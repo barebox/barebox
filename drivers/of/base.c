@@ -1270,7 +1270,7 @@ struct device_node *of_find_node_by_path_from(struct device_node *from,
 		if (slash)
 			*slash = 0;
 
-		from = of_find_child_by_name(from, p);
+		from = of_get_child_by_name(from, p);
 		if (!from)
 			goto out;
 
@@ -1905,17 +1905,6 @@ int of_probe(void)
 	return 0;
 }
 
-struct device_node *of_find_child_by_name(struct device_node *node, const char *name)
-{
-	struct device_node *_n;
-
-	device_node_for_nach_child(node, _n)
-		if (!of_node_cmp(_n->name, name))
-			return _n;
-
-	return NULL;
-}
-
 /**
  * of_create_node - create a new node including its parents
  * @path - the nodepath to create
@@ -1940,7 +1929,7 @@ struct device_node *of_create_node(struct device_node *root, const char *path)
 		if (slash)
 			*slash = 0;
 
-		tmp = of_find_child_by_name(dn, p);
+		tmp = of_get_child_by_name(dn, p);
 		if (tmp)
 			dn = tmp;
 		else

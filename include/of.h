@@ -74,8 +74,6 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 int of_n_addr_cells(struct device_node *np);
 int of_n_size_cells(struct device_node *np);
 
-struct device_node *of_find_child_by_name(struct device_node *node, const char *name);
-
 struct fdt_header *fdt_get_tree(void);
 
 struct fdt_header *of_get_fixed_tree(struct device_node *node);

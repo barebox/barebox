@@ -383,6 +383,21 @@ int of_property_read_u32_array(const struct device_node *np,
 }
 EXPORT_SYMBOL_GPL(of_property_read_u32_array);
 
+/**
+ * of_property_write_u32_array - Write an array of u32 to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * @values:	pointer to array elements to write.
+ * @sz:		number of array elements to write.
+ *
+ * Search for a property in a device node and write 32-bit value(s) to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created.
+ */
 int of_property_write_u32_array(struct device_node *np,
 				const char *propname, const u32 *values,
 				size_t sz)
@@ -397,14 +412,15 @@ int of_property_write_u32_array(struct device_node *np,
 
 	free(prop->value);
 
-	prop->value = malloc(sizeof(__be32) * sz);
+	prop->length = sizeof(*val) * sz;
+	prop->value = malloc(prop->length);
 	if (!prop->value)
 		return -ENOMEM;
 
 	val = prop->value;
-
 	while (sz--)
 		*val++ = cpu_to_be32(*values++);
+
 	return 0;
 }
 

@@ -29,7 +29,7 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 	const char *partname;
 	char *filename;
 
-	device_node_for_nach_child(node, n) {
+	for_each_child_of_node(node, n) {
 		const __be32 *reg;
 		unsigned long offset, size;
 		const char *name;

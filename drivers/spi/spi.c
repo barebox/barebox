@@ -107,7 +107,7 @@ void spi_of_register_slaves(struct spi_master *master, struct device_node *node)
 	struct spi_board_info chip;
 	struct property *reg;
 
-	device_node_for_nach_child(node, n) {
+	for_each_child_of_node(node, n) {
 		memset(&chip, 0, sizeof(chip));
 		chip.name = xstrdup(n->name);
 		chip.bus_num = master->bus_num;

@@ -798,6 +798,119 @@ int of_property_count_strings(struct device_node *np, const char *propname)
 EXPORT_SYMBOL_GPL(of_property_count_strings);
 
 /**
+ * of_property_write_bool - Create/Delete empty (bool) property.
+ *
+ * @np:		device node from which the property is to be set.
+ * @propname:	name of the property to be set.
+ *
+ * Search for a property in a device node and create or delete the property.
+ * If the property already exists and write value is false, the property is
+ * deleted. If write value is true and the property does not exist, it is
+ * created. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created.
+ */
+int of_property_write_bool(struct device_node *np, const char *propname,
+			   const bool value)
+{
+	struct property *prop = of_find_property(np, propname, NULL);
+
+	if (!value) {
+		if (prop)
+			of_delete_property(prop);
+		return 0;
+	}
+
+	if (!prop)
+		prop = of_new_property(np, propname, NULL, 0);
+	if (!prop)
+		return -ENOMEM;
+
+	return 0;
+}
+
+/**
+ * of_property_write_u8_array - Write an array of u8 to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * @values:	pointer to array elements to write.
+ * @sz:		number of array elements to write.
+ *
+ * Search for a property in a device node and write 8-bit value(s) to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created.
+ */
+int of_property_write_u8_array(struct device_node *np,
+			       const char *propname, const u8 *values,
+			       size_t sz)
+{
+	struct property *prop = of_find_property(np, propname, NULL);
+	u8 *val;
+
+	if (!prop)
+		prop = of_new_property(np, propname, NULL, 0);
+	if (!prop)
+		return -ENOMEM;
+
+	free(prop->value);
+
+	prop->length = sizeof(*val) * sz;
+	prop->value = malloc(prop->length);
+	if (!prop->value)
+		return -ENOMEM;
+
+	val = prop->value;
+	while (sz--)
+		*val++ = *values++;
+
+	return 0;
+}
+
+/**
+ * of_property_write_u16_array - Write an array of u16 to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * @values:	pointer to array elements to write.
+ * @sz:		number of array elements to write.
+ *
+ * Search for a property in a device node and write 16-bit value(s) to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created.
+ */
+int of_property_write_u16_array(struct device_node *np,
+				const char *propname, const u16 *values,
+				size_t sz)
+{
+	struct property *prop = of_find_property(np, propname, NULL);
+	__be16 *val;
+
+	if (!prop)
+		prop = of_new_property(np, propname, NULL, 0);
+	if (!prop)
+		return -ENOMEM;
+
+	free(prop->value);
+
+	prop->length = sizeof(*val) * sz;
+	prop->value = malloc(prop->length);
+	if (!prop->value)
+		return -ENOMEM;
+
+	val = prop->value;
+	while (sz--)
+		*val++ = cpu_to_be16(*values++);
+
+	return 0;
+}
+
+/**
  * of_property_write_u32_array - Write an array of u32 to a property. If
  * the property does not exist, it will be created and appended to the given
  * device node.
@@ -834,6 +947,49 @@ int of_property_write_u32_array(struct device_node *np,
 	val = prop->value;
 	while (sz--)
 		*val++ = cpu_to_be32(*values++);
+
+	return 0;
+}
+
+/**
+ * of_property_write_u64_array - Write an array of u64 to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * @values:	pointer to array elements to write.
+ * @sz:		number of array elements to write.
+ *
+ * Search for a property in a device node and write 64-bit value(s) to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created.
+ */
+int of_property_write_u64_array(struct device_node *np,
+				const char *propname, const u64 *values,
+				size_t sz)
+{
+	struct property *prop = of_find_property(np, propname, NULL);
+	__be32 *val;
+
+	if (!prop)
+		prop = of_new_property(np, propname, NULL, 0);
+	if (!prop)
+		return -ENOMEM;
+
+	free(prop->value);
+
+	prop->length = 2 * sizeof(*val) * sz;
+	prop->value = malloc(prop->length);
+	if (!prop->value)
+		return -ENOMEM;
+
+	val = prop->value;
+	while (sz--) {
+		of_write_number(val, *values++, 2);
+		val += 2;
+	}
 
 	return 0;
 }

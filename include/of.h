@@ -113,17 +113,6 @@ static inline void of_write_number(void *__cell, u64 val, int size)
 	}
 }
 
-int of_property_write_u32_array(struct device_node *np,
-				const char *propname, const u32 *values,
-				size_t sz);
-
-static inline int of_property_write_u32(struct device_node *np,
-					const char *propname,
-					u32 value)
-{
-	return of_property_write_u32_array(np, propname, &value, 1);
-}
-
 const void *of_get_property(const struct device_node *np, const char *name,
 			 int *lenp);
 
@@ -217,6 +206,21 @@ extern int of_property_match_string(struct device_node *np,
 				    const char *string);
 extern int of_property_count_strings(struct device_node *np,
 				     const char *propname);
+
+extern int of_property_write_bool(struct device_node *np,
+				const char *propname, const bool value);
+extern int of_property_write_u8_array(struct device_node *np,
+				const char *propname, const u8 *values,
+				size_t sz);
+extern int of_property_write_u16_array(struct device_node *np,
+				const char *propname, const u16 *values,
+				size_t sz);
+extern int of_property_write_u32_array(struct device_node *np,
+				const char *propname, const u32 *values,
+				size_t sz);
+extern int of_property_write_u64_array(struct device_node *np,
+				const char *propname, const u64 *values,
+				size_t sz);
 
 extern struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name,
@@ -355,6 +359,36 @@ static inline int of_property_match_string(struct device_node *np,
 
 static inline int of_property_count_strings(struct device_node *np,
 					const char *propname)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_write_bool(struct device_node *np,
+				const char *propname, const bool value)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_write_u8_array(struct device_node *np,
+			const char *propname, const u8 *values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_write_u16_array(struct device_node *np,
+			const char *propname, const u16 *values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_write_u32_array(struct device_node *np,
+			const char *propname, const u32 *values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_write_u64_array(struct device_node *np,
+			const char *propname, const u64 *values, size_t sz)
 {
 	return -ENOSYS;
 }
@@ -500,6 +534,32 @@ static inline int of_property_read_u32(const struct device_node *np,
 				       u32 *out_value)
 {
 	return of_property_read_u32_array(np, propname, out_value, 1);
+}
+
+static inline int of_property_write_u8(struct device_node *np,
+				       const char *propname, u8 value)
+{
+	return of_property_write_u8_array(np, propname, &value, 1);
+}
+
+static inline int of_property_write_u16(struct device_node *np,
+					const char *propname, u16 value)
+{
+	return of_property_write_u16_array(np, propname, &value, 1);
+}
+
+static inline int of_property_write_u32(struct device_node *np,
+					const char *propname,
+					u32 value)
+{
+	return of_property_write_u32_array(np, propname, &value, 1);
+}
+
+static inline int of_property_write_u64(struct device_node *np,
+					const char *propname,
+					u64 value)
+{
+	return of_property_write_u64_array(np, propname, &value, 1);
 }
 
 #endif /* __OF_H */

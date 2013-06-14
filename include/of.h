@@ -178,10 +178,11 @@ const struct of_device_id *of_match_node(const struct of_device_id *matches,
 struct cdev;
 
 #ifdef CONFIG_OFTREE
-int of_parse_partitions(struct cdev *cdev, struct device_node *node);
+extern void of_alias_scan(void);
+extern int of_alias_get_id(struct device_node *np, const char *stem);
+extern const char *of_alias_get(struct device_node *np);
 
-int of_alias_get_id(struct device_node *np, const char *stem);
-const char *of_alias_get(struct device_node *np);
+int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
@@ -194,16 +195,6 @@ static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
 {
 	return -EINVAL;
-}
-
-static inline int of_alias_get_id(struct device_node *np, const char *stem)
-{
-	return -ENOENT;
-}
-
-static inline const char *of_alias_get(struct device_node *np)
-{
-	return NULL;
 }
 
 static inline int of_device_is_stdout_path(struct device_d *dev)
@@ -227,6 +218,20 @@ static inline int of_add_memory(struct device_node *node, bool dump)
 }
 
 static inline struct device_node *of_get_root_node(void)
+{
+	return NULL;
+}
+
+static inline void of_alias_scan(void)
+{
+}
+
+static inline int of_alias_get_id(struct device_node *np, const char *stem)
+{
+	return -ENOSYS;
+}
+
+static inline const char *of_alias_get(struct device_node *np)
 {
 	return NULL;
 }

@@ -135,7 +135,7 @@ static void of_alias_add(struct alias_prop *ap, struct device_node *np,
  * the global lookup table with the properties.  It returns the
  * number of alias_prop found, or error code in error case.
  */
-static void of_alias_scan(void)
+void of_alias_scan(void)
 {
 	struct property *pp;
 	struct alias_prop *app, *tmp;
@@ -187,6 +187,7 @@ static void of_alias_scan(void)
 		of_alias_add(ap, np, id, start, len);
 	}
 }
+EXPORT_SYMBOL(of_alias_scan);
 
 /**
  * of_alias_get_id - Get alias id for the given device_node

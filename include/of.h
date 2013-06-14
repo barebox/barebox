@@ -42,6 +42,13 @@ struct of_device_id {
 	unsigned long data;
 };
 
+#define MAX_PHANDLE_ARGS 8
+struct of_phandle_args {
+	struct device_node *np;
+	int args_count;
+	uint32_t args[MAX_PHANDLE_ARGS];
+};
+
 #define OF_MAX_RESERVE_MAP	16
 struct of_reserve_map {
 	uint64_t start[OF_MAX_RESERVE_MAP];
@@ -119,11 +126,6 @@ static inline int of_property_write_u32(struct device_node *np,
 
 const void *of_get_property(const struct device_node *np, const char *name,
 			 int *lenp);
-
-int of_parse_phandles_with_args(struct device_node *np, const char *list_name,
-				const char *cells_name, int index,
-				struct device_node **out_node,
-				const void **out_args);
 
 int of_get_named_gpio(struct device_node *np,
                                    const char *propname, int index);
@@ -219,6 +221,11 @@ extern int of_property_count_strings(struct device_node *np,
 extern struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name,
 					    int index);
+extern int of_parse_phandle_with_args(const struct device_node *np,
+	const char *list_name, const char *cells_name, int index,
+	struct of_phandle_args *out_args);
+extern int of_count_phandle_with_args(const struct device_node *np,
+	const char *list_name, const char *cells_name);
 
 extern void of_alias_scan(void);
 extern int of_alias_get_id(struct device_node *np, const char *stem);
@@ -356,6 +363,19 @@ static inline struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name, int index)
 {
 	return NULL;
+}
+
+static inline int of_parse_phandle_with_args(const struct device_node *np,
+		const char *list_name, const char *cells_name, int index,
+		struct of_phandle_args *out_args)
+{
+	return -ENOSYS;
+}
+
+static inline int of_count_phandle_with_args(const struct device_node *np,
+				const char *list_name, const char *cells_name)
+{
+	return -ENOSYS;
 }
 
 static inline struct device_node *of_find_node_by_path_from(

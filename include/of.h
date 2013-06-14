@@ -207,6 +207,10 @@ extern int of_property_match_string(struct device_node *np,
 extern int of_property_count_strings(struct device_node *np,
 				     const char *propname);
 
+extern const __be32 *of_prop_next_u32(struct property *prop,
+				const __be32 *cur, u32 *pu);
+extern const char *of_prop_next_string(struct property *prop, const char *cur);
+
 extern int of_property_write_bool(struct device_node *np,
 				const char *propname, const bool value);
 extern int of_property_write_u8_array(struct device_node *np,
@@ -361,6 +365,18 @@ static inline int of_property_count_strings(struct device_node *np,
 					const char *propname)
 {
 	return -ENOSYS;
+}
+
+static inline const __be32 *of_prop_next_u32(struct property *prop,
+					const __be32 *cur, u32 *pu)
+{
+	return 0;
+}
+
+static inline const char *of_prop_next_string(struct property *prop,
+					const char *cur)
+{
+	return NULL;
 }
 
 static inline int of_property_write_bool(struct device_node *np,
@@ -535,6 +551,33 @@ static inline int of_property_read_u32(const struct device_node *np,
 {
 	return of_property_read_u32_array(np, propname, out_value, 1);
 }
+
+/*
+ * struct property *prop;
+ * const __be32 *p;
+ * u32 u;
+ *
+ * of_property_for_each_u32(np, "propname", prop, p, u)
+ *         printk("U32 value: %x\n", u);
+ */
+#define of_property_for_each_u32(np, propname, prop, p, u)	\
+	for (prop = of_find_property(np, propname, NULL),	\
+		p = of_prop_next_u32(prop, NULL, &u);		\
+		p;						\
+		p = of_prop_next_u32(prop, p, &u))
+
+/*
+ * struct property *prop;
+ * const char *s;
+ *
+ * of_property_for_each_string(np, "propname", prop, s)
+ *         printk("String value: %s\n", s);
+ */
+#define of_property_for_each_string(np, propname, prop, s)	\
+	for (prop = of_find_property(np, propname, NULL),	\
+		s = of_prop_next_string(prop, NULL);		\
+		s;						\
+		s = of_prop_next_string(prop, s))
 
 static inline int of_property_write_u8(struct device_node *np,
 				       const char *propname, u8 value)

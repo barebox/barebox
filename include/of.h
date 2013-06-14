@@ -106,17 +106,6 @@ static inline void of_write_number(void *__cell, u64 val, int size)
 	}
 }
 
-int of_property_read_u32_array(const struct device_node *np,
-			       const char *propname, u32 *out_values,
-			       size_t sz);
-
-static inline int of_property_read_u32(const struct device_node *np,
-				       const char *propname,
-				       u32 *out_value)
-{
-	return of_property_read_u32_array(np, propname, out_value, 1);
-}
-
 int of_property_write_u32_array(struct device_node *np,
 				const char *propname, const u32 *values,
 				size_t sz);
@@ -163,10 +152,6 @@ struct property *of_new_property(struct device_node *node, const char *name,
 		const void *data, int len);
 void of_delete_property(struct property *pp);
 
-int of_property_read_string(struct device_node *np, const char *propname,
-				const char **out_string);
-int of_property_read_string_index(struct device_node *np, const char *propname,
-				  int index, const char **output);
 int of_set_property(struct device_node *node, const char *p, const void *val, int len,
 		int create);
 struct device_node *of_create_node(struct device_node *root, const char *path);
@@ -204,6 +189,32 @@ extern int of_get_child_count(const struct device_node *parent);
 extern int of_get_available_child_count(const struct device_node *parent);
 extern struct device_node *of_get_child_by_name(const struct device_node *node,
 					const char *name);
+
+extern int of_property_read_u32_index(const struct device_node *np,
+				       const char *propname,
+				       u32 index, u32 *out_value);
+extern int of_property_read_u8_array(const struct device_node *np,
+			const char *propname, u8 *out_values, size_t sz);
+extern int of_property_read_u16_array(const struct device_node *np,
+			const char *propname, u16 *out_values, size_t sz);
+extern int of_property_read_u32_array(const struct device_node *np,
+				      const char *propname,
+				      u32 *out_values,
+				      size_t sz);
+extern int of_property_read_u64(const struct device_node *np,
+				const char *propname, u64 *out_value);
+
+extern int of_property_read_string(struct device_node *np,
+				   const char *propname,
+				   const char **out_string);
+extern int of_property_read_string_index(struct device_node *np,
+					 const char *propname,
+					 int index, const char **output);
+extern int of_property_match_string(struct device_node *np,
+				    const char *propname,
+				    const char *string);
+extern int of_property_count_strings(struct device_node *np,
+				     const char *propname);
 
 extern void of_alias_scan(void);
 extern int of_alias_get_id(struct device_node *np, const char *stem);
@@ -281,6 +292,60 @@ static inline struct property *of_find_property(const struct device_node *np,
 						int *lenp)
 {
 	return NULL;
+}
+
+static inline int of_property_read_u32_index(const struct device_node *np,
+				const char *propname, u32 index, u32 *out_value)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_read_u8_array(const struct device_node *np,
+				const char *propname, u8 *out_values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_read_u16_array(const struct device_node *np,
+			const char *propname, u16 *out_values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_read_u32_array(const struct device_node *np,
+			const char *propname, u32 *out_values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_read_u64(const struct device_node *np,
+				const char *propname, u64 *out_value)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_read_string(struct device_node *np,
+				const char *propname, const char **out_string)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_read_string_index(struct device_node *np,
+			 const char *propname, int index, const char **output)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_match_string(struct device_node *np,
+				const char *propname, const char *string)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_count_strings(struct device_node *np,
+					const char *propname)
+{
+	return -ENOSYS;
 }
 
 static inline struct device_node *of_find_node_by_path_from(
@@ -369,5 +434,42 @@ static inline struct device_node *of_find_matching_node(
 #define for_each_available_child_of_node(parent, child) \
 	for (child = of_get_next_available_child(parent, NULL); child != NULL; \
 	     child = of_get_next_available_child(parent, child))
+
+/**
+ * of_property_read_bool - Findfrom a property
+ * @np:		device node from which the property value is to be read.
+ * @propname:	name of the property to be searched.
+ *
+ * Search for a property in a device node.
+ * Returns true if the property exist false otherwise.
+ */
+static inline bool of_property_read_bool(const struct device_node *np,
+					 const char *propname)
+{
+	struct property *prop = of_find_property(np, propname, NULL);
+
+	return prop ? true : false;
+}
+
+static inline int of_property_read_u8(const struct device_node *np,
+				       const char *propname,
+				       u8 *out_value)
+{
+	return of_property_read_u8_array(np, propname, out_value, 1);
+}
+
+static inline int of_property_read_u16(const struct device_node *np,
+				       const char *propname,
+				       u16 *out_value)
+{
+	return of_property_read_u16_array(np, propname, out_value, 1);
+}
+
+static inline int of_property_read_u32(const struct device_node *np,
+				       const char *propname,
+				       u32 *out_value)
+{
+	return of_property_read_u32_array(np, propname, out_value, 1);
+}
 
 #endif /* __OF_H */

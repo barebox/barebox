@@ -22,40 +22,28 @@
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
 
-#define SI_REV 0x48
+#define IIM_SREV 0x24
 
 static int imx51_silicon_revision(void)
 {
-	void __iomem *rom = MX51_IROM_BASE_ADDR;
-	u32 mx51_silicon_revision;
-	u32 rev;
+	void __iomem *iim_base = IOMEM(MX51_IIM_BASE_ADDR);
+	u32 rev = readl(iim_base + IIM_SREV) & 0xff;
 
-	rev = readl(rom + SI_REV);
 	switch (rev) {
-	case 0x1:
-		mx51_silicon_revision = IMX_CHIP_REV_1_0;
-		break;
-	case 0x2:
-		mx51_silicon_revision = IMX_CHIP_REV_1_1;
-		break;
+	case 0x0:
+		return IMX_CHIP_REV_2_0;
 	case 0x10:
-		mx51_silicon_revision = IMX_CHIP_REV_2_0;
-		break;
-	case 0x20:
-		mx51_silicon_revision = IMX_CHIP_REV_3_0;
-		break;
+		return IMX_CHIP_REV_3_0;
 	default:
-		mx51_silicon_revision = 0;
+		return IMX_CHIP_REV_UNKNOWN;
 	}
-
-	imx_set_silicon_revision("i.MX51", mx51_silicon_revision);
 
 	return 0;
 }
 
 static int imx51_init(void)
 {
-	imx51_silicon_revision();
+	imx_set_silicon_revision("i.MX51", imx51_silicon_revision());
 	imx51_boot_save_loc((void *)MX51_SRC_BASE_ADDR);
 
 	if (of_get_root_node())

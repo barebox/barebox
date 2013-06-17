@@ -175,7 +175,7 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me,
 		puts("   ");
 	}
 
-	printf(" %d: ", me->num);
+	printf(" %2d: ", me->num);
 	if (selected)
 		puts("\e[7m");
 

@@ -361,7 +361,8 @@ int menu_show(struct menu *m)
 				break;
 			clear();
 			gotoXY(1,1);
-			m->selected->action(m, m->selected);
+			if (m->selected->action)
+				m->selected->action(m, m->selected);
 			if (m->selected->non_re_ent)
 				return m->selected->num;
 			else

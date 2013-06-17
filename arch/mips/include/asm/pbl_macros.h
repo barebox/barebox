@@ -41,9 +41,9 @@
 	.set	push
 	.set	noreorder
 	move	\temp, ra			# preserve ra beforehand
-	bal	_pc
+	bal	255f
 	 nop
-_pc:	addiu	\rd, ra, \label - _pc		# label is assumed to be
+255:	addiu	\rd, ra, \label - 255b		# label is assumed to be
 	move	ra, \temp			# within pc +/- 32KB
 	.set	pop
 	.endm

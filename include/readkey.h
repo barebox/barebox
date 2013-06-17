@@ -28,7 +28,7 @@
 
 #define printf_reverse(fmt,args...)	printf("\e[7m" fmt "\e[m",##args)
 #define puts_reverse(fmt)		puts("\e[7m" fmt "\e[m")
-#define gotoXY(row, col)		printf("\e[%d;%dH", row, col)
+#define gotoXY(row, col)		printf("\e[%d;%dH", col, row)
 #define clear()				puts("\e[2J")
 
 int read_key(void);

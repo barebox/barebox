@@ -137,7 +137,7 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX51_CCM_BASE_ADDR;
 	u32 r;
-	int rev = imx_silicon_revision();
+	int rev = imx51_silicon_revision();
 
 	imx5_init_lowlevel();
 

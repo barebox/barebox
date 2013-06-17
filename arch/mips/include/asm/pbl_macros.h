@@ -48,8 +48,6 @@ _pc:	addiu	\rd, ra, \label - _pc		# label is assumed to be
 	.set	pop
 	.endm
 
-#define LONGSIZE	4
-
 	.macro	copy_to_link_location start_addr
 	.set	push
 	.set	noreorder

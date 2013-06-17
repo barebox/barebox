@@ -196,7 +196,7 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 	imx5_setup_pll_216((void __iomem *)MX51_PLL3_BASE_ADDR);
 
 	/* Set the platform clock dividers */
-	writel(0x00000124, MX51_ARM_BASE_ADDR + 0x14);
+	writel(0x00000125, MX51_ARM_BASE_ADDR + 0x14);
 
 	/* Run at Full speed */
 	writel(0x0, ccm + MX5_CCM_CACRR);

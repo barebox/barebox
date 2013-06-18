@@ -212,7 +212,7 @@ static int do_of_property(int argc, char *argv[])
 	if (optind + 1 < argc) {
 		propname = argv[optind + 1];
 
-		pp = of_find_property(node, propname);
+		pp = of_find_property(node, propname, NULL);
 		if (!set && !pp) {
 			printf("Cannot find property %s\n", propname);
 			return -ENOENT;

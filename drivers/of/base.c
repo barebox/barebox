@@ -102,16 +102,20 @@ static void of_bus_count_cells(struct device_node *dev,
 	of_bus_default_count_cells(dev, addrc, sizec);
 }
 
-struct property *of_find_property(const struct device_node *node, const char *name)
+struct property *of_find_property(const struct device_node *np,
+				  const char *name, int *lenp)
 {
 	struct property *pp;
 
-	if (!node)
+	if (!np)
 		return NULL;
 
-	list_for_each_entry(pp, &node->properties, list)
-		if (of_prop_cmp(pp->name, name) == 0)
+	list_for_each_entry(pp, &np->properties, list)
+		if (of_prop_cmp(pp->name, name) == 0) {
+			if (lenp)
+				*lenp = pp->length;
 			return pp;
+		}
 
 	return NULL;
 }
@@ -242,7 +246,7 @@ u64 of_translate_address(struct device_node *node, const __be32 *in_addr)
 			return addr;
 
 		node = node->parent;
-		p = of_find_property(node, "ranges");
+		p = of_find_property(node, "ranges", NULL);
 		if (!p && node->parent)
 			return OF_BAD_ADDR;
 		of_bus_count_cells(node, &na, &nc);
@@ -277,13 +281,7 @@ EXPORT_SYMBOL(of_find_node_by_phandle);
 const void *of_get_property(const struct device_node *np, const char *name,
 			 int *lenp)
 {
-	struct property *pp = of_find_property(np, name);
-
-	if (!pp)
-		return NULL;
-
-	if (lenp)
-		*lenp = pp->length;
+	struct property *pp = of_find_property(np, name, lenp);
 
 	return pp ? pp->value : NULL;
 }
@@ -368,7 +366,7 @@ int of_property_read_u32_array(const struct device_node *np,
 			       const char *propname, u32 *out_values,
 			       size_t sz)
 {
-	struct property *prop = of_find_property(np, propname);
+	struct property *prop = of_find_property(np, propname, NULL);
 	const __be32 *val;
 
 	if (!prop)
@@ -404,7 +402,7 @@ int of_property_write_u32_array(struct device_node *np,
 				const char *propname, const u32 *values,
 				size_t sz)
 {
-	struct property *prop = of_find_property(np, propname);
+	struct property *prop = of_find_property(np, propname, NULL);
 	__be32 *val;
 
 	if (!prop)
@@ -619,7 +617,7 @@ EXPORT_SYMBOL(of_find_node_by_path);
 int of_property_read_string(struct device_node *np, const char *propname,
 				const char **out_string)
 {
-	struct property *prop = of_find_property(np, propname);
+	struct property *prop = of_find_property(np, propname, NULL);
 	if (!prop)
 		return -EINVAL;
 	if (!prop->value)
@@ -652,7 +650,7 @@ EXPORT_SYMBOL_GPL(of_property_read_string);
 int of_property_read_string_index(struct device_node *np, const char *propname,
 				  int index, const char **output)
 {
-	struct property *prop = of_find_property(np, propname);
+	struct property *prop = of_find_property(np, propname, NULL);
 	int i = 0;
 	size_t l = 0, total = 0;
 	const char *p;
@@ -725,7 +723,7 @@ static int of_node_disabled(struct device_node *node)
 {
 	struct property *p;
 
-	p = of_find_property(node, "status");
+	p = of_find_property(node, "status", NULL);
 	if (p) {
 		if (!strcmp("disabled", p->value))
 			return 1;
@@ -833,7 +831,7 @@ int of_set_property(struct device_node *np, const char *name, const void *val, i
 	if (!np)
 		return -ENOENT;
 
-	pp = of_find_property(np, name);
+	pp = of_find_property(np, name, NULL);
 	if (pp) {
 		void *data;
 
@@ -1278,11 +1276,11 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 	} else {
 		struct property *pp;
 
-		pp = of_find_property(chosen, "linux,initrd-start");
+		pp = of_find_property(chosen, "linux,initrd-start", NULL);
 		if (pp)
 			of_delete_property(pp);
 
-		pp = of_find_property(chosen, "linux,initrd-end");
+		pp = of_find_property(chosen, "linux,initrd-end", NULL);
 		if (pp)
 			of_delete_property(pp);
 	}

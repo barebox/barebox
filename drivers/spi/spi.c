@@ -112,17 +112,17 @@ void spi_of_register_slaves(struct spi_master *master, struct device_node *node)
 		chip.name = xstrdup(n->name);
 		chip.bus_num = master->bus_num;
 		/* Mode (clock phase/polarity/etc.) */
-		if (of_find_property(n, "spi-cpha"))
+		if (of_find_property(n, "spi-cpha", NULL))
 			chip.mode |= SPI_CPHA;
-		if (of_find_property(n, "spi-cpol"))
+		if (of_find_property(n, "spi-cpol", NULL))
 			chip.mode |= SPI_CPOL;
-		if (of_find_property(n, "spi-cs-high"))
+		if (of_find_property(n, "spi-cs-high", NULL))
 			chip.mode |= SPI_CS_HIGH;
-		if (of_find_property(n, "spi-3wire"))
+		if (of_find_property(n, "spi-3wire", NULL))
 			chip.mode |= SPI_3WIRE;
 		of_property_read_u32(n, "spi-max-frequency",
 				&chip.max_speed_hz);
-		reg = of_find_property(n, "reg");
+		reg = of_find_property(n, "reg", NULL);
 		if (!reg)
 			continue;
 		chip.chip_select = of_read_number(reg->value, 1);

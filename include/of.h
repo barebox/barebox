@@ -67,8 +67,6 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 int of_n_addr_cells(struct device_node *np);
 int of_n_size_cells(struct device_node *np);
 
-struct property *of_find_property(const struct device_node *node, const char *name);
-
 struct device_node *of_find_node_by_path(struct device_node *root, const char *path);
 
 struct device_node *of_find_child_by_name(struct device_node *node, const char *name);
@@ -183,6 +181,9 @@ const struct of_device_id *of_match_node(const struct of_device_id *matches,
 struct cdev;
 
 #ifdef CONFIG_OFTREE
+extern struct property *of_find_property(const struct device_node *np,
+					const char *name, int *lenp);
+
 extern void of_alias_scan(void);
 extern int of_alias_get_id(struct device_node *np, const char *stem);
 extern const char *of_alias_get(struct device_node *np);
@@ -223,6 +224,13 @@ static inline int of_add_memory(struct device_node *node, bool dump)
 }
 
 static inline struct device_node *of_get_root_node(void)
+{
+	return NULL;
+}
+
+static inline struct property *of_find_property(const struct device_node *np,
+						const char *name,
+						int *lenp)
 {
 	return NULL;
 }

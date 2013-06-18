@@ -5,6 +5,11 @@
 #include <errno.h>
 #include <asm/byteorder.h>
 
+/* Default string compare functions */
+#define of_compat_cmp(s1, s2, l)	strcasecmp((s1), (s2))
+#define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
+#define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+
 #define OF_BAD_ADDR      ((u64)-1)
 
 typedef u32 phandle;

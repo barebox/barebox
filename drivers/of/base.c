@@ -104,14 +104,15 @@ static void of_bus_count_cells(struct device_node *dev,
 
 struct property *of_find_property(const struct device_node *node, const char *name)
 {
-	struct property *p;
+	struct property *pp;
 
 	if (!node)
 		return NULL;
 
-	list_for_each_entry(p, &node->properties, list)
-		if (!strcmp(p->name, name))
-			return p;
+	list_for_each_entry(pp, &node->properties, list)
+		if (of_prop_cmp(pp->name, name) == 0)
+			return pp;
+
 	return NULL;
 }
 EXPORT_SYMBOL(of_find_property);
@@ -160,9 +161,9 @@ void of_alias_scan(void)
 		int id, len;
 
 		/* Skip those we do not want to proceed */
-		if (!strcmp(pp->name, "name") ||
-		    !strcmp(pp->name, "phandle") ||
-		    !strcmp(pp->name, "linux,phandle"))
+		if (!of_prop_cmp(pp->name, "name") ||
+		    !of_prop_cmp(pp->name, "phandle") ||
+		    !of_prop_cmp(pp->name, "linux,phandle"))
 			continue;
 
 		np = of_find_node_by_path(root_node, pp->value);
@@ -203,7 +204,7 @@ int of_alias_get_id(struct device_node *np, const char *stem)
 	int id = -ENODEV;
 
 	list_for_each_entry(app, &aliases_lookup, link) {
-		if (strcmp(app->stem, stem) != 0)
+		if (of_node_cmp(app->stem, stem) != 0)
 			continue;
 
 		if (np == app->np) {
@@ -221,7 +222,7 @@ const char *of_alias_get(struct device_node *np)
 	struct property *pp;
 
 	list_for_each_entry(pp, &of_aliases->properties, list) {
-		if (!strcmp(np->full_name, pp->value))
+		if (!of_node_cmp(np->full_name, pp->value))
 			return pp->name;
 	}
 
@@ -301,7 +302,7 @@ int of_device_is_compatible(const struct device_node *device,
 	if (cp == NULL)
 		return 0;
 	while (cplen > 0) {
-		if (strcmp(cp, compat) == 0)
+		if (of_compat_cmp(cp, compat, strlen(compat)) == 0)
 			return 1;
 		l = strlen(cp) + 1;
 		cp += l;
@@ -958,7 +959,7 @@ int of_add_memory(struct device_node *node, bool dump)
 	if (ret)
 		return -ENXIO;
 
-	if (strcmp(device_type, "memory"))
+	if (of_node_cmp(device_type, "memory"))
 		return -ENXIO;
 
 	of_bus_count_cells(node, &na, &nc);
@@ -1177,7 +1178,7 @@ struct device_node *of_find_child_by_name(struct device_node *node, const char *
 	struct device_node *_n;
 
 	device_node_for_nach_child(node, _n)
-		if (!strcmp(_n->name, name))
+		if (!of_node_cmp(_n->name, name))
 			return _n;
 
 	return NULL;

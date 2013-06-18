@@ -60,6 +60,7 @@ obj-$(CONFIG_MACH_SABRESD)			+= freescale-mx6-sabresd/
 obj-$(CONFIG_MACH_SCB9328)			+= scb9328/
 obj-$(CONFIG_MACH_TOSHIBA_AC100)		+= toshiba-ac100/
 obj-$(CONFIG_MACH_TQMA53)			+= tqma53/
+obj-$(CONFIG_MACH_TQMA6X)			+= tqma6x/
 obj-$(CONFIG_MACH_TX25)				+= karo-tx25/
 obj-$(CONFIG_MACH_TX28)				+= karo-tx28/
 obj-$(CONFIG_MACH_TX51)				+= karo-tx51/

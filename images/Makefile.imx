@@ -41,3 +41,15 @@ CFG_start_imx6_gk802.pblx.imximg = $(board)/gk802/flash-header.imxcfg
 imximage-$(CONFIG_MACH_GK802) += start_imx6_gk802.pblx.imximg
 FILE_barebox-gk802.img = start_imx6_gk802.pblx.imximg
 image-$(CONFIG_MACH_GK802) += barebox-gk802.img
+
+pblx-$(CONFIG_MACH_TQMA6X) += start_imx6dl_mba6x
+CFG_start_imx6dl_mba6x.pblx.imximg = $(board)/tqma6x/flash-header-tqma6dl.imxcfg
+imximage-$(CONFIG_MACH_TQMA6X) += start_imx6dl_mba6x.pblx.imximg
+FILE_barebox-tq-tqma6s-mba6x.img = start_imx6dl_mba6x.pblx.imximg
+image-$(CONFIG_MACH_TQMA6X) += barebox-tq-tqma6s-mba6x.img
+
+pblx-$(CONFIG_MACH_TQMA6X) += start_imx6q_mba6x
+CFG_start_imx6q_mba6x.pblx.imximg = $(board)/tqma6x/flash-header-tqma6q.imxcfg
+imximage-$(CONFIG_MACH_TQMA6X) += start_imx6q_mba6x.pblx.imximg
+FILE_barebox-tq-tqma6q-mba6x.img = start_imx6q_mba6x.pblx.imximg
+image-$(CONFIG_MACH_TQMA6X) += barebox-tq-tqma6q-mba6x.img

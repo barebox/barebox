@@ -45,6 +45,14 @@ config DRIVER_VIDEO_S3C24XX
 	help
 	  Add support for the S3C244x LCD controller.
 
+config DRIVER_VIDEO_OMAP
+	bool "OMAP framebuffer driver"
+	depends on ARCH_OMAP4
+	help
+	  Add support for OMAP Display Controller. Currently this
+	  driver only supports OMAP4 SoCs in DISPC parallel mode on
+	  LCD2 (MIPI DPI).
+
 if DRIVER_VIDEO_S3C24XX
 
 config DRIVER_VIDEO_S3C_VERBOSE

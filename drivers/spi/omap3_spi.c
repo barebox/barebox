@@ -357,16 +357,24 @@ static int omap3_spi_probe(struct device_d *dev)
 	 * McSPI3 has 2 CS (bus 3, cs 0 - 1)
 	 * McSPI4 has 1 CS (bus 4, cs 0)
 	 *
+	 * AM335x McSPI has 2 busses with 2 chip selects:
+	 * McSPI0 has 2 CS (bus 0, cs 0 - 1)
+	 * McSPI1 has 2 CS (bus 1, cs 0 - 1)
+	 *
 	 * The board code has to make sure that it does not use
 	 * invalid buses or chip selects.
 	 */
 
 	master->bus_num = dev->id;
-	master->num_chipselect = 4;
+
+	if (IS_ENABLED(CONFIG_ARCH_OMAP3))
+		master->num_chipselect = 4;
+	else
+		master->num_chipselect = 2;
 	master->setup = omap3_spi_setup;
 	master->transfer = omap3_spi_transfer;
 
-	omap3_master->regs = dev_request_mem_region(dev, 0);;
+	omap3_master->regs = dev_request_mem_region(dev, 0);
 
 	spi_reset(master);
 

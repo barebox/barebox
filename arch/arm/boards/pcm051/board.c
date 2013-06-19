@@ -19,13 +19,17 @@
 
 #include <common.h>
 #include <init.h>
+#include <io.h>
 #include <sizes.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
+#include <linux/phy.h>
 #include <mach/am33xx-devices.h>
+#include <mach/am33xx-generic.h>
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-silicon.h>
+#include <mach/cpsw.h>
 #include <spi/spi.h>
 #include <spi/flash.h>
 
@@ -73,6 +77,18 @@ static struct spi_board_info pcm051_spi_board_info[] = {
 	},
 };
 
+static struct cpsw_slave_data cpsw_slaves[] = {
+	{
+		.phy_id		= 0,
+		.phy_if		= PHY_INTERFACE_MODE_RMII,
+	},
+};
+
+static struct cpsw_platform_data cpsw_data = {
+	.slave_data	= cpsw_slaves,
+	.num_slaves	= ARRAY_SIZE(cpsw_slaves),
+};
+
 static void pcm051_spi_init(void)
 {
 	int ret;
@@ -84,6 +100,17 @@ static void pcm051_spi_init(void)
 	am33xx_add_spi0();
 }
 
+static void pcm051_eth_init(void)
+{
+	am33xx_register_ethaddr(0, 0);
+
+	writel(0x49, AM33XX_MAC_MII_SEL);
+
+	am33xx_enable_rmii1_pin_mux();
+
+	am33xx_add_cpsw(&cpsw_data);
+}
+
 static int pcm051_devices_init(void)
 {
 	pcm051_enable_mmc0_pin_mux();
@@ -91,6 +118,7 @@ static int pcm051_devices_init(void)
 	am33xx_add_mmc0(NULL);
 
 	pcm051_spi_init();
+	pcm051_eth_init();
 
 	devfs_add_partition("nor0", 0x00000, SZ_128K,
 					DEVFS_PARTITION_FIXED, "xload");

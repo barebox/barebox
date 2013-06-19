@@ -211,9 +211,12 @@ struct usb_host {
 	struct list_head list;
 
 	int busnum;
+	int scanned;
 };
 
 int usb_register_host(struct usb_host *);
+
+int usb_host_detect(struct usb_host *host, int force);
 
 /* Defines */
 #define USB_UHCI_VEND_ID	0x8086

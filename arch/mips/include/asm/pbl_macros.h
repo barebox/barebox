@@ -38,6 +38,18 @@
 	.set	pop
 	.endm
 
+	.macro	pbl_probe_mem ret1 ret2 addr
+	.set	push
+	.set	noreorder
+	la	\ret1, \addr
+	sw	zero, 0(\ret1)
+	li	\ret2, 0x12345678
+	sw	\ret2, 0(\ret1)
+	lw	\ret2, 0(\ret1)
+	li	\ret1, 0x12345678
+	.set	pop
+	.endm
+
 	/*
 	 * ADR macro instruction (inspired by ARM)
 	 *

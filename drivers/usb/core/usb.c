@@ -488,11 +488,18 @@ static struct usb_device *usb_alloc_new_device(void)
 	return usbdev;
 }
 
-void usb_rescan(void)
+static int scanned;
+
+void usb_rescan(int force)
 {
 	struct usb_device *dev, *tmp;
 	struct usb_host *host;
 	int ret;
+
+	if (scanned && !force)
+		return;
+
+	scanned = 1;
 
 	list_for_each_entry_safe(dev, tmp, &usb_device_list, list) {
 		list_del(&dev->list);

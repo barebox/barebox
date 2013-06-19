@@ -18,6 +18,7 @@
 
 #include <asm/pbl_macros.h>
 #include <mach/pbl_macros.h>
+#include <mach/ar2312_regs.h>
 
 #include <mach/debug_ll.h>
 
@@ -40,10 +41,17 @@
 	/* check if SDRAM is already configured,
 	 * if yes, we are probably starting
 	 * as second stage loader and can skip configuration */
+	la	t0, KSEG1 | AR2312_MEM_CFG1
+	lw	t1, 0(t0)
+	and	t0, t1, MEM_CFG1_E0
+	beq	zero, t0, 1f
+	 nop
+
 	pbl_probe_mem t0, t1, KSEG1
 	beq t0, t1, sdram_configured
 	 nop
 
+1:
 	/* start SDRAM configuration */
 	pbl_ar2312_x16_sdram
 

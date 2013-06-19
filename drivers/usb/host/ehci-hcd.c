@@ -847,6 +847,13 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	return -1;
 }
 
+static int ehci_detect(struct device_d *dev)
+{
+	struct ehci_priv *ehci = dev->priv;
+
+	return usb_host_detect(&ehci->host, 0);
+}
+
 int ehci_register(struct device_d *dev, struct ehci_data *data)
 {
 	struct usb_host *host;
@@ -881,6 +888,8 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 	if (ehci->flags & EHCI_HAS_TT) {
 		ehci_reset(ehci);
 	}
+
+	dev->detect = ehci_detect;
 
 	usb_register_host(host);
 

@@ -314,3 +314,8 @@ void am33xx_enable_mmc0_pin_mux(void)
 {
 	configure_module_pin_mux(mmc0_pin_mux);
 }
+
+void am33xx_enable_spi0_pin_mux(void)
+{
+	configure_module_pin_mux(spi0_pin_mux);
+}

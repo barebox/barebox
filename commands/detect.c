@@ -28,8 +28,9 @@ static int do_detect(int argc, char *argv[])
 	int opt, i, ret;
 	int option_list = 0;
 	int option_error = 0;
+	int option_all = 0;
 
-	while ((opt = getopt(argc, argv, "el")) > 0) {
+	while ((opt = getopt(argc, argv, "ela")) > 0) {
 		switch (opt) {
 		case 'l':
 			option_list = 1;
@@ -37,6 +38,11 @@ static int do_detect(int argc, char *argv[])
 		case 'e':
 			option_error = 1;
 			break;
+		case 'a':
+			option_all = 1;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 
@@ -44,6 +50,15 @@ static int do_detect(int argc, char *argv[])
 		for_each_device(dev) {
 			if (dev->detect)
 				printf("%s\n", dev_name(dev));
+		}
+		return 0;
+	}
+
+	if (option_all) {
+		for_each_device(dev) {
+			ret = device_detect(dev);
+			if (ret && ret != -ENOSYS && option_error)
+				return ret;
 		}
 		return 0;
 	}

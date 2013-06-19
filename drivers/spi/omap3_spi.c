@@ -325,17 +325,6 @@ static int omap3_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 
 static int omap3_spi_setup(struct spi_device *spi)
 {
-	struct spi_master *master = spi->master;
-
-	if (((master->bus_num == 1) && (spi->chip_select > 3)) ||
-			((master->bus_num == 2) && (spi->chip_select > 1)) ||
-			((master->bus_num == 3) && (spi->chip_select > 1)) ||
-			((master->bus_num == 4) && (spi->chip_select > 0))) {
-		printf("SPI error: unsupported chip select %i \
-			on bus %i\n", spi->chip_select, master->bus_num);
-		return -EINVAL;
-	}
-
 	if (spi->max_speed_hz > OMAP3_MCSPI_MAX_FREQ) {
 		printf("SPI error: unsupported frequency %i Hz. \
 			Max frequency is 48 Mhz\n", spi->max_speed_hz);

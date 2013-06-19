@@ -97,6 +97,22 @@ copy_loop_exit:
 	.set	pop
 	.endm
 
+	.macro	mips_barebox_10h
+	.set	push
+	.set	noreorder
+
+	b	1f
+	 nop
+
+	.org	0x10
+	.ascii	"barebox " UTS_RELEASE " " UTS_VERSION
+	.byte	0
+
+	.align	4
+1:
+	.set	pop
+	.endm
+
 	/*
 	 * Dominic Sweetman, See MIPS Run, Morgan Kaufmann, 2nd edition, 2006
 	 *

@@ -148,13 +148,13 @@ static void imx_pata_setup_port(void *reg_base, void *alt_base,
 
 static int imx_pata_probe(struct device_d *dev)
 {
-	struct ata_ioports *io;
+	struct ide_port *ide;
 	struct clk *clk;
 	void __iomem *base;
 	int ret;
 	const char *devname = NULL;
 
-	io = xzalloc(sizeof(struct ata_ioports));
+	ide = xzalloc(sizeof(*ide));
 	base = dev_request_mem_region(dev, 0);
 
 	clk = clk_get(dev, NULL);
@@ -164,7 +164,7 @@ static int imx_pata_probe(struct device_d *dev)
 	}
 
 	imx_pata_setup_port(base + PATA_IMX_DRIVE_DATA,
-			base + PATA_IMX_DRIVE_CONTROL, io, 2);
+			base + PATA_IMX_DRIVE_CONTROL, &ide->io, 2);
 
 	/* deassert resets */
 	writel(PATA_IMX_ATA_CTRL_FIFO_RST_B |
@@ -179,7 +179,10 @@ static int imx_pata_probe(struct device_d *dev)
 			devname = xstrdup(devname);
 	}
 
-	ret = ide_port_register(dev, io, devname);
+	ide->port.dev = dev;
+	ide->port.devname = devname;
+
+	ret = ide_port_register(ide);
 	if (ret) {
 		dev_err(dev, "Cannot register IDE interface: %s\n",
 				strerror(-ret));
@@ -192,7 +195,7 @@ out_free_clk:
 	clk_put(clk);
 
 out_free:
-	free(io);
+	free(ide);
 
 	return ret;
 }

@@ -143,7 +143,12 @@ struct ata_port {
 	int probe;
 };
 
-int ide_port_register(struct device_d *, struct ata_ioports *, const char *);
+struct ide_port {
+	struct ata_ioports io;	/**< register file */
+	struct ata_port port;
+};
+
+int ide_port_register(struct ide_port *ide);
 int ata_port_register(struct ata_port *port);
 int ata_port_detect(struct ata_port *port);
 

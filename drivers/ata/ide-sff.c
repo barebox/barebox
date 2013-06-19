@@ -8,14 +8,6 @@
 /* max timeout for a rotating disk in [ms] */
 #define MAX_TIMEOUT 5000
 
-/**
- * Collection of data we need to know about this drive
- */
-struct ide_port {
-	struct ata_ioports *io;	/**< register file */
-	struct ata_port port;
-};
-
 #define to_ata_drive_access(x) container_of((x), struct ide_port, port)
 
 #define DISK_MASTER 0
@@ -28,7 +20,7 @@ struct ide_port {
  */
 static uint8_t ata_rd_status(struct ide_port *ide)
 {
-	return readb(ide->io->status_addr);
+	return readb(ide->io.status_addr);
 }
 
 /**
@@ -90,12 +82,12 @@ static int ata_set_lba_sector(struct ide_port *ide, unsigned drive, uint64_t num
 	if (num > 0x0FFFFFFF || drive > 1)
 		return -EINVAL;
 
-	writeb(0xA0 | LBA_FLAG | drive << 4 | num >> 24, ide->io->device_addr);
-	writeb(0x00, ide->io->error_addr);
-	writeb(0x01, ide->io->nsect_addr);
-	writeb(num, ide->io->lbal_addr);	/* 0 ... 7 */
-	writeb(num >> 8, ide->io->lbam_addr); /* 8 ... 15 */
-	writeb(num >> 16, ide->io->lbah_addr); /* 16 ... 23 */
+	writeb(0xA0 | LBA_FLAG | drive << 4 | num >> 24, ide->io.device_addr);
+	writeb(0x00, ide->io.error_addr);
+	writeb(0x01, ide->io.nsect_addr);
+	writeb(num, ide->io.lbal_addr);	/* 0 ... 7 */
+	writeb(num >> 8, ide->io.lbam_addr); /* 8 ... 15 */
+	writeb(num >> 16, ide->io.lbah_addr); /* 16 ... 23 */
 
 	return 0;
 }
@@ -114,7 +106,7 @@ static int ata_wr_cmd(struct ide_port *ide, uint8_t cmd)
 	if (rc != 0)
 		return rc;
 
-	writeb(cmd, ide->io->command_addr);
+	writeb(cmd, ide->io.command_addr);
 	return 0;
 }
 
@@ -125,7 +117,7 @@ static int ata_wr_cmd(struct ide_port *ide, uint8_t cmd)
  */
 static void ata_wr_dev_ctrl(struct ide_port *ide, uint8_t val)
 {
-	writeb(val, ide->io->ctl_addr);
+	writeb(val, ide->io.ctl_addr);
 }
 
 /**
@@ -138,12 +130,12 @@ static void ata_rd_sector(struct ide_port *ide, void *buf)
 	unsigned u = SECTOR_SIZE / sizeof(uint16_t);
 	uint16_t *b = buf;
 
-	if (ide->io->dataif_be) {
+	if (ide->io.dataif_be) {
 		for (; u > 0; u--)
-			*b++ = be16_to_cpu(readw(ide->io->data_addr));
+			*b++ = be16_to_cpu(readw(ide->io.data_addr));
 	} else {
 		for (; u > 0; u--)
-			*b++ = le16_to_cpu(readw(ide->io->data_addr));
+			*b++ = le16_to_cpu(readw(ide->io.data_addr));
 	}
 }
 
@@ -157,12 +149,12 @@ static void ata_wr_sector(struct ide_port *ide, const void *buf)
 	unsigned u = SECTOR_SIZE / sizeof(uint16_t);
 	const uint16_t *b = buf;
 
-	if (ide->io->dataif_be) {
+	if (ide->io.dataif_be) {
 		for (; u > 0; u--)
-			writew(cpu_to_be16(*b++), ide->io->data_addr);
+			writew(cpu_to_be16(*b++), ide->io.data_addr);
 	} else {
 		for (; u > 0; u--)
-			writew(cpu_to_le16(*b++), ide->io->data_addr);
+			writew(cpu_to_le16(*b++), ide->io.data_addr);
 	}
 }
 
@@ -176,10 +168,10 @@ static int ide_read_id(struct ata_port *port, void *buf)
 	struct ide_port *ide = to_ata_drive_access(port);
 	int rc;
 
-	writeb(0xA0, ide->io->device_addr);	/* FIXME drive */
-	writeb(0x00, ide->io->lbal_addr);
-	writeb(0x00, ide->io->lbam_addr);
-	writeb(0x00, ide->io->lbah_addr);
+	writeb(0xA0, ide->io.device_addr);	/* FIXME drive */
+	writeb(0x00, ide->io.lbal_addr);
+	writeb(0x00, ide->io.lbam_addr);
+	writeb(0x00, ide->io.lbah_addr);
 
 	rc = ata_wr_cmd(ide, ATA_CMD_ID_ATA);
 	if (rc != 0)
@@ -201,11 +193,11 @@ static int ide_reset(struct ata_port *port)
 	uint8_t reg;
 
 	/* try a hard reset first (if available) */
-	if (ide->io->reset != NULL) {
+	if (ide->io.reset != NULL) {
 		pr_debug("%s: Resetting drive...\n", __func__);
-		ide->io->reset(1);
+		ide->io.reset(1);
 		rc = ata_wait_busy(ide, 500);
-		ide->io->reset(0);
+		ide->io.reset(0);
 		if (rc == 0) {
 			rc = ata_wait_ready(ide, MAX_TIMEOUT);
 			if (rc != 0)
@@ -324,17 +316,11 @@ static struct ata_port_operations ide_ops = {
 	.reset = ide_reset,
 };
 
-int ide_port_register(struct device_d *dev, struct ata_ioports *io, const char *devname)
+int ide_port_register(struct ide_port *ide)
 {
-	struct ide_port *ide;
 	int ret;
 
-	ide = xzalloc(sizeof(*ide));
-
-	ide->io = io;
 	ide->port.ops = &ide_ops;
-	ide->port.dev = dev;
-	ide->port.devname = devname;
 
 	ret = ata_port_register(&ide->port);
 

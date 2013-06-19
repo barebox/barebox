@@ -80,7 +80,7 @@ static int platform_ide_probe(struct device_d *dev)
 {
 	int rc;
 	struct ide_port_info *pdata = dev->platform_data;
-	struct ata_ioports *io;
+	struct ide_port *ide;
 	void *reg_base, *alt_base;
 
 	if (pdata == NULL) {
@@ -88,17 +88,17 @@ static int platform_ide_probe(struct device_d *dev)
 		return -EINVAL;
 	}
 
-	io = xzalloc(sizeof(struct ata_ioports));
+	ide = xzalloc(sizeof(*ide));
 	reg_base = dev_request_mem_region(dev, 0);
 	alt_base = dev_request_mem_region(dev, 1);
-	platform_ide_setup_port(reg_base, alt_base, io, pdata->ioport_shift);
-	io->reset = pdata->reset;
-	io->dataif_be = pdata->dataif_be;
+	platform_ide_setup_port(reg_base, alt_base, &ide->io, pdata->ioport_shift);
+	ide->io.reset = pdata->reset;
+	ide->io.dataif_be = pdata->dataif_be;
 
-	rc = ide_port_register(dev, io, NULL);
+	rc = ide_port_register(ide);
 	if (rc != 0) {
 		dev_err(dev, "Cannot register IDE interface\n");
-		free(io);
+		free(ide);
 	}
 
 	return rc;

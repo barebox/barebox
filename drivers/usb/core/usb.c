@@ -431,14 +431,22 @@ static int usb_new_device(struct usb_device *dev)
 	if (dev->descriptor->iSerialNumber)
 		usb_string(dev, dev->descriptor->iSerialNumber,
 			   dev->serial, sizeof(dev->serial));
+
+	if (parent) {
+		sprintf(dev->dev.name, "%s-%d", parent->dev.name, port);
+	} else {
+		sprintf(dev->dev.name, "usb%d", dev->host->busnum);
+	}
+
+	dev->dev.id = DEVICE_ID_SINGLE;
+
+	register_device(&dev->dev);
+
 	/* now prode if the device is a hub */
 	usb_hub_probe(dev, 0);
 
-	sprintf(dev->dev.name, "usb%d-%d", dev->host->busnum, dev->devnum);
-
 	print_usb_device(dev);
 
-	register_device(&dev->dev);
 	dev_add_param_int_ro(&dev->dev, "iManufacturer",
 			dev->descriptor->iManufacturer, "%d");
 	dev_add_param_int_ro(&dev->dev, "iProduct",

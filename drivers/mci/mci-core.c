@@ -534,9 +534,7 @@ static int sd_change_freq(struct mci *mci)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
-#ifdef CONFIG_MCI_SPI
 	struct mci_host *host = mci->host;
-#endif
 	uint32_t *switch_status = sector_buf;
 	uint32_t *scr = sector_buf;
 	int timeout;

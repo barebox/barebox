@@ -55,12 +55,6 @@
 
 #define IS_SD(x) (x->version & SD_VERSION_SD)
 
-#ifdef CONFIG_MCI_SPI
-#define mmc_host_is_spi(host)	((host)->host_caps & MMC_CAP_SPI)
-#else
-#define mmc_host_is_spi(host)	0
-#endif
-
 #define MMC_DATA_READ		1
 #define MMC_DATA_WRITE		2
 
@@ -366,5 +360,13 @@ struct mci {
 int mci_register(struct mci_host*);
 void mci_of_parse(struct mci_host *host);
 int mci_detect_card(struct mci_host *);
+
+static inline int mmc_host_is_spi(struct mci_host *host)
+{
+	if (IS_ENABLED(CONFIG_MCI_SPI))
+		return host->host_caps & MMC_CAP_SPI;
+	else
+		return 0;
+}
 
 #endif /* _MCI_H_ */

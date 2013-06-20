@@ -32,6 +32,8 @@
 #include <mach/cpsw.h>
 #include <spi/spi.h>
 #include <spi/flash.h>
+#include <i2c/i2c.h>
+#include <i2c/at24.h>
 
 #include "mux.h"
 
@@ -89,6 +91,12 @@ static struct cpsw_platform_data cpsw_data = {
 	.num_slaves	= ARRAY_SIZE(cpsw_slaves),
 };
 
+static struct i2c_board_info i2c0_devices[] = {
+	{
+		I2C_BOARD_INFO("24c32", 0x52),
+	},
+};
+
 static void pcm051_spi_init(void)
 {
 	int ret;
@@ -111,6 +119,15 @@ static void pcm051_eth_init(void)
 	am33xx_add_cpsw(&cpsw_data);
 }
 
+static void pcm051_i2c_init(void)
+{
+	am33xx_enable_i2c0_pin_mux();
+
+	i2c_register_board_info(0, i2c0_devices, ARRAY_SIZE(i2c0_devices));
+
+	am33xx_add_i2c0(NULL);
+}
+
 static int pcm051_devices_init(void)
 {
 	pcm051_enable_mmc0_pin_mux();
@@ -119,6 +136,7 @@ static int pcm051_devices_init(void)
 
 	pcm051_spi_init();
 	pcm051_eth_init();
+	pcm051_i2c_init();
 
 	devfs_add_partition("nor0", 0x00000, SZ_128K,
 					DEVFS_PARTITION_FIXED, "xload");

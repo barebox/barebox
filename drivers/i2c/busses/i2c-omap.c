@@ -245,7 +245,7 @@ static inline u16 omap_i2c_read_reg(struct omap_i2c_struct *i2c_omap, int reg)
 
 static void omap_i2c_unidle(struct omap_i2c_struct *i2c_omap)
 {
-	if (cpu_is_omap34xx()) {
+	if (cpu_is_omap34xx() || cpu_is_am33xx()) {
 		omap_i2c_write_reg(i2c_omap, OMAP_I2C_CON_REG, 0);
 		omap_i2c_write_reg(i2c_omap, OMAP_I2C_PSC_REG, i2c_omap->pscstate);
 		omap_i2c_write_reg(i2c_omap, OMAP_I2C_SCLL_REG, i2c_omap->scllstate);
@@ -353,7 +353,11 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 		internal_clk = 9600;
 	else
 		internal_clk = 4000;
-	fclk_rate = 96000000 / 1000;
+
+	if (cpu_is_am33xx())
+		fclk_rate = 48000;
+	else
+		fclk_rate = 96000;
 
 	/* Compute prescaler divisor */
 	psc = fclk_rate / internal_clk;
@@ -410,7 +414,7 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 			OMAP_I2C_IE_AL)  | ((i2c_omap->fifo_size) ?
 				(OMAP_I2C_IE_RDR | OMAP_I2C_IE_XDR) : 0);
 	omap_i2c_write_reg(i2c_omap, OMAP_I2C_IE_REG, i2c_omap->iestate);
-	if (cpu_is_omap34xx()) {
+	if (cpu_is_omap34xx() || cpu_is_am33xx()) {
 		i2c_omap->pscstate = psc;
 		i2c_omap->scllstate = scll;
 		i2c_omap->sclhstate = sclh;
@@ -665,7 +669,7 @@ static int omap_i2c_xfer_msg(struct i2c_adapter *adapter,
 	ret = omap_i2c_isr(i2c_omap);
 	while (ret){
 		ret = omap_i2c_isr(i2c_omap);
-		if (is_timeout(start, MSECOND)) {
+		if (is_timeout(start, 50 * MSECOND)) {
 				dev_err(&adapter->dev,
 				"timed out on polling for "
 				"open i2c message handling\n");
@@ -743,7 +747,7 @@ i2c_omap_probe(struct device_d *pdev)
 		goto err_free_mem;
 	}
 
-	if (cpu_is_omap4xxx()) {
+	if (cpu_is_omap4xxx() || cpu_is_am33xx()) {
 		i2c_omap->regs = (u8 *)omap4_reg_map;
 		i2c_omap->reg_shift = 0;
 	} else {

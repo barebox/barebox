@@ -24,10 +24,6 @@
  * GNU General Public License for more details.
  */
 
-
-/* #include <linux/delay.h> */
-
-
 #include <clock.h>
 #include <common.h>
 #include <driver.h>
@@ -43,12 +39,6 @@
 #include <i2c/i2c.h>
 #include <mach/generic.h>
 #include <mach/omap3-clock.h>
-
-#define OMAP_I2C_SIZE		0x3f
-#define OMAP1_I2C_BASE		0xfffb3800
-#define OMAP2_I2C_BASE1		0x48070000
-#define OMAP2_I2C_BASE2		0x48072000
-#define OMAP2_I2C_BASE3		0x48060000
 
 /* This will be the driver name */
 #define DRIVER_NAME "i2c-omap"
@@ -140,7 +130,6 @@
 
 #define SYSC_IDLEMODE_SMART		0x2
 #define SYSC_CLOCKACTIVITY_FCLK		0x2
-
 
 struct omap_i2c_struct {
 	void 			*base;
@@ -352,63 +341,51 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 	}
 	omap_i2c_write_reg(i2c_omap, OMAP_I2C_CON_REG, 0);
 
-	/* omap1 handling is missing here */
+	/*
+	 * HSI2C controller internal clk rate should be 19.2 Mhz for
+	 * HS and for all modes on 2430. On 34xx we can use lower rate
+	 * to get longer filter period for better noise suppression.
+	 * The filter is iclk (fclk for HS) period.
+	 */
+	if (i2c_omap->speed > 400)
+		internal_clk = 19200;
+	else if (i2c_omap->speed > 100)
+		internal_clk = 9600;
+	else
+		internal_clk = 4000;
+	fclk_rate = 96000000 / 1000;
 
-	if (cpu_is_omap2430() || cpu_is_omap34xx() || cpu_is_omap4xxx()) {
+	/* Compute prescaler divisor */
+	psc = fclk_rate / internal_clk;
+	psc = psc - 1;
 
-		/*
-		 * HSI2C controller internal clk rate should be 19.2 Mhz for
-		 * HS and for all modes on 2430. On 34xx we can use lower rate
-		 * to get longer filter period for better noise suppression.
-		 * The filter is iclk (fclk for HS) period.
-		 */
-		if (i2c_omap->speed > 400 || cpu_is_omap2430())
-			internal_clk = 19200;
-		else if (i2c_omap->speed > 100)
-			internal_clk = 9600;
-		else
-			internal_clk = 4000;
-		fclk_rate = 96000000 / 1000;
+	/* If configured for High Speed */
+	if (i2c_omap->speed > 400) {
+		unsigned long scl;
 
-		/* Compute prescaler divisor */
-		psc = fclk_rate / internal_clk;
-		psc = psc - 1;
+		/* For first phase of HS mode */
+		scl = internal_clk / 400;
+		fsscll = scl - (scl / 3) - 7;
+		fssclh = (scl / 3) - 5;
 
-		/* If configured for High Speed */
-		if (i2c_omap->speed > 400) {
-			unsigned long scl;
+		/* For second phase of HS mode */
+		scl = fclk_rate / i2c_omap->speed;
+		hsscll = scl - (scl / 3) - 7;
+		hssclh = (scl / 3) - 5;
+	} else if (i2c_omap->speed > 100) {
+		unsigned long scl;
 
-			/* For first phase of HS mode */
-			scl = internal_clk / 400;
-			fsscll = scl - (scl / 3) - 7;
-			fssclh = (scl / 3) - 5;
-
-			/* For second phase of HS mode */
-			scl = fclk_rate / i2c_omap->speed;
-			hsscll = scl - (scl / 3) - 7;
-			hssclh = (scl / 3) - 5;
-		} else if (i2c_omap->speed > 100) {
-			unsigned long scl;
-
-			/* Fast mode */
-			scl = internal_clk / i2c_omap->speed;
-			fsscll = scl - (scl / 3) - 7;
-			fssclh = (scl / 3) - 5;
-		} else {
-			/* Standard mode */
-			fsscll = internal_clk / (i2c_omap->speed * 2) - 7;
-			fssclh = internal_clk / (i2c_omap->speed * 2) - 5;
-		}
-		scll = (hsscll << OMAP_I2C_SCLL_HSSCLL) | fsscll;
-		sclh = (hssclh << OMAP_I2C_SCLH_HSSCLH) | fssclh;
+		/* Fast mode */
+		scl = internal_clk / i2c_omap->speed;
+		fsscll = scl - (scl / 3) - 7;
+		fssclh = (scl / 3) - 5;
 	} else {
-		/* Program desired operating rate */
-		fclk_rate /= (psc + 1) * 1000;
-		if (psc > 2)
-			psc = 2;
-		scll = fclk_rate / (i2c_omap->speed * 2) - 7 + psc;
-		sclh = fclk_rate / (i2c_omap->speed * 2) - 7 + psc;
+		/* Standard mode */
+		fsscll = internal_clk / (i2c_omap->speed * 2) - 7;
+		fssclh = internal_clk / (i2c_omap->speed * 2) - 5;
 	}
+	scll = (hsscll << OMAP_I2C_SCLL_HSSCLL) | fsscll;
+	sclh = (hssclh << OMAP_I2C_SCLH_HSSCLH) | fssclh;
 
 	/* Setup clock prescaler to obtain approx 12MHz I2C module clock: */
 	omap_i2c_write_reg(i2c_omap, OMAP_I2C_PSC_REG, psc);
@@ -525,15 +502,6 @@ complete:
 				if (dev->buf_len) {
 					*dev->buf++ = w;
 					dev->buf_len--;
-					/* Data reg from 2430 is 8 bit wide */
-					if (!cpu_is_omap2430() &&
-							!cpu_is_omap34xx() &&
-							!cpu_is_omap4xxx()) {
-						if (dev->buf_len) {
-							*dev->buf++ = w >> 8;
-							dev->buf_len--;
-						}
-					}
 				} else {
 					if (stat & OMAP_I2C_STAT_RRDY)
 						dev_err(&dev->adapter.dev,
@@ -566,15 +534,6 @@ complete:
 				if (dev->buf_len) {
 					w = *dev->buf++;
 					dev->buf_len--;
-					/* Data reg from  2430 is 8 bit wide */
-					if (!cpu_is_omap2430() &&
-							!cpu_is_omap34xx() &&
-							!cpu_is_omap4xxx()) {
-						if (dev->buf_len) {
-							w |= *dev->buf++ << 8;
-							dev->buf_len--;
-						}
-					}
 				} else {
 					if (stat & OMAP_I2C_STAT_XRDY)
 						dev_err(&dev->adapter.dev,
@@ -776,6 +735,7 @@ i2c_omap_probe(struct device_d *pdev)
 	/* struct i2c_platform_data *pdata; */
 	int r;
 	u32 speed = 0;
+	u16 s;
 
 	i2c_omap = kzalloc(sizeof(struct omap_i2c_struct), GFP_KERNEL);
 	if (!i2c_omap) {
@@ -802,28 +762,23 @@ i2c_omap_probe(struct device_d *pdev)
 	omap_i2c_unidle(i2c_omap);
 
 	i2c_omap->rev = omap_i2c_read_reg(i2c_omap, OMAP_I2C_REV_REG) & 0xff;
-	/* i2c_omap->base = OMAP2_I2C_BASE3; */
 
-	if (cpu_is_omap2430() || cpu_is_omap34xx() || cpu_is_omap4xxx()) {
-		u16 s;
+	/* Set up the fifo size - Get total size */
+	s = (omap_i2c_read_reg(i2c_omap, OMAP_I2C_BUFSTAT_REG) >> 14) & 0x3;
+	i2c_omap->fifo_size = 0x8 << s;
 
-		/* Set up the fifo size - Get total size */
-		s = (omap_i2c_read_reg(i2c_omap, OMAP_I2C_BUFSTAT_REG) >> 14) & 0x3;
-		i2c_omap->fifo_size = 0x8 << s;
+	/*
+	 * Set up notification threshold as half the total available
+	 * size. This is to ensure that we can handle the status on int
+	 * call back latencies.
+	 */
 
-		/*
-		 * Set up notification threshold as half the total available
-		 * size. This is to ensure that we can handle the status on int
-		 * call back latencies.
-		 */
+	i2c_omap->fifo_size = (i2c_omap->fifo_size / 2);
 
-		i2c_omap->fifo_size = (i2c_omap->fifo_size / 2);
-
-		if (i2c_omap->rev >= OMAP_I2C_REV_ON_4430)
-			i2c_omap->b_hw = 0; /* Disable hardware fixes */
-		else
-			i2c_omap->b_hw = 1; /* Enable hardware fixes */
-	}
+	if (i2c_omap->rev >= OMAP_I2C_REV_ON_4430)
+		i2c_omap->b_hw = 0; /* Disable hardware fixes */
+	else
+		i2c_omap->b_hw = 1; /* Enable hardware fixes */
 
 	/* reset ASAP, clearing any IRQs */
 	omap_i2c_init(i2c_omap);

@@ -290,7 +290,7 @@ int ata_port_detect(struct ata_port *port)
 	int ret;
 
 	if (port->initialized) {
-		dev_info(&port->class_dev, "already initialized\n");
+		dev_dbg(&port->class_dev, "already initialized\n");
 		return 0;
 	}
 

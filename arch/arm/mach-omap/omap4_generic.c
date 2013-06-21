@@ -508,9 +508,9 @@ static int omap4_bootsource(void)
 
 	if (bootsrc & (1 << 5))
 		src = BOOTSOURCE_MMC;
-	if (bootsrc & (1 << 3))
+	else if (bootsrc & (1 << 3))
 		src = BOOTSOURCE_NAND;
-	if (bootsrc & (1<<20))
+	else if (bootsrc & (1<<20))
 		src = BOOTSOURCE_USB;
 	bootsource_set(src);
 	bootsource_set_instance(0);

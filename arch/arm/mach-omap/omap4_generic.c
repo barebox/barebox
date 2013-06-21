@@ -586,11 +586,10 @@ noinline int omap4460_scale_vcores(unsigned vsel0_pin, unsigned volt_mv)
 	writel(0x6026, OMAP44XX_PRM_VC_CFG_I2C_CLK);
 
 	/* TPS - supplies vdd_mpu on 4460
-	 * Setup SET1 and SET0 with right values so that kernel
-	 * can use either of them based on its needs.
+	 * Setup SET1 and don't touch SET0 it acts as boot voltage
+	 * source after reset.
 	 */
 
-	omap4_do_scale_tps62361(TPS62361_REG_ADDR_SET0, volt_mv);
 	omap4_do_scale_tps62361(TPS62361_REG_ADDR_SET1, volt_mv);
 
 	/*

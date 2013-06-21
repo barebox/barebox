@@ -40,6 +40,17 @@ struct clk_ref {
 #define SET	0x4
 #define CLR	0x8
 
+static int clk_ref_is_enabled(struct clk *clk)
+{
+	struct clk_ref *ref = to_clk_ref(clk);
+	u32 reg = readl(ref->reg);
+
+	if (reg & 1 << ((ref->idx + 1) * 8 - 1))
+		return 0;
+
+	return 1;
+}
+
 static int clk_ref_enable(struct clk *clk)
 {
 	struct clk_ref *ref = to_clk_ref(clk);
@@ -118,6 +129,7 @@ static int clk_ref_set_rate(struct clk *clk, unsigned long rate,
 }
 
 static const struct clk_ops clk_ref_ops = {
+	.is_enabled	= clk_ref_is_enabled,
 	.enable		= clk_ref_enable,
 	.disable	= clk_ref_disable,
 	.recalc_rate	= clk_ref_recalc_rate,

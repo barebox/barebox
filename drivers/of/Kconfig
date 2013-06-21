@@ -1,4 +1,5 @@
 config OFTREE
+	select DTC
 	bool
 
 config OFTREE_MEM_GENERIC

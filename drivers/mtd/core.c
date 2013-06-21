@@ -70,7 +70,7 @@ static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
 	int ret;
 	unsigned long offset = _offset;
 
-	dev_dbg(cdev->dev, "read ofs: 0x%08lx count: 0x%08x\n",
+	dev_dbg(cdev->dev, "read ofs: 0x%08lx count: 0x%08zx\n",
 			offset, count);
 
 	ret = mtd_read(mtd, offset, count, &retlen, buf);

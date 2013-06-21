@@ -15,6 +15,7 @@
 #include <common.h>
 #include <io.h>
 #include <sizes.h>
+#include <mach/imx6.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
 #include <mach/imx6-regs.h>
@@ -59,6 +60,7 @@ void imx6_init_lowlevel(void)
 
 int imx6_init(void)
 {
+	const char *cputypestr;
 	u32 rev;
 	u32 mx6_silicon_revision;
 
@@ -82,7 +84,19 @@ int imx6_init(void)
 		mx6_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 	}
 
-	imx_set_silicon_revision("i.MX6", mx6_silicon_revision);
+	switch (imx6_cpu_type()) {
+	case IMX6_CPUTYPE_IMX6Q:
+		cputypestr = "i.MX6 Dual/Quad";
+		break;
+	case IMX6_CPUTYPE_IMX6DL:
+		cputypestr = "i.MX6 Solo/DualLite";
+		break;
+	default:
+		cputypestr = "unknown i.MX6";
+		break;
+	}
+
+	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
 
 	return 0;
 }

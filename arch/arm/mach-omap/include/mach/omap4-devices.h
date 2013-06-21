@@ -60,22 +60,26 @@ static inline struct device_d *omap44xx_add_mmc5(struct omap_hsmmc_platform_data
 
 static inline struct device_d *omap44xx_add_i2c1(void *pdata)
 {
-	return omap_add_i2c(0, OMAP44XX_I2C1_BASE, pdata);
+	return add_generic_device("i2c-omap4", 0, NULL, OMAP44XX_I2C1_BASE,
+			SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *omap44xx_add_i2c2(void *pdata)
 {
-	return omap_add_i2c(1, OMAP44XX_I2C2_BASE, pdata);
+	return add_generic_device("i2c-omap4", 1, NULL, OMAP44XX_I2C2_BASE,
+			SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *omap44xx_add_i2c3(void *pdata)
 {
-	return omap_add_i2c(2, OMAP44XX_I2C3_BASE, pdata);
+	return add_generic_device("i2c-omap4", 2, NULL, OMAP44XX_I2C3_BASE,
+			SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *omap44xx_add_i2c4(void *pdata)
 {
-	return omap_add_i2c(3, OMAP44XX_I2C4_BASE, pdata);
+	return add_generic_device("i2c-omap4", 3, NULL, OMAP44XX_I2C4_BASE,
+			SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *omap44xx_add_ehci(void *pdata)

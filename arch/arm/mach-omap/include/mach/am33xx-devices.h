@@ -55,17 +55,20 @@ static inline struct device_d *am33xx_add_spi1(void)
 
 static inline struct device_d *am33xx_add_i2c0(void *pdata)
 {
-	return omap_add_i2c(0, AM33XX_I2C0_BASE, pdata);
+	return add_generic_device("i2c-am33xx", 0, NULL, AM33XX_I2C0_BASE,
+			SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *am33xx_add_i2c1(void *pdata)
 {
-	return omap_add_i2c(1, AM33XX_I2C1_BASE, pdata);
+	return add_generic_device("i2c-am33xx", 1, NULL, AM33XX_I2C1_BASE,
+			SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 static inline struct device_d *am33xx_add_i2c2(void *pdata)
 {
-	return omap_add_i2c(2, AM33XX_I2C2_BASE, pdata);
+	return add_generic_device("i2c-am33xx", 2, NULL, AM33XX_I2C2_BASE,
+			SZ_4K, IORESOURCE_MEM, pdata);
 }
 
 #endif /* __MACH_OMAP3_DEVICES_H */

@@ -26,7 +26,6 @@
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
-ENTRY(pbl_start)
 SECTIONS
 {
 #ifdef CONFIG_PBL_RELOCATABLE

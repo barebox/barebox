@@ -86,6 +86,12 @@ SECTIONS
 	}
 	__piggydata_end = .;
 
-	_barebox_image_size = __piggydata_end - (TEXT_BASE - SZ_2M);
+	. = ALIGN(4);
+	.image_end : {
+		KEEP(*(.image_end))
+	}
+	__image_end = .;
+
+	_barebox_image_size = __image_end - (TEXT_BASE - SZ_2M);
 	_barebox_pbl_size = __bss_start - (TEXT_BASE - SZ_2M);
 }

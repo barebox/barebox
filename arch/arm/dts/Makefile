@@ -1,4 +1,5 @@
 dtb-$(CONFIG_ARCH_IMX51) += imx51-babbage.dtb
+dtb-$(CONFIG_ARCH_IMX53) += imx53-qsb.dtb
 dtb-$(CONFIG_ARCH_IMX6) += imx6q-sabrelite.dtb \
 	imx6q-sabresd.dtb
 

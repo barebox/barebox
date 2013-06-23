@@ -33,10 +33,12 @@
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
 
-void __bare_init __naked barebox_arm_reset_vector(void)
+ENTRY_FUNCTION(start_imx27_pcm038)(void)
 {
 	uint32_t r;
 	int i;
+
+	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

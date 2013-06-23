@@ -8,3 +8,8 @@ $(obj)/%.imximg: $(obj)/% FORCE
 	$(call if_changed,imx_image)
 
 board = $(srctree)/arch/$(ARCH)/boards
+
+# ----------------------- i.MX27 based boards ---------------------------
+pblx-$(CONFIG_MACH_PCM038) += start_imx27_pcm038
+FILE_barebox-phytec-phycore-imx27.img = start_imx27_pcm038.pblx
+image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img

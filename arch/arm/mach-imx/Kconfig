@@ -231,6 +231,12 @@ config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53
 
+config MACH_REALQ7
+	bool "DataModul i.MX6Q Real Qseven Board"
+	select ARCH_IMX6
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
+
 endif
 
 # ----------------------------------------------------------
@@ -477,12 +483,6 @@ config MACH_SABRELITE
 config MACH_SABRESD
 	bool "Freescale i.MX6 SabreSD"
 	select ARCH_IMX6
-
-config MACH_REALQ7
-	bool "DataModul i.MX6Q Real Qseven Board"
-	select ARCH_IMX6
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 
 endchoice
 

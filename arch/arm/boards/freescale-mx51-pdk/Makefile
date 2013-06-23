@@ -1,3 +1,3 @@
-obj-y += board.o flash-header.o
-extra-y += flash-header.S flash-header.dcd
+obj-y += board.o flash-header-imx51-babbage.o
+extra-y += flash-header-imx51-babbage.S flash-header-imx51-babbage.dcd
 lwl-y += lowlevel.o

@@ -13,3 +13,10 @@ board = $(srctree)/arch/$(ARCH)/boards
 pblx-$(CONFIG_MACH_PCM038) += start_imx27_pcm038
 FILE_barebox-phytec-phycore-imx27.img = start_imx27_pcm038.pblx
 image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img
+
+# ----------------------- i.MX53 based boards ---------------------------
+pblx-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco
+CFG_start_imx53_loco.pblx.imximg = $(board)/freescale-mx53-loco/flash-header.imxcfg
+imximage-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco.pblx.imximg
+FILE_barebox-freescale-imx53-loco.img = start_imx53_loco.pblx.imximg
+image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco.img

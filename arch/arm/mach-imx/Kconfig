@@ -97,6 +97,7 @@ endchoice
 
 config ARCH_IMX_IMXIMAGE
 	bool
+	default y
 	help
 	  if enabled the imx-image tool is compiled
 
@@ -476,7 +477,7 @@ choice
 
 config MACH_FREESCALE_MX53_LOCO
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
+	select HAVE_PBL_MULTI_IMAGES
 	bool "Freescale i.MX53 LOCO"
 
 config MACH_FREESCALE_MX53_SMD

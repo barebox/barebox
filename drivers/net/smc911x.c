@@ -18,10 +18,6 @@
  *
  */
 
-#ifdef CONFIG_ENABLE_DEVICE_NOISE
-# define DEBUG
-#endif
-
 #include <common.h>
 
 #include <command.h>

@@ -609,24 +609,6 @@ config DEBUG_INFO
 	help
 	  Enable build of barebox with -g.
 
-config ENABLE_FLASH_NOISE
-	bool
-	prompt "verbose flash handling"
-	help
-	  Enable this to get noisy flash handling routines
-
-config ENABLE_PARTITION_NOISE
-	bool
-	prompt "verbose partition handling"
-	help
-	  Enable this to get noisy partition handling routines
-
-config ENABLE_DEVICE_NOISE
-	bool
-	prompt "verbose device handling"
-	help
-	  Enable this to get noisy device handling routines
-
 config DEBUG_LL
 	bool
 	depends on HAS_DEBUG_LL

@@ -23,10 +23,6 @@
  * @brief partition handling and addpart and delpart command
  */
 
-#ifdef CONFIG_ENABLE_PARTITION_NOISE
-# define DEBUG
-#endif
-
 #include <common.h>
 #include <command.h>
 #include <complete.h>

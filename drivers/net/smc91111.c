@@ -55,10 +55,6 @@
  .	03/16/01  Daris A Nevil	   Modified smc9194.c for use with LAN91C111
  ----------------------------------------------------------------------------*/
 
-#ifdef CONFIG_ENABLE_DEVICE_NOISE
-# define DEBUG
-#endif
-
 #include <common.h>
 
 #include <command.h>

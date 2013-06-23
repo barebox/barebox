@@ -83,6 +83,9 @@ static int loco_late_init(void)
 	struct mc34708 *mc34708;
 	int rev;
 
+	if (!of_machine_is_compatible("fsl,imx53-qsb"))
+		return 0;
+
 	device_detect_by_name("mmc0");
 
 	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
@@ -120,10 +123,13 @@ static int loco_late_init(void)
 }
 late_initcall(loco_late_init);
 
-static int loco_core_init(void)
+static int loco_postcore_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx53-qsb"))
+		return 0;
+
 	imx53_init_lowlevel(1000);
 
 	return 0;
 }
-core_initcall(loco_core_init);
+postcore_initcall(loco_postcore_init);

@@ -186,7 +186,7 @@ static int imx25_3ds_fec_init(void)
 }
 late_initcall(imx25_3ds_fec_init);
 
-static int imx25_devices_init(void)
+static int imx25_3ds_devices_init(void)
 {
 #ifdef CONFIG_USB
 	/* USB does not work yet. Don't know why. Maybe
@@ -222,7 +222,7 @@ static int imx25_devices_init(void)
 	return 0;
 }
 
-device_initcall(imx25_devices_init);
+device_initcall(imx25_3ds_devices_init);
 
 static iomux_v3_cfg_t imx25_pads[] = {
 	MX25_PAD_FEC_MDC__FEC_MDC,

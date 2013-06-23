@@ -703,6 +703,10 @@ config DEBUG_IMX_UART_PORT
 	  Choose UART port on which kernel low-level debug messages
 	  should be output.
 
+config DEBUG_INITCALLS
+	bool "Trace initcalls"
+	help
+	  If enabled this will print initcall traces.
 endmenu
 
 config HAS_DEBUG_LL

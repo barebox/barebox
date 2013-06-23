@@ -481,7 +481,16 @@ export KBUILD_BINARY ?= barebox.bin
 barebox-flash-image: $(KBUILD_IMAGE) FORCE
 	$(call if_changed,ln)
 
+images: barebox.bin FORCE
+	$(Q)$(MAKE) $(build)=images $@
+images/%.s: barebox.bin FORCE
+	$(Q)$(MAKE) $(build)=images $@
+
+ifdef CONFIG_PBL_MULTI_IMAGES
+all: $(KBUILD_DTBS) barebox.bin images
+else
 all: barebox-flash-image $(KBUILD_DTBS)
+endif
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
 
@@ -987,6 +996,7 @@ clean-dirs      := $(addprefix _clean_,$(srctree) $(barebox-alldirs))
 
 PHONY += $(clean-dirs) clean archclean
 $(clean-dirs):
+	$(Q)$(MAKE) $(clean)=images
 	$(Q)$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
 
 clean: archclean $(clean-dirs)

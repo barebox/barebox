@@ -1,12 +1,28 @@
 config HAVE_PBL_IMAGE
 	bool
 
+config HAVE_PBL_MULTI_IMAGES
+	bool
+
 config HAVE_IMAGE_COMPRESSION
 	bool
 
 config PBL_IMAGE
 	bool "Pre-Bootloader image"
 	depends on HAVE_PBL_IMAGE
+
+config PBL_MULTI_IMAGES
+	bool
+	select PBL_IMAGE
+	select PBL_RELOCATABLE
+	depends on HAVE_PBL_MULTI_IMAGES
+	default y
+
+config PBL_SINGLE_IMAGE
+	bool
+	depends on PBL_IMAGE
+	depends on !HAVE_PBL_MULTI_IMAGES
+	default y
 
 config PBL_FORCE_PIGGYDATA_COPY
 	bool

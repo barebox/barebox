@@ -81,6 +81,9 @@ static int ksz9031rn_phy_fixup(struct phy_device *dev)
 
 static int realq7_enet_init(void)
 {
+	if (!of_machine_is_compatible("dmo,imx6q-realq7"))
+		return 0;
+
 	mxc_iomux_v3_setup_multiple_pads(realq7_pads_gpio, ARRAY_SIZE(realq7_pads_gpio));
 	gpio_direction_output(RQ7_GPIO_ENET_PHYADD2, 0);
 	gpio_direction_output(RQ7_GPIO_ENET_MODE0, 1);
@@ -102,19 +105,16 @@ static int realq7_enet_init(void)
 }
 fs_initcall(realq7_enet_init);
 
-static int realq7_devices_init(void)
+static int realq7_env_init(void)
 {
+	if (!of_machine_is_compatible("dmo,imx6q-realq7"))
+		return 0;
+
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT, NULL, 0, 0x00907000);
 	imx6_bbu_internal_mmc_register_handler("mmc", "/dev/mmc3.barebox",
 		0, NULL, 0, 0x00907000);
 
-	return 0;
-}
-device_initcall(realq7_devices_init);
-
-static int realq7_env_init(void)
-{
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
 		device_detect_by_name("mmc3");
@@ -136,8 +136,11 @@ late_initcall(realq7_env_init);
 
 static int realq7_console_init(void)
 {
+	if (!of_machine_is_compatible("dmo,imx6q-realq7"))
+		return 0;
+
 	imx6_init_lowlevel();
 
 	return 0;
 }
-core_initcall(realq7_console_init);
+postcore_initcall(realq7_console_init);

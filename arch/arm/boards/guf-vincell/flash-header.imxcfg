@@ -1,0 +1,3 @@
+soc imx53
+loadaddr 0xf8020000
+dcdofs 0x400

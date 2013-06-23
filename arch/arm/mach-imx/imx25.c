@@ -53,10 +53,15 @@ u64 imx_uid(void)
 	return uid;
 }
 
-static int imx25_init(void)
+int imx25_init(void)
 {
 	imx25_boot_save_loc((void *)MX25_CCM_BASE_ADDR);
 
+	return 0;
+}
+
+int imx25_devices_init(void)
+{
 	add_generic_device("imx_iim", 0, NULL, MX25_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
@@ -72,4 +77,3 @@ static int imx25_init(void)
 
 	return 0;
 }
-postcore_initcall(imx25_init);

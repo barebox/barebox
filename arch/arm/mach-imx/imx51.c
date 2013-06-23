@@ -41,14 +41,16 @@ static int imx51_silicon_revision(void)
 	return 0;
 }
 
-static int imx51_init(void)
+int imx51_init(void)
 {
 	imx_set_silicon_revision("i.MX51", imx51_silicon_revision());
 	imx51_boot_save_loc((void *)MX51_SRC_BASE_ADDR);
 
-	if (of_get_root_node())
-		return 0;
+	return 0;
+}
 
+int imx51_devices_init(void)
+{
 	add_generic_device("imx_iim", 0, NULL, MX51_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
@@ -65,7 +67,6 @@ static int imx51_init(void)
 
 	return 0;
 }
-postcore_initcall(imx51_init);
 
 /*
  * Saves the boot source media into the $bootsource environment variable

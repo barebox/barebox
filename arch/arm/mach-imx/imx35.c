@@ -49,20 +49,19 @@ static void imx35_silicon_revision(void)
 
 #define L2_MEM_VAL 0x10
 
-static int imx35_l2_fix(void)
+int imx35_init(void)
 {
 	writel(0x515, MX35_CLKCTL_BASE_ADDR + L2_MEM_VAL);
 
-	return 0;
-}
-core_initcall(imx35_l2_fix);
-
-static int imx35_init(void)
-{
 	imx35_silicon_revision();
 
 	imx35_boot_save_loc((void *)MX35_CCM_BASE_ADDR);
 
+	return 0;
+}
+
+int imx35_devices_init(void)
+{
 	add_generic_device("imx_iim", 0, NULL, MX35_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
@@ -77,4 +76,3 @@ static int imx35_init(void)
 
 	return 0;
 }
-postcore_initcall(imx35_init);

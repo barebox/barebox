@@ -17,6 +17,7 @@
 #include <mach/imx1-regs.h>
 #include <mach/weim.h>
 #include <mach/iomux-v1.h>
+#include <mach/generic.h>
 #include <reset_source.h>
 
 #define MX1_RSR MX1_SCM_BASE_ADDR
@@ -51,10 +52,16 @@ void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 
 #include <mach/esdctl.h>
 
-static int imx1_init(void)
+int imx1_init(void)
+{
+	imx1_detect_reset_source();
+
+	return 0;
+}
+
+int imx1_devices_init(void)
 {
 	imx_iomuxv1_init((void *)MX1_GPIO1_BASE_ADDR);
-	imx1_detect_reset_source();
 
 	add_generic_device("imx1-ccm", 0, NULL, MX1_CCM_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpt", 0, NULL, MX1_TIM1_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
@@ -67,4 +74,3 @@ static int imx1_init(void)
 
 	return 0;
 }
-postcore_initcall(imx1_init);

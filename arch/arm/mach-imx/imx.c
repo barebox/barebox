@@ -12,7 +12,9 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <mach/revision.h>
+#include <mach/generic.h>
 
 static int __imx_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 
@@ -29,3 +31,56 @@ void imx_set_silicon_revision(const char *soc, int revision)
 			(revision >> 4) & 0xf,
 			revision & 0xf);
 }
+
+static int imx_init(void)
+{
+	int ret;
+
+	if (cpu_is_mx1())
+		ret = imx1_init();
+	else if (cpu_is_mx21())
+		ret = imx21_init();
+	else if (cpu_is_mx25())
+		ret = imx25_init();
+	else if (cpu_is_mx27())
+		ret = imx27_init();
+	else if (cpu_is_mx31())
+		ret = imx31_init();
+	else if (cpu_is_mx35())
+		ret = imx35_init();
+	else if (cpu_is_mx51())
+		ret = imx51_init();
+	else if (cpu_is_mx53())
+		ret = imx53_init();
+	else if (cpu_is_mx6())
+		ret = imx6_init();
+	else
+		return -EINVAL;
+
+	if (of_get_root_node())
+		return ret;
+
+	if (cpu_is_mx1())
+		ret = imx1_devices_init();
+	else if (cpu_is_mx21())
+		ret = imx21_devices_init();
+	else if (cpu_is_mx25())
+		ret = imx25_devices_init();
+	else if (cpu_is_mx27())
+		ret = imx27_devices_init();
+	else if (cpu_is_mx31())
+		ret = imx31_devices_init();
+	else if (cpu_is_mx35())
+		ret = imx35_devices_init();
+	else if (cpu_is_mx51())
+		ret = imx51_devices_init();
+	else if (cpu_is_mx53())
+		ret = imx53_devices_init();
+	else if (cpu_is_mx6())
+		ret = imx6_devices_init();
+	else
+		return -EINVAL;
+
+	return ret;
+}
+postcore_initcall(imx_init);

@@ -18,6 +18,7 @@
 #include <mach/generic.h>
 #include <mach/revision.h>
 #include <mach/imx6-regs.h>
+#include <mach/generic.h>
 
 #define SI_REV 0x260
 
@@ -56,7 +57,7 @@ void imx6_init_lowlevel(void)
 	writel(0xffffffff, 0x020c4080);
 }
 
-static int imx6_init(void)
+int imx6_init(void)
 {
 	u32 rev;
 	u32 mx6_silicon_revision;
@@ -83,9 +84,11 @@ static int imx6_init(void)
 
 	imx_set_silicon_revision("i.MX6", mx6_silicon_revision);
 
-	if (of_get_root_node())
-		return 0;
+	return 0;
+}
 
+int imx6_devices_init(void)
+{
 	add_generic_device("imx-iomuxv3", 0, NULL, MX6_IOMUXC_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx6-ccm", 0, NULL, MX6_CCM_BASE_ADDR, 0x4000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx31-gpt", 0, NULL, MX6_GPT_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
@@ -101,4 +104,3 @@ static int imx6_init(void)
 
 	return 0;
 }
-postcore_initcall(imx6_init);

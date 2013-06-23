@@ -48,7 +48,6 @@ config BOARDINFO
 	default "Phytec phyCORE-i.MX35" if MACH_PCM043
 	default "Synertronixx scb9328" if MACH_SCB9328
 	default "Garz+Fricke Neso" if MACH_NESO
-	default "Freescale i.MX51 PDK" if MACH_FREESCALE_MX51_PDK
 	default "Freescale i.MX53 LOCO" if MACH_FREESCALE_MX53_LOCO
 	default "Freescale i.MX53 SMD" if MACH_FREESCALE_MX53_SMD
 	default "Efika MX smartbook" if MACH_EFIKA_MX_SMARTBOOK
@@ -63,6 +62,7 @@ config BOARDINFO
 	default "Garz+Fricke Vincell" if MACH_GUF_VINCELL
 	default "SabreSD" if MACH_SABRESD
 	default "DataModul i.MX6Q Real Qseven" if MACH_REALQ7
+	default "unused" if IMX_MULTI_BOARDS
 
 choice
 	prompt "Select boot mode"
@@ -217,10 +217,23 @@ config ARCH_IMX6
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
 
+config IMX_MULTI_BOARDS
+	bool "Allow multiple boards to be selected"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
+
+if IMX_MULTI_BOARDS
+
+config MACH_FREESCALE_MX51_PDK
+	bool "Freescale i.MX51 PDK"
+	select ARCH_IMX51
+endif
+
 # ----------------------------------------------------------
 
 choice
 	prompt "Select Board"
+	depends on !IMX_MULTI_BOARDS
 
 comment "i.MX1 Boards"
 
@@ -381,12 +394,6 @@ config MACH_GUF_CUPID
 # ----------------------------------------------------------
 
 comment "i.MX51 Boards"
-
-config MACH_FREESCALE_MX51_PDK
-	bool "Freescale i.MX51 PDK"
-	select ARCH_IMX51
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 
 config MACH_EUKREA_CPUIMX51SD
 	bool "Ka-Ro TX51"

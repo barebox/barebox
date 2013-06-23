@@ -8,7 +8,7 @@ obj-y += start.o setupc.o
 #
 obj-$(CONFIG_CMD_ARM_CPUINFO) += cpuinfo.o
 obj-$(CONFIG_CMD_ARM_MMUINFO) += mmuinfo.o
-obj-$(CONFIG_BUILTIN_DTB) += dtb.o
+obj-$(CONFIG_OFDEVICE) += dtb.o
 obj-$(CONFIG_MMU) += mmu.o cache.o mmu-early.o
 pbl-$(CONFIG_MMU) += cache.o mmu-early.o
 obj-$(CONFIG_CPU_32v4T) += cache-armv4.o

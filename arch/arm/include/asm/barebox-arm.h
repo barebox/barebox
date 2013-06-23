@@ -54,6 +54,8 @@ static inline void arm_fixup_vectors(void)
 }
 #endif
 
+void *barebox_arm_boot_dtb(void);
+
 /*
  * For relocatable binaries find a suitable start address for the
  * relocated binary. Beginning at the memory end substract the reserved

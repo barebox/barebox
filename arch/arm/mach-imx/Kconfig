@@ -66,7 +66,6 @@ config BOARDINFO
 
 choice
 	prompt "Select boot mode"
-	depends on !ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
 	depends on !HAVE_PBL_MULTI_IMAGES
 	help
 	  i.MX processors support two different boot modes. With the internal
@@ -100,16 +99,6 @@ config ARCH_IMX_IMXIMAGE
 	default y
 	help
 	  if enabled the imx-image tool is compiled
-
-config ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
-	select ARCH_IMX_IMXIMAGE
-	bool
-	help
-	  Traditionally the i.MX specific format for internal bootmode
-	  was generated using C structs inside the binary. Now there is
-	  a tool available to generate the imx-image format. Boards using
-	  this tool must select this option. This is recommended for new
-	  boards.
 
 choice
 	depends on ARCH_IMX_INTERNAL_BOOT

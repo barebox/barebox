@@ -20,3 +20,10 @@ CFG_start_imx53_loco.pblx.imximg = $(board)/freescale-mx53-loco/flash-header.imx
 imximage-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco.pblx.imximg
 FILE_barebox-freescale-imx53-loco.img = start_imx53_loco.pblx.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco.img
+
+# ----------------------- i.MX6 based boards ---------------------------
+pblx-$(CONFIG_MACH_REALQ7) += start_imx6_realq7
+CFG_start_imx6_realq7.pblx.imximg = $(board)/dmo-mx6-realq7/flash-header.imxcfg
+imximage-$(CONFIG_MACH_REALQ7) += start_imx6_realq7.pblx.imximg
+FILE_barebox-datamodul-edm-qmx6.img = start_imx6_realq7.pblx.imximg
+image-$(CONFIG_MACH_REALQ7) += barebox-datamodul-edm-qmx6.img

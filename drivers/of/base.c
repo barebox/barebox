@@ -899,16 +899,11 @@ int of_property_write_u8_array(struct device_node *np,
 	struct property *prop = of_find_property(np, propname, NULL);
 	u8 *val;
 
-	if (!prop)
-		prop = of_new_property(np, propname, NULL, 0);
-	if (!prop)
-		return -ENOMEM;
+	if (prop)
+		of_delete_property(prop);
 
-	free(prop->value);
-
-	prop->length = sizeof(*val) * sz;
-	prop->value = malloc(prop->length);
-	if (!prop->value)
+	prop = of_new_property(np, propname, NULL, sizeof(*val) * sz);
+	if (!prop)
 		return -ENOMEM;
 
 	val = prop->value;
@@ -940,16 +935,11 @@ int of_property_write_u16_array(struct device_node *np,
 	struct property *prop = of_find_property(np, propname, NULL);
 	__be16 *val;
 
-	if (!prop)
-		prop = of_new_property(np, propname, NULL, 0);
-	if (!prop)
-		return -ENOMEM;
+	if (prop)
+		of_delete_property(prop);
 
-	free(prop->value);
-
-	prop->length = sizeof(*val) * sz;
-	prop->value = malloc(prop->length);
-	if (!prop->value)
+	prop = of_new_property(np, propname, NULL, sizeof(*val) * sz);
+	if (!prop)
 		return -ENOMEM;
 
 	val = prop->value;
@@ -981,16 +971,11 @@ int of_property_write_u32_array(struct device_node *np,
 	struct property *prop = of_find_property(np, propname, NULL);
 	__be32 *val;
 
-	if (!prop)
-		prop = of_new_property(np, propname, NULL, 0);
-	if (!prop)
-		return -ENOMEM;
+	if (prop)
+		of_delete_property(prop);
 
-	free(prop->value);
-
-	prop->length = sizeof(*val) * sz;
-	prop->value = malloc(prop->length);
-	if (!prop->value)
+	prop = of_new_property(np, propname, NULL, sizeof(*val) * sz);
+	if (!prop)
 		return -ENOMEM;
 
 	val = prop->value;
@@ -1022,16 +1007,11 @@ int of_property_write_u64_array(struct device_node *np,
 	struct property *prop = of_find_property(np, propname, NULL);
 	__be32 *val;
 
-	if (!prop)
-		prop = of_new_property(np, propname, NULL, 0);
-	if (!prop)
-		return -ENOMEM;
+	if (prop)
+		of_delete_property(prop);
 
-	free(prop->value);
-
-	prop->length = 2 * sizeof(*val) * sz;
-	prop->value = malloc(prop->length);
-	if (!prop->value)
+	prop = of_new_property(np, propname, NULL, 2 * sizeof(*val) * sz);
+	if (!prop)
 		return -ENOMEM;
 
 	val = prop->value;
@@ -1567,26 +1547,19 @@ void of_delete_property(struct property *pp)
 int of_set_property(struct device_node *np, const char *name, const void *val, int len,
 		int create)
 {
-	struct property *pp;
+	struct property *pp = of_find_property(np, name, NULL);
 
 	if (!np)
 		return -ENOENT;
 
-	pp = of_find_property(np, name, NULL);
-	if (pp) {
-		void *data;
+	if (!pp && !create)
+		return -ENOENT;
 
-		free(pp->value);
-		data = xzalloc(len);
-		memcpy(data, val, len);
-		pp->value = data;
-		pp->length = len;
-	} else {
-		if (!create)
-			return -ENOENT;
+	of_delete_property(pp);
 
-		pp = of_new_property(np, name, val, len);
-	}
+	pp = of_new_property(np, name, val, len);
+	if (!pp)
+		return -ENOMEM;
 
 	return 0;
 }
@@ -1810,12 +1783,8 @@ void of_free(struct device_node *node)
 	if (!node)
 		return;
 
-	list_for_each_entry_safe(p, pt, &node->properties, list) {
-		list_del(&p->list);
-		free(p->name);
-		free(p->value);
-		free(p);
-	}
+	list_for_each_entry_safe(p, pt, &node->properties, list)
+		of_delete_property(p);
 
 	list_for_each_entry_safe(n, nt, &node->children, parent_list) {
 		of_free(n);

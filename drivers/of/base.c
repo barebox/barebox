@@ -1527,13 +1527,17 @@ struct property *of_new_property(struct device_node *node, const char *name,
 	struct property *prop;
 
 	prop = xzalloc(sizeof(*prop));
-
 	prop->name = strdup(name);
-	prop->length = len;
-	if (len) {
-		prop->value = xzalloc(len);
-		memcpy(prop->value, data, len);
+	if (!prop->name) {
+		free(prop);
+		return NULL;
 	}
+
+	prop->length = len;
+	prop->value = xzalloc(len);
+
+	if (data)
+		memcpy(prop->value, data, len);
 
 	list_add_tail(&prop->list, &node->properties);
 
@@ -1542,6 +1546,9 @@ struct property *of_new_property(struct device_node *node, const char *name,
 
 void of_delete_property(struct property *pp)
 {
+	if (!pp)
+		return;
+
 	list_del(&pp->list);
 
 	free(pp->name);

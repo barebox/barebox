@@ -182,6 +182,9 @@ static int efikamx_power_init(void)
 
 static int efikamx_usb_init(void)
 {
+	if (!of_machine_is_compatible("genesi,imx51-sb"))
+		return 0;
+
 	gpio_direction_output(GPIO_BLUETOOTH, 0);
 	gpio_direction_output(GPIO_WIFI_ENABLE, 1);
 	gpio_direction_output(GPIO_WIFI_RESET, 0);
@@ -222,14 +225,16 @@ static struct gpio_led leds[] = {
 	},
 };
 
-#define DCD_NAME static struct imx_dcd_entry dcd_entry
-
-#include "dcd-data.h"
+extern char flash_header_imx51_genesi_efikasb_start[];
+extern char flash_header_imx51_genesi_efikasb_end[];
 
 static int efikamx_late_init(void)
 {
 	enum bootsource bootsource;
 	int i;
+
+	if (!of_machine_is_compatible("genesi,imx51-sb"))
+		return 0;
 
 	efikamx_power_init();
 
@@ -241,8 +246,10 @@ static int efikamx_late_init(void)
 	writew(0x0, MX51_WDOG_BASE_ADDR + 0x8);
 
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc1",
-			BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry),
-			0);
+			BBU_HANDLER_FLAG_DEFAULT,
+			(void *)flash_header_imx51_genesi_efikasb_start,
+			flash_header_imx51_genesi_efikasb_end -
+			flash_header_imx51_genesi_efikasb_start, 0);
 
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(2370);

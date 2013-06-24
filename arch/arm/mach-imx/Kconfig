@@ -223,6 +223,14 @@ config IMX_MULTI_BOARDS
 
 if IMX_MULTI_BOARDS
 
+config MACH_EFIKA_MX_SMARTBOOK
+	bool "Efika MX smartbook"
+	select ARCH_IMX51
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
+	help
+	  Choose this to compile barebox for the Efika MX Smartbook
+
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select ARCH_IMX51
@@ -436,13 +444,6 @@ config MACH_CCMX51_BASEBOARD
 	help
 	  This adds board specific devices that can be found on Digi
 	  evaluation board for CCMX51 module.
-
-config MACH_EFIKA_MX_SMARTBOOK
-	bool "Efika MX smartbook"
-	select ARCH_IMX51
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	help
-	  Choose this to compile barebox for the Efika MX Smartbook
 
 # ----------------------------------------------------------
 

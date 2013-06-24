@@ -18,11 +18,10 @@
 /** @file
  *  This File contains declaration for early output support
  */
-#ifndef __INCLUDE_ARCH_DEBUG_LL_H__
-#define   __INCLUDE_ARCH_DEBUG_LL_H__
+#ifndef __MACH_MALTA_DEBUG_LL_H__
+#define __MACH_MALTA_DEBUG_LL_H__
 
-#include <mach/hardware.h>
-
+#include <board/debug_ll.h>
 #include <asm/debug_ll_ns16550.h>
 
-#endif  /* __INCLUDE_ARCH_DEBUG_LL_H__ */
+#endif /* __MACH_MALTA_DEBUG_LL_H__ */

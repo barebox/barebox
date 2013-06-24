@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,15 +15,13 @@
  *
  */
 
-#ifndef __INCLUDE_ARCH_HARDWARE_H__
-#define   __INCLUDE_ARCH_HARDWARE_H__
+#ifndef __INCLUDE_BOARD_DEBUG_LL_QEMU_MALTA_H__
+#define __INCLUDE_BOARD_DEBUG_LL_QEMU_MALTA_H__
 
-#define MALTA_PIIX4_UART0	0xb00003f8
+#include <mach/hardware.h>
 
-/*
- * Reset register.
- */
-#define SOFTRES_REG	0xbf000500
-#define GORESET		0x42
+#define DEBUG_LL_UART_ADDR	MALTA_PIIX4_UART0
+#define DEBUG_LL_UART_SHIFT	0
+#define DEBUG_LL_UART_DIVISOR 1843200 /* no matter for emulated port */
 
-#endif  /* __INCLUDE_ARCH_HARDWARE_H__ */
+#endif /* __INCLUDE_BOARD_DEBUG_LL_QEMU_MALTA_H__ */

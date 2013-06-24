@@ -325,6 +325,11 @@ static int flash_image(const struct mtd_dev_info *mtd,
 		goto out_close;
 	}
 
+	if (st_size == 0) {
+		sys_errmsg("file \"%s\" has size 0 bytes", args.image);
+		goto out_close;
+	}
+
 	verbose(args.verbose, "will write %d eraseblocks", img_ebs);
 	divisor = img_ebs;
 	for (eb = 0; eb < mtd->eb_cnt; eb++) {

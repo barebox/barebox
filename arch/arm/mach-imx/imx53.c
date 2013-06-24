@@ -55,6 +55,9 @@ static int imx53_init(void)
 	imx53_silicon_revision();
 	imx53_boot_save_loc((void *)MX53_SRC_BASE_ADDR);
 
+	if (of_get_root_node())
+		return 0;
+
 	add_generic_device("imx_iim", 0, NULL, MX53_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 

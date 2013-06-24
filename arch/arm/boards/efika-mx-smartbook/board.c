@@ -252,6 +252,8 @@ static int efikamx_late_init(void)
 
 	switch (bootsource) {
 	case BOOTSOURCE_MMC:
+		device_detect_by_name("mmc1");
+
 		devfs_add_partition("mmc1", 0x00000, 0x80000,
 				DEVFS_PARTITION_FIXED, "self0");
 		devfs_add_partition("mmc1", 0x80000, 0x80000,

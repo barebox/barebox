@@ -59,12 +59,19 @@
 #define SYSCLK_50	50000000
 #define SYSCLK_100	100000000
 
-/* Ethernet. Use eTSEC3 */
+/* Define attributes for eTSEC2 and eTSEC3 */
 static struct gfar_info_struct gfar_info[] = {
+	{
+		.phyaddr = 0,
+		.tbiana = 0x1a0,
+		.tbicr = 0x9140,
+		.mdiobus_tbi = 1,
+	},
 	{
 		.phyaddr = 1,
 		.tbiana = 0,
 		.tbicr = 0,
+		.mdiobus_tbi = 2,
 	},
 };
 
@@ -82,8 +89,8 @@ static int devices_init(void)
 	add_generic_device("i2c-fsl", 1, NULL, I2C2_BASE_ADDR,
 			0x100, IORESOURCE_MEM, &i2cplat);
 
-	/* eTSEC3 */
-	fsl_eth_init(3, &gfar_info[0]);
+	fsl_eth_init(2, &gfar_info[0]);
+	fsl_eth_init(3, &gfar_info[1]);
 
 	devfs_add_partition("nor0", 0xf80000, 0x80000, DEVFS_PARTITION_FIXED,
 			    "self0");

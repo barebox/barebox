@@ -1,0 +1,10 @@
+#
+# barebox image generation Makefile for i.MX images
+#
+
+# %.imximg - convert into i.MX image
+# ----------------------------------------------------------------
+$(obj)/%.imximg: $(obj)/% FORCE
+	$(call if_changed,imx_image)
+
+board = $(srctree)/arch/$(ARCH)/boards

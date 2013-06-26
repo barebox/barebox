@@ -13,6 +13,7 @@ obj-$(CONFIG_CMD_LOADS)		+= s_record.o
 obj-$(CONFIG_OFTREE)		+= oftree.o
 
 obj-y += memory.o
+obj-$(CONFIG_DDR_SPD)  += ddr_spd.o
 obj-y += memory_display.o
 obj-$(CONFIG_MALLOC_DLMALLOC) += dlmalloc.o
 obj-$(CONFIG_MALLOC_TLSF) += tlsf_malloc.o

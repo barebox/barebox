@@ -48,7 +48,6 @@ config BOARDINFO
 	default "Phytec phyCORE-i.MX35" if MACH_PCM043
 	default "Synertronixx scb9328" if MACH_SCB9328
 	default "Garz+Fricke Neso" if MACH_NESO
-	default "Freescale i.MX53 LOCO" if MACH_FREESCALE_MX53_LOCO
 	default "Freescale i.MX53 SMD" if MACH_FREESCALE_MX53_SMD
 	default "Efika MX smartbook" if MACH_EFIKA_MX_SMARTBOOK
 	default "Garz+Fricke Cupid" if MACH_GUF_CUPID
@@ -227,6 +226,11 @@ if IMX_MULTI_BOARDS
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select ARCH_IMX51
+
+config MACH_FREESCALE_MX53_LOCO
+	bool "Freescale i.MX53 LOCO"
+	select ARCH_IMX53
+
 endif
 
 # ----------------------------------------------------------
@@ -437,12 +441,6 @@ config MACH_EFIKA_MX_SMARTBOOK
 # ----------------------------------------------------------
 
 comment "i.MX53 Boards"
-
-config MACH_FREESCALE_MX53_LOCO
-	bool "Freescale i.MX53 LOCO"
-	select ARCH_IMX53
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 
 config MACH_FREESCALE_MX53_SMD
 	bool "Freescale i.MX53 SMD"

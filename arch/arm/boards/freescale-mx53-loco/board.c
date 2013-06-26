@@ -79,12 +79,10 @@ extern char flash_header_start[], flash_header_end[];
 
 static int loco_late_init(void)
 {
-	struct device_d *dev = get_device_by_name("mmc0");
 	struct mc34708 *mc34708;
 	int rev;
 
-	if (dev)
-		device_detect(dev);
+	device_detect_by_name("mmc0");
 
 	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 

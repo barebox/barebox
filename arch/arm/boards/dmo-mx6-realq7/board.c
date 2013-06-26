@@ -117,11 +117,7 @@ static int realq7_env_init(void)
 {
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
-		if (!IS_ENABLED(CONFIG_MCI_STARTUP)) {
-			struct device_d *dev = get_device_by_name("mmc3");
-			if (dev)
-				device_detect(dev);
-		}
+		device_detect_by_name("mmc3");
 		devfs_add_partition("mmc3", 0, SZ_1M, DEVFS_PARTITION_FIXED, "mmc3.barebox");
 		devfs_add_partition("mmc3", SZ_1M, SZ_1M, DEVFS_PARTITION_FIXED, "mmc3.bareboxenv");
 		default_environment_path = "/dev/mmc3.bareboxenv";

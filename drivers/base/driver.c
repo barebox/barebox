@@ -100,6 +100,16 @@ int device_detect(struct device_d *dev)
 	return dev->detect(dev);
 }
 
+int device_detect_by_name(const char *devname)
+{
+	struct device_d *dev = get_device_by_name(devname);
+
+	if (!dev)
+		return -ENODEV;
+
+	return device_detect(dev);
+}
+
 static int match(struct driver_d *drv, struct device_d *dev)
 {
 	int ret;

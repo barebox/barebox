@@ -42,7 +42,7 @@ static __iomem void *timer_base;
 
 uint64_t mvebu_clocksource_read(void)
 {
-	return __raw_readl(timer_base + TIMER0_VAL_OFF);
+	return 0 - __raw_readl(timer_base + TIMER0_VAL_OFF);
 }
 
 static struct clocksource cs = {

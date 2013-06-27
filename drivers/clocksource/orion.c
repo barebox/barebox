@@ -34,7 +34,7 @@ static __iomem void *timer_base;
 
 static uint64_t orion_clocksource_read(void)
 {
-	return __raw_readl(timer_base + TIMER0_VAL);
+	return 0 - __raw_readl(timer_base + TIMER0_VAL);
 }
 
 static struct clocksource clksrc = {

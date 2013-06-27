@@ -1,1 +1,1 @@
-obj-y += board.c
+obj-y += board.o

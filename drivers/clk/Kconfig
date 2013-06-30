@@ -4,3 +4,8 @@ config CLKDEV_LOOKUP
 
 config COMMON_CLK
 	bool
+
+config COMMON_CLK_OF_PROVIDER
+	bool
+	help
+	 Clock driver provides OF-Tree based clock lookup.

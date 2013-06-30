@@ -11,6 +11,8 @@
 #ifndef __LINUX_CLK_H
 #define __LINUX_CLK_H
 
+#include <linux/err.h>
+
 struct device_d;
 
 /*
@@ -226,6 +228,37 @@ struct clk *clk_lookup(const char *name);
 
 void clk_dump(int verbose);
 
+#endif
+
+struct device_node;
+struct of_phandle_args;
+
+#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+int of_clk_add_provider(struct device_node *np,
+			struct clk *(*clk_src_get)(struct of_phandle_args *args,
+						   void *data),
+			void *data);
+void of_clk_del_provider(struct device_node *np);
+
+struct clk_onecell_data {
+	struct clk **clks;
+	unsigned int clk_num;
+};
+struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data);
+
+struct clk *of_clk_get(struct device_node *np, int index);
+struct clk *of_clk_get_by_name(struct device_node *np, const char *name);
+struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec);
+#else
+static inline struct clk *of_clk_get(struct device_node *np, int index)
+{
+	return ERR_PTR(-ENOENT);
+}
+static inline struct clk *of_clk_get_by_name(struct device_node *np,
+					     const char *name)
+{
+	return ERR_PTR(-ENOENT);
+}
 #endif
 
 #endif

@@ -19,9 +19,79 @@
 #include <linux/clkdev.h>
 #include <init.h>
 #include <malloc.h>
+#include <of.h>
 #include <stdio.h>
 
 static LIST_HEAD(clocks);
+
+#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+struct clk *of_clk_get(struct device_node *np, int index)
+{
+	struct of_phandle_args clkspec;
+	struct clk *clk;
+	int rc;
+
+	if (index < 0)
+		return ERR_PTR(-EINVAL);
+
+	rc = of_parse_phandle_with_args(np, "clocks", "#clock-cells", index,
+					&clkspec);
+	if (rc)
+		return ERR_PTR(rc);
+
+	clk = of_clk_get_from_provider(&clkspec);
+	return clk;
+}
+EXPORT_SYMBOL(of_clk_get);
+
+/**
+ * of_clk_get_by_name() - Parse and lookup a clock referenced by a device node
+ * @np: pointer to clock consumer node
+ * @name: name of consumer's clock input, or NULL for the first clock reference
+ *
+ * This function parses the clocks and clock-names properties,
+ * and uses them to look up the struct clk from the registered list of clock
+ * providers.
+ */
+struct clk *of_clk_get_by_name(struct device_node *np, const char *name)
+{
+	struct clk *clk = ERR_PTR(-ENOENT);
+
+	/* Walk up the tree of devices looking for a clock that matches */
+	while (np) {
+		int index = 0;
+
+		/*
+		 * For named clocks, first look up the name in the
+		 * "clock-names" property.  If it cannot be found, then
+		 * index will be an error code, and of_clk_get() will fail.
+		 */
+		if (name)
+			index = of_property_match_string(np, "clock-names",
+							 name);
+		clk = of_clk_get(np, index);
+		if (!IS_ERR(clk))
+			break;
+		else if (name && index >= 0) {
+			pr_err("ERROR: could not get clock %s:%s(%i)\n",
+				np->full_name, name ? name : "", index);
+			return clk;
+		}
+
+		/*
+		 * No matching clock found on this node.  If the parent node
+		 * has a "clock-ranges" property, then we can try one of its
+		 * clocks.
+		 */
+		np = np->parent;
+		if (np && !of_get_property(np, "clock-ranges", NULL))
+			break;
+	}
+
+	return clk;
+}
+EXPORT_SYMBOL(of_clk_get_by_name);
+#endif
 
 /*
  * Find the correct struct clk for the device and connection ID.
@@ -108,6 +178,10 @@ struct clk *clk_get(struct device_d *dev, const char *con_id)
 	clk = clk_find_physbase(dev, con_id);
 	if (!IS_ERR(clk))
 		return clk;
+
+	clk = of_clk_get_by_name(dev->device_node, con_id);
+		if (!IS_ERR(clk))
+			return clk;
 
 	return clk_get_sys(dev_id, con_id);
 }

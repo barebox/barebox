@@ -54,14 +54,14 @@ static void assert_maincomplex_reset(int num_cores)
 		mask |= 0x1111 << i;
 
 	writel(mask, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_SET);
-	writel(CRC_RST_DEV_L_SET_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_SET);
+	writel(CRC_RST_DEV_L_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_SET);
 }
 
 /* release reset state of the first core of the main CPU complex */
 static void deassert_cpu0_reset(void)
 {
 	writel(0x1111, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_CLR);
-	writel(CRC_RST_DEV_L_CLR_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_CLR);
+	writel(CRC_RST_DEV_L_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_CLR);
 }
 
 /* stop all internal and external clocks to the main CPU complex */
@@ -220,7 +220,7 @@ void barebox_arm_reset_vector(void)
 	deassert_cpu0_reset();
 
 	/* assert AVP reset to stop execution here */
-	writel(CRC_RST_DEV_L_SET_COP, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_SET);
+	writel(CRC_RST_DEV_L_COP, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_SET);
 
 	unreachable();
 }

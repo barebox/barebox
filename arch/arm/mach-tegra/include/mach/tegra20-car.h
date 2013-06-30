@@ -82,6 +82,39 @@
 #define CRC_OSC_CTRL_PLL_REF_DIV_SHIFT	28
 #define CRC_OSC_CTRL_PLL_REF_DIV_MASK	(0x3 << CRC_OSC_CTRL_PLL_REF_DIV_SHIFT)
 
+#define CRC_PLL_BASE_LOCK		27
+#define CRC_PLLE_MISC_LOCK		11
+
+#define CRC_PLL_MISC_LOCK_ENABLE	18
+#define CRC_PLLDU_MISC_LOCK_ENABLE	22
+#define CRC_PLLE_MISC_LOCK_ENABLE	9
+
+#define CRC_PLLS_BASE			0x0f0
+#define CRC_PLLS_MISC			0x0f4
+
+#define CRC_PLLC_BASE			0x080
+#define CRC_PLLC_OUT			0x084
+#define CRC_PLLC_MISC			0x08c
+
+#define CRC_PLLM_BASE			0x090
+#define CRC_PLLM_OUT			0x094
+#define CRC_PLLM_MISC			0x09c
+
+#define CRC_PLLP_BASE			0x0a0
+#define CRC_PLLP_OUTA			0x0a4
+#define CRC_PLLP_OUTB			0x0a8
+#define CRC_PLLP_MISC			0x0ac
+
+#define CRC_PLLA_BASE			0x0b0
+#define CRC_PLLA_OUT			0x0b4
+#define CRC_PLLA_MISC			0x0bc
+
+#define CRC_PLLU_BASE			0x0c0
+#define CRC_PLLU_MISC			0x0cc
+
+#define CRC_PLLD_BASE			0x0d0
+#define CRC_PLLD_MISC			0x0dc
+
 #define CRC_PLLX_BASE			0x0e0
 #define CRC_PLLX_BASE_BYPASS		(1 << 31)
 #define CRC_PLLX_BASE_ENABLE		(1 << 30)
@@ -109,6 +142,9 @@
 #define CRC_PLLX_MISC_LFCON_MASK	(0xf << CRC_PLLX_MISC_LFCON_SHIFT)
 #define CRC_PLLX_MISC_VCOCON_SHIFT	0
 #define CRC_PLLX_MISC_VCOCON_MASK	(0xf << CRC_PLLX_MISC_VCOCON_SHIFT)
+
+#define CRC_PLLE_BASE			0x0e8
+#define CRC_PLLE_MISC			0x0ec
 
 #define CRC_RST_DEV_L_SET		0x300
 #define CRC_RST_DEV_L_CACHE2		(1 << 31)

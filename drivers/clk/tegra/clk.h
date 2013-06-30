@@ -115,6 +115,29 @@ struct clk *tegra_clk_register_pll_out(const char *name,
 		const char *parent_name, void __iomem *reg, u8 shift,
 		u8 divider_flags);
 
+/* struct clk-periph - peripheral clock */
+struct tegra_clk_periph {
+	struct clk	hw;
+	struct clk	*gate;
+	struct clk	*mux;
+	struct clk	*div;
+	u8 		flags;
+	u8		rst_shift;
+	void __iomem	*rst_reg;
+};
+
+#define TEGRA_PERIPH_NO_RESET BIT(0)
+#define TEGRA_PERIPH_MANUAL_RESET BIT(1)
+#define TEGRA_PERIPH_ON_APB BIT(2)
+
+struct clk *tegra_clk_register_periph_nodiv(const char *name,
+		const char **parent_names, int num_parents,
+		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags);
+
+struct clk *tegra_clk_register_periph(const char *name,
+		const char **parent_names, int num_parents,
+		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags);
+
 /* struct clk_init_table - clock initialization table */
 struct tegra_clk_init_table {
 	unsigned int	clk_id;

@@ -275,6 +275,28 @@ static void tegra20_pll_init(void)
 			TEGRA_PLL_HAS_CPCON, pll_u_freq_table);
 }
 
+static const char *mux_pllpcm_clkm[] = {"pll_p", "pll_c", "pll_m", "clk_m"};
+
+static void tegra20_periph_init(void)
+{
+	/* peripheral clocks without a divider */
+	clks[uarta] = tegra_clk_register_periph_nodiv("uarta", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_UARTA, uarta, TEGRA_PERIPH_ON_APB);
+	clks[uartb] = tegra_clk_register_periph_nodiv("uartb", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_UARTB, uartb, TEGRA_PERIPH_ON_APB);
+	clks[uartc] = tegra_clk_register_periph_nodiv("uartc", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_UARTC, uartc, TEGRA_PERIPH_ON_APB);
+	clks[uartd] = tegra_clk_register_periph_nodiv("uartd", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_UARTD, uartd, TEGRA_PERIPH_ON_APB);
+	clks[uarte] = tegra_clk_register_periph_nodiv("uarte", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_UARTE, uarte, TEGRA_PERIPH_ON_APB);
+}
+
 static struct tegra_clk_init_table init_table[] = {
 	{pll_p,		clk_max,	216000000,	1},
 	{pll_p_out1,	clk_max,	28800000,	1},
@@ -283,6 +305,11 @@ static struct tegra_clk_init_table init_table[] = {
 	{pll_p_out4,	clk_max,	24000000,	1},
 	{pll_c,		clk_max,	600000000,	1},
 	{pll_c_out1,	clk_max,	120000000,	1},
+	{uarta,		pll_p,		0,		1},
+	{uartb,		pll_p,		0,		1},
+	{uartc,		pll_p,		0,		1},
+	{uartd,		pll_p,		0,		1},
+	{uarte,		pll_p,		0,		1},
 	{clk_max,	clk_max,	0,		0}, /* sentinel */
 };
 
@@ -294,6 +321,7 @@ static int tegra20_car_probe(struct device_d *dev)
 
 	tegra20_osc_clk_init();
 	tegra20_pll_init();
+	tegra20_periph_init();
 
 	tegra_init_from_table(init_table, clks, clk_max);
 

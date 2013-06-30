@@ -1,5 +1,6 @@
 obj-y	+= clk.o
 obj-y	+= clk-divider.o
+obj-y	+= clk-periph.o
 obj-y	+= clk-pll.o
 obj-y	+= clk-pll-out.o
 

@@ -24,6 +24,7 @@
 #include <init.h>
 #include <io.h>
 #include <linux/clk.h>
+#include <mach/lowlevel.h>
 
 /* register definitions */
 #define TIMERUS_CNTR_1US	0x10
@@ -43,8 +44,6 @@ static struct clocksource cs = {
 
 static int tegra20_timer_probe(struct device_d *dev)
 {
-	struct clk *timer_clk;
-	unsigned long rate;
 	u32 reg;
 
 	/* use only one timer */
@@ -57,22 +56,13 @@ static int tegra20_timer_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	timer_clk = clk_get(dev, NULL);
-	if (!timer_clk) {
-		dev_err(dev, "could not get clock\n");
-		return -ENODEV;
-	}
-
-	clk_enable(timer_clk);
-
 	/*
 	 * calibrate timer to run at 1MHz
 	 * TIMERUS_USEC_CFG selects the scale down factor with bits [0:7]
 	 * representing the divisor and bits [8:15] representing the dividend
 	 * each in n+1 form.
 	 */
-	rate = clk_get_rate(timer_clk);
-	switch (rate) {
+	switch (tegra_get_osc_clock()) {
 	case 12000000:
 		reg = 0x000b;
 		break;
@@ -116,4 +106,4 @@ static int tegra20_timer_init(void)
 {
 	return platform_driver_register(&tegra20_timer_driver);
 }
-coredevice_initcall(tegra20_timer_init);
+core_initcall(tegra20_timer_init);

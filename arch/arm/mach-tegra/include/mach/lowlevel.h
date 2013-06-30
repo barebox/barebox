@@ -142,5 +142,28 @@ static inline long tegra20_get_debuguart_base(void)
 	return uart_id_to_base[id];
 }
 
+#define CRC_OSC_CTRL			0x050
+#define CRC_OSC_CTRL_OSC_FREQ_SHIFT	30
+#define CRC_OSC_CTRL_OSC_FREQ_MASK	(0x3 << CRC_OSC_CTRL_OSC_FREQ_SHIFT)
+
+static inline unsigned int tegra_get_osc_clock(void)
+{
+	u32 osc_ctrl = readl(TEGRA_CLK_RESET_BASE + CRC_OSC_CTRL);
+
+	switch ((osc_ctrl & CRC_OSC_CTRL_OSC_FREQ_MASK) >>
+		CRC_OSC_CTRL_OSC_FREQ_SHIFT) {
+	case 0:
+		return 13000000;
+	case 1:
+		return 19200000;
+	case 2:
+		return 12000000;
+	case 3:
+		return 26000000;
+	default:
+		return 0;
+	}
+}
+
 /* reset vector for the main CPU complex */
 void tegra_maincomplex_entry(void);

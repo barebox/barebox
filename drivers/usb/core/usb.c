@@ -431,14 +431,22 @@ static int usb_new_device(struct usb_device *dev)
 	if (dev->descriptor->iSerialNumber)
 		usb_string(dev, dev->descriptor->iSerialNumber,
 			   dev->serial, sizeof(dev->serial));
+
+	if (parent) {
+		sprintf(dev->dev.name, "%s-%d", parent->dev.name, port);
+	} else {
+		sprintf(dev->dev.name, "usb%d", dev->host->busnum);
+	}
+
+	dev->dev.id = DEVICE_ID_SINGLE;
+
+	register_device(&dev->dev);
+
 	/* now prode if the device is a hub */
 	usb_hub_probe(dev, 0);
 
-	sprintf(dev->dev.name, "usb%d-%d", dev->host->busnum, dev->devnum);
-
 	print_usb_device(dev);
 
-	register_device(&dev->dev);
 	dev_add_param_int_ro(&dev->dev, "iManufacturer",
 			dev->descriptor->iManufacturer, "%d");
 	dev_add_param_int_ro(&dev->dev, "iProduct",
@@ -480,13 +488,18 @@ static struct usb_device *usb_alloc_new_device(void)
 	return usbdev;
 }
 
-void usb_rescan(void)
+int usb_host_detect(struct usb_host *host, int force)
 {
 	struct usb_device *dev, *tmp;
-	struct usb_host *host;
 	int ret;
 
+	if (host->scanned && !force)
+		return -EBUSY;
+
 	list_for_each_entry_safe(dev, tmp, &usb_device_list, list) {
+		if (dev->host != host)
+			continue;
+
 		list_del(&dev->list);
 		unregister_device(&dev->dev);
 		if (dev->hub)
@@ -496,17 +509,31 @@ void usb_rescan(void)
 		free(dev);
 	}
 
+	ret = host->init(host);
+	if (ret)
+		return ret;
+
+	dev = usb_alloc_new_device();
+	dev->host = host;
+	usb_new_device(dev);
+
+	host->scanned = 1;
+
+	return 0;
+}
+
+void usb_rescan(int force)
+{
+	struct usb_host *host;
+	int ret;
+
 	printf("USB: scanning bus for devices...\n");
 	dev_index = 0;
 
 	list_for_each_entry(host, &host_list, list) {
-		ret = host->init(host);
+		ret = usb_host_detect(host, force);
 		if (ret)
 			continue;
-
-		dev = usb_alloc_new_device();
-		dev->host = host;
-		usb_new_device(dev);
 	}
 
 	printf("%d USB Device(s) found\n", dev_index);

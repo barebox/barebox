@@ -22,24 +22,20 @@
 #include <usb/usb.h>
 #include <getopt.h>
 
-static int scanned;
-
 static int do_usb(int argc, char *argv[])
 {
 	int opt;
+	int force = 0;
 
 	while ((opt = getopt(argc, argv, "f")) > 0) {
 		switch (opt) {
 		case 'f':
-			scanned = 0;
+			force = 1;
 			break;
 		}
 	}
 
-	if (!scanned) {
-		usb_rescan();
-		scanned = 1;
-	}
+	usb_rescan(force);
 
 	return 0;
 }

@@ -211,9 +211,12 @@ struct usb_host {
 	struct list_head list;
 
 	int busnum;
+	int scanned;
 };
 
 int usb_register_host(struct usb_host *);
+
+int usb_host_detect(struct usb_host *host, int force);
 
 /* Defines */
 #define USB_UHCI_VEND_ID	0x8086
@@ -248,7 +251,7 @@ int usb_clear_halt(struct usb_device *dev, int pipe);
 int usb_string(struct usb_device *dev, int index, char *buf, size_t size);
 int usb_set_interface(struct usb_device *dev, int interface, int alternate);
 
-void usb_rescan(void);
+void usb_rescan(int force);
 
 /* big endian -> little endian conversion */
 /* some CPUs are already little endian e.g. the ARM920T */

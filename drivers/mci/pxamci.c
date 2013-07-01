@@ -343,7 +343,7 @@ static int pxamci_probe(struct device_d *dev)
 	host->mci.init = pxamci_init;
 	host->mci.send_cmd = pxamci_request;
 	host->mci.set_ios = pxamci_set_ios;
-	host->mci.host_caps = MMC_MODE_4BIT;
+	host->mci.host_caps = MMC_CAP_4_BIT_DATA;
 	host->mci.hw_dev = dev;
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

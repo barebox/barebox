@@ -553,7 +553,8 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 		return -EBUSY;
 	}
 
-	host->mci.host_caps |= MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz;
+	host->mci.host_caps |= MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED |
+		MMC_CAP_MMC_HIGHSPEED;
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

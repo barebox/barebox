@@ -30,7 +30,7 @@
 #include <mach/ocotp.h>
 
 static struct mxs_mci_platform_data mci_pdata = {
-	.caps = MMC_MODE_4BIT,
+	.caps = MMC_CAP_4_BIT_DATA,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
 	.f_min = 400 * 1000,
 	.f_max = 25000000,

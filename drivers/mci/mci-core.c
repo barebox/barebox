@@ -66,6 +66,11 @@
  * - Transcend SDHC, 8 GiB (Class 6)
  */
 
+static inline unsigned mci_caps(struct mci *mci)
+{
+	return mci->card_caps & mci->host->host_caps;
+}
+
 /**
  * Call the MMC/SD instance driver to run the command on the MMC/SD card
  * @param mci MCI instance
@@ -434,7 +439,7 @@ static int mmc_change_freq(struct mci *mci)
 	if (mci->version < MMC_VERSION_4)
 		return 0;
 
-	mci->card_caps |= MMC_MODE_4BIT;
+	mci->card_caps |= MMC_CAP_4_BIT_DATA;
 
 	err = mci_send_ext_csd(mci, mci->ext_csd);
 	if (err) {
@@ -467,9 +472,9 @@ static int mmc_change_freq(struct mci *mci)
 
 	/* High Speed is set, there are two types: 52MHz and 26MHz */
 	if (cardtype & EXT_CSD_CARD_TYPE_52)
-		mci->card_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
+		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED_52MHZ | MMC_CAP_MMC_HIGHSPEED;
 	else
-		mci->card_caps |= MMC_MODE_HS;
+		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED;
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
 			mci->ext_csd[EXT_CSD_REV] >= 3 && mci->ext_csd[EXT_CSD_BOOT_MULT]) {
@@ -534,9 +539,7 @@ static int sd_change_freq(struct mci *mci)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
-#ifdef CONFIG_MCI_SPI
 	struct mci_host *host = mci->host;
-#endif
 	uint32_t *switch_status = sector_buf;
 	uint32_t *scr = sector_buf;
 	int timeout;
@@ -615,7 +618,7 @@ retry_scr:
 	}
 
 	if (mci->scr[0] & SD_DATA_4BIT)
-		mci->card_caps |= MMC_MODE_4BIT;
+		mci->card_caps |= MMC_CAP_4_BIT_DATA;
 
 	/* If high-speed isn't supported, we return */
 	if (!(__be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))
@@ -628,7 +631,7 @@ retry_scr:
 	}
 
 	if ((__be32_to_cpu(switch_status[4]) & 0x0f000000) == 0x01000000)
-		mci->card_caps |= MMC_MODE_HS;
+		mci->card_caps |= MMC_CAP_SD_HIGHSPEED;
 
 	return 0;
 }
@@ -663,10 +666,6 @@ static void mci_set_clock(struct mci *mci, unsigned clock)
 
 	if (clock < host->f_min)
 		clock = host->f_min;
-
-	/* check against the limit at the card's side */
-	if (mci->tran_speed != 0 && clock > mci->tran_speed)
-		clock = mci->tran_speed;
 
 	host->clock = clock;	/* the new target frequency */
 	mci_set_ios(mci);
@@ -900,7 +899,7 @@ static int mci_startup_sd(struct mci *mci)
 	struct mci_cmd cmd;
 	int err;
 
-	if (mci->card_caps & MMC_MODE_4BIT) {
+	if (mci_caps(mci) & MMC_CAP_4_BIT_DATA) {
 		dev_dbg(&mci->dev, "Prepare for bus width change\n");
 		mci_setup_cmd(&cmd, MMC_CMD_APP_CMD, mci->rca << 16, MMC_RSP_R1);
 		err = mci_send_cmd(mci, &cmd, NULL);
@@ -919,11 +918,8 @@ static int mci_startup_sd(struct mci *mci)
 		}
 		mci_set_bus_width(mci, MMC_BUS_WIDTH_4);
 	}
-	/* if possible, speed up the transfer */
-	if (mci->card_caps & MMC_MODE_HS)
-		mci_set_clock(mci, 50000000);
-	else
-		mci_set_clock(mci, 25000000);
+
+	mci_set_clock(mci, mci->tran_speed);
 
 	return 0;
 }
@@ -943,14 +939,14 @@ static int mci_startup_mmc(struct mci *mci)
 	};
 
 	/* if possible, speed up the transfer */
-	if (mci->card_caps & MMC_MODE_HS) {
-		if (mci->card_caps & MMC_MODE_HS_52MHz)
-			mci_set_clock(mci, 52000000);
+	if (mci_caps(mci) & MMC_CAP_MMC_HIGHSPEED) {
+		if (mci->card_caps & MMC_CAP_MMC_HIGHSPEED_52MHZ)
+			mci->tran_speed = 52000000;
 		else
-			mci_set_clock(mci, 26000000);
-	} else {
-		mci_set_clock(mci, 20000000);
+			mci->tran_speed = 26000000;
 	}
+
+	mci_set_clock(mci, mci->tran_speed);
 
 	/*
 	 * Unlike SD, MMC cards dont have a configuration register to notify
@@ -958,7 +954,7 @@ static int mci_startup_mmc(struct mci *mci)
 	 * the supported bus width or compare the ext csd values of current
 	 * bus width and ext csd values of 1 bit mode read earlier.
 	 */
-	if (host->host_caps & MMC_MODE_8BIT)
+	if (host->host_caps & MMC_CAP_8_BIT_DATA)
 		idx = 1;
 
 	for (; idx >= 0; idx--) {
@@ -997,8 +993,7 @@ static int mci_startup(struct mci *mci)
 	struct mci_cmd cmd;
 	int err;
 
-#ifdef CONFIG_MMC_SPI_CRC_ON
-	if (mmc_host_is_spi(host)) { /* enable CRC check for spi */
+	if (IS_ENABLED(CONFIG_MMC_SPI_CRC_ON) && mmc_host_is_spi(host)) { /* enable CRC check for spi */
 
 		mci_setup_cmd(&cmd, MMC_CMD_SPI_CRC_ON_OFF, 1, MMC_RSP_R1);
 		err = mci_send_cmd(mci, &cmd, NULL);
@@ -1008,7 +1003,6 @@ static int mci_startup(struct mci *mci)
 			return err;
 		}
 	}
-#endif
 
 	dev_dbg(&mci->dev, "Put the Card in Identify Mode\n");
 
@@ -1097,9 +1091,6 @@ static int mci_startup(struct mci *mci)
 		return err;
 
 	mci_extract_card_capacity_from_csd(mci);
-
-	/* Restrict card's capabilities by what the host can do */
-	mci->card_caps &= host->host_caps;
 
 	if (IS_SD(mci))
 		err = mci_startup_sd(mci);
@@ -1366,6 +1357,16 @@ static unsigned extract_mtd_year(struct mci *mci)
 		return UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
 }
 
+static void mci_print_caps(unsigned caps)
+{
+	printf("  capabilities: %s%s%s%s%s\n",
+		caps & MMC_CAP_4_BIT_DATA ? "4bit " : "",
+		caps & MMC_CAP_8_BIT_DATA ? "8bit " : "",
+		caps & MMC_CAP_SD_HIGHSPEED ? "sd-hs " : "",
+		caps & MMC_CAP_MMC_HIGHSPEED ? "mmc-hs " : "",
+		caps & MMC_CAP_MMC_HIGHSPEED_52MHZ ? "mmc-52MHz " : "");
+}
+
 /**
  * Output some valuable information when the user runs 'devinfo' on an MCI device
  * @param mci MCI device instance
@@ -1373,13 +1374,28 @@ static unsigned extract_mtd_year(struct mci *mci)
 static void mci_info(struct device_d *dev)
 {
 	struct mci *mci = container_of(dev, struct mci, dev);
+	struct mci_host *host = mci->host;
+	int bw;
 
 	if (mci->ready_for_use == 0) {
 		printf(" No information available:\n  MCI card not probed yet\n");
 		return;
 	}
 
-	printf(" Card:\n");
+	printf("Host information:\n");
+	printf("  current clock: %d\n", host->clock);
+
+	if (host->bus_width == MMC_BUS_WIDTH_8)
+		bw = 8;
+	else if (host->bus_width == MMC_BUS_WIDTH_4)
+		bw = 4;
+	else
+		bw = 1;
+
+	printf("  current buswidth: %d\n", bw);
+	mci_print_caps(host->host_caps);
+
+	printf("Card information:\n");
 	if (mci->version < SD_VERSION_SD) {
 		printf("  Attached is a MultiMediaCard (Version: %u.%u)\n",
 			(mci->version >> 4) & 0xf, mci->version & 0xf);
@@ -1396,6 +1412,7 @@ static void mci_info(struct device_d *dev)
 	printf("   CSD: %08X-%08X-%08X-%08X\n", mci->csd[0], mci->csd[1],
 		mci->csd[2], mci->csd[3]);
 	printf("  Max. transfer speed: %u Hz\n", mci->tran_speed);
+	mci_print_caps(mci->card_caps);
 	printf("  Manufacturer ID: %02X\n", extract_mid(mci));
 	printf("  OEM/Application ID: %04X\n", extract_oid(mci));
 	printf("  Product name: '%c%c%c%c%c'\n", mci->cid[0] & 0xff,
@@ -1694,10 +1711,10 @@ void mci_of_parse(struct mci_host *host)
 
 	switch (bus_width) {
 	case 8:
-		host->host_caps |= MMC_MODE_8BIT;
+		host->host_caps |= MMC_CAP_8_BIT_DATA;
 		/* Hosts capable of 8-bit transfers can also do 4 bits */
 	case 4:
-		host->host_caps |= MMC_MODE_4BIT;
+		host->host_caps |= MMC_CAP_4_BIT_DATA;
 		break;
 	case 1:
 		break;

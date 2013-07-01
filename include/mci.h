@@ -44,21 +44,16 @@
 #define MMC_VERSION_3		(MMC_VERSION_MMC | 0x30)
 #define MMC_VERSION_4		(MMC_VERSION_MMC | 0x40)
 
-#define MMC_MODE_HS		0x001
-#define MMC_MODE_HS_52MHz	0x010
-#define MMC_CAP_SPI		0x020
-#define MMC_MODE_4BIT		0x100
-#define MMC_MODE_8BIT		0x200
+#define MMC_CAP_SPI			(1 << 0)
+#define MMC_CAP_4_BIT_DATA		(1 << 1)
+#define MMC_CAP_8_BIT_DATA		(1 << 2)
+#define MMC_CAP_SD_HIGHSPEED		(1 << 3)
+#define MMC_CAP_MMC_HIGHSPEED		(1 << 4)
+#define MMC_CAP_MMC_HIGHSPEED_52MHZ	(1 << 5)
 
 #define SD_DATA_4BIT		0x00040000
 
 #define IS_SD(x) (x->version & SD_VERSION_SD)
-
-#ifdef CONFIG_MCI_SPI
-#define mmc_host_is_spi(host)	((host)->host_caps & MMC_CAP_SPI)
-#else
-#define mmc_host_is_spi(host)	0
-#endif
 
 #define MMC_DATA_READ		1
 #define MMC_DATA_WRITE		2
@@ -341,7 +336,7 @@ struct mci {
 	unsigned csd[4];	/**< card's "card specific data register" */
 	unsigned cid[4];	/**< card's "card identification register" */
 	unsigned short rca;	/* FIXME */
-	unsigned tran_speed;	/**< not yet used */
+	unsigned tran_speed;	/**< Maximum transfer speed */
 	/** currently used data block length for read accesses */
 	unsigned read_bl_len;
 	/** currently used data block length for write accesses */
@@ -365,5 +360,13 @@ struct mci {
 int mci_register(struct mci_host*);
 void mci_of_parse(struct mci_host *host);
 int mci_detect_card(struct mci_host *);
+
+static inline int mmc_host_is_spi(struct mci_host *host)
+{
+	if (IS_ENABLED(CONFIG_MCI_SPI))
+		return host->host_caps & MMC_CAP_SPI;
+	else
+		return 0;
+}
 
 #endif /* _MCI_H_ */

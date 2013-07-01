@@ -220,7 +220,7 @@ static struct esdhc_platform_data tqma53_sd2_data = {
 static struct esdhc_platform_data tqma53_sd3_data = {
 	.cd_type = ESDHC_CD_PERMANENT,
 	.wp_type = ESDHC_WP_NONE,
-	.caps = MMC_MODE_8BIT | MMC_MODE_4BIT,
+	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
 };
 
 static int tqma53_devices_init(void)

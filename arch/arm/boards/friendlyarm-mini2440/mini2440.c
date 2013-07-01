@@ -62,7 +62,7 @@ static struct dm9000_platform_data dm9000_data = {
 };
 
 static struct s3c_mci_platform_data mci_data = {
-	.caps = MMC_MODE_4BIT | MMC_MODE_HS | MMC_MODE_HS_52MHz,
+	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED,
 	.voltages = MMC_VDD_32_33 | MMC_VDD_33_34,
 	.gpio_detect = 232,	/* GPG8_GPIO */
 	.detect_invert = 0,

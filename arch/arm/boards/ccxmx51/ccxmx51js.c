@@ -69,14 +69,14 @@ static iomux_v3_cfg_t ccxmx51js_pads[] = {
 static struct esdhc_platform_data sdhc1_pdata = {
 	.cd_type	= ESDHC_CD_NONE,
 	.wp_type	= ESDHC_WP_NONE,
-	.caps		= MMC_MODE_4BIT,
+	.caps		= MMC_CAP_4_BIT_DATA,
 };
 
 static struct esdhc_platform_data sdhc3_pdata = {
 	.cd_type	= ESDHC_CD_NONE,
 	.wp_type	= ESDHC_WP_GPIO,
 	.wp_gpio	= CCXMX51JS_SD3_WP,
-	.caps		= MMC_MODE_4BIT | MMC_MODE_8BIT,
+	.caps		= MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
 };
 
 static struct imxusb_platformdata ccxmx51js_usbhost1_pdata = {

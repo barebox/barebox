@@ -141,9 +141,22 @@ static struct platform_device_id imx_sata_ids[] = {
 	},
 };
 
+static __maybe_unused struct of_device_id imx_sata_dt_ids[] = {
+	{
+		.compatible = "fsl,imx6q-ahci",
+		.data = (unsigned long)&data_imx6,
+	}, {
+		.compatible = "fsl,imx53-ahci",
+		.data = (unsigned long)&data_imx53,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx_sata_driver = {
 	.name   = "imx-sata",
 	.probe  = imx_sata_probe,
 	.id_table = imx_sata_ids,
+	.of_compatible = DRV_OF_COMPAT(imx_sata_dt_ids),
 };
 device_platform_driver(imx_sata_driver);

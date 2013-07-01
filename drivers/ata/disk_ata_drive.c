@@ -26,41 +26,6 @@
 #include <disks.h>
 #include <dma.h>
 
-#define ata_id_u32(id,n)        \
-        (((uint32_t) (id)[(n) + 1] << 16) | ((uint32_t) (id)[(n)]))
-#define ata_id_u64(id,n)        \
-        ( ((uint64_t) (id)[(n) + 3] << 48) | \
-          ((uint64_t) (id)[(n) + 2] << 32) | \
-          ((uint64_t) (id)[(n) + 1] << 16) | \
-          ((uint64_t) (id)[(n) + 0]) )
-
-#define ata_id_has_lba(id)               ((id)[49] & (1 << 9))
-
-enum {
-	ATA_ID_SERNO		= 10,
-#define ATA_ID_SERNO_LEN 20
-	ATA_ID_FW_REV		= 23,
-#define ATA_ID_FW_REV_LEN 8
-	ATA_ID_PROD		= 27,
-#define ATA_ID_PROD_LEN 40
-	ATA_ID_CAPABILITY	= 49,
-	ATA_ID_FIELD_VALID	= 53,
-	ATA_ID_LBA_CAPACITY	= 60,
-	ATA_ID_MWDMA_MODES	= 63,
-	ATA_ID_PIO_MODES	= 64,
-	ATA_ID_QUEUE_DEPTH	= 75,
-	ATA_ID_MAJOR_VER	= 80,
-	ATA_ID_COMMAND_SET_1	= 82,
-	ATA_ID_COMMAND_SET_2	= 83,
-	ATA_ID_CFSSE		= 84,
-	ATA_ID_CFS_ENABLE_1	= 85,
-	ATA_ID_CFS_ENABLE_2	= 86,
-	ATA_ID_CSF_DEFAULT	= 87,
-	ATA_ID_UDMA_MODES	= 88,
-	ATA_ID_HW_CONFIG	= 93,
-	ATA_ID_LBA_CAPACITY_2	= 100,
-};
-
 static int ata_id_is_valid(const uint16_t *id)
 {
 	if ((id[ATA_ID_FIELD_VALID] & 1) == 0) {
@@ -69,15 +34,6 @@ static int ata_id_is_valid(const uint16_t *id)
 	}
 
 	return 0;
-}
-
-static inline int ata_id_has_lba48(const uint16_t *id)
-{
-	if ((id[ATA_ID_COMMAND_SET_2] & 0xC000) != 0x4000)
-		return 0;
-	if (!ata_id_u64(id, ATA_ID_LBA_CAPACITY_2))
-		return 0;
-	return id[ATA_ID_COMMAND_SET_2] & (1 << 10);
 }
 
 static uint64_t ata_id_n_sectors(uint16_t *id)
@@ -298,12 +254,16 @@ static int ata_port_init(struct ata_port *port)
 #ifdef DEBUG
 	ata_dump_id(port->id);
 #endif
-	rc = cdev_find_free_index("ata");
-	if (rc == -1)
-		pr_err("Cannot find a free index for the disk node\n");
+	if (port->devname) {
+		port->blk.cdev.name = xstrdup(port->devname);
+	} else {
+		rc = cdev_find_free_index("ata");
+		if (rc == -1)
+			pr_err("Cannot find a free index for the disk node\n");
+		port->blk.cdev.name = asprintf("ata%d", rc);
+	}
 
 	port->blk.num_blocks = ata_id_n_sectors(port->id);
-	port->blk.cdev.name = asprintf("ata%d", rc);
 	port->blk.blockbits = SECTOR_SHIFT;
 
 	rc = blockdevice_register(&port->blk);
@@ -325,16 +285,12 @@ on_error:
 	return rc;
 }
 
-static int ata_set_probe(struct param_d *param, void *priv)
+int ata_port_detect(struct ata_port *port)
 {
-	struct ata_port *port = priv;
 	int ret;
 
-	if (!port->probe)
-		return 0;
-
 	if (port->initialized) {
-		dev_info(&port->class_dev, "already initialized\n");
+		dev_dbg(&port->class_dev, "already initialized\n");
 		return 0;
 	}
 
@@ -347,6 +303,23 @@ static int ata_set_probe(struct param_d *param, void *priv)
 	return 0;
 }
 
+static int ata_set_probe(struct param_d *param, void *priv)
+{
+	struct ata_port *port = priv;
+
+	if (!port->probe)
+		return 0;
+
+	return ata_port_detect(port);
+}
+
+static int ata_detect(struct device_d *dev)
+{
+	struct ata_port *port = container_of(dev, struct ata_port, class_dev);
+
+	return ata_port_detect(port);
+}
+
 /**
  * Register an ATA drive behind an IDE like interface
  * @param dev The interface device
@@ -357,9 +330,16 @@ int ata_port_register(struct ata_port *port)
 {
 	int ret;
 
-	port->class_dev.id = DEVICE_ID_DYNAMIC;
-	strcpy(port->class_dev.name, "ata");
+	if (port->devname) {
+		strcpy(port->class_dev.name, port->devname);
+		port->class_dev.id = DEVICE_ID_SINGLE;
+	} else {
+		strcpy(port->class_dev.name, "ata");
+		port->class_dev.id = DEVICE_ID_DYNAMIC;
+	}
+
 	port->class_dev.parent = port->dev;
+	port->class_dev.detect = ata_detect;
 
 	ret = register_device(&port->class_dev);
 	if (ret)

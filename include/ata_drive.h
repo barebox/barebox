@@ -55,6 +55,50 @@
 #define ATA_DEVCTL_SOFT_RESET	(1 << 2)
 #define ATA_DEVCTL_INTR_DISABLE	(1 << 1)
 
+#define ata_id_u32(id,n)        \
+        (((uint32_t) (id)[(n) + 1] << 16) | ((uint32_t) (id)[(n)]))
+#define ata_id_u64(id,n)        \
+        ( ((uint64_t) (id)[(n) + 3] << 48) | \
+          ((uint64_t) (id)[(n) + 2] << 32) | \
+          ((uint64_t) (id)[(n) + 1] << 16) | \
+          ((uint64_t) (id)[(n) + 0]) )
+
+#define ata_id_has_lba(id)               ((id)[49] & (1 << 9))
+
+enum {
+	ATA_ID_SERNO		= 10,
+#define ATA_ID_SERNO_LEN 20
+	ATA_ID_FW_REV		= 23,
+#define ATA_ID_FW_REV_LEN 8
+	ATA_ID_PROD		= 27,
+#define ATA_ID_PROD_LEN 40
+	ATA_ID_CAPABILITY	= 49,
+	ATA_ID_FIELD_VALID	= 53,
+	ATA_ID_LBA_CAPACITY	= 60,
+	ATA_ID_MWDMA_MODES	= 63,
+	ATA_ID_PIO_MODES	= 64,
+	ATA_ID_QUEUE_DEPTH	= 75,
+	ATA_ID_MAJOR_VER	= 80,
+	ATA_ID_COMMAND_SET_1	= 82,
+	ATA_ID_COMMAND_SET_2	= 83,
+	ATA_ID_CFSSE		= 84,
+	ATA_ID_CFS_ENABLE_1	= 85,
+	ATA_ID_CFS_ENABLE_2	= 86,
+	ATA_ID_CSF_DEFAULT	= 87,
+	ATA_ID_UDMA_MODES	= 88,
+	ATA_ID_HW_CONFIG	= 93,
+	ATA_ID_LBA_CAPACITY_2	= 100,
+};
+
+static inline int ata_id_has_lba48(const uint16_t *id)
+{
+	if ((id[ATA_ID_COMMAND_SET_2] & 0xC000) != 0x4000)
+		return 0;
+	if (!ata_id_u64(id, ATA_ID_LBA_CAPACITY_2))
+		return 0;
+	return id[ATA_ID_COMMAND_SET_2] & (1 << 10);
+}
+
 /** addresses of each individual IDE drive register */
 struct ata_ioports {
 	void __iomem *cmd_addr;
@@ -91,6 +135,7 @@ struct ata_port {
 	struct ata_port_operations *ops;
 	struct device_d *dev;
 	struct device_d class_dev;
+	const char *devname;
 	void *drvdata;
 	struct block_device blk;
 	uint16_t *id;
@@ -98,8 +143,14 @@ struct ata_port {
 	int probe;
 };
 
-int ide_port_register(struct device_d *, struct ata_ioports *);
+struct ide_port {
+	struct ata_ioports io;	/**< register file */
+	struct ata_port port;
+};
+
+int ide_port_register(struct ide_port *ide);
 int ata_port_register(struct ata_port *port);
+int ata_port_detect(struct ata_port *port);
 
 struct device_d;
 

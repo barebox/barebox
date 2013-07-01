@@ -34,7 +34,7 @@ usage() {
 	echo "The cross-compiler can be specify via"
 	echo "    CROSS_COMPILE               default"
 	echo "    CROSS_COMPILE_<arch>        arch default"
-	echo "    CROSS_COMPILE_<target>      deconfig specifc"
+	echo "    CROSS_COMPILE_<target>      defconfig specific"
 	echo ""
 	echo "it will be evaluated in the invert order"
 	echo ""
@@ -70,7 +70,7 @@ stats() {
 	time_diff=$((${time_stop} - ${time_start}))
 	printf "compiled in %4is\n" ${time_diff}
 	if [ ${nb_errors} -gt 0 ] ; then
-		echo "defcongids with warnings or errors: ${nb_errors} (${errors_list} )"
+		echo "defconfigs with warnings or errors: ${nb_errors} (${errors_list} )"
 	fi
 	echo "----------------------------------------------------------"
 

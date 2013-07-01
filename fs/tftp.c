@@ -598,7 +598,10 @@ static int tftp_stat(struct device_d *dev, const char *filename, struct stat *s)
 		return PTR_ERR(priv);
 
 	s->st_mode = S_IFREG | S_IRWXU | S_IRWXG | S_IRWXO;
-	s->st_size = priv->filesize;
+	if (priv->filesize)
+		s->st_size = priv->filesize;
+	else
+		s->st_size = FILESIZE_MAX;
 
 	tftp_do_close(priv);
 

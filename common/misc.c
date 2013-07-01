@@ -125,3 +125,20 @@ EXPORT_SYMBOL(perror);
 
 void (*do_execute)(void *func, int argc, char *argv[]);
 EXPORT_SYMBOL(do_execute);
+
+static const char *boardinfo;
+
+const char *barebox_boardinfo(void)
+{
+	if (boardinfo)
+		return boardinfo;
+
+	boardinfo = of_get_model();
+	if (boardinfo)
+		boardinfo = xstrdup(boardinfo);
+	else
+		boardinfo = CONFIG_BOARDINFO;
+
+	return boardinfo;
+}
+EXPORT_SYMBOL(barebox_boardinfo);

@@ -898,7 +898,7 @@ all: modules
 
 PHONY += modules
 modules: $(barebox-dirs) $(if $(KBUILD_BUILTIN),barebox)
-	@echo '  Building modules, stage 2.';
+	@$(kecho) '  Building modules, stage 2.';
 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
 
 

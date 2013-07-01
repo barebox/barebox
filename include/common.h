@@ -234,6 +234,8 @@ void barebox_banner(void);
 static inline void barebox_banner(void) {}
 #endif
 
+const char *barebox_boardinfo(void);
+
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 
 #define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))

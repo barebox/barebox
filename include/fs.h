@@ -149,6 +149,8 @@ int protect(int fd, size_t count, unsigned long offset, int prot);
 int protect_file(const char *file, int prot);
 void *memmap(int fd, int flags);
 
+#define FILESIZE_MAX	((loff_t)-1)
+
 #define PROT_READ	1
 #define PROT_WRITE	2
 

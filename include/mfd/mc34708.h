@@ -93,7 +93,14 @@ struct mc34708 {
 	unsigned int		revision;
 };
 
-extern struct mc34708 *mc34708_get(void);
+#ifdef CONFIG_MFD_MC34708
+struct mc34708 *mc34708_get(void);
+#else
+static inline struct mc34708 *mc34708_get(void)
+{
+	return NULL;
+}
+#endif
 
 extern int mc34708_reg_read(struct mc34708 *mc34708, enum mc34708_reg reg, u32 *val);
 extern int mc34708_reg_write(struct mc34708 *mc34708, enum mc34708_reg reg, u32 val);

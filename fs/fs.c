@@ -38,9 +38,20 @@ void *read_file(const char *filename, size_t *size)
 	int fd;
 	struct stat s;
 	void *buf = NULL;
+	const char *tmpfile = "/.read_file_tmp";
+	int ret;
 
+again:
 	if (stat(filename, &s))
 		return NULL;
+
+	if (s.st_size == FILESIZE_MAX) {
+		ret = copy_file(filename, tmpfile, 0);
+		if (ret)
+			return NULL;
+		filename = tmpfile;
+		goto again;
+	}
 
 	buf = xzalloc(s.st_size + 1);
 
@@ -56,12 +67,19 @@ void *read_file(const char *filename, size_t *size)
 	if (size)
 		*size = s.st_size;
 
+	if (filename == tmpfile)
+		unlink(tmpfile);
+
 	return buf;
 
 err_out1:
 	close(fd);
 err_out:
 	free(buf);
+
+	if (filename == tmpfile)
+		unlink(tmpfile);
+
 	return NULL;
 }
 

@@ -129,9 +129,6 @@ static int simplify_symbols(Elf32_Shdr *sechdrs,
 	return ret;
 }
 
-#define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
-#define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
-
 /* Update size with this section: return offset. */
 static long get_offset(unsigned long *size, Elf32_Shdr *sechdr)
 {

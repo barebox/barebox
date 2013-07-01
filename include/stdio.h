@@ -70,7 +70,7 @@ static inline int ctrlc (void)
 {
 	return 0;
 }
-#endif /* ARCH_HAS_CTRC */
+#endif /* ARCH_HAS_CTRLC */
 
 #endif
 
@@ -101,7 +101,6 @@ static inline void putchar(char c)
 int	fprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
 int	fputs(int file, const char *s);
 int	fputc(int file, const char c);
-int	ftstc(int file);
 int	fgetc(int file);
 
 #endif /* __STDIO_H */

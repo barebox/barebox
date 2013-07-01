@@ -18,6 +18,7 @@ obj-$(CONFIG_MALLOC_DLMALLOC) += dlmalloc.o
 obj-$(CONFIG_MALLOC_TLSF) += tlsf_malloc.o
 obj-$(CONFIG_MALLOC_TLSF) += tlsf.o
 obj-$(CONFIG_MALLOC_DUMMY) += dummy_malloc.o
+obj-$(CONFIG_CMD_MEMTEST) += memtest.o
 obj-y += clock.o
 obj-$(CONFIG_BANNER) += version.o
 obj-$(CONFIG_MEMINFO) += meminfo.o

@@ -29,7 +29,8 @@
 
 #include "ccxmx51.h"
 
-#define CCXMX51JS_USBHOST1_RESET	IMX_GPIO_NR(3, 8)
+#define CCXMX51JS_USBH1_RESET	IMX_GPIO_NR(3, 8)
+#define CCXMX51JS_SD3_WP	IMX_GPIO_NR(3, 17)
 
 static iomux_v3_cfg_t ccxmx51js_pads[] = {
 	/* SD1 */
@@ -63,7 +64,6 @@ static iomux_v3_cfg_t ccxmx51js_pads[] = {
 	MX51_PAD_USBH1_DATA5__USBH1_DATA5,
 	MX51_PAD_USBH1_DATA6__USBH1_DATA6,
 	MX51_PAD_USBH1_DATA7__USBH1_DATA7,
-	MX51_PAD_DISPB2_SER_RS__GPIO3_8,	/* Reset */
 };
 
 static struct esdhc_platform_data sdhc1_pdata = {
@@ -74,7 +74,8 @@ static struct esdhc_platform_data sdhc1_pdata = {
 
 static struct esdhc_platform_data sdhc3_pdata = {
 	.cd_type	= ESDHC_CD_NONE,
-	.wp_type	= ESDHC_WP_NONE,
+	.wp_type	= ESDHC_WP_GPIO,
+	.wp_gpio	= CCXMX51JS_SD3_WP,
 	.caps		= MMC_MODE_4BIT | MMC_MODE_8BIT,
 };
 
@@ -92,9 +93,9 @@ static int ccxmx51js_init(void)
 		imx51_add_mmc2(&sdhc3_pdata);
 	}
 
-	gpio_direction_output(CCXMX51JS_USBHOST1_RESET, 0);
+	gpio_direction_output(CCXMX51JS_USBH1_RESET, 0);
 	mdelay(10);
-	gpio_set_value(CCXMX51JS_USBHOST1_RESET, 1);
+	gpio_set_value(CCXMX51JS_USBH1_RESET, 1);
 	mdelay(10);
 	imx51_add_usbh1(&ccxmx51js_usbhost1_pdata);
 

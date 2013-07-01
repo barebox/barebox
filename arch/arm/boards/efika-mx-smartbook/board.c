@@ -13,42 +13,31 @@
  *
  */
 
-#include <common.h>
-#include <bootsource.h>
-#include <net.h>
-#include <init.h>
 #include <environment.h>
-#include <mach/gpio.h>
-#include <asm/armlinux.h>
+#include <bootsource.h>
 #include <partition.h>
-#include <notifier.h>
-#include <fs.h>
-#include <led.h>
+#include <common.h>
 #include <fcntl.h>
-#include <nand.h>
-#include <usb/ulpi.h>
-#include <usb/chipidea-imx.h>
+#include <gpio.h>
+#include <init.h>
+#include <led.h>
+#include <fs.h>
+#include <io.h>
+
 #include <spi/spi.h>
 #include <mfd/mc13xxx.h>
 #include <mfd/mc13892.h>
-#include <asm/io.h>
-#include <asm/mmu.h>
-#include <mach/imx-nand.h>
-#include <mach/spi.h>
+
+#include <asm/armlinux.h>
+
+#include <mach/imx-flash-header.h>
+#include <mach/devices-imx51.h>
+#include <mach/imx51-regs.h>
+#include <mach/iomux-mx51.h>
+#include <mach/revision.h>
 #include <mach/generic.h>
 #include <mach/imx5.h>
 #include <mach/bbu.h>
-#include <mach/iomux-mx51.h>
-#include <mach/imx51-regs.h>
-#include <mach/devices-imx51.h>
-#include <mach/imx-flash-header.h>
-#include <mach/revision.h>
-
-#define GPIO_EFIKA_SDHC1_WP	IMX_GPIO_NR(1, 1)
-#define GPIO_EFIKAMX_SDHC1_CD	IMX_GPIO_NR(1, 0)
-#define GPIO_EFIKASB_SDHC1_CD	IMX_GPIO_NR(2, 27)
-#define GPIO_EFIKASB_SDHC2_CD	IMX_GPIO_NR(1, 8)
-#define GPIO_EFIKASB_SDHC2_WP	IMX_GPIO_NR(1, 7)
 
 #define GPIO_BACKLIGHT_POWER	IMX_GPIO_NR(4, 12)
 #define GPIO_BACKLIGHT_PWM	IMX_GPIO_NR(1, 2)
@@ -63,128 +52,6 @@
 #define GPIO_HUB_RESET		IMX_GPIO_NR(1, 5)
 #define GPIO_SMSC3317_RESET	IMX_GPIO_NR(2, 9)
 
-static iomux_v3_cfg_t efika_pads[] = {
-	/* ECSPI1 */
-	MX51_PAD_CSPI1_MOSI__ECSPI1_MOSI,
-	MX51_PAD_CSPI1_MISO__ECSPI1_MISO,
-	MX51_PAD_CSPI1_SCLK__ECSPI1_SCLK,
-	MX51_PAD_CSPI1_SS0__GPIO4_24,
-	MX51_PAD_CSPI1_SS1__GPIO4_25,
-	MX51_PAD_GPIO1_6__GPIO1_6,
-
-	/* ESDHC1 */
-	MX51_PAD_SD1_CMD__SD1_CMD,
-	MX51_PAD_SD1_CLK__SD1_CLK,
-	MX51_PAD_SD1_DATA0__SD1_DATA0,
-	MX51_PAD_SD1_DATA1__SD1_DATA1,
-	MX51_PAD_SD1_DATA2__SD1_DATA2,
-	MX51_PAD_SD1_DATA3__SD1_DATA3,
-	MX51_PAD_GPIO1_1__GPIO1_1,
-
-	/* USB HOST1 */
-	MX51_PAD_USBH1_CLK__USBH1_CLK,
-	MX51_PAD_USBH1_DIR__USBH1_DIR,
-	MX51_PAD_USBH1_NXT__USBH1_NXT,
-	MX51_PAD_USBH1_DATA0__USBH1_DATA0,
-	MX51_PAD_USBH1_DATA1__USBH1_DATA1,
-	MX51_PAD_USBH1_DATA2__USBH1_DATA2,
-	MX51_PAD_USBH1_DATA3__USBH1_DATA3,
-	MX51_PAD_USBH1_DATA4__USBH1_DATA4,
-	MX51_PAD_USBH1_DATA5__USBH1_DATA5,
-	MX51_PAD_USBH1_DATA6__USBH1_DATA6,
-	MX51_PAD_USBH1_DATA7__USBH1_DATA7,
-	MX51_PAD_USBH1_STP__GPIO1_27,
-	MX51_PAD_EIM_A16__GPIO2_10,
-
-	/* USB HOST2 */
-	MX51_PAD_EIM_D27__GPIO2_9,
-	MX51_PAD_GPIO1_5__GPIO1_5,
-	MX51_PAD_EIM_D16__USBH2_DATA0,
-	MX51_PAD_EIM_D17__USBH2_DATA1,
-	MX51_PAD_EIM_D18__USBH2_DATA2,
-	MX51_PAD_EIM_D19__USBH2_DATA3,
-	MX51_PAD_EIM_D20__USBH2_DATA4,
-	MX51_PAD_EIM_D21__USBH2_DATA5,
-	MX51_PAD_EIM_D22__USBH2_DATA6,
-	MX51_PAD_EIM_D23__USBH2_DATA7,
-	MX51_PAD_EIM_A24__USBH2_CLK,
-	MX51_PAD_EIM_A25__USBH2_DIR,
-	MX51_PAD_EIM_A26__GPIO2_20,
-	MX51_PAD_EIM_A27__USBH2_NXT,
-
-	/* PATA */
-	MX51_PAD_NANDF_WE_B__PATA_DIOW,
-	MX51_PAD_NANDF_RE_B__PATA_DIOR,
-	MX51_PAD_NANDF_ALE__PATA_BUFFER_EN,
-	MX51_PAD_NANDF_CLE__PATA_RESET_B,
-	MX51_PAD_NANDF_WP_B__PATA_DMACK,
-	MX51_PAD_NANDF_RB0__PATA_DMARQ,
-	MX51_PAD_NANDF_RB1__PATA_IORDY,
-	MX51_PAD_GPIO_NAND__PATA_INTRQ,
-	MX51_PAD_NANDF_CS2__PATA_CS_0,
-	MX51_PAD_NANDF_CS3__PATA_CS_1,
-	MX51_PAD_NANDF_CS4__PATA_DA_0,
-	MX51_PAD_NANDF_CS5__PATA_DA_1,
-	MX51_PAD_NANDF_CS6__PATA_DA_2,
-	MX51_PAD_NANDF_D15__PATA_DATA15,
-	MX51_PAD_NANDF_D14__PATA_DATA14,
-	MX51_PAD_NANDF_D13__PATA_DATA13,
-	MX51_PAD_NANDF_D12__PATA_DATA12,
-	MX51_PAD_NANDF_D11__PATA_DATA11,
-	MX51_PAD_NANDF_D10__PATA_DATA10,
-	MX51_PAD_NANDF_D9__PATA_DATA9,
-	MX51_PAD_NANDF_D8__PATA_DATA8,
-	MX51_PAD_NANDF_D7__PATA_DATA7,
-	MX51_PAD_NANDF_D6__PATA_DATA6,
-	MX51_PAD_NANDF_D5__PATA_DATA5,
-	MX51_PAD_NANDF_D4__PATA_DATA4,
-	MX51_PAD_NANDF_D3__PATA_DATA3,
-	MX51_PAD_NANDF_D2__PATA_DATA2,
-	MX51_PAD_NANDF_D1__PATA_DATA1,
-	MX51_PAD_NANDF_D0__PATA_DATA0,
-
-	MX51_PAD_EIM_A22__GPIO2_16, /* WLAN enable (1 = on) */
-	MX51_PAD_EIM_A17__GPIO2_11,
-
-	/* I2C2 */
-	MX51_PAD_KEY_COL4__I2C2_SCL,
-	MX51_PAD_KEY_COL5__I2C2_SDA,
-
-	MX51_PAD_GPIO1_2__GPIO1_2, /* Backlight (should be pwm) (1 = on) */
-	MX51_PAD_CSI2_D19__GPIO4_12, /* Backlight power (0 = on) */
-
-	MX51_PAD_DISPB2_SER_CLK__GPIO3_7, /* LVDS power (1 = on) */
-	MX51_PAD_DISPB2_SER_DIN__GPIO3_5, /* LVDS reset (1 = reset) */
-	MX51_PAD_CSI1_D8__GPIO3_12, /* LVDS enable (1 = enable) */
-	MX51_PAD_CSI1_D9__GPIO3_13, /* LCD enable (1 = on) */
-
-	MX51_PAD_DI1_PIN12__GPIO3_1, /* WLAN switch (0 = on) */
-
-	MX51_PAD_GPIO1_4__WDOG1_WDOG_B,
-};
-
-static iomux_v3_cfg_t efikasb_pads[] = {
-	/* LEDs */
-	MX51_PAD_EIM_CS0__GPIO2_25,
-	MX51_PAD_GPIO1_3__GPIO1_3,
-
-	/* ESHC2 */
-	MX51_PAD_SD2_CMD__SD2_CMD,
-	MX51_PAD_SD2_CLK__SD2_CLK,
-	MX51_PAD_SD2_DATA0__SD2_DATA0,
-	MX51_PAD_SD2_DATA1__SD2_DATA1,
-	MX51_PAD_SD2_DATA2__SD2_DATA2,
-	MX51_PAD_SD2_DATA3__SD2_DATA3,
-	MX51_PAD_GPIO1_7__GPIO1_7,
-	MX51_PAD_GPIO1_8__GPIO1_8,
-
-	MX51_PAD_EIM_CS2__GPIO2_27,
-};
-
-static iomux_v3_cfg_t efikamx_pads[] = {
-	MX51_PAD_GPIO1_0__GPIO1_0,
-};
-
 /*
  * Generally this should work on the Efika MX smarttop aswell,
  * but I do not have the hardware to test it, so hardcode this
@@ -195,36 +62,7 @@ static inline int machine_is_efikasb(void)
 	return 1;
 }
 
-static int efikamx_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x90000000, SZ_512M);
-
-	return 0;
-}
-mem_initcall(efikamx_mem_init);
-
-static int spi_0_cs[] = { IMX_GPIO_NR(4, 24), IMX_GPIO_NR(4, 25) };
-
-static struct spi_imx_master spi_0_data = {
-	.chipselect = spi_0_cs,
-	.num_chipselect = ARRAY_SIZE(spi_0_cs),
-};
-
-static const struct spi_board_info efikamx_spi_board_info[] = {
-	{
-		.name = "mc13xxx-spi",
-		.max_speed_hz = 30 * 1000 * 1000,
-		.bus_num = 0,
-		.chip_select = 0,
-	}, {
-		.name = "m25p80",
-		.chip_select = 1,
-		.max_speed_hz = 20 * 1000 * 1000,
-		.bus_num = 0,
-	},
-};
-
-static void efikamx_power_init(void)
+static int efikamx_power_init(void)
 {
 	unsigned int val;
 	struct mc13xxx *mc;
@@ -232,7 +70,7 @@ static void efikamx_power_init(void)
 	mc = mc13xxx_get();
 	if (!mc) {
 		printf("could not get mc13892\n");
-		return;
+		return -ENODEV;
 	}
 
 	/* Write needed to Power Gate 2 register */
@@ -269,11 +107,6 @@ static void efikamx_power_init(void)
 	val |= MC13892_SWx_SWx_1_250V;
 	mc13xxx_reg_write(mc, MC13892_REG_SW_2, val);
 	udelay(50);
-
-	/* Raise the core frequency to 800MHz */
-	console_flush();
-	imx51_init_lowlevel(800);
-	clock_notifier_call_chain();
 
 	/* Set switchers in Auto in NORMAL mode & STANDBY mode */
 	/* Setup the switcher mode for SW1 & SW2*/
@@ -343,35 +176,9 @@ static void efikamx_power_init(void)
 	mc13xxx_reg_write(mc, MC13892_REG_POWER_CTL2, val);
 
 	udelay(2500);
+
+	return 0;
 }
-
-static struct esdhc_platform_data efikasb_sd2_data = {
-	.cd_gpio = GPIO_EFIKASB_SDHC2_CD,
-	.wp_gpio = GPIO_EFIKASB_SDHC2_WP,
-	.cd_type = ESDHC_CD_GPIO,
-	.wp_type = ESDHC_WP_GPIO,
-	.devname = "mmc_left",
-};
-
-static struct esdhc_platform_data efikamx_sd1_data = {
-	.cd_gpio = GPIO_EFIKAMX_SDHC1_CD,
-	.wp_gpio = GPIO_EFIKA_SDHC1_WP,
-	.cd_type = ESDHC_CD_GPIO,
-	.wp_type = ESDHC_WP_GPIO,
-};
-
-static struct esdhc_platform_data efikasb_sd1_data = {
-	.cd_gpio = GPIO_EFIKASB_SDHC1_CD,
-	.wp_gpio = GPIO_EFIKA_SDHC1_WP,
-	.cd_type = ESDHC_CD_GPIO,
-	.wp_type = ESDHC_WP_GPIO,
-	.devname = "mmc_back",
-};
-
-struct imxusb_platformdata efikamx_usbh1_pdata = {
-	.flags = MXC_EHCI_MODE_ULPI | MXC_EHCI_INTERFACE_DIFF_UNI,
-	.mode = IMX_USB_MODE_HOST,
-};
 
 static int efikamx_usb_init(void)
 {
@@ -400,18 +207,9 @@ static int efikamx_usb_init(void)
 		mxc_iomux_v3_setup_pad(MX51_PAD_EIM_A26__USBH2_STP);
 	}
 
-	imx51_add_usbh1(&efikamx_usbh1_pdata);
-
-	/*
-	 * At least for the EfikaSB these do not seem to be interesting.
-	 * The external ports are all connected to host1.
-	 *
-	 * imx51_add_usbotg(pdata);
-	 * imx51_add_usbh2(pdate);
-	 */
-
 	return 0;
 }
+console_initcall(efikamx_usb_init);
 
 static struct gpio_led leds[] = {
 	{
@@ -428,45 +226,21 @@ static struct gpio_led leds[] = {
 
 #include "dcd-data.h"
 
-static int efikamx_devices_init(void)
+static int efikamx_late_init(void)
 {
+	enum bootsource bootsource;
 	int i;
-
-	mxc_iomux_v3_setup_multiple_pads(efika_pads, ARRAY_SIZE(efika_pads));
-	if (machine_is_efikasb()) {
-		gpio_direction_output(GPIO_BACKLIGHT_POWER, 1);
-		mxc_iomux_v3_setup_multiple_pads(efikasb_pads,
-				ARRAY_SIZE(efikasb_pads));
-	} else {
-		mxc_iomux_v3_setup_multiple_pads(efikamx_pads,
-				ARRAY_SIZE(efikamx_pads));
-	}
-
-	spi_register_board_info(efikamx_spi_board_info,
-			ARRAY_SIZE(efikamx_spi_board_info));
-	imx51_add_spi0(&spi_0_data);
 
 	efikamx_power_init();
 
-	if (machine_is_efikasb())
-		imx51_add_mmc0(&efikasb_sd1_data);
-	else
-		imx51_add_mmc0(&efikamx_sd1_data);
-
-	imx51_add_mmc1(&efikasb_sd2_data);
+	gpio_direction_output(GPIO_BACKLIGHT_POWER, 1);
 
 	for (i = 0; i < ARRAY_SIZE(leds); i++)
 		led_gpio_register(&leds[i]);
 
-	imx51_add_i2c1(NULL);
-
-	efikamx_usb_init();
-
-	imx51_add_pata();
-
 	writew(0x0, MX51_WDOG_BASE_ADDR + 0x8);
 
-	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc_left",
+	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc1",
 			BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry),
 			0);
 
@@ -474,38 +248,24 @@ static int efikamx_devices_init(void)
 	armlinux_set_architecture(2370);
 	armlinux_set_revision(0x5100 | imx_silicon_revision());
 
-	return 0;
-}
-device_initcall(efikamx_devices_init);
+	bootsource = bootsource_get();
 
-static int efikamx_part_init(void)
-{
-	if (bootsource_get() == BOOTSOURCE_MMC) {
-		devfs_add_partition("mmc_left", 0x00000, 0x80000,
+	switch (bootsource) {
+	case BOOTSOURCE_MMC:
+		device_detect_by_name("mmc1");
+
+		devfs_add_partition("mmc1", 0x00000, 0x80000,
 				DEVFS_PARTITION_FIXED, "self0");
-		devfs_add_partition("mmc_left", 0x80000, 0x80000,
+		devfs_add_partition("mmc1", 0x80000, 0x80000,
 				DEVFS_PARTITION_FIXED, "env0");
+		break;
+	case BOOTSOURCE_SPI:
+	default:
+		devfs_add_partition("m25p0", 0x80000, 0x20000,
+				DEVFS_PARTITION_FIXED, "env0");
+		break;
 	}
 
 	return 0;
 }
-late_initcall(efikamx_part_init);
-
-static iomux_v3_cfg_t efika_uart_pads[] = {
-	/* UART */
-	MX51_PAD_UART1_RXD__UART1_RXD,
-	MX51_PAD_UART1_TXD__UART1_TXD,
-	MX51_PAD_UART1_RTS__UART1_RTS,
-	MX51_PAD_UART1_CTS__UART1_CTS,
-};
-
-static int efikamx_console_init(void)
-{
-	mxc_iomux_v3_setup_multiple_pads(efika_uart_pads,
-			ARRAY_SIZE(efika_uart_pads));
-
-	imx51_add_uart0();
-
-	return 0;
-}
-console_initcall(efikamx_console_init);
+late_initcall(efikamx_late_init);

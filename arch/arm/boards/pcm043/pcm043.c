@@ -113,7 +113,7 @@ struct gpio_led led0 = {
 	.gpio = 1 * 32 + 6,
 };
 
-static int imx35_devices_init(void)
+static int pcm043_devices_init(void)
 {
 	uint32_t reg;
 	char *envstr;
@@ -173,7 +173,7 @@ static int imx35_devices_init(void)
 	return 0;
 }
 
-device_initcall(imx35_devices_init);
+device_initcall(pcm043_devices_init);
 
 static iomux_v3_cfg_t pcm043_pads[] = {
 	MX35_PAD_FEC_TX_CLK__FEC_TX_CLK,

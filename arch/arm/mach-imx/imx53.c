@@ -50,11 +50,16 @@ static int imx53_silicon_revision(void)
 	return 0;
 }
 
-static int imx53_init(void)
+int imx53_init(void)
 {
 	imx53_silicon_revision();
 	imx53_boot_save_loc((void *)MX53_SRC_BASE_ADDR);
 
+	return 0;
+}
+
+int imx53_devices_init(void)
+{
 	add_generic_device("imx_iim", 0, NULL, MX53_IIM_BASE_ADDR, SZ_4K,
 			IORESOURCE_MEM, NULL);
 
@@ -73,7 +78,6 @@ static int imx53_init(void)
 
 	return 0;
 }
-postcore_initcall(imx53_init);
 
 void imx53_init_lowlevel_early(unsigned int cpufreq_mhz)
 {

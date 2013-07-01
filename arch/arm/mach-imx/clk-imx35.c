@@ -192,4 +192,4 @@ static int imx35_ccm_init(void)
 {
 	return platform_driver_register(&imx35_ccm_driver);
 }
-postcore_initcall(imx35_ccm_init);
+core_initcall(imx35_ccm_init);

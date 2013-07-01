@@ -253,7 +253,7 @@ static int imx51_ccm_init(void)
 {
 	return platform_driver_register(&imx51_ccm_driver);
 }
-postcore_initcall(imx51_ccm_init);
+core_initcall(imx51_ccm_init);
 #endif
 
 #ifdef CONFIG_ARCH_IMX53
@@ -316,5 +316,5 @@ static int imx53_ccm_init(void)
 {
 	return platform_driver_register(&imx53_ccm_driver);
 }
-postcore_initcall(imx53_ccm_init);
+core_initcall(imx53_ccm_init);
 #endif

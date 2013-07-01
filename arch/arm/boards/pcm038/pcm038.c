@@ -46,9 +46,10 @@
 
 #include "pll.h"
 
+#define PCM038_GPIO_PMIC_IRQ	(GPIO_PORTB + 23)
 #define PCM038_GPIO_FEC_RST	(GPIO_PORTC + 30)
-#define PCM038_GPIO_SPI_CS0	(GPIO_PORTD + 28)
 #define PCM970_GPIO_SPI_CS1	(GPIO_PORTD + 27)
+#define PCM038_GPIO_SPI_CS0	(GPIO_PORTD + 28)
 #define PCM038_GPIO_OTG_STP	(GPIO_PORTE + 1)
 
 static struct fec_platform_data fec_info = {
@@ -225,7 +226,6 @@ static int pcm038_devices_init(void)
 		PD15_AOUT_FEC_COL,
 		PD16_AIN_FEC_TX_ER,
 		PF23_AIN_FEC_TX_EN,
-		PCM038_GPIO_FEC_RST | GPIO_GPIO | GPIO_OUT,
 		/* UART1 */
 		PE12_PF_UART1_TXD,
 		PE13_PF_UART1_RXD,
@@ -236,10 +236,6 @@ static int pcm038_devices_init(void)
 		PD29_PF_CSPI1_SCLK,
 		PD30_PF_CSPI1_MISO,
 		PD31_PF_CSPI1_MOSI,
-		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
-#ifdef CONFIG_MACH_PCM970_BASEBOARD
-		PCM970_GPIO_SPI_CS1 | GPIO_GPIO | GPIO_OUT,
-#endif
 		/* Display */
 		PA5_PF_LSCLK,
 		PA6_PF_LD0,
@@ -287,6 +283,13 @@ static int pcm038_devices_init(void)
 		/* I2C2 */
 		PC5_PF_I2C2_SDA,
 		PC6_PF_I2C2_SCL,
+		/* Misc */
+		PCM038_GPIO_FEC_RST | GPIO_GPIO | GPIO_OUT,
+		PCM038_GPIO_SPI_CS0 | GPIO_GPIO | GPIO_OUT,
+#ifdef CONFIG_MACH_PCM970_BASEBOARD
+		PCM970_GPIO_SPI_CS1 | GPIO_GPIO | GPIO_OUT,
+#endif
+		PCM038_GPIO_PMIC_IRQ | GPIO_GPIO | GPIO_IN,
 	};
 
 	/* configure 16 bit nor flash on cs0 */
@@ -328,7 +331,8 @@ static int pcm038_devices_init(void)
 	mdelay(1);
 	imx_gpio_mode(PE1_PF_USBOTG_STP);
 
-	imx27_add_usbotg(&pcm038_otg_pdata);
+	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC))
+		imx27_add_usbotg(&pcm038_otg_pdata);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:

@@ -146,7 +146,7 @@ static struct smc911x_plat smsc9217_pdata = {
 	.flags = SMC911X_FORCE_INTERNAL_PHY,
 };
 
-static int imx31_devices_init(void)
+static int pcm037_devices_init(void)
 {
 	/* CS0: Nor Flash */
 	imx31_setup_weimcs(0, 0x0000cf03, 0x10000d03, 0x00720900);
@@ -202,7 +202,7 @@ static int imx31_devices_init(void)
 	return 0;
 }
 
-device_initcall(imx31_devices_init);
+device_initcall(pcm037_devices_init);
 
 static unsigned int pcm037_iomux[] = {
 	/* UART1 */

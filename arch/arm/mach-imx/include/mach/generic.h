@@ -13,62 +13,148 @@ void imx51_boot_save_loc(void __iomem *src_base);
 void imx53_boot_save_loc(void __iomem *src_base);
 void imx6_boot_save_loc(void __iomem *src_base);
 
+int imx1_init(void);
+int imx21_init(void);
+int imx25_init(void);
+int imx27_init(void);
+int imx31_init(void);
+int imx35_init(void);
+int imx51_init(void);
+int imx53_init(void);
+int imx6_init(void);
+
+int imx1_devices_init(void);
+int imx21_devices_init(void);
+int imx25_devices_init(void);
+int imx27_devices_init(void);
+int imx31_devices_init(void);
+int imx35_devices_init(void);
+int imx51_devices_init(void);
+int imx53_devices_init(void);
+int imx6_devices_init(void);
+
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
 /* range e.g. GPIO_1_5 is gpio 5 under linux */
 #define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))
 
+#define IMX_CPU_IMX1	1
+#define IMX_CPU_IMX21	21
+#define IMX_CPU_IMX25	25
+#define IMX_CPU_IMX27	27
+#define IMX_CPU_IMX31	31
+#define IMX_CPU_IMX35	35
+#define IMX_CPU_IMX51	51
+#define IMX_CPU_IMX53	53
+#define IMX_CPU_IMX6	6
+
+extern unsigned int __imx_cpu_type;
+
 #ifdef CONFIG_ARCH_IMX1
-#define cpu_is_mx1()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX1
+# endif
+# define cpu_is_mx1()		(imx_cpu_type == IMX_CPU_IMX1)
 #else
-#define cpu_is_mx1()	(0)
+# define cpu_is_mx1()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX21
-#define cpu_is_mx21()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX21
+# endif
+# define cpu_is_mx21()		(imx_cpu_type == IMX_CPU_IMX21)
 #else
-#define cpu_is_mx21()	(0)
+# define cpu_is_mx21()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX25
-#define cpu_is_mx25()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX25
+# endif
+# define cpu_is_mx25()		(imx_cpu_type == IMX_CPU_IMX25)
 #else
-#define cpu_is_mx25()	(0)
+# define cpu_is_mx25()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX27
-#define cpu_is_mx27()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX27
+# endif
+# define cpu_is_mx27()		(imx_cpu_type == IMX_CPU_IMX27)
 #else
-#define cpu_is_mx27()	(0)
+# define cpu_is_mx27()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX31
-#define cpu_is_mx31()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX31
+# endif
+# define cpu_is_mx31()		(imx_cpu_type == IMX_CPU_IMX31)
 #else
-#define cpu_is_mx31()	(0)
+# define cpu_is_mx31()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX35
-#define cpu_is_mx35()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX35
+# endif
+# define cpu_is_mx35()		(imx_cpu_type == IMX_CPU_IMX35)
 #else
-#define cpu_is_mx35()	(0)
+# define cpu_is_mx35()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX51
-#define cpu_is_mx51()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX51
+# endif
+# define cpu_is_mx51()		(imx_cpu_type == IMX_CPU_IMX51)
 #else
-#define cpu_is_mx51()	(0)
+# define cpu_is_mx51()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX53
-#define cpu_is_mx53()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX53
+# endif
+# define cpu_is_mx53()		(imx_cpu_type == IMX_CPU_IMX53)
 #else
-#define cpu_is_mx53()	(0)
+# define cpu_is_mx53()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_IMX6
-#define cpu_is_mx6()	(1)
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX6
+# endif
+# define cpu_is_mx6()		(imx_cpu_type == IMX_CPU_IMX6)
 #else
-#define cpu_is_mx6()	(0)
+# define cpu_is_mx6()		(0)
 #endif
 
 #define cpu_is_mx23()	(0)

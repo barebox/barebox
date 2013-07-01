@@ -12,7 +12,9 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <mach/revision.h>
+#include <mach/generic.h>
 
 static int __imx_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 
@@ -29,3 +31,92 @@ void imx_set_silicon_revision(const char *soc, int revision)
 			(revision >> 4) & 0xf,
 			revision & 0xf);
 }
+
+unsigned int __imx_cpu_type;
+
+static int imx_soc_from_dt(void)
+{
+	if (of_machine_is_compatible("fsl,imx1"))
+		return IMX_CPU_IMX1;
+	if (of_machine_is_compatible("fsl,imx21"))
+		return IMX_CPU_IMX21;
+	if (of_machine_is_compatible("fsl,imx25"))
+		return IMX_CPU_IMX25;
+	if (of_machine_is_compatible("fsl,imx27"))
+		return IMX_CPU_IMX27;
+	if (of_machine_is_compatible("fsl,imx31"))
+		return IMX_CPU_IMX31;
+	if (of_machine_is_compatible("fsl,imx35"))
+		return IMX_CPU_IMX35;
+	if (of_machine_is_compatible("fsl,imx51"))
+		return IMX_CPU_IMX51;
+	if (of_machine_is_compatible("fsl,imx53"))
+		return IMX_CPU_IMX53;
+	if (of_machine_is_compatible("fsl,imx6q"))
+		return IMX_CPU_IMX6;
+	if (of_machine_is_compatible("fsl,imx6dl"))
+		return IMX_CPU_IMX6;
+
+	return 0;
+}
+
+static int imx_init(void)
+{
+	int ret;
+	struct device_node *root;
+
+	root = of_get_root_node();
+	if (root) {
+		__imx_cpu_type = imx_soc_from_dt();
+		if (!__imx_cpu_type)
+			hang();
+	}
+
+	if (cpu_is_mx1())
+		ret = imx1_init();
+	else if (cpu_is_mx21())
+		ret = imx21_init();
+	else if (cpu_is_mx25())
+		ret = imx25_init();
+	else if (cpu_is_mx27())
+		ret = imx27_init();
+	else if (cpu_is_mx31())
+		ret = imx31_init();
+	else if (cpu_is_mx35())
+		ret = imx35_init();
+	else if (cpu_is_mx51())
+		ret = imx51_init();
+	else if (cpu_is_mx53())
+		ret = imx53_init();
+	else if (cpu_is_mx6())
+		ret = imx6_init();
+	else
+		return -EINVAL;
+
+	if (root)
+		return ret;
+
+	if (cpu_is_mx1())
+		ret = imx1_devices_init();
+	else if (cpu_is_mx21())
+		ret = imx21_devices_init();
+	else if (cpu_is_mx25())
+		ret = imx25_devices_init();
+	else if (cpu_is_mx27())
+		ret = imx27_devices_init();
+	else if (cpu_is_mx31())
+		ret = imx31_devices_init();
+	else if (cpu_is_mx35())
+		ret = imx35_devices_init();
+	else if (cpu_is_mx51())
+		ret = imx51_devices_init();
+	else if (cpu_is_mx53())
+		ret = imx53_devices_init();
+	else if (cpu_is_mx6())
+		ret = imx6_devices_init();
+	else
+		return -EINVAL;
+
+	return ret;
+}
+postcore_initcall(imx_init);

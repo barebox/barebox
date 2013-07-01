@@ -92,7 +92,14 @@ struct mach_id imx_ids[] = {
 	}, {
 		.vid = 0x15a2,
 		.pid = 0x0054,
-		.name = "i.MX6",
+		.name = "i.MX6q",
+		.header_type = HDR_MX53,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
+	},  {
+		.vid = 0x15a2,
+		.pid = 0x0061,
+		.name = "i.MX6dl/s",
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,

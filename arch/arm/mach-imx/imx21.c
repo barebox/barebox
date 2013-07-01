@@ -17,6 +17,7 @@
 #include <mach/imx21-regs.h>
 #include <mach/weim.h>
 #include <mach/iomux-v1.h>
+#include <mach/generic.h>
 
 void imx21_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 {
@@ -24,7 +25,12 @@ void imx21_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 	writel(lower, MX21_EIM_BASE_ADDR + 4 + cs * 8);
 }
 
-static int imx21_init(void)
+int imx21_init(void)
+{
+	return 0;
+}
+
+int imx21_devices_init(void)
 {
 	imx_iomuxv1_init((void *)MX21_GPIO1_BASE_ADDR);
 
@@ -40,4 +46,3 @@ static int imx21_init(void)
 
 	return 0;
 }
-postcore_initcall(imx21_init);

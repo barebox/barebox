@@ -181,6 +181,8 @@ device_initcall(f3s_devices_init);
 
 static int f3s_part_init(void)
 {
+	device_detect_by_name("mmc0");
+
 	devfs_add_partition("mmc0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
 	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 

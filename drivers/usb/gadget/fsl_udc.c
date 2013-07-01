@@ -625,10 +625,13 @@ static int dr_controller_setup(struct fsl_udc *udc)
 	case FSL_USB2_PHY_SERIAL:
 		portctrl |= PORTSCX_PTS_FSLS;
 		break;
+	case FSL_USB2_PHY_NONE:
+		break;
 	default:
 		return -EINVAL;
 	}
-	writel(portctrl, &dr_regs->portsc1);
+	if (udc->phy_mode != FSL_USB2_PHY_NONE)
+		writel(portctrl, &dr_regs->portsc1);
 
 	/* Stop and reset the usb controller */
 	tmp = readl(&dr_regs->usbcmd);
@@ -2077,7 +2080,10 @@ static int struct_udc_setup(struct fsl_udc *udc,
 	struct fsl_usb2_platform_data *pdata = dev->platform_data;
 	size_t size;
 
-	udc->phy_mode = pdata->phy_mode;
+	if (pdata)
+		udc->phy_mode = pdata->phy_mode;
+	else
+		udc->phy_mode = FSL_USB2_PHY_NONE;
 
 	udc->eps = kzalloc(sizeof(struct fsl_ep) * udc->max_ep, GFP_KERNEL);
 	if (!udc->eps) {

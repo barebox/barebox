@@ -114,4 +114,4 @@ static int imx1_ccm_init(void)
 {
 	return platform_driver_register(&imx1_ccm_driver);
 }
-postcore_initcall(imx1_ccm_init);
+core_initcall(imx1_ccm_init);

@@ -20,6 +20,7 @@
 #include <mach/generic.h>
 #include <init.h>
 #include <io.h>
+#include <mach/generic.h>
 
 static int imx27_silicon_revision(void)
 {
@@ -96,11 +97,16 @@ static void imx27_init_max(void)
 	writel(val, max_base + MAX_SLAVE_PORT2_OFFSET + MAX_SLAVE_AMPR_OFFSET);
 }
 
-static int imx27_init(void)
+int imx27_init(void)
 {
 	imx27_silicon_revision();
 	imx27_boot_save_loc((void *)MX27_SYSCTRL_BASE_ADDR);
 
+	return 0;
+}
+
+int imx27_devices_init(void)
+{
 	imx_iomuxv1_init((void *)MX27_GPIO1_BASE_ADDR);
 
 	add_generic_device("imx_iim", DEVICE_ID_SINGLE, NULL,
@@ -124,4 +130,3 @@ static int imx27_init(void)
 
 	return 0;
 }
-postcore_initcall(imx27_init);

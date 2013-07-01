@@ -67,6 +67,7 @@ config BOARDINFO
 choice
 	prompt "Select boot mode"
 	depends on !ARCH_IMX_INTERNAL_BOOT_USE_IMXIMAGE
+	depends on !HAVE_PBL_MULTI_IMAGES
 	help
 	  i.MX processors support two different boot modes. With the internal
 	  boot mode the boot medium contains a header describing the image to
@@ -329,6 +330,7 @@ config MACH_PCM038
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
 	  with a Freescale i.MX27 Processor

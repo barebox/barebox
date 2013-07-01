@@ -42,6 +42,9 @@ ld_var_entry __dynsym_end
 ld_var_entry _barebox_image_size
 ld_var_entry __bss_start
 ld_var_entry __bss_stop
+#ifdef __PBL__
+ld_var_entry __image_end
+#endif
 
 1:
 	ldr r1, =__ld_var_base

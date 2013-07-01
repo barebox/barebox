@@ -43,7 +43,7 @@ static inline void arm_cpu_lowlevel_init(void)
 #ifdef CONFIG_HAVE_MACH_ARM_HEAD
 #include <mach/barebox-arm-head.h>
 #else
-static inline void barebox_arm_head(void)
+static inline void __barebox_arm_head(void)
 {
 	__asm__ __volatile__ (
 #ifdef CONFIG_THUMB2_BAREBOX
@@ -52,12 +52,12 @@ static inline void barebox_arm_head(void)
 		"bx r9\n"
 		".thumb\n"
 		"1:\n"
-		"bl barebox_arm_reset_vector\n"
+		"bl 2f\n"
 		".rept 10\n"
 		"1: b 1b\n"
 		".endr\n"
 #else
-		"b barebox_arm_reset_vector\n"
+		"b 2f\n"
 		"1: b 1b\n"
 		"1: b 1b\n"
 		"1: b 1b\n"
@@ -74,6 +74,14 @@ static inline void barebox_arm_head(void)
 		".rept 8\n"
 		".word 0x55555555\n"
 		".endr\n"
+		"2:\n"
+	);
+}
+static inline void barebox_arm_head(void)
+{
+	__barebox_arm_head();
+	__asm__ __volatile__ (
+		"b barebox_arm_reset_vector\n"
 	);
 }
 #endif

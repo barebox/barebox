@@ -329,4 +329,4 @@ $(obj)/%.S: $(obj)/%.dcd
 	$(call cmd,imximage_S_dcd)
 
 quiet_cmd_imx_image = IMX-IMG $@
-      cmd_imx_image = $(obj)/scripts/imx/imx-image -b -c $(CFG_$(@F)) -f $< -o $@
+      cmd_imx_image = $(objtree)/scripts/imx/imx-image -b -c $(CFG_$(@F)) -f $< -o $@

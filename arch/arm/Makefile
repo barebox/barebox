@@ -328,7 +328,7 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
 
-common-$(CONFIG_BUILTIN_DTB) += arch/arm/dts/
+common-$(CONFIG_OFTREE) += arch/arm/dts/
 
 lds-y	:= arch/arm/lib/barebox.lds
 

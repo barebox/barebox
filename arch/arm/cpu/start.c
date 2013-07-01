@@ -24,6 +24,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
+#include <asm/unaligned.h>
 #include <asm/cache.h>
 #include <memory.h>
 
@@ -38,6 +39,13 @@ static unsigned long barebox_boarddata;
 unsigned long barebox_arm_boarddata(void)
 {
 	return barebox_boarddata;
+}
+
+static void *barebox_boot_dtb;
+
+void *barebox_arm_boot_dtb(void)
+{
+	return barebox_boot_dtb;
 }
 
 static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
@@ -64,6 +72,18 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 
 		if (!IS_ENABLED(CONFIG_PBL_IMAGE))
 			mmu_early_enable(membase, memsize, endmem);
+	}
+
+	/*
+	 * If boarddata is a pointer inside valid memory and contains a
+	 * FDT magic then use it as later to probe devices
+	 */
+	if (boarddata > membase && boarddata < membase + memsize &&
+			get_unaligned_be32((void *)boarddata) == FDT_MAGIC) {
+		uint32_t totalsize = get_unaligned_be32((void *)boarddata + 4);
+		endmem -= ALIGN(totalsize, 64);
+		barebox_boot_dtb = (void *)endmem;
+		memcpy(barebox_boot_dtb, (void *)boarddata, totalsize);
 	}
 
 	if ((unsigned long)_text > membase + memsize ||

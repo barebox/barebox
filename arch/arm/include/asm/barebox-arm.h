@@ -54,6 +54,8 @@ static inline void arm_fixup_vectors(void)
 }
 #endif
 
+void *barebox_arm_boot_dtb(void);
+
 /*
  * For relocatable binaries find a suitable start address for the
  * relocated binary. Beginning at the memory end substract the reserved
@@ -76,5 +78,9 @@ static inline unsigned long arm_barebox_image_place(unsigned long endmem)
 
 	return endmem;
 }
+
+#define ENTRY_FUNCTION(name)  \
+	void __naked __section(.text_head_entry_##name) \
+		name
 
 #endif	/* _BAREBOX_ARM_H_ */

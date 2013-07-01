@@ -29,9 +29,12 @@ endif
 zbarebox-common := $(barebox-pbl-common) $(obj)/$(piggy_o)
 zbarebox-lds := $(obj)/zbarebox.lds
 
+$(zbarebox-lds): $(obj)/../lib/pbl.lds.S FORCE
+	$(call if_changed_dep,cpp_lds_S)
+
 quiet_cmd_zbarebox__ ?= LD      $@
       cmd_zbarebox__ ?= $(LD) $(LDFLAGS) $(LDFLAGS_zbarebox) -o $@ \
-      -T $(zbarebox-lds)                                           \
+      -e pbl_start -T $(zbarebox-lds)                              \
       --start-group $(zbarebox-common) --end-group                 \
       $(filter-out $(zbarebox-lds) $(zbarebox-common) FORCE ,$^)
 

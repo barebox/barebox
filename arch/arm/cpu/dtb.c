@@ -17,20 +17,38 @@
 #include <common.h>
 #include <init.h>
 #include <of.h>
+#include <asm/barebox-arm.h>
 
 extern char __dtb_start[];
 
 static int of_arm_init(void)
 {
 	struct device_node *root;
+	void *fdt;
 
+	/* See if we already have a dtb */
 	root = of_get_root_node();
 	if (root)
 		return 0;
 
-	root = of_unflatten_dtb(NULL, __dtb_start);
-	if (root) {
+	/* See if we are provided a dtb in boarddata */
+	fdt = barebox_arm_boot_dtb();
+	if (fdt)
+		pr_debug("using boarddata provided DTB\n");
+
+	/* Next see if we have a builtin dtb */
+	if (!fdt && IS_ENABLED(CONFIG_BUILTIN_DTB)) {
+		fdt = __dtb_start;
 		pr_debug("using internal DTB\n");
+	}
+
+	if (!fdt) {
+		pr_debug("No DTB found\n");
+		return 0;
+	}
+
+	root = of_unflatten_dtb(NULL, fdt);
+	if (root) {
 		of_set_root_node(root);
 		if (IS_ENABLED(CONFIG_OFDEVICE))
 			of_probe();

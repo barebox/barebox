@@ -106,6 +106,25 @@ static struct file_operations stmpe_fops = {
 	.write	= stmpe_write,
 };
 
+static struct stmpe_platform_data *stmpe_of_probe(struct device_d *dev)
+{
+	struct stmpe_platform_data *pdata;
+	struct device_node *node;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+		return NULL;
+
+	pdata = xzalloc(sizeof(*pdata));
+
+	device_node_for_nach_child(dev->device_node, node) {
+		if (!strcmp(node->name, "stmpe_gpio")) {
+			pdata->blocks |= STMPE_BLOCK_GPIO;
+		}
+	}
+
+	return pdata;
+}
+
 static int stmpe_probe(struct device_d *dev)
 {
 	struct stmpe_platform_data *pdata = dev->platform_data;
@@ -113,8 +132,11 @@ static int stmpe_probe(struct device_d *dev)
 	struct stmpe_client_info *i2c_ci;
 
 	if (!pdata) {
-		dev_dbg(dev, "no platform data\n");
-		return -ENODEV;
+		pdata = stmpe_of_probe(dev);
+		if (!pdata) {
+			dev_dbg(dev, "no platform data\n");
+			return -ENODEV;
+		}
 	}
 
 	stmpe_dev = xzalloc(sizeof(struct stmpe));
@@ -140,9 +162,15 @@ static int stmpe_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct platform_device_id stmpe_i2c_id[] = {
+	{ "stmpe1601", 0 },
+	{ }
+};
+
 static struct driver_d stmpe_driver = {
 	.name  = DRIVERNAME,
 	.probe = stmpe_probe,
+	.id_table = stmpe_i2c_id,
 };
 
 static int stmpe_init(void)

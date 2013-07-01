@@ -52,6 +52,7 @@ struct eth_device {
 
 	struct device_d dev;
 	struct device_d *parent;
+	char *nodepath;
 
 	struct list_head list;
 

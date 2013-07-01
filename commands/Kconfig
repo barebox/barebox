@@ -420,6 +420,7 @@ menu "booting"
 config CMD_BOOTM
 	tristate
 	default y
+	select BOOTM
 	select CRC32
 	select UIMAGE
 	select UNCOMPRESS

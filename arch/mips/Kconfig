@@ -52,6 +52,7 @@ config MACH_MIPS_AR231X
 	select SYS_SUPPORTS_BIG_ENDIAN
 	select CSRC_R4K_LIB
 	select DRIVER_SERIAL_NS16550
+	select HAS_DEBUG_LL
 
 config MACH_MIPS_BCM47XX
 	bool "Broadcom BCM47xx-based boards"
@@ -243,6 +244,52 @@ config CMD_MIPS_CPUINFO
 	help
 	  Say yes here to get a cpuinfo command to show some
 	  information about the cpu model.
+
+config HAS_NMON
+	bool
+
+config NMON
+	bool "nmon"
+	depends on HAS_NMON
+	depends on DEBUG_LL
+	help
+	  Say yes here to add the nmon to pbl.
+	  nmon -- nano-monitor program for the MIPS processors.
+	  It can operate with NO working RAM, using only
+	  the processor registers.
+
+config NMON_USER_START
+	bool "'press any key to start nmon' dialog"
+	depends on NMON
+	help
+	  Say yes here to get the 'press any key to start nmon'
+	  dialog on start.
+
+config NMON_1S_DELAY
+	prompt "number of delay loops for 1s time interval"
+	depends on NMON_USER_START
+	hex
+	default 0x400000
+	help
+	nmon uses a very simple delay loop for time measurement.
+	The delay is CPU-dependent or even board-dependent.
+	The NMON_1S_DELAY parameter specify delay loop count
+	for near 1 second time interval.
+
+config NMON_USER_START_DELAY
+	prompt "'press any key to start nmon' dialog delay"
+	depends on NMON_USER_START
+	hex
+	default 3
+	help
+	  Select the delay interval for nmon 'press any key to start nmon' dialog.
+
+config NMON_HELP
+	bool "nmon help message"
+	depends on NMON
+	help
+	  Say yes here to get the nmon commands message on
+	  every nmon start.
 
 endmenu
 

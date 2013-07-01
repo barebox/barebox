@@ -2,7 +2,6 @@
  * Startup Code for MIPS CPU
  *
  * Copyright (C) 2011, 2012 Antony Pavlov <antonynpavlov@gmail.com>
- * ADR macro copyrighted (C) 2009 by Shinya Kuribayashi <skuribay@pobox.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.

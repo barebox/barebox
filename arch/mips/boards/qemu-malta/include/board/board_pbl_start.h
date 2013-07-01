@@ -18,6 +18,7 @@
  */
 
 #include <asm/pbl_macros.h>
+#include <asm/pbl_nmon.h>
 
 	.macro	board_pbl_start
 	.set	push
@@ -27,6 +28,8 @@
 
 	/* cpu specific setup ... */
 	/* ... absent */
+
+	mips_nmon
 
 	copy_to_link_location	pbl_start
 

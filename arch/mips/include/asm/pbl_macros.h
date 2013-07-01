@@ -28,6 +28,28 @@
 #include <generated/compile.h>
 #include <generated/utsrelease.h>
 
+	.macro	pbl_sleep reg count
+	.set push
+	.set noreorder
+	li	\reg, \count
+254:
+	bgtz	\reg, 254b
+	 addi	\reg, -1
+	.set	pop
+	.endm
+
+	.macro	pbl_probe_mem ret1 ret2 addr
+	.set	push
+	.set	noreorder
+	la	\ret1, \addr
+	sw	zero, 0(\ret1)
+	li	\ret2, 0x12345678
+	sw	\ret2, 0(\ret1)
+	lw	\ret2, 0(\ret1)
+	li	\ret1, 0x12345678
+	.set	pop
+	.endm
+
 	/*
 	 * ADR macro instruction (inspired by ARM)
 	 *
@@ -41,14 +63,12 @@
 	.set	push
 	.set	noreorder
 	move	\temp, ra			# preserve ra beforehand
-	bal	_pc
+	bal	255f
 	 nop
-_pc:	addiu	\rd, ra, \label - _pc		# label is assumed to be
+255:	addiu	\rd, ra, \label - 255b		# label is assumed to be
 	move	ra, \temp			# within pc +/- 32KB
 	.set	pop
 	.endm
-
-#define LONGSIZE	4
 
 	.macro	copy_to_link_location start_addr
 	.set	push
@@ -96,6 +116,22 @@ copy_loop_exit:
 	li	k1, ~ST0_IE
 	and	k0, k1
 	mtc0	k0, CP0_STATUS
+	.set	pop
+	.endm
+
+	.macro	mips_barebox_10h
+	.set	push
+	.set	noreorder
+
+	b	1f
+	 nop
+
+	.org	0x10
+	.ascii	"barebox " UTS_RELEASE " " UTS_VERSION
+	.byte	0
+
+	.align	4
+1:
 	.set	pop
 	.endm
 

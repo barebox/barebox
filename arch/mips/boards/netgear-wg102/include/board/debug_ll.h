@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2013 Oleksij Rempel <linux@rempel-privat.de>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,15 +15,19 @@
  *
  */
 
-#ifndef __INCLUDE_ARCH_HARDWARE_H__
-#define   __INCLUDE_ARCH_HARDWARE_H__
-
-#define MALTA_PIIX4_UART0	0xb00003f8
-
-/*
- * Reset register.
+/** @file
+ *  This File contains declaration for early output support
  */
-#define SOFTRES_REG	0xbf000500
-#define GORESET		0x42
+#ifndef __NETGEAR_WG102_DEBUG_LL_H__
+#define __NETGEAR_WG102_DEBUG_LL_H__
 
-#endif  /* __INCLUDE_ARCH_HARDWARE_H__ */
+#include <mach/ar2312_regs.h>
+
+#define DEBUG_LL_UART_ADDR	KSEG1ADDR(AR2312_UART0)
+#define DEBUG_LL_UART_SHIFT	AR2312_UART_SHIFT
+
+#define DEBUG_LL_UART_CLK   (45000000 / 16)
+#define DEBUG_LL_UART_BPS   CONFIG_BAUDRATE
+#define DEBUG_LL_UART_DIVISOR   (DEBUG_LL_UART_CLK / DEBUG_LL_UART_BPS)
+
+#endif /* __NETGEAR_WG102_DEBUG_LL_H__ */

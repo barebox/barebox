@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,15 +15,13 @@
  *
  */
 
-#ifndef __INCLUDE_ARCH_HARDWARE_H__
-#define   __INCLUDE_ARCH_HARDWARE_H__
+#ifndef __MACH_AR231X_DEBUG_LL__
+#define __MACH_AR231X_DEBUG_LL__
 
-#define MALTA_PIIX4_UART0	0xb00003f8
-
-/*
- * Reset register.
+/** @file
+ *  This File contains declaration for early output support
  */
-#define SOFTRES_REG	0xbf000500
-#define GORESET		0x42
+#include <board/debug_ll.h>
+#include <asm/debug_ll_ns16550.h>
 
-#endif  /* __INCLUDE_ARCH_HARDWARE_H__ */
+#endif /* __MACH_AR231X_DEBUG_LL__ */

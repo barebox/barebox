@@ -612,24 +612,6 @@ config DEBUG_INFO
 	help
 	  Enable build of barebox with -g.
 
-config ENABLE_FLASH_NOISE
-	bool
-	prompt "verbose flash handling"
-	help
-	  Enable this to get noisy flash handling routines
-
-config ENABLE_PARTITION_NOISE
-	bool
-	prompt "verbose partition handling"
-	help
-	  Enable this to get noisy partition handling routines
-
-config ENABLE_DEVICE_NOISE
-	bool
-	prompt "verbose device handling"
-	help
-	  Enable this to get noisy device handling routines
-
 config DEBUG_LL
 	bool
 	depends on HAS_DEBUG_LL
@@ -639,6 +621,95 @@ config DEBUG_LL
 	  This requires SoC specific support. Most SoCs require the debug UART to be
 	  initialized by a debugger or first stage bootloader.
 
+choice
+	prompt "Kernel low-level debugging port"
+	depends on DEBUG_LL
+
+config DEBUG_IMX1_UART
+	bool "i.MX1 Debug UART"
+	depends on ARCH_IMX1
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX1.
+
+config DEBUG_IMX21_UART
+	bool "i.MX21 Debug UART"
+	depends on ARCH_IMX21
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX21.
+
+config DEBUG_IMX25_UART
+	bool "i.MX25 Debug UART"
+	depends on ARCH_IMX25
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX25.
+
+config DEBUG_IMX27_UART
+	bool "i.MX27 Debug UART"
+	depends on ARCH_IMX1
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX27.
+
+config DEBUG_IMX31_UART
+	bool "i.MX31 Debug UART"
+	depends on ARCH_IMX31
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX31.
+
+config DEBUG_IMX35_UART
+	bool "i.MX35 Debug UART"
+	depends on ARCH_IMX35
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX35.
+
+config DEBUG_IMX51_UART
+	bool "i.MX51 Debug UART"
+	depends on ARCH_IMX51
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX51.
+
+config DEBUG_IMX53_UART
+	bool "i.MX53 Debug UART"
+	depends on ARCH_IMX53
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX53.
+
+config DEBUG_IMX6Q_UART
+	bool "i.MX6Q Debug UART"
+	depends on ARCH_IMX6
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX6Q.
+
+endchoice
+
+config DEBUG_IMX_UART_PORT
+	int "i.MX Debug UART Port Selection" if DEBUG_IMX1_UART || \
+						DEBUG_IMX25_UART || \
+						DEBUG_IMX21_IMX27_UART || \
+						DEBUG_IMX31_UART || \
+						DEBUG_IMX35_UART || \
+						DEBUG_IMX51_UART || \
+						DEBUG_IMX53_UART || \
+						DEBUG_IMX6Q_UART || \
+						DEBUG_IMX6SL_UART
+	default 1
+	depends on ARCH_IMX
+	help
+	  Choose UART port on which kernel low-level debug messages
+	  should be output.
+
+config DEBUG_INITCALLS
+	bool "Trace initcalls"
+	help
+	  If enabled this will print initcall traces.
 endmenu
 
 config HAS_DEBUG_LL

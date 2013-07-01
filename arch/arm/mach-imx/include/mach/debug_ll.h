@@ -13,12 +13,30 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 
-/* #define IMX_DEBUG_LL_UART_BASE MXxy_UARTx_BASE_ADDR */
-
-#ifndef IMX_DEBUG_LL_UART_BASE
-#warning define IMX_DEBUG_LL_UART_BASE properly for debug_ll
-#define IMX_DEBUG_LL_UART_BASE 0
+#ifdef CONFIG_DEBUG_IMX1_UART
+#define IMX_DEBUG_SOC MX1
+#elif defined CONFIG_DEBUG_IMX21_UART
+#define IMX_DEBUG_SOC MX21
+#elif defined CONFIG_DEBUG_IMX25_UART
+#define IMX_DEBUG_SOC MX25
+#elif defined CONFIG_DEBUG_IMX27_UART
+#define IMX_DEBUG_SOC MX27
+#elif defined CONFIG_DEBUG_IMX31_UART
+#define IMX_DEBUG_SOC MX31
+#elif defined CONFIG_DEBUG_IMX35_UART
+#define IMX_DEBUG_SOC MX35
+#elif defined CONFIG_DEBUG_IMX51_UART
+#define IMX_DEBUG_SOC MX51
+#elif defined CONFIG_DEBUG_IMX53_UART
+#define IMX_DEBUG_SOC MX53
+#elif defined CONFIG_DEBUG_IMX6Q_UART
+#define IMX_DEBUG_SOC MX6
+#else
+#error "unknown i.MX debug uart soc type"
 #endif
+
+#define __IMX_UART_BASE(soc, num) soc##_UART##num##_BASE_ADDR
+#define IMX_UART_BASE(soc, num) __IMX_UART_BASE(soc, num)
 
 #define URTX0		0x40		/* Transmitter Register */
 
@@ -30,7 +48,8 @@
 
 static inline void PUTC_LL(int c)
 {
-	void __iomem *base = (void *)IMX_DEBUG_LL_UART_BASE;
+	void __iomem *base = (void *)IMX_UART_BASE(IMX_DEBUG_SOC,
+			CONFIG_DEBUG_IMX_UART_PORT);
 
 	if (!base)
 		return;

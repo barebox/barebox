@@ -20,13 +20,12 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-struct clk_divider {
-	struct clk clk;
-	u8 shift;
-	u8 width;
-	void __iomem *reg;
-	const char *parent;
-};
+static unsigned int clk_divider_maxdiv(struct clk_divider *div)
+{
+	if (div->flags & CLK_DIVIDER_ONE_BASED)
+                return (1 << div->width) - 1;
+	return 1 << div->width;
+}
 
 static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
 		unsigned long parent_rate)
@@ -40,11 +39,11 @@ static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
 		rate = 1;
 
 	divval = DIV_ROUND_UP(parent_rate, rate);
+	if (divval > clk_divider_maxdiv(div))
+		divval = clk_divider_maxdiv(div);
 
-	if (divval > (1 << div->width))
-		divval = 1 << (div->width);
-
-	divval--;
+	if (!(div->flags & CLK_DIVIDER_ONE_BASED))
+		divval--;
 
 	val = readl(div->reg);
 	val &= ~(((1 << div->width) - 1) << div->shift);
@@ -63,7 +62,12 @@ static unsigned long clk_divider_recalc_rate(struct clk *clk,
 	val = readl(div->reg) >> div->shift;
 	val &= (1 << div->width) - 1;
 
-	val++;
+	if (div->flags & CLK_DIVIDER_ONE_BASED) {
+		if (!val)
+			val++;
+	} else {
+		val++;
+	}
 
 	return parent_rate / val;
 }
@@ -95,4 +99,20 @@ struct clk *clk_divider(const char *name, const char *parent,
 	}
 
 	return &div->clk;
+}
+
+struct clk *clk_divider_one_based(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width)
+{
+	struct clk_divider *div;
+	struct clk *clk;
+
+	clk = clk_divider(name, parent, reg, shift, width);
+	if (IS_ERR(clk))
+		return clk;
+
+	div = container_of(clk, struct clk_divider, clk);
+	div->flags |= CLK_DIVIDER_ONE_BASED;
+
+	return clk;
 }

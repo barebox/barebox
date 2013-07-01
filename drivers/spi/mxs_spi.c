@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <io.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <asm/mmu.h>
 #include <mach/generic.h>
 #include <mach/imx-regs.h>
@@ -52,7 +53,7 @@ static inline struct mxs_spi *to_mxs(struct spi_master *master)
 static void imx_set_ssp_busclock(struct spi_master *master, uint32_t freq)
 {
 	struct mxs_spi *mxs = to_mxs(master);
-	const uint32_t sspclk = imx_get_sspclk(master->bus_num);
+	const uint32_t sspclk = clk_get_rate(mxs->clk);
 	uint32_t val;
 	uint32_t divide, rate, tgtclk;
 
@@ -266,6 +267,9 @@ static int mxs_spi_probe(struct device_d *dev)
 	mxs->mode = SPI_CPOL | SPI_CPHA;
 
 	mxs->regs = dev_request_mem_region(dev, 0);
+	mxs->clk = clk_get(dev, NULL);
+	if (IS_ERR(mxs->clk))
+		return PTR_ERR(mxs->clk);
 
 	spi_register_master(master);
 

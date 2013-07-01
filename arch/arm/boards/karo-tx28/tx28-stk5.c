@@ -371,11 +371,6 @@ void base_board_init(void)
 	for (i = 0; i < ARRAY_SIZE(tx28_starterkit_pad_setup); i++)
 		imx_gpio_mode(tx28_starterkit_pad_setup[i]);
 
-	/* enable IOCLK0 to run at the PLL frequency */
-	imx_set_ioclk(0, 480000000);
-	/* run the SSP unit clock at 100 MHz */
-	imx_set_sspclk(0, 100000000, 1);
-
 	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, 0x2000,
 			   IORESOURCE_MEM, &mci_pdata);
 
@@ -392,7 +387,6 @@ void base_board_init(void)
 
 	tx28_get_ethaddr();
 
-	imx_enable_enetclk();
 	add_generic_device("imx28-fec", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);
 

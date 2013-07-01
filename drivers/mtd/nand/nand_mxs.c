@@ -21,6 +21,8 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <linux/types.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <common.h>
 #include <malloc.h>
 #include <errno.h>
@@ -140,6 +142,7 @@
 struct mxs_nand_info {
 	struct nand_chip	nand_chip;
 	void __iomem		*io_base;
+	struct clk		*clk;
 	struct mtd_info		mtd;
 	u32		version;
 
@@ -1147,8 +1150,6 @@ int mxs_nand_hw_init(struct mxs_nand_info *info)
 	/* Init the DMA controller. */
 	mxs_dma_init();
 
-	imx_enable_nandclk();
-
 	/* Reset the GPMI block. */
 	ret = mxs_reset_block(gpmi_regs + GPMI_CTRL0, 0);
 	if (ret)
@@ -1199,6 +1200,12 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	/* XXX: Remove u-boot specific access pointers and use io_base instead? */
 	nand_info->io_base = dev_request_mem_region(dev, 0);
+
+	nand_info->clk = clk_get(dev, NULL);
+	if (IS_ERR(nand_info->clk))
+		return PTR_ERR(nand_info->clk);
+
+	clk_enable(nand_info->clk);
 
 	err = mxs_nand_alloc_buffers(nand_info);
 	if (err)

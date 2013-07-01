@@ -188,7 +188,22 @@ struct clk_div_table {
 };
 
 struct clk *clk_fixed(const char *name, int rate);
+
+struct clk_divider {
+	struct clk clk;
+	u8 shift;
+	u8 width;
+	void __iomem *reg;
+	const char *parent;
+#define CLK_DIVIDER_ONE_BASED	(1 << 0)
+	unsigned flags;
+};
+
+extern struct clk_ops clk_divider_ops;
+
 struct clk *clk_divider(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width);
+struct clk *clk_divider_one_based(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width);
 struct clk *clk_divider_table(const char *name,
 		const char *parent, void __iomem *reg, u8 shift, u8 width,
@@ -199,6 +214,9 @@ struct clk *clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents);
 struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
 		u8 shift);
+struct clk *clk_gate_inverted(const char *name, const char *parent, void __iomem *reg,
+		u8 shift);
+int clk_is_enabled(struct clk *clk);
 
 int clk_is_enabled_always(struct clk *clk);
 

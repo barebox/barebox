@@ -109,9 +109,6 @@ static int mx23_evk_devices_init(void)
 	armlinux_set_bootparams((void*)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MX23EVK);
 
-	imx_set_ioclk(480000000); /* enable IOCLK to run at the PLL frequency */
-	imx_set_sspclk(0, 100000000, 1);
-
 	add_generic_device("mxs_mci", DEVICE_ID_DYNAMIC, NULL, IMX_SSP1_BASE,
 					0x8000, IORESOURCE_MEM, &mci_pdata);
 

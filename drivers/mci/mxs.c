@@ -36,6 +36,8 @@
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 #include <asm/bitops.h>
 #include <mach/mxs.h>
 #include <mach/imx-regs.h>
@@ -49,8 +51,8 @@
 struct mxs_mci_host {
 	struct mci_host	host;
 	void __iomem	*regs;
+	struct clk	*clk;
 	unsigned	clock;	/* current clock speed in Hz ("0" if disabled) */
-	unsigned	index;
 #ifdef CONFIG_MCI_INFO
 	unsigned	f_min;
 	unsigned	f_max;
@@ -59,16 +61,6 @@ struct mxs_mci_host {
 };
 
 #define to_mxs_mci(mxs) container_of(mxs, struct mxs_mci_host, host)
-
-/**
- * Get the SSP clock rate
- * @param hw_dev Host interface device instance
- * @return Unit's clock in [Hz]
- */
-static unsigned mxs_mci_get_unit_clock(struct mxs_mci_host *mxs_mci)
-{
-	return imx_get_sspclk(mxs_mci->index);
-}
 
 /**
  * Get MCI cards response if defined for the type of command
@@ -116,22 +108,22 @@ static void mxs_mci_finish_request(struct mxs_mci_host *mxs_mci)
  * @param status HW_SSP_STATUS's content
  * @return 0 if no error, negative values else
  */
-static int mxs_mci_get_cmd_error(unsigned status)
+static int mxs_mci_get_cmd_error(struct mxs_mci_host *mxs_mci, unsigned status)
 {
 	if (status & SSP_STATUS_ERROR)
-		pr_debug("Status Reg reports %08X\n", status);
+		dev_dbg(mxs_mci->host.hw_dev, "Status Reg reports %08X\n", status);
 
 	if (status & SSP_STATUS_TIMEOUT) {
-		pr_debug("CMD timeout\n");
+		dev_dbg(mxs_mci->host.hw_dev, "CMD timeout\n");
 		return -ETIMEDOUT;
 	} else if (status & SSP_STATUS_RESP_TIMEOUT) {
-		pr_debug("RESP timeout\n");
+		dev_dbg(mxs_mci->host.hw_dev, "RESP timeout\n");
 		return -ETIMEDOUT;
 	} else if (status & SSP_STATUS_RESP_CRC_ERR) {
-		pr_debug("CMD crc error\n");
+		dev_dbg(mxs_mci->host.hw_dev, "CMD crc error\n");
 		return -EILSEQ;
 	} else if (status & SSP_STATUS_RESP_ERR) {
-		pr_debug("RESP error\n");
+		dev_dbg(mxs_mci->host.hw_dev, "RESP error\n");
 		return -EIO;
 	}
 
@@ -168,7 +160,8 @@ static int mxs_mci_read_data(struct mxs_mci_host *mxs_mci, void *buffer, unsigne
 	uint32_t *p = buffer;
 
 	if (length & 0x3) {
-		pr_debug("Cannot read data sizes not multiple of 4 (request for %u detected)\n",
+		dev_dbg(mxs_mci->host.hw_dev,
+				"Cannot read data sizes not multiple of 4 (request for %u detected)\n",
 				length);
 		return -EINVAL;
 	}
@@ -206,7 +199,8 @@ static int mxs_mci_write_data(struct mxs_mci_host *mxs_mci, const void *buffer, 
 	const uint32_t *p = buffer;
 
 	if (length & 0x3) {
-		pr_debug("Cannot write data sizes not multiple of 4 (request for %u detected)\n",
+		dev_dbg(mxs_mci->host.hw_dev,
+				"Cannot write data sizes not multiple of 4 (request for %u detected)\n",
 				length);
 		return -EINVAL;
 	}
@@ -320,7 +314,7 @@ static int mxs_mci_std_cmds(struct mxs_mci_host *mxs_mci, struct mci_cmd *cmd)
 	if (cmd->resp_type & MMC_RSP_PRESENT)
 		mxs_mci_get_cards_response(mxs_mci, cmd);
 
-	return mxs_mci_get_cmd_error(readl(mxs_mci->regs + HW_SSP_STATUS));
+	return mxs_mci_get_cmd_error(mxs_mci, readl(mxs_mci->regs + HW_SSP_STATUS));
 }
 
 /**
@@ -385,7 +379,7 @@ static int mxs_mci_adtc(struct mxs_mci_host *mxs_mci, struct mci_cmd *cmd,
 
 	err = mxs_mci_transfer_data(mxs_mci, data);
 	if (err != 0) {
-		pr_debug(" Transfering data failed\n");
+		dev_dbg(mxs_mci->host.hw_dev, "Transfering data failed with %d\n", err);
 		return err;
 	}
 
@@ -428,7 +422,7 @@ static unsigned mxs_mci_setup_clock_speed(struct mxs_mci_host *mxs_mci, unsigned
 		return 0;
 	}
 
-	ssp = mxs_mci_get_unit_clock(mxs_mci);
+	ssp = clk_get_rate(mxs_mci->clk);
 
 	for (div = 2; div < 255; div += 2) {
 		rate = DIV_ROUND_CLOSEST(DIV_ROUND_CLOSEST(ssp, nc), div);
@@ -436,7 +430,7 @@ static unsigned mxs_mci_setup_clock_speed(struct mxs_mci_host *mxs_mci, unsigned
 			break;
 	}
 	if (div >= 255) {
-		pr_warning("Cannot set clock to %d Hz\n", nc);
+		dev_warn(mxs_mci->host.hw_dev, "Cannot set clock to %d Hz\n", nc);
 		return 0;
 	}
 
@@ -531,7 +525,8 @@ static void mxs_mci_set_ios(struct mci_host *host, struct mci_ios *ios)
 	}
 
 	mxs_mci->clock = mxs_mci_setup_clock_speed(mxs_mci, ios->clock);
-	pr_debug("IO settings: frequency=%u Hz\n", mxs_mci->clock);
+
+	dev_dbg(host->hw_dev, "IO settings: frequency=%u Hz\n", mxs_mci->clock);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -555,9 +550,10 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 	struct mxs_mci_platform_data *pd = hw_dev->platform_data;
 	struct mxs_mci_host *mxs_mci;
 	struct mci_host *host;
+	unsigned long rate;
 
 	if (hw_dev->platform_data == NULL) {
-		pr_err("Missing platform data\n");
+		dev_err(hw_dev, "Missing platform data\n");
 		return -EINVAL;
 	}
 
@@ -575,44 +571,29 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 	host->voltages = pd->voltages;
 	host->host_caps = pd->caps;
 
-#ifdef CONFIG_ARCH_IMX23
-	mxs_mci->index = 0;	/* there is only one clock for all */
-#endif
-#ifdef CONFIG_ARCH_IMX28
-	/* one dedicated clock per unit */
-	switch (hw_dev->resource[0].start) {
-	case IMX_SSP0_BASE:
-		mxs_mci->index = 0;
-		break;
-	case IMX_SSP1_BASE:
-		mxs_mci->index = 1;
-		break;
-	case IMX_SSP2_BASE:
-		mxs_mci->index = 2;
-		break;
-	case IMX_SSP3_BASE:
-		mxs_mci->index = 3;
-		break;
-	default:
-		pr_debug("Unknown SSP unit at address 0x%p\n", mxs_mci->regs);
-		return 0;
-	}
-#endif
+	mxs_mci->clk = clk_get(hw_dev, NULL);
+	if (IS_ERR(mxs_mci->clk))
+		return PTR_ERR(mxs_mci->clk);
+
+	clk_enable(mxs_mci->clk);
+
+	rate = clk_get_rate(mxs_mci->clk);
+
 	if (pd->f_min == 0) {
-		host->f_min = mxs_mci_get_unit_clock(mxs_mci) / 254 / 256;
-		pr_debug("Min. frequency is %u Hz\n", host->f_min);
+		host->f_min = rate / 254 / 256;
+		dev_dbg(hw_dev, "Min. frequency is %u Hz\n", host->f_min);
 	} else {
 		host->f_min = pd->f_min;
-		pr_debug("Min. frequency is %u Hz, could be %u Hz\n",
-			host->f_min, mxs_mci_get_unit_clock(mxs_mci) / 254 / 256);
+		dev_dbg(hw_dev, "Min. frequency is %u Hz, could be %lu Hz\n",
+			host->f_min, rate / 254 / 256);
 	}
 	if (pd->f_max == 0) {
-		host->f_max = mxs_mci_get_unit_clock(mxs_mci) / 2 / 1;
-		pr_debug("Max. frequency is %u Hz\n", host->f_max);
+		host->f_max = rate / 2 / 1;
+		dev_dbg(hw_dev, "Max. frequency is %u Hz\n", host->f_max);
 	} else {
 		host->f_max =  pd->f_max;
-		pr_debug("Max. frequency is %u Hz, could be %u Hz\n",
-			host->f_max, mxs_mci_get_unit_clock(mxs_mci) / 2 / 1);
+		dev_dbg(hw_dev, "Max. frequency is %u Hz, could be %lu Hz\n",
+			host->f_max, rate / 2 / 1);
 	}
 
 	if (IS_ENABLED(CONFIG_MCI_INFO)) {

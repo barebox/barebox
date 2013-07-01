@@ -21,11 +21,12 @@
 #include <malloc.h>
 #include <io.h>
 #include <clock.h>
+#include <linux/clk.h>
+#include <linux/err.h>
 
 #include <mach/generic.h>
 #include <mach/ocotp.h>
 #include <mach/imx-regs.h>
-#include <mach/clock-imx28.h>
 #include <mach/power.h>
 
 #define DRIVERNAME "ocotp"
@@ -45,6 +46,7 @@ struct ocotp_priv {
 	struct cdev cdev;
 	void __iomem *base;
 	unsigned int write_enable;
+	struct clk *clk;
 };
 
 static int mxs_ocotp_wait_busy(struct ocotp_priv *priv)
@@ -131,10 +133,10 @@ static ssize_t mxs_ocotp_cdev_write(struct cdev *cdev, const void *buf, size_t c
 		work_buf[offset - aligned_offset + i] |= ((u8 *)buf)[i];
 
 	/* prepare system for OTP write */
-	old_hclk = imx_get_hclk();
+	old_hclk = clk_get_rate(priv->clk);
 	old_vddio = imx_get_vddio();
 
-	imx_set_hclk(24000000);
+	clk_set_rate(priv->clk, 24000000);
 	imx_set_vddio(2800000);
 
 	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + BIT_CLR);
@@ -162,7 +164,7 @@ static ssize_t mxs_ocotp_cdev_write(struct cdev *cdev, const void *buf, size_t c
 
 restore_system:
 	imx_set_vddio(old_vddio);
-	imx_set_hclk(old_hclk);
+	clk_set_rate(priv->clk, old_hclk);
 free_mem:
 	free(work_buf);
 
@@ -180,6 +182,9 @@ static int mxs_ocotp_probe(struct device_d *dev)
 	struct ocotp_priv *priv = xzalloc(sizeof (*priv));
 
 	priv->base = dev_request_mem_region(dev, 0);
+	priv->clk = clk_get(dev, NULL);
+	if (IS_ERR(priv->clk))
+		return PTR_ERR(priv->clk);
 	priv->cdev.dev = dev;
 	priv->cdev.ops = &mxs_ocotp_ops;
 	priv->cdev.priv = priv;

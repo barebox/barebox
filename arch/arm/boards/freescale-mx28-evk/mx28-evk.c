@@ -253,14 +253,6 @@ static int mx28_evk_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mx28evk_pads); i++)
 		imx_gpio_mode(mx28evk_pads[i]);
 
-	/* enable IOCLK0 to run at the PLL frequency */
-	imx_set_ioclk(0, 480000000);
-	imx_set_ioclk(1, 320000000);
-	/* run the SSP unit clock at 100 MHz */
-	imx_set_sspclk(0, 100000000, 1);
-	/* run the SSP unit 2 clock at 160Mhz */
-	imx_set_sspclk(2, 160000000, 1);
-
 	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MX28EVK);
 
@@ -274,7 +266,6 @@ static int mx28_evk_devices_init(void)
 			IORESOURCE_MEM, NULL);
 	mx28_evk_get_ethaddr(); /* must be after registering ocotp */
 
-	imx_enable_enetclk();
 	mx28_evk_fec_reset();
 	add_generic_device("imx28-fec", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);

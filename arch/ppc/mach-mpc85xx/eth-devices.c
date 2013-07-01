@@ -22,28 +22,40 @@
 
 #include <common.h>
 #include <driver.h>
+#include <init.h>
 #include <mach/immap_85xx.h>
 #include <mach/gianfar.h>
 
+static int fsl_phy_init(void)
+{
+	int i;
+	void __iomem *base  = IOMEM(GFAR_BASE_ADDR + GFAR_TBIPA_OFFSET);
+
+	/*
+	 * The TBI address must be initialised to enable the PHY to
+	 * link up after the MDIO reset.
+	 */
+	out_be32(base, GFAR_TBIPA_END);
+	/* All ports access external PHYs via the "gfar-mdio" device */
+	add_generic_device("gfar-mdio", 0, NULL, MDIO_BASE_ADDR,
+			0x1000, IORESOURCE_MEM, NULL);
+
+	for (i = 1; i < 3; i++) {
+		out_be32(base + (i * 0x1000), GFAR_TBIPA_END - i);
+		/* Use "gfar-tbiphy" devices to access internal PHY. */
+		add_generic_device("gfar-tbiphy", i, NULL,
+				MDIO_BASE_ADDR + (i * 0x1000),
+				0x1000, IORESOURCE_MEM, NULL);
+	}
+	return 0;
+}
+
+coredevice_initcall(fsl_phy_init);
+
 int fsl_eth_init(int num, struct gfar_info_struct *gf)
 {
-	struct resource *res;
-
-	res = xzalloc(3 * sizeof(struct resource));
-	/* TSEC interface registers */
-	res[0].start = GFAR_BASE_ADDR + ((num - 1) * 0x1000);
-	res[0].end = res[0].start + 0x1000 - 1;
-	res[0].flags = IORESOURCE_MEM;
-	/* External PHY access always through eTSEC1 */
-	res[1].start = MDIO_BASE_ADDR;
-	res[1].end = res[1].start + 0x1000 - 1;
-	res[1].flags = IORESOURCE_MEM;
-	/* Access to TBI/RTBI interface. */
-	res[2].start = MDIO_BASE_ADDR + ((num - 1) * 0x1000);
-	res[2].end = res[2].start + 0x1000 - 1;
-	res[2].flags = IORESOURCE_MEM;
-
-	add_generic_device_res("gfar", DEVICE_ID_DYNAMIC, res, 3, gf);
-
+	add_generic_device("gfar", DEVICE_ID_DYNAMIC, NULL,
+			GFAR_BASE_ADDR + ((num - 1) * 0x1000), 0x1000,
+			IORESOURCE_MEM, gf);
 	return 0;
 }

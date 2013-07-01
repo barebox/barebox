@@ -184,10 +184,11 @@ static int gfar_open(struct eth_device *edev)
 {
 	int ix;
 	struct gfar_private *priv = edev->priv;
+	struct gfar_phy *phy = priv->gfar_mdio;
 	void __iomem *regs = priv->regs;
 	int ret;
 
-	ret = phy_device_connect(edev, &priv->miibus, priv->phyaddr,
+	ret = phy_device_connect(edev, &phy->miibus, priv->phyaddr,
 				 gfar_adjust_link, 0, PHY_INTERFACE_MODE_NA);
 	if (ret)
 		return ret;
@@ -305,44 +306,51 @@ static uint gfar_local_mdio_read(void __iomem *phyregs, uint phyid, uint regnum)
 
 static void gfar_configure_serdes(struct gfar_private *priv)
 {
-	gfar_local_mdio_write(priv->phyregs_sgmii,
+	struct gfar_phy *phy = priv->gfar_tbi;
+
+	gfar_local_mdio_write(phy->regs,
 			in_be32(priv->regs + GFAR_TBIPA_OFFSET), GFAR_TBI_ANA,
 			priv->tbiana);
-	gfar_local_mdio_write(priv->phyregs_sgmii,
+	gfar_local_mdio_write(phy->regs,
 			in_be32(priv->regs + GFAR_TBIPA_OFFSET),
 			GFAR_TBI_TBICON, GFAR_TBICON_CLK_SELECT);
-	gfar_local_mdio_write(priv->phyregs_sgmii,
+	gfar_local_mdio_write(phy->regs,
 			in_be32(priv->regs + GFAR_TBIPA_OFFSET), GFAR_TBI_CR,
 			priv->tbicr);
 }
 
-/* Reset the internal and external PHYs. */
-static void gfar_init_phy(struct eth_device *dev)
+static int gfar_bus_reset(struct mii_bus *bus)
 {
-	struct gfar_private *priv = dev->priv;
-	void __iomem *regs = priv->regs;
+	struct gfar_phy *phy = bus->priv;
 	uint64_t start;
 
-	/* Assign a Physical address to the TBI */
-	out_be32(regs + GFAR_TBIPA_OFFSET, GFAR_TBIPA_VALUE);
-
 	/* Reset MII (due to new addresses) */
-	out_be32(priv->phyregs + GFAR_MIIMCFG_OFFSET, GFAR_MIIMCFG_RESET);
-	out_be32(priv->phyregs + GFAR_MIIMCFG_OFFSET, GFAR_MIIMCFG_INIT_VALUE);
+	out_be32(phy->regs + GFAR_MIIMCFG_OFFSET, GFAR_MIIMCFG_RESET);
+	out_be32(phy->regs + GFAR_MIIMCFG_OFFSET, GFAR_MIIMCFG_INIT_VALUE);
 
 	start = get_time_ns();
 	while (!is_timeout(start, 10 * MSECOND)) {
-		if (!(in_be32(priv->phyregs + GFAR_MIIMMIND_OFFSET) &
+		if (!(in_be32(phy->regs + GFAR_MIIMMIND_OFFSET) &
 			GFAR_MIIMIND_BUSY))
 			break;
 	}
+	return 0;
+}
 
-	gfar_local_mdio_write(priv->phyregs, priv->phyaddr, GFAR_MIIM_CR,
+/* Reset the external PHYs. */
+static void gfar_init_phy(struct eth_device *dev)
+{
+	struct gfar_private *priv = dev->priv;
+	struct gfar_phy *phy = priv->gfar_mdio;
+	void __iomem *regs = priv->regs;
+	uint64_t start;
+
+	gfar_local_mdio_write(phy->regs, priv->phyaddr, GFAR_MIIM_CR,
 			GFAR_MIIM_CR_RST);
 
 	start = get_time_ns();
 	while (!is_timeout(start, 10 * MSECOND)) {
-		if (!(gfar_local_mdio_read(priv->phyregs, priv->phyaddr,
+		if (!(gfar_local_mdio_read(phy->regs, priv->phyaddr,
 					GFAR_MIIM_CR) & GFAR_MIIM_CR_RST))
 			break;
 	}
@@ -433,13 +441,12 @@ static int gfar_recv(struct eth_device *edev)
 /* Read a MII PHY register. */
 static int gfar_miiphy_read(struct mii_bus *bus, int addr, int reg)
 {
-	struct device_d *dev = bus->parent;
-	struct gfar_private *priv = bus->priv;
+	struct gfar_phy *phy = bus->priv;
 	int ret;
 
-	ret = gfar_local_mdio_read(priv->phyregs, addr, reg);
+	ret = gfar_local_mdio_read(phy->regs, addr, reg);
 	if (ret == -EIO)
-		dev_err(dev, "Can't read PHY at address %d\n", addr);
+		dev_err(phy->dev, "Can't read PHY at address %d\n", addr);
 
 	return ret;
 }
@@ -448,15 +455,14 @@ static int gfar_miiphy_read(struct mii_bus *bus, int addr, int reg)
 static int gfar_miiphy_write(struct mii_bus *bus, int addr, int reg,
 				u16 value)
 {
-	struct device_d *dev = bus->parent;
-	struct gfar_private *priv = bus->priv;
+	struct gfar_phy *phy = bus->priv;
 	unsigned short val = value;
 	int ret;
 
-	ret = gfar_local_mdio_write(priv->phyregs, addr, reg, val);
+	ret = gfar_local_mdio_write(phy->regs, addr, reg, val);
 
 	if (ret)
-		dev_err(dev, "Can't write PHY at address %d\n", addr);
+		dev_err(phy->dev, "Can't write PHY at address %d\n", addr);
 
 	return 0;
 }
@@ -470,7 +476,9 @@ static int gfar_probe(struct device_d *dev)
 	struct gfar_info_struct *gfar_info = dev->platform_data;
 	struct eth_device *edev;
 	struct gfar_private *priv;
+	struct device_d *mdev;
 	size_t size;
+	char devname[16];
 	char *p;
 
 	priv = xzalloc(sizeof(struct gfar_private));
@@ -480,14 +488,28 @@ static int gfar_probe(struct device_d *dev)
 
 	edev = &priv->edev;
 
-	priv->regs = dev_request_mem_region(dev, 0);
-	priv->phyregs = dev_request_mem_region(dev, 1);
-	priv->phyregs_sgmii = dev_request_mem_region(dev, 2);
-
+	priv->mdiobus_tbi = gfar_info->mdiobus_tbi;
+	priv->regs = dev_get_mem_region(dev, 0);
 	priv->phyaddr = gfar_info->phyaddr;
 	priv->tbicr = gfar_info->tbicr;
 	priv->tbiana = gfar_info->tbiana;
 
+	mdev = get_device_by_name("gfar-mdio0");
+	if (mdev == NULL) {
+		pr_err("gfar-mdio0 was not found\n");
+		return -ENODEV;
+	}
+	priv->gfar_mdio = mdev->priv;
+
+	if (priv->mdiobus_tbi != 0) {
+		sprintf(devname, "%s%d", "gfar-tbiphy", priv->mdiobus_tbi);
+		mdev = get_device_by_name(devname);
+		if (mdev == NULL) {
+			pr_err("%s was not found\n", devname);
+			return -ENODEV;
+		}
+	}
+	priv->gfar_tbi = mdev->priv;
 	/*
 	 * Allocate descriptors 64-bit aligned. Descriptors
 	 * are 8 bytes in size.
@@ -512,14 +534,7 @@ static int gfar_probe(struct device_d *dev)
 	udelay(2);
 	clrbits_be32(priv->regs + GFAR_MACCFG1_OFFSET, GFAR_MACCFG1_SOFT_RESET);
 
-	priv->miibus.read = gfar_miiphy_read;
-	priv->miibus.write = gfar_miiphy_write;
-	priv->miibus.priv = priv;
-	priv->miibus.parent = dev;
-
 	gfar_init_phy(edev);
-
-	mdiobus_register(&priv->miibus);
 
 	return eth_register(edev);
 }
@@ -529,3 +544,64 @@ static struct driver_d gfar_eth_driver = {
 	.probe = gfar_probe,
 };
 device_platform_driver(gfar_eth_driver);
+
+static int gfar_phy_probe(struct device_d *dev)
+{
+	struct gfar_phy *phy;
+	int ret;
+
+	phy = xzalloc(sizeof(*phy));
+	phy->dev = dev;
+	phy->regs = dev_get_mem_region(dev, 0);
+	if (!phy->regs)
+		return -ENOMEM;
+
+	phy->miibus.read = gfar_miiphy_read;
+	phy->miibus.write = gfar_miiphy_write;
+	phy->miibus.priv = phy;
+	phy->miibus.reset = gfar_bus_reset;
+	phy->miibus.parent = dev;
+	dev->priv = phy;
+
+	ret = mdiobus_register(&phy->miibus);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static struct driver_d gfar_phy_driver = {
+	.name  = "gfar-mdio",
+	.probe = gfar_phy_probe,
+};
+register_driver_macro(coredevice, platform, gfar_phy_driver);
+
+static int gfar_tbiphy_probe(struct device_d *dev)
+{
+	struct gfar_phy *phy;
+	int ret;
+
+	phy = xzalloc(sizeof(*phy));
+	phy->dev = dev;
+	phy->regs = dev_get_mem_region(dev, 0);
+	if (!phy->regs)
+		return -ENOMEM;
+
+	phy->miibus.read = gfar_miiphy_read;
+	phy->miibus.write = gfar_miiphy_write;
+	phy->miibus.priv = phy;
+	phy->miibus.parent = dev;
+	dev->priv = phy;
+
+	ret = mdiobus_register(&phy->miibus);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static struct driver_d gfar_tbiphy_driver = {
+	.name  = "gfar-tbiphy",
+	.probe = gfar_tbiphy_probe,
+};
+register_driver_macro(coredevice, platform, gfar_tbiphy_driver);

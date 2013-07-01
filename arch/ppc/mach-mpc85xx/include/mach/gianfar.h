@@ -22,10 +22,14 @@
  * Platform data for the Motorola Triple Speed Ethernet Controller
  */
 
+#define GFAR_TBIPA_OFFSET       0x030   /* TBI PHY address */
+#define GFAR_TBIPA_END		0x1f    /* Last valid PHY address */
+
 struct gfar_info_struct {
 	unsigned int phyaddr;
 	unsigned int tbiana;
 	unsigned int tbicr;
+	unsigned int mdiobus_tbi;
 };
 
 int fsl_eth_init(int num, struct gfar_info_struct *gf);

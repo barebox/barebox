@@ -24,6 +24,8 @@
 #include <generated/mach-types.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-devices.h>
+#include <mach/omap4-clock.h>
+#include <mach/omap-fb.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -92,6 +94,190 @@ static struct gpmc_nand_platform_data nand_plat = {
 	.nand_cfg = &omap4_nand_cfg,
 };
 
+static struct omapfb_display const pcm049_displays[] = {
+	{
+		.mode	= {
+			.name		= "pd050vl1",
+			.refresh	= 60,
+			.xres		= 640,
+			.yres		= 480,
+			.pixclock	= 25000,
+			.left_margin	= 46,
+			.right_margin	= 18,
+			.hsync_len	= 96,
+			.upper_margin	= 33,
+			.lower_margin	= 10,
+			.vsync_len	= 2,
+		},
+
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+	},
+	/* Prime-View PM070WL4 */
+	{
+		.mode	= {
+			.name		= "pm070wl4",
+			.refresh	= 60,
+			.xres		= 800,
+			.yres		= 480,
+			.pixclock	= 32000,
+			.left_margin	= 86,
+			.right_margin	= 42,
+			.hsync_len	= 128,
+			.lower_margin	= 10,
+			.upper_margin	= 33,
+			.vsync_len	= 2,
+		},
+
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+	},
+	/* Prime-View PD104SLF */
+	{
+		.mode	= {
+			.name		= "pd104slf",
+			.refresh	= 60,
+			.xres		= 800,
+			.yres		= 600,
+			.pixclock	= 40000,
+			.left_margin	= 86,
+			.right_margin	= 42,
+			.hsync_len	= 128,
+			.lower_margin	= 1,
+			.upper_margin	= 23,
+			.vsync_len	= 4,
+		},
+
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+	},
+	/* EDT ETM0350G0DH6 */
+	{
+		.mode	= {
+			.name		= "edt_etm0350G0dh6",
+			.refresh	= 60,
+			.xres		= 320,
+			.yres		= 240,
+			.pixclock	= 15720,
+			.left_margin	= 68,
+			.right_margin	= 20,
+			.hsync_len	= 88,
+			.lower_margin	= 4,
+			.upper_margin	= 18,
+			.vsync_len	= 22,
+		},
+
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+	},
+	/* EDT ETM0430G0DH6 */
+	{
+		.mode	= {
+			.name		= "edt_etm0430G0dh6",
+			.refresh	= 60,
+			.xres		= 480,
+			.yres		= 272,
+			.pixclock	= 9000,
+			.left_margin	= 2,
+			.right_margin	= 2,
+			.hsync_len	= 41,
+			.lower_margin	= 2,
+			.upper_margin	= 2,
+			.vsync_len	= 10,
+		},
+
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+	},
+	/* EDT ETMV570G2DHU */
+	{
+		.mode	= {
+			.name		= "edt_etmv570G2dhu",
+			.refresh	= 60,
+			.xres		= 640,
+			.yres		= 480,
+			.pixclock	= 25175,
+			.left_margin	= 114,
+			.right_margin	= 16,
+			.hsync_len	= 30,
+			.lower_margin	= 10,
+			.upper_margin	= 35,
+			.vsync_len	= 3,
+		},
+
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+	},
+	/* ETD ETM0700G0DH6 */
+	{
+		.mode	= {
+			.name		= "edt_etm0700G0dh6",
+			.refresh	= 60,
+			.xres		= 800,
+			.yres		= 480,
+			.pixclock	= 33260,
+			.left_margin	= 216,
+			.right_margin	= 40,
+			.hsync_len	= 128,
+			.lower_margin	= 10,
+			.upper_margin	= 35,
+			.vsync_len	= 2,
+		},
+
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+	},
+
+	/* CHIMEI G104X1-L03 */
+	{
+		.mode = {
+			.name		= "g104x1",
+			.refresh	= 60,
+			.xres		= 1024,
+			.yres		= 768,
+			.pixclock	= 64000,
+			.left_margin	= 320,
+			.right_margin	= 1,
+			.hsync_len	= 320,
+			.upper_margin	= 38,
+			.lower_margin	= 38,
+			.vsync_len	= 2,
+		},
+		.config = (OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+				OMAP_DSS_LCD_IHS | OMAP_DSS_LCD_IPC |
+				OMAP_DSS_LCD_DATALINES_24),
+
+		.power_on_delay		= 50,
+		.power_off_delay	= 100,
+	},
+};
+
+#define GPIO_DISPENABLE			  118
+#define GPIO_BACKLIGHT			  122
+
+static void pcm049_fb_enable(int e)
+{
+	gpio_direction_output(GPIO_DISPENABLE, e);
+	gpio_direction_output(GPIO_BACKLIGHT, e);
+}
+
+static struct omapfb_platform_data pcm049_fb_data = {
+	.displays	= pcm049_displays,
+	.num_displays	= ARRAY_SIZE(pcm049_displays),
+
+	.dss_clk_hz	= 19200000,
+
+	.bpp		= 32,
+	.enable		= pcm049_fb_enable,
+};
+
 static int pcm049_devices_init(void)
 {
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
@@ -115,6 +301,8 @@ static int pcm049_devices_init(void)
 
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM049);
+
+	omap_add_display(&pcm049_fb_data);
 
 	return 0;
 }

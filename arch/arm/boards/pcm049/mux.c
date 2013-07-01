@@ -109,11 +109,11 @@ static const struct pad_conf_entry core_padconf_array[] = {
 	{ABE_PDM_DL_DATA, (SAFE_MODE)},					/* unused */
 	{ABE_PDM_FRAME, (SAFE_MODE)},					/* unused */
 	{ABE_PDM_LB_CLK, (SAFE_MODE)},					/* unused */
-	{ABE_CLKS, (SAFE_MODE)},					/* unused */
+	{ABE_CLKS, (M3)},						/* gpio_118 */
 	{ABE_DMIC_CLK1, (SAFE_MODE)},					/* nc */
 	{ABE_DMIC_DIN1, (SAFE_MODE)},					/* unused */
 	{ABE_DMIC_DIN2, (DIS | IEN | M3)},				/* gpio_121 */
-	{ABE_DMIC_DIN3, (SAFE_MODE)},					/* unused */
+	{ABE_DMIC_DIN3, (M3)},						/* gpio_122 */
 	{UART2_CTS, (SAFE_MODE)},					/* unused */
 	{UART2_RTS, (SAFE_MODE)},					/* unused */
 	{UART2_RX, (SAFE_MODE)},					/* unused */
@@ -151,17 +151,17 @@ static const struct pad_conf_entry core_padconf_array[] = {
 	{UART4_RX, (SAFE_MODE)},					/* unused */
 	{UART4_TX, (SAFE_MODE)},					/* unused */
 	{USBB2_ULPITLL_CLK, (SAFE_MODE)},				/* nc */
-	{USBB2_ULPITLL_STP, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DIR, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_NXT, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT0, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT1, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT2, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT3, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT4, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT5, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT6, (SAFE_MODE)},				/* unused */
-	{USBB2_ULPITLL_DAT7, (SAFE_MODE)},				/* unused */
+	{USBB2_ULPITLL_STP, (M5)},					/* dispc2_data23 */
+	{USBB2_ULPITLL_DIR, (M5)},					/* dispc2_data22 */
+	{USBB2_ULPITLL_NXT, (M5)},					/* dispc2_data21 */
+	{USBB2_ULPITLL_DAT0, (M5)},					/* dispc2_data20 */
+	{USBB2_ULPITLL_DAT1, (M5)},					/* dispc2_data19 */
+	{USBB2_ULPITLL_DAT2, (M5)},					/* dispc2_data18 */
+	{USBB2_ULPITLL_DAT3, (M5)},					/* dispc2_data15 */
+	{USBB2_ULPITLL_DAT4, (M5)},					/* dispc2_data14 */
+	{USBB2_ULPITLL_DAT5, (M5)},					/* dispc2_data13 */
+	{USBB2_ULPITLL_DAT6, (M5)},					/* dispc2_data12 */
+	{USBB2_ULPITLL_DAT7, (M5)},					/* dispc2_data11 */
 	{USBB2_HSIC_DATA, (SAFE_MODE)},					/* nc */
 	{USBB2_HSIC_STROBE, (SAFE_MODE)},				/* nc */
 	{UNIPRO_TX0, (SAFE_MODE)},					/* unused */
@@ -192,23 +192,23 @@ static const struct pad_conf_entry core_padconf_array[] = {
 	{DPM_EMU0, (IEN | M0)},						/* dpm_emu0 */
 	{DPM_EMU1, (IEN | M0)},						/* dpm_emu1 */
 	{DPM_EMU2, (SAFE_MODE)},					/* unused */
-	{DPM_EMU3, (SAFE_MODE)},					/* unused */
-	{DPM_EMU4, (SAFE_MODE)},					/* unused */
-	{DPM_EMU5, (SAFE_MODE)},					/* unused */
-	{DPM_EMU6, (SAFE_MODE)},					/* unused */
-	{DPM_EMU7, (SAFE_MODE)},					/* unused */
-	{DPM_EMU8, (SAFE_MODE)},					/* unused */
-	{DPM_EMU9, (SAFE_MODE)},					/* unused */
-	{DPM_EMU10, (SAFE_MODE)},					/* unused */
-	{DPM_EMU11, (SAFE_MODE)},					/* unused */
-	{DPM_EMU12, (SAFE_MODE)},					/* unused */
-	{DPM_EMU13, (SAFE_MODE)},					/* unused */
-	{DPM_EMU14, (SAFE_MODE)},					/* unused */
-	{DPM_EMU15, (SAFE_MODE)},					/* unused */
-	{DPM_EMU16, (SAFE_MODE)},					/* unused */
-	{DPM_EMU17, (SAFE_MODE)},					/* unused */
-	{DPM_EMU18, (SAFE_MODE)},					/* unused */
-	{DPM_EMU19, (SAFE_MODE)},					/* unused */
+	{DPM_EMU3, (M5)},						/* dispc2_data10 */
+	{DPM_EMU4, (M5)},						/* dispc2_data9 */
+	{DPM_EMU5, (M5)},						/* dispc2_data16 */
+	{DPM_EMU6, (M5)},						/* dispc2_data17 */
+	{DPM_EMU7, (M5)},						/* dispc2_hsync */
+	{DPM_EMU8, (M5)},						/* dispc2_pclk */
+	{DPM_EMU9, (M5)},						/* dispc2_vsync */
+	{DPM_EMU10, (M5)},						/* dispc2_de */
+	{DPM_EMU11, (M5)},						/* dispc2_data8 */
+	{DPM_EMU12, (M5)},						/* dispc2_data7 */
+	{DPM_EMU13, (M5)},						/* dispc2_data6 */
+	{DPM_EMU14, (M5)},						/* dispc2_data5 */
+	{DPM_EMU15, (M5)},						/* dispc2_data4 */
+	{DPM_EMU16, (M5)},						/* dispc2_data3 */
+	{DPM_EMU17, (M5)},						/* dispc2_data2 */
+	{DPM_EMU18, (M5)},						/* dispc2_data1 */
+	{DPM_EMU19, (M5)},						/* dispc2_data0 */
 };
 
 static const struct pad_conf_entry wkup_padconf_array[] = {

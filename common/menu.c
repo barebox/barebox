@@ -164,7 +164,7 @@ static void __print_entry(const char *str)
 static void print_menu_entry(struct menu *m, struct menu_entry *me,
 			     int selected)
 {
-	gotoXY(me->num + 1, 3);
+	gotoXY(3, me->num + 1);
 
 	if (me->type == MENU_ENTRY_BOX) {
 		if (me->box_state)
@@ -175,7 +175,7 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me,
 		puts("   ");
 	}
 
-	printf(" %d: ", me->num);
+	printf(" %2d: ", me->num);
 	if (selected)
 		puts("\e[7m");
 
@@ -234,7 +234,7 @@ static void print_menu(struct menu *m)
 	struct menu_entry *me;
 
 	clear();
-	gotoXY(1, 2);
+	gotoXY(2, 1);
 	if(m->display) {
 		__print_entry(m->display);
 	} else {
@@ -269,7 +269,7 @@ int menu_show(struct menu *m)
 
 	countdown = m->auto_select;
 	if (m->auto_select >= 0) {
-		gotoXY(m->nb_entries + 2, 3);
+		gotoXY(3, m->nb_entries + 2);
 		if (!m->auto_display) {
 			printf("Auto Select in");
 		} else {
@@ -293,10 +293,10 @@ int menu_show(struct menu *m)
 		}
 	}
 
-	gotoXY(m->nb_entries + 2, 3);
+	gotoXY(3, m->nb_entries + 2);
 	printf("%*c", auto_display_len + 4, ' ');
 
-	gotoXY(m->selected->num + 1, 3);
+	gotoXY(3, m->selected->num + 1);
 
 	do {
 		struct menu_entry *old_selected = m->selected;
@@ -361,7 +361,8 @@ int menu_show(struct menu *m)
 				break;
 			clear();
 			gotoXY(1,1);
-			m->selected->action(m, m->selected);
+			if (m->selected->action)
+				m->selected->action(m, m->selected);
 			if (m->selected->non_re_ent)
 				return m->selected->num;
 			else

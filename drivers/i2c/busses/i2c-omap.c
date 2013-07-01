@@ -24,10 +24,6 @@
  * GNU General Public License for more details.
  */
 
-
-/* #include <linux/delay.h> */
-
-
 #include <clock.h>
 #include <common.h>
 #include <driver.h>
@@ -43,12 +39,6 @@
 #include <i2c/i2c.h>
 #include <mach/generic.h>
 #include <mach/omap3-clock.h>
-
-#define OMAP_I2C_SIZE		0x3f
-#define OMAP1_I2C_BASE		0xfffb3800
-#define OMAP2_I2C_BASE1		0x48070000
-#define OMAP2_I2C_BASE2		0x48072000
-#define OMAP2_I2C_BASE3		0x48060000
 
 /* This will be the driver name */
 #define DRIVER_NAME "i2c-omap"
@@ -141,11 +131,17 @@
 #define SYSC_IDLEMODE_SMART		0x2
 #define SYSC_CLOCKACTIVITY_FCLK		0x2
 
+/* i2c driver flags from kernel */
+#define OMAP_I2C_FLAG_RESET_REGS_POSTIDLE	BIT(3)
+#define OMAP_I2C_FLAG_BUS_SHIFT_NONE		0
+#define OMAP_I2C_FLAG_BUS_SHIFT_1		BIT(7)
+#define OMAP_I2C_FLAG_BUS_SHIFT_2		BIT(8)
+#define OMAP_I2C_FLAG_BUS_SHIFT__SHIFT		7
 
 struct omap_i2c_struct {
 	void 			*base;
-	u8			*regs;
 	u8			reg_shift;
+	struct omap_i2c_driver_data	*data;
 	struct resource		*ioarea;
 	u32			speed;		/* Speed of bus in Khz */
 	u16			cmd_err;
@@ -241,22 +237,50 @@ static const u8 omap4_reg_map[] = {
 	[OMAP_I2C_IRQENABLE_CLR] = 0x30,
 };
 
+struct omap_i2c_driver_data {
+	u32		flags;
+	u32		fclk_rate;
+	u8		*regs;
+};
+
+static struct omap_i2c_driver_data omap3_data = {
+	.flags =	OMAP_I2C_FLAG_RESET_REGS_POSTIDLE |
+			OMAP_I2C_FLAG_BUS_SHIFT_2,
+	.fclk_rate =	48000,
+	.regs =		(u8 *) reg_map,
+};
+
+static struct omap_i2c_driver_data omap4_data = {
+	.flags =	OMAP_I2C_FLAG_BUS_SHIFT_NONE,
+	.fclk_rate =	96000,
+	.regs =		(u8 *) omap4_reg_map,
+};
+
+static struct omap_i2c_driver_data am33xx_data = {
+	.flags =	OMAP_I2C_FLAG_RESET_REGS_POSTIDLE |
+			OMAP_I2C_FLAG_BUS_SHIFT_NONE,
+	.fclk_rate =	96000,
+	.regs =		(u8 *) omap4_reg_map,
+};
+
 static inline void omap_i2c_write_reg(struct omap_i2c_struct *i2c_omap,
 				      int reg, u16 val)
 {
 	__raw_writew(val, i2c_omap->base +
-			(i2c_omap->regs[reg] << i2c_omap->reg_shift));
+			(i2c_omap->data->regs[reg] << i2c_omap->reg_shift));
 }
 
 static inline u16 omap_i2c_read_reg(struct omap_i2c_struct *i2c_omap, int reg)
 {
 	return __raw_readw(i2c_omap->base +
-			(i2c_omap->regs[reg] << i2c_omap->reg_shift));
+			(i2c_omap->data->regs[reg] << i2c_omap->reg_shift));
 }
 
 static void omap_i2c_unidle(struct omap_i2c_struct *i2c_omap)
 {
-	if (cpu_is_omap34xx()) {
+	struct omap_i2c_driver_data *i2c_data = i2c_omap->data;
+
+	if (i2c_data->flags & OMAP_I2C_FLAG_RESET_REGS_POSTIDLE) {
 		omap_i2c_write_reg(i2c_omap, OMAP_I2C_CON_REG, 0);
 		omap_i2c_write_reg(i2c_omap, OMAP_I2C_PSC_REG, i2c_omap->pscstate);
 		omap_i2c_write_reg(i2c_omap, OMAP_I2C_SCLL_REG, i2c_omap->scllstate);
@@ -299,9 +323,8 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 	u16 psc = 0, scll = 0, sclh = 0, buf = 0;
 	u16 fsscll = 0, fssclh = 0, hsscll = 0, hssclh = 0;
 	uint64_t start;
-
-	unsigned long fclk_rate = 12000000;
 	unsigned long internal_clk = 0;
+	struct omap_i2c_driver_data *i2c_data = i2c_omap->data;
 
 	if (i2c_omap->rev >= OMAP_I2C_REV_2) {
 		/* Disable I2C controller before soft reset */
@@ -352,63 +375,50 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 	}
 	omap_i2c_write_reg(i2c_omap, OMAP_I2C_CON_REG, 0);
 
-	/* omap1 handling is missing here */
+	/*
+	 * HSI2C controller internal clk rate should be 19.2 Mhz for
+	 * HS and for all modes on 2430. On 34xx we can use lower rate
+	 * to get longer filter period for better noise suppression.
+	 * The filter is iclk (fclk for HS) period.
+	 */
+	if (i2c_omap->speed > 400)
+		internal_clk = 19200;
+	else if (i2c_omap->speed > 100)
+		internal_clk = 9600;
+	else
+		internal_clk = 4000;
 
-	if (cpu_is_omap2430() || cpu_is_omap34xx() || cpu_is_omap4xxx()) {
+	/* Compute prescaler divisor */
+	psc = i2c_data->fclk_rate / internal_clk;
+	psc = psc - 1;
 
-		/*
-		 * HSI2C controller internal clk rate should be 19.2 Mhz for
-		 * HS and for all modes on 2430. On 34xx we can use lower rate
-		 * to get longer filter period for better noise suppression.
-		 * The filter is iclk (fclk for HS) period.
-		 */
-		if (i2c_omap->speed > 400 || cpu_is_omap2430())
-			internal_clk = 19200;
-		else if (i2c_omap->speed > 100)
-			internal_clk = 9600;
-		else
-			internal_clk = 4000;
-		fclk_rate = 96000000 / 1000;
+	/* If configured for High Speed */
+	if (i2c_omap->speed > 400) {
+		unsigned long scl;
 
-		/* Compute prescaler divisor */
-		psc = fclk_rate / internal_clk;
-		psc = psc - 1;
+		/* For first phase of HS mode */
+		scl = internal_clk / 400;
+		fsscll = scl - (scl / 3) - 7;
+		fssclh = (scl / 3) - 5;
 
-		/* If configured for High Speed */
-		if (i2c_omap->speed > 400) {
-			unsigned long scl;
+		/* For second phase of HS mode */
+		scl = i2c_data->fclk_rate / i2c_omap->speed;
+		hsscll = scl - (scl / 3) - 7;
+		hssclh = (scl / 3) - 5;
+	} else if (i2c_omap->speed > 100) {
+		unsigned long scl;
 
-			/* For first phase of HS mode */
-			scl = internal_clk / 400;
-			fsscll = scl - (scl / 3) - 7;
-			fssclh = (scl / 3) - 5;
-
-			/* For second phase of HS mode */
-			scl = fclk_rate / i2c_omap->speed;
-			hsscll = scl - (scl / 3) - 7;
-			hssclh = (scl / 3) - 5;
-		} else if (i2c_omap->speed > 100) {
-			unsigned long scl;
-
-			/* Fast mode */
-			scl = internal_clk / i2c_omap->speed;
-			fsscll = scl - (scl / 3) - 7;
-			fssclh = (scl / 3) - 5;
-		} else {
-			/* Standard mode */
-			fsscll = internal_clk / (i2c_omap->speed * 2) - 7;
-			fssclh = internal_clk / (i2c_omap->speed * 2) - 5;
-		}
-		scll = (hsscll << OMAP_I2C_SCLL_HSSCLL) | fsscll;
-		sclh = (hssclh << OMAP_I2C_SCLH_HSSCLH) | fssclh;
+		/* Fast mode */
+		scl = internal_clk / i2c_omap->speed;
+		fsscll = scl - (scl / 3) - 7;
+		fssclh = (scl / 3) - 5;
 	} else {
-		/* Program desired operating rate */
-		fclk_rate /= (psc + 1) * 1000;
-		if (psc > 2)
-			psc = 2;
-		scll = fclk_rate / (i2c_omap->speed * 2) - 7 + psc;
-		sclh = fclk_rate / (i2c_omap->speed * 2) - 7 + psc;
+		/* Standard mode */
+		fsscll = internal_clk / (i2c_omap->speed * 2) - 7;
+		fssclh = internal_clk / (i2c_omap->speed * 2) - 5;
 	}
+	scll = (hsscll << OMAP_I2C_SCLL_HSSCLL) | fsscll;
+	sclh = (hssclh << OMAP_I2C_SCLH_HSSCLH) | fssclh;
 
 	/* Setup clock prescaler to obtain approx 12MHz I2C module clock: */
 	omap_i2c_write_reg(i2c_omap, OMAP_I2C_PSC_REG, psc);
@@ -433,7 +443,7 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 			OMAP_I2C_IE_AL)  | ((i2c_omap->fifo_size) ?
 				(OMAP_I2C_IE_RDR | OMAP_I2C_IE_XDR) : 0);
 	omap_i2c_write_reg(i2c_omap, OMAP_I2C_IE_REG, i2c_omap->iestate);
-	if (cpu_is_omap34xx()) {
+	if (i2c_data->flags & OMAP_I2C_FLAG_RESET_REGS_POSTIDLE) {
 		i2c_omap->pscstate = psc;
 		i2c_omap->scllstate = scll;
 		i2c_omap->sclhstate = sclh;
@@ -525,15 +535,6 @@ complete:
 				if (dev->buf_len) {
 					*dev->buf++ = w;
 					dev->buf_len--;
-					/* Data reg from 2430 is 8 bit wide */
-					if (!cpu_is_omap2430() &&
-							!cpu_is_omap34xx() &&
-							!cpu_is_omap4xxx()) {
-						if (dev->buf_len) {
-							*dev->buf++ = w >> 8;
-							dev->buf_len--;
-						}
-					}
 				} else {
 					if (stat & OMAP_I2C_STAT_RRDY)
 						dev_err(&dev->adapter.dev,
@@ -566,15 +567,6 @@ complete:
 				if (dev->buf_len) {
 					w = *dev->buf++;
 					dev->buf_len--;
-					/* Data reg from  2430 is 8 bit wide */
-					if (!cpu_is_omap2430() &&
-							!cpu_is_omap34xx() &&
-							!cpu_is_omap4xxx()) {
-						if (dev->buf_len) {
-							w |= *dev->buf++ << 8;
-							dev->buf_len--;
-						}
-					}
 				} else {
 					if (stat & OMAP_I2C_STAT_XRDY)
 						dev_err(&dev->adapter.dev,
@@ -706,7 +698,7 @@ static int omap_i2c_xfer_msg(struct i2c_adapter *adapter,
 	ret = omap_i2c_isr(i2c_omap);
 	while (ret){
 		ret = omap_i2c_isr(i2c_omap);
-		if (is_timeout(start, MSECOND)) {
+		if (is_timeout(start, 50 * MSECOND)) {
 				dev_err(&adapter->dev,
 				"timed out on polling for "
 				"open i2c message handling\n");
@@ -773,9 +765,10 @@ static int __init
 i2c_omap_probe(struct device_d *pdev)
 {
 	struct omap_i2c_struct	*i2c_omap;
-	/* struct i2c_platform_data *pdata; */
+	struct omap_i2c_driver_data *i2c_data;
 	int r;
 	u32 speed = 0;
+	u16 s;
 
 	i2c_omap = kzalloc(sizeof(struct omap_i2c_struct), GFP_KERNEL);
 	if (!i2c_omap) {
@@ -783,13 +776,13 @@ i2c_omap_probe(struct device_d *pdev)
 		goto err_free_mem;
 	}
 
-	if (cpu_is_omap4xxx()) {
-		i2c_omap->regs = (u8 *)omap4_reg_map;
-		i2c_omap->reg_shift = 0;
-	} else {
-		i2c_omap->regs = (u8 *)reg_map;
-		i2c_omap->reg_shift = 2;
-	}
+	r = dev_get_drvdata(pdev, (unsigned long *)&i2c_data);
+	if (r)
+		return r;
+
+	i2c_omap->data = i2c_data;
+	i2c_omap->reg_shift = (i2c_data->flags >>
+					OMAP_I2C_FLAG_BUS_SHIFT__SHIFT) & 3;
 
 	if (pdev->platform_data != NULL)
 		speed = *(u32 *)pdev->platform_data;
@@ -802,28 +795,23 @@ i2c_omap_probe(struct device_d *pdev)
 	omap_i2c_unidle(i2c_omap);
 
 	i2c_omap->rev = omap_i2c_read_reg(i2c_omap, OMAP_I2C_REV_REG) & 0xff;
-	/* i2c_omap->base = OMAP2_I2C_BASE3; */
 
-	if (cpu_is_omap2430() || cpu_is_omap34xx() || cpu_is_omap4xxx()) {
-		u16 s;
+	/* Set up the fifo size - Get total size */
+	s = (omap_i2c_read_reg(i2c_omap, OMAP_I2C_BUFSTAT_REG) >> 14) & 0x3;
+	i2c_omap->fifo_size = 0x8 << s;
 
-		/* Set up the fifo size - Get total size */
-		s = (omap_i2c_read_reg(i2c_omap, OMAP_I2C_BUFSTAT_REG) >> 14) & 0x3;
-		i2c_omap->fifo_size = 0x8 << s;
+	/*
+	 * Set up notification threshold as half the total available
+	 * size. This is to ensure that we can handle the status on int
+	 * call back latencies.
+	 */
 
-		/*
-		 * Set up notification threshold as half the total available
-		 * size. This is to ensure that we can handle the status on int
-		 * call back latencies.
-		 */
+	i2c_omap->fifo_size = (i2c_omap->fifo_size / 2);
 
-		i2c_omap->fifo_size = (i2c_omap->fifo_size / 2);
-
-		if (i2c_omap->rev >= OMAP_I2C_REV_ON_4430)
-			i2c_omap->b_hw = 0; /* Disable hardware fixes */
-		else
-			i2c_omap->b_hw = 1; /* Enable hardware fixes */
-	}
+	if (i2c_omap->rev >= OMAP_I2C_REV_ON_4430)
+		i2c_omap->b_hw = 0; /* Disable hardware fixes */
+	else
+		i2c_omap->b_hw = 1; /* Enable hardware fixes */
 
 	/* reset ASAP, clearing any IRQs */
 	omap_i2c_init(i2c_omap);
@@ -856,9 +844,25 @@ err_free_mem:
 	return r;
 }
 
+static struct platform_device_id omap_i2c_ids[] = {
+	 {
+		.name = "i2c-omap3",
+		.driver_data = (unsigned long)&omap3_data,
+	}, {
+		.name = "i2c-omap4",
+		.driver_data = (unsigned long)&omap4_data,
+	}, {
+		.name = "i2c-am33xx",
+		.driver_data = (unsigned long)&am33xx_data,
+	}, {
+		/* sentinel */
+	},
+};
+
 static struct driver_d omap_i2c_driver = {
 	.probe		= i2c_omap_probe,
 	.name		= DRIVER_NAME,
+	.id_table	= omap_i2c_ids,
 };
 device_platform_driver(omap_i2c_driver);
 

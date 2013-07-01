@@ -27,4 +27,10 @@
 #define cpu_is_omap4xxx()	(0)
 #endif
 
+#ifdef CONFIG_ARCH_AM33XX
+#define cpu_is_am33xx()		(1)
+#else
+#define cpu_is_am33xx()		(0)
+#endif
+
 #endif

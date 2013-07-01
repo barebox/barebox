@@ -230,7 +230,8 @@ struct dpll_param;
 void omap4_ddr_init(const struct ddr_regs *, const struct dpll_param *);
 void omap4_power_i2c_send(u32);
 unsigned int omap4_revision(void);
-noinline int omap4_scale_vcores(unsigned vsel0_pin);
+int omap4430_scale_vcores(void);
+int omap4460_scale_vcores(unsigned vsel0_pin, unsigned volt_mv);
 void omap4_set_warmboot_order(u32 *device_list);
 
 #endif

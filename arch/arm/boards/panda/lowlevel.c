@@ -52,6 +52,7 @@ static void noinline panda_init_lowlevel(void)
 	struct dpll_param per = OMAP4_PER_DPLL_PARAM_38M4;
 	struct dpll_param abe = OMAP4_ABE_DPLL_PARAM_38M4;
 	struct dpll_param usb = OMAP4_USB_DPLL_PARAM_38M4;
+	unsigned int rev = omap4_revision();
 
 	writel(CM_SYS_CLKSEL_38M4, CM_SYS_CLKSEL);
 
@@ -69,8 +70,10 @@ static void noinline panda_init_lowlevel(void)
 
 	omap4_ddr_init(&ddr_regs_400_mhz_2cs, &core);
 
-	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
-	omap4_scale_vcores(TPS62361_VSEL0_GPIO);
+	if (rev < OMAP4460_ES1_0)
+		omap4430_scale_vcores();
+	else
+		omap4460_scale_vcores(TPS62361_VSEL0_GPIO, 1210);
 }
 
 void barebox_arm_reset_vector(void)

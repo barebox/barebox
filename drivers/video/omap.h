@@ -1,0 +1,187 @@
+/*
+ * TI Omap4 Frame Buffer device driver
+ *
+ * Copyright (C) 2013 Christoph Fritz <chf.fritz@googlemail.com>
+ *
+ * See file CREDITS for list of people who contributed to this
+ * project.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#ifndef H_BAREBOX_DRIVER_VIDEO_OMAP4_REGS_H
+#define H_BAREBOX_DRIVER_VIDEO_OMAP4_REGS_H
+
+#include <types.h>
+#include <common.h>
+
+#define OFB_TIMEOUT	(128 * USECOND)
+
+#define _ofb_read(io, reg)		__raw_readl((io)+(reg))
+#define _ofb_write(val, io, reg)	__raw_writel((val), (io)+(reg))
+
+/* TRM: 10.1.3.2 DSS Registers */
+#define O4_DSS_REVISION	0x0
+#define O4_DSS_SYSSTATUS	0x14
+#define O4_DSS_CTRL		0x40
+#define O4_DSS_STATUS		0x5c
+
+#define o4_dss_read(reg)		_ofb_read(fbi->dss, reg)
+#define o4_dss_write(val, reg)		_ofb_write(val, fbi->dss, reg)
+
+/* TRM: 10.2.7.3 Display Controller Registers */
+#define O4_DISPC_REVISION		0x0
+#define O4_DISPC_IRQSTATUS		0x18
+#define O4_DISPC_VID1_BA0		0xbc
+#define O4_DISPC_VID1_BA1		0xc0
+#define O4_DISPC_VID1_POSITION		0xc4
+#define O4_DISPC_VID1_SIZE		0xc8
+#define O4_DISPC_VID1_ATTRIBUTES	0xcc
+#define O4_DISPC_VID1_ROW_INC		0xd8
+#define O4_DISPC_VID1_PIXEL_INC	0xdc
+#define O4_DISPC_VID1_PICTURE_SIZE	0xe4
+#define O4_DISPC_VID1_PRELOAD		0x230
+#define O4_DISPC_CONTROL2		0x238
+#define O4_DISPC_DEFAULT_COLOR2	0x3ac
+#define O4_DISPC_SIZE_LCD2		0x3cc
+#define O4_DISPC_TIMING_H2		0x400
+#define O4_DISPC_TIMING_V2		0x404
+#define O4_DISPC_POL_FREQ2		0x408
+#define O4_DISPC_DIVISOR2		0x40c
+#define O4_DISPC_DIVISOR		0x804
+
+#define o4_dispc_read(reg)		_ofb_read(fbi->dispc, reg)
+#define o4_dispc_write(val, reg)	_ofb_write(val, fbi->dispc, reg)
+
+#define DSS_DISPC_VIDn_POSITION_VIDPOSX(_x)		((_x) << 0)
+#define DSS_DISPC_VIDn_POSITION_VIDPOSY(_y)		((_y) << 16)
+
+#define DSS_DISPC_VIDn_PICTURE_SIZE_VIDORGSIZEX(_x)	((_x) << 0)
+#define DSS_DISPC_VIDn_PICTURE_SIZE_VIDORGSIZEY(_y)	((_y) << 16)
+
+#define DSS_DISPC_VIDn_SIZE_VIDSIZEX(_x)		((_x) << 0)
+#define DSS_DISPC_VIDn_SIZE_VIDSIZEY(_y)		((_y) << 16)
+
+#define DSS_DISPC_SIZE_LCD_PPL(_x)			((_x) << 0)
+#define DSS_DISPC_SIZE_LCD_LPP(_y)			((_y) << 16)
+
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDENABLE		(1u << 0)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(_fmt)	((_fmt) << 1)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_RGB12	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(4u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_ARGB16	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(5u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_RGB16	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(6u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_ARGB16o	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(7u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_xRGB24u	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(8u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_RGB24p	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(9u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_YUV2	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(10u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_UYVY	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(11u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_ARGB32	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(12u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_RGBA32	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(13u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT_xRGB32	\
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDFORMAT(14u)
+
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDBURSTSIZE(_b)	((_b) << 14)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDBURSTSIZE_2x128 \
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDBURSTSIZE(0u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDBURSTSIZE_4x128 \
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDBURSTSIZE(1u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDBURSTSIZE_8x128 \
+	DSS_DISPC_VIDn_ATTRIBUTES_VIDBURSTSIZE(2u)
+
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDCHANNELOUT	(1u << 16)
+#define DSS_DISPC_VIDn_ATTRIBUTES_SELFREFRESHAUTO	(1u << 17)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDFIFOPRELOAD	(1u << 19)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDVERTICALTAPS	(1u << 21)
+#define DSS_DISPC_VIDn_ATTRIBUTES_DOUBLESTRIDE		(1u << 22)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDARBITRATION	(1u << 23)
+#define DSS_DISPC_VIDn_ATTRIBUTES_VIDSELFREFRESH	(1u << 24)
+#define DSS_DISPC_VIDn_ATTRIBUTES_ZORDERENABLE		(1u << 25)
+
+#define DSS_DISPC_VIDn_ATTRIBUTES_CHANNELOUT2(_b)  ((_b) << 30)
+#define DSS_DISPC_VIDn_ATTRIBUTES_CHANNELOUT2_PRIMARY_LCD \
+	DSS_DISPC_VIDn_ATTRIBUTES_CHANNELOUT2(0u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_CHANNELOUT2_SECONDARY_LCD \
+	DSS_DISPC_VIDn_ATTRIBUTES_CHANNELOUT2(1u)
+#define DSS_DISPC_VIDn_ATTRIBUTES_CHANNELOUT2_WRITEBACK_MEM \
+	DSS_DISPC_VIDn_ATTRIBUTES_CHANNELOUT2(3u)
+
+#define DSS_DISPC_CONTROL_LCDENABLE			(1u << 0)
+#define DSS_DISPC_CONTROL_TVENABLE			(1u << 1)
+#define DSS_DISPC_CONTROL_MONOCOLOR			(1u << 2)
+#define DSS_DISPC_CONTROL_STNTFT			(1u << 3)
+#define DSS_DISPC_CONTROL_M8B				(1u << 4)
+#define DSS_DISPC_CONTROL_GOLCD			(1u << 5)
+#define DSS_DISPC_CONTROL_GOTV				(1u << 6)
+#define DSS_DISPC_CONTROL_STDITHERENABLE		(1u << 7)
+
+#define DSS_DISPC_CONTROL_TFTDATALINES(_l)		((_l) << 8)
+#define DSS_DISPC_CONTROL_TFTDATALINES_12 \
+	DSS_DISPC_CONTROL_TFTDATALINES(0u)
+#define DSS_DISPC_CONTROL_TFTDATALINES_16 \
+	DSS_DISPC_CONTROL_TFTDATALINES(1u)
+#define DSS_DISPC_CONTROL_TFTDATALINES_18 \
+	DSS_DISPC_CONTROL_TFTDATALINES(2u)
+#define DSS_DISPC_CONTROL_TFTDATALINES_24 \
+	DSS_DISPC_CONTROL_TFTDATALINES(3u)
+
+#define DSS_DISPC_CONTROL_STALLMODE			(1u << 11)
+#define DSS_DISPC_CONTROL_OVERLAYOPTIMIZATION		(1u << 12)
+#define DSS_DISPC_CONTROL_GPIN0			(1u << 13) /* ro */
+#define DSS_DISPC_CONTROL_GPIN1			(1u << 14) /* ro */
+#define DSS_DISPC_CONTROL_GPOUT0			(1u << 15)
+#define DSS_DISPC_CONTROL_GPOUT1			(1u << 16)
+#define DSS_DISPC_CONTROL_HT(_ht)			((_ht) << 17)
+#define DSS_DISPC_CONTROL_TDMENABLE			(1u << 20)
+#define DSS_DISPC_CONTROL_TDMPARALLELMODE(_pm)		((_pm) << 21)
+#define DSS_DISPC_CONTROL_TDMCYCLEFORMAT(_cf)		((_cf) << 23)
+#define DSS_DISPC_CONTROL_TDMUNUSEDBITS(_ub)		((_ub) << 25)
+#define DSS_DISPC_CONTROL_PCKFREEENABLE		(1u << 27)
+#define DSS_DISPC_CONTROL_LCDENABLESIGNAL		(1u << 28)
+#define DSS_DISPC_CONTROL_LCDENABLEPOL			(1u << 29)
+#define DSS_DISPC_CONTROL_SPATIALTEMPD(_df)		((_df) << 30)
+
+#define DSS_DISPC_POL_FREQ_IVS				(1u << 12)
+#define DSS_DISPC_POL_FREQ_IHS				(1u << 13)
+#define DSS_DISPC_POL_FREQ_IPC				(1u << 14)
+#define DSS_DISPC_POL_FREQ_IEO				(1u << 15)
+#define DSS_DISPC_POL_FREQ_RF				(1u << 16)
+#define DSS_DISPC_POL_FREQ_ONOFF			(1u << 17)
+
+#define DSS_DISPC_TIMING_H_HSW(_hsw)			((_hsw) << 0)
+#define DSS_DISPC_TIMING_H_HFP(_hfp)			((_hfp) << 8)
+#define DSS_DISPC_TIMING_H_HBP(_hbp)			((_hbp) << 20)
+
+#define DSS_DISPC_TIMING_V_VSW(_vsw)			((_vsw) << 0)
+#define DSS_DISPC_TIMING_V_VFP(_vfp)			((_vfp) << 8)
+#define DSS_DISPC_TIMING_V_VBP(_vbp)			((_vbp) << 20)
+
+#define DSS_DISPC_DIVISOR_ENABLE			(1u << 0)
+#define DSS_DISPC_DIVISOR_LCD(_lcd)			((_lcd) << 16)
+
+#define DSS_DISPC_DIVISOR2_PCD(_pcd)			((_pcd) << 0)
+#define DSS_DISPC_DIVISOR2_LCD(_lcd)			((_lcd) << 16)
+
+#define DSS_DISPC_IRQSTATUS_FRAMEDONE			(1u << 0)
+#define DSS_DISPC_IRQSTATUS_FRAMEDONE2			(1u << 22)
+
+#define DSS_DSS_SYSSTATUS_RESETDONE			(1u << 0)
+
+#endif	/* H_BAREBOX_DRIVER_VIDEO_O4_REGS_H */

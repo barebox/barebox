@@ -4,6 +4,7 @@ dtb-$(CONFIG_ARCH_IMX53) += imx53-qsb.dtb
 dtb-$(CONFIG_ARCH_IMX6) += imx6q-dmo-realq7.dtb \
 	imx6q-sabrelite.dtb \
 	imx6q-sabresd.dtb
+dtb-$(CONFIG_ARCH_MVEBU) += dove-cubox.dtb
 
 BUILTIN_DTB := $(patsubst "%",%,$(CONFIG_BUILTIN_DTB_NAME))
 obj-$(CONFIG_BUILTIN_DTB) += $(BUILTIN_DTB).dtb.o

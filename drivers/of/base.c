@@ -99,21 +99,6 @@ int of_n_size_cells(struct device_node *np)
 }
 EXPORT_SYMBOL(of_n_size_cells);
 
-static void of_bus_default_count_cells(struct device_node *dev,
-				       int *addrc, int *sizec)
-{
-	if (addrc)
-		*addrc = of_n_addr_cells(dev);
-	if (sizec)
-		*sizec = of_n_size_cells(dev);
-}
-
-static void of_bus_count_cells(struct device_node *dev,
-			int *addrc, int *sizec)
-{
-	of_bus_default_count_cells(dev, addrc, sizec);
-}
-
 struct property *of_find_property(const struct device_node *np,
 				  const char *name, int *lenp)
 {
@@ -1543,48 +1528,22 @@ int of_set_property(struct device_node *np, const char *name, const void *val, i
 	return 0;
 }
 
-static u64 dt_mem_next_cell(int s, const __be32 **cellp)
-{
-	const __be32 *p = *cellp;
-
-	*cellp = p + s;
-	return of_read_number(p, s);
-}
-
 int of_add_memory(struct device_node *node, bool dump)
 {
-	int na, nc;
-	const __be32 *reg, *endp;
-	int len, r = 0, ret;
 	const char *device_type;
+	struct resource res;
+	int n = 0, ret;
 
 	ret = of_property_read_string(node, "device_type", &device_type);
-	if (ret)
+	if (ret || of_node_cmp(device_type, "memory"))
 		return -ENXIO;
 
-	if (of_node_cmp(device_type, "memory"))
-		return -ENXIO;
-
-	of_bus_count_cells(node, &na, &nc);
-
-	reg = of_get_property(node, "reg", &len);
-	if (!reg)
-		return -EINVAL;
-
-	endp = reg + (len / sizeof(__be32));
-
-	while ((endp - reg) >= (na + nc)) {
-		u64 base, size;
-
-		base = dt_mem_next_cell(na, &reg);
-		size = dt_mem_next_cell(nc, &reg);
-
-		if (size == 0)
+	while (!of_address_to_resource(node, n, &res)) {
+		if (!resource_size(&res))
 			continue;
-
-		of_add_memory_bank(node, dump, r, base, size);
-
-		r++;
+		of_add_memory_bank(node, dump, n,
+				res.start, resource_size(&res));
+		n++;
 	}
 
 	return 0;

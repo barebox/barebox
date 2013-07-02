@@ -1594,6 +1594,7 @@ void of_free(struct device_node *node)
 {
 	struct device_node *n, *nt;
 	struct property *p, *pt;
+	struct device_d *dev;
 
 	if (!node)
 		return;
@@ -1610,10 +1611,9 @@ void of_free(struct device_node *node)
 		list_del(&node->list);
 	}
 
-	if (node->device)
-		node->device->device_node = NULL;
-	else
-		free(node->resource);
+	dev = of_find_device_by_node(node);
+	if (dev)
+		dev->device_node = NULL;
 
 	free(node->name);
 	free(node->full_name);

@@ -30,9 +30,6 @@ struct device_node {
 	struct list_head children;
 	struct list_head parent_list;
 	struct list_head list;
-	struct resource *resource;
-	int num_resource;
-	struct device_d *device;
 	struct list_head phandles;
 	phandle phandle;
 };

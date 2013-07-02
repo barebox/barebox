@@ -109,7 +109,7 @@ static int armada_370_xp_init_soc(void)
 	armada_370_xp_add_uart();
 	return 0;
 }
-postcore_initcall(armada_370_xp_init_soc);
+core_initcall(armada_370_xp_init_soc);
 
 void __noreturn reset_cpu(unsigned long addr)
 {

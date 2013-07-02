@@ -132,7 +132,7 @@ static int dove_init_soc(void)
 
 	return 0;
 }
-postcore_initcall(dove_init_soc);
+core_initcall(dove_init_soc);
 
 void __noreturn reset_cpu(unsigned long addr)
 {

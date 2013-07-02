@@ -95,7 +95,7 @@ static int kirkwood_init_soc(void)
 
 	return 0;
 }
-postcore_initcall(kirkwood_init_soc);
+core_initcall(kirkwood_init_soc);
 
 void __noreturn reset_cpu(unsigned long addr)
 {

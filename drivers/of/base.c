@@ -1840,7 +1840,7 @@ const struct of_device_id of_default_bus_match_table[] = {
 
 int of_probe(void)
 {
-	struct device_node *memory, *n;
+	struct device_node *memory;
 
 	if(!root_node)
 		return -ENODEV;
@@ -1854,8 +1854,7 @@ int of_probe(void)
 	if (memory)
 		of_add_memory(memory, false);
 
-	list_for_each_entry(n, &root_node->children, parent_list)
-		__of_probe(n, of_default_bus_match_table, NULL);
+	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
 	return 0;
 }

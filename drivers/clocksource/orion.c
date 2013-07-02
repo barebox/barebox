@@ -49,7 +49,7 @@ static int orion_timer_probe(struct device_d *dev)
 	uint32_t val;
 
 	timer_base = dev_request_mem_region(dev, 0);
-	tclk = clk_get(dev, "tclk");
+	tclk = clk_get(dev, NULL);
 
 	/* setup TIMER0 as free-running clock source */
 	__raw_writel(~0, timer_base + TIMER0_VAL);

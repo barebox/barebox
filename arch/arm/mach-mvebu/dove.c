@@ -114,7 +114,7 @@ static int dove_init_clocks(void)
 	}
 
 	tclk = clk_fixed("tclk", rate);
-	return clk_register_clkdev(tclk, NULL, "orion-timer");
+	return 0;
 }
 
 static int dove_init_soc(void)
@@ -123,6 +123,7 @@ static int dove_init_soc(void)
 
 	dove_remap_mc_regs();
 	dove_init_clocks();
+	clkdev_add_physbase(tclk, (unsigned int)DOVE_TIMER_BASE, NULL);
 	add_generic_device("orion-timer", DEVICE_ID_SINGLE, NULL,
 			   (unsigned int)DOVE_TIMER_BASE, 0x30,
 			   IORESOURCE_MEM, NULL);

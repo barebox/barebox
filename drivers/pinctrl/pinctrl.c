@@ -64,14 +64,14 @@ int pinctrl_select_state(struct device_d *dev, const char *name)
 	if (!np)
 		return 0;
 
-	if (!of_find_property(np, "pinctrl-0"))
+	if (!of_find_property(np, "pinctrl-0", NULL))
 		return 0;
 
 	/* For each defined state ID */
 	for (state = 0; ; state++) {
 		/* Retrieve the pinctrl-* property */
 		propname = asprintf("pinctrl-%d", state);
-		prop = of_find_property(np, propname);
+		prop = of_find_property(np, propname, NULL);
 		free(propname);
 
 		if (!prop) {

@@ -296,7 +296,7 @@ static int eth_of_fixup(struct device_node *root)
 			continue;
 		}
 
-		node = of_find_node_by_path(root, edev->nodepath);
+		node = of_find_node_by_path(edev->nodepath);
 		if (!node) {
 			dev_dbg(&edev->dev, "%s: fixup node %s not found\n",
 					__func__, edev->nodepath);

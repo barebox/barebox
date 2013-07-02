@@ -116,7 +116,7 @@ static struct stmpe_platform_data *stmpe_of_probe(struct device_d *dev)
 
 	pdata = xzalloc(sizeof(*pdata));
 
-	device_node_for_nach_child(dev->device_node, node) {
+	for_each_child_of_node(dev->device_node, node) {
 		if (!strcmp(node->name, "stmpe_gpio")) {
 			pdata->blocks |= STMPE_BLOCK_GPIO;
 		}

@@ -35,25 +35,21 @@ static int hb_fixup(struct device_node *root)
 	__be32 latency;
 
 	if (!(reg & HB_PWRDOM_STAT_SATA)) {
-		of_tree_for_each_node(node, root) {
-			if (of_device_is_compatible(node, "calxeda,hb-ahci"))
-				of_set_property(node, "status", "disabled",
-						sizeof("disabled"), 1);
-		}
+		for_each_compatible_node(node, NULL, "calxeda,hb-ahci")
+			of_set_property(node, "status", "disabled",
+					sizeof("disabled"), 1);
 	}
 
 	if (!(reg & HB_PWRDOM_STAT_EMMC)) {
-		of_tree_for_each_node(node, root) {
-			if (of_device_is_compatible(node, "calxeda,hb-sdhci"))
-				of_set_property(node, "status", "disabled",
-						sizeof("disabled"), 1);
-		}
+		for_each_compatible_node(node, NULL, "calxeda,hb-sdhci")
+			of_set_property(node, "status", "disabled",
+					sizeof("disabled"), 1);
 	}
 
 	if ((opp_table[0] >> 16) != HB_OPP_VERSION)
 		return 0;
 
-	node = of_find_node_by_path(root, "/cpus/cpu@0");
+	node = of_find_node_by_path("/cpus/cpu@0");
 	if (!node)
 		return 0;
 
@@ -89,7 +85,7 @@ static int highbank_mem_init(void)
 
 	of_set_root_node(root);
 
-	np = of_find_node_by_path(root, "/memory");
+	np = of_find_node_by_path("/memory");
 	if (!np) {
 		pr_warn("no memory node use default configuration\n");
 		goto not_found;

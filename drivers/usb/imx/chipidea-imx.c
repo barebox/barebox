@@ -76,16 +76,15 @@ static int imx_chipidea_port_post_init(void *drvdata)
 
 static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 {
-	const void *out_args;
-	struct device_node *usbmisc_np;
+	struct of_phandle_args out_args;
 	enum usb_dr_mode mode;
 	enum usb_phy_interface phymode;
 
-	of_parse_phandles_with_args(ci->dev->device_node, "fsl,usbmisc",
-			"#index-cells", 0, &usbmisc_np, &out_args);
+	if (of_parse_phandle_with_args(ci->dev->device_node, "fsl,usbmisc",
+					"#index-cells", 0, &out_args))
+		return -ENODEV;
 
-	ci->portno = be32_to_cpup(out_args);
-
+	ci->portno = out_args.args[0];
 	ci->flags = MXC_EHCI_MODE_UTMI_8BIT;
 
 	mode = of_usb_get_dr_mode(ci->dev->device_node, NULL);
@@ -122,7 +121,8 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 		return -EINVAL;
 	}
 
-	if (of_find_property(ci->dev->device_node, "disable-over-current"))
+	if (of_find_property(ci->dev->device_node,
+				"disable-over-current", NULL))
 		ci->flags |= MXC_EHCI_DISABLE_OVERCURRENT;
 
 	return 0;

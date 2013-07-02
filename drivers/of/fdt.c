@@ -61,7 +61,7 @@ struct device_node *of_unflatten_dtb(struct device_node *root, void *infdt)
 	int  len;		/* length of the property */
 	const struct fdt_property *fdt_prop;
 	const char *pathp, *name;
-	struct device_node *node = NULL, *n;
+	struct device_node *node = NULL;
 	struct property *p;
 	uint32_t dt_struct;
 	struct fdt_node_header *fnh;
@@ -135,9 +135,10 @@ struct device_node *of_unflatten_dtb(struct device_node *root, void *infdt)
 			if (!node) {
 				node = root;
 			} else {
-				if (merge && (n = of_find_child_by_name(node, pathp)))
-					node = n;
-				else
+				if (merge)
+					node = of_get_child_by_name(node,
+								    pathp);
+				if (!merge || !node)
 					node = of_new_node(node, pathp);
 			}
 
@@ -178,7 +179,10 @@ struct device_node *of_unflatten_dtb(struct device_node *root, void *infdt)
 				goto err;
 			}
 
-			if (merge && (p = of_find_property(node, name))) {
+			p = NULL;
+			if (merge)
+				p = of_find_property(node, name, NULL);
+			if (merge && p) {
 				free(p->value);
 				p->value = xzalloc(len);
 				memcpy(p->value, nodep, len);

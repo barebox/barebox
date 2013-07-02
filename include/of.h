@@ -61,6 +61,7 @@ struct of_reserve_map *of_get_reserve_map(void);
 void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 
+struct device_d;
 struct driver_d;
 
 int of_fix_tree(struct device_node *);
@@ -220,6 +221,11 @@ extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 
 extern struct device_node *of_get_root_node(void);
 extern int of_set_root_node(struct device_node *node);
+
+extern int of_platform_populate(struct device_node *root,
+				const struct of_device_id *matches,
+				struct device_d *parent);
+extern struct device_d *of_find_device_by_node(struct device_node *np);
 
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_device_is_stdout_path(struct device_d *dev);
@@ -546,6 +552,18 @@ static inline int of_modalias_node(struct device_node *node, char *modalias,
 				int len)
 {
 	return -ENOSYS;
+}
+
+static inline int of_platform_populate(struct device_node *root,
+				const struct of_device_id *matches,
+				struct device_d *parent)
+{
+	return -ENOSYS;
+}
+
+static inline struct device_d *of_find_device_by_node(struct device_node *np)
+{
+	return NULL;
 }
 #endif
 

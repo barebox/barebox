@@ -57,8 +57,7 @@ static int mvebu_timer_probe(struct device_d *dev)
 	u32 val;
 
 	timer_base = dev_request_mem_region(dev, 0);
-
-	tclk = clk_get(dev, "tclk");
+	tclk = clk_get(dev, NULL);
 
 	val = __raw_readl(timer_base + TIMER_CTRL_OFF);
 	val &= ~TIMER0_25MHZ;

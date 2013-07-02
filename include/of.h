@@ -101,9 +101,6 @@ int of_get_named_gpio(struct device_node *np,
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
 
-#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
-#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
-
 void of_print_nodes(struct device_node *node, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);

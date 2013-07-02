@@ -64,6 +64,9 @@ struct device_node *root_node;
 
 struct device_node *of_aliases;
 
+#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
+#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
+
 int of_n_addr_cells(struct device_node *np)
 {
 	const __be32 *ip;

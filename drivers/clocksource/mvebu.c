@@ -77,9 +77,15 @@ static int mvebu_timer_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct of_device_id mvebu_timer_dt_ids[] = {
+	{ .compatible = "marvell,armada-370-xp-timer", },
+	{ }
+};
+
 static struct driver_d mvebu_timer_driver = {
 	.name = "mvebu-timer",
 	.probe = mvebu_timer_probe,
+	.of_compatible = DRV_OF_COMPAT(mvebu_timer_dt_ids),
 };
 
 static int mvebu_timer_init(void)

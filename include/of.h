@@ -139,7 +139,7 @@ extern struct device_node *of_new_node(struct device_node *parent,
 				const char *name);
 extern struct device_node *of_create_node(struct device_node *root,
 					const char *path);
-extern void of_free(struct device_node *node);
+extern void of_delete_node(struct device_node *node);
 
 extern int of_machine_is_compatible(const char *compat);
 extern int of_device_is_compatible(const struct device_node *device,
@@ -508,7 +508,7 @@ static inline struct device_node *of_create_node(struct device_node *root,
 	return NULL;
 }
 
-static inline void of_free(struct device_node *node)
+static inline void of_delete_node(struct device_node *node)
 {
 }
 

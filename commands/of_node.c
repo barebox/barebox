@@ -87,7 +87,7 @@ static int do_of_node(int argc, char *argv[])
 			return -ENOENT;
 		}
 
-		of_free(node);
+		of_delete_node(node);
 	}
 
 	return 0;

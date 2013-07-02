@@ -1549,39 +1549,6 @@ int of_add_memory(struct device_node *node, bool dump)
 	return 0;
 }
 
-void of_free(struct device_node *node)
-{
-	struct device_node *n, *nt;
-	struct property *p, *pt;
-	struct device_d *dev;
-
-	if (!node)
-		return;
-
-	list_for_each_entry_safe(p, pt, &node->properties, list)
-		of_delete_property(p);
-
-	list_for_each_entry_safe(n, nt, &node->children, parent_list) {
-		of_free(n);
-	}
-
-	if (node->parent) {
-		list_del(&node->parent_list);
-		list_del(&node->list);
-	}
-
-	dev = of_find_device_by_node(node);
-	if (dev)
-		dev->device_node = NULL;
-
-	free(node->name);
-	free(node->full_name);
-	free(node);
-
-	if (node == root_node)
-		of_set_root_node(NULL);
-}
-
 static void __of_parse_phandles(struct device_node *node)
 {
 	struct device_node *n;
@@ -1677,6 +1644,38 @@ out:
 	free(freep);
 
 	return dn;
+}
+
+void of_delete_node(struct device_node *node)
+{
+	struct device_node *n, *nt;
+	struct property *p, *pt;
+	struct device_d *dev;
+
+	if (!node)
+		return;
+
+	list_for_each_entry_safe(p, pt, &node->properties, list)
+		of_delete_property(p);
+
+	list_for_each_entry_safe(n, nt, &node->children, parent_list)
+		of_delete_node(n);
+
+	if (node->parent) {
+		list_del(&node->parent_list);
+		list_del(&node->list);
+	}
+
+	dev = of_find_device_by_node(node);
+	if (dev)
+		dev->device_node = NULL;
+
+	free(node->name);
+	free(node->full_name);
+	free(node);
+
+	if (node == root_node)
+		of_set_root_node(NULL);
 }
 
 int of_device_is_stdout_path(struct device_d *dev)

@@ -278,6 +278,12 @@ static u64 __of_translate_address(struct device_node *dev,
 	return result;
 }
 
+u64 of_translate_address(struct device_node *dev, const __be32 *in_addr)
+{
+	return __of_translate_address(dev, in_addr, "ranges");
+}
+EXPORT_SYMBOL(of_translate_address);
+
 u64 of_translate_dma_address(struct device_node *dev, const __be32 *in_addr)
 {
 	return __of_translate_address(dev, in_addr, "dma-ranges");

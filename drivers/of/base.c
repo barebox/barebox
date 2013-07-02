@@ -19,6 +19,7 @@
  */
 #include <common.h>
 #include <of.h>
+#include <of_address.h>
 #include <errno.h>
 #include <malloc.h>
 #include <init.h>
@@ -241,31 +242,6 @@ const char *of_alias_get(struct device_node *np)
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(of_alias_get);
-
-u64 of_translate_address(struct device_node *node, const __be32 *in_addr)
-{
-	struct property *p;
-	u64 addr = be32_to_cpu(*in_addr);
-
-	while (1) {
-		int na, nc;
-
-		if (!node->parent)
-			return addr;
-
-		node = node->parent;
-		p = of_find_property(node, "ranges", NULL);
-		if (!p && node->parent)
-			return OF_BAD_ADDR;
-		of_bus_count_cells(node, &na, &nc);
-		if (na != 1 || nc != 1) {
-			printk("%s: #size-cells != 1 or #address-cells != 1 "
-					"currently not supported\n", node->name);
-			return OF_BAD_ADDR;
-		}
-	}
-}
-EXPORT_SYMBOL(of_translate_address);
 
 /*
  * of_find_node_by_phandle - Find a node given a phandle

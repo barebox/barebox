@@ -10,6 +10,8 @@ static inline unsigned long pci_address_to_pio(phys_addr_t addr) { return -1; }
 
 #ifdef CONFIG_OFTREE
 
+extern u64 of_translate_address(struct device_node *dev,
+				const __be32 *in_addr);
 extern u64 of_translate_dma_address(struct device_node *dev,
 				const __be32 *in_addr);
 extern bool of_can_translate_address(struct device_node *dev);
@@ -23,6 +25,12 @@ extern struct device_node *of_find_matching_node_by_address(
 extern void __iomem *of_iomap(struct device_node *np, int index);
 
 #else /* CONFIG_OFTREE */
+
+static inline u64 of_translate_address(struct device_node *dev,
+				const __be32 *in_addr)
+{
+	return OF_BAD_ADDR;
+}
 
 static inline u64 of_translate_dma_address(struct device_node *dev,
 				const __be32 *in_addr)

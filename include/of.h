@@ -96,9 +96,6 @@ static inline void of_write_number(void *__cell, u64 val, int size)
 	}
 }
 
-int of_get_named_gpio(struct device_node *np,
-                                   const char *propname, int index);
-
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
 

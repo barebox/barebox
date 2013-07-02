@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <gpio.h>
+#include <of_gpio.h>
 #include <mach/spi.h>
 #include <mach/generic.h>
 #include <linux/clk.h>

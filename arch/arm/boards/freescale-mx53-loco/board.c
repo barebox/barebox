@@ -75,18 +75,18 @@ static void loco_fec_reset(void)
 
 #define MX53_LOCO_USB_PWREN		IMX_GPIO_NR(7, 8)
 
-#define DCD_NAME static struct imx_dcd_v2_entry dcd_entry
-
-#include "dcd-data.h"
+extern char flash_header_imx53_loco_start[];
+extern char flash_header_imx53_loco_end[];
 
 static int loco_late_init(void)
 {
-	struct device_d *dev = get_device_by_name("mmc0");
 	struct mc34708 *mc34708;
 	int rev;
 
-	if (dev)
-		device_detect(dev);
+	if (!of_machine_is_compatible("fsl,imx53-qsb"))
+		return 0;
+
+	device_detect_by_name("mmc0");
 
 	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
@@ -116,17 +116,20 @@ static int loco_late_init(void)
 	armlinux_set_architecture(MACH_TYPE_MX53_LOCO);
 
 	imx53_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",
-		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry), 0);
-
+		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_imx53_loco_start,
+		flash_header_imx53_loco_end - flash_header_imx53_loco_start, 0);
 
 	return 0;
 }
 late_initcall(loco_late_init);
 
-static int loco_core_init(void)
+static int loco_postcore_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx53-qsb"))
+		return 0;
+
 	imx53_init_lowlevel(1000);
 
 	return 0;
 }
-core_initcall(loco_core_init);
+postcore_initcall(loco_postcore_init);

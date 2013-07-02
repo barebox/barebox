@@ -138,8 +138,14 @@ static void sdram_init(void)
 	writel(0x00000001, 0x021e8080);
 }
 
-void __naked barebox_arm_reset_vector(void)
+extern char __dtb_imx6q_dmo_realq7_start[];
+
+ENTRY_FUNCTION(start_imx6_realq7)(void)
 {
+	uint32_t fdt;
+
+	__barebox_arm_head();
+
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
@@ -151,5 +157,7 @@ void __naked barebox_arm_reset_vector(void)
 		mmdc_do_dqs_calibration();
 	}
 
-	barebox_arm_entry(0x10000000, SZ_2G, 0);
+	fdt = (uint32_t)__dtb_imx6q_dmo_realq7_start - get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, SZ_2G, fdt);
 }

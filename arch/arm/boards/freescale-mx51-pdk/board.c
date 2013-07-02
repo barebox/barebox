@@ -157,10 +157,14 @@ static void babbage_power_init(void)
 	mdelay(50);
 }
 
-extern char flash_header_start[], flash_header_end[];
+extern char flash_header_imx51_babbage_start[];
+extern char flash_header_imx51_babbage_end[];
 
-static int f3s_devices_init(void)
+static int imx51_babbage_late_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx51-babbage"))
+		return 0;
+
 	babbage_power_init();
 
 	console_flush();
@@ -171,16 +175,9 @@ static int f3s_devices_init(void)
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_start,
-		flash_header_end - flash_header_start, 0);
+		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_imx51_babbage_start,
+		flash_header_imx51_babbage_end - flash_header_imx51_babbage_start, 0);
 
-	return 0;
-}
-
-device_initcall(f3s_devices_init);
-
-static int f3s_part_init(void)
-{
 	device_detect_by_name("mmc0");
 
 	devfs_add_partition("mmc0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
@@ -188,4 +185,4 @@ static int f3s_part_init(void)
 
 	return 0;
 }
-late_initcall(f3s_part_init);
+late_initcall(imx51_babbage_late_init);

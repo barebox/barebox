@@ -32,6 +32,7 @@ config ARCH_TEXT_BASE
 	default 0x97f00000 if MACH_EFIKA_MX_SMARTBOOK
 	default 0x17800000 if MACH_SABRESD
 	default 0x4fc00000 if MACH_REALQ7
+	default 0x4fc00000 if MACH_GK802
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -61,6 +62,7 @@ config BOARDINFO
 	default "Garz+Fricke Vincell" if MACH_GUF_VINCELL
 	default "SabreSD" if MACH_SABRESD
 	default "DataModul i.MX6Q Real Qseven" if MACH_REALQ7
+	default "Zealz GK802" if MACH_GK802
 	default "unused" if IMX_MULTI_BOARDS
 
 choice
@@ -244,6 +246,10 @@ config MACH_REALQ7
 	select ARCH_IMX6
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
+
+config MACH_GK802
+	bool "Zealz GK802 Mini PC"
+	select ARCH_IMX6
 
 endif
 

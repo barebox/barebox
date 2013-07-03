@@ -1380,7 +1380,8 @@ EXPORT_SYMBOL(of_get_parent);
 struct device_node *of_get_next_available_child(const struct device_node *node,
 	struct device_node *prev)
 {
-	for_each_child_of_node(node, prev)
+	prev = list_prepare_entry(prev, &node->children, parent_list);
+	list_for_each_entry_continue(prev, &node->children, parent_list)
 		if (of_device_is_available(prev))
 			return prev;
 	return NULL;

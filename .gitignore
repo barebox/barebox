@@ -20,6 +20,8 @@
 *.elf
 *.mcp
 *.orig
+*.dcd
+*.dcd.S
 
 #
 # Top-level generic files

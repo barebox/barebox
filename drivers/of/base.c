@@ -33,8 +33,17 @@
  * have a dedicated list head, the start node (usually the root
  * node) will not be iterated over.
  */
-#define of_tree_for_each_node(node, root) \
-	list_for_each_entry(node, &root->list, list)
+static inline struct device_node *of_next_node(struct device_node *node)
+{
+	struct device_node *next;
+
+	next = list_first_entry(&node->list, struct device_node, list);
+
+	return next->parent ? next : NULL;
+}
+
+#define of_tree_for_each_node_from(node, from) \
+	for (node = of_next_node(from); node; node = of_next_node(node))
 
 /**
  * struct alias_prop - Alias property in 'aliases' node
@@ -337,7 +346,7 @@ struct device_node *of_find_node_by_name(struct device_node *from,
 	if (!from)
 		from = root_node;
 
-	of_tree_for_each_node(np, from)
+	of_tree_for_each_node_from(np, from)
 		if (np->name && !of_node_cmp(np->name, name))
 			return np;
 
@@ -367,7 +376,7 @@ struct device_node *of_find_compatible_node(struct device_node *from,
 	if (!from)
 		from = root_node;
 
-	of_tree_for_each_node(np, from)
+	of_tree_for_each_node_from(np, from)
 		if (of_device_is_compatible(np, compatible))
 			return np;
 
@@ -391,7 +400,7 @@ struct device_node *of_find_node_with_property(struct device_node *from,
 {
 	struct device_node *np;
 
-	of_tree_for_each_node(np, from) {
+	of_tree_for_each_node_from(np, from) {
 		struct property *pp = of_find_property(np, prop_name, NULL);
 		if (pp)
 			return np;
@@ -447,7 +456,7 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 	if (!from)
 		from = root_node;
 
-	of_tree_for_each_node(np, from) {
+	of_tree_for_each_node_from(np, from) {
 		const struct of_device_id *m = of_match_node(matches, np);
 		if (m) {
 			if (match)

@@ -114,22 +114,6 @@ static int realq7_env_init(void)
 		BBU_HANDLER_FLAG_DEFAULT, NULL, 0, 0x00907000);
 	imx6_bbu_internal_mmc_register_handler("mmc", "/dev/mmc3.barebox",
 		0, NULL, 0, 0x00907000);
-
-	switch (bootsource_get()) {
-	case BOOTSOURCE_MMC:
-		device_detect_by_name("mmc3");
-		devfs_add_partition("mmc3", 0, SZ_1M, DEVFS_PARTITION_FIXED, "mmc3.barebox");
-		devfs_add_partition("mmc3", SZ_1M, SZ_1M, DEVFS_PARTITION_FIXED, "mmc3.bareboxenv");
-		default_environment_path = "/dev/mmc3.bareboxenv";
-		break;
-	default:
-	case BOOTSOURCE_SPI:
-		devfs_add_partition("m25p0", 0, SZ_256K, DEVFS_PARTITION_FIXED, "m25p0.barebox");
-		devfs_add_partition("m25p0", SZ_256K, SZ_256K, DEVFS_PARTITION_FIXED, "m25p0.bareboxenv");
-		default_environment_path = "/dev/m25p0.bareboxenv";
-		break;
-	}
-
 	return 0;
 }
 late_initcall(realq7_env_init);
@@ -140,6 +124,16 @@ static int realq7_console_init(void)
 		return 0;
 
 	imx6_init_lowlevel();
+
+	switch (bootsource_get()) {
+	case BOOTSOURCE_MMC:
+		of_device_enable_path("/chosen/environment-emmc");
+		break;
+	default:
+	case BOOTSOURCE_SPI:
+		of_device_enable_path("/chosen/environment-spi");
+		break;
+	}
 
 	return 0;
 }

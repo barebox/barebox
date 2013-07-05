@@ -34,6 +34,7 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_REALQ7
 	default 0x4fc00000 if MACH_GK802
 	default 0x2fc00000 if MACH_TQMA6X
+	default 0x4fc00000 if MACH_PHYTEC_PFLA02
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -225,6 +226,10 @@ config MACH_FREESCALE_MX51_PDK
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53
+
+config MACH_PHYTEC_PFLA02
+	bool "Phytec phyFLEX-i.MX6 Ouad"
+	select ARCH_IMX6
 
 config MACH_REALQ7
 	bool "DataModul i.MX6Q Real Qseven Board"

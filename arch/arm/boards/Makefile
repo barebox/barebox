@@ -52,6 +52,7 @@ obj-$(CONFIG_MACH_PCM038)			+= pcm038/
 obj-$(CONFIG_MACH_PCM043)			+= pcm043/
 obj-$(CONFIG_MACH_PCM049)			+= pcm049/
 obj-$(CONFIG_MACH_PCM051)			+= pcm051/
+obj-$(CONFIG_MACH_PHYTEC_PFLA02)		+= phytec-pfla02/
 obj-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3)	+= plathome-openblocks-ax3/
 obj-$(CONFIG_MACH_REALQ7)			+= dmo-mx6-realq7/
 obj-$(CONFIG_MACH_RPI)				+= raspberry-pi/

@@ -124,6 +124,8 @@ static int dove_init_soc(void)
 	dove_remap_mc_regs();
 	dove_init_clocks();
 	clkdev_add_physbase(tclk, (unsigned int)DOVE_TIMER_BASE, NULL);
+	clkdev_add_physbase(tclk, (unsigned int)DOVE_SPI0_BASE, NULL);
+	clkdev_add_physbase(tclk, (unsigned int)DOVE_SPI1_BASE, NULL);
 	add_generic_device("orion-timer", DEVICE_ID_SINGLE, NULL,
 			   (unsigned int)DOVE_TIMER_BASE, 0x30,
 			   IORESOURCE_MEM, NULL);

@@ -19,6 +19,7 @@
 
 #include <asm/pbl_macros.h>
 #include <mach/debug_ll.h>
+#include <asm/pbl_nmon.h>
 
 	.macro	board_pbl_start
 	.set	push
@@ -33,6 +34,8 @@
 
 	debug_ll_ns16550_outc '.'
 	debug_ll_ns16550_outnl
+
+	mips_nmon
 
 	copy_to_link_location	pbl_start
 

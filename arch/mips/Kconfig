@@ -72,6 +72,7 @@ config MACH_MIPS_XBURST
 	select HAS_DEBUG_LL
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
+	select HAS_NMON
 endchoice
 
 source arch/mips/mach-malta/Kconfig

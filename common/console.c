@@ -62,22 +62,21 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	char active[4];
 	unsigned int flag = 0, i = 0;
 
-	if (!val)
-		dev_param_set_generic(dev, param, NULL);
+	if (val) {
+		if (strchr(val, 'i') && cdev->f_caps & CONSOLE_STDIN) {
+			active[i++] = 'i';
+			flag |= CONSOLE_STDIN;
+		}
 
-	if (strchr(val, 'i') && cdev->f_caps & CONSOLE_STDIN) {
-		active[i++] = 'i';
-		flag |= CONSOLE_STDIN;
-	}
+		if (strchr(val, 'o') && cdev->f_caps & CONSOLE_STDOUT) {
+			active[i++] = 'o';
+			flag |= CONSOLE_STDOUT;
+		}
 
-	if (strchr(val, 'o') && cdev->f_caps & CONSOLE_STDOUT) {
-		active[i++] = 'o';
-		flag |= CONSOLE_STDOUT;
-	}
-
-	if (strchr(val, 'e') && cdev->f_caps & CONSOLE_STDERR) {
-		active[i++] = 'e';
-		flag |= CONSOLE_STDERR;
+		if (strchr(val, 'e') && cdev->f_caps & CONSOLE_STDERR) {
+			active[i++] = 'e';
+			flag |= CONSOLE_STDERR;
+		}
 	}
 
 	active[i] = 0;

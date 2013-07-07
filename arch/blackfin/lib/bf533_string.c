@@ -176,6 +176,6 @@ void *dma_memcpy(void * dest,const void *src,size_t count)
 		*pMDMA_D0_IRQ_STATUS |= (DMA_DONE | DMA_ERR);
 
 		dest += count;
-		src  += count;
+
 		return dest;
 }

@@ -30,6 +30,8 @@
 #include <linux/phy.h>
 #include <platform_data/macb.h>
 
+void at91_set_main_clock(unsigned long rate);
+
  /* USB Host */
 struct at91_usbh_data {
 	u8		ports;		/* number of ports on root hub */

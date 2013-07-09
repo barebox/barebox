@@ -146,3 +146,10 @@ static int pm9263_console_init(void)
 }
 
 console_initcall(pm9263_console_init);
+
+static int pm9263_main_clock(void)
+{
+	at91_set_main_clock(18432000);
+	return 0;
+}
+pure_initcall(pm9263_main_clock);

@@ -436,3 +436,10 @@ static int usb_a9260_console_init(void)
 }
 console_initcall(usb_a9260_console_init);
 #endif
+
+static int usb_a9260_main_clock(void)
+{
+	at91_set_main_clock(12000000);
+	return 0;
+}
+pure_initcall(usb_a9260_main_clock);

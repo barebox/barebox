@@ -249,3 +249,10 @@ static int animeo_ip_console_init(void)
 	return 0;
 }
 console_initcall(animeo_ip_console_init);
+
+static int animeo_ip_main_clock(void)
+{
+	at91_set_main_clock(18432000);
+	return 0;
+}
+pure_initcall(animeo_ip_main_clock);

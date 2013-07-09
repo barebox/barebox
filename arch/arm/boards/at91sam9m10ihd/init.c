@@ -286,3 +286,10 @@ static int at91sam9m10ihd_console_init(void)
 	return 0;
 }
 console_initcall(at91sam9m10ihd_console_init);
+
+static int at91sam9m10ihd_main_clock(void)
+{
+	at91_set_main_clock(12000000);
+	return 0;
+}
+pure_initcall(at91sam9m10ihd_main_clock);

@@ -77,3 +77,10 @@ static int mmccpu_console_init(void)
 }
 
 console_initcall(mmccpu_console_init);
+
+static int mmccpu_main_clock(void)
+{
+	at91_set_main_clock(18432000);
+	return 0;
+}
+pure_initcall(mmccpu_main_clock);

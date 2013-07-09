@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	init-menu-add-entry "$0" "NAND partitions"
+	exit
+fi
+
+mtdparts="128k(nand0.xload),128k(nand0.xload_backup1),128k(nand0.xload_backup2),128k(nand0.xload_backup3),512k(nand0.barebox)ro,128k(nand0.bareboxenv),8M(nand0.kernel),-(nand0.root)"
+kernelname="omap2-nand.0"
+
+mtdparts-add -b -d nand0 -k ${kernelname} -p ${mtdparts}

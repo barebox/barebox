@@ -28,8 +28,8 @@ kernelimage=zImage
 #kernelimage=Image.lzo
 
 nand_device=atmel_nand
-nand_parts="32k(at91bootstrap),256k(barebox)ro,32k(bareboxenv),704k(user_block),1728k(kernel),-(root)"
-rootfs_mtdblock_nand=5
+nand_parts="32k(at91bootstrap),320k(barebox)ro,32k(bareboxenv),-(ubi)"
+rootfs_mtdblock_nand=3
 
 autoboot_timeout=3
 

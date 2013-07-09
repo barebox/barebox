@@ -6,5 +6,5 @@ if [ "$1" = menu ]; then
 fi
 
 global.bootm.image=/boot/uImage
-global.bootm.oftree=/boot/oftree
+#global.bootm.oftree=/boot/oftree
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootfstype=ext3 rootwait"

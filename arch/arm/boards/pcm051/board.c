@@ -49,6 +49,7 @@
  */
 static int pcm051_console_init(void)
 {
+	am33xx_enable_uart0_pin_mux();
 	/* Register the serial port */
 	am33xx_add_uart0();
 

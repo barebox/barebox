@@ -276,14 +276,18 @@ int __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
 	return 1;
 }
 
+#define BARE_INIT_FUNCTION(name)  \
+	void __noreturn __section(.text_bare_init_##name) \
+		name
+
 /*
  * SoC specific entries for booting in external NAND mode. To be called from
  * the board specific entry code. This is safe to call even if not booting from
  * NAND. In this case the booting is continued without loading an image from
  * NAND. This function needs a stack to be set up.
  */
-#ifdef CONFIG_ARCH_IMX21
-void __bare_init __noreturn imx21_barebox_boot_nand_external(void)
+#ifdef BROKEN
+BARE_INIT_FUNCTION(imx21_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX21_NFC_BASE_ADDR;
 	int pagesize_2k;
@@ -301,12 +305,12 @@ void __bare_init __noreturn imx21_barebox_boot_nand_external(void)
 				(void *)nfc_base, pagesize_2k);
 	}
 
+	/* This function doesn't exist yet */
 	imx21_barebox_entry(0);
 }
 #endif
 
-#ifdef CONFIG_ARCH_IMX25
-void __bare_init __noreturn imx25_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx25_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX25_NFC_BASE_ADDR;
 	int pagesize_2k;
@@ -326,10 +330,8 @@ void __bare_init __noreturn imx25_barebox_boot_nand_external(void)
 
 	imx25_barebox_entry(0);
 }
-#endif
 
-#ifdef CONFIG_ARCH_IMX27
-void __bare_init __noreturn imx27_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx27_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX27_NFC_BASE_ADDR;
 	int pagesize_2k;
@@ -349,10 +351,8 @@ void __bare_init __noreturn imx27_barebox_boot_nand_external(void)
 
 	imx27_barebox_entry(0);
 }
-#endif
 
-#ifdef CONFIG_ARCH_IMX31
-void __bare_init __noreturn imx31_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx31_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX31_NFC_BASE_ADDR;
 	int pagesize_2k;
@@ -372,10 +372,8 @@ void __bare_init __noreturn imx31_barebox_boot_nand_external(void)
 
 	imx31_barebox_entry(0);
 }
-#endif
 
-#ifdef CONFIG_ARCH_IMX35
-void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx35_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX35_NFC_BASE_ADDR;
 	int pagesize_2k;
@@ -395,4 +393,3 @@ void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
 
 	imx35_barebox_entry(0);
 }
-#endif

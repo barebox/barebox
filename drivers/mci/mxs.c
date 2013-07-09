@@ -36,10 +36,10 @@
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
+#include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm/bitops.h>
-#include <mach/mxs.h>
 #include <mach/imx-regs.h>
 #include <mach/mci.h>
 #include <mach/clock.h>
@@ -457,7 +457,7 @@ static int mxs_mci_initialize(struct mci_host *host, struct device_d *mci_dev)
 	writel(SSP_CTRL0_CLKGATE, mxs_mci->regs + HW_SSP_CTRL0 + 8);
 
 	/* reset the unit */
-	mxs_reset_block(mxs_mci->regs + HW_SSP_CTRL0, 0);
+	stmp_reset_block(mxs_mci->regs + HW_SSP_CTRL0, 0);
 
 	/* restore the last settings */
 	mxs_mci_setup_timeout(mxs_mci, 0xffff);

@@ -24,11 +24,13 @@ choice
 
 config ARCH_IMX23
 	bool "i.MX23"
+	select STMP_DEVICE
 	select CPU_ARM926T
 
 config ARCH_IMX28
 	bool "i.MX28"
 	select CPU_ARM926T
+	select STMP_DEVICE
 	select ARCH_HAS_FEC_IMX
 
 endchoice

@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <xfuncs.h>
 #include <io.h>
+#include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <mach/imx-regs.h>
@@ -222,7 +223,7 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 	 * Sometimes some data is still present in the FIFO. This leads into
 	 * a correct but shifted picture. Clearing the FIFO helps
 	 */
-	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + BIT_SET);
+	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + STMP_OFFSET_REG_SET);
 
 	/* if it was disabled, re-enable the mode again */
 	reg = readl(fbi->base + HW_LCDIF_CTRL);
@@ -255,14 +256,14 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 	}
 
 	/* stop FIFO reset */
-	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + BIT_CLR);
+	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + STMP_OFFSET_REG_CLR);
 
 	/* enable LCD using LCD_RESET signal*/
 	if (fbi->pdata->flags & USE_LCD_RESET)
-		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + BIT_SET);
+		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + STMP_OFFSET_REG_SET);
 
 	/* start the engine right now */
-	writel(CTRL_RUN, fbi->base + HW_LCDIF_CTRL + BIT_SET);
+	writel(CTRL_RUN, fbi->base + HW_LCDIF_CTRL + STMP_OFFSET_REG_SET);
 
 	if (fbi->pdata->enable)
 		fbi->pdata->enable(1);
@@ -277,7 +278,7 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 
 	/* disable LCD using LCD_RESET signal*/
 	if (fbi->pdata->flags & USE_LCD_RESET)
-		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + BIT_CLR);
+		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + STMP_OFFSET_REG_CLR);
 
 	if (fbi->pdata->enable)
 		fbi->pdata->enable(0);

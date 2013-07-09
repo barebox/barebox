@@ -20,12 +20,12 @@
 #include <common.h>
 #include <malloc.h>
 #include <errno.h>
+#include <stmp-device.h>
 #include <asm/mmu.h>
 #include <asm/io.h>
 #include <mach/clock.h>
 #include <mach/imx-regs.h>
 #include <mach/dma.h>
-#include <mach/mxs.h>
 
 #define HW_APBHX_CTRL0				0x000
 #define BM_APBH_CTRL0_APB_BURST8_EN		(1 << 29)
@@ -165,7 +165,7 @@ static int mxs_dma_enable(int channel)
 		writel(pchan->active_num,
 			apbh_regs + HW_APBHX_CHn_SEMA(channel));
 		channel_bit = channel + (apbh_is_old ? BP_APBH_CTRL0_CLKGATE_CHANNEL : 0);
-		writel(1 << channel_bit, apbh_regs + HW_APBHX_CTRL0 + BIT_CLR);
+		writel(1 << channel_bit, apbh_regs + HW_APBHX_CTRL0 + STMP_OFFSET_REG_CLR);
 	}
 
 	pchan->flags |= MXS_DMA_FLAGS_BUSY;
@@ -202,7 +202,7 @@ static int mxs_dma_disable(int channel)
 		return -EINVAL;
 
 	channel_bit = channel + (apbh_is_old ? BP_APBH_CTRL0_CLKGATE_CHANNEL : 0);
-	writel(1 << channel_bit, apbh_regs + HW_APBHX_CTRL0 + BIT_SET);
+	writel(1 << channel_bit, apbh_regs + HW_APBHX_CTRL0 + STMP_OFFSET_REG_SET);
 
 	pchan->flags &= ~MXS_DMA_FLAGS_BUSY;
 	pchan->active_num = 0;
@@ -226,10 +226,10 @@ static int mxs_dma_reset(int channel)
 
 	if (apbh_is_old)
 		writel(1 << (channel + BP_APBH_CTRL0_RESET_CHANNEL),
-			apbh_regs + HW_APBHX_CTRL0 + BIT_SET);
+			apbh_regs + HW_APBHX_CTRL0 + STMP_OFFSET_REG_SET);
 	else
 		writel(1 << (channel + BP_APBHX_CHANNEL_CTRL_RESET_CHANNEL),
-			apbh_regs + HW_APBHX_CHANNEL_CTRL + BIT_SET);
+			apbh_regs + HW_APBHX_CHANNEL_CTRL + STMP_OFFSET_REG_SET);
 
 	return 0;
 }
@@ -250,10 +250,10 @@ static int mxs_dma_enable_irq(int channel, int enable)
 
 	if (enable)
 		writel(1 << (channel + BP_APBHX_CTRL1_CH_CMDCMPLT_IRQ_EN),
-			apbh_regs + HW_APBHX_CTRL1 + BIT_SET);
+			apbh_regs + HW_APBHX_CTRL1 + STMP_OFFSET_REG_SET);
 	else
 		writel(1 << (channel + BP_APBHX_CTRL1_CH_CMDCMPLT_IRQ_EN),
-			apbh_regs + HW_APBHX_CTRL1 + BIT_CLR);
+			apbh_regs + HW_APBHX_CTRL1 + STMP_OFFSET_REG_CLR);
 
 	return 0;
 }
@@ -273,8 +273,8 @@ static int mxs_dma_ack_irq(int channel)
 	if (ret)
 		return ret;
 
-	writel(1 << channel, apbh_regs + HW_APBHX_CTRL1 + BIT_CLR);
-	writel(1 << channel, apbh_regs + HW_APBHX_CTRL2 + BIT_CLR);
+	writel(1 << channel, apbh_regs + HW_APBHX_CTRL1 + STMP_OFFSET_REG_CLR);
+	writel(1 << channel, apbh_regs + HW_APBHX_CTRL2 + STMP_OFFSET_REG_CLR);
 
 	return 0;
 }
@@ -555,7 +555,7 @@ int mxs_dma_init(void)
 	int ret, channel;
 	u32 val, reg;
 
-	ret = mxs_reset_block(apbh_regs, 0);
+	ret = stmp_reset_block(apbh_regs, 0);
 	if (ret)
 		return ret;
 
@@ -569,10 +569,10 @@ int mxs_dma_init(void)
 	apbh_is_old = (readl((void *)reg) >> 24) < 3;
 
 	writel(BM_APBH_CTRL0_APB_BURST8_EN,
-		apbh_regs + HW_APBHX_CTRL0 + BIT_SET);
+		apbh_regs + HW_APBHX_CTRL0 + STMP_OFFSET_REG_SET);
 
 	writel(BM_APBH_CTRL0_APB_BURST_EN,
-		apbh_regs + HW_APBHX_CTRL0 + BIT_SET);
+		apbh_regs + HW_APBHX_CTRL0 + STMP_OFFSET_REG_SET);
 
 	for (channel = 0; channel < MXS_MAX_DMA_CHANNELS; channel++) {
 		pchan = mxs_dma_channels + channel;

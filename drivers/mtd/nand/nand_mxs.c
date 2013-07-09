@@ -28,12 +28,12 @@
 #include <errno.h>
 #include <driver.h>
 #include <init.h>
+#include <stmp-device.h>
 #include <asm/mmu.h>
 #include <asm/io.h>
 #include <mach/clock.h>
 #include <mach/imx-regs.h>
 #include <mach/dma.h>
-#include <mach/mxs.h>
 
 #define	MX28_BLOCK_SFTRST				(1 << 31)
 #define	MX28_BLOCK_CLKGATE				(1 << 30)
@@ -313,7 +313,7 @@ static int mxs_nand_wait_for_bch_complete(void)
 
 	ret = (timeout == 0) ? -ETIMEDOUT : 0;
 
-	writel(BCH_CTRL_COMPLETE_IRQ, bch_regs + BCH_CTRL + BIT_CLR);
+	writel(BCH_CTRL_COMPLETE_IRQ, bch_regs + BCH_CTRL + STMP_OFFSET_REG_CLR);
 
 	return ret;
 }
@@ -1048,7 +1048,7 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	int ret;
 
 	/* Reset BCH. Don't use SFTRST on MX23 due to Errata #2847 */
-	ret = mxs_reset_block(bch_regs + BCH_CTRL,
+	ret = stmp_reset_block(bch_regs + BCH_CTRL,
 				nand_info->version == GPMI_VERSION_TYPE_MX23);
 	if (ret)
 		return ret;
@@ -1073,7 +1073,7 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	writel(0, bch_regs + BCH_LAYOUTSELECT);
 
 	/* Enable BCH complete interrupt */
-	writel(BCH_CTRL_COMPLETE_IRQ_EN, bch_regs + BCH_CTRL + BIT_SET);
+	writel(BCH_CTRL_COMPLETE_IRQ_EN, bch_regs + BCH_CTRL + STMP_OFFSET_REG_SET);
 
 	/* Hook some operations at the MTD level. */
 	if (mtd->read_oob != mxs_nand_hook_read_oob) {
@@ -1154,7 +1154,7 @@ int mxs_nand_hw_init(struct mxs_nand_info *info)
 	mxs_dma_init();
 
 	/* Reset the GPMI block. */
-	ret = mxs_reset_block(gpmi_regs + GPMI_CTRL0, 0);
+	ret = stmp_reset_block(gpmi_regs + GPMI_CTRL0, 0);
 	if (ret)
 		return ret;
 
@@ -1162,7 +1162,7 @@ int mxs_nand_hw_init(struct mxs_nand_info *info)
 	info->version = val >> GPMI_VERSION_MINOR_OFFSET;
 
 	/* Reset BCH. Don't use SFTRST on MX23 due to Errata #2847 */
-	ret = mxs_reset_block(bch_regs + BCH_CTRL,
+	ret = stmp_reset_block(bch_regs + BCH_CTRL,
 				info->version == GPMI_VERSION_TYPE_MX23);
 	if (ret)
 		return ret;

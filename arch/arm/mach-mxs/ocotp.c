@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <malloc.h>
 #include <io.h>
+#include <stmp-device.h>
 #include <clock.h>
 #include <linux/clk.h>
 #include <linux/err.h>
@@ -75,13 +76,13 @@ static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	 */
 
 	/* try to clear ERROR bit */
-	writel(OCOTP_CTRL_ERROR, base + OCOTP_CTRL + BIT_CLR);
+	writel(OCOTP_CTRL_ERROR, base + OCOTP_CTRL + STMP_OFFSET_REG_CLR);
 
 	if (mxs_ocotp_wait_busy(priv))
 		return -ETIMEDOUT;
 
 	/* open OCOTP banks for read */
-	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + BIT_SET);
+	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + STMP_OFFSET_REG_SET);
 
 	/* approximately wait 32 hclk cycles */
 	udelay(1);
@@ -96,7 +97,7 @@ static ssize_t mxs_ocotp_cdev_read(struct cdev *cdev, void *buf, size_t count,
 				(((i + offset) & 0xfc) << 2) + ((i + offset) & 3));
 
 	/* close banks for power saving */
-	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + BIT_CLR);
+	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + STMP_OFFSET_REG_CLR);
 
 	return size;
 }
@@ -139,7 +140,7 @@ static ssize_t mxs_ocotp_cdev_write(struct cdev *cdev, const void *buf, size_t c
 	clk_set_rate(priv->clk, 24000000);
 	imx_set_vddio(2800000);
 
-	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + BIT_CLR);
+	writel(OCOTP_CTRL_RD_BANK_OPEN, base + OCOTP_CTRL + STMP_OFFSET_REG_CLR);
 
 	if (mxs_ocotp_wait_busy(priv)) {
 		ret = -ETIMEDOUT;

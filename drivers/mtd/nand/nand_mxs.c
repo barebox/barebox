@@ -408,7 +408,7 @@ static int mxs_nand_device_ready(struct mtd_info *mtd)
 {
 	struct nand_chip *chip = mtd->priv;
 	struct mxs_nand_info *nand_info = chip->priv;
-	void __iomem *gpmi_regs = (void *)MXS_GPMI_BASE;
+	void __iomem *gpmi_regs = nand_info->io_base;
 	uint32_t tmp;
 
 	if (nand_info->version > GPMI_VERSION_TYPE_MX23) {
@@ -1133,7 +1133,7 @@ int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
  */
 int mxs_nand_hw_init(struct mxs_nand_info *info)
 {
-	void __iomem *gpmi_regs = (void *)MXS_GPMI_BASE;
+	void __iomem *gpmi_regs = info->io_base;
 	void __iomem *bch_regs = (void __iomem *)MXS_BCH_BASE;
 	int i = 0, ret;
 	u32 val;
@@ -1198,7 +1198,6 @@ static int mxs_nand_probe(struct device_d *dev)
 		return -ENOMEM;
 	}
 
-	/* XXX: Remove u-boot specific access pointers and use io_base instead? */
 	nand_info->io_base = dev_request_mem_region(dev, 0);
 
 	nand_info->clk = clk_get(dev, NULL);

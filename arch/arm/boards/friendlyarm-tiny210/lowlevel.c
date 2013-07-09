@@ -33,6 +33,22 @@
 
 #define IRAM_CODE_BASE		0xD0020010
 
+/* Tiny210 has 4 leds numbered from 0 to 3 at GPJ2 */
+static inline void __bare_init debug_led(int led, bool state)
+{
+	uint32_t r;
+	/* GPJ2CON: mode 0001=output */
+	r = readl(0xE0200280);
+	r &= ~(0xF << (4 * led));
+	r |=  (0x1 << (4 * led));
+	writel(r, 0xE0200280);
+	/* GPJ2DAT: active low */
+	r = readl(0xE0200284);
+	r &= ~(1 << led);
+	r |= (state ? 0 : 1) << led;
+	writel(r, 0xE0200284);
+}
+
 /*
  * iROM boot from MMC
  * TODO: replace this by native boot
@@ -76,17 +92,27 @@ void __bare_init barebox_arm_reset_vector(void)
 	s5p_init_pll();
 #endif
 
+	debug_led(0, 1);
+
 	if (get_pc() < IRAM_CODE_BASE) /* Are we running from iRAM? */
 		/* No, we don't. */
 		goto boot;
 
 	s5p_init_dram_bank_ddr2(S5P_DMC0_BASE, 0x20E00323, 0, 0);
 
+	debug_led(1, 1);
+
 	if (! load_stage2((void*)(ld_var(_text) - 16),
-				ld_var(_barebox_image_size) + 16))
+				ld_var(_barebox_image_size) + 16)) {
+		debug_led(3, 1);
 		while (1) { } /* hang */
+	}
+
+	debug_led(2, 1);
 
 	jump_sdram(IRAM_CODE_BASE - ld_var(_text));
+
+	debug_led(1, 0);
 
 boot:
 	barebox_arm_entry(S3C_SDRAM_BASE, SZ_256M, 0);

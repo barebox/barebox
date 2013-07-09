@@ -649,9 +649,22 @@ static struct platform_device_id apbh_ids[] = {
         },
 };
 
+static __maybe_unused struct of_device_id apbh_dt_ids[] = {
+	{
+		.compatible = "fsl,imx23-dma-apbh",
+		.data = (unsigned long)IMX23_DMA,
+	}, {
+		.compatible = "fsl,imx28-dma-apbh",
+		.data = (unsigned long)IMX28_DMA,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d apbh_dma_driver = {
 	.name  = "dma-apbh",
 	.id_table = apbh_ids,
+	.of_compatible = DRV_OF_COMPAT(apbh_dt_ids),
 	.probe = apbh_dma_probe,
 };
 coredevice_platform_driver(apbh_dma_driver);

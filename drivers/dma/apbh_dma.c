@@ -15,19 +15,17 @@
  * (at your option) any later version.
  */
 
-#include <linux/list.h>
-
-#include <common.h>
-#include <driver.h>
-#include <init.h>
-#include <malloc.h>
-#include <errno.h>
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
+#include <linux/list.h>
+#include <common.h>
+#include <driver.h>
+#include <malloc.h>
+#include <errno.h>
+#include <init.h>
+#include <io.h>
+
 #include <asm/mmu.h>
-#include <asm/io.h>
-#include <mach/clock.h>
-#include <mach/imx-regs.h>
 
 #define HW_APBHX_CTRL0				0x000
 #define BM_APBH_CTRL0_APB_BURST8_EN		(1 << 29)

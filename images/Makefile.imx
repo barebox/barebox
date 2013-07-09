@@ -9,11 +9,6 @@ $(obj)/%.imximg: $(obj)/% FORCE
 
 board = $(srctree)/arch/$(ARCH)/boards
 
-# ----------------------- i.MX27 based boards ---------------------------
-pblx-$(CONFIG_MACH_PCM038) += start_imx27_pcm038
-FILE_barebox-phytec-phycore-imx27.img = start_imx27_pcm038.pblx
-image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img
-
 # ----------------------- i.MX51 based boards ---------------------------
 pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-pdk/flash-header-imx51-babbage.imxcfg

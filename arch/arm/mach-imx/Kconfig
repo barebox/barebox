@@ -335,7 +335,6 @@ config MACH_PCM038
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
 	  with a Freescale i.MX27 Processor

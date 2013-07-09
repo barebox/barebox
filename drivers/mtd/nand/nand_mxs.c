@@ -28,12 +28,10 @@
 #include <errno.h>
 #include <driver.h>
 #include <init.h>
+#include <io.h>
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
 #include <asm/mmu.h>
-#include <asm/io.h>
-#include <mach/clock.h>
-#include <mach/imx-regs.h>
 
 #define	MX28_BLOCK_SFTRST				(1 << 31)
 #define	MX28_BLOCK_CLKGATE				(1 << 30)

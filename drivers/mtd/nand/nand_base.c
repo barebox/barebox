@@ -1126,7 +1126,7 @@ static int nand_flash_detect_onfi(struct mtd_info *mtd, struct nand_chip *chip,
 	chip->options &= ~NAND_CHIPOPTIONS_MSK;
 	chip->options |= NAND_NO_READRDY & NAND_CHIPOPTIONS_MSK;
 
-	pr_info("ONFI flash detected ... ");
+	pr_info("ONFI flash detected ...\n");
 	return 1;
 }
 

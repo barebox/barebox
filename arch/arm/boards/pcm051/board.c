@@ -32,6 +32,7 @@
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/cpsw.h>
+#include <mach/generic.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 #include <spi/spi.h>
@@ -121,6 +122,13 @@ static struct gpmc_nand_platform_data nand_plat = {
 	.nand_cfg = &pcm051_nand_cfg,
 };
 
+static struct omap_barebox_part pcm051_barebox_part = {
+	.nand_offset = SZ_512K,
+	.nand_size = SZ_512K,
+	.nor_offset = SZ_128K,
+	.nor_size = SZ_512K,
+};
+
 static void pcm051_spi_init(void)
 {
 	int ret;
@@ -197,6 +205,7 @@ static int pcm051_devices_init(void)
 		break;
 	}
 
+	omap_set_barebox_part(&pcm051_barebox_part);
 	armlinux_set_bootparams((void *)(AM33XX_DRAM_ADDR_SPACE_START + 0x100));
 	armlinux_set_architecture(MACH_TYPE_PCM051);
 

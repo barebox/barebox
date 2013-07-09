@@ -31,6 +31,8 @@
 #include <mach/s3c-clocks.h>
 #include <mach/s3c-generic.h>
 
+#define IRAM_CODE_BASE		0xD0020010
+
 /*
  * iROM boot from MMC
  * TODO: replace this by native boot
@@ -50,6 +52,19 @@ int __bare_init s5p_irom_load_mmc(void *dest, uint32_t start_block, uint16_t blo
 	return func(chan, start_block, block_count, (uint32_t*)dest, 0) ? 1 : 0;
 }
 
+static __bare_init __naked void jump_sdram(unsigned long offset)
+{
+	__asm__ __volatile__ (
+			"sub lr, lr, %0;"
+			"mov pc, lr;" : : "r"(offset)
+			);
+}
+
+static __bare_init bool load_stage2(void *dest, size_t size)
+{
+	/* TODO add other ways to boot */
+	return s5p_irom_load_mmc(dest, 1, (size+ 511) / 512);
+}
 
 void __bare_init barebox_arm_reset_vector(void)
 {
@@ -61,18 +76,18 @@ void __bare_init barebox_arm_reset_vector(void)
 	s5p_init_pll();
 #endif
 
-	if (get_pc() < 0xD0000000) /* Are we running from iRAM? */
+	if (get_pc() < IRAM_CODE_BASE) /* Are we running from iRAM? */
 		/* No, we don't. */
-		barebox_arm_entry(S3C_SDRAM_BASE, SZ_64M, 0);
+		goto boot;
 
 	s5p_init_dram_bank_ddr2(S5P_DMC0_BASE, 0x20E00323, 0, 0);
 
-	if (! s5p_irom_load_mmc((void*)TEXT_BASE - 16, 1,
-				(ld_var(_barebox_image_size) + 16 + 511) / 512))
+	if (! load_stage2((void*)(ld_var(_text) - 16),
+				ld_var(_barebox_image_size) + 16))
 		while (1) { } /* hang */
 
-	/* Jump to SDRAM */
-	r = (unsigned)TEXT_BASE;
-	__asm__ __volatile__("mov pc, %0" : : "r"(r));
-	while (1) { } /* hang */
+	jump_sdram(IRAM_CODE_BASE - ld_var(_text));
+
+boot:
+	barebox_arm_entry(S3C_SDRAM_BASE, SZ_256M, 0);
 }

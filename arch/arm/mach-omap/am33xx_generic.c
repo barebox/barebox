@@ -27,6 +27,7 @@
 #include <mach/am33xx-clock.h>
 #include <mach/sys_info.h>
 #include <mach/am33xx-generic.h>
+#include <mach/gpmc.h>
 
 void __noreturn reset_cpu(unsigned long addr)
 {
@@ -126,3 +127,17 @@ int am33xx_register_ethaddr(int eth_id, int mac_id)
 
 	return -ENODEV;
 }
+
+/* GPMC timing for AM33XX nand device */
+const struct gpmc_config am33xx_nand_cfg = {
+	.cfg = {
+		0x00000800,	/* CONF1 */
+		0x001e1e00,	/* CONF2 */
+		0x001e1e00,	/* CONF3 */
+		0x16051807,	/* CONF4 */
+		0x00151e1e,	/* CONF5 */
+		0x16000f80,	/* CONF6 */
+	},
+	.base = 0x08000000,
+	.size = GPMC_SIZE_16M,
+};

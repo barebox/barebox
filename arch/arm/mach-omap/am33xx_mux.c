@@ -39,8 +39,6 @@ static const __maybe_unused struct module_pin_mux uart3_pin_mux[] = {
 	{-1},
 };
 
-
-#ifdef CONFIG_NAND
 static const __maybe_unused struct module_pin_mux nand_pin_mux[] = {
 	{OFFSET(gpmc_ad0), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD0 */
 	{OFFSET(gpmc_ad1), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD1 */
@@ -59,7 +57,6 @@ static const __maybe_unused struct module_pin_mux nand_pin_mux[] = {
 	{OFFSET(gpmc_be0n_cle), (MODE(0) | PULLUDEN)},	/* NAND_BE_CLE */
 	{-1},
 };
-#endif
 
 static const __maybe_unused struct module_pin_mux i2c0_pin_mux[] = {
 	{OFFSET(i2c0_sda), (MODE(0) | RXACTIVE | PULLUDEN | SLEWCTRL)},	/* I2C_DATA */
@@ -318,4 +315,9 @@ void am33xx_enable_mmc0_pin_mux(void)
 void am33xx_enable_spi0_pin_mux(void)
 {
 	configure_module_pin_mux(spi0_pin_mux);
+}
+
+void am33xx_enable_nand_pin_mux(void)
+{
+	configure_module_pin_mux(nand_pin_mux);
 }

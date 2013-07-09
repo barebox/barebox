@@ -141,3 +141,17 @@ const struct gpmc_config am33xx_nand_cfg = {
 	.base = 0x08000000,
 	.size = GPMC_SIZE_16M,
 };
+
+static int am33xx_gpio_init(void)
+{
+	add_generic_device("omap-gpio", 0, NULL, AM33XX_GPIO0_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	add_generic_device("omap-gpio", 1, NULL, AM33XX_GPIO1_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	add_generic_device("omap-gpio", 2, NULL, AM33XX_GPIO2_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	add_generic_device("omap-gpio", 3, NULL, AM33XX_GPIO3_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	return 0;
+}
+coredevice_initcall(am33xx_gpio_init);

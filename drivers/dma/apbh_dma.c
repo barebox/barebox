@@ -20,12 +20,12 @@
 #include <common.h>
 #include <malloc.h>
 #include <errno.h>
+#include <dma/apbh-dma.h>
 #include <stmp-device.h>
 #include <asm/mmu.h>
 #include <asm/io.h>
 #include <mach/clock.h>
 #include <mach/imx-regs.h>
-#include <mach/dma.h>
 
 #define HW_APBHX_CTRL0				0x000
 #define BM_APBH_CTRL0_APB_BURST8_EN		(1 << 29)

@@ -171,6 +171,9 @@ static int pcm051_devices_init(void)
 	pcm051_i2c_init();
 	pcm051_nand_init();
 
+	pcm051_enable_user_led_pin_mux();
+	pcm051_enable_user_btn_pin_mux();
+
 	switch (bootsource_get()) {
 	case BOOTSOURCE_SPI:
 		devfs_add_partition("nor0", 0x00000, SZ_128K,

@@ -65,7 +65,7 @@ static int pcm051_mem_init(void)
 mem_initcall(pcm051_mem_init);
 
 static struct flash_platform_data pcm051_spi_flash = {
-	.name	= "nor",
+	.name	= "m25p",
 	.type	= "w25q64",
 };
 
@@ -176,11 +176,11 @@ static int pcm051_devices_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_SPI:
-		devfs_add_partition("nor0", 0x00000, SZ_128K,
+		devfs_add_partition("m25p0", 0x00000, SZ_128K,
 					DEVFS_PARTITION_FIXED, "xload");
-		devfs_add_partition("nor0", SZ_128K, SZ_512K,
+		devfs_add_partition("m25p0", SZ_128K, SZ_512K,
 					DEVFS_PARTITION_FIXED, "self0");
-		devfs_add_partition("nor0", SZ_128K + SZ_512K, SZ_128K,
+		devfs_add_partition("m25p0", SZ_128K + SZ_512K, SZ_128K,
 					DEVFS_PARTITION_FIXED, "env0");
 		break;
 	default:

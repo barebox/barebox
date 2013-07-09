@@ -5,8 +5,8 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-mtdparts="128k(nor0.xload),512k(nor0.barebox),128k(nor0.bareboxenv),4M(nor0.kernel),-(nor0.root)"
+mtdparts="128k(m25p0.xload),512k(m25p0.barebox),128k(m25p0.bareboxenv),4M(m25p0.kernel),-(m25p0.root)"
 kernelname="spi_flash"
 
-mtdparts-add -d nor0 -k ${kernelname} -p ${mtdparts}
+mtdparts-add -d m25p0 -k ${kernelname} -p ${mtdparts}
 

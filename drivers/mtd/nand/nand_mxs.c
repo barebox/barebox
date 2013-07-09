@@ -142,6 +142,7 @@
 struct mxs_nand_info {
 	struct nand_chip	nand_chip;
 	void __iomem		*io_base;
+	void __iomem		*bch_base;
 	struct clk		*clk;
 	struct mtd_info		mtd;
 	u32		version;
@@ -299,9 +300,9 @@ static uint32_t mxs_nand_mark_bit_offset(struct mtd_info *mtd)
 /*
  * Wait for BCH complete IRQ and clear the IRQ
  */
-static int mxs_nand_wait_for_bch_complete(void)
+static int mxs_nand_wait_for_bch_complete(struct mxs_nand_info *nand_info)
 {
-	void __iomem *bch_regs = (void __iomem *)MXS_BCH_BASE;
+	void __iomem *bch_regs = nand_info->bch_base;
 	int timeout = MXS_NAND_BCH_TIMEOUT;
 	int ret;
 
@@ -708,7 +709,7 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 		goto rtn;
 	}
 
-	ret = mxs_nand_wait_for_bch_complete();
+	ret = mxs_nand_wait_for_bch_complete(nand_info);
 	if (ret) {
 		printf("MXS NAND: BCH read timeout\n");
 		goto rtn;
@@ -809,7 +810,7 @@ static int mxs_nand_ecc_write_page(struct mtd_info *mtd,
 		goto rtn;
 	}
 
-	ret = mxs_nand_wait_for_bch_complete();
+	ret = mxs_nand_wait_for_bch_complete(nand_info);
 	if (ret) {
 		printf("MXS NAND: BCH write timeout\n");
 		goto rtn;
@@ -1043,7 +1044,7 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 {
 	struct nand_chip *nand = mtd->priv;
 	struct mxs_nand_info *nand_info = nand->priv;
-	void __iomem *bch_regs = (void __iomem *)MXS_BCH_BASE;
+	void __iomem *bch_regs = nand_info->bch_base;
 	uint32_t tmp;
 	int ret;
 
@@ -1134,7 +1135,7 @@ int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 int mxs_nand_hw_init(struct mxs_nand_info *info)
 {
 	void __iomem *gpmi_regs = info->io_base;
-	void __iomem *bch_regs = (void __iomem *)MXS_BCH_BASE;
+	void __iomem *bch_regs = info->bch_base;
 	int i = 0, ret;
 	u32 val;
 
@@ -1199,6 +1200,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	}
 
 	nand_info->io_base = dev_request_mem_region(dev, 0);
+	nand_info->bch_base = dev_request_mem_region(dev, 1);
 
 	nand_info->clk = clk_get(dev, NULL);
 	if (IS_ERR(nand_info->clk))

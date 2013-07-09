@@ -33,4 +33,7 @@
 #define cpu_is_am33xx()		(0)
 #endif
 
+extern uint32_t omap_bootinfo[3];
+void omap_save_bootinfo(void);
+
 #endif

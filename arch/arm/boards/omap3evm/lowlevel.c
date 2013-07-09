@@ -3,6 +3,7 @@
 #include <sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <mach/generic.h>
 #include <mach/omap3-mux.h>
 #include <mach/sdrc.h>
 #include <mach/control.h>
@@ -159,8 +160,10 @@ static int omap3_evm_board_init(void)
 	return 0;
 }
 
-void __naked barebox_arm_reset_vector(void)
+void __naked __bare_init barebox_arm_reset_vector(uint32_t *data)
 {
+	omap_save_bootinfo();
+
 	arm_cpu_lowlevel_init();
 
 	omap3_evm_board_init();

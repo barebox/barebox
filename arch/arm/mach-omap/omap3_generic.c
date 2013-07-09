@@ -33,6 +33,7 @@
 #include <io.h>
 #include <mach/omap3-silicon.h>
 #include <mach/gpmc.h>
+#include <mach/generic.h>
 #include <mach/sdrc.h>
 #include <mach/control.h>
 #include <mach/omap3-smx.h>
@@ -468,12 +469,21 @@ void omap3_core_init(void)
 static int omap3_bootsource(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	u32 bootsrc = readl(OMAP3_TRACING_VECTOR1);
 
-	if (bootsrc & (1 << 2))
+	switch (omap_bootinfo[1] & 0xFF) {
+	case 0x02:
 		src = BOOTSOURCE_NAND;
-	if (bootsrc & (1 << 6))
+		break;
+	case 0x06:
 		src = BOOTSOURCE_MMC;
+		break;
+	case 0x11:
+		src = BOOTSOURCE_USB;
+		break;
+	default:
+		src = BOOTSOURCE_UNKNOWN;
+	}
+
 	bootsource_set(src);
 	bootsource_set_instance(0);
 

@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <sizes.h>
 #include <filetype.h>
+#include <mach/generic.h>
 
 static void *read_image_head(const char *name)
 {
@@ -163,7 +164,8 @@ static void *omap4_xload_boot_usb(void){
  */
 static __noreturn int omap_xload(void)
 {
-	int (*func)(void) = NULL;
+	int (*func)(void *) = NULL;
+	uint32_t *arg;
 
 	switch (bootsource_get())
 	{
@@ -198,8 +200,10 @@ static __noreturn int omap_xload(void)
 		while (1);
 	}
 
+	arg = (uint32_t *)&omap_bootinfo;
+
 	shutdown_barebox();
-	func();
+	func(arg);
 
 	while (1);
 }

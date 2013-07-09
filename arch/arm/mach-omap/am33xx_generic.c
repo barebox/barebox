@@ -25,6 +25,7 @@
 #include <net.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
+#include <mach/generic.h>
 #include <mach/sys_info.h>
 #include <mach/am33xx-generic.h>
 #include <mach/gpmc.h>
@@ -98,7 +99,22 @@ u32 running_in_sdram(void)
 
 static int am33xx_bootsource(void)
 {
-	bootsource_set(BOOTSOURCE_MMC); /* only MMC for now */
+	enum bootsource src;
+
+	switch (omap_bootinfo[2] & 0xFF) {
+	case 0x05:
+		src = BOOTSOURCE_NAND;
+		break;
+	case 0x08:
+		src = BOOTSOURCE_MMC;
+		break;
+	case 0x0b:
+		src = BOOTSOURCE_SPI;
+		break;
+	default:
+		src = BOOTSOURCE_UNKNOWN;
+	}
+	bootsource_set(src);
 	bootsource_set_instance(0);
 	return 0;
 }

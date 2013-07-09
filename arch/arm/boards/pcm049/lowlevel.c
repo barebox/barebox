@@ -17,8 +17,10 @@
  *
  */
 #include <common.h>
+#include <init.h>
 #include <io.h>
 #include <sizes.h>
+#include <mach/generic.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>
@@ -106,8 +108,10 @@ static void noinline pcm049_init_lowlevel(void)
 	sr32(OMAP44XX_SCRM_ALTCLKSRC, 2, 2, 0x3);  /* enable clocks */
 }
 
-void barebox_arm_reset_vector(void)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
 {
+	omap_save_bootinfo();
+
 	arm_cpu_lowlevel_init();
 
 	if (get_pc() > 0x80000000)

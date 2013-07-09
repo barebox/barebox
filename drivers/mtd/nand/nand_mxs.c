@@ -1150,9 +1150,6 @@ int mxs_nand_hw_init(struct mxs_nand_info *info)
 			goto err2;
 	}
 
-	/* Init the DMA controller. */
-	mxs_dma_init();
-
 	/* Reset the GPMI block. */
 	ret = stmp_reset_block(gpmi_regs + GPMI_CTRL0, 0);
 	if (ret)

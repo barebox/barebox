@@ -187,7 +187,7 @@
 
 #define CM_ALWON_GPMC_CLKCTRL           CM_PER_GPMC_CLKCTRL
 
-extern void pll_init(void);
+extern void pll_init(int mpupll_M);
 extern void enable_ddr_clocks(void);
 
 #endif  /* endif _AM33XX_CLOCKS_H_ */

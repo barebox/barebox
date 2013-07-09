@@ -197,7 +197,7 @@ void beaglebone_sram_init(void)
 	u32 regVal, uart_base;
 
 	/* Setup the PLLs and the clocks for the peripherals */
-	pll_init();
+	pll_init(MPUPLL_M_500);
 
 	beaglebone_config_ddr();
 

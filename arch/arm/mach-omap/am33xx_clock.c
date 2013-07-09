@@ -294,9 +294,9 @@ void enable_ddr_clocks(void)
 /*
  * Configure the PLL/PRCM for necessary peripherals
  */
-void pll_init()
+void pll_init(int mpupll_M)
 {
-	mpu_pll_config(MPUPLL_M_500);
+	mpu_pll_config(mpupll_M);
 	core_pll_config();
 	per_pll_config();
 	ddr_pll_config();

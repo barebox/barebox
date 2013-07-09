@@ -406,35 +406,3 @@ void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
 	imx35_barebox_entry(0);
 }
 #endif
-
-#define CONFIG_NAND_IMX_BOOT_DEBUG
-#ifdef CONFIG_NAND_IMX_BOOT_DEBUG
-#include <command.h>
-
-static int do_nand_boot_test(int argc, char *argv[])
-{
-	void *dest;
-	int size;
-
-	if (argc < 3)
-		return COMMAND_ERROR_USAGE;
-
-	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
-	size = strtoul_suffix(argv[2], NULL, 0);
-
-	imx_nand_load_image(dest, size);
-
-	return 0;
-}
-
-static const __maybe_unused char cmd_nand_boot_test_help[] =
-"Usage: nand_boot_test <dest> <size>\n"
-"This command loads the booloader from the NAND memory like the reset\n"
-"routine does. Its intended for development tests only";
-
-BAREBOX_CMD_START(nand_boot_test)
-	.cmd		= do_nand_boot_test,
-	.usage		= "load bootloader from NAND",
-	BAREBOX_CMD_HELP(cmd_nand_boot_test_help)
-BAREBOX_CMD_END
-#endif

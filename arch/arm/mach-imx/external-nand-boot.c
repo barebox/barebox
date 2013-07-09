@@ -169,13 +169,7 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 	int pagesize_2k = 1, bbt = 0;
 	void *regs, *base, *spare0;
 
-#if defined(CONFIG_NAND_IMX_BOOT_512)
-	pagesize_2k = 0;
-#elif defined(CONFIG_NAND_IMX_BOOT_2K)
-	pagesize_2k = 1;
-#else
 	pagesize_2k = is_pagesize_2k();
-#endif
 
 	if (pagesize_2k) {
 		pagesize = 2048;

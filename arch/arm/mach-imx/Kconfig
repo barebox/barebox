@@ -143,22 +143,6 @@ config ARCH_IMX_EXTERNAL_BOOT_NAND
 	prompt "Support Starting barebox from NAND"
 	depends on ARCH_IMX_EXTERNAL_BOOT
 
-choice
-	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
-	default NAND_IMX_BOOT_512_2K
-	prompt "select nand pagesize you want to support booting from"
-
-config NAND_IMX_BOOT_512
-	bool "512 byte page size"
-
-config NAND_IMX_BOOT_2K
-	bool "2048 byte page size"
-
-config NAND_IMX_BOOT_512_2K
-	bool "512 byte and 2048 byte pagesize"
-
-endchoice
-
 config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	bool
 	depends on ARCH_IMX_EXTERNAL_BOOT_NAND

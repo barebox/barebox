@@ -129,11 +129,12 @@ static noinline void __bare_init imx_nandboot_get_page(void *regs,
 	imx_nandboot_send_page(regs, NFC_OUTPUT, pagesize_2k);
 }
 
-void __bare_init imx_nand_load_image(void *dest, int size, int pagesize_2k)
+void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
+		int pagesize_2k)
 {
 	u32 tmp, page, block, blocksize, pagesize, badblocks;
 	int bbt = 0;
-	void *regs, *base, *spare0;
+	void *regs, *spare0;
 
 	if (pagesize_2k) {
 		pagesize = 2048;
@@ -143,21 +144,6 @@ void __bare_init imx_nand_load_image(void *dest, int size, int pagesize_2k)
 		blocksize = 16 * 1024;
 	}
 
-#ifdef CONFIG_ARCH_IMX21
-	base = (void __iomem *)MX21_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX25
-	base = (void __iomem *)MX25_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	base = (void __iomem *)MX27_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX31
-	base = (void __iomem *)MX31_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX35
-	base = (void __iomem *)MX35_NFC_BASE_ADDR;
-#endif
 	if (nfc_is_v21()) {
 		regs = base + 0x1e00;
 		spare0 = base + 0x1000;
@@ -312,7 +298,7 @@ void __bare_init __noreturn imx21_barebox_boot_nand_external(void)
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(barebox_image_size),
-				pagesize_2k);
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx21_barebox_entry(0);
@@ -335,7 +321,7 @@ void __bare_init __noreturn imx25_barebox_boot_nand_external(void)
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),
-				pagesize_2k);
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx25_barebox_entry(0);
@@ -358,7 +344,7 @@ void __bare_init __noreturn imx27_barebox_boot_nand_external(void)
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),
-				pagesize_2k);
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx27_barebox_entry(0);
@@ -381,7 +367,7 @@ void __bare_init __noreturn imx31_barebox_boot_nand_external(void)
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),
-				pagesize_2k);
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx31_barebox_entry(0);
@@ -404,7 +390,7 @@ void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),
-				pagesize_2k);
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx35_barebox_entry(0);

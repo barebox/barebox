@@ -30,6 +30,7 @@
 #include <mach/mci.h>
 #include <mach/fb.h>
 #include <mach/ocotp.h>
+#include <mach/devices.h>
 #include <spi/spi.h>
 
 #include <asm/armlinux.h>
@@ -270,8 +271,7 @@ static int mx28_evk_devices_init(void)
 	add_generic_device("imx28-fec", 0, NULL, IMX_FEC0_BASE, 0x4000,
 			   IORESOURCE_MEM, &fec_info);
 
-	add_generic_device("mxs_nand", 0, NULL, MXS_GPMI_BASE, 0x2000,
-			   IORESOURCE_MEM, NULL);
+	imx28_add_nand();
 
 	spi_register_board_info(mx28evk_spi_board_info,
 			ARRAY_SIZE(mx28evk_spi_board_info));

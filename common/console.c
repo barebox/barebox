@@ -79,6 +79,12 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 		}
 	}
 
+	if (flag && !cdev->f_active) {
+		/* The device is being activated, set its baudrate */
+		if (cdev->setbrg)
+			cdev->setbrg(cdev, cdev->baudrate);
+	}
+
 	active[i] = 0;
 	cdev->f_active = flag;
 
@@ -103,6 +109,10 @@ static int console_baudrate_set(struct param_d *param, void *priv)
 	struct console_device *cdev = priv;
 	unsigned char c;
 
+	/*
+	 * If the device is already active, change its baudrate.
+	 * The baudrate of an inactive device will be set at activation time.
+	 */
 	if (cdev->f_active) {
 		printf("## Switch baudrate to %d bps and press ENTER ...\n",
 			cdev->baudrate);
@@ -112,8 +122,7 @@ static int console_baudrate_set(struct param_d *param, void *priv)
 		do {
 			c = getc();
 		} while (c != '\r' && c != '\n');
-	} else
-		cdev->setbrg(cdev, cdev->baudrate);
+	}
 
 	return 0;
 }

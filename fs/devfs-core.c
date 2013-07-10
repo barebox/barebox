@@ -56,6 +56,33 @@ struct cdev *cdev_by_name(const char *filename)
 	return NULL;
 }
 
+/**
+ * device_find_partition - find a partition belonging to a physical device
+ *
+ * @dev: the device which should be searched for partitions
+ * @name: the partition name
+ */
+struct cdev *device_find_partition(struct device_d *dev, const char *name)
+{
+	struct cdev *cdev;
+	struct device_d *child;
+
+	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
+		if (!cdev->partname)
+			continue;
+		if (!strcmp(cdev->partname, name))
+			return cdev;
+	}
+
+	device_for_each_child(dev, child) {
+		cdev = device_find_partition(child, name);
+		if (cdev)
+			return cdev;
+	}
+
+	return NULL;
+}
+
 int cdev_find_free_index(const char *basename)
 {
 	int i;

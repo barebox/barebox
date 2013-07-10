@@ -458,6 +458,7 @@ struct cdev {
 int devfs_create(struct cdev *);
 int devfs_remove(struct cdev *);
 int cdev_find_free_index(const char *);
+struct cdev *device_find_partition(struct device_d *dev, const char *name);
 struct cdev *cdev_by_name(const char *filename);
 struct cdev *cdev_open(const char *name, unsigned long flags);
 int cdev_do_open(struct cdev *, unsigned long flags);

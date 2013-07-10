@@ -18,3 +18,12 @@ config OFDEVICE
 config OF_NET
 	depends on NET
 	def_bool y
+
+config OF_BAREBOX_DRIVERS
+	depends on OFDEVICE
+	bool "Enable barebox specific devicetree configuration drivers"
+	help
+	  barebox supports being configured from devicetree. This enables
+	  support for this feature. This currently allows to configure the
+	  environment path from devicetree and to partition devices. See
+	  Documentation/devicetree/bindings/barebox/ for more information.

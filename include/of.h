@@ -229,6 +229,8 @@ void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
 void of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size);
+struct device_d *of_find_device_by_node_path(const char *path);
+int of_find_path(struct device_node *node, const char *propname, char **outpath);
 #else
 static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)

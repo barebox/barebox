@@ -261,16 +261,24 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		unsigned long initrd_size, void *oftree)
 {
 	void (*kernel)(int zero, int arch, void *params) = adr;
-	void *params = NULL;
 	int architecture;
 
 	if (oftree) {
-		printf("booting Linux kernel with devicetree\n");
-		params = oftree;
+		if (armlinux_bootparams) {
+			struct fdt_header *header = oftree;
+
+			memcpy(armlinux_bootparams, oftree,
+					fdt32_to_cpu(header->totalsize));
+		} else {
+			armlinux_bootparams = oftree;
+		}
+
+		printf("booting Linux kernel with devicetree at 0x%p\n",
+				armlinux_bootparams);
 	} else {
 		setup_tags(initrd_address, initrd_size, swap);
-		params = armlinux_bootparams;
 	}
+
 	architecture = armlinux_get_architecture();
 
 	shutdown_barebox();
@@ -288,10 +296,10 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 		"mov r2, %1\n"
 		"bx %2\n"
 		:
-		: "r" (architecture), "r" (params), "r" (kernel)
+		: "r" (architecture), "r" (armlinux_bootparams), "r" (kernel)
 		: "r0", "r1", "r2"
 	);
 #else
-	kernel(0, architecture, params);
+	kernel(0, architecture, armlinux_bootparams);
 #endif
 }

@@ -444,7 +444,10 @@ struct cdev {
 	struct device_d *dev;
 	struct list_head list;
 	struct list_head devices_list;
-	char *name;
+	char *name; /* filename under /dev/ */
+	char *partname; /* the partition name, usually the above without the
+			 * device part, i.e. name = "nand0.barebox" -> partname = "barebox"
+			 */
 	loff_t offset;
 	loff_t size;
 	unsigned int flags;

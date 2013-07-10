@@ -244,6 +244,8 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size
 
 	new = xzalloc(sizeof (*new));
 	new->name = strdup(name);
+	if (!strncmp(devname, name, strlen(devname)))
+		new->partname = xstrdup(name + strlen(devname) + 1);
 	new->ops = cdev->ops;
 	new->priv = cdev->priv;
 	new->size = size;
@@ -291,6 +293,7 @@ int devfs_del_partition(const char *name)
 		return ret;
 
 	free(cdev->name);
+	free(cdev->partname);
 	free(cdev);
 
 	return 0;

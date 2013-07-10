@@ -34,6 +34,7 @@
 #include <asm/byteorder.h>
 #include <block.h>
 #include <disks.h>
+#include <of.h>
 #include <linux/err.h>
 
 #define MAX_BUFFER_NUMBER 0xffffffff

@@ -1,6 +1,7 @@
 #include <common.h>
 #include <ata_drive.h>
 #include <io.h>
+#include <of.h>
 #include <clock.h>
 #include <disks.h>
 #include <driver.h>

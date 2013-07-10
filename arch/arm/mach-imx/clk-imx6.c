@@ -15,6 +15,7 @@
 #include <driver.h>
 #include <linux/clk.h>
 #include <io.h>
+#include <of.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
 #include <mach/imx6-regs.h>

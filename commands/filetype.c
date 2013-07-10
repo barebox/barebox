@@ -12,7 +12,7 @@
 #include <magicvar.h>
 #include <getopt.h>
 #include <linux/stat.h>
-#include <fs.h>
+#include <errno.h>
 
 static int do_filetype(int argc, char *argv[])
 {

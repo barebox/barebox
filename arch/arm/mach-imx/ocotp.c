@@ -24,6 +24,7 @@
 #include <init.h>
 #include <net.h>
 #include <io.h>
+#include <of.h>
 
 /*
  * a single MAC address reference has the form

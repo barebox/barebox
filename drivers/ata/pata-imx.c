@@ -30,6 +30,7 @@
 #include <ata_drive.h>
 #include <platform_ide.h>
 #include <io.h>
+#include <of.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 

@@ -21,6 +21,7 @@
 #include <complete.h>
 #include <driver.h>
 #include <getopt.h>
+#include <errno.h>
 
 static int do_detect(int argc, char *argv[])
 {

@@ -29,6 +29,7 @@
 #include <init.h>
 #include <clock.h>
 #include <errno.h>
+#include <of.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <notifier.h>

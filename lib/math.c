@@ -118,6 +118,7 @@
 #include <linux/ctype.h>
 #include <linux/string.h>
 #include <libbb.h>
+#include <errno.h>
 #include <math.h>
 
 #define lookupvar (math_state->lookupvar)

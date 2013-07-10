@@ -25,6 +25,7 @@
 #include <ioctl.h>
 #include <nand.h>
 #include <errno.h>
+#include <of.h>
 
 #include "mtd.h"
 

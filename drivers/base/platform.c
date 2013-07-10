@@ -20,6 +20,7 @@
 #include <driver.h>
 #include <errno.h>
 #include <init.h>
+#include <of.h>
 
 static int platform_probe(struct device_d *dev)
 {

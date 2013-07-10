@@ -1,4 +1,5 @@
 #include <common.h>
+#include <errno.h>
 
 #define DISP_LINE_LEN	16
 

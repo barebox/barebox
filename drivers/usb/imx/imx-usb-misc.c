@@ -16,6 +16,8 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <of.h>
+#include <errno.h>
 #include <usb/chipidea-imx.h>
 #include <mach/imx6-regs.h>
 #include <mach/iomux-mx6.h>

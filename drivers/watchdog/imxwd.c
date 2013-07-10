@@ -15,6 +15,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <of.h>
 #include <errno.h>
 #include <malloc.h>
 #include <watchdog.h>

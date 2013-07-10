@@ -20,6 +20,7 @@
 #include <malloc.h>
 #include <notifier.h>
 #include <io.h>
+#include <of.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 

@@ -1,6 +1,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <globalvar.h>
+#include <errno.h>
 #include <init.h>
 #include <environment.h>
 #include <magicvar.h>

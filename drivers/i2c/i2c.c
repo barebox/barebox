@@ -22,6 +22,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <init.h>
+#include <of.h>
 
 #include <i2c/i2c.h>
 

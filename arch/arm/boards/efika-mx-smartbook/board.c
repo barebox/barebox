@@ -23,6 +23,7 @@
 #include <led.h>
 #include <fs.h>
 #include <io.h>
+#include <of.h>
 
 #include <spi/spi.h>
 #include <mfd/mc13xxx.h>

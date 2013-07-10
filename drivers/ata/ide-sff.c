@@ -1,6 +1,7 @@
 #include <common.h>
 #include <ata_drive.h>
 #include <io.h>
+#include <errno.h>
 #include <clock.h>
 #include <disks.h>
 #include <malloc.h>

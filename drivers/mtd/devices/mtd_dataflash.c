@@ -17,6 +17,7 @@
 #include <linux/err.h>
 #include <errno.h>
 #include <io.h>
+#include <of.h>
 #include <clock.h>
 
 #include <spi/spi.h>

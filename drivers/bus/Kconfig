@@ -1,0 +1,7 @@
+menu "Bus devices"
+
+config IMX_WEIM
+	depends on ARCH_IMX
+	bool "i.MX WEIM driver"
+
+endmenu

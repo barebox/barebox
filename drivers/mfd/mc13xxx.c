@@ -287,6 +287,20 @@ static int __init mc13892_revision(struct mc13xxx *mc13xxx)
 	return rev;
 }
 
+static int __init mc34708_revision(struct mc13xxx *mc13xxx)
+{
+	unsigned int rev_id;
+
+	mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev_id);
+
+	if (rev_id > 0xfff)
+		return -ENODEV;
+
+	dev_info(mc_dev->cdev.dev, "Found MC34708 ID: 0x%03x\n", rev_id);
+
+	return (int)rev_id;
+}
+
 static int __init mc13xxx_probe(struct device_d *dev)
 {
 	struct mc13xxx_devtype *devtype;
@@ -346,15 +360,21 @@ static struct mc13xxx_devtype mc13892_devtype = {
 	.revision	= mc13892_revision,
 };
 
+static struct mc13xxx_devtype mc34708_devtype = {
+	.revision	= mc34708_revision,
+};
+
 static struct platform_device_id mc13xxx_ids[] = {
 	{ .name = "mc13783", .driver_data = (ulong)&mc13783_devtype, },
 	{ .name = "mc13892", .driver_data = (ulong)&mc13892_devtype, },
+	{ .name = "mc34708", .driver_data = (ulong)&mc34708_devtype, },
 	{ }
 };
 
 static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
 	{ .compatible = "fsl,mc13783", .data = (ulong)&mc13783_devtype, },
 	{ .compatible = "fsl,mc13892", .data = (ulong)&mc13892_devtype, },
+	{ .compatible = "fsl,mc34708", .data = (ulong)&mc34708_devtype, },
 	{ }
 };
 

@@ -214,7 +214,7 @@ static struct spi_imx_master ecspi_0_data = {
 
 static const struct spi_board_info ccxmx51_spi_board_info[] = {
 	{
-		.name		= "mc13xxx-spi",
+		.name		= "mc13892",
 		.bus_num	= 0,
 		.chip_select	= 0,
 	},

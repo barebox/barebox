@@ -71,7 +71,7 @@ struct imx_nand_platform_data nand_info = {
 
 static struct i2c_board_info i2c_devices[] = {
 	{
-		I2C_BOARD_INFO("mc13xxx-i2c", 0x08),
+		I2C_BOARD_INFO("mc13892", 0x08),
 	}, {
 		I2C_BOARD_INFO("mc9sdz60", 0x69),
 	},

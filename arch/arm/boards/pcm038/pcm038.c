@@ -71,7 +71,7 @@ static struct spi_imx_master pcm038_spi_0_data = {
 
 static struct spi_board_info pcm038_spi_board_info[] = {
 	{
-		.name = "mc13xxx-spi",
+		.name = "mc13783",
 		.bus_num = 0,
 		.chip_select = 0,
 	}

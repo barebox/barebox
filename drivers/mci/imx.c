@@ -520,8 +520,17 @@ static int mxcmci_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id mxcmci_compatible[] = {
+	{
+		.compatible = "fsl,imx27-mmc",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d mxcmci_driver = {
         .name  = DRIVER_NAME,
         .probe = mxcmci_probe,
+	.of_compatible = DRV_OF_COMPAT(mxcmci_compatible),
 };
 device_platform_driver(mxcmci_driver);

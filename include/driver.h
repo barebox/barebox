@@ -384,6 +384,7 @@ struct bus_type {
 };
 
 int bus_register(struct bus_type *bus);
+int device_match(struct device_d *dev, struct driver_d *drv);
 
 extern struct list_head bus_list;
 

@@ -81,7 +81,7 @@ static int do_spi(int argc, char *argv[])
 	}
 
 	tx_buf = xmalloc(count);
-	rx_buf = xmalloc(count);
+	rx_buf = xmalloc(read);
 
 	for (i = 0; i < count; i++)
 		tx_buf[i] = (u8) simple_strtol(argv[optind + i], NULL, 16);

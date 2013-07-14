@@ -14,6 +14,8 @@
 #include <mach/am33xx-generic.h>
 #include <mach/wdt.h>
 
+#include "beaglebone.h"
+
 #define DDR2_RD_DQS		0x12
 #define DDR2_PHY_FIFO_WE	0x80
 #define	DDR2_WR_DQS		0x00
@@ -68,6 +70,38 @@ static const struct am33xx_ddr_data ddr2_data = {
 	.dll_lock_diff0		= 0x0,
 };
 
+static const struct am33xx_ddr_data ddr3_data = {
+	.rd_slave_ratio0        = 0x38,
+	.wr_dqs_slave_ratio0    = 0x44,
+	.fifo_we_slave_ratio0	= 0x94,
+	.wr_slave_ratio0        = 0x7D,
+	.use_rank0_delay	= 0x01,
+	.dll_lock_diff0		= 0x0,
+};
+
+static const struct am33xx_cmd_control ddr3_cmd_ctrl = {
+	.slave_ratio0	= 0x80,
+	.dll_lock_diff0	= 0x1,
+	.invert_clkout0	= 0x0,
+	.slave_ratio1	= 0x80,
+	.dll_lock_diff1	= 0x1,
+	.invert_clkout1	= 0x0,
+	.slave_ratio2	= 0x80,
+	.dll_lock_diff2	= 0x1,
+	.invert_clkout2	= 0x0,
+};
+
+static const struct am33xx_emif_regs ddr3_regs = {
+	.emif_read_latency	= 0x100007,
+	.emif_tim1		= 0x0AAAD4DB,
+	.emif_tim2		= 0x266B7FDA,
+	.emif_tim3		= 0x501F867F,
+	.zq_config		= 0x50074BE4,
+	.sdram_config		= 0x61C05332,
+	.sdram_config2		= 0x0,
+	.sdram_ref_ctrl		= 0xC30,
+};
+
 /**
  * @brief The basic entry point for board initialization.
  *
@@ -90,9 +124,16 @@ static int beaglebone_board_init(void)
 	if (running_in_sdram())
 		return 0;
 
-	pll_init(MPUPLL_M_500, 24, DDRPLL_M_266);
-
-	am335x_sdram_init(0x18B, &ddr2_cmd_ctrl, &ddr2_regs, &ddr2_data);
+	/* Setup the PLLs and the clocks for the peripherals */
+	if (is_beaglebone_black()) {
+		pll_init(MPUPLL_M_500, 24, DDRPLL_M_400);
+		am335x_sdram_init(0x18B, &ddr3_cmd_ctrl, &ddr3_regs,
+				&ddr3_data);
+	} else {
+		pll_init(MPUPLL_M_500, 24, DDRPLL_M_266);
+		am335x_sdram_init(0x18B, &ddr2_cmd_ctrl, &ddr2_regs,
+				&ddr2_data);
+	}
 
 	am33xx_uart0_soft_reset();
 	am33xx_enable_uart0_pin_mux();
@@ -104,11 +145,18 @@ static int beaglebone_board_init(void)
 
 void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
 {
+	unsigned sdram;
+
 	am33xx_save_bootinfo(data);
 
 	arm_cpu_lowlevel_init();
 
 	beaglebone_board_init();
 
-	barebox_arm_entry(0x80000000, SZ_256M, 0);
+	if (is_beaglebone_black())
+		sdram = SZ_512M;
+	else
+		sdram = SZ_256M;
+
+	barebox_arm_entry(0x80000000, sdram, 0);
 }

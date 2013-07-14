@@ -26,6 +26,8 @@
 #include <init.h>
 #include <driver.h>
 #include <envfs.h>
+#include <environment.h>
+#include <globalvar.h>
 #include <sizes.h>
 #include <io.h>
 #include <ns16550.h>
@@ -49,6 +51,8 @@
 #include <mach/am33xx-generic.h>
 #include <mach/cpsw.h>
 
+#include "beaglebone.h"
+
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 
 /**
@@ -68,7 +72,10 @@ console_initcall(beaglebone_console_init);
 
 static int beaglebone_mem_init(void)
 {
-	omap_add_ram0(SZ_256M);
+	if (is_beaglebone_black())
+		omap_add_ram0(SZ_512M);
+	else
+		omap_add_ram0(SZ_256M);
 
 	return 0;
 }
@@ -103,9 +110,29 @@ static struct i2c_board_info i2c0_devices[] = {
 	},
 };
 
+static const __maybe_unused struct module_pin_mux mmc1_pin_mux[] = {
+	{OFFSET(gpmc_ad0), (MODE(1) | RXACTIVE)},	/* MMC1_DAT0 */
+	{OFFSET(gpmc_ad1), (MODE(1) | RXACTIVE)},	/* MMC1_DAT1 */
+	{OFFSET(gpmc_ad2), (MODE(1) | RXACTIVE)},	/* MMC1_DAT2 */
+	{OFFSET(gpmc_ad3), (MODE(1) | RXACTIVE)},	/* MMC1_DAT3 */
+	{OFFSET(gpmc_ad4), (MODE(1) | RXACTIVE)},	/* MMC1_DAT4 */
+	{OFFSET(gpmc_ad5), (MODE(1) | RXACTIVE)},	/* MMC1_DAT5 */
+	{OFFSET(gpmc_ad6), (MODE(1) | RXACTIVE)},	/* MMC1_DAT6 */
+	{OFFSET(gpmc_ad7), (MODE(1) | RXACTIVE)},	/* MMC1_DAT7 */
+	{OFFSET(gpmc_csn1), (MODE(2) | RXACTIVE | PULLUP_EN)},	/* MMC1_CLK */
+	{OFFSET(gpmc_csn2), (MODE(2) | RXACTIVE | PULLUP_EN)},	/* MMC1_CMD */
+	{-1},
+};
+
 static int beaglebone_devices_init(void)
 {
+	am33xx_enable_mmc0_pin_mux();
 	am33xx_add_mmc0(NULL);
+
+	if (is_beaglebone_black()) {
+		configure_module_pin_mux(mmc1_pin_mux);
+		am33xx_add_mmc1(NULL);
+	}
 
 	am33xx_enable_i2c0_pin_mux();
 	i2c_register_board_info(0, i2c0_devices, ARRAY_SIZE(i2c0_devices));
@@ -113,9 +140,24 @@ static int beaglebone_devices_init(void)
 
 	beaglebone_eth_init();
 
+	return 0;
+}
+device_initcall(beaglebone_devices_init);
+
+static int beaglebone_env_init(void)
+{
+	int black = is_beaglebone_black();
+
+#ifdef CONFIG_GLOBALVAR
+	globalvar_add_simple("board.variant");
+	setenv("global.board.variant", black ? "boneblack" : "bone");
+#endif
+
+	printf("detected 'BeagleBone %s'\n", black ? "Black" : "White");
+
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_BEAGLEBONE);
 
 	return 0;
 }
-device_initcall(beaglebone_devices_init);
+late_initcall(beaglebone_env_init);

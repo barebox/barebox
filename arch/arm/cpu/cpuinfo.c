@@ -31,6 +31,12 @@
 #define CPU_ARCH_ARMv6		8
 #define CPU_ARCH_ARMv7		9
 
+#define ARM_CPU_PART_CORTEX_A5      0xC050
+#define ARM_CPU_PART_CORTEX_A7      0xC070
+#define ARM_CPU_PART_CORTEX_A8      0xC080
+#define ARM_CPU_PART_CORTEX_A9      0xC090
+#define ARM_CPU_PART_CORTEX_A15     0xC0F0
+
 static void decode_cache(unsigned long size)
 {
 	int linelen = 1 << ((size & 0x3) + 3);
@@ -153,6 +159,33 @@ static int do_cpuinfo(int argc, char *argv[])
 
 	printf("implementer: %s\narchitecture: %s\n",
 			implementer, architecture);
+
+	if (cpu_arch == CPU_ARCH_ARMv7) {
+		unsigned int major, minor;
+		char *part;
+		major = (mainid >> 20) & 0xf;
+		minor = mainid & 0xf;
+		switch (mainid & 0xfff0) {
+		case ARM_CPU_PART_CORTEX_A5:
+			part = "Cortex-A5";
+			break;
+		case ARM_CPU_PART_CORTEX_A7:
+			part = "Cortex-A7";
+			break;
+		case ARM_CPU_PART_CORTEX_A8:
+			part = "Cortex-A8";
+			break;
+		case ARM_CPU_PART_CORTEX_A9:
+			part = "Cortex-A9";
+			break;
+		case ARM_CPU_PART_CORTEX_A15:
+			part = "Cortex-A15";
+			break;
+		default:
+			part = "unknown";
+		}
+		printf("core: %s r%up%u\n", part, major, minor);
+	}
 
 	if (cache & (1 << 24)) {
 		/* separate I/D cache */

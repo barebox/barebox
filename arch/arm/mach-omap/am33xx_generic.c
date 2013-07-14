@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2012 Teresa Gámez, Phytec Messtechnik GmbH
- * (C) Copyright 2012 Jan Luebbe <j.luebbe@pengutronix.de>
+ * (C) Copyright 2012-2013 Jan Luebbe <j.luebbe@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -35,6 +35,38 @@ void __noreturn reset_cpu(unsigned long addr)
 	writel(AM33XX_PRM_RSTCTRL_RESET, AM33XX_PRM_RSTCTRL);
 
 	while (1);
+}
+
+/**
+ * @brief Extract the AM33xx ES revision
+ *
+ * The significance of the CPU revision depends upon the cpu type.
+ * Latest known revision is considered default.
+ *
+ * @return silicon version
+ */
+u32 am33xx_get_cpu_rev(void)
+{
+	u32 version, retval;
+
+	version = (readl(AM33XX_IDCODE_REG) >> 28) & 0xF;
+
+	switch (version) {
+	case 0:
+		retval = AM335X_ES1_0;
+		break;
+	case 1:
+		retval = AM335X_ES2_0;
+		break;
+	case 2:
+		/*
+		 * Fall through the default case.
+		 */
+	default:
+		retval = AM335X_ES2_1;
+	}
+
+	return retval;
 }
 
 /**

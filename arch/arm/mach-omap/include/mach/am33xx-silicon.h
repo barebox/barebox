@@ -71,6 +71,7 @@
 
 /* CTRL */
 #define AM33XX_CTRL_BASE		(AM33XX_L4_WKUP_BASE + 0x210000)
+#define AM33XX_IDCODE_REG		(AM33XX_CTRL_BASE + 0x600)
 
 /* Watchdog Timer */
 #define AM33XX_WDT_BASE			0x44E35000

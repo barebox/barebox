@@ -6,6 +6,8 @@
 
 int am33xx_register_ethaddr(int eth_id, int mac_id);
 
+u32 am33xx_get_cpu_rev(void);
+
 static inline void am33xx_save_bootinfo(uint32_t *info)
 {
 	unsigned long i = (unsigned long)info;

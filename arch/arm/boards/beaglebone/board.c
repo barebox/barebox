@@ -97,11 +97,20 @@ static void beaglebone_eth_init(void)
 	am33xx_add_cpsw(&cpsw_data);
 }
 
+static struct i2c_board_info i2c0_devices[] = {
+	{
+		I2C_BOARD_INFO("24c256", 0x50)
+	},
+};
+
 static int beaglebone_devices_init(void)
 {
 	am33xx_add_mmc0(NULL);
 
 	am33xx_enable_i2c0_pin_mux();
+	i2c_register_board_info(0, i2c0_devices, ARRAY_SIZE(i2c0_devices));
+	am33xx_add_i2c0(NULL);
+
 	beaglebone_eth_init();
 
 	armlinux_set_bootparams((void *)0x80000100);

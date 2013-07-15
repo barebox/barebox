@@ -23,6 +23,10 @@
 
 #include <asm/unaligned.h>
 
+#ifndef STATIC
+#define STATIC
+#endif
+
 /*
  * Note: Uncompressed chunk size is used in the compressor side
  * (userspace side for compression).
@@ -175,7 +179,7 @@ exit_0:
 	return ret;
 }
 
-int decompress_unlz4(unsigned char *buf, int in_len,
+STATIC int decompress_unlz4(unsigned char *buf, int in_len,
 			      int(*fill)(void*, unsigned int),
 			      int(*flush)(void*, unsigned int),
 			      unsigned char *output,

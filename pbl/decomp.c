@@ -10,6 +10,10 @@
 
 #define STATIC static
 
+#ifdef CONFIG_IMAGE_COMPRESSION_LZ4
+#include "../../../lib/decompress_unlz4.c"
+#endif
+
 #ifdef CONFIG_IMAGE_COMPRESSION_LZO
 #include "../../../lib/decompress_unlzo.c"
 #endif

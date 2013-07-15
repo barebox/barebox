@@ -38,10 +38,11 @@
  */
 
 #ifndef STATIC
-#include <linux/module.h>
+#include <module.h>
 #include <linux/kernel.h>
 #endif
 #include <linux/lz4.h>
+#include <linux/string.h>
 
 #include <asm/unaligned.h>
 

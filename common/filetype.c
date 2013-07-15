@@ -33,6 +33,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_unknown] = { "unknown", "unkown" },
 	[filetype_arm_zimage] = { "arm Linux zImage", "arm-zimage" },
 	[filetype_lzo_compressed] = { "lzo compressed", "lzo" },
+	[filetype_lz4_compressed] = { "lz4 compressed", "lz4" },
 	[filetype_arm_barebox] = { "arm barebox image", "arm-barebox" },
 	[filetype_uimage] = { "U-Boot uImage", "u-boot" },
 	[filetype_ubi] = { "UBI image", "ubi" },
@@ -195,6 +196,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf8[0] == 0x89 && buf8[1] == 0x4c && buf8[2] == 0x5a &&
 			buf8[3] == 0x4f)
 		return filetype_lzo_compressed;
+	if (buf8[0] == 0x02 && buf8[1] == 0x21 && buf8[2] == 0x4c &&
+			buf8[3] == 0x18)
+		return filetype_lz4_compressed;
 	if (buf[0] == be32_to_cpu(0x27051956))
 		return filetype_uimage;
 	if (buf[0] == 0x23494255)

@@ -1558,6 +1558,7 @@ static int mci_card_probe(struct mci *mci)
 				dev_warn(&mci->dev, "No partition table found\n");
 				rc = 0; /* it's not a failure */
 			}
+			of_parse_partitions(&part->blk.cdev, host->hw_dev->device_node);
 		}
 
 		if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&

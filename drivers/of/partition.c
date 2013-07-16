@@ -34,6 +34,9 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	int len;
 	unsigned long flags = 0;
 
+	if (!node)
+		return NULL;
+
 	reg = of_get_property(node, "reg", &len);
 	if (!reg)
 		return NULL;
@@ -66,6 +69,9 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 {
 	struct device_node *n;
+
+	if (!node)
+		return -EINVAL;
 
 	for_each_child_of_node(node, n) {
 		of_parse_partition(cdev, n);

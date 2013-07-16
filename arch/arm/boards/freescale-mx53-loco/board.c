@@ -86,10 +86,6 @@ static int loco_late_init(void)
 	if (!of_machine_is_compatible("fsl,imx53-qsb"))
 		return 0;
 
-	device_detect_by_name("mmc0");
-
-	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
-
 	mc34708 = mc34708_get();
 	if (mc34708) {
 		/* get the board revision from fuse */

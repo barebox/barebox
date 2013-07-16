@@ -24,7 +24,7 @@
 
 struct fdt_header *fdt = NULL;
 
-static int hb_fixup(struct device_node *root)
+static int hb_fixup(struct device_node *root, void *unused)
 {
 	struct device_node *node;
 	u32 reg = readl(sregs_base + HB_SREG_A9_PWRDOM_DATA);
@@ -108,7 +108,7 @@ mem_initcall(highbank_mem_init);
 
 static int highbank_devices_init(void)
 {
-	of_register_fixup(hb_fixup);
+	of_register_fixup(hb_fixup, NULL);
 	if (!fdt) {
 		highbank_register_gpio(0);
 		highbank_register_gpio(1);

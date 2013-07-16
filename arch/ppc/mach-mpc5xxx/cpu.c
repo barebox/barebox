@@ -77,7 +77,7 @@ void __noreturn reset_cpu (unsigned long addr)
 /* ------------------------------------------------------------------------- */
 
 #ifdef CONFIG_OFTREE
-static int of_mpc5200_fixup(struct device_node *root)
+static int of_mpc5200_fixup(struct device_node *root, void *unused)
 {
 	struct device_node *node;
 
@@ -103,7 +103,7 @@ static int of_mpc5200_fixup(struct device_node *root)
 
 static int of_register_mpc5200_fixup(void)
 {
-	return of_register_fixup(of_mpc5200_fixup);
+	return of_register_fixup(of_mpc5200_fixup, NULL);
 }
 late_initcall(of_register_mpc5200_fixup);
 #endif

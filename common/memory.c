@@ -163,7 +163,7 @@ int release_sdram_region(struct resource *res)
 
 #ifdef CONFIG_OFTREE
 
-static int of_memory_fixup(struct device_node *node)
+static int of_memory_fixup(struct device_node *node, void *unused)
 {
 	struct memory_bank *bank;
 	int err;
@@ -200,7 +200,7 @@ static int of_memory_fixup(struct device_node *node)
 
 static int of_register_memory_fixup(void)
 {
-	return of_register_fixup(of_memory_fixup);
+	return of_register_fixup(of_memory_fixup, NULL);
 }
 late_initcall(of_register_memory_fixup);
 #endif

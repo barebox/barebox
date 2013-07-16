@@ -1739,3 +1739,68 @@ int of_add_initrd(struct device_node *root, resource_size_t start,
 
 	return 0;
 }
+
+/**
+ * of_device_enable - enable a devicenode device
+ * @node - the node to enable
+ *
+ * This deletes the status property of a devicenode effectively
+ * enabling the device.
+ */
+int of_device_enable(struct device_node *node)
+{
+	struct property *pp;
+
+	pp = of_find_property(node, "status", NULL);
+	if (!pp)
+		return 0;
+
+	of_delete_property(pp);
+
+	return 0;
+}
+
+/**
+ * of_device_enable_path - enable a devicenode
+ * @path - the nodepath to enable
+ *
+ * wrapper around of_device_enable taking the nodepath as argument
+ */
+int of_device_enable_path(const char *path)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_path(path);
+	if (!node)
+		return -ENODEV;
+
+	return of_device_enable(node);
+}
+
+/**
+ * of_device_enable - disable a devicenode device
+ * @node - the node to disable
+ *
+ * This sets the status of a devicenode to "disabled"
+ */
+int of_device_disable(struct device_node *node)
+{
+	return of_set_property(node, "status", "disabled", sizeof("disabled"), 1);
+}
+
+/**
+ * of_device_disable_path - disable a devicenode
+ * @path - the nodepath to disable
+ *
+ * wrapper around of_device_disable taking the nodepath as argument
+ */
+int of_device_disable_path(const char *path)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_path(path);
+	if (!node)
+		return -ENODEV;
+
+	return of_device_disable(node);
+}

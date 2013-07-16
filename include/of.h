@@ -682,4 +682,9 @@ static inline int of_property_write_u64(struct device_node *np,
 
 extern const struct of_device_id of_default_bus_match_table[];
 
+int of_device_enable(struct device_node *node);
+int of_device_enable_path(const char *path);
+int of_device_disable(struct device_node *node);
+int of_device_disable_path(const char *path);
+
 #endif /* __OF_H */

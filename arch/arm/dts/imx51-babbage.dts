@@ -19,6 +19,11 @@
 
 	chosen {
 		linux,stdout-path = "/soc/aips@70000000/serial@73fbc000";
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &esdhc1, "partname:barebox-environment";
+		};
 	};
 
 	memory {
@@ -73,6 +78,13 @@
 	fsl,cd-controller;
 	fsl,wp-controller;
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox-environment";
+		reg = <0x80000 0x20000>;
+	};
 };
 
 &esdhc2 {

@@ -314,7 +314,7 @@ static void set_ddr_sdram_mode(struct fsl_ddr_cfg_regs_s *ddr,
 		   | ((rtt & 0x1) << 2));
 
 	/* Write recovery */
-	wr = (dimm->tWR_ps + mclk_ps - 1) / (mclk_ps - 1);
+	wr = ((dimm->tWR_ps + mclk_ps - 1) / mclk_ps) - 1;
 
 	switch (popts->burst_length) {
 	case DDR_BL4:

@@ -56,7 +56,7 @@ static ssize_t mtd_op_read_oob(struct cdev *cdev, void *buf, size_t count,
 	ops.len = mtd->oobsize;
 
 	offset /= mtd->oobsize;
-	ret = mtd->read_oob(mtd, offset * mtd->writesize, &ops);
+	ret = mtd_read_oob(mtd, offset * mtd->writesize, &ops);
 	if (ret)
 		return ret;
 

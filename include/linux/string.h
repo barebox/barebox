@@ -106,6 +106,8 @@ extern char * skip_spaces(const char *);
 
 extern char *strim(char *);
 
+void *memchr_inv(const void *start, int c, size_t bytes);
+
 #ifdef __cplusplus
 }
 #endif

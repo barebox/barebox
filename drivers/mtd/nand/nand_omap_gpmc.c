@@ -697,7 +697,7 @@ static void omap_write_buf_pref(struct mtd_info *mtd,
  * generate dummy eccs for the unprotected oob area.
  */
 static int omap_gpmc_read_page_bch_rom_mode(struct mtd_info *mtd,
-		struct nand_chip *chip, uint8_t *buf)
+		struct nand_chip *chip, uint8_t *buf, int oob_required, int page)
 {
 	struct gpmc_nand_info *oinfo = chip->priv;
 	int dev_width = chip->options & NAND_BUSWIDTH_16 ? GPMC_ECC_CONFIG_ECC16B : 0;
@@ -886,7 +886,7 @@ static int omap_gpmc_eccmode_set(struct device_d *dev, struct param_d *param, co
 	return omap_gpmc_eccmode(oinfo, i);
 }
 
-static int gpmc_set_buswidth(struct mtd_info *mtd, struct nand_chip *chip, int buswidth)
+static int gpmc_set_buswidth(struct nand_chip *chip, int buswidth)
 {
 	struct gpmc_nand_info *oinfo = chip->priv;
 
@@ -1007,8 +1007,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	nand->options |= NAND_OWN_BUFFERS;
 	nand->buffers = xzalloc(sizeof(*nand->buffers));
 
-	nand->set_buswidth = gpmc_set_buswidth;
-
 	/* State my controller */
 	nand->controller = &oinfo->controller;
 
@@ -1031,10 +1029,12 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	mdelay(1);
 
 	/* first scan to find the device and get the page size */
-	if (nand_scan_ident(minfo, 1)) {
+	if (nand_scan_ident(minfo, 1, NULL)) {
 		err = -ENXIO;
 		goto out_release_mem;
 	}
+
+	gpmc_set_buswidth(nand, nand->options & NAND_BUSWIDTH_16);
 
 	if (nand->options & NAND_BUSWIDTH_16) {
 		lsp = &ecc_sp_x16;

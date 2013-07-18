@@ -43,8 +43,6 @@ static int nhk8815_nand_init(void)
 }
 
 static struct nomadik_nand_platform_data nhk8815_nand_data = {
-	.options	= NAND_COPYBACK | NAND_CACHEPRG | NAND_NO_PADDING \
-			| NAND_NO_READRDY | NAND_NO_AUTOINCR,
 	.init		= nhk8815_nand_init,
 };
 

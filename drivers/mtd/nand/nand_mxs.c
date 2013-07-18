@@ -620,7 +620,7 @@ static uint8_t mxs_nand_read_byte(struct mtd_info *mtd)
  * Read a page from NAND.
  */
 static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
-					uint8_t *buf)
+					uint8_t *buf, int oob_required, int page)
 {
 	struct mxs_nand_info *nand_info = nand->priv;
 	struct mxs_dma_desc *d;
@@ -762,13 +762,14 @@ rtn:
 /*
  * Write a page to NAND.
  */
-static void mxs_nand_ecc_write_page(struct mtd_info *mtd,
-				struct nand_chip *nand, const uint8_t *buf)
+static int mxs_nand_ecc_write_page(struct mtd_info *mtd,
+				struct nand_chip *nand, const uint8_t *buf,
+				int oob_required)
 {
 	struct mxs_nand_info *nand_info = nand->priv;
 	struct mxs_dma_desc *d;
 	uint32_t channel = MXS_DMA_CHANNEL_AHB_APBH_GPMI0 + nand_info->cur_chip;
-	int ret;
+	int ret = 0;
 
 	memcpy(nand_info->data_buf, buf, mtd->writesize);
 	memcpy(nand_info->oob_buf, nand->oob_poi, mtd->oobsize);
@@ -816,6 +817,8 @@ static void mxs_nand_ecc_write_page(struct mtd_info *mtd,
 
 rtn:
 	mxs_nand_return_dma_descs(nand_info);
+
+	return ret;
 }
 
 /*
@@ -934,7 +937,7 @@ static int mxs_nand_hook_block_markbad(struct mtd_info *mtd, loff_t ofs)
  * what to do.
  */
 static int mxs_nand_ecc_read_oob(struct mtd_info *mtd, struct nand_chip *nand,
-				int page, int cmd)
+				int page)
 {
 	struct mxs_nand_info *nand_info = nand->priv;
 	int column;
@@ -1249,7 +1252,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand->ecc.strength	= 8;
 
 	/* first scan to find the device and get the page size */
-	err = nand_scan_ident(mtd, 1);
+	err = nand_scan_ident(mtd, 1, NULL);
 	if (err)
 		goto err2;
 

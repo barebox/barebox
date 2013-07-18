@@ -687,23 +687,6 @@ static void copy_spare(struct mtd_info *mtd, int bfrom)
 }
 
 /*
- * This function is used by the upper layer to verify the data in NAND Flash
- * with the data in the \b buf.
- *
- * @param       mtd     MTD structure for the NAND Flash
- * @param       buf     data to be verified
- * @param       len     length of the data to be verified
- *
- * @return      -EFAULT if error else 0
- *
- */
-static int
-imx_nand_verify_buf(struct mtd_info *mtd, const u_char * buf, int len)
-{
-	return -EFAULT;
-}
-
-/*
  * This function is used by upper layer for select and deselect of the NAND
  * chip
  *
@@ -1235,7 +1218,6 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->read_word = imx_nand_read_word;
 	this->write_buf = imx_nand_write_buf;
 	this->read_buf = imx_nand_read_buf;
-	this->verify_buf = imx_nand_verify_buf;
 
 	if (host->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;
@@ -1268,7 +1250,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	}
 
 	/* first scan to find the device and get the page size */
-	if (nand_scan_ident(mtd, 1)) {
+	if (nand_scan_ident(mtd, 1, NULL)) {
 		err = -ENXIO;
 		goto escan;
 	}

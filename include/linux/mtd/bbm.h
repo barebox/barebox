@@ -103,7 +103,6 @@ struct nand_bbt_descr {
 #define NAND_BBT_SCAN2NDPAGE	0x00008000
 /* Search good / bad pattern on the last page of the eraseblock */
 #define NAND_BBT_SCANLASTPAGE	0x00010000
-
 /*
  * Use a flash based bad block table. By default, OOB identifier is saved in
  * OOB area. This option is passed to the default bad block table function.
@@ -129,5 +128,49 @@ struct nand_bbt_descr {
 
 /* The maximum number of blocks to scan for a bbt */
 #define NAND_BBT_SCAN_MAXBLOCKS	4
+
+/*
+ * Constants for oob configuration
+ */
+#define NAND_SMALL_BADBLOCK_POS		5
+#define NAND_LARGE_BADBLOCK_POS		0
+#define ONENAND_BADBLOCK_POS		0
+
+/*
+ * Bad block scanning errors
+ */
+#define ONENAND_BBT_READ_ERROR		1
+#define ONENAND_BBT_READ_ECC_ERROR	2
+#define ONENAND_BBT_READ_FATAL_ERROR	4
+
+/**
+ * struct bbm_info - [GENERIC] Bad Block Table data structure
+ * @bbt_erase_shift:	[INTERN] number of address bits in a bbt entry
+ * @badblockpos:	[INTERN] position of the bad block marker in the oob area
+ * @options:		options for this descriptor
+ * @bbt:		[INTERN] bad block table pointer
+ * @isbad_bbt:		function to determine if a block is bad
+ * @badblock_pattern:	[REPLACEABLE] bad block scan pattern used for
+ *			initial bad block scan
+ * @priv:		[OPTIONAL] pointer to private bbm date
+ */
+struct bbm_info {
+	int bbt_erase_shift;
+	int badblockpos;
+	int options;
+
+	uint8_t *bbt;
+
+	int (*isbad_bbt)(struct mtd_info *mtd, loff_t ofs, int allowbbt);
+
+	/* TODO Add more NAND specific fileds */
+	struct nand_bbt_descr *badblock_pattern;
+
+	void *priv;
+};
+
+/* OneNAND BBT interface */
+extern int onenand_scan_bbt(struct mtd_info *mtd, struct nand_bbt_descr *bd);
+extern int onenand_default_bbt(struct mtd_info *mtd);
 
 #endif	/* __LINUX_MTD_BBM_H */

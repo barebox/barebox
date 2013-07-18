@@ -104,12 +104,24 @@ struct mtd_info {
 	u_int32_t oobsize;   // Amount of OOB data per block (e.g. 16)
 	u_int32_t oobavail;  // Available OOB bytes per block
 
+	/*
+	 * read ops return -EUCLEAN if max number of bitflips corrected on any
+	 * one region comprising an ecc step equals or exceeds this value.
+	 * Settable by driver, else defaults to ecc_strength.  User can override
+	 * in sysfs.  N.B. The meaning of the -EUCLEAN return code has changed;
+	 * see Documentation/ABI/testing/sysfs-class-mtd for more detail.
+	 */
+	unsigned int bitflip_threshold;
+
 	// Kernel-only stuff starts here.
 	char *name;
 	int index;
 
 	/* ecc layout structure pointer - read only ! */
 	struct nand_ecclayout *ecclayout;
+
+	/* max number of correctible bit errors per ecc step */
+	unsigned int ecc_strength;
 
 	/* Data for variable erase regions. If numeraseregions is zero,
 	 * it means that the whole device has erasesize as given above.
@@ -272,5 +284,17 @@ int mtd_all_ff(const void *buf, unsigned int len);
 #endif /* CONFIG_MTD_DEBUG */
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+static inline int mtd_is_bitflip(int err) {
+	return err == -EUCLEAN;
+}
+
+static inline int mtd_is_eccerr(int err) {
+	return err == -EBADMSG;
+}
+
+static inline int mtd_is_bitflip_or_eccerr(int err) {
+	return mtd_is_bitflip(err) || mtd_is_eccerr(err);
+}
 
 #endif /* __MTD_MTD_H__ */

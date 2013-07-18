@@ -1298,6 +1298,9 @@ static int __init imxnd_probe(struct device_d *dev)
 			writew(NFC_V2_SPAS_SPARESIZE(16), host->regs + NFC_V2_SPAS);
 	}
 
+	if (this->ecc.mode == NAND_ECC_HW)
+		this->ecc.strength = host->eccsize;
+
 	/* second phase scan */
 	if (nand_scan_tail(mtd)) {
 		err = -ENXIO;

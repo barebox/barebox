@@ -456,6 +456,8 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 	 */
 	chip->ecc.mode = NAND_ECC_HW;
 	chip->ecc.bytes = 3;	/* always 24 bit ECC per turn */
+	chip->ecc.strength  = 1;
+
 #ifdef CONFIG_CPU_S3C2440
 	if (readl(host->base) & 0x8) {
 		/* large page (2048 bytes per page) */

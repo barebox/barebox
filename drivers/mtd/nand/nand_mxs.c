@@ -1246,6 +1246,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand->ecc.mode		= NAND_ECC_HW;
 	nand->ecc.bytes		= 9;
 	nand->ecc.size		= 512;
+	nand->ecc.strength	= 8;
 
 	/* first scan to find the device and get the page size */
 	err = nand_scan_ident(mtd, 1);

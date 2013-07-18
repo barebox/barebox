@@ -91,4 +91,5 @@ void nand_init_ecc_soft(struct nand_chip *chip)
 #endif
 	chip->ecc.size = 256;
 	chip->ecc.bytes = 3;
+	chip->ecc.strength = 1;
 }

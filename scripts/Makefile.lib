@@ -343,3 +343,6 @@ imximg-tmp = $(subst $(comma),_,$(dot-target).imxcfg.tmp)
 quiet_cmd_imx_image = IMX-IMG $@
       cmd_imx_image = $(CPP) $(imxcfg_cpp_flags) -o $(imximg-tmp) $(CFG_$(@F)) ; \
 		      $(objtree)/scripts/imx/imx-image -o $@ -b -c $(imximg-tmp) -f $<
+
+quiet_cmd_kwb_image = KWB     $@
+      cmd_kwb_image = scripts/kwbimage -p $< $(OPTS_$(@F)) -o $@

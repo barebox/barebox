@@ -108,6 +108,7 @@ $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 	$(call if_changed,shipped)
 
 include $(srctree)/images/Makefile.imx
+include $(srctree)/images/Makefile.mvebu
 
 targets += $(image-y) pbl.lds barebox.x barebox.z
 targets += $(patsubst %,%.pblx,$(pblx-y))
@@ -121,5 +122,6 @@ SECONDARY: $(addprefix $(obj)/,$(targets))
 images: $(addprefix $(obj)/, $(image-y)) FORCE
 	@echo "images built:\n" $(patsubst %,%\\n,$(image-y))
 
-clean-files := *.pbl *.pblb *.pblx *.map start_*.imximg *.img barebox.z
+clean-files := *.pbl *.pblb *.pblx *.map start_*.imximg *.img barebox.z start_*.kwbimg \
+	start_*.kwbuartimg
 clean-files += pbl.lds

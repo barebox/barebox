@@ -1,0 +1,26 @@
+#
+# barebox image generation Makefile for Marvell mvebu
+#
+
+# %.kwbimg - convert into kwb image
+# ----------------------------------------------------------------
+$(obj)/%.kwbimg: $(obj)/% FORCE
+	$(call if_changed,kwb_image)
+$(obj)/%.kwbuartimg: $(obj)/% FORCE
+	$(call if_changed,kwb_image)
+
+board = $(srctree)/arch/$(ARCH)/boards
+
+# ----------------------- Dove 88AP510 based boards ---------------------------
+SOLIDRUN_CUBOX_KWBOPTS = -c -i $(board)/solidrun-cubox/kwbimage.cfg -d 0x1000000 -e 0x1000000
+pblx-$(CONFIG_MACH_SOLIDRUN_CUBOX) += start_solidrun_cubox
+OPTS_start_solidrun_cubox.pblx.kwbimg = $(SOLIDRUN_CUBOX_KWBOPTS)
+FILE_barebox-solidrun-cubox.img = start_solidrun_cubox.pblx.kwbimg
+image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox.img
+
+OPTS_start_solidrun_cubox.pblx.kwbuartimg = -m uart $(SOLIDRUN_CUBOX_KWBOPTS)
+FILE_barebox-solidrun-cubox-uart.img = start_solidrun_cubox.pblx.kwbuartimg
+image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-uart.img
+
+FILE_barebox-solidrun-cubox-2nd.img = start_solidrun_cubox.pblx
+image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-2nd.img

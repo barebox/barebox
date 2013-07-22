@@ -42,6 +42,17 @@
 #include "serial_ns16550.h"
 #include <ns16550.h>
 
+struct ns16550_priv {
+	struct console_device cdev;
+	struct NS16550_plat plat;
+	int access_width;
+};
+
+static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
+{
+	return container_of(cdev, struct ns16550_priv, cdev);
+}
+
 /**
  * @brief read register
  *
@@ -52,9 +63,10 @@
  */
 static uint32_t ns16550_read(struct console_device *cdev, uint32_t off)
 {
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
 	struct device_d *dev = cdev->dev;
-	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
-	int width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+	struct NS16550_plat *plat = &priv->plat;
+	int width = priv->access_width;
 
 	off <<= plat->shift;
 
@@ -82,9 +94,10 @@ static uint32_t ns16550_read(struct console_device *cdev, uint32_t off)
 static void ns16550_write(struct console_device *cdev, uint32_t val,
 			  uint32_t off)
 {
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
 	struct device_d *dev = cdev->dev;
-	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
-	int width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+	struct NS16550_plat *plat = &priv->plat;
+	int width = priv->access_width;
 
 	off <<= plat->shift;
 
@@ -117,8 +130,8 @@ static void ns16550_write(struct console_device *cdev, uint32_t val,
 static inline unsigned int ns16550_calc_divisor(struct console_device *cdev,
 					 unsigned int baudrate)
 {
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+	struct NS16550_plat *plat = &priv->plat;
 	unsigned int clk = plat->clock;
 
 	return (clk / MODE_X_DIV / baudrate);
@@ -136,8 +149,8 @@ static inline unsigned int ns16550_calc_divisor(struct console_device *cdev,
 static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 {
 	unsigned int baud_divisor = ns16550_calc_divisor(cdev, baud_rate);
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+	struct NS16550_plat *plat = &priv->plat;
 
 	ns16550_write(cdev, LCR_BKSE, lcr);
 	ns16550_write(cdev, baud_divisor & 0xff, dll);
@@ -227,6 +240,7 @@ static int ns16550_tstc(struct console_device *cdev)
  */
 static int ns16550_probe(struct device_d *dev)
 {
+	struct ns16550_priv *priv;
 	struct console_device *cdev;
 	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
 
@@ -235,7 +249,12 @@ static int ns16550_probe(struct device_d *dev)
 		return -EINVAL;
 	dev->priv = dev_request_mem_region(dev, 0);
 
-	cdev = xzalloc(sizeof(*cdev));
+	priv = xzalloc(sizeof(*priv));
+
+	cdev = &priv->cdev;
+	priv->plat = *plat;
+
+	priv->access_width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 
 	cdev->dev = dev;
 	if (plat->f_caps)

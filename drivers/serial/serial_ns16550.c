@@ -231,6 +231,16 @@ static int ns16550_tstc(struct console_device *cdev)
 	return ((ns16550_read(cdev, lsr) & LSR_DR) != 0);
 }
 
+static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
+{
+	struct device_node *np = dev->device_node;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
+}
+
 /**
  * @brief Probe entry point -called on the first match for device
  *
@@ -251,8 +261,12 @@ static int ns16550_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(*priv));
 
+	if (plat)
+		priv->plat = *plat;
+	else
+		ns16550_probe_dt(dev, priv);
+
 	cdev = &priv->cdev;
-	priv->plat = *plat;
 
 	if (!plat || !plat->clock) {
 		priv->clk = clk_get(dev, NULL);
@@ -288,11 +302,20 @@ err:
 	return ret;
 }
 
+static struct of_device_id ns16550_serial_dt_ids[] = {
+	{
+		.compatible = "ns16550a",
+	}, {
+		/* sentinel */
+	},
+};
+
 /**
  * @brief Driver registration structure
  */
 static struct driver_d ns16550_serial_driver = {
 	.name = "ns16550_serial",
 	.probe = ns16550_probe,
+	.of_compatible = DRV_OF_COMPAT(ns16550_serial_dt_ids),
 };
 console_platform_driver(ns16550_serial_driver);

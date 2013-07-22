@@ -257,10 +257,7 @@ static int ns16550_probe(struct device_d *dev)
 	priv->access_width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 
 	cdev->dev = dev;
-	if (plat->f_caps)
-		cdev->f_caps = plat->f_caps;
-	else
-		cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
+	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = ns16550_tstc;
 	cdev->putc = ns16550_putc;
 	cdev->getc = ns16550_getc;

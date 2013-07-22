@@ -80,26 +80,6 @@ static void sabresd_phy_reset(void)
 	gpio_set_value(IMX_GPIO_NR(1, 25), 1);
 }
 
-static inline int imx6_iim_register_fec_ethaddr(void)
-{
-	u32 value;
-	u8 buf[6];
-
-	value = readl(MX6_OCOTP_BASE_ADDR + 0x630);
-	buf[0] = (value >> 8);
-	buf[1] = value;
-
-	value = readl(MX6_OCOTP_BASE_ADDR + 0x620);
-	buf[2] = value >> 24;
-	buf[3] = value >> 16;
-	buf[4] = value >> 8;
-	buf[5] = value;
-
-	eth_register_ethaddr(0, buf);
-
-	return 0;
-}
-
 static int sabresd_devices_init(void)
 {
 	armlinux_set_bootparams((void *)0x10000100);
@@ -117,8 +97,6 @@ static int sabresd_coredevices_init(void)
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,
 			ar8031_phy_fixup);
-
-	imx6_iim_register_fec_ethaddr();
 
 	return 0;
 }

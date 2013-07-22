@@ -108,6 +108,10 @@
 	};
 };
 
+&ocotp1 {
+	barebox,provide-mac-address = <&fec 0x620>;
+};
+
 &usbotg {
 	vbus-supply = <&reg_usb_otg_vbus>;
 	pinctrl-names = "default";

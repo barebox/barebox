@@ -106,26 +106,6 @@ static int sabrelite_ksz9021rn_setup(void)
  */
 fs_initcall(sabrelite_ksz9021rn_setup);
 
-static inline int imx6_iim_register_fec_ethaddr(void)
-{
-	u32 value;
-	u8 buf[6];
-
-	value = readl(MX6_OCOTP_BASE_ADDR + 0x630);
-	buf[0] = (value >> 8);
-	buf[1] = value;
-
-	value = readl(MX6_OCOTP_BASE_ADDR + 0x620);
-	buf[2] = value >> 24;
-	buf[3] = value >> 16;
-	buf[4] = value >> 8;
-	buf[5] = value;
-
-	eth_register_ethaddr(0, buf);
-
-	return 0;
-}
-
 static void sabrelite_ehci_init(void)
 {
 	imx6_usb_phy2_disable_oc();
@@ -157,9 +137,6 @@ static int sabrelite_coredevices_init(void)
 {
 	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
 					   ksz9021rn_phy_fixup);
-
-	imx6_iim_register_fec_ethaddr();
-
 	return 0;
 }
 coredevice_initcall(sabrelite_coredevices_init);

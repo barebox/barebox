@@ -1214,6 +1214,17 @@ err1:
 	return -ENOMEM;
 }
 
+static void mxs_nand_probe_dt(struct device_d *dev, struct mxs_nand_info *nand_info)
+{
+	struct nand_chip *nand = &nand_info->nand_chip;
+
+	if (!IS_ENABLED(CONFIG_OFTREE))
+		return;
+
+	if (of_get_nand_on_flash_bbt(dev->device_node))
+		nand->bbt_options |= NAND_BBT_USE_FLASH | NAND_BBT_NO_OOB;
+}
+
 static int mxs_nand_probe(struct device_d *dev)
 {
 	struct mxs_nand_info *nand_info;
@@ -1231,6 +1242,8 @@ static int mxs_nand_probe(struct device_d *dev)
 		printf("MXS NAND: Failed to allocate private data\n");
 		return -ENOMEM;
 	}
+
+	mxs_nand_probe_dt(dev, nand_info);
 
 	nand_info->type = type;
 	nand_info->io_base = dev_request_mem_region(dev, 0);

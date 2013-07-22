@@ -613,6 +613,15 @@ config IMX_IIM_FUSE_BLOW
 	  enable it:
 	    imx_iim0.permanent_write_enable=1
 
+config IMX_OCOTP
+	tristate "i.MX6 On Chip OTP controller"
+	depends on ARCH_IMX6
+	depends on OFDEVICE
+	help
+	  This adds support for the i.MX6 On-Chip OTP controller. Currently the
+	  only supported functionality is reading the MAC address and assigning
+	  it to an ethernet device.
+
 endmenu
 
 endif

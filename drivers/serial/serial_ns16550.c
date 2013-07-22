@@ -42,9 +42,6 @@
 #include "serial_ns16550.h"
 #include <ns16550.h>
 
-/*********** Private Functions **********************************/
-static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate);
-
 /**
  * @brief read register
  *
@@ -129,6 +126,34 @@ static inline unsigned int ns16550_calc_divisor(struct console_device *cdev,
 }
 
 /**
+ * @brief Set the baudrate for the uart port
+ *
+ * @param[in] cdev  console device
+ * @param[in] baud_rate baud rate to set
+ *
+ * @return  0-implied to support the baudrate
+ */
+static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
+{
+	unsigned int baud_divisor = ns16550_calc_divisor(cdev, baud_rate);
+	struct NS16550_plat *plat = (struct NS16550_plat *)
+	    cdev->dev->platform_data;
+
+	ns16550_write(cdev, LCR_BKSE, lcr);
+	ns16550_write(cdev, baud_divisor & 0xff, dll);
+	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
+	ns16550_write(cdev, LCRVAL, lcr);
+	ns16550_write(cdev, MCRVAL, mcr);
+
+	if (plat->flags & NS16650_FLAG_DISABLE_FIFO)
+		ns16550_write(cdev, FCRVAL & ~FCR_FIFO_EN, fcr);
+	else
+		ns16550_write(cdev, FCRVAL, fcr);
+
+	return 0;
+}
+
+/**
  * @brief Initialize the device
  *
  * @param[in] cdev pointer to console device
@@ -189,34 +214,6 @@ static int ns16550_getc(struct console_device *cdev)
 static int ns16550_tstc(struct console_device *cdev)
 {
 	return ((ns16550_read(cdev, lsr) & LSR_DR) != 0);
-}
-
-/**
- * @brief Set the baudrate for the uart port
- *
- * @param[in] cdev  console device
- * @param[in] baud_rate baud rate to set
- *
- * @return  0-implied to support the baudrate
- */
-static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
-{
-	unsigned int baud_divisor = ns16550_calc_divisor(cdev, baud_rate);
-	struct NS16550_plat *plat = (struct NS16550_plat *)
-	    cdev->dev->platform_data;
-
-	ns16550_write(cdev, LCR_BKSE, lcr);
-	ns16550_write(cdev, baud_divisor & 0xff, dll);
-	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
-	ns16550_write(cdev, LCRVAL, lcr);
-	ns16550_write(cdev, MCRVAL, mcr);
-
-	if (plat->flags & NS16650_FLAG_DISABLE_FIFO)
-		ns16550_write(cdev, FCRVAL & ~FCR_FIFO_EN, fcr);
-	else
-		ns16550_write(cdev, FCRVAL, fcr);
-
-	return 0;
 }
 
 /**

@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <malloc.h>
 #include <io.h>
+#include <linux/clk.h>
 
 #include "serial_ns16550.h"
 #include <ns16550.h>
@@ -46,6 +47,7 @@ struct ns16550_priv {
 	struct console_device cdev;
 	struct NS16550_plat plat;
 	int access_width;
+	struct clk *clk;
 };
 
 static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
@@ -243,16 +245,29 @@ static int ns16550_probe(struct device_d *dev)
 	struct ns16550_priv *priv;
 	struct console_device *cdev;
 	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
+	int ret;
 
-	/* we do expect platform specific data */
-	if (plat == NULL)
-		return -EINVAL;
 	dev->priv = dev_request_mem_region(dev, 0);
 
 	priv = xzalloc(sizeof(*priv));
 
 	cdev = &priv->cdev;
 	priv->plat = *plat;
+
+	if (!plat || !plat->clock) {
+		priv->clk = clk_get(dev, NULL);
+		if (IS_ERR(priv->clk)) {
+			ret = PTR_ERR(priv->clk);
+			goto err;
+		}
+		priv->plat.clock = clk_get_rate(priv->clk);
+	}
+
+	if (priv->plat.clock == 0) {
+		dev_err(dev, "no valid clockrate\n");
+		ret = -EINVAL;
+		goto err;
+	}
 
 	priv->access_width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 
@@ -266,6 +281,11 @@ static int ns16550_probe(struct device_d *dev)
 	ns16550_serial_init_port(cdev);
 
 	return console_register(cdev);
+
+err:
+	free(priv);
+
+	return ret;
 }
 
 /**

@@ -492,12 +492,40 @@ struct command cmds[] = {
 	},
 };
 
+static char *readcmd(FILE *f)
+{
+	static char *buf;
+	char *str;
+	ssize_t ret;
+
+	if (!buf) {
+		buf = malloc(4096);
+		if (!buf)
+			return NULL;
+	}
+
+	str = buf;
+	*str = 0;
+
+	while (1) {
+		ret = fread(str, 1, 1, f);
+		if (!ret)
+			return strlen(buf) ? buf : NULL;
+
+		if (*str == '\n' || *str == ';') {
+			*str = 0;
+			return buf;
+		}
+
+		str++;
+	}
+}
+
 static int parse_config(const char *filename)
 {
 	FILE *f;
 	int lineno = 0;
 	char *line = NULL, *tmp;
-	size_t len;
 	char *argv[MAXARGS];
 	int nargs, i, ret;
 
@@ -507,13 +535,14 @@ static int parse_config(const char *filename)
 		exit(1);
 	}
 
-	while ((getline(&line, &len, f)) > 0) {
+	while (1) {
+		line = readcmd(f);
+		if (!line)
+			break;
+
 		lineno++;
 
 		tmp = strchr(line, '#');
-		if (tmp)
-			*tmp = 0;
-		tmp = strrchr(line, '\n');
 		if (tmp)
 			*tmp = 0;
 

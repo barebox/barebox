@@ -80,7 +80,7 @@ config NAND_IMX_BBM
 config NAND_MXS
 	bool
 	select NAND_BBT
-	prompt "i.MX23/28 NAND driver"
+	prompt "i.MX23/28/6 NAND driver"
 	depends on MXS_APBH_DMA
 
 config NAND_OMAP_GPMC

@@ -42,6 +42,7 @@ config FS_NFS
 	prompt "nfs support"
 
 source fs/fat/Kconfig
+source fs/ubifs/Kconfig
 
 config PARTITION_NEED_MTD
 	bool

@@ -266,8 +266,6 @@ static int ns16550_probe(struct device_d *dev)
 	else
 		ns16550_probe_dt(dev, priv);
 
-	cdev = &priv->cdev;
-
 	if (!plat || !plat->clock) {
 		priv->clk = clk_get(dev, NULL);
 		if (IS_ERR(priv->clk)) {
@@ -291,6 +289,7 @@ static int ns16550_probe(struct device_d *dev)
 
 	priv->access_width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 
+	cdev = &priv->cdev;
 	cdev->dev = dev;
 	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = ns16550_tstc;

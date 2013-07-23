@@ -277,6 +277,12 @@ static int ns16550_probe(struct device_d *dev)
 		priv->plat.clock = clk_get_rate(priv->clk);
 	}
 
+	if (priv->plat.clock == 0 && IS_ENABLED(CONFIG_OFDEVICE)) {
+		struct device_node *np = dev->device_node;
+
+		of_property_read_u32(np, "clock-frequency", &priv->plat.clock);
+	}
+
 	if (priv->plat.clock == 0) {
 		dev_err(dev, "no valid clockrate\n");
 		ret = -EINVAL;

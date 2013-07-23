@@ -19,11 +19,12 @@ struct device_d;
  * The base API.
  */
 
-
 /*
  * struct clk - an machine class defined object / cookie.
  */
 struct clk;
+
+#ifdef CONFIG_HAVE_CLK
 
 /**
  * clk_get - lookup and obtain a reference to a clock producer.
@@ -156,6 +157,42 @@ struct clk *clk_get_sys(const char *dev_id, const char *con_id);
  */
 int clk_add_alias(const char *alias, const char *alias_dev_name, char *id,
 			struct device_d *dev);
+
+#else
+
+static inline struct clk *clk_get(struct device_d *dev, const char *id)
+{
+	return NULL;
+}
+
+static inline int clk_enable(struct clk *clk)
+{
+	return 0;
+}
+
+static inline void clk_disable(struct clk *clk)
+{
+}
+
+static inline unsigned long clk_get_rate(struct clk *clk)
+{
+	return 0;
+}
+
+static inline void clk_put(struct clk *clk)
+{
+}
+
+static inline long clk_round_rate(struct clk *clk, unsigned long rate)
+{
+	return 0;
+}
+
+static inline int clk_set_rate(struct clk *clk, unsigned long rate)
+{
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_COMMON_CLK
 struct clk_ops {

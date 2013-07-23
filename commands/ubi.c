@@ -71,12 +71,17 @@ static int do_ubiattach(int argc, char *argv[])
 	}
 
 	ret = ioctl(fd, MEMGETINFO, &user);
-	if (!ret)
-		ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, 0);
+	if (ret) {
+		printf("MEMGETINFO failed: %s\n", strerror(-ret));
+		goto err;
+	}
 
-	if (ret)
+	ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, 0);
+	if (ret < 0)
 		printf("failed to attach: %s\n", strerror(-ret));
-
+	else
+		ret = 0;
+err:
 	close(fd);
 
 	return ret ? 1 : 0;

@@ -5,6 +5,8 @@
 #include "ubi-barebox.h"
 #include "ubi.h"
 
+LIST_HEAD(ubi_volumes_list);
+
 struct ubi_volume_cdev_priv {
 	struct ubi_device *ubi;
 	struct ubi_volume *vol;
@@ -184,6 +186,8 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 		free(cdev->name);
 	}
 
+	list_add_tail(&vol->list, &ubi_volumes_list);
+
 	return 0;
 }
 
@@ -191,6 +195,8 @@ void ubi_volume_cdev_remove(struct ubi_volume *vol)
 {
 	struct cdev *cdev = &vol->cdev;
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
+
+	list_del(&vol->list);
 
 	devfs_remove(cdev);
 	kfree(cdev->name);

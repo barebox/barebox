@@ -265,6 +265,23 @@ struct ubi_volume_desc *ubi_open_volume_nm(int ubi_num, const char *name,
 }
 EXPORT_SYMBOL_GPL(ubi_open_volume_nm);
 
+extern struct list_head ubi_volumes_list;
+
+struct ubi_volume_desc *ubi_open_volume_cdev(struct cdev *cdev, int mode)
+{
+	struct ubi_volume *vol;
+
+	list_for_each_entry(vol, &ubi_volumes_list, list) {
+		if (cdev == &vol->cdev)
+			goto found;
+	}
+
+	return ERR_PTR(-ENOENT);
+
+found:
+	return ubi_open_volume(vol->ubi->ubi_num, vol->vol_id, mode);
+}
+
 /**
  * ubi_close_volume - close UBI volume.
  * @desc: volume descriptor

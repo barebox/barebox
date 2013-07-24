@@ -27,6 +27,7 @@ enum filetype {
 	filetype_png,
 	filetype_ext,
 	filetype_gpt,
+	filetype_ubifs,
 	filetype_max,
 };
 

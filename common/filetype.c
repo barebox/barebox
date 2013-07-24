@@ -203,6 +203,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_uimage;
 	if (buf[0] == 0x23494255)
 		return filetype_ubi;
+	if (buf[0] == le32_to_cpu(0x06101831))
+		return filetype_ubifs;
 	if (buf[0] == 0x20031985)
 		return filetype_jffs2;
 	if (buf8[0] == 0x1f && buf8[1] == 0x8b && buf8[2] == 0x08)

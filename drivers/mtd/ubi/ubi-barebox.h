@@ -32,14 +32,6 @@
 #define CONFIG_MTD_UBI_WL_THRESHOLD	4096
 #define UBI_IO_DEBUG			0
 
-#define DUMP_PREFIX_OFFSET 0
-static inline void print_hex_dump(const char *level, const char *prefix_str,
-		int prefix_type, int rowsize, int groupsize,
-		const void *buf, size_t len, bool ascii)
-{
-	memory_display(buf, 0, len, 4, 0);
-}
-
 /* upd.c */
 static inline unsigned long copy_from_user(void *dest, const void *src,
 					   unsigned long count)

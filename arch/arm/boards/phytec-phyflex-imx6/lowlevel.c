@@ -86,3 +86,18 @@ ENTRY_FUNCTION(start_phytec_pbab01_2gib, r0, r1, r2)
 
 	barebox_arm_entry(0x10000000, SZ_2G, fdt);
 }
+
+ENTRY_FUNCTION(start_phytec_pbab01_4gib, r0, r1, r2)
+{
+	uint32_t fdt;
+
+	__barebox_arm_head();
+
+	arm_cpu_lowlevel_init();
+
+	arm_setup_stack(0x00920000 - 8);
+
+	fdt = (uint32_t)__dtb_imx6q_phytec_pbab01_start - get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, 0xEFFFFFF8, fdt);
+}

@@ -137,6 +137,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 		}
 
 		vol->checked = 1;
+		ubi_volume_notify(ubi, vol, UBI_VOLUME_UPDATED);
 	}
 
 	return 0;

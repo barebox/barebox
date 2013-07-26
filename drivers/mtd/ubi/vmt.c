@@ -173,6 +173,7 @@ int ubi_create_volume(struct ubi_device *ubi, struct ubi_mkvol_req *req)
 	ubi->volumes[vol_id] = vol;
 	ubi->vol_count += 1;
 
+	ubi_volume_notify(ubi, vol, UBI_VOLUME_ADDED);
 	self_check_volumes(ubi);
 	return err;
 
@@ -251,6 +252,7 @@ int ubi_remove_volume(struct ubi_volume_desc *desc, int no_vtbl)
 	ubi_update_reserved(ubi);
 	ubi->vol_count -= 1;
 
+	ubi_volume_notify(ubi, vol, UBI_VOLUME_REMOVED);
 	if (!no_vtbl)
 		self_check_volumes(ubi);
 
@@ -359,6 +361,7 @@ int ubi_resize_volume(struct ubi_volume_desc *desc, int reserved_pebs)
 			(long long)vol->used_ebs * vol->usable_leb_size;
 	}
 
+	ubi_volume_notify(ubi, vol, UBI_VOLUME_RESIZED);
 	self_check_volumes(ubi);
 	return err;
 
@@ -400,6 +403,7 @@ int ubi_rename_volumes(struct ubi_device *ubi, struct list_head *rename_list)
 
 			vol->name_len = re->new_name_len;
 			memcpy(vol->name, re->new_name, re->new_name_len + 1);
+			ubi_volume_notify(ubi, vol, UBI_VOLUME_RENAMED);
 		}
 	}
 

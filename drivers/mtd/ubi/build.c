@@ -64,6 +64,38 @@ static bool fm_autoconvert = 1;
 struct ubi_device *ubi_devices[UBI_MAX_DEVICES];
 
 /**
+ * ubi_volume_notify - send a volume change notification.
+ * @ubi: UBI device description object
+ * @vol: volume description object of the changed volume
+ * @ntype: notification type to send (%UBI_VOLUME_ADDED, etc)
+ *
+ * This is a helper function which notifies all subscribers about a volume
+ * change event (creation, removal, re-sizing, re-naming, updating). Returns
+ * zero in case of success and a negative error code in case of failure.
+ */
+int ubi_volume_notify(struct ubi_device *ubi, struct ubi_volume *vol, int ntype)
+{
+	struct ubi_notification nt;
+
+	ubi_do_get_device_info(ubi, &nt.di);
+	ubi_do_get_volume_info(ubi, vol, &nt.vi);
+
+#ifdef CONFIG_MTD_UBI_FASTMAP
+	switch (ntype) {
+	case UBI_VOLUME_ADDED:
+	case UBI_VOLUME_REMOVED:
+	case UBI_VOLUME_RESIZED:
+	case UBI_VOLUME_RENAMED:
+		if (ubi_update_fastmap(ubi)) {
+			ubi_err("Unable to update fastmap!");
+			ubi_ro_mode(ubi);
+		}
+	}
+#endif
+	return 0;
+}
+
+/**
  * ubi_get_device - get UBI device.
  * @ubi_num: UBI device number
  *

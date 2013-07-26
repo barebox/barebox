@@ -103,6 +103,22 @@ err_close:
 	return ret;
 }
 
+static int imx_bbu_check_prereq(struct bbu_data *data)
+{
+	int ret;
+
+	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
+		if (!bbu_force(data, "Not an ARM barebox image"))
+			return -EINVAL;
+	}
+
+	ret = bbu_confirm(data);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 /*
  * Update barebox on a v1 type internal boot (i.MX25, i.MX35, i.MX51)
  *
@@ -122,12 +138,7 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 	int ret, image_len;
 	void *buf;
 
-	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
-		if (!bbu_force(data, "Not an ARM barebox image"))
-			return -EINVAL;
-	}
-
-	ret = bbu_confirm(data);
+	ret = imx_bbu_check_prereq(data);
 	if (ret)
 		return ret;
 
@@ -344,12 +355,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	int ret, image_len;
 	void *buf;
 
-	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
-		if (!bbu_force(data, "Not an ARM barebox image"))
-			return -EINVAL;
-	}
-
-	ret = bbu_confirm(data);
+	ret = imx_bbu_check_prereq(data);
 	if (ret)
 		return ret;
 

@@ -91,8 +91,7 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 			of_add_reserve_entry(initrd_start, initrd_end);
 		data->oftree = of_get_fixed_tree(data->of_root_node);
 		fdt_add_reserve_map(data->oftree);
-		if (bootm_verbose(data))
-			of_print_cmdline(data->of_root_node);
+		of_print_cmdline(data->of_root_node);
 		if (bootm_verbose(data) > 1)
 			of_print_nodes(data->of_root_node, 0);
 	}

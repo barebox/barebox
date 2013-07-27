@@ -1475,9 +1475,12 @@ void of_print_nodes(struct device_node *node, int indent)
 	list_for_each_entry(p, &node->properties, list) {
 		for (i = 0; i < indent + 1; i++)
 			printf("\t");
-		printf("%s: ", p->name);
-		of_print_property(p->value, p->length);
-		printf("\n");
+		printf("%s", p->name);
+		if (p->length) {
+			printf(" = ");
+			of_print_property(p->value, p->length);
+		}
+		printf(";\n");
 	}
 
 	list_for_each_entry(n, &node->children, parent_list) {

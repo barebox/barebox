@@ -100,7 +100,7 @@ void of_print_property(const void *data, int len)
 
 void of_print_cmdline(struct device_node *root)
 {
-	struct device_node *node = of_find_node_by_path("/chosen");
+	struct device_node *node = of_find_node_by_path_from(root, "/chosen");
 	const char *cmdline;
 
 	if (!node) {

@@ -114,10 +114,11 @@ void cpu_init_early_f(void)
 	e500_init_tlbs();
 }
 
-void cpu_init_f(void)
+static int cpu_init_r(void)
 {
 	e500_disable_tlb(14);
 	e500_disable_tlb(15);
 
-	fsl_init_early_memctl_regs();
+	return 0;
 }
+core_initcall(cpu_init_r);

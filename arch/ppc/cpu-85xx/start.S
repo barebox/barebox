@@ -300,7 +300,6 @@ _start_cont:
 	mtmsr	r3
 	isync
 
-	bl      cpu_init_f
 	bl      initdram
 	b       relocate_code
 	isync

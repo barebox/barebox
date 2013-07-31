@@ -235,6 +235,10 @@ static int board_init_r(void)
 
 	checkboard();
 
+	/* Map the whole boot flash */
+	fsl_set_lbc_br(0, BR_PHYS_ADDR(CFG_FLASH_BASE_PHYS) | BR_PS_16 | BR_V);
+	fsl_set_lbc_or(0, 0xff000ff7);
+
 	/* Flush d-cache and invalidate i-cache of any FLASH data */
 	flush_dcache();
 	invalidate_icache();

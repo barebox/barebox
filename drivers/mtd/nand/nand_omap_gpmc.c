@@ -1049,7 +1049,8 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	}
 
 	nand->read_buf   = omap_read_buf_pref;
-	nand->write_buf  = omap_write_buf_pref;
+	if (IS_ENABLED(CONFIG_MTD_WRITE))
+		nand->write_buf  = omap_write_buf_pref;
 
 	nand->options |= NAND_SKIP_BBTSCAN;
 

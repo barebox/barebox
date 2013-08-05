@@ -43,6 +43,9 @@ static int writebuffer_flush(struct block_device *blk)
 {
 	struct chunk *chunk;
 
+	if (!IS_ENABLED(CONFIG_BLOCK_WRITE))
+		return 0;
+
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
 		if (chunk->dirty) {
 			blk->ops->write(blk, chunk->data, chunk->block_start, blk->rdbufsize);

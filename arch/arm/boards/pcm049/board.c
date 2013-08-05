@@ -286,7 +286,8 @@ static int pcm049_devices_init(void)
 
 	gpmc_generic_init(0x10);
 
-	pcm049_network_init();
+	if (IS_ENABLED(CONFIG_DRIVER_NET_SMC911X))
+		pcm049_network_init();
 
 	omap_add_gpmc_nand_device(&nand_plat);
 
@@ -302,7 +303,8 @@ static int pcm049_devices_init(void)
 	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCM049);
 
-	omap_add_display(&pcm049_fb_data);
+	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_OMAP))
+		omap_add_display(&pcm049_fb_data);
 
 	return 0;
 }

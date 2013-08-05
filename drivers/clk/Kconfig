@@ -1,8 +1,11 @@
+config HAVE_CLK
+	bool
 
 config CLKDEV_LOOKUP
 	bool
 
 config COMMON_CLK
+	select HAVE_CLK
 	bool
 
 config COMMON_CLK_OF_PROVIDER

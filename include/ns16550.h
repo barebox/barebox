@@ -33,10 +33,6 @@
 struct NS16550_plat {
 	/** Clock speed */
 	unsigned int clock;
-	/** Console capabilities:
-	 * CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR @see console.h
-	 */
-	unsigned char f_caps;
 	/**
 	 * register read access capability
 	 */

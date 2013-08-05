@@ -34,6 +34,7 @@ config ARCH_AT91
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
 	select HAVE_MACH_ARM_HEAD
+	select HAVE_CLK
 
 config ARCH_BCM2835
 	bool "Broadcom BCM2835 boards"
@@ -101,6 +102,7 @@ config ARCH_NOMADIK
 	bool "STMicroelectronics Nomadik"
 	select CPU_ARM926T
 	select CLOCKSOURCE_NOMADIK
+	select HAVE_CLK
 	help
 	  Support for the Nomadik platform by ST-Ericsson
 
@@ -135,6 +137,7 @@ config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
 	select CPU_ARM926T
 	select GPIOLIB
+	select HAVE_CLK
 
 config ARCH_VEXPRESS
 	bool "ARM Vexpres boards"

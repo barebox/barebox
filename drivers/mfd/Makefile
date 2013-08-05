@@ -1,7 +1,6 @@
 obj-$(CONFIG_MFD_LP3972)	+= lp3972.o
 obj-$(CONFIG_MFD_MC13XXX)	+= mc13xxx.o
 obj-$(CONFIG_MFD_MC34704)	+= mc34704.o
-obj-$(CONFIG_MFD_MC34708)	+= mc34708.o
 obj-$(CONFIG_MFD_MC9SDZ60)	+= mc9sdz60.o
 obj-$(CONFIG_MFD_STMPE)		+= stmpe-i2c.o
 obj-$(CONFIG_MFD_SYSCON)	+= syscon.o

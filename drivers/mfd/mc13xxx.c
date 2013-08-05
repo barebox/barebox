@@ -28,19 +28,19 @@
 
 #define DRIVERNAME		"mc13xxx"
 
-enum mc13xxx_mode {
-	MC13XXX_MODE_I2C,
-	MC13XXX_MODE_SPI,
-};
-
 struct mc13xxx {
 	struct cdev			cdev;
 	union {
 		struct i2c_client	*client;
 		struct spi_device	*spi;
 	};
-	enum mc13xxx_mode		mode;
 	int				revision;
+	int				(*reg_read)(struct mc13xxx*, u8, u32*);
+	int				(*reg_write)(struct mc13xxx*, u8, u32);
+};
+
+struct mc13xxx_devtype {
+	int	(*revision)(struct mc13xxx*);
 };
 
 #define to_mc13xxx(a)		container_of(a, struct mc13xxx, cdev)
@@ -136,29 +136,13 @@ static int mc13xxx_i2c_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val)
 
 int mc13xxx_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val)
 {
-#ifdef CONFIG_I2C
-	if (mc13xxx->mode == MC13XXX_MODE_I2C)
-		return mc13xxx_i2c_reg_write(mc13xxx, reg, val);
-#endif
-#ifdef CONFIG_SPI
-	if (mc13xxx->mode == MC13XXX_MODE_SPI)
-		return mc13xxx_spi_reg_write(mc13xxx, reg, val);
-#endif
-	return -EINVAL;
+	return mc13xxx->reg_write(mc13xxx, reg, val);
 }
 EXPORT_SYMBOL(mc13xxx_reg_write);
 
 int mc13xxx_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val)
 {
-#ifdef CONFIG_I2C
-	if (mc13xxx->mode == MC13XXX_MODE_I2C)
-		return mc13xxx_i2c_reg_read(mc13xxx, reg, val);
-#endif
-#ifdef CONFIG_SPI
-	if (mc13xxx->mode == MC13XXX_MODE_SPI)
-		return mc13xxx_spi_reg_read(mc13xxx, reg, val);
-#endif
-	return -EINVAL;
+	return mc13xxx->reg_read(mc13xxx, reg, val);
 }
 EXPORT_SYMBOL(mc13xxx_reg_read);
 
@@ -179,7 +163,7 @@ EXPORT_SYMBOL(mc13xxx_set_bits);
 
 static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, loff_t offset, ulong flags)
 {
-	struct mc13xxx *priv = to_mc13xxx(cdev);
+	struct mc13xxx *mc13xxx = to_mc13xxx(cdev);
 	u32 *buf = _buf;
 	size_t i = count >> 2;
 	int err;
@@ -187,7 +171,7 @@ static ssize_t mc_read(struct cdev *cdev, void *_buf, size_t count, loff_t offse
 	offset >>= 2;
 
 	while (i) {
-		err = mc13xxx_reg_read(priv, offset, buf);
+		err = mc13xxx_reg_read(mc13xxx, offset, buf);
 		if (err)
 			return (ssize_t)err;
 		buf++;
@@ -225,13 +209,37 @@ static struct file_operations mc_fops = {
 	.write	= mc_write,
 };
 
-struct mc13892_rev {
+static int __init mc13783_revision(struct mc13xxx *mc13xxx)
+{
+	unsigned int rev_id;
+	char revstr[5];
+	int rev;
+
+	mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev_id);
+
+	if (((rev_id >> 6) & 0x7) != 0x2)
+		return -ENODEV;
+
+
+	rev = (((rev_id & 0x18) >> 3) << 4) | (rev_id & 0x7);
+	/* Ver 0.2 is actually 3.2a. Report as 3.2 */
+	if (rev == 0x02) {
+		rev = 0x32;
+		strcpy(revstr, "3.2a");
+	} else
+		sprintf(revstr, "%d.%d", rev / 0x10, rev % 10);
+
+	dev_info(mc_dev->cdev.dev, "Found MC13783 ID: 0x%06x [Rev: %s]\n",
+		 rev_id, revstr);
+
+	return rev;
+}
+
+static struct __init {
 	u16	rev_id;
 	int	rev;
 	char	*revstr;
-};
-
-static struct mc13892_rev mc13892_revisions[] = {
+} mc13892_revisions[] = {
 	{ 0x01, MC13892_REVISION_1_0, "1.0" },
 	{ 0x09, MC13892_REVISION_1_1, "1.1" },
 	{ 0x0a, MC13892_REVISION_1_2, "1.2" },
@@ -245,132 +253,152 @@ static struct mc13892_rev mc13892_revisions[] = {
 	{ 0x1d, MC13892_REVISION_3_5, "3.5" },
 };
 
-static int mc13xxx_query_revision(struct mc13xxx *mc13xxx)
+static int __init mc13892_revision(struct mc13xxx *mc13xxx)
 {
 	unsigned int rev_id;
-	char *chipname, revstr[5];
+	char revstr[5];
 	int rev, i;
 
 	mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev_id);
 
-	/* Determine chip type by decode ICID bits */
-	switch ((rev_id >> 6) & 0x7) {
-	case 2:
-		chipname = "MC13783";
-		rev = (((rev_id & 0x18) >> 3) << 4) | (rev_id & 0x7);
-		/* Ver 0.2 is actually 3.2a. Report as 3.2 */
-		if (rev == 0x02) {
-			rev = 0x32;
-			strcpy(revstr, "3.2a");
-		} else
-			sprintf(revstr, "%d.%d", rev / 0x10, rev % 10);
-		break;
-	case 7:
-		chipname = "MC13892";
-		for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)
-			if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)
-				break;
+	if (((rev_id >> 6) & 0x7) != 0x7)
+		return -ENODEV;
 
-		if (i == ARRAY_SIZE(mc13892_revisions))
-			return -EINVAL;
+	for (i = 0; i < ARRAY_SIZE(mc13892_revisions); i++)
+		if ((rev_id & 0x1f) == mc13892_revisions[i].rev_id)
+			break;
 
-		rev = mc13892_revisions[i].rev;
-		strcpy(revstr, mc13892_revisions[i].revstr);
+	if (i == ARRAY_SIZE(mc13892_revisions))
+		return -ENOSYS;
 
-		if (rev == MC13892_REVISION_2_0) {
-			if ((rev_id >> 9) & 0x3) {
-				rev = MC13892_REVISION_2_0a;
-				strcpy(revstr, "2.0a");
-			}
+	rev = mc13892_revisions[i].rev;
+	strcpy(revstr, mc13892_revisions[i].revstr);
+
+	if (rev == MC13892_REVISION_2_0) {
+		if ((rev_id >> 9) & 0x3) {
+			rev = MC13892_REVISION_2_0a;
+			strcpy(revstr, "2.0a");
 		}
-		break;
-	default:
-		dev_info(mc_dev->cdev.dev, "No PMIC detected.\n");
-		return -EINVAL;
 	}
 
-	dev_info(mc_dev->cdev.dev, "Found %s ID: 0x%06x [Rev: %s]\n",
-			chipname, rev_id, revstr);
-
-	mc13xxx->revision = rev;
+	dev_info(mc_dev->cdev.dev, "Found MC13892 ID: 0x%06x [Rev: %s]\n",
+		 rev_id, revstr);
 
 	return rev;
 }
 
-static int mc_probe(struct device_d *dev, enum mc13xxx_mode mode)
+static int __init mc34708_revision(struct mc13xxx *mc13xxx)
 {
-	int rev;
+	unsigned int rev_id;
+
+	mc13xxx_reg_read(mc13xxx, MC13XXX_REG_IDENTIFICATION, &rev_id);
+
+	if (rev_id > 0xfff)
+		return -ENODEV;
+
+	dev_info(mc_dev->cdev.dev, "Found MC34708 ID: 0x%03x\n", rev_id);
+
+	return (int)rev_id;
+}
+
+static int __init mc13xxx_probe(struct device_d *dev)
+{
+	struct mc13xxx_devtype *devtype;
+	int ret, rev;
 
 	if (mc_dev)
 		return -EBUSY;
 
-	mc_dev = xzalloc(sizeof(struct mc13xxx));
-	mc_dev->mode = mode;
+	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	if (ret)
+		return ret;
+
+	mc_dev = xzalloc(sizeof(*mc_dev));
 	mc_dev->cdev.name = DRIVERNAME;
-	if (mode == MC13XXX_MODE_I2C) {
+
+#ifdef CONFIG_I2C
+	if (dev->bus == &i2c_bus) {
 		mc_dev->client = to_i2c_client(dev);
+		mc_dev->reg_read = mc13xxx_i2c_reg_read;
+		mc_dev->reg_write = mc13xxx_i2c_reg_write;
 	}
-	if (mode == MC13XXX_MODE_SPI) {
+#endif
+#ifdef CONFIG_SPI
+	if (dev->bus == &spi_bus) {
 		mc_dev->spi = dev->type_data;
 		mc_dev->spi->mode = SPI_MODE_0 | SPI_CS_HIGH;
 		mc_dev->spi->bits_per_word = 32;
 		mc_dev->spi->max_speed_hz = 20000000;
+		mc_dev->reg_read = mc13xxx_spi_reg_read;
+		mc_dev->reg_write = mc13xxx_spi_reg_write;
 	}
+#endif
+
 	mc_dev->cdev.size = 256;
 	mc_dev->cdev.dev = dev;
 	mc_dev->cdev.ops = &mc_fops;
 
-	rev = mc13xxx_query_revision(mc_dev);
+	rev = devtype->revision(mc_dev);
 	if (rev < 0) {
+		dev_err(mc_dev->cdev.dev, "No PMIC detected.\n");
 		free(mc_dev);
 		mc_dev = NULL;
-		return -EINVAL;
+		return rev;
 	}
 
+	mc_dev->revision = rev;
 	devfs_create(&mc_dev->cdev);
 
 	return 0;
 }
 
-static __maybe_unused struct of_device_id mc13892_dt_ids[] = {
-	{
-		.compatible = "fsl,mc13892",
-	}, {
-		.compatible = "fsl,mc13783",
-	}, {
-		/* sentinel */
-	}
+static struct mc13xxx_devtype mc13783_devtype = {
+	.revision	= mc13783_revision,
+};
+
+static struct mc13xxx_devtype mc13892_devtype = {
+	.revision	= mc13892_revision,
+};
+
+static struct mc13xxx_devtype mc34708_devtype = {
+	.revision	= mc34708_revision,
+};
+
+static struct platform_device_id mc13xxx_ids[] = {
+	{ .name = "mc13783", .driver_data = (ulong)&mc13783_devtype, },
+	{ .name = "mc13892", .driver_data = (ulong)&mc13892_devtype, },
+	{ .name = "mc34708", .driver_data = (ulong)&mc34708_devtype, },
+	{ }
+};
+
+static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
+	{ .compatible = "fsl,mc13783", .data = (ulong)&mc13783_devtype, },
+	{ .compatible = "fsl,mc13892", .data = (ulong)&mc13892_devtype, },
+	{ .compatible = "fsl,mc34708", .data = (ulong)&mc34708_devtype, },
+	{ }
 };
 
 #ifdef CONFIG_I2C
-static int mc_i2c_probe(struct device_d *dev)
-{
-	return mc_probe(dev, MC13XXX_MODE_I2C);
-}
-
-static struct driver_d mc_i2c_driver = {
-	.name  = "mc13xxx-i2c",
-	.probe = mc_i2c_probe,
-	.of_compatible = DRV_OF_COMPAT(mc13892_dt_ids),
+static struct driver_d mc13xxx_i2c_driver = {
+	.name		= "mc13xxx-i2c",
+	.probe		= mc13xxx_probe,
+	.id_table	= mc13xxx_ids,
+	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
 
-static int mc_i2c_init(void)
+static int __init mc13xxx_i2c_init(void)
 {
-	return i2c_driver_register(&mc_i2c_driver);
+	return i2c_driver_register(&mc13xxx_i2c_driver);
 }
-device_initcall(mc_i2c_init);
+device_initcall(mc13xxx_i2c_init);
 #endif
 
 #ifdef CONFIG_SPI
-static int mc_spi_probe(struct device_d *dev)
-{
-	return mc_probe(dev, MC13XXX_MODE_SPI);
-}
-
-static struct driver_d mc_spi_driver = {
-	.name  = "mc13xxx-spi",
-	.probe = mc_spi_probe,
-	.of_compatible = DRV_OF_COMPAT(mc13892_dt_ids),
+static struct driver_d mc13xxx_spi_driver = {
+	.name		= "mc13xxx-spi",
+	.probe		= mc13xxx_probe,
+	.id_table	= mc13xxx_ids,
+	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
-device_spi_driver(mc_spi_driver);
+device_spi_driver(mc13xxx_spi_driver);
 #endif

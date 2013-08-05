@@ -6,15 +6,11 @@ config MFD_LP3972
 
 config MFD_MC13XXX
 	depends on I2C || SPI
-	bool "MC13XXX a.k.a. PMIC driver (MC13783, MC13892)"
+	bool "MC13XXX a.k.a. PMIC driver (MC13783, MC13892, MC34708)"
 
 config MFD_MC34704
 	depends on I2C
 	bool "MC34704 PMIC driver"
-
-config MFD_MC34708
-	depends on I2C || SPI
-	bool "MC34708 PMIC driver"
 
 config MFD_MC9SDZ60
 	depends on I2C

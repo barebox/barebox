@@ -23,7 +23,7 @@
 #include <fs.h>
 #include <io.h>
 
-#include <mfd/mc34708.h>
+#include <mfd/mc13xxx.h>
 #include <i2c/i2c.h>
 
 #include <asm/armlinux.h>
@@ -80,7 +80,7 @@ extern char flash_header_imx53_loco_end[];
 
 static int loco_late_init(void)
 {
-	struct mc34708 *mc34708;
+	struct mc13xxx *mc34708;
 	int rev;
 
 	if (!of_machine_is_compatible("fsl,imx53-qsb"))
@@ -90,7 +90,7 @@ static int loco_late_init(void)
 
 	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
-	mc34708 = mc34708_get();
+	mc34708 = mc13xxx_get();
 	if (mc34708) {
 		/* get the board revision from fuse */
 		rev = readl(MX53_IIM_BASE_ADDR + 0x878);

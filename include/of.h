@@ -221,6 +221,7 @@ extern int of_platform_populate(struct device_node *root,
 				struct device_d *parent);
 extern struct device_d *of_find_device_by_node(struct device_node *np);
 
+struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
@@ -228,6 +229,8 @@ void *of_flatten_dtb(struct device_node *node);
 int of_add_memory(struct device_node *node, bool dump);
 void of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size);
+struct device_d *of_find_device_by_node_path(const char *path);
+int of_find_path(struct device_node *node, const char *propname, char **outpath);
 #else
 static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
@@ -678,5 +681,12 @@ static inline int of_property_write_u64(struct device_node *np,
 {
 	return of_property_write_u64_array(np, propname, &value, 1);
 }
+
+extern const struct of_device_id of_default_bus_match_table[];
+
+int of_device_enable(struct device_node *node);
+int of_device_enable_path(const char *path);
+int of_device_disable(struct device_node *node);
+int of_device_disable_path(const char *path);
 
 #endif /* __OF_H */

@@ -178,11 +178,6 @@ static int imx51_babbage_late_init(void)
 		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_imx51_babbage_start,
 		flash_header_imx51_babbage_end - flash_header_imx51_babbage_start, 0);
 
-	device_detect_by_name("mmc0");
-
-	devfs_add_partition("mmc0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
-	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
-
 	return 0;
 }
 late_initcall(imx51_babbage_late_init);

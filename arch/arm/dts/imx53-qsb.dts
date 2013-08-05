@@ -19,6 +19,11 @@
 
 	chosen {
 		linux,stdout-path = "/soc/aips@50000000/serial@53fbc000";
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &esdhc1, "partname:barebox-environment";
+		};
 	};
 
 	memory {
@@ -119,6 +124,13 @@
 	pinctrl-0 = <&pinctrl_esdhc1_1>;
 	cd-gpios = <&gpio3 13 0>;
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox-environment";
+		reg = <0x80000 0x20000>;
+	};
 };
 
 &ssi2 {

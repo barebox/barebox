@@ -1,0 +1,10 @@
+barebox specific devicetree bindings
+====================================
+
+barebox uses some barebox specific devicetree bindings. All of these
+are under the /chosen/ hierarchy in the devicetree.
+
+The bindings have the form of a device with regular 'compatible' properties.
+drivers matching these devices do not handle physical devices but instead
+influence / configure certain behaviours of barebox like the place where to
+find the persistent environment.

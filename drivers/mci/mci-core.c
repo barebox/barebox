@@ -406,7 +406,7 @@ static int mci_calc_blk_cnt(uint64_t cap, unsigned shift)
 }
 
 static void mci_part_add(struct mci *mci, uint64_t size,
-                        unsigned int part_cfg, char *name, int idx, bool ro,
+                        unsigned int part_cfg, char *name, char *partname, int idx, bool ro,
                         int area_type)
 {
 	struct mci_part *part = &mci->part[mci->nr_parts];
@@ -414,6 +414,7 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->mci = mci;
 	part->size = size;
 	part->blk.cdev.name = name;
+	part->blk.cdev.partname = partname;
 	part->blk.blockbits = SECTOR_SHIFT;
 	part->blk.num_blocks = mci_calc_blk_cnt(size, part->blk.blockbits);
 	part->area_type = area_type;
@@ -482,13 +483,14 @@ static int mmc_change_freq(struct mci *mci)
 		unsigned int part_size;
 
 		for (idx = 0; idx < MMC_NUM_BOOT_PARTITION; idx++) {
-			char *name;
+			char *name, *partname;
 			part_size = mci->ext_csd[EXT_CSD_BOOT_MULT] << 17;
 
-			name = asprintf("%s.boot%d", mci->cdevname, idx);
+			partname = asprintf("boot%d", idx);
+			name = asprintf("%s.%s", mci->cdevname, partname);
 			mci_part_add(mci, part_size,
 					EXT_CSD_PART_CONFIG_ACC_BOOT0 + idx,
-					name, idx, true,
+					name, partname, idx, true,
 					MMC_BLK_DATA_AREA_BOOT);
 		}
 
@@ -1104,7 +1106,7 @@ static int mci_startup(struct mci *mci)
 	err = mci_set_blocklen(mci, mci->read_bl_len);
 
 	mci_part_add(mci, mci->capacity, 0,
-			mci->cdevname, 0, true,
+			mci->cdevname, NULL, 0, true,
 			MMC_BLK_DATA_AREA_MAIN);
 
 	return err;
@@ -1556,6 +1558,7 @@ static int mci_card_probe(struct mci *mci)
 				dev_warn(&mci->dev, "No partition table found\n");
 				rc = 0; /* it's not a failure */
 			}
+			of_parse_partitions(&part->blk.cdev, host->hw_dev->device_node);
 		}
 
 		if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&

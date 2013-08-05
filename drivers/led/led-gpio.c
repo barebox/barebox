@@ -18,8 +18,10 @@
  *
  */
 #include <common.h>
+#include <init.h>
 #include <led.h>
 #include <gpio.h>
+#include <of_gpio.h>
 
 static void led_gpio_set(struct led *led, unsigned int value)
 {
@@ -194,3 +196,79 @@ void led_gpio_rgb_unregister(struct gpio_led *led)
 	led_unregister(&led->led);
 }
 #endif /* CONFIG_LED_GPIO_RGB */
+
+#ifdef CONFIG_LED_GPIO_OF
+
+struct led_trg {
+	const char *str;
+	enum led_trigger trg;
+};
+
+static struct led_trg triggers[] = {
+	{ .str = "heartbeat", LED_TRIGGER_HEARTBEAT, },
+	{ .str = "panic", LED_TRIGGER_PANIC, },
+	{ .str = "net", LED_TRIGGER_NET_TXRX, },
+};
+
+static void led_of_parse_trigger(struct led *led, struct device_node *np)
+{
+	const char *trigger;
+	int i;
+
+	trigger = of_get_property(np, "linux,default-trigger", NULL);
+	if (!trigger)
+		trigger = of_get_property(np, "barebox,default-trigger", NULL);
+
+	if (!trigger)
+		return;
+
+	for (i = 0; i < ARRAY_SIZE(triggers); i++) {
+		struct led_trg *trg = &triggers[i];
+		if (!strcmp(trg->str, trigger)) {
+			led_set_trigger(trg->trg, led);
+			return;
+		}
+	}
+}
+
+static int led_gpio_of_probe(struct device_d *dev)
+{
+	struct device_node *child;
+
+	for_each_child_of_node(dev->device_node, child) {
+		struct gpio_led *gled;
+		enum of_gpio_flags flags;
+		int gpio;
+
+		gpio = of_get_named_gpio_flags(child, "gpios", 0, &flags);
+		if (gpio < 0)
+			continue;
+
+		gled = xzalloc(sizeof(*gled));
+		gled->led.name = xstrdup(child->name);
+		gled->gpio = gpio;
+		gled->active_low = (flags & OF_GPIO_ACTIVE_LOW) ? 1 : 0;
+
+		dev_dbg(dev, "register led %s on gpio%d, active_low = %d\n",
+			gled->led.name, gled->gpio, gled->active_low);
+
+		led_of_parse_trigger(&gled->led, child);
+		led_gpio_register(gled);
+	}
+
+	return 0;
+}
+
+static struct of_device_id led_gpio_of_ids[] = {
+	{ .compatible = "gpio-leds", },
+	{ }
+};
+
+static struct driver_d led_gpio_of_driver = {
+	.name  = "gpio-leds",
+	.probe = led_gpio_of_probe,
+	.of_compatible = DRV_OF_COMPAT(led_gpio_of_ids),
+};
+device_platform_driver(led_gpio_of_driver);
+
+#endif /* CONFIG LED_GPIO_OF */

@@ -210,6 +210,16 @@ static int efikamx_usb_init(void)
 		mxc_iomux_v3_setup_pad(MX51_PAD_EIM_A26__USBH2_STP);
 	}
 
+	switch (bootsource_get()) {
+	case BOOTSOURCE_MMC:
+		of_device_enable_path("/chosen/environment-sd");
+		break;
+	case BOOTSOURCE_SPI:
+	default:
+		of_device_enable_path("/chosen/environment-spi");
+		break;
+	}
+
 	return 0;
 }
 console_initcall(efikamx_usb_init);
@@ -230,7 +240,6 @@ extern char flash_header_imx51_genesi_efikasb_end[];
 
 static int efikamx_late_init(void)
 {
-	enum bootsource bootsource;
 	int i;
 
 	if (!of_machine_is_compatible("genesi,imx51-sb"))
@@ -254,24 +263,6 @@ static int efikamx_late_init(void)
 	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(2370);
 	armlinux_set_revision(0x5100 | imx_silicon_revision());
-
-	bootsource = bootsource_get();
-
-	switch (bootsource) {
-	case BOOTSOURCE_MMC:
-		device_detect_by_name("mmc1");
-
-		devfs_add_partition("mmc1", 0x00000, 0x80000,
-				DEVFS_PARTITION_FIXED, "self0");
-		devfs_add_partition("mmc1", 0x80000, 0x80000,
-				DEVFS_PARTITION_FIXED, "env0");
-		break;
-	case BOOTSOURCE_SPI:
-	default:
-		devfs_add_partition("m25p0", 0x80000, 0x20000,
-				DEVFS_PARTITION_FIXED, "env0");
-		break;
-	}
 
 	return 0;
 }

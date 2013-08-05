@@ -56,6 +56,33 @@ struct cdev *cdev_by_name(const char *filename)
 	return NULL;
 }
 
+/**
+ * device_find_partition - find a partition belonging to a physical device
+ *
+ * @dev: the device which should be searched for partitions
+ * @name: the partition name
+ */
+struct cdev *device_find_partition(struct device_d *dev, const char *name)
+{
+	struct cdev *cdev;
+	struct device_d *child;
+
+	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
+		if (!cdev->partname)
+			continue;
+		if (!strcmp(cdev->partname, name))
+			return cdev;
+	}
+
+	device_for_each_child(dev, child) {
+		cdev = device_find_partition(child, name);
+		if (cdev)
+			return cdev;
+	}
+
+	return NULL;
+}
+
 int cdev_find_free_index(const char *basename)
 {
 	int i;
@@ -70,6 +97,14 @@ int cdev_find_free_index(const char *basename)
 	return -EBUSY;	/* all indexes are used */
 }
 
+int cdev_do_open(struct cdev *cdev, unsigned long flags)
+{
+	if (cdev->ops->open)
+		return cdev->ops->open(cdev, flags);
+
+	return 0;
+}
+
 struct cdev *cdev_open(const char *name, unsigned long flags)
 {
 	struct cdev *cdev = cdev_by_name(name);
@@ -78,11 +113,9 @@ struct cdev *cdev_open(const char *name, unsigned long flags)
 	if (!cdev)
 		return NULL;
 
-	if (cdev->ops->open) {
-		ret = cdev->ops->open(cdev, flags);
-		if (ret)
-			return NULL;
-	}
+	ret = cdev_do_open(cdev, flags);
+	if (ret)
+		return NULL;
 
 	return cdev;
 }
@@ -226,24 +259,26 @@ int devfs_remove(struct cdev *cdev)
 	return 0;
 }
 
-int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
+struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		int flags, const char *name)
 {
 	struct cdev *cdev, *new;
 
 	cdev = cdev_by_name(name);
 	if (cdev)
-		return -EEXIST;
+		return ERR_PTR(-EEXIST);
 
 	cdev = cdev_by_name(devname);
 	if (!cdev)
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 
 	if (offset + size > cdev->size)
-		return -EINVAL;
+		return ERR_PTR(-EINVAL);
 
 	new = xzalloc(sizeof (*new));
 	new->name = strdup(name);
+	if (!strncmp(devname, name, strlen(devname)))
+		new->partname = xstrdup(name + strlen(devname) + 1);
 	new->ops = cdev->ops;
 	new->priv = cdev->priv;
 	new->size = size;
@@ -257,14 +292,14 @@ int devfs_add_partition(const char *devname, loff_t offset, loff_t size,
 		if (IS_ERR(new->mtd)) {
 			int ret = PTR_ERR(new->mtd);
 			free(new);
-			return ret;
+			return ERR_PTR(ret);
 		}
 	}
 #endif
 
 	devfs_create(new);
 
-	return 0;
+	return new;
 }
 
 int devfs_del_partition(const char *name)
@@ -291,6 +326,7 @@ int devfs_del_partition(const char *name)
 		return ret;
 
 	free(cdev->name);
+	free(cdev->partname);
 	free(cdev);
 
 	return 0;

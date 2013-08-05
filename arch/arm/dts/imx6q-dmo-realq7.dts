@@ -19,6 +19,18 @@
 
 	chosen {
 		linux,stdout-path = "/soc/aips-bus@02100000/serial@021e8000";
+
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &usdhc4, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-spi {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:barebox-environment";
+			status = "disabled";
+		};
 	};
 
 	aliases {
@@ -87,6 +99,18 @@
 		compatible = "m25p80";
 		spi-max-frequency = <40000000>;
 		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x80000>;
+		};
+
+		partition@1 {
+			label = "barebox-environment";
+			reg = <0x80000 0x20000>;
+		};
 	};
 };
 
@@ -351,4 +375,11 @@
 	non-removable;
 	bus-width = <8>;
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox-environment";
+		reg = <0x0 0x80000>;
+	};
 };

@@ -24,5 +24,6 @@ source "drivers/dma/Kconfig"
 source "drivers/gpio/Kconfig"
 source "drivers/w1/Kconfig"
 source "drivers/pinctrl/Kconfig"
+source "drivers/bus/Kconfig"
 
 endmenu

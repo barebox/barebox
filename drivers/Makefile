@@ -23,3 +23,4 @@ obj-y	+= gpio/
 obj-$(CONFIG_OFTREE) += of/
 obj-$(CONFIG_W1) += w1/
 obj-y += pinctrl/
+obj-y += bus/

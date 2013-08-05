@@ -18,6 +18,18 @@
 
 	chosen {
 		linux,stdout-path = "/soc/aips@70000000/serial@73fbc000";
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &esdhc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-spi {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:barebox-environment";
+			status = "disabled";
+		};
 	};
 
 	memory {
@@ -178,6 +190,13 @@
 	cd-gpios = <&gpio1 8 0>;
 	wp-gpios = <&gpio1 7 0>;
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
+	};
 };
 
 &ecspi1 {
@@ -290,6 +309,13 @@
 		compatible = "sst,sst25vf032b", "m25p80";
 		spi-max-frequency = <15000000>;
 		reg = <1>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox-environment";
+			reg = <0x80000 0x80000>;
+		};
 	};
 };
 

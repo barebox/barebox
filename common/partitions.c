@@ -29,6 +29,7 @@
 #include <disks.h>
 #include <filetype.h>
 #include <dma.h>
+#include <linux/err.h>
 
 #include "partitions/parser.h"
 
@@ -48,16 +49,19 @@ static int register_one_partition(struct block_device *blk,
 	int ret;
 	uint64_t start = part->first_sec * SECTOR_SIZE;
 	uint64_t size = part->size * SECTOR_SIZE;
+	struct cdev *cdev;
 
 	partition_name = asprintf("%s.%d", blk->cdev.name, no);
 	if (!partition_name)
 		return -ENOMEM;
 	dev_dbg(blk->dev, "Registering partition %s on drive %s\n",
 				partition_name, blk->cdev.name);
-	ret = devfs_add_partition(blk->cdev.name,
+	cdev = devfs_add_partition(blk->cdev.name,
 				start, size, 0, partition_name);
-	if (ret)
+	if (IS_ERR(cdev)) {
+		ret = PTR_ERR(cdev);
 		goto out;
+	}
 
 	free(partition_name);
 
@@ -70,10 +74,10 @@ static int register_one_partition(struct block_device *blk,
 
 	dev_dbg(blk->dev, "Registering partition %s on drive %s\n",
 				partition_name, blk->cdev.name);
-	ret = devfs_add_partition(blk->cdev.name,
+	cdev = devfs_add_partition(blk->cdev.name,
 				start, size, 0, partition_name);
 
-	if (ret)
+	if (IS_ERR(cdev))
 		dev_warn(blk->dev, "Registering partition %s on drive %s failed\n",
 				partition_name, blk->cdev.name);
 

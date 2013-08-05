@@ -1,8 +1,8 @@
 VERSION = 2013
-PATCHLEVEL = 07
+PATCHLEVEL = 08
 SUBLEVEL = 0
 EXTRAVERSION =
-NAME = Amissive Actinocutious Kiwi
+NAME = Just married Maintainer
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

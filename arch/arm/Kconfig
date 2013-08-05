@@ -91,6 +91,7 @@ config ARCH_MXS
 	select GENERIC_GPIO
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
+	select HAS_DEBUG_LL
 
 config ARCH_NETX
 	bool "Hilscher NetX based"

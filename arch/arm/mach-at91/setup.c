@@ -14,6 +14,7 @@
 #include <mach/at91_dbgu.h>
 
 #include "soc.h"
+#include "generic.h"
 
 struct at91_init_soc __initdata at91_boot_soc;
 
@@ -232,6 +233,9 @@ static int at91_detect(void)
 
 	if (!at91_soc_is_enabled())
 		panic("AT91: Soc not enabled");
+
+	/* Init clock subsystem */
+	at91_clock_init();
 
 	if (at91_boot_soc.init)
 		at91_boot_soc.init();

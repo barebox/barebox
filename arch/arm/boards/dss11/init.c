@@ -158,3 +158,10 @@ static int dss11_console_init(void)
 	return 0;
 }
 console_initcall(dss11_console_init);
+
+static int dss11_main_clock(void)
+{
+	at91_set_main_clock(18432000);
+	return 0;
+}
+pure_initcall(dss11_main_clock);

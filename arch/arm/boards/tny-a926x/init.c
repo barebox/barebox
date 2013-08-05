@@ -252,3 +252,10 @@ static int tny_a9260_console_init(void)
 	return 0;
 }
 console_initcall(tny_a9260_console_init);
+
+static int tny_a9260_main_clock(void)
+{
+	at91_set_main_clock(12000000);
+	return 0;
+}
+pure_initcall(tny_a9260_main_clock);

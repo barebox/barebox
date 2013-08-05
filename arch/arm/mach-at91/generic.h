@@ -9,7 +9,7 @@
  */
 
  /* Clocks */
-extern int __init at91_clock_init(unsigned long main_clock);
+extern int __init at91_clock_init(void);
 
 static inline struct device_d *at91_add_rm9200_gpio(int id, resource_size_t start)
 {

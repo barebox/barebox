@@ -406,3 +406,10 @@ static int at91sam9261ek_console_init(void)
 }
 
 console_initcall(at91sam9261ek_console_init);
+
+static int at91sam9261ek_main_clock(void)
+{
+	at91_set_main_clock(18432000);
+	return 0;
+}
+pure_initcall(at91sam9261ek_main_clock);

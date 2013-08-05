@@ -432,3 +432,10 @@ static int at91sama5d3xek_console_init(void)
 	return 0;
 }
 console_initcall(at91sama5d3xek_console_init);
+
+static int at91sama5d3xek_main_clock(void)
+{
+	at91_set_main_clock(12000000);
+	return 0;
+}
+pure_initcall(at91sama5d3xek_main_clock);

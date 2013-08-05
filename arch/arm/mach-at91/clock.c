@@ -616,13 +616,20 @@ static void at91_upll_usbfs_clock_init(unsigned long main_clock)
 
 static int pll_overclock = 0;
 static u32 cpu_freq = 0;
+static unsigned long at91_main_clock = 0;
 
-int at91_clock_init(unsigned long main_clock)
+void at91_set_main_clock(unsigned long rate)
+{
+	at91_main_clock = rate;
+}
+
+int at91_clock_init(void)
 {
 	unsigned tmp, freq, mckr;
 	int i;
+	unsigned long main_clock;
 
-
+	main_clock = at91_main_clock;
 
 	/*
 	 * When the bootloader initialized the main oscillator correctly,

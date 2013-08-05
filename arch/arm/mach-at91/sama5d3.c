@@ -375,9 +375,6 @@ static void __init sama5d3_register_clocks(void)
 
 static void sama5d3_initialize(void)
 {
-	/* Init clock subsystem */
-	at91_clock_init(AT91_MAIN_CLOCK);
-
 	/* Register the processor-specific clocks */
 	sama5d3_register_clocks();
 

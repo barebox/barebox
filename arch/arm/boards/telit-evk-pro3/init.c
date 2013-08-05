@@ -174,3 +174,10 @@ static int evk_console_init(void)
 	return 0;
 }
 console_initcall(evk_console_init);
+
+static int evk_main_clock(void)
+{
+	at91_set_main_clock(6000000);
+	return 0;
+}
+pure_initcall(evk_main_clock);

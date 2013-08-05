@@ -30,9 +30,6 @@ struct device_node {
 	struct list_head children;
 	struct list_head parent_list;
 	struct list_head list;
-	struct resource *resource;
-	int num_resource;
-	struct device_d *device;
 	struct list_head phandles;
 	phandle phandle;
 };
@@ -61,6 +58,7 @@ struct of_reserve_map *of_get_reserve_map(void);
 void of_clean_reserve_map(void);
 void fdt_add_reserve_map(void *fdt);
 
+struct device_d;
 struct driver_d;
 
 int of_fix_tree(struct device_node *);
@@ -95,16 +93,8 @@ static inline void of_write_number(void *__cell, u64 val, int size)
 	}
 }
 
-int of_get_named_gpio(struct device_node *np,
-                                   const char *propname, int index);
-
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
-
-u64 of_translate_address(struct device_node *node, const __be32 *in_addr);
-
-#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
-#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
 
 void of_print_nodes(struct device_node *node, int indent);
 int of_probe(void);
@@ -149,7 +139,7 @@ extern struct device_node *of_new_node(struct device_node *parent,
 				const char *name);
 extern struct device_node *of_create_node(struct device_node *root,
 					const char *path);
-extern void of_free(struct device_node *node);
+extern void of_delete_node(struct device_node *node);
 
 extern int of_machine_is_compatible(const char *compat);
 extern int of_device_is_compatible(const struct device_node *device,
@@ -225,6 +215,11 @@ extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 
 extern struct device_node *of_get_root_node(void);
 extern int of_set_root_node(struct device_node *node);
+
+extern int of_platform_populate(struct device_node *root,
+				const struct of_device_id *matches,
+				struct device_d *parent);
+extern struct device_d *of_find_device_by_node(struct device_node *np);
 
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
 int of_device_is_stdout_path(struct device_d *dev);
@@ -513,7 +508,7 @@ static inline struct device_node *of_create_node(struct device_node *root,
 	return NULL;
 }
 
-static inline void of_free(struct device_node *node)
+static inline void of_delete_node(struct device_node *node)
 {
 }
 
@@ -551,6 +546,18 @@ static inline int of_modalias_node(struct device_node *node, char *modalias,
 				int len)
 {
 	return -ENOSYS;
+}
+
+static inline int of_platform_populate(struct device_node *root,
+				const struct of_device_id *matches,
+				struct device_d *parent)
+{
+	return -ENOSYS;
+}
+
+static inline struct device_d *of_find_device_by_node(struct device_node *np)
+{
+	return NULL;
 }
 #endif
 

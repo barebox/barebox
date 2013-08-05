@@ -38,6 +38,10 @@ config DRIVER_SPI_MXS
 	depends on ARCH_IMX23 || ARCH_IMX28
 	depends on SPI
 
+config DRIVER_SPI_MVEBU
+	bool "Marvell MVEBU SoC SPI master driver"
+	depends on ARCH_ARMADA_370 || ARCH_ARMADA_XP || ARCH_DOVE || ARCH_KIRKWOOD
+
 config DRIVER_SPI_OMAP3
 	bool "OMAP3 McSPI Master driver"
 	depends on ARCH_OMAP3 || ARCH_AM33XX

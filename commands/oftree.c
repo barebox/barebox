@@ -86,7 +86,7 @@ static int do_oftree(int argc, char *argv[])
 		struct device_node *root = of_get_root_node();
 
 		if (root)
-			of_free(root);
+			of_delete_node(root);
 
 		return 0;
 	}
@@ -162,7 +162,7 @@ static int do_oftree(int argc, char *argv[])
 				goto out;
 			}
 			of_print_nodes(root, 0);
-			of_free(root);
+			of_delete_node(root);
 		} else {
 			struct device_node *n = of_find_node_by_path(node);
 			if (!n) {

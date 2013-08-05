@@ -83,6 +83,7 @@ config ARCH_MVEBU
 	bool "Marvell EBU platforms"
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
+	select GPIOLIB
 	select HAS_DEBUG_LL
 
 config ARCH_MXS

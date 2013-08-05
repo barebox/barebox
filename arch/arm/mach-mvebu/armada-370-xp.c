@@ -91,7 +91,7 @@ static int armada_xp_init_clocks(void)
 {
 	/* On Armada XP, the TCLK frequency is always 250 Mhz */
 	tclk = clk_fixed("tclk", 250000000);
-	return clk_register_clkdev(tclk, NULL, "mvebu-timer");
+	return 0;
 }
 #define armada_370_xp_init_clocks()	armada_xp_init_clocks()
 #endif
@@ -101,6 +101,7 @@ static int armada_370_xp_init_soc(void)
 	unsigned long phys_base, phys_size;
 
 	armada_370_xp_init_clocks();
+	clkdev_add_physbase(tclk, (unsigned int)ARMADA_370_XP_TIMER_BASE, NULL);
 	add_generic_device("mvebu-timer", DEVICE_ID_SINGLE, NULL,
 			   (unsigned int)ARMADA_370_XP_TIMER_BASE, 0x30,
 			   IORESOURCE_MEM, NULL);
@@ -109,7 +110,7 @@ static int armada_370_xp_init_soc(void)
 	armada_370_xp_add_uart();
 	return 0;
 }
-postcore_initcall(armada_370_xp_init_soc);
+core_initcall(armada_370_xp_init_soc);
 
 void __noreturn reset_cpu(unsigned long addr)
 {

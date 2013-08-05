@@ -78,7 +78,7 @@ static int kirkwood_init_clocks(void)
 		rate = 200000000;
 
 	tclk = clk_fixed("tclk", rate);
-	return clk_register_clkdev(tclk, NULL, "orion-timer");
+	return 0;
 }
 
 static int kirkwood_init_soc(void)
@@ -86,6 +86,7 @@ static int kirkwood_init_soc(void)
 	unsigned long phys_base, phys_size;
 
 	kirkwood_init_clocks();
+	clkdev_add_physbase(tclk, (unsigned int)KIRKWOOD_TIMER_BASE, NULL);
 	add_generic_device("orion-timer", DEVICE_ID_SINGLE, NULL,
 			   (unsigned int)KIRKWOOD_TIMER_BASE, 0x30,
 			   IORESOURCE_MEM, NULL);
@@ -95,7 +96,7 @@ static int kirkwood_init_soc(void)
 
 	return 0;
 }
-postcore_initcall(kirkwood_init_soc);
+core_initcall(kirkwood_init_soc);
 
 void __noreturn reset_cpu(unsigned long addr)
 {

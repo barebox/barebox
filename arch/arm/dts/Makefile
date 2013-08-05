@@ -8,6 +8,7 @@ dtb-$(CONFIG_ARCH_IMX6) += imx6q-gk802.dtb \
 	imx6dl-mba6x.dtb \
 	imx6q-mba6x.dtb \
 	imx6q-phytec-pbab01.dtb
+dtb-$(CONFIG_ARCH_MVEBU) += dove-cubox.dtb
 
 BUILTIN_DTB := $(patsubst "%",%,$(CONFIG_BUILTIN_DTB_NAME))
 obj-$(CONFIG_BUILTIN_DTB) += $(BUILTIN_DTB).dtb.o

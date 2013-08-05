@@ -211,7 +211,7 @@ struct device_node *of_unflatten_dtb(struct device_node *root, void *infdt)
 		}
 	}
 err:
-	of_free(root);
+	of_delete_node(root);
 
 	return ERR_PTR(ret);
 }

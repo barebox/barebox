@@ -19,6 +19,7 @@
  */
 #include <common.h>
 #include <of.h>
+#include <of_address.h>
 #include <errno.h>
 #include <malloc.h>
 #include <init.h>
@@ -72,6 +73,9 @@ struct device_node *root_node;
 
 struct device_node *of_aliases;
 
+#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
+#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
+
 int of_n_addr_cells(struct device_node *np)
 {
 	const __be32 *ip;
@@ -103,21 +107,6 @@ int of_n_size_cells(struct device_node *np)
 	return OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
 }
 EXPORT_SYMBOL(of_n_size_cells);
-
-static void of_bus_default_count_cells(struct device_node *dev,
-				       int *addrc, int *sizec)
-{
-	if (addrc)
-		*addrc = of_n_addr_cells(dev);
-	if (sizec)
-		*sizec = of_n_size_cells(dev);
-}
-
-static void of_bus_count_cells(struct device_node *dev,
-			int *addrc, int *sizec)
-{
-	of_bus_default_count_cells(dev, addrc, sizec);
-}
 
 struct property *of_find_property(const struct device_node *np,
 				  const char *name, int *lenp)
@@ -250,31 +239,6 @@ const char *of_alias_get(struct device_node *np)
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(of_alias_get);
-
-u64 of_translate_address(struct device_node *node, const __be32 *in_addr)
-{
-	struct property *p;
-	u64 addr = be32_to_cpu(*in_addr);
-
-	while (1) {
-		int na, nc;
-
-		if (!node->parent)
-			return addr;
-
-		node = node->parent;
-		p = of_find_property(node, "ranges", NULL);
-		if (!p && node->parent)
-			return OF_BAD_ADDR;
-		of_bus_count_cells(node, &na, &nc);
-		if (na != 1 || nc != 1) {
-			printk("%s: #size-cells != 1 or #address-cells != 1 "
-					"currently not supported\n", node->name);
-			return OF_BAD_ADDR;
-		}
-	}
-}
-EXPORT_SYMBOL(of_translate_address);
 
 /*
  * of_find_node_by_phandle - Find a node given a phandle
@@ -1580,267 +1544,25 @@ int of_set_property(struct device_node *np, const char *name, const void *val, i
 	return 0;
 }
 
-static struct device_d *add_of_amba_device(struct device_node *node)
-{
-	struct amba_device *dev;
-	char *name, *at;
-
-	dev = xzalloc(sizeof(*dev));
-
-	name = xstrdup(node->name);
-	at = strchr(name, '@');
-	if (at) {
-		*at = 0;
-		snprintf(dev->dev.name, MAX_DRIVER_NAME, "%s.%s", at + 1, name);
-	} else {
-		strncpy(dev->dev.name, node->name, MAX_DRIVER_NAME);
-	}
-
-	dev->dev.id = DEVICE_ID_SINGLE;
-	memcpy(&dev->res, &node->resource[0], sizeof(struct resource));
-	dev->dev.resource = node->resource;
-	dev->dev.num_resources = 1;
-	dev->dev.device_node = node;
-	node->device = &dev->dev;
-
-	of_property_read_u32(node, "arm,primecell-periphid", &dev->periphid);
-
-	debug("register device 0x%08x\n", node->resource[0].start);
-
-	amba_device_add(dev);
-
-	free(name);
-
-	return &dev->dev;
-}
-
-static struct device_d *add_of_platform_device(struct device_node *node,
-		struct device_d *parent)
-{
-	struct device_d *dev;
-	char *name, *at;
-
-	dev = xzalloc(sizeof(*dev));
-
-	dev->parent = parent;
-
-	name = xstrdup(node->name);
-	at = strchr(name, '@');
-	if (at) {
-		*at = 0;
-		snprintf(dev->name, MAX_DRIVER_NAME, "%s.%s", at + 1, name);
-	} else {
-		strncpy(dev->name, node->name, MAX_DRIVER_NAME);
-	}
-
-	dev->id = DEVICE_ID_SINGLE;
-	dev->resource = node->resource;
-	dev->num_resources = node->num_resource;
-	dev->device_node = node;
-	node->device = dev;
-
-	debug("register device 0x%08x\n", node->resource[0].start);
-
-	platform_device_register(dev);
-
-	free(name);
-
-	return dev;
-}
-
-static struct device_d *add_of_device(struct device_node *node,
-		struct device_d *parent)
-{
-	const struct property *cp;
-
-	if (!of_device_is_available(node))
-		return NULL;
-
-	cp = of_get_property(node, "compatible", NULL);
-	if (!cp)
-		return NULL;
-
-	if (IS_ENABLED(CONFIG_ARM_AMBA) &&
-	    of_device_is_compatible(node, "arm,primecell") == 1)
-		return add_of_amba_device(node);
-	else
-		return add_of_platform_device(node, parent);
-}
-EXPORT_SYMBOL(add_of_device);
-
-static u64 dt_mem_next_cell(int s, const __be32 **cellp)
-{
-	const __be32 *p = *cellp;
-
-	*cellp = p + s;
-	return of_read_number(p, s);
-}
-
 int of_add_memory(struct device_node *node, bool dump)
 {
-	int na, nc;
-	const __be32 *reg, *endp;
-	int len, r = 0, ret;
 	const char *device_type;
+	struct resource res;
+	int n = 0, ret;
 
 	ret = of_property_read_string(node, "device_type", &device_type);
-	if (ret)
+	if (ret || of_node_cmp(device_type, "memory"))
 		return -ENXIO;
 
-	if (of_node_cmp(device_type, "memory"))
-		return -ENXIO;
-
-	of_bus_count_cells(node, &na, &nc);
-
-	reg = of_get_property(node, "reg", &len);
-	if (!reg)
-		return -EINVAL;
-
-	endp = reg + (len / sizeof(__be32));
-
-	while ((endp - reg) >= (na + nc)) {
-		u64 base, size;
-
-		base = dt_mem_next_cell(na, &reg);
-		size = dt_mem_next_cell(nc, &reg);
-
-		if (size == 0)
+	while (!of_address_to_resource(node, n, &res)) {
+		if (!resource_size(&res))
 			continue;
-
-		of_add_memory_bank(node, dump, r, base, size);
-
-		r++;
+		of_add_memory_bank(node, dump, n,
+				res.start, resource_size(&res));
+		n++;
 	}
 
 	return 0;
-}
-
-static struct device_d *add_of_device_resource(struct device_node *node,
-		struct device_d *parent)
-{
-	u64 address = 0, size;
-	struct resource *res, *resp;
-	struct device_d *dev;
-	const __be32 *endp, *reg;
-	const char *resname;
-	int na, nc, n_resources;
-	int ret, len, index;
-
-	reg = of_get_property(node, "reg", &len);
-	if (!reg)
-		return add_of_device(node, parent);
-
-	of_bus_count_cells(node, &na, &nc);
-
-	n_resources = (len / sizeof(__be32)) / (na + nc);
-
-	res = resp = xzalloc(sizeof(*res) * n_resources);
-
-	endp = reg + (len / sizeof(__be32));
-
-	index = 0;
-
-	while ((endp - reg) >= (na + nc)) {
-		address = of_translate_address(node, reg);
-		if (address == OF_BAD_ADDR) {
-			ret =  -EINVAL;
-			goto err_free;
-		}
-
-		reg += na;
-		size = dt_mem_next_cell(nc, &reg);
-
-		resp->start = address;
-		resp->end = address + size - 1;
-		resname = NULL;
-		of_property_read_string_index(node, "reg-names", index, &resname);
-		if (resname)
-			resp->name = xstrdup(resname);
-		resp->flags = IORESOURCE_MEM;
-		resp++;
-		index++;
-        }
-
-	/*
-	 * A device may already be registered as platform_device.
-	 * Instead of registering the same device again, just
-	 * add this node to the existing device.
-	 */
-	for_each_device(dev) {
-		if (!dev->resource)
-			continue;
-		if (dev->resource->start == res->start &&
-				dev->resource->end == res->end) {
-			debug("connecting %s to %s\n", node->name, dev_name(dev));
-			node->device = dev;
-			dev->device_node = node;
-			node->resource = dev->resource;
-			ret = 0;
-			goto err_free;
-		}
-	}
-
-	node->resource = res;
-	node->num_resource = n_resources;
-
-	return add_of_device(node, parent);
-
-err_free:
-	free(res);
-
-	return NULL;
-}
-
-void of_free(struct device_node *node)
-{
-	struct device_node *n, *nt;
-	struct property *p, *pt;
-
-	if (!node)
-		return;
-
-	list_for_each_entry_safe(p, pt, &node->properties, list)
-		of_delete_property(p);
-
-	list_for_each_entry_safe(n, nt, &node->children, parent_list) {
-		of_free(n);
-	}
-
-	if (node->parent) {
-		list_del(&node->parent_list);
-		list_del(&node->list);
-	}
-
-	if (node->device)
-		node->device->device_node = NULL;
-	else
-		free(node->resource);
-
-	free(node->name);
-	free(node->full_name);
-	free(node);
-
-	if (node == root_node)
-		of_set_root_node(NULL);
-}
-
-static void __of_probe(struct device_node *node,
-		const struct of_device_id *matches,
-		struct device_d *parent)
-{
-	struct device_node *n;
-	struct device_d *dev;
-
-	if (node->device)
-		return;
-
-	dev = add_of_device_resource(node, parent);
-
-	if (!of_match_node(matches, node))
-		return;
-
-	list_for_each_entry(n, &node->children, parent_list)
-		__of_probe(n, matches, dev);
 }
 
 static void __of_parse_phandles(struct device_node *node)
@@ -1877,7 +1599,7 @@ const struct of_device_id of_default_bus_match_table[] = {
 
 int of_probe(void)
 {
-	struct device_node *memory, *n;
+	struct device_node *memory;
 
 	if(!root_node)
 		return -ENODEV;
@@ -1891,8 +1613,7 @@ int of_probe(void)
 	if (memory)
 		of_add_memory(memory, false);
 
-	list_for_each_entry(n, &root_node->children, parent_list)
-		__of_probe(n, of_default_bus_match_table, NULL);
+	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
 	return 0;
 }
@@ -1939,6 +1660,38 @@ out:
 	free(freep);
 
 	return dn;
+}
+
+void of_delete_node(struct device_node *node)
+{
+	struct device_node *n, *nt;
+	struct property *p, *pt;
+	struct device_d *dev;
+
+	if (!node)
+		return;
+
+	list_for_each_entry_safe(p, pt, &node->properties, list)
+		of_delete_property(p);
+
+	list_for_each_entry_safe(n, nt, &node->children, parent_list)
+		of_delete_node(n);
+
+	if (node->parent) {
+		list_del(&node->parent_list);
+		list_del(&node->list);
+	}
+
+	dev = of_find_device_by_node(node);
+	if (dev)
+		dev->device_node = NULL;
+
+	free(node->name);
+	free(node->full_name);
+	free(node);
+
+	if (node == root_node)
+		of_set_root_node(NULL);
 }
 
 int of_device_is_stdout_path(struct device_d *dev)

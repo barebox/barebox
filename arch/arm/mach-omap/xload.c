@@ -9,6 +9,16 @@
 #include <fcntl.h>
 #include <sizes.h>
 #include <filetype.h>
+#include <mach/generic.h>
+
+struct omap_barebox_part *barebox_part;
+
+static struct omap_barebox_part default_part = {
+	.nand_offset = SZ_128K,
+	.nand_size = SZ_1M,
+	.nor_offset = SZ_128K,
+	.nor_size = SZ_1M,
+};
 
 static void *read_image_head(const char *name)
 {
@@ -45,14 +55,15 @@ static unsigned int get_image_size(void *head)
 	return ret;
 }
 
-static void *omap_xload_boot_nand(int offset)
+static void *omap_xload_boot_nand(int offset, int part_size)
 {
 	int ret;
 	int size;
 	void *to, *header;
 	struct cdev *cdev;
 
-	devfs_add_partition("nand0", offset, SZ_1M, DEVFS_PARTITION_FIXED, "x");
+	devfs_add_partition("nand0", offset, part_size,
+					DEVFS_PARTITION_FIXED, "x");
 	dev_add_bb_dev("x", "bbx");
 
 	header = read_image_head("bbx");
@@ -104,14 +115,15 @@ static void *omap_xload_boot_mmc(void)
 	return buf;
 }
 
-static void *omap_xload_boot_spi(int offset)
+static void *omap_xload_boot_spi(int offset, int part_size)
 {
 	int ret;
 	int size;
 	void *to, *header;
 	struct cdev *cdev;
 
-	devfs_add_partition("m25p0", offset, SZ_1M, DEVFS_PARTITION_FIXED, "x");
+	devfs_add_partition("m25p0", offset, part_size,
+					DEVFS_PARTITION_FIXED, "x");
 
 	header = read_image_head("x");
 	if (header == NULL)
@@ -163,7 +175,11 @@ static void *omap4_xload_boot_usb(void){
  */
 static __noreturn int omap_xload(void)
 {
-	int (*func)(void) = NULL;
+	int (*func)(void *) = NULL;
+	uint32_t *arg;
+
+	if (!barebox_part)
+		barebox_part = &default_part;
 
 	switch (bootsource_get())
 	{
@@ -181,15 +197,18 @@ static __noreturn int omap_xload(void)
 		}
 	case BOOTSOURCE_NAND:
 		printf("booting from NAND\n");
-		func = omap_xload_boot_nand(SZ_128K);
+		func = omap_xload_boot_nand(barebox_part->nand_offset,
+					barebox_part->nand_size);
 		break;
 	case BOOTSOURCE_SPI:
 		printf("booting from SPI\n");
-		func = omap_xload_boot_spi(SZ_128K);
+		func = omap_xload_boot_spi(barebox_part->nor_offset,
+					barebox_part->nor_size);
 		break;
 	default:
 		printf("unknown boot source. Fall back to nand\n");
-		func = omap_xload_boot_nand(SZ_128K);
+		func = omap_xload_boot_nand(barebox_part->nand_offset,
+					barebox_part->nand_size);
 		break;
 	}
 
@@ -198,10 +217,19 @@ static __noreturn int omap_xload(void)
 		while (1);
 	}
 
+	arg = (uint32_t *)&omap_bootinfo;
+
 	shutdown_barebox();
-	func();
+	func(arg);
 
 	while (1);
+}
+
+int omap_set_barebox_part(struct omap_barebox_part *part)
+{
+	barebox_part = part;
+
+	return 0;
 }
 
 static int omap_set_xload(void)

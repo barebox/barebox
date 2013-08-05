@@ -15,8 +15,8 @@
 # GNU General Public License for more details.
 #
 #
-obj-$(CONFIG_ARCH_OMAP) += syslib.o omap_devices.o omap_generic.o omap_fb.o
-pbl-$(CONFIG_ARCH_OMAP) += syslib.o
+obj-$(CONFIG_ARCH_OMAP) += syslib.o omap_devices.o omap_generic.o omap_fb.o omap_bootinfo.o
+pbl-$(CONFIG_ARCH_OMAP) += syslib.o omap_bootinfo.o
 obj-$(CONFIG_OMAP_CLOCK_SOURCE_S32K) += s32k_clksource.o
 obj-$(CONFIG_OMAP_CLOCK_SOURCE_DMTIMER0) += dmtimer0.o
 obj-$(CONFIG_ARCH_OMAP3) += omap3_generic.o auxcr.o

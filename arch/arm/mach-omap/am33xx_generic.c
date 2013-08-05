@@ -25,8 +25,10 @@
 #include <net.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
+#include <mach/generic.h>
 #include <mach/sys_info.h>
 #include <mach/am33xx-generic.h>
+#include <mach/gpmc.h>
 
 void __noreturn reset_cpu(unsigned long addr)
 {
@@ -97,7 +99,22 @@ u32 running_in_sdram(void)
 
 static int am33xx_bootsource(void)
 {
-	bootsource_set(BOOTSOURCE_MMC); /* only MMC for now */
+	enum bootsource src;
+
+	switch (omap_bootinfo[2] & 0xFF) {
+	case 0x05:
+		src = BOOTSOURCE_NAND;
+		break;
+	case 0x08:
+		src = BOOTSOURCE_MMC;
+		break;
+	case 0x0b:
+		src = BOOTSOURCE_SPI;
+		break;
+	default:
+		src = BOOTSOURCE_UNKNOWN;
+	}
+	bootsource_set(src);
 	bootsource_set_instance(0);
 	return 0;
 }
@@ -126,3 +143,31 @@ int am33xx_register_ethaddr(int eth_id, int mac_id)
 
 	return -ENODEV;
 }
+
+/* GPMC timing for AM33XX nand device */
+const struct gpmc_config am33xx_nand_cfg = {
+	.cfg = {
+		0x00000800,	/* CONF1 */
+		0x001e1e00,	/* CONF2 */
+		0x001e1e00,	/* CONF3 */
+		0x16051807,	/* CONF4 */
+		0x00151e1e,	/* CONF5 */
+		0x16000f80,	/* CONF6 */
+	},
+	.base = 0x08000000,
+	.size = GPMC_SIZE_16M,
+};
+
+static int am33xx_gpio_init(void)
+{
+	add_generic_device("omap-gpio", 0, NULL, AM33XX_GPIO0_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	add_generic_device("omap-gpio", 1, NULL, AM33XX_GPIO1_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	add_generic_device("omap-gpio", 2, NULL, AM33XX_GPIO2_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	add_generic_device("omap-gpio", 3, NULL, AM33XX_GPIO3_BASE,
+				0xf00, IORESOURCE_MEM, NULL);
+	return 0;
+}
+coredevice_initcall(am33xx_gpio_init);

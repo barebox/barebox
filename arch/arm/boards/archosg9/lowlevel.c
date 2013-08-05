@@ -14,6 +14,7 @@
 #include <io.h>
 #include <init.h>
 #include <sizes.h>
+#include <mach/generic.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-clock.h>
@@ -64,8 +65,10 @@ static noinline void archosg9_init_lowlevel(void)
 	omap4_ddr_init(&ddr_regs_400_mhz_2cs, &core);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(void)
+void __naked __bare_init barebox_arm_reset_vector(uint32_t *data)
 {
+	omap_save_bootinfo();
+
 	arm_cpu_lowlevel_init();
 
 	if (get_pc() > 0x80000000)

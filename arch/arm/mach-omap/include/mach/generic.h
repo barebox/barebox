@@ -33,4 +33,23 @@
 #define cpu_is_am33xx()		(0)
 #endif
 
+struct omap_barebox_part {
+	unsigned int nand_offset;
+	unsigned int nand_size;
+	unsigned int nor_offset;
+	unsigned int nor_size;
+};
+
+#ifdef CONFIG_SHELL_NONE
+int omap_set_barebox_part(struct omap_barebox_part *part);
+#else
+static inline int omap_set_barebox_part(struct omap_barebox_part *part)
+{
+	return 0;
+}
+#endif
+
+extern uint32_t omap_bootinfo[3];
+void omap_save_bootinfo(void);
+
 #endif

@@ -14,7 +14,29 @@ static const struct module_pin_mux mmc0_pin_mux[] = {
 	{-1},
 };
 
+static const struct module_pin_mux user_led_pin_mux[] = {
+	{OFFSET(gpmc_csn1), MODE(7) | PULLUDEN}, /* USER LED1 */
+	{OFFSET(gpmc_csn2), MODE(7) | PULLUDEN}, /* USER LED2 */
+	{-1},
+};
+
+static const struct module_pin_mux user_btn_pin_mux[] = {
+	{OFFSET(emu0), MODE(7) | RXACTIVE | PULLUP_EN},
+	{OFFSET(emu1), MODE(7) | RXACTIVE | PULLUP_EN},
+	{-1},
+};
+
 void pcm051_enable_mmc0_pin_mux(void)
 {
 	configure_module_pin_mux(mmc0_pin_mux);
+}
+
+void pcm051_enable_user_led_pin_mux(void)
+{
+	configure_module_pin_mux(user_led_pin_mux);
+}
+
+void pcm051_enable_user_btn_pin_mux(void)
+{
+	configure_module_pin_mux(user_btn_pin_mux);
 }

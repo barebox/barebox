@@ -5,6 +5,7 @@
 #include <asm/barebox-arm.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
+#include <mach/generic.h>
 #include <mach/sdrc.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
@@ -197,7 +198,7 @@ void beaglebone_sram_init(void)
 	u32 regVal, uart_base;
 
 	/* Setup the PLLs and the clocks for the peripherals */
-	pll_init();
+	pll_init(MPUPLL_M_500);
 
 	beaglebone_config_ddr();
 
@@ -248,8 +249,10 @@ static int beaglebone_board_init(void)
 	return 0;
 }
 
-void __naked barebox_arm_reset_vector(void)
+void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
 {
+	omap_save_bootinfo();
+
 	arm_cpu_lowlevel_init();
 
 	beaglebone_board_init();

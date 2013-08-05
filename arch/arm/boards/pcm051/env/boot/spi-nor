@@ -5,7 +5,7 @@ if [ "$1" = menu ]; then
         exit
 fi
 
-global.bootm.image="/dev/nor0.kernel"
+global.bootm.image="/dev/m25p0.kernel"
 
 # Use rootfs form SD-Card for now as rootfs partition < 4MB
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootfstype=ext3 rootwait"

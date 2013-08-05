@@ -65,5 +65,6 @@ int omap_add_gpmc_nand_device(struct gpmc_nand_platform_data *pdata);
 
 extern struct gpmc_config omap3_nand_cfg;
 extern struct gpmc_config omap4_nand_cfg;
+extern struct gpmc_config am33xx_nand_cfg;
 
 #endif				/* __ASM_OMAP_NAND_GPMC_H */

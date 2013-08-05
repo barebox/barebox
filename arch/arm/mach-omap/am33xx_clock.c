@@ -53,6 +53,18 @@ static void interface_clocks_enable(void)
 	/* GPIO0 */
 	__raw_writel(PRCM_MOD_EN, CM_WKUP_GPIO0_CLKCTRL);
 	while (__raw_readl(CM_WKUP_GPIO0_CLKCTRL) != PRCM_MOD_EN);
+
+	/* GPIO1 */
+	__raw_writel(PRCM_MOD_EN, CM_PER_GPIO1_CLKCTRL);
+	while (__raw_readl(CM_PER_GPIO1_CLKCTRL) != PRCM_MOD_EN);
+
+	/* GPIO2 */
+	__raw_writel(PRCM_MOD_EN, CM_PER_GPIO2_CLKCTRL);
+	while (__raw_readl(CM_PER_GPIO2_CLKCTRL) != PRCM_MOD_EN);
+
+	/* GPIO3 */
+	__raw_writel(PRCM_MOD_EN, CM_PER_GPIO3_CLKCTRL);
+	while (__raw_readl(CM_PER_GPIO3_CLKCTRL) != PRCM_MOD_EN);
 }
 
 static void power_domain_transition_enable(void)
@@ -282,9 +294,9 @@ void enable_ddr_clocks(void)
 /*
  * Configure the PLL/PRCM for necessary peripherals
  */
-void pll_init()
+void pll_init(int mpupll_M)
 {
-	mpu_pll_config(MPUPLL_M_500);
+	mpu_pll_config(mpupll_M);
 	core_pll_config();
 	per_pll_config();
 	ddr_pll_config();

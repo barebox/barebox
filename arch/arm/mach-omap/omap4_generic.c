@@ -6,6 +6,7 @@
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-mux.h>
 #include <mach/syslib.h>
+#include <mach/generic.h>
 #include <mach/gpmc.h>
 #include <mach/gpio.h>
 #include <mach/omap4_rom_usb.h>
@@ -504,14 +505,21 @@ static int omap_vector_init(void)
 static int omap4_bootsource(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	u32 bootsrc = readl(OMAP4_TRACING_VECTOR3);
 
-	if (bootsrc & (1 << 5))
-		src = BOOTSOURCE_MMC;
-	else if (bootsrc & (1 << 3))
+	switch (omap_bootinfo[2] & 0xFF) {
+	case 0x03:
 		src = BOOTSOURCE_NAND;
-	else if (bootsrc & (1<<20))
+		break;
+	case 0x05:
+		src = BOOTSOURCE_MMC;
+		break;
+	case 0x20:
 		src = BOOTSOURCE_USB;
+		break;
+	default:
+		src = BOOTSOURCE_UNKNOWN;
+	}
+
 	bootsource_set(src);
 	bootsource_set_instance(0);
 

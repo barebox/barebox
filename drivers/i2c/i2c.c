@@ -454,26 +454,6 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 }
 EXPORT_SYMBOL(i2c_add_numbered_adapter);
 
-static int i2c_match(struct device_d *dev, struct driver_d *drv)
-{
-	if (!strcmp(dev->name, drv->name))
-		return 0;
-
-	if (drv->id_table) {
-		struct platform_device_id *id = drv->id_table;
-
-		while (id->name) {
-			if (!strcmp(id->name, dev->name)) {
-				dev->id_entry = id;
-				return 0;
-			}
-			id++;
-		}
-	}
-
-	return -1;
-}
-
 static int i2c_probe(struct device_d *dev)
 {
 	return dev->driver->probe(dev);
@@ -486,7 +466,7 @@ static void i2c_remove(struct device_d *dev)
 
 struct bus_type i2c_bus = {
 	.name = "i2c",
-	.match = i2c_match,
+	.match = device_match,
 	.probe = i2c_probe,
 	.remove = i2c_remove,
 };

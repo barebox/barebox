@@ -289,15 +289,6 @@ int spi_write_then_read(struct spi_device *spi,
 }
 EXPORT_SYMBOL(spi_write_then_read);
 
-static int spi_match(struct device_d *dev, struct driver_d *drv)
-{
-	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node &&
-			drv->of_compatible)
-		return of_match(dev, drv);
-
-	return strcmp(dev->name, drv->name) ? -1 : 0;
-}
-
 static int spi_probe(struct device_d *dev)
 {
 	return dev->driver->probe(dev);
@@ -310,7 +301,7 @@ static void spi_remove(struct device_d *dev)
 
 struct bus_type spi_bus = {
 	.name = "spi",
-	.match = spi_match,
+	.match = device_match,
 	.probe = spi_probe,
 	.remove = spi_remove,
 };

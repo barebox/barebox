@@ -256,6 +256,17 @@ config RELOCATABLE
 	  allowing it to relocate to the end of the available RAM. This
 	  way you have the whole memory in a single piece.
 
+config PANIC_HANG
+	bool "hang the system in case of a fatal error"
+	help
+	  This option enables stop of the system in case of a
+	  fatal error, so that you have to reset it manually.
+	  This is probably NOT a good idea for an embedded
+	  system where you want the system to reboot
+	  automatically as fast as possible, but it may be
+	  useful during development since you can try to debug
+	  the conditions that lead to the situation.
+
 config PROMPT
 	string
 	prompt "barebox command prompt"

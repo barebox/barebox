@@ -630,11 +630,11 @@ void __noreturn panic(const char *fmt, ...)
 
 	led_trigger(LED_TRIGGER_PANIC, TRIGGER_ENABLE);
 
-#if defined (CONFIG_PANIC_HANG)
-	hang();
-#else
-	udelay(100000);	/* allow messages to go out */
-	reset_cpu(0);
-#endif
+	if (IS_ENABLED(CONFIG_PANIC_HANG)) {
+		hang();
+	} else {
+		udelay(100000);	/* allow messages to go out */
+		reset_cpu(0);
+	}
 }
 EXPORT_SYMBOL(panic);

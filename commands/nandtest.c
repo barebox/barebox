@@ -181,7 +181,7 @@ static int do_nandtest(int argc, char *argv[])
 	markbad = 0;
 	fd = -1;
 
-	memset(ecc_stats, 0, MAX_ECC_BITS);
+	memset(ecc_stats, 0, sizeof(*ecc_stats));
 
 	while ((opt = getopt(argc, argv, "ms:i:o:l:t")) > 0) {
 		switch (opt) {

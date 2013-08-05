@@ -133,6 +133,8 @@
 #define ERESTARTNOHAND	514	/* restart if no handler.. */
 #define ENOIOCTLCMD	515	/* No ioctl command */
 
-#define _LAST_ERRNO	515
+#define ENOTSUPP	524	/* Operation is not supported */
+
+#define _LAST_ERRNO	524
 
 #endif

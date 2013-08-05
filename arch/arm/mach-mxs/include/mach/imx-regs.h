@@ -16,11 +16,6 @@
 #ifndef _IMX_REGS_H
 # define _IMX_REGS_H
 
-/* Note: Some registers do not support this bit change feature! */
-#define BIT_SET 0x04
-#define BIT_CLR 0x08
-#define BIT_TGL 0x0C
-
 #if defined CONFIG_ARCH_IMX23
 # include <mach/imx23-regs.h>
 #endif

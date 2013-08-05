@@ -28,12 +28,6 @@
 
 #include <linux/list.h>
 
-#ifndef	CONFIG_ARCH_DMA_PIO_WORDS
-#define	DMA_PIO_WORDS		15
-#else
-#define	DMA_PIO_WORDS		CONFIG_ARCH_DMA_PIO_WORDS
-#endif
-
 #define MXS_DMA_ALIGNMENT	32
 
 /*
@@ -90,7 +84,8 @@ struct mxs_dma_cmd {
 		dma_addr_t	address;
 		unsigned long	alternate;
 	};
-	unsigned long		pio_words[DMA_PIO_WORDS];
+#define	APBH_DMA_PIO_WORDS		15
+	unsigned long		pio_words[APBH_DMA_PIO_WORDS];
 };
 
 /*

@@ -10,7 +10,15 @@ unsigned int rand(void);
 void srand(unsigned int seed);
 
 /* fill a buffer with pseudo-random data */
-void get_random_bytes(char *buf, int len);
+void get_random_bytes(void *buf, int len);
 
+static inline u32 random32(void)
+{
+	u32 ret;
+
+	get_random_bytes(&ret, 4);
+
+	return ret;
+}
 
 #endif /* __STDLIB_H */

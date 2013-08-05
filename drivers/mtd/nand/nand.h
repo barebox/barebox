@@ -17,7 +17,8 @@ void multi_erase_cmd(struct mtd_info *mtd, int page);
 void nand_write_page_raw(struct mtd_info *mtd, struct nand_chip *chip,
 				const uint8_t *buf);
 int nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
-			   const uint8_t *buf, int page, int cached, int raw);
+		uint32_t offset, int data_len, const uint8_t *buf,
+		int oob_required, int page, int cached, int raw);
 int nand_erase(struct mtd_info *mtd, struct erase_info *instr);
 int nand_write(struct mtd_info *mtd, loff_t to, size_t len,
 			  size_t *retlen, const uint8_t *buf);

@@ -47,6 +47,9 @@ config LIBUBIGEN
 config LIBMTD
 	bool
 
+config STMP_DEVICE
+	bool
+
 source lib/gui/Kconfig
 
 source lib/bootstrap/Kconfig

@@ -7,6 +7,7 @@
 #define kzalloc(len, mode)	xzalloc(len)
 #define vmalloc(len)		malloc(len)
 #define kfree(ptr)		free(ptr)
+#define vzalloc(len)		kzalloc(len, 0)
 #define vfree(ptr)		free(ptr)
 
 #define KERN_EMERG      ""   /* system is unusable                   */
@@ -17,6 +18,11 @@
 #define KERN_NOTICE     ""   /* normal but significant condition     */
 #define KERN_INFO       ""   /* informational                        */
 #define KERN_DEBUG      ""   /* debug-level messages                 */
+#define KERN_CONT       ""
+
+#define GFP_KERNEL	0
+
+typedef int     gfp_t;
 
 #define printk			printf
 

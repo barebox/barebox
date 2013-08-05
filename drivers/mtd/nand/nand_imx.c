@@ -27,6 +27,7 @@
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
 #include <io.h>
+#include <of_mtd.h>
 #include <errno.h>
 
 #define NFC_V3_FLASH_CMD		(host->regs_axi + 0x00)
@@ -99,6 +100,10 @@ struct imx_nand_host {
 	unsigned int		buf_start;
 	int			spare_len;
 	int			eccsize;
+
+	int			hw_ecc;
+	int			data_width;
+	int			flash_bbt;
 
 	void			(*preset)(struct mtd_info *);
 	void			(*send_cmd)(struct imx_nand_host *, uint16_t);
@@ -682,23 +687,6 @@ static void copy_spare(struct mtd_info *mtd, int bfrom)
 }
 
 /*
- * This function is used by the upper layer to verify the data in NAND Flash
- * with the data in the \b buf.
- *
- * @param       mtd     MTD structure for the NAND Flash
- * @param       buf     data to be verified
- * @param       len     length of the data to be verified
- *
- * @return      -EFAULT if error else 0
- *
- */
-static int
-imx_nand_verify_buf(struct mtd_info *mtd, const u_char * buf, int len)
-{
-	return -EFAULT;
-}
-
-/*
  * This function is used by upper layer for select and deselect of the NAND
  * chip
  *
@@ -1087,6 +1075,31 @@ static struct nand_bbt_descr bbt_mirror_descr = {
 	.pattern = mirror_pattern,
 };
 
+static int __init mxcnd_probe_dt(struct imx_nand_host *host)
+{
+	struct device_node *np = host->dev->device_node;
+	int buswidth;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return 1;
+
+	if (!np)
+		return 1;
+
+	if (of_get_nand_ecc_mode(np) == NAND_ECC_HW)
+		host->hw_ecc = 1;
+
+	host->flash_bbt = of_get_nand_on_flash_bbt(np);
+
+	buswidth = of_get_nand_bus_width(np);
+	if (buswidth < 0)
+		return buswidth;
+
+	host->data_width = buswidth / 8;
+
+	return 0;
+}
+
 /*
  * This function is called during the driver binding process.
  *
@@ -1101,7 +1114,6 @@ static int __init imxnd_probe(struct device_d *dev)
 {
 	struct nand_chip *this;
 	struct mtd_info *mtd;
-	struct imx_nand_platform_data *pdata = dev->platform_data;
 	struct imx_nand_host *host;
 	struct nand_ecclayout *oob_smallpage, *oob_largepage, *oob_4kpage;
 	int err = 0;
@@ -1111,6 +1123,21 @@ static int __init imxnd_probe(struct device_d *dev)
 			NAND_MAX_OOBSIZE, GFP_KERNEL);
 	if (!host)
 		return -ENOMEM;
+
+	host->dev = dev;
+
+	err = mxcnd_probe_dt(host);
+	if (err < 0)
+		goto escan;
+
+	if (err > 0) {
+		struct imx_nand_platform_data *pdata;
+
+		pdata = dev->platform_data;
+		host->flash_bbt = pdata->flash_bbt;
+		host->data_width = pdata->width;
+		host->hw_ecc = pdata->hw_ecc;
+	}
 
 	host->data_buf = (uint8_t *)(host + 1);
 
@@ -1173,7 +1200,6 @@ static int __init imxnd_probe(struct device_d *dev)
 		goto escan;
 	}
 
-	host->dev = dev;
 	/* structures must be linked */
 	this = &host->nand;
 	mtd = &host->mtd;
@@ -1192,9 +1218,8 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->read_word = imx_nand_read_word;
 	this->write_buf = imx_nand_write_buf;
 	this->read_buf = imx_nand_read_buf;
-	this->verify_buf = imx_nand_verify_buf;
 
-	if (pdata->hw_ecc) {
+	if (host->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;
 		this->ecc.hwctl = imx_nand_enable_hwecc;
 		if (nfc_is_v1())
@@ -1211,13 +1236,13 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->ecc.layout = oob_smallpage;
 
 	/* NAND bus width determines access functions used by upper layer */
-	if (pdata->width == 2) {
+	if (host->data_width == 2) {
 		this->options |= NAND_BUSWIDTH_16;
 		this->ecc.layout = &nandv1_hw_eccoob_smallpage;
 		imx_nand_set_layout(0, 16);
 	}
 
-	if (pdata->flash_bbt) {
+	if (host->flash_bbt) {
 		this->bbt_td = &bbt_main_descr;
 		this->bbt_md = &bbt_mirror_descr;
 		/* update flash based bbt */
@@ -1225,7 +1250,7 @@ static int __init imxnd_probe(struct device_d *dev)
 	}
 
 	/* first scan to find the device and get the page size */
-	if (nand_scan_ident(mtd, 1)) {
+	if (nand_scan_ident(mtd, 1, NULL)) {
 		err = -ENXIO;
 		goto escan;
 	}
@@ -1233,10 +1258,10 @@ static int __init imxnd_probe(struct device_d *dev)
 	/* Call preset again, with correct writesize this time */
 	host->preset(mtd);
 
-	imx_nand_set_layout(mtd->writesize, pdata->width == 2 ? 16 : 8);
+	imx_nand_set_layout(mtd->writesize, host->data_width == 2 ? 16 : 8);
 
 	if (mtd->writesize >= 2048) {
-		if (!pdata->flash_bbt)
+		if (!host->flash_bbt)
 			dev_warn(dev, "2k or 4k flash detected without flash_bbt. "
 					"You will loose factory bad block markers!\n");
 
@@ -1255,13 +1280,16 @@ static int __init imxnd_probe(struct device_d *dev)
 			writew(NFC_V2_SPAS_SPARESIZE(16), host->regs + NFC_V2_SPAS);
 	}
 
+	if (this->ecc.mode == NAND_ECC_HW)
+		this->ecc.strength = host->eccsize;
+
 	/* second phase scan */
 	if (nand_scan_tail(mtd)) {
 		err = -ENXIO;
 		goto escan;
 	}
 
-	if (pdata->flash_bbt && this->bbt_td->pages[0] == -1 && this->bbt_md->pages[0] == -1) {
+	if (host->flash_bbt && this->bbt_td->pages[0] == -1 && this->bbt_md->pages[0] == -1) {
 		dev_warn(dev, "no BBT found. create one using the imx_nand_bbm command\n");
 	} else {
 		bbt_main_descr.options |= NAND_BBT_WRITE | NAND_BBT_CREATE;
@@ -1281,9 +1309,26 @@ escan:
 
 }
 
+static __maybe_unused struct of_device_id imx_nand_compatible[] = {
+	{
+		.compatible = "fsl,imx21-nand",
+	}, {
+		.compatible = "fsl,imx25-nand",
+	}, {
+		.compatible = "fsl,imx27-nand",
+	}, {
+		.compatible = "fsl,imx51-nand",
+	}, {
+		.compatible = "fsl,imx53-nand",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx_nand_driver = {
 	.name  = "imx_nand",
 	.probe = imxnd_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_nand_compatible),
 };
 device_platform_driver(imx_nand_driver);
 

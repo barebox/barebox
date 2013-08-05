@@ -415,6 +415,8 @@ int platform_driver_register(struct driver_d *drv);
 	}						\
 	level##_initcall(drv##_register)
 
+#define coredevice_platform_driver(drv)	\
+	register_driver_macro(coredevice,platform,drv)
 #define device_platform_driver(drv)	\
 	register_driver_macro(device,platform,drv)
 #define console_platform_driver(drv)	\

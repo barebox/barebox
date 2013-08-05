@@ -14,46 +14,45 @@
 
 #include <common.h>
 #include <io.h>
+#include <stmp-device.h>
 #include <errno.h>
 #include <clock.h>
-#include <mach/mxs.h>
-#include <mach/imx-regs.h>
 
-#define	MXS_IP_RESET_TIMEOUT	(10 * MSECOND)
+#define	STMP_IP_RESET_TIMEOUT	(10 * MSECOND)
 
-#define	MXS_BLOCK_SFTRST				(1 << 31)
-#define	MXS_BLOCK_CLKGATE				(1 << 30)
+#define	STMP_BLOCK_SFTRST				(1 << 31)
+#define	STMP_BLOCK_CLKGATE				(1 << 30)
 
-int mxs_reset_block(void __iomem *reg, int just_enable)
+int stmp_reset_block(void __iomem *reg, int just_enable)
 {
 	/* Clear SFTRST */
-	writel(MXS_BLOCK_SFTRST, reg + BIT_CLR);
+	writel(STMP_BLOCK_SFTRST, reg + STMP_OFFSET_REG_CLR);
 
-	if (wait_on_timeout(MXS_IP_RESET_TIMEOUT, !(readl(reg) & MXS_BLOCK_SFTRST)))
+	if (wait_on_timeout(STMP_IP_RESET_TIMEOUT, !(readl(reg) & STMP_BLOCK_SFTRST)))
 		goto timeout;
 
 	/* Clear CLKGATE */
-	writel(MXS_BLOCK_CLKGATE, reg + BIT_CLR);
+	writel(STMP_BLOCK_CLKGATE, reg + STMP_OFFSET_REG_CLR);
 
 	if (!just_enable) {
 		/* Set SFTRST */
-		writel(MXS_BLOCK_SFTRST, reg + BIT_SET);
+		writel(STMP_BLOCK_SFTRST, reg + STMP_OFFSET_REG_SET);
 
 		/* Wait for CLKGATE being set */
-		if (wait_on_timeout(MXS_IP_RESET_TIMEOUT, readl(reg) & MXS_BLOCK_CLKGATE))
+		if (wait_on_timeout(STMP_IP_RESET_TIMEOUT, readl(reg) & STMP_BLOCK_CLKGATE))
 			goto timeout;
 	}
 
 	/* Clear SFTRST */
-	writel(MXS_BLOCK_SFTRST, reg + BIT_CLR);
+	writel(STMP_BLOCK_SFTRST, reg + STMP_OFFSET_REG_CLR);
 
-	if (wait_on_timeout(MXS_IP_RESET_TIMEOUT, !(readl(reg) & MXS_BLOCK_SFTRST)))
+	if (wait_on_timeout(STMP_IP_RESET_TIMEOUT, !(readl(reg) & STMP_BLOCK_SFTRST)))
 		goto timeout;
 
 	/* Clear CLKGATE */
-	writel(MXS_BLOCK_CLKGATE, reg + BIT_CLR);
+	writel(STMP_BLOCK_CLKGATE, reg + STMP_OFFSET_REG_CLR);
 
-	if (wait_on_timeout(MXS_IP_RESET_TIMEOUT, !(readl(reg) & MXS_BLOCK_CLKGATE)))
+	if (wait_on_timeout(STMP_IP_RESET_TIMEOUT, !(readl(reg) & STMP_BLOCK_CLKGATE)))
 		goto timeout;
 
 	return 0;

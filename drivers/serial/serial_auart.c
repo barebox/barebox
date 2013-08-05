@@ -171,7 +171,7 @@ static int auart_clocksource_clock_change(struct notifier_block *nb, unsigned lo
 
 static void auart_serial_init_port(struct auart_priv *priv)
 {
-	mxs_reset_block(priv->base + HW_UARTAPP_CTRL0, 0);
+	stmp_reset_block(priv->base + HW_UARTAPP_CTRL0, 0);
 
 	/* Disable UART */
 	writel(0x0, priv->base + HW_UARTAPP_CTRL2);

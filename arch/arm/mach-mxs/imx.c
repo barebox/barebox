@@ -19,6 +19,7 @@
 #include <complete.h>
 #include <init.h>
 #include <io.h>
+#include <stmp-device.h>
 
 #include <mach/generic.h>
 #include <mach/imx-regs.h>
@@ -39,7 +40,7 @@ static int imx_reset_usb_bootstrap(void)
 	 * To prevent this (and boot from the configured bootsource instead)
 	 * clear this bit here.
 	 */
-	writel(0x2, IMX_WDT_BASE + HW_RTC_PERSISTENT1 + BIT_CLR);
+	writel(0x2, IMX_WDT_BASE + HW_RTC_PERSISTENT1 + STMP_OFFSET_REG_CLR);
 
 	return 0;
 }

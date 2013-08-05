@@ -71,12 +71,17 @@ static int do_ubiattach(int argc, char *argv[])
 	}
 
 	ret = ioctl(fd, MEMGETINFO, &user);
-	if (!ret)
-		ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, 0);
+	if (ret) {
+		printf("MEMGETINFO failed: %s\n", strerror(-ret));
+		goto err;
+	}
 
-	if (ret)
+	ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, 0, 20);
+	if (ret < 0)
 		printf("failed to attach: %s\n", strerror(-ret));
-
+	else
+		ret = 0;
+err:
 	close(fd);
 
 	return ret ? 1 : 0;
@@ -90,6 +95,32 @@ BAREBOX_CMD_START(ubiattach)
 	.cmd		= do_ubiattach,
 	.usage		= "attach a mtd dev to ubi",
 	BAREBOX_CMD_HELP(cmd_ubiattach_help)
+BAREBOX_CMD_END
+
+static int do_ubidetach(int argc, char *argv[])
+{
+	int ubi_num, ret;
+
+	if (argc != 2)
+		return COMMAND_ERROR_USAGE;
+
+	ubi_num = simple_strtoul(argv[1], NULL, 0);
+	ret = ubi_detach_mtd_dev(ubi_num, 1);
+
+	if (ret)
+		printf("failed to detach: %s\n", strerror(-ret));
+
+	return ret;
+}
+
+static const __maybe_unused char cmd_ubidetach_help[] =
+"Usage: ubidetach <ubinum>\n"
+"Detach <ubinum> from ubi\n";
+
+BAREBOX_CMD_START(ubidetach)
+	.cmd		= do_ubidetach,
+	.usage		= "detach an ubi dev",
+	BAREBOX_CMD_HELP(cmd_ubidetach_help)
 BAREBOX_CMD_END
 
 static int do_ubirmvol(int argc, char *argv[])

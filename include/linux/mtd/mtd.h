@@ -52,22 +52,6 @@ struct mtd_erase_region_info {
 	unsigned long *lockmap;		/* If keeping bitmap of locks */
 };
 
-/*
- * oob operation modes
- *
- * MTD_OOB_PLACE:	oob data are placed at the given offset
- * MTD_OOB_AUTO:	oob data are automatically placed at the free areas
- *			which are defined by the ecclayout
- * MTD_OOB_RAW:		mode to read raw data+oob in one chunk. The oob data
- *			is inserted into the data. Thats a raw image of the
- *			flash contents.
- */
-typedef enum {
-	MTD_OOB_PLACE,
-	MTD_OOB_AUTO,
-	MTD_OOB_RAW,
-} mtd_oob_mode_t;
-
 /**
  * struct mtd_oob_ops - oob operation operands
  * @mode:	operation mode
@@ -88,7 +72,7 @@ typedef enum {
  * OOB area.
  */
 struct mtd_oob_ops {
-	mtd_oob_mode_t	mode;
+	unsigned int	mode;
 	size_t		len;
 	size_t		retlen;
 	size_t		ooblen;
@@ -117,8 +101,28 @@ struct mtd_info {
 	 */
 	u_int32_t writesize;
 
+	/*
+	 * Size of the write buffer used by the MTD. MTD devices having a write
+	 * buffer can write multiple writesize chunks at a time. E.g. while
+	 * writing 4 * writesize bytes to a device with 2 * writesize bytes
+	 * buffer the MTD driver can (but doesn't have to) do 2 writesize
+	 * operations, but not 4. Currently, all NANDs have writebufsize
+	 * equivalent to writesize (NAND page size). Some NOR flashes do have
+	 * writebufsize greater than writesize.
+	 */
+	uint32_t writebufsize;
+
 	u_int32_t oobsize;   // Amount of OOB data per block (e.g. 16)
 	u_int32_t oobavail;  // Available OOB bytes per block
+
+	/*
+	 * read ops return -EUCLEAN if max number of bitflips corrected on any
+	 * one region comprising an ecc step equals or exceeds this value.
+	 * Settable by driver, else defaults to ecc_strength.  User can override
+	 * in sysfs.  N.B. The meaning of the -EUCLEAN return code has changed;
+	 * see Documentation/ABI/testing/sysfs-class-mtd for more detail.
+	 */
+	unsigned int bitflip_threshold;
 
 	// Kernel-only stuff starts here.
 	char *name;
@@ -126,6 +130,9 @@ struct mtd_info {
 
 	/* ecc layout structure pointer - read only ! */
 	struct nand_ecclayout *ecclayout;
+
+	/* max number of correctible bit errors per ecc step */
+	unsigned int ecc_strength;
 
 	/* Data for variable erase regions. If numeraseregions is zero,
 	 * it means that the whole device has erasesize as given above.
@@ -217,6 +224,24 @@ int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
 	      const u_char *buf);
 
+int mtd_read_oob(struct mtd_info *mtd, loff_t from, struct mtd_oob_ops *ops);
+
+static inline int mtd_write_oob(struct mtd_info *mtd, loff_t to,
+				struct mtd_oob_ops *ops)
+{
+	ops->retlen = ops->oobretlen = 0;
+	if (!mtd->write_oob)
+		return -EOPNOTSUPP;
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	return mtd->write_oob(mtd, to, ops);
+}
+
+static inline int mtd_can_have_bb(const struct mtd_info *mtd)
+{
+	return !!mtd->block_isbad;
+}
+
 static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
 {
 	do_div(sz, mtd->erasesize);
@@ -288,5 +313,17 @@ int mtd_all_ff(const void *buf, unsigned int len);
 #endif /* CONFIG_MTD_DEBUG */
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
+
+static inline int mtd_is_bitflip(int err) {
+	return err == -EUCLEAN;
+}
+
+static inline int mtd_is_eccerr(int err) {
+	return err == -EBADMSG;
+}
+
+static inline int mtd_is_bitflip_or_eccerr(int err) {
+	return mtd_is_bitflip(err) || mtd_is_eccerr(err);
+}
 
 #endif /* __MTD_MTD_H__ */

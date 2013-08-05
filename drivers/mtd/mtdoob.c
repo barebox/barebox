@@ -37,7 +37,7 @@ static struct mtd_info *to_mtd(struct cdev *cdev)
 	return mtdoob->mtd;
 }
 
-static ssize_t mtd_read_oob(struct cdev *cdev, void *buf, size_t count,
+static ssize_t mtd_op_read_oob(struct cdev *cdev, void *buf, size_t count,
 			     loff_t _offset, ulong flags)
 {
 	struct mtd_info *mtd = to_mtd(cdev);
@@ -48,7 +48,7 @@ static ssize_t mtd_read_oob(struct cdev *cdev, void *buf, size_t count,
 	if (count < mtd->oobsize)
 		return -EINVAL;
 
-	ops.mode = MTD_OOB_RAW;
+	ops.mode = MTD_OPS_RAW;
 	ops.ooboffs = 0;
 	ops.ooblen = mtd->oobsize;
 	ops.oobbuf = buf;
@@ -56,7 +56,7 @@ static ssize_t mtd_read_oob(struct cdev *cdev, void *buf, size_t count,
 	ops.len = mtd->oobsize;
 
 	offset /= mtd->oobsize;
-	ret = mtd->read_oob(mtd, offset * mtd->writesize, &ops);
+	ret = mtd_read_oob(mtd, offset * mtd->writesize, &ops);
 	if (ret)
 		return ret;
 
@@ -64,7 +64,7 @@ static ssize_t mtd_read_oob(struct cdev *cdev, void *buf, size_t count,
 }
 
 static struct file_operations mtd_ops_oob = {
-	.read   = mtd_read_oob,
+	.read   = mtd_op_read_oob,
 	.ioctl  = mtd_ioctl,
 	.lseek  = dev_lseek_default,
 };

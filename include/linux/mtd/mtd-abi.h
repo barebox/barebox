@@ -20,6 +20,25 @@ struct mtd_oob_buf {
 	unsigned char *ptr;
 };
 
+/**
+ * MTD operation modes
+ *
+ * @MTD_OPS_PLACE_OOB:	OOB data are placed at the given offset (default)
+ * @MTD_OPS_AUTO_OOB:	OOB data are automatically placed at the free areas
+ *			which are defined by the internal ecclayout
+ * @MTD_OPS_RAW:	data are transferred as-is, with no error correction;
+ *			this mode implies %MTD_OPS_PLACE_OOB
+ *
+ * These modes can be passed to ioctl(MEMWRITE) and are also used internally.
+ * See notes on "MTD file modes" for discussion on %MTD_OPS_RAW vs.
+ * %MTD_FILE_MODE_RAW.
+ */
+enum {
+	MTD_OPS_PLACE_OOB = 0,
+	MTD_OPS_AUTO_OOB = 1,
+	MTD_OPS_RAW = 2,
+};
+
 #define MTD_ABSENT		0
 #define MTD_RAM			1
 #define MTD_ROM			2

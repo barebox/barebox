@@ -11,6 +11,7 @@
  */
 #include <common.h>
 #include <io.h>
+#include <stmp-device.h>
 #include <errno.h>
 #include <mach/imx-regs.h>
 
@@ -72,11 +73,11 @@ void imx_power_prepare_usbphy(void)
 	 * Set these bits so that we can force the OTG bits high
 	 * so the ARC core operates properly
 	 */
-	writel(POWER_CTRL_CLKGATE, POWER_CTRL + BIT_CLR);
+	writel(POWER_CTRL_CLKGATE, POWER_CTRL + STMP_OFFSET_REG_CLR);
 
 	writel(POWER_DEBUG_VBUSVALIDPIOLOCK |
 			   POWER_DEBUG_AVALIDPIOLOCK |
-			   POWER_DEBUG_BVALIDPIOLOCK, POWER_DEBUG + BIT_SET);
+			   POWER_DEBUG_BVALIDPIOLOCK, POWER_DEBUG + STMP_OFFSET_REG_SET);
 
 	reg = readl(POWER_STS);
 	reg |= POWER_STS_BVALID | POWER_STS_AVALID | POWER_STS_VBUSVALID;

@@ -21,6 +21,7 @@
 #include <io.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
+#include <mach/devices.h>
 #include <asm/mmu.h>
 
 /* setup the CPU card internal signals */
@@ -92,8 +93,7 @@ static int tx28_devices_init(void)
 
 	base_board_init();
 
-	add_generic_device("mxs_nand", 0, NULL, MXS_GPMI_BASE, 0x2000,
-			   IORESOURCE_MEM, NULL);
+	imx28_add_nand();
 
 	return 0;
 }

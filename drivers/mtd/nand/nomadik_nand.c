@@ -209,6 +209,7 @@ static int nomadik_nand_probe(struct device_d *dev)
 	nand->ecc.hwctl = nomadik_ecc_control;
 	nand->ecc.size = 512;
 	nand->ecc.bytes = 3;
+	nand->ecc.strength = 1;
 
 	nand->options = pdata->options;
 

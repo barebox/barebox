@@ -13,10 +13,19 @@ config NAND_ECC_SOFT
 	default y
 	prompt "Support software ecc"
 
+config NAND_ECC_BCH
+	select BCH
+	bool
+	prompt "Support software BCH ecc"
+
 config NAND_ECC_HW
 	bool
 	default y
 	prompt "Support hardware ecc"
+
+config NAND_ECC_HW_OOB_FIRST
+	bool
+	prompt "Support hardware ecc (oob first)"
 
 config NAND_ECC_HW_SYNDROME
 	bool
@@ -64,13 +73,14 @@ config NAND_IMX
 
 config NAND_IMX_BBM
 	bool
-	prompt "i.MX NAND flash bbt creation command"
+	depends on NAND_BBT
 	depends on NAND_IMX
+	prompt "i.MX NAND flash bbt creation command"
 
 config NAND_MXS
 	bool
 	select NAND_BBT
-	prompt "i.MX23/28 NAND driver"
+	prompt "i.MX23/28/6 NAND driver"
 	depends on MXS_APBH_DMA
 
 config NAND_OMAP_GPMC
@@ -100,29 +110,12 @@ config NAND_S3C24XX
 	help
 	  Add support for processor's NAND device controller.
 
-config MTD_NAND_VERIFY_WRITE
-	bool "Verify NAND page writes"
-	help
-	  This adds an extra check when data is written to the flash. The
-	  NAND flash device internally checks only bits transitioning
-	  from 1 to 0. There is a rare possibility that even though the
-	  device thinks the write was successful, a bit could have been
-	  flipped accidentally due to device wear or something else.
-
 config MTD_NAND_ECC_SMC
 	bool "NAND ECC Smart Media byte order"
 	default n
 	help
 	  Software ECC according to the Smart Media Specification.
 	  The original Linux implementation had byte 0 and 1 swapped.
-
-config MTD_NAND_MUSEUM_IDS
-	bool "Enable chip ids for obsolete ancient NAND devices"
-	default n
-	help
-	  Enable this option only when your board has first generation
-	  NAND chips (page size 256 byte, erase size 4-8KiB). The IDs
-	  of these chips were reused by later, larger chips.
 
 config MTD_NAND_IDS
 	tristate

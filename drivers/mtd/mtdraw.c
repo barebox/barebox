@@ -58,7 +58,7 @@
  *  - no actual mtd->write if done
  * A second write of 512 bytes triggers:
  *  - copy of the 16 first bytes into writebuf
- *  - a mtd->write_oob() from writebuf
+ *  - a mtd_write_oob() from writebuf
  *  - empty writebuf
  *  - copy the remaining 496 bytes into writebuf
  *    => write_fill = 496, write_ofs = offset + 528
@@ -97,13 +97,13 @@ static ssize_t mtdraw_read_unaligned(struct mtd_info *mtd, void *dst,
 		tmp = malloc(mtd->writesize + mtd->oobsize);
 	if (!tmp)
 		return -ENOMEM;
-	ops.mode = MTD_OOB_RAW;
+	ops.mode = MTD_OPS_RAW;
 	ops.ooboffs = 0;
 	ops.datbuf = tmp;
 	ops.len = mtd->writesize;
 	ops.oobbuf = tmp + mtd->writesize;
 	ops.ooblen = mtd->oobsize;
-	ret = mtd->read_oob(mtd, offset, &ops);
+	ret = mtd_read_oob(mtd, offset, &ops);
 	if (ret)
 		goto err;
 	if (partial)
@@ -152,13 +152,13 @@ static ssize_t mtdraw_blkwrite(struct mtd_info *mtd, const void *buf,
 	struct mtd_oob_ops ops;
 	int ret;
 
-	ops.mode = MTD_OOB_RAW;
+	ops.mode = MTD_OPS_RAW;
 	ops.ooboffs = 0;
 	ops.datbuf = (void *)buf;
 	ops.len = mtd->writesize;
 	ops.oobbuf = (void *)buf + mtd->writesize;
 	ops.ooblen = mtd->oobsize;
-	ret = mtd->write_oob(mtd, offset, &ops);
+	ret = mtd_write_oob(mtd, offset, &ops);
 	if (!ret)
 		ret = ops.retlen + ops.oobretlen;
 	return ret;

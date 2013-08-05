@@ -18,8 +18,10 @@ void srand(unsigned int seed)
 	random_seed = seed;
 }
 
-void get_random_bytes(char *buf, int len)
+void get_random_bytes(void *_buf, int len)
 {
+	char *buf = _buf;
+
 	while (len--)
 		*buf++ = rand() % 256;
 }

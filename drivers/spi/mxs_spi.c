@@ -20,6 +20,7 @@
 #include <clock.h>
 #include <errno.h>
 #include <io.h>
+#include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm/mmu.h>
@@ -99,11 +100,11 @@ static int mxs_spi_setup(struct spi_device *spi)
 		return -EINVAL;
 	}
 
-	mxs_reset_block(mxs->regs + HW_SSP_CTRL0, 0);
+	stmp_reset_block(mxs->regs + HW_SSP_CTRL0);
 
 	val |= SSP_CTRL0_SSP_ASSERT_OUT(spi->chip_select);
 	val |= SSP_CTRL0_BUS_WIDTH(0);
-	writel(val, mxs->regs + HW_SSP_CTRL0 + BIT_SET);
+	writel(val, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_SET);
 
 	val = SSP_CTRL1_SSP_MODE(0) | SSP_CTRL1_WORD_LENGTH(7);
 	val |= (mxs->mode & SPI_CPOL) ? SSP_CTRL1_POLARITY : 0;
@@ -120,14 +121,14 @@ static int mxs_spi_setup(struct spi_device *spi)
 
 static void mxs_spi_start_xfer(struct mxs_spi *mxs)
 {
-	writel(SSP_CTRL0_LOCK_CS, mxs->regs + HW_SSP_CTRL0 + BIT_SET);
-	writel(SSP_CTRL0_IGNORE_CRC, mxs->regs + HW_SSP_CTRL0 + BIT_CLR);
+	writel(SSP_CTRL0_LOCK_CS, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_SET);
+	writel(SSP_CTRL0_IGNORE_CRC, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_CLR);
 }
 
 static void mxs_spi_end_xfer(struct mxs_spi *mxs)
 {
-	writel(SSP_CTRL0_LOCK_CS, mxs->regs + HW_SSP_CTRL0 + BIT_CLR);
-	writel(SSP_CTRL0_IGNORE_CRC, mxs->regs + HW_SSP_CTRL0 + BIT_SET);
+	writel(SSP_CTRL0_LOCK_CS, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_CLR);
+	writel(SSP_CTRL0_IGNORE_CRC, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_SET);
 }
 
 static void mxs_spi_set_cs(struct spi_device *spi)
@@ -136,8 +137,8 @@ static void mxs_spi_set_cs(struct spi_device *spi)
 	const uint32_t mask = SSP_CTRL0_WAIT_FOR_CMD | SSP_CTRL0_WAIT_FOR_IRQ;
 	uint32_t select = SSP_CTRL0_SSP_ASSERT_OUT(spi->chip_select);
 
-	writel(mask, mxs->regs + HW_SSP_CTRL0 + BIT_CLR);
-	writel(select, mxs->regs + HW_SSP_CTRL0 + BIT_SET);
+	writel(mask, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_CLR);
+	writel(select, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_SET);
 }
 
 static int mxs_spi_xfer_pio(struct spi_device *spi,
@@ -159,11 +160,11 @@ static int mxs_spi_xfer_pio(struct spi_device *spi,
 		writel(1, mxs->regs + HW_SSP_XFER_COUNT);
 
 		if (write)
-			writel(SSP_CTRL0_READ, mxs->regs + HW_SSP_CTRL0 + BIT_CLR);
+			writel(SSP_CTRL0_READ, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_CLR);
 		else
-			writel(SSP_CTRL0_READ, mxs->regs + HW_SSP_CTRL0 + BIT_SET);
+			writel(SSP_CTRL0_READ, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_SET);
 
-		writel(SSP_CTRL0_RUN, mxs->regs + HW_SSP_CTRL0 + BIT_SET);
+		writel(SSP_CTRL0_RUN, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_SET);
 
 		if (wait_on_timeout(MXS_SPI_MAX_TIMEOUT,
 				(readl(mxs->regs + HW_SSP_CTRL0) & SSP_CTRL0_RUN) == SSP_CTRL0_RUN)) {
@@ -174,7 +175,7 @@ static int mxs_spi_xfer_pio(struct spi_device *spi,
 		if (write)
 			writel(*data++, mxs->regs + HW_SSP_DATA);
 
-		writel(SSP_CTRL0_DATA_XFER, mxs->regs + HW_SSP_CTRL0 + BIT_SET);
+		writel(SSP_CTRL0_DATA_XFER, mxs->regs + HW_SSP_CTRL0 + STMP_OFFSET_REG_SET);
 
 		if (!write) {
 			if (wait_on_timeout(MXS_SPI_MAX_TIMEOUT,
@@ -240,7 +241,7 @@ static int mxs_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 			}
 		}
 
-		writel(SSP_CTRL1_DMA_ENABLE, mxs->regs + HW_SSP_CTRL1 + BIT_CLR);
+		writel(SSP_CTRL1_DMA_ENABLE, mxs->regs + HW_SSP_CTRL1 + STMP_OFFSET_REG_CLR);
 		ret = mxs_spi_xfer_pio(spi, data, t->len, write, flags);
 		if (ret < 0)
 			return ret;

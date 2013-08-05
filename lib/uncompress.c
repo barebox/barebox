@@ -21,6 +21,7 @@
 #include <bunzip2.h>
 #include <gunzip.h>
 #include <lzo.h>
+#include <linux/decompress/unlz4.h>
 #include <errno.h>
 #include <filetype.h>
 #include <malloc.h>
@@ -110,6 +111,11 @@ int uncompress(unsigned char *inbuf, int len,
 #ifdef CONFIG_LZO_DECOMPRESS
 	case filetype_lzo_compressed:
 		compfn = decompress_unlzo;
+		break;
+#endif
+#ifdef CONFIG_LZ4_DECOMPRESS
+	case filetype_lz4_compressed:
+		compfn = decompress_unlz4;
 		break;
 #endif
 	default:

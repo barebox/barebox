@@ -1,5 +1,6 @@
 piggy.gzip
 piggy.lzo
+piggy.lz4
 zbarebox
 zbarebox.bin
 zbarebox.lds

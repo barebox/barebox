@@ -1,6 +1,7 @@
 
 suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
 suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)	= lzo
+suffix_$(CONFIG_IMAGE_COMPRESSION_LZ4)	= lz4
 suffix_$(CONFIG_IMAGE_COMPRESSION_NONE)	= shipped
 
 OBJCOPYFLAGS_zbarebox.bin = -O binary
@@ -10,7 +11,7 @@ targets := zbarebox.lds zbarebox zbarebox.bin zbarebox.S \
 	   $(piggy_o) piggy.$(suffix_y)
 
 # Make sure files are removed during clean
-extra-y       += piggy.gzip piggy.lzo piggy.lzma piggy.xzkern piggy.shipped zbarebox.map
+extra-y       += piggy.gzip piggy.lz4 piggy.lzo piggy.lzma piggy.xzkern piggy.shipped zbarebox.map
 
 $(obj)/zbarebox.bin:	$(obj)/zbarebox FORCE
 	$(call if_changed,objcopy)

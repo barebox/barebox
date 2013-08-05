@@ -121,40 +121,6 @@ static void __bare_init __memcpy32(void *trg, const void *src, int size)
 		*t++ = *s++;
 }
 
-static int __maybe_unused is_pagesize_2k(void)
-{
-#ifdef CONFIG_ARCH_IMX21
-	if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
-		return 1;
-	else
-		return 0;
-#endif
-#if defined(CONFIG_ARCH_IMX25)
-	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 8))
-		return 1;
-	else
-		return 0;
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	if (readl(MX27_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
-		return 1;
-	else
-		return 0;
-#endif
-#ifdef CONFIG_ARCH_IMX31
-	if (readl(MX31_CCM_BASE_ADDR + MX31_CCM_RCSR) & MX31_RCSR_NFMS)
-		return 1;
-	else
-		return 0;
-#endif
-#if defined(CONFIG_ARCH_IMX35)
-	if (readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR) & (1 << 8))
-		return 1;
-	else
-		return 0;
-#endif
-}
-
 static noinline void __bare_init imx_nandboot_get_page(void *regs,
 		u32 offs, int pagesize_2k)
 {
@@ -163,19 +129,12 @@ static noinline void __bare_init imx_nandboot_get_page(void *regs,
 	imx_nandboot_send_page(regs, NFC_OUTPUT, pagesize_2k);
 }
 
-void __bare_init imx_nand_load_image(void *dest, int size)
+void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
+		int pagesize_2k)
 {
 	u32 tmp, page, block, blocksize, pagesize, badblocks;
-	int pagesize_2k = 1, bbt = 0;
-	void *regs, *base, *spare0;
-
-#if defined(CONFIG_NAND_IMX_BOOT_512)
-	pagesize_2k = 0;
-#elif defined(CONFIG_NAND_IMX_BOOT_2K)
-	pagesize_2k = 1;
-#else
-	pagesize_2k = is_pagesize_2k();
-#endif
+	int bbt = 0;
+	void *regs, *spare0;
 
 	if (pagesize_2k) {
 		pagesize = 2048;
@@ -185,21 +144,6 @@ void __bare_init imx_nand_load_image(void *dest, int size)
 		blocksize = 16 * 1024;
 	}
 
-#ifdef CONFIG_ARCH_IMX21
-	base = (void __iomem *)MX21_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX25
-	base = (void __iomem *)MX25_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX27
-	base = (void __iomem *)MX27_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX31
-	base = (void __iomem *)MX31_NFC_BASE_ADDR;
-#endif
-#ifdef CONFIG_ARCH_IMX35
-	base = (void __iomem *)MX35_NFC_BASE_ADDR;
-#endif
 	if (nfc_is_v21()) {
 		regs = base + 0x1e00;
 		spare0 = base + 0x1000;
@@ -332,115 +276,120 @@ int __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
 	return 1;
 }
 
+#define BARE_INIT_FUNCTION(name)  \
+	void __noreturn __section(.text_bare_init_##name) \
+		name
+
 /*
  * SoC specific entries for booting in external NAND mode. To be called from
  * the board specific entry code. This is safe to call even if not booting from
  * NAND. In this case the booting is continued without loading an image from
  * NAND. This function needs a stack to be set up.
  */
-#ifdef CONFIG_ARCH_IMX21
-void __bare_init __noreturn imx21_barebox_boot_nand_external(void)
+#ifdef BROKEN
+BARE_INIT_FUNCTION(imx21_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX21_NFC_BASE_ADDR;
+	int pagesize_2k;
 
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
+
+		if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
+			pagesize_2k = 1;
+		else
+			pagesize_2k = 0;
+
 		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(barebox_image_size));
+				ld_var(barebox_image_size),
+				(void *)nfc_base, pagesize_2k);
 	}
 
+	/* This function doesn't exist yet */
 	imx21_barebox_entry(0);
 }
 #endif
 
-#ifdef CONFIG_ARCH_IMX25
-void __bare_init __noreturn imx25_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx25_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX25_NFC_BASE_ADDR;
+	int pagesize_2k;
 
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
+
+		if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 8))
+			pagesize_2k = 1;
+		else
+			pagesize_2k = 0;
+
 		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size));
+				ld_var(_barebox_image_size),
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx25_barebox_entry(0);
 }
-#endif
 
-#ifdef CONFIG_ARCH_IMX27
-void __bare_init __noreturn imx27_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx27_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX27_NFC_BASE_ADDR;
+	int pagesize_2k;
 
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
+
+		if (readl(MX27_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
+			pagesize_2k = 1;
+		else
+			pagesize_2k = 0;
+
 		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size));
+				ld_var(_barebox_image_size),
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx27_barebox_entry(0);
 }
-#endif
 
-#ifdef CONFIG_ARCH_IMX31
-void __bare_init __noreturn imx31_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx31_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX31_NFC_BASE_ADDR;
+	int pagesize_2k;
 
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
+
+		if (readl(MX31_CCM_BASE_ADDR + MX31_CCM_RCSR) & MX31_RCSR_NFMS)
+			pagesize_2k = 1;
+		else
+			pagesize_2k = 0;
+
 		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size));
+				ld_var(_barebox_image_size),
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx31_barebox_entry(0);
 }
-#endif
 
-#ifdef CONFIG_ARCH_IMX35
-void __bare_init __noreturn imx35_barebox_boot_nand_external(void)
+BARE_INIT_FUNCTION(imx35_barebox_boot_nand_external)(void)
 {
 	unsigned long nfc_base = MX35_NFC_BASE_ADDR;
+	int pagesize_2k;
 
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
+
+		if (readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR) & (1 << 8))
+			pagesize_2k = 1;
+		else
+			pagesize_2k = 0;
+
 		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size));
+				ld_var(_barebox_image_size),
+				(void *)nfc_base, pagesize_2k);
 	}
 
 	imx35_barebox_entry(0);
 }
-#endif
-
-#define CONFIG_NAND_IMX_BOOT_DEBUG
-#ifdef CONFIG_NAND_IMX_BOOT_DEBUG
-#include <command.h>
-
-static int do_nand_boot_test(int argc, char *argv[])
-{
-	void *dest;
-	int size;
-
-	if (argc < 3)
-		return COMMAND_ERROR_USAGE;
-
-	dest = (void *)strtoul_suffix(argv[1], NULL, 0);
-	size = strtoul_suffix(argv[2], NULL, 0);
-
-	imx_nand_load_image(dest, size);
-
-	return 0;
-}
-
-static const __maybe_unused char cmd_nand_boot_test_help[] =
-"Usage: nand_boot_test <dest> <size>\n"
-"This command loads the booloader from the NAND memory like the reset\n"
-"routine does. Its intended for development tests only";
-
-BAREBOX_CMD_START(nand_boot_test)
-	.cmd		= do_nand_boot_test,
-	.usage		= "load bootloader from NAND",
-	BAREBOX_CMD_HELP(cmd_nand_boot_test_help)
-BAREBOX_CMD_END
-#endif

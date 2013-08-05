@@ -751,12 +751,12 @@
 				interrupts = <0 14 0x04>;
 			};
 
-			ocotp@021bc000 {
+			ocotp1: ocotp@021bc000 {
 				compatible = "fsl,imx6q-ocotp";
 				reg = <0x021bc000 0x4000>;
 			};
 
-			ocotp@021c0000 {
+			ocotp2: ocotp@021c0000 {
 				reg = <0x021c0000 0x4000>;
 				interrupts = <0 21 0x04>;
 			};

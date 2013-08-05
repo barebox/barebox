@@ -1,0 +1,6 @@
+
+#define SETUP_1GIB_2GIB			\
+	wm 32 0x021b0040 0x00000017;	\
+	wm 32 0x021b0000 0xc21a0000
+
+#include "flash-header-phytec-pfla02.h"

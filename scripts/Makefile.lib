@@ -319,8 +319,13 @@ cmd_imximage_S_dcd=						\
 	echo '.balign STRUCT_ALIGNMENT';			\
 ) > $@
 
+imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp
+
+dcd-tmp = $(subst $(comma),_,$(dot-target).dcd.tmp)
+
 quiet_cmd_dcd = DCD     $@
-      cmd_dcd = $(objtree)/scripts/imx/imx-image -d -o $@ -c $<
+      cmd_dcd = $(CPP) $(imxcfg_cpp_flags) -o $(dcd-tmp) $< ; \
+		$(objtree)/scripts/imx/imx-image -d -o $@ -c $(dcd-tmp)
 
 $(obj)/%.dcd: $(obj)/%.imxcfg FORCE
 	$(call if_changed,dcd)
@@ -328,5 +333,8 @@ $(obj)/%.dcd: $(obj)/%.imxcfg FORCE
 $(obj)/%.dcd.S: $(obj)/%.dcd
 	$(call cmd,imximage_S_dcd)
 
+imximg-tmp = $(subst $(comma),_,$(dot-target).imxcfg.tmp)
+
 quiet_cmd_imx_image = IMX-IMG $@
-      cmd_imx_image = $(objtree)/scripts/imx/imx-image -b -c $(CFG_$(@F)) -f $< -o $@
+      cmd_imx_image = $(CPP) $(imxcfg_cpp_flags) -o $(imximg-tmp) $(CFG_$(@F)) ; \
+		      $(objtree)/scripts/imx/imx-image -o $@ -b -c $(imximg-tmp) -f $<

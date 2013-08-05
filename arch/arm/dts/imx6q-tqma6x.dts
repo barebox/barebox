@@ -1,0 +1,320 @@
+/*
+ * Copyright 2013 Sascha Hauer, Pengutronix
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+/dts-v1/;
+
+#include "imx6q.dtsi"
+
+/ {
+	model = "TQ TQMa6x";
+	compatible = "tq,tqma6x", "fsl,imx6q";
+
+	chosen {
+		linux,stdout-path = "/soc/aips-bus@02100000/serial@021e8000";
+	};
+
+	memory {
+		reg = <0x10000000 0x40000000>;
+	};
+
+	gpio_buttons: gpio_buttons@0 {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpiobuttons_1>;
+
+		button@1 {
+			label = "button0";
+			linux,code = <0x100>;
+			gpios = <&gpio7 13 0>;
+		};
+
+		button@2 {
+			label = "button1";
+			linux,code = <0x101>;
+			gpios = <&gpio7 12 0>;
+		};
+
+		button@3 {
+			label = "button2";
+			linux,code = <0x102>;
+			gpios = <&gpio1 8 0>;
+		};
+	};
+};
+
+&can1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_can1_1>;
+	status = "okay";
+};
+
+&can2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_can2_1>;
+	status = "okay";
+};
+
+&ecspi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi1_1>;
+	fsl,spi-num-chipselects = <1>;
+	cs-gpios = <&gpio3 19 0>;
+	status = "okay";
+
+	flash: m25p80@0 {
+		compatible = "m25p80";
+		spi-max-frequency = <40000000>;
+		reg = <0>;
+	};
+};
+
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet_1>;
+	phy-mode = "rgmii";
+	status = "okay";
+};
+
+&hdmi {
+	status = "okay";
+	ddc = <&i2c2>;
+};
+
+&i2c3 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3_2>;
+
+	pmic: pf0100@08 {
+		compatible = "pf0100-regulator";
+		reg = <0x08>;
+		interrupt-parent = <&gpio6>;
+		interrupts = <10 8>;
+
+		regulators {
+			reg_vddcore: sw1ab {
+				regulator-min-microvolt = <300000>;
+				regulator-max-microvolt = <1875000>;
+				regulator-always-on;
+			};
+
+			reg_vddsoc: sw1c {
+				regulator-min-microvolt = <300000>;
+				regulator-max-microvolt = <1875000>;
+				regulator-always-on;
+			};
+
+			reg_gen_3v3: sw2 {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+
+			reg_ddr_1v5a: sw3a {
+				regulator-min-microvolt = <400000>;
+				regulator-max-microvolt = <1975000>;
+				regulator-always-on;
+			};
+
+			reg_ddr_1v5b: sw3b {
+				regulator-min-microvolt = <400000>;
+				regulator-max-microvolt = <1975000>;
+				regulator-always-on;
+			};
+
+			reg_ddr_vtt: sw4 {
+				regulator-min-microvolt = <400000>;
+				regulator-max-microvolt = <1975000>;
+				regulator-always-on;
+			};
+
+			reg_5v_600mA: swbst {
+				regulator-min-microvolt = <5000000>;
+				regulator-max-microvolt = <5150000>;
+				regulator-always-on;
+			};
+
+			reg_snvs_3v: vsnvs {
+				regulator-min-microvolt = <1500000>;
+				regulator-max-microvolt = <3000000>;
+				regulator-always-on;
+			};
+
+			reg_vrefddr: vrefddr {
+				regulator-min-microvolt = <750000>;
+				regulator-max-microvolt = <750000>;
+				regulator-always-on;
+			};
+
+			reg_vgen1_1v5: vgen1 {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <1550000>;
+				/* not used */
+			};
+
+			reg_vgen2_1v2_eth: vgen2 {
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <1550000>;
+				regulator-always-on;
+			};
+
+			reg_vgen3_2v8: vgen3 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+
+			reg_vgen4_1v8: vgen4 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+
+			reg_vgen5_1v8_eth: vgen5 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+
+			reg_vgen6_3v3: vgen6 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+		};
+	};
+
+	sensor1: lm75@48 {
+		compatible = "lm75";
+		reg = <0x48>;
+	};
+
+	sensor2: lm75@49 {
+		compatible = "lm75";
+		reg = <0x49>;
+	};
+
+	eeprom: m24c64@50 { /* FIXME: Baseboard */
+		compatible = "st,24c64", "at24";
+		reg = <0x50>;
+	};
+
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	can1 {
+		pinctrl_can1_1: can1grp-1 {
+			fsl,pins = <
+				MX6Q_PAD_KEY_COL2__FLEXCAN1_TX 0x80000000
+				MX6Q_PAD_KEY_ROW2__FLEXCAN1_RX 0x80000000
+			>;
+		};
+	};
+
+	can2 {
+		pinctrl_can2_1: can2grp-1 {
+			fsl,pins = <
+				MX6Q_PAD_KEY_COL4__FLEXCAN2_TX 0x80000000
+				MX6Q_PAD_KEY_ROW4__FLEXCAN2_RX 0x80000000
+			>;
+		};
+	};
+
+	hog {
+		pinctrl_hog: hoggrp-1 {
+			fsl,pins = <
+				MX6Q_PAD_ENET_CRS_DV__GPIO1_IO25 0x80000000 /* FEC phy reset */
+				MX6Q_PAD_GPIO_4__GPIO1_IO04  0x80000000 /* usdhc2 CD */
+				MX6Q_PAD_GPIO_2__GPIO1_IO02 0x80000000 /* usdhc2 WP */
+				MX6Q_PAD_EIM_D19__GPIO3_IO19 0x80000000 /* eCSPI1 SS1 */
+				MX6Q_PAD_NANDF_RB0__GPIO6_IO10 0x80000000 /* PMIC irq */
+				MX6Q_PAD_EIM_D22__GPIO3_IO22 0x80000000
+			>;
+		};
+	};
+
+	i2c3 {
+		pinctrl_i2c3_2: i2c3grp-2 {
+			fsl,pins = <
+				MX6Q_PAD_GPIO_5__I2C3_SCL 0x4001b8b1
+				MX6Q_PAD_GPIO_6__I2C3_SDA 0x4001b8b1
+			>;
+		};
+	};
+
+	uart2 {
+		pinctrl_uart2_2: uart2grp-2 {
+			fsl,pins = <
+				MX6Q_PAD_SD4_DAT4__UART2_RX_DATA 0x1b0b1
+				MX6Q_PAD_SD4_DAT7__UART2_TX_DATA 0x1b0b1
+			>;
+		};
+	};
+
+	gpiobuttons {
+		pinctrl_gpiobuttons_1: gpiogrp-1 {
+			fsl,pins = <
+				MX6Q_PAD_GPIO_17__GPIO7_IO12 0x80000000
+				MX6Q_PAD_GPIO_18__GPIO7_IO13 0x80000000
+				MX6Q_PAD_GPIO_8__GPIO1_IO08 0x80000000
+			>;
+		};
+	};
+};
+
+&sata {
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2_2>;
+};
+
+&usbh1 {
+	status = "okay";
+	barebox,phy_type = "utmi";
+	disable-over-current;
+};
+
+&usbotg {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg_1>;
+	barebox,phy_type = "utmi";
+	barebox,dr_mode = "peripheral";
+	dr_mode = "host";
+	disable-over-current;
+	otg_id_pin_select_change;
+	status = "okay";
+};
+
+&usdhc2 { /* Baseboard Slot */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc2_1>;
+	cd-gpios = <&gpio1 4 0>;
+	wp-gpios = <&gpio1 2 0>;
+	max-frequency = <1000000>;
+	status = "okay";
+};
+
+&usdhc3 { /* eMMC */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc3_1>;
+	non-removable;
+	bus-width = <8>;
+	status = "disabled";
+};

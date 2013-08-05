@@ -32,6 +32,9 @@ config ARCH_TEXT_BASE
 	default 0x97f00000 if MACH_EFIKA_MX_SMARTBOOK
 	default 0x17800000 if MACH_SABRESD
 	default 0x4fc00000 if MACH_REALQ7
+	default 0x4fc00000 if MACH_GK802
+	default 0x2fc00000 if MACH_TQMA6X
+	default 0x4fc00000 if MACH_PHYTEC_PFLA02
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -61,6 +64,7 @@ config BOARDINFO
 	default "Garz+Fricke Vincell" if MACH_GUF_VINCELL
 	default "SabreSD" if MACH_SABRESD
 	default "DataModul i.MX6Q Real Qseven" if MACH_REALQ7
+	default "Zealz GK802" if MACH_GK802
 	default "unused" if IMX_MULTI_BOARDS
 
 choice
@@ -140,22 +144,6 @@ config ARCH_IMX_EXTERNAL_BOOT_NAND
 	depends on !ARCH_IMX1
 	prompt "Support Starting barebox from NAND"
 	depends on ARCH_IMX_EXTERNAL_BOOT
-
-choice
-	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
-	default NAND_IMX_BOOT_512_2K
-	prompt "select nand pagesize you want to support booting from"
-
-config NAND_IMX_BOOT_512
-	bool "512 byte page size"
-
-config NAND_IMX_BOOT_2K
-	bool "2048 byte page size"
-
-config NAND_IMX_BOOT_512_2K
-	bool "512 byte and 2048 byte pagesize"
-
-endchoice
 
 config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	bool
@@ -239,11 +227,23 @@ config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53
 
+config MACH_PHYTEC_PFLA02
+	bool "Phytec phyFLEX-i.MX6 Ouad"
+	select ARCH_IMX6
+
 config MACH_REALQ7
 	bool "DataModul i.MX6Q Real Qseven Board"
 	select ARCH_IMX6
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
+
+config MACH_GK802
+	bool "Zealz GK802 Mini PC"
+	select ARCH_IMX6
+
+config MACH_TQMA6X
+	bool "TQ tqma6x on mba6x"
+	select ARCH_IMX6
 
 endif
 
@@ -617,6 +617,15 @@ config IMX_IIM_FUSE_BLOW
 	  Before being actually able to blow the fuses, you need to explicitely
 	  enable it:
 	    imx_iim0.permanent_write_enable=1
+
+config IMX_OCOTP
+	tristate "i.MX6 On Chip OTP controller"
+	depends on ARCH_IMX6
+	depends on OFDEVICE
+	help
+	  This adds support for the i.MX6 On-Chip OTP controller. Currently the
+	  only supported functionality is reading the MAC address and assigning
+	  it to an ethernet device.
 
 endmenu
 

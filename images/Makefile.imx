@@ -35,3 +35,33 @@ CFG_start_imx6_realq7.pblx.imximg = $(board)/dmo-mx6-realq7/flash-header.imxcfg
 imximage-$(CONFIG_MACH_REALQ7) += start_imx6_realq7.pblx.imximg
 FILE_barebox-datamodul-edm-qmx6.img = start_imx6_realq7.pblx.imximg
 image-$(CONFIG_MACH_REALQ7) += barebox-datamodul-edm-qmx6.img
+
+pblx-$(CONFIG_MACH_GK802) += start_imx6_gk802
+CFG_start_imx6_gk802.pblx.imximg = $(board)/gk802/flash-header.imxcfg
+imximage-$(CONFIG_MACH_GK802) += start_imx6_gk802.pblx.imximg
+FILE_barebox-gk802.img = start_imx6_gk802.pblx.imximg
+image-$(CONFIG_MACH_GK802) += barebox-gk802.img
+
+pblx-$(CONFIG_MACH_TQMA6X) += start_imx6dl_mba6x
+CFG_start_imx6dl_mba6x.pblx.imximg = $(board)/tqma6x/flash-header-tqma6dl.imxcfg
+imximage-$(CONFIG_MACH_TQMA6X) += start_imx6dl_mba6x.pblx.imximg
+FILE_barebox-tq-tqma6s-mba6x.img = start_imx6dl_mba6x.pblx.imximg
+image-$(CONFIG_MACH_TQMA6X) += barebox-tq-tqma6s-mba6x.img
+
+pblx-$(CONFIG_MACH_TQMA6X) += start_imx6q_mba6x
+CFG_start_imx6q_mba6x.pblx.imximg = $(board)/tqma6x/flash-header-tqma6q.imxcfg
+imximage-$(CONFIG_MACH_TQMA6X) += start_imx6q_mba6x.pblx.imximg
+FILE_barebox-tq-tqma6q-mba6x.img = start_imx6q_mba6x.pblx.imximg
+image-$(CONFIG_MACH_TQMA6X) += barebox-tq-tqma6q-mba6x.img
+
+pblx-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_2gib
+CFG_start_phytec_pbab01_2gib.pblx.imximg = $(board)/phytec-pfla02/flash-header-phytec-pfla02-2gib.imxcfg
+imximage-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_2gib.pblx.imximg
+FILE_barebox-phytec-pbab01-2gib.img = start_phytec_pbab01_2gib.pblx.imximg
+image-$(CONFIG_MACH_PHYTEC_PFLA02) += barebox-phytec-pbab01-2gib.img
+
+pblx-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_1gib
+CFG_start_phytec_pbab01_1gib.pblx.imximg = $(board)/phytec-pfla02/flash-header-phytec-pfla02-1gib.imxcfg
+imximage-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_1gib.pblx.imximg
+FILE_barebox-phytec-pbab01-1gib.img = start_phytec_pbab01_1gib.pblx.imximg
+image-$(CONFIG_MACH_PHYTEC_PFLA02) += barebox-phytec-pbab01-1gib.img

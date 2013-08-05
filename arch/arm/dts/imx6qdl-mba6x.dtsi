@@ -1,0 +1,190 @@
+/*
+ * Copyright 2013 Sascha Hauer, Pengutronix
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+/ {
+	gpio_buttons: gpio_buttons@0 {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpiobuttons_1>;
+
+		button@1 {
+			label = "s6";
+			linux,code = <64>; /* KEY_F6 */
+			gpios = <&gpio7 13 0>;
+		};
+
+		button@2 {
+			label = "s7";
+			linux,code = <65>; /* KEY_F7 */
+			gpios = <&gpio7 12 0>;
+		};
+
+		button@3 {
+			label = "s8";
+			linux,code = <66>; /* KEY_F8 */
+			gpios = <&gpio1 8 0>;
+		};
+	};
+
+	beeper: beeper@0 {
+		compatible = "pwm-beeper";
+		pwms = <&pwm1 2 5000000>;
+	};
+
+	disp0: display@0 {
+		compatible = "fsl,imx-parallel-display";
+		interface-pix-fmt = "rgb24";
+		gpios = <&gpio7 11 0>; /* LCD.PWR_EN */
+		status = "disabled";
+
+		display-timings {
+			tx14d11vm1cpd {
+				clock-frequency = <4854369 5847953 7042253>;
+				hactive = <320>;
+				vactive = <240>;
+				hfront-porch = <22 30 35>;
+				hback-porch = <23 30 35>;
+				hsync-len = <4 5 7>;
+				vback-porch = <4 5 9>;
+				vfront-porch = <5 6 10>;
+				vsync-len = <2>;
+				pixelclk-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+		};
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		lcd-backlight-enable {
+			label = "backlight";
+			gpios = <&gpio4 5 0>; /* LCD.BLT_EN */
+			linux,default-trigger = "default-on";
+		};
+
+		lcd-contrast {
+			label = "contrast";
+			gpios = <&gpio4 20 0>; /* LCD.CONTRAST */
+			linux,default-trigger = "default-on";
+		};
+	};
+
+	sound {
+		/* Currently the kernel does not have a fabric driver for this */
+		compatible = "fsl,imx6-tqma6x-tlv320aic23",
+			     "fsl,imx-audio-tlv320aic23";
+		model = "imx6-tqma6x-tlv320aic23";
+		ssi-controller = <&ssi1>;
+		audio-codec = <&codec>;
+		mux-int-port = <1>;
+		mux-ext-port = <3>;
+	};
+};
+
+&audmux {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_audmux_2>;
+	status = "okay";
+};
+
+&can1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_can1_1>;
+	status = "okay";
+};
+
+&can2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_can2_1>;
+	status = "okay";
+};
+
+&i2c1 {
+	codec: tlv320@18 {
+		compatible = "ti,tlv320aic23";
+		reg = <0x18>;
+	};
+};
+
+&i2c3 {
+	sensor1: lm75@49 {
+		compatible = "lm75";
+		reg = <0x49>;
+	};
+};
+
+&ldb {
+	status = "disabled";
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "disabled";
+
+		display-timings {
+			chimei-g070y2-l01 {
+				clock-frequency = <27000000 29500000 33000000>;
+				hactive = <800>;
+				vactive = <480>;
+				hfront-porch = <0>;
+				hback-porch = <0>;
+				hsync-len = <130 192 290>;
+				vback-porch = <0>;
+				vfront-porch = <2>;
+				vsync-len = <10 20 70>;
+				de-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+			};
+		};
+	};
+};
+
+&ssi1 {
+	fsl,mode = "i2s-slave";
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2_2>;
+};
+
+&usbh1 {
+	status = "okay";
+	barebox,phy_type = "utmi";
+	disable-over-current;
+};
+
+&usbotg {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg_1>;
+	barebox,phy_type = "utmi";
+	barebox,dr_mode = "peripheral";
+	dr_mode = "host";
+	disable-over-current;
+	otg_id_pin_select_change;
+	status = "okay";
+};
+
+&usdhc2 { /* Baseboard Slot */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc2_tqma6x>;
+	cd-gpios = <&gpio1 4 0>;
+	wp-gpios = <&gpio1 2 0>;
+	status = "okay";
+};

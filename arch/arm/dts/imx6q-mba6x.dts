@@ -1,0 +1,71 @@
+/*
+ * Copyright 2013 Sascha Hauer, Pengutronix
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+/dts-v1/;
+
+#include "imx6q-tqma6q.dtsi"
+#include "imx6qdl-mba6x.dtsi"
+
+/ {
+	model = "TQ TQMA6Q on MBa6x";
+	compatible = "tq,mba6x", "tq,tqma6q", "fsl,imx6q";
+
+	chosen {
+		linux,stdout-path = &uart2;
+	};
+
+	memory {
+		reg = <0x10000000 0x40000000>;
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	gpiobuttons {
+		pinctrl_gpiobuttons_1: gpiogrp-1 {
+			fsl,pins = <
+				MX6Q_PAD_GPIO_17__GPIO7_IO12 0x80000000
+				MX6Q_PAD_GPIO_18__GPIO7_IO13 0x80000000
+				MX6Q_PAD_GPIO_8__GPIO1_IO08 0x80000000
+			>;
+		};
+	};
+
+	hog {
+		pinctrl_hog: hoggrp-1 {
+			fsl,pins = <
+				MX6Q_PAD_ENET_CRS_DV__GPIO1_IO25 0x80000000 /* FEC phy reset */
+				MX6Q_PAD_GPIO_4__GPIO1_IO04  0x80000000 /* usdhc2 CD */
+				MX6Q_PAD_GPIO_2__GPIO1_IO02 0x80000000 /* usdhc2 WP */
+				MX6Q_PAD_EIM_D19__GPIO3_IO19 0x80000000 /* eCSPI1 SS1 */
+				MX6Q_PAD_NANDF_RB0__GPIO6_IO10 0x80000000 /* PMIC irq */
+				MX6Q_PAD_EIM_D22__GPIO3_IO22 0x80000000
+				MX6Q_PAD_SD1_DAT3__GPIO1_IO21 0x80000000 /* beeper (1 = on) */
+				MX6Q_PAD_GPIO_16__GPIO7_IO11 0x80000000 /* LCD.PWR_EN */
+				MX6Q_PAD_GPIO_7__GPIO1_IO07 0x80000000 /* LCD.RESET */
+				MX6Q_PAD_GPIO_19__GPIO4_IO05 0x80000000 /* LCD.BLT_EN */
+				MX6Q_PAD_DI0_PIN4__GPIO4_IO20 0x80000000 /* LCD.CONTRAST */
+			>;
+		};
+	};
+};
+
+&disp0 {
+	pinctrl-names = "ipu1-di0", "ipu2-di0";
+	pinctrl-0 = <&pinctrl_disp0_ipu1>;
+	pinctrl-1 = <&pinctrl_disp0_ipu2>;
+	crtcs = <&ipu1 0 &ipu2 0>;
+};
+
+&sata {
+	status = "okay";
+};

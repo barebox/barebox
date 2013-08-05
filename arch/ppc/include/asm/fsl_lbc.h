@@ -44,8 +44,6 @@
 #ifndef __ASSEMBLY__
 #include <asm/io.h>
 
-extern void fsl_init_early_memctl_regs(void);
-
 /* LBC register offsets. */
 #define FSL_LBC_BRX(x)	((x) * 8)	/* bank register offsets.  */
 #define FSL_LBC_ORX(x)	(4 + ((x) * 8)) /* option register offset. */

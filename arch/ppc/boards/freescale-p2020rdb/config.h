@@ -87,8 +87,4 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 /* Leave 256 bytes for global data */
 #define CFG_INIT_SP_OFFSET	(0x00004000 - 256)
 
-#define CFG_BR0_PRELIM	(BR_PHYS_ADDR(CFG_FLASH_BASE_PHYS) |	\
-			 BR_PS_16 | BR_V)	/* NOR Base Address */
-#define CFG_OR0_PRELIM  0xff000ff7		/* NOR Options      */
-
 #endif	/* __CONFIG_H */

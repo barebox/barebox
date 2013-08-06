@@ -75,11 +75,6 @@ struct ubi_device *ubi_devices[UBI_MAX_DEVICES];
  */
 int ubi_volume_notify(struct ubi_device *ubi, struct ubi_volume *vol, int ntype)
 {
-	struct ubi_notification nt;
-
-	ubi_do_get_device_info(ubi, &nt.di);
-	ubi_do_get_volume_info(ubi, vol, &nt.vi);
-
 #ifdef CONFIG_MTD_UBI_FASTMAP
 	switch (ntype) {
 	case UBI_VOLUME_ADDED:

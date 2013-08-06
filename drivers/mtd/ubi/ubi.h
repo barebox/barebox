@@ -816,6 +816,8 @@ struct ubi_device *ubi_get_device(int ubi_num);
 void ubi_put_device(struct ubi_device *ubi);
 struct ubi_device *ubi_get_by_major(int major);
 int ubi_major2num(int major);
+int ubi_volume_notify(struct ubi_device *ubi, struct ubi_volume *vol,
+		      int ntype);
 void ubi_free_internal_volumes(struct ubi_device *ubi);
 
 /* cdev.c */

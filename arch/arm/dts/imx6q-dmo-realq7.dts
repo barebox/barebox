@@ -272,8 +272,8 @@
 	hog {
 		pinctrl_hog: hoggrp-1 {
 			fsl,pins = <
-				MX6Q_PAD_EIM_A16__GPIO2_IO22 0x80000000
-				MX6Q_PAD_EIM_A17__GPIO2_IO21 0x80000000
+				MX6QDL_PAD_EIM_A16__GPIO2_IO22 0x80000000
+				MX6QDL_PAD_EIM_A17__GPIO2_IO21 0x80000000
 			>;
 		};
 	};
@@ -281,8 +281,8 @@
 	i2c2 {
 		pinctrl_i2c2: i2c2grp {
 			fsl,pins = <
-				MX6Q_PAD_EIM_EB2__I2C2_SCL 0x4001b8b1
-				MX6Q_PAD_KEY_ROW3__I2C2_SDA 0x4001b8b1
+				MX6QDL_PAD_EIM_EB2__I2C2_SCL 0x4001b8b1
+				MX6QDL_PAD_KEY_ROW3__I2C2_SDA 0x4001b8b1
 			>;
 		};
 	};
@@ -290,8 +290,8 @@
 	uart {
 		pinctrl_uart1_2: uart1grp-2 {
 			fsl,pins = <
-				MX6Q_PAD_SD3_DAT6__UART1_RX_DATA 0x1b0b1
-				MX6Q_PAD_SD3_DAT7__UART1_TX_DATA 0x1b0b1
+				MX6QDL_PAD_SD3_DAT6__UART1_RX_DATA 0x1b0b1
+				MX6QDL_PAD_SD3_DAT7__UART1_TX_DATA 0x1b0b1
 			>;
 		};
 	};
@@ -299,7 +299,7 @@
 	pfuze {
 		pinctrl_pfuze_1: pfuze100grp1 {
 			fsl,pins = <
-				MX6Q_PAD_EIM_D20__GPIO3_IO20 0x198c0
+				MX6QDL_PAD_EIM_D20__GPIO3_IO20 0x198c0
 			>;
 		};
 	};
@@ -307,7 +307,7 @@
 	stmpe_1 {
 		pinctrl_stmpe_1_1: stmpe1grp-1 {
 			fsl,pins = <
-				MX6Q_PAD_EIM_D30__GPIO3_IO30 0x80000000
+				MX6QDL_PAD_EIM_D30__GPIO3_IO30 0x80000000
 			>;
 		};
 	};
@@ -315,7 +315,7 @@
 	stmpe_2 {
 		pinctrl_stmpe_2_1: stmpe2grp-1 {
 			fsl,pins = <
-				MX6Q_PAD_EIM_A25__GPIO5_IO02 0x80000000
+				MX6QDL_PAD_EIM_A25__GPIO5_IO02 0x80000000
 			>;
 		};
 	};
@@ -323,9 +323,9 @@
 	ecspi5 {
 		pinctrl_ecspi_5_1: ecspi5rp-1 {
 			fsl,pins = <
-				MX6Q_PAD_SD1_DAT0__ECSPI5_MISO 0x80000000
-				MX6Q_PAD_SD1_CMD__ECSPI5_MOSI 0x80000000
-				MX6Q_PAD_SD2_DAT3__GPIO1_IO12 0x80000000 /* cs0: m25p80 */
+				MX6QDL_PAD_SD1_DAT0__ECSPI5_MISO 0x80000000
+				MX6QDL_PAD_SD1_CMD__ECSPI5_MOSI 0x80000000
+				MX6QDL_PAD_SD2_DAT3__GPIO1_IO12 0x80000000 /* cs0: m25p80 */
 			>;
 		};
 	};

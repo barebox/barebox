@@ -162,7 +162,7 @@ static void pcm051_i2c_init(void)
 
 static void pcm051_nand_init(void)
 {
-	am33xx_enable_nand_pin_mux();
+	pcm051_enable_nand_pin_mux();
 
 	gpmc_generic_init(0x12);
 

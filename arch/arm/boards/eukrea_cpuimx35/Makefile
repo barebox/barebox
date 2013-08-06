@@ -18,4 +18,3 @@
 
 obj-y					+= eukrea_cpuimx35.o
 lwl-y					+= lowlevel.o
-lwl-$(CONFIG_ARCH_IMX_INTERNAL_BOOT)	+= flash_header.o

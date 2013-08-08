@@ -21,6 +21,9 @@
 #include <gpio.h>
 #include <init.h>
 #include <of.h>
+#include <fec.h>
+
+#include <linux/micrel_phy.h>
 
 #include <mach/imx6.h>
 
@@ -36,6 +39,21 @@ static int eth_phy_reset(void)
 	return 0;
 }
 
+static void mmd_write_reg(struct phy_device *dev, int device, int reg, int val)
+{
+	phy_write(dev, 0x0d, device);
+	phy_write(dev, 0x0e, reg);
+	phy_write(dev, 0x0d, (1 << 14) | device);
+	phy_write(dev, 0x0e, val);
+}
+
+static int ksz9031rn_phy_fixup(struct phy_device *dev)
+{
+	mmd_write_reg(dev, 2, 8, 0x039F);
+
+	return 0;
+}
+
 static int phytec_pfla02_init(void)
 {
 	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
@@ -44,6 +62,8 @@ static int phytec_pfla02_init(void)
 		return 0;
 
 	eth_phy_reset();
+	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,
+					   ksz9031rn_phy_fixup);
 
 	return 0;
 }

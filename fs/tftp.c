@@ -40,7 +40,7 @@
 #define TFTP_RESEND_TIMEOUT	SECOND
 
 /* After this time without progress we will bail out */
-#define TFTP_TIMEOUT		(5 * SECOND)
+#define TFTP_TIMEOUT		(TIMEOUT * SECOND)
 
 /*
  *	TFTP operations.

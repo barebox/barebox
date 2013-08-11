@@ -41,7 +41,7 @@ static unsigned int net_ip_id;
 
 int net_checksum_ok(unsigned char *ptr, int len)
 {
-	return net_checksum(ptr, len) + 1;
+	return net_checksum(ptr, len) == 0xffff;
 }
 
 uint16_t net_checksum(unsigned char *ptr, int len)

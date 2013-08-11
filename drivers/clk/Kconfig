@@ -11,4 +11,4 @@ config COMMON_CLK
 config COMMON_CLK_OF_PROVIDER
 	bool
 	help
-	 Clock driver provides OF-Tree based clock lookup.
+	  Clock driver provides OF-Tree based clock lookup.

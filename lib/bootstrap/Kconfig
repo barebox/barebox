@@ -1,5 +1,5 @@
 menuconfig BOOTSTRAP
-	bool "Library bootstrap routines           "
+	bool "Library bootstrap routines"
 	depends on SHELL_NONE
 
 if BOOTSTRAP

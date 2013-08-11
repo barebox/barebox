@@ -563,14 +563,14 @@ config CMD_NANDTEST
 	prompt "nandtest"
 
 config CMD_MEMTEST
-    tristate
-    prompt "memtest"
-       help
-         The memtest command can test the registered barebox memory.
-         During this test barebox memory regions like heap, stack, ...
-	 will be skipped. If the tested architecture has MMU with PTE
-	 flags support, the memtest is running twice with cache enabled
-	 and with cache disabled
+	tristate
+	prompt "memtest"
+	help
+	  The memtest command can test the registered barebox memory.
+	  During this test barebox memory regions like heap, stack, ...
+	  will be skipped. If the tested architecture has MMU with PTE
+	  flags support, the memtest is running twice with cache enabled
+	  and with cache disabled
 
 endmenu
 

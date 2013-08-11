@@ -142,7 +142,7 @@ config MACH_BEAGLE
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
 	depends on ARCH_AM33XX
-	  help
+	help
 	  Say Y here if you are using Beagle Bone
 
 config MACH_OMAP3EVM

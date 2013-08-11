@@ -124,6 +124,6 @@ config MVEBU_CONSOLE_UART
 	range 0 3 if ARCH_DOVE
 	range 0 1 if ARCH_KIRKWOOD
 	help
-	 Select the UART number the barebox console will sit on.
+	  Select the UART number the barebox console will sit on.
 
 endif # ARCH_MVEBU

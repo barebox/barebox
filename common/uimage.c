@@ -29,17 +29,10 @@
 #include <filetype.h>
 #include <memory.h>
 
-#ifdef CONFIG_UIMAGE_MULTI
 static inline int uimage_is_multi_image(struct uimage_handle *handle)
 {
 	return (handle->header.ih_type == IH_TYPE_MULTI) ? 1 : 0;
 }
-#else
-static inline int uimage_is_multi_image(struct uimage_handle *handle)
-{
-	return 0;
-}
-#endif
 
 void uimage_print_contents(struct uimage_handle *handle)
 {

@@ -479,6 +479,7 @@ void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,
 			free(buf);
 			return NULL;
 		}
+		size = ihd->len;
 		goto out;
 	}
 

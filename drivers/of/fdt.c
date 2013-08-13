@@ -185,6 +185,7 @@ struct device_node *of_unflatten_dtb(struct device_node *root, void *infdt)
 			if (merge && p) {
 				free(p->value);
 				p->value = xzalloc(len);
+				p->length = len;
 				memcpy(p->value, nodep, len);
 			} else {
 				of_new_property(node, name, nodep, len);

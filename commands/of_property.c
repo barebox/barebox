@@ -196,7 +196,7 @@ static int do_of_property(int argc, char *argv[])
 
 	if (optind < argc) {
 		path = argv[optind];
-		node = of_find_node_by_path(path);
+		node = of_find_node_by_path_or_alias(NULL, path);
 		if (!node) {
 			printf("Cannot find nodepath %s\n", path);
 			return -ENOENT;

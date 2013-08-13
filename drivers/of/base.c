@@ -1211,6 +1211,9 @@ struct device_node *of_find_node_by_path_from(struct device_node *from,
 {
 	char *slash, *p, *freep;
 
+	if (!from)
+		from = root_node;
+
 	if (!from || !path || *path != '/')
 		return NULL;
 

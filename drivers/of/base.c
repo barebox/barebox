@@ -1568,22 +1568,6 @@ int of_add_memory(struct device_node *node, bool dump)
 	return 0;
 }
 
-static void __of_parse_phandles(struct device_node *node)
-{
-	struct device_node *n;
-	phandle phandle;
-	int ret;
-
-	ret = of_property_read_u32(node, "phandle", &phandle);
-	if (!ret) {
-		node->phandle = phandle;
-		list_add_tail(&node->phandles, &phandle_list);
-	}
-
-	list_for_each_entry(n, &node->children, parent_list)
-		__of_parse_phandles(n);
-}
-
 struct device_node *of_chosen;
 const char *of_model;
 
@@ -1602,7 +1586,7 @@ const struct of_device_id of_default_bus_match_table[] = {
 
 int of_probe(void)
 {
-	struct device_node *memory;
+	struct device_node *memory, *node;
 
 	if(!root_node)
 		return -ENODEV;
@@ -1610,7 +1594,9 @@ int of_probe(void)
 	of_chosen = of_find_node_by_path("/chosen");
 	of_property_read_string(root_node, "model", &of_model);
 
-	__of_parse_phandles(root_node);
+	of_tree_for_each_node_from(node, root_node)
+		if (node->phandle)
+			list_add_tail(&node->phandles, &phandle_list);
 
 	memory = of_find_node_by_path("/memory");
 	if (memory)

@@ -188,7 +188,9 @@ struct device_node *of_unflatten_dtb(struct device_node *root, void *infdt)
 				p->length = len;
 				memcpy(p->value, nodep, len);
 			} else {
-				of_new_property(node, name, nodep, len);
+				p = of_new_property(node, name, nodep, len);
+				if (!strcmp(name, "phandle") && len == 4)
+					node->phandle = be32_to_cpup(p->value);
 			}
 
 			break;

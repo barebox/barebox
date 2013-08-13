@@ -1,0 +1,10 @@
+*.pbl
+*.pblx
+*.pblb
+*.img
+*.imximg
+*.map
+*.src
+pbl.lds
+barebox.x
+barebox.z

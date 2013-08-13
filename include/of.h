@@ -689,4 +689,18 @@ int of_device_enable_path(const char *path);
 int of_device_disable(struct device_node *node);
 int of_device_disable_path(const char *path);
 
+phandle of_get_tree_max_phandle(struct device_node *root);
+phandle of_node_create_phandle(struct device_node *node);
+struct device_node *of_find_node_by_alias(struct device_node *root,
+		const char *alias);
+struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
+		const char *str);
+
+static inline struct device_node *of_find_root_node(struct device_node *node)
+{
+	while (node->parent)
+		node = node->parent;
+
+	return node;
+}
 #endif /* __OF_H */

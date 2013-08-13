@@ -164,7 +164,7 @@ static int do_oftree(int argc, char *argv[])
 			of_print_nodes(root, 0);
 			of_delete_node(root);
 		} else {
-			struct device_node *n = of_find_node_by_path(node);
+			struct device_node *n = of_find_node_by_path_or_alias(NULL, node);
 			if (!n) {
 				ret = -ENOENT;
 				goto out;

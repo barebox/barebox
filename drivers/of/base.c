@@ -1555,8 +1555,11 @@ int of_add_memory(struct device_node *node, bool dump)
 		return -ENXIO;
 
 	while (!of_address_to_resource(node, n, &res)) {
-		if (!resource_size(&res))
+		if (!resource_size(&res)) {
+			n++;
 			continue;
+		}
+
 		of_add_memory_bank(node, dump, n,
 				res.start, resource_size(&res));
 		n++;

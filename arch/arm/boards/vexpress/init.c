@@ -107,8 +107,7 @@ static int vexpress_devices_init(void)
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
 
-	globalvar_add_simple("hostname");
-	setenv("global.hostname", v2m_init->hostname);
+	globalvar_add_simple("hostname",  v2m_init->hostname);
 
 	return 0;
 }

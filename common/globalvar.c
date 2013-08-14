@@ -2,6 +2,8 @@
 #include <malloc.h>
 #include <globalvar.h>
 #include <init.h>
+#include <environment.h>
+#include <generated/utsrelease.h>
 
 static struct device_d global_device = {
 	.name = "global",
@@ -61,9 +63,15 @@ void globalvar_set_match(const char *match, const char *val)
  *
  * add a new globalvar named 'name'
  */
-int globalvar_add_simple(const char *name)
+int globalvar_add_simple(const char *name, const char *value)
 {
-	return globalvar_add(name, NULL, NULL, 0);
+	int ret;
+
+	ret = globalvar_add(name, NULL, NULL, 0);
+	if (ret && ret != -EEXIST)
+		return ret;
+
+	return dev_set_param(&global_device, name, value);
 }
 
 static int globalvar_init(void)

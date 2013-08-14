@@ -667,7 +667,7 @@ static void dhcp_global_add(const char *var)
 	if (!var_global)
 		return;
 
-	globalvar_add_simple(var_global);
+	globalvar_add_simple(var_global, NULL);
 	free(var_global);
 }
 

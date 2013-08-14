@@ -164,10 +164,10 @@ err_out:
 static int bootm_init(void)
 {
 
-	globalvar_add_simple("bootm.image");
-	globalvar_add_simple("bootm.oftree");
+	globalvar_add_simple("bootm.image", NULL);
+	globalvar_add_simple("bootm.oftree", NULL);
 	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
-		globalvar_add_simple("bootm.initrd");
+		globalvar_add_simple("bootm.initrd", NULL);
 
 	return 0;
 }

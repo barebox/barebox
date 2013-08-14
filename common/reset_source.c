@@ -36,8 +36,8 @@ EXPORT_SYMBOL(set_reset_source);
 /* ensure this runs after the 'global' device is already registerd */
 static int init_reset_source(void)
 {
-	globalvar_add_simple("system.reset");
-	set_reset_source(RESET_UKWN);
+	globalvar_add_simple("system.reset", reset_src_names[RESET_UKWN]);
+
 	return 0;
 }
 

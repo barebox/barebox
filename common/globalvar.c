@@ -83,6 +83,6 @@ static int globalvar_init(void)
 
 	return 0;
 }
-postconsole_initcall(globalvar_init);
+pure_initcall(globalvar_init);
 
 BAREBOX_MAGICVAR_NAMED(global_version, global.version, "The barebox version");

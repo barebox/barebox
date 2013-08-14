@@ -139,13 +139,20 @@ static char *model;
  */
 void barebox_set_model(const char *__model)
 {
-	free(model);
-	model = xstrdup(__model);
+	if (IS_ENABLED(CONFIG_GLOBALVAR)) {
+		globalvar_add_simple("model", __model);
+	} else {
+		free(model);
+		model = xstrdup(__model);
+	}
 }
 EXPORT_SYMBOL(barebox_set_model);
 
 const char *barebox_get_model(void)
 {
+	if (IS_ENABLED(CONFIG_GLOBALVAR))
+		return getenv("global.model");
+
 	return model;
 }
 EXPORT_SYMBOL(barebox_get_model);

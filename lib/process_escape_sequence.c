@@ -54,7 +54,7 @@ int process_escape_sequence(const char *source, char *dest, int destlen)
 				dest[i++] = 0x1b;
 				break;
 			case 'h':
-				i += snprintf(dest + i, destlen - i, "%s", barebox_boardinfo());
+				i += snprintf(dest + i, destlen - i, "%s", barebox_get_model());
 				break;
 			case 'w':
 				i += snprintf(dest + i, destlen - i, "%s", getcwd());

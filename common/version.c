@@ -9,5 +9,5 @@ EXPORT_SYMBOL(version_string);
 void barebox_banner (void)
 {
 	pr_info("\n\n%s\n\n", version_string);
-	pr_info("Board: %s\n", barebox_boardinfo());
+	pr_info("Board: %s\n", barebox_get_model());
 }

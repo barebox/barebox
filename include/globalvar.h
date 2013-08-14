@@ -1,6 +1,8 @@
 #ifndef __GLOBALVAR_H
 #define __GLOBALVAR_H
 
+#include <param.h>
+
 #ifdef CONFIG_GLOBALVAR
 int globalvar_add_simple(const char *name);
 

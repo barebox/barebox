@@ -19,6 +19,9 @@
 #include <common.h>
 #include <errno.h>
 #include <malloc.h>
+#include <magicvar.h>
+#include <globalvar.h>
+#include <environment.h>
 
 int errno;
 EXPORT_SYMBOL(errno);
@@ -149,3 +152,34 @@ const char *barebox_get_model(void)
 	return CONFIG_BOARDINFO;
 }
 EXPORT_SYMBOL(barebox_get_model);
+
+BAREBOX_MAGICVAR_NAMED(global_model, global.model, "Product name of this hardware");
+
+static char *hostname;
+
+/*
+ * The hostname is supposed to be the shortname of a board. It should
+ * contain only lowercase letters, numbers, '-', '_'. No whitespaces
+ * allowed.
+ */
+void barebox_set_hostname(const char *__hostname)
+{
+	if (IS_ENABLED(CONFIG_GLOBALVAR)) {
+		globalvar_add_simple("hostname", __hostname);
+	} else {
+		free(hostname);
+		hostname = xstrdup(__hostname);
+	}
+}
+
+const char *barebox_get_hostname(void)
+{
+	if (IS_ENABLED(CONFIG_GLOBALVAR))
+		return getenv("global.hostname");
+
+	return hostname;
+}
+EXPORT_SYMBOL(barebox_get_hostname);
+
+BAREBOX_MAGICVAR_NAMED(global_hostname, global.hostname,
+		"shortname of the board. Also used as hostname for DHCP requests");

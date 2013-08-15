@@ -18,6 +18,7 @@
 
 #include <common.h>
 #include <errno.h>
+#include <malloc.h>
 
 int errno;
 EXPORT_SYMBOL(errno);
@@ -126,19 +127,25 @@ EXPORT_SYMBOL(perror);
 void (*do_execute)(void *func, int argc, char *argv[]);
 EXPORT_SYMBOL(do_execute);
 
-static const char *model;
+static char *model;
+
+/*
+ * The model is the verbose name of a board. It can contain
+ * whitespaces, uppercase/lowcer letters, digits, ',', '.'
+ * '-', '_'
+ */
+void barebox_set_model(const char *__model)
+{
+	free(model);
+	model = xstrdup(__model);
+}
+EXPORT_SYMBOL(barebox_set_model);
 
 const char *barebox_get_model(void)
 {
 	if (model)
 		return model;
 
-	model = of_get_model();
-	if (model)
-		model = xstrdup(model);
-	else
-		model = CONFIG_BOARDINFO;
-
-	return model;
+	return CONFIG_BOARDINFO;
 }
 EXPORT_SYMBOL(barebox_get_model);

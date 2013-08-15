@@ -1610,6 +1610,9 @@ int of_probe(void)
 	of_chosen = of_find_node_by_path("/chosen");
 	of_property_read_string(root_node, "model", &of_model);
 
+	if (of_model)
+		barebox_set_model(of_model);
+
 	__of_parse_phandles(root_node);
 
 	memory = of_find_node_by_path("/memory");

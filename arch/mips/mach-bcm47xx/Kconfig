@@ -12,6 +12,4 @@ config BOARD_DLINK_DIR320
 
 endchoice
 
-source arch/mips/boards/dlink-dir-320/Kconfig
-
 endif

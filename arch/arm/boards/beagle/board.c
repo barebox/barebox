@@ -73,6 +73,9 @@
  */
 static int beagle_console_init(void)
 {
+	barebox_set_model("Texas Instruments beagle");
+	barebox_set_hostname("beagle");
+
 	omap3_add_uart3();
 
 	return 0;

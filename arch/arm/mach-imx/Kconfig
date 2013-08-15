@@ -36,37 +36,6 @@ config ARCH_TEXT_BASE
 	default 0x2fc00000 if MACH_TQMA6X
 	default 0x4fc00000 if MACH_PHYTEC_PFLA02
 
-config BOARDINFO
-	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
-	default "Eukrea CPUIMX27" if MACH_EUKREA_CPUIMX27
-	default "Eukrea CPUIMX35" if MACH_EUKREA_CPUIMX35
-	default "Eukrea CPUIMX51" if MACH_EUKREA_CPUIMX51SD
-	default "Freescale i.MX21 ADS" if MACH_IMX21ADS
-	default "Freescale i.MX27 ADS" if MACH_IMX27ADS
-	default "Freescale MX35 3Stack" if MACH_FREESCALE_MX35_3STACK
-	default "Freescale MX25 3Stack" if MACH_FREESCALE_MX25_3STACK
-	default "Phytec phyCard-i.MX27" if MACH_PCA100
-	default "Phytec phyCORE-i.MX27" if MACH_PCM038
-	default "Phytec phyCORE-i.MX31" if MACH_PCM037
-	default "Phytec phyCORE-i.MX35" if MACH_PCM043
-	default "Synertronixx scb9328" if MACH_SCB9328
-	default "Garz+Fricke Neso" if MACH_NESO
-	default "Freescale i.MX53 SMD" if MACH_FREESCALE_MX53_SMD
-	default "Efika MX smartbook" if MACH_EFIKA_MX_SMARTBOOK
-	default "Garz+Fricke Cupid" if MACH_GUF_CUPID
-	default "Ka-Ro tx25" if MACH_TX25
-	default "TQ TQMa53" if MACH_TQMA53
-	default "Ka-Ro tx51" if MACH_TX51
-	default "Freescale i.MX6q armadillo2" if MACH_MX6Q_ARM2
-	default "ConnectCore i.MX51" if MACH_CCMX51
-	default "Sabre Lite" if MACH_SABRELITE
-	default "Ka-Ro tx53" if MACH_TX53
-	default "Garz+Fricke Vincell" if MACH_GUF_VINCELL
-	default "SabreSD" if MACH_SABRESD
-	default "DataModul i.MX6Q Real Qseven" if MACH_REALQ7
-	default "Zealz GK802" if MACH_GK802
-	default "unused" if IMX_MULTI_BOARDS
-
 choice
 	prompt "Select boot mode"
 	depends on !HAVE_PBL_MULTI_IMAGES

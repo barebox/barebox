@@ -15,6 +15,4 @@ config BOARD_QEMU_MALTA
 
 endchoice
 
-source arch/mips/boards/qemu-malta/Kconfig
-
 endif

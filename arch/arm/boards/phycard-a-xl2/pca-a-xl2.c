@@ -41,6 +41,9 @@
 
 static int pcaaxl2_console_init(void)
 {
+	barebox_set_model("Phytec phyCARD-OMAP4");
+	barebox_set_hostname("phycard-omap4");
+
 	omap44xx_add_uart3();
 
 	return 0;

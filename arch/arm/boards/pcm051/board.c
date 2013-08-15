@@ -50,6 +50,9 @@
  */
 static int pcm051_console_init(void)
 {
+	barebox_set_model("Phytec phyCORE-AM335x");
+	barebox_set_hostname("phycore-am335x");
+
 	am33xx_enable_uart0_pin_mux();
 	/* Register the serial port */
 	am33xx_add_uart0();

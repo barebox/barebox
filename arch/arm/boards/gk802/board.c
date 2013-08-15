@@ -77,6 +77,8 @@ static int gk802_console_init(void)
 	if (!of_machine_is_compatible("zealz,imx6q-gk802"))
 		return 0;
 
+	barebox_set_hostname("gk802");
+
 	imx6_init_lowlevel();
 
 	return 0;

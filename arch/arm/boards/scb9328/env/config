@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=scb9328
 eth0.serverip=
 user=
 

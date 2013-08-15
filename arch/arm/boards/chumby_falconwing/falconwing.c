@@ -311,6 +311,9 @@ device_initcall(falconwing_devices_init);
 
 static int falconwing_console_init(void)
 {
+	barebox_set_model("Chumby Falconwing");
+	barebox_set_hostname("falconwing");
+
 	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
 			   IORESOURCE_MEM, NULL);
 

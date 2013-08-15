@@ -230,6 +230,9 @@ device_initcall(eukrea_cpuimx25_devices_init);
 
 static int eukrea_cpuimx25_console_init(void)
 {
+	barebox_set_model("Eukrea CPUIMX25");
+	barebox_set_hostname("eukrea-cpuimx25");
+
 	imx25_add_uart0();
 	return 0;
 }

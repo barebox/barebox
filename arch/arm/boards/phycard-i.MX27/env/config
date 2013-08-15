@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=pca100
 eth0.serverip=
 user=
 

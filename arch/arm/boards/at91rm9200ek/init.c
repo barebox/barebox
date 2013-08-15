@@ -183,6 +183,9 @@ device_initcall(at91rm9200ek_devices_init);
 
 static int at91rm9200ek_console_init(void)
 {
+	barebox_set_model("Atmel at91rm9200-ek");
+	barebox_set_hostname("at91rm9200-ek");
+
 	at91_register_uart(0, 0);
 	return 0;
 }

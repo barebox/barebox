@@ -9,14 +9,6 @@ config ARCH_TEXT_BASE
 	default 0x47000000 if MACH_MX28EVK
 	default 0x47000000 if MACH_CFA10036
 
-config BOARDINFO
-	default "Freescale i.MX23-EVK" if MACH_MX23EVK
-	default "Chumby Falconwing" if MACH_CHUMBY
-	default "Olimex.ltd imx233-olinuxino" if MACH_IMX233_OLINUXINO
-	default "Karo TX28" if MACH_TX28
-	default "Freescale i.MX28-EVK" if MACH_MX28EVK
-	default "Crystalfontz CFA-10036" if MACH_CFA10036
-
 comment "Freescale i.MX System-on-Chip"
 
 choice

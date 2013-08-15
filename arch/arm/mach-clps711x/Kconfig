@@ -22,9 +22,6 @@ config CLPS711X_RAISE_CPUFREQ
 
 endmenu
 
-config BOARDINFO
-	default "Cirrus Logic CLEP7212" if MACH_CLEP7212
-
 config ARCH_TEXT_BASE
 	hex
 	default 0xc0780000 if MACH_CLEP7212

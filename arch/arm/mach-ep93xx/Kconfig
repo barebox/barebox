@@ -45,9 +45,6 @@ endchoice
 
 if MACH_EDB9301
 
-config BOARDINFO
-	default "Cirrus Logic EDB9301"
-
 config ARCH_TEXT_BASE
 	hex
 	default 0x05700000
@@ -115,9 +112,6 @@ endchoice
 
 if MACH_EDB9302
 
-config BOARDINFO
-	default "Cirrus Logic EDB9302"
-
 config ARCH_TEXT_BASE
 	hex
 	default 0x05700000
@@ -161,9 +155,6 @@ config EP93XX_SDRAM_BANK3_SIZE
 endif
 
 if MACH_EDB9302A
-
-config BOARDINFO
-	default "Cirrus Logic EDB9302A"
 
 config ARCH_TEXT_BASE
 	hex
@@ -232,9 +223,6 @@ endchoice
 
 if MACH_EDB9307
 
-config BOARDINFO
-	default "Cirrus Logic EDB9307"
-
 config ARCH_TEXT_BASE
 	hex
 	default 0x01f00000
@@ -262,9 +250,6 @@ config EP93XX_SDRAM_BANK1_SIZE
 endif
 
 if MACH_EDB9307A
-
-config BOARDINFO
-	default "Cirrus Logic EDB9307A"
 
 config ARCH_TEXT_BASE
 	hex
@@ -310,9 +295,6 @@ config MACH_EDB9312
 endchoice
 
 if MACH_EDB9312
-
-config BOARDINFO
-	default "Cirrus Logic EDB9312"
 
 config ARCH_TEXT_BASE
 	hex
@@ -365,9 +347,6 @@ endchoice
 
 if MACH_EDB9315
 
-config BOARDINFO
-	default "Cirrus Logic EDB9315"
-
 config ARCH_TEXT_BASE
 	hex
 	default 0x01f00000
@@ -395,9 +374,6 @@ config EP93XX_SDRAM_BANK1_SIZE
 endif
 
 if MACH_EDB9315A
-
-config BOARDINFO
-	default "Cirrus Logic EDB9315A"
 
 config ARCH_TEXT_BASE
 	hex

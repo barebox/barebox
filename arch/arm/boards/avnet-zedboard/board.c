@@ -44,6 +44,9 @@ device_initcall(zedboard_device_init);
 
 static int zedboard_console_init(void)
 {
+	barebox_set_model("Avnet ZedBoard");
+	barebox_set_hostname("zedboard");
+
 	zynq_add_uart1();
 
 	return 0;

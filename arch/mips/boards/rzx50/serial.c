@@ -22,6 +22,9 @@
 
 static int rzx50_console_init(void)
 {
+	barebox_set_model("Ritmix RZX-50");
+	barebox_set_hostname("rzx50");
+
 	/* Register the serial port */
 	jz_add_uart(DEVICE_ID_DYNAMIC, UART1_BASE, 12000000);
 

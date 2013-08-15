@@ -246,6 +246,17 @@ device_initcall(tny_a9260_devices_init);
 
 static int tny_a9260_console_init(void)
 {
+	if (machine_is_tny_a9g20()) {
+		barebox_set_model("Calao TNY-A9G20");
+		barebox_set_hostname("tny-a9g20");
+	} else if (machine_is_tny_a9263()) {
+		barebox_set_model("Calao TNY-A9263");
+		barebox_set_hostname("tny-a9263");
+	} else {
+		barebox_set_model("Calao TNY-A9260");
+		barebox_set_hostname("tny-a9260");
+	}
+
 	at91_register_uart(0, 0);
 	if (IS_ENABLED(CONFIG_CALAO_MOB_TNY_MD2))
 		at91_register_uart(2, ATMEL_UART_CTS | ATMEL_UART_RTS);

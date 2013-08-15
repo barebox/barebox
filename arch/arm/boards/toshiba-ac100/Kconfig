@@ -4,6 +4,4 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x01000000
 
-config BOARDINFO
-	default "Toshiba AC100 (Tegra2)"
 endif

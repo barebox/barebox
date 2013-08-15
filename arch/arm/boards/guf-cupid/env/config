@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=cupid
 eth0.serverip=
 user=
 

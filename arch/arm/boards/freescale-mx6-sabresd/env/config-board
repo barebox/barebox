@@ -3,5 +3,4 @@
 # board defaults, do not change in running system. Change /env/config
 # instead
 
-global.hostname=SabreSD
 global.linux.bootargs.base="console=ttymxc0,115200"

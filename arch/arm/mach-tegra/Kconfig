@@ -67,9 +67,6 @@ endchoice
 
 if MACH_TEGRA20_GENERIC
 
-config BOARDINFO
-	default "Generic Tegra20 board"
-
 endif #MACH_TEGRA20_GENERIC
 
 source arch/arm/boards/toshiba-ac100/Kconfig

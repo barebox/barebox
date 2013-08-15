@@ -8,9 +8,6 @@ config ZYNQ_DEBUG_LL_UART_BASE
 	hex
 	default 0xe0001000 if MACH_ZEDBOARD
 
-config BOARDINFO
-	default "ZedBoard" if MACH_ZEDBOARD
-
 choice
 	prompt "Xilinx Zynq type board"
 

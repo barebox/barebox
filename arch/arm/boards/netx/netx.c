@@ -73,6 +73,9 @@ static int netx_console_init(void)
 	*(volatile unsigned long *)(0x00100808) = 2;
 	*(volatile unsigned long *)(0x0010080c) = 2;
 
+	barebox_set_model("Hilscher Netx nxdb500");
+	barebox_set_hostname("nxdb500");
+
 	add_generic_device("netx_serial", DEVICE_ID_DYNAMIC, NULL, NETX_PA_UART0, 0x40,
 			   IORESOURCE_MEM, NULL);
 	return 0;

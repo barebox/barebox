@@ -42,6 +42,9 @@
 
 static int pcm049_console_init(void)
 {
+	barebox_set_model("Phytec phyCORE-OMAP4460");
+	barebox_set_hostname("phycore-omap4460");
+
 	omap44xx_add_uart3();
 
 	return 0;

@@ -9,9 +9,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x00000000
 
-config BOARDINFO
-	default "Altera Generic Board" if GENERIC
-
 choice
 	prompt "Select your board"
 

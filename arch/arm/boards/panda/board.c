@@ -33,6 +33,9 @@ static int board_revision;
 
 static int panda_console_init(void)
 {
+	barebox_set_model("Texas Instruments panda");
+	barebox_set_hostname("panda");
+
 	omap44xx_add_uart3();
 
 	return 0;

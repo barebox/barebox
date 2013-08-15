@@ -51,6 +51,9 @@ device_initcall(clps711x_devices_init);
 
 static int clps711x_console_init(void)
 {
+	barebox_set_model("Cirrus Logic CLEP7212");
+	barebox_set_hostname("clep7212");
+
 	clps711x_add_uart(0);
 
 	return 0;

@@ -141,6 +141,9 @@ device_initcall(imx23_olinuxino_devices_init);
 
 static int imx23_olinuxino_console_init(void)
 {
+	barebox_set_model("Olimex.ltd imx233-olinuxino");
+	barebox_set_hostname("imx233-olinuxino");
+
 	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
 			   IORESOURCE_MEM, NULL);
 

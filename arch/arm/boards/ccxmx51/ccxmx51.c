@@ -475,6 +475,9 @@ static int ccxmx51_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(ccxmx51_pads, ARRAY_SIZE(ccxmx51_pads));
 
+	barebox_set_model("Digi ConnectCore i.MX51");
+	barebox_set_hostname("ccmx51");
+
 	imx51_add_uart0();
 
 	return 0;

@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=guf-neso
 eth0.serverip=
 user=
 

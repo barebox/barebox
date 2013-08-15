@@ -5,6 +5,4 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x01000000
 
-config BOARDINFO
-	default "ARM Versatile/PB (ARM926EJ-S)"
 endif

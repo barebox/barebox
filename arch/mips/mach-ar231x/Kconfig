@@ -14,6 +14,4 @@ config BOARD_NETGEAR_WG102
 
 endchoice
 
-source arch/mips/boards/netgear-wg102/Kconfig
-
 endif

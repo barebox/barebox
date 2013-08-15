@@ -209,6 +209,9 @@ static int imx35_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(pcm043_pads, ARRAY_SIZE(pcm043_pads));
 
+	barebox_set_model("Phytec phyCORE-i.MX35");
+	barebox_set_hostname("phycore-imx35");
+
 	imx35_add_uart0();
 
 	return 0;

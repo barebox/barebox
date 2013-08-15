@@ -1,7 +1,6 @@
 #
 #
 
-global.hostname=tx28
 baseboard=tx28stk5
 
 # use 'dhcp' to do dhcp in barebox and in kernel

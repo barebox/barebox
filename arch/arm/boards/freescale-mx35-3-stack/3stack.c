@@ -260,6 +260,9 @@ static int f3s_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(f3s_pads, ARRAY_SIZE(f3s_pads));
 
+	barebox_set_model("Freescale i.MX35 3DS");
+	barebox_set_hostname("mx35-3stack");
+
 	imx35_add_uart0();
 	return 0;
 }

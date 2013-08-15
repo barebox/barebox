@@ -227,6 +227,9 @@ static int cupid_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(cupid_pads, ARRAY_SIZE(cupid_pads));
 
+	barebox_set_model("Garz & Fricke CUPID");
+	barebox_set_hostname("cupid");
+
 	imx35_add_uart0();
 
 	return 0;
@@ -355,4 +358,3 @@ BAREBOX_CMD_START(cpufreq)
 	.usage          = "adjust CPU frequency",
 	BAREBOX_CMD_HELP(cmd_cpufreq_help)
 BAREBOX_CMD_END
-

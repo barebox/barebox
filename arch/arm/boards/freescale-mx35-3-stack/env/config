@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=mx35-3stack
 eth0.serverip=
 user=
 

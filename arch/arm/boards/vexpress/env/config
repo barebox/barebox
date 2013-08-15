@@ -3,8 +3,6 @@
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=dhcp
-# set in c
-#global.hostname=vexpress
 global.dhcp.vendor_id=barebox-${global.hostname}
 
 # or set your networking parameters here

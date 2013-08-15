@@ -134,6 +134,9 @@ device_initcall(highbank_devices_init);
 
 static int highbank_console_init(void)
 {
+	barebox_set_model("Calxeda Highbank");
+	barebox_set_hostname("highbank");
+
 	highbank_register_uart();
 
 	return 0;

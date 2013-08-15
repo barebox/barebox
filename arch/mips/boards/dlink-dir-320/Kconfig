@@ -1,6 +1,0 @@
-if BOARD_DLINK_DIR320
-
-config BOARDINFO
-	default "D-Link DIR-320"
-
-endif

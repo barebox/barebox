@@ -31,6 +31,9 @@
 
 static int vpb_console_init(void)
 {
+	barebox_set_model("ARM Versatile/PB (ARM926EJ-S)");
+	barebox_set_hostname("versatilepb");
+
 	versatile_register_uart(0);
 	return 0;
 }

@@ -154,6 +154,9 @@ device_initcall(dss11_devices_init);
 
 static int dss11_console_init(void)
 {
+	barebox_set_model("Aizo dSS11");
+	barebox_set_hostname("dss11");
+
 	at91_register_uart(0, 0);
 	return 0;
 }

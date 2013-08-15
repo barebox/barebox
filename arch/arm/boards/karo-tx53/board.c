@@ -264,6 +264,9 @@ static int tx53_console_init(void)
 	if (!IS_ENABLED(CONFIG_TX53_REV_XX30))
 		imx53_init_lowlevel(1000);
 
+	barebox_set_model("Ka-Ro TX53");
+	barebox_set_hostname("tx53");
+
 	imx53_add_uart0();
 	return 0;
 }

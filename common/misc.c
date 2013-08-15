@@ -146,10 +146,7 @@ EXPORT_SYMBOL(barebox_set_model);
 
 const char *barebox_get_model(void)
 {
-	if (model)
-		return model;
-
-	return CONFIG_BOARDINFO;
+	return model;
 }
 EXPORT_SYMBOL(barebox_get_model);
 

@@ -5,11 +5,6 @@ config ARCH_TEXT_BASE
 	default 0xa0000000 if MACH_MIOA701
 	default 0xa3f00000 if MACH_PCM027
 
-config BOARDINFO
-	string
-	default "Scoter Mitac Mio A701" if MACH_MIOA701
-	default "Phytec phyCORE-PXA270" if MACH_PCM027
-
 # ----------------------------------------------------------
 
 config ARCH_PXA2XX

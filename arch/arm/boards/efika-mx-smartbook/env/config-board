@@ -3,7 +3,6 @@
 # board defaults, do not change in running system. Change /env/config
 # instead
 
-global.hostname=efikasb
 global.linux.bootargs.base="console=ttymxc0,115200"
 
 [ -f /env/config ] && /env/config

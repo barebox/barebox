@@ -5,9 +5,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x00007c00 if MACH_X86_GENERIC
 
-config BOARDINFO
-	default "Generic x86 bootloader" if MACH_X86_GENERIC
-
 config BOARD_LINKER_SCRIPT
 	bool
 	default n

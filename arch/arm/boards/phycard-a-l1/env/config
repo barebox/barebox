@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=pcaal1
 #user=
 
 # Enter MAC address here if not retrieved automatically

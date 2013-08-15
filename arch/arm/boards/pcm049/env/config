@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=pcm049
 eth0.serverip=
 user=
 

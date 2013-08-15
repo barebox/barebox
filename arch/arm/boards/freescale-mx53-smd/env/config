@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=loco
 eth0.serverip=
 user=
 

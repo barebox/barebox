@@ -210,6 +210,9 @@ static int eukrea_cpuimx27_console_init(void)
 {
 	uint32_t val;
 
+	barebox_set_model("Eukrea CPUIMX27");
+	barebox_set_hostname("eukrea-cpuimx27");
+
 #ifdef CONFIG_DRIVER_SERIAL_IMX
 	imx27_add_uart0();
 #endif

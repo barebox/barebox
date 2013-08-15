@@ -60,6 +60,9 @@ device_initcall(generic_devices_init);
 
 static int altera_console_init(void)
 {
+	barebox_set_model("Altera Generic Board");
+	barebox_set_hostname("nios2");
+
 	add_generic_device("altera_serial", DEVICE_ID_DYNAMIC, NULL,
 			NIOS_SOPC_UART_BASE, 0x20, IORESOURCE_MEM, NULL);
 

@@ -303,6 +303,9 @@ device_initcall(pca100_devices_init);
 
 static int pca100_console_init(void)
 {
+	barebox_set_model("Phytec phyCARD-i.MX27");
+	barebox_set_hostname("phycard-imx27");
+
 	imx27_add_uart0();
 	return 0;
 }

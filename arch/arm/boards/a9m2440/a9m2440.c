@@ -154,6 +154,9 @@ device_initcall(a9m2440_devices_init);
 
 static int a9m2440_console_init(void)
 {
+	barebox_set_model("Digi A9M2440");
+	barebox_set_hostname("a9m2440");
+
 	s3c24xx_add_uart1();
 	return 0;
 }

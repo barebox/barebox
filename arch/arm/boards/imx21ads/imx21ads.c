@@ -185,6 +185,9 @@ late_initcall(mx21ads_enable_display);
 
 static int mx21ads_console_init(void)
 {
+	barebox_set_model("Freescale i.MX21 ADS");
+	barebox_set_hostname("mx21ads");
+
 	imx21_add_uart0();
 	return 0;
 }

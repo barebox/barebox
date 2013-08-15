@@ -123,6 +123,8 @@ static int realq7_console_init(void)
 	if (!of_machine_is_compatible("dmo,imx6q-realq7"))
 		return 0;
 
+	barebox_set_hostname("eDM-QMX6");
+
 	imx6_init_lowlevel();
 
 	switch (bootsource_get()) {

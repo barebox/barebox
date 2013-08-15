@@ -92,6 +92,9 @@ static int scb9328_console_init(void)
 	imx_gpio_mode(PC11_PF_UART1_TXD);
 	imx_gpio_mode(PC12_PF_UART1_RXD);
 
+	barebox_set_model("Synertronixx scb9328");
+	barebox_set_hostname("scb9328");
+
 	imx1_add_uart0();
 
 	return 0;

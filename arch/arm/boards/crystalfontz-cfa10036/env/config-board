@@ -3,5 +3,4 @@
 # board defaults, do not change in running system. Change /env/config
 # instead
 
-global.hostname=cfa10036
 global.linux.bootargs.base="console=ttyAMA0,115200"

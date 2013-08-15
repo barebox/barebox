@@ -285,6 +285,9 @@ device_initcall(mx28_evk_devices_init);
 
 static int mx28_evk_console_init(void)
 {
+	barebox_set_model("Freescale i.MX28 EVK");
+	barebox_set_hostname("mx28evk");
+
 	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 0x2000,
 			   IORESOURCE_MEM, NULL);
 

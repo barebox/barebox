@@ -75,6 +75,9 @@ static struct NS16550_plat serial_plat = {
 
 static int pc_console_init(void)
 {
+	barebox_set_model("X86 generic barebox");
+	barebox_set_hostname("x86");
+
 	/* Register the serial port */
 	add_ns16550_device(DEVICE_ID_DYNAMIC, 0x3f8, 8, 0, &serial_plat);
 

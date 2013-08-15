@@ -1,7 +1,5 @@
 #!/bin/sh
 
-global.hostname=clps711x
-
 # Timeout in seconds before the default boot entry is started
 global.autoboot_timeout=2
 

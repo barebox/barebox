@@ -401,6 +401,14 @@ device_initcall(at91sam9261ek_devices_init);
 
 static int at91sam9261ek_console_init(void)
 {
+	if (machine_is_at91sam9g10ek()) {
+		barebox_set_model("Atmel at91sam9g10-ek");
+		barebox_set_hostname("at91sam9g10-ek");
+	} else {
+		barebox_set_model("Atmel at91sam9261-ek");
+		barebox_set_hostname("at91sam9261-ek");
+	}
+
 	at91_register_uart(0, 0);
 	return 0;
 }

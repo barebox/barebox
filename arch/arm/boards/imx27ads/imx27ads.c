@@ -114,6 +114,9 @@ device_initcall(mx27ads_devices_init);
 
 static int mx27ads_console_init(void)
 {
+	barebox_set_model("Freescale i.MX27 ADS");
+	barebox_set_hostname("mx27ads");
+
 	imx27_add_uart0();
 	return 0;
 }

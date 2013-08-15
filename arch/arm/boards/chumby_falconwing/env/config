@@ -1,7 +1,5 @@
 #!/bin/sh
 
-global.hostname=falconwing
-
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=none

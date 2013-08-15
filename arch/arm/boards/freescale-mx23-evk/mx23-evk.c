@@ -130,6 +130,9 @@ device_initcall(mx23_evk_devices_init);
 
 static int mx23_evk_console_init(void)
 {
+	barebox_set_model("Freescale i.MX23 EVK");
+	barebox_set_hostname("mx23evk");
+
 	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
 			   IORESOURCE_MEM, NULL);
 	

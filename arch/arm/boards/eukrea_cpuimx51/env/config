@@ -8,8 +8,6 @@ video="CMO-QVGA"
 # screen type : can be 'tft' or 'dvi'
 screen_type="tft"
 
-global.hostname=eukrea-cpuimx51
-
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=none

@@ -3,7 +3,6 @@
 # board defaults, do not change in running system. Change /env/config
 # instead
 
-global.hostname=highbank
 global.allow_color=true
 global.autoboot_timeout=3
 global.bootm.oftree="/dev/dtb"

@@ -59,6 +59,9 @@
  */
 static int beaglebone_console_init(void)
 {
+	barebox_set_model("Texas Instruments beaglebone");
+	barebox_set_hostname("beaglebone");
+
 	am33xx_add_uart0();
 
 	return 0;

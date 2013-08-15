@@ -1,6 +1,0 @@
-if BOARD_RZX50
-
-config BOARDINFO
-	default "Ritmix RZX-50"
-
-endif

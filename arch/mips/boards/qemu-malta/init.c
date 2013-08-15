@@ -43,6 +43,9 @@ static struct NS16550_plat serial_plat = {
 
 static int malta_console_init(void)
 {
+	barebox_set_model("qemu malta");
+	barebox_set_hostname("malta");
+
 	/* Register the serial port */
 	add_ns16550_device(DEVICE_ID_DYNAMIC, MALTA_PIIX4_UART0, 8,
 			IORESOURCE_MEM_8BIT, &serial_plat);

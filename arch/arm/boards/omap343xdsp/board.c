@@ -53,9 +53,6 @@
 #include <mach/gpmc.h>
 #include <errno.h>
 
-/*-----------------------CONSOLE  Devices -----------------------------------*/
-
-#ifdef CONFIG_DRIVER_SERIAL_NS16550
 /**
  * @brief UART serial port initialization - remember to enable COM clocks in arch
  *
@@ -63,13 +60,15 @@
  */
 static int sdp3430_console_init(void)
 {
+	barebox_set_model("Texas Instruments SDP343x");
+	barebox_set_hostname("sdp343x");
+
 	omap3_add_uart3();
 
 	return 0;
 }
 
 console_initcall(sdp3430_console_init);
-#endif				/* CONFIG_DRIVER_SERIAL_NS16550 */
 
 static int sdp3430_mem_init(void)
 {

@@ -67,6 +67,9 @@ device_initcall(devices_init);
 
 static int console_init(void)
 {
+	barebox_set_model("Phytec phyCORE MPC5200 tiny");
+	barebox_set_hostname("mpc5200");
+
 	add_generic_device("mpc5xxx_serial", DEVICE_ID_DYNAMIC, NULL, MPC5XXX_PSC3, 0x200,
 			   IORESOURCE_MEM, NULL);
 	add_generic_device("mpc5xxx_serial", DEVICE_ID_DYNAMIC, NULL, MPC5XXX_PSC6, 0x200,

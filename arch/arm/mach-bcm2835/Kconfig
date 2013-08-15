@@ -4,9 +4,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x04000000 if MACH_RPI
 
-config BOARDINFO
-	default "RaspberryPi (BCM2835/ARM1176JZF-S)" if MACH_RPI
-
 choice
 	prompt "Broadcom Board type"
 

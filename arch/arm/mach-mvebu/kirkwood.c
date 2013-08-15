@@ -85,6 +85,9 @@ static int kirkwood_init_soc(void)
 {
 	unsigned long phys_base, phys_size;
 
+	barebox_set_model("Marvell Kirkwood");
+	barebox_set_hostname("kirkwood");
+
 	kirkwood_init_clocks();
 	clkdev_add_physbase(tclk, (unsigned int)KIRKWOOD_TIMER_BASE, NULL);
 	add_generic_device("orion-timer", DEVICE_ID_SINGLE, NULL,

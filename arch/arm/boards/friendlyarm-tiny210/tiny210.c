@@ -86,6 +86,9 @@ static int tiny210_console_init(void)
 	s3c_gpio_mode(GPA02_NCTS0 | ENABLE_PU);
 	s3c_gpio_mode(GPA03_NRTS0);
 
+	barebox_set_model("Friendlyarm tiny210");
+	barebox_set_hostname("tiny210");
+
 	add_generic_device("s3c_serial", DEVICE_ID_DYNAMIC, NULL,
 			   S3C_UART1_BASE, S3C_UART1_SIZE,
 			   IORESOURCE_MEM, NULL);

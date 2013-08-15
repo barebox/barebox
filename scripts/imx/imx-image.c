@@ -632,7 +632,7 @@ int main(int argc, char *argv[])
 	char *imagename = NULL;
 	char *outfile = NULL;
 	void *buf;
-	size_t image_size = 0;
+	size_t image_size = 0, load_size;
 	struct stat s;
 	int infd, outfd;
 	int dcd_only = 0;
@@ -714,12 +714,22 @@ int main(int argc, char *argv[])
 		exit (0);
 	}
 
+	/*
+	 * Add 0x1000 to the image size for the DCD.
+	 * Align up to a 4k boundary, because:
+	 * - at least i.MX5 NAND boot only reads full NAND pages and misses the
+	 *   last partial NAND page.
+	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
+	 *   in ver funy ways when the image size is not 4 byte aligned
+	 */
+	load_size = ((image_size + 0x1000) + 0xfff) & ~0xfff;
+
 	switch (header_version) {
 	case 1:
-		add_header_v1(buf, image_dcd_offset, image_load_addr, image_size + 0x1000);
+		add_header_v1(buf, image_dcd_offset, image_load_addr, load_size);
 		break;
 	case 2:
-		add_header_v2(buf, image_dcd_offset, image_load_addr, image_size + 0x1000);
+		add_header_v2(buf, image_dcd_offset, image_load_addr, load_size);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",

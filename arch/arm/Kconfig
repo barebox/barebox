@@ -83,9 +83,11 @@ config ARCH_IMX
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"
 	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select HAS_DEBUG_LL
+	select OFTREE
 
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"

@@ -161,7 +161,8 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci->data.post_init = imx_chipidea_port_post_init;
 	ci->data.drvdata = ci;
 
-	imx_chipidea_port_init(ci);
+	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_HSIC)
+		imx_chipidea_port_init(ci);
 
 	portsc = readl(base + 0x184);
 	portsc &= ~MXC_EHCI_PORTSC_MASK;

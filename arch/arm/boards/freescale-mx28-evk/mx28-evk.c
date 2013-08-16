@@ -29,6 +29,7 @@
 #include <mach/iomux-imx28.h>
 #include <mach/mci.h>
 #include <mach/fb.h>
+#include <mach/iomux.h>
 #include <mach/ocotp.h>
 #include <mach/devices.h>
 #include <spi/spi.h>

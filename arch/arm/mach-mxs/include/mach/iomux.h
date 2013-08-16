@@ -13,9 +13,18 @@
  *
  */
 
-#ifndef __ASM_MACH_GPIO_H
-#define __ASM_MACH_GPIO_H
+#ifndef __ASM_MACH_IOMUX_H
+#define __ASM_MACH_IOMUX_H
 
-#include <asm-generic/gpio.h>
+#include <types.h>
 
-#endif /* __ASM_MACH_GPIO_H */
+#if defined CONFIG_ARCH_IMX23
+# include <mach/iomux-imx23.h>
+#endif
+#if defined CONFIG_ARCH_IMX28
+# include <mach/iomux-imx28.h>
+#endif
+
+void imx_gpio_mode(uint32_t);
+
+#endif /* __ASM_MACH_IOMUX_H */

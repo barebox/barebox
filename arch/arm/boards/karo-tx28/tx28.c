@@ -22,6 +22,7 @@
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
 #include <mach/devices.h>
+#include <mach/iomux.h>
 #include <asm/mmu.h>
 
 /* setup the CPU card internal signals */

@@ -17,6 +17,7 @@
 #include <mach/s3c-iomap.h>
 #include <mach/gpio.h>
 #include <mach/s3c24xx-gpio.h>
+#include <mach/iomux.h>
 
 static const unsigned char group_offset[] =
 {

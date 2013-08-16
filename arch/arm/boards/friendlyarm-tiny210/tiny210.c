@@ -35,6 +35,7 @@
 #include <io.h>
 #include <nand.h>
 #include <asm/armlinux.h>
+#include <mach/iomux.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-clocks.h>
 #include <mach/s3c-generic.h>

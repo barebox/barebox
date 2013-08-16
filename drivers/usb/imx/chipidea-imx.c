@@ -32,7 +32,6 @@ struct imx_chipidea {
 	struct ehci_data data;
 	unsigned long flags;
 	enum imx_usb_mode mode;
-	int (*init)(int port);
 	int portno;
 };
 
@@ -57,9 +56,6 @@ static int imx_chipidea_port_init(void *drvdata)
 	ret = imx_usbmisc_port_init(ci->portno, ci->flags);
 	if (ret)
 		dev_err(ci->dev, "misc init failed: %s\n", strerror(-ret));
-
-	if (ci->init)
-		ci->init(ci->portno);
 
 	return ret;
 }
@@ -152,7 +148,6 @@ static int imx_chipidea_probe(struct device_d *dev)
 		}
 		ci->portno = dev->id;
 		ci->flags = pdata->flags;
-		ci->init = pdata->init;
 		ci->mode = pdata->mode;
 	}
 

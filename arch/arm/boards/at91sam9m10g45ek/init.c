@@ -34,6 +34,7 @@
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
+#include <mach/iomux.h>
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
 #include <gpio_keys.h>

@@ -32,6 +32,7 @@
 #include <mach/board.h>
 #include <gpio.h>
 #include <mach/io.h>
+#include <mach/iomux.h>
 #include <mach/at91sam9_smc.h>
 #include <dm9000.h>
 #include <gpio_keys.h>

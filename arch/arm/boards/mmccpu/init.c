@@ -31,6 +31,7 @@
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
+#include <mach/iomux.h>
 #include <mach/io.h>
 
 static struct macb_platform_data macb_pdata = {

@@ -47,6 +47,7 @@ static int imx_chipidea_port_init(void *drvdata)
 			if (ret)
 				dev_err(ci->dev, "ULPI setup failed with %s\n",
 						strerror(-ret));
+			mdelay(20);
 		} else {
 			dev_err(ci->dev, "no ULPI support available\n");
 			ret = -ENODEV;

@@ -32,6 +32,7 @@
 #include <net.h>
 #include <sizes.h>
 #include <partition.h>
+#include <gpio.h>
 
 #include <asm/armlinux.h>
 #include <asm/sections.h>
@@ -39,7 +40,6 @@
 #include <io.h>
 #include <generated/mach-types.h>
 
-#include <mach/gpio.h>
 #include <mach/weim.h>
 #include <mach/imx-nand.h>
 #include <mach/imx35-regs.h>

@@ -3,6 +3,7 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
+#include <gpio.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -16,7 +17,6 @@
 #include <linux/err.h>
 #include <sizes.h>
 #include <asm/mmu.h>
-#include <mach/gpio.h>
 #include <envfs.h>
 #include <i2c/i2c.h>
 #include <gpio.h>

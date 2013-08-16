@@ -21,7 +21,6 @@
 #include <generated/mach-types.h>
 #include <mach/imx1-regs.h>
 #include <asm/armlinux.h>
-#include <mach/gpio.h>
 #include <mach/weim.h>
 #include <io.h>
 #include <partition.h>

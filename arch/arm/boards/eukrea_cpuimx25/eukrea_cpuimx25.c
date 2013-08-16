@@ -21,12 +21,12 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
+#include <gpio.h>
 #include <environment.h>
 #include <mach/imx25-regs.h>
 #include <asm/armlinux.h>
 #include <asm/barebox-arm.h>
 #include <asm/sections.h>
-#include <mach/gpio.h>
 #include <io.h>
 #include <asm/mmu.h>
 #include <led.h>

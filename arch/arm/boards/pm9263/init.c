@@ -25,6 +25,7 @@
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
+#include <gpio.h>
 #include <fcntl.h>
 #include <io.h>
 #include <asm/hardware.h>
@@ -32,7 +33,6 @@
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
-#include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/at91sam9_smc.h>
 #include <linux/w1-gpio.h>

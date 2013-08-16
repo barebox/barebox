@@ -25,10 +25,10 @@
 #include <driver.h>
 #include <environment.h>
 #include <fs.h>
+#include <gpio.h>
 #include <sizes.h>
 #include <mach/imx35-regs.h>
 #include <asm/armlinux.h>
-#include <mach/gpio.h>
 #include <io.h>
 #include <partition.h>
 #include <nand.h>

@@ -22,7 +22,7 @@
 #include <asm/armlinux.h>
 #include <io.h>
 #include <fec.h>
-#include <mach/gpio.h>
+#include <gpio.h>
 #include <mach/weim.h>
 #include <partition.h>
 #include <fs.h>

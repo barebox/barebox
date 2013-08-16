@@ -23,6 +23,7 @@
 #include <net.h>
 #include <partition.h>
 #include <sizes.h>
+#include <gpio.h>
 
 #include <generated/mach-types.h>
 
@@ -30,7 +31,6 @@
 #include <mach/iomux-mx53.h>
 #include <mach/devices-imx53.h>
 #include <mach/generic.h>
-#include <mach/gpio.h>
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
 #include <mach/imx5.h>

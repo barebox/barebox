@@ -18,6 +18,7 @@
 #include <console.h>
 #include <init.h>
 #include <driver.h>
+#include <gpio.h>
 #include <io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
@@ -35,7 +36,6 @@
 #include <partition.h>
 #include <nand.h>
 #include <asm/mmu.h>
-#include <mach/gpio.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 #include <i2c/i2c.h>

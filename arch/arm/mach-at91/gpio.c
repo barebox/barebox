@@ -24,7 +24,6 @@
 #include <linux/err.h>
 #include <errno.h>
 #include <io.h>
-#include <mach/gpio.h>
 #include <mach/io.h>
 #include <mach/cpu.h>
 #include <gpio.h>

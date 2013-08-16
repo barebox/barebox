@@ -8,7 +8,6 @@
 #include <mach/syslib.h>
 #include <mach/generic.h>
 #include <mach/gpmc.h>
-#include <mach/gpio.h>
 #include <mach/omap4_rom_usb.h>
 
 /*

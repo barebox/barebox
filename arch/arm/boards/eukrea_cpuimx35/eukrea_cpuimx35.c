@@ -33,13 +33,13 @@
 #include <nand.h>
 #include <net.h>
 #include <partition.h>
+#include <gpio.h>
 
 #include <asm/armlinux.h>
 #include <io.h>
 #include <generated/mach-types.h>
 #include <asm/mmu.h>
 
-#include <mach/gpio.h>
 #include <mach/imx-nand.h>
 #include <mach/imx35-regs.h>
 #include <mach/iomux-mx35.h>

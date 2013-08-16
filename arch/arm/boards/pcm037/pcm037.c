@@ -22,13 +22,13 @@
 #include <init.h>
 #include <driver.h>
 #include <fs.h>
+#include <gpio.h>
 #include <environment.h>
 #include <usb/ulpi.h>
 #include <mach/imx31-regs.h>
 #include <mach/iomux-mx31.h>
 #include <asm/armlinux.h>
 #include <asm/sections.h>
-#include <mach/gpio.h>
 #include <mach/weim.h>
 #include <io.h>
 #include <smc911x.h>

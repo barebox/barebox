@@ -19,6 +19,7 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
+#include <gpio.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -32,7 +33,6 @@
 #include <partition.h>
 #include <nand.h>
 #include <asm/mmu.h>
-#include <mach/gpio.h>
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 #include <mach/omap_hsmmc.h>

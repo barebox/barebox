@@ -15,11 +15,11 @@
 #include <io.h>
 #include <init.h>
 #include <sizes.h>
+#include <gpio.h>
 #include <platform_ide.h>
 #include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>
 #include <mach/weim.h>
-#include <mach/gpio.h>
 #include <mach/devices-imx27.h>
 #include <usb/chipidea-imx.h>
 

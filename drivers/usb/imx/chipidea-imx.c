@@ -44,6 +44,9 @@ static int imx_chipidea_port_init(void *drvdata)
 		dev_dbg(ci->dev, "using ULPI phy\n");
 		if (IS_ENABLED(CONFIG_USB_ULPI)) {
 			ret = ulpi_setup(ci->base + 0x170, 1);
+			if (ret)
+				dev_err(ci->dev, "ULPI setup failed with %s\n",
+						strerror(-ret));
 		} else {
 			dev_err(ci->dev, "no ULPI support available\n");
 			ret = -ENODEV;

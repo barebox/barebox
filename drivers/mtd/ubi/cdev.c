@@ -23,7 +23,7 @@ static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
 	loff_t offp = offset;
 	int usable_leb_size = vol->usable_leb_size;
 
-	printf("%s: %zd @ 0x%08llx\n", __func__, size, offset);
+	pr_debug("%s: %zd @ 0x%08llx\n", __func__, size, offset);
 
 	len = size > usable_leb_size ? usable_leb_size : size;
 

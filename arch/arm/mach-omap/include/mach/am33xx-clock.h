@@ -23,20 +23,16 @@
 
 /* Put the pll config values over here */
 
-#define OSC	24
-
 /* MAIN PLL Fdll = 1 GHZ, */
 #define MPUPLL_M_500	500	/* 125 * n */
 #define MPUPLL_M_550	550	/* 125 * n */
 #define MPUPLL_M_600	600	/* 125 * n */
 #define MPUPLL_M_720	720	/* 125 * n */
 
-#define MPUPLL_N	(OSC - 1)
 #define MPUPLL_M2	1
 
 /* Core PLL Fdll = 1 GHZ, */
 #define COREPLL_M	1000	/* 125 * n */
-#define COREPLL_N	(OSC - 1)
 
 #define COREPLL_M4	10	/* CORE_CLKOUTM4 = 200 MHZ */
 #define COREPLL_M5	8	/* CORE_CLKOUTM5 = 250 MHZ */
@@ -48,13 +44,11 @@
  * For clkout = 192 MHZ, Fdll = 960 MHZ, divider values are given below
  */
 #define PERPLL_M	960
-#define PERPLL_N	(OSC - 1)
 #define PERPLL_M2	5
 
 /* DDR Freq is 266 MHZ for now*/
 /* Set Fdll = 400 MHZ , Fdll = M * 2 * CLKINP/ N + 1; clkout = Fdll /(2 * M2) */
 #define DDRPLL_M	266
-#define DDRPLL_N	(OSC - 1)
 #define DDRPLL_M2	1
 
 /* PRCM */
@@ -187,7 +181,7 @@
 
 #define CM_ALWON_GPMC_CLKCTRL           CM_PER_GPMC_CLKCTRL
 
-extern void pll_init(int mpupll_M);
+extern void pll_init(int mpupll_M, int osc);
 extern void enable_ddr_clocks(void);
 
 #endif  /* endif _AM33XX_CLOCKS_H_ */

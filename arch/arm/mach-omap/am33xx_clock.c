@@ -156,7 +156,7 @@ static void per_clocks_enable(void)
 	while (__raw_readl(CM_PER_SPI1_CLKCTRL) != PRCM_MOD_EN);
 }
 
-static void mpu_pll_config(int mpupll_M)
+static void mpu_pll_config(int mpupll_M, int osc)
 {
 	u32 clkmode, clksel, div_m2;
 
@@ -170,7 +170,7 @@ static void mpu_pll_config(int mpupll_M)
 	while(__raw_readl(CM_IDLEST_DPLL_MPU) != 0x00000100);
 
 	clksel = clksel & (~0x7ffff);
-	clksel = clksel | ((mpupll_M << 0x8) | MPUPLL_N);
+	clksel = clksel | ((mpupll_M << 0x8) | (osc - 1));
 	__raw_writel(clksel, CM_CLKSEL_DPLL_MPU);
 
 	div_m2 = div_m2 & ~0x1f;
@@ -183,7 +183,7 @@ static void mpu_pll_config(int mpupll_M)
 	while(__raw_readl(CM_IDLEST_DPLL_MPU) != 0x1);
 }
 
-static void core_pll_config(void)
+static void core_pll_config(int osc)
 {
 	u32 clkmode, clksel, div_m4, div_m5, div_m6;
 
@@ -199,7 +199,7 @@ static void core_pll_config(void)
 	while(__raw_readl(CM_IDLEST_DPLL_CORE) != 0x00000100);
 
 	clksel = clksel & (~0x7ffff);
-	clksel = clksel | ((COREPLL_M << 0x8) | COREPLL_N);
+	clksel = clksel | ((COREPLL_M << 0x8) | (osc - 1));
 	__raw_writel(clksel, CM_CLKSEL_DPLL_CORE);
 
 	div_m4 = div_m4 & ~0x1f;
@@ -221,7 +221,7 @@ static void core_pll_config(void)
 	while(__raw_readl(CM_IDLEST_DPLL_CORE) != 0x1);
 }
 
-static void per_pll_config(void)
+static void per_pll_config(int osc)
 {
 	u32 clkmode, clksel, div_m2;
 
@@ -235,7 +235,7 @@ static void per_pll_config(void)
 	while(__raw_readl(CM_IDLEST_DPLL_PER) != 0x00000100);
 
 	clksel = clksel & (~0x7ffff);
-	clksel = clksel | ((PERPLL_M << 0x8) | PERPLL_N);
+	clksel = clksel | ((PERPLL_M << 0x8) | (osc - 1));
 	__raw_writel(clksel, CM_CLKSEL_DPLL_PER);
 
 	div_m2 = div_m2 & ~0x7f;
@@ -248,7 +248,7 @@ static void per_pll_config(void)
 	while(__raw_readl(CM_IDLEST_DPLL_PER) != 0x1);
 }
 
-static void ddr_pll_config(void)
+static void ddr_pll_config(int osc)
 {
 	u32 clkmode, clksel, div_m2;
 
@@ -263,7 +263,7 @@ static void ddr_pll_config(void)
 	while ((__raw_readl(CM_IDLEST_DPLL_DDR) & 0x00000100) != 0x00000100);
 
 	clksel = clksel & (~0x7ffff);
-	clksel = clksel | ((DDRPLL_M << 0x8) | DDRPLL_N);
+	clksel = clksel | ((DDRPLL_M << 0x8) | (osc - 1));
 	__raw_writel(clksel, CM_CLKSEL_DPLL_DDR);
 
 	div_m2 = div_m2 & 0xFFFFFFE0;
@@ -294,12 +294,12 @@ void enable_ddr_clocks(void)
 /*
  * Configure the PLL/PRCM for necessary peripherals
  */
-void pll_init(int mpupll_M)
+void pll_init(int mpupll_M, int osc)
 {
-	mpu_pll_config(mpupll_M);
-	core_pll_config();
-	per_pll_config();
-	ddr_pll_config();
+	mpu_pll_config(mpupll_M, osc);
+	core_pll_config(osc);
+	per_pll_config(osc);
+	ddr_pll_config(osc);
 	/* Enable the required interconnect clocks */
 	interface_clocks_enable();
 	/* Enable power domain transition */

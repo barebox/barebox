@@ -55,6 +55,7 @@ void imx1_setup_eimcs(size_t cs, unsigned upper, unsigned lower)
 int imx1_init(void)
 {
 	imx1_detect_reset_source();
+	add_generic_device("imx1-sdramc", 0, NULL, MX1_SDRAMC_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
@@ -70,7 +71,6 @@ int imx1_devices_init(void)
 	add_generic_device("imx1-gpio", 2, NULL, MX1_GPIO3_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 3, NULL, MX1_GPIO4_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-wdt", 0, NULL, MX1_WDT_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
-	add_generic_device("imx1-sdramc", 0, NULL, MX1_SDRAMC_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

@@ -101,6 +101,8 @@ int imx27_init(void)
 {
 	imx27_silicon_revision();
 	imx27_boot_save_loc((void *)MX27_SYSCTRL_BASE_ADDR);
+	add_generic_device("imx27-esdctl", DEVICE_ID_SINGLE, NULL,
+			   MX27_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }
@@ -124,8 +126,6 @@ int imx27_devices_init(void)
 	add_generic_device("imx1-gpio", 4, NULL, MX27_GPIO5_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx1-gpio", 5, NULL, MX27_GPIO6_BASE_ADDR, 0x100, IORESOURCE_MEM, NULL);
 	add_generic_device("imx21-wdt", 0, NULL, MX27_WDOG_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
-	add_generic_device("imx27-esdctl", DEVICE_ID_SINGLE, NULL,
-			   MX27_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx27-usb-misc", 0, NULL, MX27_USB_OTG_BASE_ADDR + 0x600, 0x100, IORESOURCE_MEM, NULL);
 
 	return 0;

@@ -26,10 +26,6 @@
 		};
 	};
 
-	memory {
-		reg = <0x70000000 0x40000000>;
-	};
-
 	display@di0 {
 		compatible = "fsl,imx-parallel-display";
 		crtcs = <&ipu 0>;

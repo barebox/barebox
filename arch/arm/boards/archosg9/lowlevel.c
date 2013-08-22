@@ -17,6 +17,7 @@
 #include <mach/generic.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>
+#include <mach/omap4-generic.h>
 #include <mach/omap4-clock.h>
 #include <mach/syslib.h>
 #include <asm/barebox-arm.h>
@@ -67,7 +68,7 @@ static noinline void archosg9_init_lowlevel(void)
 
 void __naked __bare_init barebox_arm_reset_vector(uint32_t *data)
 {
-	omap_save_bootinfo();
+	omap4_save_bootinfo(data);
 
 	arm_cpu_lowlevel_init();
 

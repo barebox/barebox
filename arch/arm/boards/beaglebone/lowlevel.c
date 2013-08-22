@@ -10,6 +10,7 @@
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
 #include <mach/am33xx-mux.h>
+#include <mach/am33xx-generic.h>
 #include <mach/wdt.h>
 
 /* UART Defines */
@@ -251,7 +252,7 @@ static int beaglebone_board_init(void)
 
 void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
 {
-	omap_save_bootinfo();
+	am33xx_save_bootinfo(data);
 
 	arm_cpu_lowlevel_init();
 

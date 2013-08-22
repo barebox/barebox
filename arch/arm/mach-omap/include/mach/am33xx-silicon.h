@@ -17,6 +17,8 @@
 #ifndef __ASM_ARCH_AM33XX_H
 #define __ASM_ARCH_AM33XX_H
 
+#include <sizes.h>
+
 /** AM335x Internal Bus Base addresses */
 #define AM33XX_L4_WKUP_BASE		0x44C00000
 #define AM33XX_L4_PER_BASE		0x48000000
@@ -115,10 +117,9 @@
 #define AM33XX_VTP1_CTRL_REG		0x48140E10
 
 /* OCMC */
-#define AM33XX_SRAM0_SIZE			(0x1B400) /* 109 KB */
+#define AM33XX_SRAM0_START			0x402f0400
+#define AM33XX_SRAM0_SIZE			(SZ_128K - SZ_1K)
 #define AM33XX_SRAM_GPMC_STACK_SIZE		(0x40)
-
-#define AM33XX_LOW_LEVEL_SRAM_STACK		(AM33XX_SRAM0_START + AM33XX_SRAM0_SIZE - 4)
 
 /* DDR offsets */
 #define	AM33XX_DDR_PHY_BASE_ADDR		0x44E12000

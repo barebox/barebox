@@ -6,6 +6,7 @@
 #include <mach/control.h>
 #include <mach/generic.h>
 #include <mach/omap3-silicon.h>
+#include <mach/omap3-generic.h>
 #include <mach/omap3-mux.h>
 #include <mach/sdrc.h>
 #include <mach/syslib.h>
@@ -182,7 +183,7 @@ static int beagle_board_init(void)
 
 void __naked  __bare_init barebox_arm_reset_vector(uint32_t *data)
 {
-	omap_save_bootinfo();
+	omap3_save_bootinfo(data);
 
 	arm_cpu_lowlevel_init();
 

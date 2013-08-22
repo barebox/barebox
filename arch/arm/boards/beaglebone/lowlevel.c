@@ -89,7 +89,7 @@ static int beaglebone_board_init(void)
 	if (running_in_sdram())
 		return 0;
 
-	pll_init(MPUPLL_M_500, 24);
+	pll_init(MPUPLL_M_500, 24, DDRPLL_M_266);
 
 	am335x_sdram_init(0x18B, &ddr2_cmd_ctrl, &ddr2_regs, &ddr2_data);
 

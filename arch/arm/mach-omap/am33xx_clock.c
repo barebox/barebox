@@ -248,7 +248,7 @@ static void per_pll_config(int osc)
 	while(__raw_readl(CM_IDLEST_DPLL_PER) != 0x1);
 }
 
-static void ddr_pll_config(int osc)
+static void ddr_pll_config(int osc, int ddrpll_M)
 {
 	u32 clkmode, clksel, div_m2;
 
@@ -263,7 +263,7 @@ static void ddr_pll_config(int osc)
 	while ((__raw_readl(CM_IDLEST_DPLL_DDR) & 0x00000100) != 0x00000100);
 
 	clksel = clksel & (~0x7ffff);
-	clksel = clksel | ((DDRPLL_M << 0x8) | (osc - 1));
+	clksel = clksel | ((ddrpll_M << 0x8) | (osc - 1));
 	__raw_writel(clksel, CM_CLKSEL_DPLL_DDR);
 
 	div_m2 = div_m2 & 0xFFFFFFE0;
@@ -288,18 +288,18 @@ void enable_ddr_clocks(void)
 		PRCM_L3_GCLK_ACTIVITY));
 	/* Poll if module is functional */
 	while ((__raw_readl(CM_PER_EMIF_CLKCTRL)) != PRCM_MOD_EN);
-
 }
 
 /*
  * Configure the PLL/PRCM for necessary peripherals
  */
-void pll_init(int mpupll_M, int osc)
+void pll_init(int mpupll_M, int osc, int ddrpll_M)
 {
 	mpu_pll_config(mpupll_M, osc);
 	core_pll_config(osc);
 	per_pll_config(osc);
-	ddr_pll_config(osc);
+	ddr_pll_config(osc, ddrpll_M);
+
 	/* Enable the required interconnect clocks */
 	interface_clocks_enable();
 	/* Enable power domain transition */

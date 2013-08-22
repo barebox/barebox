@@ -48,7 +48,9 @@
 
 /* DDR Freq is 266 MHZ for now*/
 /* Set Fdll = 400 MHZ , Fdll = M * 2 * CLKINP/ N + 1; clkout = Fdll /(2 * M2) */
-#define DDRPLL_M	266
+#define DDRPLL_M_266	266
+#define DDRPLL_M_400	400
+#define DDRPLL_N	(OSC - 1)
 #define DDRPLL_M2	1
 
 /* PRCM */
@@ -181,7 +183,7 @@
 
 #define CM_ALWON_GPMC_CLKCTRL           CM_PER_GPMC_CLKCTRL
 
-extern void pll_init(int mpupll_M, int osc);
+extern void pll_init(int mpupll_M, int osc, int ddrpll_M);
 extern void enable_ddr_clocks(void);
 
 #endif  /* endif _AM33XX_CLOCKS_H_ */

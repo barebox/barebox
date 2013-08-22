@@ -31,6 +31,12 @@ static inline struct device_d *am33xx_add_mmc0(struct omap_hsmmc_platform_data *
 			AM33XX_MMCHS0_BASE, SZ_4K, IORESOURCE_MEM, pdata);
 }
 
+static inline struct device_d *am33xx_add_mmc1(struct omap_hsmmc_platform_data *pdata)
+{
+	return add_generic_device("omap4-hsmmc", 1, NULL,
+			AM33XX_MMC1_BASE, SZ_4K, IORESOURCE_MEM, pdata);
+}
+
 static inline struct device_d *am33xx_add_cpsw(struct cpsw_platform_data *cpsw_data)
 {
 	return add_generic_device("cpsw", 0, NULL,

@@ -90,6 +90,14 @@ config OMAP_BUILD_SPI
 	  Say Y here if you want to build an barebox.spi image as used
 	  on the AM35xx chips when booting from SPI NOR flash.
 
+config BAREBOX_UPDATE_AM33XX_SPI_NOR_MLO
+	prompt "barebox update SPI NOR MLO handler"
+	bool
+	depends on BAREBOX_UPDATE
+	help
+          Say Y for barebox update SPI NOR MLO handler.
+          AM35xx, AM33xx chips use big endian MLO for SPI NOR flash.
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x80e80000 if MACH_OMAP343xSDP

@@ -100,6 +100,7 @@ u32 running_in_sdram(void)
 static int am33xx_bootsource(void)
 {
 	enum bootsource src;
+	int instance = 0;
 
 	switch (omap_bootinfo[2] & 0xFF) {
 	case 0x05:
@@ -107,6 +108,11 @@ static int am33xx_bootsource(void)
 		break;
 	case 0x08:
 		src = BOOTSOURCE_MMC;
+		instance = 0;
+		break;
+	case 0x09:
+		src = BOOTSOURCE_MMC;
+		instance = 1;
 		break;
 	case 0x0b:
 		src = BOOTSOURCE_SPI;
@@ -115,7 +121,7 @@ static int am33xx_bootsource(void)
 		src = BOOTSOURCE_UNKNOWN;
 	}
 	bootsource_set(src);
-	bootsource_set_instance(0);
+	bootsource_set_instance(instance);
 	return 0;
 }
 postcore_initcall(am33xx_bootsource);

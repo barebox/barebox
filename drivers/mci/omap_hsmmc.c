@@ -574,6 +574,13 @@ static void mmc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	writel(readl(&mmc_base->sysctl) | CEN_ENABLE, &mmc_base->sysctl);
 }
 
+static int omap_mmc_detect(struct device_d *dev)
+{
+	struct omap_hsmmc *hsmmc = dev->priv;
+
+	return mci_detect_card(&hsmmc->mci);
+}
+
 static int omap_mmc_probe(struct device_d *dev)
 {
 	struct omap_hsmmc *hsmmc;
@@ -608,6 +615,9 @@ static int omap_mmc_probe(struct device_d *dev)
 		hsmmc->mci.f_max = pdata->f_max;
 	else
 		hsmmc->mci.f_max = 52000000;
+
+	dev->priv = hsmmc;
+	dev->detect = omap_mmc_detect,
 
 	mci_register(&hsmmc->mci);
 

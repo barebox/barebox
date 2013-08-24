@@ -18,19 +18,44 @@
 #include <init.h>
 #include <io.h>
 #include <fs.h>
+#include <malloc.h>
 #include <linux/stat.h>
 
-#if defined(CONFIG_DEFAULT_ENVIRONMENT) && defined(CONFIG_MCI_STARTUP)
+static char *omap_bootmmc_dev;
+
+void omap_set_bootmmc_devname(char *devname)
+{
+	omap_bootmmc_dev = devname;
+}
+
+const char *omap_get_bootmmc_devname(void)
+{
+	return omap_bootmmc_dev;
+}
+
+#if defined(CONFIG_DEFAULT_ENVIRONMENT)
 static int omap_env_init(void)
 {
 	struct stat s;
-	char *diskdev = "/dev/disk0.0";
+	char *diskdev, *partname;
 	int ret;
 
 	if (bootsource_get() != BOOTSOURCE_MMC)
 		return 0;
 
-	ret = stat(diskdev, &s);
+	if (omap_bootmmc_dev)
+		diskdev = omap_bootmmc_dev;
+	else
+		diskdev = "disk0";
+
+	device_detect_by_name(diskdev);
+
+	partname = asprintf("/dev/%s.0", diskdev);
+
+	ret = stat(partname, &s);
+
+	free(partname);
+
 	if (ret) {
 		printf("no %s. using default env\n", diskdev);
 		return 0;

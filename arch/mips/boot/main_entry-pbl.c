@@ -51,7 +51,7 @@ void __section(.text_entry) pbl_main_entry(void)
 	u32 pg_start, pg_end, pg_len;
 	void (*barebox)(void);
 
-	PUTS_LL("pbl_main_entry()\n");
+	puts_ll("pbl_main_entry()\n");
 
 	/* clear bss */
 	memset(__bss_start, 0, __bss_stop - __bss_start);

@@ -54,7 +54,7 @@ ENTRY_FUNCTION(start_imx6q_mba6x)(void)
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e0338);
 		setup_uart();
-		PUTC_LL('a');
+		putc_ll('a');
 	}
 
 	arm_early_mmu_cache_invalidate();
@@ -77,7 +77,7 @@ ENTRY_FUNCTION(start_imx6dl_mba6x)(void)
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e035c);
 		setup_uart();
-		PUTC_LL('a');
+		putc_ll('a');
 	}
 
 	arm_early_mmu_cache_invalidate();

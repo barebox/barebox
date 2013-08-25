@@ -32,6 +32,7 @@
 #include <io.h>
 #include <ns16550.h>
 #include <net.h>
+#include <bootsource.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/am33xx-silicon.h>
@@ -124,14 +125,29 @@ static const __maybe_unused struct module_pin_mux mmc1_pin_mux[] = {
 	{-1},
 };
 
+static struct omap_hsmmc_platform_data beaglebone_sd = {
+	.devname = "sd",
+};
+
+static struct omap_hsmmc_platform_data beaglebone_emmc = {
+	.devname = "emmc",
+};
+
 static int beaglebone_devices_init(void)
 {
 	am33xx_enable_mmc0_pin_mux();
-	am33xx_add_mmc0(NULL);
+	am33xx_add_mmc0(&beaglebone_sd);
 
 	if (is_beaglebone_black()) {
 		configure_module_pin_mux(mmc1_pin_mux);
-		am33xx_add_mmc1(NULL);
+		am33xx_add_mmc1(&beaglebone_emmc);
+	}
+
+	if (bootsource_get() == BOOTSOURCE_MMC) {
+		if (bootsource_get_instance() == 0)
+			omap_set_bootmmc_devname("sd");
+		else
+			omap_set_bootmmc_devname("emmc");
 	}
 
 	am33xx_enable_i2c0_pin_mux();

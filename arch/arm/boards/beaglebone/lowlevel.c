@@ -1,6 +1,7 @@
 #include <init.h>
 #include <sizes.h>
 #include <io.h>
+#include <debug_ll.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/am33xx-silicon.h>
@@ -93,7 +94,10 @@ static int beaglebone_board_init(void)
 
 	am335x_sdram_init(0x18B, &ddr2_cmd_ctrl, &ddr2_regs, &ddr2_data);
 
+	am33xx_uart0_soft_reset();
 	am33xx_enable_uart0_pin_mux();
+	omap_uart_lowlevel_init();
+	putc_ll('>');
 
 	return 0;
 }

@@ -67,11 +67,6 @@ static int pcm051_mem_init(void)
 }
 mem_initcall(pcm051_mem_init);
 
-static struct flash_platform_data pcm051_spi_flash = {
-	.name	= "m25p",
-	.type	= "w25q64",
-};
-
 /*
 * SPI Flash works at 80Mhz however the SPI controller runs with 48MHz.
 * So setup Max speed to be less than the controller speed.
@@ -79,7 +74,6 @@ static struct flash_platform_data pcm051_spi_flash = {
 static struct spi_board_info pcm051_spi_board_info[] = {
 	{
 		.name		= "m25p80",
-		.platform_data	= &pcm051_spi_flash,
 		.max_speed_hz	= 24000000,
 		.bus_num	= 0,
 		.chip_select	= 0,

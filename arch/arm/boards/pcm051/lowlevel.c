@@ -68,7 +68,7 @@ static int pcm051_board_init(void)
 	if (running_in_sdram())
 		return 0;
 
-	pll_init(MPUPLL_M_600, 25, DDRPLL_M_266);
+	pll_init(MPUPLL_M_600, 25, DDRPLL_M_303);
 
 	am335x_sdram_init(0x18B, &MT41J256M8HX15E_2x256M8_cmd,
 			&MT41J256M8HX15E_2x256M8_regs,

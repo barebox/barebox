@@ -632,6 +632,69 @@ int genphy_read_status(struct phy_device *phydev)
 	return 0;
 }
 
+static inline void mmd_phy_indirect(struct phy_device *phydev, int prtad,
+					int devad)
+{
+	/* Write the desired MMD Devad */
+	phy_write(phydev, MII_MMD_CTRL, devad);
+
+	/* Write the desired MMD register address */
+	phy_write(phydev, MII_MMD_DATA, prtad);
+
+	/* Select the Function : DATA with no post increment */
+	phy_write(phydev, MII_MMD_CTRL, (devad | MII_MMD_CTRL_NOINCR));
+}
+
+/**
+ * phy_read_mmd_indirect - reads data from the MMD registers
+ * @phy_device: phy device
+ * @prtad: MMD Address
+ * @devad: MMD DEVAD
+ *
+ * Description: it reads data from the MMD registers (clause 22 to access to
+ * clause 45) of the specified phy address.
+ * To read these register we have:
+ * 1) Write reg 13 // DEVAD
+ * 2) Write reg 14 // MMD Address
+ * 3) Write reg 13 // MMD Data Command for MMD DEVAD
+ * 3) Read  reg 14 // Read MMD data
+ */
+int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad)
+{
+	u32 ret;
+
+	mmd_phy_indirect(phydev, prtad, devad);
+
+	/* Read the content of the MMD's selected register */
+	ret = phy_read(phydev, MII_MMD_DATA);
+
+	return ret;
+}
+
+/**
+ * phy_write_mmd_indirect - writes data to the MMD registers
+ * @phy_device: phy device
+ * @prtad: MMD Address
+ * @devad: MMD DEVAD
+ * @data: data to write in the MMD register
+ *
+ * Description: Write data from the MMD registers of the specified
+ * phy address.
+ * To write these register we have:
+ * 1) Write reg 13 // DEVAD
+ * 2) Write reg 14 // MMD Address
+ * 3) Write reg 13 // MMD Data Command for MMD DEVAD
+ * 3) Write reg 14 // Write MMD data
+ */
+void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
+				   u16 data)
+{
+	mmd_phy_indirect(phydev, prtad, devad);
+
+	/* Write the data into MMD's selected register */
+	phy_write(phydev, MII_MMD_DATA, data);
+}
+
 static int genphy_config_init(struct phy_device *phydev)
 {
 	int val;

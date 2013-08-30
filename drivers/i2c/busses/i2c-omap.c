@@ -246,7 +246,7 @@ struct omap_i2c_driver_data {
 static struct omap_i2c_driver_data omap3_data = {
 	.flags =	OMAP_I2C_FLAG_RESET_REGS_POSTIDLE |
 			OMAP_I2C_FLAG_BUS_SHIFT_2,
-	.fclk_rate =	48000,
+	.fclk_rate =	96000,
 	.regs =		(u8 *) reg_map,
 };
 
@@ -259,7 +259,7 @@ static struct omap_i2c_driver_data omap4_data = {
 static struct omap_i2c_driver_data am33xx_data = {
 	.flags =	OMAP_I2C_FLAG_RESET_REGS_POSTIDLE |
 			OMAP_I2C_FLAG_BUS_SHIFT_NONE,
-	.fclk_rate =	96000,
+	.fclk_rate =	48000,
 	.regs =		(u8 *) omap4_reg_map,
 };
 

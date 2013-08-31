@@ -86,7 +86,7 @@ static unsigned int get_module_rev(void)
 static int phytec_pfla02_init(void)
 {
 	int ret;
-	char *environment_path;
+	char *environment_path, *envdev;
 
 	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
 			!of_machine_is_compatible("phytec,imx6dl-pfla02") &&
@@ -106,13 +106,16 @@ static int phytec_pfla02_init(void)
 	case BOOTSOURCE_MMC:
 		environment_path = asprintf("/chosen/environment-sd%d",
 					bootsource_get_instance() + 1);
+		envdev = "MMC";
 		break;
 	case BOOTSOURCE_NAND:
 		environment_path = asprintf("/chosen/environment-nand");
+		envdev = "NAND flash";
 		break;
 	default:
 	case BOOTSOURCE_SPI:
 		environment_path = asprintf("/chosen/environment-spinor");
+		envdev = "SPI NOR flash";
 		break;
 	}
 
@@ -122,6 +125,8 @@ static int phytec_pfla02_init(void)
 			environment_path, ret);
 
 	free(environment_path);
+
+	pr_notice("Using environment in %s\n", envdev);
 
 	return 0;
 }

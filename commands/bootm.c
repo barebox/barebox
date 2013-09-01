@@ -80,6 +80,19 @@ static char *bootm_image_name_and_no(const char *name, int *no)
 #define BOOTM_OPTS BOOTM_OPTS_COMMON
 #endif
 
+unsigned long long getenv_loadaddr(const char *name)
+{
+	const char *valstr = getenv(name);
+
+	if (!valstr)
+		return UIMAGE_SOME_ADDRESS;
+
+	if (valstr[0] == '\0')
+		return UIMAGE_SOME_ADDRESS;
+
+	return simple_strtoull(valstr, NULL, 0);
+}
+
 static int do_bootm(int argc, char *argv[])
 {
 	int opt;
@@ -96,6 +109,8 @@ static int do_bootm(int argc, char *argv[])
 
 	oftree = getenv("global.bootm.oftree");
 	os_file = getenv("global.bootm.image");
+	data.os_address = getenv_loadaddr("global.bootm.image.loadaddr");
+	data.initrd_address = getenv_loadaddr("global.bootm.initrd.loadaddr");
 	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
 		initrd_file = getenv("global.bootm.initrd");
 
@@ -165,9 +180,12 @@ static int bootm_init(void)
 {
 
 	globalvar_add_simple("bootm.image");
+	globalvar_add_simple("bootm.image.loadaddr");
 	globalvar_add_simple("bootm.oftree");
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd");
+		globalvar_add_simple("bootm.initrd.loadaddr");
+	}
 
 	return 0;
 }
@@ -199,7 +217,9 @@ BAREBOX_CMD_END
 
 BAREBOX_MAGICVAR(bootargs, "Linux Kernel parameters");
 BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
+BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
+BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
 
 static struct binfmt_hook binfmt_uimage_hook = {
 	.type = filetype_uimage,

@@ -236,7 +236,7 @@ out:
 		return 1;
 	} else {
 		printf("Memtest successful.\n");
-		return 1;
+		return 0;
 	}
 }
 

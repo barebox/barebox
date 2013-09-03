@@ -24,7 +24,7 @@ for i in $*; do
 done
 )
 
-find $tempdir -name '.svn' -o -name '*~' | xargs --no-run-if-empty rm -r
+find $tempdir -name '.svn' -o -name '*~' -delete
 
 $objtree/scripts/bareboxenv -s $tempdir $target
 

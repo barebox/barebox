@@ -34,6 +34,14 @@ config MCI_MMC_BOOT_PARTITIONS
 
 comment "--- MCI host drivers ---"
 
+config MCI_DW
+	bool "Synopsys DesignWare Memory Card Interface"
+	depends on ARM
+	help
+	  This selects support for the Synopsys DesignWare Mobile Storage IP
+	  block, this provides host support for SD and MMC interfaces, in both
+	  PIO and external DMA modes.
+
 config MCI_MXS
 	bool "i.MX23/i.MX28"
 	depends on ARCH_MXS

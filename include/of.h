@@ -124,6 +124,8 @@ extern struct device_node *of_find_node_by_path_from(struct device_node *from,
 						const char *path);
 extern struct device_node *of_find_node_by_path(const char *path);
 extern struct device_node *of_find_node_by_phandle(phandle phandle);
+extern struct device_node *of_find_node_by_type(struct device_node *from,
+	const char *type);
 extern struct device_node *of_find_compatible_node(struct device_node *from,
 	const char *type, const char *compat);
 extern const struct of_device_id *of_match_node(

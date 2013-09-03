@@ -401,6 +401,35 @@ struct device_node *of_find_node_by_name(struct device_node *from,
 EXPORT_SYMBOL(of_find_node_by_name);
 
 /**
+ *	of_find_node_by_type - Find a node by its "device_type" property
+ *	@from:  The node to start searching from, or NULL to start searching
+ *		the entire device tree. The node you pass will not be
+ *		searched, only the next one will; typically, you pass
+ *		what the previous call returned.
+ *	@type:  The type string to match against.
+ *
+ *	Returns a pointer to the node found or NULL.
+ */
+struct device_node *of_find_node_by_type(struct device_node *from,
+		const char *type)
+{
+	struct device_node *np;
+	const char *device_type;
+	int ret;
+
+	if (!from)
+		from = root_node;
+
+	of_tree_for_each_node_from(np, from) {
+		ret = of_property_read_string(np, "device_type", &device_type);
+		if (!ret && !of_node_cmp(device_type, type))
+			return np;
+	}
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_node_by_type);
+
+/**
  *	of_find_compatible_node - Find a node based on type and one of the
  *                                tokens in its "compatible" property
  *	@from:		The node to start searching from or NULL, the node

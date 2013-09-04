@@ -273,7 +273,7 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 	return 0;
 }
 
-#ifdef CONFIG_OFDEVICE
+#ifdef CONFIG_OFTREE
 static int eth_of_fixup(struct device_node *root)
 {
 	struct eth_device *edev;
@@ -285,21 +285,23 @@ static int eth_of_fixup(struct device_node *root)
 	 * find a nodepath for and which has a valid mac address.
 	 */
 	list_for_each_entry(edev, &netdev_list, list) {
-		if (!edev->nodepath) {
-			dev_dbg(&edev->dev, "%s: no node to fixup\n", __func__);
-			continue;
-		}
-
 		if (!is_valid_ether_addr(edev->ethaddr)) {
-			dev_dbg(&edev->dev, "%s: no valid mac address, cannot fixup\n",
-					__func__);
+			dev_dbg(&edev->dev,
+				"%s: no valid mac address, cannot fixup\n",
+				__func__);
 			continue;
 		}
 
-		node = of_find_node_by_path_from(root, edev->nodepath);
+		if (edev->nodepath) {
+			node = of_find_node_by_path_from(root, edev->nodepath);
+		} else {
+			char eth[12];
+			sprintf(eth, "ethernet%d", edev->dev.id);
+			node = of_find_node_by_alias(root, eth);
+		}
+
 		if (!node) {
-			dev_dbg(&edev->dev, "%s: fixup node %s not found\n",
-					__func__, edev->nodepath);
+			dev_dbg(&edev->dev, "%s: no node to fixup\n", __func__);
 			continue;
 		}
 

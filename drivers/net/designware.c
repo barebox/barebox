@@ -29,11 +29,11 @@
 #include <init.h>
 #include <io.h>
 #include <net.h>
+#include <of_net.h>
 #include <asm/mmu.h>
 #include <net/designware.h>
 #include <linux/phy.h>
 #include "designware.h"
-
 
 struct dw_eth_dev {
 	struct eth_device netdev;
@@ -55,6 +55,14 @@ struct dw_eth_dev {
 	int phy_addr;
 	phy_interface_t interface;
 	int enh_desc;
+};
+
+struct dw_eth_drvdata {
+	bool enh_desc;
+};
+
+static struct dw_eth_drvdata dwmac_370a_drvdata = {
+	.enh_desc = 1,
 };
 
 /* Speed specific definitions */
@@ -399,6 +407,14 @@ static void dwc_version(struct device_d *dev, u32 hwid)
 		uid, synid);
 }
 
+static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
+{
+	priv->phy_addr = -1;
+	priv->interface = of_get_phy_mode(dev->device_node);
+
+	return 0;
+}
+
 static int dwc_ether_probe(struct device_d *dev)
 {
 	struct dw_eth_dev *priv;
@@ -406,13 +422,26 @@ static int dwc_ether_probe(struct device_d *dev)
 	struct mii_bus *miibus;
 	void __iomem *base;
 	struct dwc_ether_platform_data *pdata = dev->platform_data;
-
-	if (!pdata) {
-		printf("dwc_ether: no platform_data\n");
-		return -ENODEV;
-	}
+	int ret;
+	struct dw_eth_drvdata *drvdata;
 
 	priv = xzalloc(sizeof(struct dw_eth_dev));
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&drvdata);
+	if (ret)
+		return ret;
+
+	priv->enh_desc = drvdata->enh_desc;
+
+	if (pdata) {
+		priv->phy_addr = pdata->phy_addr;
+		priv->interface = pdata->interface;
+		priv->fix_mac_speed = pdata->fix_mac_speed;
+	} else {
+		ret = dwc_probe_dt(dev, priv);
+		if (ret)
+			return ret;
+	}
 
 	base = dev_request_mem_region(dev, 0);
 	priv->mac_regs_p = base;
@@ -424,7 +453,6 @@ static int dwc_ether_probe(struct device_d *dev)
 		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr));
 	priv->txbuffs = dma_alloc(TX_TOTAL_BUFSIZE);
 	priv->rxbuffs = dma_alloc(RX_TOTAL_BUFSIZE);
-	priv->fix_mac_speed = pdata->fix_mac_speed;
 
 	edev = &priv->netdev;
 	miibus = &priv->miibus;
@@ -439,8 +467,6 @@ static int dwc_ether_probe(struct device_d *dev)
 	edev->get_ethaddr = dwc_ether_get_ethaddr;
 	edev->set_ethaddr = dwc_ether_set_ethaddr;
 
-	priv->phy_addr = pdata->phy_addr;
-	priv->interface = pdata->interface;
 	miibus->parent = dev;
 	miibus->read = dwc_ether_mii_read;
 	miibus->write = dwc_ether_mii_write;
@@ -455,9 +481,19 @@ static void dwc_ether_remove(struct device_d *dev)
 {
 }
 
+static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
+	{
+		.compatible = "snps,dwmac-3.70a",
+		.data = (unsigned long)&dwmac_370a_drvdata,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d dwc_ether_driver = {
 	.name = "designware_eth",
 	.probe = dwc_ether_probe,
 	.remove = dwc_ether_remove,
+	.of_compatible = DRV_OF_COMPAT(dwc_ether_compatible),
 };
 device_platform_driver(dwc_ether_driver);

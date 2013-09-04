@@ -82,7 +82,7 @@ static int dwc_ether_mii_read(struct mii_bus *dev, int addr, int reg)
 	u64 start;
 	u32 miiaddr;
 
-	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) | \
+	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) |
 		  ((reg << MIIREGSHIFT) & MII_REGMSK);
 
 	writel(miiaddr | MII_CLKRANGE_150_250M | MII_BUSY, &mac_p->miiaddr);
@@ -105,7 +105,7 @@ static int dwc_ether_mii_write(struct mii_bus *dev, int addr, int reg, u16 val)
 	u32 miiaddr;
 
 	writel(val, &mac_p->miidata);
-	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) | \
+	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) |
 		  ((reg << MIIREGSHIFT) & MII_REGMSK) | MII_WRITE;
 
 	writel(miiaddr | MII_CLKRANGE_150_250M | MII_BUSY, &mac_p->miiaddr);
@@ -346,7 +346,7 @@ static int dwc_ether_rx(struct eth_device *dev)
 	if (status & DESC_RXSTS_OWNBYDMA)
 		return 0;
 
-	length = (status & DESC_RXSTS_FRMLENMSK) >> \
+	length = (status & DESC_RXSTS_FRMLENMSK) >>
 		 DESC_RXSTS_FRMLENSHFT;
 
 	/*
@@ -389,7 +389,7 @@ static int dwc_ether_set_ethaddr(struct eth_device *dev, u8 adr[6])
 	struct eth_mac_regs *mac_p = priv->mac_regs_p;
 	u32 macid_lo, macid_hi;
 
-	macid_lo = adr[0] + (adr[1] << 8) + \
+	macid_lo = adr[0] + (adr[1] << 8) +
 		   (adr[2] << 16) + (adr[3] << 24);
 	macid_hi = adr[4] + (adr[5] << 8);
 	writel(macid_hi, &mac_p->macaddr0hi);

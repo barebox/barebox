@@ -54,6 +54,12 @@ config GPIO_TEGRA
 	help
 	  Say yes here to include the driver for the GPIO controller found on the
 	  Tegra line of SoCs.
+
+config GPIO_DESIGNWARE
+	tristate "Synopsys DesignWare GPIO driver"
+	help
+	  Say Y or M here to build support for the Synopsys DesignWare APB
+	  GPIO block.
 endmenu
 
 endif

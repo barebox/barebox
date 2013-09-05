@@ -1,0 +1,18 @@
+menuconfig FS_UBIFS
+	bool
+	depends on MTD_UBI
+	prompt "ubifs support"
+
+if FS_UBIFS
+
+config FS_UBIFS_COMPRESSION_LZO
+	bool
+	select LZO_DECOMPRESS
+	prompt "LZO compression support"
+
+config FS_UBIFS_COMPRESSION_ZLIB
+	bool
+	select ZLIB
+	prompt "ZLIB compression support"
+
+endif

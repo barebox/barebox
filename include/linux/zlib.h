@@ -31,6 +31,7 @@
 #define _ZLIB_H
 
 #include <linux/zconf.h>
+#include <linux/types.h>
 
 /* zlib deflate based on ZLIB_VERSION "1.1.3" */
 /* zlib inflate based on ZLIB_VERSION "1.2.3" */
@@ -707,5 +708,8 @@ extern int zlib_inflateInit2(z_streamp strm, int  windowBits);
 /* Utility function: initialize zlib, unpack binary blob, clean up zlib,
  * return len or negative error code. */
 extern int zlib_inflate_blob(void *dst, unsigned dst_sz, const void *src, unsigned src_sz);
+
+int deflate_decompress(struct z_stream_s *s, const u8 *src, unsigned int slen,
+		u8 *dst, unsigned int *dlen);
 
 #endif /* _ZLIB_H */

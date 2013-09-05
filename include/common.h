@@ -222,6 +222,14 @@ int run_shell(void);
 
 int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int swab);
 
+#define DUMP_PREFIX_OFFSET 0
+static inline void print_hex_dump(const char *level, const char *prefix_str,
+		int prefix_type, int rowsize, int groupsize,
+		const void *buf, size_t len, bool ascii)
+{
+	memory_display(buf, 0, len, 4, 0);
+}
+
 int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab);
 int open_and_lseek(const char *filename, int mode, loff_t pos);

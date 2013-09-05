@@ -25,6 +25,82 @@
 #include "ubi.h"
 
 /**
+ * ubi_do_get_device_info - get information about UBI device.
+ * @ubi: UBI device description object
+ * @di: the information is stored here
+ *
+ * This function is the same as 'ubi_get_device_info()', but it assumes the UBI
+ * device is locked and cannot disappear.
+ */
+void ubi_do_get_device_info(struct ubi_device *ubi, struct ubi_device_info *di)
+{
+	di->ubi_num = ubi->ubi_num;
+	di->leb_size = ubi->leb_size;
+	di->leb_start = ubi->leb_start;
+	di->min_io_size = ubi->min_io_size;
+	di->max_write_size = ubi->max_write_size;
+	di->ro_mode = ubi->ro_mode;
+}
+EXPORT_SYMBOL_GPL(ubi_do_get_device_info);
+
+/**
+ * ubi_get_device_info - get information about UBI device.
+ * @ubi_num: UBI device number
+ * @di: the information is stored here
+ *
+ * This function returns %0 in case of success, %-EINVAL if the UBI device
+ * number is invalid, and %-ENODEV if there is no such UBI device.
+ */
+int ubi_get_device_info(int ubi_num, struct ubi_device_info *di)
+{
+	struct ubi_device *ubi;
+
+	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES)
+		return -EINVAL;
+	ubi = ubi_get_device(ubi_num);
+	if (!ubi)
+		return -ENODEV;
+	ubi_do_get_device_info(ubi, di);
+	ubi_put_device(ubi);
+	return 0;
+}
+EXPORT_SYMBOL_GPL(ubi_get_device_info);
+
+/**
+ * ubi_do_get_volume_info - get information about UBI volume.
+ * @ubi: UBI device description object
+ * @vol: volume description object
+ * @vi: the information is stored here
+ */
+void ubi_do_get_volume_info(struct ubi_device *ubi, struct ubi_volume *vol,
+			    struct ubi_volume_info *vi)
+{
+	vi->vol_id = vol->vol_id;
+	vi->ubi_num = ubi->ubi_num;
+	vi->size = vol->reserved_pebs;
+	vi->used_bytes = vol->used_bytes;
+	vi->vol_type = vol->vol_type;
+	vi->corrupted = vol->corrupted;
+	vi->upd_marker = vol->upd_marker;
+	vi->alignment = vol->alignment;
+	vi->usable_leb_size = vol->usable_leb_size;
+	vi->name_len = vol->name_len;
+	vi->name = vol->name;
+}
+
+/**
+ * ubi_get_volume_info - get information about UBI volume.
+ * @desc: volume descriptor
+ * @vi: the information is stored here
+ */
+void ubi_get_volume_info(struct ubi_volume_desc *desc,
+			 struct ubi_volume_info *vi)
+{
+	ubi_do_get_volume_info(desc->vol->ubi, desc->vol, vi);
+}
+EXPORT_SYMBOL_GPL(ubi_get_volume_info);
+
+/**
  * ubi_open_volume - open UBI volume.
  * @ubi_num: UBI device number
  * @vol_id: volume ID
@@ -188,6 +264,23 @@ struct ubi_volume_desc *ubi_open_volume_nm(int ubi_num, const char *name,
 	return ret;
 }
 EXPORT_SYMBOL_GPL(ubi_open_volume_nm);
+
+extern struct list_head ubi_volumes_list;
+
+struct ubi_volume_desc *ubi_open_volume_cdev(struct cdev *cdev, int mode)
+{
+	struct ubi_volume *vol;
+
+	list_for_each_entry(vol, &ubi_volumes_list, list) {
+		if (cdev == &vol->cdev)
+			goto found;
+	}
+
+	return ERR_PTR(-ENOENT);
+
+found:
+	return ubi_open_volume(vol->ubi->ubi_num, vol->vol_id, mode);
+}
 
 /**
  * ubi_close_volume - close UBI volume.

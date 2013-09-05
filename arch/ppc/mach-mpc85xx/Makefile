@@ -5,4 +5,5 @@ obj-y			+= fsl_law.o
 obj-y			+= speed.o
 obj-y			+=time.o
 obj-$(CONFIG_MP)	+= mp.o
+obj-$(CONFIG_OFTREE)	+= fdt.o
 obj-$(CONFIG_DRIVER_NET_GIANFAR) += eth-devices.o

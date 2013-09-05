@@ -845,6 +845,7 @@
 
 /* Some parts define SVR[0:23] as the SOC version */
 #define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFFFFF)	/* SOC Version fields */
+#define IS_E_PROCESSOR(svr)    ((svr) & 0x80000)
 
 /*
  * SVR_VER() Version Values

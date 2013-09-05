@@ -27,3 +27,5 @@ pbl-$(CONFIG_PBL_MULTI_IMAGES) += start-images.o uncompress.o
 
 obj-y += common.o
 pbl-y += common.o
+
+lwl-y += lowlevel.o

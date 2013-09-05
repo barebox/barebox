@@ -58,7 +58,7 @@ CCM_BASE_ADDR_W:	.word	MX35_CCM_BASE_ADDR
 
 .globl barebox_arm_reset_vector
 barebox_arm_reset_vector:
-	arm_cpu_lowlevel_init r0
+	bl	arm_cpu_lowlevel_init
 
 	mrc	15, 0, r1, c1, c0, 0
 

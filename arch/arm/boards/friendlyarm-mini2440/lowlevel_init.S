@@ -13,7 +13,7 @@
 
 .globl barebox_arm_reset_vector
 barebox_arm_reset_vector:
-	arm_cpu_lowlevel_init r0
+	bl arm_cpu_lowlevel_init
 
 	bl s3c24x0_disable_wd
 

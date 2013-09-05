@@ -51,7 +51,7 @@ CCM_BASE_ADDR_W:        .word   MX25_CCM_BASE_ADDR
 
 .globl barebox_arm_reset_vector
 barebox_arm_reset_vector:
-	arm_cpu_lowlevel_init r0
+	bl arm_cpu_lowlevel_init
 
 #define MX25_CCM_MCR	0x64
 

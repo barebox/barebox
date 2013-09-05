@@ -418,8 +418,8 @@ static int dwc_ether_probe(struct device_d *dev)
 		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr));
 	priv->rx_mac_descrtable = dma_alloc_coherent(
 		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr));
-	priv->txbuffs = malloc(TX_TOTAL_BUFSIZE);
-	priv->rxbuffs = malloc(RX_TOTAL_BUFSIZE);
+	priv->txbuffs = dma_alloc(TX_TOTAL_BUFSIZE);
+	priv->rxbuffs = dma_alloc(RX_TOTAL_BUFSIZE);
 	priv->fix_mac_speed = pdata->fix_mac_speed;
 
 	edev = &priv->netdev;

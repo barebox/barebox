@@ -32,7 +32,6 @@
 # can generate images with a sane name. So what we really need for this
 # board is a i.MX specific image, a .imximg
 #
-## imximage-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage.pblx.imximg
 ## CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-pdk/flash-header.imxcfg
 #
 # The .imximg can be generated from a .pblx using a rule specified in Makefile.imx.
@@ -114,7 +113,7 @@ targets += $(patsubst %,%.pblx,$(pblx-y))
 targets += $(patsubst %,%.pblb,$(pblx-y))
 targets += $(patsubst %,%.pbl,$(pblx-y))
 targets += $(patsubst %,%.s,$(pblx-y))
-targets += $(imximage-y)
+targets += $(foreach m, $(image-y), $(FILE_$(m)))
 
 SECONDARY: $(addprefix $(obj)/,$(targets))
 

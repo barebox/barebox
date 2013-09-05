@@ -103,6 +103,22 @@ err_close:
 	return ret;
 }
 
+static int imx_bbu_check_prereq(struct bbu_data *data)
+{
+	int ret;
+
+	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
+		if (!bbu_force(data, "Not an ARM barebox image"))
+			return -EINVAL;
+	}
+
+	ret = bbu_confirm(data);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 /*
  * Update barebox on a v1 type internal boot (i.MX25, i.MX35, i.MX51)
  *
@@ -122,12 +138,7 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 	int ret, image_len;
 	void *buf;
 
-	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
-		if (!bbu_force(data, "Not an ARM barebox image"))
-			return -EINVAL;
-	}
-
-	ret = bbu_confirm(data);
+	ret = imx_bbu_check_prereq(data);
 	if (ret)
 		return ret;
 
@@ -326,42 +337,14 @@ out:
 	return ret;
 }
 
-/*
- * Update barebox on a v2 type internal boot (i.MX53)
- *
- * This constructs a DCD header, adds the specific DCD data and writes
- * the resulting image to the device. Currently this handles MMC/SD
- * and NAND devices.
- */
-static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_data *data)
+static void imx_bbu_internal_v2_init_flash_header(struct bbu_handler *handler, struct bbu_data *data,
+		void *imx_pre_image, int imx_pre_image_size)
 {
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	struct imx_flash_header_v2 *flash_header;
 	unsigned long flash_header_offset = imx_handler->flash_header_offset;
-	void *imx_pre_image;
-	int imx_pre_image_size;
-	int ret, image_len;
-	void *buf;
 
-	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
-		if (!bbu_force(data, "Not an ARM barebox image"))
-			return -EINVAL;
-	}
-
-	ret = bbu_confirm(data);
-	if (ret)
-		return ret;
-
-	printf("updating to %s\n", data->devicefile);
-
-	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND)
-		/* NAND needs additional space for the DBBT */
-		imx_pre_image_size = 0x8000;
-	else
-		imx_pre_image_size = 0x2000;
-
-	imx_pre_image = xzalloc(imx_pre_image_size);
 	flash_header = imx_pre_image + flash_header_offset;
 
 	flash_header->header.tag = IVT_HEADER_TAG;
@@ -388,11 +371,58 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 
 	/* Add dcd data */
 	memcpy((void *)flash_header + sizeof(*flash_header), imx_handler->dcd, imx_handler->dcdsize);
+}
+
+#define IVT_BARKER		0x402000d1
+
+/*
+ * Update barebox on a v2 type internal boot (i.MX53)
+ *
+ * This constructs a DCD header, adds the specific DCD data and writes
+ * the resulting image to the device. Currently this handles MMC/SD
+ * and NAND devices.
+ */
+static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_data *data)
+{
+	struct imx_internal_bbu_handler *imx_handler =
+		container_of(handler, struct imx_internal_bbu_handler, handler);
+	void *imx_pre_image = NULL;
+	int imx_pre_image_size;
+	int ret, image_len;
+	void *buf;
+
+	ret = imx_bbu_check_prereq(data);
+	if (ret)
+		return ret;
+
+	if (imx_handler->dcd) {
+		imx_pre_image_size = 0x2000;
+	} else {
+		uint32_t *barker = data->image + imx_handler->flash_header_offset;
+
+		if (*barker != IVT_BARKER) {
+			printf("Board does not provide DCD data and this image is no imximage\n");
+			return -EINVAL;
+		}
+
+		imx_pre_image_size = 0;
+	}
+
+	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND)
+		/* NAND needs additional space for the DBBT */
+		imx_pre_image_size += 0x6000;
+
+	if (imx_pre_image_size)
+		imx_pre_image = xzalloc(imx_pre_image_size);
+
+	if (imx_handler->dcd)
+		imx_bbu_internal_v2_init_flash_header(handler, data, imx_pre_image, imx_pre_image_size);
 
 	/* Create a buffer containing header and image data */
 	image_len = data->len + imx_pre_image_size;
 	buf = xzalloc(image_len);
-	memcpy(buf, imx_pre_image, imx_pre_image_size);
+	if (imx_pre_image_size)
+		memcpy(buf, imx_pre_image, imx_pre_image_size);
 	memcpy(buf + imx_pre_image_size, data->image, data->len);
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND) {

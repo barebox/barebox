@@ -35,6 +35,7 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_GK802
 	default 0x2fc00000 if MACH_TQMA6X
 	default 0x4fc00000 if MACH_PHYTEC_PFLA02
+	default 0x4fc00000 if MACH_DFI_FS700_M60
 
 config BOARDINFO
 	default "Eukrea CPUIMX25" if MACH_EUKREA_CPUIMX25
@@ -229,6 +230,10 @@ config MACH_FREESCALE_MX53_LOCO
 
 config MACH_PHYTEC_PFLA02
 	bool "Phytec phyFLEX-i.MX6 Ouad"
+	select ARCH_IMX6
+
+config MACH_DFI_FS700_M60
+	bool "DFI i.MX6 FS700 M60 Q7 Board"
 	select ARCH_IMX6
 
 config MACH_REALQ7

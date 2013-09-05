@@ -41,8 +41,8 @@
 	hog {
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
-				MX6Q_PAD_EIM_D23__GPIO3_IO23    0x80000000
-				MX6Q_PAD_DISP0_DAT3__GPIO4_IO24	0x80000000 /* SPI NOR chipselect */
+				MX6QDL_PAD_EIM_D23__GPIO3_IO23    0x80000000
+				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24	0x80000000 /* SPI NOR chipselect */
 			>;
 		};
 	};
@@ -50,8 +50,8 @@
 	pfla02 {
 		pinctrl_usdhc3_pfla02: usdhc3grp-pfla02 {
 			fsl,pins = <
-				MX6Q_PAD_ENET_RXD0__GPIO1_IO27  0x80000000
-				MX6Q_PAD_ENET_TXD1__GPIO1_IO29  0x80000000
+				MX6QDL_PAD_ENET_RXD0__GPIO1_IO27  0x80000000
+				MX6QDL_PAD_ENET_TXD1__GPIO1_IO29  0x80000000
 			>;
 		};
 	};

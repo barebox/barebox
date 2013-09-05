@@ -47,6 +47,9 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	partname = of_get_property(node, "label", &len);
 	if (!partname)
 		partname = of_get_property(node, "name", &len);
+	if (!partname)
+		return NULL;
+
 	name = (char *)partname;
 
 	debug("add partition: %s.%s 0x%08lx 0x%08lx\n", cdev->name, partname, offset, size);

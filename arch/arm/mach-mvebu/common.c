@@ -49,9 +49,9 @@ static void mvebu_remap_registers(void)
 #define MVEBU_BOOTUP_MEMORY_BASE	0x00000000
 #define MVEBU_BOOTUP_MEMORY_SIZE	SZ_64M
 
-void __naked __noreturn mvebu_barebox_entry(void)
+void __naked __noreturn mvebu_barebox_entry(uint32_t boarddata)
 {
 	mvebu_remap_registers();
 	barebox_arm_entry(MVEBU_BOOTUP_MEMORY_BASE,
-			  MVEBU_BOOTUP_MEMORY_SIZE, 0);
+			  MVEBU_BOOTUP_MEMORY_SIZE, boarddata);
 }

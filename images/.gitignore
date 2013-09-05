@@ -5,6 +5,8 @@
 *.imximg
 *.map
 *.src
+*.kwbimg
+*.kwbuartimg
 pbl.lds
 barebox.x
 barebox.z

@@ -18,6 +18,6 @@
 #ifndef __MACH_LOWLEVEL_H__
 #define __MACH_LOWLEVEL_H__
 
-void mvebu_barebox_entry(void);
+void mvebu_barebox_entry(uint32_t boarddata);
 
 #endif

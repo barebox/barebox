@@ -21,8 +21,17 @@
 #include <asm/barebox-arm-head.h>
 #include <mach/lowlevel.h>
 
-void __naked barebox_arm_reset_vector(void)
+extern char __dtb_dove_cubox_start[];
+
+ENTRY_FUNCTION(start_solidrun_cubox)(void)
 {
+	uint32_t fdt;
+
+	__barebox_arm_head();
+
 	arm_cpu_lowlevel_init();
-	mvebu_barebox_entry(0);
+
+	fdt = (uint32_t)__dtb_dove_cubox_start - get_runtime_offset();
+
+	mvebu_barebox_entry(fdt);
 }

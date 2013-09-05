@@ -1,4 +1,5 @@
 #include <common.h>
+#include <malloc.h>
 #include <fb.h>
 #include <errno.h>
 #include <command.h>
@@ -93,35 +94,6 @@ static struct file_operations fb_ops = {
 	.ioctl	= fb_ioctl,
 };
 
-int register_framebuffer(struct fb_info *info)
-{
-	int id = get_free_deviceid("fb");
-	struct device_d *dev;
-
-	dev = &info->dev;
-
-	info->cdev.ops = &fb_ops;
-	info->cdev.name = asprintf("fb%d", id);
-	info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
-	info->cdev.dev = dev;
-	info->cdev.priv = info;
-	dev->resource = xzalloc(sizeof(struct resource));
-	dev->resource[0].start = (resource_size_t)info->screen_base;
-	dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
-	dev->resource[0].flags = IORESOURCE_MEM;
-	dev->num_resources = 1;
-
-	dev->priv = info;
-	dev->id = id;
-
-	sprintf(dev->name, "fb");
-
-	info->dev.bus = &fb_bus;
-	register_device(&info->dev);
-
-	return 0;
-}
-
 static void fb_info(struct device_d *dev)
 {
 	struct fb_info *info = dev->priv;
@@ -142,18 +114,34 @@ static void fb_info(struct device_d *dev)
 	printf("\n");
 }
 
-static struct driver_d fb_driver = {
-	.name  = "fb",
-};
-
-static int fb_match(struct device_d *dev, struct driver_d *drv)
+int register_framebuffer(struct fb_info *info)
 {
-	return 0;
-}
+	int id = get_free_deviceid("fb");
+	struct device_d *dev;
+	int ret;
 
-static int fb_probe(struct device_d *dev)
-{
-	struct fb_info *info = dev->priv;
+	dev = &info->dev;
+
+	info->cdev.ops = &fb_ops;
+	info->cdev.name = asprintf("fb%d", id);
+	info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
+	info->cdev.dev = dev;
+	info->cdev.priv = info;
+	dev->resource = xzalloc(sizeof(struct resource));
+	dev->resource[0].start = (resource_size_t)info->screen_base;
+	dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
+	dev->resource[0].flags = IORESOURCE_MEM;
+	dev->num_resources = 1;
+
+	dev->priv = info;
+	dev->id = id;
+	dev->info = fb_info;
+
+	sprintf(dev->name, "fb");
+
+	ret = register_device(&info->dev);
+	if (ret)
+		goto err_free;
 
 	dev_add_param_bool(dev, "enable", fb_enable_set, NULL,
 			&info->p_enable, info);
@@ -164,32 +152,16 @@ static int fb_probe(struct device_d *dev)
 		dev_set_param(dev, "mode_name", info->mode_list[0].name);
 	}
 
-	dev->info = fb_info;
+	ret = devfs_create(&info->cdev);
+	if (ret)
+		goto err_unregister;
 
-	return devfs_create(&info->cdev);
-}
-
-static void fb_remove(struct device_d *dev)
-{
-}
-
-struct bus_type fb_bus = {
-	.name = "fb",
-	.match = fb_match,
-	.probe = fb_probe,
-	.remove = fb_remove,
-};
-
-static int fb_bus_init(void)
-{
-	return bus_register(&fb_bus);
-}
-pure_initcall(fb_bus_init);
-
-static int fb_init_driver(void)
-{
-	fb_driver.bus = &fb_bus;
-	register_driver(&fb_driver);
 	return 0;
+
+err_unregister:
+	unregister_device(&info->dev);
+err_free:
+	free(dev->resource);
+
+	return ret;
 }
-device_initcall(fb_init_driver);

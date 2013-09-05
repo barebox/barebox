@@ -4,9 +4,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x83f00000
 
-config BOARDINFO
-	default "ARM Vexpress" if MACH_VEXPRESS
-
 choice
 	prompt "ARM Board type"
 

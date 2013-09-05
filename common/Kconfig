@@ -353,7 +353,7 @@ config HUSH_FANCY_PROMPT
 	prompt "allow fancy hush prompts"
 	help
 	  Allow to set PS1 from the command line. PS1 can have several escaped commands
-	  like \h for CONFIG_BOARDINFO or \w for the current working directory.
+	  like \h for the 'model' string or \w for the current working directory.
 
 config HUSH_GETOPT
 	bool

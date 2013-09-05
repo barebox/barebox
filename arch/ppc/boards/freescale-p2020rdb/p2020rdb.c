@@ -106,6 +106,9 @@ static struct NS16550_plat serial_plat = {
 
 static int p2020_console_init(void)
 {
+	barebox_set_model("Freescale P2020 RDB");
+	barebox_set_hostname("p2020rdb");
+
 	serial_plat.clock = fsl_get_bus_freq(0);
 
 	add_ns16550_device(DEVICE_ID_DYNAMIC, 0xffe04500, 16, IORESOURCE_MEM_8BIT,

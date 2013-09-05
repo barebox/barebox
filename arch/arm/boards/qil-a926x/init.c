@@ -242,6 +242,14 @@ console_initcall(qil_a9260_console_init);
 
 static int qil_a9260_main_clock(void)
 {
+	if (machine_is_qil_a9g20()) {
+		barebox_set_model("Calao QIL-a9G20");
+		barebox_set_hostname("qil-a9g20");
+	} else {
+		barebox_set_model("Calao QIL-A9260");
+		barebox_set_hostname("qil-a9260");
+	}
+
 	at91_set_main_clock(12000000);
 	return 0;
 }

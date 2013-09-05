@@ -12,14 +12,6 @@ config ARCH_TEXT_BASE
 	default 0x31fc0000 if MACH_A9M2410
 	default 0x23e00000 if MACH_TINY210
 
-config BOARDINFO
-	default "Mini 2440" if MACH_MINI2440
-	default "Mini 6410" if MACH_MINI6410
-	default "Tiny 6410" if MACH_TINY6410
-	default "Digi A9M2440" if MACH_A9M2440
-	default "Digi A9M2410" if MACH_A9M2410
-	default "Tiny 210" if MACH_TINY210
-
 config ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 	hex
 	default 0x1ff0 if ARCH_S5PCxx

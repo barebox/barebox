@@ -111,18 +111,6 @@ config CMD_BOOT_ORDER
 	help
 	  A command to choose the next boot device on a warm reset.
 
-config BOARDINFO
-	default "Archos G9" if MACH_ARCHOSG9
-	default "Texas Instrument's SDP343x" if MACH_OMAP343xSDP
-	default "Texas Instrument's Beagle Board" if MACH_BEAGLE
-	default "Texas Instrument's Beagle Bone" if MACH_BEAGLEBONE
-	default "Texas Instrument's OMAP3EVM" if MACH_OMAP3EVM
-	default "Texas Instrument's Panda" if MACH_PANDA
-	default "Phytec phyCORE pcm049" if MACH_PCM049
-	default "Phytec phyCARD-A-L1" if MACH_PCAAL1
-	default "Phytec phyCARD-A-XL2" if MACH_PCAAXL2
-	default "Phytec phyCORE-AM335x" if MACH_PCM051
-
 choice
 	prompt "Select OMAP board"
 

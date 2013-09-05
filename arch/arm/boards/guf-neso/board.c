@@ -289,6 +289,9 @@ device_initcall(neso_devices_init);
 
 static int neso_console_init(void)
 {
+	barebox_set_model("Garz & Fricke NESO");
+	barebox_set_hostname("neso");
+
 	imx27_add_uart0();
 
 	return 0;

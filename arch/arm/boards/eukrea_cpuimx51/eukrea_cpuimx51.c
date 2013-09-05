@@ -132,6 +132,9 @@ static int eukrea_cpuimx51_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx51_pads, ARRAY_SIZE(eukrea_cpuimx51_pads));
 
+	barebox_set_model("Eukrea CPUIMX51");
+	barebox_set_hostname("eukrea-cpuimx51");
+
 	imx51_init_lowlevel(800);
 
 	imx51_add_uart0();

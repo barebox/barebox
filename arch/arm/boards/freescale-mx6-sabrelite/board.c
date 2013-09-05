@@ -144,6 +144,8 @@ static int sabrelite_core_init(void)
 {
 	imx6_init_lowlevel();
 
+	barebox_set_hostname("sabrelite");
+
 	return 0;
 }
 core_initcall(sabrelite_core_init);

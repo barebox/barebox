@@ -248,6 +248,9 @@ static int imx31_console_init(void)
 {
 	imx_iomux_setup_multiple_pins(pcm037_iomux, ARRAY_SIZE(pcm037_iomux));
 
+	barebox_set_model("Phytec phyCORE-i.MX31");
+	barebox_set_hostname("phycore-imx31");
+
 	imx31_add_uart0();
 	return 0;
 }

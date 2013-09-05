@@ -314,6 +314,9 @@ static int vincell_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(vincell_pads, ARRAY_SIZE(vincell_pads));
 
+	barebox_set_model("Garz & Fricke VINCELL");
+	barebox_set_hostname("vincell");
+
 	imx53_add_uart1();
 
 	return 0;

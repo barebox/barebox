@@ -68,6 +68,9 @@
  */
 static int pcaal1_init_console(void)
 {
+	barebox_set_model("Phytec phyCARD-OMAP3");
+	barebox_set_hostname("phycard-omap3");
+
 	omap3_add_uart3();
 
 	return 0;

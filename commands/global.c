@@ -23,21 +23,6 @@
 #include <environment.h>
 #include <getopt.h>
 
-static int globalvar_set(char* name, char* value)
-{
-	int ret;
-
-	ret = globalvar_add_simple(name);
-
-	if (value) {
-		char *tmp = asprintf("global.%s", name);
-		ret = setenv(tmp, value);
-		free(tmp);
-	}
-
-	return ret ? 1 : 0;
-}
-
 static int do_global(int argc, char *argv[])
 {
 	int opt;
@@ -72,7 +57,7 @@ static int do_global(int argc, char *argv[])
 		return 0;
 	}
 
-	return globalvar_set(argv[0], value);
+	return globalvar_add_simple(argv[0], value);
 }
 
 BAREBOX_CMD_HELP_START(global)

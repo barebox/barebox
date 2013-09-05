@@ -367,6 +367,9 @@ device_initcall(pcm038_devices_init);
 
 static int pcm038_console_init(void)
 {
+	barebox_set_model("Phytec phyCORE-i.MX27");
+	barebox_set_hostname("phycore-imx27");
+
 	imx27_add_uart0();
 
 	return 0;

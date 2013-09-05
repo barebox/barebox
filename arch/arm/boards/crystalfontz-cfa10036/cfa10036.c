@@ -147,6 +147,9 @@ device_initcall(cfa10036_devices_init);
 
 static int cfa10036_console_init(void)
 {
+	barebox_set_model("crystalfontz-cfa10036");
+	barebox_set_hostname("cfa10036");
+
 	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, SZ_8K,
 			   IORESOURCE_MEM, NULL);
 

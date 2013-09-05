@@ -170,6 +170,9 @@ device_initcall(pm9g45_devices_init);
 
 static int pm9g45_console_init(void)
 {
+	barebox_set_model("Ronetix PM9G45");
+	barebox_set_hostname("pm9g45");
+
 	at91_register_uart(0, 0);
 	return 0;
 }

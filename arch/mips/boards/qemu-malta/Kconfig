@@ -1,6 +1,0 @@
-if BOARD_QEMU_MALTA
-
-config BOARDINFO
-	default "qemu malta"
-
-endif

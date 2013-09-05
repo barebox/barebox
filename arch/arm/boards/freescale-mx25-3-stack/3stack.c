@@ -268,6 +268,9 @@ static int imx25_console_init(void)
 
 	writel(0x03010101, 0x53f80024);
 
+	barebox_set_model("Freescale i.MX25 3DS");
+	barebox_set_hostname("mx25-3stack");
+
 	imx25_add_uart0();
 	return 0;
 }

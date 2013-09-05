@@ -246,6 +246,10 @@ static int animeo_ip_console_init(void)
 	 */
 #define ATMEL_US_BRGR	0x0020
 	at91_sys_write(AT91_DBGU + ATMEL_US_BRGR, 0);
+
+	barebox_set_model("Somfy Animeo IP");
+	barebox_set_hostname("animeoip");
+
 	at91_register_uart(3, 0);
 	return 0;
 }

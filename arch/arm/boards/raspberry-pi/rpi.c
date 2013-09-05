@@ -29,6 +29,9 @@ mem_initcall(rpi_mem_init);
 
 static int rpi_console_init(void)
 {
+	barebox_set_model("RaspberryPi (BCM2835/ARM1176JZF-S)");
+	barebox_set_hostname("rpi");
+
 	bcm2835_register_uart();
 	return 0;
 }

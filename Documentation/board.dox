@@ -82,7 +82,6 @@ TBD
  - modify arch/\<architecture\>/Kconfig
   - add your board (MACH_*) to the list
   - add your default text base address for this architecture (ARCH_TEXT_BASE)
-  - add BOARDINFO with valueable info for your board
  - modify arch/\<architecture\>/Makefile:
   - add board-$(MACH_*) = \<your board_dir\>
 

@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=pcaaxl2
 user=
 
 # use 'dhcp' to do dhcp in barebox and in kernel

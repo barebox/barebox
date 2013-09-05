@@ -6,9 +6,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x00000000
 
-config BOARDINFO
-	default "sandbox"
-
 config LINUX
 	bool
 	default y

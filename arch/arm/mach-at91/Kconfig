@@ -35,34 +35,6 @@ config ARCH_TEXT_BASE
 	default 0x21f00000 if MACH_ANIMEO_IP
 	default 0x23f00000
 
-config BOARDINFO
-	default "Atmel at91rm9200-ek" if MACH_AT91RM9200EK
-	default "Atmel at91sam9260-ek" if MACH_AT91SAM9260EK
-	default "Atmel at91sam9261-ek" if MACH_AT91SAM9261EK
-	default "Atmel at91sam9263-ek" if MACH_AT91SAM9263EK
-	default "Atmel at91sam9g10-ek" if MACH_AT91SAM9G10EK
-	default "Atmel at91sam9g20-ek" if MACH_AT91SAM9G20EK
-	default "Atmel at91sam9m10ihd" if MACH_AT91SAM9M10IHD
-	default "Atmel at91sam9m10g45-ek" if MACH_AT91SAM9M10G45EK
-	default "Atmel at91sam9n12-ek" if MACH_AT91SAM9N12EK
-	default "Atmel at91sam9x5-ek" if MACH_AT91SAM9X5EK
-	default "Atmel sama5d3x-ek" if MACH_SAMA5D3XEK
-	default "Bucyrus MMC-CPU" if MACH_MMCCPU
-	default "Calao USB-A9260" if MACH_USB_A9260
-	default "Calao USB-A9263" if MACH_USB_A9263
-	default "Calao USB-A9G20" if MACH_USB_A9G20
-	default "Ronetix PM9261" if MACH_PM9261
-	default "Ronetix PM9263" if MACH_PM9263
-	default "Ronetix PM9G45" if MACH_PM9G45
-	default "Aizo dSS11" if MACH_DSS11
-	default "Calao TNY-A9260" if MACH_TNY_A9260
-	default "Calao TNY-A9263" if MACH_TNY_A9263
-	default "Calao TNY-A9G20" if MACH_TNY_A9G20
-	default "Calao QIL-A9260" if MACH_QIL_A9260
-	default "Calao QIL-A9G20" if MACH_QIL_A9G20
-	default "Somfy Animeo IP" if MACH_ANIMEO_IP
-	default "Telit EVK-PRO3" if MACH_GE863
-
 config HAVE_NAND_ATMEL_BUSWIDTH_16
 	bool
 

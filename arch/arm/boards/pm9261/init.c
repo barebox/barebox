@@ -158,6 +158,9 @@ device_initcall(pm9261_devices_init);
 
 static int pm9261_console_init(void)
 {
+	barebox_set_model("Ronetix PM9261");
+	barebox_set_hostname("pm9261");
+
 	at91_register_uart(0, 0);
 	return 0;
 }

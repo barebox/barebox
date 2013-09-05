@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=mini2440
 eth0.serverip=
 user=
 

@@ -73,6 +73,9 @@ device_initcall(mmccpu_devices_init);
 
 static int mmccpu_console_init(void)
 {
+	barebox_set_model("Bucyrus MMC-CPU");
+	barebox_set_hostname("mmccpu");
+
 	at91_register_uart(0, 0);
 	return 0;
 }

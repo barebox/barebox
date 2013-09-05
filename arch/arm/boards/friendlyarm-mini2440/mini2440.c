@@ -332,6 +332,9 @@ static int mini2440_console_init(void)
 	s3c_gpio_mode(GPH2_TXD0);
 	s3c_gpio_mode(GPH3_RXD0);
 
+	barebox_set_model("Friendlyarm mini2440");
+	barebox_set_hostname("mini2440");
+
 	s3c24xx_add_uart1();
 	return 0;
 }

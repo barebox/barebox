@@ -428,6 +428,9 @@ device_initcall(at91sama5d3xek_devices_init);
 
 static int at91sama5d3xek_console_init(void)
 {
+	barebox_set_model("Atmel sama5d3x-ek");
+	barebox_set_hostname("sama5d3x-ek");
+
 	at91_register_uart(0, 0);
 	at91_register_uart(2, 0);
 	return 0;

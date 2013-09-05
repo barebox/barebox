@@ -242,7 +242,10 @@ void barebox_banner(void);
 static inline void barebox_banner(void) {}
 #endif
 
-const char *barebox_boardinfo(void);
+const char *barebox_get_model(void);
+void barebox_set_model(const char *);
+const char *barebox_get_hostname(void);
+void barebox_set_hostname(const char *);
 
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 

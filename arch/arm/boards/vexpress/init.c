@@ -22,7 +22,6 @@ struct vexpress_init {
 	void (*mem_init)(void);
 	void (*console_init)(void);
 	void (*devices_init)(void);
-	char *hostname;
 };
 
 struct vexpress_init *v2m_init;
@@ -87,7 +86,6 @@ struct vexpress_init vexpress_init_a9_legacy = {
 	.mem_init = vexpress_a9_legacy_mem_init,
 	.console_init = vexpress_a9_legacy_console_init,
 	.devices_init = vexpress_a9_legacy_devices_init,
-	.hostname = "vexpress-a9-legacy",
 };
 
 static int vexpress_mem_init(void)
@@ -106,10 +104,6 @@ static int vexpress_devices_init(void)
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
-
-	globalvar_add_simple("hostname");
-	setenv("global.hostname", v2m_init->hostname);
-
 	return 0;
 }
 device_initcall(vexpress_devices_init);
@@ -124,19 +118,25 @@ console_initcall(vexpress_console_init);
 
 static int vexpress_core_init(void)
 {
+	char *hostname;
+
 	if (amba_is_arm_sp804(IOMEM(0x10011000))) {
 		v2m_init = &vexpress_init_a9_legacy;
+		hostname = "vexpress-a9-legacy";
 	} else {
 		v2m_init = &vexpress_init_ax;
 		if (cpu_is_cortex_a5())
-			v2m_init->hostname = "vexpress-a5";
+			hostname = "vexpress-a5";
 		else if (cpu_is_cortex_a7())
-			v2m_init->hostname = "vexpress-a7";
+			hostname = "vexpress-a7";
 		else if (cpu_is_cortex_a9())
-			v2m_init->hostname = "vexpress-a9";
+			hostname = "vexpress-a9";
 		else if (cpu_is_cortex_a15())
-			v2m_init->hostname = "vexpress-a15";
+			hostname = "vexpress-a15";
 	}
+
+	barebox_set_model("ARM Vexpress");
+	barebox_set_hostname(hostname);
 
 	v2m_init->core_init();
 

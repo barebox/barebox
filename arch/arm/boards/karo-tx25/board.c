@@ -149,6 +149,9 @@ static int tx25_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(tx25_pads, ARRAY_SIZE(tx25_pads));
 
+	barebox_set_model("Ka-Ro TX25");
+	barebox_set_hostname("tx25");
+
 	imx25_add_uart0();
 	return 0;
 }

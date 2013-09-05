@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.hostname=mx28-evk
 #user=
 
 # use 'dhcp' to do dhcp in barebox and in kernel

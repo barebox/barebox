@@ -171,6 +171,9 @@ device_initcall(evk_devices_init);
 
 static int evk_console_init(void)
 {
+	barebox_set_model("Telit EVK-PRO3");
+	barebox_set_hostname("evkpr03");
+
 	at91_register_uart(0, 0);
 	return 0;
 }

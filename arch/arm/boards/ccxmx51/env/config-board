@@ -1,7 +1,5 @@
 #!/bin/sh
 
-global.hostname=ccmx51
-
 # Timeout in seconds before the default boot entry is started
 global.autoboot_timeout=2
 

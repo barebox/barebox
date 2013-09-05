@@ -185,6 +185,8 @@ static int efikamx_usb_init(void)
 	if (!of_machine_is_compatible("genesi,imx51-sb"))
 		return 0;
 
+	barebox_set_hostname("efikasb");
+
 	gpio_direction_output(GPIO_BLUETOOTH, 0);
 	gpio_direction_output(GPIO_WIFI_ENABLE, 1);
 	gpio_direction_output(GPIO_WIFI_RESET, 0);

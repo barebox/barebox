@@ -275,6 +275,9 @@ static int mioa701_coredevice_init(void)
 	asm volatile("mcr p14, 0, %0, c6, c0, 0 @ set CCLK"
 	  : : "r" (cclk) : "cc");
 
+	barebox_set_model("Scoter Mitac Mio A701");
+	barebox_set_hostname("mioa701");
+
 	return 0;
 }
 coredevice_initcall(mioa701_coredevice_init);

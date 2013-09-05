@@ -18,6 +18,10 @@
 
 #include <common.h>
 #include <errno.h>
+#include <malloc.h>
+#include <magicvar.h>
+#include <globalvar.h>
+#include <environment.h>
 
 int errno;
 EXPORT_SYMBOL(errno);
@@ -126,19 +130,60 @@ EXPORT_SYMBOL(perror);
 void (*do_execute)(void *func, int argc, char *argv[]);
 EXPORT_SYMBOL(do_execute);
 
-static const char *boardinfo;
+static char *model;
 
-const char *barebox_boardinfo(void)
+/*
+ * The model is the verbose name of a board. It can contain
+ * whitespaces, uppercase/lowcer letters, digits, ',', '.'
+ * '-', '_'
+ */
+void barebox_set_model(const char *__model)
 {
-	if (boardinfo)
-		return boardinfo;
-
-	boardinfo = of_get_model();
-	if (boardinfo)
-		boardinfo = xstrdup(boardinfo);
-	else
-		boardinfo = CONFIG_BOARDINFO;
-
-	return boardinfo;
+	if (IS_ENABLED(CONFIG_GLOBALVAR)) {
+		globalvar_add_simple("model", __model);
+	} else {
+		free(model);
+		model = xstrdup(__model);
+	}
 }
-EXPORT_SYMBOL(barebox_boardinfo);
+EXPORT_SYMBOL(barebox_set_model);
+
+const char *barebox_get_model(void)
+{
+	if (IS_ENABLED(CONFIG_GLOBALVAR))
+		return getenv("global.model");
+
+	return model;
+}
+EXPORT_SYMBOL(barebox_get_model);
+
+BAREBOX_MAGICVAR_NAMED(global_model, global.model, "Product name of this hardware");
+
+static char *hostname;
+
+/*
+ * The hostname is supposed to be the shortname of a board. It should
+ * contain only lowercase letters, numbers, '-', '_'. No whitespaces
+ * allowed.
+ */
+void barebox_set_hostname(const char *__hostname)
+{
+	if (IS_ENABLED(CONFIG_GLOBALVAR)) {
+		globalvar_add_simple("hostname", __hostname);
+	} else {
+		free(hostname);
+		hostname = xstrdup(__hostname);
+	}
+}
+
+const char *barebox_get_hostname(void)
+{
+	if (IS_ENABLED(CONFIG_GLOBALVAR))
+		return getenv("global.hostname");
+
+	return hostname;
+}
+EXPORT_SYMBOL(barebox_get_hostname);
+
+BAREBOX_MAGICVAR_NAMED(global_hostname, global.hostname,
+		"shortname of the board. Also used as hostname for DHCP requests");

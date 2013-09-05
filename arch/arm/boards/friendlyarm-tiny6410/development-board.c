@@ -93,6 +93,9 @@ static int tiny6410evk_console_init(void)
 	s3c_gpio_mode(GPA0_RXD0 | ENABLE_PU);
 	s3c_gpio_mode(GPA1_TXD0);
 
+	barebox_set_model("Friendlyarm tiny6410");
+	barebox_set_hostname("tiny6410");
+
 	s3c64xx_add_uart1();
 
 	return 0;

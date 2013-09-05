@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if [ "$1" = menu ]; then
-	init-menu-add-entry "$0" "hostname"
-	exit
-fi
-
-global.hostname=Raspberry-Pi

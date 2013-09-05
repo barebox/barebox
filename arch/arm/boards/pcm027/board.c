@@ -178,6 +178,9 @@ static int pcm027_console_init(void)
 	/* enable clock */
 	CKEN |= CKEN_FFUART;
 
+	barebox_set_model("Phytec phyCORE-PXA270");
+	barebox_set_hostname("pcm027");
+
 	pxa_add_uart((void *)0x40100000, 0);
 
 	return 0;

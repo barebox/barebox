@@ -33,7 +33,7 @@ static int do_usbserial(int argc, char *argv[])
 	struct usb_serial_pdata pdata;
 	char *argstr;
 	char *manufacturer = "barebox";
-	char *productname = CONFIG_BOARDINFO;
+	const char *productname = barebox_get_model();
 	u16 idVendor = 0, idProduct = 0;
 	int mode = 0;
 
@@ -83,7 +83,7 @@ BAREBOX_CMD_HELP_START(usbserial)
 BAREBOX_CMD_HELP_USAGE("usbserial [OPTIONS] <description>\n")
 BAREBOX_CMD_HELP_SHORT("Enable/disable a serial gadget on the USB device interface.\n")
 BAREBOX_CMD_HELP_OPT  ("-m <str>",  "Manufacturer string (barebox)\n")
-BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string (" CONFIG_BOARDINFO ")\n")
+BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string\n")
 BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
 BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
 BAREBOX_CMD_HELP_OPT  ("-a",   "CDC ACM (default)\n")

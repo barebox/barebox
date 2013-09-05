@@ -271,6 +271,10 @@ static int tx51_console_init(void)
 {
 	imx51_init_lowlevel(800);
 	mxc_iomux_v3_setup_multiple_pads(tx51_pads, ARRAY_SIZE(tx51_pads));
+
+	barebox_set_model("Ka-Ro TX51");
+	barebox_set_hostname("tx51");
+
 	imx51_add_uart0();
 
 	return 0;

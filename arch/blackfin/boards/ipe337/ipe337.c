@@ -36,6 +36,9 @@ device_initcall(ipe337_devices_init);
 
 static int blackfin_console_init(void)
 {
+	barebox_set_model("PII ipe337");
+	barebox_set_hostname("ipe337");
+
 	add_generic_device("blackfin_serial", DEVICE_ID_DYNAMIC, NULL, 0, 4096,
 			   IORESOURCE_MEM, NULL);
 
@@ -43,4 +46,3 @@ static int blackfin_console_init(void)
 }
 
 console_initcall(blackfin_console_init);
-

@@ -424,6 +424,17 @@ static int usb_a9260_console_init(void)
 {
 	struct device_d *dev;
 
+	if (machine_is_usb_a9260()) {
+		barebox_set_model("Calao USB-A9260");
+		barebox_set_hostname("usb-a9260");
+	} else if (machine_is_usb_a9g20()) {
+		barebox_set_model("Calao USB-A9G20");
+		barebox_set_hostname("usb-a9g20");
+	} else {
+		barebox_set_model("Calao USB-A9263");
+		barebox_set_hostname("usb-a9263");
+	}
+
 	at91_register_uart(0, 0);
 
 	if (IS_ENABLED(CONFIG_CALAO_DAB_MMX)) {

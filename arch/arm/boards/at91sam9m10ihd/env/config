@@ -3,8 +3,6 @@
 # change network settings in /env/network/eth0
 # change mtd partition settings and automountpoints in /env/init/*
 
-#global.hostname=
-
 # set to false if you do not want to have colors
 global.allow_color=true
 

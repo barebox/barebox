@@ -1,7 +1,5 @@
 #!/bin/sh
 
-hostname=imx23-olinuxino
-
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=none

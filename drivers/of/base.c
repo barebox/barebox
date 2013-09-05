@@ -1727,6 +1727,9 @@ int of_probe(void)
 	of_chosen = of_find_node_by_path("/chosen");
 	of_property_read_string(root_node, "model", &of_model);
 
+	if (of_model)
+		barebox_set_model(of_model);
+
 	of_tree_for_each_node_from(node, root_node)
 		if (node->phandle)
 			list_add_tail(&node->phandles, &phandle_list);

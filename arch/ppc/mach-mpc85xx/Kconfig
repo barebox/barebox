@@ -4,9 +4,6 @@ config TEXT_BASE
 	hex
 	default 0xeff80000 if P2020RDB
 
-config BOARDINFO
-	default "P2020_RDB" if P2020RDB
-
 config MPC85xx
 	bool
 	default y if P2020RDB

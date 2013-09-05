@@ -150,6 +150,9 @@ static int arm2_console_init(void)
 
 	imx6_init_lowlevel();
 
+	barebox_set_model("Freescale i.MX6 Armadillo2");
+	barebox_set_hostname("armadillo2");
+
 	imx6_add_uart3();
 
 	return 0;

@@ -298,6 +298,9 @@ static int mini6410_console_init(void)
 	s3c_gpio_mode(GPA2_NCTS0 | ENABLE_PU);
 	s3c_gpio_mode(GPA3_NRTS0);
 
+	barebox_set_model("Friendlyarm mini6410");
+	barebox_set_hostname("mini6410");
+
 	s3c64xx_add_uart1();
 
 	return 0;

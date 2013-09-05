@@ -399,6 +399,9 @@ void base_board_init(void)
 
 static int tx28kit_console_init(void)
 {
+	barebox_set_model("Ka-Ro TX28");
+	barebox_set_hostname("tx28");
+
 	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 0x2000,
 			   IORESOURCE_MEM, NULL);
 

@@ -31,6 +31,9 @@ static struct NS16550_plat serial_plat = {
 
 static int dir320_console_init(void)
 {
+	barebox_set_model("D-Link DIR-320");
+	barebox_set_hostname("dir320");
+
 	/* Register the serial port */
 	add_ns16550_device(DEVICE_ID_DYNAMIC, DEBUG_LL_UART_ADDR, 8,
 			IORESOURCE_MEM_8BIT, &serial_plat);

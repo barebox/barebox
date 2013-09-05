@@ -99,7 +99,7 @@ static int do_dfu(int argc, char *argv[])
 	char *endptr, *argstr;
 	struct usb_dfu_dev *dfu_alts = NULL;
 	char *manufacturer = "barebox";
-	char *productname = CONFIG_BOARDINFO;
+	const char *productname = barebox_get_model();
 	u16 idVendor = 0, idProduct = 0;
 
 
@@ -163,7 +163,7 @@ BAREBOX_CMD_HELP_START(dfu)
 BAREBOX_CMD_HELP_USAGE("dfu [OPTIONS] <description>\n")
 BAREBOX_CMD_HELP_SHORT("Start firmware update with the Device Firmware Update (DFU) protocol.\n")
 BAREBOX_CMD_HELP_OPT  ("-m <str>",  "Manufacturer string (barebox)\n")
-BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string (" CONFIG_BOARDINFO ")\n")
+BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string\n")
 BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
 BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
 BAREBOX_CMD_HELP_OPT  ("<description>",

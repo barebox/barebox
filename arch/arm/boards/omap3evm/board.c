@@ -53,8 +53,6 @@
 #include <generated/mach-types.h>
 #include <mach/omap3-devices.h>
 
-#ifdef CONFIG_DRIVER_SERIAL_NS16550
-
 /**
  * @brief Initialize the serial port to be used as console.
  *
@@ -62,6 +60,9 @@
  */
 static int omap3evm_init_console(void)
 {
+	barebox_set_model("Texas Instruments omap3evm");
+	barebox_set_hostname("omap3evm");
+
 	if (IS_ENABLED(CONFIG_OMAP_UART1))
 		omap3_add_uart1();
 	if (IS_ENABLED(CONFIG_OMAP_UART3))
@@ -70,7 +71,6 @@ static int omap3evm_init_console(void)
 	return 0;
 }
 console_initcall(omap3evm_init_console);
-#endif /* CONFIG_DRIVER_SERIAL_NS16550 */
 
 static int omap3evm_mem_init(void)
 {

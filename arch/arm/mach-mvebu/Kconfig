@@ -9,14 +9,6 @@ config ARCH_TEXT_BASE
 	default 0x2000000 if MACH_MARVELL_ARMADA_XP_GP
 	default 0x2000000 if MACH_SOLIDRUN_CUBOX
 
-config BOARDINFO
-	default "PlatHome OpenBlocks AX3" if MACH_PLATHOME_OPENBLOCKS_AX3
-	default "Globalscale Mirabox" if MACH_GLOBALSCALE_MIRABOX
-	default "Globalscale Guruplug" if MACH_GLOBALSCALE_GURUPLUG
-	default "Marvell Armada XP GP" if MACH_MARVELL_ARMADA_XP_GP
-	default "SolidRun CuBox" if MACH_SOLIDRUN_CUBOX
-	default "USI Topkick" if MACH_USI_TOPKICK
-
 choice
 	prompt "Marvell EBU Processor"
 

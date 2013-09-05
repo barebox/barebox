@@ -113,7 +113,11 @@ device_initcall(nhk8815_devices_init);
 
 static int nhk8815_console_init(void)
 {
+	barebox_set_model("Nomadik nhk8815");
+	barebox_set_hostname("nhk8815");
+
 	st8815_register_uart(1);
+
 	return 0;
 }
 

@@ -5,8 +5,6 @@ otg_mode="device"
 # video : can be CMO-QVGA, URT-WVGA, DVI-VGA or DVI-SVGA
 video="CMO-QVGA"
 
-global.hostname=eukrea-cpuimx25
-
 # use 'dhcp' to do dhcp in barebox and in kernel
 # use 'none' if you want to skip kernel ip autoconfiguration
 ip=none

@@ -4,9 +4,6 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x03c00000 if MACH_NOMADIK_8815NHK
 
-config BOARDINFO
-	default "NHK8815" if MACH_NOMADIK_8815NHK
-
 choice
 	prompt "Nomadik boards"
 

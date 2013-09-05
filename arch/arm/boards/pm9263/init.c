@@ -142,6 +142,9 @@ device_initcall(pm9263_devices_init);
 
 static int pm9263_console_init(void)
 {
+	barebox_set_model("Ronetix PM9263");
+	barebox_set_hostname("pm9263");
+
 	at91_register_uart(0, 0);
 	return 0;
 }

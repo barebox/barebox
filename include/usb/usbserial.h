@@ -3,7 +3,7 @@
 
 struct usb_serial_pdata {
 	char		*manufacturer;
-	char		*productname;
+	const char		*productname;
 	u16			idVendor;
 	u16			idProduct;
 	int			mode;

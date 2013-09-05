@@ -26,7 +26,11 @@
 #include <readkey.h>
 #include "archos_features.h"
 
-static int archosg9_console_init(void){
+static int archosg9_console_init(void)
+{
+	barebox_set_model("Archos G9");
+	barebox_set_hostname("g9");
+
 	if (IS_ENABLED(CONFIG_DRIVER_SERIAL_OMAP4_USBBOOT) &&
 			omap4_usbboot_ready()) {
 		add_generic_device("serial_omap4_usbboot", DEVICE_ID_DYNAMIC

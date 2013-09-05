@@ -22,6 +22,8 @@
 
 static int malta_core_init(void)
 {
+	barebox_set_hostname("malta");
+
 	return 0;
 }
 core_initcall(malta_core_init);

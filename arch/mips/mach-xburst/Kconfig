@@ -35,6 +35,4 @@ endchoice
 endif # CPU_JZ4755
 endif # DEBUG_LL
 
-source arch/mips/boards/rzx50/Kconfig
-
 endif

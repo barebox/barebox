@@ -1,8 +1,5 @@
 if ARCH_MPC5XXX
 
-config BOARDINFO
-	default "Phytec Phycore mpc5200b tiny" if MACH_PHYCORE_MPC5200B_TINY
-
 config ARCH_TEXT_BASE
 	hex
 	default 0x00000000 if RELOCATABLE

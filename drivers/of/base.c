@@ -241,6 +241,32 @@ const char *of_alias_get(struct device_node *np)
 EXPORT_SYMBOL_GPL(of_alias_get);
 
 /*
+ * of_find_node_by_alias - Find a node given an alias name
+ * @root:    the root node of the tree. If NULL, use internal tree
+ * @alias:   the alias name to find
+ */
+struct device_node *of_find_node_by_alias(struct device_node *root, const char *alias)
+{
+	struct device_node *aliasnp;
+	int ret;
+	const char *path;
+
+	if (!root)
+		root = root_node;
+
+	aliasnp = of_find_node_by_path_from(root, "/aliases");
+	if (!aliasnp)
+		return NULL;
+
+	ret = of_property_read_string(aliasnp, alias, &path);
+	if (ret)
+		return NULL;
+
+	return of_find_node_by_path_from(root, path);
+}
+EXPORT_SYMBOL_GPL(of_find_node_by_alias);
+
+/*
  * of_find_node_by_phandle - Find a node given a phandle
  * @handle:    phandle of the node to find
  */
@@ -254,6 +280,62 @@ struct device_node *of_find_node_by_phandle(phandle phandle)
 	return NULL;
 }
 EXPORT_SYMBOL(of_find_node_by_phandle);
+
+/*
+ * of_get_tree_max_phandle - Find the maximum phandle of a tree
+ * @root:    root node of the tree to search in. If NULL use the
+ *           internal tree.
+ */
+phandle of_get_tree_max_phandle(struct device_node *root)
+{
+	struct device_node *n;
+	phandle max;
+
+	if (!root)
+		root = root_node;
+
+	if (!root)
+		return 0;
+
+	max = root->phandle;
+
+	of_tree_for_each_node_from(n, root) {
+		if (n->phandle > max)
+			max = n->phandle;
+	}
+
+	return max;
+}
+EXPORT_SYMBOL(of_get_tree_max_phandle);
+
+/*
+ * of_node_create_phandle - create a phandle for a node
+ * @node:    The node to create a phandle in
+ *
+ * returns the new phandle or the existing phandle if the node
+ * already has a phandle.
+ */
+phandle of_node_create_phandle(struct device_node *node)
+{
+	phandle p;
+	struct device_node *root;
+
+	if (node->phandle)
+		return node->phandle;
+
+	root = of_find_root_node(node);
+
+	p = of_get_tree_max_phandle(root) + 1;
+
+	node->phandle = p;
+
+	p = cpu_to_be32(p);
+
+	of_set_property(node, "phandle", &p, sizeof(p), 1);
+
+	return node->phandle;
+}
+EXPORT_SYMBOL(of_node_create_phandle);
 
 /*
  * Find a property with a given name for a given node
@@ -317,6 +399,35 @@ struct device_node *of_find_node_by_name(struct device_node *from,
 	return NULL;
 }
 EXPORT_SYMBOL(of_find_node_by_name);
+
+/**
+ *	of_find_node_by_type - Find a node by its "device_type" property
+ *	@from:  The node to start searching from, or NULL to start searching
+ *		the entire device tree. The node you pass will not be
+ *		searched, only the next one will; typically, you pass
+ *		what the previous call returned.
+ *	@type:  The type string to match against.
+ *
+ *	Returns a pointer to the node found or NULL.
+ */
+struct device_node *of_find_node_by_type(struct device_node *from,
+		const char *type)
+{
+	struct device_node *np;
+	const char *device_type;
+	int ret;
+
+	if (!from)
+		from = root_node;
+
+	of_tree_for_each_node_from(np, from) {
+		ret = of_property_read_string(np, "device_type", &device_type);
+		if (!ret && !of_node_cmp(device_type, type))
+			return np;
+	}
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_node_by_type);
 
 /**
  *	of_find_compatible_node - Find a node based on type and one of the
@@ -1211,6 +1322,9 @@ struct device_node *of_find_node_by_path_from(struct device_node *from,
 {
 	char *slash, *p, *freep;
 
+	if (!from)
+		from = root_node;
+
 	if (!from || !path || *path != '/')
 		return NULL;
 
@@ -1253,6 +1367,25 @@ struct device_node *of_find_node_by_path(const char *path)
 	return of_find_node_by_path_from(root_node, path);
 }
 EXPORT_SYMBOL(of_find_node_by_path);
+
+/**
+ *	of_find_node_by_path_or_alias - Find a node matching a full OF path
+ *	or an alias
+ *	@root:	The root node. If NULL the internal tree is used
+ *	@str:	the full path or alias
+ *
+ *	Returns a pointer to the node found or NULL.
+ */
+struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
+		const char *str)
+{
+	if (*str ==  '/')
+		return of_find_node_by_path_from(root, str);
+	else
+		return of_find_node_by_alias(root, str);
+
+}
+EXPORT_SYMBOL(of_find_node_by_path_or_alias);
 
 /**
  * of_modalias_node - Lookup appropriate modalias for a device node
@@ -1568,22 +1701,6 @@ int of_add_memory(struct device_node *node, bool dump)
 	return 0;
 }
 
-static void __of_parse_phandles(struct device_node *node)
-{
-	struct device_node *n;
-	phandle phandle;
-	int ret;
-
-	ret = of_property_read_u32(node, "phandle", &phandle);
-	if (!ret) {
-		node->phandle = phandle;
-		list_add_tail(&node->phandles, &phandle_list);
-	}
-
-	list_for_each_entry(n, &node->children, parent_list)
-		__of_parse_phandles(n);
-}
-
 struct device_node *of_chosen;
 const char *of_model;
 
@@ -1602,7 +1719,7 @@ const struct of_device_id of_default_bus_match_table[] = {
 
 int of_probe(void)
 {
-	struct device_node *memory;
+	struct device_node *memory, *node;
 
 	if(!root_node)
 		return -ENODEV;
@@ -1610,7 +1727,9 @@ int of_probe(void)
 	of_chosen = of_find_node_by_path("/chosen");
 	of_property_read_string(root_node, "model", &of_model);
 
-	__of_parse_phandles(root_node);
+	of_tree_for_each_node_from(node, root_node)
+		if (node->phandle)
+			list_add_tail(&node->phandles, &phandle_list);
 
 	memory = of_find_node_by_path("/memory");
 	if (memory)

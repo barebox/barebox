@@ -26,7 +26,7 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <io.h>
-#include <mach/gpio.h>
+#include <gpio.h>
 #include <mach/weim.h>
 #include <partition.h>
 #include <fs.h>

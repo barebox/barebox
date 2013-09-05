@@ -19,6 +19,7 @@
 #define __ASM_ARCH_IO_H
 
 #include <io.h>
+#include <mach/hardware.h>
 
 static inline unsigned int at91_sys_read(unsigned int reg_offset)
 {

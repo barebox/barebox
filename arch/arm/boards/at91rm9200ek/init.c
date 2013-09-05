@@ -22,13 +22,14 @@
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
+#include <gpio.h>
 #include <fcntl.h>
 #include <io.h>
 #include <sizes.h>
 #include <asm/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
-#include <mach/gpio.h>
+#include <mach/iomux.h>
 #include <mach/io.h>
 #include <spi/spi.h>
 

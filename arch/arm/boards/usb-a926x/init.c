@@ -35,6 +35,7 @@
 #include <gpio.h>
 #include <led.h>
 #include <mach/io.h>
+#include <mach/iomux.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
 #include <gpio_keys.h>

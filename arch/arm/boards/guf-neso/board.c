@@ -21,6 +21,7 @@
 #include <fec.h>
 #include <notifier.h>
 #include <partition.h>
+#include <gpio.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <nand.h>
@@ -33,7 +34,6 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 
-#include <mach/gpio.h>
 #include <mach/spi.h>
 #include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>

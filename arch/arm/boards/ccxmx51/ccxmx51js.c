@@ -18,9 +18,9 @@
 #include <common.h>
 #include <io.h>
 #include <init.h>
+#include <gpio.h>
 #include <mci.h>
 #include <asm/armlinux.h>
-#include <mach/gpio.h>
 #include <mach/generic.h>
 #include <mach/imx51-regs.h>
 #include <mach/iomux-mx51.h>

@@ -34,7 +34,8 @@
 #include <asm/armlinux.h>
 #include <asm/sections.h>
 #include <io.h>
-#include <mach/gpio.h>
+#include <gpio.h>
+#include <mach/iomux.h>
 #include <mach/s3c-iomap.h>
 #include <mach/devices-s3c24xx.h>
 #include <mach/s3c24xx-nand.h>

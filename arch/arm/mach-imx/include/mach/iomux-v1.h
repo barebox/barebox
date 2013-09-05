@@ -46,5 +46,6 @@
 #define GPIO_GIUS      (1 << 16)
 
 void imx_iomuxv1_init(void __iomem *base);
+void imx_gpio_mode(int gpio_mode);
 
 #endif /* __MACH_IOMUX_V1_H__ */

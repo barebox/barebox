@@ -27,8 +27,8 @@
  *            ^_____________________ initial output value if enabled as GPIO and configured as output
  *           ^______________________ Bit keeper present
  */
-#ifndef __ASM_MACH_IOMUX_H
-#define __ASM_MACH_IOMUX_H
+#ifndef __ASM_MACH_IOMUX_MX23_H
+#define __ASM_MACH_IOMUX_MX23_H
 
 /* control pad's function */
 #define FBIT_SHIFT (3)
@@ -422,4 +422,4 @@
 #define EMI_DQM0		(FUNC(0) | PORTF(7, 0) | SE | VE | PE)
 #define EMI_DQM0_DISABLED	(FUNC(3) | PORTF(7, 0) | SE | VE | PE)
 
-#endif /* __ASM_MACH_IOMUX_H */
+#endif /* __ASM_MACH_IOMUX_MX23_H */

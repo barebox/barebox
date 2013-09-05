@@ -20,7 +20,7 @@
 #include <environment.h>
 #include <mach/imx6-regs.h>
 #include <fec.h>
-#include <mach/gpio.h>
+#include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>
@@ -33,7 +33,6 @@
 #include <mach/imx6.h>
 #include <mach/devices-imx6.h>
 #include <mach/iomux-mx6.h>
-#include <mach/gpio.h>
 #include <spi/spi.h>
 #include <mach/spi.h>
 #include <mach/usb.h>

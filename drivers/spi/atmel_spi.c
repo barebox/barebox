@@ -32,6 +32,7 @@
 #include <io.h>
 #include <spi/spi.h>
 #include <mach/io.h>
+#include <mach/iomux.h>
 #include <mach/board.h>
 #include <mach/cpu.h>
 #include <linux/clk.h>

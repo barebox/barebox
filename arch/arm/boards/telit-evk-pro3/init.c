@@ -22,6 +22,7 @@
 #include <mach/at91sam9_smc.h>
 #include <mach/board.h>
 #include <mach/io.h>
+#include <mach/iomux.h>
 #include <nand.h>
 
 #define BOOTSTRAP_SIZE	0xC0000

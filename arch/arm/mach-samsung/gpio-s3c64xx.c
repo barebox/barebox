@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <io.h>
 #include <gpio.h>
+#include <mach/iomux.h>
 #include <mach/s3c-iomap.h>
 
 #define S3C_GPACON (S3C_GPIO_BASE)

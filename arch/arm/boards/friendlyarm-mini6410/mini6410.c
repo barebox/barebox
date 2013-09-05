@@ -21,6 +21,7 @@
 #include <mach/s3c-iomap.h>
 #include <mach/devices-s3c64xx.h>
 #include <mach/s3c-generic.h>
+#include <mach/iomux.h>
 
 /*
  * dm9000 network controller onboard

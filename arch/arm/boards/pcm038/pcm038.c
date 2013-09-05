@@ -24,7 +24,7 @@
 #include <fec.h>
 #include <sizes.h>
 #include <notifier.h>
-#include <mach/gpio.h>
+#include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>

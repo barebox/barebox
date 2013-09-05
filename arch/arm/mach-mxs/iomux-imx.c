@@ -18,6 +18,7 @@
 #include <gpio.h>
 #include <errno.h>
 #include <io.h>
+#include <mach/iomux.h>
 #include <stmp-device.h>
 #include <mach/imx-regs.h>
 

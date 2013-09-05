@@ -12,14 +12,15 @@
 #include <common.h>
 #include <init.h>
 #include <sizes.h>
+#include <gpio.h>
 #include <asm/armlinux.h>
 #include <asm/hardware.h>
 #include <mach/board.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91sam9n12_matrix.h>
 #include <mach/at91sam9_ddrsdr.h>
-#include <mach/gpio.h>
 #include <mach/io.h>
+#include <mach/iomux.h>
 #include <mach/cpu.h>
 #include <i2c/i2c-gpio.h>
 

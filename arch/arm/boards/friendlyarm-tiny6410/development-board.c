@@ -26,6 +26,7 @@
 #include <dm9000.h>
 #include <mach/devices-s3c64xx.h>
 #include <mach/s3c-generic.h>
+#include <mach/iomux.h>
 
 #include "tiny6410.h"
 

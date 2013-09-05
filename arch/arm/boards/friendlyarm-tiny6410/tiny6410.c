@@ -19,6 +19,7 @@
 #include <asm/armlinux.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-generic.h>
+#include <mach/iomux.h>
 
 static const unsigned tiny6410_pin_usage[] = {
 	/* UART0 */

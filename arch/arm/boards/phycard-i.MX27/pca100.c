@@ -20,7 +20,7 @@
 #include <environment.h>
 #include <mach/imx27-regs.h>
 #include <fec.h>
-#include <mach/gpio.h>
+#include <gpio.h>
 #include <asm/armlinux.h>
 #include <asm/sections.h>
 #include <generated/mach-types.h>

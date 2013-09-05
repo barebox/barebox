@@ -19,6 +19,7 @@
 #include <init.h>
 #include <environment.h>
 #include <fec.h>
+#include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>
@@ -30,7 +31,7 @@
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
-#include <mach/gpio.h>
+#include <mach/iomux.h>
 #include <mach/io.h>
 
 static struct macb_platform_data macb_pdata = {

@@ -39,6 +39,7 @@
 #include <spi/flash.h>
 #include <i2c/i2c.h>
 #include <i2c/at24.h>
+#include <mach/bbu.h>
 
 #include "mux.h"
 
@@ -69,11 +70,6 @@ static int pcm051_mem_init(void)
 }
 mem_initcall(pcm051_mem_init);
 
-static struct flash_platform_data pcm051_spi_flash = {
-	.name	= "m25p",
-	.type	= "w25q64",
-};
-
 /*
 * SPI Flash works at 80Mhz however the SPI controller runs with 48MHz.
 * So setup Max speed to be less than the controller speed.
@@ -81,7 +77,6 @@ static struct flash_platform_data pcm051_spi_flash = {
 static struct spi_board_info pcm051_spi_board_info[] = {
 	{
 		.name		= "m25p80",
-		.platform_data	= &pcm051_spi_flash,
 		.max_speed_hz	= 24000000,
 		.bus_num	= 0,
 		.chip_select	= 0,
@@ -165,7 +160,7 @@ static void pcm051_i2c_init(void)
 
 static void pcm051_nand_init(void)
 {
-	am33xx_enable_nand_pin_mux();
+	pcm051_enable_nand_pin_mux();
 
 	gpmc_generic_init(0x12);
 
@@ -211,6 +206,8 @@ static int pcm051_devices_init(void)
 	omap_set_barebox_part(&pcm051_barebox_part);
 	armlinux_set_bootparams((void *)(AM33XX_DRAM_ADDR_SPACE_START + 0x100));
 	armlinux_set_architecture(MACH_TYPE_PCM051);
+
+	am33xx_bbu_spi_nor_mlo_register_handler("MLO.spi", "/dev/m25p0.xload");
 
 	return 0;
 }

@@ -93,9 +93,9 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	if (initialized < CONSOLE_INIT_FULL) {
 		char ch;
 		initialized = CONSOLE_INIT_FULL;
-		PUTS_LL("Switch to console [");
-		PUTS_LL(dev_name(dev));
-		PUTS_LL("]\n");
+		puts_ll("Switch to console [");
+		puts_ll(dev_name(dev));
+		puts_ll("]\n");
 		barebox_banner();
 		while (kfifo_getc(console_output_fifo, &ch) == 0)
 			console_putc(CONSOLE_STDOUT, ch);
@@ -286,7 +286,7 @@ void console_putc(unsigned int ch, char c)
 
 	case CONSOLE_INITIALIZED_BUFFER:
 		kfifo_putc(console_output_fifo, c);
-		PUTC_LL(c);
+		putc_ll(c);
 		return;
 
 	case CONSOLE_INIT_FULL:

@@ -42,14 +42,22 @@ struct omap_barebox_part {
 
 #ifdef CONFIG_SHELL_NONE
 int omap_set_barebox_part(struct omap_barebox_part *part);
+int omap_set_mmc_dev(const char *mmcdev);
 #else
 static inline int omap_set_barebox_part(struct omap_barebox_part *part)
+{
+	return 0;
+}
+static inline int omap_set_mmc_dev(const char *mmcdev)
 {
 	return 0;
 }
 #endif
 
 extern uint32_t omap_bootinfo[3];
-void omap_save_bootinfo(void);
+void omap_save_bootinfo(void *data);
+
+void omap_set_bootmmc_devname(const char *devname);
+const char *omap_get_bootmmc_devname(void);
 
 #endif

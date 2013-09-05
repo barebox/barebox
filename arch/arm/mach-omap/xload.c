@@ -8,6 +8,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <sizes.h>
+#include <malloc.h>
 #include <filetype.h>
 #include <mach/generic.h>
 
@@ -98,11 +99,23 @@ static void *omap_xload_boot_mmc(void)
 	int ret;
 	void *buf;
 	int len;
-	const char *diskdev = "disk0.0";
+	const char *diskdev;
+	char *partname;
 
-	ret = mount(diskdev, "fat", "/");
+	diskdev = omap_get_bootmmc_devname();
+	if (!diskdev)
+		diskdev = "disk0";
+
+	device_detect_by_name(diskdev);
+
+	partname = asprintf("%s.0", diskdev);
+
+	ret = mount(partname, "fat", "/");
+
+	free(partname);
+
 	if (ret) {
-		printf("Unable to mount %s (%d)\n", diskdev, ret);
+		printf("Unable to mount %s (%d)\n", partname, ret);
 		return NULL;
 	}
 

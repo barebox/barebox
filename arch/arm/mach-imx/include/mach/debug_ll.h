@@ -13,6 +13,8 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 
+#ifdef CONFIG_DEBUG_LL
+
 #ifdef CONFIG_DEBUG_IMX1_UART
 #define IMX_DEBUG_SOC MX1
 #elif defined CONFIG_DEBUG_IMX21_UART
@@ -61,5 +63,5 @@ static inline void PUTC_LL(int c)
 
 	writel(c, base + URTX0);
 }
-
+#endif /* CONFIG_DEBUG_LL */
 #endif /* __MACH_DEBUG_LL_H__ */

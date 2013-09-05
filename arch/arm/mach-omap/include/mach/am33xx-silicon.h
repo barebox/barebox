@@ -17,6 +17,8 @@
 #ifndef __ASM_ARCH_AM33XX_H
 #define __ASM_ARCH_AM33XX_H
 
+#include <sizes.h>
+
 /** AM335x Internal Bus Base addresses */
 #define AM33XX_L4_WKUP_BASE		0x44C00000
 #define AM33XX_L4_PER_BASE		0x48000000
@@ -69,6 +71,7 @@
 
 /* CTRL */
 #define AM33XX_CTRL_BASE		(AM33XX_L4_WKUP_BASE + 0x210000)
+#define AM33XX_IDCODE_REG		(AM33XX_CTRL_BASE + 0x600)
 
 /* Watchdog Timer */
 #define AM33XX_WDT_BASE			0x44E35000
@@ -115,10 +118,9 @@
 #define AM33XX_VTP1_CTRL_REG		0x48140E10
 
 /* OCMC */
-#define AM33XX_SRAM0_SIZE			(0x1B400) /* 109 KB */
+#define AM33XX_SRAM0_START			0x402f0400
+#define AM33XX_SRAM0_SIZE			(SZ_128K - SZ_1K)
 #define AM33XX_SRAM_GPMC_STACK_SIZE		(0x40)
-
-#define AM33XX_LOW_LEVEL_SRAM_STACK		(AM33XX_SRAM0_START + AM33XX_SRAM0_SIZE - 4)
 
 /* DDR offsets */
 #define	AM33XX_DDR_PHY_BASE_ADDR		0x44E12000
@@ -190,5 +192,49 @@
 #define AM33XX_MAC_ID1_LO	(AM33XX_CTRL_BASE + 0x638)
 #define AM33XX_MAC_ID1_HI	(AM33XX_CTRL_BASE + 0x63c)
 #define AM33XX_MAC_MII_SEL	(AM33XX_CTRL_BASE + 0x650)
+
+struct am33xx_cmd_control {
+	u32 slave_ratio0;
+	u32 dll_lock_diff0;
+	u32 invert_clkout0;
+	u32 slave_ratio1;
+	u32 dll_lock_diff1;
+	u32 invert_clkout1;
+	u32 slave_ratio2;
+	u32 dll_lock_diff2;
+	u32 invert_clkout2;
+};
+
+struct am33xx_emif_regs {
+	u32 emif_read_latency;
+	u32 emif_tim1;
+	u32 emif_tim2;
+	u32 emif_tim3;
+	u32 sdram_config;
+	u32 sdram_config2;
+	u32 zq_config;
+	u32 sdram_ref_ctrl;
+};
+
+struct am33xx_ddr_data {
+	u32 rd_slave_ratio0;
+	u32 wr_dqs_slave_ratio0;
+	u32 wrlvl_init_ratio0;
+	u32 gatelvl_init_ratio0;
+	u32 fifo_we_slave_ratio0;
+	u32 wr_slave_ratio0;
+	u32 use_rank0_delay;
+	u32 dll_lock_diff0;
+};
+
+void am33xx_uart0_soft_reset(void);
+void am33xx_config_vtp(void);
+void am33xx_ddr_phydata_cmd_macro(const struct am33xx_cmd_control *cmd_ctrl);
+void am33xx_config_io_ctrl(int ioctrl);
+void am33xx_config_sdram(const struct am33xx_emif_regs *regs);
+void am33xx_config_ddr_data(const struct am33xx_ddr_data *data, int macronr);
+void am335x_sdram_init(int ioctrl, const struct am33xx_cmd_control *cmd_ctrl,
+			const struct am33xx_emif_regs *emif_regs,
+			const struct am33xx_ddr_data *ddr_data);
 
 #endif

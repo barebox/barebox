@@ -20,8 +20,7 @@
 #ifndef __INCLUDE_DEBUG_LL_H__
 #define   __INCLUDE_DEBUG_LL_H__
 
-#if defined (CONFIG_DEBUG_LL)
-
+#ifdef CONFIG_HAS_DEBUG_LL
 /*
  * mach/debug_ll.h should implement PUTC_LL. This can be a macro or a static
  * inline function. Note that several SoCs expect the UART to be initialized
@@ -29,35 +28,61 @@
  * this initialization. Depending on the PUTC_LL implementation the board might
  * also hang in PUTC_LL without proper initialization.
  */
-# include <mach/debug_ll.h>
+#include <mach/debug_ll.h>
+#endif
 
-# define PUTHEX_LL(value)  ({ unsigned long v = (unsigned long) (value); \
-			     int i; unsigned char ch; \
-			     for (i = 8; i--; ) {\
-			     ch = ((v >> (i*4)) & 0xf);\
-			     ch += (ch >= 10) ? 'a' - 10 : '0';\
-			     PUTC_LL (ch); }})
+#if defined (CONFIG_DEBUG_LL)
+
+static inline void putc_ll(unsigned char value)
+{
+	PUTC_LL(value);
+}
+
+static inline void puthex_ll(unsigned long value)
+{
+	int i; unsigned char ch;
+
+	for (i = 8; i--; ) {
+		ch = ((value >> (i * 4)) & 0xf);
+		ch += (ch >= 10) ? 'a' - 10 : '0';
+		putc_ll(ch);
+	}
+}
 
 /*
- * Be careful with PUTS_LL, it only works if the binary is running at the
+ * Be careful with puts_ll, it only works if the binary is running at the
  * link address which often is not the case during early startup. If in doubt
  * don't use it.
  */
-static __inline__ void PUTS_LL(const char * str)
+static inline void puts_ll(const char * str)
 {
 	while (*str) {
-		if (*str == '\n') {
-			PUTC_LL('\r');
-		}
-		PUTC_LL(*str);
+		if (*str == '\n')
+			putc_ll('\r');
+
+		putc_ll(*str);
 		str++;
 	}
 }
 
 #else
-# define PUTC_LL(c) do {} while (0)
-# define PUTHEX_LL(v) do {} while (0)
-# define PUTS_LL(c) do {} while (0)
+
+static inline void putc_ll(unsigned char value)
+{
+}
+
+static inline void puthex_ll(unsigned long value)
+{
+}
+
+/*
+ * Be careful with puts_ll, it only works if the binary is running at the
+ * link address which often is not the case during early startup. If in doubt
+ * don't use it.
+ */
+static inline void puts_ll(const char * str)
+{
+}
 
 #endif
 

@@ -14,6 +14,24 @@ static const struct module_pin_mux mmc0_pin_mux[] = {
 	{-1},
 };
 
+static const struct module_pin_mux nand_pin_mux[] = {
+	{OFFSET(gpmc_ad0), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD0 */
+	{OFFSET(gpmc_ad1), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD1 */
+	{OFFSET(gpmc_ad2), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD2 */
+	{OFFSET(gpmc_ad3), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD3 */
+	{OFFSET(gpmc_ad4), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD4 */
+	{OFFSET(gpmc_ad5), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD5 */
+	{OFFSET(gpmc_ad6), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD6 */
+	{OFFSET(gpmc_ad7), (MODE(0) | PULLUP_EN | RXACTIVE)},	/* NAND AD7 */
+	{OFFSET(gpmc_wait0), (MODE(0) | RXACTIVE | PULLUP_EN)},	/* NAND WAIT */
+	{OFFSET(gpmc_csn0), (MODE(0) | PULLUDEN)},	/* NAND_CS0 */
+	{OFFSET(gpmc_advn_ale), (MODE(0) | PULLUDEN)},	/* NAND_ADV_ALE */
+	{OFFSET(gpmc_oen_ren), (MODE(0) | PULLUDEN)},	/* NAND_OE */
+	{OFFSET(gpmc_wen), (MODE(0) | PULLUDEN)},	/* NAND_WEN */
+	{OFFSET(gpmc_be0n_cle), (MODE(0) | PULLUDEN)},	/* NAND_BE_CLE */
+	{-1},
+};
+
 static const struct module_pin_mux user_led_pin_mux[] = {
 	{OFFSET(gpmc_csn1), MODE(7) | PULLUDEN}, /* USER LED1 */
 	{OFFSET(gpmc_csn2), MODE(7) | PULLUDEN}, /* USER LED2 */
@@ -29,6 +47,11 @@ static const struct module_pin_mux user_btn_pin_mux[] = {
 void pcm051_enable_mmc0_pin_mux(void)
 {
 	configure_module_pin_mux(mmc0_pin_mux);
+}
+
+void pcm051_enable_nand_pin_mux(void)
+{
+	configure_module_pin_mux(nand_pin_mux);
 }
 
 void pcm051_enable_user_led_pin_mux(void)

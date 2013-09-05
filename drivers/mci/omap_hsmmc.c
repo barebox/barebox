@@ -574,6 +574,13 @@ static void mmc_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	writel(readl(&mmc_base->sysctl) | CEN_ENABLE, &mmc_base->sysctl);
 }
 
+static int omap_mmc_detect(struct device_d *dev)
+{
+	struct omap_hsmmc *hsmmc = dev->priv;
+
+	return mci_detect_card(&hsmmc->mci);
+}
+
 static int omap_mmc_probe(struct device_d *dev)
 {
 	struct omap_hsmmc *hsmmc;
@@ -593,7 +600,7 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.set_ios = mmc_set_ios;
 	hsmmc->mci.init = mmc_init_setup;
 	hsmmc->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED |
-		MMC_CAP_MMC_HIGHSPEED;
+		MMC_CAP_MMC_HIGHSPEED | MMC_CAP_8_BIT_DATA;
 	hsmmc->mci.hw_dev = dev;
 
 	hsmmc->iobase = dev_request_mem_region(dev, 0);
@@ -604,10 +611,19 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.f_min = 400000;
 
 	pdata = (struct omap_hsmmc_platform_data *)dev->platform_data;
-	if (pdata && pdata->f_max)
-		hsmmc->mci.f_max = pdata->f_max;
-	else
-		hsmmc->mci.f_max = 52000000;
+	if (pdata) {
+		if (pdata->f_max)
+			hsmmc->mci.f_max = pdata->f_max;
+		else
+			hsmmc->mci.f_max = 52000000;
+
+		if (pdata->devname)
+			hsmmc->mci.devname = pdata->devname;
+	}
+
+
+	dev->priv = hsmmc;
+	dev->detect = omap_mmc_detect,
 
 	mci_register(&hsmmc->mci);
 

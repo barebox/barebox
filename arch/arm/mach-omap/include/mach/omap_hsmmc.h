@@ -21,5 +21,6 @@
 /** omapmmc platform data structure */
 struct omap_hsmmc_platform_data {
 	unsigned f_max;         /* host interface upper limit */
+	char *devname;		/* The mci device name, optional */
 };
 #endif /* __ASM_OMAP_HSMMC_H */

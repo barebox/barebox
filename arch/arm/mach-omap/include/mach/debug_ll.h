@@ -17,7 +17,7 @@
 #ifndef __MACH_DEBUG_LL_H__
 #define   __MACH_DEBUG_LL_H__
 
-#include <asm/io.h>
+#include <io.h>
 
 #ifdef CONFIG_ARCH_OMAP3
 #include <mach/omap3-silicon.h>
@@ -56,7 +56,7 @@
 #define MCR		(4 << 2)
 #define MDR		(8 << 2)
 
-static inline void INIT_LL(void)
+static inline void omap_uart_lowlevel_init(void)
 {
 	writeb(0x00, UART_BASE + LCR);
 	writeb(0x00, UART_BASE + IER);

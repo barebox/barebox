@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+        boot-menu-add-entry "$0" "SPI NOR Flash"
+        exit
+fi
+
+global.bootm.image="/dev/m25p0.kernel"
+
+# Use rootfs form NAND for now as rootfs partition < 4MB
+global.linux.bootargs.dyn.root="root=ubi0:root ubi.mtd=nand0.root,2048 rootfstype=ubifs"

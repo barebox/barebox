@@ -40,6 +40,7 @@
 #define CPU_1710	0x1710
 #define CPU_2420	0x2420
 #define CPU_2430	0x2430
+#define CPU_3350	0x3350
 #define CPU_3430	0x3430
 #define CPU_3630	0x3630
 
@@ -53,6 +54,10 @@
 #define OMAP34XX_ES2_1		cpu_revision(CPU_3430, 2)
 #define OMAP34XX_ES3		cpu_revision(CPU_3430, 3)
 #define OMAP34XX_ES3_1		cpu_revision(CPU_3430, 4)
+
+#define AM335X_ES1_0		cpu_revision(CPU_3350, 0)
+#define AM335X_ES2_0		cpu_revision(CPU_3350, 1)
+#define AM335X_ES2_1		cpu_revision(CPU_3350, 2)
 
 #define OMAP36XX_ES1		cpu_revision(CPU_3630, 0)
 #define OMAP36XX_ES1_1		cpu_revision(CPU_3630, 1)
@@ -76,8 +81,9 @@
 /**
  * Hawkeye definitions to identify silicon families
  */
-#define OMAP_HAWKEYE_34XX	0xB7AE
-#define OMAP_HAWKEYE_36XX	0xB891
+#define OMAP_HAWKEYE_34XX	0xB7AE /* OMAP34xx */
+#define OMAP_HAWKEYE_36XX	0xB891 /* OMAP36xx */
+#define OMAP_HAWKEYE_335X	0xB944 /* AM335x */
 
 /** These are implemented by the System specific code in omapX-generic.c */
 u32 get_cpu_type(void);

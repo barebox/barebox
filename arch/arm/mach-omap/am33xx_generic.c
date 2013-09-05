@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2012 Teresa Gámez, Phytec Messtechnik GmbH
- * (C) Copyright 2012 Jan Luebbe <j.luebbe@pengutronix.de>
+ * (C) Copyright 2012-2013 Jan Luebbe <j.luebbe@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -35,6 +35,38 @@ void __noreturn reset_cpu(unsigned long addr)
 	writel(AM33XX_PRM_RSTCTRL_RESET, AM33XX_PRM_RSTCTRL);
 
 	while (1);
+}
+
+/**
+ * @brief Extract the AM33xx ES revision
+ *
+ * The significance of the CPU revision depends upon the cpu type.
+ * Latest known revision is considered default.
+ *
+ * @return silicon version
+ */
+u32 am33xx_get_cpu_rev(void)
+{
+	u32 version, retval;
+
+	version = (readl(AM33XX_IDCODE_REG) >> 28) & 0xF;
+
+	switch (version) {
+	case 0:
+		retval = AM335X_ES1_0;
+		break;
+	case 1:
+		retval = AM335X_ES2_0;
+		break;
+	case 2:
+		/*
+		 * Fall through the default case.
+		 */
+	default:
+		retval = AM335X_ES2_1;
+	}
+
+	return retval;
 }
 
 /**
@@ -100,6 +132,7 @@ u32 running_in_sdram(void)
 static int am33xx_bootsource(void)
 {
 	enum bootsource src;
+	int instance = 0;
 
 	switch (omap_bootinfo[2] & 0xFF) {
 	case 0x05:
@@ -107,6 +140,11 @@ static int am33xx_bootsource(void)
 		break;
 	case 0x08:
 		src = BOOTSOURCE_MMC;
+		instance = 0;
+		break;
+	case 0x09:
+		src = BOOTSOURCE_MMC;
+		instance = 1;
 		break;
 	case 0x0b:
 		src = BOOTSOURCE_SPI;
@@ -115,7 +153,7 @@ static int am33xx_bootsource(void)
 		src = BOOTSOURCE_UNKNOWN;
 	}
 	bootsource_set(src);
-	bootsource_set_instance(0);
+	bootsource_set_instance(instance);
 	return 0;
 }
 postcore_initcall(am33xx_bootsource);
@@ -171,3 +209,160 @@ static int am33xx_gpio_init(void)
 	return 0;
 }
 coredevice_initcall(am33xx_gpio_init);
+
+/* UART Defines */
+#define UART_SYSCFG_OFFSET	0x54
+#define UART_SYSSTS_OFFSET	0x58
+
+#define UART_CLK_RUNNING_MASK	0x1
+#define UART_RESET		(0x1 << 1)
+#define UART_SMART_IDLE_EN	(0x1 << 0x3)
+
+void am33xx_uart0_soft_reset(void)
+{
+	int reg;
+
+	reg = readl(AM33XX_UART0_BASE + UART_SYSCFG_OFFSET);
+	reg |= UART_RESET;
+	writel(reg, (AM33XX_UART0_BASE + UART_SYSCFG_OFFSET));
+
+	while ((readl(AM33XX_UART0_BASE + UART_SYSSTS_OFFSET) &
+		UART_CLK_RUNNING_MASK) != UART_CLK_RUNNING_MASK)
+		;
+
+	/* Disable smart idle */
+	reg = readl((AM33XX_UART0_BASE + UART_SYSCFG_OFFSET));
+	reg |= UART_SMART_IDLE_EN;
+	writel(reg, (AM33XX_UART0_BASE + UART_SYSCFG_OFFSET));
+}
+
+
+#define VTP_CTRL_READY		(0x1 << 5)
+#define VTP_CTRL_ENABLE		(0x1 << 6)
+#define VTP_CTRL_START_EN	(0x1)
+
+void am33xx_config_vtp(void)
+{
+	uint32_t val;
+
+	val = readl(AM33XX_VTP0_CTRL_REG);
+	val |= VTP_CTRL_ENABLE;
+	writel(val, AM33XX_VTP0_CTRL_REG);
+
+	val = readl(AM33XX_VTP0_CTRL_REG);
+	val &= ~VTP_CTRL_START_EN;
+	writel(val, AM33XX_VTP0_CTRL_REG);
+
+	val = readl(AM33XX_VTP0_CTRL_REG);
+	val |= VTP_CTRL_START_EN;
+	writel(val, AM33XX_VTP0_CTRL_REG);
+
+	/* Poll for READY */
+	while ((readl(AM33XX_VTP0_CTRL_REG) &
+				VTP_CTRL_READY) != VTP_CTRL_READY)
+		;
+}
+
+void am33xx_ddr_phydata_cmd_macro(const struct am33xx_cmd_control *cmd_ctrl)
+{
+	writel(cmd_ctrl->slave_ratio0, AM33XX_CMD0_CTRL_SLAVE_RATIO_0);
+	writel(cmd_ctrl->dll_lock_diff0, AM33XX_CMD0_DLL_LOCK_DIFF_0);
+	writel(cmd_ctrl->invert_clkout0, AM33XX_CMD0_INVERT_CLKOUT_0);
+
+	writel(cmd_ctrl->slave_ratio1, AM33XX_CMD1_CTRL_SLAVE_RATIO_0);
+	writel(cmd_ctrl->dll_lock_diff1, AM33XX_CMD1_DLL_LOCK_DIFF_0);
+	writel(cmd_ctrl->invert_clkout1, AM33XX_CMD1_INVERT_CLKOUT_0);
+
+	writel(cmd_ctrl->slave_ratio2, AM33XX_CMD2_CTRL_SLAVE_RATIO_0);
+	writel(cmd_ctrl->dll_lock_diff2, AM33XX_CMD2_DLL_LOCK_DIFF_0);
+	writel(cmd_ctrl->invert_clkout2, AM33XX_CMD2_INVERT_CLKOUT_0);
+}
+
+#define CM_EMIF_SDRAM_CONFIG	(AM33XX_CTRL_BASE + 0x110)
+
+void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
+{
+	writel(regs->emif_read_latency, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1));
+	writel(regs->emif_read_latency, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_1_SHADOW));
+	writel(regs->emif_read_latency, AM33XX_EMIF4_0_REG(DDR_PHY_CTRL_2));
+	writel(regs->emif_tim1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1));
+	writel(regs->emif_tim1, AM33XX_EMIF4_0_REG(SDRAM_TIM_1_SHADOW));
+	writel(regs->emif_tim2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2));
+	writel(regs->emif_tim2, AM33XX_EMIF4_0_REG(SDRAM_TIM_2_SHADOW));
+	writel(regs->emif_tim3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3));
+	writel(regs->emif_tim3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3_SHADOW));
+
+	if (regs->zq_config) {
+		/*
+		 * A value of 0x2800 for the REF CTRL will give us
+		 * about 570us for a delay, which will be long enough
+		 * to configure things.
+		 */
+		writel(0x2800, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
+		writel(regs->zq_config, AM33XX_EMIF4_0_REG(ZQ_CONFIG));
+		writel(regs->sdram_config, CM_EMIF_SDRAM_CONFIG);
+		writel(regs->sdram_config, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
+		writel(regs->sdram_ref_ctrl,
+				AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
+		writel(regs->sdram_ref_ctrl,
+			AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
+
+	}
+
+	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
+	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
+	writel(regs->sdram_config, CM_EMIF_SDRAM_CONFIG);
+}
+
+void am33xx_config_io_ctrl(int ioctrl)
+{
+	writel(ioctrl, AM33XX_DDR_CMD0_IOCTRL);
+	writel(ioctrl, AM33XX_DDR_CMD1_IOCTRL);
+	writel(ioctrl, AM33XX_DDR_CMD2_IOCTRL);
+	writel(ioctrl, AM33XX_DDR_DATA0_IOCTRL);
+	writel(ioctrl, AM33XX_DDR_DATA1_IOCTRL);
+}
+
+void am33xx_config_ddr_data(const struct am33xx_ddr_data *data, int macronr)
+{
+	u32 base = 0x0;
+
+	if (macronr)
+		base = 0xA4;
+
+	writel(data->rd_slave_ratio0, AM33XX_DATA0_RD_DQS_SLAVE_RATIO_0 + base);
+	writel(data->wr_dqs_slave_ratio0, AM33XX_DATA0_WR_DQS_SLAVE_RATIO_0 + base);
+	writel(data->wrlvl_init_ratio0, AM33XX_DATA0_WRLVL_INIT_RATIO_0 + base);
+	writel(data->gatelvl_init_ratio0, AM33XX_DATA0_GATELVL_INIT_RATIO_0 + base);
+	writel(data->fifo_we_slave_ratio0, AM33XX_DATA0_FIFO_WE_SLAVE_RATIO_0 + base);
+	writel(data->wr_slave_ratio0, AM33XX_DATA0_WR_DATA_SLAVE_RATIO_0 + base);
+	writel(data->use_rank0_delay, AM33XX_DATA0_RANK0_DELAYS_0 + base);
+	writel(data->dll_lock_diff0, AM33XX_DATA0_DLL_LOCK_DIFF_0 + base);
+}
+
+void am335x_sdram_init(int ioctrl, const struct am33xx_cmd_control *cmd_ctrl,
+		const struct am33xx_emif_regs *emif_regs,
+		const struct am33xx_ddr_data *ddr_data)
+{
+	uint32_t val;
+
+	enable_ddr_clocks();
+
+	am33xx_config_vtp();
+
+	am33xx_ddr_phydata_cmd_macro(cmd_ctrl);
+	am33xx_config_ddr_data(ddr_data, 0);
+	am33xx_config_ddr_data(ddr_data, 1);
+
+	am33xx_config_io_ctrl(ioctrl);
+
+	val = readl(AM33XX_DDR_IO_CTRL);
+	val &= 0xefffffff;
+	writel(val, AM33XX_DDR_IO_CTRL);
+
+	val = readl(AM33XX_DDR_CKE_CTRL);
+	val |= 0x00000001;
+	writel(val, AM33XX_DDR_CKE_CTRL);
+
+	am33xx_config_sdram(emif_regs);
+}

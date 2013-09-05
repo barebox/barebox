@@ -58,23 +58,15 @@ static iomux_v3_cfg_t tqma6x_pads_gpio[] = {
 	MX6Q_PAD_RGMII_RX_CTL__GPIO_6_24,
 };
 
-static void mmd_write_reg(struct phy_device *dev, int device, int reg, int val)
-{
-	phy_write(dev, 0x0d, device);
-	phy_write(dev, 0x0e, reg);
-	phy_write(dev, 0x0d, (1 << 14) | device);
-	phy_write(dev, 0x0e, val);
-}
-
 static int ksz9031rn_phy_fixup(struct phy_device *dev)
 {
 	/*
 	 * min rx data delay, max rx/tx clock delay,
 	 * min rx/tx control delay
 	 */
-	mmd_write_reg(dev, 2, 4, 0);
-	mmd_write_reg(dev, 2, 5, 0);
-	mmd_write_reg(dev, 2, 8, 0x003ff);
+	phy_write_mmd_indirect(dev, 4, 2, 0);
+	phy_write_mmd_indirect(dev, 5, 2, 0);
+	phy_write_mmd_indirect(dev, 8, 2, 0x003ff);
 
 	return 0;
 }

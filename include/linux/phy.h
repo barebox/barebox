@@ -288,5 +288,9 @@ int phy_register_fixup_for_uid(u32 phy_uid, u32 phy_uid_mask,
 		int (*run)(struct phy_device *));
 int phy_scan_fixups(struct phy_device *phydev);
 
+int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad);
+void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
+				   u16 data);
+
 extern struct bus_type mdio_bus_type;
 #endif /* __PHYDEV_H__ */

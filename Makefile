@@ -577,7 +577,7 @@ define rule_barebox__
 	$(cmd_sysmap) $@ System.map;                                         \
 	if [ $$? -ne 0 ]; then                                               \
 		rm -f $@;                                                    \
-		/bin/false;                                                  \
+		false;                                                       \
 	fi;
 endef
 
@@ -614,7 +614,7 @@ define verify_kallsyms
 	$(Q)cmp -s System.map .tmp_System.map ||                             \
 		(echo Inconsistent kallsyms data;                            \
 		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
-		 rm .tmp_kallsyms* ; /bin/false )
+		 rm .tmp_kallsyms* ; false )
 endef
 
 # Update barebox version before link
@@ -782,7 +782,7 @@ ifneq ($(KBUILD_SRC),)
 	$(Q)if [ -f $(srctree)/.config -o -d $(srctree)/include/config ]; then \
 		echo "  $(srctree) is not clean, please run 'make mrproper'";\
 		echo "  in the '$(srctree)' directory.";\
-		/bin/false; \
+		false; \
 	fi;
 	$(Q)if [ ! -d include2 ]; then mkdir -p include2; fi;
 	$(Q)if [ -e $(srctree)/include/asm-$(SRCARCH)/barebox.h ]; then  \

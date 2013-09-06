@@ -966,8 +966,11 @@ struct cpu_type {
 struct cpu_type *identify_cpu(u32 ver);
 
 #if defined(CONFIG_MPC85xx)
+#define LINUX_TLB1_MAX_ADDR	((void *)(64 << 20))
 #define CPU_TYPE_ENTRY(n, v, nc) \
 	{ .name = #n, .soc_ver = SVR_##v, .num_cores = (nc), }
+#else
+#define LINUX_TLB1_MAX_ADDR	((void *)0xffffffff)
 #endif
 #ifndef CONFIG_MACH_SPECIFIC
 extern int _machine;

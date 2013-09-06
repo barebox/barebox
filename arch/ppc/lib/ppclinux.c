@@ -4,11 +4,44 @@
 #include <command.h>
 #include <image.h>
 #include <init.h>
+#include <malloc.h>
 #include <environment.h>
 #include <asm/bitops.h>
+#include <asm/processor.h>
 #include <boot.h>
 #include <errno.h>
 #include <fs.h>
+
+static int bootm_relocate_fdt(void *addr, struct image_data *data)
+{
+	if (addr < LINUX_TLB1_MAX_ADDR) {
+		/* The kernel is within  the boot TLB mapping.
+		 * Put the DTB above if there is no space
+		 * below.
+		 */
+		if (addr < (void *)data->oftree->totalsize) {
+			addr = (void *)PAGE_ALIGN((phys_addr_t)addr +
+					data->os->header.ih_size);
+			addr += data->oftree->totalsize;
+			if (addr < LINUX_TLB1_MAX_ADDR)
+				addr = LINUX_TLB1_MAX_ADDR;
+		}
+	}
+
+	if (addr > LINUX_TLB1_MAX_ADDR) {
+		pr_crit("Unable to relocate DTB to Linux TLB\n");
+		return 1;
+	}
+
+	addr = (void *)PAGE_ALIGN_DOWN((phys_addr_t)addr -
+			data->oftree->totalsize);
+	memcpy(addr, data->oftree, data->oftree->totalsize);
+	free(data->oftree);
+	data->oftree = addr;
+
+	pr_info("Relocating device tree to 0x%p\n", addr);
+	return 0;
+}
 
 static int do_bootm_linux(struct image_data *data)
 {
@@ -22,6 +55,20 @@ static int do_bootm_linux(struct image_data *data)
 	if (!data->oftree) {
 		pr_err("bootm: No devicetree given.\n");
 		return -EINVAL;
+	}
+
+	/* Relocate the device tree if outside the initial
+	 * Linux mapped TLB.
+	 */
+	if (IS_ENABLED(CONFIG_MPC85xx)) {
+		void *addr = data->oftree;
+
+		if ((addr + data->oftree->totalsize) > LINUX_TLB1_MAX_ADDR) {
+			addr = (void *)data->os_address;
+
+			if (bootm_relocate_fdt(addr, data))
+				goto error;
+		}
 	}
 
 	fdt_add_reserve_map(data->oftree);
@@ -40,7 +87,7 @@ static int do_bootm_linux(struct image_data *data)
 
 	reset_cpu(0);
 
-	/* not reached */
+error:
 	return -1;
 }
 

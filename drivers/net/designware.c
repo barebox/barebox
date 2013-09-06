@@ -337,14 +337,15 @@ static int dwc_ether_rx(struct eth_device *dev)
 	length = (status & DESC_RXSTS_FRMLENMSK) >> \
 		 DESC_RXSTS_FRMLENSHFT;
 
-	net_receive(desc_p->dmamac_addr, length);
-
 	/*
 	 * Make the current descriptor valid again and go to
 	 * the next one
 	 */
 	dma_inv_range((unsigned long)desc_p->dmamac_addr,
 		      (unsigned long)desc_p->dmamac_addr + length);
+
+	net_receive(desc_p->dmamac_addr, length);
+
 	desc_p->txrx_status |= DESC_RXSTS_OWNBYDMA;
 
 	/* Test the wrap-around condition. */

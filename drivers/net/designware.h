@@ -130,26 +130,20 @@ struct dmamacdescr {
  */
 
 /* tx status bits definitions */
-#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
+#define DESC_ENH_TXSTS_OWNBYDMA		(1 << 31)
+#define DESC_ENH_TXSTS_TXINT		(1 << 30)
+#define DESC_ENH_TXSTS_TXLAST		(1 << 29)
+#define DESC_ENH_TXSTS_TXFIRST		(1 << 28)
+#define DESC_ENH_TXSTS_TXCRCDIS		(1 << 27)
 
-#define DESC_TXSTS_OWNBYDMA		(1 << 31)
-#define DESC_TXSTS_TXINT		(1 << 30)
-#define DESC_TXSTS_TXLAST		(1 << 29)
-#define DESC_TXSTS_TXFIRST		(1 << 28)
-#define DESC_TXSTS_TXCRCDIS		(1 << 27)
-
-#define DESC_TXSTS_TXPADDIS		(1 << 26)
-#define DESC_TXSTS_TXCHECKINSCTRL	(3 << 22)
-#define DESC_TXSTS_TXRINGEND		(1 << 21)
-#define DESC_TXSTS_TXCHAIN		(1 << 20)
-#define DESC_TXSTS_MSK			(0x1FFFF << 0)
-
-#else
+#define DESC_ENH_TXSTS_TXPADDIS		(1 << 26)
+#define DESC_ENH_TXSTS_TXCHECKINSCTRL	(3 << 22)
+#define DESC_ENH_TXSTS_TXRINGEND		(1 << 21)
+#define DESC_ENH_TXSTS_TXCHAIN		(1 << 20)
+#define DESC_ENH_TXSTS_MSK			(0x1FFFF << 0)
 
 #define DESC_TXSTS_OWNBYDMA		(1 << 31)
 #define DESC_TXSTS_MSK			(0x1FFFF << 0)
-
-#endif
 
 /* rx status bits definitions */
 #define DESC_RXSTS_OWNBYDMA		(1 << 31)
@@ -178,14 +172,10 @@ struct dmamacdescr {
  */
 
 /* tx control bits definitions */
-#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
-
-#define DESC_TXCTRL_SIZE1MASK		(0x1FFF << 0)
-#define DESC_TXCTRL_SIZE1SHFT		(0)
-#define DESC_TXCTRL_SIZE2MASK		(0x1FFF << 16)
-#define DESC_TXCTRL_SIZE2SHFT		(16)
-
-#else
+#define DESC_ENH_TXCTRL_SIZE1MASK		(0x1FFF << 0)
+#define DESC_ENH_TXCTRL_SIZE1SHFT		(0)
+#define DESC_ENH_TXCTRL_SIZE2MASK		(0x1FFF << 16)
+#define DESC_ENH_TXCTRL_SIZE2SHFT		(16)
 
 #define DESC_TXCTRL_TXINT		(1 << 31)
 #define DESC_TXCTRL_TXLAST		(1 << 30)
@@ -200,21 +190,15 @@ struct dmamacdescr {
 #define DESC_TXCTRL_SIZE2MASK		(0x7FF << 11)
 #define DESC_TXCTRL_SIZE2SHFT		(11)
 
-#endif
-
 /* rx control bits definitions */
-#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
+#define DESC_ENH_RXCTRL_RXINTDIS		(1 << 31)
+#define DESC_ENH_RXCTRL_RXRINGEND		(1 << 15)
+#define DESC_ENH_RXCTRL_RXCHAIN		(1 << 14)
 
-#define DESC_RXCTRL_RXINTDIS		(1 << 31)
-#define DESC_RXCTRL_RXRINGEND		(1 << 15)
-#define DESC_RXCTRL_RXCHAIN		(1 << 14)
-
-#define DESC_RXCTRL_SIZE1MASK		(0x1FFF << 0)
-#define DESC_RXCTRL_SIZE1SHFT		(0)
-#define DESC_RXCTRL_SIZE2MASK		(0x1FFF << 16)
-#define DESC_RXCTRL_SIZE2SHFT		(16)
-
-#else
+#define DESC_ENH_RXCTRL_SIZE1MASK		(0x1FFF << 0)
+#define DESC_ENH_RXCTRL_SIZE1SHFT		(0)
+#define DESC_ENH_RXCTRL_SIZE2MASK		(0x1FFF << 16)
+#define DESC_ENH_RXCTRL_SIZE2SHFT		(16)
 
 #define DESC_RXCTRL_RXINTDIS		(1 << 31)
 #define DESC_RXCTRL_RXRINGEND		(1 << 25)
@@ -224,7 +208,5 @@ struct dmamacdescr {
 #define DESC_RXCTRL_SIZE1SHFT		(0)
 #define DESC_RXCTRL_SIZE2MASK		(0x7FF << 11)
 #define DESC_RXCTRL_SIZE2SHFT		(11)
-
-#endif
 
 #endif

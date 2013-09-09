@@ -54,6 +54,7 @@ struct dw_eth_dev {
 	struct eth_dma_regs *dma_regs_p;
 	int phy_addr;
 	phy_interface_t interface;
+	int enh_desc;
 };
 
 /* Speed specific definitions */
@@ -149,19 +150,19 @@ static void tx_descs_init(struct eth_device *dev)
 		desc_p->dmamac_addr = &txbuffs[idx * CONFIG_ETH_BUFSIZE];
 		desc_p->dmamac_next = &desc_table_p[idx + 1];
 
-#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
-		desc_p->txrx_status &= ~(DESC_TXSTS_TXINT | DESC_TXSTS_TXLAST |
-				DESC_TXSTS_TXFIRST | DESC_TXSTS_TXCRCDIS | \
-				DESC_TXSTS_TXCHECKINSCTRL | \
-				DESC_TXSTS_TXRINGEND | DESC_TXSTS_TXPADDIS);
+		if (priv->enh_desc) {
+			desc_p->txrx_status &= ~(DESC_ENH_TXSTS_TXINT | DESC_ENH_TXSTS_TXLAST |
+					DESC_ENH_TXSTS_TXFIRST | DESC_ENH_TXSTS_TXCRCDIS |
+					DESC_ENH_TXSTS_TXCHECKINSCTRL |
+					DESC_ENH_TXSTS_TXRINGEND | DESC_ENH_TXSTS_TXPADDIS);
 
-		desc_p->txrx_status |= DESC_TXSTS_TXCHAIN;
-		desc_p->dmamac_cntl = 0;
-		desc_p->txrx_status &= ~(DESC_TXSTS_MSK | DESC_TXSTS_OWNBYDMA);
-#else
-		desc_p->dmamac_cntl = DESC_TXCTRL_TXCHAIN;
-		desc_p->txrx_status = 0;
-#endif
+			desc_p->txrx_status |= DESC_ENH_TXSTS_TXCHAIN;
+			desc_p->dmamac_cntl = 0;
+			desc_p->txrx_status &= ~(DESC_ENH_TXSTS_MSK | DESC_ENH_TXSTS_OWNBYDMA);
+		} else {
+			desc_p->dmamac_cntl = DESC_TXCTRL_TXCHAIN;
+			desc_p->txrx_status = 0;
+		}
 	}
 
 	/* Correcting the last pointer of the chain */
@@ -184,9 +185,11 @@ static void rx_descs_init(struct eth_device *dev)
 		desc_p->dmamac_addr = &rxbuffs[idx * CONFIG_ETH_BUFSIZE];
 		desc_p->dmamac_next = &desc_table_p[idx + 1];
 
-		desc_p->dmamac_cntl =
-			(MAC_MAX_FRAME_SZ & DESC_RXCTRL_SIZE1MASK) | \
-				      DESC_RXCTRL_RXCHAIN;
+		desc_p->dmamac_cntl = MAC_MAX_FRAME_SZ;
+		if (priv->enh_desc)
+			desc_p->dmamac_cntl |= DESC_ENH_RXCTRL_RXCHAIN;
+		else
+			desc_p->dmamac_cntl |= DESC_RXCTRL_RXCHAIN;
 
 		dma_inv_range((unsigned long)desc_p->dmamac_addr,
 			      (unsigned long)desc_p->dmamac_addr + CONFIG_ETH_BUFSIZE);
@@ -282,11 +285,12 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
-	u32 desc_num = priv->tx_currdescnum;
+	u32 owndma, desc_num = priv->tx_currdescnum;
 	struct dmamacdescr *desc_p = &priv->tx_mac_descrtable[desc_num];
 
+	owndma = priv->enh_desc ? DESC_ENH_TXSTS_OWNBYDMA : DESC_TXSTS_OWNBYDMA;
 	/* Check if the descriptor is owned by CPU */
-	if (desc_p->txrx_status & DESC_TXSTS_OWNBYDMA) {
+	if (desc_p->txrx_status & owndma) {
 		dev_err(&dev->dev, "CPU not owner of tx frame\n");
 		return -1;
 	}
@@ -295,20 +299,20 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 	dma_flush_range((unsigned long)desc_p->dmamac_addr,
 			(unsigned long)desc_p->dmamac_addr + length);
 
-#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
-	desc_p->txrx_status |= DESC_TXSTS_TXFIRST | DESC_TXSTS_TXLAST;
-	desc_p->dmamac_cntl |= (length << DESC_TXCTRL_SIZE1SHFT) & \
-			       DESC_TXCTRL_SIZE1MASK;
+	if (priv->enh_desc) {
+		desc_p->txrx_status |= DESC_ENH_TXSTS_TXFIRST | DESC_ENH_TXSTS_TXLAST;
+		desc_p->dmamac_cntl |= (length << DESC_ENH_TXCTRL_SIZE1SHFT) &
+				       DESC_ENH_TXCTRL_SIZE1MASK;
 
-	desc_p->txrx_status &= ~(DESC_TXSTS_MSK);
-	desc_p->txrx_status |= DESC_TXSTS_OWNBYDMA;
-#else
-	desc_p->dmamac_cntl |= ((length << DESC_TXCTRL_SIZE1SHFT) & \
-			       DESC_TXCTRL_SIZE1MASK) | DESC_TXCTRL_TXLAST | \
-			       DESC_TXCTRL_TXFIRST;
+		desc_p->txrx_status &= ~(DESC_ENH_TXSTS_MSK);
+		desc_p->txrx_status |= DESC_ENH_TXSTS_OWNBYDMA;
+	} else {
+		desc_p->dmamac_cntl |= ((length << DESC_TXCTRL_SIZE1SHFT) &
+				       DESC_TXCTRL_SIZE1MASK) | DESC_TXCTRL_TXLAST |
+				       DESC_TXCTRL_TXFIRST;
 
-	desc_p->txrx_status = DESC_TXSTS_OWNBYDMA;
-#endif
+		desc_p->txrx_status = DESC_TXSTS_OWNBYDMA;
+	}
 
 	/* Test the wrap-around condition. */
 	if (++desc_num >= CONFIG_TX_DESCR_NUM)

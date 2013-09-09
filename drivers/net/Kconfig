@@ -134,11 +134,6 @@ config DRIVER_NET_DESIGNWARE
 	  This option enables support for the Synopsys
 	  Designware Core Univesal MAC 10M/100M/1G ethernet IP.
 
-config DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR
-	bool
-	depends on DRIVER_NET_DESIGNWARE
-	default n
-
 config DRIVER_NET_GIANFAR
 	bool "Gianfar Ethernet"
 	depends on ARCH_MPC85XX

@@ -33,7 +33,7 @@
 
 #include <mach/clock.h>
 #include <mach/imx-regs.h>
-#include <mach/iomux-imx28.h>
+#include <mach/iomux.h>
 #include <mach/mci.h>
 
 #include <asm/armlinux.h>

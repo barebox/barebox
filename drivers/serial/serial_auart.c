@@ -42,11 +42,11 @@
 #include <io.h>
 #include <malloc.h>
 #include <notifier.h>
+#include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 
 #include <mach/clock.h>
-#include <mach/mxs.h>
 #include <mach/imx-regs.h>
 
 #define HW_UARTAPP_CTRL0		(0x00000000)

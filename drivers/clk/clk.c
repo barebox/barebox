@@ -273,6 +273,13 @@ struct of_clk_provider {
 
 static LIST_HEAD(of_clk_providers);
 
+struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec,
+		void *data)
+{
+	return data;
+}
+EXPORT_SYMBOL_GPL(of_clk_src_simple_get);
+
 struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data)
 {
 	struct clk_onecell_data *clk_data = data;

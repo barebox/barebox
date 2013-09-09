@@ -290,6 +290,7 @@ struct clk_onecell_data {
 	unsigned int clk_num;
 };
 struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data);
+struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data);
 
 struct clk *of_clk_get(struct device_node *np, int index);
 struct clk *of_clk_get_by_name(struct device_node *np, const char *name);

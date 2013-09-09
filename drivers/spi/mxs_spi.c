@@ -26,7 +26,6 @@
 #include <asm/mmu.h>
 #include <mach/generic.h>
 #include <mach/imx-regs.h>
-#include <mach/mxs.h>
 #include <mach/clock.h>
 #include <mach/ssp.h>
 
@@ -100,7 +99,7 @@ static int mxs_spi_setup(struct spi_device *spi)
 		return -EINVAL;
 	}
 
-	stmp_reset_block(mxs->regs + HW_SSP_CTRL0);
+	stmp_reset_block(mxs->regs + HW_SSP_CTRL0, 0);
 
 	val |= SSP_CTRL0_SSP_ASSERT_OUT(spi->chip_select);
 	val |= SSP_CTRL0_BUS_WIDTH(0);

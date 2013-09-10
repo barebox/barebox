@@ -32,6 +32,8 @@
 #include <mach/iomux.h>
 #include <mach/ocotp.h>
 #include <mach/devices.h>
+#include <mach/usb.h>
+#include <usb/fsl_usb2.h>
 #include <spi/spi.h>
 
 #include <asm/armlinux.h>
@@ -135,6 +137,11 @@ static const uint32_t mx28evk_pads[] = {
 	SSP2_D3 | VE_3_3V | PULLUP(1) | STRENGTH(S8MA), /* SS0 !CS */
 	SSP2_CMD | VE_3_3V | PULLUP(1) | STRENGTH(S8MA), /* MOSI DIO */
 	SSP2_SCK | VE_3_3V | PULLUP(1) | STRENGTH(S8MA), /* CLK */
+
+	/* USB VBUS1 ENABLE - default to ON */
+	AUART2_RX_GPIO | VE_3_3V | PULLUP(0) | GPIO_OUT | GPIO_VALUE(1),
+	/* USB VBUS0 ENABLE - default to OFF */
+	AUART2_TX_GPIO | VE_3_3V | PULLUP(0) | GPIO_OUT | GPIO_VALUE(0),
 };
 
 static struct mxs_mci_platform_data mci_pdata = {
@@ -247,6 +254,12 @@ static const struct spi_board_info mx28evk_spi_board_info[] = {
 	}
 };
 
+#ifdef CONFIG_USB_GADGET_DRIVER_ARC
+static struct fsl_usb2_platform_data usb_pdata = {
+	.operating_mode	= FSL_USB2_DR_DEVICE,
+	.phy_mode	= FSL_USB2_PHY_UTMI,
+};
+#endif
 static int mx28_evk_devices_init(void)
 {
 	int i;
@@ -279,6 +292,14 @@ static int mx28_evk_devices_init(void)
 
 	add_generic_device("mxs_spi", 2, NULL, IMX_SSP2_BASE, 0x2000,
 			   IORESOURCE_MEM, NULL);
+
+#ifdef CONFIG_USB_GADGET_DRIVER_ARC
+	imx28_usb_phy0_enable();
+	imx28_usb_phy1_enable();
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_USB1_BASE, NULL);
+	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, IMX_USB0_BASE,
+			   0x200, IORESOURCE_MEM, &usb_pdata);
+#endif
 
 	return 0;
 }

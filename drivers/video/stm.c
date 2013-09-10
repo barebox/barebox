@@ -331,7 +331,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	/** @todo ensure HCLK is active at this point of time! */
 
 	size = clk_set_rate(fbi->clk, PICOS2KHZ(mode->pixclock) * 1000);
-	if (size == 0) {
+	if (size != 0) {
 		dev_dbg(fbi->hw_dev, "Unable to set a valid pixel clock\n");
 		return -EINVAL;
 	}

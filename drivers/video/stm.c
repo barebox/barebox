@@ -496,6 +496,7 @@ static int stmfb_probe(struct device_d *hw_dev)
 	fbi.clk = clk_get(hw_dev, NULL);
 	if (IS_ERR(fbi.clk))
 		return PTR_ERR(fbi.clk);
+	clk_enable(fbi.clk);
 
 	/* add runtime video info */
 	fbi.info.mode_list = pdata->mode_list;

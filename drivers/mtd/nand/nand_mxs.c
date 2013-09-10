@@ -1259,6 +1259,7 @@ static int mxs_nand_probe(struct device_d *dev)
 		nand_info->dma_channel_base = 0;
 	} else {
 		nand_info->dma_channel_base = MXS_DMA_CHANNEL_AHB_APBH_GPMI0;
+		clk_enable(nand_info->clk);
 	}
 
 	err = mxs_nand_alloc_buffers(nand_info);

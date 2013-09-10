@@ -46,6 +46,7 @@
 #define CLK_PLL0CTRL0			(IMX_CCM_BASE + 0x0)
 #define CLK_PLL1CTRL0			(IMX_CCM_BASE + 0x20)
 #define PLLCTRL0_EN_USB_CLKS		(1 << 18)
+#define PLLCTRL0_POWER		(1 << 17)
 
 #define DIGCTRL_CTRL			(IMX_DIGCTL_BASE + 0x0)
 #define DIGCTL_CTRL_USB0_CLKGATE	(1 << 2)
@@ -77,7 +78,7 @@ int imx28_usb_phy0_enable(void)
 	imx28_usb_phy_reset((void *)IMX_USBPHY0_BASE);
 
 	/* Turn on the USB clocks */
-	writel(PLLCTRL0_EN_USB_CLKS, CLK_PLL0CTRL0 + SET);
+	writel(PLLCTRL0_EN_USB_CLKS | PLLCTRL0_POWER, CLK_PLL0CTRL0 + SET);
 
 	writel(DIGCTL_CTRL_USB0_CLKGATE, DIGCTRL_CTRL + CLR);
 
@@ -91,7 +92,7 @@ int imx28_usb_phy1_enable(void)
 	imx28_usb_phy_reset((void *)IMX_USBPHY1_BASE);
 
 	/* Turn on the USB clocks */
-	writel(PLLCTRL0_EN_USB_CLKS, CLK_PLL1CTRL0 + SET);
+	writel(PLLCTRL0_EN_USB_CLKS | PLLCTRL0_POWER, CLK_PLL1CTRL0 + SET);
 
 	writel(DIGCTL_CTRL_USB1_CLKGATE, DIGCTRL_CTRL + CLR);
 

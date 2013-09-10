@@ -270,6 +270,7 @@ static int mxs_spi_probe(struct device_d *dev)
 	mxs->clk = clk_get(dev, NULL);
 	if (IS_ERR(mxs->clk))
 		return PTR_ERR(mxs->clk);
+	clk_enable(mxs->clk);
 
 	spi_register_master(master);
 

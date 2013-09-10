@@ -68,7 +68,7 @@ enum imx28_clk {
 	emi_xtal, lcdif_div, etm_div, ptp, saif0_div, saif1_div,
 	clk32k_div, rtc, lradc, spdif_div, clk32k, pwm, uart, ssp0,
 	ssp1, ssp2, ssp3, gpmi, spdif, emi, saif0, saif1, lcdif, etm,
-	fec, can0, can1, usb0, usb1, usb0_phy, usb1_phy, enet_out,
+	fec_sleep, fec, can0, can1, usb0, usb1, usb0_phy, usb1_phy, enet_out,
 	lcdif_comp, clk_max
 };
 
@@ -124,7 +124,8 @@ int __init mx28_clocks_init(void __iomem *regs)
 	clks[emi] = mxs_clk_gate("emi", "emi_sel", EMI, 31);
 	clks[lcdif] = mxs_clk_gate("lcdif", "lcdif_div", LCDIF, 31);
 	clks[etm] = mxs_clk_gate("etm", "etm_div", ETM, 31);
-	clks[fec] = mxs_clk_gate("fec", "hbus", ENET, 30);
+	clks[fec_sleep] = mxs_clk_gate("fec_sleep", "hbus", ENET, 31);
+	clks[fec] = mxs_clk_gate("fec", "fec_sleep", ENET, 30);
 	clks[usb0_phy] = mxs_clk_gate("usb0_phy", "pll0", PLL0CTRL0, 18);
 	clks[usb1_phy] = mxs_clk_gate("usb1_phy", "pll1", PLL1CTRL0, 18);
 	clks[enet_out] = clk_gate("enet_out", "pll2", ENET, 18);

@@ -14,6 +14,7 @@ hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-am35xx-spi-image
 hostprogs-$(CONFIG_ARCH_S5PCxx)  += s5p_cksum
 hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 hostprogs-$(CONFIG_ARCH_ZYNQ)	 += zynq_mkimage
+hostprogs-$(CONFIG_ARCH_SOCFPGA) += socfpga_mkimage
 subdir-$(CONFIG_ARCH_IMX)	 += imx
 
 HOSTLOADLIBES_omap4_usbboot = -lpthread

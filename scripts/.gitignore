@@ -10,3 +10,4 @@ mkublheader
 omap_signGP
 omap4_usbboot
 zynq_mkimage
+socfpga_mkimage

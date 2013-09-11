@@ -1,0 +1,121 @@
+/*
+ *  Copyright (C) 2013 Steffen Trumtrar <s.trumtrar@pengutronix.de>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/include/ "socfpga_cyclone5.dtsi"
+
+/ {
+	model = "Terasic SoCkit";
+	compatible = "terasic,sockit", "altr,socfpga";
+
+	chosen {
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x0>;
+	};
+
+	leds: gpio-leds {
+	};
+
+	buttons: gpio-keys {
+	};
+};
+
+&leds {
+	compatible = "gpio-leds";
+
+	led@0 {
+		label = "0";
+		gpios = <&gpio1 24 0>;
+		linux,default-trigger = "heartbeat";
+	};
+
+	led@1 {
+		label = "1";
+		gpios = <&gpio1 25 0>;
+	};
+
+	led@2 {
+		label = "2";
+		gpios = <&gpio1 26 0>;
+	};
+
+	led@3 {
+		label = "3";
+		gpios = <&gpio1 27 0>;
+	};
+};
+
+&buttons {
+	compatible = "gpio-keys";
+
+        key@0 {
+		label = "F1";
+		gpios = <&gpio2 21 0>;
+		linux,code = <59>;
+	};
+
+        key@1 {
+		label = "F2";
+		gpios = <&gpio2 22 0>;
+		linux,code = <60>;
+	};
+
+        key@2 {
+		label = "F3";
+		gpios = <&gpio2 23 0>;
+		linux,code = <61>;
+	};
+
+        key@3 {
+		label = "F4";
+		gpios = <&gpio2 24 0>;
+		linux,code = <62>;
+	};
+};
+
+&gmac1 {
+	phy-mode = "rgmii";
+	status = "okay";
+};
+
+&mmc {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "disabled";
+
+	eeprom@51 {
+		compatible = "atmel,24c32";
+		reg = <0x51>;
+		pagesize = <0x20>;
+	};
+};
+
+&i2c1 {
+	status = "disabled";
+
+	adxl345@53 {
+		compatible = "adi,adxl34x";
+		reg = <0x53>;
+		interrupt-parent = <0x2>;
+		interrupts = <0x0 0xa6 0x4>;
+	};
+};

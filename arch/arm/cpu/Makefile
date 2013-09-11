@@ -10,7 +10,7 @@ obj-$(CONFIG_CMD_ARM_CPUINFO) += cpuinfo.o
 obj-$(CONFIG_CMD_ARM_MMUINFO) += mmuinfo.o
 obj-$(CONFIG_OFDEVICE) += dtb.o
 obj-$(CONFIG_MMU) += mmu.o cache.o mmu-early.o
-pbl-$(CONFIG_MMU) += cache.o mmu-early.o
+pbl-$(CONFIG_MMU) += mmu-early.o
 obj-$(CONFIG_CPU_32v4T) += cache-armv4.o
 pbl-$(CONFIG_CPU_32v4T) += cache-armv4.o
 obj-$(CONFIG_CPU_32v5) += cache-armv5.o
@@ -25,7 +25,7 @@ pbl-y += setupc.o
 pbl-$(CONFIG_PBL_SINGLE_IMAGE) += start-pbl.o
 pbl-$(CONFIG_PBL_MULTI_IMAGES) += start-images.o uncompress.o
 
-obj-y += common.o
-pbl-y += common.o
+obj-y += common.o cache.o
+pbl-y += common.o cache.o
 
 lwl-y += lowlevel.o

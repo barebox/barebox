@@ -1,0 +1,19 @@
+#
+# barebox image generation Makefile for Altera socfpga
+#
+
+# %.socfpga - convert into socfpga image
+# ----------------------------------------------------------------
+quiet_cmd_socfpga_image = SOCFPGA-IMG $@
+      cmd_socfpga_image = scripts/socfpga_mkimage -b -o $@ $<
+
+$(obj)/%.socfpgaimg: $(obj)/% FORCE
+	$(call if_changed,socfpga_image)
+
+# ----------------------- Cyclone5 based boards ---------------------------
+
+ifdef CONFIG_ARCH_SOCFPGA_XLOAD
+image-y += $(xload-y)
+else
+image-y += $(barebox-y)
+endif

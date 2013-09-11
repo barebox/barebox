@@ -117,6 +117,17 @@ config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	select GENERIC_GPIO
 
+config ARCH_SOCFPGA
+	bool "Altera SOCFPGA cyclone5"
+	select HAS_DEBUG_LL
+	select ARM_SMP_TWD
+	select CPU_V7
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select GENERIC_GPIO
+	select GPIOLIB
+	select HAVE_PBL_MULTI_IMAGES
+
 config ARCH_S3C24xx
 	bool "Samsung S3C2410, S3C2440"
 	select ARCH_SAMSUNG
@@ -183,6 +194,7 @@ source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-pxa/Kconfig
 source arch/arm/mach-samsung/Kconfig
+source arch/arm/mach-socfpga/Kconfig
 source arch/arm/mach-versatile/Kconfig
 source arch/arm/mach-vexpress/Kconfig
 source arch/arm/mach-tegra/Kconfig

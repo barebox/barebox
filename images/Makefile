@@ -108,6 +108,7 @@ $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 
 include $(srctree)/images/Makefile.imx
 include $(srctree)/images/Makefile.mvebu
+include $(srctree)/images/Makefile.socfpga
 
 targets += $(image-y) pbl.lds barebox.x barebox.z
 targets += $(patsubst %,%.pblx,$(pblx-y))
@@ -122,5 +123,5 @@ images: $(addprefix $(obj)/, $(image-y)) FORCE
 	@echo "images built:\n" $(patsubst %,%\\n,$(image-y))
 
 clean-files := *.pbl *.pblb *.pblx *.map start_*.imximg *.img barebox.z start_*.kwbimg \
-	start_*.kwbuartimg
+	start_*.kwbuartimg *.socfpgaimg
 clean-files += pbl.lds

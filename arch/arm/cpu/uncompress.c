@@ -54,6 +54,8 @@ static void noinline uncompress(uint32_t membase,
 	uint32_t *ptr;
 	void *pg_start;
 
+	arm_early_mmu_cache_invalidate();
+
 	endmem -= STACK_SIZE; /* stack */
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))

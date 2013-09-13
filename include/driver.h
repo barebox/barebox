@@ -456,6 +456,7 @@ struct cdev {
 	unsigned int flags;
 	int open;
 	struct mtd_info *mtd;
+	u8 dos_partition_type;
 };
 
 int devfs_create(struct cdev *);

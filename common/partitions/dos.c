@@ -138,10 +138,13 @@ static void dos_partition(void *buf, struct block_device *blk,
 	for (i = 0; i < 4; i++) {
 		pentry.first_sec = get_unaligned_le32(&table[i].partition_start);
 		pentry.size = get_unaligned_le32(&table[i].partition_size);
+		pentry.dos_partition_type = table[i].type;
 
 		if (pentry.first_sec != 0) {
-			pd->parts[pd->used_entries].first_sec = pentry.first_sec;
-			pd->parts[pd->used_entries].size = pentry.size;
+			int n = pd->used_entries;
+			pd->parts[n].first_sec = pentry.first_sec;
+			pd->parts[n].size = pentry.size;
+			pd->parts[n].dos_partition_type = pentry.dos_partition_type;
 			pd->used_entries++;
 		} else {
 			dev_dbg(blk->dev, "Skipping empty partition %d\n", i);

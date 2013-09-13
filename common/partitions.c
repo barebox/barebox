@@ -63,6 +63,8 @@ static int register_one_partition(struct block_device *blk,
 		goto out;
 	}
 
+	cdev->dos_partition_type = part->dos_partition_type;
+
 	free(partition_name);
 
 	if (!part->name[0])
@@ -84,7 +86,7 @@ static int register_one_partition(struct block_device *blk,
 	ret = 0;
 out:
 	free(partition_name);
-	return 0;
+	return ret;
 }
 
 static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)

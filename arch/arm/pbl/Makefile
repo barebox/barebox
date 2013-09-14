@@ -13,9 +13,17 @@ targets := zbarebox.lds zbarebox zbarebox.bin zbarebox.S \
 # Make sure files are removed during clean
 extra-y       += piggy.gzip piggy.lz4 piggy.lzo piggy.lzma piggy.xzkern piggy.shipped zbarebox.map
 
+ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
+FIX_SIZE=-b
+else
+FIX_SIZE=
+endif
+
 $(obj)/zbarebox.bin:	$(obj)/zbarebox FORCE
 	$(call if_changed,objcopy)
 	$(call cmd,check_file_size,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
+	$(Q)$(kecho) '  Barebox: fix size'
+	$(Q)$(objtree)/scripts/fix_size -f $(objtree)/$@ -o 0x2c $(FIX_SIZE)
 	$(Q)$(kecho) '  Barebox: $@ is ready'
 
 $(obj)/zbarebox.S: $(obj)/zbarebox FORCE

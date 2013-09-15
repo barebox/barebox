@@ -451,6 +451,14 @@ config BLSPEC
 	  on a device and it allows the Operating System to install / update
 	  kernels.
 
+config KERNEL_INSTALL_TARGET
+	bool
+	prompt "Build kernel-install utility for the target"
+	help
+	  Enable this to compile the kernel-install script using the cross
+	  compiler. The utility for the target will be under
+	  scripts/kernel-install-target
+
 choice
 	prompt "console support"
 	default CONSOLE_FULL

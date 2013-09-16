@@ -6,7 +6,7 @@
 #include <magicvar.h>
 #include <generated/utsrelease.h>
 
-static struct device_d global_device = {
+struct device_d global_device = {
 	.name = "global",
 	.id = DEVICE_ID_SINGLE,
 };

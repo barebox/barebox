@@ -114,6 +114,26 @@ cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c default_environment)
 $(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(barebox_default_env_comp) FORCE
 	$(call if_changed,env_h)
 
+quiet_cmd_pwd_h = PWDH    $@
+ifneq ($(CONFIG_PASSWORD_DEFAULT),"")
+PASSWD_FILE := $(shell cd $(srctree); find $(CONFIG_PASSWORD_DEFAULT) -type f)
+cmd_pwd_h = echo -n "const char default_passwd[] = \"" > $@; \
+	cat $< | tr -d '\n' >> $@; \
+	echo "\";" >> $@
+
+include/generated/passwd.h: $(PASSWD_FILE)
+	$(call if_changed,pwd_h)
+else
+cmd_pwd_h = echo "const char default_passwd[] = \"\";" > $@
+
+include/generated/passwd.h: FORCE
+	$(call if_changed,pwd_h)
+endif
+
+targets += include/generated/passwd.h
+
+$(obj)/password.o: include/generated/passwd.h
+
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h
 

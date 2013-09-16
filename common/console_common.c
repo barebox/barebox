@@ -21,8 +21,41 @@
 #include <common.h>
 #include <fs.h>
 #include <errno.h>
+#include <console.h>
+#include <init.h>
+#include <environment.h>
+#include <globalvar.h>
+#include <magicvar.h>
+#include <password.h>
 
 #ifndef CONFIG_CONSOLE_NONE
+
+static int console_input_allow;
+
+static int console_global_init(void)
+{
+	if (IS_ENABLED(CONFIG_CMD_LOGIN) && is_passwd_enable())
+		console_input_allow = 0;
+	else
+		console_input_allow = 1;
+
+	globalvar_add_simple_bool("console.input_allow", &console_input_allow);
+
+	return 0;
+}
+late_initcall(console_global_init);
+
+BAREBOX_MAGICVAR_NAMED(global_console_input_allow, global.console.input_allow, "console input allowed");
+
+bool console_is_input_allow(void)
+{
+	return console_input_allow;
+}
+
+void console_allow_input(bool val)
+{
+	console_input_allow = val;
+}
 
 int printf(const char *fmt, ...)
 {

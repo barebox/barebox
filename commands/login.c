@@ -24,6 +24,7 @@
 #include <globalvar.h>
 #include <magicvar.h>
 #include <init.h>
+#include <console.h>
 
 #define PASSWD_MAX_LENGTH	(128 + 1)
 
@@ -44,6 +45,7 @@ static int do_login(int argc, char *argv[])
 	int timeout = login_timeout;
 	char *timeout_cmd = "boot";
 
+	console_allow_input(true);
 	if (!is_passwd_enable()) {
 		puts("login: password not set\n");
 		return 0;
@@ -64,8 +66,10 @@ static int do_login(int argc, char *argv[])
 		puts("Password: ");
 		passwd_len = password(passwd, PASSWD_MAX_LENGTH, LOGIN_MODE, timeout);
 
-		if (passwd_len < 0)
+		if (passwd_len < 0) {
+			console_allow_input(false);
 			run_command(timeout_cmd, 0);
+		}
 
 		if (check_passwd(passwd, passwd_len))
 			return 0;

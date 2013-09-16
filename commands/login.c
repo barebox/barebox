@@ -20,6 +20,10 @@
 #include <complete.h>
 #include <password.h>
 #include <getopt.h>
+#include <environment.h>
+#include <globalvar.h>
+#include <magicvar.h>
+#include <init.h>
 
 #define PASSWD_MAX_LENGTH	(128 + 1)
 
@@ -31,11 +35,13 @@
 #define LOGIN_MODE HIDE
 #endif
 
+static int login_timeout = 0;
+
 static int do_login(int argc, char *argv[])
 {
 	unsigned char passwd[PASSWD_MAX_LENGTH];
 	int passwd_len, opt;
-	int timeout = 0;
+	int timeout = login_timeout;
 	char *timeout_cmd = "boot";
 
 	if (!is_passwd_enable()) {
@@ -80,3 +86,13 @@ BAREBOX_CMD_START(login)
 	BAREBOX_CMD_HELP(cmd_login_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
+
+static int login_global_init(void)
+{
+	globalvar_add_simple_int("login.timeout", &login_timeout, "%d");
+
+	return 0;
+}
+late_initcall(login_global_init);
+
+BAREBOX_MAGICVAR_NAMED(global_login_timeout, global.login.timeout, "timeout to type the password");

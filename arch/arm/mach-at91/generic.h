@@ -35,3 +35,5 @@ static inline struct device_d *at91_add_sam9_smc(int id, resource_size_t start,
 	return add_generic_device("at91sam9-smc", id, NULL, start, size,
 				  IORESOURCE_MEM, NULL);
 }
+
+void at91_rtt_irq_fixup(void *base);

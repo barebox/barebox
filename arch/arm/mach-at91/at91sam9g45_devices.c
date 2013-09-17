@@ -10,6 +10,7 @@
  *
  */
 #include <common.h>
+#include <init.h>
 #include <sizes.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
@@ -451,3 +452,9 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data)
 void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data) {}
 #endif
 
+static int at91_fixup_device(void)
+{
+	at91_rtt_irq_fixup(IOMEM(AT91SAM9G45_BASE_RTT));
+	return 0;
+}
+late_initcall(at91_fixup_device);

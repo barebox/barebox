@@ -277,6 +277,7 @@ static loff_t fat_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	if (ret)
 		return ret;
 
+	f->pos = pos;
 	return pos;
 }
 

@@ -563,6 +563,7 @@ static int atmci_probe(struct device_d *hw_dev)
 	host->mci.init = atmci_reset;
 	host->mci.card_present = atmci_card_present;
 	host->mci.hw_dev = hw_dev;
+	host->mci.devname = pd->devname;
 
 	if (pd->bus_width >= 4)
 		host->mci.host_caps |= MMC_CAP_4_BIT_DATA;

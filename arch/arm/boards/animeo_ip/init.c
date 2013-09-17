@@ -123,6 +123,8 @@ static void animeo_ip_add_device_nand(void)
 
 static struct macb_platform_data macb_pdata = {
 	.phy_addr = 0,
+	.phy_interface = PHY_INTERFACE_MODE_MII,
+	.flags = AT91SAM_ETX2_ETX3_ALTERNATIVE,
 };
 
 /*

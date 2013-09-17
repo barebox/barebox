@@ -1,6 +1,15 @@
 #include <common.h>
 #include <command.h>
 #include <environment.h>
+#include <shell.h>
+
+/*
+ * not yet supported
+ */
+int shell_get_last_return_code(void)
+{
+	return 0;
+}
 
 static int parse_line (char *line, char *argv[])
 {

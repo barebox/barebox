@@ -123,6 +123,7 @@
 #include <linux/list.h>
 #include <binfmt.h>
 #include <init.h>
+#include <shell.h>
 
 /*cmd_boot.c*/
 extern int do_bootd(int flag, int argc, char *argv[]);      /* do_bootd */
@@ -225,6 +226,11 @@ static char console_buffer[CONFIG_CBSIZE];		/* console I/O buffer	*/
 /* globals, connect us to the outside world
  * the first three support $?, $#, and $1 */
 static unsigned int last_return_code;
+
+int shell_get_last_return_code(void)
+{
+	return last_return_code;
+}
 
 /* "globals" within this file */
 static uchar *ifs;

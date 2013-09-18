@@ -21,6 +21,7 @@ config OF_NET
 
 config OF_BAREBOX_DRIVERS
 	depends on OFDEVICE
+	depends on ENV_HANDLING
 	bool "Enable barebox specific devicetree configuration drivers"
 	help
 	  barebox supports being configured from devicetree. This enables

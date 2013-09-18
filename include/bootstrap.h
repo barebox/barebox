@@ -7,6 +7,8 @@
 #ifndef __BOOSTRAP_H__
 #define __BOOSTRAP_H__
 
+#include <common.h>
+
 #define bootstrap_err(fmt, arg...) printf(fmt, ##arg)
 
 void bootstrap_boot(int (*func)(void), bool barebox);

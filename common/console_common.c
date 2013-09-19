@@ -108,3 +108,16 @@ int fputc(int fd, char c)
 	return 0;
 }
 EXPORT_SYMBOL(fputc);
+
+struct console_device *console_get_by_dev(struct device_d *dev)
+{
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (cdev->dev == dev)
+			return cdev;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(console_get_by_dev);

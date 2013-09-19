@@ -28,6 +28,11 @@
 #define CONSOLE_STDOUT          (1 << 1)
 #define CONSOLE_STDERR          (1 << 2)
 
+enum console_mode {
+	CONSOLE_MODE_NORMAL,
+	CONSOLE_MODE_RS485,
+};
+
 struct console_device {
 	struct device_d *dev;
 	struct device_d class_dev;
@@ -37,6 +42,7 @@ struct console_device {
 	int  (*getc)(struct console_device *cdev);
 	int (*setbrg)(struct console_device *cdev, int baudrate);
 	void (*flush)(struct console_device *cdev);
+	int (*set_mode)(struct console_device *cdev, enum console_mode mode);
 
 	struct list_head list;
 

@@ -152,6 +152,7 @@ extern int (*barebox_main)(void);
 
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
+extern void (*board_shutdown)(void);
 
 /*
  * architectures which have special calling conventions for

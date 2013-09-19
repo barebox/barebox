@@ -146,6 +146,21 @@ static void animeo_ip_add_device_mci(void)
 static void animeo_ip_add_device_mci(void) {}
 #endif
 
+/*
+ * USB Host port
+ */
+static struct at91_usbh_data __initdata animeo_ip_usbh_data = {
+	.ports		= 2,
+	.vbus_pin	= {AT91_PIN_PB15, -EINVAL},
+	.vbus_pin_active_low	= {0, 0},
+
+};
+
+static void animeo_ip_add_device_usb(void)
+{
+	at91_add_device_usbh_ohci(&animeo_ip_usbh_data);
+}
+
 struct gpio_bicolor_led leds[] = {
 	{
 		.gpio_c0 = AT91_PIN_PC17,
@@ -216,6 +231,7 @@ static int animeo_ip_devices_init(void)
 	animeo_ip_power_control();
 	animeo_ip_add_device_nand();
 	at91_add_device_eth(0, &macb_pdata);
+	animeo_ip_add_device_usb();
 	animeo_ip_add_device_mci();
 	animeo_ip_add_device_buttons();
 	animeo_ip_add_device_led();

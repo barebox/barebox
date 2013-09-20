@@ -19,6 +19,7 @@
 #include <nand.h>
 #include <sizes.h>
 #include <linux/mtd/nand.h>
+#include <linux/clk.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
 #include <gpio.h>
@@ -208,12 +209,45 @@ static void animeo_ip_power_control(void)
 	animeo_export_gpio_out(AT91_PIN_PC4, "power_save");
 }
 
+static void animeo_ip_phy_reset(void)
+{
+	unsigned long rstc;
+	int i;
+	struct clk *clk = clk_get(NULL, "macb_clk");
+
+	clk_enable(clk);
+
+	for (i = AT91_PIN_PA12; i <= AT91_PIN_PA29; i++)
+		at91_set_gpio_input(i, 0);
+
+	rstc = at91_sys_read(AT91_RSTC_MR) & AT91_RSTC_ERSTL;
+
+	/* Need to reset PHY -> 500ms reset */
+	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
+				     (AT91_RSTC_ERSTL & (0x0d << 8)) |
+				     AT91_RSTC_URSTEN);
+
+	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_EXTRST);
+
+	/* Wait for end hardware reset */
+	while (!(at91_sys_read(AT91_RSTC_SR) & AT91_RSTC_NRSTL))
+		;
+
+	/* Restore NRST value */
+	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY | (rstc) | AT91_RSTC_URSTEN);
+}
+
+static void animeo_ip_add_device_eth(void)
+{
+	animeo_ip_phy_reset();
+	at91_add_device_eth(0, &macb_pdata);
+}
+
 static int animeo_ip_devices_init(void)
 {
 	animeo_ip_detect_version();
 	animeo_ip_power_control();
 	animeo_ip_add_device_nand();
-	at91_add_device_eth(0, &macb_pdata);
 	animeo_ip_add_device_mci();
 	animeo_ip_add_device_buttons();
 	animeo_ip_add_device_led();
@@ -231,6 +265,8 @@ static int animeo_ip_devices_init(void)
 	dev_add_bb_dev("self_raw", "self0");
 	devfs_add_partition("nand0", SZ_256K + SZ_32K, SZ_32K, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+
+	animeo_ip_add_device_eth();
 
 	return 0;
 }

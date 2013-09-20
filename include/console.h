@@ -40,7 +40,6 @@ struct console_device {
 
 	struct list_head list;
 
-	unsigned char f_caps;
 	unsigned char f_active;
 
 	unsigned int baudrate;

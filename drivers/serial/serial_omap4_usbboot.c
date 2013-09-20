@@ -62,7 +62,6 @@ static int serial_omap4_usbboot_probe(struct device_d *dev)
 	priv = xzalloc(sizeof(*priv));
 
 	priv->cdev.dev = dev;
-	priv->cdev.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	priv->cdev.tstc = serial_omap4_usbboot_tstc;
 	priv->cdev.putc = serial_omap4_usbboot_putc;
 	priv->cdev.getc = serial_omap4_usbboot_getc;

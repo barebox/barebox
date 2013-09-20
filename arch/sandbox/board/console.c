@@ -36,11 +36,6 @@ int barebox_register_console(char *name, int stdinfd, int stdoutfd)
 
 	strcpy(dev->name, "console");
 
-	if (stdinfd >= 0)
-		data->flags = CONSOLE_STDIN;
-	if (stdoutfd >= 0)
-		data->flags |= CONSOLE_STDOUT | CONSOLE_STDERR;
-
 	data->stdoutfd = stdoutfd;
 	data->stdinfd  = stdinfd;
 

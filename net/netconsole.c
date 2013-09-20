@@ -72,7 +72,6 @@ static int nc_init(void)
 	}
 
 	net_udp_bind(priv->con, priv->port);
-	priv->cdev.f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	return 0;
 }
 

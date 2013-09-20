@@ -93,7 +93,6 @@ static int __init twl6030_pwrbtn_probe(struct device_d *dev)
 
 	dev->type_data = &idata->cdev;
 	idata->cdev.dev = dev;
-	idata->cdev.f_caps = CONSOLE_STDIN;
 	idata->cdev.tstc = twl6030_pwrbtn_tstc;
 	idata->cdev.getc = twl6030_pwrbtn_getc;
 	console_register(&idata->cdev);

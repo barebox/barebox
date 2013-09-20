@@ -196,7 +196,6 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 
 	cdev = &uart->uart;
 	cdev->dev = &dev->dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pl011_tstc;
 	cdev->putc = pl011_putc;
 	cdev->getc = pl011_getc;

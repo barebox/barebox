@@ -187,7 +187,6 @@ static int auart_serial_probe(struct device_d *dev)
 	priv = xzalloc(sizeof *priv);
 	cdev = &priv->cdev;
 
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = auart_serial_tstc;
 	cdev->putc = auart_serial_putc;
 	cdev->getc = auart_serial_getc;

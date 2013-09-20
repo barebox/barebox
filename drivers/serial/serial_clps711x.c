@@ -131,7 +131,6 @@ static int clps711x_probe(struct device_d *dev)
 
 	dev->priv	= s;
 	s->cdev.dev	= dev;
-	s->cdev.f_caps	= CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	s->cdev.tstc	= clps711x_tstc;
 	s->cdev.putc	= clps711x_putc;
 	s->cdev.getc	= clps711x_getc;

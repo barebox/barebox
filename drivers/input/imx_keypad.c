@@ -441,7 +441,6 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	cdev->dev = dev;
 	cdev->tstc = imx_keypad_tstc;
 	cdev->getc = imx_keypad_getc;
-	cdev->f_caps = CONSOLE_STDIN;
 	cdev->f_active = CONSOLE_STDIN;
 
 	console_register(&keypad->cdev);

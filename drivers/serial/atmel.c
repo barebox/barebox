@@ -399,7 +399,6 @@ static int atmel_serial_probe(struct device_d *dev)
 	uart = xzalloc(sizeof(struct atmel_uart_port));
 	cdev = &uart->uart;
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = atmel_serial_tstc;
 	cdev->putc = atmel_serial_putc;
 	cdev->getc = atmel_serial_getc;

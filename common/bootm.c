@@ -167,6 +167,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 	data->of_root_node = of_unflatten_dtb(NULL, fdt);
 	if (!data->of_root_node) {
 		pr_err("unable to unflatten devicetree\n");
+		free(fdt);
 		return -EINVAL;
 	}
 

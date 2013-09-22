@@ -46,11 +46,6 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-/*
- * Additional oftree size for the fixed tree
- */
-#define OFTREE_SIZE_INCREASE	0x8000
-
 static char *bootm_image_name_and_no(const char *name, int *no)
 {
 	char *at, *ret;

@@ -106,4 +106,6 @@ struct menu_entry* menu_entry_get_by_num(struct menu* m, int num);
  */
 void menu_action_exit(struct menu *m, struct menu_entry *me);
 
+int menutree(const char *path, int toplevel);
+
 #endif /* __MENU_H__ */

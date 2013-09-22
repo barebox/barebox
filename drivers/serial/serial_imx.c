@@ -337,7 +337,6 @@ static int imx_serial_probe(struct device_d *dev)
 	cdev->setbrg = imx_serial_setbaudrate;
 
 	imx_serial_init_port(cdev);
-	imx_serial_setbaudrate(cdev, 115200);
 
 	/* Enable UART */
 	val = readl(priv->regs + UCR1);

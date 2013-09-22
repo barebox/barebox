@@ -183,8 +183,6 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 	ns16550_write(cdev, 0x07, mdr1);	/* Disable */
 #endif
 
-	ns16550_setbaudrate(cdev, CONFIG_BAUDRATE);
-
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
 	ns16550_write(cdev, 0x00,  mdr1);
 #endif

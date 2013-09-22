@@ -201,7 +201,6 @@ static int auart_serial_probe(struct device_d *dev)
 		return PTR_ERR(priv->clk);
 
 	auart_serial_init_port(priv);
-	auart_serial_setbaudrate(cdev, CONFIG_BAUDRATE);
 
 	/* Disable RTS/CTS, enable Rx, Tx, UART */
 	writel(BM_UARTAPP_CTRL2_RTSEN | BM_UARTAPP_CTRL2_CTSEN |

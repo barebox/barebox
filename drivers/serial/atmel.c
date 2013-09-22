@@ -379,8 +379,6 @@ static int atmel_serial_init_port(struct console_device *cdev)
 
 	writel(USART3_BIT(RSTRX) | USART3_BIT(RSTTX), uart->base + USART3_CR);
 
-	atmel_serial_setbaudrate(cdev, 115200);
-
 	writel(USART3_BIT(RXEN) | USART3_BIT(TXEN), uart->base + USART3_CR);
 	writel((USART3_BF(USART_MODE, USART3_USART_MODE_NORMAL)
 			   | USART3_BF(USCLKS, USART3_USCLKS_MCK)

@@ -164,10 +164,6 @@ int pl011_init_port (struct console_device *cdev)
 	uart->uartclk = clk_get_rate(uart->clk);
 
 	/*
-	 * set baud rate
-	 */
-	pl011_setbaudrate(cdev, 115200);
-	/*
 	 ** Set the UART to be 8 bits, 1 stop bit, no parity, fifo enabled.
 	 */
 	pl011_rlcr(uart, UART01x_LCRH_WLEN_8 | UART01x_LCRH_FEN);

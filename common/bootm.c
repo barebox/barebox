@@ -16,6 +16,8 @@
 #include <fs.h>
 #include <malloc.h>
 #include <memory.h>
+#include <globalvar.h>
+#include <init.h>
 
 static LIST_HEAD(handler_list);
 
@@ -322,3 +324,17 @@ err_out:
 
 	return ret;
 }
+
+static int bootm_init(void)
+{
+	globalvar_add_simple("bootm.image", NULL);
+	globalvar_add_simple("bootm.image.loadaddr", NULL);
+	globalvar_add_simple("bootm.oftree", NULL);
+	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD)) {
+		globalvar_add_simple("bootm.initrd", NULL);
+		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
+	}
+
+	return 0;
+}
+late_initcall(bootm_init);

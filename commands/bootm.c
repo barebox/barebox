@@ -158,20 +158,6 @@ err_out:
 	return 1;
 }
 
-static int bootm_init(void)
-{
-	globalvar_add_simple("bootm.image", NULL);
-	globalvar_add_simple("bootm.image.loadaddr", NULL);
-	globalvar_add_simple("bootm.oftree", NULL);
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD)) {
-		globalvar_add_simple("bootm.initrd", NULL);
-		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
-	}
-
-	return 0;
-}
-late_initcall(bootm_init);
-
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_USAGE("bootm [OPTIONS] image\n")
 BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")

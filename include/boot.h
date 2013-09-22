@@ -96,4 +96,6 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 
 int bootm_boot(struct image_data *);
 
+unsigned long long getenv_loadaddr(const char *name);
+
 #endif /* __BOOT_H */

@@ -75,19 +75,6 @@ static char *bootm_image_name_and_no(const char *name, int *no)
 #define BOOTM_OPTS BOOTM_OPTS_COMMON
 #endif
 
-unsigned long long getenv_loadaddr(const char *name)
-{
-	const char *valstr = getenv(name);
-
-	if (!valstr)
-		return UIMAGE_SOME_ADDRESS;
-
-	if (valstr[0] == '\0')
-		return UIMAGE_SOME_ADDRESS;
-
-	return simple_strtoull(valstr, NULL, 0);
-}
-
 static int do_bootm(int argc, char *argv[])
 {
 	int opt;

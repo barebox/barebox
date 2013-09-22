@@ -210,6 +210,11 @@ int bootm_boot(struct image_data *data)
 	int ret;
 	enum filetype os_type, initrd_type = filetype_unknown;
 
+	if (!data->os_file) {
+		printf("no image given\n");
+		return -ENOENT;
+	}
+
 	os_type = file_name_detect_type(data->os_file);
 	if ((int)os_type < 0) {
 		printf("could not open %s: %s\n", data->os_file,

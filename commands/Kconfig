@@ -514,6 +514,17 @@ config CMD_LINUX16
 	  Compile the linux16 command to be able to boot bzImages
 	  via real mode.
 
+config CMD_BOOT
+	tristate
+	select BOOTM
+	prompt "boot"
+	help
+	  Select this for booting based on scripts. unlike the bootm command which
+	  can boot a single image this command offers the possibility to boot with
+	  scripts (by default placed under /env/boot/). This command iterates over
+	  multiple scripts until one succeeds. It supersedes the previous 'boot'
+	  script.
+
 config CMD_RESET
 	tristate
 	prompt "reset"

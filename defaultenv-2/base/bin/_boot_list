@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# This script is a workaround for buggy globbing in for loops
-
-for i in $*; do
-	_boot $i;
-done

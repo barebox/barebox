@@ -82,6 +82,11 @@ int console_register(struct console_device *newcdev)
 	console_list.prev = console_list.next = &newcdev->list;
 	newcdev->list.prev = newcdev->list.next = &console_list;
 
+	if (newcdev->setbrg) {
+		newcdev->baudrate = CONFIG_BAUDRATE;
+		newcdev->setbrg(newcdev, newcdev->baudrate);
+	}
+
 	barebox_banner();
 
 	return 0;

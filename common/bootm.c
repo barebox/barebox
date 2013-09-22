@@ -299,6 +299,8 @@ err_out:
 		uimage_close(data->initrd);
 	if (data->os)
 		uimage_close(data->os);
+	if (data->of_root_node && data->of_root_node != of_get_root_node())
+		of_delete_node(data->of_root_node);
 
 	return ret;
 }

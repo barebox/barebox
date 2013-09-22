@@ -1794,6 +1794,7 @@ static int ohci_probe(struct device_d *dev)
 	ohci = xzalloc(sizeof(struct ohci));
 	host = &ohci->host;
 
+	host->hw_dev = dev;
 	host->init = ohci_init;
 	host->submit_int_msg = submit_int_msg;
 	host->submit_control_msg = submit_control_msg;

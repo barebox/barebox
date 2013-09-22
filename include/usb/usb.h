@@ -210,6 +210,7 @@ struct usb_host {
 
 	struct list_head list;
 
+	struct device_d *hw_dev;
 	int busnum;
 	int scanned;
 };

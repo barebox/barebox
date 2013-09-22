@@ -440,6 +440,8 @@ static int usb_new_device(struct usb_device *dev)
 
 	dev->dev.id = DEVICE_ID_SINGLE;
 
+	if (dev->host->hw_dev)
+		dev->dev.parent = dev->host->hw_dev;
 	register_device(&dev->dev);
 
 	/* now prode if the device is a hub */

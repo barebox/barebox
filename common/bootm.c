@@ -263,6 +263,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	data->verbose = bootm_data->verbose;
 	data->verify = bootm_data->verify;
 	data->force = bootm_data->force;
+	data->dryrun = bootm_data->dryrun;
 	data->initrd_address = bootm_data->initrd_address;
 	data->os_address = bootm_data->os_address;
 	data->os_entry = bootm_data->os_entry;
@@ -346,7 +347,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("Passing control to %s handler\n", handler->name);
 	}
 
-	ret = handler->bootm(data);
+	if (data->dryrun)
+		ret = 0;
+	else
+		ret = handler->bootm(data);
 err_out:
 	if (data->os_res)
 		release_sdram_region(data->os_res);

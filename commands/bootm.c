@@ -46,7 +46,7 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-#define BOOTM_OPTS_COMMON "ca:e:vo:f"
+#define BOOTM_OPTS_COMMON "ca:e:vo:fd"
 
 #ifdef CONFIG_CMD_BOOTM_INITRD
 #define BOOTM_OPTS BOOTM_OPTS_COMMON "L:r:"
@@ -101,6 +101,9 @@ static int do_bootm(int argc, char *argv[])
 		case 'f':
 			data.force = 1;
 			break;
+		case 'd':
+			data.dryrun = 1;
+			break;
 		default:
 			break;
 		}
@@ -125,17 +128,23 @@ static int do_bootm(int argc, char *argv[])
 	data.initrd_file = initrd_file;
 
 	ret = bootm_boot(&data);
+	if (ret) {
+		printf("handler failed with: %s\n", strerror(-ret));
+		goto err_out;
+	}
 
-	printf("handler failed with %s\n", strerror(-ret));
+	if (data.dryrun)
+		printf("Dryrun. Aborted\n");
 
 err_out:
-	return 1;
+	return ret ? 1 : 0;
 }
 
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_USAGE("bootm [OPTIONS] image\n")
 BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
 BAREBOX_CMD_HELP_OPT  ("-c",  "crc check uImage data\n")
+BAREBOX_CMD_HELP_OPT  ("-d",  "dryrun. Check data, but do not run\n")
 #ifdef CONFIG_CMD_BOOTM_INITRD
 BAREBOX_CMD_HELP_OPT  ("-r <initrd>","specify an initrd image\n")
 BAREBOX_CMD_HELP_OPT  ("-L <load addr>","specify initrd load address\n")

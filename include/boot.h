@@ -14,6 +14,7 @@ struct bootm_data {
 	int verbose;
 	bool verify;
 	bool force;
+	bool dryrun;
 	unsigned long initrd_address;
 	unsigned long os_address;
 	unsigned long os_entry;
@@ -64,6 +65,7 @@ struct image_data {
 	int verify;
 	int verbose;
 	int force;
+	int dryrun;
 };
 
 struct image_handler {

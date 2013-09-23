@@ -42,11 +42,9 @@
 static struct tag *params;
 static void *armlinux_bootparams = NULL;
 
-#ifndef CONFIG_ENVIRONMENT_VARIABLES
 static int armlinux_architecture;
 static u32 armlinux_system_rev;
 static u64 armlinux_system_serial;
-#endif
 
 BAREBOX_MAGICVAR(armlinux_architecture, "ARM machine ID");
 BAREBOX_MAGICVAR(armlinux_system_rev, "ARM system revision");
@@ -54,56 +52,41 @@ BAREBOX_MAGICVAR(armlinux_system_serial, "ARM system serial");
 
 void armlinux_set_architecture(int architecture)
 {
-#ifdef CONFIG_ENVIRONMENT_VARIABLES
 	export_env_ull("armlinux_architecture", architecture);
-#else
 	armlinux_architecture = architecture;
-#endif
 }
 
 int armlinux_get_architecture(void)
 {
-#ifdef CONFIG_ENVIRONMENT_VARIABLES
-	return getenv_ull("armlinux_architecture");
-#else
+	getenv_uint("armlinux_architecture", &armlinux_architecture);
+
 	return armlinux_architecture;
-#endif
 }
 
 void armlinux_set_revision(unsigned int rev)
 {
-#ifdef CONFIG_ENVIRONMENT_VARIABLES
 	export_env_ull("armlinux_system_rev", rev);
-#else
 	armlinux_system_rev = rev;
-#endif
 }
 
 unsigned int armlinux_get_revision(void)
 {
-#ifdef CONFIG_ENVIRONMENT_VARIABLES
-	return getenv_ull("armlinux_system_rev");
-#else
+	getenv_uint("armlinux_system_rev", &armlinux_system_rev);
+
 	return armlinux_system_rev;
-#endif
 }
 
 void armlinux_set_serial(u64 serial)
 {
-#ifdef CONFIG_ENVIRONMENT_VARIABLES
 	export_env_ull("armlinux_system_serial", serial);
-#else
 	armlinux_system_serial = serial;
-#endif
 }
 
 u64 armlinux_get_serial(void)
 {
-#ifdef CONFIG_ENVIRONMENT_VARIABLES
-	return getenv_ull("armlinux_system_serial");
-#else
+	getenv_ull("armlinux_system_serial", &armlinux_system_serial);
+
 	return armlinux_system_serial;
-#endif
 }
 
 #ifdef CONFIG_ARM_BOARD_APPEND_ATAG

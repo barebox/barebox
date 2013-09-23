@@ -46,27 +46,6 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-static char *bootm_image_name_and_no(const char *name, int *no)
-{
-	char *at, *ret;
-
-	if (!name || !*name)
-		return NULL;
-
-	*no = 0;
-
-	ret = xstrdup(name);
-	at = strchr(ret, '@');
-	if (!at)
-		return ret;
-
-	*at++ = 0;
-
-	*no = simple_strtoul(at, NULL, 10);
-
-	return ret;
-}
-
 #define BOOTM_OPTS_COMMON "ca:e:vo:f"
 
 #ifdef CONFIG_CMD_BOOTM_INITRD
@@ -78,11 +57,9 @@ static char *bootm_image_name_and_no(const char *name, int *no)
 static int do_bootm(int argc, char *argv[])
 {
 	int opt;
-	struct image_data data;
+	struct bootm_data data = {};
 	int ret = 1;
 	const char *oftree = NULL, *initrd_file = NULL, *os_file = NULL;
-
-	memset(&data, 0, sizeof(struct image_data));
 
 	data.initrd_address = UIMAGE_INVALID_ADDRESS;
 	data.os_address = UIMAGE_SOME_ADDRESS;
@@ -143,18 +120,15 @@ static int do_bootm(int argc, char *argv[])
 	if (oftree && !*oftree)
 		oftree = NULL;
 
-	data.os_file = bootm_image_name_and_no(os_file, &data.os_num);
-	data.oftree_file = bootm_image_name_and_no(oftree, &data.oftree_num);
-	data.initrd_file = bootm_image_name_and_no(initrd_file, &data.initrd_num);
+	data.os_file = os_file;
+	data.oftree_file = oftree;
+	data.initrd_file = initrd_file;
 
 	ret = bootm_boot(&data);
 
 	printf("handler failed with %s\n", strerror(-ret));
 
 err_out:
-	free(data.initrd_file);
-	free(data.os_file);
-
 	return 1;
 }
 

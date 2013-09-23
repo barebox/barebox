@@ -219,16 +219,53 @@ static void bootm_print_info(struct image_data *data)
 	}
 }
 
-int bootm_boot(struct image_data *data)
+static char *bootm_image_name_and_no(const char *name, int *no)
 {
+	char *at, *ret;
+
+	if (!name || !*name)
+		return NULL;
+
+	*no = 0;
+
+	ret = xstrdup(name);
+	at = strchr(ret, '@');
+	if (!at)
+		return ret;
+
+	*at++ = 0;
+
+	*no = simple_strtoul(at, NULL, 10);
+
+	return ret;
+}
+
+/*
+ * bootm_boot - Boot an application image described by bootm_data
+ */
+int bootm_boot(struct bootm_data *bootm_data)
+{
+	struct image_data *data;
 	struct image_handler *handler;
 	int ret;
 	enum filetype os_type, initrd_type = filetype_unknown;
 
-	if (!data->os_file) {
+	if (!bootm_data->os_file) {
 		printf("no image given\n");
 		return -ENOENT;
 	}
+
+	data = xzalloc(sizeof(*data));
+
+	data->os_file = bootm_image_name_and_no(bootm_data->os_file, &data->os_num);
+	data->oftree_file = bootm_image_name_and_no(bootm_data->oftree_file, &data->oftree_num);
+	data->initrd_file = bootm_image_name_and_no(bootm_data->initrd_file, &data->initrd_num);
+	data->verbose = bootm_data->verbose;
+	data->verify = bootm_data->verify;
+	data->force = bootm_data->force;
+	data->initrd_address = bootm_data->initrd_address;
+	data->os_address = bootm_data->os_address;
+	data->os_entry = bootm_data->os_entry;
 
 	os_type = file_name_detect_type(data->os_file);
 	if ((int)os_type < 0) {
@@ -321,6 +358,11 @@ err_out:
 		uimage_close(data->os);
 	if (data->of_root_node && data->of_root_node != of_get_root_node())
 		of_delete_node(data->of_root_node);
+
+	free(data->os_file);
+	free(data->oftree_file);
+	free(data->initrd_file);
+	free(data);
 
 	return ret;
 }

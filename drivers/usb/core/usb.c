@@ -74,7 +74,7 @@ static LIST_HEAD(usb_device_list);
 
 static void print_usb_device(struct usb_device *dev)
 {
-	printf("Bus %03d Device %03d: ID %04x:%04x %s\n",
+	pr_info("Bus %03d Device %03d: ID %04x:%04x %s\n",
 		dev->host->busnum, dev->devnum,
 		dev->descriptor->idVendor,
 		dev->descriptor->idProduct,
@@ -529,7 +529,7 @@ void usb_rescan(int force)
 	struct usb_host *host;
 	int ret;
 
-	printf("USB: scanning bus for devices...\n");
+	pr_info("USB: scanning bus for devices...\n");
 	dev_index = 0;
 
 	list_for_each_entry(host, &host_list, list) {
@@ -538,7 +538,7 @@ void usb_rescan(int force)
 			continue;
 	}
 
-	printf("%d USB Device(s) found\n", dev_index);
+	pr_info("%d USB Device(s) found\n", dev_index);
 }
 
 /*

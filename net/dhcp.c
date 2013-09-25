@@ -699,16 +699,6 @@ static int dhcp_global_init(void)
 }
 late_initcall(dhcp_global_init);
 
-static void dhcp_getenv_int(const char *name, int *i)
-{
-	const char* str = getenv(name);
-
-	if (!str)
-		return;
-
-	*i = simple_strtoul(str, NULL, 10);
-}
-
 static int do_dhcp(int argc, char *argv[])
 {
 	int ret, opt;
@@ -716,7 +706,7 @@ static int do_dhcp(int argc, char *argv[])
 
 	dhcp_reset_env();
 
-	dhcp_getenv_int("global.dhcp.retries", &retries);
+	getenv_uint("global.dhcp.retries", &retries);
 
 	while((opt = getopt(argc, argv, "H:v:c:u:U:r:")) > 0) {
 		switch(opt) {

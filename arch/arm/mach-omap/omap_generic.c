@@ -20,10 +20,11 @@
 #include <fs.h>
 #include <malloc.h>
 #include <linux/stat.h>
+#include <mach/generic.h>
 
-static char *omap_bootmmc_dev;
+const static char *omap_bootmmc_dev;
 
-void omap_set_bootmmc_devname(char *devname)
+void omap_set_bootmmc_devname(const char *devname)
 {
 	omap_bootmmc_dev = devname;
 }
@@ -37,7 +38,8 @@ const char *omap_get_bootmmc_devname(void)
 static int omap_env_init(void)
 {
 	struct stat s;
-	char *diskdev, *partname;
+	char *partname;
+	const char *diskdev;
 	int ret;
 
 	if (bootsource_get() != BOOTSOURCE_MMC)

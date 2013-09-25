@@ -44,6 +44,10 @@ config FS_NFS
 source fs/fat/Kconfig
 source fs/ubifs/Kconfig
 
+config FS_UIMAGEFS
+	bool
+	prompt "uImage FS support"
+
 config PARTITION_NEED_MTD
 	bool
 

@@ -298,6 +298,9 @@ static int __maybe_unused ide_write(struct ata_port *port,
 		rc = ata_wr_cmd(ide, ATA_CMD_WRITE);
 		if (rc != 0)
 			return rc;
+		rc = ata_wait_ready(ide, MAX_TIMEOUT);
+		if (rc != 0)
+			return rc;
 		ata_wr_sector(ide, buffer);
 		num_blocks--;
 		sector++;

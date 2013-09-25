@@ -1,0 +1,5 @@
+#!/bin/sh
+
+edit /env/config
+
+/env/config

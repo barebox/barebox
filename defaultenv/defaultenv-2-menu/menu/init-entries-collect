@@ -1,9 +1,0 @@
-#!/bin/sh
-
-cd /env/init
-
-for i in *; do
-	./$i menu
-done
-
-cd /

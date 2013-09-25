@@ -28,19 +28,6 @@ int register_image_handler(struct image_handler *handler)
 	return 0;
 }
 
-unsigned long long getenv_loadaddr(const char *name)
-{
-	const char *valstr = getenv(name);
-
-	if (!valstr)
-		return UIMAGE_SOME_ADDRESS;
-
-	if (valstr[0] == '\0')
-		return UIMAGE_SOME_ADDRESS;
-
-	return simple_strtoull(valstr, NULL, 0);
-}
-
 static struct image_handler *bootm_find_handler(enum filetype filetype,
 		struct image_data *data)
 {

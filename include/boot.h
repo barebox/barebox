@@ -110,6 +110,4 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 
-unsigned long long getenv_loadaddr(const char *name);
-
 #endif /* __BOOT_H */

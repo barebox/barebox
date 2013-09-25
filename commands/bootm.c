@@ -68,8 +68,8 @@ static int do_bootm(int argc, char *argv[])
 
 	oftree = getenv("global.bootm.oftree");
 	os_file = getenv("global.bootm.image");
-	data.os_address = getenv_loadaddr("global.bootm.image.loadaddr");
-	data.initrd_address = getenv_loadaddr("global.bootm.initrd.loadaddr");
+	getenv_ul("global.bootm.image.loadaddr", &data.os_address);
+	getenv_ul("global.bootm.initrd.loadaddr", &data.initrd_address);
 	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
 		initrd_file = getenv("global.bootm.initrd");
 

@@ -85,8 +85,8 @@ static int boot_script(char *path)
 	data.os_address = UIMAGE_SOME_ADDRESS;
 	data.oftree_file = getenv_or_null("global.bootm.oftree");
 	data.os_file = getenv_or_null("global.bootm.image");
-	data.os_address = getenv_loadaddr("global.bootm.image.loadaddr");
-	data.initrd_address = getenv_loadaddr("global.bootm.initrd.loadaddr");
+	getenv_ul("global.bootm.image.loadaddr", &data.os_address);
+	getenv_ul("global.bootm.initrd.loadaddr", &data.initrd_address);
 	data.initrd_file = getenv_or_null("global.bootm.initrd");
 	data.verbose = verbose;
 	data.dryrun = dryrun;

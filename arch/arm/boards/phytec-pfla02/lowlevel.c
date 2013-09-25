@@ -50,7 +50,7 @@ static inline void setup_uart(void)
 	writel(0x0000c34f, uartbase + 0xa8);
 	writel(0x00000001, uartbase + 0x80);
 
-	PUTC_LL('>');
+	putc_ll('>');
 }
 
 extern char __dtb_imx6q_phytec_pbab01_start[];

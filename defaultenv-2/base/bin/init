@@ -2,16 +2,23 @@
 
 export PATH=/env/bin
 
-global hostname=generic
-global user=none
-global autoboot_timeout=3
-global boot.default=net
-global allow_color=true
+global hostname
+global user
+global autoboot_timeout
+global boot.default
+global allow_color
 global linux.bootargs.base
 #linux.bootargs.dyn.* will be cleared at the beginning of boot
 global linux.bootargs.dyn.ip
 global linux.bootargs.dyn.root
-global editcmd=sedit
+global editcmd
+
+[ -z "${global.hostname}" ] && global.hostname=generic
+[ -z "${global.user}" ] && global.user=none
+[ -z "${global.autoboot_timeout}" ] && global.autoboot_timeout=3
+[ -z "${global.boot.default}" ] && global.boot.default=net
+[ -z "${global.allow_color}" ] && global.allow_color=true
+[ -z "${global.editcmd}" ] && global.editcmd=sedit
 
 [ -e /env/config-board ] && /env/config-board
 /env/config

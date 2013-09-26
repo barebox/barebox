@@ -8,5 +8,4 @@ mk-am35xx-spi-image
 mkimage
 mkublheader
 omap_signGP
-omap4_usbboot
 zynq_mkimage

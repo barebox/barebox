@@ -17,15 +17,12 @@ hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 hostprogs-$(CONFIG_ARCH_ZYNQ)	 += zynq_mkimage
 
 subdir-y			+= mod
+subdir-$(CONFIG_OMAP4_USBBOOT)	+= omap4_usbboot
 subdir-$(CONFIG_ARCH_IMX)	+= imx
 subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc
 
 targetprogs-$(CONFIG_BAREBOXENV_TARGET) += bareboxenv-target
-
-HOSTLOADLIBES_omap4_usbboot = -lpthread
-omap4_usbboot-objs               := usb_linux.o omap4_usbboot.o
-hostprogs-$(CONFIG_OMAP4_USBBOOT)+= omap4_usbboot
 
 # Let clean descend into subdirs
 subdir-	+= basic kconfig setupmbr

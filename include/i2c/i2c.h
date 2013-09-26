@@ -36,6 +36,7 @@ struct i2c_platform_data {
 #define I2C_M_DATA_ONLY		0x0002	/* transfer data bytes only */
 #define I2C_M_TEN               0x0010  /* this is a ten bit chip address */
 #define I2C_M_IGNORE_NAK        0x1000  /* if I2C_FUNC_PROTOCOL_MANGLING */
+#define I2C_M_STOP		0x8000	/* if I2C_FUNC_PROTOCOL_MANGLING */
 
 /**
  * struct i2c_msg - an I2C transaction segment beginning with START

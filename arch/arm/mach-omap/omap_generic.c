@@ -124,10 +124,7 @@ static int omap_env_init(void)
 		return 0;
 	}
 
-	if (IS_ENABLED(CONFIG_OMAP_BUILD_IFT))
-		default_environment_path = "/dev/defaultenv";
-	else
-		default_environment_path = "/boot/barebox.env";
+	default_environment_path = "/boot/barebox.env";
 
 	return 0;
 }

@@ -21,7 +21,7 @@ subdir-$(CONFIG_ARCH_IMX)	+= imx
 subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc
 
-targetprogs-y += bareboxenv-target
+targetprogs-$(CONFIG_BAREBOXENV_TARGET) += bareboxenv-target
 
 HOSTLOADLIBES_omap4_usbboot = -lpthread
 omap4_usbboot-objs               := usb_linux.o omap4_usbboot.o
@@ -33,9 +33,12 @@ subdir-	+= basic kconfig setupmbr
 quiet_cmd_csingle	= CC      $@
       cmd_csingle	= $(CC) -Wp,-MD,$(depfile) $(CFLAGS) -o $@ $<
 
-obj-$(CONFIG_BAREBOXENV_TARGET)	+= bareboxenv-target
+__targetprogs	:= $(sort $(targetprogs-y) $(targetprogs-m))
+target-csingle	:= $(foreach m,$(__targetprogs),$(if $($(m)-objs),,$(m)))
+__targetprogs	:= $(addprefix $(obj)/,$(__targetprogs))
+target-csingle	:= $(addprefix $(obj)/,$(target-csingle))
 
-scripts/bareboxenv-target: scripts/bareboxenv.c FORCE
+always		:= $(hostprogs-y) $(hostprogs-m) $(targetprogs-y)
+
+$(target-csingle): %-target: %.c FORCE
 	$(call if_changed_dep,csingle)
-
-always		:= $(hostprogs-y) $(hostprogs-m)

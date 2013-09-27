@@ -2,6 +2,7 @@
 #define __BLOCK_H
 
 #include <driver.h>
+#include <linux/list.h>
 
 struct block_device;
 
@@ -14,6 +15,7 @@ struct chunk;
 
 struct block_device {
 	struct device_d *dev;
+	struct list_head list;
 	struct block_device_ops *ops;
 	int blockbits;
 	int num_blocks;
@@ -25,6 +27,10 @@ struct block_device {
 
 	struct cdev cdev;
 };
+
+extern struct list_head block_device_list;
+
+#define for_each_block_device(bdev) list_for_each_entry(bdev, &block_device_list, list)
 
 int blockdevice_register(struct block_device *blk);
 int blockdevice_unregister(struct block_device *blk);

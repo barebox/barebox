@@ -25,6 +25,8 @@
 
 #define BLOCKSIZE(blk)	(1 << blk->blockbits)
 
+LIST_HEAD(block_device_list);
+
 /* a chunk of contigous data */
 struct chunk {
 	void *data; /* data buffer */
@@ -367,6 +369,8 @@ int blockdevice_register(struct block_device *blk)
 	if (ret)
 		return ret;
 
+	list_add_tail(&blk->list, &block_device_list);
+
 	return 0;
 }
 
@@ -387,6 +391,7 @@ int blockdevice_unregister(struct block_device *blk)
 	}
 
 	devfs_remove(&blk->cdev);
+	list_del(&blk->list);
 
 	return 0;
 }

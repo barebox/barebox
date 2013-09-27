@@ -1269,10 +1269,7 @@ static const char *detect_fs(const char *filename)
 	if (type == filetype_unknown)
 		return NULL;
 
-	for_each_driver(drv) {
-		if (drv->bus != &fs_bus)
-			continue;
-
+	bus_for_each_driver(&fs_bus, drv) {
 		fdrv = drv_to_fs_driver(drv);
 
 		if (type == fdrv->type)

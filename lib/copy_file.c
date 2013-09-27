@@ -63,8 +63,12 @@ int copy_file(const char *src, const char *dst, int verbose)
 			total += w;
 		}
 
-		if (verbose)
-			show_progress(statbuf.st_size ? total : total / 16384);
+		if (verbose) {
+			if (statbuf.st_size && statbuf.st_size != FILESIZE_MAX)
+				show_progress(total);
+			else
+				show_progress(total / 16384);
+		}
 	}
 
 	ret = 0;

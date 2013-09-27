@@ -39,7 +39,7 @@ static int do_mount(int argc, char *argv[])
 	if (argc == 1) {
 		for_each_fs_device(fsdev) {
 			printf("%s on %s type %s\n",
-				fsdev->parent_device ? dev_name(fsdev->parent_device) : "none",
+				fsdev->backingstore ? fsdev->backingstore : "none",
 				fsdev->path,
 				fsdev->dev.name);
 		}

@@ -1017,7 +1017,6 @@ i2c_omap_probe(struct device_d *pdev)
 
 	i2c_omap->speed = speed;
 	i2c_omap->base = dev_request_mem_region(pdev, 0);
-	printf ("I2C probe\n");
 
 	/*
 	 * Read the Rev hi bit-[15:14] ie scheme this is 1 indicates ver2.

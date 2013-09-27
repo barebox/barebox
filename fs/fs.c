@@ -1231,6 +1231,9 @@ static void fs_remove(struct device_d *dev)
 	if (fsdev == fs_dev_root)
 		fs_dev_root = NULL;
 
+	if (fsdev->cdev)
+		cdev_close(fsdev->cdev);
+
 	free(fsdev->backingstore);
 	free(fsdev);
 }
@@ -1279,6 +1282,23 @@ static const char *detect_fs(const char *filename)
 	return NULL;
 }
 
+int fsdev_open_cdev(struct fs_device_d *fsdev)
+{
+	const char *backingstore = fsdev->backingstore;
+
+	if (!strncmp(backingstore , "/dev/", 5))
+		backingstore += 5;
+
+	fsdev->cdev = cdev_open(backingstore, O_RDWR);
+	if (!fsdev->cdev)
+		return -EINVAL;
+
+	fsdev->dev.parent = fsdev->cdev->dev;
+	fsdev->parent_device = fsdev->cdev->dev;
+
+	return 0;
+}
+
 /*
  * Mount a device to a directory.
  * We do this by registering a new device on which the filesystem
@@ -1322,14 +1342,6 @@ int mount(const char *device, const char *fsname, const char *_path)
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
 	fsdev->path = xstrdup(path);
 	fsdev->dev.bus = &fs_bus;
-
-	if (!strncmp(device, "/dev/", 5))
-		fsdev->cdev = cdev_by_name(device + 5);
-
-	if (fsdev->cdev) {
-		fsdev->dev.parent = fsdev->cdev->dev;
-		fsdev->parent_device = fsdev->cdev->dev;
-	}
 
 	ret = register_device(&fsdev->dev);
 	if (ret)

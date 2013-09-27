@@ -193,4 +193,6 @@ void automount_print(void);
 
 int unlink_recursive(const char *path, char **failedpath);
 
+int fsdev_open_cdev(struct fs_device_d *fsdev);
+
 #endif /* __FS_H */

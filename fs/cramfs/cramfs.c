@@ -422,29 +422,33 @@ static int cramfs_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev;
 	struct cramfs_priv *priv;
+	int ret;
 
 	fsdev = dev_to_fs_device(dev);
 
 	priv = xmalloc(sizeof(struct cramfs_priv));
 	dev->priv = priv;
 
-	if (strncmp(fsdev->backingstore, "/dev/", 5))
-		return -ENODEV;
+	ret = fsdev_open_cdev(fsdev);
+	if (ret)
+		goto err_out;
 
-	priv->cdev = cdev_by_name(fsdev->backingstore + 5);
-	if (!priv->cdev)
-		return -ENODEV;
+	priv->cdev = fsdev->cdev;
 
 	if (cramfs_read_super(priv)) {
 		dev_info(dev, "no valid cramfs found\n");
-		free(priv);
-		return -EINVAL;
+		ret =  -EINVAL;
 	}
 
 	priv->curr_base = -1;
 
 	cramfs_uncompress_init ();
 	return 0;
+
+err_out:
+	free(priv);
+
+	return ret;
 }
 
 static void cramfs_remove(struct device_d *dev)

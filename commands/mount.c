@@ -31,27 +31,40 @@
 static int do_mount(int argc, char *argv[])
 {
 	int opt;
-	int ret = 0;
+	int ret = 0, verbose = 0;
 	struct fs_device_d *fsdev;
+	struct driver_d *drv;
 	const char *type = NULL;
 	const char *mountpoint, *dev;
 
-	if (argc == 1) {
+	while ((opt = getopt(argc, argv, "t:v")) > 0) {
+		switch (opt) {
+		case 't':
+			type = optarg;
+			break;
+		case 'v':
+			verbose++;
+			break;
+		}
+	}
+
+	if (argc == optind) {
 		for_each_fs_device(fsdev) {
 			printf("%s on %s type %s\n",
 				fsdev->backingstore ? fsdev->backingstore : "none",
 				fsdev->path,
 				fsdev->dev.name);
 		}
-		return 0;
-	}
 
-	while ((opt = getopt(argc, argv, "t:")) > 0) {
-		switch (opt) {
-		case 't':
-			type = optarg;
-			break;
+		if (verbose) {
+			printf("\nSupported filesystems:\n\n");
+			bus_for_each_driver(&fs_bus, drv) {
+				struct fs_driver_d * fsdrv = drv_to_fs_driver(drv);
+				printf("%s\n", fsdrv->drv.name);
+			}
 		}
+
+		return 0;
 	}
 
 	if (argc < optind + 2)
@@ -77,7 +90,9 @@ static int do_mount(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(mount)
-BAREBOX_CMD_HELP_USAGE("mount [[-t <fstype] <device> <mountpoint>]\n")
+BAREBOX_CMD_HELP_USAGE("mount [[OPTIONS] <device> <mountpoint>]\n")
+BAREBOX_CMD_HELP_OPT("-t <type>", "specify filesystem type\n")
+BAREBOX_CMD_HELP_OPT("-v", "be more verbose\n")
 BAREBOX_CMD_HELP_SHORT("Mount a filesystem of a given type to a mountpoint.\n")
 BAREBOX_CMD_HELP_SHORT("If no fstype is specified, try to detect it automatically.\n")
 BAREBOX_CMD_HELP_SHORT("If no argument is given, list mounted filesystems.\n")

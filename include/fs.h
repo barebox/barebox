@@ -87,6 +87,7 @@ struct fs_driver_d {
 
 extern struct list_head fs_device_list;
 #define for_each_fs_device(f) list_for_each_entry(f, &fs_device_list, list)
+extern struct bus_type fs_bus;
 
 struct fs_device_d {
 	char *backingstore; /* the device we are associated with */

@@ -437,6 +437,20 @@ config TIMESTAMP
 	  commands like bootm or iminfo. This option is
 	  automatically enabled when you select CFG_CMD_DATE .
 
+config BLSPEC
+	depends on BLOCK
+	select OFTREE
+	select FLEXIBLE_BOOTARGS
+	bool
+	prompt "Support bootloader spec"
+	help
+	  Enable this to let barebox support the Freedesktop bootloader spec,
+	  see: http://www.freedesktop.org/wiki/Specifications/BootLoaderSpec/
+	  The bootloader spec is a standard interface between the bootloader
+	  and the kernel. It allows the bootloader to discover boot options
+	  on a device and it allows the Operating System to install / update
+	  kernels.
+
 choice
 	prompt "console support"
 	default CONSOLE_FULL

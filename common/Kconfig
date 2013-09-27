@@ -32,6 +32,7 @@ config GENERIC_GPIO
 	bool
 
 config BOOTM
+	select UIMAGE
 	bool
 
 config BLOCK

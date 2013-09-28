@@ -29,7 +29,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
-	dstfd = open(dst, O_WRONLY | O_CREAT);
+	dstfd = open(dst, O_WRONLY | O_CREAT | O_TRUNC);
 	if (dstfd < 0) {
 		printf("could not open %s: %s\n", dst, errno_str());
 		goto out;

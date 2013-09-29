@@ -1,5 +1,9 @@
 if ARCH_TEGRA
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x0
+
 choice
 	prompt "Tegra processor type"
 
@@ -45,10 +49,6 @@ endchoice
 # ---------------------------------------------------------
 
 if ARCH_TEGRA_2x_SOC
-
-config ARCH_TEXT_BASE
-	hex
-	default 0x00108000
 
 choice
 	prompt "Tegra 20 Board Type"

@@ -36,11 +36,5 @@ void tegra_maincomplex_entry(void)
 		unreachable();
 	}
 
-	/*
-	 * The standard load address for Tegra systems is 0x10800 which means
-	 * the barebox binary will always be below the malloc area for all
-	 * reasonable malloc area sizes. We offset the RAM base address by 8MB
-	 * to pretend barebox is in another bank.
-	 */
-	barebox_arm_entry(rambase + SZ_8M, ramsize - SZ_8M, 0);
+	barebox_arm_entry(rambase, ramsize, 0);
 }

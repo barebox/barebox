@@ -162,6 +162,7 @@ config ARCH_TEGRA
 	select GPIO_TEGRA
 	select OFDEVICE
 	select OFTREE
+	select RELOCATABLE
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"

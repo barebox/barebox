@@ -27,6 +27,7 @@
 #include <fs.h>
 #include <errno.h>
 #include <getopt.h>
+#include <linux/err.h>
 
 static int do_mount(int argc, char *argv[])
 {
@@ -70,6 +71,28 @@ static int do_mount(int argc, char *argv[])
 		return 0;
 	}
 
+	if (argc == optind + 1) {
+		struct cdev *cdev;
+		const char *path, *devstr;
+
+		devstr = argv[optind];
+
+		if (!strncmp(devstr, "/dev/", 5))
+			devstr += 5;
+
+		cdev = cdev_by_name(devstr);
+		if (!cdev)
+			return -ENOENT;
+
+		path = cdev_mount_default(cdev);
+		if (IS_ERR(path))
+			return PTR_ERR(path);
+
+		printf("mounted /dev/%s on %s\n", devstr, path);
+
+		return 0;
+	}
+
 	if (argc < optind + 2)
 		return COMMAND_ERROR_USAGE;
 
@@ -93,7 +116,7 @@ static int do_mount(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(mount)
-BAREBOX_CMD_HELP_USAGE("mount [[OPTIONS] <device> <mountpoint>]\n")
+BAREBOX_CMD_HELP_USAGE("mount [[OPTIONS] <device> [mountpoint]]\n")
 BAREBOX_CMD_HELP_OPT("-t <type>", "specify filesystem type\n")
 BAREBOX_CMD_HELP_OPT("-a", "Mount all blockdevices.\n")
 BAREBOX_CMD_HELP_OPT("-v", "be more verbose\n")
@@ -102,6 +125,8 @@ BAREBOX_CMD_HELP_SHORT("If no fstype is specified, try to detect it automaticall
 BAREBOX_CMD_HELP_SHORT("If no argument is given, list mounted filesystems.\n")
 BAREBOX_CMD_HELP_SHORT("With -a the mount command mounts all block devices whose filesystem\n")
 BAREBOX_CMD_HELP_SHORT("can be detected automatically to /mnt/<partname>\n")
+BAREBOX_CMD_HELP_SHORT("If mountpoint is not given a standard mountpoint of /mnt/devname>\n")
+BAREBOX_CMD_HELP_SHORT("is used. This directoy is created automatically if necessary.\n")
 BAREBOX_CMD_HELP_END
 
 /**

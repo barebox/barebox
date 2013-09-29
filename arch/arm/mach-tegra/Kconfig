@@ -64,8 +64,6 @@ if MACH_TEGRA20_GENERIC
 
 endif #MACH_TEGRA20_GENERIC
 
-source arch/arm/boards/toshiba-ac100/Kconfig
-
 # ---------------------------------------------------------
 
 endif

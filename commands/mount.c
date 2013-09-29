@@ -37,13 +37,16 @@ static int do_mount(int argc, char *argv[])
 	const char *type = NULL;
 	const char *mountpoint, *dev;
 
-	while ((opt = getopt(argc, argv, "t:v")) > 0) {
+	while ((opt = getopt(argc, argv, "t:va")) > 0) {
 		switch (opt) {
 		case 't':
 			type = optarg;
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'a':
+			mount_all();
 			break;
 		}
 	}
@@ -92,10 +95,13 @@ static int do_mount(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(mount)
 BAREBOX_CMD_HELP_USAGE("mount [[OPTIONS] <device> <mountpoint>]\n")
 BAREBOX_CMD_HELP_OPT("-t <type>", "specify filesystem type\n")
+BAREBOX_CMD_HELP_OPT("-a", "Mount all blockdevices.\n")
 BAREBOX_CMD_HELP_OPT("-v", "be more verbose\n")
 BAREBOX_CMD_HELP_SHORT("Mount a filesystem of a given type to a mountpoint.\n")
 BAREBOX_CMD_HELP_SHORT("If no fstype is specified, try to detect it automatically.\n")
 BAREBOX_CMD_HELP_SHORT("If no argument is given, list mounted filesystems.\n")
+BAREBOX_CMD_HELP_SHORT("With -a the mount command mounts all block devices whose filesystem\n")
+BAREBOX_CMD_HELP_SHORT("can be detected automatically to /mnt/<partname>\n")
 BAREBOX_CMD_HELP_END
 
 /**

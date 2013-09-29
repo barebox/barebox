@@ -119,7 +119,8 @@ targets += $(foreach m, $(image-y), $(FILE_$(m)))
 SECONDARY: $(addprefix $(obj)/,$(targets))
 
 images: $(addprefix $(obj)/, $(image-y)) FORCE
-	@echo "images built:\n" $(patsubst %,%\\n,$(image-y))
+	@echo "images built:"
+	@for i in $(image-y); do echo $$i; done
 
 clean-files := *.pbl *.pblb *.pblx *.map start_*.imximg *.img barebox.z start_*.kwbimg \
 	start_*.kwbuartimg

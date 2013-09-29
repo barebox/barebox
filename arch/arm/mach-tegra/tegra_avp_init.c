@@ -109,8 +109,6 @@ static void init_pllx(void)
 		return;
 
 	chiptype = tegra_get_chiptype();
-	if (chiptype < 0)
-		BUG();
 
 	osc_freq = (readl(TEGRA_CLK_RESET_BASE + CRC_OSC_CTRL) &
 		    CRC_OSC_CTRL_OSC_FREQ_MASK) >> CRC_OSC_CTRL_OSC_FREQ_SHIFT;
@@ -197,8 +195,6 @@ void barebox_arm_reset_vector(void)
 
 	/* get the number of cores in the main CPU complex of the current SoC */
 	num_cores = tegra_get_num_cores();
-	if (!num_cores)
-		BUG();
 
 	/* bring down main CPU complex (this may be a warm boot) */
 	enable_maincomplex_powerrail();

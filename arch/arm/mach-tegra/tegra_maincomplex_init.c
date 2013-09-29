@@ -33,7 +33,7 @@ void tegra_maincomplex_entry(void)
 		break;
 	default:
 		/* If we don't know the chiptype, better bail out */
-		BUG();
+		unreachable();
 	}
 
 	/*

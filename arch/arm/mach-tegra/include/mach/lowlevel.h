@@ -172,5 +172,20 @@ int tegra_get_osc_clock(void)
 	}
 }
 
+static inline __attribute__((always_inline))
+void tegra_cpu_lowlevel_setup(void)
+{
+	uint32_t r;
+
+	/* set the cpu to SVC32 mode */
+	__asm__ __volatile__("mrs %0, cpsr":"=r"(r));
+	r &= ~0x1f;
+	r |= 0xd3;
+	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+}
+
+/* reset vector for the AVP, to be called from board reset vector */
+void tegra_avp_reset_vector(uint32_t boarddata);
+
 /* reset vector for the main CPU complex */
 void tegra_maincomplex_entry(void);

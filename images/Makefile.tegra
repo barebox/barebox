@@ -1,0 +1,14 @@
+#
+# barebox image generation Makefile for Tegra images
+#
+
+board = $(srctree)/arch/$(ARCH)/boards
+
+# ----------------------- Tegra20 based boards ---------------------------
+pblx-$(CONFIG_MACH_TOSHIBA_AC100) += start_toshiba_ac100
+FILE_barebox-tegra20-toshiba-ac100.img = start_toshiba_ac100.pblx
+image-$(CONFIG_MACH_TOSHIBA_AC100) += barebox-tegra20-toshiba-ac100.img
+
+pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20_IRIS) += start_toradex_colibri_t20_iris
+FILE_barebox-tegra20-toradex-colibri-t20-iris.img = start_toradex_colibri_t20_iris.pblx
+image-$(CONFIG_MACH_TORADEX_COLIBRI_T20_IRIS) += barebox-tegra20-toradex-colibri-t20-iris.img

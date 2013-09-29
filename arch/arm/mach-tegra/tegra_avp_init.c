@@ -24,17 +24,6 @@
 #include <mach/tegra20-car.h>
 #include <mach/tegra20-pmc.h>
 
-static inline void tegra_cpu_lowlevel_setup(void)
-{
-	uint32_t r;
-
-	/* set the cpu to SVC32 mode */
-	__asm__ __volatile__("mrs %0, cpsr":"=r"(r));
-	r &= ~0x1f;
-	r |= 0xd3;
-	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
-}
-
 /* instruct the PMIC to enable the CPU power rail */
 static void enable_maincomplex_powerrail(void)
 {
@@ -186,12 +175,9 @@ static void maincomplex_powerup(void)
 		writel(reg, TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
 	}
 }
-void barebox_arm_reset_vector(void)
+void tegra_avp_reset_vector(uint32_t boarddata)
 {
 	int num_cores;
-
-	/* minimal initialization, OK for both ARMv4 and ARMv7 */
-	tegra_cpu_lowlevel_setup();
 
 	/* get the number of cores in the main CPU complex of the current SoC */
 	num_cores = tegra_get_num_cores();
@@ -204,6 +190,9 @@ void barebox_arm_reset_vector(void)
 	/* set start address for the main CPU complex processors */
 	writel(tegra_maincomplex_entry - get_runtime_offset(),
 	       TEGRA_EXCEPTION_VECTORS_BASE + 0x100);
+
+	/* put boarddata in scratch reg, for main CPU to fetch after startup */
+	writel(boarddata, TEGRA_PMC_BASE + PMC_SCRATCH(10));
 
 	/* bring up main CPU complex */
 	start_cpu0_clocks();

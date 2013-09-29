@@ -16,27 +16,21 @@
 
 #include <common.h>
 #include <sizes.h>
-#include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
 #include <mach/lowlevel.h>
-#include <mach/tegra20-pmc.h>
 
-void tegra_maincomplex_entry(void)
+extern char __dtb_tegra20_paz00_start[];
+
+ENTRY_FUNCTION(start_toshiba_ac100)(void)
 {
-	uint32_t rambase, ramsize;
+	uint32_t fdt;
 
-	arm_cpu_lowlevel_init();
+	__barebox_arm_head();
 
-	switch (tegra_get_chiptype()) {
-	case TEGRA20:
-		rambase = 0x0;
-		ramsize = tegra20_get_ramsize();
-		break;
-	default:
-		/* If we don't know the chiptype, better bail out */
-		unreachable();
-	}
+	tegra_cpu_lowlevel_setup();
 
-	barebox_arm_entry(rambase, ramsize,
-			  readl(TEGRA_PMC_BASE + PMC_SCRATCH(10)));
+	fdt = (uint32_t)__dtb_tegra20_paz00_start - get_runtime_offset();
+
+	tegra_avp_reset_vector(fdt);
 }

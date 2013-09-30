@@ -30,8 +30,10 @@
 
 static __inline__ void PUTC_LL(char ch)
 {
-	while (!(__raw_readb(DEBUG_LL_UART_ADDR + lsr) & LSR_THRE));
-	__raw_writeb(ch, DEBUG_LL_UART_ADDR + rbr);
+	void *base = (void *)DEBUG_LL_UART_ADDR;
+
+	while (!(__raw_readb(base + lsr) & LSR_THRE));
+	__raw_writeb(ch, base + rbr);
 }
 
 #endif  /* __INCLUDE_ARCH_DEBUG_LL_H__ */

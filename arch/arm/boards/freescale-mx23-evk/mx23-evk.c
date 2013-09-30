@@ -19,6 +19,7 @@
 #include <gpio.h>
 #include <environment.h>
 #include <mci.h>
+#include <linux/err.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/imx-regs.h>
@@ -95,8 +96,11 @@ static int register_persistant_environment(void)
 	}
 
 	/* use the full partition as our persistent environment storage */
-	return devfs_add_partition("disk0.1", 0, cdev->size,
+	cdev = devfs_add_partition("disk0.1", 0, cdev->size,
 						DEVFS_PARTITION_FIXED, "env0");
+	if (IS_ERR(cdev))
+		return PTR_ERR(cdev);
+	return 0;
 }
 
 static int mx23_evk_devices_init(void)

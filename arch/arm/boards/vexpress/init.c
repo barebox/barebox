@@ -118,7 +118,7 @@ console_initcall(vexpress_console_init);
 
 static int vexpress_core_init(void)
 {
-	char *hostname;
+	char *hostname = "vexpress-unknown";
 
 	if (amba_is_arm_sp804(IOMEM(0x10011000))) {
 		v2m_init = &vexpress_init_a9_legacy;

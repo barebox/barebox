@@ -84,8 +84,6 @@ static __bare_init bool load_stage2(void *dest, size_t size)
 
 void __bare_init barebox_arm_reset_vector(void)
 {
-	uint32_t r;
-
 	arm_cpu_lowlevel_init();
 
 #ifdef CONFIG_S3C_PLL_INIT

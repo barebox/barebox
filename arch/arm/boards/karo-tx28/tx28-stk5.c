@@ -23,6 +23,7 @@
 #include <io.h>
 #include <net.h>
 #include <asm/sections.h>
+#include <linux/err.h>
 #include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/mci.h>
@@ -344,8 +345,11 @@ static int register_persistent_environment(void)
 	}
 
 	/* use the full partition as our persistent environment storage */
-	return devfs_add_partition("disk0.1", 0, cdev->size,
+	cdev = devfs_add_partition("disk0.1", 0, cdev->size,
 					DEVFS_PARTITION_FIXED, "env0");
+	if (IS_ERR(cdev))
+		return PTR_ERR(cdev);
+	return 0;
 }
 
 void tx28_get_ethaddr(void)

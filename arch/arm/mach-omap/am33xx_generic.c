@@ -302,7 +302,7 @@ void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
 
 	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
 	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
-	writel(regs->sdram_config, CM_EMIF_SDRAM_CONFIG);
+	writel(regs->sdram_config, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
 }
 
 void am33xx_config_io_ctrl(int ioctrl)

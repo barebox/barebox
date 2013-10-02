@@ -285,7 +285,7 @@ static int mmu_init(void)
 		ttb = (unsigned long *)((unsigned long)ttb & ~0x3fff);
 
 		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
-			pr_err("Error: Can't request SDRAM region for ttb\n");
+			pr_err("Error: Can't request SDRAM region for ttb at %p\n", ttb);
 	} else {
 		ttb = memalign(0x10000, 0x4000);
 	}

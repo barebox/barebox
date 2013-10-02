@@ -36,13 +36,13 @@ static const struct am33xx_cmd_control ddr2_cmd_ctrl = {
 };
 
 static const struct am33xx_emif_regs ddr2_regs = {
-	.emif_read_latency	= 0x5,
-	.emif_tim1		= 0x0666B3D6,
-	.emif_tim2		= 0x143731DA,
-	.emif_tim3		= 0x00000347,
-	.sdram_config		= 0x43805332,
-	.sdram_config2		= 0x43805332,
-	.sdram_ref_ctrl		= 0x0000081a,
+	.emif_read_latency	= 0x100005,
+	.emif_tim1		= 0x0666B3C9,
+	.emif_tim2		= 0x243631CA,
+	.emif_tim3		= 0x0000033F,
+	.sdram_config		= 0x41805332,
+	.sdram_config2		= 0x41805332,
+	.sdram_ref_ctrl		= 0x0000081A,
 };
 
 static const struct am33xx_ddr_data ddr2_data = {

@@ -43,30 +43,21 @@ void __noreturn reset_cpu(unsigned long addr)
  * The significance of the CPU revision depends upon the cpu type.
  * Latest known revision is considered default.
  *
+ * This function is called before barebox_arm_entry(), so avoid switch
+ * statements.
+ *
  * @return silicon version
  */
 u32 am33xx_get_cpu_rev(void)
 {
-	u32 version, retval;
+	u32 version = (readl(AM33XX_IDCODE_REG) >> 28) & 0xF;
 
-	version = (readl(AM33XX_IDCODE_REG) >> 28) & 0xF;
-
-	switch (version) {
-	case 0:
-		retval = AM335X_ES1_0;
-		break;
-	case 1:
-		retval = AM335X_ES2_0;
-		break;
-	case 2:
-		/*
-		 * Fall through the default case.
-		 */
-	default:
-		retval = AM335X_ES2_1;
-	}
-
-	return retval;
+	if (version == 0)
+		return AM335X_ES1_0;
+	else if (version == 1)
+		return AM335X_ES2_0;
+	else
+		return AM335X_ES2_1;
 }
 
 /**

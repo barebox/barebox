@@ -609,18 +609,16 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 
 	hsmmc->mci.f_min = 400000;
+	hsmmc->mci.f_max = 52000000;
 
 	pdata = (struct omap_hsmmc_platform_data *)dev->platform_data;
 	if (pdata) {
 		if (pdata->f_max)
 			hsmmc->mci.f_max = pdata->f_max;
-		else
-			hsmmc->mci.f_max = 52000000;
 
 		if (pdata->devname)
 			hsmmc->mci.devname = pdata->devname;
 	}
-
 
 	dev->priv = hsmmc;
 	dev->detect = omap_mmc_detect,

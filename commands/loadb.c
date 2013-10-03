@@ -591,26 +591,6 @@ err_quit:
 }
 
 /**
- * @brief returns current used console device
- *
- * @return console device which is registered with CONSOLE_STDIN and
- * CONSOLE_STDOUT
- */
-static struct console_device *get_current_console(void)
-{
-	struct console_device *cdev;
-	/*
-	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
-	 * same output console
-	 */
-	for_each_console(cdev) {
-		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
-			return cdev;
-	}
-	return NULL;
-}
-
-/**
  * @brief provide the loadb(Kermit) or loadY mode support
  *
  * @param cmdtp
@@ -650,7 +630,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 		}
 	}
 
-	cdev = get_current_console();
+	cdev = console_get_first_active();
 	if (NULL == cdev) {
 		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
 		return -ENODEV;

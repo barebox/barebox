@@ -40,26 +40,6 @@
 
 #define DEF_FILE	"image.bin"
 
-/**
- * @brief returns current used console device
- *
- * @return console device which is registered with CONSOLE_STDIN and
- * CONSOLE_STDOUT
- */
-static struct console_device *get_current_console(void)
-{
-	struct console_device *cdev;
-	/*
-	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
-	 * same output console
-	 */
-	for_each_console(cdev) {
-		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
-			return cdev;
-	}
-	return NULL;
-}
-
 static int console_change_speed(struct console_device *cdev, int baudrate)
 {
 	int current_baudrate;
@@ -134,7 +114,7 @@ static int do_loady(int argc, char *argv[])
 	if (cname)
 		cdev = get_named_console(cname);
 	else
-		cdev = get_current_console();
+		cdev = console_get_first_active();
 	if (!cdev) {
 		printf("%s:No console device %s with STDIN and STDOUT\n",
 		       argv[0], cname ? cname : "default");
@@ -202,7 +182,7 @@ static int do_loadx(int argc, char *argv[])
 	if (cname)
 		cdev = get_named_console(cname);
 	else
-		cdev = get_current_console();
+		cdev = console_get_first_active();
 	if (!cdev) {
 		printf("%s:No console device %s with STDIN and STDOUT\n",
 		       argv[0], cname ? cname : "default");

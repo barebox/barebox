@@ -53,4 +53,6 @@ extern struct list_head console_list;
 
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
 
+struct console_device *console_get_first_active(void);
+
 #endif

@@ -58,13 +58,25 @@ BAREBOX_CMD_END
 
 static int do_ubiattach(int argc, char *argv[])
 {
+	int opt;
 	struct mtd_info_user user;
 	int fd, ret;
+	int vid_hdr_offset = 0;
 
-	if (argc != 2)
+	while((opt = getopt(argc, argv, "O:")) > 0) {
+		switch(opt) {
+		case 'O':
+			vid_hdr_offset = simple_strtoul(optarg, NULL, 0);
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
+		}
+	}
+
+	if (optind == argc)
 		return COMMAND_ERROR_USAGE;
 
-	fd = open(argv[1], O_RDWR);
+	fd = open(argv[optind], O_RDWR);
 	if (fd < 0) {
 		perror("open");
 		return 1;
@@ -76,7 +88,7 @@ static int do_ubiattach(int argc, char *argv[])
 		goto err;
 	}
 
-	ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, 0, 20);
+	ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, vid_hdr_offset, 20);
 	if (ret < 0)
 		printf("failed to attach: %s\n", strerror(-ret));
 	else
@@ -88,7 +100,7 @@ err:
 }
 
 static const __maybe_unused char cmd_ubiattach_help[] =
-"Usage: ubiattach <mtddev>\n"
+"Usage: ubiattach [-O vid-hdr-offset] <mtddev>\n"
 "Attach <mtddev> to ubi\n";
 
 BAREBOX_CMD_START(ubiattach)

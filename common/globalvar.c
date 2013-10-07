@@ -72,6 +72,9 @@ int globalvar_add_simple(const char *name, const char *value)
 	if (ret && ret != -EEXIST)
 		return ret;
 
+	if (!value)
+		return 0;
+
 	return dev_set_param(&global_device, name, value);
 }
 

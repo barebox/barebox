@@ -19,6 +19,7 @@
 #include <common.h>
 #include <fs.h>
 #include <libbb.h>
+#include <shell.h>
 
 int process_escape_sequence(const char *source, char *dest, int destlen)
 {
@@ -59,6 +60,12 @@ int process_escape_sequence(const char *source, char *dest, int destlen)
 			case 'w':
 				i += snprintf(dest + i, destlen - i, "%s", getcwd());
 				break;
+			case '$':
+				if (*(source + 2) == '?') {
+					i += snprintf(dest + i, destlen - i, "%d", shell_get_last_return_code());
+					source++;
+					break;
+				}
 			default:
 				dest[i++] = '\\';
 				dest[i++] = *(source + 1);

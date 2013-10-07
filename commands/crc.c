@@ -82,6 +82,19 @@ out:
 	return ret;
 }
 
+static int crc_from_file(const char* file, ulong *crc)
+{
+	char * buf;
+
+	buf= read_file(file, NULL);
+
+	if (!buf)
+		return -ENOMEM;
+
+	*crc = simple_strtoul(buf, NULL, 16);
+	return 0;
+}
+
 static int do_crc(int argc, char *argv[])
 {
 	loff_t start = 0, size = ~0;
@@ -92,7 +105,7 @@ static int do_crc(int argc, char *argv[])
 #endif
 	int opt, err = 0, filegiven = 0, verify = 0;
 
-	while((opt = getopt(argc, argv, "f:F:v:")) > 0) {
+	while((opt = getopt(argc, argv, "f:F:v:V:")) > 0) {
 		switch(opt) {
 		case 'f':
 			filename = optarg;
@@ -107,6 +120,10 @@ static int do_crc(int argc, char *argv[])
 		case 'v':
 			verify = 1;
 			vcrc = simple_strtoul(optarg, NULL, 0);
+			break;
+		case 'V':
+			if (!crc_from_file(optarg, &vcrc))
+				verify = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -153,6 +170,7 @@ BAREBOX_CMD_HELP_OPT  ("-f <file>", "Use file instead of memory.\n")
 BAREBOX_CMD_HELP_OPT  ("-F <file>", "Use file to compare.\n")
 #endif
 BAREBOX_CMD_HELP_OPT  ("-v <crc>",  "Verify\n")
+BAREBOX_CMD_HELP_OPT  ("-V <file>", "Verify with crc read from <file>\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(crc32)

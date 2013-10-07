@@ -1078,7 +1078,7 @@ i2c_omap_probe(struct device_d *pdev)
 	omap_i2c_init(i2c_omap);
 
 	dev_info(pdev, "bus %d rev%d.%d at %d kHz\n",
-		 pdev->id, i2c_omap->rev >> 4, i2c_omap->rev & 0xf, i2c_omap->speed);
+		 pdev->id, major, minor, i2c_omap->speed);
 
 	omap_i2c_idle(i2c_omap);
 

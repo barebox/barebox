@@ -44,6 +44,21 @@ config FS_NFS
 source fs/fat/Kconfig
 source fs/ubifs/Kconfig
 
+config FS_BPKFS
+	bool
+	prompt "BPKFS support"
+	help
+	  Simple update file format developed for Somfy, tools and library are
+	  available under LGPLv2 (https://www.gitorious.org/libbpk).
+	  This format in the v1.0 allow you to store 6 types a binary stream for
+	  a unique hardware id:
+	   - bootloader
+	   - bootloader_version
+	   - description.gz
+	   - kernel
+	   - rootfs
+	   - firmware_version
+
 config PARTITION_NEED_MTD
 	bool
 

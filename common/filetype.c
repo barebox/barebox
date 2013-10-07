@@ -50,6 +50,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_png] = { "PNG image", "png" },
 	[filetype_ext] = { "ext filesystem", "ext" },
 	[filetype_gpt] = { "GUID Partition Table", "gpt" },
+	[filetype_bpk] = { "Binary PacKage", "bpk" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -220,6 +221,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_png;
 	if (is_barebox_mips_head(_buf))
 		return filetype_mips_barebox;
+	if (buf[0] == be32_to_cpu(0x534F4659))
+		return filetype_bpk;
 
 	if (bufsize < 64)
 		return filetype_unknown;

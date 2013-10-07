@@ -109,6 +109,7 @@ $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 include $(srctree)/images/Makefile.imx
 include $(srctree)/images/Makefile.mvebu
 include $(srctree)/images/Makefile.socfpga
+include $(srctree)/images/Makefile.tegra
 
 targets += $(image-y) pbl.lds barebox.x barebox.z
 targets += $(patsubst %,%.pblx,$(pblx-y))

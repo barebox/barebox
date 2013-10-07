@@ -40,7 +40,8 @@
 #define T20_ODMDATA_UARTID_SHIFT	15
 #define T20_ODMDATA_UARTID_MASK		(7 << T20_ODMDATA_UARTID_SHIFT)
 
-static inline u32 tegra_get_odmdata(void)
+static inline __attribute__((always_inline))
+u32 tegra_get_odmdata(void)
 {
 	u32 bctsize, bctptr, odmdata;
 
@@ -62,7 +63,8 @@ enum tegra_chiptype {
 	TEGRA20 = 0,
 };
 
-static inline enum tegra_chiptype tegra_get_chiptype(void)
+static inline __attribute__((always_inline))
+enum tegra_chiptype tegra_get_chiptype(void)
 {
 	u32 hidrev;
 
@@ -76,7 +78,8 @@ static inline enum tegra_chiptype tegra_get_chiptype(void)
 	}
 }
 
-static inline int tegra_get_num_cores(void)
+static inline __attribute__((always_inline))
+int tegra_get_num_cores(void)
 {
 	switch (tegra_get_chiptype()) {
 	case TEGRA20:
@@ -89,7 +92,8 @@ static inline int tegra_get_num_cores(void)
 }
 
 /* Runtime data */
-static inline int tegra_cpu_is_maincomplex(void)
+static inline __attribute__((always_inline))
+int tegra_cpu_is_maincomplex(void)
 {
 	u32 tag0;
 
@@ -98,7 +102,8 @@ static inline int tegra_cpu_is_maincomplex(void)
 	return (tag0 & 0xff) == 0x55;
 }
 
-static inline uint32_t tegra20_get_ramsize(void)
+static inline __attribute__((always_inline))
+uint32_t tegra20_get_ramsize(void)
 {
 	switch ((tegra_get_odmdata() & T20_ODMDATA_RAMSIZE_MASK) >>
 		T20_ODMDATA_RAMSIZE_SHIFT) {
@@ -120,7 +125,8 @@ static long uart_id_to_base[] = {
 	TEGRA_UARTE_BASE,
 };
 
-static inline long tegra20_get_debuguart_base(void)
+static inline __attribute__((always_inline))
+long tegra20_get_debuguart_base(void)
 {
 	u32 odmdata;
 	int id;
@@ -146,7 +152,8 @@ static inline long tegra20_get_debuguart_base(void)
 #define CRC_OSC_CTRL_OSC_FREQ_SHIFT	30
 #define CRC_OSC_CTRL_OSC_FREQ_MASK	(0x3 << CRC_OSC_CTRL_OSC_FREQ_SHIFT)
 
-static inline unsigned int tegra_get_osc_clock(void)
+static inline unsigned __attribute__((always_inline))
+int tegra_get_osc_clock(void)
 {
 	u32 osc_ctrl = readl(TEGRA_CLK_RESET_BASE + CRC_OSC_CTRL);
 
@@ -164,6 +171,21 @@ static inline unsigned int tegra_get_osc_clock(void)
 		return 0;
 	}
 }
+
+static inline __attribute__((always_inline))
+void tegra_cpu_lowlevel_setup(void)
+{
+	uint32_t r;
+
+	/* set the cpu to SVC32 mode */
+	__asm__ __volatile__("mrs %0, cpsr":"=r"(r));
+	r &= ~0x1f;
+	r |= 0xd3;
+	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+}
+
+/* reset vector for the AVP, to be called from board reset vector */
+void tegra_avp_reset_vector(uint32_t boarddata);
 
 /* reset vector for the main CPU complex */
 void tegra_maincomplex_entry(void);

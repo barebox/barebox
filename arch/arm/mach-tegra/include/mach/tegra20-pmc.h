@@ -65,3 +65,5 @@
 #define PMC_PWRGATE_STATUS_VE		(1 << 2)
 #define PMC_PWRGATE_STATUS_TD		(1 << 1)
 #define PMC_PWRGATE_STATUS_CPU		(1 << 0)
+
+#define PMC_SCRATCH(i)			(0x050 + 0x4*i)

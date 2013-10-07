@@ -1,13 +1,11 @@
 if ARCH_TEGRA
 
-choice
-	prompt "Tegra processor type"
+config ARCH_TEXT_BASE
+	hex
+	default 0x0
 
-config ARCH_TEGRA_2x_SOC
-	bool "Tegra 20"
-	select PINCTRL_TEGRA20
-
-endchoice
+config BOARDINFO
+	default ""
 
 choice
 	prompt "Tegra debug UART"
@@ -44,34 +42,21 @@ endchoice
 
 # ---------------------------------------------------------
 
-if ARCH_TEGRA_2x_SOC
+config ARCH_TEGRA_2x_SOC
+	bool
+	select PINCTRL_TEGRA20
 
-config ARCH_TEXT_BASE
-	hex
-	default 0x00108000
+menu "select Tegra boards to be built"
 
-choice
-	prompt "Tegra 20 Board Type"
-
-config MACH_TEGRA20_GENERIC
-	bool "Generic DT based board"
-	help
-	  Say Y here if you are building for a generic DT based board.
+config MACH_TORADEX_COLIBRI_T20_IRIS
+	bool "Toradex Colibri T20 on Iris Carrier"
+	select ARCH_TEGRA_2x_SOC
 
 config MACH_TOSHIBA_AC100
 	bool "Toshiba AC100"
-	help
-	  Say Y here if you are using Toshiba AC100 smartbook.
+	select ARCH_TEGRA_2x_SOC
 
-endchoice
-
-if MACH_TEGRA20_GENERIC
-
-endif #MACH_TEGRA20_GENERIC
-
-source arch/arm/boards/toshiba-ac100/Kconfig
-
-endif #ARCH_TEGRA_2x_SOC
+endmenu
 
 # ---------------------------------------------------------
 

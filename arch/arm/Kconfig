@@ -165,14 +165,16 @@ config ARCH_TEGRA
 	bool "NVIDIA Tegra"
 	select CPU_V7
 	select HAS_DEBUG_LL
-	select BUILTIN_DTB
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select GPIO_TEGRA
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
 	select OFDEVICE
 	select OFTREE
+	select RELOCATABLE
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"

@@ -89,9 +89,18 @@ static int smp_twd_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id smp_twd_compatible[] = {
+	{
+		.compatible = "arm,cortex-a9-twd-timer",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d smp_twd_driver = {
 	.name = "smp_twd",
 	.probe = smp_twd_probe,
+	.of_compatible = DRV_OF_COMPAT(smp_twd_compatible),
 };
 
 static int smp_twd_init(void)

@@ -170,7 +170,6 @@ static int pxa_serial_probe(struct device_d *dev)
 
 	dev->priv = priv;
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pxa_serial_tstc;
 	cdev->putc = pxa_serial_putc;
 	cdev->getc = pxa_serial_getc;

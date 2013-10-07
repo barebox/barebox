@@ -265,7 +265,6 @@ static int qt1070_probe(struct device_d *dev)
 
 	cdev = &data->cdev;
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN;
 	cdev->tstc = qt1070_tstc;
 	cdev->getc = qt1070_getc;
 

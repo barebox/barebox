@@ -478,7 +478,6 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 		gser->connect(gser);
 
 	cdev = &port->cdev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = serial_tstc;
 	cdev->putc = serial_putc;
 	cdev->getc = serial_getc;

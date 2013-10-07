@@ -58,9 +58,6 @@ static void clps711x_init_port(struct console_device *cdev)
 	tmp |= UBRLCR_FIFOEN | UBRLCR_WRDLEN8; /* FIFO on, 8N1 mode */
 	writel(tmp, s->UBRLCR);
 
-	/* Set default baudrate on initialization */
-	clps711x_setbaudrate(cdev, CONFIG_BAUDRATE);
-
 	/* Enable the UART */
 	writel(readl(SYSCON(s)) | SYSCON_UARTEN, SYSCON(s));
 }
@@ -131,7 +128,6 @@ static int clps711x_probe(struct device_d *dev)
 
 	dev->priv	= s;
 	s->cdev.dev	= dev;
-	s->cdev.f_caps	= CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	s->cdev.tstc	= clps711x_tstc;
 	s->cdev.putc	= clps711x_putc;
 	s->cdev.getc	= clps711x_getc;

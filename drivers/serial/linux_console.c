@@ -64,10 +64,12 @@ static int linux_console_probe(struct device_d *dev)
 
 	cdev = xzalloc(sizeof(struct console_device));
 	cdev->dev = dev;
-	cdev->f_caps = data->flags;
-	cdev->tstc = linux_console_tstc;
-	cdev->putc = linux_console_putc;
-	cdev->getc = linux_console_getc;
+	if (data->stdinfd >= 0) {
+		cdev->tstc = linux_console_tstc;
+		cdev->getc = linux_console_getc;
+	}
+	if (data->stdoutfd >= 0)
+		cdev->putc = linux_console_putc;
 
 	console_register(cdev);
 

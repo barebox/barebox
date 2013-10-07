@@ -183,8 +183,6 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 	ns16550_write(cdev, 0x07, mdr1);	/* Disable */
 #endif
 
-	ns16550_setbaudrate(cdev, CONFIG_BAUDRATE);
-
 #ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
 	ns16550_write(cdev, 0x00,  mdr1);
 #endif
@@ -291,7 +289,6 @@ static int ns16550_probe(struct device_d *dev)
 
 	cdev = &priv->cdev;
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = ns16550_tstc;
 	cdev->putc = ns16550_putc;
 	cdev->getc = ns16550_getc;

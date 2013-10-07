@@ -95,7 +95,6 @@ static int __init gpio_keys_probe(struct device_d *dev)
 	cdev = &pdata->cdev;
 	dev->type_data = cdev;
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN;
 	cdev->tstc = gpio_keys_tstc;
 	cdev->getc = gpio_keys_getc;
 

@@ -149,7 +149,6 @@ static int mpc5xxx_serial_probe(struct device_d *dev)
 	cdev = xzalloc(sizeof(struct console_device));
 	dev->priv = dev_request_mem_region(dev, 0);
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = mpc5xxx_serial_tstc;
 	cdev->putc = mpc5xxx_serial_putc;
 	cdev->getc = mpc5xxx_serial_getc;

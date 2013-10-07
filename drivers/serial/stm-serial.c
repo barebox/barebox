@@ -153,7 +153,6 @@ static int stm_serial_probe(struct device_d *dev)
 
 	cdev = &priv->cdev;
 
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = stm_serial_tstc;
 	cdev->putc = stm_serial_putc;
 	cdev->getc = stm_serial_getc;

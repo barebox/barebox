@@ -40,7 +40,6 @@ struct console_device {
 
 	struct list_head list;
 
-	unsigned char f_caps;
 	unsigned char f_active;
 
 	unsigned int baudrate;
@@ -53,5 +52,7 @@ extern struct list_head console_list;
 #define for_each_console(console) list_for_each_entry(console, &console_list, list)
 
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
+
+struct console_device *console_get_first_active(void);
 
 #endif

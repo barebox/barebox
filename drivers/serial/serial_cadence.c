@@ -246,7 +246,6 @@ static int cadence_serial_probe(struct device_d *dev)
 	}
 
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = cadence_serial_tstc;
 	cdev->putc = cadence_serial_putc;
 	cdev->getc = cadence_serial_getc;

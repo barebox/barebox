@@ -187,7 +187,6 @@ static int auart_serial_probe(struct device_d *dev)
 	priv = xzalloc(sizeof *priv);
 	cdev = &priv->cdev;
 
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = auart_serial_tstc;
 	cdev->putc = auart_serial_putc;
 	cdev->getc = auart_serial_getc;
@@ -202,7 +201,6 @@ static int auart_serial_probe(struct device_d *dev)
 		return PTR_ERR(priv->clk);
 
 	auart_serial_init_port(priv);
-	auart_serial_setbaudrate(cdev, CONFIG_BAUDRATE);
 
 	/* Disable RTS/CTS, enable Rx, Tx, UART */
 	writel(BM_UARTAPP_CTRL2_RTSEN | BM_UARTAPP_CTRL2_CTSEN |

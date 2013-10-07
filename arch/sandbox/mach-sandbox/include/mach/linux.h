@@ -23,7 +23,6 @@ int barebox_register_console(char *name_template, int stdinfd, int stdoutfd);
 struct linux_console_data {
 	int stdinfd;
 	int stdoutfd;
-	unsigned int flags;
 };
 
 extern int sdl_xres;

@@ -108,3 +108,25 @@ int fputc(int fd, char c)
 	return 0;
 }
 EXPORT_SYMBOL(fputc);
+
+/*
+ * @brief returns current used console device
+ *
+ * @return console device which is registered with CONSOLE_STDIN and
+ * CONSOLE_STDOUT
+ */
+struct console_device *console_get_first_active(void)
+{
+	struct console_device *cdev;
+	/*
+	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
+	 * same output console
+	 */
+	for_each_console(cdev) {
+		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
+			return cdev;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(console_get_first_active);

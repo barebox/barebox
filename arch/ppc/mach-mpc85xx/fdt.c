@@ -70,9 +70,7 @@ static int fdt_stdout_setup(struct device_node *blob)
 		goto error;
 	}
 
-	for_each_console(cdev)
-		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
-			break;
+	cdev = console_get_first_active();
 	if (cdev)
 		sprintf(sername, "serial%d", cdev->dev->id);
 	else

@@ -184,7 +184,6 @@ static int s3c_serial_probe(struct device_d *dev)
 	priv->regs = dev_request_mem_region(dev, 0);
 	dev->priv = priv;
 	cdev->dev = dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = s3c_serial_tstc;
 	cdev->putc = s3c_serial_putc;
 	cdev->getc = s3c_serial_getc;

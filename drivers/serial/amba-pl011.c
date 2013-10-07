@@ -164,10 +164,6 @@ int pl011_init_port (struct console_device *cdev)
 	uart->uartclk = clk_get_rate(uart->clk);
 
 	/*
-	 * set baud rate
-	 */
-	pl011_setbaudrate(cdev, 115200);
-	/*
 	 ** Set the UART to be 8 bits, 1 stop bit, no parity, fifo enabled.
 	 */
 	pl011_rlcr(uart, UART01x_LCRH_WLEN_8 | UART01x_LCRH_FEN);
@@ -196,7 +192,6 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 
 	cdev = &uart->uart;
 	cdev->dev = &dev->dev;
-	cdev->f_caps = CONSOLE_STDIN | CONSOLE_STDOUT | CONSOLE_STDERR;
 	cdev->tstc = pl011_tstc;
 	cdev->putc = pl011_putc;
 	cdev->getc = pl011_getc;

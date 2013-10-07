@@ -33,7 +33,7 @@
 
 #ifdef STATIC
 #include <linux/decompress/mm.h>
-#include "lzo/lzo1x_decompress.c"
+#include "lzo/lzo1x_decompress_safe.c"
 #else
 #include <malloc.h>
 #endif
@@ -108,7 +108,7 @@ static inline int parse_header(u8 *input, int *skip, int in_len)
 	return 1;
 }
 
-STATIC int decompress_unlzo(u8 *input, int in_len,
+int decompress_unlzo(u8 *input, int in_len,
 				int (*fill) (void *, unsigned int),
 				int (*flush) (void *, unsigned int),
 				u8 *output, int *posp,

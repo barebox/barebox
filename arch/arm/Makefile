@@ -142,8 +142,7 @@ KBUILD_IMAGE := barebox.s5p
 endif
 
 quiet_cmd_mlo ?= IFT     $@
-	cmd_mlo ?= scripts/omap_signGP $< $(TEXT_BASE) 1; \
-		     test -e $<.ift && mv $<.ift MLO
+	cmd_mlo ?= scripts/omap_signGP -o MLO -l $(TEXT_BASE) -c $<
 
 MLO: $(KBUILD_BINARY)
 	$(call if_changed,mlo)

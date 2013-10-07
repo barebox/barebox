@@ -2,12 +2,13 @@
 #define _MACH_GENERIC_H
 
 /* I2C controller revisions */
-#define OMAP_I2C_REV_2			0x20
+#define OMAP_I2C_OMAP1_REV_2            0x20
 
 /* I2C controller revisions present on specific hardware */
-#define OMAP_I2C_REV_ON_2430		0x36
-#define OMAP_I2C_REV_ON_3430		0x3C
-#define OMAP_I2C_REV_ON_4430		0x40
+#define OMAP_I2C_REV_ON_2430		0x00000036
+#define OMAP_I2C_REV_ON_3430_3530       0x0000003C
+#define OMAP_I2C_REV_ON_3630            0x00000040
+#define OMAP_I2C_REV_ON_4430_PLUS       0x50400002
 
 #ifdef CONFIG_ARCH_OMAP
 #define cpu_is_omap2430()	(1)
@@ -56,6 +57,7 @@ static inline int omap_set_mmc_dev(const char *mmcdev)
 
 extern uint32_t omap_bootinfo[3];
 void omap_save_bootinfo(void *data);
+void __noreturn omap_start_barebox(void *barebox);
 
 void omap_set_bootmmc_devname(const char *devname);
 const char *omap_get_bootmmc_devname(void);

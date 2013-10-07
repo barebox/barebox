@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <malloc.h>
+#include <getopt.h>
 #include <linux/types.h>
 
 #undef CH_WITH_CHRAM
@@ -233,6 +234,18 @@ static struct ch_chsettings_nochram config_header
 };
 #endif
 
+static void usage(const char *prgname)
+{
+	fprintf(stderr,
+"usage: %s [OPTIONS] <infile>\n"
+"\n"
+"Options:\n"
+"-o <outfile>     output to <outfile>\n"
+"-l <loadaddr>    specify load address\n"
+"-c               Add config header\n"
+"-h               This help\n"
+	, prgname);
+}
 
 #define err(...) do { int save_errno = errno; \
                       fprintf(stderr, __VA_ARGS__); \
@@ -243,29 +256,43 @@ static struct ch_chsettings_nochram config_header
 int main(int argc, char *argv[])
 {
 	int	i;
-	char	ifname[FILENAME_MAX], ofname[FILENAME_MAX], ch;
+	char	*ifname, *ofname = NULL, ch;
 	FILE	*ifile, *ofile;
-	unsigned long	loadaddr, len;
+	unsigned long	loadaddr = ~0, len;
 	struct stat	sinfo;
 	int ch_add = 0;
+	int opt;
 
+	while ((opt = getopt(argc, argv, "o:hl:c")) != -1) {
+		switch (opt) {
+		case 'h':
+			usage(argv[0]);
+			exit(0);
+		case 'o':
+			ofname = optarg;
+			break;
+		case 'l':
+			loadaddr = strtoul(optarg, NULL, 0);
+			break;
+		case 'c':
+			ch_add = 1;
+			break;
+		default:
+			exit(1);
+		}
+	}
 
-	/* Default to x-load.bin and 0x40200800. */
-	strcpy(ifname, "x-load.bin");
-	loadaddr = 0x40200800;
+	if (loadaddr == ~0) {
+		fprintf(stderr, "no loadaddr given\n");
+		exit(1);
+	}
 
-	if ((argc == 2) || (argc == 3) || (argc == 4))
-		strcpy(ifname, argv[1]);
+	if (optind == argc || !ofname) {
+		usage(argv[0]);
+		exit(1);
+	}
 
-	if ((argc == 3) || (argc == 4))
-		loadaddr = strtoul(argv[2], NULL, 16);
-
-	if (argc == 4)
-		ch_add = strtoul(argv[3], NULL, 16);
-
-	/* Form the output file name. */
-	strcpy(ofname, ifname);
-	strcat(ofname, ".ift");
+	ifname = argv[optind];
 
 	/* Open the input file. */
 	ifile = fopen(ifname, "rb");

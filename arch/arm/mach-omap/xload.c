@@ -188,8 +188,7 @@ static void *omap4_xload_boot_usb(void){
  */
 static __noreturn int omap_xload(void)
 {
-	int (*func)(void *) = NULL;
-	uint32_t *arg;
+	void *func;
 
 	if (!barebox_part)
 		barebox_part = &default_part;
@@ -230,12 +229,7 @@ static __noreturn int omap_xload(void)
 		while (1);
 	}
 
-	arg = (uint32_t *)&omap_bootinfo;
-
-	shutdown_barebox();
-	func(arg);
-
-	while (1);
+	omap_start_barebox(func);
 }
 
 int omap_set_barebox_part(struct omap_barebox_part *part)

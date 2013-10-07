@@ -161,6 +161,8 @@ void __noreturn hang (void)
 	for (;;);
 }
 
+void (*board_shutdown)(void);
+
 /* Everything needed to cleanly shutdown barebox.
  * Should be called before starting an OS to get
  * the devices into a clean state
@@ -171,4 +173,6 @@ void shutdown_barebox(void)
 #ifdef ARCH_SHUTDOWN
 	arch_shutdown();
 #endif
+	if (board_shutdown)
+		board_shutdown();
 }

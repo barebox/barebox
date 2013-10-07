@@ -21,8 +21,68 @@
 #include <common.h>
 #include <fs.h>
 #include <errno.h>
+#include <console.h>
+#include <init.h>
+#include <environment.h>
+#include <globalvar.h>
+#include <magicvar.h>
+#include <password.h>
 
 #ifndef CONFIG_CONSOLE_NONE
+
+static int console_input_allow;
+
+static int console_global_init(void)
+{
+	if (IS_ENABLED(CONFIG_CMD_LOGIN) && is_passwd_enable())
+		console_input_allow = 0;
+	else
+		console_input_allow = 1;
+
+	globalvar_add_simple_bool("console.input_allow", &console_input_allow);
+
+	return 0;
+}
+late_initcall(console_global_init);
+
+BAREBOX_MAGICVAR_NAMED(global_console_input_allow, global.console.input_allow, "console input allowed");
+
+bool console_is_input_allow(void)
+{
+	return console_input_allow;
+}
+
+void console_allow_input(bool val)
+{
+	console_input_allow = val;
+}
+
+int barebox_loglevel = CONFIG_DEFAULT_LOGLEVEL;
+
+int pr_print(int level, const char *fmt, ...)
+{
+	va_list args;
+	uint i;
+	char printbuffer[CFG_PBSIZE];
+
+	if (level > barebox_loglevel)
+		return 0;
+
+	va_start(args, fmt);
+	i = vsprintf(printbuffer, fmt, args);
+	va_end(args);
+
+	/* Print the string */
+	puts(printbuffer);
+
+	return i;
+}
+
+static int loglevel_init(void)
+{
+	return globalvar_add_simple_int("loglevel", &barebox_loglevel, "%d");
+}
+device_initcall(loglevel_init);
 
 int printf(const char *fmt, ...)
 {

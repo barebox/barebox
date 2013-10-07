@@ -28,11 +28,23 @@
 int password(unsigned char *passwd, size_t length, int flags, int timeout);
 
 int read_passwd(unsigned char *sum, size_t length);
-int write_passwd(unsigned char *sum, size_t length);
-
-int is_passwd_enable(void);
-int passwd_disable(void);
 int check_passwd(unsigned char* passwd, size_t length);
-int set_passwd(unsigned char* passwd, size_t length);
+
+int read_env_passwd(unsigned char *sum, size_t length);
+int write_env_passwd(unsigned char *sum, size_t length);
+
+int read_default_passwd(unsigned char *sum, size_t length);
+int is_passwd_default_enable(void);
+int check_default_passwd(unsigned char* passwd, size_t length);
+
+int is_passwd_env_enable(void);
+int passwd_env_disable(void);
+int check_env_passwd(unsigned char* passwd, size_t length);
+int set_env_passwd(unsigned char* passwd, size_t length);
+
+static inline int is_passwd_enable(void)
+{
+	return is_passwd_default_enable() || is_passwd_env_enable();
+}
 
 #endif /* __PASSWORD_H__ */

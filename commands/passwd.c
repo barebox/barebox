@@ -63,7 +63,7 @@ static int do_passwd(int argc, char *argv[])
 			goto err;
 	}
 
-	ret = set_passwd(passwd1, passwd1_len);
+	ret = set_env_passwd(passwd1, passwd1_len);
 
 	if (ret < 0) {
 		puts("Sorry, passwords write failed\n");
@@ -78,15 +78,15 @@ err:
 	return 1;
 
 disable:
-	passwd_disable();
+	passwd_env_disable();
 	puts("passwd: password disabled\n");
 	return ret;
 }
 
 static const __maybe_unused char cmd_passwd_help[] =
 "Usage: passwd\n"
-"passwd allow you to specify a password\n"
-"to disable it put an empty password\n"
+"passwd allow you to specify a password in the env\n"
+"to disable it put an empty password will still use the default password if set\n"
 ;
 
 BAREBOX_CMD_START(passwd)

@@ -25,6 +25,7 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <clock.h>
+#include <generated/passwd.h>
 
 #if defined(CONFIG_PASSWD_SUM_MD5)
 #define PASSWD_SUM "md5"
@@ -97,7 +98,13 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 }
 EXPORT_SYMBOL(password);
 
-int is_passwd_enable(void)
+int is_passwd_default_enable(void)
+{
+	return strlen(default_passwd) > 0;
+}
+EXPORT_SYMBOL(is_passwd_default_enable);
+
+int is_passwd_env_enable(void)
 {
 	int fd;
 
@@ -110,13 +117,13 @@ int is_passwd_enable(void)
 
 	return 1;
 }
-EXPORT_SYMBOL(is_passwd_enable);
+EXPORT_SYMBOL(is_passwd_env_enable);
 
-int passwd_disable(void)
+int passwd_env_disable(void)
 {
 	return unlink(PASSWD_FILE);
 }
-EXPORT_SYMBOL(passwd_disable);
+EXPORT_SYMBOL(passwd_env_disable);
 
 static unsigned char to_digit(unsigned char c)
 {
@@ -139,6 +146,43 @@ static unsigned char to_hexa(unsigned char c)
 }
 
 int read_passwd(unsigned char *sum, size_t length)
+{
+	if (is_passwd_env_enable())
+		return read_env_passwd(sum, length);
+	else if (is_passwd_default_enable())
+		return read_default_passwd(sum, length);
+	else
+		return -EINVAL;
+}
+
+int read_default_passwd(unsigned char *sum, size_t length)
+{
+	int i = 0;
+	int len = strlen(default_passwd);
+	unsigned char *buf = (unsigned char *)default_passwd;
+	unsigned char c;
+
+	if (!sum || length < 1)
+		return -EINVAL;
+
+	for (i = 0; i < len && length > 0; i++) {
+		c = buf[i];
+		i++;
+
+		*sum = to_digit(c) << 4;
+
+		c = buf[i];
+
+		*sum |= to_digit(c);
+		sum++;
+		length--;
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(read_default_passwd);
+
+int read_env_passwd(unsigned char *sum, size_t length)
 {
 	int fd;
 	int ret = 0;
@@ -178,9 +222,9 @@ exit:
 
 	return ret;
 }
-EXPORT_SYMBOL(read_passwd);
+EXPORT_SYMBOL(read_env_passwd);
 
-int write_passwd(unsigned char *sum, size_t length)
+int write_env_passwd(unsigned char *sum, size_t length)
 {
 	int fd;
 	unsigned char c;
@@ -227,9 +271,9 @@ exit:
 
 	return ret;
 }
-EXPORT_SYMBOL(write_passwd);
+EXPORT_SYMBOL(write_env_passwd);
 
-int check_passwd(unsigned char* passwd, size_t length)
+static int __check_passwd(unsigned char* passwd, size_t length, int std)
 {
 	struct digest *d;
 	unsigned char *passwd1_sum;
@@ -256,7 +300,10 @@ int check_passwd(unsigned char* passwd, size_t length)
 
 	d->final(d, passwd1_sum);
 
-	ret = read_passwd(passwd2_sum, d->length);
+	if (std)
+		ret = read_env_passwd(passwd2_sum, d->length);
+	else
+		ret = read_default_passwd(passwd2_sum, d->length);
 
 	if (ret < 0)
 		goto err2;
@@ -271,9 +318,30 @@ err1:
 
 	return ret;
 }
-EXPORT_SYMBOL(check_passwd);
 
-int set_passwd(unsigned char* passwd, size_t length)
+int check_default_passwd(unsigned char* passwd, size_t length)
+{
+	return __check_passwd(passwd, length, 0);
+}
+EXPORT_SYMBOL(check_default_passwd);
+
+int check_env_passwd(unsigned char* passwd, size_t length)
+{
+	return __check_passwd(passwd, length, 1);
+}
+EXPORT_SYMBOL(check_env_passwd);
+
+int check_passwd(unsigned char* passwd, size_t length)
+{
+	if (is_passwd_env_enable())
+		return check_env_passwd(passwd, length);
+	else if (is_passwd_default_enable())
+		return check_default_passwd(passwd, length);
+	else
+		return -EINVAL;
+}
+
+int set_env_passwd(unsigned char* passwd, size_t length)
 {
 	struct digest *d;
 	unsigned char *passwd_sum;
@@ -292,10 +360,10 @@ int set_passwd(unsigned char* passwd, size_t length)
 
 	d->final(d, passwd_sum);
 
-	ret = write_passwd(passwd_sum, d->length);
+	ret = write_env_passwd(passwd_sum, d->length);
 
 	free(passwd_sum);
 
 	return ret;
 }
-EXPORT_SYMBOL(set_passwd);
+EXPORT_SYMBOL(set_env_passwd);

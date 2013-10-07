@@ -238,6 +238,9 @@ int getc(void)
 	unsigned char ch;
 	uint64_t start;
 
+	if (unlikely(!console_is_input_allow()))
+		return -EPERM;
+
 	/*
 	 * For 100us we read the characters from the serial driver
 	 * into a kfifo. This helps us not to lose characters
@@ -272,6 +275,9 @@ EXPORT_SYMBOL(fgetc);
 
 int tstc(void)
 {
+	if (unlikely(!console_is_input_allow()))
+		return 0;
+
 	return kfifo_len(console_input_fifo) || tstc_raw();
 }
 EXPORT_SYMBOL(tstc);

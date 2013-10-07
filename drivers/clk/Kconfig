@@ -12,3 +12,8 @@ config COMMON_CLK_OF_PROVIDER
 	bool
 	help
 	  Clock driver provides OF-Tree based clock lookup.
+
+config CLK_SOCFPGA
+	bool
+	select COMMON_CLK_OF_PROVIDER
+	default y if ARCH_SOCFPGA && OFDEVICE

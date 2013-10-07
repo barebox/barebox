@@ -1,0 +1,34 @@
+#
+# barebox image generation Makefile for Altera socfpga
+#
+
+# %.socfpga - convert into socfpga image
+# ----------------------------------------------------------------
+quiet_cmd_socfpga_image = SOCFPGA-IMG $@
+      cmd_socfpga_image = scripts/socfpga_mkimage -b -o $@ $<
+
+$(obj)/%.socfpgaimg: $(obj)/% FORCE
+	$(call if_changed,socfpga_image)
+
+# ----------------------- Cyclone5 based boards ---------------------------
+pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += start_socfpga_sockit_xload
+FILE_barebox-socfpga-sockit-xload.img = start_socfpga_sockit_xload.pblx.socfpgaimg
+xload-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += barebox-socfpga-sockit-xload.img
+
+pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += start_socfpga_sockit
+FILE_barebox-socfpga-sockit.img = start_socfpga_sockit.pblx
+barebox-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += barebox-socfpga-sockit.img
+
+pblx-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += start_socfpga_socrates_xload
+FILE_barebox-socfpga-socrates-xload.img = start_socfpga_socrates_xload.pblx.socfpgaimg
+xload-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += barebox-socfpga-socrates-xload.img
+
+pblx-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += start_socfpga_socrates
+FILE_barebox-socfpga-socrates.img = start_socfpga_socrates.pblx
+barebox-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += barebox-socfpga-socrates.img
+
+ifdef CONFIG_ARCH_SOCFPGA_XLOAD
+image-y += $(xload-y)
+else
+image-y += $(barebox-y)
+endif

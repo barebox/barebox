@@ -307,6 +307,8 @@ err:
 static struct of_device_id ns16550_serial_dt_ids[] = {
 	{
 		.compatible = "ns16550a",
+	},{
+		.compatible = "snps,dw-apb-uart",
 	}, {
 		/* sentinel */
 	},

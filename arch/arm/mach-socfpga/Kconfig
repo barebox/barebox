@@ -1,0 +1,19 @@
+if ARCH_SOCFPGA
+
+config ARCH_SOCFPGA_XLOAD
+	bool
+	prompt "Build preloader image"
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x00100000 if MACH_SOCFPGA_CYCLONE5
+
+config MACH_SOCFPGA_EBV_SOCRATES
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	bool "EBV Socrates"
+
+config MACH_SOCFPGA_TERASIC_SOCKIT
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	bool "Terasic SoCKit"
+
+endif

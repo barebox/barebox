@@ -15,6 +15,7 @@ hostprogs-$(CONFIG_ARCH_OMAP)    += omap_signGP mk-am35xx-spi-image
 hostprogs-$(CONFIG_ARCH_S5PCxx)  += s5p_cksum
 hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 hostprogs-$(CONFIG_ARCH_ZYNQ)	 += zynq_mkimage
+hostprogs-$(CONFIG_ARCH_SOCFPGA) += socfpga_mkimage
 
 subdir-y			+= mod
 subdir-$(CONFIG_OMAP4_USBBOOT)	+= omap4_usbboot

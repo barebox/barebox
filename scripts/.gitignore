@@ -9,3 +9,4 @@ mkimage
 mkublheader
 omap_signGP
 zynq_mkimage
+socfpga_mkimage

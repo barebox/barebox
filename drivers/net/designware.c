@@ -29,11 +29,11 @@
 #include <init.h>
 #include <io.h>
 #include <net.h>
+#include <of_net.h>
 #include <asm/mmu.h>
 #include <net/designware.h>
 #include <linux/phy.h>
 #include "designware.h"
-
 
 struct dw_eth_dev {
 	struct eth_device netdev;
@@ -54,6 +54,15 @@ struct dw_eth_dev {
 	struct eth_dma_regs *dma_regs_p;
 	int phy_addr;
 	phy_interface_t interface;
+	int enh_desc;
+};
+
+struct dw_eth_drvdata {
+	bool enh_desc;
+};
+
+static struct dw_eth_drvdata dwmac_370a_drvdata = {
+	.enh_desc = 1,
 };
 
 /* Speed specific definitions */
@@ -73,7 +82,7 @@ static int dwc_ether_mii_read(struct mii_bus *dev, int addr, int reg)
 	u64 start;
 	u32 miiaddr;
 
-	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) | \
+	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) |
 		  ((reg << MIIREGSHIFT) & MII_REGMSK);
 
 	writel(miiaddr | MII_CLKRANGE_150_250M | MII_BUSY, &mac_p->miiaddr);
@@ -96,7 +105,7 @@ static int dwc_ether_mii_write(struct mii_bus *dev, int addr, int reg, u16 val)
 	u32 miiaddr;
 
 	writel(val, &mac_p->miidata);
-	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) | \
+	miiaddr = ((addr << MIIADDRSHIFT) & MII_ADDRMSK) |
 		  ((reg << MIIREGSHIFT) & MII_REGMSK) | MII_WRITE;
 
 	writel(miiaddr | MII_CLKRANGE_150_250M | MII_BUSY, &mac_p->miiaddr);
@@ -149,19 +158,19 @@ static void tx_descs_init(struct eth_device *dev)
 		desc_p->dmamac_addr = &txbuffs[idx * CONFIG_ETH_BUFSIZE];
 		desc_p->dmamac_next = &desc_table_p[idx + 1];
 
-#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
-		desc_p->txrx_status &= ~(DESC_TXSTS_TXINT | DESC_TXSTS_TXLAST |
-				DESC_TXSTS_TXFIRST | DESC_TXSTS_TXCRCDIS | \
-				DESC_TXSTS_TXCHECKINSCTRL | \
-				DESC_TXSTS_TXRINGEND | DESC_TXSTS_TXPADDIS);
+		if (priv->enh_desc) {
+			desc_p->txrx_status &= ~(DESC_ENH_TXSTS_TXINT | DESC_ENH_TXSTS_TXLAST |
+					DESC_ENH_TXSTS_TXFIRST | DESC_ENH_TXSTS_TXCRCDIS |
+					DESC_ENH_TXSTS_TXCHECKINSCTRL |
+					DESC_ENH_TXSTS_TXRINGEND | DESC_ENH_TXSTS_TXPADDIS);
 
-		desc_p->txrx_status |= DESC_TXSTS_TXCHAIN;
-		desc_p->dmamac_cntl = 0;
-		desc_p->txrx_status &= ~(DESC_TXSTS_MSK | DESC_TXSTS_OWNBYDMA);
-#else
-		desc_p->dmamac_cntl = DESC_TXCTRL_TXCHAIN;
-		desc_p->txrx_status = 0;
-#endif
+			desc_p->txrx_status |= DESC_ENH_TXSTS_TXCHAIN;
+			desc_p->dmamac_cntl = 0;
+			desc_p->txrx_status &= ~(DESC_ENH_TXSTS_MSK | DESC_ENH_TXSTS_OWNBYDMA);
+		} else {
+			desc_p->dmamac_cntl = DESC_TXCTRL_TXCHAIN;
+			desc_p->txrx_status = 0;
+		}
 	}
 
 	/* Correcting the last pointer of the chain */
@@ -184,9 +193,11 @@ static void rx_descs_init(struct eth_device *dev)
 		desc_p->dmamac_addr = &rxbuffs[idx * CONFIG_ETH_BUFSIZE];
 		desc_p->dmamac_next = &desc_table_p[idx + 1];
 
-		desc_p->dmamac_cntl =
-			(MAC_MAX_FRAME_SZ & DESC_RXCTRL_SIZE1MASK) | \
-				      DESC_RXCTRL_RXCHAIN;
+		desc_p->dmamac_cntl = MAC_MAX_FRAME_SZ;
+		if (priv->enh_desc)
+			desc_p->dmamac_cntl |= DESC_ENH_RXCTRL_RXCHAIN;
+		else
+			desc_p->dmamac_cntl |= DESC_RXCTRL_RXCHAIN;
 
 		dma_inv_range((unsigned long)desc_p->dmamac_addr,
 			      (unsigned long)desc_p->dmamac_addr + CONFIG_ETH_BUFSIZE);
@@ -282,11 +293,12 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
-	u32 desc_num = priv->tx_currdescnum;
+	u32 owndma, desc_num = priv->tx_currdescnum;
 	struct dmamacdescr *desc_p = &priv->tx_mac_descrtable[desc_num];
 
+	owndma = priv->enh_desc ? DESC_ENH_TXSTS_OWNBYDMA : DESC_TXSTS_OWNBYDMA;
 	/* Check if the descriptor is owned by CPU */
-	if (desc_p->txrx_status & DESC_TXSTS_OWNBYDMA) {
+	if (desc_p->txrx_status & owndma) {
 		dev_err(&dev->dev, "CPU not owner of tx frame\n");
 		return -1;
 	}
@@ -295,20 +307,20 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 	dma_flush_range((unsigned long)desc_p->dmamac_addr,
 			(unsigned long)desc_p->dmamac_addr + length);
 
-#if defined(CONFIG_DRIVER_NET_DESIGNWARE_ALTDESCRIPTOR)
-	desc_p->txrx_status |= DESC_TXSTS_TXFIRST | DESC_TXSTS_TXLAST;
-	desc_p->dmamac_cntl |= (length << DESC_TXCTRL_SIZE1SHFT) & \
-			       DESC_TXCTRL_SIZE1MASK;
+	if (priv->enh_desc) {
+		desc_p->txrx_status |= DESC_ENH_TXSTS_TXFIRST | DESC_ENH_TXSTS_TXLAST;
+		desc_p->dmamac_cntl |= (length << DESC_ENH_TXCTRL_SIZE1SHFT) &
+				       DESC_ENH_TXCTRL_SIZE1MASK;
 
-	desc_p->txrx_status &= ~(DESC_TXSTS_MSK);
-	desc_p->txrx_status |= DESC_TXSTS_OWNBYDMA;
-#else
-	desc_p->dmamac_cntl |= ((length << DESC_TXCTRL_SIZE1SHFT) & \
-			       DESC_TXCTRL_SIZE1MASK) | DESC_TXCTRL_TXLAST | \
-			       DESC_TXCTRL_TXFIRST;
+		desc_p->txrx_status &= ~(DESC_ENH_TXSTS_MSK);
+		desc_p->txrx_status |= DESC_ENH_TXSTS_OWNBYDMA;
+	} else {
+		desc_p->dmamac_cntl |= ((length << DESC_TXCTRL_SIZE1SHFT) &
+				       DESC_TXCTRL_SIZE1MASK) | DESC_TXCTRL_TXLAST |
+				       DESC_TXCTRL_TXFIRST;
 
-	desc_p->txrx_status = DESC_TXSTS_OWNBYDMA;
-#endif
+		desc_p->txrx_status = DESC_TXSTS_OWNBYDMA;
+	}
 
 	/* Test the wrap-around condition. */
 	if (++desc_num >= CONFIG_TX_DESCR_NUM)
@@ -334,10 +346,8 @@ static int dwc_ether_rx(struct eth_device *dev)
 	if (status & DESC_RXSTS_OWNBYDMA)
 		return 0;
 
-	length = (status & DESC_RXSTS_FRMLENMSK) >> \
+	length = (status & DESC_RXSTS_FRMLENMSK) >>
 		 DESC_RXSTS_FRMLENSHFT;
-
-	net_receive(desc_p->dmamac_addr, length);
 
 	/*
 	 * Make the current descriptor valid again and go to
@@ -345,6 +355,9 @@ static int dwc_ether_rx(struct eth_device *dev)
 	 */
 	dma_inv_range((unsigned long)desc_p->dmamac_addr,
 		      (unsigned long)desc_p->dmamac_addr + length);
+
+	net_receive(desc_p->dmamac_addr, length);
+
 	desc_p->txrx_status |= DESC_RXSTS_OWNBYDMA;
 
 	/* Test the wrap-around condition. */
@@ -376,7 +389,7 @@ static int dwc_ether_set_ethaddr(struct eth_device *dev, u8 adr[6])
 	struct eth_mac_regs *mac_p = priv->mac_regs_p;
 	u32 macid_lo, macid_hi;
 
-	macid_lo = adr[0] + (adr[1] << 8) + \
+	macid_lo = adr[0] + (adr[1] << 8) +
 		   (adr[2] << 16) + (adr[3] << 24);
 	macid_hi = adr[4] + (adr[5] << 8);
 	writel(macid_hi, &mac_p->macaddr0hi);
@@ -394,6 +407,14 @@ static void dwc_version(struct device_d *dev, u32 hwid)
 		uid, synid);
 }
 
+static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
+{
+	priv->phy_addr = -1;
+	priv->interface = of_get_phy_mode(dev->device_node);
+
+	return 0;
+}
+
 static int dwc_ether_probe(struct device_d *dev)
 {
 	struct dw_eth_dev *priv;
@@ -401,13 +422,26 @@ static int dwc_ether_probe(struct device_d *dev)
 	struct mii_bus *miibus;
 	void __iomem *base;
 	struct dwc_ether_platform_data *pdata = dev->platform_data;
-
-	if (!pdata) {
-		printf("dwc_ether: no platform_data\n");
-		return -ENODEV;
-	}
+	int ret;
+	struct dw_eth_drvdata *drvdata;
 
 	priv = xzalloc(sizeof(struct dw_eth_dev));
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&drvdata);
+	if (ret)
+		return ret;
+
+	priv->enh_desc = drvdata->enh_desc;
+
+	if (pdata) {
+		priv->phy_addr = pdata->phy_addr;
+		priv->interface = pdata->interface;
+		priv->fix_mac_speed = pdata->fix_mac_speed;
+	} else {
+		ret = dwc_probe_dt(dev, priv);
+		if (ret)
+			return ret;
+	}
 
 	base = dev_request_mem_region(dev, 0);
 	priv->mac_regs_p = base;
@@ -417,9 +451,8 @@ static int dwc_ether_probe(struct device_d *dev)
 		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr));
 	priv->rx_mac_descrtable = dma_alloc_coherent(
 		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr));
-	priv->txbuffs = malloc(TX_TOTAL_BUFSIZE);
-	priv->rxbuffs = malloc(RX_TOTAL_BUFSIZE);
-	priv->fix_mac_speed = pdata->fix_mac_speed;
+	priv->txbuffs = dma_alloc(TX_TOTAL_BUFSIZE);
+	priv->rxbuffs = dma_alloc(RX_TOTAL_BUFSIZE);
 
 	edev = &priv->netdev;
 	miibus = &priv->miibus;
@@ -434,8 +467,6 @@ static int dwc_ether_probe(struct device_d *dev)
 	edev->get_ethaddr = dwc_ether_get_ethaddr;
 	edev->set_ethaddr = dwc_ether_set_ethaddr;
 
-	priv->phy_addr = pdata->phy_addr;
-	priv->interface = pdata->interface;
 	miibus->parent = dev;
 	miibus->read = dwc_ether_mii_read;
 	miibus->write = dwc_ether_mii_write;
@@ -450,9 +481,19 @@ static void dwc_ether_remove(struct device_d *dev)
 {
 }
 
+static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
+	{
+		.compatible = "snps,dwmac-3.70a",
+		.data = (unsigned long)&dwmac_370a_drvdata,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d dwc_ether_driver = {
 	.name = "designware_eth",
 	.probe = dwc_ether_probe,
 	.remove = dwc_ether_remove,
+	.of_compatible = DRV_OF_COMPAT(dwc_ether_compatible),
 };
 device_platform_driver(dwc_ether_driver);

@@ -28,6 +28,7 @@
 #include <environment.h>
 #include <partition.h>
 #include <sizes.h>
+#include <net/smc91111.h>
 
 static int vpb_console_init(void)
 {
@@ -47,6 +48,10 @@ static int vpb_mem_init(void)
 }
 mem_initcall(vpb_mem_init);
 
+static struct smc91c111_pdata net_pdata = {
+	.qemu_fixup = 1,
+};
+
 static int vpb_devices_init(void)
 {
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, VERSATILE_FLASH_BASE, VERSATILE_FLASH_SIZE, 0);
@@ -55,7 +60,7 @@ static int vpb_devices_init(void)
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
 	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, VERSATILE_ETH_BASE,
-			64 * 1024, IORESOURCE_MEM, NULL);
+			64 * 1024, IORESOURCE_MEM, &net_pdata);
 
 	armlinux_set_architecture(MACH_TYPE_VERSATILE_PB);
 	armlinux_set_bootparams((void *)(0x00000100));

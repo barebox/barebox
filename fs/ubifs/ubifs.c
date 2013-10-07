@@ -553,25 +553,22 @@ static int ubifs_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct ubifs_priv *priv = xzalloc(sizeof(struct ubifs_priv));
-	char *backingstore = fsdev->backingstore;
 	int ret;
 
 	dev->priv = priv;
 
-	if (!strncmp(backingstore , "/dev/", 5))
-		backingstore += 5;
-
-	priv->cdev = cdev_open(backingstore, O_RDONLY);
-	if (!priv->cdev) {
-		ret = -ENOENT;
+	ret = fsdev_open_cdev(fsdev);
+	if (ret)
 		goto err_free;
-	}
+
+	priv->cdev = fsdev->cdev;
 
 	priv->ubi = ubi_open_volume_cdev(priv->cdev, UBI_READONLY);
 	if (IS_ERR(priv->ubi)) {
 		dev_err(dev, "failed to open ubi volume: %s\n",
 				strerror(-PTR_ERR(priv->ubi)));
-		return PTR_ERR(priv->ubi);
+		ret = PTR_ERR(priv->ubi);
+		goto err_free;
 	}
 
 	priv->sb = ubifs_get_super(priv->ubi, 0);
@@ -596,7 +593,6 @@ static void ubifs_remove(struct device_d *dev)
 
 	ubifs_umount(c);
 	ubi_close_volume(priv->ubi);
-	cdev_close(priv->cdev);
 
 	free(c);
 	free(sb);

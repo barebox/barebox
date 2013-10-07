@@ -39,7 +39,6 @@ typedef struct filep {
 #define FS_DRIVER_NO_DEV	1
 
 struct fs_driver_d {
-	char *name;
 	int (*probe) (struct device_d *dev);
 	int (*mkdir)(struct device_d *dev, const char *pathname);
 	int (*rmdir)(struct device_d *dev, const char *pathname);
@@ -88,6 +87,7 @@ struct fs_driver_d {
 
 extern struct list_head fs_device_list;
 #define for_each_fs_device(f) list_for_each_entry(f, &fs_device_list, list)
+extern struct bus_type fs_bus;
 
 struct fs_device_d {
 	char *backingstore; /* the device we are associated with */
@@ -192,5 +192,10 @@ int automount_add(const char *path, const char *cmd);
 void automount_print(void);
 
 int unlink_recursive(const char *path, char **failedpath);
+
+int fsdev_open_cdev(struct fs_device_d *fsdev);
+const char *cdev_get_mount_path(struct cdev *cdev);
+const char *cdev_mount_default(struct cdev *cdev);
+void mount_all(void);
 
 #endif /* __FS_H */

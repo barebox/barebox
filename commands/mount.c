@@ -27,31 +27,70 @@
 #include <fs.h>
 #include <errno.h>
 #include <getopt.h>
+#include <linux/err.h>
 
 static int do_mount(int argc, char *argv[])
 {
 	int opt;
-	int ret = 0;
+	int ret = 0, verbose = 0;
 	struct fs_device_d *fsdev;
+	struct driver_d *drv;
 	const char *type = NULL;
 	const char *mountpoint, *dev;
 
-	if (argc == 1) {
-		for_each_fs_device(fsdev) {
-			printf("%s on %s type %s\n",
-				fsdev->parent_device ? dev_name(fsdev->parent_device) : "none",
-				fsdev->path,
-				fsdev->dev.name);
-		}
-		return 0;
-	}
-
-	while ((opt = getopt(argc, argv, "t:")) > 0) {
+	while ((opt = getopt(argc, argv, "t:va")) > 0) {
 		switch (opt) {
 		case 't':
 			type = optarg;
 			break;
+		case 'v':
+			verbose++;
+			break;
+		case 'a':
+			mount_all();
+			break;
 		}
+	}
+
+	if (argc == optind) {
+		for_each_fs_device(fsdev) {
+			printf("%s on %s type %s\n",
+				fsdev->backingstore ? fsdev->backingstore : "none",
+				fsdev->path,
+				fsdev->dev.name);
+		}
+
+		if (verbose) {
+			printf("\nSupported filesystems:\n\n");
+			bus_for_each_driver(&fs_bus, drv) {
+				struct fs_driver_d * fsdrv = drv_to_fs_driver(drv);
+				printf("%s\n", fsdrv->drv.name);
+			}
+		}
+
+		return 0;
+	}
+
+	if (argc == optind + 1) {
+		struct cdev *cdev;
+		const char *path, *devstr;
+
+		devstr = argv[optind];
+
+		if (!strncmp(devstr, "/dev/", 5))
+			devstr += 5;
+
+		cdev = cdev_by_name(devstr);
+		if (!cdev)
+			return -ENOENT;
+
+		path = cdev_mount_default(cdev);
+		if (IS_ERR(path))
+			return PTR_ERR(path);
+
+		printf("mounted /dev/%s on %s\n", devstr, path);
+
+		return 0;
 	}
 
 	if (argc < optind + 2)
@@ -77,10 +116,17 @@ static int do_mount(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(mount)
-BAREBOX_CMD_HELP_USAGE("mount [[-t <fstype] <device> <mountpoint>]\n")
+BAREBOX_CMD_HELP_USAGE("mount [[OPTIONS] <device> [mountpoint]]\n")
+BAREBOX_CMD_HELP_OPT("-t <type>", "specify filesystem type\n")
+BAREBOX_CMD_HELP_OPT("-a", "Mount all blockdevices.\n")
+BAREBOX_CMD_HELP_OPT("-v", "be more verbose\n")
 BAREBOX_CMD_HELP_SHORT("Mount a filesystem of a given type to a mountpoint.\n")
 BAREBOX_CMD_HELP_SHORT("If no fstype is specified, try to detect it automatically.\n")
 BAREBOX_CMD_HELP_SHORT("If no argument is given, list mounted filesystems.\n")
+BAREBOX_CMD_HELP_SHORT("With -a the mount command mounts all block devices whose filesystem\n")
+BAREBOX_CMD_HELP_SHORT("can be detected automatically to /mnt/<partname>\n")
+BAREBOX_CMD_HELP_SHORT("If mountpoint is not given a standard mountpoint of /mnt/devname>\n")
+BAREBOX_CMD_HELP_SHORT("is used. This directoy is created automatically if necessary.\n")
 BAREBOX_CMD_HELP_END
 
 /**

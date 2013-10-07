@@ -225,7 +225,6 @@ static int ext_readlink(struct device_d *dev, const char *pathname,
 static int ext_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
-	char *backingstore = fsdev->backingstore;
 	int ret;
 	struct ext_filesystem *fs;
 
@@ -234,14 +233,11 @@ static int ext_probe(struct device_d *dev)
 	dev->priv = fs;
 	fs->dev = dev;
 
-	if (!strncmp(backingstore , "/dev/", 5))
-		backingstore += 5;
-
-	fs->cdev = cdev_open(backingstore, O_RDWR);
-	if (!fs->cdev) {
-		ret = -ENOENT;
+	ret = fsdev_open_cdev(fsdev);
+	if (ret)
 		goto err_open;
-	}
+
+	fs->cdev = fsdev->cdev;
 
 	ret = ext4fs_mount(fs);
 	if (ret)
@@ -250,7 +246,6 @@ static int ext_probe(struct device_d *dev)
 	return 0;
 
 err_mount:
-	cdev_close(fs->cdev);
 err_open:
 	free(fs);
 
@@ -262,7 +257,6 @@ static void ext_remove(struct device_d *dev)
 	struct ext_filesystem *fs = dev->priv;
 
 	ext4fs_umount(fs);
-	cdev_close(fs->cdev);
 	free(fs);
 }
 

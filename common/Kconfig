@@ -32,6 +32,7 @@ config GENERIC_GPIO
 	bool
 
 config BOOTM
+	select UIMAGE
 	bool
 
 config BLOCK
@@ -549,6 +550,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select CMD_READLINK
 	select CMD_DIRNAME
 	select FLEXIBLE_BOOTARGS
+	select CMD_BOOT
 	prompt "Generic environment template"
 
 config DEFAULT_ENVIRONMENT_GENERIC

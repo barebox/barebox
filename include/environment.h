@@ -45,7 +45,11 @@ char *var_name(struct variable_d *);
 const char *getenv(const char *);
 int setenv(const char *, const char *);
 void export_env_ull(const char *name, unsigned long long val);
-unsigned long long getenv_ull(const char *name);
+int getenv_ull(const char *name, unsigned long long *val);
+int getenv_ul(const char *name, unsigned long *val);
+int getenv_uint(const char *name, unsigned int *val);
+int getenv_bool(const char *var, int *val);
+const char *getenv_nonempty(const char *var);
 #else
 static inline char *getenv(const char *var)
 {
@@ -56,10 +60,22 @@ static inline int setenv(const char *var, const char *val)
 {
 	return 0;
 }
+
 static inline void export_env_ull(const char *name, unsigned long long val) {}
-static inline unsigned long long getenv_ull(const char *name)
+
+static inline int getenv_ull(const char *name, unsigned long long *val)
 {
-	return 0;
+	return -EINVAL;
+}
+
+static inline int getenv_ul(const char *name, unsigned long *val)
+{
+	return -EINVAL;
+}
+
+static inline int getenv_uint(const char *name, unsigned int *val)
+{
+	return -EINVAL;
 }
 
 static inline int export(const char *var)
@@ -67,6 +83,15 @@ static inline int export(const char *var)
 	return -EINVAL;
 }
 
+static inline int getenv_bool(const char *var, int *val)
+{
+	return -EINVAL;
+}
+
+static inline const char *getenv_nonempty(const char *var)
+{
+	return NULL;
+}
 #endif
 
 int env_pop_context(void);

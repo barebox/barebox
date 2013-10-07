@@ -267,13 +267,74 @@ void export_env_ull(const char *name, unsigned long long val)
 }
 EXPORT_SYMBOL(export_env_ull);
 
-unsigned long long getenv_ull(const char *name)
+/*
+ * Like regular getenv, but never returns an empty string.
+ * If the string is empty, NULL is returned instead
+ */
+const char *getenv_nonempty(const char *var)
 {
-	const char *valstr = getenv(name);
+	const char *val = getenv(var);
 
-	if (!valstr)
-		return 0;
+	if (val && *val)
+		return val;
 
-	return simple_strtoull(valstr, NULL, 0);
+	return NULL;
+}
+EXPORT_SYMBOL(getenv_nonempty);
+
+int getenv_ull(const char *var , unsigned long long *val)
+{
+	const char *valstr = getenv(var);
+
+	if (!valstr || !*valstr)
+		return -EINVAL;
+
+	*val = simple_strtoull(valstr, NULL, 0);
+
+	return 0;
 }
 EXPORT_SYMBOL(getenv_ull);
+
+int getenv_ul(const char *var , unsigned long *val)
+{
+	const char *valstr = getenv(var);
+
+	if (!valstr || !*valstr)
+		return -EINVAL;
+
+	*val = simple_strtoul(valstr, NULL, 0);
+
+	return 0;
+}
+EXPORT_SYMBOL(getenv_ul);
+
+int getenv_uint(const char *var , unsigned int *val)
+{
+	const char *valstr = getenv(var);
+
+	if (!valstr || !*valstr)
+		return -EINVAL;
+
+	*val = simple_strtoul(valstr, NULL, 0);
+
+	return 0;
+}
+EXPORT_SYMBOL(getenv_uint);
+
+int getenv_bool(const char *var, int *val)
+{
+	const char *valstr = getenv(var);
+
+	if (!valstr || !*valstr)
+		return -EINVAL;
+
+	if (!*valstr)
+		*val = false;
+	else if (*valstr == '0')
+		*val = false;
+	else
+		*val = true;
+
+	return 0;
+}
+EXPORT_SYMBOL(getenv_bool);

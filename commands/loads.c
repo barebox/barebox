@@ -40,14 +40,9 @@ static int do_load_serial(int argc, char *argv[])
 	ulong offset = 0;
 	ulong addr;
 	int i;
-	const char *env_echo;
 	int rcode = 0;
 
-	if (((env_echo = getenv("loads_echo")) != NULL) && (*env_echo == '1')) {
-		do_echo = 1;
-	} else {
-		do_echo = 0;
-	}
+	getenv_bool("loads_echo", &do_echo);
 
 	if (argc == 2) {
 		offset = simple_strtoul(argv[1], NULL, 16);

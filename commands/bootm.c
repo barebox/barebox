@@ -46,33 +46,7 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-/*
- * Additional oftree size for the fixed tree
- */
-#define OFTREE_SIZE_INCREASE	0x8000
-
-static char *bootm_image_name_and_no(const char *name, int *no)
-{
-	char *at, *ret;
-
-	if (!name || !*name)
-		return NULL;
-
-	*no = 0;
-
-	ret = xstrdup(name);
-	at = strchr(ret, '@');
-	if (!at)
-		return ret;
-
-	*at++ = 0;
-
-	*no = simple_strtoul(at, NULL, 10);
-
-	return ret;
-}
-
-#define BOOTM_OPTS_COMMON "ca:e:vo:f"
+#define BOOTM_OPTS_COMMON "ca:e:vo:fd"
 
 #ifdef CONFIG_CMD_BOOTM_INITRD
 #define BOOTM_OPTS BOOTM_OPTS_COMMON "L:r:"
@@ -80,27 +54,12 @@ static char *bootm_image_name_and_no(const char *name, int *no)
 #define BOOTM_OPTS BOOTM_OPTS_COMMON
 #endif
 
-unsigned long long getenv_loadaddr(const char *name)
-{
-	const char *valstr = getenv(name);
-
-	if (!valstr)
-		return UIMAGE_SOME_ADDRESS;
-
-	if (valstr[0] == '\0')
-		return UIMAGE_SOME_ADDRESS;
-
-	return simple_strtoull(valstr, NULL, 0);
-}
-
 static int do_bootm(int argc, char *argv[])
 {
 	int opt;
-	struct image_data data;
+	struct bootm_data data = {};
 	int ret = 1;
 	const char *oftree = NULL, *initrd_file = NULL, *os_file = NULL;
-
-	memset(&data, 0, sizeof(struct image_data));
 
 	data.initrd_address = UIMAGE_INVALID_ADDRESS;
 	data.os_address = UIMAGE_SOME_ADDRESS;
@@ -109,8 +68,8 @@ static int do_bootm(int argc, char *argv[])
 
 	oftree = getenv("global.bootm.oftree");
 	os_file = getenv("global.bootm.image");
-	data.os_address = getenv_loadaddr("global.bootm.image.loadaddr");
-	data.initrd_address = getenv_loadaddr("global.bootm.initrd.loadaddr");
+	getenv_ul("global.bootm.image.loadaddr", &data.os_address);
+	getenv_ul("global.bootm.initrd.loadaddr", &data.initrd_address);
 	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
 		initrd_file = getenv("global.bootm.initrd");
 
@@ -142,6 +101,9 @@ static int do_bootm(int argc, char *argv[])
 		case 'f':
 			data.force = 1;
 			break;
+		case 'd':
+			data.dryrun = 1;
+			break;
 		default:
 			break;
 		}
@@ -161,39 +123,28 @@ static int do_bootm(int argc, char *argv[])
 	if (oftree && !*oftree)
 		oftree = NULL;
 
-	data.os_file = bootm_image_name_and_no(os_file, &data.os_num);
-	data.oftree_file = bootm_image_name_and_no(oftree, &data.oftree_num);
-	data.initrd_file = bootm_image_name_and_no(initrd_file, &data.initrd_num);
+	data.os_file = os_file;
+	data.oftree_file = oftree;
+	data.initrd_file = initrd_file;
 
 	ret = bootm_boot(&data);
-
-	printf("handler failed with %s\n", strerror(-ret));
-
-err_out:
-	free(data.initrd_file);
-	free(data.os_file);
-
-	return 1;
-}
-
-static int bootm_init(void)
-{
-	globalvar_add_simple("bootm.image", NULL);
-	globalvar_add_simple("bootm.image.loadaddr", NULL);
-	globalvar_add_simple("bootm.oftree", NULL);
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD)) {
-		globalvar_add_simple("bootm.initrd", NULL);
-		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
+	if (ret) {
+		printf("handler failed with: %s\n", strerror(-ret));
+		goto err_out;
 	}
 
-	return 0;
+	if (data.dryrun)
+		printf("Dryrun. Aborted\n");
+
+err_out:
+	return ret ? 1 : 0;
 }
-late_initcall(bootm_init);
 
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_USAGE("bootm [OPTIONS] image\n")
 BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
 BAREBOX_CMD_HELP_OPT  ("-c",  "crc check uImage data\n")
+BAREBOX_CMD_HELP_OPT  ("-d",  "dryrun. Check data, but do not run\n")
 #ifdef CONFIG_CMD_BOOTM_INITRD
 BAREBOX_CMD_HELP_OPT  ("-r <initrd>","specify an initrd image\n")
 BAREBOX_CMD_HELP_OPT  ("-L <load addr>","specify initrd load address\n")

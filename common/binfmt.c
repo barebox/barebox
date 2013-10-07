@@ -60,6 +60,9 @@ int execute_binfmt(int argc, char **argv)
 	if (strchr(argv[0], '/'))
 		return binfmt_run(argv[0], argc, argv);
 
+	if (find_cmd(argv[0]))
+		return execute_command(argc, &argv[0]);
+
 	path = find_execable(argv[0]);
 	if (path) {
 		ret = binfmt_run(path, argc, argv);
@@ -67,7 +70,7 @@ int execute_binfmt(int argc, char **argv)
 		return ret;
 	}
 
-	return execute_command(argc, &argv[0]);
+	return -ENOENT;
 }
 
 int binfmt_register(struct binfmt_hook *b)

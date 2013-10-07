@@ -1,0 +1,12 @@
+/dts-v1/;
+
+/include/ "skeleton.dtsi"
+
+/ {
+	model = "Ritmix RZX-50";
+	compatible = "ritmix,rzx50";
+
+	memory {
+		reg = <0x00000000 0x4000000>;
+	};
+};

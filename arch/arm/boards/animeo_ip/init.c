@@ -136,6 +136,7 @@ static struct atmel_mci_platform_data __initdata animeo_ip_mci_data = {
 	.slot_b		= 1,
 	.detect_pin	= -EINVAL,
 	.wp_pin		= -EINVAL,
+	.devname	= "microsd",
 };
 
 static void animeo_ip_add_device_mci(void)

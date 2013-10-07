@@ -266,6 +266,21 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	if (irqstat & IRQSTAT_CTOE)
 		return -ETIMEDOUT;
 
+	/* Workaround for ESDHC errata ENGcm03648 / ENGcm12360 */
+	if (!data && (cmd->resp_type & MMC_RSP_BUSY)) {
+		/*
+		 * Poll on DATA0 line for cmd with busy signal for
+		 * timout / 10 usec since DLA polling can be insecure.
+		 */
+		ret = wait_on_timeout(2500 * MSECOND,
+			(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_DAT0));
+
+		if (ret) {
+			dev_err(host->dev, "timeout PRSSTAT_DAT0\n");
+			return -ETIMEDOUT;
+		}
+	}
+
 	/* Copy the response to the response buffer */
 	if (cmd->resp_type & MMC_RSP_136) {
 		u32 cmdrsp3, cmdrsp2, cmdrsp1, cmdrsp0;

@@ -43,7 +43,6 @@ extern uint8_t pers_env_drive;
 
 static int devices_init(void)
 {
-	int rc;
 	struct cdev *cdev;
 
 	/* extended memory only */
@@ -57,7 +56,7 @@ static int devices_init(void)
 				pers_env_storage * 512,
 				(unsigned)pers_env_size * 512,
 				DEVFS_PARTITION_FIXED, "env0");
-		printf("Partition: %d\n", IS_ERR(cdev) ? PTR_ERR(cdev) : 0);
+		printf("Partition: %ld\n", IS_ERR(cdev) ? PTR_ERR(cdev) : 0);
 	} else
 		printf("No persistent storage defined\n");
 

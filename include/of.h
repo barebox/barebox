@@ -30,7 +30,6 @@ struct device_node {
 	struct list_head children;
 	struct list_head parent_list;
 	struct list_head list;
-	struct list_head phandles;
 	phandle phandle;
 };
 

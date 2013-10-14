@@ -116,6 +116,7 @@ $(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(barebox_default_env_co
 	$(call if_changed,env_h)
 
 quiet_cmd_pwd_h = PWDH    $@
+ifdef CONFIG_PASSWORD
 ifneq ($(CONFIG_PASSWORD_DEFAULT),"")
 PASSWD_FILE := $(shell cd $(srctree); find $(CONFIG_PASSWORD_DEFAULT) -type f)
 cmd_pwd_h = echo -n "const char default_passwd[] = \"" > $@; \
@@ -134,6 +135,7 @@ endif
 targets += include/generated/passwd.h
 
 $(obj)/password.o: include/generated/passwd.h
+endif
 
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h

@@ -549,7 +549,7 @@ config AT91_BOOTSTRAP
 	select BOOTSTRAP
 
 config AT91_LOAD_BAREBOX_SRAM
-	bool "at91 laad barebox in sram"
+	bool "at91 load barebox in sram"
 	depends on SHELL_NONE || HAVE_AT91_LOAD_BAREBOX_SRAM
 	default y if SHELL_NONE
 

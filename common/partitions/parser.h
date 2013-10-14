@@ -16,6 +16,7 @@
 
 struct partition {
 	char name[MAX_PARTITION_NAME];
+	u8 dos_partition_type;
 	uint64_t first_sec;
 	uint64_t size;
 };

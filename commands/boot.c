@@ -15,51 +15,155 @@
 #include <globalvar.h>
 #include <magicvar.h>
 #include <command.h>
+#include <readkey.h>
 #include <common.h>
 #include <getopt.h>
+#include <blspec.h>
 #include <libgen.h>
 #include <malloc.h>
 #include <boot.h>
+#include <menu.h>
 #include <fs.h>
+#include <complete.h>
 
 #include <linux/stat.h>
+
+static int boot_script(char *path);
 
 static int verbose;
 static int dryrun;
 
-static void bootsources_list(void)
+static void bootsource_action(struct menu *m, struct menu_entry *me)
 {
-	DIR *dir;
-	struct dirent *d;
-	const char *path = "/env/boot";
+	struct blspec_entry *be = container_of(me, struct blspec_entry, me);
+	int ret;
 
-	dir = opendir(path);
-	if (!dir) {
-		printf("cannot open %s: %s\n", path, strerror(-errno));
-		return;
+	if (be->scriptpath) {
+		ret = boot_script(be->scriptpath);
+	} else {
+		if (IS_ENABLED(CONFIG_BLSPEC))
+			ret = blspec_boot(be, 0, 0);
+		else
+			ret = -ENOSYS;
 	}
 
-	printf("Bootsources: ");
+	if (ret)
+		printf("Booting failed with: %s\n", strerror(-ret));
+
+	printf("Press any key to continue\n");
+
+	read_key();
+}
+
+static int bootsources_menu_env_entries(struct blspec *blspec)
+{
+	const char *path = "/env/boot", *title;
+	DIR *dir;
+	struct dirent *d;
+	struct blspec_entry *be;
+	char *cmd;
+
+	dir = opendir(path);
+	if (!dir)
+		return -errno;
 
 	while ((d = readdir(dir))) {
+
 		if (*d->d_name == '.')
 			continue;
 
-		printf("%s ", d->d_name);
+		be = blspec_entry_alloc(blspec);
+		be->me.type = MENU_ENTRY_NORMAL;
+		be->scriptpath = asprintf("/env/boot/%s", d->d_name);
+
+		cmd = asprintf(". %s menu", be->scriptpath);
+		setenv("title", "");
+		run_command(cmd, 0);
+		free(cmd);
+		title = getenv("title");
+
+		if (title)
+			be->me.display = xstrdup(title);
+		else
+			be->me.display = xstrdup(d->d_name);
 	}
 
-	printf("\n");
-
 	closedir(dir);
+
+	return 0;
 }
 
-static const char *getenv_or_null(const char *var)
+static struct blspec *bootentries_collect(void)
 {
-	const char *val = getenv(var);
+	struct blspec *blspec;
 
-	if (val && *val)
-		return val;
-	return NULL;
+	blspec = blspec_alloc();
+	blspec->menu->display = asprintf("boot");
+	bootsources_menu_env_entries(blspec);
+	if (IS_ENABLED(CONFIG_BLSPEC))
+		blspec_scan_devices(blspec);
+	return blspec;
+}
+
+static void bootsources_menu(void)
+{
+	struct blspec *blspec = NULL;
+	struct blspec_entry *entry;
+	struct menu_entry *back_entry;
+
+	if (!IS_ENABLED(CONFIG_MENU)) {
+		printf("no menu support available\n");
+		return;
+	}
+
+	blspec = bootentries_collect();
+
+	blspec_for_each_entry(blspec, entry) {
+		entry->me.action = bootsource_action;
+		menu_add_entry(blspec->menu, &entry->me);
+	}
+
+	back_entry = xzalloc(sizeof(*back_entry));
+	back_entry->display = "back";
+	back_entry->type = MENU_ENTRY_NORMAL;
+	back_entry->non_re_ent = 1;
+	menu_add_entry(blspec->menu, back_entry);
+
+	menu_show(blspec->menu);
+
+	free(back_entry);
+
+	blspec_free(blspec);
+}
+
+static void bootsources_list(void)
+{
+	struct blspec *blspec;
+	struct blspec_entry *entry;
+
+	blspec = bootentries_collect();
+
+	printf("\nBootscripts:\n\n");
+	printf("%-40s   %-20s\n", "name", "title");
+	printf("%-40s   %-20s\n", "----", "-----");
+
+	blspec_for_each_entry(blspec, entry) {
+		if (entry->scriptpath)
+			printf("%-40s   %s\n", basename(entry->scriptpath), entry->me.display);
+	}
+
+	if (!IS_ENABLED(CONFIG_BLSPEC))
+		return;
+
+	printf("\nBootloader spec entries:\n\n");
+	printf("%-20s %-20s  %s\n", "device", "hwdevice", "title");
+	printf("%-20s %-20s  %s\n", "------", "--------", "-----");
+
+	blspec_for_each_entry(blspec, entry)
+		if (!entry->scriptpath)
+			printf("%s\n", entry->me.display);
+
+	blspec_free(blspec);
 }
 
 /*
@@ -67,8 +171,11 @@ static const char *getenv_or_null(const char *var)
  */
 static int boot_script(char *path)
 {
-	struct bootm_data data = {};
 	int ret;
+	struct bootm_data data = {
+		.os_address = UIMAGE_SOME_ADDRESS,
+		.initrd_address = UIMAGE_SOME_ADDRESS,
+	};
 
 	printf("booting %s...\n", basename(path));
 
@@ -83,11 +190,11 @@ static int boot_script(char *path)
 
 	data.initrd_address = UIMAGE_INVALID_ADDRESS;
 	data.os_address = UIMAGE_SOME_ADDRESS;
-	data.oftree_file = getenv_or_null("global.bootm.oftree");
-	data.os_file = getenv_or_null("global.bootm.image");
+	data.oftree_file = getenv_nonempty("global.bootm.oftree");
+	data.os_file = getenv_nonempty("global.bootm.image");
 	getenv_ul("global.bootm.image.loadaddr", &data.os_address);
 	getenv_ul("global.bootm.initrd.loadaddr", &data.initrd_address);
-	data.initrd_file = getenv_or_null("global.bootm.initrd");
+	data.initrd_file = getenv_nonempty("global.bootm.initrd");
 	data.verbose = verbose;
 	data.dryrun = dryrun;
 
@@ -118,7 +225,13 @@ static int boot(const char *name)
 
 	ret = stat(path, &s);
 	if (ret) {
-		pr_err("%s: %s\n", path, strerror(-ret));
+		if (!IS_ENABLED(CONFIG_BLSPEC)) {
+			pr_err("%s: %s\n", path, strerror(-ret));
+			goto out;
+		}
+
+		ret = blspec_boot_hwdevice(name, verbose, dryrun);
+		pr_err("%s: %s\n", name, strerror(-ret));
 		goto out;
 	}
 
@@ -173,12 +286,12 @@ static int do_boot(int argc, char *argv[])
 {
 	const char *sources = NULL;
 	char *source, *freep;
-	int opt, ret = 0, do_list = 0;
+	int opt, ret = 0, do_list = 0, do_menu = 0;
 
 	verbose = 0;
 	dryrun = 0;
 
-	while ((opt = getopt(argc, argv, "vld")) > 0) {
+	while ((opt = getopt(argc, argv, "vldm")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose++;
@@ -189,11 +302,19 @@ static int do_boot(int argc, char *argv[])
 		case 'd':
 			dryrun = 1;
 			break;
+		case 'm':
+			do_menu = 1;
+			break;
 		}
 	}
 
 	if (do_list) {
 		bootsources_list();
+		return 0;
+	}
+
+	if (do_menu) {
+		bootsources_menu();
 		return 0;
 	}
 
@@ -247,6 +368,7 @@ BAREBOX_CMD_HELP_SHORT("\nOptions:\n")
 BAREBOX_CMD_HELP_OPT  ("-v","Increase verbosity\n")
 BAREBOX_CMD_HELP_OPT  ("-d","Dryrun. See what happens but do no actually boot\n")
 BAREBOX_CMD_HELP_OPT  ("-l","List available boot sources\n")
+BAREBOX_CMD_HELP_OPT  ("-m","Show a menu with boot options\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(boot)

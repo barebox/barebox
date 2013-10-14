@@ -176,3 +176,46 @@ int read_full(int fd, void *buf, size_t size)
 	return insize;
 }
 EXPORT_SYMBOL(read_full);
+
+/*
+ * read_file_line - read a line from a file
+ *
+ * Used to compose a filename from a printf format and to read a line from this
+ * file. All leading and trailing whitespaces (including line endings) are
+ * removed. The returned buffer must be freed with free(). This function is
+ * supposed for reading variable like content into a buffer, so files > 1024
+ * bytes are ignored.
+ */
+char *read_file_line(const char *fmt, ...)
+{
+	va_list args;
+	char *filename;
+	char *buf, *line = NULL;
+	size_t size;
+	int ret;
+	struct stat s;
+
+	va_start(args, fmt);
+	filename = vasprintf(fmt, args);
+	va_end(args);
+
+	ret = stat(filename, &s);
+	if (ret)
+		goto out;
+
+	if (s.st_size > 1024)
+		goto out;
+
+	buf = read_file(filename, &size);
+	if (!buf)
+		goto out;
+
+	line = strim(buf);
+
+	line = xstrdup(line);
+	free(buf);
+out:
+	free(filename);
+	return line;
+}
+EXPORT_SYMBOL_GPL(read_file_line);

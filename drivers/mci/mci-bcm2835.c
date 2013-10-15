@@ -28,6 +28,7 @@
  * Author: Wilhelm Lundgren <wilhelm.lundgren@cybercom.com>
  */
 
+#include <asm/mmu.h>
 #include <common.h>
 #include <init.h>
 #include <mci.h>
@@ -471,7 +472,7 @@ int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 static u32 bcm2835_mci_get_emmc_clock(struct msg_get_clock_rate *clk_data)
 {
 	u32 val;
-	struct bcm2835_mbox_regs *regs =
+	struct bcm2835_mbox_regs __iomem *regs =
 			(struct bcm2835_mbox_regs *) BCM2835_MBOX_PHYSADDR;
 
 	/*Read out old msg*/
@@ -489,6 +490,7 @@ static u32 bcm2835_mci_get_emmc_clock(struct msg_get_clock_rate *clk_data)
 			break;
 	}
 	val = BCM2835_MBOX_PROP_CHAN + ((u32) &clk_data->hdr);
+	dma_flush_range((u32)clk_data, (u32)clk_data + sizeof(*clk_data));
 	writel(val, &regs->write);
 
 	while (true) {
@@ -504,6 +506,9 @@ static u32 bcm2835_mci_get_emmc_clock(struct msg_get_clock_rate *clk_data)
 		if ((val & 0x0F) == BCM2835_MBOX_PROP_CHAN)
 			break;
 	}
+
+	dma_inv_range((u32)clk_data, (u32)clk_data + sizeof(*clk_data));
+
 	if ((val & ~0x0F) == ((u32) &clk_data->hdr))
 		if (clk_data->get_clock_rate.tag_hdr.val_len
 				& BCM2835_MBOX_TAG_VAL_LEN_RESPONSE)

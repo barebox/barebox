@@ -57,11 +57,10 @@ static void bootsource_action(struct menu *m, struct menu_entry *me)
 
 static int bootsources_menu_env_entries(struct blspec *blspec)
 {
-	const char *path = "/env/boot", *title;
+	const char *path = "/env/boot";
 	DIR *dir;
 	struct dirent *d;
 	struct blspec_entry *be;
-	char *cmd;
 
 	dir = opendir(path);
 	if (!dir)
@@ -75,17 +74,7 @@ static int bootsources_menu_env_entries(struct blspec *blspec)
 		be = blspec_entry_alloc(blspec);
 		be->me.type = MENU_ENTRY_NORMAL;
 		be->scriptpath = asprintf("/env/boot/%s", d->d_name);
-
-		cmd = asprintf(". %s menu", be->scriptpath);
-		setenv("title", "");
-		run_command(cmd, 0);
-		free(cmd);
-		title = getenv("title");
-
-		if (title)
-			be->me.display = xstrdup(title);
-		else
-			be->me.display = xstrdup(d->d_name);
+		be->me.display = xstrdup(d->d_name);
 	}
 
 	closedir(dir);

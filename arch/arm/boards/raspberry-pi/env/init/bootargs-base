@@ -5,4 +5,4 @@ if [ "$1" = menu ]; then
 	exit
 fi
 
-global.linux.bootargs.base="console=ttymxc0,115200"
+global.linux.bootargs.base="console=ttyAMA0,115200"

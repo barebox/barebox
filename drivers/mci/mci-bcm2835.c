@@ -516,6 +516,13 @@ static u32 bcm2835_mci_get_emmc_clock(struct msg_get_clock_rate *clk_data)
 	return 0;
 }
 
+static int bcm2835_mci_detect(struct device_d *dev)
+{
+	struct bcm2835_mci_host *host = dev->priv;
+
+	return mci_detect_card(&host->mci);
+}
+
 static int bcm2835_mci_probe(struct device_d *hw_dev)
 {
 	struct bcm2835_mci_host *host;
@@ -565,6 +572,9 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 
 	host->mci.f_min = MIN_FREQ;
 	host->mci.f_max = host->max_clock;
+
+	hw_dev->priv = host;
+	hw_dev->detect = bcm2835_mci_detect,
 
 	/*
 	 * The Arasan has a bugette whereby it may lose the content of

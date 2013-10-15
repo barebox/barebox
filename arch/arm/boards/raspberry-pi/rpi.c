@@ -15,6 +15,9 @@
 
 #include <common.h>
 #include <init.h>
+#include <fs.h>
+#include <linux/stat.h>
+#include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 
@@ -37,11 +40,37 @@ static int rpi_console_init(void)
 }
 console_initcall(rpi_console_init);
 
+static int rpi_env_init(void)
+{
+	struct stat s;
+	const char *diskdev = "/dev/disk0.0";
+	int ret;
+
+	device_detect_by_name("mci0");
+
+	ret = stat(diskdev, &s);
+	if (ret) {
+		printf("no %s. using default env\n", diskdev);
+		return 0;
+	}
+
+	mkdir("/boot", 0666);
+	ret = mount(diskdev, "fat", "/boot");
+	if (ret) {
+		printf("failed to mount %s\n", diskdev);
+		return 0;
+	}
+
+	default_environment_path = "/boot/barebox.env";
+
+	return 0;
+}
+
 static int rpi_devices_init(void)
 {
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	armlinux_set_bootparams((void *)(0x00000100));
+	rpi_env_init();
 	return 0;
 }
-
-device_initcall(rpi_devices_init);
+late_initcall(rpi_devices_init);

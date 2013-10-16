@@ -722,8 +722,7 @@ int open(const char *pathname, int flags, ...)
 	if (ret)
 		goto out;
 
-
-	if (flags & O_TRUNC) {
+	if (!(s.st_mode & S_IFCHR) && (flags & O_TRUNC)) {
 		ret = fsdrv->truncate(&fsdev->dev, f, 0);
 		f->size = 0;
 		if (ret)

@@ -147,7 +147,7 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 	char *abspath;
 	int ret, found = 0;
 	const char *dirname = "loader/entries";
-	char *entry_default = NULL, *entry_once = NULL;
+	char *entry_default = NULL, *entry_once = NULL, *name;
 
 	pr_debug("%s: %s %s\n", __func__, root, dirname);
 
@@ -213,10 +213,12 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 		entry->configpath = configname;
 		entry->cdev = cdev;
 
-		if (entry_default && !strcmp(d->d_name, entry_default))
+		name = asprintf("%s/%s", dirname, d->d_name);
+		if (entry_default && !strcmp(name, entry_default))
 			entry->boot_default = true;
-		if (entry_once && !strcmp(d->d_name, entry_once))
+		if (entry_once && !strcmp(name, entry_once))
 			entry->boot_once = true;
+		free(name);
 
 		devname = xstrdup(dev_name(entry->cdev->dev));
 		if (entry->cdev->dev->parent)

@@ -32,37 +32,20 @@
 #include <mach/core.h>
 #include <linux/amba/bus.h>
 
-enum brcm_clks {
-	dummy, clk_ref_3, clk_ref_1, clks_max
-};
-
-static struct clk *clks[clks_max];
-
 static int bcm2835_clk_init(void)
 {
-	int ret;
+	struct clk *clk;
 
-	clks[dummy] = clk_fixed("dummy", 0);
-	clks[clk_ref_3] = clk_fixed("ref3", 3 * 1000 * 1000);
-	clks[clk_ref_1] = clk_fixed("ref1", 1 * 1000 * 1000);
+	clk = clk_fixed("apb_pclk", 0);
+	clk_register_clkdev(clk, "apb_pclk", NULL);
 
-	ret = clk_register_clkdev(clks[dummy], "apb_pclk", NULL);
-	if (ret)
-		goto clk_err;
+	clk = clk_fixed("uart0-pl0110", 3 * 1000 * 1000);
+	clk_register_clkdev(clk, NULL, "uart0-pl0110");
 
-	ret = clk_register_clkdev(clks[clk_ref_3], NULL, "uart0-pl0110");
-	if (ret)
-		goto clk_err;
-
-	ret = clk_register_clkdev(clks[clk_ref_1], NULL, "bcm2835-cs");
-	if (ret)
-		goto clk_err;
+	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
+	clk_register_clkdev(clk, NULL, "bcm2835-cs");
 
 	return 0;
-
-clk_err:
-	return ret;
-
 }
 postcore_initcall(bcm2835_clk_init);
 

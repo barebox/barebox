@@ -26,11 +26,34 @@
 #include <mach/core.h>
 #include <mach/mbox.h>
 
+struct msg_get_arm_mem {
+	struct bcm2835_mbox_hdr hdr;
+	struct bcm2835_mbox_tag_get_arm_mem get_arm_mem;
+	u32 end_tag;
+};
+
 struct msg_get_clock_rate {
 	struct bcm2835_mbox_hdr hdr;
 	struct bcm2835_mbox_tag_get_clock_rate get_clock_rate;
 	u32 end_tag;
 };
+
+static int rpi_get_arm_mem(u32 *size)
+{
+	BCM2835_MBOX_STACK_ALIGN(struct msg_get_arm_mem, msg);
+	int ret;
+
+	BCM2835_MBOX_INIT_HDR(msg);
+	BCM2835_MBOX_INIT_TAG(&msg->get_arm_mem, GET_ARM_MEMORY);
+
+	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
+	if (ret)
+		return ret;
+
+	*size = msg->get_arm_mem.body.resp.mem_size;
+
+	return 0;
+}
 
 static int rpi_register_clkdev(u32 clock_id, const char *name)
 {
@@ -58,8 +81,16 @@ static int rpi_register_clkdev(u32 clock_id, const char *name)
 
 static int rpi_mem_init(void)
 {
-	bcm2835_add_device_sdram(0);
-	return 0;
+	u32 size = 0;
+	int ret;
+
+	ret = rpi_get_arm_mem(&size);
+	if (ret)
+		printf("could not query ARM memory size\n");
+
+	bcm2835_add_device_sdram(size);
+
+	return ret;
 }
 mem_initcall(rpi_mem_init);
 

@@ -17,11 +17,44 @@
 #include <init.h>
 #include <fs.h>
 #include <linux/stat.h>
+#include <linux/clk.h>
+#include <linux/clkdev.h>
 #include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 
 #include <mach/core.h>
+#include <mach/mbox.h>
+
+struct msg_get_clock_rate {
+	struct bcm2835_mbox_hdr hdr;
+	struct bcm2835_mbox_tag_get_clock_rate get_clock_rate;
+	u32 end_tag;
+};
+
+static int rpi_register_clkdev(u32 clock_id, const char *name)
+{
+	BCM2835_MBOX_STACK_ALIGN(struct msg_get_clock_rate, msg);
+	struct clk *clk;
+	int ret;
+
+	BCM2835_MBOX_INIT_HDR(msg);
+	BCM2835_MBOX_INIT_TAG(&msg->get_clock_rate, GET_CLOCK_RATE);
+	msg->get_clock_rate.body.req.clock_id = clock_id;
+
+	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
+	if (ret)
+		return ret;
+
+	clk = clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	if (!clk_register_clkdev(clk, NULL, name))
+		return -ENODEV;
+
+	return 0;
+}
 
 static int rpi_mem_init(void)
 {
@@ -39,6 +72,13 @@ static int rpi_console_init(void)
 	return 0;
 }
 console_initcall(rpi_console_init);
+
+static int rpi_clock_init(void)
+{
+	rpi_register_clkdev(BCM2835_MBOX_CLOCK_ID_EMMC, "bcm2835_mci0");
+	return 0;
+}
+postconsole_initcall(rpi_clock_init);
 
 static int rpi_env_init(void)
 {

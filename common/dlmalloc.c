@@ -1750,10 +1750,10 @@ void *calloc(size_t n, size_t elem_size)
 	mchunkptr oldtop = top;
 	INTERNAL_SIZE_T oldtopsize = chunksize(top);
 
-	void *mem = malloc(sz);
-
 	if ((long)n < 0)
 		return NULL;
+
+	void *mem = malloc(sz);
 
 	if (!mem)
 		return NULL;

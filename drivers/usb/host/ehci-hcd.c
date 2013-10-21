@@ -748,6 +748,7 @@ static int ehci_init(struct usb_host *host)
 	struct ehci_priv *ehci = to_ehci(host);
 	uint32_t reg;
 	uint32_t cmd;
+	int ret = 0;
 
 	ehci_halt(ehci);
 
@@ -755,8 +756,11 @@ static int ehci_init(struct usb_host *host)
 	if (ehci_reset(ehci) != 0)
 		return -1;
 
-	if (ehci->init)
-		ehci->init(ehci->drvdata);
+	if (ehci->init) {
+		ret = ehci->init(ehci->drvdata);
+		if (ret)
+			return ret;
+	}
 
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	ehci->qh_list->qh_endpt1 = cpu_to_hc32((1 << 15) | (USB_SPEED_HIGH << 12));
@@ -799,9 +803,9 @@ static int ehci_init(struct usb_host *host)
 	ehci->rootdev = 0;
 
 	if (ehci->post_init)
-		ehci->post_init(ehci->drvdata);
+		ret = ehci->post_init(ehci->drvdata);
 
-	return 0;
+	return ret;
 }
 
 static int

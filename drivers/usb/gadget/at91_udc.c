@@ -414,6 +414,8 @@ static int at91_ep_queue(struct usb_ep *_ep,
 	req = container_of(_req, struct at91_request, req);
 	ep = container_of(_ep, struct at91_ep, ep);
 
+	udc = ep->udc;
+
 	if (!_req || !_req->complete
 			|| !_req->buf || !list_empty(&req->queue)) {
 		DBG(udc, "invalid request\n");
@@ -424,8 +426,6 @@ static int at91_ep_queue(struct usb_ep *_ep,
 		DBG(udc, "invalid ep\n");
 		return -EINVAL;
 	}
-
-	udc = ep->udc;
 
 	if (!udc || !udc->driver || udc->gadget.speed == USB_SPEED_UNKNOWN) {
 		DBG(udc, "invalid device\n");

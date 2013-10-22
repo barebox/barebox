@@ -9,3 +9,4 @@ obj-$(CONFIG_MCI_PXA)		+= pxamci.o
 obj-$(CONFIG_MCI_S3C)		+= s3c.o
 obj-$(CONFIG_MCI_SPI)		+= mci_spi.o
 obj-$(CONFIG_MCI_DW)		+= dw_mmc.o
+obj-$(CONFIG_MCI_MMCI)		+= mmci.o

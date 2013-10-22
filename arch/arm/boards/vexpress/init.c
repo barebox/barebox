@@ -16,12 +16,18 @@
 #include <io.h>
 #include <globalvar.h>
 #include <linux/amba/sp804.h>
+#include <mci.h>
 
 struct vexpress_init {
 	void (*core_init)(void);
 	void (*mem_init)(void);
 	void (*console_init)(void);
 	void (*devices_init)(void);
+};
+
+struct mmci_platform_data mmci_plat = {
+	.ocr_mask	= MMC_VDD_32_33 | MMC_VDD_33_34,
+	.clkdiv_init	= SDI_CLKCR_CLKDIV_INIT,
 };
 
 struct vexpress_init *v2m_init;
@@ -37,6 +43,7 @@ static void vexpress_ax_devices_init(void)
 {
 	add_cfi_flash_device(0, 0x08000000, SZ_64M, 0);
 	add_cfi_flash_device(1, 0x0c000000, SZ_64M, 0);
+	vexpress_register_mmc(&mmci_plat);
 	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL, 0x1a000000,
 			64 * 1024, IORESOURCE_MEM, NULL);
 	armlinux_set_bootparams((void *)(0x80000100));
@@ -68,7 +75,7 @@ static void vexpress_a9_legacy_devices_init(void)
 	add_cfi_flash_device(1, 0x44000000, SZ_64M, 0);
 	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL, 0x4e000000,
 			64 * 1024, IORESOURCE_MEM, NULL);
-
+	vexpress_a9_legacy_register_mmc(&mmci_plat);
 	armlinux_set_architecture(MACH_TYPE_VEXPRESS);
 	armlinux_set_bootparams((void *)(0x60000100));
 }

@@ -20,6 +20,7 @@
 void __iomem *v2m_sysreg_base;
 
 static const char *v2m_osc2_periphs[] = {
+	"mb:mmci",  "mmci-pl18x",	/* PL180 MMCI */
 	"mb:uart0", "uart-pl0110",	/* PL011 UART0 */
 	"mb:uart1", "uart-pl0111",	/* PL011 UART1 */
 	"mb:uart2", "uart-pl0112",	/* PL011 UART2 */

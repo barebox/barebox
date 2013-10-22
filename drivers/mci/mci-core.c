@@ -1199,6 +1199,11 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 	struct mci *mci = part->mci;
 	struct mci_host *host = mci->host;
 	int rc;
+	unsigned max_req_block = num_blocks;
+	int write_block;
+
+	if (mci->host->max_req_size)
+		max_req_block = mci->host->max_req_size / mci->write_bl_len;
 
 	mci_blk_part_switch(part);
 
@@ -1222,10 +1227,16 @@ static int __maybe_unused mci_sd_write(struct block_device *blk,
 		return -EINVAL;
 	}
 
-	rc = mci_block_write(mci, buffer, block, num_blocks);
-	if (rc != 0) {
-		dev_dbg(&mci->dev, "Writing block %d failed with %d\n", block, rc);
-		return rc;
+	while (num_blocks) {
+		write_block = min_t(int, num_blocks, max_req_block);
+		rc = mci_block_write(mci, buffer, block, write_block);
+		if (rc != 0) {
+			dev_dbg(&mci->dev, "Writing block %d failed with %d\n", block, rc);
+			return rc;
+		}
+		num_blocks -= write_block;
+		block += write_block;
+		buffer += write_block * mci->write_bl_len;
 	}
 
 	return 0;
@@ -1246,7 +1257,12 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 {
 	struct mci_part *part = container_of(blk, struct mci_part, blk);
 	struct mci *mci = part->mci;
+	unsigned max_req_block = num_blocks;
+	int read_block;
 	int rc;
+
+	if (mci->host->max_req_size)
+		max_req_block = mci->host->max_req_size / mci->read_bl_len;
 
 	mci_blk_part_switch(part);
 
@@ -1264,10 +1280,16 @@ static int mci_sd_read(struct block_device *blk, void *buffer, int block,
 		return -EINVAL;
 	}
 
-	rc = mci_read_block(mci, buffer, block, num_blocks);
-	if (rc != 0) {
-		dev_dbg(&mci->dev, "Reading block %d failed with %d\n", block, rc);
-		return rc;
+	while (num_blocks) {
+		read_block = min_t(int, num_blocks, max_req_block);
+		rc = mci_read_block(mci, buffer, block, read_block);
+		if (rc != 0) {
+			dev_dbg(&mci->dev, "Reading block %d failed with %d\n", block, rc);
+			return rc;
+		}
+		num_blocks -= read_block;
+		block += read_block;
+		buffer += read_block * mci->read_bl_len;
 	}
 
 	return 0;

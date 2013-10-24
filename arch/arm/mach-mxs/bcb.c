@@ -265,7 +265,7 @@ static int find_fcb(struct mtd_info *mtd, void *ref, int page)
 
 	chip->select_chip(mtd, 0);
 	chip->cmdfunc(mtd, NAND_CMD_READ0, 0x00, page);
-	ret = chip->ecc.read_page_raw(mtd, chip, buf);
+	ret = chip->ecc.read_page_raw(mtd, chip, buf, 1, page);
 	if (ret) {
 		printf("Failed to read FCB from page %u: %d\n", page, ret);
 		return ret;
@@ -306,7 +306,7 @@ static int write_fcb(struct mtd_info *mtd, void *buf, int block)
 
 	printf("Writing FCB to block %08x\n", block);
 	chip->select_chip(mtd, 0);
-	ret = chip->write_page(mtd, chip, buf, page, 0, 1);
+	ret = chip->write_page(mtd, chip, 0, mtd->erasesize, buf, 1, page, 0, 1);
 	if (ret) {
 		printf("Failed to write FCB to block %08x: %d\n", block, ret);
 	}

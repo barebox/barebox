@@ -962,7 +962,7 @@
 			ranges;
 
 			iim: iim@63f98000 {
-				compatible = "fsl,imx53-iim", "fsl,imx-iim";
+				compatible = "fsl,imx53-iim", "fsl,imx27-iim";
 				reg = <0x63f98000 0x4000>;
 				interrupts = <69>;
 				clocks = <&clks 107>;

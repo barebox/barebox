@@ -24,6 +24,18 @@
 	.set	push
 	.set	noreorder
 
+	b	__start
+	 nop
+
+	/*
+	   On MIPS Technologies boards
+	   0x1fc00010 address is reserved for BoardID
+	*/
+	.org	0x10
+	.word	0xffffffff
+	.word	0xffffffff
+
+__start:
 	mips_disable_interrupts
 
 	/* cpu specific setup ... */

@@ -4,7 +4,7 @@ Specific to this emulated board is, it does not require any setup code to bring 
 
 Emulator run string:
 @verbatim
-qemu-system-mips -nodefaults -M malta -m 256 -nographic -serial stdio -monitor null -bios barebox.bin
+qemu-system-mips -nodefaults -M malta -m 256 -nographic -serial stdio -monitor null -bios barebox-flash-image
 @endverbatim
 
 Links:

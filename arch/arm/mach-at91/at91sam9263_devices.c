@@ -14,7 +14,7 @@
 #include <sizes.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
-#include <asm/hardware.h>
+#include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91sam9263_matrix.h>
 #include <mach/at91sam9_sdramc.h>

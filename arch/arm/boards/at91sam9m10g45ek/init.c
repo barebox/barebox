@@ -28,7 +28,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
-#include <asm/hardware.h>
+#include <mach/hardware.h>
 #include <nand.h>
 #include <sizes.h>
 #include <linux/mtd/nand.h>

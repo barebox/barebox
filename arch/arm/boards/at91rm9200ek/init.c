@@ -26,7 +26,7 @@
 #include <fcntl.h>
 #include <io.h>
 #include <sizes.h>
-#include <asm/hardware.h>
+#include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
 #include <mach/iomux.h>

@@ -28,7 +28,7 @@
 #include <gpio.h>
 #include <fcntl.h>
 #include <io.h>
-#include <asm/hardware.h>
+#include <mach/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
 #include <mach/at91_pmc.h>

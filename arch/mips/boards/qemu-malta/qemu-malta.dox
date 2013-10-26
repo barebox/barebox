@@ -8,7 +8,6 @@ qemu-system-mips -nodefaults -M malta -m 256 -nographic -serial stdio -monitor n
 @endverbatim
 
 Links:
-@li http://www.mips.com/products/development-kits/malta/
 @li http://www.linux-mips.org/wiki/Mips_Malta
 @li http://www.qemu.org/
 

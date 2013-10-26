@@ -7,8 +7,14 @@ Emulator run string:
 qemu-system-mips -nodefaults -M malta -m 256 -nographic -serial stdio -monitor null -bios barebox-flash-image
 @endverbatim
 
+Also you can use GXemul:
+@verbatim
+gxemul -Q -x -e maltabe -M 256 0xbfc00000:barebox-flash-image
+@endverbatim
+
 Links:
 @li http://www.linux-mips.org/wiki/Mips_Malta
 @li http://www.qemu.org/
+@li http://gxemul.sourceforge.net/
 
 */

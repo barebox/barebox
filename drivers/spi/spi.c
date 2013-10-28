@@ -226,6 +226,9 @@ int spi_register_master(struct spi_master *master)
 	if (master->num_chipselect == 0)
 		return -EINVAL;
 
+	if ((master->bus_num < 0) && master->dev->device_node)
+		master->bus_num = of_alias_get_id(master->dev->device_node, "spi");
+
 	/* convention:  dynamically assigned bus IDs count down from the max */
 	if (master->bus_num < 0)
 		master->bus_num = dyn_bus_id--;

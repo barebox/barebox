@@ -215,6 +215,7 @@ static LIST_HEAD(spi_master_list);
  */
 int spi_register_master(struct spi_master *master)
 {
+	static int dyn_bus_id = (1 << 15) - 1;
 	int			status = -ENODEV;
 
 	debug("%s: %s:%d\n", __func__, master->dev->name, master->dev->id);
@@ -224,6 +225,10 @@ int spi_register_master(struct spi_master *master)
 	 */
 	if (master->num_chipselect == 0)
 		return -EINVAL;
+
+	/* convention:  dynamically assigned bus IDs count down from the max */
+	if (master->bus_num < 0)
+		master->bus_num = dyn_bus_id--;
 
 	list_add_tail(&master->list, &spi_master_list);
 

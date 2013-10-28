@@ -942,9 +942,7 @@ static int m25p_probe(struct device_d *dev)
 				flash->mtd.eraseregions[i].erasesize / 1024,
 				flash->mtd.eraseregions[i].numblocks);
 
-
-
-	return add_mtd_device(&flash->mtd, flash->mtd.name);
+	return add_mtd_device(&flash->mtd, flash->mtd.name, DEVICE_ID_DYNAMIC);
 }
 
 static __maybe_unused struct of_device_id m25p80_dt_ids[] = {

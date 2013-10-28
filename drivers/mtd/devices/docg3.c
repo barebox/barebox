@@ -1173,7 +1173,7 @@ static int __init docg3_probe(struct device_d *dev)
 		}
 		docg3_floors[floor] = mtd;
 		mtd->parent = dev;
-		ret = add_mtd_device(mtd, NULL);
+		ret = add_mtd_device(mtd, NULL, DEVICE_ID_DYNAMIC);
 		if (ret)
 			goto err_probe;
 		found++;

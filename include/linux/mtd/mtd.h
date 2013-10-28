@@ -254,7 +254,7 @@ static inline uint32_t mtd_mod_by_eb(uint64_t sz, struct mtd_info *mtd)
 }
 	/* Kernel-side ioctl definitions */
 
-extern int add_mtd_device(struct mtd_info *mtd, char *devname);
+extern int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id);
 extern int del_mtd_device (struct mtd_info *mtd);
 
 extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);

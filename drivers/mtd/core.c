@@ -359,21 +359,25 @@ static struct file_operations mtd_ops = {
 	.lseek  = dev_lseek_default,
 };
 
-int add_mtd_device(struct mtd_info *mtd, char *devname)
+int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
 
 	if (!devname)
 		devname = "mtd";
 	strcpy(mtd->class_dev.name, devname);
-	mtd->class_dev.id = DEVICE_ID_DYNAMIC;
+	mtd->class_dev.id = device_id;
 	if (mtd->parent)
 		mtd->class_dev.parent = mtd->parent;
 	register_device(&mtd->class_dev);
 
 	mtd->cdev.ops = &mtd_ops;
 	mtd->cdev.size = mtd->size;
-	mtd->cdev.name = asprintf("%s%d", devname, mtd->class_dev.id);
+	if (device_id == DEVICE_ID_SINGLE)
+		mtd->cdev.name = xstrdup(devname);
+	else
+		mtd->cdev.name = asprintf("%s%d", devname, mtd->class_dev.id);
+
 	mtd->cdev.priv = mtd;
 	mtd->cdev.dev = &mtd->class_dev;
 	mtd->cdev.mtd = mtd;

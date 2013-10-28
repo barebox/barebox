@@ -100,12 +100,18 @@ fail:
 }
 EXPORT_SYMBOL(spi_new_device);
 
-#ifdef CONFIG_OFDEVICE
-void spi_of_register_slaves(struct spi_master *master, struct device_node *node)
+static void spi_of_register_slaves(struct spi_master *master)
 {
 	struct device_node *n;
 	struct spi_board_info chip;
 	struct property *reg;
+	struct device_node *node = master->dev->device_node;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	if (!node)
+		return;
 
 	for_each_child_of_node(node, n) {
 		memset(&chip, 0, sizeof(chip));
@@ -130,7 +136,6 @@ void spi_of_register_slaves(struct spi_master *master, struct device_node *node)
 		spi_register_board_info(&chip, 1);
 	}
 }
-#endif
 
 /**
  * spi_register_board_info - register SPI devices for a given board
@@ -221,6 +226,8 @@ int spi_register_master(struct spi_master *master)
 		return -EINVAL;
 
 	list_add_tail(&master->list, &spi_master_list);
+
+	spi_of_register_slaves(master);
 
 	/* populate children from any spi device tables */
 	scan_boardinfo(master);

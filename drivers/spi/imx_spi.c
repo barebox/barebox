@@ -517,8 +517,6 @@ static int imx_spi_dt_probe(struct imx_spi *imx)
 		imx->cs_array[i] = cs_gpio;
 	}
 
-	spi_of_register_slaves(&imx->master, node);
-
 	return 0;
 }
 

@@ -79,8 +79,8 @@
 };
 
 &usbh1 {
-	barebox,phy_type = "utmi";
-	barebox,dr_mode = "host";
+	phy_type = "utmi";
+	dr_mode = "host";
 	status = "okay";
 };
 
@@ -89,8 +89,8 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg_2>;
 	disable-over-current;
-	barebox,phy_type = "utmi";
-	barebox,dr_mode = "host";
+	phy_type = "utmi";
+	dr_mode = "host";
 	status = "okay";
 };
 

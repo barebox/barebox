@@ -166,15 +166,14 @@
 
 &usbh1 {
 	status = "okay";
-	barebox,phy_type = "utmi";
+	phy_type = "utmi";
 	disable-over-current;
 };
 
 &usbotg {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg_1>;
-	barebox,phy_type = "utmi";
-	barebox,dr_mode = "peripheral";
+	phy_type = "utmi";
 	dr_mode = "host";
 	disable-over-current;
 	otg_id_pin_select_change;

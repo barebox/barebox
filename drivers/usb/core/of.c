@@ -39,7 +39,7 @@ enum usb_dr_mode of_usb_get_dr_mode(struct device_node *np,
 	int err, i;
 
 	if (!propname)
-		propname = "barebox,dr_mode";
+		propname = "dr_mode";
 
 	err = of_property_read_string(np, propname, &dr_mode);
 	if (err < 0)
@@ -76,7 +76,7 @@ enum usb_phy_interface of_usb_get_phy_mode(struct device_node *np,
 	int err, i;
 
 	if (!propname)
-		propname = "barebox,phy_type";
+		propname = "phy_type";
 
 	err = of_property_read_string(np, propname, &phy_type);
 	if (err < 0)

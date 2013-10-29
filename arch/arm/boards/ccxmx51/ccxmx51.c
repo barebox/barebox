@@ -220,8 +220,7 @@ static const struct spi_board_info ccxmx51_spi_board_info[] = {
 };
 
 static struct imxusb_platformdata ccxmx51_otg_pdata = {
-	.flags	= MXC_EHCI_MODE_UTMI_16_BIT | MXC_EHCI_INTERNAL_PHY |
-		  MXC_EHCI_POWER_PINS_ENABLED,
+	.flags	= MXC_EHCI_MODE_UTMI_16_BIT | MXC_EHCI_POWER_PINS_ENABLED,
 	.mode	= IMX_USB_MODE_HOST,
 };
 

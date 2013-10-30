@@ -1,5 +1,3 @@
-menu "Pin controllers"
-
 config PINCTRL
 	bool "Pin controller core support"
 	depends on OFDEVICE
@@ -10,25 +8,23 @@ config PINCTRL
 	  support but instead provide their own SoC specific APIs
 
 config PINCTRL_IMX_IOMUX_V1
-	bool "i.MX iomux v1"
+	bool
 	help
 	  This iomux controller is found on i.MX1,21,27.
 
 config PINCTRL_IMX_IOMUX_V2
-	bool "i.MX iomux v2"
+	bool
 	help
 	  This iomux controller is found on i.MX31.
 
 config PINCTRL_IMX_IOMUX_V3
 	select PINCTRL if OFDEVICE
-	bool "i.MX iomux v3"
+	bool
 	help
 	  This iomux controller is found on i.MX25,35,51,53,6.
 
 config PINCTRL_TEGRA20
 	select PINCTRL
-	bool "Tegra 20 pinmux"
+	bool
 	help
 	  The pinmux controller found on the Tegra 20 line of SoCs.
-
-endmenu

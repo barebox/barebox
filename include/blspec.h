@@ -84,7 +84,8 @@ static inline void blspec_free(struct blspec *blspec)
 
 	list_for_each_entry_safe(entry, tmp, &blspec->entries, list)
 		blspec_entry_free(entry);
-	free(blspec->menu->display);
+	if (blspec->menu)
+		free(blspec->menu->display);
 	free(blspec->menu);
 	free(blspec);
 }

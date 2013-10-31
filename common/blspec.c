@@ -317,6 +317,8 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 
 	pr_debug("%s: %s\n", __func__, dev_name(dev));
 
+	device_detect(dev);
+
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 		/*
 		 * If the OS is installed on a disk with MBR disk label, and a
@@ -373,8 +375,6 @@ int blspec_scan_hwdevice(struct blspec *blspec, const char *devname)
 	dev = get_device_by_name(devname);
 	if (!dev)
 		return -ENODEV;
-
-	device_detect(dev);
 
 	blspec_scan_device(blspec, dev);
 

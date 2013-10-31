@@ -361,12 +361,12 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 }
 
 /*
- * blspec_scan_hwdevice - scan a hardware device for child cdevs
+ * blspec_scan_devicename - scan a hardware device for child cdevs
  *
  * Given a name of a hardware device this functions scans over all child
  * cdevs looking for blspec entries.
  */
-int blspec_scan_hwdevice(struct blspec *blspec, const char *devname)
+int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 {
 	struct device_d *dev;
 
@@ -488,10 +488,10 @@ struct blspec_entry *blspec_entry_default(struct blspec *l)
 }
 
 /*
- * blspec_boot_hwdevice - scan hardware device for blspec entries and
+ * blspec_boot_devicename - scan hardware device for blspec entries and
  *                        start the best one.
  */
-int blspec_boot_hwdevice(const char *devname, int verbose, int dryrun)
+int blspec_boot_devicename(const char *devname, int verbose, int dryrun)
 {
 	struct blspec *blspec;
 	struct blspec_entry *e;
@@ -499,7 +499,7 @@ int blspec_boot_hwdevice(const char *devname, int verbose, int dryrun)
 
 	blspec = blspec_alloc();
 
-	ret = blspec_scan_hwdevice(blspec, devname);
+	ret = blspec_scan_devicename(blspec, devname);
 	if (ret)
 		return ret;
 

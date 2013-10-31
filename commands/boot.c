@@ -219,7 +219,7 @@ static int boot(const char *name)
 			goto out;
 		}
 
-		ret = blspec_boot_hwdevice(name, verbose, dryrun);
+		ret = blspec_boot_devicename(name, verbose, dryrun);
 		pr_err("%s: %s\n", name, strerror(-ret));
 		goto out;
 	}

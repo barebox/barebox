@@ -369,8 +369,25 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 {
 	struct device_d *dev;
+	struct cdev *cdev;
+	const char *colon;
 
 	pr_debug("%s: %s\n", __func__, devname);
+
+	colon = strchr(devname, '.');
+	if (colon) {
+		char *name = xstrdup(devname);
+		*strchr(name, '.') = 0;
+		device_detect_by_name(name);
+		free(name);
+	}
+
+	cdev = cdev_by_name(devname);
+	if (cdev) {
+		int ret = blspec_scan_cdev(blspec, cdev);
+		if (!ret)
+			return 0;
+	}
 
 	dev = get_device_by_name(devname);
 	if (!dev)

@@ -533,6 +533,7 @@ static char *mount_path(char *in_path, int *newmount)
 			*newmount = 1;
 			return out_path;
 		}
+		fprintf(stderr, "cannot mount %s\n", in_path);
 		return NULL;
 	case MOUNT_MOUNT:
 		out_path = mount_path_mount(in_path);
@@ -540,6 +541,7 @@ static char *mount_path(char *in_path, int *newmount)
 			*newmount = 1;
 			return out_path;
 		}
+		fprintf(stderr, "cannot mount %s\n", in_path);
 		return NULL;
 	}
 
@@ -789,12 +791,18 @@ static int do_add_kernel(void)
 	}
 
 	ret = make_directory(conf_dir);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "failed to create directory %s: %s\n",
+				conf_dir, strerror(errno));
 		return ret;
+	}
 
 	ret = make_directory(host_images_dir);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "failed to create directory %s: %s\n",
+				host_images_dir, strerror(errno));
 		return ret;
+	}
 
 	fd = open(conf_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0) {

@@ -37,6 +37,7 @@ int blspec_scan_devices(struct blspec *blspec);
 
 struct blspec_entry *blspec_entry_default(struct blspec *l);
 int blspec_scan_devicename(struct blspec *blspec, const char *devname);
+int blspec_scan_directory(struct blspec *blspec, const char *root);
 
 #define blspec_for_each_entry(blspec, entry) \
 	list_for_each_entry(entry, &blspec->entries, list)

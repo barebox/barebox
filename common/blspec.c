@@ -138,8 +138,7 @@ static int blspec_have_entry(struct blspec *blspec, const char *path)
  * returns 0 if at least one entry could be successfully loaded, negative
  * error value otherwise.
  */
-static int blspec_scan_directory(struct blspec *blspec, const char *root,
-		struct cdev *cdev)
+int blspec_scan_directory(struct blspec *blspec, const char *root)
 {
 	struct blspec_entry *entry;
 	DIR *dir;
@@ -211,7 +210,7 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 
 		entry->rootpath = xstrdup(root);
 		entry->configpath = configname;
-		entry->cdev = cdev;
+		entry->cdev = get_cdev_by_mountpath(root);
 
 		name = asprintf("%s/%s", dirname, d->d_name);
 		if (entry_default && !strcmp(name, entry_default))
@@ -220,12 +219,17 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 			entry->boot_once = true;
 		free(name);
 
-		devname = xstrdup(dev_name(entry->cdev->dev));
-		if (entry->cdev->dev->parent)
-			hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
+		if (entry->cdev) {
+			devname = xstrdup(dev_name(entry->cdev->dev));
+			if (entry->cdev->dev->parent)
+				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
+		}
 
-		entry->me.display = asprintf("%-20s %-20s  %s", devname, hwdevname,
+		entry->me.display = asprintf("%-20s %-20s  %s",
+				devname ? devname : "",
+				hwdevname ? hwdevname : "",
 				blspec_entry_var_get(entry, "title"));
+
 		free(devname);
 		free(hwdevname);
 
@@ -277,9 +281,7 @@ static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 	if (IS_ERR(rootpath))
 		return PTR_ERR(rootpath);
 
-	ret = blspec_scan_directory(blspec, rootpath, cdev);
-
-	return ret;
+	return blspec_scan_directory(blspec, rootpath);
 }
 
 /*
@@ -461,7 +463,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 	globalvar_add_simple("linux.bootargs.blspec", options);
 
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
-			dev_name(entry->cdev->dev));
+			entry->cdev ? dev_name(entry->cdev->dev) : "none");
 
 	if (entry->boot_once) {
 		char *s = asprintf("%s/once", abspath);

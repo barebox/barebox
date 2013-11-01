@@ -21,6 +21,7 @@
 #include <blspec.h>
 #include <libgen.h>
 #include <malloc.h>
+#include <clock.h>
 #include <boot.h>
 #include <menu.h>
 #include <fs.h>
@@ -30,6 +31,7 @@
 
 static int verbose;
 static int dryrun;
+static int timeout;
 
 /*
  * Start a single boot script. 'path' is a full path to a boot script.
@@ -255,6 +257,9 @@ static void bootsources_menu(char *entries[], int num_entries)
 	back_entry->non_re_ent = 1;
 	menu_add_entry(blspec->menu, back_entry);
 
+	if (timeout >= 0)
+		blspec->menu->auto_select = timeout;
+
 	menu_show(blspec->menu);
 
 	free(back_entry);
@@ -332,8 +337,9 @@ static int do_boot(int argc, char *argv[])
 
 	verbose = 0;
 	dryrun = 0;
+	timeout = -1;
 
-	while ((opt = getopt(argc, argv, "vldm")) > 0) {
+	while ((opt = getopt(argc, argv, "vldmt:")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose++;
@@ -346,6 +352,9 @@ static int do_boot(int argc, char *argv[])
 			break;
 		case 'm':
 			do_menu = 1;
+			break;
+		case 't':
+			timeout = simple_strtoul(optarg, NULL, 0);
 			break;
 		}
 	}
@@ -415,6 +424,7 @@ BAREBOX_CMD_HELP_OPT  ("-v","Increase verbosity\n")
 BAREBOX_CMD_HELP_OPT  ("-d","Dryrun. See what happens but do no actually boot\n")
 BAREBOX_CMD_HELP_OPT  ("-l","List available boot sources\n")
 BAREBOX_CMD_HELP_OPT  ("-m","Show a menu with boot options\n")
+BAREBOX_CMD_HELP_OPT  ("-t <timeout>","specify timeout for the menu\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(boot)

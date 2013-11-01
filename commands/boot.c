@@ -132,25 +132,15 @@ static void bootsources_list(void)
 
 	blspec = bootentries_collect();
 
-	printf("\nBootscripts:\n\n");
-	printf("%-40s   %-20s\n", "name", "title");
-	printf("%-40s   %-20s\n", "----", "-----");
+	printf("%-20s %-20s  %s\n", "device", "hwdevice", "title");
+	printf("%-20s %-20s  %s\n", "------", "--------", "-----");
 
 	blspec_for_each_entry(blspec, entry) {
 		if (entry->scriptpath)
 			printf("%-40s   %s\n", basename(entry->scriptpath), entry->me.display);
-	}
-
-	if (!IS_ENABLED(CONFIG_BLSPEC))
-		return;
-
-	printf("\nBootloader spec entries:\n\n");
-	printf("%-20s %-20s  %s\n", "device", "hwdevice", "title");
-	printf("%-20s %-20s  %s\n", "------", "--------", "-----");
-
-	blspec_for_each_entry(blspec, entry)
-		if (!entry->scriptpath)
+		else
 			printf("%s\n", entry->me.display);
+	}
 
 	blspec_free(blspec);
 }

@@ -207,7 +207,7 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 			continue;
 		}
 
-		found = 1;
+		found++;
 
 		entry->rootpath = xstrdup(root);
 		entry->configpath = configname;
@@ -232,7 +232,7 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 		entry->me.type = MENU_ENTRY_NORMAL;
 	}
 
-	ret = found ? 0 : -ENOENT;
+	ret = found;
 
 	closedir(dir);
 err_out:
@@ -249,8 +249,8 @@ err_out:
  * Given a cdev this function mounts the filesystem and collects all blspec
  * entries found under /blspec/entries/.
  *
- * returns 0 if at least one entry could be successfully loaded, negative
- * error value otherwise.
+ * returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
 static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 {
@@ -286,11 +286,14 @@ static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
  * blspec_scan_devices - scan all devices for child cdevs
  *
  * Iterate over all devices and collect child their cdevs.
+ * Returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
-void blspec_scan_devices(struct blspec *blspec)
+int blspec_scan_devices(struct blspec *blspec)
 {
 	struct device_d *dev;
 	struct block_device *bdev;
+	int ret, found = 0;
 
 	for_each_device(dev)
 		device_detect(dev);
@@ -298,9 +301,14 @@ void blspec_scan_devices(struct blspec *blspec)
 	for_each_block_device(bdev) {
 		struct cdev *cdev = &bdev->cdev;
 
-		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list)
-			blspec_scan_cdev(blspec, cdev);
+		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list) {
+			ret = blspec_scan_cdev(blspec, cdev);
+			if (ret > 0)
+				found += ret;
+		}
 	}
+
+	return found;
 }
 
 /*
@@ -308,12 +316,14 @@ void blspec_scan_devices(struct blspec *blspec)
  *
  * Given a device this functions scans over all child cdevs looking
  * for blspec entries.
+ * Returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
 int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 {
 	struct device_d *child;
 	struct cdev *cdev;
-	int ret;
+	int ret, found = 0;
 
 	pr_debug("%s: %s\n", __func__, dev_name(dev));
 
@@ -326,8 +336,11 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 		 * should be used as $BOOT
 		 */
 		if (cdev->dos_partition_type == 0xea) {
-			blspec_scan_cdev(blspec, cdev);
-			return 0;
+			ret = blspec_scan_cdev(blspec, cdev);
+			if (ret == 0)
+				ret = -ENOENT;
+
+			return ret;
 		}
 
 		/*
@@ -343,8 +356,8 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 	/* Try child devices */
 	device_for_each_child(dev, child) {
 		ret = blspec_scan_device(blspec, child);
-		if (!ret)
-			return 0;
+		if (ret > 0)
+			return ret;
 	}
 
 	/*
@@ -353,11 +366,11 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 	 */
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 		ret = blspec_scan_cdev(blspec, cdev);
-		if (!ret)
-			return 0;
+		if (ret > 0)
+			found += ret;
 	}
 
-	return -ENODEV;
+	return found;
 }
 
 /*
@@ -365,6 +378,8 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
  *
  * Given a name of a hardware device this functions scans over all child
  * cdevs looking for blspec entries.
+ * Returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
 int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 {
@@ -385,17 +400,15 @@ int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 	cdev = cdev_by_name(devname);
 	if (cdev) {
 		int ret = blspec_scan_cdev(blspec, cdev);
-		if (!ret)
-			return 0;
+		if (ret > 0)
+			return ret;
 	}
 
 	dev = get_device_by_name(devname);
 	if (!dev)
 		return -ENODEV;
 
-	blspec_scan_device(blspec, dev);
-
-	return 0;
+	return blspec_scan_device(blspec, dev);
 }
 
 /*

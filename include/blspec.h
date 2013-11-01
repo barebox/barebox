@@ -33,7 +33,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun);
 
 int blspec_boot_devicename(const char *devname, int verbose, int dryrun);
 
-void blspec_scan_devices(struct blspec *blspec);
+int blspec_scan_devices(struct blspec *blspec);
 
 struct blspec_entry *blspec_entry_default(struct blspec *l);
 int blspec_scan_devicename(struct blspec *blspec, const char *devname);

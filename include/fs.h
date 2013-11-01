@@ -184,6 +184,8 @@ char *normalise_link(const char *pathname, const char* symlink);
 
 char *get_mounted_path(const char *path);
 
+struct cdev *get_cdev_by_mountpath(const char *path);
+
 /* Register a new filesystem driver */
 int register_fs_driver(struct fs_driver_d *fsdrv);
 

@@ -537,7 +537,7 @@ int blspec_boot_devicename(const char *devname, int verbose, int dryrun)
 
 	e = blspec_entry_default(blspec);
 	if (!e) {
-		printf("Nothing found on %s\n", devname);
+		printf("No bootspec entry found on %s\n", devname);
 		ret = -ENOENT;
 		goto out;
 	}

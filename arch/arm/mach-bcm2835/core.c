@@ -54,7 +54,6 @@ postcore_initcall(bcm2835_clk_init);
 static int bcm2835_dev_init(void)
 {
 	add_generic_device("bcm2835-gpio", 0, NULL, BCM2835_GPIO_BASE, 0xB0, IORESOURCE_MEM, NULL);
-	add_generic_device("bcm2835_mci", 0, NULL, BCM2835_EMMC_BASE, 0xFC, IORESOURCE_MEM, NULL);
 	return 0;
 }
 coredevice_initcall(bcm2835_dev_init);

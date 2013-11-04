@@ -140,6 +140,7 @@ static int rpi_env_init(void)
 static int rpi_devices_init(void)
 {
 	bcm2835_register_mci();
+	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	armlinux_set_bootparams((void *)(0x00000100));
 	rpi_env_init();

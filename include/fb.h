@@ -94,6 +94,7 @@ struct fb_info {
 	u32 xres;			/* visible resolution		*/
 	u32 yres;
 	u32 bits_per_pixel;		/* guess what			*/
+	u32 line_length;		/* length of a line in bytes	*/
 
 	u32 grayscale;			/* != 0 Graylevels instead of colors */
 

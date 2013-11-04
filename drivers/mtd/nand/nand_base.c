@@ -3597,6 +3597,9 @@ int nand_scan_tail(struct mtd_info *mtd)
 	if (chip->options & NAND_SKIP_BBTSCAN)
 		return 0;
 
+	if (!IS_ENABLED(CONFIG_NAND_BBT))
+		return 0;
+
 	/* Build bad block table */
 	return chip->scan_bbt(mtd);
 }

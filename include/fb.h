@@ -105,6 +105,9 @@ struct fb_info {
 
 	int enabled;
 	int p_enable;
+	int register_simplefb;		/* If true a simplefb device node will
+					 * be created.
+					 */
 };
 
 int register_framebuffer(struct fb_info *info);
@@ -114,6 +117,10 @@ int register_framebuffer(struct fb_info *info);
 #define	FBIO_DISABLE		_IO('F', 3)
 
 extern struct bus_type fb_bus;
+
+/* fb internal functions */
+
+int fb_register_simplefb(struct fb_info *info);
 
 #endif /* __FB_H */
 

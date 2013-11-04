@@ -163,6 +163,13 @@ int register_framebuffer(struct fb_info *info)
 	if (ret)
 		goto err_unregister;
 
+	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_SIMPLEFB)) {
+		ret = fb_register_simplefb(info);
+		if (ret)
+			dev_err(&info->dev, "failed to register simplefb: %s\n",
+					strerror(-ret));
+	}
+
 	return 0;
 
 err_unregister:

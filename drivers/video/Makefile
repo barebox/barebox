@@ -10,3 +10,4 @@ obj-$(CONFIG_DRIVER_VIDEO_PXA) += pxa.o
 obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o
 obj-$(CONFIG_DRIVER_VIDEO_OMAP) += omap.o
 obj-$(CONFIG_DRIVER_VIDEO_BCM2835) += bcm2835.o
+obj-$(CONFIG_DRIVER_VIDEO_SIMPLEFB) += simplefb.o

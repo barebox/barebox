@@ -3,25 +3,9 @@ if ARCH_MPC85XX
 config TEXT_BASE
 	hex
 	default 0xeff80000 if P2020RDB
+	default 0xfff80000 if DA923RC
 
 config MPC85xx
-	bool
-	default y if P2020RDB
-
-choice
-	prompt "Select your board"
-
-config P2020RDB
-	bool "P2020RDB"
-	help
-	  Say Y here if you are using the Freescale P2020RDB
-
-endchoice
-
-endif
-
-if P2020RDB
-config P2020
 	bool
 	default y
 
@@ -33,7 +17,41 @@ config E500
 	bool
 	default y
 
+choice
+	prompt "Select your board"
+
+config P2020RDB
+	bool "P2020RDB"
+	help
+	  Say Y here if you are using the Freescale P2020RDB
+
+config DA923RC
+	bool "DA923RC"
+	help
+	Say Y here if you are using the GE Intelligent Platforms DA923RC
+endchoice
+endif
+
+if P2020RDB
+config P2020
+	bool
+	default y
+
 config FSL_ELBC
 	bool
 	default y
+endif
+
+if DA923RC
+config MPC8544
+	bool
+	default y
+
+config DDR_SPD
+    bool
+    default y
+
+config FSL_DDR2
+    bool
+    default y
 endif

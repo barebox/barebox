@@ -44,8 +44,10 @@ long int initdram(int board_type)
 {
 	phys_size_t dram_size = 0;
 
-	dram_size = fixed_sdram();
-
+	if (IS_ENABLED(CONFIG_DDR_SPD))
+		dram_size = fsl_ddr_sdram();
+	else
+		dram_size = fixed_sdram();
 	dram_size = e500_setup_ddr_tlbs(dram_size / 0x100000);
 	dram_size *= 0x100000;
 

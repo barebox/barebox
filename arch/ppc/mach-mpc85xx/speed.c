@@ -90,6 +90,15 @@ unsigned long fsl_get_bus_freq(ulong dummy)
 	return sys_info.freqSystemBus;
 }
 
+unsigned long fsl_get_ddr_freq(ulong dummy)
+{
+	struct sys_info sys_info;
+
+	fsl_get_sys_info(&sys_info);
+
+	return sys_info.freqDDRBus;
+}
+
 unsigned long fsl_get_timebase_clock(void)
 {
 	struct sys_info sysinfo;

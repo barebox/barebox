@@ -32,6 +32,7 @@
 #define MPC85xx_ECM_OFFSET	0x1000
 #define MPC85xx_DDR_OFFSET	0x2000
 #define MPC85xx_LBC_OFFSET	0x5000
+#define MPC85xx_PCI1_OFFSET	0x8000
 
 #define MPC85xx_GPIO_OFFSET	0xf000
 #define MPC85xx_L2_OFFSET	0x20000
@@ -58,6 +59,8 @@
 
 /* ECM Registers */
 #define MPC85xx_ECM_EEBPCR_OFFSET	0x00 /* ECM CCB Port Configuration */
+#define MPC85xx_ECM_EEDR_OFFSET		0xE00 /* ECM error detect register  */
+#define MPC85xx_ECM_EEER_OFFSET		0xE08 /* ECM error enable register  */
 
 /*
  * DDR Memory Controller Register Offsets
@@ -94,6 +97,9 @@
 /* training init and extended addr */
 #define MPC85xx_DDR_SDRAM_INIT_ADDR_OFFSET	0x148
 #define MPC85xx_DDR_SDRAM_INIT_ADDR_EXT_OFFSET	0x14c
+/* DDR IP block revision */
+#define MPC85xx_DDR_IP_REV1_OFFSET	0xbf8
+#define MPC85xx_DDR_IP_REV2_OFFSET	0xbfc
 
 #define DDR_OFF(REGNAME)	(MPC85xx_DDR_##REGNAME##_OFFSET)
 
@@ -102,6 +108,20 @@
  */
 #define MPC85xx_GPIO_GPDIR	0x00
 #define MPC85xx_GPIO_GPDAT	0x08
+#define MPC85xx_GPIO_GPDIR_OFFSET	0x00
+#define MPC85xx_GPIO_GPDAT_OFFSET	0x08
+
+/* Global Utilities Registers */
+#define MPC85xx_GPIOCR_OFFSET	0x30
+#define		MPC85xx_GPIOCR_GPOUT	0x00000200
+#define MPC85xx_GPOUTDR_OFFSET	0x40
+#define		MPC85xx_GPIOBIT(i)	(1 << (31 - i))
+#define MPC85xx_GPINDR_OFFSET	0x50
+
+#define MPC85xx_DEVDISR_OFFSET	0x70
+#define		MPC85xx_DEVDISR_TSEC1	0x00000080
+#define		MPC85xx_DEVDISR_TSEC2	0x00000040
+#define		MPC85xx_DEVDISR_TSEC3	0x00000020
 
 /*
  * L2 Cache Register Offsets
@@ -125,6 +145,8 @@
 #define MPC85xx_GUTS_PORPLLSR_OFFSET	0x0
 #define		MPC85xx_PORPLLSR_DDR_RATIO		0x00003e00
 #define		MPC85xx_PORPLLSR_DDR_RATIO_SHIFT	9
+#define MPC85xx_GUTS_PORDEVSR2_OFFSET	0x14
+#define		MPC85xx_PORDEVSR2_SEC_CFG		0x00000080
 #define MPC85xx_GUTS_DEVDISR_OFFSET	0x70
 #define		MPC85xx_DEVDISR_TB0	0x00004000
 #define		MPC85xx_DEVDISR_TB1	0x00001000
@@ -136,4 +158,5 @@
 #define I2C1_BASE_ADDR		(CFG_IMMR + 0x3000)
 #define I2C2_BASE_ADDR		(CFG_IMMR + 0x3100)
 
+#define PCI1_BASE_ADDR		(CFG_IMMR + MPC85xx_PCI1_OFFSET)
 #endif /*__IMMAP_85xx__*/

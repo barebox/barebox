@@ -858,6 +858,8 @@
 #define SVR_8548	0x8031
 #define SVR_8548_E	0x8039
 #define SVR_8641	0x8090
+#define SVR_8544	0x803401
+#define SVR_8544_E	0x803C01
 #define SVR_P2020	0x80E200
 #define SVR_P2020_E	0x80EA00
 

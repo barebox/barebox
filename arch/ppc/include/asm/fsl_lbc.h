@@ -27,6 +27,7 @@
 #define BR_PS_32			0x00001800	/* Port Size 32 bit */
 #define BR_V				0x00000001
 #define BR_V_SHIFT			0
+#define BR_MS_UPMA			0x00000080
 
 /* Convert an address into the right format for the BR registers */
 #define BR_PHYS_ADDR(x) ((x) & 0xffff8000)
@@ -54,6 +55,17 @@
 #define fsl_get_lbc_or(x) (in_be32((LBC_BASE_ADDR + FSL_LBC_ORX(x))))
 #define fsl_set_lbc_br(x, v) (out_be32((LBC_BASE_ADDR + FSL_LBC_BRX(x)), v))
 #define fsl_set_lbc_or(x, v) (out_be32((LBC_BASE_ADDR + FSL_LBC_ORX(x)), v))
+
+#define FSL_LBC_MAR_OFFSET	0x68
+#define FSL_LBC_MAMR_OFFSET	0x70
+#define FSL_LBC_MDR_OFFSET	0x88
+#define FSL_LBC_LTESR_OFFSET	0xB0
+#define FSL_LBC_LTEIR_OFFSET	0xB8
+
+#define MxMR_MAD_MSK		0x0000003f /* Machine Address Mask         */
+#define MxMR_GPL_x4DIS		0x00040000 /* GPL_A4 Ouput Line Disable    */
+#define MxMR_OP_NORM		0x00000000 /* Normal Operation             */
+#define MxMR_OP_WARR		0x10000000 /* Write to Array               */
 
 #endif /* __ASSEMBLY__ */
 #endif /* __ASM_PPC_FSL_LBC_H */

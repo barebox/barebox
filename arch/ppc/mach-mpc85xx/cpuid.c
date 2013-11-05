@@ -27,6 +27,8 @@
 #include <mach/immap_85xx.h>
 
 struct cpu_type cpu_type_list[] = {
+	CPU_TYPE_ENTRY(8544, 8544, 1),
+	CPU_TYPE_ENTRY(8544, 8544_E, 1),
 	CPU_TYPE_ENTRY(P2020, P2020, 2),
 	CPU_TYPE_ENTRY(P2020, P2020_E, 2),
 };

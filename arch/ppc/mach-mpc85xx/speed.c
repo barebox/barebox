@@ -101,9 +101,18 @@ unsigned long fsl_get_timebase_clock(void)
 
 unsigned long fsl_get_i2c_freq(void)
 {
+	uint svr;
 	struct sys_info sysinfo;
+	void __iomem *gur = IOMEM(MPC85xx_GUTS_ADDR);
 
 	fsl_get_sys_info(&sysinfo);
+
+	svr = get_svr();
+	if ((svr == SVR_8544) || (svr == SVR_8544_E)) {
+		if (in_be32(gur + MPC85xx_GUTS_PORDEVSR2_OFFSET) &
+				MPC85xx_PORDEVSR2_SEC_CFG)
+			return sysinfo.freqSystemBus / 3;
+	}
 
 	return sysinfo.freqSystemBus / 2;
 }

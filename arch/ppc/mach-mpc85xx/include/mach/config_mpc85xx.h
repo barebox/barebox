@@ -28,6 +28,11 @@
 #define MAX_CPUS	2
 #define FSL_NUM_LAWS	12
 #define FSL_SEC_COMPAT	2
+
+#elif defined(CONFIG_MPC8544)
+#define MAX_CPUS	1
+#define FSL_NUM_LAWS	10
+
 #else
 #error Processor type not defined for this platform
 #endif

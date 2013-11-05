@@ -40,7 +40,7 @@ static int fsl_phy_init(void)
 	add_generic_device("gfar-mdio", 0, NULL, MDIO_BASE_ADDR,
 			0x1000, IORESOURCE_MEM, NULL);
 
-	for (i = 1; i < 3; i++) {
+	for (i = 1; i < FSL_NUM_TSEC; i++) {
 		out_be32(base + (i * 0x1000), GFAR_TBIPA_END - i);
 		/* Use "gfar-tbiphy" devices to access internal PHY. */
 		add_generic_device("gfar-tbiphy", i, NULL,

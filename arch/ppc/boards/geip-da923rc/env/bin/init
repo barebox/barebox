@@ -1,0 +1,4 @@
+#!/bin/sh
+export PATH=/env/bin
+
+source /env/config

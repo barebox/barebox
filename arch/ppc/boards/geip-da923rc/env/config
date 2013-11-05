@@ -1,0 +1,4 @@
+#!/bin/sh
+export bootargs="root=/dev/nfs rw ip=bootp"
+eth0.ipaddr=192.168.0.136
+eth0.serverip=192.168.0.102

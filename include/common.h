@@ -192,6 +192,17 @@ int run_shell(void);
 #define ARRAY_SIZE(arr)		(sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
+/*
+ * The STACK_ALIGN_ARRAY macro is used to allocate a buffer on the stack that
+ * meets a minimum alignment requirement.
+ *
+ * Note that the size parameter is the number of array elements to allocate,
+ * not the number of bytes.
+ */
+#define STACK_ALIGN_ARRAY(type, name, size, align)		\
+	char __##name[sizeof(type) * (size) + (align) - 1];	\
+	type *name = (type *)ALIGN((uintptr_t)__##name, align)
+
 /**
  * container_of - cast a member of a structure out to the containing structure
  * @ptr:	the pointer to the member.

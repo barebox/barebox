@@ -70,7 +70,9 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 		endmem &= ~0x3fff;
 		endmem -= SZ_16K; /* ttb */
 
-		if (!IS_ENABLED(CONFIG_PBL_IMAGE)) {
+		if (IS_ENABLED(CONFIG_PBL_IMAGE)) {
+			arm_set_cache_functions();
+		} else {
 			arm_early_mmu_cache_invalidate();
 			mmu_early_enable(membase, memsize, endmem);
 		}

@@ -34,6 +34,8 @@
 #include <io.h>
 #include <malloc.h>
 #include <clock.h>
+#include <linux/clk.h>
+
 #include "mci-bcm2835.h"
 #include "sdhci.h"
 
@@ -468,53 +470,32 @@ int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 	return bcm2835_mci_wait_command_done(host);
 }
 
-static u32 bcm2835_mci_get_emmc_clock(struct msg_get_clock_rate *clk_data)
+static int bcm2835_mci_detect(struct device_d *dev)
 {
-	u32 val;
-	struct bcm2835_mbox_regs *regs =
-			(struct bcm2835_mbox_regs *) BCM2835_MBOX_PHYSADDR;
+	struct bcm2835_mci_host *host = dev->priv;
 
-	/*Read out old msg*/
-	while (true) {
-		val = readl(&regs->status);
-		if (val & BCM2835_MBOX_STATUS_RD_EMPTY)
-			break;
-		val = readl(&regs->read);
-	}
-
-	/*Check for ok to write*/
-	while (true) {
-		val = readl(&regs->status);
-		if (!(val & BCM2835_MBOX_STATUS_WR_FULL))
-			break;
-	}
-	val = BCM2835_MBOX_PROP_CHAN + ((u32) &clk_data->hdr);
-	writel(val, &regs->write);
-
-	while (true) {
-		/* Wait for the response */
-		while (true) {
-			val = readl(&regs->status);
-			if (!(val & BCM2835_MBOX_STATUS_RD_EMPTY))
-				break;
-		}
-
-		/* Read the response */
-		val = readl(&regs->read);
-		if ((val & 0x0F) == BCM2835_MBOX_PROP_CHAN)
-			break;
-	}
-	if ((val & ~0x0F) == ((u32) &clk_data->hdr))
-		if (clk_data->get_clock_rate.tag_hdr.val_len
-				& BCM2835_MBOX_TAG_VAL_LEN_RESPONSE)
-			return 1;
-	return 0;
+	return mci_detect_card(&host->mci);
 }
 
 static int bcm2835_mci_probe(struct device_d *hw_dev)
 {
 	struct bcm2835_mci_host *host;
-	struct msg_get_clock_rate *clk_data;
+	static struct clk *clk;
+	int ret;
+
+	clk = clk_get(hw_dev, NULL);
+	if (IS_ERR(clk)) {
+		ret = PTR_ERR(clk);
+		dev_err(hw_dev, "clock not found: %d\n", ret);
+		return ret;
+	}
+
+	ret = clk_enable(clk);
+	if (ret) {
+		dev_err(hw_dev, "clock failed to enable: %d\n", ret);
+		clk_put(clk);
+		return ret;
+	}
 
 	host = xzalloc(sizeof(*host));
 	host->mci.send_cmd = bcm2835_mci_request;
@@ -522,31 +503,7 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	host->mci.init = bcm2835_mci_reset;
 	host->mci.hw_dev = hw_dev;
 	host->hw_dev = hw_dev;
-
-	/* Allocate a buffer thats 16 bytes aligned in memory
-	 * Of the 32 bits address passed into the mbox 28 bits
-	 * are the address of the buffer, lower 4 bits is channel
-	 */
-	clk_data = memalign(16, sizeof(struct msg_get_clock_rate));
-	memset(clk_data, 0, sizeof(struct msg_get_clock_rate));
-	clk_data->hdr.buf_size = sizeof(struct msg_get_clock_rate);
-	clk_data->get_clock_rate.tag_hdr.tag = BCM2835_MBOX_TAG_GET_CLOCK_RATE;
-	clk_data->get_clock_rate.tag_hdr.val_buf_size =
-			sizeof(clk_data->get_clock_rate.body);
-	clk_data->get_clock_rate.tag_hdr.val_len =
-			sizeof(clk_data->get_clock_rate.body.req);
-	clk_data->get_clock_rate.body.req.clock_id = BCM2835_MBOX_CLOCK_ID_EMMC;
-
-	if (!bcm2835_mci_get_emmc_clock(clk_data)) {
-		dev_warn(host->hw_dev,
-				"Failed getting emmc clock, lets go anyway with 50MHz\n");
-		host->max_clock = 50000000;
-	} else {
-		host->max_clock = clk_data->get_clock_rate.body.resp.rate_hz;
-		dev_info(host->hw_dev, "Got emmc clock at %d Hz\n",
-				host->max_clock);
-	}
-
+	host->max_clock = clk_get_rate(clk);
 	host->regs = dev_request_mem_region(hw_dev, 0);
 	if (host->regs == NULL) {
 		dev_err(host->hw_dev, "Failed request mem region, aborting...\n");
@@ -560,6 +517,9 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 
 	host->mci.f_min = MIN_FREQ;
 	host->mci.f_max = host->max_clock;
+
+	hw_dev->priv = host;
+	hw_dev->detect = bcm2835_mci_detect,
 
 	/*
 	 * The Arasan has a bugette whereby it may lose the content of

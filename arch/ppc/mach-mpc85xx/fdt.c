@@ -89,7 +89,7 @@ error:
 	return -ENODEV;
 }
 
-static int fdt_cpu_setup(struct device_node *blob)
+static int fdt_cpu_setup(struct device_node *blob, void *unused)
 {
 	struct device_node *node;
 	struct sys_info sysinfo;
@@ -139,6 +139,6 @@ static int fdt_cpu_setup(struct device_node *blob)
 
 static int of_register_mpc85xx_fixup(void)
 {
-	return of_register_fixup(fdt_cpu_setup);
+	return of_register_fixup(fdt_cpu_setup, NULL);
 }
 late_initcall(of_register_mpc85xx_fixup);

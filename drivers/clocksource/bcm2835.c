@@ -87,4 +87,4 @@ static int bcm2835_cs_init(void)
 {
 	return platform_driver_register(&bcm2835_cs_driver);
 }
-coredevice_initcall(bcm2835_cs_init);
+core_initcall(bcm2835_cs_init);

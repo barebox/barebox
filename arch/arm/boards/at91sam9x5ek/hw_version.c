@@ -229,7 +229,7 @@ static void at91sam9x5ek_devices_detect_one(const char *name)
 
 #define NODE_NAME_LEN  128
 
-static int cm_cogent_fixup(struct device_node *root)
+static int cm_cogent_fixup(struct device_node *root, void *unused)
 {
 	int ret;
 	struct device_node *node;
@@ -260,5 +260,5 @@ void at91sam9x5ek_devices_detect_hw(void)
 	armlinux_set_serial(sn);
 
 	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
-		of_register_fixup(cm_cogent_fixup);
+		of_register_fixup(cm_cogent_fixup, NULL);
 }

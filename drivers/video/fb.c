@@ -72,12 +72,16 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 
 	info->xres = info->mode->xres;
 	info->yres = info->mode->yres;
+	info->line_length = 0;
 
 	ret = info->fbops->fb_activate_var(info);
 
+	if (!info->line_length)
+		info->line_length = info->xres * (info->bits_per_pixel >> 3);
+
 	if (!ret) {
 		dev->resource[0].start = (resource_size_t)info->screen_base;
-		info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
+		info->cdev.size = info->line_length * info->yres;
 		dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
 		dev_param_set_generic(dev, param, val);
 	} else
@@ -122,9 +126,12 @@ int register_framebuffer(struct fb_info *info)
 
 	dev = &info->dev;
 
+	if (!info->line_length)
+		info->line_length = info->xres * (info->bits_per_pixel >> 3);
+
 	info->cdev.ops = &fb_ops;
 	info->cdev.name = asprintf("fb%d", id);
-	info->cdev.size = info->xres * info->yres * (info->bits_per_pixel >> 3);
+	info->cdev.size = info->line_length * info->yres;
 	info->cdev.dev = dev;
 	info->cdev.priv = info;
 	dev->resource = xzalloc(sizeof(struct resource));
@@ -155,6 +162,13 @@ int register_framebuffer(struct fb_info *info)
 	ret = devfs_create(&info->cdev);
 	if (ret)
 		goto err_unregister;
+
+	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_SIMPLEFB)) {
+		ret = fb_register_simplefb(info);
+		if (ret)
+			dev_err(&info->dev, "failed to register simplefb: %s\n",
+					strerror(-ret));
+	}
 
 	return 0;
 

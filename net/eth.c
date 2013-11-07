@@ -274,7 +274,7 @@ static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const ch
 }
 
 #ifdef CONFIG_OFTREE
-static int eth_of_fixup(struct device_node *root)
+static int eth_of_fixup(struct device_node *root, void *unused)
 {
 	struct eth_device *edev;
 	struct device_node *node;
@@ -316,7 +316,7 @@ static int eth_of_fixup(struct device_node *root)
 
 static int eth_register_of_fixup(void)
 {
-	return of_register_fixup(eth_of_fixup);
+	return of_register_fixup(eth_of_fixup, NULL);
 }
 late_initcall(eth_register_of_fixup);
 #endif

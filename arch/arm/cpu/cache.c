@@ -41,32 +41,38 @@ DEFINE_CPU_FNS(v7)
 
 void __dma_clean_range(unsigned long start, unsigned long end)
 {
-	cache_fns->dma_clean_range(start, end);
+	if (cache_fns)
+		cache_fns->dma_clean_range(start, end);
 }
 
 void __dma_flush_range(unsigned long start, unsigned long end)
 {
-	cache_fns->dma_flush_range(start, end);
+	if (cache_fns)
+		cache_fns->dma_flush_range(start, end);
 }
 
 void __dma_inv_range(unsigned long start, unsigned long end)
 {
-	cache_fns->dma_inv_range(start, end);
+	if (cache_fns)
+		cache_fns->dma_inv_range(start, end);
 }
 
 void __mmu_cache_on(void)
 {
-	cache_fns->mmu_cache_on();
+	if (cache_fns)
+		cache_fns->mmu_cache_on();
 }
 
 void __mmu_cache_off(void)
 {
-	cache_fns->mmu_cache_off();
+	if (cache_fns)
+		cache_fns->mmu_cache_off();
 }
 
 void __mmu_cache_flush(void)
 {
-	cache_fns->mmu_cache_flush();
+	if (cache_fns)
+		cache_fns->mmu_cache_flush();
 }
 
 int arm_set_cache_functions(void)

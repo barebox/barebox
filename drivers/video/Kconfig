@@ -71,4 +71,17 @@ config DRIVER_VIDEO_PXA
 	  Add support for the frame buffer device found on the PXA270
 	  CPU.
 
+config DRIVER_VIDEO_BCM2835
+	bool "BCM2835 framebuffer driver"
+	depends on ARCH_BCM2835
+	help
+	  Add support for the BCM2835/VideoCore frame buffer device.
+
+config DRIVER_VIDEO_SIMPLEFB
+	bool "Simple framebuffer support"
+	depends on OFTREE
+	help
+	  Add support for setting up the kernel's simple framebuffer driver
+	  based on the active barebox framebuffer.
+
 endif

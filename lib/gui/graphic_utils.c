@@ -167,18 +167,18 @@ void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 {
 	unsigned char *adr;
 	int x, y;
-	int xres;
+	int line_length;
 	int img_byte_per_pixel = 3;
 	void *image;
 
 	if (is_rgba)
 		img_byte_per_pixel++;
 
-	xres = info->xres;
+	line_length = info->line_length;
 
 	for (y = 0; y < height; y++) {
-		adr = buf + ((y + starty) * xres + startx) *
-				(info->bits_per_pixel >> 3);
+		adr = buf + (y + starty) * line_length +
+				startx * (info->bits_per_pixel >> 3);
 		image = img->data + (y * img->width *img_byte_per_pixel);
 
 		for (x = 0; x < width; x++) {
@@ -219,7 +219,7 @@ int fb_open(const char * fbdev, struct screen *sc, bool offscreen)
 	sc->s.y = 0;
 	sc->s.width = sc->info.xres;
 	sc->s.height = sc->info.yres;
-	sc->fbsize = sc->s.width * sc->s.height * (sc->info.bits_per_pixel >> 3);
+	sc->fbsize = sc->info.line_length * sc->s.height;
 
 	if (offscreen) {
 		/* Don't fail if malloc fails, just continue rendering directly

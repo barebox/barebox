@@ -113,7 +113,7 @@ void of_print_cmdline(struct device_node *root)
 	printf("commandline: %s\n", cmdline);
 }
 
-static int of_fixup_bootargs(struct device_node *root)
+static int of_fixup_bootargs(struct device_node *root, void *unused)
 {
 	struct device_node *node;
 	const char *str;
@@ -135,22 +135,24 @@ static int of_fixup_bootargs(struct device_node *root)
 
 static int of_register_bootargs_fixup(void)
 {
-	return of_register_fixup(of_fixup_bootargs);
+	return of_register_fixup(of_fixup_bootargs, NULL);
 }
 late_initcall(of_register_bootargs_fixup);
 
 struct of_fixup {
-	int (*fixup)(struct device_node *);
+	int (*fixup)(struct device_node *, void *);
+	void *context;
 	struct list_head list;
 };
 
 static LIST_HEAD(of_fixup_list);
 
-int of_register_fixup(int (*fixup)(struct device_node *))
+int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context)
 {
 	struct of_fixup *of_fixup = xzalloc(sizeof(*of_fixup));
 
 	of_fixup->fixup = fixup;
+	of_fixup->context = context;
 
 	list_add_tail(&of_fixup->list, &of_fixup_list);
 
@@ -167,7 +169,7 @@ int of_fix_tree(struct device_node *node)
 	int ret;
 
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
-		ret = of_fixup->fixup(node);
+		ret = of_fixup->fixup(node, of_fixup->context);
 		if (ret)
 			return ret;
 	}

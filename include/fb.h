@@ -94,6 +94,7 @@ struct fb_info {
 	u32 xres;			/* visible resolution		*/
 	u32 yres;
 	u32 bits_per_pixel;		/* guess what			*/
+	u32 line_length;		/* length of a line in bytes	*/
 
 	u32 grayscale;			/* != 0 Graylevels instead of colors */
 
@@ -104,6 +105,9 @@ struct fb_info {
 
 	int enabled;
 	int p_enable;
+	int register_simplefb;		/* If true a simplefb device node will
+					 * be created.
+					 */
 };
 
 int register_framebuffer(struct fb_info *info);
@@ -113,6 +117,10 @@ int register_framebuffer(struct fb_info *info);
 #define	FBIO_DISABLE		_IO('F', 3)
 
 extern struct bus_type fb_bus;
+
+/* fb internal functions */
+
+int fb_register_simplefb(struct fb_info *info);
 
 #endif /* __FB_H */
 

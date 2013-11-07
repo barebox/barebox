@@ -216,7 +216,9 @@ static struct blspec *bootentries_collect(char *entries[], int num_entries)
 	int i;
 
 	blspec = blspec_alloc();
-	blspec->menu->display = asprintf("boot");
+
+	if (IS_ENABLED(CONFIG_MENU))
+		blspec->menu->display = asprintf("boot");
 
 	if (!num_entries)
 		bootscript_scan_path(blspec, "/env/boot");

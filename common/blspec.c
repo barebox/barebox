@@ -138,8 +138,7 @@ static int blspec_have_entry(struct blspec *blspec, const char *path)
  * returns 0 if at least one entry could be successfully loaded, negative
  * error value otherwise.
  */
-static int blspec_scan_directory(struct blspec *blspec, const char *root,
-		struct cdev *cdev)
+int blspec_scan_directory(struct blspec *blspec, const char *root)
 {
 	struct blspec_entry *entry;
 	DIR *dir;
@@ -207,11 +206,11 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 			continue;
 		}
 
-		found = 1;
+		found++;
 
 		entry->rootpath = xstrdup(root);
 		entry->configpath = configname;
-		entry->cdev = cdev;
+		entry->cdev = get_cdev_by_mountpath(root);
 
 		name = asprintf("%s/%s", dirname, d->d_name);
 		if (entry_default && !strcmp(name, entry_default))
@@ -220,19 +219,24 @@ static int blspec_scan_directory(struct blspec *blspec, const char *root,
 			entry->boot_once = true;
 		free(name);
 
-		devname = xstrdup(dev_name(entry->cdev->dev));
-		if (entry->cdev->dev->parent)
-			hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
+		if (entry->cdev) {
+			devname = xstrdup(dev_name(entry->cdev->dev));
+			if (entry->cdev->dev->parent)
+				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
+		}
 
-		entry->me.display = asprintf("%-20s %-20s  %s", devname, hwdevname,
+		entry->me.display = asprintf("%-20s %-20s  %s",
+				devname ? devname : "",
+				hwdevname ? hwdevname : "",
 				blspec_entry_var_get(entry, "title"));
+
 		free(devname);
 		free(hwdevname);
 
 		entry->me.type = MENU_ENTRY_NORMAL;
 	}
 
-	ret = found ? 0 : -ENOENT;
+	ret = found;
 
 	closedir(dir);
 err_out:
@@ -249,8 +253,8 @@ err_out:
  * Given a cdev this function mounts the filesystem and collects all blspec
  * entries found under /blspec/entries/.
  *
- * returns 0 if at least one entry could be successfully loaded, negative
- * error value otherwise.
+ * returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
 static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 {
@@ -277,20 +281,21 @@ static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 	if (IS_ERR(rootpath))
 		return PTR_ERR(rootpath);
 
-	ret = blspec_scan_directory(blspec, rootpath, cdev);
-
-	return ret;
+	return blspec_scan_directory(blspec, rootpath);
 }
 
 /*
  * blspec_scan_devices - scan all devices for child cdevs
  *
  * Iterate over all devices and collect child their cdevs.
+ * Returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
-void blspec_scan_devices(struct blspec *blspec)
+int blspec_scan_devices(struct blspec *blspec)
 {
 	struct device_d *dev;
 	struct block_device *bdev;
+	int ret, found = 0;
 
 	for_each_device(dev)
 		device_detect(dev);
@@ -298,9 +303,14 @@ void blspec_scan_devices(struct blspec *blspec)
 	for_each_block_device(bdev) {
 		struct cdev *cdev = &bdev->cdev;
 
-		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list)
-			blspec_scan_cdev(blspec, cdev);
+		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list) {
+			ret = blspec_scan_cdev(blspec, cdev);
+			if (ret > 0)
+				found += ret;
+		}
 	}
+
+	return found;
 }
 
 /*
@@ -308,14 +318,18 @@ void blspec_scan_devices(struct blspec *blspec)
  *
  * Given a device this functions scans over all child cdevs looking
  * for blspec entries.
+ * Returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
 int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 {
 	struct device_d *child;
 	struct cdev *cdev;
-	int ret;
+	int ret, found = 0;
 
 	pr_debug("%s: %s\n", __func__, dev_name(dev));
+
+	device_detect(dev);
 
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 		/*
@@ -324,8 +338,11 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 		 * should be used as $BOOT
 		 */
 		if (cdev->dos_partition_type == 0xea) {
-			blspec_scan_cdev(blspec, cdev);
-			return 0;
+			ret = blspec_scan_cdev(blspec, cdev);
+			if (ret == 0)
+				ret = -ENOENT;
+
+			return ret;
 		}
 
 		/*
@@ -341,8 +358,8 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 	/* Try child devices */
 	device_for_each_child(dev, child) {
 		ret = blspec_scan_device(blspec, child);
-		if (!ret)
-			return 0;
+		if (ret > 0)
+			return ret;
 	}
 
 	/*
@@ -351,34 +368,49 @@ int blspec_scan_device(struct blspec *blspec, struct device_d *dev)
 	 */
 	list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 		ret = blspec_scan_cdev(blspec, cdev);
-		if (!ret)
-			return 0;
+		if (ret > 0)
+			found += ret;
 	}
 
-	return -ENODEV;
+	return found;
 }
 
 /*
- * blspec_scan_hwdevice - scan a hardware device for child cdevs
+ * blspec_scan_devicename - scan a hardware device for child cdevs
  *
  * Given a name of a hardware device this functions scans over all child
  * cdevs looking for blspec entries.
+ * Returns the number of entries found or a negative error code if some unexpected
+ * error occured.
  */
-int blspec_scan_hwdevice(struct blspec *blspec, const char *devname)
+int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 {
 	struct device_d *dev;
+	struct cdev *cdev;
+	const char *colon;
 
 	pr_debug("%s: %s\n", __func__, devname);
+
+	colon = strchr(devname, '.');
+	if (colon) {
+		char *name = xstrdup(devname);
+		*strchr(name, '.') = 0;
+		device_detect_by_name(name);
+		free(name);
+	}
+
+	cdev = cdev_by_name(devname);
+	if (cdev) {
+		int ret = blspec_scan_cdev(blspec, cdev);
+		if (ret > 0)
+			return ret;
+	}
 
 	dev = get_device_by_name(devname);
 	if (!dev)
 		return -ENODEV;
 
-	device_detect(dev);
-
-	blspec_scan_device(blspec, dev);
-
-	return 0;
+	return blspec_scan_device(blspec, dev);
 }
 
 /*
@@ -431,7 +463,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 	globalvar_add_simple("linux.bootargs.blspec", options);
 
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
-			dev_name(entry->cdev->dev));
+			entry->cdev ? dev_name(entry->cdev->dev) : "none");
 
 	if (entry->boot_once) {
 		char *s = asprintf("%s/once", abspath);
@@ -488,10 +520,10 @@ struct blspec_entry *blspec_entry_default(struct blspec *l)
 }
 
 /*
- * blspec_boot_hwdevice - scan hardware device for blspec entries and
+ * blspec_boot_devicename - scan hardware device for blspec entries and
  *                        start the best one.
  */
-int blspec_boot_hwdevice(const char *devname, int verbose, int dryrun)
+int blspec_boot_devicename(const char *devname, int verbose, int dryrun)
 {
 	struct blspec *blspec;
 	struct blspec_entry *e;
@@ -499,13 +531,13 @@ int blspec_boot_hwdevice(const char *devname, int verbose, int dryrun)
 
 	blspec = blspec_alloc();
 
-	ret = blspec_scan_hwdevice(blspec, devname);
+	ret = blspec_scan_devicename(blspec, devname);
 	if (ret)
 		return ret;
 
 	e = blspec_entry_default(blspec);
 	if (!e) {
-		printf("Nothing found on %s\n", devname);
+		printf("No bootspec entry found on %s\n", devname);
 		ret = -ENOENT;
 		goto out;
 	}

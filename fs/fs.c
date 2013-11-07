@@ -283,6 +283,19 @@ static struct fs_device_d *get_fsdevice_by_path(const char *path)
 	return fs_dev_root;
 }
 
+/*
+ * get_cdev_by_mountpath - return the cdev the given path
+ *                         is mounted on
+ */
+struct cdev *get_cdev_by_mountpath(const char *path)
+{
+	struct fs_device_d *fsdev;
+
+	fsdev = get_fsdevice_by_path(path);
+
+	return fsdev->cdev;
+}
+
 char *get_mounted_path(const char *path)
 {
 	struct fs_device_d *fdev;

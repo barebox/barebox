@@ -1745,6 +1745,7 @@ void *calloc(size_t n, size_t elem_size)
 	mchunkptr p;
 	INTERNAL_SIZE_T csz;
 	INTERNAL_SIZE_T sz = n * elem_size;
+	void *mem;
 
 	/* check if expand_top called, in which case don't need to clear */
 	mchunkptr oldtop = top;
@@ -1753,7 +1754,7 @@ void *calloc(size_t n, size_t elem_size)
 	if ((long)n < 0)
 		return NULL;
 
-	void *mem = malloc(sz);
+	mem = malloc(sz);
 
 	if (!mem)
 		return NULL;

@@ -122,6 +122,15 @@ static struct phy_driver ksphy_driver[] = {
 	.config_aneg	= genphy_config_aneg,
 	.read_status	= genphy_read_status,
 }, {
+	.phy_id		= PHY_ID_KSZ8031,
+	.phy_id_mask	= 0x00ffffff,
+	.drv.name	= "Micrel KSZ8031",
+	.features	= (PHY_BASIC_FEATURES | SUPPORTED_Pause |
+			   SUPPORTED_Asym_Pause),
+	.config_init	= ksz8021_config_init,
+	.config_aneg	= genphy_config_aneg,
+	.read_status	= genphy_read_status,
+}, {
 	.phy_id		= PHY_ID_KSZ8041,
 	.phy_id_mask	= 0x00fffff0,
 	.drv.name	= "Micrel KSZ8041",

@@ -965,7 +965,7 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->type = MTD_NORFLASH;
 	mtd->parent = info->dev;
 
-	add_mtd_device(mtd, "nor");
+	add_mtd_device(mtd, "nor", DEVICE_ID_DYNAMIC);
 }
 
 static int cfi_probe (struct device_d *dev)

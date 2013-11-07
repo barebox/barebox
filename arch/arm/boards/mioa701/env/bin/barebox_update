@@ -1,10 +1,10 @@
 #!/bin/sh
 
 # Page+OOB specific partitions
-addpart /dev/mtdraw0 1081344@3649536(msipl)
-addpart /dev/mtdraw0 270336@3649536(barebox)
+addpart /dev/mtd0.raw 1081344@3649536(msipl)
+addpart /dev/mtd0.raw 270336@3649536(barebox)
 
 if [ -r /barebox.BIP0 ]; then
-	erase /dev/mtdraw0.barebox
-	cp -v /barebox.BIP0 /dev/mtdraw0.barebox
+	erase /dev/mtd0.raw.barebox
+	cp -v /barebox.BIP0 /dev/mtd0.raw.barebox
 fi

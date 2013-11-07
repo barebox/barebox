@@ -808,6 +808,8 @@ static int m25p_probe(struct device_d *dev)
 	struct flash_info		*info = NULL;
 	unsigned			i;
 	unsigned			do_jdec_probe = 1;
+	char				*flashname = NULL;
+	int				device_id;
 
 	/* Platform data helps sort out which chip type we have, as
 	 * well as how this board partitions it.  If we don't have
@@ -876,10 +878,19 @@ static int m25p_probe(struct device_d *dev)
 		write_sr(flash, 0);
 	}
 
-	if (data && data->name)
-		flash->mtd.name = data->name;
-	else
-		flash->mtd.name = "m25p";
+	device_id = DEVICE_ID_SINGLE;
+	if (dev->device_node) {
+		const char *alias = of_alias_get(dev->device_node);
+		if (alias)
+			flashname = xstrdup(alias);
+	} else if (data && data->name) {
+		flashname = data->name;
+	}
+
+	if (!flashname) {
+		device_id = DEVICE_ID_DYNAMIC;
+		flashname = "m25p";
+	}
 
 	flash->mtd.type = MTD_NORFLASH;
 	flash->mtd.writesize = 1;
@@ -942,9 +953,7 @@ static int m25p_probe(struct device_d *dev)
 				flash->mtd.eraseregions[i].erasesize / 1024,
 				flash->mtd.eraseregions[i].numblocks);
 
-
-
-	return add_mtd_device(&flash->mtd, flash->mtd.name);
+	return add_mtd_device(&flash->mtd, flashname, device_id);
 }
 
 static __maybe_unused struct of_device_id m25p80_dt_ids[] = {

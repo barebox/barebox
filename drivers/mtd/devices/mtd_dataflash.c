@@ -643,7 +643,7 @@ add_dataflash_otp(struct spi_device *spi, char *name,
 			name, (long long)((device->size + 1023) >> 10),
 			pagesize, otp_tag);
 
-	err = add_mtd_device(device, device->name);
+	err = add_mtd_device(device, device->name, DEVICE_ID_DYNAMIC);
 
 	if (!err)
 		return 0;

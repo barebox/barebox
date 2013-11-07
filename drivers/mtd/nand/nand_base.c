@@ -3690,7 +3690,7 @@ int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 {
 	int ret;
 
-	ret = add_mtd_device(mtd, devname);
+	ret = add_mtd_device(mtd, devname, DEVICE_ID_DYNAMIC);
 	if (ret)
 		return ret;
 

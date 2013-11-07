@@ -435,6 +435,8 @@ static int at24_probe(struct device_d *dev)
 
 	devfs_create(&at24->cdev);
 
+	of_parse_partitions(&at24->cdev, dev->device_node);
+
 	return 0;
 
 err_clients:

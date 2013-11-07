@@ -361,9 +361,6 @@ static int mvebu_spi_probe(struct device_d *dev)
 	master->transfer = mvebu_spi_transfer;
 	master->num_chipselect = 1;
 
-	if (dev->device_node)
-		spi_of_register_slaves(master, dev->device_node);
-
 	ret = spi_register_master(master);
 	if (!ret)
 		return 0;

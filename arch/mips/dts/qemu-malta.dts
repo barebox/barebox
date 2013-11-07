@@ -17,9 +17,9 @@
 		reg = <0x00000000 0x10000000>;
 	};
 
-	uart0: serial@b00003f8 {
+	uart0: serial@b80003f8 {
 		compatible = "ns16550a";
-		reg = <0xb00003f8 0x08>;
+		reg = <0xb80003f8 0x08>;
 		reg-shift = <0>;
 		/* no matter for emulated port */
 		clock-frequency = <1843200>;

@@ -18,7 +18,7 @@
 #ifndef __INCLUDE_ARCH_HARDWARE_H__
 #define   __INCLUDE_ARCH_HARDWARE_H__
 
-#define MALTA_PIIX4_UART0	0xb00003f8
+#define MALTA_PIIX4_UART0	0xb80003f8
 
 /*
  * Reset register.

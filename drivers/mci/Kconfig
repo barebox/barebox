@@ -101,6 +101,12 @@ config MCI_ATMEL
 	  Enable this entry to add support to read and write SD cards on a
 	  Atmel AT91.
 
+config MCI_MMCI
+	bool "ARM PL180 MMCI"
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  ARM AMBA PL180.
+
 config MCI_SPI
 	bool "MMC/SD over SPI"
 	select CRC7

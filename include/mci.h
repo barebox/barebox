@@ -293,6 +293,7 @@ struct mci_host {
 	unsigned f_max;		/**< host interface upper limit */
 	unsigned clock;		/**< Current clock used to talk to the card */
 	unsigned bus_width;	/**< used data bus width to the card */
+	unsigned max_req_size;
 
 	/** init the host interface */
 	int (*init)(struct mci_host*, struct device_d*);

@@ -20,7 +20,6 @@ void vexpress_a9_legacy_add_ddram(u32 ddr0_size, u32 ddr1_size)
 		arm_add_mem_device("ram1", 0x80000000, ddr1_size);
 }
 
-
 void vexpress_a9_legacy_register_uart(unsigned id)
 {
 	resource_size_t start;
@@ -42,6 +41,12 @@ void vexpress_a9_legacy_register_uart(unsigned id)
 		return;
 	}
 	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
+}
+
+void vexpress_a9_legacy_register_mmc(struct mmci_platform_data *plat)
+{
+	amba_apb_device_add(NULL, "mmci-pl18x", DEVICE_ID_SINGLE, 0x10005000,
+	4096, plat, 0);
 }
 
 void vexpress_add_ddram(u32 size)
@@ -70,4 +75,9 @@ void vexpress_register_uart(unsigned id)
 		return;
 	}
 	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
+}
+
+void vexpress_register_mmc(struct mmci_platform_data *plat)
+{
+	amba_apb_device_add(NULL, "mmci-pl18x", DEVICE_ID_SINGLE, 0x1c050000, 4096, plat, 0);
 }

@@ -67,8 +67,6 @@ struct alias_prop {
 
 static LIST_HEAD(aliases_lookup);
 
-static LIST_HEAD(phandle_list);
-
 struct device_node *root_node;
 
 struct device_node *of_aliases;
@@ -274,9 +272,10 @@ struct device_node *of_find_node_by_phandle(phandle phandle)
 {
 	struct device_node *node;
 
-	list_for_each_entry(node, &phandle_list, phandles)
+	of_tree_for_each_node_from(node, root_node)
 		if (node->phandle == phandle)
 			return node;
+
 	return NULL;
 }
 EXPORT_SYMBOL(of_find_node_by_phandle);
@@ -1719,7 +1718,7 @@ const struct of_device_id of_default_bus_match_table[] = {
 
 int of_probe(void)
 {
-	struct device_node *memory, *node;
+	struct device_node *memory;
 
 	if(!root_node)
 		return -ENODEV;
@@ -1729,10 +1728,6 @@ int of_probe(void)
 
 	if (of_model)
 		barebox_set_model(of_model);
-
-	of_tree_for_each_node_from(node, root_node)
-		if (node->phandle)
-			list_add_tail(&node->phandles, &phandle_list);
 
 	memory = of_find_node_by_path("/memory");
 	if (memory)

@@ -113,18 +113,16 @@
 
 /* External USB-A port (USBOTG) */
 &usbotg {
-	phy-mode = "utmi";
+	phy_type = "utmi";
 	dr_mode = "host";
-	barebox,phy_type = "utmi";
 	disable-over-current;
 	status = "okay";
 };
 
 /* Internal USB port (USBH1), connected to RTL8192CU */
 &usbh1 {
-	phy-mode = "utmi";
+	phy_type = "utmi";
 	dr_mode = "host";
-	barebox,phy_type = "utmi";
 	disable-over-current;
 	status = "okay";
 };

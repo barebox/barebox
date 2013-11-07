@@ -296,7 +296,7 @@ static int imx_iim_probe(struct device_d *dev)
 
 static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
 	{
-		.compatible = "fsl,imx-iim",
+		.compatible = "fsl,imx27-iim",
 	}, {
 		/* sentinel */
 	}

@@ -30,6 +30,10 @@
 		mmc1 = &usdhc2;
 		mmc2 = &usdhc3;
 		mmc3 = &usdhc4;
+		spi0 = &ecspi1;
+		spi1 = &ecspi2;
+		spi2 = &ecspi3;
+		spi3 = &ecspi4;
 	};
 
 	intc: interrupt-controller@00a01000 {

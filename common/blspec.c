@@ -135,8 +135,7 @@ static int blspec_have_entry(struct blspec *blspec, const char *path)
  *
  * Given a root path collects all blspec entries found under /blspec/entries/.
  *
- * returns 0 if at least one entry could be successfully loaded, negative
- * error value otherwise.
+ * returns the number of entries found or a negative error value otherwise.
  */
 int blspec_scan_directory(struct blspec *blspec, const char *root)
 {

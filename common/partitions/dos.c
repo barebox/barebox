@@ -109,7 +109,7 @@ static int dos_get_disk_signature(struct param_d *p, void *_priv)
 	if (!buf)
 		return -EIO;
 
-	priv->signature = le32_to_cpup((__le32 *)(buf + 0x1b8));
+	priv->signature = get_unaligned_le32(buf + 0x1b8);
 
 	free(buf);
 

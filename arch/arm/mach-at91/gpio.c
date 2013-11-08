@@ -438,7 +438,7 @@ static void at91mux_dump_pio_config(unsigned bank, unsigned pin)
 	void __iomem *pio = at91_gpio->regbase;
 	u32 div;
 
-	printf("pio%c%d configuration\n\n", bank + 'A', pin);
+	printf("pio%c%u configuration\n\n", bank + 'A', pin);
 
 	at91mux_printf_mode(bank, pin);
 	printf("\n");
@@ -499,7 +499,7 @@ static int do_at91mux(int argc, char *argv[])
 	}
 
 	if (pin >= 32) {
-		printf("pin %d >= supported %d pins\n", pin, 32);
+		printf("pin %u >= supported %d pins\n", pin, 32);
 		return 1;
 	}
 

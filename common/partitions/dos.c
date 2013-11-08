@@ -116,12 +116,64 @@ static int dos_get_disk_signature(struct param_d *p, void *_priv)
 	return 0;
 }
 
+static void dos_extended_partition(struct block_device *blk, struct partition_desc *pd,
+		struct partition *partition)
+{
+	uint8_t *buf = dma_alloc(SECTOR_SIZE);
+	uint32_t ebr_sector = partition->first_sec;
+	struct partition_entry *table = (struct partition_entry *)&buf[0x1be];
+
+	while (pd->used_entries < ARRAY_SIZE(pd->parts)) {
+		int rc, i;
+		int n = pd->used_entries;
+
+		dev_dbg(blk->dev, "expect EBR in sector %x\n", ebr_sector);
+
+		rc = block_read(blk, buf, ebr_sector, 1);
+		if (rc != 0) {
+			dev_err(blk->dev, "Cannot read EBR partition table\n");
+			goto out;
+		}
+
+		/* sanity checks */
+		if (buf[0x1fe] != 0x55 || buf[0x1ff] != 0xaa) {
+			dev_err(blk->dev, "sector %x doesn't contain an EBR signature\n", ebr_sector);
+			goto out;
+		}
+
+		for (i = 0x1de; i < 0x1fe; ++i)
+			if (buf[i]) {
+				dev_err(blk->dev, "EBR's third or fourth partition non-empty\n");
+				goto out;
+			}
+		/* /sanity checks */
+
+		/* the first entry defines the extended partition */
+		pd->parts[n].first_sec = ebr_sector +
+			get_unaligned_le32(&table[0].partition_start);
+		pd->parts[n].size = get_unaligned_le32(&table[0].partition_size);
+		pd->parts[n].dos_partition_type = table[0].type;
+		pd->used_entries++;
+
+		/* the second entry defines the start of the next ebr if != 0 */
+		if (get_unaligned_le32(&table[1].partition_start))
+			ebr_sector = partition->first_sec +
+				get_unaligned_le32(&table[1].partition_start);
+		else
+			break;
+	}
+
+out:
+	dma_free(buf);
+	return;
+}
+
 /**
  * Check if a DOS like partition describes this block device
  * @param blk Block device to register to
  * @param pd Where to store the partition information
  *
- * It seems at least on ARM this routine canot use temp. stack space for the
+ * It seems at least on ARM this routine cannot use temp. stack space for the
  * sector. So, keep the malloc/free.
  */
 static void dos_partition(void *buf, struct block_device *blk,
@@ -129,6 +181,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 {
 	struct partition_entry *table;
 	struct partition pentry;
+	struct partition *extended_partition = NULL;
 	uint8_t *buffer = buf;
 	int i;
 	struct disk_signature_priv *dsp;
@@ -150,10 +203,31 @@ static void dos_partition(void *buf, struct block_device *blk,
 			pd->parts[n].size = pentry.size;
 			pd->parts[n].dos_partition_type = pentry.dos_partition_type;
 			pd->used_entries++;
+			/*
+			 * Partitions of type 0x05 and 0x0f (and some more)
+			 * contain extended partitions. Only check for type 0x0f
+			 * here as this is the easiest to parse and common
+			 * enough.
+			 */
+			if (pentry.dos_partition_type == 0x0f) {
+				if (!extended_partition)
+					extended_partition = &pd->parts[n];
+				else
+					/*
+					 * An DOS MBR must only contain a single
+					 * extended partition. Just ignore all
+					 * but the first.
+					 */
+					dev_warn(blk->dev, "Skipping additional extended partition\n");
+			}
+
 		} else {
 			dev_dbg(blk->dev, "Skipping empty partition %d\n", i);
 		}
 	}
+
+	if (extended_partition)
+		dos_extended_partition(blk, pd, extended_partition);
 
 	dsp = xzalloc(sizeof(*dsp));
 	dsp->blk = blk;

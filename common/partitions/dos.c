@@ -27,19 +27,23 @@
  * @param table partition table
  * @return sector count
  */
-static int disk_guess_size(struct device_d *dev, struct partition_entry *table)
+static uint64_t disk_guess_size(struct device_d *dev,
+		struct partition_entry *table)
 {
 	uint64_t size = 0;
 	int i;
 
 	for (i = 0; i < 4; i++) {
-		if (table[i].partition_start != 0) {
-			size += get_unaligned_le32(&table[i].partition_start) - size;
-			size += get_unaligned_le32(&table[i].partition_size);
+		if (get_unaligned_le32(&table[i].partition_start) != 0) {
+			uint64_t part_end = get_unaligned_le32(&table[i].partition_start) +
+				get_unaligned_le32(&table[i].partition_size);
+
+			if (size < part_end)
+				size = part_end;
 		}
 	}
 
-	return (int)size;
+	return size;
 }
 
 static void *read_mbr(struct block_device *blk)

@@ -57,7 +57,7 @@ struct image *png_open(char *inbuf, int insize)
 	png_info = PNG_decode(inbuf, insize);
 
 	if(PNG_error) {
-		printf("error %u:\n", PNG_error);
+		printf("error %i:\n", PNG_error);
 		ret = -EINVAL;
 		goto err;
 	}

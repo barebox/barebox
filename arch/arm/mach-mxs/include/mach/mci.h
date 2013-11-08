@@ -15,6 +15,7 @@
 #define __MACH_MMC_H
 
 struct mxs_mci_platform_data {
+	const char *devname;
 	unsigned caps;	/**< supported operating modes (MMC_MODE_*) */
 	unsigned voltages; /**< supported voltage range (MMC_VDD_*) */
 	unsigned f_min;	/**< min operating frequency in Hz (0 -> no limit) */

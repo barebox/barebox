@@ -248,7 +248,6 @@ config MACH_IMX21ADS
 	  Say Y here if you are using the Freescale i.MX21ads board equipped
 	  with a Freescale i.MX21 Processor
 
-
 # ----------------------------------------------------------
 
 comment "i.MX25 Boards"

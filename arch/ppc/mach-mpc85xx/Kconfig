@@ -48,10 +48,10 @@ config MPC8544
 	default y
 
 config DDR_SPD
-    bool
-    default y
+	bool
+	default y
 
 config FSL_DDR2
-    bool
-    default y
+	bool
+	default y
 endif

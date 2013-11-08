@@ -95,8 +95,8 @@ config BAREBOX_UPDATE_AM33XX_SPI_NOR_MLO
 	bool
 	depends on BAREBOX_UPDATE
 	help
-          Say Y for barebox update SPI NOR MLO handler.
-          AM35xx, AM33xx chips use big endian MLO for SPI NOR flash.
+	  Say Y for barebox update SPI NOR MLO handler.
+	  AM35xx, AM33xx chips use big endian MLO for SPI NOR flash.
 
 config ARCH_TEXT_BASE
 	hex

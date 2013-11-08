@@ -408,11 +408,11 @@ void *of_flatten_dtb(struct device_node *node)
 	nh->tag = cpu_to_fdt32(FDT_END);
 	fdt.dt_nextofs = dt_next_ofs(fdt.dt_nextofs, sizeof(struct fdt_node_header));
 
-	header.size_dt_strings = cpu_to_fdt32(fdt.str_nextofs);
+	header.off_dt_struct = cpu_to_fdt32(ofs);
 	header.size_dt_struct = cpu_to_fdt32(fdt.dt_nextofs - ofs);
 
-	header.off_dt_struct = cpu_to_fdt32(ofs);
 	header.off_dt_strings = cpu_to_fdt32(fdt.dt_nextofs);
+	header.size_dt_strings = cpu_to_fdt32(fdt.str_nextofs);
 
 	if (fdt.dt_size - fdt.dt_nextofs < fdt.str_nextofs) {
 		fdt.dt = memalign_realloc(fdt.dt, fdt.dt_size,

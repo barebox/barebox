@@ -92,6 +92,8 @@ SECTIONS
 	__usymtab : { BAREBOX_SYMS }
 	__usymtab_end = .;
 
+	.oftables : { BAREBOX_CLK_TABLE() }
+
 	.dtb : { BAREBOX_DTB() }
 
 	.rel.dyn : {

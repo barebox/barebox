@@ -228,16 +228,34 @@ static int do_gpiolib(int argc, char *argv[])
 	int i;
 
 	printf("gpiolib: gpio lists\n");
-	printf("%*crequested  label\n", 11, ' ');
 
 	for (i = 0; i < ARCH_NR_GPIOS; i++) {
 		struct gpio_info *gi = &gpio_desc[i];
+		int val = -1, dir = -1;
 
 		if (!gi->chip)
 			continue;
 
-		printf("gpio %*d: %*s  %s\n", 4,
-			i, 9, gi->requested ? "true" : "false",
+		/* print chip information and header on first gpio */
+		if (gi->chip->base == i) {
+			printf("\ngpios %u-%u, chip %s:\n",
+				gi->chip->base,
+				gi->chip->base + gi->chip->ngpio - 1,
+				gi->chip->dev->name);
+			printf("%*cdir val requested  label\n", 13, ' ');
+		}
+
+		if (gi->chip->ops->get_direction)
+			dir = gi->chip->ops->get_direction(gi->chip,
+						i - gi->chip->base);
+		if (gi->chip->ops->get)
+			val = gi->chip->ops->get(gi->chip,
+						i - gi->chip->base);
+
+		printf("  gpio %*d: %*s %*s %*s  %s\n", 4, i,
+			3, (dir < 0) ? "unk" : ((dir == GPIO_DIR_IN) ? "in" : "out"),
+			3, (val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
+			9, gi->requested ? "true" : "false",
 			gi->label ? gi->label : "");
 	}
 

@@ -12,6 +12,7 @@
 #define __LINUX_CLK_H
 
 #include <linux/err.h>
+#include <linux/stringify.h>
 
 struct device_d;
 
@@ -278,12 +279,19 @@ void clk_dump(int verbose);
 struct device_node;
 struct of_phandle_args;
 
+#define CLK_OF_DECLARE(name, compat, fn)				\
+const struct of_device_id __clk_of_table_##name				\
+__attribute__ ((unused,section (".__clk_of_table_" __stringify(name)))) \
+	= { .compatible = compat, .data = (u32)fn }
+
 #if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 int of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *args,
 						   void *data),
 			void *data);
 void of_clk_del_provider(struct device_node *np);
+
+typedef int (*of_clk_init_cb_t)(struct device_node *);
 
 struct clk_onecell_data {
 	struct clk **clks;
@@ -295,6 +303,7 @@ struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data);
 struct clk *of_clk_get(struct device_node *np, int index);
 struct clk *of_clk_get_by_name(struct device_node *np, const char *name);
 struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec);
+int of_clk_init(struct device_node *root, const struct of_device_id *matches);
 #else
 static inline struct clk *of_clk_get(struct device_node *np, int index)
 {
@@ -304,6 +313,11 @@ static inline struct clk *of_clk_get_by_name(struct device_node *np,
 					     const char *name)
 {
 	return ERR_PTR(-ENOENT);
+}
+static inline int of_clk_init(struct device_node *root,
+			      const struct of_device_id *matches)
+{
+	return 0;
 }
 #endif
 

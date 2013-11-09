@@ -225,6 +225,8 @@ static void led_of_parse_trigger(struct led *led, struct device_node *np)
 	for (i = 0; i < ARRAY_SIZE(triggers); i++) {
 		struct led_trg *trg = &triggers[i];
 		if (!strcmp(trg->str, trigger)) {
+			/* disable LED before installing trigger */
+			led_set(led, 0);
 			led_set_trigger(trg->trg, led);
 			return;
 		}
@@ -252,8 +254,8 @@ static int led_gpio_of_probe(struct device_d *dev)
 		dev_dbg(dev, "register led %s on gpio%d, active_low = %d\n",
 			gled->led.name, gled->gpio, gled->active_low);
 
-		led_of_parse_trigger(&gled->led, child);
 		led_gpio_register(gled);
+		led_of_parse_trigger(&gled->led, child);
 	}
 
 	return 0;

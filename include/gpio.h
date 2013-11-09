@@ -3,6 +3,9 @@
 
 #include <asm/gpio.h>
 
+#define GPIO_DIR_OUT	(0 << 0)
+#define GPIO_DIR_IN	(1 << 0)
+
 #ifndef CONFIG_GPIOLIB
 static inline int gpio_request(unsigned gpio, const char *label)
 {
@@ -24,6 +27,7 @@ struct gpio_ops {
 	void (*free)(struct gpio_chip *chip, unsigned offset);
 	int (*direction_input)(struct gpio_chip *chip, unsigned offset);
 	int (*direction_output)(struct gpio_chip *chip, unsigned offset, int value);
+	int (*get_direction)(struct gpio_chip *chip, unsigned offset);
 	int (*get)(struct gpio_chip *chip, unsigned offset);
 	void (*set)(struct gpio_chip *chip, unsigned offset, int value);
 };

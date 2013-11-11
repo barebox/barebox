@@ -257,17 +257,9 @@ int eth_rx(void)
 	return eth_current->recv(eth_current);
 }
 
-static int eth_set_ethaddr(struct device_d *dev, struct param_d *param, const char *val)
+static int eth_set_ethaddr(struct param_d *param, void *priv)
 {
-	struct eth_device *edev = dev_to_edev(dev);
-
-	if (!val)
-		return dev_param_set_generic(dev, param, NULL);
-
-	if (string_to_ethaddr(val, edev->ethaddr) < 0)
-		return -EINVAL;
-
-	dev_param_set_generic(dev, param, val);
+	struct eth_device *edev = priv;
 
 	edev->set_ethaddr(edev, edev->ethaddr);
 
@@ -345,7 +337,7 @@ int eth_register(struct eth_device *edev)
 	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);
 	dev_add_param_ip(dev, "gateway", NULL, NULL, &edev->gateway, edev);
 	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
-	dev_add_param(dev, "ethaddr", eth_set_ethaddr, NULL, 0);
+	dev_add_param_mac(dev, "ethaddr", eth_set_ethaddr, NULL, edev->ethaddr, edev);
 
 	if (edev->init)
 		edev->init(edev);

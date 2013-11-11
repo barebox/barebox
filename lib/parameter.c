@@ -542,6 +542,93 @@ struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
 
 	return &pi->param;
 }
+
+struct param_mac {
+	struct param_d param;
+	char *mac;
+	u8 mac_str[sizeof("xx:xx:xx:xx:xx:xx")];
+	const char *format;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+int string_to_ethaddr(const char *str, u8 enetaddr[6]);
+void ethaddr_to_string(const u8 enetaddr[6], char *str);
+
+static inline struct param_mac *to_param_mac(struct param_d *p)
+{
+	return container_of(p, struct param_mac, param);
+}
+
+static int param_mac_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct param_mac *pm = to_param_mac(p);
+	char mac_save[6];
+	int ret;
+
+	if (!val)
+		return -EINVAL;
+
+	memcpy(mac_save, pm->mac, 6);
+
+	ret = string_to_ethaddr(val, pm->mac);
+	if (ret)
+		goto out;
+
+	if (!pm->set)
+		return 0;
+
+	ret = pm->set(p, p->driver_priv);
+	if (ret)
+		goto out;
+
+	return 0;
+out:
+	memcpy(pm->mac, mac_save, 6);
+
+	return ret;
+}
+
+static const char *param_mac_get(struct device_d *dev, struct param_d *p)
+{
+	struct param_mac *pm = to_param_mac(p);
+	int ret;
+
+	if (pm->get) {
+		ret = pm->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	ethaddr_to_string(pm->mac, p->value);
+
+	return p->value;
+}
+
+struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		u8 *mac, void *priv)
+{
+	struct param_mac *pm;
+	int ret;
+
+	pm = xzalloc(sizeof(*pm));
+	pm->mac = mac;
+	pm->set = set;
+	pm->get = get;
+	pm->param.driver_priv = priv;
+	pm->param.value = pm->mac_str;
+
+	ret = __dev_add_param(&pm->param, dev, name,
+			param_mac_set, param_mac_get, 0);
+	if (ret) {
+		free(pm);
+		return ERR_PTR(ret);
+	}
+
+	return &pm->param;
+}
 #endif
 
 /**

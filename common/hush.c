@@ -264,8 +264,27 @@ struct in_str {
 
 #define final_printf debug
 
-static void syntax(void) {
-	 printf("syntax error\n");
+static void syntax(void)
+{
+	printf("syntax error\n");
+}
+
+static void syntaxf(const char *fmt, ...)
+{
+	va_list args;
+
+	printf("syntax error: ");
+
+	va_start(args, fmt);
+
+	vprintf(fmt, args);
+
+	va_end(args);
+}
+
+static void syntax_unexpected_token(const char *token)
+{
+	syntaxf("unexpected token `%s'\n", token);
 }
 
 /*   o_string manipulation: */
@@ -1201,7 +1220,7 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 				initialize_context(ctx);
 				ctx->stack = new;
 			} else if (ctx->w == RES_NONE || !(ctx->old_flag & (1 << r->code))) {
-				syntax();
+				syntax_unexpected_token(r->literal);
 				ctx->w = RES_SNTX;
 				b_reset(dest);
 				return 1;

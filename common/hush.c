@@ -471,21 +471,23 @@ static int file_get(struct in_str *i)
 	int ch;
 
 	ch = 0;
+
 	/* If there is data waiting, eat it up */
-	if (i->p && *i->p) {
+	if (i->p && *i->p)
+		return *i->p++;
+
+	/* need to double check i->file because we might be doing something
+	 * more complicated by now, like sourcing or substituting. */
+	while (!i->p  || strlen(i->p) == 0 )
+		get_user_input(i);
+
+	i->promptmode = 2;
+
+	if (i->p && *i->p)
 		ch = *i->p++;
-	} else {
-		/* need to double check i->file because we might be doing something
-		 * more complicated by now, like sourcing or substituting. */
-			while (!i->p  || strlen(i->p) == 0 ) {
-				get_user_input(i);
-			}
-			i->promptmode = 2;
-			if (i->p && *i->p) {
-				ch = *i->p++;
-			}
-		debug("%s: got a %d\n", __func__, ch);
-	}
+
+	debug("%s: got a %d\n", __func__, ch);
+
 	return ch;
 }
 

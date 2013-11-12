@@ -184,8 +184,6 @@ if IMX_MULTI_BOARDS
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Choose this to compile barebox for the Efika MX Smartbook
 
@@ -208,8 +206,6 @@ config MACH_DFI_FS700_M60
 config MACH_REALQ7
 	bool "DataModul i.MX6Q Real Qseven Board"
 	select ARCH_IMX6
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 
 config MACH_GK802
 	bool "Zealz GK802 Mini PC"

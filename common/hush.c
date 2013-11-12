@@ -132,7 +132,6 @@ extern int do_bootd(int flag, int argc, char *argv[]);      /* do_bootd */
 
 #define EXIT_SUCCESS 0
 #define EOF -1
-#define syntax() syntax_err()
 #define xstrdup strdup
 #define error_msg printf
 
@@ -265,7 +264,7 @@ struct in_str {
 
 #define final_printf debug
 
-static void syntax_err(void) {
+static void syntax(void) {
 	 printf("syntax error\n");
 }
 
@@ -1551,7 +1550,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				b_getch(input);
 				done_pipe(ctx, PIPE_AND);
 			} else {
-				syntax_err();
+				syntax();
 				return 1;
 			}
 			break;
@@ -1564,7 +1563,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				/* we could pick up a file descriptor choice here
 				 * with redirect_opt_num(), but bash doesn't do it.
 				 * "echo foo 2| cat" yields "foo 2". */
-				syntax_err();
+				syntax();
 				return 1;
 			}
 			break;

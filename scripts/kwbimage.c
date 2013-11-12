@@ -685,6 +685,7 @@ static int image_create_payload(void *payload_start, size_t payloadsz,
 				const char *payload_filename)
 {
 	FILE *payload;
+	struct stat s;
 	uint32_t *payload_checksum =
 		(uint32_t *) (payload_start + payloadsz);
 	int ret;
@@ -696,7 +697,14 @@ static int image_create_payload(void *payload_start, size_t payloadsz,
 		return -1;
 	}
 
-	ret = fread(payload_start, payloadsz, 1, payload);
+	ret = stat(payload_filename, &s);
+	if (ret < 0) {
+		fprintf(stderr, "Cannot stat payload file %s\n",
+			payload_filename);
+		return ret;
+	}
+
+	ret = fread(payload_start, s.st_size, 1, payload);
 	if (ret != 1) {
 		fprintf(stderr, "Cannot read payload file %s\n",
 			payload_filename);
@@ -747,7 +755,8 @@ static void *image_create_v0(struct image_cfg_element *image_cfg,
 			return NULL;
 		}
 
-		payloadsz = s.st_size;
+		/* payload size must be multiple of 32b */
+		payloadsz = 4 * ((s.st_size + 3)/4);
 	}
 
 	/* Headers, payload and 32-bits checksum */
@@ -875,7 +884,8 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 			return NULL;
 		}
 
-		payloadsz = s.st_size;
+		/* payload size must be multiple of 32b */
+		payloadsz = 4 * ((s.st_size + 3)/4);
 	}
 
 	/* The payload should be aligned on some reasonable

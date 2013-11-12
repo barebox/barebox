@@ -562,7 +562,7 @@ config ARCH_IMX_USBLOADER
 
 config IMX_IIM
 	tristate "IIM fusebox device"
-	depends on !ARCH_IMX21 && !ARCH_IMX21
+	depends on !ARCH_IMX21
 	help
 	  Device driver for the IC Identification Module (IIM) fusebox. Use the
 	  regular md/mw commands to program and read the fusebox.

@@ -191,7 +191,6 @@ int readline(const char *prompt, char *buf, int len)
 	unsigned wlen;
 	int ichar;
 	int insert = 1;
-	int rc = 0;
 #ifdef CONFIG_AUTO_COMPLETE
 	char tmp;
 	int reprint, i;
@@ -351,5 +350,5 @@ int readline(const char *prompt, char *buf, int len)
 		cread_add_to_hist(buf);
 	hist_cur = hist_add_idx;
 
-	return rc < 0 ? rc : len;
+	return len;
 }

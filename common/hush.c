@@ -1853,14 +1853,17 @@ int run_shell(void)
 	int rcode;
 	struct in_str input;
 	struct p_context ctx;
+	int exit = 0;
 
 	do {
 		setup_file_in_str(&input);
 		rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
-		if (rcode < -1)
+		if (rcode < -1) {
+			exit = 1;
 			rcode = -rcode - 2;
+		}
 		release_context(&ctx);
-	} while (!input.__promptme);
+	} while (!exit);
 
 	return rcode;
 }

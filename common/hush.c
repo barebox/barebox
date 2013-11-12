@@ -1201,52 +1201,52 @@ static int reserved_word(o_string *dest, struct p_context *ctx)
 	for (i = 0; i < ARRAY_SIZE(reserved_list); i++) {
 		r = &reserved_list[i];
 
-		if (strcmp(dest->data, r->literal) == 0) {
+		if (strcmp(dest->data, r->literal))
+			continue;
 
-			debug("found reserved word %s, code %d\n",r->literal,r->code);
+		debug("found reserved word %s, code %d\n",r->literal,r->code);
 
-			if (r->flag & FLAG_START) {
-				struct p_context *new = xmalloc(sizeof(struct p_context));
+		if (r->flag & FLAG_START) {
+			struct p_context *new = xmalloc(sizeof(struct p_context));
 
-				debug("push stack\n");
+			debug("push stack\n");
 
-				if (ctx->w == RES_IN || ctx->w == RES_FOR) {
-					syntax();
-					free(new);
-					ctx->w = RES_SNTX;
-					b_reset(dest);
-
-					return 1;
-				}
-				*new = *ctx;   /* physical copy */
-				initialize_context(ctx);
-				ctx->stack = new;
-			} else if (ctx->w == RES_NONE || !(ctx->old_flag & (1 << r->code))) {
-				syntax_unexpected_token(r->literal);
+			if (ctx->w == RES_IN || ctx->w == RES_FOR) {
+				syntax();
+				free(new);
 				ctx->w = RES_SNTX;
 				b_reset(dest);
+
 				return 1;
 			}
-
-			ctx->w = r->code;
-			ctx->old_flag = r->flag;
-
-			if (ctx->old_flag & FLAG_END) {
-				struct p_context *old;
-
-				debug("pop stack\n");
-
-				done_pipe(ctx,PIPE_SEQ);
-				old = ctx->stack;
-				old->child->group = ctx->list_head;
-				*ctx = *old;   /* physical copy */
-				free(old);
-			}
-
+			*new = *ctx;   /* physical copy */
+			initialize_context(ctx);
+			ctx->stack = new;
+		} else if (ctx->w == RES_NONE || !(ctx->old_flag & (1 << r->code))) {
+			syntax_unexpected_token(r->literal);
+			ctx->w = RES_SNTX;
 			b_reset(dest);
-
 			return 1;
 		}
+
+		ctx->w = r->code;
+		ctx->old_flag = r->flag;
+
+		if (ctx->old_flag & FLAG_END) {
+			struct p_context *old;
+
+			debug("pop stack\n");
+
+			done_pipe(ctx,PIPE_SEQ);
+			old = ctx->stack;
+			old->child->group = ctx->list_head;
+			*ctx = *old;   /* physical copy */
+			free(old);
+		}
+
+		b_reset(dest);
+
+		return 1;
 	}
 
 	return 0;

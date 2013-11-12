@@ -420,15 +420,16 @@ static void get_user_input(struct in_str *i)
 {
 	int n;
 	static char the_command[CONFIG_CBSIZE];
+	char *prompt;
 
 	i->__promptme = 1;
 
-	if (i->promptmode == 1) {
-		n = readline(getprompt(), console_buffer, CONFIG_CBSIZE);
-	} else {
-		n = readline(CONFIG_PROMPT_HUSH_PS2, console_buffer, CONFIG_CBSIZE);
-	}
+	if (i->promptmode == 1)
+		prompt = getprompt();
+	else
+		prompt = CONFIG_PROMPT_HUSH_PS2;
 
+	n = readline(prompt, console_buffer, CONFIG_CBSIZE);
 	if (n == -1 ) {
 		i->__promptme = 0;
 		n = 0;

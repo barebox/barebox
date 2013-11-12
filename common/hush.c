@@ -441,25 +441,27 @@ static void get_user_input(struct in_str *i)
 	if (i->promptmode == 1) {
 		strcpy(the_command,console_buffer);
 		i->p = the_command;
-	} else {
-		if (console_buffer[0] != '\n') {
-			if (strlen(the_command) + strlen(console_buffer)
-			    < CONFIG_CBSIZE) {
-				n = strlen(the_command);
-				the_command[n - 1] = ' ';
-				strcpy(&the_command[n], console_buffer);
-			}
-			else {
-				the_command[0] = '\n';
-				the_command[1] = '\0';
-			}
-		}
-		if (i->__promptme == 0) {
+		return;
+	}
+
+	if (console_buffer[0] != '\n') {
+		if (strlen(the_command) + strlen(console_buffer)
+		    < CONFIG_CBSIZE) {
+			n = strlen(the_command);
+			the_command[n - 1] = ' ';
+			strcpy(&the_command[n], console_buffer);
+		} else {
 			the_command[0] = '\n';
 			the_command[1] = '\0';
 		}
-		i->p = console_buffer;
 	}
+
+	if (i->__promptme == 0) {
+		the_command[0] = '\n';
+		the_command[1] = '\0';
+	}
+
+	i->p = console_buffer;
 }
 
 /* This is the magic location that prints prompts

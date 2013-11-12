@@ -254,7 +254,7 @@ typedef struct {
  * available?  Where is it documented? */
 struct in_str {
 	const char *p;
-	int __promptme;
+	int interrupt;
 	int promptmode;
 	int (*get) (struct in_str *);
 	int (*peek) (struct in_str *);
@@ -422,8 +422,6 @@ static void get_user_input(struct in_str *i)
 	static char the_command[CONFIG_CBSIZE];
 	char *prompt;
 
-	i->__promptme = 1;
-
 	if (i->promptmode == 1)
 		prompt = getprompt();
 	else
@@ -431,7 +429,7 @@ static void get_user_input(struct in_str *i)
 
 	n = readline(prompt, console_buffer, CONFIG_CBSIZE);
 	if (n == -1 ) {
-		i->__promptme = 0;
+		i->interrupt = 1;
 		n = 0;
 	}
 
@@ -456,7 +454,7 @@ static void get_user_input(struct in_str *i)
 		}
 	}
 
-	if (i->__promptme == 0) {
+	if (i->interrupt) {
 		the_command[0] = '\n';
 		the_command[1] = '\0';
 	}
@@ -503,7 +501,7 @@ static void setup_file_in_str(struct in_str *i)
 {
 	i->peek = file_peek;
 	i->get = file_get;
-	i->__promptme = 1;
+	i->interrupt = 0;
 	i->promptmode = 1;
 	i->p = NULL;
 }
@@ -512,7 +510,7 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 {
 	i->peek = static_peek;
 	i->get = static_get;
-	i->__promptme = 1;
+	i->interrupt = 0;
 	i->promptmode = 1;
 	i->p = s;
 }
@@ -1470,7 +1468,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 
 	while ((ch = b_getch(input)) != EOF) {
 		m = map[ch];
-		if (input->__promptme == 0)
+		if (input->interrupt)
 			return 1;
 		next = (ch == '\n') ? 0 : b_peek(input);
 
@@ -1528,7 +1526,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 			dest->nonnull = 1;
 			b_addchr(dest, '\'');
 			while (ch = b_getch(input), ch != EOF && ch != '\'') {
-				if (input->__promptme == 0)
+				if (input->interrupt)
 					return 1;
 				b_addchr(dest,ch);
 			}
@@ -1660,7 +1658,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 				free(ctx->stack);
 				b_reset(&temp);
 			}
-			if (inp->__promptme == 0)
+			if (inp->interrupt)
 				printf("<INTERRUPT>\n");
 			temp.nonnull = 0;
 			temp.quote = 0;

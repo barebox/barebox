@@ -1192,13 +1192,15 @@ static struct reserved_combo reserved_list[] = {
 	{ "do",    RES_DO,    FLAG_DONE },
 	{ "done",  RES_DONE,  FLAG_END  }
 };
-#define NRES (sizeof(reserved_list)/sizeof(struct reserved_combo))
 
 static int reserved_word(o_string *dest, struct p_context *ctx)
 {
 	struct reserved_combo *r;
+	int i;
 
-	for (r = reserved_list; r < reserved_list + NRES; r++) {
+	for (i = 0; i < ARRAY_SIZE(reserved_list); i++) {
+		r = &reserved_list[i];
+
 		if (strcmp(dest->data, r->literal) == 0) {
 
 			debug("found reserved word %s, code %d\n",r->literal,r->code);

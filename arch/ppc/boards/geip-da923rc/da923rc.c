@@ -195,7 +195,7 @@ static int da923rc_board_init_r(void)
 		gpio_set_value(1, 1);
 		/* De-assert Board reset */
 		udelay(1000);
-		gpio_set_value(0, 0);
+		gpio_set_value(0, 1);
 	}
 
 	/* Enable PCI error reporting */
@@ -209,4 +209,4 @@ static int da923rc_board_init_r(void)
 	return 0;
 }
 
-core_initcall(da923rc_board_init_r);
+postcore_initcall(da923rc_board_init_r);

@@ -132,6 +132,11 @@ static int fdt_cpu_setup(struct device_node *blob, void *unused)
 		node = of_find_compatible_node(node, NULL, "ns16550");
 	}
 
+	node = of_find_compatible_node(blob, NULL, "fsl,mpic");
+	if (node)
+		of_property_write_u32(node, "clock-frequency",
+				sysinfo.freqSystemBus);
+
 	fdt_stdout_setup(blob);
 
 	return 0;

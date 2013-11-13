@@ -158,5 +158,8 @@
 #define I2C1_BASE_ADDR		(CFG_IMMR + 0x3000)
 #define I2C2_BASE_ADDR		(CFG_IMMR + 0x3100)
 
+/* Global Timer Registers */
+#define MPC8xxx_PIC_TFRR_OFFSET		0x10F0
+
 #define PCI1_BASE_ADDR		(CFG_IMMR + MPC85xx_PCI1_OFFSET)
 #endif /*__IMMAP_85xx__*/

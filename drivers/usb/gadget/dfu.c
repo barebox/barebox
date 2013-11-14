@@ -61,7 +61,7 @@
 #define DFU_TEMPFILE "/dfu_temp"
 
 static int dfualt;
-static int dfufd = -EINVAL;;
+static int dfufd = -EINVAL;
 static struct usb_dfu_dev *dfu_devs;
 static int dfu_num_alt;
 static int dfudetach;

@@ -376,7 +376,7 @@ static int tse_eth_send(struct eth_device *edev, void *packet, int length)
 
 	alt_sgdma_do_sync_transfer(tx_sgdma, tx_desc_cur);
 
-	return 0;;
+	return 0;
 }
 
 static void tse_eth_halt(struct eth_device *edev)

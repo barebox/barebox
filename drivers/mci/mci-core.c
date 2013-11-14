@@ -832,7 +832,7 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
 		mci->capacity = (csize + 1) << (cmult + 2);
 	}
 
-	mci->capacity *= 1 << UNSTUFF_BITS(mci->csd, 80, 4);;
+	mci->capacity *= 1 << UNSTUFF_BITS(mci->csd, 80, 4);
 	dev_dbg(&mci->dev, "Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 }
 

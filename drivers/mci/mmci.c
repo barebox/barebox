@@ -31,7 +31,6 @@
 #include <linux/clk.h>
 #include <errno.h>
 #include <malloc.h>
-#include <mmci.h>
 #include <linux/amba/bus.h>
 #include <linux/amba/mmci.h>
 

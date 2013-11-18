@@ -20,6 +20,7 @@
 #include <mach/imx6-regs.h>
 #include <fec.h>
 #include <gpio.h>
+#include <mach/bbu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>
@@ -123,6 +124,8 @@ static int sabrelite_devices_init(void)
 	armlinux_set_bootparams((void *)0x10000100);
 	armlinux_set_architecture(3769);
 
+	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
+			BBU_HANDLER_FLAG_DEFAULT, NULL, 0, 0);
 
 	return 0;
 }

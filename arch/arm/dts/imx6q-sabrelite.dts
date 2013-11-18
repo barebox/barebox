@@ -117,10 +117,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg_1>;
 	disable-over-current;
+	phy-mode = "utmi";
+	dr_mode = "host";
 	status = "okay";
 };
 
 &usbh1 {
+	phy-mode = "utmi";
+	dr_mode = "host";
 	status = "okay";
 };
 

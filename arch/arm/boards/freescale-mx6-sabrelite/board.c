@@ -107,15 +107,10 @@ fs_initcall(sabrelite_ksz9021rn_setup);
 
 static void sabrelite_ehci_init(void)
 {
-	imx6_usb_phy2_disable_oc();
-	imx6_usb_phy2_enable();
-
 	/* hub reset */
 	gpio_direction_output(204, 0);
 	udelay(2000);
 	gpio_set_value(204, 1);
-
-	add_generic_usb_ehci_device(1, MX6_USBOH3_USB_BASE_ADDR + 0x200, NULL);
 }
 
 static int sabrelite_devices_init(void)

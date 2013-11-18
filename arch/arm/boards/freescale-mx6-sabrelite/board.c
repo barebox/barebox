@@ -120,6 +120,9 @@ static void sabrelite_ehci_init(void)
 
 static int sabrelite_devices_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+		return 0;
+
 	sabrelite_ehci_init();
 
 	armlinux_set_bootparams((void *)0x10000100);
@@ -134,18 +137,24 @@ device_initcall(sabrelite_devices_init);
 
 static int sabrelite_coredevices_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+		return 0;
+
 	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
 					   ksz9021rn_phy_fixup);
 	return 0;
 }
 coredevice_initcall(sabrelite_coredevices_init);
 
-static int sabrelite_core_init(void)
+static int sabrelite_postcore_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+		return 0;
+
 	imx6_init_lowlevel();
 
 	barebox_set_hostname("sabrelite");
 
 	return 0;
 }
-core_initcall(sabrelite_core_init);
+postcore_initcall(sabrelite_postcore_init);

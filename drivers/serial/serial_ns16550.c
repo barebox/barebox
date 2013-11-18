@@ -55,6 +55,10 @@ static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
 	return container_of(cdev, struct ns16550_priv, cdev);
 }
 
+struct ns16550_drvdata {
+	void (*init_port)(struct console_device *cdev);
+};
+
 /**
  * @brief read register
  *
@@ -178,14 +182,16 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 	/* initializing the device for the first time */
 	ns16550_write(cdev, 0x00, lcr); /* select ier reg */
 	ns16550_write(cdev, 0x00, ier);
+}
 
-#ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	ns16550_write(cdev, 0x07, mdr1);	/* Disable */
-#endif
+#define omap_mdr1		8
 
-#ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-	ns16550_write(cdev, 0x00,  mdr1);
-#endif
+static void ns16550_omap_init_port(struct console_device *cdev)
+{
+	ns16550_serial_init_port(cdev);
+
+	ns16550_write(cdev, 0x07, omap_mdr1);	/* Disable */
+	ns16550_write(cdev, 0x00,  omap_mdr1);
 }
 
 /*********** Exposed Functions **********************************/
@@ -239,6 +245,14 @@ static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
 }
 
+static struct ns16550_drvdata ns16550_drvdata = {
+	.init_port = ns16550_serial_init_port,
+};
+
+static __maybe_unused struct ns16550_drvdata omap_drvdata = {
+	.init_port = ns16550_omap_init_port,
+};
+
 /**
  * @brief Probe entry point -called on the first match for device
  *
@@ -253,7 +267,12 @@ static int ns16550_probe(struct device_d *dev)
 	struct ns16550_priv *priv;
 	struct console_device *cdev;
 	struct NS16550_plat *plat = (struct NS16550_plat *)dev->platform_data;
+	struct ns16550_drvdata *devtype;
 	int ret;
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	if (ret)
+		devtype = &ns16550_drvdata;
 
 	dev->priv = dev_request_mem_region(dev, 0);
 
@@ -294,7 +313,7 @@ static int ns16550_probe(struct device_d *dev)
 	cdev->getc = ns16550_getc;
 	cdev->setbrg = ns16550_setbaudrate;
 
-	ns16550_serial_init_port(cdev);
+	devtype->init_port(cdev);
 
 	return console_register(cdev);
 
@@ -307,8 +326,32 @@ err:
 static struct of_device_id ns16550_serial_dt_ids[] = {
 	{
 		.compatible = "ns16550a",
-	},{
+		.data = (unsigned long)&ns16550_drvdata,
+	}, {
 		.compatible = "snps,dw-apb-uart",
+		.data = (unsigned long)&ns16550_drvdata,
+	},
+#if IS_ENABLED(CONFIG_ARCH_OMAP)
+	{
+		.compatible = "ti,omap2-uart",
+		.data = (unsigned long)&omap_drvdata,
+	}, {
+		.compatible = "ti,omap3-uart",
+		.data = (unsigned long)&omap_drvdata,
+	}, {
+		.compatible = "ti,omap4-uart",
+		.data = (unsigned long)&omap_drvdata,
+	},
+#endif
+	{
+		/* sentinel */
+	},
+};
+
+static __maybe_unused struct platform_device_id ns16550_serial_ids[] = {
+	{
+		.name = "omap-uart",
+		.driver_data = (unsigned long)&omap_drvdata,
 	}, {
 		/* sentinel */
 	},
@@ -321,5 +364,8 @@ static struct driver_d ns16550_serial_driver = {
 	.name = "ns16550_serial",
 	.probe = ns16550_probe,
 	.of_compatible = DRV_OF_COMPAT(ns16550_serial_dt_ids),
+#if IS_ENABLED(CONFIG_ARCH_OMAP)
+	.id_table = ns16550_serial_ids,
+#endif
 };
 console_platform_driver(ns16550_serial_driver);

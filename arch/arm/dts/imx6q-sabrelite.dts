@@ -18,7 +18,7 @@
 	compatible = "fsl,imx6q-sabrelite", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = "/soc/aips-bus@02100000/serial@021e8000";
+		linux,stdout-path = &uart2;
 	};
 
 	memory {

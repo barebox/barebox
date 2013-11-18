@@ -126,11 +126,11 @@ static int beaglebone_board_init(void)
 
 	/* Setup the PLLs and the clocks for the peripherals */
 	if (is_beaglebone_black()) {
-		pll_init(MPUPLL_M_500, 24, DDRPLL_M_400);
+		am33xx_pll_init(MPUPLL_M_500, 24, DDRPLL_M_400);
 		am335x_sdram_init(0x18B, &ddr3_cmd_ctrl, &ddr3_regs,
 				&ddr3_data);
 	} else {
-		pll_init(MPUPLL_M_500, 24, DDRPLL_M_266);
+		am33xx_pll_init(MPUPLL_M_500, 24, DDRPLL_M_266);
 		am335x_sdram_init(0x18B, &ddr2_cmd_ctrl, &ddr2_regs,
 				&ddr2_data);
 	}

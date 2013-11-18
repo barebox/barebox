@@ -337,7 +337,7 @@ void am335x_sdram_init(int ioctrl, const struct am33xx_cmd_control *cmd_ctrl,
 {
 	uint32_t val;
 
-	enable_ddr_clocks();
+	am33xx_enable_ddr_clocks();
 
 	am33xx_config_vtp();
 

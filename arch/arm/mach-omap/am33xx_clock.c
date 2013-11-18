@@ -276,7 +276,7 @@ static void ddr_pll_config(int osc, int ddrpll_M)
 	while ((__raw_readl(CM_IDLEST_DPLL_DDR) & 0x00000001) != 0x1);
 }
 
-void enable_ddr_clocks(void)
+void am33xx_enable_ddr_clocks(void)
 {
 	/* Enable the  EMIF_FW Functional clock */
 	__raw_writel(PRCM_MOD_EN, CM_PER_EMIF_FW_CLKCTRL);
@@ -293,7 +293,7 @@ void enable_ddr_clocks(void)
 /*
  * Configure the PLL/PRCM for necessary peripherals
  */
-void pll_init(int mpupll_M, int osc, int ddrpll_M)
+void am33xx_pll_init(int mpupll_M, int osc, int ddrpll_M)
 {
 	mpu_pll_config(mpupll_M, osc);
 	core_pll_config(osc);

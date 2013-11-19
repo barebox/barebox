@@ -25,7 +25,7 @@ subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc
 
 targetprogs-$(CONFIG_BAREBOXENV_TARGET) += bareboxenv-target
-targetprogs-$(CONFIG_KERNEL_INSTALL_TARGET) += bareboxenv-target
+targetprogs-$(CONFIG_KERNEL_INSTALL_TARGET) += kernel-install-target
 
 # Let clean descend into subdirs
 subdir-	+= basic kconfig setupmbr

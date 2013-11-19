@@ -88,7 +88,11 @@
 
 struct omap3_spi_master {
 	struct spi_master master;
-	void __iomem *regs;
+	void __iomem *base; /* base of address space */
+	void __iomem *regs; /* actual start of registers, omap4/am33xx have an
+			     * offset of 0x100 between start of register space
+			     * and registers
+			     */
 };
 
 #endif /* _OMAP3_SPI_H_ */

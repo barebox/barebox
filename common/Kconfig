@@ -453,6 +453,7 @@ config BLSPEC
 
 config KERNEL_INSTALL_TARGET
 	bool
+	depends on !SANDBOX
 	prompt "Build kernel-install utility for the target"
 	help
 	  Enable this to compile the kernel-install script using the cross
@@ -610,6 +611,7 @@ config DEFAULT_ENVIRONMENT_PATH
 
 config BAREBOXENV_TARGET
 	bool
+	depends on !SANDBOX
 	prompt "build bareboxenv tool for target"
 	help
 	  'bareboxenv' is a tool to access the barebox environment from a running Linux

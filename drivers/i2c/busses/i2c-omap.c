@@ -151,6 +151,7 @@ struct omap_i2c_struct {
 	u8			reg_shift;
 	struct omap_i2c_driver_data	*data;
 	struct resource		*ioarea;
+	u32			fclk_rate;
 	u32			speed;		/* Speed of bus in Khz */
 	u16			scheme;
 	u16			cmd_err;
@@ -269,6 +270,11 @@ static struct omap_i2c_driver_data omap4_data = {
 static struct omap_i2c_driver_data am33xx_data = {
 	.flags =	OMAP_I2C_FLAG_BUS_SHIFT_NONE,
 	.fclk_rate =	48000,
+};
+
+static struct omap_i2c_driver_data omap4_of_data = {
+	.flags =	OMAP_I2C_FLAG_BUS_SHIFT_NONE,
+	.fclk_rate =	0,
 };
 
 static inline void omap_i2c_write_reg(struct omap_i2c_struct *i2c_omap,
@@ -415,7 +421,7 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 		internal_clk = 4000;
 
 	/* Compute prescaler divisor */
-	psc = i2c_data->fclk_rate / internal_clk;
+	psc = i2c_omap->fclk_rate / internal_clk;
 	psc = psc - 1;
 
 	/* If configured for High Speed */
@@ -1074,6 +1080,12 @@ i2c_omap_probe(struct device_d *pdev)
 			i2c_omap->b_hw = 1; /* Enable hardware fixes */
 	}
 
+	i2c_omap->fclk_rate = i2c_data->fclk_rate;
+
+	if (!i2c_omap->fclk_rate)
+		of_property_read_u32(pdev->device_node, "clock-frequency",
+				&i2c_omap->fclk_rate);
+
 	/* reset ASAP, clearing any IRQs */
 	omap_i2c_init(i2c_omap);
 
@@ -1085,6 +1097,7 @@ i2c_omap_probe(struct device_d *pdev)
 	i2c_omap->adapter.master_xfer = omap_i2c_xfer,
 	i2c_omap->adapter.nr = pdev->id;
 	i2c_omap->adapter.dev.parent = pdev;
+	i2c_omap->adapter.dev.device_node = pdev->device_node;
 
 	/* i2c device drivers may be active on return from add_adapter() */
 	r = i2c_add_numbered_adapter(&i2c_omap->adapter);
@@ -1119,10 +1132,23 @@ static struct platform_device_id omap_i2c_ids[] = {
 	},
 };
 
+static __maybe_unused struct of_device_id omap_spi_dt_ids[] = {
+	{
+		.compatible = "ti,omap3-i2c",
+		.data = (unsigned long)&omap3_data,
+	}, {
+		.compatible = "ti,omap4-i2c",
+		.data = (unsigned long)&omap4_of_data,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d omap_i2c_driver = {
 	.probe		= i2c_omap_probe,
 	.name		= DRIVER_NAME,
 	.id_table	= omap_i2c_ids,
+	.of_compatible = DRV_OF_COMPAT(omap_spi_dt_ids),
 };
 device_platform_driver(omap_i2c_driver);
 

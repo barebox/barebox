@@ -404,6 +404,18 @@ static struct omap_spi_drvdata omap4_data = {
 	.register_offset = 0x100,
 };
 
+static __maybe_unused struct of_device_id omap_spi_dt_ids[] = {
+	{
+		.compatible = "ti,omap2-mcspi",
+		.data = (unsigned long)&omap3_data,
+	}, {
+		.compatible = "ti,omap4-mcspi",
+		.data = (unsigned long)&omap4_data,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct platform_device_id omap_spi_ids[] = {
 	{
 		.name = "omap3-spi",
@@ -419,6 +431,7 @@ static struct platform_device_id omap_spi_ids[] = {
 static struct driver_d omap3_spi_driver = {
 	.name = "omap-spi",
 	.probe = omap3_spi_probe,
+	.of_compatible = DRV_OF_COMPAT(omap_spi_dt_ids),
 	.id_table = omap_spi_ids,
 };
 device_platform_driver(omap3_spi_driver);

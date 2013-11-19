@@ -23,6 +23,9 @@ config PINCTRL_IMX_IOMUX_V3
 	help
 	  This iomux controller is found on i.MX25,35,51,53,6.
 
+config PINCTRL_SINGLE
+	bool "pinctrl single"
+
 config PINCTRL_TEGRA20
 	select PINCTRL
 	bool

@@ -27,6 +27,8 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <of_net.h>
+#include <of_gpio.h>
+#include <gpio.h>
 
 #include <asm/mmu.h>
 
@@ -643,6 +645,7 @@ static int fec_probe(struct device_d *dev)
 	void *base;
 	int ret;
 	enum fec_type type;
+	int phy_reset;
 
 	ret = dev_get_drvdata(dev, (unsigned long *)&type);
 	if (ret)
@@ -670,6 +673,20 @@ static int fec_probe(struct device_d *dev)
 	clk_enable(fec->clk);
 
 	fec->regs = dev_request_mem_region(dev, 0);
+
+	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
+	if (gpio_is_valid(phy_reset)) {
+		ret = gpio_request(phy_reset, "phy-reset");
+		if (ret)
+			goto err_free;
+
+		ret = gpio_direction_output(phy_reset, 0);
+		if (ret)
+			goto err_free;
+
+		udelay(10);
+		gpio_set_value(phy_reset, 1);
+	}
 
 	/* Reset chip. */
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);

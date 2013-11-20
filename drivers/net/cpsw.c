@@ -182,6 +182,7 @@ struct cpsw_slave {
 	int				phy_id;
 	phy_interface_t			phy_if;
 	struct eth_device		edev;
+	struct cpsw_priv		*cpsw;
 };
 
 struct cpdma_desc {
@@ -538,7 +539,8 @@ static inline void soft_reset(struct cpsw_priv *priv, void *reg)
 
 static int cpsw_get_hwaddr(struct eth_device *edev, unsigned char *mac)
 {
-	struct cpsw_priv *priv = edev->priv;
+	struct cpsw_slave *slave = edev->priv;
+	struct cpsw_priv *priv = slave->cpsw;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
@@ -547,8 +549,8 @@ static int cpsw_get_hwaddr(struct eth_device *edev, unsigned char *mac)
 
 static int cpsw_set_hwaddr(struct eth_device *edev, unsigned char *mac)
 {
-	struct cpsw_priv *priv = edev->priv;
-	struct cpsw_slave *slave = &priv->slaves[0];
+	struct cpsw_slave *slave = edev->priv;
+	struct cpsw_priv *priv = slave->cpsw;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
@@ -616,8 +618,8 @@ static int cpsw_update_link(struct cpsw_slave *slave, struct cpsw_priv *priv)
 
 static void cpsw_adjust_link(struct eth_device *edev)
 {
-	struct cpsw_priv *priv = edev->priv;
-	struct cpsw_slave *slave = &priv->slaves[0];
+	struct cpsw_slave *slave = edev->priv;
+	struct cpsw_priv *priv = slave->cpsw;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
@@ -758,8 +760,8 @@ static int cpsw_init(struct eth_device *edev)
 
 static int cpsw_open(struct eth_device *edev)
 {
-	struct cpsw_priv *priv = edev->priv;
-	struct cpsw_slave *slave = &priv->slaves[0];
+	struct cpsw_slave *slave = edev->priv;
+	struct cpsw_priv *priv = slave->cpsw;
 	int i, ret;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
@@ -843,9 +845,10 @@ static int cpsw_open(struct eth_device *edev)
 	return 0;
 }
 
-static void cpsw_halt(struct eth_device *dev)
+static void cpsw_halt(struct eth_device *edev)
 {
-	struct cpsw_priv	*priv = dev->priv;
+	struct cpsw_slave *slave = edev->priv;
+	struct cpsw_priv *priv = slave->cpsw;
 
 	writel(0, priv->dma_regs + CPDMA_TXCONTROL);
 	writel(0, priv->dma_regs + CPDMA_RXCONTROL);
@@ -857,9 +860,10 @@ static void cpsw_halt(struct eth_device *dev)
 	soft_reset(priv, priv->dma_regs + CPDMA_SOFTRESET);
 }
 
-static int cpsw_send(struct eth_device *dev, void *packet, int length)
+static int cpsw_send(struct eth_device *edev, void *packet, int length)
 {
-	struct cpsw_priv	*priv = dev->priv;
+	struct cpsw_slave *slave = edev->priv;
+	struct cpsw_priv *priv = slave->cpsw;
 	void *buffer;
 	int ret, len;
 
@@ -877,9 +881,10 @@ static int cpsw_send(struct eth_device *dev, void *packet, int length)
 	return ret;
 }
 
-static int cpsw_recv(struct eth_device *dev)
+static int cpsw_recv(struct eth_device *edev)
 {
-	struct cpsw_priv	*priv = dev->priv;
+	struct cpsw_slave *slave = edev->priv;
+	struct cpsw_priv *priv = slave->cpsw;
 	void *buffer;
 	int len;
 
@@ -912,8 +917,9 @@ static void cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	slave->slave_num = slave_num;
 	slave->regs	= regs + priv->slave_ofs + priv->slave_size * slave_num;
 	slave->sliver	= regs + priv->sliver_ofs + SLIVER_SIZE * slave_num;
+	slave->cpsw	= priv;
 
-	edev->priv	= priv;
+	edev->priv	= slave;
 	edev->init	= cpsw_init;
 	edev->open	= cpsw_open;
 	edev->halt	= cpsw_halt;

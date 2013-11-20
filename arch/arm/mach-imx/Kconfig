@@ -20,6 +20,7 @@ config ARCH_TEXT_BASE
 	default 0x97f00000 if MACH_FREESCALE_MX51_PDK
 	default 0x7ff00000 if MACH_FREESCALE_MX53_LOCO
 	default 0x7ff00000 if MACH_FREESCALE_MX53_SMD
+	default 0x7ff00000 if MACH_FREESCALE_MX53_VMX53
 	default 0x87f00000 if MACH_GUF_CUPID
 	default 0x93d00000 if MACH_TX25
 	default 0x7ff00000 if MACH_TQMA53
@@ -196,6 +197,13 @@ config MACH_FREESCALE_MX51_PDK
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53
+
+config MACH_FREESCALE_MX53_VMX53
+	bool "Voipac i.MX53"
+	select ARCH_IMX53
+	help
+	  Say Y here if you are using the Voipac Technologies X53-DMM-668
+	  module equipped with a Freescale i.MX53 Processor
 
 config MACH_PHYTEC_PFLA02
 	bool "Phytec phyFLEX-i.MX6 Ouad"

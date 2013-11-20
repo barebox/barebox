@@ -217,7 +217,7 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 
 	/* If the phy_id is mostly Fs, there is no device there */
 	if ((phy_id & 0x1fffffff) == 0x1fffffff)
-		return NULL;
+		return ERR_PTR(-ENODEV);
 
 	dev = phy_device_create(bus, addr, phy_id);
 
@@ -254,7 +254,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	if (!edev->phydev) {
 		if (addr >= 0) {
 			dev = mdiobus_scan(bus, addr);
-			if (!dev) {
+			if (IS_ERR(dev)) {
 				ret = -EIO;
 				goto fail;
 			}
@@ -273,7 +273,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 					continue;
 
 				dev = mdiobus_scan(bus, i);
-				if (!dev || dev->attached_dev)
+				if (IS_ERR(dev) || dev->attached_dev)
 					continue;
 
 				dev->attached_dev = edev;
@@ -304,7 +304,7 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	return 0;
 
 fail:
-	if (dev)
+	if (!IS_ERR(dev))
 		dev->attached_dev = NULL;
 	puts("Unable to find a PHY (unknown ID?)\n");
 	return ret;

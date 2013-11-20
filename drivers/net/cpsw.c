@@ -906,7 +906,7 @@ static void cpsw_slave_init_data(struct cpsw_slave *slave, int slave_num,
 	slave->phy_if	= data->phy_if;
 }
 
-static void cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
+static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 			    struct cpsw_priv *priv)
 {
 	void			*regs = priv->regs;
@@ -929,7 +929,7 @@ static void cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	edev->set_ethaddr = cpsw_set_hwaddr;
 	edev->parent	= priv->dev;
 
-	eth_register(edev);
+	return eth_register(edev);
 }
 
 struct cpsw_data {
@@ -1111,7 +1111,7 @@ int cpsw_probe(struct device_d *dev)
 	if (dev->device_node) {
 		ret = cpsw_probe_dt(priv);
 		if (ret)
-			return ret;
+			goto out;
 	} else {
 		priv->data = *data;
 		priv->num_slaves = data->num_slaves;
@@ -1135,7 +1135,8 @@ int cpsw_probe(struct device_d *dev)
 		cpsw_data = &cpsw2_data;
 		break;
 	default:
-		return -EINVAL;
+		ret = -EINVAL;
+		goto out;
 	}
 
 	priv->descs		= regs + cpsw_data->cppi_ram_ofs;
@@ -1190,9 +1191,16 @@ int cpsw_probe(struct device_d *dev)
 
 	mdiobus_register(&priv->miibus);
 
-	cpsw_slave_setup(&priv->slaves[0], 0, priv);
+	ret = cpsw_slave_setup(&priv->slaves[0], 0, priv);
+	if (ret)
+		goto out;
 
 	return 0;
+out:
+	free(priv->slaves);
+	free(priv);
+
+	return ret;
 }
 
 static __maybe_unused struct of_device_id cpsw_dt_ids[] = {

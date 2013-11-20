@@ -27,6 +27,10 @@
 #include <linux/phy.h>
 #include <errno.h>
 #include <io.h>
+#include <of.h>
+#include <pinctrl.h>
+#include <of_net.h>
+#include <of_address.h>
 #include <xfuncs.h>
 #include <asm/mmu.h>
 #include <asm/system.h>
@@ -900,17 +904,23 @@ static int cpsw_recv(struct eth_device *dev)
 	return 0;
 }
 
+static void cpsw_slave_init_data(struct cpsw_slave *slave, int slave_num,
+			    struct cpsw_priv *priv)
+{
+	struct cpsw_slave_data	*data = priv->data.slave_data + slave_num;
+
+	slave->phy_id	= data->phy_id;
+	slave->phy_if	= data->phy_if;
+}
+
 static void cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 			    struct cpsw_priv *priv)
 {
 	void			*regs = priv->regs;
-	struct cpsw_slave_data	*data = priv->data.slave_data + slave_num;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
 	slave->slave_num = slave_num;
-	slave->phy_id	= data->phy_id;
-	slave->phy_if	= data->phy_if;
 	slave->regs	= regs + priv->slave_ofs + priv->slave_size * slave_num;
 	slave->sliver	= regs + priv->sliver_ofs + SLIVER_SIZE * slave_num;
 }
@@ -950,6 +960,130 @@ static struct cpsw_data cpsw2_data = {
 	.cppi_ram_ofs		= 0x2000,
 };
 
+static void __iomem *phy_sel_addr;
+static bool rmii_clock_external;
+
+static int cpsw_phy_sel_init(struct cpsw_priv *priv, struct device_node *np)
+{
+	const void *reg;
+	unsigned long addr;
+
+	reg = of_get_property(np, "reg", NULL);
+	if (!reg)
+		return -EINVAL;
+
+	addr = of_translate_address(np, reg);
+
+	phy_sel_addr = (void *)addr;
+
+	if (of_property_read_bool(np, "rmii-clock-ext"))
+		rmii_clock_external = true;
+
+	return 0;
+}
+
+/* AM33xx SoC specific definitions for the CONTROL port */
+#define AM33XX_GMII_SEL_MODE_MII	0
+#define AM33XX_GMII_SEL_MODE_RMII	1
+#define AM33XX_GMII_SEL_MODE_RGMII	2
+
+#define AM33XX_GMII_SEL_RMII2_IO_CLK_EN	BIT(7)
+#define AM33XX_GMII_SEL_RMII1_IO_CLK_EN	BIT(6)
+
+static void cpsw_gmii_sel_am335x(struct cpsw_slave *slave)
+{
+	u32 reg;
+	u32 mask;
+	u32 mode = 0;
+
+	reg = readl(phy_sel_addr);
+
+	switch (slave->phy_if) {
+	case PHY_INTERFACE_MODE_RMII:
+		mode = AM33XX_GMII_SEL_MODE_RMII;
+		break;
+
+	case PHY_INTERFACE_MODE_RGMII:
+	case PHY_INTERFACE_MODE_RGMII_ID:
+	case PHY_INTERFACE_MODE_RGMII_RXID:
+	case PHY_INTERFACE_MODE_RGMII_TXID:
+		mode = AM33XX_GMII_SEL_MODE_RGMII;
+		break;
+
+	case PHY_INTERFACE_MODE_MII:
+	default:
+		mode = AM33XX_GMII_SEL_MODE_MII;
+		break;
+	};
+
+	mask = 0x3 << (slave->slave_num * 2) | BIT(slave->slave_num + 6);
+	mode <<= slave->slave_num * 2;
+
+	if (rmii_clock_external) {
+		if (slave->slave_num == 0)
+			mode |= AM33XX_GMII_SEL_RMII1_IO_CLK_EN;
+		else
+			mode |= AM33XX_GMII_SEL_RMII2_IO_CLK_EN;
+	}
+
+	reg &= ~mask;
+	reg |= mode;
+
+	writel(reg, phy_sel_addr);
+}
+
+static int cpsw_probe_dt(struct cpsw_priv *priv)
+{
+	struct device_d *dev = priv->dev;
+	struct device_node *np = dev->device_node, *child;
+	int ret, i = 0;
+
+	ret = of_property_read_u32(np, "slaves", &priv->num_slaves);
+	if (ret)
+		return ret;
+
+	priv->slaves = xzalloc(sizeof(struct cpsw_slave) * priv->num_slaves);
+
+	for_each_child_of_node(np, child) {
+		if (of_device_is_compatible(child, "ti,am3352-cpsw-phy-sel")) {
+			ret = cpsw_phy_sel_init(priv, child);
+			if (ret)
+				return ret;
+		}
+
+		if (of_device_is_compatible(child, "ti,davinci_mdio")) {
+			ret = of_pinctrl_select_state_default(child);
+			if (ret)
+				return ret;
+		}
+
+		if (!strncmp(child->name, "slave", 5)) {
+			struct cpsw_slave *slave = &priv->slaves[i];
+			uint32_t phy_id[2];
+
+			ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
+			if (ret)
+				return ret;
+
+			slave->phy_id = phy_id[1];
+			slave->phy_if = of_get_phy_mode(child);
+
+			i++;
+		}
+	}
+
+	for (i = 0; i < 2; i++) {
+		struct cpsw_slave *slave = &priv->slaves[i];
+
+		cpsw_gmii_sel_am335x(slave);
+	}
+
+	/* Only one slave supported by this driver */
+	priv->num_slaves = 1;
+
+	return 0;
+}
+
 int cpsw_probe(struct device_d *dev)
 {
 	struct cpsw_platform_data *data = (struct cpsw_platform_data *)dev->platform_data;
@@ -959,6 +1093,7 @@ int cpsw_probe(struct device_d *dev)
 	uint64_t start;
 	uint32_t phy_mask;
 	struct cpsw_data *cpsw_data;
+	int ret;
 
 	dev_dbg(dev, "* %s\n", __func__);
 
@@ -966,13 +1101,21 @@ int cpsw_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;
-	priv->data = *data;
+
+	if (dev->device_node) {
+		ret = cpsw_probe_dt(priv);
+		if (ret)
+			return ret;
+	} else {
+		priv->data = *data;
+		priv->num_slaves = data->num_slaves;
+		priv->slaves = xzalloc(sizeof(struct cpsw_slave) * priv->num_slaves);
+		for_each_slave(priv, cpsw_slave_init_data, idx, priv);
+	}
+
 	priv->channels = 8;
-	priv->num_slaves = data->num_slaves;
 	priv->ale_entries = 1024;
 	edev = &priv->edev;
-
-	priv->slaves = xzalloc(sizeof(struct cpsw_slave) * priv->num_slaves);
 
 	priv->host_port         = 0;
 	priv->regs		= regs;
@@ -1059,8 +1202,17 @@ int cpsw_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id cpsw_dt_ids[] = {
+	{
+		.compatible = "ti,cpsw",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d cpsw_driver = {
 	.name   = "cpsw",
 	.probe  = cpsw_probe,
+	.of_compatible = DRV_OF_COMPAT(cpsw_dt_ids),
 };
 device_platform_driver(cpsw_driver);

@@ -175,7 +175,8 @@ struct cpsw_slave {
 	struct cpsw_sliver_regs		*sliver;
 	int				slave_num;
 	u32				mac_control;
-	struct cpsw_slave_data		*data;
+	int				phy_id;
+	phy_interface_t			phy_if;
 };
 
 struct cpdma_desc {
@@ -765,13 +766,13 @@ static int cpsw_init(struct eth_device *edev)
 static int cpsw_open(struct eth_device *edev)
 {
 	struct cpsw_priv *priv = edev->priv;
-	struct cpsw_slave_data	*slave_data = priv->data.slave_data;
+	struct cpsw_slave *slave = &priv->slaves[0];
 	int i, ret;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
-	ret = phy_device_connect(edev, &priv->miibus, slave_data[0].phy_id,
-				 cpsw_adjust_link, 0, slave_data[0].phy_if);
+	ret = phy_device_connect(edev, &priv->miibus, slave->phy_id,
+				 cpsw_adjust_link, 0, slave->phy_if);
 	if (ret)
 		return ret;
 
@@ -908,7 +909,8 @@ static void cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
 	slave->slave_num = slave_num;
-	slave->data	= data;
+	slave->phy_id	= data->phy_id;
+	slave->phy_if	= data->phy_if;
 	slave->regs	= regs + priv->slave_ofs + priv->slave_size * slave_num;
 	slave->sliver	= regs + priv->sliver_ofs + SLIVER_SIZE * slave_num;
 }

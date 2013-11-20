@@ -181,6 +181,7 @@ struct cpsw_slave {
 	u32				mac_control;
 	int				phy_id;
 	phy_interface_t			phy_if;
+	struct eth_device		edev;
 };
 
 struct cpdma_desc {
@@ -201,7 +202,6 @@ struct cpdma_chan {
 
 struct cpsw_priv {
 	struct device_d			*dev;
-	struct eth_device		edev;
 	struct mii_bus			miibus;
 
 	u32				version;
@@ -577,7 +577,7 @@ static int cpsw_set_hwaddr(struct eth_device *edev, unsigned char *mac)
 static void cpsw_slave_update_link(struct cpsw_slave *slave,
 				   struct cpsw_priv *priv, int *link)
 {
-	struct phy_device *phydev = priv->edev.phydev;
+	struct phy_device *phydev = slave->edev.phydev;
 	u32 mac_control = 0;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
@@ -917,12 +917,25 @@ static void cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 			    struct cpsw_priv *priv)
 {
 	void			*regs = priv->regs;
+	struct eth_device	*edev = &slave->edev;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
 	slave->slave_num = slave_num;
 	slave->regs	= regs + priv->slave_ofs + priv->slave_size * slave_num;
 	slave->sliver	= regs + priv->sliver_ofs + SLIVER_SIZE * slave_num;
+
+	edev->priv	= priv;
+	edev->init	= cpsw_init;
+	edev->open	= cpsw_open;
+	edev->halt	= cpsw_halt;
+	edev->send	= cpsw_send;
+	edev->recv	= cpsw_recv;
+	edev->get_ethaddr = cpsw_get_hwaddr;
+	edev->set_ethaddr = cpsw_set_hwaddr;
+	edev->parent	= priv->dev;
+
+	eth_register(edev);
 }
 
 struct cpsw_data {
@@ -1089,7 +1102,6 @@ int cpsw_probe(struct device_d *dev)
 	struct cpsw_platform_data *data = (struct cpsw_platform_data *)dev->platform_data;
 	struct cpsw_priv	*priv;
 	void __iomem		*regs;
-	struct eth_device	*edev;
 	uint64_t start;
 	uint32_t phy_mask;
 	struct cpsw_data *cpsw_data;
@@ -1115,7 +1127,6 @@ int cpsw_probe(struct device_d *dev)
 
 	priv->channels = 8;
 	priv->ale_entries = 1024;
-	edev = &priv->edev;
 
 	priv->host_port         = 0;
 	priv->regs		= regs;
@@ -1143,18 +1154,6 @@ int cpsw_probe(struct device_d *dev)
 	priv->slave_ofs		= cpsw_data->slave_ofs;
 	priv->slave_size	= cpsw_data->slave_size;
 	priv->sliver_ofs	= cpsw_data->sliver_ofs;
-
-	for_each_slave(priv, cpsw_slave_setup, idx, priv);
-
-	edev->priv	= priv;
-	edev->init	= cpsw_init;
-	edev->open	= cpsw_open;
-	edev->halt	= cpsw_halt;
-	edev->send	= cpsw_send;
-	edev->recv	= cpsw_recv;
-	edev->get_ethaddr = cpsw_get_hwaddr;
-	edev->set_ethaddr = cpsw_set_hwaddr;
-	edev->parent	= dev;
 
 	priv->miibus.read = cpsw_mdio_read;
 	priv->miibus.write = cpsw_mdio_write;
@@ -1197,7 +1196,7 @@ int cpsw_probe(struct device_d *dev)
 
 	mdiobus_register(&priv->miibus);
 
-	eth_register(edev);
+	for_each_slave(priv, cpsw_slave_setup, idx, priv);
 
 	return 0;
 }

@@ -95,7 +95,7 @@ static int dw_gpio_get_direction(struct gpio_chip *gc, unsigned offset)
 	struct dw_gpio_instance *chip = to_dw_gpio(gc);
 
 	return (readl(chip->regs + DW_GPIO_DDR) & (1 << offset)) ?
-		GPIO_DIR_OUT : GPIO_DIR_IN;
+		GPIOF_DIR_OUT : GPIOF_DIR_IN;
 }
 
 static struct gpio_ops imx_gpio_ops = {

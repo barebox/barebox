@@ -3,8 +3,8 @@
 
 #include <asm/gpio.h>
 
-#define GPIO_DIR_OUT	(0 << 0)
-#define GPIO_DIR_IN	(1 << 0)
+#define GPIOF_DIR_OUT	(0 << 0)
+#define GPIOF_DIR_IN	(1 << 0)
 
 #ifndef CONFIG_GPIOLIB
 static inline int gpio_request(unsigned gpio, const char *label)

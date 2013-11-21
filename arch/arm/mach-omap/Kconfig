@@ -178,6 +178,7 @@ config MACH_PCM051
 	bool "Phytec phyCORE pcm051"
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_AM33XX
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using Phytecs phyCORE pcm051 board
 

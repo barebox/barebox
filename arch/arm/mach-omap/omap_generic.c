@@ -25,6 +25,9 @@
 #include <mach/am33xx-silicon.h>
 #include <mach/omap3-silicon.h>
 #include <mach/omap4-silicon.h>
+#include <mach/am33xx-generic.h>
+#include <mach/omap3-generic.h>
+#include <mach/omap4-generic.h>
 
 static void *omap_sram_start(void)
 {
@@ -130,3 +133,14 @@ static int omap_env_init(void)
 }
 late_initcall(omap_env_init);
 #endif
+
+void __noreturn reset_cpu(unsigned long addr)
+{
+	if (cpu_is_omap34xx())
+		omap3_reset_cpu(addr);
+	if (cpu_is_omap4xxx())
+		omap4_reset_cpu(addr);
+	if (cpu_is_am33xx())
+		am33xx_reset_cpu(addr);
+	while (1);
+}

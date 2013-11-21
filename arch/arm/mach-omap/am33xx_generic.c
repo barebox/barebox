@@ -30,7 +30,7 @@
 #include <mach/am33xx-generic.h>
 #include <mach/gpmc.h>
 
-void __noreturn reset_cpu(unsigned long addr)
+void __noreturn am33xx_reset_cpu(unsigned long addr)
 {
 	writel(AM33XX_PRM_RSTCTRL_RESET, AM33XX_PRM_RSTCTRL);
 

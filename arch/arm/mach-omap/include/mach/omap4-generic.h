@@ -18,4 +18,6 @@ static inline void omap4_save_bootinfo(uint32_t *info)
 	omap_save_bootinfo(info);
 }
 
+void __noreturn omap4_reset_cpu(unsigned long addr);
+
 #endif /* __MACH_OMAP4_GENERIC_H */

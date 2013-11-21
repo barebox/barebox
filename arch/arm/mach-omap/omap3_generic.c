@@ -52,7 +52,7 @@
  *
  * @return void
  */
-void __noreturn reset_cpu(unsigned long addr)
+void __noreturn omap3_reset_cpu(unsigned long addr)
 {
 	writel(OMAP3_PRM_RSTCTRL_RESET, OMAP3_PRM_REG(RSTCTRL));
 

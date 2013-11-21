@@ -26,4 +26,6 @@ u32 am33xx_running_in_flash(void);
 u32 am33xx_running_in_sram(void);
 u32 am33xx_running_in_sdram(void);
 
+void __noreturn am33xx_reset_cpu(unsigned long addr);
+
 #endif /* __MACH_AM33XX_GENERIC_H */

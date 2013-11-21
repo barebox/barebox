@@ -29,14 +29,17 @@
 #include <mach/omap3-generic.h>
 #include <mach/omap4-generic.h>
 
+unsigned int __omap_cpu_type;
+
 static void *omap_sram_start(void)
 {
 	if (cpu_is_am33xx())
 		return (void *)AM33XX_SRAM0_START;
-	if (cpu_is_omap34xx())
+	if (cpu_is_omap3())
 		return (void *)OMAP3_SRAM_BASE;
-	if (cpu_is_omap4xxx())
+	if (cpu_is_omap4())
 		return (void *)OMAP44XX_SRAM_BASE;
+	return NULL;
 }
 
 void __noreturn omap_start_barebox(void *barebox)
@@ -136,9 +139,9 @@ late_initcall(omap_env_init);
 
 void __noreturn reset_cpu(unsigned long addr)
 {
-	if (cpu_is_omap34xx())
+	if (cpu_is_omap3())
 		omap3_reset_cpu(addr);
-	if (cpu_is_omap4xxx())
+	if (cpu_is_omap4())
 		omap4_reset_cpu(addr);
 	if (cpu_is_am33xx())
 		am33xx_reset_cpu(addr);

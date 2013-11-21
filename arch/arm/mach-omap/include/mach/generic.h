@@ -10,28 +10,46 @@
 #define OMAP_I2C_REV_ON_3630            0x00000040
 #define OMAP_I2C_REV_ON_4430_PLUS       0x50400002
 
-#ifdef CONFIG_ARCH_OMAP
-#define cpu_is_omap2430()	(1)
-#else
-#define cpu_is_omap2430()	(0)
-#endif
+extern unsigned int __omap_cpu_type;
+
+#define OMAP_CPU_OMAP3		3
+#define OMAP_CPU_OMAP4		4
+#define OMAP_CPU_AM33XX		33
 
 #ifdef CONFIG_ARCH_OMAP3
-#define cpu_is_omap34xx()	(1)
+# ifdef omap_cpu_type
+#  undef omap_cpu_type
+#  define omap_cpu_type __omap_cpu_type
+# else
+#  define omap_cpu_type OMAP_CPU_OMAP3
+# endif
+# define cpu_is_omap3()		(omap_cpu_type == OMAP_CPU_OMAP3)
 #else
-#define cpu_is_omap34xx()	(0)
+# define cpu_is_omap3()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_OMAP4
-#define cpu_is_omap4xxx()	(1)
+# ifdef omap_cpu_type
+#  undef omap_cpu_type
+#  define omap_cpu_type __omap_cpu_type
+# else
+#  define omap_cpu_type OMAP_CPU_OMAP4
+# endif
+# define cpu_is_omap4()		(omap_cpu_type == OMAP_CPU_OMAP4)
 #else
-#define cpu_is_omap4xxx()	(0)
+# define cpu_is_omap4()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_AM33XX
-#define cpu_is_am33xx()		(1)
+# ifdef omap_cpu_type
+#  undef omap_cpu_type
+#  define omap_cpu_type __omap_cpu_type
+# else
+#  define omap_cpu_type OMAP_CPU_AM33XX
+# endif
+# define cpu_is_am33xx()		(omap_cpu_type == OMAP_CPU_AM33XX)
 #else
-#define cpu_is_am33xx()		(0)
+# define cpu_is_am33xx()	(0)
 #endif
 
 struct omap_barebox_part {

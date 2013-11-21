@@ -90,7 +90,7 @@
 
 int omap_gpmc_decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc);
 
-static char *ecc_mode_strings[] = {
+static const char *ecc_mode_strings[] = {
 	"software",
 	"hamming_hw_romcode",
 	"bch4_hw",
@@ -861,29 +861,11 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 	return 0;
 }
 
-static int omap_gpmc_eccmode_set(struct device_d *dev, struct param_d *param, const char *val)
+static int omap_gpmc_eccmode_set(struct param_d *param, void *priv)
 {
-	struct gpmc_nand_info *oinfo = dev->priv;
-	int i;
+	struct gpmc_nand_info *oinfo = priv;
 
-	if (!val)
-		return 0;
-
-	for (i = 0; i < ARRAY_SIZE(ecc_mode_strings); i++)
-		if (!strcmp(ecc_mode_strings[i], val))
-			break;
-
-	if (i == ARRAY_SIZE(ecc_mode_strings)) {
-		dev_err(dev, "invalid ecc mode '%s'\n", val);
-		printf("valid modes:\n");
-		for (i = 0; i < ARRAY_SIZE(ecc_mode_strings); i++)
-			printf("%s\n", ecc_mode_strings[i]);
-		return -EINVAL;
-	}
-
-	dev_param_set_generic(dev, param, ecc_mode_strings[i]);
-
-	return omap_gpmc_eccmode(oinfo, i);
+	return omap_gpmc_eccmode(oinfo, oinfo->ecc_mode);
 }
 
 static int gpmc_set_buswidth(struct nand_chip *chip, int buswidth)
@@ -1062,11 +1044,13 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	nand->options |= NAND_SKIP_BBTSCAN;
 
-	dev_add_param(pdev, "eccmode", omap_gpmc_eccmode_set, NULL, 0);
-	dev_set_param(pdev, "eccmode", ecc_mode_strings[pdata->ecc_mode]);
+	oinfo->ecc_mode = pdata->ecc_mode;
 
-	if (! IS_ENABLED(CONFIG_PARAMETER))
-		omap_gpmc_eccmode(oinfo, pdata->ecc_mode);
+	dev_add_param_enum(pdev, "eccmode",
+			omap_gpmc_eccmode_set, NULL, (int *)&oinfo->ecc_mode,
+			ecc_mode_strings, ARRAY_SIZE(ecc_mode_strings), oinfo);
+
+	omap_gpmc_eccmode(oinfo, oinfo->ecc_mode);
 
 	/* We are all set to register with the system now! */
 	err = add_mtd_nand_device(minfo, "nand");

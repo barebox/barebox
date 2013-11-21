@@ -30,6 +30,9 @@ config GPIO_GENERIC_PLATFORM
 config GPIO_IMX
 	def_bool ARCH_IMX
 
+config GPIO_OMAP
+	def_bool ARCH_OMAP
+
 config GPIO_ORION
 	bool "GPIO support for Marvell Orion/MVEBU SoCs"
 	depends on ARCH_MVEBU

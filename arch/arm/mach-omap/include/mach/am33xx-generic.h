@@ -22,4 +22,8 @@ static inline void am33xx_save_bootinfo(uint32_t *info)
 	omap_save_bootinfo(info);
 }
 
+u32 am33xx_running_in_flash(void);
+u32 am33xx_running_in_sram(void);
+u32 am33xx_running_in_sdram(void);
+
 #endif /* __MACH_AM33XX_GENERIC_H */

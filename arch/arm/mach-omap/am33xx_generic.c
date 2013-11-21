@@ -68,7 +68,7 @@ u32 am33xx_get_cpu_rev(void)
  *
  * @return base address
  */
-u32 get_base(void)
+static u32 get_base(void)
 {
 	u32 val;
 	__asm__ __volatile__("mov %0, pc \n":"=r"(val)::"memory");
@@ -84,7 +84,7 @@ u32 get_base(void)
  *
  * @return 1 if we are running in XIP mode, else return 0
  */
-u32 running_in_flash(void)
+u32 am33xx_running_in_flash(void)
 {
 	if (get_base() < 4)
 		return 1;	/* in flash */
@@ -98,7 +98,7 @@ u32 running_in_flash(void)
  *
  * @return  1 if we are running in SRAM, else return 0
  */
-u32 running_in_sram(void)
+u32 am33xx_running_in_sram(void)
 {
 	if (get_base() == 4)
 		return 1;	/* in SRAM */
@@ -113,7 +113,7 @@ u32 running_in_sram(void)
  *
  * @return 1 if we are running from SDRAM, else return 0
  */
-u32 running_in_sdram(void)
+u32 am33xx_running_in_sdram(void)
 {
 	if (get_base() > 4)
 		return 1;	/* in sdram */

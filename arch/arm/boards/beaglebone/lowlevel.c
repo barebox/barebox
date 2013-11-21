@@ -121,7 +121,7 @@ static int beaglebone_board_init(void)
 	__raw_writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
-	if (running_in_sdram())
+	if (am33xx_running_in_sdram())
 		return 0;
 
 	/* Setup the PLLs and the clocks for the peripherals */

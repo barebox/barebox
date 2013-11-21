@@ -213,7 +213,7 @@ inline u32 get_sysboot_value(void)
  *
  * @return base address
  */
-u32 get_base(void)
+static u32 get_base(void)
 {
 	u32 val;
 	__asm__ __volatile__("mov %0, pc \n":"=r"(val)::"memory");
@@ -229,7 +229,7 @@ u32 get_base(void)
  *
  * @return 1 if we are running in XIP mode, else return 0
  */
-u32 running_in_flash(void)
+u32 omap3_running_in_flash(void)
 {
 	if (get_base() < 4)
 		return 1;	/* in flash */
@@ -243,7 +243,7 @@ u32 running_in_flash(void)
  *
  * @return  1 if we are running in SRAM, else return 0
  */
-u32 running_in_sram(void)
+u32 omap3_running_in_sram(void)
 {
 	if (get_base() == 4)
 		return 1;	/* in SRAM */
@@ -258,13 +258,13 @@ u32 running_in_sram(void)
  *
  * @return 1 if we are running from SDRAM, else return 0
  */
-u32 running_in_sdram(void)
+u32 omap3_running_in_sdram(void)
 {
 	if (get_base() > 4)
 		return 1;	/* in sdram */
 	return 0;		/* running in SRAM or FLASH */
 }
-EXPORT_SYMBOL(running_in_sdram);
+EXPORT_SYMBOL(omap3_running_in_sdram);
 
 /**
  * @brief Is this an XIP type device or a stream one
@@ -408,7 +408,7 @@ void setup_auxcr(void);
 static void try_unlock_memory(void)
 {
 	int mode;
-	int in_sdram = running_in_sdram();
+	int in_sdram = omap3_running_in_sdram();
 
 	/* if GP device unlock device SRAM for general use */
 	/* secure code breaks for Secure/Emulation device - HS/E/T */

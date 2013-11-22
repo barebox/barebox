@@ -133,6 +133,7 @@ config MACH_BEAGLE
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
 	select ARCH_AM33XX
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using Beagle Bone
 

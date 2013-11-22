@@ -15,6 +15,14 @@ pblx-$(CONFIG_MACH_PCM051) += start_am33xx_phytec_phycore_sram
 FILE_barebox-am33xx-phytec-phycore-mlo.img = start_am33xx_phytec_phycore_sram.pblx.mlo
 am33xx-mlo-$(CONFIG_MACH_PCM051) += barebox-am33xx-phytec-phycore-mlo.img
 
+pblx-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sdram
+FILE_barebox-am33xx-beaglebone.img = start_am33xx_beaglebone_sdram.pblx
+am33xx-barebox-$(CONFIG_MACH_BEAGLEBONE) += barebox-am33xx-beaglebone.img
+
+pblx-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sram
+FILE_barebox-am33xx-beaglebone-mlo.img = start_am33xx_beaglebone_sram.pblx.mlo
+am33xx-mlo-$(CONFIG_MACH_BEAGLEBONE) += barebox-am33xx-beaglebone-mlo.img
+
 ifdef CONFIG_OMAP_BUILD_IFT
 image-y += $(am33xx-mlo-y)
 else

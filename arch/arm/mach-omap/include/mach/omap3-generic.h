@@ -25,4 +25,7 @@ u32 omap3_running_in_sdram(void);
 
 void __noreturn omap3_reset_cpu(unsigned long addr);
 
+int omap3_init(void);
+int omap3_devices_init(void);
+
 #endif /* __MACH_OMAP3_GENERIC_H */

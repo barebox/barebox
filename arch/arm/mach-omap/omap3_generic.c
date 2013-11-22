@@ -489,7 +489,13 @@ static int omap3_bootsource(void)
 
 	return 0;
 }
-postcore_initcall(omap3_bootsource);
+
+int omap3_init(void)
+{
+	omap_gpmc_base = (void *)OMAP3_GPMC_BASE;
+
+	return omap3_bootsource();
+}
 
 /* GPMC timing for OMAP3 nand device */
 const struct gpmc_config omap3_nand_cfg = {
@@ -525,5 +531,9 @@ static int omap3_gpio_init(void)
 
 	return 0;
 }
-coredevice_initcall(omap3_gpio_init);
+
+int omap3_devices_init(void)
+{
+	return omap3_gpio_init();
+}
 #endif

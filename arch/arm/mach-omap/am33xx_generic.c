@@ -147,7 +147,6 @@ static int am33xx_bootsource(void)
 	bootsource_set_instance(instance);
 	return 0;
 }
-postcore_initcall(am33xx_bootsource);
 
 int am33xx_register_ethaddr(int eth_id, int mac_id)
 {
@@ -199,7 +198,18 @@ static int am33xx_gpio_init(void)
 				0xf00, IORESOURCE_MEM, NULL);
 	return 0;
 }
-coredevice_initcall(am33xx_gpio_init);
+
+int am33xx_init(void)
+{
+	omap_gpmc_base = (void *)AM33XX_GPMC_BASE;
+
+	return am33xx_bootsource();
+}
+
+int am33xx_devices_init(void)
+{
+	return am33xx_gpio_init();
+}
 
 /* UART Defines */
 #define UART_SYSCFG_OFFSET	0x54

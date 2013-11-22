@@ -1,4 +1,6 @@
 dtb-$(CONFIG_ARCH_AM33XX) += \
+	am335x-bone.dtb \
+	am335x-boneblack.dtb \
 	am335x-phytec-phycore.dtb
 dtb-$(CONFIG_ARCH_IMX51) += imx51-babbage.dtb \
 	imx51-genesi-efika-sb.dtb

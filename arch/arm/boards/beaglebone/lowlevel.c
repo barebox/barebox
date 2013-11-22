@@ -137,7 +137,7 @@ static int beaglebone_board_init(void)
 
 	am33xx_uart0_soft_reset();
 	am33xx_enable_uart0_pin_mux();
-	omap_uart_lowlevel_init();
+	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');
 
 	return 0;

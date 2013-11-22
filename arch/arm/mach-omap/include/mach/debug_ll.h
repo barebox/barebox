@@ -18,31 +18,9 @@
 #define   __MACH_DEBUG_LL_H__
 
 #include <io.h>
-
-#ifdef CONFIG_ARCH_OMAP3
 #include <mach/omap3-silicon.h>
-
-#ifdef CONFIG_OMAP_UART1
-#define UART_BASE	OMAP3_UART1_BASE
-#else
-#define UART_BASE	OMAP3_UART3_BASE
-#endif
-
-#endif
-
-#ifdef CONFIG_ARCH_OMAP4
 #include <mach/omap4-silicon.h>
-#ifdef CONFIG_OMAP_UART1
-#define UART_BASE	OMAP44XX_UART1_BASE
-#else
-#define UART_BASE	OMAP44XX_UART3_BASE
-#endif
-#endif
-
-#ifdef CONFIG_ARCH_AM33XX
 #include <mach/am33xx-silicon.h>
-#define UART_BASE	AM33XX_UART0_BASE
-#endif
 
 #define LSR_THRE	0x20	/* Xmit holding register empty */
 #define LCR_BKSE	0x80	/* Bank select enable */
@@ -56,26 +34,47 @@
 #define MCR		(4 << 2)
 #define MDR		(8 << 2)
 
-static inline void omap_uart_lowlevel_init(void)
+static inline void omap_uart_lowlevel_init(void __iomem *base)
 {
-	writeb(0x00, UART_BASE + LCR);
-	writeb(0x00, UART_BASE + IER);
-	writeb(0x07, UART_BASE + MDR);
-	writeb(LCR_BKSE, UART_BASE + LCR);
-	writeb(26, UART_BASE + DLL); /* 115200 */
-	writeb(0, UART_BASE + DLM);
-	writeb(0x03, UART_BASE + LCR);
-	writeb(0x03, UART_BASE + MCR);
-	writeb(0x07, UART_BASE + FCR);
-	writeb(0x00, UART_BASE + MDR);
+	writeb(0x00, base + LCR);
+	writeb(0x00, base + IER);
+	writeb(0x07, base + MDR);
+	writeb(LCR_BKSE, base + LCR);
+	writeb(26, base + DLL); /* 115200 */
+	writeb(0, base + DLM);
+	writeb(0x03, base + LCR);
+	writeb(0x03, base + MCR);
+	writeb(0x07, base + FCR);
+	writeb(0x00, base + MDR);
 }
+
+#ifdef CONFIG_DEBUG_LL
+
+#ifdef CONFIG_DEBUG_OMAP3_UART
+#define OMAP_DEBUG_SOC OMAP3
+#elif defined CONFIG_DEBUG_OMAP4_UART
+#define OMAP_DEBUG_SOC OMAP44XX
+#elif defined CONFIG_DEBUG_AM33XX_UART
+#define OMAP_DEBUG_SOC AM33XX
+#else
+#error "unknown OMAP debug uart soc type"
+#endif
+
+#define __OMAP_UART_BASE(soc, num) soc##_UART##num##_BASE
+#define OMAP_UART_BASE(soc, num) __OMAP_UART_BASE(soc, num)
+
 static inline void PUTC_LL(char c)
 {
+	void __iomem *base = (void *)OMAP_UART_BASE(OMAP_DEBUG_SOC,
+			CONFIG_DEBUG_OMAP_UART_PORT);
+
 	/* Wait until there is space in the FIFO */
-	while ((readb(UART_BASE + LSR) & LSR_THRE) == 0);
+	while ((readb(base + LSR) & LSR_THRE) == 0);
 	/* Send the character */
-	writeb(c, UART_BASE + THR);
+	writeb(c, base + THR);
 	/* Wait to make sure it hits the line, in case we die too soon. */
-	while ((readb(UART_BASE + LSR) & LSR_THRE) == 0);
+	while ((readb(base + LSR) & LSR_THRE) == 0);
 }
+#endif
+
 #endif

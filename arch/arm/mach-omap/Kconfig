@@ -188,6 +188,7 @@ if ARCH_OMAP
 choice
 	prompt "Select UART"
 	default OMAP_UART3
+	depends on MACH_OMAP3EVM
 
 	config OMAP_UART1
 		bool "Use UART1"

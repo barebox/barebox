@@ -499,20 +499,18 @@ static int omap_vector_init(void)
 	return 0;
 }
 
-#define OMAP4_TRACING_VECTOR3 0x4030d048
-
 static int omap4_bootsource(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	enum bootsource src;
 
 	switch (omap_bootinfo[2] & 0xFF) {
-	case 0x03:
+	case OMAP44XX_SAR_BOOT_NAND:
 		src = BOOTSOURCE_NAND;
 		break;
-	case 0x05:
+	case OMAP44XX_SAR_BOOT_MMC1:
 		src = BOOTSOURCE_MMC;
 		break;
-	case 0x20:
+	case OMAP44XX_SAR_BOOT_USB_1:
 		src = BOOTSOURCE_USB;
 		break;
 	default:

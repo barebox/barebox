@@ -29,6 +29,9 @@ else
 obj-y		+= $(lwl-y)
 endif
 
+obj-y		+= $(obj-pbl-y)
+pbl-y		+= $(obj-pbl-y)
+
 # for non dirs add pbl- prefix to the target
 # so we recompile the source with custom flags and custom quiet
 __pbl-y		:= $(notdir $(pbl-y))

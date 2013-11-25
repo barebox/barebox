@@ -75,3 +75,13 @@ void* xmemalign(size_t alignment, size_t bytes)
 	return p;
 }
 EXPORT_SYMBOL(xmemalign);
+
+void *xmemdup(const void *orig, size_t size)
+{
+	void *buf = xmalloc(size);
+
+	memcpy(buf, orig, size);
+
+	return buf;
+}
+EXPORT_SYMBOL(xmemdup);

@@ -725,3 +725,17 @@ void *memchr_inv(const void *start, int c, size_t bytes)
 	return check_bytes8(start, value, bytes % 8);
 }
 EXPORT_SYMBOL(memchr_inv);
+
+void *memdup(const void *orig, size_t size)
+{
+	void *buf;
+
+	buf = malloc(size);
+	if (!buf)
+		return NULL;
+
+	memcpy(buf, orig, size);
+
+	return buf;
+}
+EXPORT_SYMBOL(memdup);

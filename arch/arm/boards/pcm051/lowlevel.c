@@ -13,6 +13,7 @@
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-generic.h>
 #include <mach/wdt.h>
+#include <debug_ll.h>
 
 static const struct am33xx_cmd_control MT41J256M8HX15E_2x256M8_cmd = {
 	.slave_ratio0 = 0x40,
@@ -76,6 +77,8 @@ static int pcm051_board_init(void)
 
 	am33xx_uart0_soft_reset();
 	am33xx_enable_uart0_pin_mux();
+	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
+	putc_ll('>');
 
 	return 0;
 }

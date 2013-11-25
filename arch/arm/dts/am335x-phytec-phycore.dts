@@ -161,8 +161,23 @@
 		#size-cells = <1>;
 
 		partition@0 {
-			label = "barebox-environment";
-			reg = <0x80000 0x80000>;
+			label = "xload";
+			reg = <0x0 0x20000>;
+		};
+
+		partition@1 {
+			label = "barebox";
+			reg = <0x20000 0x80000>;
+		};
+
+		partition@2 {
+			label = "bareboxenv";
+			reg = <0xa0000 0x20000>;
+		};
+
+		partition@3 {
+			label = "kernel";
+			reg = <0xc0000 0x400000>;
 		};
 	};
 };
@@ -229,5 +244,45 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		elm_id = <&elm>;
+
+		partition@0 {
+			label = "xload";
+			reg = <0x0 0x20000>;
+		};
+
+		partition@1 {
+			label = "xload_backup1";
+			reg = <0x20000 0x20000>;
+		};
+
+		partition@2 {
+			label = "xload_backup2";
+			reg = <0x40000 0x20000>;
+		};
+
+		partition@3 {
+			label = "xload_backup3";
+			reg = <0x60000 0x20000>;
+		};
+
+		partition@4 {
+			label = "barebox";
+			reg = <0x80000 0x80000>;
+		};
+
+		partition@5 {
+			label = "bareboxenv";
+			reg = <0x100000 0x20000>;
+		};
+
+		partition@6 {
+			label = "kernel";
+			reg = <0x120000 0x800000>;
+		};
+
+		partition@7 {
+			label = "root";
+			reg = <0x920000 0x1f6e0000>;
+		};
 	};
 };

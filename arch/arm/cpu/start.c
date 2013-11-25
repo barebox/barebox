@@ -82,7 +82,7 @@ static noinline __noreturn void __start(uint32_t membase, uint32_t memsize,
 	 * If boarddata is a pointer inside valid memory and contains a
 	 * FDT magic then use it as later to probe devices
 	 */
-	if (boarddata > membase && boarddata < membase + memsize &&
+	if (boarddata >= membase && boarddata < membase + memsize &&
 			get_unaligned_be32((void *)boarddata) == FDT_MAGIC) {
 		uint32_t totalsize = get_unaligned_be32((void *)boarddata + 4);
 		endmem -= ALIGN(totalsize, 64);

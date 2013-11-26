@@ -41,11 +41,9 @@ static inline void setup_uart(void)
 extern char __dtb_imx6q_mba6x_start[];
 extern char __dtb_imx6dl_mba6x_start[];
 
-ENTRY_FUNCTION(start_imx6q_mba6x)(void)
+ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 
@@ -64,11 +62,9 @@ ENTRY_FUNCTION(start_imx6q_mba6x)(void)
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
 
-ENTRY_FUNCTION(start_imx6dl_mba6x)(void)
+ENTRY_FUNCTION(start_imx6dl_mba6x, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

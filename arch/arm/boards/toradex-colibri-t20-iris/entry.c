@@ -22,11 +22,9 @@
 
 extern char __dtb_tegra20_colibri_iris_start[];
 
-ENTRY_FUNCTION(start_toradex_colibri_t20_iris)(void)
+ENTRY_FUNCTION(start_toradex_colibri_t20_iris, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	tegra_cpu_lowlevel_setup();
 

@@ -45,7 +45,7 @@ static inline void ledoff(void)
 
 extern char __dtb_socfpga_cyclone5_socrates_start[];
 
-ENTRY_FUNCTION(start_socfpga_socrates)(void)
+ENTRY_FUNCTION(start_socfpga_socrates, r0, r1, r2)
 {
 	uint32_t fdt;
 
@@ -87,10 +87,8 @@ static noinline void socrates_entry(void)
 	barebox_arm_entry(0x0, SZ_1G, 0);
 }
 
-ENTRY_FUNCTION(start_socfpga_socrates_xload)(void)
+ENTRY_FUNCTION(start_socfpga_socrates_xload, r0, r1, r2)
 {
-	__barebox_arm_head();
-
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0xffff0000 + SZ_64K - SZ_4K - 16);

@@ -6,11 +6,9 @@
 
 extern char __dtb_imx51_genesi_efika_sb_start[];
 
-ENTRY_FUNCTION(start_imx51_genesi_efikasb)(void)
+ENTRY_FUNCTION(start_imx51_genesi_efikasb, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 	arm_setup_stack(0x20000000 - 16);

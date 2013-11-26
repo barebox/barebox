@@ -22,11 +22,9 @@
 
 extern char __dtb_tegra20_paz00_start[];
 
-ENTRY_FUNCTION(start_toshiba_ac100)(void)
+ENTRY_FUNCTION(start_toshiba_ac100, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	tegra_cpu_lowlevel_setup();
 

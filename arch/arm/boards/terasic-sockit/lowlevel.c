@@ -45,11 +45,9 @@ static inline void ledoff(int led)
 
 extern char __dtb_socfpga_cyclone5_sockit_start[];
 
-ENTRY_FUNCTION(start_socfpga_sockit)(void)
+ENTRY_FUNCTION(start_socfpga_sockit, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 
@@ -87,10 +85,8 @@ static noinline void sockit_entry(void)
 	barebox_arm_entry(0x0, SZ_1G, 0);
 }
 
-ENTRY_FUNCTION(start_socfpga_sockit_xload)(void)
+ENTRY_FUNCTION(start_socfpga_sockit_xload, r0, r1, r2)
 {
-	__barebox_arm_head();
-
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0xffff0000 + SZ_64K - SZ_4K - 16);

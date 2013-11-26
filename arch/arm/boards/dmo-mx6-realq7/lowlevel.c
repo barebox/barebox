@@ -140,11 +140,9 @@ static void sdram_init(void)
 
 extern char __dtb_imx6q_dmo_realq7_start[];
 
-ENTRY_FUNCTION(start_imx6_realq7)(void)
+ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

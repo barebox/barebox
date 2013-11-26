@@ -114,8 +114,29 @@ config CMD_BOOT_ORDER
 	help
 	  A command to choose the next boot device on a warm reset.
 
+config OMAP_MULTI_BOARDS
+	bool "Allow multiple boards to be selected"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
+
+if OMAP_MULTI_BOARDS
+
+config MACH_BEAGLEBONE
+	bool "Texas Instrument's Beagle Bone"
+	select ARCH_AM33XX
+	help
+	  Say Y here if you are using Beagle Bone
+
+config MACH_PCM051
+	bool "Phytec phyCORE pcm051"
+	select ARCH_AM33XX
+	help
+	  Say Y here if you are using Phytecs phyCORE pcm051 board
+endif
+
 choice
 	prompt "Select OMAP board"
+	depends on !OMAP_MULTI_BOARDS
 
 config MACH_OMAP343xSDP
 	bool "Texas Instrument's SDP343x"
@@ -129,13 +150,6 @@ config MACH_BEAGLE
 	select ARCH_OMAP3
 	help
 	  Say Y here if you are using Beagle Board
-
-config MACH_BEAGLEBONE
-	bool "Texas Instrument's Beagle Bone"
-	select ARCH_AM33XX
-	select HAVE_PBL_MULTI_IMAGES
-	help
-	  Say Y here if you are using Beagle Bone
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"
@@ -174,14 +188,6 @@ config MACH_PCAAXL2
 	select ARCH_OMAP4
 	help
 	  Say Y here if you are using a phyCARD-A-XL1 PCA-A-XL1
-
-config MACH_PCM051
-	bool "Phytec phyCORE pcm051"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select ARCH_AM33XX
-	select HAVE_PBL_MULTI_IMAGES
-	help
-	  Say Y here if you are using Phytecs phyCORE pcm051 board
 
 endchoice
 

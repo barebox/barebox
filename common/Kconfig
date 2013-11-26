@@ -285,6 +285,7 @@ config SIMPLE_READLINE
 
 config LONGHELP
 	bool
+	depends on !SHELL_NONE
 	prompt "Enable long help texts"
 
 config CBSIZE
@@ -365,6 +366,7 @@ config HUSH_GETOPT
 	  This enables a getopt function builtin to hush.
 
 config CMDLINE_EDITING
+	depends on !SHELL_NONE
 	bool
 	prompt "Enable command line editing"
 

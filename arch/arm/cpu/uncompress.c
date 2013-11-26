@@ -43,7 +43,7 @@ static int __attribute__((__used__))
 	__attribute__((__section__(".image_end")))
 	__image_end_dummy = 0xdeadbeef;
 
-static void noinline uncompress(uint32_t membase,
+static void __noreturn noinline uncompress_start_payload(uint32_t membase,
 		uint32_t memsize, uint32_t boarddata)
 {
 	uint32_t offset;
@@ -99,12 +99,13 @@ static void noinline uncompress(uint32_t membase,
 }
 
 /*
- * Generic second stage pbl uncompressor entry
+ * For the multi images startup process board code jumps here. We will uncompress
+ * the attached barebox image and start it.
  */
-ENTRY_FUNCTION(start_uncompress)(uint32_t membase, uint32_t memsize,
+void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
 		uint32_t boarddata)
 {
 	arm_setup_stack(membase + memsize - 16);
 
-	uncompress(membase, memsize, boarddata);
+	uncompress_start_payload(membase, memsize, boarddata);
 }

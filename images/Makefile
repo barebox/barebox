@@ -69,10 +69,10 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 
 quiet_cmd_pblx ?= PBLX    $@
       cmd_pblx ?= cat $(obj)/$(patsubst %.pblx,%.pblb,$(2)) > $@; \
-		  $(call size_append, $(obj)/barebox.x) >> $@; \
-		  cat $(obj)/barebox.x >> $@
+		  $(call size_append, $(obj)/barebox.z) >> $@; \
+		  cat $(obj)/barebox.z >> $@
 
-$(obj)/%.pblx: $(obj)/%.pblb $(obj)/barebox.x FORCE
+$(obj)/%.pblx: $(obj)/%.pblb $(obj)/barebox.z FORCE
 	$(call if_changed,pblx,$(@F))
 
 $(obj)/%.s: $(obj)/% FORCE
@@ -92,12 +92,6 @@ quiet_cmd_selfextract = COMP    $@
       cmd_selfextract = cat $(obj)/start_uncompress.pblb > $@; \
 			$(call size_append, $<) >> $@; \
 			cat $< >> $@
-
-pblx-y += start_uncompress
-# barebox.x - self extracting barebox binary
-# ----------------------------------------------------------------
-$(obj)/barebox.x: $(obj)/barebox.z $(obj)/start_uncompress.pblb FORCE
-	$(call if_changed,selfextract)
 
 # %.img - create a copy from another file
 # ----------------------------------------------------------------

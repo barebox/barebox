@@ -7,6 +7,10 @@
  */
 
 / {
+	chosen {
+		linux,stdout-path = &uart0;
+	};
+
 	cpus {
 		cpu@0 {
 			cpu0-supply = <&dcdc2_reg>;

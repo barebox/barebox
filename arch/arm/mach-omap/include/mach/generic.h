@@ -73,8 +73,6 @@ static inline int omap_set_mmc_dev(const char *mmcdev)
 }
 #endif
 
-extern uint32_t omap_bootinfo[3];
-void omap_save_bootinfo(void *data);
 void __noreturn omap_start_barebox(void *barebox);
 
 void omap_set_bootmmc_devname(const char *devname);

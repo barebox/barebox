@@ -100,6 +100,7 @@
 
 /** Interrupt Vector base address */
 #define OMAP3_SRAM_BASE		0x40200000
+#define OMAP3_SRAM_SCRATCH_SPACE	0x4020f000 /* start of public stack */
 #define OMAP3_SRAM_INTVECT	0x4020F800
 #define OMAP3_SRAM_INTVECT_COPYSIZE	0x64
 

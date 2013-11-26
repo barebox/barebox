@@ -469,8 +469,9 @@ void omap3_core_init(void)
 static int omap3_bootsource(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	uint32_t *omap3_bootinfo = (void *)OMAP3_SRAM_SCRATCH_SPACE;
 
-	switch (omap_bootinfo[1] & 0xFF) {
+	switch (omap3_bootinfo[1] & 0xFF) {
 	case 0x02:
 		src = BOOTSOURCE_NAND;
 		break;

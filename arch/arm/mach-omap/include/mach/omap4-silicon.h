@@ -40,8 +40,7 @@
 #define OMAP44XX_L4_PER_BASE		0x48000000
 
 #define OMAP44XX_SRAM_BASE		0x40300000
-
-#define OMAP44XX_SRAM_BASE		0x40300000
+#define OMAP44XX_SRAM_SCRATCH_SPACE	0x4030c000 /* start of public stack */
 
 /* EMIF and DMM registers */
 #define OMAP44XX_EMIF1_BASE		0x4c000000

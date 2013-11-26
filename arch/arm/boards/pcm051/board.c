@@ -47,26 +47,13 @@ static int pcm051_devices_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_SPI:
-		devfs_add_partition("m25p0", 0x00000, SZ_128K,
-					DEVFS_PARTITION_FIXED, "xload");
-		devfs_add_partition("m25p0", SZ_128K, SZ_512K,
-					DEVFS_PARTITION_FIXED, "self0");
-		devfs_add_partition("m25p0", SZ_128K + SZ_512K, SZ_128K,
-					DEVFS_PARTITION_FIXED, "env0");
+		of_device_enable_path("/chosen/environment-spi");
 		break;
 	case BOOTSOURCE_MMC:
 		omap_set_bootmmc_devname("mmc0");
 		break;
 	default:
-		devfs_add_partition("nand0", 0x00000, SZ_128K,
-					DEVFS_PARTITION_FIXED, "xload_raw");
-		dev_add_bb_dev("xload_raw", "xload");
-		devfs_add_partition("nand0", SZ_512K, SZ_512K,
-					DEVFS_PARTITION_FIXED, "self_raw");
-		dev_add_bb_dev("self_raw", "self0");
-		devfs_add_partition("nand0", SZ_512K + SZ_512K, SZ_128K,
-					DEVFS_PARTITION_FIXED, "env_raw");
-		dev_add_bb_dev("env_raw", "env0");
+		of_device_enable_path("/chosen/environment-nand");
 		break;
 	}
 

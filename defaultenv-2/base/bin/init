@@ -8,6 +8,7 @@ global autoboot_timeout
 global boot.default
 global allow_color
 global linux.bootargs.base
+global linux.bootargs.console
 #linux.bootargs.dyn.* will be cleared at the beginning of boot
 global linux.bootargs.dyn.ip
 global linux.bootargs.dyn.root

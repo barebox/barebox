@@ -559,7 +559,7 @@ config CMD_OF_NODE
 	select OFTREE
 	prompt "of_node"
 	help
-	  The of_property command allows adding and removing devicetree nodes.
+	  The of_node command allows adding and removing devicetree nodes.
 
 endmenu
 

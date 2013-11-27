@@ -579,6 +579,8 @@ int chdir(const char *pathname)
 	if (ret)
 		goto out;
 
+	automount_mount(p, 0);
+
 	strcpy(cwd, p);
 
 out:

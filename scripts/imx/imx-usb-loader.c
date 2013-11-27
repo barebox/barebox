@@ -124,6 +124,13 @@ struct mach_id imx_ids[] = {
 		.header_type = HDR_MX51,
 		.mode = MODE_BULK,
 		.max_transfer = 64,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x003a,
+		.name = "i.MX25",
+		.header_type = HDR_MX51,
+		.mode = MODE_BULK,
+		.max_transfer = 64,
 	},
 };
 

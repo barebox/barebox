@@ -103,6 +103,7 @@ config MCI_ATMEL
 
 config MCI_MMCI
 	bool "ARM PL180 MMCI"
+	depends on ARM_AMBA
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  ARM AMBA PL180.

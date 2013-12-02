@@ -213,6 +213,8 @@ out_free:
 static __maybe_unused struct of_device_id imx_pata_dt_ids[] = {
 	{
 		.compatible = "fsl,imx27-pata",
+	}, {
+		/* sentinel */
 	},
 };
 

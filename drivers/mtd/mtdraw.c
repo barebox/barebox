@@ -278,7 +278,6 @@ static const struct file_operations mtd_raw_fops = {
 	.read		= mtdraw_read,
 	.write		= mtdraw_write,
 	.erase		= mtdraw_erase,
-	.ioctl		= mtd_ioctl,
 	.lseek		= dev_lseek_default,
 };
 

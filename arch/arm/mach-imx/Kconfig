@@ -233,6 +233,10 @@ config MACH_SABRELITE
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
 
+config MACH_SOLIDRUN_CARRIER1
+	bool "SolidRun CuBox-i Carrier-1"
+	select ARCH_IMX6
+
 endif
 
 # ----------------------------------------------------------

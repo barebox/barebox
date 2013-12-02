@@ -8,6 +8,11 @@ if PHYLIB
 
 comment "MII PHY device drivers"
 
+config AT803X_PHY
+	bool "Driver for Atheros AT803X PHYs"
+	---help---
+	  Currently supports the AT8030, AT8031 and AT8035 PHYs.
+
 config MICREL_PHY
 	bool "Driver for Micrel PHYs"
 	---help---

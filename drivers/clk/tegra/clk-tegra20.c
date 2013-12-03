@@ -325,6 +325,13 @@ static int tegra20_car_probe(struct device_d *dev)
 
 	tegra_init_from_table(init_table, clks, clk_max);
 
+	/* speed up system bus */
+	writel(CRC_SCLK_BURST_POLICY_SYS_STATE_RUN <<
+	       CRC_SCLK_BURST_POLICY_SYS_STATE_SHIFT |
+	       CRC_SCLK_BURST_POLICY_SRC_PLLC_OUT1 <<
+	       CRC_SCLK_BURST_POLICY_RUN_SRC_SHIFT,
+	       car_base + CRC_SCLK_BURST_POLICY);
+
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);
 	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,

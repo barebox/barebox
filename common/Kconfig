@@ -618,6 +618,13 @@ config BAREBOXENV_TARGET
 	  'bareboxenv' is a tool to access the barebox environment from a running Linux
 	  system. Say yes here to build it for the target.
 
+config BAREBOXCRC32_TARGET
+	bool
+	prompt "build bareboxcrc32 tool for target"
+	help
+	  'bareboxcrc32' is a userspacetool to generate the crc32 checksums the same way
+	  barebox does. Say yes here to build it for the target.
+
 config POLLER
 	bool "generic polling infrastructure"
 

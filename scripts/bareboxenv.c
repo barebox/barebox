@@ -35,25 +35,6 @@
 
 #define debug(...)
 
-static void *xmalloc(size_t size)
-{
-	void *p = NULL;
-
-	if (!(p = malloc(size))) {
-		printf("ERROR: out of memory\n");
-		exit(1);
-	}
-
-	return p;
-}
-
-static void *xzalloc(size_t size)
-{
-	void *p = xmalloc(size);
-	memset(p, 0, size);
-	return p;
-}
-
 /* Find out if the last character of a string matches the one given.
  * Don't underrun the buffer if the string length is 0.
  */

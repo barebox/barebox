@@ -15,6 +15,7 @@
 #include <init.h>
 #include <io.h>
 #include <linux/mtd/nand.h>
+#include <asm/cache.h>
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
@@ -244,6 +245,8 @@ void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
  */
 static __bare_init __naked void jump_sdram(unsigned long offset)
 {
+	flush_icache();
+
 	__asm__ __volatile__ (
 			"sub lr, lr, %0;"
 			"mov pc, lr;" : : "r"(offset)

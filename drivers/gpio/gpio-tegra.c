@@ -106,12 +106,10 @@ static int tegra_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
 	/* If gpio is in output mode then read from the out value */
 	if ((tegra_gpio_readl(GPIO_OE(offset)) >> GPIO_BIT(offset)) & 1) {
-		printf("GPIO output mode\n");
 		return (tegra_gpio_readl(GPIO_OUT(offset)) >>
 				GPIO_BIT(offset)) & 0x1;
 	}
 
-	printf("GPIO input mode\n");
 	return (tegra_gpio_readl(GPIO_IN(offset)) >> GPIO_BIT(offset)) & 0x1;
 }
 

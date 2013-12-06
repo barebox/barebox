@@ -112,6 +112,10 @@
 	status = "okay";
 };
 
+&fec {
+	status = "okay";
+};
+
 &i2c1 {
 	codec: tlv320@18 {
 		compatible = "ti,tlv320aic23";

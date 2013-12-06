@@ -21,11 +21,11 @@ enum of_gpio_flags {
 	OF_GPIO_ACTIVE_LOW = 0x1,
 };
 
-#ifdef CONFIG_OFTREE
+#ifdef CONFIG_OF_GPIO
 extern int of_get_named_gpio_flags(struct device_node *np,
 		const char *list_name, int index, enum of_gpio_flags *flags);
 
-#else /* CONFIG_OFTREE */
+#else /* CONFIG_OF_GPIO */
 
 static inline int of_get_named_gpio_flags(struct device_node *np,
 		const char *list_name, int index, enum of_gpio_flags *flags)
@@ -33,7 +33,7 @@ static inline int of_get_named_gpio_flags(struct device_node *np,
 	return -ENOSYS;
 }
 
-#endif /* CONFIG_OFTREE */
+#endif /* CONFIG_OF_GPIO */
 
 static inline int of_get_named_gpio(struct device_node *np,
 				const char *list_name, int index)

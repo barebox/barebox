@@ -19,6 +19,11 @@ config OF_NET
 	depends on NET
 	def_bool y
 
+config OF_GPIO
+	depends on CONFIG_GPIOLIB
+	depends on CONFIG_OFDEVICE
+	def_bool y
+
 config OF_BAREBOX_DRIVERS
 	depends on OFDEVICE
 	depends on ENV_HANDLING

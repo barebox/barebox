@@ -18,7 +18,12 @@
 	compatible = "fsl,imx6q-sabrelite", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = "/soc/aips-bus@02100000/serial@021e8000";
+		linux,stdout-path = &uart2;
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:barebox-environment";
+		};
 	};
 
 	memory {
@@ -80,6 +85,18 @@
 		compatible = "sst,sst25vf016b", "m25p80";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x80000>;
+		};
+
+		partition@1 {
+			label = "barebox-environment";
+			reg = <0x80000 0x80000>;
+		};
 	};
 };
 
@@ -117,10 +134,14 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usbotg_1>;
 	disable-over-current;
+	phy-mode = "utmi";
+	dr_mode = "host";
 	status = "okay";
 };
 
 &usbh1 {
+	phy-mode = "utmi";
+	dr_mode = "host";
 	status = "okay";
 };
 

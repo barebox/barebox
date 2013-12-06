@@ -20,6 +20,7 @@
 #include <mach/imx6-regs.h>
 #include <fec.h>
 #include <gpio.h>
+#include <mach/bbu.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>
@@ -107,26 +108,24 @@ fs_initcall(sabrelite_ksz9021rn_setup);
 
 static void sabrelite_ehci_init(void)
 {
-	imx6_usb_phy2_disable_oc();
-	imx6_usb_phy2_enable();
-
 	/* hub reset */
 	gpio_direction_output(204, 0);
 	udelay(2000);
 	gpio_set_value(204, 1);
-
-	add_generic_usb_ehci_device(1, MX6_USBOH3_USB_BASE_ADDR + 0x200, NULL);
 }
 
 static int sabrelite_devices_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+		return 0;
+
 	sabrelite_ehci_init();
 
 	armlinux_set_bootparams((void *)0x10000100);
 	armlinux_set_architecture(3769);
 
-	devfs_add_partition("m25p0", 0, SZ_512K, DEVFS_PARTITION_FIXED, "self0");
-	devfs_add_partition("m25p0", SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, "env0");
+	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
+			BBU_HANDLER_FLAG_DEFAULT, NULL, 0, 0);
 
 	return 0;
 }
@@ -134,18 +133,24 @@ device_initcall(sabrelite_devices_init);
 
 static int sabrelite_coredevices_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+		return 0;
+
 	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
 					   ksz9021rn_phy_fixup);
 	return 0;
 }
 coredevice_initcall(sabrelite_coredevices_init);
 
-static int sabrelite_core_init(void)
+static int sabrelite_postcore_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+		return 0;
+
 	imx6_init_lowlevel();
 
 	barebox_set_hostname("sabrelite");
 
 	return 0;
 }
-core_initcall(sabrelite_core_init);
+postcore_initcall(sabrelite_postcore_init);

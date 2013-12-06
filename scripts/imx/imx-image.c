@@ -442,6 +442,7 @@ struct soc_type {
 };
 
 static struct soc_type socs[] = {
+	{ .name = "imx25", .header_version = 1, },
 	{ .name = "imx35", .header_version = 1, },
 	{ .name = "imx51", .header_version = 1, },
 	{ .name = "imx53", .header_version = 2, },

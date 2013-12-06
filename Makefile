@@ -1,8 +1,8 @@
 VERSION = 2013
-PATCHLEVEL = 11
+PATCHLEVEL = 12
 SUBLEVEL = 0
 EXTRAVERSION =
-NAME = La tour Eiffel
+NAME = Saint Nicholas Day
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

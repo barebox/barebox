@@ -65,10 +65,10 @@ static int pcm051_board_init(void)
 	writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
-	if (running_in_sdram())
+	if (am33xx_running_in_sdram())
 		return 0;
 
-	pll_init(MPUPLL_M_600, 25, DDRPLL_M_303);
+	am33xx_pll_init(MPUPLL_M_600, 25, DDRPLL_M_303);
 
 	am335x_sdram_init(0x18B, &MT41J256M8HX15E_2x256M8_cmd,
 			&MT41J256M8HX15E_2x256M8_regs,

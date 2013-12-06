@@ -21,19 +21,28 @@
 #include <fs.h>
 #include <malloc.h>
 #include <linux/stat.h>
+#include <mach/gpmc.h>
 #include <mach/generic.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/omap3-silicon.h>
 #include <mach/omap4-silicon.h>
+#include <mach/am33xx-generic.h>
+#include <mach/omap3-generic.h>
+#include <mach/omap4-generic.h>
+
+void __iomem *omap_gpmc_base;
+
+unsigned int __omap_cpu_type;
 
 static void *omap_sram_start(void)
 {
 	if (cpu_is_am33xx())
 		return (void *)AM33XX_SRAM0_START;
-	if (cpu_is_omap34xx())
+	if (cpu_is_omap3())
 		return (void *)OMAP3_SRAM_BASE;
-	if (cpu_is_omap4xxx())
+	if (cpu_is_omap4())
 		return (void *)OMAP44XX_SRAM_BASE;
+	return NULL;
 }
 
 void __noreturn omap_start_barebox(void *barebox)
@@ -130,3 +139,63 @@ static int omap_env_init(void)
 }
 late_initcall(omap_env_init);
 #endif
+
+void __noreturn reset_cpu(unsigned long addr)
+{
+	if (cpu_is_omap3())
+		omap3_reset_cpu(addr);
+	if (cpu_is_omap4())
+		omap4_reset_cpu(addr);
+	if (cpu_is_am33xx())
+		am33xx_reset_cpu(addr);
+	while (1);
+}
+
+static int omap_soc_from_dt(void)
+{
+        if (of_machine_is_compatible("ti,am33xx"))
+		return OMAP_CPU_AM33XX;
+        if (of_machine_is_compatible("ti,omap4"))
+		return OMAP_CPU_OMAP4;
+        if (of_machine_is_compatible("ti,omap3"))
+		return OMAP_CPU_OMAP3;
+
+	return 0;
+}
+
+static int omap_init(void)
+{
+	int ret;
+	struct device_node *root;
+
+	root = of_get_root_node();
+	if (root) {
+		__omap_cpu_type = omap_soc_from_dt();
+		if (!__omap_cpu_type)
+			hang();
+	}
+
+	if (cpu_is_omap3())
+		ret = omap3_init();
+	else if (cpu_is_omap4())
+		ret = omap4_init();
+	else if (cpu_is_am33xx())
+		ret = am33xx_init();
+	else
+		return -EINVAL;
+
+	if (root)
+		return ret;
+
+	if (cpu_is_omap3())
+		ret = omap3_devices_init();
+	else if (cpu_is_omap4())
+		ret = omap4_devices_init();
+	else if (cpu_is_am33xx())
+		ret = am33xx_devices_init();
+	else
+		return -EINVAL;
+
+	return ret;
+}
+postcore_initcall(omap_init);

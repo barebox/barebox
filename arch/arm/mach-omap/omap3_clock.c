@@ -33,6 +33,7 @@
 #include <common.h>
 #include <io.h>
 #include <mach/omap3-silicon.h>
+#include <mach/omap3-generic.h>
 #include <mach/clocks.h>
 #include <mach/omap3-clock.h>
 #include <mach/timers.h>
@@ -170,7 +171,7 @@ static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 
 	dp += clk_sel;
 
-	if (running_in_sram()) {
+	if (omap3_running_in_sram()) {
 		sr32(OMAP3_CM_REG(CLKEN_PLL), 0, 3, PLL_FAST_RELOCK_BYPASS);
 		wait_on_value((0x1 << 0), 0, OMAP3_CM_REG(IDLEST_CKGEN), LDELAY);
 
@@ -209,7 +210,7 @@ static void init_core_dpll_34x(u32 cpu_rev, u32 clk_sel)
 		/* Lock Mode */
 		sr32(OMAP3_CM_REG(CLKEN_PLL), 0, 3, PLL_LOCK);
 		wait_on_value((0x1 << 0), 1, OMAP3_CM_REG(IDLEST_CKGEN), LDELAY);
-	} else if (running_in_flash()) {
+	} else if (omap3_running_in_flash()) {
 		/***Oopps.. Wrong .config!! *****/
 		hang();
 	}
@@ -403,7 +404,7 @@ static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
 
 	dp += clk_sel;
 
-	if (running_in_sram()) {
+	if (omap3_running_in_sram()) {
 		sr32(OMAP3_CM_REG(CLKEN_PLL), 0, 3, PLL_FAST_RELOCK_BYPASS);
 		wait_on_value((0x1 << 0), 0, OMAP3_CM_REG(IDLEST_CKGEN), LDELAY);
 
@@ -435,7 +436,7 @@ static void init_core_dpll_36x(u32 cpu_rev, u32 clk_sel)
 		/* Lock Mode */
 		sr32(OMAP3_CM_REG(CLKEN_PLL), 0, 3, PLL_LOCK);
 		wait_on_value((0x1 << 0), 1, OMAP3_CM_REG(IDLEST_CKGEN), LDELAY);
-	} else if (running_in_flash()) {
+	} else if (omap3_running_in_flash()) {
 		/***Oopps.. Wrong .config!! *****/
 		hang();
 	}

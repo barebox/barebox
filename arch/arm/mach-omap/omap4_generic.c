@@ -34,7 +34,7 @@
 #define EMIF_L3_CONFIG_VAL_SYS_10_LL_0		0x0A0000FF
 #define EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0	0x0A300000
 
-void __noreturn reset_cpu(unsigned long addr)
+void __noreturn omap4_reset_cpu(unsigned long addr)
 {
 	writel(OMAP44XX_PRM_RSTCTRL_RESET, OMAP44XX_PRM_RSTCTRL);
 
@@ -470,6 +470,9 @@ static int watchdog_init(void)
 {
 	void __iomem *wd2_base = (void *)OMAP44XX_WDT2_BASE;
 
+	if (!cpu_is_omap4())
+		return 0;
+
 	writel(WD_UNLOCK1, wd2_base + WATCHDOG_WSPR);
 	wait_for_command_complete();
 	writel(WD_UNLOCK2, wd2_base + WATCHDOG_WSPR);
@@ -524,7 +527,13 @@ static int omap4_bootsource(void)
 
 	return 0;
 }
-core_initcall(omap4_bootsource);
+
+int omap4_init(void)
+{
+	omap_gpmc_base = (void *)OMAP44XX_GPMC_BASE;
+
+	return omap4_bootsource();
+}
 
 #define GPIO_MASK 0x1f
 
@@ -668,4 +677,8 @@ static int omap4_gpio_init(void)
 
 	return 0;
 }
-coredevice_initcall(omap4_gpio_init);
+
+int omap4_devices_init(void)
+{
+	return omap4_gpio_init();
+}

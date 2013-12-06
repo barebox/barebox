@@ -30,7 +30,7 @@
 #include <mach/am33xx-generic.h>
 #include <mach/gpmc.h>
 
-void __noreturn reset_cpu(unsigned long addr)
+void __noreturn am33xx_reset_cpu(unsigned long addr)
 {
 	writel(AM33XX_PRM_RSTCTRL_RESET, AM33XX_PRM_RSTCTRL);
 
@@ -68,7 +68,7 @@ u32 am33xx_get_cpu_rev(void)
  *
  * @return base address
  */
-u32 get_base(void)
+static u32 get_base(void)
 {
 	u32 val;
 	__asm__ __volatile__("mov %0, pc \n":"=r"(val)::"memory");
@@ -84,7 +84,7 @@ u32 get_base(void)
  *
  * @return 1 if we are running in XIP mode, else return 0
  */
-u32 running_in_flash(void)
+u32 am33xx_running_in_flash(void)
 {
 	if (get_base() < 4)
 		return 1;	/* in flash */
@@ -98,7 +98,7 @@ u32 running_in_flash(void)
  *
  * @return  1 if we are running in SRAM, else return 0
  */
-u32 running_in_sram(void)
+u32 am33xx_running_in_sram(void)
 {
 	if (get_base() == 4)
 		return 1;	/* in SRAM */
@@ -113,7 +113,7 @@ u32 running_in_sram(void)
  *
  * @return 1 if we are running from SDRAM, else return 0
  */
-u32 running_in_sdram(void)
+u32 am33xx_running_in_sdram(void)
 {
 	if (get_base() > 4)
 		return 1;	/* in sdram */
@@ -147,7 +147,6 @@ static int am33xx_bootsource(void)
 	bootsource_set_instance(instance);
 	return 0;
 }
-postcore_initcall(am33xx_bootsource);
 
 int am33xx_register_ethaddr(int eth_id, int mac_id)
 {
@@ -199,7 +198,18 @@ static int am33xx_gpio_init(void)
 				0xf00, IORESOURCE_MEM, NULL);
 	return 0;
 }
-coredevice_initcall(am33xx_gpio_init);
+
+int am33xx_init(void)
+{
+	omap_gpmc_base = (void *)AM33XX_GPMC_BASE;
+
+	return am33xx_bootsource();
+}
+
+int am33xx_devices_init(void)
+{
+	return am33xx_gpio_init();
+}
 
 /* UART Defines */
 #define UART_SYSCFG_OFFSET	0x54
@@ -337,7 +347,7 @@ void am335x_sdram_init(int ioctrl, const struct am33xx_cmd_control *cmd_ctrl,
 {
 	uint32_t val;
 
-	enable_ddr_clocks();
+	am33xx_enable_ddr_clocks();
 
 	am33xx_config_vtp();
 

@@ -91,10 +91,6 @@ u32 get_cpu_rev(void);
 u32 get_sdr_cs_size(u32 offset);
 u32 get_sdr_cs1_base(void);
 inline u32 get_sysboot_value(void);
-u32 get_base(void);
-u32 running_in_flash(void);
-u32 running_in_sram(void);
-u32 running_in_sdram(void);
 u32 get_boot_type(void);
 u32 get_device_type(void);
 

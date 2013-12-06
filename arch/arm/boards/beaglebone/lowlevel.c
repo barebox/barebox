@@ -121,23 +121,23 @@ static int beaglebone_board_init(void)
 	__raw_writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
-	if (running_in_sdram())
+	if (am33xx_running_in_sdram())
 		return 0;
 
 	/* Setup the PLLs and the clocks for the peripherals */
 	if (is_beaglebone_black()) {
-		pll_init(MPUPLL_M_500, 24, DDRPLL_M_400);
+		am33xx_pll_init(MPUPLL_M_500, 24, DDRPLL_M_400);
 		am335x_sdram_init(0x18B, &ddr3_cmd_ctrl, &ddr3_regs,
 				&ddr3_data);
 	} else {
-		pll_init(MPUPLL_M_500, 24, DDRPLL_M_266);
+		am33xx_pll_init(MPUPLL_M_500, 24, DDRPLL_M_266);
 		am335x_sdram_init(0x18B, &ddr2_cmd_ctrl, &ddr2_regs,
 				&ddr2_data);
 	}
 
 	am33xx_uart0_soft_reset();
 	am33xx_enable_uart0_pin_mux();
-	omap_uart_lowlevel_init();
+	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');
 
 	return 0;

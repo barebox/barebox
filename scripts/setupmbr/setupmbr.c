@@ -666,10 +666,10 @@ and populating the root filesystem for example) to make it useful.
 In the next step, @a barebox gets installed to this boot media:
 
 @verbatim
-[jb@host]~> scripts/setupmbr/setupmbr -s 32 -m ./barebox -d /dev/sda
+[jb@host]~> scripts/setupmbr/setupmbr -s 32 -m ./barebox.bin -d /dev/sda
 @endverbatim
 
-This command writes the @a barebox image file './barebox' onto the device
+This command writes the @a barebox image file './barebox.bin' onto the device
 @p /dev/sda.
 
 The @p -s option will keep the persistant storage sectors free and untouched

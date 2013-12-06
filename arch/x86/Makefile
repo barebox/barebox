@@ -5,7 +5,8 @@ machine-y := i386
 
 TEXT_BASE = $(CONFIG_TEXT_BASE)
 
-CPPFLAGS += -march=i386 -m32 -DTEXT_BASE=$(TEXT_BASE)
+CPPFLAGS += -march=i386 -m32 -DTEXT_BASE=$(TEXT_BASE) \
+	-fno-unwind-tables -fno-asynchronous-unwind-tables
 LDFLAGS += -m elf_i386
 
 ifndef CONFIG_MODULES

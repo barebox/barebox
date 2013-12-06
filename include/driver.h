@@ -229,6 +229,15 @@ void *dev_get_mem_region(struct device_d *dev, int num);
  */
 void __iomem *dev_request_mem_region(struct device_d *dev, int num);
 
+struct device_d *device_alloc(const char *devname, int id);
+
+int device_add_resources(struct device_d *dev, const struct resource *res, int num);
+
+int device_add_resource(struct device_d *dev, const char *resname,
+		resource_size_t start, resource_size_t size, unsigned int flags);
+
+int device_add_data(struct device_d *dev, void *data, size_t size);
+
 /*
  * register a generic device
  * with only one resource

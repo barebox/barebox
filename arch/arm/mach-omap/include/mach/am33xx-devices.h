@@ -45,7 +45,7 @@ static inline struct device_d *am33xx_add_cpsw(struct cpsw_platform_data *cpsw_d
 
 static inline struct device_d *am33xx_add_spi(int id, resource_size_t start)
 {
-	return add_generic_device("omap3_spi", id, NULL, start + 0x100, SZ_4K - 0x100,
+	return add_generic_device("omap4-spi", id, NULL, start, SZ_4K,
 				   IORESOURCE_MEM, NULL);
 }
 

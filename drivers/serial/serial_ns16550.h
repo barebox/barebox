@@ -40,10 +40,6 @@
 #define lsr		5
 #define msr		6
 #define scr		7
-#ifdef CONFIG_DRIVER_SERIAL_NS16550_OMAP_EXTENSIONS
-#define mdr1		8
-#define osc_12m_sel	9
-#endif
 
 #define thr		rbr
 #define iir		fcr

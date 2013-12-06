@@ -20,6 +20,8 @@ void pinctrl_unregister(struct pinctrl_device *pdev);
 #ifdef CONFIG_PINCTRL
 int pinctrl_select_state(struct device_d *dev, const char *state);
 int pinctrl_select_state_default(struct device_d *dev);
+int of_pinctrl_select_state(struct device_node *np, const char *state);
+int of_pinctrl_select_state_default(struct device_node *np);
 #else
 static inline int pinctrl_select_state(struct device_d *dev, const char *state)
 {
@@ -27,6 +29,16 @@ static inline int pinctrl_select_state(struct device_d *dev, const char *state)
 }
 
 static inline int pinctrl_select_state_default(struct device_d *dev)
+{
+	return -ENODEV;
+}
+
+static inline int of_pinctrl_select_state(struct device_node *np, const char *state)
+{
+	return -ENODEV;
+}
+
+static inline int of_pinctrl_select_state_default(struct device_node *np)
 {
 	return -ENODEV;
 }

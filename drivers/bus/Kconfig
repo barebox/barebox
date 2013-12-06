@@ -4,4 +4,10 @@ config IMX_WEIM
 	depends on ARCH_IMX
 	bool "i.MX WEIM driver"
 
+config BUS_OMAP_GPMC
+	depends on ARCH_OMAP
+	depends on OFDEVICE
+	depends on OMAP_GPMC
+	bool "TI OMAP/AM33xx GPMC support"
+
 endmenu

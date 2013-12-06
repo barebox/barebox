@@ -49,6 +49,10 @@
 #define SPI_XFER_BEGIN  0x01                    /* Assert CS before transfer */
 #define SPI_XFER_END    0x02                    /* Deassert CS after transfer */
 
+struct omap_spi_drvdata {
+	unsigned register_offset;
+};
+
 static void spi_reset(struct spi_master *master)
 {
 	struct omap3_spi_master *omap3_master = container_of(master, struct omap3_spi_master, master);
@@ -343,6 +347,12 @@ static int omap3_spi_probe(struct device_d *dev)
 {
 	struct spi_master *master;
 	struct omap3_spi_master *omap3_master;
+	struct omap_spi_drvdata *devtype;
+	int ret;
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	if (ret)
+		return ret;
 
 	omap3_master = xzalloc(sizeof(*omap3_master));
 
@@ -374,7 +384,10 @@ static int omap3_spi_probe(struct device_d *dev)
 	master->setup = omap3_spi_setup;
 	master->transfer = omap3_spi_transfer;
 
-	omap3_master->regs = dev_request_mem_region(dev, 0);
+	omap3_master->base = dev_request_mem_region(dev, 0);
+	omap3_master->regs = omap3_master->base;
+
+	omap3_master->regs += devtype->register_offset;
 
 	spi_reset(master);
 
@@ -383,8 +396,42 @@ static int omap3_spi_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct omap_spi_drvdata omap3_data = {
+	.register_offset = 0x0,
+};
+
+static struct omap_spi_drvdata omap4_data = {
+	.register_offset = 0x100,
+};
+
+static __maybe_unused struct of_device_id omap_spi_dt_ids[] = {
+	{
+		.compatible = "ti,omap2-mcspi",
+		.data = (unsigned long)&omap3_data,
+	}, {
+		.compatible = "ti,omap4-mcspi",
+		.data = (unsigned long)&omap4_data,
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct platform_device_id omap_spi_ids[] = {
+	{
+		.name = "omap3-spi",
+		.driver_data = (unsigned long)&omap3_data,
+	}, {
+		.name = "omap4-spi",
+		.driver_data = (unsigned long)&omap4_data,
+	}, {
+		/* sentinel */
+	},
+};
+
 static struct driver_d omap3_spi_driver = {
-	.name = "omap3_spi",
+	.name = "omap-spi",
 	.probe = omap3_spi_probe,
+	.of_compatible = DRV_OF_COMPAT(omap_spi_dt_ids),
+	.id_table = omap_spi_ids,
 };
 device_platform_driver(omap3_spi_driver);

@@ -94,7 +94,10 @@ void gpmc_cs_config(char cs, struct gpmc_config *config)
 {
 	void __iomem *reg = GPMC_REG(CONFIG1_0) + (cs * GPMC_CONFIG_CS_SIZE);
 	unsigned char x = 0;
-	debug("gpmccs=0x%x cfg=0x%p\n", cs, config);
+	uint32_t config7;
+
+	debug("%s: cs=%d base=0x%08x size=0x%08x\n", __func__,
+			cs, config->base, config->size);
 
 	/* Disable the CS before reconfiguring */
 	writel(0x0, GPMC_REG(CONFIG7_0) + (cs * GPMC_CONFIG_CS_SIZE));
@@ -102,22 +105,22 @@ void gpmc_cs_config(char cs, struct gpmc_config *config)
 
 	/* Write the CFG1-6 regs */
 	while (x < 6) {
-		debug("gpmccfg%d Reg:0x%p <-0x%08x\n",
-				x, reg, config->cfg[x]);
+		debug("gpmccfg%d Reg:0x%p <-0x%08x, old 0x%08x\n",
+				x, reg, config->cfg[x], readl(reg));
 		writel(config->cfg[x], reg);
 		reg += GPMC_CONFIG_REG_OFF;
 		x++;
 	}
-	/* reg now points to CFG7 */
-	debug("gpmccfg%d Reg:0x%p <-0x%08x\n",
-			x, reg, (0x1 << 6) |		/* CS enable */
-		     ((config->size & 0xF) << 8) |	/* Size */
-		     ((config->base >> 24) & 0x3F));
 
-	writel((0x1 << 6) |			/* CS enable */
+	config7 = (0x1 << 6) | /* CS enable */
 		     ((config->size & 0xF) << 8) |	/* Size */
-		     ((config->base >> 24) & 0x3F),	/* Address */
-		     reg);
+		     ((config->base >> 24) & 0x3F);
+
+	debug("gpmccfg%d Reg:0x%p <-0x%08x, old 0x%08x\n",
+			x, reg, config7, readl(reg));
+
+	writel(config7, reg);
+
 	mdelay(1);		/* Settling time */
 }
 EXPORT_SYMBOL(gpmc_cs_config);

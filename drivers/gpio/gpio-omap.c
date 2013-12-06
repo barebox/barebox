@@ -48,6 +48,18 @@ struct omap_gpio_chip {
 	struct gpio_chip chip;
 };
 
+struct omap_gpio_drvdata {
+	unsigned int regofs;
+};
+
+static struct omap_gpio_drvdata gpio_omap3_drvdata = {
+	.regofs = 0x0,
+};
+
+static struct omap_gpio_drvdata gpio_omap4_drvdata = {
+	.regofs = 0x100,
+};
+
 static inline int omap_get_gpio_index(int gpio)
 {
 	return gpio & 0x1f;
@@ -129,11 +141,24 @@ static struct gpio_ops omap_gpio_ops = {
 static int omap_gpio_probe(struct device_d *dev)
 {
 	struct omap_gpio_chip *omapgpio;
+	struct omap_gpio_drvdata *drvdata = NULL;
+
+	dev_get_drvdata(dev, (unsigned long *)&drvdata);
 
 	omapgpio = xzalloc(sizeof(*omapgpio));
 	omapgpio->base = dev_request_mem_region(dev, 0);
+	if (drvdata)
+		omapgpio->base += drvdata->regofs;
+
 	omapgpio->chip.ops = &omap_gpio_ops;
-	omapgpio->chip.base = dev->id * 32;
+	if (dev->id < 0) {
+		omapgpio->chip.base = of_alias_get_id(dev->device_node, "gpio");
+		if (omapgpio->chip.base < 0)
+			return omapgpio->chip.base;
+		omapgpio->chip.base *= 32;
+	} else {
+		omapgpio->chip.base = dev->id * 32;
+	}
 	omapgpio->chip.ngpio = 32;
 	omapgpio->chip.dev = dev;
 	gpiochip_add(&omapgpio->chip);
@@ -144,9 +169,21 @@ static int omap_gpio_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id omap_gpio_dt_ids[] = {
+	{
+		.compatible = "ti,omap4-gpio",
+		.data = (unsigned long)&gpio_omap4_drvdata,
+	}, {
+		.compatible = "ti,omap3-gpio",
+		.data = (unsigned long)&gpio_omap3_drvdata,
+	}, {
+	}
+};
+
 static struct driver_d omap_gpio_driver = {
 	.name = "omap-gpio",
 	.probe = omap_gpio_probe,
+	.of_compatible = DRV_OF_COMPAT(omap_gpio_dt_ids),
 };
 
 static int omap_gpio_add(void)

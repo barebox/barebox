@@ -20,33 +20,67 @@
 #include <common.h>
 #include <driver.h>
 #include <xfuncs.h>
+#include <malloc.h>
 
-static struct device_d *alloc_device(const char* devname, int id, void *pdata)
+struct device_d *device_alloc(const char *devname, int id)
 {
 	struct device_d *dev;
 
 	dev = xzalloc(sizeof(*dev));
 	strcpy(dev->name, devname);
 	dev->id = id;
-	dev->platform_data = pdata;
 
 	return dev;
+}
+
+int device_add_data(struct device_d *dev, void *data, size_t size)
+{
+	free(dev->platform_data);
+
+	if (data)
+		dev->platform_data = xmemdup(data, size);
+	else
+		dev->platform_data = NULL;
+
+	return 0;
+}
+
+int device_add_resources(struct device_d *dev, const struct resource *res, int num)
+{
+	dev->resource = xmemdup(res, sizeof(*res) * num);
+	dev->num_resources = num;
+
+	return 0;
+}
+
+int device_add_resource(struct device_d *dev, const char *resname,
+		resource_size_t start, resource_size_t size, unsigned int flags)
+{
+	struct resource res = {
+		.start = start,
+		.end = start + size - 1,
+		.flags = flags,
+	};
+
+	if (resname)
+		res.name = xstrdup(resname);
+
+	return device_add_resources(dev, &res, 1);
 }
 
 struct device_d *add_generic_device(const char* devname, int id, const char *resname,
 		resource_size_t start, resource_size_t size, unsigned int flags,
 		void *pdata)
 {
-	struct resource *res;
+	struct device_d *dev;
 
-	res = xzalloc(sizeof(struct resource));
-	if (resname)
-		res[0].name = xstrdup(resname);
-	res[0].start = start;
-	res[0].end = start + size - 1;
-	res[0].flags = flags;
+	dev = device_alloc(devname, id);
+	dev->platform_data = pdata;
+	device_add_resource(dev, resname, start, size, flags);
 
-	return add_generic_device_res(devname, id, res, 1, pdata);
+	platform_device_register(dev);
+
+	return dev;
 }
 EXPORT_SYMBOL(add_generic_device);
 
@@ -55,9 +89,9 @@ struct device_d *add_generic_device_res(const char* devname, int id,
 {
 	struct device_d *dev;
 
-	dev = alloc_device(devname, id, pdata);
-	dev->resource = res;
-	dev->num_resources = nb;
+	dev = device_alloc(devname, id);
+	dev->platform_data = pdata;
+	device_add_resources(dev, res, nb);
 
 	platform_device_register(dev);
 

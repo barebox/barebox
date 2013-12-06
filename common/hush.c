@@ -132,7 +132,6 @@ extern int do_bootd(int flag, int argc, char *argv[]);      /* do_bootd */
 
 #define EXIT_SUCCESS 0
 #define EOF -1
-#define syntax() syntax_err()
 #define xstrdup strdup
 #define error_msg printf
 
@@ -254,7 +253,7 @@ typedef struct {
  * available?  Where is it documented? */
 struct in_str {
 	const char *p;
-	int __promptme;
+	int interrupt;
 	int promptmode;
 	int (*get) (struct in_str *);
 	int (*peek) (struct in_str *);
@@ -265,8 +264,27 @@ struct in_str {
 
 #define final_printf debug
 
-static void syntax_err(void) {
-	 printf("syntax error\n");
+static void syntax(void)
+{
+	printf("syntax error\n");
+}
+
+static void syntaxf(const char *fmt, ...)
+{
+	va_list args;
+
+	printf("syntax error: ");
+
+	va_start(args, fmt);
+
+	vprintf(fmt, args);
+
+	va_end(args);
+}
+
+static void syntax_unexpected_token(const char *token)
+{
+	syntaxf("unexpected token `%s'\n", token);
 }
 
 /*   o_string manipulation: */
@@ -420,17 +438,16 @@ static void get_user_input(struct in_str *i)
 {
 	int n;
 	static char the_command[CONFIG_CBSIZE];
+	char *prompt;
 
-	i->__promptme = 1;
+	if (i->promptmode == 1)
+		prompt = getprompt();
+	else
+		prompt = CONFIG_PROMPT_HUSH_PS2;
 
-	if (i->promptmode == 1) {
-		n = readline(getprompt(), console_buffer, CONFIG_CBSIZE);
-	} else {
-		n = readline(CONFIG_PROMPT_HUSH_PS2, console_buffer, CONFIG_CBSIZE);
-	}
-
+	n = readline(prompt, console_buffer, CONFIG_CBSIZE);
 	if (n == -1 ) {
-		i->__promptme = 0;
+		i->interrupt = 1;
 		n = 0;
 	}
 
@@ -440,25 +457,27 @@ static void get_user_input(struct in_str *i)
 	if (i->promptmode == 1) {
 		strcpy(the_command,console_buffer);
 		i->p = the_command;
-	} else {
-		if (console_buffer[0] != '\n') {
-			if (strlen(the_command) + strlen(console_buffer)
-			    < CONFIG_CBSIZE) {
-				n = strlen(the_command);
-				the_command[n - 1] = ' ';
-				strcpy(&the_command[n], console_buffer);
-			}
-			else {
-				the_command[0] = '\n';
-				the_command[1] = '\0';
-			}
-		}
-		if (i->__promptme == 0) {
+		return;
+	}
+
+	if (console_buffer[0] != '\n') {
+		if (strlen(the_command) + strlen(console_buffer)
+		    < CONFIG_CBSIZE) {
+			n = strlen(the_command);
+			the_command[n - 1] = ' ';
+			strcpy(&the_command[n], console_buffer);
+		} else {
 			the_command[0] = '\n';
 			the_command[1] = '\0';
 		}
-		i->p = console_buffer;
 	}
+
+	if (i->interrupt) {
+		the_command[0] = '\n';
+		the_command[1] = '\0';
+	}
+
+	i->p = console_buffer;
 }
 
 /* This is the magic location that prints prompts
@@ -468,21 +487,23 @@ static int file_get(struct in_str *i)
 	int ch;
 
 	ch = 0;
+
 	/* If there is data waiting, eat it up */
-	if (i->p && *i->p) {
+	if (i->p && *i->p)
+		return *i->p++;
+
+	/* need to double check i->file because we might be doing something
+	 * more complicated by now, like sourcing or substituting. */
+	while (!i->p  || strlen(i->p) == 0 )
+		get_user_input(i);
+
+	i->promptmode = 2;
+
+	if (i->p && *i->p)
 		ch = *i->p++;
-	} else {
-		/* need to double check i->file because we might be doing something
-		 * more complicated by now, like sourcing or substituting. */
-			while (!i->p  || strlen(i->p) == 0 ) {
-				get_user_input(i);
-			}
-			i->promptmode = 2;
-			if (i->p && *i->p) {
-				ch = *i->p++;
-			}
-		debug("%s: got a %d\n", __func__, ch);
-	}
+
+	debug("%s: got a %d\n", __func__, ch);
+
 	return ch;
 }
 
@@ -498,7 +519,7 @@ static void setup_file_in_str(struct in_str *i)
 {
 	i->peek = file_peek;
 	i->get = file_get;
-	i->__promptme = 1;
+	i->interrupt = 0;
 	i->promptmode = 1;
 	i->p = NULL;
 }
@@ -507,7 +528,7 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 {
 	i->peek = static_peek;
 	i->get = static_get;
-	i->__promptme = 1;
+	i->interrupt = 0;
 	i->promptmode = 1;
 	i->p = s;
 }
@@ -1171,59 +1192,61 @@ static struct reserved_combo reserved_list[] = {
 	{ "do",    RES_DO,    FLAG_DONE },
 	{ "done",  RES_DONE,  FLAG_END  }
 };
-#define NRES (sizeof(reserved_list)/sizeof(struct reserved_combo))
 
 static int reserved_word(o_string *dest, struct p_context *ctx)
 {
 	struct reserved_combo *r;
+	int i;
 
-	for (r = reserved_list; r < reserved_list + NRES; r++) {
-		if (strcmp(dest->data, r->literal) == 0) {
+	for (i = 0; i < ARRAY_SIZE(reserved_list); i++) {
+		r = &reserved_list[i];
 
-			debug("found reserved word %s, code %d\n",r->literal,r->code);
+		if (strcmp(dest->data, r->literal))
+			continue;
 
-			if (r->flag & FLAG_START) {
-				struct p_context *new = xmalloc(sizeof(struct p_context));
+		debug("found reserved word %s, code %d\n",r->literal,r->code);
 
-				debug("push stack\n");
+		if (r->flag & FLAG_START) {
+			struct p_context *new = xmalloc(sizeof(struct p_context));
 
-				if (ctx->w == RES_IN || ctx->w == RES_FOR) {
-					syntax();
-					free(new);
-					ctx->w = RES_SNTX;
-					b_reset(dest);
+			debug("push stack\n");
 
-					return 1;
-				}
-				*new = *ctx;   /* physical copy */
-				initialize_context(ctx);
-				ctx->stack = new;
-			} else if (ctx->w == RES_NONE || !(ctx->old_flag & (1 << r->code))) {
+			if (ctx->w == RES_IN || ctx->w == RES_FOR) {
 				syntax();
+				free(new);
 				ctx->w = RES_SNTX;
 				b_reset(dest);
+
 				return 1;
 			}
-
-			ctx->w = r->code;
-			ctx->old_flag = r->flag;
-
-			if (ctx->old_flag & FLAG_END) {
-				struct p_context *old;
-
-				debug("pop stack\n");
-
-				done_pipe(ctx,PIPE_SEQ);
-				old = ctx->stack;
-				old->child->group = ctx->list_head;
-				*ctx = *old;   /* physical copy */
-				free(old);
-			}
-
+			*new = *ctx;   /* physical copy */
+			initialize_context(ctx);
+			ctx->stack = new;
+		} else if (ctx->w == RES_NONE || !(ctx->old_flag & (1 << r->code))) {
+			syntax_unexpected_token(r->literal);
+			ctx->w = RES_SNTX;
 			b_reset(dest);
-
 			return 1;
 		}
+
+		ctx->w = r->code;
+		ctx->old_flag = r->flag;
+
+		if (ctx->old_flag & FLAG_END) {
+			struct p_context *old;
+
+			debug("pop stack\n");
+
+			done_pipe(ctx,PIPE_SEQ);
+			old = ctx->stack;
+			old->child->group = ctx->list_head;
+			*ctx = *old;   /* physical copy */
+			free(old);
+		}
+
+		b_reset(dest);
+
+		return 1;
 	}
 
 	return 0;
@@ -1465,7 +1488,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 
 	while ((ch = b_getch(input)) != EOF) {
 		m = map[ch];
-		if (input->__promptme == 0)
+		if (input->interrupt)
 			return 1;
 		next = (ch == '\n') ? 0 : b_peek(input);
 
@@ -1523,7 +1546,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 			dest->nonnull = 1;
 			b_addchr(dest, '\'');
 			while (ch = b_getch(input), ch != EOF && ch != '\'') {
-				if (input->__promptme == 0)
+				if (input->interrupt)
 					return 1;
 				b_addchr(dest,ch);
 			}
@@ -1548,7 +1571,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				b_getch(input);
 				done_pipe(ctx, PIPE_AND);
 			} else {
-				syntax_err();
+				syntax();
 				return 1;
 			}
 			break;
@@ -1561,7 +1584,7 @@ static int parse_stream(o_string *dest, struct p_context *ctx,
 				/* we could pick up a file descriptor choice here
 				 * with redirect_opt_num(), but bash doesn't do it.
 				 * "echo foo 2| cat" yields "foo 2". */
-				syntax_err();
+				syntax();
 				return 1;
 			}
 			break;
@@ -1655,7 +1678,7 @@ static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int fla
 				free(ctx->stack);
 				b_reset(&temp);
 			}
-			if (inp->__promptme == 0)
+			if (inp->interrupt)
 				printf("<INTERRUPT>\n");
 			temp.nonnull = 0;
 			temp.quote = 0;
@@ -1853,14 +1876,17 @@ int run_shell(void)
 	int rcode;
 	struct in_str input;
 	struct p_context ctx;
+	int exit = 0;
 
 	do {
 		setup_file_in_str(&input);
 		rcode = parse_stream_outer(&ctx, &input, FLAG_PARSE_SEMICOLON);
-		if (rcode < -1)
+		if (rcode < -1) {
+			exit = 1;
 			rcode = -rcode - 2;
+		}
 		release_context(&ctx);
-	} while (!input.__promptme);
+	} while (!exit);
 
 	return rcode;
 }

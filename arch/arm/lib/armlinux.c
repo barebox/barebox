@@ -261,7 +261,7 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 	int architecture;
 
 	if (oftree) {
-		printf("booting Linux kernel with devicetree\n");
+		printf("booting kernel with devicetree\n");
 		params = oftree;
 	} else {
 		setup_tags(initrd_address, initrd_size, swap);

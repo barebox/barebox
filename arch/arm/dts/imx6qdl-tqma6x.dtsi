@@ -29,6 +29,10 @@
 	phy-mode = "rgmii";
 };
 
+&ocotp1 {
+	barebox,provide-mac-address = <&fec 0x620>;
+};
+
 &i2c1 {
 	status = "okay";
 	clock-frequency = <100000>;

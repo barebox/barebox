@@ -20,12 +20,21 @@
 #include <asm/barebox-arm.h>
 #include <mach/lowlevel.h>
 #include <mach/tegra20-pmc.h>
+#include <mach/tegra20-car.h>
 
 void tegra_maincomplex_entry(void)
 {
 	uint32_t rambase, ramsize;
 
 	arm_cpu_lowlevel_init();
+
+	/* switch to PLLX */
+	writel(CRC_CCLK_BURST_POLICY_SYS_STATE_RUN <<
+	       CRC_CCLK_BURST_POLICY_SYS_STATE_SHIFT |
+	       CRC_CCLK_BURST_POLICY_SRC_PLLX_OUT0 <<
+	       CRC_CCLK_BURST_POLICY_RUN_SRC_SHIFT,
+	       TEGRA_CLK_RESET_BASE + CRC_CCLK_BURST_POLICY);
+	writel(CRC_SUPER_CDIV_ENB, TEGRA_CLK_RESET_BASE + CRC_SUPER_CCLK_DIV);
 
 	switch (tegra_get_chiptype()) {
 	case TEGRA20:

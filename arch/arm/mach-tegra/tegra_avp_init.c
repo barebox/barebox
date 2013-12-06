@@ -103,6 +103,8 @@ static void init_pllx(void)
 		    CRC_OSC_CTRL_OSC_FREQ_MASK) >> CRC_OSC_CTRL_OSC_FREQ_SHIFT;
 
 	conf = &pllx_config_table[chiptype][osc_freq];
+	/* we are not relocated yet - globals are a bit more tricky here */
+	conf = (struct pll_config *)((char *)conf - get_runtime_offset());
 
 	/* set PLL bypass and frequency parameters */
 	reg = CRC_PLLX_BASE_BYPASS;

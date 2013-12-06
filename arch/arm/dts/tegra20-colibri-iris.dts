@@ -29,4 +29,9 @@
 			};
 		};
 	};
+
+	sdhci@c8000600 {
+		status = "okay";
+		bus-width = <4>;
+	};
 };

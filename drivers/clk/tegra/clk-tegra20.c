@@ -295,6 +295,20 @@ static void tegra20_periph_init(void)
 	clks[uarte] = tegra_clk_register_periph_nodiv("uarte", mux_pllpcm_clkm,
 			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
 			CRC_CLK_SOURCE_UARTE, uarte, TEGRA_PERIPH_ON_APB);
+
+	/* peripheral clocks with a divider */
+	clks[sdmmc1] = tegra_clk_register_periph("sdmmc1", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_SDMMC1, sdmmc1, 1);
+	clks[sdmmc2] = tegra_clk_register_periph("sdmmc2", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_SDMMC2, sdmmc2, 1);
+	clks[sdmmc3] = tegra_clk_register_periph("sdmmc3", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_SDMMC3, sdmmc3, 1);
+	clks[sdmmc4] = tegra_clk_register_periph("sdmmc4", mux_pllpcm_clkm,
+			ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_SDMMC4, sdmmc4, 1);
 }
 
 static struct tegra_clk_init_table init_table[] = {
@@ -310,6 +324,10 @@ static struct tegra_clk_init_table init_table[] = {
 	{uartc,		pll_p,		0,		1},
 	{uartd,		pll_p,		0,		1},
 	{uarte,		pll_p,		0,		1},
+	{sdmmc1,	pll_p,		48000000,	0},
+	{sdmmc2,	pll_p,		48000000,	0},
+	{sdmmc3,	pll_p,		48000000,	0},
+	{sdmmc4,	pll_p,		48000000,	0},
 	{clk_max,	clk_max,	0,		0}, /* sentinel */
 };
 
@@ -324,6 +342,13 @@ static int tegra20_car_probe(struct device_d *dev)
 	tegra20_periph_init();
 
 	tegra_init_from_table(init_table, clks, clk_max);
+
+	/* speed up system bus */
+	writel(CRC_SCLK_BURST_POLICY_SYS_STATE_RUN <<
+	       CRC_SCLK_BURST_POLICY_SYS_STATE_SHIFT |
+	       CRC_SCLK_BURST_POLICY_SRC_PLLC_OUT1 <<
+	       CRC_SCLK_BURST_POLICY_RUN_SRC_SHIFT,
+	       car_base + CRC_SCLK_BURST_POLICY);
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);

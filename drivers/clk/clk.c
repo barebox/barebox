@@ -271,6 +271,10 @@ struct of_clk_provider {
 	void *data;
 };
 
+extern struct of_device_id __clk_of_table_start[];
+const struct of_device_id __clk_of_table_sentinel
+	__attribute__ ((unused,section (".__clk_of_table_end")));
+
 static LIST_HEAD(of_clk_providers);
 
 struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec,
@@ -354,6 +358,39 @@ struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec)
 	}
 
 	return clk;
+}
+
+/**
+ * of_clk_init() - Scan and init clock providers from the DT
+ * @root: parent of the first level to probe or NULL for the root of the tree
+ * @matches: array of compatible values and init functions for providers.
+ *
+ * This function scans the device tree for matching clock providers and
+ * calls their initialization functions
+ *
+ * Returns 0 on success, < 0 on failure.
+ */
+int of_clk_init(struct device_node *root, const struct of_device_id *matches)
+{
+	const struct of_device_id *match;
+	int rc;
+
+	if (!root)
+		root = of_find_node_by_path("/");
+	if (!root)
+		return -EINVAL;
+	if (!matches)
+		matches = __clk_of_table_start;
+
+	for_each_matching_node_and_match(root, matches, &match) {
+		of_clk_init_cb_t clk_init_cb = (of_clk_init_cb_t)match->data;
+		rc = clk_init_cb(root);
+		if (rc)
+			pr_err("%s: failed to init clock for %s: %d\n",
+			       __func__, root->full_name, rc);
+	}
+
+	return 0;
 }
 #endif
 

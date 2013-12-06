@@ -54,3 +54,26 @@ struct clk *clk_fixed(const char *name, int rate)
 
 	return &fix->clk;
 }
+
+#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+/**
+ * of_fixed_clk_setup() - Setup function for simple fixed rate clock
+ */
+static int of_fixed_clk_setup(struct device_node *node)
+{
+	struct clk *clk;
+	const char *clk_name = node->name;
+	u32 rate;
+
+	if (of_property_read_u32(node, "clock-frequency", &rate))
+		return -EINVAL;
+
+	of_property_read_string(node, "clock-output-names", &clk_name);
+
+	clk = clk_fixed(clk_name, rate);
+	if (IS_ERR(clk))
+		return IS_ERR(clk);
+	return of_clk_add_provider(node, of_clk_src_simple_get, clk);
+}
+CLK_OF_DECLARE(fixed_clk, "fixed-clock", of_fixed_clk_setup);
+#endif

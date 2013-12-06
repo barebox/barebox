@@ -10,6 +10,12 @@
 
 #ifdef __BAREBOX__	/* Shut down "ANSI does not permit..." warnings */
 #include <common.h>
+#include <xfuncs.h>
+#include <fs.h>
+#include <fcntl.h>
+#include <malloc.h>
+#include <linux/ctype.h>
+#include <errno.h>
 #endif
 
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
@@ -178,3 +184,57 @@ uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
     return crc;
 }
 
+int file_crc(char *filename, ulong start, ulong size, ulong *crc,
+		    ulong *total)
+{
+	int fd, now;
+	int ret = 0;
+	char *buf;
+
+	*total = 0;
+	*crc = 0;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		printf("open %s: %s\n", filename, strerror(errno));
+		return fd;
+	}
+
+	if (start > 0) {
+		off_t lseek_ret;
+		errno = 0;
+		lseek_ret = lseek(fd, start, SEEK_SET);
+		if (lseek_ret == (off_t)-1 && errno) {
+			perror("lseek");
+			ret = -1;
+			goto out;
+		}
+	}
+
+	buf = xmalloc(4096);
+
+	while (size) {
+		now = min((ulong)4096, size);
+		now = read(fd, buf, now);
+		if (now < 0) {
+			ret = now;
+			perror("read");
+			goto out_free;
+		}
+		if (!now)
+			break;
+		*crc = crc32(*crc, buf, now);
+		size -= now;
+		*total += now;
+	}
+
+out_free:
+	free(buf);
+out:
+	close(fd);
+
+	return ret;
+}
+#ifdef __BAREBOX__
+EXPORT_SYMBOL(file_crc);
+#endif

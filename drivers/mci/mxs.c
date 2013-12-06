@@ -570,6 +570,7 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 	/* feed forward the platform specific values */
 	host->voltages = pd->voltages;
 	host->host_caps = pd->caps;
+	host->devname = pd->devname;
 
 	mxs_mci->clk = clk_get(hw_dev, NULL);
 	if (IS_ERR(mxs_mci->clk))

@@ -334,6 +334,7 @@ kwboot_xm_makeblock(struct kwboot_block *block, const void *data,
 	size_t n;
 	int i;
 
+	block->soh = SOH;
 	block->pnum = pnum;
 	block->_pnum = ~block->pnum;
 

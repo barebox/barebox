@@ -24,6 +24,7 @@
 #include <getopt.h>
 #include <command.h>
 #include <envfs.h>
+#include <errno.h>
 #include <fs.h>
 
 static int do_loadenv(int argc, char *argv[])

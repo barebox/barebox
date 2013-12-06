@@ -25,6 +25,7 @@
 #include <console.h>
 #include <driver.h>
 #include <fs.h>
+#include <of.h>
 #include <init.h>
 #include <clock.h>
 #include <kfifo.h>

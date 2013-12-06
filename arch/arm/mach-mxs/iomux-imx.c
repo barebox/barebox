@@ -99,7 +99,7 @@ void imx_gpio_mode(uint32_t m)
 
 	/* some pins are disabled when configured for GPIO */
 	if ((gpio_pin > MAX_GPIO_NO) && (GET_FUNC(m) == IS_GPIO)) {
-		printf("Cannot configure pad %d to GPIO\n", gpio_pin);
+		printf("Cannot configure pad %u to GPIO\n", gpio_pin);
 		return;
 	}
 

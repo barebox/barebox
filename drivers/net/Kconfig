@@ -62,7 +62,7 @@ config DRIVER_NET_SMC91111
 
 config DRIVER_NET_DAVINCI_EMAC
 	bool "TI Davinci/OMAP EMAC ethernet driver"
-	depends on ARCH_DAVINCI || ARCH_OMAP3
+	depends on ARCH_OMAP3
 	select PHYLIB
 
 config DRIVER_NET_DM9K

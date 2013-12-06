@@ -30,6 +30,7 @@
 #include <linux/ctype.h>
 #include <errno.h>
 #include <fs.h>
+#include <of.h>
 #include <linux/list.h>
 #include <complete.h>
 #include <pinctrl.h>

@@ -28,7 +28,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
-#include <asm/hardware.h>
+#include <mach/hardware.h>
 #include <mach/at91_pit.h>
 #include <mach/io.h>
 #include <io.h>

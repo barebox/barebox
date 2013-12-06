@@ -2,6 +2,7 @@
 #define __MACH_BBU_H
 
 #include <bbu.h>
+#include <errno.h>
 
 struct imx_dcd_entry;
 struct imx_dcd_v2_entry;

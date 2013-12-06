@@ -12,6 +12,7 @@
  */
 
 #include <common.h>
+#include <of.h>
 #include <init.h>
 #include <mach/revision.h>
 #include <mach/generic.h>

@@ -19,6 +19,7 @@
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
+#include <of.h>
 
 #include <i2c/i2c.h>
 #include <mfd/stmpe-i2c.h>

@@ -20,6 +20,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <of.h>
 #include <pinctrl.h>
 #include <malloc.h>
 #include <mach/iomux-v3.h>

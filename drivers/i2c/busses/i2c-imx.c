@@ -34,6 +34,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
+#include <of.h>
 #include <malloc.h>
 #include <types.h>
 #include <xfuncs.h>

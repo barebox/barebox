@@ -20,6 +20,7 @@
 #include <common.h>
 #include <init.h>
 #include <sizes.h>
+#include <of.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>

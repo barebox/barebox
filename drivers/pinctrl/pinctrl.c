@@ -19,6 +19,8 @@
 #include <common.h>
 #include <malloc.h>
 #include <pinctrl.h>
+#include <errno.h>
+#include <of.h>
 
 static LIST_HEAD(pinctrl_list);
 

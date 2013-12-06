@@ -25,6 +25,7 @@
 #include <mach/imx6.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <sizes.h>
+#include <of.h>
 
 #define GK802_GPIO_RECOVERY_BTN	IMX_GPIO_NR(3, 16)	/* recovery button */
 #define GK802_GPIO_RTL8192_PDN	IMX_GPIO_NR(2, 0)	/* RTL8192CU powerdown */

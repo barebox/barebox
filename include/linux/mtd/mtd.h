@@ -12,6 +12,7 @@
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #include <driver.h>
+#include <errno.h>
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/mtd/mtd-abi.h>

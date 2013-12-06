@@ -326,7 +326,7 @@ static int transfer(struct libusb_device_handle *h, int report, unsigned char *p
 						memcpy(p, &tmp[1], *last_trans);
 					}
 				} else {
-					printf("Unexpected report %i err=%i, cnt=%i, last_trans=%i, %02x %02x %02x %02x\n",
+					printf("Unexpected report %i err=%i, cnt=%u, last_trans=%i, %02x %02x %02x %02x\n",
 						tmp[0], err, cnt, *last_trans, tmp[0], tmp[1], tmp[2], tmp[3]);
 					err = 0;
 				}
@@ -475,7 +475,7 @@ static int read_memory(struct libusb_device_handle *h, struct usb_id *p_id,
 		tmp[0] = tmp[1] = tmp[2] = tmp[3] = 0;
 		err = transfer(h, 4, tmp, 64, &last_trans, p_id);
 		if (err) {
-			printf("r4 in err=%i, last_trans=%i  %02x %02x %02x %02x cnt=%d rem=%d\n",
+			printf("r4 in err=%i, last_trans=%i  %02x %02x %02x %02x cnt=%u rem=%d\n",
 					err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3], cnt, rem);
 			break;
 		}
@@ -483,7 +483,7 @@ static int read_memory(struct libusb_device_handle *h, struct usb_id *p_id,
 			if ((last_trans == 64) && (cnt == rem)) {
 				/* Last transfer is expected to be too large for HID */
 			} else {
-				printf("err: %02x %02x %02x %02x cnt=%d rem=%d last_trans=%i\n",
+				printf("err: %02x %02x %02x %02x cnt=%u rem=%d last_trans=%i\n",
 						tmp[0], tmp[1], tmp[2], tmp[3], cnt, rem, last_trans);
 			}
 			last_trans = rem;
@@ -1247,7 +1247,7 @@ static int do_irom_download(struct libusb_device_handle *h, struct usb_id *p_id,
 		}
 	}
 
-	printf("loading binary file(%s) to %08x, skip=0x%x, fsize=%d type=%d...\n",
+	printf("loading binary file(%s) to %08x, skip=0x%x, fsize=%u type=%d...\n",
 			curr->filename, dladdr, skip, fsize, type);
 
 	ret = load_file(h, p_id, p, cnt, buf, BUF_SIZE,

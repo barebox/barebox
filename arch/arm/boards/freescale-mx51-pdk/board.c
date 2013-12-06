@@ -24,6 +24,7 @@
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
+#include <of.h>
 #include <fcntl.h>
 #include <mach/bbu.h>
 #include <nand.h>

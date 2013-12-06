@@ -185,8 +185,6 @@ if IMX_MULTI_BOARDS
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Choose this to compile barebox for the Efika MX Smartbook
 
@@ -216,8 +214,6 @@ config MACH_DFI_FS700_M60
 config MACH_REALQ7
 	bool "DataModul i.MX6Q Real Qseven Board"
 	select ARCH_IMX6
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select HAVE_PBL_MULTI_IMAGES
 
 config MACH_GK802
 	bool "Zealz GK802 Mini PC"
@@ -265,7 +261,6 @@ config MACH_IMX21ADS
 	help
 	  Say Y here if you are using the Freescale i.MX21ads board equipped
 	  with a Freescale i.MX21 Processor
-
 
 # ----------------------------------------------------------
 
@@ -580,7 +575,7 @@ config ARCH_IMX_USBLOADER
 
 config IMX_IIM
 	tristate "IIM fusebox device"
-	depends on !ARCH_IMX21 && !ARCH_IMX21
+	depends on !ARCH_IMX21
 	help
 	  Device driver for the IC Identification Module (IIM) fusebox. Use the
 	  regular md/mw commands to program and read the fusebox.

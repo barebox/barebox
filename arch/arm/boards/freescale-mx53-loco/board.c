@@ -22,6 +22,7 @@
 #include <init.h>
 #include <fs.h>
 #include <io.h>
+#include <of.h>
 
 #include <mfd/mc13xxx.h>
 #include <i2c/i2c.h>

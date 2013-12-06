@@ -24,6 +24,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
+#include <of.h>
 #include <malloc.h>
 #include <mci.h>
 #include <clock.h>

@@ -21,6 +21,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <malloc.h>
+#include <of.h>
 
 #include <i2c/i2c.h>
 #include <spi/spi.h>

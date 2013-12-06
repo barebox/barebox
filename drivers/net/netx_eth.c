@@ -86,7 +86,7 @@ static int netx_eth_send (struct eth_device *edev,
 #endif
 	val = PFIFO_REG( PFIFO_BASE(CON_FIFO_PORT_LO(xcno)) );
 	if((val & FIFO_PTR_ERROR_MASK) & 0x8)
-		printf("error sending frame: %d\n",val);
+		printf("error sending frame: %u\n", val);
 
 	return 0;
 }

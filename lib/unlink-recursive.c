@@ -1,4 +1,5 @@
 #include <common.h>
+#include <errno.h>
 #include <libbb.h>
 #include <fs.h>
 

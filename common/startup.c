@@ -35,6 +35,7 @@
 #include <malloc.h>
 #include <debug_ll.h>
 #include <fs.h>
+#include <errno.h>
 #include <linux/stat.h>
 #include <envfs.h>
 #include <asm/sections.h>

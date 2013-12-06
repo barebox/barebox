@@ -107,4 +107,29 @@ typedef uint32_t __u32;
 # define be64_to_cpu(x)		(x)
 #endif
 
+#define min(x, y) ({                            \
+	typeof(x) _min1 = (x);                  \
+	typeof(y) _min2 = (y);                  \
+	(void) (&_min1 == &_min2);              \
+	_min1 < _min2 ? _min1 : _min2; })
+
+inline void *xmalloc(size_t size)
+{
+	void *p = NULL;
+
+	if (!(p = malloc(size))) {
+		printf("ERROR: out of memory\n");
+		exit(1);
+	}
+
+	return p;
+}
+
+inline void *xzalloc(size_t size)
+{
+	void *p = xmalloc(size);
+	memset(p, 0, size);
+	return p;
+}
+
 #endif

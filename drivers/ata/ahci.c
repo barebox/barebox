@@ -29,6 +29,7 @@
 #include <init.h>
 #include <errno.h>
 #include <io.h>
+#include <of.h>
 #include <malloc.h>
 #include <scsi.h>
 #include <linux/ctype.h>
@@ -375,7 +376,7 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ret = wait_on_timeout(WAIT_LINKUP,
 			(ahci_port_read(ahci_port, PORT_SCR_STAT) & 0xf) == 0x3);
 	if (ret) {
-		ahci_port_info(ahci_port, "SATA link timeout\n");;
+		ahci_port_info(ahci_port, "SATA link timeout\n");
 		ret = -ETIMEDOUT;
 		goto err_init;
 	}

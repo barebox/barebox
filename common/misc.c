@@ -22,6 +22,7 @@
 #include <magicvar.h>
 #include <globalvar.h>
 #include <environment.h>
+#include <of.h>
 
 int errno;
 EXPORT_SYMBOL(errno);

@@ -360,7 +360,8 @@ static void imx_bbu_internal_v2_init_flash_header(struct bbu_handler *handler, s
 	flash_header->self = imx_handler->app_dest + flash_header_offset;
 
 	flash_header->boot_data.start = imx_handler->app_dest;
-	flash_header->boot_data.size = ALIGN(imx_pre_image_size + data->len, 4096);;
+	flash_header->boot_data.size = ALIGN(imx_pre_image_size +
+			data->len, 4096);
 
 	if (imx_handler->dcdsize) {
 		flash_header->dcd.header.tag = DCD_HEADER_TAG;

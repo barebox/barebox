@@ -25,6 +25,7 @@
 #include <memory.h>
 #include <types.h>
 #include <sizes.h>
+#include <errno.h>
 #include <memtest.h>
 
 static const resource_size_t bitpattern[] = {

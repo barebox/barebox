@@ -433,7 +433,7 @@ void net_unregister(struct net_connection *con)
 static int net_ip_send(struct net_connection *con, int len)
 {
 	con->ip->tot_len = htons(sizeof(struct iphdr) + len);
-	con->ip->id = htons(net_ip_id++);;
+	con->ip->id = htons(net_ip_id++);
 	con->ip->check = 0;
 	con->ip->check = ~net_checksum((unsigned char *)con->ip, sizeof(struct iphdr));
 

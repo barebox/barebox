@@ -179,7 +179,7 @@ static int calc_bb_offset(struct mtd_info *mtd, struct mx28_fcb *fcb)
 	bb_mark_chunk = bb_mark_offset / chunk_total_size;
 	bb_mark_chunk_offs = bb_mark_offset - (bb_mark_chunk * chunk_total_size);
 	if (bb_mark_chunk_offs > chunk_data_size) {
-		printf("Unsupported ECC layout; BB mark resides in ECC data: %u\n",
+		printf("Unsupported ECC layout; BB mark resides in ECC data: %i\n",
 			bb_mark_chunk_offs);
 		return -EINVAL;
 	}
@@ -267,12 +267,12 @@ static int find_fcb(struct mtd_info *mtd, void *ref, int page)
 	chip->cmdfunc(mtd, NAND_CMD_READ0, 0x00, page);
 	ret = chip->ecc.read_page_raw(mtd, chip, buf, 1, page);
 	if (ret) {
-		printf("Failed to read FCB from page %u: %d\n", page, ret);
+		printf("Failed to read FCB from page %i: %d\n", page, ret);
 		return ret;
 	}
 	chip->select_chip(mtd, -1);
 	if (memcmp(buf, ref, mtd->writesize) == 0) {
-		printf("%s: Found FCB in page %u (%08x)\n", __func__,
+		printf("%s: Found FCB in page %i (%08x)\n", __func__,
 			page, page * mtd->writesize);
 		ret = 1;
 	}
@@ -376,7 +376,7 @@ int update_bcb(int argc, char *argv[])
 
 		ret = write_fcb(mtd, buf, block);
 		if (ret) {
-			printf("Failed to write FCB to block %u\n", block);
+			printf("Failed to write FCB to block %i\n", block);
 			return ret;
 		}
 

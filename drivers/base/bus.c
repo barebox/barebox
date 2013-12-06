@@ -7,6 +7,7 @@
 #include <common.h>
 #include <driver.h>
 #include <errno.h>
+#include <of.h>
 
 LIST_HEAD(bus_list);
 EXPORT_SYMBOL(bus_list);

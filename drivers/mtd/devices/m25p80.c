@@ -17,6 +17,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
+#include <of.h>
 #include <spi/spi.h>
 #include <spi/flash.h>
 #include <xfuncs.h>

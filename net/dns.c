@@ -127,7 +127,7 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 	debug("%s\n", __func__);
 
 	/* We sent 1 query. We want to see more that 1 answer. */
-	header = (struct header *)net_eth_to_udp_payload(packet);;
+	header = (struct header *)net_eth_to_udp_payload(packet);
 	if (ntohs(header->nqueries) != 1)
 		return;
 

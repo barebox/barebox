@@ -1,7 +1,7 @@
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
-#include <asm/hardware.h>
+#include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 
 #include "soc.h"

@@ -27,6 +27,7 @@
 #include <init.h>
 #include <gpio.h>
 #include <fec.h>
+#include <of.h>
 
 #include <linux/micrel_phy.h>
 #include <mfd/stmpe-i2c.h>

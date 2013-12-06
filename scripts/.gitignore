@@ -10,3 +10,5 @@ mkublheader
 omap_signGP
 zynq_mkimage
 socfpga_mkimage
+bareboxcrc32
+bareboxcrc32-target

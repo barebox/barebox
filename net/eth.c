@@ -23,6 +23,7 @@
 #include <driver.h>
 #include <init.h>
 #include <net.h>
+#include <of.h>
 #include <linux/phy.h>
 #include <errno.h>
 #include <malloc.h>

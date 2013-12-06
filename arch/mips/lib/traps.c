@@ -1,8 +1,9 @@
 #include <common.h>
 
 #include <asm/mipsregs.h>
+#include <asm/ptrace.h>
 
-void barebox_exc_handler(void *regs);
+void barebox_exc_handler(const struct pt_regs *regs);
 
 /*
  * Trap codes from OpenBSD trap.h
@@ -95,13 +96,44 @@ static char *get_exc_name(u32 cause)
 	return "unknown exception";
 }
 
-void barebox_exc_handler(void *regs)
+void barebox_exc_handler(const struct pt_regs *regs)
 {
-	printf("\nOoops, %s!\n", get_exc_name(read_c0_cause()));
-	printf("EPC = 0x%08x\n", read_c0_epc());
-	printf("CP0_STATUS = 0x%08x\n", read_c0_status());
-	printf("CP0_CAUSE = 0x%08x\n", read_c0_cause());
-	printf("CP0_CONFIG = 0x%08x\n\n", read_c0_config());
+	const int field = 2 * sizeof(unsigned long);
+	unsigned int cause = regs->cp0_cause;
+	int i;
+
+	printf("\nOoops, %s!\n\n", get_exc_name(cause));
+
+	/*
+	 * Saved main processor registers
+	 */
+	for (i = 0; i < 32; ) {
+		if ((i % 4) == 0)
+			printf("$%2d   :", i);
+		if (i == 0)
+			printf(" %0*lx", field, 0UL);
+		else if (i == 26 || i == 27)
+			printf(" %*s", field, "");
+		else
+			printf(" %0*lx", field, regs->regs[i]);
+
+		i++;
+		if ((i % 4) == 0)
+			printf("\n");
+	}
+
+	printf("Hi    : %0*lx\n", field, regs->hi);
+	printf("Lo    : %0*lx\n", field, regs->lo);
+
+	/*
+	 * Saved cp0 registers
+	 */
+	printf("epc   : %0*lx\n", field, regs->cp0_epc);
+	printf("ra    : %0*lx\n", field, regs->regs[31]);
+
+	printf("Status: %08x\n", (uint32_t) regs->cp0_status);
+	printf("Cause : %08x\n", cause);
+	printf("Config: %08x\n\n", read_c0_config());
 
 	hang();
 }

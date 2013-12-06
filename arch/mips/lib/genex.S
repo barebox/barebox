@@ -1,6 +1,7 @@
 #include <asm/asm.h>
 #include <asm/regdef.h>
 #include <asm/mipsregs.h>
+#include <asm/stackframe.h>
 
 	.text
 	.set	macro
@@ -10,6 +11,7 @@
 
 /* Exception vector */
 NESTED(handle_reserved, 0, sp)
+	SAVE_ALL
 	la	k0, barebox_exc_handler
 	jal	k0
 	 move	a0, sp

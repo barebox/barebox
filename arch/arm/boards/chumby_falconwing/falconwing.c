@@ -298,7 +298,6 @@ static int falconwing_devices_init(void)
 
 	falconwing_init_usb();
 
-	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
 
 	rc = envfs_register_partition("disk0", 1);

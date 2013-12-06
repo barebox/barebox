@@ -63,7 +63,6 @@ static int vpb_devices_init(void)
 			64 * 1024, IORESOURCE_MEM, &net_pdata);
 
 	armlinux_set_architecture(MACH_TYPE_VERSATILE_PB);
-	armlinux_set_bootparams((void *)(0x00000100));
 
 	return 0;
 }

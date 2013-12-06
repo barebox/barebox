@@ -283,7 +283,6 @@ static int mini6410_devices_init(void)
 	add_dm9000_device(0, S3C_CS1_BASE + 0x300, S3C_CS1_BASE + 0x304,
 				IORESOURCE_MEM_16BIT, &dm9000_data);
 
-	armlinux_set_bootparams((void *)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI6410);
 
 	return 0;

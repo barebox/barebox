@@ -263,7 +263,6 @@ static int efikamx_late_init(void)
 			flash_header_imx51_genesi_efikasb_end -
 			flash_header_imx51_genesi_efikasb_start, 0);
 
-	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(2370);
 	armlinux_set_revision(0x5100 | imx_silicon_revision());
 

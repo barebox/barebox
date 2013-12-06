@@ -125,7 +125,6 @@ static int mioa701_devices_init(void)
 	docg3_iospace = map_io_sections(0x0, (void *)0xe0000000, 0x2000);
 	add_generic_device("docg3", DEVICE_ID_DYNAMIC, NULL, (ulong) docg3_iospace,
 			0x2000, IORESOURCE_MEM, NULL);
-	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_MIOA701);
 
 	for (i = 0; i < ARRAY_SIZE(leds); i++)

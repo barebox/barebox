@@ -234,7 +234,6 @@ static int tqma53_devices_init(void)
 	imx53_add_mmc1(&tqma53_sd2_data);
 	imx53_add_mmc2(&tqma53_sd3_data);
 
-	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_TQMA53);
 
 	return 0;

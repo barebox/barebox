@@ -172,7 +172,6 @@ static int imx51_babbage_late_init(void)
 	imx51_init_lowlevel(800);
 	clock_notifier_call_chain();
 
-	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",

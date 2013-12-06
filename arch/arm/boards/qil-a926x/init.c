@@ -203,7 +203,6 @@ static int qil_a9260_devices_init(void)
 	ek_add_device_button();
 	qil_a9260_add_device_mb();
 
-	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	qil_a9260_set_board_type();
 
 	devfs_add_partition("nand0", 0x00000, SZ_128K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");

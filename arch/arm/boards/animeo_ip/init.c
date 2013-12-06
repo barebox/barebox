@@ -306,7 +306,6 @@ static int animeo_ip_devices_init(void)
 	animeo_ip_add_device_buttons();
 	animeo_ip_add_device_led();
 
-	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	/*
 	 * in production the machine id used is the cpu module machine id
 	 * PICOCOM1

@@ -177,7 +177,6 @@ static int f3s_devices_init(void)
 
 	imx35_add_fb(&ipu_fb_data);
 
-	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_MX35_3DS);
 
 	return 0;

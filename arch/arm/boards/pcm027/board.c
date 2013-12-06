@@ -158,7 +158,6 @@ static int pcm027_devices_init(void)
 
 	pxa_add_fb((void *)0x44000000, &fb_pdata);
 
-	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(MACH_TYPE_PCM027);
 
 	devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self0");

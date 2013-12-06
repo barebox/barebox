@@ -30,7 +30,6 @@ extern char flash_header_imx53_vmx53_end[];
 
 static int vmx53_late_init(void)
 {
-	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_VMX53);
 
 	barebox_set_model("Voipac VMX53");

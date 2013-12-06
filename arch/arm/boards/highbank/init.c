@@ -124,8 +124,6 @@ static int highbank_devices_init(void)
 		devfs_add_partition("ram0", FIRMWARE_DTB_BASE, SZ_64K, DEVFS_PARTITION_FIXED, "firmware-dtb");
 	}
 
-	armlinux_set_bootparams((void *)(0x00000100));
-
 	devfs_add_partition("nvram", 0x00000, SZ_16K, DEVFS_PARTITION_FIXED, "env0");
 
 	return 0;

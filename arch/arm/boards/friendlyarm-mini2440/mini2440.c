@@ -313,7 +313,6 @@ static int mini2440_devices_init(void)
 	s3c24xx_add_mci(&mci_data);
 	s3c24xx_add_fb(&s3c24x0_fb_data);
 	s3c24xx_add_ohci();
-	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI2440);
 
 	return 0;

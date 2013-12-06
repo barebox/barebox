@@ -76,6 +76,5 @@ void tiny6410_init(const char *bb_name)
 	for (i = 0; i < ARRAY_SIZE(tiny6410_pin_usage); i++)
 		s3c_gpio_mode(tiny6410_pin_usage[i]);
 
-	armlinux_set_bootparams((void *)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_TINY6410);
 }

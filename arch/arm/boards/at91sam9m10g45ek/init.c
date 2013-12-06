@@ -316,7 +316,6 @@ static int at91sam9m10g45ek_devices_init(void)
 	devfs_add_partition("nand0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 	dev_add_bb_dev("env_raw1", "env1");
 
-	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_6 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9M10G45EK);
 	ek_set_board_revision();
 

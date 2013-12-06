@@ -120,7 +120,6 @@ static int eukrea_cpuimx51_devices_init(void)
 	gpio_set_value(GPIO_LAN8700_RESET, 1);
 	gpio_direction_output(GPIO_LCD_BL, 0);
 
-	armlinux_set_bootparams((void *)0x90000100);
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX51SD);
 
 	return 0;

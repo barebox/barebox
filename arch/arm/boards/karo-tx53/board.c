@@ -214,7 +214,6 @@ static int tx53_devices_init(void)
 	imx53_add_mmc0(&tx53_sd1_data);
 	imx53_add_nand(&nand_info);
 
-	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_TX53);
 
 	/* rev xx30 can boot from nand or USB */

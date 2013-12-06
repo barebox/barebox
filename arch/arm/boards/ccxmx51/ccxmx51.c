@@ -461,8 +461,6 @@ static int ccxmx51_devices_init(void)
 
 	imx51_add_usbotg(&ccxmx51_otg_pdata);
 
-	armlinux_set_bootparams((void *)(MX51_CSD0_BASE_ADDR + 0x100));
-
 	armlinux_set_architecture(ccxmx51_id->wless ? MACH_TYPE_CCWMX51 : MACH_TYPE_CCMX51);
 
 	return 0;

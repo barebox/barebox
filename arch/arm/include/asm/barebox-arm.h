@@ -79,8 +79,18 @@ static inline unsigned long arm_barebox_image_place(unsigned long endmem)
 	return endmem;
 }
 
-#define ENTRY_FUNCTION(name)  \
-	void __naked __section(.text_head_entry_##name) \
-		name
+#define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
+	static void __##name(uint32_t, uint32_t, uint32_t);		\
+									\
+	void __naked __section(.text_head_entry_##name)	name		\
+				(uint32_t r0, uint32_t r1, uint32_t r2)	\
+		{							\
+			__barebox_arm_head();				\
+			__##name(r0, r1, r2);				\
+		}							\
+		static void __naked noinline __##name			\
+			(uint32_t arg0, uint32_t arg1, uint32_t arg2)
+
+
 
 #endif	/* _BAREBOX_ARM_H_ */

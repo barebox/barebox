@@ -5,11 +5,9 @@
 
 extern char __dtb_imx6q_sabrelite_start[];
 
-ENTRY_FUNCTION(start_imx6_sabrelite)(void)
+ENTRY_FUNCTION(start_imx6_sabrelite, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

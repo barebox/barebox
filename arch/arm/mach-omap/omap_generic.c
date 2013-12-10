@@ -45,15 +45,24 @@ static void *omap_sram_start(void)
 	return NULL;
 }
 
+static void *omap_scratch_space_start(void)
+{
+	if (cpu_is_am33xx())
+		return (void *)AM33XX_SRAM_SCRATCH_SPACE;
+	if (cpu_is_omap3())
+		return (void *)OMAP3_SRAM_SCRATCH_SPACE;
+	if (cpu_is_omap4())
+		return (void *)OMAP44XX_SRAM_SCRATCH_SPACE;
+	return NULL;
+}
+
 void __noreturn omap_start_barebox(void *barebox)
 {
 	int (*func)(void *) = barebox;
-	uint32_t *arg;
 	void *sramadr = omap_sram_start();
+	void *scratch = omap_scratch_space_start();
 
-	arg = (uint32_t *)&omap_bootinfo;
-
-	memcpy(sramadr, &omap_bootinfo, sizeof(uint32_t) * 3);
+	memcpy(sramadr, scratch, sizeof(uint32_t) * 3);
 
 	shutdown_barebox();
 	func(sramadr);

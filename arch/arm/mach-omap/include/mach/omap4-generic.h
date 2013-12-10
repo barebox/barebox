@@ -15,7 +15,7 @@ static inline void omap4_save_bootinfo(uint32_t *info)
 	if (i > OMAP44XX_SRAM_BASE + SZ_64K)
 		return;
 
-	omap_save_bootinfo(info);
+	memcpy((void *)OMAP44XX_SRAM_SCRATCH_SPACE, info, 3 * sizeof(uint32_t));
 }
 
 void __noreturn omap4_reset_cpu(unsigned long addr);

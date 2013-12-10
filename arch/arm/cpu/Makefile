@@ -23,7 +23,7 @@ obj-$(CONFIG_CACHE_L2X0) += cache-l2x0.o
 
 pbl-y += setupc.o
 pbl-$(CONFIG_PBL_SINGLE_IMAGE) += start-pbl.o
-pbl-$(CONFIG_PBL_MULTI_IMAGES) += start-images.o uncompress.o
+pbl-$(CONFIG_PBL_MULTI_IMAGES) += uncompress.o
 
 obj-y += common.o cache.o
 pbl-y += common.o cache.o

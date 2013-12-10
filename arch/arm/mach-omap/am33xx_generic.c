@@ -124,8 +124,9 @@ static int am33xx_bootsource(void)
 {
 	enum bootsource src;
 	int instance = 0;
+	uint32_t *am33xx_bootinfo = (void *)AM33XX_SRAM_SCRATCH_SPACE;
 
-	switch (omap_bootinfo[2] & 0xFF) {
+	switch (am33xx_bootinfo[2] & 0xFF) {
 	case 0x05:
 		src = BOOTSOURCE_NAND;
 		break;

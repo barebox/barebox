@@ -505,8 +505,9 @@ static int omap_vector_init(void)
 static int omap4_bootsource(void)
 {
 	enum bootsource src;
+	uint32_t *omap4_bootinfo = (void *)OMAP44XX_SRAM_SCRATCH_SPACE;
 
-	switch (omap_bootinfo[2] & 0xFF) {
+	switch (omap4_bootinfo[2] & 0xFF) {
 	case OMAP44XX_SAR_BOOT_NAND:
 		src = BOOTSOURCE_NAND;
 		break;

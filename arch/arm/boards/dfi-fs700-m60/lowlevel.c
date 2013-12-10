@@ -61,11 +61,9 @@ static inline void early_uart_init_6s(void)
 
 extern char __dtb_imx6q_dfi_fs700_m60_6q_start[];
 
-ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q)(void)
+ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 
@@ -80,12 +78,10 @@ ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q)(void)
 
 extern char __dtb_imx6dl_dfi_fs700_m60_6s_start[];
 
-ENTRY_FUNCTION(start_imx6dl_dfi_fs700_m60_6s)(void)
+ENTRY_FUNCTION(start_imx6dl_dfi_fs700_m60_6s, r0, r1, r2)
 {
 	uint32_t fdt;
 	int i;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

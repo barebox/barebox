@@ -5,11 +5,9 @@
 
 extern char __dtb_imx53_qsb_start[];
 
-ENTRY_FUNCTION(start_imx53_loco)(void)
+ENTRY_FUNCTION(start_imx53_loco, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

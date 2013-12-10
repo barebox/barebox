@@ -5,11 +5,9 @@
 
 extern char __dtb_imx51_babbage_start[];
 
-ENTRY_FUNCTION(start_imx51_babbage)(void)
+ENTRY_FUNCTION(start_imx51_babbage, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

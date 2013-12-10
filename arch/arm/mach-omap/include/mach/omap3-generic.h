@@ -16,7 +16,7 @@ static inline void omap3_save_bootinfo(uint32_t *info)
 	if (i > OMAP3_SRAM_BASE + SZ_64K)
 		return;
 
-	omap_save_bootinfo(info);
+	memcpy((void *)OMAP3_SRAM_SCRATCH_SPACE, info, 3 * sizeof(uint32_t));
 }
 
 u32 omap3_running_in_flash(void);

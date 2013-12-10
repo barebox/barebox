@@ -5,11 +5,9 @@
 
 extern char __dtb_imx53_voipac_bsb_start[];
 
-ENTRY_FUNCTION(start_imx53_vmx53)(void)
+ENTRY_FUNCTION(start_imx53_vmx53, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

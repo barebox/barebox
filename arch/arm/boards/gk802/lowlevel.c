@@ -5,11 +5,9 @@
 
 extern char __dtb_imx6q_gk802_start[];
 
-ENTRY_FUNCTION(start_imx6_gk802)(void)
+ENTRY_FUNCTION(start_imx6_gk802, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

@@ -55,11 +55,9 @@ static inline void setup_uart(void)
 
 extern char __dtb_imx6q_phytec_pbab01_start[];
 
-ENTRY_FUNCTION(start_phytec_pbab01_1gib)(void)
+ENTRY_FUNCTION(start_phytec_pbab01_1gib, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 
@@ -73,11 +71,9 @@ ENTRY_FUNCTION(start_phytec_pbab01_1gib)(void)
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
 
-ENTRY_FUNCTION(start_phytec_pbab01_2gib)(void)
+ENTRY_FUNCTION(start_phytec_pbab01_2gib, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

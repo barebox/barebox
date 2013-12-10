@@ -120,6 +120,7 @@
 /* OCMC */
 #define AM33XX_SRAM0_START			0x402f0400
 #define AM33XX_SRAM0_SIZE			(SZ_128K - SZ_1K)
+#define AM33XX_SRAM_SCRATCH_SPACE		0x4030b800 /* start of public stack */
 #define AM33XX_SRAM_GPMC_STACK_SIZE		(0x40)
 
 /* DDR offsets */

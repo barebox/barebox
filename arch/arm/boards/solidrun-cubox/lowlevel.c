@@ -23,11 +23,9 @@
 
 extern char __dtb_dove_cubox_start[];
 
-ENTRY_FUNCTION(start_solidrun_cubox)(void)
+ENTRY_FUNCTION(start_solidrun_cubox, r0, r1, r2)
 {
 	uint32_t fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

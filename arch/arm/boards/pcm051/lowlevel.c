@@ -13,6 +13,7 @@
 #include <mach/am33xx-mux.h>
 #include <mach/am33xx-generic.h>
 #include <mach/wdt.h>
+#include <debug_ll.h>
 
 static const struct am33xx_cmd_control MT41J256M8HX15E_2x256M8_cmd = {
 	.slave_ratio0 = 0x40,
@@ -45,6 +46,9 @@ static const struct am33xx_ddr_data MT41J256M8HX15E_2x256M8_data = {
 	.dll_lock_diff0		= 0x0,
 };
 
+extern char __dtb_am335x_phytec_phycore_start[];
+extern char __dtb_am335x_phytec_phycore_end[];
+
 /**
  * @brief The basic entry point for board initialization.
  *
@@ -54,8 +58,10 @@ static const struct am33xx_ddr_data MT41J256M8HX15E_2x256M8_data = {
  *
  * @return void
  */
-static int pcm051_board_init(void)
+static noinline void pcm051_board_init(void)
 {
+	unsigned long sdram = 0x80000000, fdt;
+
 	/* WDT1 is already running when the bootloader gets control
 	 * Disable it to avoid "random" resets
 	 */
@@ -65,9 +71,6 @@ static int pcm051_board_init(void)
 	writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
-	if (am33xx_running_in_sdram())
-		return 0;
-
 	am33xx_pll_init(MPUPLL_M_600, 25, DDRPLL_M_303);
 
 	am335x_sdram_init(0x18B, &MT41J256M8HX15E_2x256M8_cmd,
@@ -76,17 +79,42 @@ static int pcm051_board_init(void)
 
 	am33xx_uart0_soft_reset();
 	am33xx_enable_uart0_pin_mux();
+	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
+	putc_ll('>');
 
-	return 0;
+	/*
+	 * Copy the devicetree blob to sdram so that the barebox code finds it
+	 * inside valid SDRAM instead of SRAM.
+	 */
+	memcpy((void *)sdram, __dtb_am335x_phytec_phycore_start,
+			__dtb_am335x_phytec_phycore_end -
+			__dtb_am335x_phytec_phycore_start);
+	fdt = sdram;
+
+	barebox_arm_entry(sdram, SZ_512M, fdt);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(uint32_t *data)
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram, bootinfo, r1, r2)
 {
-	am33xx_save_bootinfo(data);
+	am33xx_save_bootinfo((void *)bootinfo);
 
 	arm_cpu_lowlevel_init();
 
-	pcm051_board_init();
+	/*
+	 * Setup C environment, the board init code uses global variables.
+	 * Stackpointer has already been initialized by the ROM code.
+	 */
+	relocate_to_current_adr();
+	setup_c();
 
-	barebox_arm_entry(0x80000000, SZ_512M, 0);
+	pcm051_board_init();
+}
+
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sdram, r0, r1, r2)
+{
+	uint32_t fdt;
+
+	fdt = (uint32_t)__dtb_am335x_phytec_phycore_start - get_runtime_offset();
+
+	barebox_arm_entry(0x80000000, SZ_512M, fdt);
 }

@@ -1,6 +1,7 @@
 #include <init.h>
 #include <sizes.h>
 #include <io.h>
+#include <linux/string.h>
 #include <debug_ll.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
@@ -102,6 +103,11 @@ static const struct am33xx_emif_regs ddr3_regs = {
 	.sdram_ref_ctrl		= 0xC30,
 };
 
+extern char __dtb_am335x_boneblack_start[];
+extern char __dtb_am335x_boneblack_end[];
+extern char __dtb_am335x_bone_start[];
+extern char __dtb_am335x_bone_end[];
+
 /**
  * @brief The basic entry point for board initialization.
  *
@@ -111,8 +117,22 @@ static const struct am33xx_emif_regs ddr3_regs = {
  *
  * @return void
  */
-static int beaglebone_board_init(void)
+static noinline int beaglebone_sram_init(void)
 {
+	uint32_t fdt, fdt_end, sdram_start, sdram_size;
+
+	sdram_start = 0x80000000;
+
+	if (is_beaglebone_black()) {
+		sdram_size = SZ_512M;
+		fdt = (uint32_t)__dtb_am335x_boneblack_start;
+		fdt_end = (uint32_t)__dtb_am335x_boneblack_end;
+	} else {
+		sdram_size = SZ_256M;
+		fdt = (uint32_t)__dtb_am335x_bone_start;
+		fdt_end = (uint32_t)__dtb_am335x_bone_end;
+	}
+
 	/* WDT1 is already running when the bootloader gets control
 	 * Disable it to avoid "random" resets
 	 */
@@ -120,9 +140,6 @@ static int beaglebone_board_init(void)
 	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 	__raw_writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
-
-	if (am33xx_running_in_sdram())
-		return 0;
 
 	/* Setup the PLLs and the clocks for the peripherals */
 	if (is_beaglebone_black()) {
@@ -140,23 +157,43 @@ static int beaglebone_board_init(void)
 	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');
 
-	return 0;
+	/*
+	 * Copy the devicetree blob to sdram so that the barebox code finds it
+	 * inside valid SDRAM instead of SRAM.
+	 */
+	memcpy((void *)sdram_start, (void *)fdt, fdt_end - fdt);
+	fdt = sdram_start;
+
+	barebox_arm_entry(sdram_start, sdram_size, fdt);
 }
 
-void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
+ENTRY_FUNCTION(start_am33xx_beaglebone_sram, bootinfo, r1, r2)
 {
-	unsigned sdram;
+	am33xx_save_bootinfo((void *)bootinfo);
 
-	am33xx_save_bootinfo(data);
+	/*
+	 * Setup C environment, the board init code uses global variables.
+	 * Stackpointer has already been initialized by the ROM code.
+	 */
+	relocate_to_current_adr();
+	setup_c();
 
-	arm_cpu_lowlevel_init();
+	beaglebone_sram_init();
+}
 
-	beaglebone_board_init();
+ENTRY_FUNCTION(start_am33xx_beaglebone_sdram, r0, r1, r2)
+{
+	uint32_t fdt, sdram_size;
 
-	if (is_beaglebone_black())
-		sdram = SZ_512M;
-	else
-		sdram = SZ_256M;
+	if (is_beaglebone_black()) {
+		sdram_size = SZ_512M;
+		fdt = (uint32_t)__dtb_am335x_boneblack_start;
+	} else {
+		sdram_size = SZ_256M;
+		fdt = (uint32_t)__dtb_am335x_bone_start;
+	}
 
-	barebox_arm_entry(0x80000000, sdram, 0);
+	fdt -= get_runtime_offset();
+
+	barebox_arm_entry(0x80000000, sdram_size, fdt);
 }

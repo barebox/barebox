@@ -39,11 +39,10 @@ static struct omap_barebox_part pcm051_barebox_part = {
 
 static int pcm051_devices_init(void)
 {
-	if (!of_machine_is_compatible("phytec,phycore-am335x"))
+	if (!of_machine_is_compatible("phytec,pcm051"))
 		return 0;
 
 	am33xx_register_ethaddr(0, 0);
-	writel(0x69, AM33XX_MAC_MII_SEL);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_SPI:

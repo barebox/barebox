@@ -1074,6 +1074,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 
 			slave->phy_id = phy_id[1];
 			slave->phy_if = of_get_phy_mode(child);
+			slave->slave_num = i;
 
 			i++;
 		}

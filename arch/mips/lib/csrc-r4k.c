@@ -32,7 +32,7 @@ static uint64_t c0_hpt_read(void)
 
 static struct clocksource cs = {
 	.read	= c0_hpt_read,
-	.mask	= 0xffffffff,
+	.mask	= CLOCKSOURCE_MASK(32),
 };
 
 static int clocksource_init(void)

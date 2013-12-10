@@ -40,6 +40,16 @@
 
 #include "beaglebone.h"
 
+static int beaglebone_coredevice_init(void)
+{
+	if (!of_machine_is_compatible("ti,am335x-bone"))
+		return 0;
+
+	am33xx_register_ethaddr(0, 0);
+	return 0;
+}
+coredevice_initcall(beaglebone_coredevice_init);
+
 static int beaglebone_devices_init(void)
 {
 	int black;
@@ -53,8 +63,6 @@ static int beaglebone_devices_init(void)
 		else
 			omap_set_bootmmc_devname("mmc1");
 	}
-
-	am33xx_register_ethaddr(0, 0);
 
 	black = is_beaglebone_black();
 

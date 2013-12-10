@@ -30,6 +30,17 @@
 #include <mach/am33xx-silicon.h>
 #include <mach/bbu.h>
 
+
+static int pcm051_coredevice_init(void)
+{
+	if (!of_machine_is_compatible("phytec,pcm051"))
+		return 0;
+
+	am33xx_register_ethaddr(0, 0);
+	return 0;
+}
+coredevice_initcall(pcm051_coredevice_init);
+
 static struct omap_barebox_part pcm051_barebox_part = {
 	.nand_offset = SZ_512K,
 	.nand_size = SZ_512K,
@@ -41,8 +52,6 @@ static int pcm051_devices_init(void)
 {
 	if (!of_machine_is_compatible("phytec,pcm051"))
 		return 0;
-
-	am33xx_register_ethaddr(0, 0);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_SPI:

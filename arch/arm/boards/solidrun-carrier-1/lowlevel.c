@@ -5,7 +5,7 @@
 
 extern char __dtb_imx6dl_cubox_i_carrier_1_start[];
 
-ENTRY_FUNCTION(start_imx6dl_cubox_i_carrier_1)(void)
+ENTRY_FUNCTION(start_imx6dl_cubox_i_carrier_1, r0, r1, r2)
 {
 	uint32_t fdt;
 

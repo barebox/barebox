@@ -306,6 +306,15 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 
 	edev->phydev = dev;
 	dev->attached_dev = edev;
+
+	ret = phy_init_hw(dev);
+	if (ret)
+		goto fail;
+
+	/* Sanitize settings based on PHY capabilities */
+	if ((dev->supported & SUPPORTED_Autoneg) == 0)
+		dev->autoneg = AUTONEG_DISABLE;
+
 	phy_config_aneg(edev->phydev);
 
 	dev->adjust_link = adjust_link;

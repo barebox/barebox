@@ -161,7 +161,6 @@ struct phy_device {
 	int autoneg;
 	int force;
 
-
 	/* private data pointer */
 	/* For use by PHYs to maintain extra state */
 	void *priv;

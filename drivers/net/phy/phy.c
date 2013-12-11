@@ -224,6 +224,14 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 	return dev;
 }
 
+static void phy_config_aneg(struct phy_device *phydev)
+{
+	struct phy_driver *drv;
+
+	drv = to_phy_driver(phydev->dev.driver);
+	drv->config_aneg(phydev);
+}
+
 static int phy_register_device(struct phy_device* dev)
 {
 	int ret;
@@ -246,18 +254,37 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface)
 {
-	struct phy_driver* drv;
 	struct phy_device* dev = NULL;
 	unsigned int i;
 	int ret = -EINVAL;
 
-	if (!edev->phydev) {
-		if (addr >= 0) {
-			dev = mdiobus_scan(bus, addr);
-			if (IS_ERR(dev)) {
-				ret = -EIO;
-				goto fail;
-			}
+	if (edev->phydev) {
+		phy_config_aneg(edev->phydev);
+		return 0;
+	}
+
+	if (addr >= 0) {
+		dev = mdiobus_scan(bus, addr);
+		if (IS_ERR(dev)) {
+			ret = -EIO;
+			goto fail;
+		}
+
+		dev->interface = interface;
+		dev->dev_flags = flags;
+
+		ret = phy_register_device(dev);
+		if (ret)
+			goto fail;
+	} else {
+		for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
+			/* skip masked out PHY addresses */
+			if (bus->phy_mask & (1 << i))
+				continue;
+
+			dev = mdiobus_scan(bus, i);
+			if (IS_ERR(dev) || dev->attached_dev)
+				continue;
 
 			dev->interface = interface;
 			dev->dev_flags = flags;
@@ -265,33 +292,14 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 			ret = phy_register_device(dev);
 			if (ret)
 				goto fail;
-		} else {
-			for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
-				/* skip masked out PHY addresses */
-				if (bus->phy_mask & (1 << i))
-					continue;
 
-				dev = mdiobus_scan(bus, i);
-				if (IS_ERR(dev) || dev->attached_dev)
-					continue;
-
-				dev->interface = interface;
-				dev->dev_flags = flags;
-
-				ret = phy_register_device(dev);
-				if (ret)
-					goto fail;
-
-				break;
-			}
+			break;
 		}
 	}
 
 	edev->phydev = dev;
 	dev->attached_dev = edev;
-	drv = to_phy_driver(dev->dev.driver);
-
-	drv->config_aneg(dev);
+	phy_config_aneg(edev->phydev);
 
 	dev->adjust_link = adjust_link;
 

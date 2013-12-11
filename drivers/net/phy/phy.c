@@ -269,13 +269,6 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 			ret = -EIO;
 			goto fail;
 		}
-
-		dev->interface = interface;
-		dev->dev_flags = flags;
-
-		ret = phy_register_device(dev);
-		if (ret)
-			goto fail;
 	} else {
 		for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
 			/* skip masked out PHY addresses */
@@ -283,19 +276,17 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 				continue;
 
 			dev = mdiobus_scan(bus, i);
-			if (IS_ERR(dev) || dev->attached_dev)
-				continue;
-
-			dev->interface = interface;
-			dev->dev_flags = flags;
-
-			ret = phy_register_device(dev);
-			if (ret)
-				goto fail;
-
-			break;
+			if (!IS_ERR(dev) && !dev->attached_dev)
+                                break;
 		}
 	}
+
+	dev->interface = interface;
+	dev->dev_flags = flags;
+
+	ret = phy_register_device(dev);
+	if (ret)
+		goto fail;
 
 	edev->phydev = dev;
 	dev->attached_dev = edev;

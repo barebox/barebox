@@ -37,6 +37,7 @@
 #include <linux/stat.h>
 #include <xfuncs.h>
 #include <linux/mii.h>
+#include <linux/phy.h>
 
 static u16 mdio_read(int fd, int offset)
 {
@@ -218,12 +219,16 @@ static int do_miitool(int argc, char *argv[])
 	int argc_min;
 	int fd;
 	int verbose;
+	int scan = 0;
 
 	verbose = 0;
-	while ((opt = getopt(argc, argv, "v")) > 0) {
+	while ((opt = getopt(argc, argv, "vs")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose++;
+			break;
+		case 's':
+			scan = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -232,8 +237,11 @@ static int do_miitool(int argc, char *argv[])
 
 	argc_min = optind + 1;
 
+	if (scan)
+		mdiobus_detect_all();
+
 	if (argc < argc_min)
-		return COMMAND_ERROR_USAGE;
+		return scan ? 0 : COMMAND_ERROR_USAGE;
 
 	filename = argv[optind];
 

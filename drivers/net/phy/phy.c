@@ -228,7 +228,7 @@ static int phy_register_device(struct phy_device* dev)
 {
 	int ret;
 
-	dev->dev.parent = &dev->attached_dev->dev;
+	dev->dev.parent = &dev->bus->dev;
 
 	ret = register_device(&dev->dev);
 	if (ret)
@@ -259,7 +259,6 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 				goto fail;
 			}
 
-			dev->attached_dev = edev;
 			dev->interface = interface;
 			dev->dev_flags = flags;
 
@@ -276,7 +275,6 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 				if (IS_ERR(dev) || dev->attached_dev)
 					continue;
 
-				dev->attached_dev = edev;
 				dev->interface = interface;
 				dev->dev_flags = flags;
 
@@ -287,14 +285,10 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 				break;
 			}
 		}
-
-		if (!edev->phydev) {
-			ret = -EIO;
-			goto fail;
-		}
 	}
 
-	dev = edev->phydev;
+	edev->phydev = dev;
+	dev->attached_dev = edev;
 	drv = to_phy_driver(dev->dev.driver);
 
 	drv->config_aneg(dev);
@@ -304,8 +298,6 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	return 0;
 
 fail:
-	if (!IS_ERR(dev))
-		dev->attached_dev = NULL;
 	puts("Unable to find a PHY (unknown ID?)\n");
 	return ret;
 }

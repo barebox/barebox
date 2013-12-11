@@ -153,8 +153,6 @@ static int mdio_bus_probe(struct device_d *_dev)
 
 	int ret;
 
-	dev->attached_dev->phydev = dev;
-
 	if (drv->probe) {
 		ret = drv->probe(dev);
 		if (ret)
@@ -204,8 +202,6 @@ static int mdio_bus_probe(struct device_d *_dev)
 	return 0;
 
 err:
-	dev->attached_dev->phydev = NULL;
-	dev->attached_dev = NULL;
 	return ret;
 }
 

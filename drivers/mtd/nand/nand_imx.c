@@ -403,12 +403,14 @@ static void send_read_id_v1_v2(struct imx_nand_host *host)
 	memcpy32(host->data_buf, host->main_area0, 16);
 }
 
-/* FIXME : to check on real HW */
 static void send_read_param_v1_v2(struct imx_nand_host *host)
 {
-	struct nand_chip *this = &host->nand;
+	u32 backup = readw(host->regs + NFC_V1_V2_CONFIG1);
 
-	/* NANDFC buffer 0 is used for device ID output */
+	/* Temporary disable ECC to be able to read param page */
+	writew(backup & ~NFC_V1_V2_CONFIG1_ECC_EN, host->regs + NFC_V1_V2_CONFIG1);
+
+	/* NANDFC buffer 0 is used for param output */
 	writew(0x0, host->regs + NFC_V1_V2_BUF_ADDR);
 
 	writew(NFC_OUTPUT, host->regs + NFC_V1_V2_CONFIG2);
@@ -416,20 +418,10 @@ static void send_read_param_v1_v2(struct imx_nand_host *host)
 	/* Wait for operation to complete */
 	wait_op_done(host);
 
-	if (this->options & NAND_BUSWIDTH_16) {
-		volatile u16 *mainbuf = host->main_area0;
-
-		/*
-		 * Pack the every-other-byte result for 16-bit ID reads
-		 * into every-byte as the generic code expects and various
-		 * chips implement.
-		 */
-
-		mainbuf[0] = (mainbuf[0] & 0xff) | ((mainbuf[1] & 0xff) << 8);
-		mainbuf[1] = (mainbuf[2] & 0xff) | ((mainbuf[3] & 0xff) << 8);
-		mainbuf[2] = (mainbuf[4] & 0xff) | ((mainbuf[5] & 0xff) << 8);
-	}
 	memcpy32(host->data_buf, host->main_area0, 1024);
+
+	/* Restore original CONFIG1 value */
+	writew(backup, host->regs + NFC_V1_V2_CONFIG1);
 }
 /*
  * This function requests the NANDFC to perform a read of the
@@ -1147,7 +1139,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->send_addr = send_addr_v1_v2;
 		host->send_page = send_page_v1_v2;
 		host->send_read_id = send_read_id_v1_v2;
-		host->send_read_param = send_read_param_v1_v2; /* FIXME : to check */
+		host->send_read_param = send_read_param_v1_v2;
 		host->get_dev_status = get_dev_status_v1_v2;
 		host->check_int = check_int_v1_v2;
 	}

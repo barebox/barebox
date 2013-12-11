@@ -232,7 +232,7 @@ static void phy_config_aneg(struct phy_device *phydev)
 	drv->config_aneg(phydev);
 }
 
-static int phy_register_device(struct phy_device* dev)
+int phy_register_device(struct phy_device* dev)
 {
 	int ret;
 

@@ -27,6 +27,36 @@
 
 LIST_HEAD(mii_bus_list);
 
+static int mdiobus_detect(struct device_d *dev)
+{
+	struct mii_bus *mii = to_mii_bus(dev);
+	int i, ret;
+
+	for (i = 0; i < PHY_MAX_ADDR; i++) {
+		struct phy_device *phydev;
+
+		phydev = mdiobus_scan(mii, i);
+		if (IS_ERR(phydev))
+			continue;
+		if (phydev->registered)
+			continue;
+		ret = phy_register_device(phydev);
+		if (ret)
+			dev_err(dev, "failed to register phy: %s\n", strerror(-ret));
+		dev_info(dev, "registered phy as /dev/%s\n", phydev->cdev.name);
+	}
+
+	return 0;
+}
+
+void mdiobus_detect_all(void)
+{
+	struct mii_bus *mii;
+
+	for_each_mii_bus(mii)
+		mdiobus_detect(&mii->dev);
+}
+
 /**
  * mdiobus_register - bring up all the PHYs on a given bus and attach them to bus
  * @bus: target mii_bus
@@ -49,6 +79,7 @@ int mdiobus_register(struct mii_bus *bus)
 	bus->dev.id = DEVICE_ID_DYNAMIC;
 	strcpy(bus->dev.name, "miibus");
 	bus->dev.parent = bus->parent;
+	bus->dev.detect = mdiobus_detect;
 
 	err = register_device(&bus->dev);
 	if (err) {

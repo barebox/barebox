@@ -94,6 +94,8 @@ int mdiobus_register(struct mii_bus *bus);
 void mdiobus_unregister(struct mii_bus *bus);
 struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
 
+void mdiobus_detect_all(void);
+
 extern struct list_head mii_bus_list;
 
 #define for_each_mii_bus(mii) \
@@ -250,6 +252,8 @@ int phy_drivers_register(struct phy_driver *new_driver, int n);
 struct phy_device *get_phy_device(struct mii_bus *bus, int addr);
 int phy_init(void);
 int phy_init_hw(struct phy_device *phydev);
+
+int phy_register_device(struct phy_device* dev);
 
 /**
  * phy_read - Convenience function for reading a given PHY register

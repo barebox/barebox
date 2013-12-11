@@ -236,17 +236,28 @@ static int phy_register_device(struct phy_device* dev)
 {
 	int ret;
 
+	if (dev->registered)
+		return -EBUSY;
+
 	dev->dev.parent = &dev->bus->dev;
 
 	ret = register_device(&dev->dev);
 	if (ret)
 		return ret;
 
+	dev->registered = 1;
+
 	if (dev->dev.driver)
 		return 0;
 
 	dev->dev.driver = &genphy_driver.drv;
-	return device_probe(&dev->dev);
+	ret = device_probe(&dev->dev);
+	if (ret) {
+		unregister_device(&dev->dev);
+		dev->registered = 0;
+	}
+
+	return ret;
 }
 
 /* Automatically gets and returns the PHY device */
@@ -287,9 +298,11 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	dev->interface = interface;
 	dev->dev_flags = flags;
 
-	ret = phy_register_device(dev);
-	if (ret)
-		goto fail;
+	if (!dev->registered) {
+		ret = phy_register_device(dev);
+		if (ret)
+			goto fail;
+	}
 
 	edev->phydev = dev;
 	dev->attached_dev = edev;

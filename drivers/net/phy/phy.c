@@ -281,6 +281,9 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		}
 	}
 
+	if (dev->attached_dev)
+		return -EBUSY;
+
 	dev->interface = interface;
 	dev->dev_flags = flags;
 

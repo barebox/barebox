@@ -20,8 +20,8 @@ config OF_NET
 	def_bool y
 
 config OF_GPIO
-	depends on CONFIG_GPIOLIB
-	depends on CONFIG_OFDEVICE
+	depends on GPIOLIB
+	depends on OFDEVICE
 	def_bool y
 
 config OF_BAREBOX_DRIVERS

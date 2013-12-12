@@ -110,13 +110,13 @@ struct device_d *add_dm9000_device(int id, resource_size_t base,
 
 	switch (flags) {
 	case IORESOURCE_MEM_32BIT:
-		size = 8;
-		break;
-	case IORESOURCE_MEM_16BIT:
 		size = 4;
 		break;
-	case IORESOURCE_MEM_8BIT:
+	case IORESOURCE_MEM_16BIT:
 		size = 2;
+		break;
+	case IORESOURCE_MEM_8BIT:
+		size = 1;
 		break;
 	default:
 		printf("dm9000: memory width flag missing\n");

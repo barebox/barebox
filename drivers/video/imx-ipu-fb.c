@@ -43,6 +43,7 @@ struct ipu_fb_info {
 	struct device_d		*dev;
 
 	unsigned int		alpha;
+	int			disable_fractional_divider;
 };
 
 /* IPU DMA Controller channel definitions. */
@@ -409,7 +410,7 @@ static int sdc_init_panel(struct fb_info *info, enum disp_data_mapping fmt)
 	struct fb_videomode *mode = info->mode;
 	u32 reg, old_conf, div;
 	enum ipu_panel panel = IPU_PANEL_TFT;
-	unsigned long pixel_clk;
+	unsigned long pixel_clk, rate;
 
 	/* Init panel size and blanking periods */
 	reg = ((mode->hsync_len - 1) << 26) |
@@ -466,7 +467,12 @@ static int sdc_init_panel(struct fb_info *info, enum disp_data_mapping fmt)
 	 * i.MX31 it (HSP_CLK) is <= 178MHz. Currently 128.267MHz
 	 */
 	pixel_clk = PICOS2KHZ(mode->pixclock) * 1000UL;
-	div = clk_get_rate(fbi->clk) * 16 / pixel_clk;
+	rate = clk_get_rate(fbi->clk);
+
+	if (fbi->disable_fractional_divider)
+		div = DIV_ROUND_CLOSEST(rate, pixel_clk) * 16;
+	else
+		div = rate * 16 / pixel_clk;
 
 	if (div < 0x40) {	/* Divider less than 4 */
 		dev_dbg(&info->dev,
@@ -1000,6 +1006,7 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->dev = dev;
 	fbi->enable = pdata->enable;
 	fbi->disp_data_fmt = pdata->disp_data_fmt;
+	fbi->disable_fractional_divider = pdata->disable_fractional_divider;
 	info->priv = fbi;
 	info->fbops = &imxfb_ops;
 	info->num_modes = pdata->num_modes;

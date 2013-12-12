@@ -47,6 +47,11 @@ struct imx_ipu_fb_platform_data {
 	void __iomem		*framebuffer_ovl;
 	/** hook to enable backlight and stuff */
 	void			(*enable)(int enable);
+	/*
+	 * Fractional pixelclock divider causes jitter which some displays
+	 * or LVDS transceivers can't handle. Disable it if necessary.
+	 */
+	int			disable_fractional_divider;
 };
 
 #endif /* __MACH_IMX_IPU_FB_H__ */

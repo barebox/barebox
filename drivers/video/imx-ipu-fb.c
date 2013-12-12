@@ -91,6 +91,8 @@ enum pixel_fmt {
 	IPU_PIX_FMT_BGR666,
 	/* 3 bytes */
 	IPU_PIX_FMT_RGB24,
+	/* 3 bytes */
+	IPU_PIX_FMT_RGB32,
 };
 
 struct di_mapping {
@@ -560,6 +562,9 @@ static void ipu_ch_param_set_size(struct ipu_ch_param *p,
 	case IPU_PIX_FMT_RGB24:
 		ipu_cpmem_set_format_rgb(p, &def_rgb_24);
 		break;
+	case IPU_PIX_FMT_RGB32:
+		ipu_cpmem_set_format_rgb(p, &def_rgb_32);
+		break;
 	default:
 		break;
 	}
@@ -594,8 +599,10 @@ static u32 bpp_to_pixfmt(int bpp)
 	switch (bpp) {
 	case 16:
 		return IPU_PIX_FMT_RGB565;
-	case 32:
+	case 24:
 		return IPU_PIX_FMT_RGB24;
+	case 32:
+		return IPU_PIX_FMT_RGB32;
 	default:
 		return 0;
 	}

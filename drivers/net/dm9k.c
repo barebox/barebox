@@ -722,7 +722,11 @@ static int dm9k_probe(struct device_d *dev)
 
 	priv->buswidth = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 	priv->iodata = dev_request_mem_region(dev, 1);
+	if (!priv->iodata)
+		return -EBUSY;
 	priv->iobase = dev_request_mem_region(dev, 0);
+	if (!priv->iobase)
+		return -EBUSY;
 	priv->srom = pdata->srom;
 
 	edev->init = dm9k_init_dev;

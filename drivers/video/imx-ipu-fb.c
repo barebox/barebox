@@ -475,7 +475,7 @@ static int sdc_init_panel(struct fb_info *info, enum disp_data_mapping fmt)
 	}
 
 	dev_dbg(&info->dev, "pixel clk = %lu, divider %u.%u\n",
-		pixel_clk, div >> 4, (div & 7) * 125);
+		pixel_clk, div >> 4, (div & 0xf) * (1000 / 16));
 
 	/*
 	 * DISP3_IF_CLK_DOWN_WR is half the divider value and 2 fraction bits

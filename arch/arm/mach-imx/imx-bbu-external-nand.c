@@ -40,7 +40,7 @@ static int imx_bbu_external_nand_update(struct bbu_handler *handler, struct bbu_
 	int size_available, size_need;
 	int ret;
 	uint32_t num_bb = 0, bbt = 0;
-	uint64_t offset;
+	uint64_t offset = 0;
 	int block = 0, len, now, blocksize;
 	void *image = data->image;
 

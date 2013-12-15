@@ -16,6 +16,13 @@ static int openrisc_console_init(void)
 
 	/* Register the serial port */
 	add_ns16550_device(DEVICE_ID_DYNAMIC, OPENRISC_SOPC_UART_BASE, 1024, IORESOURCE_MEM_8BIT, &serial_plat);
+
+#ifdef CONFIG_DRIVER_NET_ETHOC
+	add_generic_device("ethoc", DEVICE_ID_DYNAMIC, NULL,
+			   OPENRISC_SOPC_ETHOC_BASE, 0x1000,
+			   IORESOURCE_MEM, NULL);
+#endif
+
 	return 0;
 }
 

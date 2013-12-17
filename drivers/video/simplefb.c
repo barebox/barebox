@@ -37,7 +37,15 @@ static const struct simplefb_mode simplefb_modes[] = {
 		.green	= { .length = 6, .offset = 5 },
 		.blue	= { .length = 5, .offset = 0 },
 		.transp	= { .length = 0, .offset = 0 },
+	}, {
+		.format	= "a8r8g8b8",
+		.bpp	= 32,
+		.red	= { .length = 8, .offset = 16 },
+		.green	= { .length = 8, .offset = 8 },
+		.blue	= { .length = 8, .offset = 0 },
+		.transp	= { .length = 8, .offset = 24 },
 	},
+
 };
 
 static bool simplefb_bitfield_cmp(const struct fb_bitfield *a,

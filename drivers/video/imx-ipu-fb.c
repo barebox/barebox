@@ -782,11 +782,6 @@ static void ipu_fb_enable(struct fb_info *info)
 	reg_write(fbi, 0x00100010L, DI_HSP_CLK_PER);
 	/* Might need to trigger HSP clock change - see 44.3.3.8.5 */
 
-	/* mx3fb.c::sdc_set_brightness() */
-
-	/* This might be board-specific */
-	reg_write(fbi, 0x03000000UL | 255 << 16, SDC_PWM_CTRL);
-
 	/* mx3fb.c::sdc_set_global_alpha() */
 
 	/* Use global - not per-pixel - Alpha-blending */

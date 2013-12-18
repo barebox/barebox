@@ -44,7 +44,9 @@ struct imx_ipu_fb_platform_data {
 	u_int			num_modes;
 	enum disp_data_mapping	disp_data_fmt;
 	void __iomem		*framebuffer;
+	unsigned long		framebuffer_size;
 	void __iomem		*framebuffer_ovl;
+	unsigned long		framebuffer_ovl_size;
 	/** hook to enable backlight and stuff */
 	void			(*enable)(int enable);
 	/*

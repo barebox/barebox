@@ -964,6 +964,8 @@ static int sdc_fb_register_overlay(struct ipu_fb_info *fbi, void *fb)
 	if (!overlay->screen_base)
 		return -ENOMEM;
 
+	overlay->screen_size = pdata->framebuffer_ovl_size;
+
 	sdc_enable_channel(fbi, overlay->screen_base, IDMAC_SDC_1);
 
 	ret = register_framebuffer(&fbi->overlay);
@@ -1011,14 +1013,17 @@ static int imxfb_probe(struct device_d *dev)
 
 	dev_info(dev, "i.MX Framebuffer driver\n");
 
+	fbi->info.screen_size = pdata->framebuffer_size;
+	if (!fbi->info.screen_size)
+		fbi->info.screen_size = info->xres * info->yres *
+			(info->bits_per_pixel >> 3);
 	/*
 	 * Use a given frambuffer or reserve some
 	 * memory for screen usage
 	 */
 	fbi->info.screen_base = pdata->framebuffer;
 	if (fbi->info.screen_base == NULL) {
-		fbi->info.screen_base = malloc(info->xres * info->yres *
-					       (info->bits_per_pixel >> 3));
+		fbi->info.screen_base = malloc(fbi->info.screen_size);
 		if (!fbi->info.screen_base)
 			return -ENOMEM;
 	}

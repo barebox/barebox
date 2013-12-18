@@ -78,6 +78,8 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 
 	if (!info->line_length)
 		info->line_length = info->xres * (info->bits_per_pixel >> 3);
+	if (!info->screen_size)
+		info->screen_size = info->line_length * info->yres;
 
 	if (!ret) {
 		dev->resource[0].start = (resource_size_t)info->screen_base;

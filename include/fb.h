@@ -86,6 +86,7 @@ struct fb_info {
 	struct device_d dev;		/* This is this fb device */
 
 	void *screen_base;
+	unsigned long screen_size;
 
 	void *priv;
 

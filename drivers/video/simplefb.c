@@ -126,6 +126,9 @@ static int simplefb_create_node(struct device_node *root,
 	if (ret < 0)
 		return ret;
 
+	of_add_reserve_entry((u32)fbi->screen_base,
+			(u32)fbi->screen_base + fbi->screen_size);
+
 	return of_set_property(node, "status", okay, strlen(okay) + 1, 1);
 }
 

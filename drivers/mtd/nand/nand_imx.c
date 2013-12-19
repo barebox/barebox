@@ -80,7 +80,7 @@
 #define NFC_V3_DELAY_LINE		(host->regs_ip + 0x34)
 
 struct imx_nand_host {
-	struct mtd_info		mtd;		
+	struct mtd_info		mtd;
 	struct nand_chip	nand;
 	struct mtd_partition	*parts;
 	struct device_d		*dev;

@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <asm-generic/div64.h>
+#include <asm/mmu.h>
 #include <mach/imx-ipu-fb.h>
 #include <linux/clk.h>
 #include <linux/err.h>
@@ -1022,8 +1023,12 @@ static int imxfb_probe(struct device_d *dev)
 	 * memory for screen usage
 	 */
 	fbi->info.screen_base = pdata->framebuffer;
-	if (fbi->info.screen_base == NULL) {
-		fbi->info.screen_base = malloc(fbi->info.screen_size);
+	if (fbi->info.screen_base) {
+		remap_range(fbi->info.screen_base,
+			fbi->info.screen_size,
+			mmu_get_pte_uncached_flags());
+	} else {
+		fbi->info.screen_base = dma_alloc_coherent(fbi->info.screen_size);
 		if (!fbi->info.screen_base)
 			return -ENOMEM;
 	}

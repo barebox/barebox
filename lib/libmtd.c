@@ -308,6 +308,7 @@ int mtd_get_dev_info(const char *node, struct mtd_dev_info *mtd)
 	mtd->eb_size = ui.erasesize;
 	mtd->min_io_size = ui.writesize;
 	mtd->oob_size = ui.oobsize;
+	mtd->subpage_size = ui.subpagesize;
 
 	if (mtd->min_io_size <= 0) {
 		errmsg("%s has insane min. I/O unit size %d",
@@ -356,7 +357,6 @@ int mtd_get_dev_info(const char *node, struct mtd_dev_info *mtd)
 
 	if (ui.flags & MTD_WRITEABLE)
 		mtd->writable = 1;
-	mtd->subpage_size = mtd->min_io_size;
 
 	close(fd);
 

@@ -82,6 +82,7 @@ struct mtd_info_user {
 	uint32_t ecctype;
 	uint32_t eccsize;
 	struct mtd_info *mtd;
+	uint32_t subpagesize;
 };
 
 struct region_info_user {

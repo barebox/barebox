@@ -236,6 +236,7 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 		user->erasesize	= mtd->erasesize;
 		user->writesize	= mtd->writesize;
 		user->oobsize	= mtd->oobsize;
+		user->subpagesize = mtd->writesize >> mtd->subpage_sft;
 		user->mtd	= mtd;
 		/* The below fields are obsolete */
 		user->ecctype	= -1;

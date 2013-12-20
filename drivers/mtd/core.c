@@ -313,7 +313,20 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 		u_char *buf)
 {
-	return mtd->read(mtd, from, len, retlen, buf);
+	int ret_code;
+	*retlen = 0;
+
+	/*
+	 * In the absence of an error, drivers return a non-negative integer
+	 * representing the maximum number of bitflips that were corrected on
+	 * any one ecc region (if applicable; zero otherwise).
+	 */
+	ret_code = mtd->read(mtd, from, len, retlen, buf);
+	if (unlikely(ret_code < 0))
+		return ret_code;
+	if (mtd->ecc_strength == 0)
+		return 0;	/* device lacks ecc */
+	return ret_code >= mtd->bitflip_threshold ? -EUCLEAN : 0;
 }
 
 int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,

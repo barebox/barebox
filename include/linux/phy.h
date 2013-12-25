@@ -94,9 +94,9 @@ int mdiobus_register(struct mii_bus *bus);
 void mdiobus_unregister(struct mii_bus *bus);
 struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
 
-void mdiobus_detect_all(void);
-
 extern struct list_head mii_bus_list;
+
+int mdiobus_detect(struct device_d *dev);
 
 #define for_each_mii_bus(mii) \
 	list_for_each_entry(mii, &mii_bus_list, list)

@@ -27,7 +27,7 @@
 
 LIST_HEAD(mii_bus_list);
 
-static int mdiobus_detect(struct device_d *dev)
+int mdiobus_detect(struct device_d *dev)
 {
 	struct mii_bus *mii = to_mii_bus(dev);
 	int i, ret;
@@ -47,14 +47,6 @@ static int mdiobus_detect(struct device_d *dev)
 	}
 
 	return 0;
-}
-
-void mdiobus_detect_all(void)
-{
-	struct mii_bus *mii;
-
-	for_each_mii_bus(mii)
-		mdiobus_detect(&mii->dev);
 }
 
 /**

@@ -41,17 +41,6 @@
 #include <linux/phy.h>
 #include <linux/err.h>
 
-
-/* Table of known MII's */
-static const struct {
-	u_short	id1, id2;
-	u_short	mask1, mask2;
-	char	*name;
-} mii_id[] = {
-	{ 0x0013, 0x78e0, 0xffff, 0xfff0, "Level One LXT971A" },
-};
-#define NMII (sizeof(mii_id)/sizeof(mii_id[0]))
-
 const struct {
 	char	*name;
 	u_short	value[2];
@@ -189,20 +178,11 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 	}
 
 	if (verbose) {
-		printf("  product info: ");
-		for (i = 0; i < NMII; i++)
-			if ((mii_id[i].id1 == (mii_val[2] & mii_id[i].mask1)) &&
-				(mii_id[i].id2 ==
-					(mii_val[3] & mii_id[i].mask2)))
-				break;
-
-		if (i < NMII)
-			printf("%s rev %d\n", mii_id[i].name, mii_val[3]&0x0f);
-		else
-			printf("vendor %02x:%02x:%02x, model %d rev %d\n",
-				mii_val[2] >> 10, (mii_val[2] >> 2) & 0xff,
-				((mii_val[2] << 6)|(mii_val[3] >> 10)) & 0xff,
-				(mii_val[3] >> 4) & 0x3f, mii_val[3] & 0x0f);
+		printf("  product info: %s ", phydrv->drv.name);
+		printf("(vendor %02x:%02x:%02x, model %d rev %d)\n",
+			mii_val[2] >> 10, (mii_val[2] >> 2) & 0xff,
+			((mii_val[2] << 6) | (mii_val[3] >> 10)) & 0xff,
+			(mii_val[3] >> 4) & 0x3f, mii_val[3] & 0x0f);
 
 		printf("  basic mode:   ");
 		if (bmcr & BMCR_RESET)

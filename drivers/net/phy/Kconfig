@@ -13,6 +13,11 @@ config AT803X_PHY
 	---help---
 	  Currently supports the AT8030, AT8031 and AT8035 PHYs.
 
+config LXT_PHY
+	bool "Driver for the Intel LXT PHYs"
+	---help---
+	  Currently supports the lxt971 PHY.
+
 config MICREL_PHY
 	bool "Driver for Micrel PHYs"
 	---help---

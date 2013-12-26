@@ -62,4 +62,3 @@ void init_progression_bar(int max)
 	else
 		printf("\t");
 }
-

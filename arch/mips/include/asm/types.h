@@ -13,6 +13,8 @@
 
 #include <asm-generic/int-ll64.h>
 
+#ifndef __ASSEMBLY__
+
 #if (defined(CONFIG_HIGHMEM) && defined(CONFIG_64BIT_PHYS_ADDR)) \
     || defined(CONFIG_64BIT)
 typedef u64 dma_addr_t;
@@ -20,6 +22,8 @@ typedef u64 dma_addr_t;
 typedef u32 dma_addr_t;
 #endif
 typedef u64 dma64_addr_t;
+
+#endif /* __ASSEMBLY__ */
 
 /*
  * We don't use int-l64.h for the kernel anymore but still use it for

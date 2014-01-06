@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <crc.h>
 #include <fs.h>
+#include <linux/math64.h>
 
 #include <mtd/utils.h>
 #include <mtd/ubi-media.h>
@@ -102,7 +103,7 @@ int ubigen_add_volume(const struct ubigen_info *ui,
 	}
 
 	memset(vtbl_rec, 0, sizeof(struct ubi_vtbl_record));
-	tmp = (vi->bytes + ui->leb_size - 1) / ui->leb_size;
+	tmp = div_u64(vi->bytes + ui->leb_size - 1, ui->leb_size);
 	vtbl_rec->reserved_pebs = cpu_to_be32(tmp);
 	vtbl_rec->alignment = cpu_to_be32(vi->alignment);
 	vtbl_rec->vol_type = vi->type;

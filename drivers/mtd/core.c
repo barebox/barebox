@@ -75,12 +75,11 @@ static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
 			offset, count);
 
 	ret = mtd_read(mtd, offset, count, &retlen, buf);
-
-	if(ret) {
-		printf("err %d\n", ret);
+	if (ret < 0)
 		return ret;
-	}
-	return retlen;
+	if (mtd->ecc_strength == 0)
+		return retlen;	/* device lacks ecc */
+	return ret >= mtd->bitflip_threshold ? -EUCLEAN : retlen;
 }
 
 #define NOTALIGNED(x) (x & (mtd->writesize - 1)) != 0
@@ -237,6 +236,7 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 		user->erasesize	= mtd->erasesize;
 		user->writesize	= mtd->writesize;
 		user->oobsize	= mtd->oobsize;
+		user->subpagesize = mtd->writesize >> mtd->subpage_sft;
 		user->mtd	= mtd;
 		/* The below fields are obsolete */
 		user->ecctype	= -1;
@@ -314,7 +314,20 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 		u_char *buf)
 {
-	return mtd->read(mtd, from, len, retlen, buf);
+	int ret_code;
+	*retlen = 0;
+
+	/*
+	 * In the absence of an error, drivers return a non-negative integer
+	 * representing the maximum number of bitflips that were corrected on
+	 * any one ecc region (if applicable; zero otherwise).
+	 */
+	ret_code = mtd->read(mtd, from, len, retlen, buf);
+	if (unlikely(ret_code < 0))
+		return ret_code;
+	if (mtd->ecc_strength == 0)
+		return 0;	/* device lacks ecc */
+	return ret_code >= mtd->bitflip_threshold ? -EUCLEAN : 0;
 }
 
 int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,

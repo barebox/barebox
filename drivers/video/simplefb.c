@@ -37,7 +37,15 @@ static const struct simplefb_mode simplefb_modes[] = {
 		.green	= { .length = 6, .offset = 5 },
 		.blue	= { .length = 5, .offset = 0 },
 		.transp	= { .length = 0, .offset = 0 },
+	}, {
+		.format	= "a8r8g8b8",
+		.bpp	= 32,
+		.red	= { .length = 8, .offset = 16 },
+		.green	= { .length = 8, .offset = 8 },
+		.blue	= { .length = 8, .offset = 0 },
+		.transp	= { .length = 8, .offset = 24 },
 	},
+
 };
 
 static bool simplefb_bitfield_cmp(const struct fb_bitfield *a,
@@ -125,6 +133,9 @@ static int simplefb_create_node(struct device_node *root,
 	ret = of_set_property(node, "format", format, strlen(format) + 1, 1);
 	if (ret < 0)
 		return ret;
+
+	of_add_reserve_entry((u32)fbi->screen_base,
+			(u32)fbi->screen_base + fbi->screen_size);
 
 	return of_set_property(node, "status", okay, strlen(okay) + 1, 1);
 }

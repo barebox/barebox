@@ -116,7 +116,7 @@
 
 &fec {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_enet_1>;
+	pinctrl-0 = <&pinctrl_enet>;
 	phy-mode = "rgmii";
 	phy-reset-gpios = <&gpio3 23 0>;
 	status = "okay";
@@ -280,19 +280,17 @@
 
 	i2c2 {
 		pinctrl_i2c2: i2c2grp {
-			fsl,pins = <
-				MX6QDL_PAD_EIM_EB2__I2C2_SCL 0x4001b8b1
-				MX6QDL_PAD_KEY_ROW3__I2C2_SDA 0x4001b8b1
-			>;
+			fsl,pins = <MX6QDL_I2C2_PINGRP3>;
 		};
 	};
 
 	uart {
-		pinctrl_uart1_2: uart1grp-2 {
-			fsl,pins = <
-				MX6QDL_PAD_SD3_DAT6__UART1_RX_DATA 0x1b0b1
-				MX6QDL_PAD_SD3_DAT7__UART1_TX_DATA 0x1b0b1
-			>;
+		pinctrl_uart1: uart1grp {
+			fsl,pins = <MX6QDL_UART1_PINGRP2>;
+		};
+
+                pinctrl_uart2: uart2grp {
+			fsl,pins = <MX6QDL_UART2_PINGRP1>;
 		};
 	};
 
@@ -329,6 +327,28 @@
 			>;
 		};
 	};
+
+	enet {
+		pinctrl_enet: enetgrp {
+			fsl,pins = <MX6QDL_ENET_PINGRP1>;
+		};
+	};
+
+	usb {
+		pinctrl_usbotg: usbotggrp {
+			fsl,pins = <MX6QDL_USBOTG_PINGRP1>;
+		};
+	};
+
+	usdhc {
+		pinctrl_usdhc3: usdhc3grp {
+			fsl,pins = <MX6QDL_USDHC3_PINGRP_D4>;
+		};
+
+		pinctrl_usdhc4: usdhc4grp {
+			fsl,pins = <MX6QDL_USDHC4_PINGRP_D8>;
+		};
+	};
 };
 
 &sata {
@@ -337,14 +357,14 @@
 
 &uart1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1_2>;
+	pinctrl-0 = <&pinctrl_uart1>;
 	status = "okay";
 };
 
 &uart2 {
 	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart2_1>;
+	pinctrl-0 = <&pinctrl_uart2>;
 };
 
 &usbh1 {
@@ -356,21 +376,21 @@
 &usbotg {
 	vbus-supply = <&reg_usb_otg_vbus>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usbotg_1>;
+	pinctrl-0 = <&pinctrl_usbotg>;
 	disable-over-current;
 	status = "okay";
 };
 
 &usdhc3 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc3_2>;
+	pinctrl-0 = <&pinctrl_usdhc3>;
 	vmmc-supply = <&reg_3p3v>;
 	status = "okay";
 };
 
 &usdhc4 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc4_1>;
+	pinctrl-0 = <&pinctrl_usdhc4>;
 	vmmc-supply = <&reg_3p3v>;
 	non-removable;
 	bus-width = <8>;

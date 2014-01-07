@@ -85,12 +85,21 @@ struct mii_bus {
 
 	/* PHY addresses to be ignored when probing */
 	u32 phy_mask;
+
+	struct list_head list;
 };
 #define to_mii_bus(d) container_of(d, struct mii_bus, dev)
 
 int mdiobus_register(struct mii_bus *bus);
 void mdiobus_unregister(struct mii_bus *bus);
 struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr);
+
+extern struct list_head mii_bus_list;
+
+int mdiobus_detect(struct device_d *dev);
+
+#define for_each_mii_bus(mii) \
+	list_for_each_entry(mii, &mii_bus_list, list)
 
 /**
  * mdiobus_read - Convenience function for reading a given MII mgmt register
@@ -161,6 +170,7 @@ struct phy_device {
 	int autoneg;
 	int force;
 
+	int registered;
 
 	/* private data pointer */
 	/* For use by PHYs to maintain extra state */
@@ -242,6 +252,8 @@ int phy_drivers_register(struct phy_driver *new_driver, int n);
 struct phy_device *get_phy_device(struct mii_bus *bus, int addr);
 int phy_init(void);
 int phy_init_hw(struct phy_device *phydev);
+
+int phy_register_device(struct phy_device* dev);
 
 /**
  * phy_read - Convenience function for reading a given PHY register

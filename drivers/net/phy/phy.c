@@ -224,21 +224,40 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 	return dev;
 }
 
-static int phy_register_device(struct phy_device* dev)
+static void phy_config_aneg(struct phy_device *phydev)
+{
+	struct phy_driver *drv;
+
+	drv = to_phy_driver(phydev->dev.driver);
+	drv->config_aneg(phydev);
+}
+
+int phy_register_device(struct phy_device* dev)
 {
 	int ret;
 
-	dev->dev.parent = &dev->attached_dev->dev;
+	if (dev->registered)
+		return -EBUSY;
+
+	dev->dev.parent = &dev->bus->dev;
 
 	ret = register_device(&dev->dev);
 	if (ret)
 		return ret;
 
+	dev->registered = 1;
+
 	if (dev->dev.driver)
 		return 0;
 
 	dev->dev.driver = &genphy_driver.drv;
-	return device_probe(&dev->dev);
+	ret = device_probe(&dev->dev);
+	if (ret) {
+		unregister_device(&dev->dev);
+		dev->registered = 0;
+	}
+
+	return ret;
 }
 
 /* Automatically gets and returns the PHY device */
@@ -246,66 +265,63 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface)
 {
-	struct phy_driver* drv;
 	struct phy_device* dev = NULL;
 	unsigned int i;
 	int ret = -EINVAL;
 
-	if (!edev->phydev) {
-		if (addr >= 0) {
-			dev = mdiobus_scan(bus, addr);
-			if (IS_ERR(dev)) {
-				ret = -EIO;
-				goto fail;
-			}
+	if (edev->phydev) {
+		phy_config_aneg(edev->phydev);
+		return 0;
+	}
 
-			dev->attached_dev = edev;
-			dev->interface = interface;
-			dev->dev_flags = flags;
-
-			ret = phy_register_device(dev);
-			if (ret)
-				goto fail;
-		} else {
-			for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
-				/* skip masked out PHY addresses */
-				if (bus->phy_mask & (1 << i))
-					continue;
-
-				dev = mdiobus_scan(bus, i);
-				if (IS_ERR(dev) || dev->attached_dev)
-					continue;
-
-				dev->attached_dev = edev;
-				dev->interface = interface;
-				dev->dev_flags = flags;
-
-				ret = phy_register_device(dev);
-				if (ret)
-					goto fail;
-
-				break;
-			}
-		}
-
-		if (!edev->phydev) {
+	if (addr >= 0) {
+		dev = mdiobus_scan(bus, addr);
+		if (IS_ERR(dev)) {
 			ret = -EIO;
 			goto fail;
 		}
+	} else {
+		for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
+			/* skip masked out PHY addresses */
+			if (bus->phy_mask & (1 << i))
+				continue;
+
+			dev = mdiobus_scan(bus, i);
+			if (!IS_ERR(dev) && !dev->attached_dev)
+                                break;
+		}
 	}
 
-	dev = edev->phydev;
-	drv = to_phy_driver(dev->dev.driver);
+	if (dev->attached_dev)
+		return -EBUSY;
 
-	drv->config_aneg(dev);
+	dev->interface = interface;
+	dev->dev_flags = flags;
+
+	if (!dev->registered) {
+		ret = phy_register_device(dev);
+		if (ret)
+			goto fail;
+	}
+
+	edev->phydev = dev;
+	dev->attached_dev = edev;
+
+	ret = phy_init_hw(dev);
+	if (ret)
+		goto fail;
+
+	/* Sanitize settings based on PHY capabilities */
+	if ((dev->supported & SUPPORTED_Autoneg) == 0)
+		dev->autoneg = AUTONEG_DISABLE;
+
+	phy_config_aneg(edev->phydev);
 
 	dev->adjust_link = adjust_link;
 
 	return 0;
 
 fail:
-	if (!IS_ERR(dev))
-		dev->attached_dev = NULL;
 	puts("Unable to find a PHY (unknown ID?)\n");
 	return ret;
 }
@@ -757,7 +773,7 @@ int phy_driver_register(struct phy_driver *phydrv)
 
 	return register_driver(&phydrv->drv);
 }
- 
+
 int phy_drivers_register(struct phy_driver *new_driver, int n)
 {
 	int i, ret = 0;

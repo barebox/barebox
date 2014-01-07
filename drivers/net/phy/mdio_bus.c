@@ -25,6 +25,30 @@
 #include <linux/phy.h>
 #include <linux/err.h>
 
+LIST_HEAD(mii_bus_list);
+
+int mdiobus_detect(struct device_d *dev)
+{
+	struct mii_bus *mii = to_mii_bus(dev);
+	int i, ret;
+
+	for (i = 0; i < PHY_MAX_ADDR; i++) {
+		struct phy_device *phydev;
+
+		phydev = mdiobus_scan(mii, i);
+		if (IS_ERR(phydev))
+			continue;
+		if (phydev->registered)
+			continue;
+		ret = phy_register_device(phydev);
+		if (ret)
+			dev_err(dev, "failed to register phy: %s\n", strerror(-ret));
+		dev_info(dev, "registered phy as /dev/%s\n", phydev->cdev.name);
+	}
+
+	return 0;
+}
+
 /**
  * mdiobus_register - bring up all the PHYs on a given bus and attach them to bus
  * @bus: target mii_bus
@@ -47,6 +71,7 @@ int mdiobus_register(struct mii_bus *bus)
 	bus->dev.id = DEVICE_ID_DYNAMIC;
 	strcpy(bus->dev.name, "miibus");
 	bus->dev.parent = bus->parent;
+	bus->dev.detect = mdiobus_detect;
 
 	err = register_device(&bus->dev);
 	if (err) {
@@ -56,6 +81,8 @@ int mdiobus_register(struct mii_bus *bus)
 
 	if (bus->reset)
 		bus->reset(bus);
+
+	list_add_tail(&bus->list, &mii_bus_list);
 
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 	return 0;
@@ -71,6 +98,8 @@ void mdiobus_unregister(struct mii_bus *bus)
 			unregister_device(&bus->phy_map[i]->dev);
 		bus->phy_map[i] = NULL;
 	}
+
+	list_del(&bus->list);
 }
 EXPORT_SYMBOL(mdiobus_unregister);
 
@@ -153,8 +182,6 @@ static int mdio_bus_probe(struct device_d *_dev)
 
 	int ret;
 
-	dev->attached_dev->phydev = dev;
-
 	if (drv->probe) {
 		ret = drv->probe(dev);
 		if (ret)
@@ -183,14 +210,6 @@ static int mdio_bus_probe(struct device_d *_dev)
 	dev->supported = drv->features;
 	dev->advertising = drv->features;
 
-	ret = phy_init_hw(dev);
-	if (ret)
-		goto err;
-
-	/* Sanitize settings based on PHY capabilities */
-	if ((dev->supported & SUPPORTED_Autoneg) == 0)
-		dev->autoneg = AUTONEG_DISABLE;
-
 	dev_add_param_int_ro(&dev->dev, "phy_addr", dev->addr, "%d");
 	dev_add_param_int_ro(&dev->dev, "phy_id", dev->phy_id, "0x%08x");
 
@@ -204,8 +223,6 @@ static int mdio_bus_probe(struct device_d *_dev)
 	return 0;
 
 err:
-	dev->attached_dev->phydev = NULL;
-	dev->attached_dev = NULL;
 	return ret;
 }
 

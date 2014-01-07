@@ -27,7 +27,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet_1>;
 	phy-mode = "rgmii";
-	status = "okay";
+};
+
+&ocotp1 {
+	barebox,provide-mac-address = <&fec 0x620>;
 };
 
 &i2c1 {

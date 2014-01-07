@@ -80,4 +80,3 @@ int process_escape_sequence(const char *source, char *dest, int destlen)
 	dest[i] = 0;
 	return 0;
 }
-

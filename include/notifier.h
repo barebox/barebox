@@ -35,4 +35,3 @@ int clock_notifier_call_chain(void);
 	};
 
 #endif /* __NOTIFIER_H */
-

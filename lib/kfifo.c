@@ -153,4 +153,3 @@ unsigned int kfifo_getc(struct kfifo *fifo, unsigned char *c)
 
 	return 0;
 }
-

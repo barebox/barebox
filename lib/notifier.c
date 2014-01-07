@@ -56,4 +56,3 @@ int clock_notifier_call_chain(void)
 {
 	return notifier_call_chain(&clock_notifier_list, 0, NULL);
 }
-

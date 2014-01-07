@@ -88,7 +88,8 @@ static int do_oftree(int argc, char *argv[])
 		if (root)
 			of_delete_node(root);
 
-		return 0;
+		if (!load)
+			return 0;
 	}
 
 	if (optind < argc)

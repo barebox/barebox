@@ -51,7 +51,7 @@
 
 &i2c1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c1_1>;
+	pinctrl-0 = <&pinctrl_i2c1>;
 
 	/*
 	 * Not fitted on Carrier-1 board... yet
@@ -86,6 +86,10 @@
 				MX6QDL_PAD_SD2_DAT3__SD2_DATA3 0x13059
 				MX6QDL_PAD_GPIO_4__SD2_CD_B    0x1f071
 			>;
+		};
+
+		pinctrl_i2c1: i2c1grp {
+			fsl,pins = <MX6QDL_I2C1_PINGRP1>;
 		};
 	};
 };

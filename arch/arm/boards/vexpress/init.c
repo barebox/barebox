@@ -46,7 +46,6 @@ static void vexpress_ax_devices_init(void)
 	vexpress_register_mmc(&mmci_plat);
 	add_generic_device("smc911x", DEVICE_ID_DYNAMIC, NULL, 0x1a000000,
 			64 * 1024, IORESOURCE_MEM, NULL);
-	armlinux_set_bootparams((void *)(0x80000100));
 }
 
 static void vexpress_ax_console_init(void)
@@ -77,7 +76,6 @@ static void vexpress_a9_legacy_devices_init(void)
 			64 * 1024, IORESOURCE_MEM, NULL);
 	vexpress_a9_legacy_register_mmc(&mmci_plat);
 	armlinux_set_architecture(MACH_TYPE_VEXPRESS);
-	armlinux_set_bootparams((void *)(0x60000100));
 }
 
 static void vexpress_a9_legacy_console_init(void)

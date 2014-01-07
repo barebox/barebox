@@ -78,8 +78,6 @@ static int archosg9_devices_init(void){
 		&pwrbtn_data);
 	add_gpio_keys_device(DEVICE_ID_DYNAMIC, &gk_data);
 #endif
-
-	armlinux_set_bootparams((void *)0x80000100);
 	/*
 	 * This should be:
 	 * armlinux_set_architecture(MACH_TYPE_OMAP4_ARCHOSG9);

@@ -249,7 +249,6 @@ static int tx51_devices_init(void)
 	tx51_leds_init();
 
 	//Linux Parameters
-	armlinux_set_bootparams((void *)MX51_CSD0_BASE_ADDR + 0x100);
 	armlinux_set_architecture(MACH_TYPE_TX51);
 
 	return 0;

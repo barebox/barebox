@@ -285,7 +285,6 @@ static int vincell_devices_init(void)
 
 	vincell_fec_reset();
 
-	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(3297);
 
 	devfs_add_partition("nand0", SZ_1M, SZ_512K, DEVFS_PARTITION_FIXED, "self_raw");

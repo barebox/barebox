@@ -150,7 +150,6 @@ static int pcaal1_init_devices(void)
 			   IORESOURCE_MEM, NULL);
 #endif
 
-	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCAAL1);
 
 	return 0;

@@ -57,7 +57,6 @@ static int netx_devices_init(void) {
 
 	protect_file("/dev/env0", 1);
 
-	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_NXDB500);
 
 	return 0;

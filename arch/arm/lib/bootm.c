@@ -296,15 +296,28 @@ static struct image_handler zimage_handler = {
 
 static int do_bootm_barebox(struct image_data *data)
 {
-	void (*barebox)(void);
+	void *barebox;
 
 	barebox = read_file(data->os_file, NULL);
 	if (!barebox)
 		return -EINVAL;
 
-	shutdown_barebox();
+	if (IS_ENABLED(CONFIG_OFTREE) && data->of_root_node) {
+		data->oftree = of_get_fixed_tree(data->of_root_node);
+		fdt_add_reserve_map(data->oftree);
+		of_print_cmdline(data->of_root_node);
+		if (bootm_verbose(data) > 1)
+			of_print_nodes(data->of_root_node, 0);
+	}
 
-	barebox();
+	if (bootm_verbose(data)) {
+		printf("\nStarting barebox at 0x%p", barebox);
+		if (data->oftree)
+			printf(", oftree at 0x%p", data->oftree);
+		printf("...\n");
+	}
+
+	start_linux(barebox, 0, 0, 0, data->oftree);
 
 	reset_cpu(0);
 }

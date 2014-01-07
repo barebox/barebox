@@ -127,7 +127,6 @@ static int cupid_devices_init(void)
 	imx35_add_fb(&ipu_fb_data);
 	imx35_add_mmc0(NULL);
 
-	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_GUF_CUPID);
 
 	return 0;

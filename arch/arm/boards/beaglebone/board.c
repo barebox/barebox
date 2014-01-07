@@ -70,7 +70,6 @@ static int beaglebone_devices_init(void)
 
 	printf("detected 'BeagleBone %s'\n", black ? "Black" : "White");
 
-	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_BEAGLEBONE);
 
 	return 0;

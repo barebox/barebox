@@ -131,7 +131,6 @@ static int smd_devices_init(void)
 
 	smd_fec_reset();
 
-	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_MX53_SMD);
 
 	return 0;

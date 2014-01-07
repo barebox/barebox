@@ -158,7 +158,6 @@ static int panda_devices_init(void)
 	panda_ehci_init();
 
 	panda_led_init();
-	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_OMAP4_PANDA);
 
 	return 0;

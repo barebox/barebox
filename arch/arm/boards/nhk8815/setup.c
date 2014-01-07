@@ -98,7 +98,6 @@ static int nhk8815_devices_init(void)
 	platform_device_register(&nhk8815_nand_device);
 
 	armlinux_set_architecture(MACH_TYPE_NOMADIK);
-	armlinux_set_bootparams((void *)(0x00000100));
 
 	devfs_add_partition("nand0", 0x0000000, 0x040000, DEVFS_PARTITION_FIXED, "xloader_raw");
 	devfs_add_partition("nand0", 0x0040000, 0x080000, DEVFS_PARTITION_FIXED, "meminit_raw");

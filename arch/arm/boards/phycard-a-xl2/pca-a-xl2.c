@@ -134,7 +134,6 @@ static int pcaaxl2_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 #endif
 
-	armlinux_set_bootparams((void *)0x80000100);
 	armlinux_set_architecture(MACH_TYPE_PCAAXL2);
 
 	return 0;

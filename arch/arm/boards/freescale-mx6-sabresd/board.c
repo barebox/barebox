@@ -81,7 +81,6 @@ static void sabresd_phy_reset(void)
 
 static int sabresd_devices_init(void)
 {
-	armlinux_set_bootparams((void *)0x10000100);
 	armlinux_set_architecture(3980);
 
 	devfs_add_partition("disk0", 0, SZ_1M, DEVFS_PARTITION_FIXED, "self0");

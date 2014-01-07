@@ -121,7 +121,6 @@ static int sabrelite_devices_init(void)
 
 	sabrelite_ehci_init();
 
-	armlinux_set_bootparams((void *)0x10000100);
 	armlinux_set_architecture(3769);
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",

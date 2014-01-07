@@ -268,7 +268,6 @@ static int mx28_evk_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mx28evk_pads); i++)
 		imx_gpio_mode(mx28evk_pads[i]);
 
-	armlinux_set_bootparams((void *)IMX_MEMORY_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MX28EVK);
 
 	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, 0x2000,

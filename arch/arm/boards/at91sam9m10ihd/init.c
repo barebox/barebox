@@ -270,7 +270,6 @@ static int at91sam9m10ihd_devices_init(void)
 	devfs_add_partition("nand0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 	dev_add_bb_dev("env_raw1", "env1");
 
-	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_6 + 0x100));
 	/*
 	 * The internal Atmel kernel use the SAM9M10G45EK machine id
 	 * The mainline use DT

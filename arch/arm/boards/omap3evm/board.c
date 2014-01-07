@@ -90,7 +90,6 @@ static int omap3evm_init_devices(void)
 #endif
 	omap3_add_mmc1(NULL);
 
-        armlinux_set_bootparams((void *)0x80000100);
         armlinux_set_architecture(MACH_TYPE_OMAP3EVM);
 
 	return 0;

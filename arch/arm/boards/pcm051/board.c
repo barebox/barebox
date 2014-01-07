@@ -66,7 +66,6 @@ static int pcm051_devices_init(void)
 	}
 
 	omap_set_barebox_part(&pcm051_barebox_part);
-	armlinux_set_bootparams((void *)(AM33XX_DRAM_ADDR_SPACE_START + 0x100));
 	armlinux_set_architecture(MACH_TYPE_PCM051);
 
 	am33xx_bbu_spi_nor_mlo_register_handler("MLO.spi", "/dev/m25p0.xload");

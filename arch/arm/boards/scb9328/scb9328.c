@@ -77,7 +77,6 @@ static int scb9328_devices_init(void)
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 	protect_file("/dev/env0", 1);
 
-	armlinux_set_bootparams((void *)0x08000100);
 	armlinux_set_architecture(MACH_TYPE_SCB9328);
 
 	return 0;

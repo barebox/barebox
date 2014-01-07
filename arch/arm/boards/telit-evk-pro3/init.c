@@ -150,8 +150,6 @@ static int evk_devices_init(void)
 	at91_add_device_udc(&evk_udc_data);
 	evk_usb_add_device_mci();
 
-	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
-
 	devfs_add_partition("nand0", 0x00000, BOOTSTRAP_SIZE,
 			    DEVFS_PARTITION_FIXED, "bootstrap_raw");
 	dev_add_bb_dev("bootstrap_raw", "bootstrap");

@@ -89,6 +89,24 @@ u64 armlinux_get_serial(void)
 	return armlinux_system_serial;
 }
 
+void armlinux_set_bootparams(void *params)
+{
+	armlinux_bootparams = params;
+}
+
+static struct tag *armlinux_get_bootparams(void)
+{
+	struct memory_bank *mem;
+
+	if (armlinux_bootparams)
+		return armlinux_bootparams;
+
+	for_each_memory_bank(mem)
+		return (void *)mem->start + 0x100;
+
+	BUG();
+}
+
 #ifdef CONFIG_ARM_BOARD_APPEND_ATAG
 static struct tag *(*atag_appender)(struct tag *);
 void armlinux_set_atag_appender(struct tag *(*func)(struct tag *))
@@ -99,7 +117,7 @@ void armlinux_set_atag_appender(struct tag *(*func)(struct tag *))
 
 static void setup_start_tag(void)
 {
-	params = (struct tag *)armlinux_bootparams;
+	params = armlinux_get_bootparams();
 
 	params->hdr.tag = ATAG_CORE;
 	params->hdr.size = tag_size(tag_core);
@@ -235,11 +253,6 @@ static void setup_tags(unsigned long initrd_address,
 
 }
 
-void armlinux_set_bootparams(void *params)
-{
-	armlinux_bootparams = params;
-}
-
 void start_linux(void *adr, int swap, unsigned long initrd_address,
 		unsigned long initrd_size, void *oftree)
 {
@@ -248,11 +261,11 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 	int architecture;
 
 	if (oftree) {
-		printf("booting Linux kernel with devicetree\n");
+		printf("booting kernel with devicetree\n");
 		params = oftree;
 	} else {
 		setup_tags(initrd_address, initrd_size, swap);
-		params = armlinux_bootparams;
+		params = armlinux_get_bootparams();
 	}
 	architecture = armlinux_get_architecture();
 

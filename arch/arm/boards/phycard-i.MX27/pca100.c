@@ -293,7 +293,6 @@ static int pca100_devices_init(void)
 	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
-	armlinux_set_bootparams((void *)0xa0000100);
 	armlinux_set_architecture(2149);
 
 	return 0;

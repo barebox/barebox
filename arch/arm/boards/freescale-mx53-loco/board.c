@@ -113,7 +113,6 @@ static int loco_late_init(void)
 
 	set_silicon_rev(imx_silicon_revision());
 
-	armlinux_set_bootparams((void *)0x70000100);
 	armlinux_set_architecture(MACH_TYPE_MX53_LOCO);
 
 	imx53_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",

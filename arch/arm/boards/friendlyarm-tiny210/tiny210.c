@@ -111,7 +111,6 @@ static int tiny210_devices_init(void)
 
 	led_set_trigger(LED_TRIGGER_HEARTBEAT, &leds[0].led);
 
-	armlinux_set_bootparams((void*)S3C_SDRAM_BASE + 0x100);
 	armlinux_set_architecture(MACH_TYPE_MINI210);
 
 	return 0;

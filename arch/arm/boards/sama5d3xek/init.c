@@ -411,8 +411,6 @@ static int at91sama5d3xek_devices_init(void)
 	ek_add_device_mci();
 	ek_add_device_lcdc();
 
-	armlinux_set_bootparams((void *)(SAMA5_DDRCS + 0x100));
-
 	devfs_add_partition("nand0", 0x00000, SZ_256K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
 	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");
 	devfs_add_partition("nand0", SZ_256K, SZ_256K + SZ_128K, DEVFS_PARTITION_FIXED, "self_raw");

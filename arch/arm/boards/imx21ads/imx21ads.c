@@ -163,7 +163,6 @@ static int mx21ads_devices_init(void)
 			IORESOURCE_MEM, NULL);
 	imx21_add_fb(&imx_fb_data);
 
-	armlinux_set_bootparams((void *)0xc0000100);
 	armlinux_set_architecture(MACH_TYPE_MX21ADS);
 
 	return 0;

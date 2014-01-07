@@ -72,8 +72,6 @@ static int ep93xx_devices_init(void)
 	add_generic_device("ep93xx_eth", DEVICE_ID_DYNAMIC, NULL, 0, 0, IORESOURCE_MEM,
 			NULL);
 
-	armlinux_set_bootparams((void *)CONFIG_EP93XX_SDRAM_BANK0_BASE + 0x100);
-
 	armlinux_set_architecture(MACH_TYPE);
 
 	return 0;

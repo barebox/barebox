@@ -139,7 +139,6 @@ static int dss11_devices_init(void)
 	at91_add_device_mci(0, &dss11_mci_data);
 	at91_add_device_usbh_ohci(&dss11_usbh_data);
 
-	armlinux_set_bootparams((void *)(AT91_CHIPSELECT_1 + 0x100));
 	armlinux_set_architecture(MACH_TYPE_DSS11);
 
 	devfs_add_partition("nand0", 0x00000, 0x20000, DEVFS_PARTITION_FIXED, "bootstrap");

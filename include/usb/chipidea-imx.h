@@ -42,7 +42,6 @@ enum imx_usb_mode {
 struct imxusb_platformdata {
 	unsigned long flags;
 	enum imx_usb_mode mode;
-	int (*init)(int port);
 };
 
 int imx_usbmisc_port_init(int port, unsigned flags);

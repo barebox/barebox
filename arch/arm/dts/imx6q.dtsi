@@ -9,6 +9,7 @@
  */
 
 #include "imx6q-pinfunc.h"
+#include "imx6qdl-pingrp.h"
 #include "imx6qdl.dtsi"
 
 / {

@@ -1,8 +1,8 @@
-VERSION = 2013
-PATCHLEVEL = 12
+VERSION = 2014
+PATCHLEVEL = 01
 SUBLEVEL = 0
 EXTRAVERSION =
-NAME = Saint Nicholas Day
+NAME = New year karnelbullar
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

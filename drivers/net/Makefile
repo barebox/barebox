@@ -20,3 +20,4 @@ obj-$(CONFIG_DRIVER_NET_KS8851_MLL)	+= ks8851_mll.o
 obj-$(CONFIG_DRIVER_NET_DESIGNWARE)	+= designware.o
 obj-$(CONFIG_DRIVER_NET_GIANFAR)	+= gianfar.o
 obj-$(CONFIG_DRIVER_NET_MICREL)		+= ksz8864rmn.o
+obj-$(CONFIG_DRIVER_NET_ETHOC)		+= ethoc.o

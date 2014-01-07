@@ -139,6 +139,12 @@ config DRIVER_NET_GIANFAR
 	depends on ARCH_MPC85XX
 	select PHYLIB
 
+config DRIVER_NET_ETHOC
+	bool "OpenCores ethernet MAC driver"
+	help
+	  This option enables support for the OpenCores 10/100 Mbps
+	  Ethernet MAC core.
+
 source "drivers/net/usb/Kconfig"
 
 config DRIVER_NET_MICREL

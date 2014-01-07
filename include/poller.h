@@ -12,13 +12,25 @@
 
 struct poller_struct {
 	void (*func)(struct poller_struct *poller);
-
+	int registered;
 	struct list_head list;
 };
 
 int poller_register(struct poller_struct *poller);
 int poller_unregister(struct poller_struct *poller);
 
+struct poller_async;
+
+struct poller_async {
+	struct poller_struct poller;
+	void (*fn)(void *);
+	void *ctx;
+	uint64_t end;
+};
+
+int poller_call_async(struct poller_async *pa, uint64_t delay_ns,
+		void (*fn)(void *), void *ctx);
+int poller_async_cancel(struct poller_async *pa);
 
 #ifdef CONFIG_POLLER
 void poller_call(void);

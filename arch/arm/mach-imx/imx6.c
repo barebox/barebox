@@ -86,10 +86,16 @@ int imx6_init(void)
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:
-		cputypestr = "i.MX6 Dual/Quad";
+		cputypestr = "i.MX6 Quad";
+		break;
+	case IMX6_CPUTYPE_IMX6D:
+		cputypestr = "i.MX6 Dual";
 		break;
 	case IMX6_CPUTYPE_IMX6DL:
-		cputypestr = "i.MX6 Solo/DualLite";
+		cputypestr = "i.MX6 DualLite";
+		break;
+	case IMX6_CPUTYPE_IMX6S:
+		cputypestr = "i.MX6 Solo";
 		break;
 	default:
 		cputypestr = "unknown i.MX6";

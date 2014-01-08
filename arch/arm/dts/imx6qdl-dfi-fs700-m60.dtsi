@@ -31,6 +31,22 @@
 	};
 };
 
+&ecspi3 {
+	fsl,spi-num-chipselects = <1>;
+	cs-gpios = <&gpio4 24 0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi3>;
+	status = "okay";
+
+	flash: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "sst,sst25vf040b", "m25p80";
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+	};
+};
+
 &fec {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet>;
@@ -79,6 +95,15 @@
 
 		pinctrl_usdhc4: usdhc4grp {
 			fsl,pins = <MX6QDL_USDHC4_PINGRP_D8>;
+		};
+	};
+
+	ecspi3 {
+		pinctrl_ecspi3: ecspi3_csgrp {
+			fsl,pins = <
+				MX6QDL_ECSPI3_PINGRP1
+				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24 0x80000000 /* SPI NOR chipselect */
+			>;
 		};
 	};
 };

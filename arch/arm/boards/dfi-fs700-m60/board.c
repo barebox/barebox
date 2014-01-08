@@ -39,6 +39,37 @@
 #include <mach/generic.h>
 #include <mach/bbu.h>
 
+/*
+ * This board can have 512MiB, 1GiB or 2GiB of SDRAM. The actual amount of SDRAM
+ * is detected using mirror detection in lowlevel init and is stored in the first
+ * SDRAM address from the lowlevel code.
+ */
+static int dfi_fs700_m60_mem_init(void)
+{
+	u32 memsize;
+
+	if (!of_machine_is_compatible("dfi,fs700-m60"))
+		return 0;
+
+	memsize = *(u32 *)0x10000000;
+
+	/* play safe if we find some corrupted amount of SDRAM */
+	switch (memsize) {
+	case SZ_512M:
+	case SZ_1G:
+	case SZ_2G:
+		break;
+	default:
+		pr_err("unknown SDRAM size 0x%08x defaulting to 512MiB\n", memsize);
+		memsize = SZ_512M;
+	}
+
+	arm_add_mem_device("ram0", 0x10000000, memsize);
+
+	return 0;
+}
+mem_initcall(dfi_fs700_m60_mem_init);
+
 static int ar8031_phy_fixup(struct phy_device *dev)
 {
 	u16 val;

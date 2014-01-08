@@ -35,6 +35,8 @@ static inline void early_uart_init(void)
 	writel(0x0000047f, MX6_UART1_BASE_ADDR + 0xa4);
 	writel(0x0000c34f, MX6_UART1_BASE_ADDR + 0xa8);
 	writel(0x00000001, MX6_UART1_BASE_ADDR + 0x80);
+
+	putc_ll('>');
 }
 
 static inline void early_uart_init_6q(void)
@@ -59,19 +61,82 @@ static inline void early_uart_init_6s(void)
 	early_uart_init();
 }
 
+static inline unsigned int memsize_512M_1G(void)
+{
+	volatile u32 *a = (u32 *)0x10000000;
+	volatile u32 *b = (u32 *)0x30000000;
+	u32 size;
+
+	*a = 0x55555555;
+	*b = 0xaaaaaaaa;
+
+	if (*a == 0xaaaaaaaa)
+		size = SZ_512M;
+	else
+		size = SZ_1G;
+
+	*a = size;
+
+	return size;
+}
+
+static inline unsigned int memsize_1G_2G(void)
+{
+	volatile u32 *a = (u32 *)0x10000000;
+	volatile u32 *b = (u32 *)0x50000000;
+	u32 size;
+
+	*a = 0x55555555;
+	*b = 0xaaaaaaaa;
+
+	if (*a == 0xaaaaaaaa)
+		size = SZ_1G;
+	else
+		size = SZ_2G;
+
+	*a = size;
+
+	return size;
+}
+
 extern char __dtb_imx6q_dfi_fs700_m60_6q_start[];
 
-ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q, r0, r1, r2)
+ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q_nanya, r0, r1, r2)
 {
 	uint32_t fdt;
+	int i;
 
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
 
+	for (i = 0x68; i <= 0x80; i += 4)
+		writel(0xffffffff, MX6_CCM_BASE_ADDR + i);
+
 	early_uart_init_6q();
 
 	fdt = (uint32_t)__dtb_imx6q_dfi_fs700_m60_6q_start - get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, memsize_1G_2G(), fdt);
+}
+
+ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q_micron, r0, r1, r2)
+{
+	uint32_t fdt;
+	int i;
+
+	arm_cpu_lowlevel_init();
+
+	arm_setup_stack(0x00940000 - 8);
+
+	for (i = 0x68; i <= 0x80; i += 4)
+		writel(0xffffffff, MX6_CCM_BASE_ADDR + i);
+
+	early_uart_init_6q();
+
+	fdt = (uint32_t)__dtb_imx6q_dfi_fs700_m60_6q_start - get_runtime_offset();
+
+	*(uint32_t *)0x10000000 = SZ_1G;
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
@@ -94,5 +159,5 @@ ENTRY_FUNCTION(start_imx6dl_dfi_fs700_m60_6s, r0, r1, r2)
 
 	fdt = (uint32_t)__dtb_imx6dl_dfi_fs700_m60_6s_start - get_runtime_offset();
 
-	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+	barebox_arm_entry(0x10000000, memsize_512M_1G(), fdt);
 }

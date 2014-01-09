@@ -334,7 +334,7 @@ static int do_gpiolib(int argc, char *argv[])
 			3, (dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
 			3, (val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
 			9, gi->requested ? "true" : "false",
-			gi->label ? gi->label : "");
+			(gi->requested && gi->label) ? gi->label : "");
 	}
 
 	return 0;

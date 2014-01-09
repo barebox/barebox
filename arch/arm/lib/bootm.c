@@ -65,7 +65,7 @@ static int sdram_start_and_size(unsigned long *start, unsigned long *size)
 	return 0;
 }
 
-static int __do_bootm_linux(struct image_data *data, int swap)
+static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int swap)
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
@@ -76,7 +76,7 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 	initrd_start = data->initrd_address;
 
 	if (initrd_start == UIMAGE_INVALID_ADDRESS) {
-		initrd_start = data->os_res->start + SZ_8M;
+		initrd_start = PAGE_ALIGN(free_mem);
 
 		if (bootm_verbose(data)) {
 			printf("no initrd load address, defaulting to 0x%08lx\n",
@@ -92,18 +92,12 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 		initrd_start = data->initrd_res->start;
 		initrd_end = data->initrd_res->end;
 		initrd_size = resource_size(data->initrd_res);
+		free_mem = PAGE_ALIGN(initrd_end);
 	}
 
-	if (IS_ENABLED(CONFIG_OFTREE) && data->of_root_node) {
-		of_add_initrd(data->of_root_node, initrd_start, initrd_end);
-		if (initrd_end)
-			of_add_reserve_entry(initrd_start, initrd_end);
-		data->oftree = of_get_fixed_tree(data->of_root_node);
-		fdt_add_reserve_map(data->oftree);
-		of_print_cmdline(data->of_root_node);
-		if (bootm_verbose(data) > 1)
-			of_print_nodes(data->of_root_node, 0);
-	}
+	ret = bootm_load_devicetree(data, free_mem);
+	if (ret)
+		return ret;
 
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%08lx", kernel);
@@ -123,7 +117,7 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 static int do_bootm_linux(struct image_data *data)
 {
-	unsigned long load_address, mem_start, mem_size;
+	unsigned long load_address, mem_start, mem_size, mem_free;
 	int ret;
 
 	ret = sdram_start_and_size(&mem_start, &mem_size);
@@ -143,7 +137,16 @@ static int do_bootm_linux(struct image_data *data)
 	if (ret)
 		return ret;
 
-	return __do_bootm_linux(data, 0);
+	/*
+	 * Put devicetree/initrd at maximum to 128MiB into RAM to not
+	 * risk to put it outside of lowmem.
+	 */
+	if (mem_size > SZ_256M)
+		mem_free = mem_start + SZ_128M;
+	else
+		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+
+	return __do_bootm_linux(data, mem_free, 0);
 }
 
 static struct image_handler uimage_handler = {
@@ -236,7 +239,7 @@ static int do_bootz_linux(struct image_data *data)
 	void *zimage;
 	u32 end;
 	unsigned long load_address = data->os_address;
-	unsigned long mem_start, mem_size;
+	unsigned long mem_start, mem_size, mem_free;
 
 	ret = sdram_start_and_size(&mem_start, &mem_size);
 	if (ret)
@@ -321,7 +324,17 @@ static int do_bootz_linux(struct image_data *data)
 		goto err_out;
 
 	close(fd);
-	return __do_bootm_linux(data, swap);
+
+	/*
+	 * Put devicetree/initrd at maximum to 128MiB into RAM to not
+	 * risk to put it outside of lowmem.
+	 */
+	if (mem_size > SZ_256M)
+		mem_free = mem_start + SZ_128M;
+	else
+		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+
+	return __do_bootm_linux(data, mem_free, swap);
 
 err_out:
 	close(fd);
@@ -396,6 +409,7 @@ static int do_bootm_aimage(struct image_data *data)
 	void *buf;
 	int to_read;
 	struct android_header_comp *cmp;
+	unsigned long mem_free;
 
 	fd = open(data->os_file, O_RDONLY);
 	if (fd < 0) {
@@ -489,7 +503,17 @@ static int do_bootm_aimage(struct image_data *data)
 	}
 
 	close(fd);
-	return __do_bootm_linux(data, 0);
+
+	/*
+	 * Put devicetree right after initrd if present or after the kernel
+	 * if not.
+	 */
+	if (data->initrd_res)
+		mem_free = PAGE_ALIGN(data->initrd_res->end);
+	else
+		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+
+	return __do_bootm_linux(data, mem_free, 0);
 
 err_out:
 	linux_bootargs_overwrite(NULL);

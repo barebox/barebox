@@ -26,24 +26,6 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
-	struct memory_bank *bank;
-	unsigned long load_address;
-	int ret;
-
-	if (data->os_address == UIMAGE_INVALID_ADDRESS) {
-		bank = list_first_entry(&memory_banks,
-				struct memory_bank, list);
-		load_address = bank->start + SZ_32K;
-		if (bootm_verbose(data))
-			printf("no os load address, defaulting to 0x%08lx\n",
-				load_address);
-	} else {
-		load_address = data->os_address;
-	}
-
-	ret = bootm_load_os(data, load_address);
-	if (ret)
-		return ret;
 
 	kernel = data->os_res->start + data->os_entry;
 
@@ -104,6 +86,25 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 static int do_bootm_linux(struct image_data *data)
 {
+	struct memory_bank *bank;
+	unsigned long load_address;
+	int ret;
+
+	load_address = data->os_address;
+
+	if (load_address == UIMAGE_INVALID_ADDRESS) {
+		bank = list_first_entry(&memory_banks,
+				struct memory_bank, list);
+		load_address = bank->start + SZ_32K;
+		if (bootm_verbose(data))
+			printf("no os load address, defaulting to 0x%08lx\n",
+				load_address);
+	}
+
+	ret = bootm_load_os(data, load_address);
+	if (ret)
+		return ret;
+
 	return __do_bootm_linux(data, 0);
 }
 

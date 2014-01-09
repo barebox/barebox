@@ -50,22 +50,33 @@ int gpio_request(unsigned gpio, const char *label)
 	struct gpio_info *gi = gpio_to_desc(gpio);
 	int ret;
 
-	if (!gi)
-		return -ENODEV;
+	if (!gi) {
+		ret = -ENODEV;
+		goto done;
+	}
 
-	if (gi->requested)
-		return -EBUSY;
+	if (gi->requested) {
+		ret = -EBUSY;
+		goto done;
+	}
+
+	ret = 0;
 
 	if (gi->chip->ops->request) {
 		ret = gi->chip->ops->request(gi->chip, gpio - gi->chip->base);
 		if (ret)
-			return ret;
+			goto done;
 	}
 
 	gi->requested = true;
 	gi->label = xstrdup(label);
 
-	return 0;
+done:
+	if (ret)
+		pr_err("_gpio_request: gpio-%d (%s) status %d\n",
+			 gpio, label ? : "?", ret);
+
+	return ret;
 }
 
 void gpio_free(unsigned gpio)

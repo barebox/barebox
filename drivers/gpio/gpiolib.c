@@ -94,6 +94,7 @@ void gpio_free(unsigned gpio)
 
 	gi->requested = false;
 	free(gi->label);
+	gi->label = NULL;
 }
 
 /**

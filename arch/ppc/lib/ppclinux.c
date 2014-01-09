@@ -47,9 +47,11 @@ static int do_bootm_linux(struct image_data *data)
 {
 	void	(*kernel)(void *, void *, unsigned long,
 			unsigned long, unsigned long);
+	int ret;
 
-	if (!data->os_res)
-		return -EINVAL;
+	ret = bootm_load_os(data, data->os_address);
+	if (ret)
+		return ret;
 
 	data->oftree = of_get_fixed_tree(data->of_root_node);
 	if (!data->oftree) {

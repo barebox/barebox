@@ -108,6 +108,8 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 }
 #endif
 
+int bootm_load_os(struct image_data *data, unsigned long load_address);
+
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 
 #endif /* __BOOT_H */

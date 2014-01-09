@@ -45,6 +45,46 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 	return NULL;
 }
 
+/*
+ * bootm_load_os() - load OS to RAM
+ *
+ * @data:		image data context
+ * @load_address:	The address where the OS should be loaded to
+ *
+ * This loads the OS to a RAM location. load_address must be a valid
+ * address. If the image_data doesn't have a OS specified it's considered
+ * an error.
+ *
+ * Return: 0 on success, negative error code otherwise
+ */
+int bootm_load_os(struct image_data *data, unsigned long load_address)
+{
+	if (data->os_res)
+		return 0;
+
+	if (load_address == UIMAGE_INVALID_ADDRESS)
+		return -EINVAL;
+
+	if (data->os) {
+		data->os_res = uimage_load_to_sdram(data->os,
+			data->os_num, load_address);
+		if (!data->os_res)
+			return -ENOMEM;
+
+		return 0;
+	}
+
+	if (data->os_file) {
+		data->os_res = file_to_sdram(data->os_file, load_address);
+		if (!data->os_res)
+			return -ENOMEM;
+
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
 static int bootm_open_os_uimage(struct image_data *data)
 {
 	int ret;
@@ -74,15 +114,6 @@ static int bootm_open_os_uimage(struct image_data *data)
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
 		data->os_address = data->os->header.ih_load;
-
-	if (data->os_address != UIMAGE_INVALID_ADDRESS) {
-		data->os_res = uimage_load_to_sdram(data->os, 0,
-				data->os_address);
-		if (!data->os_res) {
-			uimage_close(data->os);
-			return -ENOMEM;
-		}
-	}
 
 	return 0;
 }

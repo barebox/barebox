@@ -85,6 +85,44 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	return -EINVAL;
 }
 
+/*
+ * bootm_load_initrd() - load initrd to RAM
+ *
+ * @data:		image data context
+ * @load_address:	The address where the initrd should be loaded to
+ *
+ * This loads the initrd to a RAM location. load_address must be a valid
+ * address. If the image_data doesn't have a initrd specified this function
+ * still returns successful as an initrd is optional. Check data->initrd_res
+ * to see if an initrd has been loaded.
+ *
+ * Return: 0 on success, negative error code otherwise
+ */
+int bootm_load_initrd(struct image_data *data, unsigned long load_address)
+{
+	if (data->initrd_res)
+		return 0;
+
+	if (data->initrd) {
+		data->initrd_res = uimage_load_to_sdram(data->initrd,
+			data->initrd_num, load_address);
+		if (!data->initrd_res)
+			return -ENOMEM;
+
+		return 0;
+	}
+
+	if (data->initrd_file) {
+		data->initrd_res = file_to_sdram(data->initrd_file, load_address);
+		if (!data->initrd_res)
+			return -ENOMEM;
+
+		return 0;
+	}
+
+	return 0;
+}
+
 static int bootm_open_os_uimage(struct image_data *data)
 {
 	int ret;

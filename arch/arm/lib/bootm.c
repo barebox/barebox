@@ -26,12 +26,13 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
+	int ret;
 
 	kernel = data->os_res->start + data->os_entry;
 
 	initrd_start = data->initrd_address;
 
-	if (data->initrd_file && initrd_start == UIMAGE_INVALID_ADDRESS) {
+	if (initrd_start == UIMAGE_INVALID_ADDRESS) {
 		initrd_start = data->os_res->start + SZ_8M;
 
 		if (bootm_verbose(data)) {
@@ -40,16 +41,9 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 		}
 	}
 
-	if (data->initrd) {
-		data->initrd_res = uimage_load_to_sdram(data->initrd,
-			data->initrd_num, initrd_start);
-		if (!data->initrd_res)
-			return -ENOMEM;
-	} else if (data->initrd_file) {
-		data->initrd_res = file_to_sdram(data->initrd_file, initrd_start);
-		if (!data->initrd_res)
-			return -ENOMEM;
-	}
+	ret = bootm_load_initrd(data, initrd_start);
+	if (ret)
+		return ret;
 
 	if (data->initrd_res) {
 		initrd_start = data->initrd_res->start;

@@ -22,6 +22,49 @@
 #include <asm/armlinux.h>
 #include <asm/system.h>
 
+/*
+ * sdram_start_and_size() - determine place for putting the kernel/oftree/initrd
+ *
+ * @start:	returns the start address of the first RAM bank
+ * @size:	returns the usable space at the beginning of the first RAM bank
+ *
+ * This function returns the base address of the first RAM bank and the free
+ * space found there.
+ *
+ * return: 0 for success, negative error code otherwise
+ */
+static int sdram_start_and_size(unsigned long *start, unsigned long *size)
+{
+	struct memory_bank *bank;
+	struct resource *res;
+
+	/*
+	 * We use the first memory bank for the kernel and other resources
+	 */
+	bank = list_first_entry_or_null(&memory_banks, struct memory_bank,
+			list);
+	if (!bank) {
+		printf("cannot find first memory bank\n");
+		return -EINVAL;
+	}
+
+	/*
+	 * If the first memory bank has child resources we can use the bank up
+	 * to the beginning of the first child resource, otherwise we can use
+	 * the whole bank.
+	 */
+	res = list_first_entry_or_null(&bank->res->children, struct resource,
+			sibling);
+	if (res)
+		*size = res->start - bank->start;
+	else
+		*size = bank->size;
+
+	*start = bank->start;
+
+	return 0;
+}
+
 static int __do_bootm_linux(struct image_data *data, int swap)
 {
 	unsigned long kernel;
@@ -80,16 +123,17 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 static int do_bootm_linux(struct image_data *data)
 {
-	struct memory_bank *bank;
-	unsigned long load_address;
+	unsigned long load_address, mem_start, mem_size;
 	int ret;
+
+	ret = sdram_start_and_size(&mem_start, &mem_size);
+	if (ret)
+		return ret;
 
 	load_address = data->os_address;
 
 	if (load_address == UIMAGE_INVALID_ADDRESS) {
-		bank = list_first_entry(&memory_banks,
-				struct memory_bank, list);
-		load_address = bank->start + SZ_32K;
+		load_address = mem_start + SZ_32K;
 		if (bootm_verbose(data))
 			printf("no os load address, defaulting to 0x%08lx\n",
 				load_address);
@@ -192,11 +236,23 @@ static int do_bootz_linux(struct image_data *data)
 	void *zimage;
 	u32 end;
 	unsigned long load_address = data->os_address;
+	unsigned long mem_start, mem_size;
+
+	ret = sdram_start_and_size(&mem_start, &mem_size);
+	if (ret)
+		return ret;
 
 	if (load_address == UIMAGE_INVALID_ADDRESS) {
-		struct memory_bank *bank = list_first_entry(&memory_banks,
-				struct memory_bank, list);
-		data->os_address = bank->start + SZ_8M;
+		/*
+		 * The kernel should stay in the first 128MiB of RAM, recommended
+		 * is 32MiB into RAM so that relocation prior to decompression
+		 * can be avoided.
+		 */
+		if (mem_size > SZ_64M)
+			data->os_address = mem_start + SZ_32M;
+		else
+			data->os_address = mem_start + SZ_8M;
+
 		load_address = data->os_address;
 		if (bootm_verbose(data))
 			printf("no os load address, defaulting to 0x%08lx\n",

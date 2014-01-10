@@ -26,6 +26,11 @@ CFG_start_imx53_loco.pblx.imximg = $(board)/freescale-mx53-loco/flash-header-imx
 FILE_barebox-freescale-imx53-loco.img = start_imx53_loco.pblx.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco.img
 
+pblx-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco_r
+CFG_start_imx53_loco_r.pblx.imximg = $(board)/freescale-mx53-loco/flash-header-imx53-loco.imxcfg
+FILE_barebox-freescale-imx53-loco-r.img = start_imx53_loco_r.pblx.imximg
+image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco-r.img
+
 pblx-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += start_imx53_vmx53
 CFG_start_imx53_vmx53.pblx.imximg = $(board)/freescale-mx53-vmx53/flash-header-imx53-vmx53.imxcfg
 FILE_barebox-freescale-imx53-vmx53.img = start_imx53_vmx53.pblx.imximg

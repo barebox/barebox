@@ -717,7 +717,7 @@ static void mci_detect_version_from_csd(struct mci *mci)
 			mci->version = MMC_VERSION_4;
 			break;
 		default:
-			printf("unknown card version, fallback to 1.2\n");
+			printf("unknown card version, fallback to 1.02\n");
 			mci->version = MMC_VERSION_1_2;
 			break;
 		}
@@ -1398,10 +1398,17 @@ static unsigned extract_mtd_month(struct mci *mci)
  */
 static unsigned extract_mtd_year(struct mci *mci)
 {
+	unsigned year;
 	if (IS_SD(mci))
-		return UNSTUFF_BITS(mci->cid, 12, 8) + 2000;
-	else
+		year = UNSTUFF_BITS(mci->cid, 12, 8) + 2000;
+	else if (mci->version < MMC_VERSION_4_41)
 		return UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
+	else {
+		year = UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
+		if (year < 2010)
+			year += 16;
+	}
+	return year;
 }
 
 static void mci_print_caps(unsigned caps)
@@ -1448,7 +1455,7 @@ static void mci_info(struct device_d *dev)
 			(mci->version >> 4) & 0xf, mci->version & 0xf);
 	} else {
 		printf("  Attached is an SD Card (Version: %u.%u)\n",
-			(mci->version >> 4) & 0xf, mci->version & 0xf);
+			(mci->version >> 8) & 0xf, mci->version & 0xff);
 	}
 	printf("  Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 

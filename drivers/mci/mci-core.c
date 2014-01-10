@@ -695,7 +695,6 @@ static void mci_set_bus_width(struct mci *mci, unsigned width)
 static void mci_detect_version_from_csd(struct mci *mci)
 {
 	int version;
-	char *vstr;
 
 	if (mci->version == MMC_VERSION_UNKNOWN) {
 		/* the version is coded in the bits 127:126 (left aligned) */
@@ -703,32 +702,52 @@ static void mci_detect_version_from_csd(struct mci *mci)
 
 		switch (version) {
 		case 0:
-			vstr = "1.2";
 			mci->version = MMC_VERSION_1_2;
 			break;
 		case 1:
-			vstr = "1.4";
 			mci->version = MMC_VERSION_1_4;
 			break;
 		case 2:
-			vstr = "2.2";
 			mci->version = MMC_VERSION_2_2;
 			break;
 		case 3:
-			vstr = "3.0";
 			mci->version = MMC_VERSION_3;
 			break;
 		case 4:
-			vstr = "4.0";
 			mci->version = MMC_VERSION_4;
 			break;
 		default:
-			vstr = "unknown, fallback to 1.2";
+			printf("unknown card version, fallback to 1.2\n");
 			mci->version = MMC_VERSION_1_2;
 			break;
 		}
+	}
+}
 
-		dev_info(&mci->dev, "detected card version %s\n", vstr);
+/**
+ * correct the version from ext_csd data if it's not an SD-card, detected
+ * version is at least 4 and we have ext_csd data
+ */
+static void mci_correct_version_from_ext_csd(struct mci *mci)
+{
+	if (!IS_SD(mci) && (mci->version >= MMC_VERSION_4) && mci->ext_csd) {
+		switch (mci->ext_csd[EXT_CSD_REV]) {
+		case 1:
+			mci->version = MMC_VERSION_4_1;
+			break;
+		case 2:
+			mci->version = MMC_VERSION_4_2;
+			break;
+		case 3:
+			mci->version = MMC_VERSION_4_3;
+			break;
+		case 5:
+			mci->version = MMC_VERSION_4_41;
+			break;
+		case 6:
+			mci->version = MMC_VERSION_4_5;
+			break;
+		}
 	}
 }
 
@@ -1093,6 +1112,9 @@ static int mci_startup(struct mci *mci)
 	if (err)
 		return err;
 
+	mci_correct_version_from_ext_csd(mci);
+	printf("detected %s card version %d.%d\n", IS_SD(mci) ? "SD" : "MMC",
+		(mci->version >> 8) & 0xf, mci->version & 0xff);
 	mci_extract_card_capacity_from_csd(mci);
 
 	if (IS_SD(mci))

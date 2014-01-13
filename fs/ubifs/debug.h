@@ -85,7 +85,7 @@ struct ubifs_debug_info {
 
 #define ubifs_assert(expr) do {                                                \
 	if (unlikely(!(expr))) {                                               \
-		printk(KERN_CRIT "UBIFS assert failed in %s at %u (pid %d)\n", \
+		pr_crit("UBIFS assert failed in %s at %u (pid %d)\n", \
 		       __func__, __LINE__, 0);                      \
 		dbg_dump_stack();                                              \
 	}                                                                      \
@@ -94,7 +94,7 @@ struct ubifs_debug_info {
 #define ubifs_assert_cmt_locked(c) do {                                        \
 	if (unlikely(down_write_trylock(&(c)->commit_sem))) {                  \
 		up_write(&(c)->commit_sem);                                    \
-		printk(KERN_CRIT "commit lock is not locked!\n");              \
+		pr_crit("commit lock is not locked!\n");		      \
 		ubifs_assert(0);                                               \
 	}                                                                      \
 } while (0)
@@ -107,7 +107,7 @@ struct ubifs_debug_info {
 /* Generic debugging messages */
 #define dbg_msg(fmt, ...) do {                                                 \
 	spin_lock(&dbg_lock);                                                  \
-	printk(KERN_DEBUG "UBIFS DBG (pid %d): %s: " fmt "\n", 0,   \
+	pr_debug("UBIFS DBG (pid %d): %s: " fmt "\n", 0,   \
 	       __func__, ##__VA_ARGS__);                                       \
 	spin_unlock(&dbg_lock);                                                \
 } while (0)
@@ -310,7 +310,7 @@ void ubifs_debugging_exit(struct ubifs_info *c);
 /* Use "if (0)" to make compiler check arguments even if debugging is off */
 #define ubifs_assert(expr)  do {                                               \
 	if (0 && (expr))                                                       \
-		printk(KERN_CRIT "UBIFS assert failed in %s at %u (pid %d)\n", \
+		pr_crit("UBIFS assert failed in %s at %u (pid %d)\n", \
 		       __func__, __LINE__, 0);                      \
 } while (0)
 
@@ -321,7 +321,7 @@ void ubifs_debugging_exit(struct ubifs_info *c);
 
 #define dbg_msg(fmt, ...) do {                                                 \
 	if (0)                                                                 \
-		printk(KERN_DEBUG "UBIFS DBG (pid %d): %s: " fmt "\n",         \
+		pr_debug("UBIFS DBG (pid %d): %s: " fmt "\n",         \
 		       0, __func__, ##__VA_ARGS__);                 \
 } while (0)
 

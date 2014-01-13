@@ -474,15 +474,15 @@ static inline ino_t parent_ino(struct dentry *dentry)
 #define ubifs_msg(fmt, ...)
 #else
 #define ubifs_msg(fmt, ...) \
-		printk(KERN_NOTICE "UBIFS: " fmt "\n", ##__VA_ARGS__)
+		pr_notice("UBIFS: " fmt "\n", ##__VA_ARGS__)
 #endif
 /* UBIFS error messages */
 #define ubifs_err(fmt, ...)                                                  \
-	printk(KERN_ERR "UBIFS error (pid %d): %s: " fmt "\n", 0, \
+	pr_err("UBIFS error (pid %d): %s: " fmt "\n", 0, \
 	       __func__, ##__VA_ARGS__)
 /* UBIFS warning messages */
 #define ubifs_warn(fmt, ...)                                         \
-	printk(KERN_WARNING "UBIFS warning (pid %d): %s: " fmt "\n", \
+	pr_warn("UBIFS warning (pid %d): %s: " fmt "\n", \
 	       0, __func__, ##__VA_ARGS__)
 
 /* UBIFS file system VFS magic number */

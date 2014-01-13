@@ -228,6 +228,10 @@ config MACH_SABRELITE
 	select ARCH_IMX6
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
+	
+config MACH_NITROGEN6X
+	bool "BoundaryDevices Nitrogen6x"
+	select ARCH_IMX6
 
 config MACH_SOLIDRUN_CARRIER1
 	bool "SolidRun CuBox-i Carrier-1"

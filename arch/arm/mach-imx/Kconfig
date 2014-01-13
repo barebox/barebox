@@ -233,8 +233,8 @@ config MACH_NITROGEN6X
 	bool "BoundaryDevices Nitrogen6x"
 	select ARCH_IMX6
 
-config MACH_SOLIDRUN_CARRIER1
-	bool "SolidRun CuBox-i Carrier-1"
+config MACH_SOLIDRUN_HUMMINGBOARD
+	bool "SolidRun Hummingboard"
 	select ARCH_IMX6
 
 endif

@@ -3,9 +3,9 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 
-extern char __dtb_imx6dl_cubox_i_carrier_1_start[];
+extern char __dtb_imx6dl_hummingboard_start[];
 
-ENTRY_FUNCTION(start_imx6dl_cubox_i_carrier_1, r0, r1, r2)
+ENTRY_FUNCTION(start_imx6dl_hummingboard, r0, r1, r2)
 {
 	uint32_t fdt;
 
@@ -13,6 +13,6 @@ ENTRY_FUNCTION(start_imx6dl_cubox_i_carrier_1, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = (uint32_t)__dtb_imx6dl_cubox_i_carrier_1_start - get_runtime_offset();
+	fdt = (uint32_t)__dtb_imx6dl_hummingboard_start - get_runtime_offset();
 	barebox_arm_entry(0x10000000, SZ_512M, fdt);
 }

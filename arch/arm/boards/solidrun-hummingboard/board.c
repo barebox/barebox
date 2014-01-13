@@ -60,9 +60,9 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static int carrier1_device_init(void)
+static int hummingboard_device_init(void)
 {
-	if (!of_machine_is_compatible("solidrun,cubox-i-carrier-1"))
+	if (!of_machine_is_compatible("solidrun,hummingboard"))
 		return 0;
 
 	phy_register_fixup_for_uid(0x004dd072, 0xffffffef, ar8035_phy_fixup);
@@ -73,17 +73,17 @@ static int carrier1_device_init(void)
 
 	return 0;
 }
-device_initcall(carrier1_device_init);
+device_initcall(hummingboard_device_init);
 
-static int carrier1_lwl_init(void)
+static int hummingboard_lwl_init(void)
 {
-	if (!of_machine_is_compatible("solidrun,cubox-i-carrier-1"))
+	if (!of_machine_is_compatible("solidrun,hummingboard"))
 		return 0;
 
-	barebox_set_hostname("carrier-1");
+	barebox_set_hostname("hummingboard");
 
 	imx6_init_lowlevel();
 
 	return 0;
 }
-postcore_initcall(carrier1_lwl_init);
+postcore_initcall(hummingboard_lwl_init);

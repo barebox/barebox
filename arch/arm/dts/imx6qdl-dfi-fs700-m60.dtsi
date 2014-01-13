@@ -117,7 +117,7 @@
 	};
 };
 
-&ocotp1 {
+&ocotp {
 	barebox,provide-mac-address = <&fec 0x620>;
 };
 

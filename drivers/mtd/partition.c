@@ -83,7 +83,18 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset, size_t si
 
 	part = xzalloc(sizeof(*part));
 
-	memcpy(part, mtd, sizeof(*part));
+	part->type = mtd->type;
+	part->flags = mtd->flags;
+	part->parent = mtd->parent;
+	part->erasesize = mtd->erasesize;
+	part->writesize = mtd->writesize;
+	part->writebufsize = mtd->writebufsize;
+	part->oobsize = mtd->oobsize;
+	part->oobavail = mtd->oobavail;
+	part->bitflip_threshold = mtd->bitflip_threshold;
+	part->ecclayout = mtd->ecclayout;
+	part->ecc_strength = mtd->ecc_strength;
+	part->subpage_sft = mtd->subpage_sft;
 
 	/*
 	 * find the number of eraseregions the partition includes.

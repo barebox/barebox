@@ -39,6 +39,8 @@
 #include <mach/iim.h>
 #include <mach/imx5.h>
 
+#define TQMA53_EMMC_DSR 0x0100u
+
 static struct fec_platform_data fec_info = {
 	.xcv_type = PHY_INTERFACE_MODE_RMII,
 };
@@ -221,6 +223,8 @@ static struct esdhc_platform_data tqma53_sd3_data = {
 	.cd_type = ESDHC_CD_PERMANENT,
 	.wp_type = ESDHC_WP_NONE,
 	.caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA,
+	.use_dsr = 1,
+	.dsr_val = TQMA53_EMMC_DSR,
 };
 
 static int tqma53_devices_init(void)

@@ -157,10 +157,18 @@ static int uif_init(struct ubi_device *ubi, int *ref)
 	*ref = 0;
 	sprintf(ubi->ubi_name, UBI_NAME_STR "%d", ubi->ubi_num);
 
+	sprintf(ubi->dev.name, "ubi");
+	ubi->dev.id = DEVICE_ID_DYNAMIC;
+	ubi->dev.parent = &ubi->mtd->class_dev;
+
+	err = register_device(&ubi->dev);
+	if (err)
+		goto out_unreg;
+
 	err = ubi_cdev_add(ubi);
 	if (err) {
 		ubi_err("cannot add character device");
-		goto out_unreg;
+		goto out_dev;
 	}
 
 	for (i = 0; i < ubi->vtbl_slots; i++)
@@ -177,6 +185,8 @@ static int uif_init(struct ubi_device *ubi, int *ref)
 out_volumes:
 	kill_volumes(ubi);
 	devfs_remove(&ubi->cdev);
+out_dev:
+	unregister_device(&ubi->dev);
 out_unreg:
 	ubi_err("cannot initialize UBI %s, error %d", ubi->ubi_name, err);
 	return err;
@@ -193,6 +203,7 @@ out_unreg:
 static void uif_close(struct ubi_device *ubi)
 {
 	kill_volumes(ubi);
+	unregister_device(&ubi->dev);
 	ubi_cdev_remove(ubi);
 }
 

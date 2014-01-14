@@ -179,6 +179,7 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 	cdev->name = asprintf("ubi%d.%s", ubi->ubi_num, vol->name);
 	cdev->priv = priv;
 	cdev->size = vol->used_bytes;
+	cdev->dev = &vol->dev;
 	printf("registering %s as /dev/%s\n", vol->name, cdev->name);
 	ret = devfs_create(cdev);
 	if (ret) {
@@ -199,6 +200,7 @@ void ubi_volume_cdev_remove(struct ubi_volume *vol)
 	list_del(&vol->list);
 
 	devfs_remove(cdev);
+	unregister_device(&vol->dev);
 	kfree(cdev->name);
 	kfree(priv);
 }

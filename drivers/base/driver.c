@@ -154,6 +154,7 @@ int register_device(struct device_d *new_device)
 	INIT_LIST_HEAD(&new_device->cdevs);
 	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
+	INIT_LIST_HEAD(&new_device->bus_list);
 
 	if (new_device->bus) {
 		if (!new_device->parent)

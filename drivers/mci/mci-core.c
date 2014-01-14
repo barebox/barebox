@@ -1775,6 +1775,7 @@ void mci_of_parse(struct mci_host *host)
 {
 	struct device_node *np;
 	u32 bus_width;
+	u32 dsr_val;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
@@ -1807,4 +1808,11 @@ void mci_of_parse(struct mci_host *host)
 
 	/* f_max is obtained from the optional "max-frequency" property */
 	of_property_read_u32(np, "max-frequency", &host->f_max);
+
+	if (!of_property_read_u32(np, "dsr", &dsr_val)) {
+		if (dsr_val < 0x10000) {
+			host->use_dsr = 1;
+			host->dsr_val = dsr_val;
+		}
+	}
 }

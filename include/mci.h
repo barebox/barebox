@@ -299,6 +299,8 @@ struct mci_host {
 	unsigned clock;		/**< Current clock used to talk to the card */
 	unsigned bus_width;	/**< used data bus width to the card */
 	unsigned max_req_size;
+	unsigned dsr_val;	/**< optional dsr value */
+	int use_dsr;		/**< optional dsr usage flag */
 
 	/** init the host interface */
 	int (*init)(struct mci_host*, struct device_d*);
@@ -349,6 +351,7 @@ struct mci {
 	unsigned write_bl_len;
 	uint64_t capacity;	/**< Card's data capacity in bytes */
 	int ready_for_use;	/** true if already probed */
+	int dsr_imp;		/**< DSR implementation state from CSD */
 	char *ext_csd;
 	int probe;
 	struct param_d *param_probe;

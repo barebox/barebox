@@ -102,6 +102,20 @@ static void mci_setup_cmd(struct mci_cmd *p, unsigned cmd, unsigned arg, unsigne
 }
 
 /**
+ * configure optional DSR value
+ * @param mci_dev MCI instance
+ * @return Transaction status (0 on success)
+ */
+static int mci_set_dsr(struct mci *mci)
+{
+	struct mci_cmd cmd;
+
+	mci_setup_cmd(&cmd, MMC_CMD_SET_DSR,
+			(mci->host->dsr_val >> 16) | 0xffff, MMC_RSP_NONE);
+	return mci_send_cmd(mci, &cmd, NULL);
+}
+
+/**
  * Setup SD/MMC card's blocklength to be used for future transmitts
  * @param mci_dev MCI instance
  * @param len Blocklength in bytes
@@ -855,6 +869,15 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
 	dev_dbg(&mci->dev, "Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 }
 
+/**
+ * Extract card's DSR implementation state from CSD
+ * @param mci MCI instance
+ */
+static void mci_extract_card_dsr_imp_from_csd(struct mci *mci)
+{
+	mci->dsr_imp = UNSTUFF_BITS(mci->csd, 76, 1);
+}
+
 static int mmc_compare_ext_csds(struct mci *mci, unsigned bus_width)
 {
 	u8 *bw_ext_csd;
@@ -1077,6 +1100,7 @@ static int mci_startup(struct mci *mci)
 	mci_detect_version_from_csd(mci);
 	mci_extract_max_tran_speed_from_csd(mci);
 	mci_extract_block_lengths_from_csd(mci);
+	mci_extract_card_dsr_imp_from_csd(mci);
 
 	/* sanitiy? */
 	if (mci->read_bl_len > SECTOR_SIZE) {
@@ -1092,6 +1116,9 @@ static int mci_startup(struct mci *mci)
 	}
 	dev_dbg(&mci->dev, "Read block length: %u, Write block length: %u\n",
 		mci->read_bl_len, mci->write_bl_len);
+
+	if (mci->dsr_imp && mci->host->use_dsr)
+		mci_set_dsr(mci);
 
 	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
 		dev_dbg(&mci->dev, "Select the card, and put it into Transfer Mode\n");

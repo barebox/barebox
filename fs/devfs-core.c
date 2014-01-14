@@ -276,6 +276,15 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size
 	if (offset + size > cdev->size)
 		return ERR_PTR(-EINVAL);
 
+	if (IS_ENABLED(CONFIG_PARTITION_NEED_MTD) && cdev->mtd) {
+		struct mtd_info *mtd;
+
+		mtd = mtd_add_partition(cdev->mtd, offset, size, flags, name);
+		if (IS_ERR(mtd))
+			return (void *)mtd;
+		return 0;
+	}
+
 	new = xzalloc(sizeof (*new));
 	new->name = strdup(name);
 	if (!strncmp(devname, name, strlen(devname)))
@@ -286,17 +295,6 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size
 	new->offset = offset + cdev->offset;
 	new->dev = cdev->dev;
 	new->flags = flags | DEVFS_IS_PARTITION;
-
-#ifdef CONFIG_PARTITION_NEED_MTD
-	if (cdev->mtd) {
-		new->mtd = mtd_add_partition(cdev->mtd, offset, size, flags, name);
-		if (IS_ERR(new->mtd)) {
-			int ret = PTR_ERR(new->mtd);
-			free(new);
-			return ERR_PTR(ret);
-		}
-	}
-#endif
 
 	devfs_create(new);
 
@@ -312,15 +310,15 @@ int devfs_del_partition(const char *name)
 	if (!cdev)
 		return -ENOENT;
 
+	if (IS_ENABLED(CONFIG_PARTITION_NEED_MTD) && cdev->mtd) {
+		ret = mtd_del_partition(cdev->mtd);
+		return ret;
+	}
+
 	if (!(cdev->flags & DEVFS_IS_PARTITION))
 		return -EINVAL;
 	if (cdev->flags & DEVFS_PARTITION_FIXED)
 		return -EPERM;
-
-#ifdef CONFIG_PARTITION_NEED_MTD
-	if (cdev->mtd)
-		mtd_del_partition(cdev->mtd);
-#endif
 
 	ret = devfs_remove(cdev);
 	if (ret)

@@ -125,6 +125,11 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset, size_t si
 	part->master_offset = offset;
 	part->master = mtd;
 
+	if (!strncmp(mtd->cdev.name, name, strlen(mtd->cdev.name)))
+		part->cdev.partname = xstrdup(name + strlen(mtd->cdev.name) + 1);
+
+	add_mtd_device(part, part->name, DEVICE_ID_SINGLE);
+
 	return part;
 }
 
@@ -133,6 +138,9 @@ int mtd_del_partition(struct mtd_info *part)
 	if (!part->master)
 		return -EINVAL;
 
+	del_mtd_device(part);
+
+	free(part->cdev.partname);
 	free(part->name);
 	free(part);
 

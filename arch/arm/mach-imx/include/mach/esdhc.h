@@ -42,5 +42,7 @@ struct esdhc_platform_data {
 	enum cd_types cd_type;
 	unsigned caps;
 	char *devname;
+	unsigned dsr_val;
+	int use_dsr;
 };
 #endif /* __ASM_ARCH_IMX_ESDHC_H */

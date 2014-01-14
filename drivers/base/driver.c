@@ -182,6 +182,8 @@ int unregister_device(struct device_d *old_dev)
 
 	dev_dbg(old_dev, "unregister\n");
 
+	dev_remove_parameters(old_dev);
+
 	if (old_dev->driver)
 		old_dev->bus->remove(old_dev);
 

@@ -430,6 +430,7 @@
 #define SPRN_TLB0CFG   0x2B0   /* TLB 0 Config Register */
 #define SPRN_TLB1CFG   0x2B1   /* TLB 1 Config Register */
 #define SPRN_TLB1PS	0x159	/* TLB 1 Page Size Register */
+#define TLBnCFG_NENTRY_MASK	0x00000fff
 #define SPRN_MMUCSR0	0x3f4	/* MMU control and status register 0 */
 #define SPRN_MMUCFG	0x3f7	/* MMU Configuration Register */
 #define MMUCFG_MAVN	0x00000003	/* MMU Architecture Version Number */
@@ -470,6 +471,7 @@
 #define SPRN_MSSCRO	0x3f6
 #endif
 
+#define SPRN_HDBCR0	0x3d0
 
 /* Short-hand versions for a number of the above SPRNs */
 

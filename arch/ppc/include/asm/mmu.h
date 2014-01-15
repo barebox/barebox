@@ -462,6 +462,9 @@ extern int write_bat(ppc_bat_t bat, unsigned long upper, unsigned long lower);
 #define BOOKE_PAGESZ_2G		21
 #define BOOKE_PAGESZ_4G		22
 
+#define TLBIVAX_ALL		4
+#define TLBIVAX_TLB0		0
+
 #if defined(CONFIG_MPC86xx)
 #define LAWBAR_BASE_ADDR	0x00FFFFFF
 #define LAWAR_TRGT_IF		0x01F00000

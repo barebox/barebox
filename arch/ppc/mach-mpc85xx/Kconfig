@@ -5,6 +5,11 @@ config TEXT_BASE
 	default 0xeff80000 if P2020RDB
 	default 0xfff80000 if DA923RC
 
+config RESET_VECTOR_ADDRESS
+	hex
+	default 0xfffffffc if DA923RC
+	default 0xeffffffc if P2020RDB
+
 config MPC85xx
 	bool
 	default y

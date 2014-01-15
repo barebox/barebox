@@ -63,4 +63,8 @@ endif
 common-y += $(BOARD) $(CPU) $(MACH)
 common-y += arch/ppc/lib/
 
+ifdef CONFIG_MPC85xx
+lds-y += $(MACH)/barebox.lds
+else
 lds-y += $(BOARD)/barebox.lds
+endif

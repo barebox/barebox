@@ -1,9 +1,6 @@
 /*
- * Copyright 2012 GE Intelligent Platforms, Inc.
+ * Copyright 2013 GE Intelligent Platforms, Inc.
  * Copyright 2007-2009, 2011 Freescale Semiconductor, Inc.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,14 +9,18 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
  */
 
 #include <asm-generic/barebox.lds.h>
 
-#define RESET_VECTOR_ADDRESS	0xeffffffc
+#ifdef CONFIG_RESET_VECTOR_ADDRESS
+#define RESET_VECTOR_ADDRESS    CONFIG_RESET_VECTOR_ADDRESS
+#else
+#define RESET_VECTOR_ADDRESS    0xfffffffc
+#endif
+#define BSS_START_ADDRESS       0x2000
 
 OUTPUT_ARCH("powerpc")
 
@@ -31,20 +32,42 @@ PHDRS
 
 SECTIONS
 {
-  /* Read-only sections, merged into text segment: */
   . = TEXT_BASE;
 
+  .interp        : { *(.interp)		}
+  .hash          : { *(.hash)		}
+  .dynsym        : { *(.dynsym)		}
+  .dynstr        : { *(.dynstr)		}
+  .rel.text      : { *(.rel.text)	}
+  .rela.text     : { *(.rela.text)	}
+  .rel.data      : { *(.rel.data)	}
+  .rela.data     : { *(.rela.data)	}
+  .rel.rodata    : { *(.rel.rodata)	}
+  .rela.rodata   : { *(.rela.rodata)}
+  .rel.got       : { *(.rel.got)	}
+  .rela.got      : { *(.rela.got)	}
+  .rel.ctors     : { *(.rel.ctors)	}
+  .rela.ctors    : { *(.rela.ctors)	}
+  .rel.dtors     : { *(.rel.dtors)	}
+  .rela.dtors    : { *(.rela.dtors)	}
+  .rel.bss       : { *(.rel.bss)	}
+  .rela.bss      : { *(.rela.bss)	}
+  .rel.plt       : { *(.rel.plt)	}
+  .rela.plt      : { *(.rela.plt)	}
+  .init          : { *(.init)		}
+  .plt           : { *(.plt)		}
   .text      :
   {
     *(.text*)
-  } :text
+    *(.got1*)
 
-  _etext = .;
-  PROVIDE (etext = .);
-  _sdata = .;
+   } :text
+    _etext = .;
+    PROVIDE (etext = .);
+    _sdata = .;
 
-  .rodata    :
-  {
+   .rodata    :
+   {
     *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.rodata*)))
   } :text
 
@@ -53,17 +76,16 @@ SECTIONS
 
   _erotext = .;
   PROVIDE (erotext = .);
-
   .reloc   :
   {
+    KEEP(*(.got))
     _GOT2_TABLE_ = .;
     KEEP(*(.got2))
-    KEEP(*(.got))
     PROVIDE(_GLOBAL_OFFSET_TABLE_ = . + 4);
     _FIXUP_TABLE_ = .;
     KEEP(*(.fixup))
   }
-  __got2_entries = ((_GLOBAL_OFFSET_TABLE_ - _GOT2_TABLE_) >> 2) - 1;
+  __got2_entries = ((_FIXUP_TABLE_ - _GOT2_TABLE_) >> 2);
   __fixup_entries = (. - _FIXUP_TABLE_) >> 2;
 
   .data    :
@@ -92,10 +114,6 @@ SECTIONS
   __usymtab : { BAREBOX_SYMS }
   __usymtab_end = .;
 
-  __early_init_data_begin = .;
-  .early_init_data : { *(.early_init_data) }
-  __early_init_data_end = .;
-
   . = .;
   __start___ex_table = .;
   __ex_table : { *(__ex_table) }
@@ -119,12 +137,13 @@ SECTIONS
 
   .resetvec RESET_VECTOR_ADDRESS :
   {
+    KEEP(*(.resetvec))
     arch/ppc/cpu-85xx/resetvec.o	(.resetvec)
   } :text = 0xffff
 
   . = RESET_VECTOR_ADDRESS + 0x4;
 
-  . = 0x10000;
+  . = BSS_START_ADDRESS;
   __bss_start = .;
   .bss        :
   {
@@ -133,7 +152,6 @@ SECTIONS
     *(.bss*)
     *(COMMON)
   } :bss
-
   . = ALIGN(4);
   __bss_stop = .;
   _end = . ;

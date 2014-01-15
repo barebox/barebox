@@ -74,7 +74,7 @@ static int ksz9031rn_phy_fixup(struct phy_device *dev)
 
 static int realq7_enet_init(void)
 {
-	if (!of_machine_is_compatible("dmo,imx6q-realq7"))
+	if (!of_machine_is_compatible("dmo,imx6q-edmqmx6"))
 		return 0;
 
 	mxc_iomux_v3_setup_multiple_pads(realq7_pads_gpio, ARRAY_SIZE(realq7_pads_gpio));
@@ -100,7 +100,7 @@ fs_initcall(realq7_enet_init);
 
 static int realq7_env_init(void)
 {
-	if (!of_machine_is_compatible("dmo,imx6q-realq7"))
+	if (!of_machine_is_compatible("dmo,imx6q-edmqmx6"))
 		return 0;
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
@@ -113,7 +113,7 @@ late_initcall(realq7_env_init);
 
 static int realq7_console_init(void)
 {
-	if (!of_machine_is_compatible("dmo,imx6q-realq7"))
+	if (!of_machine_is_compatible("dmo,imx6q-edmqmx6"))
 		return 0;
 
 	barebox_set_hostname("eDM-QMX6");

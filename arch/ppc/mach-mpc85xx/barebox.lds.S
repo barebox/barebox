@@ -20,7 +20,6 @@
 #else
 #define RESET_VECTOR_ADDRESS    0xfffffffc
 #endif
-#define BSS_START_ADDRESS       0x2000
 
 OUTPUT_ARCH("powerpc")
 
@@ -143,7 +142,11 @@ SECTIONS
 
   . = RESET_VECTOR_ADDRESS + 0x4;
 
-  . = BSS_START_ADDRESS;
+#if (RESET_VECTOR_ADDRESS == 0xfffffffc)
+  /* This avoids wrapping around to offset 0 */
+  . |= 0x10;
+#endif
+
   __bss_start = .;
   .bss        :
   {

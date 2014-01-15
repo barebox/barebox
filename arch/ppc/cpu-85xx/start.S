@@ -52,8 +52,8 @@
 	GOT_ENTRY(_end_of_vectors)
 	GOT_ENTRY(transfer_to_handler)
 	GOT_ENTRY(__init_end)
-	GOT_ENTRY(_end)
 	GOT_ENTRY(__bss_start)
+	GOT_ENTRY(__bss_stop)
 	END_GOT
 
 /*
@@ -775,27 +775,19 @@ e500_write_tlb:
 relocate_code:
 	mr	r9, r3			/* Save end of RAM 	*/
 
-	lis	r10, (_end - _start)@h	/* Size			*/
-	ori	r10, r10, (_end - _start)@l
-	sub	r3,  r3, r10
-
-	/* 64KB aligned */
-	lis	r10, 0xffff0000@h
-	ori	r10, r10, 0xffff0000@l
-	and	r3, r3, r10
-
-	mr	r1, r3		/* Set new stack just below barebox code */
-	mr	r10, r3 	/* Save copy of Destination Address */
-
-	bl 	calc_source
-calc_source:
-	mfspr	r4, LR	/* r4 = address in memory (flash, RAM) */
-	subi	r4, r4, (calc_source - _start)
-
 	GET_GOT
-	lis	r5, __init_size@h
-	ori	r5, r5, __init_size@l
-
+	lis	r4,TEXT_BASE@h
+	ori	r4,r4,TEXT_BASE@l
+	lwz	r5,GOT(__bss_stop)	/* size */
+	sub	r5,r5,r4
+	sub	r3, r3, r5
+	lwz	r5,GOT(__init_end)	/* Copy to init_end only */
+	sub	r5,r5,r4
+	lis	r10, 0xffff0000@h	/* Round down to 64KB */
+	ori	r10, r10, 0xffff0000@l
+	and	r3, r3, r10		/* Destination */
+	mr	r1, r3
+	mr	r10, r3
 	li	r6,CACHELINE_SIZE
 
 	/*
@@ -921,7 +913,7 @@ clear_bss:
 	 * Now clear BSS segment
 	 */
 	lwz	r3,GOT(__bss_start)
-	lwz	r4,GOT(_end)
+	lwz	r4,GOT(__bss_stop)
 
 	cmplw	0,r3,r4
 	beq	6f

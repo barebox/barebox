@@ -138,7 +138,7 @@ static void sdram_init(void)
 	writel(0x00000001, 0x021e8080);
 }
 
-extern char __dtb_imx6q_dmo_realq7_start[];
+extern char __dtb_imx6q_dmo_edmqmx6_start[];
 
 ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 {
@@ -155,7 +155,7 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 		mmdc_do_dqs_calibration();
 	}
 
-	fdt = (uint32_t)__dtb_imx6q_dmo_realq7_start - get_runtime_offset();
+	fdt = (uint32_t)__dtb_imx6q_dmo_edmqmx6_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_2G, fdt);
 }

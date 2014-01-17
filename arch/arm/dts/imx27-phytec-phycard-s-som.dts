@@ -38,6 +38,10 @@
 		pinctrl_i2c2: i2c2grp {
 			fsl,pins = <MX27_I2C2_PINGRP1>;
 		};
+
+		pinctrl_nfc: nfcgrp {
+			fsl,pins = <MX27_NFC_PINGRP1>;
+		};
 	};
 };
 
@@ -57,4 +61,13 @@
 		pagesize = <32>;
 		reg = <0x52>;
 	};
+};
+
+&nfc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_nfc>;
+	nand-bus-width = <8>;
+	nand-ecc-mode = "hw";
+	nand-on-flash-bbt;
+	status = "okay";
 };

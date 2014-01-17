@@ -329,95 +329,29 @@ static inline int imx35_pagesize_2k(void)
  * NAND. In this case the booting is continued without loading an image from
  * NAND. This function needs a stack to be set up.
  */
+
+#define DEFINE_EXTERNAL_NAND_ENTRY(soc)					\
+									\
+BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external)(void)		\
+{									\
+	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
+									\
+	if (imx_barebox_boot_nand_external(nfc_base)) {			\
+		jump_sdram(nfc_base - ld_var(_text));			\
+									\
+		imx_nand_load_image((void *)ld_var(_text),		\
+				ld_var(_barebox_image_size),		\
+				(void *)nfc_base,			\
+				imx##soc##_pagesize_2k());		\
+	}								\
+									\
+	imx##soc##_barebox_entry(0);					\
+}
+
 #ifdef BROKEN
-BARE_INIT_FUNCTION(imx21_barebox_boot_nand_external)(void)
-{
-	unsigned long nfc_base = MX21_NFC_BASE_ADDR;
-	int pagesize_2k;
-
-	if (imx_barebox_boot_nand_external(nfc_base)) {
-		jump_sdram(nfc_base - ld_var(_text));
-
-		pagesize_2k = imx21_pagesize_2k();
-
-		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(barebox_image_size),
-				(void *)nfc_base, pagesize_2k);
-	}
-
-	/* This function doesn't exist yet */
-	imx21_barebox_entry(0);
-}
+DEFINE_EXTERNAL_NAND_ENTRY(21)
 #endif
-
-BARE_INIT_FUNCTION(imx25_barebox_boot_nand_external)(void)
-{
-	unsigned long nfc_base = MX25_NFC_BASE_ADDR;
-	int pagesize_2k;
-
-	if (imx_barebox_boot_nand_external(nfc_base)) {
-		jump_sdram(nfc_base - ld_var(_text));
-
-		pagesize_2k = imx25_pagesize_2k();
-
-		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size),
-				(void *)nfc_base, pagesize_2k);
-	}
-
-	imx25_barebox_entry(0);
-}
-
-BARE_INIT_FUNCTION(imx27_barebox_boot_nand_external)(void)
-{
-	unsigned long nfc_base = MX27_NFC_BASE_ADDR;
-	int pagesize_2k;
-
-	if (imx_barebox_boot_nand_external(nfc_base)) {
-		jump_sdram(nfc_base - ld_var(_text));
-
-		pagesize_2k = imx27_pagesize_2k();
-
-		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size),
-				(void *)nfc_base, pagesize_2k);
-	}
-
-	imx27_barebox_entry(0);
-}
-
-BARE_INIT_FUNCTION(imx31_barebox_boot_nand_external)(void)
-{
-	unsigned long nfc_base = MX31_NFC_BASE_ADDR;
-	int pagesize_2k;
-
-	if (imx_barebox_boot_nand_external(nfc_base)) {
-		jump_sdram(nfc_base - ld_var(_text));
-
-		pagesize_2k = imx31_pagesize_2k();
-
-		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size),
-				(void *)nfc_base, pagesize_2k);
-	}
-
-	imx31_barebox_entry(0);
-}
-
-BARE_INIT_FUNCTION(imx35_barebox_boot_nand_external)(void)
-{
-	unsigned long nfc_base = MX35_NFC_BASE_ADDR;
-	int pagesize_2k;
-
-	if (imx_barebox_boot_nand_external(nfc_base)) {
-		jump_sdram(nfc_base - ld_var(_text));
-
-		pagesize_2k = imx35_pagesize_2k();
-
-		imx_nand_load_image((void *)ld_var(_text),
-				ld_var(_barebox_image_size),
-				(void *)nfc_base, pagesize_2k);
-	}
-
-	imx35_barebox_entry(0);
-}
+DEFINE_EXTERNAL_NAND_ENTRY(25)
+DEFINE_EXTERNAL_NAND_ENTRY(27)
+DEFINE_EXTERNAL_NAND_ENTRY(31)
+DEFINE_EXTERNAL_NAND_ENTRY(35)

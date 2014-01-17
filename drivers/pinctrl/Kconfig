@@ -8,6 +8,7 @@ config PINCTRL
 	  support but instead provide their own SoC specific APIs
 
 config PINCTRL_IMX_IOMUX_V1
+	select PINCTRL if OFDEVICE
 	bool
 	help
 	  This iomux controller is found on i.MX1,21,27.

@@ -97,7 +97,7 @@ static int imx_gpt_probe(struct device_d *dev)
 
 	/* one timer is enough */
 	if (timer_base)
-		return -EBUSY;
+		return 0;
 
 	ret = dev_get_drvdata(dev, (unsigned long *)&regs);
 	if (ret)

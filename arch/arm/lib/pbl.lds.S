@@ -24,15 +24,17 @@
 #include <asm-generic/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
 
+#ifdef CONFIG_PBL_RELOCATABLE
+#define BASE	0x0
+#else
+#define BASE	(TEXT_BASE - SZ_2M)
+#endif
+
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 SECTIONS
 {
-#ifdef CONFIG_PBL_RELOCATABLE
-	. = 0x0;
-#else
-	. = TEXT_BASE - SZ_2M;
-#endif
+	. = BASE;
 
 	PRE_IMAGE
 
@@ -91,7 +93,6 @@ SECTIONS
 		KEEP(*(.image_end))
 	}
 	__image_end = .;
-
-	_barebox_image_size = __image_end - (TEXT_BASE - SZ_2M);
-	_barebox_pbl_size = __bss_start - (TEXT_BASE - SZ_2M);
+	_barebox_image_size = __image_end - BASE;
+	_barebox_pbl_size = __bss_start - BASE;
 }

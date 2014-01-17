@@ -37,6 +37,7 @@
 #include <gpio.h>
 #include <asm/mmu.h>
 #include <usb/ulpi.h>
+#include <mach/bbu.h>
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
@@ -291,6 +292,9 @@ static int pca100_devices_init(void)
 
 	devfs_add_partition("nand0", SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+
+	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.barebox",
+			BBU_HANDLER_FLAG_DEFAULT);
 
 	armlinux_set_architecture(2149);
 

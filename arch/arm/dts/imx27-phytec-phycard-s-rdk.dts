@@ -83,6 +83,10 @@
 			fsl,pins = <MX27_OWIRE1_PINGRP1>;
 		};
 
+		pinctrl_sdhc2: sdhc2grp {
+			fsl,pins = <MX27_SDHC2_PINGRP1>;
+		};
+
 		pinctrl_uart1: uart1grp {
 			fsl,pins = <
 				MX27_UART1_PINGRP1
@@ -113,6 +117,8 @@
 };
 
 &sdhci2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdhc2>;
 	cd-gpios = <&gpio3 29 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };

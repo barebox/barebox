@@ -38,6 +38,7 @@
 #include <mach/iim.h>
 #include <linux/err.h>
 #include <mach/devices-imx25.h>
+#include <mach/bbu.h>
 #include <asm/mmu.h>
 
 static struct fec_platform_data fec_info = {
@@ -114,6 +115,9 @@ static int tx25_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_TX25);
 	armlinux_set_serial(imx_uid());
+
+	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.barebox",
+			BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

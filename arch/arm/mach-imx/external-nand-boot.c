@@ -279,6 +279,46 @@ int __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
 	return 1;
 }
 
+static inline int imx21_pagesize_2k(void)
+{
+	if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
+		return 1;
+	else
+		return 0;
+}
+
+static inline int imx25_pagesize_2k(void)
+{
+	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 8))
+		return 1;
+	else
+		return 0;
+}
+
+static inline int imx27_pagesize_2k(void)
+{
+	if (readl(MX27_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
+		return 1;
+	else
+		return 0;
+}
+
+static inline int imx31_pagesize_2k(void)
+{
+	if (readl(MX31_CCM_BASE_ADDR + MX31_CCM_RCSR) & MX31_RCSR_NFMS)
+		return 1;
+	else
+		return 0;
+}
+
+static inline int imx35_pagesize_2k(void)
+{
+	if (readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR) & (1 << 8))
+		return 1;
+	else
+		return 0;
+}
+
 #define BARE_INIT_FUNCTION(name)  \
 	void __noreturn __section(.text_bare_init_##name) \
 		name
@@ -298,10 +338,7 @@ BARE_INIT_FUNCTION(imx21_barebox_boot_nand_external)(void)
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
 
-		if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
-			pagesize_2k = 1;
-		else
-			pagesize_2k = 0;
+		pagesize_2k = imx21_pagesize_2k();
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(barebox_image_size),
@@ -321,10 +358,7 @@ BARE_INIT_FUNCTION(imx25_barebox_boot_nand_external)(void)
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
 
-		if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 8))
-			pagesize_2k = 1;
-		else
-			pagesize_2k = 0;
+		pagesize_2k = imx25_pagesize_2k();
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),
@@ -342,10 +376,7 @@ BARE_INIT_FUNCTION(imx27_barebox_boot_nand_external)(void)
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
 
-		if (readl(MX27_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
-			pagesize_2k = 1;
-		else
-			pagesize_2k = 0;
+		pagesize_2k = imx27_pagesize_2k();
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),
@@ -363,10 +394,7 @@ BARE_INIT_FUNCTION(imx31_barebox_boot_nand_external)(void)
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
 
-		if (readl(MX31_CCM_BASE_ADDR + MX31_CCM_RCSR) & MX31_RCSR_NFMS)
-			pagesize_2k = 1;
-		else
-			pagesize_2k = 0;
+		pagesize_2k = imx31_pagesize_2k();
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),
@@ -384,10 +412,7 @@ BARE_INIT_FUNCTION(imx35_barebox_boot_nand_external)(void)
 	if (imx_barebox_boot_nand_external(nfc_base)) {
 		jump_sdram(nfc_base - ld_var(_text));
 
-		if (readl(MX35_CCM_BASE_ADDR + MX35_CCM_RCSR) & (1 << 8))
-			pagesize_2k = 1;
-		else
-			pagesize_2k = 0;
+		pagesize_2k = imx35_pagesize_2k();
 
 		imx_nand_load_image((void *)ld_var(_text),
 				ld_var(_barebox_image_size),

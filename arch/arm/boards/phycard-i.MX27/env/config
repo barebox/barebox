@@ -39,7 +39,7 @@ autoboot_timeout=3
 
 bootargs="console=ttymxc0,115200"
 
-nand_parts="256k(barebox)ro,128k(bareboxenv),2M(kernel),-(root)"
+nand_parts="512k(barebox)ro,512k(bareboxenv),4M(kernel),-(root)"
 rootfs_mtdblock_nand=7
 
 # set a fancy prompt (if support is compiled in)

@@ -21,6 +21,7 @@
 #include <mach/imx27-regs.h>
 #include <fec.h>
 #include <gpio.h>
+#include <sizes.h>
 #include <asm/armlinux.h>
 #include <asm/sections.h>
 #include <generated/mach-types.h>
@@ -285,10 +286,10 @@ static int pca100_devices_init(void)
 	pca100_usb_register();
 #endif
 
-	devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
+	devfs_add_partition("nand0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 
-	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
+	devfs_add_partition("nand0", SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
 
 	armlinux_set_architecture(2149);

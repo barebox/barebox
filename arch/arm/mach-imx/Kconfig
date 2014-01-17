@@ -314,6 +314,7 @@ config MACH_IMX27ADS
 config MACH_PCA100
 	bool "phyCard-i.MX27"
 	select ARCH_IMX27
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
 	  with a Freescale i.MX27 Processor

@@ -290,6 +290,11 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 			if (!IS_ERR(dev) && !dev->attached_dev)
                                 break;
 		}
+
+		if (IS_ERR(dev)) {
+			ret = PTR_ERR(dev);
+			goto fail;
+		}
 	}
 
 	if (dev->attached_dev)

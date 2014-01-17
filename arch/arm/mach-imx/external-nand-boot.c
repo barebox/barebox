@@ -28,6 +28,10 @@
 #include <mach/imx31-regs.h>
 #include <mach/imx35-regs.h>
 
+#define BARE_INIT_FUNCTION(name)  \
+	__section(.text_bare_init_##name) \
+		name
+
 static void __bare_init noinline imx_nandboot_wait_op_done(void *regs)
 {
 	u32 r;
@@ -235,50 +239,6 @@ void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
 	}
 }
 
-/*
- * This function assumes the currently running binary has been
- * copied from its current position to an offset. It returns
- * to the calling function - offset.
- * NOTE: The calling function may not return itself since it still
- * works on the old content of the lr register. Only call this
- * from a __noreturn function.
- */
-static __bare_init __naked void jump_sdram(unsigned long offset)
-{
-	flush_icache();
-
-	__asm__ __volatile__ (
-			"sub lr, lr, %0;"
-			"mov pc, lr;" : : "r"(offset)
-			);
-}
-
-/*
- * Load and start barebox from NAND. This function also checks if we are really
- * running inside the NFC address space. If not, barebox is started from the
- * currently running address without loading anything from NAND.
- */
-int __bare_init imx_barebox_boot_nand_external(unsigned long nfc_base)
-{
-	u32 r;
-	u32 *src, *trg;
-	int i;
-
-	/* skip NAND boot if not running from NFC space */
-	r = get_pc();
-	if (r < nfc_base || r > nfc_base + 0x800)
-		return 0;
-
-	src = (unsigned int *)nfc_base;
-	trg = (unsigned int *)ld_var(_text);
-
-	/* Move ourselves out of NFC SRAM */
-	for (i = 0; i < 0x800 / sizeof(int); i++)
-		*trg++ = *src++;
-
-	return 1;
-}
-
 static inline int imx21_pagesize_2k(void)
 {
 	if (readl(MX21_SYSCTRL_BASE_ADDR + 0x14) & (1 << 5))
@@ -319,10 +279,6 @@ static inline int imx35_pagesize_2k(void)
 		return 0;
 }
 
-#define BARE_INIT_FUNCTION(name)  \
-	void __noreturn __section(.text_bare_init_##name) \
-		name
-
 /*
  * SoC specific entries for booting in external NAND mode. To be called from
  * the board specific entry code. This is safe to call even if not booting from
@@ -332,20 +288,57 @@ static inline int imx35_pagesize_2k(void)
 
 #define DEFINE_EXTERNAL_NAND_ENTRY(soc)					\
 									\
-BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external)(void)		\
+void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)(void)    \
 {									\
 	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
+	unsigned long sdram = MX##soc##_CSD0_BASE_ADDR;			\
 									\
-	if (imx_barebox_boot_nand_external(nfc_base)) {			\
-		jump_sdram(nfc_base - ld_var(_text));			\
+	imx_nand_load_image((void *)sdram,				\
+			ld_var(_barebox_image_size),			\
+			(void *)nfc_base,				\
+			imx##soc##_pagesize_2k());			\
 									\
-		imx_nand_load_image((void *)ld_var(_text),		\
-				ld_var(_barebox_image_size),		\
-				(void *)nfc_base,			\
-				imx##soc##_pagesize_2k());		\
-	}								\
+        imx##soc##_barebox_entry(0);					\
+}									\
 									\
-	imx##soc##_barebox_entry(0);					\
+void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external)(void)	\
+{									\
+	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
+	unsigned long sdram = MX##soc##_CSD0_BASE_ADDR;			\
+	unsigned long __fn;						\
+	u32 r;								\
+	u32 *src, *trg;							\
+	int i;								\
+	void __noreturn (*fn)(void);					\
+									\
+	/* skip NAND boot if not running from NFC space */		\
+	r = get_pc();							\
+	if (r < nfc_base || r > nfc_base + 0x800)			\
+		imx##soc##_barebox_entry(0);				\
+									\
+	src = (unsigned int *)nfc_base;					\
+	trg = (unsigned int *)sdram;					\
+									\
+	/*								\
+	 * Copy initial binary portion from NFC SRAM to beginning of	\
+	 * SDRAM							\
+	 */								\
+	for (i = 0; i < 0x800 / sizeof(int); i++)			\
+		*trg++ = *src++;					\
+									\
+	/* The next function we jump to */				\
+	__fn = (unsigned long)imx##soc##_boot_nand_external_cont;	\
+	/* mask out TEXT_BASE */					\
+	__fn &= 0x7ff;							\
+	/*								\
+	 * and add sdram base instead where we copied the initial	\
+	 * binary above							\
+	 */								\
+	__fn += sdram;							\
+									\
+	fn = (void *)__fn;						\
+									\
+	fn();								\
 }
 
 #ifdef BROKEN

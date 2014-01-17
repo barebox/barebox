@@ -3,11 +3,11 @@
 
 #include <linux/mtd/mtd.h>
 
-void imx21_barebox_boot_nand_external(void);
-void imx25_barebox_boot_nand_external(void);
-void imx27_barebox_boot_nand_external(void);
-void imx31_barebox_boot_nand_external(void);
-void imx35_barebox_boot_nand_external(void);
+void imx21_barebox_boot_nand_external(uint32_t boarddata);
+void imx25_barebox_boot_nand_external(uint32_t boarddata);
+void imx27_barebox_boot_nand_external(uint32_t boarddata);
+void imx31_barebox_boot_nand_external(uint32_t boarddata);
+void imx35_barebox_boot_nand_external(uint32_t boarddata);
 void imx_nand_set_layout(int writesize, int datawidth);
 
 struct imx_nand_platform_data {

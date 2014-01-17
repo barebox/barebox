@@ -131,7 +131,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* setup a stack to be able to call imx25_barebox_boot_nand_external() */
 	arm_setup_stack(STACK_BASE + STACK_SIZE - 12);
 
-	imx25_barebox_boot_nand_external();
+	imx25_barebox_boot_nand_external(0);
 #endif
 out:
 	imx25_barebox_entry(0);

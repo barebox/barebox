@@ -100,7 +100,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	sdram_init();
 
 #ifdef CONFIG_NAND_IMX_BOOT
-	imx27_barebox_boot_nand_external();
+	imx27_barebox_boot_nand_external(0);
 #else
 	imx27_barebox_entry(0);
 #endif

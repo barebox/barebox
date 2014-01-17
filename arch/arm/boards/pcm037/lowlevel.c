@@ -129,7 +129,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* setup a stack to be able to call imx31_barebox_boot_nand_external() */
 	arm_setup_stack(MX31_IRAM_BASE_ADDR + MX31_IRAM_SIZE - 12);
 
-	imx31_barebox_boot_nand_external();
+	imx31_barebox_boot_nand_external(0);
 #else
 	imx31_barebox_entry(0);
 #endif

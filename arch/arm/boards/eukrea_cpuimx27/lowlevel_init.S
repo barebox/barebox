@@ -127,6 +127,7 @@ barebox_arm_reset_vector:
 	/* Setup a temporary stack in SDRAM */
 	ldr	sp, =MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 4;
 
+	mov	r0, #0
 	b	imx27_barebox_boot_nand_external
 #endif /* CONFIG_NAND_IMX_BOOT */
 

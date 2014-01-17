@@ -97,7 +97,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* setup a stack to be able to call mx27_barebox_boot_nand_external() */
 	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 8);
 
-	imx27_barebox_boot_nand_external();
+	imx27_barebox_boot_nand_external(0);
 #endif
 out:
 	imx27_barebox_entry(0);

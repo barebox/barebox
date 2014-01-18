@@ -59,6 +59,10 @@ ISBN-13: 978-0120884216
 
 @li @subpage dev_bcm47xx_mach
 
+@subsection mach_loongson_info Loongson-based boards
+
+@li @subpage dev_loongson_mach
+
 @subsection mach_xburst_info XBurst-based boards
 
 @li @subpage dev_xburst_mach

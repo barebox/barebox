@@ -28,6 +28,20 @@
 #define PRID_COMP_BROADCOM	0x020000
 #define PRID_COMP_INGENIC	0xd00000
 
+/*
+ * Assigned Processor ID (implementation) values for bits 15:8 of the PRId
+ * register.  In order to detect a certain CPU type exactly eventually
+ * additional registers may need to be examined.
+ */
+
+#define PRID_IMP_MASK		0xff00
+
+/*
+ * These are valid when 23:16 == PRID_COMP_LEGACY
+ */
+
+#define PRID_IMP_LOONGSON1	0x4200
+
 #define PRID_IMP_UNKNOWN	0xff00
 
 /*
@@ -48,6 +62,18 @@
  */
 
 #define PRID_IMP_JZRISC		0x0200
+
+/*
+ * Particular Revision values for bits 7:0 of the PRId register.
+ */
+
+#define PRID_REV_MASK		0x00ff
+
+/*
+ * Definitions for 7:0 on legacy processors
+ */
+
+#define PRID_REV_LOONGSON1B	0x0020
 
 /*
  * Older processors used to encode processor version and revision in two
@@ -80,6 +106,7 @@ enum cpu_type_enum {
 	CPU_24K,
 	CPU_BMIPS3300,
 	CPU_JZRISC,
+	CPU_LOONGSON1,
 
 	CPU_LAST
 };

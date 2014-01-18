@@ -1,0 +1,6 @@
+#!/bin/sh
+# Script to run barebox in console mode
+
+splash /dev/mtd0.barebox-logo2
+echo
+echo "Welcome to barebox console"

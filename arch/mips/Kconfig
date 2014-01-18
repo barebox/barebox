@@ -63,6 +63,9 @@ config MACH_MIPS_BCM47XX
 	select SYS_SUPPORTS_LITTLE_ENDIAN
 	select HAS_DEBUG_LL
 
+config MACH_MIPS_LOONGSON
+	bool "Loongson-based boards"
+
 config MACH_MIPS_XBURST
 	bool "Ingenic XBurst-based boards"
 	select SYS_HAS_CPU_MIPS32_R1
@@ -78,6 +81,7 @@ endchoice
 source arch/mips/mach-malta/Kconfig
 source arch/mips/mach-ar231x/Kconfig
 source arch/mips/mach-bcm47xx/Kconfig
+source arch/mips/mach-loongson/Kconfig
 source arch/mips/mach-xburst/Kconfig
 
 endmenu

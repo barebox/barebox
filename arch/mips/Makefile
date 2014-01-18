@@ -78,6 +78,8 @@ board-$(CONFIG_BOARD_NETGEAR_WG102)	:= netgear-wg102
 machine-$(CONFIG_MACH_MIPS_BCM47XX)	:= bcm47xx
 board-$(CONFIG_BOARD_DLINK_DIR320)	:= dlink-dir-320
 
+machine-$(CONFIG_MACH_MIPS_LOONGSON)	:= loongson
+
 machine-$(CONFIG_MACH_MIPS_XBURST)	:= xburst
 board-$(CONFIG_BOARD_RZX50)	:= rzx50
 

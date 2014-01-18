@@ -17,6 +17,7 @@ config BOARD_LOONGSON_TECH_LS1B
 	select DRIVER_SERIAL_NS16550
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
+	select HAS_NMON
 
 endchoice
 

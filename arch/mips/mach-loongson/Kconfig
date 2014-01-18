@@ -15,6 +15,8 @@ config BOARD_LOONGSON_TECH_LS1B
 	select CSRC_R4K_LIB
 	select HAS_DEBUG_LL
 	select DRIVER_SERIAL_NS16550
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
 
 endchoice
 

@@ -1,0 +1,47 @@
+/** @page loongson_ls1b Loongson LS1B demo board
+
+The LS1B is a development board made by Loongson Technology Corp. Ltd.
+
+The board has
+@li Loongson LS1B SoC 250 MHz;
+@li 64 MiB SDRAM;
+@li 512 KiB SPI boot ROM;
+@li 128M x 8 Bit NAND Flash Memory;
+@li 2 x RS232 serial interfaces (DB9 connectors);
+@li 2 x Ethernet interfaces;
+@li 4 x USB interfaces;
+@li microSD card slot;
+@li LCD display (480x272);
+@li audio controller;
+@li beeper;
+@li buttons;
+@li EJTAG 10-pin connector.
+
+The board uses PMON2000 as bootloader.
+
+Barebox mini-howto:
+
+1. Connect to the boards's UART2;
+
+2. Turn board's power on;
+
+3. Wait 'Press <Enter> to execute loading image' prompt and press the space key.
+
+4. Upload zbarebox.bin via Ymodem
+@verbatim
+    PMON> ymodem base=0xa0200000
+@endverbatim
+
+5. Run barebox
+@verbatim
+    PMON> g -e 0xa0200000
+@endverbatim
+
+Loongson links:
+@li http://en.wikipedia.org/wiki/Loongson
+@li http://www.linux-mips.org/wiki/Loongson
+@li https://github.com/loongson-gz
+@li http://www.linux-mips.org/wiki/PMON_2000
+@li http://www.opsycon.se/PMON2000/Main
+
+*/

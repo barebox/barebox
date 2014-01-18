@@ -2,4 +2,6 @@
 
 @section loongson_boards Loongson-based boards
 
+@li @subpage loongson_ls1b
+
 */

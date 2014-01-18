@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <mach/pxa-regs.h>
 #include <asm/io.h>
 
 #define OSMR3	0x40A0000C
@@ -28,6 +29,9 @@
 
 void reset_cpu(ulong addr)
 {
+	/* Clear last reset source */
+	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
+
 	/* Initialize the watchdog and let it fire */
 	writel(OWER_WME, OWER);
 	writel(OSSR_M3, OSSR);

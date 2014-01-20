@@ -178,7 +178,6 @@ static void pca100_usb_init(void)
 static int pca100_devices_init(void)
 {
 	int i;
-	struct device_d *nand;
 
 	unsigned int mode[] = {
 		PD0_AIN_FEC_TXD0,
@@ -286,7 +285,6 @@ static int pca100_devices_init(void)
 	pca100_usb_register();
 #endif
 
-	nand = get_device_by_name("nand0");
 	devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
 	dev_add_bb_dev("self_raw", "self0");
 

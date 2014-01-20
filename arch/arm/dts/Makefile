@@ -6,7 +6,8 @@ dtb-$(CONFIG_ARCH_IMX27) += imx27-phytec-phycard-s-rdk.dtb \
 	imx27-phytec-phycard-s-som.dtb
 dtb-$(CONFIG_ARCH_IMX51) += imx51-babbage.dtb \
 	imx51-genesi-efika-sb.dtb
-dtb-$(CONFIG_ARCH_IMX53) += imx53-qsb.dtb \
+dtb-$(CONFIG_ARCH_IMX53) += imx53-mba53.dtb \
+	imx53-qsb.dtb \
 	imx53-qsrb.dtb \
 	imx53-voipac-bsb.dtb
 dtb-$(CONFIG_ARCH_IMX6) += imx6q-gk802.dtb \

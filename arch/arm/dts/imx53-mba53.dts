@@ -17,6 +17,16 @@
 	model = "TQ MBa53 starter kit";
 	compatible = "tq,mba53", "tq,tqma53", "fsl,imx53";
 
+	chosen {
+		linux,stdout-path = &uart2;
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &esdhc2, "partname:environment";
+			status = "disabled";
+		};
+	};
+
 	reg_backlight: fixed@0 {
 		compatible = "regulator-fixed";
 		regulator-name = "lcd-supply";
@@ -181,6 +191,13 @@
 
 &esdhc2 {
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "environment";
+		reg = <0x80000 0x80000>;
+	};
 };
 
 &uart3 {

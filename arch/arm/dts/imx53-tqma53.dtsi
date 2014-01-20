@@ -16,8 +16,16 @@
 	model = "TQ TQMa53";
 	compatible = "tq,tqma53", "fsl,imx53";
 
+	chosen {
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &esdhc3, "partname:boot1";
+			status = "disabled";
+		};
+	};
+
 	memory {
-		reg = <0x70000000 0x40000000>; /* Up to 1GiB */
+		reg = <0x70000000 0x0>; /* Up to 1GiB */
 	};
 
 	regulators {
@@ -64,7 +72,12 @@
 	vmmc-supply = <&reg_3p3v>;
 	non-removable;
 	bus-width = <8>;
+	dsr = <0x100>;
 	status = "okay";
+};
+
+&iim {
+	barebox,provide-mac-address = <&fec 1 9>;
 };
 
 &iomuxc {

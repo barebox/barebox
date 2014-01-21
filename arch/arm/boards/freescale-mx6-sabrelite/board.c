@@ -51,6 +51,10 @@ static iomux_v3_cfg_t sabrelite_enet_gpio_pads[] = {
 
 static int sabrelite_mem_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
+	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
+		return 0;
+
 	arm_add_mem_device("ram0", 0x10000000, SZ_1G);
 
 	return 0;
@@ -76,6 +80,10 @@ static int ksz9021rn_phy_fixup(struct phy_device *dev)
 
 static int sabrelite_ksz9021rn_setup(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
+	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
+		return 0;
+
 	mxc_iomux_v3_setup_multiple_pads(sabrelite_enet_gpio_pads,
 			ARRAY_SIZE(sabrelite_enet_gpio_pads));
 

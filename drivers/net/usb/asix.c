@@ -408,7 +408,7 @@ static int asix_rx_fixup(struct usbnet *dev, void *buf, int len)
 	len -= 4;
 
 	while (len > 0) {
-		if ((short)(header & 0x0000ffff) != ~((short)((header & 0xffff0000) >> 16)))
+		if ((header & 0xffff) != ((~header >> 16) & 0xffff))
 			dev_err(&dev->edev.dev, "asix_rx_fixup() Bad Header Length\n");
 
 		/* get the packet length */

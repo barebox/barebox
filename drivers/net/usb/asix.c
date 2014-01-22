@@ -692,6 +692,16 @@ static struct driver_info ax88772_info = {
 	.tx_fixup = asix_tx_fixup,
 };
 
+static struct driver_info ax88772b_info = {
+	.description = "ASIX AX88772B USB 2.0 Ethernet",
+	.bind = ax88772_bind,
+	.unbind = asix_unbind,
+        .flags = FLAG_ETHER | FLAG_FRAMING_AX,
+        .rx_fixup = asix_rx_fixup,
+        .tx_fixup = asix_tx_fixup,
+        .data = FLAG_EEPROM_MAC,
+};
+
 static const struct usb_device_id products [] = {
 {
 	// Linksys USB200M
@@ -773,6 +783,10 @@ static const struct usb_device_id products [] = {
 	// Cables-to-Go USB Ethernet Adapter
 	USB_DEVICE(0x0b95, 0x772a),
 	.driver_info = &ax88772_info,
+}, {
+	// LevelOne USB Fast Ethernet Adapter
+	USB_DEVICE(0x0b95, 0x772b),
+	.driver_info = &ax88772b_info,
 },
 	{ },		// END
 };

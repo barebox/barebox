@@ -529,7 +529,7 @@ source common/partitions/Kconfig
 config DEFAULT_ENVIRONMENT
 	bool
 	default y
-	select CMD_LOADENV
+	select ENV_HANDLING
 	prompt "Compile in default environment"
 	help
 	  Enabling this option will give you a default environment when

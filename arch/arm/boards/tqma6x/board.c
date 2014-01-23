@@ -129,7 +129,7 @@ static int tqma6x_env_init(void)
 
 	device_detect_by_name("mmc2");
 
-	default_environment_path = "/dev/mmc2.boot1";
+	default_environment_path_set("/dev/mmc2.boot1");
 
 	return 0;
 }

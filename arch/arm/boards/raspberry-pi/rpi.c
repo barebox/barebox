@@ -132,7 +132,7 @@ static int rpi_env_init(void)
 		return 0;
 	}
 
-	default_environment_path = "/boot/barebox.env";
+	default_environment_path_set("/boot/barebox.env");
 
 	return 0;
 }

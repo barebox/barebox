@@ -94,7 +94,19 @@ int envfs_load(char *filename, char *dirname, unsigned flags);
 int envfs_save(char *filename, char *dirname);
 
 /* defaults to /dev/env0 */
-extern char *default_environment_path;
+#ifdef CONFIG_ENV_HANDLING
+void default_environment_path_set(char *path);
+char *default_environment_path_get(void);
+#else
+static inline void default_environment_path_set(char *path)
+{
+}
+
+static inline char *default_environment_path_get(void)
+{
+	return NULL;
+}
+#endif
 
 int envfs_register_partition(const char *devname, unsigned int partnr);
 

@@ -53,7 +53,7 @@ static int do_loadenv(int argc, char *argv[])
 		dirname = argv[optind + 1];
 
 	if (argc - optind < 1)
-		filename = default_environment_path;
+		filename = default_environment_path_get();
 	else
 		filename = argv[optind];
 

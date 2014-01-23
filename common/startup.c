@@ -121,6 +121,7 @@ void __noreturn start_barebox(void)
 
 	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
 		int ret;
+		char *default_environment_path = default_environment_path_get();
 
 		ret = envfs_load(default_environment_path, "/env", 0);
 

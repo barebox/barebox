@@ -48,7 +48,19 @@ struct action_data {
 };
 #define PAD4(x) ((x + 3) & ~3)
 
-char *default_environment_path = "/dev/env0";
+#ifdef __BAREBOX__
+static char *default_environment_path = "/dev/env0";
+
+void default_environment_path_set(char *path)
+{
+	default_environment_path = path;
+}
+
+char *default_environment_path_get(void)
+{
+	return default_environment_path;
+}
+#endif
 
 static int file_size_action(const char *filename, struct stat *statbuf,
 			    void *userdata, int depth)

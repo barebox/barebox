@@ -38,7 +38,7 @@ static int do_saveenv(int argc, char *argv[])
 	else
 		dirname = argv[2];
 	if (argc < 2)
-		filename = default_environment_path;
+		filename = default_environment_path_get();
 	else
 		filename = argv[1];
 

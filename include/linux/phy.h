@@ -296,13 +296,22 @@ int phy_register_fixup(const char *bus_id, u32 phy_uid, u32 phy_uid_mask,
 		int (*run)(struct phy_device *));
 int phy_register_fixup_for_id(const char *bus_id,
 		int (*run)(struct phy_device *));
-int phy_register_fixup_for_uid(u32 phy_uid, u32 phy_uid_mask,
-		int (*run)(struct phy_device *));
 int phy_scan_fixups(struct phy_device *phydev);
 
 int phy_read_mmd_indirect(struct phy_device *phydev, int prtad, int devad);
 void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 				   u16 data);
+
+#ifdef CONFIG_PHYLIB
+int phy_register_fixup_for_uid(u32 phy_uid, u32 phy_uid_mask,
+		int (*run)(struct phy_device *));
+#else
+static inline int phy_register_fixup_for_uid(u32 phy_uid, u32 phy_uid_mask,
+		int (*run)(struct phy_device *))
+{
+	return -ENOSYS;
+}
+#endif
 
 extern struct bus_type mdio_bus_type;
 #endif /* __PHYDEV_H__ */

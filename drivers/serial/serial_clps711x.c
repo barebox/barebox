@@ -110,7 +110,7 @@ static void clps711x_flush(struct console_device *cdev)
 static int clps711x_probe(struct device_d *dev)
 {
 	struct clps711x_uart *s;
-	char syscon_dev[18];
+	char syscon_dev[8];
 
 	BUG_ON(dev->num_resources != 2);
 	BUG_ON((dev->id != 0) && (dev->id != 1));
@@ -122,7 +122,7 @@ static int clps711x_probe(struct device_d *dev)
 	s->UBRLCR = dev_get_mem_region(dev, 0);
 	s->UARTDR = dev_get_mem_region(dev, 1);
 
-	sprintf(syscon_dev, "clps711x-syscon%i", dev->id + 1);
+	sprintf(syscon_dev, "syscon%i", dev->id + 1);
 	s->syscon = syscon_base_lookup_by_pdevname(syscon_dev);
 	BUG_ON(IS_ERR(s->syscon));
 

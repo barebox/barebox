@@ -51,26 +51,24 @@ void clps711x_setup_memcfg(int bank, u32 val)
 }
 
 static struct resource uart0_resources[] = {
-	DEFINE_RES_MEM(UBRLCR1, SZ_4),
-	DEFINE_RES_MEM(UARTDR1, SZ_4),
+	DEFINE_RES_MEM(UARTDR1, SZ_128),
 };
 
 static struct resource uart1_resources[] = {
-	DEFINE_RES_MEM(UBRLCR2, SZ_4),
-	DEFINE_RES_MEM(UARTDR2, SZ_4),
+	DEFINE_RES_MEM(UARTDR2, SZ_128),
 };
 
 void clps711x_add_uart(unsigned int id)
 {
 	switch (id) {
 	case 0:
-		clk_add_alias(NULL, "clps711x_serial0", "uart", NULL);
-		add_generic_device_res("clps711x_serial", 0, uart0_resources,
+		clk_add_alias(NULL, "clps711x-uart0", "uart", NULL);
+		add_generic_device_res("clps711x-uart", 0, uart0_resources,
 				       ARRAY_SIZE(uart0_resources), NULL);
 		break;
 	case 1:
-		clk_add_alias(NULL, "clps711x_serial1", "uart", NULL);
-		add_generic_device_res("clps711x_serial", 1, uart1_resources,
+		clk_add_alias(NULL, "clps711x-uart1", "uart", NULL);
+		add_generic_device_res("clps711x-uart", 1, uart1_resources,
 				       ARRAY_SIZE(uart1_resources), NULL);
 		break;
 	}

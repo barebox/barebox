@@ -163,20 +163,20 @@ static void __maybe_unused imx28_detect_reset_source(const struct imx28_wd *p)
 		if (reg & MXS_RTC_PERSISTENT0_ALARM_WAKE) {
 			writel(MXS_RTC_PERSISTENT0_ALARM_WAKE,
 				p->regs + MXS_RTC_PERSISTENT0 + MXS_RTC_CLR_ADDR);
-			set_reset_source(RESET_WKE);
+			reset_source_set(RESET_WKE);
 			return;
 		}
-		set_reset_source(RESET_POR);
+		reset_source_set(RESET_POR);
 		return;
 	}
 	if (reg & MXS_RTC_PERSISTENT0_THM_RST) {
 		writel(MXS_RTC_PERSISTENT0_THM_RST,
 			p->regs + MXS_RTC_PERSISTENT0 + MXS_RTC_CLR_ADDR);
-		set_reset_source(RESET_RST);
+		reset_source_set(RESET_RST);
 		return;
 	}
 
-	set_reset_source(RESET_RST);
+	reset_source_set(RESET_RST);
 }
 
 static int imx28_wd_probe(struct device_d *dev)

@@ -23,9 +23,9 @@ enum reset_src_type {
 };
 
 #ifdef CONFIG_RESET_SOURCE
-void set_reset_source(enum reset_src_type);
+void reset_source_set(enum reset_src_type);
 #else
-static inline void set_reset_source(enum reset_src_type unused)
+static inline void reset_source_set(enum reset_src_type unused)
 {
 }
 #endif

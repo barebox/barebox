@@ -30,13 +30,13 @@ static void imx1_detect_reset_source(void)
 
 	switch (val) {
 	case RSR_EXR:
-		set_reset_source(RESET_RST);
+		reset_source_set(RESET_RST);
 		return;
 	case RSR_WDR:
-		set_reset_source(RESET_WDG);
+		reset_source_set(RESET_WDG);
 		return;
 	case 0:
-		set_reset_source(RESET_POR);
+		reset_source_set(RESET_POR);
 		return;
 	default:
 		/* else keep the default 'unknown' state */

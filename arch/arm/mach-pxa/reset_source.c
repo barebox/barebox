@@ -25,15 +25,15 @@ static int pxa_detect_reset_source(void)
 	 * Order is important, as many bits can be set together
 	 */
 	if (reg & RCSR_GPR)
-		set_reset_source(RESET_RST);
+		reset_source_set(RESET_RST);
 	else if (reg & RCSR_WDR)
-		set_reset_source(RESET_WDG);
+		reset_source_set(RESET_WDG);
 	else if (reg & RCSR_HWR)
-		set_reset_source(RESET_POR);
+		reset_source_set(RESET_POR);
 	else if (reg & RCSR_SMR)
-		set_reset_source(RESET_WKE);
+		reset_source_set(RESET_WKE);
 	else
-		set_reset_source(RESET_UKWN);
+		reset_source_set(RESET_UKWN);
 
 	return 0;
 }

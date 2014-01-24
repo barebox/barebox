@@ -27,8 +27,18 @@ static const char * const reset_src_names[] = {
 	[RESET_JTAG] = "JTAG",
 };
 
+static enum reset_src_type reset_source;
+
+enum reset_src_type reset_source_get(void)
+{
+	return reset_source;
+}
+EXPORT_SYMBOL(reset_source_get);
+
 void reset_source_set(enum reset_src_type st)
 {
+	reset_source = st;
+
 	setenv("global.system.reset", reset_src_names[st]);
 }
 EXPORT_SYMBOL(reset_source_set);

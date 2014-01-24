@@ -200,7 +200,7 @@ void imx53_boot_save_loc(void __iomem *src_base)
 	case BOOTSOURCE_MMC:
 	case BOOTSOURCE_SPI:
 	case BOOTSOURCE_I2C:
-		instance = (cfg1 >> 21) & 0x3;
+		instance = (cfg1 >> 20) & 0x3;
 		break;
 	default:
 		instance = 0;

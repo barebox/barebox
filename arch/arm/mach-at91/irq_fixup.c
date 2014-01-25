@@ -15,7 +15,7 @@
  */
 void at91_rtt_irq_fixup(void *base)
 {
-	void *reg = base + AT91_RTT_MR;
+	void __iomem *reg = base + AT91_RTT_MR;
 	u32 mr = readl(reg);
 
 	writel(mr & ~(AT91_RTT_ALMIEN | AT91_RTT_RTTINCIEN), reg);

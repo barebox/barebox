@@ -28,7 +28,7 @@
 #include <mach/imx31-regs.h>
 #include <mach/imx35-regs.h>
 
-static void __bare_init noinline imx_nandboot_wait_op_done(void *regs)
+static void __bare_init noinline imx_nandboot_wait_op_done(void __iomem *regs)
 {
 	u32 r;
 

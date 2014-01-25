@@ -328,7 +328,7 @@ device_initcall(animeo_ip_devices_init);
 
 static struct device_d *usart0, *usart1;
 
-static void animeo_ip_shutdown_uart(void *base)
+static void animeo_ip_shutdown_uart(void __iomem *base)
 {
 #define ATMEL_US_BRGR	0x0020
 	writel(0, base + ATMEL_US_BRGR);

@@ -195,7 +195,7 @@ static void add_mem(unsigned long base0, unsigned long size0,
  */
 #define ESDCTL1_RESET_DEFAULT 0x81120080
 
-static inline void imx_esdctl_v2_disable_default(void *esdctlbase)
+static inline void imx_esdctl_v2_disable_default(void __iomem *esdctlbase)
 {
 	u32 ctlval = readl(esdctlbase + IMX_ESDCTL1);
 

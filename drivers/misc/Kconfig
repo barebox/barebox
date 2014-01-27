@@ -2,17 +2,11 @@
 # Misc strange devices
 #
 
-menuconfig MISC_DEVICES
-	bool "Misc devices"
-	help
-	  Add support for misc strange devices
-
-if MISC_DEVICES
+menu "Misc devices"
 
 config JTAG
 	tristate "JTAG Bitbang driver"
 	depends on GENERIC_GPIO
 	help
 	  Controls JTAG chains connected to I/O pins
-
-endif # MISC_DEVICES
+endmenu

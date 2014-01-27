@@ -9,4 +9,10 @@ config JTAG
 	depends on GENERIC_GPIO
 	help
 	  Controls JTAG chains connected to I/O pins
+
+config SRAM
+	bool "Generic SRAM driver"
+	help
+	  This driver adds support for memory mapped SRAM.
+
 endmenu

@@ -373,6 +373,11 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
 									\
 	fn = (void *)__fn;						\
 									\
+	if (boarddata > nfc_base && boarddata < nfc_base + SZ_512K) {	\
+		boarddata &= SZ_512K - 1;				\
+		boarddata += sdram;					\
+	}								\
+									\
 	fn(boarddata);							\
 }
 

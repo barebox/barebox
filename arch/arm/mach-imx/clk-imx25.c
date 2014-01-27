@@ -140,6 +140,9 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[per15], MX25_UART4_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per15], MX25_UART5_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per5], MX25_GPT1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[per5], MX25_GPT2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[per5], MX25_GPT3_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[per5], MX25_GPT4_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX25_FEC_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX25_I2C1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX25_I2C2_BASE_ADDR, NULL);

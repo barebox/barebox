@@ -75,9 +75,12 @@ static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,
 	writel(esdctl, esdctlreg);
 }
 
+extern char __dtb_imx25_karo_tx25_start[];
+
 void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r;
+	uint32_t fdt;
 
 	arm_cpu_lowlevel_init();
 
@@ -136,6 +139,8 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 	setup_uart();
 
+	fdt = (uint32_t)__dtb_imx25_karo_tx25_start - get_runtime_offset();
+
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x80000000 && r < 0xa0000000)
@@ -161,8 +166,8 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* setup a stack to be able to call imx25_barebox_boot_nand_external() */
 	arm_setup_stack(MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 8);
 
-	imx25_barebox_boot_nand_external(0);
+	imx25_barebox_boot_nand_external(fdt);
 #endif
 out:
-	imx25_barebox_entry(0);
+	imx25_barebox_entry(fdt);
 }

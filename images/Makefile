@@ -88,11 +88,6 @@ suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = shipped
 $(obj)/barebox.z: $(obj)/../barebox.bin FORCE
 	$(call if_changed,$(suffix_y))
 
-quiet_cmd_selfextract = COMP    $@
-      cmd_selfextract = cat $(obj)/start_uncompress.pblb > $@; \
-			$(call size_append, $<) >> $@; \
-			cat $< >> $@
-
 # %.img - create a copy from another file
 # ----------------------------------------------------------------
 .SECONDEXPANSION:

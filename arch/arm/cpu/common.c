@@ -18,6 +18,7 @@
 #include <common.h>
 #include <init.h>
 #include <sizes.h>
+#include <asm/system_info.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
@@ -64,3 +65,16 @@ void relocate_to_current_adr(void)
 	arm_early_mmu_cache_flush();
 	flush_icache();
 }
+
+#ifdef ARM_MULTIARCH
+
+int __cpu_architecture;
+
+int __pure cpu_architecture(void)
+{
+	if(__cpu_architecture == CPU_ARCH_UNKNOWN)
+		__cpu_architecture = arm_early_get_cpu_architecture();
+
+	return __cpu_architecture;
+}
+#endif

@@ -132,6 +132,8 @@
 #define MARVELL_CTRL_TXDELAY	0x0002
 #define MARVELL_CTRL_RXDELAY	0x0080
 
+#define FLAG_EEPROM_MAC		(1UL << 0) /* init device MAC from eeprom */
+
 /* This structure cannot exceed sizeof(unsigned long [5]) AKA 20 bytes */
 struct asix_data {
 	u8 multi_filter[AX_MCAST_FILTER_SIZE];
@@ -364,11 +366,21 @@ static int asix_write_gpio(struct usbnet *dev, u16 value, int sleep)
 static int asix_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 {
 	struct usbnet *udev = container_of(edev, struct usbnet, edev);
-	int ret;
+	int i, ret;
 
 	/* Get the MAC address */
-	if ((ret = asix_read_cmd(udev, AX_CMD_READ_NODE_ID,
-				0, 0, 6, adr)) < 0) {
+	if (udev->driver_info->data & FLAG_EEPROM_MAC) {
+		for (i = 0; i < (6 >> 1); i++) {
+			ret = asix_read_cmd(udev, AX_CMD_READ_EEPROM, 0x04 + i,
+					0, 2, adr + i * 2);
+			if (ret < 0)
+				break;
+		}
+	} else {
+		ret = asix_read_cmd(udev, AX_CMD_READ_NODE_ID, 0, 0, 6, adr);
+	}
+
+	if (ret < 0) {
 		debug("Failed to read MAC address: %d\n", ret);
 		return -1;
 	}

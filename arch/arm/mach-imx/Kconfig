@@ -38,8 +38,9 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_PHYTEC_PFLA02
 	default 0x4fc00000 if MACH_DFI_FS700_M60
 
-choice
-	prompt "Select boot mode"
+config ARCH_IMX_INTERNAL_BOOT
+	bool "support internal boot mode"
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51 || ARCH_IMX53 || ARCH_IMX6
 	depends on !HAVE_PBL_MULTI_IMAGES
 	help
 	  i.MX processors support two different boot modes. With the internal
@@ -57,16 +58,6 @@ choice
 	  responsibility of these 2kbyte to load the rest of the boot image.
 	  The external boot mode is supported on older i.MX processors (i.MX1,
 	  i.MX21, i.MX25, i.MX27, i.MX31, i.MX35).
-
-config ARCH_IMX_INTERNAL_BOOT
-	bool "support internal boot mode"
-	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51 || ARCH_IMX53 || ARCH_IMX6
-
-config ARCH_IMX_EXTERNAL_BOOT
-	bool "support external boot mode"
-	depends on ARCH_IMX1 || ARCH_IMX21 || ARCH_IMX25 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35
-
-endchoice
 
 config ARCH_IMX_IMXIMAGE
 	bool
@@ -105,16 +96,10 @@ config ARCH_IMX_INTERNAL_BOOT_SERIAL
 
 endchoice
 
-config NAND_IMX_BOOT
-	bool
-	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
-	default y
-
 config ARCH_IMX_EXTERNAL_BOOT_NAND
 	bool
-	depends on !ARCH_IMX1
-	prompt "Support Starting barebox from NAND"
-	depends on ARCH_IMX_EXTERNAL_BOOT
+	depends on ARCH_IMX25 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35
+	prompt "Support Starting barebox from NAND in external bootmode"
 
 config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	bool
@@ -319,6 +304,7 @@ config MACH_PCA100
 	bool "phyCard-i.MX27"
 	select ARCH_IMX27
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select ARCH_IMX_EXTERNAL_BOOT_NAND
 	help
 	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
 	  with a Freescale i.MX27 Processor

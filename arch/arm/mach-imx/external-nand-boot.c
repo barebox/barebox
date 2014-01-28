@@ -322,10 +322,13 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
 			(uint32_t boarddata)				\
 {									\
 	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
-	unsigned long sdram = MX##soc##_CSD0_BASE_ADDR;			\
+	void *sdram = (void *)MX##soc##_CSD0_BASE_ADDR;			\
+	uint32_t image_size;						\
 									\
-	imx##soc##_nand_load_image((void *)sdram,			\
-			ld_var(_barebox_image_size),			\
+	image_size = *(uint32_t *)(sdram + 0x2c);			\
+									\
+	imx##soc##_nand_load_image(sdram,				\
+			image_size,					\
 			(void *)nfc_base,				\
 			imx##soc##_pagesize_2k());			\
 									\

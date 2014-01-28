@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <fcntl.h>
@@ -15,22 +16,23 @@ int main(int argc, char**argv)
 	struct stat s;
 	int c;
 	int fd;
-	uint64_t offset = 0;
 	uint32_t size = 0;
 	char *file = NULL;
 	int ret = 1;
 	int is_bigendian = 0;
+	char magic[8];
+	int ignore_unknown = 0;
 
-	while ((c = getopt (argc, argv, "hf:o:b")) != -1) {
+	while ((c = getopt (argc, argv, "if:b")) != -1) {
 		switch (c) {
 		case 'f':
 			file = optarg;
 			break;
-		case 'o':
-			offset = strtoul(optarg, NULL, 16);
-			break;
 		case 'b':
 			is_bigendian = 1;
+			break;
+		case 'i':
+			ignore_unknown = 1;
 			break;
 		}
 	}
@@ -45,13 +47,36 @@ int main(int argc, char**argv)
 		return 1;
 	}
 
-	fd = open(file, O_WRONLY);
+	fd = open(file, O_RDWR);
 	if (fd < 0) {
 		perror("open");
 		return 1;
 	}
 
-	ret = lseek(fd, offset, SEEK_SET);
+	ret = lseek(fd, 0x20, SEEK_SET);
+	if (ret < 0) {
+		perror("lseek");
+		ret = 1;
+		goto err;
+	}
+
+	ret = read(fd, magic, sizeof(magic));
+	if (ret < 0) {
+		perror("read");
+		ret = 1;
+		goto err;
+	}
+
+	if (strcmp(magic, "barebox")) {
+		fprintf(stderr, "invalid magic\n");
+		if (ignore_unknown)
+			ret = 0;
+		else
+			ret = 1;
+		goto err;
+	}
+
+	ret = lseek(fd, 0x2c, SEEK_SET);
 	if (ret < 0) {
 		perror("lseek");
 		ret = 1;

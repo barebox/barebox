@@ -89,7 +89,7 @@ static int tx25_init(void)
 	armlinux_set_architecture(MACH_TYPE_TX25);
 	armlinux_set_serial(imx_uid());
 
-	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.barebox",
+	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.boot",
 			BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;

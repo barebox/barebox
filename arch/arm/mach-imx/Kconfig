@@ -167,6 +167,13 @@ config IMX_MULTI_BOARDS
 
 if IMX_MULTI_BOARDS
 
+config MACH_TX25
+	bool "Ka-Ro TX25"
+	select ARCH_IMX25
+	select ARCH_IMX_EXTERNAL_BOOT_NAND
+	help
+	  Say Y here if you are using the Ka-Ro tx25 board
+
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51
@@ -274,13 +281,6 @@ config MACH_FREESCALE_MX25_3STACK
 	help
 	  Say Y here if you are using the Freescale MX25 3stack board equipped
 	  with a Freescale i.MX25 Processor
-
-config MACH_TX25
-	bool "Ka-Ro TX25"
-	select ARCH_IMX25
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	help
-	  Say Y here if you are using the Ka-Ro tx25 board
 
 # ----------------------------------------------------------
 

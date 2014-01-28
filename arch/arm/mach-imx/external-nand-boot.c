@@ -95,12 +95,12 @@ static void __bare_init imx_nandboot_nfc_addr(void *regs, u32 offs, int pagesize
 	}
 }
 
-static void __bare_init imx_nandboot_send_page(void *regs,
+static void __bare_init imx_nandboot_send_page(void *regs, int v1,
 		unsigned int ops, int pagesize_2k)
 {
 	int bufs, i;
 
-	if (nfc_is_v1() && pagesize_2k)
+	if (v1 && pagesize_2k)
 		bufs = 4;
 	else
 		bufs = 1;
@@ -126,15 +126,15 @@ static void __bare_init __memcpy32(void *trg, const void *src, int size)
 		*t++ = *s++;
 }
 
-static noinline void __bare_init imx_nandboot_get_page(void *regs,
+static noinline void __bare_init imx_nandboot_get_page(void *regs, int v1,
 		u32 offs, int pagesize_2k)
 {
 	imx_nandboot_send_cmd(regs, NAND_CMD_READ0);
 	imx_nandboot_nfc_addr(regs, offs, pagesize_2k);
-	imx_nandboot_send_page(regs, NFC_OUTPUT, pagesize_2k);
+	imx_nandboot_send_page(regs, v1, NFC_OUTPUT, pagesize_2k);
 }
 
-void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
+void __bare_init imx_nand_load_image(void *dest, int v1, int size, void __iomem *base,
 		int pagesize_2k)
 {
 	u32 tmp, page, block, blocksize, pagesize, badblocks;
@@ -149,12 +149,12 @@ void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
 		blocksize = 16 * 1024;
 	}
 
-	if (nfc_is_v21()) {
-		regs = base + 0x1e00;
-		spare0 = base + 0x1000;
-	} else if (nfc_is_v1()) {
+	if (v1) {
 		regs = base + 0xe00;
 		spare0 = base + 0x800;
+	} else {
+		regs = base + 0x1e00;
+		spare0 = base + 0x1000;
 	}
 
 	imx_nandboot_send_cmd(regs, NAND_CMD_RESET);
@@ -168,13 +168,13 @@ void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
 
 	tmp = readw(regs + NFC_V1_V2_CONFIG1);
 	tmp |= NFC_V1_V2_CONFIG1_ECC_EN;
-	if (nfc_is_v21())
+	if (!v1)
 		/* currently no support for 218 byte OOB with stronger ECC */
 		tmp |= NFC_V2_CONFIG1_ECC_MODE_4;
 	tmp &= ~(NFC_V1_V2_CONFIG1_SP_EN | NFC_V1_V2_CONFIG1_INT_MSK);
 	writew(tmp, regs + NFC_V1_V2_CONFIG1);
 
-	if (nfc_is_v21()) {
+	if (!v1) {
 		if (pagesize_2k)
 			writew(NFC_V2_SPAS_SPARESIZE(64), regs + NFC_V2_SPAS);
 		else
@@ -196,7 +196,7 @@ void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
 	while (1) {
 		page = 0;
 
-		imx_nandboot_get_page(regs, block * blocksize +
+		imx_nandboot_get_page(regs, v1, block * blocksize +
 				page * pagesize, pagesize_2k);
 
 		if (bbt) {
@@ -223,7 +223,7 @@ void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
 					block * blocksize +
 					page * pagesize);
 			if (page)
-				imx_nandboot_get_page(regs, block * blocksize +
+				imx_nandboot_get_page(regs, v1, block * blocksize +
 					page * pagesize, pagesize_2k);
 
 			page++;
@@ -237,6 +237,36 @@ void __bare_init imx_nand_load_image(void *dest, int size, void __iomem *base,
 		}
 		block++;
 	}
+}
+
+void BARE_INIT_FUNCTION(imx21_nand_load_image)(void *dest, int size,
+                void __iomem *base, int pagesize_2k)
+{
+        imx_nand_load_image(dest, 1, size, base, pagesize_2k);
+}
+
+void BARE_INIT_FUNCTION(imx25_nand_load_image)(void *dest, int size,
+                void __iomem *base, int pagesize_2k)
+{
+        imx_nand_load_image(dest, 0, size, base, pagesize_2k);
+}
+
+void BARE_INIT_FUNCTION(imx27_nand_load_image)(void *dest, int size,
+                void __iomem *base, int pagesize_2k)
+{
+        imx_nand_load_image(dest, 1, size, base, pagesize_2k);
+}
+
+void BARE_INIT_FUNCTION(imx31_nand_load_image)(void *dest, int size,
+                void __iomem *base, int pagesize_2k)
+{
+        imx_nand_load_image(dest, 1, size, base, pagesize_2k);
+}
+
+void BARE_INIT_FUNCTION(imx35_nand_load_image)(void *dest, int size,
+                void __iomem *base, int pagesize_2k)
+{
+        imx_nand_load_image(dest, 0, size, base, pagesize_2k);
 }
 
 static inline int imx21_pagesize_2k(void)
@@ -293,7 +323,7 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)(void)    
 	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
 	unsigned long sdram = MX##soc##_CSD0_BASE_ADDR;			\
 									\
-	imx_nand_load_image((void *)sdram,				\
+	imx##soc##_nand_load_image((void *)sdram,			\
 			ld_var(_barebox_image_size),			\
 			(void *)nfc_base,				\
 			imx##soc##_pagesize_2k());			\

@@ -42,67 +42,6 @@
 #include <mach/devices-imx25.h>
 #include <asm/barebox-arm-head.h>
 
-void __naked __flash_header_start go(void)
-{
-	barebox_arm_head();
-}
-
-struct imx_dcd_entry __dcd_entry_section dcd_entry[] = {
-	{ .ptr_type = 4, .addr = 0xb8002050, .val = 0x0000d843, },
-	{ .ptr_type = 4, .addr = 0xb8002054, .val = 0x22252521, },
-	{ .ptr_type = 4, .addr = 0xb8002058, .val = 0x22220a00, },
-#if defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
-	{ .ptr_type = 4, .addr = 0xb8001004, .val = 0x0076e83a, },
-	{ .ptr_type = 4, .addr = 0xb8001010, .val = 0x00000304, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0x92210000, },
-	{ .ptr_type = 4, .addr = 0x80000f00, .val = 0x12344321, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0xb2210000, },
-	{ .ptr_type = 1, .addr = 0x82000000, .val = 0xda, },
-	{ .ptr_type = 1, .addr = 0x83000000, .val = 0xda, },
-	{ .ptr_type = 1, .addr = 0x81000400, .val = 0xda, },
-	{ .ptr_type = 1, .addr = 0x80000333, .val = 0xda, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0x92210000, },
-	{ .ptr_type = 4, .addr = 0x80000400, .val = 0x12344321, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0xa2210000, },
-	{ .ptr_type = 4, .addr = 0x80000000, .val = 0x87654321, },
-	{ .ptr_type = 4, .addr = 0x80000000, .val = 0x87654321, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0xb2210000, },
-	{ .ptr_type = 1, .addr = 0x80000233, .val = 0xda, },
-	{ .ptr_type = 1, .addr = 0x81000780, .val = 0xda, },
-	{ .ptr_type = 1, .addr = 0x81000400, .val = 0xda, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0x82216080, },
-#elif defined CONFIG_FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
-	{ .ptr_type = 4, .addr = 0xb8001010, .val = 0x00000004, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0x92100000, },
-	{ .ptr_type = 1, .addr = 0x80000400, .val = 0x21, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0xa2100000, },
-	{ .ptr_type = 4, .addr = 0x80000000, .val = 0x12344321, },
-	{ .ptr_type = 4, .addr = 0x80000000, .val = 0x12344321, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0xb2100000, },
-	{ .ptr_type = 1, .addr = 0x80000033, .val = 0xda, },
-	{ .ptr_type = 1, .addr = 0x81000000, .val = 0xff, },
-	{ .ptr_type = 4, .addr = 0xb8001000, .val = 0x82216880, },
-	{ .ptr_type = 4, .addr = 0xb8001004, .val = 0x00295729, },
-#else
-#error "Unsupported SDRAM type"
-#endif
-	{ .ptr_type = 4, .addr = 0x53f80008, .val = 0x20034000, },
-};
-
-struct imx_flash_header __flash_header_section flash_header = {
-	.app_code_jump_vector	= DEST_BASE + 0x1000,
-	.app_code_barker	= APP_CODE_BARKER,
-	.app_code_csf		= 0,
-	.dcd_ptr_ptr		= FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd),
-	.super_root_key		= 0,
-	.dcd			= FLASH_HEADER_BASE + offsetof(struct imx_flash_header, dcd_barker),
-	.app_dest		= DEST_BASE,
-	.dcd_barker		= DCD_BARKER,
-	.dcd_block_len		= sizeof(dcd_entry),
-};
-
-unsigned long __image_len_section barebox_len = DCD_BAREBOX_SIZE;
-
 static struct fec_platform_data fec_info = {
 	.xcv_type	= PHY_INTERFACE_MODE_RMII,
 	.phy_addr	= 1,

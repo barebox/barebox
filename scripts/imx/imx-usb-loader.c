@@ -1334,7 +1334,7 @@ static void usage(const char *prgname)
 
 int main(int argc, char *argv[])
 {
-	struct usb_id *p_id;
+	struct usb_id *p_id = NULL;
 	struct mach_id *mach;
 	libusb_device **devs;
 	libusb_device *dev;
@@ -1432,6 +1432,9 @@ int main(int argc, char *argv[])
 
 	ret = 0;
 out:
+	if (p_id)
+		free(p_id);
+
 	if (h)
 		libusb_close(h);
 

@@ -48,7 +48,7 @@ uint32_t populate_memctl_options(int all_DIMMs_registered,
 	if (pdimm->n_ranks != 0) {
 		if ((pdimm->data_width >= 64) && (pdimm->data_width <= 72))
 			popts->data_bus_width = 0;
-		else if ((pdimm->data_width >= 32) ||
+		else if ((pdimm->data_width >= 32) &&
 			(pdimm->data_width <= 40))
 			popts->data_bus_width = 1;
 		else

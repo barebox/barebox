@@ -24,6 +24,7 @@
 #include <common.h>
 #include <asm/config.h>
 #include <asm/fsl_law.h>
+#include <mach/ffs64.h>
 
 #define FSL_HW_NUM_LAWS FSL_NUM_LAWS
 

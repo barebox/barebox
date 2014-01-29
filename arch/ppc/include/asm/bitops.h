@@ -6,13 +6,7 @@
 #define _PPC_BITOPS_H
 
 #include <asm/byteorder.h>
-
-extern void set_bit(int nr, volatile void *addr);
-extern void clear_bit(int nr, volatile void *addr);
-extern void change_bit(int nr, volatile void *addr);
-extern int test_and_set_bit(int nr, volatile void *addr);
-extern int test_and_clear_bit(int nr, volatile void *addr);
-extern int test_and_change_bit(int nr, volatile void *addr);
+#include <asm-generic/bitops/ops.h>
 
 /*
  * Arguably these bit operations don't imply any memory barrier or
@@ -143,13 +137,6 @@ extern __inline__ int test_and_change_bit(int nr, volatile void *addr)
 }
 #endif /* __INLINE_BITOPS */
 
-extern __inline__ int test_bit(int nr, __const__ volatile void *addr)
-{
-	__const__ unsigned int *p = (__const__ unsigned int *) addr;
-
-	return ((p[nr >> 5] >> (nr & 0x1f)) & 1) != 0;
-}
-
 /* Return the bit position of the most significant 1 bit in a word */
 extern __inline__ int __ilog2(unsigned int x)
 {
@@ -178,36 +165,6 @@ static inline int fls(unsigned int x)
 	return 32 - lz;
 }
 
-/*
- * fls64 - find last set bit in a 64-bit word
- * @x: the word to search
- *
- * This is defined in a similar way as the libc and compiler builtin
- * ffsll, but returns the position of the most significant set bit.
- *
- * fls64(value) returns 0 if value is 0 or the position of the last
- * set bit if value is nonzero. The last (most significant) bit is
- * at position 64.
- */
-
-static inline int fls64(__u64 x)
-{
-	__u32 h = x >> 32;
-	if (h)
-		return fls(h) + 32;
-	return fls(x);
-}
-
-static inline int __ilog2_u64(u64 n)
-{
-	return fls64(n) - 1;
-}
-
-static inline int ffs64(u64 x)
-{
-	return __ilog2_u64(x & -x) + 1ull;
-}
-
 #ifdef __KERNEL__
 
 /*
@@ -220,6 +177,7 @@ extern __inline__ int ffs(int x)
 	return __ilog2(x & -x) + 1;
 }
 
+#include <asm-generic/bitops/fls64.h>
 #include <asm-generic/bitops/hweight.h>
 
 #endif /* __KERNEL__ */

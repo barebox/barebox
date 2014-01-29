@@ -2,3 +2,15 @@
 export PATH=/env/bin
 
 source /env/config
+
+#Define a 26MB partition in flash starting at offset 0x20000
+addpart -n /dev/nor0 0x1a00000@0x20000(boot)
+ubiattach /dev/boot
+
+if [ $? -ne 0 ]; then
+	echo "Fail to attach UBI device"
+	exit 1;
+fi
+
+mkdir /mnt
+mount -t ubifs /dev/ubi0.boot /mnt

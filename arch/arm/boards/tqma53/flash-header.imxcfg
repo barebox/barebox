@@ -1,0 +1,66 @@
+soc imx53
+loadaddr 0x70000000
+dcdofs 0x400
+
+/* IOMUX */
+wm 32 0x53fa8554 cpu_to_be32(0x00300000
+wm 32 0x53fa8558 cpu_to_be32(0x00300040
+wm 32 0x53fa8560 cpu_to_be32(0x00300000
+wm 32 0x53fa8564 cpu_to_be32(0x00300040
+wm 32 0x53fa8568 cpu_to_be32(0x00300040
+wm 32 0x53fa8570 cpu_to_be32(0x00300000
+wm 32 0x53fa8574 cpu_to_be32(0x00300000
+wm 32 0x53fa8578 cpu_to_be32(0x00300000
+wm 32 0x53fa857c cpu_to_be32(0x00300040
+wm 32 0x53fa8580 cpu_to_be32(0x00300040
+wm 32 0x53fa8584 cpu_to_be32(0x00300000
+wm 32 0x53fa8588 cpu_to_be32(0x00300000
+wm 32 0x53fa8590 cpu_to_be32(0x00300040
+wm 32 0x53fa8594 cpu_to_be32(0x00300000
+wm 32 0x53fa86f0 cpu_to_be32(0x00300000
+wm 32 0x53fa86f4 cpu_to_be32(0x00000000
+wm 32 0x53fa86fc cpu_to_be32(0x00000000
+wm 32 0x53fa8714 cpu_to_be32(0x00000000
+wm 32 0x53fa8718 cpu_to_be32(0x00300000
+wm 32 0x53fa871c cpu_to_be32(0x00300000
+wm 32 0x53fa8720 cpu_to_be32(0x00300000
+wm 32 0x53fa8724 cpu_to_be32(0x04000000
+wm 32 0x53fa8728 cpu_to_be32(0x00300000
+wm 32 0x53fa872c cpu_to_be32(0x00300000
+/* ESDCTL */
+wm 32 0x63fd9088 cpu_to_be32(0x35343535
+wm 32 0x63fd9090 cpu_to_be32(0x4d444c44
+wm 32 0x63fd907c cpu_to_be32(0x01370138
+wm 32 0x63fd9080 cpu_to_be32(0x013b013c
+wm 32 0x63fd90f8 cpu_to_be32(0x00000800
+#ifdef CONFIG_MACH_TQMA53_1GB_RAM
+/* sync with u-boot: add WALAT for 4 chip variant */
+wm 32 0x63fd9018 cpu_to_be32(0x00011740
+wm 32 0x63fd9000 cpu_to_be32(0xc3190000
+#else
+wm 32 0x63fd9018 cpu_to_be32(0x00101740
+wm 32 0x63fd9000 cpu_to_be32(0x83190000
+#endif
+wm 32 0x63fd900c cpu_to_be32(0x9f5152e3
+wm 32 0x63fd9010 cpu_to_be32(0xb68e8a63
+wm 32 0x63fd9014 cpu_to_be32(0x01ff00db
+wm 32 0x63fd902c cpu_to_be32(0x000026d2
+/* Engcm12377 / errata sheet 03/2013 */
+wm 32 0x63fd9030 cpu_to_be32(0x009f0e23
+wm 32 0x63fd9008 cpu_to_be32(0x12273030
+wm 32 0x63fd9004 cpu_to_be32(0x0002002d
+wm 32 0x63fd901c cpu_to_be32(0x00008032
+wm 32 0x63fd901c cpu_to_be32(0x00008033
+wm 32 0x63fd901c cpu_to_be32(0x00028031
+wm 32 0x63fd901c cpu_to_be32(0x052080b0
+wm 32 0x63fd901c cpu_to_be32(0x04008040
+wm 32 0x63fd901c cpu_to_be32(0x0000803a
+wm 32 0x63fd901c cpu_to_be32(0x0000803b
+wm 32 0x63fd901c cpu_to_be32(0x00028039
+wm 32 0x63fd901c cpu_to_be32(0x05208138
+wm 32 0x63fd901c cpu_to_be32(0x04008048
+wm 32 0x63fd9020 cpu_to_be32(0x00005800
+/* prevent reserved value, use default TZQ_CS */
+wm 32 0x63fd9040 cpu_to_be32(0x05380003
+wm 32 0x63fd9058 cpu_to_be32(0x00022227
+wm 32 0x63fd901C cpu_to_be32(0x00000000

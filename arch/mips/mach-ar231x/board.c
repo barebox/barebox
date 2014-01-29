@@ -111,7 +111,7 @@ static u16
 ar231x_cksum16(u8 *data, int size)
 {
 	int i;
-	u16 sum;
+	u16 sum = 0;
 
 	for (i = 0; i < size; i++)
 		sum += data[i];

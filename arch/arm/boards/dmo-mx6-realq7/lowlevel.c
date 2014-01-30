@@ -15,6 +15,7 @@
 #include <common.h>
 #include <sizes.h>
 #include <io.h>
+#include <debug_ll.h>
 #include <asm/sections.h>
 #include <asm/mmu.h>
 #include <asm/barebox-arm-head.h>
@@ -136,26 +137,37 @@ static void sdram_init(void)
 	writel(0x0000047f, 0x021e80a4);
 	writel(0x0000c34f, 0x021e80a8);
 	writel(0x00000001, 0x021e8080);
+	putc_ll('>');
 }
 
 extern char __dtb_imx6q_dmo_realq7_start[];
+extern char __dtb_imx6q_dmo_realq7_end[];
 
 ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 {
-	uint32_t fdt;
+	unsigned long fdt, sdram = 0x10000000;
 
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
+
+	fdt = (unsigned long)__dtb_imx6q_dmo_realq7_start - get_runtime_offset();
 
 	if (get_pc() < 0x10000000) {
 		sdram_init();
 
 		mmdc_do_write_level_calibration();
 		mmdc_do_dqs_calibration();
+
+		/*
+		 * Copy the devicetree blob to sdram so that the barebox code finds it
+		 * inside valid SDRAM instead of SRAM.
+		 */
+		memcpy((void *)sdram, (void *)fdt,
+				__dtb_imx6q_dmo_realq7_end -
+				__dtb_imx6q_dmo_realq7_start);
+		fdt = sdram;
 	}
 
-	fdt = (uint32_t)__dtb_imx6q_dmo_realq7_start - get_runtime_offset();
-
-	barebox_arm_entry(0x10000000, SZ_2G, fdt);
+	barebox_arm_entry(sdram, SZ_2G, fdt);
 }

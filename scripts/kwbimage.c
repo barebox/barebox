@@ -1343,6 +1343,7 @@ static int image_create(const char *input, const char *output,
 	rewind(fcfg);
 
 	ret = image_create_config_parse(fcfg, image_cfg, &cfgn);
+	fclose(fcfg);
 	if (ret) {
 		free(image_cfg);
 		return -1;

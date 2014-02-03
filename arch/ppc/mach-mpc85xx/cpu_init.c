@@ -110,7 +110,7 @@ void cpu_init_early_f(void)
 		fsl_setup_ccsrbar();
 
 	fsl_init_laws();
-	e500_invalidate_tlb(0);
+	e500_invalidate_tlb(1);
 	e500_init_tlbs();
 }
 

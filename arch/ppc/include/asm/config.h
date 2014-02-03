@@ -23,7 +23,7 @@
 
 #ifndef MAX_MEM_MAPPED
 #if defined(CONFIG_E500)
-#define MAX_MEM_MAPPED	((phys_size_t)(2 << 30))
+#define MAX_MEM_MAPPED	(2ULL << 30)
 #endif
 #endif
 

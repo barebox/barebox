@@ -382,7 +382,7 @@ extern int write_bat(ppc_bat_t bat, unsigned long upper, unsigned long lower);
 #define MAS1_IPROT      0x40000000
 #define MAS1_TID(x)     (((x) << 16) & 0x3FFF0000)
 #define MAS1_TS         0x00001000
-#define MAS1_TSIZE(x)   (((x) << 8) & 0x00000F00)
+#define MAS1_TSIZE(x)   (((x) << 7) & 0x00000F80)
 
 #define MAS2_EPN        0xFFFFF000
 #define MAS2_SHAREN     0x00000200
@@ -438,18 +438,32 @@ extern int write_bat(ppc_bat_t bat, unsigned long upper, unsigned long lower);
 #define FSL_BOOKE_MAS7(rpn) \
 		(((u64)(rpn)) >> 32)
 
-#define BOOKE_PAGESZ_1K         0
-#define BOOKE_PAGESZ_4K         1
-#define BOOKE_PAGESZ_16K        2
-#define BOOKE_PAGESZ_64K        3
-#define BOOKE_PAGESZ_256K       4
-#define BOOKE_PAGESZ_1M         5
-#define BOOKE_PAGESZ_4M         6
-#define BOOKE_PAGESZ_16M        7
-#define BOOKE_PAGESZ_64M        8
-#define BOOKE_PAGESZ_256M       9
-#define BOOKE_PAGESZ_1GB        10
-#define BOOKE_PAGESZ_4GB        11
+#define BOOKE_PAGESZ_1K		0
+#define BOOKE_PAGESZ_2K		1
+#define BOOKE_PAGESZ_4K		2
+#define BOOKE_PAGESZ_8K		3
+#define BOOKE_PAGESZ_16K	4
+#define BOOKE_PAGESZ_32K	5
+#define BOOKE_PAGESZ_64K	6
+#define BOOKE_PAGESZ_128K	7
+#define BOOKE_PAGESZ_256K	8
+#define BOOKE_PAGESZ_512K	9
+#define BOOKE_PAGESZ_1M		10
+#define BOOKE_PAGESZ_2M		11
+#define BOOKE_PAGESZ_4M		12
+#define BOOKE_PAGESZ_8M		13
+#define BOOKE_PAGESZ_16M	14
+#define BOOKE_PAGESZ_32M	15
+#define BOOKE_PAGESZ_64M	16
+#define BOOKE_PAGESZ_128M	17
+#define BOOKE_PAGESZ_256M	18
+#define BOOKE_PAGESZ_512M	19
+#define BOOKE_PAGESZ_1G		20
+#define BOOKE_PAGESZ_2G		21
+#define BOOKE_PAGESZ_4G		22
+
+#define TLBIVAX_ALL		4
+#define TLBIVAX_TLB0		0
 
 #if defined(CONFIG_MPC86xx)
 #define LAWBAR_BASE_ADDR	0x00FFFFFF

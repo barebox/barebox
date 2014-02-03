@@ -24,7 +24,7 @@
 #include <common.h>
 #include <asm/processor.h>
 #include <asm/config.h>
-#include <asm/bitops.h>
+#include <linux/log2.h>
 #include <mach/mmu.h>
 
 void e500_invalidate_tlb(u8 tlb)

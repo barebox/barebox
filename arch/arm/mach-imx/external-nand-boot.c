@@ -32,7 +32,7 @@
 	__section(.text_bare_init_##name) \
 		name
 
-static void __bare_init noinline imx_nandboot_wait_op_done(void *regs)
+static void __bare_init noinline imx_nandboot_wait_op_done(void __iomem *regs)
 {
 	u32 r;
 

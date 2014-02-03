@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2014 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,31 +15,20 @@
  *
  */
 
-/**
- * @file
- * @brief Clocksource based on MIPS CP0 timer
+/** @file
+ *  This File contains declaration for early output support
  */
+#ifndef __LOONGSON_TECH_LS1B_DEBUG_LL_H__
+#define __LOONGSON_TECH_LS1B_DEBUG_LL_H__
 
-#include <init.h>
-#include <clock.h>
-#include <io.h>
-#include <asm/mipsregs.h>
+#include <asm/addrspace.h>
+#include <mach/loongson1.h>
 
-static uint64_t c0_hpt_read(void)
-{
-	return read_c0_count();
-}
+#define DEBUG_LL_UART_ADDR	KSEG1ADDR(LS1X_UART2_BASE)
+#define DEBUG_LL_UART_SHIFT	0
 
-static struct clocksource cs = {
-	.read	= c0_hpt_read,
-	.mask	= CLOCKSOURCE_MASK(32),
-};
+#define DEBUG_LL_UART_CLK   (83000000 / 16)
+#define DEBUG_LL_UART_BPS   CONFIG_BAUDRATE
+#define DEBUG_LL_UART_DIVISOR   (DEBUG_LL_UART_CLK / DEBUG_LL_UART_BPS)
 
-static int clocksource_init(void)
-{
-	cs.mult = clocksource_hz2mult(100000000, cs.shift);
-	init_clock(&cs);
-
-	return 0;
-}
-core_initcall(clocksource_init);
+#endif /* __LOONGSON_TECH_LS1B_DEBUG_LL_H__ */

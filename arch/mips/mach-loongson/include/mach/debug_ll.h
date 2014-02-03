@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2014 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,31 +15,13 @@
  *
  */
 
-/**
- * @file
- * @brief Clocksource based on MIPS CP0 timer
+#ifndef __MACH_LOONGSON_DEBUG_LL__
+#define __MACH_LOONGSON_DEBUG_LL__
+
+/** @file
+ *  This File contains declaration for early output support
  */
+#include <board/debug_ll.h>
+#include <asm/debug_ll_ns16550.h>
 
-#include <init.h>
-#include <clock.h>
-#include <io.h>
-#include <asm/mipsregs.h>
-
-static uint64_t c0_hpt_read(void)
-{
-	return read_c0_count();
-}
-
-static struct clocksource cs = {
-	.read	= c0_hpt_read,
-	.mask	= CLOCKSOURCE_MASK(32),
-};
-
-static int clocksource_init(void)
-{
-	cs.mult = clocksource_hz2mult(100000000, cs.shift);
-	init_clock(&cs);
-
-	return 0;
-}
-core_initcall(clocksource_init);
+#endif /* __MACH_LOONGSON_DEBUG_LL__ */

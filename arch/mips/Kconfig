@@ -63,6 +63,9 @@ config MACH_MIPS_BCM47XX
 	select SYS_SUPPORTS_LITTLE_ENDIAN
 	select HAS_DEBUG_LL
 
+config MACH_MIPS_LOONGSON
+	bool "Loongson-based boards"
+
 config MACH_MIPS_XBURST
 	bool "Ingenic XBurst-based boards"
 	select SYS_HAS_CPU_MIPS32_R1
@@ -78,6 +81,7 @@ endchoice
 source arch/mips/mach-malta/Kconfig
 source arch/mips/mach-ar231x/Kconfig
 source arch/mips/mach-bcm47xx/Kconfig
+source arch/mips/mach-loongson/Kconfig
 source arch/mips/mach-xburst/Kconfig
 
 endmenu
@@ -113,6 +117,14 @@ menu "CPU selection"
 choice
 	prompt "CPU type"
 	default CPU_MIPS32_R2
+
+config CPU_LOONGSON1B
+	bool "Loongson 1B"
+	depends on SYS_HAS_CPU_LOONGSON1B
+	select CPU_LOONGSON1
+	help
+	  The Loongson 1B is a 32-bit SoC, which implements the MIPS32
+	  release 2 instruction set.
 
 config CPU_MIPS32_R1
 	bool "MIPS32 Release 1"
@@ -169,6 +181,15 @@ config CPU_MIPS64_R2
 	  otherwise CPU_MIPS64_R1 is a safe bet for any MIPS64 system.
 
 endchoice
+
+config CPU_LOONGSON1
+	bool
+	select CPU_MIPS32
+	select CPU_MIPSR2
+	select CPU_SUPPORTS_32BIT_KERNEL
+
+config SYS_HAS_CPU_LOONGSON1B
+	bool
 
 config SYS_HAS_CPU_MIPS32_R1
 	bool

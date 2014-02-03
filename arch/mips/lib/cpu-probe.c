@@ -81,6 +81,24 @@ static void decode_configs(struct cpuinfo_mips *c)
 	BUG_ON(!ok);				/* Arch spec violation!  */
 }
 
+static inline void cpu_probe_legacy(struct cpuinfo_mips *c)
+{
+	switch (c->processor_id & PRID_IMP_MASK) {
+	case PRID_IMP_LOONGSON1:
+		decode_configs(c);
+
+		c->cputype = CPU_LOONGSON1;
+
+		switch (c->processor_id & PRID_REV_MASK) {
+		case PRID_REV_LOONGSON1B:
+			__cpu_name = "Loongson 1B";
+			break;
+		}
+
+		break;
+	}
+}
+
 static inline void cpu_probe_mips(struct cpuinfo_mips *c)
 {
 	decode_configs(c);
@@ -130,6 +148,9 @@ void cpu_probe(void)
 
 	c->processor_id = read_c0_prid();
 	switch (c->processor_id & 0xff0000) {
+	case PRID_COMP_LEGACY:
+		cpu_probe_legacy(c);
+		break;
 	case PRID_COMP_MIPS:
 		cpu_probe_mips(c);
 		break;

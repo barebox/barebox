@@ -1,0 +1,9 @@
+#!/bin/sh
+#Load the firmware images from the NOR UBIFS file system and boot
+
+readlink /mnt/active symlink
+
+bootargs="ubi.mtd=nand root=ubi0:fs-active rootfstype=ubifs rw panic=25"
+cp /mnt/$symlink/uImage /
+cp /mnt/$symlink/dtb /
+bootm -o /dtb /uImage

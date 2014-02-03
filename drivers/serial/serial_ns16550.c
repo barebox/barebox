@@ -57,6 +57,7 @@ static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
 
 struct ns16550_drvdata {
 	void (*init_port)(struct console_device *cdev);
+	const char *linux_console_name;
 };
 
 /**
@@ -251,6 +252,7 @@ static struct ns16550_drvdata ns16550_drvdata = {
 
 static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 	.init_port = ns16550_omap_init_port,
+	.linux_console_name = "ttyO",
 };
 
 /**
@@ -312,6 +314,7 @@ static int ns16550_probe(struct device_d *dev)
 	cdev->putc = ns16550_putc;
 	cdev->getc = ns16550_getc;
 	cdev->setbrg = ns16550_setbaudrate;
+	cdev->linux_console_name = devtype->linux_console_name;
 
 	devtype->init_port(cdev);
 

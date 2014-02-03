@@ -103,7 +103,7 @@ static int socfpga_env_init(void)
 		goto out_free;
 	}
 
-	default_environment_path = "/boot/barebox.env";
+	default_environment_path_set("/boot/barebox.env");
 
 out_free:
 	free(partname);

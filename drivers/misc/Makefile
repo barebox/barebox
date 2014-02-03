@@ -3,3 +3,4 @@
 #
 
 obj-$(CONFIG_JTAG)		+= jtag.o
+obj-$(CONFIG_SRAM)		+= sram.o

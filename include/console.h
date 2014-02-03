@@ -49,6 +49,8 @@ struct console_device {
 	unsigned char f_active;
 
 	unsigned int baudrate;
+
+	const char *linux_console_name;
 };
 
 int console_register(struct console_device *cdev);

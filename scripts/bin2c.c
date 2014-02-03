@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	int ch, total=0;
 
 	if (argc > 1)
-		printf("const char %s[] %s=\n",
+		printf("static const char %s[] %s=\n",
 			argv[1], argc > 2 ? argv[2] : "");
 
 	do {
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	} while (ch != EOF);
 
 	if (argc > 1)
-		printf("\t;\n\nconst int %s_size = %d;\n", argv[1], total);
+		printf("\t;\n\nstatic const int %s_size = %d;\n", argv[1], total);
 
 	return 0;
 }

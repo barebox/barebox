@@ -53,13 +53,13 @@ static int gk802_env_init(void)
 		bootsource_name = "mmc2";
 		barebox_name = "mmc2.barebox";
 		default_environment_name = "mmc2.bareboxenv";
-		default_environment_path = "/dev/mmc2.bareboxenv";
+		default_environment_path_set("/dev/mmc2.bareboxenv");
 		break;
 	case 3:
 		bootsource_name = "mmc3";
 		barebox_name = "mmc3.barebox";
 		default_environment_name = "mmc3.bareboxenv";
-		default_environment_path = "/dev/mmc3.bareboxenv";
+		default_environment_path_set("/dev/mmc3.bareboxenv");
 		break;
 	default:
 		return 0;

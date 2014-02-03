@@ -110,7 +110,7 @@ targets += barebox_default_env.lzo barebox_default_env.bz2 barebox_default_env.g
 
 quiet_cmd_env_h = ENVH    $@
 cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c default_environment) > $@; \
-	echo "const int default_environment_uncompress_size=`stat -c%s $(obj)/barebox_default_env`;" >> $@
+	echo "static const int default_environment_uncompress_size=`stat -c%s $(obj)/barebox_default_env`;" >> $@
 
 $(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(barebox_default_env_comp) FORCE
 	$(call if_changed,env_h)
@@ -119,14 +119,14 @@ quiet_cmd_pwd_h = PWDH    $@
 ifdef CONFIG_PASSWORD
 ifneq ($(CONFIG_PASSWORD_DEFAULT),"")
 PASSWD_FILE := $(shell cd $(srctree); find $(CONFIG_PASSWORD_DEFAULT) -type f)
-cmd_pwd_h = echo -n "const char default_passwd[] = \"" > $@; \
+cmd_pwd_h = echo -n "static const char default_passwd[] = \"" > $@; \
 	cat $< | tr -d '\n' >> $@; \
 	echo "\";" >> $@
 
 include/generated/passwd.h: $(PASSWD_FILE)
 	$(call if_changed,pwd_h)
 else
-cmd_pwd_h = echo "const char default_passwd[] = \"\";" > $@
+cmd_pwd_h = echo "static const char default_passwd[] = \"\";" > $@
 
 include/generated/passwd.h: FORCE
 	$(call if_changed,pwd_h)

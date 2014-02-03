@@ -2,12 +2,7 @@
 # Misc strange devices
 #
 
-menuconfig MISC_DEVICES
-	bool "Misc devices"
-	help
-	  Add support for misc strange devices
-
-if MISC_DEVICES
+menu "Misc devices"
 
 config JTAG
 	tristate "JTAG Bitbang driver"
@@ -15,4 +10,9 @@ config JTAG
 	help
 	  Controls JTAG chains connected to I/O pins
 
-endif # MISC_DEVICES
+config SRAM
+	bool "Generic SRAM driver"
+	help
+	  This driver adds support for memory mapped SRAM.
+
+endmenu

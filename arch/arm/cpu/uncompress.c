@@ -46,7 +46,6 @@ static int __attribute__((__used__))
 static void __noreturn noinline uncompress_start_payload(uint32_t membase,
 		uint32_t memsize, uint32_t boarddata)
 {
-	uint32_t offset;
 	uint32_t pg_len;
 	void __noreturn (*barebox)(uint32_t, uint32_t, uint32_t);
 	uint32_t endmem = membase + memsize;
@@ -60,9 +59,6 @@ static void __noreturn noinline uncompress_start_payload(uint32_t membase,
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
 		relocate_to_current_adr();
-
-	/* Get offset between linked address and runtime address */
-	offset = get_runtime_offset();
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE))
 		barebox_base = arm_barebox_image_place(membase + memsize);

@@ -48,7 +48,19 @@ struct action_data {
 };
 #define PAD4(x) ((x + 3) & ~3)
 
-char *default_environment_path = "/dev/env0";
+#ifdef __BAREBOX__
+static char *default_environment_path = "/dev/env0";
+
+void default_environment_path_set(char *path)
+{
+	default_environment_path = path;
+}
+
+char *default_environment_path_get(void)
+{
+	return default_environment_path;
+}
+#endif
 
 static int file_size_action(const char *filename, struct stat *statbuf,
 			    void *userdata, int depth)
@@ -150,7 +162,7 @@ out:
  * Note: This function will also be used on the host! See note in the header
  * of this file.
  */
-int envfs_save(char *filename, char *dirname)
+int envfs_save(const char *filename, char *dirname)
 {
 	struct envfs_super *super;
 	int envfd, size, ret;
@@ -215,7 +227,7 @@ EXPORT_SYMBOL(envfs_save);
  * Note: This function will also be used on the host! See note in the header
  * of this file.
  */
-int envfs_load(char *filename, char *dir, unsigned flags)
+int envfs_load(const char *filename, char *dir, unsigned flags)
 {
 	struct envfs_super super;
 	void *buf = NULL, *buf_free = NULL;

@@ -31,6 +31,8 @@
 #include <kfifo.h>
 #include <module.h>
 #include <poller.h>
+#include <magicvar.h>
+#include <globalvar.h>
 #include <linux/list.h>
 #include <linux/stringify.h>
 #include <debug_ll.h>
@@ -140,6 +142,26 @@ static void console_init_early(void)
 	initialized = CONSOLE_INITIALIZED_BUFFER;
 }
 
+static void console_set_stdoutpath(struct console_device *cdev)
+{
+	int id;
+	char *str;
+
+	if (!cdev->linux_console_name)
+		return;
+
+	id = of_alias_get_id(cdev->dev->device_node, "serial");
+	if (id < 0)
+		return;
+
+	str = asprintf("console=%s%d,%dn8", cdev->linux_console_name,
+			id, cdev->baudrate);
+
+	globalvar_add_simple("linux.bootargs.console", str);
+
+	free(str);
+}
+
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = &newcdev->class_dev;
@@ -169,8 +191,10 @@ int console_register(struct console_device *newcdev)
 		activate = 1;
 	}
 
-	if (newcdev->dev && of_device_is_stdout_path(newcdev->dev))
+	if (newcdev->dev && of_device_is_stdout_path(newcdev->dev)) {
 		activate = 1;
+		console_set_stdoutpath(newcdev);
+	}
 
 	list_add_tail(&newcdev->list, &console_list);
 
@@ -357,3 +381,6 @@ int ctrlc (void)
 }
 EXPORT_SYMBOL(ctrlc);
 #endif /* ARCH_HAS_CTRC */
+
+BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_console, global.linux.bootargs.console,
+		"console= argument for Linux from the linux,stdout-path property in /chosen node");

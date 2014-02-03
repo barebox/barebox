@@ -59,7 +59,7 @@ static int environment_probe(struct device_d *dev)
 
 	dev_info(dev, "setting default environment path to %s\n", path);
 
-	default_environment_path = path;
+	default_environment_path_set(path);
 
 	return 0;
 }

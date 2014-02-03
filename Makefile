@@ -1,8 +1,8 @@
 VERSION = 2014
-PATCHLEVEL = 01
+PATCHLEVEL = 02
 SUBLEVEL = 0
 EXTRAVERSION =
-NAME = New year karnelbullar
+NAME = None
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"

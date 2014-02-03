@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <mach/pxa-regs.h>
 #include <asm/io.h>
 
 #define OSMR3	0x40A0000C
@@ -26,12 +27,28 @@
 #define OWER_WME	(1 << 0)	/* Watch-dog Match Enable */
 #define OSSR_M3		(1 << 3)	/* Match status channel 3 */
 
+extern void pxa_suspend(int mode);
+
 void reset_cpu(ulong addr)
 {
+	/* Clear last reset source */
+	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
+
 	/* Initialize the watchdog and let it fire */
 	writel(OWER_WME, OWER);
 	writel(OSSR_M3, OSSR);
 	writel(readl(OSCR) + 368640, OSMR3);  /* ... in 100 ms */
 
 	while (1);
+}
+
+void __noreturn poweroff()
+{
+	shutdown_barebox();
+
+	/* Clear last reset source */
+	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
+
+	pxa_suspend(PWRMODE_DEEPSLEEP);
+	unreachable();
 }

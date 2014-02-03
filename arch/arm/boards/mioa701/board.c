@@ -265,6 +265,7 @@ static int mioa701_coredevice_init(void)
 	 * This requires to command the Maxim 1586 to upgrade core voltage to
 	 * 1.475 V, on the power I2C bus (device 0x14).
 	 */
+	CKEN |= CKEN_PWRI2C;
 	CCCR = CCCR_A | 0x20290;
 	PCFR = PCFR_GPR_EN | PCFR_FVC | PCFR_DC_EN | PCFR_PI2C_EN | PCFR_OPDE;
 	PCMD(0) = PCMD_LC | 0x1f;

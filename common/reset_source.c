@@ -27,18 +27,28 @@ static const char * const reset_src_names[] = {
 	[RESET_JTAG] = "JTAG",
 };
 
-void set_reset_source(enum reset_src_type st)
+static enum reset_src_type reset_source;
+
+enum reset_src_type reset_source_get(void)
 {
+	return reset_source;
+}
+EXPORT_SYMBOL(reset_source_get);
+
+void reset_source_set(enum reset_src_type st)
+{
+	reset_source = st;
+
 	setenv("global.system.reset", reset_src_names[st]);
 }
-EXPORT_SYMBOL(set_reset_source);
+EXPORT_SYMBOL(reset_source_set);
 
 /* ensure this runs after the 'global' device is already registerd */
-static int init_reset_source(void)
+static int reset_source_init(void)
 {
 	globalvar_add_simple("system.reset", reset_src_names[RESET_UKWN]);
 
 	return 0;
 }
 
-coredevice_initcall(init_reset_source);
+coredevice_initcall(reset_source_init);

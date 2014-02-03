@@ -28,4 +28,8 @@
 #define cpu_is_pxa27x()	(0)
 #endif
 
+#ifdef __ASSEMBLY__
+#define __REG(x) (x)
+#endif
+
 #endif	/* !__MACH_HARDWARE_H */

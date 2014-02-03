@@ -130,17 +130,17 @@ static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
 	u16 val = readw(priv->base + IMX21_WDOG_WSTR);
 
 	if (val & WSTR_COLDSTART) {
-		set_reset_source(RESET_POR);
+		reset_source_set(RESET_POR);
 		return;
 	}
 
 	if (val & (WSTR_HARDRESET | WSTR_WARMSTART)) {
-		set_reset_source(RESET_RST);
+		reset_source_set(RESET_RST);
 		return;
 	}
 
 	if (val & WSTR_WDOG) {
-		set_reset_source(RESET_WDG);
+		reset_source_set(RESET_WDG);
 		return;
 	}
 

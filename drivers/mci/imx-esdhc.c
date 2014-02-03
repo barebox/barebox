@@ -582,6 +582,10 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	if (host->mci.f_min < 200000)
 		host->mci.f_min = 200000;
 	host->mci.f_max = rate;
+	if (pdata) {
+		host->mci.use_dsr = pdata->use_dsr;
+		host->mci.dsr_val = pdata->dsr_val;
+	}
 
 	mci_of_parse(&host->mci);
 

@@ -102,6 +102,20 @@ static void mci_setup_cmd(struct mci_cmd *p, unsigned cmd, unsigned arg, unsigne
 }
 
 /**
+ * configure optional DSR value
+ * @param mci_dev MCI instance
+ * @return Transaction status (0 on success)
+ */
+static int mci_set_dsr(struct mci *mci)
+{
+	struct mci_cmd cmd;
+
+	mci_setup_cmd(&cmd, MMC_CMD_SET_DSR,
+			(mci->host->dsr_val >> 16) | 0xffff, MMC_RSP_NONE);
+	return mci_send_cmd(mci, &cmd, NULL);
+}
+
+/**
  * Setup SD/MMC card's blocklength to be used for future transmitts
  * @param mci_dev MCI instance
  * @param len Blocklength in bytes
@@ -695,7 +709,6 @@ static void mci_set_bus_width(struct mci *mci, unsigned width)
 static void mci_detect_version_from_csd(struct mci *mci)
 {
 	int version;
-	char *vstr;
 
 	if (mci->version == MMC_VERSION_UNKNOWN) {
 		/* the version is coded in the bits 127:126 (left aligned) */
@@ -703,32 +716,52 @@ static void mci_detect_version_from_csd(struct mci *mci)
 
 		switch (version) {
 		case 0:
-			vstr = "1.2";
 			mci->version = MMC_VERSION_1_2;
 			break;
 		case 1:
-			vstr = "1.4";
 			mci->version = MMC_VERSION_1_4;
 			break;
 		case 2:
-			vstr = "2.2";
 			mci->version = MMC_VERSION_2_2;
 			break;
 		case 3:
-			vstr = "3.0";
 			mci->version = MMC_VERSION_3;
 			break;
 		case 4:
-			vstr = "4.0";
 			mci->version = MMC_VERSION_4;
 			break;
 		default:
-			vstr = "unknown, fallback to 1.2";
+			printf("unknown card version, fallback to 1.02\n");
 			mci->version = MMC_VERSION_1_2;
 			break;
 		}
+	}
+}
 
-		dev_info(&mci->dev, "detected card version %s\n", vstr);
+/**
+ * correct the version from ext_csd data if it's not an SD-card, detected
+ * version is at least 4 and we have ext_csd data
+ */
+static void mci_correct_version_from_ext_csd(struct mci *mci)
+{
+	if (!IS_SD(mci) && (mci->version >= MMC_VERSION_4) && mci->ext_csd) {
+		switch (mci->ext_csd[EXT_CSD_REV]) {
+		case 1:
+			mci->version = MMC_VERSION_4_1;
+			break;
+		case 2:
+			mci->version = MMC_VERSION_4_2;
+			break;
+		case 3:
+			mci->version = MMC_VERSION_4_3;
+			break;
+		case 5:
+			mci->version = MMC_VERSION_4_41;
+			break;
+		case 6:
+			mci->version = MMC_VERSION_4_5;
+			break;
+		}
 	}
 }
 
@@ -834,6 +867,15 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
 
 	mci->capacity *= 1 << UNSTUFF_BITS(mci->csd, 80, 4);
 	dev_dbg(&mci->dev, "Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
+}
+
+/**
+ * Extract card's DSR implementation state from CSD
+ * @param mci MCI instance
+ */
+static void mci_extract_card_dsr_imp_from_csd(struct mci *mci)
+{
+	mci->dsr_imp = UNSTUFF_BITS(mci->csd, 76, 1);
 }
 
 static int mmc_compare_ext_csds(struct mci *mci, unsigned bus_width)
@@ -1058,6 +1100,7 @@ static int mci_startup(struct mci *mci)
 	mci_detect_version_from_csd(mci);
 	mci_extract_max_tran_speed_from_csd(mci);
 	mci_extract_block_lengths_from_csd(mci);
+	mci_extract_card_dsr_imp_from_csd(mci);
 
 	/* sanitiy? */
 	if (mci->read_bl_len > SECTOR_SIZE) {
@@ -1073,6 +1116,9 @@ static int mci_startup(struct mci *mci)
 	}
 	dev_dbg(&mci->dev, "Read block length: %u, Write block length: %u\n",
 		mci->read_bl_len, mci->write_bl_len);
+
+	if (mci->dsr_imp && mci->host->use_dsr)
+		mci_set_dsr(mci);
 
 	if (!mmc_host_is_spi(host)) { /* cmd not supported in spi */
 		dev_dbg(&mci->dev, "Select the card, and put it into Transfer Mode\n");
@@ -1093,6 +1139,9 @@ static int mci_startup(struct mci *mci)
 	if (err)
 		return err;
 
+	mci_correct_version_from_ext_csd(mci);
+	printf("detected %s card version %d.%d\n", IS_SD(mci) ? "SD" : "MMC",
+		(mci->version >> 8) & 0xf, mci->version & 0xff);
 	mci_extract_card_capacity_from_csd(mci);
 
 	if (IS_SD(mci))
@@ -1376,10 +1425,17 @@ static unsigned extract_mtd_month(struct mci *mci)
  */
 static unsigned extract_mtd_year(struct mci *mci)
 {
+	unsigned year;
 	if (IS_SD(mci))
-		return UNSTUFF_BITS(mci->cid, 12, 8) + 2000;
-	else
+		year = UNSTUFF_BITS(mci->cid, 12, 8) + 2000;
+	else if (mci->version < MMC_VERSION_4_41)
 		return UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
+	else {
+		year = UNSTUFF_BITS(mci->cid, 8, 4) + 1997;
+		if (year < 2010)
+			year += 16;
+	}
+	return year;
 }
 
 static void mci_print_caps(unsigned caps)
@@ -1426,7 +1482,7 @@ static void mci_info(struct device_d *dev)
 			(mci->version >> 4) & 0xf, mci->version & 0xf);
 	} else {
 		printf("  Attached is an SD Card (Version: %u.%u)\n",
-			(mci->version >> 4) & 0xf, mci->version & 0xf);
+			(mci->version >> 8) & 0xf, mci->version & 0xff);
 	}
 	printf("  Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 
@@ -1719,6 +1775,7 @@ void mci_of_parse(struct mci_host *host)
 {
 	struct device_node *np;
 	u32 bus_width;
+	u32 dsr_val;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
@@ -1751,4 +1808,11 @@ void mci_of_parse(struct mci_host *host)
 
 	/* f_max is obtained from the optional "max-frequency" property */
 	of_property_read_u32(np, "max-frequency", &host->f_max);
+
+	if (!of_property_read_u32(np, "dsr", &dsr_val)) {
+		if (dsr_val < 0x10000) {
+			host->use_dsr = 1;
+			host->dsr_val = dsr_val;
+		}
+	}
 }

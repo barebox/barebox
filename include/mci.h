@@ -31,18 +31,23 @@
 
 /* Firmware revisions for SD cards */
 #define SD_VERSION_SD		0x20000
-#define SD_VERSION_2		(SD_VERSION_SD | 0x20)
-#define SD_VERSION_1_0		(SD_VERSION_SD | 0x10)
-#define SD_VERSION_1_10		(SD_VERSION_SD | 0x1a)
+#define SD_VERSION_2		(SD_VERSION_SD | 0x200)
+#define SD_VERSION_1_0		(SD_VERSION_SD | 0x100)
+#define SD_VERSION_1_10		(SD_VERSION_SD | 0x10a)
 
 /* Firmware revisions for MMC cards */
 #define MMC_VERSION_MMC		0x10000
 #define MMC_VERSION_UNKNOWN	(MMC_VERSION_MMC)
-#define MMC_VERSION_1_2		(MMC_VERSION_MMC | 0x12)
-#define MMC_VERSION_1_4		(MMC_VERSION_MMC | 0x14)
-#define MMC_VERSION_2_2		(MMC_VERSION_MMC | 0x22)
-#define MMC_VERSION_3		(MMC_VERSION_MMC | 0x30)
-#define MMC_VERSION_4		(MMC_VERSION_MMC | 0x40)
+#define MMC_VERSION_1_2		(MMC_VERSION_MMC | 0x102)
+#define MMC_VERSION_1_4		(MMC_VERSION_MMC | 0x104)
+#define MMC_VERSION_2_2		(MMC_VERSION_MMC | 0x202)
+#define MMC_VERSION_3		(MMC_VERSION_MMC | 0x300)
+#define MMC_VERSION_4		(MMC_VERSION_MMC | 0x400)
+#define MMC_VERSION_4_1		(MMC_VERSION_MMC | 0x401)
+#define MMC_VERSION_4_2		(MMC_VERSION_MMC | 0x402)
+#define MMC_VERSION_4_3		(MMC_VERSION_MMC | 0x403)
+#define MMC_VERSION_4_41	(MMC_VERSION_MMC | 0x429)
+#define MMC_VERSION_4_5		(MMC_VERSION_MMC | 0x405)
 
 #define MMC_CAP_SPI			(1 << 0)
 #define MMC_CAP_4_BIT_DATA		(1 << 1)
@@ -294,6 +299,8 @@ struct mci_host {
 	unsigned clock;		/**< Current clock used to talk to the card */
 	unsigned bus_width;	/**< used data bus width to the card */
 	unsigned max_req_size;
+	unsigned dsr_val;	/**< optional dsr value */
+	int use_dsr;		/**< optional dsr usage flag */
 
 	/** init the host interface */
 	int (*init)(struct mci_host*, struct device_d*);
@@ -344,6 +351,7 @@ struct mci {
 	unsigned write_bl_len;
 	uint64_t capacity;	/**< Card's data capacity in bytes */
 	int ready_for_use;	/** true if already probed */
+	int dsr_imp;		/**< DSR implementation state from CSD */
 	char *ext_csd;
 	int probe;
 	struct param_d *param_probe;

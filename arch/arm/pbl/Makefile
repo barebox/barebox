@@ -23,7 +23,7 @@ $(obj)/zbarebox.bin:	$(obj)/zbarebox FORCE
 	$(call if_changed,objcopy)
 	$(call cmd,check_file_size,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 	$(Q)$(kecho) '  Barebox: fix size'
-	$(Q)$(objtree)/scripts/fix_size -f $(objtree)/$@ -o 0x2c $(FIX_SIZE)
+	$(Q)$(objtree)/scripts/fix_size -i -f $(objtree)/$@ $(FIX_SIZE)
 	$(Q)$(kecho) '  Barebox: $@ is ready'
 
 $(obj)/zbarebox.S: $(obj)/zbarebox FORCE

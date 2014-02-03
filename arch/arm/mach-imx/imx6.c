@@ -18,6 +18,7 @@
 #include <mach/imx6.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
+#include <mach/imx6-anadig.h>
 #include <mach/imx6-regs.h>
 #include <mach/generic.h>
 
@@ -27,6 +28,7 @@ void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
 	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
+	int is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
 
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -56,6 +58,35 @@ void imx6_init_lowlevel(void)
 	writel(0xffffffff, 0x020c4078);
 	writel(0xffffffff, 0x020c407c);
 	writel(0xffffffff, 0x020c4080);
+
+	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
+	 * to make sure PFD is working right, otherwise, PFDs may
+	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
+	 * workaround in ROM code, as bus clock need it
+	 */
+	writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
+			BM_ANADIG_PFD_480_PFD2_CLKGATE |
+			BM_ANADIG_PFD_480_PFD1_CLKGATE |
+			BM_ANADIG_PFD_480_PFD0_CLKGATE,
+			MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
+	writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
+			(is_imx6q ? BM_ANADIG_PFD_528_PFD2_CLKGATE : 0) |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE,
+			MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
+
+	writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
+			BM_ANADIG_PFD_480_PFD2_CLKGATE |
+			BM_ANADIG_PFD_480_PFD1_CLKGATE |
+			BM_ANADIG_PFD_480_PFD0_CLKGATE,
+			MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
+	writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
+			(is_imx6q ? BM_ANADIG_PFD_528_PFD2_CLKGATE : 0) |
+			BM_ANADIG_PFD_528_PFD2_CLKGATE |
+			BM_ANADIG_PFD_528_PFD1_CLKGATE |
+			BM_ANADIG_PFD_528_PFD0_CLKGATE,
+			MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
+
 }
 
 int imx6_init(void)
@@ -86,10 +117,16 @@ int imx6_init(void)
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:
-		cputypestr = "i.MX6 Dual/Quad";
+		cputypestr = "i.MX6 Quad";
+		break;
+	case IMX6_CPUTYPE_IMX6D:
+		cputypestr = "i.MX6 Dual";
 		break;
 	case IMX6_CPUTYPE_IMX6DL:
-		cputypestr = "i.MX6 Solo/DualLite";
+		cputypestr = "i.MX6 DualLite";
+		break;
+	case IMX6_CPUTYPE_IMX6S:
+		cputypestr = "i.MX6 Solo";
 		break;
 	default:
 		cputypestr = "unknown i.MX6";

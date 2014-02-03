@@ -19,6 +19,9 @@
 #define pr_fmt(fmt)  "dfi-fs700-m60: " fmt
 
 #include <generated/mach-types.h>
+#include <environment.h>
+#include <bootsource.h>
+#include <globalvar.h>
 #include <common.h>
 #include <sizes.h>
 #include <envfs.h>
@@ -35,6 +38,37 @@
 #include <mach/imx6-regs.h>
 #include <mach/generic.h>
 #include <mach/bbu.h>
+
+/*
+ * This board can have 512MiB, 1GiB or 2GiB of SDRAM. The actual amount of SDRAM
+ * is detected using mirror detection in lowlevel init and is stored in the first
+ * SDRAM address from the lowlevel code.
+ */
+static int dfi_fs700_m60_mem_init(void)
+{
+	u32 memsize;
+
+	if (!of_machine_is_compatible("dfi,fs700-m60"))
+		return 0;
+
+	memsize = *(u32 *)0x10000000;
+
+	/* play safe if we find some corrupted amount of SDRAM */
+	switch (memsize) {
+	case SZ_512M:
+	case SZ_1G:
+	case SZ_2G:
+		break;
+	default:
+		pr_err("unknown SDRAM size 0x%08x defaulting to 512MiB\n", memsize);
+		memsize = SZ_512M;
+	}
+
+	arm_add_mem_device("ram0", 0x10000000, memsize);
+
+	return 0;
+}
+mem_initcall(dfi_fs700_m60_mem_init);
 
 static int ar8031_phy_fixup(struct phy_device *dev)
 {
@@ -64,13 +98,22 @@ static int ar8031_phy_fixup(struct phy_device *dev)
 
 static int dfi_fs700_m60_init(void)
 {
+	unsigned flag_spi = 0, flag_mmc = 0;
+
 	if (!of_machine_is_compatible("dfi,fs700-m60"))
 		return 0;
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK, ar8031_phy_fixup);
 
+	if (bootsource_get() == BOOTSOURCE_SPI)
+		flag_spi |= BBU_HANDLER_FLAG_DEFAULT;
+	else
+		flag_mmc |= BBU_HANDLER_FLAG_DEFAULT;
+
 	imx6_bbu_internal_mmc_register_handler("mmc", "/dev/mmc3.boot0",
-		BBU_HANDLER_FLAG_DEFAULT, NULL, 0, 0);
+		flag_mmc, NULL, 0, 0);
+	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0",
+		flag_spi, NULL, 0, 0);
 
 	armlinux_set_architecture(MACH_TYPE_MX6Q_SABRESD);
 

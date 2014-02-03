@@ -306,18 +306,19 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	r0 = ESDCTL0_SDE | ESDCTL0_ROW14 | ESDCTL0_COL10 | ESDCTL0_DSIZ_31_0; /* 1024 MBit DDR-SDRAM */
 	setup_sdram(r0, ESDMISC_MDDR_EN, 0x80000f00);
 
-#ifdef CONFIG_NAND_IMX_BOOT
-	/* Speed up NAND controller by adjusting the NFC divider */
-	r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
-	r0 &= ~(0xf << 28);
-	r0 |= 0x1 << 28;
-	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
+	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND)) {
+		/* Speed up NAND controller by adjusting the NFC divider */
+		r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
+		r0 &= ~(0xf << 28);
+		r0 |= 0x1 << 28;
+		writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
-	/* setup a stack to be able to call imx35_barebox_boot_nand_external() */
-	arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
+		/* setup a stack to be able to call imx35_barebox_boot_nand_external() */
+		arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
 
-	imx35_barebox_boot_nand_external();
-#endif
+		imx35_barebox_boot_nand_external(0);
+	}
+
 out:
 	imx35_barebox_entry(0);
 }

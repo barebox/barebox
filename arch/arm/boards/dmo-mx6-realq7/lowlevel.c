@@ -140,8 +140,8 @@ static void sdram_init(void)
 	putc_ll('>');
 }
 
-extern char __dtb_imx6q_dmo_realq7_start[];
-extern char __dtb_imx6q_dmo_realq7_end[];
+extern char __dtb_imx6q_dmo_edmqmx6_start[];
+extern char __dtb_imx6q_dmo_edmqmx6_end[];
 
 ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 {
@@ -151,7 +151,7 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 
 	arm_setup_stack(0x00940000 - 8);
 
-	fdt = (unsigned long)__dtb_imx6q_dmo_realq7_start - get_runtime_offset();
+	fdt = (unsigned long)__dtb_imx6q_dmo_edmqmx6_start - get_runtime_offset();
 
 	if (get_pc() < 0x10000000) {
 		sdram_init();
@@ -164,8 +164,8 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 		 * inside valid SDRAM instead of SRAM.
 		 */
 		memcpy((void *)sdram, (void *)fdt,
-				__dtb_imx6q_dmo_realq7_end -
-				__dtb_imx6q_dmo_realq7_start);
+				__dtb_imx6q_dmo_edmqmx6_start -
+				__dtb_imx6q_dmo_edmqmx6_end);
 		fdt = sdram;
 	}
 

@@ -141,21 +141,14 @@ static void babbage_power_init(void)
 	/* Configure VGEN3 and VCAM regulators to use external PNP */
 	val = 0x208;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
-	udelay(200);
-#define GPIO_LAN8700_RESET	(1 * 32 + 14)
 
-	/* Reset the ethernet controller over GPIO */
-	gpio_direction_output(GPIO_LAN8700_RESET, 0);
+	udelay(200);
 
 	/* Enable VGEN3, VCAM, VAUDIO, VVIDEO, VSD regulators */
 	val = 0x49249;
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 
 	udelay(200);
-
-	gpio_set_value(GPIO_LAN8700_RESET, 1);
-
-	mdelay(50);
 }
 
 extern char flash_header_imx51_babbage_start[];

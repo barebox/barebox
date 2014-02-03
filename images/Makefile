@@ -70,7 +70,8 @@ $(obj)/%.pblb: $(obj)/%.pbl FORCE
 quiet_cmd_pblx ?= PBLX    $@
       cmd_pblx ?= cat $(obj)/$(patsubst %.pblx,%.pblb,$(2)) > $@; \
 		  $(call size_append, $(obj)/barebox.z) >> $@; \
-		  cat $(obj)/barebox.z >> $@
+		  cat $(obj)/barebox.z >> $@; \
+		  $(objtree)/scripts/fix_size -f $@
 
 $(obj)/%.pblx: $(obj)/%.pblb $(obj)/barebox.z FORCE
 	$(call if_changed,pblx,$(@F))

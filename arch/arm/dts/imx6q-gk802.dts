@@ -99,6 +99,22 @@
 			>;
 		};
 	};
+
+	uart {
+		pinctrl_uart4: uart4grp {
+			fsl,pins = <MX6QDL_UART4_PINGRP1>;
+		};
+	};
+
+	usdhc {
+		pinctrl_usdhc3: usdhc3grp {
+			fsl,pins = <MX6QDL_USDHC3_PINGRP_D4>;
+		};
+
+		pinctrl_usdhc4: usdhc4grp {
+			fsl,pins = <MX6QDL_USDHC4_PINGRP_D4>;
+		};
+	};
 };
 
 &uart2 {
@@ -107,7 +123,7 @@
 
 &uart4 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart4_1>;
+	pinctrl-0 = <&pinctrl_uart4>;
 	status = "okay";
 };
 
@@ -130,7 +146,7 @@
 /* External microSD */
 &usdhc3 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc3_2>;
+	pinctrl-0 = <&pinctrl_usdhc3>;
 	bus-width = <4>;
 	cd-gpios = <&gpio6 11 0>;
 	vmmc-supply = <&reg_3p3v>;
@@ -140,7 +156,7 @@
 /* Internal microSD */
 &usdhc4 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc4_2>;
+	pinctrl-0 = <&pinctrl_usdhc4>;
 	bus-width = <4>;
 	vmmc-supply = <&reg_3p3v>;
 	status = "okay";

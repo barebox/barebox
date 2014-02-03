@@ -1,0 +1,5 @@
+#define SETUP_512MIB_1GIB \
+	wm 32 0x63fd9018 0x00011740; \
+	wm 32 0x63fd9000 0xc3190000
+
+#include "flash-header-tq-tqma53.h"

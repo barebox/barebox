@@ -20,24 +20,10 @@
 	compatible = "fsl,imx6q-sabresd", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = "/soc/aips-bus@02000000/spba-bus@02000000/serial@02020000";
+		linux,stdout-path = &uart1;
 	};
 };
 
-&iomuxc {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hog>;
-
-	hog {
-		pinctrl_hog: hoggrp {
-			fsl,pins = <
-				MX6QDL_PAD_GPIO_4__GPIO1_IO04   0x80000000
-				MX6QDL_PAD_GPIO_5__GPIO1_IO05   0x80000000
-				MX6QDL_PAD_NANDF_D0__GPIO2_IO00 0x80000000
-				MX6QDL_PAD_NANDF_D1__GPIO2_IO01 0x80000000
-				MX6QDL_PAD_NANDF_D2__GPIO2_IO02 0x80000000
-				MX6QDL_PAD_NANDF_D3__GPIO2_IO03 0x80000000
-			>;
-		};
-	};
+&sata {
+	status = "okay";
 };

@@ -1,8 +1,4 @@
 / {
-	memory {
-		reg = <0x10000000 0x40000000>;
-	};
-
 	regulators {
 		compatible = "simple-bus";
 
@@ -31,9 +27,25 @@
 	};
 };
 
+&ecspi3 {
+	fsl,spi-num-chipselects = <1>;
+	cs-gpios = <&gpio4 24 0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi3>;
+	status = "okay";
+
+	flash: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "sst,sst25vf040b", "m25p80";
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+	};
+};
+
 &fec {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_enet_1>;
+	pinctrl-0 = <&pinctrl_enet>;
 	status = "okay";
 	phy-mode = "rgmii";
 };
@@ -42,7 +54,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
 
-	hog {
+	imx6qdl-dfi-fs700-m60 {
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
 				MX6QDL_PAD_ENET_CRS_DV__GPIO1_IO25 0x80000000
@@ -52,12 +64,49 @@
 				MX6QDL_PAD_NANDF_D2__GPIO2_IO02 0x80000000 /* SD2 card detect */
 			>;
 		};
+
+		pinctrl_enet: enetgrp {
+			fsl,pins = <MX6QDL_ENET_PINGRP1>;
+		};
+
+		pinctrl_i2c2: i2c2grp {
+			fsl,pins = <MX6QDL_I2C2_PINGRP1>;
+		};
+
+		pinctrl_uart1: uart1grp {
+			fsl,pins = <MX6QDL_UART1_PINGRP1>;
+		};
+
+		pinctrl_usbotg: usbotggrp {
+			fsl,pins = <MX6QDL_USBOTG_PINGRP2>;
+		};
+
+		pinctrl_usdhc2: usdhc2grp {
+			fsl,pins = <MX6QDL_USDHC2_PINGRP_D4>;
+		};
+
+		pinctrl_usdhc3: usdhc3grp {
+			fsl,pins = <MX6QDL_USDHC3_PINGRP_D4>;
+		};
+
+		pinctrl_usdhc4: usdhc4grp {
+			fsl,pins = <MX6QDL_USDHC4_PINGRP_D8>;
+		};
+	};
+
+	ecspi3 {
+		pinctrl_ecspi3: ecspi3_csgrp {
+			fsl,pins = <
+				MX6QDL_ECSPI3_PINGRP1
+				MX6QDL_PAD_DISP0_DAT3__GPIO4_IO24 0x80000000 /* SPI NOR chipselect */
+			>;
+		};
 	};
 };
 
 &i2c2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c2_1>;
+	pinctrl-0 = <&pinctrl_i2c2>;
 	status = "okay";
 
 	pmic: pf0100@08 {
@@ -68,13 +117,13 @@
 	};
 };
 
-&ocotp1 {
+&ocotp {
 	barebox,provide-mac-address = <&fec 0x620>;
 };
 
 &uart1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1_1>;
+	pinctrl-0 = <&pinctrl_uart1>;
 	status = "okay";
 };
 
@@ -87,7 +136,7 @@
 &usbotg {
 	vbus-supply = <&reg_usb_otg_vbus>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usbotg_2>;
+	pinctrl-0 = <&pinctrl_usbotg>;
 	disable-over-current;
 	phy_type = "utmi";
 	dr_mode = "host";
@@ -96,19 +145,19 @@
 
 &usdhc2 { /* module slot */
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc2_2>;
+	pinctrl-0 = <&pinctrl_usdhc2>;
 	cd-gpios = <&gpio2 2 0>;
 	status = "okay";
 };
 
 &usdhc3 { /* baseboard slot */
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc3_2>;
+	pinctrl-0 = <&pinctrl_usdhc3>;
 };
 
 &usdhc4 { /* eMMC */
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc4_1>;
+	pinctrl-0 = <&pinctrl_usdhc4>;
 	bus-width = <8>;
 	non-removable;
 	status = "okay";

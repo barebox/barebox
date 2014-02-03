@@ -9,29 +9,62 @@ void imx6_init_lowlevel(void);
 
 #define IMX6_ANATOP_SI_REV 0x260
 
-#define IMX6_CPUTYPE_IMX6Q	0x63
-#define IMX6_CPUTYPE_IMX6DL	0x61
+#define IMX6_CPUTYPE_IMX6S	0x161
+#define IMX6_CPUTYPE_IMX6DL	0x261
+#define IMX6_CPUTYPE_IMX6D	0x263
+#define IMX6_CPUTYPE_IMX6Q	0x463
 
-static inline int imx6_cpu_type(void)
+#define SCU_CONFIG              0x04
+
+static inline int scu_get_core_count(void)
+{
+	unsigned long base;
+	unsigned int ncores;
+
+	asm("mrc p15, 4, %0, c15, c0, 0" : "=r" (base));
+
+	ncores = readl(base + SCU_CONFIG);
+	return (ncores & 0x03) + 1;
+}
+
+static inline int __imx6_cpu_type(void)
 {
 	uint32_t val;
 
+	val = readl(MX6_ANATOP_BASE_ADDR + IMX6_ANATOP_SI_REV);
+	val = (val >> 16) & 0xff;
+
+	val |= scu_get_core_count() << 8;
+
+	return val;
+}
+
+static inline int imx6_cpu_type(void)
+{
 	if (!cpu_is_mx6())
 		return 0;
 
-	val = readl(MX6_ANATOP_BASE_ADDR + IMX6_ANATOP_SI_REV);
-
-	return (val >> 16) & 0xff;
+	return __imx6_cpu_type();
 }
 
-static inline int cpu_is_mx6q(void)
+static inline int cpu_is_mx6s(void)
 {
-	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
+	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6S;
 }
 
 static inline int cpu_is_mx6dl(void)
 {
 	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6DL;
+}
+
+static inline int cpu_is_mx6d(void)
+{
+	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
+}
+
+static inline int cpu_is_mx6q(void)
+{
+	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
 }
 
 #endif /* __MACH_IMX6_H */

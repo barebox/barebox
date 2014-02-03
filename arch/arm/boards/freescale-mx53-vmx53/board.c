@@ -30,6 +30,9 @@ extern char flash_header_imx53_vmx53_end[];
 
 static int vmx53_late_init(void)
 {
+	if (!of_machine_is_compatible("voipac,imx53-dmm-668"))
+			return 0;
+
 	armlinux_set_architecture(MACH_TYPE_VMX53);
 
 	barebox_set_model("Voipac VMX53");

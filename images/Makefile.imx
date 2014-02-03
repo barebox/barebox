@@ -9,6 +9,11 @@ $(obj)/%.imximg: $(obj)/% FORCE
 
 board = $(srctree)/arch/$(ARCH)/boards
 
+# ----------------------- i.MX25 based boards ---------------------------
+pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
+FILE_barebox-karo-tx25.img = start_imx25_karo_tx25.pblx
+image-$(CONFIG_MACH_TX25) += barebox-karo-tx25.img
+
 # ----------------------- i.MX51 based boards ---------------------------
 pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-pdk/flash-header-imx51-babbage.imxcfg
@@ -26,10 +31,25 @@ CFG_start_imx53_loco.pblx.imximg = $(board)/freescale-mx53-loco/flash-header-imx
 FILE_barebox-freescale-imx53-loco.img = start_imx53_loco.pblx.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco.img
 
+pblx-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco_r
+CFG_start_imx53_loco_r.pblx.imximg = $(board)/freescale-mx53-loco/flash-header-imx53-loco.imxcfg
+FILE_barebox-freescale-imx53-loco-r.img = start_imx53_loco_r.pblx.imximg
+image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco-r.img
+
 pblx-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += start_imx53_vmx53
 CFG_start_imx53_vmx53.pblx.imximg = $(board)/freescale-mx53-vmx53/flash-header-imx53-vmx53.imxcfg
 FILE_barebox-freescale-imx53-vmx53.img = start_imx53_vmx53.pblx.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += barebox-freescale-imx53-vmx53.img
+
+pblx-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_512mib
+CFG_start_imx53_mba53_512mib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-512mib.imxcfg
+FILE_barebox-tq-mba53-512mib.img = start_imx53_mba53_512mib.pblx.imximg
+image-$(CONFIG_MACH_TQMA53) += barebox-tq-mba53-512mib.img
+
+pblx-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_1gib
+CFG_start_imx53_mba53_1gib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-1gib.imxcfg
+FILE_barebox-tq-mba53-1gib.img = start_imx53_mba53_1gib.pblx.imximg
+image-$(CONFIG_MACH_TQMA53) += barebox-tq-mba53-1gib.img
 
 # ----------------------- i.MX6 based boards ---------------------------
 pblx-$(CONFIG_MACH_REALQ7) += start_imx6_realq7
@@ -67,17 +87,39 @@ CFG_start_imx6dl_dfi_fs700_m60_6s.pblx.imximg = $(board)/dfi-fs700-m60/flash-hea
 FILE_barebox-dfi-fs700-m60-6s.img = start_imx6dl_dfi_fs700_m60_6s.pblx.imximg
 image-$(CONFIG_MACH_DFI_FS700_M60) += barebox-dfi-fs700-m60-6s.img
 
-pblx-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q
-CFG_start_imx6q_dfi_fs700_m60_6q.pblx.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6q.imxcfg
-FILE_barebox-dfi-fs700-m60-6q.img = start_imx6q_dfi_fs700_m60_6q.pblx.imximg
-image-$(CONFIG_MACH_DFI_FS700_M60) += barebox-dfi-fs700-m60-6q.img
+pblx-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_micron
+CFG_start_imx6q_dfi_fs700_m60_6q_micron.pblx.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6q-micron.imxcfg
+imximage-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_micron.pblx.imximg
+FILE_barebox-dfi-fs700-m60-6q-micron.img = start_imx6q_dfi_fs700_m60_6q_micron.pblx.imximg
+image-$(CONFIG_MACH_DFI_FS700_M60) += barebox-dfi-fs700-m60-6q-micron.img
 
-pblx-$(CONFIG_MACH_SABRELITE) += start_imx6_sabrelite
-CFG_start_imx6_sabrelite.pblx.imximg = $(board)/freescale-mx6-sabrelite/flash-header-mx6-sabrelite.imxcfg
-FILE_barebox-freescale-imx6q-sabrelite.img = start_imx6_sabrelite.pblx.imximg
+pblx-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_nanya
+CFG_start_imx6q_dfi_fs700_m60_6q_nanya.pblx.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6q-nanya.imxcfg
+imximage-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_nanya.pblx.imximg
+FILE_barebox-dfi-fs700-m60-6q-nanya.img = start_imx6q_dfi_fs700_m60_6q_nanya.pblx.imximg
+image-$(CONFIG_MACH_DFI_FS700_M60) += barebox-dfi-fs700-m60-6q-nanya.img
+
+pblx-$(CONFIG_MACH_SABRELITE) += start_imx6q_sabrelite
+CFG_start_imx6q_sabrelite.pblx.imximg = $(board)/freescale-mx6-sabrelite/flash-header-mx6-sabrelite.imxcfg
+FILE_barebox-freescale-imx6q-sabrelite.img = start_imx6q_sabrelite.pblx.imximg
 image-$(CONFIG_MACH_SABRELITE) += barebox-freescale-imx6q-sabrelite.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_CARRIER1) += start_imx6dl_cubox_i_carrier_1
-CFG_start_imx6dl_cubox_i_carrier_1.pblx.imximg = $(board)/solidrun-carrier-1/flash-header-solidrun-carrier-1.imxcfg
-FILE_barebox-cubox-i-carrier-1.img = start_imx6dl_cubox_i_carrier_1.pblx.imximg
-image-$(CONFIG_MACH_SOLIDRUN_CARRIER1) += barebox-cubox-i-carrier-1.img
+pblx-$(CONFIG_MACH_SABRELITE) += start_imx6dl_sabrelite
+CFG_start_imx6dl_sabrelite.pblx.imximg = $(board)/freescale-mx6-sabrelite/flash-header-mx6-sabrelite.imxcfg
+FILE_barebox-freescale-imx6dl-sabrelite.img = start_imx6dl_sabrelite.pblx.imximg
+image-$(CONFIG_MACH_SABRELITE) += barebox-freescale-imx6dl-sabrelite.img
+
+pblx-$(CONFIG_MACH_SOLIDRUN_HUMMINGBOARD) += start_imx6dl_hummingboard
+CFG_start_imx6dl_hummingboard.pblx.imximg = $(board)/solidrun-hummingboard/flash-header-solidrun-hummingboard.imxcfg
+FILE_barebox-solidrun-imx6dl-hummingboard.img = start_imx6dl_hummingboard.pblx.imximg
+image-$(CONFIG_MACH_SOLIDRUN_HUMMINGBOARD) += barebox-solidrun-imx6dl-hummingboard.img
+
+pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6q_nitrogen6x_1g
+CFG_start_imx6q_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6x-1g.imxcfg
+FILE_barebox-boundarydevices-imx6q-nitrogen6x-1g.img = start_imx6q_nitrogen6x_1g.pblx.imximg
+image-$(CONFIG_MACH_NITROGEN6X) += barebox-boundarydevices-imx6q-nitrogen6x-1g.img
+
+pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6dl_nitrogen6x_1g
+CFG_start_imx6dl_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6x-1g.imxcfg
+FILE_barebox-boundarydevices-imx6dl-nitrogen6x-1g.img = start_imx6dl_nitrogen6x_1g.pblx.imximg
+image-$(CONFIG_MACH_NITROGEN6X) += barebox-boundarydevices-imx6dl-nitrogen6x-1g.img

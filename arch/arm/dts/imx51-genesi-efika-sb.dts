@@ -38,33 +38,37 @@
 
 	leds {
 		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_leds>;
 
 		mail {
 			label = "mail";
-			gpios = <&gpio1 3 1>;
+			gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
 			linux,default-trigger = "heartbeat";
 		};
 
 		white {
 			label = "white";
-			gpios = <&gpio2 25 0>;
+			gpios = <&gpio2 25 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "none";
 		};
 	};
 
 	gpio-keys {
 		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_keys>;
 
 		power {
 			label = "Power";
-			gpios = <&gpio2 31 0>;
+			gpios = <&gpio2 31 GPIO_ACTIVE_HIGH>;
 			linux,code = <116>; /* KEY_POWER */
 			gpio-key,wakeup;
 		};
 
 		lid {
 			label = "Lid";
-			gpios = <&gpio3 14 0>;
+			gpios = <&gpio3 14 GPIO_ACTIVE_HIGH>;
 			linux,input-type = <5>; /* EV_SW */
 			linux,code = <0>; /* SW_LID */
 			debounce-interval = <1>;
@@ -78,8 +82,7 @@
 		model = "imx51-efikasb-sgtl5000";
 		ssi-controller = <&ssi1>;
 		audio-codec = <&sgtl5000>;
-		audio-routing =
-			"Headphone Jack", "HP_OUT";
+		audio-routing = "Headphone Jack", "HP_OUT";
 		mux-int-port = <1>;
 		mux-ext-port = <3>;
 	};
@@ -101,52 +104,115 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
 
-	hog {
+	imx51-genesi-efika-sb {
 		pinctrl_hog: hoggrp {
 			fsl,pins = <
-				MX51_PAD_EIM_DTACK__GPIO2_31 0x800000c0		/* Power button */
 				MX51_PAD_EIM_A16__GPIO2_10  0x80000000		/* WLAN reset */
 				MX51_PAD_EIM_A22__GPIO2_16 0x80000000		/* WLAN power */
-				MX51_PAD_CSI2_D13__GPIO4_10 0x80000000		/* WWAN power? */
 				MX51_PAD_DI1_PIN12__GPIO3_1 0x80000000		/* WLAN switch */
 				MX51_PAD_EIM_A17__GPIO2_11  0x80000000		/* Bluetooth power */
 				MX51_PAD_EIM_A23__GPIO2_17 0x80000000		/* Audio amp enable, 1 = on */
-				MX51_PAD_GPIO1_6__REF_EN_B 0x80000000		/* PMIC interrupt */
-				MX51_PAD_DI1_PIN11__GPIO3_0 0x80000000		/* Battery low */
-				MX51_PAD_CSI2_PIXCLK__GPIO4_15 0x80000000	/* Power good */
-				MX51_PAD_CSI1_VSYNC__GPIO3_14 0x80000000	/* Lid switch, 0 = closed */
-				MX51_PAD_CSPI1_SS0__GPIO4_24 0x85
-				MX51_PAD_CSPI1_SS1__GPIO4_25 0x85
 				MX51_PAD_CSI1_D8__GPIO3_12 0x80000000		/* LVDS enable, 1 = on */
 				MX51_PAD_GPIO1_2__GPIO1_2 0x80000000		/* Backlight PWM */
 				MX51_PAD_CSI2_D19__GPIO4_12 0x80000000		/* Backlight power, 0 = on */
-				MX51_PAD_DISPB2_SER_DIO__GPIO3_6 0x80000000	/* LVDS reset, 1 = reset */
 				MX51_PAD_DISPB2_SER_DIN__GPIO3_5 0x80000000	/* LVDS reset (1 = reset) */
 				MX51_PAD_DISPB2_SER_CLK__GPIO3_7 0x80000000	/* LVDS power, 1 = on */
 				MX51_PAD_CSI1_D9__GPIO3_13 0x80000000		/* LCD enable (1 = on */
 				MX51_PAD_NANDF_CS0__GPIO3_16 0x80000000		/* Camera power, 0 = on */
 				MX51_PAD_GPIO1_5__GPIO1_5 0x80000000		/* USB hub reset, 0 = reset */
 				MX51_PAD_EIM_D27__GPIO2_9  0x80000000		/* USB phy reset, 0 = reset */
-				MX51_PAD_DISPB2_SER_DIO__GPIO3_6 0x80000000	/* Battery, 0 = inserted */
-				MX51_PAD_GPIO1_3__GPIO1_3 0x80000000		/* Alarm LED, 0 = on */
-				MX51_PAD_EIM_CS0__GPIO2_25 0x80000000		/* Caps LED, 1 = on */
 				MX51_PAD_CSPI1_RDY__GPIO4_26 0x80000000		/* Audio clk enable */
-				MX51_PAD_EIM_A26__GPIO2_20 0x80000000
-				MX51_PAD_USBH1_STP__GPIO1_27 0x80000000
 			>;
+		};
+
+		pinctrl_audmux: audmuxgrp {
+			fsl,pins = <MX51_AUDMUX_PINGRP1>;
+		};
+
+		pinctrl_battery: batterygrp {
+			fsl,pins = <
+				MX51_PAD_DISPB2_SER_DIO__GPIO3_6 0xe5 /* Battery */
+			>;
+		};
+
+		pinctrl_ecspi1: ecspi1grp {
+			fsl,pins = <
+				MX51_ECSPI1_PINGRP1
+				MX51_PAD_CSPI1_SS0__GPIO4_24	0x85 /* CS0 */
+				MX51_PAD_CSPI1_SS1__GPIO4_25	0x85 /* CS1 */
+				MX51_PAD_GPIO1_6__GPIO1_6	0xe5 /* PMIC IRQ */
+			>;
+		};
+
+		pinctrl_esdhc1: esdhc1grp {
+			fsl,pins = <
+				MX51_ESDHC1_PINGRP1
+				MX51_PAD_GPIO1_1__GPIO1_1	0xe5 /* WP */
+				MX51_PAD_EIM_CS2__GPIO2_27	0xe5 /* CD */
+			>;
+		};
+
+		pinctrl_esdhc2: esdhc2grp {
+			fsl,pins = <
+				MX51_ESDHC2_PINGRP1
+				MX51_PAD_GPIO1_7__GPIO1_7	0xe5 /* WP */
+				MX51_PAD_GPIO1_8__GPIO1_8	0xe5 /* CD */
+			>;
+		};
+
+		pinctrl_i2c2: i2c2grp {
+			fsl,pins = <MX51_I2C2_PINGRP1>;
+		};
+
+		pinctrl_ipu_disp1: ipudisp1grp {
+			fsl,pins = <MX51_IPU_DISP1_PINGRP1>;
+		};
+
+		pinctrl_keys: keysgrp {
+			fsl,pins = <
+				MX51_PAD_EIM_DTACK__GPIO2_31	0xe5 /* Power btn */
+				MX51_PAD_CSI1_VSYNC__GPIO3_14	0xe5 /* Lid switch */
+			>;
+		};
+
+		pinctrl_leds: ledsgrp {
+			fsl,pins = <
+				MX51_PAD_GPIO1_3__GPIO1_3	0x85 /* Alarm LED */
+				MX51_PAD_EIM_CS0__GPIO2_25	0x85 /* Caps LED */
+			>;
+		};
+
+		pinctrl_pata: patagrp {
+			fsl,pins = <MX51_PATA_PINGRP1>;
+		};
+
+		pinctrl_uart1: uart1grp {
+			fsl,pins = <
+				MX51_UART1_PINGRP1
+				MX51_UART1_RTSCTS_PINGRP1
+			>;
+		};
+
+		pinctrl_usbh1: usbh1grp {
+			fsl,pins = <MX51_USBH1_PINGRP1>;
+		};
+
+		pinctrl_usbh2: usbh2grp {
+			fsl,pins = <MX51_USBH2_PINGRP1>;
 		};
 	};
 };
 
 &uart1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart1_1>;
+	pinctrl-0 = <&pinctrl_uart1>;
+	fsl,uart-has-rtscts;
 	status = "okay";
 };
 
 &i2c2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c2_1>;
+	pinctrl-0 = <&pinctrl_i2c2>;
 	clock-frequency = <100000>;
 	status = "okay";
 
@@ -161,34 +227,36 @@
 
 	battery: battery@0b {
 		compatible = "sbs,sbs-battery";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_battery>;
 		reg = <0x0b>;
-		sbs,battery-detect-gpios = <&gpio3 6 1>;
+		sbs,battery-detect-gpios = <&gpio3 6 GPIO_ACTIVE_LOW>;
 	};
 
 	lvds: mtl017@3a {
 		compatible = "mtl017";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ipu_disp1>;
 		reg = <0x3a>;
 		crtcs = <&ipu 1>;
 		edid-i2c = <&i2c2>;
 		interface-pix-fmt = "rgb565";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ipu_disp1_1>;
 	};
 };
 
 &esdhc1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_esdhc1_1>;
-	cd-gpios = <&gpio2 27 0>;
-	wp-gpios = <&gpio1 1 0>;
+	pinctrl-0 = <&pinctrl_esdhc1>;
+	cd-gpios = <&gpio2 27 GPIO_ACTIVE_HIGH>;
+	wp-gpios = <&gpio1 1 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 };
 
 &esdhc2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_esdhc2_1>;
-	cd-gpios = <&gpio1 8 0>;
-	wp-gpios = <&gpio1 7 0>;
+	pinctrl-0 = <&pinctrl_esdhc2>;
+	cd-gpios = <&gpio1 8 GPIO_ACTIVE_HIGH>;
+	wp-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <1>;
@@ -200,23 +268,22 @@
 };
 
 &ecspi1 {
-	fsl,spi-num-chipselects = <1>;
-	cs-gpios = <&gpio4 23 0>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1_1>;
+	pinctrl-0 = <&pinctrl_ecspi1>;
 	fsl,spi-num-chipselects = <2>;
-	cs-gpios = <&gpio4 24 0>, <&gpio4 25 0>;
+	cs-gpios = <&gpio4 24 GPIO_ACTIVE_HIGH>,
+		   <&gpio4 25 GPIO_ACTIVE_LOW>;
 	status = "okay";
 
 	pmic: mc13892@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
 		compatible = "fsl,mc13892";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
 		spi-cs-high;
-		#address-cells = <1>;
-		#size-cells = <0>;
 		interrupt-parent = <&gpio1>;
-		interrupts = <6 0x4>;
+		interrupts = <6 IRQ_TYPE_LEVEL_HIGH>;
 
 		regulators {
 			sw1_reg: sw1 {
@@ -321,34 +388,31 @@
 
 &audmux {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_audmux_1>;
+	pinctrl-0 = <&pinctrl_audmux>;
 	status = "okay";
 };
 
 &pata {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pata_1>;
+	pinctrl-0 = <&pinctrl_pata>;
 	status = "okay";
 };
 
 &usbotg {
-	barebox,phy_type = "utmi_wide";
 	phy_type = "ulpi";
 	status = "okay";
 };
 
 &usbh1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usbh1_1>;
-	barebox,phy_type = "ulpi";
+	pinctrl-0 = <&pinctrl_usbh1>;
 	phy_type = "ulpi";
 	status = "okay";
 };
 
 &usbh2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usbh2_1>;
-	barebox,phy_type = "ulpi";
+	pinctrl-0 = <&pinctrl_usbh2>;
 	phy_type = "ulpi";
 	status = "okay";
 };

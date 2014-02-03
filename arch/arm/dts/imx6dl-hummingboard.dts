@@ -11,8 +11,8 @@
 #include "imx6qdl-microsom-ar8035.dtsi"
 
 / {
-	model = "SolidRun Cubox-i DL/Solo Carrier-1 Board";
-	compatible = "solidrun,cubox-i-carrier-1", "fsl,imx6dl";
+	model = "SolidRun HummingBoard DL/Solo";
+	compatible = "solidrun,hummingboard", "fsl,imx6dl";
 
 	chosen {
 		linux,stdout-path = &uart1;
@@ -31,13 +31,13 @@
 		compatible = "gpio-ir-receiver";
 		gpios = <&gpio1 2 1>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_carrier1_gpio1_2>;
+		pinctrl-0 = <&pinctrl_hummingboard_gpio1_2>;
 	};
 
 	codec: spdif-transmitter {
 		compatible = "linux,spdif-dit";
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_carrier1_spdif>;
+		pinctrl-0 = <&pinctrl_hummingboard_spdif>;
 	};
 
 	sound-spdif {
@@ -51,7 +51,7 @@
 
 &i2c1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c1_1>;
+	pinctrl-0 = <&pinctrl_hummingboard_i2c1>;
 
 	/*
 	 * Not fitted on Carrier-1 board... yet
@@ -65,18 +65,22 @@
 };
 
 &iomuxc {
-	carrier1 {
-		pinctrl_carrier1_gpio1_2: carrier1-gpio1_2 {
+	hummingboard {
+		pinctrl_hummingboard_gpio1_2: hummingboard-gpio1_2 {
 			fsl,pins = <
 				MX6QDL_PAD_GPIO_2__GPIO1_IO02 0x80000000
 			>;
 		};
 
-		pinctrl_carrier1_spdif: carrier1-spdif {
+		pinctrl_hummingboard_i2c1: hummingboard-i2c1 {
+			fsl,pins = <MX6QDL_I2C1_PINGRP1>;
+		};
+
+		pinctrl_hummingboard_spdif: hummingboard-spdif {
 			fsl,pins = <MX6QDL_PAD_GPIO_17__SPDIF_OUT 0x1b0b0>;
 		};
 
-		pinctrl_carrier1_usdhc2: carrier1-usdhc2 {
+		pinctrl_hummingboard_usdhc2: hummingboard-usdhc2 {
 			fsl,pins = <
 				MX6QDL_PAD_SD2_CMD__SD2_CMD    0x17059
 				MX6QDL_PAD_SD2_CLK__SD2_CLK    0x10059
@@ -96,7 +100,7 @@
 
 &usdhc2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_carrier1_usdhc2>;
+	pinctrl-0 = <&pinctrl_hummingboard_usdhc2>;
 	vmmc-supply = <&reg_3p3v>;
 	fsl,cd-controller;
 	status = "okay";

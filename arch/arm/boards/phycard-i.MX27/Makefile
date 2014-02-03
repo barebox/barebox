@@ -1,3 +1,3 @@
 
-lwl-y += lowlevel_init.o
+lwl-y += lowlevel.o
 obj-y += pca100.o

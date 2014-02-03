@@ -17,6 +17,8 @@
  *
  */
 
+#define pr_fmt(fmt) "tx25: " fmt
+
 #include <common.h>
 #include <init.h>
 #include <driver.h>
@@ -31,131 +33,69 @@
 #include <partition.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
-#include <fec.h>
-#include <nand.h>
 #include <mach/iomux-mx25.h>
 #include <mach/generic.h>
 #include <mach/iim.h>
 #include <linux/err.h>
 #include <mach/devices-imx25.h>
+#include <mach/bbu.h>
 #include <asm/mmu.h>
-
-static struct fec_platform_data fec_info = {
-	.xcv_type	= PHY_INTERFACE_MODE_RMII,
-	.phy_addr	= 0x1f,
-};
-
-struct imx_nand_platform_data nand_info = {
-	.width	= 1,
-	.hw_ecc	= 1,
-	.flash_bbt = 1,
-};
-
-static iomux_v3_cfg_t karo_tx25_padsd_fec[] = {
-	MX25_PAD_D11__GPIO_4_9,		/* FEC PHY power on pin */
-	MX25_PAD_D13__GPIO_4_7,		/* FEC reset */
-	MX25_PAD_FEC_MDC__FEC_MDC,
-	MX25_PAD_FEC_MDIO__FEC_MDIO,
-	MX25_PAD_FEC_TDATA0__FEC_TDATA0,
-	MX25_PAD_FEC_TDATA1__FEC_TDATA1,
-	MX25_PAD_FEC_TX_EN__FEC_TX_EN,
-	MX25_PAD_FEC_RDATA0__FEC_RDATA0,
-	MX25_PAD_FEC_RDATA1__FEC_RDATA1,
-	MX25_PAD_FEC_RX_DV__FEC_RX_DV,
-	MX25_PAD_FEC_TX_CLK__FEC_TX_CLK,
-};
 
 #define TX25_FEC_PWR_GPIO	IMX_GPIO_NR(4, 9)
 #define TX25_FEC_RST_GPIO	IMX_GPIO_NR(4, 7)
 
+static struct gpio fec_gpios[] = {
+	{
+		.gpio = TX25_FEC_PWR_GPIO,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.label = "fec-pwr",
+	}, {
+		.gpio = TX25_FEC_RST_GPIO,
+		.flags = GPIOF_OUT_INIT_LOW,
+		.label = "fec-rst",
+	},
+};
+
 static void noinline gpio_fec_active(void)
 {
-	mxc_iomux_v3_setup_multiple_pads(karo_tx25_padsd_fec,
-			ARRAY_SIZE(karo_tx25_padsd_fec));
+	int ret;
 
 	/* power down phy, put into reset */
-	gpio_direction_output(TX25_FEC_PWR_GPIO, 0);
-	gpio_direction_output(TX25_FEC_RST_GPIO, 0);
+	ret = gpio_request_array(fec_gpios, ARRAY_SIZE(fec_gpios));
+	if (ret) {
+		pr_err("Failed to request fec gpios: %s\n", strerror(-ret));
+		return;
+	}
 
 	udelay(10);
 
-	/* power up phy, get out of reset */
-	gpio_direction_output(TX25_FEC_PWR_GPIO, 1);
-	gpio_direction_output(TX25_FEC_RST_GPIO, 1);
+	/* power up phy, but leave in reset */
+	gpio_set_value(TX25_FEC_PWR_GPIO, 1);
 
 	udelay(100);
 
-	/* apply a reset to the powered phy again */
-	gpio_direction_output(TX25_FEC_RST_GPIO, 0);
-	udelay(100);
-	gpio_direction_output(TX25_FEC_RST_GPIO, 1);
+	/* FEC driver picks up the reset gpio later */
+	gpio_free(TX25_FEC_RST_GPIO);
 }
 
-static int tx25_devices_init(void)
+static int tx25_init(void)
 {
+	if (!of_machine_is_compatible("karo,imx25-tx25"))
+		return 0;
+
 	gpio_fec_active();
 
-	imx25_iim_register_fec_ethaddr();
-	imx25_add_fec(&fec_info);
-
-	if (readl(MX25_CCM_BASE_ADDR + MX25_CCM_RCSR) & (1 << 14))
-		nand_info.width = 2;
-
-	imx25_add_nand(&nand_info);
-
-	devfs_add_partition("nand0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self_raw");
-	dev_add_bb_dev("self_raw", "self0");
-
-	devfs_add_partition("nand0", SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, "env_raw");
-	dev_add_bb_dev("env_raw", "env0");
-
-	add_mem_device("sram0", 0x78000000, 128 * 1024,
-				   IORESOURCE_MEM_WRITEABLE);
-
+	barebox_set_hostname("tx25");
 	armlinux_set_architecture(MACH_TYPE_TX25);
 	armlinux_set_serial(imx_uid());
 
+	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.boot",
+			BBU_HANDLER_FLAG_DEFAULT);
+
 	return 0;
 }
 
-device_initcall(tx25_devices_init);
-
-static iomux_v3_cfg_t tx25_pads[] = {
-	MX25_PAD_D12__GPIO_4_8,
-	MX25_PAD_D10__GPIO_4_10,
-	MX25_PAD_NF_CE0__NF_CE0,
-	MX25_PAD_NFWE_B__NFWE_B,
-	MX25_PAD_NFRE_B__NFRE_B,
-	MX25_PAD_NFALE__NFALE,
-	MX25_PAD_NFCLE__NFCLE,
-	MX25_PAD_NFWP_B__NFWP_B,
-	MX25_PAD_NFRB__NFRB,
-	MX25_PAD_D7__D7,
-	MX25_PAD_D6__D6,
-	MX25_PAD_D5__D5,
-	MX25_PAD_D4__D4,
-	MX25_PAD_D3__D3,
-	MX25_PAD_D2__D2,
-	MX25_PAD_D1__D1,
-	MX25_PAD_D0__D0,
-	MX25_PAD_UART1_TXD__UART1_TXD,
-	MX25_PAD_UART1_RXD__UART1_RXD,
-	MX25_PAD_UART1_CTS__UART1_CTS,
-	MX25_PAD_UART1_RTS__UART1_RTS,
-};
-
-static int tx25_console_init(void)
-{
-	mxc_iomux_v3_setup_multiple_pads(tx25_pads, ARRAY_SIZE(tx25_pads));
-
-	barebox_set_model("Ka-Ro TX25");
-	barebox_set_hostname("tx25");
-
-	imx25_add_uart0();
-	return 0;
-}
-
-console_initcall(tx25_console_init);
+console_initcall(tx25_init);
 
 static iomux_v3_cfg_t tx25_lcdc_gpios[] = {
 	MX25_PAD_A18__GPIO_2_4,		/* LCD Reset (active LOW) */
@@ -232,6 +172,12 @@ static struct imx_fb_platform_data tx25_fb_data = {
 
 static int tx25_init_fb(void)
 {
+	if (!IS_ENABLED(CONFIG_DRIVER_VIDEO_IMX))
+		return 0;
+
+	if (!of_machine_is_compatible("karo,imx25-tx25"))
+		return 0;
+
 	tx25_fb_enable(0);
 
 	mxc_iomux_v3_setup_multiple_pads(tx25_lcdc_gpios,

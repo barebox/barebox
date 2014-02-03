@@ -592,6 +592,8 @@ static int fsl_esdhc_probe(struct device_d *dev)
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{
+		.compatible = "fsl,imx25-esdhc",
+	}, {
 		.compatible = "fsl,imx51-esdhc",
 	}, {
 		.compatible = "fsl,imx53-esdhc",

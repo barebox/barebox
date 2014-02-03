@@ -11,7 +11,7 @@
 
 &ecspi1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_ecspi1_1>;
+	pinctrl-0 = <&pinctrl_ecspi1>;
 	fsl,spi-num-chipselects = <1>;
 	cs-gpios = <&gpio3 19 0>;
 	status = "okay";
@@ -25,11 +25,35 @@
 
 &fec {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_enet_1>;
+	pinctrl-0 = <&pinctrl_enet>;
 	phy-mode = "rgmii";
 };
 
-&ocotp1 {
+&iomuxc {
+	imx6qdl-tqma6x {
+		pinctrl_ecspi1: ecspi1grp {
+			fsl,pins = <MX6QDL_ECSPI1_PINGRP1>;
+		};
+
+		pinctrl_enet: enetgrp {
+			fsl,pins = <MX6QDL_ENET_PINGRP1>;
+		};
+
+		pinctrl_i2c1: i2c1grp {
+			fsl,pins = <MX6QDL_I2C1_PINGRP2>;
+		};
+
+		pinctrl_i2c3: i2c3grp {
+			fsl,pins = <MX6QDL_I2C3_PINGRP2>;
+		};
+
+		pinctrl_usdhc3: usdhc3grp {
+			fsl,pins = <MX6QDL_USDHC3_PINGRP_D8>;
+		};
+	};
+};
+
+&ocotp {
 	barebox,provide-mac-address = <&fec 0x620>;
 };
 
@@ -37,14 +61,14 @@
 	status = "okay";
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c1_2>;
+	pinctrl-0 = <&pinctrl_i2c1>;
 };
 
 &i2c3 {
 	status = "okay";
 	clock-frequency = <100000>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_i2c3_2>;
+	pinctrl-0 = <&pinctrl_i2c3>;
 
 	pmic: pf0100@08 {
 		compatible = "pf0100-regulator";
@@ -158,7 +182,7 @@
 
 &usdhc3 { /* eMMC */
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_usdhc3_1>;
+	pinctrl-0 = <&pinctrl_usdhc3>;
 	non-removable;
 	bus-width = <8>;
 	status = "okay";

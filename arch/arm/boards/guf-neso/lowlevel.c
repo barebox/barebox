@@ -86,12 +86,13 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL,
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
-#ifdef CONFIG_NAND_IMX_BOOT
-	/* setup a stack to be able to call imx27_barebox_boot_nand_external() */
-	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 8);
+	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND)) {
+		/* setup a stack to be able to call imx27_barebox_boot_nand_external() */
+		arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 8);
 
-	imx27_barebox_boot_nand_external();
-#endif
+		imx27_barebox_boot_nand_external(0);
+	}
+
 out:
 	imx27_barebox_entry(0);
 }

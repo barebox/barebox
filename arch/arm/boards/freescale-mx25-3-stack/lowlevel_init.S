@@ -97,12 +97,14 @@ barebox_arm_reset_vector:
 	ldr r3, ESDCTL_DELAY5
 	str r3, [r0, #0x30]
 
-#ifdef CONFIG_NAND_IMX_BOOT
+#ifdef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND
+
 	/* Setup a temporary stack in SRAM */
 	ldr	sp, =MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 4
 
+	mov	r0, #0
 	b	imx25_barebox_boot_nand_external
-#endif /* CONFIG_NAND_IMX_BOOT */
+#endif /* CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND */
 
 ret:
 	b	imx25_barebox_entry

@@ -124,7 +124,8 @@ static void sabrelite_ehci_init(void)
 
 static int sabrelite_devices_init(void)
 {
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
+	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
 		return 0;
 
 	sabrelite_ehci_init();
@@ -140,7 +141,8 @@ device_initcall(sabrelite_devices_init);
 
 static int sabrelite_coredevices_init(void)
 {
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
+	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
 		return 0;
 
 	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
@@ -151,7 +153,8 @@ coredevice_initcall(sabrelite_coredevices_init);
 
 static int sabrelite_postcore_init(void)
 {
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite"))
+	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
+	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
 		return 0;
 
 	imx6_init_lowlevel();

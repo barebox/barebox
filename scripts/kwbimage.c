@@ -701,17 +701,17 @@ static int image_create_payload(void *payload_start, size_t payloadsz,
 	if (ret < 0) {
 		fprintf(stderr, "Cannot stat payload file %s\n",
 			payload_filename);
+		fclose(payload);
 		return ret;
 	}
 
 	ret = fread(payload_start, s.st_size, 1, payload);
+	fclose(payload);
 	if (ret != 1) {
 		fprintf(stderr, "Cannot read payload file %s\n",
 			payload_filename);
 		return -1;
 	}
-
-	fclose(payload);
 
 	*payload_checksum = image_checksum32(payload_start, payloadsz);
 	return 0;

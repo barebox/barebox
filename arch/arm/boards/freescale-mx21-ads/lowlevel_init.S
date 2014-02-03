@@ -118,7 +118,7 @@ barebox_arm_reset_vector:
 	ldr	r1, =0x6419a007
 	str	r1, [r0]
 
-#ifdef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND {
+#ifdef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND
 
 	/* Setup a temporary stack in SRAM */
 	ldr	sp, =MX21_IRAM_BASE_ADDR + MX21_IRAM_SIZE - 4

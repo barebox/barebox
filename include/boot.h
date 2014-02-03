@@ -61,6 +61,7 @@ struct image_data {
 
 	struct device_node *of_root_node;
 	struct fdt_header *oftree;
+	struct resource *oftree_res;
 
 	int verify;
 	int verbose;
@@ -107,6 +108,10 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 	return setenv("bootargs", bootargs);
 }
 #endif
+
+int bootm_load_os(struct image_data *data, unsigned long load_address);
+int bootm_load_initrd(struct image_data *data, unsigned long load_address);
+int bootm_load_devicetree(struct image_data *data, unsigned long load_address);
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 

@@ -22,45 +22,61 @@
 #include <asm/armlinux.h>
 #include <asm/system.h>
 
-static int __do_bootm_linux(struct image_data *data, int swap)
+/*
+ * sdram_start_and_size() - determine place for putting the kernel/oftree/initrd
+ *
+ * @start:	returns the start address of the first RAM bank
+ * @size:	returns the usable space at the beginning of the first RAM bank
+ *
+ * This function returns the base address of the first RAM bank and the free
+ * space found there.
+ *
+ * return: 0 for success, negative error code otherwise
+ */
+static int sdram_start_and_size(unsigned long *start, unsigned long *size)
+{
+	struct memory_bank *bank;
+	struct resource *res;
+
+	/*
+	 * We use the first memory bank for the kernel and other resources
+	 */
+	bank = list_first_entry_or_null(&memory_banks, struct memory_bank,
+			list);
+	if (!bank) {
+		printf("cannot find first memory bank\n");
+		return -EINVAL;
+	}
+
+	/*
+	 * If the first memory bank has child resources we can use the bank up
+	 * to the beginning of the first child resource, otherwise we can use
+	 * the whole bank.
+	 */
+	res = list_first_entry_or_null(&bank->res->children, struct resource,
+			sibling);
+	if (res)
+		*size = res->start - bank->start;
+	else
+		*size = bank->size;
+
+	*start = bank->start;
+
+	return 0;
+}
+
+static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int swap)
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
-	struct memory_bank *bank;
-	unsigned long load_address;
-
-	if (data->os_res) {
-		load_address = data->os_res->start;
-	} else if (data->os_address != UIMAGE_INVALID_ADDRESS) {
-		load_address = data->os_address;
-	} else {
-		bank = list_first_entry(&memory_banks,
-				struct memory_bank, list);
-		load_address = bank->start + SZ_32K;
-		if (bootm_verbose(data))
-			printf("no os load address, defaulting to 0x%08lx\n",
-				load_address);
-	}
-
-	if (!data->os_res && data->os) {
-		data->os_res = uimage_load_to_sdram(data->os,
-			data->os_num, load_address);
-		if (!data->os_res)
-			return -ENOMEM;
-	}
-
-	if (!data->os_res) {
-		data->os_res = file_to_sdram(data->os_file, load_address);
-		if (!data->os_res)
-			return -ENOMEM;
-	}
+	int ret;
 
 	kernel = data->os_res->start + data->os_entry;
 
 	initrd_start = data->initrd_address;
 
-	if (data->initrd_file && initrd_start == UIMAGE_INVALID_ADDRESS) {
-		initrd_start = data->os_res->start + SZ_8M;
+	if (initrd_start == UIMAGE_INVALID_ADDRESS) {
+		initrd_start = PAGE_ALIGN(free_mem);
 
 		if (bootm_verbose(data)) {
 			printf("no initrd load address, defaulting to 0x%08lx\n",
@@ -68,33 +84,20 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 		}
 	}
 
-	if (data->initrd) {
-		data->initrd_res = uimage_load_to_sdram(data->initrd,
-			data->initrd_num, initrd_start);
-		if (!data->initrd_res)
-			return -ENOMEM;
-	} else if (data->initrd_file) {
-		data->initrd_res = file_to_sdram(data->initrd_file, initrd_start);
-		if (!data->initrd_res)
-			return -ENOMEM;
-	}
+	ret = bootm_load_initrd(data, initrd_start);
+	if (ret)
+		return ret;
 
 	if (data->initrd_res) {
 		initrd_start = data->initrd_res->start;
 		initrd_end = data->initrd_res->end;
 		initrd_size = resource_size(data->initrd_res);
+		free_mem = PAGE_ALIGN(initrd_end);
 	}
 
-	if (IS_ENABLED(CONFIG_OFTREE) && data->of_root_node) {
-		of_add_initrd(data->of_root_node, initrd_start, initrd_end);
-		if (initrd_end)
-			of_add_reserve_entry(initrd_start, initrd_end);
-		data->oftree = of_get_fixed_tree(data->of_root_node);
-		fdt_add_reserve_map(data->oftree);
-		of_print_cmdline(data->of_root_node);
-		if (bootm_verbose(data) > 1)
-			of_print_nodes(data->of_root_node, 0);
-	}
+	ret = bootm_load_devicetree(data, free_mem);
+	if (ret)
+		return ret;
 
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%08lx", kernel);
@@ -114,7 +117,36 @@ static int __do_bootm_linux(struct image_data *data, int swap)
 
 static int do_bootm_linux(struct image_data *data)
 {
-	return __do_bootm_linux(data, 0);
+	unsigned long load_address, mem_start, mem_size, mem_free;
+	int ret;
+
+	ret = sdram_start_and_size(&mem_start, &mem_size);
+	if (ret)
+		return ret;
+
+	load_address = data->os_address;
+
+	if (load_address == UIMAGE_INVALID_ADDRESS) {
+		load_address = mem_start + SZ_32K;
+		if (bootm_verbose(data))
+			printf("no os load address, defaulting to 0x%08lx\n",
+				load_address);
+	}
+
+	ret = bootm_load_os(data, load_address);
+	if (ret)
+		return ret;
+
+	/*
+	 * Put devicetree/initrd at maximum to 128MiB into RAM to not
+	 * risk to put it outside of lowmem.
+	 */
+	if (mem_size > SZ_256M)
+		mem_free = mem_start + SZ_128M;
+	else
+		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+
+	return __do_bootm_linux(data, mem_free, 0);
 }
 
 static struct image_handler uimage_handler = {
@@ -207,11 +239,23 @@ static int do_bootz_linux(struct image_data *data)
 	void *zimage;
 	u32 end;
 	unsigned long load_address = data->os_address;
+	unsigned long mem_start, mem_size, mem_free;
+
+	ret = sdram_start_and_size(&mem_start, &mem_size);
+	if (ret)
+		return ret;
 
 	if (load_address == UIMAGE_INVALID_ADDRESS) {
-		struct memory_bank *bank = list_first_entry(&memory_banks,
-				struct memory_bank, list);
-		data->os_address = bank->start + SZ_8M;
+		/*
+		 * The kernel should stay in the first 128MiB of RAM, recommended
+		 * is 32MiB into RAM so that relocation prior to decompression
+		 * can be avoided.
+		 */
+		if (mem_size > SZ_64M)
+			data->os_address = mem_start + SZ_32M;
+		else
+			data->os_address = mem_start + SZ_8M;
+
 		load_address = data->os_address;
 		if (bootm_verbose(data))
 			printf("no os load address, defaulting to 0x%08lx\n",
@@ -280,7 +324,17 @@ static int do_bootz_linux(struct image_data *data)
 		goto err_out;
 
 	close(fd);
-	return __do_bootm_linux(data, swap);
+
+	/*
+	 * Put devicetree/initrd at maximum to 128MiB into RAM to not
+	 * risk to put it outside of lowmem.
+	 */
+	if (mem_size > SZ_256M)
+		mem_free = mem_start + SZ_128M;
+	else
+		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+
+	return __do_bootm_linux(data, mem_free, swap);
 
 err_out:
 	close(fd);
@@ -355,6 +409,7 @@ static int do_bootm_aimage(struct image_data *data)
 	void *buf;
 	int to_read;
 	struct android_header_comp *cmp;
+	unsigned long mem_free;
 
 	fd = open(data->os_file, O_RDONLY);
 	if (fd < 0) {
@@ -448,7 +503,17 @@ static int do_bootm_aimage(struct image_data *data)
 	}
 
 	close(fd);
-	return __do_bootm_linux(data, 0);
+
+	/*
+	 * Put devicetree right after initrd if present or after the kernel
+	 * if not.
+	 */
+	if (data->initrd_res)
+		mem_free = PAGE_ALIGN(data->initrd_res->end);
+	else
+		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+
+	return __do_bootm_linux(data, mem_free, 0);
 
 err_out:
 	linux_bootargs_overwrite(NULL);

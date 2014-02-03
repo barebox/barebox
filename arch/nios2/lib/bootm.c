@@ -36,9 +36,11 @@ static int do_bootm_linux(struct image_data *idata)
 {
 	void (*kernel)(int, int, int, const char *);
 	const char *commandline = linux_bootargs_get();
+	int ret;
 
-	if (!idata->os_res)
-		return -EINVAL;
+	ret = bootm_load_os(idata, idata->os_address);
+	if (ret)
+		return ret;
 
 	kernel = (void *)(idata->os_address + idata->os_entry);
 

@@ -41,9 +41,11 @@ static int do_bootm_linux(struct image_data *idata)
 	int (*appl)(char *cmdline);
 	const char *cmdline = linux_bootargs_get();
 	char *cmdlinedest = (char *) CMD_LINE_ADDR;
+	int ret;
 
-	if (!idata->os_res)
-		return -EINVAL;
+	ret = bootm_load_os(idata, idata->os_address);
+	if (ret)
+		return ret;
 
 	appl = (void *)(idata->os_address + idata->os_entry);
 	printf("Starting Kernel at 0x%p\n", appl);

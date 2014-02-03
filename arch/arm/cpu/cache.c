@@ -102,7 +102,7 @@ int arm_set_cache_functions(void)
 		break;
 #endif
 	default:
-		BUG();
+		while(1);
 	}
 
 	return 0;

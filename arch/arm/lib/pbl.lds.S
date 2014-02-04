@@ -54,6 +54,7 @@ SECTIONS
 	/DISCARD/ : { *(.ARM.ex*) }
 
 	BAREBOX_BARE_INIT_SIZE
+	BAREBOX_PBL_SIZE
 
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }

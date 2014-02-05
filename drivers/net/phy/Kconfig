@@ -33,6 +33,14 @@ config SMSC_PHY
 	---help---
 	  Currently supports the LAN83C185, LAN8187 and LAN8700 PHYs
 
+comment "MII bus device drivers"
+
+config MDIO_MVEBU
+	bool "Driver for MVEBU SoC MDIO bus"
+	depends on ARCH_MVEBU
+	---help---
+	  Driver for the MDIO bus found on Marvell EBU SoCs.
+
 endif
 
 endmenu

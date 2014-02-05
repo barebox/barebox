@@ -116,6 +116,12 @@ config DRIVER_NET_NETX
 	depends on HAS_NETX_ETHER
 	select PHYLIB
 
+config DRIVER_NET_ORION
+	bool "Marvell Orion SoC Ethernet"
+	depends on ARCH_MVEBU
+	select PHYLIB
+	select MDIO_MVEBU
+
 config DRIVER_NET_SMC911X
 	bool "smc911x ethernet driver"
 	select PHYLIB

@@ -126,7 +126,7 @@ static int rpi_env_init(void)
 	}
 
 	mkdir("/boot", 0666);
-	ret = mount(diskdev, "fat", "/boot");
+	ret = mount(diskdev, "fat", "/boot", NULL);
 	if (ret) {
 		printf("failed to mount %s\n", diskdev);
 		return 0;

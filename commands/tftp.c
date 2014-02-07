@@ -72,7 +72,7 @@ static int do_tftpb(int argc, char *argv[])
 		goto err_free;
 
 	ip = net_get_serverip();
-	ret = mount(ip_to_string(ip), "tftp", TFTP_MOUNT_PATH);
+	ret = mount(ip_to_string(ip), "tftp", TFTP_MOUNT_PATH, NULL);
 	if (ret)
 		goto err_rmdir;
 

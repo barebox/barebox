@@ -276,7 +276,7 @@ static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 	if (type == filetype_mbr || type == filetype_gpt)
 		return -EINVAL;
 
-	rootpath = cdev_mount_default(cdev);
+	rootpath = cdev_mount_default(cdev, NULL);
 	if (IS_ERR(rootpath))
 		return PTR_ERR(rootpath);
 

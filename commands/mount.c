@@ -33,26 +33,31 @@ static int do_mount(int argc, char *argv[])
 {
 	int opt;
 	int ret = 0, verbose = 0;
-	struct fs_device_d *fsdev;
 	struct driver_d *drv;
 	const char *type = NULL;
 	const char *mountpoint, *dev;
+	const char *fsoptions = NULL;
 
-	while ((opt = getopt(argc, argv, "t:va")) > 0) {
+	while ((opt = getopt(argc, argv, "ao:t:v")) > 0) {
 		switch (opt) {
+		case 'a':
+			mount_all();
+			break;
 		case 't':
 			type = optarg;
 			break;
+		case 'o':
+			fsoptions = optarg;
+			break;
 		case 'v':
 			verbose++;
-			break;
-		case 'a':
-			mount_all();
 			break;
 		}
 	}
 
 	if (argc == optind) {
+		struct fs_device_d *fsdev;
+
 		for_each_fs_device(fsdev) {
 			printf("%s on %s type %s\n",
 				fsdev->backingstore ? fsdev->backingstore : "none",
@@ -84,7 +89,7 @@ static int do_mount(int argc, char *argv[])
 		if (!cdev)
 			return -ENOENT;
 
-		path = cdev_mount_default(cdev);
+		path = cdev_mount_default(cdev, fsoptions);
 		if (IS_ERR(path))
 			return PTR_ERR(path);
 
@@ -108,7 +113,7 @@ static int do_mount(int argc, char *argv[])
 		mountpoint = argv[optind + 1];
 	}
 
-	if ((ret = mount(dev, type, mountpoint))) {
+	if ((ret = mount(dev, type, mountpoint, fsoptions))) {
 		perror("mount");
 		return 1;
 	}

@@ -110,7 +110,7 @@ static void *omap_xload_boot_mmc(void)
 
 	partname = asprintf("%s.0", diskdev);
 
-	ret = mount(partname, "fat", "/");
+	ret = mount(partname, "fat", "/", NULL);
 
 	free(partname);
 
@@ -170,7 +170,7 @@ static void *omap4_xload_boot_usb(void){
 	void *buf;
 	int len;
 
-	ret = mount("omap4_usbboot", "omap4_usbbootfs", "/");
+	ret = mount("omap4_usbboot", "omap4_usbbootfs", "/", NULL);
 	if (ret) {
 		printf("Unable to mount omap4_usbbootfs (%d)\n", ret);
 		return NULL;

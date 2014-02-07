@@ -1242,6 +1242,7 @@ static void fs_remove(struct device_d *dev)
 	}
 
 	free(fsdev->path);
+	free(fsdev->options);
 
 	if (fsdev == fs_dev_root)
 		fs_dev_root = NULL;
@@ -1316,13 +1317,18 @@ int fsdev_open_cdev(struct fs_device_d *fsdev)
  * We do this by registering a new device on which the filesystem
  * driver will match.
  */
-int mount(const char *device, const char *fsname, const char *_path)
+int mount(const char *device, const char *fsname, const char *_path,
+		const char *fsoptions)
 {
 	struct fs_device_d *fsdev;
 	int ret;
 	char *path = normalise_path(_path);
 
-	debug("mount: %s on %s type %s\n", device, path, fsname);
+	if (!fsoptions)
+		fsoptions = "";
+
+	debug("mount: %s on %s type %s, options=%s\n",
+			device, path, fsname, fsoptions);
 
 	if (fs_dev_root) {
 		fsdev = get_fsdevice_by_path(path);
@@ -1354,6 +1360,7 @@ int mount(const char *device, const char *fsname, const char *_path)
 	fsdev->dev.id = get_free_deviceid(fsdev->dev.name);
 	fsdev->path = xstrdup(path);
 	fsdev->dev.bus = &fs_bus;
+	fsdev->options = xstrdup(fsoptions);
 
 	ret = register_device(&fsdev->dev);
 	if (ret)
@@ -1711,7 +1718,7 @@ const char *cdev_get_mount_path(struct cdev *cdev)
  * mount it to /mnt/<cdevname> and return the path. Returns an error pointer
  * on failure.
  */
-const char *cdev_mount_default(struct cdev *cdev)
+const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 {
 	const char *path;
 	char *newpath, *devpath;
@@ -1720,7 +1727,7 @@ const char *cdev_mount_default(struct cdev *cdev)
 	/*
 	 * If this cdev is already mounted somewhere use this path
 	 * instead of mounting it again to avoid corruption on the
-	 * filesystem.
+	 * filesystem. Note this ignores eventual fsoptions though.
 	 */
 	path = cdev_get_mount_path(cdev);
 	if (path)
@@ -1731,7 +1738,7 @@ const char *cdev_mount_default(struct cdev *cdev)
 
 	devpath = asprintf("/dev/%s", cdev->name);
 
-	ret = mount(devpath, NULL, newpath);
+	ret = mount(devpath, NULL, newpath, fsoptions);
 
 	free(devpath);
 
@@ -1761,6 +1768,6 @@ void mount_all(void)
 		struct cdev *cdev = &bdev->cdev;
 
 		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list)
-			cdev_mount_default(cdev);
+			cdev_mount_default(cdev, NULL);
 	}
 }

@@ -316,7 +316,7 @@ static void spi_remove(struct device_d *dev)
 
 struct bus_type spi_bus = {
 	.name = "spi",
-	.match = device_match,
+	.match = device_match_of_modalias,
 	.probe = spi_probe,
 	.remove = spi_remove,
 };

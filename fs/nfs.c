@@ -1010,7 +1010,7 @@ static int nfs_probe(struct device_d *dev)
 	/* Need a priviliged source port */
 	net_udp_bind(npriv->con, 1000);
 
-	ret = rpc_lookup_req(npriv, PROG_MOUNT, 1);
+	ret = rpc_lookup_req(npriv, PROG_MOUNT, 2);
 	if (ret) {
 		printf("lookup mount port failed with %d\n", ret);
 		goto err2;

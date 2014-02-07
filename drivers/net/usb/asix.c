@@ -382,7 +382,7 @@ static int asix_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 
 	if (ret < 0) {
 		debug("Failed to read MAC address: %d\n", ret);
-		return -1;
+		return ret;
 	}
 
 	return 0;
@@ -403,7 +403,7 @@ static int ax88172_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	if ((ret = asix_read_cmd(udev, AX88172_CMD_READ_NODE_ID,
 				0, 0, 6, adr)) < 0) {
 		debug("read AX_CMD_READ_NODE_ID failed: %d\n", ret);
-		return -1;
+		return ret;
 	}
 
 	return 0;

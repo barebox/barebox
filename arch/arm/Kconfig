@@ -87,6 +87,7 @@ config ARCH_MVEBU
 	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select HAS_DEBUG_LL
+	select MVEBU_MBUS
 	select OFTREE
 
 config ARCH_MXS

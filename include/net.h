@@ -276,6 +276,13 @@ static inline uint32_t net_read_uint32(void *from)
 	return tmp;
 }
 
+static inline uint64_t net_read_uint64(void *from)
+{
+	uint64_t tmp;
+	memcpy(&tmp, from, sizeof(tmp));
+	return tmp;
+}
+
 /* write IP *in network byteorder* */
 static inline void net_write_ip(void *to, IPaddr_t ip)
 {

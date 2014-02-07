@@ -269,11 +269,11 @@ static inline IPaddr_t net_read_ip(void *from)
 }
 
 /* return uint32 *in network byteorder* */
-static inline uint32_t net_read_uint32(uint32_t *from)
+static inline uint32_t net_read_uint32(void *from)
 {
-	ulong l;
-	memcpy((void*)&l, (void*)from, sizeof(l));
-	return l;
+	uint32_t tmp;
+	memcpy(&tmp, from, sizeof(tmp));
+	return tmp;
 }
 
 /* write IP *in network byteorder* */

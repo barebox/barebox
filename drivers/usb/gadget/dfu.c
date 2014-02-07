@@ -597,8 +597,10 @@ static int dfu_bind_config(struct usb_configuration *c)
 	func->disable = dfu_disable;
 
 	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
-	if (!dfu->dnreq)
+	if (!dfu->dnreq) {
 		printf("usb_ep_alloc_request failed\n");
+		goto out;
+	}
 	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);
 	dfu->dnreq->complete = dn_complete;
 	dfu->dnreq->zero = 0;

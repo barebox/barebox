@@ -266,7 +266,7 @@ static int save_file(const char *path)
 	fd = open(path, O_WRONLY | O_TRUNC | O_CREAT);
 	if (fd < 0) {
 		printf("could not open file for writing: %s\n", errno_str());
-		return -1;
+		return fd;
 	}
 
 	line = buffer;

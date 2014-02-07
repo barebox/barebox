@@ -51,7 +51,7 @@ int ulpi_read(int reg, void __iomem *view)
 	int ret;
 
 	/* make sure interface is running */
-	if (!(readl(view) && ULPIVW_SS)) {
+	if (!(readl(view) & ULPIVW_SS)) {
 		writel(ULPIVW_WU, view);
 
 		/* wait for wakeup */
@@ -73,7 +73,7 @@ int ulpi_set(u8 bits, int reg, void __iomem *view)
 	int ret;
 
 	/* make sure the interface is running */
-	if (!(readl(view) && ULPIVW_SS)) {
+	if (!(readl(view) & ULPIVW_SS)) {
 		writel(ULPIVW_WU, view);
 		/* wait for wakeup */
 		ret = ulpi_poll(view, ULPIVW_WU);

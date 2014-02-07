@@ -275,8 +275,13 @@ static int rpc_check_reply(unsigned char *pkt, int rpc_prog, unsigned long rpc_i
 
 	memcpy(&rpc, pkt, sizeof(rpc));
 
-	if (ntohl(rpc.id) != rpc_id)
+	if (ntohl(rpc.id) != rpc_id) {
+		if (rpc_id - ntohl(rpc.id) == 1)
+			/* stale packet, wait a bit longer */
+			return 0;
+
 		return -EINVAL;
+	}
 
 	if (rpc.rstatus  ||
 	    rpc.verifier ||

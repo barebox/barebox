@@ -36,6 +36,8 @@
 #include <sizes.h>
 #include <byteorder.h>
 
+#include "parseopt.h"
+
 #define SUNRPC_PORT     111
 
 #define PROG_PORTMAP    100000
@@ -1339,19 +1341,27 @@ static int nfs_probe(struct device_d *dev)
 	/* Need a priviliged source port */
 	net_udp_bind(npriv->con, 1000);
 
-	ret = rpc_lookup_req(npriv, PROG_MOUNT, 3);
-	if (ret < 0) {
-		printf("lookup mount port failed with %d\n", ret);
-		goto err2;
+	parseopt_hu(fsdev->options, "mountport", &npriv->mount_port);
+	if (!npriv->mount_port) {
+		ret = rpc_lookup_req(npriv, PROG_MOUNT, 3);
+		if (ret < 0) {
+			printf("lookup mount port failed with %d\n", ret);
+			goto err2;
+		}
+		npriv->mount_port = ret;
 	}
-	npriv->mount_port = ret;
+	debug("mount port: %hu\n", npriv->mount_port);
 
-	ret = rpc_lookup_req(npriv, PROG_NFS, 3);
-	if (ret < 0) {
-		printf("lookup nfs port failed with %d\n", ret);
-		goto err2;
+	parseopt_hu(fsdev->options, "port", &npriv->nfs_port);
+	if (!npriv->nfs_port) {
+		ret = rpc_lookup_req(npriv, PROG_NFS, 3);
+		if (ret < 0) {
+			printf("lookup nfs port failed with %d\n", ret);
+			goto err2;
+		}
+		npriv->nfs_port = ret;
 	}
-	npriv->nfs_port = ret;
+	debug("nfs port: %d\n", npriv->nfs_port);
 
 	ret = nfs_mount_req(npriv);
 	if (ret) {

@@ -616,7 +616,7 @@ static struct file_priv *nfs_do_open(struct device_d *dev, const char *filename)
 	struct file_priv *priv;
 	struct nfs_priv *npriv = dev->priv;
 	int ret;
-	const char *fname, *tok;
+	const char *tok;
 
 	priv = xzalloc(sizeof(*priv));
 
@@ -629,25 +629,23 @@ static struct file_priv *nfs_do_open(struct device_d *dev, const char *filename)
 
 	filename++;
 
-	fname = filename;
-
 	memcpy(priv->filefh, npriv->rootfh, NFS_FHSIZE);
 
-	while (*fname) {
-		int flen;
+	while (*filename) {
+		size_t flen;
 
-		tok = strchr(fname, '/');
+		tok = strchr(filename, '/');
 		if (tok)
-			flen = tok - fname;
+			flen = tok - filename;
 		else
-			flen = strlen(fname);
+			flen = strlen(filename);
 
-		ret = nfs_lookup_req(priv, fname, flen);
+		ret = nfs_lookup_req(priv, filename, flen);
 		if (ret)
 			goto out;
 
 		if (tok)
-			fname += flen + 1;
+			filename += flen + 1;
 		else
 			break;
 	}

@@ -21,7 +21,7 @@
 #include <asm/barebox-arm-head.h>
 #include <mach/lowlevel.h>
 
-extern char __dtb_dove_cubox_start[];
+extern char __dtb_dove_cubox_bb_start[];
 
 ENTRY_FUNCTION(start_solidrun_cubox, r0, r1, r2)
 {
@@ -29,7 +29,7 @@ ENTRY_FUNCTION(start_solidrun_cubox, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = (uint32_t)__dtb_dove_cubox_start - get_runtime_offset();
+	fdt = (uint32_t)__dtb_dove_cubox_bb_start - get_runtime_offset();
 
 	mvebu_barebox_entry(fdt);
 }

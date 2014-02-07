@@ -404,7 +404,8 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	}
 
 	devfs_create(&mtd->cdev);
-	of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
+	if (mtd->parent)
+		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
 
 	list_for_each_entry(hook, &mtd_register_hooks, hook)
 		if (hook->add_mtd_device)

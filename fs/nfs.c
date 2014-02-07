@@ -374,22 +374,8 @@ static int rpc_lookup_req(struct nfs_priv *npriv, int prog, int ver)
 	if (ret)
 		return ret;
 
-	port = net_read_uint32((uint32_t *)(nfs_packet + sizeof(struct rpc_reply)));
-
-	switch (prog) {
-	case PROG_MOUNT:
-		npriv->mount_port = ntohl(port);
-		debug("mount port: %d\n", npriv->mount_port);
-		break;
-	case PROG_NFS:
-		npriv->nfs_port = ntohl(port);
-		debug("nfs port: %d\n", npriv->nfs_port);
-		break;
-	default:
-		return -EINVAL;
-	}
-
-	return 0;
+	port = ntohl(net_read_uint32(nfs_packet + sizeof(struct rpc_reply)));
+	return port;
 }
 
 /*
@@ -1000,16 +986,18 @@ static int nfs_probe(struct device_d *dev)
 	net_udp_bind(npriv->con, 1000);
 
 	ret = rpc_lookup_req(npriv, PROG_MOUNT, 2);
-	if (ret) {
+	if (ret < 0) {
 		printf("lookup mount port failed with %d\n", ret);
 		goto err2;
 	}
+	npriv->mount_port = ret;
 
 	ret = rpc_lookup_req(npriv, PROG_NFS, 2);
-	if (ret) {
+	if (ret < 0) {
 		printf("lookup nfs port failed with %d\n", ret);
 		goto err2;
 	}
+	npriv->nfs_port = ret;
 
 	ret = nfs_mount_req(npriv);
 	if (ret) {

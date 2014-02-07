@@ -294,8 +294,7 @@ static int at25_probe(struct device_d *dev)
 	return 0;
 
 fail:
-	if (at25)
-		free(at25);
+	free(at25);
 
 	return err;
 }

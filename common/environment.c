@@ -371,8 +371,7 @@ skip:
 	ret = 0;
 out:
 	close(envfd);
-	if (buf_free)
-		free(buf_free);
+	free(buf_free);
 	return ret;
 }
 

@@ -447,7 +447,7 @@ static int smsc95xx_phy_initialize(struct usbnet *dev)
 		udelay(10 * 1000);
 		bmcr = smsc95xx_mdio_read(&dev->miibus, phy_id, MII_BMCR);
 		timeout++;
-	} while ((bmcr & MII_BMCR) && (timeout < 100));
+	} while ((bmcr & BMCR_RESET) && (timeout < 100));
 
 	if (timeout >= 100) {
 		netdev_warn(dev->net, "timeout on PHY Reset");

@@ -546,8 +546,8 @@ static arith_t evaluate_string(arith_state_t *math_state, const char *expr)
 	arith_t result;
 
 	if (numstack == NULL || stack == NULL) {
-		errmsg = "out of memory";
-		goto err_with_custom_msg;
+		math_state->errmsg = "out of memory";
+		return -1;
 	}
 
 	/* Start with a left paren */

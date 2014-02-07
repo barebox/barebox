@@ -73,11 +73,6 @@
 
 #define SPI_NAME_SIZE   32
 
-struct spi_device_id {
-	char name[SPI_NAME_SIZE];
-	unsigned long driver_data;
-};
-
 struct m25p {
 	struct spi_device	*spi;
 	struct mtd_info		mtd;
@@ -618,7 +613,7 @@ struct flash_info {
  * more flash chips.  This current list focusses on newer chips, which
  * have been converging on command sets which including JEDEC ID.
  */
-static const struct spi_device_id m25p_ids[] = {
+static const struct platform_device_id m25p_ids[] = {
 	/* Atmel -- some are (confusingly) marketed as "DataFlash" */
 	{ "at25fs010",  INFO(0x1f6601, 0, 32 * 1024,   4, SECT_4K) },
 	{ "at25fs040",  INFO(0x1f6604, 0, 64 * 1024,   8, SECT_4K) },
@@ -755,7 +750,7 @@ static const struct spi_device_id m25p_ids[] = {
 	{ },
 };
 
-static const struct spi_device_id *jedec_probe(struct spi_device *spi)
+static const struct platform_device_id *jedec_probe(struct spi_device *spi)
 {
 	int			tmp;
 	u8			code = OPCODE_RDID;
@@ -803,13 +798,14 @@ static const struct spi_device_id *jedec_probe(struct spi_device *spi)
 static int m25p_probe(struct device_d *dev)
 {
 	struct spi_device *spi = (struct spi_device *)dev->type_data;
-	const struct spi_device_id	*id = NULL;
+	const struct platform_device_id	*id = NULL;
 	struct flash_platform_data	*data;
 	struct m25p			*flash;
 	struct flash_info		*info = NULL;
 	unsigned			i;
 	unsigned			do_jdec_probe = 1;
 	char				*flashname = NULL;
+	const char			*typename = NULL;
 	int				device_id;
 
 	/* Platform data helps sort out which chip type we have, as
@@ -818,12 +814,17 @@ static int m25p_probe(struct device_d *dev)
 	 * newer chips, even if we don't recognize the particular chip.
 	 */
 	data = dev->platform_data;
-	if (data && data->type) {
-		const struct spi_device_id *plat_id;
+	if (data && data->type)
+		typename = data->type;
+	else if (dev->id_entry)
+		typename = dev->id_entry->name;
+
+	if (typename) {
+		const struct platform_device_id *plat_id;
 
 		for (i = 0; i < ARRAY_SIZE(m25p_ids) - 1; i++) {
 			plat_id = &m25p_ids[i];
-			if (strcmp(data->type, plat_id->name))
+			if (strcmp(typename, plat_id->name))
 				continue;
 			break;
 		}
@@ -836,11 +837,11 @@ static int m25p_probe(struct device_d *dev)
 			if (!info->jedec_id)
 				do_jdec_probe = 0;
 		} else
-			dev_warn(&spi->dev, "unrecognized id %s\n", data->type);
+			dev_warn(&spi->dev, "unrecognized id %s\n", typename);
 	}
 
 	if (do_jdec_probe) {
-		const struct spi_device_id *jid;
+		const struct platform_device_id *jid;
 
 		jid = jedec_probe(spi);
 		if (IS_ERR(jid)) {
@@ -969,6 +970,7 @@ static struct driver_d m25p80_driver = {
 	.name	= "m25p80",
 	.probe	= m25p_probe,
 	.of_compatible = DRV_OF_COMPAT(m25p80_dt_ids),
+	.id_table = (struct platform_device_id *)m25p_ids,
 };
 device_spi_driver(m25p80_driver);
 

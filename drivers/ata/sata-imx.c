@@ -59,7 +59,7 @@ static int imx53_sata_init(struct imx_ahci *imx_ahci)
 	 */
 	val = readl(base + 0x180c);
 	val &= (0x3 << 1);
-	val |= (0x1 << 1);
+	val |= (0x2 << 1);
 	writel(val, base + 0x180c);
 
 	return 0;

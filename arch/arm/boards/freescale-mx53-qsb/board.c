@@ -93,11 +93,56 @@ static int loco_late_init(void)
 
 	mc34708 = mc13xxx_get();
 	if (mc34708) {
+		unsigned int val;
+		int ret;
 		/* get the board revision from fuse */
 		rev = readl(MX53_IIM_BASE_ADDR + 0x878);
 		set_board_rev(rev);
 		printf("MCIMX53-START-R board 1.0 rev %c\n", (rev == 1) ? 'A' : 'B' );
 		armlinux_set_revision(loco_system_rev);
+		/* Set VDDGP to 1.25V for 1GHz on SW1 */
+		mc13xxx_reg_read(mc34708, MC13892_REG_SW_0, &val);
+		val = (val & ~SWx_VOLT_MASK_MC34708) | SWx_1_250V_MC34708;
+		ret = mc13xxx_reg_write(mc34708, MC13892_REG_SW_0, val);
+		if (ret) {
+			printf("Writing to REG_SW_0 failed: %d\n", ret);
+			return ret;
+		}
+
+		/* Set VCC as 1.30V on SW2 */
+		mc13xxx_reg_read(mc34708, MC13892_REG_SW_1, &val);
+		val = (val & ~SWx_VOLT_MASK_MC34708) | SWx_1_300V_MC34708;
+		ret = mc13xxx_reg_write(mc34708, MC13892_REG_SW_1, val);
+		if (ret) {
+			printf("Writing to REG_SW_1 failed: %d\n", ret);
+			return ret;
+		}
+
+		/* Set global reset timer to 4s */
+		mc13xxx_reg_read(mc34708, MC13892_REG_POWER_CTL2, &val);
+		val = (val & ~TIMER_MASK_MC34708) | TIMER_4S_MC34708;
+		ret = mc13xxx_reg_write(mc34708, MC13892_REG_POWER_CTL2, val);
+		if (ret) {
+			printf("Writing to REG_POWER_CTL2 failed: %d\n", ret);
+			return ret;
+		}
+
+		/* Set VUSBSEL and VUSBEN for USB PHY supply*/
+		mc13xxx_reg_read(mc34708, MC13892_REG_MODE_0, &val);
+		val |= (VUSBSEL_MC34708 | VUSBEN_MC34708);
+		ret = mc13xxx_reg_write(mc34708, MC13892_REG_MODE_0, val);
+		if (ret) {
+			printf("Writing to REG_MODE_0 failed: %d\n", ret);
+			return ret;
+		}
+
+		/* Set SWBST to 5V in auto mode */
+		val = SWBST_AUTO;
+		ret = mc13xxx_reg_write(mc34708, SWBST_CTRL, val);
+		if (ret) {
+			printf("Writing to SWBST_CTRL failed: %d\n", ret);
+			return ret;
+		}
 	} else {
 		/* so we have a DA9053 based board */
 		printf("MCIMX53-START board 1.0\n");

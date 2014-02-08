@@ -226,3 +226,7 @@
 	phy_type = "utmi";
 	status = "okay";
 };
+
+&sata {
+	status = "okay";
+};

@@ -223,5 +223,6 @@
 };
 
 &usbotg {
-       status = "okay";
+	phy_type = "utmi";
+	status = "okay";
 };

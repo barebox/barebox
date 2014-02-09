@@ -18,9 +18,19 @@ struct device_d *imx_add_fec_imx6(void *base, struct fec_platform_data *pdata)
 	return imx_add_device("imx6-fec", -1, base, 0x1000, pdata);
 }
 
-struct device_d *imx_add_spi(void *base, int id, struct spi_imx_master *pdata)
+struct device_d *imx_add_spi_imx27(void *base, int id, struct spi_imx_master *pdata)
 {
-	return imx_add_device("imx_spi", id, base, 0x1000, pdata);
+	return imx_add_device("imx27-spi", id, base, 0x1000, pdata);
+}
+
+struct device_d *imx_add_spi_imx35(void *base, int id, struct spi_imx_master *pdata)
+{
+	return imx_add_device("imx35-spi", id, base, 0x1000, pdata);
+}
+
+struct device_d *imx_add_spi_imx51(void *base, int id, struct spi_imx_master *pdata)
+{
+	return imx_add_device("imx51-spi", id, base, 0x1000, pdata);
 }
 
 struct device_d *imx_add_i2c(void *base, int id, struct i2c_platform_data *pdata)

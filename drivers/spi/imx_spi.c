@@ -446,19 +446,19 @@ static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	return 0;
 }
 
-static struct spi_imx_devtype_data spi_imx_devtype_data_0_0 = {
+static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_0_0 = {
 	.chipselect = cspi_0_0_chipselect,
 	.xchg_single = cspi_0_0_xchg_single,
 	.init = cspi_0_0_init,
 };
 
-static struct spi_imx_devtype_data spi_imx_devtype_data_0_7 = {
+static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_0_7 = {
 	.chipselect = cspi_0_7_chipselect,
 	.xchg_single = cspi_0_7_xchg_single,
 	.init = cspi_0_7_init,
 };
 
-static struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
+static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
 	.chipselect = cspi_2_3_chipselect,
 	.xchg_single = cspi_2_3_xchg_single,
 	.init = cspi_2_3_init,
@@ -493,8 +493,12 @@ static int imx_spi_probe(struct device_d *dev)
 	struct spi_master *master;
 	struct imx_spi *imx;
 	struct spi_imx_master *pdata = dev->platform_data;
-	struct spi_imx_devtype_data *devdata;
+	struct spi_imx_devtype_data *devdata = NULL;
 	int ret;
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&devdata);
+	if (ret)
+		return -ENODEV;
 
 	imx = xzalloc(sizeof(*imx));
 
@@ -519,17 +523,6 @@ static int imx_spi_probe(struct device_d *dev)
 		goto err_free;
 	}
 
-	if (IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_0) && cpu_is_mx27())
-		devdata = &spi_imx_devtype_data_0_0;
-
-	if (IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_0) &&
-			(cpu_is_mx25() || cpu_is_mx35()))
-		devdata = &spi_imx_devtype_data_0_7;
-
-	if (IS_ENABLED(CONFIG_DRIVER_SPI_IMX_2_3) &&
-			(cpu_is_mx51() || cpu_is_mx53() || cpu_is_mx6()))
-		devdata = &spi_imx_devtype_data_2_3;
-
 	imx->chipselect = devdata->chipselect;
 	imx->xchg_single = devdata->xchg_single;
 	imx->init = devdata->init;
@@ -548,13 +541,49 @@ err_free:
 }
 
 static __maybe_unused struct of_device_id imx_spi_dt_ids[] = {
+#if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_0)
 	{
 		.compatible = "fsl,imx27-cspi",
-	}, {
+		.data = (unsigned long)&spi_imx_devtype_data_0_0,
+	},
+#endif
+#if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_7)
+	{
 		.compatible = "fsl,imx35-cspi",
-	}, {
+		.data = (unsigned long)&spi_imx_devtype_data_0_7,
+	},
+#endif
+#if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_2_3)
+	{
 		.compatible = "fsl,imx51-ecspi",
-	}, {
+		.data = (unsigned long)&spi_imx_devtype_data_2_3,
+	},
+#endif
+	{
+		/* sentinel */
+	}
+};
+
+static struct platform_device_id imx_spi_ids[] = {
+#if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_0)
+	{
+		.name = "imx27-spi",
+		.driver_data = (unsigned long)&spi_imx_devtype_data_0_0,
+	},
+#endif
+#if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_7)
+	{
+		.name = "imx35-spi",
+		.driver_data = (unsigned long)&spi_imx_devtype_data_0_7,
+	},
+#endif
+#if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_2_3)
+	{
+		.name = "imx51-spi",
+		.driver_data = (unsigned long)&spi_imx_devtype_data_2_3,
+	},
+#endif
+	{
 		/* sentinel */
 	}
 };
@@ -563,5 +592,6 @@ static struct driver_d imx_spi_driver = {
 	.name  = "imx_spi",
 	.probe = imx_spi_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_spi_dt_ids),
+	.id_table = imx_spi_ids,
 };
 device_platform_driver(imx_spi_driver);

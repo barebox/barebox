@@ -107,27 +107,6 @@
 #define CSPI_2_3_STAT		0x18
 #define CSPI_2_3_STAT_RR		(1 <<  3)
 
-enum imx_spi_devtype {
-#ifdef CONFIG_DRIVER_SPI_IMX1
-	SPI_IMX_VER_IMX1,
-#endif
-#ifdef CONFIG_DRIVER_SPI_IMX_0_0
-	SPI_IMX_VER_0_0,
-#endif
-#ifdef CONFIG_DRIVER_SPI_IMX_0_4
-	SPI_IMX_VER_0_4,
-#endif
-#ifdef CONFIG_DRIVER_SPI_IMX_0_5
-	SPI_IMX_VER_0_5,
-#endif
-#ifdef CONFIG_DRIVER_SPI_IMX_0_7
-	SPI_IMX_VER_0_7,
-#endif
-#ifdef CONFIG_DRIVER_SPI_IMX_2_3
-	SPI_IMX_VER_2_3,
-#endif
-};
-
 struct imx_spi {
 	struct spi_master	master;
 	int			*cs_array;
@@ -473,29 +452,29 @@ static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	return 0;
 }
 
-static struct spi_imx_devtype_data spi_imx_devtype_data[] = {
 #ifdef CONFIG_DRIVER_SPI_IMX_0_0
-	[SPI_IMX_VER_0_0] = {
-		.chipselect = cspi_0_0_chipselect,
-		.xchg_single = cspi_0_0_xchg_single,
-		.init = cspi_0_0_init,
-	},
-#endif
-#ifdef CONFIG_DRIVER_SPI_IMX_0_7
-	[SPI_IMX_VER_0_7] = {
-		.chipselect = cspi_0_7_chipselect,
-		.xchg_single = cspi_0_7_xchg_single,
-		.init = cspi_0_7_init,
-	},
-#endif
-#ifdef CONFIG_DRIVER_SPI_IMX_2_3
-	[SPI_IMX_VER_2_3] = {
-		.chipselect = cspi_2_3_chipselect,
-		.xchg_single = cspi_2_3_xchg_single,
-		.init = cspi_2_3_init,
-	},
-#endif
+static struct spi_imx_devtype_data spi_imx_devtype_data_0_0 = {
+	.chipselect = cspi_0_0_chipselect,
+	.xchg_single = cspi_0_0_xchg_single,
+	.init = cspi_0_0_init,
 };
+#endif
+
+#ifdef CONFIG_DRIVER_SPI_IMX_0_7
+static struct spi_imx_devtype_data spi_imx_devtype_data_0_7 = {
+	.chipselect = cspi_0_7_chipselect,
+	.xchg_single = cspi_0_7_xchg_single,
+	.init = cspi_0_7_init,
+};
+#endif
+
+#ifdef CONFIG_DRIVER_SPI_IMX_2_3
+static struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
+	.chipselect = cspi_2_3_chipselect,
+	.xchg_single = cspi_2_3_xchg_single,
+	.init = cspi_2_3_init,
+};
+#endif
 
 static int imx_spi_dt_probe(struct imx_spi *imx)
 {
@@ -526,7 +505,7 @@ static int imx_spi_probe(struct device_d *dev)
 	struct spi_master *master;
 	struct imx_spi *imx;
 	struct spi_imx_master *pdata = dev->platform_data;
-	enum imx_spi_devtype version;
+	struct spi_imx_devtype_data *devdata;
 	int ret;
 
 	imx = xzalloc(sizeof(*imx));
@@ -554,19 +533,19 @@ static int imx_spi_probe(struct device_d *dev)
 
 #ifdef CONFIG_DRIVER_SPI_IMX_0_0
 	if (cpu_is_mx27())
-		version = SPI_IMX_VER_0_0;
+		devdata = &spi_imx_devtype_data_0_0;
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_0_7
 	if (cpu_is_mx25() || cpu_is_mx35())
-		version = SPI_IMX_VER_0_7;
+		devdata = &spi_imx_devtype_data_0_7;
 #endif
 #ifdef CONFIG_DRIVER_SPI_IMX_2_3
 	if (cpu_is_mx51() || cpu_is_mx53() || cpu_is_mx6())
-		version = SPI_IMX_VER_2_3;
+		devdata = &spi_imx_devtype_data_2_3;
 #endif
-	imx->chipselect = spi_imx_devtype_data[version].chipselect;
-	imx->xchg_single = spi_imx_devtype_data[version].xchg_single;
-	imx->init = spi_imx_devtype_data[version].init;
+	imx->chipselect = devdata->chipselect;
+	imx->xchg_single = devdata->xchg_single;
+	imx->init = devdata->init;
 	imx->regs = dev_request_mem_region(dev, 0);
 
 	imx->init(imx);

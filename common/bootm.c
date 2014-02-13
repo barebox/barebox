@@ -294,6 +294,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 	if (ft != filetype_oftree) {
 		printf("%s is not an oftree but %s\n", oftree,
 				file_type_to_string(ft));
+		return -EINVAL;
 	}
 
 	data->of_root_node = of_unflatten_dtb(NULL, fdt);

@@ -1938,6 +1938,9 @@ int usb_gadget_poll(void)
 	u32 irq_src;
 	int status = 0;
 
+	if (!udc)
+		return -ENODEV;
+
 	/* Disable ISR for OTG host mode */
 	if (udc->stopped)
 		return -EIO;

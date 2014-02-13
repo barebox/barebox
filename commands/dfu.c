@@ -125,9 +125,14 @@ static int do_dfu(int argc, char *argv[])
 
 	argstr = argv[optind];
 
-	if (!idProduct || !idVendor) {
-		printf("productid or vendorid not given\n");
-		return 1;
+	if (!idProduct && !idVendor) {
+		idVendor = 0x1d50; /* Openmoko, Inc */
+		idProduct = 0x60a2; /* barebox bootloader USB DFU Mode */
+	}
+
+	if ((idProduct && !idVendor) || (!idProduct && idVendor)) {
+		printf("Only one of vendor id or product id given\n");
+		return -EINVAL;
 	}
 
 	for (n = 0; *argstr; n++) {

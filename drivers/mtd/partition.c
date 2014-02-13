@@ -85,7 +85,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset, size_t si
 
 	part->type = mtd->type;
 	part->flags = mtd->flags;
-	part->parent = mtd->parent;
+	part->parent = &mtd->class_dev;
 	part->erasesize = mtd->erasesize;
 	part->writesize = mtd->writesize;
 	part->writebufsize = mtd->writebufsize;

@@ -73,7 +73,7 @@ static int add_mtdoob_device(struct mtd_info *mtd, char *devname, void **priv)
 {
 	struct mtdoob *mtdoob;
 
-	if (mtd->oobsize == 0)
+	if (mtd->master || mtd->oobsize == 0)
 		return 0;
 
 	mtdoob = xzalloc(sizeof(*mtdoob));
@@ -92,6 +92,9 @@ static int add_mtdoob_device(struct mtd_info *mtd, char *devname, void **priv)
 static int del_mtdoob_device(struct mtd_info *mtd, void **priv)
 {
 	struct mtdoob *mtdoob;
+
+	if (mtd->master || mtd->oobsize == 0)
+		return 0;
 
 	mtdoob = *priv;
 	devfs_remove(&mtdoob->cdev);

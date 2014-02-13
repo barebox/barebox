@@ -682,6 +682,8 @@ static struct usb_composite_driver dfu_driver = {
 
 int usb_dfu_register(struct usb_dfu_pdata *pdata)
 {
+	int ret;
+
 	dfu_devs = pdata->alts;
 	dfu_num_alt = pdata->num_alts;
 	dfu_dev_descriptor.idVendor = pdata->idVendor;
@@ -692,7 +694,10 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 	usb_composite_register(&dfu_driver);
 
 	while (1) {
-		usb_gadget_poll();
+		ret = usb_gadget_poll();
+		if (ret < 0)
+			return ret;
+
 		if (ctrlc() || dfudetach)
 			goto out;
 	}

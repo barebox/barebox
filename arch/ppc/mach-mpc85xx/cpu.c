@@ -68,14 +68,14 @@ phys_size_t fsl_get_effective_memsize(void)
 	sdram_size = 0;
 
 	for (ix = 0; ix < CFG_CHIP_SELECTS_PER_CTRL; ix++) {
-		if (in_be32(regs + DDR_OFF(CS0_CONFIG) + (ix * 8)) &
+		if (in_be32(regs + DDR_OFF(CS0_CONFIG) + (ix * 4)) &
 				SDRAM_CFG_MEM_EN) {
 			reg = in_be32(regs + DDR_OFF(CS0_BNDS) + (ix * 8));
 			/* start address */
 			san = (reg & 0x0fff00000) >>  16;
 			/* end address   */
 			ean = (reg & 0x00000fff);
-			sdram_size =  ((ean - san + 1) << 24);
+			sdram_size += ((ean - san + 1) << 24);
 		}
 	}
 

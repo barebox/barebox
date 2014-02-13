@@ -60,7 +60,8 @@ again:
 	if (fd < 0)
 		goto err_out;
 
-	if (read(fd, buf, s.st_size) < s.st_size)
+	ret = read_full(fd, buf, s.st_size);
+	if (ret < 0)
 		goto err_out1;
 
 	close(fd);

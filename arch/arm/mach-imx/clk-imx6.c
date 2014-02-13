@@ -305,6 +305,10 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[usbphy1], MX6_USBPHY1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[usbphy2], MX6_USBPHY2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[enfc_podf], MX6_GPMI_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[ipg_per], MX6_PWM1_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[ipg_per], MX6_PWM2_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[ipg_per], MX6_PWM3_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[ipg_per], MX6_PWM4_BASE_ADDR, "per");
 
 	writel(0xffffffff, ccm_base + CCGR0);
 	writel(0xffffffff, ccm_base + CCGR1);

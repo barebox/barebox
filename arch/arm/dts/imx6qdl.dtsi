@@ -30,6 +30,10 @@
 		mmc1 = &usdhc2;
 		mmc2 = &usdhc3;
 		mmc3 = &usdhc4;
+		pwm0 = &pwm1;
+		pwm1 = &pwm2;
+		pwm2 = &pwm3;
+		pwm3 = &pwm4;
 		serial0 = &uart1;
 		serial1 = &uart2;
 		serial2 = &uart3;

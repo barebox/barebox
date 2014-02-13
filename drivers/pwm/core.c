@@ -26,7 +26,8 @@ struct pwm_device {
 #define FLAG_REQUESTED	0
 #define FLAG_ENABLED	1
 	struct list_head	node;
-	struct device_d		*dev;
+	struct device_d		*hwdev;
+	struct device_d		dev;
 
 	unsigned int		duty_ns;
 	unsigned int		period_ns;
@@ -79,27 +80,36 @@ int pwmchip_add(struct pwm_chip *chip, struct device_d *dev)
 {
 	struct pwm_device *pwm;
 	struct param_d *p;
+	int ret;
 
 	if (_find_pwm(chip->devname))
 		return -EBUSY;
 
 	pwm = xzalloc(sizeof(*pwm));
 	pwm->chip = chip;
-	pwm->dev = dev;
+	pwm->hwdev = dev;
+
+	strcpy(pwm->dev.name, chip->devname);
+	pwm->dev.id = DEVICE_ID_SINGLE;
+	pwm->dev.parent = dev;
+
+	ret = register_device(&pwm->dev);
+	if (ret)
+		return ret;
 
 	list_add_tail(&pwm->node, &pwm_list);
 
-	p = dev_add_param_int(dev, "duty_ns", set_duty_period_ns,
+	p = dev_add_param_int(&pwm->dev, "duty_ns", set_duty_period_ns,
 			NULL, &pwm->chip->duty_ns, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
-	p = dev_add_param_int(dev, "period_ns", set_duty_period_ns,
+	p = dev_add_param_int(&pwm->dev, "period_ns", set_duty_period_ns,
 			NULL, &pwm->chip->period_ns, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
-	p = dev_add_param_bool(dev, "enable", set_enable,
+	p = dev_add_param_bool(&pwm->dev, "enable", set_enable,
 			NULL, &pwm->p_enable, pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);

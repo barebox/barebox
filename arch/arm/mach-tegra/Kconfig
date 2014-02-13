@@ -48,8 +48,8 @@ config ARCH_TEGRA_2x_SOC
 
 menu "select Tegra boards to be built"
 
-config MACH_TORADEX_COLIBRI_T20_IRIS
-	bool "Toradex Colibri T20 on Iris Carrier"
+config MACH_TORADEX_COLIBRI_T20
+	bool "Toradex Colibri T20"
 	select ARCH_TEGRA_2x_SOC
 
 config MACH_TOSHIBA_AC100

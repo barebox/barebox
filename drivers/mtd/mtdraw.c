@@ -285,6 +285,9 @@ static int add_mtdraw_device(struct mtd_info *mtd, char *devname, void **priv)
 {
 	struct mtdraw *mtdraw;
 
+	if (mtd->master || mtd->oobsize == 0)
+		return 0;
+
 	mtdraw = xzalloc(sizeof(*mtdraw));
 	mtdraw->writebuf = xmalloc(RAW_WRITEBUF_SIZE);
 	mtdraw->mtd = mtd;
@@ -305,6 +308,9 @@ static int add_mtdraw_device(struct mtd_info *mtd, char *devname, void **priv)
 static int del_mtdraw_device(struct mtd_info *mtd, void **priv)
 {
 	struct mtdraw *mtdraw;
+
+	if (mtd->master || mtd->oobsize == 0)
+		return 0;
 
 	mtdraw = *priv;
 	devfs_remove(&mtdraw->cdev);

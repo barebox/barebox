@@ -56,11 +56,11 @@ static struct i2c_board_info i2c_devices[] = {
 };
 #if defined(CONFIG_KEYBOARD_TWL6030) && defined(CONFIG_KEYBOARD_GPIO)
 static struct twl6030_pwrbtn_platform_data pwrbtn_data = {
-	.code = KEY_ENTER
+	.code = BB_KEY_ENTER
 };
 static struct gpio_keys_button keys[] = {
-	{ .code = KEY_UP  , .gpio = 43, .active_low = 1 },
-	{ .code = KEY_DOWN, .gpio = 44, .active_low = 1 },
+	{ .code = BB_KEY_UP  , .gpio = 43, .active_low = 1 },
+	{ .code = BB_KEY_DOWN, .gpio = 44, .active_low = 1 },
 };
 static struct gpio_keys_platform_data gk_data = {
 	.buttons = keys,

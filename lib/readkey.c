@@ -29,24 +29,24 @@ struct esc_cmds {
 };
 
 static const struct esc_cmds esccmds[] = {
-	{"OA", KEY_UP},       // cursor key Up
-	{"OB", KEY_DOWN},     // cursor key Down
-	{"OC", KEY_RIGHT},    // Cursor Key Right
-	{"OD", KEY_LEFT},     // cursor key Left
-	{"OH", KEY_HOME},     // Cursor Key Home
-	{"OF", KEY_END},      // Cursor Key End
-	{"[A", KEY_UP},       // cursor key Up
-	{"[B", KEY_DOWN},     // cursor key Down
-	{"[C", KEY_RIGHT},    // Cursor Key Right
-	{"[D", KEY_LEFT},     // cursor key Left
-	{"[H", KEY_HOME},     // Cursor Key Home
-	{"[F", KEY_END},      // Cursor Key End
-	{"[1~", KEY_HOME},    // Cursor Key Home
-	{"[2~", KEY_INSERT},  // Cursor Key Insert
-	{"[3~", KEY_DEL},     // Cursor Key Delete
-	{"[4~", KEY_END},     // Cursor Key End
-	{"[5~", KEY_PAGEUP},  // Cursor Key Page Up
-	{"[6~", KEY_PAGEDOWN},// Cursor Key Page Down
+	{"OA", BB_KEY_UP},       // cursor key Up
+	{"OB", BB_KEY_DOWN},     // cursor key Down
+	{"OC", BB_KEY_RIGHT},    // Cursor Key Right
+	{"OD", BB_KEY_LEFT},     // cursor key Left
+	{"OH", BB_KEY_HOME},     // Cursor Key Home
+	{"OF", BB_KEY_END},      // Cursor Key End
+	{"[A", BB_KEY_UP},       // cursor key Up
+	{"[B", BB_KEY_DOWN},     // cursor key Down
+	{"[C", BB_KEY_RIGHT},    // Cursor Key Right
+	{"[D", BB_KEY_LEFT},     // cursor key Left
+	{"[H", BB_KEY_HOME},     // Cursor Key Home
+	{"[F", BB_KEY_END},      // Cursor Key End
+	{"[1~", BB_KEY_HOME},    // Cursor Key Home
+	{"[2~", BB_KEY_INSERT},  // Cursor Key Insert
+	{"[3~", BB_KEY_DEL},     // Cursor Key Delete
+	{"[4~", BB_KEY_END},     // Cursor Key End
+	{"[5~", BB_KEY_PAGEUP},  // Cursor Key Page Up
+	{"[6~", BB_KEY_PAGEDOWN},// Cursor Key Page Down
 };
 
 int read_key(void)

@@ -339,16 +339,16 @@ struct gpio_led dab_mmx_leds[] = {
 #ifdef CONFIG_KEYBOARD_GPIO
 struct gpio_keys_button keys[] = {
 	{
-		.code = KEY_UP,
+		.code = BB_KEY_UP,
 		.gpio = AT91_PIN_PB25,
 	}, {
-		.code = KEY_HOME,
+		.code = BB_KEY_HOME,
 		.gpio = AT91_PIN_PB13,
 	}, {
-		.code = KEY_DOWN,
+		.code = BB_KEY_DOWN,
 		.gpio = AT91_PIN_PA26,
 	}, {
-		.code = KEY_ENTER,
+		.code = BB_KEY_ENTER,
 		.gpio = AT91_PIN_PC9,
 	},
 };

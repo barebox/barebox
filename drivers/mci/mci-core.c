@@ -939,6 +939,21 @@ out:
 	return err;
 }
 
+static char *mci_version_string(struct mci *mci)
+{
+	static char version[sizeof("x.xx")];
+	unsigned major, minor, micro;
+
+	major = (mci->version >> 8) & 0xf;
+	minor = (mci->version >> 4) & 0xf;
+	micro = mci->version & 0xf;
+
+	sprintf(version, "%u.%u", major,
+			micro ? (minor << 4) | micro : minor);
+
+	return version;
+}
+
 static int mci_startup_sd(struct mci *mci)
 {
 	struct mci_cmd cmd;
@@ -1140,8 +1155,8 @@ static int mci_startup(struct mci *mci)
 		return err;
 
 	mci_correct_version_from_ext_csd(mci);
-	printf("detected %s card version %d.%d\n", IS_SD(mci) ? "SD" : "MMC",
-		(mci->version >> 8) & 0xf, mci->version & 0xff);
+	dev_info(&mci->dev, "detected %s card version %s\n", IS_SD(mci) ? "SD" : "MMC",
+		mci_version_string(mci));
 	mci_extract_card_capacity_from_csd(mci);
 
 	if (IS_SD(mci))
@@ -1477,13 +1492,8 @@ static void mci_info(struct device_d *dev)
 	mci_print_caps(host->host_caps);
 
 	printf("Card information:\n");
-	if (mci->version < SD_VERSION_SD) {
-		printf("  Attached is a MultiMediaCard (Version: %u.%u)\n",
-			(mci->version >> 4) & 0xf, mci->version & 0xf);
-	} else {
-		printf("  Attached is an SD Card (Version: %u.%u)\n",
-			(mci->version >> 8) & 0xf, mci->version & 0xff);
-	}
+	printf("  Attached is a %s card\n", IS_SD(mci) ? "SD" : "MMC");
+	printf("  Version: %s\n", mci_version_string(mci));
 	printf("  Capacity: %u MiB\n", (unsigned)(mci->capacity >> 20));
 
 	if (mci->high_capacity)

@@ -32,7 +32,7 @@ static unsigned long clk_fixed_recalc_rate(struct clk *clk,
 	return fix->rate;
 }
 
-struct clk_ops clk_fixed_ops = {
+static struct clk_ops clk_fixed_ops = {
 	.recalc_rate = clk_fixed_recalc_rate,
 	.is_enabled = clk_is_enabled_always,
 };

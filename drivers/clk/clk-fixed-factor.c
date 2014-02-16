@@ -35,7 +35,7 @@ static unsigned long clk_fixed_factor_recalc_rate(struct clk *clk,
 	return (parent_rate / f->div) * f->mult;
 }
 
-struct clk_ops clk_fixed_factor_ops = {
+static struct clk_ops clk_fixed_factor_ops = {
 	.recalc_rate = clk_fixed_factor_recalc_rate,
 };
 

@@ -552,7 +552,6 @@ kwboot_mmap_image(const char *path, size_t *size, int prot)
 	void *img;
 
 	rc = -1;
-	fd = -1;
 	img = NULL;
 
 	fd = open(path, O_RDONLY);

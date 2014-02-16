@@ -518,7 +518,7 @@ static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd, u_char *dat,
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 	u32 ecc_stat, err;
-	int no_subpages = 1;
+	int no_subpages;
 	int ret = 0;
 	u8 ecc_bit_mask, err_limit;
 

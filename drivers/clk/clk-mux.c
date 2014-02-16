@@ -50,7 +50,7 @@ static int clk_mux_set_parent(struct clk *clk, u8 idx)
 	return 0;
 }
 
-struct clk_ops clk_mux_ops = {
+static struct clk_ops clk_mux_ops = {
 	.get_parent = clk_mux_get_parent,
 	.set_parent = clk_mux_set_parent,
 };

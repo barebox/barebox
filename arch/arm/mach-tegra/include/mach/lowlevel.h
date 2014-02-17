@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -20,6 +20,9 @@
  * accessor functions are a header only implementations, as they are meant to
  * be used by both the main CPU complex (ARMv7) and the AVP (ARMv4).
  */
+
+#ifndef __TEGRA_LOWLEVEL_H
+#define __TEGRA_LOWLEVEL_H
 
 #include <linux/compiler.h>
 #include <sizes.h>
@@ -237,3 +240,5 @@ void tegra_avp_reset_vector(uint32_t boarddata);
 
 /* reset vector for the main CPU complex */
 void tegra_maincomplex_entry(void);
+
+#endif /* __TEGRA_LOWLEVEL_H */

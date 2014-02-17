@@ -46,6 +46,9 @@
 #define CRC_CLK_OUT_ENB_L_AC97		(1 << 3)
 #define CRC_CLK_OUT_ENB_L_CPU		(1 << 0)
 
+#define CRC_CLK_OUT_ENB_H		0x014
+#define CRC_CLK_OUT_ENB_H_DVC		(1 << 15)
+
 #define CRC_CCLK_BURST_POLICY		0x020
 #define CRC_CCLK_BURST_POLICY_SYS_STATE_SHIFT	28
 #define CRC_CCLK_BURST_POLICY_SYS_STATE_FIQ	8
@@ -272,6 +275,11 @@
 #define CRC_RST_DEV_L_CPU		(1 << 0)
 
 #define CRC_RST_DEV_L_CLR		0x304
+
+#define CRC_RST_DEV_H_SET		0x308
+#define CRC_RST_DEV_H_DVC		(1 << 15)
+
+#define CRC_RST_DEV_H_CLR		0x30c
 
 #define CRC_RST_CPU_CMPLX_SET		0x340
 

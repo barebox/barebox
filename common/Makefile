@@ -76,22 +76,11 @@ cmd_envs = ($(srctree)/scripts/genenv $(srctree) $(objtree) $@ $(DEFAULT_ENVIRON
 $(obj)/barebox_default_env: FORCE
 	$(call cmd,envs)
 
-barebox_default_env_comp =
-ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_GZIP),y)
-barebox_default_env_comp = .gz
-endif
-ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_BZIP2),y)
-barebox_default_env_comp = .bz2
-endif
-ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_LZO),y)
-barebox_default_env_comp = .lzo
-endif
-
 quiet_cmd_env_h = ENVH    $@
 cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c default_environment) > $@; \
 	echo "static const int default_environment_uncompress_size=`stat -c%s $(obj)/barebox_default_env`;" >> $@
 
-$(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(barebox_default_env_comp) FORCE
+$(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(DEFAULT_COMPRESSION_SUFFIX) FORCE
 	$(call if_changed,env_h)
 
 quiet_cmd_pwd_h = PWDH    $@

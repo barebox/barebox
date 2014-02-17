@@ -52,7 +52,7 @@ static int register_default_env(void)
 	int ret;
 	void *defaultenv;
 
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED)) {
+	if (!IS_ENABLED(CONFIG_DEFAULT_COMPRESSION_NONE)) {
 		void *tmp = malloc(default_environment_size);
 
 		if (!tmp)

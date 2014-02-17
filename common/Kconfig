@@ -535,35 +535,38 @@ config DEFAULT_ENVIRONMENT
 	  Enabling this option will give you a default environment when
 	  the environment found in the environment sector is invalid
 
-config DEFAULT_ENVIRONMENT_COMPRESSED
-	bool
-	depends on DEFAULT_ENVIRONMENT
-	depends on !IMAGE_COMPRESSION_LZO
-	depends on !IMAGE_COMPRESSION_GZIP
-	default y if ZLIB
-	default y if BZLIB
-	default y if LZO_DECOMPRESS
-
-if DEFAULT_ENVIRONMENT_COMPRESSED
-
 choice
-	prompt "compression"
+	prompt "default compression for in-barebox binaries"
+	default DEFAULT_COMPRESSION_NONE if PBL_IMAGE
+	default DEFAULT_COMPRESSION_LZO if LZO_DECOMPRESS
+	default DEFAULT_COMPRESSION_GZIP if ZLIB
+	default DEFAULT_COMPRESSION_LZ4 if LZ4_DECOMPRESS
+	default DEFAULT_COMPRESSION_BZIP2 if BZLIB
+	help
+	  Select the default compression for in-barebox binary files. Files
+	  compiled into barebox like for example the default environment will
+	  be compressed with this compression type.
 
-config DEFAULT_ENVIRONMENT_COMPRESSED_GZIP
+config DEFAULT_COMPRESSION_GZIP
 	bool "gzip"
 	depends on ZLIB
 
-config DEFAULT_ENVIRONMENT_COMPRESSED_BZIP2
+config DEFAULT_COMPRESSION_BZIP2
 	bool "bzip2"
 	depends on BZLIB
 
-config DEFAULT_ENVIRONMENT_COMPRESSED_LZO
+config DEFAULT_COMPRESSION_LZO
 	bool "lzo"
 	depends on LZO_DECOMPRESS
 
-endchoice
+config DEFAULT_COMPRESSION_LZ4
+	bool "lz4"
+	depends on LZ4_DECOMPRESS
 
-endif
+config DEFAULT_COMPRESSION_NONE
+	bool "no compression"
+
+endchoice
 
 config HAVE_DEFAULT_ENVIRONMENT_NEW
 	bool

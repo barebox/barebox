@@ -504,6 +504,23 @@ barebox-alldirs	:= $(sort $(barebox-dirs) $(patsubst %/,%,$(filter %/, \
 pbl-common-y	:= $(patsubst %/, %/built-in-pbl.o, $(common-y))
 common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
 
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_GZIP),y)
+DEFAULT_COMPRESSION_SUFFIX := .gz
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSED_BZIP2),y)
+DEFAULT_COMPRESSION_SUFFIX := .bz2
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_LZO),y)
+DEFAULT_COMPRESSION_SUFFIX := .lzo
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_LZ4),y)
+DEFAULT_COMPRESSION_SUFFIX := .lz4
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_NONE),y)
+DEFAULT_COMPRESSION_SUFFIX :=
+endif
+export DEFAULT_COMPRESSION_SUFFIX
+
 # Build barebox
 # ---------------------------------------------------------------------------
 # barebox is built from the objects selected by $(barebox-init) and

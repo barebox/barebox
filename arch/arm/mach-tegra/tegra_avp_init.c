@@ -149,6 +149,9 @@ static void start_cpu0_clocks(void)
 	       TEGRA_CLK_RESET_BASE + CRC_SCLK_BURST_POLICY);
 	writel(CRC_SUPER_SDIV_ENB, TEGRA_CLK_RESET_BASE + CRC_SUPER_SCLK_DIV);
 
+	writel(1 << CRC_CLK_SYSTEM_RATE_AHB_SHIFT,
+	       TEGRA_CLK_RESET_BASE + CRC_CLK_SYSTEM_RATE);
+
 	/* deassert clock stop for cpu 0 */
 	reg = readl(TEGRA_CLK_RESET_BASE + CRC_CLK_CPU_CMPLX);
 	reg &= ~CRC_CLK_CPU_CMPLX_CPU0_CLK_STP;

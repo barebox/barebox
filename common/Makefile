@@ -65,23 +65,16 @@ ifneq ($(CONFIG_DEFAULT_ENVIRONMENT_PATH),"")
 DEFAULT_ENVIRONMENT_PATH += $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
 endif
 
-ENV_FILES := $(shell cd $(srctree); for i in $(DEFAULT_ENVIRONMENT_PATH); do find $${i} -type f ; done)
-
 endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
 
 #
 # Generate a barebox envfs image.
 #
-# echo $(ENV_FILES) > /dev/null is just for letting if_changed
-# recognize that something has changed when the environment has
-# other files,
-#
-quiet_cmd_env = ENV     $@
-cmd_env = ($(srctree)/scripts/genenv $(srctree) $(objtree) $@ $(DEFAULT_ENVIRONMENT_PATH)) || \
-	(echo $(ENV_FILES) > /dev/null; rm -f $@ ; false)
+quiet_cmd_envs = ENV     $@
+cmd_envs = ($(srctree)/scripts/genenv $(srctree) $(objtree) $@ $(DEFAULT_ENVIRONMENT_PATH))
 
-$(obj)/barebox_default_env: $(ENV_FILES) FORCE
-	$(call if_changed,env)
+$(obj)/barebox_default_env: FORCE
+	$(call cmd,envs)
 
 barebox_default_env_comp =
 ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_COMPRESSED_GZIP),y)

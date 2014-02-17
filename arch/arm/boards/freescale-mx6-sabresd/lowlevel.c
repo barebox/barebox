@@ -3,8 +3,15 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 
-void __naked barebox_arm_reset_vector(void)
+extern char __dtb_imx6q_sabresd_start[];
+
+ENTRY_FUNCTION(start_imx6q_sabresd, r0, r1, r2)
 {
+	uint32_t fdt;
+
 	arm_cpu_lowlevel_init();
-	barebox_arm_entry(0x10000000, SZ_1G, 0);
+
+	fdt = (uint32_t)__dtb_imx6q_sabresd_start - get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }

@@ -225,6 +225,10 @@ config MACH_SABRELITE
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
 
+config MACH_SABRESD
+	bool "Freescale i.MX6 SabreSD"
+	select ARCH_IMX6
+
 config MACH_NITROGEN6X
 	bool "BoundaryDevices Nitrogen6x"
 	select ARCH_IMX6
@@ -450,10 +454,6 @@ comment "i.MX6 Boards"
 
 config MACH_MX6Q_ARM2
 	bool "Freescale i.MX6q Armadillo2"
-	select ARCH_IMX6
-
-config MACH_SABRESD
-	bool "Freescale i.MX6 SabreSD"
 	select ARCH_IMX6
 
 endchoice

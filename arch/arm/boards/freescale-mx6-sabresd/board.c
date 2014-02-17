@@ -40,14 +40,6 @@
 #define PHY_ID_AR8031	0x004dd074
 #define AR_PHY_ID_MASK	0xffffffff
 
-static int sabresd_mem_init(void)
-{
-	arm_add_mem_device("ram0", 0x10000000, SZ_1G);
-
-	return 0;
-}
-mem_initcall(sabresd_mem_init);
-
 static int ar8031_phy_fixup(struct phy_device *dev)
 {
 	u16 val;
@@ -71,27 +63,21 @@ static int ar8031_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static void sabresd_phy_reset(void)
-{
-	/* Reset AR8031 PHY */
-	gpio_direction_output(IMX_GPIO_NR(1, 25) , 0);
-	udelay(500);
-	gpio_set_value(IMX_GPIO_NR(1, 25), 1);
-}
-
 static int sabresd_devices_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabresd"))
+		return 0;
+
 	armlinux_set_architecture(3980);
 
-	devfs_add_partition("disk0", 0, SZ_1M, DEVFS_PARTITION_FIXED, "self0");
-	devfs_add_partition("disk0", SZ_1M + SZ_1M, SZ_512K, DEVFS_PARTITION_FIXED, "env0");
 	return 0;
 }
 device_initcall(sabresd_devices_init);
 
 static int sabresd_coredevices_init(void)
 {
-	sabresd_phy_reset();
+	if (!of_machine_is_compatible("fsl,imx6q-sabresd"))
+		return 0;
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,
 			ar8031_phy_fixup);
@@ -102,14 +88,17 @@ static int sabresd_coredevices_init(void)
  * Do this before the fec initializes but after our
  * gpios are available.
  */
-fs_initcall(sabresd_coredevices_init);
+coredevice_initcall(sabresd_coredevices_init);
 
-static int sabresd_core_init(void)
+static int sabresd_postcore_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx6q-sabresd"))
+		return 0;
+
 	imx6_init_lowlevel();
 
 	barebox_set_hostname("sabresd");
 
 	return 0;
 }
-core_initcall(sabresd_core_init);
+postcore_initcall(sabresd_postcore_init);

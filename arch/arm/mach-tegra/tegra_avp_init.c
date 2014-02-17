@@ -158,6 +158,9 @@ static void start_cpu0_clocks(void)
 	reg = readl(TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_L);
 	reg |= CRC_CLK_OUT_ENB_L_CPU;
 	writel(reg, TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_L);
+
+	/* give clocks some time to settle */
+	tegra_ll_delay_usec(300);
 }
 
 static void maincomplex_powerup(void)
@@ -175,6 +178,8 @@ static void maincomplex_powerup(void)
 		reg = readl(TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
 		reg |= PMC_REMOVE_CLAMPING_CMD_CPU;
 		writel(reg, TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
+
+		tegra_ll_delay_usec(1000);
 	}
 }
 void tegra_avp_reset_vector(uint32_t boarddata)

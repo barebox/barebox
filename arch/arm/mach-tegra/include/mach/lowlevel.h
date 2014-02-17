@@ -173,6 +173,49 @@ int tegra_get_osc_clock(void)
 	}
 }
 
+#define TIMER_CNTR_1US	0x00
+#define TIMER_USEC_CFG	0x04
+
+static __always_inline
+void tegra_ll_delay_setup(void)
+{
+	u32 reg;
+
+	/*
+	 * calibrate timer to run at 1MHz
+	 * TIMERUS_USEC_CFG selects the scale down factor with bits [0:7]
+	 * representing the divisor and bits [8:15] representing the dividend
+	 * each in n+1 form.
+	 */
+	switch (tegra_get_osc_clock()) {
+	case 12000000:
+		reg = 0x000b;
+		break;
+	case 13000000:
+		reg = 0x000c;
+		break;
+	case 19200000:
+		reg = 0x045f;
+		break;
+	case 26000000:
+		reg = 0x0019;
+		break;
+	default:
+		reg = 0;
+		break;
+	}
+
+	writel(reg, TEGRA_TMRUS_BASE + TIMER_USEC_CFG);
+}
+
+static __always_inline
+void tegra_ll_delay_usec(int delay)
+{
+	int timeout = (int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) + delay;
+
+	while ((int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) - timeout < 0);
+}
+
 static __always_inline
 void tegra_cpu_lowlevel_setup(void)
 {
@@ -183,6 +226,7 @@ void tegra_cpu_lowlevel_setup(void)
 	r &= ~0x1f;
 	r |= 0xd3;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+	tegra_ll_delay_setup();
 }
 
 /* reset vector for the AVP, to be called from board reset vector */

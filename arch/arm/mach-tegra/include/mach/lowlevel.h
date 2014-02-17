@@ -21,6 +21,7 @@
  * be used by both the main CPU complex (ARMv7) and the AVP (ARMv4).
  */
 
+#include <linux/compiler.h>
 #include <sizes.h>
 #include <io.h>
 #include <mach/iomap.h>
@@ -40,7 +41,7 @@
 #define T20_ODMDATA_UARTID_SHIFT	15
 #define T20_ODMDATA_UARTID_MASK		(7 << T20_ODMDATA_UARTID_SHIFT)
 
-static inline __attribute__((always_inline))
+static __always_inline
 u32 tegra_get_odmdata(void)
 {
 	u32 bctsize, bctptr, odmdata;
@@ -63,7 +64,7 @@ enum tegra_chiptype {
 	TEGRA20 = 0,
 };
 
-static inline __attribute__((always_inline))
+static __always_inline
 enum tegra_chiptype tegra_get_chiptype(void)
 {
 	u32 hidrev;
@@ -78,7 +79,7 @@ enum tegra_chiptype tegra_get_chiptype(void)
 	}
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 int tegra_get_num_cores(void)
 {
 	switch (tegra_get_chiptype()) {
@@ -92,7 +93,7 @@ int tegra_get_num_cores(void)
 }
 
 /* Runtime data */
-static inline __attribute__((always_inline))
+static __always_inline
 int tegra_cpu_is_maincomplex(void)
 {
 	u32 tag0;
@@ -102,7 +103,7 @@ int tegra_cpu_is_maincomplex(void)
 	return (tag0 & 0xff) == 0x55;
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 uint32_t tegra20_get_ramsize(void)
 {
 	switch ((tegra_get_odmdata() & T20_ODMDATA_RAMSIZE_MASK) >>
@@ -125,7 +126,7 @@ static long uart_id_to_base[] = {
 	TEGRA_UARTE_BASE,
 };
 
-static inline __attribute__((always_inline))
+static __always_inline
 long tegra20_get_debuguart_base(void)
 {
 	u32 odmdata;
@@ -152,7 +153,7 @@ long tegra20_get_debuguart_base(void)
 #define CRC_OSC_CTRL_OSC_FREQ_SHIFT	30
 #define CRC_OSC_CTRL_OSC_FREQ_MASK	(0x3 << CRC_OSC_CTRL_OSC_FREQ_SHIFT)
 
-static inline unsigned __attribute__((always_inline))
+static __always_inline
 int tegra_get_osc_clock(void)
 {
 	u32 osc_ctrl = readl(TEGRA_CLK_RESET_BASE + CRC_OSC_CTRL);
@@ -172,7 +173,7 @@ int tegra_get_osc_clock(void)
 	}
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 void tegra_cpu_lowlevel_setup(void)
 {
 	uint32_t r;

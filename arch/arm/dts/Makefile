@@ -23,7 +23,8 @@ dtb-$(CONFIG_ARCH_IMX6) += imx6q-gk802.dtb \
 	imx6q-phytec-pbab01.dtb \
 	imx6dl-hummingboard.dtb \
 	imx6q-nitrogen6x.dtb \
-	imx6dl-nitrogen6x.dtb
+	imx6dl-nitrogen6x.dtb \
+	imx6q-udoo.dtb
 dtb-$(CONFIG_ARCH_MVEBU) += dove-cubox.dtb
 dtb-$(CONFIG_ARCH_SOCFPGA) += socfpga_cyclone5_sockit.dtb \
 	socfpga_cyclone5_socrates.dtb
@@ -55,6 +56,7 @@ pbl-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += socfpga_cyclone5_sockit.dtb.o
 pbl-$(CONFIG_MACH_SOLIDRUN_HUMMINGBOARD) += imx6dl-hummingboard.dtb.o
 pbl-$(CONFIG_MACH_SABRELITE) += imx6q-sabrelite.dtb.o imx6dl-sabrelite.dtb.o
 pbl-$(CONFIG_MACH_NITROGEN6X) += imx6q-nitrogen6x.dtb.o imx6dl-nitrogen6x.dtb.o
+pbl-$(CONFIG_MACH_UDOO) += imx6q-udoo.dtb.o
 
 .SECONDARY: $(obj)/$(BUILTIN_DTB).dtb.S
 .SECONDARY: $(patsubst %,$(obj)/%.S,$(dtb-y))

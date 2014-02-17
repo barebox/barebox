@@ -37,6 +37,7 @@ config ARCH_TEXT_BASE
 	default 0x2fc00000 if MACH_TQMA6X
 	default 0x4fc00000 if MACH_PHYTEC_PFLA02
 	default 0x4fc00000 if MACH_DFI_FS700_M60
+	default 0x4fc00000 if MACH_UDOO
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
@@ -231,6 +232,10 @@ config MACH_NITROGEN6X
 
 config MACH_SOLIDRUN_HUMMINGBOARD
 	bool "SolidRun Hummingboard"
+	select ARCH_IMX6
+
+config MACH_UDOO
+	bool "Freescale i.MX6 UDOO Board"
 	select ARCH_IMX6
 
 endif

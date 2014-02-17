@@ -193,6 +193,9 @@ quiet_cmd_gzip = GZIP    $@
 cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -n -f -9 > $@) || \
 	(rm -f $@ ; false)
 
+%.gz: %
+	$(call if_changed,gzip)
+
 # DTC
 # ---------------------------------------------------------------------------
 
@@ -251,6 +254,9 @@ cmd_bzip2 = (cat $(filter-out FORCE,$^) | \
 	bzip2 -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
 	(rm -f $@ ; false)
 
+%.bz2: %
+	$(call if_changed,bzip2)
+
 # Lzma
 # ---------------------------------------------------------------------------
 
@@ -259,10 +265,16 @@ cmd_lzma = (cat $(filter-out FORCE,$^) | \
 	lzma -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
 	(rm -f $@ ; false)
 
+%.lzma: %
+	$(call if_changed,lzma)
+
 quiet_cmd_lzo = LZO     $@
 cmd_lzo = (cat $(filter-out FORCE,$^) | \
 	lzop -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
 	(rm -f $@ ; false)
+
+%.lzo: %
+	$(call if_changed,lzo)
 
 # XZ
 # ---------------------------------------------------------------------------
@@ -292,10 +304,16 @@ cmd_xzmisc = (cat $(filter-out FORCE,$^) | \
 	xz --check=crc32 --lzma2=dict=1MiB) > $@ || \
 	(rm -f $@ ; false)
 
+# lz4
+# ---------------------------------------------------------------------------
+
 quiet_cmd_lz4 = LZ4     $@
 cmd_lz4 = (cat $(filter-out FORCE,$^) | \
 	lz4c -l -c1 stdin stdout && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
 	(rm -f $@ ; false)
+
+%.lz4: %
+	$(call if_changed,lz4)
 
 quiet_cmd_disasm = DISASM  $@
 cmd_disasm = $(OBJDUMP) -d $< > $@

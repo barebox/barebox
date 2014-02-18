@@ -98,6 +98,7 @@ multi-objs-y	:= $(addprefix $(obj)/,$(multi-objs-y))
 multi-objs-m	:= $(addprefix $(obj)/,$(multi-objs-m))
 subdir-ym	:= $(addprefix $(obj)/,$(subdir-ym))
 obj-dirs	:= $(addprefix $(obj)/,$(obj-dirs))
+bbenv-y		:= $(addprefix $(obj)/,$(bbenv-y))
 
 # These flags are needed for modversions and compiling, so we define them here
 # already
@@ -228,6 +229,34 @@ $(obj)/%.dtb: $(src)/%.dts FORCE
 	$(call if_changed_dep,dtc)
 
 dtc-tmp = $(subst $(comma),_,$(dot-target).dts)
+
+obj-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
+extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX),$(bbenv-y))
+extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S,$(bbenv-y))
+extra-y += $(patsubst %,%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).o,$(bbenv-y))
+
+quiet_cmd_env_S = ENV.S   $@
+cmd_env_S =							\
+(								\
+	echo '\#include <asm-generic/barebox.lds.h>';		\
+	echo '.section .bbenv.rodata.$(subst -,_,$(*F)),"a"';	\
+	echo '.balign STRUCT_ALIGNMENT';			\
+	echo '.global __bbenv_$(subst -,_,$(*F))_start';	\
+	echo '__bbenv_$(subst -,_,$(*F))_start:';		\
+	echo '.incbin "$<" ';					\
+	echo '__bbenv_$(subst -,_,$(*F))_end:';			\
+	echo '.global __bbenv_$(subst -,_,$(*F))_end';		\
+	echo '.balign STRUCT_ALIGNMENT';			\
+) > $@
+
+$(obj)/%.bbenv$(DEFAULT_COMPRESSION_SUFFIX).S: $(src)/%.bbenv$(DEFAULT_COMPRESSION_SUFFIX) FORCE
+	$(call if_changed,env_S)
+
+quiet_cmd_env = ENV     $@
+cmd_env=$(srctree)/scripts/genenv $(srctree) $(objtree) $@ $<
+
+%.bbenv$(DEFAULT_COMPRESSION_SUFFIX): % FORCE
+	$(call cmd,env)
 
 # Bzip2
 # ---------------------------------------------------------------------------

@@ -1022,7 +1022,7 @@ clean: archclean $(clean-dirs)
 	@find . $(RCS_FIND_IGNORE) \
 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
-		-o -name '*.symtypes' \) \
+		-o -name '*.symtypes' -o -name '*.bbenv.S' -o -name "*.bbenv" \) \
 		-type f -print | xargs rm -f
 
 # mrproper - Delete all generated files, including .config

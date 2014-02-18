@@ -48,6 +48,7 @@ SECTIONS
 	.rodata : {
 		*(.rodata);
 		*(.rodata.*)
+		*(.bbenv.rodata.*)
 	} > ram
 
 	. = ALIGN(4);

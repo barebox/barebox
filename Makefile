@@ -493,6 +493,7 @@ all: barebox-flash-image $(KBUILD_DTBS)
 endif
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
+common-$(CONFIG_DEFAULT_ENVIRONMENT) += defaultenv/
 
 barebox-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
 
@@ -1022,7 +1023,7 @@ clean: archclean $(clean-dirs)
 	@find . $(RCS_FIND_IGNORE) \
 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
-		-o -name '*.symtypes' -o -name '*.bbenv.S' -o -name "*.bbenv" \) \
+		-o -name '*.symtypes' -o -name '*.bbenv.*' -o -name "*.bbenv" \) \
 		-type f -print | xargs rm -f
 
 # mrproper - Delete all generated files, including .config

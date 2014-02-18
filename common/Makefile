@@ -7,7 +7,6 @@ obj-y				+= misc.o
 obj-y				+= memsize.o
 obj-y				+= resource.o
 obj-y				+= bootsource.o
-extra-y				+= barebox_default_env barebox_default_env.h
 obj-$(CONFIG_AUTO_COMPLETE)	+= complete.o
 obj-$(CONFIG_BANNER)		+= version.o
 obj-$(CONFIG_BAREBOX_UPDATE)	+= bbu.o
@@ -44,44 +43,6 @@ obj-$(CONFIG_RESET_SOURCE)	+= reset_source.o
 obj-$(CONFIG_SHELL_HUSH)	+= hush.o
 obj-$(CONFIG_SHELL_SIMPLE)	+= parser.o
 obj-$(CONFIG_UIMAGE)		+= image.o uimage.o
-
-
-ifdef CONFIG_DEFAULT_ENVIRONMENT
-$(obj)/startup.o: $(obj)/barebox_default_env.h
-$(obj)/env.o: $(obj)/barebox_default_env.h
-
-ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW),y)
-DEFAULT_ENVIRONMENT_PATH = "defaultenv/defaultenv-2-base"
-ifeq ($(CONFIG_CMD_MENU_MANAGEMENT),y)
-DEFAULT_ENVIRONMENT_PATH += "defaultenv/defaultenv-2-menu"
-endif
-endif
-
-ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC),y)
-DEFAULT_ENVIRONMENT_PATH = "defaultenv/defaultenv-1"
-endif
-
-ifneq ($(CONFIG_DEFAULT_ENVIRONMENT_PATH),"")
-DEFAULT_ENVIRONMENT_PATH += $(CONFIG_DEFAULT_ENVIRONMENT_PATH)
-endif
-
-endif # ifdef CONFIG_DEFAULT_ENVIRONMENT
-
-#
-# Generate a barebox envfs image.
-#
-quiet_cmd_envs = ENV     $@
-cmd_envs = ($(srctree)/scripts/genenv $(srctree) $(objtree) $@ $(DEFAULT_ENVIRONMENT_PATH))
-
-$(obj)/barebox_default_env: FORCE
-	$(call cmd,envs)
-
-quiet_cmd_env_h = ENVH    $@
-cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c "__aligned(4) default_environment") > $@; \
-	echo "static const int default_environment_uncompress_size=`stat -c%s $(obj)/barebox_default_env`;" >> $@
-
-$(obj)/barebox_default_env.h: $(obj)/barebox_default_env$(DEFAULT_COMPRESSION_SUFFIX) FORCE
-	$(call if_changed,env_h)
 
 quiet_cmd_pwd_h = PWDH    $@
 ifdef CONFIG_PASSWORD

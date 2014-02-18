@@ -240,7 +240,7 @@ static int envfs_check_super(struct envfs_super *super, size_t *size)
 	return 0;
 }
 
-static int envfs_check_data(struct envfs_super *super, void *buf, size_t size)
+static int envfs_check_data(struct envfs_super *super, const void *buf, size_t size)
 {
 	uint32_t crc;
 

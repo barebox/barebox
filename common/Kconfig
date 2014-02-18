@@ -587,6 +587,12 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select CMD_BOOT
 	prompt "Generic environment template"
 
+config DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU
+	bool
+	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
+	depends on CONFIG_CMD_MENU_MANAGEMENT
+	default y
+
 config DEFAULT_ENVIRONMENT_GENERIC
 	bool
 	depends on !HAVE_DEFAULT_ENVIRONMENT_NEW

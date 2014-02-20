@@ -53,21 +53,12 @@ static int register_default_env(void)
 	void *defaultenv;
 
 	if (!IS_ENABLED(CONFIG_DEFAULT_COMPRESSION_NONE)) {
-		void *tmp = malloc(default_environment_size);
-
-		if (!tmp)
-			return -ENOMEM;
-
-		memcpy(tmp, default_environment, default_environment_size);
 
 		defaultenv = xzalloc(default_environment_uncompress_size);
 
-		ret = uncompress(tmp, default_environment_size,
+		ret = uncompress(default_environment, default_environment_size,
 				NULL, NULL,
 				defaultenv, NULL, uncompress_err_stdout);
-
-		free(tmp);
-
 		if (ret) {
 			free(defaultenv);
 			return ret;

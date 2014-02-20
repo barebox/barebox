@@ -58,7 +58,7 @@ endif
 endif
 
 ifeq ($(CONFIG_DEFAULT_ENVIRONMENT_GENERIC),y)
-DEFAULT_ENVIRONMENT_PATH = "defaultenv"
+DEFAULT_ENVIRONMENT_PATH = "defaultenv/defaultenv-1"
 endif
 
 ifneq ($(CONFIG_DEFAULT_ENVIRONMENT_PATH),"")

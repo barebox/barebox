@@ -90,8 +90,8 @@ struct envfs_super {
 #endif
 
 #define ENV_FLAG_NO_OVERWRITE	(1 << 0)
-int envfs_load(const char *filename, char *dirname, unsigned flags);
-int envfs_save(const char *filename, char *dirname);
+int envfs_load(const char *filename, const char *dirname, unsigned flags);
+int envfs_save(const char *filename, const char *dirname);
 
 /* defaults to /dev/env0 */
 #ifdef CONFIG_ENV_HANDLING

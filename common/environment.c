@@ -162,7 +162,7 @@ out:
  * Note: This function will also be used on the host! See note in the header
  * of this file.
  */
-int envfs_save(const char *filename, char *dirname)
+int envfs_save(const char *filename, const char *dirname)
 {
 	struct envfs_super *super;
 	int envfd, size, ret;
@@ -227,7 +227,7 @@ EXPORT_SYMBOL(envfs_save);
  * Note: This function will also be used on the host! See note in the header
  * of this file.
  */
-int envfs_load(const char *filename, char *dir, unsigned flags)
+int envfs_load(const char *filename, const char *dir, unsigned flags)
 {
 	struct envfs_super super;
 	void *buf = NULL, *buf_free = NULL;

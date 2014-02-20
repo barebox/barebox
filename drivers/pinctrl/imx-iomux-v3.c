@@ -76,9 +76,9 @@ int mxc_iomux_v3_setup_pad(iomux_v3_cfg_t pad)
 EXPORT_SYMBOL(mxc_iomux_v3_setup_pad);
 
 
-int mxc_iomux_v3_setup_multiple_pads(iomux_v3_cfg_t *pad_list, unsigned count)
+int mxc_iomux_v3_setup_multiple_pads(const iomux_v3_cfg_t *pad_list, unsigned count)
 {
-	iomux_v3_cfg_t *p = pad_list;
+	const iomux_v3_cfg_t *p = pad_list;
 	int i;
 	int ret;
 

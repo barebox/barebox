@@ -307,12 +307,12 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[enfc_podf], MX6_GPMI_BASE_ADDR, NULL);
 
 	writel(0xffffffff, ccm_base + CCGR0);
-	writel(0xffffffff, ccm_base + CCGR1);
+	writel(0xf0ffffff, ccm_base + CCGR1); /* gate GPU3D, GPU2D */
 	writel(0xffffffff, ccm_base + CCGR2);
-	writel(0xffffffff, ccm_base + CCGR3);
+	writel(0x3fff0000, ccm_base + CCGR3); /* gate OpenVG, LDB, IPU1, IPU2 */
 	writel(0xffffffff, ccm_base + CCGR4);
 	writel(0xffffffff, ccm_base + CCGR5);
-	writel(0xffffffff, ccm_base + CCGR6);
+	writel(0xffff3fff, ccm_base + CCGR6); /* gate VPU */
 	writel(0xffffffff, ccm_base + CCGR7);
 
 	clk_enable(clks[pll6_enet]);

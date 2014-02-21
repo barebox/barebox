@@ -306,7 +306,7 @@ static const char *arith_lookup_val(arith_state_t *math_state, var_or_num_t *t)
 		/* treat undefined var as 0 */
 		t->val = 0;
 	}
-	return 0;
+	return NULL;
 }
 
 /* "Applying" a token means performing it on the top elements on the integer

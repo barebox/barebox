@@ -124,9 +124,6 @@ static __init int clps711x_syscon_init(void)
 	/* SYSCON2, SYSFLG2 */
 	add_generic_device("syscon", 2, NULL, SYSCON2, SZ_128,
 			   IORESOURCE_MEM, NULL);
-	/* SYSCON3 */
-	add_generic_device("syscon", 3, NULL, SYSCON3, SZ_64,
-			   IORESOURCE_MEM, NULL);
 
 	return 0;
 }

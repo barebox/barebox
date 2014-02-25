@@ -1,0 +1,39 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+	boot-menu-add-entry "$0" "Device Firmware upgrade (DFU)"
+	exit
+fi
+
+if [ -d /dfutmp ]; then
+	rm -r /dfutmp
+fi
+
+mkdir -p /dfutmp
+
+kernel="/dfutmp/kernel"
+dtb="/dfutmp/dtb"
+cmdline="/dfutmp/cmdline"
+
+global.bootm.image="$kernel"
+
+dfu $kernel(kernel)c,$dtb(dtb)c,$cmdline(cmdline)c
+if [ $? != 0 ]; then
+	exit 1
+fi
+
+if [ ! -f "$kernel" ]; then
+	echo "No kernel uploaded. Aborting"
+	exit 1
+fi
+
+if [ -f "$cmdline" ]; then
+	global linux.bootargs.dyn.dfu
+	readf $cmdline global.linux.bootargs.dyn.dfu
+fi
+
+if [ -f "$dtb" ]; then
+	global.bootm.oftree="$dtb"
+fi
+
+true

@@ -978,8 +978,8 @@ static int cfi_probe (struct device_d *dev)
 	info->flash_id = FLASH_UNKNOWN;
 	info->cmd_reset = FLASH_CMD_RESET;
 	info->base = dev_request_mem_region(dev, 0);
-	info->size = flash_get_size(info);
 	info->dev = dev;
+	info->size = flash_get_size(info);
 
 	if (info->flash_id == FLASH_UNKNOWN) {
 		dev_warn(dev, "## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",

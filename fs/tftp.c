@@ -110,7 +110,7 @@ static int tftp_rmdir(struct device_d *dev, const char *pathname)
 
 static int tftp_truncate(struct device_d *dev, FILE *f, ulong size)
 {
-	return -ENOSYS;
+	return 0;
 }
 
 static int tftp_send(struct file_priv *priv)
@@ -393,6 +393,14 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	case O_WRONLY:
 		priv->push = 1;
 		priv->state = STATE_WRQ;
+		if (!(accmode & O_TRUNC)) {
+			/*
+			 * TFTP always truncates the existing file, so this
+			 * flag is mandatory when opening a file for writing.
+			 */
+			ret = -ENOSYS;
+			goto out;
+		}
 		break;
 	case O_RDWR:
 		ret = -ENOSYS;

@@ -22,7 +22,7 @@
 
 #include <linux/types.h>
 
-#define DFU_FLAG_SAVE		(1 << 0)
+#define DFU_FLAG_SAFE		(1 << 0)
 #define DFU_FLAG_READBACK	(1 << 1)
 
 struct usb_dfu_dev {

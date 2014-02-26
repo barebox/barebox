@@ -60,7 +60,7 @@ static int dfu_do_parse_one(char *partstr, char **endstr, struct usb_dfu_dev *df
 		case PARSE_FLAGS:
 			switch (*partstr) {
 			case 's':
-				dfu->flags |= DFU_FLAG_SAVE;
+				dfu->flags |= DFU_FLAG_SAFE;
 				break;
 			case 'r':
 				dfu->flags |= DFU_FLAG_READBACK;

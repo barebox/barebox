@@ -261,7 +261,7 @@ int devfs_remove(struct cdev *cdev)
 }
 
 struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size,
-		int flags, const char *name)
+		unsigned int flags, const char *name)
 {
 	struct cdev *cdev, *new;
 

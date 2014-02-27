@@ -129,6 +129,40 @@ static void set_board_rev(int rev)
 	imx35_3ds_system_rev =  (imx35_3ds_system_rev & ~(0xF << 8)) | (rev & 0xF) << 8;
 }
 
+static const struct devfs_partition f3s_nand0_partitions[] = {
+	{
+		.offset = 0,
+		.size = 0x40000,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "self_raw",
+		.bbname = "self0",
+	}, {
+		.offset = DEVFS_PARTITION_APPEND, /* 0x40000 */
+		.size = 0x80000,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "env_raw",
+		.bbname = "env0",
+	}, {
+		/* sentinel */
+	}
+};
+
+static const struct devfs_partition f3s_nor0_partitions[] = {
+	{
+		.offset = 0,
+		.size = 0x40000,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "self0",
+	}, {
+		.offset = DEVFS_PARTITION_APPEND, /* 0x40000 */
+		.size = 0x80000,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "env0",
+	}, {
+		/* sentinel */
+	}
+};
+
 static int f3s_devices_init(void)
 {
 	uint32_t reg;
@@ -151,15 +185,11 @@ static int f3s_devices_init(void)
 
 	switch ((reg >> 25) & 0x3) {
 	case 0x01:		/* NAND is the source */
-		devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
-		dev_add_bb_dev("self_raw", "self0");
-		devfs_add_partition("nand0", 0x40000, 0x80000, DEVFS_PARTITION_FIXED, "env_raw");
-		dev_add_bb_dev("env_raw", "env0");
+		devfs_create_partitions("nand0", f3s_nand0_partitions);
 		break;
 
 	case 0x00:		/* NOR is the source */
-		devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
-		devfs_add_partition("nor0", 0x40000, 0x80000, DEVFS_PARTITION_FIXED, "env0");
+		devfs_create_partitions("nor0", f3s_nor0_partitions);
 		protect_file("/dev/env0", 1);
 		break;
 	}

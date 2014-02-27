@@ -111,14 +111,10 @@ static int realq7_env_init(void)
 }
 late_initcall(realq7_env_init);
 
-static int realq7_console_init(void)
+static int realq7_device_init(void)
 {
 	if (!of_machine_is_compatible("dmo,imx6q-edmqmx6"))
 		return 0;
-
-	barebox_set_hostname("eDM-QMX6");
-
-	imx6_init_lowlevel();
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
@@ -132,4 +128,17 @@ static int realq7_console_init(void)
 
 	return 0;
 }
-postcore_initcall(realq7_console_init);
+device_initcall(realq7_device_init);
+
+static int realq7_postcore_init(void)
+{
+	if (!of_machine_is_compatible("dmo,imx6q-edmqmx6"))
+		return 0;
+
+	barebox_set_hostname("eDM-QMX6");
+
+	imx6_init_lowlevel();
+
+	return 0;
+}
+postcore_initcall(realq7_postcore_init);

@@ -22,6 +22,8 @@
 *.orig
 *.dcd
 *.dcd.S
+*.bbenv
+*.bbenv.*
 
 #
 # Top-level generic files

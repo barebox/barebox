@@ -164,8 +164,8 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 		 * inside valid SDRAM instead of SRAM.
 		 */
 		memcpy((void *)sdram, (void *)fdt,
-				__dtb_imx6q_dmo_edmqmx6_start -
-				__dtb_imx6q_dmo_edmqmx6_end);
+				__dtb_imx6q_dmo_edmqmx6_end -
+				__dtb_imx6q_dmo_edmqmx6_start);
 		fdt = sdram;
 	}
 

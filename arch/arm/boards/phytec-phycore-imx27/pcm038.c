@@ -199,6 +199,40 @@ struct imxusb_platformdata pcm038_otg_pdata = {
 	.flags	= MXC_EHCI_MODE_ULPI | MXC_EHCI_INTERFACE_DIFF_UNI,
 };
 
+static const struct devfs_partition pcm038_nand0_partitions[] = {
+	{
+		.offset = 0,
+		.size = SZ_512K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "self_raw",
+		.bbname = "self0",
+	}, {
+		.offset = DEVFS_PARTITION_APPEND, /* 512 KiB */
+		.size = SZ_128K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "env_raw",
+		.bbname = "env0",
+	}, {
+		/* sentinel */
+	}
+};
+
+static const struct devfs_partition pcm038_nor0_partitions[] = {
+	{
+		.offset = 0,
+		.size = SZ_512K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "self0",
+	}, {
+		.offset = DEVFS_PARTITION_APPEND, /* 512 KiB */
+		.size = SZ_128K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "env0",
+	}, {
+		/* sentinel */
+	}
+};
+
 static int pcm038_devices_init(void)
 {
 	int i;
@@ -336,19 +370,12 @@ static int pcm038_devices_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:
-		devfs_add_partition("nand0", 0, SZ_512K,
-				    DEVFS_PARTITION_FIXED, "self_raw");
-		dev_add_bb_dev("self_raw", "self0");
-		devfs_add_partition("nand0", SZ_512K, SZ_128K,
-				    DEVFS_PARTITION_FIXED, "env_raw");
-		dev_add_bb_dev("env_raw", "env0");
+		devfs_create_partitions("nand0", pcm038_nand0_partitions);
+
 		envdev = "NAND";
 		break;
 	default:
-		devfs_add_partition("nor0", 0, SZ_512K,
-				    DEVFS_PARTITION_FIXED, "self0");
-		devfs_add_partition("nor0", SZ_512K, SZ_128K,
-				    DEVFS_PARTITION_FIXED, "env0");
+		devfs_create_partitions("nor0", pcm038_nor0_partitions);
 		protect_file("/dev/env0", 1);
 		envdev = "NOR";
 	}

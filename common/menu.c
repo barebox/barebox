@@ -468,7 +468,7 @@ static void menu_action_command(struct menu *m, struct menu_entry *me)
 	if (!s)
 		s = e->command;
 
-	ret = run_command (s, 0);
+	ret = run_command(s);
 
 	if (ret < 0)
 		udelay(1000000);

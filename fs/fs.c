@@ -434,7 +434,7 @@ static void automount_mount(const char *path, int instat)
 
 		setenv("automount_path", am->path);
 		export("automount_path");
-		ret = run_command(am->cmd, 0);
+		ret = run_command(am->cmd);
 		setenv("automount_path", NULL);
 
 		if (ret)

@@ -1824,7 +1824,7 @@ static char * make_string(char ** inp)
 	return str;
 }
 
-int run_command (const char *cmd, int flag)
+int run_command(const char *cmd)
 {
 	struct p_context ctx;
 	int ret;

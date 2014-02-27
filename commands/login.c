@@ -68,7 +68,7 @@ static int do_login(int argc, char *argv[])
 
 		if (passwd_len < 0) {
 			console_allow_input(false);
-			run_command(timeout_cmd, 0);
+			run_command(timeout_cmd);
 		}
 
 		if (check_passwd(passwd, passwd_len))

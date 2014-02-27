@@ -39,7 +39,7 @@ static int do_exec(int argc, char *argv[])
 		if (!script)
 			return 1;
 
-		if (run_command (script, 0) == -1)
+		if (run_command(script) == -1)
 			goto out;
 		free(script);
 	}

@@ -116,6 +116,9 @@ static int realq7_device_init(void)
 	if (!of_machine_is_compatible("dmo,imx6q-edmqmx6"))
 		return 0;
 
+	gpio_direction_output(IMX_GPIO_NR(2, 22), 1);
+	gpio_direction_output(IMX_GPIO_NR(2, 21), 1);
+
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
 		of_device_enable_path("/chosen/environment-emmc");

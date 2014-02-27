@@ -400,6 +400,38 @@ static void ek_add_device_hdmi(void)
 }
 #endif
 
+static const struct devfs_partition at91sama5d3xek_nand0_partitions[] = {
+	{
+		.offset = 0x00000,
+		.size = SZ_256K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "at91bootstrap_raw",
+		.bbname = "at91bootstrap",
+	}, {
+		.offset = DEVFS_PARTITION_APPEND, /* 256 KiB */
+		.size = SZ_256K + SZ_128K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "self_raw",
+		.bbname = "self0",
+	},
+	/* hole of 128 KiB */
+	{
+		.offset = SZ_512K + SZ_256K,
+		.size = SZ_256K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "env_raw",
+		.bbname = "env0",
+	}, {
+		.offset = DEVFS_PARTITION_APPEND, /* 1 MiB */
+		.size = SZ_256K,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "env_raw1",
+		.bbname = "env1",
+	}, {
+		/* sentinel */
+	}
+};
+
 static int at91sama5d3xek_devices_init(void)
 {
 	ek_add_device_w1();
@@ -411,14 +443,7 @@ static int at91sama5d3xek_devices_init(void)
 	ek_add_device_mci();
 	ek_add_device_lcdc();
 
-	devfs_add_partition("nand0", 0x00000, SZ_256K, DEVFS_PARTITION_FIXED, "at91bootstrap_raw");
-	dev_add_bb_dev("at91bootstrap_raw", "at91bootstrap");
-	devfs_add_partition("nand0", SZ_256K, SZ_256K + SZ_128K, DEVFS_PARTITION_FIXED, "self_raw");
-	dev_add_bb_dev("self_raw", "self0");
-	devfs_add_partition("nand0", SZ_512K + SZ_256K, SZ_256K, DEVFS_PARTITION_FIXED, "env_raw");
-	dev_add_bb_dev("env_raw", "env0");
-	devfs_add_partition("nand0", SZ_1M, SZ_256K, DEVFS_PARTITION_FIXED, "env_raw1");
-	dev_add_bb_dev("env_raw1", "env1");
+	devfs_create_partitions("nand0", at91sama5d3xek_nand0_partitions);
 
 	return 0;
 }

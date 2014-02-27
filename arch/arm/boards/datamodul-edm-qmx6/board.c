@@ -121,7 +121,14 @@ static int realq7_device_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
-		of_device_enable_path("/chosen/environment-emmc");
+		switch (bootsource_get_instance()) {
+		case 2:
+			of_device_enable_path("/chosen/environment-sd");
+			break;
+		case 3:
+			of_device_enable_path("/chosen/environment-emmc");
+			break;
+		}
 		break;
 	default:
 	case BOOTSOURCE_SPI:

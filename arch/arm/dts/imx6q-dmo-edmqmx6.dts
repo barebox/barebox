@@ -20,6 +20,12 @@
 	chosen {
 		linux,stdout-path = "/soc/aips-bus@02100000/serial@021e8000";
 
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+			status = "disabled";
+		};
+
 		environment-emmc {
 			compatible = "barebox,environment";
 			device-path = &usdhc4, "partname:barebox-environment";
@@ -386,6 +392,18 @@
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	vmmc-supply = <&reg_3p3v>;
 	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x80000>;
+	};
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
+	};
 };
 
 &usdhc4 {
@@ -395,11 +413,16 @@
 	non-removable;
 	bus-width = <8>;
 	status = "okay";
+
 	#address-cells = <1>;
 	#size-cells = <1>;
 
 	partition@0 {
-		label = "barebox-environment";
+		label = "barebox";
 		reg = <0x0 0x80000>;
+	};
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
 	};
 };

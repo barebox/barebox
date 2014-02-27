@@ -292,6 +292,7 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size
 		new->mtd = mtd_add_partition(cdev->mtd, offset, size, flags, name);
 		if (IS_ERR(new->mtd)) {
 			int ret = PTR_ERR(new->mtd);
+			free(new->partname);
 			free(new);
 			return ERR_PTR(ret);
 		}

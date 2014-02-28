@@ -163,6 +163,7 @@ static struct led_trg triggers[] = {
 	{ .str = "heartbeat", LED_TRIGGER_HEARTBEAT, },
 	{ .str = "panic", LED_TRIGGER_PANIC, },
 	{ .str = "net", LED_TRIGGER_NET_TXRX, },
+	{ .str = "default-on", LED_TRIGGER_DEFAULT_ON, },
 };
 
 void led_of_parse_trigger(struct led *led, struct device_node *np)

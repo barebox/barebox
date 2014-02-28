@@ -582,6 +582,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select CMD_DIRNAME
 	select FLEXIBLE_BOOTARGS
 	select CMD_BOOT
+	select NET_CMD_IFUP if NET
 	prompt "Generic environment template"
 
 config DEFAULT_ENVIRONMENT_GENERIC

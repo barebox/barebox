@@ -457,4 +457,9 @@ int net_icmp_send(struct net_connection *con, int len);
 
 void led_trigger_network(enum led_trigger trigger);
 
+#define IFUP_FLAG_FORCE		(1 << 0)
+
+int ifup(const char *name, unsigned flags);
+int ifup_all(unsigned flags);
+
 #endif /* __NET_H__ */

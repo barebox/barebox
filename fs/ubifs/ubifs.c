@@ -610,7 +610,7 @@ static int ubifs_probe(struct device_d *dev)
 		goto err_free;
 	}
 
-	priv->sb = ubifs_get_super(priv->ubi, 0);
+	priv->sb = ubifs_get_super(dev, priv->ubi, 0);
 	if (IS_ERR(priv->sb)) {
 		ret = PTR_ERR(priv->sb);
 		goto err;

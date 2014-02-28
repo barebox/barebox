@@ -58,6 +58,8 @@ static inline void led_trigger(enum led_trigger trigger, enum trigger_type type)
 
 int led_get_trigger(enum led_trigger trigger);
 
+void led_of_parse_trigger(struct led *led, struct device_node *np);
+
 /* gpio LED support */
 struct gpio_led {
 	int gpio;

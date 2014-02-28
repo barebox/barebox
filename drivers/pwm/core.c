@@ -198,6 +198,26 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 }
 EXPORT_SYMBOL_GPL(pwm_config);
 
+void pwm_set_period(struct pwm_device *pwm, unsigned int period_ns)
+{
+	pwm->period_ns = period_ns;
+}
+
+unsigned int pwm_get_period(struct pwm_device *pwm)
+{
+	return pwm->period_ns;
+}
+
+void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty_ns)
+{
+	pwm->duty_ns = duty_ns;
+}
+
+unsigned int pwm_get_duty_cycle(struct pwm_device *pwm)
+{
+	return pwm->duty_ns;
+}
+
 /*
  * pwm_enable - start a PWM output toggling
  */

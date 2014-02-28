@@ -879,9 +879,6 @@ relocate_code:
 	sub	r3, r3, r5
 	lwz	r5,GOT(__init_end)	/* Copy to init_end only */
 	sub	r5,r5,r4
-	lis	r10, 0xffff0000@h	/* Round down to 64KB */
-	ori	r10, r10, 0xffff0000@l
-	and	r3, r3, r10		/* Destination */
 	mr	r1, r3
 	mr	r10, r3
 	li	r6,CACHELINE_SIZE

@@ -32,6 +32,8 @@ PHDRS
 SECTIONS
 {
   . = TEXT_BASE;
+   _stext = .;
+   PROVIDE (stext = .);
 
   .interp        : { *(.interp)		}
   .hash          : { *(.hash)		}
@@ -96,8 +98,6 @@ SECTIONS
     *(.dynamic*)
     CONSTRUCTORS
   }
-  _edata  =  .;
-  PROVIDE (edata = .);
 
   . = .;
   __barebox_cmd_start = .;
@@ -118,6 +118,9 @@ SECTIONS
   __ex_table : { *(__ex_table) }
   __stop___ex_table = .;
 
+  _edata  =  .;
+  PROVIDE (edata = .);
+
   . = ALIGN(256);
   __init_begin = .;
   .text.init : { *(.text.init) }
@@ -130,7 +133,6 @@ SECTIONS
   .bootpg RESET_VECTOR_ADDRESS - 0xffc :
   {
     _text = .;
-    _stext = .;
     arch/ppc/cpu-85xx/start.o	(.bootpg)
   } :text = 0xffff
 

@@ -46,11 +46,7 @@ void board_init_r (ulong end_of_ram)
 	_text_base = end_of_ram;
 #endif
 
-	/*
-	 * FIXME: 128k stack size. Is this enough? should
-	 *        it be configurable?
-	 */
-	malloc_end = (_text_base - (128 << 10)) & ~(4095);
+	malloc_end = (_text_base - STACK_SIZE) & ~(4095);
 
 	debug("malloc_end: 0x%08lx\n", malloc_end);
 	debug("TEXT_BASE after relocation: 0x%08lx\n", _text_base);

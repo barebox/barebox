@@ -24,7 +24,10 @@
 
 #include <config.h>
 #include <common.h>
+#include <memory.h>
+#include <init.h>
 #include <asm/fsl_ddr_sdram.h>
+#include <asm-generic/memory_layout.h>
 #include <mach/mmu.h>
 #include <mach/immap_85xx.h>
 
@@ -81,3 +84,11 @@ phys_size_t fsl_get_effective_memsize(void)
 
 	return sdram_size;
 }
+
+static int fsl_reserve_region(void)
+{
+	request_sdram_region("stack", _text_base - STACK_SIZE,
+			STACK_SIZE);
+	return 0;
+}
+coredevice_initcall(fsl_reserve_region);

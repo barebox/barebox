@@ -9,6 +9,8 @@ struct device_d;
  */
 struct pwm_device *pwm_request(const char *pwmname);
 
+struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id);
+
 /*
  * pwm_free - free a PWM device
  */

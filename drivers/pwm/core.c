@@ -143,6 +143,24 @@ int pwmchip_remove(struct pwm_chip *chip)
 }
 EXPORT_SYMBOL_GPL(pwmchip_remove);
 
+static int __pwm_request(struct pwm_device *pwm)
+{
+	int ret;
+
+	if (test_bit(FLAG_REQUESTED, &pwm->flags))
+		return -EBUSY;
+
+	if (pwm->chip->ops->request) {
+		ret = pwm->chip->ops->request(pwm->chip);
+		if (ret)
+			return ret;
+	}
+
+	set_bit(FLAG_REQUESTED, &pwm->flags);
+
+	return 0;
+}
+
 /*
  * pwm_request - request a PWM device
  */
@@ -155,20 +173,59 @@ struct pwm_device *pwm_request(const char *devname)
 	if (!pwm)
 		return NULL;
 
-	if (test_bit(FLAG_REQUESTED, &pwm->flags))
+	ret = __pwm_request(pwm);
+	if (ret)
 		return NULL;
-
-	if (pwm->chip->ops->request) {
-		ret = pwm->chip->ops->request(pwm->chip);
-		if (ret)
-			return NULL;
-	}
-
-	set_bit(FLAG_REQUESTED, &pwm->flags);
 
 	return pwm;
 }
 EXPORT_SYMBOL_GPL(pwm_request);
+
+static struct pwm_device *of_node_to_pwm_device(struct device_node *np)
+{
+	struct pwm_device *pwm;
+
+	list_for_each_entry(pwm, &pwm_list, node) {
+		if (pwm->hwdev && pwm->hwdev->device_node == np)
+			return pwm;
+	}
+
+        return ERR_PTR(-ENODEV);
+}
+
+struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id)
+{
+	struct of_phandle_args args;
+	int index = 0;
+	struct pwm_device *pwm;
+	int ret;
+
+	if (con_id)
+		return ERR_PTR(-EINVAL);
+
+	ret = of_parse_phandle_with_args(np, "pwms", "#pwm-cells", index,
+			&args);
+	if (ret) {
+		pr_debug("%s(): can't parse \"pwms\" property\n", __func__);
+		return ERR_PTR(ret);
+	}
+
+	pwm = of_node_to_pwm_device(args.np);
+	if (IS_ERR(pwm)) {
+		pr_debug("%s(): PWM chip not found\n", __func__);
+		return pwm;
+	}
+
+	if (args.args_count > 1)
+		pwm_set_period(pwm, args.args[1]);
+
+	ret = __pwm_request(pwm);
+	if (ret)
+		return ERR_PTR(-ret);
+
+	return pwm;
+}
+EXPORT_SYMBOL_GPL(of_pwm_request);
 
 /*
  * pwm_free - free a PWM device

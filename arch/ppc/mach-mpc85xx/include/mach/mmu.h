@@ -13,6 +13,11 @@
 #include <asm/mmu.h>
 
 #ifndef __ASSEMBLY__
+extern int e500_find_free_tlbcam(void);
+extern void e500_read_tlbcam_entry(int idx, u32 *valid, u32 *tsize,
+		unsigned long *epn, phys_addr_t *rpn);
+extern void e500_read_tlbcam_entry(int idx, u32 *valid, u32 *tsize,
+		unsigned long *epn, phys_addr_t *rpn);
 extern void e500_set_tlb(u8 tlb, u32 epn, u64 rpn, u8 perms, u8 wimge,
 		u8 ts, u8 esel, u8 tsize, u8 iprot);
 extern void e500_disable_tlb(u8 esel);

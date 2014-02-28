@@ -49,11 +49,13 @@ struct z_stream_s ubifs_zlib_stream;
 
 /* compress.c */
 
+#ifdef CONFIG_ZLIB
 static int ubifs_deflate_decompress(const u8 *src, unsigned int slen, u8 *dst,
 		unsigned int *dlen)
 {
 	return deflate_decompress(&ubifs_zlib_stream, src, slen, dst, dlen);
 }
+#endif
 
 /* All UBIFS compressors */
 struct ubifs_compressor ubifs_compressors[UBIFS_COMPR_TYPES_CNT] = {

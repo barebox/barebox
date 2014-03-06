@@ -21,6 +21,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <of.h>
+#include <mach/bbu.h>
 
 #include <mach/imx6.h>
 
@@ -42,6 +43,8 @@ static int phytec_pfla02_init(void)
 		return 0;
 
 	eth_phy_reset();
+
+	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

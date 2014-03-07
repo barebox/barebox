@@ -133,7 +133,7 @@ static int pxa_pwm_probe(struct device_d *dev)
 	struct pxa_pwm_chip *chip;
 
 	chip = xzalloc(sizeof(*chip));
-	chip->chip.devname = asprintf("%s", dev_name(dev));
+	chip->chip.devname = asprintf("pwm%d", dev->id);
 	chip->chip.ops = &pxa_pwm_ops;
 	chip->iobase = dev_request_mem_region(dev, 0);
 	chip->id = dev->id;

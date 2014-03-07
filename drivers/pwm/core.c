@@ -26,7 +26,8 @@ struct pwm_device {
 #define FLAG_REQUESTED	0
 #define FLAG_ENABLED	1
 	struct list_head	node;
-	struct device_d		*dev;
+	struct device_d		*hwdev;
+	struct device_d		dev;
 
 	unsigned int		duty_ns;
 	unsigned int		period_ns;
@@ -79,27 +80,36 @@ int pwmchip_add(struct pwm_chip *chip, struct device_d *dev)
 {
 	struct pwm_device *pwm;
 	struct param_d *p;
+	int ret;
 
 	if (_find_pwm(chip->devname))
 		return -EBUSY;
 
 	pwm = xzalloc(sizeof(*pwm));
 	pwm->chip = chip;
-	pwm->dev = dev;
+	pwm->hwdev = dev;
+
+	strcpy(pwm->dev.name, chip->devname);
+	pwm->dev.id = DEVICE_ID_SINGLE;
+	pwm->dev.parent = dev;
+
+	ret = register_device(&pwm->dev);
+	if (ret)
+		return ret;
 
 	list_add_tail(&pwm->node, &pwm_list);
 
-	p = dev_add_param_int(dev, "duty_ns", set_duty_period_ns,
+	p = dev_add_param_int(&pwm->dev, "duty_ns", set_duty_period_ns,
 			NULL, &pwm->chip->duty_ns, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
-	p = dev_add_param_int(dev, "period_ns", set_duty_period_ns,
+	p = dev_add_param_int(&pwm->dev, "period_ns", set_duty_period_ns,
 			NULL, &pwm->chip->period_ns, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
-	p = dev_add_param_bool(dev, "enable", set_enable,
+	p = dev_add_param_bool(&pwm->dev, "enable", set_enable,
 			NULL, &pwm->p_enable, pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
@@ -133,6 +143,24 @@ int pwmchip_remove(struct pwm_chip *chip)
 }
 EXPORT_SYMBOL_GPL(pwmchip_remove);
 
+static int __pwm_request(struct pwm_device *pwm)
+{
+	int ret;
+
+	if (test_bit(FLAG_REQUESTED, &pwm->flags))
+		return -EBUSY;
+
+	if (pwm->chip->ops->request) {
+		ret = pwm->chip->ops->request(pwm->chip);
+		if (ret)
+			return ret;
+	}
+
+	set_bit(FLAG_REQUESTED, &pwm->flags);
+
+	return 0;
+}
+
 /*
  * pwm_request - request a PWM device
  */
@@ -145,20 +173,59 @@ struct pwm_device *pwm_request(const char *devname)
 	if (!pwm)
 		return NULL;
 
-	if (test_bit(FLAG_REQUESTED, &pwm->flags))
+	ret = __pwm_request(pwm);
+	if (ret)
 		return NULL;
-
-	if (pwm->chip->ops->request) {
-		ret = pwm->chip->ops->request(pwm->chip);
-		if (ret)
-			return NULL;
-	}
-
-	set_bit(FLAG_REQUESTED, &pwm->flags);
 
 	return pwm;
 }
 EXPORT_SYMBOL_GPL(pwm_request);
+
+static struct pwm_device *of_node_to_pwm_device(struct device_node *np)
+{
+	struct pwm_device *pwm;
+
+	list_for_each_entry(pwm, &pwm_list, node) {
+		if (pwm->hwdev && pwm->hwdev->device_node == np)
+			return pwm;
+	}
+
+        return ERR_PTR(-ENODEV);
+}
+
+struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id)
+{
+	struct of_phandle_args args;
+	int index = 0;
+	struct pwm_device *pwm;
+	int ret;
+
+	if (con_id)
+		return ERR_PTR(-EINVAL);
+
+	ret = of_parse_phandle_with_args(np, "pwms", "#pwm-cells", index,
+			&args);
+	if (ret) {
+		pr_debug("%s(): can't parse \"pwms\" property\n", __func__);
+		return ERR_PTR(ret);
+	}
+
+	pwm = of_node_to_pwm_device(args.np);
+	if (IS_ERR(pwm)) {
+		pr_debug("%s(): PWM chip not found\n", __func__);
+		return pwm;
+	}
+
+	if (args.args_count > 1)
+		pwm_set_period(pwm, args.args[1]);
+
+	ret = __pwm_request(pwm);
+	if (ret)
+		return ERR_PTR(-ret);
+
+	return pwm;
+}
+EXPORT_SYMBOL_GPL(of_pwm_request);
 
 /*
  * pwm_free - free a PWM device
@@ -187,6 +254,26 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 	return pwm->chip->ops->config(pwm->chip, duty_ns, period_ns);
 }
 EXPORT_SYMBOL_GPL(pwm_config);
+
+void pwm_set_period(struct pwm_device *pwm, unsigned int period_ns)
+{
+	pwm->period_ns = period_ns;
+}
+
+unsigned int pwm_get_period(struct pwm_device *pwm)
+{
+	return pwm->period_ns;
+}
+
+void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty_ns)
+{
+	pwm->duty_ns = duty_ns;
+}
+
+unsigned int pwm_get_duty_cycle(struct pwm_device *pwm)
+{
+	return pwm->duty_ns;
+}
 
 /*
  * pwm_enable - start a PWM output toggling

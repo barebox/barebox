@@ -68,7 +68,7 @@ static void mioa701_lcd_power(int on)
 
 static void mioa701_lcd_backlight(int on)
 {
-	struct pwm_device *pwm0 = pwm_request("pxa_pwm0");
+	struct pwm_device *pwm0 = pwm_request("pwm0");
 
 	/*
 	 * The backlight has a base frequency of 250kHz (<=> 4 ms).

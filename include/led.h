@@ -33,6 +33,7 @@ enum led_trigger {
 	LED_TRIGGER_NET_RX,
 	LED_TRIGGER_NET_TX,
 	LED_TRIGGER_NET_TXRX,
+	LED_TRIGGER_DEFAULT_ON,
 	LED_TRIGGER_MAX,
 };
 
@@ -57,6 +58,8 @@ static inline void led_trigger(enum led_trigger trigger, enum trigger_type type)
 #endif
 
 int led_get_trigger(enum led_trigger trigger);
+
+void led_of_parse_trigger(struct led *led, struct device_node *np);
 
 /* gpio LED support */
 struct gpio_led {

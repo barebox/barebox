@@ -9,6 +9,8 @@ struct device_d;
  */
 struct pwm_device *pwm_request(const char *pwmname);
 
+struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id);
+
 /*
  * pwm_free - free a PWM device
  */
@@ -28,6 +30,11 @@ int pwm_enable(struct pwm_device *pwm);
  * pwm_disable - stop a PWM output toggling
  */
 void pwm_disable(struct pwm_device *pwm);
+
+void pwm_set_period(struct pwm_device *pwm, unsigned int period);
+unsigned int pwm_get_period(struct pwm_device *pwm);
+void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty);
+unsigned int pwm_get_duty_cycle(struct pwm_device *pwm);
 
 struct pwm_chip;
 

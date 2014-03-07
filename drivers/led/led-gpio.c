@@ -198,41 +198,6 @@ void led_gpio_rgb_unregister(struct gpio_led *led)
 #endif /* CONFIG_LED_GPIO_RGB */
 
 #ifdef CONFIG_LED_GPIO_OF
-
-struct led_trg {
-	const char *str;
-	enum led_trigger trg;
-};
-
-static struct led_trg triggers[] = {
-	{ .str = "heartbeat", LED_TRIGGER_HEARTBEAT, },
-	{ .str = "panic", LED_TRIGGER_PANIC, },
-	{ .str = "net", LED_TRIGGER_NET_TXRX, },
-};
-
-static void led_of_parse_trigger(struct led *led, struct device_node *np)
-{
-	const char *trigger;
-	int i;
-
-	trigger = of_get_property(np, "linux,default-trigger", NULL);
-	if (!trigger)
-		trigger = of_get_property(np, "barebox,default-trigger", NULL);
-
-	if (!trigger)
-		return;
-
-	for (i = 0; i < ARRAY_SIZE(triggers); i++) {
-		struct led_trg *trg = &triggers[i];
-		if (!strcmp(trg->str, trigger)) {
-			/* disable LED before installing trigger */
-			led_set(led, 0);
-			led_set_trigger(trg->trg, led);
-			return;
-		}
-	}
-}
-
 static int led_gpio_of_probe(struct device_d *dev)
 {
 	struct device_node *child;

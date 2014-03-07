@@ -14,3 +14,13 @@ fi
 
 mkdir /mnt
 mount -t ubifs /dev/ubi0.boot /mnt
+
+echo
+echo -n "Hit ctrl-c to stop autoboot: "
+timeout -c 5
+
+if [ $? -ne 0 ]; then
+	exit 0
+fi
+
+boot

@@ -88,11 +88,11 @@ static int request_memtest_regions(struct list_head *list)
 				 * remember last used element
 				 */
 				start = PAGE_ALIGN(bank->res->start);
-				end = PAGE_ALIGN_DOWN(r->start) - 1;
-				size = end - start + 1;
+				end = PAGE_ALIGN_DOWN(r->start);
 				r_prev = r;
-				if (start >= end)
+				if (start == end)
 					continue;
+				size = end - start;
 
 				ret = alloc_memtest_region(list, start, size);
 				if (ret < 0)
@@ -103,12 +103,12 @@ static int request_memtest_regions(struct list_head *list)
 			 * Between used regions
 			 */
 			start = PAGE_ALIGN(r_prev->end);
-			end = PAGE_ALIGN_DOWN(r->start) - 1;
-			size = end - start + 1;
+			end = PAGE_ALIGN_DOWN(r->start);
 			r_prev = r;
 			if (start >= end)
 				continue;
 
+			size = end - start;
 			ret = alloc_memtest_region(list, start, size);
 			if (ret < 0)
 				return ret;

@@ -557,6 +557,11 @@ extern int write_bat(ppc_bat_t bat, unsigned long upper, unsigned long lower);
 
 #ifndef __ASSEMBLY__
 
+#ifdef CONFIG_MMU
+void remap_range(void *_start, size_t size, uint32_t flags);
+uint32_t mmu_get_pte_cached_flags(void);
+uint32_t mmu_get_pte_uncached_flags(void);
+#else
 static inline void remap_range(void *_start, size_t size, uint32_t flags)
 {
 }
@@ -570,6 +575,7 @@ static inline uint32_t mmu_get_pte_uncached_flags(void)
 {
 	return 0;
 }
+#endif /* CONFIG_MMU */
 #endif
 
 #endif /* _PPC_MMU_H_ */

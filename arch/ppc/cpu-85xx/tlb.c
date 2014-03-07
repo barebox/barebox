@@ -50,7 +50,22 @@ void e500_init_tlbs(void)
 	return ;
 }
 
-static int e500_find_free_tlbcam(void)
+void e500_read_tlbcam_entry(int idx, u32 *valid, u32 *tsize,
+		unsigned long *epn, phys_addr_t *rpn)
+{
+	u32 _mas1;
+
+	mtspr(MAS0, FSL_BOOKE_MAS0(1, idx, 0));
+	asm volatile("tlbre;isync");
+	_mas1 = mfspr(MAS1);
+
+	*valid = (_mas1 & MAS1_VALID);
+	*tsize = (_mas1 >> 7) & 0x1f;
+	*epn = mfspr(MAS2) & MAS2_EPN;
+	*rpn = mfspr(MAS3) & MAS3_RPN;
+}
+
+int e500_find_free_tlbcam(void)
 {
 	int ix;
 	u32 _mas1;

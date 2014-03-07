@@ -1,5 +1,8 @@
 if ARCH_MPC85XX
 
+config MMU
+	default y if CMD_MEMTEST
+
 config TEXT_BASE
 	hex
 	default 0xeff80000 if P2020RDB

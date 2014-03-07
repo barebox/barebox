@@ -4,29 +4,19 @@
 #include <linux/err.h>
 #include <linux/mtd/mtd.h>
 
-struct mtd_part {
-	struct mtd_info mtd;
-	struct mtd_info *master;
-	uint64_t offset;
-	struct list_head list;
-};
-
-#define PART(x)  ((struct mtd_part *)(x))
-
 static int mtd_part_read(struct mtd_info *mtd, loff_t from, size_t len,
                 size_t *retlen, u_char *buf)
 {
-	struct mtd_part *part = PART(mtd);
 	struct mtd_ecc_stats stats;
 	int res;
 
-	stats = part->master->ecc_stats;
+	stats = mtd->master->ecc_stats;
 
 	if (from >= mtd->size)
 		len = 0;
 	else if (from + len > mtd->size)
 		len = mtd->size - from;
-	res = part->master->read(part->master, from + part->offset,
+	res = mtd->master->read(mtd->master, from + mtd->master_offset,
 				len, retlen, buf);
 	return res;
 }
@@ -34,57 +24,52 @@ static int mtd_part_read(struct mtd_info *mtd, loff_t from, size_t len,
 static int mtd_part_write(struct mtd_info *mtd, loff_t to, size_t len,
                 size_t *retlen, const u_char *buf)
 {
-	struct mtd_part *part = PART(mtd);
-
 	if (!(mtd->flags & MTD_WRITEABLE))
 		return -EROFS;
 	if (to >= mtd->size)
 		len = 0;
 	else if (to + len > mtd->size)
 		len = mtd->size - to;
-	return part->master->write(part->master, to + part->offset,
+	return mtd->master->write(mtd->master, to + mtd->master_offset,
 					len, retlen, buf);
 }
 
 static int mtd_part_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
-	struct mtd_part *part = PART(mtd);
 	int ret;
 
 	if (!(mtd->flags & MTD_WRITEABLE))
 		return -EROFS;
 	if (instr->addr >= mtd->size)
 		return -EINVAL;
-	instr->addr += part->offset;
-	ret = part->master->erase(part->master, instr);
+	instr->addr += mtd->master_offset;
+	ret = mtd->master->erase(mtd->master, instr);
 	if (ret) {
 		if (instr->fail_addr != 0xffffffff)
-			instr->fail_addr -= part->offset;
-		instr->addr -= part->offset;
+			instr->fail_addr -= mtd->master_offset;
+		instr->addr -= mtd->master_offset;
 	}
 	return ret;
 }
 
 static int mtd_part_block_isbad(struct mtd_info *mtd, loff_t ofs)
 {
-	struct mtd_part *part = PART(mtd);
 	if (ofs >= mtd->size)
 		return -EINVAL;
-	ofs += part->offset;
-	return mtd_block_isbad(part->master, ofs);
+	ofs += mtd->master_offset;
+	return mtd_block_isbad(mtd->master, ofs);
 }
 
 static int mtd_part_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
-	struct mtd_part *part = PART(mtd);
 	int res;
 
 	if (!(mtd->flags & MTD_WRITEABLE))
 		return -EROFS;
 	if (ofs >= mtd->size)
 		return -EINVAL;
-	ofs += part->offset;
-	res = part->master->block_markbad(part->master, ofs);
+	ofs += mtd->master_offset;
+	res = mtd->master->block_markbad(mtd->master, ofs);
 	if (!res)
 		mtd->ecc_stats.badblocks++;
 	return res;
@@ -93,14 +78,23 @@ static int mtd_part_block_markbad(struct mtd_info *mtd, loff_t ofs)
 struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset, size_t size,
 		unsigned long flags, const char *name)
 {
-	struct mtd_part *slave;
-	struct mtd_info *slave_mtd;
+	struct mtd_info *part;
 	int start = 0, end = 0, i;
 
-	slave = xzalloc(sizeof(*slave));
-	slave_mtd = &slave->mtd;
+	part = xzalloc(sizeof(*part));
 
-	memcpy(slave_mtd, mtd, sizeof(*slave));
+	part->type = mtd->type;
+	part->flags = mtd->flags;
+	part->parent = &mtd->class_dev;
+	part->erasesize = mtd->erasesize;
+	part->writesize = mtd->writesize;
+	part->writebufsize = mtd->writebufsize;
+	part->oobsize = mtd->oobsize;
+	part->oobavail = mtd->oobavail;
+	part->bitflip_threshold = mtd->bitflip_threshold;
+	part->ecclayout = mtd->ecclayout;
+	part->ecc_strength = mtd->ecc_strength;
+	part->subpage_sft = mtd->subpage_sft;
 
 	/*
 	 * find the number of eraseregions the partition includes.
@@ -118,26 +112,37 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset, size_t si
 			end = i;
 	}
 
-	slave_mtd->numeraseregions = end - start;
+	part->numeraseregions = end - start;
 
-	slave_mtd->read = mtd_part_read;
-	slave_mtd->write = mtd_part_write;
-	slave_mtd->erase = mtd_part_erase;
-	slave_mtd->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
-	slave_mtd->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
-	slave_mtd->size = size;
-	slave_mtd->name = strdup(name);
+	part->read = mtd_part_read;
+	part->write = mtd_part_write;
+	part->erase = mtd_part_erase;
+	part->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
+	part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
+	part->size = size;
+	part->name = strdup(name);
 
-	slave->offset = offset;
-	slave->master = mtd;
+	part->master_offset = offset;
+	part->master = mtd;
 
-	return slave_mtd;
+	if (!strncmp(mtd->cdev.name, name, strlen(mtd->cdev.name)))
+		part->cdev.partname = xstrdup(name + strlen(mtd->cdev.name) + 1);
+
+	add_mtd_device(part, part->name, DEVICE_ID_SINGLE);
+
+	return part;
 }
 
-void mtd_del_partition(struct mtd_info *mtd)
+int mtd_del_partition(struct mtd_info *part)
 {
-	struct mtd_part *part = PART(mtd);
+	if (!part->master)
+		return -EINVAL;
 
-	free(mtd->name);
+	del_mtd_device(part);
+
+	free(part->cdev.partname);
+	free(part->name);
 	free(part);
+
+	return 0;
 }

@@ -146,6 +146,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct mtd_info *mtd = cdev->priv;
 	struct erase_info erase;
+	uint32_t addr;
 	int ret;
 
 	ret = mtd_erase_align(mtd, &count, &offset);
@@ -154,9 +155,10 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 
 	memset(&erase, 0, sizeof(erase));
 	erase.mtd = mtd;
-	erase.addr = offset;
+	addr = offset;
 
 	if (!mtd->block_isbad) {
+		erase.addr = addr;
 		erase.len = count;
 		return mtd_erase(mtd, &erase);
 	}
@@ -164,22 +166,24 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	erase.len = mtd->erasesize;
 
 	while (count > 0) {
-		dev_dbg(cdev->dev, "erase %d %d\n", erase.addr, erase.len);
+		dev_dbg(cdev->dev, "erase %d %d\n", addr, erase.len);
 
 		if (!mtd->allow_erasebad)
-			ret = mtd_block_isbad(mtd, erase.addr);
+			ret = mtd_block_isbad(mtd, addr);
 		else
 			ret = 0;
 
+		erase.addr = addr;
+
 		if (ret > 0) {
-			printf("Skipping bad block at 0x%08x\n", erase.addr);
+			printf("Skipping bad block at 0x%08x\n", addr);
 		} else {
 			ret = mtd_erase(mtd, &erase);
 			if (ret)
 				return ret;
 		}
 
-		erase.addr += mtd->erasesize;
+		addr += mtd->erasesize;
 		count -= count > mtd->erasesize ? mtd->erasesize : count;
 	}
 
@@ -404,7 +408,8 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	}
 
 	devfs_create(&mtd->cdev);
-	if (mtd->parent)
+
+	if (mtd->parent && !mtd->master)
 		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
 
 	list_for_each_entry(hook, &mtd_register_hooks, hook)

@@ -154,6 +154,7 @@ int register_device(struct device_d *new_device)
 	INIT_LIST_HEAD(&new_device->cdevs);
 	INIT_LIST_HEAD(&new_device->parameters);
 	INIT_LIST_HEAD(&new_device->active);
+	INIT_LIST_HEAD(&new_device->bus_list);
 
 	if (new_device->bus) {
 		if (!new_device->parent)
@@ -180,6 +181,8 @@ int unregister_device(struct device_d *old_dev)
 	struct device_d *child, *dt;
 
 	dev_dbg(old_dev, "unregister\n");
+
+	dev_remove_parameters(old_dev);
 
 	if (old_dev->driver)
 		old_dev->bus->remove(old_dev);

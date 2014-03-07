@@ -217,6 +217,9 @@ struct mtd_info {
 	/* If true erasing bad blocks is allowed, this is set via a device parameter */
 	bool allow_erasebad;
 	int p_allow_erasebad;
+
+	struct mtd_info *master;
+	uint32_t master_offset;
 };
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr);
@@ -272,7 +275,7 @@ struct mtd_notifier {
 
 struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset, size_t size,
 		unsigned long flags, const char *name);
-void mtd_del_partition(struct mtd_info *mtd);
+int mtd_del_partition(struct mtd_info *mtd);
 
 extern void register_mtd_user (struct mtd_notifier *new);
 extern int unregister_mtd_user (struct mtd_notifier *old);

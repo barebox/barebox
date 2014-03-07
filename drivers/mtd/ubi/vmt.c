@@ -147,6 +147,13 @@ int ubi_create_volume(struct ubi_device *ubi, struct ubi_mkvol_req *req)
 			vol->last_eb_bytes = vol->usable_leb_size;
 	}
 
+	sprintf(vol->dev.name, "%s.%s", dev_name(&ubi->dev), vol->name);
+	vol->dev.id = DEVICE_ID_SINGLE;
+	vol->dev.parent = &ubi->dev;
+	err = register_device(&vol->dev);
+	if (err)
+		goto out_acc;
+
 	/* Register character device for the volume */
 	err = ubi_volume_cdev_add(ubi, vol);
 	if (err) {
@@ -190,6 +197,7 @@ out_sysfs:
 out_mapping:
 	if (do_free)
 		kfree(vol->eba_tbl);
+	unregister_device(&vol->dev);
 out_acc:
 	ubi->rsvd_pebs -= vol->reserved_pebs;
 	ubi->avail_pebs += vol->reserved_pebs;
@@ -245,6 +253,7 @@ int ubi_remove_volume(struct ubi_volume_desc *desc, int no_vtbl)
 			goto out_err;
 	}
 
+	unregister_device(&vol->dev);
 	devfs_remove(&vol->cdev);
 
 	ubi->rsvd_pebs -= reserved_pebs;
@@ -427,6 +436,13 @@ int ubi_add_volume(struct ubi_device *ubi, struct ubi_volume *vol)
 
 	dbg_gen("add volume");
 
+	sprintf(vol->dev.name, "%s.%s", dev_name(&ubi->dev), vol->name);
+	vol->dev.id = DEVICE_ID_SINGLE;
+	vol->dev.parent = &ubi->dev;
+	err = register_device(&vol->dev);
+	if (err)
+		return err;
+
 	/* Register character device for the volume */
 	err = ubi_volume_cdev_add(ubi, vol);
 	if (err) {
@@ -454,6 +470,7 @@ void ubi_free_volume(struct ubi_device *ubi, struct ubi_volume *vol)
 	dbg_gen("free volume %d", vol->vol_id);
 
 	ubi->volumes[vol->vol_id] = NULL;
+	unregister_device(&vol->dev);
 	devfs_remove(&vol->cdev);
 }
 

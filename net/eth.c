@@ -380,8 +380,6 @@ void eth_unregister(struct eth_device *edev)
 	if (edev == eth_current)
 		eth_current = NULL;
 
-	dev_remove_parameters(&edev->dev);
-
 	if (IS_ENABLED(CONFIG_OFDEVICE))
 		free(edev->nodepath);
 

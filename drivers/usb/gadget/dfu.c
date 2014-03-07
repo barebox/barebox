@@ -244,10 +244,14 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 
 	if (w_length == 0) {
 		dfu->dfu_state = DFU_STATE_dfuIDLE;
-		if (dfu_devs[dfualt].flags & DFU_FLAG_SAVE) {
+		if (dfu_devs[dfualt].flags & DFU_FLAG_SAFE) {
 			int fd;
+			unsigned flags = O_WRONLY;
 
-			fd = open(dfu_devs[dfualt].dev, O_WRONLY);
+			if (dfu_devs[dfualt].flags & DFU_FLAG_CREATE)
+				flags |= O_CREAT | O_TRUNC;
+
+			fd = open(dfu_devs[dfualt].dev, flags);
 			if (fd < 0) {
 				perror("open");
 				ret = -EINVAL;
@@ -376,10 +380,16 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 				goto out;
 			}
 			debug("dfu: starting download to %s\n", dfu_devs[dfualt].dev);
-			if (dfu_devs[dfualt].flags & DFU_FLAG_SAVE)
+			if (dfu_devs[dfualt].flags & DFU_FLAG_SAFE) {
 				dfufd = open(DFU_TEMPFILE, O_WRONLY | O_CREAT);
-			else
-				dfufd = open(dfu_devs[dfualt].dev, O_WRONLY);
+			} else {
+				unsigned flags = O_WRONLY;
+
+				if (dfu_devs[dfualt].flags & DFU_FLAG_CREATE)
+					flags |= O_CREAT | O_TRUNC;
+
+				dfufd = open(dfu_devs[dfualt].dev, flags);
+			}
 
 			if (dfufd < 0) {
 				dfu->dfu_state = DFU_STATE_dfuERROR;

@@ -10,7 +10,8 @@ basedir=$1
 target=$3
 shift 3
 
-tempdir="$objtree/.barebox_default_env"
+tempdir="${target}.genenv.tmp"
+tmpfile="$(mktemp)"
 
 mkdir -p "$tempdir"
 
@@ -26,6 +27,13 @@ done
 
 find $tempdir -name '.svn' -o -name '*~' -delete
 
-$objtree/scripts/bareboxenv -s $tempdir $target
+$objtree/scripts/bareboxenv -s $tempdir ${tmpfile}
+
+diff "${tmpfile}" "${target}" >/dev/null 2>/dev/null
+if [ $? != 0 ]; then
+	mv "${tmpfile}" "${target}"
+else
+	rm ${tmpfile}
+fi
 
 rm -r $tempdir

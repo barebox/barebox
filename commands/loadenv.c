@@ -26,21 +26,26 @@
 #include <envfs.h>
 #include <errno.h>
 #include <fs.h>
+#include <malloc.h>
 
 static int do_loadenv(int argc, char *argv[])
 {
-	char *filename, *dirname;
+	char *filename = NULL, *dirname;
 	unsigned flags = 0;
 	int opt;
 	int scrub = 0;
+	int defaultenv = 0;
 
-	while ((opt = getopt(argc, argv, "ns")) > 0) {
+	while ((opt = getopt(argc, argv, "nsd")) > 0) {
 		switch (opt) {
 		case 'n':
 			flags |= ENV_FLAG_NO_OVERWRITE;
 			break;
 		case 's':
 			scrub = 1;
+			break;
+		case 'd':
+			defaultenv = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -52,10 +57,24 @@ static int do_loadenv(int argc, char *argv[])
 	else
 		dirname = argv[optind + 1];
 
-	if (argc - optind < 1)
+	if (argc - optind < 1) {
 		filename = default_environment_path_get();
-	else
-		filename = argv[optind];
+	} else {
+		char *str = normalise_path(argv[optind]);
+
+		/*
+		 * /dev/defaultenv use to contain the defaultenvironment.
+		 * we do not have this file anymore, but maintain compatibility
+		 * to the 'loadenv -s /dev/defaultenv' command to restore the
+		 * default environment for some time.
+		 */
+		if (!strcmp(str, "/dev/defaultenv"))
+			defaultenv = 1;
+		else
+			filename = argv[optind];
+
+		free(str);
+	}
 
 	if (scrub) {
 		int ret;
@@ -75,15 +94,19 @@ static int do_loadenv(int argc, char *argv[])
 		}
 	}
 
-	printf("loading environment from %s\n", filename);
+	printf("loading environment from %s\n", defaultenv ? "defaultenv" : filename);
 
-	return envfs_load(filename, dirname, flags);
+	if (defaultenv)
+		return defaultenv_load(dirname, flags);
+	else
+		return envfs_load(filename, dirname, flags);
 }
 
 BAREBOX_CMD_HELP_START(loadenv)
 BAREBOX_CMD_HELP_USAGE("loadenv OPTIONS [ENVFS] [DIRECTORY]\n")
 BAREBOX_CMD_HELP_OPT("-n", "do not overwrite existing files\n")
 BAREBOX_CMD_HELP_OPT("-s", "scrub old environment\n")
+BAREBOX_CMD_HELP_OPT("-d", "load default environment\n")
 BAREBOX_CMD_HELP_SHORT("Load environment from ENVFS into DIRECTORY (default: /dev/env0 -> /env).\n")
 BAREBOX_CMD_HELP_END
 

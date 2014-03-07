@@ -3,6 +3,7 @@
 
 #ifdef __BAREBOX__
 #include <asm/byteorder.h>
+#include <linux/stringify.h>
 #endif
 
 #define ENVFS_MAJOR		1
@@ -90,8 +91,9 @@ struct envfs_super {
 #endif
 
 #define ENV_FLAG_NO_OVERWRITE	(1 << 0)
-int envfs_load(const char *filename, char *dirname, unsigned flags);
-int envfs_save(const char *filename, char *dirname);
+int envfs_load(const char *filename, const char *dirname, unsigned flags);
+int envfs_save(const char *filename, const char *dirname);
+int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags);
 
 /* defaults to /dev/env0 */
 #ifdef CONFIG_ENV_HANDLING
@@ -109,5 +111,35 @@ static inline char *default_environment_path_get(void)
 #endif
 
 int envfs_register_partition(const char *devname, unsigned int partnr);
+
+#ifdef CONFIG_DEFAULT_ENVIRONMENT
+void defaultenv_append(void *buf, unsigned int size, const char *name);
+int defaultenv_load(const char *dir, unsigned flags);
+#else
+static inline void defaultenv_append(void *buf, unsigned int size, const char *name)
+{
+}
+
+static inline int defaultenv_load(const char *dir, unsigned flags)
+{
+	return -ENOSYS;
+}
+#endif
+
+/*
+ * Append environment directory compiled into barebox with bbenv-y
+ * to the default environment. The symbol is generated from the filename
+ * during the build process. Replace '-' with '_' to get the name
+ * from the filename.
+ */
+#define defaultenv_append_directory(name)			\
+	{							\
+		extern char __bbenv_##name##_start[];		\
+		extern char __bbenv_##name##_end[];		\
+		defaultenv_append(__bbenv_##name##_start,	\
+				__bbenv_##name##_end -		\
+				__bbenv_##name##_start,		\
+				__stringify(name));		\
+	}
 
 #endif /* _ENVFS_H */

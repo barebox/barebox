@@ -493,6 +493,7 @@ all: barebox-flash-image $(KBUILD_DTBS)
 endif
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
+common-$(CONFIG_DEFAULT_ENVIRONMENT) += defaultenv/
 
 barebox-dirs	:= $(patsubst %/,%,$(filter %/, $(common-y)))
 
@@ -503,6 +504,23 @@ barebox-alldirs	:= $(sort $(barebox-dirs) $(patsubst %/,%,$(filter %/, \
 
 pbl-common-y	:= $(patsubst %/, %/built-in-pbl.o, $(common-y))
 common-y	:= $(patsubst %/, %/built-in.o, $(common-y))
+
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_GZIP),y)
+DEFAULT_COMPRESSION_SUFFIX := .gz
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSED_BZIP2),y)
+DEFAULT_COMPRESSION_SUFFIX := .bz2
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_LZO),y)
+DEFAULT_COMPRESSION_SUFFIX := .lzo
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_LZ4),y)
+DEFAULT_COMPRESSION_SUFFIX := .lz4
+endif
+ifeq ($(CONFIG_DEFAULT_COMPRESSION_NONE),y)
+DEFAULT_COMPRESSION_SUFFIX :=
+endif
+export DEFAULT_COMPRESSION_SUFFIX
 
 # Build barebox
 # ---------------------------------------------------------------------------
@@ -1005,7 +1023,7 @@ clean: archclean $(clean-dirs)
 	@find . $(RCS_FIND_IGNORE) \
 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
-		-o -name '*.symtypes' \) \
+		-o -name '*.symtypes' -o -name '*.bbenv.*' -o -name "*.bbenv" \) \
 		-type f -print | xargs rm -f
 
 # mrproper - Delete all generated files, including .config

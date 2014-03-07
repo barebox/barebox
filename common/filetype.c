@@ -23,6 +23,7 @@
 #include <fs.h>
 #include <malloc.h>
 #include <errno.h>
+#include <envfs.h>
 
 struct filetype_str {
 	const char *name;	/* human readable filetype */
@@ -51,6 +52,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_ext] = { "ext filesystem", "ext" },
 	[filetype_gpt] = { "GUID Partition Table", "gpt" },
 	[filetype_bpk] = { "Binary PacKage", "bpk" },
+	[filetype_barebox_env] = { "barebox environment file", "bbenv" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -188,6 +190,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (strncmp(buf8, "#!/bin/sh", 9) == 0)
 		return filetype_sh;
+	if (buf[0] == ENVFS_32(ENVFS_MAGIC))
+		return filetype_barebox_env;
 
 	if (bufsize < 32)
 		return filetype_unknown;

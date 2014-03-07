@@ -60,10 +60,13 @@ static int dfu_do_parse_one(char *partstr, char **endstr, struct usb_dfu_dev *df
 		case PARSE_FLAGS:
 			switch (*partstr) {
 			case 's':
-				dfu->flags |= DFU_FLAG_SAVE;
+				dfu->flags |= DFU_FLAG_SAFE;
 				break;
 			case 'r':
 				dfu->flags |= DFU_FLAG_READBACK;
+				break;
+			case 'c':
+				dfu->flags |= DFU_FLAG_CREATE;
 				break;
 			default:
 				return -EINVAL;
@@ -170,9 +173,10 @@ BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string\n")
 BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
 BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
 BAREBOX_CMD_HELP_OPT  ("<description>",
-	"device1(name1)[sr],device2(name2)[sr]\n"
+	"device1(name1)[sr],device2(name2)[src]\n"
 	"'s' means 'safe mode' (download the complete image before flashing) and\n"
-	"'r' that readback of the firmware is allowed.\n")
+	"'r' that readback of the firmware is allowed.\n"
+	"'c' if given, the file will be created (for use with regular files)\n")
 BAREBOX_CMD_HELP_END
 
 /**

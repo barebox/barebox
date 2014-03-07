@@ -466,7 +466,7 @@ static void i2c_remove(struct device_d *dev)
 
 struct bus_type i2c_bus = {
 	.name = "i2c",
-	.match = device_match,
+	.match = device_match_of_modalias,
 	.probe = i2c_probe,
 	.remove = i2c_remove,
 };

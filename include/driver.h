@@ -496,5 +496,6 @@ int devfs_del_partition(const char *name);
 
 int dev_get_drvdata(struct device_d *dev, unsigned long *data);
 
-#endif /* DRIVER_H */
+int device_match_of_modalias(struct device_d *dev, struct driver_d *drv);
 
+#endif /* DRIVER_H */

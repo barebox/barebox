@@ -230,3 +230,4 @@
 &sata {
 	status = "okay";
 };
+

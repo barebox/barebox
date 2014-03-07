@@ -1,0 +1,99 @@
+/*
+ * Copyright 2013 Michael Burkey
+ * Based on code written by Christian Hemp, Phytec Messtechnik GmbH
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+#include "imx6q.dtsi"
+
+/ {
+	model = "Variscite i.MX6 Quad SOM";
+	compatible = "variscite,imx6q-som", "fsl,imx6q";
+
+	memory {
+		reg = <0x10000000 0x40000000>;
+	};
+};
+
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet>;
+	phy-mode = "rgmii";
+	status = "okay";
+};
+
+&gpmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpmi_nand>;
+	nand-on-flash-bbt;
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x200000>;
+	};
+
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x200000 0x20000>;
+	};
+
+	partition@2 {
+		label = "kernel";
+		reg = <0x220000 0x600000>;
+	};
+
+	partition@3 {
+		label = "rootfs";
+		reg = <0x820000 0x1F7E0000>;
+	};
+};
+
+&hdmi {
+	status = "okay";
+	ddc-i2c-bus = <&i2c2>;
+};
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <1000000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	imx6q-variscite-som {
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+				MX6QDL_PAD_GPIO_0__CCM_CLKO1	0x80000000
+				MX6QDL_PAD_GPIO_3__CCM_CLKO2	0x80000000
+			>;
+		};
+
+		pinctrl_enet: enetgrp {
+			fsl,pins = <
+				MX6QDL_ENET_PINGRP_RGMII_MD(0x1b0b0, 0x1b0b0)
+				MX6QDL_PAD_ENET_CRS_DV__GPIO1_IO25 0x80000000		/* KSZ9031 PHY Reset */
+			  >;
+		};
+
+		pinctrl_gpmi_nand: gpmigrp {
+			fsl,pins = <MX6QDL_GPMI_NAND_PINGRP1>;
+		};
+
+		pinctrl_i2c2: i2c2grp {
+			fsl,pins = <MX6QDL_I2C2_PINGRP2>;
+		};
+	};
+};

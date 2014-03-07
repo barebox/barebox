@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -21,6 +21,10 @@
  * be used by both the main CPU complex (ARMv7) and the AVP (ARMv4).
  */
 
+#ifndef __TEGRA_LOWLEVEL_H
+#define __TEGRA_LOWLEVEL_H
+
+#include <linux/compiler.h>
 #include <sizes.h>
 #include <io.h>
 #include <mach/iomap.h>
@@ -40,7 +44,7 @@
 #define T20_ODMDATA_UARTID_SHIFT	15
 #define T20_ODMDATA_UARTID_MASK		(7 << T20_ODMDATA_UARTID_SHIFT)
 
-static inline __attribute__((always_inline))
+static __always_inline
 u32 tegra_get_odmdata(void)
 {
 	u32 bctsize, bctptr, odmdata;
@@ -61,9 +65,10 @@ u32 tegra_get_odmdata(void)
 enum tegra_chiptype {
 	TEGRA_UNK_REV = -1,
 	TEGRA20 = 0,
+	TEGRA30 = 1,
 };
 
-static inline __attribute__((always_inline))
+static __always_inline
 enum tegra_chiptype tegra_get_chiptype(void)
 {
 	u32 hidrev;
@@ -73,26 +78,28 @@ enum tegra_chiptype tegra_get_chiptype(void)
 	switch ((hidrev & HIDREV_CHIPID_MASK) >> HIDREV_CHIPID_SHIFT) {
 	case 0x20:
 		return TEGRA20;
+	case 0x30:
+		return TEGRA30;
 	default:
 		return TEGRA_UNK_REV;
 	}
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 int tegra_get_num_cores(void)
 {
 	switch (tegra_get_chiptype()) {
 	case TEGRA20:
 		return 2;
-		break;
+	case TEGRA30:
+		return 4;
 	default:
 		return 0;
-		break;
 	}
 }
 
 /* Runtime data */
-static inline __attribute__((always_inline))
+static __always_inline
 int tegra_cpu_is_maincomplex(void)
 {
 	u32 tag0;
@@ -102,7 +109,7 @@ int tegra_cpu_is_maincomplex(void)
 	return (tag0 & 0xff) == 0x55;
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 uint32_t tegra20_get_ramsize(void)
 {
 	switch ((tegra_get_odmdata() & T20_ODMDATA_RAMSIZE_MASK) >>
@@ -125,7 +132,7 @@ static long uart_id_to_base[] = {
 	TEGRA_UARTE_BASE,
 };
 
-static inline __attribute__((always_inline))
+static __always_inline
 long tegra20_get_debuguart_base(void)
 {
 	u32 odmdata;
@@ -152,7 +159,7 @@ long tegra20_get_debuguart_base(void)
 #define CRC_OSC_CTRL_OSC_FREQ_SHIFT	30
 #define CRC_OSC_CTRL_OSC_FREQ_MASK	(0x3 << CRC_OSC_CTRL_OSC_FREQ_SHIFT)
 
-static inline unsigned __attribute__((always_inline))
+static __always_inline
 int tegra_get_osc_clock(void)
 {
 	u32 osc_ctrl = readl(TEGRA_CLK_RESET_BASE + CRC_OSC_CTRL);
@@ -172,7 +179,50 @@ int tegra_get_osc_clock(void)
 	}
 }
 
-static inline __attribute__((always_inline))
+#define TIMER_CNTR_1US	0x00
+#define TIMER_USEC_CFG	0x04
+
+static __always_inline
+void tegra_ll_delay_setup(void)
+{
+	u32 reg;
+
+	/*
+	 * calibrate timer to run at 1MHz
+	 * TIMERUS_USEC_CFG selects the scale down factor with bits [0:7]
+	 * representing the divisor and bits [8:15] representing the dividend
+	 * each in n+1 form.
+	 */
+	switch (tegra_get_osc_clock()) {
+	case 12000000:
+		reg = 0x000b;
+		break;
+	case 13000000:
+		reg = 0x000c;
+		break;
+	case 19200000:
+		reg = 0x045f;
+		break;
+	case 26000000:
+		reg = 0x0019;
+		break;
+	default:
+		reg = 0;
+		break;
+	}
+
+	writel(reg, TEGRA_TMRUS_BASE + TIMER_USEC_CFG);
+}
+
+static __always_inline
+void tegra_ll_delay_usec(int delay)
+{
+	int timeout = (int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) + delay;
+
+	while ((int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) - timeout < 0);
+}
+
+static __always_inline
 void tegra_cpu_lowlevel_setup(void)
 {
 	uint32_t r;
@@ -182,6 +232,7 @@ void tegra_cpu_lowlevel_setup(void)
 	r &= ~0x1f;
 	r |= 0xd3;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+	tegra_ll_delay_setup();
 }
 
 /* reset vector for the AVP, to be called from board reset vector */
@@ -189,3 +240,5 @@ void tegra_avp_reset_vector(uint32_t boarddata);
 
 /* reset vector for the main CPU complex */
 void tegra_maincomplex_entry(void);
+
+#endif /* __TEGRA_LOWLEVEL_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * Partly based on code (C) Copyright 2010-2011
  * NVIDIA Corporation <www.nvidia.com>
@@ -23,6 +23,8 @@
 #include <mach/lowlevel.h>
 #include <mach/tegra20-car.h>
 #include <mach/tegra20-pmc.h>
+#include <mach/tegra30-car.h>
+#include <mach/tegra30-flow.h>
 
 /* instruct the PMIC to enable the CPU power rail */
 static void enable_maincomplex_powerrail(void)
@@ -84,6 +86,12 @@ static struct pll_config pllx_config_table[][4] = {
 		{1000, 12, 0, 12},	/* OSC 12.0 MHz */
 		{1000, 26, 0, 12},	/* OSC 26.0 MHz */
 	}, /* TEGRA 20 */
+	{
+		{862, 8,  0, 8},
+		{583, 8,  0, 4},
+		{700, 6,  0, 8},
+		{700, 13, 0, 8},
+	}, /* TEGRA 30 */
 };
 
 static void init_pllx(void)
@@ -149,6 +157,23 @@ static void start_cpu0_clocks(void)
 	       TEGRA_CLK_RESET_BASE + CRC_SCLK_BURST_POLICY);
 	writel(CRC_SUPER_SDIV_ENB, TEGRA_CLK_RESET_BASE + CRC_SUPER_SCLK_DIV);
 
+	writel(1 << CRC_CLK_SYSTEM_RATE_AHB_SHIFT,
+	       TEGRA_CLK_RESET_BASE + CRC_CLK_SYSTEM_RATE);
+
+	if (tegra_get_chiptype() >= TEGRA30) {
+		/* init MSELECT */
+		writel(CRC_RST_DEV_V_MSELECT,
+		       TEGRA_CLK_RESET_BASE + CRC_RST_DEV_V_SET);
+		writel((CRC_CLK_SOURCE_MSEL_SRC_PLLP <<
+		       CRC_CLK_SOURCE_MSEL_SRC_SHIFT) | 2,
+		       TEGRA_CLK_RESET_BASE + CRC_CLK_SOURCE_MSEL);
+		writel(CRC_CLK_OUT_ENB_V_MSELECT,
+		       TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_V);
+		tegra_ll_delay_usec(3);
+		writel(CRC_RST_DEV_V_MSELECT,
+		       TEGRA_CLK_RESET_BASE + CRC_RST_DEV_V_CLR);
+	}
+
 	/* deassert clock stop for cpu 0 */
 	reg = readl(TEGRA_CLK_RESET_BASE + CRC_CLK_CPU_CMPLX);
 	reg &= ~CRC_CLK_CPU_CMPLX_CPU0_CLK_STP;
@@ -158,6 +183,9 @@ static void start_cpu0_clocks(void)
 	reg = readl(TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_L);
 	reg |= CRC_CLK_OUT_ENB_L_CPU;
 	writel(reg, TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_L);
+
+	/* give clocks some time to settle */
+	tegra_ll_delay_usec(300);
 }
 
 static void maincomplex_powerup(void)
@@ -175,11 +203,27 @@ static void maincomplex_powerup(void)
 		reg = readl(TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
 		reg |= PMC_REMOVE_CLAMPING_CMD_CPU;
 		writel(reg, TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
+
+		tegra_ll_delay_usec(1000);
 	}
 }
+
+static void tegra_cluster_switch_hp(void)
+{
+	u32 reg;
+
+	reg = readl(TEGRA_FLOW_CTRL_BASE + FLOW_CLUSTER_CONTROL);
+	reg &= ~FLOW_CLUSTER_CONTROL_ACTIVE_LP;
+	writel(reg, TEGRA_FLOW_CTRL_BASE + FLOW_CLUSTER_CONTROL);
+}
+
 void tegra_avp_reset_vector(uint32_t boarddata)
 {
 	int num_cores;
+
+	/* we want to bring up the high performance CPU complex */
+	if (tegra_get_chiptype() == TEGRA30)
+		tegra_cluster_switch_hp();
 
 	/* get the number of cores in the main CPU complex of the current SoC */
 	num_cores = tegra_get_num_cores();

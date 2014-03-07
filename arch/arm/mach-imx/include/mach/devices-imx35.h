@@ -19,12 +19,12 @@ static inline struct device_d *imx35_add_i2c2(struct i2c_platform_data *pdata)
 
 static inline struct device_d *imx35_add_spi0(struct spi_imx_master *pdata)
 {
-	return imx_add_spi((void *)MX35_CSPI1_BASE_ADDR, 0, pdata);
+	return imx_add_spi_imx35((void *)MX35_CSPI1_BASE_ADDR, 0, pdata);
 }
 
 static inline struct device_d *imx35_add_spi(struct spi_imx_master *pdata)
 {
-	return imx_add_spi((void *)MX35_CSPI2_BASE_ADDR, 1, pdata);
+	return imx_add_spi_imx35((void *)MX35_CSPI2_BASE_ADDR, 1, pdata);
 }
 
 static inline struct device_d *imx35_add_uart0(void)

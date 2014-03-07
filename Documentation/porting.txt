@@ -50,7 +50,7 @@ extra-y += barebox.lds
   is not ported yet.
 
 - Call devfs_add_partition() to add an environment partition for your device:
-  devfs_add_partition("nor0", 0x40000, 0x20000, "env0");
+  devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
   This will add an area starting at 0x40000 of size 0x20000 of the device
   nor0 as env0.
 

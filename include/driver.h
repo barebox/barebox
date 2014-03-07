@@ -482,14 +482,47 @@ ssize_t cdev_write(struct cdev *cdev, const void *buf, size_t count, loff_t offs
 int cdev_ioctl(struct cdev *cdev, int cmd, void *buf);
 int cdev_erase(struct cdev *cdev, size_t count, loff_t offset);
 
-#define DEVFS_PARTITION_FIXED		(1 << 0)
-#define DEVFS_PARTITION_READONLY	(1 << 1)
+#define DEVFS_PARTITION_FIXED		(1U << 0)
+#define DEVFS_PARTITION_READONLY	(1U << 1)
 #define DEVFS_IS_PARTITION		(1 << 2)
 #define DEVFS_IS_CHARACTER_DEV		(1 << 3)
 
-struct cdev *devfs_add_partition(const char *devname, loff_t offset, loff_t size,
-		int flags, const char *name);
+struct cdev *devfs_add_partition(const char *devname, loff_t offset,
+		loff_t size, unsigned int flags, const char *name);
 int devfs_del_partition(const char *name);
+
+#define DEVFS_PARTITION_APPEND		0
+
+/**
+ * struct devfs_partition - defines parameters for a single partition
+ * @offset: start of partition
+ * 	a negative offset requests to start the partition relative to the
+ * 	device's end. DEVFS_PARTITION_APPEND (i.e. 0) means start directly at
+ * 	the end of the previous partition.
+ * @size: size of partition
+ * 	a non-positive value requests to use a size that keeps -size free space
+ * 	after the current partition. A special case of this is passing 0, which
+ * 	means "until end of device".
+ * @flags: flags passed to devfs_add_partition
+ * @name: name passed to devfs_add_partition
+ * @bbname: if non-NULL also dev_add_bb_dev() is called for the partition during
+ * 	devfs_create_partitions().
+ */
+struct devfs_partition {
+	loff_t offset;
+	loff_t size;
+	unsigned int flags;
+	const char *name;
+	const char *bbname;
+};
+/**
+ * devfs_create_partitions - create a set of partitions for a device
+ * @devname: name of the device to partition
+ * @partinfo: array of partition parameters
+ * 	The array is processed until an entry with .name = NULL is found.
+ */
+int devfs_create_partitions(const char *devname,
+		const struct devfs_partition partinfo[]);
 
 #define DRV_OF_COMPAT(compat) \
 	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL

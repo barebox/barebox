@@ -261,7 +261,7 @@ static LIST_HEAD(bb_list);
  * @param[in] name Partition name (can be obtained with devinfo command)
  * @return The device representing the new partition.
  */
-int dev_add_bb_dev(char *path, const char *name)
+int dev_add_bb_dev(const char *path, const char *name)
 {
 	struct nand_bb *bb;
 	int ret = -ENOMEM;

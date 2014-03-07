@@ -82,6 +82,24 @@ static int a9m2410_mem_init(void)
 }
 mem_initcall(a9m2410_mem_init);
 
+static const struct devfs_partition a9m2410_nand0_partitions[] = {
+	{
+		.offset = 0,
+		.size = 0x40000,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "self_raw",
+		.bbname = "self0",
+	}, {
+		.offset = DEVFS_PARTITION_APPEND,
+		.size = 0x20000,
+		.flags = DEVFS_PARTITION_FIXED,
+		.name = "env_raw",
+		.bbname = "env0",
+	}, {
+		/* sentinel */
+	}
+};
+
 static int a9m2410_devices_init(void)
 {
 	uint32_t reg;
@@ -116,14 +134,9 @@ static int a9m2410_devices_init(void)
 	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, S3C_CS1_BASE + 0x300,
 			16, IORESOURCE_MEM, NULL);
 
-#ifdef CONFIG_NAND
-	/* ----------- add some vital partitions -------- */
-	devfs_add_partition("nand0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self_raw");
-	dev_add_bb_dev("self_raw", "self0");
+	if (IS_ENABLED(CONFIG_NAND))
+		devfs_create_partitions("nand0", a9m2410_nand0_partitions);
 
-	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
-	dev_add_bb_dev("env_raw", "env0");
-#endif
 	armlinux_set_architecture(MACH_TYPE_A9M2410);
 
 	return 0;

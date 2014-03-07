@@ -456,7 +456,7 @@ static int do_edit(int argc, char *argv[])
 
 		c = read_key();
 		switch (c) {
-		case KEY_UP:
+		case BB_KEY_UP:
 			if (!curline->prev)
 				continue;
 
@@ -464,7 +464,7 @@ static int do_edit(int argc, char *argv[])
 			cursy--;
 			textx = setpos(curline->data, linepos);
 			break;
-		case KEY_DOWN:
+		case BB_KEY_DOWN:
 			if (!curline->next)
 				continue;
 
@@ -472,19 +472,19 @@ static int do_edit(int argc, char *argv[])
 			cursy++;
 			textx = setpos(curline->data, linepos);
 			break;
-		case KEY_RIGHT:
+		case BB_KEY_RIGHT:
 			textx++;
 			break;
-		case KEY_LEFT:
+		case BB_KEY_LEFT:
 			textx--;
 			break;
-		case KEY_HOME:
+		case BB_KEY_HOME:
 			textx = 0;
 			break;
-		case KEY_END:
+		case BB_KEY_END:
 			textx = curlen;
 			break;
-		case KEY_PAGEUP:
+		case BB_KEY_PAGEUP:
 			for (i = 0; i < screenheight - 1; i++) {
 				if (!curline->prev)
 					break;
@@ -493,7 +493,7 @@ static int do_edit(int argc, char *argv[])
 			}
 			textx = setpos(curline->data, linepos);
 			break;
-		case KEY_PAGEDOWN:
+		case BB_KEY_PAGEDOWN:
 			for (i = 0; i < screenheight - 1; i++) {
 				if (!curline->next)
 					break;
@@ -502,7 +502,7 @@ static int do_edit(int argc, char *argv[])
 			}
 			textx = setpos(curline->data, linepos);
 			break;
-		case KEY_DEL:
+		case BB_KEY_DEL:
 			if (textx == curlen) {
 				if (curline->next)
 					merge_line(curline);

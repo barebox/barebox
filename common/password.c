@@ -65,8 +65,8 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 				puts("\r\n");
 				return 0;
 			case CTL_CH('h'):
-			case KEY_DEL7:
-			case KEY_DEL:
+			case BB_KEY_DEL7:
+			case BB_KEY_DEL:
 				if (pos > 0) {
 					if (flags & STAR)
 						puts("\b \b");

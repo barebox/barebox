@@ -233,19 +233,19 @@ int readline(const char *prompt, char *buf, int len)
 #endif
 			break;
 
-		case KEY_HOME:
+		case BB_KEY_HOME:
 			BEGINNING_OF_LINE();
 			break;
 		case CTL_CH('c'):	/* ^C - break */
 			*buf = 0;	/* discard input */
 			return -1;
-		case KEY_RIGHT:
+		case BB_KEY_RIGHT:
 			if (num < eol_num) {
 				getcmd_putch(buf[num]);
 				num++;
 			}
 			break;
-		case KEY_LEFT:
+		case BB_KEY_LEFT:
 			if (num) {
 				getcmd_putch(CTL_BACKSPACE);
 				num--;
@@ -266,28 +266,28 @@ int readline(const char *prompt, char *buf, int len)
 				eol_num--;
 			}
 			break;
-		case KEY_ERASE_TO_EOL:
+		case BB_KEY_ERASE_TO_EOL:
 			ERASE_TO_EOL();
 			break;
-		case KEY_REFRESH_TO_EOL:
-		case KEY_END:
+		case BB_KEY_REFRESH_TO_EOL:
+		case BB_KEY_END:
 			REFRESH_TO_EOL();
 			break;
-		case KEY_INSERT:
+		case BB_KEY_INSERT:
 			insert = !insert;
 			break;
-		case KEY_ERASE_LINE:
+		case BB_KEY_ERASE_LINE:
 			BEGINNING_OF_LINE();
 			ERASE_TO_EOL();
 			break;
 		case DEL:
-		case KEY_DEL7:
+		case BB_KEY_DEL7:
 		case 8:
 			if (num) {
 				DO_BACKSPACE();
 			}
 			break;
-		case KEY_DEL:
+		case BB_KEY_DEL:
 			if (num < eol_num) {
 				wlen = eol_num - num;
 				memmove(buf + num, buf + num + 1, wlen);
@@ -299,12 +299,12 @@ int readline(const char *prompt, char *buf, int len)
 				eol_num--;
 			}
 			break;
-		case KEY_UP:
-		case KEY_DOWN:
+		case BB_KEY_UP:
+		case BB_KEY_DOWN:
 		{
 			char * hline;
 
-			if (ichar == KEY_UP)
+			if (ichar == BB_KEY_UP)
 				hline = hist_prev();
 			else
 				hline = hist_next();

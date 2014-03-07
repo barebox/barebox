@@ -303,7 +303,7 @@ int menu_show(struct menu *m)
 		int repaint = 0;
 
 		if (m->auto_select >= 0)
-			ch = KEY_RETURN;
+			ch = BB_KEY_RETURN;
 		else
 			ch = read_key();
 
@@ -327,7 +327,7 @@ int menu_show(struct menu *m)
 			}
 			break;
 		}
-		case KEY_UP:
+		case BB_KEY_UP:
 			m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 						 list);
 			if (&(m->selected->list) == &(m->entries)) {
@@ -336,7 +336,7 @@ int menu_show(struct menu *m)
 			}
 			repaint = 1;
 			break;
-		case KEY_DOWN:
+		case BB_KEY_DOWN:
 			m->selected = list_entry(m->selected->list.next, struct menu_entry,
 						 list);
 			if (&(m->selected->list) == &(m->entries)) {
@@ -353,11 +353,11 @@ int menu_show(struct menu *m)
 				m->selected->action(m, m->selected);
 			repaint = 1;
 			break;
-		case KEY_ENTER:
-			if (ch_previous == KEY_RETURN)
+		case BB_KEY_ENTER:
+			if (ch_previous == BB_KEY_RETURN)
 				break;
-		case KEY_RETURN:
-			if (ch_previous == KEY_ENTER)
+		case BB_KEY_RETURN:
+			if (ch_previous == BB_KEY_ENTER)
 				break;
 			clear();
 			gotoXY(1,1);
@@ -368,11 +368,11 @@ int menu_show(struct menu *m)
 			else
 				print_menu(m);
 			break;
-		case KEY_HOME:
+		case BB_KEY_HOME:
 			m->selected = list_first_entry(&m->entries, struct menu_entry, list);
 			repaint = 1;
 			break;
-		case KEY_END:
+		case BB_KEY_END:
 			m->selected = list_last_entry(&m->entries, struct menu_entry, list);
 			repaint = 1;
 			break;

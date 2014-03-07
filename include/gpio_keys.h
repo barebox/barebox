@@ -10,9 +10,6 @@ struct gpio_keys_button {
 
 	int gpio;
 	int active_low;
-
-	/* internal */
-	int previous_state;
 };
 
 struct gpio_keys_platform_data {
@@ -21,10 +18,6 @@ struct gpio_keys_platform_data {
 
 	/* optional */
 	int fifo_size;
-
-	struct kfifo *recv_fifo;
-	struct poller_struct poller;
-	struct console_device cdev;
 };
 
 #endif

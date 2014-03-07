@@ -182,25 +182,25 @@ static void ek_device_add_leds(void) {}
 #ifdef CONFIG_KEYBOARD_GPIO
 struct gpio_keys_button keys[] = {
 	{
-		.code = KEY_HOME,
+		.code = BB_KEY_HOME,
 		.gpio = AT91_PIN_PB6,
 	}, {
-		.code = KEY_RETURN,
+		.code = BB_KEY_RETURN,
 		.gpio = AT91_PIN_PB7,
 	}, {
-		.code = KEY_LEFT,
+		.code = BB_KEY_LEFT,
 		.gpio = AT91_PIN_PB14,
 	}, {
-		.code = KEY_RIGHT,
+		.code = BB_KEY_RIGHT,
 		.gpio = AT91_PIN_PB15,
 	}, {
-		.code = KEY_UP,
+		.code = BB_KEY_UP,
 		.gpio = AT91_PIN_PB16,
 	}, {
-		.code = KEY_DOWN,
+		.code = BB_KEY_DOWN,
 		.gpio = AT91_PIN_PB17,
 	}, {
-		.code = KEY_RETURN,
+		.code = BB_KEY_RETURN,
 		.gpio = AT91_PIN_PB18,
 	},
 };

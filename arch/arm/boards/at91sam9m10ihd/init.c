@@ -110,7 +110,7 @@ static void ek_add_device_mci(void) {}
 
 struct qt1070_platform_data qt1070_pdata = {
 	.irq_pin	= AT91_PIN_PB19,
-	.code		= { KEY_ENTER, KEY_ENTER, KEY_UP, KEY_DOWN, },
+	.code		= { BB_KEY_ENTER, BB_KEY_ENTER, BB_KEY_UP, BB_KEY_DOWN, },
 	.nb_code	= 4,
 };
 

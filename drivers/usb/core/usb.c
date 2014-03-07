@@ -504,8 +504,7 @@ int usb_host_detect(struct usb_host *host, int force)
 
 		list_del(&dev->list);
 		unregister_device(&dev->dev);
-		if (dev->hub)
-			free(dev->hub);
+		free(dev->hub);
 		dma_free(dev->setup_packet);
 		dma_free(dev->descriptor);
 		free(dev);

@@ -145,13 +145,24 @@ config BAREBOX_MAX_IMAGE_SIZE
 	help
 	  Define the maximum size of barebox
 
-config BAREBOX_MAX_BARE_INIT_SIZE
-	prompt "Maximum bare_init size"
+config BAREBOX_MAX_PBL_SIZE
+	depends on PBL_IMAGE
+	prompt "Maximum pre-bootloader size"
 	hex
 	default 0xffffffff
 	help
+	  On some hardware the ROM code can load the pbl into SRAM, but not
+	  the whole image. This option specifies how big the pbl may get.
+
+config BAREBOX_MAX_BARE_INIT_SIZE
+	prompt "Maximum bare_init size"
+	hex
+	range 0x0 BAREBOX_MAX_PBL_SIZE if LOAD_PBL_SRAM
+	default BAREBOX_MAX_PBL_SIZE if LOAD_PBL_SRAM
+	default 0xffffffff
+	help
 	  Define the maximum size of bare_init
-	  this will allow your bare_init will fit in SRAM as example
+	  this will allow your bare_init to fit in SRAM as example
 	  ARCH can overwrite it via ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT

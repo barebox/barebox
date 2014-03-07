@@ -3151,7 +3151,6 @@ static uint32_t rw_mgr_mem_calibrate_wlevel (uint32_t g, uint32_t test_bgn)
 		tmp_delay += IO_DELAY_PER_DCHAIN_TAP;
 	}
 	dtaps_per_ptap--;
-	tmp_delay = 0;
 #endif
 
 	/* starting phases */

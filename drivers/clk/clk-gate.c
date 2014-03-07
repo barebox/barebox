@@ -76,7 +76,7 @@ static int clk_gate_is_enabled(struct clk *clk)
 		return g->flags & CLK_GATE_INVERTED ? 1 : 0;
 }
 
-struct clk_ops clk_gate_ops = {
+static struct clk_ops clk_gate_ops = {
 	.enable = clk_gate_enable,
 	.disable = clk_gate_disable,
 	.is_enabled = clk_gate_is_enabled,

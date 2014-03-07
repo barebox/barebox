@@ -112,7 +112,7 @@ static void altera_spi_cs_inactive(struct spi_device *spi)
 static unsigned altera_spi_do_xfer(struct spi_device *spi, struct spi_transfer *t)
 {
 	struct altera_spi *altera_spi = container_of(spi->master, struct altera_spi, master);
-	int word_len = spi->bits_per_word;
+	int word_len;
 	unsigned retval = 0;
 	u32 txval;
 	u32 rxval;

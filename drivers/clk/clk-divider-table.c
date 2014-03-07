@@ -78,7 +78,7 @@ static unsigned long clk_divider_recalc_rate(struct clk *clk,
 	return parent_rate / div->table[val].div;
 }
 
-struct clk_ops clk_divider_table_ops = {
+static struct clk_ops clk_divider_table_ops = {
 	.set_rate = clk_divider_set_rate,
 	.recalc_rate = clk_divider_recalc_rate,
 };

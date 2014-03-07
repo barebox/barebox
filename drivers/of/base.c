@@ -67,9 +67,9 @@ struct alias_prop {
 
 static LIST_HEAD(aliases_lookup);
 
-struct device_node *root_node;
+static struct device_node *root_node;
 
-struct device_node *of_aliases;
+static struct device_node *of_aliases;
 
 #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
 #define OF_ROOT_NODE_ADDR_CELLS_DEFAULT 1
@@ -1721,8 +1721,8 @@ int of_add_memory(struct device_node *node, bool dump)
 	return 0;
 }
 
-struct device_node *of_chosen;
-const char *of_model;
+static struct device_node *of_chosen;
+static const char *of_model;
 
 const char *of_get_model(void)
 {

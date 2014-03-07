@@ -12,7 +12,6 @@
 #include <fs.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <fs.h>
 #include <malloc.h>
 #include <init.h>
 #include <linux/stat.h>
@@ -438,7 +437,7 @@ static int bpkfs_probe(struct device_d *dev)
 
 		dev_dbg(dev, "%d: type = 0x%x => %s\n", i, d->type, d->name);
 		dev_dbg(dev, "%d: size = %llu\n", i, d->size);
-		dev_dbg(dev, "%d: offset = %d\n", i, d->offset);
+		dev_dbg(dev, "%d: offset = %zu\n", i, d->offset);
 
 		dev_dbg(dev, "%d: hw_id = 0x%x => %s\n", i, h->hw_id, h->name);
 

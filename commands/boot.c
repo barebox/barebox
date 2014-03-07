@@ -308,7 +308,7 @@ static int boot(const char *name)
 {
 	struct blspec *blspec;
 	struct blspec_entry *entry;
-	int ret = -ENOENT;
+	int ret;
 
 	blspec = blspec_alloc();
 	ret = bootentry_parse_one(blspec, name);

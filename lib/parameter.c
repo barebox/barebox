@@ -108,8 +108,7 @@ int dev_set_param(struct device_d *dev, const char *name, const char *val)
 int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 		const char *val)
 {
-	if (p->value)
-		free(p->value);
+	free(p->value);
 	if (!val) {
 		p->value = NULL;
 		return 0;

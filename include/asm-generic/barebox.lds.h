@@ -60,10 +60,23 @@ CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE < CONFIG_BAREBOX_MAX_BARE_INIT_SIZE
 #define MAX_BARE_INIT_SIZE CONFIG_BAREBOX_MAX_BARE_INIT_SIZE
 #endif
 
+#if defined(CONFIG_ARCH_BAREBOX_MAX_PBL_SIZE) && \
+CONFIG_ARCH_BAREBOX_MAX_PBL_SIZE < CONFIG_BAREBOX_MAX_PBL_SIZE
+#define MAX_PBL_SIZE CONFIG_ARCH_BAREBOX_MAX_PBL_SIZE
+#else
+#define MAX_PBL_SIZE CONFIG_BAREBOX_MAX_PBL_SIZE
+#endif
+
 #include <linux/stringify.h>
 /* use 2 ASSERT because ld can not accept '"size" "10"' format */
 #define BAREBOX_BARE_INIT_SIZE					\
 	_barebox_bare_init_size = __bare_init_end - _text;	\
 	ASSERT(_barebox_bare_init_size < MAX_BARE_INIT_SIZE, "Barebox bare_init size > ") \
 	ASSERT(_barebox_bare_init_size < MAX_BARE_INIT_SIZE, __stringify(MAX_BARE_INIT_SIZE)) \
+
+#define BAREBOX_PBL_SIZE					\
+	_barebox_pbl_size = __bss_start - _text;		\
+	ASSERT(MAX_BARE_INIT_SIZE <= MAX_PBL_SIZE, "bare_init cannot be bigger than pbl") \
+	ASSERT(_barebox_pbl_size < MAX_PBL_SIZE, "Barebox pbl size > ") \
+	ASSERT(_barebox_pbl_size < MAX_PBL_SIZE, __stringify(MAX_PBL_SIZE)) \
 

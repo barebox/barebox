@@ -204,7 +204,7 @@ int __init usb_interface_id(struct usb_configuration *config,
 static int config_buf(struct usb_configuration *config,
 		enum usb_device_speed speed, void *buf, u8 type)
 {
-	struct usb_config_descriptor	*c = buf;
+	struct usb_config_descriptor	*c;
 	void				*next = buf + USB_DT_CONFIG_SIZE;
 	int				len = USB_BUFSIZ - USB_DT_CONFIG_SIZE;
 	struct usb_function		*f;

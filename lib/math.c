@@ -306,7 +306,7 @@ static const char *arith_lookup_val(arith_state_t *math_state, var_or_num_t *t)
 		/* treat undefined var as 0 */
 		t->val = 0;
 	}
-	return 0;
+	return NULL;
 }
 
 /* "Applying" a token means performing it on the top elements on the integer
@@ -546,8 +546,8 @@ static arith_t evaluate_string(arith_state_t *math_state, const char *expr)
 	arith_t result;
 
 	if (numstack == NULL || stack == NULL) {
-		errmsg = "out of memory";
-		goto err_with_custom_msg;
+		math_state->errmsg = "out of memory";
+		return -1;
 	}
 
 	/* Start with a left paren */

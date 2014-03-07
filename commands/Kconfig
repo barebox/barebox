@@ -57,6 +57,12 @@ config CMD_READLINE
 	tristate
 	prompt "readline"
 
+config CMD_READF
+	tristate
+	prompt "readf"
+	help
+	  The readf command is used to read a files content into a shell variable.
+
 config CMD_LET
 	tristate
 	prompt "let"

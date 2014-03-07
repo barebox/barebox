@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+        boot-menu-add-entry "$0" "SD Boot"
+        exit
+fi
+
+boot mci0

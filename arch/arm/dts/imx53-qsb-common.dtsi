@@ -158,6 +158,7 @@
 				MX53_PAD_EIM_DA13__GPIO3_13       0x80000000
 				MX53_PAD_PATA_DA_0__GPIO7_6       0x80000000
 				MX53_PAD_GPIO_16__GPIO7_11        0x80000000
+				MX53_PAD_PATA_DA_2__GPIO7_8       0x80000000
 			>;
 		};
 
@@ -216,9 +217,16 @@
 };
 
 &usbh1 {
-       status = "okay";
+	phy_type = "utmi";
+	dr_mode = "host";
+	status = "okay";
 };
 
 &usbotg {
-       status = "okay";
+	phy_type = "utmi";
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
 };

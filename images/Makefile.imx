@@ -14,6 +14,11 @@ pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
 FILE_barebox-karo-tx25.img = start_imx25_karo_tx25.pblx
 image-$(CONFIG_MACH_TX25) += barebox-karo-tx25.img
 
+pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
+CFG_start_imx25_karo_tx25.pblx.imximg = $(board)/karo-tx25/flash-header-tx25.imxcfg
+FILE_barebox-karo-tx25-internal.img = start_imx25_karo_tx25.pblx.imximg
+image-$(CONFIG_MACH_TX25) += barebox-karo-tx25-internal.img
+
 # ----------------------- i.MX51 based boards ---------------------------
 pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg
@@ -56,6 +61,11 @@ pblx-$(CONFIG_MACH_REALQ7) += start_imx6_realq7
 CFG_start_imx6_realq7.pblx.imximg = $(board)/datamodul-edm-qmx6/flash-header.imxcfg
 FILE_barebox-datamodul-edm-qmx6.img = start_imx6_realq7.pblx.imximg
 image-$(CONFIG_MACH_REALQ7) += barebox-datamodul-edm-qmx6.img
+
+pblx-$(CONFIG_MACH_GUF_SANTARO) += start_imx6q_guf_santaro
+CFG_start_imx6q_guf_santaro.pblx.imximg = $(board)/guf-santaro/flash-header.imxcfg
+FILE_barebox-guf-santaro.img = start_imx6q_guf_santaro.pblx.imximg
+image-$(CONFIG_MACH_GUF_SANTARO) += barebox-guf-santaro.img
 
 pblx-$(CONFIG_MACH_GK802) += start_imx6_gk802
 CFG_start_imx6_gk802.pblx.imximg = $(board)/gk802/flash-header.imxcfg
@@ -123,3 +133,8 @@ pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6dl_nitrogen6x_1g
 CFG_start_imx6dl_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6x-1g.imxcfg
 FILE_barebox-boundarydevices-imx6dl-nitrogen6x-1g.img = start_imx6dl_nitrogen6x_1g.pblx.imximg
 image-$(CONFIG_MACH_NITROGEN6X) += barebox-boundarydevices-imx6dl-nitrogen6x-1g.img
+
+pblx-$(CONFIG_MACH_UDOO) += start_imx6_udoo
+CFG_start_imx6_udoo.pblx.imximg = $(board)/udoo/flash-header-mx6-udoo.imxcfg
+FILE_barebox-udoo-imx6q.img = start_imx6_udoo.pblx.imximg
+image-$(CONFIG_MACH_UDOO) += barebox-udoo-imx6q.img

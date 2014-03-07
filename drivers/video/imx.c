@@ -530,7 +530,7 @@ static int imxfb_probe(struct device_d *dev)
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
 
-	fbi->per_clk = clk_get(dev, NULL);
+	fbi->per_clk = clk_get(dev, "per");
 	if (IS_ERR(fbi->per_clk))
 		return PTR_ERR(fbi->per_clk);
 

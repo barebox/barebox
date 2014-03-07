@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# board defaults, do not change in running system. Change /env/config
+# instead
+
+global.linux.bootargs.base="console=ttymxc1,115200"

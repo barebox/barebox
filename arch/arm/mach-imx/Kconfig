@@ -14,6 +14,7 @@ config ARCH_TEXT_BASE
 	default 0xa7f00000 if MACH_PCA100
 	default 0xa0000000 if MACH_PCM038
 	default 0x87f00000 if MACH_PCM037
+	default 0x87f00000 if MACH_MX31MOBOARD
 	default 0x87f00000 if MACH_PCM043
 	default 0x08f80000 if MACH_SCB9328
 	default 0xa7e00000 if MACH_NESO
@@ -37,6 +38,7 @@ config ARCH_TEXT_BASE
 	default 0x2fc00000 if MACH_TQMA6X
 	default 0x4fc00000 if MACH_PHYTEC_PFLA02
 	default 0x4fc00000 if MACH_DFI_FS700_M60
+	default 0x4fc00000 if MACH_UDOO
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
@@ -207,6 +209,10 @@ config MACH_DFI_FS700_M60
 	bool "DFI i.MX6 FS700 M60 Q7 Board"
 	select ARCH_IMX6
 
+config MACH_GUF_SANTARO
+	bool "Garz+Fricke Santaro Board"
+	select ARCH_IMX6
+
 config MACH_REALQ7
 	bool "DataModul i.MX6Q Real Qseven Board"
 	select ARCH_IMX6
@@ -231,6 +237,10 @@ config MACH_NITROGEN6X
 
 config MACH_SOLIDRUN_HUMMINGBOARD
 	bool "SolidRun Hummingboard"
+	select ARCH_IMX6
+
+config MACH_UDOO
+	bool "Freescale i.MX6 UDOO Board"
 	select ARCH_IMX6
 
 endif
@@ -348,6 +358,16 @@ config MACH_PCM037
 	select ARCH_HAS_L2X0
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
+	  with a Freescale i.MX31 Processor
+
+config MACH_MX31MOBOARD
+	bool "mx31moboard-i.MX31"
+	select ARCH_IMX31
+	select USB_ULPI if USB
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select ARCH_HAS_L2X0
+	help
+	  Say Y here if you are using EPFL mx31moboard board equipped
 	  with a Freescale i.MX31 Processor
 
 # ----------------------------------------------------------

@@ -21,6 +21,11 @@
 
 	chosen {
 		linux,stdout-path = &uart1;
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+		};
 	};
 };
 

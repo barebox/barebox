@@ -1,4 +1,13 @@
+config ARCH_HAS_FEC_IMX
+	bool
+
+config HAS_AT91_ETHER
+	bool
+
 config HAS_CS8900
+	bool
+
+config HAS_DESIGNWARE_ETH
 	bool
 
 config HAS_DM9000
@@ -7,16 +16,7 @@ config HAS_DM9000
 config HAS_MACB
 	bool
 
-config HAS_AT91_ETHER
-	bool
-
 config HAS_NETX_ETHER
-	bool
-
-config HAS_DESIGNWARE_ETH
-	bool
-
-config ARCH_HAS_FEC_IMX
 	bool
 
 config PHYLIB
@@ -25,14 +25,17 @@ config PHYLIB
 menu "Network drivers"
 	depends on NET
 
-source "drivers/net/phy/Kconfig"
-
 config DRIVER_NET_AR231X
 	bool "AR231X Ethernet support"
 	depends on MACH_MIPS_AR231X
 	select PHYLIB
 	help
 	  Support for the AR231x/531x ethernet controller
+
+config DRIVER_NET_AT91_ETHER
+	bool "at91 ethernet driver"
+	depends on HAS_AT91_ETHER
+	select PHYLIB
 
 config DRIVER_NET_CALXEDA_XGMAC
 	bool "Calxeda xgmac"
@@ -45,6 +48,79 @@ config DRIVER_NET_CPSW
 	bool "CPSW ethernet driver"
 	depends on ARCH_OMAP
 	select PHYLIB
+
+config DRIVER_NET_DAVINCI_EMAC
+	bool "TI Davinci/OMAP EMAC ethernet driver"
+	depends on ARCH_OMAP3
+	select PHYLIB
+
+config DRIVER_NET_DESIGNWARE
+	bool "Designware Universal MAC ethernet driver"
+	select PHYLIB
+	help
+	  This option enables support for the Synopsys
+	  Designware Core Univesal MAC 10M/100M/1G ethernet IP.
+
+config DRIVER_NET_DM9K
+	bool "Davicom dm9k[E|A|B] ethernet driver"
+	depends on HAS_DM9000
+	select PHYLIB
+
+config DRIVER_NET_EP93XX
+	bool "EP93xx Ethernet driver"
+	depends on ARCH_EP93XX
+	select PHYLIB
+
+config DRIVER_NET_ETHOC
+	bool "OpenCores ethernet MAC driver"
+	help
+	  This option enables support for the OpenCores 10/100 Mbps
+	  Ethernet MAC core.
+
+config DRIVER_NET_FEC_IMX
+	bool "i.MX FEC Ethernet driver"
+	depends on ARCH_HAS_FEC_IMX
+	select PHYLIB
+
+config DRIVER_NET_GIANFAR
+	bool "Gianfar Ethernet"
+	depends on ARCH_MPC85XX
+	select PHYLIB
+
+config DRIVER_NET_KS8851_MLL
+	bool "ks8851 mll ethernet driver"
+	select PHYLIB
+	help
+	  This option enables support for the Micrel KS8851 MLL
+	  ethernet chip.
+
+config DRIVER_NET_MACB
+	bool "macb Ethernet driver"
+	depends on HAS_MACB
+	select PHYLIB
+
+config DRIVER_NET_MICREL
+	depends on SPI
+	bool "Micrel KSZ8864RMN Ethernet Switch driver"
+	help
+	  This option enables support for enabling the Micrel
+	  KSZ8864RMN Ethernet Switch over SPI.
+
+config DRIVER_NET_MPC5200
+	bool "MPC5200 Ethernet driver"
+	depends on ARCH_MPC5200
+	select PHYLIB
+
+config DRIVER_NET_NETX
+	bool "Hilscher Netx ethernet driver"
+	depends on HAS_NETX_ETHER
+	select PHYLIB
+
+config DRIVER_NET_ORION
+	bool "Marvell Orion SoC Ethernet"
+	depends on ARCH_MVEBU
+	select PHYLIB
+	select MDIO_MVEBU
 
 config DRIVER_NET_SMC911X
 	bool "smc911x ethernet driver"
@@ -59,46 +135,6 @@ config DRIVER_NET_SMC91111
 	help
 	  This option enables support for the SMSC LAN91C111
 	  ethernet chip.
-
-config DRIVER_NET_DAVINCI_EMAC
-	bool "TI Davinci/OMAP EMAC ethernet driver"
-	depends on ARCH_OMAP3
-	select PHYLIB
-
-config DRIVER_NET_DM9K
-	bool "Davicom dm9k[E|A|B] ethernet driver"
-	depends on HAS_DM9000
-	select PHYLIB
-
-config DRIVER_NET_NETX
-	bool "Hilscher Netx ethernet driver"
-	depends on HAS_NETX_ETHER
-	select PHYLIB
-
-config DRIVER_NET_AT91_ETHER
-	bool "at91 ethernet driver"
-	depends on HAS_AT91_ETHER
-	select PHYLIB
-
-config DRIVER_NET_MPC5200
-	bool "MPC5200 Ethernet driver"
-	depends on ARCH_MPC5200
-	select PHYLIB
-
-config DRIVER_NET_FEC_IMX
-	bool "i.MX FEC Ethernet driver"
-	depends on ARCH_HAS_FEC_IMX
-	select PHYLIB
-
-config DRIVER_NET_EP93XX
-	bool "EP93xx Ethernet driver"
-	depends on ARCH_EP93XX
-	select PHYLIB
-
-config DRIVER_NET_MACB
-	bool "macb Ethernet driver"
-	depends on HAS_MACB
-	select PHYLIB
 
 config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
@@ -120,39 +156,8 @@ config TSE_USE_DEDICATED_DESC_MEM
 	  reserved with a malloc but directly mapped to the memory
 	  address (defined in config.h)
 
-config DRIVER_NET_KS8851_MLL
-	bool "ks8851 mll ethernet driver"
-	select PHYLIB
-	help
-	  This option enables support for the Micrel KS8851 MLL
-	  ethernet chip.
-
-config DRIVER_NET_DESIGNWARE
-	bool "Designware Universal MAC ethernet driver"
-	select PHYLIB
-	help
-	  This option enables support for the Synopsys
-	  Designware Core Univesal MAC 10M/100M/1G ethernet IP.
-
-config DRIVER_NET_GIANFAR
-	bool "Gianfar Ethernet"
-	depends on ARCH_MPC85XX
-	select PHYLIB
-
-config DRIVER_NET_ETHOC
-	bool "OpenCores ethernet MAC driver"
-	help
-	  This option enables support for the OpenCores 10/100 Mbps
-	  Ethernet MAC core.
-
+source "drivers/net/phy/Kconfig"
 source "drivers/net/usb/Kconfig"
-
-config DRIVER_NET_MICREL
-	depends on SPI
-	bool "Micrel KSZ8864RMN Ethernet Switch driver"
-	help
-	  This option enables support for enabling the Micrel
-	  KSZ8864RMN Ethernet Switch over SPI.
 
 endmenu
 

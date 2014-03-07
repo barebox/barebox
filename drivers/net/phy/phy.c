@@ -331,6 +331,37 @@ fail:
 	return ret;
 }
 
+#if defined(CONFIG_OFTREE)
+int of_phy_device_connect(struct eth_device *edev, struct device_node *phy_np,
+			  void (*adjust_link) (struct eth_device *edev),
+			  u32 flags, phy_interface_t interface)
+{
+	struct device_node *bus_np;
+	struct mii_bus *miibus;
+	int phy_addr = -ENODEV;
+
+	if (!phy_np)
+		return -EINVAL;
+
+	of_property_read_u32(phy_np, "reg", &phy_addr);
+
+	bus_np = of_get_parent(phy_np);
+	if (!bus_np)
+		return -ENODEV;
+
+	for_each_mii_bus(miibus) {
+		if (miibus->parent && miibus->parent->device_node == bus_np)
+			return phy_device_connect(edev, miibus, phy_addr,
+					  adjust_link, flags, interface);
+	}
+
+	dev_err(&edev->dev, "unable to mdio bus for phy %s\n",
+		phy_np->full_name);
+
+	return -ENODEV;
+}
+#endif
+
 /* Generic PHY support and helper functions */
 
 /**

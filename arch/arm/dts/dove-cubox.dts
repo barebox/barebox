@@ -1,19 +1,18 @@
 /dts-v1/;
 
-/include/ "dove.dtsi"
+#include "dove.dtsi"
 
 / {
-	compatible = "solidrun,cubox", "marvell,dove";
 	model = "SolidRun CuBox";
+	compatible = "solidrun,cubox", "marvell,dove";
 
 	memory {
 		device_type = "memory";
-		reg = <0x00000000 0x3f000000>;
+		reg = <0x00000000 0x40000000>;
 	};
 
 	chosen {
 		bootargs = "console=ttyS0,115200n8 earlyprintk";
-		linux,stdout-path = &uart0;
 	};
 
 	leds {
@@ -24,7 +23,7 @@
 		power {
 			label = "Power";
 			gpios = <&gpio0 18 1>;
-			linux,default-trigger = "default-on";
+			default-state = "keep";
 		};
 	};
 
@@ -43,6 +42,8 @@
 			regulator-always-on;
 			regulator-boot-on;
 			gpio = <&gpio0 1 0>;
+			pinctrl-0 = <&pmx_gpio_1>;
+			pinctrl-names = "default";
 		};
 	};
 
@@ -55,24 +56,27 @@
 		};
 	};
 
-	video-card {
-		compatible = "marvell,dove-video-card";
-		reg = <0x3f000000 0x1000000>;
-		marvell,external-encoder = <&tda19988>;
+	ir_recv: ir-receiver {
+		compatible = "gpio-ir-receiver";
+		gpios = <&gpio0 19 1>;
+		pinctrl-0 = <&pmx_gpio_19>;
+		pinctrl-names = "default";
 	};
 };
 
 &uart0 { status = "okay"; };
 &sata0 { status = "okay"; };
+&mdio { status = "okay"; };
+&eth { status = "okay"; };
 
-&lcd0 {
-	status = "okay";
-	clocks = <&si5351 0>;
+&ethphy {
+	compatible = "marvell,88e1310";
+	reg = <1>;
 };
 
 &i2c0 {
 	status = "okay";
-	clock-frequency = <400000>;
+	clock-frequency = <100000>;
 
 	si5351: clock-generator {
 		compatible = "silabs,si5351a-msop";
@@ -95,32 +99,21 @@
 			silabs,pll-master;
 		};
 
-		clkout1 {
-			reg = <1>;
+		clkout2 {
+			reg = <2>;
 			silabs,drive-strength = <8>;
 			silabs,multisynth-source = <1>;
 			silabs,clock-source = <0>;
 			silabs,pll-master;
 		};
-
-		clkout2 {
-			reg = <2>;
-			silabs,multisynth-source = <1>;
-			silabs,clock-source = <0>;
-		};
-	};
-
-	tda19988: hdmi-encoder@70 {
-		compatible = "nxp,tda1998x";
-		reg = <0x70>;
 	};
 };
 
 &sdio0 {
 	status = "okay";
-	bus-width = <4>;
 	/* sdio0 card detect is connected to wrong pin on CuBox */
 	cd-gpios = <&gpio0 12 1>;
+	pinctrl-0 = <&pmx_sdio0 &pmx_gpio_12>;
 };
 
 &spi0 {
@@ -128,28 +121,16 @@
 
 	/* spi0.0: 4M Flash Winbond W25Q32BV */
 	spi-flash@0 {
-		compatible = "winbond,w25q32", "m25p80";
+		compatible = "st,w25q32";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
 	};
 };
 
-&pinctrl {
-	pinctrl-0 = <&pmx_gpio_1 &pmx_gpio_12>;
+&audio1 {
+	status = "okay";
+	clocks = <&gate_clk 13>, <&si5351 2>;
+	clock-names = "internal", "extclk";
+	pinctrl-0 = <&pmx_audio1_i2s1_spdifo &pmx_audio1_extclk>;
 	pinctrl-names = "default";
-
-	pmx_gpio_1: pmx-gpio-1 {
-		marvell,pins = "mpp1";
-		marvell,function = "gpio";
-	};
-
-	pmx_gpio_12: pmx-gpio-12 {
-		marvell,pins = "mpp12";
-		marvell,function = "gpio";
-	};
-
-	pmx_gpio_18: pmx-gpio-18 {
-		marvell,pins = "mpp18";
-		marvell,function = "gpio";
-	};
 };

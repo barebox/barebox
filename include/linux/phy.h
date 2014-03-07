@@ -280,6 +280,20 @@ int phy_device_connect(struct eth_device *dev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface);
 
+#if defined(CONFIG_OFTREE)
+int of_phy_device_connect(struct eth_device *edev, struct device_node *phy_np,
+			  void (*adjust_link) (struct eth_device *edev),
+			  u32 flags, phy_interface_t interface);
+#else
+static inline int of_phy_device_connect(struct eth_device *edev,
+				struct device_node *phy_np,
+				void (*adjust_link) (struct eth_device *edev),
+				u32 flags, phy_interface_t interface)
+{
+	return -ENOSYS;
+}
+#endif
+
 int phy_update_status(struct phy_device *phydev);
 int phy_wait_aneg_done(struct phy_device *phydev);
 

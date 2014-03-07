@@ -1,13 +1,20 @@
 menu "Bus devices"
 
-config IMX_WEIM
-	depends on ARCH_IMX
-	bool "i.MX WEIM driver"
-
 config BUS_OMAP_GPMC
 	depends on ARCH_OMAP
 	depends on OFDEVICE
 	depends on OMAP_GPMC
 	bool "TI OMAP/AM33xx GPMC support"
+
+config IMX_WEIM
+	depends on ARCH_IMX
+	bool "i.MX WEIM driver"
+
+config MVEBU_MBUS
+	bool
+	depends on ARCH_MVEBU
+	help
+	  Driver needed for the MBus configuration on Marvell EBU SoCs
+	  (Kirkwood, Dove, Orion5x, MV78XX0 and Armada 370/XP).
 
 endmenu

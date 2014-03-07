@@ -257,12 +257,12 @@ static int init_constants_early(struct ubifs_info *c)
 	}
 
 	if (c->di.ro_mode) {
-		ubifs_msg("read-only UBI device");
+		dbg_msg("read-only UBI device");
 		c->ro_media = 1;
 	}
 
 	if (c->vi.vol_type == UBI_STATIC_VOLUME) {
-		ubifs_msg("static UBI volume - read-only mode");
+		dbg_msg("static UBI volume - read-only mode");
 		c->ro_media = 1;
 	}
 
@@ -540,6 +540,7 @@ static int mount_ubifs(struct ubifs_info *c)
 	int err, mounted_read_only = ubifs_readonly(c);
 	long long x;
 	size_t sz;
+	char str[128];
 
 	err = init_constants_early(c);
 	if (err)
@@ -676,18 +677,19 @@ static int mount_ubifs(struct ubifs_info *c)
 	ubifs_msg("mounted UBI device %d, volume %d, name \"%s\"",
 		  c->vi.ubi_num, c->vi.vol_id, c->vi.name);
 	if (mounted_read_only)
-		ubifs_msg("mounted read-only");
+		dbg_msg("mounted read-only");
 	x = (long long)c->main_lebs * c->leb_size;
-	ubifs_msg("file system size:   %lld bytes (%lld KiB, %lld MiB, %d "
+	c->fs_size_mb = x >> 20;
+	dbg_msg("file system size:   %lld bytes (%lld KiB, %lld MiB, %d "
 		  "LEBs)", x, x >> 10, x >> 20, c->main_lebs);
 	x = (long long)c->log_lebs * c->leb_size + c->max_bud_bytes;
-	ubifs_msg("journal size:       %lld bytes (%lld KiB, %lld MiB, %d "
+	dbg_msg("journal size:       %lld bytes (%lld KiB, %lld MiB, %d "
 		  "LEBs)", x, x >> 10, x >> 20, c->log_lebs + c->max_bud_cnt);
-	ubifs_msg("media format:       w%d/r%d (latest is w%d/r%d)",
+	dbg_msg("media format:       w%d/r%d (latest is w%d/r%d)",
 		  c->fmt_version, c->ro_compat_version,
 		  UBIFS_FORMAT_VERSION, UBIFS_RO_COMPAT_VERSION);
-	ubifs_msg("default compressor: %s", ubifs_compr_name(c->default_compr));
-	ubifs_msg("reserved for root:  %llu bytes (%llu KiB)",
+	dbg_msg("default compressor: %s", ubifs_compr_name(c->default_compr));
+	dbg_msg("reserved for root:  %llu bytes (%llu KiB)",
 		c->report_rp_size, c->report_rp_size >> 10);
 
 	dbg_msg("compiled on:         " __DATE__ " at " __TIME__);
@@ -696,6 +698,14 @@ static int mount_ubifs(struct ubifs_info *c)
 		c->leb_size, c->leb_size >> 10);
 	dbg_msg("data journal heads:  %d",
 		c->jhead_cnt - NONDATA_JHEADS_CNT);
+
+	dev_add_param_int_ro(c->dev, "filesystem_size_mb", c->fs_size_mb, "%d");
+	dev_add_param_fixed(c->dev, "default_compressor", ubifs_compr_name(c->default_compr));
+	sprintf(str, "w%d/r%d", c->fmt_version, c->ro_compat_version);
+	dev_add_param_fixed(c->dev, "media_format", str);
+	sprintf(str, "w%d/r%d", UBIFS_FORMAT_VERSION, UBIFS_RO_COMPAT_VERSION);
+	dev_add_param_fixed(c->dev, "media_format_latest", str);
+
 	dbg_msg("UUID:                %02X%02X%02X%02X-%02X%02X"
 	       "-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
 	       c->uuid[0], c->uuid[1], c->uuid[2], c->uuid[3],
@@ -804,7 +814,7 @@ void ubifs_umount(struct ubifs_info *c)
 	ubifs_debugging_exit(c);
 }
 
-struct super_block *ubifs_get_super(struct ubi_volume_desc *ubi, int silent)
+struct super_block *ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent)
 {
 	struct super_block *sb;
 	struct ubifs_info *c;
@@ -813,6 +823,8 @@ struct super_block *ubifs_get_super(struct ubi_volume_desc *ubi, int silent)
 
 	sb = xzalloc(sizeof(*sb));
 	c = xzalloc(sizeof(struct ubifs_info));
+
+	c->dev = dev;
 
 	spin_lock_init(&c->cnt_lock);
 	spin_lock_init(&c->cs_lock);

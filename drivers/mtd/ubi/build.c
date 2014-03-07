@@ -589,8 +589,8 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 		ubi->fm_disabled = 1;
 	}
 
-	ubi_msg("default fastmap pool size: %d", ubi->fm_pool.max_size);
-	ubi_msg("default fastmap WL pool size: %d", ubi->fm_wl_pool.max_size);
+	ubi_debug("default fastmap pool size: %d", ubi->fm_pool.max_size);
+	ubi_debug("default fastmap WL pool size: %d", ubi->fm_wl_pool.max_size);
 #else
 	ubi->fm_disabled = 1;
 #endif
@@ -630,22 +630,34 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 
 	ubi_msg("attached mtd%d (name \"%s\", size %llu MiB) to ubi%d",
 		mtd->index, mtd->name, ubi->flash_size >> 20, ubi_num);
-	ubi_msg("PEB size: %d bytes (%d KiB), LEB size: %d bytes",
+	ubi_debug("PEB size: %d bytes (%d KiB), LEB size: %d bytes",
 		ubi->peb_size, ubi->peb_size >> 10, ubi->leb_size);
-	ubi_msg("min./max. I/O unit sizes: %d/%d, sub-page size %d",
+	ubi_debug("min./max. I/O unit sizes: %d/%d, sub-page size %d",
 		ubi->min_io_size, ubi->max_write_size, ubi->hdrs_min_io_size);
-	ubi_msg("VID header offset: %d (aligned %d), data offset: %d",
+	ubi_debug("VID header offset: %d (aligned %d), data offset: %d",
 		ubi->vid_hdr_offset, ubi->vid_hdr_aloffset, ubi->leb_start);
-	ubi_msg("good PEBs: %d, bad PEBs: %d, corrupted PEBs: %d",
+	ubi_debug("good PEBs: %d, bad PEBs: %d, corrupted PEBs: %d",
 		ubi->good_peb_count, ubi->bad_peb_count, ubi->corr_peb_count);
-	ubi_msg("user volume: %d, internal volumes: %d, max. volumes count: %d",
+	ubi_debug("user volume: %d, internal volumes: %d, max. volumes count: %d",
 		ubi->vol_count - UBI_INT_VOL_COUNT, UBI_INT_VOL_COUNT,
 		ubi->vtbl_slots);
-	ubi_msg("max/mean erase counter: %d/%d, WL threshold: %d, image sequence number: %u",
+	ubi_debug("max/mean erase counter: %d/%d, WL threshold: %d, image sequence number: %u",
 		ubi->max_ec, ubi->mean_ec, CONFIG_MTD_UBI_WL_THRESHOLD,
 		ubi->image_seq);
-	ubi_msg("available PEBs: %d, total reserved PEBs: %d, PEBs reserved for bad PEB handling: %d",
+	ubi_debug("available PEBs: %d, total reserved PEBs: %d, PEBs reserved for bad PEB handling: %d",
 		ubi->avail_pebs, ubi->rsvd_pebs, ubi->beb_rsvd_pebs);
+
+	dev_add_param_int_ro(&ubi->dev, "peb_size", ubi->peb_size, "%d");
+	dev_add_param_int_ro(&ubi->dev, "leb_size", ubi->leb_size, "%d");
+	dev_add_param_int_ro(&ubi->dev, "vid_header_offset", ubi->vid_hdr_offset, "%d");
+	dev_add_param_int_ro(&ubi->dev, "min_io_size", ubi->min_io_size, "%d");
+	dev_add_param_int_ro(&ubi->dev, "sub_page_size", ubi->hdrs_min_io_size, "%d");
+	dev_add_param_int_ro(&ubi->dev, "good_peb_count", ubi->good_peb_count, "%d");
+	dev_add_param_int_ro(&ubi->dev, "bad_peb_count", ubi->bad_peb_count, "%d");
+	dev_add_param_int_ro(&ubi->dev, "max_erase_counter", ubi->max_ec, "%d");
+	dev_add_param_int_ro(&ubi->dev, "mean_erase_counter", ubi->mean_ec, "%d");
+	dev_add_param_int_ro(&ubi->dev, "available_pebs", ubi->avail_pebs, "%d");
+	dev_add_param_int_ro(&ubi->dev, "reserved_pebs", ubi->rsvd_pebs, "%d");
 
 	/*
 	 * The below lock makes sure we do not race with 'ubi_thread()' which

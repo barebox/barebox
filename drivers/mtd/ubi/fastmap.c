@@ -1054,8 +1054,8 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	ubi->fm_pool.max_size = ubi->fm->max_pool_size;
 	ubi->fm_wl_pool.max_size = ubi->fm->max_wl_pool_size;
 	ubi_msg("attached by fastmap");
-	ubi_msg("fastmap pool size: %d", ubi->fm_pool.max_size);
-	ubi_msg("fastmap WL pool size: %d", ubi->fm_wl_pool.max_size);
+	ubi_debug("fastmap pool size: %d", ubi->fm_pool.max_size);
+	ubi_debug("fastmap WL pool size: %d", ubi->fm_wl_pool.max_size);
 	ubi->fm_disabled = 0;
 
 	ubi_free_vid_hdr(ubi, vh);

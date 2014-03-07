@@ -39,6 +39,7 @@
 /* UBI name used for character devices, sysfs, etc */
 #define UBI_NAME_STR "ubi"
 
+#define ubi_debug(fmt, ...) pr_debug("UBI: " fmt "\n", ##__VA_ARGS__)
 /* Normal UBI messages */
 #define ubi_msg(fmt, ...) pr_info("UBI: " fmt "\n", ##__VA_ARGS__)
 /* UBI warning messages */

@@ -470,12 +470,8 @@ static inline ino_t parent_ino(struct dentry *dentry)
 #define UBIFS_VERSION 1
 
 /* Normal UBIFS messages */
-#ifdef CONFIG_UBIFS_SILENCE_MSG
-#define ubifs_msg(fmt, ...)
-#else
 #define ubifs_msg(fmt, ...) \
-		pr_notice("UBIFS: " fmt "\n", ##__VA_ARGS__)
-#endif
+		pr_info("UBIFS: " fmt "\n", ##__VA_ARGS__)
 /* UBIFS error messages */
 #define ubifs_err(fmt, ...)                                                  \
 	pr_err("UBIFS error (pid %d): %s: " fmt "\n", 0, \
@@ -1824,6 +1820,9 @@ struct ubifs_info {
 	int always_chk_crc;
 	struct ubifs_mount_opts mount_opts;
 
+	unsigned int fs_size_mb;
+	struct device_d *dev;
+
 #ifdef CONFIG_UBIFS_FS_DEBUG
 	struct ubifs_debug_info *dbg;
 #endif
@@ -2140,7 +2139,7 @@ long ubifs_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 #include "misc.h"
 #include "key.h"
 
-struct super_block *ubifs_get_super(struct ubi_volume_desc *ubi, int silent);
+struct super_block *ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent);
 void ubifs_umount(struct ubifs_info *);
 
 static inline int ubifs_readonly(struct ubifs_info *c)

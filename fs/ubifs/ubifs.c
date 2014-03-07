@@ -49,11 +49,13 @@ struct z_stream_s ubifs_zlib_stream;
 
 /* compress.c */
 
+#ifdef CONFIG_ZLIB
 static int ubifs_deflate_decompress(const u8 *src, unsigned int slen, u8 *dst,
 		unsigned int *dlen)
 {
 	return deflate_decompress(&ubifs_zlib_stream, src, slen, dst, dlen);
 }
+#endif
 
 /* All UBIFS compressors */
 struct ubifs_compressor ubifs_compressors[UBIFS_COMPR_TYPES_CNT] = {
@@ -608,7 +610,7 @@ static int ubifs_probe(struct device_d *dev)
 		goto err_free;
 	}
 
-	priv->sb = ubifs_get_super(priv->ubi, 0);
+	priv->sb = ubifs_get_super(dev, priv->ubi, 0);
 	if (IS_ERR(priv->sb)) {
 		ret = PTR_ERR(priv->sb);
 		goto err;

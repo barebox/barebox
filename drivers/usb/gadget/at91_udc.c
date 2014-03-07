@@ -1327,7 +1327,7 @@ int usb_gadget_poll(void)
 	u32 value;
 
 	if (!udc->udp_baseaddr)
-		return 0;
+		return -ENODEV;
 
 	value = gpio_get_value(udc->board.vbus_pin);
 	value ^= udc->board.vbus_active_low;

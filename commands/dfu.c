@@ -101,7 +101,7 @@ static int do_dfu(int argc, char *argv[])
 	char *manufacturer = "barebox";
 	const char *productname = barebox_get_model();
 	u16 idVendor = 0, idProduct = 0;
-
+	int ret;
 
 	while((opt = getopt(argc, argv, "m:p:V:P:")) > 0) {
 		switch(opt) {
@@ -134,6 +134,7 @@ static int do_dfu(int argc, char *argv[])
 		dfu_alts = xrealloc(dfu_alts, sizeof(*dfu_alts) * (n + 1));
 		if (dfu_do_parse_one(argstr, &endptr, &dfu_alts[n])) {
 			printf("parse error\n");
+			ret = -EINVAL;
 			goto out;
 		}
 		argstr = endptr;
@@ -147,7 +148,7 @@ static int do_dfu(int argc, char *argv[])
 	pdata.idVendor = idVendor;
 	pdata.idProduct = idProduct;
 
-	usb_dfu_register(&pdata);
+	ret = usb_dfu_register(&pdata);
 
 out:
 	while (n) {
@@ -155,8 +156,10 @@ out:
 		free(dfu_alts[n].name);
 		free(dfu_alts[n].dev);
 	};
+
 	free(dfu_alts);
-	return 1;
+
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(dfu)

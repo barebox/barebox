@@ -269,11 +269,18 @@ static inline IPaddr_t net_read_ip(void *from)
 }
 
 /* return uint32 *in network byteorder* */
-static inline uint32_t net_read_uint32(uint32_t *from)
+static inline uint32_t net_read_uint32(void *from)
 {
-	ulong l;
-	memcpy((void*)&l, (void*)from, sizeof(l));
-	return l;
+	uint32_t tmp;
+	memcpy(&tmp, from, sizeof(tmp));
+	return tmp;
+}
+
+static inline uint64_t net_read_uint64(void *from)
+{
+	uint64_t tmp;
+	memcpy(&tmp, from, sizeof(tmp));
+	return tmp;
 }
 
 /* write IP *in network byteorder* */
@@ -397,7 +404,7 @@ typedef void rx_handler_f(void *ctx, char *packet, unsigned int len);
 
 void eth_set_current(struct eth_device *eth);
 struct eth_device *eth_get_current(void);
-struct eth_device *eth_get_byname(char *name);
+struct eth_device *eth_get_byname(const char *name);
 
 /**
  * net_receive - Pass a received packet from an ethernet driver to the protocol stack
@@ -449,5 +456,10 @@ int net_udp_send(struct net_connection *con, int len);
 int net_icmp_send(struct net_connection *con, int len);
 
 void led_trigger_network(enum led_trigger trigger);
+
+#define IFUP_FLAG_FORCE		(1 << 0)
+
+int ifup(const char *name, unsigned flags);
+int ifup_all(unsigned flags);
 
 #endif /* __NET_H__ */

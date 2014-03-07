@@ -97,7 +97,7 @@ static int socfpga_env_init(void)
 	}
 
 	mkdir("/boot", 0666);
-	ret = mount(partname, "fat", "/boot");
+	ret = mount(partname, "fat", "/boot", NULL);
 	if (ret) {
 		printf("failed to mount %s\n", diskdev);
 		goto out_free;

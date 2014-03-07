@@ -20,7 +20,7 @@ void* bootstrap_read_disk(char *dev, char *fstype)
 	int len;
 	char *path = "/";
 
-	ret = mount(dev, fstype, path);
+	ret = mount(dev, fstype, path, NULL);
 	if (ret) {
 		bootstrap_err("mounting %s failed with %d\n", dev, ret);
 		return NULL;

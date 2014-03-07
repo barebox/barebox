@@ -144,7 +144,7 @@ struct eth_device * eth_get_current(void)
 	return eth_current;
 }
 
-struct eth_device *eth_get_byname(char *ethname)
+struct eth_device *eth_get_byname(const char *ethname)
 {
 	struct eth_device *edev;
 

@@ -47,9 +47,9 @@ extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 #if defined CONFIG_FS_RAMFS && defined CONFIG_FS_DEVFS
 static int mount_root(void)
 {
-	mount("none", "ramfs", "/");
+	mount("none", "ramfs", "/", NULL);
 	mkdir("/dev", 0);
-	mount("none", "devfs", "/dev");
+	mount("none", "devfs", "/dev", NULL);
 	return 0;
 }
 fs_initcall(mount_root);
@@ -95,11 +95,11 @@ void __noreturn start_barebox(void)
 		pr_info("running /env/bin/init...\n");
 
 		if (!stat("/env/bin/init", &s)) {
-			run_command("source /env/bin/init", 0);
+			run_command("source /env/bin/init");
 		} else {
 			pr_err("/env/bin/init not found\n");
 			if (IS_ENABLED(CONFIG_CMD_LOGIN))
-				while(run_command("login -t 0", 0));
+				while(run_command("login -t 0"));
 		}
 	}
 

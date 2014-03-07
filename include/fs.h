@@ -99,6 +99,7 @@ struct fs_device_d {
 	char *path;
 	struct device_d *parent_device;
 	struct list_head list;
+	char *options;
 };
 
 #define drv_to_fs_driver(d) container_of(d, struct fs_driver_d, drv)
@@ -140,7 +141,8 @@ int closedir(DIR *dir);
 int symlink(const char *pathname, const char *newpath);
 int readlink(const char *path, char *buf, size_t bufsiz);
 
-int mount (const char *device, const char *fsname, const char *path);
+int mount (const char *device, const char *fsname, const char *path,
+		const char *fsoptions);
 int umount(const char *pathname);
 
 /* not-so-standard functions */
@@ -197,7 +199,7 @@ int unlink_recursive(const char *path, char **failedpath);
 
 int fsdev_open_cdev(struct fs_device_d *fsdev);
 const char *cdev_get_mount_path(struct cdev *cdev);
-const char *cdev_mount_default(struct cdev *cdev);
+const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);
 void mount_all(void);
 
 #endif /* __FS_H */

@@ -86,7 +86,7 @@ struct mtd_oob_ops {
 struct mtd_info {
 	u_char type;
 	u_int32_t flags;
-	u_int32_t size;	 // Total size of the MTD
+	u_int64_t size;	 /* Total size of the MTD */
 
 	/* "Major" erase size for the device. Naïve users may take this
 	 * to be the only erase size available, or may use the more detailed
@@ -219,7 +219,7 @@ struct mtd_info {
 	int p_allow_erasebad;
 
 	struct mtd_info *master;
-	uint32_t master_offset;
+	loff_t master_offset;
 };
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr);
@@ -256,6 +256,13 @@ static inline uint32_t mtd_mod_by_eb(uint64_t sz, struct mtd_info *mtd)
 {
 	return do_div(sz, mtd->erasesize);
 }
+
+static inline uint32_t mtd_div_by_wb(uint64_t sz, struct mtd_info *mtd)
+{
+	do_div(sz, mtd->writesize);
+	return sz;
+}
+
 	/* Kernel-side ioctl definitions */
 
 extern int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id);

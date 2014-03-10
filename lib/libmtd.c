@@ -195,7 +195,7 @@ int libmtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	     void *buf, int len)
 {
 	int ret, rd = 0;
-	off_t seek;
+	loff_t seek;
 
 	ret = mtd_valid_erase_block(mtd, eb);
 	if (ret)
@@ -209,7 +209,7 @@ int libmtd_read(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	}
 
 	/* Seek to the beginning of the eraseblock */
-	seek = (off_t)eb * mtd->eb_size + offs;
+	seek = (loff_t)eb * mtd->eb_size + offs;
 	if (lseek(fd, seek, SEEK_SET) != seek)
 		return sys_errmsg("cannot seek %s to offset %llu",
 				  mtd->node, (unsigned long long)seek);
@@ -229,7 +229,7 @@ int libmtd_write(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	      void *buf, int len)
 {
 	int ret;
-	off_t seek;
+	loff_t seek;
 
 	ret = mtd_valid_erase_block(mtd, eb);
 	if (ret)
@@ -255,7 +255,7 @@ int libmtd_write(const struct mtd_dev_info *mtd, int fd, int eb, int offs,
 	}
 
 	/* Seek to the beginning of the eraseblock */
-	seek = (off_t)eb * mtd->eb_size + offs;
+	seek = (loff_t)eb * mtd->eb_size + offs;
 	if (lseek(fd, seek, SEEK_SET) != seek)
 		return sys_errmsg("cannot seek %s to offset %llu",
 				  mtd->node, (unsigned long long)seek);
@@ -326,7 +326,7 @@ int mtd_get_dev_info(const char *node, struct mtd_dev_info *mtd)
 		goto out_close;
 	}
 
-	mtd->eb_cnt = ui.size / ui.erasesize;
+	mtd->eb_cnt = mtd_user_div_by_eb(ui.size, &ui);
 
 	switch(mtd->type) {
 	case MTD_ABSENT:

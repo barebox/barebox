@@ -625,7 +625,7 @@ add_dataflash_otp(struct spi_device *spi, char *name,
 
 	device = &priv->mtd;
 	device->name = (pdata && pdata->name) ? pdata->name : "dataflash";
-	device->size = nr_pages * pagesize;
+	device->size = nr_pages * (uint64_t)pagesize;
 	device->erasesize = pagesize;
 	device->writesize = pagesize;
 	device->type = MTD_DATAFLASH;

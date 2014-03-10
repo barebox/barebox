@@ -277,7 +277,7 @@ static int do_nandtest(int argc, char *argv[])
 	}
 	if (length + flash_offset > meminfo.size) {
 		printf("Length 0x%08llx + offset 0x%08llx exceeds "
-				"device size 0x%08x\n", length,
+				"device size 0x%08llx\n", length,
 				flash_offset, meminfo.size);
 		goto err;
 	}

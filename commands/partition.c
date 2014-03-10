@@ -42,10 +42,11 @@
 #define PART_ADD_DEVNAME (1 << 0)
 
 static int mtd_part_do_parse_one(char *devname, const char *partstr,
-				 char **endp, unsigned long *offset,
-				 off_t devsize, size_t *retsize, unsigned int pflags)
+				 char **endp, loff_t *offset,
+				 loff_t devsize, size_t *retsize,
+				 unsigned int pflags)
 {
-	ulong size;
+	loff_t size;
 	char *end;
 	char buf[PATH_MAX] = {};
 	unsigned long flags = 0;
@@ -114,8 +115,8 @@ static int do_addpart(int argc, char *argv[])
 {
 	char *devname;
 	char *endp;
-	unsigned long offset = 0;
-	off_t devsize;
+	loff_t offset = 0;
+	loff_t devsize;
 	struct stat s;
 	int opt;
 	unsigned int flags = PART_ADD_DEVNAME;

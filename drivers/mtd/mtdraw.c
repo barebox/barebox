@@ -293,7 +293,7 @@ static int add_mtdraw_device(struct mtd_info *mtd, char *devname, void **priv)
 	mtdraw->mtd = mtd;
 
 	mtdraw->cdev.ops = (struct file_operations *)&mtd_raw_fops;
-	mtdraw->cdev.size = mtd->size / mtd->writesize *
+	mtdraw->cdev.size = mtd_div_by_wb(mtd->size, mtd) *
 		(mtd->writesize + mtd->oobsize);
 	mtdraw->cdev.name = asprintf("%s.raw", mtd->cdev.name);
 	mtdraw->cdev.priv = mtdraw;

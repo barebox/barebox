@@ -280,8 +280,8 @@ struct mtd_notifier {
 	struct list_head list;
 };
 
-struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset, size_t size,
-		unsigned long flags, const char *name);
+struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
+		uint64_t size, unsigned long flags, const char *name);
 int mtd_del_partition(struct mtd_info *mtd);
 
 extern void register_mtd_user (struct mtd_notifier *new);

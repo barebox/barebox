@@ -59,11 +59,11 @@ static int mtd_part_do_parse_one(char *devname, const char *partstr,
 		size = SIZE_REMAINING;
 		end = (char *)partstr + 1;
 	} else {
-		size = strtoul_suffix(partstr, &end, 0);
+		size = strtoull_suffix(partstr, &end, 0);
 	}
 
 	if (*end == '@')
-		*offset = strtoul_suffix(end+1, &end, 0);
+		*offset = strtoull_suffix(end+1, &end, 0);
 
 	if (size == SIZE_REMAINING)
 		size = devsize - *offset;

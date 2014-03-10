@@ -33,6 +33,7 @@
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
 #include <asm/mmu.h>
+#include <mach/generic.h>
 
 #define	MX28_BLOCK_SFTRST				(1 << 31)
 #define	MX28_BLOCK_CLKGATE				(1 << 30)
@@ -427,7 +428,13 @@ static int mxs_nand_device_ready(struct mtd_info *mtd)
 
 	if (nand_info->version > GPMI_VERSION_TYPE_MX23) {
 		tmp = readl(gpmi_regs + GPMI_STAT);
-		tmp >>= (GPMI_STAT_READY_BUSY_OFFSET + nand_info->cur_chip);
+		/* i.MX6 has only one R/B actual pin, so if there are several
+		   R/B signals they must be all connected to this pin */
+		if (cpu_is_mx6())
+			tmp >>= GPMI_STAT_READY_BUSY_OFFSET;
+		else
+			tmp >>= (GPMI_STAT_READY_BUSY_OFFSET +
+					 nand_info->cur_chip);
 	} else {
 		tmp = readl(gpmi_regs + GPMI_DEBUG);
 		tmp >>= (GPMI_DEBUG_READY0_OFFSET + nand_info->cur_chip);
@@ -1304,7 +1311,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand->ecc.strength	= 8;
 
 	/* first scan to find the device and get the page size */
-	err = nand_scan_ident(mtd, 1, NULL);
+	err = nand_scan_ident(mtd, 4, NULL);
 	if (err)
 		goto err2;
 

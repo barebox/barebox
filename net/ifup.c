@@ -95,6 +95,9 @@ int ifup(const char *name, unsigned flags)
 		ret = run_command("dhcp");
 		if (ret)
 			goto out;
+		ret = eth_set_param(dev, "serverip");
+		if (ret)
+			goto out;
 	} else if (!strcmp(ip, "static")) {
 		for (i = 0; i < ARRAY_SIZE(vars); i++) {
 			ret = eth_set_param(dev, vars[i]);

@@ -49,8 +49,6 @@ ENTRY_FUNCTION(start_socfpga_socrates, r0, r1, r2)
 {
 	uint32_t fdt;
 
-	__barebox_arm_head();
-
 	arm_cpu_lowlevel_init();
 
 	fdt = (uint32_t)__dtb_socfpga_cyclone5_socrates_start - get_runtime_offset();

@@ -202,7 +202,7 @@ config MACH_FREESCALE_MX53_VMX53
 	  module equipped with a Freescale i.MX53 Processor
 
 config MACH_PHYTEC_PFLA02
-	bool "Phytec phyFLEX-i.MX6 Ouad"
+	bool "Phytec phyFLEX-i.MX6"
 	select ARCH_IMX6
 
 config MACH_DFI_FS700_M60

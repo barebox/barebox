@@ -10,19 +10,16 @@
  */
 
 /dts-v1/;
-#include "imx6q-phytec-pfla02.dtsi"
+
+#include "imx6s-phytec-pfla02.dtsi"
 #include "imx6qdl-phytec-pbab01.dtsi"
 
 / {
-	model = "Phytec phyFLEX-i.MX6 Quad Carrier-Board";
-	compatible = "phytec,imx6x-pbab01", "phytec,imx6q-pfla02", "fsl,imx6q";
+	model = "Phytec phyFLEX-i.MX6 Single Carrier-Board";
+	compatible = "phytec,imx6x-pbab01", "phytec,imx6s-pfla02", "fsl,imx6dl";
 
 	chosen {
 		linux,stdout-path = &uart4;
 
-		environment@0 {
-			compatible = "barebox,environment";
-			device-path = &flash, "partname:barebox-environment";
-		};
 	};
 };

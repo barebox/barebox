@@ -38,7 +38,9 @@ static int eth_phy_reset(void)
 
 static int phytec_pfla02_init(void)
 {
-	if (!of_machine_is_compatible("phytec,imx6q-pfla02"))
+	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
+			!of_machine_is_compatible("phytec,imx6dl-pfla02") &&
+			!of_machine_is_compatible("phytec,imx6s-pfla02"))
 		return 0;
 
 	eth_phy_reset();
@@ -49,7 +51,7 @@ device_initcall(phytec_pfla02_init);
 
 static int phytec_pfla02_core_init(void)
 {
-	if (!of_machine_is_compatible("phytec,imx6q-pfla02"))
+	if (!of_machine_is_compatible("phytec,imx6x-pbab01"))
 		return 0;
 
 	imx6_init_lowlevel();

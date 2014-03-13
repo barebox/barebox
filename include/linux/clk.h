@@ -276,6 +276,10 @@ struct clk *clk_gate_inverted(const char *name, const char *parent, void __iomem
 int clk_is_enabled(struct clk *clk);
 
 int clk_is_enabled_always(struct clk *clk);
+long clk_parent_round_rate(struct clk *clk, unsigned long rate,
+				unsigned long *prate);
+int clk_parent_set_rate(struct clk *clk, unsigned long rate,
+				unsigned long parent_rate);
 
 int clk_register(struct clk *clk);
 

@@ -57,6 +57,7 @@ config MPC8544
 
 config DDR_SPD
 	bool
+	select CRC16
 	default y
 
 config FSL_DDR2

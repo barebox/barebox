@@ -49,34 +49,42 @@ static int fb_enable_set(struct param_d *param, void *priv)
 	return 0;
 }
 
-static int fb_setup_mode(struct device_d *dev, struct param_d *param,
-		const char *val)
+static struct fb_videomode *fb_num_to_mode(struct fb_info *info, int num)
 {
-	struct fb_info *info = dev->priv;
-	struct display_timings *dt;
-	int mode, ret;
+	int num_modes;
+
+	num_modes = info->modes.num_modes;
+
+	if (num >= num_modes)
+		return NULL;
+
+	return &info->modes.modes[num];
+}
+
+static int fb_setup_mode(struct fb_info *info)
+{
+	struct device_d *dev = &info->dev;
+	int ret;
+	struct fb_videomode *mode;
 
 	if (info->enabled != 0)
 		return -EPERM;
 
-	if (!val)
-		return dev_param_set_generic(dev, param, NULL);
-
-	dt = &info->modes;
-	for (mode = 0; mode < dt->num_modes; mode++) {
-		if (!strcmp(dt->modes[mode].name, val))
-			break;
-	}
-	if (mode >= dt->num_modes)
+	mode = fb_num_to_mode(info, info->current_mode);
+	if (!mode)
 		return -EINVAL;
 
-	info->mode = &dt->modes[mode];
+	info->mode = mode;
 
 	info->xres = info->mode->xres;
 	info->yres = info->mode->yres;
 	info->line_length = 0;
 
-	ret = info->fbops->fb_activate_var(info);
+	if (info->fbops->fb_activate_var) {
+		ret = info->fbops->fb_activate_var(info);
+		if (ret)
+			return ret;
+	}
 
 	if (!info->line_length)
 		info->line_length = info->xres * (info->bits_per_pixel >> 3);
@@ -87,11 +95,22 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 		dev->resource[0].start = (resource_size_t)info->screen_base;
 		info->cdev.size = info->line_length * info->yres;
 		dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
-		dev_param_set_generic(dev, param, val);
 	} else
 		info->cdev.size = 0;
 
 	return ret;
+}
+
+static int fb_set_modename(struct param_d *param, void *priv)
+{
+	struct fb_info *info = priv;
+	int ret;
+
+	ret = fb_setup_mode(info);
+	if (ret)
+		return ret;
+
+	return 0;
 }
 
 static struct file_operations fb_ops = {
@@ -102,22 +121,27 @@ static struct file_operations fb_ops = {
 	.ioctl	= fb_ioctl,
 };
 
+static void fb_print_mode(struct fb_videomode *mode)
+{
+	printf("%-20s %dx%d@%d\n", mode->name,
+			mode->xres, mode->yres, mode->refresh);
+}
+
+static void fb_print_modes(struct display_timings *modes)
+{
+	int i;
+
+	for (i = 0; i < modes->num_modes; i++)
+		fb_print_mode(&modes->modes[i]);
+}
+
 static void fb_info(struct device_d *dev)
 {
 	struct fb_info *info = dev->priv;
-	int i;
-
-	if (!info->modes.num_modes)
-		return;
 
 	printf("available modes:\n");
 
-	for (i = 0; i < info->modes.num_modes; i++) {
-		struct fb_videomode *mode = &info->modes.modes[i];
-
-		printf("%-10s %dx%d@%d\n", mode->name,
-				mode->xres, mode->yres, mode->refresh);
-	}
+	fb_print_modes(&info->modes);
 
 	printf("\n");
 }
@@ -126,9 +150,19 @@ int register_framebuffer(struct fb_info *info)
 {
 	int id = get_free_deviceid("fb");
 	struct device_d *dev;
-	int ret;
+	int ret, num_modes, i;
+	const char **names;
 
 	dev = &info->dev;
+
+	/*
+	 * If info->mode is set at this point it's the only mode
+	 * the fb supports. move it over to the modes list.
+	 */
+	if (info->mode) {
+		info->modes.modes = info->mode;
+		info->modes.num_modes = 1;
+	}
 
 	if (!info->line_length)
 		info->line_length = info->xres * (info->bits_per_pixel >> 3);
@@ -157,11 +191,18 @@ int register_framebuffer(struct fb_info *info)
 	dev_add_param_bool(dev, "enable", fb_enable_set, NULL,
 			&info->p_enable, info);
 
-	if (info->modes.num_modes &&
-			(info->fbops->fb_activate_var != NULL)) {
-		dev_add_param(dev, "mode_name", fb_setup_mode, NULL, 0);
-		dev_set_param(dev, "mode_name", info->modes.modes[0].name);
-	}
+	num_modes = info->modes.num_modes;
+
+	names = xzalloc(sizeof(char *) * num_modes);
+
+	for (i = 0; i < info->modes.num_modes; i++)
+		names[i] = info->modes.modes[i].name;
+
+	dev_add_param_enum(dev, "mode_name", fb_set_modename, NULL, &info->current_mode, names, num_modes, info);
+
+	info->mode = fb_num_to_mode(info, 0);
+
+	fb_setup_mode(info);
 
 	ret = devfs_create(&info->cdev);
 	if (ret)

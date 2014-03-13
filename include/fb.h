@@ -94,6 +94,8 @@ struct fb_info {
 	struct fb_videomode *mode;
 	struct display_timings modes;
 
+	int current_mode;
+
 	struct fb_ops *fbops;
 	struct device_d dev;		/* This is this fb device */
 

@@ -12,6 +12,36 @@
 
 #include "ddr.h"
 
+static uint32_t
+compute_cas_latency_ddr3(const struct dimm_params_s *dimm_params,
+			 uint32_t number_of_dimms)
+{
+	uint32_t i, taamin_ps = 0, tckmin_x_ps = 0, common_caslat,
+		 caslat_actual, retry = 16;
+	const uint32_t mclk_ps = get_memory_clk_period_ps();
+
+	/* compute the common CAS latency supported between slots */
+	common_caslat = dimm_params[0].caslat_X;
+	for (i = 1; i < number_of_dimms; i++) {
+		if (dimm_params[i].n_ranks)
+			common_caslat &= dimm_params[i].caslat_X;
+	}
+
+	for (i = 0; i < number_of_dimms; i++) {
+		taamin_ps = max(taamin_ps, dimm_params[i].taa_ps);
+		tckmin_x_ps = max(tckmin_x_ps, dimm_params[i].tCKmin_X_ps);
+	}
+
+	caslat_actual = (taamin_ps + mclk_ps - 1) / mclk_ps;
+	/* check if the dimms support the CAS latency */
+	while (!(common_caslat & (1 << caslat_actual)) && retry > 0) {
+		caslat_actual++;
+		retry--;
+	}
+
+	return caslat_actual;
+}
+
 static unsigned int common_burst_length(
 		const struct dimm_params_s *dimm_params,
 		const unsigned int number_of_dimms)
@@ -22,7 +52,6 @@ static unsigned int common_burst_length(
 	for (i = 0; i < number_of_dimms; i++)
 		if (dimm_params[i].n_ranks)
 			temp &= dimm_params[i].burst_lengths_bitmask;
-
 	return temp;
 }
 
@@ -115,16 +144,17 @@ static unsigned int compute_lowest_caslat(
  * whose parameters have been computed into the array pointed to
  * by dimm_params.
  */
-unsigned int
-compute_lowest_common_dimm_parameters(const struct dimm_params_s *dimm,
+void compute_lowest_common_dimm_parameters(const struct fsl_ddr_info_s *pinfo,
 				      struct common_timing_params_s *out,
 				      const unsigned int number_of_dimms)
 {
-	const uint32_t mclk_ps = get_memory_clk_period_ps();
 	uint32_t temp1, i;
 	struct common_timing_params_s tmp = {0};
+	const struct dimm_params_s *dimm = pinfo->dimm_params;
+	const struct memctl_options_s *popts = &pinfo->memctl_opts;
 
 	tmp.tCKmax_ps = 0xFFFFFFFF;
+	tmp.extended_op_srt = 1;
 	temp1 = 0;
 	for (i = 0; i < number_of_dimms; i++) {
 		if (dimm[i].n_ranks == 0) {
@@ -157,43 +187,50 @@ compute_lowest_common_dimm_parameters(const struct dimm_params_s *dimm,
 		tmp.tQHS_ps = max(tmp.tQHS_ps, dimm[i].tQHS_ps);
 		tmp.refresh_rate_ps = max(tmp.refresh_rate_ps,
 				dimm[i].refresh_rate_ps);
+		tmp.extended_op_srt = min(tmp.extended_op_srt,
+					dimm[i].extended_op_srt);
 		/* Find maximum tDQSQ_max_ps to find slowest timing. */
 		tmp.tDQSQ_max_ps = max(tmp.tDQSQ_max_ps, dimm[i].tDQSQ_max_ps);
 	}
 	tmp.ndimms_present = number_of_dimms - temp1;
 
 	if (temp1 == number_of_dimms)
-		return 0;
+		return;
 
 	temp1 = common_burst_length(dimm, number_of_dimms);
 	tmp.all_DIMMs_burst_lengths_bitmask = temp1;
-	tmp.all_DIMMs_registered = 0;
 
-	tmp.lowest_common_SPD_caslat = compute_lowest_caslat(dimm,
-			number_of_dimms);
-	/*
-	 * Compute a common 'de-rated' CAS latency.
-	 *
-	 * The strategy here is to find the *highest* de-rated cas latency
-	 * with the assumption that all of the DIMMs will support a de-rated
-	 * CAS latency higher than or equal to their lowest de-rated value.
-	 */
-	temp1 = 0;
-	for (i = 0; i < number_of_dimms; i++)
-		temp1 = max(temp1, dimm[i].caslat_lowest_derated);
-	tmp.highest_common_derated_caslat = temp1;
+	/* Support only unbuffered DIMMs */
+	tmp.all_DIMMs_registered = 0;
+	tmp.all_DIMMs_unbuffered = 1;
+
+	if (popts->sdram_type == SDRAM_TYPE_DDR3) {
+		tmp.lowest_common_SPD_caslat = compute_cas_latency_ddr3(dimm,
+				number_of_dimms);
+	} else {
+		tmp.lowest_common_SPD_caslat = compute_lowest_caslat(dimm,
+				number_of_dimms);
+		/*
+		 * Compute a common 'de-rated' CAS latency.
+		 *
+		 * The strategy here is to find the *highest* de-rated cas
+		 * latency with the assumption that all of the DIMMs will
+		 * support a de-rated CAS latency higher than or equal to
+		 * their lowest de-rated value.
+		 */
+		temp1 = 0;
+		for (i = 0; i < number_of_dimms; i++)
+			temp1 = max(temp1, dimm[i].caslat_lowest_derated);
+		tmp.highest_common_derated_caslat = temp1;
+	}
 
 	temp1 = 1;
 	for (i = 0; i < number_of_dimms; i++)
-		if (dimm[i].n_ranks &&
-		    !(dimm[i].edc_config & EDC_ECC)) {
+		if (dimm[i].n_ranks && !(dimm[i].edc_config & EDC_ECC)) {
 			temp1 = 0;
 			break;
 		}
 	tmp.all_DIMMs_ECC_capable = temp1;
-
-	if (mclk_ps > tmp.tCKmax_max_ps)
-		return 1;
 
 	/*
 	 * AL must be less or equal to tRCD. Typically, AL would
@@ -201,14 +238,18 @@ compute_lowest_common_dimm_parameters(const struct dimm_params_s *dimm,
 	 *
 	 * When ODT read or write is enabled the sum of CAS latency +
 	 * additive latency must be at least 3 cycles.
-	 *
 	 */
-	if ((tmp.lowest_common_SPD_caslat < 4) && (picos_to_mclk(tmp.tRCD_ps) >
-				tmp.lowest_common_SPD_caslat))
-		tmp.additive_latency = picos_to_mclk(tmp.tRCD_ps) -
-			tmp.lowest_common_SPD_caslat;
+	tmp.additive_latency = 0;
+	if (popts->sdram_type == SDRAM_TYPE_DDR2) {
+		if ((tmp.lowest_common_SPD_caslat < 4) &&
+			(picos_to_mclk(tmp.tRCD_ps) >
+			tmp.lowest_common_SPD_caslat))
+			tmp.additive_latency = picos_to_mclk(tmp.tRCD_ps) -
+					tmp.lowest_common_SPD_caslat;
+
+		if (mclk_to_picos(tmp.additive_latency) > tmp.tRCD_ps)
+			tmp.additive_latency = picos_to_mclk(tmp.tRCD_ps);
+	}
 
 	memcpy(out, &tmp, sizeof(struct common_timing_params_s));
-
-	return 0;
 }

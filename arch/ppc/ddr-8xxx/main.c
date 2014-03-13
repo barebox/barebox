@@ -15,6 +15,7 @@
 #include <common.h>
 #include <config.h>
 #include <asm/fsl_law.h>
+#include <asm/fsl_ddr_sdram.h>
 #include "ddr.h"
 
 static int get_spd(generic_spd_eeprom_t *spd,
@@ -143,6 +144,14 @@ static uint32_t compute_dimm_param(struct fsl_ddr_info_s *pinfo, uint32_t ndimm)
 	generic_spd_eeprom_t *spd;
 	uint32_t i, retval;
 
+	spd = &(pinfo->spd_installed_dimms[0]);
+	if (spd->mem_type == SPD_MEMTYPE_DDR3)
+		pinfo->memctl_opts.sdram_type = SDRAM_TYPE_DDR3;
+	else if (spd->mem_type == SPD_MEMTYPE_DDR2)
+		pinfo->memctl_opts.sdram_type = SDRAM_TYPE_DDR2;
+	else
+		return 1;
+
 	for (i = 0; i < ndimm; i++) {
 		spd = &(pinfo->spd_installed_dimms[i]);
 		pdimm = &(pinfo->dimm_params[i]);
@@ -185,8 +194,7 @@ uint64_t fsl_ddr_compute(struct fsl_ddr_info_s *pinfo)
 	 * STEP 3: Compute a common set of timing parameters
 	 * suitable for all of the DIMMs on each memory controller
 	 */
-	compute_lowest_common_dimm_parameters(pinfo->dimm_params,
-			timing_params, ndimm);
+	compute_lowest_common_dimm_parameters(pinfo, timing_params, ndimm);
 
 	/* STEP 4:  Gather configuration requirements from user */
 	populate_memctl_options(timing_params->all_DIMMs_registered,

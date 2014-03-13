@@ -23,6 +23,7 @@ struct common_timing_params_s {
 	uint32_t tRRD_ps;	/* maximum = 63750 ps */
 	uint32_t tRC_ps;	/* maximum = 254 ns + .75 ns = 254750 ps */
 	uint32_t refresh_rate_ps;
+	uint32_t extended_op_srt;
 	uint32_t tIS_ps;	/* byte 32, spd->ca_setup */
 	uint32_t tIH_ps;	/* byte 33, spd->ca_hold */
 	uint32_t tDS_ps;	/* byte 34, spd->data_setup */
@@ -36,6 +37,7 @@ struct common_timing_params_s {
 	uint32_t additive_latency;
 	uint32_t all_DIMMs_burst_lengths_bitmask;
 	uint32_t all_DIMMs_registered;
+	uint32_t all_DIMMs_unbuffered;
 	uint32_t all_DIMMs_ECC_capable;
 	uint64_t total_mem;
 	uint64_t base_address;

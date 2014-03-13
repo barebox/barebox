@@ -46,18 +46,42 @@ uint32_t populate_memctl_options(int all_DIMMs_registered,
 	 * 0 = 64-bit, 1 = 32-bit, 2 = 16-bit
 	 */
 	if (pdimm->n_ranks != 0) {
-		if ((pdimm->data_width >= 64) && (pdimm->data_width <= 72))
-			popts->data_bus_width = 0;
-		else if ((pdimm->data_width >= 32) &&
-			(pdimm->data_width <= 40))
-			popts->data_bus_width = 1;
-		else
-			panic("data width %u is invalid!\n",
-					pdimm->data_width);
+		if (popts->sdram_type == SDRAM_TYPE_DDR3) {
+			if (pdimm[0].primary_sdram_width == 64)
+				popts->data_bus_width = 0;
+			else if (pdimm[0].primary_sdram_width == 32)
+				popts->data_bus_width = 1;
+			else if (pdimm[0].primary_sdram_width == 16)
+				popts->data_bus_width = 2;
+			else
+				hang();
+		} else {
+			if ((pdimm->data_width >= 64) &&
+			      (pdimm->data_width <= 72))
+				popts->data_bus_width = 0;
+			else if ((pdimm->data_width >= 32) &&
+				(pdimm->data_width <= 40))
+				popts->data_bus_width = 1;
+			else
+				hang();
+		}
 	}
 
-	/* Must be a burst length of 4 for DD2 */
-	popts->burst_length = DDR_BL4;
+	if (popts->sdram_type == SDRAM_TYPE_DDR3) {
+		if (popts->data_bus_width == 0) {
+			popts->otf_burst_chop_en = 1;
+			popts->burst_length = DDR_OTF;
+		} else {
+			/* 32-bit or 16-bit bus */
+			popts->otf_burst_chop_en = 0;
+			popts->burst_length = DDR_BL8;
+		}
+		popts->mirrored_dimm = pdimm[0].mirrored_dimm;
+	} else {
+		/* Must be a burst length of 4 for DDR2 */
+		popts->burst_length = DDR_BL4;
+	}
+
 	/* Decide whether to use the computed de-rated latency */
 	popts->use_derated_caslat = 0;
 
@@ -70,6 +94,7 @@ uint32_t populate_memctl_options(int all_DIMMs_registered,
 	 *	- how much time you want to spend playing around
 	 */
 	popts->twoT_en = 0;
+	popts->threet_en = 0;
 
 	/*
 	 * Default BSTTOPRE precharge interval
@@ -90,7 +115,18 @@ uint32_t populate_memctl_options(int all_DIMMs_registered,
 	 * The default value below would work for x4/x8 wide memory.
 	 *
 	 */
-	popts->tFAW_window_four_activates_ps = 37500;
+	if (popts->sdram_type == SDRAM_TYPE_DDR2) {
+		popts->tFAW_window_four_activates_ps = 37500;
+	} else {
+		/*
+		 * Due to ddr3 dimm fly-by topology, enable write leveling
+		 * to meet the tQDSS under different loading.
+		 */
+		popts->tFAW_window_four_activates_ps = pdimm[0].tfaw_ps;
+		popts->wrlvl_en = 1;
+		popts->zq_en = 1;
+		popts->wrlvl_override = 0;
+	}
 
 	/*
 	 * Default powerdown exit timings.

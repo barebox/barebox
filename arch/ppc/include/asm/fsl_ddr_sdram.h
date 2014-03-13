@@ -19,17 +19,24 @@
 #define SDRAM_TYPE_DDR3    7
 
 #define DDR_BL4	4
+#define DDR_BC4	DDR_BL4
+#define DDR_OTF	6
 #define DDR_BL8	8
 
 #define DDR2_RTT_OFF		0
 #define DDR2_RTT_75_OHM		1
 #define DDR2_RTT_150_OHM	2
 #define DDR2_RTT_50_OHM		3
+#define DDR3_RTT_OFF		0
+#define DDR3_RTT_40_OHM		3
 
-#if defined(CONFIG_FSL_DDR2)
 #define FSL_DDR_MIN_TCKE_PULSE_WIDTH_DDR	(3)
+#if defined(CONFIG_FSL_DDR2)
 typedef struct ddr2_spd_eeprom_s generic_spd_eeprom_t;
 #define FSL_SDRAM_TYPE	SDRAM_TYPE_DDR2
+#elif defined(CONFIG_FSL_DDR3)
+typedef struct ddr3_spd_eeprom_s generic_spd_eeprom_t;
+#define FSL_SDRAM_TYPE	SDRAM_TYPE_DDR3
 #endif
 
 #define FSL_DDR_ODT_NEVER		0x0
@@ -121,6 +128,10 @@ struct memctl_options_s {
 	uint32_t dynamic_power;
 	uint32_t data_bus_width;
 	uint32_t burst_length;
+	uint32_t otf_burst_chop_en;
+	uint32_t mirrored_dimm;
+	uint32_t ap_en;
+	uint32_t x4_en;
 	/* Global Timing Parameters */
 	uint32_t cas_latency_override;
 	uint32_t cas_latency_override_value;
@@ -130,16 +141,36 @@ struct memctl_options_s {
 	uint32_t clk_adjust;
 	uint32_t cpo_override;
 	uint32_t write_data_delay;
+	/* Write leveling */
+	uint32_t wrlvl_override;
+	uint32_t wrlvl_sample;
+	uint32_t wrlvl_start;
+	uint32_t wrlvl_ctl_2;
+	uint32_t wrlvl_ctl_3;
 	uint32_t half_strength_driver_enable;
 	uint32_t twoT_en;
+	uint32_t threet_en;
 	uint32_t bstopre;
 	uint32_t tCKE_clock_pulse_width_ps;
 	uint32_t tFAW_window_four_activates_ps;
 	/* Rtt impedance */
 	uint32_t rtt_override;
 	uint32_t rtt_override_value;
+	uint32_t rtt_wr_override_value;
 	/* Automatic self refresh */
 	uint32_t auto_self_refresh_en;
+	uint32_t sr_it;
+	/* ZQ calibration */
+	uint32_t zq_en;
+	/* Write leveling */
+	uint32_t wrlvl_en;
+	/* RCW override for RDIMM */
+	uint32_t rcw_override;
+	uint32_t rcw_1;
+	uint32_t rcw_2;
+	/* control register 1 */
+	uint32_t ddr_cdr1;
+	uint32_t ddr_cdr2;
 	/* read-to-write turnaround */
 	uint32_t trwt_override;
 	uint32_t trwt;

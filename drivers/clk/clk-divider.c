@@ -248,3 +248,39 @@ struct clk *clk_divider_one_based(const char *name, const char *parent,
 
 	return clk;
 }
+
+struct clk *clk_divider_table(const char *name,
+		const char *parent, void __iomem *reg, u8 shift, u8 width,
+		const struct clk_div_table *table, unsigned flags)
+{
+	struct clk_divider *div = xzalloc(sizeof(*div));
+	const struct clk_div_table *clkt;
+	int ret, max_div = 0;
+
+	div->shift = shift;
+	div->reg = reg;
+	div->width = width;
+	div->parent = parent;
+	div->clk.ops = &clk_divider_ops;
+	div->clk.name = name;
+	div->clk.flags = flags;
+	div->clk.parent_names = &div->parent;
+	div->clk.num_parents = 1;
+	div->table = table;
+
+	for (clkt = div->table; clkt->div; clkt++) {
+		if (clkt->div > max_div) {
+			max_div = clkt->div;
+			div->max_div_index = div->table_size;
+		}
+		div->table_size++;
+	}
+
+	ret = clk_register(&div->clk);
+	if (ret) {
+		free(div);
+		return ERR_PTR(ret);
+	}
+
+	return &div->clk;
+}

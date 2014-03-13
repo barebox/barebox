@@ -23,6 +23,8 @@ static struct image_renderer *get_renderer(void* buf, size_t bufsize)
 			return ir;
 	}
 
+	eprintf("No renderer found for filetype %s\n", file_type_to_string(type));
+
 	return NULL;
 }
 

@@ -36,7 +36,7 @@
 
 #define MPC85xx_GPIO_OFFSET	0xf000
 #define MPC85xx_L2_OFFSET	0x20000
-#ifdef CONFIG_TSECV2
+#ifdef FSL_TSECV2
 #define TSEC1_OFFSET		0xB0000
 #else
 #define TSEC1_OFFSET		0x24000
@@ -75,6 +75,11 @@
 #define MPC85xx_DDR_CS1_CONFIG_OFFSET		0x084
 #define MPC85xx_DDR_CS2_CONFIG_OFFSET		0x088
 #define MPC85xx_DDR_CS3_CONFIG_OFFSET		0x08c
+/* Chip Select 0, 1, 2, 3 Configuration 2 */
+#define MPC85xx_DDR_CS0_CONFIG_2_OFFSET		0x0c0
+#define MPC85xx_DDR_CS1_CONFIG_2_OFFSET		0x0c4
+#define MPC85xx_DDR_CS2_CONFIG_2_OFFSET		0x0c8
+#define MPC85xx_DDR_CS3_CONFIG_2_OFFSET		0x0cc
 /* SDRAM Timing Configuration 0, 1, 2, 3 */
 #define MPC85xx_DDR_TIMING_CFG_3_OFFSET		0x100
 #define MPC85xx_DDR_TIMING_CFG_0_OFFSET		0x104
@@ -97,9 +102,30 @@
 /* training init and extended addr */
 #define MPC85xx_DDR_SDRAM_INIT_ADDR_OFFSET	0x148
 #define MPC85xx_DDR_SDRAM_INIT_ADDR_EXT_OFFSET	0x14c
+/* SDRAM Timing Configuration 4,5 */
+#define MPC85xx_DDR_TIMING_CFG_4_OFFSET		0x160
+#define MPC85xx_DDR_TIMING_CFG_5_OFFSET		0x164
+/* DDR ZQ calibration control */
+#define MPC85xx_DDR_ZQ_CNTL_OFFSET		0x170
+/* DDR write leveling control */
+#define MPC85xx_DDR_WRLVL_CNTL_OFFSET		0x174
+/* Self Refresh Counter */
+#define MPC85xx_DDR_SR_CNTL_OFFSET		0x17c
+/* DDR SDRAM Register Control Word */
+#define MPC85xx_DDR_SDRAM_RCW_1_OFFSET		0x180
+#define MPC85xx_DDR_SDRAM_RCW_2_OFFSET		0x184
+/* DDR write leveling control */
+#define MPC85xx_DDR_WRLVL_CNTL_2_OFFSET		0x190
+#define MPC85xx_DDR_WRLVL_CNTL_3_OFFSET		0x194
+/* DDR Control Driver */
+#define MPC85xx_DDR_DDRCDR1_OFFSET		0xb28
+#define MPC85xx_DDR_DDRCDR2_OFFSET		0xb2c
 /* DDR IP block revision */
-#define MPC85xx_DDR_IP_REV1_OFFSET	0xbf8
-#define MPC85xx_DDR_IP_REV2_OFFSET	0xbfc
+#define MPC85xx_DDR_IP_REV1_OFFSET		0xbf8
+#define MPC85xx_DDR_IP_REV2_OFFSET		0xbfc
+/* Memory Error Disable */
+#define MPC85xx_DDR_ERR_DISABLE_OFFSET		0xe44
+#define MPC85xx_DDR_ERR_INT_EN_OFFSET		0xe48
 
 #define DDR_OFF(REGNAME)	(MPC85xx_DDR_##REGNAME##_OFFSET)
 
@@ -147,6 +173,8 @@
 #define		MPC85xx_PORPLLSR_DDR_RATIO_SHIFT	9
 #define MPC85xx_GUTS_PORDEVSR2_OFFSET	0x14
 #define		MPC85xx_PORDEVSR2_SEC_CFG		0x00000080
+#define MPC85xx_GUTS_PMUXCR_OFFSET	0x60
+#define MPC85xx_GUTS_PMUXCR2_OFFSET	0x64
 #define MPC85xx_GUTS_DEVDISR_OFFSET	0x70
 #define		MPC85xx_DEVDISR_TB0	0x00004000
 #define		MPC85xx_DEVDISR_TB1	0x00001000

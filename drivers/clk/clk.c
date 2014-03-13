@@ -104,8 +104,18 @@ unsigned long clk_get_rate(struct clk *clk)
 
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
+	unsigned long parent_rate = 0;
+	struct clk *parent;
+
 	if (IS_ERR(clk))
 		return 0;
+
+	parent = clk_get_parent(clk);
+	if (parent)
+		parent_rate = clk_get_rate(parent);
+
+	if (clk->ops->round_rate)
+		return clk->ops->round_rate(clk, rate, &parent_rate);
 
 	return clk_get_rate(clk);
 }

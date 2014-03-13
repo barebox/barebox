@@ -405,6 +405,17 @@ struct i2c_adapter *i2c_get_adapter(int busnum)
 	return NULL;
 }
 
+struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
+{
+	struct i2c_adapter *adap;
+
+	list_for_each_entry(adap, &adapter_list, list)
+		if (adap->dev.device_node == node)
+			return adap;
+
+	return NULL;
+}
+
 /**
  * i2c_add_numbered_adapter - declare i2c adapter, use static bus number
  * @adapter: the adapter to register (with adap->nr initialized)

@@ -40,7 +40,7 @@ static struct clk_ops clk_fixed_factor_ops = {
 };
 
 struct clk *clk_fixed_factor(const char *name,
-		const char *parent, unsigned int mult, unsigned int div)
+		const char *parent, unsigned int mult, unsigned int div, unsigned flags)
 {
 	struct clk_fixed_factor *f = xzalloc(sizeof(*f));
 	int ret;
@@ -50,6 +50,7 @@ struct clk *clk_fixed_factor(const char *name,
 	f->parent = parent;
 	f->clk.ops = &clk_fixed_factor_ops;
 	f->clk.name = name;
+	f->clk.flags = flags;
 	f->clk.parent_names = &f->parent;
 	f->clk.num_parents = 1;
 

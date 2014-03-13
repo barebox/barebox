@@ -10,7 +10,7 @@ static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 static inline struct clk *imx_clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div)
 {
-	return clk_fixed_factor(name, parent, mult, div);
+	return clk_fixed_factor(name, parent, mult, div, 0);
 }
 
 static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,

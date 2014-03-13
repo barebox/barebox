@@ -46,7 +46,7 @@ static inline struct clk *mxs_clk_mux(const char *name, void __iomem *reg,
 static inline struct clk *mxs_clk_fixed_factor(const char *name,
 		const char *parent_name, unsigned int mult, unsigned int div)
 {
-	return clk_fixed_factor(name, parent_name, mult, div);
+	return clk_fixed_factor(name, parent_name, mult, div, 0);
 }
 
 #endif /* __MXS_CLK_H */

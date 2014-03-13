@@ -158,6 +158,10 @@
 	};
 };
 
+&hdmi {
+	compatible = "fsl,imx6q-hdmi";
+};
+
 &ldb {
 	clocks = <&clks 33>, <&clks 34>,
 		 <&clks 39>, <&clks 40>, <&clks 41>, <&clks 42>,

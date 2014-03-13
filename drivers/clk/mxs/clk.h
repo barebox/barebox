@@ -40,7 +40,7 @@ static inline struct clk *mxs_clk_gate(const char *name,
 static inline struct clk *mxs_clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parent_names, int num_parents)
 {
-	return clk_mux(name, reg, shift, width, parent_names, num_parents);
+	return clk_mux(name, reg, shift, width, parent_names, num_parents, 0);
 }
 
 static inline struct clk *mxs_clk_fixed_factor(const char *name,

@@ -252,10 +252,12 @@ struct clk *clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div);
 
 struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents);
+		u8 shift, u8 width, const char **parents, u8 num_parents,
+		unsigned flags);
 void clk_mux_free(struct clk *clk_mux);
 struct clk *clk_mux(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents);
+		u8 shift, u8 width, const char **parents, u8 num_parents,
+		unsigned flags);
 
 struct clk *clk_gate_alloc(const char *name, const char *parent,
 		void __iomem *reg, u8 shift);

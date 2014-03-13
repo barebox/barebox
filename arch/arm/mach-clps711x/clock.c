@@ -95,9 +95,9 @@ static __init int clps711x_clk_init(void)
 	clks[timer_hf].clk = clk_fixed(clks[timer_hf].name, f_timer_hf);
 	clks[timer_lf].clk = clk_fixed(clks[timer_lf].name, f_timer_lf);
 	clks[tc1].clk = clk_mux(clks[tc1].name, IOMEM(SYSCON1), 5, 1,
-				tc_sel_clks, ARRAY_SIZE(tc_sel_clks));
+				tc_sel_clks, ARRAY_SIZE(tc_sel_clks), 0);
 	clks[tc2].clk = clk_mux(clks[tc2].name, IOMEM(SYSCON1), 7, 1,
-				tc_sel_clks, ARRAY_SIZE(tc_sel_clks));
+				tc_sel_clks, ARRAY_SIZE(tc_sel_clks), 0);
 
 	clps711x_clk_register(dummy);
 	clps711x_clk_register(cpu);

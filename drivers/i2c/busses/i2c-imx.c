@@ -587,4 +587,4 @@ static struct driver_d i2c_fsl_driver = {
 	.name	= DRIVER_NAME,
 	.of_compatible = DRV_OF_COMPAT(imx_i2c_dt_ids),
 };
-device_platform_driver(i2c_fsl_driver);
+coredevice_platform_driver(i2c_fsl_driver);

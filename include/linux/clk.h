@@ -240,6 +240,9 @@ struct clk_divider {
 	const char *parent;
 #define CLK_DIVIDER_ONE_BASED	(1 << 0)
 	unsigned flags;
+	const struct clk_div_table *table;
+	int max_div_index;
+	int table_size;
 };
 
 extern struct clk_ops clk_divider_ops;

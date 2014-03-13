@@ -30,8 +30,6 @@ extern unsigned long get_board_sys_clk(unsigned long dummy);
 #define CFG_SYS_CLK_FREQ	get_board_sys_clk(0)
 #define CFG_DDR_CLK_FREQ	66666666
 
-#define CFG_BTB			/* toggle branch predition */
-
 /*
  * Base addresses -- Note these are effective addresses where the
  * actual resources get mapped (not physical addresses)

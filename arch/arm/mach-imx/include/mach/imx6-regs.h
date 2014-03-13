@@ -26,6 +26,9 @@
 #define MX6_SPBA_BASE_ADDR              (MX6_ATZ1_BASE_ADDR + 0x3C000)
 #define MX6_VPU_BASE_ADDR               (MX6_ATZ1_BASE_ADDR + 0x40000)
 
+#define MX6_IPU1_BASE_ADDR		0x02400000
+#define MX6_IPU2_BASE_ADDR		0x02800000
+
 /* ATZ#1- On Platform */
 #define MX6_AIPS1_ON_BASE_ADDR          (MX6_ATZ1_BASE_ADDR + 0x7C000)
 

@@ -54,6 +54,14 @@ static void fdt_add_enet_stashing(void *fdt)
 		of_property_write_u32(node, "rx-stash-idx", 0);
 		node = of_find_compatible_node(node, NULL, "gianfar");
 	}
+
+	node = of_find_compatible_node(fdt, NULL, "fsl,etsec2");
+	while (node) {
+		of_set_property(node, "bd-stash", NULL, 0, 1);
+		of_property_write_u32(node, "rx-stash-len", 96);
+		of_property_write_u32(node, "rx-stash-idx", 0);
+		node = of_find_compatible_node(node, NULL, "fsl,etsec2");
+	}
 }
 
 static int fdt_stdout_setup(struct device_node *blob)

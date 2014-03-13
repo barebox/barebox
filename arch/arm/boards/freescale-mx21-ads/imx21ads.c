@@ -62,7 +62,6 @@ static struct imx_fb_videomode imx_fb_modedata = {
 		.vsync_len      = 1,
 		.sync           = 0,
 		.vmode          = FB_VMODE_NONINTERLACED,
-		.flag           = 0,
 	},
         .pcr            = 0xfb108bc7,
         .bpp            = 16,

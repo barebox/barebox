@@ -4,6 +4,7 @@
 #include <ioctl.h>
 #include <param.h>
 #include <driver.h>
+#include <linux/bitops.h>
 
 #define FB_VISUAL_TRUECOLOR		2	/* True color	*/
 #define FB_VISUAL_PSEUDOCOLOR		3	/* Pseudo color (like atari) */
@@ -32,6 +33,16 @@
 #define PICOS2KHZ(a) (1000000000UL/(a))
 #define KHZ2PICOS(a) (1000000000UL/(a))
 
+enum display_flags {
+	/* data enable flag */
+	DISPLAY_FLAGS_DE_LOW		= BIT(4),
+	DISPLAY_FLAGS_DE_HIGH		= BIT(5),
+	/* drive data on pos. edge */
+	DISPLAY_FLAGS_PIXDATA_POSEDGE	= BIT(6),
+	/* drive data on neg. edge */
+	DISPLAY_FLAGS_PIXDATA_NEGEDGE	= BIT(7),
+};
+
 struct fb_videomode {
 	const char *name;	/* optional */
 	u32 refresh;		/* optional */
@@ -46,7 +57,7 @@ struct fb_videomode {
 	u32 vsync_len;
 	u32 sync;
 	u32 vmode;
-	u32 flag;
+	u32 display_flags;
 };
 
 /* Interpretation of offset for color fields: All offsets are from the right,
@@ -124,6 +135,8 @@ struct fb_info {
 					 * be created.
 					 */
 };
+
+struct display_timings *of_get_display_timings(struct device_node *np);
 
 int register_framebuffer(struct fb_info *info);
 

@@ -72,7 +72,6 @@ static struct fb_videomode tx28evk_vmodes[] = {
 		.lower_margin = 10,
 		.sync = FB_SYNC_DE_HIGH_ACT,
 		.vmode = FB_VMODE_NONINTERLACED,
-		.flag = 0,
 	}, {
 	/*
 	 * Emerging ETV570 640 x 480 display (directly connected)
@@ -93,7 +92,6 @@ static struct fb_videomode tx28evk_vmodes[] = {
 		.lower_margin = 10,
 		.sync = FB_SYNC_DE_HIGH_ACT,
 		.vmode = FB_VMODE_NONINTERLACED,
-		.flag = 0,
 		/*
 		 * This display is connected:
 		 *  display side   -> CPU side
@@ -127,7 +125,6 @@ static struct fb_videomode tx28evk_vmodes[] = {
 		.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT |
 				FB_SYNC_DE_HIGH_ACT,
 		.vmode = FB_VMODE_NONINTERLACED,
-		.flag = 0,
 	}, {
 	/*
 	 * Modeline "1024x768" x 60.0
@@ -149,7 +146,6 @@ static struct fb_videomode tx28evk_vmodes[] = {
 		.lower_margin = 3,
 		.sync = FB_SYNC_DE_HIGH_ACT,
 		.vmode = FB_VMODE_NONINTERLACED,
-		.flag = 0,
 	}, {
 	/*
 	 * Modeline "1280x1024" x 60.0
@@ -172,7 +168,6 @@ static struct fb_videomode tx28evk_vmodes[] = {
 		.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT |
 				FB_SYNC_DE_HIGH_ACT,
 		.vmode = FB_VMODE_NONINTERLACED,
-		.flag = 0,
 	},
 };
 

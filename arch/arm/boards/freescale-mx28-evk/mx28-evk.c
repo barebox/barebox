@@ -201,7 +201,6 @@ static struct fb_videomode mx28_evk_vmodes[] = {
 		.lower_margin = 10,
 		.sync = FB_SYNC_DE_HIGH_ACT | FB_SYNC_CLK_INVERT,
 		.vmode = FB_VMODE_NONINTERLACED,
-		.flag = 0,
 	}
 };
 

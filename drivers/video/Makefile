@@ -1,4 +1,5 @@
 obj-$(CONFIG_VIDEO) += fb.o
+obj-$(CONFIG_OFDEVICE) += of_display_timing.o
 
 obj-$(CONFIG_DRIVER_VIDEO_ATMEL) += atmel_lcdfb.o atmel_lcdfb_core.o
 obj-$(CONFIG_DRIVER_VIDEO_ATMEL_HLCD) += atmel_hlcdfb.o atmel_lcdfb_core.o

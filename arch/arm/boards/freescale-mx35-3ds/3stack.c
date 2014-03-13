@@ -95,7 +95,6 @@ static struct fb_videomode CTP_CLAA070LC0ACW = {
 	.vsync_len	= 1,	/* note: DE only display */
 	.sync		= FB_SYNC_CLK_IDLE_EN | FB_SYNC_OE_ACT_HIGH,
 	.vmode		= FB_VMODE_NONINTERLACED,
-	.flag		= 0,
 };
 
 static struct imx_ipu_fb_platform_data ipu_fb_data = {

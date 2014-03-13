@@ -145,7 +145,7 @@ struct clk *_tegra_clk_register_periph(const char *name,
 		goto out_mux;
 
 	periph->gate = clk_gate_alloc(NULL, NULL, clk_base + 0x10 +
-				      ((id >> 3) & 0xc), id & 0x1f);
+				      ((id >> 3) & 0xc), id & 0x1f, 0);
 	if (!periph->gate)
 		goto out_gate;
 

@@ -260,12 +260,12 @@ struct clk *clk_mux(const char *name, void __iomem *reg,
 		unsigned flags);
 
 struct clk *clk_gate_alloc(const char *name, const char *parent,
-		void __iomem *reg, u8 shift);
+		void __iomem *reg, u8 shift, unsigned flags);
 void clk_gate_free(struct clk *clk_gate);
 struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
-		u8 shift);
+		u8 shift, unsigned flags);
 struct clk *clk_gate_inverted(const char *name, const char *parent, void __iomem *reg,
-		u8 shift);
+		u8 shift, unsigned flags);
 int clk_is_enabled(struct clk *clk);
 
 int clk_is_enabled_always(struct clk *clk);

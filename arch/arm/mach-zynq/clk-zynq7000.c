@@ -374,11 +374,11 @@ static int zynq_clock_probe(struct device_d *dev)
 
 	clks[uart_clk] = zynq_periph_clk("uart_clk", slcr_base + 0x154);
 
-	clks[uart0] = clk_gate("uart0", "uart_clk", slcr_base + 0x154, 0);
-	clks[uart1] = clk_gate("uart1", "uart_clk", slcr_base + 0x154, 1);
+	clks[uart0] = clk_gate("uart0", "uart_clk", slcr_base + 0x154, 0, 0);
+	clks[uart1] = clk_gate("uart1", "uart_clk", slcr_base + 0x154, 1, 0);
 
-	clks[gem0] = clk_gate("gem0", "io_pll", slcr_base + 0x140, 0);
-	clks[gem1] = clk_gate("gem1", "io_pll", slcr_base + 0x144, 1);
+	clks[gem0] = clk_gate("gem0", "io_pll", slcr_base + 0x140, 0, 0);
+	clks[gem1] = clk_gate("gem1", "io_pll", slcr_base + 0x144, 1, 0);
 
 	clks[cpu_clk] = zynq_cpu_clk("cpu_clk", slcr_base + 0x120);
 

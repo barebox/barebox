@@ -37,8 +37,8 @@ static int sdlfb_probe(struct device_d *dev)
 		return -EIO;
 
 	fb = xzalloc(sizeof(*fb));
-	fb->mode_list = fb->mode = dev->platform_data;
-	fb->num_modes = 1;
+	fb->modes.modes = fb->mode = dev->platform_data;
+	fb->modes.num_modes = 1;
 	fb->bits_per_pixel = 4 << 3;
 	fb->xres = fb->mode->xres;
 	fb->yres = fb->mode->yres;

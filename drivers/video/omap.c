@@ -467,8 +467,8 @@ static int omapfb_probe(struct device_d *dev)
 	for (i = 0; i < pdata->num_displays; ++i)
 		fbi->video_modes[i] = pdata->displays[i].mode;
 
-	info->mode_list = fbi->video_modes;
-	info->num_modes = pdata->num_displays;
+	info->modes.modes = fbi->video_modes;
+	info->modes.num_modes = pdata->num_displays;
 
 	info->priv = fbi;
 	info->fbops = &omapfb_ops;

@@ -53,6 +53,7 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 		const char *val)
 {
 	struct fb_info *info = dev->priv;
+	struct display_timings *dt;
 	int mode, ret;
 
 	if (info->enabled != 0)
@@ -61,14 +62,15 @@ static int fb_setup_mode(struct device_d *dev, struct param_d *param,
 	if (!val)
 		return dev_param_set_generic(dev, param, NULL);
 
-	for (mode = 0; mode < info->num_modes; mode++) {
-		if (!strcmp(info->mode_list[mode].name, val))
+	dt = &info->modes;
+	for (mode = 0; mode < dt->num_modes; mode++) {
+		if (!strcmp(dt->modes[mode].name, val))
 			break;
 	}
-	if (mode >= info->num_modes)
+	if (mode >= dt->num_modes)
 		return -EINVAL;
 
-	info->mode = &info->mode_list[mode];
+	info->mode = &dt->modes[mode];
 
 	info->xres = info->mode->xres;
 	info->yres = info->mode->yres;
@@ -105,13 +107,13 @@ static void fb_info(struct device_d *dev)
 	struct fb_info *info = dev->priv;
 	int i;
 
-	if (!info->num_modes)
+	if (!info->modes.num_modes)
 		return;
 
 	printf("available modes:\n");
 
-	for (i = 0; i < info->num_modes; i++) {
-		struct fb_videomode *mode = &info->mode_list[i];
+	for (i = 0; i < info->modes.num_modes; i++) {
+		struct fb_videomode *mode = &info->modes.modes[i];
 
 		printf("%-10s %dx%d@%d\n", mode->name,
 				mode->xres, mode->yres, mode->refresh);
@@ -155,10 +157,10 @@ int register_framebuffer(struct fb_info *info)
 	dev_add_param_bool(dev, "enable", fb_enable_set, NULL,
 			&info->p_enable, info);
 
-	if (info->num_modes && (info->mode_list != NULL) &&
+	if (info->modes.num_modes &&
 			(info->fbops->fb_activate_var != NULL)) {
 		dev_add_param(dev, "mode_name", fb_setup_mode, NULL, 0);
-		dev_set_param(dev, "mode_name", info->mode_list[0].name);
+		dev_set_param(dev, "mode_name", info->modes.modes[0].name);
 	}
 
 	ret = devfs_create(&info->cdev);

@@ -294,7 +294,7 @@ static int imxfb_activate_var(struct fb_info *info)
 	u32 pcr;
 	int i;
 
-	for (i = 0; i < info->num_modes; i++) {
+	for (i = 0; i < info->modes.num_modes; i++) {
 		if (!strcmp(fbi->mode[i].mode.name, mode->name)) {
 			fbi->pcr = fbi->mode[i].pcr;
 			break;
@@ -551,8 +551,8 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->enable = pdata->enable;
 	fbi->dev = dev;
 	info->priv = fbi;
-	info->mode_list = mode_list;
-	info->num_modes = pdata->num_modes;
+	info->modes.modes = mode_list;
+	info->modes.num_modes = pdata->num_modes;
 	info->mode = &pdata->mode->mode;
 	info->xres = pdata->mode->mode.xres;
 	info->yres = pdata->mode->mode.yres;

@@ -77,10 +77,22 @@ struct fb_ops {
 	int (*fb_activate_var)(struct fb_info *info);
 };
 
+/*
+ * This describes all timing settings a display provides.
+ * The native_mode is the default setting for this display.
+ * Drivers that can handle multiple videomodes should work with this struct and
+ * convert each entry to the desired end result.
+ */
+struct display_timings {
+	unsigned int native_mode;
+
+	unsigned int num_modes;
+	struct fb_videomode *modes;
+};
+
 struct fb_info {
 	struct fb_videomode *mode;
-	struct fb_videomode *mode_list;
-	unsigned num_modes;
+	struct display_timings modes;
 
 	struct fb_ops *fbops;
 	struct device_d dev;		/* This is this fb device */

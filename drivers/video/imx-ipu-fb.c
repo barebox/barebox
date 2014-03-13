@@ -1007,8 +1007,8 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->disable_fractional_divider = pdata->disable_fractional_divider;
 	info->priv = fbi;
 	info->fbops = &imxfb_ops;
-	info->num_modes = pdata->num_modes;
-	info->mode_list = pdata->mode;
+	info->modes.modes = pdata->mode;
+	info->modes.num_modes = pdata->num_modes;
 
 	imxfb_init_info(info, pdata->mode, pdata->bpp);
 

@@ -499,9 +499,9 @@ static int stmfb_probe(struct device_d *hw_dev)
 	clk_enable(fbi.clk);
 
 	/* add runtime video info */
-	fbi.info.mode_list = pdata->mode_list;
-	fbi.info.num_modes = pdata->mode_cnt;
-	fbi.info.mode = &fbi.info.mode_list[0];
+	fbi.info.modes.modes = pdata->mode_list;
+	fbi.info.modes.num_modes = pdata->mode_cnt;
+	fbi.info.mode = &fbi.info.modes.modes[0];
 	fbi.info.xres = fbi.info.mode->xres;
 	fbi.info.yres = fbi.info.mode->yres;
 	if (pdata->bits_per_pixel)

@@ -45,6 +45,7 @@
 		spi3 = &ecspi4;
 		usbphy0 = &usbphy1;
 		usbphy1 = &usbphy2;
+		ipu0 = &ipu1;
 	};
 
 	intc: interrupt-controller@00a01000 {

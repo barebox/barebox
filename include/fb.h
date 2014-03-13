@@ -101,11 +101,17 @@ struct display_timings {
 	struct fb_videomode *modes;
 };
 
+struct i2c_adapter;
+
 struct fb_info {
 	struct fb_videomode *mode;
 	struct display_timings modes;
 
 	int current_mode;
+
+	void *edid_data;
+	struct i2c_adapter *edid_i2c_adapter;
+	struct display_timings edid_modes;
 
 	struct fb_ops *fbops;
 	struct device_d dev;		/* This is this fb device */
@@ -150,5 +156,8 @@ extern struct bus_type fb_bus;
 
 int fb_register_simplefb(struct fb_info *info);
 
-#endif /* __FB_H */
+int edid_to_display_timings(struct display_timings *, unsigned char *edid);
+void *edid_read_i2c(struct i2c_adapter *adapter);
+void fb_edid_add_modes(struct fb_info *info);
 
+#endif /* __FB_H */

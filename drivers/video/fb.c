@@ -53,10 +53,13 @@ static struct fb_videomode *fb_num_to_mode(struct fb_info *info, int num)
 {
 	int num_modes;
 
-	num_modes = info->modes.num_modes;
+	num_modes = info->modes.num_modes + info->edid_modes.num_modes;
 
 	if (num >= num_modes)
 		return NULL;
+
+	if (num >= info->modes.num_modes)
+		return &info->edid_modes.modes[num - info->modes.num_modes];
 
 	return &info->modes.modes[num];
 }
@@ -142,6 +145,7 @@ static void fb_info(struct device_d *dev)
 	printf("available modes:\n");
 
 	fb_print_modes(&info->modes);
+	fb_print_modes(&info->edid_modes);
 
 	printf("\n");
 }
@@ -191,13 +195,17 @@ int register_framebuffer(struct fb_info *info)
 	dev_add_param_bool(dev, "enable", fb_enable_set, NULL,
 			&info->p_enable, info);
 
-	num_modes = info->modes.num_modes;
+	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EDID))
+		fb_edid_add_modes(info);
+
+	num_modes = info->modes.num_modes + info->edid_modes.num_modes;
 
 	names = xzalloc(sizeof(char *) * num_modes);
 
 	for (i = 0; i < info->modes.num_modes; i++)
 		names[i] = info->modes.modes[i].name;
-
+	for (i = 0; i < info->edid_modes.num_modes; i++)
+		names[i + info->modes.num_modes] = info->edid_modes.modes[i].name;
 	dev_add_param_enum(dev, "mode_name", fb_set_modename, NULL, &info->current_mode, names, num_modes, info);
 
 	info->mode = fb_num_to_mode(info, 0);

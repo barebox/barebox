@@ -84,4 +84,10 @@ config DRIVER_VIDEO_SIMPLEFB
 	  Add support for setting up the kernel's simple framebuffer driver
 	  based on the active barebox framebuffer.
 
+config DRIVER_VIDEO_EDID
+	bool "Add EDID support"
+	help
+	  This enabled support for reading and parsing EDID data from an attached
+	  monitor.
+
 endif

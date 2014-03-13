@@ -85,7 +85,7 @@ static struct clk_ops clk_divider_table_ops = {
 
 struct clk *clk_divider_table(const char *name,
 		const char *parent, void __iomem *reg, u8 shift, u8 width,
-		const struct clk_div_table *table)
+		const struct clk_div_table *table, unsigned flags)
 {
 	struct clk_divider_table *div = xzalloc(sizeof(*div));
 	const struct clk_div_table *clkt;
@@ -98,6 +98,7 @@ struct clk *clk_divider_table(const char *name,
 	div->clk.ops = &clk_divider_table_ops;
 	div->clk.name = name;
 	div->clk.parent_names = &div->parent;
+	div->clk.flags = flags;
 	div->clk.num_parents = 1;
 	div->table = table;
 

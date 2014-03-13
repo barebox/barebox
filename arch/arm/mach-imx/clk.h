@@ -4,7 +4,7 @@
 static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width)
 {
-	return clk_divider(name, parent, reg, shift, width);
+	return clk_divider(name, parent, reg, shift, width, 0);
 }
 
 static inline struct clk *imx_clk_fixed_factor(const char *name,

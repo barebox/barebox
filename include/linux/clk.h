@@ -242,12 +242,12 @@ struct clk_divider {
 extern struct clk_ops clk_divider_ops;
 
 struct clk *clk_divider(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width);
+		void __iomem *reg, u8 shift, u8 width, unsigned flags);
 struct clk *clk_divider_one_based(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, u8 width);
+		void __iomem *reg, u8 shift, u8 width, unsigned flags);
 struct clk *clk_divider_table(const char *name,
 		const char *parent, void __iomem *reg, u8 shift, u8 width,
-		const struct clk_div_table *table);
+		const struct clk_div_table *table, unsigned flags);
 struct clk *clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div,
 		unsigned flags);

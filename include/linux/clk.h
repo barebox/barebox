@@ -196,6 +196,9 @@ static inline int clk_set_rate(struct clk *clk, unsigned long rate)
 #endif
 
 #ifdef CONFIG_COMMON_CLK
+
+#define CLK_SET_RATE_PARENT     (1 << 0) /* propagate rate change up one level */
+
 struct clk_ops {
 	int		(*enable)(struct clk *clk);
 	void		(*disable)(struct clk *clk);

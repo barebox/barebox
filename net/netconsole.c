@@ -81,6 +81,9 @@ static int nc_getc(struct console_device *cdev)
 					struct nc_priv, cdev);
 	unsigned char c;
 
+	if (!priv->con)
+		return 0;
+
 	while (!kfifo_len(priv->fifo))
 		net_poll();
 
@@ -93,6 +96,9 @@ static int nc_tstc(struct console_device *cdev)
 {
 	struct nc_priv *priv = container_of(cdev,
 					struct nc_priv, cdev);
+
+	if (!priv->con)
+		return 0;
 
 	if (priv->busy)
 		return kfifo_len(priv->fifo) ? 1 : 0;

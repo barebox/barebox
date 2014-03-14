@@ -77,6 +77,8 @@ config DRIVER_VIDEO_BCM2835
 	help
 	  Add support for the BCM2835/VideoCore frame buffer device.
 
+source drivers/video/imx-ipu-v3/Kconfig
+
 config DRIVER_VIDEO_SIMPLEFB
 	bool "Simple framebuffer support"
 	depends on OFTREE

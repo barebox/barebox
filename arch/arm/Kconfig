@@ -54,6 +54,10 @@ config ARCH_CLPS711X
 	select GPIOLIB
 	select MFD_SYSCON
 
+config ARCH_DAVINCI
+	bool "TI Davinci"
+	select CPU_ARM926T
+
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"
 	select CPU_ARM920T
@@ -188,6 +192,7 @@ source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
 source arch/arm/mach-bcm2835/Kconfig
 source arch/arm/mach-clps711x/Kconfig
+source arch/arm/mach-davinci/Kconfig
 source arch/arm/mach-ep93xx/Kconfig
 source arch/arm/mach-highbank/Kconfig
 source arch/arm/mach-imx/Kconfig

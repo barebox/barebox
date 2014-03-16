@@ -11,6 +11,8 @@
 
 #include <common.h>
 #include <io.h>
+#include <init.h>
+#include <clock.h>
 
 #include <mach/time.h>
 
@@ -48,6 +50,118 @@
 #define WDTCR_WDKEY_SHIFT            16
 #define WDTCR_WDKEY_SEQ0             0xa5c6
 #define WDTCR_WDKEY_SEQ1             0xda7e
+
+#define DAVINCI_TIMER_CLOCK 24000000
+
+struct timer_s {
+	void __iomem *base;
+	unsigned long tim_off;
+	unsigned long prd_off;
+	unsigned long enamode_shift;
+};
+
+static struct timer_s timers[] = {
+	{
+		.base = IOMEM(DAVINCI_TIMER0_BASE),
+		.enamode_shift = 6,
+		.tim_off = TIM12,
+		.prd_off = PRD12,
+	},
+	{
+		.base = IOMEM(DAVINCI_TIMER0_BASE),
+		.enamode_shift = 22,
+		.tim_off = TIM34,
+		.prd_off = PRD34,
+	},
+	{
+		.base = IOMEM(DAVINCI_TIMER1_BASE),
+		.enamode_shift = 6,
+		.tim_off = TIM12,
+		.prd_off = PRD12,
+	},
+	{
+		.base = IOMEM(DAVINCI_TIMER1_BASE),
+		.enamode_shift = 22,
+		.tim_off = TIM34,
+		.prd_off = PRD34,
+	},
+};
+
+static struct timer_s *t = &timers[0];
+
+static uint64_t davinci_cs_read(void)
+{
+	return (uint64_t)__raw_readl(t->base + t->tim_off);
+}
+
+static struct clocksource davinci_cs = {
+	.read	= davinci_cs_read,
+	.mask	= CLOCKSOURCE_MASK(32),
+};
+
+static int timer32_config(struct timer_s *t)
+{
+	u32 tcr;
+
+	tcr = __raw_readl(t->base + TCR);
+
+	/* disable timer */
+	tcr &= ~(TCR_ENAMODE_MASK << t->enamode_shift);
+	__raw_writel(tcr, t->base + TCR);
+
+	/* reset counter to zero, set new period */
+	__raw_writel(0, t->base + t->tim_off);
+	__raw_writel(0xffffffff, t->base + t->prd_off);
+
+	/* Set enable mode for periodic timer */
+	tcr |= TCR_ENAMODE_PERIODIC << t->enamode_shift;
+
+	__raw_writel(tcr, t->base + TCR);
+
+	return 0;
+}
+
+/* Global init of 64-bit timer as a whole */
+static void __init timer_init(void __iomem *base)
+{
+	u32 tgcr;
+
+	/* Disabled, Internal clock source */
+	__raw_writel(0, base + TCR);
+
+	/* reset both timers, no pre-scaler for timer34 */
+	tgcr = 0;
+	__raw_writel(tgcr, base + TGCR);
+
+	/* Set both timers to unchained 32-bit */
+	tgcr = TGCR_TIMMODE_32BIT_UNCHAINED << TGCR_TIMMODE_SHIFT;
+	__raw_writel(tgcr, base + TGCR);
+
+	/* Unreset timers */
+	tgcr |= (TGCR_UNRESET << TGCR_TIM12RS_SHIFT) |
+		(TGCR_UNRESET << TGCR_TIM34RS_SHIFT);
+	__raw_writel(tgcr, base + TGCR);
+
+	/* Init both counters to zero */
+	__raw_writel(0, base + TIM12);
+	__raw_writel(0, base + TIM34);
+}
+
+static int clocksource_init(void)
+{
+	clocks_calc_mult_shift(&davinci_cs.mult, &davinci_cs.shift,
+		DAVINCI_TIMER_CLOCK, NSEC_PER_SEC, 10);
+
+	init_clock(&davinci_cs);
+
+	timer_init(IOMEM(DAVINCI_TIMER0_BASE));
+	timer_init(IOMEM(DAVINCI_TIMER1_BASE));
+
+	timer32_config(t);
+
+	return 0;
+}
+core_initcall(clocksource_init);
 
 /* reset board using watchdog timer */
 void __noreturn reset_cpu(ulong addr)

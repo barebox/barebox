@@ -2,4 +2,6 @@
 
 @section davinci_boards DaVinci-based boards
 
+@li @subpage virt2real
+
 */

@@ -1,0 +1,28 @@
+#include "skeleton.dtsi"
+
+/ {
+	soc {
+		compatible = "simple-bus";
+		model = "TI TMS320DM365";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x0 0x01c00000 0x400000>;
+
+		serial0: serial@1c20000 {
+			compatible = "ns16550a";
+			reg = <0x20000 0x400>;
+			reg-shift = <2>;
+			clock-frequency = <24000000>;
+			status = "disabled";
+		};
+
+		gpio: gpio@1c67000 {
+			compatible = "ti,dm6441-gpio";
+			gpio-controller;
+			reg = <0x67000 0x800>;
+			#gpio-cells = <2>;
+			ti,ngpio = <107>;
+			status = "disabled";
+		};
+	};
+};

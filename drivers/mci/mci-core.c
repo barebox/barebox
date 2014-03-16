@@ -1813,7 +1813,7 @@ void mci_of_parse(struct mci_host *host)
 		break;
 	default:
 		dev_err(host->hw_dev,
-			"Invalid \"bus-width\" value %ud!\n", bus_width);
+			"Invalid \"bus-width\" value %u!\n", bus_width);
 	}
 
 	/* f_max is obtained from the optional "max-frequency" property */

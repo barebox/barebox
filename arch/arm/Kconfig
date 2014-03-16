@@ -58,6 +58,7 @@ config ARCH_DAVINCI
 	bool "TI Davinci"
 	select CPU_ARM926T
 	select HAS_DEBUG_LL
+	select GPIOLIB
 
 config ARCH_EP93XX
 	bool "Cirrus Logic EP93xx"

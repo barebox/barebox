@@ -200,7 +200,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 {
 	unsigned long phys = (unsigned long)bank->start;
 	unsigned long ttb_start = phys >> 20;
-	unsigned long ttb_end = (phys + bank->size) >> 20;
+	unsigned long ttb_end = (phys >> 20) + (bank->size >> 20);
 	unsigned long num_ptes = bank->size >> 10;
 	int i, pte;
 	u32 *ptes;

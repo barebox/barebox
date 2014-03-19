@@ -703,7 +703,9 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 	strings_dev[STRING_MANUFACTURER_IDX].s = pdata->manufacturer;
 	strings_dev[STRING_PRODUCT_IDX].s = pdata->productname;
 
-	usb_composite_register(&dfu_driver);
+	ret = usb_composite_register(&dfu_driver);
+	if (ret)
+		return ret;
 
 	while (1) {
 		ret = usb_gadget_poll();

@@ -333,9 +333,11 @@ static int boot(const char *name)
 
 static int do_boot(int argc, char *argv[])
 {
-	const char *sources = NULL;
-	char *source, *freep;
+	char *freep = NULL;
 	int opt, ret = 0, do_list = 0, do_menu = 0;
+	char **sources;
+	int num_sources;
+	int i;
 
 	verbose = 0;
 	dryrun = 0;
@@ -361,47 +363,62 @@ static int do_boot(int argc, char *argv[])
 		}
 	}
 
+	if (optind < argc) {
+		num_sources = argc - optind;
+		sources = xmemdup(&argv[optind], sizeof(char *) * num_sources);
+	} else {
+		const char *def;
+		char *sep;
+
+		def = getenv("global.boot.default");
+		if (!def)
+			return 0;
+
+		sep = freep = xstrdup(def);
+
+		num_sources = 0;
+
+		while (1) {
+			num_sources++;
+
+			sep = strchr(sep, ' ');
+			if (!sep)
+				break;
+			sep++;
+		}
+
+		sources = xmalloc(sizeof(char *) * num_sources);
+
+		sep = freep;
+
+		for (i = 0; i < num_sources; i++) {
+			sources[i] = sep;
+			sep = strchr(sep, ' ');
+			if (sep)
+				*sep = 0;
+			sep++;
+		}
+	}
+
 	if (do_list) {
-		bootsources_list(&argv[optind], argc - optind);
-		return 0;
+		bootsources_list(sources, num_sources);
+		goto out;
 	}
 
 	if (do_menu) {
-		bootsources_menu(&argv[optind], argc - optind);
-		return 0;
+		bootsources_menu(sources, num_sources);
+		goto out;
 	}
 
-	if (optind < argc) {
-		while (optind < argc) {
-			source = argv[optind];
-			optind++;
-			ret = boot(source);
-			if (!ret)
-				break;
-		}
-		return ret;
-	}
-
-	sources = getenv("global.boot.default");
-	if (!sources)
-		return 0;
-
-	freep = source = xstrdup(sources);
-
-	while (1) {
-		char *sep = strchr(source, ' ');
-		if (sep)
-			*sep = 0;
-		ret = boot(source);
+	for (i = 0; i < num_sources; i++) {
+		ret = boot(sources[i]);
 		if (!ret)
 			break;
-
-		if (sep)
-			source = sep + 1;
-		else
-			break;
+		goto out;
 	}
 
+out:
+	free(sources);
 	free(freep);
 
 	return ret;

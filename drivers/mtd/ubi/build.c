@@ -104,6 +104,8 @@ struct ubi_device *ubi_get_device(int ubi_num)
 	struct ubi_device *ubi;
 
 	ubi = ubi_devices[ubi_num];
+	if (!ubi)
+		return NULL;
 
 	ubi->ref_count++;
 

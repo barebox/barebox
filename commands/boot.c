@@ -106,6 +106,11 @@ static void bootsource_action(struct menu *m, struct menu_entry *me)
 static int bootscript_create_entry(struct blspec *blspec, const char *name)
 {
 	struct blspec_entry *be;
+	enum filetype type;
+
+	type = file_name_detect_type(name);
+	if (type != filetype_sh)
+		return -EINVAL;
 
 	be = blspec_entry_alloc(blspec);
 	be->me.type = MENU_ENTRY_NORMAL;

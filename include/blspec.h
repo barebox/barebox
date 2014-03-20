@@ -35,7 +35,6 @@ int blspec_boot_devicename(const char *devname, int verbose, int dryrun);
 
 int blspec_scan_devices(struct blspec *blspec);
 
-struct blspec_entry *blspec_entry_default(struct blspec *l);
 int blspec_scan_devicename(struct blspec *blspec, const char *devname);
 int blspec_scan_directory(struct blspec *blspec, const char *root);
 
@@ -90,5 +89,14 @@ static inline void blspec_free(struct blspec *blspec)
 	free(blspec->menu);
 	free(blspec);
 }
+
+#ifdef CONFIG_BLSPEC
+struct blspec_entry *blspec_entry_default(struct blspec *l);
+#else
+static inline struct blspec_entry *blspec_entry_default(struct blspec *l)
+{
+	return NULL;
+}
+#endif
 
 #endif /* __LOADER_H__ */

@@ -1,6 +1,6 @@
 /dts-v1/;
 
-#include <ar9331.dtsi>
+#include "ar9331.dtsi"
 
 / {
 	model = "TP-LINK MR3020";

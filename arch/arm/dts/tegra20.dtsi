@@ -478,9 +478,8 @@
 
 		clocks = <&tegra_car TEGRA20_CLK_PEX>,
 			 <&tegra_car TEGRA20_CLK_AFI>,
-			 <&tegra_car TEGRA20_CLK_PCIE_XCLK>,
 			 <&tegra_car TEGRA20_CLK_PLL_E>;
-		clock-names = "pex", "afi", "pcie_xclk", "pll_e";
+		clock-names = "pex", "afi", "pll_e";
 		status = "disabled";
 
 		pci@1,0 {

@@ -34,6 +34,7 @@ static char *trigger_names[] = {
 	[LED_TRIGGER_NET_RX] = "net rx",
 	[LED_TRIGGER_NET_TX] = "net tx",
 	[LED_TRIGGER_NET_TXRX] = "net",
+	[LED_TRIGGER_DEFAULT_ON] = "default on",
 };
 
 static int do_trigger(int argc, char *argv[])

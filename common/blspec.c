@@ -235,6 +235,78 @@ out:
 }
 
 /*
+ * entry_is_of_compatible - check if a bootspec entry is compatible with
+ *                          the current machine.
+ *
+ * returns true is the entry is compatible, false otherwise
+ */
+static bool entry_is_of_compatible(struct blspec_entry *entry)
+{
+	const char *devicetree;
+	const char *abspath;
+	size_t size;
+	void *fdt = NULL;
+	int ret;
+	struct device_node *root = NULL, *barebox_root;
+	const char *compat;
+	char *filename;
+
+	/* If we don't have a root node every entry is compatible */
+	barebox_root = of_get_root_node();
+	if (!barebox_root)
+		return true;
+
+	ret = of_property_read_string(barebox_root, "compatible", &compat);
+	if (ret)
+		return false;
+
+	if (entry->rootpath)
+		abspath = entry->rootpath;
+	else
+		abspath = "";
+
+	/* If the entry doesn't specifiy a devicetree we are compatible */
+	devicetree = blspec_entry_var_get(entry, "devicetree");
+	if (!devicetree)
+		return true;
+
+	if (!strcmp(devicetree, "none"))
+		return true;
+
+	filename = asprintf("%s/%s", abspath, devicetree);
+
+	fdt = read_file(filename, &size);
+	if (!fdt) {
+		ret = false;
+		goto out;
+	}
+
+	root = of_unflatten_dtb(NULL, fdt);
+	if (IS_ERR(root)) {
+		ret = PTR_ERR(root);
+		goto out;
+	}
+
+	if (of_device_is_compatible(root, compat)) {
+		ret = true;
+		goto out;
+	}
+
+	pr_info("ignoring entry with incompatible devicetree \"%s\"\n",
+			(char *)of_get_property(root, "compatible", &size));
+
+	ret = false;
+
+out:
+	if (root)
+		of_delete_node(root);
+	free(filename);
+	free(fdt);
+
+	return ret;
+}
+
+/*
  * blspec_scan_directory - scan over a directory
  *
  * Given a root path collects all blspec entries found under /blspec/entries/.
@@ -313,11 +385,16 @@ int blspec_scan_directory(struct blspec *blspec, const char *root)
 			continue;
 		}
 
-		found++;
-
 		entry->rootpath = xstrdup(root);
 		entry->configpath = configname;
 		entry->cdev = get_cdev_by_mountpath(root);
+
+		if (!entry_is_of_compatible(entry)) {
+			blspec_entry_free(entry);
+			continue;
+		}
+
+		found++;
 
 		name = asprintf("%s/%s", dirname, d->d_name);
 		if (entry_default && !strcmp(name, entry_default))

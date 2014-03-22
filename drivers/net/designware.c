@@ -477,10 +477,6 @@ static int dwc_ether_probe(struct device_d *dev)
 	return 0;
 }
 
-static void dwc_ether_remove(struct device_d *dev)
-{
-}
-
 static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
 	{
 		.compatible = "snps,dwmac-3.70a",
@@ -493,7 +489,6 @@ static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
 static struct driver_d dwc_ether_driver = {
 	.name = "designware_eth",
 	.probe = dwc_ether_probe,
-	.remove = dwc_ether_remove,
 	.of_compatible = DRV_OF_COMPAT(dwc_ether_compatible),
 };
 device_platform_driver(dwc_ether_driver);

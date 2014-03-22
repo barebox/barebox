@@ -1047,14 +1047,9 @@ static int imxfb_probe(struct device_d *dev)
 	return ret;
 }
 
-static void imxfb_remove(struct device_d *dev)
-{
-}
-
 static struct driver_d imx3fb_driver = {
 	.name = "imx-ipu-fb",
 	.probe = imxfb_probe,
-	.remove = imxfb_remove,
 };
 device_platform_driver(imx3fb_driver);
 

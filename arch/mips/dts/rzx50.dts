@@ -1,6 +1,6 @@
 /dts-v1/;
 
-/include/ "skeleton.dtsi"
+#include "jz4755.dtsi"
 
 / {
 	model = "Ritmix RZX-50";
@@ -8,5 +8,11 @@
 
 	memory {
 		reg = <0x00000000 0x4000000>;
+	};
+
+	soc {
+		serial1: serial@b0031000 {
+			status = "okay";
+		};
 	};
 };

@@ -48,6 +48,7 @@ struct ns16550_priv {
 	struct NS16550_plat plat;
 	int access_width;
 	struct clk *clk;
+	uint32_t fcrval;
 };
 
 static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
@@ -157,18 +158,13 @@ static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 {
 	unsigned int baud_divisor = ns16550_calc_divisor(cdev, baud_rate);
 	struct ns16550_priv *priv = to_ns16550_priv(cdev);
-	struct NS16550_plat *plat = &priv->plat;
 
 	ns16550_write(cdev, LCR_BKSE, lcr);
 	ns16550_write(cdev, baud_divisor & 0xff, dll);
 	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
 	ns16550_write(cdev, LCRVAL, lcr);
 	ns16550_write(cdev, MCRVAL, mcr);
-
-	if (plat->flags & NS16650_FLAG_DISABLE_FIFO)
-		ns16550_write(cdev, FCRVAL & ~FCR_FIFO_EN, fcr);
-	else
-		ns16550_write(cdev, FCRVAL, fcr);
+	ns16550_write(cdev, priv->fcrval, fcr);
 
 	return 0;
 }
@@ -315,6 +311,11 @@ static int ns16550_probe(struct device_d *dev)
 	cdev->getc = ns16550_getc;
 	cdev->setbrg = ns16550_setbaudrate;
 	cdev->linux_console_name = devtype->linux_console_name;
+
+	if (plat && (plat->flags & NS16650_FLAG_DISABLE_FIFO))
+		priv->fcrval = FCRVAL & ~FCR_FIFO_EN;
+	else
+		priv->fcrval = FCRVAL;
 
 	devtype->init_port(cdev);
 

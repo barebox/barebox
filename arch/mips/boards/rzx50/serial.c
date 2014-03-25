@@ -17,16 +17,11 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/devices.h>
-#include <mach/jz4750d_regs.h>
 
-static int rzx50_console_init(void)
+static int rzx50_hostname_init(void)
 {
 	barebox_set_hostname("rzx50");
 
-	/* Register the serial port */
-	jz_add_uart(DEVICE_ID_DYNAMIC, UART1_BASE, 12000000);
-
 	return 0;
 }
-console_initcall(rzx50_console_init);
+console_initcall(rzx50_hostname_init);

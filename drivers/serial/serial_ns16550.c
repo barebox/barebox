@@ -200,6 +200,16 @@ static void ns16550_omap_init_port(struct console_device *cdev)
 	ns16550_write(cdev, 0x00, omap_mdr1);
 }
 
+#define JZ_FCR_UME 0x10 /* Uart Module Enable */
+
+static void ns16550_jz_init_port(struct console_device *cdev)
+{
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	priv->fcrval |= JZ_FCR_UME;
+	ns16550_serial_init_port(cdev);
+}
+
 /*********** Exposed Functions **********************************/
 
 /**
@@ -262,6 +272,10 @@ static struct ns16550_drvdata ns16550_drvdata = {
 static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 	.init_port = ns16550_omap_init_port,
 	.linux_console_name = "ttyO",
+};
+
+static __maybe_unused struct ns16550_drvdata jz_drvdata = {
+	.init_port = ns16550_jz_init_port,
 };
 
 /**
@@ -361,6 +375,12 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	}, {
 		.compatible = "ti,omap4-uart",
 		.data = (unsigned long)&omap_drvdata,
+	},
+#endif
+#if IS_ENABLED(CONFIG_MACH_MIPS_XBURST)
+	{
+		.compatible = "ingenic,jz4740-uart",
+		.data = (unsigned long)&jz_drvdata,
 	},
 #endif
 	{

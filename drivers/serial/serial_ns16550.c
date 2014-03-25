@@ -192,7 +192,7 @@ static void ns16550_omap_init_port(struct console_device *cdev)
 	ns16550_serial_init_port(cdev);
 
 	ns16550_write(cdev, 0x07, omap_mdr1);	/* Disable */
-	ns16550_write(cdev, 0x00,  omap_mdr1);
+	ns16550_write(cdev, 0x00, omap_mdr1);
 }
 
 /*********** Exposed Functions **********************************/

@@ -181,6 +181,15 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 	ns16550_write(cdev, 0x00, ier);
 }
 
+static void ns16450_serial_init_port(struct console_device *cdev)
+{
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	priv->fcrval &= ~FCR_FIFO_EN;
+
+	ns16550_serial_init_port(cdev);
+}
+
 #define omap_mdr1		8
 
 static void ns16550_omap_init_port(struct console_device *cdev)
@@ -241,6 +250,10 @@ static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 
 	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
 }
+
+static struct ns16550_drvdata ns16450_drvdata = {
+	.init_port = ns16450_serial_init_port,
+};
 
 static struct ns16550_drvdata ns16550_drvdata = {
 	.init_port = ns16550_serial_init_port,
@@ -329,6 +342,9 @@ err:
 
 static struct of_device_id ns16550_serial_dt_ids[] = {
 	{
+		.compatible = "ns16450",
+		.data = (unsigned long)&ns16450_drvdata,
+	}, {
 		.compatible = "ns16550a",
 		.data = (unsigned long)&ns16550_drvdata,
 	}, {

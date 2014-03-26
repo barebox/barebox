@@ -59,9 +59,11 @@
 
 static __inline__ void PUTC_LL(char ch)
 {
+#ifdef CONFIG_DEBUG_LL
 	while (!(__raw_readb((u8 *)DEBUG_LL_UART_ADDR + UART_LSR) & UART_LSR_THRE))
 		;
 	__raw_writeb(ch, (u8 *)DEBUG_LL_UART_ADDR + UART_THR);
+#endif /* CONFIG_DEBUG_LL */
 }
 #else /* __ASSEMBLY__ */
 /*

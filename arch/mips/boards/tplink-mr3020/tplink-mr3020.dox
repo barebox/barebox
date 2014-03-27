@@ -1,0 +1,64 @@
+/** @page tplink-mr3020 TP-LINK MR3020 wireless router
+
+The router has
+@li Atheros ar9331 SoC;
+@li 32 MiB SDRAM;
+@li 4 MiB NOR type SPI Flash Memory;
+@li RS232 serial interface (LV-TTL levels on board!);
+@li 1 USB interface;
+@li 1 Ethernet interfaces;
+@li 802.11b/g/n (WiFi) interface;
+@li LEDs & buttons.
+
+The router uses U-Boot 1.1.4 as firmware.
+
+Barebox can be started from U-Boot using tftp.
+But you have to encode barebox image in a very special way.
+
+First obtain 'lzma' and 'mktplinkfw' utilities.
+
+The 'lzma' utility can be obtained in Debian/Ubuntu
+distro by installing lzma package.
+
+The 'mktplinkfw' utility can be obtained from openwrt, e.g.:
+
+@verbatim
+$ OWRTPREF=https://raw.githubusercontent.com/mirrors/openwrt/master
+$ curl -OL $OWRTPREF/tools/firmware-utils/src/mktplinkfw.c \
+        -OL $OWRTPREF/tools/firmware-utils/src/md5.c \
+        -OL $OWRTPREF/tools/firmware-utils/src/md5.h
+$ cc -o mktplinkfw mktplinkfw.c md5.c
+@endverbatim
+
+To convert your barebox.bin to U-Boot-loadable image (6F01A8C0.img)
+use this command sequence:
+
+@verbatim
+$ lzma -c -k barebox.bin > barebox.lzma
+$ ./FW/mktplinkfw -c -H 0x07200103 -W 1 -N TL-WR720N-v3 \
+    -s -F 4Mlzma -k barebox.lzma -o 6F01A8C0.img
+@endverbatim
+
+You must setup tftp-server on host 192.168.0.1.
+Put your 6F01A8C0.img to tftp-server directory
+(usual /tftpboot or /srv/tftp).
+Connect your board to your tftp-server network via Ethernet.
+
+Next, setup network on MR3020 and run 6F01A8C0.img, e.g.:
+@verbatim
+hornet> set ipaddr 192.168.0.2
+hornet> set serverip 192.168.0.1
+hornet> tftpboot 0x81000000 6F01A8C0.img
+hornet> bootm 0x81000000
+@endverbatim
+
+TP-LINK MR3020 links:
+@li http://www.tp-link.com/en/products/details/?model=TL-MR3020
+@li http://wiki.openwrt.org/toh/tp-link/tl-mr3020
+@li https://wikidevi.com/wiki/TP-LINK_TL-MR3020
+
+See also:
+@li http://www.eeboard.com/wp-content/uploads/downloads/2013/08/AR9331.pdf
+@li http://squonk42.github.io/TL-WR703N/
+
+*/

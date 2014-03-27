@@ -59,6 +59,7 @@ MIPS type:
 @li @subpage loongson_ls1b
 @li @subpage qemu_malta
 @li @subpage ritmix-rzx50
+@li @subpage tplink-mr3020
 
 */
 

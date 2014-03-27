@@ -4,4 +4,12 @@ config ARCH_TEXT_BASE
 	hex
 	default 0xa0800000
 
+choice
+	prompt "Board type"
+
+config BOARD_TPLINK_MR3020
+	bool "TP-LINK MR3020"
+
+endchoice
+
 endif

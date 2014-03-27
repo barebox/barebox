@@ -1,0 +1,16 @@
+/dts-v1/;
+
+#include <ar9331.dtsi>
+
+/ {
+	model = "TP-LINK MR3020";
+	compatible = "tplink,mr3020";
+
+	memory {
+		reg = <0x00000000 0x2000000>;
+	};
+};
+
+&serial0 {
+	status = "okay";
+};

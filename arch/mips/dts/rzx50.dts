@@ -9,10 +9,8 @@
 	memory {
 		reg = <0x00000000 0x4000000>;
 	};
+};
 
-	soc {
-		serial1: serial@b0031000 {
-			status = "okay";
-		};
-	};
+&serial1 {
+	status = "okay";
 };

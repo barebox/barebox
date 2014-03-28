@@ -1637,6 +1637,39 @@ static void update_ifs_map(void)
 	mapset(ifs, 2);			/* also flow through if quoted */
 }
 
+/*
+ * shell_expand - Expand shell variables in a string.
+ * @str:	The input string containing shell variables like
+ *		$var or ${var}
+ * Return:	The expanded string. Must be freed with free().
+ */
+char *shell_expand(char *str)
+{
+	struct p_context ctx = {};
+	o_string o = {};
+	char *res, *parsed;
+
+	remove_quotes_in_str(str);
+
+	o.quote = 1;
+
+	initialize_context(&ctx);
+
+	parse_string(&o, &ctx, str);
+
+	parsed = xmemdup(o.data, o.length + 1);
+	parsed[o.length] = 0;
+
+	res = insert_var_value(parsed);
+	if (res != parsed)
+		free(parsed);
+
+	free_pipe_list(ctx.list_head, 0);
+	b_free(&o);
+
+	return res;
+}
+
 /* most recursion does not come through here, the exeception is
  * from builtin_source() */
 static int parse_stream_outer(struct p_context *ctx, struct in_str *inp, int flag)

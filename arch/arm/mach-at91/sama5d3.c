@@ -348,11 +348,13 @@ static void __init sama5d3_register_clocks(void)
 
 	if ( cpu_is_sama5d33()
 	|| cpu_is_sama5d34()
-	|| cpu_is_sama5d35() )
+	|| cpu_is_sama5d35()
+	|| cpu_is_sama5d36())
 		clk_register(&macb0_clk);
 
 	if ( cpu_is_sama5d31()
-	|| cpu_is_sama5d35() )
+	|| cpu_is_sama5d35()
+	|| cpu_is_sama5d36())
 		clk_register(&macb1_clk);
 
 	if (!cpu_is_sama5d35())

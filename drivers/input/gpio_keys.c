@@ -121,7 +121,7 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device_d *dev)
 	struct device_node *npkey, *np = dev->device_node;
 	int i = 0, ret;
 
-	if (!IS_ENABLED(CONFIG_OFDEVICE))
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !IS_ENABLED(CONFIG_OF_GPIO))
 		return -ENODEV;
 
 	gk->nbuttons = of_get_child_count(np);

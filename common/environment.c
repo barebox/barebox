@@ -253,9 +253,9 @@ static int envfs_check_data(struct envfs_super *super, const void *buf, size_t s
 	return 0;
 }
 
-static int envfs_load_data(void *buf, size_t size, const char *dir, unsigned flags)
+static int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
+		const char *dir, unsigned flags)
 {
-	struct envfs_super super;
 	int fd, ret = 0;
 	char *str, *tmp;
 	int headerlen_full;
@@ -281,7 +281,7 @@ static int envfs_load_data(void *buf, size_t size, const char *dir, unsigned fla
 		inode_size = ENVFS_32(inode->size);
 		inode_headerlen = ENVFS_32(inode->headerlen);
 		namelen = strlen(inode->data) + 1;
-		if (super.major < 1)
+		if (super->major < 1)
 			inode_end = &inode_end_dummy;
 		else
 			inode_end = (struct envfs_inode_end *)(buf + PAD4(namelen));
@@ -363,7 +363,7 @@ int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags)
 	if (ret)
 		return ret;
 
-	ret = envfs_load_data(buf, size, dir, flags);
+	ret = envfs_load_data(super, buf, size, dir, flags);
 
 	return ret;
 }
@@ -415,7 +415,7 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 	if (ret)
 		goto out;
 
-	ret = envfs_load_data(buf, size, dir, flags);
+	ret = envfs_load_data(&super, buf, size, dir, flags);
 	if (ret)
 		goto out;
 

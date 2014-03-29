@@ -16,7 +16,7 @@
  */
 
 #include <linux/types.h>
-#include <linux/string.h>
+#include <string.h>
 #include <linux/ctype.h>
 #include <malloc.h>
 

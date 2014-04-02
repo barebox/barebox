@@ -20,6 +20,9 @@
 
 #define MALTA_PIIX4_UART0	0xb80003f8
 
+#define MALTA_CBUS_UART	0xbf000900
+#define MALTA_CBUS_UART_SHIFT	3
+
 /*
  * Reset register.
  */

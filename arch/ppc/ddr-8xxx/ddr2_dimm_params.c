@@ -193,17 +193,12 @@ compute_dimm_parameters(const generic_spd_eeprom_t *spdin,
 	const struct ddr2_spd_eeprom_s *spd = spdin;
 	uint32_t retval;
 
-	if (!spd->mem_type) {
-		memset(pdimm, 0, sizeof(struct dimm_params_s));
-		goto error;
-	}
-
 	if (spd->mem_type != SPD_MEMTYPE_DDR2)
 		goto error;
 
 	retval = ddr2_spd_checksum_pass(spd);
 	if (retval)
-		goto spd_err;
+		goto error;
 
 	/*
 	 * The part name in ASCII in the SPD EEPROM is not null terminated.
@@ -298,6 +293,4 @@ compute_dimm_parameters(const generic_spd_eeprom_t *spdin,
 	return 0;
 error:
 	return 1;
-spd_err:
-	return 2;
 }

@@ -25,8 +25,10 @@
 #define BR_PS_8				0x00000800	/* Port Size 8 bit */
 #define BR_PS_16			0x00001000	/* Port Size 16 bit */
 #define BR_PS_32			0x00001800	/* Port Size 32 bit */
+#define BR_DECC_SHIFT			9
 #define BR_V				0x00000001
 #define BR_V_SHIFT			0
+#define BR_MS_FCM			0x00000020
 #define BR_MS_UPMA			0x00000080
 
 /* Convert an address into the right format for the BR registers */
@@ -61,6 +63,7 @@
 #define FSL_LBC_MDR_OFFSET	0x88
 #define FSL_LBC_LTESR_OFFSET	0xB0
 #define FSL_LBC_LTEIR_OFFSET	0xB8
+#define FSL_LBC_LBCR_OFFSET	0xD0
 
 #define MxMR_MAD_MSK		0x0000003f /* Machine Address Mask         */
 #define MxMR_GPL_x4DIS		0x00040000 /* GPL_A4 Ouput Line Disable    */

@@ -39,6 +39,15 @@
 #define FSL_ERRATUM_A005125
 #define PPC_E500_DEBUG_TLB 0
 
+#elif defined(CONFIG_P1022)
+#define MAX_CPUS		2
+#define FSL_NUM_LAWS		12
+#define FSL_NUM_TSEC		2
+#define FSL_SEC_COMPAT		2
+#define PPC_E500_DEBUG_TLB	2
+#define FSL_TSECV2
+#define FSL_ERRATUM_A005125
+
 #else
 #error Processor type not defined for this platform
 #endif

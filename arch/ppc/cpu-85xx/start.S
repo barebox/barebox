@@ -172,7 +172,7 @@ _start_e500:
 	mtspr	HID1,r0
 
 	/* Enable Branch Prediction */
-#if defined(CFG_BTB)
+#if defined(CONFIG_BTB)
 	lis	r0,BUCSR_ENABLE@h
 	ori	r0,r0,BUCSR_ENABLE@l
 	mtspr	SPRN_BUCSR,r0

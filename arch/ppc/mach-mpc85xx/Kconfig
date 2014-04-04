@@ -1,17 +1,21 @@
 if ARCH_MPC85XX
 
 config MMU
-	default y if CMD_MEMTEST
+	default y
+
+config BTB
+	bool
+	default y if P2020RDB || P1022DS || DA923RC
 
 config TEXT_BASE
 	hex
-	default 0xeff80000 if P2020RDB
+	default 0xeff80000 if P2020RDB || P1022DS
 	default 0xfff80000 if DA923RC
 
 config RESET_VECTOR_ADDRESS
 	hex
 	default 0xfffffffc if DA923RC
-	default 0xeffffffc if P2020RDB
+	default 0xeffffffc if P2020RDB || P1022DS
 
 config MPC85xx
 	bool
@@ -33,6 +37,11 @@ config P2020RDB
 	help
 	  Say Y here if you are using the Freescale P2020RDB
 
+config P1022DS
+	bool "P1022DS"
+	help
+	  Say Y here if you are using the Freescale P1022DS
+
 config DA923RC
 	bool "DA923RC"
 	help
@@ -40,22 +49,33 @@ config DA923RC
 endchoice
 endif
 
+config FSL_ELBC
+	bool
+	default y if P2020RDB || P1022DS
+
+config DDR_SPD
+	bool
+	select CRC16
+	default y if DA923RC || P1022DS
+
 if P2020RDB
 config P2020
 	bool
 	default y
+endif
 
-config FSL_ELBC
+if P1022DS
+config P1022
+	bool
+	default y
+
+config FSL_DDR3
 	bool
 	default y
 endif
 
 if DA923RC
 config MPC8544
-	bool
-	default y
-
-config DDR_SPD
 	bool
 	default y
 

@@ -18,7 +18,6 @@
 #define __CONFIG_H
 
 #define CFG_SYS_CLK_FREQ	66666666
-#define CFG_BTB			/* toggle branch prediction */
 
 #define CFG_FLASH_CFI_WIDTH FLASH_CFI_16BIT
 #define CFG_CHIP_SELECTS_PER_CTRL   1

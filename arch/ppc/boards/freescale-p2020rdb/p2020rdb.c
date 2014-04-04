@@ -83,7 +83,10 @@ struct i2c_platform_data i2cplat = {
 static int devices_init(void)
 {
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, CFG_FLASH_BASE, 16 << 20, 0);
-
+	devfs_add_partition("nor0", 0xf60000, 0x8000, DEVFS_PARTITION_FIXED,
+			"env0");
+	devfs_add_partition("nor0", 0xf80000, 0x80000, DEVFS_PARTITION_FIXED,
+			"self0");
 	add_generic_device("i2c-fsl", 0, NULL, I2C1_BASE_ADDR,
 			0x100, IORESOURCE_MEM, &i2cplat);
 	add_generic_device("i2c-fsl", 1, NULL, I2C2_BASE_ADDR,
@@ -92,8 +95,6 @@ static int devices_init(void)
 	fsl_eth_init(2, &gfar_info[0]);
 	fsl_eth_init(3, &gfar_info[1]);
 
-	devfs_add_partition("nor0", 0xf80000, 0x80000, DEVFS_PARTITION_FIXED,
-			    "self0");
 	return 0;
 }
 
@@ -106,7 +107,7 @@ static struct NS16550_plat serial_plat = {
 
 static int p2020_console_init(void)
 {
-	barebox_set_model("Freescale P2020 RDB");
+	barebox_set_model("Freescale P2020RDB");
 	barebox_set_hostname("p2020rdb");
 
 	serial_plat.clock = fsl_get_bus_freq(0);

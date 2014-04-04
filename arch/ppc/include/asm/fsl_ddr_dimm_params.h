@@ -21,6 +21,8 @@ struct dimm_params_s {
 	uint32_t primary_sdram_width;
 	uint32_t ec_sdram_width;
 	uint32_t registered_dimm;
+	uint32_t device_width;
+	/* SDRAM device parameters */
 	uint32_t n_row_addr;
 	uint32_t n_col_addr;
 	uint32_t edc_config;		/* 0 = none, 1 = parity, 2 = ECC */
@@ -28,6 +30,11 @@ struct dimm_params_s {
 	uint32_t burst_lengths_bitmask;	/* BL=4 bit 2, BL=8 = bit 3 */
 	uint32_t row_density;
 	uint64_t base_address;
+	uint32_t mirrored_dimm;
+	uint32_t mtb_ps;
+	uint32_t ftb_10th_ps;
+	uint32_t taa_ps;
+	uint32_t tfaw_ps;
 	/* SDRAM clock periods */
 	uint32_t tCKmin_X_ps;
 	uint32_t tCKmin_X_minus_1_ps;
@@ -48,6 +55,7 @@ struct dimm_params_s {
 	uint32_t tRRD_ps;	/* maximum = 63750 ps */
 	uint32_t tRC_ps;	/* maximum = 254 ns + .75 ns = 254750 ps */
 	uint32_t refresh_rate_ps;
+	uint32_t extended_op_srt;
 	uint32_t tIS_ps;	/* byte 32, spd->ca_setup */
 	uint32_t tIH_ps;	/* byte 33, spd->ca_hold */
 	uint32_t tDS_ps;	/* byte 34, spd->data_setup */
@@ -55,6 +63,7 @@ struct dimm_params_s {
 	uint32_t tRTP_ps;	/* byte 38, spd->trtp */
 	uint32_t tDQSQ_max_ps;	/* byte 44, spd->tdqsq */
 	uint32_t tQHS_ps;	/* byte 45, spd->tqhs */
+	uint32_t rcw[16];
 };
 
 #endif

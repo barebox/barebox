@@ -47,6 +47,17 @@ struct fsl_ddr_cfg_regs_s {
 	uint32_t ddr_sdram_clk_cntl;
 	uint32_t ddr_init_addr;
 	uint32_t ddr_init_ext_addr;
+	uint32_t timing_cfg_4;
+	uint32_t timing_cfg_5;
+	uint32_t ddr_zq_cntl;
+	uint32_t ddr_wrlvl_cntl;
+	uint32_t ddr_wrlvl_cntl_2;
+	uint32_t ddr_wrlvl_cntl_3;
+	uint32_t ddr_sr_cntr;
+	uint32_t ddr_sdram_rcw_1;
+	uint32_t ddr_sdram_rcw_2;
+	uint32_t ddr_cdr1;
+	uint32_t ddr_cdr2;
 	uint32_t err_disable;
 	uint32_t err_int_en;
 	uint32_t debug[32];
@@ -82,8 +93,8 @@ uint32_t compute_fsl_memctl_config_regs(
 uint32_t compute_dimm_parameters(
 		const generic_spd_eeprom_t *spdin,
 		struct dimm_params_s *pdimm);
-uint32_t compute_lowest_common_dimm_parameters(
-		const struct dimm_params_s *dimm_params,
+void compute_lowest_common_dimm_parameters(
+		const struct fsl_ddr_info_s *pinfo,
 		struct common_timing_params_s *outpdimm,
 		uint32_t number_of_dimms);
 uint32_t populate_memctl_options(

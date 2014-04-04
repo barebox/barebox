@@ -1,0 +1,2 @@
+#!/bin/sh
+export bootargs="root=/dev/nfs rw ip=bootp console=ttyS0,115200"

@@ -147,7 +147,6 @@ static int loco_late_init(void)
 		/* so we have a DA9053 based board */
 		printf("MCIMX53-START board 1.0\n");
 		armlinux_set_revision(loco_system_rev);
-		return 0;
 	}
 
 	/* USB PWR enable */

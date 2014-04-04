@@ -268,8 +268,9 @@ static int erase_sector(struct m25p *flash, u32 offset, u32 command)
 static int m25p80_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
 	struct m25p *flash = mtd_to_m25p(mtd);
-	u32 addr, len;
+	u32 addr;
 	uint32_t rem;
+	uint64_t len;
 
 	dev_dbg(&flash->spi->dev, "%s at 0x%llx, len %lld\n",
 			__func__, (long long)instr->addr,
@@ -897,7 +898,7 @@ static int m25p_probe(struct device_d *dev)
 	flash->mtd.type = MTD_NORFLASH;
 	flash->mtd.writesize = 1;
 	flash->mtd.flags = MTD_CAP_NORFLASH;
-	flash->mtd.size = info->sector_size * info->n_sectors;
+	flash->mtd.size = (uint64_t)info->sector_size * info->n_sectors;
 	flash->mtd.erase = m25p80_erase;
 	flash->mtd.read = m25p80_read;
 

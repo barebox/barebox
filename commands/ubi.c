@@ -15,12 +15,12 @@ static int do_ubimkvol(int argc, char *argv[])
 {
 	struct ubi_mkvol_req req;
 	int fd, ret;
-	size_t size;
+	uint64_t size;
 
 	if (argc != 4)
 		return COMMAND_ERROR_USAGE;
 
-	size = strtoul_suffix(argv[3], NULL, 0);
+	size = strtoull_suffix(argv[3], NULL, 0);
 	req.name_len = min_t(int, strlen(argv[2]), UBI_VOL_NAME_MAX);
 	strncpy(req.name, argv[2], req.name_len);
 	req.name[req.name_len] = 0;

@@ -401,7 +401,7 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	mtd->cdev.mtd = mtd;
 
 	if (IS_ENABLED(CONFIG_PARAMETER)) {
-		dev_add_param_int_ro(&mtd->class_dev, "size", mtd->size, "%u");
+		dev_add_param_int_ro(&mtd->class_dev, "size", mtd->size, "%llu");
 		dev_add_param_int_ro(&mtd->class_dev, "erasesize", mtd->erasesize, "%u");
 		dev_add_param_int_ro(&mtd->class_dev, "writesize", mtd->oobsize, "%u");
 		dev_add_param_int_ro(&mtd->class_dev, "oobsize", mtd->oobsize, "%u");

@@ -222,7 +222,7 @@ static int ubi_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
 		break;
 	case UBI_IOCMKVOL:
 		if (!req->bytes)
-			req->bytes = ubi->avail_pebs * ubi->leb_size;
+			req->bytes = (__s64)ubi->avail_pebs * ubi->leb_size;
 		return ubi_create_volume(ubi, req);
 	};
 

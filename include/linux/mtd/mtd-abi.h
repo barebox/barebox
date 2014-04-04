@@ -9,6 +9,8 @@
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 
+#include <asm-generic/div64.h>
+
 struct erase_info_user {
 	uint32_t start;
 	uint32_t length;
@@ -73,7 +75,7 @@ enum {
 struct mtd_info_user {
 	uint8_t type;
 	uint32_t flags;
-	uint32_t size;	 // Total size of the MTD
+	uint64_t size;	 /* Total size of the MTD */
 	uint32_t erasesize;
 	uint32_t writesize;
 	uint32_t oobsize;   // Amount of OOB data per block (e.g. 16)
@@ -172,6 +174,14 @@ enum mtd_file_modes {
 	MTD_MODE_OTP_USER = MTD_OTP_USER,
 	MTD_MODE_RAW,
 };
+
+
+static inline uint32_t mtd_user_div_by_eb(uint64_t sz,
+	struct mtd_info_user *mtd_user)
+{
+	do_div(sz, mtd_user->erasesize);
+	return sz;
+}
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 

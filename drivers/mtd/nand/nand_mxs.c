@@ -33,6 +33,7 @@
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
 #include <asm/mmu.h>
+#include <mach/generic.h>
 
 #define	MX28_BLOCK_SFTRST				(1 << 31)
 #define	MX28_BLOCK_CLKGATE				(1 << 30)
@@ -233,18 +234,31 @@ static uint32_t mxs_nand_aux_status_offset(void)
 static inline uint32_t mxs_nand_get_ecc_strength(uint32_t page_data_size,
 						uint32_t page_oob_size)
 {
+	int ecc_chunk_count = mxs_nand_ecc_chunk_cnt(page_data_size);
+	int ecc_strength = 0;
+	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
+
+	/*
+	 * Possibly this if-else calculation may be removed since
+	 * ecc_strength calculated after it is taken from kernel driver
+	 * and therefore should work for all cases. But it was tested only
+	 * on devices with {data_size = 2046, oob_size = 64} and
+	 * {data_size = 4096, oob_size = 224} configuration.
+	 */
 	if (page_data_size == 2048)
 		return 8;
-
-	if (page_data_size == 4096) {
+	else if (page_data_size == 4096) {
 		if (page_oob_size == 128)
 			return 8;
-
 		if (page_oob_size == 218)
 			return 16;
 	}
 
-	return 0;
+	ecc_strength = ((page_oob_size - MXS_NAND_METADATA_SIZE) * 8)
+		/ (gf_len * ecc_chunk_count);
+
+	/* We need the minor even number. */
+	return rounddown(ecc_strength, 2);
 }
 
 static inline uint32_t mxs_nand_get_mark_offset(uint32_t page_data_size,
@@ -427,7 +441,13 @@ static int mxs_nand_device_ready(struct mtd_info *mtd)
 
 	if (nand_info->version > GPMI_VERSION_TYPE_MX23) {
 		tmp = readl(gpmi_regs + GPMI_STAT);
-		tmp >>= (GPMI_STAT_READY_BUSY_OFFSET + nand_info->cur_chip);
+		/* i.MX6 has only one R/B actual pin, so if there are several
+		   R/B signals they must be all connected to this pin */
+		if (cpu_is_mx6())
+			tmp >>= GPMI_STAT_READY_BUSY_OFFSET;
+		else
+			tmp >>= (GPMI_STAT_READY_BUSY_OFFSET +
+					 nand_info->cur_chip);
 	} else {
 		tmp = readl(gpmi_regs + GPMI_DEBUG);
 		tmp >>= (GPMI_DEBUG_READY0_OFFSET + nand_info->cur_chip);
@@ -1304,7 +1324,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand->ecc.strength	= 8;
 
 	/* first scan to find the device and get the page size */
-	err = nand_scan_ident(mtd, 1, NULL);
+	err = nand_scan_ident(mtd, 4, NULL);
 	if (err)
 		goto err2;
 

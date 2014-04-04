@@ -2,6 +2,11 @@
 #include <mach/devices.h>
 #include <mach/imx53-regs.h>
 
+static inline struct device_d *imx53_add_cspi(struct spi_imx_master *pdata)
+{
+	return imx_add_spi_imx35((void *)MX53_CSPI_BASE_ADDR, 0, pdata);
+}
+
 static inline struct device_d *imx53_add_spi0(struct spi_imx_master *pdata)
 {
 	return imx_add_spi_imx51((void *)MX53_ECSPI1_BASE_ADDR, 0, pdata);

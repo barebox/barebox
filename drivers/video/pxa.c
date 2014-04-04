@@ -536,13 +536,8 @@ static int pxafb_probe(struct device_d *dev)
 	return 0;
 }
 
-static void pxafb_remove(struct device_d *dev)
-{
-}
-
 static struct driver_d pxafb_driver = {
 	.name	= "pxafb",
 	.probe	= pxafb_probe,
-	.remove	= pxafb_remove,
 };
 device_platform_driver(pxafb_driver);

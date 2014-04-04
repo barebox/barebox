@@ -14,6 +14,29 @@ config CLOCKSOURCE_CLPS711X
 	bool
 	depends on ARCH_CLPS711X
 
+config CLOCKSOURCE_DUMMY
+	bool "Enable dummy software-only clocksource"
+	help
+	  When porting barebox to a new SoC there might be a case
+	  of broken or absent clocksource. This causes barebox serial
+	  console to be non functional.
+	  To solve the problem this software-only clocksource driver is used.
+	      WARNING!!! This clocksource doesn't provide correct timing.
+	  To adjust this clocksource please use CONFIG_CLOCKSOURCE_DUMMY_RATE.
+	  The bigger rate valuest makes clocksource "faster".
+	  It's possible to add this clocksource unconditionally.
+	  This clocksource starts very early (pure_initcall) so
+	  real clocksource will take over.
+	  This can help if initialization order is wrong so that
+	  the time functions are used before the real clocksource
+	  was initialized.
+
+config CLOCKSOURCE_DUMMY_RATE
+	int
+	prompt "dummy clocksource rate"
+	depends on CLOCKSOURCE_DUMMY
+	default 1000
+
 config CLOCKSOURCE_MVEBU
 	bool
 	depends on ARCH_MVEBU

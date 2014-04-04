@@ -54,6 +54,11 @@ struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
 		int (*get)(struct param_d *p, void *priv),
 		IPaddr_t *ip, void *priv);
 
+struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		u8 *mac, void *priv);
+
 int dev_add_param_fixed(struct device_d *dev, char *name, const char *value);
 
 void dev_remove_param(struct param_d *p);
@@ -122,6 +127,14 @@ static inline struct param_d *dev_add_param_ip(struct device_d *dev, const char 
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		IPaddr_t *ip, void *priv)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		u8 *mac, void *priv)
 {
 	return NULL;
 }

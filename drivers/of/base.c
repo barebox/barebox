@@ -1841,8 +1841,11 @@ int of_device_is_stdout_path(struct device_d *dev)
 	struct device_node *dn;
 	const char *name;
 
-	name = of_get_property(of_chosen, "linux,stdout-path", NULL);
-	if (name == NULL)
+	name = of_get_property(of_chosen, "stdout-path", NULL);
+	if (!name)
+		name = of_get_property(of_chosen, "linux,stdout-path", NULL);
+
+	if (!name)
 		return 0;
 
 	dn = of_find_node_by_path(name);

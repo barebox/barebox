@@ -419,15 +419,9 @@ static int ar231x_eth_probe(struct device_d *dev)
 	return 0;
 }
 
-static void ar231x_eth_remove(struct device_d *dev)
-{
-
-}
-
 static struct driver_d ar231x_eth_driver = {
 	.name = "ar231x_eth",
 	.probe = ar231x_eth_probe,
-	.remove = ar231x_eth_remove,
 };
 
 static int ar231x_eth_driver_init(void)

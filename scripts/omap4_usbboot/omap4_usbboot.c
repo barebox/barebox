@@ -35,16 +35,17 @@
 #define WHITE   8
 #define RED     1
 #define BLACK   0
-#define FORMAT        "%c[%d;%d;%dm"
-#define TARGET_FORMAT 0x1B, BRIGHT, RED+30, BLACK+40
-#define HOST_FORMAT   0x1B, RESET, WHITE+30, BLACK+40
-#define host_print(fmt, arg...)	printf(FORMAT fmt FORMAT, \
+#define TFORMAT       "%c[%d;%dm"
+#define HFORMAT       "%c[%dm"
+#define TARGET_FORMAT 0x1B, BRIGHT, RED+30
+#define HOST_FORMAT   0x1B, RESET
+#define host_print(fmt, arg...)	printf(HFORMAT fmt TFORMAT, \
 					HOST_FORMAT, ##arg, TARGET_FORMAT)
 
 void panic(struct termios *t_restore)
 {
 	tcsetattr(STDIN_FILENO, TCSANOW, t_restore);
-	printf(FORMAT, HOST_FORMAT);
+	printf(HFORMAT, HOST_FORMAT);
 	exit(1);
 }
 
@@ -354,7 +355,7 @@ int usb_boot(
 	tcgetattr(STDIN_FILENO, &vars.t_restore);
 	tn = vars.t_restore;
 	tn.c_lflag &= ~(ICANON | ECHO);
-	printf(FORMAT, TARGET_FORMAT);
+	printf(TFORMAT, TARGET_FORMAT);
 	tcsetattr(STDIN_FILENO, TCSANOW, &tn);
 	if (pthread_create(&thread, NULL, listenerTask, &vars))
 		host_print("listenerTask failed\n");
@@ -375,7 +376,7 @@ int usb_boot(
 	usb_close(usb);
 	pthread_mutex_destroy(&vars.usb_mutex);
 	tcsetattr(STDIN_FILENO, TCSANOW, &vars.t_restore);
-	printf(FORMAT, HOST_FORMAT);
+	printf(HFORMAT, HOST_FORMAT);
 	return 0;
 }
 
@@ -415,7 +416,7 @@ int main(int argc, char **argv)
 	sz = s.st_size;
 	close(fd);
 	argv++;
-	printf(FORMAT, HOST_FORMAT);
+	printf(HFORMAT, HOST_FORMAT);
 	for (once = 1;;) {
 		usb = usb_open(match_omap4_bootloader);
 		if (usb)

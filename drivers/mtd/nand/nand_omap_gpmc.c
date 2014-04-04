@@ -940,7 +940,7 @@ static int gpmc_nand_probe(struct device_d *pdev)
 
 	switch (pdata->device_width) {
 	case 0:
-		printk("probe buswidth\n");
+		dev_dbg(pdev, "probing buswidth\n");
 		nand->options |= NAND_BUSWIDTH_AUTO;
 		break;
 	case 8:

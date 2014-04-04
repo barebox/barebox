@@ -34,19 +34,19 @@ static inline struct clk *mxs_clk_fixed(const char *name, int rate)
 static inline struct clk *mxs_clk_gate(const char *name,
 			const char *parent_name, void __iomem *reg, u8 shift)
 {
-	return clk_gate_inverted(name, parent_name, reg, shift);
+	return clk_gate_inverted(name, parent_name, reg, shift, 0);
 }
 
 static inline struct clk *mxs_clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parent_names, int num_parents)
 {
-	return clk_mux(name, reg, shift, width, parent_names, num_parents);
+	return clk_mux(name, reg, shift, width, parent_names, num_parents, 0);
 }
 
 static inline struct clk *mxs_clk_fixed_factor(const char *name,
 		const char *parent_name, unsigned int mult, unsigned int div)
 {
-	return clk_fixed_factor(name, parent_name, mult, div);
+	return clk_fixed_factor(name, parent_name, mult, div, 0);
 }
 
 #endif /* __MXS_CLK_H */

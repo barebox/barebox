@@ -128,7 +128,7 @@ int __init mx28_clocks_init(void __iomem *regs)
 	clks[fec] = mxs_clk_gate("fec", "fec_sleep", ENET, 30);
 	clks[usb0_phy] = mxs_clk_gate("usb0_phy", "pll0", PLL0CTRL0, 18);
 	clks[usb1_phy] = mxs_clk_gate("usb1_phy", "pll1", PLL1CTRL0, 18);
-	clks[enet_out] = clk_gate("enet_out", "pll2", ENET, 18);
+	clks[enet_out] = clk_gate("enet_out", "pll2", ENET, 18, 0);
 	clks[lcdif_comp] = mxs_clk_lcdif("lcdif_comp", clks[ref_pix],
 			clks[lcdif_div], clks[lcdif]);
 

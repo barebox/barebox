@@ -85,7 +85,6 @@ static struct fb_videomode s3c24x0_fb_modes[] = {
 		.pixclock	= 115913,
 		.sync		= FB_SYNC_USE_PWREN,
 		.vmode		= FB_VMODE_NONINTERLACED,
-		.flag		= 0,
 	},
 #endif
 #ifdef CONFIG_MINI2440_VIDEO_A70

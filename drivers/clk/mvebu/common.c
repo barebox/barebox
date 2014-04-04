@@ -87,7 +87,7 @@ int mvebu_coreclk_probe(struct device_d *dev)
 					      2+n, &rclk_name);
 		desc->get_clk_ratio(base, desc->ratios[n].id, &mult, &div);
 		clk_data.clks[2+n] = clk_fixed_factor(rclk_name, cpuclk_name,
-						mult, div);
+						mult, div, 0);
 		WARN_ON(IS_ERR(clk_data.clks[2+n]));
 	};
 
@@ -188,7 +188,7 @@ int mvebu_clk_gating_probe(struct device_d *dev)
 			(desc[n].parent) ? desc[n].parent : default_parent;
 		gate->bit_idx = desc[n].bit_idx;
 		gate->clk = clk_gate(desc[n].name, parent,
-				base, desc[n].bit_idx);
+				base, desc[n].bit_idx, 0);
 		WARN_ON(IS_ERR(gate->clk));
 	}
 

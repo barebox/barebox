@@ -140,12 +140,12 @@ struct clk *_tegra_clk_register_periph(const char *name,
 	}
 
 	periph->mux = clk_mux_alloc(NULL, clk_base + reg_offset, 30, 2,
-				    parent_names, num_parents);
+				    parent_names, num_parents, 0);
 	if (!periph->mux)
 		goto out_mux;
 
 	periph->gate = clk_gate_alloc(NULL, NULL, clk_base + 0x10 +
-				      ((id >> 3) & 0xc), id & 0x1f);
+				      ((id >> 3) & 0xc), id & 0x1f, 0);
 	if (!periph->gate)
 		goto out_gate;
 

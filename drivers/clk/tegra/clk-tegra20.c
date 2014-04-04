@@ -62,7 +62,7 @@ static void tegra20_osc_clk_init(void)
 	clks[clk_32k] = clk_fixed("clk_32k", 32768);
 
 	clks[pll_ref] = clk_fixed_factor("pll_ref", "clk_m", 1,
-					 get_pll_ref_div());
+					 get_pll_ref_div(), 0);
 }
 
 /* PLL frequency tables */

@@ -133,6 +133,7 @@ static inline int i2c_register_board_info(int busnum,
 #endif
 extern int i2c_add_numbered_adapter(struct i2c_adapter *adapter);
 struct i2c_adapter *i2c_get_adapter(int busnum);
+struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node);
 
 /* For devices that use several addresses, use i2c_new_dummy() to make
  * client handles for the extra addresses.

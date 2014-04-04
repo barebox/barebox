@@ -51,12 +51,15 @@ static int clk_mux_set_parent(struct clk *clk, u8 idx)
 }
 
 static struct clk_ops clk_mux_ops = {
+	.set_rate = clk_parent_set_rate,
+	.round_rate = clk_parent_round_rate,
 	.get_parent = clk_mux_get_parent,
 	.set_parent = clk_mux_set_parent,
 };
 
 struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents)
+		u8 shift, u8 width, const char **parents, u8 num_parents,
+		unsigned flags)
 {
 	struct clk_mux *m = xzalloc(sizeof(*m));
 
@@ -65,6 +68,7 @@ struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
 	m->width = width;
 	m->clk.ops = &clk_mux_ops;
 	m->clk.name = name;
+	m->clk.flags = flags;
 	m->clk.parent_names = parents;
 	m->clk.num_parents = num_parents;
 
@@ -79,12 +83,12 @@ void clk_mux_free(struct clk *clk_mux)
 }
 
 struct clk *clk_mux(const char *name, void __iomem *reg,
-		u8 shift, u8 width, const char **parents, u8 num_parents)
+		u8 shift, u8 width, const char **parents, u8 num_parents, unsigned flags)
 {
 	struct clk *m;
 	int ret;
 
-	m = clk_mux_alloc(name, reg, shift, width, parents, num_parents);
+	m = clk_mux_alloc(name, reg, shift, width, parents, num_parents, flags);
 
 	ret = clk_register(m);
 	if (ret) {

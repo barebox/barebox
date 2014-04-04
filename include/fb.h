@@ -4,6 +4,7 @@
 #include <ioctl.h>
 #include <param.h>
 #include <driver.h>
+#include <linux/bitops.h>
 
 #define FB_VISUAL_TRUECOLOR		2	/* True color	*/
 #define FB_VISUAL_PSEUDOCOLOR		3	/* Pseudo color (like atari) */
@@ -32,6 +33,16 @@
 #define PICOS2KHZ(a) (1000000000UL/(a))
 #define KHZ2PICOS(a) (1000000000UL/(a))
 
+enum display_flags {
+	/* data enable flag */
+	DISPLAY_FLAGS_DE_LOW		= BIT(4),
+	DISPLAY_FLAGS_DE_HIGH		= BIT(5),
+	/* drive data on pos. edge */
+	DISPLAY_FLAGS_PIXDATA_POSEDGE	= BIT(6),
+	/* drive data on neg. edge */
+	DISPLAY_FLAGS_PIXDATA_NEGEDGE	= BIT(7),
+};
+
 struct fb_videomode {
 	const char *name;	/* optional */
 	u32 refresh;		/* optional */
@@ -46,7 +57,7 @@ struct fb_videomode {
 	u32 vsync_len;
 	u32 sync;
 	u32 vmode;
-	u32 flag;
+	u32 display_flags;
 };
 
 /* Interpretation of offset for color fields: All offsets are from the right,
@@ -77,10 +88,30 @@ struct fb_ops {
 	int (*fb_activate_var)(struct fb_info *info);
 };
 
+/*
+ * This describes all timing settings a display provides.
+ * The native_mode is the default setting for this display.
+ * Drivers that can handle multiple videomodes should work with this struct and
+ * convert each entry to the desired end result.
+ */
+struct display_timings {
+	unsigned int native_mode;
+
+	unsigned int num_modes;
+	struct fb_videomode *modes;
+};
+
+struct i2c_adapter;
+
 struct fb_info {
 	struct fb_videomode *mode;
-	struct fb_videomode *mode_list;
-	unsigned num_modes;
+	struct display_timings modes;
+
+	int current_mode;
+
+	void *edid_data;
+	struct i2c_adapter *edid_i2c_adapter;
+	struct display_timings edid_modes;
 
 	struct fb_ops *fbops;
 	struct device_d dev;		/* This is this fb device */
@@ -111,6 +142,8 @@ struct fb_info {
 					 */
 };
 
+struct display_timings *of_get_display_timings(struct device_node *np);
+
 int register_framebuffer(struct fb_info *info);
 
 #define FBIOGET_SCREENINFO	_IOR('F', 1, loff_t)
@@ -123,5 +156,8 @@ extern struct bus_type fb_bus;
 
 int fb_register_simplefb(struct fb_info *info);
 
-#endif /* __FB_H */
+int edid_to_display_timings(struct display_timings *, unsigned char *edid);
+void *edid_read_i2c(struct i2c_adapter *adapter);
+void fb_edid_add_modes(struct fb_info *info);
 
+#endif /* __FB_H */

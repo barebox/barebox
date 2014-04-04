@@ -1,0 +1,149 @@
+/*
+ * Copyright 2013 Michael Burkey
+ * Based on code written by Christian Hemp, Phytec Messtechnik GmbH
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ *
+ *
+ * 		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &usdhc2, "partname:barebox-environment";
+		};
+
+ *
+ */
+
+/dts-v1/;
+#include "imx6q-var-som.dtsi"
+
+/ {
+	model = "Variscite i.MX6 Quad Custom Carrier-Board";
+	compatible = "variscite,imx6q-custom", "variscite,imx6q-som", "fsl,imx6q";
+
+	chosen {
+		linux,stdout-path = &uart1;
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &gpmi, "partname:barebox-environment";
+		};
+
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	imx6q-variscite-custom {
+		pinctrl_i2c1: i2c1grp {
+			fsl,pins = <MX6QDL_I2C1_PINGRP1>;
+		};
+
+		pinctrl_i2c3: i2c3grp {
+			fsl,pins = <MX6QDL_I2C3_PINGRP3>;
+		};
+
+		pinctrl_usdhc2: usdhc2grp {
+			fsl,pins = <MX6QDL_USDHC2_PINGRP_D4>;
+		};
+
+		pinctrl_usdhc2_cd: usdhc2cd {
+			fsl,pins = <
+				MX6QDL_PAD_KEY_COL4__GPIO4_IO14	 0x80000000
+				MX6QDL_PAD_KEY_ROW4__GPIO4_IO15	 0x80000000
+			>;
+		};
+
+		pinctrl_uart1: uart1grp {
+			fsl,pins = <MX6QDL_UART1_PINGRP1>;
+		};
+	};
+};
+
+&ldb {
+	status = "okay";
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		status = "okay";
+		display-timings {
+			native-mode = &claawvga;
+			claawvga: claawvga {
+				native-mode;
+				clock-frequency = <35714000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <28>;
+				hfront-porch = <17>;
+				vback-porch = <13>;
+				vfront-porch = <20>;
+				hsync-len = <20>;
+				vsync-len = <13>;
+			};
+		};
+	};
+};
+
+&uart1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+};
+
+&usdhc2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc2>;
+	cd-gpios = <&gpio4 14 0>;
+	wp-gpios = <&gpio4 15 0>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x200000>;
+	};
+
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x200000 0x20000>;
+	};
+
+	partition@2 {
+		label = "kernel";
+		reg = <0x220000 0x600000>;
+	};
+
+	partition@3 {
+		label = "rootfs";
+		reg = <0x820000 0x18000000>;
+	};
+};
+
+&usbh1 {
+	status = "okay";
+	disable-over-current;
+	dr_mode = "host";
+	phy_type = "utmi";
+};
+
+&i2c1 {
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1>;
+};
+
+&i2c3 {
+	status = "okay";
+	clock-frequency = <1000000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+};

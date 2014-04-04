@@ -77,11 +77,19 @@ config DRIVER_VIDEO_BCM2835
 	help
 	  Add support for the BCM2835/VideoCore frame buffer device.
 
+source drivers/video/imx-ipu-v3/Kconfig
+
 config DRIVER_VIDEO_SIMPLEFB
 	bool "Simple framebuffer support"
 	depends on OFTREE
 	help
 	  Add support for setting up the kernel's simple framebuffer driver
 	  based on the active barebox framebuffer.
+
+config DRIVER_VIDEO_EDID
+	bool "Add EDID support"
+	help
+	  This enabled support for reading and parsing EDID data from an attached
+	  monitor.
 
 endif

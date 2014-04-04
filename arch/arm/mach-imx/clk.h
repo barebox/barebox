@@ -4,25 +4,39 @@
 static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width)
 {
-	return clk_divider(name, parent, reg, shift, width);
+	return clk_divider(name, parent, reg, shift, width, CLK_SET_RATE_PARENT);
+}
+
+static inline struct clk *imx_clk_divider_table(const char *name,
+		const char *parent, void __iomem *reg, u8 shift, u8 width,
+		const struct clk_div_table *table)
+{
+	return clk_divider_table(name, parent, reg, shift, width, table,
+			CLK_SET_RATE_PARENT);
 }
 
 static inline struct clk *imx_clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div)
 {
-	return clk_fixed_factor(name, parent, mult, div);
+	return clk_fixed_factor(name, parent, mult, div, CLK_SET_RATE_PARENT);
 }
 
 static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents)
 {
-	return clk_mux(name, reg, shift, width, parents, num_parents);
+	return clk_mux(name, reg, shift, width, parents, num_parents, 0);
+}
+
+static inline struct clk *imx_clk_mux_p(const char *name, void __iomem *reg,
+		u8 shift, u8 width, const char **parents, u8 num_parents)
+{
+	return clk_mux(name, reg, shift, width, parents, num_parents, CLK_SET_RATE_PARENT);
 }
 
 static inline struct clk *imx_clk_gate(const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
 {
-	return clk_gate(name, parent, reg, shift);
+	return clk_gate(name, parent, reg, shift, CLK_SET_RATE_PARENT);
 }
 
 struct clk *imx_clk_pllv1(const char *name, const char *parent,

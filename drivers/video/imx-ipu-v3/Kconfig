@@ -1,0 +1,14 @@
+config DRIVER_VIDEO_IMX_IPUV3
+	bool "i.MX IPUv3 driver"
+	help
+	  Support the IPUv3 found on Freescale i.MX51/53/6 SoCs
+
+if DRIVER_VIDEO_IMX_IPUV3
+
+config DRIVER_VIDEO_IMX_IPUV3_LVDS
+	bool "IPUv3 LVDS support"
+
+config DRIVER_VIDEO_IMX_IPUV3_HDMI
+	bool "IPUv3 HDMI support"
+
+endif

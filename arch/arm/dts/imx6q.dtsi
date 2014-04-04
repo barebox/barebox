@@ -16,6 +16,7 @@
 / {
 	aliases {
 		spi4 = &ecspi5;
+		ipu1 = &ipu2;
 	};
 
 	cpus {
@@ -155,6 +156,10 @@
 			resets = <&src 4>;
 		};
 	};
+};
+
+&hdmi {
+	compatible = "fsl,imx6q-hdmi";
 };
 
 &ldb {

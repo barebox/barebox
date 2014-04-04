@@ -77,13 +77,15 @@ static int clk_gate_is_enabled(struct clk *clk)
 }
 
 static struct clk_ops clk_gate_ops = {
+	.set_rate = clk_parent_set_rate,
+	.round_rate = clk_parent_round_rate,
 	.enable = clk_gate_enable,
 	.disable = clk_gate_disable,
 	.is_enabled = clk_gate_is_enabled,
 };
 
 struct clk *clk_gate_alloc(const char *name, const char *parent,
-		void __iomem *reg, u8 shift)
+		void __iomem *reg, u8 shift, unsigned flags)
 {
 	struct clk_gate *g = xzalloc(sizeof(*g));
 
@@ -92,6 +94,7 @@ struct clk *clk_gate_alloc(const char *name, const char *parent,
 	g->shift = shift;
 	g->clk.ops = &clk_gate_ops;
 	g->clk.name = name;
+	g->clk.flags = flags;
 	g->clk.parent_names = &g->parent;
 	g->clk.num_parents = 1;
 
@@ -106,12 +109,12 @@ void clk_gate_free(struct clk *clk_gate)
 }
 
 struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
-		u8 shift)
+		u8 shift, unsigned flags)
 {
 	struct clk *g;
 	int ret;
 
-	g = clk_gate_alloc(name , parent, reg, shift);
+	g = clk_gate_alloc(name , parent, reg, shift, flags);
 
 	ret = clk_register(g);
 	if (ret) {
@@ -123,12 +126,12 @@ struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
 }
 
 struct clk *clk_gate_inverted(const char *name, const char *parent,
-		void __iomem *reg, u8 shift)
+		void __iomem *reg, u8 shift, unsigned flags)
 {
 	struct clk *clk;
 	struct clk_gate *g;
 
-	clk = clk_gate(name, parent, reg, shift);
+	clk = clk_gate(name, parent, reg, shift, flags);
 	if (IS_ERR(clk))
 		return clk;
 

@@ -1,4 +1,6 @@
 obj-$(CONFIG_VIDEO) += fb.o
+obj-$(CONFIG_DRIVER_VIDEO_EDID) += edid.o
+obj-$(CONFIG_OFDEVICE) += of_display_timing.o
 
 obj-$(CONFIG_DRIVER_VIDEO_ATMEL) += atmel_lcdfb.o atmel_lcdfb_core.o
 obj-$(CONFIG_DRIVER_VIDEO_ATMEL_HLCD) += atmel_hlcdfb.o atmel_lcdfb_core.o
@@ -11,3 +13,4 @@ obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o
 obj-$(CONFIG_DRIVER_VIDEO_OMAP) += omap.o
 obj-$(CONFIG_DRIVER_VIDEO_BCM2835) += bcm2835.o
 obj-$(CONFIG_DRIVER_VIDEO_SIMPLEFB) += simplefb.o
+obj-$(CONFIG_DRIVER_VIDEO_IMX_IPUV3) += imx-ipu-v3/

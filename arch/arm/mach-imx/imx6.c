@@ -15,6 +15,7 @@
 #include <common.h>
 #include <io.h>
 #include <sizes.h>
+#include <mfd/imx6q-iomuxc-gpr.h>
 #include <mach/imx6.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
@@ -28,7 +29,9 @@ void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
 	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
+	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
 	int is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
+	uint32_t val;
 
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -87,6 +90,22 @@ void imx6_init_lowlevel(void)
 			BM_ANADIG_PFD_528_PFD0_CLKGATE,
 			MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
 
+	val = readl(iomux + IOMUXC_GPR4);
+	val |= IMX6Q_GPR4_VPU_WR_CACHE_SEL | IMX6Q_GPR4_VPU_RD_CACHE_SEL |
+		IMX6Q_GPR4_VPU_P_WR_CACHE_VAL | IMX6Q_GPR4_VPU_P_RD_CACHE_VAL_MASK |
+		IMX6Q_GPR4_IPU_WR_CACHE_CTL | IMX6Q_GPR4_IPU_RD_CACHE_CTL;
+	writel(val, iomux + IOMUXC_GPR4);
+
+	/* Increase IPU read QoS priority */
+	val = readl(iomux + IOMUXC_GPR6);
+	val &= ~(IMX6Q_GPR6_IPU1_ID00_RD_QOS_MASK | IMX6Q_GPR6_IPU1_ID01_RD_QOS_MASK);
+	val |= (0xf << 16) | (0x7 << 20);
+	writel(val, iomux + IOMUXC_GPR6);
+
+	val = readl(iomux + IOMUXC_GPR7);
+	val &= ~(IMX6Q_GPR7_IPU2_ID00_RD_QOS_MASK | IMX6Q_GPR7_IPU2_ID01_RD_QOS_MASK);
+	val |= (0xf << 16) | (0x7 << 20);
+	writel(val, iomux + IOMUXC_GPR7);
 }
 
 int imx6_init(void)

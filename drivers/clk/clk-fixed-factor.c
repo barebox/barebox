@@ -35,12 +35,42 @@ static unsigned long clk_fixed_factor_recalc_rate(struct clk *clk,
 	return (parent_rate / f->div) * f->mult;
 }
 
+static long clk_factor_round_rate(struct clk *clk, unsigned long rate,
+		unsigned long *prate)
+{
+	struct clk_fixed_factor *fix = container_of(clk, struct clk_fixed_factor, clk);
+
+	if (clk->flags & CLK_SET_RATE_PARENT) {
+		unsigned long best_parent;
+
+		best_parent = (rate / fix->mult) * fix->div;
+		*prate = clk_round_rate(clk_get_parent(clk), best_parent);
+	}
+
+	return (*prate / fix->div) * fix->mult;
+}
+
+static int clk_factor_set_rate(struct clk *clk, unsigned long rate,
+		unsigned long parent_rate)
+{
+	struct clk_fixed_factor *fix = container_of(clk, struct clk_fixed_factor, clk);
+
+	if (clk->flags & CLK_SET_RATE_PARENT) {
+		printk("%s: %ld -> parent %ld\n", __func__, rate, rate * fix->div / fix->mult);
+		return clk_set_rate(clk_get_parent(clk), rate * fix->div / fix->mult);
+	}
+
+	return 0;
+}
+
 static struct clk_ops clk_fixed_factor_ops = {
+	.set_rate = clk_factor_set_rate,
+	.round_rate = clk_factor_round_rate,
 	.recalc_rate = clk_fixed_factor_recalc_rate,
 };
 
 struct clk *clk_fixed_factor(const char *name,
-		const char *parent, unsigned int mult, unsigned int div)
+		const char *parent, unsigned int mult, unsigned int div, unsigned flags)
 {
 	struct clk_fixed_factor *f = xzalloc(sizeof(*f));
 	int ret;
@@ -50,6 +80,7 @@ struct clk *clk_fixed_factor(const char *name,
 	f->parent = parent;
 	f->clk.ops = &clk_fixed_factor_ops;
 	f->clk.name = name;
+	f->clk.flags = flags;
 	f->clk.parent_names = &f->parent;
 	f->clk.num_parents = 1;
 

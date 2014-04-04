@@ -75,7 +75,6 @@ static struct fb_videomode falconwing_vmode = {
 	.lower_margin = 8,
 	.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 	.vmode = FB_VMODE_NONINTERLACED,
-	.flag = 0,
 };
 
 #define MAX_FB_SIZE SZ_1M

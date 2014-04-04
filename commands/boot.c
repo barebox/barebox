@@ -106,6 +106,11 @@ static void bootsource_action(struct menu *m, struct menu_entry *me)
 static int bootscript_create_entry(struct blspec *blspec, const char *name)
 {
 	struct blspec_entry *be;
+	enum filetype type;
+
+	type = file_name_detect_type(name);
+	if (type != filetype_sh)
+		return -EINVAL;
 
 	be = blspec_entry_alloc(blspec);
 	be->me.type = MENU_ENTRY_NORMAL;
@@ -238,7 +243,7 @@ static struct blspec *bootentries_collect(char *entries[], int num_entries)
 static void bootsources_menu(char *entries[], int num_entries)
 {
 	struct blspec *blspec = NULL;
-	struct blspec_entry *entry;
+	struct blspec_entry *entry, *entry_default;
 	struct menu_entry *back_entry;
 
 	if (!IS_ENABLED(CONFIG_MENU)) {
@@ -247,10 +252,16 @@ static void bootsources_menu(char *entries[], int num_entries)
 	}
 
 	blspec = bootentries_collect(entries, num_entries);
+	if (blspec)
+		return;
+
+	entry_default = blspec_entry_default(blspec);
 
 	blspec_for_each_entry(blspec, entry) {
 		entry->me.action = bootsource_action;
 		menu_add_entry(blspec->menu, &entry->me);
+		if (entry == entry_default)
+			menu_set_selected_entry(blspec->menu, &entry->me);
 	}
 
 	back_entry = xzalloc(sizeof(*back_entry));
@@ -275,14 +286,23 @@ static void bootsources_menu(char *entries[], int num_entries)
 static void bootsources_list(char *entries[], int num_entries)
 {
 	struct blspec *blspec;
-	struct blspec_entry *entry;
+	struct blspec_entry *entry, *entry_default;
 
 	blspec = bootentries_collect(entries, num_entries);
+	if (!blspec)
+		return;
 
-	printf("%-20s %-20s  %s\n", "device", "hwdevice", "title");
-	printf("%-20s %-20s  %s\n", "------", "--------", "-----");
+	entry_default = blspec_entry_default(blspec);
+
+	printf("  %-20s %-20s  %s\n", "device", "hwdevice", "title");
+	printf("  %-20s %-20s  %s\n", "------", "--------", "-----");
 
 	blspec_for_each_entry(blspec, entry) {
+		if (entry == entry_default)
+			printf("* ");
+		else
+			printf("  ");
+
 		if (entry->scriptpath)
 			printf("%-40s   %s\n", basename(entry->scriptpath), entry->me.display);
 		else
@@ -307,7 +327,7 @@ static void bootsources_list(char *entries[], int num_entries)
 static int boot(const char *name)
 {
 	struct blspec *blspec;
-	struct blspec_entry *entry;
+	struct blspec_entry *entry, *entry_default;
 	int ret;
 
 	blspec = blspec_alloc();
@@ -320,7 +340,19 @@ static int boot(const char *name)
 		return -ENOENT;
 	}
 
+	entry_default = blspec_entry_default(blspec);
+	if (entry_default) {
+		ret = boot_entry(entry_default);
+		if (!ret)
+			return ret;
+		printf("booting %s failed: %s\n", entry_default->me.display,
+				strerror(-ret));
+	}
+
 	blspec_for_each_entry(blspec, entry) {
+		if (entry == entry_default)
+			continue;
+
 		printf("booting %s\n", entry->me.display);
 		ret = boot_entry(entry);
 		if (!ret)
@@ -333,9 +365,11 @@ static int boot(const char *name)
 
 static int do_boot(int argc, char *argv[])
 {
-	const char *sources = NULL;
-	char *source, *freep;
+	char *freep = NULL;
 	int opt, ret = 0, do_list = 0, do_menu = 0;
+	char **sources;
+	int num_sources;
+	int i;
 
 	verbose = 0;
 	dryrun = 0;
@@ -361,47 +395,62 @@ static int do_boot(int argc, char *argv[])
 		}
 	}
 
+	if (optind < argc) {
+		num_sources = argc - optind;
+		sources = xmemdup(&argv[optind], sizeof(char *) * num_sources);
+	} else {
+		const char *def;
+		char *sep;
+
+		def = getenv("global.boot.default");
+		if (!def)
+			return 0;
+
+		sep = freep = xstrdup(def);
+
+		num_sources = 0;
+
+		while (1) {
+			num_sources++;
+
+			sep = strchr(sep, ' ');
+			if (!sep)
+				break;
+			sep++;
+		}
+
+		sources = xmalloc(sizeof(char *) * num_sources);
+
+		sep = freep;
+
+		for (i = 0; i < num_sources; i++) {
+			sources[i] = sep;
+			sep = strchr(sep, ' ');
+			if (sep)
+				*sep = 0;
+			sep++;
+		}
+	}
+
 	if (do_list) {
-		bootsources_list(&argv[optind], argc - optind);
-		return 0;
+		bootsources_list(sources, num_sources);
+		goto out;
 	}
 
 	if (do_menu) {
-		bootsources_menu(&argv[optind], argc - optind);
-		return 0;
+		bootsources_menu(sources, num_sources);
+		goto out;
 	}
 
-	if (optind < argc) {
-		while (optind < argc) {
-			source = argv[optind];
-			optind++;
-			ret = boot(source);
-			if (!ret)
-				break;
-		}
-		return ret;
-	}
-
-	sources = getenv("global.boot.default");
-	if (!sources)
-		return 0;
-
-	freep = source = xstrdup(sources);
-
-	while (1) {
-		char *sep = strchr(source, ' ');
-		if (sep)
-			*sep = 0;
-		ret = boot(source);
+	for (i = 0; i < num_sources; i++) {
+		ret = boot(sources[i]);
 		if (!ret)
 			break;
-
-		if (sep)
-			source = sep + 1;
-		else
-			break;
+		goto out;
 	}
 
+out:
+	free(sources);
 	free(freep);
 
 	return ret;

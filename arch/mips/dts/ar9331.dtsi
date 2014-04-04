@@ -1,0 +1,26 @@
+#include <dt-bindings/clock/ar933x-clk.h>
+
+#include "skeleton.dtsi"
+
+/ {
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		device_type = "soc";
+		ranges;
+
+		serial0: serial@b8020000 {
+			compatible = "qca,ar9330-uart";
+			reg = <0xb8020000 0x14>;
+			clocks = <&ar9331_clk AR933X_CLK_UART>;
+			status = "disabled";
+		};
+
+		ar9331_clk: clock {
+			compatible = "qca,ar933x-clk";
+			reg = <0xb8050000 0x48>;
+			#clock-cells = <1>;
+		};
+	};
+};

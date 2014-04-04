@@ -1,0 +1,35 @@
+#include "skeleton.dtsi"
+
+/ {
+	soc {
+		compatible = "simple-bus";
+		model = "Ingenic JZ4755";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		serial0: serial@b0030000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0xb0030000 0x20>;
+			reg-shift = <2>;
+			clock-frequency = <12000000>;
+			status = "disabled";
+		};
+
+		serial1: serial@b0031000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0xb0031000 0x20>;
+			reg-shift = <2>;
+			clock-frequency = <12000000>;
+			status = "disabled";
+		};
+
+		serial2: serial@b0032000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0xb0032000 0x20>;
+			reg-shift = <2>;
+			clock-frequency = <12000000>;
+			status = "disabled";
+		};
+	};
+};

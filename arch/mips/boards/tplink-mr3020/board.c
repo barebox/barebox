@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2014 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -17,16 +17,11 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/devices.h>
-#include <mach/jz4750d_regs.h>
 
-static int rzx50_console_init(void)
+static int model_hostname_init(void)
 {
-	barebox_set_hostname("rzx50");
-
-	/* Register the serial port */
-	jz_add_uart(DEVICE_ID_DYNAMIC, UART1_BASE, 12000000);
+	barebox_set_hostname("mr3020");
 
 	return 0;
 }
-console_initcall(rzx50_console_init);
+postcore_initcall(model_hostname_init);

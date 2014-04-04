@@ -25,6 +25,14 @@
 		clock-frequency = <1843200>;
 	};
 
+	uart2: serial@bf000900 {
+		compatible = "ns16550a";
+		reg = <0xbf000900 0x40>;
+		reg-shift = <3>;
+		/* no matter for emulated port */
+		clock-frequency = <1843200>;
+	};
+
 	nor0: flash@be000000 {
 		#address-cells = <1>;
 		#size-cells = <1>;

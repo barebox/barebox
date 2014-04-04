@@ -48,6 +48,7 @@ struct ns16550_priv {
 	struct NS16550_plat plat;
 	int access_width;
 	struct clk *clk;
+	uint32_t fcrval;
 };
 
 static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
@@ -157,18 +158,13 @@ static int ns16550_setbaudrate(struct console_device *cdev, int baud_rate)
 {
 	unsigned int baud_divisor = ns16550_calc_divisor(cdev, baud_rate);
 	struct ns16550_priv *priv = to_ns16550_priv(cdev);
-	struct NS16550_plat *plat = &priv->plat;
 
 	ns16550_write(cdev, LCR_BKSE, lcr);
 	ns16550_write(cdev, baud_divisor & 0xff, dll);
 	ns16550_write(cdev, (baud_divisor >> 8) & 0xff, dlm);
 	ns16550_write(cdev, LCRVAL, lcr);
 	ns16550_write(cdev, MCRVAL, mcr);
-
-	if (plat->flags & NS16650_FLAG_DISABLE_FIFO)
-		ns16550_write(cdev, FCRVAL & ~FCR_FIFO_EN, fcr);
-	else
-		ns16550_write(cdev, FCRVAL, fcr);
+	ns16550_write(cdev, priv->fcrval, fcr);
 
 	return 0;
 }
@@ -185,6 +181,15 @@ static void ns16550_serial_init_port(struct console_device *cdev)
 	ns16550_write(cdev, 0x00, ier);
 }
 
+static void ns16450_serial_init_port(struct console_device *cdev)
+{
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	priv->fcrval &= ~FCR_FIFO_EN;
+
+	ns16550_serial_init_port(cdev);
+}
+
 #define omap_mdr1		8
 
 static void ns16550_omap_init_port(struct console_device *cdev)
@@ -192,7 +197,17 @@ static void ns16550_omap_init_port(struct console_device *cdev)
 	ns16550_serial_init_port(cdev);
 
 	ns16550_write(cdev, 0x07, omap_mdr1);	/* Disable */
-	ns16550_write(cdev, 0x00,  omap_mdr1);
+	ns16550_write(cdev, 0x00, omap_mdr1);
+}
+
+#define JZ_FCR_UME 0x10 /* Uart Module Enable */
+
+static void ns16550_jz_init_port(struct console_device *cdev)
+{
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	priv->fcrval |= JZ_FCR_UME;
+	ns16550_serial_init_port(cdev);
 }
 
 /*********** Exposed Functions **********************************/
@@ -246,6 +261,10 @@ static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
 }
 
+static struct ns16550_drvdata ns16450_drvdata = {
+	.init_port = ns16450_serial_init_port,
+};
+
 static struct ns16550_drvdata ns16550_drvdata = {
 	.init_port = ns16550_serial_init_port,
 };
@@ -253,6 +272,10 @@ static struct ns16550_drvdata ns16550_drvdata = {
 static __maybe_unused struct ns16550_drvdata omap_drvdata = {
 	.init_port = ns16550_omap_init_port,
 	.linux_console_name = "ttyO",
+};
+
+static __maybe_unused struct ns16550_drvdata jz_drvdata = {
+	.init_port = ns16550_jz_init_port,
 };
 
 /**
@@ -316,6 +339,11 @@ static int ns16550_probe(struct device_d *dev)
 	cdev->setbrg = ns16550_setbaudrate;
 	cdev->linux_console_name = devtype->linux_console_name;
 
+	if (plat && (plat->flags & NS16650_FLAG_DISABLE_FIFO))
+		priv->fcrval = FCRVAL & ~FCR_FIFO_EN;
+	else
+		priv->fcrval = FCRVAL;
+
 	devtype->init_port(cdev);
 
 	return console_register(cdev);
@@ -328,6 +356,9 @@ err:
 
 static struct of_device_id ns16550_serial_dt_ids[] = {
 	{
+		.compatible = "ns16450",
+		.data = (unsigned long)&ns16450_drvdata,
+	}, {
 		.compatible = "ns16550a",
 		.data = (unsigned long)&ns16550_drvdata,
 	}, {
@@ -344,6 +375,12 @@ static struct of_device_id ns16550_serial_dt_ids[] = {
 	}, {
 		.compatible = "ti,omap4-uart",
 		.data = (unsigned long)&omap_drvdata,
+	},
+#endif
+#if IS_ENABLED(CONFIG_MACH_MIPS_XBURST)
+	{
+		.compatible = "ingenic,jz4740-uart",
+		.data = (unsigned long)&jz_drvdata,
 	},
 #endif
 	{

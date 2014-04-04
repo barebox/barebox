@@ -14,6 +14,13 @@ config SERIAL_AMBA_PL011
 
 	  If unsure, say N.
 
+config DRIVER_SERIAL_AR933X
+	bool "AR933X serial driver"
+	depends on MACH_MIPS_ATH79
+	help
+	  If you have an Atheros AR933X SOC based board and want to use the
+	  built-in UART of the SoC, say Y to this option.
+
 config DRIVER_SERIAL_IMX
 	depends on ARCH_IMX
 	default y

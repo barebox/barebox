@@ -78,6 +78,9 @@ board-$(CONFIG_BOARD_QEMU_MALTA)	:= qemu-malta
 machine-$(CONFIG_MACH_MIPS_AR231X)	:= ar231x
 board-$(CONFIG_BOARD_NETGEAR_WG102)	:= netgear-wg102
 
+machine-$(CONFIG_MACH_MIPS_ATH79)	:= ath79
+board-$(CONFIG_BOARD_TPLINK_MR3020)	:= tplink-mr3020
+
 machine-$(CONFIG_MACH_MIPS_BCM47XX)	:= bcm47xx
 board-$(CONFIG_BOARD_DLINK_DIR320)	:= dlink-dir-320
 
@@ -85,7 +88,7 @@ machine-$(CONFIG_MACH_MIPS_LOONGSON)	:= loongson
 board-$(CONFIG_BOARD_LOONGSON_TECH_LS1B)	:= loongson-ls1b
 
 machine-$(CONFIG_MACH_MIPS_XBURST)	:= xburst
-board-$(CONFIG_BOARD_RZX50)	:= rzx50
+board-$(CONFIG_BOARD_RZX50)	:= ritmix-rzx50
 
 machdirs := $(patsubst %,arch/mips/mach-%/,$(machine-y))
 

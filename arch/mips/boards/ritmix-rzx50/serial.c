@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2012 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,18 +15,13 @@
  *
  */
 
-#ifndef __INCLUDE_ARCH_HARDWARE_H__
-#define   __INCLUDE_ARCH_HARDWARE_H__
+#include <common.h>
+#include <init.h>
 
-#define MALTA_PIIX4_UART0	0xb80003f8
+static int rzx50_hostname_init(void)
+{
+	barebox_set_hostname("rzx50");
 
-#define MALTA_CBUS_UART	0xbf000900
-#define MALTA_CBUS_UART_SHIFT	3
-
-/*
- * Reset register.
- */
-#define SOFTRES_REG	0xbf000500
-#define GORESET		0x42
-
-#endif  /* __INCLUDE_ARCH_HARDWARE_H__ */
+	return 0;
+}
+console_initcall(rzx50_hostname_init);

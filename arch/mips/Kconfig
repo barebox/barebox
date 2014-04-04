@@ -54,6 +54,19 @@ config MACH_MIPS_AR231X
 	select DRIVER_SERIAL_NS16550
 	select HAS_DEBUG_LL
 
+config MACH_MIPS_ATH79
+	bool "Atheros AR71XX/AR724X/AR913X/AR933X based boards"
+	select SYS_HAS_CPU_MIPS32_R2
+	select SYS_SUPPORTS_32BIT_KERNEL
+	select SYS_SUPPORTS_BIG_ENDIAN
+	select CSRC_R4K_LIB
+	select HAS_DEBUG_LL
+	select HAVE_CLK
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select CLKDEV_LOOKUP
+	select OFTREE
+
 config MACH_MIPS_BCM47XX
 	bool "Broadcom BCM47xx-based boards"
 	select CSRC_R4K_LIB
@@ -80,6 +93,7 @@ endchoice
 
 source arch/mips/mach-malta/Kconfig
 source arch/mips/mach-ar231x/Kconfig
+source arch/mips/mach-ath79/Kconfig
 source arch/mips/mach-bcm47xx/Kconfig
 source arch/mips/mach-loongson/Kconfig
 source arch/mips/mach-xburst/Kconfig

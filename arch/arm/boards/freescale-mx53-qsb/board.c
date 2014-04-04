@@ -99,6 +99,7 @@ static int loco_late_init(void)
 		rev = readl(MX53_IIM_BASE_ADDR + 0x878);
 		set_board_rev(rev);
 		printf("MCIMX53-START-R board 1.0 rev %c\n", (rev == 1) ? 'A' : 'B' );
+		barebox_set_hostname("loco-r");
 		armlinux_set_revision(loco_system_rev);
 		/* Set VDDGP to 1.25V for 1GHz on SW1 */
 		mc13xxx_reg_read(mc34708, MC13892_REG_SW_0, &val);
@@ -146,6 +147,7 @@ static int loco_late_init(void)
 	} else {
 		/* so we have a DA9053 based board */
 		printf("MCIMX53-START board 1.0\n");
+		barebox_set_hostname("loco");
 		armlinux_set_revision(loco_system_rev);
 	}
 

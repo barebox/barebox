@@ -33,6 +33,8 @@ int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefil
 		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
 		unsigned long app_dest);
 
+int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
+
 #else
 
 static inline int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
@@ -77,6 +79,10 @@ static inline int imx6_bbu_internal_spi_i2c_register_handler(const char *name, c
 	return -ENOSYS;
 }
 
+static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
+{
+	return -ENOSYS;
+}
 #endif
 
 #if defined(CONFIG_BAREBOX_UPDATE_IMX_EXTERNAL_NAND)

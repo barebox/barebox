@@ -79,8 +79,8 @@
 			compatible = "fsl,imx53-ahci";
 			reg = <0x10000000 0x1000>;
 			interrupts = <28>;
-			clocks = <&clks 173>, <&clks 5>, <&clks 188>;
-			clock-names = "sata", "ahb", "per";
+			clocks = <&clks 173>, <&clks 188>, <&clks 5>;
+			clock-names = "sata_gate", "sata_ref", "ahb";
 			status = "disabled";
 		};
 

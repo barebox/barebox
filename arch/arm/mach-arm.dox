@@ -54,6 +54,8 @@ For details on specific architectures:
 
 @subsection mach_arm_omap_info OMAP CPUs
 
+@li @subpage dev_davinci_arch
+
 @li @subpage dev_omap_arch
 
 @subsection mach_arm_s3c24xx_info S3C24XX CPUs

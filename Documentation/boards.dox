@@ -43,6 +43,7 @@ ARM type:
 @li @subpage tny-a9263
 @li @subpage usb-a9g20-lpw
 @li @subpage usb-a9263
+@li @subpage virt2real
 
 Blackfin type:
 

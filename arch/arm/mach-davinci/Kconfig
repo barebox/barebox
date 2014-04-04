@@ -1,0 +1,16 @@
+if ARCH_DAVINCI
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x82000000
+
+choice
+	prompt "Davinci Board type"
+
+config MACH_VIRT2REAL
+	bool "Virt2Real"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+
+endchoice
+
+endif

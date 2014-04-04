@@ -1,0 +1,41 @@
+/** @page virt2real virt2real board
+
+virt2real is a is a miniature board for creation of WiFi
+or internet controllable smart devices.
+
+The board has
+@li TI DaVinchi DM365 running at 300 MHz
+@li 128 MiB DDR2 SDRAM;
+@li 256 MiB NAND Flash Memory;
+@li 2 x UART serial interfaces;
+@li 2 x Ethernet interfaces;
+@li 1 x USB interface;
+@li microSD card slot.
+
+The board uses U-Boot as bootloader.
+
+Barebox mini-howto:
+
+1. Connect to the boards's UART0 (115200 8N1);
+Use J2.2 (GND), J2.4 (UART0_TXD), J2.6(UART0_RXD) pins.
+
+2. Turn board's power on;
+
+3. Wait 'Hit any key to stop autoboot' prompt and press the space key.
+
+4. Upload barebox.bin via Ymodem
+@verbatim
+    virt2real ># loady
+@endverbatim
+
+5. Run barebox
+@verbatim
+    virt2real ># go 0x82000000
+@endverbatim
+
+virt2real links:
+@li http://virt2real.com/
+@li http://wiki.virt2real.ru/
+@li https://github.com/virt2real
+
+*/

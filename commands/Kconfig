@@ -90,6 +90,14 @@ config CMD_MENU_MANAGEMENT
 	depends on CMD_MENU
 	prompt "menu scripts management"
 
+config CMD_MENUTREE
+	bool
+	depends on MENU
+	select MENUTREE
+	prompt "menutree"
+	help
+	  The menutree command allows to create a menu from a directory structure
+
 config CMD_LOGIN
 	tristate
 	select PASSWORD

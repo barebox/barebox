@@ -1,0 +1,8 @@
+#!/bin/sh
+
+saveenv
+if [ $? != 0 ]; then
+	echo "saving environment failed"
+fi
+
+sleep 2

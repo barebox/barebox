@@ -165,6 +165,15 @@ void arch_shutdown(void);
 
 int run_shell(void);
 
+#ifdef CONFIG_SHELL_HUSH
+char *shell_expand(char *str);
+#else
+static inline char *shell_expand(char *str)
+{
+	return strdup(str);
+}
+#endif
+
 /* Force a compilation error if condition is true */
 #define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
 

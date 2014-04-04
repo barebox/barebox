@@ -1,0 +1,5 @@
+#!/bin/sh
+
+boot
+
+readline "Booting failed. Press any key to continue" ignore

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Boot from Network...."
+
+sleep 3

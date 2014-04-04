@@ -62,6 +62,9 @@ config STDDEV
 config BAREBOX_UPDATE
 	bool
 
+config MENUTREE
+	bool
+
 menu "General Settings"
 
 config LOCALVERSION
@@ -602,7 +605,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 config DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU
 	bool
 	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
-	depends on CMD_MENU_MANAGEMENT
+	depends on CMD_MENUTREE
 	default y
 
 config DEFAULT_ENVIRONMENT_GENERIC_NEW_DFU

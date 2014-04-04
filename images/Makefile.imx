@@ -82,6 +82,12 @@ CFG_start_imx6q_mba6x.pblx.imximg = $(board)/tqma6x/flash-header-tqma6q.imxcfg
 FILE_barebox-tq-tqma6q-mba6x.img = start_imx6q_mba6x.pblx.imximg
 image-$(CONFIG_MACH_TQMA6X) += barebox-tq-tqma6q-mba6x.img
 
+pblx-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_4gib
+CFG_start_phytec_pbab01_4gib.pblx.imximg = $(board)/phytec-phyflex-imx6/flash-header-phytec-pfla02-4gib.imxcfg
+imximage-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_4gib.pblx.imximg
+FILE_barebox-phytec-pbab01-4gib.img = start_phytec_pbab01_4gib.pblx.imximg
+image-$(CONFIG_MACH_PHYTEC_PFLA02) += barebox-phytec-pbab01-4gib.img
+
 pblx-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_2gib
 CFG_start_phytec_pbab01_2gib.pblx.imximg = $(board)/phytec-phyflex-imx6/flash-header-phytec-pfla02-2gib.imxcfg
 FILE_barebox-phytec-pbab01-2gib.img = start_phytec_pbab01_2gib.pblx.imximg
@@ -91,6 +97,18 @@ pblx-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01_1gib
 CFG_start_phytec_pbab01_1gib.pblx.imximg = $(board)/phytec-phyflex-imx6/flash-header-phytec-pfla02-1gib.imxcfg
 FILE_barebox-phytec-pbab01-1gib.img = start_phytec_pbab01_1gib.pblx.imximg
 image-$(CONFIG_MACH_PHYTEC_PFLA02) += barebox-phytec-pbab01-1gib.img
+
+pblx-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01dl_1gib
+CFG_start_phytec_pbab01dl_1gib.pblx.imximg = $(board)/phytec-phyflex-imx6/flash-header-phytec-pfla02dl-1gib.imxcfg
+imximage-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01dl_1gib.pblx.imximg
+FILE_barebox-phytec-pbab01dl-1gib.img = start_phytec_pbab01dl_1gib.pblx.imximg
+image-$(CONFIG_MACH_PHYTEC_PFLA02) += barebox-phytec-pbab01dl-1gib.img
+
+pblx-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01s_512mb
+CFG_start_phytec_pbab01s_512mb.pblx.imximg = $(board)/phytec-phyflex-imx6/flash-header-phytec-pfla02s-512mb.imxcfg
+imximage-$(CONFIG_MACH_PHYTEC_PFLA02) += start_phytec_pbab01s_512mb.pblx.imximg
+FILE_barebox-phytec-pbab01s-512mb.img = start_phytec_pbab01s_512mb.pblx.imximg
+image-$(CONFIG_MACH_PHYTEC_PFLA02) += barebox-phytec-pbab01s-512mb.img
 
 pblx-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6dl_dfi_fs700_m60_6s
 CFG_start_imx6dl_dfi_fs700_m60_6s.pblx.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6s.imxcfg

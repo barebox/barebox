@@ -54,6 +54,8 @@ static inline void setup_uart(void)
 }
 
 extern char __dtb_imx6q_phytec_pbab01_start[];
+extern char __dtb_imx6dl_phytec_pbab01_start[];
+extern char __dtb_imx6s_phytec_pbab01_start[];
 
 ENTRY_FUNCTION(start_phytec_pbab01_1gib, r0, r1, r2)
 {
@@ -85,4 +87,49 @@ ENTRY_FUNCTION(start_phytec_pbab01_2gib, r0, r1, r2)
 	fdt = (uint32_t)__dtb_imx6q_phytec_pbab01_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_2G, fdt);
+}
+
+ENTRY_FUNCTION(start_phytec_pbab01_4gib, r0, r1, r2)
+{
+	uint32_t fdt;
+
+	__barebox_arm_head();
+
+	arm_cpu_lowlevel_init();
+
+	arm_setup_stack(0x00920000 - 8);
+
+	fdt = (uint32_t)__dtb_imx6q_phytec_pbab01_start - get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, 0xEFFFFFF8, fdt);
+}
+
+ENTRY_FUNCTION(start_phytec_pbab01dl_1gib, r0, r1, r2)
+{
+        uint32_t fdt;
+
+        __barebox_arm_head();
+
+        arm_cpu_lowlevel_init();
+
+        arm_setup_stack(0x00920000 - 8);
+
+	fdt = (uint32_t)__dtb_imx6dl_phytec_pbab01_start - get_runtime_offset();
+
+        barebox_arm_entry(0x10000000, SZ_1G, fdt);
+}
+
+ENTRY_FUNCTION(start_phytec_pbab01s_512mb, r0, r1, r2)
+{
+	uint32_t fdt;
+
+	__barebox_arm_head();
+
+	arm_cpu_lowlevel_init();
+
+	arm_setup_stack(0x00920000 - 8);
+
+	fdt = (uint32_t)__dtb_imx6s_phytec_pbab01_start - get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, SZ_512M, fdt);
 }

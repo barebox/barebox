@@ -22,6 +22,9 @@
 #include <init.h>
 #include <of.h>
 #include <mach/bbu.h>
+#include <fec.h>
+
+#include <linux/micrel_phy.h>
 
 #include <mach/imx6.h>
 
@@ -37,12 +40,31 @@ static int eth_phy_reset(void)
 	return 0;
 }
 
+static void mmd_write_reg(struct phy_device *dev, int device, int reg, int val)
+{
+	phy_write(dev, 0x0d, device);
+	phy_write(dev, 0x0e, reg);
+	phy_write(dev, 0x0d, (1 << 14) | device);
+	phy_write(dev, 0x0e, val);
+}
+
+static int ksz9031rn_phy_fixup(struct phy_device *dev)
+{
+	mmd_write_reg(dev, 2, 8, 0x039F);
+
+	return 0;
+}
+
 static int phytec_pfla02_init(void)
 {
-	if (!of_machine_is_compatible("phytec,imx6q-pfla02"))
+	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
+			!of_machine_is_compatible("phytec,imx6dl-pfla02") &&
+			!of_machine_is_compatible("phytec,imx6s-pfla02"))
 		return 0;
 
 	eth_phy_reset();
+	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,
+					   ksz9031rn_phy_fixup);
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 
@@ -52,7 +74,7 @@ device_initcall(phytec_pfla02_init);
 
 static int phytec_pfla02_core_init(void)
 {
-	if (!of_machine_is_compatible("phytec,imx6q-pfla02"))
+	if (!of_machine_is_compatible("phytec,imx6x-pbab01"))
 		return 0;
 
 	imx6_init_lowlevel();

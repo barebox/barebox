@@ -2,7 +2,7 @@ Freescale i.MX IIM (Ic Identification Module)
 
 Required properties:
 
-- compatible: fsl,imx-iim
+- compatible: fsl,imx27-iim
 - reg: physical register base and size
 
 Optional properties:
@@ -14,7 +14,7 @@ Optional properties:
 Example:
 
 iim: iim@83f98000 {
-	compatible = "fsl,imx51-iim", "fsl,imx-iim";
+	compatible = "fsl,imx51-iim", "fsl,imx27-iim";
 	reg = <0x83f98000 0x4000>;
 	barebox,provide-mac-address = <&fec 1 9>;
 };

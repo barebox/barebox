@@ -15,13 +15,74 @@
 #define DISK_SLAVE 1
 
 /**
+ * Read a byte from the ATA controller
+ * @param ide IDE port structure
+ * @param addr Register adress
+ * @return Register's content
+ */
+static inline uint8_t ata_rd_byte(struct ide_port *ide, void __iomem *addr)
+{
+	if (ide->io.mmio)
+		return readb(addr);
+	else
+		return (uint8_t) inb((int) addr);
+}
+
+/**
+ * Write a byte to the ATA controller
+ * @param ide IDE port structure
+ * @param value Value to write
+ * @param addr Register adress
+ * @return Register's content
+ */
+static inline void ata_wr_byte(struct ide_port *ide, uint8_t value,
+			       void __iomem *addr)
+{
+	if (ide->io.mmio)
+		writeb(value, addr);
+	else
+		outb(value, (int) addr);
+}
+
+/**
+ * Read a word from the ATA controller
+ * @param ide IDE port structure
+ * @param addr Register adress
+ * @return Register's content
+ */
+static inline uint16_t ata_rd_word(struct ide_port *ide,
+				   void __iomem *addr)
+{
+	if (ide->io.mmio)
+		return readw(addr);
+	else
+		return (uint16_t) inw((int) addr);
+}
+
+/**
+ * Write a word to the ATA controller
+ * @param ide IDE port structure
+ * @param value Value to write
+ * @param addr Register adress
+ * @return Register's content
+ */
+static inline void ata_wr_word(struct ide_port *ide, uint16_t value,
+			       void __iomem *addr)
+{
+	if (ide->io.mmio)
+		writew(value, addr);
+	else
+		outw(value, (int) addr);
+}
+
+/**
  * Read the status register of the ATA drive
  * @param io Register file
  * @return Register's content
  */
 static uint8_t ata_rd_status(struct ide_port *ide)
 {
-	return readb(ide->io.status_addr);
+	return ata_rd_byte(ide, ide->io.status_addr);
 }
 
 /**
@@ -83,12 +144,13 @@ static int ata_set_lba_sector(struct ide_port *ide, unsigned drive, uint64_t num
 	if (num > 0x0FFFFFFF || drive > 1)
 		return -EINVAL;
 
-	writeb(0xA0 | LBA_FLAG | drive << 4 | num >> 24, ide->io.device_addr);
-	writeb(0x00, ide->io.error_addr);
-	writeb(0x01, ide->io.nsect_addr);
-	writeb(num, ide->io.lbal_addr);	/* 0 ... 7 */
-	writeb(num >> 8, ide->io.lbam_addr); /* 8 ... 15 */
-	writeb(num >> 16, ide->io.lbah_addr); /* 16 ... 23 */
+	ata_wr_byte(ide, 0xA0 | LBA_FLAG | drive << 4 | num >> 24,
+		    ide->io.device_addr);
+	ata_wr_byte(ide, 0x00, ide->io.error_addr);
+	ata_wr_byte(ide, 0x01, ide->io.nsect_addr);
+	ata_wr_byte(ide, num, ide->io.lbal_addr);	/* 0 ... 7 */
+	ata_wr_byte(ide, num >> 8, ide->io.lbam_addr); /* 8 ... 15 */
+	ata_wr_byte(ide, num >> 16, ide->io.lbah_addr); /* 16 ... 23 */
 
 	return 0;
 }
@@ -107,7 +169,7 @@ static int ata_wr_cmd(struct ide_port *ide, uint8_t cmd)
 	if (rc != 0)
 		return rc;
 
-	writeb(cmd, ide->io.command_addr);
+	ata_wr_byte(ide, cmd, ide->io.command_addr);
 	return 0;
 }
 
@@ -118,7 +180,7 @@ static int ata_wr_cmd(struct ide_port *ide, uint8_t cmd)
  */
 static void ata_wr_dev_ctrl(struct ide_port *ide, uint8_t val)
 {
-	writeb(val, ide->io.ctl_addr);
+	ata_wr_byte(ide, val, ide->io.ctl_addr);
 }
 
 /**
@@ -133,10 +195,10 @@ static void ata_rd_sector(struct ide_port *ide, void *buf)
 
 	if (ide->io.dataif_be) {
 		for (; u > 0; u--)
-			*b++ = be16_to_cpu(readw(ide->io.data_addr));
+			*b++ = be16_to_cpu(ata_rd_word(ide, ide->io.data_addr));
 	} else {
 		for (; u > 0; u--)
-			*b++ = le16_to_cpu(readw(ide->io.data_addr));
+			*b++ = le16_to_cpu(ata_rd_word(ide, ide->io.data_addr));
 	}
 }
 
@@ -152,10 +214,10 @@ static void ata_wr_sector(struct ide_port *ide, const void *buf)
 
 	if (ide->io.dataif_be) {
 		for (; u > 0; u--)
-			writew(cpu_to_be16(*b++), ide->io.data_addr);
+			ata_wr_word(ide, cpu_to_be16(*b++), ide->io.data_addr);
 	} else {
 		for (; u > 0; u--)
-			writew(cpu_to_le16(*b++), ide->io.data_addr);
+			ata_wr_word(ide, cpu_to_le16(*b++), ide->io.data_addr);
 	}
 }
 
@@ -169,10 +231,10 @@ static int ide_read_id(struct ata_port *port, void *buf)
 	struct ide_port *ide = to_ata_drive_access(port);
 	int rc;
 
-	writeb(0xA0, ide->io.device_addr);	/* FIXME drive */
-	writeb(0x00, ide->io.lbal_addr);
-	writeb(0x00, ide->io.lbam_addr);
-	writeb(0x00, ide->io.lbah_addr);
+	ata_wr_byte(ide, 0xA0, ide->io.device_addr);	/* FIXME drive */
+	ata_wr_byte(ide, 0x00, ide->io.lbal_addr);
+	ata_wr_byte(ide, 0x00, ide->io.lbam_addr);
+	ata_wr_byte(ide, 0x00, ide->io.lbah_addr);
 
 	rc = ata_wr_cmd(ide, ATA_CMD_ID_ATA);
 	if (rc != 0)
@@ -327,6 +389,8 @@ int ide_port_register(struct ide_port *ide)
 	ide->port.ops = &ide_ops;
 
 	ret = ata_port_register(&ide->port);
+	if (!ret)
+		ata_port_detect(&ide->port);
 
 	if (ret)
 		free(ide);

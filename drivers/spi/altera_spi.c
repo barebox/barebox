@@ -34,18 +34,18 @@ static int altera_spi_setup(struct spi_device *spi)
 	if (spi->bits_per_word != altera_spi->databits) {
 		dev_err(master->dev, " master doesn't support %d bits per word requested by %s\n",
 			spi->bits_per_word, spi_dev.name);
-		return -1;
+		return -EINVAL;
 	}
 
 	if ((spi->mode & (SPI_CPHA | SPI_CPOL)) != altera_spi->mode) {
 		dev_err(master->dev, " master doesn't support SPI_MODE%d requested by %s\n",
 			spi->mode & (SPI_CPHA | SPI_CPOL), spi_dev.name);
-		return -1;
+		return -EINVAL;
 	}
 
 	if (spi->max_speed_hz < altera_spi->speed) {
 		dev_err(master->dev, " frequency is too high for %s\n", spi_dev.name);
-		return -1;
+		return -EINVAL;
 	}
 
 	altera_spi_cs_inactive(spi);

@@ -167,7 +167,7 @@ static void cspi_0_0_chipselect(struct spi_device *spi, int is_active)
 
 	if (!is_active) {
 		if (gpio >= 0)
-			gpio_set_value(gpio, !cs);
+			gpio_direction_output(gpio, !cs);
 		return;
 	}
 
@@ -253,7 +253,7 @@ static void cspi_0_7_chipselect(struct spi_device *spi, int is_active)
 
 	if (!is_active) {
 		if (gpio >= 0)
-			gpio_set_value(gpio, !cs);
+			gpio_direction_output(gpio, !cs);
 		return;
 	}
 

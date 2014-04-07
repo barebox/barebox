@@ -30,8 +30,6 @@
 
 static struct NS16550_plat serial_plat = {
 	.clock = 1843200,
-	.reg_read = x86_uart_read,
-	.reg_write = x86_uart_write,
 };
 
 static int pc_console_init(void)
@@ -40,7 +38,10 @@ static int pc_console_init(void)
 	barebox_set_hostname("x86");
 
 	/* Register the serial port */
-	add_ns16550_device(DEVICE_ID_DYNAMIC, 0x3f8, 8, 0, &serial_plat);
+	add_ns16550_device(DEVICE_ID_DYNAMIC, 0x3f8, 8, IORESOURCE_IO,
+			   &serial_plat);
+	add_ns16550_device(DEVICE_ID_DYNAMIC, 0x2f8, 8, IORESOURCE_IO,
+			   &serial_plat);
 
 	return 0;
 }

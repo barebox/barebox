@@ -15,7 +15,8 @@ static int openrisc_console_init(void)
 	barebox_set_hostname("or1k");
 
 	/* Register the serial port */
-	add_ns16550_device(DEVICE_ID_DYNAMIC, OPENRISC_SOPC_UART_BASE, 1024, IORESOURCE_MEM_8BIT, &serial_plat);
+	add_ns16550_device(DEVICE_ID_DYNAMIC, OPENRISC_SOPC_UART_BASE, 1024,
+			   IORESOURCE_MEM | IORESOURCE_MEM_8BIT, &serial_plat);
 
 #ifdef CONFIG_DRIVER_NET_ETHOC
 	add_generic_device("ethoc", DEVICE_ID_DYNAMIC, NULL,

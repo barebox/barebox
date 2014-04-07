@@ -15,7 +15,7 @@ static int console_init(void)
 	barebox_set_hostname("ls1b");
 
 	add_ns16550_device(DEVICE_ID_DYNAMIC, KSEG1ADDR(LS1X_UART2_BASE),
-		8, IORESOURCE_MEM_8BIT, &serial_plat);
+		8, IORESOURCE_MEM | IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
 }

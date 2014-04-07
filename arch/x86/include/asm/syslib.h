@@ -14,9 +14,6 @@
  *
  */
 
-extern unsigned int x86_uart_read(unsigned long, unsigned char);
-extern void x86_uart_write(unsigned int, unsigned long, unsigned char);
-
 #ifdef CONFIG_X86_BIOS_BRINGUP
 
 extern int bios_disk_rw_int13_extensions(int, int, void*) __attribute__((regparm(3)));

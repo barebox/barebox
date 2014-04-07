@@ -14,6 +14,8 @@
 #include <asm/types.h>
 #include <asm/byteorder.h>
 
+#define	IO_SPACE_LIMIT	0
+
 /*****************************************************************************/
 /*
  * readX/writeX() are used to access memory mapped devices. On some

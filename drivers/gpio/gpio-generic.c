@@ -310,7 +310,7 @@ static void __iomem *bgpio_map(struct device_d *dev, const char *name,
 
 	*err = 0;
 
-	r = dev_get_resource_by_name(dev, name);
+	r = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
 	if (!r)
 		return NULL;
 
@@ -342,7 +342,7 @@ static int bgpio_dev_probe(struct device_d *dev)
 	struct bgpio_chip *bgc;
 	struct bgpio_pdata *pdata = dev->platform_data;
 
-	r = dev_get_resource_by_name(dev, "dat");
+	r = dev_get_resource_by_name(dev, IORESOURCE_MEM, "dat");
 	if (!r)
 		return -EINVAL;
 

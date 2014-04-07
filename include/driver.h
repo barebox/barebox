@@ -203,11 +203,13 @@ static inline const char *dev_name(const struct device_d *dev)
 /*
  * get resource 'num' for a device
  */
-struct resource *dev_get_resource(struct device_d *dev, int num);
+struct resource *dev_get_resource(struct device_d *dev, unsigned long type,
+				  int num);
 /*
  * get resource base 'name' for a device
  */
 struct resource *dev_get_resource_by_name(struct device_d *dev,
+					  unsigned long type,
 					  const char *name);
 /*
  * get register base 'name' for a device
@@ -219,6 +221,7 @@ void *dev_get_mem_region_by_name(struct device_d *dev, const char *name);
  */
 void __iomem *dev_request_mem_region_by_name(struct device_d *dev,
 					     const char *name);
+
 /*
  * get register base 'num' for a device
  */

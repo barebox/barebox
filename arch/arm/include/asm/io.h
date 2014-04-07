@@ -3,6 +3,8 @@
 
 #include <asm-generic/io.h>
 
+#define	IO_SPACE_LIMIT	0
+
 /*
  * String version of IO memory access ops:
  */

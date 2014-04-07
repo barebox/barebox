@@ -12,6 +12,8 @@
 
 #include <asm/byteorder.h>
 
+#define	IO_SPACE_LIMIT	0xffff
+
 static inline void outb(unsigned char value, int port)
 {
 	asm volatile("outb %b0, %w1" : : "a"(value), "Nd"(port));

@@ -241,13 +241,14 @@ int register_driver(struct driver_d *drv)
 }
 EXPORT_SYMBOL(register_driver);
 
-struct resource *dev_get_resource(struct device_d *dev, int num)
+struct resource *dev_get_resource(struct device_d *dev, unsigned long type,
+				  int num)
 {
 	int i, n = 0;
 
 	for (i = 0; i < dev->num_resources; i++) {
 		struct resource *res = &dev->resource[i];
-		if (resource_type(res) == IORESOURCE_MEM) {
+		if (resource_type(res) == type) {
 			if (n == num)
 				return res;
 			n++;
@@ -261,7 +262,7 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 {
 	struct resource *res;
 
-	res = dev_get_resource(dev, num);
+	res = dev_get_resource(dev, IORESOURCE_MEM, num);
 	if (!res)
 		return NULL;
 
@@ -270,13 +271,14 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 EXPORT_SYMBOL(dev_get_mem_region);
 
 struct resource *dev_get_resource_by_name(struct device_d *dev,
+					  unsigned long type,
 					  const char *name)
 {
 	int i;
 
 	for (i = 0; i < dev->num_resources; i++) {
 		struct resource *res = &dev->resource[i];
-		if (resource_type(res) != IORESOURCE_MEM)
+		if (resource_type(res) != type)
 			continue;
 		if (!res->name)
 			continue;
@@ -291,7 +293,7 @@ void *dev_get_mem_region_by_name(struct device_d *dev, const char *name)
 {
 	struct resource *res;
 
-	res = dev_get_resource_by_name(dev, name);
+	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
 	if (!res)
 		return NULL;
 
@@ -303,7 +305,7 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 {
 	struct resource *res;
 
-	res = dev_get_resource_by_name(dev, name);
+	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
 	if (!res)
 		return NULL;
 
@@ -319,7 +321,7 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 {
 	struct resource *res;
 
-	res = dev_get_resource(dev, num);
+	res = dev_get_resource(dev, IORESOURCE_MEM, num);
 	if (!res)
 		return NULL;
 

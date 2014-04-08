@@ -80,7 +80,7 @@ static int do_loadenv(int argc, char *argv[])
 		int ret;
 
 		ret = unlink_recursive(dirname, NULL);
-		if (ret) {
+		if (ret && ret != -ENOENT) {
 			eprintf("cannot remove %s: %s\n", dirname,
 					strerror(-ret));
 			return 1;

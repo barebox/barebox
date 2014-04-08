@@ -690,6 +690,14 @@ config CMD_GPIO
 	  include gpio_set_value, gpio_get_value, gpio_direction_input and
 	  gpio_direction_output commands to control gpios.
 
+config CMD_REGULATOR
+	bool
+	depends on REGULATOR
+	prompt "regulator command"
+	help
+	  the regulator command lists the currently registered regulators and
+	  their current state.
+
 config CMD_UNCOMPRESS
 	bool
 	select UNCOMPRESS

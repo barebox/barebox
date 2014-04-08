@@ -167,7 +167,7 @@ int envfs_save(const char *filename, const char *dirname)
 	struct envfs_super *super;
 	int envfd, size, ret;
 	struct action_data data;
-	void *buf = NULL;
+	void *buf = NULL, *wbuf;
 
 	data.writep = NULL;
 	data.base = dirname;
@@ -201,11 +201,19 @@ int envfs_save(const char *filename, const char *dirname)
 		goto out1;
 	}
 
-	if (write(envfd, buf, size  + sizeof(struct envfs_super)) <
-			sizeof(struct envfs_super)) {
-		perror("write");
-		ret = -1;	/* FIXME */
-		goto out;
+	size += sizeof(struct envfs_super);
+
+	wbuf = buf;
+
+	while (size) {
+		ssize_t now = write(envfd, wbuf, size);
+		if (now < 0) {
+			ret = -errno;
+			goto out;
+		}
+
+		wbuf += now;
+		size -= now;
 	}
 
 	ret = 0;

@@ -85,8 +85,10 @@ static int fb_setup_mode(struct fb_info *info)
 
 	if (info->fbops->fb_activate_var) {
 		ret = info->fbops->fb_activate_var(info);
-		if (ret)
+		if (ret) {
+			info->cdev.size = 0;
 			return ret;
+		}
 	}
 
 	if (!info->line_length)
@@ -94,14 +96,11 @@ static int fb_setup_mode(struct fb_info *info)
 	if (!info->screen_size)
 		info->screen_size = info->line_length * info->yres;
 
-	if (!ret) {
-		dev->resource[0].start = (resource_size_t)info->screen_base;
-		info->cdev.size = info->line_length * info->yres;
-		dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
-	} else
-		info->cdev.size = 0;
+	dev->resource[0].start = (resource_size_t)info->screen_base;
+	info->cdev.size = info->line_length * info->yres;
+	dev->resource[0].end = dev->resource[0].start + info->cdev.size - 1;
 
-	return ret;
+	return 0;
 }
 
 static int fb_set_modename(struct param_d *param, void *priv)

@@ -32,9 +32,9 @@ int of_get_named_gpio_flags(struct device_node *np, const char *propname,
 
 	dev = of_find_device_by_node(out_args.np);
 	if (!dev) {
-		pr_err("%s: unable to find device of node %s: %d\n",
-			__func__, out_args.np->full_name, ret);
-		return ret;
+		pr_err("%s: unable to find device of node %s\n",
+			__func__, out_args.np->full_name);
+		return -ENODEV;
 	}
 
 	ret = gpio_get_num(dev, out_args.args[0]);

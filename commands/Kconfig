@@ -597,6 +597,12 @@ config CMD_MEMTEST
 	  flags support, the memtest is running twice with cache enabled
 	  and with cache disabled
 
+config CMD_2048
+	tristate
+	prompt "2048"
+	help
+	  Console version of the game "2048" for GNU/Linux
+
 endmenu
 
 menu "video command"

@@ -388,10 +388,10 @@ int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags)
 int envfs_load(const char *filename, const char *dir, unsigned flags)
 {
 	struct envfs_super super;
-	void *buf = NULL;
+	void *buf = NULL, *rbuf;
 	int envfd;
 	int ret = 0;
-	size_t size;
+	size_t size, rsize;
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
@@ -412,11 +412,28 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 		goto out;
 
 	buf = xmalloc(size);
-	ret = read(envfd, buf, size);
-	if (ret < size) {
-		perror("read");
-		ret = -errno;
-		goto out;
+
+	rbuf = buf;
+	rsize = size;
+
+	while (rsize) {
+		ssize_t now;
+
+		now = read(envfd, rbuf, rsize);
+		if (now < 0) {
+			perror("read");
+			ret = -errno;
+			goto out;
+		}
+
+		if (!now) {
+			printf("%s: premature end of file\n", filename);
+			ret = -EINVAL;
+			goto out;
+		}
+
+		rbuf += now;
+		rsize -= now;
 	}
 
 	ret = envfs_check_data(&super, buf, size);

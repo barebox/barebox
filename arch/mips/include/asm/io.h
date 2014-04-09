@@ -78,4 +78,6 @@ static inline void __raw_writel(u32 b, volatile void __iomem *addr)
 #define out_be16(a, v)	__raw_writew(__cpu_to_be16(v), a)
 #define out_be32(a, v)	__raw_writel(__cpu_to_be32(v), a)
 
+#include <asm-generic/io.h>
+
 #endif	/* __ASM_MIPS_IO_H */

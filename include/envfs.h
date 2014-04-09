@@ -110,8 +110,6 @@ static inline char *default_environment_path_get(void)
 }
 #endif
 
-int envfs_register_partition(const char *devname, unsigned int partnr);
-
 #ifdef CONFIG_DEFAULT_ENVIRONMENT
 void defaultenv_append(void *buf, unsigned int size, const char *name);
 int defaultenv_load(const char *dir, unsigned flags);

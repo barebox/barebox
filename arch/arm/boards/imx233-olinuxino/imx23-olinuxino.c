@@ -129,10 +129,7 @@ static int imx23_olinuxino_devices_init(void)
 
 	olinuxino_init_usb();
 
-	rc = envfs_register_partition("disk0", 1);
-	if (rc != 0)
-		printf("Cannot create the 'env0' persistent "
-			 "environment storage (%d)\n", rc);
+	default_environment_path_set("/dev/disk0.1");
 
 	return 0;
 }

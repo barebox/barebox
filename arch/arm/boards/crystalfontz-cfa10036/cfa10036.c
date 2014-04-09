@@ -135,10 +135,7 @@ static int cfa10036_devices_init(void)
 
 	cfa10036_detect_hw();
 
-	ret = envfs_register_partition("disk0", 1);
-	if (ret != 0)
-		printf("Cannot create the 'env0' persistent "
-			 "environment storage (%d)\n", ret);
+	default_environment_path_set("/dev/disk0.1");
 
 	return 0;
 }

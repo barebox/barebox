@@ -436,6 +436,7 @@ struct cdev {
 	struct file_operations *ops;
 	void *priv;
 	struct device_d *dev;
+	struct device_node *device_node;
 	struct list_head list;
 	struct list_head devices_list;
 	char *name; /* filename under /dev/ */
@@ -456,6 +457,7 @@ int devfs_remove(struct cdev *);
 int cdev_find_free_index(const char *);
 struct cdev *device_find_partition(struct device_d *dev, const char *name);
 struct cdev *cdev_by_name(const char *filename);
+struct cdev *cdev_by_device_node(struct device_node *node);
 struct cdev *cdev_open(const char *name, unsigned long flags);
 int cdev_do_open(struct cdev *, unsigned long flags);
 void cdev_close(struct cdev *cdev);

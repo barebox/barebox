@@ -57,6 +57,19 @@ struct cdev *cdev_by_name(const char *filename)
 	return NULL;
 }
 
+struct cdev *cdev_by_device_node(struct device_node *node)
+{
+	struct cdev *cdev;
+
+	list_for_each_entry(cdev, &cdev_list, list) {
+		if (!cdev->device_node)
+			continue;
+		if (cdev->device_node == node)
+			return cdev;
+	}
+	return NULL;
+}
+
 /**
  * device_find_partition - find a partition belonging to a physical device
  *

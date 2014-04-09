@@ -16,7 +16,6 @@ fi
 
 if [ -e /dev/nand0 -a -n "$nand_parts" ]; then
 	addpart /dev/nand0 $nand_parts
-	nand -a /dev/nand0.*
 fi
 
 if [ -f /env/bin/init_board ]; then

@@ -10,10 +10,6 @@ fi
 
 if [ -e /dev/nand0 ]; then
 	addpart /dev/nand0 $nand_parts
-
-	# Uh, oh, hush first expands wildcards and then starts executing
-	# commands. What a bug!
-	source /env/bin/hush_hack 
 fi
 
 if [ -z $eth0.ethaddr ]; then

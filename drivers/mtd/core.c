@@ -409,6 +409,9 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 
 	devfs_create(&mtd->cdev);
 
+	if (mtd_can_have_bb(mtd))
+		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
+
 	if (mtd->parent && !mtd->master)
 		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
 

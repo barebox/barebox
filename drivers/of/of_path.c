@@ -148,6 +148,9 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath)
 
 	device_detect(op.dev);
 
+	if (list_is_singular(&op.dev->cdevs))
+		op.cdev = list_first_entry(&op.dev->cdevs, struct cdev, devices_list);
+
 	i = 1;
 
 	while (1) {

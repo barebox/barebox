@@ -29,7 +29,7 @@
 
 static int do_saveenv(int argc, char *argv[])
 {
-	int ret, fd;
+	int ret;
 	char *filename, *dirname;
 
 	printf("saving environment\n");
@@ -42,52 +42,8 @@ static int do_saveenv(int argc, char *argv[])
 	else
 		filename = argv[1];
 
-	fd = open(filename, O_WRONLY | O_CREAT);
-	if (fd < 0) {
-		printf("could not open %s: %s\n", filename, errno_str());
-		return 1;
-	}
-
-	ret = protect(fd, ~0, 0, 0);
-
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != ENOSYS) {
-		printf("could not unprotect %s: %s\n", filename, errno_str());
-		close(fd);
-		return 1;
-	}
-
-	ret = erase(fd, ~0, 0);
-
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != ENOSYS) {
-		printf("could not erase %s: %s\n", filename, errno_str());
-		close(fd);
-		return 1;
-	}
-
-	close(fd);
-
 	ret = envfs_save(filename, dirname);
-	if (ret) {
-		printf("saveenv failed\n");
-		goto out;
-	}
 
-	fd = open(filename, O_WRONLY | O_CREAT);
-
-	ret = protect(fd, ~0, 0, 1);
-
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != ENOSYS) {
-		printf("could not protect %s: %s\n", filename, errno_str());
-		close(fd);
-		return 1;
-	}
-
-	ret = 0;
-out:
-	close(fd);
 	return ret;
 }
 

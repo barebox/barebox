@@ -60,6 +60,16 @@ char *default_environment_path_get(void)
 {
 	return default_environment_path;
 }
+#else
+static inline int protect(int fd, size_t count, unsigned long offset, int prot)
+{
+	return 0;
+}
+
+static inline int erase(int fd, size_t count, unsigned long offset)
+{
+	return 0;
+}
 #endif
 
 static int file_size_action(const char *filename, struct stat *statbuf,
@@ -196,9 +206,25 @@ int envfs_save(const char *filename, const char *dirname)
 
 	envfd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 	if (envfd < 0) {
-		printf("Open %s %s\n", filename, errno_str());
-		ret = envfd;
+		printf("could not open %s: %s\n", filename, errno_str());
+		ret = -errno;
 		goto out1;
+	}
+
+	ret = protect(envfd, ~0, 0, 0);
+
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != ENOSYS) {
+		printf("could not unprotect %s: %s\n", filename, errno_str());
+		goto out;
+	}
+
+	ret = erase(envfd, ~0, 0);
+
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != ENOSYS) {
+		printf("could not erase %s: %s\n", filename, errno_str());
+		goto out;
 	}
 
 	size += sizeof(struct envfs_super);
@@ -214,6 +240,14 @@ int envfs_save(const char *filename, const char *dirname)
 
 		wbuf += now;
 		size -= now;
+	}
+
+	ret = protect(envfd, ~0, 0, 1);
+
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != ENOSYS) {
+		printf("could not protect %s: %s\n", filename, errno_str());
+		goto out;
 	}
 
 	ret = 0;

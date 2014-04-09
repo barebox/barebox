@@ -303,7 +303,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 				partinfo->flags, partinfo->name);
 		if (IS_ERR(mtd))
 			return (void *)mtd;
-		return 0;
+		return &mtd->cdev;
 	}
 
 	new = xzalloc(sizeof(*new));

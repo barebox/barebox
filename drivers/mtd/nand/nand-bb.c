@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <libgen.h>
 #include <linux/list.h>
+#include <linux/err.h>
 
 struct nand_bb {
 	char *name;
@@ -240,6 +241,36 @@ static struct file_operations nand_bb_ops = {
 
 static LIST_HEAD(bb_list);
 
+struct cdev *mtd_add_bb(struct mtd_info *mtd, const char *name)
+{
+	struct nand_bb *bb;
+	int ret;
+
+	bb = xzalloc(sizeof(*bb));
+	bb->mtd = mtd;
+
+	if (name)
+		bb->cdev.name = xstrdup(name);
+	else
+		bb->cdev.name = asprintf("%s.bb", mtd->cdev.name);
+
+	nand_bb_calc_size(bb);
+	bb->cdev.ops = &nand_bb_ops;
+	bb->cdev.priv = bb;
+
+	ret = devfs_create(&bb->cdev);
+	if (ret)
+		goto err;
+
+	list_add_tail(&bb->list, &bb_list);
+
+	return &bb->cdev;
+
+err:
+	free(bb);
+	return ERR_PTR(ret);
+}
+
 /**
  * Add a bad block aware device ontop of another (NAND) device
  * @param[in] dev The device to add a partition on
@@ -248,9 +279,7 @@ static LIST_HEAD(bb_list);
  */
 int dev_add_bb_dev(const char *path, const char *name)
 {
-	struct nand_bb *bb;
-	struct cdev *parent;
-	int ret = -ENOMEM;
+	struct cdev *parent, *cdev;
 
 	parent = cdev_by_name(path);
 	if (!parent)
@@ -259,29 +288,9 @@ int dev_add_bb_dev(const char *path, const char *name)
 	if (!parent->mtd)
 		return -EINVAL;
 
-	bb = xzalloc(sizeof(*bb));
-	bb->mtd = parent->mtd;
+	cdev = mtd_add_bb(parent->mtd, name);
 
-	if (name)
-		bb->cdev.name = xstrdup(name);
-	else
-		bb->cdev.name = asprintf("%s.bb", path);;
-
-	nand_bb_calc_size(bb);
-	bb->cdev.ops = &nand_bb_ops;
-	bb->cdev.priv = bb;
-
-	ret = devfs_create(&bb->cdev);
-	if (ret)
-		goto out4;
-
-	list_add_tail(&bb->list, &bb_list);
-
-	return 0;
-
-out4:
-	free(bb);
-	return ret;
+	return PTR_ERR(cdev);
 }
 
 int dev_remove_bb_dev(const char *name)

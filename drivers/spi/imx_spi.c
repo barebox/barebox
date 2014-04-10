@@ -117,7 +117,6 @@ struct imx_spi {
 
 	unsigned int		(*xchg_single)(struct imx_spi *imx, u32 data);
 	void			(*chipselect)(struct spi_device *spi, int active);
-	void			(*init)(struct imx_spi *imx);
 };
 
 struct spi_imx_devtype_data {
@@ -383,10 +382,6 @@ static void cspi_2_3_chipselect(struct spi_device *spi, int is_active)
 		gpio_set_value(gpio, gpio_cs);
 }
 
-static void cspi_2_3_init(struct imx_spi *imx)
-{
-}
-
 static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
@@ -459,7 +454,6 @@ static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_0_7 = {
 static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
 	.chipselect = cspi_2_3_chipselect,
 	.xchg_single = cspi_2_3_xchg_single,
-	.init = cspi_2_3_init,
 };
 
 static int imx_spi_dt_probe(struct imx_spi *imx)
@@ -523,10 +517,10 @@ static int imx_spi_probe(struct device_d *dev)
 
 	imx->chipselect = devdata->chipselect;
 	imx->xchg_single = devdata->xchg_single;
-	imx->init = devdata->init;
 	imx->regs = dev_request_mem_region(dev, 0);
 
-	imx->init(imx);
+	if (devdata->init)
+		devdata->init(imx);
 
 	spi_register_master(master);
 

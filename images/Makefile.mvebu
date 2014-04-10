@@ -36,3 +36,14 @@ pblx-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += start_globalscale_guruplug
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug.img
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-uart.img
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-2nd.img
+
+USI_TOPKICK_KWBOPTS = ${KWBOPTS} -i $(board)/usi-topkick/kwbimage.cfg
+OPTS_start_usi_topkick.pblx.kwbimg = $(USI_TOPKICK_KWBOPTS)
+OPTS_start_usi_topkick.pblx.kwbuartimg = -m uart $(USI_TOPKICK_KWBOPTS)
+FILE_barebox-usi-topkick.img	= start_usi_topkick.pblx.kwbimg
+FILE_barebox-usi-topkick-uart.img = start_usi_topkick.pblx.kwbuartimg
+FILE_barebox-usi-topkick-2nd.img = start_usi_topkick.pblx
+pblx-$(CONFIG_MACH_USI_TOPKICK) += start_usi_topkick
+image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick.img
+image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick-uart.img
+image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick-2nd.img

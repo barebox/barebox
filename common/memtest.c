@@ -1,7 +1,7 @@
 /*
- * memory_test.c
+ * memtest.c
  *
- * Copyright (c) 2013 Alexander Aring <aar@pengutronix.de>, Pengutronix
+ * Copyright (C) 2013 Alexander Aring <aar@pengutronix.de>, Pengutronix
  *
  * (C) Copyright 2000
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.

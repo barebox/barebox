@@ -24,3 +24,15 @@ pblx-$(CONFIG_MACH_SOLIDRUN_CUBOX) += start_solidrun_cubox
 image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox.img
 image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-uart.img
 image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-2nd.img
+
+# ----------------------- Kirkwood based boards ---------------------------
+GLOBALSCALE_GURUPLUG_KWBOPTS = ${KWBOPTS} -i $(board)/globalscale-guruplug/kwbimage.cfg
+OPTS_start_globalscale_guruplug.pblx.kwbimg = $(GLOBALSCALE_GURUPLUG_KWBOPTS)
+OPTS_start_globalscale_guruplug.pblx.kwbuartimg = -m uart $(GLOBALSCALE_GURUPLUG_KWBOPTS)
+FILE_barebox-globalscale-guruplug.img	= start_globalscale_guruplug.pblx.kwbimg
+FILE_barebox-globalscale-guruplug-uart.img = start_globalscale_guruplug.pblx.kwbuartimg
+FILE_barebox-globalscale-guruplug-2nd.img = start_globalscale_guruplug.pblx
+pblx-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += start_globalscale_guruplug
+image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug.img
+image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-uart.img
+image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-2nd.img

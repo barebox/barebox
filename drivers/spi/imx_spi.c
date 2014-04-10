@@ -67,6 +67,8 @@
 
 #define CSPI_0_0_TEST_LBC		(1 << 14)
 
+#define CSPI_0_0_RESET_START		(1 << 0)
+
 #define CSPI_0_7_RXDATA			0x00
 #define CSPI_0_7_TXDATA			0x04
 #define CSPI_0_7_CTRL			0x08
@@ -197,13 +199,9 @@ static void cspi_0_0_init(struct imx_spi *imx)
 {
 	void __iomem *base = imx->regs;
 
-	writel(CSPI_0_0_CTRL_ENABLE | CSPI_0_0_CTRL_MASTER,
-		     base + CSPI_0_0_CTRL);
-	writel(CSPI_0_0_PERIOD_32KHZ,
-		     base + CSPI_0_0_PERIOD);
-	while (readl(base + CSPI_0_0_INT) & CSPI_0_0_STAT_RR)
-		readl(base + CSPI_0_0_RXDATA);
-	writel(0, base + CSPI_0_0_INT);
+	writel(CSPI_0_0_RESET_START, base + CSPI_0_0_RESET);
+	do {
+	} while (readl(base + CSPI_0_0_RESET) & CSPI_0_0_RESET_START);
 }
 
 static unsigned int cspi_0_7_xchg_single(struct imx_spi *imx, unsigned int data)

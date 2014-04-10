@@ -16,13 +16,50 @@
  */
 
 #include <common.h>
+#include <io.h>
 #include <sizes.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
+#include <mach/common.h>
 #include <mach/lowlevel.h>
 
 void __naked barebox_arm_reset_vector(void)
 {
 	arm_cpu_lowlevel_init();
 	mvebu_barebox_entry(NULL);
+}
+
+/*
+ * All MVEBU SoCs start with internal registers at 0xd0000000.
+ * To get more contiguous address space and as Linux expects them
+ * there, we remap them early to 0xf1000000.
+ *
+ * There is no way to determine internal registers base address
+ * safely later on, as the remap register itself is within the
+ * internal registers.
+ */
+#define MVEBU_BOOTUP_INT_REG_BASE	0xd0000000
+#define MVEBU_BRIDGE_REG_BASE		0x20000
+#define DEVICE_INTERNAL_BASE_ADDR	(MVEBU_BRIDGE_REG_BASE + 0x80)
+
+static void mvebu_remap_registers(void)
+{
+	writel(MVEBU_REMAP_INT_REG_BASE,
+	       IOMEM(MVEBU_BOOTUP_INT_REG_BASE) + DEVICE_INTERNAL_BASE_ADDR);
+}
+
+/*
+ * Determining the actual memory size is highly SoC dependent,
+ * but for all SoCs RAM starts at 0x00000000. Therefore, we start
+ * with a minimal memory setup of 64M and probe correct memory size
+ * later.
+ */
+#define MVEBU_BOOTUP_MEMORY_BASE	0x00000000
+#define MVEBU_BOOTUP_MEMORY_SIZE	SZ_64M
+
+void __naked __noreturn mvebu_barebox_entry(void *boarddata)
+{
+	mvebu_remap_registers();
+	barebox_arm_entry(MVEBU_BOOTUP_MEMORY_BASE,
+			  MVEBU_BOOTUP_MEMORY_SIZE, boarddata);
 }

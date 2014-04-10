@@ -1,0 +1,18 @@
+/*
+ * Barebox specific DT overlay for OpenBlocks AX3-4 board
+ *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ */
+
+#include "arm/armada-xp-openblocks-ax3-4.dts"
+
+/ {
+	soc {
+		internal-regs {
+			gpio_leds {
+				red_led {
+					barebox,default-trigger = "heartbeat";
+				};
+			};
+		};
+	};
+};

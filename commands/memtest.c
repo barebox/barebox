@@ -232,12 +232,12 @@ out:
 		if (ret == -EINTR)
 			printf("\n");
 
-		printf("Memtest failed.\n");
+		printf("Memtest failed. Error: %d\n", ret);
 		return 1;
-	} else {
-		printf("Memtest successful.\n");
-		return 0;
 	}
+
+	printf("Memtest successful.\n");
+	return 0;
 }
 
 static const __maybe_unused char cmd_memtest_help[] =

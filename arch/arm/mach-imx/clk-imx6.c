@@ -433,6 +433,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ecspi_root], MX6_ECSPI5_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg_per], MX6_GPT_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[ipg], MX6_ENET_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[ipg], MX6_OCOTP_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[usdhc1_podf], MX6_USDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[usdhc2_podf], MX6_USDHC2_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[usdhc3_podf], MX6_USDHC3_BASE_ADDR, NULL);

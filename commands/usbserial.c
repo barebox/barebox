@@ -31,7 +31,6 @@ static int do_usbserial(int argc, char *argv[])
 {
 	int opt;
 	struct usb_serial_pdata pdata;
-	char *argstr;
 	char *manufacturer = "barebox";
 	const char *productname = barebox_get_model();
 	u16 idVendor = 0, idProduct = 0;
@@ -67,8 +66,6 @@ static int do_usbserial(int argc, char *argv[])
 			return 0;
 		}
 	}
-
-	argstr = argv[optind];
 
 	pdata.manufacturer = manufacturer;
 	pdata.productname = productname;

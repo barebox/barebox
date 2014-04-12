@@ -392,16 +392,12 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	struct console_device *cdev;
 	int error, i;
 
-	keypad = xzalloc(sizeof(struct imx_keypad));
-	if (!keypad) {
-		pr_err("not enough memory for driver data\n");
-		error = -ENOMEM;
-	}
-
 	if (!keymap_data) {
 		pr_err("no keymap defined\n");
 		return -ENODEV;
 	}
+
+	keypad = xzalloc(sizeof(struct imx_keypad));
 
 	keypad->dev = dev;
 	keypad->mmio_base = dev_request_mem_region(dev, 0);
@@ -420,8 +416,8 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	if (keypad->rows_en_mask > ((1 << MAX_MATRIX_KEY_ROWS) - 1) ||
 	   keypad->cols_en_mask > ((1 << MAX_MATRIX_KEY_COLS) - 1)) {
 		pr_err("invalid key data (too many rows or colums)\n");
-		error = -EINVAL;
-		//goto failed_clock_put;
+		free(keypad);
+		return -EINVAL;
 	}
 	pr_debug("enabled rows mask: %x\n", keypad->rows_en_mask);
 	pr_debug("enabled cols mask: %x\n", keypad->cols_en_mask);
@@ -446,7 +442,6 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	console_register(&keypad->cdev);
 
 	return poller_register(&keypad->poller);
-
 }
 
 static struct driver_d imx_keypad_driver = {

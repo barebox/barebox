@@ -13,6 +13,18 @@ board = $(srctree)/arch/$(ARCH)/boards
 
 KWBOPTS = -c -d 0x1000000 -e 0x1000000
 
+# ----------------------- Armada 370 based boards ---------------------------
+GLOBALSCALE_MIRABOX_KWBOPTS = ${KWBOPTS} -i $(board)/globalscale-mirabox/kwbimage.cfg
+OPTS_start_globalscale_mirabox.pblx.kwbimg = $(GLOBALSCALE_MIRABOX_KWBOPTS)
+OPTS_start_globalscale_mirabox.pblx.kwbuartimg = -m uart $(GLOBALSCALE_MIRABOX_KWBOPTS)
+FILE_barebox-globalscale-mirabox.img	= start_globalscale_mirabox.pblx.kwbimg
+FILE_barebox-globalscale-mirabox-uart.img = start_globalscale_mirabox.pblx.kwbuartimg
+FILE_barebox-globalscale-mirabox-2nd.img = start_globalscale_mirabox.pblx
+pblx-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += start_globalscale_mirabox
+image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox.img
+image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-uart.img
+image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-2nd.img
+
 # ----------------------- Dove 88AP510 based boards ---------------------------
 SOLIDRUN_CUBOX_KWBOPTS = ${KWBOPTS} -i $(board)/solidrun-cubox/kwbimage.cfg
 OPTS_start_solidrun_cubox.pblx.kwbimg = $(SOLIDRUN_CUBOX_KWBOPTS)

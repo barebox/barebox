@@ -7,10 +7,7 @@
 static int mtd_part_read(struct mtd_info *mtd, loff_t from, size_t len,
                 size_t *retlen, u_char *buf)
 {
-	struct mtd_ecc_stats stats;
 	int res;
-
-	stats = mtd->master->ecc_stats;
 
 	if (from >= mtd->size)
 		len = 0;

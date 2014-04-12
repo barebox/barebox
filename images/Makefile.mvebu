@@ -26,6 +26,17 @@ image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-uart.img
 image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-2nd.img
 
 # ----------------------- Armada XP based boards ---------------------------
+PLATHOME_OPENBLOCKS_AX3_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-ax3/kwbimage.cfg
+OPTS_start_plathome_openblocks_ax3.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
+OPTS_start_plathome_openblocks_ax3.pblx.kwbuartimg = -m uart $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
+FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblx.kwbimg
+FILE_barebox-plathome-openblocks-ax3-uart.img = start_plathome_openblocks_ax3.pblx.kwbuartimg
+FILE_barebox-plathome-openblocks-ax3-2nd.img = start_plathome_openblocks_ax3.pblx
+pblx-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += start_plathome_openblocks_ax3
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-uart.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-2nd.img
+
 MARVELL_ARMADA_XP_GP_KWBOPTS = ${KWBOPTS} -i $(board)/marvell-armada-xp-gp/kwbimage.cfg
 OPTS_start_marvell_armada_xp_gp.pblx.kwbimg = $(MARVELL_ARMADA_XP_GP_KWBOPTS)
 OPTS_start_marvell_armada_xp_gp.pblx.kwbuartimg = -m uart $(MARVELL_ARMADA_XP_GP_KWBOPTS)

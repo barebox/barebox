@@ -78,9 +78,6 @@ static void pata_imx_set_bus_timing(void __iomem *base, unsigned long clkrate,
 {
 	uint32_t T = 1000000000 / clkrate;
 
-	struct mxc_ata_config_regs *ata_regs;
-	ata_regs = (struct mxc_ata_config_regs *)base;
-
 	if (mode >= ARRAY_SIZE(pio_t1))
 		return;
 

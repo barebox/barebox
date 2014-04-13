@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -40,6 +40,10 @@ void tegra_maincomplex_entry(void)
 	case TEGRA20:
 		rambase = 0x0;
 		ramsize = tegra20_get_ramsize();
+		break;
+	case TEGRA30:
+		rambase = SZ_2G;
+		ramsize = tegra30_get_ramsize();
 		break;
 	default:
 		/* If we don't know the chiptype, better bail out */

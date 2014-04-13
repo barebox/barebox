@@ -46,6 +46,9 @@ config ARCH_TEGRA_2x_SOC
 	bool
 	select PINCTRL_TEGRA20
 
+config ARCH_TEGRA_3x_SOC
+	bool
+
 menu "select Tegra boards to be built"
 
 config MACH_TORADEX_COLIBRI_T20

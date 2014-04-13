@@ -200,6 +200,19 @@ int tegra_get_osc_clock(void)
 	}
 }
 
+static __always_inline
+int tegra_get_pllp_rate(void)
+{
+	switch (tegra_get_chiptype()) {
+	case TEGRA20:
+		return 216000000;
+	case TEGRA30:
+		return 408000000;
+	default:
+		return 0;
+	}
+}
+
 #define TIMER_CNTR_1US	0x00
 #define TIMER_USEC_CFG	0x04
 

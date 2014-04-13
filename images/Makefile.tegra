@@ -12,3 +12,8 @@ image-$(CONFIG_MACH_TOSHIBA_AC100) += barebox-tegra20-toshiba-ac100.img
 pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_toradex_colibri_t20_iris
 FILE_barebox-tegra20-toradex-colibri-t20-iris.img = start_toradex_colibri_t20_iris.pblx
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-iris.img
+
+# ----------------------- Tegra30 based boards ---------------------------
+pblx-$(CONFIG_MACH_NVIDIA_BEAVER) += start_nvidia_beaver
+FILE_barebox-tegra30-nvidia-beaver.img = start_nvidia_beaver.pblx
+image-$(CONFIG_MACH_NVIDIA_BEAVER) += barebox-tegra30-nvidia-beaver.img

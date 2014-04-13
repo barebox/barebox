@@ -33,3 +33,9 @@ config PINCTRL_TEGRA20
 	bool
 	help
 	  The pinmux controller found on the Tegra 20 line of SoCs.
+
+config PINCTRL_TEGRA30
+	select PINCTRL
+	bool
+	help
+	  The pinmux controller found on the Tegra 30 line of SoCs.

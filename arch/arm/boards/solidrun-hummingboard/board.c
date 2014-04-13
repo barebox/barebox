@@ -20,6 +20,7 @@
 #include <envfs.h>
 #include <gpio.h>
 #include <init.h>
+#include <mach/bbu.h>
 #include <mach/generic.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx6.h>
@@ -74,6 +75,18 @@ static int hummingboard_device_init(void)
 	return 0;
 }
 device_initcall(hummingboard_device_init);
+
+static int hummingboard_late_init(void)
+{
+	if (!of_machine_is_compatible("solidrun,hummingboard"))
+		return 0;
+
+	imx6_bbu_internal_mmc_register_handler("sdcard", "/dev/mmc1.barebox",
+		BBU_HANDLER_FLAG_DEFAULT);
+
+	return 0;
+}
+late_initcall(hummingboard_late_init);
 
 static int hummingboard_lwl_init(void)
 {

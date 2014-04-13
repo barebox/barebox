@@ -175,10 +175,19 @@ static struct tegra_gpio_soc_config tegra20_gpio_config = {
 	.bank_count = 7,
 };
 
+static struct tegra_gpio_soc_config tegra30_gpio_config = {
+	.bank_stride = 0x100,
+	.upper_offset = 0x80,
+	.bank_count = 8,
+};
+
 static __maybe_unused struct of_device_id tegra_gpio_dt_ids[] = {
 	{
 		.compatible = "nvidia,tegra20-gpio",
 		.data = (unsigned long)&tegra20_gpio_config
+	}, {
+		.compatible = "nvidia,tegra30-gpio",
+		.data = (unsigned long)&tegra30_gpio_config
 	}, {
 		/* sentinel */
 	},

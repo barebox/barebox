@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -58,8 +58,22 @@ console_initcall(tegra20_add_debug_console);
 
 static int tegra20_mem_init(void)
 {
+	if (!of_machine_is_compatible("nvidia,tegra20"))
+		return 0;
+
 	arm_add_mem_device("ram0", 0x0, tegra20_get_ramsize());
 
 	return 0;
 }
 mem_initcall(tegra20_mem_init);
+
+static int tegra30_mem_init(void)
+{
+	if (!of_machine_is_compatible("nvidia,tegra30"))
+		return 0;
+
+	arm_add_mem_device("ram0", SZ_2G, tegra30_get_ramsize());
+
+	return 0;
+}
+mem_initcall(tegra30_mem_init);

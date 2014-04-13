@@ -339,7 +339,7 @@ static int tegra_sdmmc_init(struct mci_host *mci, struct device_d *dev)
 
 	val = readl(regs + TEGRA_SDMMC_INT_STAT_EN);
 	val &= ~(0xffff);
-	val = (TEGRA_SDMMC_INT_STAT_EN_CMD_COMPLETE |
+	val |= (TEGRA_SDMMC_INT_STAT_EN_CMD_COMPLETE |
 		TEGRA_SDMMC_INT_STAT_EN_XFER_COMPLETE |
 		TEGRA_SDMMC_INT_STAT_EN_DMA_INTERRUPT |
 		TEGRA_SDMMC_INT_STAT_EN_BUFFER_WRITE_READY |
@@ -348,7 +348,7 @@ static int tegra_sdmmc_init(struct mci_host *mci, struct device_d *dev)
 
 	val = readl(regs + TEGRA_SDMMC_INT_SIG_EN);
 	val &= ~(0xffff);
-	val = TEGRA_SDMMC_INT_SIG_EN_XFER_COMPLETE;
+	val |= TEGRA_SDMMC_INT_SIG_EN_XFER_COMPLETE;
 	writel(val, regs + TEGRA_SDMMC_INT_SIG_EN);
 
 	tegra_sdmmc_set_clock(host, 400000);

@@ -27,6 +27,7 @@
 	ARMADA_370_XP_UARTn_BASE(CONFIG_MVEBU_CONSOLE_UART)
 
 static struct clk *tclk;
+static struct clk *refclk;
 
 static inline void armada_370_xp_memory_find(unsigned long *phys_base,
 					     unsigned long *phys_size)
@@ -92,6 +93,7 @@ static int armada_xp_init_clocks(void)
 {
 	/* On Armada XP, the TCLK frequency is always 250 Mhz */
 	tclk = clk_fixed("tclk", 250000000);
+	refclk = clk_fixed("ref25M", 25000000);
 	return 0;
 }
 #define armada_370_xp_init_clocks()	armada_xp_init_clocks()
@@ -106,6 +108,9 @@ static int armada_370_xp_init_soc(void)
 
 	armada_370_xp_init_clocks();
 	clkdev_add_physbase(tclk, (unsigned int)ARMADA_370_XP_TIMER_BASE, NULL);
+	if (refclk && !IS_ERR(refclk))
+		clkdev_add_physbase(refclk, (u32)ARMADA_370_XP_TIMER_BASE,
+				    "fixed");
 	add_generic_device("mvebu-timer", DEVICE_ID_SINGLE, NULL,
 			   (unsigned int)ARMADA_370_XP_TIMER_BASE, 0x30,
 			   IORESOURCE_MEM, NULL);

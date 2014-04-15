@@ -241,7 +241,7 @@ BAREBOX_CMD_END
 
 static const __maybe_unused char cmd_loady_help[] =
 	"[OPTIONS]\n"
-	"  -y        - use Y-Modem/G (only for lossless tty as USB)\n"
+	"  -g        - use Y-Modem/G (only for lossless tty as USB)\n"
 	"  -t name   - console device name to use - defaults to current console\n"
 	"  -b baud   - baudrate at which to download - defaults to console baudrate\n";
 

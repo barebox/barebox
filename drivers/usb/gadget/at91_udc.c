@@ -1329,13 +1329,15 @@ int usb_gadget_poll(void)
 	if (!udc->udp_baseaddr)
 		return -ENODEV;
 
-	value = gpio_get_value(udc->board.vbus_pin);
-	value ^= udc->board.vbus_active_low;
+	if (gpio_is_valid(udc->board.vbus_pin)) {
+		value = gpio_get_value(udc->board.vbus_pin);
+		value ^= udc->board.vbus_active_low;
 
-	udc->gpio_vbus_val = value;
+		udc->gpio_vbus_val = value;
 
-	if (!value)
-		return 0;
+		if (!value)
+			return 0;
+	}
 
 	value = at91_udp_read(udc, AT91_UDP_ISR) & (~(AT91_UDP_SOFINT));
 	if (value)
@@ -1501,13 +1503,13 @@ static int __init at91udc_probe(struct device_d *dev)
 		udc->vbus = gpio_get_value(udc->board.vbus_pin);
 		DBG(udc, "VBUS detection: host:%s \n",
 			udc->vbus ? "present":"absent");
+
+		dev_add_param_bool(dev, "vbus",
+			at91_udc_vbus_set, NULL, &udc->gpio_vbus_val, udc);
 	} else {
 		DBG(udc, "no VBUS detection, assuming always-on\n");
 		udc->vbus = 1;
 	}
-
-	dev_add_param_bool(dev, "vbus",
-			at91_udc_vbus_set, NULL, &udc->gpio_vbus_val, udc);
 
 	poller_register(&poller);
 

@@ -528,7 +528,7 @@ static int parse_config(const char *filename)
 	int lineno = 0;
 	char *line = NULL, *tmp;
 	char *argv[MAXARGS];
-	int nargs, i, ret;
+	int nargs, i, ret = 0;
 
 	f = fopen(filename, "r");
 	if (!f) {
@@ -559,7 +559,7 @@ static int parse_config(const char *filename)
 				if (ret) {
 					fprintf(stderr, "error in line %d: %s\n",
 							lineno, strerror(-ret));
-					return ret;
+					goto cleanup;
 				}
 				break;
 			}
@@ -567,11 +567,13 @@ static int parse_config(const char *filename)
 
 		if (ret == -ENOENT) {
 			fprintf(stderr, "no such command: %s\n", argv[0]);
-			return ret;
+			goto cleanup;
 		}
 	}
 
-	return 0;
+cleanup:
+	fclose(f);
+	return ret;
 }
 
 static int xread(int fd, void *buf, int len)

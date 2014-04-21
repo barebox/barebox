@@ -276,7 +276,7 @@ static void jtag_info(struct device_d *pdev)
 	struct jtag_info *info = pdev->priv;
 
 	printf(" JTAG:\n");
-	printf("  Devices found: %d\n", info->devices);
+	printf("  Devices found: %u\n", info->devices);
 	for (dn = 0; dn < info->devices; dn++) {
 		jid.device = dn;
 		ret = jtag_ioctl(&info->cdev, JTAG_GET_ID, &jid);

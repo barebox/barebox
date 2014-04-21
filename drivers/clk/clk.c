@@ -428,7 +428,7 @@ static void dump_one(struct clk *clk, int verbose, int indent)
 {
 	struct clk *c;
 
-	printf("%*s%s (rate %ld, %sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
+	printf("%*s%s (rate %lu, %sabled)\n", indent * 4, "", clk->name, clk_get_rate(clk),
 			clk_is_enabled(clk) ? "en" : "dis");
 	if (verbose) {
 

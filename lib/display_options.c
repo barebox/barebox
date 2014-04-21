@@ -62,7 +62,7 @@ char *size_human_readable(unsigned long long size)
 
 	ptr += sprintf(buf, "%lu", n);
 	if (m) {
-		ptr += sprintf(ptr, ".%ld", m);
+		ptr += sprintf(ptr, ".%lu", m);
 	}
 	sprintf(ptr, " %ciB", c);
 

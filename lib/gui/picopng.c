@@ -800,7 +800,7 @@ int main(int argc, char **argv)
 #ifdef ALLOC_DEBUG
 	png_alloc_node_t *node;
 	for (node = png_alloc_head, n = 1; node; node = node->next, n++)
-		printf("node %d (%p) addr = %p, size = %ld\n", n, node, node->addr, node->size);
+		printf("node %d (%p) addr = %p, size = %zu\n", n, node, node->addr, node->size);
 #endif
 	png_alloc_free_all(); // also frees info and image data from PNG_decode
 

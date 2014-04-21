@@ -706,12 +706,12 @@ int usb_get_configuration_no(struct usb_device *dev,
 
 	if (tmp > USB_BUFSIZ) {
 		USB_PRINTF("usb_get_configuration_no: failed to get " \
-			   "descriptor - too long: %d\n", tmp);
+			   "descriptor - too long: %u\n", tmp);
 		return -1;
 	}
 
 	result = usb_get_descriptor(dev, USB_DT_CONFIG, cfgno, buffer, tmp);
-	USB_PRINTF("get_conf_no %d Result %d, wLength %d\n",
+	USB_PRINTF("get_conf_no %d Result %d, wLength %u\n",
 		   cfgno, result, tmp);
 	return result;
 }

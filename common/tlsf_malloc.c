@@ -97,5 +97,5 @@ void malloc_stats(void)
 
 	tlsf_walk_heap(tlsf_mem_pool, malloc_walker, &s);
 
-	printf("used: %10d\nfree: %10d\n", s.used, s.free);
+	printf("used: %10zu\nfree: %10zu\n", s.used, s.free);
 }

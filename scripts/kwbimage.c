@@ -1265,7 +1265,7 @@ static void image_dump_config(struct image_cfg_element *image_cfg,
 		struct image_cfg_element *e = &image_cfg[cfgi];
 		switch (e->type) {
 		case IMAGE_CFG_VERSION:
-			printf("VERSION %d\n", e->version);
+			printf("VERSION %u\n", e->version);
 			break;
 		case IMAGE_CFG_BOOT_FROM:
 			printf("BOOTFROM %s\n",

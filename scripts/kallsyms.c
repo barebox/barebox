@@ -286,7 +286,7 @@ static void write_src(void)
 	printf("\n");
 
 	output_label("kallsyms_num_syms");
-	printf("\tPTR\t%d\n", table_cnt);
+	printf("\tPTR\t%u\n", table_cnt);
 	printf("\n");
 
 	/* table of offset markers, that give the offset in the compressed stream
@@ -315,7 +315,7 @@ static void write_src(void)
 
 	output_label("kallsyms_markers");
 	for (i = 0; i < ((table_cnt + 255) >> 8); i++)
-		printf("\tPTR\t%d\n", markers[i]);
+		printf("\tPTR\t%u\n", markers[i]);
 	printf("\n");
 
 	free(markers);
@@ -332,7 +332,7 @@ static void write_src(void)
 
 	output_label("kallsyms_token_index");
 	for (i = 0; i < 256; i++)
-		printf("\t.short\t%d\n", best_idx[i]);
+		printf("\t.short\t%u\n", best_idx[i]);
 	printf("\n");
 }
 

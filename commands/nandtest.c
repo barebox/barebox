@@ -161,7 +161,7 @@ static void print_stats(int nr_passes, int length)
 			* nr_passes);
 
 	for (i = 0; i < MAX_ECC_BITS; i++)
-		printf("ECC %d bit error(s)	: %d\n", i + 1, ecc_stats[i]);
+		printf("ECC %d bit error(s)	: %u\n", i + 1, ecc_stats[i]);
 
 	printf("ECC >%d bit error(s)	: %u\n", MAX_ECC_BITS, ecc_stats_over);
 	printf("ECC corrections failed	: %u\n", ecc_failed_cnt);

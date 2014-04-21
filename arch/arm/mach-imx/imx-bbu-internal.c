@@ -281,12 +281,12 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 		}
 	}
 
-	debug("total image size: 0x%08x. Space needed including bad blocks: 0x%08x\n",
+	debug("total image size: 0x%08zx. Space needed including bad blocks: 0x%08zx\n",
 			data->len + 0x8000,
 			data->len + 0x8000 + *num_bb * blocksize);
 
 	if (data->len + 0x8000 + *num_bb * blocksize > imx_handler->device_size) {
-		printf("needed space (0x%08x) exceeds partition space (0x%08x)\n",
+		printf("needed space (0x%08zx) exceeds partition space (0x%08zx)\n",
 				data->len + 0x8000 + *num_bb * blocksize,
 				imx_handler->device_size);
 		ret = -ENOSPC;

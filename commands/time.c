@@ -37,7 +37,7 @@ static int do_time(int argc, char *argv[])
 
 	diff = diff64;
 
-	printf("time: %ldms\n", diff);
+	printf("time: %lums\n", diff);
 
 	free(buf);
 

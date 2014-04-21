@@ -74,7 +74,7 @@ void uimage_print_contents(struct uimage_handle *handle)
 }
 EXPORT_SYMBOL(uimage_print_contents);
 
-size_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no)
+ssize_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no)
 {
 	if (image_no >= handle->nb_data_entries)
 		return -EINVAL;
@@ -373,7 +373,7 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr)
 	struct resource *res;
 	size_t size = BUFSIZ;
 	size_t ofs = 0;
-	size_t now;
+	ssize_t now;
 	int fd;
 
 	fd = open(filename, O_RDONLY);
@@ -420,7 +420,7 @@ struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
 		int image_no, unsigned long load_address)
 {
 	int ret;
-	size_t size;
+	ssize_t size;
 	resource_size_t start = (resource_size_t)load_address;
 
 	uimage_buf = (void *)load_address;

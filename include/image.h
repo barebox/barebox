@@ -230,7 +230,7 @@ int uimage_verify(struct uimage_handle *handle);
 int uimage_load(struct uimage_handle *handle, unsigned int image_no,
 		int(*flush)(void*, unsigned int));
 void uimage_print_contents(struct uimage_handle *handle);
-size_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no);
+ssize_t uimage_get_size(struct uimage_handle *handle, unsigned int image_no);
 struct resource *uimage_load_to_sdram(struct uimage_handle *handle,
 		int image_no, unsigned long load_address);
 void *uimage_load_to_buf(struct uimage_handle *handle, int image_no,

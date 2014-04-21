@@ -109,10 +109,8 @@ int of_get_display_timing(struct device_node *np, const char *name,
 {
 	struct device_node *timing_np;
 
-	if (!np) {
-		pr_err("%s: no devicenode given\n", np->full_name);
+	if (!np)
 		return -EINVAL;
-	}
 
 	timing_np = of_get_child_by_name(np, name);
 	if (!timing_np) {
@@ -136,10 +134,8 @@ struct display_timings *of_get_display_timings(struct device_node *np)
 	struct device_node *native_mode;
 	struct display_timings *disp;
 
-	if (!np) {
-		pr_err("%s: no device node given\n", np->full_name);
+	if (!np)
 		return NULL;
-	}
 
 	timings_np = of_get_child_by_name(np, "display-timings");
 	if (!timings_np) {

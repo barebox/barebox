@@ -162,6 +162,7 @@ static void __init soc_detect(u32 dbgu_base)
 			break;
 		case ARCH_EXID_SAMA5D35:
 			at91_soc_initdata.subtype = AT91_SOC_SAMA5D35;
+			break;
 		case ARCH_EXID_SAMA5D36:
 			at91_soc_initdata.subtype = AT91_SOC_SAMA5D36;
 			break;

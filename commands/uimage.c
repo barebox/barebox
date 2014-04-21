@@ -62,12 +62,9 @@ static int do_uimage(int argc, char *argv[])
 	if (verify) {
 		printf("verifying data crc... ");
 		ret = uimage_verify(handle);
-		if (ret) {
+		if (ret)
 			goto err;
-			printf("Bad Data CRC\n");
-		} else {
-			printf("ok\n");
-		}
+		printf("ok\n");
 	}
 
 	if (extract) {

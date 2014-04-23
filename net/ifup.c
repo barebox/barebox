@@ -31,7 +31,6 @@ static char *vars[] = {
 	"netmask",
 	"gateway",
 	"serverip",
-	"ethaddr",
 };
 
 static int eth_set_param(struct device_d *dev, const char *param)

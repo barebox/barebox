@@ -70,14 +70,18 @@ int ifup(const char *name, unsigned flags)
 	cmd_discover = asprintf("/env/network/%s-discover", name);
 
 	ret = run_command(cmd);
-	if (ret)
+	if (ret) {
+		pr_err("Running '%s' failed with %d\n", cmd, ret);
 		goto out;
+	}
 
 	ret = stat(cmd_discover, &s);
 	if (!ret) {
 		ret = run_command(cmd_discover);
-		if (ret)
+		if (ret) {
+			pr_err("Running '%s' failed with %d\n", cmd, ret);
 			goto out;
+		}
 	}
 
 	dev = get_device_by_name(name);

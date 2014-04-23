@@ -14,3 +14,5 @@ serverip=
 #ethaddr=xx:xx:xx:xx:xx:xx
 
 # put code to discover eth0 (i.e. 'usb') to /env/network/eth0-discover
+
+exit 0

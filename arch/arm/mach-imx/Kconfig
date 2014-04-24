@@ -250,6 +250,10 @@ config MACH_SOLIDRUN_HUMMINGBOARD
 	bool "SolidRun Hummingboard"
 	select ARCH_IMX6
 
+config MACH_EMBEST_RIOTBOARD
+	bool "Embest RIoTboard"
+	select ARCH_IMX6
+
 config MACH_UDOO
 	bool "Freescale i.MX6 UDOO Board"
 	select ARCH_IMX6

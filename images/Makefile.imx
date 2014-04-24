@@ -166,3 +166,8 @@ pblx-$(CONFIG_MACH_VARISCITE_MX6) += start_variscite_custom
 CFG_start_variscite_custom.pblx.imximg = $(board)/variscite-mx6/flash-header-variscite.imxcfg
 FILE_barebox-variscite-custom.img = start_variscite_custom.pblx.imximg
 image-$(CONFIG_MACH_VARISCITE_MX6) += barebox-variscite-custom.img
+
+pblx-$(CONFIG_MACH_EMBEST_RIOTBOARD) += start_imx6s_riotboard
+CFG_start_imx6s_riotboard.pblx.imximg = $(board)/embest-riotboard/flash-header-embest-riotboard.imxcfg
+FILE_barebox-embest-imx6s-riotboard.img = start_imx6s_riotboard.pblx.imximg
+image-$(CONFIG_MACH_EMBEST_RIOTBOARD) += barebox-embest-imx6s-riotboard.img

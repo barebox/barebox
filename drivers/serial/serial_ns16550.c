@@ -194,6 +194,10 @@ static void ns16450_serial_init_port(struct console_device *cdev)
 
 static void ns16550_omap_init_port(struct console_device *cdev)
 {
+	struct ns16550_priv *priv = to_ns16550_priv(cdev);
+
+	priv->plat.shift = 2;
+
 	ns16550_serial_init_port(cdev);
 
 	ns16550_write(cdev, 0x07, omap_mdr1);	/* Disable */

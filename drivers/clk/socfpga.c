@@ -49,25 +49,6 @@
 
 static void __iomem *clk_mgr_base_addr;
 
-char *of_clk_get_parent_name(struct device_node *np, unsigned int index)
-{
-	struct of_phandle_args clkspec;
-	const char *clk_name;
-	int rc;
-
-	rc = of_parse_phandle_with_args(np, "clocks", "#clock-cells", index,
-			&clkspec);
-	if (rc)
-		return NULL;
-
-	if (of_property_read_string_index(clkspec.np, "clock-output-names",
-				clkspec.args_count ? clkspec.args[0] : 0,
-				&clk_name) < 0)
-		clk_name = clkspec.np->name;
-
-	return xstrdup(clk_name);
-}
-
 static struct clk *socfpga_fixed_clk(struct device_node *node)
 {
 	uint32_t f = 0;

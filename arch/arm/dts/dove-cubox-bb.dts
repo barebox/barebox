@@ -3,7 +3,7 @@
  *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  */
 
-#include "dove-cubox.dts"
+#include "arm/dove-cubox.dts"
 
 / {
 	chosen {

@@ -23,16 +23,10 @@
 
 static int do_umount(int argc, char *argv[])
 {
-	int ret = 0;
-
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	if ((ret = umount(argv[1]))) {
-		perror("umount");
-		return 1;
-	}
-	return 0;
+	return umount(argv[1]);
 }
 
 static const __maybe_unused char cmd_umount_help[] =

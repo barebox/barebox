@@ -36,7 +36,7 @@ static inline struct clk *imx_clk_mux_p(const char *name, void __iomem *reg,
 static inline struct clk *imx_clk_gate(const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
 {
-	return clk_gate(name, parent, reg, shift, CLK_SET_RATE_PARENT);
+	return clk_gate(name, parent, reg, shift, CLK_SET_RATE_PARENT, 0);
 }
 
 struct clk *imx_clk_pllv1(const char *name, const char *parent,

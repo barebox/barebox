@@ -4,4 +4,12 @@ config ARCH_TEXT_BASE
 	hex
 	default 0x68000000
 
+choice
+	prompt "Board type"
+
+config MACH_RADXA_ROCK
+	bool "Radxa rock board"
+
+endchoice
+
 endif

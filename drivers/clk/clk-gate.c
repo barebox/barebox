@@ -30,36 +30,33 @@ struct clk_gate {
 
 #define to_clk_gate(_clk) container_of(_clk, struct clk_gate, clk)
 
-static int clk_gate_enable(struct clk *clk)
+static void clk_gate_endisable(struct clk *clk, int enable)
 {
-	struct clk_gate *g = container_of(clk, struct clk_gate, clk);
+	struct clk_gate *gate = container_of(clk, struct clk_gate, clk);
+	int set = gate->flags & CLK_GATE_INVERTED ? 1 : 0;
 	u32 val;
 
-	val = readl(g->reg);
+	set ^= enable;
+	val = readl(gate->reg);
 
-	if (g->flags & CLK_GATE_INVERTED)
-		val &= ~(1 << g->shift);
+	if (set)
+		val |= BIT(gate->shift);
 	else
-		val |= 1 << g->shift;
+		val &= ~BIT(gate->shift);
 
-	writel(val, g->reg);
+	writel(val, gate->reg);
+}
+
+static int clk_gate_enable(struct clk *clk)
+{
+	clk_gate_endisable(clk, 1);
 
 	return 0;
 }
 
 static void clk_gate_disable(struct clk *clk)
 {
-	struct clk_gate *g = container_of(clk, struct clk_gate, clk);
-	u32 val;
-
-	val = readl(g->reg);
-
-	if (g->flags & CLK_GATE_INVERTED)
-		val |= 1 << g->shift;
-	else
-		val &= ~(1 << g->shift);
-
-	writel(val, g->reg);
+	clk_gate_endisable(clk, 0);
 }
 
 static int clk_gate_is_enabled(struct clk *clk)

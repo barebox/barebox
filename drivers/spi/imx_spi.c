@@ -430,7 +430,7 @@ static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
 static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
-	struct spi_transfer *t = NULL;
+	struct spi_transfer *t;
 
 	imx->chipselect(spi, 1);
 

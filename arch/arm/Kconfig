@@ -125,6 +125,11 @@ config ARCH_PXA
 	select GENERIC_GPIO
 	select HAS_POWEROFF
 
+config ARCH_ROCKCHIP
+	bool "Rockchip RX3xxx"
+	select CPU_V7
+	select ARM_SMP_TWD
+
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA cyclone5"
 	select HAS_DEBUG_LL
@@ -204,6 +209,7 @@ source arch/arm/mach-netx/Kconfig
 source arch/arm/mach-nomadik/Kconfig
 source arch/arm/mach-omap/Kconfig
 source arch/arm/mach-pxa/Kconfig
+source arch/arm/mach-rockchip/Kconfig
 source arch/arm/mach-samsung/Kconfig
 source arch/arm/mach-socfpga/Kconfig
 source arch/arm/mach-versatile/Kconfig

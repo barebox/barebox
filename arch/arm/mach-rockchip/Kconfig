@@ -1,0 +1,7 @@
+if ARCH_ROCKCHIP
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x68000000
+
+endif

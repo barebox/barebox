@@ -129,6 +129,9 @@ config ARCH_ROCKCHIP
 	bool "Rockchip RX3xxx"
 	select CPU_V7
 	select ARM_SMP_TWD
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA cyclone5"

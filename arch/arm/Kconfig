@@ -132,6 +132,8 @@ config ARCH_ROCKCHIP
 	select COMMON_CLK
 	select CLKDEV_LOOKUP
 	select COMMON_CLK_OF_PROVIDER
+	select GPIOLIB
+	select PINCTRL_ROCKCHIP
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA cyclone5"

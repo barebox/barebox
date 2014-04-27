@@ -37,12 +37,19 @@ static void clk_gate_endisable(struct clk *clk, int enable)
 	u32 val;
 
 	set ^= enable;
-	val = readl(gate->reg);
 
-	if (set)
-		val |= BIT(gate->shift);
-	else
-		val &= ~BIT(gate->shift);
+	if (gate->flags & CLK_GATE_HIWORD_MASK) {
+		val = BIT(gate->shift + 16);
+		if (set)
+			val |= BIT(gate->shift);
+	} else {
+		val = readl(gate->reg);
+
+		if (set)
+			val |= BIT(gate->shift);
+		else
+			val &= ~BIT(gate->shift);
+	}
 
 	writel(val, gate->reg);
 }

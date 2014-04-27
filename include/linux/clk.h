@@ -200,6 +200,7 @@ static inline int clk_set_rate(struct clk *clk, unsigned long rate)
 #define CLK_SET_RATE_PARENT     (1 << 0) /* propagate rate change up one level */
 
 #define CLK_GATE_INVERTED	(1 << 0)
+#define CLK_GATE_HIWORD_MASK	(1 << 1)
 
 struct clk_ops {
 	int		(*enable)(struct clk *clk);

@@ -1,5 +1,9 @@
 menu MFD
 
+config MFD_ACT8846
+	depends on I2C
+	bool "ACT8846 driver"
+
 config MFD_LP3972
 	depends on I2C
 	bool "LP3972 driver"

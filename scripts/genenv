@@ -10,7 +10,26 @@ basedir=$1
 target=$3
 shift 3
 
-tempdir="${target}.genenv.tmp"
+abspath() {
+	local fn dn
+	if [ $# -ne 1 ]; then
+		echo "usage: ptxd_abspath <path>"
+		exit 1
+	fi
+	if [ -d "${1}" ]; then
+		fn=""
+		dn="${1}"
+	else
+		fn="/$(basename "${1}")"
+		dn="$(dirname "${1}")"
+	fi
+
+	[ ! -d "${dn}" ] && exit 1
+	echo "$(cd "${dn}" && pwd)${fn}"
+}
+export -f abspath
+
+tempdir=$(abspath "${target}.genenv.tmp")
 tmpfile="$(mktemp)"
 
 mkdir -p "$tempdir"

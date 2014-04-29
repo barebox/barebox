@@ -308,9 +308,9 @@ out1:
 
 int dev_remove_bb_dev(const char *name)
 {
-	struct nand_bb *bb;
+	struct nand_bb *bb, *tmp;
 
-	list_for_each_entry(bb, &bb_list, list) {
+	list_for_each_entry_safe(bb, tmp, &bb_list, list) {
 		if (!strcmp(bb->cdev.name, name)) {
 			devfs_remove(&bb->cdev);
 			cdev_close(bb->cdev_parent);

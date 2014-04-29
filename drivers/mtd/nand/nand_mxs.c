@@ -661,6 +661,7 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 	uint32_t channel = nand_info->dma_channel_base + nand_info->cur_chip;
 	uint32_t corrected = 0, failed = 0;
 	uint8_t	*status;
+	unsigned int  max_bitflips = 0;
 	int i, ret;
 
 	/* Compile the DMA descriptor - wait for ready. */
@@ -766,6 +767,7 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 		}
 
 		corrected += status[i];
+		max_bitflips = max_t(unsigned int, max_bitflips, status[i]);
 	}
 
 	/* Propagate ECC status to the owning MTD. */
@@ -787,10 +789,11 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 
 	memcpy(buf, nand_info->data_buf, mtd->writesize);
 
+	ret = 0;
 rtn:
 	mxs_nand_return_dma_descs(nand_info);
 
-	return ret;
+	return ret ? ret : max_bitflips;
 }
 
 /*

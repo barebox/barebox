@@ -45,6 +45,9 @@ static void radxa_rock_pmic_init(void)
 
 static int setup_plls(void)
 {
+	if (!of_machine_is_compatible("radxa,rock"))
+		return 0;
+
 	/* Codec PLL frequency: 594 MHz */
 	rk3188_pll_set_parameters(RK3188_CPLL, 2, 198, 4);
 	/* General PLL frequency: 300 MHz */
@@ -56,6 +59,9 @@ coredevice_initcall(setup_plls);
 
 static int devices_init(void)
 {
+	if (!of_machine_is_compatible("radxa,rock"))
+		return 0;
+
 	i2c_register_board_info(0, radxa_rock_i2c_devices,
 				ARRAY_SIZE(radxa_rock_i2c_devices));
 	add_generic_device_res("i2c-gpio", 0, NULL, 0, &i2c_gpio_pdata);
@@ -71,6 +77,9 @@ device_initcall(devices_init);
 
 static int hostname_init(void)
 {
+	if (!of_machine_is_compatible("radxa,rock"))
+		return 0;
+
 	barebox_set_hostname("radxa-rock");
 
 	return 0;

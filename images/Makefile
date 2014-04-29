@@ -99,6 +99,7 @@ $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 include $(srctree)/images/Makefile.am33xx
 include $(srctree)/images/Makefile.imx
 include $(srctree)/images/Makefile.mvebu
+include $(srctree)/images/Makefile.rockchip
 include $(srctree)/images/Makefile.socfpga
 include $(srctree)/images/Makefile.tegra
 

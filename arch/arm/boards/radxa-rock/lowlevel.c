@@ -16,8 +16,15 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 
-void __naked barebox_arm_reset_vector(void)
+extern char __dtb_rk3188_radxarock_start[];
+
+ENTRY_FUNCTION(start_radxa_rock, r0, r1, r2)
 {
+	uint32_t fdt;
+
 	arm_cpu_lowlevel_init();
-	barebox_arm_entry(0x60000000, SZ_2G, 0);
+
+	fdt = (uint32_t)__dtb_rk3188_radxarock_start - get_runtime_offset();
+
+	barebox_arm_entry(0x60000000, SZ_2G, fdt);
 }

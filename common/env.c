@@ -258,7 +258,7 @@ EXPORT_SYMBOL(export);
 
 void export_env_ull(const char *name, unsigned long long val)
 {
-	char *valstr = asprintf("%lld", val);
+	char *valstr = asprintf("%llu", val);
 
 	setenv(name, valstr);
 	export(name);

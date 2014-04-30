@@ -741,8 +741,13 @@ static int cpdma_process(struct cpsw_priv *priv, struct cpdma_chan *chan,
 	if (buffer)
 		*buffer = (void *)readl(&desc->sw_buffer);
 
-	if (status & CPDMA_DESC_OWNER)
+	if (status & CPDMA_DESC_OWNER) {
+		if (readl(chan->hdp) == 0) {
+			if (readl(&desc->hw_mode) & CPDMA_DESC_OWNER)
+				writel((u32)desc, chan->hdp);
+		}
 		return -EBUSY;
+	}
 
 	chan->head = (void *)readl(&desc->hw_next);
 

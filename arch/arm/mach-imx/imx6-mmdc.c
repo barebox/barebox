@@ -17,7 +17,6 @@
  */
 #include <common.h>
 #include <io.h>
-#include <mach/imx6-regs.h>
 #include <mach/imx6-mmdc.h>
 
 int mmdc_do_write_level_calibration(void)

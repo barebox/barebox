@@ -1,6 +1,7 @@
 #ifndef __MACH_MMDC_H
 #define __MACH_MMDC_H
 
+#include <mach/imx6-regs.h>
 
 #define P0_IPS (void __iomem *)MX6_MMDC_P0_BASE_ADDR
 #define P1_IPS (void __iomem *)MX6_MMDC_P1_BASE_ADDR

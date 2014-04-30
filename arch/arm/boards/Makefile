@@ -63,6 +63,7 @@ obj-$(CONFIG_MACH_PANDA)			+= panda/
 obj-$(CONFIG_MACH_PCA100)			+= phytec-phycard-imx27/
 obj-$(CONFIG_MACH_PCAAL1)			+= phytec-phycard-omap3/
 obj-$(CONFIG_MACH_PCAAXL2)			+= phytec-phycard-omap4/
+obj-$(CONFIG_MACH_PCAAXL3)			+= phytec-phycard-imx6/
 obj-$(CONFIG_MACH_PCM037)			+= phytec-phycore-imx31/
 obj-$(CONFIG_MACH_PCM038)			+= phytec-phycore-imx27/
 obj-$(CONFIG_MACH_PCM043)			+= phytec-phycore-imx35/

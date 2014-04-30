@@ -40,6 +40,7 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_DFI_FS700_M60
 	default 0x4fc00000 if MACH_UDOO
 	default 0x4fc00000 if MACH_VARISCITE_MX6
+	default 0x4fc00000 if MACH_PCAAXL3
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
@@ -207,6 +208,10 @@ config MACH_FREESCALE_MX53_VMX53
 	help
 	  Say Y here if you are using the Voipac Technologies X53-DMM-668
 	  module equipped with a Freescale i.MX53 Processor
+
+config MACH_PCAAXL3
+        bool "Phytec phyCARD-i.MX6 Quad"
+        select ARCH_IMX6
 
 config MACH_PHYTEC_PFLA02
 	bool "Phytec phyFLEX-i.MX6"

@@ -127,7 +127,13 @@ static int do_bootm_linux(struct image_data *data)
 	load_address = data->os_address;
 
 	if (load_address == UIMAGE_INVALID_ADDRESS) {
-		load_address = mem_start + SZ_32K;
+		/*
+		 * Just use a conservative default of 4 times the size of the
+		 * compressed image, to avoid the need for the kernel to
+		 * relocate itself before decompression.
+		 */
+		load_address = mem_start + PAGE_ALIGN(
+		               uimage_get_size(data->os, data->os_num) * 4);
 		if (bootm_verbose(data))
 			printf("no os load address, defaulting to 0x%08lx\n",
 				load_address);
@@ -138,13 +144,10 @@ static int do_bootm_linux(struct image_data *data)
 		return ret;
 
 	/*
-	 * Put devicetree/initrd at maximum to 128MiB into RAM to not
-	 * risk to put it outside of lowmem.
+	 * put oftree/initrd close behind compressed kernel image to avoid
+	 * placing it outside of the kernels lowmem.
 	 */
-	if (mem_size > SZ_256M)
-		mem_free = mem_start + SZ_128M;
-	else
-		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
+	mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
 
 	return __do_bootm_linux(data, mem_free, 0);
 }

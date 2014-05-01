@@ -104,9 +104,7 @@ static const struct am33xx_emif_regs ddr3_regs = {
 };
 
 extern char __dtb_am335x_boneblack_start[];
-extern char __dtb_am335x_boneblack_end[];
 extern char __dtb_am335x_bone_start[];
-extern char __dtb_am335x_bone_end[];
 
 /**
  * @brief The basic entry point for board initialization.
@@ -119,19 +117,15 @@ extern char __dtb_am335x_bone_end[];
  */
 static noinline int beaglebone_sram_init(void)
 {
-	uint32_t sdram_start, sdram_size;
-	void *fdt, *fdt_end;
-
-	sdram_start = 0x80000000;
+	uint32_t sdram_size;
+	void *fdt;
 
 	if (is_beaglebone_black()) {
 		sdram_size = SZ_512M;
 		fdt = __dtb_am335x_boneblack_start;
-		fdt_end = __dtb_am335x_boneblack_end;
 	} else {
 		sdram_size = SZ_256M;
 		fdt = __dtb_am335x_bone_start;
-		fdt_end = __dtb_am335x_bone_end;
 	}
 
 	/* WDT1 is already running when the bootloader gets control
@@ -158,14 +152,7 @@ static noinline int beaglebone_sram_init(void)
 	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');
 
-	/*
-	 * Copy the devicetree blob to sdram so that the barebox code finds it
-	 * inside valid SDRAM instead of SRAM.
-	 */
-	memcpy((void *)sdram_start, fdt, fdt_end - fdt);
-	fdt = sdram_start;
-
-	barebox_arm_entry(sdram_start, sdram_size, fdt);
+	barebox_arm_entry(0x80000000, sdram_size, fdt);
 }
 
 ENTRY_FUNCTION(start_am33xx_beaglebone_sram, bootinfo, r1, r2)

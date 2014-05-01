@@ -136,7 +136,6 @@ static void sdram_init(void)
 }
 
 extern char __dtb_imx6q_dmo_edmqmx6_start[];
-extern char __dtb_imx6q_dmo_edmqmx6_end[];
 
 ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 {
@@ -154,14 +153,6 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 
 		mmdc_do_write_level_calibration();
 		mmdc_do_dqs_calibration();
-
-		/*
-		 * Copy the devicetree blob to sdram so that the barebox code finds it
-		 * inside valid SDRAM instead of SRAM.
-		 */
-		memcpy((void*)sdram, fdt, __dtb_imx6q_dmo_edmqmx6_end -
-		       __dtb_imx6q_dmo_edmqmx6_start);
-		fdt = (void *)sdram;
 	}
 
 	barebox_arm_entry(sdram, SZ_2G, fdt);

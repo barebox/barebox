@@ -47,7 +47,6 @@ static const struct am33xx_ddr_data MT41J256M8HX15E_2x256M8_data = {
 };
 
 extern char __dtb_am335x_phytec_phycore_start[];
-extern char __dtb_am335x_phytec_phycore_end[];
 
 /**
  * @brief The basic entry point for board initialization.
@@ -60,7 +59,6 @@ extern char __dtb_am335x_phytec_phycore_end[];
  */
 static noinline void pcm051_board_init(void)
 {
-	uint32_t sdram = 0x80000000;
 	void *fdt;
 
 	/* WDT1 is already running when the bootloader gets control
@@ -83,16 +81,9 @@ static noinline void pcm051_board_init(void)
 	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');
 
-	/*
-	 * Copy the devicetree blob to sdram so that the barebox code finds it
-	 * inside valid SDRAM instead of SRAM.
-	 */
-	memcpy((void *)sdram, __dtb_am335x_phytec_phycore_start,
-			__dtb_am335x_phytec_phycore_end -
-			__dtb_am335x_phytec_phycore_start);
-	fdt = (void *)sdram;
+	fdt = __dtb_am335x_phytec_phycore_start - get_runtime_offset();
 
-	barebox_arm_entry(sdram, SZ_512M, fdt);
+	barebox_arm_entry(0x80000000, SZ_512M, fdt);
 }
 
 ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram, bootinfo, r1, r2)

@@ -83,7 +83,7 @@ static noinline __noreturn void mx31moboard_startup(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x80000000 && r < 0xa0000000)
-		imx31_barebox_entry(0);
+		imx31_barebox_entry(NULL);
 
 	writel(0x00000004, MX31_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 	writel(0x00695727, MX31_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
@@ -99,7 +99,7 @@ static noinline __noreturn void mx31moboard_startup(void)
 	writel(0xDEADBEEF, MX31_CSD0_BASE_ADDR);
 	writel(0x0000000c, MX31_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 
-	imx31_barebox_entry(0);
+	imx31_barebox_entry(NULL);
 
 }
 

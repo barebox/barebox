@@ -69,5 +69,5 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult)
 	/* Disable LED flasher */
 	writew(0, LEDFLSH);
 
-	barebox_arm_entry(SDRAM0_BASE, SZ_8M, 0);
+	barebox_arm_entry(SDRAM0_BASE, SZ_8M, NULL);
 }

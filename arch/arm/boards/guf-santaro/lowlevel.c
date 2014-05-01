@@ -30,7 +30,7 @@ extern char __dtb_imx6q_guf_santaro_start[];
 
 ENTRY_FUNCTION(start_imx6q_guf_santaro, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 	int i;
 
 	arm_cpu_lowlevel_init();
@@ -42,7 +42,7 @@ ENTRY_FUNCTION(start_imx6q_guf_santaro, r0, r1, r2)
 
 	setup_uart();
 
-	fdt = (uint32_t)__dtb_imx6q_guf_santaro_start - get_runtime_offset();
+	fdt = __dtb_imx6q_guf_santaro_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }

@@ -16,7 +16,7 @@ void __naked barebox_arm_reset_vector(void)
 	arm_cpu_lowlevel_init();
 
 	if (amba_is_arm_sp804(IOMEM(0x10011000)))
-		barebox_arm_entry(0x60000000, SZ_512M, 0);
+		barebox_arm_entry(0x60000000, SZ_512M, NULL);
 	else
-		barebox_arm_entry(0x80000000, SZ_512M, 0);
+		barebox_arm_entry(0x80000000, SZ_512M, NULL);
 }

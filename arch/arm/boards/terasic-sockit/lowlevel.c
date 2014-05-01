@@ -47,11 +47,11 @@ extern char __dtb_socfpga_cyclone5_sockit_start[];
 
 ENTRY_FUNCTION(start_socfpga_sockit, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
-	fdt = (uint32_t)__dtb_socfpga_cyclone5_sockit_start - get_runtime_offset();
+	fdt = __dtb_socfpga_cyclone5_sockit_start - get_runtime_offset();
 
 	barebox_arm_entry(0x0, SZ_1G, fdt);
 }
@@ -82,7 +82,7 @@ static noinline void sockit_entry(void)
 
 	puts_ll("done\n");
 
-	barebox_arm_entry(0x0, SZ_1G, 0);
+	barebox_arm_entry(0x0, SZ_1G, NULL);
 }
 
 ENTRY_FUNCTION(start_socfpga_sockit_xload, r0, r1, r2)

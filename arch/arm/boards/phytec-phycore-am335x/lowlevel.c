@@ -60,7 +60,8 @@ extern char __dtb_am335x_phytec_phycore_end[];
  */
 static noinline void pcm051_board_init(void)
 {
-	unsigned long sdram = 0x80000000, fdt;
+	uint32_t sdram = 0x80000000;
+	void *fdt;
 
 	/* WDT1 is already running when the bootloader gets control
 	 * Disable it to avoid "random" resets
@@ -89,7 +90,7 @@ static noinline void pcm051_board_init(void)
 	memcpy((void *)sdram, __dtb_am335x_phytec_phycore_start,
 			__dtb_am335x_phytec_phycore_end -
 			__dtb_am335x_phytec_phycore_start);
-	fdt = sdram;
+	fdt = (void *)sdram;
 
 	barebox_arm_entry(sdram, SZ_512M, fdt);
 }
@@ -112,9 +113,9 @@ ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram, bootinfo, r1, r2)
 
 ENTRY_FUNCTION(start_am33xx_phytec_phycore_sdram, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
-	fdt = (uint32_t)__dtb_am335x_phytec_phycore_start - get_runtime_offset();
+	fdt = __dtb_am335x_phytec_phycore_start - get_runtime_offset();
 
 	barebox_arm_entry(0x80000000, SZ_512M, fdt);
 }

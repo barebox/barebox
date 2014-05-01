@@ -140,13 +140,14 @@ extern char __dtb_imx6q_dmo_edmqmx6_end[];
 
 ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 {
-	unsigned long fdt, sdram = 0x10000000;
+	unsigned long sdram = 0x10000000;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
 
-	fdt = (unsigned long)__dtb_imx6q_dmo_edmqmx6_start - get_runtime_offset();
+	fdt = __dtb_imx6q_dmo_edmqmx6_start - get_runtime_offset();
 
 	if (get_pc() < 0x10000000) {
 		sdram_init();
@@ -158,10 +159,9 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 		 * Copy the devicetree blob to sdram so that the barebox code finds it
 		 * inside valid SDRAM instead of SRAM.
 		 */
-		memcpy((void *)sdram, (void *)fdt,
-				__dtb_imx6q_dmo_edmqmx6_end -
-				__dtb_imx6q_dmo_edmqmx6_start);
-		fdt = sdram;
+		memcpy((void*)sdram, fdt, __dtb_imx6q_dmo_edmqmx6_end -
+		       __dtb_imx6q_dmo_edmqmx6_start);
+		fdt = (void *)sdram;
 	}
 
 	barebox_arm_entry(sdram, SZ_2G, fdt);

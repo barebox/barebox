@@ -48,12 +48,12 @@ void __naked __section(.text_head_entry) pbl_start(void)
 extern void *input_data;
 extern void *input_data_end;
 
-static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
-		uint32_t memsize, uint32_t boarddata)
+static noinline __noreturn void __barebox_arm_entry(unsigned long membase,
+		unsigned long memsize, void *boarddata)
 {
 	uint32_t offset;
 	uint32_t pg_start, pg_end, pg_len;
-	void __noreturn (*barebox)(uint32_t, uint32_t, uint32_t);
+	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	uint32_t endmem = membase + memsize;
 	unsigned long barebox_base;
 
@@ -127,8 +127,8 @@ static noinline __noreturn void __barebox_arm_entry(uint32_t membase,
  * Usually a TEXT_BASE of 1MiB below your lowest possible end of memory should
  * be fine.
  */
-void __naked __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize,
-		uint32_t boarddata)
+void __naked __noreturn barebox_arm_entry(unsigned long membase,
+		unsigned long memsize, void *boarddata)
 {
 	arm_setup_stack(membase + memsize - 16);
 

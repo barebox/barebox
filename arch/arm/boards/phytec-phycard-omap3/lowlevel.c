@@ -260,5 +260,5 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
 
 	pcaal1_board_init();
 
-	barebox_arm_entry(0x80000000, SZ_256M, 0);
+	barebox_arm_entry(0x80000000, SZ_256M, NULL);
 }

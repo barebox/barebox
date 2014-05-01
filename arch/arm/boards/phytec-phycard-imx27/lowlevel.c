@@ -74,7 +74,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* Skip SDRAM initialization if we run from RAM */
         r = get_pc();
         if (r > 0xa0000000 && r < 0xc0000000)
-                imx27_barebox_entry(0);
+                imx27_barebox_entry(NULL);
 
 	/* 399 MHz */
 	writel(IMX_PLL_PD(0) |

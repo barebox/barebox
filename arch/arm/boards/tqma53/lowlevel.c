@@ -22,7 +22,7 @@ static inline void setup_uart(void __iomem *base)
 	writel(0x00000001, base + 0x80);
 }
 
-static void __noreturn start_imx53_tqma53_common(uint32_t fdt)
+static void __noreturn start_imx53_tqma53_common(void *fdt)
 {
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x3, MX53_IOMUXC_BASE_ADDR + 0x278);
@@ -36,7 +36,7 @@ static void __noreturn start_imx53_tqma53_common(uint32_t fdt)
 
 ENTRY_FUNCTION(start_imx53_mba53_512mib, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
@@ -44,14 +44,14 @@ ENTRY_FUNCTION(start_imx53_mba53_512mib, r0, r1, r2)
 
 	imx53_init_lowlevel_early(800);
 
-	fdt = (uint32_t)__dtb_imx53_mba53_start - get_runtime_offset();
+	fdt = __dtb_imx53_mba53_start - get_runtime_offset();
 
 	start_imx53_tqma53_common(fdt);
 }
 
 ENTRY_FUNCTION(start_imx53_mba53_1gib, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
@@ -59,7 +59,7 @@ ENTRY_FUNCTION(start_imx53_mba53_1gib, r0, r1, r2)
 
 	imx53_init_lowlevel_early(800);
 
-	fdt = (uint32_t)__dtb_imx53_mba53_start - get_runtime_offset();
+	fdt = __dtb_imx53_mba53_start - get_runtime_offset();
 
 	start_imx53_tqma53_common(fdt);
 }

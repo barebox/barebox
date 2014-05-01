@@ -34,7 +34,8 @@ void __bare_init at91sam9260_lowlevel_init(void)
 
 	at91sam926x_lowlevel_init(&cfg);
 
-	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc), 0);
+	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc),
+	                  NULL);
 }
 
 void __naked __bare_init barebox_arm_reset_vector(void)

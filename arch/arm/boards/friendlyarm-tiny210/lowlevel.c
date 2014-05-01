@@ -113,5 +113,5 @@ void __bare_init barebox_arm_reset_vector(void)
 	debug_led(1, 0);
 
 boot:
-	barebox_arm_entry(S3C_SDRAM_BASE, SZ_256M, 0);
+	barebox_arm_entry(S3C_SDRAM_BASE, SZ_256M, NULL);
 }

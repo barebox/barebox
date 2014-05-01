@@ -24,5 +24,5 @@
 void __naked barebox_arm_reset_vector(void)
 {
 	arm_cpu_lowlevel_init();
-	mvebu_barebox_entry(0);
+	mvebu_barebox_entry(NULL);
 }

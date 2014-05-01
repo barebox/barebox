@@ -8,13 +8,13 @@ extern char __dtb_imx51_genesi_efika_sb_start[];
 
 ENTRY_FUNCTION(start_imx51_genesi_efikasb, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 	arm_setup_stack(0x20000000 - 16);
 	imx51_init_lowlevel(800);
 
-	fdt = (uint32_t)__dtb_imx51_genesi_efika_sb_start - get_runtime_offset();
+	fdt = __dtb_imx51_genesi_efika_sb_start - get_runtime_offset();
 
 	imx51_barebox_entry(fdt);
 }

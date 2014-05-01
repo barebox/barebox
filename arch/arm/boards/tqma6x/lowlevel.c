@@ -43,7 +43,7 @@ extern char __dtb_imx6dl_mba6x_start[];
 
 ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
@@ -57,14 +57,14 @@ ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
 
 	arm_early_mmu_cache_invalidate();
 
-	fdt = (uint32_t)__dtb_imx6q_mba6x_start - get_runtime_offset();
+	fdt = __dtb_imx6q_mba6x_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
 
 ENTRY_FUNCTION(start_imx6dl_mba6x, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
@@ -78,7 +78,7 @@ ENTRY_FUNCTION(start_imx6dl_mba6x, r0, r1, r2)
 
 	arm_early_mmu_cache_invalidate();
 
-	fdt = (uint32_t)__dtb_imx6dl_mba6x_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_mba6x_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_512M, fdt);
 }

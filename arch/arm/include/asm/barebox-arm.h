@@ -43,8 +43,8 @@ uint32_t get_runtime_offset(void);
 void setup_c(void);
 void relocate_to_current_adr(void);
 void relocate_to_adr(unsigned long target);
-void __noreturn barebox_arm_entry(uint32_t membase, uint32_t memsize, uint32_t boarddata);
-unsigned long barebox_arm_boarddata(void);
+void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
+void *barebox_arm_boarddata(void);
 
 #if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
 void arm_fixup_vectors(void);

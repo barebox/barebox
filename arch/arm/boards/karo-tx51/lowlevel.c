@@ -5,5 +5,5 @@
 void __naked barebox_arm_reset_vector(void)
 {
 	arm_cpu_lowlevel_init();
-	imx51_barebox_entry(0);
+	imx51_barebox_entry(NULL);
 }

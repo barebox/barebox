@@ -100,5 +100,5 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 		imx27_barebox_boot_nand_external(0);
 	}
 out:
-	imx27_barebox_entry(0);
+	imx27_barebox_entry(NULL);
 }

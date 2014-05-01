@@ -122,5 +122,5 @@ void __bare_init __naked barebox_arm_reset_vector(uint32_t *data)
 
 	pcm049_init_lowlevel();
 out:
-	barebox_arm_entry(0x80000000, SZ_512M, 0);
+	barebox_arm_entry(0x80000000, SZ_512M, NULL);
 }

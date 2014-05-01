@@ -7,5 +7,5 @@
 void __naked barebox_arm_reset_vector(void)
 {
 	arm_cpu_lowlevel_init();
-	barebox_arm_entry(MX51_CSD0_BASE_ADDR, SZ_128M, 0);
+	barebox_arm_entry(MX51_CSD0_BASE_ADDR, SZ_128M, NULL);
 }

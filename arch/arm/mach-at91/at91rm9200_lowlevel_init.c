@@ -129,5 +129,5 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 	set_cr(r);
 
 end:
-	barebox_arm_entry(AT91_CHIPSELECT_1, at91rm9200_get_sdram_size(), 0);
+	barebox_arm_entry(AT91_CHIPSELECT_1, at91rm9200_get_sdram_size(), NULL);
 }

@@ -319,7 +319,7 @@ static inline int imx35_pagesize_2k(void)
 #define DEFINE_EXTERNAL_NAND_ENTRY(soc)					\
 									\
 void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
-			(uint32_t boarddata)				\
+			(void *boarddata)				\
 {									\
 	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
 	void *sdram = (void *)MX##soc##_CSD0_BASE_ADDR;			\
@@ -336,20 +336,21 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
 }									\
 									\
 void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
-			(uint32_t boarddata)				\
+			(void *bd)				\
 {									\
 	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
 	unsigned long sdram = MX##soc##_CSD0_BASE_ADDR;			\
+	unsigned long boarddata = (unsigned long)bd;			\
 	unsigned long __fn;						\
 	u32 r;								\
 	u32 *src, *trg;							\
 	int i;								\
-	void __noreturn (*fn)(uint32_t);				\
+	void __noreturn (*fn)(void *);					\
 									\
 	/* skip NAND boot if not running from NFC space */		\
 	r = get_pc();							\
 	if (r < nfc_base || r > nfc_base + 0x800)			\
-		imx##soc##_barebox_entry(boarddata);			\
+		imx##soc##_barebox_entry(bd);				\
 									\
 	src = (unsigned int *)nfc_base;					\
 	trg = (unsigned int *)sdram;					\
@@ -378,7 +379,7 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
 		boarddata += sdram;					\
 	}								\
 									\
-	fn(boarddata);							\
+	fn((void *)boarddata);						\
 }
 
 #ifdef BROKEN

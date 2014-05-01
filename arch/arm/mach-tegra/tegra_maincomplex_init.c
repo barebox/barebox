@@ -51,5 +51,5 @@ void tegra_maincomplex_entry(void)
 	}
 
 	barebox_arm_entry(rambase, ramsize,
-			  readl(TEGRA_PMC_BASE + PMC_SCRATCH(10)));
+			  (void *)readl(TEGRA_PMC_BASE + PMC_SCRATCH(10)));
 }

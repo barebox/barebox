@@ -320,5 +320,5 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	}
 
 out:
-	imx35_barebox_entry(0);
+	imx35_barebox_entry(NULL);
 }

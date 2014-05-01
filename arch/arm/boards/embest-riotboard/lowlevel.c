@@ -28,7 +28,7 @@ extern char __dtb_imx6s_riotboard_start[];
 
 ENTRY_FUNCTION(start_imx6s_riotboard, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
@@ -38,6 +38,6 @@ ENTRY_FUNCTION(start_imx6s_riotboard, r0, r1, r2)
 		putc_ll('a');
 	}
 
-	fdt = (uint32_t)__dtb_imx6s_riotboard_start - get_runtime_offset();
+	fdt = __dtb_imx6s_riotboard_start - get_runtime_offset();
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }

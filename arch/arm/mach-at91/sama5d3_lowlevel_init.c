@@ -21,5 +21,5 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 
 	arm_setup_stack(SAMA5D3_SRAM_BASE + SAMA5D3_SRAM_SIZE - 16);
 
-	barebox_arm_entry(SAMA5_DDRCS, at91sama5_get_ddram_size(), 0);
+	barebox_arm_entry(SAMA5_DDRCS, at91sama5_get_ddram_size(), NULL);
 }

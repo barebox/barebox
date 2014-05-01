@@ -132,7 +132,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x70000000 && r < 0xf0000000)
-		imx53_barebox_entry(0);
+		imx53_barebox_entry(NULL);
 
 	/* Setup a preliminary stack */
 	r = 0xf8000000 + 0x60000 - 16;
@@ -146,5 +146,5 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 	imx_esdctlv4_init();
 
-	imx53_barebox_entry(0);
+	imx53_barebox_entry(NULL);
 }

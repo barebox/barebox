@@ -75,7 +75,7 @@ static inline void __bare_init  setup_sdram(uint32_t base, uint32_t esdctl,
 	writel(esdctl, esdctlreg);
 }
 
-static void __bare_init karo_tx25_common_init(uint32_t fdt)
+static void __bare_init karo_tx25_common_init(void *fdt)
 {
 	uint32_t r;
 
@@ -167,11 +167,11 @@ extern char __dtb_imx25_karo_tx25_start[];
 
 ENTRY_FUNCTION(start_imx25_karo_tx25, r0, r1, r2)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_setup_stack(MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 8);
 
-	fdt = (uint32_t)__dtb_imx25_karo_tx25_start - get_runtime_offset();
+	fdt = __dtb_imx25_karo_tx25_start - get_runtime_offset();
 
 	karo_tx25_common_init(fdt);
 }

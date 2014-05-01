@@ -84,7 +84,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
 	if (r > 0x80000000 && r < 0xa0000000)
-		imx31_barebox_entry(0);
+		imx31_barebox_entry(NULL);
 
 #if defined CONFIG_PCM037_SDRAM_BANK0_128MB
 #define ROWS0	ESDCTL0_ROW13
@@ -131,6 +131,6 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 		imx31_barebox_boot_nand_external(0);
 	} else {
-		imx31_barebox_entry(0);
+		imx31_barebox_entry(NULL);
 	}
 }

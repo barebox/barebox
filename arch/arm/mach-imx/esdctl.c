@@ -436,7 +436,7 @@ mem_initcall(imx_esdctl_init);
  * - cs0 enabled, cs1 enabled: The largest continuous region, that is, cs0 + cs1
  *                             if cs0 is taking the whole address space.
  */
-void __naked __noreturn imx1_barebox_entry(uint32_t boarddata)
+void __naked __noreturn imx1_barebox_entry(void *boarddata)
 {
 	unsigned long base;
 	unsigned long size;
@@ -450,7 +450,7 @@ void __naked __noreturn imx1_barebox_entry(uint32_t boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx25_barebox_entry(uint32_t boarddata)
+void __naked __noreturn imx25_barebox_entry(void *boarddata)
 {
 	unsigned long base;
 	unsigned long size;
@@ -464,7 +464,7 @@ void __naked __noreturn imx25_barebox_entry(uint32_t boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx27_barebox_entry(uint32_t boarddata)
+void __naked __noreturn imx27_barebox_entry(void *boarddata)
 {
 	unsigned long base;
 	unsigned long size;
@@ -480,7 +480,7 @@ void __naked __noreturn imx27_barebox_entry(uint32_t boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx31_barebox_entry(uint32_t boarddata)
+void __naked __noreturn imx31_barebox_entry(void *boarddata)
 {
 	unsigned long base;
 	unsigned long size;
@@ -496,7 +496,7 @@ void __naked __noreturn imx31_barebox_entry(uint32_t boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx35_barebox_entry(uint32_t boarddata)
+void __naked __noreturn imx35_barebox_entry(void *boarddata)
 {
 	unsigned long base;
 	unsigned long size;
@@ -512,7 +512,7 @@ void __naked __noreturn imx35_barebox_entry(uint32_t boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx51_barebox_entry(uint32_t boarddata)
+void __naked __noreturn imx51_barebox_entry(void *boarddata)
 {
 	unsigned long base;
 	unsigned long size;
@@ -526,7 +526,7 @@ void __naked __noreturn imx51_barebox_entry(uint32_t boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx53_barebox_entry(uint32_t boarddata)
+void __naked __noreturn imx53_barebox_entry(void *boarddata)
 {
 	unsigned long base;
 	unsigned long size;

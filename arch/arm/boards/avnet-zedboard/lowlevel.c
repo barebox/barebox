@@ -257,5 +257,5 @@ void __naked barebox_arm_reset_vector(void)
 	writel(0x0000767B, ZYNQ_SLCR_LOCK);
 
 	arm_cpu_lowlevel_init();
-	barebox_arm_entry(0, SZ_512M, 0);
+	barebox_arm_entry(0, SZ_512M, NULL);
 }

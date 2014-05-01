@@ -436,106 +436,123 @@ mem_initcall(imx_esdctl_init);
  * - cs0 enabled, cs1 enabled: The largest continuous region, that is, cs0 + cs1
  *                             if cs0 is taking the whole address space.
  */
+static void
+upper_or_coalesced_range(unsigned long base0, unsigned long size0,
+                         unsigned long base1, unsigned long size1,
+                         unsigned long *res_base, unsigned long *res_size)
+{
+	/* if we have an upper range, use it */
+	if (size1) {
+		*res_base = base1;
+		*res_size = size1;
+	} else {
+		*res_base = base0;
+		*res_size = size0;
+	}
+
+	/*
+	 * if there is no hole between the two ranges, coalesce into a
+	 * single big one
+	 */
+	if ((base0 + size0) == base1) {
+		*res_base = base0;
+		*res_size = size0 + size1;
+	}
+}
+
 void __naked __noreturn imx1_barebox_entry(void *boarddata)
 {
-	unsigned long base;
-	unsigned long size;
+	unsigned long base, size;
 
-	base = MX1_CSD0_BASE_ADDR;
-
-	size = imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 0);
-	if (size == SZ_64M)
-		size += imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 1);
+	upper_or_coalesced_range(MX1_CSD0_BASE_ADDR,
+			imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 0),
+			MX1_CSD1_BASE_ADDR,
+			imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 1),
+			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }
 
 void __naked __noreturn imx25_barebox_entry(void *boarddata)
 {
-	unsigned long base;
-	unsigned long size;
+	unsigned long base, size;
 
-	base = MX25_CSD0_BASE_ADDR;
-
-	size = imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 0);
-	if (size == SZ_256M)
-		size += imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 1);
+	upper_or_coalesced_range(MX25_CSD0_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 0),
+			MX25_CSD1_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 1),
+			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }
 
 void __naked __noreturn imx27_barebox_entry(void *boarddata)
 {
-	unsigned long base;
-	unsigned long size;
+	unsigned long base, size;
 
 	imx_esdctl_v2_disable_default((void *)MX27_ESDCTL_BASE_ADDR);
 
-	base = MX27_CSD0_BASE_ADDR;
-
-	size = imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 0);
-	if (size == SZ_256M)
-		size += imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 1);
+	upper_or_coalesced_range(MX27_CSD0_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 0),
+			MX27_CSD1_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 1),
+			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }
 
 void __naked __noreturn imx31_barebox_entry(void *boarddata)
 {
-	unsigned long base;
-	unsigned long size;
+	unsigned long base, size;
 
 	imx_esdctl_v2_disable_default((void *)MX31_ESDCTL_BASE_ADDR);
 
-	base = MX31_CSD0_BASE_ADDR;
-
-	size = imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 0);
-	if (size == SZ_256M)
-		size += imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 1);
+	upper_or_coalesced_range(MX31_CSD0_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 0),
+			MX31_CSD1_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 1),
+			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }
 
 void __naked __noreturn imx35_barebox_entry(void *boarddata)
 {
-	unsigned long base;
-	unsigned long size;
+	unsigned long base, size;
 
 	imx_esdctl_v2_disable_default((void *)MX35_ESDCTL_BASE_ADDR);
 
-	base = MX35_CSD0_BASE_ADDR;
-
-	size = imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 0);
-	if (size == SZ_256M)
-		size += imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 1);
+	upper_or_coalesced_range(MX35_CSD0_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 0),
+			MX35_CSD1_BASE_ADDR,
+			imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 1),
+			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }
 
 void __naked __noreturn imx51_barebox_entry(void *boarddata)
 {
-	unsigned long base;
-	unsigned long size;
+	unsigned long base, size;
 
-	base = MX51_CSD0_BASE_ADDR;
-
-	size = imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 0);
-	if (size == SZ_256M)
-		size += imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 1);
+	upper_or_coalesced_range(MX51_CSD0_BASE_ADDR,
+			imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 0),
+			MX51_CSD1_BASE_ADDR,
+			imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 1),
+			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }
 
 void __naked __noreturn imx53_barebox_entry(void *boarddata)
 {
-	unsigned long base;
-	unsigned long size;
+	unsigned long base, size;
 
-	base = MX53_CSD0_BASE_ADDR;
-
-	size = imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 0);
-	if (size == SZ_1G)
-		size += imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 1);
+	upper_or_coalesced_range(MX53_CSD0_BASE_ADDR,
+			imx_v3_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 0),
+			MX53_CSD1_BASE_ADDR,
+			imx_v3_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 1),
+			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }

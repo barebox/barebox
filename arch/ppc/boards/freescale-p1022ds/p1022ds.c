@@ -130,7 +130,7 @@ static int p1022ds_console_init(void)
 
 	serial_plat.clock = fsl_get_bus_freq(0);
 	add_ns16550_device(DEVICE_ID_DYNAMIC, CFG_IMMR + 0x4500, 16,
-			   IORESOURCE_MEM_8BIT, &serial_plat);
+			   IORESOURCE_MEM | IORESOURCE_MEM_8BIT, &serial_plat);
 	return 0;
 }
 

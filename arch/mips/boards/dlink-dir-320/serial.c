@@ -36,7 +36,7 @@ static int dir320_console_init(void)
 
 	/* Register the serial port */
 	add_ns16550_device(DEVICE_ID_DYNAMIC, DEBUG_LL_UART_ADDR, 8,
-			IORESOURCE_MEM_8BIT, &serial_plat);
+			IORESOURCE_MEM | IORESOURCE_MEM_8BIT, &serial_plat);
 
 	return 0;
 }

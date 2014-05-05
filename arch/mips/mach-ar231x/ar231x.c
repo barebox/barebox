@@ -189,7 +189,9 @@ static int ar2312_console_init(void)
 	/* Register the serial port */
 	serial_plat.clock = ar2312_sys_frequency();
 	add_ns16550_device(DEVICE_ID_DYNAMIC, KSEG1ADDR(AR2312_UART0),
-		8 << AR2312_UART_SHIFT, IORESOURCE_MEM_8BIT, &serial_plat);
+			   8 << AR2312_UART_SHIFT,
+			   IORESOURCE_MEM | IORESOURCE_MEM_8BIT,
+			   &serial_plat);
 	return 0;
 }
 console_initcall(ar2312_console_init);

@@ -33,18 +33,9 @@
 struct NS16550_plat {
 	/** Clock speed */
 	unsigned int clock;
-	/**
-	 * register read access capability
-	 */
-	unsigned int (*reg_read) (unsigned long base, unsigned char reg_offset);
-	/**
-	 * register write access capability
-	 */
-	void (*reg_write) (unsigned int val, unsigned long base,
-				    unsigned char reg_offset);
-
 	int shift;
 	unsigned int flags;
+	int mmio;
 #define NS16650_FLAG_DISABLE_FIFO	1
 };
 

@@ -223,7 +223,8 @@ static int eukrea_cpuimx27_console_init(void)
 	imx27_setup_weimcs(3, 0x0000D603, 0x0D1D0D01, 0x00D20000);
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 	add_ns16550_device(DEVICE_ID_DYNAMIC, MX27_CS3_BASE_ADDR + QUART_OFFSET, 0xf,
-			 IORESOURCE_MEM_16BIT, &quad_uart_serial_plat);
+			   IORESOURCE_MEM | IORESOURCE_MEM_16BIT,
+			   &quad_uart_serial_plat);
 #endif
 	return 0;
 }

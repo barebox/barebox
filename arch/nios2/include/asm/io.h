@@ -22,6 +22,8 @@
 
 #include <asm/byteorder.h>
 
+#define	IO_SPACE_LIMIT	0
+
 #define __raw_writeb(v, a)       (*(volatile unsigned char  *)(a) = (v))
 #define __raw_writew(v, a)       (*(volatile unsigned short *)(a) = (v))
 #define __raw_writel(v, a)       (*(volatile unsigned int   *)(a) = (v))

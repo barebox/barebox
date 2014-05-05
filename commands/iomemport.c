@@ -15,6 +15,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#include <asm/io.h>
 #include <common.h>
 #include <command.h>
 
@@ -27,8 +28,8 @@ static void __print_resources(struct resource *res, int indent)
 		printf("  ");
 
 	printf(PRINTF_CONVERSION_RESOURCE " - " PRINTF_CONVERSION_RESOURCE
-			" (size " PRINTF_CONVERSION_RESOURCE ") %s\n", res->start,
-			res->end, resource_size(res), res->name);
+			" (size " PRINTF_CONVERSION_RESOURCE ") %s\n",
+			res->start, res->end, resource_size(res), res->name);
 
 	list_for_each_entry(r, &res->children, sibling)
 		__print_resources(r, indent + 1);
@@ -50,3 +51,17 @@ BAREBOX_CMD_START(iomem)
 	.cmd		= do_iomem,
 	.usage		= "show iomem usage",
 BAREBOX_CMD_END
+
+#if IO_SPACE_LIMIT > 0
+static int do_ioport(int argc, char *argv[])
+{
+	print_resources(&ioport_resource);
+
+	return 0;
+}
+
+BAREBOX_CMD_START(ioport)
+	.cmd		= do_ioport,
+	.usage		= "show ioport usage",
+BAREBOX_CMD_END
+#endif

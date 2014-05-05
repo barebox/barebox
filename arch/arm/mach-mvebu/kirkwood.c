@@ -58,7 +58,8 @@ static int kirkwood_add_uart(void)
 	uart_plat.clock = clk_get_rate(tclk);
 	if (!add_ns16550_device(DEVICE_ID_DYNAMIC,
 				(unsigned int)CONSOLE_UART_BASE, 32,
-				IORESOURCE_MEM_32BIT, &uart_plat))
+				IORESOURCE_MEM | IORESOURCE_MEM_32BIT,
+				&uart_plat))
 		return -ENODEV;
 	return 0;
 }

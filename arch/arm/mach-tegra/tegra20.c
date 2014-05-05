@@ -50,7 +50,7 @@ static int tegra20_add_debug_console(void)
 		return -ENODEV;
 
 	add_ns16550_device(DEVICE_ID_DYNAMIC, base, 8 << debug_uart.shift,
-			   IORESOURCE_MEM_8BIT, &debug_uart);
+			   IORESOURCE_MEM | IORESOURCE_MEM_8BIT, &debug_uart);
 
 	return 0;
 }

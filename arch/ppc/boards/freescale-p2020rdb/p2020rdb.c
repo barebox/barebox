@@ -112,7 +112,8 @@ static int p2020_console_init(void)
 
 	serial_plat.clock = fsl_get_bus_freq(0);
 
-	add_ns16550_device(DEVICE_ID_DYNAMIC, 0xffe04500, 16, IORESOURCE_MEM_8BIT,
+	add_ns16550_device(DEVICE_ID_DYNAMIC, 0xffe04500, 16,
+			   IORESOURCE_MEM | IORESOURCE_MEM_8BIT,
 			   &serial_plat);
 	return 0;
 }

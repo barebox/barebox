@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <init.h>
 #include <linux/ioport.h>
+#include <asm/io.h>
 
 static int init_resource(struct resource *res, const char *name)
 {
@@ -36,7 +37,7 @@ static int init_resource(struct resource *res, const char *name)
  * the parent resource and does not conflict with any of the child
  * resources.
  */
-struct resource *request_region(struct resource *parent,
+struct resource *__request_region(struct resource *parent,
 		const char *name, resource_size_t start,
 		resource_size_t end)
 {
@@ -95,7 +96,7 @@ ok:
 }
 
 /*
- * release a region previously requested with request_region
+ * release a region previously requested with request_*_region
  */
 int release_region(struct resource *res)
 {
@@ -109,7 +110,7 @@ int release_region(struct resource *res)
 	return 0;
 }
 
-/* The root resource for the whole io space */
+/* The root resource for the whole memory-mapped io space */
 struct resource iomem_resource = {
 	.start = 0,
 	.end = 0xffffffff,
@@ -118,10 +119,27 @@ struct resource iomem_resource = {
 };
 
 /*
- * request a region inside the io space
+ * request a region inside the io space (memory)
  */
 struct resource *request_iomem_region(const char *name,
 		resource_size_t start, resource_size_t end)
 {
-	return request_region(&iomem_resource, name, start, end);
+	return __request_region(&iomem_resource, name, start, end);
+}
+
+/* The root resource for the whole io-mapped io space */
+struct resource ioport_resource = {
+	.start = 0,
+	.end = IO_SPACE_LIMIT,
+	.name = "ioport",
+	.children = LIST_HEAD_INIT(ioport_resource.children),
+};
+
+/*
+ * request a region inside the io space (i/o port)
+ */
+struct resource *request_ioport_region(const char *name,
+		resource_size_t start, resource_size_t end)
+{
+	return __request_region(&ioport_resource, name, start, end);
 }

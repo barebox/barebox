@@ -70,7 +70,7 @@ static int syscon_probe(struct device_d *dev)
 	if (!syscon)
 		return -ENOMEM;
 
-	res = dev_get_resource(dev, 0);
+	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (!res) {
 		free(syscon);
 		return -ENOENT;

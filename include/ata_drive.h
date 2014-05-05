@@ -119,6 +119,7 @@ struct ata_ioports {
 	/* hard reset line handling */
 	void (*reset)(int);	/* true: assert reset, false: de-assert reset */
 	int dataif_be;	/* true if 16 bit data register is big endian */
+	int mmio; /* true if memory-mapped io */
 };
 
 struct ata_port;

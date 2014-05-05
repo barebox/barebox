@@ -115,7 +115,8 @@ static int da923rc_console_init(void)
 		barebox_set_model("unknown");
 
 	serial_plat.clock = fsl_get_bus_freq(0);
-	add_ns16550_device(1, CFG_CCSRBAR + 0x4600, 16, IORESOURCE_MEM_8BIT,
+	add_ns16550_device(1, CFG_CCSRBAR + 0x4600, 16,
+			   IORESOURCE_MEM | IORESOURCE_MEM_8BIT,
 			   &serial_plat);
 	return 0;
 }

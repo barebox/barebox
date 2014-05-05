@@ -45,8 +45,8 @@ static void socfpga_uart_init(void)
 	clks[uart] = clk_fixed("uart", 100000000);
 	clkdev_add_physbase(clks[uart], CYCLONE5_UART0_ADDRESS, NULL);
 	clkdev_add_physbase(clks[uart], CYCLONE5_UART1_ADDRESS, NULL);
-	add_ns16550_device(0, 0xffc02000, 1024, IORESOURCE_MEM_8BIT,
-			&uart_pdata);
+	add_ns16550_device(0, 0xffc02000, 1024, IORESOURCE_MEM |
+			IORESOURCE_MEM_8BIT, &uart_pdata);
 }
 
 static void socfpga_timer_init(void)

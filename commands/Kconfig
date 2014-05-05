@@ -309,10 +309,10 @@ config CMD_MEMINFO
 
 config CMD_IOMEM
 	tristate
-	prompt "iomem"
+	prompt "iomem/ioport"
 	help
-	  Show information about iomem usage. Pendant to 'cat /proc/iomem'
-	  under Linux.
+	  Show information about iomem/ioport usage. Pendant to
+	  'cat /proc/iomem' and 'cat /proc/ioports' under Linux.
 
 config CMD_MEMORY
 	bool

@@ -24,3 +24,4 @@ obj-$(CONFIG_OFTREE) += of/
 obj-$(CONFIG_W1) += w1/
 obj-y += pinctrl/
 obj-y += bus/
+obj-$(CONFIG_REGULATOR) += regulator/

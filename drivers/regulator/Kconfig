@@ -1,0 +1,13 @@
+menuconfig REGULATOR
+	depends on OFDEVICE
+	bool "voltage regulator support"
+
+if REGULATOR
+
+config REGULATOR_FIXED
+	bool "fixed/gpio regulator"
+	help
+	  This enables a simple fixed regulator. It is used for regulators
+	  which are not software controllable or controllable via gpio.
+
+endif

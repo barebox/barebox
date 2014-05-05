@@ -28,6 +28,7 @@
 
 #include <linux/list.h>
 #include <block.h>
+#include <regulator.h>
 
 /* Firmware revisions for SD cards */
 #define SD_VERSION_SD		0x20000
@@ -301,6 +302,7 @@ struct mci_host {
 	unsigned max_req_size;
 	unsigned dsr_val;	/**< optional dsr value */
 	int use_dsr;		/**< optional dsr usage flag */
+	struct regulator *supply;
 
 	/** init the host interface */
 	int (*init)(struct mci_host*, struct device_d*);

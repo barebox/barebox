@@ -31,8 +31,7 @@
 
 static int do_mount(int argc, char *argv[])
 {
-	int opt;
-	int ret = 0, verbose = 0;
+	int opt, verbose = 0;
 	struct driver_d *drv;
 	const char *type = NULL;
 	const char *mountpoint, *dev;
@@ -113,11 +112,7 @@ static int do_mount(int argc, char *argv[])
 		mountpoint = argv[optind + 1];
 	}
 
-	if ((ret = mount(dev, type, mountpoint, fsoptions))) {
-		perror("mount");
-		return 1;
-	}
-	return 0;
+	return mount(dev, type, mountpoint, fsoptions);
 }
 
 BAREBOX_CMD_HELP_START(mount)

@@ -33,14 +33,16 @@
 #include <kfifo.h>
 #include <sizes.h>
 
-#define TFTP_PORT	69	/* Well known TFTP port #		*/
-#define TIMEOUT		5	/* Seconds to timeout for a lost pkt	*/
+#define TFTP_PORT	69	/* Well known TFTP port number */
+
+/* Seconds to wait before remote server is allowed to resend a lost packet */
+#define TIMEOUT		5
 
 /* After this time without a response from the server we will resend a packet */
 #define TFTP_RESEND_TIMEOUT	SECOND
 
 /* After this time without progress we will bail out */
-#define TFTP_TIMEOUT		(TIMEOUT * SECOND)
+#define TFTP_TIMEOUT		((TIMEOUT * 3) * SECOND)
 
 /*
  *	TFTP operations.

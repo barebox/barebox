@@ -286,7 +286,7 @@ static int asix_sw_reset(struct usbnet *dev, u8 flags)
 {
 	int ret;
 
-        ret = asix_write_cmd(dev, AX_CMD_SW_RESET, flags, 0, 0, NULL);
+	ret = asix_write_cmd(dev, AX_CMD_SW_RESET, flags, 0, 0, NULL);
 	if (ret < 0)
 		dev_err(&dev->edev.dev, "Failed to send software reset: %02x\n", ret);
 
@@ -453,8 +453,8 @@ static int asix_rx_fixup(struct usbnet *dev, void *buf, int len)
 }
 
 static int asix_tx_fixup(struct usbnet *dev,
-                                void *buf, int len,
-                                void *nbuf, int *nlen)
+				void *buf, int len,
+				void *nbuf, int *nlen)
 {
 	unsigned int packet_len;
 
@@ -696,10 +696,10 @@ static struct driver_info ax88772b_info = {
 	.description = "ASIX AX88772B USB 2.0 Ethernet",
 	.bind = ax88772_bind,
 	.unbind = asix_unbind,
-        .flags = FLAG_ETHER | FLAG_FRAMING_AX,
-        .rx_fixup = asix_rx_fixup,
-        .tx_fixup = asix_tx_fixup,
-        .data = FLAG_EEPROM_MAC,
+	.flags = FLAG_ETHER | FLAG_FRAMING_AX,
+	.rx_fixup = asix_rx_fixup,
+	.tx_fixup = asix_tx_fixup,
+	.data = FLAG_EEPROM_MAC,
 };
 
 static const struct usb_device_id products [] = {
@@ -800,7 +800,6 @@ static struct usb_driver asix_driver = {
 
 static int __init asix_init(void)
 {
- 	return usb_driver_register(&asix_driver);
+	return usb_driver_register(&asix_driver);
 }
 device_initcall(asix_init);
-

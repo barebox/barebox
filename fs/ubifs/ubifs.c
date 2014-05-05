@@ -240,8 +240,6 @@ static struct inode *ubifs_findfile(struct super_block *sb, const char *filename
 		return ubifs_iget(sb, 1);
 
 	for (;;) {
-		struct ubifs_inode *ui;
-
 		/* Extract the actual part from the pathname.  */
 		next = strchr(name, '/');
 		if (next) {
@@ -256,8 +254,6 @@ static struct inode *ubifs_findfile(struct super_block *sb, const char *filename
 		inode = ubifs_iget(sb, inum);
 		if (!inode)
 			break;
-
-		ui = ubifs_inode(inode);
 
 		/*
 		 * Check if directory with this name exists

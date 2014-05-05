@@ -39,6 +39,7 @@
 
 #define T20_ODMDATA_RAMSIZE_SHIFT	28
 #define T20_ODMDATA_RAMSIZE_MASK	(3 << T20_ODMDATA_RAMSIZE_SHIFT)
+#define T30_ODMDATA_RAMSIZE_MASK	(0xf << T20_ODMDATA_RAMSIZE_SHIFT)
 #define T20_ODMDATA_UARTTYPE_SHIFT	18
 #define T20_ODMDATA_UARTTYPE_MASK	(3 << T20_ODMDATA_UARTTYPE_SHIFT)
 #define T20_ODMDATA_UARTID_SHIFT	15
@@ -124,6 +125,26 @@ uint32_t tegra20_get_ramsize(void)
 	}
 }
 
+static __always_inline
+uint32_t tegra30_get_ramsize(void)
+{
+	switch ((tegra_get_odmdata() & T30_ODMDATA_RAMSIZE_MASK) >>
+			T20_ODMDATA_RAMSIZE_SHIFT) {
+	case 0:
+	case 1:
+	default:
+		return SZ_256M;
+	case 2:
+		return SZ_512M;
+	case 3:
+		return SZ_512M + SZ_256M;
+	case 4:
+		return SZ_1G;
+	case 8:
+		return SZ_2G - SZ_1M;
+	}
+}
+
 static long uart_id_to_base[] = {
 	TEGRA_UARTA_BASE,
 	TEGRA_UARTB_BASE,
@@ -174,6 +195,19 @@ int tegra_get_osc_clock(void)
 		return 12000000;
 	case 3:
 		return 26000000;
+	default:
+		return 0;
+	}
+}
+
+static __always_inline
+int tegra_get_pllp_rate(void)
+{
+	switch (tegra_get_chiptype()) {
+	case TEGRA20:
+		return 216000000;
+	case TEGRA30:
+		return 408000000;
 	default:
 		return 0;
 	}

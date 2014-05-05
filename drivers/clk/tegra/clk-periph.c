@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * Based on the Linux Tegra clock code
  *
@@ -130,7 +130,7 @@ struct clk *_tegra_clk_register_periph(const char *name,
 		bool has_div)
 {
 	struct tegra_clk_periph *periph;
-	int ret;
+	int ret, gate_offs, rst_offs;
 
 	periph = kzalloc(sizeof(*periph), GFP_KERNEL);
 	if (!periph) {
@@ -144,8 +144,13 @@ struct clk *_tegra_clk_register_periph(const char *name,
 	if (!periph->mux)
 		goto out_mux;
 
-	periph->gate = clk_gate_alloc(NULL, NULL, clk_base + 0x10 +
-				      ((id >> 3) & 0xc), id & 0x1f, 0, 0);
+	if (id >= 96)
+		gate_offs = 0x360 + (((id - 96) >> 3) & 0xc);
+	else
+		gate_offs = 0x10 + ((id >> 3) & 0xc);
+
+	periph->gate = clk_gate_alloc(NULL, NULL, clk_base + gate_offs,
+				      id & 0x1f, 0, 0);
 	if (!periph->gate)
 		goto out_gate;
 
@@ -162,7 +167,12 @@ struct clk *_tegra_clk_register_periph(const char *name,
 	periph->hw.parent_names = parent_names;
 	periph->hw.num_parents = num_parents;
 	periph->flags = flags;
-	periph->rst_reg = clk_base + 0x4 + ((id >> 3) & 0xc);
+
+	if (id >= 96)
+		rst_offs = 0x358 + (((id - 96) >> 3) & 0xc);
+	else
+		rst_offs = 0x4 + ((id >> 3) & 0xc);
+	periph->rst_reg = clk_base + rst_offs;
 	periph->rst_shift = id & 0x1f;
 
 	ret = clk_register(&periph->hw);

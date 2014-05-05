@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -22,13 +22,16 @@
 #include <mach/lowlevel.h>
 
 static struct NS16550_plat debug_uart = {
-	.clock = 216000000, /* pll_p rate */
 	.shift = 2,
 };
 
-static int tegra20_add_debug_console(void)
+static int tegra_add_debug_console(void)
 {
 	unsigned long base = 0;
+
+	if (!of_machine_is_compatible("nvidia,tegra20") &&
+	    !of_machine_is_compatible("nvidia,tegra30"))
+		return 0;
 
 	/* figure out which UART to use */
 	if (IS_ENABLED(CONFIG_TEGRA_UART_NONE))
@@ -49,17 +52,33 @@ static int tegra20_add_debug_console(void)
 	if (!base)
 		return -ENODEV;
 
+	debug_uart.clock = tegra_get_pllp_rate();
+
 	add_ns16550_device(DEVICE_ID_DYNAMIC, base, 8 << debug_uart.shift,
 			   IORESOURCE_MEM | IORESOURCE_MEM_8BIT, &debug_uart);
 
 	return 0;
 }
-console_initcall(tegra20_add_debug_console);
+console_initcall(tegra_add_debug_console);
 
 static int tegra20_mem_init(void)
 {
+	if (!of_machine_is_compatible("nvidia,tegra20"))
+		return 0;
+
 	arm_add_mem_device("ram0", 0x0, tegra20_get_ramsize());
 
 	return 0;
 }
 mem_initcall(tegra20_mem_init);
+
+static int tegra30_mem_init(void)
+{
+	if (!of_machine_is_compatible("nvidia,tegra30"))
+		return 0;
+
+	arm_add_mem_device("ram0", SZ_2G, tegra30_get_ramsize());
+
+	return 0;
+}
+mem_initcall(tegra30_mem_init);

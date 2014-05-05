@@ -56,6 +56,7 @@ obj-$(CONFIG_MACH_MX31MOBOARD)			+= mx31moboard/
 obj-$(CONFIG_MACH_MX6Q_ARM2)			+= freescale-mx6-arm2/
 obj-$(CONFIG_MACH_NESO)				+= guf-neso/
 obj-$(CONFIG_MACH_NOMADIK_8815NHK)		+= nhk8815/
+obj-$(CONFIG_MACH_NVIDIA_BEAVER)		+= nvidia-beaver/
 obj-$(CONFIG_MACH_NXDB500)			+= netx/
 obj-$(CONFIG_MACH_OMAP343xSDP)			+= omap343xdsp/
 obj-$(CONFIG_MACH_OMAP3EVM)			+= omap3evm/

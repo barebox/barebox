@@ -38,11 +38,6 @@
 #define GPIO_MSK_OE(x)		(GPIO_REG(x) + config->upper_offset + 0x10)
 #define GPIO_MSK_OUT(x)		(GPIO_REG(x) + config->upper_offset + 0X20)
 
-struct tegra_gpio_bank {
-	int bank;
-	int irq;
-};
-
 struct tegra_gpio_soc_config {
 	u32 bank_stride;
 	u32 upper_offset;
@@ -180,13 +175,10 @@ static struct tegra_gpio_soc_config tegra20_gpio_config = {
 	.bank_count = 7,
 };
 
-static struct platform_device_id tegra_gpio_ids[] = {
-	{
-		.name = "tegra20-gpio",
-		.driver_data = (unsigned long)&tegra20_gpio_config,
-	}, {
-		/* sentinel */
-	},
+static struct tegra_gpio_soc_config tegra30_gpio_config = {
+	.bank_stride = 0x100,
+	.upper_offset = 0x80,
+	.bank_count = 8,
 };
 
 static __maybe_unused struct of_device_id tegra_gpio_dt_ids[] = {
@@ -194,13 +186,15 @@ static __maybe_unused struct of_device_id tegra_gpio_dt_ids[] = {
 		.compatible = "nvidia,tegra20-gpio",
 		.data = (unsigned long)&tegra20_gpio_config
 	}, {
+		.compatible = "nvidia,tegra30-gpio",
+		.data = (unsigned long)&tegra30_gpio_config
+	}, {
 		/* sentinel */
 	},
 };
 
 static struct driver_d tegra_gpio_driver = {
 	.name		= "tegra-gpio",
-	.id_table	= tegra_gpio_ids,
 	.of_compatible	= DRV_OF_COMPAT(tegra_gpio_dt_ids),
 	.probe		= tegra_gpio_probe,
 };

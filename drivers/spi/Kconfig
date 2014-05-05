@@ -25,7 +25,7 @@ config DRIVER_SPI_IMX_0_0
 
 config DRIVER_SPI_IMX_0_7
 	bool
-	depends on ARCH_IMX25 || ARCH_IMX35
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX53
 	default y
 
 config DRIVER_SPI_IMX_2_3

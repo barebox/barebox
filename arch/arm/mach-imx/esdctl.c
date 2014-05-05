@@ -21,10 +21,12 @@
 #include <errno.h>
 #include <sizes.h>
 #include <init.h>
+#include <of.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
 #include <mach/esdctl.h>
 #include <mach/esdctl-v4.h>
+#include <mach/imx6-mmdc.h>
 #include <mach/imx1-regs.h>
 #include <mach/imx21-regs.h>
 #include <mach/imx25-regs.h>
@@ -33,6 +35,7 @@
 #include <mach/imx35-regs.h>
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
+#include <mach/imx6-regs.h>
 
 struct imx_esdctl_data {
 	unsigned long base0;
@@ -163,6 +166,45 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 	return size;
 }
 
+/*
+ * MMDC - found on i.MX6
+ */
+
+static inline unsigned long imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
+{
+	u32 ctlval = readl(mmdcbase + MDCTL);
+	u32 mdmisc = readl(mmdcbase + MDMISC);
+	unsigned long size;
+	int rows, cols, width = 2, banks = 8;
+
+	if (cs == 0 && !(ctlval & MMDCx_MDCTL_SDE0))
+		return 0;
+	if (cs == 1 && !(ctlval & MMDCx_MDCTL_SDE1))
+		return 0;
+
+	rows = ((ctlval >> 24) & 0x7) + 11;
+
+	cols = (ctlval >> 20) & 0x7;
+	if (cols == 3)
+		cols = 8;
+	else if (cols == 4)
+		cols = 12;
+	else
+		cols += 9;
+
+	if (ctlval & MMDCx_MDCTL_DSIZ_32B)
+		width = 4;
+	else if (ctlval & MMDCx_MDCTL_DSIZ_64B)
+		width = 8;
+
+	if (mdmisc & MMDCx_MDMISC_DDR_4_BANKS)
+		banks = 4;
+
+	size = (1 << cols) * (1 << rows) * banks * width;
+
+	return size;
+}
+
 static void add_mem(unsigned long base0, unsigned long size0,
 		unsigned long base1, unsigned long size1)
 {
@@ -237,6 +279,13 @@ static void imx_esdctl_v4_add_mem(void *esdctlbase, struct imx_esdctl_data *data
 			data->base1, imx_v4_sdram_size(esdctlbase, 1));
 }
 
+static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+{
+	arm_add_mem_device("ram0", data->base0,
+			imx6_mmdc_sdram_size(mmdcbase, 0) +
+			imx6_mmdc_sdram_size(mmdcbase, 1));
+}
+
 static int imx_esdctl_probe(struct device_d *dev)
 {
 	struct imx_esdctl_data *data;
@@ -301,6 +350,11 @@ static __maybe_unused struct imx_esdctl_data imx53_data = {
 	.add_mem = imx_esdctl_v4_add_mem,
 };
 
+static __maybe_unused struct imx_esdctl_data imx6q_data = {
+	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
+	.add_mem = imx6_mmdc_add_mem,
+};
+
 static struct platform_device_id imx_esdctl_ids[] = {
 #ifdef CONFIG_ARCH_IMX1
 	{
@@ -349,10 +403,20 @@ static struct platform_device_id imx_esdctl_ids[] = {
 	},
 };
 
+static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
+	{
+		.compatible = "fsl,imx6q-mmdc",
+		.data = (unsigned long)&imx6q_data
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d imx_serial_driver = {
 	.name   = "imx-esdctl",
 	.probe  = imx_esdctl_probe,
 	.id_table = imx_esdctl_ids,
+	.of_compatible = DRV_OF_COMPAT(imx_esdctl_dt_ids),
 };
 
 static int imx_esdctl_init(void)

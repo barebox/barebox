@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ "$1" = menu ]; then
+        boot-menu-add-entry "$0" "MMC (ext3)"
+        exit
+fi
+
+global.bootm.image="/mnt/kernel/linuximage"
+#global.bootm.oftree="/boot/oftree"
+bootargs-ip
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootfstype=ext3 rootwait"

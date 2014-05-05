@@ -1,0 +1,147 @@
+/*
+ * Copyright 2014444 Christian Hemp, Phytec Messtechnik GmbH
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+#include "imx6q.dtsi"
+
+/ {
+	model = "Phytec phyCARD-i.MX6 Quad";
+	compatible = "phytec,imx6q-pcaaxl3", "fsl,imx6q";
+
+	chosen {
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &gpmi, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+};
+
+&i2c1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1>;
+
+	eeprom: m24c32@50 {
+		compatible = "st,24c32", "at24";
+		reg = <0x50>;
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+
+	imx6q-phytec-pcaaxl3 {
+		pinctrl_enet: enetgrp {
+			fsl,pins = <
+				MX6QDL_ENET_PINGRP4
+				MX6QDL_PAD_ENET_REF_CLK__ENET_TX_CLK	0x1b0b0
+				MX6QDL_PAD_KEY_COL0__ENET_RX_DATA3	0x1b0b0
+				MX6QDL_PAD_KEY_ROW0__ENET_TX_DATA3	0x1b0b0
+				MX6QDL_PAD_KEY_ROW1__ENET_COL		0x1b0b0
+				MX6QDL_PAD_KEY_COL2__ENET_RX_DATA2	0x1b0b0
+				MX6QDL_PAD_KEY_ROW2__ENET_TX_DATA2	0x1b0b0
+				MX6QDL_PAD_KEY_COL3__ENET_CRS		0x1b0b0
+				MX6QDL_PAD_GPIO_18__ENET_RX_CLK		0x1b0b0
+				MX6QDL_PAD_GPIO_19__ENET_TX_ER		0x1b0b0
+			>;
+		};
+
+		pinctrl_gpmi_nand: gpmigrp {
+			fsl,pins = <MX6QDL_GPMI_NAND_PINGRP1>;
+		};
+
+		pinctrl_i2c1: i2c1grp {
+			fsl,pins = <MX6QDL_I2C1_PINGRP1>;
+		};
+
+		pinctrl_uart3: uart3grp {
+			fsl,pins = <MX6QDL_UART3_PINGRP3>;
+		};
+
+		pinctrl_usdhc3: usdhc3grp {
+			fsl,pins = <
+				MX6QDL_USDHC3_PINGRP_D4
+				MX6QDL_PAD_CSI0_DAT4__GPIO5_IO22  0x80000000 /* CD */
+			>;
+		};
+	};
+};
+
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet>;
+	phy-mode = "mii";
+	status = "disabled";
+};
+
+&gpmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpmi_nand>;
+	nand-on-flash-bbt;
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x400000>;
+	};
+
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x400000 0x20000>;
+	};
+
+	partition@2 {
+		label = "kernel";
+		reg = <0x420000 0x800000>;
+	};
+
+	partition@3 {
+		label = "root";
+		reg = <0xC20000 0x0>;
+	};
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec 0x620>;
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart3>;
+	status = "disabled";
+};
+
+&usdhc3 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_usdhc3>;
+        cd-gpios = <&gpio5 22 0>;
+        status = "disabled";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x80000>;
+	};
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
+	};
+};

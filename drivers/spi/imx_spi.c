@@ -67,6 +67,8 @@
 
 #define CSPI_0_0_TEST_LBC		(1 << 14)
 
+#define CSPI_0_0_RESET_START		(1 << 0)
+
 #define CSPI_0_7_RXDATA			0x00
 #define CSPI_0_7_TXDATA			0x04
 #define CSPI_0_7_CTRL			0x08
@@ -115,7 +117,6 @@ struct imx_spi {
 
 	unsigned int		(*xchg_single)(struct imx_spi *imx, u32 data);
 	void			(*chipselect)(struct spi_device *spi, int active);
-	void			(*init)(struct imx_spi *imx);
 };
 
 struct spi_imx_devtype_data {
@@ -197,13 +198,9 @@ static void cspi_0_0_init(struct imx_spi *imx)
 {
 	void __iomem *base = imx->regs;
 
-	writel(CSPI_0_0_CTRL_ENABLE | CSPI_0_0_CTRL_MASTER,
-		     base + CSPI_0_0_CTRL);
-	writel(CSPI_0_0_PERIOD_32KHZ,
-		     base + CSPI_0_0_PERIOD);
-	while (readl(base + CSPI_0_0_INT) & CSPI_0_0_STAT_RR)
-		readl(base + CSPI_0_0_RXDATA);
-	writel(0, base + CSPI_0_0_INT);
+	writel(CSPI_0_0_RESET_START, base + CSPI_0_0_RESET);
+	do {
+	} while (readl(base + CSPI_0_0_RESET) & CSPI_0_0_RESET_START);
 }
 
 static unsigned int cspi_0_7_xchg_single(struct imx_spi *imx, unsigned int data)
@@ -385,10 +382,6 @@ static void cspi_2_3_chipselect(struct spi_device *spi, int is_active)
 		gpio_set_value(gpio, gpio_cs);
 }
 
-static void cspi_2_3_init(struct imx_spi *imx)
-{
-}
-
 static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
@@ -461,7 +454,6 @@ static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_0_7 = {
 static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
 	.chipselect = cspi_2_3_chipselect,
 	.xchg_single = cspi_2_3_xchg_single,
-	.init = cspi_2_3_init,
 };
 
 static int imx_spi_dt_probe(struct imx_spi *imx)
@@ -525,10 +517,10 @@ static int imx_spi_probe(struct device_d *dev)
 
 	imx->chipselect = devdata->chipselect;
 	imx->xchg_single = devdata->xchg_single;
-	imx->init = devdata->init;
 	imx->regs = dev_request_mem_region(dev, 0);
 
-	imx->init(imx);
+	if (devdata->init)
+		devdata->init(imx);
 
 	spi_register_master(master);
 

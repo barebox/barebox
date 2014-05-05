@@ -166,3 +166,23 @@ pblx-$(CONFIG_MACH_VARISCITE_MX6) += start_variscite_custom
 CFG_start_variscite_custom.pblx.imximg = $(board)/variscite-mx6/flash-header-variscite.imxcfg
 FILE_barebox-variscite-custom.img = start_variscite_custom.pblx.imximg
 image-$(CONFIG_MACH_VARISCITE_MX6) += barebox-variscite-custom.img
+
+pblx-$(CONFIG_MACH_EMBEST_RIOTBOARD) += start_imx6s_riotboard
+CFG_start_imx6s_riotboard.pblx.imximg = $(board)/embest-riotboard/flash-header-embest-riotboard.imxcfg
+FILE_barebox-embest-imx6s-riotboard.img = start_imx6s_riotboard.pblx.imximg
+image-$(CONFIG_MACH_EMBEST_RIOTBOARD) += barebox-embest-imx6s-riotboard.img
+
+pblx-$(CONFIG_MACH_PCAAXL3) += start_phytec_pbaa03_1gib
+CFG_start_phytec_pbaa03_1gib.pblx.imximg = $(board)/phytec-phycard-imx6/flash-header-phytec-pcaaxl3-1gib.imxcfg
+FILE_barebox-phytec-pbaa03-1gib.img = start_phytec_pbaa03_1gib.pblx.imximg
+image-$(CONFIG_MACH_PCAAXL3) += barebox-phytec-pbaa03-1gib.img
+
+pblx-$(CONFIG_MACH_PCAAXL3) += start_phytec_pbaa03_1gib_1bank
+CFG_start_phytec_pbaa03_1gib_1bank.pblx.imximg = $(board)/phytec-phycard-imx6/flash-header-phytec-pcaaxl3-1gib-1bank.imxcfg
+FILE_barebox-phytec-pbaa03-1gib-1bank.img = start_phytec_pbaa03_1gib_1bank.pblx.imximg
+image-$(CONFIG_MACH_PCAAXL3) += barebox-phytec-pbaa03-1gib-1bank.img
+
+pblx-$(CONFIG_MACH_PCAAXL3) += start_phytec_pbaa03_2gib
+CFG_start_phytec_pbaa03_2gib.pblx.imximg = $(board)/phytec-phycard-imx6/flash-header-phytec-pcaaxl3-2gib.imxcfg
+FILE_barebox-phytec-pbaa03-2gib.img = start_phytec_pbaa03_2gib.pblx.imximg
+image-$(CONFIG_MACH_PCAAXL3) += barebox-phytec-pbaa03-2gib.img

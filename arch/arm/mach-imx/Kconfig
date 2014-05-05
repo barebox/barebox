@@ -40,6 +40,7 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_DFI_FS700_M60
 	default 0x4fc00000 if MACH_UDOO
 	default 0x4fc00000 if MACH_VARISCITE_MX6
+	default 0x4fc00000 if MACH_PCAAXL3
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
@@ -208,6 +209,10 @@ config MACH_FREESCALE_MX53_VMX53
 	  Say Y here if you are using the Voipac Technologies X53-DMM-668
 	  module equipped with a Freescale i.MX53 Processor
 
+config MACH_PCAAXL3
+        bool "Phytec phyCARD-i.MX6 Quad"
+        select ARCH_IMX6
+
 config MACH_PHYTEC_PFLA02
 	bool "Phytec phyFLEX-i.MX6"
 	select ARCH_IMX6
@@ -248,6 +253,10 @@ config MACH_NITROGEN6X
 
 config MACH_SOLIDRUN_HUMMINGBOARD
 	bool "SolidRun Hummingboard"
+	select ARCH_IMX6
+
+config MACH_EMBEST_RIOTBOARD
+	bool "Embest RIoTboard"
 	select ARCH_IMX6
 
 config MACH_UDOO
@@ -620,6 +629,16 @@ config IMX_OCOTP
 	  This adds support for the i.MX6 On-Chip OTP controller. Currently the
 	  only supported functionality is reading the MAC address and assigning
 	  it to an ethernet device.
+
+config IMX_OCOTP_WRITE
+	bool
+	prompt "Enable write support of i.MX6 CPUs OTP fuses"
+	depends on IMX_OCOTP
+	help
+	  This adds write support to IMX6 On-Chip OTP registers.
+	  Example of set MAC to 12:34:56:78:9A:BC (2 words with offset 0x22 * 4):
+		mw -l -d /dev/imx-ocotp 0x8C 0x00001234
+		mw -l -d /dev/imx-ocotp 0x88 0x56789ABC
 
 endmenu
 

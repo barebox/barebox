@@ -12,7 +12,7 @@
 		};
 	};
 
-	pinmux {
+	pinmux@70000014 {
 		state_default: pinmux {
 			hdint {
 				nvidia,tristate = <0>;

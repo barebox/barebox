@@ -61,9 +61,6 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 
 	new = devfs_add_partition(cdev->name, offset, size, flags, filename);
 
-	if (cdev->mtd && cdev->mtd->type == MTD_NANDFLASH)
-		dev_add_bb_dev(filename, NULL);
-
 	free(filename);
 
 	return new;

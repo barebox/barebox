@@ -299,9 +299,7 @@ static int falconwing_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_CHUMBY);
 
-	rc = envfs_register_partition("disk0", 1);
-	if (rc != 0)
-		printf("Cannot create the 'env0' persistent environment storage (%d)\n", rc);
+	default_environment_path_set("/dev/disk0.1");
 
 	return 0;
 }

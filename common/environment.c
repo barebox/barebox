@@ -60,6 +60,16 @@ char *default_environment_path_get(void)
 {
 	return default_environment_path;
 }
+#else
+static inline int protect(int fd, size_t count, unsigned long offset, int prot)
+{
+	return 0;
+}
+
+static inline int erase(int fd, size_t count, unsigned long offset)
+{
+	return 0;
+}
 #endif
 
 static int file_size_action(const char *filename, struct stat *statbuf,
@@ -196,9 +206,25 @@ int envfs_save(const char *filename, const char *dirname)
 
 	envfd = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 	if (envfd < 0) {
-		printf("Open %s %s\n", filename, errno_str());
-		ret = envfd;
+		printf("could not open %s: %s\n", filename, errno_str());
+		ret = -errno;
 		goto out1;
+	}
+
+	ret = protect(envfd, ~0, 0, 0);
+
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != ENOSYS) {
+		printf("could not unprotect %s: %s\n", filename, errno_str());
+		goto out;
+	}
+
+	ret = erase(envfd, ~0, 0);
+
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != ENOSYS) {
+		printf("could not erase %s: %s\n", filename, errno_str());
+		goto out;
 	}
 
 	size += sizeof(struct envfs_super);
@@ -214,6 +240,14 @@ int envfs_save(const char *filename, const char *dirname)
 
 		wbuf += now;
 		size -= now;
+	}
+
+	ret = protect(envfd, ~0, 0, 1);
+
+	/* ENOSYS is no error here, many devices do not need it */
+	if (ret && errno != ENOSYS) {
+		printf("could not protect %s: %s\n", filename, errno_str());
+		goto out;
 	}
 
 	ret = 0;
@@ -395,7 +429,9 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {
-		printf("Open %s %s\n", filename, errno_str());
+		printf("environment load %s: %s\n", filename, errno_str());
+		if (errno == ENOENT)
+			printf("Maybe you have to create the partition.\n");
 		return -1;
 	}
 
@@ -451,49 +487,3 @@ out:
 
 	return ret;
 }
-
-#ifdef __BAREBOX__
-/**
- * Try to register an environment storage on a device's partition
- * @return 0 on success
- *
- * We rely on the existence of a usable storage device, already attached to
- * our system, to get something like a persistent memory for our environment.
- * We need to specify the partition number to use on this device.
- * @param[in] devname Name of the device
- * @param[in] partnr Partition number
- * @return 0 on success, anything else in case of failure
- */
-
-int envfs_register_partition(const char *devname, unsigned int partnr)
-{
-	struct cdev *cdev, *part;
-	char *partname;
-
-	if (!devname)
-		return -EINVAL;
-
-	cdev = cdev_by_name(devname);
-	if (cdev == NULL) {
-		pr_err("No %s present\n", devname);
-		return -ENODEV;
-	}
-	partname = asprintf("%s.%d", devname, partnr);
-	cdev = cdev_by_name(partname);
-	if (cdev == NULL) {
-		pr_err("No %s partition available\n", partname);
-		pr_info("Please create the partition %s to store the env\n", partname);
-		return -ENODEV;
-	}
-
-	part = devfs_add_partition(partname, 0, cdev->size,
-						DEVFS_PARTITION_FIXED, "env0");
-	if (part)
-		return 0;
-
-	free(partname);
-
-	return -EINVAL;
-}
-EXPORT_SYMBOL(envfs_register_partition);
-#endif

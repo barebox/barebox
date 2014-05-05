@@ -39,10 +39,6 @@ fi
 addpart -n /dev/${device} "$parts" || exit
 mkdir -p /tmp/mtdparts/${device}
 
-if [ -n "${bbdev}" ]; then
-	nand -a /dev/${device}.*
-fi
-
 if [ -n ${kernelname} ]; then
 	global linux.mtdparts.${device}
 	global.linux.mtdparts.${device}="${kernelname}:${parts}"

@@ -22,5 +22,11 @@
 			reg = <0xb8050000 0x48>;
 			#clock-cells = <1>;
 		};
+
+		spi: spi@bf000000{
+			compatible = "qca,ath79-spi";
+			reg = <0xbf000000 0x01000000>;
+			status = "disabled";
+		};
 	};
 };

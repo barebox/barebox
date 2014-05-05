@@ -10,6 +10,10 @@ config DRIVER_SPI_ALTERA
 	bool "Altera SPI Master driver"
 	depends on NIOS2
 
+config DRIVER_SPI_ATH79
+	bool "Atheros AR71XX/AR724X/AR913X/AR933X SPI controller driver"
+	depends on MACH_MIPS_ATH79
+
 config DRIVER_SPI_ATMEL
 	bool "Atmel (AT91) SPI Master driver"
 	depends on ARCH_AT91

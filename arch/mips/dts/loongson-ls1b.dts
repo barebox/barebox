@@ -1,0 +1,16 @@
+/dts-v1/;
+
+#include "ls1b.dtsi"
+
+/ {
+	model = "Loongson Tech LS1B Demo Board";
+	compatible = "loongson,ls1b";
+
+	memory {
+		reg = <0x00000000 0x4000000>;
+	};
+};
+
+&serial2 {
+	status = "okay";
+};

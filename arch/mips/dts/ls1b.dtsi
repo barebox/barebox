@@ -1,0 +1,43 @@
+#include "skeleton.dtsi"
+
+/ {
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		device_type = "soc";
+		ranges;
+
+		serial0: serial@bfe40000 {
+			compatible = "ns16550a";
+			reg = <0xbfe40000 0x8>;
+			reg-shift = <0>;
+			clock-frequency = <83000000>;
+			status = "disabled";
+		};
+
+		serial1: serial@bfe44000 {
+			compatible = "ns16550a";
+			reg = <0xbfe44000 0x8>;
+			reg-shift = <0>;
+			clock-frequency = <83000000>;
+			status = "disabled";
+		};
+
+		serial2: serial@bfe48000 {
+			compatible = "ns16550a";
+			reg = <0xbfe48000 0x8>;
+			reg-shift = <0>;
+			clock-frequency = <83000000>;
+			status = "disabled";
+		};
+
+		serial3: serial@bfe4c000 {
+			compatible = "ns16550a";
+			reg = <0xbfe4c000 0x8>;
+			reg-shift = <0>;
+			clock-frequency = <83000000>;
+			status = "disabled";
+		};
+	};
+};

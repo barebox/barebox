@@ -25,42 +25,45 @@ struct clk_gate {
 	void __iomem *reg;
 	int shift;
 	const char *parent;
-#define CLK_GATE_INVERTED	(1 << 0)
 	unsigned flags;
 };
 
 #define to_clk_gate(_clk) container_of(_clk, struct clk_gate, clk)
 
-static int clk_gate_enable(struct clk *clk)
+static void clk_gate_endisable(struct clk *clk, int enable)
 {
-	struct clk_gate *g = container_of(clk, struct clk_gate, clk);
+	struct clk_gate *gate = container_of(clk, struct clk_gate, clk);
+	int set = gate->flags & CLK_GATE_INVERTED ? 1 : 0;
 	u32 val;
 
-	val = readl(g->reg);
+	set ^= enable;
 
-	if (g->flags & CLK_GATE_INVERTED)
-		val &= ~(1 << g->shift);
-	else
-		val |= 1 << g->shift;
+	if (gate->flags & CLK_GATE_HIWORD_MASK) {
+		val = BIT(gate->shift + 16);
+		if (set)
+			val |= BIT(gate->shift);
+	} else {
+		val = readl(gate->reg);
 
-	writel(val, g->reg);
+		if (set)
+			val |= BIT(gate->shift);
+		else
+			val &= ~BIT(gate->shift);
+	}
+
+	writel(val, gate->reg);
+}
+
+static int clk_gate_enable(struct clk *clk)
+{
+	clk_gate_endisable(clk, 1);
 
 	return 0;
 }
 
 static void clk_gate_disable(struct clk *clk)
 {
-	struct clk_gate *g = container_of(clk, struct clk_gate, clk);
-	u32 val;
-
-	val = readl(g->reg);
-
-	if (g->flags & CLK_GATE_INVERTED)
-		val |= 1 << g->shift;
-	else
-		val &= ~(1 << g->shift);
-
-	writel(val, g->reg);
+	clk_gate_endisable(clk, 0);
 }
 
 static int clk_gate_is_enabled(struct clk *clk)
@@ -85,7 +88,7 @@ static struct clk_ops clk_gate_ops = {
 };
 
 struct clk *clk_gate_alloc(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, unsigned flags)
+		void __iomem *reg, u8 shift, unsigned flags, u8 clk_gate_flags)
 {
 	struct clk_gate *g = xzalloc(sizeof(*g));
 
@@ -97,6 +100,7 @@ struct clk *clk_gate_alloc(const char *name, const char *parent,
 	g->clk.flags = flags;
 	g->clk.parent_names = &g->parent;
 	g->clk.num_parents = 1;
+	g->flags = clk_gate_flags;
 
 	return &g->clk;
 }
@@ -109,12 +113,12 @@ void clk_gate_free(struct clk *clk_gate)
 }
 
 struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
-		u8 shift, unsigned flags)
+		u8 shift, unsigned flags, u8 clk_gate_flags)
 {
 	struct clk *g;
 	int ret;
 
-	g = clk_gate_alloc(name , parent, reg, shift, flags);
+	g = clk_gate_alloc(name , parent, reg, shift, flags, clk_gate_flags);
 
 	ret = clk_register(g);
 	if (ret) {
@@ -131,13 +135,11 @@ struct clk *clk_gate_inverted(const char *name, const char *parent,
 	struct clk *clk;
 	struct clk_gate *g;
 
-	clk = clk_gate(name, parent, reg, shift, flags);
+	clk = clk_gate(name, parent, reg, shift, flags, CLK_GATE_INVERTED);
 	if (IS_ERR(clk))
 		return clk;
 
 	g = container_of(clk, struct clk_gate, clk);
-
-	g->flags = CLK_GATE_INVERTED;
 
 	return clk;
 }

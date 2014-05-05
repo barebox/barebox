@@ -188,7 +188,7 @@ int mvebu_clk_gating_probe(struct device_d *dev)
 			(desc[n].parent) ? desc[n].parent : default_parent;
 		gate->bit_idx = desc[n].bit_idx;
 		gate->clk = clk_gate(desc[n].name, parent,
-				base, desc[n].bit_idx, 0);
+				base, desc[n].bit_idx, 0, 0);
 		WARN_ON(IS_ERR(gate->clk));
 	}
 

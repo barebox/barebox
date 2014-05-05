@@ -199,6 +199,9 @@ static inline int clk_set_rate(struct clk *clk, unsigned long rate)
 
 #define CLK_SET_RATE_PARENT     (1 << 0) /* propagate rate change up one level */
 
+#define CLK_GATE_INVERTED	(1 << 0)
+#define CLK_GATE_HIWORD_MASK	(1 << 1)
+
 struct clk_ops {
 	int		(*enable)(struct clk *clk);
 	void		(*disable)(struct clk *clk);
@@ -267,10 +270,11 @@ struct clk *clk_mux(const char *name, void __iomem *reg,
 		unsigned flags);
 
 struct clk *clk_gate_alloc(const char *name, const char *parent,
-		void __iomem *reg, u8 shift, unsigned flags);
+		void __iomem *reg, u8 shift, unsigned flags,
+		u8 clk_gate_flags);
 void clk_gate_free(struct clk *clk_gate);
 struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
-		u8 shift, unsigned flags);
+		u8 shift, unsigned flags, u8 clk_gate_flags);
 struct clk *clk_gate_inverted(const char *name, const char *parent, void __iomem *reg,
 		u8 shift, unsigned flags);
 int clk_is_enabled(struct clk *clk);
@@ -316,6 +320,7 @@ struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data);
 struct clk *of_clk_get(struct device_node *np, int index);
 struct clk *of_clk_get_by_name(struct device_node *np, const char *name);
 struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec);
+char *of_clk_get_parent_name(struct device_node *np, unsigned int index);
 int of_clk_init(struct device_node *root, const struct of_device_id *matches);
 #else
 static inline struct clk *of_clk_get(struct device_node *np, int index)

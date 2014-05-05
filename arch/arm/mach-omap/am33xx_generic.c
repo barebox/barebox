@@ -207,6 +207,8 @@ int am33xx_init(void)
 {
 	omap_gpmc_base = (void *)AM33XX_GPMC_BASE;
 
+	am33xx_enable_per_clocks();
+
 	return am33xx_bootsource();
 }
 

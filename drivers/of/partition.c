@@ -60,6 +60,8 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	filename = asprintf("%s.%s", cdev->name, partname);
 
 	new = devfs_add_partition(cdev->name, offset, size, flags, filename);
+	if (new && new->dev)
+		new->dev->device_node = node;
 
 	free(filename);
 

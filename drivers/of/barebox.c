@@ -35,20 +35,6 @@ struct of_partition {
 
 static LIST_HEAD(of_partition_list);
 
-struct device_d *of_find_device_by_node_path(const char *path)
-{
-	struct device_d *dev;
-
-	for_each_device(dev) {
-		if (!dev->device_node)
-			continue;
-		if (!strcmp(path, dev->device_node->full_name))
-			return dev;
-	}
-
-	return NULL;
-}
-
 static int environment_probe(struct device_d *dev)
 {
 	char *path;

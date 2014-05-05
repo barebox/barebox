@@ -31,6 +31,20 @@ struct of_path_type {
 	int (*parse)(struct of_path *op, const char *str);
 };
 
+struct device_d *of_find_device_by_node_path(const char *path)
+{
+	struct device_d *dev;
+
+	for_each_device(dev) {
+		if (!dev->device_node)
+			continue;
+		if (!strcmp(path, dev->device_node->full_name))
+			return dev;
+	}
+
+	return NULL;
+}
+
 /**
  * of_path_type_partname - find a partition based on physical device and
  *                         partition name
@@ -133,6 +147,9 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath)
 		return -ENODEV;
 
 	device_detect(op.dev);
+
+	if (list_is_singular(&op.dev->cdevs))
+		op.cdev = list_first_entry(&op.dev->cdevs, struct cdev, devices_list);
 
 	i = 1;
 

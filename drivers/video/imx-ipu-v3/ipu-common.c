@@ -774,7 +774,7 @@ static int ipu_probe(struct device_d *dev)
 	ipu->clk = clk_get(dev, "bus");
 	if (IS_ERR(ipu->clk)) {
 		ret = PTR_ERR(ipu->clk);
-		dev_err(dev, "clk_get failed with %d", ret);
+		dev_err(dev, "clk_get failed: %s\n", strerror(-ret));
 		return ret;
 	}
 
@@ -788,7 +788,7 @@ static int ipu_probe(struct device_d *dev)
 
 	ret = devtype->reset(ipu);
 	if (ret) {
-		dev_err(dev, "failed to reset: %d\n", ret);
+		dev_err(dev, "failed to reset: %s\n", strerror(-ret));
 		goto out_failed_reset;
 	}
 

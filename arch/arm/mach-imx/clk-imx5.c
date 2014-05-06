@@ -209,6 +209,8 @@ int __init mx51_clocks_init(void __iomem *regs, unsigned long rate_ckil, unsigne
 	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_C_SEL], MX51_MMC_SDHC3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_D_SEL], MX51_MMC_SDHC4_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[IMX5_CLK_IPG], MX51_ATA_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX51_PWM1_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX51_PWM2_BASE_ADDR, "per");
 
 	return 0;
 }
@@ -272,6 +274,8 @@ int __init mx53_clocks_init(void __iomem *regs, unsigned long rate_ckil, unsigne
 	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_B_PODF], MX53_ESDHC3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_D_SEL], MX53_ESDHC4_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[IMX5_CLK_AHB], MX53_SATA_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX53_PWM1_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX53_PWM2_BASE_ADDR, "per");
 
 	return 0;
 }

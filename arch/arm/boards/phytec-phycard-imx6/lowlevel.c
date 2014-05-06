@@ -57,7 +57,7 @@ extern char __dtb_imx6q_phytec_pbaa03_start[];
 
 static void __noreturn start_imx6q_phytec_pbaa03_common(uint32_t size)
 {
-	uint32_t fdt;
+	void *fdt;
 
 	arm_cpu_lowlevel_init();
 
@@ -66,7 +66,7 @@ static void __noreturn start_imx6q_phytec_pbaa03_common(uint32_t size)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = (uint32_t)__dtb_imx6q_phytec_pbaa03_start - get_runtime_offset();
+	fdt = __dtb_imx6q_phytec_pbaa03_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, size, fdt);
 }

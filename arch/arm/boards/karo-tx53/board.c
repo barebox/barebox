@@ -198,14 +198,6 @@ static inline void tx53_fec_init(void)
 			ARRAY_SIZE(tx53_fec_pads));
 }
 
-#define DCD_NAME_1011 static struct imx_dcd_v2_entry dcd_entry_1011
-
-#include "dcd-data-1011.h"
-
-#define DCD_NAME_XX30 static u32 dcd_entry_xx30
-
-#include "dcd-data-xx30.h"
-
 static int tx53_devices_init(void)
 {
 	imx53_iim_register_fec_ethaddr();
@@ -218,12 +210,10 @@ static int tx53_devices_init(void)
 
 	/* rev xx30 can boot from nand or USB */
 	imx53_bbu_internal_nand_register_handler("nand-xx30",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)dcd_entry_xx30,
-		sizeof(dcd_entry_xx30), SZ_512K, 0);
+		BBU_HANDLER_FLAG_DEFAULT, SZ_512K);
 
 	/* rev 1011 can boot from MMC/SD, other bootsource currently unknown */
-	imx53_bbu_internal_mmc_register_handler("mmc-1011", "/dev/disk0",
-		0, (void *)dcd_entry_1011, sizeof(dcd_entry_1011), 0);
+	imx53_bbu_internal_mmc_register_handler("mmc-1011", "/dev/disk0", 0);
 
 	return 0;
 }

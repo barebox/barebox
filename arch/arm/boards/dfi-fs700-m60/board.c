@@ -111,9 +111,9 @@ static int dfi_fs700_m60_init(void)
 		flag_mmc |= BBU_HANDLER_FLAG_DEFAULT;
 
 	imx6_bbu_internal_mmc_register_handler("mmc", "/dev/mmc3.boot0",
-		flag_mmc, NULL, 0, 0);
+		flag_mmc);
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0",
-		flag_spi, NULL, 0, 0);
+		flag_spi);
 
 	armlinux_set_architecture(MACH_TYPE_MX6Q_SABRESD);
 

@@ -238,9 +238,6 @@ static struct gpio_led leds[] = {
 	},
 };
 
-extern char flash_header_imx51_genesi_efikasb_start[];
-extern char flash_header_imx51_genesi_efikasb_end[];
-
 static int efikamx_late_init(void)
 {
 	int i;
@@ -258,10 +255,7 @@ static int efikamx_late_init(void)
 	writew(0x0, MX51_WDOG_BASE_ADDR + 0x8);
 
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc1",
-			BBU_HANDLER_FLAG_DEFAULT,
-			(void *)flash_header_imx51_genesi_efikasb_start,
-			flash_header_imx51_genesi_efikasb_end -
-			flash_header_imx51_genesi_efikasb_start, 0);
+			BBU_HANDLER_FLAG_DEFAULT);
 
 	armlinux_set_architecture(2370);
 	armlinux_set_revision(0x5100 | imx_silicon_revision());

@@ -70,7 +70,7 @@ static int riotboard_device_init(void)
 	phy_register_fixup_for_uid(0x004dd072, 0xffffffef, ar8035_phy_fixup);
 
 	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc3.barebox",
-			BBU_HANDLER_FLAG_DEFAULT, NULL, 0, 0);
+			BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

@@ -98,34 +98,16 @@ static int tqma6x_enet_init(void)
 }
 fs_initcall(tqma6x_enet_init);
 
-extern char flash_header_tqma6dl_start[];
-extern char flash_header_tqma6dl_end[];
-
-extern char flash_header_tqma6q_start[];
-extern char flash_header_tqma6q_end[];
-
 static int tqma6x_env_init(void)
 {
-	void *flash_header_start;
-	void *flash_header_end;
-
-	if (of_machine_is_compatible("tq,tqma6s")) {
-		flash_header_start = (void *)flash_header_tqma6dl_start;
-		flash_header_end = (void *)flash_header_tqma6dl_end;
-	} else if (of_machine_is_compatible("tq,tqma6q")) {
-		flash_header_start = (void *)flash_header_tqma6q_start;
-		flash_header_end = (void *)flash_header_tqma6q_end;
-	} else {
+	if (!of_machine_is_compatible("tq,mba6x"))
 		return 0;
-	}
 
 	devfs_add_partition("m25p0", 0, SZ_512K, DEVFS_PARTITION_FIXED, "m25p0.barebox");
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_start,
-		flash_header_end - flash_header_start, 0);
-	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc2.boot0",
-		0, (void *)flash_header_start, flash_header_end - flash_header_start, 0);
+		BBU_HANDLER_FLAG_DEFAULT);
+	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc2.boot0", 0);
 
 	device_detect_by_name("mmc2");
 

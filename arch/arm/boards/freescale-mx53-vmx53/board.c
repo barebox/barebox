@@ -25,9 +25,6 @@
 #include <asm/armlinux.h>
 #include <mach/bbu.h>
 
-extern char flash_header_imx53_vmx53_start[];
-extern char flash_header_imx53_vmx53_end[];
-
 static int vmx53_late_init(void)
 {
 	if (!of_machine_is_compatible("voipac,imx53-dmm-668"))
@@ -39,9 +36,7 @@ static int vmx53_late_init(void)
 	barebox_set_hostname("vmx53");
 
 	imx53_bbu_internal_nand_register_handler("nand",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_imx53_vmx53_start,
-		flash_header_imx53_vmx53_end - flash_header_imx53_vmx53_start,
-		SZ_512K, 0);
+		BBU_HANDLER_FLAG_DEFAULT, SZ_512K);
 
 	return 0;
 }

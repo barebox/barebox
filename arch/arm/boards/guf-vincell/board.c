@@ -259,9 +259,6 @@ static struct imx_nand_platform_data nand_info = {
 	.flash_bbt	= 1,
 };
 
-static struct imx_dcd_v2_entry __dcd_entry_section dcd_entry[] = {
-};
-
 static struct i2c_board_info i2c_devices[] = {
 	{
 		I2C_BOARD_INFO("da9053", 0x48),
@@ -293,7 +290,7 @@ static int vincell_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 
 	imx53_bbu_internal_nand_register_handler("nand",
-		BBU_HANDLER_FLAG_DEFAULT, dcd_entry, sizeof(dcd_entry), 3 * SZ_128K, 0xf8020000);
+		BBU_HANDLER_FLAG_DEFAULT, 3 * SZ_128K);
 
 	return 0;
 }

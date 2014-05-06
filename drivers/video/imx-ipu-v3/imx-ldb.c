@@ -178,7 +178,7 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 		dev_err(ldb->dev, "failed to set display clock parent: %s\n", strerror(-ret));
 		return ret;
 	}
-printk("%s: %d\n", __func__, di);
+
 	val = readl(gpr3);
 	shift = (imx_ldb_ch->chno == 0) ? 6 : 8;
 	val &= ~(3 << shift);

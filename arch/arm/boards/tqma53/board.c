@@ -30,7 +30,6 @@ static int tqma53_devices_init(void)
 	if (!of_machine_is_compatible("tq,tqma53"))
 		return 0;
 
-	barebox_set_model("TQ tqma53");
 	barebox_set_hostname("tqma53");
 
 	if (bootsource_get() == BOOTSOURCE_MMC &&

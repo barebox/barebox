@@ -1,6 +1,8 @@
 #ifndef __STDLIB_H
 #define __STDLIB_H
 
+#include <types.h>
+
 #define RAND_MAX 32767
 
 /* return a pseudo-random integer in the range [0, RAND_MAX] */

@@ -117,7 +117,8 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 
 
 	if (!size || size % FSL_PIN_SIZE) {
-		dev_err(iomux->pinctrl.dev, "Invalid fsl,pins property\n");
+		dev_err(iomux->pinctrl.dev, "Invalid fsl,pins property in %s\n",
+				np->full_name);
 		return -EINVAL;
 	}
 

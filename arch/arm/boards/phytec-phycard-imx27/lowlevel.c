@@ -8,6 +8,7 @@
 #include <init.h>
 #include <io.h>
 #include <config.h>
+#include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <mach/imx27-regs.h>
 #include <mach/imx-pll.h>
@@ -57,13 +58,11 @@ static void sdram_init(void)
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 }
 
-void __bare_init __naked barebox_arm_reset_vector(void)
+void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt)
 {
 	unsigned long r;
 
 	arm_cpu_lowlevel_init();
-
-	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 12);
 
 	/* ahb lite ip interface */
 	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0);
@@ -74,7 +73,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	/* Skip SDRAM initialization if we run from RAM */
         r = get_pc();
         if (r > 0xa0000000 && r < 0xc0000000)
-                imx27_barebox_entry(NULL);
+                imx27_barebox_entry(fdt);
 
 	/* 399 MHz */
 	writel(IMX_PLL_PD(0) |
@@ -99,5 +98,18 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 	sdram_init();
 
-	imx27_barebox_boot_nand_external(0);
+	imx27_barebox_boot_nand_external(fdt);
+}
+
+extern char __dtb_imx27_phytec_phycard_s_rdk_bb_start[];
+
+ENTRY_FUNCTION(start_phytec_phycard_imx27, r0, r1, r2)
+{
+	void *fdt;
+
+	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 12);
+
+	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start - get_runtime_offset();
+
+	phytec_phycard_imx27_common_init(fdt);
 }

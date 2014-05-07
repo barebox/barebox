@@ -184,6 +184,15 @@ config MACH_TX25
 	help
 	  Say Y here if you are using the Ka-Ro tx25 board
 
+config MACH_PCA100
+	bool "phyCard-i.MX27"
+	select ARCH_IMX27
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select ARCH_IMX_EXTERNAL_BOOT_NAND
+	help
+	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
+	  with a Freescale i.MX27 Processor
+
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51
@@ -333,15 +342,6 @@ config MACH_IMX27ADS
 	select ARCH_IMX27
 	help
 	  Say Y here if you are using the Freescale i.MX27ads board equipped
-	  with a Freescale i.MX27 Processor
-
-config MACH_PCA100
-	bool "phyCard-i.MX27"
-	select ARCH_IMX27
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select ARCH_IMX_EXTERNAL_BOOT_NAND
-	help
-	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
 	  with a Freescale i.MX27 Processor
 
 config MACH_PCM038

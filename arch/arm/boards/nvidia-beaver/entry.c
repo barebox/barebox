@@ -30,6 +30,7 @@ ENTRY_FUNCTION(start_nvidia_beaver, r0, r1, r2)
 	tegra_cpu_lowlevel_setup();
 
 	tegra_dvc_init();
+	tegra30_tps62366a_ramp_vddcore();
 	tegra30_tps65911_cpu_rail_enable();
 
 	fdt = (uint32_t)__dtb_tegra30_beaver_start - get_runtime_offset();

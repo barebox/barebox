@@ -70,3 +70,21 @@ void tegra30_tps65911_cpu_rail_enable(void)
 	tegra_dvc_write_data(0x0127, TEGRA_I2C_SEND_2_BYTES);
 	tegra_ll_delay_usec(10 * 1000);
 }
+
+static inline __attribute__((always_inline))
+void tegra30_tps62366a_ramp_vddcore(void)
+{
+	tegra_dvc_write_addr(0xc0, 2);
+	/* set VDDcore to 1,2V */
+	tegra_dvc_write_data(0x4601, TEGRA_I2C_SEND_2_BYTES);
+	tegra_ll_delay_usec(1000);
+}
+
+static inline __attribute__((always_inline))
+void tegra30_tps62361b_ramp_vddcore(void)
+{
+	tegra_dvc_write_addr(0xc0, 2);
+	/* set VDDcore to 1,2V */
+	tegra_dvc_write_data(0x4603, TEGRA_I2C_SEND_2_BYTES);
+	tegra_ll_delay_usec(1000);
+}

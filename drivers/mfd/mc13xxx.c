@@ -60,6 +60,21 @@ int mc13xxx_revision(struct mc13xxx *mc13xxx)
 }
 EXPORT_SYMBOL(mc13xxx_revision);
 
+static void(*mc13xxx_init_callback)(struct mc13xxx *mc13xxx);
+
+int mc13xxx_register_init_callback(void(*callback)(struct mc13xxx *mc13xxx))
+{
+	if (mc13xxx_init_callback)
+		return -EBUSY;
+
+	mc13xxx_init_callback = callback;
+
+	if (mc_dev)
+		mc13xxx_init_callback(mc_dev);
+
+	return 0;
+}
+
 #ifdef CONFIG_SPI
 static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 {
@@ -349,6 +364,9 @@ static int __init mc13xxx_probe(struct device_d *dev)
 
 	mc_dev->revision = rev;
 	devfs_create(&mc_dev->cdev);
+
+	if (mc13xxx_init_callback)
+		mc13xxx_init_callback(mc_dev);
 
 	return 0;
 }

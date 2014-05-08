@@ -21,6 +21,14 @@
 			status = "disabled";
 		};
 	};
+
+	memory {
+		reg = <0x70000000 0x0>; /* Up to 1GiB */
+	};
+};
+
+&esdhc3 { /* EMMC */
+	dsr = <0x100>;
 };
 
 &iim {

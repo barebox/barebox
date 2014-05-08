@@ -586,4 +586,4 @@ static struct driver_d imx_spi_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx_spi_dt_ids),
 	.id_table = imx_spi_ids,
 };
-device_platform_driver(imx_spi_driver);
+coredevice_platform_driver(imx_spi_driver);

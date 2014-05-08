@@ -156,7 +156,7 @@ static int do_loadx(int argc, char *argv[])
 	char *output_file = NULL, *cname = NULL;
 	struct console_device *cdev = NULL;
 
-	while ((opt = getopt(argc, argv, "f:b:o:c")) > 0) {
+	while ((opt = getopt(argc, argv, "f:b:t:o:c")) > 0) {
 		switch (opt) {
 		case 'f':
 			output_file = optarg;
@@ -211,12 +211,12 @@ static int do_loadx(int argc, char *argv[])
 	}
 
 	current_baudrate = console_change_speed(cdev, load_baudrate);
-	printf("## Ready for binary (X-Modem) download "
+	printf("## Ready for binary (xmodem) download "
 	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
-	       output_file, load_baudrate);
-	rcode = do_load_serial_ymodem(cdev);
+	       output_file, load_baudrate ? load_baudrate : current_baudrate);
+	rcode = do_load_serial_xmodem(cdev, ofd);
 	if (rcode < 0) {
-		printf("## Binary (kermit) download aborted (%d)\n", rcode);
+		printf("## Binary (xmodem) download aborted (%d)\n", rcode);
 		rcode = 1;
 	}
 	console_change_speed(cdev, current_baudrate);

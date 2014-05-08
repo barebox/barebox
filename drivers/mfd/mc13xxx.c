@@ -397,7 +397,6 @@ static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
 	{ }
 };
 
-#ifdef CONFIG_I2C
 static struct driver_d mc13xxx_i2c_driver = {
 	.name		= "mc13xxx-i2c",
 	.probe		= mc13xxx_probe,
@@ -405,19 +404,30 @@ static struct driver_d mc13xxx_i2c_driver = {
 	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
 
-static int __init mc13xxx_i2c_init(void)
-{
-	return i2c_driver_register(&mc13xxx_i2c_driver);
-}
-device_initcall(mc13xxx_i2c_init);
-#endif
-
-#ifdef CONFIG_SPI
 static struct driver_d mc13xxx_spi_driver = {
 	.name		= "mc13xxx-spi",
 	.probe		= mc13xxx_probe,
 	.id_table	= mc13xxx_ids,
 	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
-device_spi_driver(mc13xxx_spi_driver);
-#endif
+
+static int __init mc13xxx_init(void)
+{
+	int err_spi = 0, err_i2c = 0;
+
+	if (IS_ENABLED(CONFIG_I2C))
+		err_spi = i2c_driver_register(&mc13xxx_i2c_driver);
+
+	if (IS_ENABLED(CONFIG_SPI))
+		err_i2c = spi_driver_register(&mc13xxx_spi_driver);
+
+	if (err_spi)
+		return err_spi;
+
+	if (err_i2c)
+		return err_i2c;
+
+	return 0;
+
+}
+coredevice_initcall(mc13xxx_init);

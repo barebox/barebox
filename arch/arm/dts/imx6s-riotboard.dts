@@ -72,7 +72,10 @@
 			>;
 		};
 		pinctrl_uart2: uart2grp {
-			fsl,pins = <MX6QDL_UART2_PINGRP1>;
+			fsl,pins = <
+				MX6QDL_PAD_EIM_D26__UART2_TX_DATA	0x1b0b1
+				MX6QDL_PAD_EIM_D27__UART2_RX_DATA	0x1b0b1
+			>;
 		};
 		pinctrl_rgmii_ar8035: rgmii_ar8035 {
 			fsl,pins = <

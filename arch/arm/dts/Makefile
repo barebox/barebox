@@ -80,4 +80,4 @@ targets += $(dtb-y)
 
 extra-y += $(dtb-y)
 
-clean-files := *.dtb *.dtb.S
+clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts

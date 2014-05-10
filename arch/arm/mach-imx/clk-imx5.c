@@ -254,7 +254,6 @@ static void mx5_clocks_ipu_init(void __iomem *regs)
 	clks[IMX5_CLK_IPU_SEL]		= imx_clk_mux("ipu_sel", regs + CCM_CBCMR, 6, 2, ipu_sel, ARRAY_SIZE(ipu_sel));
 }
 
-#ifdef CONFIG_ARCH_IMX51
 static void mx51_clocks_ipu_init(void __iomem *regs)
 {
 	clks[IMX5_CLK_IPU_DI0_SEL]	= imx_clk_mux_p("ipu_di0_sel", regs + CCM_CSCMR2, 26, 3,
@@ -332,14 +331,6 @@ static struct driver_d imx51_ccm_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx51_ccm_dt_ids),
 };
 
-static int imx51_ccm_init(void)
-{
-	return platform_driver_register(&imx51_ccm_driver);
-}
-core_initcall(imx51_ccm_init);
-#endif
-
-#ifdef CONFIG_ARCH_IMX53
 static void mx53_clocks_ipu_init(void __iomem *regs)
 {
 	clks[IMX5_CLK_LDB_DI1_DIV_3_5]	= imx_clk_fixed_factor("ldb_di1_div_3_5", "ldb_di1_sel", 2, 7);
@@ -426,9 +417,13 @@ static struct driver_d imx53_ccm_driver = {
 	.of_compatible = DRV_OF_COMPAT(imx53_ccm_dt_ids),
 };
 
-static int imx53_ccm_init(void)
+static int imx5_ccm_init(void)
 {
-	return platform_driver_register(&imx53_ccm_driver);
+	if (IS_ENABLED(CONFIG_ARCH_IMX51))
+		platform_driver_register(&imx51_ccm_driver);
+	if (IS_ENABLED(CONFIG_ARCH_IMX53))
+		platform_driver_register(&imx53_ccm_driver);
+
+	return 0;
 }
-core_initcall(imx53_ccm_init);
-#endif
+core_initcall(imx5_ccm_init);

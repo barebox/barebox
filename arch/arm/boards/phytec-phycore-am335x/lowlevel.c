@@ -15,7 +15,7 @@
 #include <mach/wdt.h>
 #include <debug_ll.h>
 
-static const struct am33xx_cmd_control MT41J256M8HX15E_2x256M8_cmd = {
+static const struct am33xx_cmd_control MT41J256M16HA15EIT_1x512MB_cmd = {
 	.slave_ratio0 = 0x40,
 	.dll_lock_diff0 = 0x0,
 	.invert_clkout0 = 0x1,
@@ -27,23 +27,21 @@ static const struct am33xx_cmd_control MT41J256M8HX15E_2x256M8_cmd = {
 	.invert_clkout2 = 0x1,
 };
 
-static const struct am33xx_emif_regs MT41J256M8HX15E_2x256M8_regs = {
+static const struct am33xx_emif_regs MT41J256M16HA15EIT_1x512MB_regs = {
 	.emif_read_latency	= 0x6,
-	.emif_tim1		= 0x0668A39B,
-	.emif_tim2		= 0x26337FDA,
-	.emif_tim3		= 0x501F830F,
-	.sdram_config		= 0x61C04832,
+	.emif_tim1		= 0x0888A39B,
+	.emif_tim2		= 0x26517FDA,
+	.emif_tim3		= 0x501F84EF,
+	.sdram_config		= 0x61C04B32,
 	.zq_config		= 0x50074BE4,
 	.sdram_ref_ctrl		= 0x0000093B,
 };
 
-static const struct am33xx_ddr_data MT41J256M8HX15E_2x256M8_data = {
+static const struct am33xx_ddr_data MT41J256M16HA15EIT_1x512MB_data = {
 	.rd_slave_ratio0	= 0x3B,
-	.wr_dqs_slave_ratio0	= 0x85,
-	.fifo_we_slave_ratio0	= 0x100,
-	.wr_slave_ratio0	= 0xC1,
-	.use_rank0_delay	= 0x01,
-	.dll_lock_diff0		= 0x0,
+	.wr_dqs_slave_ratio0	= 0x3B,
+	.fifo_we_slave_ratio0	= 0x96,
+	.wr_slave_ratio0	= 0x76,
 };
 
 extern char __dtb_am335x_phytec_phycore_start[];
@@ -72,9 +70,9 @@ static noinline void pcm051_board_init(void)
 
 	am33xx_pll_init(MPUPLL_M_600, 25, DDRPLL_M_303);
 
-	am335x_sdram_init(0x18B, &MT41J256M8HX15E_2x256M8_cmd,
-			&MT41J256M8HX15E_2x256M8_regs,
-			&MT41J256M8HX15E_2x256M8_data);
+	am335x_sdram_init(0x18B, &MT41J256M16HA15EIT_1x512MB_cmd,
+			&MT41J256M16HA15EIT_1x512MB_regs,
+			&MT41J256M16HA15EIT_1x512MB_data);
 
 	am33xx_uart_soft_reset((void *)AM33XX_UART0_BASE);
 	am33xx_enable_uart0_pin_mux();

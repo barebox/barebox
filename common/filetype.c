@@ -53,6 +53,9 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_gpt] = { "GUID Partition Table", "gpt" },
 	[filetype_bpk] = { "Binary PacKage", "bpk" },
 	[filetype_barebox_env] = { "barebox environment file", "bbenv" },
+	[filetype_ch_image] = { "TI OMAP CH boot image", "ch-image" },
+	[filetype_ch_image_be] = {
+			"TI OMAP CH boot image (big endian)", "ch-image-be" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -177,6 +180,8 @@ enum filetype file_detect_partition_table(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
+#define CH_TOC_section_name     0x14
+
 enum filetype file_detect_type(const void *_buf, size_t bufsize)
 {
 	const u32 *buf = _buf;
@@ -245,6 +250,13 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (bufsize >= 1536 && buf16[512 + 28] == le16_to_cpu(0xef53))
 		return filetype_ext;
+
+	if (strncmp(buf8 + CH_TOC_section_name, "CHSETTINGS", 10) == 0)
+		return filetype_ch_image;
+
+	if (buf[5] == 0x43485345 && buf[6] == 0x5454494E &&
+		buf[7] == 0x47530000)
+		return filetype_ch_image_be;
 
 	return filetype_unknown;
 }

@@ -72,10 +72,11 @@
 #ifndef WARN
 #define WARN(condition, format...) ({					\
 	int __ret_warn_on = !!(condition);				\
-	if (unlikely(__ret_warn_on))					\
+	if (unlikely(__ret_warn_on)) {					\
 		__WARN();						\
 		puts("WARNING: ");					\
 		printf(format);						\
+	}								\
 	unlikely(__ret_warn_on);					\
 })
 #endif

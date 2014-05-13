@@ -219,4 +219,16 @@ static inline void writesb(const void __iomem *addr, const void *buf, int len)
 	outsb(addr - PCI_IOBASE, buf, len);
 }
 
+#define ioread8(addr)		readb(addr)
+#define ioread16(addr)		readw(addr)
+#define ioread16be(addr)	__be16_to_cpu(__raw_readw(addr))
+#define ioread32(addr)		readl(addr)
+#define ioread32be(addr)	__be32_to_cpu(__raw_readl(addr))
+
+#define iowrite8(v, addr)	writeb((v), (addr))
+#define iowrite16(v, addr)	writew((v), (addr))
+#define iowrite16be(v, addr)	__raw_writew(__cpu_to_be16(v), addr)
+#define iowrite32(v, addr)	writel((v), (addr))
+#define iowrite32be(v, addr)	__raw_writel(__cpu_to_be32(v), addr)
+
 #endif /* __ASM_GENERIC_IO_H */

@@ -256,13 +256,6 @@ endmenu
 
 menu "Arm specific settings"
 
-config CMD_ARM_CPUINFO
-	bool "cpuinfo command"
-	default y
-	help
-	  Say yes here to get a cpuinfo command to show some
-	  CPU information using the cp15 registers
-
 config CMD_ARM_MMUINFO
 	bool "mmuinfo command"
 	depends on CPU_V7

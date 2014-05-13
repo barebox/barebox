@@ -30,6 +30,22 @@ menu "Commands"
 
 menu "Information"
 
+config CMD_ARM_CPUINFO
+	bool "cpuinfo command"
+	default y
+	depends on ARM
+	help
+	  Show info about ARM CPU
+
+	  Example:
+
+	  implementer: ARM
+	  architecture: v7
+	  core: Cortex-A9 r2p10
+	  I-cache: 512 bytes (linelen = 64)
+	  D-cache: 8192 bytes (linelen = 8)
+	  Control register: M C W P D L I V RR DT IT U XP
+
 config CMD_DEVINFO
 	tristate
 	default y

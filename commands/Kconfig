@@ -91,6 +91,39 @@ config CMD_MEMINFO
 	  system bytes     =     282616
 	  in use bytes     =     274752
 
+config CMD_ARM_MMUINFO
+	bool "mmuinfo command"
+	depends on CPU_V7
+	help
+	  Say yes here to get a mmuinfo command to show some
+	  MMU and cache information using the cp15 registers.
+
+	  Example:
+
+	  PAR result for 0x00110000:
+	  privileged read: 0x00110090
+	  Physical Address [31:12]: 0x00110000
+	  Reserved [11]:            0x0
+	  Not Outer Shareable [10]: 0x0
+	  Non-Secure [9]:           0x0
+	  Impl. def. [8]:           0x0
+	  Shareable [7]:            0x1
+	  Inner mem. attr. [6:4]:   0x1 (0b001 Strongly-ordered)
+	  Outer mem. attr. [3:2]:   0x0 (0b00 Non-cacheable)
+	  SuperSection [1]:         0x0
+	  Failure [0]:              0x0
+	  privileged write: 0x00110090
+	  Physical Address [31:12]: 0x00110000
+	  Reserved [11]:            0x0
+	  Not Outer Shareable [10]: 0x0
+	  Non-Secure [9]:           0x0
+	  Impl. def. [8]:           0x0
+	  Shareable [7]:            0x1
+	  Inner mem. attr. [6:4]:   0x1 (0b001 Strongly-ordered)
+	  Outer mem. attr. [3:2]:   0x0 (0b00 Non-cacheable)
+	  SuperSection [1]:         0x0
+	  Failure [0]:              0x0
+
 config CMD_REGINFO
 	depends on HAS_REGINFO
 	select REGINFO

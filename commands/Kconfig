@@ -942,6 +942,21 @@ config CMD_FALSE
 	help
 	  Do nothing, unsuccessfully
 
+config CMD_GETOPT
+	bool
+	depends on SHELL_HUSH
+	prompt "getopt"
+	help
+	  Parse option arguments
+
+	  Usage: getopt OPTSTRING VAR
+
+	  OPTSTRING contains the option letters. Add a colon to an
+	  options if this Option has a required argument or two colons
+	  for an optional argument. The Current option is saved in
+	  VAR, arguments are saved in $OPTARG. Any n-option arguments
+	  can be accessed starting from $1.
+
 config CMD_LET
 	tristate
 	prompt "let"

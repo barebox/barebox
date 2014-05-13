@@ -533,7 +533,7 @@ static void setup_string_in_str(struct in_str *i, const char *s)
 	i->p = s;
 }
 
-#ifdef CONFIG_HUSH_GETOPT
+#ifdef CONFIG_CMD_GETOPT
 static int builtin_getopt(struct p_context *ctx, struct child_prog *child,
 		int argc, char *argv[])
 {
@@ -823,7 +823,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	remove_quotes(globbuf.gl_pathc, globbuf.gl_pathv);
 
 	if (!strcmp(globbuf.gl_pathv[0], "getopt") &&
-			IS_ENABLED(CONFIG_HUSH_GETOPT)) {
+			IS_ENABLED(CONFIG_CMD_GETOPT)) {
 		ret = builtin_getopt(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
 	} else if (!strcmp(globbuf.gl_pathv[0], "exit")) {
 		ret = builtin_exit(ctx, child, globbuf.gl_pathc, globbuf.gl_pathv);
@@ -1154,7 +1154,7 @@ static void initialize_context(struct p_context *ctx)
 
 static void release_context(struct p_context *ctx)
 {
-#ifdef CONFIG_HUSH_GETOPT
+#ifdef CONFIG_CMD_GETOPT
 	struct option *opt, *tmp;
 
 	list_for_each_entry_safe(opt, tmp, &ctx->options, list) {
@@ -2000,7 +2000,7 @@ BAREBOX_CMD_START(exit)
 	BAREBOX_CMD_HELP(cmd_exit_help)
 BAREBOX_CMD_END
 
-#ifdef CONFIG_HUSH_GETOPT
+#ifdef CONFIG_CMD_GETOPT
 BAREBOX_CMD_HELP_START(getopt)
 BAREBOX_CMD_HELP_TEXT("OPTSTRING contains the option letters. Add a colon to an options if this")
 BAREBOX_CMD_HELP_TEXT("option has a required argument or two colons for an optional argument. The")

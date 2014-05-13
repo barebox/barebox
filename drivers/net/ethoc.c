@@ -192,12 +192,12 @@ struct ethoc_bd {
 
 static inline u32 ethoc_read(struct ethoc *dev, loff_t offset)
 {
-	return readl(dev->iobase + offset);
+	return ioread32be(dev->iobase + offset);
 }
 
 static inline void ethoc_write(struct ethoc *dev, loff_t offset, u32 data)
 {
-	writel(data, dev->iobase + offset);
+	iowrite32be(data, dev->iobase + offset);
 }
 
 static inline void ethoc_read_bd(struct ethoc *dev, int index,

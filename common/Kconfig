@@ -21,9 +21,6 @@ config HAS_KALLSYMS
 config HAS_MODULES
 	bool
 
-config CMD_MEMORY
-	bool
-
 config ENV_HANDLING
 	select CRC32
 	bool

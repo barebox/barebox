@@ -1,4 +1,5 @@
 obj-$(CONFIG_STDDEV)		+= stddev.o
+obj-$(CONFIG_COMPILE_MEMORY)	+= mem.o
 obj-$(CONFIG_CMD_BOOTM)		+= bootm.o
 obj-$(CONFIG_CMD_UIMAGE)	+= uimage.o
 obj-$(CONFIG_CMD_LINUX16)	+= linux16.o
@@ -6,7 +7,6 @@ obj-$(CONFIG_CMD_LOADB)		+= loadb.o
 obj-$(CONFIG_CMD_LOADY)		+= loadxy.o
 obj-$(CONFIG_CMD_LOADS)		+= loads.o
 obj-$(CONFIG_CMD_ECHO)		+= echo.o
-obj-$(CONFIG_CMD_MEMORY)	+= mem.o
 obj-$(CONFIG_CMD_MD)		+= md.o
 obj-$(CONFIG_CMD_MM)		+= mm.o
 obj-$(CONFIG_CMD_MW)		+= mw.o

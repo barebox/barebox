@@ -12,6 +12,11 @@ config HAS_POWEROFF
 
 if COMMAND_SUPPORT
 
+config COMPILE_MEMORY
+	bool
+	help
+	  Turns on compilation of mem.c
+
 menu "Commands"
 
 
@@ -1196,13 +1201,6 @@ endmenu
 
 menu "Memory"
 
-config CMD_MEMORY
-	bool
-	default y
-	help
-	  TODO This is actually not a command, but turns in the /dev/mem device
-	  and common memory options (e.g. range parsing).
-
 config CMD_CRC
 	tristate
 	select CRC32
@@ -1228,7 +1226,7 @@ config CMD_CRC_CMP
 config CMD_MD
 	tristate
 	default y
-	select CMD_MEMORY
+	select COMPILE_MEMORY
 	prompt "md"
 	help
 	  Memory display
@@ -1252,7 +1250,7 @@ config CMD_MD
 config CMD_MEMCMP
 	tristate
 	default y
-	select CMD_MEMORY
+	select COMPILE_MEMORY
 	prompt "memcmp"
 	help
 	  Memory compare
@@ -1274,7 +1272,7 @@ config CMD_MEMCMP
 config CMD_MEMCPY
 	tristate
 	default y
-	select CMD_MEMORY
+	select COMPILE_MEMORY
 	prompt "memcpy"
 	help
 	  Memory copy
@@ -1293,7 +1291,7 @@ config CMD_MEMCPY
 config CMD_MEMSET
 	tristate
 	default y
-	select CMD_MEMORY
+	select COMPILE_MEMORY
 	prompt "memset"
 	help
 	  Memory fill
@@ -1326,7 +1324,7 @@ config CMD_MEMTEST
 
 config CMD_MM
 	tristate
-	select CMD_MEMORY
+	select COMPILE_MEMORY
 	prompt "memory modify (mm)"
 	help
 	  Memory modify with mask
@@ -1344,7 +1342,7 @@ config CMD_MM
 config CMD_MW
 	tristate
 	default y
-	select CMD_MEMORY
+	select COMPILE_MEMORY
 	prompt "mw"
 	help
 	  Memory write

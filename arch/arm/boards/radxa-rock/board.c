@@ -84,4 +84,4 @@ static int hostname_init(void)
 
 	return 0;
 }
-core_initcall(hostname_init);
+postcore_initcall(hostname_init);

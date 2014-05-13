@@ -23,6 +23,7 @@
 #include <malloc.h>
 #include <clock.h>
 #include <boot.h>
+#include <glob.h>
 #include <menu.h>
 #include <fs.h>
 #include <complete.h>
@@ -129,10 +130,10 @@ static int bootscript_create_entry(struct blspec *blspec, const char *name)
 static int bootscript_scan_path(struct blspec *blspec, const char *path)
 {
 	struct stat s;
-	DIR *dir;
-	struct dirent *d;
-	int ret;
+	char *files;
+	int ret, i;
 	int found = 0;
+	glob_t globb;
 
 	ret = stat(path, &s);
 	if (ret)
@@ -145,25 +146,24 @@ static int bootscript_scan_path(struct blspec *blspec, const char *path)
 		return 1;
 	}
 
-	dir = opendir(path);
-	if (!dir)
-		return -errno;
+	files = asprintf("%s/*", path);
 
-	while ((d = readdir(dir))) {
-		char *bootscript_path;
+	glob(files, 0, NULL, &globb);
 
-		if (*d->d_name == '.')
+	for (i = 0; i < globb.gl_pathc; i++) {
+		char *bootscript_path = globb.gl_pathv[i];;
+
+		if (*basename(bootscript_path) == '.')
 			continue;
 
-		bootscript_path = asprintf("%s/%s", path, d->d_name);
 		bootscript_create_entry(blspec, bootscript_path);
 		found++;
-		free(bootscript_path);
 	}
 
-	ret = found;
+	globfree(&globb);
+	free(files);
 
-	closedir(dir);
+	ret = found;
 
 	return ret;
 }

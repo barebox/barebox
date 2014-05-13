@@ -22,11 +22,4 @@ config NET_IFUP
 	default y
 	bool
 
-config NET_CMD_IFUP
-	bool
-	prompt "ifup support"
-	help
-	  This enables the 'ifup' command which is used to bring up network
-	  interfaces based on config files under /env/network/<ethname>
-
 endif

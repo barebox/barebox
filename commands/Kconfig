@@ -1068,6 +1068,23 @@ config CMD_HOST
 
 	  Usage: host DESTINATION
 
+config NET_CMD_IFUP
+	bool
+	prompt "ifup"
+	help
+	  Bring up network interfaces based on config files.
+
+	  Usage: ifup [-af] [INTF]
+
+	  Each INTF must have a script /env/network/INTF that set the variables
+	  ip (to 'static' or 'dynamic'), ipaddr, netmask, gateway, serverip
+	  and/or ethaddr. A script /env/network/INTF-discover can contains for
+	  discovering the ethernet device, e.g. 'usb'.
+
+	  Options:
+	          -a      bring up all interfaces
+	          -f      Force. Configure even if ip already set
+
 config CMD_MIITOOL
 	tristate
 	depends on PHYLIB

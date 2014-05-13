@@ -530,10 +530,6 @@ config CMD_AT91MUX
 	bool "at91mux dump command"
 	default y
 
-config CMD_AT91CLK
-	bool "at91clk dump command"
-	default y
-
 endif
 
 config AT91_BOOTSTRAP

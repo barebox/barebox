@@ -30,6 +30,13 @@ menu "Commands"
 
 menu "Information"
 
+config CMD_AT91CLK
+	bool "at91clk"
+	default y
+	depends on ARCH_AT91
+	help
+	  List clock configuration.
+
 config CMD_ARM_CPUINFO
 	bool "cpuinfo command"
 	default y

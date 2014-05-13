@@ -107,13 +107,6 @@ config OMAP4_USBBOOT
 	  You need the utility program omap4_usbboot to boot from USB.
 	  Please read omap4_usb_booting.txt for more information.
 
-config CMD_BOOT_ORDER
-	tristate
-	depends on ARCH_OMAP4
-	prompt "boot_order"
-	help
-	  A command to choose the next boot device on a warm reset.
-
 config OMAP_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
 	select HAVE_DEFAULT_ENVIRONMENT_NEW

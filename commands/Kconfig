@@ -171,6 +171,18 @@ config FLEXIBLE_BOOTARGS
 	  to replace parts of the bootargs string without reconstructing it
 	  completely.
 
+config CMD_BOOT_ORDER
+	tristate
+	depends on ARCH_OMAP4
+	prompt "boot_order"
+	help
+	  Set warm boot order (the next boot device on a warm reset).
+
+	  Usage: boot_order DEVICE...
+
+	  Each device can be one of:
+	  xip xipwait nand onenand mmc1 mmc2_1 mmc2_2 uart usb_1 usb_ulpi usb_2
+
 config CMD_BOOT
 	tristate
 	select BOOTM

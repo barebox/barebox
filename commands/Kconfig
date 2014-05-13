@@ -1063,6 +1063,14 @@ config CMD_MIITOOL
 	  detailed MII status information, such as MII capabilities,
 	  current advertising mode, and link partner capabilities.
 
+config CMD_PING
+	tristate
+	prompt "ping"
+	help
+	  Send ICMP echo requests.
+
+	  Usage: ping DESTINATION
+
 config CMD_TFTP
 	depends on FS_TFTP
 	tristate

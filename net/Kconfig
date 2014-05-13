@@ -11,10 +11,6 @@ config NET_NFS
 	bool
 	prompt "nfs support"
 
-config NET_PING
-	bool
-	prompt "ping support"
-
 config NET_NETCONSOLE
 	bool
 	depends on !CONSOLE_NONE

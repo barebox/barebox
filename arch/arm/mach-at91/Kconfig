@@ -534,12 +534,6 @@ config CMD_AT91CLK
 	bool "at91clk dump command"
 	default y
 
-config CMD_AT91_BOOT_TEST
-	bool "at91_boot_test"
-	help
-	  allow to upload a boot binary to sram and execute it
-	  useful to test bootstrap or barebox lowlevel init
-
 endif
 
 config AT91_BOOTSTRAP

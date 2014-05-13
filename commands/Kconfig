@@ -171,6 +171,19 @@ config FLEXIBLE_BOOTARGS
 	  to replace parts of the bootargs string without reconstructing it
 	  completely.
 
+config CMD_AT91_BOOT_TEST
+	bool "at91_boot_test"
+	depends on ARCH_AT91
+	help
+	  allow to upload a boot binary to SRAM and execute it.
+	  Useful to test bootstrap or barebox lowlevel init.
+
+	  Usage: at91_boot_test [-js] FILE
+
+	  Options:
+	  -j ADDR  jump address
+	  -s SRAM  SRAM device (default /dev/sram0)
+
 config CMD_BOOT_ORDER
 	tristate
 	depends on ARCH_OMAP4

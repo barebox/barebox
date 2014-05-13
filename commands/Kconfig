@@ -1039,6 +1039,7 @@ endmenu
 
 
 
+if NET
 
 menu "Network"
 
@@ -1073,6 +1074,9 @@ config CMD_TFTP
 
 # end Network commands
 endmenu
+
+# end if NET
+endif
 
 
 

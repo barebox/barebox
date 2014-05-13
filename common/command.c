@@ -36,22 +36,18 @@ EXPORT_SYMBOL(command_list);
 
 void barebox_cmd_usage(struct command *cmdtp)
 {
-#ifdef	CONFIG_LONGHELP
-		/* found - print (long) help info */
-		if (cmdtp->help) {
-			puts (cmdtp->help);
-		} else {
-			puts (cmdtp->name);
-			putchar (' ');
-			puts ("- No help available.\n");
-		}
-		putchar ('\n');
-#else	/* no long help available */
-		if (cmdtp->usage) {
-			puts (cmdtp->usage);
-			puts("\n");
-		}
-#endif	/* CONFIG_LONGHELP */
+	putchar('\n');
+	if (cmdtp->desc)
+		printf("%s - %s\n\n", cmdtp->name, cmdtp->desc);
+	if (cmdtp->opts)
+		printf("Usage: %s %s\n\n", cmdtp->name, cmdtp->opts);
+#ifdef CONFIG_LONGHELP
+	/* found - print (long) help info */
+	if (cmdtp->help) {
+		puts(cmdtp->help);
+		putchar('\n');
+	}
+#endif
 }
 EXPORT_SYMBOL(barebox_cmd_usage);
 
@@ -108,14 +104,13 @@ int register_command(struct command *cmd)
 	if (cmd->aliases) {
 		char **aliases = (char**)cmd->aliases;
 		while(*aliases) {
-			char *usage = "alias for ";
 			struct command *c = xzalloc(sizeof(struct command));
 
 			memcpy(c, cmd, sizeof(struct command));
 
 			c->name = *aliases;
-			c->usage = xmalloc(strlen(usage) + strlen(cmd->name) + 1);
-			sprintf((char*)c->usage, "%s%s", usage, cmd->name);
+			c->desc = cmd->desc;
+			c->opts = cmd->opts;
 
 			c->aliases = NULL;
 
@@ -163,4 +158,3 @@ static int init_command_list(void)
 }
 
 late_initcall(init_command_list);
-

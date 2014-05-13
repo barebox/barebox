@@ -340,16 +340,10 @@ static int do_gpiolib(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(gpiolib)
-BAREBOX_CMD_HELP_USAGE("gpiolib\n")
-BAREBOX_CMD_HELP_SHORT("dump current registered gpio\n");
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(gpiolib)
 	.cmd		= do_gpiolib,
-	.usage		= "dump current registered gpio",
+	BAREBOX_CMD_DESC("list registered GPIOs")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
-	BAREBOX_CMD_HELP(cmd_gpiolib_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 #endif

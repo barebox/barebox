@@ -193,17 +193,18 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(oftree)
-BAREBOX_CMD_HELP_USAGE("oftree [OPTIONS] [DTB]\n")
-BAREBOX_CMD_HELP_OPT  ("-l",  "Load [DTB] to internal devicetree\n")
-BAREBOX_CMD_HELP_OPT  ("-p",  "probe devices from stored devicetree\n")
-BAREBOX_CMD_HELP_OPT  ("-d",  "dump oftree from [DTB] or the parsed tree if no dtb is given\n")
-BAREBOX_CMD_HELP_OPT  ("-f",  "free stored devicetree\n")
-BAREBOX_CMD_HELP_OPT  ("-n <node>",  "specify root devicenode to dump for -d\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-l",  "Load DTB to internal device tree")
+BAREBOX_CMD_HELP_OPT ("-p",  "probe devices from stored device tree")
+BAREBOX_CMD_HELP_OPT ("-f",  "free stored device tree")
+BAREBOX_CMD_HELP_OPT ("-d",  "dump device tree from DTB or the parsed tree if no DTB is given")
+BAREBOX_CMD_HELP_OPT ("-n NODE",  "specify root device NODE to dump for -d")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(oftree)
 	.cmd		= do_oftree,
-	.usage		= "handle devicetrees",
+	BAREBOX_CMD_DESC("handle device trees")
+	BAREBOX_CMD_OPTS("[-lpfdn] [DTB]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_oftree_help)
 BAREBOX_CMD_END

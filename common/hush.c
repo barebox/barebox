@@ -1932,16 +1932,11 @@ static int do_sh(int argc, char *argv[])
 	return execute_script(argv[1], argc - 1, argv + 1);
 }
 
-static const __maybe_unused char cmd_sh_help[] =
-"Usage: sh filename [arguments]\n"
-"\n"
-"Execute a shell script\n";
-
 BAREBOX_CMD_START(sh)
 	.cmd		= do_sh,
-	.usage		= "run shell script",
+	BAREBOX_CMD_DESC("execute a shell script")
+	BAREBOX_CMD_OPTS("FILE [ARGUMENT...]")
 	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
-	BAREBOX_CMD_HELP(cmd_sh_help)
 BAREBOX_CMD_END
 
 static int do_source(int argc, char *argv[])
@@ -1969,21 +1964,16 @@ static int do_source(int argc, char *argv[])
 
 static const char *source_aliases[] = { ".", NULL};
 
-static const __maybe_unused char cmd_source_help[] =
-"Usage: .  filename [arguments]\n"
-"or     source filename [arguments]\n"
-"\n"
-"Read  and  execute  commands  from filename in the current shell\n"
-"environment and return the exit status of the last command  exe-\n"
-"cuted from filename\n";
-
-static const __maybe_unused char cmd_source_usage[] =
-"execute shell script in current shell environment";
+BAREBOX_CMD_HELP_START(source)
+BAREBOX_CMD_HELP_TEXT("Read and execute commands from FILE in the current shell environment.")
+BAREBOX_CMD_HELP_TEXT("and return the exit status of the last command executed.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(source)
 	.aliases	= source_aliases,
 	.cmd		= do_source,
-	.usage		= cmd_source_usage,
+	BAREBOX_CMD_DESC("execute shell script in current shell environment")
+	BAREBOX_CMD_OPTS("FILE [ARGUMENT...]")
 	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_source_help)
 BAREBOX_CMD_END
@@ -1997,32 +1987,31 @@ static int do_dummy_command(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_exit_help[] =
-"Usage: exit [n]\n"
-"\n"
-"exit script with a status of n. If n is omitted, the exit status is that\n"
-"of the last command executed\n";
+BAREBOX_CMD_HELP_START(exit)
+BAREBOX_CMD_HELP_TEXT("Exit script with status ERRLVL n. If ERRLVL is omitted, the exit status is")
+BAREBOX_CMD_HELP_TEXT("of the last command executed")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(exit)
 	.cmd		= do_dummy_command,
-	.usage		= "exit script",
+	BAREBOX_CMD_DESC("exit script")
+	BAREBOX_CMD_OPTS("[ERRLVL]")
 	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_exit_help)
 BAREBOX_CMD_END
 
 #ifdef CONFIG_HUSH_GETOPT
-static const __maybe_unused char cmd_getopt_help[] =
-"Usage: getopt <optstring> <var>\n"
-"\n"
-"hush option parser. <optstring> is a string with valid options. Add\n"
-"a colon to an options if this option has a required argument or two\n"
-"colons for an optional argument. The current option is saved in <var>,\n"
-"arguments are saved in OPTARG. After this command additional nonopts\n"
-"can be accessed starting from $1\n";
+BAREBOX_CMD_HELP_START(getopt)
+BAREBOX_CMD_HELP_TEXT("OPTSTRING contains the option letters. Add a colon to an options if this")
+BAREBOX_CMD_HELP_TEXT("option has a required argument or two colons for an optional argument. The")
+BAREBOX_CMD_HELP_TEXT("current option is saved in VAR, arguments are saved in $OPTARG. Any")
+BAREBOX_CMD_HELP_TEXT("non-option arguments can be accessed starting from $1.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(getopt)
 	.cmd		= do_dummy_command,
-	.usage		= "getopt <optstring> <var>",
+	BAREBOX_CMD_DESC("parse option arguments")
+	BAREBOX_CMD_OPTS("OPTSTRING VAR")
 	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_getopt_help)
 BAREBOX_CMD_END

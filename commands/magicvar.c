@@ -16,6 +16,6 @@ static int do_magicvar(int argc, char *argv[])
 
 BAREBOX_CMD_START(magicvar)
 	.cmd		= do_magicvar,
-	.usage		= "List information about magic variables",
+	BAREBOX_CMD_DESC("list information about magic variables")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 BAREBOX_CMD_END

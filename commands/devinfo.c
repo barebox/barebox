@@ -118,10 +118,6 @@ static int do_devinfo(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(devinfo)
-BAREBOX_CMD_HELP_USAGE("devinfo [DEVICE]\n")
-BAREBOX_CMD_HELP_SHORT("Output device information.\n")
-BAREBOX_CMD_HELP_END
 
 /**
  * @page devinfo_command
@@ -150,9 +146,19 @@ Example from an MPC5200 based system:
 @endverbatim
  */
 
+BAREBOX_CMD_HELP_START(devinfo)
+BAREBOX_CMD_HELP_TEXT("If called without arguments, devinfo shows a summary of the known")
+BAREBOX_CMD_HELP_TEXT("devices and drivers.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("If called with a device path being the argument, devinfo shows more")
+BAREBOX_CMD_HELP_TEXT("default information about this device and its parameters.")
+BAREBOX_CMD_HELP_END
+
+
 BAREBOX_CMD_START(devinfo)
 	.cmd		= do_devinfo,
-	.usage		= "Show information about devices and drivers.",
+	BAREBOX_CMD_DESC("show information about devices and drivers")
+	BAREBOX_CMD_OPTS("[DEVICE]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_devinfo_help)
 	BAREBOX_CMD_COMPLETE(device_complete)

@@ -1043,6 +1043,15 @@ if NET
 
 menu "Network"
 
+config CMD_HOST
+	tristate
+	select NET_RESOLV
+	prompt "host"
+	help
+	  Resolv a hostname.
+
+	  Usage: host DESTINATION
+
 config CMD_MIITOOL
 	tristate
 	depends on PHYLIB

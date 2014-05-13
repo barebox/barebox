@@ -241,6 +241,7 @@ IPaddr_t resolv(char *host)
 	return dns_ip;
 }
 
+#ifdef CONFIG_CMD_HOST
 static int do_host(int argc, char *argv[])
 {
 	IPaddr_t ip;
@@ -266,4 +267,4 @@ BAREBOX_CMD_START(host)
 	BAREBOX_CMD_OPTS("HOSTNAME")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 BAREBOX_CMD_END
-
+#endif

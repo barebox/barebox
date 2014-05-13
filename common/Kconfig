@@ -294,11 +294,6 @@ config SIMPLE_READLINE
 	default y
 	depends on !CMDLINE_EDITING
 
-config LONGHELP
-	bool
-	depends on !SHELL_NONE
-	prompt "Enable long help texts"
-
 config CBSIZE
 	int
 	prompt "Buffer size for input from the Console"

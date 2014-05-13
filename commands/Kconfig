@@ -97,6 +97,43 @@ config CMD_HELP
 		-a	output help on all commands
 		-v	verbose
 
+config LONGHELP
+	bool
+	depends on !SHELL_NONE && CMD_HELP
+	prompt "Long help texts"
+	help
+	  This make the "help" command of barebox spit out much more information,
+	  but (obviously) also makes barebox bigger.
+
+	  Example with CONFIG_LONGHELP:
+
+	  -----------------------------
+	  barebox:/ help ls
+
+	  ls - list a file or directory
+
+	  Usage: ls [-lCR] [FILEDIR...]
+
+	  List information about the specified files or directories.
+
+	  Options:
+	          -l      long format
+	          -C      column format (opposite of long format)
+	          -R      list subdirectories recursively
+	  -----------------------------
+
+	  And now without CONFIG_LONGHELP:
+
+	  -----------------------------
+	  barebox:/ help ls
+
+	  ls - list a file or directory
+
+	  Usage: ls [-lCR] [FILEDIR...]
+	  -----------------------------
+
+	  With my specific .config, the binary size increased from 461500 to 481980.
+
 config CMD_IOMEM
 	tristate
 	prompt "iomem and ioport"

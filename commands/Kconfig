@@ -12,6 +12,12 @@ config HAS_POWEROFF
 
 if COMMAND_SUPPORT
 
+config COMPILE_DIGEST
+	tristate
+	select DIGEST
+	help
+	  Turns on compilation of digest.c
+
 config COMPILE_MEMORY
 	bool
 	help
@@ -591,12 +597,6 @@ endmenu
 
 menu "File"
 
-config CMD_DIGEST
-	tristate
-	select DIGEST
-	help
-	  TODO This is actually not a command, but turns on digest.c compilation.
-
 config CMD_BASENAME
 	tristate
 	prompt "basename"
@@ -716,7 +716,7 @@ config CMD_LS
 
 config CMD_MD5SUM
 	tristate
-	select CMD_DIGEST
+	select COMPILE_DIGEST
 	select MD5
 	prompt "md5sum"
 	help
@@ -781,7 +781,7 @@ config CMD_RMDIR
 
 config CMD_SHA1SUM
 	tristate
-	select CMD_DIGEST
+	select COMPILE_DIGEST
 	select SHA1
 	prompt "sha1sum"
 	help
@@ -793,7 +793,7 @@ config CMD_SHA1SUM
 
 config CMD_SHA224SUM
 	tristate
-	select CMD_DIGEST
+	select COMPILE_DIGEST
 	select SHA224
 	prompt "sha224sum"
 	help
@@ -805,7 +805,7 @@ config CMD_SHA224SUM
 
 config CMD_SHA256SUM
 	tristate
-	select CMD_DIGEST
+	select COMPILE_DIGEST
 	select SHA256
 	prompt "sha256sum"
 	help

@@ -3,10 +3,6 @@ menuconfig NET
 
 if NET
 
-config NET_DHCP
-	bool
-	prompt "dhcp support"
-
 config NET_NFS
 	bool
 	prompt "nfs support"

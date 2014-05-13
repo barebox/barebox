@@ -1043,6 +1043,22 @@ if NET
 
 menu "Network"
 
+config CMD_DHCP
+	bool
+	prompt "dhcp"
+	help
+	  DHCP client to obtain IP or boot params
+
+	  Usage: dhcp [-HvcuUr]
+
+	  Options:
+	          -H HOSTNAME     hostname to send to the DHCP server
+	          -v ID           DHCP Vendor ID (code 60) submitted in DHCP requests
+	          -c ID           DHCP Client ID (code 61) submitted in DHCP requests
+	          -u UUID         DHCP Client UUID (code 97) submitted in DHCP requests
+	          -U CLASS        DHCP User class (code 77) submitted in DHCP requests
+	          -r RETRY        retry limit (default 20)#
+
 config CMD_HOST
 	tristate
 	select NET_RESOLV

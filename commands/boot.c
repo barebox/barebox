@@ -446,7 +446,6 @@ static int do_boot(int argc, char *argv[])
 		ret = boot(sources[i]);
 		if (!ret)
 			break;
-		goto out;
 	}
 
 out:

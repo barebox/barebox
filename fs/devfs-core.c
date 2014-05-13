@@ -296,7 +296,7 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 		return ERR_PTR(-EINVAL);
 	}
 
-	if (IS_ENABLED(CONFIG_PARTITION_NEED_MTD) && cdev->mtd) {
+	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
 		struct mtd_info *mtd;
 
 		mtd = mtd_add_partition(cdev->mtd, offset, size,
@@ -352,7 +352,7 @@ int devfs_del_partition(const char *name)
 	if (!cdev)
 		return -ENOENT;
 
-	if (IS_ENABLED(CONFIG_PARTITION_NEED_MTD) && cdev->mtd) {
+	if (IS_ENABLED(CONFIG_MTD) && cdev->mtd) {
 		ret = mtd_del_partition(cdev->mtd);
 		return ret;
 	}

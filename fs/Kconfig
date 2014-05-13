@@ -63,7 +63,4 @@ config FS_UIMAGEFS
 	bool
 	prompt "uImage FS support"
 
-config PARTITION_NEED_MTD
-	bool
-
 endmenu

@@ -565,6 +565,7 @@ BAREBOX_CMD_START(edit)
 	.cmd		= do_edit,
 	.aliases	= edit_aliases,
 	.usage		= "Usage: (s)edit <file>",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_edit_help)
 BAREBOX_CMD_END
 

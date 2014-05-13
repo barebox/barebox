@@ -55,4 +55,5 @@ static int do_cpuinfo(int argc, char *argv[])
 BAREBOX_CMD_START(cpuinfo)
 	.cmd            = do_cpuinfo,
 	.usage          = "Show info about CPU",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 BAREBOX_CMD_END

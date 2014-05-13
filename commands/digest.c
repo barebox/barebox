@@ -90,6 +90,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(md5sum)
 	.cmd		= do_md5,
 	.usage		= "md5 checksum calculation",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_md5sum_help)
 BAREBOX_CMD_END
 
@@ -110,6 +111,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(sha1sum)
 	.cmd		= do_sha1,
 	.usage		= "sha1 checksum calculation",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_sha1sum_help)
 BAREBOX_CMD_END
 
@@ -130,6 +132,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(sha224sum)
 	.cmd		= do_sha224,
 	.usage		= "sha224 checksum calculation",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_sha224sum_help)
 BAREBOX_CMD_END
 
@@ -150,6 +153,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(sha256sum)
 	.cmd		= do_sha256,
 	.usage		= "sha256 checksum calculation",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_sha256sum_help)
 BAREBOX_CMD_END
 

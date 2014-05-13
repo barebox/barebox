@@ -480,6 +480,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(boot)
 	.cmd	= do_boot,
 	.usage		= "boot the machine",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_boot_help)
 BAREBOX_CMD_END
 

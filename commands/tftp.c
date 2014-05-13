@@ -99,5 +99,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(tftp)
 	.cmd		= do_tftpb,
 	.usage		= "(up-)Load file using tftp protocol",
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_tftp_help)
 BAREBOX_CMD_END

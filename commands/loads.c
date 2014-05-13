@@ -277,6 +277,7 @@ static const __maybe_unused char cmd_loads_help[] =
 BAREBOX_CMD_START(loads)
 	.cmd		= do_load_serial,
 	.usage		= "load S-Record file over serial line",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_loads_help)
 BAREBOX_CMD_END
 
@@ -293,6 +294,7 @@ static const __maybe_unused char cmd_saves_help[] =
 BAREBOX_CMD_START(saves)
 	.cmd		= do_save_serial,
 	.usage		= "save S-Record file over serial line",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_saves_help)
 BAREBOX_CMD_END
 #endif	/* CONFIG_CMD_SAVES */

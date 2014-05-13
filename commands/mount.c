@@ -163,5 +163,6 @@ the filesystem has been unmounted.
 BAREBOX_CMD_START(mount)
 	.cmd		= do_mount,
 	.usage		= "Mount a filesystem of a given type to a mountpoint or list mounted filesystems.",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_mount_help)
 BAREBOX_CMD_END

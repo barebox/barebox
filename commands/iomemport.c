@@ -50,6 +50,7 @@ static int do_iomem(int argc, char *argv[])
 BAREBOX_CMD_START(iomem)
 	.cmd		= do_iomem,
 	.usage		= "show iomem usage",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 BAREBOX_CMD_END
 
 #if IO_SPACE_LIMIT > 0
@@ -63,5 +64,6 @@ static int do_ioport(int argc, char *argv[])
 BAREBOX_CMD_START(ioport)
 	.cmd		= do_ioport,
 	.usage		= "show ioport usage",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 BAREBOX_CMD_END
 #endif

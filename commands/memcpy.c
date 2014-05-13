@@ -141,5 +141,6 @@ static const __maybe_unused char cmd_memcpy_help[] =
 BAREBOX_CMD_START(memcpy)
 	.cmd		= do_memcpy,
 	.usage		= "memory copy",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memcpy_help)
 BAREBOX_CMD_END

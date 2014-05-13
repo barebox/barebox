@@ -62,6 +62,7 @@ static const __maybe_unused char cmd_uncompress_help[] =
 BAREBOX_CMD_START(uncompress)
         .cmd            = do_uncompress,
         .usage          = "uncompress a compressed file",
+        BAREBOX_CMD_GROUP(CMD_GRP_FILE)
         BAREBOX_CMD_HELP(cmd_uncompress_help)
 BAREBOX_CMD_END
 

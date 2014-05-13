@@ -55,6 +55,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(saveenv)
 	.cmd		= do_saveenv,
 	.usage		= "save environment to persistent storage",
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_saveenv_help)
 BAREBOX_CMD_END
 

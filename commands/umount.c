@@ -36,5 +36,6 @@ static const __maybe_unused char cmd_umount_help[] =
 BAREBOX_CMD_START(umount)
 	.cmd		= do_umount,
 	.usage		= "umount a filesystem",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_umount_help)
 BAREBOX_CMD_END

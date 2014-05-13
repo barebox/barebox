@@ -314,5 +314,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(of_property)
 	.cmd		= do_of_property,
 	.usage		= "handle of properties",
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_of_property_help)
 BAREBOX_CMD_END

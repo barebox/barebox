@@ -204,5 +204,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(oftree)
 	.cmd		= do_oftree,
 	.usage		= "handle devicetrees",
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_oftree_help)
 BAREBOX_CMD_END

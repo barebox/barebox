@@ -69,5 +69,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(global)
 	.cmd		= do_global,
 	.usage		= "create or set global variables",
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_global_help)
 BAREBOX_CMD_END

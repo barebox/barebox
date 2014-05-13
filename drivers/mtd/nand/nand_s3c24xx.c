@@ -644,6 +644,7 @@ static const __maybe_unused char cmd_nand_boot_test_help[] =
 BAREBOX_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,
 	.usage		= "load an image from NAND",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_nand_boot_test_help)
 BAREBOX_CMD_END
 #endif

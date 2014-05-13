@@ -516,6 +516,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(at91mux)
 	.cmd		= do_at91mux,
 	.usage		= "dump current mux configuration",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_at91mux_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

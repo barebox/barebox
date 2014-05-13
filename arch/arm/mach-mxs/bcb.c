@@ -395,5 +395,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(bcb)
 	.cmd = update_bcb,
 	.usage = "Writes a MX23/28 BCB data structure to flash",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_bcb_help)
 BAREBOX_CMD_END

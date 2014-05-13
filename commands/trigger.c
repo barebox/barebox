@@ -99,6 +99,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(trigger)
 	.cmd		= do_trigger,
 	.usage		= "handle LED triggers",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_trigger_help)
 BAREBOX_CMD_END
 

@@ -266,6 +266,7 @@ static const __maybe_unused char cmd_host_help[] =
 BAREBOX_CMD_START(host)
 	.cmd		= do_host,
 	.usage		= "resolve a hostname",
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_host_help)
 BAREBOX_CMD_END
 

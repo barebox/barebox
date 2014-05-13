@@ -63,6 +63,7 @@ static const __maybe_unused char cmd_i2c_probe_help[] =
 BAREBOX_CMD_START(i2c_probe)
 	.cmd		= do_i2c_probe,
 	.usage		= "probe for an i2c device",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_i2c_probe_help)
 BAREBOX_CMD_END
 
@@ -140,6 +141,7 @@ static const __maybe_unused char cmd_i2c_write_help[] =
 BAREBOX_CMD_START(i2c_write)
 	.cmd		= do_i2c_write,
 	.usage		= "write to an i2c device",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_i2c_write_help)
 BAREBOX_CMD_END
 
@@ -214,5 +216,6 @@ static const __maybe_unused char cmd_i2c_read_help[] =
 BAREBOX_CMD_START(i2c_read)
 	.cmd		= do_i2c_read,
 	.usage		= "read from an i2c device",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_i2c_read_help)
 BAREBOX_CMD_END

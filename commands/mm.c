@@ -113,5 +113,6 @@ static const __maybe_unused char cmd_mm_help[] =
 BAREBOX_CMD_START(mm)
 	.cmd		= do_mem_mm,
 	.usage		= "memory modify write with mask",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_mm_help)
 BAREBOX_CMD_END

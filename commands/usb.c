@@ -49,6 +49,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(usb)
 	.cmd		= do_usb,
 	.usage		= "(re-)detect USB devices",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usb_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

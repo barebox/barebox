@@ -48,6 +48,7 @@ static const __maybe_unused char cmd_readline_help[] =
 BAREBOX_CMD_START(readline)
 	.cmd		= do_readline,
 	.usage		= "prompt for user input",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_readline_help)
 BAREBOX_CMD_END
 

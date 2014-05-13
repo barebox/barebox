@@ -100,5 +100,6 @@ static const __maybe_unused char cmd_mw_help[] =
 BAREBOX_CMD_START(mw)
 	.cmd		= do_mem_mw,
 	.usage		= "memory write (fill)",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_mw_help)
 BAREBOX_CMD_END

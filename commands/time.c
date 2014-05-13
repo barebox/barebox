@@ -53,5 +53,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(time)
 	.cmd		= do_time,
 	.usage		= "measure execution time of a command",
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_time_help)
 BAREBOX_CMD_END

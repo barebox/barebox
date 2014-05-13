@@ -349,5 +349,6 @@ static const __maybe_unused char cmd_nandtest_help[] =
 BAREBOX_CMD_START(nandtest)
 	.cmd		= do_nandtest,
 	.usage		= "NAND Test",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_nandtest_help)
 BAREBOX_CMD_END

@@ -59,5 +59,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(readf)
 	.cmd		= do_readf,
 	.usage		= "read file into variable",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_readf_help)
 BAREBOX_CMD_END

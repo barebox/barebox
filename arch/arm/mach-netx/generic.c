@@ -146,5 +146,6 @@ void __noreturn reset_cpu(unsigned long addr)
 BAREBOX_CMD_START(loadxc)
 	.cmd		= do_loadxc,
 	.usage		= "load xmac/xpec engine with ethernet firmware",
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 BAREBOX_CMD_END
 

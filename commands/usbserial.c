@@ -98,5 +98,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(usbserial)
 	.cmd		= do_usbserial,
 	.usage		= "Serial gadget enable/disable",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usbserial_help)
 BAREBOX_CMD_END

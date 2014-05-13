@@ -732,6 +732,7 @@ static const __maybe_unused char cmd_nfs_help[] =
 BAREBOX_CMD_START(nfs)
 	.cmd		= do_nfs,
 	.usage		= "boot image via network using nfs protocol",
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_nfs_help)
 BAREBOX_CMD_END
 

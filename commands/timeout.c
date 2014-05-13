@@ -114,6 +114,7 @@ static const __maybe_unused char cmd_timeout_help[] =
 BAREBOX_CMD_START(timeout)
 	.cmd		= do_timeout,
 	.usage		= "wait for a specified timeout",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_timeout_help)
 BAREBOX_CMD_END
 

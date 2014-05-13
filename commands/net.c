@@ -63,6 +63,7 @@ static const __maybe_unused char cmd_ethact_help[] =
 BAREBOX_CMD_START(ethact)
 	.cmd		= do_ethact,
 	.usage		= "set current ethernet device",
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_ethact_help)
 	BAREBOX_CMD_COMPLETE(eth_complete)
 BAREBOX_CMD_END

@@ -92,6 +92,7 @@ static const __maybe_unused char cmd_passwd_help[] =
 BAREBOX_CMD_START(passwd)
 	.cmd		= do_passwd,
 	.usage		= "passwd",
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_passwd_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

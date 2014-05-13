@@ -53,5 +53,6 @@ in use. Within the hush shell, \c setenv is not required.</p>
 BAREBOX_CMD_START(setenv)
 	.cmd		= do_setenv,
 	.usage		= "set environment variables",
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_setenv_help)
 BAREBOX_CMD_END

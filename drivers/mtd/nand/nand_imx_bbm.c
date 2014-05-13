@@ -219,5 +219,6 @@ static const __maybe_unused char cmd_imx_nand_bbm_help[] =
 BAREBOX_CMD_START(imx_nand_bbm)
 	.cmd		= do_imx_nand_bbm,
 	.usage		= "create bbt for i.MX NAND",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_imx_nand_bbm_help)
 BAREBOX_CMD_END

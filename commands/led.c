@@ -88,5 +88,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(led)
 	.cmd		= do_led,
 	.usage		= "led <led> <value>",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_led_help)
 BAREBOX_CMD_END

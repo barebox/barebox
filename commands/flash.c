@@ -82,6 +82,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(erase)
 	.cmd		= do_flerase,
 	.usage		= "erase FLASH memory",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_erase_help)
 BAREBOX_CMD_END
 
@@ -156,6 +157,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(protect)
 	.cmd		= do_protect,
 	.usage		= "enable flash write protection",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_protect_help)
 BAREBOX_CMD_END
 
@@ -184,6 +186,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(unprotect)
 	.cmd		= do_protect,
 	.usage		= "disable flash write protection",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_unprotect_help)
 BAREBOX_CMD_END
 

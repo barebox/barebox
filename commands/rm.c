@@ -66,5 +66,6 @@ static const __maybe_unused char cmd_rm_help[] =
 BAREBOX_CMD_START(rm)
 	.cmd		= do_rm,
 	.usage		= "remove files",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_rm_help)
 BAREBOX_CMD_END

@@ -239,5 +239,6 @@ static const __maybe_unused char cmd_memtest_help[] =
 BAREBOX_CMD_START(memtest)
 	.cmd		= do_memtest,
 	.usage		= "Memory Test",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memtest_help)
 BAREBOX_CMD_END

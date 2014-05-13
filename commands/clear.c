@@ -37,5 +37,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clear)
 	.cmd		= do_clear,
 	.usage		= "clear screen",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

@@ -89,5 +89,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(let)
 	.cmd            = do_let,
 	.usage          = "evaluate arithmetic expressions",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_let_help)
 BAREBOX_CMD_END

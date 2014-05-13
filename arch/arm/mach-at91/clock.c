@@ -889,6 +889,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(at91clk)
 	.cmd		= do_at91clk,
 	.usage		= "dump current clock configuration",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_at91clk_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

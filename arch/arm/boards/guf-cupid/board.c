@@ -354,5 +354,6 @@ static const __maybe_unused char cmd_cpufreq_help[] =
 BAREBOX_CMD_START(cpufreq)
 	.cmd            = do_cpufreq,
 	.usage          = "adjust CPU frequency",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_cpufreq_help)
 BAREBOX_CMD_END

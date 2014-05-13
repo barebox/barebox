@@ -708,5 +708,6 @@ static const __maybe_unused char cmd_loadb_help[] =
 BAREBOX_CMD_START(loadb)
 	.cmd = do_load_serial_bin,
 	.usage = "Load binary file over serial line (kermit mode)",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_loadb_help)
 BAREBOX_CMD_END

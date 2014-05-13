@@ -348,6 +348,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(gpiolib)
 	.cmd		= do_gpiolib,
 	.usage		= "dump current registered gpio",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_gpiolib_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

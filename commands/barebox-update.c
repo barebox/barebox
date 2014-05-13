@@ -82,5 +82,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(barebox_update)
 	.cmd		= do_barebox_update,
 	.usage		= "update barebox",
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_barebox_update_help)
 BAREBOX_CMD_END

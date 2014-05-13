@@ -162,6 +162,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
 	.usage		= "boot an application image",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
 

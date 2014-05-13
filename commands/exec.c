@@ -53,4 +53,5 @@ out:
 BAREBOX_CMD_START(exec)
 	.cmd		= do_exec,
 	.usage		= "execute a script",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 BAREBOX_CMD_END

@@ -187,6 +187,7 @@ kernel or cmdline mtd partitions.
 BAREBOX_CMD_START(addpart)
 	.cmd = do_addpart,
 	.usage = "adds a partition table to a device",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_addpart_help)
 BAREBOX_CMD_END
 
@@ -224,6 +225,7 @@ argument list is taken as a list of partitions to be deleted.
 BAREBOX_CMD_START(delpart)
 	.cmd = do_delpart,
 	.usage = "delete partition(s)",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_delpart_help)
 	BAREBOX_CMD_COMPLETE(devfs_partition_complete)
 BAREBOX_CMD_END

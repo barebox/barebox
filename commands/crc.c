@@ -121,5 +121,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(crc32)
 	.cmd		= do_crc,
 	.usage		= "crc32 checksum calculation",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_crc_help)
 BAREBOX_CMD_END

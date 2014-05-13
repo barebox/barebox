@@ -102,5 +102,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(of_node)
 	.cmd		= do_of_node,
 	.usage		= "handle of nodes",
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_of_node_help)
 BAREBOX_CMD_END

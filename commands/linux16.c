@@ -338,6 +338,7 @@ x86_boot_preparation for more info about how to use this command.</p>
 BAREBOX_CMD_START(linux16)
 	.cmd		= do_linux16,
 	.usage		= "boot a linux kernel",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_linux16_help)
 BAREBOX_CMD_END
 

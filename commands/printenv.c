@@ -73,5 +73,6 @@ printed.</p>
 BAREBOX_CMD_START(printenv)
 	.cmd		= do_printenv,
 	.usage		= "Print value of one or all environment variables.",
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_printenv_help)
 BAREBOX_CMD_END

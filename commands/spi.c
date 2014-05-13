@@ -128,5 +128,6 @@ static const __maybe_unused char cmd_spi_help[] =
 BAREBOX_CMD_START(spi)
 	.cmd		= do_spi,
 	.usage		= "write/read spi device",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_spi_help)
 BAREBOX_CMD_END

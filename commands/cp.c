@@ -105,6 +105,7 @@ If you want to copy between memory blocks, use 'memcpy'.
 BAREBOX_CMD_START(cp)
 	.cmd		= do_cp,
 	.usage		= "copy files",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cp_help)
 BAREBOX_CMD_END
 

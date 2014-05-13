@@ -144,5 +144,6 @@ static const __maybe_unused char cmd_memcmp_help[] =
 BAREBOX_CMD_START(memcmp)
 	.cmd		= do_memcmp,
 	.usage		= "memory compare",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memcmp_help)
 BAREBOX_CMD_END

@@ -101,5 +101,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(uimage)
 	.cmd		= do_uimage,
 	.usage		= "extract/verify uImage",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_uimage_help)
 BAREBOX_CMD_END

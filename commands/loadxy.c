@@ -236,6 +236,7 @@ static const __maybe_unused char cmd_loadx_help[] =
 BAREBOX_CMD_START(loadx)
 	.cmd = do_loadx,
 	.usage = "Load binary file over serial line (X-Modem)",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 BAREBOX_CMD_HELP(cmd_loadx_help)
 BAREBOX_CMD_END
 
@@ -248,6 +249,7 @@ static const __maybe_unused char cmd_loady_help[] =
 BAREBOX_CMD_START(loady)
 	.cmd = do_loady,
 	.usage = "Load binary file over serial line (Y-Modem or Y-Modem/G)",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 BAREBOX_CMD_HELP(cmd_loady_help)
 BAREBOX_CMD_END
 #endif

@@ -122,5 +122,6 @@ ENVFS can only handle files, directories are skipped silently.
 BAREBOX_CMD_START(loadenv)
 	.cmd		= do_loadenv,
 	.usage		= "Load environment from ENVFS into DIRECTORY (default: /dev/env0 -> /env).",
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_loadenv_help)
 BAREBOX_CMD_END

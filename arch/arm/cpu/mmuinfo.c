@@ -107,5 +107,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(mmuinfo)
 	.cmd            = do_mmuinfo,
 	.usage		= "mmuinfo <address>",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_mmuinfo_help)
 BAREBOX_CMD_END

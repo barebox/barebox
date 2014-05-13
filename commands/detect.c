@@ -89,6 +89,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(detect)
 	.cmd		= do_detect,
 	.usage		= "detect devices",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_COMPLETE(device_complete)
 	BAREBOX_CMD_HELP(cmd_detect_help)
 BAREBOX_CMD_END

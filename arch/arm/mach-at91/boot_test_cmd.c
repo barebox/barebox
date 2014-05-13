@@ -91,5 +91,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(at91_boot_test)
 	.cmd		= do_at91_boot_test,
 	.usage		= "upload the binary to sram and jump as will do the romcode",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_at91_boot_test_help)
 BAREBOX_CMD_END

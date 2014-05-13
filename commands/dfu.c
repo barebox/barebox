@@ -197,5 +197,6 @@ device1(name1)[sr],device2(name2)[sr]
 BAREBOX_CMD_START(dfu)
 	.cmd		= do_dfu,
 	.usage		= "Device firmware update",
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_dfu_help)
 BAREBOX_CMD_END

@@ -179,6 +179,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(ifup)
 	.cmd		= do_ifup,
 	.usage		= "Bring up network interfaces",
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_ifup_help)
 BAREBOX_CMD_END
 

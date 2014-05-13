@@ -87,6 +87,7 @@ static const __maybe_unused char cmd_login_help[] =
 BAREBOX_CMD_START(login)
 	.cmd		= do_login,
 	.usage		= "login",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_login_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

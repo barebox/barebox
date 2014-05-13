@@ -76,5 +76,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(readlink)
 	.cmd		= do_readlink,
 	.usage		= "read value of a symbolic link",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_readlink_help)
 BAREBOX_CMD_END

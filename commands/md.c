@@ -112,5 +112,6 @@ static const __maybe_unused char cmd_md_help[] =
 BAREBOX_CMD_START(md)
 	.cmd		= do_mem_md,
 	.usage		= "memory display",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_md_help)
 BAREBOX_CMD_END

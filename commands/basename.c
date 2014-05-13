@@ -43,5 +43,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(basename)
 	.cmd		= do_basename,
 	.usage		= "strip directory and suffix from filenames",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_basename_help)
 BAREBOX_CMD_END

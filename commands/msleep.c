@@ -37,4 +37,5 @@ static int do_msleep(int argc, char *argv[])
 BAREBOX_CMD_START(msleep)
 	.cmd		= do_msleep,
 	.usage		= "delay execution for n milliseconds",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 BAREBOX_CMD_END

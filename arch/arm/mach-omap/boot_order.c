@@ -78,6 +78,7 @@ static const __maybe_unused char cmd_boot_order_help[] =
 BAREBOX_CMD_START(boot_order)
 	.cmd		= cmd_boot_order,
 	.usage		= "boot_order <device 1> [<device n>]",
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_boot_order_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

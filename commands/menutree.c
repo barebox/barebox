@@ -56,5 +56,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(menutree)
 	.cmd	= do_menutree,
 	.usage		= "create a menu from a directory structure",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_menutree_help)
 BAREBOX_CMD_END

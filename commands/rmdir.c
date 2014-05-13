@@ -28,5 +28,6 @@ static const __maybe_unused char cmd_rmdir_help[] =
 BAREBOX_CMD_START(rmdir)
 	.cmd		= do_rmdir,
 	.usage		= "remove directorie(s)",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_rmdir_help)
 BAREBOX_CMD_END

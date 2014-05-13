@@ -91,5 +91,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(cat)
 	.cmd		= do_cat,
 	.usage		= "concatenate file(s)",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cat_help)
 BAREBOX_CMD_END

@@ -1940,6 +1940,7 @@ static const __maybe_unused char cmd_sh_help[] =
 BAREBOX_CMD_START(sh)
 	.cmd		= do_sh,
 	.usage		= "run shell script",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_sh_help)
 BAREBOX_CMD_END
 
@@ -1983,6 +1984,7 @@ BAREBOX_CMD_START(source)
 	.aliases	= source_aliases,
 	.cmd		= do_source,
 	.usage		= cmd_source_usage,
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_source_help)
 BAREBOX_CMD_END
 
@@ -2004,6 +2006,7 @@ static const __maybe_unused char cmd_exit_help[] =
 BAREBOX_CMD_START(exit)
 	.cmd		= do_dummy_command,
 	.usage		= "exit script",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_exit_help)
 BAREBOX_CMD_END
 
@@ -2020,6 +2023,7 @@ static const __maybe_unused char cmd_getopt_help[] =
 BAREBOX_CMD_START(getopt)
 	.cmd		= do_dummy_command,
 	.usage		= "getopt <optstring> <var>",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_getopt_help)
 BAREBOX_CMD_END
 #endif

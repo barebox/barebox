@@ -26,6 +26,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clk_enable)
 	.cmd		= do_clk_enable,
 	.usage		= "enable a clock",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_enable_help)
 BAREBOX_CMD_END
 
@@ -53,6 +54,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clk_disable)
 	.cmd		= do_clk_disable,
 	.usage		= "disable a clock",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_disable_help)
 BAREBOX_CMD_END
 
@@ -81,6 +83,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clk_set_rate)
 	.cmd		= do_clk_set_rate,
 	.usage		= "set a clocks rate",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_set_rate_help)
 BAREBOX_CMD_END
 
@@ -112,6 +115,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clk_dump)
 	.cmd		= do_clk_dump,
 	.usage		= "show information about registered clocks",
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_clk_dump_help)
 BAREBOX_CMD_END
 
@@ -140,5 +144,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(clk_set_parent)
 	.cmd		= do_clk_set_parent,
 	.usage		= "set a parent of a clock",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_set_parent_help)
 BAREBOX_CMD_END

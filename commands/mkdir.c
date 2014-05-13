@@ -66,5 +66,6 @@ static const __maybe_unused char cmd_mkdir_help[] =
 BAREBOX_CMD_START(mkdir)
 	.cmd		= do_mkdir,
 	.usage		= "make directories",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_mkdir_help)
 BAREBOX_CMD_END

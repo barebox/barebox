@@ -212,5 +212,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(ls)
 	.cmd		= do_ls,
 	.usage		= "list a file or directory",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_ls_help)
 BAREBOX_CMD_END

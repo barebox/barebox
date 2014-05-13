@@ -53,5 +53,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(cd)
 	.cmd		= do_cd,
 	.usage		= "change working directory",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cd_help)
 BAREBOX_CMD_END

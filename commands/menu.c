@@ -472,5 +472,6 @@ static const __maybe_unused char cmd_menu_help[] =
 BAREBOX_CMD_START(menu)
 	.cmd		= do_menu,
 	.usage		= "Menu Management",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_menu_help)
 BAREBOX_CMD_END

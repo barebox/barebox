@@ -64,5 +64,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(wd)
 	.cmd = do_wd,
 	.usage = "enable/disable/trigger the watchdog",
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_wd_help)
 BAREBOX_CMD_END

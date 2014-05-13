@@ -97,5 +97,6 @@ static const __maybe_unused char cmd_memset_help[] =
 BAREBOX_CMD_START(memset)
 	.cmd		= do_memset,
 	.usage		= "memory fill",
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memset_help)
 BAREBOX_CMD_END

@@ -56,6 +56,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(export)
 	.cmd		= do_export,
 	.usage		= "export environment variables",
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_export_help)
 BAREBOX_CMD_END
 

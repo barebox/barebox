@@ -93,5 +93,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(filetype)
 	.cmd		= do_filetype,
 	.usage		= "detect file type",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_filetype_help)
 BAREBOX_CMD_END

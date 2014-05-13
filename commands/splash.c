@@ -101,5 +101,6 @@ color depth.
 BAREBOX_CMD_START(splash)
 	.cmd		= do_splash,
 	.usage		= "show a bmp image",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_splash_help)
 BAREBOX_CMD_END

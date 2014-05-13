@@ -122,6 +122,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(echo)
 	.cmd		= do_echo,
 	.usage		= "echo args to console",
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_echo_help)
 BAREBOX_CMD_END
 

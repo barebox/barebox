@@ -61,5 +61,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(dirname)
 	.cmd		= do_dirname,
 	.usage		= "strip last component from file name",
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_dirname_help)
 BAREBOX_CMD_END

@@ -511,6 +511,7 @@ static int do_mycdev(int argc, char *argv[])
 
 BAREBOX_CMD_START(mycdev)
 	.cmd		= do_mycdev,
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 

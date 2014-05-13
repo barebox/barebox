@@ -237,5 +237,6 @@ BAREBOX_CMD_START(test)
 	.aliases	= test_aliases,
 	.cmd		= do_test,
 	.usage		= cmd_test_usage,
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_test_help)
 BAREBOX_CMD_END

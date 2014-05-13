@@ -298,5 +298,6 @@ adapters use an MII to autonegotiate link speed and duplex setting.
 BAREBOX_CMD_START(miitool)
 	.cmd		= do_miitool,
 	.usage		= "view media-independent interface status",
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_miitool_help)
 BAREBOX_CMD_END

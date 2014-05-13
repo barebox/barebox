@@ -51,6 +51,7 @@ static const __maybe_unused char cmd_alternate_help[] =
 BAREBOX_CMD_START(alternate)
 	.cmd		= do_alternate,
 	.usage		= "count zero bits in a file",
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_alternate_help)
 BAREBOX_CMD_END
 

@@ -52,6 +52,7 @@ static const __maybe_unused char cmd_ubimkvol_help[] =
 BAREBOX_CMD_START(ubimkvol)
 	.cmd		= do_ubimkvol,
 	.usage		= "create an ubi volume",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubimkvol_help)
 BAREBOX_CMD_END
 
@@ -106,6 +107,7 @@ static const __maybe_unused char cmd_ubiattach_help[] =
 BAREBOX_CMD_START(ubiattach)
 	.cmd		= do_ubiattach,
 	.usage		= "attach a mtd dev to ubi",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubiattach_help)
 BAREBOX_CMD_END
 
@@ -132,6 +134,7 @@ static const __maybe_unused char cmd_ubidetach_help[] =
 BAREBOX_CMD_START(ubidetach)
 	.cmd		= do_ubidetach,
 	.usage		= "detach an ubi dev",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubidetach_help)
 BAREBOX_CMD_END
 
@@ -167,6 +170,7 @@ static const __maybe_unused char cmd_ubirmvol_help[] =
 BAREBOX_CMD_START(ubirmvol)
 	.cmd		= do_ubirmvol,
 	.usage		= "delete an ubi volume",
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubirmvol_help)
 BAREBOX_CMD_END
 

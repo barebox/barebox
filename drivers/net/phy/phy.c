@@ -49,7 +49,7 @@ int phy_update_status(struct phy_device *dev)
 		dev->adjust_link(edev);
 
 	if (dev->link)
-		pr_info("%dMbps %s duplex link detected\n", dev->speed,
+		dev_info(&edev->dev, "%dMbps %s duplex link detected\n", dev->speed,
 			dev->duplex ? "full" : "half");
 
 	return 0;

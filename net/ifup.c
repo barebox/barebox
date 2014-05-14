@@ -58,6 +58,8 @@ int ifup(const char *name, unsigned flags)
 	if (edev && edev->ipaddr && !(flags & IFUP_FLAG_FORCE))
 		return 0;
 
+	eth_set_current(edev);
+
 	env_push_context();
 
 	setenv("ip", "");

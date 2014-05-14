@@ -192,6 +192,7 @@ config ARCH_TEGRA
 	select OFDEVICE
 	select OFTREE
 	select RELOCATABLE
+	select RESET_CONTROLLER
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"

@@ -347,6 +347,8 @@ static int tegra20_car_probe(struct device_d *dev)
 	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get,
 			    &clk_data);
 
+	tegra_clk_init_rst_controller(car_base, dev->device_node, 3 * 32);
+
 	return 0;
 }
 

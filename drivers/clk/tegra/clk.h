@@ -148,3 +148,15 @@ struct tegra_clk_init_table {
 
 void tegra_init_from_table(struct tegra_clk_init_table *tbl,
 		struct clk *clks[], int clk_max);
+
+struct tegra_clk_periph_regs {
+	u32 enb_reg;
+	u32 enb_set_reg;
+	u32 enb_clr_reg;
+	u32 rst_reg;
+	u32 rst_set_reg;
+	u32 rst_clr_reg;
+};
+
+void tegra_clk_init_rst_controller(void __iomem *base, struct device_node *np,
+		unsigned int num);

@@ -572,9 +572,6 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 	if (!phydev)
 		return;
 
-	if (slave->slave_num)
-		return;
-
 	if (phydev->link) {
 		*link = 1;
 		mac_control = BIT(5); /* MIIEN */
@@ -1096,9 +1093,6 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 		cpsw_gmii_sel_am335x(slave);
 	}
 
-	/* Only one slave supported by this driver */
-	priv->num_slaves = 1;
-
 	return 0;
 }
 
@@ -1110,7 +1104,7 @@ int cpsw_probe(struct device_d *dev)
 	uint64_t start;
 	uint32_t phy_mask;
 	struct cpsw_data *cpsw_data;
-	int ret;
+	int i, ret;
 
 	dev_dbg(dev, "* %s\n", __func__);
 
@@ -1202,9 +1196,11 @@ int cpsw_probe(struct device_d *dev)
 
 	mdiobus_register(&priv->miibus);
 
-	ret = cpsw_slave_setup(&priv->slaves[0], 0, priv);
-	if (ret)
-		goto out;
+	for (i = 0; i < priv->num_slaves; i++) {
+		ret = cpsw_slave_setup(&priv->slaves[i], i, priv);
+		if (ret)
+			goto out;
+	}
 
 	return 0;
 out:

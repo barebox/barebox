@@ -400,3 +400,9 @@ quiet_cmd_imx_image = IMX-IMG $@
 
 quiet_cmd_kwb_image = KWB     $@
       cmd_kwb_image = scripts/kwbimage -p $< $(OPTS_$(@F)) -o $@
+
+quiet_cmd_cboot_bct = BCT     $@
+      cmd_cboot_bct = $(objtree)/scripts/tegra/cbootimage -gbct -s $(soc) $< $@
+
+$(obj)/%.bct: $(obj)/%.bct.cfg
+	$(call cmd,cboot_bct)

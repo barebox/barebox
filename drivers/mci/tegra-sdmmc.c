@@ -59,6 +59,14 @@
 #define TEGRA_SDMMC_INT_SIG_EN				0x038
 #define  TEGRA_SDMMC_INT_SIG_EN_XFER_COMPLETE		(1 << 1)
 
+#define TEGRA_SDMMC_SDMEMCOMPPADCTRL			0x1e0
+#define  TEGRA_SDMMC_SDMEMCOMPPADCTRL_VREF_SEL_SHIFT	0
+
+#define TEGRA_SDMMC_AUTO_CAL_CONFIG			0x1e4
+#define  TEGRA_SDMMC_AUTO_CAL_CONFIG_PU_OFFSET_SHIFT	0
+#define  TEGRA_SDMMC_AUTO_CAL_CONFIG_PD_OFFSET_SHIFT	8
+#define  TEGRA_SDMMC_AUTO_CAL_CONFIG_ENABLE		(1 << 29)
+
 struct tegra_sdmmc_host {
 	struct mci_host		mci;
 	void __iomem		*regs;
@@ -332,6 +340,23 @@ static int tegra_sdmmc_init(struct mci_host *mci, struct device_d *dev)
 	val &= ~(0xff << 8);
 	val |= TEGRA_SDMMC_PWR_CNTL_33_V | TEGRA_SDMMC_PWR_CNTL_SD_BUS;
 	writel(val, regs + TEGRA_SDMMC_PWR_CNTL);
+
+	/* sdmmc1 and sdmmc3 on T30 need a bit of padctrl init */
+	if (of_device_is_compatible(mci->hw_dev->device_node,
+			"nvidia,tegra30-sdhci") &&
+			((u32)regs == 0x78000000 || (u32)regs == 78000400)) {
+		val = readl(regs + TEGRA_SDMMC_SDMEMCOMPPADCTRL);
+		val &= 0xfffffff0;
+		val |= 0x7 << TEGRA_SDMMC_SDMEMCOMPPADCTRL_VREF_SEL_SHIFT;
+		writel(val, regs + TEGRA_SDMMC_SDMEMCOMPPADCTRL);
+
+		val = readl(regs + TEGRA_SDMMC_AUTO_CAL_CONFIG);
+		val &= 0xffff0000;
+		val |= (0x62 << TEGRA_SDMMC_AUTO_CAL_CONFIG_PU_OFFSET_SHIFT) |
+		       (0x70 << TEGRA_SDMMC_AUTO_CAL_CONFIG_PD_OFFSET_SHIFT) |
+		       TEGRA_SDMMC_AUTO_CAL_CONFIG_ENABLE;
+		writel(val, regs + TEGRA_SDMMC_AUTO_CAL_CONFIG);
+	}
 
 	/* setup signaling */
 	writel(0xffffffff, regs + TEGRA_SDMMC_INT_STAT_EN);

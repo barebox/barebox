@@ -74,19 +74,8 @@ static int clk_periph_is_enabled(struct clk *hw)
 static int clk_periph_enable(struct clk *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
-	u32 reg;
-
-	reg = readl(periph->rst_reg);
-	reg |= (1 << periph->rst_shift);
-	writel(reg, periph->rst_reg);
 
 	periph->gate->ops->enable(periph->gate);
-
-	udelay(2);
-
-	reg = readl(periph->rst_reg);
-	reg &= ~(1 << periph->rst_shift);
-	writel(reg, periph->rst_reg);
 
 	return 0;
 }
@@ -94,13 +83,6 @@ static int clk_periph_enable(struct clk *hw)
 static void clk_periph_disable(struct clk *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
-	u32 reg;
-
-	reg = readl(periph->rst_reg);
-	reg |= (1 << periph->rst_shift);
-	writel(reg, periph->rst_reg);
-
-	udelay(2);
 
 	periph->gate->ops->disable(periph->gate);
 }

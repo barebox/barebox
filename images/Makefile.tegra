@@ -10,6 +10,15 @@ quiet_cmd_tegra20_image = T20IMG  $@
 $(obj)/%.t20img: $(obj)/% FORCE
 	$(call if_changed,tegra20_image)
 
+quiet_cmd_tegra30_image = T30IMG  $@
+      cmd_tegra30_image = echo "Version = 0x00030001;Bctcopy = 1; \
+                                Bctfile = $(BCT_$(@F)); \
+                                BootLoader = $(subst .t30img,,$@),0x80108000,0x80108000,Complete;" \
+                                > $@.cfg; \
+                          $(objtree)/scripts/tegra/cbootimage -s tegra30 $@.cfg $@
+$(obj)/%.t30img: $(obj)/% FORCE
+	$(call if_changed,tegra30_image)
+
 board = $(srctree)/arch/$(ARCH)/boards
 
 # ----------------------- Tegra20 based boards ---------------------------

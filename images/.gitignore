@@ -10,6 +10,8 @@
 *.socfpgaimg
 *.t20img
 *.t20img.cfg
+*.t30img
+*.t30img.cfg
 pbl.lds
 barebox.x
 barebox.z

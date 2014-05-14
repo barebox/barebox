@@ -187,3 +187,14 @@ void tegra_clk_init_rst_controller(void __iomem *base, struct device_node *np,
 	rst_ctlr.nr_resets = num;
 	reset_controller_register(&rst_ctlr);
 }
+
+void tegra_clk_reset_uarts(void) {
+	int i;
+	int console_device_ids[] = {6, 7, 55, 65, 66};
+
+	for (i = 0; i < ARRAY_SIZE(console_device_ids); i++) {
+		rst_ops.assert(&rst_ctlr, console_device_ids[i]);
+		udelay(2);
+		rst_ops.deassert(&rst_ctlr, console_device_ids[i]);
+	}
+};

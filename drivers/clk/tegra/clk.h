@@ -160,3 +160,5 @@ struct tegra_clk_periph_regs {
 
 void tegra_clk_init_rst_controller(void __iomem *base, struct device_node *np,
 		unsigned int num);
+
+void tegra_clk_reset_uarts(void);

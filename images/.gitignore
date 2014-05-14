@@ -8,6 +8,8 @@
 *.kwbimg
 *.kwbuartimg
 *.socfpgaimg
+*.t20img
+*.t20img.cfg
 pbl.lds
 barebox.x
 barebox.z

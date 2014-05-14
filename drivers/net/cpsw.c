@@ -801,8 +801,8 @@ static int cpsw_open(struct eth_device *edev)
 			   ALE_SECURE);
 	cpsw_ale_add_mcast(priv, ethbdaddr, 1 << priv->host_port);
 
-	cpsw_slave_init(&priv->slaves[0], priv);
-	cpsw_update_link(&priv->slaves[0], priv);
+	cpsw_slave_init(slave, priv);
+	cpsw_update_link(slave, priv);
 
 	/* init descriptor pool */
 	for (i = 0; i < NUM_DESCS; i++) {

@@ -470,8 +470,7 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 	mci->set_ios = tegra_sdmmc_set_ios;
 	mci->send_cmd = tegra_sdmmc_send_cmd;
 	mci->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
-	mci->host_caps |= MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA |
-	                  MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
+	mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
 	                  MMC_CAP_SD_HIGHSPEED;
 
 	dev->priv = host;

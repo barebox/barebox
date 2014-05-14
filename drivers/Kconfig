@@ -26,5 +26,6 @@ source "drivers/w1/Kconfig"
 source "drivers/pinctrl/Kconfig"
 source "drivers/bus/Kconfig"
 source "drivers/regulator/Kconfig"
+source "drivers/reset/Kconfig"
 
 endmenu

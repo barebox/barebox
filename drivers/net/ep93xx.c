@@ -344,7 +344,7 @@ static int ep93xx_eth_rcv_packet(struct eth_device *edev)
 			 * used when we pass the data off to the protocol
 			 * layer via net_receive().
 			 */
-			net_receive((uchar *)priv->rx_dq.current->word1,
+			net_receive(edev, (uchar *)priv->rx_dq.current->word1,
 				RX_STATUS_FRAME_LEN(priv->rx_sq.current));
 			pr_debug("reporting %d bytes...\n",
 				RX_STATUS_FRAME_LEN(priv->rx_sq.current));

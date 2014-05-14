@@ -619,7 +619,7 @@ bad:
 	return 0;
 }
 
-int net_receive(unsigned char *pkt, int len)
+int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct ethernet *et = (struct ethernet *)pkt;
 	int et_protlen = ntohs(et->et_protlen);

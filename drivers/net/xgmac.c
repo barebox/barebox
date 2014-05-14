@@ -617,7 +617,7 @@ static int xgmac_recv(struct eth_device *edev)
 
 	length = desc_get_rx_frame_len(rxdesc);
 
-	net_receive(desc_get_buf_addr(rxdesc), length);
+	net_receive(edev, desc_get_buf_addr(rxdesc), length);
 
 	/* set descriptor back to owned by XGMAC */
 	desc_set_rx_owner(rxdesc);

@@ -303,7 +303,7 @@ static int port_recv(struct eth_device *edev)
 		      ALIGN(PKTSIZE, 8));
 
 	/* received packet is padded with two null bytes */
-	net_receive(rxdesc->buf_ptr + 0x2, rxdesc->byte_cnt - 0x2);
+	net_receive(edev, rxdesc->buf_ptr + 0x2, rxdesc->byte_cnt - 0x2);
 	ret = 0;
 
 recv_err:

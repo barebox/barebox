@@ -633,7 +633,7 @@ static int dm9k_eth_rx(struct eth_device *edev)
 			dev_dbg(dev, "Receiving packet\n");
 			dm9k_rd(priv->buswidth, priv->iodata, priv->pckt, rx_len);
 			dev_dbg(dev, "passing %u bytes packet to upper layer\n", rx_len);
-			net_receive(priv->pckt, rx_len);
+			net_receive(edev, priv->pckt, rx_len);
 		} else {
 			dev_dbg(dev, "Discarding packet\n");
 			dm9k_dump(priv->buswidth, priv->iodata, rx_len); /* discard packet */

@@ -369,7 +369,7 @@ static int ethoc_rx(struct eth_device *edev, int limit)
 
 			size -= 4; /* strip the CRC */
 			invalidate_dcache_range(bd.addr, bd.addr + PKTSIZE);
-			net_receive((unsigned char *)bd.addr, size);
+			net_receive(edev, (unsigned char *)bd.addr, size);
 		}
 
 		/* clear the buffer descriptor so it can be reused */

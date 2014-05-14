@@ -45,7 +45,7 @@ int tap_eth_rx (struct eth_device *edev)
 	length = linux_read_nonblock(priv->fd, NetRxPackets[0], PKTSIZE);
 
 	if (length > 0)
-		net_receive(NetRxPackets[0], length);
+		net_receive(edev, NetRxPackets[0], length);
 
 	return 0;
 }

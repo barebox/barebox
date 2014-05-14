@@ -581,7 +581,7 @@ static int fec_recv(struct eth_device *dev)
 			 */
 			frame = phys_to_virt(readl(&rbd->data_pointer));
 			frame_length = readw(&rbd->data_length) - 4;
-			net_receive(frame->data, frame_length);
+			net_receive(dev, frame->data, frame_length);
 			len = frame_length;
 		} else {
 			if (bd_status & FEC_RBD_ERR) {

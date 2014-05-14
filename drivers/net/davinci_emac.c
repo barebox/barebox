@@ -462,7 +462,7 @@ static int davinci_emac_recv(struct eth_device *edev)
 		dev_dbg(priv->dev, "| emac_recv got packet (length %i)\n", len);
 		dma_inv_range((ulong)pkt,
 				(ulong)readl(rx_curr_desc + EMAC_DESC_BUFFER) + len);
-		net_receive(pkt, len);
+		net_receive(edev, pkt, len);
 		ret = len;
 	}
 

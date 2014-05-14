@@ -413,7 +413,7 @@ struct eth_device *eth_get_byname(const char *name);
  *
  * Return 0 if the packet is successfully handled. Can be ignored
  */
-int net_receive(unsigned char *pkt, int len);
+int net_receive(struct eth_device *edev, unsigned char *pkt, int len);
 
 struct net_connection {
 	struct ethernet *et;

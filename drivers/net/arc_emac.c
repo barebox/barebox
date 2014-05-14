@@ -304,7 +304,7 @@ static int arc_emac_recv(struct eth_device *edev)
 		dma_inv_range((unsigned long)rxbd->data,
 			      (unsigned long)rxbd->data + pktlen);
 
-		net_receive((unsigned char *)rxbd->data, pktlen);
+		net_receive(edev, (unsigned char *)rxbd->data, pktlen);
 
 		rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);
 	}

@@ -431,7 +431,7 @@ static int asix_rx_fixup(struct usbnet *dev, void *buf, int len)
 			return 0;
 		}
 
-		net_receive(buf, size);
+		net_receive(&dev->edev, buf, size);
 
 		buf += ((size + 1) & 0xfffe);
 		len -= ((size + 1) & 0xfffe);

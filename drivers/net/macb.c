@@ -187,7 +187,7 @@ static int gem_recv(struct eth_device *edev)
 		status = macb->rx_ring[macb->rx_tail].ctrl;
 		length = MACB_BFEXT(RX_FRMLEN, status);
 		buffer = macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail;
-		net_receive(buffer, length);
+		net_receive(edev, buffer, length);
 		macb->rx_ring[macb->rx_tail].addr &= ~MACB_BIT(RX_USED);
 		barrier();
 
@@ -237,7 +237,7 @@ static int macb_recv(struct eth_device *edev)
 				buffer = (void *)NetRxPackets[0];
 			}
 
-			net_receive(buffer, length);
+			net_receive(edev, buffer, length);
 			if (++rx_tail >= macb->rx_ring_size)
 				rx_tail = 0;
 			reclaim_rx_buffers(macb, rx_tail);

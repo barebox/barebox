@@ -70,6 +70,12 @@ enum tegra_chiptype {
 };
 
 static __always_inline
+u32 tegra_read_chipid(void)
+{
+	return readl(TEGRA_APB_MISC_BASE + APB_MISC_HIDREV);
+}
+
+static __always_inline
 enum tegra_chiptype tegra_get_chiptype(void)
 {
 	u32 hidrev;

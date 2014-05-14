@@ -63,6 +63,8 @@ config MACH_TOSHIBA_AC100
 config MACH_NVIDIA_BEAVER
 	bool "NVIDIA Beaver"
 	select ARCH_TEGRA_3x_SOC
+	select I2C
+	select I2C_TEGRA
 
 endmenu
 

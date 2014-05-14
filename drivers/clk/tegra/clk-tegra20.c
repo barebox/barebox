@@ -301,6 +301,19 @@ static void tegra20_periph_init(void)
 	clks[TEGRA20_CLK_SDMMC4] = tegra_clk_register_periph("sdmmc4",
 			mux_pllpcm_clkm, ARRAY_SIZE(mux_pllpcm_clkm), car_base,
 			CRC_CLK_SOURCE_SDMMC4, TEGRA20_CLK_SDMMC4, 1);
+
+	clks[TEGRA20_CLK_I2C1] = tegra_clk_register_periph_div16("i2c1",
+			mux_pllpcm_clkm, ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_I2C1, TEGRA20_CLK_I2C1, 1);
+	clks[TEGRA20_CLK_I2C2] = tegra_clk_register_periph_div16("i2c2",
+			mux_pllpcm_clkm, ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_I2C2, TEGRA20_CLK_I2C2, 1);
+	clks[TEGRA20_CLK_I2C3] = tegra_clk_register_periph_div16("i2c3",
+			mux_pllpcm_clkm, ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_I2C3, TEGRA20_CLK_I2C3, 1);
+	clks[TEGRA20_CLK_DVC] = tegra_clk_register_periph_div16("dvc",
+			mux_pllpcm_clkm, ARRAY_SIZE(mux_pllpcm_clkm), car_base,
+			CRC_CLK_SOURCE_DVC, TEGRA20_CLK_DVC, 1);
 }
 
 static struct tegra_clk_init_table init_table[] = {

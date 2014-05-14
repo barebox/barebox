@@ -28,6 +28,7 @@
 #include <mci.h>
 #include <of_gpio.h>
 #include <linux/clk.h>
+#include <linux/reset.h>
 
 #include "sdhci.h"
 
@@ -62,6 +63,7 @@ struct tegra_sdmmc_host {
 	struct mci_host		mci;
 	void __iomem		*regs;
 	struct clk		*clk;
+	struct reset_control	*reset;
 	int			gpio_cd, gpio_pwr;
 };
 #define to_tegra_sdmmc_host(mci) container_of(mci, struct tegra_sdmmc_host, mci)
@@ -400,6 +402,10 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
 
+	host->reset = reset_control_get(dev, NULL);
+	if (IS_ERR(host->reset))
+		return PTR_ERR(host->reset);
+
 	host->regs = dev_request_mem_region(dev, 0);
 	if (!host->regs) {
 		dev_err(dev, "could not get iomem region\n");
@@ -430,6 +436,9 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 	}
 
 	clk_enable(host->clk);
+	reset_control_assert(host->reset);
+	udelay(2);
+	reset_control_deassert(host->reset);
 
 	mci->init = tegra_sdmmc_init;
 	mci->card_present = tegra_sdmmc_card_present;

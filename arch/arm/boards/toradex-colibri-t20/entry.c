@@ -22,7 +22,7 @@
 
 extern char __dtb_tegra20_colibri_iris_start[];
 
-ENTRY_FUNCTION(start_toradex_colibri_t20_iris, r0, r1, r2)
+static void common_toradex_colibri_t20_iris_start(void)
 {
 	uint32_t fdt;
 
@@ -31,4 +31,44 @@ ENTRY_FUNCTION(start_toradex_colibri_t20_iris, r0, r1, r2)
 	fdt = (uint32_t)__dtb_tegra20_colibri_iris_start - get_runtime_offset();
 
 	tegra_avp_reset_vector(fdt);
+}
+
+ENTRY_FUNCTION(start_colibri_t20_256_usbload, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
+}
+
+ENTRY_FUNCTION(start_colibri_t20_256_hsmmc, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
+}
+
+ENTRY_FUNCTION(start_colibri_t20_256_v11_nand, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
+}
+
+ENTRY_FUNCTION(start_colibri_t20_256_v12_nand, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
+}
+
+ENTRY_FUNCTION(start_colibri_t20_512_usbload, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
+}
+
+ENTRY_FUNCTION(start_colibri_t20_512_hsmmc, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
+}
+
+ENTRY_FUNCTION(start_colibri_t20_512_v11_nand, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
+}
+
+ENTRY_FUNCTION(start_colibri_t20_512_v12_nand, r0, r1, r2)
+{
+	common_toradex_colibri_t20_iris_start();
 }

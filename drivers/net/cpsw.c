@@ -541,9 +541,8 @@ static inline void soft_reset(struct cpsw_priv *priv, void *reg)
 static int cpsw_get_hwaddr(struct eth_device *edev, unsigned char *mac)
 {
 	struct cpsw_slave *slave = edev->priv;
-	struct cpsw_priv *priv = slave->cpsw;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	return -1;
 }
@@ -553,7 +552,7 @@ static int cpsw_set_hwaddr(struct eth_device *edev, unsigned char *mac)
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	memcpy(&priv->mac_addr, mac, sizeof(priv->mac_addr));
 
@@ -569,7 +568,7 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 	struct phy_device *phydev = slave->edev.phydev;
 	u32 mac_control = 0;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	if (!phydev)
 		return;
@@ -595,11 +594,11 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 		return;
 
 	if (mac_control) {
-		dev_dbg(priv->dev, "link up on port %d, speed %d, %s duplex\n",
-				slave->slave_num, phydev->speed,
+		dev_dbg(&slave->dev, "link up, speed %d, %s duplex\n",
+				phydev->speed,
 				(phydev->duplex == DUPLEX_FULL) ?  "full" : "half");
 	} else {
-		dev_dbg(priv->dev, "link down on port %d\n", slave->slave_num);
+		dev_dbg(&slave->dev, "link down\n");
 	}
 
 	writel(mac_control, &slave->sliver->mac_control);
@@ -610,7 +609,7 @@ static int cpsw_update_link(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {
 	int link = 0;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	cpsw_slave_update_link(slave, priv, &link);
 
@@ -622,7 +621,7 @@ static void cpsw_adjust_link(struct eth_device *edev)
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	cpsw_update_link(slave, priv);
 }
@@ -639,7 +638,7 @@ static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {
 	u32	slave_port;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	soft_reset(priv, &slave->sliver->soft_reset);
 
@@ -770,7 +769,7 @@ static int cpsw_open(struct eth_device *edev)
 	struct cpsw_priv *priv = slave->cpsw;
 	int i, ret;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	ret = phy_device_connect(edev, &priv->miibus, slave->phy_id,
 				 cpsw_adjust_link, 0, slave->phy_if);
@@ -843,7 +842,7 @@ static int cpsw_open(struct eth_device *edev)
 		ret = cpdma_submit(priv, &priv->rx_chan, NetRxPackets[i],
 				   PKTSIZE);
 		if (ret < 0) {
-			dev_err(priv->dev, "error %d submitting rx desc\n", ret);
+			dev_err(&slave->dev, "error %d submitting rx desc\n", ret);
 			break;
 		}
 	}
@@ -855,6 +854,8 @@ static void cpsw_halt(struct eth_device *edev)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
+
+	dev_dbg(priv->dev, "* %s slave %d\n", __func__, slave->slave_num);
 
 	writel(0, priv->dma_regs + CPDMA_TXCONTROL);
 	writel(0, priv->dma_regs + CPDMA_RXCONTROL);
@@ -873,12 +874,12 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 	void *buffer;
 	int ret, len;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s slave %d\n", __func__, slave->slave_num);
 
 	/* first reap completed packets */
 	while (cpdma_process(priv, &priv->tx_chan, &buffer, &len) >= 0);
 
-	dev_dbg(priv->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
+	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
 	dma_flush_range((ulong) packet, (ulong)packet + length);
 
@@ -927,7 +928,7 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	if (ret)
 		return ret;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	slave->slave_num = slave_num;
 	slave->regs	= regs + priv->slave_ofs + priv->slave_size * slave_num;

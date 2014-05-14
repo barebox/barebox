@@ -138,6 +138,10 @@ struct clk *tegra_clk_register_periph(const char *name,
 		const char **parent_names, int num_parents,
 		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags);
 
+struct clk *tegra_clk_register_periph_div16(const char *name,
+		const char **parent_names, int num_parents,
+		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags);
+
 /* struct clk_init_table - clock initialization table */
 struct tegra_clk_init_table {
 	unsigned int	clk_id;

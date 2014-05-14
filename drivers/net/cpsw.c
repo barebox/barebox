@@ -178,7 +178,6 @@ struct cpsw_slave {
 	struct cpsw_slave_regs		*regs;
 	struct cpsw_sliver_regs		*sliver;
 	int				slave_num;
-	u32				mac_control;
 	int				phy_id;
 	phy_interface_t			phy_if;
 	struct eth_device		edev;
@@ -590,9 +589,6 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 			mac_control |= BIT(0);	/* FULLDUPLEXEN	*/
 	}
 
-	if (mac_control == slave->mac_control)
-		return;
-
 	if (mac_control) {
 		dev_dbg(&slave->dev, "link up, speed %d, %s duplex\n",
 				phydev->speed,
@@ -602,7 +598,6 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 	}
 
 	writel(mac_control, &slave->sliver->mac_control);
-	slave->mac_control = mac_control;
 }
 
 static int cpsw_update_link(struct cpsw_slave *slave, struct cpsw_priv *priv)
@@ -648,8 +643,6 @@ static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 
 	/* setup max packet size, and mac address */
 	writel(PKT_MAX, &slave->sliver->rx_maxlen);
-
-	slave->mac_control = 0;	/* no link yet */
 
 	/* enable forwarding */
 	slave_port = cpsw_get_slave_port(priv, slave->slave_num);

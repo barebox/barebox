@@ -217,8 +217,6 @@ main(int argc, char *argv[])
 
 		fwrite(context.bct, 1, context.bct_size,
 			context.raw_file);
-		printf("New BCT file %s has been successfully generated!\n",
-			context.image_filename);
 		goto fail;
 	}
 
@@ -232,9 +230,6 @@ main(int argc, char *argv[])
 	/* The image hasn't been written yet. */
 	if (write_image_file(&context) != 0)
 		printf("Error writing image file.\n");
-	else
-		printf("Image file %s has been successfully generated!\n",
-				context.image_filename);
 
  fail:
 	/* Close the file(s). */

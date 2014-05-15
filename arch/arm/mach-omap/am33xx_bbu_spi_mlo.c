@@ -32,6 +32,18 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 	uint32_t readbuf;
 	int size = data->len;
 	void *image = data->image;
+	uint32_t *header;
+	int swap = 0;
+
+	header = data->image;
+	if (header[5] == 0x43485345) {
+		swap = 0;
+	} else if (header[5] == 0x45534843) {
+		swap = 1;
+	} else {
+		if (!bbu_force(data, "Not a MLO image"))
+			return -EINVAL;
+	}
 
 	dstfd = open(data->devicefile, O_WRONLY);
 	if (dstfd < 0) {
@@ -49,7 +61,8 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 	for (; size >= 0; size -= 4) {
 		memcpy((char *)&readbuf, image, 4);
 
-		readbuf = cpu_to_be32(readbuf);
+		if (swap)
+			readbuf = cpu_to_be32(readbuf);
 		ret = write(dstfd, &readbuf, 4);
 		if (ret < 0) {
 			perror("write");

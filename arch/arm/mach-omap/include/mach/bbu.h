@@ -6,7 +6,7 @@
 #ifdef CONFIG_BAREBOX_UPDATE_AM33XX_SPI_NOR_MLO
 int am33xx_bbu_spi_nor_mlo_register_handler(const char *name, char *devicefile);
 #else
-int am33xx_bbu_spi_nor_mlo_register_handler(const char *name, char *devicefile)
+static inline int am33xx_bbu_spi_nor_mlo_register_handler(const char *name, char *devicefile)
 {
 	return 0;
 }

@@ -23,6 +23,7 @@
 #include <init.h>
 #include <io.h>
 #include <sizes.h>
+#include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <linux/phy.h>
@@ -67,6 +68,7 @@ static int pcm051_devices_init(void)
 
 	omap_set_barebox_part(&pcm051_barebox_part);
 	armlinux_set_architecture(MACH_TYPE_PCM051);
+	defaultenv_append_directory(defaultenv_phycore_am335x);
 
 	am33xx_bbu_spi_nor_mlo_register_handler("MLO.spi", "/dev/m25p0.xload");
 

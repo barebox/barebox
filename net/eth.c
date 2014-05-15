@@ -330,12 +330,21 @@ int eth_register(struct eth_device *edev)
 	}
 
 	strcpy(edev->dev.name, "eth");
-	edev->dev.id = DEVICE_ID_DYNAMIC;
 
 	if (edev->parent)
 		edev->dev.parent = edev->parent;
 
-	register_device(&edev->dev);
+	if (edev->dev.parent && edev->dev.parent->device_node) {
+		edev->dev.id = of_alias_get_id(edev->dev.parent->device_node, "ethernet");
+		if (edev->dev.id < 0)
+			edev->dev.id = DEVICE_ID_DYNAMIC;
+	} else {
+		edev->dev.id = DEVICE_ID_DYNAMIC;
+	}
+
+	ret = register_device(&edev->dev);
+	if (ret)
+		return ret;
 
 	dev_add_param_ip(dev, "ipaddr", NULL, NULL, &edev->ipaddr, edev);
 	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);

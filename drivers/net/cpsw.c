@@ -183,6 +183,7 @@ struct cpsw_slave {
 	phy_interface_t			phy_if;
 	struct eth_device		edev;
 	struct cpsw_priv		*cpsw;
+	struct device_d			dev;
 };
 
 struct cpdma_desc {
@@ -916,6 +917,15 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 {
 	void			*regs = priv->regs;
 	struct eth_device	*edev = &slave->edev;
+	struct device_d		*dev = &slave->dev;
+	int ret;
+
+	sprintf(dev->name, "cpsw-slave");
+	dev->id = slave->slave_num;
+	dev->parent = priv->dev;
+	ret = register_device(dev);
+	if (ret)
+		return ret;
 
 	dev_dbg(priv->dev, "* %s\n", __func__);
 
@@ -932,7 +942,7 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	edev->recv	= cpsw_recv;
 	edev->get_ethaddr = cpsw_get_hwaddr;
 	edev->set_ethaddr = cpsw_set_hwaddr;
-	edev->parent	= priv->dev;
+	edev->parent	= dev;
 
 	return eth_register(edev);
 }
@@ -1077,6 +1087,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 			if (ret)
 				return ret;
 
+			slave->dev.device_node = child;
 			slave->phy_id = phy_id[1];
 			slave->phy_if = of_get_phy_mode(child);
 			slave->slave_num = i;

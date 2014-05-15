@@ -5,8 +5,14 @@
 
 #ifdef CONFIG_BAREBOX_UPDATE_AM33XX_SPI_NOR_MLO
 int am33xx_bbu_spi_nor_mlo_register_handler(const char *name, char *devicefile);
+int am33xx_bbu_spi_nor_register_handler(const char *name, char *devicefile);
 #else
 static inline int am33xx_bbu_spi_nor_mlo_register_handler(const char *name, char *devicefile)
+{
+	return 0;
+}
+
+static inline int am33xx_bbu_spi_nor_register_handler(const char *name, char *devicefile)
 {
 	return 0;
 }

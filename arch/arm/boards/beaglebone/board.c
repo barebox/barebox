@@ -29,6 +29,7 @@
 #include <globalvar.h>
 #include <sizes.h>
 #include <net.h>
+#include <envfs.h>
 #include <bootsource.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -65,6 +66,8 @@ static int beaglebone_devices_init(void)
 	}
 
 	black = is_beaglebone_black();
+
+	defaultenv_append_directory(defaultenv_beaglebone);
 
 	globalvar_add_simple("board.variant", black ? "boneblack" : "bone");
 

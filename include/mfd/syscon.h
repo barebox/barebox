@@ -15,11 +15,11 @@
 #define __MFD_SYSCON_H__
 
 #ifdef CONFIG_MFD_SYSCON
-void __iomem *syscon_base_lookup_by_pdevname(const char *);
+void __iomem *syscon_base_lookup_by_pdevname(const char *s);
 void __iomem *syscon_base_lookup_by_phandle
 	(struct device_node *np, const char *property);
 #else
-static inline void __iomem *syscon_base_lookup_by_pdevname(const char *)
+static inline void __iomem *syscon_base_lookup_by_pdevname(const char *s)
 {
 	return NULL;
 }

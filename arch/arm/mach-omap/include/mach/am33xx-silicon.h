@@ -228,7 +228,7 @@ struct am33xx_ddr_data {
 	u32 dll_lock_diff0;
 };
 
-void am33xx_uart0_soft_reset(void);
+void am33xx_uart_soft_reset(void __iomem *uart_base);
 void am33xx_config_vtp(void);
 void am33xx_ddr_phydata_cmd_macro(const struct am33xx_cmd_control *cmd_ctrl);
 void am33xx_config_io_ctrl(int ioctrl);

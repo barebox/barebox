@@ -147,7 +147,7 @@ static noinline int beaglebone_sram_init(void)
 				&ddr2_data);
 	}
 
-	am33xx_uart0_soft_reset();
+	am33xx_uart_soft_reset((void *)AM33XX_UART0_BASE);
 	am33xx_enable_uart0_pin_mux();
 	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');

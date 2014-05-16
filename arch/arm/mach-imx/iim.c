@@ -46,6 +46,7 @@ struct iim_bank {
 
 struct iim_priv {
 	struct cdev cdev;
+	struct device_d dev;
 	void __iomem *base;
 	void __iomem *bankbase;
 	struct iim_bank *bank[IIM_NUM_BANKS];
@@ -288,6 +289,13 @@ static int imx_iim_probe(struct device_d *dev)
 
 	iim = xzalloc(sizeof(*iim));
 
+	strcpy(iim->dev.name, "iim");
+	iim->dev.parent = dev;
+	iim->dev.id = DEVICE_ID_SINGLE;
+	ret = register_device(&iim->dev);
+	if (ret)
+		return ret;
+
 	iim->base = dev_request_mem_region(dev, 0);
 	if (!iim->base)
 		return -EBUSY;
@@ -301,10 +309,10 @@ static int imx_iim_probe(struct device_d *dev)
 	imx_iim_init_dt(dev, iim);
 
 	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW))
-		dev_add_param_bool(dev, "permanent_write_enable",
+		dev_add_param_bool(&iim->dev, "permanent_write_enable",
 			NULL, NULL, &iim_write_enable, NULL);
 
-	dev_add_param_bool(dev, "explicit_sense_enable",
+	dev_add_param_bool(&iim->dev, "explicit_sense_enable",
 			NULL, NULL, &iim_sense_enable, NULL);
 
 	return 0;

@@ -32,9 +32,6 @@
 #define DRIVERNAME	"imx_iim"
 #define IIM_NUM_BANKS	8
 
-static int iim_write_enable;
-static int iim_sense_enable;
-
 struct iim_priv;
 
 struct iim_bank {
@@ -50,6 +47,8 @@ struct iim_priv {
 	void __iomem *base;
 	void __iomem *bankbase;
 	struct iim_bank *bank[IIM_NUM_BANKS];
+	int write_enable;
+	int sense_enable;
 };
 
 static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
@@ -97,7 +96,7 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	struct iim_bank *bank = container_of(cdev, struct iim_bank, cdev);
 
 	size = min((loff_t)count, 32 - offset);
-	if (iim_sense_enable) {
+	if (bank->iim->sense_enable) {
 		for (i = 0; i < size; i++) {
 			int row_val;
 
@@ -178,7 +177,7 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 
 	size = min((loff_t)count, 32 - offset);
 
-	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW) && iim_write_enable) {
+	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW) && bank->iim->write_enable) {
 		for (i = 0; i < size; i++) {
 			int ret;
 
@@ -298,10 +297,10 @@ static int imx_iim_probe(struct device_d *dev)
 
 	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW))
 		dev_add_param_bool(&iim->dev, "permanent_write_enable",
-			NULL, NULL, &iim_write_enable, NULL);
+			NULL, NULL, &iim->write_enable, NULL);
 
 	dev_add_param_bool(&iim->dev, "explicit_sense_enable",
-			NULL, NULL, &iim_sense_enable, NULL);
+			NULL, NULL, &iim->sense_enable, NULL);
 
 	return 0;
 }

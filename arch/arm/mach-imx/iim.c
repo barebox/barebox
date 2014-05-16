@@ -257,6 +257,57 @@ static int imx_iim_add_bank(struct iim_priv *iim, int num)
 
 #if IS_ENABLED(CONFIG_OFDEVICE)
 
+#define MAC_BYTES	6
+
+struct imx_iim_mac {
+	struct iim_bank *bank;
+	int offset;
+	u8 ethaddr[MAC_BYTES];
+};
+
+static int imx_iim_get_mac(struct param_d *param, void *priv)
+{
+	struct imx_iim_mac *iimmac = priv;
+	struct iim_bank *bank = iimmac->bank;
+	int ret;
+
+	ret = imx_iim_cdev_read(&bank->cdev, iimmac->ethaddr, MAC_BYTES, iimmac->offset, 0);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+static int imx_iim_set_mac(struct param_d *param, void *priv)
+{
+	struct imx_iim_mac *iimmac = priv;
+	struct iim_bank *bank = iimmac->bank;
+	int ret;
+
+	ret = imx_iim_cdev_write(&bank->cdev, iimmac->ethaddr, MAC_BYTES, iimmac->offset, 0);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+static void imx_iim_add_mac_param(struct iim_priv *iim, int macnum, int bank, int offset)
+{
+	struct imx_iim_mac *iimmac;
+	char *name;
+
+	iimmac = xzalloc(sizeof(*iimmac));
+	iimmac->offset = offset;
+	iimmac->bank = iim->bank[bank];
+
+	name = asprintf("ethaddr%d", macnum);
+
+	dev_add_param_mac(&iim->dev, name, imx_iim_set_mac,
+			imx_iim_get_mac, iimmac->ethaddr, iimmac);
+
+	free(name);
+}
+
 /*
  * a single MAC address reference has the form
  * <&phandle iim-bank-no offset>, so three cells
@@ -268,7 +319,7 @@ static void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 	char mac[6];
 	const __be32 *prop;
 	struct device_node *node = dev->device_node;
-	int len, ret;
+	int len, ret, macnum = 0;
 
 	if (!node)
 		return;
@@ -293,6 +344,9 @@ static void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 		} else {
 			dev_err(dev, "cannot read: %s\n", strerror(-ret));
 		}
+
+		imx_iim_add_mac_param(iim, macnum, bank, offset);
+		macnum++;
 
 		len -= MAC_ADDRESS_PROPLEN;
 	}

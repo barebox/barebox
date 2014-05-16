@@ -49,6 +49,13 @@ static struct omap_barebox_part pcm051_barebox_part = {
 	.nor_size = SZ_512K,
 };
 
+static char *xloadslots[] = {
+	"/dev/nand0.xload.bb",
+	"/dev/nand0.xload_backup1.bb",
+	"/dev/nand0.xload_backup2.bb",
+	"/dev/nand0.xload_backup3.bb"
+};
+
 static int pcm051_devices_init(void)
 {
 	if (!of_machine_is_compatible("phytec,pcm051"))
@@ -71,6 +78,8 @@ static int pcm051_devices_init(void)
 	defaultenv_append_directory(defaultenv_phycore_am335x);
 
 	am33xx_bbu_spi_nor_mlo_register_handler("MLO.spi", "/dev/m25p0.xload");
+	am33xx_bbu_nand_xloadslots_register_handler("MLO.nand",
+		xloadslots, ARRAY_SIZE(xloadslots));
 
 	return 0;
 }

@@ -51,7 +51,7 @@ struct iim_priv {
 	struct iim_bank *bank[IIM_NUM_BANKS];
 };
 
-static int do_fuse_sense(void __iomem *reg_base, unsigned int bank,
+static int imx_iim_fuse_sense(void __iomem *reg_base, unsigned int bank,
 		unsigned int row)
 {
 	u8 err, stat;
@@ -105,7 +105,7 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 		for (i = 0; i < size; i++) {
 			int row_val;
 
-			row_val = do_fuse_sense(iim->base,
+			row_val = imx_iim_fuse_sense(iim->base,
 						bank->bank, offset + i);
 			if (row_val < 0)
 				return row_val;
@@ -119,7 +119,7 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	return size;
 }
 
-static int do_fuse_blow(void __iomem *reg_base, unsigned int bank,
+static int imx_iim_fuse_blow(void __iomem *reg_base, unsigned int bank,
 		unsigned int row, u8 value)
 {
 	int bit, ret = 0;
@@ -192,7 +192,7 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 		for (i = 0; i < size; i++) {
 			int ret;
 
-			ret = do_fuse_blow(iim->base, bank->bank,
+			ret = imx_iim_fuse_blow(iim->base, bank->bank,
 					   offset + i, ((u8 *)buf)[i]);
 			if (ret < 0)
 				return ret;

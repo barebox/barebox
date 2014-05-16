@@ -52,15 +52,11 @@ struct iim_priv {
 	struct iim_bank *bank[IIM_NUM_BANKS];
 };
 
-static int imx_iim_fuse_sense(void __iomem *reg_base, unsigned int bank,
-		unsigned int row)
+static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
 {
+	struct iim_priv *iim = bank->iim;
+	void __iomem *reg_base = iim->base;
 	u8 err, stat;
-
-	if (bank > 7) {
-		printf("%s: invalid bank number\n", __func__);
-		return -EINVAL;
-	}
 
 	if (row > 255) {
 		printf("%s: invalid row index\n", __func__);
@@ -72,7 +68,7 @@ static int imx_iim_fuse_sense(void __iomem *reg_base, unsigned int bank,
 	writeb(0xfe, reg_base + IIM_ERR);
 
 	/* upper and lower address halves */
-	writeb((bank << 3) | (row >> 5), reg_base + IIM_UA);
+	writeb((bank->bank << 3) | (row >> 5), reg_base + IIM_UA);
 	writeb((row << 3) & 0xf8, reg_base + IIM_LA);
 
 	/* start fuse sensing */
@@ -99,15 +95,13 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 {
 	ulong size, i;
 	struct iim_bank *bank = container_of(cdev, struct iim_bank, cdev);
-	struct iim_priv *iim = bank->iim;
 
 	size = min((loff_t)count, 32 - offset);
 	if (iim_sense_enable) {
 		for (i = 0; i < size; i++) {
 			int row_val;
 
-			row_val = imx_iim_fuse_sense(iim->base,
-						bank->bank, offset + i);
+			row_val = imx_iim_fuse_sense(bank, offset + i);
 			if (row_val < 0)
 				return row_val;
 			((u8 *)buf)[i] = (u8)row_val;

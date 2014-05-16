@@ -277,6 +277,8 @@ static int imx_iim_probe(struct device_d *dev)
 	void __iomem *base;
 
 	base = dev_request_mem_region(dev, 0);
+	if (!base)
+		return -EBUSY;
 
 	for (i = 0; i < 8; i++) {
 		imx_iim_add_bank(dev, base, i);

@@ -59,7 +59,7 @@ static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
 	u8 err, stat;
 
 	if (row > 255) {
-		printf("%s: invalid row index\n", __func__);
+		dev_err(&iim->dev, "%s: invalid row index\n", __func__);
 		return -EINVAL;
 	}
 
@@ -83,7 +83,7 @@ static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
 
 	err = readb(reg_base + IIM_ERR);
 	if (err) {
-		printf("%s: sense error (0x%02x)\n", __func__, err);
+		dev_err(&iim->dev, "sense error (0x%02x)\n", err);
 		return -EIO;
 	}
 
@@ -122,7 +122,7 @@ static int imx_iim_fuse_blow(struct iim_bank *bank, unsigned int row, u8 value)
 	u8 err, stat;
 
 	if (row > 255) {
-		printf("%s: invalid row index\n", __func__);
+		dev_err(&iim->dev, "%s: invalid row index\n", __func__);
 		return -EINVAL;
 	}
 
@@ -156,8 +156,8 @@ static int imx_iim_fuse_blow(struct iim_bank *bank, unsigned int row, u8 value)
 
 		err = readb(reg_base + IIM_ERR);
 		if (err) {
-			printf("%s: bank %u, row %u, bit %d program error "
-					"(0x%02x)\n", __func__, bank->bank, row, bit,
+			dev_err(&iim->dev, "bank %u, row %u, bit %d program error "
+					"(0x%02x)\n", bank->bank, row, bit,
 					err);
 			ret = -EIO;
 			goto out;

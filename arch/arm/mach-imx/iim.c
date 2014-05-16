@@ -51,6 +51,8 @@ struct iim_priv {
 	int sense_enable;
 };
 
+static struct iim_priv *imx_iim;
+
 static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
 {
 	struct iim_priv *iim = bank->iim;
@@ -111,6 +113,22 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	}
 
 	return size;
+}
+
+int imx_iim_read(unsigned int banknum, int offset, void *buf, int count)
+{
+	struct iim_priv *iim = imx_iim;
+	struct iim_bank *bank;
+
+	if (!imx_iim)
+		return -ENODEV;
+
+	if (banknum > IIM_NUM_BANKS)
+		return -EINVAL;
+
+	bank = iim->bank[banknum];
+
+	return imx_iim_cdev_read(&bank->cdev, buf, count, offset, 0);
 }
 
 static int imx_iim_fuse_blow(struct iim_bank *bank, unsigned int row, u8 value)
@@ -274,7 +292,12 @@ static int imx_iim_probe(struct device_d *dev)
 	struct iim_priv *iim;
 	int i, ret;
 
+	if (imx_iim)
+		return -EBUSY;
+
 	iim = xzalloc(sizeof(*iim));
+
+	imx_iim = iim;
 
 	strcpy(iim->dev.name, "iim");
 	iim->dev.parent = dev;
@@ -326,21 +349,3 @@ static int imx_iim_init(void)
 	return 0;
 }
 coredevice_initcall(imx_iim_init);
-
-int imx_iim_read(unsigned int bank, int offset, void *buf, int count)
-{
-	struct cdev *cdev;
-	char *name = asprintf(DRIVERNAME "_bank%d", bank);
-	int ret;
-
-	cdev = cdev_open(name, O_RDONLY);
-	if (!cdev)
-		return -ENODEV;
-
-	ret = cdev_read(cdev, buf, count, offset, 0);
-
-	cdev_close(cdev);
-	free(name);
-
-	return ret;
-}

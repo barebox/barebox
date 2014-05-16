@@ -120,16 +120,12 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 	return size;
 }
 
-static int imx_iim_fuse_blow(void __iomem *reg_base, unsigned int bank,
-		unsigned int row, u8 value)
+static int imx_iim_fuse_blow(struct iim_bank *bank, unsigned int row, u8 value)
 {
+	struct iim_priv *iim = bank->iim;
+	void __iomem *reg_base = iim->base;
 	int bit, ret = 0;
 	u8 err, stat;
-
-	if (bank > 7) {
-		printf("%s: invalid bank number\n", __func__);
-		return -EINVAL;
-	}
 
 	if (row > 255) {
 		printf("%s: invalid row index\n", __func__);
@@ -144,7 +140,7 @@ static int imx_iim_fuse_blow(void __iomem *reg_base, unsigned int bank,
 	writeb(0xaa, reg_base + IIM_PREG_P);
 
 	/* upper half address register */
-	writeb((bank << 3) | (row >> 5), reg_base + IIM_UA);
+	writeb((bank->bank << 3) | (row >> 5), reg_base + IIM_UA);
 
 	for (bit = 0; bit < 8; bit++) {
 		if (((value >> bit) & 1) == 0)
@@ -167,7 +163,7 @@ static int imx_iim_fuse_blow(void __iomem *reg_base, unsigned int bank,
 		err = readb(reg_base + IIM_ERR);
 		if (err) {
 			printf("%s: bank %u, row %u, bit %d program error "
-					"(0x%02x)\n", __func__, bank, row, bit,
+					"(0x%02x)\n", __func__, bank->bank, row, bit,
 					err);
 			ret = -EIO;
 			goto out;
@@ -185,7 +181,6 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 {
 	ulong size, i;
 	struct iim_bank *bank = container_of(cdev, struct iim_bank, cdev);
-	struct iim_priv *iim = bank->iim;
 
 	size = min((loff_t)count, 32 - offset);
 
@@ -193,8 +188,7 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 		for (i = 0; i < size; i++) {
 			int ret;
 
-			ret = imx_iim_fuse_blow(iim->base, bank->bank,
-					   offset + i, ((u8 *)buf)[i]);
+			ret = imx_iim_fuse_blow(bank, offset + i, ((u8 *)buf)[i]);
 			if (ret < 0)
 				return ret;
 		}

@@ -28,6 +28,9 @@
 #include <io.h>
 
 #include <mach/iim.h>
+#include <mach/imx51-regs.h>
+#include <mach/imx53-regs.h>
+#include <mach/clock-imx51_53.h>
 
 #define DRIVERNAME	"imx_iim"
 #define IIM_NUM_BANKS	8
@@ -49,6 +52,11 @@ struct iim_priv {
 	struct iim_bank *bank[IIM_NUM_BANKS];
 	int write_enable;
 	int sense_enable;
+	void (*supply)(int enable);
+};
+
+struct imx_iim_drvdata {
+	void (*supply)(int enable);
 };
 
 static struct iim_priv *imx_iim;
@@ -192,10 +200,14 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 {
 	ulong size, i;
 	struct iim_bank *bank = container_of(cdev, struct iim_bank, cdev);
+	struct iim_priv *iim = bank->iim;
 
 	size = min((loff_t)count, 32 - offset);
 
 	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW) && bank->iim->write_enable) {
+		if (iim->supply)
+			iim->supply(1);
+
 		for (i = 0; i < size; i++) {
 			int ret;
 
@@ -203,6 +215,10 @@ static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t cou
 			if (ret < 0)
 				return ret;
 		}
+
+		if (iim->supply)
+			iim->supply(0);
+
 	} else {
 		for (i = 0; i < size; i++)
 			((u8 *)bank->bankbase)[(offset+i)*4] = ((u8 *)buf)[i];
@@ -291,11 +307,17 @@ static int imx_iim_probe(struct device_d *dev)
 {
 	struct iim_priv *iim;
 	int i, ret;
+	struct imx_iim_drvdata *drvdata = NULL;
 
 	if (imx_iim)
 		return -EBUSY;
 
 	iim = xzalloc(sizeof(*iim));
+
+	dev_get_drvdata(dev, (unsigned long *)&drvdata);
+
+	if (drvdata && drvdata->supply)
+		iim->supply = drvdata->supply;
 
 	imx_iim = iim;
 
@@ -328,9 +350,51 @@ static int imx_iim_probe(struct device_d *dev)
 	return 0;
 }
 
+static void imx5_iim_supply(void __iomem *ccm_base, int enable)
+{
+	uint32_t val;
+
+	val = readl(ccm_base + MX5_CCM_CGPR);
+
+	if (enable)
+		val |= 1 << 4;
+	else
+		val &= ~(1 << 4);
+
+	writel(val, ccm_base + MX5_CCM_CGPR);
+}
+
+static void imx51_iim_supply(int enable)
+{
+	imx5_iim_supply((void __iomem *)MX51_CCM_BASE_ADDR, enable);
+}
+
+static void imx53_iim_supply(int enable)
+{
+	imx5_iim_supply((void __iomem *)MX53_CCM_BASE_ADDR, enable);
+}
+
+static struct imx_iim_drvdata imx27_drvdata = {
+};
+
+static struct imx_iim_drvdata imx51_drvdata = {
+	.supply = imx51_iim_supply,
+};
+
+static struct imx_iim_drvdata imx53_drvdata = {
+	.supply = imx53_iim_supply,
+};
+
 static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
 	{
+		.compatible = "fsl,imx53-iim",
+		.data = (unsigned long)&imx53_drvdata,
+	}, {
+		.compatible = "fsl,imx51-iim",
+		.data = (unsigned long)&imx51_drvdata,
+	}, {
 		.compatible = "fsl,imx27-iim",
+		.data = (unsigned long)&imx27_drvdata,
 	}, {
 		/* sentinel */
 	}

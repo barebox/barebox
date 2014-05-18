@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# board defaults, do not change in running system. Change /env/config
+# instead
+
+global.linux.bootargs.console="console=ttySAC0,115200"
+
+#
+# "mini2440" kernel parameter
+# 0 .. 9 = screen type
+# b = backlight enabled
+# t = touch enabled
+# c = camera enabled
+# Note: can be "minit2440= " if nothing of these components are connected
+#
+global.linux.bootargs.base="mini2440=6tb"

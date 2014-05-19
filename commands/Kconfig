@@ -1944,8 +1944,6 @@ config CMD_OFTREE
 		  -l		Load DTB to internal device tree
 		  -p		probe devices from stored device tree
 		  -f		free stored device tree
-		  -d		dump device tree from DTB or the parsed tree if no DTB is given
-		  -n NODE	specify root device NODE to dump for -d
 
 config CMD_TIME
 	bool "time"

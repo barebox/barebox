@@ -1886,6 +1886,19 @@ config CMD_LSMOD
 	help
 	  List loaded barebox modules.
 
+config CMD_OF_DUMP
+	tristate
+	select OFTREE
+	prompt "of_dump"
+	default y if CMD_OFTREE
+	help
+	  dump devicetree nodes to the console
+
+	  Usage: of_dump [-f] [NODE]
+
+	  Options:
+		-f <dtb>	work on <dtb> instead of internal devicetree
+
 config CMD_OF_NODE
 	tristate
 	select OFTREE

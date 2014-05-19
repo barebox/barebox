@@ -17,6 +17,7 @@
  */
 
 #include <asm/mmu.h>
+#include <clock.h>
 #include <common.h>
 #include <net.h>
 #include <io.h>
@@ -342,26 +343,18 @@ static int arc_emac_set_ethaddr(struct eth_device *edev, unsigned char *mac)
 	return 0;
 }
 
-/* Number of seconds we wait for "MDIO complete" flag to appear */
-#define ARC_MDIO_COMPLETE_POLL_COUNT	1
-
 static int arc_mdio_complete_wait(struct arc_emac_priv *priv)
 {
-	unsigned int i;
+	uint64_t start = get_time_ns();
 
-	for (i = 0; i < ARC_MDIO_COMPLETE_POLL_COUNT * 40; i++) {
-		unsigned int status = arc_reg_get(priv, R_STATUS);
-
-		status &= MDIO_MASK;
-
-		if (status) {
+	while (!is_timeout(start, 1000 * MSECOND)) {
+		if (arc_reg_get(priv, R_STATUS) & MDIO_MASK) {
 			/* Reset "MDIO complete" flag */
-			arc_reg_set(priv, R_STATUS, status);
+			arc_reg_set(priv, R_STATUS, MDIO_MASK);
 			return 0;
 		}
-
-		mdelay(25);
 	}
+
 	return -ETIMEDOUT;
 }
 

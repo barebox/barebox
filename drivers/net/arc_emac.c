@@ -210,9 +210,6 @@ static int arc_emac_open(struct eth_device *edev)
 	arc_reg_set(priv, R_RX_RING, (unsigned int)priv->rxbd);
 	arc_reg_set(priv, R_TX_RING, (unsigned int)priv->txbd);
 
-	/* Enable interrupts */
-	arc_reg_set(priv, R_ENABLE, RXINT_MASK | ERR_MASK);
-
 	/* Set CONTROL */
 	arc_reg_set(priv, R_CTRL,
 		     (RX_BD_NUM << 24) |	/* RX BD table length */
@@ -316,9 +313,6 @@ static int arc_emac_recv(struct eth_device *edev)
 static void arc_emac_halt(struct eth_device *edev)
 {
 	struct arc_emac_priv *priv = edev->priv;
-
-	/* Disable interrupts */
-	arc_reg_clr(priv, R_ENABLE, RXINT_MASK | ERR_MASK);
 
 	/* Disable EMAC */
 	arc_reg_clr(priv, R_CTRL, EN_MASK);
@@ -439,6 +433,9 @@ static int arc_emac_probe(struct device_d *dev)
 
 	/* Set poll rate so that it polls every 1 ms */
 	arc_reg_set(priv, R_POLLRATE, clock_frequency / 1000000);
+
+	/* Disable interrupts */
+	arc_reg_set(priv, R_ENABLE, 0);
 
 	mdiobus_register(miibus);
 	eth_register(edev);

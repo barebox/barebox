@@ -42,13 +42,11 @@
 static int do_oftree(int argc, char *argv[])
 {
 	struct fdt_header *fdt = NULL;
-	void *fdt_free = NULL;
 	int size;
 	int opt;
-	char *file = NULL;
 	int probe = 0;
-	int load = 0;
-	int save = 0;
+	char *load = NULL;
+	char *save = NULL;
 	int free_of = 0;
 	int ret;
 	struct device_node *root;
@@ -56,7 +54,7 @@ static int do_oftree(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "pfl:s:")) > 0) {
 		switch (opt) {
 		case 'l':
-			load = 1;
+			load = optarg;
 			break;
 		case 'p':
 			if (IS_ENABLED(CONFIG_OFDEVICE)) {
@@ -70,7 +68,7 @@ static int do_oftree(int argc, char *argv[])
 			free_of = 1;
 			break;
 		case 's':
-			save = 1;
+			save = optarg;
 			break;
 		}
 	}
@@ -85,20 +83,10 @@ static int do_oftree(int argc, char *argv[])
 			return 0;
 	}
 
-	if (optind < argc)
-		file = argv[optind];
-
 	if (!probe && !load && !save)
 		return COMMAND_ERROR_USAGE;
 
 	if (save) {
-		if (!file) {
-			printf("no file given\n");
-			ret = -ENOENT;
-
-			goto out;
-		}
-
 		fdt = of_get_fixed_tree(NULL);
 		if (!fdt) {
 			printf("no devicetree available\n");
@@ -107,39 +95,29 @@ static int do_oftree(int argc, char *argv[])
 			goto out;
 		}
 
-		ret = write_file(file, fdt, fdt32_to_cpu(fdt->totalsize));
+		ret = write_file(save, fdt, fdt32_to_cpu(fdt->totalsize));
 
 		goto out;
 	}
 
-	if (file) {
-		fdt = read_file(file, &size);
+	if (load) {
+		fdt = read_file(load, &size);
 		if (!fdt) {
-			printf("unable to read %s\n", file);
+			printf("unable to read %s\n", load);
 			return 1;
 		}
 
-		fdt_free = fdt;
-	}
-
-	if (load) {
-		if (!fdt) {
-			printf("no fdt given\n");
-			ret = -ENOENT;
-
-			goto out;
-		}
-
 		root = of_unflatten_dtb(fdt);
+
+		free(fdt);
+
 		if (IS_ERR(root))
-			ret = PTR_ERR(root);
-		else
-			ret = 0;
+			return PTR_ERR(root);
 
 		ret = of_set_root_node(root);
-
 		if (ret) {
-			printf("parse oftree: %s\n", strerror(-ret));
+			printf("setting root node failed: %s\n", strerror(-ret));
+			of_delete_node(root);
 			goto out;
 		}
 	}
@@ -152,14 +130,14 @@ static int do_oftree(int argc, char *argv[])
 
 	ret = 0;
 out:
-	free(fdt_free);
 
 	return ret;
 }
 
 BAREBOX_CMD_HELP_START(oftree)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-l",  "Load DTB to internal device tree")
+BAREBOX_CMD_HELP_OPT ("-l <DTB>",  "Load <DTB> to internal devicetree\n")
+BAREBOX_CMD_HELP_OPT ("-s <DTB>",  "save internal devicetree to <DTB>\n")
 BAREBOX_CMD_HELP_OPT ("-p",  "probe devices from stored device tree")
 BAREBOX_CMD_HELP_OPT ("-f",  "free stored device tree")
 BAREBOX_CMD_HELP_END
@@ -167,7 +145,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(oftree)
 	.cmd		= do_oftree,
 	BAREBOX_CMD_DESC("handle device trees")
-	BAREBOX_CMD_OPTS("[-lpf] [DTB]")
+	BAREBOX_CMD_OPTS("[-lpfs]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_oftree_help)
 BAREBOX_CMD_END

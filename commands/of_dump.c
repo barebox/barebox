@@ -63,7 +63,7 @@ static int do_of_dump(int argc, char *argv[])
 			return -errno;
 		}
 
-		root = of_unflatten_dtb(NULL, fdt);
+		root = of_unflatten_dtb(fdt);
 
 		free(fdt);
 

@@ -48,7 +48,7 @@ static int of_mips_init(void)
 	if (root)
 		return 0;
 
-	root = of_unflatten_dtb(NULL, __dtb_start);
+	root = of_unflatten_dtb(__dtb_start);
 	if (root) {
 		pr_debug("using internal DTB\n");
 		of_set_root_node(root);

@@ -51,7 +51,7 @@ static int do_oftree(int argc, char *argv[])
 	int save = 0;
 	int free_of = 0;
 	int ret;
-	struct device_node *n, *root;
+	struct device_node *root;
 
 	while ((opt = getopt(argc, argv, "pfl:s:")) > 0) {
 		switch (opt) {
@@ -130,16 +130,13 @@ static int do_oftree(int argc, char *argv[])
 			goto out;
 		}
 
-		n = of_get_root_node();
-
-		root = of_unflatten_dtb(n, fdt);
+		root = of_unflatten_dtb(fdt);
 		if (IS_ERR(root))
 			ret = PTR_ERR(root);
 		else
 			ret = 0;
 
-		if (!n)
-			ret = of_set_root_node(root);
+		ret = of_set_root_node(root);
 
 		if (ret) {
 			printf("parse oftree: %s\n", strerror(-ret));

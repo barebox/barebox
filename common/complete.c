@@ -277,11 +277,16 @@ static char* cmd_complete_lookup(struct string_list *sl, char *instr)
 	int len;
 	int ret = COMPLETE_END;
 	char *res = NULL;
+	char *t;
 
 	for_each_command(cmdtp) {
 		len = strlen(cmdtp->name);
 		if (!strncmp(instr, cmdtp->name, len) && instr[len] == ' ') {
 			instr += len + 1;
+			t = strrchr(instr, ' ');
+			if (t)
+				instr = t + 1;
+
 			if (cmdtp->complete) {
 				ret = cmdtp->complete(sl, instr);
 				res = instr;

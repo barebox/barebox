@@ -238,22 +238,6 @@ static inline uint32_t mxs_nand_get_ecc_strength(uint32_t page_data_size,
 	int ecc_strength = 0;
 	int gf_len = 13;  /* length of Galois Field for non-DDR nand */
 
-	/*
-	 * Possibly this if-else calculation may be removed since
-	 * ecc_strength calculated after it is taken from kernel driver
-	 * and therefore should work for all cases. But it was tested only
-	 * on devices with {data_size = 2046, oob_size = 64} and
-	 * {data_size = 4096, oob_size = 224} configuration.
-	 */
-	if (page_data_size == 2048)
-		return 8;
-	else if (page_data_size == 4096) {
-		if (page_oob_size == 128)
-			return 8;
-		if (page_oob_size == 218)
-			return 16;
-	}
-
 	ecc_strength = ((page_oob_size - MXS_NAND_METADATA_SIZE) * 8)
 		/ (gf_len * ecc_chunk_count);
 

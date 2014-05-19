@@ -24,6 +24,7 @@
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
+#include <complete.h>
 #include <linux/ctype.h>
 #include <asm/byteorder.h>
 #include <errno.h>
@@ -317,5 +318,6 @@ BAREBOX_CMD_START(of_property)
 	BAREBOX_CMD_DESC("handle device tree properties")
 	BAREBOX_CMD_OPTS("[-sd] NODE [PROPERTY] [VALUES]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_COMPLETE(devicetree_complete)
 	BAREBOX_CMD_HELP(cmd_of_property_help)
 BAREBOX_CMD_END

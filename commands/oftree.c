@@ -37,6 +37,7 @@
 #include <getopt.h>
 #include <init.h>
 #include <fcntl.h>
+#include <complete.h>
 
 static int do_oftree(int argc, char *argv[])
 {
@@ -207,4 +208,5 @@ BAREBOX_CMD_START(oftree)
 	BAREBOX_CMD_OPTS("[-lpfdn] [DTB]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_oftree_help)
+	BAREBOX_CMD_COMPLETE(devicetree_file_complete)
 BAREBOX_CMD_END

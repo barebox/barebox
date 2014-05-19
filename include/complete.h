@@ -17,6 +17,9 @@ int empty_complete(struct string_list *sl, char *instr);
 int eth_complete(struct string_list *sl, char *instr);
 int command_var_complete(struct string_list *sl, char *instr);
 int devfs_partition_complete(struct string_list *sl, char *instr);
+int devicetree_alias_complete(struct string_list *sl, char *instr);
+int devicetree_nodepath_complete(struct string_list *sl, char *instr);
+int devicetree_complete(struct string_list *sl, char *instr);
+int devicetree_file_complete(struct string_list *sl, char *instr);
 
 #endif /* __COMPLETE_ */
-

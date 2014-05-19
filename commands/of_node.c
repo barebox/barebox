@@ -21,6 +21,7 @@
 #include <environment.h>
 #include <fdt.h>
 #include <of.h>
+#include <complete.h>
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
@@ -104,5 +105,6 @@ BAREBOX_CMD_START(of_node)
 	BAREBOX_CMD_DESC("create/delete nodes in the device tree")
 	BAREBOX_CMD_OPTS("[-cd] NODE NAME")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_COMPLETE(devicetree_complete)
 	BAREBOX_CMD_HELP(cmd_of_node_help)
 BAREBOX_CMD_END

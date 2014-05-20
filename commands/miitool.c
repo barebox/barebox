@@ -66,7 +66,7 @@ static const char *media_list(unsigned mask, unsigned mask2, int best)
 
 	*buf = '\0';
 
-	if (mask & BMCR_SPEED1000) {
+	if (mask2) {
 		if (mask2 & ADVERTISE_1000FULL) {
 			strcat(buf, " ");
 			strcat(buf, "1000baseT-FD");

@@ -209,7 +209,7 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 			printf("remote fault, ");
 		printf((bmsr & BMSR_LSTATUS) ? "link ok" : "no link");
 		printf("\n  capabilities:%s", media_list(bmsr >> 6, bmcr2, 0));
-		printf("\n  advertising: %s", media_list(advert, lpa2 >> 2, 0));
+		printf("\n  advertising: %s", media_list(advert, bmcr2, 0));
 
 #define LPA_ABILITY_MASK	(LPA_10HALF | LPA_10FULL \
 				| LPA_100HALF | LPA_100FULL \
@@ -217,7 +217,7 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 
 		if (lkpar & LPA_ABILITY_MASK)
 			printf("\n  link partner:%s",
-				media_list(lkpar, bmcr2, 0));
+				media_list(lkpar, lpa2 >> 2, 0));
 		printf("\n");
 	}
 

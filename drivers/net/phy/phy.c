@@ -245,6 +245,8 @@ int phy_register_device(struct phy_device* dev)
 	if (ret)
 		return ret;
 
+	dev->bus->phy_map[dev->addr] = dev;
+
 	dev->registered = 1;
 
 	if (dev->dev.driver)

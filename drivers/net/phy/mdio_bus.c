@@ -114,8 +114,6 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
 	if (IS_ERR(phydev))
 		return phydev;
 
-	bus->phy_map[addr] = phydev;
-
 	return phydev;
 }
 EXPORT_SYMBOL(mdiobus_scan);

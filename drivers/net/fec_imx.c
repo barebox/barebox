@@ -89,7 +89,7 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	/*
 	 * it's now safe to read the PHY's register
 	 */
-	return readl(fec->regs + FEC_MII_DATA);
+	return readl(fec->regs + FEC_MII_DATA) & 0xffff;
 }
 
 static int fec_miibus_write(struct mii_bus *bus, int phyAddr,

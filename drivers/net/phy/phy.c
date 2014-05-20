@@ -260,12 +260,48 @@ int phy_register_device(struct phy_device* dev)
 	return ret;
 }
 
+static int phy_device_attach(struct phy_device *phy, struct eth_device *edev,
+		       void (*adjust_link) (struct eth_device *edev),
+		       u32 flags, phy_interface_t interface)
+{
+	int ret;
+
+	if (phy->attached_dev)
+		return -EBUSY;
+
+	phy->interface = interface;
+	phy->dev_flags = flags;
+
+	if (!phy->registered) {
+		ret = phy_register_device(phy);
+		if (ret)
+			return ret;
+	}
+
+	edev->phydev = phy;
+	phy->attached_dev = edev;
+
+	ret = phy_init_hw(phy);
+	if (ret)
+		return ret;
+
+	/* Sanitize settings based on PHY capabilities */
+	if ((phy->supported & SUPPORTED_Autoneg) == 0)
+		phy->autoneg = AUTONEG_DISABLE;
+
+	phy_config_aneg(edev->phydev);
+
+	phy->adjust_link = adjust_link;
+
+	return 0;
+}
+
 /* Automatically gets and returns the PHY device */
 int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface)
 {
-	struct phy_device* dev = NULL;
+	struct phy_device *phy;
 	unsigned int i;
 	int ret = -EINVAL;
 
@@ -275,59 +311,36 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	}
 
 	if (addr >= 0) {
-		dev = mdiobus_scan(bus, addr);
-		if (IS_ERR(dev)) {
+		phy = mdiobus_scan(bus, addr);
+		if (IS_ERR(phy)) {
 			ret = -EIO;
-			goto fail;
-		}
-	} else {
-		for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
-			/* skip masked out PHY addresses */
-			if (bus->phy_mask & (1 << i))
-				continue;
-
-			dev = mdiobus_scan(bus, i);
-			if (!IS_ERR(dev) && !dev->attached_dev)
-                                break;
+			goto out;
 		}
 
-		if (IS_ERR(dev)) {
-			ret = PTR_ERR(dev);
-			goto fail;
-		}
+		ret = phy_device_attach(phy, edev, adjust_link, flags, interface);
+
+		goto out;
 	}
 
-	if (dev->attached_dev)
-		return -EBUSY;
+	for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
+		/* skip masked out PHY addresses */
+		if (bus->phy_mask & (1 << i))
+			continue;
 
-	dev->interface = interface;
-	dev->dev_flags = flags;
+		phy = mdiobus_scan(bus, i);
+		if (IS_ERR(phy))
+			continue;
 
-	if (!dev->registered) {
-		ret = phy_register_device(dev);
-		if (ret)
-			goto fail;
+		ret = phy_device_attach(phy, edev, adjust_link, flags, interface);
+
+		goto out;
 	}
 
-	edev->phydev = dev;
-	dev->attached_dev = edev;
-
-	ret = phy_init_hw(dev);
+	ret = -ENODEV;
+out:
 	if (ret)
-		goto fail;
+		puts("Unable to find a PHY (unknown ID?)\n");
 
-	/* Sanitize settings based on PHY capabilities */
-	if ((dev->supported & SUPPORTED_Autoneg) == 0)
-		dev->autoneg = AUTONEG_DISABLE;
-
-	phy_config_aneg(edev->phydev);
-
-	dev->adjust_link = adjust_link;
-
-	return 0;
-
-fail:
-	puts("Unable to find a PHY (unknown ID?)\n");
 	return ret;
 }
 

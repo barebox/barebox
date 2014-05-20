@@ -61,7 +61,7 @@ const struct {
 
 static const char *media_list(unsigned mask, unsigned mask2, int best)
 {
-	static char buf[100];
+	static char buf[256];
 	int i;
 
 	*buf = '\0';

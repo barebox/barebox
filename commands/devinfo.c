@@ -33,9 +33,10 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 		list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 			for (i = 0; i < depth + 1; i++)
 				printf("     ");
-			printf("`---- 0x%08llx-0x%08llx: /dev/%s\n",
+			printf("`---- 0x%08llx-0x%08llx (%10s): /dev/%s\n",
 					cdev->offset,
 					cdev->offset + cdev->size - 1,
+					size_human_readable(cdev->size),
 					cdev->name);
 		}
 	} else {

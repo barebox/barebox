@@ -390,7 +390,7 @@ out:
 int genphy_config_advert(struct phy_device *phydev)
 {
 	u32 advertise;
-	int oldadv, adv;
+	int oldadv, adv, bmsr;
 	int err, changed = 0;
 
 	/* Only allow advertising what
@@ -417,8 +417,11 @@ int genphy_config_advert(struct phy_device *phydev)
 	}
 
 	/* Configure gigabit if it's supported */
-	if (phydev->supported & (SUPPORTED_1000baseT_Half |
-				SUPPORTED_1000baseT_Full)) {
+	bmsr = phy_read(phydev, MII_BMSR);
+	if (bmsr < 0)
+		return bmsr;
+
+	if (bmsr & BMSR_ESTATEN) {
 		oldadv = adv = phy_read(phydev, MII_CTRL1000);
 
 		if (adv < 0)

@@ -242,6 +242,39 @@ static struct file_operations phydev_ops = {
 	.lseek = dev_lseek_default,
 };
 
+static void of_set_phy_supported(struct phy_device *phydev)
+{
+	struct device_node *node = phydev->dev.device_node;
+	u32 max_speed;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	if (!node)
+		return;
+
+	if (!of_property_read_u32(node, "max-speed", &max_speed)) {
+		/*
+		 * The default values for phydev->supported are provided by the PHY
+		 * driver "features" member, we want to reset to sane defaults first
+		 * before supporting higher speeds.
+		 */
+		phydev->supported &= PHY_DEFAULT_FEATURES;
+
+		switch (max_speed) {
+		default:
+			return;
+
+		case SPEED_1000:
+			phydev->supported |= PHY_1000BT_FEATURES;
+		case SPEED_100:
+			phydev->supported |= PHY_100BT_FEATURES;
+		case SPEED_10:
+			phydev->supported |= PHY_10BT_FEATURES;
+		}
+	}
+}
+
 static int mdio_bus_probe(struct device_d *_dev)
 {
 	struct phy_device *dev = to_phy_device(_dev);
@@ -275,7 +308,8 @@ static int mdio_bus_probe(struct device_d *_dev)
 	 * a controller will attach, and may modify one
 	 * or both of these values */
 	dev->supported = drv->features;
-	dev->advertising = drv->features;
+	of_set_phy_supported(dev);
+	dev->advertising = dev->supported;
 
 	dev_add_param_int_ro(&dev->dev, "phy_addr", dev->addr, "%d");
 	dev_add_param_int_ro(&dev->dev, "phy_id", dev->phy_id, "0x%08x");

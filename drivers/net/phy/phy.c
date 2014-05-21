@@ -262,6 +262,29 @@ int phy_register_device(struct phy_device* dev)
 	return ret;
 }
 
+static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
+{
+	struct device_d *dev;
+	struct device_node *phy_node;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return NULL;
+
+	if (!edev->parent->device_node)
+		return NULL;
+
+	phy_node = of_parse_phandle(edev->parent->device_node, "phy-handle", 0);
+	if (!phy_node)
+		return NULL;
+
+	bus_for_each_device(&mdio_bus_type, dev) {
+		if (dev->device_node == phy_node)
+			return container_of(dev, struct phy_device, dev);
+	}
+
+	return NULL;
+}
+
 static int phy_device_attach(struct phy_device *phy, struct eth_device *edev,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface)
@@ -310,6 +333,13 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	if (edev->phydev) {
 		phy_config_aneg(edev->phydev);
 		return 0;
+	}
+
+	phy = of_mdio_find_phy(edev);
+	if (phy) {
+		ret = phy_device_attach(phy, edev, adjust_link, flags, interface);
+
+		goto out;
 	}
 
 	if (addr >= 0) {

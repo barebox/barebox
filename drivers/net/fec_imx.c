@@ -621,6 +621,7 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 #ifdef CONFIG_OFDEVICE
 static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 {
+	struct device_node *mdiobus;
 	int ret;
 
 	ret = of_get_phy_mode(dev->device_node);
@@ -628,6 +629,10 @@ static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 		fec->interface = PHY_INTERFACE_MODE_MII;
 	else
 		fec->interface = ret;
+
+	mdiobus = of_get_child_by_name(dev->device_node, "mdio");
+	if (mdiobus)
+		fec->miibus.dev.device_node = mdiobus;
 
 	return 0;
 }

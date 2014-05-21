@@ -70,7 +70,7 @@ static int hub_port_reset(struct usb_device *dev, int port,
 			  unsigned short *portstat);
 
 static LIST_HEAD(host_list);
-static LIST_HEAD(usb_device_list);
+LIST_HEAD(usb_device_list);
 
 static void print_usb_device(struct usb_device *dev)
 {

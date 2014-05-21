@@ -473,4 +473,7 @@ enum usb_phy_interface {
 	USBPHY_INTERFACE_MODE_SERIAL,
 	USBPHY_INTERFACE_MODE_HSIC,
 };
+
+extern struct list_head usb_device_list;
+
 #endif /*_USB_H_ */

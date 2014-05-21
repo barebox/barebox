@@ -23,6 +23,13 @@
 #include <asm/cache.h>
 #include <asm/openrisc_exc.h>
 
+/* CPUID */
+#define OR1KSIM	0x00
+#define OR1200	0x12
+#define MOR1KX	0x01
+#define ALTOR32	0x32
+#define OR10	0x10
+
 static volatile int illegal_instruction;
 
 static void illegal_instruction_handler(void)
@@ -56,10 +63,46 @@ static int checkinstructions(void)
 	return 0;
 }
 
+static void cpu_implementation(ulong vr2, char *string)
+{
+	switch (vr2 >> 24) {
+
+	case OR1KSIM:
+		sprintf(string, "or1ksim");
+		break;
+	case OR1200:
+		sprintf(string, "OR1200");
+		break;
+	case MOR1KX:
+		sprintf(string, "mor1kx v%u.%u - ", (uint)((vr2 >> 16) & 0xff),
+			(uint)((vr2 >> 8) & 0xff));
+
+		if ((uint)(vr2 & 0xff) == 1)
+			strcat(string, "cappuccino");
+		else if ((uint)(vr2 & 0xff) == 2)
+			strcat(string, "espresso");
+		else if ((uint)(vr2 & 0xff) == 3)
+			strcat(string, "prontoespresso");
+		else
+			strcat(string, "unknwown");
+
+		break;
+	case ALTOR32:
+		sprintf(string, "AltOr32");
+		break;
+	case OR10:
+		sprintf(string, "OR10");
+		break;
+	default:
+		sprintf(string, "unknown");
+	}
+}
+
 int checkcpu(void)
 {
 	ulong upr = mfspr(SPR_UPR);
 	ulong vr = mfspr(SPR_VR);
+	ulong vr2 = mfspr(SPR_VR2);
 	ulong iccfgr = mfspr(SPR_ICCFGR);
 	ulong dccfgr = mfspr(SPR_DCCFGR);
 	ulong immucfgr = mfspr(SPR_IMMUCFGR);
@@ -71,8 +114,15 @@ int checkcpu(void)
 	uint ways;
 	uint sets;
 
+	char impl_str[50];
+
 	printf("CPU:   OpenRISC-%x00 (rev %d) @ %d MHz\n",
 		ver, rev, (CONFIG_SYS_CLK_FREQ / 1000000));
+
+	if (vr2) {
+		cpu_implementation(vr2, impl_str);
+		printf("       Implementation: %s\n", impl_str);
+	}
 
 	if (upr & SPR_UPR_DCP) {
 		block_size = (dccfgr & SPR_DCCFGR_CBS) ? 32 : 16;

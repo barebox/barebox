@@ -120,6 +120,7 @@ static int mvebu_mdio_probe(struct device_d *dev)
 	if (!IS_ERR(priv->clk))
 		clk_enable(priv->clk);
 
+	priv->miibus.dev.device_node = dev->device_node;
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
 	priv->miibus.read = mvebu_mdio_read;

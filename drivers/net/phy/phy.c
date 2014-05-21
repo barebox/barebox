@@ -805,8 +805,8 @@ static int genphy_config_init(struct phy_device *phydev)
 			features |= SUPPORTED_1000baseT_Half;
 	}
 
-	phydev->supported = features;
-	phydev->advertising = features;
+	phydev->supported &= features;
+	phydev->advertising &= features;
 
 	return 0;
 }
@@ -858,7 +858,9 @@ static struct phy_driver genphy_driver = {
 	.drv.name = "Generic PHY",
 	.phy_id = PHY_ANY_UID,
 	.phy_id_mask = PHY_ANY_UID,
-	.features = 0,
+	.features = PHY_GBIT_FEATURES | SUPPORTED_MII |
+		SUPPORTED_AUI | SUPPORTED_FIBRE |
+		SUPPORTED_BNC,
 };
 
 static int generic_phy_register(void)

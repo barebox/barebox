@@ -370,7 +370,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		/* get the precision */
 		precision = -1;
 		if (*fmt == '.') {
-			++fmt;	
+			++fmt;
 			if (isdigit(*fmt))
 				precision = skip_atoi(&fmt);
 			else if (*fmt == '*') {
@@ -534,7 +534,8 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
 {
 	int i;
 
-	i=vsnprintf(buf,size,fmt,args);
+	i = vsnprintf(buf, size, fmt, args);
+
 	return (i >= size) ? (size - 1) : i;
 }
 EXPORT_SYMBOL(vscnprintf);
@@ -566,13 +567,13 @@ int sprintf(char * buf, const char *fmt, ...)
 	int i;
 
 	va_start(args, fmt);
-	i=vsprintf(buf,fmt,args);
+	i = vsprintf(buf, fmt, args);
 	va_end(args);
 	return i;
 }
 EXPORT_SYMBOL(sprintf);
 
-int snprintf(char * buf, size_t size, const char *fmt, ...)
+int snprintf(char *buf, size_t size, const char *fmt, ...)
 {
 	va_list args;
 	int i;
@@ -620,7 +621,7 @@ EXPORT_SYMBOL(asprintf);
 
 void __noreturn panic(const char *fmt, ...)
 {
-	va_list	args;
+	va_list args;
 	va_start(args, fmt);
 	vprintf(fmt, args);
 	putchar('\n');

@@ -202,6 +202,7 @@ config ARCH_UEMD
 	select OFDEVICE
 	select OFTREE
 	select CLOCKSOURCE_UEMD
+	select HAS_DEBUG_LL
 
 config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"

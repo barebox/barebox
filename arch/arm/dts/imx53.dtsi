@@ -1,5 +1,3 @@
-#include <arm/imx53.dtsi>
-
 / {
 	aliases {
 		pwm0 = &pwm1;

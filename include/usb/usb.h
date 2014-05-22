@@ -219,10 +219,6 @@ int usb_register_host(struct usb_host *);
 
 int usb_host_detect(struct usb_host *host, int force);
 
-/* Defines */
-#define USB_UHCI_VEND_ID	0x8086
-#define USB_UHCI_DEV_ID		0x7112
-
 int usb_set_protocol(struct usb_device *dev, int ifnum, int protocol);
 int usb_set_idle(struct usb_device *dev, int ifnum, int duration,
 			int report_id);

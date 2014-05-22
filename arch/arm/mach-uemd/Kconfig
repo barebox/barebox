@@ -1,0 +1,7 @@
+if ARCH_UEMD
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x40800000
+
+endif

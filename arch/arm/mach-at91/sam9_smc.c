@@ -12,11 +12,13 @@
 #include <init.h>
 #include <io.h>
 #include <mach/hardware.h>
+#include <mach/cpu.h>
 #include <mach/io.h>
 
 #include <mach/at91sam9_smc.h>
 
-#define AT91_SMC_CS(id, n)	(smc_base_addr[id] + ((n) * 0x10))
+#define AT91_SMC_CS_STRIDE      ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? 0x14 : 0x10)
+#define AT91_SMC_CS(id, n)	(smc_base_addr[id] + ((n) * AT91_SMC_CS_STRIDE))
 
 static void __iomem *smc_base_addr[2];
 

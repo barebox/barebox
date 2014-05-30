@@ -125,7 +125,7 @@ static struct file_operations fb_ops = {
 
 static void fb_print_mode(struct fb_videomode *mode)
 {
-	printf("%-20s %dx%d@%d\n", mode->name,
+	printf("  %s: %dx%d@%d\n", mode->name,
 			mode->xres, mode->yres, mode->refresh);
 }
 
@@ -141,12 +141,9 @@ static void fb_info(struct device_d *dev)
 {
 	struct fb_info *info = dev->priv;
 
-	printf("available modes:\n");
-
+	printf("Available modes:\n");
 	fb_print_modes(&info->modes);
 	fb_print_modes(&info->edid_modes);
-
-	printf("\n");
 }
 
 int register_framebuffer(struct fb_info *info)

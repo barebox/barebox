@@ -51,16 +51,16 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 	return 0;
 }
 
+
 static int do_devinfo(int argc, char *argv[])
 {
 	struct device_d *dev;
 	struct param_d *param;
 	int i;
+	int first;
 	struct resource *res;
 
 	if (argc == 1) {
-		printf("devices:\n");
-
 		for_each_device(dev) {
 			if (!dev->parent)
 				do_devinfo_subtree(dev, 0);
@@ -73,38 +73,42 @@ static int do_devinfo(int argc, char *argv[])
 			return -1;
 		}
 
-		printf("resources:\n");
+		if (dev->num_resources)
+			printf("Resources:\n");
 		for (i = 0; i < dev->num_resources; i++) {
 			res = &dev->resource[i];
-			printf("num   : %d\n", i);
+			printf("  num: %d\n", i);
 			if (res->name)
-				printf("name  : %s\n", res->name);
-			printf("start : " PRINTF_CONVERSION_RESOURCE "\nsize  : "
-					PRINTF_CONVERSION_RESOURCE "\n",
+				printf("  name: %s\n", res->name);
+			printf("  start: " PRINTF_CONVERSION_RESOURCE "\n"
+				   "  size: "  PRINTF_CONVERSION_RESOURCE "\n",
 			       res->start, resource_size(res));
 		}
 
-		printf("driver: %s\n", dev->driver ?
-				dev->driver->name : "none");
+		if (dev->driver)
+			printf("Driver: %s\n", dev->driver->name);
 
-		printf("bus: %s\n\n", dev->bus ?
-				dev->bus->name : "none");
+		if (dev->bus)
+			printf("Bus: %s\n", dev->bus->name);
 
 		if (dev->info)
 			dev->info(dev);
 
-		printf("%s\n", list_empty(&dev->parameters) ?
-				"no parameters available" : "Parameters:");
-
+		first = true;
 		list_for_each_entry(param, &dev->parameters, list) {
-			printf("%16s = %s", param->name, dev_get_param(dev, param->name));
-			if (param->info)
+			if (first) {
+				printf("Parameters:\n");
+				first = false;
+			}
+			printf("  %s: %s", param->name, dev_get_param(dev, param->name));
+			if (param->info) {
 				param->info(param);
+			}
 			printf("\n");
 		}
 #ifdef CONFIG_OFDEVICE
 		if (dev->device_node) {
-			printf("\ndevice node: %s\n", dev->device_node->full_name);
+			printf("Device node: %s\n", dev->device_node->full_name);
 			of_print_nodes(dev->device_node, 0);
 		}
 #endif

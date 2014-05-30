@@ -54,7 +54,6 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 static int do_devinfo(int argc, char *argv[])
 {
 	struct device_d *dev;
-	struct driver_d *drv;
 	struct param_d *param;
 	int i;
 	struct resource *res;
@@ -66,10 +65,6 @@ static int do_devinfo(int argc, char *argv[])
 			if (!dev->parent)
 				do_devinfo_subtree(dev, 0);
 		}
-
-		printf("\ndrivers:\n");
-		for_each_driver(drv)
-			printf("%s\n",drv->name);
 	} else {
 		dev = get_device_by_name(argv[1]);
 
@@ -148,7 +143,7 @@ Example from an MPC5200 based system:
 
 BAREBOX_CMD_HELP_START(devinfo)
 BAREBOX_CMD_HELP_TEXT("If called without arguments, devinfo shows a summary of the known")
-BAREBOX_CMD_HELP_TEXT("devices and drivers.")
+BAREBOX_CMD_HELP_TEXT("devices.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("If called with a device path being the argument, devinfo shows more")
 BAREBOX_CMD_HELP_TEXT("default information about this device and its parameters.")
@@ -157,7 +152,7 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(devinfo)
 	.cmd		= do_devinfo,
-	BAREBOX_CMD_DESC("show information about devices and drivers")
+	BAREBOX_CMD_DESC("show information about devices")
 	BAREBOX_CMD_OPTS("[DEVICE]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_devinfo_help)

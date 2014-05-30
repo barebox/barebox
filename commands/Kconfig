@@ -79,10 +79,17 @@ config CMD_DEVINFO
 	  devinfo [DEVICE]
 
 	  If called without arguments, devinfo shows a summary of the known
-	  devices and drivers.
+	  devices.
 
 	  If called with a device path being the argument, devinfo shows more
 	  default information about this device and its parameters.
+
+config CMD_DRVINFO
+	tristate
+	default y
+	prompt "drvinfo"
+	help
+	  List compiled-in device drivers and the devices they support.
 
 config CMD_HELP
 	tristate

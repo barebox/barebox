@@ -428,7 +428,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
-	printf("\nLoading OS %s '%s'", file_type_to_string(os_type),
+	printf("\nLoading %s '%s'", file_type_to_string(os_type),
 			data->os_file);
 	if (os_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
@@ -442,7 +442,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 				goto err_out;
 		} else {
 			data->of_root_node = of_get_root_node();
-			if (data->of_root_node)
+			if (bootm_verbose(data) > 1 && data->of_root_node)
 				printf("using internal devicetree\n");
 		}
 	}

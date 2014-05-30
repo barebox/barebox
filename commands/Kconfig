@@ -288,11 +288,16 @@ config CMD_BOOT
 	  one succeeds.
 
 	  Options:
-		  -v	Increase verbosity
-		  -d	Dryrun. See what happens but do no actually boot
-		  -l	List available boot sources
-		  -m	Show a menu with boot options
-		  -t SECS	specify timeout in SECS
+	      -c         crc check uImage data
+	      -d         dryrun: check data, but do not run
+	      -f         load images even if type is undetectable
+	      -r INITRD  specify an initrd image
+	      -L ADDR    specify initrd load address
+	      -a ADDR    specify os load address
+	      -e OFFS    entry point to the image relative to start (0)
+	      -o DTS     specify open firmware device tree
+	      -v         verbose
+
 
 config CMD_BOOTM
 	tristate

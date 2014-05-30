@@ -142,16 +142,17 @@ err_out:
 
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-c",  "crc check uImage data")
-BAREBOX_CMD_HELP_OPT ("-d",  "dryrun. Check data, but do not run")
+BAREBOX_CMD_HELP_OPT ("-c\t",  "crc check uImage data")
+BAREBOX_CMD_HELP_OPT ("-d\t",  "dryrun: check data, but do not run")
+BAREBOX_CMD_HELP_OPT ("-f\t",  "load images even if type is undetectable")
 #ifdef CONFIG_CMD_BOOTM_INITRD
 BAREBOX_CMD_HELP_OPT ("-r INITRD","specify an initrd image")
-BAREBOX_CMD_HELP_OPT ("-L ADDR","specify initrd load address")
+BAREBOX_CMD_HELP_OPT ("-L ADDR\t","specify initrd load address")
 #endif
-BAREBOX_CMD_HELP_OPT ("-a ADDR","specify os load address")
-BAREBOX_CMD_HELP_OPT ("-e OFFS","entry point to the image relative to start (0)")
+BAREBOX_CMD_HELP_OPT ("-a ADDR\t","specify os load address")
+BAREBOX_CMD_HELP_OPT ("-e OFFS\t","entry point to the image relative to start (0)")
 #ifdef CONFIG_OFTREE
-BAREBOX_CMD_HELP_OPT ("-o DTS","specify device tree")
+BAREBOX_CMD_HELP_OPT ("-o DTS\t","specify open firmware device tree")
 #endif
 #ifdef CONFIG_CMD_BOOTM_VERBOSE
 BAREBOX_CMD_HELP_OPT ("-v\t","verbose")
@@ -161,7 +162,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
 	BAREBOX_CMD_DESC("boot an application image")
-	BAREBOX_CMD_OPTS("[-cd"
+	BAREBOX_CMD_OPTS("[-cdf"
 #ifdef CONFIG_CMD_BOOTM_INITRD
 					  "rL"
 #endif

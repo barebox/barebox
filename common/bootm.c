@@ -403,7 +403,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (os_type == filetype_uimage) {
 		ret = bootm_open_os_uimage(data);
 		if (ret) {
-			printf("loading os image failed with %s\n",
+			printf("Loading OS image failed with %s\n",
 					strerror(-ret));
 			goto err_out;
 		}
@@ -455,7 +455,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("no image handler found for image type %s\n",
 			file_type_to_string(os_type));
 		if (os_type == filetype_uimage)
-			printf("and os type: %d\n", data->os->header.ih_os);
+			printf("and OS type: %d\n", data->os->header.ih_os);
 		ret = -ENODEV;
 		goto err_out;
 	}

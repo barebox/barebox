@@ -239,7 +239,7 @@ config THUMB2_BAREBOX
 	bool "Compile barebox in thumb-2 mode (read help)"
 	help
 	  This enables compilation of barebox in thumb-2 mode which generates
-	  ~25% smaller binaries. Arm Assembly code needs some fixups to be able
+	  ~25% smaller binaries. ARM assembly code needs some fixups to be able
 	  to work correctly in thumb-2 mode. the barebox core should have these
 	  fixups since most assembly code is derived from the Kernel. However,
 	  your board lowlevel init code may break in thumb-2 mode. You have been
@@ -254,7 +254,7 @@ config ARM_BOARD_APPEND_ATAG
 
 endmenu
 
-menu "Arm specific settings"
+menu "ARM specific settings"
 
 config CPU_V7_DCACHE_SKIP
 	bool "Skip DCache Invalidate"

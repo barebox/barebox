@@ -15,7 +15,7 @@
 
 	More efficient reading of Huffman codes, a streamlined read_bunzip()
 	function, and various other tweaks.  In (limited) tests, approximately
-	20% faster than bzcat on x86 and about 10% faster on arm.
+	20% faster than bzcat on x86 and about 10% faster on ARM.
 
 	Note that about 2/3 of the time is spent in read_unzip() reversing
 	the Burrows-Wheeler transformation.  Much of that time is delay

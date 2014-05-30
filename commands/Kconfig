@@ -809,24 +809,24 @@ Detect file type
 	  what you have compiled into barebox. Example of "filetype -l":
 
 	  known filetypes:
-	  arm-zimage      : arm Linux zImage
-	  lzo             : lzo compressed
-	  lz4             : lz4 compressed
-	  arm-barebox     : arm barebox image
+	  arm-zimage      : ARM Linux zImage
+	  lzo             : LZO compressed
+	  lz4             : LZ4 compressed
+	  arm-barebox     : ARM barebox image
 	  u-boot          : U-Boot uImage
 	  ubi             : UBI image
 	  jffs2           : JFFS2 image
-	  gzip            : gzip compressed
-	  bzip2           : bzip2 compressed
-	  dtb             : open firmware flat device tree
-	  android         : Android boot image
-	  sh              : Bourne Shell
+	  gzip            : GZIP compressed
+	  bzip2           : BZIP2 compressed
+	  dtb             : open firmware Device Tree flattened Binary
+	  android         : android boot image
+	  sh              : bourne SHell
 	  mips-barebox    : MIPS barebox image
 	  fat             : FAT filesytem
 	  mbr             : MBR sector
 	  bmp             : BMP image
 	  png             : PNG image
-	  ext             : ext filesystem
+	  ext             : EXT filesystem
 	  gpt             : GUID Partition Table
 	  bpk             : Binary PacKage
 	  bbenv           : barebox environment file

@@ -79,7 +79,7 @@
 #define  UCR3_DSR        (1<<10) /* Data set ready */
 #define  UCR3_DCD        (1<<9)  /* Data carrier detect */
 #define  UCR3_RI         (1<<8)  /* Ring indicator */
-#define  UCR3_TIMEOUTEN  (1<<7)  /* Timeout interrupt enable */
+#define  UCR3_ADNIMP     (1<<7)  /* Autobaud Detection Not Improved */
 #define  UCR3_RXDSEN	 (1<<6)  /* Receive status interrupt enable */
 #define  UCR3_AIRINTEN   (1<<5)  /* Async IR wake interrupt enable */
 #define  UCR3_AWAKEN	 (1<<4)  /* Async wake interrupt enable */
@@ -152,7 +152,7 @@ static struct imx_serial_devtype_data imx1_data = {
 
 static struct imx_serial_devtype_data imx21_data = {
 	.ucr1_val = 0,
-	.ucr3_val = 0x700 | UCR3_RXDMUXSEL,
+	.ucr3_val = 0x700 | UCR3_RXDMUXSEL | UCR3_ADNIMP,
 	.ucr4_val = UCR4_CTSTL_32,
 	.uts = 0xb4,
 	.onems = 0xb0,

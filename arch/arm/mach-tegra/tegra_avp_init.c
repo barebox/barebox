@@ -25,6 +25,7 @@
 #include <mach/tegra20-pmc.h>
 #include <mach/tegra30-car.h>
 #include <mach/tegra30-flow.h>
+#include <mach/tegra124-car.h>
 
 /* instruct the PMIC to enable the CPU power rail */
 static void enable_maincomplex_powerrail(void)
@@ -106,6 +107,14 @@ static void init_pllx(void)
 		return;
 
 	chiptype = tegra_get_chiptype();
+
+	/* disable IDDQ on T124 */
+	if (chiptype == TEGRA124) {
+		reg = readl(TEGRA_CLK_RESET_BASE + CRC_PLLX_MISC_3);
+		reg &= ~CRC_PLLX_MISC_3_IDDQ;
+		writel(reg, TEGRA_CLK_RESET_BASE + CRC_PLLX_MISC_3);
+		tegra_ll_delay_usec(2);
+	}
 
 	osc_freq = (readl(TEGRA_CLK_RESET_BASE + CRC_OSC_CTRL) &
 		    CRC_OSC_CTRL_OSC_FREQ_MASK) >> CRC_OSC_CTRL_OSC_FREQ_SHIFT;

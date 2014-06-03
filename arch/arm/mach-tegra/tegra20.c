@@ -30,7 +30,8 @@ static int tegra_add_debug_console(void)
 	unsigned long base = 0;
 
 	if (!of_machine_is_compatible("nvidia,tegra20") &&
-	    !of_machine_is_compatible("nvidia,tegra30"))
+	    !of_machine_is_compatible("nvidia,tegra30") &&
+	    !of_machine_is_compatible("nvidia,tegra124"))
 		return 0;
 
 	/* figure out which UART to use */
@@ -74,7 +75,8 @@ mem_initcall(tegra20_mem_init);
 
 static int tegra30_mem_init(void)
 {
-	if (!of_machine_is_compatible("nvidia,tegra30"))
+	if (!of_machine_is_compatible("nvidia,tegra30") &&
+	    !of_machine_is_compatible("nvidia,tegra124"))
 		return 0;
 
 	arm_add_mem_device("ram0", SZ_2G, tegra30_get_ramsize());

@@ -40,6 +40,22 @@ void tegra_dvc_init(void)
 	writel(CRC_RST_DEV_H_DVC, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_H_CLR);
 }
 
+static __always_inline
+void tegra124_dvc_pinmux(void)
+{
+	u32 val;
+
+	/* disable tristate for pin PWR_I2C_SCL_PZ6 */
+	val = readl(TEGRA_APB_MISC_BASE + 0x32b4);
+	val &= ~(1 << 4);
+	writel(val, TEGRA_APB_MISC_BASE + 0x32b4);
+
+	/* disable tristate for pin PWR_I2C_SDA_PZ7 */
+	val = readl(TEGRA_APB_MISC_BASE + 0x32b8);
+	val &= ~(1 << 4);
+	writel(val, TEGRA_APB_MISC_BASE + 0x32b8);
+}
+
 #define TEGRA_I2C_CNFG		0x00
 #define TEGRA_I2C_CMD_ADDR0	0x04
 #define TEGRA_I2C_CMD_DATA1	0x0c
@@ -87,4 +103,43 @@ void tegra30_tps62361b_ramp_vddcore(void)
 	/* set VDDcore to 1,2V */
 	tegra_dvc_write_data(0x4603, TEGRA_I2C_SEND_2_BYTES);
 	tegra_ll_delay_usec(1000);
+}
+
+static __always_inline
+void tegra124_as3722_enable_essential_rails(u32 sd0voltage)
+{
+	/*
+	 * Bring up VDD_CPU via the AS3722 PMIC on the PWR I2C bus.
+	 * First set VDD to 1.0V, then enable the VDD regulator.
+	 */
+	tegra_dvc_write_addr(0x80, 2);
+	tegra_dvc_write_data(sd0voltage | 0x00, TEGRA_I2C_SEND_2_BYTES);
+	tegra_ll_delay_usec(10 * 1000);
+
+	/*
+	 * Bring up VDD_GPU via the AS3722 PMIC on the PWR I2C bus.
+	 * First set VDD to 1.0V, then enable the VDD regulator.
+	 */
+	tegra_dvc_write_addr(0x80, 2);
+	tegra_dvc_write_data(0x2800 | 0x06, TEGRA_I2C_SEND_2_BYTES);
+	tegra_ll_delay_usec(10 * 1000);
+
+	/*
+	 * Bring up VPP_FUSE via the AS3722 PMIC on the PWR I2C bus.
+	 * First set VDD to 1.2V, then enable the VDD regulator.
+	 */
+	tegra_dvc_write_addr(0x80, 2);
+	tegra_dvc_write_data(0x1000 | 0x12, TEGRA_I2C_SEND_2_BYTES);
+	tegra_ll_delay_usec(10 * 1000);
+
+	/*
+	 * Bring up VDD_SDMMC via the AS3722 PMIC on the PWR I2C bus.
+	 * First set it to bypass 3.3V straight thru, then enable the regulator
+	 *
+	 * NOTE: We do this early because doing it later seems to hose the CPU
+	 * power rail/partition startup. Need to debug.
+	 */
+	tegra_dvc_write_addr(0x80, 2);
+	tegra_dvc_write_data(0x3f00 | 0x16, TEGRA_I2C_SEND_2_BYTES);
+	tegra_ll_delay_usec(10 * 1000);
 }

@@ -21,6 +21,7 @@
 #include <malloc.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/log2.h>
 
 #include "clk.h"
 
@@ -113,6 +114,7 @@ static struct clk *_tegra_clk_register_periph(const char *name,
 {
 	struct tegra_clk_periph *periph;
 	int ret, gate_offs, rst_offs;
+	u8 mux_size = order_base_2(num_parents);
 
 	periph = kzalloc(sizeof(*periph), GFP_KERNEL);
 	if (!periph) {
@@ -121,8 +123,8 @@ static struct clk *_tegra_clk_register_periph(const char *name,
 		goto out_periph;
 	}
 
-	periph->mux = clk_mux_alloc(NULL, clk_base + reg_offset, 30, 2,
-				    parent_names, num_parents, 0);
+	periph->mux = clk_mux_alloc(NULL, clk_base + reg_offset, 32 - mux_size,
+				    mux_size, parent_names, num_parents, 0);
 	if (!periph->mux)
 		goto out_mux;
 

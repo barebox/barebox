@@ -12,6 +12,8 @@
 *.t20img.cfg
 *.t30img
 *.t30img.cfg
+*.t124img
+*.t124img.cfg
 pbl.lds
 barebox.x
 barebox.z

@@ -272,6 +272,8 @@ void tegra_cpu_lowlevel_setup(void)
 	r &= ~0x1f;
 	r |= 0xd3;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+
+	arm_setup_stack(TEGRA_IRAM_BASE + SZ_256K - 8);
 	tegra_ll_delay_setup();
 }
 

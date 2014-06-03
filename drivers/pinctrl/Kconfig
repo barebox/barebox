@@ -45,4 +45,4 @@ config PINCTRL_TEGRA30
 	select PINCTRL
 	bool
 	help
-	  The pinmux controller found on the Tegra 30 line of SoCs.
+	  The pinmux controller found on the Tegra 30+ line of SoCs.

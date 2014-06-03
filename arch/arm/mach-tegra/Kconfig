@@ -52,6 +52,7 @@ config ARCH_TEGRA_3x_SOC
 
 config ARCH_TEGRA_124_SOC
 	bool
+	select PINCTRL_TEGRA30
 
 menu "select Tegra boards to be built"
 

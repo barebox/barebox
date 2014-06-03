@@ -104,6 +104,14 @@ static struct pll_config pllx_config_table[][4] = {
 		{600,  12, 0, 8 },
 		{600,  26, 0, 8 },
 	}, /* TEGRA 30 */
+	{
+	}, /* TEGRA 114 */
+	{
+		{ 108,  1, 1, 0 },
+		{  73,  1, 1, 0 },
+		{ 116,  1, 1, 0 },
+		{ 108,  2, 1, 0 },
+	}, /* TEGRA 124 */
 };
 
 static void init_pllx(void)

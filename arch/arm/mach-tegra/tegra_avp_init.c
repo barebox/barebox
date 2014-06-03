@@ -43,8 +43,12 @@ static void assert_maincomplex_reset(int num_cores)
 	u32 mask = 0;
 	int i;
 
-	for (i = 0; i < num_cores; i++)
-		mask |= 0x1111 << i;
+	for (i = 0; i < num_cores; i++) {
+		if (tegra_get_chiptype() >= TEGRA114)
+			mask |= 0x111001 << i;
+		else
+			mask |= 0x1111 << i;
+	}
 
 	writel(mask, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_SET);
 	writel(CRC_RST_DEV_L_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_SET);
@@ -53,7 +57,14 @@ static void assert_maincomplex_reset(int num_cores)
 /* release reset state of the first core of the main CPU complex */
 static void deassert_cpu0_reset(void)
 {
-	writel(0x1111, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_CLR);
+	u32 reg;
+
+	if (tegra_get_chiptype() >= TEGRA114)
+		reg = 0x21fff00f;
+	else
+		reg = 0x1111;
+
+	writel(reg, TEGRA_CLK_RESET_BASE + CRC_RST_CPU_CMPLX_CLR);
 	writel(CRC_RST_DEV_L_CPU, TEGRA_CLK_RESET_BASE + CRC_RST_DEV_L_CLR);
 }
 
@@ -185,7 +196,7 @@ static void start_cpu0_clocks(void)
 
 	/* deassert clock stop for cpu 0 */
 	reg = readl(TEGRA_CLK_RESET_BASE + CRC_CLK_CPU_CMPLX);
-	reg &= ~CRC_CLK_CPU_CMPLX_CPU0_CLK_STP;
+	reg &= ~(0xf << 8);
 	writel(reg, TEGRA_CLK_RESET_BASE + CRC_CLK_CPU_CMPLX);
 
 	/* enable main CPU complex clock */

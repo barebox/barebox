@@ -177,7 +177,7 @@ static void start_cpu0_clocks(void)
 		       CRC_CLK_SOURCE_MSEL_SRC_SHIFT),
 		       TEGRA_CLK_RESET_BASE + CRC_CLK_SOURCE_MSEL);
 		writel(CRC_CLK_OUT_ENB_V_MSELECT,
-		       TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_V);
+		       TEGRA_CLK_RESET_BASE + CRC_CLK_OUT_ENB_V_SET);
 		tegra_ll_delay_usec(3);
 		writel(CRC_RST_DEV_V_MSELECT,
 		       TEGRA_CLK_RESET_BASE + CRC_RST_DEV_V_CLR);

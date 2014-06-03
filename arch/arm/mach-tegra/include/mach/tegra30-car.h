@@ -31,3 +31,5 @@
 #define CRC_RST_DEV_V_MSELECT		(1 << 3)
 
 #define CRC_RST_DEV_V_CLR		0x434
+
+#define CRC_CLK_OUT_ENB_V_SET		0x440

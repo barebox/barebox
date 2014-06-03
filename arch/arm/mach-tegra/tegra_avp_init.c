@@ -197,23 +197,35 @@ static void start_cpu0_clocks(void)
 	tegra_ll_delay_usec(300);
 }
 
-static void maincomplex_powerup(void)
+static void power_up_partition(u32 partid)
 {
 	u32 reg;
 
-	if (!(readl(TEGRA_PMC_BASE + PMC_PWRGATE_STATUS) &
-	      PMC_PWRGATE_STATUS_CPU)) {
-		writel(PMC_PWRGATE_TOGGLE_START | PMC_PWRGATE_TOGGLE_PARTID_CPU,
+	if (!(readl(TEGRA_PMC_BASE + PMC_PWRGATE_STATUS) & (1 << partid))) {
+		writel(PMC_PWRGATE_TOGGLE_START | partid,
 		       TEGRA_PMC_BASE + PMC_PWRGATE_TOGGLE);
 
 		while (!(readl(TEGRA_PMC_BASE + PMC_PWRGATE_STATUS) &
-			 PMC_PWRGATE_STATUS_CPU));
+			(1 << partid)));
 
 		reg = readl(TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
-		reg |= PMC_REMOVE_CLAMPING_CMD_CPU;
+		reg |= (1 << partid);
 		writel(reg, TEGRA_PMC_BASE + PMC_REMOVE_CLAMPING_CMD);
 
 		tegra_ll_delay_usec(1000);
+	}
+}
+
+static void maincomplex_powerup(void)
+{
+	/* main cpu rail */
+	power_up_partition(PMC_PARTID_CRAIL);
+
+	if (tegra_get_chiptype() >= TEGRA114) {
+		/* fast cluster uncore part */
+		power_up_partition(PMC_PARTID_C0NC);
+		/* fast cluster cpu0 part */
+		power_up_partition(PMC_PARTID_CE0);
 	}
 }
 

@@ -66,4 +66,8 @@
 #define PMC_PWRGATE_STATUS_TD		(1 << 1)
 #define PMC_PWRGATE_STATUS_CPU		(1 << 0)
 
+#define PMC_PARTID_CRAIL		0
+#define PMC_PARTID_CE0			14
+#define PMC_PARTID_C0NC			15
+
 #define PMC_SCRATCH(i)			(0x050 + 0x4*i)

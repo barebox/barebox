@@ -481,6 +481,8 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 
 static __maybe_unused struct of_device_id tegra_sdmmc_compatible[] = {
 	{
+		.compatible = "nvidia,tegra124-sdhci",
+	}, {
 		.compatible = "nvidia,tegra30-sdhci",
 	}, {
 		.compatible = "nvidia,tegra20-sdhci",

@@ -20,6 +20,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <init.h>
 #include <io.h>
 
@@ -47,6 +48,14 @@ static int tegra20_pmc_probe(struct device_d *dev)
 	return 0;
 }
 
+static int do_tegrarcm(int argc, char *argv[])
+{
+	writel(2, pmc_base + PMC_SCRATCH(0));
+	reset_cpu(0);
+
+	return 0;
+}
+
 static __maybe_unused struct of_device_id tegra20_pmc_dt_ids[] = {
 	{
 		.compatible = "nvidia,tegra20-pmc",
@@ -68,3 +77,14 @@ static int tegra20_pmc_init(void)
 	return platform_driver_register(&tegra20_pmc_driver);
 }
 coredevice_initcall(tegra20_pmc_init);
+
+BAREBOX_CMD_HELP_START(tegrarcm)
+BAREBOX_CMD_HELP_TEXT("Get into recovery mode without using a physical switch\n")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(tegrarcm)
+	.cmd		= do_tegrarcm,
+	BAREBOX_CMD_DESC("Usage: tegrarcm")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
+	BAREBOX_CMD_HELP(cmd_tegrarcm_help)
+BAREBOX_CMD_END

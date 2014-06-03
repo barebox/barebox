@@ -1572,7 +1572,8 @@ static int mci_card_probe(struct mci *mci)
 	struct mci_host *host = mci->host;
 	int i, rc, disknum, ret;
 
-	if (host->card_present && !host->card_present(host)) {
+	if (host->card_present && !host->card_present(host) &&
+	    !host->non_removable) {
 		dev_err(&mci->dev, "no card inserted\n");
 		return -ENODEV;
 	}
@@ -1839,4 +1840,6 @@ void mci_of_parse(struct mci_host *host)
 			host->dsr_val = dsr_val;
 		}
 	}
+
+	host->non_removable = of_property_read_bool(np, "non-removable");
 }

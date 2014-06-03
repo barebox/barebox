@@ -82,3 +82,13 @@ pblx-$(CONFIG_MACH_NVIDIA_BEAVER) += start_nvidia_beaver
 BCT_start_nvidia_beaver.pblx.t30img = $(board)/nvidia-beaver/beaver-2gb-emmc.bct
 FILE_barebox-tegra30-nvidia-beaver-emmc.img = start_nvidia_beaver.pblx.t30img
 image-$(CONFIG_MACH_NVIDIA_BEAVER) += barebox-tegra30-nvidia-beaver-emmc.img
+
+# ----------------------- Tegra124 based boards --------------------------
+pblx-$(CONFIG_MACH_NVIDIA_JETSON) += start_nvidia_jetson
+FILE_barebox-tegra124-nvidia-jetson-tk1-usbloader.img = start_nvidia_jetson.pblx
+image-$(CONFIG_MACH_NVIDIA_JETSON) += barebox-tegra124-nvidia-jetson-tk1-usbloader.img
+
+pblx-$(CONFIG_MACH_NVIDIA_JETSON) += start_nvidia_jetson
+BCT_start_nvidia_jetson.pblx.t124img = $(board)/nvidia-jetson-tk1/jetson-tk1-2gb-emmc.bct
+FILE_barebox-tegra124-nvidia-jetson-tk1-emmc.img = start_nvidia_jetson.pblx.t124img
+image-$(CONFIG_MACH_NVIDIA_JETSON) += barebox-tegra124-nvidia-jetson-tk1-emmc.img

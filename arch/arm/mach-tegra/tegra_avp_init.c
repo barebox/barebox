@@ -260,6 +260,10 @@ static void tegra_cluster_switch_hp(void)
 void tegra_avp_reset_vector(uint32_t boarddata)
 {
 	int num_cores;
+	unsigned int entry_address = 0;
+
+	if (tegra_cpu_is_maincomplex())
+		tegra_maincomplex_entry();
 
 	/* we want to bring up the high performance CPU complex */
 	if (tegra_get_chiptype() >= TEGRA30)
@@ -274,8 +278,18 @@ void tegra_avp_reset_vector(uint32_t boarddata)
 	stop_maincomplex_clocks(num_cores);
 
 	/* set start address for the main CPU complex processors */
-	writel(tegra_maincomplex_entry - get_runtime_offset(),
-	       TEGRA_EXCEPTION_VECTORS_BASE + 0x100);
+	switch (tegra_get_chiptype()) {
+	case TEGRA20:
+		entry_address = 0x108000;
+		break;
+	case TEGRA30:
+	case TEGRA124:
+		entry_address = 0x80108000;
+		break;
+	default:
+		break;
+	}
+	writel(entry_address, TEGRA_EXCEPTION_VECTORS_BASE + 0x100);
 
 	/* put boarddata in scratch reg, for main CPU to fetch after startup */
 	writel(boarddata, TEGRA_PMC_BASE + PMC_SCRATCH(10));

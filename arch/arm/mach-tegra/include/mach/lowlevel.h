@@ -67,6 +67,8 @@ enum tegra_chiptype {
 	TEGRA_UNK_REV = -1,
 	TEGRA20 = 0,
 	TEGRA30 = 1,
+	TEGRA114 = 2,
+	TEGRA124 = 3,
 };
 
 static __always_inline
@@ -87,6 +89,8 @@ enum tegra_chiptype tegra_get_chiptype(void)
 		return TEGRA20;
 	case 0x30:
 		return TEGRA30;
+	case 0x40:
+		return TEGRA124;
 	default:
 		return TEGRA_UNK_REV;
 	}
@@ -99,6 +103,7 @@ int tegra_get_num_cores(void)
 	case TEGRA20:
 		return 2;
 	case TEGRA30:
+	case TEGRA124:
 		return 4;
 	default:
 		return 0;
@@ -213,6 +218,7 @@ int tegra_get_pllp_rate(void)
 	case TEGRA20:
 		return 216000000;
 	case TEGRA30:
+	case TEGRA124:
 		return 408000000;
 	default:
 		return 0;

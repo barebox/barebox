@@ -25,6 +25,8 @@
 void tegra_maincomplex_entry(void)
 {
 	uint32_t rambase, ramsize;
+	enum tegra_chiptype chiptype;
+	u32 reg = 0;
 
 	arm_cpu_lowlevel_init();
 
@@ -36,7 +38,16 @@ void tegra_maincomplex_entry(void)
 	       TEGRA_CLK_RESET_BASE + CRC_CCLK_BURST_POLICY);
 	writel(CRC_SUPER_CDIV_ENB, TEGRA_CLK_RESET_BASE + CRC_SUPER_CCLK_DIV);
 
-	switch (tegra_get_chiptype()) {
+	chiptype = tegra_get_chiptype();
+
+	if (chiptype >= TEGRA114) {
+		asm("mrc p15, 1, %0, c9, c0, 2" : : "r" (reg));
+		reg &= ~7;
+		reg |= 2;
+		asm("mcr p15, 1, %0, c9, c0, 2" : : "r" (reg));
+	}
+
+	switch (chiptype) {
 	case TEGRA20:
 		rambase = 0x0;
 		ramsize = tegra20_get_ramsize();

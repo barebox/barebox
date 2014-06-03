@@ -62,6 +62,8 @@ static __maybe_unused struct of_device_id tegra20_pmc_dt_ids[] = {
 	}, {
 		.compatible = "nvidia,tegra30-pmc",
 	}, {
+		.compatible = "nvidia,tegra124-pmc",
+	}, {
 		/* sentinel */
 	}
 };

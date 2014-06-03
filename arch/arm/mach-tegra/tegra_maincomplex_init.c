@@ -42,6 +42,7 @@ void tegra_maincomplex_entry(void)
 		ramsize = tegra20_get_ramsize();
 		break;
 	case TEGRA30:
+	case TEGRA124:
 		rambase = SZ_2G;
 		ramsize = tegra30_get_ramsize();
 		break;

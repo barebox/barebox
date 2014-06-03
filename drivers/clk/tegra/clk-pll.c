@@ -196,8 +196,6 @@ static int _get_table_rate(struct clk *hw,
 	if (sel->input_rate == 0)
 		return -EINVAL;
 
-	BUG_ON(sel->p < 1);
-
 	cfg->input_rate = sel->input_rate;
 	cfg->output_rate = sel->output_rate;
 	cfg->m = sel->m;

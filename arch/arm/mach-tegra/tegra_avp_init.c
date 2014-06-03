@@ -262,7 +262,7 @@ void tegra_avp_reset_vector(uint32_t boarddata)
 	int num_cores;
 
 	/* we want to bring up the high performance CPU complex */
-	if (tegra_get_chiptype() == TEGRA30)
+	if (tegra_get_chiptype() >= TEGRA30)
 		tegra_cluster_switch_hp();
 
 	/* get the number of cores in the main CPU complex of the current SoC */

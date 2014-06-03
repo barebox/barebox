@@ -59,7 +59,7 @@ void tegra_dvc_write_data(u32 data, u32 config)
 	writel(config, TEGRA_DVC_BASE + TEGRA_I2C_CNFG);
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 void tegra30_tps65911_cpu_rail_enable(void)
 {
 	tegra_dvc_write_addr(0x5a, 2);
@@ -71,7 +71,7 @@ void tegra30_tps65911_cpu_rail_enable(void)
 	tegra_ll_delay_usec(10 * 1000);
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 void tegra30_tps62366a_ramp_vddcore(void)
 {
 	tegra_dvc_write_addr(0xc0, 2);
@@ -80,7 +80,7 @@ void tegra30_tps62366a_ramp_vddcore(void)
 	tegra_ll_delay_usec(1000);
 }
 
-static inline __attribute__((always_inline))
+static __always_inline
 void tegra30_tps62361b_ramp_vddcore(void)
 {
 	tegra_dvc_write_addr(0xc0, 2);

@@ -31,8 +31,9 @@
 
 /* Bootinfotable */
 
-#define NV_BIT_BCTSIZE		0x38	/* size of the BCT in IRAM */
-#define NV_BIT_BCTPTR		0x3C	/* location of the BCT in IRAM */
+/* location of the BCT in IRAM */
+#define NV_BIT_BCTPTR_T20	0x3c
+#define NV_BIT_BCTPTR_T114	0x4c
 
 /* ODM data */
 #define BCT_ODMDATA_OFFSET	12	/* offset from the _end_ of the BCT */
@@ -44,19 +45,6 @@
 #define T20_ODMDATA_UARTTYPE_MASK	(3 << T20_ODMDATA_UARTTYPE_SHIFT)
 #define T20_ODMDATA_UARTID_SHIFT	15
 #define T20_ODMDATA_UARTID_MASK		(7 << T20_ODMDATA_UARTID_SHIFT)
-
-static __always_inline
-u32 tegra_get_odmdata(void)
-{
-	u32 bctsize, bctptr, odmdata;
-
-	bctsize = cpu_readl(TEGRA_IRAM_BASE + NV_BIT_BCTSIZE);
-	bctptr = cpu_readl(TEGRA_IRAM_BASE + NV_BIT_BCTPTR);
-
-	odmdata = cpu_readl(bctptr + bctsize - BCT_ODMDATA_OFFSET);
-
-	return odmdata;
-}
 
 /* chip ID */
 #define APB_MISC_HIDREV			0x804
@@ -94,6 +82,38 @@ enum tegra_chiptype tegra_get_chiptype(void)
 	default:
 		return TEGRA_UNK_REV;
 	}
+}
+
+static __always_inline
+u32 tegra_get_odmdata(void)
+{
+	u32 bctptr_offset, bctptr, odmdata_offset;
+	enum tegra_chiptype chiptype = tegra_get_chiptype();
+
+	switch(chiptype) {
+	case TEGRA20:
+		bctptr_offset = NV_BIT_BCTPTR_T20;
+		odmdata_offset = 4068;
+		break;
+	case TEGRA30:
+		bctptr_offset = NV_BIT_BCTPTR_T20;
+		odmdata_offset = 6116;
+		break;
+	case TEGRA114:
+		bctptr_offset = NV_BIT_BCTPTR_T114;
+		odmdata_offset = 1752;
+		break;
+	case TEGRA124:
+		bctptr_offset = NV_BIT_BCTPTR_T114;
+		odmdata_offset = 1704;
+		break;
+	default:
+		return 0;
+	}
+
+	bctptr = cpu_readl(TEGRA_IRAM_BASE + bctptr_offset);
+
+	return cpu_readl(bctptr + odmdata_offset);
 }
 
 static __always_inline

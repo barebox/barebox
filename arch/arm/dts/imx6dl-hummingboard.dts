@@ -11,9 +11,6 @@
 #include "imx6qdl-microsom-ar8035.dtsi"
 
 / {
-	model = "SolidRun HummingBoard DL/Solo";
-	compatible = "solidrun,hummingboard", "fsl,imx6dl";
-
 	chosen {
 		linux,stdout-path = &uart1;
 
@@ -26,85 +23,9 @@
 	memory {
 		reg = <0x10000000 0x20000000>;
 	};
-
-	ir_recv: ir-receiver {
-		compatible = "gpio-ir-receiver";
-		gpios = <&gpio1 2 1>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_hummingboard_gpio1_2>;
-	};
-
-	codec: spdif-transmitter {
-		compatible = "linux,spdif-dit";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_hummingboard_spdif>;
-	};
-
-	sound-spdif {
-		compatible = "fsl,imx-audio-spdif";
-		model = "imx-spdif";
-		/* IMX6 doesn't implement this yet */
-		spdif-controller = <&spdif>;
-		spdif-out;
-	};
-};
-
-&i2c1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hummingboard_i2c1>;
-
-	/*
-	 * Not fitted on Carrier-1 board... yet
-	status = "okay";
-
-	rtc: pcf8523@68 {
-		compatible = "nxp,pcf8523";
-		reg = <0x68>;
-	};
-	 */
-};
-
-&iomuxc {
-	hummingboard {
-		pinctrl_hummingboard_gpio1_2: hummingboard-gpio1_2 {
-			fsl,pins = <
-				MX6QDL_PAD_GPIO_2__GPIO1_IO02 0x80000000
-			>;
-		};
-
-		pinctrl_hummingboard_i2c1: hummingboard-i2c1 {
-			fsl,pins = <MX6QDL_I2C1_PINGRP1>;
-		};
-
-		pinctrl_hummingboard_spdif: hummingboard-spdif {
-			fsl,pins = <MX6QDL_PAD_GPIO_17__SPDIF_OUT 0x1b0b0>;
-		};
-
-		pinctrl_hummingboard_usdhc2: hummingboard-usdhc2 {
-			fsl,pins = <
-				MX6QDL_PAD_SD2_CMD__SD2_CMD    0x17059
-				MX6QDL_PAD_SD2_CLK__SD2_CLK    0x10059
-				MX6QDL_PAD_SD2_DAT0__SD2_DATA0 0x17059
-				MX6QDL_PAD_SD2_DAT1__SD2_DATA1 0x17059
-				MX6QDL_PAD_SD2_DAT2__SD2_DATA2 0x17059
-				MX6QDL_PAD_SD2_DAT3__SD2_DATA3 0x13059
-				MX6QDL_PAD_GPIO_4__SD2_CD_B    0x1f071
-			>;
-		};
-	};
-};
-
-&spdif {
-	status = "okay";
 };
 
 &usdhc2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hummingboard_usdhc2>;
-	vmmc-supply = <&reg_3p3v>;
-	fsl,cd-controller;
-	status = "okay";
-
 	#address-cells = <1>;
 	#size-cells = <1>;
 

@@ -119,11 +119,16 @@
 &iomuxc {
 	imx6qdl-mba6x {
 		pinctrl_usbotg: usbotggrp {
-			fsl,pins = <MX6QDL_USBOTG_PINGRP1>;
+			fsl,pins = <MX6QDL_PAD_GPIO_1__USB_OTG_ID 0x17059>;
 		};
 
 		pinctrl_audmux: audmuxgrp {
-			fsl,pins = <MX6QDL_AUDMUX_PINGRP2>;
+			fsl,pins = <
+				MX6QDL_PAD_CSI0_DAT7__AUD3_RXD		0x130b0
+				MX6QDL_PAD_CSI0_DAT4__AUD3_TXC		0x130b0
+				MX6QDL_PAD_CSI0_DAT5__AUD3_TXD		0x110b0
+				MX6QDL_PAD_CSI0_DAT6__AUD3_TXFS		0x130b0
+			>;
 		};
 	};
 };

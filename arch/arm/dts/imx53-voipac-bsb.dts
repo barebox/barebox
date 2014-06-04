@@ -10,3 +10,4 @@
  */
 
 #include <arm/imx53-voipac-bsb.dts>
+#include "imx53.dtsi"

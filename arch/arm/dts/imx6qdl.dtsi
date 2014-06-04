@@ -1,4 +1,3 @@
-#include "imx6qdl-pingrp.h"
 
 / {
 	aliases {

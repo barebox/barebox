@@ -2,7 +2,7 @@
  * Barebox specific DT overlay for Phytec PCA100 RDK
  */
 
-#include "imx27-phytec-phycard-s-rdk.dts"
+#include <arm/imx27-phytec-phycard-s-rdk.dts>
 
 / {
 	chosen {

@@ -5,6 +5,7 @@
 
 #define MX53_SATA_BASE_ADDR	0x10000000
 
+#define MX53_IPU_BASE_ADDR	0x18000000
 /*
  * SPBA global module enabled #0
  */

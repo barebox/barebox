@@ -4,90 +4,13 @@
  * The code contained herein is licensed under the GNU General Public
  * License version 2.
  */
-/ {
-	regulators {
-		compatible = "simple-bus";
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		reg_3p3v: regulator@0 {
-			compatible = "regulator-fixed";
-			reg = <0>;
-			regulator-name = "3P3V";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-always-on;
-		};
-
-		reg_usb_h1_vbus: regulator@1 {
-			compatible = "regulator-fixed";
-			reg = <1>;
-			regulator-name = "usb_h1_vbus";
-			regulator-min-microvolt = <5000000>;
-			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio1 0 0>;
-			enable-active-high;
-		};
-
-		reg_usb_otg_vbus: regulator@2 {
-			compatible = "regulator-fixed";
-			reg = <2>;
-			regulator-name = "usb_otg_vbus";
-			regulator-min-microvolt = <5000000>;
-			regulator-max-microvolt = <5000000>;
-			gpio = <&gpio3 22 0>;
-			enable-active-high;
-		};
-	};
-};
-
-&can1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_microsom_flexcan1>;
-	status = "okay";
-};
-
-&iomuxc {
-	microsom {
-		pinctrl_microsom_flexcan1: microsom-flexcan1 {
-			fsl,pins = <
-				MX6QDL_PAD_SD3_CLK__FLEXCAN1_RX 0x80000000
-				MX6QDL_PAD_SD3_CMD__FLEXCAN1_TX 0x80000000
-			>;
-		};
-
-		pinctrl_microsom_uart1: microsom-uart1 {
-			fsl,pins = <MX6QDL_UART1_PINGRP1>;
-		};
-
-		pinctrl_microsom_usbotg: microsom-usbotg {
-			/*
-			 * Similar to pinctrl_usbotg_2, but we want it
-			 * pulled down for a fixed host connection.
-			 */
-			fsl,pins = <MX6QDL_PAD_GPIO_1__USB_OTG_ID 0x13059>;
-		};
-	};
-};
-
-&uart1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_microsom_uart1>;
-	status = "okay";
-};
+#include <arm/imx6qdl-microsom.dtsi>
 
 &usbotg {
 	phy_type = "utmi";
-	dr_mode = "host";
-	vbus-supply = <&reg_usb_otg_vbus>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_microsom_usbotg>;
-	status = "okay";
 };
 
 &usbh1 {
 	phy_type = "utmi";
 	dr_mode = "host";
-	vbus-supply = <&reg_usb_h1_vbus>;
-	status = "okay";
 };

@@ -76,9 +76,6 @@ static void loco_fec_reset(void)
 
 #define MX53_LOCO_USB_PWREN		IMX_GPIO_NR(7, 8)
 
-extern char flash_header_imx53_loco_start[];
-extern char flash_header_imx53_loco_end[];
-
 static int loco_late_init(void)
 {
 	struct mc13xxx *mc34708;
@@ -162,8 +159,7 @@ static int loco_late_init(void)
 	armlinux_set_architecture(MACH_TYPE_MX53_LOCO);
 
 	imx53_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_imx53_loco_start,
-		flash_header_imx53_loco_end - flash_header_imx53_loco_start, 0);
+		BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

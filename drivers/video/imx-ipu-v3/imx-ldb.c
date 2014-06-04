@@ -190,7 +190,36 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 
 static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 {
-	return -ENOSYS;
+	struct clk *diclk, *ldbclk;
+	struct imx_ldb *ldb = imx_ldb_ch->ldb;
+	int ret, dino;
+	char *clkname;
+
+	dino = di & 0x1;
+
+	clkname = asprintf("ipu_di%d_sel", dino);
+	diclk = clk_lookup(clkname);
+	free(clkname);
+	if (IS_ERR(diclk)) {
+		dev_err(ldb->dev, "failed to get di clk: %s\n", strerror(PTR_ERR(diclk)));
+		return PTR_ERR(diclk);
+	}
+
+	clkname = asprintf("ldb_di%d_div", imx_ldb_ch->chno);
+	ldbclk = clk_lookup(clkname);
+	free(clkname);
+	if (IS_ERR(ldbclk)) {
+		dev_err(ldb->dev, "failed to get ldb clk: %s\n", strerror(PTR_ERR(ldbclk)));
+		return PTR_ERR(ldbclk);
+	}
+
+	ret = clk_set_parent(diclk, ldbclk);
+	if (ret) {
+		dev_err(ldb->dev, "failed to set display clock parent: %s\n", strerror(-ret));
+		return ret;
+	}
+
+	return 0;
 }
 
 static struct imx_ldb_data imx_ldb_data_imx6q = {

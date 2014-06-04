@@ -60,10 +60,8 @@ static int santaro_device_init(void)
 		}
 	}
 
-	imx6_bbu_internal_mmc_register_handler("sd", "/dev/mmc1",
-			flag_sd, NULL, 0, 0);
-	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc3.boot0",
-			flag_emmc, NULL, 0, 0);
+	imx6_bbu_internal_mmc_register_handler("sd", "/dev/mmc1", flag_sd);
+	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc3.boot0", flag_emmc);
 
 	return 0;
 }

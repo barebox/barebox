@@ -19,7 +19,7 @@
 	compatible = "genesi,imx51-sb", "fsl,imx51";
 
 	chosen {
-		linux,stdout-path = "/soc/aips@70000000/serial@73fbc000";
+		stdout-path = &uart1;
 
 		environment-sd {
 			compatible = "barebox,environment";

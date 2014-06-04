@@ -12,7 +12,7 @@
 
 / {
 	chosen {
-		linux,stdout-path = "/soc/aips@50000000/serial@53fbc000";
+		stdout-path = &uart1;
 
 		environment@0 {
 			compatible = "barebox,environment";

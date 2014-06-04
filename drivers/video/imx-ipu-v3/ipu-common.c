@@ -22,6 +22,8 @@
 #include <asm/mmu.h>
 #include <mach/generic.h>
 #include <mach/imx6-regs.h>
+#include <mach/imx53-regs.h>
+#include <mach/imx51-regs.h>
 
 #include "imx-ipu-v3.h"
 #include "ipu-prv.h"
@@ -529,6 +531,31 @@ static int imx6_ipu_reset(struct ipu_soc *ipu)
 
 }
 
+static int imx5_ipu_reset(void __iomem *src_base)
+{
+	uint32_t val;
+	int ret;
+
+	val = ipureadl(src_base);
+	val |= (1 << 3);
+	ipuwritel("reset", val, src_base);
+
+	ret = wait_on_timeout(100 * MSECOND, !(readl(src_base) & (1 << 3)));
+
+	return ret;
+
+}
+
+static int imx51_ipu_reset(struct ipu_soc *ipu)
+{
+	return imx5_ipu_reset((void *)MX51_SRC_BASE_ADDR);
+}
+
+static int imx53_ipu_reset(struct ipu_soc *ipu)
+{
+	return imx5_ipu_reset((void *)MX53_SRC_BASE_ADDR);
+}
+
 struct ipu_devtype {
 	const char *name;
 	unsigned long cm_ofs;
@@ -554,6 +581,7 @@ static struct ipu_devtype ipu_type_imx51 = {
 	.dc_tmpl_ofs = 0x1f080000,
 	.vdi_ofs = 0x1e068000,
 	.type = IPUV3EX,
+	.reset = imx51_ipu_reset,
 };
 
 static struct ipu_devtype ipu_type_imx53 = {
@@ -567,6 +595,7 @@ static struct ipu_devtype ipu_type_imx53 = {
 	.dc_tmpl_ofs = 0x07080000,
 	.vdi_ofs = 0x06068000,
 	.type = IPUV3M,
+	.reset = imx53_ipu_reset,
 };
 
 static struct ipu_devtype ipu_type_imx6q = {

@@ -40,9 +40,6 @@
 
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
-	const void *dcd;
-	int dcdsize;
-	unsigned long app_dest;
 	unsigned long flash_header_offset;
 	size_t device_size;
 	unsigned long flags;
@@ -130,13 +127,7 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 {
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
-	struct imx_flash_header *flash_header;
-	unsigned long flash_header_offset = imx_handler->flash_header_offset;
-	u32 *dcd_image_size;
-	void *imx_pre_image;
-	int imx_pre_image_size = 0x2000;
-	int ret, image_len;
-	void *buf;
+	int ret;
 
 	ret = imx_bbu_check_prereq(data);
 	if (ret)
@@ -144,38 +135,7 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 
 	printf("updating to %s\n", data->devicefile);
 
-	imx_pre_image = xzalloc(imx_pre_image_size);
-	flash_header = imx_pre_image + flash_header_offset;
-
-	flash_header->app_code_jump_vector = imx_handler->app_dest + 0x1000;
-	flash_header->app_code_barker = APP_CODE_BARKER;
-	flash_header->app_code_csf = 0;
-	flash_header->dcd_ptr_ptr = imx_handler->app_dest + flash_header_offset +
-		offsetof(struct imx_flash_header, dcd);
-	flash_header->super_root_key = 0;
-	flash_header->dcd = imx_handler->app_dest + flash_header_offset +
-		offsetof(struct imx_flash_header, dcd_barker);
-	flash_header->app_dest = imx_handler->app_dest;
-	flash_header->dcd_barker = DCD_BARKER;
-	flash_header->dcd_block_len = imx_handler->dcdsize;
-
-	memcpy((void *)flash_header + sizeof(*flash_header), imx_handler->dcd, imx_handler->dcdsize);
-
-	dcd_image_size = (imx_pre_image + flash_header_offset + sizeof(*flash_header) + imx_handler->dcdsize);
-
-	*dcd_image_size = ALIGN(imx_pre_image_size + data->len, 4096);
-
-	/* Create a buffer containing header and image data */
-	image_len = data->len + imx_pre_image_size;
-	buf = xzalloc(image_len);
-	memcpy(buf, imx_pre_image, imx_pre_image_size);
-	memcpy(buf + imx_pre_image_size, data->image, data->len);
-
-	ret = imx_bbu_write_device(imx_handler, data, buf, image_len);
-
-	free(buf);
-
-	free(imx_pre_image);
+	ret = imx_bbu_write_device(imx_handler, data, data->image, data->len);
 
 	return ret;
 }
@@ -337,43 +297,6 @@ out:
 	return ret;
 }
 
-static void imx_bbu_internal_v2_init_flash_header(struct bbu_handler *handler, struct bbu_data *data,
-		void *imx_pre_image, int imx_pre_image_size)
-{
-	struct imx_internal_bbu_handler *imx_handler =
-		container_of(handler, struct imx_internal_bbu_handler, handler);
-	struct imx_flash_header_v2 *flash_header;
-	unsigned long flash_header_offset = imx_handler->flash_header_offset;
-
-	flash_header = imx_pre_image + flash_header_offset;
-
-	flash_header->header.tag = IVT_HEADER_TAG;
-	flash_header->header.length = cpu_to_be16(32);
-	flash_header->header.version = IVT_VERSION;
-
-	flash_header->entry = imx_handler->app_dest + imx_pre_image_size;
-	if (imx_handler->dcdsize)
-		flash_header->dcd_ptr = imx_handler->app_dest + flash_header_offset +
-			offsetof(struct imx_flash_header_v2, dcd);
-	flash_header->boot_data_ptr = imx_handler->app_dest +
-		flash_header_offset + offsetof(struct imx_flash_header_v2, boot_data);
-	flash_header->self = imx_handler->app_dest + flash_header_offset;
-
-	flash_header->boot_data.start = imx_handler->app_dest;
-	flash_header->boot_data.size = ALIGN(imx_pre_image_size +
-			data->len, 4096);
-
-	if (imx_handler->dcdsize) {
-		flash_header->dcd.header.tag = DCD_HEADER_TAG;
-		flash_header->dcd.header.length = cpu_to_be16(sizeof(struct imx_dcd) +
-				imx_handler->dcdsize);
-		flash_header->dcd.header.version = DCD_VERSION;
-	}
-
-	/* Add dcd data */
-	memcpy((void *)flash_header + sizeof(*flash_header), imx_handler->dcd, imx_handler->dcdsize);
-}
-
 #define IVT_BARKER		0x402000d1
 
 /*
@@ -391,82 +314,41 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	int imx_pre_image_size;
 	int ret, image_len;
 	void *buf;
+	uint32_t *barker;
 
 	ret = imx_bbu_check_prereq(data);
 	if (ret)
 		return ret;
 
-	if (imx_handler->dcd) {
-		imx_pre_image_size = 0x2000;
-	} else {
-		uint32_t *barker = data->image + imx_handler->flash_header_offset;
+	barker = data->image + imx_handler->flash_header_offset;
 
-		if (*barker != IVT_BARKER) {
-			printf("Board does not provide DCD data and this image is no imximage\n");
-			return -EINVAL;
-		}
-
-		imx_pre_image_size = 0;
+	if (*barker != IVT_BARKER) {
+		printf("Board does not provide DCD data and this image is no imximage\n");
+		return -EINVAL;
 	}
 
-	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND)
-		/* NAND needs additional space for the DBBT */
-		imx_pre_image_size += 0x6000;
-
-	if (imx_pre_image_size)
-		imx_pre_image = xzalloc(imx_pre_image_size);
-
-	if (imx_handler->dcd)
-		imx_bbu_internal_v2_init_flash_header(handler, data, imx_pre_image, imx_pre_image_size);
-
-	/* Create a buffer containing header and image data */
-	image_len = data->len + imx_pre_image_size;
-	buf = xzalloc(image_len);
-	if (imx_pre_image_size)
-		memcpy(buf, imx_pre_image, imx_pre_image_size);
-	memcpy(buf + imx_pre_image_size, data->image, data->len);
+	imx_pre_image_size = 0;
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND) {
+		/* NAND needs additional space for the DBBT */
+		imx_pre_image_size += 0x6000;
+		imx_pre_image = xzalloc(imx_pre_image_size);
+
+		/* Create a buffer containing header and image data */
+		image_len = data->len + imx_pre_image_size;
+		buf = xzalloc(image_len);
+		memcpy(buf, imx_pre_image, imx_pre_image_size);
+		memcpy(buf + imx_pre_image_size, data->image, data->len);
+
 		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data, buf,
 				image_len);
-		goto out_free_buf;
+		free(buf);
+		free(imx_pre_image);
+	} else {
+		ret = imx_bbu_write_device(imx_handler, data, data->image, data->len);
 	}
 
-	ret = imx_bbu_write_device(imx_handler, data, buf, image_len);
-
-out_free_buf:
-	free(buf);
-
-	free(imx_pre_image);
 	return ret;
-}
-
-/*
- * On the i.MX53 the dcd data can contain several commands. Each of them must
- * have its length encoded into it. We can't express that during compile time,
- * so use this function if you are using multiple dcd commands and wish to
- * concatenate them together to a single dcd table with the correct sizes for
- * each command.
- */
-void *imx53_bbu_internal_concat_dcd_table(struct dcd_table *table, int num_entries)
-{
-	int i;
-	unsigned int dcdsize = 0, pos = 0;
-	void *dcdptr;
-
-	for (i = 0; i < num_entries; i++)
-		dcdsize += table[i].size;
-
-	dcdptr = xmalloc(dcdsize);
-
-	for (i = 0; i < num_entries; i++) {
-		u32 *current = dcdptr + pos;
-		memcpy(current, table[i].data, table[i].size);
-		*current |= cpu_to_be32(table[i].size << 8);
-		pos += table[i].size;
-	}
-
-	return dcdptr;
 }
 
 static struct imx_internal_bbu_handler *__init_handler(const char *name, char *devicefile,
@@ -499,20 +381,12 @@ static int __register_handler(struct imx_internal_bbu_handler *imx_handler)
  * Register a i.MX51 internal boot update handler for MMC/SD
  */
 int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
-	imx_handler->dcd = dcd;
-	imx_handler->dcdsize = dcdsize;
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	if (app_dest)
-		imx_handler->app_dest = app_dest;
-	else
-		imx_handler->app_dest = 0x90000000;
 
 	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
 	imx_handler->handler.handler = imx_bbu_internal_v1_update;
@@ -520,65 +394,16 @@ int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 	return __register_handler(imx_handler);
 }
 
-#define DCD_WR_CMD(len)		cpu_to_be32(0xcc << 24 | (((len) & 0xffff) << 8) | 0x04)
-
-static int imx53_bbu_internal_init_dcd(struct imx_internal_bbu_handler *imx_handler,
-		void *dcd, int dcdsize)
-{
-	uint32_t *dcd32 = dcd;
-
-	/*
-	 * For boards which do not have a dcd (i.e. they do their SDRAM
-	 * setup in C code)
-	 */
-	if (!dcd || !dcdsize)
-		return 0;
-
-	/*
-	 * The DCD data we have compiled in does not have a DCD_WR_CMD at
-	 * the beginning. Instead it is contained in struct imx_flash_header_v2.
-	 * This is necessary to generate the DCD size at compile time. If
-	 * we are passed such a DCD data here, prepend a DCD_WR_CMD.
-	 */
-	if ((*dcd32 & 0xff0000ff) != DCD_WR_CMD(0)) {
-		__be32 *buf;
-
-		debug("%s: dcd does not have a DCD_WR_CMD. Prepending one\n", __func__);
-
-		buf = xmalloc(dcdsize + sizeof(__be32));
-
-		*buf = DCD_WR_CMD(dcdsize + sizeof(__be32));
-		memcpy(&buf[1], dcd, dcdsize);
-
-		imx_handler->dcd = buf;
-		imx_handler->dcdsize = dcdsize + sizeof(__be32);
-	} else {
-		debug("%s: dcd already has a DCD_WR_CMD. Using original dcd data\n", __func__);
-
-		imx_handler->dcd = dcd;
-		imx_handler->dcdsize = dcdsize;
-	}
-
-	return 0;
-}
-
 /*
  * Register a i.MX53 internal boot update handler for MMC/SD
  */
 int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
-	imx53_bbu_internal_init_dcd(imx_handler, dcd, dcdsize);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	if (app_dest)
-		imx_handler->app_dest = app_dest;
-	else
-		imx_handler->app_dest = 0x70000000;
 
 	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
@@ -592,19 +417,12 @@ int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
  * keep a partition table. We have to erase the device beforehand though.
  */
 int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
-	imx53_bbu_internal_init_dcd(imx_handler, dcd, dcdsize);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	if (app_dest)
-		imx_handler->app_dest = app_dest;
-	else
-		imx_handler->app_dest = 0x70000000;
 
 	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
@@ -616,19 +434,12 @@ int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefi
  * Register a i.MX53 internal boot update handler for NAND
  */
 int imx53_bbu_internal_nand_register_handler(const char *name,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		int partition_size, unsigned long app_dest)
+		unsigned long flags, int partition_size)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, NULL, flags);
-	imx53_bbu_internal_init_dcd(imx_handler, dcd, dcdsize);
 	imx_handler->flash_header_offset = 0x400;
-
-	if (app_dest)
-		imx_handler->app_dest = app_dest;
-	else
-		imx_handler->app_dest = 0x70000000;
 
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
 	imx_handler->flags = IMX_INTERNAL_FLAG_NAND;
@@ -642,14 +453,17 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
  * Register a i.MX6 internal boot update handler for MMC/SD
  */
 int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
-	if (!app_dest)
-		app_dest = 0x10000000;
+	struct imx_internal_bbu_handler *imx_handler;
 
-	return imx53_bbu_internal_mmc_register_handler(name, devicefile,
-		flags, dcd, dcdsize, app_dest);
+	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+
+	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
+	imx_handler->handler.handler = imx_bbu_internal_v2_update;
+
+	return __register_handler(imx_handler);
 }
 
 /*
@@ -658,12 +472,15 @@ int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
  * keep a partition table. We have to erase the device beforehand though.
  */
 int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
-	if (!app_dest)
-		app_dest = 0x10000000;
+	struct imx_internal_bbu_handler *imx_handler;
 
-	return imx53_bbu_internal_spi_i2c_register_handler(name, devicefile,
-		flags, dcd, dcdsize, app_dest);
+	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+
+	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
+	imx_handler->handler.handler = imx_bbu_internal_v2_update;
+
+	return __register_handler(imx_handler);
 }

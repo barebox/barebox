@@ -13,6 +13,8 @@
 
 #define MX51_IROM_BASE_ADDR	0x0
 
+#define MX51_IPU_BASE_ADDR	0x40000000
+
 /*
  * AIPS 1
  */

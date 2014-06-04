@@ -10,71 +10,59 @@ struct imx_dcd_v2_entry;
 #ifdef CONFIG_BAREBOX_UPDATE
 
 int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_entry *, int dcdsize,
-		unsigned long app_dest);
+		unsigned long flags);
 
 int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *, int dcdsize,
-		unsigned long app_dest);
+		unsigned long flags);
 
 int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest);
+		unsigned long flags);
 
 int imx53_bbu_internal_nand_register_handler(const char *name,
-		unsigned long flags, struct imx_dcd_v2_entry *, int dcdsize,
-		int partition_size, unsigned long app_dest);
+		unsigned long flags, int partition_size);
 
 int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *, int dcdsize,
-		unsigned long app_dest);
+		unsigned long flags);
 
 int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest);
+		unsigned long flags);
 
 int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
 
 #else
 
 static inline int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	return -ENOSYS;
 }
 
 static inline int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	return -ENOSYS;
 }
 
 static inline int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	return -ENOSYS;
 }
 
 static inline int imx53_bbu_internal_nand_register_handler(const char *name,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		int partition_size, unsigned long app_dest)
+		unsigned long flags, int partition_size)
 {
 	return -ENOSYS;
 }
 
 static inline int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	return -ENOSYS;
 }
 
 static inline int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags, struct imx_dcd_v2_entry *dcd, int dcdsize,
-		unsigned long app_dest)
+		unsigned long flags)
 {
 	return -ENOSYS;
 }
@@ -95,12 +83,5 @@ static inline int imx_bbu_external_nand_register_handler(const char *name, char 
 	return -ENOSYS;
 }
 #endif
-
-struct dcd_table {
-	void *data;
-	unsigned int size;
-};
-
-void *imx53_bbu_internal_concat_dcd_table(struct dcd_table *table, int num_entries);
 
 #endif

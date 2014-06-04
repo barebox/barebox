@@ -60,6 +60,21 @@ int mc13xxx_revision(struct mc13xxx *mc13xxx)
 }
 EXPORT_SYMBOL(mc13xxx_revision);
 
+static void(*mc13xxx_init_callback)(struct mc13xxx *mc13xxx);
+
+int mc13xxx_register_init_callback(void(*callback)(struct mc13xxx *mc13xxx))
+{
+	if (mc13xxx_init_callback)
+		return -EBUSY;
+
+	mc13xxx_init_callback = callback;
+
+	if (mc_dev)
+		mc13xxx_init_callback(mc_dev);
+
+	return 0;
+}
+
 #ifdef CONFIG_SPI
 static int spi_rw(struct spi_device *spi, void * buf, size_t len)
 {
@@ -350,6 +365,9 @@ static int __init mc13xxx_probe(struct device_d *dev)
 	mc_dev->revision = rev;
 	devfs_create(&mc_dev->cdev);
 
+	if (mc13xxx_init_callback)
+		mc13xxx_init_callback(mc_dev);
+
 	return 0;
 }
 
@@ -379,7 +397,6 @@ static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
 	{ }
 };
 
-#ifdef CONFIG_I2C
 static struct driver_d mc13xxx_i2c_driver = {
 	.name		= "mc13xxx-i2c",
 	.probe		= mc13xxx_probe,
@@ -387,19 +404,30 @@ static struct driver_d mc13xxx_i2c_driver = {
 	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
 
-static int __init mc13xxx_i2c_init(void)
-{
-	return i2c_driver_register(&mc13xxx_i2c_driver);
-}
-device_initcall(mc13xxx_i2c_init);
-#endif
-
-#ifdef CONFIG_SPI
 static struct driver_d mc13xxx_spi_driver = {
 	.name		= "mc13xxx-spi",
 	.probe		= mc13xxx_probe,
 	.id_table	= mc13xxx_ids,
 	.of_compatible	= DRV_OF_COMPAT(mc13xxx_dt_ids),
 };
-device_spi_driver(mc13xxx_spi_driver);
-#endif
+
+static int __init mc13xxx_init(void)
+{
+	int err_spi = 0, err_i2c = 0;
+
+	if (IS_ENABLED(CONFIG_I2C))
+		err_spi = i2c_driver_register(&mc13xxx_i2c_driver);
+
+	if (IS_ENABLED(CONFIG_SPI))
+		err_i2c = spi_driver_register(&mc13xxx_spi_driver);
+
+	if (err_spi)
+		return err_spi;
+
+	if (err_i2c)
+		return err_i2c;
+
+	return 0;
+
+}
+coredevice_initcall(mc13xxx_init);

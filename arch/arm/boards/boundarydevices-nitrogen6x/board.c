@@ -27,7 +27,7 @@ static int nitrogen6x_devices_init(void)
 		return 0;
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
-			BBU_HANDLER_FLAG_DEFAULT, NULL, 0, 0);
+			BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

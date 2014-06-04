@@ -11,4 +11,5 @@
  */
 
 #include <arm/imx53-qsb.dts>
+#include "imx53.dtsi"
 #include "imx53-qsb-common.dtsi"

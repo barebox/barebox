@@ -14,6 +14,8 @@
  *
  */
 
+#define pr_fmt(fmt) "babbage: " fmt
+
 #include <common.h>
 #include <init.h>
 #include <environment.h>
@@ -44,16 +46,9 @@
 
 #define MX51_CCM_CACRR 0x10
 
-static void babbage_power_init(void)
+static void babbage_power_init(struct mc13xxx *mc13xxx)
 {
-	struct mc13xxx *mc13xxx;
 	u32 val;
-
-	mc13xxx = mc13xxx_get();
-	if (!mc13xxx) {
-		printf("could not get PMIC\n");
-		return;
-	}
 
 	/* Write needed to Power Gate 2 register */
 	mc13xxx_reg_read(mc13xxx, MC13892_REG_POWER_MISC, &val);
@@ -149,28 +144,26 @@ static void babbage_power_init(void)
 	mc13xxx_reg_write(mc13xxx, MC13892_REG_MODE_1, val);
 
 	udelay(200);
-}
 
-extern char flash_header_imx51_babbage_start[];
-extern char flash_header_imx51_babbage_end[];
-
-static int imx51_babbage_late_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx51-babbage"))
-		return 0;
-
-	babbage_power_init();
+	pr_info("initialized PMIC\n");
 
 	console_flush();
 	imx51_init_lowlevel(800);
 	clock_notifier_call_chain();
+}
+
+static int imx51_babbage_init(void)
+{
+	if (!of_machine_is_compatible("fsl,imx51-babbage"))
+		return 0;
+
+	mc13xxx_register_init_callback(babbage_power_init);
 
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);
 
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0",
-		BBU_HANDLER_FLAG_DEFAULT, (void *)flash_header_imx51_babbage_start,
-		flash_header_imx51_babbage_end - flash_header_imx51_babbage_start, 0);
+		BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }
-late_initcall(imx51_babbage_late_init);
+coredevice_initcall(imx51_babbage_init);

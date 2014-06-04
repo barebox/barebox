@@ -48,3 +48,7 @@ config CLOCKSOURCE_NOMADIK
 config CLOCKSOURCE_ORION
 	bool
 	depends on ARCH_MVEBU
+
+config CLOCKSOURCE_UEMD
+	bool
+	depends on ARCH_UEMD

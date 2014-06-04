@@ -1,0 +1,16 @@
+if ARCH_UEMD
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x40800000
+
+choice
+	prompt "UEMD Board type"
+
+config MACH_MB7707
+	bool "MB7707"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+
+endchoice
+
+endif

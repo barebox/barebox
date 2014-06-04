@@ -80,13 +80,17 @@ is allowed.
 */
 
 BAREBOX_CMD_HELP_START(led)
-BAREBOX_CMD_HELP_USAGE("led <led> <value>\n")
-BAREBOX_CMD_HELP_SHORT("control the value of a LED. a value of 0 means disabled\n")
-BAREBOX_CMD_HELP_SHORT("without arguments the available LEDs are listed\n")
+BAREBOX_CMD_HELP_TEXT("Control the value of a LED. The exact meaning of VALUE is unspecified,")
+BAREBOX_CMD_HELP_TEXT("it can be a brightness, or a color. Most often a value of '1' means on")
+BAREBOX_CMD_HELP_TEXT("and '0' means off.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Without arguments the available LEDs are listed.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(led)
 	.cmd		= do_led,
-	.usage		= "led <led> <value>",
+	BAREBOX_CMD_DESC("control LEDs")
+	BAREBOX_CMD_OPTS("LED VALUE")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_led_help)
 BAREBOX_CMD_END

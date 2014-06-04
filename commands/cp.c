@@ -89,8 +89,10 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(cp)
-BAREBOX_CMD_HELP_USAGE("cp [-v] <source> <destination>\n")
-BAREBOX_CMD_HELP_SHORT("copy file from <source> to <destination>.\n")
+BAREBOX_CMD_HELP_TEXT("Copy file from SRC to DEST.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-v", "verbose")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -104,7 +106,9 @@ If you want to copy between memory blocks, use 'memcpy'.
 
 BAREBOX_CMD_START(cp)
 	.cmd		= do_cp,
-	.usage		= "copy files",
+	BAREBOX_CMD_DESC("copy files")
+	BAREBOX_CMD_OPTS("[-v] SRC DEST")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cp_help)
 BAREBOX_CMD_END
 

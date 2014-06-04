@@ -77,18 +77,19 @@ static int do_usbserial(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(usbserial)
-BAREBOX_CMD_HELP_USAGE("usbserial [OPTIONS] <description>\n")
-BAREBOX_CMD_HELP_SHORT("Enable/disable a serial gadget on the USB device interface.\n")
-BAREBOX_CMD_HELP_OPT  ("-m <str>",  "Manufacturer string (barebox)\n")
-BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string\n")
-BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
-BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
-BAREBOX_CMD_HELP_OPT  ("-a",   "CDC ACM (default)\n")
+BAREBOX_CMD_HELP_TEXT("Enable / disable a serial gadget on the USB device interface.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-m STR",  "Manufacturer string (barebox)")
+BAREBOX_CMD_HELP_OPT ("-p STR",  "product string")
+BAREBOX_CMD_HELP_OPT ("-V ID",   "vendor id")
+BAREBOX_CMD_HELP_OPT ("-P ID",   "product id")
+BAREBOX_CMD_HELP_OPT ("-a",   "CDC ACM (default)")
 #ifdef HAVE_OBEX
-BAREBOX_CMD_HELP_OPT  ("-o",   "CDC OBEX\n")
+BAREBOX_CMD_HELP_OPT ("-o",   "CDC OBEX")
 #endif
-BAREBOX_CMD_HELP_OPT  ("-s",   "Generic Serial\n")
-BAREBOX_CMD_HELP_OPT  ("-d",   "Disable the serial gadget\n")
+BAREBOX_CMD_HELP_OPT ("-s",   "Generic Serial")
+BAREBOX_CMD_HELP_OPT ("-d",   "Disable the serial gadget")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -97,6 +98,12 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(usbserial)
 	.cmd		= do_usbserial,
-	.usage		= "Serial gadget enable/disable",
+	BAREBOX_CMD_DESC("serial gadget enable/disable")
+	BAREBOX_CMD_OPTS("[-mpVPa"
+#ifdef HAVE_OBEX
+					  "o"
+#endif
+					  "sd] <description>")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usbserial_help)
 BAREBOX_CMD_END

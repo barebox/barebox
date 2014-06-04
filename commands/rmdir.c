@@ -21,12 +21,15 @@ static int do_rmdir(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_rmdir_help[] =
-"Usage: rmdir [directories]\n"
-"Remove directories. The directories have to be empty.\n";
+
+BAREBOX_CMD_HELP_START(rmdir)
+BAREBOX_CMD_HELP_TEXT("Remove directories. The directories have to be empty.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(rmdir)
 	.cmd		= do_rmdir,
-	.usage		= "remove directorie(s)",
+	BAREBOX_CMD_DESC("remove empty directory(s)")
+	BAREBOX_CMD_OPTS("DIRECTORY...")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_rmdir_help)
 BAREBOX_CMD_END

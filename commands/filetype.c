@@ -83,15 +83,18 @@ static int do_filetype(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(filetype)
-BAREBOX_CMD_HELP_USAGE("filetype [OPTIONS] <file>\n")
-BAREBOX_CMD_HELP_SHORT("detect type of a file and export result to a variable\n")
-BAREBOX_CMD_HELP_OPT("-v", "verbose\n")
-BAREBOX_CMD_HELP_OPT("-s <v>", "set <v> to shortname\n")
-BAREBOX_CMD_HELP_OPT("-l", "list known filetypes\n")
+BAREBOX_CMD_HELP_TEXT("Detect type of a file and export result to a variable.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-v", "verbose")
+BAREBOX_CMD_HELP_OPT("-s VAR", "set variable VAR to shortname")
+BAREBOX_CMD_HELP_OPT("-l", "list known filetypes")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(filetype)
 	.cmd		= do_filetype,
-	.usage		= "detect file type",
+	BAREBOX_CMD_DESC("detect file type")
+	BAREBOX_CMD_OPTS("[-vsl] FILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_filetype_help)
 BAREBOX_CMD_END

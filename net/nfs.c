@@ -725,13 +725,10 @@ err_udp:
 	return nfs_err == 0 ? 0 : 1;
 }
 
-static const __maybe_unused char cmd_nfs_help[] =
-"Usage: nfs <file> [localfile]\n"
-"Load a file via network using nfs protocol.\n";
-
 BAREBOX_CMD_START(nfs)
 	.cmd		= do_nfs,
-	.usage		= "boot image via network using nfs protocol",
-	BAREBOX_CMD_HELP(cmd_nfs_help)
+	BAREBOX_CMD_DESC("boot image over NFS")
+	BAREBOX_CMD_OPTS("FILE [LOCALFILE]")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 BAREBOX_CMD_END
 

@@ -117,5 +117,7 @@ out:
 
 BAREBOX_CMD_START(ping)
 	.cmd		= do_ping,
-	.usage		= "ping <destination>",
+	BAREBOX_CMD_DESC("send ICMP echo requests")
+	BAREBOX_CMD_OPTS("DESTINATION")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 BAREBOX_CMD_END

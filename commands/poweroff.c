@@ -33,5 +33,6 @@ static int cmd_poweroff(int argc, char *argv[])
 
 BAREBOX_CMD_START(poweroff)
 	.cmd		= cmd_poweroff,
-	.usage		= "Perform POWER OFF of the board",
+	BAREBOX_CMD_DESC("turn the power off")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END

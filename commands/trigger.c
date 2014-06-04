@@ -90,15 +90,18 @@ static int do_trigger(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(trigger)
-BAREBOX_CMD_HELP_USAGE("trigger [OPTIONS]\n")
-BAREBOX_CMD_HELP_SHORT("control a LED trigger. Without options the currently assigned triggers are shown.\n")
-BAREBOX_CMD_HELP_OPT  ("-t <trigger> <led>",  "set a trigger for a led\n")
-BAREBOX_CMD_HELP_OPT  ("-d <trigger>",  "disable a trigger\n")
+BAREBOX_CMD_HELP_TEXT("Control a LED trigger. Without options assigned triggers are shown.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-t",  "set a trigger (needs LED argument)")
+BAREBOX_CMD_HELP_OPT ("-d",  "disable a trigger")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(trigger)
 	.cmd		= do_trigger,
-	.usage		= "handle LED triggers",
+	BAREBOX_CMD_DESC("handle LED triggers")
+	BAREBOX_CMD_OPTS("[-td] TRIGGER [LED]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_trigger_help)
 BAREBOX_CMD_END
 

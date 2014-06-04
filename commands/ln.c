@@ -39,13 +39,9 @@ static int do_ln(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(ln)
-BAREBOX_CMD_HELP_USAGE("ln SRC DEST\n")
-BAREBOX_CMD_HELP_SHORT("symlink - make a new name for a file\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(ln)
 	.cmd		= do_ln,
-	.usage		= "symlink - make a new name for a file",
-	BAREBOX_CMD_HELP(cmd_ln_help)
+	BAREBOX_CMD_DESC("create symlink (make a new name for a file)")
+	BAREBOX_CMD_OPTS("SRC DEST")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 BAREBOX_CMD_END

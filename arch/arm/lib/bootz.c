@@ -127,13 +127,10 @@ err_out:
 	return 1;
 }
 
-static const __maybe_unused char cmd_bootz_help[] =
-"Usage: bootz [FILE]\n"
-"Boot a Linux zImage\n";
-
 BAREBOX_CMD_START(bootz)
 	.cmd            = do_bootz,
-	.usage          = "start a zImage",
-	BAREBOX_CMD_HELP(cmd_bootz_help)
+	BAREBOX_CMD_DESC("boot Linux zImage")
+	BAREBOX_CMD_OPTS("FILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 BAREBOX_CMD_END
 

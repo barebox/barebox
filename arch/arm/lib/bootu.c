@@ -36,7 +36,9 @@ static const __maybe_unused char cmd_bootu_help[] =
 
 BAREBOX_CMD_START(bootu)
 	.cmd            = do_bootu,
-	.usage          = "start a raw linux image",
+	BAREBOX_CMD_DESC("boot into already loaded Linux kernel")
+	BAREBOX_CMD_OPTS("ADDRESS")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_bootu_help)
 BAREBOX_CMD_END
 

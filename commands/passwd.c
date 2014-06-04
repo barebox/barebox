@@ -83,15 +83,17 @@ disable:
 	return ret;
 }
 
-static const __maybe_unused char cmd_passwd_help[] =
-"Usage: passwd\n"
-"passwd allow you to specify a password in the env\n"
-"to disable it put an empty password will still use the default password if set\n"
-;
+BAREBOX_CMD_HELP_START(passwd)
+BAREBOX_CMD_HELP_TEXT("'Interactively asks for a password. The digest of this password will be")
+BAREBOX_CMD_HELP_TEXT("stored in " PASSWD_DIR "/passwd. This is then used by the 'login' command.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Entering an empty string will disable the password function.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(passwd)
 	.cmd		= do_passwd,
-	.usage		= "passwd",
+	BAREBOX_CMD_DESC("set password")
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_passwd_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

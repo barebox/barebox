@@ -124,7 +124,7 @@ coredevice_initcall(arm_request_stack);
 static void thumb2_execute(void *func, int argc, char *argv[])
 {
 	/*
-	 * Switch back to arm mode before executing external
+	 * Switch back to ARM mode before executing external
 	 * programs.
 	 */
 	__asm__ __volatile__ (

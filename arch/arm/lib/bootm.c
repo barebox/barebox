@@ -135,7 +135,7 @@ static int do_bootm_linux(struct image_data *data)
 		load_address = mem_start + PAGE_ALIGN(
 		               uimage_get_size(data->os, data->os_num) * 4);
 		if (bootm_verbose(data))
-			printf("no os load address, defaulting to 0x%08lx\n",
+			printf("no OS load address, defaulting to 0x%08lx\n",
 				load_address);
 	}
 
@@ -215,7 +215,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 	}
 
 	if (IS_BUILTIN(CONFIG_OFTREE)) {
-		data->of_root_node = of_unflatten_dtb(NULL, oftree);
+		data->of_root_node = of_unflatten_dtb(oftree);
 		if (!data->of_root_node) {
 			pr_err("unable to unflatten devicetree\n");
 			ret = -EINVAL;
@@ -294,7 +294,7 @@ static int do_bootz_linux(struct image_data *data)
 
 		load_address = data->os_address;
 		if (bootm_verbose(data))
-			printf("no os load address, defaulting to 0x%08lx\n",
+			printf("no OS load address, defaulting to 0x%08lx\n",
 				load_address);
 	}
 

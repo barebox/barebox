@@ -32,15 +32,11 @@ static int do_gpio_get_value(int argc, char *argv[])
 	return value;
 }
 
-BAREBOX_CMD_HELP_START(gpio_get_value)
-BAREBOX_CMD_HELP_USAGE("gpio_get_value <gpio>\n")
-BAREBOX_CMD_HELP_SHORT("get the value of an gpio input pin\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(gpio_get_value)
 	.cmd		= do_gpio_get_value,
-	.usage		= "return value of a gpio pin",
-	BAREBOX_CMD_HELP(cmd_gpio_get_value_help)
+	BAREBOX_CMD_DESC("return value of a GPIO pin")
+	BAREBOX_CMD_OPTS("GPIO")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
 static int do_gpio_set_value(int argc, char *argv[])
@@ -58,15 +54,11 @@ static int do_gpio_set_value(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(gpio_set_value)
-BAREBOX_CMD_HELP_USAGE("gpio_set_value <gpio> <value>\n")
-BAREBOX_CMD_HELP_SHORT("set the value of an gpio output pin\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(gpio_set_value)
 	.cmd		= do_gpio_set_value,
-	.usage		= "set a gpio's output value",
-	BAREBOX_CMD_HELP(cmd_gpio_set_value_help)
+	BAREBOX_CMD_DESC("set a GPIO's output value")
+	BAREBOX_CMD_OPTS("GPIO VALUE")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
 static int do_gpio_direction_input(int argc, char *argv[])
@@ -85,15 +77,11 @@ static int do_gpio_direction_input(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(gpio_direction_input)
-BAREBOX_CMD_HELP_USAGE("gpio_direction_input <gpio>\n")
-BAREBOX_CMD_HELP_SHORT("set direction of a gpio pin to input\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(gpio_direction_input)
 	.cmd		= do_gpio_direction_input,
-	.usage		= "set direction of a gpio pin to input",
-	BAREBOX_CMD_HELP(cmd_gpio_direction_input_help)
+	BAREBOX_CMD_DESC("set direction of a GPIO pin to input")
+	BAREBOX_CMD_OPTS("GPIO")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
 static int do_gpio_direction_output(int argc, char *argv[])
@@ -113,15 +101,11 @@ static int do_gpio_direction_output(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(gpio_direction_output)
-BAREBOX_CMD_HELP_USAGE("gpio_direction_output <gpio> <value>\n")
-BAREBOX_CMD_HELP_SHORT("set direction of a gpio pin to output\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(gpio_direction_output)
 	.cmd		= do_gpio_direction_output,
-	.usage		= "set direction of a gpio pin to output",
-	BAREBOX_CMD_HELP(cmd_gpio_direction_output_help)
+	BAREBOX_CMD_DESC("set direction of a GPIO pin to output")
+	BAREBOX_CMD_OPTS("GPIO")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
 /**

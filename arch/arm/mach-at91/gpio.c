@@ -509,13 +509,19 @@ static int do_at91mux(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(at91mux)
-BAREBOX_CMD_HELP_USAGE("at91mux [-p <pin> -b <bank>]\n")
-BAREBOX_CMD_HELP_SHORT("dump current mux configuration if bank/pin specified dump pin details\n");
+BAREBOX_CMD_HELP_TEXT("Dump current MIX configuration. If a BANK or PIN has been")
+BAREBOX_CMD_HELP_TEXT("specified dump pin details.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-p PIN", "pin number")
+BAREBOX_CMD_HELP_OPT ("-b BANK", "bank number")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(at91mux)
 	.cmd		= do_at91mux,
-	.usage		= "dump current mux configuration",
+	BAREBOX_CMD_DESC("list MUX configuration")
+	BAREBOX_CMD_OPTS("[-pn]")
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_at91mux_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

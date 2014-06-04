@@ -78,15 +78,20 @@ static int do_login(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_login_help[] =
-"Usage: login [-t timeout [<command>]]\n"
-"If a timeout is specified and expired the command will be executed;\n"
-"\"boot\" by default\n"
-;
+BAREBOX_CMD_HELP_START(login)
+BAREBOX_CMD_HELP_TEXT("Asks for a password from the console before script execution continues.")
+BAREBOX_CMD_HELP_TEXT("The password can be set with the 'passwd' command. Instead of specifying")
+BAREBOX_CMD_HELP_TEXT("a TIMEOUT the magic variable 'global.login.timeout' could be set.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-t TIMEOUT", "Execute COMMAND if no login withing TIMEOUT seconds")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(login)
 	.cmd		= do_login,
-	.usage		= "login",
+	BAREBOX_CMD_DESC("ask for a password")
+	BAREBOX_CMD_OPTS("[-t TIMEOUT] COMMAND")
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_login_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

@@ -89,28 +89,28 @@ out:
 	return ret ? 1 : 0;
 }
 
-static const __maybe_unused char cmd_md_help[] =
-"Usage md [OPTIONS] <region>\n"
-"display (hexdump) a memory region.\n"
-"options:\n"
-"  -s <file>   display file (default /dev/mem)\n"
-"  -b          output in bytes\n"
-"  -w          output in halfwords (16bit)\n"
-"  -l          output in words (32bit)\n"
-"  -x          swap bytes at output\n"
-"\n"
-"Memory regions:\n"
-"Memory regions can be specified in two different forms: start+size\n"
-"or start-end, If <start> is omitted it defaults to 0. If end is omitted it\n"
-"defaults to the end of the device, except for interactive commands like md\n"
-"and mw for which it defaults to 0x100.\n"
-"Sizes can be specified as decimal, or if prefixed with 0x as hexadecimal.\n"
-"an optional suffix of k, M or G is for kibibytes, Megabytes or Gigabytes,\n"
-"respectively\n";
+
+BAREBOX_CMD_HELP_START(md)
+BAREBOX_CMD_HELP_TEXT("Display (hex dump) a memory region.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
+BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
+BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-s FILE",  "display file (default /dev/mem)")
+BAREBOX_CMD_HELP_OPT ("-x",       "swap bytes at output")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Memory regions can be specified in two different forms: START+SIZE")
+BAREBOX_CMD_HELP_TEXT("or START-END, If START is omitted it defaults to 0x100")
+BAREBOX_CMD_HELP_TEXT("Sizes can be specified as decimal, or if prefixed with 0x as hexadecimal.")
+BAREBOX_CMD_HELP_TEXT("An optional suffix of k, M or G is for kbytes, Megabytes or Gigabytes.")
+BAREBOX_CMD_HELP_END
 
 
 BAREBOX_CMD_START(md)
 	.cmd		= do_mem_md,
-	.usage		= "memory display",
+	BAREBOX_CMD_DESC("memory display")
+	BAREBOX_CMD_OPTS("[-bwlsx] REGION")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_md_help)
 BAREBOX_CMD_END

@@ -47,7 +47,7 @@ static int of_arm_init(void)
 		return 0;
 	}
 
-	root = of_unflatten_dtb(NULL, fdt);
+	root = of_unflatten_dtb(fdt);
 	if (root) {
 		of_set_root_node(root);
 		if (IS_ENABLED(CONFIG_OFDEVICE))

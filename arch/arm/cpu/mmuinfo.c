@@ -99,13 +99,9 @@ static int do_mmuinfo(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(mmuinfo)
-BAREBOX_CMD_HELP_USAGE("mmuinfo <address>\n")
-BAREBOX_CMD_HELP_SHORT("Show MMU/cache information for an address.\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(mmuinfo)
 	.cmd            = do_mmuinfo,
-	.usage		= "mmuinfo <address>",
-	BAREBOX_CMD_HELP(cmd_mmuinfo_help)
+	BAREBOX_CMD_DESC("show MMU/cache information of an address")
+	BAREBOX_CMD_OPTS("ADDRESS")
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 BAREBOX_CMD_END

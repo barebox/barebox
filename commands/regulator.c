@@ -29,5 +29,6 @@ static int do_regulator(int argc, char *argv[])
 
 BAREBOX_CMD_START(regulator)
 	.cmd		= do_regulator,
-	.usage		= "list regulators",
+	BAREBOX_CMD_DESC("list regulators")
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 BAREBOX_CMD_END

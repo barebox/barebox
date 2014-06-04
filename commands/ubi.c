@@ -44,14 +44,17 @@ static int do_ubimkvol(int argc, char *argv[])
 	return ret ? 1 : 0;
 }
 
-static const __maybe_unused char cmd_ubimkvol_help[] =
-"Usage: ubimkvol <ubidev> <name> <size>\n"
-"Create an ubi volume on <ubidev> with name <name> and size <size>\n"
-"If size is zero all available space is used for the volume\n";
+
+BAREBOX_CMD_HELP_START(ubimkvol)
+BAREBOX_CMD_HELP_TEXT("Create an UBI volume on UBIDEV with NAME and SIZE.")
+BAREBOX_CMD_HELP_TEXT("If SIZE is 0 all available space is used for the volume.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ubimkvol)
 	.cmd		= do_ubimkvol,
-	.usage		= "create an ubi volume",
+	BAREBOX_CMD_DESC("create an UBI volume")
+	BAREBOX_CMD_OPTS("UBIDEV NAME SIZE")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubimkvol_help)
 BAREBOX_CMD_END
 
@@ -99,13 +102,16 @@ err:
 	return ret ? 1 : 0;
 }
 
-static const __maybe_unused char cmd_ubiattach_help[] =
-"Usage: ubiattach [-O vid-hdr-offset] <mtddev>\n"
-"Attach <mtddev> to ubi\n";
+BAREBOX_CMD_HELP_START(ubiattach)
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-O OFFS",  "VID header offset")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ubiattach)
 	.cmd		= do_ubiattach,
-	.usage		= "attach a mtd dev to ubi",
+	BAREBOX_CMD_DESC("attach mtd device to UBI")
+	BAREBOX_CMD_OPTS("[-O] MTDDEV")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubiattach_help)
 BAREBOX_CMD_END
 
@@ -125,14 +131,11 @@ static int do_ubidetach(int argc, char *argv[])
 	return ret;
 }
 
-static const __maybe_unused char cmd_ubidetach_help[] =
-"Usage: ubidetach <ubinum>\n"
-"Detach <ubinum> from ubi\n";
-
 BAREBOX_CMD_START(ubidetach)
 	.cmd		= do_ubidetach,
-	.usage		= "detach an ubi dev",
-	BAREBOX_CMD_HELP(cmd_ubidetach_help)
+	BAREBOX_CMD_DESC("detach an UBI device")
+	BAREBOX_CMD_OPTS("UBINUM")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 BAREBOX_CMD_END
 
 static int do_ubirmvol(int argc, char *argv[])
@@ -160,13 +163,15 @@ static int do_ubirmvol(int argc, char *argv[])
 	return ret ? 1 : 0;
 }
 
-static const __maybe_unused char cmd_ubirmvol_help[] =
-"Usage: ubirmvol <ubidev> <name>\n"
-"Delete ubi volume <name> from <ubidev>\n";
+BAREBOX_CMD_HELP_START(ubirmvol)
+BAREBOX_CMD_HELP_TEXT("Delete UBI volume NAME from UBIDEV")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ubirmvol)
 	.cmd		= do_ubirmvol,
-	.usage		= "delete an ubi volume",
+	BAREBOX_CMD_DESC("delete an UBI volume")
+	BAREBOX_CMD_OPTS("UBIDEV NAME")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubirmvol_help)
 BAREBOX_CMD_END
 

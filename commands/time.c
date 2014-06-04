@@ -45,13 +45,14 @@ static int do_time(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(time)
-BAREBOX_CMD_HELP_USAGE("time <command>\n")
-BAREBOX_CMD_HELP_SHORT("note: This command depends on <command> being interruptible,\n")
-BAREBOX_CMD_HELP_SHORT("Otherwise the timer may overrun resulting in incorrect results\n")
+BAREBOX_CMD_HELP_TEXT("Note: This command depends on COMMAND being interruptible,")
+BAREBOX_CMD_HELP_TEXT("otherwise the timer may overrun resulting in incorrect results")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(time)
 	.cmd		= do_time,
-	.usage		= "measure execution time of a command",
+	BAREBOX_CMD_DESC("measure execution duration of a command")
+	BAREBOX_CMD_OPTS("COMMAND")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_time_help)
 BAREBOX_CMD_END

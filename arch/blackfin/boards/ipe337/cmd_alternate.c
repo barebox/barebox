@@ -44,13 +44,9 @@ static int do_alternate(int argc, char *argv[])
 	return (bitcount & 1) ? 3 : 2;
 }
 
-static const __maybe_unused char cmd_alternate_help[] =
-"Usage: alternate <file>"
-"\n";
-
 BAREBOX_CMD_START(alternate)
 	.cmd		= do_alternate,
-	.usage		= "count zero bits in a file",
-	BAREBOX_CMD_HELP(cmd_alternate_help)
+	BAREBOX_CMD_DESC("count zero bits in a file")
+	BAREBOX_CMD_OPTS("FILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 BAREBOX_CMD_END
-

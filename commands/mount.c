@@ -116,17 +116,18 @@ static int do_mount(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(mount)
-BAREBOX_CMD_HELP_USAGE("mount [[OPTIONS] <device> [mountpoint]]\n")
-BAREBOX_CMD_HELP_OPT("-t <type>", "specify filesystem type\n")
-BAREBOX_CMD_HELP_OPT("-a", "Mount all blockdevices.\n")
-BAREBOX_CMD_HELP_OPT("-v", "be more verbose\n")
-BAREBOX_CMD_HELP_SHORT("Mount a filesystem of a given type to a mountpoint.\n")
-BAREBOX_CMD_HELP_SHORT("If no fstype is specified, try to detect it automatically.\n")
-BAREBOX_CMD_HELP_SHORT("If no argument is given, list mounted filesystems.\n")
-BAREBOX_CMD_HELP_SHORT("With -a the mount command mounts all block devices whose filesystem\n")
-BAREBOX_CMD_HELP_SHORT("can be detected automatically to /mnt/<partname>\n")
-BAREBOX_CMD_HELP_SHORT("If mountpoint is not given a standard mountpoint of /mnt/devname>\n")
-BAREBOX_CMD_HELP_SHORT("is used. This directoy is created automatically if necessary.\n")
+BAREBOX_CMD_HELP_TEXT("If no argument is given, list mounted filesystems.")
+BAREBOX_CMD_HELP_TEXT("If no FSTYPE is specified, try to detect it automatically.")
+BAREBOX_CMD_HELP_TEXT("With -a the mount command mounts all block devices whose filesystem")
+BAREBOX_CMD_HELP_TEXT("can be detected automatically to /mnt/PARTNAME")
+BAREBOX_CMD_HELP_TEXT("If mountpoint is not given, a standard mountpoint of /mnt/DEVICE")
+BAREBOX_CMD_HELP_TEXT("is used. This directoy is created automatically if necessary.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-a\t", "mount all blockdevices")
+BAREBOX_CMD_HELP_OPT("-t FSTYPE", "specify filesystem type")
+BAREBOX_CMD_HELP_OPT("-o OPTIONS", "set file system OPTIONS")
+BAREBOX_CMD_HELP_OPT("-v\t", "verbose")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -162,6 +163,8 @@ the filesystem has been unmounted.
 
 BAREBOX_CMD_START(mount)
 	.cmd		= do_mount,
-	.usage		= "Mount a filesystem of a given type to a mountpoint or list mounted filesystems.",
+	BAREBOX_CMD_DESC("mount a filesystem or list mounted filesystems")
+	BAREBOX_CMD_OPTS("[[-atov] [DEVICE] [MOUNTPOINT]]")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_mount_help)
 BAREBOX_CMD_END

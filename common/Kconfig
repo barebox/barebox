@@ -21,9 +21,6 @@ config HAS_KALLSYMS
 config HAS_MODULES
 	bool
 
-config CMD_MEMORY
-	bool
-
 config ENV_HANDLING
 	select CRC32
 	bool
@@ -297,11 +294,6 @@ config SIMPLE_READLINE
 	default y
 	depends on !CMDLINE_EDITING
 
-config LONGHELP
-	bool
-	depends on !SHELL_NONE
-	prompt "Enable long help texts"
-
 config CBSIZE
 	int
 	prompt "Buffer size for input from the Console"
@@ -371,13 +363,6 @@ config HUSH_FANCY_PROMPT
 	help
 	  Allow to set PS1 from the command line. PS1 can have several escaped commands
 	  like \h for the 'model' string or \w for the current working directory.
-
-config HUSH_GETOPT
-	bool
-	depends on SHELL_HUSH
-	prompt "enable builtin getopt"
-	help
-	  This enables a getopt function builtin to hush.
 
 config CMDLINE_EDITING
 	depends on !SHELL_NONE
@@ -589,7 +574,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	bool
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
-	select HUSH_GETOPT
+	select CMD_GETOPT
 	select GLOB
 	select GLOB_SORT
 	select CMD_GLOBAL
@@ -619,7 +604,7 @@ config DEFAULT_ENVIRONMENT_GENERIC
 	depends on !HAVE_DEFAULT_ENVIRONMENT_NEW
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
-	select HUSH_GETOPT
+	select CMD_GETOPT
 	select CMD_CRC
 	select CMD_CRC_CMP
 	select CMD_AUTOMOUNT if HAVE_DEFAULT_ENVIRONMENT_NEW

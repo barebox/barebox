@@ -36,8 +36,8 @@ static int do_setenv(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(setenv)
-BAREBOX_CMD_HELP_USAGE("setenv <name> [<value>]\n")
-BAREBOX_CMD_HELP_SHORT("Set environment variable to a value or delete if value is avoided.\n")
+BAREBOX_CMD_HELP_TEXT("Set environment variable NAME to VALUE.")
+BAREBOX_CMD_HELP_TEXT("If VALUE is ommitted, then the variable is deleted.")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -46,12 +46,12 @@ BAREBOX_CMD_HELP_END
 <p> This command is only available if the simple command line parser is
 in use. Within the hush shell, \c setenv is not required.</p>
 
-\todo Check if kconfig does this correctly.
-
  */
 
 BAREBOX_CMD_START(setenv)
 	.cmd		= do_setenv,
-	.usage		= "set environment variables",
+	BAREBOX_CMD_DESC("set environment variable")
+	BAREBOX_CMD_OPTS("NAME [VALUE]")
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_setenv_help)
 BAREBOX_CMD_END

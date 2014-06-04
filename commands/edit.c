@@ -547,8 +547,7 @@ out:
 static const char *edit_aliases[] = { "sedit", NULL};
 
 BAREBOX_CMD_HELP_START(edit)
-BAREBOX_CMD_HELP_USAGE("(s)edit <file>\n")
-BAREBOX_CMD_HELP_SHORT("A small editor. <ctrl-c> is exit, <ctrl-d> exit-with-save.\n")
+BAREBOX_CMD_HELP_TEXT("Use cursor keys, Ctrl-C to exit and Ctrl-D to exit-with-save.")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -564,7 +563,9 @@ If called as sedit, the editor uses ansi codes to scroll the screen.
 BAREBOX_CMD_START(edit)
 	.cmd		= do_edit,
 	.aliases	= edit_aliases,
-	.usage		= "Usage: (s)edit <file>",
+	BAREBOX_CMD_DESC("a small full-screen editor")
+	BAREBOX_CMD_OPTS("FILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_edit_help)
 BAREBOX_CMD_END
 

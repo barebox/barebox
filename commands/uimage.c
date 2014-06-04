@@ -60,7 +60,7 @@ static int do_uimage(int argc, char *argv[])
 	}
 
 	if (verify) {
-		printf("verifying data crc... ");
+		printf("verifying data CRC... ");
 		ret = uimage_verify(handle);
 		if (ret)
 			goto err;
@@ -91,15 +91,17 @@ err:
 }
 
 BAREBOX_CMD_HELP_START(uimage)
-BAREBOX_CMD_HELP_USAGE("uimage [OPTIONS] <file>\n")
-BAREBOX_CMD_HELP_OPT  ("-i",  "show information about image\n")
-BAREBOX_CMD_HELP_OPT  ("-v",  "verify image\n")
-BAREBOX_CMD_HELP_OPT  ("-e <outfile>",  "extract image to <outfile>\n")
-BAREBOX_CMD_HELP_OPT  ("-n <no>",  "use image number <no> in multifile images\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-i\t",  "show information about image")
+BAREBOX_CMD_HELP_OPT ("-v\t",  "verify image")
+BAREBOX_CMD_HELP_OPT ("-e OUTFILE",  "extract image to OUTFILE")
+BAREBOX_CMD_HELP_OPT ("-n NO\t",  "use image number NO in multifile image")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(uimage)
 	.cmd		= do_uimage,
-	.usage		= "extract/verify uImage",
+	BAREBOX_CMD_DESC("extract/verify uImage")
+	BAREBOX_CMD_OPTS("[-vien] FILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_uimage_help)
 BAREBOX_CMD_END

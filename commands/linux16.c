@@ -318,9 +318,16 @@ on_error:
 }
 
 BAREBOX_CMD_HELP_START(linux16)
-BAREBOX_CMD_HELP_USAGE("linux16 <file> [-v <mode>]\n")
-BAREBOX_CMD_HELP_SHORT("Boot a kernel <file> on x86 via real mode code.\n")
-BAREBOX_CMD_HELP_OPT  ("-v <mode>",   "VESA video mode number or 'ask'\n")
+BAREBOX_CMD_HELP_TEXT("Load kernel from FILE and boot on x86 in real-mode.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Only kernel images in bzImage format are supported by now.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("For the video mode refer the Linux kernel documentation")
+BAREBOX_CMD_HELP_TEXT("'Documentation/fb/vesafb.txt' for correct VESA mode numbers. Use 'ask'")
+BAREBOX_CMD_HELP_TEXT("instead of a number to make Linux for options..")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-v VESAMODE",   "set VESAMODE")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -337,7 +344,9 @@ x86_boot_preparation for more info about how to use this command.</p>
 
 BAREBOX_CMD_START(linux16)
 	.cmd		= do_linux16,
-	.usage		= "boot a linux kernel",
+	BAREBOX_CMD_DESC("boot a linux kernel on x86 via real-mode code")
+	BAREBOX_CMD_OPTS("[-v VESAMODE] FILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_linux16_help)
 BAREBOX_CMD_END
 

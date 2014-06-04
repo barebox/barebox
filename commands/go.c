@@ -78,15 +78,18 @@ out:
 	return rcode;
 }
 
-static const __maybe_unused char cmd_go_help[] =
-"Usage: go addr [arg ...]\n"
-"Start application at address 'addr' passing 'arg' as arguments.\n"
-"If addr does not start with a digit it is interpreted as a filename\n"
-"in which case the file is memmapped and executed\n";
+BAREBOX_CMD_HELP_START(go)
+BAREBOX_CMD_HELP_TEXT("Start application at ADDR passing ARG as arguments.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("If addr does not start with a digit it is interpreted as a filename")
+BAREBOX_CMD_HELP_TEXT("in which case the file is memmapped and executed")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(go)
 	.cmd		= do_go,
-	.usage		= "start application at address or file",
+	BAREBOX_CMD_DESC("start application at address or file")
+	BAREBOX_CMD_OPTS("ADDR [ARG...]")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_go_help)
 	BAREBOX_CMD_COMPLETE(command_var_complete)
 BAREBOX_CMD_END

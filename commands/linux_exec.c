@@ -45,13 +45,9 @@ static int do_linux_exec(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(linux_exec)
-BAREBOX_CMD_HELP_USAGE("linux_exec ...\n")
-BAREBOX_CMD_HELP_SHORT("Execute a command on the host\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(linux_exec)
 	.cmd		= do_linux_exec,
-	.usage		= "Execute a command on the host",
-	BAREBOX_CMD_HELP(cmd_linux_exec_help)
+	BAREBOX_CMD_DESC("execute a command on the host")
+	BAREBOX_CMD_OPTS("COMMAND")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 BAREBOX_CMD_END

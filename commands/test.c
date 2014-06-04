@@ -226,16 +226,17 @@ out:
 
 static const char *test_aliases[] = { "[", NULL};
 
-static const __maybe_unused char cmd_test_help[] =
-"Usage: test [OPTIONS]\n"
-"options: !, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e, -f, -L\n"
-"see 'man test' on your PC for more information.\n";
-
-static const __maybe_unused char cmd_test_usage[] = "minimal test like /bin/sh";
+BAREBOX_CMD_HELP_START(test)
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_TEXT("\t!, =, !=, -eq, -ne, -ge, -gt, -le, -lt, -o, -a, -z, -n, -d, -e,")
+BAREBOX_CMD_HELP_TEXT("\t-f, -L; see 'man test' on your PC for more information.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(test)
 	.aliases	= test_aliases,
 	.cmd		= do_test,
-	.usage		= cmd_test_usage,
+	BAREBOX_CMD_DESC("minimal test command like in /bin/sh")
+	BAREBOX_CMD_OPTS("[EXPR]")
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_test_help)
 BAREBOX_CMD_END

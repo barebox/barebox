@@ -18,15 +18,11 @@ static int do_clk_enable(int argc, char *argv[])
 	return clk_enable(clk);
 }
 
-BAREBOX_CMD_HELP_START(clk_enable)
-BAREBOX_CMD_HELP_USAGE("clk_enable <clk>\n")
-BAREBOX_CMD_HELP_SHORT("enable <clk>\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(clk_enable)
 	.cmd		= do_clk_enable,
-	.usage		= "enable a clock",
-	BAREBOX_CMD_HELP(cmd_clk_enable_help)
+	BAREBOX_CMD_DESC("enable a clock")
+	BAREBOX_CMD_OPTS("CLK")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
 static int do_clk_disable(int argc, char *argv[])
@@ -45,15 +41,11 @@ static int do_clk_disable(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(clk_disable)
-BAREBOX_CMD_HELP_USAGE("clk_disable <clk>\n")
-BAREBOX_CMD_HELP_SHORT("disable <clk>\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(clk_disable)
 	.cmd		= do_clk_disable,
-	.usage		= "disable a clock",
-	BAREBOX_CMD_HELP(cmd_clk_disable_help)
+	BAREBOX_CMD_DESC("disable a clock")
+	BAREBOX_CMD_OPTS("CLK")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 
 static int do_clk_set_rate(int argc, char *argv[])
@@ -74,13 +66,14 @@ static int do_clk_set_rate(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(clk_set_rate)
-BAREBOX_CMD_HELP_USAGE("clk_set_rate <clk> <rate_hz>\n")
-BAREBOX_CMD_HELP_SHORT("Set clock <clk> to <rate>\n")
+BAREBOX_CMD_HELP_TEXT("Set clock CLK to RATE")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(clk_set_rate)
 	.cmd		= do_clk_set_rate,
-	.usage		= "set a clocks rate",
+	BAREBOX_CMD_DESC("set a clocks rate")
+	BAREBOX_CMD_OPTS("CLK HZ")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_set_rate_help)
 BAREBOX_CMD_END
 
@@ -105,13 +98,15 @@ static int do_clk_dump(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(clk_dump)
-BAREBOX_CMD_HELP_USAGE("clk_dump [-v]\n")
-BAREBOX_CMD_HELP_OPT  ("-v",  "verbose\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-v",  "verbose")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(clk_dump)
 	.cmd		= do_clk_dump,
-	.usage		= "show information about registered clocks",
+	BAREBOX_CMD_DESC("show information about registered clocks")
+	BAREBOX_CMD_OPTS("[-v]")
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_clk_dump_help)
 BAREBOX_CMD_END
 
@@ -132,13 +127,9 @@ static int do_clk_set_parent(int argc, char *argv[])
 	return clk_set_parent(clk, parent);
 }
 
-BAREBOX_CMD_HELP_START(clk_set_parent)
-BAREBOX_CMD_HELP_USAGE("clk_set_parent <clk> <parent>\n")
-BAREBOX_CMD_HELP_SHORT("Set parent of <clk> to <parent>\n")
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(clk_set_parent)
 	.cmd		= do_clk_set_parent,
-	.usage		= "set a parent of a clock",
-	BAREBOX_CMD_HELP(cmd_clk_set_parent_help)
+	BAREBOX_CMD_DESC("set parent of a clock")
+	BAREBOX_CMD_OPTS("CLK PARENT")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END

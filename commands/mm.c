@@ -103,15 +103,21 @@ out_write:
 	return 1;
 }
 
-static const __maybe_unused char cmd_mm_help[] =
-"Usage: mm [OPTIONS] <adr> <val> <mask>\n"
-"set/clear bits specified with <mask> in <adr> to <value>\n"
-"options:\n"
-"  -b, -w, -l	use byte, halfword, or word accesses\n"
-"  -d <file>	write file (default /dev/mem)\n";
+BAREBOX_CMD_HELP_START(mm)
+BAREBOX_CMD_HELP_TEXT("Set/clear bits specified with MASK in ADDR to VALUE")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
+BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
+BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
+BAREBOX_CMD_HELP_END
+
 
 BAREBOX_CMD_START(mm)
 	.cmd		= do_mem_mm,
-	.usage		= "memory modify write with mask",
+	BAREBOX_CMD_DESC("memory modify with mask")
+	BAREBOX_CMD_OPTS("[-bwld] ADDR VAL MASK")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_mm_help)
 BAREBOX_CMD_END

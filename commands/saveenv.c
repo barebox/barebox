@@ -48,13 +48,20 @@ static int do_saveenv(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(saveenv)
-BAREBOX_CMD_HELP_USAGE("saveenv [envfs] [directory]\n")
-BAREBOX_CMD_HELP_SHORT("Save the files in <directory> to the persistent storage device <envfs>.\n")
+BAREBOX_CMD_HELP_TEXT("Save the files in DIRECTORY to the persistent storage device ENVFS.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("ENVFS is usually a block in flash but can be any other file. If")
+BAREBOX_CMD_HELP_TEXT("omitted, DIRECTORY defaults to /env and ENVFS defaults to")
+BAREBOX_CMD_HELP_TEXT("/dev/env0. Note that envfs can only handle files, directories are being")
+BAREBOX_CMD_HELP_TEXT("skipped silently.")
+
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(saveenv)
 	.cmd		= do_saveenv,
-	.usage		= "save environment to persistent storage",
+	BAREBOX_CMD_DESC("save environment to persistent storage")
+	BAREBOX_CMD_OPTS("[ENVFS] [DIRECTORY]")
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_saveenv_help)
 BAREBOX_CMD_END
 

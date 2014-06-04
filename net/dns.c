@@ -241,6 +241,7 @@ IPaddr_t resolv(char *host)
 	return dns_ip;
 }
 
+#ifdef CONFIG_CMD_HOST
 static int do_host(int argc, char *argv[])
 {
 	IPaddr_t ip;
@@ -260,12 +261,10 @@ static int do_host(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_host_help[] =
-"Usage: host <hostname>\n";
-
 BAREBOX_CMD_START(host)
 	.cmd		= do_host,
-	.usage		= "resolve a hostname",
-	BAREBOX_CMD_HELP(cmd_host_help)
+	BAREBOX_CMD_DESC("resolve a hostname")
+	BAREBOX_CMD_OPTS("HOSTNAME")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 BAREBOX_CMD_END
-
+#endif

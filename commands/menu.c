@@ -407,70 +407,67 @@ end:
 }
 
 static const __maybe_unused char cmd_menu_help[] =
-"Usage: menu [OPTION]... \n"
-"Manage Menu\n"
+"Manage Menu:\n"
 "  -m  menu\n"
 "  -l  list\n"
 "  -s  show\n"
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
-"Advanced\n"
+"Advanced menu management:\n"
 "  -e  menu entry\n"
 "  -a  add\n"
 "  -r  remove\n"
 "  -S  select\n"
 #endif
 "\n"
-"How to\n"
-"\n"
-"Show menu\n"
+"Show menu:\n"
 "  (-A auto select delay)\n"
 "  (-d auto select description)\n"
-"  menu -s -m <menu> [-A delay] [-d auto_display]\n"
+"  menu -s -m MENU [-A delay] [-d auto_display]\n"
 "\n"
-"List menu\n"
+"List menu:\n"
 "  menu -l\n"
 "\n"
 #if defined(CONFIG_CMD_MENU_MANAGEMENT)
-"Add a menu\n"
-"  menu -a -m <name> -d <description>\n"
+"Add a menu:\n"
+"  menu -a -m NAME -d DESC\n"
 "\n"
-"Remove a menu\n"
-"  menu -r -m <name>\n"
+"Remove a menu:\n"
+"  menu -r -m NAME\n"
 "\n"
-"Add an entry\n"
+"Add an entry:\n"
 "  (-R for do no exit the menu after executing the command)\n"
 "  (-b for box style 1 for selected)\n"
 "  (and optional -c for the command to run when we change the state)\n"
-"  menu -e -a -m <menu> -c <command> [-R] [-b 0|1] -d <description>\n"
+"  menu -e -a -m MENU -c COMMAND [-R] [-b 0|1] -d DESC\n"
 
-"Add a submenu entry\n"
+"Add a submenu entry:\n"
 "  (-R is not needed)\n"
 "  (-b for box style 1 for selected)\n"
 "  (and -c is not needed)\n"
-"  menu -e -a -m <menu> -u submenu -d [-b 0|1] <description>\n"
+"  menu -e -a -m MENU -u submenu -d [-b 0|1] DESC\n"
 "\n"
-"Remove an entry\n"
-"  menu -e -r -m <name> -n <num>\n"
+"Remove an entry:\n"
+"  menu -e -r -m NAME -n ENTRY\n"
 "\n"
-"Select an entry\n"
-"  menu -m <menu> -S -n <entry num starting at 1>\n"
+"Select an entry:\n"
+"  menu -m <menu> -S -n ENTRY\n"
 "\n"
-"List menu\n"
+"List menu:\n"
 "  menu -e -l [menu]\n"
 "\n"
-"Menu example\n"
-"menu -a -m boot -d \"Boot Menu\"\n"
-"menu -e -a -m boot -c boot -d \"Boot\"\n"
-"menu -e -a -m boot -c reset -d \"Reset\"\n"
-"menu -s -m boot\n"
+"Menu examples:\n"
+"  menu -a -m boot -d \"Boot Menu\"\n"
+"  menu -e -a -m boot -c boot -d \"Boot\"\n"
+"  menu -e -a -m boot -c reset -d \"Reset\"\n"
 #else
-"Menu example\n"
-"menu -s -m boot\n"
+"Menu example:\n"
 #endif
+"  menu -s -m boot\n"
 ;
 
 BAREBOX_CMD_START(menu)
 	.cmd		= do_menu,
-	.usage		= "Menu Management",
+	BAREBOX_CMD_DESC("create and display menus")
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_menu_help)
 BAREBOX_CMD_END

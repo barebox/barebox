@@ -114,19 +114,22 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_spi_help[] =
-"Usage: spi [OPTION] [data to write 0xXX]\n"
-"write/read spi device.\n"
-"  -b <bus_num>  spi bus number (default = 0)\n"
-"  -r <count>    to read\n"
-"  -c <cs>       chip select (default = 0)\n"
-"  -m <mode>     spi mode (default = 0)\n"
-"  -f <hz>       max_speed_hz (default = 1MHz)\n"
-"  -w <bit>      bits_per_word (default = 8)\n"
-"  -v            verbose\n";
+
+BAREBOX_CMD_HELP_START(spi)
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b BUS\t",  "SPI bus number (default 0)")
+BAREBOX_CMD_HELP_OPT ("-r COUNT",  "bytes to read")
+BAREBOX_CMD_HELP_OPT ("-c\t",      "chip select (default 0)")
+BAREBOX_CMD_HELP_OPT ("-m MODE\t", "SPI mode (default 0)")
+BAREBOX_CMD_HELP_OPT ("-f HZ\t",   "max speed frequency, in Hz (default 1 MHz)")
+BAREBOX_CMD_HELP_OPT ("-w BIT\t",  "bits per word (default 8)")
+BAREBOX_CMD_HELP_OPT ("-v\t",      "verbose")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(spi)
 	.cmd		= do_spi,
-	.usage		= "write/read spi device",
+	BAREBOX_CMD_DESC("write/read from SPI device")
+	BAREBOX_CMD_OPTS("[-brcmfwv] DATA...")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_spi_help)
 BAREBOX_CMD_END

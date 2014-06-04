@@ -305,8 +305,6 @@ static int do_gpiolib(int argc, char *argv[])
 {
 	int i;
 
-	printf("gpiolib: gpio lists\n");
-
 	for (i = 0; i < ARCH_NR_GPIOS; i++) {
 		struct gpio_info *gi = &gpio_desc[i];
 		int val = -1, dir = -1;
@@ -316,7 +314,7 @@ static int do_gpiolib(int argc, char *argv[])
 
 		/* print chip information and header on first gpio */
 		if (gi->chip->base == i) {
-			printf("\ngpios %u-%u, chip %s:\n",
+			printf("\nGPIOs %u-%u, chip %s:\n",
 				gi->chip->base,
 				gi->chip->base + gi->chip->ngpio - 1,
 				gi->chip->dev->name);
@@ -330,7 +328,7 @@ static int do_gpiolib(int argc, char *argv[])
 			val = gi->chip->ops->get(gi->chip,
 						i - gi->chip->base);
 
-		printf("  gpio %*d: %*s %*s %*s  %s\n", 4, i,
+		printf("  GPIO %*d: %*s %*s %*s  %s\n", 4, i,
 			3, (dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
 			3, (val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
 			9, gi->requested ? "true" : "false",
@@ -340,15 +338,10 @@ static int do_gpiolib(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(gpiolib)
-BAREBOX_CMD_HELP_USAGE("gpiolib\n")
-BAREBOX_CMD_HELP_SHORT("dump current registered gpio\n");
-BAREBOX_CMD_HELP_END
-
-BAREBOX_CMD_START(gpiolib)
+BAREBOX_CMD_START(gpioinfo)
 	.cmd		= do_gpiolib,
-	.usage		= "dump current registered gpio",
-	BAREBOX_CMD_HELP(cmd_gpiolib_help)
+	BAREBOX_CMD_DESC("list registered GPIOs")
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 #endif

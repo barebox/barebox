@@ -41,13 +41,16 @@ static int do_readline(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_readline_help[] =
-"Usage: readline <prompt> VAR\n"
-"readline reads a line of user input into variable VAR.\n";
+BAREBOX_CMD_HELP_START(readline)
+BAREBOX_CMD_HELP_TEXT("First it displays the PROMPT, then it reads a line of user input into")
+BAREBOX_CMD_HELP_TEXT("variable VAR.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(readline)
 	.cmd		= do_readline,
-	.usage		= "prompt for user input",
+	BAREBOX_CMD_DESC("prompt for user input")
+	BAREBOX_CMD_OPTS("PROMPT VAR")
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_readline_help)
 BAREBOX_CMD_END
 

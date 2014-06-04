@@ -270,13 +270,15 @@ static int write_record(char *buf)
 }
 #endif /* CONFIG_CMD_SAVES */
 
-static const __maybe_unused char cmd_loads_help[] =
-	"[ off ]\n"
-	"    - load S-Record file over serial line with offset 'off'\n";
+BAREBOX_CMD_HELP_START(loads)
+BAREBOX_CMD_HELP_TEXT("Load S-Record file over serial line with offset OFFS.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loads)
 	.cmd		= do_load_serial,
-	.usage		= "load S-Record file over serial line",
+	BAREBOX_CMD_DESC("load binary file over serial line (S-Records)")
+	BAREBOX_CMD_OPTS("OFFS")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_loads_help)
 BAREBOX_CMD_END
 
@@ -285,14 +287,15 @@ BAREBOX_CMD_END
  */
 
 #ifdef CONFIG_CMD_SAVES
-static const __maybe_unused char cmd_saves_help[] =
-	"[ off ] [size]\n"
-	"    - save S-Record file over serial line with offset 'off' "
-	"and size 'size'\n";
+BAREBOX_CMD_HELP_START(saves)
+BAREBOX_CMD_HELP_TEXT("Save S-Record file to serial line with offset OFFS and length LEN.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(saves)
 	.cmd		= do_save_serial,
-	.usage		= "save S-Record file over serial line",
+	BAREBOX_CMD_DESC("save file over serial line (S-Records)")
+	BAREBOX_CMD_OPTS("OFFS LEN")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_saves_help)
 BAREBOX_CMD_END
 #endif	/* CONFIG_CMD_SAVES */

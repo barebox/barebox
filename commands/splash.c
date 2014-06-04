@@ -78,13 +78,15 @@ static int do_splash(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(splash)
-BAREBOX_CMD_HELP_USAGE("splash [OPTIONS] FILE\n")
-BAREBOX_CMD_HELP_SHORT("Show the bitmap FILE on the framebuffer.\n")
-BAREBOX_CMD_HELP_OPT  ("-f <fb>",   "framebuffer device (/dev/fb0)\n")
-BAREBOX_CMD_HELP_OPT  ("-x <xofs>", "x offset (default center)\n")
-BAREBOX_CMD_HELP_OPT  ("-y <yofs>", "y offset (default center)\n")
-BAREBOX_CMD_HELP_OPT  ("-b <color>", "background color in 0xttrrggbb\n")
-BAREBOX_CMD_HELP_OPT  ("-o",        "render offscreen\n")
+BAREBOX_CMD_HELP_TEXT("This command displays a graphics in the bitmap (.bmp) format on the")
+BAREBOX_CMD_HELP_TEXT("framebuffer. Currently images with 8 and 24 bit color depth are supported.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-f FB\t",    "framebuffer device (default /dev/fb0)")
+BAREBOX_CMD_HELP_OPT ("-x XOFFS", "x offset (default center)")
+BAREBOX_CMD_HELP_OPT ("-y YOFFS", "y offset (default center)")
+BAREBOX_CMD_HELP_OPT ("-b COLOR", "background color in 0xttrrggbb")
+BAREBOX_CMD_HELP_OPT ("-o\t",       "render offscreen")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -100,6 +102,8 @@ color depth.
 
 BAREBOX_CMD_START(splash)
 	.cmd		= do_splash,
-	.usage		= "show a bmp image",
+	BAREBOX_CMD_DESC("display a BMP image")
+	BAREBOX_CMD_OPTS("[-fxyno] FILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_splash_help)
 BAREBOX_CMD_END

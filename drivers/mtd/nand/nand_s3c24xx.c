@@ -638,13 +638,11 @@ static int do_nand_boot_test(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_nand_boot_test_help[] =
-"Usage: nand_boot_test <dest> <size>\n";
-
 BAREBOX_CMD_START(nand_boot_test)
 	.cmd		= do_nand_boot_test,
-	.usage		= "load an image from NAND",
-	BAREBOX_CMD_HELP(cmd_nand_boot_test_help)
+	BAREBOX_CMD_DESC("load an image from NAND")
+	BAREBOX_CMD_OPTS("DEST SIZE")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 BAREBOX_CMD_END
 #endif
 

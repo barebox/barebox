@@ -204,13 +204,18 @@ static int do_ls(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(ls)
-BAREBOX_CMD_HELP_USAGE("ls [OPTIONS] [FILES]\n")
-BAREBOX_CMD_HELP_SHORT("List information about the FILEs (the current directory by default).\n")
-BAREBOX_CMD_HELP_OPT  ("-R",  "list subdirectories recursively\n")
+BAREBOX_CMD_HELP_TEXT("List information about the specified files or directories.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-l",  "long format")
+BAREBOX_CMD_HELP_OPT ("-C",  "column format (opposite of long format)")
+BAREBOX_CMD_HELP_OPT ("-R",  "list subdirectories recursively")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ls)
 	.cmd		= do_ls,
-	.usage		= "list a file or directory",
+	BAREBOX_CMD_DESC("list a file or directory")
+	BAREBOX_CMD_OPTS("[-lCR] [FILEDIR...]")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_ls_help)
 BAREBOX_CMD_END

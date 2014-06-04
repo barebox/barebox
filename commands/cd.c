@@ -45,13 +45,13 @@ static int do_cd(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(cd)
-BAREBOX_CMD_HELP_USAGE("cd [directory]\n")
-BAREBOX_CMD_HELP_SHORT("Change to directory.\n")
-BAREBOX_CMD_HELP_TEXT ("If called without an argument, change to the root directory /.\n")
+BAREBOX_CMD_HELP_TEXT("If called without an argument, change to the root directory '/'.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cd)
 	.cmd		= do_cd,
-	.usage		= "change working directory",
+	BAREBOX_CMD_DESC("change working directory")
+	BAREBOX_CMD_OPTS("DIRECTORY")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cd_help)
 BAREBOX_CMD_END

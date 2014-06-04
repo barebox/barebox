@@ -32,11 +32,9 @@ static int do_insmod(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_insmod_help[] =
-"Usage: insmod <module>\n"; 
-
 BAREBOX_CMD_START(insmod)
 	.cmd		= do_insmod,
-	.usage		= "insert a module",
-	BAREBOX_CMD_HELP(cmd_insmod_help)
+	BAREBOX_CMD_DESC("load a barebox module")
+	BAREBOX_CMD_OPTS("[MODULE]")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 BAREBOX_CMD_END

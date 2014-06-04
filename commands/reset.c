@@ -46,14 +46,15 @@ static int cmd_reset(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(reset)
-BAREBOX_CMD_HELP_USAGE("reset [-f]\n")
-BAREBOX_CMD_HELP_SHORT("Perform RESET of the CPU.\n")
-BAREBOX_CMD_HELP_OPT("-f",  "force RESET, don't call shutdown\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-f",  "force RESET, don't call shutdown")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(reset)
 	.cmd		= cmd_reset,
-	.usage		= "Perform RESET of the CPU",
+	BAREBOX_CMD_DESC("perform RESET of the CPU")
+	BAREBOX_CMD_OPTS("[-f]")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_reset_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

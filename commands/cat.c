@@ -82,14 +82,13 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(cat)
-BAREBOX_CMD_HELP_USAGE("cat [FILES]\n")
-BAREBOX_CMD_HELP_SHORT("Concatenate files on stdout.\n")
-BAREBOX_CMD_HELP_TEXT ("Currently only printable characters and \\ n and \\ t are printed,\n")
-BAREBOX_CMD_HELP_TEXT ("but this should be optional.\n")
+BAREBOX_CMD_HELP_TEXT("Currently only printable characters and NL, TAB are printed.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(cat)
 	.cmd		= do_cat,
-	.usage		= "concatenate file(s)",
+	BAREBOX_CMD_DESC("concatenate file(s) to stdout")
+	BAREBOX_CMD_OPTS("FILE...")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cat_help)
 BAREBOX_CMD_END

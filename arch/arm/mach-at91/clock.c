@@ -881,15 +881,10 @@ static int do_at91clk(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(at91clk)
-BAREBOX_CMD_HELP_USAGE("at91clk\n")
-BAREBOX_CMD_HELP_SHORT("dump current clock configuration\n");
-BAREBOX_CMD_HELP_END
-
 BAREBOX_CMD_START(at91clk)
 	.cmd		= do_at91clk,
-	.usage		= "dump current clock configuration",
-	BAREBOX_CMD_HELP(cmd_at91clk_help)
+	BAREBOX_CMD_DESC("list clock configuration")
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 #endif

@@ -41,14 +41,17 @@ static int do_usb(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(usb)
-BAREBOX_CMD_HELP_USAGE("usb [-f]\n")
-BAREBOX_CMD_HELP_SHORT("Scan for USB devices.\n")
-BAREBOX_CMD_HELP_OPT("-f", "force. Rescan although scanned already\n")
+BAREBOX_CMD_HELP_TEXT("Scan for USB devices.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-f", "force rescan")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(usb)
 	.cmd		= do_usb,
-	.usage		= "(re-)detect USB devices",
+	BAREBOX_CMD_DESC("(re-)detect USB devices")
+	BAREBOX_CMD_OPTS("[-f]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usb_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

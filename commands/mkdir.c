@@ -59,12 +59,17 @@ static int do_mkdir(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_mkdir_help[] =
-"Usage: mkdir [directories]\n"
-"Create new directories\n";
+BAREBOX_CMD_HELP_START(mkdir)
+BAREBOX_CMD_HELP_TEXT("Create new directories")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-p", "make parent directories as needed")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mkdir)
 	.cmd		= do_mkdir,
-	.usage		= "make directories",
+	BAREBOX_CMD_DESC("make directories")
+	BAREBOX_CMD_OPTS("[DIRECTORY ...]")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_mkdir_help)
 BAREBOX_CMD_END

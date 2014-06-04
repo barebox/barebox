@@ -29,6 +29,7 @@ static int do_pwd(int argc, char *argv[])
 
 BAREBOX_CMD_START(pwd)
 	.cmd		= do_pwd,
-	.usage		= "print working directory",
+	BAREBOX_CMD_DESC("print working directory")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

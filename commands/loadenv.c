@@ -103,11 +103,13 @@ static int do_loadenv(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(loadenv)
-BAREBOX_CMD_HELP_USAGE("loadenv OPTIONS [ENVFS] [DIRECTORY]\n")
-BAREBOX_CMD_HELP_OPT("-n", "do not overwrite existing files\n")
-BAREBOX_CMD_HELP_OPT("-s", "scrub old environment\n")
-BAREBOX_CMD_HELP_OPT("-d", "load default environment\n")
-BAREBOX_CMD_HELP_SHORT("Load environment from ENVFS into DIRECTORY (default: /dev/env0 -> /env).\n")
+BAREBOX_CMD_HELP_TEXT("Load environment from files in ENVFS (default /dev/env0) in")
+BAREBOX_CMD_HELP_TEXT("DIRECTORY (default /env")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-n", "do not overwrite existing files")
+BAREBOX_CMD_HELP_OPT("-s", "scrub old environment")
+BAREBOX_CMD_HELP_OPT("-d", "load default environment")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -121,6 +123,8 @@ ENVFS can only handle files, directories are skipped silently.
 
 BAREBOX_CMD_START(loadenv)
 	.cmd		= do_loadenv,
-	.usage		= "Load environment from ENVFS into DIRECTORY (default: /dev/env0 -> /env).",
+	BAREBOX_CMD_DESC("load environment from ENVFS")
+	BAREBOX_CMD_OPTS("{-nsd] [ENVFS] [DIRECTORY]")
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_loadenv_help)
 BAREBOX_CMD_END

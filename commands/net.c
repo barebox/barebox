@@ -57,13 +57,11 @@ static int do_ethact(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_ethact_help[] =
-"Usage: ethact [ethx]\n";
-
 BAREBOX_CMD_START(ethact)
 	.cmd		= do_ethact,
-	.usage		= "set current ethernet device",
-	BAREBOX_CMD_HELP(cmd_ethact_help)
+	BAREBOX_CMD_DESC("get or set current ethernet device")
+	BAREBOX_CMD_OPTS("[ETHX]")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_COMPLETE(eth_complete)
 BAREBOX_CMD_END
 

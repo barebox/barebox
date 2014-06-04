@@ -90,15 +90,20 @@ static int do_mem_mw(int argc, char *argv[])
 	return ret ? 1 : 0;
 }
 
-static const __maybe_unused char cmd_mw_help[] =
-"Usage: mw [OPTIONS] <region> <value(s)>\n"
-"Write value(s) to the specifies region.\n"
-"options:\n"
-"  -b, -w, -l	use byte, halfword, or word accesses\n"
-"  -d <file>	write file (default /dev/mem)\n";
+BAREBOX_CMD_HELP_START(mw)
+BAREBOX_CMD_HELP_TEXT("Write DATA value(s) to the specified REGION.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
+BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
+BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mw)
 	.cmd		= do_mem_mw,
-	.usage		= "memory write (fill)",
+	BAREBOX_CMD_DESC("memory write")
+	BAREBOX_CMD_OPTS("[-bwld] REGION DATA...")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_mw_help)
 BAREBOX_CMD_END

@@ -1942,13 +1942,13 @@ static void malloc_update_mallinfo(void)
 void malloc_stats(void)
 {
 	malloc_update_mallinfo();
-	printf("max system bytes = %10u\n", (unsigned int)(max_total_mem));
-	printf("system bytes     = %10u\n",
+	printf("Maximum system memory: %u\n", (unsigned int)(max_total_mem));
+	printf("Current system memory: %u\n",
 		(unsigned int)(sbrked_mem + mmapped_mem));
-	printf("in use bytes     = %10u\n",
+	printf("in use: %u\n",
 		(unsigned int)(current_mallinfo.uordblks + mmapped_mem));
 #if HAVE_MMAP
-	fprintf(stderr, "max mmap regions = %10u\n",
+	printf("Maximum mmap'ed mmap regions: %u\n",
 		 (unsigned int) max_n_mmaps);
 #endif
 }

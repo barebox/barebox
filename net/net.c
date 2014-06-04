@@ -160,7 +160,7 @@ int string_to_ethaddr(const char *str, u8 enetaddr[6])
 
 void ethaddr_to_string(const u8 enetaddr[6], char *str)
 {
-	sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X",
+	sprintf(str, "%02x:%02x:%02x:%02x:%02x:%02x",
 		 enetaddr[0], enetaddr[1], enetaddr[2], enetaddr[3],
 		 enetaddr[4], enetaddr[5]);
 }

@@ -100,15 +100,17 @@ static int do_nand(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_nand_help[] =
-"Usage: nand [OPTION]...\n"
-"nand related commands\n"
-"  -a  <dev>  register a bad block aware device ontop of a normal nand device\n"
-"  -d  <dev>  deregister a bad block aware device\n"
-"  -b  <ofs> <dev> mark block at offset ofs as bad\n";
+BAREBOX_CMD_HELP_START(nand)
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-a",  "register a bad block aware device ontop of a normal NAND device")
+BAREBOX_CMD_HELP_OPT ("-d",  "deregister a bad block aware device")
+BAREBOX_CMD_HELP_OPT ("-b OFFS",  "mark block at OFFSet as bad")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(nand)
 	.cmd		= do_nand,
-	.usage		= "NAND specific handling",
+	BAREBOX_CMD_DESC("NAND flash handling")
+	BAREBOX_CMD_OPTS("[-adb] NANDDEV")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_nand_help)
 BAREBOX_CMD_END

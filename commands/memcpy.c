@@ -128,18 +128,21 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_memcpy_help[] =
-"Usage: memcpy [OPTIONS] <src> <dst> <count>\n"
-"\n"
-"options:\n"
-"  -b, -w, -l   use byte, halfword, or word accesses\n"
-"  -s <file>    source file (default /dev/mem)\n"
-"  -d <file>    destination file (default /dev/mem)\n"
-"\n"
-"Copy memory at <src> of <count> bytes to <dst>\n";
+BAREBOX_CMD_HELP_START(memcpy)
+BAREBOX_CMD_HELP_TEXT("Copy memory at SRC of COUNT bytes to DEST")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b", "byte access")
+BAREBOX_CMD_HELP_OPT ("-w", "word access (16 bit)")
+BAREBOX_CMD_HELP_OPT ("-l", "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-s FILE", "source file (default /dev/mem)")
+BAREBOX_CMD_HELP_OPT ("-d FILE", "write file (default /dev/mem)")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(memcpy)
 	.cmd		= do_memcpy,
-	.usage		= "memory copy",
+	BAREBOX_CMD_DESC("memory copy")
+	BAREBOX_CMD_OPTS("[-bwlsd] SRC DEST COUNT")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memcpy_help)
 BAREBOX_CMD_END

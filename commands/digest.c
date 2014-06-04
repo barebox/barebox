@@ -83,13 +83,14 @@ static int do_md5(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(md5sum)
-BAREBOX_CMD_HELP_USAGE("md5sum [[FILE] [AREA]]...\n")
-BAREBOX_CMD_HELP_SHORT("Calculate a md5 checksum of a memory area.\n")
+BAREBOX_CMD_HELP_TEXT("Calculate a MD5 digest over a FILE or a memory area.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(md5sum)
 	.cmd		= do_md5,
-	.usage		= "md5 checksum calculation",
+	BAREBOX_CMD_DESC("calculate MD5 checksum")
+	BAREBOX_CMD_OPTS("FILE|AREA...")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_md5sum_help)
 BAREBOX_CMD_END
 
@@ -103,13 +104,14 @@ static int do_sha1(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(sha1sum)
-BAREBOX_CMD_HELP_USAGE("sha1sum [[FILE] [AREA]]...\n")
-BAREBOX_CMD_HELP_SHORT("Calculate a sha1 checksum of a memory area.\n")
+BAREBOX_CMD_HELP_TEXT("Calculate a SHA1 digest over a FILE or a memory area.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(sha1sum)
 	.cmd		= do_sha1,
-	.usage		= "sha1 checksum calculation",
+	BAREBOX_CMD_DESC("calculate SHA1 digest")
+	BAREBOX_CMD_OPTS("FILE|AREA")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_sha1sum_help)
 BAREBOX_CMD_END
 
@@ -123,13 +125,14 @@ static int do_sha224(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(sha224sum)
-BAREBOX_CMD_HELP_USAGE("sha224sum [[FILE] [AREA]]...\n")
-BAREBOX_CMD_HELP_SHORT("Calculate a sha224 checksum of a memory area.\n")
+BAREBOX_CMD_HELP_TEXT("Calculate a SHA224 digest over a FILE or a memory area.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(sha224sum)
 	.cmd		= do_sha224,
-	.usage		= "sha224 checksum calculation",
+	BAREBOX_CMD_DESC("calculate SHA224 digest")
+	BAREBOX_CMD_OPTS("FILE|AREA")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_sha224sum_help)
 BAREBOX_CMD_END
 
@@ -143,13 +146,14 @@ static int do_sha256(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(sha256sum)
-BAREBOX_CMD_HELP_USAGE("sha256sum [[FILE] [AREA]]...\n")
-BAREBOX_CMD_HELP_SHORT("Calculate a sha256 checksum of a memory area.\n")
+BAREBOX_CMD_HELP_TEXT("Calculate a SHA256 digest over a FILE or a memory area.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(sha256sum)
 	.cmd		= do_sha256,
-	.usage		= "sha256 checksum calculation",
+	BAREBOX_CMD_DESC("calculate SHA256 digest")
+	BAREBOX_CMD_OPTS("FILE|AREA")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_sha256sum_help)
 BAREBOX_CMD_END
 

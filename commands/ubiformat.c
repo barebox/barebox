@@ -764,34 +764,32 @@ out_close_mtd:
 }
 
 BAREBOX_CMD_HELP_START(ubiformat)
-BAREBOX_CMD_HELP_USAGE(PROGRAM_NAME " <MTD device file name> [-s <bytes>] [-O <offs>] [-n]\n"
-	"\t[-f <file>] [-e <value>] [-x <num>] [-Q <num>] [-y] [-q] [-v]\n")
-BAREBOX_CMD_HELP_SHORT("A tool to format MTD devices and flash UBI images\n")
-BAREBOX_CMD_HELP_OPT("-s <bytes>", "minimum input/output unit used for UBI headers, "
-"e.g. sub-page size in case of NAND flash (equivalent to the minimum input/output "
-"unit size by default)\n")
-BAREBOX_CMD_HELP_OPT("-O <offs>", "offset if the VID header from start of the "
-"physical eraseblock (default is the next minimum I/O unit or sub-page after the EC "
-"header)\n")
-BAREBOX_CMD_HELP_OPT("-n", "only erase all eraseblock and preserve erase "
-"counters, do not write empty volume table\n")
-BAREBOX_CMD_HELP_OPT("-f <file>", "flash image file\n")
-BAREBOX_CMD_HELP_OPT("-e <value>", "use <value> as the erase counter value for all eraseblocks\n")
-BAREBOX_CMD_HELP_OPT("-x <num>", "UBI version number to put to EC headers "
-"(default is 1)\n")
-BAREBOX_CMD_HELP_OPT("-Q <num>", "32-bit UBI image sequence number to use "
-"(by default a random number is picked)\n")
-BAREBOX_CMD_HELP_OPT("-q", "suppress progress percentage information\n")
-BAREBOX_CMD_HELP_OPT("-v", "be verbose\n")
-BAREBOX_CMD_HELP_TEXT(
-"Example 1: " PROGRAM_NAME " /dev/nand0 -y - format nand0 and assume yes\n"
-"Example 2: " PROGRAM_NAME " /dev/nand0 -q -e 0 - format nand0,\n"
-"           be quiet and force erase counter value 0.\n";
-)
+BAREBOX_CMD_HELP_TEXT("A tool to format MTD devices and flash UBI images")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-s BYTES", "minimum input/output unit used for UBI headers")
+BAREBOX_CMD_HELP_OPT("\t", "e.g. sub-page size in case of NAND flash")
+BAREBOX_CMD_HELP_OPT("-O OFFS\t", "offset if the VID header from start of the")
+BAREBOX_CMD_HELP_OPT("\t", "physical eraseblock (default is the next minimum I/O unit or")
+BAREBOX_CMD_HELP_OPT("\t", "sub-page after the EC header)")
+BAREBOX_CMD_HELP_OPT("-n\t", "only erase all eraseblock and preserve erase")
+BAREBOX_CMD_HELP_OPT("\t", "counters, do not write empty volume table")
+BAREBOX_CMD_HELP_OPT("-f FILE\t", "flash image file")
+BAREBOX_CMD_HELP_OPT("-e VALUE", "use VALUE as erase counter value for all eraseblocks")
+BAREBOX_CMD_HELP_OPT("-x NUM\t", "UBI version number to put to EC headers (default 1)")
+BAREBOX_CMD_HELP_OPT("-Q NUM\t", "32-bit UBI image sequence number to use")
+BAREBOX_CMD_HELP_OPT("-q\t", "suppress progress percentage information")
+BAREBOX_CMD_HELP_OPT("-v\t", "be verbose")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Example 1: " PROGRAM_NAME " /dev/nand0 -y - format nand0 and assume yes")
+BAREBOX_CMD_HELP_TEXT("Example 2: " PROGRAM_NAME " /dev/nand0 -q -e 0 - format nand0,")
+BAREBOX_CMD_HELP_TEXT("\tbe quiet and force erase counter value 0.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ubiformat)
 	.cmd		= do_ubiformat,
-	.usage		= "format an ubi volume",
+	BAREBOX_CMD_DESC("format an ubi volume")
+	BAREBOX_CMD_OPTS("[-sOnfexQqv] MTDEVICE")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubiformat_help)
 BAREBOX_CMD_END

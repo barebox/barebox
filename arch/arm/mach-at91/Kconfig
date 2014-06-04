@@ -524,24 +524,6 @@ config CALAO_MB_QIL_A9260
 	bool "MB-QIL A9260 Motherboard Board support"
 	depends on MACH_QIL_A9260 || MACH_QIL_A9G20
 
-if COMMAND_SUPPORT
-
-config CMD_AT91MUX
-	bool "at91mux dump command"
-	default y
-
-config CMD_AT91CLK
-	bool "at91clk dump command"
-	default y
-
-config CMD_AT91_BOOT_TEST
-	bool "at91_boot_test"
-	help
-	  allow to upload a boot binary to sram and execute it
-	  useful to test bootstrap or barebox lowlevel init
-
-endif
-
 config AT91_BOOTSTRAP
 	bool "at91 bootstrap"
 	depends on HAVE_AT91_LOWLEVEL_INIT

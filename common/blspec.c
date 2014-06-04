@@ -281,7 +281,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 		goto out;
 	}
 
-	root = of_unflatten_dtb(NULL, fdt);
+	root = of_unflatten_dtb(fdt);
 	if (IS_ERR(root)) {
 		ret = PTR_ERR(root);
 		goto out;

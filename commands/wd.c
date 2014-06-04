@@ -55,14 +55,15 @@ static int do_wd(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(wd)
-BAREBOX_CMD_HELP_USAGE("wd [<time>]\n")
-BAREBOX_CMD_HELP_SHORT("enable the watchdog to bark in <time> seconds. "
-		"When <time> is 0, the watchdog gets disabled,\n"
-		"without a parameter the watchdog will be re-triggered\n")
+BAREBOX_CMD_HELP_TEXT("Enable the watchdog to bark in TIME seconds.")
+BAREBOX_CMD_HELP_TEXT("When TIME is 0, the watchdog gets disabled,")
+BAREBOX_CMD_HELP_TEXT("Without a parameter the watchdog will be re-triggered.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(wd)
 	.cmd = do_wd,
-	.usage = "enable/disable/trigger the watchdog",
+	BAREBOX_CMD_DESC("enable/disable/trigger the watchdog")
+	BAREBOX_CMD_OPTS("[TIME]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_wd_help)
 BAREBOX_CMD_END

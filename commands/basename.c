@@ -36,12 +36,13 @@ static int do_basename(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(basename)
-BAREBOX_CMD_HELP_USAGE("basename NAME BASENAME\n")
-BAREBOX_CMD_HELP_SHORT("strip NAME and store into $BASENAME\n")
+BAREBOX_CMD_HELP_TEXT("Remove directory part from the PATH and store result into variable VAR.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(basename)
 	.cmd		= do_basename,
-	.usage		= "strip directory and suffix from filenames",
+	BAREBOX_CMD_DESC("strip directory and suffix from filenames")
+	BAREBOX_CMD_OPTS("PATH VAR")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_basename_help)
 BAREBOX_CMD_END

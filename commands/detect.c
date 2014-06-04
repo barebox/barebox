@@ -80,15 +80,17 @@ static int do_detect(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(detect)
-BAREBOX_CMD_HELP_USAGE("detect [OPTIONS] [devices]\n")
-BAREBOX_CMD_HELP_OPT  ("-l",  "list detectable devices\n")
-BAREBOX_CMD_HELP_OPT  ("-e",  "bail out if one device fails to detect\n")
-BAREBOX_CMD_HELP_OPT  ("-a",  "detect all devices\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-l",  "list detectable devices")
+BAREBOX_CMD_HELP_OPT ("-e",  "bail out if one device fails to detect")
+BAREBOX_CMD_HELP_OPT ("-a",  "detect all devices")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(detect)
 	.cmd		= do_detect,
-	.usage		= "detect devices",
+	BAREBOX_CMD_DESC("detect devices")
+	BAREBOX_CMD_OPTS("[-lea] [devices]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_COMPLETE(device_complete)
 	BAREBOX_CMD_HELP(cmd_detect_help)
 BAREBOX_CMD_END

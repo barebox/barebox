@@ -108,18 +108,25 @@ static int do_crc(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(crc)
-BAREBOX_CMD_HELP_USAGE("crc32 [OPTION] [AREA]\n")
-BAREBOX_CMD_HELP_SHORT("Calculate a crc32 checksum of a memory area.\n")
-BAREBOX_CMD_HELP_OPT  ("-f <file>", "Use file instead of memory.\n")
+BAREBOX_CMD_HELP_TEXT("Calculate a CRC32 checksum of a memory area.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-f FILE", "Use file instead of memory.")
 #ifdef CONFIG_CMD_CRC_CMP
-BAREBOX_CMD_HELP_OPT  ("-F <file>", "Use file to compare.\n")
+BAREBOX_CMD_HELP_OPT ("-F FILE", "Use file to compare.")
 #endif
-BAREBOX_CMD_HELP_OPT  ("-v <crc>",  "Verify\n")
-BAREBOX_CMD_HELP_OPT  ("-V <file>", "Verify with crc read from <file>\n")
+BAREBOX_CMD_HELP_OPT ("-v CRC",  "Verify")
+BAREBOX_CMD_HELP_OPT ("-V FILE", "Verify with CRC read from FILE")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(crc32)
 	.cmd		= do_crc,
-	.usage		= "crc32 checksum calculation",
+	BAREBOX_CMD_DESC("CRC32 checksum calculation")
+	BAREBOX_CMD_OPTS("[-f"
+#ifdef CONFIG_CMD_CRC_CMP
+					  "F"
+#endif
+					  "vV] AREA")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_crc_help)
 BAREBOX_CMD_END

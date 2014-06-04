@@ -3,17 +3,9 @@ menuconfig NET
 
 if NET
 
-config NET_DHCP
-	bool
-	prompt "dhcp support"
-
 config NET_NFS
 	bool
 	prompt "nfs support"
-
-config NET_PING
-	bool
-	prompt "ping support"
 
 config NET_NETCONSOLE
 	bool
@@ -29,12 +21,5 @@ config NET_RESOLV
 config NET_IFUP
 	default y
 	bool
-
-config NET_CMD_IFUP
-	bool
-	prompt "ifup support"
-	help
-	  This enables the 'ifup' command which is used to bring up network
-	  interfaces based on config files under /env/network/<ethname>
 
 endif

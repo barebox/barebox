@@ -92,12 +92,16 @@ err_free:
 }
 
 BAREBOX_CMD_HELP_START(tftp)
-BAREBOX_CMD_HELP_USAGE("tftp [-p] <source> [dest]\n")
-BAREBOX_CMD_HELP_SHORT("Load a file from or upload to TFTP server.\n")
+BAREBOX_CMD_HELP_TEXT("Load (or save) a file via TFTP.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-p", "push to TFTP server")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(tftp)
 	.cmd		= do_tftpb,
-	.usage		= "(up-)Load file using tftp protocol",
+	BAREBOX_CMD_DESC("load (or save) a file using TFTP")
+	BAREBOX_CMD_OPTS("[-p] SOURCE [DEST]")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_tftp_help)
 BAREBOX_CMD_END

@@ -49,13 +49,14 @@ static int do_export(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(export)
-BAREBOX_CMD_HELP_USAGE("export <var>[=value]\n")
-BAREBOX_CMD_HELP_SHORT("export an environment variable to subsequently executed scripts\n")
+BAREBOX_CMD_HELP_TEXT("Export an environment variable to subsequently executed scripts.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(export)
 	.cmd		= do_export,
-	.usage		= "export environment variables",
+	BAREBOX_CMD_DESC("export environment variables")
+	BAREBOX_CMD_OPTS("VAR[=VALUE]")
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_export_help)
 BAREBOX_CMD_END
 

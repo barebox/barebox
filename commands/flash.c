@@ -75,13 +75,20 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(erase)
-BAREBOX_CMD_HELP_USAGE("erase <device> [area]\n")
-BAREBOX_CMD_HELP_SHORT("Erase a flash device or parts of a device if an area specification is given.\n")
+BAREBOX_CMD_HELP_TEXT("Erase the flash memory handled by DEVICE. Which AREA will be erased")
+BAREBOX_CMD_HELP_TEXT("depends on the device: If the device represents the whole flash")
+BAREBOX_CMD_HELP_TEXT("memory, the whole memory will be erased. If the device represents a")
+BAREBOX_CMD_HELP_TEXT("partition on a main flash memory, only this partition part will be")
+BAREBOX_CMD_HELP_TEXT("erased.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Use 'addpart' and 'delpart' to manage partitions.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(erase)
 	.cmd		= do_flerase,
-	.usage		= "erase FLASH memory",
+	BAREBOX_CMD_DESC("erase flash memory")
+	BAREBOX_CMD_OPTS("DEVICE [AREA]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_erase_help)
 BAREBOX_CMD_END
 
@@ -149,21 +156,28 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(protect)
-BAREBOX_CMD_HELP_USAGE("protect <device> [area]\n")
-BAREBOX_CMD_HELP_SHORT("protect a flash device (or parts of a device, if an area is specified)\n")
+BAREBOX_CMD_HELP_TEXT("Protect the flash memory behind the device. It depends on the device")
+BAREBOX_CMD_HELP_TEXT("given, what area will be protected. If the device represents the whole")
+BAREBOX_CMD_HELP_TEXT("flash memory, the whole memory will be protected. If the device")
+BAREBOX_CMD_HELP_TEXT("represents a partition on a main flash memory, only this partition part")
+BAREBOX_CMD_HELP_TEXT("will be protected.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Use 'addpart' and 'delpart' to manage partitions.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(protect)
 	.cmd		= do_protect,
-	.usage		= "enable flash write protection",
+	BAREBOX_CMD_DESC("enable flash write protection")
+	BAREBOX_CMD_OPTS("DEVICE [AREA]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_protect_help)
 BAREBOX_CMD_END
 
 /**
  * @page protect_command
 
-Protect the flash memory behind the device. It depends on the device
-given, what area will be protected. If the device represents the whole
+
+If the device represents the whole
 flash memory the whole memory will be protected. If the device
 represents a partition on a main flash memory, only this partition part
 will be protected.
@@ -177,20 +191,25 @@ flashes here.
  */
 
 BAREBOX_CMD_HELP_START(unprotect)
-BAREBOX_CMD_HELP_USAGE("unprotect <device> [area]\n")
-BAREBOX_CMD_HELP_SHORT("unprotect a flash device (or parts of a device, if an area is specified)\n")
+BAREBOX_CMD_HELP_TEXT("Unprotect the flash memory behind the device. It depends on the device")
+BAREBOX_CMD_HELP_TEXT("given, what area will be unprotected. If the device represents the whole")
+BAREBOX_CMD_HELP_TEXT("flash memory, the whole memory will be unprotected. If the device")
+BAREBOX_CMD_HELP_TEXT("represents a partition on a main flash memory, only this partition part")
+BAREBOX_CMD_HELP_TEXT("will be unprotected.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(unprotect)
 	.cmd		= do_protect,
-	.usage		= "disable flash write protection",
+	BAREBOX_CMD_DESC("disable flash write protection")
+	BAREBOX_CMD_OPTS("DEVICE [AREA]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_unprotect_help)
 BAREBOX_CMD_END
 
 /**
  * @page unprotect_command
 
-Unprotect the flash memory behind the device. It depends on the device given,
+It depends on the device given,
 what area will be unprotected. If the device represents the whole flash memory
 the whole memory will be unprotected. If the device represents a partition
 on a main flash memory, only this partition part will be unprotected.

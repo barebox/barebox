@@ -25,15 +25,15 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 	int i;
 
 	for (i = 0; i < depth; i++)
-		printf("     ");
+		printf("   ");
 
-	printf("`---- %s", dev_name(dev));
+	printf("`-- %s", dev_name(dev));
 	if (!list_empty(&dev->cdevs)) {
 		printf("\n");
 		list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 			for (i = 0; i < depth + 1; i++)
-				printf("     ");
-			printf("`---- 0x%08llx-0x%08llx: /dev/%s\n",
+				printf("   ");
+			printf("`-- 0x%08llx-0x%08llx: /dev/%s\n",
 					cdev->offset,
 					cdev->offset + cdev->size - 1,
 					cdev->name);
@@ -51,25 +51,20 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 	return 0;
 }
 
+
 static int do_devinfo(int argc, char *argv[])
 {
 	struct device_d *dev;
-	struct driver_d *drv;
 	struct param_d *param;
 	int i;
+	int first;
 	struct resource *res;
 
 	if (argc == 1) {
-		printf("devices:\n");
-
 		for_each_device(dev) {
 			if (!dev->parent)
 				do_devinfo_subtree(dev, 0);
 		}
-
-		printf("\ndrivers:\n");
-		for_each_driver(drv)
-			printf("%s\n",drv->name);
 	} else {
 		dev = get_device_by_name(argv[1]);
 
@@ -78,38 +73,42 @@ static int do_devinfo(int argc, char *argv[])
 			return -1;
 		}
 
-		printf("resources:\n");
+		if (dev->num_resources)
+			printf("Resources:\n");
 		for (i = 0; i < dev->num_resources; i++) {
 			res = &dev->resource[i];
-			printf("num   : %d\n", i);
+			printf("  num: %d\n", i);
 			if (res->name)
-				printf("name  : %s\n", res->name);
-			printf("start : " PRINTF_CONVERSION_RESOURCE "\nsize  : "
-					PRINTF_CONVERSION_RESOURCE "\n",
+				printf("  name: %s\n", res->name);
+			printf("  start: " PRINTF_CONVERSION_RESOURCE "\n"
+				   "  size: "  PRINTF_CONVERSION_RESOURCE "\n",
 			       res->start, resource_size(res));
 		}
 
-		printf("driver: %s\n", dev->driver ?
-				dev->driver->name : "none");
+		if (dev->driver)
+			printf("Driver: %s\n", dev->driver->name);
 
-		printf("bus: %s\n\n", dev->bus ?
-				dev->bus->name : "none");
+		if (dev->bus)
+			printf("Bus: %s\n", dev->bus->name);
 
 		if (dev->info)
 			dev->info(dev);
 
-		printf("%s\n", list_empty(&dev->parameters) ?
-				"no parameters available" : "Parameters:");
-
+		first = true;
 		list_for_each_entry(param, &dev->parameters, list) {
-			printf("%16s = %s", param->name, dev_get_param(dev, param->name));
-			if (param->info)
+			if (first) {
+				printf("Parameters:\n");
+				first = false;
+			}
+			printf("  %s: %s", param->name, dev_get_param(dev, param->name));
+			if (param->info) {
 				param->info(param);
+			}
 			printf("\n");
 		}
 #ifdef CONFIG_OFDEVICE
 		if (dev->device_node) {
-			printf("\ndevice node: %s\n", dev->device_node->full_name);
+			printf("Device node: %s\n", dev->device_node->full_name);
 			of_print_nodes(dev->device_node, 0);
 		}
 #endif
@@ -118,10 +117,6 @@ static int do_devinfo(int argc, char *argv[])
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(devinfo)
-BAREBOX_CMD_HELP_USAGE("devinfo [DEVICE]\n")
-BAREBOX_CMD_HELP_SHORT("Output device information.\n")
-BAREBOX_CMD_HELP_END
 
 /**
  * @page devinfo_command
@@ -150,9 +145,20 @@ Example from an MPC5200 based system:
 @endverbatim
  */
 
+BAREBOX_CMD_HELP_START(devinfo)
+BAREBOX_CMD_HELP_TEXT("If called without arguments, devinfo shows a summary of the known")
+BAREBOX_CMD_HELP_TEXT("devices.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("If called with a device path being the argument, devinfo shows more")
+BAREBOX_CMD_HELP_TEXT("default information about this device and its parameters.")
+BAREBOX_CMD_HELP_END
+
+
 BAREBOX_CMD_START(devinfo)
 	.cmd		= do_devinfo,
-	.usage		= "Show information about devices and drivers.",
+	BAREBOX_CMD_DESC("show information about devices")
+	BAREBOX_CMD_OPTS("[DEVICE]")
+	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_devinfo_help)
 	BAREBOX_CMD_COMPLETE(device_complete)
 BAREBOX_CMD_END

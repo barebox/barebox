@@ -165,11 +165,17 @@ static int do_addpart(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(addpart)
-BAREBOX_CMD_HELP_USAGE("addpart <device> <part_desc>\n")
-BAREBOX_CMD_HELP_SHORT("Add a partition description to a device.\n")
-BAREBOX_CMD_HELP_OPT  ("-n", "no prefix. Do not prepend the device name as prefix before the partition name\n")
-BAREBOX_CMD_HELP_OPT  ("<device>",    "device being worked on\n")
-BAREBOX_CMD_HELP_OPT  ("<part_desc>", "size1[@offset1](name1)[ro],size2[@offset2](name2)[ro],...\n")
+
+BAREBOX_CMD_HELP_TEXT("The size and the offset can be given in decimal (without any prefix) and")
+BAREBOX_CMD_HELP_TEXT("in hex (prefixed with 0x). Both can have an optional suffix K, M or G.")
+BAREBOX_CMD_HELP_TEXT("The size of the last partition can be specified as '-' for the remaining")
+BAREBOX_CMD_HELP_TEXT("space on the device.  This format is the same as used by the Linux")
+BAREBOX_CMD_HELP_TEXT("kernel or cmdline mtd partitions.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-n", "do not use the device name as prefix of the partition name")
+BAREBOX_CMD_HELP_OPT ("DEVICE",    "device being worked on")
+BAREBOX_CMD_HELP_OPT ("PART", "SIZE1[@OFFSET1](NAME1)[RO],SIZE2[@OFFSET2](NAME2)[RO],...")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -186,7 +192,9 @@ kernel or cmdline mtd partitions.
 
 BAREBOX_CMD_START(addpart)
 	.cmd = do_addpart,
-	.usage = "adds a partition table to a device",
+	BAREBOX_CMD_DESC("add a partition description to a device")
+	BAREBOX_CMD_OPTS("[-n] DEVICE PART")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_addpart_help)
 BAREBOX_CMD_END
 
@@ -206,8 +214,7 @@ static int do_delpart(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(delpart)
-BAREBOX_CMD_HELP_USAGE("delpart <part 1> [<part n>] \n")
-BAREBOX_CMD_HELP_SHORT("Delete partitions previously added to a device with addpart.\n")
+BAREBOX_CMD_HELP_TEXT("Delete partitions previously added to a device with addpart.")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -223,7 +230,9 @@ argument list is taken as a list of partitions to be deleted.
 
 BAREBOX_CMD_START(delpart)
 	.cmd = do_delpart,
-	.usage = "delete partition(s)",
+	BAREBOX_CMD_DESC("delete partition(s)")
+	BAREBOX_CMD_OPTS("PART...")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_delpart_help)
 	BAREBOX_CMD_COMPLETE(devfs_partition_complete)
 BAREBOX_CMD_END

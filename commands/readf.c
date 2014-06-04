@@ -50,14 +50,15 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(readf)
-BAREBOX_CMD_HELP_USAGE("readf <file> <variable>\n")
-BAREBOX_CMD_HELP_SHORT("Read a single line of a file into a shell variable. Leading and trailing whitespaces\n")
-BAREBOX_CMD_HELP_SHORT("are removed, nonvisible characters are stripped. Input is limited to 1024\n")
-BAREBOX_CMD_HELP_SHORT("characters.\n")
+BAREBOX_CMD_HELP_TEXT("Read a single line from FILE into a VARiable. Leading and trailing")
+BAREBOX_CMD_HELP_TEXT("whitespaces are removed, nonvisible characters are stripped. Input is")
+BAREBOX_CMD_HELP_TEXT("limited to 1024 characters.")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(readf)
 	.cmd		= do_readf,
-	.usage		= "read file into variable",
+	BAREBOX_CMD_DESC("read file into variable")
+	BAREBOX_CMD_OPTS("FILE VAR")
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_HELP(cmd_readf_help)
 BAREBOX_CMD_END

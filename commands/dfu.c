@@ -171,17 +171,19 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(dfu)
-BAREBOX_CMD_HELP_USAGE("dfu [OPTIONS] <description>\n")
-BAREBOX_CMD_HELP_SHORT("Start firmware update with the Device Firmware Update (DFU) protocol.\n")
-BAREBOX_CMD_HELP_OPT  ("-m <str>",  "Manufacturer string (barebox)\n")
-BAREBOX_CMD_HELP_OPT  ("-p <str>",  "product string\n")
-BAREBOX_CMD_HELP_OPT  ("-V <id>",   "vendor id\n")
-BAREBOX_CMD_HELP_OPT  ("-P <id>",   "product id\n")
-BAREBOX_CMD_HELP_OPT  ("<description>",
-	"device1(name1)[sr],device2(name2)[src]\n"
-	"'s' means 'safe mode' (download the complete image before flashing) and\n"
-	"'r' that readback of the firmware is allowed.\n"
-	"'c' if given, the file will be created (for use with regular files)\n")
+BAREBOX_CMD_HELP_TEXT("Turn's the USB host into DFU mode (Device Firmware Mode) and accepts")
+BAREBOX_CMD_HELP_TEXT("a new firmware. The destination is described by DESC in the this format:")
+BAREBOX_CMD_HELP_TEXT("  DEVICE(NAME)[src]...")
+BAREBOX_CMD_HELP_TEXT("Specify the '(') and ')' literal, the [] however denote this optional modes:")
+BAREBOX_CMD_HELP_TEXT("- 's' safe mode (download the complete image before flashing)")
+BAREBOX_CMD_HELP_TEXT("- 'r' readback of the firmware is allowed")
+BAREBOX_CMD_HELP_TEXT("- 'c' the file will be created (for use with regular files)")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-m STR", "Manufacturer string (barebox)")
+BAREBOX_CMD_HELP_OPT ("-p STR", "product string")
+BAREBOX_CMD_HELP_OPT ("-V ID",  "vendor id")
+BAREBOX_CMD_HELP_OPT ("-P ID",  "product id")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -196,6 +198,8 @@ device1(name1)[sr],device2(name2)[sr]
 
 BAREBOX_CMD_START(dfu)
 	.cmd		= do_dfu,
-	.usage		= "Device firmware update",
+	BAREBOX_CMD_DESC("device firmware update")
+	BAREBOX_CMD_OPTS("[-mpVP] DESC")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_dfu_help)
 BAREBOX_CMD_END

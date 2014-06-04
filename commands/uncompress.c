@@ -55,13 +55,10 @@ exit_close:
 	return ret;
 }
 
-static const __maybe_unused char cmd_uncompress_help[] =
-"Usage: uncompress <infile> <outfile>\n"
-"Uncompress a compressed file\n";
 
 BAREBOX_CMD_START(uncompress)
-        .cmd            = do_uncompress,
-        .usage          = "uncompress a compressed file",
-        BAREBOX_CMD_HELP(cmd_uncompress_help)
+	.cmd            = do_uncompress,
+	BAREBOX_CMD_DESC("uncompress a compressed file")
+	BAREBOX_CMD_OPTS("INFILE OUTFILE")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 BAREBOX_CMD_END
-

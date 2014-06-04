@@ -47,9 +47,11 @@ struct command {
 					/* Implementation function	*/
 	int		(*cmd)(int, char *[]);
 	int		(*complete)(struct string_list *sl, char *instr);
-	const char	*usage;		/* Usage message	(short)	*/
+	const char	*desc;		/* Short command description, start with lowercase */
+	const char	*opts;		/* command options */
 
 	struct list_head list;		/* List of commands		*/
+	uint32_t	group;
 #ifdef	CONFIG_LONGHELP
 	const char	*help;		/* Help  message	(long)	*/
 #endif
@@ -72,6 +74,19 @@ void barebox_cmd_usage(struct command *cmdtp);
 #define COMMAND_SUCCESS		0
 #define COMMAND_ERROR		1
 #define COMMAND_ERROR_USAGE	2
+
+/* Note: keep this list in sync with commands/help.c */
+#define CMD_GRP_INFO		1
+#define CMD_GRP_BOOT		2
+#define CMD_GRP_ENV		3
+#define CMD_GRP_FILE		4
+#define CMD_GRP_PART		5
+#define CMD_GRP_SCRIPT		6
+#define CMD_GRP_NET		7
+#define CMD_GRP_CONSOLE		8
+#define CMD_GRP_MEM		9
+#define CMD_GRP_HWMANIP		10
+#define CMD_GRP_MISC		11
 
 #endif	/* __ASSEMBLY__ */
 
@@ -96,10 +111,8 @@ const struct command __barebox_cmd_##_name						\
 #define BAREBOX_CMD_HELP_START(_name) \
 static const __maybe_unused char cmd_##_name##_help[] =
 
-#define BAREBOX_CMD_HELP_USAGE(_name) "Usage: " _name
-#define BAREBOX_CMD_HELP_SHORT(_text) _text
-#define BAREBOX_CMD_HELP_OPT(_opt, _desc) _opt "\t" _desc
-#define BAREBOX_CMD_HELP_TEXT(_text) _text
+#define BAREBOX_CMD_HELP_OPT(_opt, _desc) "\t" _opt "\t" _desc "\n"
+#define BAREBOX_CMD_HELP_TEXT(_text) _text "\n"
 #define BAREBOX_CMD_HELP_END ;
 
 #ifdef CONFIG_LONGHELP
@@ -107,6 +120,12 @@ static const __maybe_unused char cmd_##_name##_help[] =
 #else
 #define BAREBOX_CMD_HELP(text)
 #endif
+
+#define BAREBOX_CMD_GROUP(grp)	.group = grp,
+
+#define BAREBOX_CMD_DESC(text)	.desc = text,
+
+#define BAREBOX_CMD_OPTS(text)	.opts = text,
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 

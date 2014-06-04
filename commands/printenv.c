@@ -57,8 +57,9 @@ static int do_printenv(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(printenv)
-BAREBOX_CMD_HELP_USAGE("printenv [variable]\n")
-BAREBOX_CMD_HELP_SHORT("Print value of one or all environment variables.\n")
+BAREBOX_CMD_HELP_TEXT("If an argument is given, printenv prints the content of an environment")
+BAREBOX_CMD_HELP_TEXT("variable to the terminal. If no argument is specified, all variables are")
+BAREBOX_CMD_HELP_TEXT("printed.")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -72,6 +73,8 @@ printed.</p>
 
 BAREBOX_CMD_START(printenv)
 	.cmd		= do_printenv,
-	.usage		= "Print value of one or all environment variables.",
+	BAREBOX_CMD_DESC("print value of environment variables")
+	BAREBOX_CMD_OPTS("[VARIABLE]")
+	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_printenv_help)
 BAREBOX_CMD_END

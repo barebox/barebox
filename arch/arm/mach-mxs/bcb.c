@@ -387,13 +387,14 @@ int update_bcb(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(bcb)
-BAREBOX_CMD_HELP_USAGE("bcb <first_bootstream> [second_bootstream]\n")
-BAREBOX_CMD_HELP_SHORT("Write a BCB to NAND flash which an MX23/28 needs to boot.\n")
-BAREBOX_CMD_HELP_TEXT ("Example: bcb nand0.bootstream\n")
+BAREBOX_CMD_HELP_TEXT("Write a BCB to NAND flash which an MX23/28 needs to boot.")
+BAREBOX_CMD_HELP_TEXT("Example: bcb nand0.bootstream")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(bcb)
 	.cmd = update_bcb,
-	.usage = "Writes a MX23/28 BCB data structure to flash",
+	BAREBOX_CMD_DESC("writes a i.MX23/28 BCB data structure to flash")
+	BAREBOX_CMD_OPTS("BOOTSTREAM [BOOTSTREAM]")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_bcb_help)
 BAREBOX_CMD_END

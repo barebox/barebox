@@ -128,21 +128,24 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_memcmp_help[] =
-"Usage: memcmp [OPTIONS] <addr1> <addr2> <count>\n"
-"\n"
-"options:\n"
-"  -b, -w, -l	use byte, halfword, or word accesses\n"
-"  -s <file>    source file (default /dev/mem)\n"
-"  -d <file>    destination file (default /dev/mem)\n"
-"\n"
-"Compare memory regions specified with addr1 and addr2\n"
-"of size <count> bytes. If source is a file count can\n"
-"be left unspecified in which case the whole file is\n"
-"compared\n";
+BAREBOX_CMD_HELP_START(memcmp)
+BAREBOX_CMD_HELP_TEXT("Compare memory regions specified with ADDR and ADDR2")
+BAREBOX_CMD_HELP_TEXT("of size COUNT bytes. If source is a file COUNT can")
+BAREBOX_CMD_HELP_TEXT("be left unspecified, in which case the whole file is")
+BAREBOX_CMD_HELP_TEXT("compared.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
+BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
+BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-s FILE", "source file (default /dev/mem)")
+BAREBOX_CMD_HELP_OPT ("-d FILE", "destination file (default /dev/mem)")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(memcmp)
 	.cmd		= do_memcmp,
-	.usage		= "memory compare",
+	BAREBOX_CMD_DESC("memory compare")
+	BAREBOX_CMD_OPTS("[-bwlsd] ADDR1 ADDR2 COUNT")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memcmp_help)
 BAREBOX_CMD_END

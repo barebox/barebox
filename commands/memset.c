@@ -85,17 +85,20 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_memset_help[] =
-"Usage: memset [OPTIONS] <addr> <c> <n>\n"
-"\n"
-"options:\n"
-"  -b, -w, -l   use byte, halfword, or word accesses\n"
-"  -d <file>    destination file (default /dev/mem)\n"
-"\n"
-"Fill the first <n> bytes at offset <addr> with byte <c>\n";
+BAREBOX_CMD_HELP_START(memset)
+BAREBOX_CMD_HELP_TEXT("Fills the first COUNT bytes at offset ADDR with byte DATA,")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
+BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
+BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(memset)
 	.cmd		= do_memset,
-	.usage		= "memory fill",
+	BAREBOX_CMD_DESC("memory fill")
+	BAREBOX_CMD_OPTS("[-bwld] ADDR COUNT DATA")
+	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memset_help)
 BAREBOX_CMD_END

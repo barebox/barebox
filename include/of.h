@@ -98,7 +98,7 @@ void of_print_cmdline(struct device_node *root);
 void of_print_nodes(struct device_node *node, int indent);
 int of_probe(void);
 int of_parse_dtb(struct fdt_header *fdt);
-struct device_node *of_unflatten_dtb(struct device_node *root, void *fdt);
+struct device_node *of_unflatten_dtb(void *fdt);
 
 struct cdev;
 

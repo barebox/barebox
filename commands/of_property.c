@@ -24,6 +24,7 @@
 #include <command.h>
 #include <fs.h>
 #include <malloc.h>
+#include <complete.h>
 #include <linux/ctype.h>
 #include <asm/byteorder.h>
 #include <errno.h>
@@ -301,18 +302,22 @@ static int do_of_property(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(of_property)
-BAREBOX_CMD_HELP_USAGE("of_property [OPTIONS] [NODE] [PROPERTY] [VALUES]\n")
-BAREBOX_CMD_HELP_OPT  ("-s",  "set property to value\n")
-BAREBOX_CMD_HELP_OPT  ("-d",  "delete property\n")
-BAREBOX_CMD_HELP_TEXT ("\nvalid formats for values:\n")
-BAREBOX_CMD_HELP_TEXT ("<0x00112233 4 05> - an array of cells. cells not beginning with a digit are\n")
-BAREBOX_CMD_HELP_TEXT ("                    interpreted as node pathes and converted to phandles\n")
-BAREBOX_CMD_HELP_TEXT ("[00 11 22 .. nn]  - byte stream\n")
-BAREBOX_CMD_HELP_TEXT ("If the value does not start with '<' or '[' it is interpreted as strings\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-s",  "set property to value")
+BAREBOX_CMD_HELP_OPT ("-d",  "delete property")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Valid formats for values:")
+BAREBOX_CMD_HELP_TEXT("<0x00112233 4 05> - an array of cells. cells not beginning with a digit are")
+BAREBOX_CMD_HELP_TEXT("                    interpreted as node pathes and converted to phandles")
+BAREBOX_CMD_HELP_TEXT("[00 11 22 .. nn]  - byte stream")
+BAREBOX_CMD_HELP_TEXT("If the value does not start with '<' or '[' it is interpreted as string")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_property)
 	.cmd		= do_of_property,
-	.usage		= "handle of properties",
+	BAREBOX_CMD_DESC("handle device tree properties")
+	BAREBOX_CMD_OPTS("[-sd] NODE [PROPERTY] [VALUES]")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_COMPLETE(devicetree_complete)
 	BAREBOX_CMD_HELP(cmd_of_property_help)
 BAREBOX_CMD_END

@@ -104,12 +104,13 @@ no_optarg_out:
 }
 
 BAREBOX_CMD_HELP_START(echo)
-BAREBOX_CMD_HELP_USAGE("echo [OPTIONS] [STRING]\n")
-BAREBOX_CMD_HELP_SHORT("Display a line of text.\n")
-BAREBOX_CMD_HELP_OPT  ("-n",  "do not output the trailing newline\n")
-BAREBOX_CMD_HELP_OPT  ("-a <file>",  "instead of outputting to stdout append to <file>\n")
-BAREBOX_CMD_HELP_OPT  ("-o <file>",  "instead of outputting to stdout overwrite <file>\n")
-BAREBOX_CMD_HELP_OPT  ("-e",  "recognize escape sequences\n")
+BAREBOX_CMD_HELP_TEXT("Display a line of TEXT on the console.")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-n",     "do not output the trailing newline")
+BAREBOX_CMD_HELP_OPT ("-e",     "recognize escape sequences")
+BAREBOX_CMD_HELP_OPT ("-a FILE", "append to FILE instead of using stdout")
+BAREBOX_CMD_HELP_OPT ("-o FILE", "overwrite FILE instead of using stdout")
 BAREBOX_CMD_HELP_END
 
 /**
@@ -121,7 +122,9 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(echo)
 	.cmd		= do_echo,
-	.usage		= "echo args to console",
+	BAREBOX_CMD_DESC("echo args to console")
+	BAREBOX_CMD_OPTS("[-neao] STRING")
+	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_echo_help)
 BAREBOX_CMD_END
 

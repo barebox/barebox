@@ -204,6 +204,77 @@ int command_var_complete(struct string_list *sl, char *instr)
 }
 EXPORT_SYMBOL(command_var_complete);
 
+int devicetree_alias_complete(struct string_list *sl, char *instr)
+{
+	struct device_node *aliases;
+	struct property *p;
+
+	aliases = of_find_node_by_path("/aliases");
+	if (!aliases)
+		return 0;
+
+	list_for_each_entry(p, &aliases->properties, list) {
+		if (strncmp(instr, p->name, strlen(instr)))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", p->name);
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(devicetree_alias_complete);
+
+int devicetree_nodepath_complete(struct string_list *sl, char *instr)
+{
+	struct device_node *node, *child;
+	char *dirn, *base;
+	char *path = strdup(instr);
+
+	if (*instr == '/') {
+		dirn = dirname(path);
+		base = basename(instr);
+		node = of_find_node_by_path(dirn);
+		if (!node)
+			goto out;
+	} else if (!*instr) {
+		node = of_get_root_node();
+		if (!node)
+			goto out;
+		base = "";
+	} else {
+		goto out;
+	}
+
+	for_each_child_of_node(node, child) {
+		if (strncmp(base, child->name, strlen(base)))
+			continue;
+		string_list_add_asprintf(sl, "%s/", child->full_name);
+	}
+out:
+	free(path);
+
+	return 0;
+}
+EXPORT_SYMBOL(devicetree_nodepath_complete);
+
+int devicetree_complete(struct string_list *sl, char *instr)
+{
+	devicetree_nodepath_complete(sl, instr);
+	devicetree_alias_complete(sl, instr);
+
+	return 0;
+}
+EXPORT_SYMBOL(devicetree_complete);
+
+int devicetree_file_complete(struct string_list *sl, char *instr)
+{
+	devicetree_complete(sl, instr);
+	file_complete(sl, instr, 0);
+
+	return 0;
+}
+EXPORT_SYMBOL(devicetree_file_complete);
+
 static int env_param_complete(struct string_list *sl, char *instr, int eval)
 {
 	struct device_d *dev;
@@ -277,11 +348,16 @@ static char* cmd_complete_lookup(struct string_list *sl, char *instr)
 	int len;
 	int ret = COMPLETE_END;
 	char *res = NULL;
+	char *t;
 
 	for_each_command(cmdtp) {
 		len = strlen(cmdtp->name);
 		if (!strncmp(instr, cmdtp->name, len) && instr[len] == ' ') {
 			instr += len + 1;
+			t = strrchr(instr, ' ');
+			if (t)
+				instr = t + 1;
+
 			if (cmdtp->complete) {
 				ret = cmdtp->complete(sl, instr);
 				res = instr;

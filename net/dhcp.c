@@ -790,32 +790,20 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(dhcp)
-BAREBOX_CMD_HELP_USAGE("dhcp [OPTIONS]\n")
-BAREBOX_CMD_HELP_SHORT("Invoke dhcp client to obtain ip/boot params.\n")
-BAREBOX_CMD_HELP_OPT  ("-H <hostname>",
-"Hostname to send to the DHCP server\n")
-BAREBOX_CMD_HELP_OPT  ("-v <vendor_id>",
-"DHCP Vendor ID (code 60) submitted in DHCP requests. It can\n"
-"be used in the DHCP server's configuration to select options\n"
-"(e.g. bootfile or server) which are valid for barebox clients only.\n")
-BAREBOX_CMD_HELP_OPT  ("-c <client_id>",
-"DHCP Client ID (code 61) submitted in DHCP requests. It can\n"
-"be used in the DHCP server's configuration to select options\n"
-"(e.g. bootfile or server) which are valid for barebox clients only.\n")
-BAREBOX_CMD_HELP_OPT  ("-u <client_uuid>",
-"DHCP Client UUID (code 97) submitted in DHCP requests. It can\n"
-"be used in the DHCP server's configuration to select options\n"
-"(e.g. bootfile or server) which are valid for barebox clients only.\n")
-BAREBOX_CMD_HELP_OPT  ("-U <user_class>",
-"DHCP User class (code 77) submitted in DHCP requests. It can\n"
-"be used in the DHCP server's configuration to select options\n"
-"(e.g. bootfile or server) which are valid for barebox clients only.\n")
-BAREBOX_CMD_HELP_OPT  ("-r <retry>", "retry limit by default "__stringify(DHCP_DEFAULT_RETRY)"\n");
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-H HOSTNAME", "hostname to send to the DHCP server")
+BAREBOX_CMD_HELP_OPT ("-v ID\t", "DHCP Vendor ID (code 60) submitted in DHCP requests")
+BAREBOX_CMD_HELP_OPT ("-c ID\t", "DHCP Client ID (code 61) submitted in DHCP requests")
+BAREBOX_CMD_HELP_OPT ("-u UUID\t", "DHCP Client UUID (code 97) submitted in DHCP requests")
+BAREBOX_CMD_HELP_OPT ("-U CLASS", "DHCP User class (code 77) submitted in DHCP requests")
+BAREBOX_CMD_HELP_OPT ("-r RETRY", "retry limit (default "__stringify(DHCP_DEFAULT_RETRY)")");
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dhcp)
 	.cmd		= do_dhcp,
-	.usage		= "invoke dhcp client to obtain ip/boot params",
+	BAREBOX_CMD_DESC("DHCP client to obtain IP or boot params")
+	BAREBOX_CMD_OPTS("[-HvcuUr]")
+	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_dhcp_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

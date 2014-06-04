@@ -141,27 +141,40 @@ err_out:
 }
 
 BAREBOX_CMD_HELP_START(bootm)
-BAREBOX_CMD_HELP_USAGE("bootm [OPTIONS] image\n")
-BAREBOX_CMD_HELP_SHORT("Boot an application image.\n")
-BAREBOX_CMD_HELP_OPT  ("-c",  "crc check uImage data\n")
-BAREBOX_CMD_HELP_OPT  ("-d",  "dryrun. Check data, but do not run\n")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-c\t",  "crc check uImage data")
+BAREBOX_CMD_HELP_OPT ("-d\t",  "dryrun: check data, but do not run")
+BAREBOX_CMD_HELP_OPT ("-f\t",  "load images even if type is undetectable")
 #ifdef CONFIG_CMD_BOOTM_INITRD
-BAREBOX_CMD_HELP_OPT  ("-r <initrd>","specify an initrd image\n")
-BAREBOX_CMD_HELP_OPT  ("-L <load addr>","specify initrd load address\n")
+BAREBOX_CMD_HELP_OPT ("-r INITRD","specify an initrd image")
+BAREBOX_CMD_HELP_OPT ("-L ADDR\t","specify initrd load address")
 #endif
-BAREBOX_CMD_HELP_OPT  ("-a <load addr>","specify os load address\n")
-BAREBOX_CMD_HELP_OPT  ("-e <ofs>","entry point to the image relative to start (0)\n")
+BAREBOX_CMD_HELP_OPT ("-a ADDR\t","specify os load address")
+BAREBOX_CMD_HELP_OPT ("-e OFFS\t","entry point to the image relative to start (0)")
 #ifdef CONFIG_OFTREE
-BAREBOX_CMD_HELP_OPT  ("-o <oftree>","specify oftree\n")
+BAREBOX_CMD_HELP_OPT ("-o DTS\t","specify open firmware device tree")
 #endif
 #ifdef CONFIG_CMD_BOOTM_VERBOSE
-BAREBOX_CMD_HELP_OPT  ("-v","verbose\n")
+BAREBOX_CMD_HELP_OPT ("-v\t","verbose")
 #endif
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
-	.usage		= "boot an application image",
+	BAREBOX_CMD_DESC("boot an application image")
+	BAREBOX_CMD_OPTS("[-cdf"
+#ifdef CONFIG_CMD_BOOTM_INITRD
+					  "rL"
+#endif
+					  "ae"
+#ifdef CONFIG_OFTREE
+					  "o"
+#endif
+#ifdef CONFIG_CMD_BOOTM_VERBOSE
+					  "v"
+#endif
+					  "] IMAGE")
+	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
 

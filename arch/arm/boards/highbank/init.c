@@ -76,7 +76,7 @@ static int highbank_mem_init(void)
 	/* load by the firmware at 0x1000 */
 	fdt = IOMEM(FIRMWARE_DTB_BASE);
 
-	root = of_unflatten_dtb(NULL, fdt);
+	root = of_unflatten_dtb(fdt);
 	if (!root) {
 		pr_warn("no dtb found at 0x1000 use default configuration\n");
 		fdt = NULL;

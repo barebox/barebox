@@ -28,7 +28,8 @@ static int do_true(int argc, char *argv[])
 
 BAREBOX_CMD_START(true)
 	.cmd		= do_true,
-	.usage		= "do nothing, successfully",
+	BAREBOX_CMD_DESC("do nothing, successfully")
+	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END
 

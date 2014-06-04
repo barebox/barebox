@@ -56,13 +56,15 @@ static int do_i2c_probe(int argc, char *argv[])
 	return 0;
 }
 
-static const __maybe_unused char cmd_i2c_probe_help[] =
-"Usage: i2c_probe bus 0xstartaddr 0xstopaddr\n"
-"probe a range of i2c addresses.\n";
+BAREBOX_CMD_HELP_START(i2c_probe)
+BAREBOX_CMD_HELP_TEXT("Probe the i2c bus BUS, address range from START to END for devices.")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(i2c_probe)
 	.cmd		= do_i2c_probe,
-	.usage		= "probe for an i2c device",
+	BAREBOX_CMD_DESC("probe for an i2c device")
+	BAREBOX_CMD_OPTS("BUS START END")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_i2c_probe_help)
 BAREBOX_CMD_END
 
@@ -129,17 +131,20 @@ out:
 	return ret;
 }
 
-static const __maybe_unused char cmd_i2c_write_help[] =
-"Usage: i2c_write [OPTION] ... hexdatas\n"
-"write to i2c device.\n"
-"  -a 0x<addr>   i2c device address\n"
-"  -b <bus_num>  i2c bus number (default = 0)\n"
-"  -r 0x<reg>    start register\n"
-"  -w            use 16bit-wide address access\n";
+BAREBOX_CMD_HELP_START(i2c_write)
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-b BUS\t", "i2c bus number (default 0)")
+BAREBOX_CMD_HELP_OPT ("-a ADDR\t", "i2c device address")
+BAREBOX_CMD_HELP_OPT ("-r START", "start register")
+BAREBOX_CMD_HELP_OPT ("-w\t",       "use word (16 bit) wide access")
+BAREBOX_CMD_HELP_OPT ("-v\t",       "verbose")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(i2c_write)
 	.cmd		= do_i2c_write,
-	.usage		= "write to an i2c device",
+	BAREBOX_CMD_DESC("write to an i2c device")
+	BAREBOX_CMD_OPTS("[-barwv] DATA...")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_i2c_write_help)
 BAREBOX_CMD_END
 
@@ -202,17 +207,21 @@ static int do_i2c_read(int argc, char *argv[])
 	return ret;
 }
 
-static const __maybe_unused char cmd_i2c_read_help[] =
-"Usage: i2c_read [OPTION]\n"
-"read i2c device.\n"
-"  -a 0x<addr>   i2c device address\n"
-"  -b <bus_num>  i2c bus number (default = 0)\n"
-"  -r 0x<reg>    start register\n"
-"  -w            use 16bit-wide address access\n"
-"  -c <count>    byte count\n";
+BAREBOX_CMD_HELP_START(i2c_read)
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT("-b BUS\t", "i2c bus number (default 0)")
+BAREBOX_CMD_HELP_OPT("-a ADDR\t", "i2c device address")
+BAREBOX_CMD_HELP_OPT("-r START", "start register")
+BAREBOX_CMD_HELP_OPT("-w\t",       "use word (16 bit) wide access")
+BAREBOX_CMD_HELP_OPT("-c COUNT", "byte count")
+BAREBOX_CMD_HELP_OPT("-v\t",       "verbose")
+BAREBOX_CMD_HELP_END
+
 
 BAREBOX_CMD_START(i2c_read)
 	.cmd		= do_i2c_read,
-	.usage		= "read from an i2c device",
+	BAREBOX_CMD_DESC("read from an i2c device")
+	BAREBOX_CMD_OPTS("[-bacrwv] DATA...")
+	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_i2c_read_help)
 BAREBOX_CMD_END

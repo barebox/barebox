@@ -48,30 +48,64 @@
 #include <getopt.h>
 #include <endian.h>
 
+enum soc {
+	SOC_AM33XX,
+	SOC_AM35XX,
+	SOC_UNKNOWN,
+};
+
+static char *soc_names[] = {
+	[SOC_AM33XX] = "am33xx",
+	[SOC_AM35XX] = "am35xx",
+};
+
 void usage(char *prgname)
 {
 	printf("usage: %s [OPTION] FILE > IMAGE\n"
 	       "\n"
 	       "options:\n"
-	       "  -a <address> memory address for the loaded image in SRAM\n",
+	       "  -a <address> memory address for the loaded image in SRAM\n"
+	       "  -s <soc>     SoC to use (am33xx, am35xx)\n",
 	       prgname);
 }
 
 int main(int argc, char *argv[])
 {
 	FILE *input;
-	int opt;
+	int opt, i;
 	off_t pos;
 	size_t size;
 	uint32_t addr = 0x40200000;
 	uint32_t temp;
+	enum soc soc = SOC_UNKNOWN;
+	char *socname = NULL;
 
-	while((opt = getopt(argc, argv, "a:")) != -1) {
+	while((opt = getopt(argc, argv, "a:s:")) != -1) {
 		switch (opt) {
 		case 'a':
 			addr = strtoul(optarg, NULL, 0);
 			break;
+		case 's':
+			socname = optarg;
+			break;
 		}
+	}
+
+	if (!socname) {
+		fprintf(stderr, "SoC not specified. Use -s <soc>\n");
+		exit(EXIT_FAILURE);
+	}
+
+	for (i = 0; i < 2; i++) {
+		if (!strcmp(socname, soc_names[i])) {
+			soc = i;
+			break;
+		}
+	}
+
+	if (soc == SOC_UNKNOWN) {
+		fprintf(stderr, "SoC %s unknown\n", socname);
+		exit(EXIT_FAILURE);
 	}
 
 	if (optind >= argc) {
@@ -108,12 +142,14 @@ int main(int argc, char *argv[])
 	pos = (pos + 3) & ~3;
 
 	/* image size */
-	temp = htobe32((uint32_t)pos);
-	fwrite(&temp, sizeof(uint32_t), 1, stdout);
+	if (soc == SOC_AM35XX) {
+		temp = htobe32((uint32_t)pos);
+		fwrite(&temp, sizeof(uint32_t), 1, stdout);
 
-	/* memory address */
-	temp = htobe32(addr);
-	fwrite(&temp, sizeof(uint32_t), 1, stdout);
+		/* memory address */
+		temp = htobe32(addr);
+		fwrite(&temp, sizeof(uint32_t), 1, stdout);
+	}
 
 	for (;;) {
 		size = fread(&temp, 1, sizeof(uint32_t), input);

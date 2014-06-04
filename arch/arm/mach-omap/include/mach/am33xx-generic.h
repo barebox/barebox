@@ -1,6 +1,7 @@
 #ifndef __MACH_AM33XX_GENERIC_H
 #define __MACH_AM33XX_GENERIC_H
 
+#include <string.h>
 #include <mach/generic.h>
 #include <mach/am33xx-silicon.h>
 

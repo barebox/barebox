@@ -93,6 +93,7 @@ struct omap3_spi_master {
 			     * offset of 0x100 between start of register space
 			     * and registers
 			     */
+	int swap_miso_mosi;
 };
 
 #endif /* _OMAP3_SPI_H_ */

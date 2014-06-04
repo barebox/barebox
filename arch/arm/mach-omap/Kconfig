@@ -93,6 +93,16 @@ config BAREBOX_UPDATE_AM33XX_SPI_NOR_MLO
 	  Say Y for barebox update SPI NOR MLO handler.
 	  AM35xx, AM33xx chips use big endian MLO for SPI NOR flash.
 
+config BAREBOX_UPDATE_AM33XX_NAND_XLOADSLOTS
+	prompt "barebox update nand xload slots handler"
+	bool
+	depends on BAREBOX_UPDATE
+	help
+	  Say Y for barebox update nand xload slots handler.
+	  This update handler updates 4 default nand xload slots
+	  with a single command.
+	  The Handler also checks if the given image has a valid CH header.
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x80e80000 if MACH_OMAP343xSDP

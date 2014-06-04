@@ -106,8 +106,15 @@ int spi_claim_bus(struct spi_device *spi)
 	/* standard 4-wire master mode:	SCK, MOSI/out, MISO/in, nCS
 	 * REVISIT: this controller could support SPI_3WIRE mode.
 	 */
-	conf &= ~(OMAP3_MCSPI_CHCONF_IS|OMAP3_MCSPI_CHCONF_DPE1);
-	conf |= OMAP3_MCSPI_CHCONF_DPE0;
+	if (omap3_master->swap_miso_mosi) {
+		/* swapped */
+		conf |= (OMAP3_MCSPI_CHCONF_IS | OMAP3_MCSPI_CHCONF_DPE1);
+		conf &= ~OMAP3_MCSPI_CHCONF_DPE0;
+	} else {
+		 /* bootloader default */
+		conf &= ~(OMAP3_MCSPI_CHCONF_IS | OMAP3_MCSPI_CHCONF_DPE1);
+		conf |= OMAP3_MCSPI_CHCONF_DPE0;
+	}
 
 	/* wordlength */
 	conf &= ~OMAP3_MCSPI_CHCONF_WL_MASK;
@@ -343,6 +350,17 @@ static int omap3_spi_setup(struct spi_device *spi)
 	return 0;
 }
 
+static int omap3_spi_probe_dt(struct device_d *dev, struct omap3_spi_master *omap3_master)
+{
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node)
+		return -ENODEV;
+
+	if (of_property_read_bool(dev->device_node, "ti,pindir-d0-out-d1-in"))
+		omap3_master->swap_miso_mosi = 1;
+
+	return 0;
+}
+
 static int omap3_spi_probe(struct device_d *dev)
 {
 	struct spi_master *master;
@@ -355,6 +373,8 @@ static int omap3_spi_probe(struct device_d *dev)
 		return ret;
 
 	omap3_master = xzalloc(sizeof(*omap3_master));
+
+	omap3_spi_probe_dt(dev, omap3_master);
 
 	master = &omap3_master->master;
 	master->dev = dev;

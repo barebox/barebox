@@ -1,0 +1,32 @@
+/dts-v1/;
+
+#include "skeleton.dtsi"
+
+/ {
+	model = "D-Link DIR-320";
+	compatible = "dlink,dir320";
+
+	memory {
+		reg = <0x00000000 0x2000000>;
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		device_type = "soc";
+		ranges;
+
+		serial0: serial@b8000300 {
+			compatible = "ns16550a";
+			reg = <0xb8000300 0x08>;
+			reg-shift = <0>;
+			clock-frequency = <25804800>;
+			status = "disabled";
+		};
+	};
+};
+
+&serial0 {
+	status = "okay";
+};

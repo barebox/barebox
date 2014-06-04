@@ -26,34 +26,52 @@
 #include <malloc.h>
 #include <of.h>
 #include <io.h>
+#include <regulator.h>
+#include <linux/err.h>
 
 #include <mach/iim.h>
+#include <mach/imx51-regs.h>
+#include <mach/imx53-regs.h>
+#include <mach/clock-imx51_53.h>
 
 #define DRIVERNAME	"imx_iim"
+#define IIM_NUM_BANKS	8
 
-static int iim_write_enable;
-static int iim_sense_enable;
+struct iim_priv;
+
+struct iim_bank {
+	struct cdev cdev;
+	void __iomem *bankbase;
+	int bank;
+	struct iim_priv *iim;
+};
 
 struct iim_priv {
 	struct cdev cdev;
+	struct device_d dev;
 	void __iomem *base;
 	void __iomem *bankbase;
-	int bank;
-	int banksize;
+	struct iim_bank *bank[IIM_NUM_BANKS];
+	int write_enable;
+	int sense_enable;
+	void (*supply)(int enable);
+	struct regulator *fuse_supply;
 };
 
-static int do_fuse_sense(void __iomem *reg_base, unsigned int bank,
-		unsigned int row)
+struct imx_iim_drvdata {
+	void (*supply)(int enable);
+};
+
+static struct iim_priv *imx_iim;
+
+static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
 {
+	struct iim_priv *iim = bank->iim;
+	void __iomem *reg_base = iim->base;
 	u8 err, stat;
 
-	if (bank > 7) {
-		printf("%s: invalid bank number\n", __func__);
-		return -EINVAL;
-	}
-
 	if (row > 255) {
-		printf("%s: invalid row index\n", __func__);
+		dev_err(&iim->dev, "%s: invalid row index\n", __func__);
 		return -EINVAL;
 	}
 
@@ -62,7 +80,7 @@ static int do_fuse_sense(void __iomem *reg_base, unsigned int bank,
 	writeb(0xfe, reg_base + IIM_ERR);
 
 	/* upper and lower address halves */
-	writeb((bank << 3) | (row >> 5), reg_base + IIM_UA);
+	writeb((bank->bank << 3) | (row >> 5), reg_base + IIM_UA);
 	writeb((row << 3) & 0xf8, reg_base + IIM_LA);
 
 	/* start fuse sensing */
@@ -77,7 +95,7 @@ static int do_fuse_sense(void __iomem *reg_base, unsigned int bank,
 
 	err = readb(reg_base + IIM_ERR);
 	if (err) {
-		printf("%s: sense error (0x%02x)\n", __func__, err);
+		dev_err(&iim->dev, "sense error (0x%02x)\n", err);
 		return -EIO;
 	}
 
@@ -88,40 +106,51 @@ static ssize_t imx_iim_cdev_read(struct cdev *cdev, void *buf, size_t count,
 		loff_t offset, ulong flags)
 {
 	ulong size, i;
-	struct iim_priv *priv = cdev->priv;
+	struct iim_bank *bank = container_of(cdev, struct iim_bank, cdev);
 
-	size = min((loff_t)count, priv->banksize - offset);
-	if (iim_sense_enable) {
+	size = min((loff_t)count, 32 - offset);
+	if (bank->iim->sense_enable) {
 		for (i = 0; i < size; i++) {
 			int row_val;
 
-			row_val = do_fuse_sense(priv->base,
-						priv->bank, offset + i);
+			row_val = imx_iim_fuse_sense(bank, offset + i);
 			if (row_val < 0)
 				return row_val;
 			((u8 *)buf)[i] = (u8)row_val;
 		}
 	} else {
 		for (i = 0; i < size; i++)
-			((u8 *)buf)[i] = ((u8 *)priv->bankbase)[(offset+i)*4];
+			((u8 *)buf)[i] = ((u8 *)bank->bankbase)[(offset+i)*4];
 	}
 
 	return size;
 }
 
-static int do_fuse_blow(void __iomem *reg_base, unsigned int bank,
-		unsigned int row, u8 value)
+int imx_iim_read(unsigned int banknum, int offset, void *buf, int count)
 {
+	struct iim_priv *iim = imx_iim;
+	struct iim_bank *bank;
+
+	if (!imx_iim)
+		return -ENODEV;
+
+	if (banknum > IIM_NUM_BANKS)
+		return -EINVAL;
+
+	bank = iim->bank[banknum];
+
+	return imx_iim_cdev_read(&bank->cdev, buf, count, offset, 0);
+}
+
+static int imx_iim_fuse_blow_one(struct iim_bank *bank, unsigned int row, u8 value)
+{
+	struct iim_priv *iim = bank->iim;
+	void __iomem *reg_base = iim->base;
 	int bit, ret = 0;
 	u8 err, stat;
 
-	if (bank > 7) {
-		printf("%s: invalid bank number\n", __func__);
-		return -EINVAL;
-	}
-
 	if (row > 255) {
-		printf("%s: invalid row index\n", __func__);
+		dev_err(&iim->dev, "%s: invalid row index\n", __func__);
 		return -EINVAL;
 	}
 
@@ -133,7 +162,7 @@ static int do_fuse_blow(void __iomem *reg_base, unsigned int bank,
 	writeb(0xaa, reg_base + IIM_PREG_P);
 
 	/* upper half address register */
-	writeb((bank << 3) | (row >> 5), reg_base + IIM_UA);
+	writeb((bank->bank << 3) | (row >> 5), reg_base + IIM_UA);
 
 	for (bit = 0; bit < 8; bit++) {
 		if (((value >> bit) & 1) == 0)
@@ -155,8 +184,8 @@ static int do_fuse_blow(void __iomem *reg_base, unsigned int bank,
 
 		err = readb(reg_base + IIM_ERR);
 		if (err) {
-			printf("%s: bank %u, row %u, bit %d program error "
-					"(0x%02x)\n", __func__, bank, row, bit,
+			dev_err(&iim->dev, "bank %u, row %u, bit %d program error "
+					"(0x%02x)\n", bank->bank, row, bit,
 					err);
 			ret = -EIO;
 			goto out;
@@ -169,26 +198,56 @@ out:
 	return ret;
 }
 
+static int imx_iim_fuse_blow(struct iim_bank *bank, unsigned offset, const void *buf,
+		unsigned size)
+{
+	struct iim_priv *iim = bank->iim;
+	int ret, i;
+
+	if (IS_ERR(iim->fuse_supply)) {
+		iim->fuse_supply = regulator_get(iim->dev.parent, "vdd-fuse");
+		dev_info(iim->dev.parent, "regul: %p\n", iim->fuse_supply);
+		if (IS_ERR(iim->fuse_supply))
+			return PTR_ERR(iim->fuse_supply);
+	}
+
+	ret = regulator_enable(iim->fuse_supply);
+	if (ret < 0)
+		return ret;
+
+	if (iim->supply)
+		iim->supply(1);
+
+	for (i = 0; i < size; i++) {
+		ret = imx_iim_fuse_blow_one(bank, offset + i, ((u8 *)buf)[i]);
+		if (ret < 0)
+			goto err_out;
+	}
+
+	if (iim->supply)
+		iim->supply(0);
+
+	ret = 0;
+
+err_out:
+	regulator_disable(iim->fuse_supply);
+
+	return ret;
+}
+
 static ssize_t imx_iim_cdev_write(struct cdev *cdev, const void *buf, size_t count,
 		loff_t offset, ulong flags)
 {
 	ulong size, i;
-	struct iim_priv *priv = cdev->priv;
+	struct iim_bank *bank = container_of(cdev, struct iim_bank, cdev);
 
-	size = min((loff_t)count, priv->banksize - offset);
+	size = min((loff_t)count, 32 - offset);
 
-	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW) && iim_write_enable) {
-		for (i = 0; i < size; i++) {
-			int ret;
-
-			ret = do_fuse_blow(priv->base, priv->bank,
-					   offset + i, ((u8 *)buf)[i]);
-			if (ret < 0)
-				return ret;
-		}
+	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW) && bank->iim->write_enable) {
+		return imx_iim_fuse_blow(bank, offset, buf, size);
 	} else {
 		for (i = 0; i < size; i++)
-			((u8 *)priv->bankbase)[(offset+i)*4] = ((u8 *)buf)[i];
+			((u8 *)bank->bankbase)[(offset+i)*4] = ((u8 *)buf)[i];
 	}
 
 	return size;
@@ -200,30 +259,80 @@ static struct file_operations imx_iim_ops = {
 	.lseek	= dev_lseek_default,
 };
 
-static int imx_iim_add_bank(struct device_d *dev, void __iomem *base, int num)
+static int imx_iim_add_bank(struct iim_priv *iim, int num)
 {
-	struct iim_priv *priv;
+	struct iim_bank *bank;
 	struct cdev *cdev;
 
-	priv = xzalloc(sizeof (*priv));
+	bank = xzalloc(sizeof (*bank));
 
-	priv->base	= base;
-	priv->bankbase	= priv->base + 0x800 + 0x400 * num;
-	priv->bank	= num;
-	priv->banksize	= 32;
-	cdev = &priv->cdev;
-	cdev->dev	= dev;
+	bank->bankbase	= iim->base + 0x800 + 0x400 * num;
+	bank->bank	= num;
+	bank->iim	= iim;
+	cdev = &bank->cdev;
 	cdev->ops	= &imx_iim_ops;
-	cdev->priv	= priv;
 	cdev->size	= 32;
 	cdev->name	= asprintf(DRIVERNAME "_bank%d", num);
 	if (cdev->name == NULL)
 		return -ENOMEM;
 
+	iim->bank[num] = bank;
+
 	return devfs_create(cdev);
 }
 
 #if IS_ENABLED(CONFIG_OFDEVICE)
+
+#define MAC_BYTES	6
+
+struct imx_iim_mac {
+	struct iim_bank *bank;
+	int offset;
+	u8 ethaddr[MAC_BYTES];
+};
+
+static int imx_iim_get_mac(struct param_d *param, void *priv)
+{
+	struct imx_iim_mac *iimmac = priv;
+	struct iim_bank *bank = iimmac->bank;
+	int ret;
+
+	ret = imx_iim_cdev_read(&bank->cdev, iimmac->ethaddr, MAC_BYTES, iimmac->offset, 0);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+static int imx_iim_set_mac(struct param_d *param, void *priv)
+{
+	struct imx_iim_mac *iimmac = priv;
+	struct iim_bank *bank = iimmac->bank;
+	int ret;
+
+	ret = imx_iim_cdev_write(&bank->cdev, iimmac->ethaddr, MAC_BYTES, iimmac->offset, 0);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+static void imx_iim_add_mac_param(struct iim_priv *iim, int macnum, int bank, int offset)
+{
+	struct imx_iim_mac *iimmac;
+	char *name;
+
+	iimmac = xzalloc(sizeof(*iimmac));
+	iimmac->offset = offset;
+	iimmac->bank = iim->bank[bank];
+
+	name = asprintf("ethaddr%d", macnum);
+
+	dev_add_param_mac(&iim->dev, name, imx_iim_set_mac,
+			imx_iim_get_mac, iimmac->ethaddr, iimmac);
+
+	free(name);
+}
 
 /*
  * a single MAC address reference has the form
@@ -231,12 +340,12 @@ static int imx_iim_add_bank(struct device_d *dev, void __iomem *base, int num)
  */
 #define MAC_ADDRESS_PROPLEN	(3 * sizeof(__be32))
 
-static void imx_iim_init_dt(struct device_d *dev)
+static void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 {
 	char mac[6];
 	const __be32 *prop;
 	struct device_node *node = dev->device_node;
-	int len, ret;
+	int len, ret, macnum = 0;
 
 	if (!node)
 		return;
@@ -262,41 +371,112 @@ static void imx_iim_init_dt(struct device_d *dev)
 			dev_err(dev, "cannot read: %s\n", strerror(-ret));
 		}
 
+		imx_iim_add_mac_param(iim, macnum, bank, offset);
+		macnum++;
+
 		len -= MAC_ADDRESS_PROPLEN;
 	}
 }
 #else
-static inline void imx_iim_init_dt(struct device_d *dev)
+static inline void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 {
 }
 #endif
 
 static int imx_iim_probe(struct device_d *dev)
 {
-	int i;
-	void __iomem *base;
+	struct iim_priv *iim;
+	int i, ret;
+	struct imx_iim_drvdata *drvdata = NULL;
 
-	base = dev_request_mem_region(dev, 0);
+	if (imx_iim)
+		return -EBUSY;
 
-	for (i = 0; i < 8; i++) {
-		imx_iim_add_bank(dev, base, i);
+	iim = xzalloc(sizeof(*iim));
+
+	dev_get_drvdata(dev, (unsigned long *)&drvdata);
+
+	if (drvdata && drvdata->supply)
+		iim->supply = drvdata->supply;
+
+	imx_iim = iim;
+
+	strcpy(iim->dev.name, "iim");
+	iim->dev.parent = dev;
+	iim->dev.id = DEVICE_ID_SINGLE;
+	ret = register_device(&iim->dev);
+	if (ret)
+		return ret;
+
+	iim->fuse_supply = ERR_PTR(-ENODEV);
+
+	iim->base = dev_request_mem_region(dev, 0);
+	if (!iim->base)
+		return -EBUSY;
+
+	for (i = 0; i < IIM_NUM_BANKS; i++) {
+		ret = imx_iim_add_bank(iim, i);
+		if (ret)
+			return ret;
 	}
 
-	imx_iim_init_dt(dev);
+	imx_iim_init_dt(dev, iim);
 
 	if (IS_ENABLED(CONFIG_IMX_IIM_FUSE_BLOW))
-		dev_add_param_bool(dev, "permanent_write_enable",
-			NULL, NULL, &iim_write_enable, NULL);
+		dev_add_param_bool(&iim->dev, "permanent_write_enable",
+			NULL, NULL, &iim->write_enable, NULL);
 
-	dev_add_param_bool(dev, "explicit_sense_enable",
-			NULL, NULL, &iim_sense_enable, NULL);
+	dev_add_param_bool(&iim->dev, "explicit_sense_enable",
+			NULL, NULL, &iim->sense_enable, NULL);
 
 	return 0;
 }
 
+static void imx5_iim_supply(void __iomem *ccm_base, int enable)
+{
+	uint32_t val;
+
+	val = readl(ccm_base + MX5_CCM_CGPR);
+
+	if (enable)
+		val |= 1 << 4;
+	else
+		val &= ~(1 << 4);
+
+	writel(val, ccm_base + MX5_CCM_CGPR);
+}
+
+static void imx51_iim_supply(int enable)
+{
+	imx5_iim_supply((void __iomem *)MX51_CCM_BASE_ADDR, enable);
+}
+
+static void imx53_iim_supply(int enable)
+{
+	imx5_iim_supply((void __iomem *)MX53_CCM_BASE_ADDR, enable);
+}
+
+static struct imx_iim_drvdata imx27_drvdata = {
+};
+
+static struct imx_iim_drvdata imx51_drvdata = {
+	.supply = imx51_iim_supply,
+};
+
+static struct imx_iim_drvdata imx53_drvdata = {
+	.supply = imx53_iim_supply,
+};
+
 static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
 	{
+		.compatible = "fsl,imx53-iim",
+		.data = (unsigned long)&imx53_drvdata,
+	}, {
+		.compatible = "fsl,imx51-iim",
+		.data = (unsigned long)&imx51_drvdata,
+	}, {
 		.compatible = "fsl,imx27-iim",
+		.data = (unsigned long)&imx27_drvdata,
 	}, {
 		/* sentinel */
 	}
@@ -315,21 +495,3 @@ static int imx_iim_init(void)
 	return 0;
 }
 coredevice_initcall(imx_iim_init);
-
-int imx_iim_read(unsigned int bank, int offset, void *buf, int count)
-{
-	struct cdev *cdev;
-	char *name = asprintf(DRIVERNAME "_bank%d", bank);
-	int ret;
-
-	cdev = cdev_open(name, O_RDONLY);
-	if (!cdev)
-		return -ENODEV;
-
-	ret = cdev_read(cdev, buf, count, offset, 0);
-
-	cdev_close(cdev);
-	free(name);
-
-	return ret;
-}

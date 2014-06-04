@@ -20,17 +20,25 @@
 #include <linux/ethtool.h>
 #include <linux/mii.h>
 
-#define PHY_BASIC_FEATURES	(SUPPORTED_10baseT_Half | \
-				 SUPPORTED_10baseT_Full | \
-				 SUPPORTED_100baseT_Half | \
-				 SUPPORTED_100baseT_Full | \
-				 SUPPORTED_Autoneg | \
+#define PHY_DEFAULT_FEATURES    (SUPPORTED_Autoneg | \
 				 SUPPORTED_TP | \
 				 SUPPORTED_MII)
 
-#define PHY_GBIT_FEATURES	(PHY_BASIC_FEATURES | \
-				 SUPPORTED_1000baseT_Half | \
+#define PHY_10BT_FEATURES       (SUPPORTED_10baseT_Half | \
+				 SUPPORTED_10baseT_Full)
+
+#define PHY_100BT_FEATURES      (SUPPORTED_100baseT_Half | \
+				 SUPPORTED_100baseT_Full)
+
+#define PHY_1000BT_FEATURES     (SUPPORTED_1000baseT_Half | \
 				 SUPPORTED_1000baseT_Full)
+
+#define PHY_BASIC_FEATURES      (PHY_10BT_FEATURES | \
+				 PHY_100BT_FEATURES | \
+				 PHY_DEFAULT_FEATURES)
+
+#define PHY_GBIT_FEATURES       (PHY_BASIC_FEATURES | \
+				 PHY_1000BT_FEATURES)
 
 /* Interface Mode definitions */
 typedef enum {
@@ -279,20 +287,6 @@ static inline int phy_write(struct phy_device *phydev, u32 regnum, u16 val)
 int phy_device_connect(struct eth_device *dev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface);
-
-#if defined(CONFIG_OFTREE)
-int of_phy_device_connect(struct eth_device *edev, struct device_node *phy_np,
-			  void (*adjust_link) (struct eth_device *edev),
-			  u32 flags, phy_interface_t interface);
-#else
-static inline int of_phy_device_connect(struct eth_device *edev,
-				struct device_node *phy_np,
-				void (*adjust_link) (struct eth_device *edev),
-				u32 flags, phy_interface_t interface)
-{
-	return -ENOSYS;
-}
-#endif
 
 int phy_update_status(struct phy_device *phydev);
 int phy_wait_aneg_done(struct phy_device *phydev);

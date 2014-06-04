@@ -245,6 +245,8 @@ int phy_register_device(struct phy_device* dev)
 	if (ret)
 		return ret;
 
+	dev->bus->phy_map[dev->addr] = dev;
+
 	dev->registered = 1;
 
 	if (dev->dev.driver)
@@ -260,12 +262,71 @@ int phy_register_device(struct phy_device* dev)
 	return ret;
 }
 
+static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
+{
+	struct device_d *dev;
+	struct device_node *phy_node;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return NULL;
+
+	if (!edev->parent->device_node)
+		return NULL;
+
+	phy_node = of_parse_phandle(edev->parent->device_node, "phy-handle", 0);
+	if (!phy_node)
+		return NULL;
+
+	bus_for_each_device(&mdio_bus_type, dev) {
+		if (dev->device_node == phy_node)
+			return container_of(dev, struct phy_device, dev);
+	}
+
+	return NULL;
+}
+
+static int phy_device_attach(struct phy_device *phy, struct eth_device *edev,
+		       void (*adjust_link) (struct eth_device *edev),
+		       u32 flags, phy_interface_t interface)
+{
+	int ret;
+
+	if (phy->attached_dev)
+		return -EBUSY;
+
+	phy->interface = interface;
+	phy->dev_flags = flags;
+
+	if (!phy->registered) {
+		ret = phy_register_device(phy);
+		if (ret)
+			return ret;
+	}
+
+	edev->phydev = phy;
+	phy->attached_dev = edev;
+
+	ret = phy_init_hw(phy);
+	if (ret)
+		return ret;
+
+	/* Sanitize settings based on PHY capabilities */
+	if ((phy->supported & SUPPORTED_Autoneg) == 0)
+		phy->autoneg = AUTONEG_DISABLE;
+
+	phy_config_aneg(edev->phydev);
+
+	phy->adjust_link = adjust_link;
+
+	return 0;
+}
+
 /* Automatically gets and returns the PHY device */
 int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		       void (*adjust_link) (struct eth_device *edev),
 		       u32 flags, phy_interface_t interface)
 {
-	struct phy_device* dev = NULL;
+	struct phy_device *phy;
 	unsigned int i;
 	int ret = -EINVAL;
 
@@ -274,93 +335,46 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		return 0;
 	}
 
+	phy = of_mdio_find_phy(edev);
+	if (phy) {
+		ret = phy_device_attach(phy, edev, adjust_link, flags, interface);
+
+		goto out;
+	}
+
 	if (addr >= 0) {
-		dev = mdiobus_scan(bus, addr);
-		if (IS_ERR(dev)) {
+		phy = mdiobus_scan(bus, addr);
+		if (IS_ERR(phy)) {
 			ret = -EIO;
-			goto fail;
-		}
-	} else {
-		for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
-			/* skip masked out PHY addresses */
-			if (bus->phy_mask & (1 << i))
-				continue;
-
-			dev = mdiobus_scan(bus, i);
-			if (!IS_ERR(dev) && !dev->attached_dev)
-                                break;
+			goto out;
 		}
 
-		if (IS_ERR(dev)) {
-			ret = PTR_ERR(dev);
-			goto fail;
-		}
+		ret = phy_device_attach(phy, edev, adjust_link, flags, interface);
+
+		goto out;
 	}
 
-	if (dev->attached_dev)
-		return -EBUSY;
+	for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
+		/* skip masked out PHY addresses */
+		if (bus->phy_mask & (1 << i))
+			continue;
 
-	dev->interface = interface;
-	dev->dev_flags = flags;
+		phy = mdiobus_scan(bus, i);
+		if (IS_ERR(phy))
+			continue;
 
-	if (!dev->registered) {
-		ret = phy_register_device(dev);
-		if (ret)
-			goto fail;
+		ret = phy_device_attach(phy, edev, adjust_link, flags, interface);
+
+		goto out;
 	}
 
-	edev->phydev = dev;
-	dev->attached_dev = edev;
-
-	ret = phy_init_hw(dev);
+	ret = -ENODEV;
+out:
 	if (ret)
-		goto fail;
+		puts("Unable to find a PHY (unknown ID?)\n");
 
-	/* Sanitize settings based on PHY capabilities */
-	if ((dev->supported & SUPPORTED_Autoneg) == 0)
-		dev->autoneg = AUTONEG_DISABLE;
-
-	phy_config_aneg(edev->phydev);
-
-	dev->adjust_link = adjust_link;
-
-	return 0;
-
-fail:
-	puts("Unable to find a PHY (unknown ID?)\n");
 	return ret;
 }
-
-#if defined(CONFIG_OFTREE)
-int of_phy_device_connect(struct eth_device *edev, struct device_node *phy_np,
-			  void (*adjust_link) (struct eth_device *edev),
-			  u32 flags, phy_interface_t interface)
-{
-	struct device_node *bus_np;
-	struct mii_bus *miibus;
-	int phy_addr = -ENODEV;
-
-	if (!phy_np)
-		return -EINVAL;
-
-	of_property_read_u32(phy_np, "reg", &phy_addr);
-
-	bus_np = of_get_parent(phy_np);
-	if (!bus_np)
-		return -ENODEV;
-
-	for_each_mii_bus(miibus) {
-		if (miibus->parent && miibus->parent->device_node == bus_np)
-			return phy_device_connect(edev, miibus, phy_addr,
-					  adjust_link, flags, interface);
-	}
-
-	dev_err(&edev->dev, "unable to mdio bus for phy %s\n",
-		phy_np->full_name);
-
-	return -ENODEV;
-}
-#endif
 
 /* Generic PHY support and helper functions */
 
@@ -376,7 +390,7 @@ int of_phy_device_connect(struct eth_device *edev, struct device_node *phy_np,
 int genphy_config_advert(struct phy_device *phydev)
 {
 	u32 advertise;
-	int oldadv, adv;
+	int oldadv, adv, bmsr;
 	int err, changed = 0;
 
 	/* Only allow advertising what
@@ -403,8 +417,11 @@ int genphy_config_advert(struct phy_device *phydev)
 	}
 
 	/* Configure gigabit if it's supported */
-	if (phydev->supported & (SUPPORTED_1000baseT_Half |
-				SUPPORTED_1000baseT_Full)) {
+	bmsr = phy_read(phydev, MII_BMSR);
+	if (bmsr < 0)
+		return bmsr;
+
+	if (bmsr & BMSR_ESTATEN) {
 		oldadv = adv = phy_read(phydev, MII_CTRL1000);
 
 		if (adv < 0)
@@ -788,8 +805,8 @@ static int genphy_config_init(struct phy_device *phydev)
 			features |= SUPPORTED_1000baseT_Half;
 	}
 
-	phydev->supported = features;
-	phydev->advertising = features;
+	phydev->supported &= features;
+	phydev->advertising &= features;
 
 	return 0;
 }
@@ -841,7 +858,9 @@ static struct phy_driver genphy_driver = {
 	.drv.name = "Generic PHY",
 	.phy_id = PHY_ANY_UID,
 	.phy_id_mask = PHY_ANY_UID,
-	.features = 0,
+	.features = PHY_GBIT_FEATURES | SUPPORTED_MII |
+		SUPPORTED_AUI | SUPPORTED_FIBRE |
+		SUPPORTED_BNC,
 };
 
 static int generic_phy_register(void)

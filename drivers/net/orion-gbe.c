@@ -56,6 +56,7 @@ struct txdesc {
 };
 
 struct port_priv {
+	struct device_d dev;
 	struct eth_device edev;
 	void __iomem *regs;
 	struct device_node *np;
@@ -64,6 +65,7 @@ struct port_priv {
 	struct rxdesc *rxdesc;
 	struct rxdesc *current_rxdesc;
 	u8 *rxbuf;
+	phy_interface_t intf;
 };
 
 struct orion_gbe {
@@ -351,16 +353,6 @@ static int port_get_ethaddr(struct eth_device *edev, unsigned char *mac)
 	return 0;
 }
 
-static int port_open(struct eth_device *edev)
-{
-	struct port_priv *port = edev->priv;
-
-	/* enable receive queue */
-	writel(BIT(URXQ), port->regs + PORT_RQC);
-
-	return 0;
-}
-
 static void port_adjust_link(struct eth_device *edev)
 {
 	struct port_priv *port = edev->priv;
@@ -389,10 +381,25 @@ static void port_adjust_link(struct eth_device *edev)
 	writel(reg, port->regs + PORT_SC0);
 }
 
+static int port_open(struct eth_device *edev)
+{
+	struct port_priv *port = edev->priv;
+	int ret;
+
+	ret = phy_device_connect(&port->edev, NULL, -1, port_adjust_link, 0,
+			port->intf);
+	if (ret)
+		return ret;
+
+	/* enable receive queue */
+	writel(BIT(URXQ), port->regs + PORT_RQC);
+
+	return 0;
+}
+
 static int port_probe(struct device_d *parent, struct port_priv *port)
 {
-	struct device_node *phynp;
-	phy_interface_t intf = PHY_INTERFACE_MODE_RGMII;
+	struct device_d *dev = &port->dev;
 	u32 reg;
 	int ret;
 
@@ -400,12 +407,11 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 	if (of_property_read_u32(port->np, "reg", &port->portno))
 		dev_warn(parent, "port node is missing reg property\n");
 
-	phynp = of_parse_phandle(port->np, "phy-handle", 0);
-	if (phynp) {
-		ret = of_get_phy_mode(port->np);
-		if (ret > 0)
-			intf = ret;
-	}
+	ret = of_get_phy_mode(port->np);
+	if (ret > 0)
+		port->intf = ret;
+	else
+		port->intf = PHY_INTERFACE_MODE_RGMII;
 
 	port->regs = dev_get_mem_region(parent, 0) + PORTn_REGS(port->portno);
 
@@ -440,9 +446,17 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 
 	reg = SC1_RESERVED;
 	reg |= DEFAULT_COL_LIMIT | COL_ON_BACKPRESS | INBAND_ANEG_BYPASS;
-	if (intf == PHY_INTERFACE_MODE_RGMII)
+	if (port->intf == PHY_INTERFACE_MODE_RGMII)
 		reg |= RGMII_ENABLE;
 	writel(reg, port->regs + PORT_SC1);
+
+	sprintf(dev->name, "orion-gbe-port");
+	dev->id = port->portno;
+	dev->parent = parent;
+	dev->device_node = port->np;
+	ret = register_device(dev);
+	if (ret)
+		return ret;
 
 	/* register eth device */
 	port->edev.priv = port;
@@ -452,19 +466,11 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 	port->edev.halt = port_halt;
 	port->edev.set_ethaddr = port_set_ethaddr;
 	port->edev.get_ethaddr = port_get_ethaddr;
-	port->edev.parent = parent;
+	port->edev.parent = dev;
 
 	ret = eth_register(&port->edev);
 	if (ret)
 		return ret;
-
-	/* attach phy device */
-	if (phynp) {
-		ret = of_phy_device_connect(&port->edev, phynp,
-					    port_adjust_link, 0, intf);
-		if (ret)
-			return ret;
-	}
 
 	return 0;
 }

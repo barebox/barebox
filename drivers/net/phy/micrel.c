@@ -37,6 +37,34 @@
 #define KS8737_CTRL_INT_ACTIVE_HIGH		(1 << 14)
 #define KSZ8051_RMII_50MHZ_CLK			(1 << 7)
 
+/* Write/read to/from extended registers */
+#define MII_KSZPHY_EXTREG                       0x0b
+#define KSZPHY_EXTREG_WRITE                     0x8000
+
+#define MII_KSZPHY_EXTREG_WRITE                 0x0c
+#define MII_KSZPHY_EXTREG_READ                  0x0d
+
+/* Extended registers */
+#define MII_KSZPHY_CLK_CONTROL_PAD_SKEW         0x104
+#define MII_KSZPHY_RX_DATA_PAD_SKEW             0x105
+#define MII_KSZPHY_TX_DATA_PAD_SKEW             0x106
+
+#define PS_TO_REG				200
+
+static int kszphy_extended_write(struct phy_device *phydev,
+				u32 regnum, u16 val)
+{
+	phy_write(phydev, MII_KSZPHY_EXTREG, KSZPHY_EXTREG_WRITE | regnum);
+	return phy_write(phydev, MII_KSZPHY_EXTREG_WRITE, val);
+}
+
+static int kszphy_extended_read(struct phy_device *phydev,
+				u32 regnum)
+{
+	phy_write(phydev, MII_KSZPHY_EXTREG, regnum);
+	return phy_read(phydev, MII_KSZPHY_EXTREG_READ);
+}
+
 static int kszphy_config_init(struct phy_device *phydev)
 {
 	return 0;
@@ -57,6 +85,62 @@ static int ks8051_config_init(struct phy_device *phydev)
 		regval = phy_read(phydev, MII_KSZPHY_CTRL);
 		regval |= KSZ8051_RMII_50MHZ_CLK;
 		phy_write(phydev, MII_KSZPHY_CTRL, regval);
+	}
+
+	return 0;
+}
+
+static int ksz9021_load_values_from_of(struct phy_device *phydev,
+				       struct device_node *of_node, u16 reg,
+				       const char *field[])
+{
+	int val, regval, i;
+
+	regval = kszphy_extended_read(phydev, reg);
+
+	for (i = 0; i < 4; i++) {
+		int shift = i * 4;
+
+		if (of_property_read_u32(of_node, field[i], &val))
+			continue;
+
+		regval &= ~(0xf << shift);
+		regval |= ((val / PS_TO_REG) & 0xf) << shift;
+	}
+
+	return kszphy_extended_write(phydev, reg, regval);
+}
+
+static int ksz9021_config_init(struct phy_device *phydev)
+{
+	struct device_d *dev = &phydev->dev;
+	struct device_node *of_node = dev->device_node;
+	const char *clk_pad_skew_names[] = {
+		"txen-skew-ps", "txc-skew-ps",
+		"rxdv-skew-ps", "rxc-skew-ps"
+	};
+	const char *rx_pad_skew_names[] = {
+		"rxd0-skew-ps", "rxd1-skew-ps",
+		"rxd2-skew-ps", "rxd3-skew-ps"
+	};
+	const char *tx_pad_skew_names[] = {
+		"txd0-skew-ps", "txd1-skew-ps",
+		"txd2-skew-ps", "txd3-skew-ps"
+	};
+
+	if (!of_node && dev->parent->device_node)
+		of_node = dev->parent->device_node;
+
+	if (of_node) {
+		ksz9021_load_values_from_of(phydev, of_node,
+				    MII_KSZPHY_CLK_CONTROL_PAD_SKEW,
+				    clk_pad_skew_names);
+		ksz9021_load_values_from_of(phydev, of_node,
+				    MII_KSZPHY_RX_DATA_PAD_SKEW,
+				    rx_pad_skew_names);
+		ksz9021_load_values_from_of(phydev, of_node,
+				    MII_KSZPHY_TX_DATA_PAD_SKEW,
+				    tx_pad_skew_names);
 	}
 
 	return 0;
@@ -166,6 +250,15 @@ static struct phy_driver ksphy_driver[] = {
 	.phy_id_mask	= 0x000ffffe,
 	.drv.name	= "Micrel KSZ9021 Gigabit PHY",
 	.features	= (PHY_GBIT_FEATURES | SUPPORTED_Pause),
+	.config_init	= ksz9021_config_init,
+	.config_aneg	= genphy_config_aneg,
+	.read_status	= genphy_read_status,
+}, {
+	.phy_id		= PHY_ID_KSZ9031,
+	.phy_id_mask	= 0x00fffff0,
+	.drv.name	= "Micrel KSZ9031 Gigabit PHY",
+	.features	= (PHY_GBIT_FEATURES | SUPPORTED_Pause
+				| SUPPORTED_Asym_Pause),
 	.config_init	= kszphy_config_init,
 	.config_aneg	= genphy_config_aneg,
 	.read_status	= genphy_read_status,

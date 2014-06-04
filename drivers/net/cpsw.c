@@ -178,11 +178,11 @@ struct cpsw_slave {
 	struct cpsw_slave_regs		*regs;
 	struct cpsw_sliver_regs		*sliver;
 	int				slave_num;
-	u32				mac_control;
 	int				phy_id;
 	phy_interface_t			phy_if;
 	struct eth_device		edev;
 	struct cpsw_priv		*cpsw;
+	struct device_d			dev;
 };
 
 struct cpdma_desc {
@@ -540,9 +540,8 @@ static inline void soft_reset(struct cpsw_priv *priv, void *reg)
 static int cpsw_get_hwaddr(struct eth_device *edev, unsigned char *mac)
 {
 	struct cpsw_slave *slave = edev->priv;
-	struct cpsw_priv *priv = slave->cpsw;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	return -1;
 }
@@ -552,7 +551,7 @@ static int cpsw_set_hwaddr(struct eth_device *edev, unsigned char *mac)
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	memcpy(&priv->mac_addr, mac, sizeof(priv->mac_addr));
 
@@ -568,12 +567,9 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 	struct phy_device *phydev = slave->edev.phydev;
 	u32 mac_control = 0;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	if (!phydev)
-		return;
-
-	if (slave->slave_num)
 		return;
 
 	if (phydev->link) {
@@ -590,26 +586,22 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 			mac_control |= BIT(0);	/* FULLDUPLEXEN	*/
 	}
 
-	if (mac_control == slave->mac_control)
-		return;
-
 	if (mac_control) {
-		dev_dbg(priv->dev, "link up on port %d, speed %d, %s duplex\n",
-				slave->slave_num, phydev->speed,
+		dev_dbg(&slave->dev, "link up, speed %d, %s duplex\n",
+				phydev->speed,
 				(phydev->duplex == DUPLEX_FULL) ?  "full" : "half");
 	} else {
-		dev_dbg(priv->dev, "link down on port %d\n", slave->slave_num);
+		dev_dbg(&slave->dev, "link down\n");
 	}
 
 	writel(mac_control, &slave->sliver->mac_control);
-	slave->mac_control = mac_control;
 }
 
 static int cpsw_update_link(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {
 	int link = 0;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	cpsw_slave_update_link(slave, priv, &link);
 
@@ -621,7 +613,7 @@ static void cpsw_adjust_link(struct eth_device *edev)
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	cpsw_update_link(slave, priv);
 }
@@ -638,7 +630,7 @@ static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 {
 	u32	slave_port;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	soft_reset(priv, &slave->sliver->soft_reset);
 
@@ -648,8 +640,6 @@ static void cpsw_slave_init(struct cpsw_slave *slave, struct cpsw_priv *priv)
 
 	/* setup max packet size, and mac address */
 	writel(PKT_MAX, &slave->sliver->rx_maxlen);
-
-	slave->mac_control = 0;	/* no link yet */
 
 	/* enable forwarding */
 	slave_port = cpsw_get_slave_port(priv, slave->slave_num);
@@ -769,7 +759,7 @@ static int cpsw_open(struct eth_device *edev)
 	struct cpsw_priv *priv = slave->cpsw;
 	int i, ret;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	ret = phy_device_connect(edev, &priv->miibus, slave->phy_id,
 				 cpsw_adjust_link, 0, slave->phy_if);
@@ -801,8 +791,8 @@ static int cpsw_open(struct eth_device *edev)
 			   ALE_SECURE);
 	cpsw_ale_add_mcast(priv, ethbdaddr, 1 << priv->host_port);
 
-	cpsw_slave_init(&priv->slaves[0], priv);
-	cpsw_update_link(&priv->slaves[0], priv);
+	cpsw_slave_init(slave, priv);
+	cpsw_update_link(slave, priv);
 
 	/* init descriptor pool */
 	for (i = 0; i < NUM_DESCS; i++) {
@@ -842,7 +832,7 @@ static int cpsw_open(struct eth_device *edev)
 		ret = cpdma_submit(priv, &priv->rx_chan, NetRxPackets[i],
 				   PKTSIZE);
 		if (ret < 0) {
-			dev_err(priv->dev, "error %d submitting rx desc\n", ret);
+			dev_err(&slave->dev, "error %d submitting rx desc\n", ret);
 			break;
 		}
 	}
@@ -854,6 +844,8 @@ static void cpsw_halt(struct eth_device *edev)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;
+
+	dev_dbg(priv->dev, "* %s slave %d\n", __func__, slave->slave_num);
 
 	writel(0, priv->dma_regs + CPDMA_TXCONTROL);
 	writel(0, priv->dma_regs + CPDMA_RXCONTROL);
@@ -872,12 +864,12 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 	void *buffer;
 	int ret, len;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	dev_dbg(&slave->dev, "* %s slave %d\n", __func__, slave->slave_num);
 
 	/* first reap completed packets */
 	while (cpdma_process(priv, &priv->tx_chan, &buffer, &len) >= 0);
 
-	dev_dbg(priv->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
+	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
 	dma_flush_range((ulong) packet, (ulong)packet + length);
 
@@ -895,7 +887,7 @@ static int cpsw_recv(struct eth_device *edev)
 
 	while (cpdma_process(priv, &priv->rx_chan, &buffer, &len) >= 0) {
 		dma_inv_range((ulong)buffer, (ulong)buffer + len);
-		net_receive(buffer, len);
+		net_receive(edev, buffer, len);
 		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE);
 	}
 
@@ -916,8 +908,17 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 {
 	void			*regs = priv->regs;
 	struct eth_device	*edev = &slave->edev;
+	struct device_d		*dev = &slave->dev;
+	int ret;
 
-	dev_dbg(priv->dev, "* %s\n", __func__);
+	sprintf(dev->name, "cpsw-slave");
+	dev->id = slave->slave_num;
+	dev->parent = priv->dev;
+	ret = register_device(dev);
+	if (ret)
+		return ret;
+
+	dev_dbg(&slave->dev, "* %s\n", __func__);
 
 	slave->slave_num = slave_num;
 	slave->regs	= regs + priv->slave_ofs + priv->slave_size * slave_num;
@@ -932,7 +933,7 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	edev->recv	= cpsw_recv;
 	edev->get_ethaddr = cpsw_get_hwaddr;
 	edev->set_ethaddr = cpsw_set_hwaddr;
-	edev->parent	= priv->dev;
+	edev->parent	= dev;
 
 	return eth_register(edev);
 }
@@ -1077,6 +1078,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 			if (ret)
 				return ret;
 
+			slave->dev.device_node = child;
 			slave->phy_id = phy_id[1];
 			slave->phy_if = of_get_phy_mode(child);
 			slave->slave_num = i;
@@ -1091,9 +1093,6 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 		cpsw_gmii_sel_am335x(slave);
 	}
 
-	/* Only one slave supported by this driver */
-	priv->num_slaves = 1;
-
 	return 0;
 }
 
@@ -1105,7 +1104,7 @@ int cpsw_probe(struct device_d *dev)
 	uint64_t start;
 	uint32_t phy_mask;
 	struct cpsw_data *cpsw_data;
-	int ret;
+	int i, ret;
 
 	dev_dbg(dev, "* %s\n", __func__);
 
@@ -1197,9 +1196,11 @@ int cpsw_probe(struct device_d *dev)
 
 	mdiobus_register(&priv->miibus);
 
-	ret = cpsw_slave_setup(&priv->slaves[0], 0, priv);
-	if (ret)
-		goto out;
+	for (i = 0; i < priv->num_slaves; i++) {
+		ret = cpsw_slave_setup(&priv->slaves[i], i, priv);
+		if (ret)
+			goto out;
+	}
 
 	return 0;
 out:

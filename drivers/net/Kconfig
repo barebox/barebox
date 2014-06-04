@@ -80,6 +80,7 @@ config DRIVER_NET_EP93XX
 
 config DRIVER_NET_ETHOC
 	bool "OpenCores ethernet MAC driver"
+	select PHYLIB
 	help
 	  This option enables support for the OpenCores 10/100 Mbps
 	  Ethernet MAC core.

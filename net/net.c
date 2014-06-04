@@ -241,7 +241,7 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 
 	arp_ether = ether;
 
-	ret = eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+	ret = eth_send(edev, arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 	if (ret)
 		return ret;
 	arp_start = get_time_ns();
@@ -253,7 +253,7 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 		if (is_timeout(arp_start, 3 * SECOND)) {
 			printf("T ");
 			arp_start = get_time_ns();
-			ret = eth_send(arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+			ret = eth_send(edev, arp_packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 			if (ret)
 				return ret;
 			retries++;
@@ -358,6 +358,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 	con = xzalloc(sizeof(*con));
 	con->packet = net_alloc_packet();
 	con->priv = ctx;
+	con->edev = edev;
 	memset(con->packet, 0, PKTSIZE);
 
 	con->et = (struct ethernet *)con->packet;
@@ -437,7 +438,7 @@ static int net_ip_send(struct net_connection *con, int len)
 	con->ip->check = 0;
 	con->ip->check = ~net_checksum((unsigned char *)con->ip, sizeof(struct iphdr));
 
-	return eth_send(con->packet, ETHER_HDR_SIZE + sizeof(struct iphdr) + len);
+	return eth_send(con->edev, con->packet, ETHER_HDR_SIZE + sizeof(struct iphdr) + len);
 }
 
 int net_udp_send(struct net_connection *con, int len)
@@ -480,7 +481,7 @@ static int net_answer_arp(unsigned char *pkt, int len)
 	if (!packet)
 		return 0;
 	memcpy(packet, pkt, ETHER_HDR_SIZE + ARP_HDR_SIZE);
-	ret = eth_send(packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
+	ret = eth_send(edev, packet, ETHER_HDR_SIZE + ARP_HDR_SIZE);
 	free(packet);
 
 	return ret;
@@ -497,9 +498,8 @@ static void net_bad_packet(unsigned char *pkt, int len)
 #endif
 }
 
-static int net_handle_arp(unsigned char *pkt, int len)
+static int net_handle_arp(struct eth_device *edev, unsigned char *pkt, int len)
 {
-	struct eth_device *edev = eth_get_current();
 	struct arprequest *arp;
 
 	debug("%s: got arp\n", __func__);
@@ -580,10 +580,9 @@ static int net_handle_icmp(unsigned char *pkt, int len)
 	return 0;
 }
 
-static int net_handle_ip(unsigned char *pkt, int len)
+static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
-	struct eth_device *edev = eth_get_current();
 	IPaddr_t tmp;
 
 	debug("%s\n", __func__);
@@ -619,7 +618,7 @@ bad:
 	return 0;
 }
 
-int net_receive(unsigned char *pkt, int len)
+int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct ethernet *et = (struct ethernet *)pkt;
 	int et_protlen = ntohs(et->et_protlen);
@@ -634,10 +633,10 @@ int net_receive(unsigned char *pkt, int len)
 
 	switch (et_protlen) {
 	case PROT_ARP:
-		ret = net_handle_arp(pkt, len);
+		ret = net_handle_arp(edev, pkt, len);
 		break;
 	case PROT_IP:
-		ret = net_handle_ip(pkt, len);
+		ret = net_handle_ip(edev, pkt, len);
 		break;
 	default:
 		debug("%s: got unknown protocol type: %d\n", __func__, et_protlen);

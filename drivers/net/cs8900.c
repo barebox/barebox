@@ -309,7 +309,7 @@ static int cs8900_recv(struct eth_device *dev)
 	if (len & 1) {
 		*addr++ = readw(priv->regs + CS8900_RTDATA0);
 	}
-	net_receive(NetRxPackets[0], len);
+	net_receive(dev, NetRxPackets[0], len);
 
 	return len;
 }

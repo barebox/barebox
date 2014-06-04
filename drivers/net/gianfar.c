@@ -413,7 +413,7 @@ static int gfar_recv(struct eth_device *edev)
 
 	/* Send the packet up if there were no errors */
 	if (!(priv->rxbd[priv->rxidx].status & RXBD_STATS)) {
-		net_receive(NetRxPackets[priv->rxidx], length - 4);
+		net_receive(edev, NetRxPackets[priv->rxidx], length - 4);
 	} else {
 		dev_err(dev, "Got error %x\n",
 		       (priv->rxbd[priv->rxidx].status & RXBD_STATS));

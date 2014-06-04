@@ -17,6 +17,7 @@
  */
 
 #include <asm/mmu.h>
+#include <clock.h>
 #include <common.h>
 #include <net.h>
 #include <io.h>
@@ -209,9 +210,6 @@ static int arc_emac_open(struct eth_device *edev)
 	arc_reg_set(priv, R_RX_RING, (unsigned int)priv->rxbd);
 	arc_reg_set(priv, R_TX_RING, (unsigned int)priv->txbd);
 
-	/* Enable interrupts */
-	arc_reg_set(priv, R_ENABLE, RXINT_MASK | ERR_MASK);
-
 	/* Set CONTROL */
 	arc_reg_set(priv, R_CTRL,
 		     (RX_BD_NUM << 24) |	/* RX BD table length */
@@ -304,7 +302,7 @@ static int arc_emac_recv(struct eth_device *edev)
 		dma_inv_range((unsigned long)rxbd->data,
 			      (unsigned long)rxbd->data + pktlen);
 
-		net_receive((unsigned char *)rxbd->data, pktlen);
+		net_receive(edev, (unsigned char *)rxbd->data, pktlen);
 
 		rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);
 	}
@@ -315,9 +313,6 @@ static int arc_emac_recv(struct eth_device *edev)
 static void arc_emac_halt(struct eth_device *edev)
 {
 	struct arc_emac_priv *priv = edev->priv;
-
-	/* Disable interrupts */
-	arc_reg_clr(priv, R_ENABLE, RXINT_MASK | ERR_MASK);
 
 	/* Disable EMAC */
 	arc_reg_clr(priv, R_CTRL, EN_MASK);
@@ -342,26 +337,18 @@ static int arc_emac_set_ethaddr(struct eth_device *edev, unsigned char *mac)
 	return 0;
 }
 
-/* Number of seconds we wait for "MDIO complete" flag to appear */
-#define ARC_MDIO_COMPLETE_POLL_COUNT	1
-
 static int arc_mdio_complete_wait(struct arc_emac_priv *priv)
 {
-	unsigned int i;
+	uint64_t start = get_time_ns();
 
-	for (i = 0; i < ARC_MDIO_COMPLETE_POLL_COUNT * 40; i++) {
-		unsigned int status = arc_reg_get(priv, R_STATUS);
-
-		status &= MDIO_MASK;
-
-		if (status) {
+	while (!is_timeout(start, 1000 * MSECOND)) {
+		if (arc_reg_get(priv, R_STATUS) & MDIO_MASK) {
 			/* Reset "MDIO complete" flag */
-			arc_reg_set(priv, R_STATUS, status);
+			arc_reg_set(priv, R_STATUS, MDIO_MASK);
 			return 0;
 		}
-
-		mdelay(25);
 	}
+
 	return -ETIMEDOUT;
 }
 
@@ -446,6 +433,9 @@ static int arc_emac_probe(struct device_d *dev)
 
 	/* Set poll rate so that it polls every 1 ms */
 	arc_reg_set(priv, R_POLLRATE, clock_frequency / 1000000);
+
+	/* Disable interrupts */
+	arc_reg_set(priv, R_ENABLE, 0);
 
 	mdiobus_register(miibus);
 	eth_register(edev);

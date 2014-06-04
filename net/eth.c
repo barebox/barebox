@@ -131,11 +131,6 @@ void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr)
 
 void eth_set_current(struct eth_device *eth)
 {
-	if (eth_current && eth_current->active) {
-		eth_current->halt(eth_current);
-		eth_current->active = 0;
-	}
-
 	eth_current = eth;
 }
 
@@ -178,83 +173,92 @@ int eth_complete(struct string_list *sl, char *instr)
 /*
  * Check for link if we haven't done so for longer.
  */
-static int eth_carrier_check(int force)
+static int eth_carrier_check(struct eth_device *edev, int force)
 {
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_PHYLIB))
 		return 0;
 
-	if (!eth_current->phydev)
+	if (!edev->phydev)
 		return 0;
 
 	if (force)
-		phy_wait_aneg_done(eth_current->phydev);
+		phy_wait_aneg_done(edev->phydev);
 
 	if (force || is_timeout(last_link_check, 5 * SECOND) ||
-			!eth_current->phydev->link) {
-		ret = phy_update_status(eth_current->phydev);
+			!edev->phydev->link) {
+		ret = phy_update_status(edev->phydev);
 		if (ret)
 			return ret;
 		last_link_check = get_time_ns();
 	}
 
-	return eth_current->phydev->link ? 0 : -ENETDOWN;
+	return edev->phydev->link ? 0 : -ENETDOWN;
 }
 
 /*
  * Check if we have a current ethernet device and
  * eventually open it if we have to.
  */
-static int eth_check_open(void)
+static int eth_check_open(struct eth_device *edev)
 {
 	int ret;
 
-	if (!eth_current)
-		return -ENODEV;
-
-	if (eth_current->active)
+	if (edev->active)
 		return 0;
 
-	ret = eth_current->open(eth_current);
+	ret = edev->open(eth_current);
 	if (ret)
 		return ret;
 
-	eth_current->active = 1;
+	edev->active = 1;
 
-	return eth_carrier_check(1);
+	return eth_carrier_check(edev, 1);
 }
 
-int eth_send(void *packet, int length)
+int eth_send(struct eth_device *edev, void *packet, int length)
 {
 	int ret;
 
-	ret = eth_check_open();
+	ret = eth_check_open(edev);
 	if (ret)
 		return ret;
 
-	ret = eth_carrier_check(0);
+	ret = eth_carrier_check(edev, 0);
 	if (ret)
 		return ret;
 
 	led_trigger_network(LED_TRIGGER_NET_TX);
 
-	return eth_current->send(eth_current, packet, length);
+	return edev->send(eth_current, packet, length);
+}
+
+static int __eth_rx(struct eth_device *edev)
+{
+	int ret;
+
+	ret = eth_check_open(edev);
+	if (ret)
+		return ret;
+
+	ret = eth_carrier_check(edev, 0);
+	if (ret)
+		return ret;
+
+	return edev->recv(eth_current);
 }
 
 int eth_rx(void)
 {
-	int ret;
+	struct eth_device *edev;
 
-	ret = eth_check_open();
-	if (ret)
-		return ret;
+	list_for_each_entry(edev, &netdev_list, list) {
+		if (edev->active)
+			__eth_rx(edev);
+	}
 
-	ret = eth_carrier_check(0);
-	if (ret)
-		return ret;
-
-	return eth_current->recv(eth_current);
+	return 0;
 }
 
 static int eth_set_ethaddr(struct param_d *param, void *priv)
@@ -326,12 +330,21 @@ int eth_register(struct eth_device *edev)
 	}
 
 	strcpy(edev->dev.name, "eth");
-	edev->dev.id = DEVICE_ID_DYNAMIC;
 
 	if (edev->parent)
 		edev->dev.parent = edev->parent;
 
-	register_device(&edev->dev);
+	if (edev->dev.parent && edev->dev.parent->device_node) {
+		edev->dev.id = of_alias_get_id(edev->dev.parent->device_node, "ethernet");
+		if (edev->dev.id < 0)
+			edev->dev.id = DEVICE_ID_DYNAMIC;
+	} else {
+		edev->dev.id = DEVICE_ID_DYNAMIC;
+	}
+
+	ret = register_device(&edev->dev);
+	if (ret)
+		return ret;
 
 	dev_add_param_ip(dev, "ipaddr", NULL, NULL, &edev->ipaddr, edev);
 	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);

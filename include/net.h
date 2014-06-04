@@ -68,7 +68,7 @@ struct eth_device {
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
 
-int eth_send(void *packet, int length);	   /* Send a packet		*/
+int eth_send(struct eth_device *edev, void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/
 
 /* associate a MAC address to a ethernet device. Should be called by
@@ -413,12 +413,13 @@ struct eth_device *eth_get_byname(const char *name);
  *
  * Return 0 if the packet is successfully handled. Can be ignored
  */
-int net_receive(unsigned char *pkt, int len);
+int net_receive(struct eth_device *edev, unsigned char *pkt, int len);
 
 struct net_connection {
 	struct ethernet *et;
 	struct iphdr *ip;
 	struct udphdr *udp;
+	struct eth_device *edev;
 	struct icmphdr *icmp;
 	unsigned char *packet;
 	struct list_head list;

@@ -178,6 +178,8 @@ struct ethoc {
 
 	u32 num_rx;
 	u32 cur_rx;
+
+	struct mii_bus miibus;
 };
 
 /**
@@ -369,7 +371,7 @@ static int ethoc_rx(struct eth_device *edev, int limit)
 
 			size -= 4; /* strip the CRC */
 			invalidate_dcache_range(bd.addr, bd.addr + PKTSIZE);
-			net_receive((unsigned char *)bd.addr, size);
+			net_receive(edev, (unsigned char *)bd.addr, size);
 		}
 
 		/* clear the buffer descriptor so it can be reused */
@@ -481,6 +483,54 @@ static int ethoc_send_packet(struct eth_device *edev, void *packet, int length)
 	return 0;
 }
 
+static int ethoc_mdio_read(struct mii_bus *bus, int phy, int reg)
+{
+	struct ethoc *priv = bus->priv;
+	u64 start;
+	u32 data;
+
+	ethoc_write(priv, MIIADDRESS, MIIADDRESS_ADDR(phy, reg));
+	ethoc_write(priv, MIICOMMAND, MIICOMMAND_READ);
+
+	start = get_time_ns();
+	while (ethoc_read(priv, MIISTATUS) & MIISTATUS_BUSY) {
+		if (is_timeout(start, 2 * MSECOND)) {
+			dev_err(bus->parent, "PHY command timeout\n");
+			return -EBUSY;
+		}
+	}
+
+	data = ethoc_read(priv, MIIRX_DATA);
+
+	/* reset MII command register */
+	ethoc_write(priv, MIICOMMAND, 0);
+
+	return data;
+}
+
+static int ethoc_mdio_write(struct mii_bus *bus, int phy, int reg, u16 val)
+{
+	struct ethoc *priv = bus->priv;
+	u64 start;
+
+	ethoc_write(priv, MIIADDRESS, MIIADDRESS_ADDR(phy, reg));
+	ethoc_write(priv, MIITX_DATA, val);
+	ethoc_write(priv, MIICOMMAND, MIICOMMAND_WRITE);
+
+	start = get_time_ns();
+	while (ethoc_read(priv, MIISTATUS) & MIISTATUS_BUSY) {
+		if (is_timeout(start, 2 * MSECOND)) {
+			dev_err(bus->parent, "PHY command timeout\n");
+			return -EBUSY;
+		}
+	}
+
+	/* reset MII command register */
+	ethoc_write(priv, MIICOMMAND, 0);
+
+	return 0;
+}
+
 static int ethoc_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
@@ -493,6 +543,11 @@ static int ethoc_probe(struct device_d *dev)
 	priv = edev->priv;
 	priv->iobase = dev_request_mem_region(dev, 0);
 
+	priv->miibus.read = ethoc_mdio_read;
+	priv->miibus.write = ethoc_mdio_write;
+	priv->miibus.priv = priv;
+	priv->miibus.parent = dev;
+
 	edev->init = ethoc_init_dev;
 	edev->open = ethoc_open;
 	edev->send = ethoc_send_packet;
@@ -502,6 +557,8 @@ static int ethoc_probe(struct device_d *dev)
 	edev->get_ethaddr = ethoc_get_ethaddr;
 	edev->set_ethaddr = ethoc_set_ethaddr;
 	edev->parent = dev;
+
+	mdiobus_register(&priv->miibus);
 
 	eth_register(edev);
 

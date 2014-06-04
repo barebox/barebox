@@ -356,7 +356,7 @@ static int dwc_ether_rx(struct eth_device *dev)
 	dma_inv_range((unsigned long)desc_p->dmamac_addr,
 		      (unsigned long)desc_p->dmamac_addr + length);
 
-	net_receive(desc_p->dmamac_addr, length);
+	net_receive(dev, desc_p->dmamac_addr, length);
 
 	desc_p->txrx_status |= DESC_RXSTS_OWNBYDMA;
 

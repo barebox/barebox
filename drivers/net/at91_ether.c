@@ -224,7 +224,7 @@ static int at91_ether_rx(struct eth_device *edev)
 
 	size = rbfp->size & RBF_SIZE;
 
-	net_receive((unsigned char *)(rbfp->addr & RBF_ADDR), size);
+	net_receive(edev, (unsigned char *)(rbfp->addr & RBF_ADDR), size);
 
 	rbfp->addr &= ~RBF_OWNER;
 	if (rbfp->addr & RBF_WRAP)

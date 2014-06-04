@@ -793,11 +793,11 @@ static int smsc95xx_rx_fixup(struct usbnet *dev, void *buf, int len)
 
 			/* last frame in this batch */
 			if (len == size) {
-				net_receive(buf, len - 4);
+				net_receive(&dev->edev, buf, len - 4);
 				return 1;
 			}
 
-			net_receive(packet, len - 4);
+			net_receive(&dev->edev, packet, len - 4);
 		}
 
 		len -= size;

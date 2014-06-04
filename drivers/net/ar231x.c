@@ -217,7 +217,7 @@ static int ar231x_eth_recv(struct eth_device *edev)
 			u16 length =
 				((status >> DMA_RX_LEN_SHIFT) & 0x3fff)
 				- CRC_LEN;
-			net_receive((void *)rxdsc->buffer_ptr, length);
+			net_receive(edev, (void *)rxdsc->buffer_ptr, length);
 		}
 		/* Clean descriptor. now it is owned by DMA. */
 		priv->next_rxdsc = (struct ar231x_descr *)rxdsc->next_dsc_ptr;

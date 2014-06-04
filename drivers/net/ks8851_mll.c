@@ -693,7 +693,7 @@ static int ks8851_rx_frame(struct ks_net *ks)
 	if (RxStatus & RXFSHR_RXFV) {
 		/* Pass to upper layer */
 		dev_dbg(dev, "passing packet to upper layer\n\n");
-		net_receive(NetRxPackets[0], RxLen);
+		net_receive(&ks->edev, NetRxPackets[0], RxLen);
 		return RxLen;
 	} else if (RxStatus & RXFSHR_ERR) {
 		dev_err(dev, "RxStatus error 0x%04x\n", RxStatus & RXFSHR_ERR);

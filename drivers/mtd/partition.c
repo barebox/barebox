@@ -112,10 +112,13 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	part->numeraseregions = end - start;
 
 	part->read = mtd_part_read;
-	part->write = mtd_part_write;
-	part->erase = mtd_part_erase;
+	if (IS_ENABLED(CONFIG_MTD_WRITE)) {
+		part->write = mtd_part_write;
+		part->erase = mtd_part_erase;
+		part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
+	}
+
 	part->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
-	part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
 	part->size = size;
 	part->name = strdup(name);
 

@@ -734,6 +734,7 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	char *p;
 	glob_t globbuf = {};
 	int ret;
+	int rcode;
 # if __GNUC__
 	/* Avoid longjmp clobbering */
 	(void) &i;
@@ -753,8 +754,6 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	child = &pi->progs[0];
 
 	if (child->group) {
-		int rcode;
-
 		debug("non-subshell grouping\n");
 		rcode = run_list_real(ctx, child->group);
 
@@ -789,7 +788,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 
 			free(name);
 			p = insert_var_value(child->argv[i]);
-			set_local_var(p, export_me);
+			rcode = set_local_var(p, export_me);
+			if (rcode)
+				return 1;
 
 			if (p != child->argv[i])
 				free(p);
@@ -798,7 +799,9 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	}
 	for (i = 0; is_assignment(child->argv[i]); i++) {
 		p = insert_var_value(child->argv[i]);
-		set_local_var(p, 0);
+		rcode = set_local_var(p, 0);
+		if (rcode)
+			return 1;
 
 		if (p != child->argv[i]) {
 			child->sp--;
@@ -808,7 +811,6 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 	if (child->sp) {
 		char * str = NULL;
 		struct p_context ctx1;
-		int rcode;
 
 		str = make_string((child->argv + i));
 		rcode = parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);

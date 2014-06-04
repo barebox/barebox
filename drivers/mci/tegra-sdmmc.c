@@ -28,6 +28,7 @@
 #include <mci.h>
 #include <of_gpio.h>
 #include <linux/clk.h>
+#include <linux/reset.h>
 
 #include "sdhci.h"
 
@@ -58,10 +59,19 @@
 #define TEGRA_SDMMC_INT_SIG_EN				0x038
 #define  TEGRA_SDMMC_INT_SIG_EN_XFER_COMPLETE		(1 << 1)
 
+#define TEGRA_SDMMC_SDMEMCOMPPADCTRL			0x1e0
+#define  TEGRA_SDMMC_SDMEMCOMPPADCTRL_VREF_SEL_SHIFT	0
+
+#define TEGRA_SDMMC_AUTO_CAL_CONFIG			0x1e4
+#define  TEGRA_SDMMC_AUTO_CAL_CONFIG_PU_OFFSET_SHIFT	0
+#define  TEGRA_SDMMC_AUTO_CAL_CONFIG_PD_OFFSET_SHIFT	8
+#define  TEGRA_SDMMC_AUTO_CAL_CONFIG_ENABLE		(1 << 29)
+
 struct tegra_sdmmc_host {
 	struct mci_host		mci;
 	void __iomem		*regs;
 	struct clk		*clk;
+	struct reset_control	*reset;
 	int			gpio_cd, gpio_pwr;
 };
 #define to_tegra_sdmmc_host(mci) container_of(mci, struct tegra_sdmmc_host, mci)
@@ -331,6 +341,23 @@ static int tegra_sdmmc_init(struct mci_host *mci, struct device_d *dev)
 	val |= TEGRA_SDMMC_PWR_CNTL_33_V | TEGRA_SDMMC_PWR_CNTL_SD_BUS;
 	writel(val, regs + TEGRA_SDMMC_PWR_CNTL);
 
+	/* sdmmc1 and sdmmc3 on T30 need a bit of padctrl init */
+	if (of_device_is_compatible(mci->hw_dev->device_node,
+			"nvidia,tegra30-sdhci") &&
+			((u32)regs == 0x78000000 || (u32)regs == 78000400)) {
+		val = readl(regs + TEGRA_SDMMC_SDMEMCOMPPADCTRL);
+		val &= 0xfffffff0;
+		val |= 0x7 << TEGRA_SDMMC_SDMEMCOMPPADCTRL_VREF_SEL_SHIFT;
+		writel(val, regs + TEGRA_SDMMC_SDMEMCOMPPADCTRL);
+
+		val = readl(regs + TEGRA_SDMMC_AUTO_CAL_CONFIG);
+		val &= 0xffff0000;
+		val |= (0x62 << TEGRA_SDMMC_AUTO_CAL_CONFIG_PU_OFFSET_SHIFT) |
+		       (0x70 << TEGRA_SDMMC_AUTO_CAL_CONFIG_PD_OFFSET_SHIFT) |
+		       TEGRA_SDMMC_AUTO_CAL_CONFIG_ENABLE;
+		writel(val, regs + TEGRA_SDMMC_AUTO_CAL_CONFIG);
+	}
+
 	/* setup signaling */
 	writel(0xffffffff, regs + TEGRA_SDMMC_INT_STAT_EN);
 	writel(0xffffffff, regs + TEGRA_SDMMC_INT_SIG_EN);
@@ -400,6 +427,10 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
 
+	host->reset = reset_control_get(dev, NULL);
+	if (IS_ERR(host->reset))
+		return PTR_ERR(host->reset);
+
 	host->regs = dev_request_mem_region(dev, 0);
 	if (!host->regs) {
 		dev_err(dev, "could not get iomem region\n");
@@ -430,14 +461,16 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 	}
 
 	clk_enable(host->clk);
+	reset_control_assert(host->reset);
+	udelay(2);
+	reset_control_deassert(host->reset);
 
 	mci->init = tegra_sdmmc_init;
 	mci->card_present = tegra_sdmmc_card_present;
 	mci->set_ios = tegra_sdmmc_set_ios;
 	mci->send_cmd = tegra_sdmmc_send_cmd;
 	mci->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
-	mci->host_caps |= MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA |
-	                  MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
+	mci->host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
 	                  MMC_CAP_SD_HIGHSPEED;
 
 	dev->priv = host;

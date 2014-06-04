@@ -24,6 +24,7 @@ subdir-$(CONFIG_OMAP4_USBBOOT)	+= omap4_usbboot
 subdir-$(CONFIG_ARCH_IMX)	+= imx
 subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc
+subdir-$(CONFIG_ARCH_TEGRA)	+= tegra
 
 targetprogs-$(CONFIG_BAREBOXENV_TARGET) += bareboxenv-target
 targetprogs-$(CONFIG_KERNEL_INSTALL_TARGET) += kernel-install-target

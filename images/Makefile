@@ -117,5 +117,6 @@ images: $(addprefix $(obj)/, $(image-y)) FORCE
 	@for i in $(image-y); do echo $$i; done
 
 clean-files := *.pbl *.pblb *.pblx *.map start_*.imximg *.img barebox.z start_*.kwbimg \
-	start_*.kwbuartimg *.socfpgaimg *.mlo
+	start_*.kwbuartimg *.socfpgaimg *.mlo *.t20img *.t20img.cfg *.t30img \
+	*.t30img.cfg
 clean-files += pbl.lds

@@ -74,19 +74,8 @@ static int clk_periph_is_enabled(struct clk *hw)
 static int clk_periph_enable(struct clk *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
-	u32 reg;
-
-	reg = readl(periph->rst_reg);
-	reg |= (1 << periph->rst_shift);
-	writel(reg, periph->rst_reg);
 
 	periph->gate->ops->enable(periph->gate);
-
-	udelay(2);
-
-	reg = readl(periph->rst_reg);
-	reg &= ~(1 << periph->rst_shift);
-	writel(reg, periph->rst_reg);
 
 	return 0;
 }
@@ -94,13 +83,6 @@ static int clk_periph_enable(struct clk *hw)
 static void clk_periph_disable(struct clk *hw)
 {
 	struct tegra_clk_periph *periph = to_clk_periph(hw);
-	u32 reg;
-
-	reg = readl(periph->rst_reg);
-	reg |= (1 << periph->rst_shift);
-	writel(reg, periph->rst_reg);
-
-	udelay(2);
 
 	periph->gate->ops->disable(periph->gate);
 }
@@ -124,10 +106,10 @@ const struct clk_ops tegra_clk_periph_nodiv_ops = {
 	.disable = clk_periph_disable,
 };
 
-struct clk *_tegra_clk_register_periph(const char *name,
+static struct clk *_tegra_clk_register_periph(const char *name,
 		const char **parent_names, int num_parents,
 		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags,
-		bool has_div)
+		int div)
 {
 	struct tegra_clk_periph *periph;
 	int ret, gate_offs, rst_offs;
@@ -154,15 +136,20 @@ struct clk *_tegra_clk_register_periph(const char *name,
 	if (!periph->gate)
 		goto out_gate;
 
-	if (has_div) {
+	if (div == 8) {
 		periph->div = tegra_clk_divider_alloc(NULL, NULL, clk_base +
-				reg_offset, 0, TEGRA_DIVIDER_ROUND_UP, 0, 8, 1);
+		              reg_offset, 0, TEGRA_DIVIDER_ROUND_UP, 0, 8, 1);
+		if (!periph->div)
+			goto out_div;
+	} else if (div == 16) {
+		periph->div = tegra_clk_divider_alloc(NULL, NULL, clk_base +
+		              reg_offset, 0, TEGRA_DIVIDER_ROUND_UP, 0, 16, 0);
 		if (!periph->div)
 			goto out_div;
 	}
 
 	periph->hw.name = name;
-	periph->hw.ops = has_div ? &tegra_clk_periph_ops :
+	periph->hw.ops = div ? &tegra_clk_periph_ops :
 				   &tegra_clk_periph_nodiv_ops;
 	periph->hw.parent_names = parent_names;
 	periph->hw.num_parents = num_parents;
@@ -199,7 +186,7 @@ struct clk *tegra_clk_register_periph_nodiv(const char *name,
 {
 	return _tegra_clk_register_periph(name, parent_names, num_parents,
 					  clk_base, reg_offset, id, flags,
-					  false);
+					  0);
 }
 
 struct clk *tegra_clk_register_periph(const char *name,
@@ -208,5 +195,14 @@ struct clk *tegra_clk_register_periph(const char *name,
 {
 	return _tegra_clk_register_periph(name, parent_names, num_parents,
 					  clk_base, reg_offset, id, flags,
-					  true);
+					  8);
+}
+
+struct clk *tegra_clk_register_periph_div16(const char *name,
+		const char **parent_names, int num_parents,
+		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags)
+{
+	return _tegra_clk_register_periph(name, parent_names, num_parents,
+					  clk_base, reg_offset, id, flags,
+					  16);
 }

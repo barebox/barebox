@@ -302,6 +302,7 @@ struct mci_host {
 	unsigned max_req_size;
 	unsigned dsr_val;	/**< optional dsr value */
 	int use_dsr;		/**< optional dsr usage flag */
+	bool non_removable;	/**< device is non removable */
 	struct regulator *supply;
 
 	/** init the host interface */

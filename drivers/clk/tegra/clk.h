@@ -138,6 +138,10 @@ struct clk *tegra_clk_register_periph(const char *name,
 		const char **parent_names, int num_parents,
 		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags);
 
+struct clk *tegra_clk_register_periph_div16(const char *name,
+		const char **parent_names, int num_parents,
+		void __iomem *clk_base, u32 reg_offset, u8 id, u8 flags);
+
 /* struct clk_init_table - clock initialization table */
 struct tegra_clk_init_table {
 	unsigned int	clk_id;
@@ -148,3 +152,17 @@ struct tegra_clk_init_table {
 
 void tegra_init_from_table(struct tegra_clk_init_table *tbl,
 		struct clk *clks[], int clk_max);
+
+struct tegra_clk_periph_regs {
+	u32 enb_reg;
+	u32 enb_set_reg;
+	u32 enb_clr_reg;
+	u32 rst_reg;
+	u32 rst_set_reg;
+	u32 rst_clr_reg;
+};
+
+void tegra_clk_init_rst_controller(void __iomem *base, struct device_node *np,
+		unsigned int num);
+
+void tegra_clk_reset_uarts(void);

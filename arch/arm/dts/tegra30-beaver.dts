@@ -191,6 +191,15 @@
 						"pex_l1_clkreq_n_pdd6";
 				nvidia,pull = <TEGRA_PIN_PULL_UP>;
 			};
+			sdio1 {
+				nvidia,pins = "drive_sdio1";
+				nvidia,high-speed-mode = <TEGRA_PIN_DISABLE>;
+				nvidia,schmitt = <TEGRA_PIN_DISABLE>;
+				nvidia,pull-down-strength = <46>;
+				nvidia,pull-up-strength = <42>;
+				nvidia,slew-rate-rising = <1>;
+				nvidia,slew-rate-falling = <1>;
+			};
 			sdio3 {
 				nvidia,pins = "drive_sdio3";
 				nvidia,high-speed-mode = <TEGRA_PIN_DISABLE>;
@@ -325,6 +334,7 @@
 						"vi_hsync_pd7";
 				nvidia,function = "ddr";
 				nvidia,tristate = <TEGRA_PIN_DISABLE>;
+				nvidia,io-reset = <TEGRA_PIN_DISABLE>;
 			};
 			ddr_up {
 				nvidia,pins =	"vi_d11_pt3";

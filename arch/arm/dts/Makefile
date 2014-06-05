@@ -4,7 +4,8 @@ dtb-$(CONFIG_ARCH_AM33XX) += \
 	am335x-bone-common.dtb \
 	am335x-phytec-phycore.dtb
 dtb-$(CONFIG_ARCH_IMX25) += imx25-karo-tx25.dtb
-dtb-$(CONFIG_ARCH_IMX27) += imx27-phytec-phycard-s-rdk-bb.dtb
+dtb-$(CONFIG_ARCH_IMX27) += imx27-phytec-phycard-s-rdk-bb.dtb \
+	imx27-phytec-phycore-rdk.dtb
 dtb-$(CONFIG_ARCH_IMX51) += imx51-babbage.dtb \
 	imx51-genesi-efika-sb.dtb
 dtb-$(CONFIG_ARCH_IMX53) += imx53-mba53.dtb \

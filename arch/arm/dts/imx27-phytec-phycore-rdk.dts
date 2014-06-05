@@ -1,0 +1,71 @@
+/*
+ * Barebox specific DT overlay for Phytec PCM-970 RDK
+ */
+
+#include <arm/imx27-phytec-phycore-rdk.dts>
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+
+		environment-nor {
+			compatible = "barebox,environment";
+			device-path = &nor, "partname:env";
+			status = "disabled";
+		};
+
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &nfc, "partname:env";
+			status = "disabled";
+		};
+	};
+};
+
+&iim {
+	barebox,provide-mac-address = <&fec 1 0>;
+};
+
+&nfc {
+	partition@0 {
+		label = "boot";
+		reg = <0x00000000 0x00080000>;
+	};
+
+	partition@1 {
+		label = "env";
+		reg = <0x00080000 0x00020000>;
+	};
+
+	partition@2 {
+		label = "kernel";
+		reg = <0x000a0000 0x00400000>;
+	};
+
+	partition@3 {
+		label = "root";
+		reg = <0x004a0000 0>;
+	};
+};
+
+&nor {
+	partition@0 {
+		label = "boot";
+		reg = <0x00000000 0x00080000>;
+	};
+
+	partition@1 {
+		label = "env";
+		reg = <0x00080000 0x00020000>;
+	};
+
+	partition@2 {
+		label = "kernel";
+		reg = <0x000a0000 0x00400000>;
+	};
+
+	partition@3 {
+		label = "root";
+		reg = <0x004a0000 0>;
+	};
+};

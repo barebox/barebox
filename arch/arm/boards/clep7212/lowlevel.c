@@ -24,5 +24,5 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 {
 	arm_cpu_lowlevel_init();
 
-	clps711x_barebox_entry(CLPS711X_CPU_PLL_MULT);
+	clps711x_barebox_entry(CLPS711X_CPU_PLL_MULT, NULL);
 }

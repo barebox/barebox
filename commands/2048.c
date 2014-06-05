@@ -337,6 +337,8 @@ static int do_2048(int argc, char *argv[])
 		return test();
 	}
 
+	score = 0;
+
 	printf("\033[?25l\033[2J\033[H");
 
 	memset(board,0,sizeof(board));

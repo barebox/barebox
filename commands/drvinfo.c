@@ -18,7 +18,7 @@
 #include <command.h>
 #include <driver.h>
 
-int do_drvinfo(int argc, char *argv[])
+static int do_drvinfo(int argc, char *argv[])
 {
 	struct driver_d *drv;
 	struct device_d *dev;

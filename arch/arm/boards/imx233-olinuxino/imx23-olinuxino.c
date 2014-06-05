@@ -115,8 +115,7 @@ static void olinuxino_init_usb(void)
 
 static int imx23_olinuxino_devices_init(void)
 {
-	int i, rc;
-
+	int i;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)

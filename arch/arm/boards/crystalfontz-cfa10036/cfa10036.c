@@ -116,7 +116,7 @@ mem_initcall(cfa10036_mem_init);
 
 static int cfa10036_devices_init(void)
 {
-	int i, ret;
+	int i;
 
 	/* initizalize muxing */
 	for (i = 0; i < ARRAY_SIZE(cfa10036_pads); i++)

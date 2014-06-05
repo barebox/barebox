@@ -104,6 +104,7 @@ static const struct am33xx_emif_regs ddr3_regs = {
 };
 
 extern char __dtb_am335x_boneblack_start[];
+extern char __dtb_am335x_bone_common_start[];
 extern char __dtb_am335x_bone_start[];
 
 /**
@@ -120,13 +121,12 @@ static noinline int beaglebone_sram_init(void)
 	uint32_t sdram_size;
 	void *fdt;
 
-	if (is_beaglebone_black()) {
+	fdt = __dtb_am335x_bone_common_start;
+
+	if (is_beaglebone_black())
 		sdram_size = SZ_512M;
-		fdt = __dtb_am335x_boneblack_start;
-	} else {
+	else
 		sdram_size = SZ_256M;
-		fdt = __dtb_am335x_bone_start;
-	}
 
 	/* WDT1 is already running when the bootloader gets control
 	 * Disable it to avoid "random" resets

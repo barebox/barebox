@@ -1,6 +1,7 @@
 dtb-$(CONFIG_ARCH_AM33XX) += \
 	am335x-bone.dtb \
 	am335x-boneblack.dtb \
+	am335x-bone-common.dtb \
 	am335x-phytec-phycore.dtb
 dtb-$(CONFIG_ARCH_IMX25) += imx25-karo-tx25.dtb
 dtb-$(CONFIG_ARCH_IMX27) += imx27-phytec-phycard-s-rdk-bb.dtb
@@ -43,7 +44,7 @@ dtb-$(CONFIG_ARCH_TEGRA) += \
 BUILTIN_DTB := $(patsubst "%",%,$(CONFIG_BUILTIN_DTB_NAME))
 obj-$(CONFIG_BUILTIN_DTB) += $(BUILTIN_DTB).dtb.o
 
-pbl-$(CONFIG_MACH_BEAGLEBONE) += am335x-bone.dtb.o am335x-boneblack.dtb.o
+pbl-$(CONFIG_MACH_BEAGLEBONE) += am335x-bone.dtb.o am335x-boneblack.dtb.o am335x-bone-common.dtb.o
 pbl-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK) += imx51-genesi-efika-sb.dtb.o
 pbl-$(CONFIG_MACH_EMBEST_RIOTBOARD) += imx6s-riotboard.dtb.o
 pbl-$(CONFIG_MACH_FREESCALE_MX51_PDK) += imx51-babbage.dtb.o

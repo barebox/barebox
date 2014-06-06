@@ -24,6 +24,8 @@
 		};
 
 		spi: spi@bf000000{
+			#address-cells = <1>;
+			#size-cells = <0>;
 			compatible = "qca,ath79-spi";
 			reg = <0xbf000000 0x01000000>;
 			status = "disabled";

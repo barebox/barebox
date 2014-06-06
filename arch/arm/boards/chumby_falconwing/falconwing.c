@@ -284,7 +284,7 @@ static void falconwing_init_usb(void)
 
 static int falconwing_devices_init(void)
 {
-	int i, rc;
+	int i;
 
 	/* initizalize gpios */
 	for (i = 0; i < ARRAY_SIZE(pad_setup); i++)

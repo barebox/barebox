@@ -90,7 +90,7 @@ struct ddr_board_info_s {
 	uint32_t i2c_slave;
 	uint32_t i2c_speed;
 	void __iomem *i2c_base;
-	uint8_t *spd_i2c_addr;
+	const uint8_t *spd_i2c_addr;
 };
 
 /*

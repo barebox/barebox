@@ -2,7 +2,6 @@ menu "Library gui routines"
 
 config IMAGE_RENDERER
 	bool
-	depends on VIDEO
 	select FILETYPE
 
 if IMAGE_RENDERER

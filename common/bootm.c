@@ -312,7 +312,7 @@ static int bootm_open_oftree(struct image_data *data, const char *oftree, int nu
 static void bootm_print_info(struct image_data *data)
 {
 	if (data->os_res)
-		printf("OS image is at 0x%08x-0x%08x\n",
+		printf("OS image is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
 				data->os_res->start,
 				data->os_res->end);
 	else
@@ -329,7 +329,7 @@ static void bootm_print_info(struct image_data *data)
 			printf(", multifile image %d", data->initrd_num);
 		printf("\n");
 		if (data->initrd_res)
-			printf("initrd is at 0x%08x-0x%08x\n",
+			printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
 				data->initrd_res->start,
 				data->initrd_res->end);
 		else

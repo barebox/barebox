@@ -117,8 +117,8 @@ static ssize_t at25_ee_read(struct cdev *cdev,
 	 */
 	status = spi_sync(at25->spi, &m);
 	dev_dbg(at25->cdev.dev,
-		"read %d bytes at %llu --> %d\n",
-		count, offset, (int) status);
+		"read %zd bytes at %llu --> %zd\n",
+		count, offset, status);
 
 	return status ? status : count;
 }

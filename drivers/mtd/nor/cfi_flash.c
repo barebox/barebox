@@ -949,6 +949,8 @@ static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 static void cfi_init_mtd(struct flash_info *info)
 {
 	struct mtd_info *mtd = &info->mtd;
+	u_int32_t erasesize;
+	int i;
 
 	mtd->read = cfi_mtd_read;
 	mtd->write = cfi_mtd_write;
@@ -956,7 +958,14 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->lock = cfi_mtd_lock;
 	mtd->unlock = cfi_mtd_unlock;
 	mtd->size = info->size;
-	mtd->erasesize = info->eraseregions[1].erasesize; /* FIXME */
+
+	erasesize = 0;
+	for (i=0; i < info->numeraseregions; i++) {
+		if (erasesize < info->eraseregions[i].erasesize)
+			erasesize = info->eraseregions[i].erasesize;
+	}
+	mtd->erasesize = erasesize;
+
 	mtd->writesize = 1;
 	mtd->subpage_sft = 0;
 	mtd->eraseregions = info->eraseregions;

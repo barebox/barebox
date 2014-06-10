@@ -23,6 +23,10 @@ pblx-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27
 FILE_barebox-phytec-phycard-imx27.img = start_phytec_phycard_imx27.pblx
 image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27.img
 
+pblx-$(CONFIG_MACH_PCM038) += start_phytec_phycore_imx27
+FILE_barebox-phytec-phycore-imx27.img = start_phytec_phycore_imx27.pblx
+image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img
+
 # ----------------------- i.MX51 based boards ---------------------------
 pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg

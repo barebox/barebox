@@ -49,6 +49,32 @@ static int mtd_part_erase(struct mtd_info *mtd, struct erase_info *instr)
 	return ret;
 }
 
+static int mtd_part_lock(struct mtd_info *mtd, loff_t offset, size_t len)
+{
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+
+	if (offset + len > mtd->size)
+		return -EINVAL;
+
+	offset += mtd->master_offset;
+
+	return mtd->master->lock(mtd->master, offset, len);
+}
+
+static int mtd_part_unlock(struct mtd_info *mtd, loff_t offset, size_t len)
+{
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+
+	if (offset + len > mtd->size)
+		return -EINVAL;
+
+	offset += mtd->master_offset;
+
+	return mtd->master->unlock(mtd->master, offset, len);
+}
+
 static int mtd_part_block_isbad(struct mtd_info *mtd, loff_t ofs)
 {
 	if (ofs >= mtd->size)
@@ -122,6 +148,8 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	if (IS_ENABLED(CONFIG_MTD_WRITE)) {
 		part->write = mtd_part_write;
 		part->erase = mtd_part_erase;
+		part->lock = mtd_part_lock;
+		part->unlock = mtd_part_unlock;
 		part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
 	}
 

@@ -76,7 +76,6 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 		uint64_t size, unsigned long flags, const char *name)
 {
 	struct mtd_info *part;
-	int start = 0, end = 0, i;
 
 	part = xzalloc(sizeof(*part));
 
@@ -93,23 +92,31 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	part->ecc_strength = mtd->ecc_strength;
 	part->subpage_sft = mtd->subpage_sft;
 
-	/*
-	 * find the number of eraseregions the partition includes.
-	 * Do not bother to create the mtd_erase_region_infos as
-	 * ubi is only interested in its number. UBI does not
-	 * yet support multiple erase regions.
-	 */
-	for (i = mtd->numeraseregions - 1; i >= 0; i--) {
-		struct mtd_erase_region_info *region = &mtd->eraseregions[i];
-		if (offset >= region->offset &&
-		    offset < region->offset + region->erasesize * region->numblocks)
-			start = i;
-		if (offset + size >= region->offset &&
-		    offset + size <= region->offset + region->erasesize * region->numblocks)
-			end = i;
-	}
+	if (mtd->numeraseregions > 1) {
+		/* Deal with variable erase size stuff */
+		int i, max = mtd->numeraseregions;
+		u64 end = offset + size;
+		struct mtd_erase_region_info *regions = mtd->eraseregions;
 
-	part->numeraseregions = end - start;
+		/* Find the first erase regions which is part of this
+		 * partition. */
+		for (i = 0; i < max && regions[i].offset <= offset; i++)
+			;
+		/* The loop searched for the region _behind_ the first one */
+		if (i > 0)
+			i--;
+
+		/* Pick biggest erasesize */
+		for (; i < max && regions[i].offset < end; i++) {
+			if (part->erasesize < regions[i].erasesize) {
+				part->erasesize = regions[i].erasesize;
+			}
+		}
+		BUG_ON(part->erasesize == 0);
+	} else {
+		/* Single erase size */
+		part->erasesize = mtd->erasesize;
+	}
 
 	part->read = mtd_part_read;
 	if (IS_ENABLED(CONFIG_MTD_WRITE)) {

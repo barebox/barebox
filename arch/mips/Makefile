@@ -146,11 +146,6 @@ dts := arch/mips/dts
 %.dtb: scripts
 	$(Q)$(MAKE) $(build)=$(dts) $(dts)/$@
 
-dtbs: scripts
-	$(Q)$(MAKE) $(build)=$(dts) dtbs
-
-KBUILD_DTBS := dtbs
-
 KBUILD_IMAGE ?= $(KBUILD_BINARY)
 
 #####

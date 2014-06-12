@@ -119,6 +119,12 @@ static int pca100_devices_init(void)
 		PE25_PF_USBOTG_DATA7,
 	};
 
+	if (!of_machine_is_compatible("phytec,imx27-pca100"))
+		return 0;
+
+	barebox_set_model("Phytec phyCARD-i.MX27");
+	barebox_set_hostname("phycard-imx27");
+
 	pca100_usb_init();
 
 	/* initizalize gpios */
@@ -137,13 +143,3 @@ static int pca100_devices_init(void)
 }
 
 device_initcall(pca100_devices_init);
-
-static int pca100_console_init(void)
-{
-	barebox_set_model("Phytec phyCARD-i.MX27");
-	barebox_set_hostname("phycard-imx27");
-
-	return 0;
-}
-
-console_initcall(pca100_console_init);

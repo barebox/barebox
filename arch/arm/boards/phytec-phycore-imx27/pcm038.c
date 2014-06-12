@@ -28,6 +28,7 @@
 #include <mach/imxfb.h>
 #include <mach/iomux-mx27.h>
 #include <mfd/mc13xxx.h>
+#include <mach/bbu.h>
 
 #include "pll.h"
 
@@ -105,7 +106,7 @@ static int pcm038_init(void)
 {
 	struct mc13xxx *mc13xxx = mc13xxx_get();
 	char *envdev;
-	uint32_t i;
+	uint32_t i, bbu_nand_flags = 0, bbu_nor_flags = 0;
 
 	if (!of_machine_is_compatible("phytec,imx27-pcm038"))
 		return 0;
@@ -123,10 +124,12 @@ static int pcm038_init(void)
 	switch (bootsource_get()) {
 	case BOOTSOURCE_NAND:
 		of_device_enable_path("/chosen/environment-nand");
+		bbu_nand_flags |= BBU_HANDLER_FLAG_DEFAULT;
 		envdev = "NAND";
 		break;
 	default:
 		of_device_enable_path("/chosen/environment-nor");
+		bbu_nor_flags |= BBU_HANDLER_FLAG_DEFAULT;
 		envdev = "NOR";
 		break;
 	}
@@ -174,6 +177,11 @@ static int pcm038_init(void)
 
 	/* Clock gating enable */
 	writel(0x00050f08, MX27_SYSCTRL_BASE_ADDR + MX27_GPCR);
+
+	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.boot",
+			bbu_nand_flags);
+	imx_bbu_external_nor_register_handler("nor", "/dev/nor0.boot",
+			bbu_nor_flags);
 
 	defaultenv_append_directory(defaultenv_pcm038);
 

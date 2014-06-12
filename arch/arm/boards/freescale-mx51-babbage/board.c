@@ -157,6 +157,8 @@ static int imx51_babbage_init(void)
 	if (!of_machine_is_compatible("fsl,imx51-babbage"))
 		return 0;
 
+	barebox_set_hostname("babbage");
+
 	mc13xxx_register_init_callback(babbage_power_init);
 
 	armlinux_set_architecture(MACH_TYPE_MX51_BABBAGE);

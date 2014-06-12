@@ -21,6 +21,7 @@
 #include <io.h>
 #include <notifier.h>
 #include <sizes.h>
+#include <envfs.h>
 #include <mach/devices-imx27.h>
 #include <mach/imx-pll.h>
 #include <mach/imx27-regs.h>
@@ -173,6 +174,8 @@ static int pcm038_init(void)
 
 	/* Clock gating enable */
 	writel(0x00050f08, MX27_SYSCTRL_BASE_ADDR + MX27_GPCR);
+
+	defaultenv_append_directory(defaultenv_pcm038);
 
 	return 0;
 }

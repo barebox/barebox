@@ -29,6 +29,9 @@ int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefil
 
 int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
 
+int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
+		unsigned long flags);
+
 #else
 
 static inline int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
@@ -68,6 +71,12 @@ static inline int imx6_bbu_internal_spi_i2c_register_handler(const char *name, c
 }
 
 static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
+		unsigned long flags)
 {
 	return -ENOSYS;
 }

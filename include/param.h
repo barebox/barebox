@@ -49,6 +49,9 @@ struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format);
 
+struct param_d *dev_add_param_llint_ro(struct device_d *dev, const char *name,
+		long long value, const char *format);
+
 struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
@@ -119,6 +122,12 @@ static inline struct param_d *dev_add_param_bool(struct device_d *dev, const cha
 
 static inline struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format)
+{
+	return NULL;
+}
+
+static inline struct param_d *dev_add_param_llint_ro(struct device_d *dev, const char *name,
+		long long value, const char *format)
 {
 	return NULL;
 }

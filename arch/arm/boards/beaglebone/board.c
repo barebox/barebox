@@ -51,6 +51,23 @@ static int beaglebone_coredevice_init(void)
 }
 coredevice_initcall(beaglebone_coredevice_init);
 
+static int beaglebone_mem_init(void)
+{
+	uint32_t sdram_size;
+
+	if (!of_machine_is_compatible("ti,am335x-bone"))
+		return 0;
+
+	if (is_beaglebone_black())
+		sdram_size = SZ_512M;
+	else
+		sdram_size = SZ_256M;
+
+	arm_add_mem_device("ram0", 0x80000000, sdram_size);
+	return 0;
+}
+mem_initcall(beaglebone_mem_init);
+
 static int beaglebone_devices_init(void)
 {
 	int black;

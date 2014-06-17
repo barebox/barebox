@@ -104,7 +104,7 @@ static int do_gpio_direction_output(int argc, char *argv[])
 BAREBOX_CMD_START(gpio_direction_output)
 	.cmd		= do_gpio_direction_output,
 	BAREBOX_CMD_DESC("set direction of a GPIO pin to output")
-	BAREBOX_CMD_OPTS("GPIO")
+	BAREBOX_CMD_OPTS("GPIO VALUE")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 BAREBOX_CMD_END
 

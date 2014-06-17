@@ -1,0 +1,6 @@
+
+barebox uses the same devicetree bindings as the kernel. For
+the bindings derived from the kernel look in the kernel sources
+for reference.
+
+barebox specific bindings are documented here.

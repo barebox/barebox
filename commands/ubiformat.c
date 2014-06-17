@@ -26,7 +26,7 @@
  */
 #define MAX_CONSECUTIVE_BAD_BLOCKS 4
 
-#define PROGRAM_NAME    "ubiformat"
+#define PROGRAM_NAME	"ubiformat"
 
 #include <common.h>
 #include <command.h>
@@ -337,7 +337,7 @@ static int flash_image(const struct mtd_dev_info *mtd,
 		long long ec;
 
 		if (!args.quiet && !args.verbose) {
-			printf("\r" PROGRAM_NAME ": flashing eraseblock %d -- %2u %% complete  ",
+			printf("\rubiformat: flashing eraseblock %d -- %2u %% complete  ",
 			       eb, (eb + 1) * 100 / mtd->eb_cnt);
 		}
 
@@ -447,7 +447,7 @@ static int format(const struct mtd_dev_info *mtd,
 		long long ec;
 
 		if (!args.quiet && !args.verbose) {
-			printf("\r" PROGRAM_NAME ": formatting eraseblock %d -- %2u %% complete  ",
+			printf("\rubiformat: formatting eraseblock %d -- %2u %% complete  ",
 			       eb, (eb + 1 - start_eb) * 100 / (mtd->eb_cnt - start_eb));
 		}
 
@@ -781,8 +781,8 @@ BAREBOX_CMD_HELP_OPT("-Q NUM\t", "32-bit UBI image sequence number to use")
 BAREBOX_CMD_HELP_OPT("-q\t", "suppress progress percentage information")
 BAREBOX_CMD_HELP_OPT("-v\t", "be verbose")
 BAREBOX_CMD_HELP_TEXT("")
-BAREBOX_CMD_HELP_TEXT("Example 1: " PROGRAM_NAME " /dev/nand0 -y - format nand0 and assume yes")
-BAREBOX_CMD_HELP_TEXT("Example 2: " PROGRAM_NAME " /dev/nand0 -q -e 0 - format nand0,")
+BAREBOX_CMD_HELP_TEXT("Example 1: ubiformat /dev/nand0 -y - format nand0 and assume yes")
+BAREBOX_CMD_HELP_TEXT("Example 2: ubiformat /dev/nand0 -q -e 0 - format nand0,")
 BAREBOX_CMD_HELP_TEXT("\tbe quiet and force erase counter value 0.")
 BAREBOX_CMD_HELP_END
 

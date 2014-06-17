@@ -15,32 +15,6 @@
  *
  */
 
-/**
- * @file
- * @brief SDP3430 Specific Board Initialization routines
- */
-
-/**
- * @page ti_SDP3430 Texas Instruments SDP3430
- *
- * SDP3430 from Texas Instruments as described here:
- * http://www.ti.com/omap3430_devplatform
- * This file provides initialization in two stages:
- * @li boot time initialization - do basics required to get SDRAM working.
- * This is run from SRAM - so no case constructs and global vars can be used.
- * @li run time initialization - this is for the rest of the initializations
- * such as flash, uart etc.
- *
- * Boot time initialization includes:
- * @li SDRAM initialization.
- * @li Pin Muxing relevant for SDP3430.
- *
- * Run time initialization includes
- * @li serial @ref serial_ns16550.c driver device definition
- *
- * Originally from http://linux.omap.com/pub/bootloader/3430sdp/u-boot-v1.tar.gz
- */
-
 #include <common.h>
 #include <console.h>
 #include <init.h>

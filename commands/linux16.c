@@ -330,18 +330,6 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-v VESAMODE",   "set VESAMODE")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page linux16_command
-
-<p>Only kernel images in bzImage format are supported by now. See \ref
-x86_boot_preparation for more info about how to use this command.</p>
-
-<p>For the video mode refer the Linux kernel documentation
-'Documentation/fb/vesafb.txt' for correct VESA mode numbers. If the keyword
-'ask' instead of a number is given, the starting kernel will ask for a number.
-</p>
- */
-
 BAREBOX_CMD_START(linux16)
 	.cmd		= do_linux16,
 	BAREBOX_CMD_DESC("boot a linux kernel on x86 via real-mode code")
@@ -349,57 +337,3 @@ BAREBOX_CMD_START(linux16)
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_linux16_help)
 BAREBOX_CMD_END
-
-/**
- * @file
- * @brief Boot support for Linux on x86
- */
-
-/**
- * @page x86_boot_preparation Linux Preparation on x86
- *
- * Due to some real mode constraints, starting Linux is somehow tricky.
- * Currently only @p bzImages are supported, because @p zImages would
- * interfere with the @a barebox runtime.
- * Also older load header versions than 2.00 aren't supported.
- *
- * The memory layout immediately before starting the Linux kernel:
- *
-@verbatim
-                  real mode space                     hole            extended memory
-   |---------------------------------------------->|----------->|------------------------------>
-   0  0x7e00                        0x90000     0xa0000     0x100000
-    <-1-|----------2-----------><-3-   |
-                                  <-4--|-5-->                   |---------6------------->
-@endverbatim
- *
- * @li 1 = @a barebox's real mode stack
- * @li 2 = @a barebox's code
- * @li 3 = @a barebox's flat mode stack
- * @li 4 = real mode stack, when starting the Linux kernel
- * @li 5 = Kernel's real mode setup code
- * @li 6 = compressed kernel image
- *
- * A more detailed memory layout for kernel's real mode setup code
- *
-@verbatim
-
-   0x90000                                    0x97fff   0x99000              0x990ff
-   ---|------------------------------------------|----------------|--------------------|
-      |<-------- max setup code size ----------->|<--heap/stack-->|<-- command line -->|
-
-@endverbatim
- *
- * The regular entry point into the setup code is 0x90200 (2nd sector)
- *
- * To start the kernel, it's own setup code will be called. To do so, it
- * must be called in real mode. So, @a barebox switches back to real mode
- * a last time and does a jump to the setup code entry point. Now its up to
- * the setup code to deflate the kernel, switching to its own protected mode
- * setup and starting the kernel itself.
- *
- * @note This scenario only works, if a BIOS is still present. In this case
- * there is no need for @a barebox to forward any system related information
- * to the kernel. Everything is detected by kernel's setup code.
- *
- */

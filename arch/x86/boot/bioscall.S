@@ -13,8 +13,6 @@
  * touching registers they shouldn't be.
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 	.file	"bioscall.S"
 	.code16
 	.section .boot.text.intcall, "ax"
@@ -95,5 +93,3 @@ die:
         hlt
         jmp     die
 	.size	die, .-die
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */

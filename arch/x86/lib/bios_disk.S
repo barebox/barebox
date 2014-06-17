@@ -26,7 +26,6 @@
  * space below 0x10000
  */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 /*
  *   int bios_disk_rw_int13_extensions (int ah, int drive, void *dap)
  *
@@ -69,5 +68,3 @@ bios_disk_rw_int13_extensions:
 	popl %ebp
 
 	ret
-
-#endif

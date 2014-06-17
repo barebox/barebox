@@ -1,7 +1,0 @@
-/** @page dev_loongson_mach Loongson in barebox
-
-@section loongson_boards Loongson-based boards
-
-@li @subpage loongson_ls1b
-
-*/

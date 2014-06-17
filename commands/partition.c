@@ -180,18 +180,6 @@ BAREBOX_CMD_HELP_TEXT("The size of the last partition can be specified as '-' fo
 BAREBOX_CMD_HELP_TEXT("space on the device.")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page addpart_command
-
-The size and the offset can be given in decimal (without any prefix) and
-in hex (prefixed with 0x). Both can have an optional suffix K, M or G.
-The size of the last partition can be specified as '-' for the remaining
-space on the device.  This format is the same as used by the Linux
-kernel or cmdline mtd partitions.
-
-\todo This command has to be reworked and will probably change it's API.
-*/
-
 BAREBOX_CMD_START(addpart)
 	.cmd = do_addpart,
 	BAREBOX_CMD_DESC("add a partition description to a device")
@@ -219,17 +207,6 @@ BAREBOX_CMD_HELP_START(delpart)
 BAREBOX_CMD_HELP_TEXT("Delete partitions previously added to a device with addpart.")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page delpart_command
-
-Partitions are created by adding their description with the addpart
-command. If you want to get rid of a partition again, use delpart. The
-argument list is taken as a list of partitions to be deleted.
-
-\todo Add an example
-
- */
-
 BAREBOX_CMD_START(delpart)
 	.cmd = do_delpart,
 	BAREBOX_CMD_DESC("delete partition(s)")
@@ -238,4 +215,3 @@ BAREBOX_CMD_START(delpart)
 	BAREBOX_CMD_HELP(cmd_delpart_help)
 	BAREBOX_CMD_COMPLETE(devfs_partition_complete)
 BAREBOX_CMD_END
-

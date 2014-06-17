@@ -89,17 +89,6 @@ BAREBOX_CMD_HELP_OPT ("-b COLOR", "background color in 0xttrrggbb")
 BAREBOX_CMD_HELP_OPT ("-o\t",       "render offscreen")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page bmp_command
-
-This command displays a graphics in the bitmap (.bmp) format on the
-framebuffer. Currently the bmp command supports images with 8 and 24 bit
-color depth.
-
-\todo What does the -o (offscreen) option do?
-
- */
-
 BAREBOX_CMD_START(splash)
 	.cmd		= do_splash,
 	BAREBOX_CMD_DESC("display a BMP image")

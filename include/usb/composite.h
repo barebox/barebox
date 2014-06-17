@@ -17,8 +17,6 @@
 #ifndef	__LINUX_USB_COMPOSITE_H
 #define	__LINUX_USB_COMPOSITE_H
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 /*
  * This framework is an optional layer on top of the USB Gadget interface,
  * making it easier to build (a) Composite devices, supporting multiple
@@ -342,7 +340,5 @@ extern int usb_string_id(struct usb_composite_dev *c);
 #define ERROR(d, fmt, args...)
 #define WARNING(d, fmt, args...)
 #define INFO(d, fmt, args...)
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif	/* __LINUX_USB_COMPOSITE_H */

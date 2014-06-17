@@ -9,8 +9,6 @@
 #ifndef __MTD_MTD_H__
 #define __MTD_MTD_H__
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #include <driver.h>
 #include <errno.h>
 #include <linux/types.h>
@@ -324,8 +322,6 @@ int mtd_all_ff(const void *buf, unsigned int len);
 #define MTD_DEBUG(n, args...) do { } while(0)
 
 #endif /* CONFIG_MTD_DEBUG */
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 static inline int mtd_is_bitflip(int err) {
 	return err == -EUCLEAN;

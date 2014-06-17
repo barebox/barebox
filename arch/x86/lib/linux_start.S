@@ -30,7 +30,6 @@
  *   void bios_start_linux(unsigned segment)
  *
  */
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 	.section .boot.text.bios_start_linux, "ax"
 	.code32
@@ -67,5 +66,3 @@ setup_seg:
 	.word	0
 
 	.code32
-
-#endif

@@ -1,8 +1,6 @@
 #ifndef __INCLUDE_SPI_H
 #define __INCLUDE_SPI_H
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #include <driver.h>
 #include <linux/string.h>
 
@@ -430,8 +428,6 @@ static inline ssize_t spi_w8r8(struct spi_device *spi, u8 cmd)
 	/* return negative errno or unsigned value */
 	return (status < 0) ? status : result;
 }
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 extern struct bus_type spi_bus;
 

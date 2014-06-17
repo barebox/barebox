@@ -31,14 +31,6 @@ s3c24x0_disable_wd:
 	str r1, [r0]
 	mov pc, lr
 
-/**
-@page dev_s3c24xx_wd_handling Watchdog handling
-
-The watchdog must be disabled very early, because if it resets the system
-it is still active and will continue to reset the system. So, call this
-routine very early in your board_init_lowlevel routine.
-*/
-
 /*
  * S3C2410 PLL configuration
  * -------------------------

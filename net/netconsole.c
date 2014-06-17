@@ -32,11 +32,6 @@
 #include <init.h>
 #include <linux/err.h>
 
-/**
- * @file
- * @brief Network console support
- */
-
 struct nc_priv {
 	struct console_device cdev;
 	struct kfifo *fifo;
@@ -169,26 +164,3 @@ static int netconsole_init(void)
 }
 
 device_initcall(netconsole_init);
-
-/** @page net_netconsole Network console
-
-@section net_netconsole Using an UDP based network console
-
-If enabled barebox supports a console via udp networking. There is only
-one network console supported registered during init time. It is deactivated
-by default because it opens great security holes, so use with care.
-
-To use the network console you have to configure the remote ip and the local
-and remote ports. Assuming the network console is registered as cs1, it can be
-configured with:
-
-@code
-cs1.ip=<remotehost>
-cs1.port=<port>
-cs1.active=ioe
-@endcode
-
-On the remote host call scripts/netconsole with bareboxes ip and port as
-parameters. port is initialized to 6666 by default.
-
-*/

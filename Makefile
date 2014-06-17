@@ -1117,16 +1117,6 @@ help:
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the ./README file'
 
-# Generate doxygen docs
-# ---------------------------------------------------------------------------
-.PHONY += docs htmldocs
-
-docs : htmldocs
-
-htmldocs: Doxyfile.version
-	@echo  'Running doxygen with local Doxyfile'
-	$(Q)doxygen Doxyfile
-
 # Generate tags for editors
 # ---------------------------------------------------------------------------
 quiet_cmd_tags = GEN     $@

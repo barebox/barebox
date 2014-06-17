@@ -70,15 +70,6 @@ static int do_led(int argc, char *argv[])
 	return 0;
 }
 
-/**
- * @page led_command
-
-The exact meaning of <value> is unspecified. It can be a color in case of rgb
-LEDs or a brightness if this is controllable. In most cases only 1 for enabled
-is allowed.
-
-*/
-
 BAREBOX_CMD_HELP_START(led)
 BAREBOX_CMD_HELP_TEXT("Control the value of a LED. The exact meaning of VALUE is unspecified,")
 BAREBOX_CMD_HELP_TEXT("it can be a brightness, or a color. Most often a value of '1' means on")

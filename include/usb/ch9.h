@@ -33,8 +33,6 @@
 #ifndef __LINUX_USB_CH9_H
 #define __LINUX_USB_CH9_H
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #include <linux/types.h>	/* __u8 etc */
 
 /*-------------------------------------------------------------------------*/
@@ -797,7 +795,5 @@ enum usb_device_state {
 	 * suspend states.  (L2 being original USB 1.1 suspend.)
 	 */
 };
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __LINUX_USB_CH9_H */

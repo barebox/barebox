@@ -7,8 +7,6 @@
 #ifndef __MTD_ABI_H__
 #define __MTD_ABI_H__
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #include <asm-generic/div64.h>
 
 struct erase_info_user {
@@ -182,7 +180,5 @@ static inline uint32_t mtd_user_div_by_eb(uint64_t sz,
 	do_div(sz, mtd_user->erasesize);
 	return sz;
 }
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif /* __MTD_ABI_H__ */

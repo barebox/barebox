@@ -92,10 +92,6 @@ BAREBOX_CMD_HELP_OPT ("-s",   "Generic Serial")
 BAREBOX_CMD_HELP_OPT ("-d",   "Disable the serial gadget")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page usbserial_command
- */
-
 BAREBOX_CMD_START(usbserial)
 	.cmd		= do_usbserial,
 	BAREBOX_CMD_DESC("serial gadget enable/disable")

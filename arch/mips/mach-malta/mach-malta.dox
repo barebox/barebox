@@ -1,7 +1,0 @@
-/** @page dev_malta_mach MIPS Malta in barebox
-
-@section malta_boards MIPS Malta boards
-
-@li @subpage qemu_malta
-
-*/

@@ -1,9 +1,0 @@
-/* This document is intended to provide the developer with information
- * how to integrate a new CPU (MACH) into this part of the barebox tree
- */
-
-/** @page dev_bf_mach Blackfin based CPU (MACH) into the tree
-
-FIXME
-
-*/

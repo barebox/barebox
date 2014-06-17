@@ -15,11 +15,6 @@
  *
  */
 
-/**
- * @file
- * @brief setenv: Set an environment variables
- */
-
 #include <common.h>
 #include <command.h>
 #include <errno.h>
@@ -39,14 +34,6 @@ BAREBOX_CMD_HELP_START(setenv)
 BAREBOX_CMD_HELP_TEXT("Set environment variable NAME to VALUE.")
 BAREBOX_CMD_HELP_TEXT("If VALUE is ommitted, then the variable is deleted.")
 BAREBOX_CMD_HELP_END
-
-/**
- * @page setenv_command
-
-<p> This command is only available if the simple command line parser is
-in use. Within the hush shell, \c setenv is not required.</p>
-
- */
 
 BAREBOX_CMD_START(setenv)
 	.cmd		= do_setenv,

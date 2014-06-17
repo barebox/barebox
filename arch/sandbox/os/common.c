@@ -18,10 +18,6 @@
  *
  */
 
-/**
- * @file
- * @brief Common wrapper functions between barebox and the host
- */
 /*
  * These are host includes. Never include any barebox header
  * files here...
@@ -421,54 +417,3 @@ static void print_usage(const char *prgname)
 	prgname
 	);
 }
-
-/**
- * @page barebox_simul barebox Simulator
- *
- * barebox can be run as a simulator on your host to check and debug new non
- * hardware related features.
- *
- * @section simu_build How to build barebox for simulation
- *
- * @section simu_run How to run barebox simulator
- *
- * $ barebox [\<OPTIONS\>]
- *
- * Options can be:
- *
- * -m, --malloc=\<size\>
- *
- * Start sandbox with a specified malloc-space \<size\> in bytes.
- *
- * -i \<file\>
- *
- * Map a \<file\> to barebox. This option can be given multiple times. The \<file\>s
- * will show up as /dev/fd0 ... /dev/fdx in the barebox simulator.
- *
- * -e \<file\>
- *
- * Map \<file\> to barebox. With this option \<file\>s are mapped as /dev/env0 ...
- * /dev/envx and thus are used as default environment. A clean file generated
- * with dd will do to get started with an empty environment
- *
- * -O \<file\>
- *
- * Register \<file\> as a console capable of doing stdout. \<file\> can be a
- * regular file or a fifo.
- *
- * -I \<file\>
- *
- * Register \<file\> as a console capable of doing stdin. \<file\> can be a regular
- * file or a fifo.
- *
- * -x, --xres \<res\>
- *
- * Specify SDL width
- *
- * -y, --yres \<res\>
- *
- * Specify SDL height
- *
- * @section simu_dbg How to debug barebox simulator
- *
- */

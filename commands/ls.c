@@ -127,6 +127,9 @@ static int do_ls(int argc, char *argv[])
 	ulong flags = LS_COLUMN;
 	struct string_list sl;
 
+	if (!strcmp(argv[0], "ll"))
+		flags &= ~LS_COLUMN;
+
 	while((opt = getopt(argc, argv, "RCl")) > 0) {
 		switch(opt) {
 		case 'R':
@@ -215,6 +218,14 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(ls)
 	.cmd		= do_ls,
 	BAREBOX_CMD_DESC("list a file or directory")
+	BAREBOX_CMD_OPTS("[-lCR] [FILEDIR...]")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
+	BAREBOX_CMD_HELP(cmd_ls_help)
+BAREBOX_CMD_END
+
+BAREBOX_CMD_START(ll)
+	.cmd		= do_ls,
+	BAREBOX_CMD_DESC("list a file or directory with details")
 	BAREBOX_CMD_OPTS("[-lCR] [FILEDIR...]")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_ls_help)

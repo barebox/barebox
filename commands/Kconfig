@@ -674,6 +674,20 @@ endmenu
 
 menu "Environment"
 
+config CMD_NV
+	select GLOBALVAR
+	tristate
+	prompt "nv"
+	help
+	  create, set or remove non volatile variables.
+
+	  Usage: nv [-r] VAR[=VALUE]
+
+	  Add a new config non volatile named VAR, optionally set to VALUE.
+
+	  Options:
+		-r	remove a non volatile variable
+
 config CMD_EXPORT
 	depends on ENVIRONMENT_VARIABLES
 	tristate

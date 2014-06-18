@@ -603,6 +603,7 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 		goto out;
 
 	ret = 0;
+
 out:
 	close(envfd);
 	free(buf);

@@ -40,6 +40,7 @@
 #include <envfs.h>
 #include <asm/sections.h>
 #include <uncompress.h>
+#include <globalvar.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -84,6 +85,7 @@ void __noreturn start_barebox(void)
 			defaultenv_load("/env", 0);
 
 		envfs_load(default_environment_path, "/env", 0);
+		nvvar_load();
 	}
 
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {

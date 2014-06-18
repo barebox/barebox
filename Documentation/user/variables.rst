@@ -25,6 +25,47 @@ other variable. You can also directly assign a value during creation::
 to assigning a value with ``global.myvar1=foobar``, but the latter fails when
 a variable has not been created before.
 
+.. _config_device:
+
+Non volatile variables
+----------------------
+
+Additionally to global variables barebox also has non volatile (nv) variables.
+Unlike the global variables the config variables are persistent over reboots.
+
+Each nv variable is linked with the global variable of the same name.
+Whenever the nv variable changes its value the corresponding global
+variable also changes its value. The other way round though is not true:
+Changing a global variable does not change the corresponding nv variable.
+This means that changing a global variable changes the behaviour for the
+currently running barebox, while changing a nv variable changes the
+behaviour persistently over reboots.
+
+nv variables can be created or removed with the :ref:`command_nv`
+command. The nv variables are made persistent using the environment
+facilities of barebox, so a :ref:`saveenv` must be issued to store the actual
+values.
+
+examples:
+
+.. code-block:: sh
+
+  barebox@Phytec phyCARD-i.MX27:/ devinfo nv
+  barebox@Phytec phyCARD-i.MX27:/ nv model=myboard
+  barebox@myboard:/ devinfo nv
+  Parameters:
+    model: myboard
+  barebox@myboard:/ devinfo global
+  Parameters:
+    [...]
+    model: myboard
+    [...]
+  barebox@myboard:/ global.model=yourboard
+  barebox@yourboard:/ devinfo nv
+  Parameters:
+    model: myboard
+  barebox@yourboard:/
+
 .. _magicvars:
 
 Magic variables

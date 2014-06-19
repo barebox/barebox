@@ -166,16 +166,18 @@ static int do_addpart(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(addpart)
 
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-n", "do not use the device name as prefix of the partition name")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("Create partitions on device DEVICE using the partition description")
+BAREBOX_CMD_HELP_TEXT("from PART.")
+BAREBOX_CMD_HELP_TEXT("PART contains a partition description compatible to the Kernel mtd")
+BAREBOX_CMD_HELP_TEXT("commandline partition description:")
+BAREBOX_CMD_HELP_TEXT("SIZE1[@OFFSET1](NAME1)[RO],SIZE2[@OFFSET2](NAME2)[RO],...")
 BAREBOX_CMD_HELP_TEXT("The size and the offset can be given in decimal (without any prefix) and")
 BAREBOX_CMD_HELP_TEXT("in hex (prefixed with 0x). Both can have an optional suffix K, M or G.")
 BAREBOX_CMD_HELP_TEXT("The size of the last partition can be specified as '-' for the remaining")
-BAREBOX_CMD_HELP_TEXT("space on the device.  This format is the same as used by the Linux")
-BAREBOX_CMD_HELP_TEXT("kernel or cmdline mtd partitions.")
-BAREBOX_CMD_HELP_TEXT("")
-BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-n", "do not use the device name as prefix of the partition name")
-BAREBOX_CMD_HELP_OPT ("DEVICE",    "device being worked on")
-BAREBOX_CMD_HELP_OPT ("PART", "SIZE1[@OFFSET1](NAME1)[RO],SIZE2[@OFFSET2](NAME2)[RO],...")
+BAREBOX_CMD_HELP_TEXT("space on the device.")
 BAREBOX_CMD_HELP_END
 
 /**

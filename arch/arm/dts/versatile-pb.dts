@@ -1,0 +1,10 @@
+#include <arm/versatile-ab.dts>
+
+/ {
+	model = "ARM Versatile PB";
+	compatible = "arm,versatile-pb";
+
+	memory {
+		reg = <0x0 0x04000000>;
+	};
+};

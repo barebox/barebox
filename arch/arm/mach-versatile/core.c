@@ -40,11 +40,6 @@
 #include <mach/platform.h>
 #include <mach/init.h>
 
-void versatile_add_sdram(u32 size)
-{
-	arm_add_mem_device("ram0", 0x00000000, size);
-}
-
 struct clk {
 	unsigned long rate;
 };
@@ -181,12 +176,6 @@ void versatile_register_uart(unsigned id)
 		return;
 	}
 	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
-}
-
-void versatile_register_i2c(void)
-{
-	add_generic_device("versatile-i2c", DEVICE_ID_DYNAMIC, NULL,
-			VERSATILE_I2C_BASE, SZ_4K, IORESOURCE_MEM, NULL);
 }
 
 void __noreturn reset_cpu (unsigned long ignored)

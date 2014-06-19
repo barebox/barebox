@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "Device Firmware upgrade (DFU)"
-	exit
-fi
-
 if [ -d /dfutmp ]; then
 	rm -r /dfutmp
 fi

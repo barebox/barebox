@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "AHCI (UEFI boot partiton)"
-	exit
-fi
-
 path="/mnt/ahci-boot"
 
 global.bootm.image="${path}/zImage"

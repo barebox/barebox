@@ -136,6 +136,8 @@ int ifup_all(unsigned flags)
 	while ((d = readdir(dir))) {
 		if (*d->d_name == '.')
 			continue;
+		if (strstr(d->d_name, "-discover"))
+			continue;
 		ifup(d->d_name, flags);
 	}
 

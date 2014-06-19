@@ -506,7 +506,7 @@
 };
 
 &usbotg {
-	phy_type = "ulpi";
+	phy_type = "utmi_wide";
 	status = "okay";
 };
 

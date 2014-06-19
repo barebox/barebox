@@ -252,7 +252,7 @@ static void bootsources_menu(char *entries[], int num_entries)
 	}
 
 	blspec = bootentries_collect(entries, num_entries);
-	if (blspec)
+	if (!blspec)
 		return;
 
 	entry_default = blspec_entry_default(blspec);

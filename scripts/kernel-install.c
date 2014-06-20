@@ -1026,7 +1026,7 @@ static int do_remove_kernel(void)
 		do_list_entries();
 		printf("which kernel do you like to remove?\n");
 		ret = getline(&input, &insize, stdin);
-		if (ret)
+		if (ret < 0)
 			return -errno;
 		if (!strlen(input))
 			return -EINVAL;

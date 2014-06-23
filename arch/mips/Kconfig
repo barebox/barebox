@@ -44,6 +44,7 @@ config MACH_MIPS_MALTA
 	select SYS_SUPPORTS_32BIT_KERNEL
 	select SYS_SUPPORTS_BIG_ENDIAN
 	select HAS_DEBUG_LL
+	select GPIOLIB
 
 config MACH_MIPS_AR231X
 	bool "Atheros ar231x-based boards"

@@ -37,6 +37,16 @@ config GPIO_GENERIC_PLATFORM
 config GPIO_IMX
 	def_bool ARCH_IMX
 
+config GPIO_MALTA_FPGA_I2C
+	bool "Malta CBUS FPGA I2C GPIO"
+	depends on MACH_MIPS_MALTA
+	help
+	  Support access to the CBUS FPGA I2C lines through the gpio library.
+
+	  This driver provides common support for accessing the device,
+	  additional drivers must be enabled in order to use the
+	  functionality of the device.
+
 config GPIO_OMAP
 	def_bool ARCH_OMAP
 

@@ -136,6 +136,11 @@ int ifup_all(unsigned flags)
 	while ((d = readdir(dir))) {
 		if (*d->d_name == '.')
 			continue;
+		/*
+		 * Skip xxx-discover files since these are no
+		 * network configuration files, but scripts to bring
+		 * up network interface xxx.
+		 */
 		if (strstr(d->d_name, "-discover"))
 			continue;
 		ifup(d->d_name, flags);

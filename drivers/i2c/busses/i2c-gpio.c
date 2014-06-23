@@ -15,6 +15,7 @@
 #include <i2c/i2c-gpio.h>
 #include <init.h>
 #include <gpio.h>
+#include <of_gpio.h>
 
 struct i2c_gpio_private_data {
 	struct i2c_adapter adap;
@@ -83,6 +84,41 @@ static int i2c_gpio_getscl(void *data)
 	return gpio_get_value(pdata->scl_pin);
 }
 
+static int of_i2c_gpio_probe(struct device_node *np,
+			     struct i2c_gpio_platform_data *pdata)
+{
+	u32 reg;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return -ENODEV;
+
+	if (of_gpio_count(np) < 2)
+		return -ENODEV;
+
+	pdata->sda_pin = of_get_gpio(np, 0);
+	pdata->scl_pin = of_get_gpio(np, 1);
+
+	if (!gpio_is_valid(pdata->sda_pin) || !gpio_is_valid(pdata->scl_pin)) {
+		pr_err("%s: invalid GPIO pins, sda=%d/scl=%d\n",
+		       np->full_name, pdata->sda_pin, pdata->scl_pin);
+		return -ENODEV;
+	}
+
+	of_property_read_u32(np, "i2c-gpio,delay-us", &pdata->udelay);
+
+	if (!of_property_read_u32(np, "i2c-gpio,timeout-ms", &reg))
+		pdata->timeout_ms = reg;
+
+	pdata->sda_is_open_drain =
+		of_property_read_bool(np, "i2c-gpio,sda-open-drain");
+	pdata->scl_is_open_drain =
+		of_property_read_bool(np, "i2c-gpio,scl-open-drain");
+	pdata->scl_is_output_only =
+		of_property_read_bool(np, "i2c-gpio,scl-output-only");
+
+	return 0;
+}
+
 static int i2c_gpio_probe(struct device_d *dev)
 {
 	struct i2c_gpio_private_data *priv;
@@ -97,9 +133,15 @@ static int i2c_gpio_probe(struct device_d *dev)
 	bit_data = &priv->bit_data;
 	pdata = &priv->pdata;
 
-	if (!dev->platform_data)
-		return -ENXIO;
-	memcpy(pdata, dev->platform_data, sizeof(*pdata));
+	if (dev->device_node) {
+		ret = of_i2c_gpio_probe(dev->device_node, pdata);
+		if (ret)
+			return ret;
+	} else {
+		if (!dev->platform_data)
+			return -ENXIO;
+		memcpy(pdata, dev->platform_data, sizeof(*pdata));
+	}
 
 	ret = gpio_request(pdata->sda_pin, "sda");
 	if (ret)
@@ -144,6 +186,7 @@ static int i2c_gpio_probe(struct device_d *dev)
 
 	adap->algo_data = bit_data;
 	adap->dev.parent = dev;
+	adap->dev.device_node = dev->device_node;
 
 	adap->nr = dev->id;
 	ret = i2c_bit_add_numbered_bus(adap);
@@ -165,8 +208,14 @@ err_request_sda:
 	return ret;
 }
 
+static struct of_device_id i2c_gpio_dt_ids[] = {
+	{ .compatible = "i2c-gpio", },
+	{ /* sentinel */ }
+};
+
 static struct driver_d i2c_gpio_driver = {
 	.name	= "i2c-gpio",
 	.probe	= i2c_gpio_probe,
+	.of_compatible = DRV_OF_COMPAT(i2c_gpio_dt_ids),
 };
 device_platform_driver(i2c_gpio_driver);

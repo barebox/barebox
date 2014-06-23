@@ -71,7 +71,7 @@ struct resource *__request_region(struct resource *parent,
 			goto ok;
 		if (start > r->end)
 			continue;
-		debug("%s: 0x%08llx:0x%08llx conflicts with 0x%08llx:0x%08llx\n",
+		pr_warn("%s: 0x%08llx:0x%08llx conflicts with 0x%08llx:0x%08llx\n",
 				__func__,
 				(unsigned long long)start,
 				(unsigned long long)end,

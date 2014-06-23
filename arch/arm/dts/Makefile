@@ -31,12 +31,6 @@ dtb-$(CONFIG_ARCH_IMX6) += imx6q-gk802.dtb \
 	imx6q-var-custom.dtb \
 	imx6s-riotboard.dtb \
 	imx6q-phytec-pbaa03.dtb
-dtb-$(CONFIG_ARCH_MVEBU) += dove-cubox-bb.dtb \
-	armada-370-mirabox-bb.dtb \
-	armada-xp-gp-bb.dtb \
-	armada-xp-openblocks-ax3-4-bb.dtb \
-	kirkwood-guruplug-server-plus-bb.dtb \
-	kirkwood-topkick-bb.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3188-radxarock.dtb
 dtb-$(CONFIG_ARCH_SOCFPGA) += socfpga_cyclone5_sockit.dtb \
 	socfpga_cyclone5_socrates.dtb

@@ -399,6 +399,7 @@ static int port_open(struct eth_device *edev)
 
 static int port_probe(struct device_d *parent, struct port_priv *port)
 {
+	struct orion_gbe *gbe = parent->priv;
 	struct device_d *dev = &port->dev;
 	u32 reg;
 	int ret;
@@ -450,7 +451,7 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 		reg |= RGMII_ENABLE;
 	writel(reg, port->regs + PORT_SC1);
 
-	sprintf(dev->name, "orion-gbe-port");
+	snprintf(dev->name, MAX_DRIVER_NAME, "%08x.ethernet-port", (u32)gbe->regs);
 	dev->id = port->portno;
 	dev->parent = parent;
 	dev->device_node = port->np;

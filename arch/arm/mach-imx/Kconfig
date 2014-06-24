@@ -269,8 +269,8 @@ config MACH_NITROGEN6X
 	bool "BoundaryDevices Nitrogen6x"
 	select ARCH_IMX6
 
-config MACH_SOLIDRUN_HUMMINGBOARD
-	bool "SolidRun Hummingboard"
+config MACH_SOLIDRUN_MICROSOM
+	bool "SolidRun MicroSOM based devices"
 	select ARCH_IMX6
 
 config MACH_EMBEST_RIOTBOARD

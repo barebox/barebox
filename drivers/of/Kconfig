@@ -15,6 +15,9 @@ config OFDEVICE
 	select DTC
 	bool "Enable probing of devices from the devicetree"
 
+config OF_ADDRESS_PCI
+	bool
+
 config OF_NET
 	depends on NET
 	def_bool y

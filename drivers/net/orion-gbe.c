@@ -447,7 +447,10 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 
 	reg = SC1_RESERVED;
 	reg |= DEFAULT_COL_LIMIT | COL_ON_BACKPRESS | INBAND_ANEG_BYPASS;
-	if (port->intf == PHY_INTERFACE_MODE_RGMII)
+	if (port->intf == PHY_INTERFACE_MODE_RGMII ||
+	    port->intf == PHY_INTERFACE_MODE_RGMII_ID ||
+	    port->intf == PHY_INTERFACE_MODE_RGMII_RXID ||
+	    port->intf == PHY_INTERFACE_MODE_RGMII_TXID)
 		reg |= RGMII_ENABLE;
 	writel(reg, port->regs + PORT_SC1);
 

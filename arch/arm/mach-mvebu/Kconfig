@@ -24,11 +24,13 @@ config ARCH_DOVE
 	bool "Dove 88AP510"
 	select CPU_V7
 	select CLOCKSOURCE_ORION
+	select PINCTRL_DOVE
 
 config ARCH_KIRKWOOD
 	bool "Kirkwood"
 	select CPU_FEROCEON
 	select CLOCKSOURCE_ORION
+	select PINCTRL_KIRKWOOD
 
 endchoice
 

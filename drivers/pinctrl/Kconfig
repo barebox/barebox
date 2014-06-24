@@ -46,3 +46,5 @@ config PINCTRL_TEGRA30
 	bool
 	help
 	  The pinmux controller found on the Tegra 30+ line of SoCs.
+
+source drivers/pinctrl/mvebu/Kconfig

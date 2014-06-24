@@ -1,0 +1,7 @@
+config PINCTRL_DOVE
+	bool
+	select PINCTRL
+
+config PINCTRL_KIRKWOOD
+	bool
+	select PINCTRL

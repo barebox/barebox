@@ -72,6 +72,8 @@ static int hummingboard_device_init(void)
 	gpio_direction_output(IMX_GPIO_NR(3, 22), 1);
 	gpio_direction_output(IMX_GPIO_NR(1, 0), 1);
 
+	barebox_set_hostname("hummingboard");
+
 	return 0;
 }
 device_initcall(hummingboard_device_init);
@@ -87,16 +89,3 @@ static int hummingboard_late_init(void)
 	return 0;
 }
 late_initcall(hummingboard_late_init);
-
-static int hummingboard_lwl_init(void)
-{
-	if (!of_machine_is_compatible("solidrun,hummingboard"))
-		return 0;
-
-	barebox_set_hostname("hummingboard");
-
-	imx6_init_lowlevel();
-
-	return 0;
-}
-postcore_initcall(hummingboard_lwl_init);

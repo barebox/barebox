@@ -69,19 +69,8 @@ static int gk802_env_init(void)
 	devfs_add_partition(bootsource_name, 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, barebox_name);
 	devfs_add_partition(bootsource_name, SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, default_environment_name);
 
+	barebox_set_hostname("gk802");
+
 	return 0;
 }
 late_initcall(gk802_env_init);
-
-static int gk802_console_init(void)
-{
-	if (!of_machine_is_compatible("zealz,imx6q-gk802"))
-		return 0;
-
-	barebox_set_hostname("gk802");
-
-	imx6_init_lowlevel();
-
-	return 0;
-}
-postcore_initcall(gk802_console_init);

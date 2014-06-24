@@ -69,6 +69,7 @@ static int sabresd_devices_init(void)
 		return 0;
 
 	armlinux_set_architecture(3980);
+	barebox_set_hostname("sabresd");
 
 	return 0;
 }
@@ -89,16 +90,3 @@ static int sabresd_coredevices_init(void)
  * gpios are available.
  */
 coredevice_initcall(sabresd_coredevices_init);
-
-static int sabresd_postcore_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx6q-sabresd"))
-		return 0;
-
-	imx6_init_lowlevel();
-
-	barebox_set_hostname("sabresd");
-
-	return 0;
-}
-postcore_initcall(sabresd_postcore_init);

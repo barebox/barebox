@@ -72,19 +72,8 @@ static int riotboard_device_init(void)
 	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc3.barebox",
 			BBU_HANDLER_FLAG_DEFAULT);
 
+	barebox_set_hostname("riotboard");
+
 	return 0;
 }
 device_initcall(riotboard_device_init);
-
-static int riotboard_lwl_init(void)
-{
-	if (!of_machine_is_compatible("embest,riotboard"))
-		return 0;
-
-	barebox_set_hostname("riotboard");
-
-	imx6_init_lowlevel();
-
-	return 0;
-}
-postcore_initcall(riotboard_lwl_init);

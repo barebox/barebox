@@ -26,17 +26,6 @@
 #include <mach/bbu.h>
 #include <mach/imx6.h>
 
-static int santaro_postcore_init(void)
-{
-	if (!of_machine_is_compatible("guf,imx6q-santaro"))
-		return 0;
-
-	imx6_init_lowlevel();
-
-	return 0;
-}
-postcore_initcall(santaro_postcore_init);
-
 static int santaro_device_init(void)
 {
 	uint32_t flag_sd = 0, flag_emmc = 0;

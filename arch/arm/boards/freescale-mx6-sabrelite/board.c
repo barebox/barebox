@@ -179,20 +179,9 @@ static int sabrelite_coredevices_init(void)
 
 	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,
 					   ksz9021rn_phy_fixup);
-	return 0;
-}
-coredevice_initcall(sabrelite_coredevices_init);
-
-static int sabrelite_postcore_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx6q-sabrelite") &&
-	    !of_machine_is_compatible("fsl,imx6dl-sabrelite"))
-		return 0;
-
-	imx6_init_lowlevel();
 
 	barebox_set_hostname("sabrelite");
 
 	return 0;
 }
-postcore_initcall(sabrelite_postcore_init);
+coredevice_initcall(sabrelite_coredevices_init);

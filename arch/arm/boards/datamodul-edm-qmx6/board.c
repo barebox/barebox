@@ -135,19 +135,8 @@ static int realq7_device_init(void)
 		break;
 	}
 
+	barebox_set_hostname("eDM-QMX6");
+
 	return 0;
 }
 device_initcall(realq7_device_init);
-
-static int realq7_postcore_init(void)
-{
-	if (!of_machine_is_compatible("dmo,imx6q-edmqmx6"))
-		return 0;
-
-	barebox_set_hostname("eDM-QMX6");
-
-	imx6_init_lowlevel();
-
-	return 0;
-}
-postcore_initcall(realq7_postcore_init);

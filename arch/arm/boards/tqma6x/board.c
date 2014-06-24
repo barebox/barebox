@@ -113,17 +113,8 @@ static int tqma6x_env_init(void)
 
 	default_environment_path_set("/dev/mmc2.boot1");
 
+	barebox_set_hostname("mba6x");
+
 	return 0;
 }
 late_initcall(tqma6x_env_init);
-
-static int tqma6x_core_init(void)
-{
-	if (!of_machine_is_compatible("tq,mba6x"))
-		return 0;
-
-	imx6_init_lowlevel();
-
-	return 0;
-}
-postcore_initcall(tqma6x_core_init);

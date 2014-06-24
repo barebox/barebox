@@ -147,8 +147,6 @@ static int arm2_console_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(arm2_pads, ARRAY_SIZE(arm2_pads));
 
-	imx6_init_lowlevel();
-
 	barebox_set_model("Freescale i.MX6 Armadillo2");
 	barebox_set_hostname("armadillo2");
 

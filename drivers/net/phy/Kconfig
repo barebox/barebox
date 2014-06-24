@@ -18,6 +18,11 @@ config LXT_PHY
 	---help---
 	  Currently supports the lxt971 PHY.
 
+config MARVELL_PHY
+	tristate "Drivers for Marvell PHYs"
+	---help---
+	  Add support for various Marvell PHYs (e.g. 88E1121R).
+
 config MICREL_PHY
 	bool "Driver for Micrel PHYs"
 	---help---

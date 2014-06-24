@@ -53,6 +53,8 @@ int ls(const char *path, ulong flags)
 	char tmp[PATH_MAX];
 	struct stat s;
 	struct string_list sl;
+	struct string_list *entry;
+	int ret;
 
 	string_list_init(&sl);
 
@@ -71,51 +73,51 @@ int ls(const char *path, ulong flags)
 	if (!dir)
 		return -errno;
 
-	while ((d = readdir(dir))) {
-		sprintf(tmp, "%s/%s", path, d->d_name);
-		if (flags & LS_COLUMN) {
-			string_list_add_sorted(&sl, d->d_name);
-		} else {
-			if (lstat(tmp, &s))
-				goto out;
-			ls_one(d->d_name, tmp, &s);
-		}
-	}
+	while ((d = readdir(dir)))
+		string_list_add_sorted(&sl, d->d_name);
 
 	closedir(dir);
 
 	if (flags & LS_COLUMN) {
 		string_list_print_by_column(&sl);
-		string_list_free(&sl);
+	} else {
+		string_list_for_each_entry(entry, &sl) {
+			sprintf(tmp, "%s/%s", path, entry->str);
+			ret = lstat(tmp, &s);
+			if (ret) {
+				printf("%s: %s\n", tmp, strerror(-ret));
+				continue;
+			}
+
+			ls_one(entry->str, tmp, &s);
+		}
 	}
 
 	if (!(flags & LS_RECURSIVE))
-		return 0;
+		goto out;
 
-	dir = opendir(path);
-	if (!dir) {
-		errno = ENOENT;
-		return -ENOENT;
-	}
-
-	while ((d = readdir(dir))) {
-
-		if (!strcmp(d->d_name, "."))
+	string_list_for_each_entry(entry, &sl) {
+		if (!strcmp(entry->str, "."))
 			continue;
-		if (!strcmp(d->d_name, ".."))
+		if (!strcmp(entry->str, ".."))
 			continue;
-		sprintf(tmp, "%s/%s", path, d->d_name);
+		sprintf(tmp, "%s/%s", path, entry->str);
 
-		if (lstat(tmp, &s))
-			goto out;
+		ret = lstat(tmp, &s);
+		if (ret) {
+			printf("%s: %s\n", tmp, strerror(-ret));
+			continue;
+		}
+
 		if (s.st_mode & S_IFDIR) {
 			char *norm = normalise_path(tmp);
 			ls(norm, flags);
 			free(norm);
 		}
 	}
+
 out:
-	closedir(dir);
+	string_list_free(&sl);
 
 	return 0;
 }

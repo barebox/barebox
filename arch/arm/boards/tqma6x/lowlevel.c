@@ -45,7 +45,7 @@ ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00920000 - 8);
 
@@ -66,7 +66,7 @@ ENTRY_FUNCTION(start_imx6dl_mba6x, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00920000 - 8);
 

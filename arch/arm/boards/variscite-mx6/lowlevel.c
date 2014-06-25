@@ -61,7 +61,7 @@ ENTRY_FUNCTION(start_variscite_custom, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00920000 - 8);
 

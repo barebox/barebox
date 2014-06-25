@@ -18,6 +18,7 @@
 #include <sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <asm/errata.h>
 #include <mach/lowlevel.h>
 #include <mach/tegra20-pmc.h>
 #include <mach/tegra20-car.h>
@@ -30,6 +31,23 @@ void tegra_maincomplex_entry(void)
 
 	arm_cpu_lowlevel_init();
 
+	chiptype = tegra_get_chiptype();
+
+	/* enable ARM errata workarounds early */
+	switch (chiptype) {
+	case TEGRA20:
+		enable_arm_errata_716044_war();
+		enable_arm_errata_742230_war();
+		enable_arm_errata_751472_war();
+		break;
+	case TEGRA30:
+		enable_arm_errata_743622_war();
+		enable_arm_errata_751472_war();
+		break;
+	default:
+		break;
+	}
+
 	/* switch to PLLX */
 	writel(CRC_CCLK_BURST_POLICY_SYS_STATE_RUN <<
 	       CRC_CCLK_BURST_POLICY_SYS_STATE_SHIFT |
@@ -37,8 +55,6 @@ void tegra_maincomplex_entry(void)
 	       CRC_CCLK_BURST_POLICY_RUN_SRC_SHIFT,
 	       TEGRA_CLK_RESET_BASE + CRC_CCLK_BURST_POLICY);
 	writel(CRC_SUPER_CDIV_ENB, TEGRA_CLK_RESET_BASE + CRC_SUPER_CCLK_DIV);
-
-	chiptype = tegra_get_chiptype();
 
 	if (chiptype >= TEGRA114) {
 		asm("mrc p15, 1, %0, c9, c0, 2" : : "r" (reg));
@@ -51,6 +67,7 @@ void tegra_maincomplex_entry(void)
 	case TEGRA20:
 		rambase = 0x0;
 		ramsize = tegra20_get_ramsize();
+
 		break;
 	case TEGRA30:
 	case TEGRA124:

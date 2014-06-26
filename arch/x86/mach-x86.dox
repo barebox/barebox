@@ -53,7 +53,7 @@ code. Thats why not the PIC is touched nor the IDT.
 @todo Add some notes about drive numbers used by the BIOS. They may change
 if one change orders in the BIOS setup. Drive orders and numbers may be
 different at BIOS runtime and Linux runtime! But these numbers are required
-at BIOS runtime for booting and the persistant environment storage.
+at BIOS runtime for booting and the persistent environment storage.
 
 @attention Currently there is a 4 GiB limit for the disk sizes!
 
@@ -82,11 +82,11 @@ gets stored when this image will be written to a boot media. This information
 is required to load all parts of the image from the boot media at runtime.
 
 The image gets installed in two ways onto the boot media, depending on the
-need for a persistant storage.
+need for a persistent storage.
 
-@subsection mach_x86_drive_layout_wops barebox's boot media layout without persistant storage
+@subsection mach_x86_drive_layout_wops barebox's boot media layout without persistent storage
 
-In this case @a barebox's persistant storage is anywhere:
+In this case @a barebox's persistent storage is anywhere:
 
 @verbatim
   Sector     Content
@@ -100,9 +100,9 @@ In this case @a barebox's persistant storage is anywhere:
     0        MBR, Partition table, boot code
 @endverbatim
 
-@subsection mach_x86_drive_layout_wps barebox's boot media layout with persistant storage
+@subsection mach_x86_drive_layout_wps barebox's boot media layout with persistent storage
 
-@a barebox's persistant storage is part of the boot media (more
+@a barebox's persistent storage is part of the boot media (more
 space required in front of the first partition) and interferes with the
 boot loader image itself:
 
@@ -115,13 +115,13 @@ boot loader image itself:
     .        32 bit barebox code
     n+2      16 bit bootstrap code, BIOS calling code
     n+1      indirect sector
-    n        end of persistant environment storage
+    n        end of persistent environment storage
     .
-    1        start of persistant environment storage
+    1        start of persistent environment storage
     0        MBR, Partition table, boot code
 @endverbatim
 
-The information where the persistant storage is located is also stored into
+The information where the persistent storage is located is also stored into
 the MBR at specific locations by @p setupmbr. The @a barebox runtime will use
 it to load and store all environment relevant data.
 

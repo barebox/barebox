@@ -85,7 +85,7 @@ SECTIONS
 		boot_disk = .;
 		BYTE(0x00);		/* boot disk number (provided by the BIOS)
 
-		/* information about the persistant environment storage */
+		/* information about the persistent environment storage */
 		. = PATCH_AREA + PATCH_AREA_PERS_START;
 		pers_env_storage = .;
 		LONG(0x00000000);	/* LBA start lower */

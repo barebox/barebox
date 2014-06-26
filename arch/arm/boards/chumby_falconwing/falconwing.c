@@ -355,7 +355,7 @@ make ARCH=arm CROSS_COMPILE=armv5compiler
 
 - Create four primary partitions on the MCI card
  - the first one for the bootlets (about 256 kiB)
- - the second one for the persistant environment (size is up to you, at least 256k)
+ - the second one for the persistent environment (size is up to you, at least 256k)
  - the third one for the kernel (2 MiB ... 4 MiB in size)
  - the 4th one for the root filesystem which can fill the rest of the available space
 

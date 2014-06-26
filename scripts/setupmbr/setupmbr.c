@@ -140,7 +140,7 @@ static void invalidate_daps(struct DAPS *sector)
  * Create the indirect sector with the DAPS entries
  * @param daps_table Where to store the entries
  * @param size Size of the whole image in bytes
- * @param pers_sector_count Count of sectors to skip after MBR for the persistant environment storage
+ * @param pers_sector_count Count of sectors to skip after MBR for the persistent environment storage
  * @return 0 on success
  *
  * This routine calculates the DAPS entries for the case the whole
@@ -326,10 +326,10 @@ static int check_for_space(const void *hd_image, off_t size)
 }
 
 /**
- * Setup the persistant environment storage information
+ * Setup the persistent environment storage information
  * @param patch_area Where to patch
- * @param pers_sector_start Start sector of the persistant environment storage
- * @param pers_sector_count Count of sectors for the persistant environment storage
+ * @param pers_sector_start Start sector of the persistent environment storage
+ * @param pers_sector_count Count of sectors for the persistent environment storage
  * @return 0 on success
  */
 static int store_pers_env_info(void *patch_area, uint64_t pers_sector_start, long pers_sector_count)
@@ -355,7 +355,7 @@ static int store_pers_env_info(void *patch_area, uint64_t pers_sector_start, lon
  * Prepare the MBR and indirect sector for runtime
  * @param fd_barebox barebox image to use
  * @param fd_hd Hard disk image to prepare
- * @param pers_sector_count Count of sectors to skip after MBR for the persistant environment storage
+ * @param pers_sector_count Count of sectors to skip after MBR for the persistent environment storage
  * @return 0 on success
  *
  * This routine expects a prepared hard disk image file with a partition table
@@ -390,7 +390,7 @@ static int barebox_overlay_mbr(int fd_barebox, int fd_hd, long pers_sector_count
 	}
 
 	/*
-	 * the persistant environment storage is in front of the main
+	 * the persistent environment storage is in front of the main
 	 * barebox image. To handle both, we need more space in front of the
 	 * the first partition.
 	 */
@@ -415,7 +415,7 @@ static int barebox_overlay_mbr(int fd_barebox, int fd_hd, long pers_sector_count
 
 	/*
 	 * embed the barebox main image into the disk drive image,
-	 * but keep the persistant environment storage untouched
+	 * but keep the persistent environment storage untouched
 	 * (if defined), e.g. store the main image behind this special area.
 	 */
 	memcpy(hd_image + ((pers_sector_count + 1) * SECTOR_SIZE),
@@ -471,7 +471,7 @@ static void print_usage(const char *pname)
 {
 	printf("%s: Preparing a hard disk image for boot with barebox on x86.\n", pname);
 	printf("Usage is\n %s [options] -m <barebox image> -d <hd image>\n", pname);
-	printf(" [options] are:\n -s <count> sector count of the persistant environment storage\n");
+	printf(" [options] are:\n -s <count> sector count of the persistent environment storage\n");
 	printf(" <barebox image> barebox's boot image file\n");
 	printf(" <hd image> HD image to store the barebox image\n");
 	printf(" If no '-s <x>' was given, barebox occupies sectors 0 to n, else sector 0 and x+1 to n\n");
@@ -586,7 +586,7 @@ prepared in some special way:
     this does not collide with partitions on the boot media, the first
     partition must start at a sector behind the ones @a barebox occupies.
 @li @a barebox handles its runtime configuration in a special way: It stores it
-    in a binary way into some reserved sectors ("persistant storage").
+    in a binary way into some reserved sectors ("persistent storage").
 
 @section x86_bootloader_preparations Boot Preparations
 
@@ -603,12 +603,12 @@ simple calulation:
 	sectors = (\<size of barebox image\> + 511) / 512
 
 To be able to store the runtime configuration, further free sectors are
-required. Its up to you and your requirements, how large this persistant
+required. Its up to you and your requirements, how large this persistent
 storage must be. If you need 16 kiB for this purpose, you need to keep
 additional 32 sectors free.
 
 For this example we are reserving 300 sectors for the @a barebox image and
-additionaly 32 sectors for the persistant storage. So, the first partition on
+additionaly 32 sectors for the persistent storage. So, the first partition on
 the boot media must start at sector 333 or later.
 
 Run the @p fdisk tool to setup such a partition table:
@@ -672,7 +672,7 @@ In the next step, @a barebox gets installed to this boot media:
 This command writes the @a barebox image file './barebox.bin' onto the device
 @p /dev/sda.
 
-The @p -s option will keep the persistant storage sectors free and untouched
+The @p -s option will keep the persistent storage sectors free and untouched
 and set flags in the MBR to forward its existance, size and location to
 @a barebox at runtime. @p setupmbr also does not change the partition table.
 
@@ -681,11 +681,11 @@ The @a barebox image gets stored on the boot media like this:
 @verbatim
 sector 0   1             33                              333
        |---|-------------|--------------- ~~~ ------------|--------------
-      MBR    persistant              barebox                 first
+      MBR    persistent              barebox                 first
               storage               main image              partition
 @endverbatim
 
-If the @p -s option is omitted, the "persistant storage" part simply does
+If the @p -s option is omitted, the "persistent storage" part simply does
 not exist:
 
 @verbatim

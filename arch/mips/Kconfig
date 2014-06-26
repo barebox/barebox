@@ -89,6 +89,7 @@ config MACH_MIPS_XBURST
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
+	select GPIOLIB
 endchoice
 
 source arch/mips/mach-malta/Kconfig

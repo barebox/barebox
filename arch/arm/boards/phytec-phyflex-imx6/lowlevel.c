@@ -93,8 +93,6 @@ ENTRY_FUNCTION(start_phytec_pbab01_4gib, r0, r1, r2)
 {
 	void *fdt;
 
-	__barebox_arm_head();
-
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00920000 - 8);
@@ -108,22 +106,18 @@ ENTRY_FUNCTION(start_phytec_pbab01dl_1gib, r0, r1, r2)
 {
 	void *fdt;
 
-        __barebox_arm_head();
+	arm_cpu_lowlevel_init();
 
-        arm_cpu_lowlevel_init();
-
-        arm_setup_stack(0x00920000 - 8);
+	arm_setup_stack(0x00920000 - 8);
 
 	fdt = __dtb_imx6dl_phytec_pbab01_start - get_runtime_offset();
 
-        barebox_arm_entry(0x10000000, SZ_1G, fdt);
+	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
 
 ENTRY_FUNCTION(start_phytec_pbab01s_512mb, r0, r1, r2)
 {
 	void *fdt;
-
-	__barebox_arm_head();
 
 	arm_cpu_lowlevel_init();
 

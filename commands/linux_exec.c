@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <malloc.h>
 #include <command.h>
 #include <mach/linux.h>
 

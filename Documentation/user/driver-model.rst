@@ -59,6 +59,8 @@ A particular device can be detected with ``detect <devname>``::
 
 For detecting all devices ``detect -a`` can be used.
 
+.. _device_parameters:
+
 Device parameters
 -----------------
 

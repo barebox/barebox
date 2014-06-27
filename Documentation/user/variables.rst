@@ -1,5 +1,8 @@
-Configuration variables
-=======================
+Variables
+=========
+
+We already have seen some variables in :ref:`device_parameters`. But
+there is more to variables.
 
 .. _global_device:
 

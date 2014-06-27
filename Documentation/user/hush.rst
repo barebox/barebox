@@ -2,7 +2,7 @@
 
 .. _hush:
 
-hush shell
+Hush shell
 ==========
 
 barebox has an integrated shell: hush. This is a simple shell which
@@ -10,7 +10,7 @@ is enough for writing simple shell scripts. Usage of the shell for
 scripts should not be overstrained. Often a command written in C is
 more flexible and also more robust than a complicated shell script.
 
-hush features
+Hush features
 -------------
 
 variables::

@@ -197,7 +197,7 @@ The entry can be listed with the -l option:
 When on barebox the SD card shows up as ``mmc`` then this entry can be booted with
 ``boot mmc1`` or with setting ``global.boot.default`` to ``mmc1``.
 
-network boot
+Network boot
 ------------
 
 With the following steps barebox can start the Kernel and root filesystem

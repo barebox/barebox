@@ -1,7 +1,7 @@
 .. highlight:: console
 
-barebox user manual
-===================
+User manual
+===========
 
 Contents:
 

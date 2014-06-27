@@ -1,4 +1,4 @@
-memory areas
+Memory areas
 ============
 
 Several barebox commands like :ref:`command_md`, erase or crc work on an area

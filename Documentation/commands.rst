@@ -1,5 +1,5 @@
-barebox command reference
-=========================
+Command reference
+=================
 
 .. toctree::
    :glob:

@@ -7,8 +7,8 @@ both the first and the second stage loader. To build as a first stage loader
 build the \*_xload_defconfig for your board, for second stage build the normal
 \*_defconfig for your board.
 
-bootstrapping a panda board
----------------------------
+Bootstrapping a PandaBoard
+--------------------------
 
 The Panda board boots from SD card. The OMAP Boot ROM code loads a file named
 'MLO' on a bootable FAT partition on this card. There are several howtos and

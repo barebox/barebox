@@ -1,4 +1,4 @@
-barebox specific devicetree bindings
+Barebox specific devicetree bindings
 ====================================
 
 Contents:

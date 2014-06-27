@@ -1,6 +1,6 @@
 .. _filesystems:
 
-filesystems
+Filesystems
 ===========
 
 .. toctree::

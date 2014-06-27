@@ -1,4 +1,4 @@
-networking
+Networking
 ==========
 
 barebox has IPv4 networking support. Several protocols such as

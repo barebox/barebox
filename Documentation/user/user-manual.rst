@@ -15,9 +15,9 @@ Contents:
    automount
    memory-areas
    driver-model
+   variables
    hush
    defaultenv-2
-   variables
    updating
    devicetree
    pbl

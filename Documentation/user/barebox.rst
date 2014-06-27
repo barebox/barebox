@@ -100,6 +100,9 @@ with the most popular being ``menuconfig``::
 
   make menuconfig
 
+barebox used the same configuration system as Linux, so you can use
+all the things you know, e.g. ``make xconfig``, ``make allyesconfig`` etc.
+
 Compilation
 -----------
 

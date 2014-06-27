@@ -1,5 +1,5 @@
-System Setup
-============
+Appendix: System Setup
+======================
 
 Serial Console Access
 ---------------------

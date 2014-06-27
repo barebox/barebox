@@ -10,7 +10,6 @@ Contents:
    :maxdepth: 2
 
    introduction
-   system-setup
    barebox
    networking
    automount
@@ -27,6 +26,7 @@ Contents:
    usb
    ubi
    booting-linux
+   system-setup
 
 * :ref:`search`
 * :ref:`genindex`

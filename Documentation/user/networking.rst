@@ -52,7 +52,7 @@ or
 
   mount -t nfs 192.168.2.1:/export none /mnt
 
-**NOTE** This can often be hidden behind the :ref:`command_automount` command to make
+**NOTE:** this can often be hidden behind the :ref:`command_automount` command to make
 mounting transparent to the user.
 
 Network console

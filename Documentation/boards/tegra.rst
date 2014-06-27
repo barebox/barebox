@@ -14,7 +14,7 @@ multi-image build (:ref:`multi_image`). Building is as easy as typing:
   make ARCH=arm tegra_v7_defconfig
   make ARCH=arm CROSS_COMPILE=arm-v7-compiler-
 
-**NOTE** replace the arm-v7-compiler- with your ARM v7 cross compiler.
+**NOTE:** replace the arm-v7-compiler- with your ARM v7 cross compiler.
 
 Tegra images are specific to the bootsource. The build will generate images for
 all combinations of bootsources and supported boards. You can find the
@@ -69,7 +69,7 @@ You should now see barebox coming up on the serial console.
 Writing barebox to the primary boot device
 ------------------------------------------
 
-**NOTE** This may change in the near future to work with the standard
+**NOTE:** this may change in the near future to work with the standard
 barebox update mechanism (:ref:`update`).
 
 Copy the image corresponding to the primary boot device for your board to a

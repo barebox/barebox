@@ -48,7 +48,7 @@ variable:
   global.bootm.image=/path/to/zImage
   bootm
 
-**NOTE** It may happen that barebox is probed from the devicetree, but you have
+**NOTE:** it may happen that barebox is probed from the devicetree, but you have
 want to start a Kernel without passing a devicetree. In this case call ``oftree -f``
 to free the internal devicetree before calling ``bootm``
 

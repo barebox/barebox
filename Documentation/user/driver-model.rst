@@ -87,5 +87,5 @@ device variables may have a type, so assigning wrong values may fail::
   barebox@Genesi Efika MX Smartbook:/ echo $?
   1
 
-**HINT** barebox has tab completion for variables. Typing ``eth0.<TAB><TAB>``
+**HINT:** barebox has tab completion for variables. Typing ``eth0.<TAB><TAB>``
 will show the parameters for eth0.

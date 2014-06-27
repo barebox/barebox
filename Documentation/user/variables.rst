@@ -18,7 +18,7 @@ other variable. You can also directly assign a value during creation::
 
   global myvar1=foobar
 
-**NOTE** creating a variable with ``global myvar1=foobar`` looks very similar
+**NOTE:** creating a variable with ``global myvar1=foobar`` looks very similar
 to assigning a value with ``global.myvar1=foobar``, but the latter fails when
 a variable has not been created before.
 

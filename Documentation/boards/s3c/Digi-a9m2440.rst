@@ -64,4 +64,4 @@ Build the binary image::
 
   make ARCH=arm CROSS_COMPILE=armv4compiler
 
-**NOTE** replace the armv4compiler with your ARM v4 cross compiler.
+**NOTE:** replace the armv4compiler with your ARM v4 cross compiler.

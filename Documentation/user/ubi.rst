@@ -19,7 +19,7 @@ If you intend to use a device with UBI you should always use ``ubiformat`` inste
 :ref:`command_erase`. ``ubiformat`` will make sure the erasecounters are preserved and also
 :ref:`ubi_fastmap` won't work when a flash is erased with ``erase``
 
-NOTE: When using the :ref:`ubi_fastmap` feature make sure that the UBI is attached and detached
+**NOTE:** when using the :ref:`ubi_fastmap` feature make sure that the UBI is attached and detached
 once after using ``ubiformat``. This makes sure the Fastmap is written.
 
 After a device has been formatted it can be attached with :ref:`command_ubiattach`.

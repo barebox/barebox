@@ -31,9 +31,9 @@ Build the binary image::
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 
-**NOTE** replace the armv5compiler with your ARM v5 cross compiler.
+**NOTE:** replace the armv5compiler with your ARM v5 cross compiler.
 
-**NOTE** To use the result, you also need the following resources from Freescale:
+**NOTE:** to use the result, you also need the following resources from Freescale:
   * the 'bootlets' archive
   * the 'elftosb2' encryption tool
   * in the case you want to start @b barebox from an attached SD card the 'sdimage' tool from Freescale's 'uuc' archive.

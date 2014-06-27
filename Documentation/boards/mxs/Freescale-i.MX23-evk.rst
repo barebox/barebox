@@ -25,4 +25,4 @@ Build the bootloader binary image::
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 
-**NOTE** replace the armv5compiler with your ARM v5 cross compiler.
+**NOTE:** replace the armv5compiler with your ARM v5 cross compiler.

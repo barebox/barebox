@@ -36,7 +36,8 @@ Build the binary image::
 **NOTE:** to use the result, you also need the following resources from Freescale:
   * the 'bootlets' archive
   * the 'elftosb2' encryption tool
-  * in the case you want to start @b barebox from an attached SD card the 'sdimage' tool from Freescale's 'uuc' archive.
+  * in the case you want to start @b barebox from an attached SD card
+    the 'sdimage' tool from Freescale's 'uuc' archive.
 
 Memory layout when barebox is running
 -------------------------------------

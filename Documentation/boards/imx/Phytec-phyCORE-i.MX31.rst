@@ -6,7 +6,8 @@ The CPU module
 
 http://www.phytec.eu/europe/products/modules-overview/phycore/produktdetails/p/phycore-imx31-2.html
 
-This CPU card is based on a Freescale i.MX31 CPU. The card in configuration -0000REU is shipped with:
+This CPU card is based on a Freescale i.MX31 CPU. The card in
+configuration -0000REU is shipped with:
 
   * 128 MiB synchronous dynamic RAM (DDR type)
   * 64 MiB NAND flash
@@ -33,6 +34,8 @@ Build the binary image::
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 
-**NOTE:** replace ''armv5compiler'' with your ARM v5 cross compiler, e.g.: ''arm-1136jfs-linux-gnueabi-''
+**NOTE:** replace ''armv5compiler'' with your ARM v5 cross compiler,
+ e.g.: ''arm-1136jfs-linux-gnueabi-''
 
-The resulting binary image to be flashed will be barebox.bin, whereas the file named just barebox is an ELF executable for ARM.
+The resulting binary image to be flashed will be barebox.bin, whereas
+the file named just barebox is an ELF executable for ARM.

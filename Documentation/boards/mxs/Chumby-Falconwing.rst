@@ -37,10 +37,15 @@ How to prepare an MCI card to boot the "chumby one" with barebox
     * the third one for the kernel (2 MiB ... 4 MiB in size)
     * the 4th one for the root filesystem which can fill the rest of the available space
 
-  * Mark the first partition with the partition ID "53" and copy the bootlets into this partition (currently not part of @b barebox!).
+  * Mark the first partition with the partition ID "53" and copy the
+    bootlets into this partition (currently not part of @b barebox!).
 
-  * Copy the default @b barebox environment into the second partition (no filesystem required).
+  * Copy the default @b barebox environment into the second partition
+    (no filesystem required).
 
   * Copy the kernel into the third partition (no filesystem required).
 
-  * Create the root filesystem in the 4th partition. You may copy an image into this partition or you can do it in the classic way: mkfs on it, mount it and copy all required data and programs into it.
+  * Create the root filesystem in the 4th partition. You may copy an
+    image into this partition or you can do it in the classic way:
+    mkfs on it, mount it and copy all required data and programs into
+    it.

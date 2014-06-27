@@ -16,11 +16,24 @@ Restrictions
 Due to some BIOS and barebox restrictions the boot media must be
 prepared in some special way:
 
-  * barebox must be stored in the MBR (Master Boot Record) of the boot media. Currently its not possible to store and boot it in one of the partition sectors  to use it as a second stage loader). This is no eternal restriction. It only needs further effort to add this feature.
-  * barebox currently cannot run a chained boot loader. Also, this is no external restriction, only further effort needed.
-  * barebox comes with limited filesystem support. There is currently no support for the most common and popular filesystems used in the \*NIX world. This restricts locations where to store a kernel and other runtime information
-  * barebox must be stored to the first n sectors of the boot media. To ensure this does not collide with partitions on the boot media, the first partition must start at a sector behind the ones barebox occupies.
-  * barebox handles its runtime configuration in a special way: It stores it in a binary way into some reserved sectors ("persistant storage").
+  * barebox must be stored in the MBR (Master Boot Record) of the boot
+    media. Currently its not possible to store and boot it in one of
+    the partition sectors to use it as a second stage loader). This is
+    no eternal restriction. It only needs further effort to add this
+    feature.
+  * barebox currently cannot run a chained boot loader. Also, this is
+    no external restriction, only further effort needed.
+  * barebox comes with limited filesystem support. There is currently
+    no support for the most common and popular filesystems used in the
+    \*NIX world. This restricts locations where to store a kernel and
+    other runtime information
+  * barebox must be stored to the first n sectors of the boot media.
+    To ensure this does not collide with partitions on the boot media,
+    the first partition must start at a sector behind the ones barebox
+    occupies.
+  * barebox handles its runtime configuration in a special way: It
+    stores it in a binary way into some reserved sectors ("persistant
+    storage").
 
 Boot Preparations
 -----------------

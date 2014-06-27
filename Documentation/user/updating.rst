@@ -18,7 +18,7 @@ Updating barebox can be as easy as::
 Multiple handlers can be registered to the update mechanism. Usually the device
 barebox has been started from is registered as default (marked with a ``*``)::
 
-  barebox@Genesi Efika MX Smartbook:/ barebox_update -l
+  barebox:/ barebox_update -l
   registered update handlers:
   * mmc         -> /dev/mmc1
     spinor	-> /dev/m25p0

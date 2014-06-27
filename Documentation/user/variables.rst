@@ -33,7 +33,7 @@ Since it's hard to remember which variables these are and if the current
 barebox has support for them the :ref:`command_magicvar` command can print a list
 of all variables with special meaning along with a short description::
 
-  barebox@Genesi Efika MX Smartbook:/ magicvar
+  barebox:/ magicvar
   OPTARG                           optarg for hush builtin getopt
   PATH                             colon separated list of pathes to search for executables
   PS1                              hush prompt

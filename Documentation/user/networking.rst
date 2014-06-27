@@ -14,7 +14,7 @@ device is usually ``eth0``. The current configuration can be viewed with the
 
 .. code-block:: sh
 
-  barebox@Genesi Efika MX Smartbook:/ devinfo eth0
+  barebox:/ devinfo eth0
   Parameters:
     ipaddr: 192.168.23.197
     serverip: 192.168.23.1

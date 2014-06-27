@@ -34,7 +34,7 @@ handled with device detection. The user visible interface to device detection
 is the :ref:`command_detect` command. ``detect -l`` shows a list of detectable
 devices::
 
-  barebox@Genesi Efika MX Smartbook:/ detect -l
+  barebox:/ detect -l
   70004000.esdhc
   70008000.esdhc
   73f80000.usb
@@ -48,7 +48,7 @@ devices::
 
 A particular device can be detected with ``detect <devname>``::
 
-  barebox@Genesi Efika MX Smartbook:/ detect 73f80200.usb
+  barebox:/ detect 73f80200.usb
   Found SMSC USB331x ULPI transceiver (0x0424:0x0006).
   Bus 002 Device 004: ID 13d3:3273 802.11 n WLAN
   mdio_bus: miibus0: probed
@@ -67,7 +67,7 @@ additional information for a device. The parameters can be listed with the
 :ref:`command_devinfo` command. A ``devinfo <devicename>`` will print the parameters
 of a device::
 
-  barebox@Genesi Efika MX Smartbook:/ devinfo eth0
+  barebox:/ devinfo eth0
   Parameters:
     ipaddr: 192.168.23.197
     serverip: 192.168.23.1
@@ -82,9 +82,9 @@ The parameters can be used as shell variables::
 
 device variables may have a type, so assigning wrong values may fail::
 
-  barebox@Genesi Efika MX Smartbook:/ eth0.ipaddr="This is not an IP"
+  barebox:/ eth0.ipaddr="This is not an IP"
   set parameter: Invalid argument
-  barebox@Genesi Efika MX Smartbook:/ echo $?
+  barebox:/ echo $?
   1
 
 **HINT:** barebox has tab completion for variables. Typing ``eth0.<TAB><TAB>``

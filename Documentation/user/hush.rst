@@ -50,3 +50,11 @@ example the :ref:`command_echo` command has the ``-a FILE`` option for appending
 a file and the ``-o FILE`` option for overwriting a file. The readline
 command requires a variable name as argument in which the line will be
 stored.
+
+**NOTE:** hush feels like a normal Unix shell, but it cannot calculate by
+itself, i.e. $(($A/2)) won't work. Calculation can however be done
+with :ref:`command_let`::
+
+  A=10
+  let B=$A/2
+  echo $B

@@ -13,7 +13,6 @@ Contents:
    :numbered:
    :maxdepth: 1
 
-   download
    user/user-manual
    filesystems
    commands

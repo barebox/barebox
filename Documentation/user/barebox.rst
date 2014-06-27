@@ -16,7 +16,7 @@ http://www.barebox.org/download/
 Development versions of barebox are accessible via git. A local repository clone
 can be created using git::
 
-  git clone git://git.pengutronix.de/git/barebox.git
+  $ git clone git://git.pengutronix.de/git/barebox.git
   Cloning into 'barebox'...
   remote: Counting objects: 113356, done.
   remote: Compressing objects: 100% (25177/25177), done.
@@ -25,6 +25,11 @@ can be created using git::
   Resolving deltas: 100% (87910/87910), done.
   Checking connectivity... done.
   Checking out files: 100% (5651/5651), done.
+
+After this, make sure to check out needed branch. If you want to
+develop for barebox, it's better to check the the next branch::
+
+  $ git checkout -b next origin/remotes/next
 
 A web interface to the repository is available at
 http://git.pengutronix.de/?p=barebox.git.

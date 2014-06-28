@@ -5,7 +5,7 @@
 NFS Support
 ===========
 
-barebox has readonly support for NFSv3 un UDP mode.
+barebox has readonly support for NFSv3 in UDP mode.
 
 Example::
 

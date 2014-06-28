@@ -37,5 +37,5 @@ Build the binary image::
 **NOTE:** replace ''armv5compiler'' with your ARM v5 cross compiler,
  e.g.: ''arm-1136jfs-linux-gnueabi-''
 
-The resulting binary image to be flashed will be barebox.bin, whereas
-the file named just barebox is an ELF executable for ARM.
+The resulting binary image to be flashed will be ``barebox.bin``, whereas
+the file named just ``barebox`` is an ELF executable for ARM.

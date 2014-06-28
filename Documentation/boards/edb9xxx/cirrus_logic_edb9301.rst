@@ -1,7 +1,7 @@
 Cirrus Logic EP9301
 ===================
 
-This boards is based on a Cirrus Logic EP9301 CPU. The board is shipped with:
+This board is based on a Cirrus Logic EP9301 CPU. The board is shipped with:
 
   * 16MiB NOR type Flash Memory
   * 32MiB synchronous dynamic RAM on CS3

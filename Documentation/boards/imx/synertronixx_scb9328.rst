@@ -8,5 +8,3 @@ This CPU card is based on a Freescale i.MX1 CPU. The card is shipped with:
   * 16MiB NOR type Flash Memory
   * 16MiB synchronous dynamic RAM
   * DM9000 network controller
-
-It's the first i.MX board sha has ever ported Linux to.

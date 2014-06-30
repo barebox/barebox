@@ -5,7 +5,7 @@ Glossary
 
 .. glossary:: :sorted:
 
-   FTD
+   FDT
       Flattened Device Tree
 
    DTB

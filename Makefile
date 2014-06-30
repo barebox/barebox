@@ -1076,7 +1076,7 @@ help:
 	@echo  '                    enough build support to build external modules'
 	@echo  '  mrproper	  - Remove all generated files + config + various backup files'
 	@echo  '  distclean	  - mrproper + remove editor backup and patch files'
-	@echo  '  docs            - build documentation
+	@echo  '  docs            - build documentation'
 	@echo  ''
 	@echo  'Configuration targets:'
 	@$(MAKE) -f $(srctree)/scripts/kconfig/Makefile help

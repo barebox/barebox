@@ -151,7 +151,7 @@ static int bootscript_scan_path(struct blspec *blspec, const char *path)
 	glob(files, 0, NULL, &globb);
 
 	for (i = 0; i < globb.gl_pathc; i++) {
-		char *bootscript_path = globb.gl_pathv[i];;
+		char *bootscript_path = globb.gl_pathv[i];
 
 		if (*basename(bootscript_path) == '.')
 			continue;

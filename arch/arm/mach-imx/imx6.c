@@ -130,6 +130,18 @@ int imx6_init(void)
 		mx6_silicon_revision = IMX_CHIP_REV_1_2;
 		break;
 
+	case 0x03:
+		mx6_silicon_revision = IMX_CHIP_REV_1_3;
+		break;
+
+	case 0x04:
+		mx6_silicon_revision = IMX_CHIP_REV_1_4;
+		break;
+
+	case 0x05:
+		mx6_silicon_revision = IMX_CHIP_REV_1_5;
+		break;
+
 	default:
 		mx6_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 	}

@@ -3,14 +3,14 @@ Freescale i.MX IIM (Ic Identification Module)
 
 Required properties:
 
-- compatible: fsl,imx27-iim
-- reg: physical register base and size
+* ``compatible``: ``fsl,imx27-iim``, ``fsl,imx51-iim``
+* ``reg``: physical register base and size
 
 Optional properties:
 
-- barebox,provide-mac-address: Provide MAC addresses for ethernet devices. This
-  can be multiple entries in the form <&phandle bankno fuseofs> to specify a MAC
-  address to a ethernet device.
+* ``barebox,provide-mac-address``: Provide MAC addresses for Ethernet devices. This
+  can be multiple entries in the form <&phandle bankno fuseofs> to assign a MAC
+  address to an Ethernet device.
 
 Example::
 

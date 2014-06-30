@@ -3,14 +3,14 @@ Freescale i.MX OCOTP (On-Chip OTP)
 
 Required properties:
 
-- compatible: fsl,imx6q-ocotp
-- reg: physical register base and size
+* ``compatible``: ``fsl,imx6q-ocotp``
+* ``reg``: physical register base and size
 
 Optional properties:
 
-- barebox,provide-mac-address: Provide MAC addresses for ethernet devices. This
-  can be multiple entries in the form <&phandle regofs> to specify a MAC
-  address to a ethernet device.
+* ``barebox,provide-mac-address``: Provide MAC addresses for Ethernet devices. This
+  can be multiple entries in the form <&phandle regofs> to assign a MAC
+  address to an Ethernet device.
 
 Example::
 

@@ -61,6 +61,8 @@ config BAREBOX_UPDATE
 
 config MENUTREE
 	bool
+	select GLOB
+	select GLOB_SORT
 
 menu "General Settings"
 
@@ -338,10 +340,12 @@ config MAXARGS
 
 config GLOB
 	bool
-	prompt "hush globbing support"
-	depends on SHELL_HUSH
+	prompt "globbing support"
 	help
 	  If you want to use wildcards like * or ? say y here.
+
+	  Globbing can be used in the HUSH shell, but is also used
+	  internally in the menutree command.
 
 config GLOB_SORT
 	select QSORT

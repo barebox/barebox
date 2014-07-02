@@ -26,9 +26,41 @@
 
 #include <linux/micrel_phy.h>
 
+#include <mach/iomux-mx6.h>
 #include <mach/imx6.h>
 
 #define ETH_PHY_RST	IMX_GPIO_NR(3, 23)
+
+#define GPIO_2_11_PD_CTL	MX6_PAD_CTL_PUS_100K_DOWN | MX6_PAD_CTL_PUE | MX6_PAD_CTL_PKE | \
+				MX6_PAD_CTL_SPEED_MED | MX6_PAD_CTL_DSE_40ohm | MX6_PAD_CTL_HYS
+
+#define MX6Q_PAD_SD4_DAT3__GPIO_2_11_PD (_MX6Q_PAD_SD4_DAT3__GPIO_2_11 | MUX_PAD_CTRL(GPIO_2_11_PD_CTL))
+#define MX6DL_PAD_SD4_DAT3__GPIO_2_11 IOMUX_PAD(0x0734, 0x034C, 5, 0x0000, 0, GPIO_2_11_PD_CTL)
+
+#define MX6_PHYFLEX_ERR006282	IMX_GPIO_NR(2, 11)
+
+static void phyflex_err006282_workaround(void)
+{
+	/*
+	 * Boards beginning with 1362.2 have the SD4_DAT3 pin connected
+	 * to the CMIC. If this pin isn't toggled within 10s the boards
+	 * reset. The pin is unconnected on older boards, so we do not
+	 * need a check for older boards before applying this fixup.
+	 */
+
+	gpio_direction_output(MX6_PHYFLEX_ERR006282, 0);
+	mdelay(2);
+	gpio_direction_output(MX6_PHYFLEX_ERR006282, 1);
+	mdelay(2);
+	gpio_set_value(MX6_PHYFLEX_ERR006282, 0);
+
+	if (cpu_is_mx6q())
+		mxc_iomux_v3_setup_pad(MX6Q_PAD_SD4_DAT3__GPIO_2_11_PD);
+	else if (cpu_is_mx6dl())
+		mxc_iomux_v3_setup_pad(MX6DL_PAD_SD4_DAT3__GPIO_2_11);
+
+	gpio_direction_input(MX6_PHYFLEX_ERR006282);
+}
 
 static int eth_phy_reset(void)
 {
@@ -61,6 +93,8 @@ static int phytec_pfla02_init(void)
 			!of_machine_is_compatible("phytec,imx6dl-pfla02") &&
 			!of_machine_is_compatible("phytec,imx6s-pfla02"))
 		return 0;
+
+	phyflex_err006282_workaround();
 
 	eth_phy_reset();
 	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,

@@ -44,7 +44,7 @@ barebox uses Kconfig from the Linux kernel as a configuration tool,
 where all configuration is done via the ``make`` command. Before running
 it you have to specify your architecture with the ``ARCH`` environment
 variable and the cross compiler with the ``CROSS_COMPILE`` environment
-variable. ``ARCH`` has to be one of:
+variable. Currently, ``ARCH`` must be one of:
 
 * arm
 * blackfin

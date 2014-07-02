@@ -2,8 +2,8 @@ Driver model
 ============
 
 barebox has a driver model. This matches the devices on a board with their
-corresponding drivers. From a users point of view this is mostly visible in the
-:ref:`command_devinfo` and :ref:`command_drvinfo` command. Without arguments
+corresponding drivers. From a user's point of view this is mostly visible in the
+:ref:`command_devinfo` and :ref:`command_drvinfo` commands. Without arguments
 the :ref:`command_devinfo` command will show a hierarchical list of devices
 found on the board. As this may be instantiated from the :ref:`devicetree`
 there may be devices listed for which no driver is available. The

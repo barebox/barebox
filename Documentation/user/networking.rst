@@ -31,7 +31,7 @@ The configuration can be changed on the command line with:
 The :ref:`command_dhcp` command will change the settings based on the answer
 from the DHCP server.
 
-This low level configuration of the network interface is often not necessary. Normally
+This low-level configuration of the network interface is often not necessary. Normally
 the network settings should be edited in ``/env/network/eth0``, then the network interface
 can be brought up using the :ref:`command_ifup` command.
 
@@ -58,8 +58,8 @@ mounting transparent to the user.
 Network console
 ---------------
 
-barebox has a udp based network console. If enabled in the config, you will see
-something like this during startup:
+barebox has a UDP-based network console. If enabled in the config, you will see
+something like this during startup::
 
   registered netconsole as cs1
 
@@ -71,7 +71,7 @@ risks. It can be enabled using:
   cs1.ip=192.168.23.2
   cs1.active=ioe
 
-This will send udp packets to 192.168.23.2 on port 6666. On 192.168.23.2 the
+This will send UDP packets to 192.168.23.2 on port 6666. On 192.168.23.2 the
 scripts/netconsole script can be used to control barebox:
 
 .. code-block:: sh

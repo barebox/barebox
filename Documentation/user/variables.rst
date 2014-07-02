@@ -31,7 +31,7 @@ Magic variables
 ---------------
 
 Some variables have special meanings and influence the behaviour
-of barebox. Most but not all of them are consolidated in the :ref:`global_device`
+of barebox. Most but not all of them are consolidated in the :ref:`global_device`.
 Since it's hard to remember which variables these are and if the current
 barebox has support for them the :ref:`command_magicvar` command can print a list
 of all variables with special meaning along with a short description::

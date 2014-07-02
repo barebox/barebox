@@ -1,8 +1,8 @@
 Memory areas
 ============
 
-Several barebox commands like :ref:`command_md`, erase or crc work on an area
-of memory. Areas have the following form::
+Several barebox commands like :ref:`command_md`, :ref:`command_erase`
+or :ref:`command_crc` work on an area of memory. Areas have the following form::
 
   <start>-<end>
 

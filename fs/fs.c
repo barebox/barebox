@@ -409,6 +409,12 @@ static void automount_mount(const char *path, int instat)
 {
 	struct automount *am;
 	int ret;
+	static int in_automount;
+
+	if (in_automount)
+		return;
+
+	in_automount++;
 
 	list_for_each_entry(am, &automount_list, list) {
 		int len_path = strlen(path);
@@ -444,8 +450,10 @@ static void automount_mount(const char *path, int instat)
 		else
 			automount_remove(am->path);
 
-		return;
+		break;
 	}
+
+	in_automount--;
 }
 
 BAREBOX_MAGICVAR(automount_path, "mountpath passed to automount scripts");

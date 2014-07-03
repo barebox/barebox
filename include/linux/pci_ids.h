@@ -134,3 +134,8 @@
 #define PCI_CLASS_SP_OTHER		0x1180
 
 #define PCI_CLASS_OTHERS		0xff
+
+/* Vendors and devices.  Sort key: vendor first, device next. */
+
+#define PCI_VENDOR_ID_REALTEK		0x10ec
+#define PCI_DEVICE_ID_REALTEK_8139	0x8139

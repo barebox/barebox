@@ -207,6 +207,14 @@ config CMD_REGULATOR
 	  the regulator command lists the currently registered regulators and
 	  their current state.
 
+config CMD_LSPCI
+	bool
+	depends on PCI
+	prompt "lspci command"
+	default y
+	help
+	  The lspci command allows to list all PCI devices.
+
 config CMD_VERSION
 	tristate
 	default y

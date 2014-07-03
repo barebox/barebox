@@ -10,4 +10,6 @@
 
 #define MIPS_GT_BASE	0x1be00000
 
+#define GT64120_BASE    0xbbe00000
+
 #endif /* _ASM_MACH_MIPS_MACH_GT64120_DEP_H */

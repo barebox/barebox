@@ -17,10 +17,6 @@
  *
  */
 
-/**
- * @file
- * @brief cp: copy file command
- */
 #include <common.h>
 #include <command.h>
 #include <xfuncs.h>
@@ -95,15 +91,6 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-v", "verbose")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page cp_command
-This command operates on files.
-
-If you want to copy between memory blocks, use 'memcpy'.
-
-\todo What does this mean? Add examples.
- */
-
 BAREBOX_CMD_START(cp)
 	.cmd		= do_cp,
 	BAREBOX_CMD_DESC("copy files")
@@ -111,4 +98,3 @@ BAREBOX_CMD_START(cp)
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
 	BAREBOX_CMD_HELP(cmd_cp_help)
 BAREBOX_CMD_END
-

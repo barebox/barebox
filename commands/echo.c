@@ -113,13 +113,6 @@ BAREBOX_CMD_HELP_OPT ("-a FILE", "append to FILE instead of using stdout")
 BAREBOX_CMD_HELP_OPT ("-o FILE", "overwrite FILE instead of using stdout")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page echo_command
-
-\todo Add documentation for -a, -o and -e.
-
- */
-
 BAREBOX_CMD_START(echo)
 	.cmd		= do_echo,
 	BAREBOX_CMD_DESC("echo args to console")
@@ -127,4 +120,3 @@ BAREBOX_CMD_START(echo)
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_echo_help)
 BAREBOX_CMD_END
-

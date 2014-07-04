@@ -15,11 +15,6 @@
  *
  */
 
-/**
- * @file
- * @brief printenv: Print out environment variables
- */
-
 #include <common.h>
 #include <command.h>
 #include <errno.h>
@@ -61,15 +56,6 @@ BAREBOX_CMD_HELP_TEXT("If an argument is given, printenv prints the content of a
 BAREBOX_CMD_HELP_TEXT("variable to the terminal. If no argument is specified, all variables are")
 BAREBOX_CMD_HELP_TEXT("printed.")
 BAREBOX_CMD_HELP_END
-
-/**
- * @page printenv_command
-
-<p>If an argument is given, printenv prints the content of an environment
-variable to the terminal. If no argument is specified, all variables are
-printed.</p>
-
- */
 
 BAREBOX_CMD_START(printenv)
 	.cmd		= do_printenv,

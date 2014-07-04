@@ -22,8 +22,6 @@
 #ifndef _USB_H_
 #define _USB_H_
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #include <driver.h>
 #include <usb/usb_defs.h>
 #include <asm/byteorder.h>
@@ -515,8 +513,6 @@ struct usb_device_id {
 
 #define USB_CTRL_SET_TIMEOUT   5000
 #define USB_CTRL_GET_TIMEOUT   5000
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 enum usb_dr_mode of_usb_get_dr_mode(struct device_node *np,
 		const char *propname);

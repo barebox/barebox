@@ -1076,8 +1076,7 @@ help:
 	@echo  '                    enough build support to build external modules'
 	@echo  '  mrproper	  - Remove all generated files + config + various backup files'
 	@echo  '  distclean	  - mrproper + remove editor backup and patch files'
-	@echo  '  docs            - start doxygen for all output types (only HTML - FIXME)'
-	@echo  '    htmldocs      - create documentation in HTML format'
+	@echo  '  docs            - build documentation'
 	@echo  ''
 	@echo  'Configuration targets:'
 	@$(MAKE) -f $(srctree)/scripts/kconfig/Makefile help
@@ -1117,16 +1116,6 @@ help:
 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
 	@echo  'For further info see the ./README file'
 
-# Generate doxygen docs
-# ---------------------------------------------------------------------------
-.PHONY += docs htmldocs
-
-docs : htmldocs
-
-htmldocs: Doxyfile.version
-	@echo  'Running doxygen with local Doxyfile'
-	$(Q)doxygen Doxyfile
-
 # Generate tags for editors
 # ---------------------------------------------------------------------------
 quiet_cmd_tags = GEN     $@
@@ -1135,6 +1124,14 @@ quiet_cmd_tags = GEN     $@
 tags TAGS cscope: FORCE
 	$(call cmd,tags)
 
+SPHINXBUILD   = sphinx-build
+ALLSPHINXOPTS   =  source
+
+docs: FORCE
+	@mkdir -p $(srctree)/Documentation/commands
+	@$(srctree)/Documentation/gen_commands.py $(srctree) $(srctree)/Documentation/commands
+	@$(SPHINXBUILD) -b html -d $(objtree)/doctrees $(srctree)/Documentation \
+		$(objtree)/Documentation/html
 
 endif #ifeq ($(config-targets),1)
 endif #ifeq ($(mixed-targets),1)

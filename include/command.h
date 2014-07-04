@@ -90,8 +90,6 @@ void barebox_cmd_usage(struct command *cmdtp);
 
 #endif	/* __ASSEMBLY__ */
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 #define Struct_Section  __attribute__ ((unused,section (".barebox_cmd")))
 
 #define BAREBOX_CMD_START(_name)							\
@@ -126,8 +124,6 @@ static const __maybe_unused char cmd_##_name##_help[] =
 #define BAREBOX_CMD_DESC(text)	.desc = text,
 
 #define BAREBOX_CMD_OPTS(text)	.opts = text,
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 int register_command(struct command *);
 

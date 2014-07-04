@@ -1,7 +1,0 @@
-/** @page dev_xburst_mach XBurst in barebox
-
-@section xburst_boards XBurst-based boards
-
-@li @subpage ritmix-rzx50
-
-*/

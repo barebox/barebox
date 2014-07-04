@@ -112,15 +112,6 @@ BAREBOX_CMD_HELP_OPT("-s", "scrub old environment")
 BAREBOX_CMD_HELP_OPT("-d", "load default environment")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page loadenv_command
-
-ENVFS can only handle files, directories are skipped silently.
-
-\todo This needs proper documentation. What is ENVFS, why is it FS etc. Explain the concepts.
-
- */
-
 BAREBOX_CMD_START(loadenv)
 	.cmd		= do_loadenv,
 	BAREBOX_CMD_DESC("load environment from ENVFS")

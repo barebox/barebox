@@ -65,7 +65,7 @@ BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(automount)
 	.cmd		= do_automount,
-	BAREBOX_CMD_DESC("execute (mount) COMMAND when PATH ist first accessed")
+	BAREBOX_CMD_DESC("execute (mount) COMMAND when PATH is first accessed")
 	BAREBOX_CMD_OPTS("[-ldr] PATH [COMMAND]")
 	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_automount_help)

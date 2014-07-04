@@ -1,0 +1,141 @@
+x86
+===
+
+Features
+--------
+
+barebox can act as a bootloader for PC based systems. In this case a special
+binary layout will be created to be able to store it on some media the PC
+BIOS can boot from. It can boot Linux kernels stored also on the same boot
+media and be configured at runtime, with the possibility to store the changed
+configuration on the boot media.
+
+Restrictions
+------------
+
+Due to some BIOS and barebox restrictions the boot media must be
+prepared in some special way:
+
+  * barebox must be stored in the MBR (Master Boot Record) of the boot
+    media. Currently its not possible to store and boot it in one of
+    the partition sectors to use it as a second stage loader). This is
+    no eternal restriction. It only needs further effort to add this
+    feature.
+  * barebox currently cannot run a chained boot loader. Also, this is
+    no external restriction, only further effort needed.
+  * barebox comes with limited filesystem support. There is currently
+    no support for the most common and popular filesystems used in the
+    \*NIX world. This restricts locations where to store a kernel and
+    other runtime information
+  * barebox must be stored to the first n sectors of the boot media.
+    To ensure this does not collide with partitions on the boot media,
+    the first partition must start at a sector behind the ones barebox
+    occupies.
+  * barebox handles its runtime configuration in a special way: It
+    stores it in a binary way into some reserved sectors ("persistant
+    storage").
+
+Boot Preparations
+-----------------
+
+To store the barebox image to a boot media, it comes with the tool
+setupmbr in the directory  scripts/setupmbr/ . To be able to use it on
+the boot media of your choice, some preparations are required.
+
+Keep Sectors free
+-----------------
+
+Build the barebox image and check its size. At least this amount of
+sectors must be kept free after the MBR prior the first partition. Do this
+simple calulation::
+
+	sectors = (\<size of barebox image\> + 511) / 512
+
+To be able to store the runtime configuration, further free sectors are
+required. Its up to you and your requirements, how large this persistant
+storage must be. If you need 16 kiB for this purpose, you need to keep
+additional 32 sectors free.
+
+For this example we are reserving 300 sectors for the barebox image and
+additionaly 32 sectors for the persistant storage. So, the first partition on
+the boot media must start at sector 333 or later.
+
+Run the  fdisk tool to setup such a partition table::
+
+
+  [jb@host]~> fdisk /dev/sda
+  Command (m for help): p
+  
+  Disk /dev/sda: 20.7 MB, 212680704 bytes
+  16 heads, 63 sectors/track, 406 cylinders
+  Units = cylinders of 1008 * 512 = 516096 bytes
+  
+  Device Boot      Start         End      Blocks   Id  System
+
+Change the used units to  sectors for easier handling.
+
+::
+
+  Command (m for help): u
+  Changing display/entry units to sectors
+  
+  Command (m for help): p
+
+  Disk /dev/sda: 20.7 MB, 212680704 bytes
+  16 heads, 63 sectors/track, 406 cylinders, total 409248 sectors
+  Units = sectors of 1 * 512 = 512 bytes
+  
+  Device Boot      Start         End      Blocks   Id  System
+
+Now its possible to create the first partition with the required offset::
+
+  Command (m for help): n
+  Command action
+     e   extended
+     p   primary partition (1-4)
+  p
+  Partition number (1-4): 1
+  First sector (63-409247, default 63): 333
+  Last sector or +size or +sizeM or +sizeK (333-409247, default 409247): +18M
+  Command (m for help): p
+  
+  Disk /dev/sda: 20.7 MB, 212680704 bytes
+  16 heads, 63 sectors/track, 406 cylinders, total 409248 sectors
+  Units = sectors of 1 * 512 = 512 bytes
+  
+          Device Boot      Start         End      Blocks   Id  System
+  /dev/sda                   333       35489       17578+  83  Linux
+
+That's all. Do whatever is required now with the new partition (formatting
+and populating the root filesystem for example) to make it useful.
+
+In the next step, barebox gets installed to this boot media::
+
+  [jb@host]~> scripts/setupmbr/setupmbr -s 32 -m ./barebox -d /dev/sda
+
+This command writes the barebox image file './barebox' onto the device
+ /dev/sda.
+
+The  -s option will keep the persistant storage sectors free and untouched
+and set flags in the MBR to forward its existance, size and location to
+barebox at runtime.  setupmbr also does not change the partition table.
+
+The barebox image gets stored on the boot media like this::
+
+  sector 0   1             33                              333
+         |---|-------------|--------------- ~~~ ------------|--------------
+        MBR    persistant              barebox                 first
+                storage               main image              partition
+
+If the  -s option is omitted, the "persistant storage" part simply does
+not exist::
+
+  sector 0   1                              333
+         |---|--------------- ~~~ ------------|--------------
+        MBR               barebox                 first
+                         main image              partition
+
+**NOTE:** the ``setupmbr`` tool is also working on real image file than on device
+nodes only. So, there is no restriction what kind of file will be
+modified.
+

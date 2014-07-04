@@ -15,11 +15,6 @@
  *
  */
 
-/**
- * @file
- * @brief A tiny editor implementation
- */
-
 #include <common.h>
 #include <command.h>
 #include <malloc.h>
@@ -550,16 +545,6 @@ BAREBOX_CMD_HELP_START(edit)
 BAREBOX_CMD_HELP_TEXT("Use cursor keys, Ctrl-C to exit and Ctrl-D to exit-with-save.")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page edit_command
-
-<p> Barebox contains a small text editor which can be used to edit
-config files in /env. You can move the cursor around with the arrow keys
-and type characters. </p>
-
-If called as sedit, the editor uses ansi codes to scroll the screen.
- */
-
 BAREBOX_CMD_START(edit)
 	.cmd		= do_edit,
 	.aliases	= edit_aliases,
@@ -568,4 +553,3 @@ BAREBOX_CMD_START(edit)
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_edit_help)
 BAREBOX_CMD_END
-

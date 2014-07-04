@@ -1,9 +1,0 @@
-/** @page pcm038 Phytec's phyCORE-i.MX27
-
-This CPU card is based on a Freescale i.MX27 CPU. The card is shipped with:
-
-- up to 64MB NOR Flash Memory
-- up to 1GB NAND Flash Memory
-- up to 256MB DRAM
-
-*/

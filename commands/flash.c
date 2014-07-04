@@ -19,11 +19,6 @@
  *
  */
 
-/**
- * @file
- * @brief Flash memory support: erase, protect, unprotect
- */
-
 #include <common.h>
 #include <command.h>
 #include <errno.h>
@@ -92,20 +87,6 @@ BAREBOX_CMD_START(erase)
 	BAREBOX_CMD_HELP(cmd_erase_help)
 BAREBOX_CMD_END
 
-/**
- * @page erase_command
-
-<p> Erase the flash memory handled by this device. Which area will be
-erased depends on the device: If the device represents the whole flash
-memory, the whole memory will be erased. If the device represents a
-partition on a main flash memory, only this partition part will be
-erased. </p>
-
-Refer to \ref addpart_command, \ref delpart_command and \ref
-devinfo_command for partition handling.
-
- */
-
 static int do_protect(int argc, char *argv[])
 {
 	int fd;
@@ -173,23 +154,6 @@ BAREBOX_CMD_START(protect)
 	BAREBOX_CMD_HELP(cmd_protect_help)
 BAREBOX_CMD_END
 
-/**
- * @page protect_command
-
-
-If the device represents the whole
-flash memory the whole memory will be protected. If the device
-represents a partition on a main flash memory, only this partition part
-will be protected.
-
-Refer addpart_command, delpart_command and devinfo_command for partition
-handling.
-
-\todo Rework this documentation, what is an 'area'? Explain more about
-flashes here.
-
- */
-
 BAREBOX_CMD_HELP_START(unprotect)
 BAREBOX_CMD_HELP_TEXT("Unprotect the flash memory behind the device. It depends on the device")
 BAREBOX_CMD_HELP_TEXT("given, what area will be unprotected. If the device represents the whole")
@@ -205,19 +169,3 @@ BAREBOX_CMD_START(unprotect)
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_unprotect_help)
 BAREBOX_CMD_END
-
-/**
- * @page unprotect_command
-
-It depends on the device given,
-what area will be unprotected. If the device represents the whole flash memory
-the whole memory will be unprotected. If the device represents a partition
-on a main flash memory, only this partition part will be unprotected.
-
-Refer addpart_command, delpart_command and devinfo_command for partition
-handling.
-
-\todo Rework this documentation, what does it mean?
-
- */
-

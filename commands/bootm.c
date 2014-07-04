@@ -194,20 +194,3 @@ static int binfmt_uimage_init(void)
 	return binfmt_register(&binfmt_uimage_hook);
 }
 fs_initcall(binfmt_uimage_init);
-
-/**
- * @file
- * @brief Boot support for Linux
- */
-
-/**
- * @page boot_preparation Preparing for Boot
- *
- * This chapter describes what's to be done to forward the control from
- * barebox to Linux. This part describes the generic part, below you can find
- * the architecture specific part.
- *
- * - @subpage arm_boot_preparation
- * - @subpage ppc_boot_preparation
- * - @subpage x86_boot_preparation
- */

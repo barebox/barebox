@@ -15,11 +15,6 @@
  *
  */
 
-/**
- * @file
- * @brief saveenv: Make the environment persistent
- */
-
 #include <common.h>
 #include <command.h>
 #include <errno.h>
@@ -64,16 +59,3 @@ BAREBOX_CMD_START(saveenv)
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_saveenv_help)
 BAREBOX_CMD_END
-
-/**
- * @page saveenv_command
-
-<p>\<envfs> is usually a block in flash but can be any other file. If
-omitted, \<directory> defaults to /env and \<envfs> defaults to
-/dev/env0. Note that envfs can only handle files, directories are being
-skipped silently.</p>
-
-\todo What does 'block in flash' mean? Add example.
-
- */
-

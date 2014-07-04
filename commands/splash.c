@@ -78,8 +78,9 @@ static int do_splash(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(splash)
-BAREBOX_CMD_HELP_TEXT("This command displays a graphics in the bitmap (.bmp) format on the")
-BAREBOX_CMD_HELP_TEXT("framebuffer. Currently images with 8 and 24 bit color depth are supported.")
+BAREBOX_CMD_HELP_TEXT("This command displays a graphics image of either bitmap (.bmp) format")
+BAREBOX_CMD_HELP_TEXT("or Portable Network Graphics (.png) format on the framebuffer.")
+BAREBOX_CMD_HELP_TEXT("Currently images with 8 and 24 bit color depth are supported.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-f FB\t",    "framebuffer device (default /dev/fb0)")
@@ -89,20 +90,9 @@ BAREBOX_CMD_HELP_OPT ("-b COLOR", "background color in 0xttrrggbb")
 BAREBOX_CMD_HELP_OPT ("-o\t",       "render offscreen")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page bmp_command
-
-This command displays a graphics in the bitmap (.bmp) format on the
-framebuffer. Currently the bmp command supports images with 8 and 24 bit
-color depth.
-
-\todo What does the -o (offscreen) option do?
-
- */
-
 BAREBOX_CMD_START(splash)
 	.cmd		= do_splash,
-	BAREBOX_CMD_DESC("display a BMP image")
+	BAREBOX_CMD_DESC("display a BMP or PNG splash image")
 	BAREBOX_CMD_OPTS("[-fxyno] FILE")
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_splash_help)

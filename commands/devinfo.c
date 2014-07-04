@@ -118,34 +118,6 @@ static int do_devinfo(int argc, char *argv[])
 	return 0;
 }
 
-
-/**
- * @page devinfo_command
-
-If called without arguments, devinfo shows a summary of the known
-devices and drivers.
-
-If called with a device path being the argument, devinfo shows more
-default information about this device and its parameters.
-
-Example from an MPC5200 based system:
-
-@verbatim
-  barebox:/ devinfo /dev/eth0
-  base  : 0x1002b000
-  size  : 0x00000000
-  driver: fec_mpc5xxx
-
-  no info available for eth0
-  Parameters:
-      ipaddr = 192.168.23.197
-     ethaddr = 80:81:82:83:84:86
-     gateway = 192.168.23.1
-     netmask = 255.255.255.0
-    serverip = 192.168.23.2
-@endverbatim
- */
-
 BAREBOX_CMD_HELP_START(devinfo)
 BAREBOX_CMD_HELP_TEXT("If called without arguments, devinfo shows a summary of the known")
 BAREBOX_CMD_HELP_TEXT("devices.")

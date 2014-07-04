@@ -28,32 +28,6 @@
 
 #include <param.h>
 
-/**
- * @file
- * @brief Main description of the device/driver model
- */
-
-/** @page driver_model Main description of the device/driver model
- *
- * We follow a rather simplistic driver model here. There is a
- * @code struct device_d @endcode
- * which describes a particular device present in the system.
- *
- * On the other side a
- * @code struct driver_d @endcode
- * represents a driver present in the system.
- *
- * Both structs find together via the members 'type' (int) and 'name' (char *).
- * If both members match, the driver's probe function is called with the
- * struct device_d as argument.
- *
- * People familiar with the Linux platform bus will recognize this behaviour
- * and in fact many things were stolen from there. Some selected members of the
- * structs will be described in this document.
- */
-
-/*@{*/	/* do not delete, doxygen relevant */
-
 struct filep;
 struct bus_type;
 

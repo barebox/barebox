@@ -19,8 +19,6 @@
 #include <driver.h>
 #include <linux/types.h>
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-
 /*
  * struct i2c_platform_data - structure of platform data for MXC I2C driver
  * @param	bitrate	Bus speed measured in Hz
@@ -152,8 +150,6 @@ extern int i2c_master_recv(struct i2c_client *client, char *buf, int count);
 
 extern int i2c_read_reg(struct i2c_client *client, u32 addr, u8 *buf, u16 count);
 extern int i2c_write_reg(struct i2c_client *client, u32 addr, const u8 *buf, u16 count);
-
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 extern struct bus_type i2c_bus;
 

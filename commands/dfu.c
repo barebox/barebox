@@ -186,16 +186,6 @@ BAREBOX_CMD_HELP_OPT ("-V ID",  "vendor id")
 BAREBOX_CMD_HELP_OPT ("-P ID",  "product id")
 BAREBOX_CMD_HELP_END
 
-/**
- * @page dfu_command
-\<description> has the following form:
-device1(name1)[sr],device2(name2)[sr]
-'s' means 'safe mode' (download the complete image before flashing) and
-'r' that readback of the firmware is allowed.
-
-\todo Add example, how to use dfu from a Linux or Windows host.
- */
-
 BAREBOX_CMD_START(dfu)
 	.cmd		= do_dfu,
 	BAREBOX_CMD_DESC("device firmware update")

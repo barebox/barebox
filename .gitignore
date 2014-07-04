@@ -67,6 +67,8 @@ include/generated
 
 # Generated files
 Doxyfile.version
+Documentation/commands/*.rst
+doctrees/
 
 # stgit generated dirs
 patches-*

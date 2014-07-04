@@ -143,7 +143,7 @@ err_out:
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-c\t",  "crc check uImage data")
-BAREBOX_CMD_HELP_OPT ("-d\t",  "dryrun: check data, but do not run")
+BAREBOX_CMD_HELP_OPT ("-d\t",  "dry run: check data, but do not run")
 BAREBOX_CMD_HELP_OPT ("-f\t",  "load images even if type is undetectable")
 #ifdef CONFIG_CMD_BOOTM_INITRD
 BAREBOX_CMD_HELP_OPT ("-r INITRD","specify an initrd image")
@@ -152,7 +152,7 @@ BAREBOX_CMD_HELP_OPT ("-L ADDR\t","specify initrd load address")
 BAREBOX_CMD_HELP_OPT ("-a ADDR\t","specify os load address")
 BAREBOX_CMD_HELP_OPT ("-e OFFS\t","entry point to the image relative to start (0)")
 #ifdef CONFIG_OFTREE
-BAREBOX_CMD_HELP_OPT ("-o DTS\t","specify open firmware device tree")
+BAREBOX_CMD_HELP_OPT ("-o DTB\t","specify open firmware device tree")
 #endif
 #ifdef CONFIG_CMD_BOOTM_VERBOSE
 BAREBOX_CMD_HELP_OPT ("-v\t","verbose")
@@ -178,7 +178,7 @@ BAREBOX_CMD_START(bootm)
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
 
-BAREBOX_MAGICVAR(bootargs, "Linux Kernel parameters");
+BAREBOX_MAGICVAR(bootargs, "Linux kernel parameters");
 BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
 BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");

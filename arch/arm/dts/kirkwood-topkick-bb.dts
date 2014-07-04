@@ -1,0 +1,14 @@
+/*
+ * Barebox specific DT overlay for USI Topkick
+ *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ */
+
+#include "arm/kirkwood-topkick.dts"
+
+/ {
+	gpio-leds {
+		system {
+			barebox,default-trigger = "heartbeat";
+		};
+	};
+};

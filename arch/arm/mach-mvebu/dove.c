@@ -71,6 +71,9 @@ static int dove_init_soc(void)
 {
 	unsigned long phys_base, phys_size;
 
+	barebox_set_model("Marvell Dove");
+	barebox_set_hostname("dove");
+
 	dove_remap_mc_regs();
 	dove_memory_find(&phys_base, &phys_size);
 	arm_add_mem_device("ram0", phys_base, phys_size);

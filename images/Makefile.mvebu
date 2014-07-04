@@ -11,16 +11,74 @@ $(obj)/%.kwbuartimg: $(obj)/% FORCE
 
 board = $(srctree)/arch/$(ARCH)/boards
 
+KWBOPTS = -c -d 0x1000000 -e 0x1000000
+
+# ----------------------- Armada 370 based boards ---------------------------
+GLOBALSCALE_MIRABOX_KWBOPTS = ${KWBOPTS} -i $(board)/globalscale-mirabox/kwbimage.cfg
+OPTS_start_globalscale_mirabox.pblx.kwbimg = $(GLOBALSCALE_MIRABOX_KWBOPTS)
+OPTS_start_globalscale_mirabox.pblx.kwbuartimg = -m uart $(GLOBALSCALE_MIRABOX_KWBOPTS)
+FILE_barebox-globalscale-mirabox.img	= start_globalscale_mirabox.pblx.kwbimg
+FILE_barebox-globalscale-mirabox-uart.img = start_globalscale_mirabox.pblx.kwbuartimg
+FILE_barebox-globalscale-mirabox-2nd.img = start_globalscale_mirabox.pblx
+pblx-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += start_globalscale_mirabox
+image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox.img
+image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-uart.img
+image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-2nd.img
+
+# ----------------------- Armada XP based boards ---------------------------
+PLATHOME_OPENBLOCKS_AX3_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-ax3/kwbimage.cfg
+OPTS_start_plathome_openblocks_ax3.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
+OPTS_start_plathome_openblocks_ax3.pblx.kwbuartimg = -m uart $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
+FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblx.kwbimg
+FILE_barebox-plathome-openblocks-ax3-uart.img = start_plathome_openblocks_ax3.pblx.kwbuartimg
+FILE_barebox-plathome-openblocks-ax3-2nd.img = start_plathome_openblocks_ax3.pblx
+pblx-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += start_plathome_openblocks_ax3
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-uart.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-2nd.img
+
+MARVELL_ARMADA_XP_GP_KWBOPTS = ${KWBOPTS} -i $(board)/marvell-armada-xp-gp/kwbimage.cfg
+OPTS_start_marvell_armada_xp_gp.pblx.kwbimg = $(MARVELL_ARMADA_XP_GP_KWBOPTS)
+OPTS_start_marvell_armada_xp_gp.pblx.kwbuartimg = -m uart $(MARVELL_ARMADA_XP_GP_KWBOPTS)
+FILE_barebox-marvell-armada-xp-gp.img   = start_marvell_armada_xp_gp.pblx.kwbimg
+FILE_barebox-marvell-armada-xp-gp-uart.img = start_marvell_armada_xp_gp.pblx.kwbuartimg
+FILE_barebox-marvell-armada-xp-gp-2nd.img = start_marvell_armada_xp_gp.pblx
+pblx-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += start_marvell_armada_xp_gp
+image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp.img
+image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp-uart.img
+image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp-2nd.img
+
 # ----------------------- Dove 88AP510 based boards ---------------------------
-SOLIDRUN_CUBOX_KWBOPTS = -c -i $(board)/solidrun-cubox/kwbimage.cfg -d 0x1000000 -e 0x1000000
-pblx-$(CONFIG_MACH_SOLIDRUN_CUBOX) += start_solidrun_cubox
+SOLIDRUN_CUBOX_KWBOPTS = ${KWBOPTS} -i $(board)/solidrun-cubox/kwbimage.cfg
 OPTS_start_solidrun_cubox.pblx.kwbimg = $(SOLIDRUN_CUBOX_KWBOPTS)
-FILE_barebox-solidrun-cubox.img = start_solidrun_cubox.pblx.kwbimg
-image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox.img
-
 OPTS_start_solidrun_cubox.pblx.kwbuartimg = -m uart $(SOLIDRUN_CUBOX_KWBOPTS)
+FILE_barebox-solidrun-cubox.img	= start_solidrun_cubox.pblx.kwbimg
 FILE_barebox-solidrun-cubox-uart.img = start_solidrun_cubox.pblx.kwbuartimg
-image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-uart.img
-
 FILE_barebox-solidrun-cubox-2nd.img = start_solidrun_cubox.pblx
+pblx-$(CONFIG_MACH_SOLIDRUN_CUBOX) += start_solidrun_cubox
+image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox.img
+image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-uart.img
 image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-2nd.img
+
+# ----------------------- Kirkwood based boards ---------------------------
+GLOBALSCALE_GURUPLUG_KWBOPTS = ${KWBOPTS} -i $(board)/globalscale-guruplug/kwbimage.cfg
+OPTS_start_globalscale_guruplug.pblx.kwbimg = $(GLOBALSCALE_GURUPLUG_KWBOPTS)
+OPTS_start_globalscale_guruplug.pblx.kwbuartimg = -m uart $(GLOBALSCALE_GURUPLUG_KWBOPTS)
+FILE_barebox-globalscale-guruplug.img	= start_globalscale_guruplug.pblx.kwbimg
+FILE_barebox-globalscale-guruplug-uart.img = start_globalscale_guruplug.pblx.kwbuartimg
+FILE_barebox-globalscale-guruplug-2nd.img = start_globalscale_guruplug.pblx
+pblx-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += start_globalscale_guruplug
+image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug.img
+image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-uart.img
+image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-2nd.img
+
+USI_TOPKICK_KWBOPTS = ${KWBOPTS} -i $(board)/usi-topkick/kwbimage.cfg
+OPTS_start_usi_topkick.pblx.kwbimg = $(USI_TOPKICK_KWBOPTS)
+OPTS_start_usi_topkick.pblx.kwbuartimg = -m uart $(USI_TOPKICK_KWBOPTS)
+FILE_barebox-usi-topkick.img	= start_usi_topkick.pblx.kwbimg
+FILE_barebox-usi-topkick-uart.img = start_usi_topkick.pblx.kwbuartimg
+FILE_barebox-usi-topkick-2nd.img = start_usi_topkick.pblx
+pblx-$(CONFIG_MACH_USI_TOPKICK) += start_usi_topkick
+image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick.img
+image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick-uart.img
+image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick-2nd.img

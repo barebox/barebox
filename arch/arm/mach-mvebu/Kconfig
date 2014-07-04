@@ -2,12 +2,10 @@ if ARCH_MVEBU
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x2000000 if MACH_PLATHOME_OPENBLOCKS_AX3
-	default 0x2000000 if MACH_GLOBALSCALE_MIRABOX
-	default 0x2000000 if MACH_GLOBALSCALE_GURUPLUG
-	default 0x2000000 if MACH_USI_TOPKICK
-	default 0x2000000 if MACH_MARVELL_ARMADA_XP_GP
-	default 0x2000000 if MACH_SOLIDRUN_CUBOX
+	default 0x2000000 if ARCH_ARMADA_370
+	default 0x2000000 if ARCH_ARMADA_XP
+	default 0x2000000 if ARCH_DOVE
+	default 0x2000000 if ARCH_KIRKWOOD
 
 choice
 	prompt "Marvell EBU Processor"
@@ -26,11 +24,13 @@ config ARCH_DOVE
 	bool "Dove 88AP510"
 	select CPU_V7
 	select CLOCKSOURCE_ORION
+	select PINCTRL_DOVE
 
 config ARCH_KIRKWOOD
 	bool "Kirkwood"
 	select CPU_FEROCEON
 	select CLOCKSOURCE_ORION
+	select PINCTRL_KIRKWOOD
 
 endchoice
 
@@ -40,13 +40,8 @@ endchoice
 
 if ARCH_ARMADA_370
 
-choice
-	prompt "Armada 370 Board Type"
-
 config MACH_GLOBALSCALE_MIRABOX
 	bool "Globalscale Mirabox"
-
-endchoice
 
 endif # ARCH_ARMADA_370
 
@@ -56,16 +51,11 @@ endif # ARCH_ARMADA_370
 
 if ARCH_ARMADA_XP
 
-choice
-	prompt "Armada XP Board Type"
-
 config MACH_PLATHOME_OPENBLOCKS_AX3
 	bool "PlatHome OpenBlocks AX3"
 
 config MACH_MARVELL_ARMADA_XP_GP
 	bool "Marvell Armada XP GP"
-
-endchoice
 
 endif # ARCH_ARMADA_XP
 
@@ -75,14 +65,8 @@ endif # ARCH_ARMADA_XP
 
 if ARCH_DOVE
 
-choice
-	prompt "Dove 88AP510 Board Type"
-
 config MACH_SOLIDRUN_CUBOX
 	bool "SolidRun CuBox"
-	select HAVE_PBL_MULTI_IMAGES
-
-endchoice
 
 endif # ARCH_DOVE
 
@@ -92,16 +76,11 @@ endif # ARCH_DOVE
 
 if ARCH_KIRKWOOD
 
-choice
-	prompt "Kirkwood Board Type"
-
 config MACH_GLOBALSCALE_GURUPLUG
 	bool "Guruplug"
 
 config MACH_USI_TOPKICK
 	bool "Topkick"
-
-endchoice
 
 endif # ARCH_KIRKWOOD
 

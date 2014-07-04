@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013 Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+ * Copyright (C) 2014
+ *  Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -13,10 +14,21 @@
  *
  */
 
-#ifndef __MACH_MVEBU_H
-#define __MACH_MVEBU_H
+#include <common.h>
+#include <sizes.h>
+#include <asm/barebox-arm.h>
+#include <asm/barebox-arm-head.h>
+#include <mach/lowlevel.h>
 
-int mvebu_add_uart0(void);
-void __naked __noreturn mvebu_barebox_entry(void);
+extern char __dtb_armada_xp_gp_bb_start[];
 
-#endif /* __MACH_MVEBU_H */
+ENTRY_FUNCTION(start_marvell_armada_xp_gp, r0, r1, r2)
+{
+	void *fdt;
+
+	arm_cpu_lowlevel_init();
+
+	fdt = __dtb_armada_xp_gp_bb_start - get_runtime_offset();
+
+	mvebu_barebox_entry(fdt);
+}

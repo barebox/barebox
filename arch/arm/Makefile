@@ -86,17 +86,11 @@ machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
 board-$(CONFIG_MACH_A9M2410)			+= a9m2410
 board-$(CONFIG_MACH_A9M2440)			+= a9m2440
 board-$(CONFIG_MACH_AT91RM9200EK)		+= at91rm9200ek
-board-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG)	+= globalscale-guruplug
-board-$(CONFIG_MACH_GLOBALSCALE_MIRABOX)	+= globalscale-mirabox
-board-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP)	+= marvell-armada-xp-gp
 board-$(CONFIG_MACH_MINI2440)			+= friendlyarm-mini2440
 board-$(CONFIG_MACH_MINI6410)			+= friendlyarm-mini6410
 board-$(CONFIG_MACH_PCM027)			+= phytec-phycore-pxa270
-board-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3)	+= plathome-openblocks-ax3/
-board-$(CONFIG_MACH_SOLIDRUN_CUBOX)		+= solidrun-cubox
 board-$(CONFIG_MACH_TINY210)			+= friendlyarm-tiny210
 board-$(CONFIG_MACH_TINY6410)			+= friendlyarm-tiny6410
-board-$(CONFIG_MACH_USI_TOPKICK)		+= usi-topkick
 
 machdirs := $(patsubst %,arch/arm/mach-%/,$(machine-y))
 

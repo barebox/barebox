@@ -108,11 +108,94 @@ static unsigned int of_bus_default_get_flags(const __be32 *addr)
 	return IORESOURCE_MEM;
 }
 
+#ifdef CONFIG_OF_ADDRESS_PCI
+/*
+ * PCI bus specific translator
+ */
+
+static int of_bus_pci_match(struct device_node *np)
+{
+	return !of_property_match_string(np, "device_type", "pci");
+}
+
+static void of_bus_pci_count_cells(struct device_node *np,
+				   int *addrc, int *sizec)
+{
+	if (addrc)
+		*addrc = 3;
+	if (sizec)
+		*sizec = 2;
+}
+
+static unsigned int of_bus_pci_get_flags(const __be32 *addr)
+{
+	unsigned int flags = 0;
+	u32 w = be32_to_cpup(addr);
+
+	switch ((w >> 24) & 0x03) {
+	case 0x01:
+		flags |= IORESOURCE_IO;
+		break;
+	case 0x02: /* 32 bits */
+	case 0x03: /* 64 bits */
+		flags |= IORESOURCE_MEM;
+		break;
+	}
+	if (w & 0x40000000)
+		flags |= IORESOURCE_PREFETCH;
+	return flags;
+}
+
+static u64 of_bus_pci_map(__be32 *addr, const __be32 *range, int na, int ns,
+		int pna)
+{
+	u64 cp, s, da;
+	unsigned int af, rf;
+
+	af = of_bus_pci_get_flags(addr);
+	rf = of_bus_pci_get_flags(range);
+
+	/* Check address type match */
+	if ((af ^ rf) & (IORESOURCE_MEM | IORESOURCE_IO))
+		return OF_BAD_ADDR;
+
+	/* Read address values, skipping high cell */
+	cp = of_read_number(range + 1, na - 1);
+	s  = of_read_number(range + na + pna, ns);
+	da = of_read_number(addr + 1, na - 1);
+
+	pr_debug("OF: PCI map, cp=%llx, s=%llx, da=%llx\n",
+		 (unsigned long long)cp, (unsigned long long)s,
+		 (unsigned long long)da);
+
+	if (da < cp || da >= (cp + s))
+		return OF_BAD_ADDR;
+	return da - cp;
+}
+
+static int of_bus_pci_translate(__be32 *addr, u64 offset, int na)
+{
+	return of_bus_default_translate(addr + 1, offset, na - 1);
+}
+#endif /* CONFIG_OF_ADDRESS_PCI */
+
 /*
  * Array of bus specific translators
  */
 
 static struct of_bus of_busses[] = {
+#ifdef CONFIG_OF_ADDRESS_PCI
+	/* PCI */
+	{
+		.name = "pci",
+		.addresses = "assigned-addresses",
+		.match = of_bus_pci_match,
+		.count_cells = of_bus_pci_count_cells,
+		.map = of_bus_pci_map,
+		.translate = of_bus_pci_translate,
+		.get_flags = of_bus_pci_get_flags,
+	},
+#endif
 	/* Default */
 	{
 		.name = "default",

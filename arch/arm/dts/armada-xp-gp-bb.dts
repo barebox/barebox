@@ -1,0 +1,12 @@
+/*
+ * Barebox specific DT overlay for Marvell Armada XP DB-MV784MP-GP
+ *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ */
+
+#include "arm/armada-xp-gp.dts"
+
+/ {
+	chosen {
+		stdout-path = "/soc/internal-regs/serial@12000";
+	};
+};

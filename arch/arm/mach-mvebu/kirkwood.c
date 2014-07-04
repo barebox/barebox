@@ -16,15 +16,8 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <ns16550.h>
-#include <linux/clk.h>
-#include <linux/clkdev.h>
 #include <asm/memory.h>
 #include <mach/kirkwood-regs.h>
-
-#define CONSOLE_UART_BASE	KIRKWOOD_UARTn_BASE(CONFIG_MVEBU_CONSOLE_UART)
-
-static struct clk *tclk;
 
 static inline void kirkwood_memory_find(unsigned long *phys_base,
 					unsigned long *phys_size)
@@ -49,39 +42,6 @@ static inline void kirkwood_memory_find(unsigned long *phys_base,
 	}
 }
 
-static struct NS16550_plat uart_plat = {
-	.shift = 2,
-};
-
-static int kirkwood_add_uart(void)
-{
-	uart_plat.clock = clk_get_rate(tclk);
-	if (!add_ns16550_device(DEVICE_ID_DYNAMIC,
-				(unsigned int)CONSOLE_UART_BASE, 32,
-				IORESOURCE_MEM | IORESOURCE_MEM_32BIT,
-				&uart_plat))
-		return -ENODEV;
-	return 0;
-}
-
-static int kirkwood_init_clocks(void)
-{
-	u32 val = readl(KIRKWOOD_SAR_BASE);
-	unsigned int rate;
-
-	/*
-	 * On Kirkwood, the TCLK frequency can be either
-	 * 166 Mhz or 200 Mhz
-	 */
-	if ((val & SAR_TCLK_FREQ) == SAR_TCLK_FREQ)
-		rate = 166666667;
-	else
-		rate = 200000000;
-
-	tclk = clk_fixed("tclk", rate);
-	return 0;
-}
-
 static int kirkwood_init_soc(void)
 {
 	unsigned long phys_base, phys_size;
@@ -89,14 +49,8 @@ static int kirkwood_init_soc(void)
 	barebox_set_model("Marvell Kirkwood");
 	barebox_set_hostname("kirkwood");
 
-	kirkwood_init_clocks();
-	clkdev_add_physbase(tclk, (unsigned int)KIRKWOOD_TIMER_BASE, NULL);
-	add_generic_device("orion-timer", DEVICE_ID_SINGLE, NULL,
-			   (unsigned int)KIRKWOOD_TIMER_BASE, 0x30,
-			   IORESOURCE_MEM, NULL);
 	kirkwood_memory_find(&phys_base, &phys_size);
 	arm_add_mem_device("ram0", phys_base, phys_size);
-	kirkwood_add_uart();
 
 	return 0;
 }

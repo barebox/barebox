@@ -9,6 +9,7 @@ struct block_device;
 struct block_device_ops {
 	int (*read)(struct block_device *, void *buf, int block, int num_blocks);
 	int (*write)(struct block_device *, const void *buf, int block, int num_blocks);
+	int (*flush)(struct block_device *);
 };
 
 struct chunk;

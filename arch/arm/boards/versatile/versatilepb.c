@@ -32,21 +32,12 @@
 
 static int vpb_console_init(void)
 {
-	barebox_set_model("ARM Versatile/PB (ARM926EJ-S)");
 	barebox_set_hostname("versatilepb");
 
 	versatile_register_uart(0);
 	return 0;
 }
 console_initcall(vpb_console_init);
-
-static int vpb_mem_init(void)
-{
-	versatile_add_sdram(64 * 1024 *1024);
-
-	return 0;
-}
-mem_initcall(vpb_mem_init);
 
 static struct smc91c111_pdata net_pdata = {
 	.qemu_fixup = 1,
@@ -55,7 +46,6 @@ static struct smc91c111_pdata net_pdata = {
 static int vpb_devices_init(void)
 {
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, VERSATILE_FLASH_BASE, VERSATILE_FLASH_SIZE, 0);
-	versatile_register_i2c();
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 

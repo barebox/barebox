@@ -84,6 +84,7 @@ static int i2c_versatile_probe(struct device_d *dev)
 
 	i2c->adap.algo_data = &i2c->algo;
 	i2c->adap.dev.parent = dev;
+	i2c->adap.dev.device_node = dev->device_node;
 	i2c->algo = i2c_versatile_algo;
 	i2c->algo.data = i2c;
 
@@ -99,8 +100,14 @@ static int i2c_versatile_probe(struct device_d *dev)
 	return ret;
 }
 
+static struct of_device_id i2c_versatile_match[] = {
+	{ .compatible = "arm,versatile-i2c", },
+	{},
+};
+
 static struct driver_d i2c_versatile_driver = {
 	.name	= "versatile-i2c",
 	.probe	= i2c_versatile_probe,
+	.of_compatible = DRV_OF_COMPAT(i2c_versatile_match),
 };
 device_platform_driver(i2c_versatile_driver);

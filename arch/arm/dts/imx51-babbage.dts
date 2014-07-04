@@ -38,9 +38,6 @@
 };
 
 &iomuxc {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_hog>;
-
 	imx51-babbage {
 		pinctrl_fec: fecgrp {
 			/*

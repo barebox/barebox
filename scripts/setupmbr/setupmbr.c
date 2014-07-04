@@ -140,7 +140,7 @@ static void invalidate_daps(struct DAPS *sector)
  * Create the indirect sector with the DAPS entries
  * @param daps_table Where to store the entries
  * @param size Size of the whole image in bytes
- * @param pers_sector_count Count of sectors to skip after MBR for the persistant environment storage
+ * @param pers_sector_count Count of sectors to skip after MBR for the persistent environment storage
  * @return 0 on success
  *
  * This routine calculates the DAPS entries for the case the whole
@@ -326,10 +326,10 @@ static int check_for_space(const void *hd_image, off_t size)
 }
 
 /**
- * Setup the persistant environment storage information
+ * Setup the persistent environment storage information
  * @param patch_area Where to patch
- * @param pers_sector_start Start sector of the persistant environment storage
- * @param pers_sector_count Count of sectors for the persistant environment storage
+ * @param pers_sector_start Start sector of the persistent environment storage
+ * @param pers_sector_count Count of sectors for the persistent environment storage
  * @return 0 on success
  */
 static int store_pers_env_info(void *patch_area, uint64_t pers_sector_start, long pers_sector_count)
@@ -355,7 +355,7 @@ static int store_pers_env_info(void *patch_area, uint64_t pers_sector_start, lon
  * Prepare the MBR and indirect sector for runtime
  * @param fd_barebox barebox image to use
  * @param fd_hd Hard disk image to prepare
- * @param pers_sector_count Count of sectors to skip after MBR for the persistant environment storage
+ * @param pers_sector_count Count of sectors to skip after MBR for the persistent environment storage
  * @return 0 on success
  *
  * This routine expects a prepared hard disk image file with a partition table
@@ -390,7 +390,7 @@ static int barebox_overlay_mbr(int fd_barebox, int fd_hd, long pers_sector_count
 	}
 
 	/*
-	 * the persistant environment storage is in front of the main
+	 * the persistent environment storage is in front of the main
 	 * barebox image. To handle both, we need more space in front of the
 	 * the first partition.
 	 */
@@ -415,7 +415,7 @@ static int barebox_overlay_mbr(int fd_barebox, int fd_hd, long pers_sector_count
 
 	/*
 	 * embed the barebox main image into the disk drive image,
-	 * but keep the persistant environment storage untouched
+	 * but keep the persistent environment storage untouched
 	 * (if defined), e.g. store the main image behind this special area.
 	 */
 	memcpy(hd_image + ((pers_sector_count + 1) * SECTOR_SIZE),
@@ -471,7 +471,7 @@ static void print_usage(const char *pname)
 {
 	printf("%s: Preparing a hard disk image for boot with barebox on x86.\n", pname);
 	printf("Usage is\n %s [options] -m <barebox image> -d <hd image>\n", pname);
-	printf(" [options] are:\n -s <count> sector count of the persistant environment storage\n");
+	printf(" [options] are:\n -s <count> sector count of the persistent environment storage\n");
 	printf(" <barebox image> barebox's boot image file\n");
 	printf(" <hd image> HD image to store the barebox image\n");
 	printf(" If no '-s <x>' was given, barebox occupies sectors 0 to n, else sector 0 and x+1 to n\n");

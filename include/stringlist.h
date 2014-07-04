@@ -29,4 +29,7 @@ static inline void string_list_free(struct string_list *sl)
 	}
 }
 
+#define string_list_for_each_entry(entry, sl) \
+	list_for_each_entry(entry, &(sl)->list, list)
+
 #endif /* __STRINGLIST_H */

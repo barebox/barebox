@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "<menu text here>"
-	exit
-fi
-
 global.bootm.image=<path to image>
 #global.bootm.oftree=<path to oftree>
 #global.bootm.initrd=<path to initrd>

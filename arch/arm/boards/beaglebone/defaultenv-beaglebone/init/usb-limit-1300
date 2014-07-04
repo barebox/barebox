@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo -n "changing USB current limit to 1300 mA... "
+i2c_write -b 0 -a 0x24 -r 0x01 0x3e
+echo "done"

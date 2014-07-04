@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "network (tftp, nfs)"
-	exit
-fi
-
 path="/mnt/tftp"
 
 global.bootm.image="${path}/${global.user}-linux-${global.hostname}"

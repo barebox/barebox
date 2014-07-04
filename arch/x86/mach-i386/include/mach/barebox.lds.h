@@ -31,27 +31,27 @@
 #define PATCH_AREA_BOOT_DEV 16
 
 /**
- * Offset where to store information about the persistant environment storage
+ * Offset where to store information about the persistent environment storage
  * It points to an LBA number (8 bytes) and defines the first sector of this
  * storage on disk.
  */
 #define PATCH_AREA_PERS_START 20
 
 /**
- * Offset where to store information about the persistant environment storage
+ * Offset where to store information about the persistent environment storage
  * It points to a short number (2 bytes) and defines the sector count of this
  * storage on disk.
  */
 #define PATCH_AREA_PERS_SIZE 28
 
 /**
- * Offset where to store information about the persistant environment storage
+ * Offset where to store information about the persistent environment storage
  * drive number (BIOS number, 1 byte)
  */
 #define PATCH_AREA_PERS_DRIVE 30
 
 /**
- * Mark the persistant environment as not used
+ * Mark the persistent environment as not used
  */
 #define PATCH_AREA_PERS_SIZE_UNUSED 0x000
 

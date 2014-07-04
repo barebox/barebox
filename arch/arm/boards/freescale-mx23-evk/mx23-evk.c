@@ -70,7 +70,7 @@ mem_initcall(mx23_evk_mem_init);
  * If this SD card is also the boot media, we can use the second partition
  * for our environment purpose (if present!).
  */
-static int register_persistant_environment(void)
+static int register_persistent_environment(void)
 {
 	struct cdev *cdev;
 
@@ -116,9 +116,9 @@ static int mx23_evk_devices_init(void)
 	add_generic_device("mxs_mci", DEVICE_ID_DYNAMIC, NULL, IMX_SSP1_BASE,
 					0x8000, IORESOURCE_MEM, &mci_pdata);
 
-	rc = register_persistant_environment();
+	rc = register_persistent_environment();
 	if (rc != 0)
-		printf("Cannot create the 'env0' persistant "
+		printf("Cannot create the 'env0' persistent "
 			 "environment storage (%d)\n", rc);
 
 #ifdef CONFIG_USB_GADGET_DRIVER_ARC

@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "network (tftp, nfs) (eth1)"
-	exit
-fi
-
 ethact eth1
 
 path="/mnt/tftp"

@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "internal harddisk"
-	exit
-fi
-
 path="/mnt/internal-hd0.0"
 
 global.bootm.image="${path}/linuximage"

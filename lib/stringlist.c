@@ -64,7 +64,7 @@ int string_list_contains(struct string_list *sl, char *str)
 {
 	struct string_list *entry;
 
-	list_for_each_entry(entry, &sl->list, list) {
+	string_list_for_each_entry(entry, sl) {
 		if (!strcmp(str, entry->str))
 			return 1;
 	}
@@ -77,7 +77,7 @@ void string_list_print_by_column(struct string_list *sl)
 	int len = 0, num, i;
 	struct string_list *entry;
 
-	list_for_each_entry(entry, &sl->list, list) {
+	string_list_for_each_entry(entry, sl) {
 		int l = strlen(entry->str) + 4;
 		if (l > len)
 			len = l;
@@ -91,7 +91,7 @@ void string_list_print_by_column(struct string_list *sl)
 		num = 1;
 
 	i = 0;
-	list_for_each_entry(entry, &sl->list, list) {
+	string_list_for_each_entry(entry, sl) {
 		if (!(++i % num))
 			printf("%s\n", entry->str);
 		else

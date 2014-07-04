@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "Android from SD card"
-	exit
-fi
-
 path=/mnt/sd
 global.bootm.image=${path}/android
 global.bootm.initrd=${path}/initramfs.cpio.lzo

@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "MMC slot (UEFI boot partiton)"
-	exit
-fi
-
 path="/mnt/mmc-boot"
 
 global.bootm.image="${path}/zimage"

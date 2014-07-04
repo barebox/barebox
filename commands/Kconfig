@@ -1958,10 +1958,11 @@ config CMD_OFTREE
 	help
 	  oftree - handle device trees
 
-	  Usage: oftree [-lpfdn] [DTB]
+	  Usage: oftree [-lspf] [DTB]
 
 	  Options:
 		  -l		Load DTB to internal device tree
+		  -s		save internal device tree to DTB
 		  -p		probe devices from stored device tree
 		  -f		free stored device tree
 

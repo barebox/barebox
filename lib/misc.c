@@ -21,6 +21,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <fs.h>
+#include <string.h>
 #include <linux/ctype.h>
 
 /*

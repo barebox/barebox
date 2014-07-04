@@ -44,6 +44,8 @@ config MACH_MIPS_MALTA
 	select SYS_SUPPORTS_32BIT_KERNEL
 	select SYS_SUPPORTS_BIG_ENDIAN
 	select HAS_DEBUG_LL
+	select GPIOLIB
+	select HW_HAS_PCI
 
 config MACH_MIPS_AR231X
 	bool "Atheros ar231x-based boards"
@@ -61,7 +63,6 @@ config MACH_MIPS_ATH79
 	select SYS_SUPPORTS_BIG_ENDIAN
 	select CSRC_R4K_LIB
 	select HAS_DEBUG_LL
-	select HAVE_CLK
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP
@@ -89,6 +90,7 @@ config MACH_MIPS_XBURST
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
+	select GPIOLIB
 endchoice
 
 source arch/mips/mach-malta/Kconfig

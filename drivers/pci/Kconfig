@@ -1,0 +1,29 @@
+config HW_HAS_PCI
+	bool
+
+if HW_HAS_PCI
+
+menu "PCI bus options"
+
+config PCI
+	bool "Support for PCI controller"
+	depends on HW_HAS_PCI
+	help
+	  Find out whether you have a PCI motherboard. PCI is the name of a
+	  bus system, i.e. the way the CPU talks to the other stuff inside
+	  your box. If you have PCI, say Y, otherwise N.
+
+
+config PCI_DEBUG
+	bool "PCI Debugging"
+	depends on PCI
+	help
+	  Say Y here if you want the PCI core to produce a bunch of debug
+	  messages to the system log.  Select this if you are having a
+	  problem with PCI support and want to see more of what is going on.
+
+	  When in doubt, say N.
+
+endmenu
+
+endif

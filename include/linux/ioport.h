@@ -9,6 +9,7 @@
 #define _LINUX_IOPORT_H
 
 #ifndef __ASSEMBLY__
+#include <linux/list.h>
 #include <linux/compiler.h>
 #include <linux/types.h>
 /*

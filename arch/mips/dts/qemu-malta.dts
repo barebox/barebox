@@ -25,6 +25,25 @@
 		clock-frequency = <1843200>;
 	};
 
+	gpio: gpio@1f000b00 {
+		compatible = "mti,malta-fpga-i2c-gpio";
+		gpio-controller;
+		reg = <0xbf000b00 0x20>;
+		#gpio-cells = <2>;
+	};
+
+	i2c0: i2c0 {
+		compatible = "i2c-gpio";
+		gpios = <&gpio 0 0 /* sda */
+			&gpio 1 0 /* scl */
+			>;
+		i2c-gpio,sda-open-drain;
+		i2c-gpio,scl-open-drain;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+	};
+
 	uart2: serial@bf000900 {
 		compatible = "ns16550a";
 		reg = <0xbf000900 0x40>;
@@ -50,4 +69,8 @@
 			reg = <0x80000 0x10000>;
 		};
 	};
+};
+
+&i2c0 {
+	status = "okay";
 };

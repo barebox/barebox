@@ -32,6 +32,7 @@ enum filetype {
 	filetype_barebox_env,
 	filetype_ch_image,
 	filetype_ch_image_be,
+	filetype_exe,
 	filetype_max,
 };
 

@@ -56,6 +56,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_ch_image] = { "TI OMAP CH boot image", "ch-image" },
 	[filetype_ch_image_be] = {
 			"TI OMAP CH boot image (big endian)", "ch-image-be" },
+	[filetype_exe] = { "MS-DOS executable", "exe" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -235,6 +236,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (bufsize < 64)
 		return filetype_unknown;
+
+	if (buf8[0] == 'M' && buf8[1] == 'Z')
+		return filetype_exe;
 
 	if (is_barebox_arm_head(_buf))
 		return filetype_arm_barebox;

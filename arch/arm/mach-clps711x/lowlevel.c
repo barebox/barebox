@@ -17,7 +17,7 @@
 
 #include <mach/clps711x.h>
 
-void __naked __bare_init clps711x_barebox_entry(u32 pllmult)
+void __naked __bare_init clps711x_barebox_entry(u32 pllmult, void *data)
 {
 	u32 cpu, bus;
 
@@ -69,5 +69,5 @@ void __naked __bare_init clps711x_barebox_entry(u32 pllmult)
 	/* Disable LED flasher */
 	writew(0, LEDFLSH);
 
-	barebox_arm_entry(SDRAM0_BASE, SZ_8M, NULL);
+	barebox_arm_entry(SDRAM0_BASE, SZ_8M, data);
 }

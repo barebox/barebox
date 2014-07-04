@@ -47,14 +47,3 @@ static int phytec_pcaaxl3_init(void)
 	return 0;
 }
 device_initcall(phytec_pcaaxl3_init);
-
-static int phytec_pcaaxl3_core_init(void)
-{
-	if (!of_machine_is_compatible("phytec,imx6q-pcaaxl3"))
-		return 0;
-
-	imx6_init_lowlevel();
-
-	return 0;
-}
-postcore_initcall(phytec_pcaaxl3_core_init);

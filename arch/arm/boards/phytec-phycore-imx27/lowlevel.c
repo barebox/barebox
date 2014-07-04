@@ -33,7 +33,7 @@
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
 
-void __bare_init __naked barebox_arm_reset_vector(void)
+static void __bare_init __naked noinline phytec_phycorce_imx27_common_init(void *fdt)
 {
 	uint32_t r;
 	int i;
@@ -93,12 +93,22 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL,
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
-	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND)) {
-		/* setup a stack to be able to call mx27_barebox_boot_nand_external() */
-		arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 8);
+	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND))
+		imx27_barebox_boot_nand_external(fdt);
 
-		imx27_barebox_boot_nand_external(0);
-	}
 out:
-	imx27_barebox_entry(NULL);
+	imx27_barebox_entry(fdt);
+}
+
+extern char __dtb_imx27_phytec_phycore_rdk_start[];
+
+ENTRY_FUNCTION(start_phytec_phycore_imx27, r0, r1, r2)
+{
+	void *fdt;
+
+	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 12);
+
+	fdt = __dtb_imx27_phytec_phycore_rdk_start - get_runtime_offset();
+
+	phytec_phycorce_imx27_common_init(fdt);
 }

@@ -1,3 +1,3 @@
-obj-y					+= pcm038.o
-lwl-y				+= lowlevel.o
-obj-$(CONFIG_MACH_PCM970_BASEBOARD)	+= pcm970.o
+obj-y	+= pcm038.o pcm970.o
+lwl-y	+= lowlevel.o
+bbenv-y += defaultenv-pcm038

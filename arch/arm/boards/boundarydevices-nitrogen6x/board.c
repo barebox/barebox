@@ -29,6 +29,8 @@ static int nitrogen6x_devices_init(void)
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 			BBU_HANDLER_FLAG_DEFAULT);
 
+	barebox_set_hostname("nitrogen6x");
+
 	return 0;
 }
 device_initcall(nitrogen6x_devices_init);
@@ -61,17 +63,3 @@ static int nitrogen6x_coredevices_init(void)
 	return 0;
 }
 coredevice_initcall(nitrogen6x_coredevices_init);
-
-static int nitrogen6x_postcore_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx6dl-nitrogen6x") &&
-	    !of_machine_is_compatible("fsl,imx6q-nitrogen6x"))
-		return 0;
-
-	imx6_init_lowlevel();
-
-	barebox_set_hostname("nitrogen6x");
-
-	return 0;
-}
-postcore_initcall(nitrogen6x_postcore_init);

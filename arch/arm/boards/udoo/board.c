@@ -164,6 +164,7 @@ static int udoo_devices_init(void)
 	udoo_epit_init();
 
 	armlinux_set_bootparams((void *)0x10000100);
+	barebox_set_hostname("udoo");
 
 	return 0;
 }
@@ -179,16 +180,3 @@ static int udoo_coredevices_init(void)
 	return 0;
 }
 coredevice_initcall(udoo_coredevices_init);
-
-static int udoo_postcore_init(void)
-{
-	if (!of_machine_is_compatible("udoo,imx6qdl-udoo"))
-		return 0;
-
-	imx6_init_lowlevel();
-
-	barebox_set_hostname("udoo");
-
-	return 0;
-}
-postcore_initcall(udoo_postcore_init);

@@ -47,15 +47,27 @@ static void __noreturn noinline uncompress_start_payload(unsigned long membase,
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	uint32_t endmem = membase + memsize;
 	unsigned long barebox_base;
-	uint32_t *ptr;
+	uint32_t *image_end;
 	void *pg_start;
+	unsigned long pc = get_pc();
 
 	arm_early_mmu_cache_invalidate();
 
 	endmem -= STACK_SIZE; /* stack */
 
-	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
-		relocate_to_current_adr();
+	image_end = (void *)ld_var(__image_end) - get_runtime_offset();
+
+	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE)) {
+		/*
+		 * If we run from inside the memory just relocate the binary
+		 * to the current address. Otherwise it may be a readonly location.
+		 * Copy and relocate to the start of the memory in this case.
+		 */
+		if (pc > membase && pc < membase + memsize)
+			relocate_to_current_adr();
+		else
+			relocate_to_adr(membase);
+	}
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE))
 		barebox_base = arm_barebox_image_place(membase + memsize);
@@ -74,9 +86,12 @@ static void __noreturn noinline uncompress_start_payload(unsigned long membase,
 	free_mem_ptr = endmem;
 	free_mem_end_ptr = free_mem_ptr + SZ_128K;
 
-	ptr = (void *)__image_end;
-	pg_start = ptr + 1;
-	pg_len = *(ptr);
+	/*
+	 * image_end is the first location after the executable. It contains
+	 * the size of the appended compressed binary followed by the binary.
+	 */
+	pg_start = image_end + 1;
+	pg_len = *(image_end);
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 

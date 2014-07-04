@@ -120,16 +120,3 @@ static int variscite_custom_init(void)
 	return 0;
 }
 device_initcall(variscite_custom_init);
-
-static int variscite_custom_core_init(void)
-{
-	if (!of_machine_is_compatible("variscite,imx6q-custom"))
-		return 0;
-
-	imx6_init_lowlevel();
-
-	pr_debug("Completing custom_core_init()\n");
-
-	return 0;
-}
-postcore_initcall(variscite_custom_core_init);

@@ -37,7 +37,6 @@ ENTRY(setup_c)
 	mov	pc, lr
 ENDPROC(setup_c)
 
-#ifdef CONFIG_RELOCATABLE
 /*
  * void relocate_to_adr(unsigned long targetadr)
  *
@@ -93,4 +92,3 @@ ENTRY(relocate_to_adr)
 	mov	pc, lr
 
 ENDPROC(relocate_to_adr)
-#endif

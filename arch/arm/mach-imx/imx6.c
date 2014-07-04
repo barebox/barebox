@@ -114,6 +114,8 @@ int imx6_init(void)
 	u32 rev;
 	u32 mx6_silicon_revision;
 
+	imx6_init_lowlevel();
+
 	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
 
 	rev = readl(MX6_ANATOP_BASE_ADDR + SI_REV);
@@ -128,6 +130,18 @@ int imx6_init(void)
 
 	case 0x02:
 		mx6_silicon_revision = IMX_CHIP_REV_1_2;
+		break;
+
+	case 0x03:
+		mx6_silicon_revision = IMX_CHIP_REV_1_3;
+		break;
+
+	case 0x04:
+		mx6_silicon_revision = IMX_CHIP_REV_1_4;
+		break;
+
+	case 0x05:
+		mx6_silicon_revision = IMX_CHIP_REV_1_5;
 		break;
 
 	default:

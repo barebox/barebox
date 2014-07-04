@@ -193,6 +193,15 @@ config MACH_PCA100
 	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
 	  with a Freescale i.MX27 Processor
 
+config MACH_PCM038
+	bool "phyCORE-i.MX27"
+	select ARCH_IMX27
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select ARCH_IMX_EXTERNAL_BOOT_NAND
+	help
+	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
+	  with a Freescale i.MX27 Processor
+
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51
@@ -260,8 +269,8 @@ config MACH_NITROGEN6X
 	bool "BoundaryDevices Nitrogen6x"
 	select ARCH_IMX6
 
-config MACH_SOLIDRUN_HUMMINGBOARD
-	bool "SolidRun Hummingboard"
+config MACH_SOLIDRUN_MICROSOM
+	bool "SolidRun MicroSOM based devices"
 	select ARCH_IMX6
 
 config MACH_EMBEST_RIOTBOARD
@@ -343,26 +352,6 @@ config MACH_IMX27ADS
 	help
 	  Say Y here if you are using the Freescale i.MX27ads board equipped
 	  with a Freescale i.MX27 Processor
-
-config MACH_PCM038
-	bool "phyCORE-i.MX27"
-	select ARCH_IMX27
-	select IMX_IIM
-	select SPI
-	select DRIVER_SPI_IMX
-	select MFD_MC13XXX
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	help
-	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
-	  with a Freescale i.MX27 Processor
-
-config MACH_PCM970_BASEBOARD
-	bool "PHYTEC PCM970 development board"
-	depends on MACH_PCM038
-	default y
-	help
-	  This adds board specific devices that can be found on Phytec's
-	  PCM970 evaluation board.
 
 config MACH_NESO
 	bool "Garz+Fricke Neso"

@@ -59,7 +59,16 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		return fd;
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
-		debug("%s: eraseing %s from 0 to 0x%08x\n", __func__,
+		debug("%s: unprotecting %s from 0 to 0x%08x\n", __func__,
+				data->devicefile, image_len);
+		ret = protect(fd, image_len, 0, 0);
+		if (ret && ret != -ENOSYS) {
+			printf("unprotecting %s failed with %s\n", data->devicefile,
+					strerror(-ret));
+			goto err_close;
+		}
+
+		debug("%s: erasing %s from 0 to 0x%08x\n", __func__,
 				data->devicefile, image_len);
 		ret = erase(fd, image_len, 0);
 		if (ret) {
@@ -91,6 +100,16 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	ret = write(fd, buf, image_len);
 	if (ret < 0)
 		goto err_close;
+
+	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
+		debug("%s: protecting %s from 0 to 0x%08x\n", __func__,
+				data->devicefile, image_len);
+		ret = protect(fd, image_len, 0, 1);
+		if (ret && ret != -ENOSYS) {
+			printf("protecting %s failed with %s\n", data->devicefile,
+					strerror(-ret));
+		}
+	}
 
 	ret = 0;
 
@@ -351,6 +370,19 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	return ret;
 }
 
+static int imx_bbu_external_update(struct bbu_handler *handler, struct bbu_data *data)
+{
+	struct imx_internal_bbu_handler *imx_handler =
+		container_of(handler, struct imx_internal_bbu_handler, handler);
+	int ret;
+
+	ret = imx_bbu_check_prereq(data);
+	if (ret)
+		return ret;
+
+	return imx_bbu_write_device(imx_handler, data, data->image, data->len);
+}
+
 static struct imx_internal_bbu_handler *__init_handler(const char *name, char *devicefile,
 		unsigned long flags)
 {
@@ -481,6 +513,18 @@ int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefil
 
 	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
+
+	return __register_handler(imx_handler);
+}
+
+int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
+		unsigned long flags)
+{
+	struct imx_internal_bbu_handler *imx_handler;
+
+	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
+	imx_handler->handler.handler = imx_bbu_external_update;
 
 	return __register_handler(imx_handler);
 }

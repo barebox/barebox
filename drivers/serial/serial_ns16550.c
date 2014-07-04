@@ -50,6 +50,7 @@ struct ns16550_priv {
 	int mmio;
 	struct clk *clk;
 	uint32_t fcrval;
+	void __iomem *mmiobase;
 };
 
 static inline struct ns16550_priv *to_ns16550_priv(struct console_device *cdev)
@@ -157,7 +158,6 @@ static inline void ns16550_sys_writel(uint32_t val, void __iomem *addr,
 static uint32_t ns16550_read(struct console_device *cdev, uint32_t off)
 {
 	struct ns16550_priv *priv = to_ns16550_priv(cdev);
-	struct device_d *dev = cdev->dev;
 	struct NS16550_plat *plat = &priv->plat;
 	int width = priv->access_width;
 
@@ -165,11 +165,11 @@ static uint32_t ns16550_read(struct console_device *cdev, uint32_t off)
 
 	switch (width) {
 	case IORESOURCE_MEM_8BIT:
-		return ns16550_sys_readb(dev->priv + off, priv->mmio);
+		return ns16550_sys_readb(priv->mmiobase + off, priv->mmio);
 	case IORESOURCE_MEM_16BIT:
-		return ns16550_sys_readw(dev->priv + off, priv->mmio);
+		return ns16550_sys_readw(priv->mmiobase + off, priv->mmio);
 	case IORESOURCE_MEM_32BIT:
-		return ns16550_sys_readl(dev->priv + off, priv->mmio);
+		return ns16550_sys_readl(priv->mmiobase + off, priv->mmio);
 	}
 	return -1;
 }
@@ -185,7 +185,6 @@ static void ns16550_write(struct console_device *cdev, uint32_t val,
 			  uint32_t off)
 {
 	struct ns16550_priv *priv = to_ns16550_priv(cdev);
-	struct device_d *dev = cdev->dev;
 	struct NS16550_plat *plat = &priv->plat;
 	int width = priv->access_width;
 
@@ -193,13 +192,13 @@ static void ns16550_write(struct console_device *cdev, uint32_t val,
 
 	switch (width) {
 	case IORESOURCE_MEM_8BIT:
-		ns16550_sys_writeb(val & 0xff, dev->priv + off, priv->mmio);
+		ns16550_sys_writeb(val & 0xff, priv->mmiobase + off, priv->mmio);
 		break;
 	case IORESOURCE_MEM_16BIT:
-		ns16550_sys_writew(val & 0xffff, dev->priv + off, priv->mmio);
+		ns16550_sys_writew(val & 0xffff, priv->mmiobase + off, priv->mmio);
 		break;
 	case IORESOURCE_MEM_32BIT:
-		ns16550_sys_writel(val, dev->priv + off, priv->mmio);
+		ns16550_sys_writel(val, priv->mmiobase + off, priv->mmio);
 		break;
 	}
 }
@@ -395,7 +394,7 @@ static int ns16550_probe(struct device_d *dev)
 	}
 	if (!res)
 		goto err;
-	dev->priv = (void __force __iomem *) res->start;
+	priv->mmiobase = (void __force __iomem *) res->start;
 
 
 	if (plat)

@@ -369,6 +369,8 @@ static inline int is_broadcast_ether_addr(const u8 *addr)
 	return (addr[0] & addr[1] & addr[2] & addr[3] & addr[4] & addr[5]) == 0xff;
 }
 
+#define ETH_ALEN 6
+
 /**
  * random_ether_addr - Generate software assigned random Ethernet address
  * @addr: Pointer to a six-byte array containing the Ethernet address
@@ -379,9 +381,9 @@ static inline int is_broadcast_ether_addr(const u8 *addr)
 static inline void random_ether_addr(u8 *addr)
 {
 	srand(get_time_ns());
-	get_random_bytes(addr, 6);
-	addr [0] &= 0xfe;	/* clear multicast bit */
-	addr [0] |= 0x02;	/* set local assignment bit (IEEE802) */
+	get_random_bytes(addr, ETH_ALEN);
+	addr[0] &= 0xfe;	/* clear multicast bit */
+	addr[0] |= 0x02;	/* set local assignment bit (IEEE802) */
 }
 
 /**

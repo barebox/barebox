@@ -21,6 +21,7 @@
 #include <asm/barebox-arm.h>
 #include <mach/imx6-mmdc.h>
 #include <mach/imx6-regs.h>
+#include <mach/generic.h>
 
 #include <debug_ll.h>
 
@@ -106,7 +107,7 @@ ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q_nanya, r0, r1, r2)
 	void *fdt;
 	int i;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
 
@@ -125,7 +126,7 @@ ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q_micron, r0, r1, r2)
 	void *fdt;
 	int i;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
 
@@ -148,7 +149,7 @@ ENTRY_FUNCTION(start_imx6dl_dfi_fs700_m60_6s, r0, r1, r2)
 	void *fdt;
 	int i;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00920000 - 8);
 

@@ -22,3 +22,4 @@ obj-$(CONFIG_BAREBOX_UPDATE) += imx-bbu-internal.o
 obj-$(CONFIG_BAREBOX_UPDATE_IMX_EXTERNAL_NAND) += imx-bbu-external-nand.o
 obj-$(CONFIG_BAREBOX_UPDATE_IMX6_NAND) += imx6-bbu-nand.o
 pbl-y += esdctl.o
+lwl-y += cpu_init.o

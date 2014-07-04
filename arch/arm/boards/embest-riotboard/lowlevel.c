@@ -30,7 +30,7 @@ ENTRY_FUNCTION(start_imx6s_riotboard, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x4, 0x020e016c);

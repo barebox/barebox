@@ -3,6 +3,7 @@
 #include <io.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <mach/generic.h>
 #include <mach/imx6-regs.h>
 #include <debug_ll.h>
 
@@ -33,7 +34,7 @@ ENTRY_FUNCTION(start_imx6q_guf_santaro, r0, r1, r2)
 	void *fdt;
 	int i;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00920000 - 8);
 

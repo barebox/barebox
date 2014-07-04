@@ -21,6 +21,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx6-mmdc.h>
+#include <mach/generic.h>
 
 static void sdram_init(void)
 {
@@ -142,7 +143,7 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 	unsigned long sdram = 0x10000000;
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
 

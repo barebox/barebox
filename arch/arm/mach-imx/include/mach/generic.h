@@ -33,6 +33,8 @@ int imx51_devices_init(void);
 int imx53_devices_init(void);
 int imx6_devices_init(void);
 
+void imx6_cpu_lowlevel_init(void);
+
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
 /* range e.g. GPIO_1_5 is gpio 5 under linux */
 #define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))

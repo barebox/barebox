@@ -1,5 +1,6 @@
 #include <common.h>
 #include <sizes.h>
+#include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 
@@ -9,7 +10,7 @@ ENTRY_FUNCTION(start_imx6q_nitrogen6x_1g, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	fdt = __dtb_imx6q_nitrogen6x_start - get_runtime_offset();
 
@@ -22,7 +23,7 @@ ENTRY_FUNCTION(start_imx6dl_nitrogen6x_1g, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx6_cpu_lowlevel_init();
 
 	fdt = __dtb_imx6dl_nitrogen6x_start - get_runtime_offset();
 

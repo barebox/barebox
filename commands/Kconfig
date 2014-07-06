@@ -44,7 +44,7 @@ config CMD_AT91MUX
 	help
 	  List MUX configuration
 
-	  Usage: at91mux [-pn]
+	  Usage: at91mux [-pb]
 
 	  Dump current MUX configuration. If a BANK or PIN has been
 	  specified dump pin details.

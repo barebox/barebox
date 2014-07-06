@@ -509,7 +509,7 @@ static int do_at91mux(int argc, char *argv[])
 }
 
 BAREBOX_CMD_HELP_START(at91mux)
-BAREBOX_CMD_HELP_TEXT("Dump current MIX configuration. If a BANK or PIN has been")
+BAREBOX_CMD_HELP_TEXT("Dump current MUX configuration. If a BANK or PIN has been")
 BAREBOX_CMD_HELP_TEXT("specified dump pin details.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
@@ -520,7 +520,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(at91mux)
 	.cmd		= do_at91mux,
 	BAREBOX_CMD_DESC("list MUX configuration")
-	BAREBOX_CMD_OPTS("[-pn]")
+	BAREBOX_CMD_OPTS("[-pb]")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_HELP(cmd_at91mux_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)

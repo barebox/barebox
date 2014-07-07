@@ -45,6 +45,10 @@ config DRIVER_SERIAL_LINUX_CONSOLE
 	default y
 	bool "linux console driver"
 
+config DRIVER_SERIAL_EFI_STDIO
+	depends on ARCH_EFI
+	bool "EFI stdio driver"
+
 config DRIVER_SERIAL_MPC5XXX
 	depends on MPC5200
 	default y

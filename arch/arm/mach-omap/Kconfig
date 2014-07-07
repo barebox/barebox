@@ -72,6 +72,7 @@ config OMAP_GPMC
 
 config OMAP_BUILD_IFT
 	prompt "build ift binary (MLO)"
+	depends on !OMAP_MULTI_BOARDS
 	bool
 	help
 	  Say Y here if you want to build an MLO binary. On TI SoCs, this
@@ -80,6 +81,7 @@ config OMAP_BUILD_IFT
 
 config OMAP_BUILD_SPI
 	prompt "build SPI binary"
+	depends on !OMAP_MULTI_BOARDS
 	bool
 	help
 	  Say Y here if you want to build an barebox.spi image as used

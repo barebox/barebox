@@ -170,6 +170,10 @@ config DRIVER_NET_TAP
 	bool "tap Ethernet driver"
 	depends on LINUX
 
+config DRIVER_NET_EFI_SNP
+	bool "EFI SNP ethernet driver"
+	depends on ARCH_EFI
+
 config DRIVER_NET_TSE
 	depends on NIOS2
 	bool "Altera TSE ethernet driver"

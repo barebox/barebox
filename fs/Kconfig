@@ -41,6 +41,14 @@ config FS_NFS
 	bool
 	prompt "nfs support"
 
+config FS_EFI
+	depends on ARCH_EFI
+	bool
+	prompt "EFI filesystem support"
+	help
+	  This filesystem driver provides access to the filesystems provided
+	  by the EFI Firmware via the EFI Simple File System Protocol.
+
 source fs/fat/Kconfig
 source fs/ubifs/Kconfig
 

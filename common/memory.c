@@ -58,7 +58,7 @@ void mem_malloc_init(void *start, void *end)
 #endif
 }
 
-#ifndef __SANDBOX__
+#if !defined __SANDBOX__ && !defined CONFIG_ARCH_EFI
 static int mem_malloc_resource(void)
 {
 	/*

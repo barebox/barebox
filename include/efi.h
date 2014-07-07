@@ -14,6 +14,14 @@
 #include <linux/string.h>
 #include <linux/types.h>
 
+#ifdef CONFIG_ARCH_EFI
+#define EFIAPI __attribute__((ms_abi))
+#else
+#define EFIAPI
+#endif
+
+struct efi_device_path;
+
 #define EFI_SUCCESS                             0
 #define EFI_LOAD_ERROR                  ( 1 | (1UL << (BITS_PER_LONG-1)))
 #define EFI_INVALID_PARAMETER           ( 2 | (1UL << (BITS_PER_LONG-1)))
@@ -52,13 +60,15 @@
 typedef unsigned long efi_status_t;
 typedef u8 efi_bool_t;
 typedef u16 efi_char16_t;		/* UNICODE character */
+typedef u64 efi_physical_addr_t;
+typedef void *efi_handle_t;
 
 
 typedef struct {
 	u8 b[16];
 } efi_guid_t;
 
-#define EFI_GUID(a,b,c,d0,d1,d2,d3,d4,d5,d6,d7) \
+#define EFI_GUID(a, b, c, d0, d1, d2, d3, d4, d5, d6, d7) \
 ((efi_guid_t) \
 {{ (a) & 0xff, ((a) >> 8) & 0xff, ((a) >> 16) & 0xff, ((a) >> 24) & 0xff, \
   (b) & 0xff, ((b) >> 8) & 0xff, \
@@ -109,22 +119,7 @@ typedef	struct {
 #define EFI_MEMORY_DESCRIPTOR_VERSION	1
 
 #define EFI_PAGE_SHIFT		12
-
-typedef struct {
-	u32 type;
-	u32 pad;
-	u64 phys_addr;
-	u64 virt_addr;
-	u64 num_pages;
-	u64 attribute;
-} efi_memory_desc_t;
-
-typedef struct {
-	efi_guid_t guid;
-	u32 headersize;
-	u32 flags;
-	u32 imagesize;
-} efi_capsule_header_t;
+#define EFI_PAGE_SIZE		(1UL << EFI_PAGE_SHIFT)
 
 /*
  * Allocation types for calls to boottime->allocate_pages.
@@ -163,6 +158,19 @@ typedef struct {
 	u8 sets_to_zero;
 } efi_time_cap_t;
 
+enum efi_locate_search_type {
+	all_handles,
+	by_register_notify,
+	by_protocol
+};
+
+struct efi_open_protocol_information_entry {
+	efi_handle_t agent_handle;
+	efi_handle_t controller_handle;
+	u32 attributes;
+	u32 open_count;
+};
+
 /*
  * EFI Boot Services table
  */
@@ -170,41 +178,69 @@ typedef struct {
 	efi_table_hdr_t hdr;
 	void *raise_tpl;
 	void *restore_tpl;
-	void *allocate_pages;
-	void *free_pages;
-	void *get_memory_map;
-	void *allocate_pool;
-	void *free_pool;
+	efi_status_t (EFIAPI *allocate_pages)(int, int, unsigned long,
+				       efi_physical_addr_t *);
+	efi_status_t (EFIAPI *free_pages)(efi_physical_addr_t, unsigned long);
+	efi_status_t (EFIAPI *get_memory_map)(unsigned long *, void *, unsigned long *,
+				       unsigned long *, u32 *);
+	efi_status_t (EFIAPI *allocate_pool)(int, unsigned long, void **);
+	efi_status_t (EFIAPI *free_pool)(void *);
 	void *create_event;
 	void *set_timer;
-	void *wait_for_event;
+	efi_status_t(EFIAPI *wait_for_event)(unsigned long number_of_events, void *event,
+			unsigned long *index);
 	void *signal_event;
 	void *close_event;
 	void *check_event;
 	void *install_protocol_interface;
 	void *reinstall_protocol_interface;
 	void *uninstall_protocol_interface;
-	void *handle_protocol;
+	efi_status_t (EFIAPI *handle_protocol)(efi_handle_t, efi_guid_t *, void **);
 	void *__reserved;
 	void *register_protocol_notify;
-	void *locate_handle;
-	void *locate_device_path;
+	efi_status_t (EFIAPI *locate_handle) (enum efi_locate_search_type search_type,
+			efi_guid_t *protocol, void *search_key,
+			unsigned long *buffer_size, efi_handle_t *buffer);
+	efi_status_t (EFIAPI *locate_device_path)(efi_guid_t *protocol,
+			struct efi_device_path **device_path, efi_handle_t *device);
 	void *install_configuration_table;
-	void *load_image;
-	void *start_image;
-	void *exit;
+	efi_status_t (EFIAPI *load_image)(bool boot_policiy, efi_handle_t parent_image,
+			struct efi_device_path *file_path, void *source_buffer,
+			unsigned long source_size, efi_handle_t *image);
+	efi_status_t (EFIAPI *start_image)(efi_handle_t handle,
+			unsigned long *exitdata_size, s16 **exitdata);
+	efi_status_t(EFIAPI *exit)(efi_handle_t handle,  efi_status_t exit_status,
+			unsigned long exitdata_size, s16 *exitdata);
 	void *unload_image;
-	void *exit_boot_services;
+	efi_status_t (EFIAPI *exit_boot_services)(efi_handle_t, unsigned long);
 	void *get_next_monotonic_count;
-	void *stall;
+	efi_status_t (EFIAPI *stall)(unsigned long usecs);
 	void *set_watchdog_timer;
-	void *connect_controller;
+	efi_status_t(EFIAPI *connect_controller)(efi_handle_t controller_handle,
+			efi_handle_t *driver_image_handle,
+			struct efi_device_path *remaining_device_path,
+			bool Recursive);
 	void *disconnect_controller;
-	void *open_protocol;
+#define EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL  0x00000001
+#define EFI_OPEN_PROTOCOL_GET_PROTOCOL        0x00000002
+#define EFI_OPEN_PROTOCOL_TEST_PROTOCOL       0x00000004
+#define EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER 0x00000008
+#define EFI_OPEN_PROTOCOL_BY_DRIVER           0x00000010
+#define EFI_OPEN_PROTOCOL_EXCLUSIVE           0x00000020
+	efi_status_t (EFIAPI *open_protocol)(efi_handle_t handle, efi_guid_t *protocol,
+			void ** interface, efi_handle_t agent_handle,
+			efi_handle_t controller_handle, u32 attributes);
 	void *close_protocol;
-	void *open_protocol_information;
-	void *protocols_per_handle;
-	void *locate_handle_buffer;
+	efi_status_t(EFIAPI *open_protocol_information)(efi_handle_t handle, efi_guid_t *Protocol,
+			struct efi_open_protocol_information_entry **entry_buffer,
+			unsigned long *entry_count);
+	efi_status_t (EFIAPI *protocols_per_handle)(efi_handle_t handle,
+			efi_guid_t ***protocol_buffer,
+			unsigned long *protocols_buffer_count);
+	efi_status_t (EFIAPI *locate_handle_buffer) (
+			enum efi_locate_search_type search_type,
+			efi_guid_t *protocol, void *search_key,
+			unsigned long *no_handles, efi_handle_t **buffer);
 	void *locate_protocol;
 	void *install_multiple_protocol_interfaces;
 	void *uninstall_multiple_protocol_interfaces;
@@ -213,6 +249,8 @@ typedef struct {
 	void *set_mem;
 	void *create_event_ex;
 } efi_boot_services_t;
+
+extern efi_boot_services_t *BS;
 
 /*
  * Types and defines for EFI ResetSystem
@@ -229,90 +267,63 @@ typedef struct {
 
 typedef struct {
 	efi_table_hdr_t hdr;
-	unsigned long get_time;
-	unsigned long set_time;
-	unsigned long get_wakeup_time;
-	unsigned long set_wakeup_time;
-	unsigned long set_virtual_address_map;
-	unsigned long convert_pointer;
-	unsigned long get_variable;
-	unsigned long get_next_variable;
-	unsigned long set_variable;
-	unsigned long get_next_high_mono_count;
-	unsigned long reset_system;
-	unsigned long update_capsule;
-	unsigned long query_capsule_caps;
-	unsigned long query_variable_info;
+	void *get_time;
+	void *set_time;
+	void *get_wakeup_time;
+	void *set_wakeup_time;
+	void *set_virtual_address_map;
+	void *convert_pointer;
+	efi_status_t (EFIAPI *get_variable)(s16 *variable_name, efi_guid_t *vendor,
+			u32 *Attributes, unsigned long *data_size, void *data);
+	efi_status_t (EFIAPI *get_next_variable)(unsigned long *variable_name_size,
+			s16 *variable_name, efi_guid_t *vendor);
+	void *set_variable;
+	void *get_next_high_mono_count;
+	void *reset_system;
+	void *update_capsule;
+	void *query_capsule_caps;
+	void *query_variable_info;
 } efi_runtime_services_t;
 
-typedef efi_status_t efi_get_time_t (efi_time_t *tm, efi_time_cap_t *tc);
-typedef efi_status_t efi_set_time_t (efi_time_t *tm);
-typedef efi_status_t efi_get_wakeup_time_t (efi_bool_t *enabled, efi_bool_t *pending,
-					    efi_time_t *tm);
-typedef efi_status_t efi_set_wakeup_time_t (efi_bool_t enabled, efi_time_t *tm);
-typedef efi_status_t efi_get_variable_t (efi_char16_t *name, efi_guid_t *vendor, u32 *attr,
-					 unsigned long *data_size, void *data);
-typedef efi_status_t efi_get_next_variable_t (unsigned long *name_size, efi_char16_t *name,
-					      efi_guid_t *vendor);
-typedef efi_status_t efi_set_variable_t (efi_char16_t *name, efi_guid_t *vendor,
-					 u32 attr, unsigned long data_size,
-					 void *data);
-typedef efi_status_t efi_get_next_high_mono_count_t (u32 *count);
-typedef void efi_reset_system_t (int reset_type, efi_status_t status,
-				 unsigned long data_size, efi_char16_t *data);
-typedef efi_status_t efi_set_virtual_address_map_t (unsigned long memory_map_size,
-						unsigned long descriptor_size,
-						u32 descriptor_version,
-						efi_memory_desc_t *virtual_map);
-typedef efi_status_t efi_query_variable_info_t(u32 attr,
-					       u64 *storage_space,
-					       u64 *remaining_space,
-					       u64 *max_variable_size);
-typedef efi_status_t efi_update_capsule_t(efi_capsule_header_t **capsules,
-					  unsigned long count,
-					  unsigned long sg_list);
-typedef efi_status_t efi_query_capsule_caps_t(efi_capsule_header_t **capsules,
-					      unsigned long count,
-					      u64 *max_size,
-					      int *reset_type);
+extern efi_runtime_services_t *RT;
 
 /*
  *  EFI Configuration Table and GUID definitions
  */
-#define NULL_GUID \
+#define EFI_NULL_GUID \
     EFI_GUID(  0x00000000, 0x0000, 0x0000, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 )
 
-#define MPS_TABLE_GUID    \
+#define EFI_MPS_TABLE_GUID    \
     EFI_GUID(  0xeb9d2d2f, 0x2d88, 0x11d3, 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d )
 
-#define ACPI_TABLE_GUID    \
+#define EFI_ACPI_TABLE_GUID    \
     EFI_GUID(  0xeb9d2d30, 0x2d88, 0x11d3, 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d )
 
-#define ACPI_20_TABLE_GUID    \
+#define EFI_ACPI_20_TABLE_GUID    \
     EFI_GUID(  0x8868e871, 0xe4f1, 0x11d3, 0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 )
 
-#define SMBIOS_TABLE_GUID    \
+#define EFI_SMBIOS_TABLE_GUID    \
     EFI_GUID(  0xeb9d2d31, 0x2d88, 0x11d3, 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d )
 
-#define SAL_SYSTEM_TABLE_GUID    \
+#define EFI_SAL_SYSTEM_TABLE_GUID    \
     EFI_GUID(  0xeb9d2d32, 0x2d88, 0x11d3, 0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d )
 
-#define HCDP_TABLE_GUID	\
+#define EFI_HCDP_TABLE_GUID	\
     EFI_GUID(  0xf951938d, 0x620b, 0x42ef, 0x82, 0x79, 0xa8, 0x4b, 0x79, 0x61, 0x78, 0x98 )
 
-#define UGA_IO_PROTOCOL_GUID \
+#define EFI_UGA_IO_PROTOCOL_GUID \
     EFI_GUID(  0x61a4d49e, 0x6f68, 0x4f1b, 0xb9, 0x22, 0xa8, 0x6e, 0xed, 0xb, 0x7, 0xa2 )
 
 #define EFI_GLOBAL_VARIABLE_GUID \
     EFI_GUID(  0x8be4df61, 0x93ca, 0x11d2, 0xaa, 0x0d, 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c )
 
-#define UV_SYSTEM_TABLE_GUID \
+#define EFI_UV_SYSTEM_TABLE_GUID \
     EFI_GUID(  0x3b13a7d4, 0x633e, 0x11dd, 0x93, 0xec, 0xda, 0x25, 0x56, 0xd8, 0x95, 0x93 )
 
-#define LINUX_EFI_CRASH_GUID \
+#define EFI_LINUX_EFI_CRASH_GUID \
     EFI_GUID(  0xcfc8fc79, 0xbe2e, 0x4ddc, 0x97, 0xf0, 0x9f, 0x98, 0xbf, 0xe2, 0x98, 0xa0 )
 
-#define LOADED_IMAGE_PROTOCOL_GUID \
+#define EFI_LOADED_IMAGE_PROTOCOL_GUID \
     EFI_GUID(  0x5b1b31a1, 0x9562, 0x11d2, 0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b )
 
 #define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID \
@@ -324,26 +335,38 @@ typedef efi_status_t efi_query_capsule_caps_t(efi_capsule_header_t **capsules,
 #define EFI_PCI_IO_PROTOCOL_GUID \
     EFI_GUID(  0x4cf5b200, 0x68b8, 0x4ca5, 0x9e, 0xec, 0xb2, 0x3e, 0x3f, 0x50, 0x2, 0x9a )
 
-#define EFI_FILE_INFO_ID \
+#define EFI_FILE_INFO_GUID \
     EFI_GUID(  0x9576e92, 0x6d3f, 0x11d2, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b )
 
-#define EFI_FILE_SYSTEM_GUID \
+#define EFI_SIMPLE_FILE_SYSTEM_GUID \
     EFI_GUID(  0x964e5b22, 0x6459, 0x11d2, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b )
 
-typedef struct {
-	efi_guid_t guid;
-	u64 table;
-} efi_config_table_64_t;
+#define EFI_DEVICE_TREE_GUID \
+    EFI_GUID(  0xb1b621d5, 0xf19c, 0x41a5, 0x83, 0x0b, 0xd9, 0x15, 0x2c, 0x69, 0xaa, 0xe0 )
 
-typedef struct {
-	efi_guid_t guid;
-	u32 table;
-} efi_config_table_32_t;
+#define EFI_DEVICE_PATH_PROTOCOL_GUID \
+    EFI_GUID(  0x9576e91, 0x6d3f, 0x11d2, 0x8e, 0x39, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b )
 
-typedef struct {
-	efi_guid_t guid;
-	unsigned long table;
-} efi_config_table_t;
+#define EFI_SIMPLE_NETWORK_PROTOCOL_GUID \
+    EFI_GUID( 0xA19832B9, 0xAC25, 0x11D3, 0x9A, 0x2D, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D )
+
+#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID \
+	EFI_GUID(0x0964e5b22, 0x6459, 0x11d2, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
+
+#define EFI_UNKNOWN_DEVICE_GUID \
+	EFI_GUID(0xcf31fac5, 0xc24e, 0x11d2, 0x85, 0xf3, 0x0, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b)
+
+#define EFI_BLOCK_IO_PROTOCOL_GUID \
+	EFI_GUID(0x964e5b21, 0x6459, 0x11d2, 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
+
+extern efi_guid_t efi_file_info_id;
+extern efi_guid_t efi_simple_file_system_protocol_guid;
+extern efi_guid_t efi_device_path_protocol_guid;
+extern efi_guid_t efi_loaded_image_protocol_guid;
+extern efi_guid_t efi_unknown_device_guid;
+extern efi_guid_t efi_null_guid;
+extern efi_guid_t efi_global_variable_guid;
+extern efi_guid_t efi_block_io_protocol_guid;
 
 #define EFI_SYSTEM_TABLE_SIGNATURE ((u64)0x5453595320494249ULL)
 
@@ -356,62 +379,19 @@ typedef struct {
 
 typedef struct {
 	efi_table_hdr_t hdr;
-	u64 fw_vendor;	/* physical addr of CHAR16 vendor string */
-	u32 fw_revision;
-	u32 __pad1;
-	u64 con_in_handle;
-	u64 con_in;
-	u64 con_out_handle;
-	u64 con_out;
-	u64 stderr_handle;
-	u64 _stderr;
-	u64 runtime;
-	u64 boottime;
-	u32 nr_tables;
-	u32 __pad2;
-	u64 tables;
-} efi_system_table_64_t;
-
-typedef struct {
-	efi_table_hdr_t hdr;
-	u32 fw_vendor;	/* physical addr of CHAR16 vendor string */
-	u32 fw_revision;
-	u32 con_in_handle;
-	u32 con_in;
-	u32 con_out_handle;
-	u32 con_out;
-	u32 stderr_handle;
-	u32 _stderr;
-	u32 runtime;
-	u32 boottime;
-	u32 nr_tables;
-	u32 tables;
-} efi_system_table_32_t;
-
-typedef struct {
-	efi_table_hdr_t hdr;
 	unsigned long fw_vendor;	/* physical addr of CHAR16 vendor string */
 	u32 fw_revision;
 	unsigned long con_in_handle;
-	unsigned long con_in;
+	struct efi_simple_input_interface *con_in;
 	unsigned long con_out_handle;
-	unsigned long con_out;
+	struct efi_simple_text_output_protocol *con_out;
 	unsigned long stderr_handle;
-	unsigned long _stderr;
+	unsigned long std_err;
 	efi_runtime_services_t *runtime;
 	efi_boot_services_t *boottime;
 	unsigned long nr_tables;
 	unsigned long tables;
 } efi_system_table_t;
-
-struct efi_memory_map {
-	void *phys_map;
-	void *map;
-	void *map_end;
-	int nr_map;
-	unsigned long desc_version;
-	unsigned long desc_size;
-};
 
 typedef struct {
 	u32 revision;
@@ -429,83 +409,10 @@ typedef struct {
 	unsigned long unload;
 } efi_loaded_image_t;
 
-typedef struct {
-	u64 revision;
-	void *open_volume;
-} efi_file_io_interface_t;
-
-typedef struct {
-	u64 size;
-	u64 file_size;
-	u64 phys_size;
-	efi_time_t create_time;
-	efi_time_t last_access_time;
-	efi_time_t modification_time;
-	__aligned_u64 attribute;
-	efi_char16_t filename[1];
-} efi_file_info_t;
-
-typedef struct {
-	u64 revision;
-	void *open;
-	void *close;
-	void *delete;
-	void *read;
-	void *write;
-	void *get_position;
-	void *set_position;
-	void *get_info;
-	void *set_info;
-	void *flush;
-} efi_file_handle_t;
-
-#define EFI_FILE_MODE_READ	0x0000000000000001
-#define EFI_FILE_MODE_WRITE	0x0000000000000002
-#define EFI_FILE_MODE_CREATE	0x8000000000000000
-
-#define EFI_INVALID_TABLE_ADDR		(~0UL)
-
-/*
- * All runtime access to EFI goes through this structure:
- */
-extern struct efi {
-	efi_system_table_t *systab;	/* EFI system table */
-	unsigned int runtime_version;	/* Runtime services version */
-	unsigned long mps;		/* MPS table */
-	unsigned long acpi;		/* ACPI table  (IA64 ext 0.71) */
-	unsigned long acpi20;		/* ACPI table  (ACPI 2.0) */
-	unsigned long smbios;		/* SM BIOS table */
-	unsigned long sal_systab;	/* SAL system table */
-	unsigned long boot_info;	/* boot info table */
-	unsigned long hcdp;		/* HCDP table */
-	unsigned long uga;		/* UGA table */
-	unsigned long uv_systab;	/* UV system table */
-	efi_get_time_t *get_time;
-	efi_set_time_t *set_time;
-	efi_get_wakeup_time_t *get_wakeup_time;
-	efi_set_wakeup_time_t *set_wakeup_time;
-	efi_get_variable_t *get_variable;
-	efi_get_next_variable_t *get_next_variable;
-	efi_set_variable_t *set_variable;
-	efi_query_variable_info_t *query_variable_info;
-	efi_update_capsule_t *update_capsule;
-	efi_query_capsule_caps_t *query_capsule_caps;
-	efi_get_next_high_mono_count_t *get_next_high_mono_count;
-	efi_reset_system_t *reset_system;
-	efi_set_virtual_address_map_t *set_virtual_address_map;
-} efi;
-
 static inline int
 efi_guidcmp (efi_guid_t left, efi_guid_t right)
 {
 	return memcmp(&left, &right, sizeof (efi_guid_t));
-}
-
-static inline char *
-efi_guid_unparse(efi_guid_t *guid, char *out)
-{
-	sprintf(out, "%pUl", guid->b);
-        return out;
 }
 
 /*
@@ -527,48 +434,80 @@ efi_guid_unparse(efi_guid_t *guid, char *out)
 				EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS | \
 				EFI_VARIABLE_APPEND_WRITE)
 /*
- * The type of search to perform when calling boottime->locate_handle
+ * Length of a GUID string (strlen("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
+ * not including trailing NUL
  */
-#define EFI_LOCATE_ALL_HANDLES			0
-#define EFI_LOCATE_BY_REGISTER_NOTIFY		1
-#define EFI_LOCATE_BY_PROTOCOL			2
+#define EFI_VARIABLE_GUID_LEN 36
 
-/*
- * EFI Device Path information
- */
-#define EFI_DEV_HW			0x01
-#define  EFI_DEV_PCI				 1
-#define  EFI_DEV_PCCARD				 2
-#define  EFI_DEV_MEM_MAPPED			 3
-#define  EFI_DEV_VENDOR				 4
-#define  EFI_DEV_CONTROLLER			 5
-#define EFI_DEV_ACPI			0x02
-#define   EFI_DEV_BASIC_ACPI			 1
-#define   EFI_DEV_EXPANDED_ACPI			 2
-#define EFI_DEV_MSG			0x03
-#define   EFI_DEV_MSG_ATAPI			 1
-#define   EFI_DEV_MSG_SCSI			 2
-#define   EFI_DEV_MSG_FC			 3
-#define   EFI_DEV_MSG_1394			 4
-#define   EFI_DEV_MSG_USB			 5
-#define   EFI_DEV_MSG_USB_CLASS			15
-#define   EFI_DEV_MSG_I20			 6
-#define   EFI_DEV_MSG_MAC			11
-#define   EFI_DEV_MSG_IPV4			12
-#define   EFI_DEV_MSG_IPV6			13
-#define   EFI_DEV_MSG_INFINIBAND		 9
-#define   EFI_DEV_MSG_UART			14
-#define   EFI_DEV_MSG_VENDOR			10
-#define EFI_DEV_MEDIA			0x04
-#define   EFI_DEV_MEDIA_HARD_DRIVE		 1
-#define   EFI_DEV_MEDIA_CDROM			 2
-#define   EFI_DEV_MEDIA_VENDOR			 3
-#define   EFI_DEV_MEDIA_FILE			 4
-#define   EFI_DEV_MEDIA_PROTOCOL		 5
-#define EFI_DEV_BIOS_BOOT		0x05
-#define EFI_DEV_END_PATH		0x7F
-#define EFI_DEV_END_PATH2		0xFF
-#define   EFI_DEV_END_INSTANCE			0x01
-#define   EFI_DEV_END_ENTIRE			0xFF
+struct efi_device_path {
+	u8 type;
+	u8 sub_type;
+	u16 length;
+} __attribute ((packed));
+
+struct simple_text_output_mode {
+	s32 max_mode;
+	s32 mode;
+	s32 attribute;
+	s32 cursor_column;
+	s32 cursor_row;
+	bool cursor_visible;
+};
+
+struct efi_simple_text_output_protocol {
+	void *reset;
+	efi_status_t (EFIAPI *output_string)(void *, void *);
+	void *test_string;
+
+	efi_status_t(EFIAPI *query_mode)(struct efi_simple_text_output_protocol *this,
+			unsigned long mode_number, unsigned long *columns, unsigned long *rows);
+	efi_status_t(EFIAPI *set_mode)(struct efi_simple_text_output_protocol *this,
+			unsigned long mode_number);
+	efi_status_t(EFIAPI *set_attribute)(struct efi_simple_text_output_protocol *this,
+			unsigned long attribute);
+	efi_status_t(EFIAPI *clear_screen) (struct efi_simple_text_output_protocol *this);
+	efi_status_t(EFIAPI *set_cursor_position) (struct efi_simple_text_output_protocol *this,
+			unsigned long column, unsigned long row);
+	efi_status_t(EFIAPI *enable_cursor)(void *, bool enable);
+	struct simple_text_output_mode *mode;
+};
+
+struct efi_input_key {
+	u16 scan_code;
+	s16 unicode_char;
+};
+
+struct efi_simple_input_interface {
+	efi_status_t(EFIAPI *reset)(struct efi_simple_input_interface *this,
+			bool ExtendedVerification);
+	efi_status_t(EFIAPI *read_key_stroke)(struct efi_simple_input_interface *this,
+			struct efi_input_key *key);
+	void *wait_for_key;
+};
+
+typedef struct {
+	uint8_t Addr[32];
+} efi_mac_address;
+
+typedef struct {
+	uint8_t Addr[4];
+} efi_ipv4_address;
+
+typedef struct {
+	uint8_t Addr[16];
+} efi_ipv6_address;
+
+typedef union {
+	uint32_t Addr[4];
+	efi_ipv4_address v4;
+	efi_ipv6_address v6;
+} efi_ip_address;
+
+static inline int efi_compare_guid(efi_guid_t *a, efi_guid_t *b)
+{
+	return memcmp(a, b, sizeof(efi_guid_t));
+}
+
+char *device_path_to_str(struct efi_device_path *dev_path);
 
 #endif /* _LINUX_EFI_H */

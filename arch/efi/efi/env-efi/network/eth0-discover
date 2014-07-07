@@ -1,0 +1,5 @@
+#!/bin/sh
+
+for i in /boot/network-drivers/*; do
+	$i;
+done

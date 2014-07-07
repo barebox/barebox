@@ -46,6 +46,7 @@ barebox.uimage
 barebox.map
 barebox.kwb
 barebox.kwbuart
+barebox.efi
 barebox-flash-image
 System.map
 Module.symvers

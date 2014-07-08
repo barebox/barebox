@@ -141,6 +141,7 @@ static int netconsole_init(void)
 	cdev->tstc = nc_tstc;
 	cdev->putc = nc_putc;
 	cdev->getc = nc_getc;
+	cdev->devname = "netconsole";
 
 	g_priv = priv;
 

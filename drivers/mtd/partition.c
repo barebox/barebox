@@ -51,6 +51,9 @@ static int mtd_part_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 static int mtd_part_lock(struct mtd_info *mtd, loff_t offset, size_t len)
 {
+	if (!mtd->master->lock)
+		return -ENOSYS;
+
 	if (!(mtd->flags & MTD_WRITEABLE))
 		return -EROFS;
 
@@ -64,6 +67,9 @@ static int mtd_part_lock(struct mtd_info *mtd, loff_t offset, size_t len)
 
 static int mtd_part_unlock(struct mtd_info *mtd, loff_t offset, size_t len)
 {
+	if (!mtd->master->unlock)
+		return -ENOSYS;
+
 	if (!(mtd->flags & MTD_WRITEABLE))
 		return -EROFS;
 

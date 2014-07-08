@@ -170,8 +170,14 @@ int console_register(struct console_device *newcdev)
 	if (initialized == CONSOLE_UNINITIALIZED)
 		console_init_early();
 
-	dev->id = DEVICE_ID_DYNAMIC;
-	strcpy(dev->name, "cs");
+	if (newcdev->devname) {
+		dev->id = DEVICE_ID_SINGLE;
+		strcpy(dev->name, newcdev->devname);
+	} else {
+		dev->id = DEVICE_ID_DYNAMIC;
+		strcpy(dev->name, "cs");
+	}
+
 	if (newcdev->dev)
 		dev->parent = newcdev->dev;
 	platform_device_register(dev);

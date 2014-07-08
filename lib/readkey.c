@@ -25,7 +25,7 @@
 
 struct esc_cmds {
 	const char *seq;
-	char val;
+	unsigned char val;
 };
 
 static const struct esc_cmds esccmds[] = {

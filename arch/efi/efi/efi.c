@@ -36,6 +36,7 @@
 #include <binfmt.h>
 #include <wchar.h>
 #include <envfs.h>
+#include <efi.h>
 #include <mach/efi.h>
 #include <mach/efi-device.h>
 
@@ -233,6 +234,8 @@ static struct NS16550_plat ns16550_plat = {
 
 static int efi_console_init(void)
 {
+	barebox_set_model("barebox EFI payload");
+
 	add_generic_device("efi-stdio", DEVICE_ID_SINGLE, NULL, 0 , 0, 0, NULL);
 
 	if (IS_ENABLED(CONFIG_ARCH_EFI_REGISTER_COM1))
@@ -296,8 +299,6 @@ static void fixup_tables(void)
 
 static int efi_init(void)
 {
-	barebox_set_model("barebox EFI payload");
-
 	defaultenv_append_directory(env_efi);
 
 	return 0;

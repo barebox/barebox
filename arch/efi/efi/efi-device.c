@@ -86,7 +86,8 @@ static void efi_devinfo(struct device_d *dev)
 	printf("Protocols:\n");
 
 	for (i = 0; i < efidev->num_guids; i++)
-		printf("  %d: %pUl\n", i, &efidev->guids[i]);
+		printf("  %d: %pUl: %s\n", i, &efidev->guids[i],
+					efi_guid_string(&efidev->guids[i]));
 }
 
 static efi_handle_t *efi_find_parent(efi_handle_t *handle)

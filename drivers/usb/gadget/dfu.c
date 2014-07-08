@@ -116,6 +116,7 @@ static struct usb_interface_descriptor dfu_control_interface_desc = {
 static int
 dfu_bind(struct usb_configuration *c, struct usb_function *f)
 {
+	struct usb_composite_dev *cdev = c->cdev;
 	struct usb_descriptor_header **header;
 	struct usb_interface_descriptor *desc;
 	int i;
@@ -145,8 +146,8 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	header[i + 1] = NULL;
 
 	/* copy descriptors, and track endpoint copies */
-	f->descriptors = usb_copy_descriptors(header);
-	if (!f->descriptors)
+	f->fs_descriptors = usb_copy_descriptors(header);
+	if (!f->fs_descriptors)
 		goto out;
 
 	/* support all relevant hardware speeds... we expect that when
@@ -176,7 +177,7 @@ dfu_unbind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct f_dfu		*dfu = func_to_dfu(f);
 
-	free(f->descriptors);
+	free(f->fs_descriptors);
 	if (gadget_is_dualspeed(c->cdev->gadget))
 		free(f->hs_descriptors);
 
@@ -634,7 +635,6 @@ static void dfu_unbind_config(struct usb_configuration *c)
 
 static struct usb_configuration dfu_config_driver = {
 	.label			= "USB DFU",
-	.bind			= dfu_bind_config,
 	.unbind			= dfu_unbind_config,
 	.bConfigurationValue	= 1,
 	.bmAttributes		= USB_CONFIG_ATT_SELFPOWER,
@@ -676,7 +676,7 @@ static int dfu_driver_bind(struct usb_composite_dev *cdev)
 	strings_dev[STRING_DESCRIPTION_IDX].id = status;
 	dfu_config_driver.iConfiguration = status;
 
-	status = usb_add_config(cdev, &dfu_config_driver);
+	status = usb_add_config(cdev, &dfu_config_driver, dfu_bind_config);
 	if (status < 0)
 		goto fail;
 
@@ -703,7 +703,7 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 	strings_dev[STRING_MANUFACTURER_IDX].s = pdata->manufacturer;
 	strings_dev[STRING_PRODUCT_IDX].s = pdata->productname;
 
-	ret = usb_composite_register(&dfu_driver);
+	ret = usb_composite_probe(&dfu_driver);
 	if (ret)
 		return ret;
 

@@ -6,14 +6,10 @@ struct usb_serial_pdata {
 	const char		*productname;
 	u16			idVendor;
 	u16			idProduct;
-	int			mode;
+	bool			acm;
 };
 
 int usb_serial_register(struct usb_serial_pdata *pdata);
 void usb_serial_unregister(void);
 
-/* OBEX support is missing in barebox */
-/* #define HAVE_OBEX */
-
 #endif /* _USB_SERIAL_H */
-

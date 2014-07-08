@@ -242,7 +242,7 @@ static int do_loadx(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(loadx)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default " DEF_FILE ")")
+BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
 BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate")
 BAREBOX_CMD_HELP_OPT("-t NAME", "console name to use (default: current)")

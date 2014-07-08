@@ -796,7 +796,7 @@ BAREBOX_CMD_HELP_OPT ("-v ID\t", "DHCP Vendor ID (code 60) submitted in DHCP req
 BAREBOX_CMD_HELP_OPT ("-c ID\t", "DHCP Client ID (code 61) submitted in DHCP requests")
 BAREBOX_CMD_HELP_OPT ("-u UUID\t", "DHCP Client UUID (code 97) submitted in DHCP requests")
 BAREBOX_CMD_HELP_OPT ("-U CLASS", "DHCP User class (code 77) submitted in DHCP requests")
-BAREBOX_CMD_HELP_OPT ("-r RETRY", "retry limit (default "__stringify(DHCP_DEFAULT_RETRY)")");
+BAREBOX_CMD_HELP_OPT ("-r RETRY", "retry limit (default 20)");
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dhcp)

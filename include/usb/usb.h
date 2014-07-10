@@ -39,13 +39,6 @@
 
 #define USB_CNTL_TIMEOUT 100 /* 100ms timeout */
 
-/* String descriptor */
-struct usb_string_descriptor {
-	unsigned char	bLength;
-	unsigned char	bDescriptorType;
-	unsigned short	wData[1];
-} __attribute__ ((packed));
-
 /* device request (setup) */
 struct devrequest {
 	unsigned char	requesttype;
@@ -102,12 +95,6 @@ struct usb_interface_descriptor {
 	unsigned char	bInterfaceSubClass;
 	unsigned char	bInterfaceProtocol;
 	unsigned char	iInterface;
-
-	unsigned char	no_of_ep;
-	unsigned char	num_altsetting;
-	unsigned char	act_altsetting;
-
-	struct usb_endpoint_descriptor ep_desc[USB_MAXENDPOINTS];
 } __attribute__ ((packed));
 
 
@@ -121,9 +108,6 @@ struct usb_config_descriptor {
 	unsigned char	iConfiguration;
 	unsigned char	bmAttributes;
 	unsigned char	MaxPower;
-
-	unsigned char	no_of_if;	/* number of interfaces */
-	struct usb_interface_descriptor if_desc[USB_MAXINTERFACES];
 } __attribute__ ((packed));
 
 enum {
@@ -132,6 +116,23 @@ enum {
 	PACKET_SIZE_16  = 1,
 	PACKET_SIZE_32  = 2,
 	PACKET_SIZE_64  = 3,
+};
+
+struct usb_interface {
+	struct usb_interface_descriptor desc;
+
+	unsigned char	no_of_ep;
+	unsigned char	num_altsetting;
+	unsigned char	act_altsetting;
+
+	struct usb_endpoint_descriptor ep_desc[USB_MAXENDPOINTS];
+};
+
+struct usb_configuration {
+	struct usb_config_descriptor desc;
+
+	unsigned char	no_of_if;	/* number of interfaces */
+	struct usb_interface interface[USB_MAXINTERFACES];
 };
 
 struct usb_device {
@@ -154,7 +155,7 @@ struct usb_device {
 
 	int configno;			/* selected config number */
 	struct usb_device_descriptor *descriptor; /* Device Descriptor */
-	struct usb_config_descriptor config; /* config descriptor */
+	struct usb_configuration config; /* config descriptor */
 	struct devrequest *setup_packet;
 
 	int have_langid;		/* whether string_langid is valid yet */

@@ -75,7 +75,7 @@ static int do_i2c_write(int argc, char *argv[])
 	int addr = -1, reg = -1, count = -1, verbose = 0, ret, opt, i, bus = 0, wide = 0;
 	u8 *buf;
 
-	while ((opt = getopt(argc, argv, "a:b:r:v:w")) > 0) {
+	while ((opt = getopt(argc, argv, "a:b:r:vw")) > 0) {
 		switch (opt) {
 		case 'a':
 			addr = simple_strtol(optarg, NULL, 0);
@@ -155,7 +155,7 @@ static int do_i2c_read(int argc, char *argv[])
 	u8 *buf;
 	int count = -1, addr = -1, reg = -1, verbose = 0, ret, opt, bus = 0, wide = 0;
 
-	while ((opt = getopt(argc, argv, "a:b:c:r:v:w")) > 0) {
+	while ((opt = getopt(argc, argv, "a:b:c:r:vw")) > 0) {
 		switch (opt) {
 		case 'a':
 			addr = simple_strtol(optarg, NULL, 0);

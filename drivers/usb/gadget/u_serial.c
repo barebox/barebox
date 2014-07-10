@@ -109,14 +109,6 @@ static unsigned	n_ports;
 
 #define GS_CLOSE_TIMEOUT		15		/* seconds */
 
-#ifdef VERBOSE_DEBUG
-#define pr_vdebug(fmt, arg...) \
-	pr_debug(fmt, ##arg)
-#else
-#define pr_vdebug(fmt, arg...) \
-	({ if (0) pr_debug(fmt, ##arg); })
-#endif
-
 static unsigned gs_start_rx(struct gs_port *port)
 {
 	struct list_head	*pool = &port->read_pool;

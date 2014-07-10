@@ -1831,6 +1831,11 @@ config CMD_USB
 	  Options:
 		  -f	force rescan
 
+config CMD_USBGADGET
+	bool
+	depends on USB_GADGET
+	prompt "usbgadget"
+
 config CMD_WD
 	bool
 	depends on WATCHDOG

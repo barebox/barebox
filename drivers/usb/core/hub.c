@@ -405,6 +405,13 @@ static int usb_hub_configure(struct usb_device *dev)
 		"" : "no ");
 	usb_hub_power_on(hub);
 
+	return 0;
+}
+
+static int usb_hub_configure_ports(struct usb_device *dev)
+{
+	int i;
+
 	for (i = 0; i < dev->maxchild; i++)
 		usb_hub_configure_port(dev, i);
 
@@ -416,7 +423,7 @@ static int usb_hub_detect(struct device_d *dev)
 	struct usb_device *usbdev = container_of(dev, struct usb_device, dev);
 	int i;
 
-	usb_hub_configure(usbdev);
+	usb_hub_configure_ports(usbdev);
 
 	for (i = 0; i < usbdev->maxchild; i++) {
 		if (usbdev->children[i])

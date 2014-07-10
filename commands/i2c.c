@@ -90,7 +90,7 @@ static int do_i2c_write(int argc, char *argv[])
 			verbose = 1;
 			break;
 		case 'w':
-			wide = 1;
+			wide = I2C_ADDR_16_BIT;
 			break;
 		}
 	}
@@ -113,7 +113,7 @@ static int do_i2c_write(int argc, char *argv[])
 	for (i = 0; i < count; i++)
 		*(buf + i) = (char) simple_strtol(argv[optind+i], NULL, 16);
 
-	ret = i2c_write_reg(&client, reg | (wide ? I2C_ADDR_16_BIT : 0), buf, count);
+	ret = i2c_write_reg(&client, reg | wide, buf, count);
 	if (ret != count)
 		goto out;
 	ret = 0;
@@ -173,7 +173,7 @@ static int do_i2c_read(int argc, char *argv[])
 			verbose = 1;
 			break;
 		case 'w':
-			wide = 1;
+			wide = I2C_ADDR_16_BIT;
 			break;
 		}
 	}
@@ -191,7 +191,7 @@ static int do_i2c_read(int argc, char *argv[])
 	client.addr = addr;
 
 	buf = xmalloc(count);
-	ret = i2c_read_reg(&client, reg | (wide ? I2C_ADDR_16_BIT : 0), buf, count);
+	ret = i2c_read_reg(&client, reg | wide, buf, count);
 	if (ret == count) {
 		int i;
 		if (verbose)

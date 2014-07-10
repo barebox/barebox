@@ -1,3 +1,3 @@
 
-obj-y += usb.o
+obj-$(CONFIG_USB_HOST) += usb.o
 obj-$(CONFIG_OFDEVICE) += of.o

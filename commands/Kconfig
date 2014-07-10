@@ -1818,7 +1818,7 @@ config CMD_LED_TRIGGER
 
 config CMD_USB
 	bool
-	depends on USB
+	depends on USB_HOST
 	prompt "usb command"
 	default y
 	help

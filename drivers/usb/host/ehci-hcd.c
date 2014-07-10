@@ -871,7 +871,7 @@ static int ehci_detect(struct device_d *dev)
 {
 	struct ehci_priv *ehci = dev->priv;
 
-	return usb_host_detect(&ehci->host, 0);
+	return usb_host_detect(&ehci->host);
 }
 
 int ehci_register(struct device_d *dev, struct ehci_data *data)

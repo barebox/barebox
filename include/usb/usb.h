@@ -150,12 +150,12 @@ struct usb_host {
 
 	struct device_d *hw_dev;
 	int busnum;
-	int scanned;
+	struct usb_device *root_dev;
 };
 
 int usb_register_host(struct usb_host *);
 
-int usb_host_detect(struct usb_host *host, int force);
+int usb_host_detect(struct usb_host *host);
 
 int usb_set_protocol(struct usb_device *dev, int ifnum, int protocol);
 int usb_set_idle(struct usb_device *dev, int ifnum, int duration,
@@ -185,7 +185,7 @@ int usb_clear_halt(struct usb_device *dev, int pipe);
 int usb_string(struct usb_device *dev, int index, char *buf, size_t size);
 int usb_set_interface(struct usb_device *dev, int interface, int alternate);
 
-void usb_rescan(int force);
+void usb_rescan(void);
 
 /* big endian -> little endian conversion */
 /* some CPUs are already little endian e.g. the ARM920T */

@@ -492,50 +492,35 @@ struct usb_device *usb_alloc_new_device(void)
 	return usbdev;
 }
 
-int usb_host_detect(struct usb_host *host, int force)
+int usb_host_detect(struct usb_host *host)
 {
-	struct usb_device *dev, *tmp;
 	int ret;
 
-	if (host->scanned && !force)
-		return -EBUSY;
+	if (!host->root_dev) {
+		ret = host->init(host);
+		if (ret)
+			return ret;
 
-	list_for_each_entry_safe(dev, tmp, &usb_device_list, list) {
-		if (dev->host != host)
-			continue;
-
-		list_del(&dev->list);
-		unregister_device(&dev->dev);
-		free(dev->hub);
-		dma_free(dev->setup_packet);
-		dma_free(dev->descriptor);
-		free(dev);
+		host->root_dev = usb_alloc_new_device();
+		host->root_dev->dev.parent = host->hw_dev;
+		host->root_dev->host = host;
+		usb_new_device(host->root_dev);
 	}
 
-	ret = host->init(host);
-	if (ret)
-		return ret;
-
-	dev = usb_alloc_new_device();
-	dev->dev.parent = host->hw_dev;
-	dev->host = host;
-	usb_new_device(dev);
-
-	host->scanned = 1;
+	device_detect(&host->root_dev->dev);
 
 	return 0;
 }
 
-void usb_rescan(int force)
+void usb_rescan(void)
 {
 	struct usb_host *host;
 	int ret;
 
 	pr_info("USB: scanning bus for devices...\n");
-	dev_index = 0;
 
 	list_for_each_entry(host, &host_list, list) {
-		ret = usb_host_detect(host, force);
+		ret = usb_host_detect(host);
 		if (ret)
 			continue;
 	}

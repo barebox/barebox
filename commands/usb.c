@@ -112,13 +112,10 @@ static void usb_show_devices(bool tree)
 static int do_usb(int argc, char *argv[])
 {
 	int opt;
-	int force = 0, tree = 0, show = 0;
+	int tree = 0, show = 0;
 
-	while ((opt = getopt(argc, argv, "fts")) > 0) {
+	while ((opt = getopt(argc, argv, "ts")) > 0) {
 		switch (opt) {
-		case 'f':
-			force = 1;
-			break;
 		case 't':
 			tree = 1;
 			show = 1;
@@ -129,7 +126,7 @@ static int do_usb(int argc, char *argv[])
 		}
 	}
 
-	usb_rescan(force);
+	usb_rescan();
 
 	if (show)
 		usb_show_devices(tree);

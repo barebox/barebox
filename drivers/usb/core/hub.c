@@ -196,6 +196,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 
 	/* Allocate a new device struct for it */
 	usb = usb_alloc_new_device();
+	usb->dev.parent = &dev->dev;
 	usb->host = dev->host;
 
 	if (portstatus & USB_PORT_STAT_HIGH_SPEED)

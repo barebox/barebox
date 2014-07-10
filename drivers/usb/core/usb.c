@@ -424,8 +424,6 @@ int usb_new_device(struct usb_device *dev)
 
 	dev->dev.id = DEVICE_ID_SINGLE;
 
-	if (dev->host->hw_dev)
-		dev->dev.parent = dev->host->hw_dev;
 	print_usb_device(dev);
 
 	err = register_device(&dev->dev);
@@ -500,6 +498,7 @@ int usb_host_detect(struct usb_host *host, int force)
 		return ret;
 
 	dev = usb_alloc_new_device();
+	dev->dev.parent = host->hw_dev;
 	dev->host = host;
 	usb_new_device(dev);
 

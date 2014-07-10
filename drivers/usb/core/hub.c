@@ -70,16 +70,33 @@ static void usb_hub_power_on(struct usb_hub_device *hub)
 {
 	int i;
 	struct usb_device *dev;
+	unsigned pgood_delay = hub->desc.bPwrOn2PwrGood * 2;
 
 	dev = hub->pusb_dev;
+
+	/*
+	 * Enable power to the ports:
+	 * Here we Power-cycle the ports: aka,
+	 * turning them off and turning on again.
+	 */
+	for (i = 0; i < dev->maxchild; i++) {
+		usb_clear_port_feature(dev, i + 1, USB_PORT_FEAT_POWER);
+		dev_dbg(&dev->dev, "port %d returns %lX\n", i + 1, dev->status);
+	}
+
+	/* Wait at least 2 * bPwrOn2PwrGood for PP to change */
+	mdelay(pgood_delay);
+
 	/* Enable power to the ports */
 	dev_dbg(&dev->dev, "enabling power on all ports\n");
+
 	for (i = 0; i < dev->maxchild; i++) {
 		usb_set_port_feature(dev, i + 1, USB_PORT_FEAT_POWER);
 		dev_dbg(&dev->dev, "port %d returns %lX\n", i + 1, dev->status);
 	}
+
 	/* power on is encoded in 2ms increments -> times 2 for the actual delay */
-	mdelay(hub->desc.bPwrOn2PwrGood*2);
+	mdelay(pgood_delay + 1000);
 }
 
 #define MAX_TRIES 5

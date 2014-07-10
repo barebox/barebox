@@ -114,8 +114,12 @@ static int do_i2c_write(int argc, char *argv[])
 		*(buf + i) = (char) simple_strtol(argv[optind+i], NULL, 16);
 
 	ret = i2c_write_reg(&client, reg | wide, buf, count);
-	if (ret != count)
+	if (ret != count) {
+		if (verbose)
+			printf("write aborted, count(%i) != writestatus(%i)\n",
+				count, ret);
 		goto out;
+	}
 	ret = 0;
 
 	if (verbose) {

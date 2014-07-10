@@ -297,7 +297,6 @@ static int usb_new_device(struct usb_device *dev)
 	int tmp;
 	void *buf;
 	struct usb_device_descriptor *desc;
-	int port = -1;
 	struct usb_device *parent = dev->parent;
 	unsigned short portstatus;
 	char str[16];
@@ -338,24 +337,10 @@ static int usb_new_device(struct usb_device *dev)
 
 	/* find the port number we're at */
 	if (parent) {
-		int j;
-
-		for (j = 0; j < parent->maxchild; j++) {
-			if (parent->children[j] == dev) {
-				port = j;
-				break;
-			}
-		}
-		if (port < 0) {
-			printf("%s: cannot locate device's port.\n", __func__);
-			err = -ENODEV;
-			goto err_out;
-		}
-
 		/* reset the port for the second time */
-		err = hub_port_reset(dev->parent, port, &portstatus);
+		err = hub_port_reset(dev->parent, dev->portnr - 1, &portstatus);
 		if (err < 0) {
-			printf("\n     Couldn't reset port %i\n", port);
+			printf("\n     Couldn't reset port %i\n", dev->portnr);
 			goto err_out;
 		}
 	}
@@ -433,7 +418,7 @@ static int usb_new_device(struct usb_device *dev)
 			   dev->serial, sizeof(dev->serial));
 
 	if (parent) {
-		sprintf(dev->dev.name, "%s-%d", parent->dev.name, port);
+		sprintf(dev->dev.name, "%s-%d", parent->dev.name, dev->portnr - 1);
 	} else {
 		sprintf(dev->dev.name, "usb%d", dev->host->busnum);
 	}
@@ -1108,6 +1093,8 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 
 	dev->children[port] = usb;
 	usb->parent = dev;
+	usb->portnr = port + 1;
+
 	/* Run it through the hoops (find a driver, etc) */
 	if (usb_new_device(usb)) {
 		/* Woops, disable the port */

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import errno
 import os
 import re
 import sys
@@ -76,7 +77,7 @@ def parse_c(name):
     x = CMD_GROUP.match(line)
     if x:
       last = cmd['c_group']
-      last.append(x.group(1).decode("string_escape"))
+      last.append(x.group(1).split('_')[-1].lower())
       continue
     x = CONT.match(line)
     if x:
@@ -159,6 +160,14 @@ for name in CMDS.keys():
 for name, cmd in CMDS.items():
   #pprint({name: cmd})
   rst = gen_rst(name, cmd)
-  target = os.path.join(sys.argv[2], name+'.rst')
+  subdir = os.path.join(sys.argv[2], cmd['c_group'][0])
+  try:
+    os.makedirs(subdir)
+  except OSError as e:
+    if e.errno == errno.EEXIST and os.path.isdir(subdir):
+      pass
+    else:
+      raise
+  target = os.path.join(subdir, name+'.rst')
   file(target, 'w').write(rst)
 

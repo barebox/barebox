@@ -3,7 +3,7 @@
 obj-$(CONFIG_NAND)			+= nand_ecc.o
 obj-$(CONFIG_NAND_ECC_BCH)		+= nand_bch.o
 obj-$(CONFIG_MTD_NAND_IDS)		+= nand_ids.o
-obj-$(CONFIG_NAND)			+= nand_base.o nand-bb.o
+obj-$(CONFIG_NAND)			+= nand_base.o nand-bb.o nand_timings.o
 obj-$(CONFIG_NAND_BBT)			+= nand_bbt.o
 
 obj-$(CONFIG_MTD_NAND_NOMADIK)		+= nomadik_nand.o

@@ -226,12 +226,14 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		dev_dbg(&dev->dev, "hub: disabling port %d\n", port + 1);
 		usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_ENABLE);
 	}
+	device_detect(&usb->dev);
 }
 
 static int usb_hub_configure_port(struct usb_device *dev, int port)
 {
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
+	int connect_change = 0;
 
 	if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
 		dev_dbg(&dev->dev, "get_port_status failed\n");
@@ -245,7 +247,7 @@ static int usb_hub_configure_port(struct usb_device *dev, int port)
 
 	if (portchange & USB_PORT_STAT_C_CONNECTION) {
 		dev_dbg(&dev->dev, "port %d connection change\n", port + 1);
-		usb_hub_port_connect_change(dev, port);
+		connect_change = 1;
 	}
 	if (portchange & USB_PORT_STAT_C_ENABLE) {
 		dev_dbg(&dev->dev, "port %d enable change, status %x\n",
@@ -262,9 +264,13 @@ static int usb_hub_configure_port(struct usb_device *dev, int port)
 			dev_dbg(&dev->dev, "already running port %i "  \
 					"disabled by hub (EMI?), " \
 					"re-enabling...\n", port + 1);
-				usb_hub_port_connect_change(dev, port);
+				connect_change = 1;
 		}
 	}
+
+	if (connect_change)
+		usb_hub_port_connect_change(dev, port);
+
 	if (portstatus & USB_PORT_STAT_SUSPEND) {
 		dev_dbg(&dev->dev, "port %d suspend change\n", port + 1);
 		usb_clear_port_feature(dev, port + 1,

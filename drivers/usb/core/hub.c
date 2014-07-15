@@ -189,6 +189,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	if (((!(portstatus & USB_PORT_STAT_CONNECTION)) &&
 	     (!(portstatus & USB_PORT_STAT_ENABLE))) || (dev->children[port])) {
 		dev_dbg(&dev->dev, "usb_disconnect(&hub->children[port]);\n");
+		usb_remove_device(dev->children[port]);
 		/* Return now if nothing is connected */
 		if (!(portstatus & USB_PORT_STAT_CONNECTION))
 			return;

@@ -455,6 +455,25 @@ err_out:
 	return err;
 }
 
+void usb_remove_device(struct usb_device *usbdev)
+{
+	int i, ret;
+
+	for (i = 0; i < usbdev->maxchild; i++) {
+		if (usbdev->children[i])
+			usb_remove_device(usbdev->children[i]);
+	}
+
+	dev_info(&usbdev->dev, "removing\n");
+
+	ret = unregister_device(&usbdev->dev);
+	if (ret)
+		dev_err(&usbdev->dev, "failed to unregister\n");
+
+	usbdev->parent->children[usbdev->portnr - 1] = NULL;
+	free(usbdev);
+}
+
 struct usb_device *usb_alloc_new_device(void)
 {
 	struct usb_device *usbdev = xzalloc(sizeof (*usbdev));

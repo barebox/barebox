@@ -1164,6 +1164,11 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	nand_chip->chip_delay = 20;		/* 20us command delay time */
 
+	if (IS_ENABLED(CONFIG_NAND_ECC_BCH) &&
+			pdata->ecc_mode == NAND_ECC_SOFT_BCH) {
+		nand_chip->ecc.mode = NAND_ECC_SOFT_BCH;
+	}
+
 	if (host->board->bus_width_16) {	/* 16-bit bus width */
 		nand_chip->options |= NAND_BUSWIDTH_16;
 		nand_chip->read_buf = atmel_read_buf16;

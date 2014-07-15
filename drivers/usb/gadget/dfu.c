@@ -102,17 +102,6 @@ static struct usb_gadget_strings *dfu_strings[] = {
 	NULL,
 };
 
-static struct usb_interface_descriptor dfu_control_interface_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	/* .bInterfaceNumber = DYNAMIC */
-	.bNumEndpoints =	0,
-	.bInterfaceClass =	0xfe,
-	.bInterfaceSubClass =	1,
-	.bInterfaceProtocol =	1,
-	/* .iInterface = DYNAMIC */
-};
-
 static int
 dfu_bind(struct usb_configuration *c, struct usb_function *f)
 {
@@ -126,8 +115,6 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	status = usb_interface_id(c, f);
 	if (status < 0)
 		return status;
-
-	dfu_control_interface_desc.bInterfaceNumber = status;
 
 	header = xzalloc(sizeof(void *) * (dfu_num_alt + 2));
 	desc = xzalloc(sizeof(struct usb_interface_descriptor) * dfu_num_alt);
@@ -576,7 +563,6 @@ static int dfu_bind_config(struct usb_configuration *c)
 	status = usb_string_id(c->cdev);
 	if (status < 0)
 		return status;
-	dfu_control_interface_desc.iInterface = status;
 
 	/* allocate and initialize one new instance */
 	dfu = xzalloc(sizeof *dfu);

@@ -31,6 +31,11 @@ int dev_add_param(struct device_d *dev, const char *name,
 		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags);
 
+struct param_d *dev_add_param_string(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		char **value, void *priv);
+
 struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
@@ -93,6 +98,14 @@ static inline int dev_add_param(struct device_d *dev, char *name,
 		unsigned long flags)
 {
 	return 0;
+}
+
+static inline struct param_d *dev_add_param_string(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		char **value, void *priv)
+{
+	return NULL;
 }
 
 static inline struct param_d *dev_add_param_int(struct device_d *dev, const char *name,

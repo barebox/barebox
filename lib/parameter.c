@@ -201,6 +201,82 @@ int dev_add_param_fixed(struct device_d *dev, char *name, const char *value)
 	return 0;
 }
 
+struct param_string {
+	struct param_d param;
+	char **value;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+static inline struct param_string *to_param_string(struct param_d *p)
+{
+	return container_of(p, struct param_string, param);
+}
+
+static int param_string_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct param_string *ps = to_param_string(p);
+	int ret;
+	char *value_save = *ps->value;
+
+	if (!val)
+		return -EINVAL;
+
+	*ps->value = xstrdup(val);
+
+	if (!ps->set)
+		return 0;
+
+	ret = ps->set(p, p->driver_priv);
+	if (ret) {
+		free(*ps->value);
+		*ps->value = value_save;
+	} else {
+		free(value_save);
+	}
+
+	return ret;
+}
+
+static const char *param_string_get(struct device_d *dev, struct param_d *p)
+{
+	struct param_string *ps = to_param_string(p);
+	int ret;
+
+	if (ps->get) {
+		ret = ps->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	return *ps->value;
+}
+
+struct param_d *dev_add_param_string(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		char **value, void *priv)
+{
+	struct param_string *ps;
+	struct param_d *p;
+	int ret;
+
+	ps = xzalloc(sizeof(*ps));
+	ps->value = value;
+	ps->set = set;
+	ps->get = get;
+	p = &ps->param;
+	p->driver_priv = priv;
+
+	ret = __dev_add_param(p, dev, name, param_string_set, param_string_get, 0);
+	if (ret) {
+		free(ps);
+		return ERR_PTR(ret);
+	}
+
+	return &ps->param;
+}
+
 struct param_int {
 	struct param_d param;
 	int *value;

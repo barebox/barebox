@@ -2,6 +2,7 @@ config OPENRISC
 	bool
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select GENERIC_FIND_NEXT_BIT
 	default y
 
 # not used

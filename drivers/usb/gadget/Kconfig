@@ -49,5 +49,8 @@ config USB_GADGET_SERIAL
 	depends on !CONSOLE_NONE
 	prompt "Serial Gadget"
 
-endif
+config USB_GADGET_FASTBOOT
+	bool
+	prompt "Android Fastboot support"
 
+endif

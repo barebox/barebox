@@ -1162,7 +1162,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		nand_chip->ecc.mode = NAND_ECC_HW;
 	}
 
-	nand_chip->chip_delay = 20;		/* 20us command delay time */
+	nand_chip->chip_delay = 40;		/* 40us command delay time */
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_BCH) &&
 			pdata->ecc_mode == NAND_ECC_SOFT_BCH) {

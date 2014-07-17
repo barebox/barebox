@@ -259,6 +259,7 @@ int open_and_lseek(const char *filename, int mode, loff_t pos);
 #define RW_BUF_SIZE	(unsigned)4096
 
 extern const char version_string[];
+extern const char release_string[];
 #ifdef CONFIG_BANNER
 void barebox_banner(void);
 #else

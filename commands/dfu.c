@@ -24,71 +24,7 @@
 #include <fs.h>
 #include <xfuncs.h>
 #include <usb/dfu.h>
-
-#define PARSE_DEVICE	0
-#define PARSE_NAME	1
-#define PARSE_FLAGS	2
-
-static int dfu_do_parse_one(char *partstr, char **endstr, struct usb_dfu_dev *dfu)
-{
-	int i = 0, state = PARSE_DEVICE;
-	char device[PATH_MAX];
-	char name[PATH_MAX];
-
-	memset(device, 0, sizeof(device));
-	memset(name, 0, sizeof(name));
-	dfu->flags = 0;
-
-	while (*partstr && *partstr != ',') {
-		switch (state) {
-		case PARSE_DEVICE:
-			if (*partstr == '(') {
-				state = PARSE_NAME;
-				i = 0;
-			} else {
-				device[i++] = *partstr;
-			}
-			break;
-		case PARSE_NAME:
-			if (*partstr == ')') {
-				state = PARSE_FLAGS;
-				i = 0;
-			} else {
-				name[i++] = *partstr;
-			}
-			break;
-		case PARSE_FLAGS:
-			switch (*partstr) {
-			case 's':
-				dfu->flags |= DFU_FLAG_SAFE;
-				break;
-			case 'r':
-				dfu->flags |= DFU_FLAG_READBACK;
-				break;
-			case 'c':
-				dfu->flags |= DFU_FLAG_CREATE;
-				break;
-			default:
-				return -EINVAL;
-			}
-			break;
-		default:
-			return -EINVAL;
-		}
-		partstr++;
-	}
-
-	if (state != PARSE_FLAGS)
-		return -EINVAL;
-
-	dfu->name = xstrdup(name);
-	dfu->dev = xstrdup(device);
-	if (*partstr == ',')
-		partstr++;
-	*endstr = partstr;
-
-	return 0;
-}
+#include <linux/err.h>
 
 /* dfu /dev/self0(bootloader)sr,/dev/nand0.root.bb(root)
  *
@@ -97,9 +33,8 @@ static int dfu_do_parse_one(char *partstr, char **endstr, struct usb_dfu_dev *df
  */
 static int do_dfu(int argc, char *argv[])
 {
-	int n = 0;
 	struct usb_dfu_pdata pdata;
-	char *endptr, *argstr;
+	char *argstr;
 	struct usb_dfu_dev *dfu_alts = NULL;
 	int ret;
 
@@ -108,27 +43,16 @@ static int do_dfu(int argc, char *argv[])
 
 	argstr = argv[optind];
 
-	for (n = 0; *argstr; n++) {
-		dfu_alts = xrealloc(dfu_alts, sizeof(*dfu_alts) * (n + 1));
-		if (dfu_do_parse_one(argstr, &endptr, &dfu_alts[n])) {
-			printf("parse error\n");
-			ret = -EINVAL;
-			goto out;
-		}
-		argstr = endptr;
+	pdata.files = file_list_parse(argstr);
+	if (IS_ERR(pdata.files)) {
+		ret = PTR_ERR(pdata.files);
+		goto out;
 	}
-
-	pdata.alts = dfu_alts;
-	pdata.num_alts = n;
 
 	ret = usb_dfu_register(&pdata);
 
+	file_list_free(pdata.files);
 out:
-	while (n) {
-		n--;
-		free(dfu_alts[n].name);
-		free(dfu_alts[n].dev);
-	};
 
 	free(dfu_alts);
 

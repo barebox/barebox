@@ -64,6 +64,9 @@ config MENUTREE
 	select GLOB
 	select GLOB_SORT
 
+config FILE_LIST
+	bool
+
 menu "General Settings"
 
 config LOCALVERSION

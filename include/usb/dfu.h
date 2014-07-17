@@ -21,20 +21,10 @@
  */
 
 #include <linux/types.h>
-
-#define DFU_FLAG_SAFE		(1 << 0)
-#define DFU_FLAG_READBACK	(1 << 1)
-#define DFU_FLAG_CREATE		(1 << 2)
-
-struct usb_dfu_dev {
-	char *name;
-	char *dev;
-	unsigned long flags;
-};
+#include <file-list.h>
 
 struct usb_dfu_pdata {
-	struct usb_dfu_dev	*alts;
-	int			num_alts;
+	struct file_list	*files;
 };
 
 int usb_dfu_register(struct usb_dfu_pdata *);

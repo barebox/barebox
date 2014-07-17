@@ -549,9 +549,9 @@ void __naked __noreturn imx53_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX53_CSD0_BASE_ADDR,
-			imx_v3_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 0),
+			imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 0),
 			MX53_CSD1_BASE_ADDR,
-			imx_v3_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 1),
+			imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);

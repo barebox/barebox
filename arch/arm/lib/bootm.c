@@ -414,6 +414,11 @@ static int do_bootm_aimage(struct image_data *data)
 	int to_read;
 	struct android_header_comp *cmp;
 	unsigned long mem_free;
+	unsigned long mem_start, mem_size;
+
+	ret = sdram_start_and_size(&mem_start, &mem_size);
+	if (ret)
+		return ret;
 
 	fd = open(data->os_file, O_RDONLY);
 	if (fd < 0) {
@@ -447,8 +452,17 @@ static int do_bootm_aimage(struct image_data *data)
 	cmp = &header->kernel;
 	data->os_res = request_sdram_region("akernel", cmp->load_addr, cmp->size);
 	if (!data->os_res) {
-		ret = -ENOMEM;
-		goto err_out;
+		pr_err("Cannot request region 0x%08x - 0x%08x, using default load address\n",
+				cmp->load_addr, cmp->size);
+
+		data->os_address = mem_start + PAGE_ALIGN(cmp->size * 4);
+		data->os_res = request_sdram_region("akernel", data->os_address, cmp->size);
+		if (!data->os_res) {
+			pr_err("Cannot request region 0x%08x - 0x%08x\n",
+					cmp->load_addr, cmp->size);
+			ret = -ENOMEM;
+			goto err_out;
+		}
 	}
 
 	ret = aimage_load_resource(fd, data->os_res, buf, header->page_size);

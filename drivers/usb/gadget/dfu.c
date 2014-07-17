@@ -43,6 +43,7 @@
 #include <linux/list.h>
 #include <usb/gadget.h>
 #include <linux/stat.h>
+#include <linux/err.h>
 #include <usb/ch9.h>
 #include <usb/dfu.h>
 #include <config.h>
@@ -179,23 +180,16 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	struct f_dfu *dfu = container_of(f, struct f_dfu, func);
 	int i;
 	int			status;
-
-	status = usb_string_id(c->cdev);
-	if (status < 0)
-		return status;
+	struct usb_string	*us;
 
 	dfu_string_defs = xzalloc(sizeof(struct usb_string) * (dfu_files->num_entries + 2));
 	dfu_string_defs[0].s = "Generic DFU";
-	dfu_string_defs[0].id = status;
 	i = 0;
 	file_list_for_each_entry(dfu_files, fentry) {
 		dfu_string_defs[i + 1].s = fentry->name;
-		status = usb_string_id(c->cdev);
-		if (status < 0)
-			goto out;
-		dfu_string_defs[i + 1].id = status;
 		i++;
 	}
+
 	dfu_string_defs[i + 1].s = NULL;
 	dfu_string_table.strings = dfu_string_defs;
 
@@ -210,6 +204,12 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);
 	dfu->dnreq->complete = dn_complete;
 	dfu->dnreq->zero = 0;
+
+	us = usb_gstrings_attach(cdev, dfu_strings, dfu_files->num_entries + 1);
+	if (IS_ERR(us)) {
+		status = PTR_ERR(us);
+		goto out;
+	}
 
 	/* allocate instance-specific interface IDs, and patch descriptors */
 	status = usb_interface_id(c, f);
@@ -226,7 +226,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 		desc[i].bInterfaceSubClass =	1;
 		desc[i].bInterfaceProtocol =	1;
 		desc[i].bAlternateSetting = i;
-		desc[i].iInterface = dfu_string_defs[i + 1].id;
+		desc[i].iInterface = us[i + 1].id;
 		header[i] = (struct usb_descriptor_header *)&desc[i];
 	}
 	header[i] = (struct usb_descriptor_header *) &usb_dfu_func;

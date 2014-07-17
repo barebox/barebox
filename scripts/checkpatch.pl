@@ -329,7 +329,7 @@ sub top_of_kernel_tree {
 
 	my @tree_check = (
 		"arch", "commands", "common", "COPYING", "CREDITS", "defaultenv",  
-		"Documentation", "Doxyfile", "drivers", "fs", "include", "lib",
+		"Documentation", "drivers", "fs", "include", "lib",
 		"MAKEALL", "Makefile", "net", "README", "scripts", "TODO"
 	);
 

@@ -33,11 +33,6 @@ struct usb_dfu_dev {
 };
 
 struct usb_dfu_pdata {
-	char			*manufacturer;
-	const char		*productname;
-	u16			idVendor;
-	u16			idProduct;
-
 	struct usb_dfu_dev	*alts;
 	int			num_alts;
 };

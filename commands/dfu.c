@@ -97,46 +97,16 @@ static int dfu_do_parse_one(char *partstr, char **endstr, struct usb_dfu_dev *df
  */
 static int do_dfu(int argc, char *argv[])
 {
-	int opt, n = 0;
+	int n = 0;
 	struct usb_dfu_pdata pdata;
 	char *endptr, *argstr;
 	struct usb_dfu_dev *dfu_alts = NULL;
-	char *manufacturer = "barebox";
-	const char *productname = barebox_get_model();
-	u16 idVendor = 0, idProduct = 0;
 	int ret;
-
-	while((opt = getopt(argc, argv, "m:p:V:P:")) > 0) {
-		switch(opt) {
-		case 'm':
-			manufacturer = optarg;
-			break;
-		case 'p':
-			productname = optarg;
-			break;
-		case 'V':
-			idVendor = simple_strtoul(optarg, NULL, 0);
-			break;
-		case 'P':
-			idProduct = simple_strtoul(optarg, NULL, 0);
-			break;
-		}
-	}
 
 	if (argc != optind + 1)
 		return COMMAND_ERROR_USAGE;
 
 	argstr = argv[optind];
-
-	if (!idProduct && !idVendor) {
-		idVendor = 0x1d50; /* Openmoko, Inc */
-		idProduct = 0x60a2; /* barebox bootloader USB DFU Mode */
-	}
-
-	if ((idProduct && !idVendor) || (!idProduct && idVendor)) {
-		printf("Only one of vendor id or product id given\n");
-		return -EINVAL;
-	}
 
 	for (n = 0; *argstr; n++) {
 		dfu_alts = xrealloc(dfu_alts, sizeof(*dfu_alts) * (n + 1));
@@ -150,11 +120,6 @@ static int do_dfu(int argc, char *argv[])
 
 	pdata.alts = dfu_alts;
 	pdata.num_alts = n;
-
-	pdata.manufacturer = manufacturer;
-	pdata.productname = productname;
-	pdata.idVendor = idVendor;
-	pdata.idProduct = idProduct;
 
 	ret = usb_dfu_register(&pdata);
 
@@ -179,17 +144,12 @@ BAREBOX_CMD_HELP_TEXT("- 's' safe mode (download the complete image before flash
 BAREBOX_CMD_HELP_TEXT("- 'r' readback of the firmware is allowed")
 BAREBOX_CMD_HELP_TEXT("- 'c' the file will be created (for use with regular files)")
 BAREBOX_CMD_HELP_TEXT("")
-BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-m STR", "Manufacturer string (barebox)")
-BAREBOX_CMD_HELP_OPT ("-p STR", "product string")
-BAREBOX_CMD_HELP_OPT ("-V ID",  "vendor id")
-BAREBOX_CMD_HELP_OPT ("-P ID",  "product id")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dfu)
 	.cmd		= do_dfu,
 	BAREBOX_CMD_DESC("device firmware update")
-	BAREBOX_CMD_OPTS("[-mpVP] DESC")
+	BAREBOX_CMD_OPTS("DESC")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_dfu_help)
 BAREBOX_CMD_END

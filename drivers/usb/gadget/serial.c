@@ -75,7 +75,6 @@ static struct usb_device_descriptor device_desc = {
 	.bDeviceSubClass =	0,
 	.bDeviceProtocol =	0,
 	/* .bMaxPacketSize0 = f(hardware) */
-	.idVendor =		cpu_to_le16(GS_VENDOR_ID),
 	/* .idProduct =	f(use_acm) */
 	.bcdDevice = cpu_to_le16(GS_VERSION_NUM),
 	/* .iManufacturer = DYNAMIC */
@@ -175,10 +174,25 @@ out:
 static int __init gs_bind(struct usb_composite_dev *cdev)
 {
 	int			status;
+	struct usb_gadget	*gadget = cdev->gadget;
 
 	/* Allocate string descriptor numbers ... note that string
 	 * contents can be overridden by the composite_dev glue.
 	 */
+
+	if (gadget->vendor_id && gadget->product_id) {
+		device_desc.idVendor = cpu_to_le16(gadget->vendor_id);
+		device_desc.idProduct = cpu_to_le16(gadget->product_id);
+	} else {
+		device_desc.idVendor = cpu_to_le16(GS_VENDOR_ID);
+		if (use_acm)
+			device_desc.idProduct = cpu_to_le16(GS_CDC_PRODUCT_ID);
+		else
+			device_desc.idProduct = cpu_to_le16(GS_PRODUCT_ID);
+	}
+
+	strings_dev[USB_GADGET_MANUFACTURER_IDX].s = gadget->manufacturer;
+	strings_dev[USB_GADGET_PRODUCT_IDX].s = gadget->productname;
 
 	status = usb_string_ids_tab(cdev, strings_dev);
 	if (status < 0)
@@ -257,22 +271,11 @@ int usb_serial_register(struct usb_serial_pdata *pdata)
 		serial_config_driver.label = "CDC ACM config";
 		serial_config_driver.bConfigurationValue = 2;
 		device_desc.bDeviceClass = USB_CLASS_COMM;
-		device_desc.idProduct =
-				cpu_to_le16(GS_CDC_PRODUCT_ID);
 	} else {
 		serial_config_driver.label = "Generic Serial config";
 		serial_config_driver.bConfigurationValue = 1;
 		device_desc.bDeviceClass = USB_CLASS_VENDOR_SPEC;
-		device_desc.idProduct =
-				cpu_to_le16(GS_PRODUCT_ID);
 	}
-
-	if (pdata->idVendor)
-		device_desc.idVendor = pdata->idVendor;
-	if (pdata->idProduct)
-		device_desc.idProduct = pdata->idProduct;
-	strings_dev[USB_GADGET_MANUFACTURER_IDX].s = pdata->manufacturer;
-	strings_dev[USB_GADGET_PRODUCT_IDX].s = pdata->productname;
 
 	return usb_composite_probe(&gserial_driver);
 }

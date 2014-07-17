@@ -2,10 +2,6 @@
 #define _USB_SERIAL_H
 
 struct usb_serial_pdata {
-	char		*manufacturer;
-	const char		*productname;
-	u16			idVendor;
-	u16			idProduct;
 	bool			acm;
 };
 

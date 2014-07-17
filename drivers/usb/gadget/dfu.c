@@ -655,7 +655,19 @@ static struct usb_device_descriptor dfu_dev_descriptor = {
 
 static int dfu_driver_bind(struct usb_composite_dev *cdev)
 {
+	struct usb_gadget *gadget = cdev->gadget;
 	int status;
+
+	if (gadget->vendor_id && gadget->product_id) {
+		dfu_dev_descriptor.idVendor = cpu_to_le16(gadget->vendor_id);
+		dfu_dev_descriptor.idProduct = cpu_to_le16(gadget->product_id);
+	} else {
+		dfu_dev_descriptor.idVendor = cpu_to_le16(0x1d50); /* Openmoko, Inc */
+		dfu_dev_descriptor.idProduct = cpu_to_le16(0x60a2); /* barebox bootloader USB DFU Mode */
+	}
+
+	strings_dev[STRING_MANUFACTURER_IDX].s = gadget->manufacturer;
+	strings_dev[STRING_PRODUCT_IDX].s = gadget->productname;
 
 	status = usb_string_id(cdev);
 	if (status < 0)
@@ -698,10 +710,6 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 
 	dfu_devs = pdata->alts;
 	dfu_num_alt = pdata->num_alts;
-	dfu_dev_descriptor.idVendor = pdata->idVendor;
-	dfu_dev_descriptor.idProduct = pdata->idProduct;
-	strings_dev[STRING_MANUFACTURER_IDX].s = pdata->manufacturer;
-	strings_dev[STRING_PRODUCT_IDX].s = pdata->productname;
 
 	ret = usb_composite_probe(&dfu_driver);
 	if (ret)

@@ -577,16 +577,21 @@ static void reset_config(struct usb_composite_dev *cdev)
 {
 	struct usb_function		*f;
 
+	if (cdev->in_reset_config)
+		return;
+
+	cdev->in_reset_config = 1;
+
 	DBG(cdev, "reset config\n");
 
 	list_for_each_entry(f, &cdev->config->functions, list) {
 		if (f->disable)
 			f->disable(f);
-
 		bitmap_zero(f->endpoints, 32);
 	}
 	cdev->config = NULL;
 	cdev->delayed_status = 0;
+	cdev->in_reset_config = 0;
 }
 
 static int set_config(struct usb_composite_dev *cdev,

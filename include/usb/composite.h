@@ -392,6 +392,8 @@ struct usb_composite_dev {
 
 	/* protects deactivations and delayed_status counts*/
 	spinlock_t			lock;
+
+	int in_reset_config;
 };
 
 extern int usb_string_id(struct usb_composite_dev *c);

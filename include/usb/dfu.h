@@ -22,11 +22,13 @@
 
 #include <linux/types.h>
 #include <file-list.h>
+#include <usb/composite.h>
 
-struct usb_dfu_pdata {
-	struct file_list	*files;
+struct f_dfu_opts {
+	struct usb_function_instance func_inst;
+	struct file_list *files;
 };
 
-int usb_dfu_register(struct usb_dfu_pdata *);
+int usb_dfu_register(struct f_dfu_opts *);
 
 #endif /* _USB_DFU_H */

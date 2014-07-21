@@ -33,7 +33,7 @@
  */
 static int do_dfu(int argc, char *argv[])
 {
-	struct usb_dfu_pdata pdata;
+	struct f_dfu_opts opts;
 	char *argstr;
 	struct usb_dfu_dev *dfu_alts = NULL;
 	int ret;
@@ -43,15 +43,15 @@ static int do_dfu(int argc, char *argv[])
 
 	argstr = argv[optind];
 
-	pdata.files = file_list_parse(argstr);
-	if (IS_ERR(pdata.files)) {
-		ret = PTR_ERR(pdata.files);
+	opts.files = file_list_parse(argstr);
+	if (IS_ERR(opts.files)) {
+		ret = PTR_ERR(opts.files);
 		goto out;
 	}
 
-	ret = usb_dfu_register(&pdata);
+	ret = usb_dfu_register(&opts);
 
-	file_list_free(pdata.files);
+	file_list_free(opts.files);
 out:
 
 	free(dfu_alts);

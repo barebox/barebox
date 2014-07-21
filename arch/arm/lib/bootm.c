@@ -314,7 +314,7 @@ static int do_bootz_linux(struct image_data *data)
 			image_size - sizeof(*header));
 	if (ret < 0)
 		goto err_out;
-	if (ret < end - sizeof(*header)) {
+	if (ret < image_size - sizeof(*header)) {
 		printf("premature end of image\n");
 		ret = -EIO;
 		goto err_out;

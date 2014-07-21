@@ -17,7 +17,9 @@
 
 #include <mach/at91sam9_smc.h>
 
-#define AT91_SMC_CS_STRIDE      ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? 0x14 : 0x10)
+#define AT91_SAM9_SMC_CS_STRIDE		0x10
+#define AT91_SAMA5_SMC_CS_STRIDE	0x14
+#define AT91_SMC_CS_STRIDE      ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? AT91_SAMA5_SMC_CS_STRIDE : AT91_SAM9_SMC_CS_STRIDE)
 #define AT91_SMC_CS(id, n)	(smc_base_addr[id] + ((n) * AT91_SMC_CS_STRIDE))
 
 static void __iomem *smc_base_addr[2];
@@ -25,9 +27,27 @@ static void __iomem *smc_base_addr[2];
 static void sam9_smc_cs_write_mode(void __iomem *base,
 					struct sam9_smc_config *config)
 {
+	void __iomem *mode_reg;
+
+	mode_reg = base + ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? AT91_SAMA5_SMC_MODE : AT91_SAM9_SMC_MODE);
+
 	__raw_writel(config->mode
 		   | AT91_SMC_TDF_(config->tdf_cycles),
-		   base + AT91_SMC_MODE);
+		   mode_reg);
+}
+
+static void sam9_smc_cs_write_timings(void __iomem *base,
+					struct sam9_smc_config *config)
+{
+	__raw_writel(AT91_SMC_TCLR_(config->tclr)
+                   | AT91_SMC_TADL_(config->tadl)
+                   | AT91_SMC_TAR_(config->tar)
+                   | AT91_SMC_OCMS_(config->ocms)
+                   | AT91_SMC_TRR_(config->trr)
+                   | AT91_SMC_TWB_(config->twb)
+                   | AT91_SMC_RBNSEL_(config->rbnsel)
+                   | AT91_SMC_NFSEL_(config->nfsel),
+		   base + AT91_SAMA5_SMC_TIMINGS);
 }
 
 void sam9_smc_write_mode(int id, int cs,
@@ -72,7 +92,12 @@ void sam9_smc_configure(int id, int cs,
 static void sam9_smc_cs_read_mode(void __iomem *base,
 					struct sam9_smc_config *config)
 {
-	u32 val = __raw_readl(base + AT91_SMC_MODE);
+	u32 val;
+	void __iomem *mode_reg;
+
+	mode_reg = base + ((at91_soc_initdata.type == AT91_SOC_SAMA5D3) ? AT91_SAMA5_SMC_MODE : AT91_SAM9_SMC_MODE);
+
+	val = __raw_readl(mode_reg);
 
 	config->mode = (val & ~AT91_SMC_NWECYCLE);
 	config->tdf_cycles = (val & AT91_SMC_NWECYCLE) >> 16 ;
@@ -118,6 +143,13 @@ static void sam9_smc_cs_read(void __iomem *base,
 void sam9_smc_read(int id, int cs, struct sam9_smc_config *config)
 {
 	sam9_smc_cs_read(AT91_SMC_CS(id, cs), config);
+}
+
+void sama5_smc_configure(int id, int cs, struct sam9_smc_config *config)
+{
+        sam9_smc_configure(id, cs, config);
+
+        sam9_smc_cs_write_timings(AT91_SMC_CS(id, cs), config);
 }
 
 static int at91sam9_smc_probe(struct device_d *dev)

@@ -779,8 +779,15 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 		if (ret < 0)
 			goto out;
 
-		if (ctrlc() || dfudetach)
+		if (dfudetach) {
+			ret = 0;
 			goto out;
+		}
+
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out;
+		}
 	}
 
 out:

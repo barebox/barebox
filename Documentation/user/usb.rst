@@ -88,3 +88,10 @@ the following:
 
 The ``dfu-util`` command automatically finds DFU-capable devices. If there are
 multiple devices found, you need to identify one with the ``-d``/``-p`` options.
+
+USB serial console
+^^^^^^^^^^^^^^^^^^
+
+barebox can provide a serial console over USB. This can be initialized with the
+:ref:`command_usbserial` command. Once the host is plugged in it should show a
+new serial device, on Linux for example ``/dev/ttyACM0``.

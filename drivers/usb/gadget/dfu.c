@@ -200,7 +200,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	dfu_string_defs[i + 1].s = NULL;
 	dfu_string_table.strings = dfu_string_defs;
 
-	dfu->dfu_state = DFU_STATE_appIDLE;
+	dfu->dfu_state = DFU_STATE_dfuIDLE;
 	dfu->dfu_status = DFU_STATUS_OK;
 
 	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
@@ -451,26 +451,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	}
 
 	switch (dfu->dfu_state) {
-	case DFU_STATE_appIDLE:
-		switch (ctrl->bRequest) {
-		case USB_REQ_DFU_DETACH:
-			dfu->dfu_state = DFU_STATE_appDETACH;
-			value = 0;
-			goto out;
-			break;
-		default:
-			value = -EINVAL;
-		}
-		break;
-	case DFU_STATE_appDETACH:
-		switch (ctrl->bRequest) {
-		default:
-			dfu->dfu_state = DFU_STATE_appIDLE;
-			value = -EINVAL;
-			goto out;
-			break;
-		}
-		break;
 	case DFU_STATE_dfuIDLE:
 		switch (ctrl->bRequest) {
 		case USB_REQ_DFU_DNLOAD:
@@ -529,13 +509,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			value = 0;
 			break;
 		case USB_REQ_DFU_DETACH:
-			/* Proprietary extension: 'detach' from idle mode and
-			 * get back to runtime mode in case of USB Reset.  As
-			 * much as I dislike this, we just can't use every USB
-			 * bus reset to switch back to runtime mode, since at
-			 * least the Linux USB stack likes to send a number of resets
-			 * in a row :( */
-			dfu->dfu_state = DFU_STATE_dfuMANIFEST_WAIT_RST;
 			value = 0;
 			dfudetach = 1;
 			break;
@@ -597,7 +570,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	case DFU_STATE_dfuDNBUSY:
 	case DFU_STATE_dfuMANIFEST_SYNC:
 	case DFU_STATE_dfuMANIFEST:
-	case DFU_STATE_dfuMANIFEST_WAIT_RST:
 		dfu->dfu_state = DFU_STATE_dfuERROR;
 		value = -EINVAL;
 		goto out;
@@ -623,17 +595,7 @@ static void dfu_disable(struct usb_function *f)
 {
 	struct f_dfu		*dfu = func_to_dfu(f);
 
-	switch (dfu->dfu_state) {
-	case DFU_STATE_appDETACH:
-		dfu->dfu_state = DFU_STATE_dfuIDLE;
-		break;
-	case DFU_STATE_dfuMANIFEST_WAIT_RST:
-		dfu->dfu_state = DFU_STATE_appIDLE;
-		break;
-	default:
-		dfu->dfu_state = DFU_STATE_appDETACH;
-		break;
-	}
+	dfu->dfu_state = DFU_STATE_dfuIDLE;
 
 	dfu_cleanup(dfu);
 }

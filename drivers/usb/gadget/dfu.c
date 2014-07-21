@@ -777,7 +777,7 @@ int usb_dfu_register(struct usb_dfu_pdata *pdata)
 	while (1) {
 		ret = usb_gadget_poll();
 		if (ret < 0)
-			return ret;
+			goto out;
 
 		if (ctrlc() || dfudetach)
 			goto out;

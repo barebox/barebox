@@ -92,7 +92,8 @@ err_free:
 }
 
 BAREBOX_CMD_HELP_START(tftp)
-BAREBOX_CMD_HELP_TEXT("Load (or save) a file via TFTP.")
+BAREBOX_CMD_HELP_TEXT("Load (or save) a file via TFTP. SOURCE is a path on server,")
+BAREBOX_CMD_HELP_TEXT("server address is taken from the environment (ethX.serverip).")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-p", "push to TFTP server")

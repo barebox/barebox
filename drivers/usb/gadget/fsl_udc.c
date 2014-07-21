@@ -1280,7 +1280,7 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
 	int ep_num, stopped, ret = 0;
 	u32 epctrl;
 
-	if (!_ep || !_req)
+	if (!_ep || !_req || !ep->desc)
 		return -EINVAL;
 
 	stopped = ep->stopped;

@@ -14,6 +14,7 @@ config ARCH_ARMADA_370
 	bool "Armada 370"
 	select CPU_V7
 	select CLOCKSOURCE_MVEBU
+	select PINCTRL_ARMADA_370
 
 config ARCH_ARMADA_XP
 	bool "Armada XP"

@@ -186,7 +186,7 @@ static int clk_divider_set_rate(struct clk *clk, unsigned long rate,
 		div = clk_divider_bestdiv(clk, rate, &best_parent_rate);
 		clk_set_rate(clk_get_parent(clk), best_parent_rate);
 	} else {
-		div = parent_rate / rate;
+		div = DIV_ROUND_UP(parent_rate, rate);
 	}
 
 	value = _get_val(divider, div);

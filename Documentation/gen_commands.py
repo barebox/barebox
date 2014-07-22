@@ -4,6 +4,7 @@ import errno
 import os
 import re
 import sys
+import hashlib
 
 from collections import defaultdict
 from pprint import pprint
@@ -169,5 +170,18 @@ for name, cmd in CMDS.items():
     else:
       raise
   target = os.path.join(subdir, name+'.rst')
+
+  # Only write the new rst if it differs from the old one. Wroto
+  hash_old = hashlib.sha1()
+  try:
+    f = open(target, 'rb')
+    hash_old.update(f.read())
+  except:
+    pass
+  hash_new = hashlib.sha1()
+  hash_new.update(rst)
+  if hash_old.hexdigest() == hash_new.hexdigest():
+    continue
+
   file(target, 'w').write(rst)
 

@@ -642,6 +642,7 @@ config BAREBOXENV_TARGET
 config BAREBOXCRC32_TARGET
 	bool
 	prompt "build bareboxcrc32 tool for target"
+	depends on !SANDBOX
 	help
 	  'bareboxcrc32' is a userspacetool to generate the crc32 checksums the same way
 	  barebox does. Say yes here to build it for the target.

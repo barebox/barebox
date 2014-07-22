@@ -229,16 +229,29 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 	qh = &ehci->qh_list[1];
 	qh->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
-	c = (usb_pipespeed(pipe) != USB_SPEED_HIGH &&
+	c = (dev->speed != USB_SPEED_HIGH &&
 	     usb_pipeendpoint(pipe) == 0) ? 1 : 0;
 	endpt = (8 << 28) |
 	    (c << 27) |
 	    (usb_maxpacket(dev, pipe) << 16) |
 	    (0 << 15) |
 	    (1 << 14) |
-	    (usb_pipespeed(pipe) << 12) |
 	    (usb_pipeendpoint(pipe) << 8) |
 	    (0 << 7) | (usb_pipedevice(pipe) << 0);
+	switch (dev->speed) {
+	case USB_SPEED_FULL:
+		endpt |= 0 << 12;
+		break;
+	case USB_SPEED_LOW:
+		endpt |= 1 << 12;
+		break;
+	case USB_SPEED_HIGH:
+		endpt |= 2 << 12;
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	qh->qh_endpt1 = cpu_to_hc32(endpt);
 	endpt = (1 << 30) |
 	    (dev->portnr << 23) |

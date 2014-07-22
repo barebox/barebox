@@ -44,6 +44,8 @@ struct console_device {
 	void (*flush)(struct console_device *cdev);
 	int (*set_mode)(struct console_device *cdev, enum console_mode mode);
 
+	char *devname;
+
 	struct list_head list;
 
 	unsigned char f_active;

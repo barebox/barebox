@@ -103,7 +103,7 @@ def gen_rst(name, cmd):
   out.append('.. _command_%s:' % name)
   out.append('')
   if 'c_desc' in cmd:
-    out.append("%s (%s)" % (name, ''.join(cmd['c_desc']).strip()))
+    out.append("%s - %s" % (name, ''.join(cmd['c_desc']).strip()))
   else:
     out.append("%s" % (name,))
   out.append('='*len(out[-1]))

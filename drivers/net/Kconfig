@@ -34,6 +34,7 @@ config DRIVER_NET_AR231X
 
 config DRIVER_NET_ARC_EMAC
 	bool "ARC Ethernet MAC driver"
+	depends on HAS_DMA
 	select PHYLIB
 	help
 	  This option enables support for the ARC EMAC ethernet
@@ -46,6 +47,7 @@ config DRIVER_NET_AT91_ETHER
 
 config DRIVER_NET_CALXEDA_XGMAC
 	bool "Calxeda xgmac"
+	depends on HAS_DMA
 
 config DRIVER_NET_CS8900
 	bool "cs8900 ethernet driver"
@@ -63,6 +65,7 @@ config DRIVER_NET_DAVINCI_EMAC
 
 config DRIVER_NET_DESIGNWARE
 	bool "Designware Universal MAC ethernet driver"
+	depends on HAS_DMA
 	select PHYLIB
 	help
 	  This option enables support for the Synopsys
@@ -94,6 +97,7 @@ config DRIVER_NET_EP93XX
 
 config DRIVER_NET_ETHOC
 	bool "OpenCores ethernet MAC driver"
+	depends on HAS_CACHE
 	select PHYLIB
 	help
 	  This option enables support for the OpenCores 10/100 Mbps

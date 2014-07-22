@@ -2,6 +2,8 @@ config ARM
 	bool
 	select HAS_KALLSYMS
 	select HAS_MODULES
+	select HAS_DMA
+	select HAS_CACHE
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION

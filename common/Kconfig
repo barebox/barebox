@@ -25,6 +25,22 @@ config ENV_HANDLING
 	select CRC32
 	bool
 
+config HAS_CACHE
+	bool
+	help
+	  This allows you do run "make ARCH=sandbox allyesconfig".
+
+	  Drivers that depend on a cache implementation can depend on this
+	  config, so that you don't get a compilation error.
+
+config HAS_DMA
+	bool
+	help
+	  This allows you do run "make ARCH=sandbox allyesconfig".
+
+	  Drivers that depend on a DMA implementation can depend on this
+	  config, so that you don't get a compilation error.
+
 config GENERIC_GPIO
 	bool
 

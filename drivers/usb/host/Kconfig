@@ -1,5 +1,6 @@
 config USB_EHCI
 	bool "EHCI driver"
+	depends on HAS_DMA
 
 config USB_EHCI_OMAP
 	depends on ARCH_OMAP3

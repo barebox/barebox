@@ -20,6 +20,7 @@ config ARCH_ARMADA_XP
 	bool "Armada XP"
 	select CPU_V7
 	select CLOCKSOURCE_MVEBU
+	select PINCTRL_ARMADA_XP
 
 config ARCH_DOVE
 	bool "Dove 88AP510"

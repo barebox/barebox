@@ -202,6 +202,9 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	*ptr++ = FCB_MAGIC;	/* FCB */
 	*ptr++ = 1;		/* FCB version */
 
+	ptr = image + 0x68; /* Firmware start page */
+	*ptr = 12;
+
 	ptr = image + 0x78; /* DBBT start page */
 	*ptr = 4;
 

@@ -796,7 +796,9 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 	switch (mtd->writesize) {
 	case 2048:
 	case 4096:
-		host->pmecc_degree = PMECC_GF_DIMENSION_13;
+	case 8192:
+		host->pmecc_degree = (sector_size == 512) ?
+					PMECC_GF_DIMENSION_13 : PMECC_GF_DIMENSION_14;
 		host->pmecc_cw_len = (1 << host->pmecc_degree) - 1;
 		host->pmecc_sector_number = mtd->writesize / sector_size;
 		host->pmecc_bytes_per_sector = pmecc_get_ecc_bytes(
@@ -1162,7 +1164,12 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		nand_chip->ecc.mode = NAND_ECC_HW;
 	}
 
-	nand_chip->chip_delay = 20;		/* 20us command delay time */
+	nand_chip->chip_delay = 40;		/* 40us command delay time */
+
+	if (IS_ENABLED(CONFIG_NAND_ECC_BCH) &&
+			pdata->ecc_mode == NAND_ECC_SOFT_BCH) {
+		nand_chip->ecc.mode = NAND_ECC_SOFT_BCH;
+	}
 
 	if (host->board->bus_width_16) {	/* 16-bit bus width */
 		nand_chip->options |= NAND_BUSWIDTH_16;

@@ -676,6 +676,7 @@ config COMPILE_LOGLEVEL
 	  5    normal but significant condition (notice)
 	  6    informational (info)
 	  7    debug-level messages (debug)
+	  8    verbose debug messages (vdebug)
 
 config DEFAULT_LOGLEVEL
 	int "default loglevel"
@@ -692,6 +693,7 @@ config DEFAULT_LOGLEVEL
 	  5    normal but significant condition (notice)
 	  6    informational (info)
 	  7    debug-level messages (debug)
+	  8    verbose debug messages (vdebug)
 
 config DEBUG_INFO
 	bool

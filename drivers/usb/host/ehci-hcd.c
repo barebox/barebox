@@ -57,8 +57,8 @@ struct ehci_priv {
 static struct descriptor {
 	struct usb_hub_descriptor hub;
 	struct usb_device_descriptor device;
-	struct usb_linux_config_descriptor config;
-	struct usb_linux_interface_descriptor interface;
+	struct usb_config_descriptor config;
+	struct usb_interface_descriptor interface;
 	struct usb_endpoint_descriptor endpoint;
 }  __attribute__ ((packed)) descriptor = {
 	{

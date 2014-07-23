@@ -178,6 +178,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	uint32_t *ptr, *num_bb, *bb;
 	uint64_t offset;
 	int block = 0, len, now, blocksize;
+	int pre_image_size;
 
 	ret = stat(data->devicefile, &s);
 	if (ret)
@@ -192,6 +193,8 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	ret = ioctl(fd, MEMGETINFO, &meminfo);
 	if (ret)
 		goto out;
+
+	pre_image_size = 12 * meminfo.writesize;
 
 	blocksize = meminfo.erasesize;
 
@@ -218,7 +221,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	bb = ptr + 1;
 	offset = 0;
 
-	size_need = data->len + 0x8000;
+	size_need = data->len + pre_image_size;
 
 	/*
 	 * Collect bad blocks and construct DBBT
@@ -261,18 +264,18 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	}
 
 	debug("total image size: 0x%08zx. Space needed including bad blocks: 0x%08zx\n",
-			data->len + 0x8000,
-			data->len + 0x8000 + *num_bb * blocksize);
+			data->len + pre_image_size,
+			data->len + pre_image_size + *num_bb * blocksize);
 
-	if (data->len + 0x8000 + *num_bb * blocksize > imx_handler->device_size) {
+	if (data->len + pre_image_size + *num_bb * blocksize > imx_handler->device_size) {
 		printf("needed space (0x%08zx) exceeds partition space (0x%08zx)\n",
-				data->len + 0x8000 + *num_bb * blocksize,
+				data->len + pre_image_size + *num_bb * blocksize,
 				imx_handler->device_size);
 		ret = -ENOSPC;
 		goto out;
 	}
 
-	len = data->len + 0x8000;
+	len = data->len + pre_image_size;
 	offset = 0;
 
 	/*

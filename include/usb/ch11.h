@@ -232,7 +232,7 @@ struct usb_hub_status {
 #define USB_HUB_PR_SS		3 /* Super speed hub */
 
 struct usb_hub_descriptor {
-	__u8  bDescLength;
+	__u8  bLength;
 	__u8  bDescriptorType;
 	__u8  bNbrPorts;
 	__le16 wHubCharacteristics;

@@ -178,6 +178,9 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	uint32_t *ptr, *num_bb, *bb;
 	uint64_t offset;
 	int block = 0, len, now, blocksize;
+	int dbbt_start_page = 4;
+	int firmware_start_page = 12;
+	void *dbbt_base;
 	int pre_image_size;
 
 	ret = stat(data->devicefile, &s);
@@ -194,7 +197,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	if (ret)
 		goto out;
 
-	pre_image_size = 12 * meminfo.writesize;
+	pre_image_size = firmware_start_page * meminfo.writesize;
 
 	blocksize = meminfo.erasesize;
 
@@ -203,23 +206,24 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	*ptr++ = 1;		/* FCB version */
 
 	ptr = image + 0x68; /* Firmware start page */
-	*ptr = 12;
+	*ptr = firmware_start_page;
 
 	ptr = image + 0x78; /* DBBT start page */
-	*ptr = 4;
+	*ptr = dbbt_start_page;
 
-	ptr = image + 4 * 2048 + 4;
+	dbbt_base = image + dbbt_start_page * meminfo.writesize;
+	ptr = dbbt_base + 4;
 	*ptr++ = DBBT_MAGIC;	/* DBBT */
 	*ptr = 1;		/* DBBT version */
 
-	ptr = (u32*)(image + 0x2010);
+	ptr = (u32*)(dbbt_base + 0x10);
 	/*
 	 * This is marked as reserved in the i.MX53 reference manual, but
 	 * must be != 0. Otherwise the ROM ignores the DBBT
 	 */
 	*ptr = 1;
 
-	ptr = (u32*)(image + 0x4004); /* start of DBBT */
+	ptr = (u32*)(dbbt_base + 4 * meminfo.writesize + 4); /* start of DBBT */
 	num_bb = ptr;
 	bb = ptr + 1;
 	offset = 0;

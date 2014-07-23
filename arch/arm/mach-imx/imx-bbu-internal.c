@@ -168,7 +168,7 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
  * layer.
  */
 static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *imx_handler,
-		struct bbu_data *data, void *image, int image_len)
+		struct bbu_data *data)
 {
 	struct mtd_info_user meminfo;
 	int fd;
@@ -181,6 +181,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 	int dbbt_start_page = 4;
 	int firmware_start_page = 12;
 	void *dbbt_base;
+	void *image, *freep = NULL;
 	int pre_image_size;
 
 	ret = stat(data->devicefile, &s);
@@ -198,6 +199,8 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 		goto out;
 
 	pre_image_size = firmware_start_page * meminfo.writesize;
+	image = freep = xzalloc(data->len + pre_image_size);
+	memcpy(image + pre_image_size, data->image, data->len);
 
 	blocksize = meminfo.erasesize;
 
@@ -322,6 +325,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 
 out:
 	close(fd);
+	free(freep);
 
 	return ret;
 }
@@ -339,10 +343,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 {
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
-	void *imx_pre_image = NULL;
-	int imx_pre_image_size;
-	int ret, image_len;
-	void *buf;
+	int ret;
 	uint32_t *barker;
 
 	ret = imx_bbu_check_prereq(data);
@@ -356,26 +357,10 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 		return -EINVAL;
 	}
 
-	imx_pre_image_size = 0;
-
-	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND) {
-		/* NAND needs additional space for the DBBT */
-		imx_pre_image_size += 0x6000;
-		imx_pre_image = xzalloc(imx_pre_image_size);
-
-		/* Create a buffer containing header and image data */
-		image_len = data->len + imx_pre_image_size;
-		buf = xzalloc(image_len);
-		memcpy(buf, imx_pre_image, imx_pre_image_size);
-		memcpy(buf + imx_pre_image_size, data->image, data->len);
-
-		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data, buf,
-				image_len);
-		free(buf);
-		free(imx_pre_image);
-	} else {
+	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND)
+		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data);
+	else
 		ret = imx_bbu_write_device(imx_handler, data, data->image, data->len);
-	}
 
 	return ret;
 }

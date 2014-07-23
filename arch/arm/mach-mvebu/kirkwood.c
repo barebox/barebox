@@ -17,6 +17,7 @@
 #include <init.h>
 #include <io.h>
 #include <asm/memory.h>
+#include <linux/mbus.h>
 #include <mach/kirkwood-regs.h>
 
 static inline void kirkwood_memory_find(unsigned long *phys_base,
@@ -51,6 +52,8 @@ static int kirkwood_init_soc(void)
 
 	kirkwood_memory_find(&phys_base, &phys_size);
 	arm_add_mem_device("ram0", phys_base, phys_size);
+
+	mvebu_mbus_add_range(0xf0, 0x01, MVEBU_REMAP_INT_REG_BASE);
 
 	return 0;
 }

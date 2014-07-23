@@ -18,6 +18,7 @@
 #include <init.h>
 #include <io.h>
 #include <asm/memory.h>
+#include <linux/mbus.h>
 #include <mach/armada-370-xp-regs.h>
 
 static inline void armada_370_xp_memory_find(unsigned long *phys_base,
@@ -52,6 +53,8 @@ static int armada_370_xp_init_soc(void)
 
 	armada_370_xp_memory_find(&phys_base, &phys_size);
 	arm_add_mem_device("ram0", phys_base, phys_size);
+
+	mvebu_mbus_add_range(0xf0, 0x01, MVEBU_REMAP_INT_REG_BASE);
 
 	return 0;
 }

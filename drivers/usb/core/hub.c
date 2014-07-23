@@ -342,7 +342,7 @@ static int usb_hub_configure(struct usb_device *dev)
 		hub->desc.DeviceRemovable[i] = descriptor->DeviceRemovable[i];
 
 	for (i = 0; i < ((hub->desc.bNbrPorts + 1 + 7)/8); i++)
-		hub->desc.DeviceRemovable[i] = descriptor->PortPowerCtrlMask[i];
+		hub->desc.PortPowerCtrlMask[i] = descriptor->PortPowerCtrlMask[i];
 
 	dev->maxchild = descriptor->bNbrPorts;
 	dev_dbg(&dev->dev, "%d ports detected\n", dev->maxchild);

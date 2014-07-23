@@ -53,6 +53,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <malloc.h>
 #include <of.h>
 #include <of_address.h>
 #include <linux/mbus.h>
@@ -546,7 +547,7 @@ void mvebu_mbus_get_pcie_io_aperture(struct resource *res)
  *  - bits 16 to 23: window attribute ID
  *  - bits  0 to 15: unused
  */
-#define CUSTOM(id) (((id) & 0xF0000000) >> 24)
+#define CUSTOM(id) (((id) & 0xF0000000) >> 28)
 #define TARGET(id) (((id) & 0x0F000000) >> 24)
 #define ATTR(id)   (((id) & 0x00FF0000) >> 16)
 
@@ -741,3 +742,74 @@ static int mvebu_mbus_init(void)
 	return platform_driver_register(&mvebu_mbus_driver);
 }
 postcore_initcall(mvebu_mbus_init);
+
+struct mbus_range {
+	u32 mbusid;
+	u32 remap;
+	struct list_head list;
+};
+
+#define MBUS_ID(t,a)	(((t) << 24) | ((attr) << 16))
+static LIST_HEAD(mbus_ranges);
+
+void mvebu_mbus_add_range(u8 target, u8 attr, u32 remap)
+{
+	struct mbus_range *r = xzalloc(sizeof(*r));
+
+	r->mbusid = MBUS_ID(target, attr);
+	r->remap = remap;
+	list_add_tail(&r->list, &mbus_ranges);
+}
+
+/*
+ * Barebox always remaps internal registers to 0xf1000000 on every SoC.
+ * As we (and Linux) need a working DT and there is no way to tell the current
+ * remap address, fixup any provided DT to ensure custom MBUS_IDs are correct.
+ */
+static int mvebu_mbus_of_fixup(struct device_node *root, void *context)
+{
+	struct device_node *np;
+
+	for_each_matching_node(np, mvebu_mbus_dt_ids) {
+		struct property *p;
+		int n, pa, na, ns, lenp, size;
+		u32 *ranges;
+
+		p = of_find_property(np, "ranges", &lenp);
+		if (!p)
+			return -EINVAL;
+
+		pa = of_n_addr_cells(np);
+		if (of_property_read_u32(np, "#address-cells", &na) ||
+		    of_property_read_u32(np, "#size-cells", &ns))
+			return -EINVAL;
+
+		size = pa + na + ns;
+		ranges = xzalloc(lenp);
+		of_property_read_u32_array(np, "ranges", ranges, lenp/4);
+
+		for (n = 0; n < lenp/4; n += size) {
+			struct mbus_range *r;
+			u32 mbusid = ranges[n];
+
+			if (!CUSTOM(mbusid))
+				continue;
+
+			list_for_each_entry(r, &mbus_ranges, list) {
+				if (r->mbusid == mbusid)
+					ranges[n + na] = r->remap;
+			}
+		}
+
+		if (of_property_write_u32_array(np, "ranges", ranges, lenp/4))
+			pr_err("Unable to fixup mbus ranges\n");
+		free(ranges);
+	}
+
+	return 0;
+}
+
+static int mvebu_mbus_fixup_register(void) {
+	return of_register_fixup(mvebu_mbus_of_fixup, NULL);
+}
+pure_initcall(mvebu_mbus_fixup_register);

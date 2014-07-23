@@ -503,12 +503,12 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		case USB_DT_DEVICE:
 			dev_dbg(ehci->dev, "USB_DT_DEVICE request\n");
 			srcptr = &descriptor.device;
-			srclen = 0x12;
+			srclen = descriptor.device.bLength;
 			break;
 		case USB_DT_CONFIG:
 			dev_dbg(ehci->dev, "USB_DT_CONFIG config\n");
 			srcptr = &descriptor.config;
-			srclen = 0x19;
+			srclen = le16_to_cpu(descriptor.config.wTotalLength);
 			break;
 		case USB_DT_STRING:
 			dev_dbg(ehci->dev, "USB_DT_STRING config\n");
@@ -543,7 +543,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		case USB_DT_HUB:
 			dev_dbg(ehci->dev, "USB_DT_HUB config\n");
 			srcptr = &descriptor.hub;
-			srclen = 0x8;
+			srclen = descriptor.hub.bLength;
 			break;
 		default:
 			dev_dbg(ehci->dev, "unknown value %x\n", le16_to_cpu(req->value));

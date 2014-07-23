@@ -69,8 +69,8 @@ static struct descriptor {
 		.wHubCharacteristics	= 0,
 		.bPwrOn2PwrGood		= 10,
 		.bHubContrCurrent	= 0,
-		.DeviceRemovable	= {},
-		.PortPowerCtrlMask	= {}
+		.u.hs.DeviceRemovable	= {},
+		.u.hs.PortPwrCtrlMask	= {}
 	},
 	.device = {
 		.bLength		= USB_DT_DEVICE_SIZE,

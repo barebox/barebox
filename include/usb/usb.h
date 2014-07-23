@@ -24,6 +24,7 @@
 
 #include <driver.h>
 #include <usb/ch9.h>
+#include <usb/ch11.h>
 #include <usb/usb_defs.h>
 #include <asm/byteorder.h>
 
@@ -311,32 +312,6 @@ void usb_rescan(void);
 /*************************************************************************
  * Hub Stuff
  */
-struct usb_port_status {
-	unsigned short wPortStatus;
-	unsigned short wPortChange;
-} __attribute__ ((packed));
-
-struct usb_hub_status {
-	unsigned short wHubStatus;
-	unsigned short wHubChange;
-} __attribute__ ((packed));
-
-
-/* Hub descriptor */
-struct usb_hub_descriptor {
-	unsigned char  bLength;
-	unsigned char  bDescriptorType;
-	unsigned char  bNbrPorts;
-	unsigned short wHubCharacteristics;
-	unsigned char  bPwrOn2PwrGood;
-	unsigned char  bHubContrCurrent;
-	unsigned char  DeviceRemovable[(USB_MAXCHILDREN+1+7)/8];
-	unsigned char  PortPowerCtrlMask[(USB_MAXCHILDREN+1+7)/8];
-	/* DeviceRemovable and PortPwrCtrlMask want to be variable-length
-	   bitmaps that hold max 255 entries. (bit0 is ignored) */
-} __attribute__ ((packed));
-
-
 struct usb_hub_device {
 	struct usb_device *pusb_dev;
 	struct usb_hub_descriptor desc;

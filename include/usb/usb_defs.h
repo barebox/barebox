@@ -238,4 +238,30 @@
 #define HUB_CHANGE_LOCAL_POWER	0x0001
 #define HUB_CHANGE_OVERCURRENT	0x0002
 
+/* (shifted) direction/type/recipient from the USB 2.0 spec, table 9.2 */
+#define DeviceRequest \
+	((USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_DEVICE) << 8)
+
+#define DeviceOutRequest \
+	((USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_DEVICE) << 8)
+
+#define InterfaceRequest \
+	((USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_INTERFACE) << 8)
+
+#define EndpointRequest \
+	((USB_DIR_IN | USB_TYPE_STANDARD | USB_RECIP_INTERFACE) << 8)
+
+#define EndpointOutRequest \
+	((USB_DIR_OUT | USB_TYPE_STANDARD | USB_RECIP_INTERFACE) << 8)
+
+/* class requests from the USB 2.0 hub spec, table 11-15 */
+/* GetBusState and SetHubDescriptor are optional, omitted */
+#define ClearHubFeature		(0x2000 | USB_REQ_CLEAR_FEATURE)
+#define ClearPortFeature	(0x2300 | USB_REQ_CLEAR_FEATURE)
+#define GetHubDescriptor	(0xa000 | USB_REQ_GET_DESCRIPTOR)
+#define GetHubStatus		(0xa000 | USB_REQ_GET_STATUS)
+#define GetPortStatus		(0xa300 | USB_REQ_GET_STATUS)
+#define SetHubFeature		(0x2000 | USB_REQ_SET_FEATURE)
+#define SetPortFeature		(0x2300 | USB_REQ_SET_FEATURE)
+
 #endif /*_USB_DEFS_H_ */

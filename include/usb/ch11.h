@@ -19,8 +19,10 @@
  * up to 22 devices to connect. Upcoming hardware might raise that
  * limit. Because the arrays need to add a bit for hub status data, we
  * use 31, so plus one evens out to four bytes.
+ *
+ * Reduced to 8 max children for Barebox.
  */
-#define USB_MAXCHILDREN		31
+#define USB_MAXCHILDREN		8
 
 /*
  * Hub request types

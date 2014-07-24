@@ -160,7 +160,7 @@ static int __dev_add_param(struct param_d *param, struct device_d *dev, const ch
  * expect the parameter value to be a string which can be freed with free(). Do
  * not use static arrays when using the generic functions.
  */
-int dev_add_param(struct device_d *dev, const char *name,
+struct param_d *dev_add_param(struct device_d *dev, const char *name,
 		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
 		const char *(*get)(struct device_d *dev, struct param_d *param),
 		unsigned long flags)
@@ -171,10 +171,12 @@ int dev_add_param(struct device_d *dev, const char *name,
 	param = xzalloc(sizeof(*param));
 
 	ret = __dev_add_param(param, dev, name, set, get, flags);
-	if (ret)
+	if (ret) {
 		free(param);
+		return ERR_PTR(ret);
+	}
 
-	return ret;
+	return param;
 }
 
 /**

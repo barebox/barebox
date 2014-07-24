@@ -17,7 +17,12 @@ int globalvar_add(const char *name,
 		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags)
 {
-	return dev_add_param(&global_device, name, set, get, flags);
+	struct param_d *param;
+
+	param = dev_add_param(&global_device, name, set, get, flags);
+	if (IS_ERR(param))
+		return PTR_ERR(param);
+	return 0;
 }
 
 /*

@@ -95,10 +95,16 @@ static struct platform_device_id syscon_ids[] = {
 	{ }
 };
 
+static struct of_device_id of_syscon_match[] = {
+	{ .compatible = "syscon" },
+	{ },
+};
+
 static struct driver_d syscon_driver = {
 	.name		= "syscon",
 	.probe		= syscon_probe,
 	.id_table	= syscon_ids,
+	.of_compatible	= DRV_OF_COMPAT(of_syscon_match),
 };
 
 static int __init syscon_init(void)

@@ -27,6 +27,7 @@ config PINCTRL_IMX_IOMUX_V3
 config PINCTRL_ROCKCHIP
 	select PINCTRL
 	select GPIO_GENERIC
+	select MFD_SYSCON
 	bool
 	help
 	  The pinmux controller found on Rockchip SoCs.

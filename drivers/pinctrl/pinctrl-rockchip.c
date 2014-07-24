@@ -23,6 +23,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <malloc.h>
+#include <mfd/syscon.h>
 #include <of.h>
 #include <of_address.h>
 #include <pinctrl.h>
@@ -44,7 +45,6 @@ enum rockchip_pin_bank_type {
 
 struct rockchip_pin_bank {
 	void __iomem			*reg_base;
-	void __iomem			*reg_pull;
 	struct clk			*clk;
 	u32				pin_base;
 	u8				nr_pins;
@@ -77,7 +77,7 @@ struct rockchip_pin_ctrl {
 
 struct rockchip_pinctrl {
 	void __iomem			*reg_base;
-	void __iomem			*reg_pull;
+	void __iomem			*reg_pmu;
 	struct pinctrl_device		pctl_dev;
 	struct rockchip_pin_ctrl	*ctrl;
 };
@@ -192,9 +192,11 @@ static void rk2928_calc_pull_reg_and_bit(struct rockchip_pin_bank *bank,
 	*bit = pin_num % RK2928_PULL_PINS_PER_REG;
 };
 
+#define RK3188_PULL_OFFSET		0x164
 #define RK3188_PULL_BITS_PER_PIN	2
 #define RK3188_PULL_PINS_PER_REG	8
 #define RK3188_PULL_BANK_STRIDE		16
+#define RK3188_PULL_PMU_OFFSET		0x64
 
 static void rk3188_calc_pull_reg_and_bit(struct rockchip_pin_bank *bank,
 					 int pin_num, void __iomem **reg,
@@ -204,12 +206,12 @@ static void rk3188_calc_pull_reg_and_bit(struct rockchip_pin_bank *bank,
 
 	/* The first 12 pins of the first bank are located elsewhere */
 	if (bank->bank_type == RK3188_BANK0 && pin_num < 12) {
-		*reg = bank->reg_pull +
+		*reg = info->reg_pmu + RK3188_PULL_PMU_OFFSET +
 				((pin_num / RK3188_PULL_PINS_PER_REG) * 4);
 		*bit = pin_num % RK3188_PULL_PINS_PER_REG;
 		*bit *= RK3188_PULL_BITS_PER_PIN;
 	} else {
-		*reg = info->reg_pull - 4;
+		*reg = info->reg_base + RK3188_PULL_OFFSET - 4;
 		*reg += bank->bank_num * RK3188_PULL_BANK_STRIDE;
 		*reg += ((pin_num / RK3188_PULL_PINS_PER_REG) * 4);
 
@@ -347,31 +349,11 @@ static int rockchip_get_bank_data(struct rockchip_pin_bank *bank,
 
 	bank->reg_base = (void __iomem *)res->start;
 
-	/*
-	 * special case, where parts of the pull setting-registers are
-	 * part of the PMU register space
-	 */
 	if (of_device_is_compatible(bank->of_node,
-				    "rockchip,rk3188-gpio-bank0")) {
+				    "rockchip,rk3188-gpio-bank0"))
 		bank->bank_type = RK3188_BANK0;
-
-		if (of_address_to_resource(bank->of_node, 1, &node_res)) {
-			dev_err(dev, "cannot find IO resource for bank\n");
-			return -ENOENT;
-		}
-
-		res = request_iomem_region(dev_name(dev), node_res.start,
-					   node_res.end);
-		if (!res) {
-			dev_err(dev, "cannot request iomem region %08x\n",
-				node_res.start);
-			return -ENOENT;
-		}
-
-		bank->reg_pull = (void __iomem *)res->start;
-	} else {
+	else
 		bank->bank_type = COMMON_BANK;
-	}
 
 	bank->clk = of_clk_get(bank->of_node, 0);
 	if (IS_ERR(bank->clk))
@@ -440,19 +422,18 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 	}
 	info->ctrl = ctrl;
 
-	info->reg_base = dev_request_mem_region(dev, 0);
-	if (!info->reg_base) {
-		dev_err(dev, "Could not get reg_base region\n");
+	info->reg_base = syscon_base_lookup_by_phandle(dev->device_node,
+						       "rockchip,grf");
+	if (IS_ERR(info->reg_base)) {
+		dev_err(dev, "Could not get grf syscon address\n");
 		return -ENODEV;
 	}
 
-	/* The RK3188 has its pull registers in a separate place */
-	if (ctrl->type == RK3188) {
-		info->reg_pull = dev_request_mem_region(dev, 1);
-		if (!info->reg_pull) {
-			dev_err(dev, "Could not get reg_pull region\n");
-			return -ENODEV;
-		}
+	info->reg_pmu = syscon_base_lookup_by_phandle(dev->device_node,
+						      "rockchip,pmu");
+	if (IS_ERR(info->reg_pmu)) {
+		dev_err(dev, "Could not get pmu syscon address\n");
+		return -ENODEV;
 	}
 
 	info->pctl_dev.dev = dev;

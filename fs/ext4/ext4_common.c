@@ -45,6 +45,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 	struct ext4_extent_idx *index;
 	unsigned long long block;
 	struct ext_filesystem *fs = data->fs;
+	int blksz = EXT2_BLOCK_SIZE(data);
 	int i, ret;
 
 	while (1) {
@@ -68,7 +69,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		block = le32_to_cpu(index[i].ei_leaf_hi);
 		block = (block << 32) + le32_to_cpu(index[i].ei_leaf_lo);
 
-		ret = ext4fs_devread(fs, block << log2_blksz, 0, fs->blksz, buf);
+		ret = ext4fs_devread(fs, block << log2_blksz, 0, blksz, buf);
 		if (ret)
 			return NULL;
 		else

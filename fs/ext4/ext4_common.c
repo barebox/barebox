@@ -51,7 +51,7 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 	while (1) {
 		index = (struct ext4_extent_idx *)(ext_block + 1);
 
-		if (le32_to_cpu(ext_block->eh_magic) != EXT4_EXT_MAGIC)
+		if (le16_to_cpu(ext_block->eh_magic) != EXT4_EXT_MAGIC)
 			return 0;
 
 		if (ext_block->eh_depth == 0)
@@ -59,14 +59,14 @@ static struct ext4_extent_header *ext4fs_get_extent_block(struct ext2_data *data
 		i = -1;
 		do {
 			i++;
-			if (i >= le32_to_cpu(ext_block->eh_entries))
+			if (i >= le16_to_cpu(ext_block->eh_entries))
 				break;
 		} while (fileblock >= le32_to_cpu(index[i].ei_block));
 
 		if (--i < 0)
 			return 0;
 
-		block = le32_to_cpu(index[i].ei_leaf_hi);
+		block = le16_to_cpu(index[i].ei_leaf_hi);
 		block = (block << 32) + le32_to_cpu(index[i].ei_leaf_lo);
 
 		ret = ext4fs_devread(fs, block << log2_blksz, 0, blksz, buf);
@@ -187,18 +187,18 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 
 		do {
 			i++;
-			if (i >= le32_to_cpu(ext_block->eh_entries))
+			if (i >= le16_to_cpu(ext_block->eh_entries))
 				break;
 		} while (fileblock >= le32_to_cpu(extent[i].ee_block));
 
 		if (--i >= 0) {
 			fileblock -= le32_to_cpu(extent[i].ee_block);
-			if (fileblock >= le32_to_cpu(extent[i].ee_len)) {
+			if (fileblock >= le16_to_cpu(extent[i].ee_len)) {
 				free(buf);
 				return 0;
 			}
 
-			start = le32_to_cpu(extent[i].ee_start_hi);
+			start = le16_to_cpu(extent[i].ee_start_hi);
 			start = (start << 32) +
 					le32_to_cpu(extent[i].ee_start_lo);
 			free(buf);

@@ -5,17 +5,17 @@ config MMU
 
 config BTB
 	bool
-	default y if P2020RDB || P1022DS || DA923RC
+	default y
 
 config TEXT_BASE
 	hex
-	default 0xeff80000 if P2020RDB || P1022DS
+	default 0xeff80000 if P1010RDB || P2020RDB || P1022DS
 	default 0xfff80000 if DA923RC
 
 config RESET_VECTOR_ADDRESS
 	hex
 	default 0xfffffffc if DA923RC
-	default 0xeffffffc if P2020RDB || P1022DS
+	default 0xeffffffc if P1010RDB || P2020RDB || P1022DS
 
 config MPC85xx
 	bool
@@ -31,55 +31,78 @@ config E500
 
 choice
 	prompt "Select your board"
+config P1010RDB
+	bool "P1010RDB"
+    select P1010
+    select DDR_SPD
+    select FSL_DDR3
+	help
+	  Say Y here if you are using the Freescale P1010RDB
 
 config P2020RDB
 	bool "P2020RDB"
+    select P2020
+    select FSL_ELBC
 	help
 	  Say Y here if you are using the Freescale P2020RDB
 
 config P1022DS
 	bool "P1022DS"
+    select P1022
+    select DDR_SPD
+    select FSL_DDR3
+    select FSL_ELBC
 	help
 	  Say Y here if you are using the Freescale P1022DS
 
 config DA923RC
 	bool "DA923RC"
+    select MPC8544
+    select DDR_SPD
+    select FSL_DDR2
 	help
 	Say Y here if you are using the GE Intelligent Platforms DA923RC
 endchoice
 endif
 
-config FSL_ELBC
+config P1010
+    select FSL_IFC
+    select FSL_ERRATUM_IFC_A002769
+    select FSL_ERRATUM_P1010_A003549
+    select FSL_ERRATUM_IFC_A003399
 	bool
-	default y if P2020RDB || P1022DS
+
+config P2020
+	bool
+
+config P1022
+	bool
+
+config MPC8544
+	bool
 
 config DDR_SPD
 	bool
 	select CRC16
-	default y if DA923RC || P1022DS
-
-if P2020RDB
-config P2020
-	bool
-	default y
-endif
-
-if P1022DS
-config P1022
-	bool
-	default y
-
-config FSL_DDR3
-	bool
-	default y
-endif
-
-if DA923RC
-config MPC8544
-	bool
-	default y
 
 config FSL_DDR2
 	bool
-	default y
-endif
+
+config FSL_DDR3
+	bool
+
+config FSL_IFC
+	bool
+
+config FSL_ELBC
+	bool
+
+config FSL_ERRATUM_IFC_A002769
+    bool
+
+config FSL_ERRATUM_IFC_A003399
+    bool
+
+config FSL_ERRATUM_P1010_A003549
+    bool
+

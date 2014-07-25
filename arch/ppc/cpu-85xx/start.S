@@ -105,6 +105,29 @@ _start_e500:
 	isync
 	.endm
 
+	.macro  create_tlb0_entry esel ts tsize epn wimg rpn perm phy_high \
+				scratch
+	lis \scratch, FSL_BOOKE_MAS0(0, \esel, 0)@h
+	ori \scratch, \scratch, FSL_BOOKE_MAS0(0, \esel, 0)@l
+	mtspr   MAS0, \scratch
+	lis \scratch, FSL_BOOKE_MAS1(1, 0, 0, \ts, \tsize)@h
+	ori \scratch, \scratch, FSL_BOOKE_MAS1(1, 0, 0, \ts, \tsize)@l
+	mtspr   MAS1, \scratch
+	lis \scratch, FSL_BOOKE_MAS2(\epn, \wimg)@h
+	ori \scratch, \scratch, FSL_BOOKE_MAS2(\epn, \wimg)@l
+	mtspr   MAS2, \scratch
+	lis \scratch, FSL_BOOKE_MAS3(\rpn, 0, \perm)@h
+	ori \scratch, \scratch, FSL_BOOKE_MAS3(\rpn, 0, \perm)@l
+	mtspr   MAS3, \scratch
+	lis \scratch, \phy_high@h
+	ori \scratch, \scratch, \phy_high@l
+	mtspr   MAS7, \scratch
+	isync
+	msync
+	tlbwe
+	isync
+	.endm
+
 	/* Setup interrupt vectors */
 	lis	r1,TEXT_BASE@h
 	mtspr	IVPR,r1
@@ -277,6 +300,89 @@ nexti:	mflr	r1		/* R1 = our PC */
 		0xffc00000, MAS3_SX|MAS3_SW|MAS3_SR, \
 		0, r6
 
+#endif
+/*
+ * Relocate CCSR, if necessary. We relocate CCSR if (obviously) the default
+ * location is not where we want it. This typically happens on a 36-bit
+ * system, where we want to move CCSR to near the top of 36-bit address space.
+ *
+ * To move CCSR, we create two temporary TLBs, one for the old location, and
+ * another for the new location. On CoreNet systems, we also need to create
+ * a special, temporary LAW.
+ *
+ * As a general rule, TLB0 is used for short-term TLBs, and TLB1 is used for
+ * long-term TLBs, so we use TLB0 here.
+ */
+#if (CFG_CCSRBAR_DEFAULT != CFG_CCSRBAR_PHYS)
+create_ccsr_new_tlb:
+	/*
+	 * Create a TLB for the new location of CCSR. Register R8 is reserved
+	 * for the virtual address of this TLB (CFG_CCSRBAR).
+	 */
+	lis	r8, CFG_CCSRBAR@h
+	ori	r8, r8, CFG_CCSRBAR@l
+	lis	r9, (CFG_CCSRBAR + 0x1000)@h
+	ori	r9, r9, (CFG_CCSRBAR + 0x1000)@l
+	create_tlb0_entry 0, \
+	0, BOOKE_PAGESZ_4K, \
+	CFG_CCSRBAR, MAS2_I|MAS2_G, \
+	CFG_CCSRBAR_PHYS, MAS3_SW|MAS3_SR, \
+	0, r3
+
+	/*
+	 * Create a TLB for the current location of CCSR. Register R9 is
+	 * reserved for the virtual address of this TLB (CFG_CCSRBAR + 0x1000).
+	 */
+create_ccsr_old_tlb:
+	create_tlb0_entry 1, \
+	0, BOOKE_PAGESZ_4K, \
+	CFG_CCSRBAR + 0x1000, MAS2_I|MAS2_G, \
+	CFG_CCSRBAR_DEFAULT, MAS3_SW|MAS3_SR, \
+	0, r3
+
+	/*
+	 * We have a TLB for what we think is the current (old) CCSR. Let's
+	 * verify that, otherwise we won't be able to move it.
+	 * CFG_CCSRBAR_DEFAULT is always a 32-bit number, so we only
+	 * need to compare the lower 32 bits of CCSRBAR on CoreNet systems.
+	 */
+verify_old_ccsr:
+	lis	r0, CFG_CCSRBAR_DEFAULT@h
+	ori	r0, r0, CFG_CCSRBAR_DEFAULT@l
+	lwz	r1, 0(r9)
+	slwi	r1, r1, 12
+	cmpl	0, r0, r1
+
+	/*
+	 * If the value we read from CCSRBAR is not what we expect, then
+	 * enter an infinite loop. This will at least allow a debugger to
+	 * halt execution and examine TLBs, etc. There's no point in going
+	 * on.
+	 */
+infinite_debug_loop:
+	bne infinite_debug_loop
+
+	/*
+	 * Read the current value of CCSRBAR using a load word instruction
+	 * followed by an isync. This forces all accesses to configuration
+	 * space to complete.
+	 */
+write_new_ccsrbar:
+	sync
+	lwz r0, 0(r9)
+	isync
+	lis	r0, (CFG_CCSRBAR_PHYS >> 12)@h
+	ori	r0, r0, (CFG_CCSRBAR_PHYS >> 12)@l
+	stw	r0, 0(r9)
+	sync
+	isync
+
+	/*
+	 * Read the contents of CCSRBAR from its new location, followed by
+	 * another isync.
+	 */
+	 lwz	r0, 0(r8)
+	 isync
 #endif
 
 	/* Enable/invalidate the I-Cache */

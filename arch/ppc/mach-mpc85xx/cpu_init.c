@@ -32,24 +32,6 @@
 #include <mach/mmu.h>
 #include <mach/immap_85xx.h>
 
-static void fsl_setup_ccsrbar(void)
-{
-	u32 temp;
-	u32 mas0, mas1, mas2, mas3, mas7;
-	u32 *ccsr_virt = (u32 *)(CFG_CCSRBAR + 0x1000);
-
-	mas0 = MAS0_TLBSEL(0) | MAS0_ESEL(1);
-	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_4K);
-	mas2 = FSL_BOOKE_MAS2(CFG_CCSRBAR + 0x1000, MAS2_I|MAS2_G);
-	mas3 = FSL_BOOKE_MAS3(CFG_CCSRBAR_DEFAULT, 0, MAS3_SW|MAS3_SR);
-	mas7 = FSL_BOOKE_MAS7(CFG_CCSRBAR_DEFAULT);
-
-	e500_write_tlb(mas0, mas1, mas2, mas3, mas7);
-
-	temp = in_be32(ccsr_virt);
-	out_be32(ccsr_virt, CFG_CCSRBAR_PHYS >> 12);
-	temp = in_be32((u32 *)CFG_CCSRBAR);
-}
 
 int fsl_l2_cache_init(void)
 {
@@ -97,17 +79,14 @@ void cpu_init_early_f(void)
 {
 	u32 mas0, mas1, mas2, mas3, mas7;
 
-	mas0 = MAS0_TLBSEL(0) | MAS0_ESEL(0);
-	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS | MAS1_TSIZE(BOOKE_PAGESZ_4K);
-	mas2 = FSL_BOOKE_MAS2(CFG_CCSRBAR, MAS2_I|MAS2_G);
-	mas3 = FSL_BOOKE_MAS3(CFG_CCSRBAR_PHYS, 0, MAS3_SW|MAS3_SR);
+	mas0 = MAS0_TLBSEL(1) | MAS0_ESEL(13);
+	mas1 = MAS1_VALID | MAS1_TID(0) | MAS1_TS |
+			MAS1_TSIZE(BOOKE_PAGESZ_1M);
+	mas2 = FSL_BOOKE_MAS2(CFG_CCSRBAR, MAS2_I | MAS2_G);
+	mas3 = FSL_BOOKE_MAS3(CFG_CCSRBAR_PHYS, 0, MAS3_SW | MAS3_SR);
 	mas7 = FSL_BOOKE_MAS7(CFG_CCSRBAR_PHYS);
 
 	e500_write_tlb(mas0, mas1, mas2, mas3, mas7);
-
-	/* set up CCSR if we want it moved */
-	if (CFG_CCSRBAR_DEFAULT != CFG_CCSRBAR_PHYS)
-		fsl_setup_ccsrbar();
 
 	fsl_init_laws();
 	e500_invalidate_tlb(1);

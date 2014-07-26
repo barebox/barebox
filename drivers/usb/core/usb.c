@@ -65,6 +65,7 @@
 
 #define USB_BUFSIZ	512
 
+static int dev_count;
 static int dev_index;
 static int asynch_allowed;
 
@@ -447,6 +448,7 @@ int usb_new_device(struct usb_device *dev)
 	dev_add_param_int_ro(&dev->dev, "idProduct",
 			le16_to_cpu(dev->descriptor->idProduct), "%04x");
 	list_add_tail(&dev->list, &usb_device_list);
+	dev_count++;
 
 	err = 0;
 
@@ -473,6 +475,7 @@ void usb_remove_device(struct usb_device *usbdev)
 	usbdev->parent->children[usbdev->portnr - 1] = NULL;
 	list_del(&usbdev->list);
 	free(usbdev);
+	dev_count--;
 }
 
 struct usb_device *usb_alloc_new_device(void)
@@ -526,7 +529,7 @@ void usb_rescan(void)
 			continue;
 	}
 
-	pr_info("%d USB Device(s) found\n", dev_index);
+	pr_info("%d USB Device(s) found\n", dev_count);
 }
 
 /*

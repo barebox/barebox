@@ -179,7 +179,7 @@ net/                  -> Networking stuff
 
 scripts/              -> Kconfig system
 
-Documentation/        -> Doxygen generated documentation
+Documentation/        -> Sphinx generated documentation
 
 
 Release Strategy

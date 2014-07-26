@@ -774,10 +774,6 @@ include/config/kernel.release: include/config/auto.conf FORCE
 	$(Q)rm -f $@
 	$(Q)echo $(KERNELVERSION)$(localversion) > $@
 
-Doxyfile.version: include/config/auto.conf FORCE
-	$(Q)rm -f $@
-	$(Q)echo "PROJECT_NUMBER = $(KERNELRELEASE)" > $@
-
 # Things we need to do before we recursively start building the kernel
 # or the modules are listed in "prepare".
 # A multi level approach is used. prepareN is processed before prepareN-1.
@@ -996,7 +992,7 @@ CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
 		.tmp_kallsyms* common/barebox_default_env* barebox.ldr \
 		scripts/bareboxenv-target barebox-flash-image \
-		Doxyfile.version barebox.srec barebox.s5p barebox.ubl \
+		barebox.srec barebox.s5p barebox.ubl \
 		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart
 
 # Directories & files removed with 'make mrproper'

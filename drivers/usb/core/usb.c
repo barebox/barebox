@@ -471,6 +471,7 @@ void usb_remove_device(struct usb_device *usbdev)
 		dev_err(&usbdev->dev, "failed to unregister\n");
 
 	usbdev->parent->children[usbdev->portnr - 1] = NULL;
+	list_del(&usbdev->list);
 	free(usbdev);
 }
 

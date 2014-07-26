@@ -186,19 +186,21 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_CONNECTION);
 
 	/* Disconnect any existing devices under this port */
-	if (((!(portstatus & USB_PORT_STAT_CONNECTION)) &&
-	     (!(portstatus & USB_PORT_STAT_ENABLE))) || (dev->children[port])) {
-		dev_dbg(&dev->dev, "usb_disconnect(&hub->children[port]);\n");
+	if (dev->children[port] && !(portstatus & USB_PORT_STAT_CONNECTION)) {
+		dev_dbg(&dev->dev, "disconnect detected on port %d\n", port + 1);
 		usb_remove_device(dev->children[port]);
-		/* Return now if nothing is connected */
-		if (!(portstatus & USB_PORT_STAT_CONNECTION))
-			return;
+		return;
 	}
+
+	/* Remove disabled but connected devices */
+	if (dev->children[port] && !(portstatus & USB_PORT_STAT_ENABLE))
+		usb_remove_device(dev->children[port]);
+
 	wait_ms(200);
 
 	/* Reset the port */
 	if (hub_port_reset(dev, port, &portstatus) < 0) {
-		printf("cannot reset port %i!?\n", port + 1);
+		dev_warn(&dev->dev, "cannot reset port %i!?\n", port + 1);
 		return;
 	}
 
@@ -225,7 +227,10 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		/* Woops, disable the port */
 		dev_dbg(&dev->dev, "hub: disabling port %d\n", port + 1);
 		usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_ENABLE);
+		usb_free_device(usb);
+		return;
 	}
+
 	device_detect(&usb->dev);
 }
 

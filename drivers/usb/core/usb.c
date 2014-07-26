@@ -430,7 +430,7 @@ int usb_new_device(struct usb_device *dev)
 	err = register_device(&dev->dev);
 	if (err) {
 		printf("Failed to register device: %s\n", strerror(-err));
-		return err;
+		goto err_out;
 	}
 
 	dev_add_param_int_ro(&dev->dev, "iManufacturer",
@@ -457,41 +457,44 @@ err_out:
 	return err;
 }
 
+void usb_free_device(struct usb_device *usbdev)
+{
+	dma_free(usbdev->descriptor);
+	dma_free(usbdev->setup_packet);
+	free(usbdev);
+}
+
 void usb_remove_device(struct usb_device *usbdev)
 {
-	int i, ret;
+	int i;
 
-	for (i = 0; i < usbdev->maxchild; i++) {
-		if (usbdev->children[i])
-			usb_remove_device(usbdev->children[i]);
-	}
+	if (!usbdev)
+		return;
 
-	dev_info(&usbdev->dev, "removing\n");
-
-	ret = unregister_device(&usbdev->dev);
-	if (ret)
-		dev_err(&usbdev->dev, "failed to unregister\n");
-
-	usbdev->parent->children[usbdev->portnr - 1] = NULL;
+	for (i = 0; i < usbdev->maxchild; i++)
+		usb_remove_device(usbdev->children[i]);
+	if (usbdev->parent && usbdev->portnr)
+		usbdev->parent->children[usbdev->portnr - 1] = NULL;
 	list_del(&usbdev->list);
-	free(usbdev);
 	dev_count--;
+
+	if (unregister_device(&usbdev->dev))
+		dev_err(&usbdev->dev, "failed to unregister\n");
+	else
+		dev_info(&usbdev->dev, "removed\n");
+
+	usb_free_device(usbdev);
 }
 
 struct usb_device *usb_alloc_new_device(void)
 {
 	struct usb_device *usbdev = xzalloc(sizeof (*usbdev));
 
-	if (!usbdev)
-		return NULL;
-
-	usbdev->devnum = dev_index + 1;
+	usbdev->devnum = ++dev_index;
 	usbdev->maxchild = 0;
 	usbdev->dev.bus = &usb_bus_type;
 	usbdev->setup_packet = dma_alloc(sizeof(*usbdev->setup_packet));
 	usbdev->descriptor = dma_alloc(sizeof(*usbdev->descriptor));
-
-	dev_index++;
 
 	return usbdev;
 }
@@ -508,7 +511,12 @@ int usb_host_detect(struct usb_host *host)
 		host->root_dev = usb_alloc_new_device();
 		host->root_dev->dev.parent = host->hw_dev;
 		host->root_dev->host = host;
-		usb_new_device(host->root_dev);
+
+		ret = usb_new_device(host->root_dev);
+		if (ret) {
+			usb_free_device(host->root_dev);
+			return ret;
+		}
 	}
 
 	device_detect(&host->root_dev->dev);

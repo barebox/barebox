@@ -436,16 +436,6 @@ fail:
 	return -1;
 }
 
-static inline int min3(int a, int b, int c)
-{
-
-	if (b < a)
-		a = b;
-	if (c < a)
-		a = c;
-	return a;
-}
-
 #ifdef CONFIG_MACH_EFIKA_MX_SMARTBOOK
 #include <usb/ulpi.h>
 /*
@@ -717,7 +707,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	wait_ms(1);
-	len = min3(srclen, le16_to_cpu(req->length), length);
+	len = min3(srclen, (int)le16_to_cpu(req->length), length);
 	if (srcptr != NULL && len > 0)
 		memcpy(buffer, srcptr, len);
 	else

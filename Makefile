@@ -992,7 +992,7 @@ CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
 		.tmp_kallsyms* common/barebox_default_env* barebox.ldr \
 		scripts/bareboxenv-target barebox-flash-image \
-		barebox.srec barebox.s5p barebox.ubl \
+		barebox.srec barebox.s5p barebox.ubl barebox.zynq \
 		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart
 
 # Directories & files removed with 'make mrproper'

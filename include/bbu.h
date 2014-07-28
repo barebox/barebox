@@ -1,6 +1,8 @@
 #ifndef __INCLUDE_BBU_H
 #define __INCLUDE_BBU_H
 
+#include <asm-generic/errno.h>
+
 struct bbu_data {
 #define BBU_FLAG_FORCE	(1 << 0)
 #define BBU_FLAG_YES	(1 << 1)

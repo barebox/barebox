@@ -1,0 +1,8 @@
+if ARCH_DIGIC
+
+choice
+	prompt "camera type"
+
+endchoice
+
+endif

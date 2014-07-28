@@ -2,6 +2,7 @@
 #include <mach/esdctl.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <image-metadata.h>
 
 extern char __dtb_imx53_qsb_start[];
 

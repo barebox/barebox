@@ -10,6 +10,7 @@ hostprogs-y                      += fix_size
 hostprogs-y                      += bareboxenv
 hostprogs-y                      += bareboxcrc32
 hostprogs-y                      += kernel-install
+hostprogs-$(CONFIG_IMD)          += bareboximd
 hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
 hostprogs-$(CONFIG_ARCH_MVEBU)   += kwbimage kwboot
 hostprogs-$(CONFIG_ARCH_NETX)    += gen_netx_image
@@ -29,6 +30,7 @@ subdir-$(CONFIG_ARCH_TEGRA)	+= tegra
 targetprogs-$(CONFIG_BAREBOXENV_TARGET) += bareboxenv-target
 targetprogs-$(CONFIG_KERNEL_INSTALL_TARGET) += kernel-install-target
 targetprogs-$(CONFIG_BAREBOXCRC32_TARGET) += bareboxcrc32-target
+targetprogs-$(CONFIG_IMD_TARGET) += bareboximd-target
 
 # Let clean descend into subdirs
 subdir-	+= basic kconfig setupmbr

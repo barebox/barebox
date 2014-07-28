@@ -2,8 +2,46 @@
 
 name=$1
 dtb=$2
+imd=$3
 
 echo "#include <asm-generic/barebox.lds.h>"
+
+le32() {
+	printf ".byte 0x%02x, 0x%02x, 0x%02x, 0x%02x\n" \
+		$(($1 & 0xff))				\
+		$((($1 >> 8) & 0xff))			\
+		$((($1 >> 16) & 0xff))			\
+		$((($1 >> 24) & 0xff))
+}
+
+FDTGET=scripts/dtc/fdtget
+
+if [ "$imd" = "y" ]; then
+	echo ".section .barebox_imd_0.${name},\"a\""
+	echo ".global __imd_${name}_start"
+	echo "__imd_${name}_start:"
+
+	compat=$($FDTGET -d notfound -t bi "$dtb" / compatible | sed "s^ ^,^g")
+	if [ "$compat" != "notfound" ]; then
+
+		compatlen=$($FDTGET -t s "$dtb" / compatible | wc -c)
+		le32 0x640c8005
+		le32 $compatlen
+		echo ".byte " $compat
+		echo ".balign 4"
+	fi
+
+	model=$($FDTGET -d notfound -t bi "$dtb" / model | sed "s^ ^,^g")
+
+	if [ "$model" != "notfound" ]; then
+		modellen=$($FDTGET -t s "$dtb" / model | wc -c)
+		le32 0x640c8004
+		le32 $compatlen
+		echo ".byte " $model
+		echo ".balign 4"
+	fi
+fi
+
 echo ".section .dtb.rodata.${name},\"a\""
 echo ".balign STRUCT_ALIGNMENT"
 echo ".global __dtb_${name}_start"
@@ -12,3 +50,7 @@ echo ".incbin \"$dtb\""
 echo "__dtb_${name}_end:"
 echo ".global __dtb_${name}_end"
 echo ".balign STRUCT_ALIGNMENT"
+
+if [ "$imd" = "y" ]; then
+	echo ".word __imd_${name}_start"
+fi

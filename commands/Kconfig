@@ -148,6 +148,15 @@ config CMD_IOMEM
 	  Show information about iomem/ioport usage. Pendant to
 	  'cat /proc/iomem' and 'cat /proc/ioports' under Linux.
 
+config CMD_IMD
+	tristate
+	prompt "imd"
+	select IMD
+	help
+	  barebox images can have metadata in them which contains information
+	  like the barebox version and the build time. Say yes here to get the
+	  imd command which can extract that information from images.
+
 config CMD_MEMINFO
 	tristate
 	prompt "meminfo"

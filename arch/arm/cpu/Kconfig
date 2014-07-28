@@ -39,6 +39,19 @@ config CPU_ARM926T
 	  Say Y if you want support for the ARM926T processor.
 	  Otherwise, say N.
 
+# ARM946E-S
+config CPU_ARM946E
+	bool
+	depends on !MMU
+	select CPU_32v4T
+	help
+	  ARM946E-S is a member of the ARM9E-S family of high-
+	  performance, 32-bit system-on-chip processor solutions.
+	  The TCM and ARMv5TE 32-bit instruction set is supported.
+
+	  Say Y if you want support for the ARM946E-S processor.
+	  Otherwise, say N.
+
 # Feroceon
 config CPU_FEROCEON
 	bool

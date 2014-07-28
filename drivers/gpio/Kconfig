@@ -9,6 +9,10 @@ menu "GPIO"
 config GPIO_GENERIC
 	bool
 
+config GPIO_DIGIC
+	bool "GPIO support for Canon DIGIC"
+	depends on ARCH_DIGIC
+
 config GPIO_BCM2835
 	bool "GPIO support for BCM2835"
 	depends on ARCH_BCM2835

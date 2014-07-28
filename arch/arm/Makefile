@@ -185,6 +185,16 @@ ifeq ($(machine-y),zynq)
 KBUILD_IMAGE := barebox.zynq
 endif
 
+quiet_cmd_canon_a1100_image = DD      $@
+      cmd_canon_a1100_image = scripts/canon-a1100-image $< $@ || \
+	echo "WARNING: Couldn't create Canon A1100 image due to previous errors."
+barebox.canon-a1100.bin: $(KBUILD_BINARY) FORCE
+	$(call if_changed,canon_a1100_image)
+
+ifeq ($(CONFIG_MACH_CANON_A1100),y)
+KBUILD_IMAGE := barebox.canon-a1100.bin
+endif
+
 KWBIMAGE_OPTS = \
 	-c -i $(srctree)/$(BOARD)/kwbimage.cfg -d $(TEXT_BASE) -e $(TEXT_BASE)
 

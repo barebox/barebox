@@ -1691,6 +1691,14 @@ config CMD_GPIO
 
 	  Usage: gpio_set_value GPIO VALUE
 
+config CMD_HWCLOCK
+	bool
+	depends on RTC_CLASS
+	prompt "hwclock command"
+	default y
+	help
+	  The hwclock command allows to query or set the hardware clock (RTC).
+
 config CMD_I2C
 	bool
 	depends on I2C

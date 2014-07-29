@@ -1,0 +1,15 @@
+#
+# RTC class/drivers configuration
+#
+
+config RTC_LIB
+	bool
+
+menuconfig RTC_CLASS
+	bool "Real Time Clock"
+	default n
+	select RTC_LIB
+	help
+	  Generic RTC class support. If you say yes here, you will
+	  be allowed to plug one or more RTCs to your system. You will
+	  probably want to enable one or more of the interfaces below.

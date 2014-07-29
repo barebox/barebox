@@ -53,4 +53,6 @@ void to_tm (int, struct rtc_time *);
 unsigned long mktime (unsigned int, unsigned int, unsigned int,
 		      unsigned int, unsigned int, unsigned int);
 
+extern struct rtc_device *rtc_lookup(const char *name);
+
 #endif	/* _RTC_H_ */

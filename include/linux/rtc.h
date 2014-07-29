@@ -17,6 +17,7 @@
 extern int rtc_month_days(unsigned int month, unsigned int year);
 extern int rtc_valid_tm(struct rtc_time *tm);
 extern int rtc_tm_to_time(struct rtc_time *tm, unsigned long *time);
+extern void rtc_time_to_tm(unsigned long time, struct rtc_time *tm);
 
 struct rtc_class_ops;
 

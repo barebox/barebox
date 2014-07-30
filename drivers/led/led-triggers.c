@@ -145,7 +145,7 @@ int led_get_trigger(enum led_trigger trigger)
 	return led_get_number(triggers[trigger].led);
 }
 
-int trigger_init(void)
+static int trigger_init(void)
 {
 	return poller_register(&trigger_poller);
 }

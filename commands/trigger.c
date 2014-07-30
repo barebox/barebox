@@ -68,8 +68,9 @@ static int do_trigger(int argc, char *argv[])
 		break;
 
 	case LED_COMMAND_DISABLE_TRIGGER:
-		led_set_trigger(trigger, NULL);
-		return 0;
+		ret = led_set_trigger(trigger, NULL);
+		break;
+
 	case LED_COMMAND_SET_TRIGGER:
 		if (argc - optind != 1)
 			return COMMAND_ERROR_USAGE;

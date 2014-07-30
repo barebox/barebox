@@ -124,7 +124,7 @@ int led_set_trigger(enum led_trigger trigger, struct led *led)
 
 	triggers[trigger].led = led;
 
-	if (trigger == LED_TRIGGER_DEFAULT_ON)
+	if (led && trigger == LED_TRIGGER_DEFAULT_ON)
 		led_set(triggers[trigger].led, triggers[trigger].led->max_value);
 
 	return 0;

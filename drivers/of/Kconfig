@@ -27,6 +27,12 @@ config OF_GPIO
 	depends on OFDEVICE
 	def_bool y
 
+config OF_PCI
+	bool
+	depends on PCI
+	help
+	  OpenFirmware PCI bus accessors
+
 config OF_BAREBOX_DRIVERS
 	depends on OFDEVICE
 	depends on ENV_HANDLING

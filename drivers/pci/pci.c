@@ -211,19 +211,29 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 				size = -(mask & 0xfffffffe);
 				DBG("  PCI: pbar%d: mask=%08x io %d bytes\n", bar, mask, size);
 				pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_io);
+				dev->resource[bar].flags = IORESOURCE_IO;
 				last_addr = last_io;
 				last_io += size;
-
 			} else { /* MEM */
 				size = -(mask & 0xfffffff0);
 				DBG("  PCI: pbar%d: mask=%08x memory %d bytes\n", bar, mask, size);
 				pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem);
+				dev->resource[bar].flags = IORESOURCE_MEM;
 				last_addr = last_mem;
 				last_mem += size;
+
+				if ((mask & PCI_BASE_ADDRESS_MEM_TYPE_MASK) ==
+				    PCI_BASE_ADDRESS_MEM_TYPE_64) {
+					dev->resource[bar].flags |= IORESOURCE_MEM_64;
+					pci_write_config_dword(dev,
+					       PCI_BASE_ADDRESS_1 + bar * 4, 0);
+				}
 			}
 
 			dev->resource[bar].start = last_addr;
 			dev->resource[bar].end = last_addr + size - 1;
+			if (dev->resource[bar].flags & IORESOURCE_MEM_64)
+				bar++;
 		}
 	}
 

@@ -186,9 +186,6 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 
 		DBG("PCI: %02x:%02x [%04x/%04x]\n", bus->number, dev->devfn, dev->vendor, dev->device);
 
-		list_add_tail(&dev->bus_list, &bus->devices);
-		pci_register_device(dev);
-
 		if (class == PCI_CLASS_BRIDGE_HOST) {
 			DBG("PCI: skip pci host bridge\n");
 			continue;
@@ -235,6 +232,9 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			if (dev->resource[bar].flags & IORESOURCE_MEM_64)
 				bar++;
 		}
+
+		list_add_tail(&dev->bus_list, &bus->devices);
+		pci_register_device(dev);
 	}
 
 	/*

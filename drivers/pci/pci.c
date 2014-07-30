@@ -191,6 +191,10 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			continue;
 		}
 
+		pci_read_config_byte(dev, PCI_COMMAND, &cmd);
+		pci_write_config_byte(dev, PCI_COMMAND,
+				      cmd & ~(PCI_COMMAND_IO | PCI_COMMAND_MEMORY));
+
 		for (bar = 0; bar < 6; bar++) {
 			resource_size_t last_addr;
 
@@ -233,6 +237,7 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 				bar++;
 		}
 
+		pci_write_config_byte(dev, PCI_COMMAND, cmd);
 		list_add_tail(&dev->bus_list, &bus->devices);
 		pci_register_device(dev);
 	}

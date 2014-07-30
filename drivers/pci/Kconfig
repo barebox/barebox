@@ -24,6 +24,12 @@ config PCI_DEBUG
 
 	  When in doubt, say N.
 
+config PCI_MVEBU
+	bool "Marvell EBU PCIe driver"
+	depends on ARCH_MVEBU
+	select OF_PCI
+	select PCI
+
 endmenu
 
 endif

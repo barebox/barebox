@@ -93,6 +93,7 @@ config ARCH_MVEBU
 	select GPIOLIB
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
+	select HW_HAS_PCI
 	select MVEBU_MBUS
 	select OFTREE
 	select OF_ADDRESS_PCI

@@ -116,6 +116,88 @@ out:
 EXPORT_SYMBOL_GPL(read_file_line);
 
 /**
+ * read_file_2 - read a file to an allocated buffer
+ * @filename:  The filename to read
+ * @size:      After successful return contains the size of the file
+ * @outbuf:    contains a pointer to the file data after successful return
+ * @max_size:  The maximum size to read. Use FILESIZE_MAX for reading files
+ *             of any size.
+ *
+ * This function reads a file to an allocated buffer. At maximum @max_size
+ * bytes are read. The actual read size is returned in @size. -EFBIG is
+ * returned if the file is bigger than @max_size, but the buffer is read
+ * anyway up to @max_size in this case. Free the buffer with free() after
+ * usage.
+ *
+ * Return: 0 for success, or negative error code. -EFBIG is returned
+ * when the file has been bigger than max_size.
+ */
+int read_file_2(const char *filename, size_t *size, void **outbuf,
+		loff_t max_size)
+{
+	int fd;
+	struct stat s;
+	void *buf = NULL;
+	const char *tmpfile = "/.read_file_tmp";
+	int ret;
+	loff_t read_size;
+
+again:
+	ret = stat(filename, &s);
+	if (ret)
+		return ret;
+
+	if (max_size == FILESIZE_MAX)
+		read_size = s.st_size;
+	else
+		read_size = max_size;
+
+	if (read_size == FILESIZE_MAX) {
+		ret = copy_file(filename, tmpfile, 0);
+		if (ret)
+			return ret;
+		filename = tmpfile;
+		goto again;
+	}
+
+	buf = xzalloc(read_size + 1);
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0)
+		goto err_out;
+
+	ret = read_full(fd, buf, read_size);
+	if (ret < 0)
+		goto err_out1;
+
+	close(fd);
+
+	if (size)
+		*size = ret;
+
+	if (filename == tmpfile)
+		unlink(tmpfile);
+
+	*outbuf = buf;
+
+	if (read_size < s.st_size)
+		return -EFBIG;
+	else
+		return 0;
+
+err_out1:
+	close(fd);
+err_out:
+	free(buf);
+
+	if (filename == tmpfile)
+		unlink(tmpfile);
+
+	return ret;
+}
+EXPORT_SYMBOL(read_file_2);
+
+/**
  * read_file - read a file to an allocated buffer
  * @filename:  The filename to read
  * @size:      After successful return contains the size of the file
@@ -128,51 +210,12 @@ EXPORT_SYMBOL_GPL(read_file_line);
  */
 void *read_file(const char *filename, size_t *size)
 {
-	int fd;
-	struct stat s;
-	void *buf = NULL;
-	const char *tmpfile = "/.read_file_tmp";
 	int ret;
+	void *buf;
 
-again:
-	if (stat(filename, &s))
-		return NULL;
-
-	if (s.st_size == FILESIZE_MAX) {
-		ret = copy_file(filename, tmpfile, 0);
-		if (ret)
-			return NULL;
-		filename = tmpfile;
-		goto again;
-	}
-
-	buf = xzalloc(s.st_size + 1);
-
-	fd = open(filename, O_RDONLY);
-	if (fd < 0)
-		goto err_out;
-
-	ret = read_full(fd, buf, s.st_size);
-	if (ret < 0)
-		goto err_out1;
-
-	close(fd);
-
-	if (size)
-		*size = s.st_size;
-
-	if (filename == tmpfile)
-		unlink(tmpfile);
-
-	return buf;
-
-err_out1:
-	close(fd);
-err_out:
-	free(buf);
-
-	if (filename == tmpfile)
-		unlink(tmpfile);
+	ret = read_file_2(filename, size, &buf, FILESIZE_MAX);
+	if (!ret)
+		return buf;
 
 	return NULL;
 }

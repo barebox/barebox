@@ -22,6 +22,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <libbb.h>
+#include <libfile.h>
 #include <uncompress.h>
 #include <fcntl.h>
 #include <fs.h>

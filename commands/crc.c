@@ -22,6 +22,7 @@
 #include <fs.h>
 #include <getopt.h>
 #include <malloc.h>
+#include <libfile.h>
 #include <environment.h>
 
 static int crc_from_file(const char* file, ulong *crc)

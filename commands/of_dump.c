@@ -18,6 +18,7 @@
  */
 
 #include <common.h>
+#include <libfile.h>
 #include <fdt.h>
 #include <of.h>
 #include <command.h>

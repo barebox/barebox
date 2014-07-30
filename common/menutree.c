@@ -15,6 +15,7 @@
 #include <glob.h>
 #include <menu.h>
 #include <fs.h>
+#include <libfile.h>
 
 #include <linux/stat.h>
 

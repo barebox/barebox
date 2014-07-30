@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <linux/stat.h>
 #include <errno.h>
+#include <libfile.h>
 #include <malloc.h>
 #include <xfuncs.h>
 

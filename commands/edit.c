@@ -21,6 +21,7 @@
 #include <fs.h>
 #include <linux/ctype.h>
 #include <fcntl.h>
+#include <libfile.h>
 #include <readkey.h>
 #include <errno.h>
 #include <xfuncs.h>

@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <libgen.h>
 #include <getopt.h>
+#include <libfile.h>
 
 /**
  * @param[in] argc Argument count from command line

@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <getopt.h>
+#include <libfile.h>
 
 static int uimage_fd;
 

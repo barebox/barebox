@@ -24,6 +24,7 @@
 #include <fs.h>
 #include <net.h>
 #include <libbb.h>
+#include <libfile.h>
 
 #define TFTP_MOUNT_PATH	"/.tftp_tmp_path"
 

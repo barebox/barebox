@@ -17,6 +17,7 @@
 #include <uimagefs.h>
 #include <libbb.h>
 #include <rtc.h>
+#include <libfile.h>
 
 static bool uimagefs_is_data_file(struct uimagefs_handle_data *d)
 {

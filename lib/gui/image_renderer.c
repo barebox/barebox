@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <malloc.h>
+#include <libfile.h>
 
 static LIST_HEAD(image_renderers);
 

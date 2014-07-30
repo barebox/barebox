@@ -11,6 +11,7 @@ static struct pci_controller *hose_head, **hose_tail = &hose_head;
 
 LIST_HEAD(pci_root_buses);
 EXPORT_SYMBOL(pci_root_buses);
+static u8 bus_index;
 
 static struct pci_bus *pci_alloc_bus(void)
 {
@@ -36,10 +37,14 @@ void register_pci_controller(struct pci_controller *hose)
 
 	bus = pci_alloc_bus();
 	hose->bus = bus;
+	bus->host = hose;
 	bus->ops = hose->pci_ops;
 	bus->resource[0] = hose->mem_resource;
 	bus->resource[1] = hose->io_resource;
+	bus->number = bus_index++;
 
+	if (hose->set_busno)
+		hose->set_busno(hose, bus->number);
 	pci_scan_bus(bus);
 
 	list_add_tail(&bus->node, &pci_root_buses);

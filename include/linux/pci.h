@@ -91,9 +91,6 @@ struct pci_dev {
 	struct list_head bus_list;	/* node in per-bus list */
 	struct pci_bus	*bus;		/* bus this device is on */
 	struct pci_bus	*subordinate;	/* bus this device bridges to */
-
-	void		*sysdata;	/* hook for sys-specific extension */
-	struct proc_dir_entry *procent;	/* device entry in /proc/bus/pci */
 	struct pci_slot	*slot;		/* Physical slot this device is in */
 
 	struct device_d dev;
@@ -118,6 +115,7 @@ struct pci_dev {
 #define	to_pci_dev(dev) container_of(dev, struct pci_dev, dev)
 
 struct pci_bus {
+	struct pci_controller *host;	/* associated host controller */
 	struct list_head node;		/* node in list of buses */
 	struct list_head children;	/* list of child buses */
 	struct list_head devices;	/* list of devices on this bus */
@@ -126,8 +124,6 @@ struct pci_bus {
 	struct list_head resources;	/* address space routed to this bus */
 
 	struct pci_ops	*ops;		/* configuration access functions */
-	void		*sysdata;	/* hook for sys-specific extension */
-	struct proc_dir_entry *procdir;	/* directory entry in /proc/bus/pci */
 
 	unsigned char	number;		/* bus number */
 	unsigned char	primary;	/* number of primary bridge */
@@ -167,10 +163,8 @@ struct pci_controller {
 
 	unsigned int index;
 
-	/* Optional access methods for reading/writing the bus number
-	   of the PCI controller */
-	int (*get_busno)(void);
-	void (*set_busno)(int busno);
+	/* Optional access method for writing the bus number */
+	void (*set_busno)(struct pci_controller *host, int busno);
 };
 
 struct pci_driver {

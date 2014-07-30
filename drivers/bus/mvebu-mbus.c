@@ -188,7 +188,7 @@ static int mvebu_mbus_window_conflicts(struct mvebu_mbus_state *mbus,
 				       phys_addr_t base, size_t size,
 				       u8 target, u8 attr)
 {
-	u64 end = (u64)base + size;
+	u64 end = (u64)base + size - 1;
 	int win;
 
 	for (win = 0; win < mbus->soc->num_wins; win++) {
@@ -204,7 +204,7 @@ static int mvebu_mbus_window_conflicts(struct mvebu_mbus_state *mbus,
 		if (!enabled)
 			continue;
 
-		wend = wbase + wsize;
+		wend = wbase + wsize - 1;
 
 		/*
 		 * Check if the current window overlaps with the
@@ -662,7 +662,7 @@ static void mvebu_mbus_get_pcie_resources(struct device_node *np,
 					 reg, ARRAY_SIZE(reg));
 	if (!ret) {
 		mem->start = reg[0];
-		mem->end = mem->start + reg[1];
+		mem->end = mem->start + reg[1] - 1;
 		mem->flags = IORESOURCE_MEM;
 	}
 
@@ -670,7 +670,7 @@ static void mvebu_mbus_get_pcie_resources(struct device_node *np,
 					 reg, ARRAY_SIZE(reg));
 	if (!ret) {
 		io->start = reg[0];
-		io->end = io->start + reg[1];
+		io->end = io->start + reg[1] - 1;
 		io->flags = IORESOURCE_IO;
 	}
 }

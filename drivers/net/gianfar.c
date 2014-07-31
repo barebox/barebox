@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <asm/io.h>
 #include <linux/phy.h>
+#include <linux/err.h>
 #include "gianfar.h"
 
 /* 2 seems to be the minimum number of TX descriptors to make it work. */
@@ -489,6 +490,8 @@ static int gfar_probe(struct device_d *dev)
 
 	priv->mdiobus_tbi = gfar_info->mdiobus_tbi;
 	priv->regs = dev_get_mem_region(dev, 0);
+	if (IS_ERR(priv->regs))
+		return PTR_ERR(priv->regs);
 	priv->phyaddr = gfar_info->phyaddr;
 	priv->tbicr = gfar_info->tbicr;
 	priv->tbiana = gfar_info->tbiana;
@@ -553,8 +556,8 @@ static int gfar_phy_probe(struct device_d *dev)
 	phy = xzalloc(sizeof(*phy));
 	phy->dev = dev;
 	phy->regs = dev_get_mem_region(dev, 0);
-	if (!phy->regs)
-		return -ENOMEM;
+	if (IS_ERR(phy->regs))
+		return PTR_ERR(phy->regs);
 
 	phy->miibus.read = gfar_miiphy_read;
 	phy->miibus.write = gfar_miiphy_write;
@@ -584,8 +587,8 @@ static int gfar_tbiphy_probe(struct device_d *dev)
 	phy = xzalloc(sizeof(*phy));
 	phy->dev = dev;
 	phy->regs = dev_get_mem_region(dev, 0);
-	if (!phy->regs)
-		return -ENOMEM;
+	if (IS_ERR(phy->regs))
+		return PTR_ERR(phy->regs);
 
 	phy->miibus.read = gfar_miiphy_read;
 	phy->miibus.write = gfar_miiphy_write;

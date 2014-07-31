@@ -28,6 +28,7 @@
 #include <io.h>
 #include <of.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <linux/phy.h>
 
 #define SMI_DATA_SHIFT          0
@@ -113,8 +114,8 @@ static int mvebu_mdio_probe(struct device_d *dev)
 	dev->priv = priv;
 
 	priv->regs = dev_get_mem_region(dev, 0);
-	if (!priv->regs)
-		return -ENOMEM;
+	if (IS_ERR(priv->regs))
+		return PTR_ERR(priv->regs);
 
 	priv->clk = clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))

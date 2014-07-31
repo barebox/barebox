@@ -265,7 +265,7 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, num);
 	if (IS_ERR(res))
-		return NULL;
+		return ERR_CAST(res);
 
 	return (void __force *)res->start;
 }
@@ -348,6 +348,8 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 	if (flags & PROT_WRITE)
 		return -EACCES;
 	*map = dev_get_mem_region(cdev->dev, 0);
+	if (IS_ERR(*map))
+		return PTR_ERR(*map);
 	return 0;
 }
 
@@ -357,6 +359,9 @@ int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 		return -EINVAL;
 
 	*map = dev_get_mem_region(cdev->dev, 0);
+	if (IS_ERR(*map))
+		return PTR_ERR(*map);
+
 	return 0;
 }
 

@@ -17,6 +17,7 @@
 #include <of_address.h>
 #include <of_mtd.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <mach/gpmc_nand.h>
 #include <mach/gpmc.h>
 
@@ -404,8 +405,8 @@ static int gpmc_probe_nand_child(struct device_d *dev,
 	}
 
 	gpmc_base = dev_get_mem_region(dev, 0);
-	if (!gpmc_base)
-		return -ENODEV;
+	if (IS_ERR(gpmc_base))
+		return PTR_ERR(gpmc_base);
 
 	gpmc_nand_data.cs = val;
 	gpmc_nand_data.of_node = child;

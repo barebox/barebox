@@ -14,6 +14,13 @@ obj-m := $(filter-out $(obj-y),$(obj-m))
 lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
 
 
+pbl-y		+= $(pbl-dtb-y)
+obj-y		+= $(obj-dtb-y)
+extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(obj-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb,$(obj-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(pbl-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb,$(pbl-dtb-y))
+
 # Handle objects in subdirs
 # ---------------------------------------------------------------------------
 # o if we encounter foo/ in $(obj-y), replace it by foo/built-in.o

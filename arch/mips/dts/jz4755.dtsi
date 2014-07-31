@@ -8,6 +8,11 @@
 		#size-cells = <1>;
 		ranges;
 
+		wdt: wdt@b0002000 {
+			compatible = "ingenic,jz4740-wdt";
+			reg = <0xb0002000 0x10>;
+		};
+
 		serial0: serial@b0030000 {
 			compatible = "ingenic,jz4740-uart";
 			reg = <0xb0030000 0x20>;

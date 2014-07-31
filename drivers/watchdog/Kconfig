@@ -21,4 +21,11 @@ config WATCHDOG_IMX
 	depends on ARCH_IMX
 	help
 	  Add support for watchdog found on Freescale i.MX SoCs.
+
+config WATCHDOG_JZ4740
+	bool "Ingenic jz4740 SoC hardware watchdog"
+	depends on MACH_MIPS_XBURST
+	help
+	  Hardware driver for the built-in watchdog timer on Ingenic jz4740 SoCs.
+
 endif

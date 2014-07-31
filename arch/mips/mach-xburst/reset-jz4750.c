@@ -24,8 +24,6 @@
 #include <io.h>
 #include <mach/jz4750d_regs.h>
 
-#define JZ_EXTAL 24000000
-
 static void __noreturn jz4750d_halt(void)
 {
 	while (1) {
@@ -38,22 +36,6 @@ static void __noreturn jz4750d_halt(void)
 
 	unreachable();
 }
-
-void __noreturn reset_cpu(ulong addr)
-{
-	__raw_writew(WDT_TCSR_PRESCALE4 | WDT_TCSR_EXT_EN, (u16 *)WDT_TCSR);
-	__raw_writew(0, (u16 *)WDT_TCNT);
-
-	/* reset after 4ms */
-	__raw_writew(JZ_EXTAL / 1000, (u16 *)WDT_TDR);
-	/* enable wdt clock */
-	__raw_writel(TCU_TSCR_WDTSC, (u32 *)TCU_TSCR);
-	/* start wdt */
-	__raw_writeb(WDT_TCER_TCEN, (u8 *)WDT_TCER);
-
-	unreachable();
-}
-EXPORT_SYMBOL(reset_cpu);
 
 void __noreturn poweroff()
 {

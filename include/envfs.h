@@ -43,6 +43,7 @@ struct envfs_super {
 	uint8_t minor;			/* minor */
 	uint16_t future;		/* reserved for future use */
 	uint32_t flags;			/* feature flags */
+#define ENVFS_FLAGS_FORCE_BUILT_IN	(1 << 0)
 	uint32_t sb_crc;		/* crc for the superblock */
 };
 

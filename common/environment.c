@@ -447,6 +447,15 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 	if (ret)
 		goto out;
 
+	if (super.flags & ENVFS_FLAGS_FORCE_BUILT_IN) {
+		printf("found force-builtin environment, using defaultenv\n");
+		ret = defaultenv_load(dir, 0);
+		if (ret)
+			printf("failed to load default environment: %s\n",
+					strerror(-ret));
+		goto out;
+	}
+
 	buf = xmalloc(size);
 
 	rbuf = buf;

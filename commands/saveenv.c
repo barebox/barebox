@@ -37,7 +37,7 @@ static int do_saveenv(int argc, char *argv[])
 	else
 		filename = argv[1];
 
-	ret = envfs_save(filename, dirname);
+	ret = envfs_save(filename, dirname, 0);
 
 	return ret;
 }

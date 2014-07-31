@@ -29,6 +29,7 @@
 #include <fb.h>
 #include <init.h>
 #include <malloc.h>
+#include <linux/err.h>
 
 #include <mach/clock.h>
 #include <mach/pxa-regs.h>
@@ -499,6 +500,8 @@ static int pxafb_probe(struct device_d *dev)
 
 	fbi->mode = pdata->mode;
 	fbi->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(fbi->regs))
+		return PTR_ERR(fbi->regs);
 
 	fbi->dev = dev;
 	fbi->lcd_power = pdata->lcd_power;

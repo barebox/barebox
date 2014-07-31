@@ -343,8 +343,8 @@ static int mvebu_spi_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(*priv));
 	priv->base = dev_request_mem_region(dev, 0);
-	if (!priv->base) {
-		ret = -EINVAL;
+	if (IS_ERR(priv->base)) {
+		ret = PTR_ERR(priv->base);
 		goto err_free;
 	}
 	priv->set_baudrate = (void *)match->data;

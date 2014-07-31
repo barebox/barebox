@@ -104,6 +104,8 @@ static int imx_gpt_probe(struct device_d *dev)
 		return ret;
 
 	timer_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(timer_base))
+		return PTR_ERR(timer_base);
 
 	/* setup GP Timer 1 */
 	writel(TCTL_SWR, timer_base + GPT_TCTL);

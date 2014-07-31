@@ -62,6 +62,8 @@ static int bcm2835_cs_probe(struct device_d *dev)
 
 	rate = clk_get_rate(stc_clk);
 	stc_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(stc_base))
+		return PTR_ERR(stc_base);
 
 	clocks_calc_mult_shift(&bcm2835_stc.mult, &bcm2835_stc.shift, rate, NSEC_PER_SEC, 60);
 	init_clock(&bcm2835_stc);

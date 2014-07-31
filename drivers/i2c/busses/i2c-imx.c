@@ -548,6 +548,9 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	i2c_fsl->adapter.dev.parent = pdev;
 	i2c_fsl->adapter.dev.device_node = pdev->device_node;
 	i2c_fsl->base = dev_request_mem_region(pdev, 0);
+	if (IS_ERR(i2c_fsl->base))
+		return PTR_ERR(i2c_fsl->base);
+
 	i2c_fsl->dfsrr = -1;
 
 	/* Set up clock divider */

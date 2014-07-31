@@ -169,6 +169,8 @@ static int imx28_ccm_probe(struct device_d *dev)
 	void __iomem *regs;
 
 	regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(regs))
+		return PTR_ERR(regs);
 
 	mx28_clocks_init(regs);
 

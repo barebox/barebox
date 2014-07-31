@@ -163,6 +163,9 @@ static int ar933x_serial_probe(struct device_d *dev)
 	cdev = xzalloc(sizeof(struct console_device));
 	priv = xzalloc(sizeof(struct ar933x_uart_priv));
 	priv->base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->base))
+		return PTR_ERR(priv->base);
+
 	dev->priv = priv;
 
 	cdev->dev = dev;

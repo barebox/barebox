@@ -23,6 +23,7 @@
 #include <command.h>
 #include <init.h>
 #include <io.h>
+#include <linux/err.h>
 
 #include <mach/tegra20-pmc.h>
 
@@ -40,9 +41,9 @@ EXPORT_SYMBOL(reset_cpu);
 static int tegra20_pmc_probe(struct device_d *dev)
 {
 	pmc_base = dev_request_mem_region(dev, 0);
-	if (!pmc_base) {
+	if (IS_ERR(pmc_base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(pmc_base);
 	}
 
 	return 0;

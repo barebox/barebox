@@ -183,6 +183,9 @@ static int mxs_ocotp_probe(struct device_d *dev)
 	struct ocotp_priv *priv = xzalloc(sizeof (*priv));
 
 	priv->base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->base))
+		return PTR_ERR(priv->base);
+
 	priv->clk = clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return PTR_ERR(priv->clk);

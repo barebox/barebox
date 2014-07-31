@@ -24,6 +24,7 @@
 #include <usb/chipidea-imx.h>
 #include <usb/ulpi.h>
 #include <usb/fsl_usb2.h>
+#include <linux/err.h>
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
@@ -242,8 +243,8 @@ static int imx_chipidea_probe(struct device_d *dev)
 	regulator_enable(ci->vbus);
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base)
-		return -ENODEV;
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	ci->base = base;
 

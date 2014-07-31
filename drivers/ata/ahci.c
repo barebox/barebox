@@ -28,6 +28,7 @@
 #include <malloc.h>
 #include <scsi.h>
 #include <linux/ctype.h>
+#include <linux/err.h>
 #include <disks.h>
 #include <asm/mmu.h>
 #include <ata_drive.h>
@@ -654,6 +655,8 @@ static int ahci_probe(struct device_d *dev)
 	ahci = xzalloc(sizeof(*ahci));
 
 	regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(regs))
+		return PTR_ERR(regs);
 
 	ahci->dev = dev;
 	ahci->mmio_base = regs;

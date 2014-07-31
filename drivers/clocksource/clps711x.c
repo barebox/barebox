@@ -38,9 +38,9 @@ static int clps711x_cs_probe(struct device_d *dev)
 
 	rate = clk_get_rate(timer_clk);
 	clps711x_timer_base = dev_request_mem_region(dev, 0);
-	if (!clps711x_timer_base) {
+	if (IS_ERR(clps711x_timer_base)) {
 		clk_put(timer_clk);
-		return -ENOENT;
+		return PTR_ERR(clps711x_timer_base);
 	}
 
 	clocks_calc_mult_shift(&clps711x_cs.mult, &clps711x_cs.shift, rate,

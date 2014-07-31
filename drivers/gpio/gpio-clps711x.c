@@ -26,17 +26,21 @@ static int clps711x_gpio_probe(struct device_d *dev)
 		return -ENODEV;
 
 	dat = dev_request_mem_region(dev, 0);
+	if (IS_ERR(dat))
+		return PTR_ERR(dat);
+
 	switch (id) {
 	case 3:
 		dir_inv = dev_request_mem_region(dev, 1);
+		if (IS_ERR(dir_inv))
+			return PTR_ERR(dir_inv);
 		break;
 	default:
 		dir = dev_request_mem_region(dev, 1);
+		if (IS_ERR(dir))
+			return PTR_ERR(dir);
 		break;
 	}
-
-	if (!dat || (!dir && !dir_inv))
-		return -EINVAL;
 
 	bgc = xzalloc(sizeof(struct bgpio_chip));
 	if (!bgc)

@@ -94,8 +94,8 @@ static int orion_nand_probe(struct device_d *dev)
 	chip = &priv->chip;
 
 	io_base = dev_request_mem_region(dev, 0);
-	if (!io_base)
-		return -EBUSY;
+	if (IS_ERR(io_base))
+		return PTR_ERR(io_base);
 
 	if (!of_property_read_u32(dev_node, "cle", &val))
 		priv->cle = (u8)val;

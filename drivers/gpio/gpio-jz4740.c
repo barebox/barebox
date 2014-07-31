@@ -21,6 +21,7 @@
 #include <io.h>
 #include <gpio.h>
 #include <malloc.h>
+#include <linux/err.h>
 
 #define JZ_REG_GPIO_PIN			0x00
 #define JZ_REG_GPIO_DATA		0x10
@@ -94,9 +95,9 @@ static int jz4740_gpio_probe(struct device_d *dev)
 	int ret;
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base) {
+	if (IS_ERR(base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(base);
 	}
 
 	jz4740_gpio = xzalloc(sizeof(*jz4740_gpio));

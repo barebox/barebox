@@ -24,6 +24,7 @@
 #include <init.h>
 #include <io.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <mach/lowlevel.h>
 
 /* register definitions */
@@ -51,9 +52,9 @@ static int tegra20_timer_probe(struct device_d *dev)
 		return -EBUSY;
 
 	timer_base = dev_request_mem_region(dev, 0);
-	if (!timer_base) {
+	if (IS_ERR(timer_base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(timer_base);
 	}
 
 	/*

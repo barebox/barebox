@@ -328,6 +328,8 @@ static int imx6_ccm_probe(struct device_d *dev)
 
 	anatop_base = (void *)MX6_ANATOP_BASE_ADDR;
 	ccm_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(ccm_base))
+		return PTR_ERR(ccm_base);
 
 	base = anatop_base;
 

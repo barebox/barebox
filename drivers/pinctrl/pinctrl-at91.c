@@ -653,8 +653,8 @@ static int at91_gpio_probe(struct device_d *dev)
 
 	gpio_banks = max(gpio_banks, alias_idx + 1);
 	at91_gpio->regbase = dev_request_mem_region(dev, 0);
-	if (!at91_gpio->regbase)
-		return -EBUSY;
+	if (IS_ERR(at91_gpio->regbase))
+		return PTR_ERR(at91_gpio->regbase);
 
 	at91_gpio->chip.ops = &at91_gpio_ops;
 	at91_gpio->chip.ngpio = MAX_NB_GPIO_PER_BANK;

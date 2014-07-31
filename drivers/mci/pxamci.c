@@ -17,6 +17,7 @@
 #include <clock.h>
 #include <init.h>
 #include <mci.h>
+#include <linux/err.h>
 
 #include <mach/clock.h>
 #include <mach/mci_pxa2xx.h>
@@ -339,6 +340,8 @@ static int pxamci_probe(struct device_d *dev)
 	clk_enable();
 	host = xzalloc(sizeof(*host));
 	host->base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(host->base))
+		return PTR_ERR(host->base);
 
 	host->mci.init = pxamci_init;
 	host->mci.send_cmd = pxamci_request;

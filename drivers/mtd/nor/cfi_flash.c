@@ -39,6 +39,7 @@
 #include <io.h>
 #include <errno.h>
 #include <progress.h>
+#include <linux/err.h>
 #include "cfi_flash.h"
 
 /*
@@ -987,6 +988,9 @@ static int cfi_probe (struct device_d *dev)
 	info->flash_id = FLASH_UNKNOWN;
 	info->cmd_reset = FLASH_CMD_RESET;
 	info->base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(info->base))
+		return PTR_ERR(info->base);
+
 	info->dev = dev;
 	info->size = flash_get_size(info);
 

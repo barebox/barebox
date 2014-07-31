@@ -149,9 +149,9 @@ static int tegra_gpio_probe(struct device_d *dev)
 	}
 
 	gpio_base = dev_request_mem_region(dev, 0);
-	if (!gpio_base) {
+	if (IS_ERR(gpio_base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(gpio_base);
 	}
 
 	for (i = 0; i < config->bank_count; i++) {

@@ -36,6 +36,7 @@
 #include <errno.h>
 #include <gpio.h>
 #include <init.h>
+#include <linux/err.h>
 
 #define OMAP_GPIO_OE		0x0034
 #define OMAP_GPIO_DATAIN	0x0038
@@ -147,6 +148,9 @@ static int omap_gpio_probe(struct device_d *dev)
 
 	omapgpio = xzalloc(sizeof(*omapgpio));
 	omapgpio->base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(omapgpio->base))
+		return PTR_ERR(omapgpio->base);
+
 	if (drvdata)
 		omapgpio->base += drvdata->regofs;
 

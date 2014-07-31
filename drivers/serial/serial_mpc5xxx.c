@@ -36,6 +36,7 @@
 #include <console.h>
 #include <xfuncs.h>
 #include <mach/clocks.h>
+#include <linux/err.h>
 
 static int __mpc5xxx_serial_setbaudrate(struct mpc5xxx_psc *psc, int baudrate)
 {
@@ -148,6 +149,8 @@ static int mpc5xxx_serial_probe(struct device_d *dev)
 
 	cdev = xzalloc(sizeof(struct console_device));
 	dev->priv = dev_request_mem_region(dev, 0);
+	if (IS_ERR(dev->priv))
+		return PTR_ERR(dev->priv);
 	cdev->dev = dev;
 	cdev->tstc = mpc5xxx_serial_tstc;
 	cdev->putc = mpc5xxx_serial_putc;

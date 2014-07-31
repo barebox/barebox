@@ -60,6 +60,8 @@ static int mvebu_timer_probe(struct device_d *dev)
 	u32 rate, div, val;
 
 	timer_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(timer_base))
+		return PTR_ERR(timer_base);
 
 	val = __raw_readl(timer_base + TIMER_CTRL_OFF);
 	val &= ~(TIMER0_25MHZ | TIMER0_DIV_MASK);

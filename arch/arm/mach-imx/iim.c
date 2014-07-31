@@ -411,8 +411,8 @@ static int imx_iim_probe(struct device_d *dev)
 	iim->fuse_supply = ERR_PTR(-ENODEV);
 
 	iim->base = dev_request_mem_region(dev, 0);
-	if (!iim->base)
-		return -EBUSY;
+	if (IS_ERR(iim->base))
+		return PTR_ERR(iim->base);
 
 	for (i = 0; i < IIM_NUM_BANKS; i++) {
 		ret = imx_iim_add_bank(iim, i);

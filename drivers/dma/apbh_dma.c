@@ -18,6 +18,7 @@
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
 #include <linux/list.h>
+#include <linux/err.h>
 #include <common.h>
 #include <driver.h>
 #include <malloc.h>
@@ -597,8 +598,8 @@ static int apbh_dma_probe(struct device_d *dev)
 
 	apbh_dma = apbh = xzalloc(sizeof(*apbh));
 	apbh->regs = dev_request_mem_region(dev, 0);
-	if (!apbh->regs)
-		return -EBUSY;
+	if (IS_ERR(apbh->regs))
+		return PTR_ERR(apbh->regs);
 
 	apbh->id = id;
 

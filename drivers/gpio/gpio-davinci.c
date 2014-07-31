@@ -163,9 +163,9 @@ static int davinci_gpio_probe(struct device_d *dev)
 	chips = xzalloc((ngpio / 32 + 1) * sizeof(*chips));
 
 	gpio_base = dev_request_mem_region(dev, 0);
-	if (!gpio_base) {
+	if (IS_ERR(gpio_base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(gpio_base);
 	}
 
 	for (i = 0, base = 0; base < ngpio; i++, base += 32) {

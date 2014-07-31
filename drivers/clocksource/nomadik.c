@@ -124,6 +124,8 @@ static int nmdk_mtu_probe(struct device_d *dev)
 
 	/* Save global pointer to mtu, used by functions above */
 	mtu_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(mtu_base))
+		return PTR_ERR(mtu_base);
 
 	/* Init the timer and register clocksource */
 	nmdk_timer_reset();

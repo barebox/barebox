@@ -1432,8 +1432,8 @@ static int __init at91udc_probe(struct device_d *dev)
 	}
 
 	udc->udp_baseaddr = dev_request_mem_region(dev, 0);
-	if (!udc->udp_baseaddr) {
-		retval = -ENOMEM;
+	if (IS_ERR(udc->udp_baseaddr)) {
+		retval = PTR_ERR(udc->udp_baseaddr);
 		goto fail0a;
 	}
 

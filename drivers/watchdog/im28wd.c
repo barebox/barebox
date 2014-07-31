@@ -22,6 +22,7 @@
 #include <malloc.h>
 #include <watchdog.h>
 #include <reset_source.h>
+#include <linux/err.h>
 
 #define MXS_RTC_CTRL 0x0
 #define MXS_RTC_SET_ADDR 0x4
@@ -186,6 +187,8 @@ static int imx28_wd_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(struct imx28_wd));
 	priv->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->regs))
+		return PTR_ERR(priv->regs);
 	priv->wd.set_timeout = imx28_watchdog_set_timeout;
 
 	if (!(readl(priv->regs + MXS_RTC_STAT) & MXS_RTC_STAT_WD_PRESENT)) {

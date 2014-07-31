@@ -129,6 +129,8 @@ static int imx23_ccm_probe(struct device_d *dev)
 	void __iomem *regs;
 
 	regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(regs))
+		return PTR_ERR(regs);
 
 	mx23_clocks_init(regs);
 

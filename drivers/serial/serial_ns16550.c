@@ -321,6 +321,8 @@ static int ns16550_init_iomem(struct device_d *dev, struct ns16550_priv *priv)
 		return PTR_ERR(res);
 
 	priv->mmiobase = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->mmiobase))
+		return PTR_ERR(priv->mmiobase);
 
 	width = res->flags & IORESOURCE_MEM_TYPE_MASK;
 	switch (width) {

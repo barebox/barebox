@@ -99,8 +99,8 @@ static int imx_sata_probe(struct device_d *dev)
 	}
 
 	imx_ahci->ahci.mmio_base = dev_request_mem_region(dev, 0);
-	if (!imx_ahci->ahci.mmio_base)
-		return -ENODEV;
+	if (IS_ERR(imx_ahci->ahci.mmio_base))
+		return PTR_ERR(imx_ahci->ahci.mmio_base);
 
 	data->init(imx_ahci);
 

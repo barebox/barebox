@@ -547,8 +547,8 @@ static int dw_mmc_probe(struct device_d *dev)
 
 	host->dev = dev;
 	host->ioaddr = dev_request_mem_region(dev, 0);
-	if (!host->ioaddr)
-		return -EBUSY;
+	if (IS_ERR(host->ioaddr))
+		return PTR_ERR(host->ioaddr);
 
 	if (pdata) {
 		mci->devname = pdata->devname;

@@ -26,6 +26,7 @@
 #include <clock.h>
 #include <linux/mii.h>
 #include <linux/phy.h>
+#include <linux/err.h>
 
 #include <io.h>
 #include <asm/dma-mapping.h>
@@ -515,6 +516,8 @@ static int tse_probe(struct device_d *dev)
 
 #ifdef CONFIG_TSE_USE_DEDICATED_DESC_MEM
 	tx_desc = dev_request_mem_region(dev, 3);
+	if (IS_ERR(tx_desc))
+		return PTR_ERR(tx_desc);
 	rx_desc = tx_desc + 2;
 #else
 	tx_desc = dma_alloc_coherent(sizeof(*tx_desc) * (3 + PKTBUFSRX), (unsigned long *)&dma_handle);
@@ -531,8 +534,14 @@ static int tse_probe(struct device_d *dev)
 	memset(tx_desc, 0, (sizeof *tx_desc) * 2);
 
 	priv->tse_regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->tse_regs))
+		return PTR_ERR(priv->tse_regs);
 	priv->sgdma_rx_regs = dev_request_mem_region(dev, 1);
+	if (IS_ERR(priv->sgdma_rx_regs))
+		return PTR_ERR(priv->sgdma_rx_regs);
 	priv->sgdma_tx_regs = dev_request_mem_region(dev, 2);
+	if (IS_ERR(priv->sgdma_tx_regs))
+		return PTR_ERR(priv->sgdma_tx_regs);
 	priv->rx_desc = rx_desc;
 	priv->tx_desc = tx_desc;
 

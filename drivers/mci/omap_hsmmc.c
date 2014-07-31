@@ -26,6 +26,7 @@
 #include <clock.h>
 #include <errno.h>
 #include <io.h>
+#include <linux/err.h>
 
 #include <mach/omap_hsmmc.h>
 
@@ -604,6 +605,8 @@ static int omap_mmc_probe(struct device_d *dev)
 	hsmmc->mci.hw_dev = dev;
 
 	hsmmc->iobase = dev_request_mem_region(dev, 0);
+	if (IS_ERR(hsmmc->iobase))
+		return PTR_ERR(hsmmc->iobase);
 	hsmmc->base = hsmmc->iobase + reg_ofs;
 
 	hsmmc->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;

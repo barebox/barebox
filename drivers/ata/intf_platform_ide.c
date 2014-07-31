@@ -84,7 +84,7 @@ static int platform_ide_probe(struct device_d *dev)
 	struct ide_port *ide;
 	void *reg_base, *alt_base = NULL;
 	struct resource *reg, *alt;
-	int mmio;
+	int mmio = 0;
 
 	if (pdata == NULL) {
 		dev_err(dev, "No platform data. Cannot continue\n");
@@ -92,9 +92,12 @@ static int platform_ide_probe(struct device_d *dev)
 	}
 
 	reg_base = dev_request_mem_region(dev, 0);
-	mmio = (reg_base != NULL);
-	if (mmio) {
+
+	if (!IS_ERR(reg_base)) {
+		mmio = 1;
 		alt_base = dev_request_mem_region(dev, 1);
+		if (IS_ERR(alt_base))
+			alt_base = NULL;
 	} else {
 		reg = dev_get_resource(dev, IORESOURCE_IO, 0);
 		if (IS_ERR(reg))

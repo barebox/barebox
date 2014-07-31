@@ -29,6 +29,7 @@
 #include <asm/mmu.h>
 #include <net/designware.h>
 #include <linux/phy.h>
+#include <linux/err.h>
 #include "designware.h"
 
 struct dw_eth_dev {
@@ -440,6 +441,9 @@ static int dwc_ether_probe(struct device_d *dev)
 	}
 
 	base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
+
 	priv->mac_regs_p = base;
 	dwc_version(dev, readl(&priv->mac_regs_p->version));
 	priv->dma_regs_p = base + DW_DMA_BASE_OFFSET;

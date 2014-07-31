@@ -47,6 +47,7 @@
 #include <kfifo.h>
 #include <malloc.h>
 #include <matrix_keypad.h>
+#include <linux/err.h>
 
 /*
  * Keypad Controller registers (halfword)
@@ -401,6 +402,8 @@ static int __init imx_keypad_probe(struct device_d *dev)
 
 	keypad->dev = dev;
 	keypad->mmio_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(keypad->mmio_base))
+		return PTR_ERR(keypad->mmio_base);
 
 	if(!keypad->fifo_size)
 		keypad->fifo_size = 50;

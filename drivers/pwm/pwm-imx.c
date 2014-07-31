@@ -14,6 +14,7 @@
 #include <io.h>
 #include <pwm.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <asm-generic/div64.h>
 
 /* i.MX1 and i.MX21 share the same PWM function block: */
@@ -237,8 +238,8 @@ static int imx_pwm_probe(struct device_d *dev)
 	}
 
 	imx->mmio_base = dev_request_mem_region(dev, 0);
-	if (!imx->mmio_base)
-		return -EBUSY;
+	if (IS_ERR(imx->mmio_base))
+		return PTR_ERR(imx->mmio_base);
 
 	imx->config = data->config;
 	imx->set_enable = data->set_enable;

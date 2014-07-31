@@ -90,6 +90,8 @@ static int at91_pit_probe(struct device_d *dev)
 	}
 
 	pit_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(pit_base))
+		return PTR_ERR(pit_base);
 
 	pit_rate = clk_get_rate(clk) / 16;
 

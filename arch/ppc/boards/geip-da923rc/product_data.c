@@ -20,12 +20,20 @@
 #include <mach/fsl_i2c.h>
 #include "product_data.h"
 
+static int ge_pd_header_check(unsigned short header)
+{
+	if (header != 0xa5a5)
+		return -1;
+	else
+		return 0;
+}
+
 static int ge_is_data_valid(struct ge_product_data *v)
 {
 	int crc, ret = 0;
 	const unsigned char *p = (const unsigned char *)v;
 
-	if (v->v1.pdh.tag != 0xa5a5)
+	if (ge_pd_header_check(v->v1.pdh.tag))
 		return -1;
 
 	switch (v->v1.pdh.version) {
@@ -51,12 +59,20 @@ int ge_get_product_data(struct ge_product_data *productp)
 {
 	struct i2c_adapter *adapter;
 	struct i2c_client client;
+	unsigned int width = 0;
 	int ret;
 
 	adapter = i2c_get_adapter(0);
 	client.addr = 0x51;
 	client.adapter = adapter;
 	ret = i2c_read_reg(&client, 0, (uint8_t *) productp,
+			   sizeof(unsigned short));
+
+	/* If there is no valid header, it may be a 16-bit eeprom. */
+	if (ge_pd_header_check(productp->v1.pdh.tag))
+		width = I2C_ADDR_16_BIT;
+
+	ret = i2c_read_reg(&client, width, (uint8_t *) productp,
 			   sizeof(struct ge_product_data));
 
 	if (ret == sizeof(struct ge_product_data))

@@ -22,6 +22,7 @@
 #include <of.h>
 #include <init.h>
 #include <linux/ioport.h>
+#include <linux/err.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <malloc.h>
@@ -150,7 +151,7 @@ struct resource *request_sdram_region(const char *name, resource_size_t start,
 
 		res = __request_region(bank->res, name, start,
 				       start + size - 1);
-		if (res)
+		if (!IS_ERR(res))
 			return res;
 	}
 

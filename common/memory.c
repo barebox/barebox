@@ -124,8 +124,8 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 	struct device_d *dev;
 
 	bank->res = request_iomem_region(name, start, start + size - 1);
-	if (!bank->res)
-		return -EBUSY;
+	if (IS_ERR(bank->res))
+		return PTR_ERR(bank->res);
 
 	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
 

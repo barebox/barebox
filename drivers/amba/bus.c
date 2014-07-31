@@ -7,6 +7,7 @@
 #include <common.h>
 #include <driver.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <linux/amba/bus.h>
 #include <io.h>
 #include <init.h>
@@ -115,8 +116,8 @@ int amba_device_add(struct amba_device *dev)
 	 */
 	size = resource_size(&dev->res);
 	res = request_iomem_region("amba", dev->res.start, dev->res.end);
-	if (!res)
-		return -ENOMEM;
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 	dev->base = tmp = (void __force __iomem *)res->start;
 	if (!tmp) {
 		ret = -ENOMEM;

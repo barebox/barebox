@@ -125,13 +125,7 @@ struct resource iomem_resource = {
 struct resource *request_iomem_region(const char *name,
 		resource_size_t start, resource_size_t end)
 {
-	struct resource *res;
-
-	res = __request_region(&iomem_resource, name, start, end);
-	if (IS_ERR(res))
-		return NULL;
-
-	return res;
+	return __request_region(&iomem_resource, name, start, end);
 }
 
 /* The root resource for the whole io-mapped io space */

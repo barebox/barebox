@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <ata_drive.h>
 #include <platform_ide.h>
+#include <linux/err.h>
 
 /**
  * Setup the register specific addresses for an ATA like divice

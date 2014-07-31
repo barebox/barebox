@@ -311,7 +311,7 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 		return NULL;
 
 	res = request_iomem_region(dev_name(dev), res->start, res->end);
-	if (!res)
+	if (IS_ERR(res))
 		return NULL;
 
 	return (void __force __iomem *)res->start;
@@ -327,7 +327,7 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 		return NULL;
 
 	res = request_iomem_region(dev_name(dev), res->start, res->end);
-	if (!res)
+	if (IS_ERR(res))
 		return NULL;
 
 	return (void __force __iomem *)res->start;

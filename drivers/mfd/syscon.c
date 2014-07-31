@@ -77,9 +77,9 @@ static int syscon_probe(struct device_d *dev)
 	}
 
 	res = request_iomem_region(dev_name(dev), res->start, res->end);
-	if (!res) {
+	if (IS_ERR(res)) {
 		free(syscon);
-		return -EBUSY;
+		return PTR_ERR(res);
 	}
 
 	syscon->base = (void __iomem *)res->start;

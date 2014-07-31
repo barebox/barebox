@@ -48,6 +48,8 @@ static int sram_probe(struct device_d *dev)
 			cdev_find_free_index("sram"));
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
 	sram->cdev.size = (unsigned long)resource_size(res);
 	sram->cdev.ops = &memops;

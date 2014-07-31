@@ -97,8 +97,8 @@ static int platform_ide_probe(struct device_d *dev)
 		alt_base = dev_request_mem_region(dev, 1);
 	} else {
 		reg = dev_get_resource(dev, IORESOURCE_IO, 0);
-		if (!reg)
-			return -ENODEV;
+		if (IS_ERR(reg))
+			return PTR_ERR(reg);
 
 		reg = request_ioport_region(dev_name(dev), reg->start,
 					    reg->end);
@@ -108,7 +108,7 @@ static int platform_ide_probe(struct device_d *dev)
 		reg_base = (void __force __iomem *) reg->start;
 
 		alt = dev_get_resource(dev, IORESOURCE_IO, 1);
-		if (alt) {
+		if (!IS_ERR(alt)) {
 			alt = request_ioport_region(dev_name(dev),
 						    alt->start,
 						    alt->end);

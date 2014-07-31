@@ -256,7 +256,7 @@ struct resource *dev_get_resource(struct device_d *dev, unsigned long type,
 		}
 	}
 
-	return NULL;
+	return ERR_PTR(-ENOENT);
 }
 
 void *dev_get_mem_region(struct device_d *dev, int num)
@@ -264,7 +264,7 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 	struct resource *res;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, num);
-	if (!res)
+	if (IS_ERR(res))
 		return NULL;
 
 	return (void __force *)res->start;
@@ -323,7 +323,7 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 	struct resource *res;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, num);
-	if (!res)
+	if (IS_ERR(res))
 		return NULL;
 
 	res = request_iomem_region(dev_name(dev), res->start, res->end);

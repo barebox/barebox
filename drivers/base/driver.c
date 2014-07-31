@@ -308,11 +308,11 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 
 	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
 	if (IS_ERR(res))
-		return NULL;
+		return ERR_CAST(res);
 
 	res = request_iomem_region(dev_name(dev), res->start, res->end);
 	if (IS_ERR(res))
-		return NULL;
+		return ERR_CAST(res);
 
 	return (void __force __iomem *)res->start;
 }

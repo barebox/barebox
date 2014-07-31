@@ -29,6 +29,7 @@
 #include <malloc.h>
 #include <common.h>
 #include <clock.h>
+#include <linux/err.h>
 
 #include <mach/omap4-silicon.h>
 #include <mach/omap-fb.h>
@@ -442,7 +443,7 @@ static int omapfb_probe(struct device_d *dev)
 	fbi->dss   = dev_request_mem_region_by_name(dev, "omap4_dss");
 	fbi->dispc = dev_request_mem_region_by_name(dev, "omap4_dispc");
 
-	if (!fbi->dss || !fbi->dispc) {
+	if (IS_ERR(fbi->dss) || IS_ERR(fbi->dispc)) {
 		dev_err(dev, "Insufficient register description\n");
 		rc = -EINVAL;
 		goto out;

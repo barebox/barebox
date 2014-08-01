@@ -237,5 +237,7 @@ void am33xx_config_ddr_data(const struct am33xx_ddr_data *data, int macronr);
 void am335x_sdram_init(int ioctrl, const struct am33xx_cmd_control *cmd_ctrl,
 			const struct am33xx_emif_regs *emif_regs,
 			const struct am33xx_ddr_data *ddr_data);
+unsigned long am335x_sdram_size(void);
+void am335x_barebox_entry(void *boarddata);
 
 #endif

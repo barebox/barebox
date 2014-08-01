@@ -60,8 +60,7 @@ BAREBOX_CMD_HELP_TEXT("Save the files in DIRECTORY to the persistent storage dev
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("ENVFS is usually a block in flash but can be any other file. If")
 BAREBOX_CMD_HELP_TEXT("omitted, DIRECTORY defaults to /env and ENVFS defaults to")
-BAREBOX_CMD_HELP_TEXT("/dev/env0. Note that envfs can only handle files, directories are being")
-BAREBOX_CMD_HELP_TEXT("skipped silently.")
+BAREBOX_CMD_HELP_TEXT("/dev/env0.")
 BAREBOX_CMD_HELP_OPT ("-z",  "force the built-in default environment at startup")
 
 BAREBOX_CMD_HELP_END

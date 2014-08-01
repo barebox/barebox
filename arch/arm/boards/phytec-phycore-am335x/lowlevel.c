@@ -81,7 +81,7 @@ static noinline void pcm051_board_init(void)
 
 	fdt = __dtb_am335x_phytec_phycore_start - get_runtime_offset();
 
-	barebox_arm_entry(0x80000000, SZ_512M, fdt);
+	am335x_barebox_entry(fdt);
 }
 
 ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram, bootinfo, r1, r2)
@@ -106,5 +106,5 @@ ENTRY_FUNCTION(start_am33xx_phytec_phycore_sdram, r0, r1, r2)
 
 	fdt = __dtb_am335x_phytec_phycore_start - get_runtime_offset();
 
-	barebox_arm_entry(0x80000000, SZ_512M, fdt);
+	am335x_barebox_entry(fdt);
 }

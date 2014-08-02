@@ -788,6 +788,21 @@ static int mvebu_mbus_of_fixup(struct device_node *root, void *context)
 		ranges = xzalloc(lenp);
 		of_property_read_u32_array(np, "ranges", ranges, lenp/4);
 
+		/*
+		 * Iterate through each ranges tuple and fixup the custom
+		 * window ranges low base address. Because Armada XP supports
+		 * LPAE, it has 2 cells for the parent address:
+		 *   <windowid child_base high_base low_base size>
+		 *
+		 * whereas for Armada 370, there's just one:
+		 *   <windowid child_base base size>
+		 *
+		 * For instance, the following tuple:
+		 *   <MBUS_ID(0xf0, 0x01) child_base {0} base 0x100000>
+		 *
+		 * would be fixed-up like:
+		 *   <MBUS_ID(0xf0, 0x01) child_base {0} remap 0x100000>
+		 */
 		for (n = 0; n < lenp/4; n += size) {
 			struct mbus_range *r;
 			u32 mbusid = ranges[n];
@@ -797,7 +812,7 @@ static int mvebu_mbus_of_fixup(struct device_node *root, void *context)
 
 			list_for_each_entry(r, &mbus_ranges, list) {
 				if (r->mbusid == mbusid)
-					ranges[n + na] = r->remap;
+					ranges[n + na + pa - 1] = r->remap;
 			}
 		}
 

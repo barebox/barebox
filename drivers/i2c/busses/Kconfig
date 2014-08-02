@@ -12,9 +12,21 @@ config I2C_GPIO
 	  This is a very simple bitbanging I2C driver utilizing the
 	  arch-neutral GPIO API to control the SCL and SDA lines.
 
+config I2C_AT91
+	bool "AT91 I2C Master driver"
+	depends on ARCH_AT91
+
 config I2C_IMX
 	bool "MPC85xx/i.MX I2C Master driver"
 	depends on (ARCH_IMX && !ARCH_IMX1) || ARCH_MPC85XX
+
+config I2C_MV64XXX
+	bool "Marvell mv64xxx I2C Controller"
+	depends on HAVE_CLK && OFDEVICE
+	help
+	  If you say yes to this option, support will be included for the
+	  built-in I2C interface on the Marvell 64xxx line of host bridges.
+	  This driver is also used for Allwinner SoCs I2C controllers.
 
 config I2C_OMAP
 	bool "OMAP I2C Master driver"

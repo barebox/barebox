@@ -49,6 +49,8 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
+	.barebox_imd : { BAREBOX_IMD }
+
 	. = ALIGN(4);
 	.got : { *(.got*) }
 

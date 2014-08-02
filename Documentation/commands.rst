@@ -73,7 +73,7 @@ Hardware Manipulation
 
    commands/hwmanip/*
 
-Miscelleanous
+Miscellaneous
 -------------
 .. toctree::
    :titlesonly:

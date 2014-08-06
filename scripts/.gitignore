@@ -15,3 +15,5 @@ zynq_mkimage
 socfpga_mkimage
 bareboxcrc32
 bareboxcrc32-target
+bareboximd
+bareboximd-target

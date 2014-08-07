@@ -75,7 +75,7 @@ static int do_i2c_write(int argc, char *argv[])
 	int addr = -1, reg = -1, count = -1, verbose = 0, ret, opt, i, bus = 0, wide = 0;
 	u8 *buf;
 
-	while ((opt = getopt(argc, argv, "a:b:r:v:w")) > 0) {
+	while ((opt = getopt(argc, argv, "a:b:r:vw")) > 0) {
 		switch (opt) {
 		case 'a':
 			addr = simple_strtol(optarg, NULL, 0);
@@ -90,7 +90,7 @@ static int do_i2c_write(int argc, char *argv[])
 			verbose = 1;
 			break;
 		case 'w':
-			wide = 1;
+			wide = I2C_ADDR_16_BIT;
 			break;
 		}
 	}
@@ -113,9 +113,13 @@ static int do_i2c_write(int argc, char *argv[])
 	for (i = 0; i < count; i++)
 		*(buf + i) = (char) simple_strtol(argv[optind+i], NULL, 16);
 
-	ret = i2c_write_reg(&client, reg | (wide ? I2C_ADDR_16_BIT : 0), buf, count);
-	if (ret != count)
+	ret = i2c_write_reg(&client, reg | wide, buf, count);
+	if (ret != count) {
+		if (verbose)
+			printf("write aborted, count(%i) != writestatus(%i)\n",
+				count, ret);
 		goto out;
+	}
 	ret = 0;
 
 	if (verbose) {
@@ -155,7 +159,7 @@ static int do_i2c_read(int argc, char *argv[])
 	u8 *buf;
 	int count = -1, addr = -1, reg = -1, verbose = 0, ret, opt, bus = 0, wide = 0;
 
-	while ((opt = getopt(argc, argv, "a:b:c:r:v:w")) > 0) {
+	while ((opt = getopt(argc, argv, "a:b:c:r:vw")) > 0) {
 		switch (opt) {
 		case 'a':
 			addr = simple_strtol(optarg, NULL, 0);
@@ -173,7 +177,7 @@ static int do_i2c_read(int argc, char *argv[])
 			verbose = 1;
 			break;
 		case 'w':
-			wide = 1;
+			wide = I2C_ADDR_16_BIT;
 			break;
 		}
 	}
@@ -191,7 +195,7 @@ static int do_i2c_read(int argc, char *argv[])
 	client.addr = addr;
 
 	buf = xmalloc(count);
-	ret = i2c_read_reg(&client, reg | (wide ? I2C_ADDR_16_BIT : 0), buf, count);
+	ret = i2c_read_reg(&client, reg | wide, buf, count);
 	if (ret == count) {
 		int i;
 		if (verbose)

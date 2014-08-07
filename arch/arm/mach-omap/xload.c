@@ -5,6 +5,7 @@
 #include <init.h>
 #include <driver.h>
 #include <linux/mtd/mtd.h>
+#include <libfile.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <sizes.h>

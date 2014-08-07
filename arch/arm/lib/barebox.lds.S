@@ -75,6 +75,8 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
+	.barebox_imd : { BAREBOX_IMD }
+
 	. = .;
 	__barebox_cmd_start = .;
 	.barebox_cmd : { BAREBOX_CMDS }

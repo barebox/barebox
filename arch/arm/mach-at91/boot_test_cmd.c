@@ -7,6 +7,7 @@
 #include <common.h>
 #include <command.h>
 #include <libbb.h>
+#include <libfile.h>
 #include <getopt.h>
 #include <fs.h>
 #include <fcntl.h>

@@ -5,6 +5,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx5.h>
+#include <image-metadata.h>
 
 extern char __dtb_imx53_mba53_start[];
 
@@ -34,6 +35,8 @@ static void __noreturn start_imx53_tqma53_common(void *fdt)
 	imx53_barebox_entry(fdt);
 }
 
+BAREBOX_IMD_TAG_STRING(tqma53_memsize_512M, IMD_TYPE_PARAMETER, "memsize=512", 0);
+
 ENTRY_FUNCTION(start_imx53_mba53_512mib, r0, r1, r2)
 {
 	void *fdt;
@@ -42,12 +45,16 @@ ENTRY_FUNCTION(start_imx53_mba53_512mib, r0, r1, r2)
 
 	arm_setup_stack(0xf8020000 - 8);
 
+	IMD_USED(tqma53_memsize_512M);
+
 	imx53_init_lowlevel_early(800);
 
 	fdt = __dtb_imx53_mba53_start - get_runtime_offset();
 
 	start_imx53_tqma53_common(fdt);
 }
+
+BAREBOX_IMD_TAG_STRING(tqma53_memsize_1G, IMD_TYPE_PARAMETER, "memsize=1024", 0);
 
 ENTRY_FUNCTION(start_imx53_mba53_1gib, r0, r1, r2)
 {
@@ -56,6 +63,8 @@ ENTRY_FUNCTION(start_imx53_mba53_1gib, r0, r1, r2)
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(0xf8020000 - 8);
+
+	IMD_USED(tqma53_memsize_1G);
 
 	imx53_init_lowlevel_early(800);
 

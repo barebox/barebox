@@ -20,6 +20,7 @@
 #include <io.h>
 #include <fs.h>
 #include <malloc.h>
+#include <libfile.h>
 #include <linux/stat.h>
 #include <mach/gpmc.h>
 #include <mach/generic.h>

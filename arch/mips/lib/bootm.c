@@ -1,5 +1,6 @@
 #include <boot.h>
 #include <common.h>
+#include <libfile.h>
 #include <init.h>
 #include <fs.h>
 #include <errno.h>

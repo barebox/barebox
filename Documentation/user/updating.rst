@@ -27,3 +27,6 @@ barebox has been started from is registered as default (marked with a ``*``)::
 available for your board. It is recommended to implement it, but you can also
 update barebox manually using :ref:`command_erase` and :ref:`command_cp`
 commands. The exact commands are board specific.
+
+**NOTE** barebox images can be enriched with metadata which can be used to check
+if a given image is suitable for updating barebox, see :ref:`imd`.

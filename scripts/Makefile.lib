@@ -14,6 +14,13 @@ obj-m := $(filter-out $(obj-y),$(obj-m))
 lib-y := $(filter-out $(obj-y), $(sort $(lib-y) $(lib-m)))
 
 
+pbl-y		+= $(pbl-dtb-y)
+obj-y		+= $(obj-dtb-y)
+extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(obj-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb,$(obj-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb.S,$(pbl-dtb-y))
+extra-y		+= $(patsubst %.dtb.o,%.dtb,$(pbl-dtb-y))
+
 # Handle objects in subdirs
 # ---------------------------------------------------------------------------
 # o if we encounter foo/ in $(obj-y), replace it by foo/built-in.o
@@ -203,21 +210,9 @@ cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -n -f -9 > $@) || \
 
 # Generate an assembly file to wrap the output of the device tree compiler
 quiet_cmd_dt_S_dtb = DTB     $@
-cmd_dt_S_dtb=							\
-(								\
-	echo '\#include <asm-generic/barebox.lds.h>';		\
-	echo '.section .dtb.rodata.$(subst -,_,$(*F)),"a"';	\
-	echo '.balign STRUCT_ALIGNMENT';			\
-	echo '.global __dtb_$(subst -,_,$(*F))_start';		\
-	echo '__dtb_$(subst -,_,$(*F))_start:';			\
-	echo '.incbin "$<" ';					\
-	echo '__dtb_$(subst -,_,$(*F))_end:';			\
-	echo '.global __dtb_$(subst -,_,$(*F))_end';		\
-	echo '.balign STRUCT_ALIGNMENT';			\
-) > $@
-
-$(obj)/%.dtb.S: $(obj)/%.dtb
-	$(call cmd,dt_S_dtb)
+cmd_dt_S_dtb = $(srctree)/scripts/gen-dtb-s $(subst -,_,$(*F)) $< $(CONFIG_IMD) > $@
+$(obj)/%.dtb.S: $(obj)/%.dtb $(srctree)/scripts/gen-dtb-s FORCE
+	$(call if_changed,dt_S_dtb)
 
 quiet_cmd_dtc = DTC     $@
 cmd_dtc = $(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \

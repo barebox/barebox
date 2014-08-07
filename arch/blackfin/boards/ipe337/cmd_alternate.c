@@ -1,5 +1,6 @@
 #include <common.h>
 #include <command.h>
+#include <libfile.h>
 #include <linux/stat.h>
 #include <malloc.h>
 #include <fs.h>

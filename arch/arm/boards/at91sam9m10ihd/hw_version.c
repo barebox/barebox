@@ -18,6 +18,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <libbb.h>
+#include <libfile.h>
 #include <asm/armlinux.h>
 #include <of.h>
 

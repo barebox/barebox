@@ -19,6 +19,7 @@ Contents:
    hush
    defaultenv-2
    updating
+   imd
    devicetree
    pbl
    multi-image

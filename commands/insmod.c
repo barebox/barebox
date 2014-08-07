@@ -3,6 +3,7 @@
 #include <module.h>
 #include <errno.h>
 #include <fs.h>
+#include <libfile.h>
 #include <malloc.h>
 
 static int do_insmod(int argc, char *argv[])

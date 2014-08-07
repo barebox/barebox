@@ -54,6 +54,8 @@ SECTIONS
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }
 
+	.barebox_imd : { BAREBOX_IMD }
+
 	_etext = .;			/* End of text and rodata section */
 
 	. = ALIGN(4);

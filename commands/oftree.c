@@ -26,6 +26,7 @@
 #include <common.h>
 #include <environment.h>
 #include <fdt.h>
+#include <libfile.h>
 #include <of.h>
 #include <command.h>
 #include <fs.h>

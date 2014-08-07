@@ -16,6 +16,7 @@
 #include <fs.h>
 #include <malloc.h>
 #include <memory.h>
+#include <libfile.h>
 #include <globalvar.h>
 #include <init.h>
 

@@ -11,6 +11,7 @@
 #include <sizes.h>
 #include <errno.h>
 #include <malloc.h>
+#include <libfile.h>
 #include <bootstrap.h>
 
 void* bootstrap_read_disk(char *dev, char *fstype)

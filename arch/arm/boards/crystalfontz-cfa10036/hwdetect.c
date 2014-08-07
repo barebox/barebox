@@ -21,6 +21,7 @@
 #include <fs.h>
 #include <globalvar.h>
 #include <libbb.h>
+#include <libfile.h>
 #include <magicvar.h>
 
 #include <asm/armlinux.h>

@@ -24,6 +24,7 @@
 #include <environment.h>
 #include <fs.h>
 #include <errno.h>
+#include <libfile.h>
 #include <getopt.h>
 #include <malloc.h>
 #include <boot.h>

@@ -21,6 +21,7 @@
 #include <malloc.h>
 #include <block.h>
 #include <fcntl.h>
+#include <libfile.h>
 #include <libbb.h>
 #include <init.h>
 #include <boot.h>

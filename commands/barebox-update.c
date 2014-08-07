@@ -17,6 +17,7 @@
  */
 #include <common.h>
 #include <command.h>
+#include <libfile.h>
 #include <getopt.h>
 #include <malloc.h>
 #include <errno.h>

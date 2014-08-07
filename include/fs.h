@@ -164,20 +164,6 @@ int ls(const char *path, ulong flags);
 char *mkmodestr(unsigned long mode, char *str);
 
 /*
- * Read a file into memory. Memory is allocated with malloc and must
- * be freed with free() afterwards. This function allocates one
- * byte more than actually needed and sets this to zero, so that
- * it can be used for text files.
- * If size is nonzero it s set to the file size.
- */
-void *read_file(const char *filename, size_t *size);
-
-/*
- * Write a buffer to a file. This file is newly created.
- */
-int write_file(const char *filename, void *buf, size_t size);
-
-/*
  * This function turns 'path' into an absolute path and removes all occurrences
  * of "..", "." and double slashes. The returned string must be freed wit free().
  */

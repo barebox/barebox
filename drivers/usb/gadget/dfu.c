@@ -43,6 +43,7 @@
 #include <linux/list.h>
 #include <usb/gadget.h>
 #include <linux/stat.h>
+#include <libfile.h>
 #include <usb/ch9.h>
 #include <usb/dfu.h>
 #include <config.h>

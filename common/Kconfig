@@ -465,6 +465,13 @@ config BLSPEC
 	  on a device and it allows the Operating System to install / update
 	  kernels.
 
+config IMD
+	bool "barebox metadata support"
+
+config IMD_TARGET
+	bool "build bareboximd target tool"
+	depends on IMD
+
 config KERNEL_INSTALL_TARGET
 	bool
 	depends on !SANDBOX

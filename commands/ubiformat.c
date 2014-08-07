@@ -40,6 +40,7 @@
 #include <malloc.h>
 #include <ioctl.h>
 #include <libbb.h>
+#include <libfile.h>
 #include <linux/mtd/mtd.h>
 #include <linux/kernel.h>
 #include <linux/stat.h>

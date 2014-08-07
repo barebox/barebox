@@ -53,6 +53,12 @@
 	KEEP(*(.dtb.rodata.*));			\
 	__dtb_end = .;
 
+#define BAREBOX_IMD				\
+	KEEP(*(.barebox_imd_start))		\
+	KEEP(*(.barebox_imd_1*))		\
+	*(.barebox_imd_0*)			\
+	KEEP(*(.barebox_imd_end))
+
 #if defined(CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE) && \
 CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE < CONFIG_BAREBOX_MAX_BARE_INIT_SIZE
 #define MAX_BARE_INIT_SIZE CONFIG_ARCH_BAREBOX_MAX_BARE_INIT_SIZE

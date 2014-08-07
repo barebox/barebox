@@ -9,6 +9,16 @@
 	memory {
 		reg = <0x00000000 0x4000000>;
 	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		lcd-backlight-enable {
+			label = "lcd backlight";
+			gpios = <&gpio4 22 0>;
+			linux,default-trigger = "default-on";
+		};
+	};
 };
 
 &serial1 {

@@ -88,3 +88,58 @@ the following:
 
 The ``dfu-util`` command automatically finds DFU-capable devices. If there are
 multiple devices found, you need to identify one with the ``-d``/``-p`` options.
+
+USB serial console
+^^^^^^^^^^^^^^^^^^
+
+barebox can provide a serial console over USB. This can be initialized with the
+:ref:`command_usbserial` command. Once the host is plugged in it should show a
+new serial device, on Linux for example ``/dev/ttyACM0``.
+
+Android Fastboot support
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+barebox has support for the android fastboot protocol. There is no dedicated command
+for initializing the fastboot protocol, instead it is integrated into the Multifunction
+Composite Gadget, see :`ref:command_usbgadget` for a usage description.
+
+The Fastboot gadget supports the following commands:
+
+- fastboot flash
+- fastboot getvar
+- fastboot boot
+- fastboot reboot
+
+**NOTE** ``fastboot erase`` is not yet implemented. This means flashing MTD partitions
+does not yet work.
+
+The barebox Fastboot gadget supports the following non standard extensions:
+
+- ``fastboot getvar all``
+  Shows a list of all variables
+- ``fastboot oem getenv <varname>``
+  Shows a barebox environment variable
+- ``fastboot oem setenv <varname>=<value>``
+  Sets a barebox environment variable
+- ``fastboot oem exec <cmd>``
+  executes a shell command. Note the output can't be seen on the host, but the fastboot
+  command returns successfully when the barebox command was successful and it fails when
+  the barebox command fails.
+
+USB Composite Multifunction Gadget
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With the Composite Multifunction Gadget it is possible to create a USB device with
+multiple functions. A useful combination is creating a Fastboot gadget and a USB serial
+console. This combination can be created with:
+
+.. code-block:: sh
+
+  usbgadget -A /dev/mmc2.0(root),/dev/mmc2.1(data) -a
+
+The ``-A`` option will create a Fastboot function providing ``/dev/mmc2.0`` as root
+partition and ``/dev/mmc2.1`` as data partition. The ``-a`` option will create a
+USB CDC ACM compliant serial device.
+
+Unlike the :ref:`command_dfu` command the ``usbgadget`` command returns immediately
+after creating the gadget. The gadget can be removed with ``usbgadget -d``.

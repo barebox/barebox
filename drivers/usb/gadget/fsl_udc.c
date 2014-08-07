@@ -1047,6 +1047,11 @@ static void fsl_free_request(struct usb_ep *_ep, struct usb_request *_req)
 
 	req = container_of(_req, struct fsl_req, req);
 
+	if (!list_empty(&req->queue)) {
+		printk("%s: Freeing queued request\n", __func__);
+		dump_stack();
+	}
+
 	if (_req)
 		kfree(req);
 }
@@ -1275,7 +1280,7 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct usb_request *_req)
 	int ep_num, stopped, ret = 0;
 	u32 epctrl;
 
-	if (!_ep || !_req)
+	if (!_ep || !_req || !ep->desc)
 		return -EINVAL;
 
 	stopped = ep->stopped;
@@ -1999,32 +2004,18 @@ int usb_gadget_poll(void)
  * Hook to gadget drivers
  * Called by initialization code of gadget drivers
 *----------------------------------------------------------------*/
-int usb_gadget_register_driver(struct usb_gadget_driver *driver)
+static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
-	int retval = -ENODEV;
-
-	if (!udc_controller)
-		return -ENODEV;
-
-	if (!driver || (driver->speed != USB_SPEED_FULL
-				&& driver->speed != USB_SPEED_HIGH)
-			|| !driver->bind || !driver->disconnect
-			|| !driver->setup)
-		return -EINVAL;
-
-	if (udc_controller->driver)
-		return -EBUSY;
+	/*
+	 * We currently have PHY no driver which could call vbus_connect,
+	 * so when the USB gadget core calls usb_gadget_connect() the
+	 * driver decides to disable the device because it has no vbus.
+	 * Work around this by enabling vbus here.
+	 */
+	usb_gadget_vbus_connect(gadget);
 
 	/* hook up the driver */
 	udc_controller->driver = driver;
-
-	/* bind udc driver to gadget driver */
-	retval = driver->bind(&udc_controller->gadget);
-	if (retval) {
-		VDBG("bind to gadget --> %d", retval);
-		udc_controller->driver = NULL;
-		goto out;
-	}
 
 	/* Enable DR IRQ reg and Set usbcmd reg  Run bit */
 	dr_controller_run(udc_controller);
@@ -2032,24 +2023,13 @@ int usb_gadget_register_driver(struct usb_gadget_driver *driver)
 	udc_controller->ep0_state = WAIT_FOR_SETUP;
 	udc_controller->ep0_dir = 0;
 
-out:
-	if (retval)
-		printk(KERN_WARNING "gadget driver register failed %d\n",
-		       retval);
-	return retval;
+	return 0;
 }
-EXPORT_SYMBOL(usb_gadget_register_driver);
 
 /* Disconnect from gadget driver */
-int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+static int fsl_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
 	struct fsl_ep *loop_ep;
-
-	if (!udc_controller)
-		return -ENODEV;
-
-	if (!driver || driver != udc_controller->driver || !driver->unbind)
-		return -EINVAL;
 
 	/* stop DR, disable intr */
 	dr_controller_stop(udc_controller);
@@ -2066,16 +2046,8 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
 			ep.ep_list)
 		nuke(loop_ep, -ESHUTDOWN);
 
-	/* report disconnect; the controller is already quiesced */
-	driver->disconnect(&udc_controller->gadget);
-
-	/* unbind gadget and unhook driver. */
-	driver->unbind(&udc_controller->gadget);
-	udc_controller->driver = NULL;
-
 	return 0;
 }
-EXPORT_SYMBOL(usb_gadget_unregister_driver);
 
 static int struct_udc_setup(struct fsl_udc *udc,
 		struct device_d *dev)
@@ -2202,12 +2174,14 @@ static int fsl_pullup(struct usb_gadget *gadget, int is_on)
 
 	udc = container_of(gadget, struct fsl_udc, gadget);
 	udc->softconnect = (is_on != 0);
-	if (can_pullup(udc))
+
+	if (can_pullup(udc)) {
 		writel((readl(&dr_regs->usbcmd) | USB_CMD_RUN_STOP),
 				&dr_regs->usbcmd);
-	else
+	} else {
 		writel((readl(&dr_regs->usbcmd) & ~USB_CMD_RUN_STOP),
 				&dr_regs->usbcmd);
+	}
 
 	return 0;
 }
@@ -2220,6 +2194,8 @@ static struct usb_gadget_ops fsl_gadget_ops = {
 	.vbus_session = fsl_vbus_session,
 	.vbus_draw = fsl_vbus_draw,
 	.pullup = fsl_pullup,
+	.udc_start = fsl_udc_start,
+	.udc_stop = fsl_udc_stop,
 };
 
 /*----------------------------------------------------------------
@@ -2243,7 +2219,7 @@ static int __init struct_ep_setup(struct fsl_udc *udc, unsigned char index,
 	/* for ep0: maxP defined in desc
 	 * for other eps, maxP is set by epautoconfig() called by gadget layer
 	 */
-	ep->ep.maxpacket = (unsigned short) ~0;
+	usb_ep_set_maxpacket_limit(&ep->ep, (unsigned short) ~0);
 
 	/* the queue lists any req for this ep */
 	INIT_LIST_HEAD(&ep->queue);
@@ -2300,10 +2276,10 @@ int ci_udc_register(struct device_d *dev, void __iomem *regs)
 
 	/* Setup gadget structure */
 	udc_controller->gadget.ops = &fsl_gadget_ops;
-	udc_controller->gadget.is_dualspeed = 1;
 	udc_controller->gadget.ep0 = &udc_controller->eps[0].ep;
 	INIT_LIST_HEAD(&udc_controller->gadget.ep_list);
 	udc_controller->gadget.speed = USB_SPEED_UNKNOWN;
+	udc_controller->gadget.max_speed = USB_SPEED_HIGH;
 	udc_controller->gadget.name = "fsl-usb2-udc";
 
 	/* setup QH and epctrl for ep0 */
@@ -2329,6 +2305,11 @@ int ci_udc_register(struct device_d *dev, void __iomem *regs)
 	}
 
 	poller_register(&poller);
+
+	ret = usb_add_gadget_udc_release(dev, &udc_controller->gadget,
+			NULL);
+	if (ret)
+		goto err_out;
 
 	return 0;
 err_out:

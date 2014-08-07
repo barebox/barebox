@@ -882,11 +882,16 @@ static int pxa_udc_vbus_session(struct usb_gadget *_gadget, int is_active)
 	return 0;
 }
 
+static int pxa_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *driver);
+static int pxa_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver);
+
 static const struct usb_gadget_ops pxa_udc_ops = {
 	.get_frame	= pxa_udc_get_frame,
 	.wakeup		= pxa_udc_wakeup,
 	.pullup		= pxa_udc_pullup,
 	.vbus_session	= pxa_udc_vbus_session,
+	.udc_start	= pxa_udc_start,
+	.udc_stop	= pxa_udc_stop,
 };
 
 static void clk_enable(void)
@@ -976,40 +981,20 @@ static void udc_enable(struct pxa_udc *udc)
 	udc->enabled = 1;
 }
 
-int usb_gadget_register_driver(struct usb_gadget_driver *driver)
+static int pxa_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
 	struct pxa_udc *udc = the_controller;
-	int retval;
-
-	if (!driver || driver->speed < USB_SPEED_FULL || !driver->bind
-			|| !driver->disconnect || !driver->setup)
-		return -EINVAL;
-	if (!udc)
-		return -ENODEV;
-	if (udc->driver)
-		return -EBUSY;
 
 	/* first hook up the driver ... */
 	udc->driver = driver;
-	dplus_pullup(udc, 1);
 
-	retval = driver->bind(&udc->gadget);
-	if (retval) {
-		dev_err(udc->dev, "bind to function %s --> error %d\n",
-			driver->function, retval);
-		goto bind_fail;
-	}
 	dev_dbg(udc->dev, "registered gadget function '%s'\n",
 		driver->function);
 
 	if (should_enable_udc(udc))
 		udc_enable(udc);
 	return 0;
-
-bind_fail:
-	return retval;
 }
-EXPORT_SYMBOL(usb_gadget_register_driver);
 
 static void stop_activity(struct pxa_udc *udc, struct usb_gadget_driver *driver)
 {
@@ -1027,7 +1012,7 @@ static void stop_activity(struct pxa_udc *udc, struct usb_gadget_driver *driver)
 		driver->disconnect(&udc->gadget);
 }
 
-int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
+static int pxa_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
 	struct pxa_udc *udc = the_controller;
 
@@ -1038,7 +1023,6 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
 
 	stop_activity(udc, driver);
 	udc_disable(udc);
-	dplus_pullup(udc, 0);
 
 	driver->disconnect(&udc->gadget);
 	driver->unbind(&udc->gadget);
@@ -1050,7 +1034,6 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
 	*/
 	return 0;
 }
-EXPORT_SYMBOL(usb_gadget_unregister_driver);
 
 static void handle_ep0_ctrl_req(struct pxa_udc *udc,
 				struct pxa27x_request *req)
@@ -1481,7 +1464,7 @@ static struct poller_struct poller = {
 static int __init pxa_udc_probe(struct device_d *dev)
 {
 	struct pxa_udc *udc = &memory;
-	int gpio;
+	int gpio, ret;
 
 	udc->regs = dev_request_mem_region(dev, 0);
 	if (!udc->regs)
@@ -1502,6 +1485,10 @@ static int __init pxa_udc_probe(struct device_d *dev)
 	udc_init_data(udc);
 	pxa_eps_setup(udc);
 	poller_register(&poller);
+
+	ret = usb_add_gadget_udc_release(dev, &udc->gadget, NULL);
+	if (ret)
+		return ret;
 
 	return 0;
 }

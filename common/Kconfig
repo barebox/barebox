@@ -88,6 +88,9 @@ config EFI_GUID
 config EFI_DEVICEPATH
 	bool
 
+config FILE_LIST
+	bool
+
 menu "General Settings"
 
 config LOCALVERSION

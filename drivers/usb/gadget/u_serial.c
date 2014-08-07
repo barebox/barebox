@@ -22,6 +22,8 @@
 #include <usb/cdc.h>
 #include <kfifo.h>
 #include <clock.h>
+#include <linux/err.h>
+#include <dma.h>
 
 #include "u_serial.h"
 
@@ -31,11 +33,12 @@
  * "serial port" functionality through the USB gadget stack.  Each such
  * port is exposed through a /dev/ttyGS* node.
  *
- * After initialization (gserial_setup), these TTY port devices stay
- * available until they are removed (gserial_cleanup).  Each one may be
- * connected to a USB function (gserial_connect), or disconnected (with
- * gserial_disconnect) when the USB host issues a config change event.
- * Data can only flow when the port is connected to the host.
+ * After this module has been loaded, the individual TTY port can be requested
+ * (gserial_alloc_line()) and it will stay available until they are removed
+ * (gserial_free_line()). Each one may be connected to a USB function
+ * (gserial_connect), or disconnected (with gserial_disconnect) when the USB
+ * host issues a config change event. Data can only flow when the port is
+ * connected to the host.
  *
  * A given TTY port can be made available in multiple configurations.
  * For example, each one might expose a ttyGS0 node which provides a
@@ -74,21 +77,27 @@
  * next layer of buffering.  For TX that's a circular buffer; for RX
  * consider it a NOP.  A third layer is provided by the TTY code.
  */
-#define QUEUE_SIZE		128
+#define QUEUE_SIZE		16
 #define WRITE_BUF_SIZE		8192		/* TX only */
 #define RECV_FIFO_SIZE		(1024 * 8)
+
+/* circular buffer */
+struct gs_buf {
+	unsigned		buf_size;
+	char			*buf_buf;
+	char			*buf_get;
+	char			*buf_put;
+};
+
 /*
  * The port structure holds info for each port, one for each minor number
  * (and thus for each /dev/ node).
  */
 struct gs_port {
-
 	struct gserial		*port_usb;
 	struct console_device	cdev;
 	struct kfifo		*recv_fifo;
 
-	unsigned		open_count;
-	int			openclose;	/* open/close in progress */
 	u8			port_num;
 
 	struct list_head	read_pool;
@@ -100,12 +109,9 @@ struct gs_port {
 	struct usb_cdc_line_coding port_line_coding;	/* 8-N-1 etc */
 };
 
-/* increase N_PORTS if you need more */
-#define N_PORTS		4
 static struct portmaster {
 	struct gs_port	*port;
-} ports[N_PORTS];
-static unsigned	n_ports;
+} ports[MAX_U_SERIAL_PORTS];
 
 #define GS_CLOSE_TIMEOUT		15		/* seconds */
 
@@ -162,6 +168,10 @@ static void gs_read_complete(struct usb_ep *ep, struct usb_request *req)
 	gs_start_rx(port);
 }
 
+/*-------------------------------------------------------------------------*/
+
+/* I/O glue between TTY (upper) and USB function (lower) driver layers */
+
 static void gs_write_complete(struct usb_ep *ep, struct usb_request *req)
 {
 	struct gs_port	*port = ep->driver_data;
@@ -176,7 +186,6 @@ static void gs_write_complete(struct usb_ep *ep, struct usb_request *req)
 		/* FALL THROUGH */
 	case 0:
 		/* normal completion */
-//		gs_start_tx(port);
 		break;
 
 	case -ESHUTDOWN:
@@ -201,11 +210,24 @@ gs_alloc_req(struct usb_ep *ep, unsigned len)
 
 	if (req != NULL) {
 		req->length = len;
-		req->buf = xmemalign(32, len);
+		req->buf = dma_alloc(len);
 	}
 
 	return req;
 }
+EXPORT_SYMBOL_GPL(gs_alloc_req);
+
+/*
+ * gs_free_req
+ *
+ * Free a usb_request and its buffer.
+ */
+void gs_free_req(struct usb_ep *ep, struct usb_request *req)
+{
+	kfree(req->buf);
+	usb_ep_free_request(ep, req);
+}
+EXPORT_SYMBOL_GPL(gs_free_req);
 
 static void gs_free_requests(struct usb_ep *ep, struct list_head *head)
 {
@@ -276,9 +298,7 @@ static int gs_start_io(struct gs_port *port)
 	started = gs_start_rx(port);
 
 	/* unblock any pending writes into our circular buffer */
-	if (started) {
-//		tty_wakeup(port->port_tty);
-	} else {
+	if (!started) {
 		gs_free_requests(ep, head);
 		gs_free_requests(port->port_usb->in, &port->write_pool);
 		status = -EIO;
@@ -287,76 +307,84 @@ static int gs_start_io(struct gs_port *port)
 	return status;
 }
 
-/*
- * gs_free_req
- *
- * Free a usb_request and its buffer.
- */
-void gs_free_req(struct usb_ep *ep, struct usb_request *req)
-{
-	kfree(req->buf);
-	usb_ep_free_request(ep, req);
-}
+/*-------------------------------------------------------------------------*/
 
-static int __init
+static int
 gs_port_alloc(unsigned port_num, struct usb_cdc_line_coding *coding)
 {
 	struct gs_port	*port;
+	int		ret = 0;
+
+	if (ports[port_num].port) {
+		ret = -EBUSY;
+		goto out;
+	}
 
 	port = kzalloc(sizeof(struct gs_port), GFP_KERNEL);
-	if (port == NULL)
-		return -ENOMEM;
-
-	port->port_num = port_num;
-	port->port_line_coding = *coding;
+	if (port == NULL) {
+		ret = -ENOMEM;
+		goto out;
+	}
 
 	INIT_LIST_HEAD(&port->read_pool);
 	INIT_LIST_HEAD(&port->write_pool);
 
-	ports[port_num].port = port;
+	port->port_num = port_num;
+	port->port_line_coding = *coding;
 
-	return 0;
+	ports[port_num].port = port;
+out:
+	return ret;
 }
 
-/**
- * gserial_setup - initialize TTY driver for one or more ports
- * @g: gadget to associate with these ports
- * @count: how many ports to support
- * Context: may sleep
- *
- * The TTY stack needs to know in advance how many devices it should
- * plan to manage.  Use this call to set up the ports you will be
- * exporting through USB.  Later, connect them to functions based
- * on what configuration is activated by the USB host; and disconnect
- * them as appropriate.
- *
- * An example would be a two-configuration device in which both
- * configurations expose port 0, but through different functions.
- * One configuration could even expose port 1 while the other
- * one doesn't.
- *
- * Returns negative errno or zero.
- */
-int __init gserial_setup(struct usb_gadget *g, unsigned count)
+static void gserial_free_port(struct gs_port *port)
+{
+	kfree(port);
+}
+
+void gserial_free_line(unsigned char port_num)
+{
+	struct gs_port	*port;
+
+	if (WARN_ON(!ports[port_num].port))
+		return;
+
+	port = ports[port_num].port;
+	ports[port_num].port = NULL;
+
+	gserial_free_port(port);
+}
+EXPORT_SYMBOL_GPL(gserial_free_line);
+
+int gserial_alloc_line(unsigned char *line_num)
 {
 	struct usb_cdc_line_coding	coding;
-	int i, status;
+	int				ret;
+	int				port_num;
 
-	/* make devices be openable */
-	for (i = 0; i < count; i++) {
-		status = gs_port_alloc(i, &coding);
-		if (status) {
-			count = i;
-			goto fail;
-		}
+	coding.dwDTERate = cpu_to_le32(9600);
+	coding.bCharFormat = 8;
+	coding.bParityType = USB_CDC_NO_PARITY;
+	coding.bDataBits = USB_CDC_1_STOP_BITS;
+
+	for (port_num = 0; port_num < MAX_U_SERIAL_PORTS; port_num++) {
+		ret = gs_port_alloc(port_num, &coding);
+		if (ret == -EBUSY)
+			continue;
+		if (ret)
+			return ret;
+		break;
 	}
-	n_ports = count;
-	return 0;
-fail:
-	while (count--)
-		kfree(ports[count].port);
-	return status;
+	if (ret)
+		return ret;
+
+	/* ... and sysfs class devices, so mdev/udev make /dev/ttyGS* */
+
+	*line_num = port_num;
+
+	return ret;
 }
+EXPORT_SYMBOL_GPL(gserial_alloc_line);
 
 static void serial_putc(struct console_device *cdev, char c)
 {
@@ -422,33 +450,59 @@ timeout:
 static void serial_flush(struct console_device *cdev)
 {
 }
+
 static int serial_setbaudrate(struct console_device *cdev, int baudrate)
 {
 	return 0;
 }
 
-static struct console_device *mycdev;
-
+/**
+ * gserial_connect - notify TTY I/O glue that USB link is active
+ * @gser: the function, set up with endpoints and descriptors
+ * @port_num: which port is active
+ * Context: any (usually from irq)
+ *
+ * This is called activate endpoints and let the TTY layer know that
+ * the connection is active ... not unlike "carrier detect".  It won't
+ * necessarily start I/O queues; unless the TTY is held open by any
+ * task, there would be no point.  However, the endpoints will be
+ * activated so the USB host can perform I/O, subject to basic USB
+ * hardware flow control.
+ *
+ * Caller needs to have set up the endpoints and USB function in @dev
+ * before calling this, as well as the appropriate (speed-specific)
+ * endpoint descriptors, and also have allocate @port_num by calling
+ * @gserial_alloc_line().
+ *
+ * Returns negative errno or zero.
+ * On success, ep->driver_data will be overwritten.
+ */
 int gserial_connect(struct gserial *gser, u8 port_num)
 {
 	struct gs_port	*port;
 	int		status;
 	struct console_device *cdev;
 
-	/* we "know" gserial_cleanup() hasn't been called */
-	port = ports[port_num].port;
+	if (port_num >= MAX_U_SERIAL_PORTS)
+		return -ENXIO;
 
-	/* In case of multiple activation (ie. multiple SET_INTERFACE) */
-	if (port->port_usb)
-		return 0;
+	port = ports[port_num].port;
+	if (!port) {
+		pr_err("serial line %d not allocated.\n", port_num);
+		return -EINVAL;
+	}
+	if (port->port_usb) {
+		pr_err("serial line %d is in use.\n", port_num);
+		return -EBUSY;
+	}
 
 	/* activate the endpoints */
-	status = usb_ep_enable(gser->in, gser->in_desc);
+	status = usb_ep_enable(gser->in);
 	if (status < 0)
 		return status;
 	gser->in->driver_data = port;
 
-	status = usb_ep_enable(gser->out, gser->out_desc);
+	status = usb_ep_enable(gser->out);
 	if (status < 0)
 		goto fail_out;
 	gser->out->driver_data = port;
@@ -481,7 +535,21 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	if (status)
 		goto fail_out;
 
-	mycdev = cdev;
+	dev_set_param(&cdev->class_dev, "active", "ioe");
+
+	/* REVISIT if waiting on "carrier detect", signal. */
+
+	/* if it's already open, start I/O ... and notify the serial
+	 * protocol about open/close status (connect/disconnect).
+	 */
+	if (1) {
+		pr_debug("gserial_connect: start ttyGS%d\n", port->port_num);
+		if (gser->connect)
+			gser->connect(gser);
+	} else {
+		if (gser->disconnect)
+			gser->disconnect(gser);
+	}
 
 	return status;
 
@@ -490,27 +558,7 @@ fail_out:
 	gser->in->driver_data = NULL;
 	return status;
 }
-#include <command.h>
-
-static int do_mycdev(int argc, char *argv[])
-{
-
-	int i,j;
-	for (i = 'a'; i < 'z'; i++) {
-		mycdev->putc(mycdev, i);
-		printf("%c", i);
-		mdelay(500);
-		for (j = 0; j < 100; j++)
-			usb_gadget_poll();
-	}
-	return 0;
-}
-
-BAREBOX_CMD_START(mycdev)
-	.cmd		= do_mycdev,
-	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
-	BAREBOX_CMD_COMPLETE(empty_complete)
-BAREBOX_CMD_END
+EXPORT_SYMBOL_GPL(gserial_connect);
 
 /**
  * gserial_disconnect - notify TTY I/O glue that USB link is inactive
@@ -531,7 +579,10 @@ void gserial_disconnect(struct gserial *gser)
 	if (!port)
 		return;
 
+	cdev = &port->cdev;
+
 	/* tell the TTY glue not to do I/O here any more */
+	console_unregister(cdev);
 
 	/* REVISIT as above: how best to track this? */
 	port->port_line_coding = gser->port_line_coding;
@@ -550,6 +601,5 @@ void gserial_disconnect(struct gserial *gser)
 	gs_free_requests(gser->out, &port->read_pool);
 	gs_free_requests(gser->in, &port->write_pool);
 
-	cdev = &port->cdev;
-	console_unregister(cdev);
+	kfifo_free(port->recv_fifo);
 }

@@ -44,6 +44,7 @@
 #include <usb/gadget.h>
 #include <linux/stat.h>
 #include <libfile.h>
+#include <linux/err.h>
 #include <usb/ch9.h>
 #include <usb/dfu.h>
 #include <config.h>
@@ -55,16 +56,81 @@
 #include <init.h>
 #include <fs.h>
 
+#define USB_DT_DFU			0x21
+
+struct usb_dfu_func_descriptor {
+	u_int8_t		bLength;
+	u_int8_t		bDescriptorType;
+	u_int8_t		bmAttributes;
+#define USB_DFU_CAN_DOWNLOAD	(1 << 0)
+#define USB_DFU_CAN_UPLOAD	(1 << 1)
+#define USB_DFU_MANIFEST_TOL	(1 << 2)
+#define USB_DFU_WILL_DETACH	(1 << 3)
+	u_int16_t		wDetachTimeOut;
+	u_int16_t		wTransferSize;
+	u_int16_t		bcdDFUVersion;
+} __attribute__ ((packed));
+
+#define USB_DT_DFU_SIZE			9
+
+#define USB_TYPE_DFU		(USB_TYPE_CLASS|USB_RECIP_INTERFACE)
+
+/* DFU class-specific requests (Section 3, DFU Rev 1.1) */
+#define USB_REQ_DFU_DETACH	0x00
+#define USB_REQ_DFU_DNLOAD	0x01
+#define USB_REQ_DFU_UPLOAD	0x02
+#define USB_REQ_DFU_GETSTATUS	0x03
+#define USB_REQ_DFU_CLRSTATUS	0x04
+#define USB_REQ_DFU_GETSTATE	0x05
+#define USB_REQ_DFU_ABORT	0x06
+
+struct dfu_status {
+	u_int8_t bStatus;
+	u_int8_t bwPollTimeout[3];
+	u_int8_t bState;
+	u_int8_t iString;
+} __attribute__((packed));
+
+#define DFU_STATUS_OK			0x00
+#define DFU_STATUS_errTARGET		0x01
+#define DFU_STATUS_errFILE		0x02
+#define DFU_STATUS_errWRITE		0x03
+#define DFU_STATUS_errERASE		0x04
+#define DFU_STATUS_errCHECK_ERASED	0x05
+#define DFU_STATUS_errPROG		0x06
+#define DFU_STATUS_errVERIFY		0x07
+#define DFU_STATUS_errADDRESS		0x08
+#define DFU_STATUS_errNOTDONE		0x09
+#define DFU_STATUS_errFIRMWARE		0x0a
+#define DFU_STATUS_errVENDOR		0x0b
+#define DFU_STATUS_errUSBR		0x0c
+#define DFU_STATUS_errPOR		0x0d
+#define DFU_STATUS_errUNKNOWN		0x0e
+#define DFU_STATUS_errSTALLEDPKT	0x0f
+
+enum dfu_state {
+	DFU_STATE_appIDLE		= 0,
+	DFU_STATE_appDETACH		= 1,
+	DFU_STATE_dfuIDLE		= 2,
+	DFU_STATE_dfuDNLOAD_SYNC	= 3,
+	DFU_STATE_dfuDNBUSY		= 4,
+	DFU_STATE_dfuDNLOAD_IDLE	= 5,
+	DFU_STATE_dfuMANIFEST_SYNC	= 6,
+	DFU_STATE_dfuMANIFEST		= 7,
+	DFU_STATE_dfuMANIFEST_WAIT_RST	= 8,
+	DFU_STATE_dfuUPLOAD_IDLE	= 9,
+	DFU_STATE_dfuERROR		= 10,
+};
+
 #define USB_DT_DFU_SIZE			9
 #define USB_DT_DFU			0x21
 
 #define CONFIG_USBD_DFU_XFER_SIZE     4096
 #define DFU_TEMPFILE "/dfu_temp"
 
-static int dfualt;
+struct file_list_entry *dfu_file_entry;
 static int dfufd = -EINVAL;
-static struct usb_dfu_dev *dfu_devs;
-static int dfu_num_alt;
+static struct file_list *dfu_files;
 static int dfudetach;
 
 /* USB DFU functional descriptor */
@@ -103,35 +169,64 @@ static struct usb_gadget_strings *dfu_strings[] = {
 	NULL,
 };
 
-static struct usb_interface_descriptor dfu_control_interface_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	/* .bInterfaceNumber = DYNAMIC */
-	.bNumEndpoints =	0,
-	.bInterfaceClass =	0xfe,
-	.bInterfaceSubClass =	1,
-	.bInterfaceProtocol =	1,
-	/* .iInterface = DYNAMIC */
-};
+static void dn_complete(struct usb_ep *ep, struct usb_request *req);
 
 static int
 dfu_bind(struct usb_configuration *c, struct usb_function *f)
 {
+	struct usb_composite_dev *cdev = c->cdev;
 	struct usb_descriptor_header **header;
 	struct usb_interface_descriptor *desc;
+	struct file_list_entry *fentry;
+	struct f_dfu *dfu = container_of(f, struct f_dfu, func);
 	int i;
 	int			status;
+	struct usb_string	*us;
+
+	if (!dfu_files) {
+		const struct usb_function_instance *fi = f->fi;
+		struct f_dfu_opts *opts = container_of(fi, struct f_dfu_opts, func_inst);
+
+		dfu_files = opts->files;
+	}
+
+	dfu_string_defs = xzalloc(sizeof(struct usb_string) * (dfu_files->num_entries + 2));
+	dfu_string_defs[0].s = "Generic DFU";
+	i = 0;
+	file_list_for_each_entry(dfu_files, fentry) {
+		dfu_string_defs[i + 1].s = fentry->name;
+		i++;
+	}
+
+	dfu_string_defs[i + 1].s = NULL;
+	dfu_string_table.strings = dfu_string_defs;
+
+	dfu->dfu_state = DFU_STATE_dfuIDLE;
+	dfu->dfu_status = DFU_STATUS_OK;
+
+	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
+	if (!dfu->dnreq) {
+		printf("usb_ep_alloc_request failed\n");
+		goto out;
+	}
+	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);
+	dfu->dnreq->complete = dn_complete;
+	dfu->dnreq->zero = 0;
+
+	us = usb_gstrings_attach(cdev, dfu_strings, dfu_files->num_entries + 1);
+	if (IS_ERR(us)) {
+		status = PTR_ERR(us);
+		goto out;
+	}
 
 	/* allocate instance-specific interface IDs, and patch descriptors */
 	status = usb_interface_id(c, f);
 	if (status < 0)
-		return status;
+		goto out;
 
-	dfu_control_interface_desc.bInterfaceNumber = status;
-
-	header = xzalloc(sizeof(void *) * (dfu_num_alt + 2));
-	desc = xzalloc(sizeof(struct usb_interface_descriptor) * dfu_num_alt);
-	for (i = 0; i < dfu_num_alt; i++) {
+	header = xzalloc(sizeof(void *) * (dfu_files->num_entries + 2));
+	desc = xzalloc(sizeof(struct usb_interface_descriptor) * dfu_files->num_entries);
+	for (i = 0; i < dfu_files->num_entries; i++) {
 		desc[i].bLength =		USB_DT_INTERFACE_SIZE;
 		desc[i].bDescriptorType =	USB_DT_INTERFACE;
 		desc[i].bNumEndpoints	=	0;
@@ -139,32 +234,30 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 		desc[i].bInterfaceSubClass =	1;
 		desc[i].bInterfaceProtocol =	1;
 		desc[i].bAlternateSetting = i;
-		desc[i].iInterface = dfu_string_defs[i + 1].id;
+		desc[i].iInterface = us[i + 1].id;
 		header[i] = (struct usb_descriptor_header *)&desc[i];
 	}
 	header[i] = (struct usb_descriptor_header *) &usb_dfu_func;
 	header[i + 1] = NULL;
 
-	/* copy descriptors, and track endpoint copies */
-	f->descriptors = usb_copy_descriptors(header);
-	if (!f->descriptors)
-		goto out;
+	status = usb_assign_descriptors(f, header, header, NULL);
 
-	/* support all relevant hardware speeds... we expect that when
-	 * hardware is dual speed, all bulk-capable endpoints work at
-	 * both speeds
-	 */
-	if (gadget_is_dualspeed(c->cdev->gadget)) {
-		/* copy descriptors, and track endpoint copies */
-		f->hs_descriptors = usb_copy_descriptors(header);
-	}
-
-	for (i = 0; i < dfu_num_alt; i++)
-		printf("dfu: register alt%d(%s) with device %s\n",
-				i, dfu_devs[i].name, dfu_devs[i].dev);
-out:
 	free(desc);
 	free(header);
+
+	if (status)
+		goto out;
+
+	i = 0;
+	file_list_for_each_entry(dfu_files, fentry) {
+		printf("dfu: register alt%d(%s) with device %s\n",
+				i, fentry->name, fentry->filename);
+		i++;
+	}
+
+	return 0;
+out:
+	free(dfu_string_defs);
 
 	if (status)
 		ERROR(cdev, "%s/%p: can't bind, err %d\n", f->name, f, status);
@@ -177,20 +270,27 @@ dfu_unbind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct f_dfu		*dfu = func_to_dfu(f);
 
-	free(f->descriptors);
-	if (gadget_is_dualspeed(c->cdev->gadget))
-		free(f->hs_descriptors);
+	usb_free_all_descriptors(f);
 
 	dma_free(dfu->dnreq->buf);
 	usb_ep_free_request(c->cdev->gadget->ep0, dfu->dnreq);
-	free(dfu);
 }
 
 static int dfu_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 {
-	dfualt = alt;
+	struct file_list_entry	*fentry;
+	int i = 0;
 
-	return 0;
+	file_list_for_each_entry(dfu_files, fentry) {
+		if (i == alt) {
+			dfu_file_entry = fentry;
+			return 0;
+		}
+
+		i++;
+	}
+
+	return -EINVAL;
 }
 
 static int dfu_status(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
@@ -245,14 +345,14 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 
 	if (w_length == 0) {
 		dfu->dfu_state = DFU_STATE_dfuIDLE;
-		if (dfu_devs[dfualt].flags & DFU_FLAG_SAFE) {
+		if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE) {
 			int fd;
 			unsigned flags = O_WRONLY;
 
-			if (dfu_devs[dfualt].flags & DFU_FLAG_CREATE)
+			if (dfu_file_entry->flags & FILE_LIST_FLAG_CREATE)
 				flags |= O_CREAT | O_TRUNC;
 
-			fd = open(dfu_devs[dfualt].dev, flags);
+			fd = open(dfu_file_entry->filename, flags);
 			if (fd < 0) {
 				perror("open");
 				ret = -EINVAL;
@@ -265,7 +365,7 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 				ret = -EINVAL;
 				goto err_out;
 			}
-			ret = copy_file(DFU_TEMPFILE, dfu_devs[dfualt].dev, 0);
+			ret = copy_file(DFU_TEMPFILE, dfu_file_entry->filename, 0);
 			if (ret) {
 				printf("copy file failed\n");
 				ret = -EINVAL;
@@ -352,26 +452,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	}
 
 	switch (dfu->dfu_state) {
-	case DFU_STATE_appIDLE:
-		switch (ctrl->bRequest) {
-		case USB_REQ_DFU_DETACH:
-			dfu->dfu_state = DFU_STATE_appDETACH;
-			value = 0;
-			goto out;
-			break;
-		default:
-			value = -EINVAL;
-		}
-		break;
-	case DFU_STATE_appDETACH:
-		switch (ctrl->bRequest) {
-		default:
-			dfu->dfu_state = DFU_STATE_appIDLE;
-			value = -EINVAL;
-			goto out;
-			break;
-		}
-		break;
 	case DFU_STATE_dfuIDLE:
 		switch (ctrl->bRequest) {
 		case USB_REQ_DFU_DNLOAD:
@@ -380,16 +460,16 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 				value = -EINVAL;
 				goto out;
 			}
-			debug("dfu: starting download to %s\n", dfu_devs[dfualt].dev);
-			if (dfu_devs[dfualt].flags & DFU_FLAG_SAFE) {
+			debug("dfu: starting download to %s\n", dfu_file_entry->filename);
+			if (dfu_file_entry->flags & FILE_LIST_FLAG_SAFE) {
 				dfufd = open(DFU_TEMPFILE, O_WRONLY | O_CREAT);
 			} else {
 				unsigned flags = O_WRONLY;
 
-				if (dfu_devs[dfualt].flags & DFU_FLAG_CREATE)
+				if (dfu_file_entry->flags & FILE_LIST_FLAG_CREATE)
 					flags |= O_CREAT | O_TRUNC;
 
-				dfufd = open(dfu_devs[dfualt].dev, flags);
+				dfufd = open(dfu_file_entry->filename, flags);
 			}
 
 			if (dfufd < 0) {
@@ -411,12 +491,12 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			break;
 		case USB_REQ_DFU_UPLOAD:
 			dfu->dfu_state = DFU_STATE_dfuUPLOAD_IDLE;
-			debug("dfu: starting upload from %s\n", dfu_devs[dfualt].dev);
-			if (!(dfu_devs[dfualt].flags & DFU_FLAG_READBACK)) {
+			debug("dfu: starting upload from %s\n", dfu_file_entry->filename);
+			if (!(dfu_file_entry->flags & FILE_LIST_FLAG_READBACK)) {
 				dfu->dfu_state = DFU_STATE_dfuERROR;
 				goto out;
 			}
-			dfufd = open(dfu_devs[dfualt].dev, O_RDONLY);
+			dfufd = open(dfu_file_entry->filename, O_RDONLY);
 			if (dfufd < 0) {
 				dfu->dfu_state = DFU_STATE_dfuERROR;
 				perror("open");
@@ -430,13 +510,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			value = 0;
 			break;
 		case USB_REQ_DFU_DETACH:
-			/* Proprietary extension: 'detach' from idle mode and
-			 * get back to runtime mode in case of USB Reset.  As
-			 * much as I dislike this, we just can't use every USB
-			 * bus reset to switch back to runtime mode, since at
-			 * least the Linux USB stack likes to send a number of resets
-			 * in a row :( */
-			dfu->dfu_state = DFU_STATE_dfuMANIFEST_WAIT_RST;
 			value = 0;
 			dfudetach = 1;
 			break;
@@ -498,7 +571,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	case DFU_STATE_dfuDNBUSY:
 	case DFU_STATE_dfuMANIFEST_SYNC:
 	case DFU_STATE_dfuMANIFEST:
-	case DFU_STATE_dfuMANIFEST_WAIT_RST:
 		dfu->dfu_state = DFU_STATE_dfuERROR;
 		value = -EINVAL;
 		goto out;
@@ -524,17 +596,7 @@ static void dfu_disable(struct usb_function *f)
 {
 	struct f_dfu		*dfu = func_to_dfu(f);
 
-	switch (dfu->dfu_state) {
-	case DFU_STATE_appDETACH:
-		dfu->dfu_state = DFU_STATE_dfuIDLE;
-		break;
-	case DFU_STATE_dfuMANIFEST_WAIT_RST:
-		dfu->dfu_state = DFU_STATE_appIDLE;
-		break;
-	default:
-		dfu->dfu_state = DFU_STATE_appDETACH;
-		break;
-	}
+	dfu->dfu_state = DFU_STATE_dfuIDLE;
 
 	dfu_cleanup(dfu);
 }
@@ -560,74 +622,6 @@ static struct usb_gadget_strings *dev_strings[] = {
 	NULL,
 };
 
-static int dfu_bind_config(struct usb_configuration *c)
-{
-	struct f_dfu *dfu;
-	struct usb_function *func;
-	int		status;
-	int i;
-
-	/* config description */
-	status = usb_string_id(c->cdev);
-	if (status < 0)
-		return status;
-	strings_dev[STRING_DESCRIPTION_IDX].id = status;
-
-	status = usb_string_id(c->cdev);
-	if (status < 0)
-		return status;
-	dfu_control_interface_desc.iInterface = status;
-
-	/* allocate and initialize one new instance */
-	dfu = xzalloc(sizeof *dfu);
-
-	dfu->dfu_state = DFU_STATE_appIDLE;
-	dfu->dfu_status = DFU_STATUS_OK;
-
-	dfu_string_defs = xzalloc(sizeof(struct usb_string) * (dfu_num_alt + 2));
-	dfu_string_defs[0].s = "Generic DFU";
-	dfu_string_defs[0].id = status;
-	for (i = 0; i < dfu_num_alt; i++) {
-		dfu_string_defs[i + 1].s = dfu_devs[i].name;
-		status = usb_string_id(c->cdev);
-		if (status < 0)
-			goto out;
-		dfu_string_defs[i + 1].id = status;
-	}
-	dfu_string_defs[i + 1].s = NULL;
-	dfu_string_table.strings = dfu_string_defs;
-
-	func = &dfu->func;
-	func->name = "DFU";
-	func->strings = dfu_strings;
-	/* descriptors are per-instance copies */
-	func->bind = dfu_bind;
-	func->unbind = dfu_unbind;
-	func->set_alt = dfu_set_alt;
-	func->setup = dfu_setup;
-	func->disable = dfu_disable;
-
-	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
-	if (!dfu->dnreq) {
-		printf("usb_ep_alloc_request failed\n");
-		goto out;
-	}
-	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);
-	dfu->dnreq->complete = dn_complete;
-	dfu->dnreq->zero = 0;
-
-	status = usb_add_function(c, func);
-	if (status)
-		goto out;
-
-	return 0;
-out:
-	free(dfu);
-	free(dfu_string_defs);
-
-	return status;
-}
-
 static void dfu_unbind_config(struct usb_configuration *c)
 {
 	free(dfu_string_defs);
@@ -635,7 +629,6 @@ static void dfu_unbind_config(struct usb_configuration *c)
 
 static struct usb_configuration dfu_config_driver = {
 	.label			= "USB DFU",
-	.bind			= dfu_bind_config,
 	.unbind			= dfu_unbind_config,
 	.bConfigurationValue	= 1,
 	.bmAttributes		= USB_CONFIG_ATT_SELFPOWER,
@@ -654,9 +647,24 @@ static struct usb_device_descriptor dfu_dev_descriptor = {
 	.bNumConfigurations	= 0x01,
 };
 
+static struct usb_function_instance *fi_dfu;
+static struct usb_function *f_dfu;
+
 static int dfu_driver_bind(struct usb_composite_dev *cdev)
 {
+	struct usb_gadget *gadget = cdev->gadget;
 	int status;
+
+	if (gadget->vendor_id && gadget->product_id) {
+		dfu_dev_descriptor.idVendor = cpu_to_le16(gadget->vendor_id);
+		dfu_dev_descriptor.idProduct = cpu_to_le16(gadget->product_id);
+	} else {
+		dfu_dev_descriptor.idVendor = cpu_to_le16(0x1d50); /* Openmoko, Inc */
+		dfu_dev_descriptor.idProduct = cpu_to_le16(0x60a2); /* barebox bootloader USB DFU Mode */
+	}
+
+	strings_dev[STRING_MANUFACTURER_IDX].s = gadget->manufacturer;
+	strings_dev[STRING_PRODUCT_IDX].s = gadget->productname;
 
 	status = usb_string_id(cdev);
 	if (status < 0)
@@ -677,8 +685,24 @@ static int dfu_driver_bind(struct usb_composite_dev *cdev)
 	strings_dev[STRING_DESCRIPTION_IDX].id = status;
 	dfu_config_driver.iConfiguration = status;
 
-	status = usb_add_config(cdev, &dfu_config_driver);
+	status = usb_add_config_only(cdev, &dfu_config_driver);
 	if (status < 0)
+		goto fail;
+
+	fi_dfu = usb_get_function_instance("dfu");
+	if (IS_ERR(fi_dfu)) {
+		status = PTR_ERR(fi_dfu);
+		goto fail;
+	}
+
+	f_dfu = usb_get_function(fi_dfu);
+	if (IS_ERR(f_dfu)) {
+		status = PTR_ERR(f_dfu);
+		goto fail;
+	}
+
+	status = usb_add_function(&dfu_config_driver, f_dfu);
+	if (status)
 		goto fail;
 
 	return 0;
@@ -686,41 +710,104 @@ fail:
 	return status;
 }
 
+static int dfu_driver_unbind(struct usb_composite_dev *cdev)
+{
+	usb_put_function(f_dfu);
+	usb_put_function_instance(fi_dfu);
+
+	return 0;
+}
+
 static struct usb_composite_driver dfu_driver = {
 	.name		= "g_dfu",
 	.dev		= &dfu_dev_descriptor,
 	.strings	= dev_strings,
 	.bind		= dfu_driver_bind,
+	.unbind		= dfu_driver_unbind,
 };
 
-int usb_dfu_register(struct usb_dfu_pdata *pdata)
+int usb_dfu_register(struct f_dfu_opts *opts)
 {
 	int ret;
 
-	dfu_devs = pdata->alts;
-	dfu_num_alt = pdata->num_alts;
-	dfu_dev_descriptor.idVendor = pdata->idVendor;
-	dfu_dev_descriptor.idProduct = pdata->idProduct;
-	strings_dev[STRING_MANUFACTURER_IDX].s = pdata->manufacturer;
-	strings_dev[STRING_PRODUCT_IDX].s = pdata->productname;
+	if (dfu_files)
+		return -EBUSY;
 
-	ret = usb_composite_register(&dfu_driver);
+	dfu_files = opts->files;
+
+	ret = usb_composite_probe(&dfu_driver);
 	if (ret)
-		return ret;
+		goto out;
 
 	while (1) {
 		ret = usb_gadget_poll();
 		if (ret < 0)
-			return ret;
+			goto out1;
 
-		if (ctrlc() || dfudetach)
-			goto out;
+		if (dfudetach) {
+			ret = 0;
+			goto out1;
+		}
+
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out1;
+		}
 	}
 
-out:
+out1:
 	dfudetach = 0;
 	usb_composite_unregister(&dfu_driver);
+out:
+	dfu_files = NULL;
 
-	return 0;
+	return ret;
 }
 
+static void dfu_free_func(struct usb_function *f)
+{
+	struct f_dfu *dfu = container_of(f, struct f_dfu, func);
+
+	free(dfu);
+}
+
+static struct usb_function *dfu_alloc_func(struct usb_function_instance *fi)
+{
+	struct f_dfu *dfu;
+
+	dfu = xzalloc(sizeof(*dfu));
+
+	dfu->func.name = "dfu";
+	dfu->func.strings = dfu_strings;
+	/* descriptors are per-instance copies */
+	dfu->func.bind = dfu_bind;
+	dfu->func.set_alt = dfu_set_alt;
+	dfu->func.setup = dfu_setup;
+	dfu->func.disable = dfu_disable;
+	dfu->func.unbind = dfu_unbind;
+	dfu->func.free_func = dfu_free_func;
+
+	return &dfu->func;
+}
+
+static void dfu_free_instance(struct usb_function_instance *fi)
+{
+	struct f_dfu_opts *opts;
+
+	opts = container_of(fi, struct f_dfu_opts, func_inst);
+	kfree(opts);
+}
+
+static struct usb_function_instance *dfu_alloc_instance(void)
+{
+	struct f_dfu_opts *opts;
+
+	opts = kzalloc(sizeof(*opts), GFP_KERNEL);
+	if (!opts)
+		return ERR_PTR(-ENOMEM);
+	opts->func_inst.free_func_inst = dfu_free_instance;
+
+	return &opts->func_inst;
+}
+
+DECLARE_USB_FUNCTION_INIT(dfu, dfu_alloc_instance, dfu_alloc_func);

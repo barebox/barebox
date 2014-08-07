@@ -31,35 +31,15 @@ static int do_usbserial(int argc, char *argv[])
 {
 	int opt;
 	struct usb_serial_pdata pdata;
-	char *manufacturer = "barebox";
-	const char *productname = barebox_get_model();
-	u16 idVendor = 0, idProduct = 0;
-	int mode = 0;
+	int acm = 1;
 
-	while ((opt = getopt(argc, argv, "m:p:V:P:asd")) > 0) {
+	while ((opt = getopt(argc, argv, "asd")) > 0) {
 		switch (opt) {
-		case 'm':
-			manufacturer = optarg;
-			break;
-		case 'p':
-			productname = optarg;
-			break;
-		case 'V':
-			idVendor = simple_strtoul(optarg, NULL, 0);
-			break;
-		case 'P':
-			idProduct = simple_strtoul(optarg, NULL, 0);
-			break;
 		case 'a':
-			mode = 0;
+			acm = 1;
 			break;
-#ifdef HAVE_OBEX
-		case 'o':
-			mode = 1;
-			break;
-#endif
 		case 's':
-			mode = 2;
+			acm = 0;
 			break;
 		case 'd':
 			usb_serial_unregister();
@@ -67,11 +47,7 @@ static int do_usbserial(int argc, char *argv[])
 		}
 	}
 
-	pdata.manufacturer = manufacturer;
-	pdata.productname = productname;
-	pdata.idVendor = idVendor;
-	pdata.idProduct = idProduct;
-	pdata.mode = mode;
+	pdata.acm = acm;
 
 	return usb_serial_register(&pdata);
 }
@@ -80,14 +56,7 @@ BAREBOX_CMD_HELP_START(usbserial)
 BAREBOX_CMD_HELP_TEXT("Enable / disable a serial gadget on the USB device interface.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-m STR",  "Manufacturer string (barebox)")
-BAREBOX_CMD_HELP_OPT ("-p STR",  "product string")
-BAREBOX_CMD_HELP_OPT ("-V ID",   "vendor id")
-BAREBOX_CMD_HELP_OPT ("-P ID",   "product id")
 BAREBOX_CMD_HELP_OPT ("-a",   "CDC ACM (default)")
-#ifdef HAVE_OBEX
-BAREBOX_CMD_HELP_OPT ("-o",   "CDC OBEX")
-#endif
 BAREBOX_CMD_HELP_OPT ("-s",   "Generic Serial")
 BAREBOX_CMD_HELP_OPT ("-d",   "Disable the serial gadget")
 BAREBOX_CMD_HELP_END
@@ -95,11 +64,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(usbserial)
 	.cmd		= do_usbserial,
 	BAREBOX_CMD_DESC("serial gadget enable/disable")
-	BAREBOX_CMD_OPTS("[-mpVPa"
-#ifdef HAVE_OBEX
-					  "o"
-#endif
-					  "sd] <description>")
+	BAREBOX_CMD_OPTS("[-asd] <description>")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usbserial_help)
 BAREBOX_CMD_END

@@ -51,6 +51,7 @@
 #include <dma.h>
 
 #include <usb/usb.h>
+#include <usb/ch9.h>
 
 /* #define USB_DEBUG */
 

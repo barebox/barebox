@@ -41,12 +41,16 @@ comment "USB Gadget drivers"
 
 config USB_GADGET_DFU
 	bool
+	select FILE_LIST
 	prompt "Device Firmware Update Gadget"
 
 config USB_GADGET_SERIAL
 	bool
-	depends on EXPERIMENTAL && !CONSOLE_NONE
+	depends on !CONSOLE_NONE
 	prompt "Serial Gadget"
 
-endif
+config USB_GADGET_FASTBOOT
+	bool
+	prompt "Android Fastboot support"
 
+endif

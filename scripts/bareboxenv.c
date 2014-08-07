@@ -109,6 +109,7 @@ static void usage(char *prgname)
 		"\n"
 		"options:\n"
 		"  -s        save (directory -> environment sector)\n"
+		"  -z        force the built-in default environment at startup\n"
 		"  -l        load (environment sector -> directory)\n"
 		"  -p <size> pad output file to given size\n"
 		"  -v        verbose\n",
@@ -120,9 +121,10 @@ int main(int argc, char *argv[])
 	int opt;
 	int save = 0, load = 0, pad = 0, err = 0, fd;
 	char *filename = NULL, *dirname = NULL;
+	unsigned envfs_flags = 0;
 	int verbose = 0;
 
-	while((opt = getopt(argc, argv, "slp:v")) != -1) {
+	while((opt = getopt(argc, argv, "slp:vz")) != -1) {
 		switch (opt) {
 		case 's':
 			save = 1;
@@ -132,6 +134,10 @@ int main(int argc, char *argv[])
 			break;
 		case 'p':
 			pad = strtoul(optarg, NULL, 0);
+			break;
+		case 'z':
+			envfs_flags |= ENVFS_FLAGS_FORCE_BUILT_IN;
+			save = 1;
 			break;
 		case 'v':
 			verbose = 1;
@@ -181,7 +187,7 @@ int main(int argc, char *argv[])
 		if (verbose)
 			printf("saving contents of %s to file %s\n", dirname, filename);
 
-		err = envfs_save(filename, dirname);
+		err = envfs_save(filename, dirname, envfs_flags);
 
 		if (verbose && err)
 			printf("saving env failed: %d\n", err);

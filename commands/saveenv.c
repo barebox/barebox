@@ -18,26 +18,39 @@
 #include <common.h>
 #include <command.h>
 #include <errno.h>
+#include <getopt.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <envfs.h>
 
 static int do_saveenv(int argc, char *argv[])
 {
-	int ret;
+	int ret, opt;
+	unsigned envfs_flags = 0;
 	char *filename, *dirname;
 
 	printf("saving environment\n");
-	if (argc < 3)
-		dirname = "/env";
-	else
-		dirname = argv[2];
-	if (argc < 2)
-		filename = default_environment_path_get();
-	else
-		filename = argv[1];
+	while ((opt = getopt(argc, argv, "z")) > 0) {
+		switch (opt) {
+		case 'z':
+			envfs_flags |= ENVFS_FLAGS_FORCE_BUILT_IN;
+			break;
+		}
+	}
 
-	ret = envfs_save(filename, dirname);
+	/* destination and source are given? */
+	if (argc == optind + 2)
+		dirname = argv[optind + 1];
+	else
+		dirname = "/env";
+
+	/* destination only given? */
+	if (argc == optind + 1)
+		filename = argv[optind];
+	else
+		filename = default_environment_path_get();
+
+	ret = envfs_save(filename, dirname, envfs_flags);
 
 	return ret;
 }
@@ -47,15 +60,15 @@ BAREBOX_CMD_HELP_TEXT("Save the files in DIRECTORY to the persistent storage dev
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("ENVFS is usually a block in flash but can be any other file. If")
 BAREBOX_CMD_HELP_TEXT("omitted, DIRECTORY defaults to /env and ENVFS defaults to")
-BAREBOX_CMD_HELP_TEXT("/dev/env0. Note that envfs can only handle files, directories are being")
-BAREBOX_CMD_HELP_TEXT("skipped silently.")
+BAREBOX_CMD_HELP_TEXT("/dev/env0.")
+BAREBOX_CMD_HELP_OPT ("-z",  "force the built-in default environment at startup")
 
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(saveenv)
 	.cmd		= do_saveenv,
 	BAREBOX_CMD_DESC("save environment to persistent storage")
-	BAREBOX_CMD_OPTS("[ENVFS] [DIRECTORY]")
+	BAREBOX_CMD_OPTS("[-z] [ENVFS [DIRECTORY]]")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_saveenv_help)
 BAREBOX_CMD_END

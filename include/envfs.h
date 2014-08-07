@@ -43,6 +43,7 @@ struct envfs_super {
 	uint8_t minor;			/* minor */
 	uint16_t future;		/* reserved for future use */
 	uint32_t flags;			/* feature flags */
+#define ENVFS_FLAGS_FORCE_BUILT_IN	(1 << 0)
 	uint32_t sb_crc;		/* crc for the superblock */
 };
 
@@ -92,7 +93,7 @@ struct envfs_super {
 
 #define ENV_FLAG_NO_OVERWRITE	(1 << 0)
 int envfs_load(const char *filename, const char *dirname, unsigned flags);
-int envfs_save(const char *filename, const char *dirname);
+int envfs_save(const char *filename, const char *dirname, unsigned flags);
 int envfs_load_from_buf(void *buf, int len, const char *dir, unsigned flags);
 
 /* defaults to /dev/env0 */

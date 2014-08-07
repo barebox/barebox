@@ -167,12 +167,13 @@ out:
  * Make the current environment persistent
  * @param[in] filename where to store
  * @param[in] dirname what to store (all files in this dir)
+ * @param[in] flags superblock flags (refer ENVFS_FLAGS_* macros)
  * @return 0 on success, anything else in case of failure
  *
  * Note: This function will also be used on the host! See note in the header
  * of this file.
  */
-int envfs_save(const char *filename, const char *dirname)
+int envfs_save(const char *filename, const char *dirname, unsigned flags)
 {
 	struct envfs_super *super;
 	int envfd, size, ret;
@@ -182,11 +183,15 @@ int envfs_save(const char *filename, const char *dirname)
 	data.writep = NULL;
 	data.base = dirname;
 
-	/* first pass: calculate size */
-	recursive_action(dirname, ACTION_RECURSE, file_size_action,
-			 NULL, &data, 0);
+	if (flags & ENVFS_FLAGS_FORCE_BUILT_IN) {
+		size = 0; /* force no content */
+	} else {
+		/* first pass: calculate size */
+		recursive_action(dirname, ACTION_RECURSE, file_size_action,
+				NULL, &data, 0);
 
-	size = (unsigned long)data.writep;
+		size = (unsigned long)data.writep;
+	}
 
 	buf = xzalloc(size + sizeof(struct envfs_super));
 	data.writep = buf + sizeof(struct envfs_super);
@@ -196,10 +201,13 @@ int envfs_save(const char *filename, const char *dirname)
 	super->major = ENVFS_MAJOR;
 	super->minor = ENVFS_MINOR;
 	super->size = ENVFS_32(size);
+	super->flags = ENVFS_32(flags);
 
-	/* second pass: copy files to buffer */
-	recursive_action(dirname, ACTION_RECURSE, file_save_action,
-			 NULL, &data, 0);
+	if (!(flags & ENVFS_FLAGS_FORCE_BUILT_IN)) {
+		/* second pass: copy files to buffer */
+		recursive_action(dirname, ACTION_RECURSE, file_save_action,
+				NULL, &data, 0);
+	}
 
 	super->crc = ENVFS_32(crc32(0, buf + sizeof(struct envfs_super), size));
 	super->sb_crc = ENVFS_32(crc32(0, buf, sizeof(struct envfs_super) - 4));
@@ -446,6 +454,15 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 	ret = envfs_check_super(&super, &size);
 	if (ret)
 		goto out;
+
+	if (super.flags & ENVFS_FLAGS_FORCE_BUILT_IN) {
+		printf("found force-builtin environment, using defaultenv\n");
+		ret = defaultenv_load(dir, 0);
+		if (ret)
+			printf("failed to load default environment: %s\n",
+					strerror(-ret));
+		goto out;
+	}
 
 	buf = xmalloc(size);
 

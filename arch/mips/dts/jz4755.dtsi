@@ -13,6 +13,11 @@
 			reg = <0xb0002000 0x10>;
 		};
 
+		rtc: rtc@10003000 {
+			compatible = "ingenic,jz4740-rtc";
+			reg = <0xb0003000 0x38>;
+		};
+
 		serial0: serial@b0030000 {
 			compatible = "ingenic,jz4740-uart";
 			reg = <0xb0030000 0x20>;

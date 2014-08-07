@@ -67,7 +67,6 @@ include/linux/compile.h
 include/generated
 
 # Generated files
-Doxyfile.version
 Documentation/commands/*.rst
 doctrees/
 

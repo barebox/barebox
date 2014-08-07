@@ -46,7 +46,7 @@ static int do_lspci(int argc, char *argv[])
 
 BAREBOX_CMD_START(lspci)
 	.cmd            = do_lspci,
-	BAREBOX_CMD_DESC("Show PCI info")
+	BAREBOX_CMD_DESC("show PCI info")
 	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
 	BAREBOX_CMD_COMPLETE(empty_complete)
 BAREBOX_CMD_END

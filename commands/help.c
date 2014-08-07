@@ -128,7 +128,7 @@ static int do_help(int argc, char *argv[])
 
 
 BAREBOX_CMD_HELP_START(help)
-BAREBOX_CMD_HELP_TEXT("Without arguments, lists all all commands. With an argument, print help")
+BAREBOX_CMD_HELP_TEXT("Without arguments, lists all commands. With an argument, print help")
 BAREBOX_CMD_HELP_TEXT("about the specified command. If the argument is 'all', then output help")
 BAREBOX_CMD_HELP_TEXT("for all commands.")
 BAREBOX_CMD_HELP_TEXT("")

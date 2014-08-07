@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
+import errno
 import os
 import re
 import sys
+import hashlib
 
 from collections import defaultdict
 from pprint import pprint
@@ -76,7 +78,7 @@ def parse_c(name):
     x = CMD_GROUP.match(line)
     if x:
       last = cmd['c_group']
-      last.append(x.group(1).decode("string_escape"))
+      last.append(x.group(1).split('_')[-1].lower())
       continue
     x = CONT.match(line)
     if x:
@@ -101,7 +103,7 @@ def gen_rst(name, cmd):
   out.append('.. _command_%s:' % name)
   out.append('')
   if 'c_desc' in cmd:
-    out.append("%s (%s)" % (name, ''.join(cmd['c_desc']).strip()))
+    out.append("%s - %s" % (name, ''.join(cmd['c_desc']).strip()))
   else:
     out.append("%s" % (name,))
   out.append('='*len(out[-1]))
@@ -159,6 +161,27 @@ for name in CMDS.keys():
 for name, cmd in CMDS.items():
   #pprint({name: cmd})
   rst = gen_rst(name, cmd)
-  target = os.path.join(sys.argv[2], name+'.rst')
+  subdir = os.path.join(sys.argv[2], cmd['c_group'][0])
+  try:
+    os.makedirs(subdir)
+  except OSError as e:
+    if e.errno == errno.EEXIST and os.path.isdir(subdir):
+      pass
+    else:
+      raise
+  target = os.path.join(subdir, name+'.rst')
+
+  # Only write the new rst if it differs from the old one. Wroto
+  hash_old = hashlib.sha1()
+  try:
+    f = open(target, 'rb')
+    hash_old.update(f.read())
+  except:
+    pass
+  hash_new = hashlib.sha1()
+  hash_new.update(rst)
+  if hash_old.hexdigest() == hash_new.hexdigest():
+    continue
+
   file(target, 'w').write(rst)
 

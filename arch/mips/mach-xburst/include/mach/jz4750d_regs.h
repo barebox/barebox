@@ -59,28 +59,6 @@
 #define TCU_OSTCSR_PCK_EN		(1 << 0) /* select pclk as the timer clock input */
 
 /*************************************************************************
- * WDT (WatchDog Timer)
- *************************************************************************/
-#define WDT_TDR		(WDT_BASE + 0x00)
-#define WDT_TCER	(WDT_BASE + 0x04)
-#define WDT_TCNT	(WDT_BASE + 0x08)
-#define WDT_TCSR	(WDT_BASE + 0x0c)
-
-#define WDT_TCSR_PRESCALE_BIT	3
-#define WDT_TCSR_PRESCALE_MASK	(0x7 << WDT_TCSR_PRESCALE_BIT)
- #define WDT_TCSR_PRESCALE1	(0x0 << WDT_TCSR_PRESCALE_BIT)
- #define WDT_TCSR_PRESCALE4	(0x1 << WDT_TCSR_PRESCALE_BIT)
- #define WDT_TCSR_PRESCALE16	(0x2 << WDT_TCSR_PRESCALE_BIT)
- #define WDT_TCSR_PRESCALE64	(0x3 << WDT_TCSR_PRESCALE_BIT)
- #define WDT_TCSR_PRESCALE256	(0x4 << WDT_TCSR_PRESCALE_BIT)
- #define WDT_TCSR_PRESCALE1024	(0x5 << WDT_TCSR_PRESCALE_BIT)
-#define WDT_TCSR_EXT_EN		(1 << 2)
-#define WDT_TCSR_RTC_EN		(1 << 1)
-#define WDT_TCSR_PCK_EN		(1 << 0)
-
-#define WDT_TCER_TCEN		(1 << 0)
-
-/*************************************************************************
  * RTC
  *************************************************************************/
 #define RTC_RCR		(RTC_BASE + 0x00) /* RTC Control Register */

@@ -153,6 +153,11 @@ extern __inline__ int ffz(unsigned int x)
 	return __ilog2(x & -x);
 }
 
+static __inline__ int __ffs(unsigned long x)
+{
+	return __ilog2(x & -x);
+}
+
 /*
  * fls: find last (most-significant) bit set.
  * Note fls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
@@ -182,49 +187,7 @@ extern __inline__ int ffs(int x)
 
 #endif /* __KERNEL__ */
 
-/*
- * This implementation of find_{first,next}_zero_bit was stolen from
- * Linus' asm-alpha/bitops.h.
- */
-#define find_first_zero_bit(addr, size) \
-	find_next_zero_bit((addr), (size), 0)
-
-extern __inline__ unsigned long find_next_zero_bit(void * addr,
-	unsigned long size, unsigned long offset)
-{
-	unsigned int * p = ((unsigned int *) addr) + (offset >> 5);
-	unsigned int result = offset & ~31UL;
-	unsigned int tmp;
-
-	if (offset >= size)
-		return size;
-	size -= result;
-	offset &= 31UL;
-	if (offset) {
-		tmp = *p++;
-		tmp |= ~0UL >> (32-offset);
-		if (size < 32)
-			goto found_first;
-		if (tmp != ~0U)
-			goto found_middle;
-		size -= 32;
-		result += 32;
-	}
-	while (size >= 32) {
-		if ((tmp = *p++) != ~0U)
-			goto found_middle;
-		result += 32;
-		size -= 32;
-	}
-	if (!size)
-		return result;
-	tmp = *p;
-found_first:
-	tmp |= ~0UL << size;
-found_middle:
-	return result + ffz(tmp);
-}
-
+#include <asm-generic/bitops/find.h>
 
 #define _EXT2_HAVE_ASM_BITOPS_
 

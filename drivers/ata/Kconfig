@@ -34,6 +34,7 @@ config DISK_ATA
 
 config DISK_AHCI
 	bool "AHCI support"
+	depends on HAS_DMA
 	select DISK_ATA
 
 config DISK_AHCI_IMX

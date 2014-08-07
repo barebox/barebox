@@ -25,6 +25,22 @@ config ENV_HANDLING
 	select CRC32
 	bool
 
+config HAS_CACHE
+	bool
+	help
+	  This allows you do run "make ARCH=sandbox allyesconfig".
+
+	  Drivers that depend on a cache implementation can depend on this
+	  config, so that you don't get a compilation error.
+
+config HAS_DMA
+	bool
+	help
+	  This allows you do run "make ARCH=sandbox allyesconfig".
+
+	  Drivers that depend on a DMA implementation can depend on this
+	  config, so that you don't get a compilation error.
+
 config GENERIC_GPIO
 	bool
 
@@ -657,6 +673,7 @@ config BAREBOXENV_TARGET
 config BAREBOXCRC32_TARGET
 	bool
 	prompt "build bareboxcrc32 tool for target"
+	depends on !SANDBOX
 	help
 	  'bareboxcrc32' is a userspacetool to generate the crc32 checksums the same way
 	  barebox does. Say yes here to build it for the target.
@@ -691,6 +708,7 @@ config COMPILE_LOGLEVEL
 	  5    normal but significant condition (notice)
 	  6    informational (info)
 	  7    debug-level messages (debug)
+	  8    verbose debug messages (vdebug)
 
 config DEFAULT_LOGLEVEL
 	int "default loglevel"
@@ -707,6 +725,7 @@ config DEFAULT_LOGLEVEL
 	  5    normal but significant condition (notice)
 	  6    informational (info)
 	  7    debug-level messages (debug)
+	  8    verbose debug messages (vdebug)
 
 config DEBUG_INFO
 	bool

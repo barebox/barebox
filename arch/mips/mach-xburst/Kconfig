@@ -6,6 +6,8 @@ config ARCH_TEXT_BASE
 
 config CPU_JZ4755
 	bool
+	select WATCHDOG
+	select WATCHDOG_JZ4740
 
 choice
 	prompt "Board type"

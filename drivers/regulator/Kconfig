@@ -6,6 +6,7 @@ if REGULATOR
 
 config REGULATOR_FIXED
 	bool "fixed/gpio regulator"
+	depends on GENERIC_GPIO
 	help
 	  This enables a simple fixed regulator. It is used for regulators
 	  which are not software controllable or controllable via gpio.

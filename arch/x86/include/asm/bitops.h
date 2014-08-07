@@ -12,22 +12,24 @@
  *
  */
 
-/**
- * @file
- * @brief x86 bit operations
- *
- * This file is required only to make all sources happy including
- * 'linux/bitops.h'
- */
+#ifndef _ASM_BITOPS_H_
+#define _ASM_BITOPS_H_
 
-#ifndef _ASM_X86_BITOPS_H_
-#define _ASM_X86_BITOPS_H_
-
-#define BITS_PER_LONG 32
-
-#include <asm-generic/bitops/__fls.h>
 #include <asm-generic/bitops/__ffs.h>
-#include <asm-generic/bitops/fls.h>
+#include <asm-generic/bitops/__fls.h>
 #include <asm-generic/bitops/ffs.h>
+#include <asm-generic/bitops/fls.h>
+#include <asm-generic/bitops/ffz.h>
+#include <asm-generic/bitops/hweight.h>
+#include <asm-generic/bitops/fls64.h>
+#include <asm-generic/bitops/find.h>
+#include <asm-generic/bitops/ops.h>
 
-#endif /* _ASM_X86_BITOPS_H_ */
+#define set_bit(x, y)			__set_bit(x, y)
+#define clear_bit(x, y)			__clear_bit(x, y)
+#define change_bit(x, y)		__change_bit(x, y)
+#define test_and_set_bit(x, y)		__test_and_set_bit(x, y)
+#define test_and_clear_bit(x, y)	__test_and_clear_bit(x, y)
+#define test_and_change_bit(x, y)	__test_and_change_bit(x, y)
+
+#endif /* _ASM_BITOPS_H_ */

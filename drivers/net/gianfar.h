@@ -188,15 +188,15 @@
 #define RXBD_STATS		0x003f
 
 struct txbd8 {
-	ushort	     status;	     /* Status Fields */
-	ushort	     length;	     /* Buffer length */
-	uint	     bufPtr;	     /* Buffer Pointer */
+	uint16_t     status;	     /* Status Fields */
+	uint16_t     length;	     /* Buffer length */
+	uint32_t     bufPtr;	     /* Buffer Pointer */
 };
 
 struct rxbd8 {
-	ushort	     status;	     /* Status Fields */
-	ushort	     length;	     /* Buffer Length */
-	uint	     bufPtr;	     /* Buffer Pointer */
+	uint16_t     status;	     /* Status Fields */
+	uint16_t     length;	     /* Buffer Length */
+	uint32_t     bufPtr;	     /* Buffer Pointer */
 };
 
 /* eTSEC general control and status registers */
@@ -275,8 +275,8 @@ struct gfar_private {
 	struct gfar_phy *gfar_mdio;
 	struct gfar_phy *gfar_tbi;
 	struct phy_info *phyinfo;
-	volatile struct txbd8 *txbd;
-	volatile struct rxbd8 *rxbd;
+	struct txbd8 __iomem *txbd;
+	struct rxbd8 __iomem *rxbd;
 	uint txidx;
 	uint rxidx;
 	uint phyaddr;

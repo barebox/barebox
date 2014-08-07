@@ -3,6 +3,8 @@ config PPC
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	select HAS_KALLSYMS
 	select HAS_MODULES
+	select HAS_CACHE
+	select GENERIC_FIND_NEXT_BIT
 	select OFTREE
 	default y
 

@@ -45,3 +45,4 @@ obj-y			+= unlink-recursive.o
 obj-$(CONFIG_STMP_DEVICE) += stmp-device.o
 obj-y			+= wchar.o
 obj-y			+= libfile.o
+obj-y			+= bitmap.o

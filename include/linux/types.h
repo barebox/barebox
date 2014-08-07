@@ -4,6 +4,9 @@
 #include <linux/posix_types.h>
 #include <asm/types.h>
 
+#define DECLARE_BITMAP(name,bits) \
+	unsigned long name[BITS_TO_LONGS(bits)]
+
 #ifndef __KERNEL_STRICT_NAMES
 
 typedef __u32 __kernel_dev_t;

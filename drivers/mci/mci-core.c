@@ -616,6 +616,9 @@ retry_scr:
 		break;
 	}
 
+	if (mci->scr[0] & SD_DATA_4BIT)
+		mci->card_caps |= MMC_CAP_4_BIT_DATA;
+
 	/* Version 1.0 doesn't support switching */
 	if (mci->version == SD_VERSION_1_0)
 		return 0;
@@ -633,9 +636,6 @@ retry_scr:
 		if (!(__be32_to_cpu(switch_status[7]) & SD_HIGHSPEED_BUSY))
 			break;
 	}
-
-	if (mci->scr[0] & SD_DATA_4BIT)
-		mci->card_caps |= MMC_CAP_4_BIT_DATA;
 
 	/* If high-speed isn't supported, we return */
 	if (!(__be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))

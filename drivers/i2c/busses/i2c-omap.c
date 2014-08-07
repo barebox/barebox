@@ -1132,7 +1132,7 @@ static struct platform_device_id omap_i2c_ids[] = {
 	},
 };
 
-static __maybe_unused struct of_device_id omap_spi_dt_ids[] = {
+static __maybe_unused struct of_device_id omap_i2c_dt_ids[] = {
 	{
 		.compatible = "ti,omap3-i2c",
 		.data = (unsigned long)&omap3_data,
@@ -1148,7 +1148,7 @@ static struct driver_d omap_i2c_driver = {
 	.probe		= i2c_omap_probe,
 	.name		= DRIVER_NAME,
 	.id_table	= omap_i2c_ids,
-	.of_compatible = DRV_OF_COMPAT(omap_spi_dt_ids),
+	.of_compatible = DRV_OF_COMPAT(omap_i2c_dt_ids),
 };
 device_platform_driver(omap_i2c_driver);
 

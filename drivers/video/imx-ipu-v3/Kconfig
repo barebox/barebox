@@ -1,5 +1,6 @@
 config DRIVER_VIDEO_IMX_IPUV3
 	bool "i.MX IPUv3 driver"
+	depends on ARCH_IMX
 	help
 	  Support the IPUv3 found on Freescale i.MX51/53/6 SoCs
 

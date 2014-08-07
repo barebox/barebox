@@ -206,13 +206,17 @@ static int led_gpio_of_probe(struct device_d *dev)
 		struct gpio_led *gled;
 		enum of_gpio_flags flags;
 		int gpio;
+		const char *label;
 
 		gpio = of_get_named_gpio_flags(child, "gpios", 0, &flags);
 		if (gpio < 0)
 			continue;
 
 		gled = xzalloc(sizeof(*gled));
-		gled->led.name = xstrdup(child->name);
+		if (of_property_read_string(child, "label", &label))
+			label = child->name;
+		gled->led.name = xstrdup(label);
+
 		gled->gpio = gpio;
 		gled->active_low = (flags & OF_GPIO_ACTIVE_LOW) ? 1 : 0;
 

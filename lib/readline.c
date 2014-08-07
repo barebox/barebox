@@ -14,8 +14,6 @@
 		printf ("%.*s", n, str);	\
 	} while (0)
 
-#define MAX_CMDBUF_SIZE		256
-
 #define CTL_BACKSPACE		('\b')
 #define DEL			255
 #define DEL7			127
@@ -25,90 +23,82 @@
 #define getcmd_getch()		getc()
 #define getcmd_cbeep()		getcmd_putch('\a')
 
-#define HIST_MAX		20
-#define HIST_SIZE		MAX_CMDBUF_SIZE
+struct history {
+	char *line;
+	struct list_head list;
+};
 
-static int hist_max = 0;
-static int hist_add_idx = 0;
-static int hist_cur = -1;
-static unsigned hist_num = 0;
+static LIST_HEAD(history_list);
 
-static char* hist_list[HIST_MAX];
-static char hist_lines[HIST_MAX][HIST_SIZE];
-
-#define add_idx_minus_one() ((hist_add_idx == 0) ? hist_max : hist_add_idx-1)
-
-static int hist_init(void)
-{
-	int i;
-
-	hist_max = 0;
-	hist_add_idx = 0;
-	hist_cur = -1;
-	hist_num = 0;
-
-	for (i = 0; i < HIST_MAX; i++) {
-		hist_list[i] = hist_lines[i];
-		hist_list[i][0] = '\0';
-	}
-	return 0;
-}
-
-postcore_initcall(hist_init);
+static struct list_head *history_current;
+static int history_num_entries;
 
 static void cread_add_to_hist(char *line)
 {
-	strcpy(hist_list[hist_add_idx], line);
+	struct history *history;
+	char *newline;
 
-	if (++hist_add_idx >= HIST_MAX)
-		hist_add_idx = 0;
+	if (!list_empty(&history_list)) {
+		history = list_last_entry(&history_list, struct history, list);
 
-	if (hist_add_idx > hist_max)
-		hist_max = hist_add_idx;
+		if (!strcmp(line, history->line))
+			return;
+	}
 
-	hist_num++;
+	newline = strdup(line);
+	if (!newline)
+		return;
+
+	if (history_num_entries < 32) {
+		history = xzalloc(sizeof(*history));
+		history_num_entries++;
+	} else {
+		history = list_first_entry(&history_list, struct history, list);
+		free(history->line);
+		list_del(&history->list);
+	}
+
+	history->line = newline;
+
+	list_add_tail(&history->list, &history_list);
 }
 
-static char* hist_prev(void)
+static const char *hist_prev(void)
 {
-	char *ret;
-	int old_cur;
+	struct history *history;
 
-	if (hist_cur < 0)
-		return NULL;
+	if (history_current->prev == &history_list) {
+		history = list_entry(history_current, struct history, list);
+		getcmd_cbeep();
+		return history->line;
+	}
 
-	old_cur = hist_cur;
-	if (--hist_cur < 0)
-		hist_cur = hist_max;
+	history = list_entry(history_current->prev, struct history, list);
 
-	if (hist_cur == hist_add_idx) {
-		hist_cur = old_cur;
-		ret = NULL;
-	} else
-		ret = hist_list[hist_cur];
+	history_current = &history->list;
 
-	return (ret);
+	return history->line;
 }
 
-static char* hist_next(void)
+static const char *hist_next(void)
 {
-	char *ret;
+	struct history *history;
 
-	if (hist_cur < 0)
-		return NULL;
+	if (history_current->next == &history_list) {
+		history_current = &history_list;
+		return "";
+	}
 
-	if (hist_cur == hist_add_idx)
-		return NULL;
+	if (history_current == &history_list) {
+		getcmd_cbeep();
+		return "";
+	}
 
-	if (++hist_cur > hist_max)
-		hist_cur = 0;
+	history = list_entry(history_current->next, struct history, list);
 
-	if (hist_cur == hist_add_idx) {
-		ret = "";
-	} else
-		ret = hist_list[hist_cur];
+	history_current = &history->list;
 
-	return (ret);
+	return history->line;
 }
 
 #define BEGINNING_OF_LINE() {			\
@@ -198,6 +188,8 @@ int readline(const char *prompt, char *buf, int len)
 
 	complete_reset();
 #endif
+	history_current = &history_list;
+
 	puts (prompt);
 
 	while (1) {
@@ -302,17 +294,12 @@ int readline(const char *prompt, char *buf, int len)
 		case BB_KEY_UP:
 		case BB_KEY_DOWN:
 		{
-			char * hline;
+			const char *hline;
 
 			if (ichar == BB_KEY_UP)
 				hline = hist_prev();
 			else
 				hline = hist_next();
-
-			if (!hline) {
-				getcmd_cbeep();
-				continue;
-			}
 
 			/* nuke the current line */
 			/* first, go home */
@@ -346,9 +333,8 @@ int readline(const char *prompt, char *buf, int len)
 	len = eol_num;
 	buf[eol_num] = '\0';	/* lose the newline */
 
-	if (buf[0] && buf[0] != CREAD_HIST_CHAR)
+	if (buf[0])
 		cread_add_to_hist(buf);
-	hist_cur = hist_add_idx;
 
 	return len;
 }

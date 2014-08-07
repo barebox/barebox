@@ -7,6 +7,7 @@ config ARCH_EFI
 	select EFI_GUID
 	select EFI_DEVICEPATH
 	select PRINTF_UUID
+	select GENERIC_FIND_NEXT_BIT
 
 config ARCH_TEXT_BASE
 	hex

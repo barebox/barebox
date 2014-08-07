@@ -1,7 +1,9 @@
 config OPENRISC
 	bool
+	select HAS_CACHE
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select GENERIC_FIND_NEXT_BIT
 	default y
 
 # not used

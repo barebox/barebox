@@ -9,8 +9,11 @@
 #define MSG_NOTICE     5    /* normal but significant condition */
 #define MSG_INFO       6    /* informational */
 #define MSG_DEBUG      7    /* debug-level messages */
+#define MSG_VDEBUG     8    /* verbose debug messages */
 
-#ifdef DEBUG
+#ifdef VERBOSE_DEBUG
+#define LOGLEVEL	MSG_VDEBUG
+#elif defined DEBUG
 #define LOGLEVEL	MSG_DEBUG
 #else
 #define LOGLEVEL	CONFIG_COMPILE_LOGLEVEL
@@ -46,6 +49,8 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 	__dev_printf(6, (dev) , format , ## arg)
 #define dev_dbg(dev, format, arg...)		\
 	__dev_printf(7, (dev) , format , ## arg)
+#define dev_vdbg(dev, format, arg...)		\
+	__dev_printf(8, (dev) , format , ## arg)
 
 #define __pr_printk(level, format, args...) \
 	({	\
@@ -65,5 +70,6 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 #define pr_info(fmt, arg...)	__pr_printk(6, pr_fmt(fmt), ##arg)
 #define pr_debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 #define debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
+#define pr_vdebug(fmt, arg...)	__pr_printk(8, pr_fmt(fmt), ##arg)
 
 #endif

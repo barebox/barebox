@@ -129,4 +129,8 @@ config DRIVER_SERIAL_CADENCE
 	help
 	  Say Y here if you have a Cadence serial IP core.
 
+config DRIVER_SERIAL_DIGIC
+	bool "Canon DIGIC serial driver"
+	depends on ARCH_DIGIC
+
 endmenu

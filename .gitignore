@@ -46,6 +46,7 @@ barebox.uimage
 barebox.map
 barebox.kwb
 barebox.kwbuart
+barebox.canon-a1100.bin
 barebox-flash-image
 System.map
 Module.symvers

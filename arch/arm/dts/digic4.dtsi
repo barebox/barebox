@@ -1,0 +1,42 @@
+/include/ "skeleton.dtsi"
+
+/ {
+	compatible = "canon,digic4";
+
+	timer0: timer@c0210000 {
+		compatible = "canon,digic-timer";
+		reg = <0xc0210000 0x1c>;
+		status = "disabled";
+	};
+
+	timer1: timer@c0210100 {
+		compatible = "canon,digic-timer";
+		reg = <0xc0210100 0x1c>;
+		status = "disabled";
+	};
+
+	timer2: timer@c0210200 {
+		compatible = "canon,digic-timer";
+		reg = <0xc0210200 0x1c>;
+		status = "disabled";
+	};
+
+	/*
+	 * I don't know real max GPIO number but this page
+	 *   http://magiclantern.wikia.com/wiki/Register_Map#GPIO_Ports
+	 * says about 93 pins on 5DMkIII.
+	 * Assume that DIGIC4 has at least 96 pins.
+	 * So resource size is 96 * 4 = 0x180.
+	 */
+	gpio: gpio {
+		compatible = "canon,digic-gpio";
+		reg = <0xc0220000 0x180>;
+		#gpio-cells = <2>;
+		gpio-controller;
+	};
+
+	uart: uart {
+		compatible = "canon,digic-uart";
+		reg = <0xc0800000 0x1c>;
+	};
+};

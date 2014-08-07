@@ -55,6 +55,7 @@ machine-$(CONFIG_ARCH_AT91)		:= at91
 machine-$(CONFIG_ARCH_BCM2835)		:= bcm2835
 machine-$(CONFIG_ARCH_CLPS711X)		:= clps711x
 machine-$(CONFIG_ARCH_DAVINCI)		:= davinci
+machine-$(CONFIG_ARCH_DIGIC)		:= digic
 machine-$(CONFIG_ARCH_EP93XX)		:= ep93xx
 machine-$(CONFIG_ARCH_HIGHBANK)		:= highbank
 machine-$(CONFIG_ARCH_IMX)		:= imx
@@ -182,6 +183,16 @@ barebox.zynq: $(KBUILD_BINARY) FORCE
 
 ifeq ($(machine-y),zynq)
 KBUILD_IMAGE := barebox.zynq
+endif
+
+quiet_cmd_canon_a1100_image = DD      $@
+      cmd_canon_a1100_image = scripts/canon-a1100-image $< $@ || \
+	echo "WARNING: Couldn't create Canon A1100 image due to previous errors."
+barebox.canon-a1100.bin: $(KBUILD_BINARY) FORCE
+	$(call if_changed,canon_a1100_image)
+
+ifeq ($(CONFIG_MACH_CANON_A1100),y)
+KBUILD_IMAGE := barebox.canon-a1100.bin
 endif
 
 KWBIMAGE_OPTS = \

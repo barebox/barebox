@@ -24,6 +24,7 @@
 
 #include <driver.h>
 #include <usb/ch9.h>
+#include <usb/ch11.h>
 #include <usb/usb_defs.h>
 #include <asm/byteorder.h>
 
@@ -150,12 +151,12 @@ struct usb_host {
 
 	struct device_d *hw_dev;
 	int busnum;
-	int scanned;
+	struct usb_device *root_dev;
 };
 
 int usb_register_host(struct usb_host *);
 
-int usb_host_detect(struct usb_host *host, int force);
+int usb_host_detect(struct usb_host *host);
 
 int usb_set_protocol(struct usb_device *dev, int ifnum, int protocol);
 int usb_set_idle(struct usb_device *dev, int ifnum, int duration,
@@ -185,7 +186,7 @@ int usb_clear_halt(struct usb_device *dev, int pipe);
 int usb_string(struct usb_device *dev, int index, char *buf, size_t size);
 int usb_set_interface(struct usb_device *dev, int interface, int alternate);
 
-void usb_rescan(int force);
+void usb_rescan(void);
 
 /* big endian -> little endian conversion */
 /* some CPUs are already little endian e.g. the ARM920T */
@@ -311,32 +312,6 @@ void usb_rescan(int force);
 /*************************************************************************
  * Hub Stuff
  */
-struct usb_port_status {
-	unsigned short wPortStatus;
-	unsigned short wPortChange;
-} __attribute__ ((packed));
-
-struct usb_hub_status {
-	unsigned short wHubStatus;
-	unsigned short wHubChange;
-} __attribute__ ((packed));
-
-
-/* Hub descriptor */
-struct usb_hub_descriptor {
-	unsigned char  bLength;
-	unsigned char  bDescriptorType;
-	unsigned char  bNbrPorts;
-	unsigned short wHubCharacteristics;
-	unsigned char  bPwrOn2PwrGood;
-	unsigned char  bHubContrCurrent;
-	unsigned char  DeviceRemovable[(USB_MAXCHILDREN+1+7)/8];
-	unsigned char  PortPowerCtrlMask[(USB_MAXCHILDREN+1+7)/8];
-	/* DeviceRemovable and PortPwrCtrlMask want to be variable-length
-	   bitmaps that hold max 255 entries. (bit0 is ignored) */
-} __attribute__ ((packed));
-
-
 struct usb_hub_device {
 	struct usb_device *pusb_dev;
 	struct usb_hub_descriptor desc;
@@ -473,4 +448,7 @@ enum usb_phy_interface {
 	USBPHY_INTERFACE_MODE_SERIAL,
 	USBPHY_INTERFACE_MODE_HSIC,
 };
+
+extern struct list_head usb_device_list;
+
 #endif /*_USB_H_ */

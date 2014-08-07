@@ -37,6 +37,7 @@
 enum imx_usb_mode {
 	IMX_USB_MODE_HOST,
 	IMX_USB_MODE_DEVICE,
+	IMX_USB_MODE_OTG,
 };
 
 struct imxusb_platformdata {

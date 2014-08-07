@@ -1,0 +1,6 @@
+#!/bin/sh
+
+mount /dev/mmc1.0
+
+global.bootm.image=/mnt/mmc1.0/zImage
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait"

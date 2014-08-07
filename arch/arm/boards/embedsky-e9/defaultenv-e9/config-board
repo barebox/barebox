@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# board defaults, do not change in running system. Change /env/config
+# instead
+
+global.hostname=e9
+global.boot.default=$bootsource$bootsource_instance

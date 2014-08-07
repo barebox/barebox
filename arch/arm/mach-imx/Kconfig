@@ -208,6 +208,12 @@ config MACH_EFIKA_MX_SMARTBOOK
 	help
 	  Choose this to compile barebox for the Efika MX Smartbook
 
+config MACH_EMBEDSKY_E9
+	bool "Embedsky E9 Mini-PC"
+	select ARCH_IMX6
+	help
+	  Choose this to compile barebox for the Embedsky E9 Mini PC
+
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select ARCH_IMX51

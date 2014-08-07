@@ -6,17 +6,12 @@
 #include <malloc.h>
 #include <linux/phy.h>
 
-static inline int usb_endpoint_dir_in(const struct usb_endpoint_descriptor *epd)
-{
-	return ((epd->bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_DIR_IN);
-}
-
 /* handles CDC Ethernet and many other network "bulk data" interfaces */
 int usbnet_get_endpoints(struct usbnet *dev)
 {
 	struct usb_device	*udev = dev->udev;
 	int				tmp;
-	struct usb_interface_descriptor	*alt = NULL;
+	struct usb_interface		*alt = NULL;
 	struct usb_endpoint_descriptor	*in = NULL, *out = NULL;
 	struct usb_endpoint_descriptor	*status = NULL;
 
@@ -24,13 +19,13 @@ int usbnet_get_endpoints(struct usbnet *dev)
 		unsigned	ep;
 
 		in = out = status = NULL;
-		alt = &udev->config.if_desc[tmp];
+		alt = &udev->config.interface[tmp];
 
 		/* take the first altsetting with in-bulk + out-bulk;
 		 * remember any status endpoint, just in case;
 		 * ignore other endpoints and altsetttings.
 		 */
-		for (ep = 0; ep < alt->bNumEndpoints; ep++) {
+		for (ep = 0; ep < alt->desc.bNumEndpoints; ep++) {
 			struct usb_endpoint_descriptor	*e;
 			int				intr = 0;
 
@@ -63,10 +58,10 @@ int usbnet_get_endpoints(struct usbnet *dev)
 	if (!alt || !in || !out)
 		return -EINVAL;
 
-	if (alt->bAlternateSetting != 0
+	if (alt->desc.bAlternateSetting != 0
 			|| !(dev->driver_info->flags & FLAG_NO_SETINT)) {
-		tmp = usb_set_interface (dev->udev, alt->bInterfaceNumber,
-				alt->bAlternateSetting);
+		tmp = usb_set_interface(dev->udev, alt->desc.bInterfaceNumber,
+				alt->desc.bAlternateSetting);
 		if (tmp < 0)
 			return tmp;
 	}

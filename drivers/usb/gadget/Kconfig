@@ -4,6 +4,7 @@ config USB_HAVE_GADGET_DRIVER
 
 menuconfig USB_GADGET
 	depends on USB_HAVE_GADGET_DRIVER
+	select USB
 	bool "USB gadget support"
 
 if USB_GADGET

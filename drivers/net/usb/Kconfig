@@ -1,5 +1,5 @@
 menuconfig NET_USB
-	depends on USB
+	depends on USB_HOST
 	bool "USB network support"
 
 if NET_USB

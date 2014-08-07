@@ -1,7 +1,11 @@
-menuconfig USB
-	bool "USB support"
+config USB
+	bool
 
-if USB
+menuconfig USB_HOST
+	select USB
+	bool "USB Host support"
+
+if USB_HOST
 
 source drivers/usb/imx/Kconfig
 

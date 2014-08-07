@@ -441,7 +441,7 @@ static void get_transport(struct us_data *us)
 }
 
 /* Get the endpoint settings */
-static int get_pipes(struct us_data *us, struct usb_interface_descriptor *intf)
+static int get_pipes(struct us_data *us, struct usb_interface *intf)
 {
 	unsigned int i;
 	struct usb_endpoint_descriptor *ep;
@@ -455,7 +455,7 @@ static int get_pipes(struct us_data *us, struct usb_interface_descriptor *intf)
 	 * An optional interrupt-in is OK (necessary for CBI protocol).
 	 * We will ignore any others.
 	 */
-	for (i = 0; i < intf->bNumEndpoints; i++) {
+	for (i = 0; i < intf->desc.bNumEndpoints; i++) {
 		ep = &intf->ep_desc[i];
 
 		if (USB_EP_IS_XFER_BULK(ep)) {
@@ -517,28 +517,28 @@ static int usb_stor_probe(struct usb_device *usbdev,
 	struct us_data *us;
 	int result;
 	int ifno;
-	struct usb_interface_descriptor *intf;
+	struct usb_interface *intf;
 
 	US_DEBUGP("Supported USB Mass Storage device detected\n");
 
 	/* scan usbdev interfaces again to find one that we can handle */
 	for (ifno=0; ifno<usbdev->config.no_of_if; ifno++) {
-		intf = &usbdev->config.if_desc[ifno];
+		intf = &usbdev->config.interface[ifno];
 
-		if (intf->bInterfaceClass    == USB_CLASS_MASS_STORAGE &&
-		    intf->bInterfaceSubClass == US_SC_SCSI &&
-		    intf->bInterfaceProtocol == US_PR_BULK)
+		if (intf->desc.bInterfaceClass    == USB_CLASS_MASS_STORAGE &&
+		    intf->desc.bInterfaceSubClass == US_SC_SCSI &&
+		    intf->desc.bInterfaceProtocol == US_PR_BULK)
 			break;
 	}
 	if (ifno >= usbdev->config.no_of_if)
 		return -ENXIO;
 
 	/* select the right interface */
-	result = usb_set_interface(usbdev, intf->bInterfaceNumber, 0);
+	result = usb_set_interface(usbdev, intf->desc.bInterfaceNumber, 0);
 	if (result)
 		return result;
 
-	US_DEBUGP("Selected interface %d\n", (int)intf->bInterfaceNumber);
+	US_DEBUGP("Selected interface %d\n", (int)intf->desc.bInterfaceNumber);
 
 	/* allocate us_data structure */
 	us = (struct us_data *)malloc(sizeof(struct us_data));
@@ -549,9 +549,9 @@ static int usb_stor_probe(struct usb_device *usbdev,
 	/* initialize the us_data structure */
 	us->pusb_dev = usbdev;
 	us->flags = 0;
-	us->ifnum = intf->bInterfaceNumber;
-	us->subclass = intf->bInterfaceSubClass;
-	us->protocol = intf->bInterfaceProtocol;
+	us->ifnum = intf->desc.bInterfaceNumber;
+	us->subclass = intf->desc.bInterfaceSubClass;
+	us->protocol = intf->desc.bInterfaceProtocol;
 	INIT_LIST_HEAD(&us->blk_dev_list);
 
 	/* get standard transport and protocol settings */

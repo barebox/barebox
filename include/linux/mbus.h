@@ -58,4 +58,6 @@ int mvebu_mbus_add_window_by_id(unsigned int target, unsigned int attribute,
 				phys_addr_t base, size_t size);
 int mvebu_mbus_del_window(phys_addr_t base, size_t size);
 
+void mvebu_mbus_add_range(u8 target, u8 attr, u32 remap);
+
 #endif /* __LINUX_MBUS_H */

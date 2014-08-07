@@ -1,3 +1,11 @@
+config PINCTRL_ARMADA_370
+	bool
+	select PINCTRL
+
+config PINCTRL_ARMADA_XP
+	bool
+	select PINCTRL
+
 config PINCTRL_DOVE
 	bool
 	select PINCTRL

@@ -11,6 +11,7 @@ static struct pci_controller *hose_head, **hose_tail = &hose_head;
 
 LIST_HEAD(pci_root_buses);
 EXPORT_SYMBOL(pci_root_buses);
+static u8 bus_index;
 
 static struct pci_bus *pci_alloc_bus(void)
 {
@@ -36,10 +37,14 @@ void register_pci_controller(struct pci_controller *hose)
 
 	bus = pci_alloc_bus();
 	hose->bus = bus;
+	bus->host = hose;
 	bus->ops = hose->pci_ops;
 	bus->resource[0] = hose->mem_resource;
 	bus->resource[1] = hose->io_resource;
+	bus->number = bus_index++;
 
+	if (hose->set_busno)
+		hose->set_busno(hose, bus->number);
 	pci_scan_bus(bus);
 
 	list_add_tail(&bus->node, &pci_root_buses);
@@ -186,13 +191,14 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 
 		DBG("PCI: %02x:%02x [%04x/%04x]\n", bus->number, dev->devfn, dev->vendor, dev->device);
 
-		list_add_tail(&dev->bus_list, &bus->devices);
-		pci_register_device(dev);
-
 		if (class == PCI_CLASS_BRIDGE_HOST) {
 			DBG("PCI: skip pci host bridge\n");
 			continue;
 		}
+
+		pci_read_config_byte(dev, PCI_COMMAND, &cmd);
+		pci_write_config_byte(dev, PCI_COMMAND,
+				      cmd & ~(PCI_COMMAND_IO | PCI_COMMAND_MEMORY));
 
 		for (bar = 0; bar < 6; bar++) {
 			resource_size_t last_addr;
@@ -211,20 +217,34 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 				size = -(mask & 0xfffffffe);
 				DBG("  PCI: pbar%d: mask=%08x io %d bytes\n", bar, mask, size);
 				pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_io);
+				dev->resource[bar].flags = IORESOURCE_IO;
 				last_addr = last_io;
 				last_io += size;
-
 			} else { /* MEM */
 				size = -(mask & 0xfffffff0);
 				DBG("  PCI: pbar%d: mask=%08x memory %d bytes\n", bar, mask, size);
 				pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem);
+				dev->resource[bar].flags = IORESOURCE_MEM;
 				last_addr = last_mem;
 				last_mem += size;
+
+				if ((mask & PCI_BASE_ADDRESS_MEM_TYPE_MASK) ==
+				    PCI_BASE_ADDRESS_MEM_TYPE_64) {
+					dev->resource[bar].flags |= IORESOURCE_MEM_64;
+					pci_write_config_dword(dev,
+					       PCI_BASE_ADDRESS_1 + bar * 4, 0);
+				}
 			}
 
 			dev->resource[bar].start = last_addr;
 			dev->resource[bar].end = last_addr + size - 1;
+			if (dev->resource[bar].flags & IORESOURCE_MEM_64)
+				bar++;
 		}
+
+		pci_write_config_byte(dev, PCI_COMMAND, cmd);
+		list_add_tail(&dev->bus_list, &bus->devices);
+		pci_register_device(dev);
 	}
 
 	/*

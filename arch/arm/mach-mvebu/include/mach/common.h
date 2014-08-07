@@ -20,4 +20,6 @@
 
 #define MVEBU_REMAP_INT_REG_BASE	0xf1000000
 
+void mvebu_set_memory(u64 phys_base, u64 phys_size);
+
 #endif

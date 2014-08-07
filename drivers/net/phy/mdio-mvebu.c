@@ -117,8 +117,9 @@ static int mvebu_mdio_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	priv->clk = clk_get(dev, NULL);
-	if (!IS_ERR(priv->clk))
-		clk_enable(priv->clk);
+	if (IS_ERR(priv->clk))
+		return PTR_ERR(priv->clk);
+	clk_enable(priv->clk);
 
 	priv->miibus.dev.device_node = dev->device_node;
 	priv->miibus.priv = priv;
@@ -135,8 +136,7 @@ static void mvebu_mdio_remove(struct device_d *dev)
 
 	mdiobus_unregister(&priv->miibus);
 
-	if (!IS_ERR(priv->clk))
-		clk_disable(priv->clk);
+	clk_disable(priv->clk);
 }
 
 static struct of_device_id mvebu_mdio_dt_ids[] = {

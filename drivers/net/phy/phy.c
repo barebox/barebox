@@ -275,6 +275,10 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 
 	phy_node = of_parse_phandle(edev->parent->device_node, "phy-handle", 0);
 	if (!phy_node)
+		phy_node = of_parse_phandle(edev->parent->device_node, "phy", 0);
+	if (!phy_node)
+		phy_node = of_parse_phandle(edev->parent->device_node, "phy-device", 0);
+	if (!phy_node)
 		return NULL;
 
 	bus_for_each_device(&mdio_bus_type, dev) {

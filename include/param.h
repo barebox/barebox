@@ -7,7 +7,7 @@
 #define PARAM_FLAG_RO	(1 << 0)
 
 struct device_d;
-typedef unsigned long          IPaddr_t;
+typedef uint32_t          IPaddr_t;
 
 struct param_d {
 	const char* (*get)(struct device_d *, struct param_d *param);

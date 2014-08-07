@@ -64,6 +64,14 @@ config MENUTREE
 	select GLOB
 	select GLOB_SORT
 
+config EFI_GUID
+	bool
+	help
+	  With this option a table of EFI guids is compiled in.
+
+config EFI_DEVICEPATH
+	bool
+
 menu "General Settings"
 
 config LOCALVERSION

@@ -994,7 +994,7 @@ CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
 		scripts/bareboxenv-target barebox-flash-image \
 		barebox.srec barebox.s5p barebox.ubl barebox.zynq \
 		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart \
-		barebox.canon-a1100.bin
+		barebox.efi barebox.canon-a1100.bin
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config include2 usr/include

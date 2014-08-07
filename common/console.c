@@ -162,6 +162,22 @@ static void console_set_stdoutpath(struct console_device *cdev)
 	free(str);
 }
 
+static int __console_puts(struct console_device *cdev, const char *s)
+{
+	int n = 0;
+
+	while (*s) {
+		if (*s == '\n') {
+			cdev->putc(cdev, '\r');
+			n++;
+		}
+		cdev->putc(cdev, *s);
+		n++;
+		s++;
+	}
+	return n;
+}
+
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = &newcdev->class_dev;
@@ -187,6 +203,9 @@ int console_register(struct console_device *newcdev)
 		dev_add_param_int(dev, "baudrate", console_baudrate_set,
 			NULL, &newcdev->baudrate, "%u", newcdev);
 	}
+
+	if (newcdev->putc && !newcdev->puts)
+		newcdev->puts = __console_puts;
 
 	dev_add_param(dev, "active", console_std_set, NULL, 0);
 
@@ -348,8 +367,18 @@ EXPORT_SYMBOL(console_putc);
 
 int console_puts(unsigned int ch, const char *str)
 {
+	struct console_device *cdev;
 	const char *s = str;
 	int n = 0;
+
+	if (initialized == CONSOLE_INIT_FULL) {
+		for_each_console(cdev) {
+			if (cdev->f_active & ch) {
+				n = cdev->puts(cdev, str);
+			}
+		}
+		return n;
+	}
 
 	while (*s) {
 		if (*s == '\n') {

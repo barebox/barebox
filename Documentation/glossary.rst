@@ -16,3 +16,6 @@ Glossary
 
    PBL
       Pre BootLoader image
+
+   ESP
+      EFI System Partition

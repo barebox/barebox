@@ -167,7 +167,7 @@ static int fat_write(struct device_d *_dev, FILE *f, const void *buf, size_t ins
 
 	ret = f_write(f_file, buf, insize, &outsize);
 
-	debug("%s: %d %d %d %p\n", __func__, ret, insize, outsize, f_file);
+	debug("%s: %d %zd %d %p\n", __func__, ret, insize, outsize, f_file);
 
 	if (ret)
 		return ret;
@@ -260,7 +260,7 @@ static int fat_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 
 	ret = f_read(f_file, buf, insize, &outsize);
 
-	debug("%s: %d %d %d %p\n", __func__, ret, insize, outsize, f_file);
+	debug("%s: %d %zd %d %p\n", __func__, ret, insize, outsize, f_file);
 
 	if (ret)
 		return ret;

@@ -183,7 +183,8 @@ static struct device_d *of_platform_device_create(struct device_node *np,
 	dev->num_resources = num_reg;
 	of_device_make_bus_id(dev);
 
-	debug("%s: register device %s, io=0x%08x\n", __func__, dev_name(dev),
+	debug("%s: register device %s, io=" PRINTF_CONVERSION_RESOURCE "\n",
+			__func__, dev_name(dev),
 		(num_reg) ? dev->resource[0].start : (-1));
 
 	ret = platform_device_register(dev);

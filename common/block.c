@@ -55,6 +55,9 @@ static int writebuffer_flush(struct block_device *blk)
 		}
 	}
 
+	if (blk->ops->flush)
+		return blk->ops->flush(blk);
+
 	return 0;
 }
 

@@ -232,7 +232,7 @@ static int is_gpt_valid(struct block_device *blk, u64 lba,
 static inline int
 is_pte_valid(const gpt_entry *pte, const u64 lastlba)
 {
-	if ((!efi_guidcmp(pte->partition_type_guid, NULL_GUID)) ||
+	if ((!efi_guidcmp(pte->partition_type_guid, EFI_NULL_GUID)) ||
 	    le64_to_cpu(pte->starting_lba) > lastlba	 ||
 	    le64_to_cpu(pte->ending_lba)   > lastlba)
 		return 0;

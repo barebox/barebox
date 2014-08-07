@@ -804,8 +804,8 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 					offset - omap_oobinfo.eccbytes;
 		break;
 	case OMAP_ECC_BCH4_CODE_HW:
-		oinfo->nand.ecc.bytes    = 4 * 7;
-		oinfo->nand.ecc.size     = 4 * 512;
+		oinfo->nand.ecc.bytes    = 7;
+		oinfo->nand.ecc.size     = 512;
 		oinfo->nand.ecc.strength = BCH4_MAX_ERROR;
 		omap_oobinfo.oobfree->offset = offset;
 		omap_oobinfo.oobfree->length = minfo->oobsize -
@@ -815,8 +815,8 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 			omap_oobinfo.eccpos[i] = i + offset;
 		break;
 	case OMAP_ECC_BCH8_CODE_HW:
-		oinfo->nand.ecc.bytes    = 4 * 13;
-		oinfo->nand.ecc.size     = 4 * 512;
+		oinfo->nand.ecc.bytes    = 13;
+		oinfo->nand.ecc.size     = 512;
 		oinfo->nand.ecc.strength = BCH8_MAX_ERROR;
 		omap_oobinfo.oobfree->offset = offset;
 		omap_oobinfo.oobfree->length = minfo->oobsize -
@@ -826,19 +826,13 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 			omap_oobinfo.eccpos[i] = i + offset;
 		break;
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
-		oinfo->nand.ecc.bytes    = 4 * 13;
-		oinfo->nand.ecc.size     = 4 * 512;
+		oinfo->nand.ecc.bytes    = 13 + 1;
+		oinfo->nand.ecc.size     = 512;
 		oinfo->nand.ecc.strength = BCH8_MAX_ERROR;
 		nand->ecc.read_page = omap_gpmc_read_page_bch_rom_mode;
 		omap_oobinfo.oobfree->length = 0;
 		j = 0;
-		for (i = 2; i < 15; i++)
-			omap_oobinfo.eccpos[j++] = i;
-		for (i = 16; i < 29; i++)
-			omap_oobinfo.eccpos[j++] = i;
-		for (i = 30; i < 43; i++)
-			omap_oobinfo.eccpos[j++] = i;
-		for (i = 44; i < 57; i++)
+		for (i = 2; i < 58; i++)
 			omap_oobinfo.eccpos[j++] = i;
 		break;
 	case OMAP_ECC_SOFT:

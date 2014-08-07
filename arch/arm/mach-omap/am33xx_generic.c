@@ -19,6 +19,7 @@
 #include <init.h>
 #include <io.h>
 #include <net.h>
+#include <asm/barebox-arm.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
 #include <mach/generic.h>
@@ -316,6 +317,61 @@ void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
 	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL));
 	writel(regs->sdram_ref_ctrl, AM33XX_EMIF4_0_REG(SDRAM_REF_CTRL_SHADOW));
 	writel(regs->sdram_config, AM33XX_EMIF4_0_REG(SDRAM_CONFIG));
+}
+
+/**
+ * am335x_sdram_size - read back SDRAM size from sdram_config register
+ *
+ * @return: The SDRAM size
+ */
+unsigned long am335x_sdram_size(void)
+{
+	int rows, cols, width, banks;
+	unsigned long size;
+	uint32_t sdram_config = readl(CM_EMIF_SDRAM_CONFIG);
+
+	rows = ((sdram_config >> 7) & 0x7) + 9;
+	cols = (sdram_config & 0x7) + 8;
+
+	switch ((sdram_config >> 14) & 0x3) {
+	case 0:
+		width = 4;
+		break;
+	case 1:
+		width = 2;
+		break;
+	default:
+		return 0;
+	}
+
+	switch ((sdram_config >> 4) & 0x7) {
+	case 0:
+		banks = 1;
+		break;
+	case 1:
+		banks = 2;
+		break;
+	case 2:
+		banks = 4;
+		break;
+	case 3:
+		banks = 8;
+		break;
+	default:
+		return 0;
+	}
+
+	size = (1 << rows) * (1 << cols) * banks * width;
+
+	debug("%s: sdram_config: 0x%08x cols: %2d rows: %2d width: %2d banks: %2d size: 0x%08lx\n",
+			__func__, sdram_config, cols, rows, width, banks, size);
+
+	return size;
+}
+
+void __noreturn am335x_barebox_entry(void *boarddata)
+{
+	barebox_arm_entry(0x80000000, am335x_sdram_size(), boarddata);
 }
 
 void am33xx_config_io_ctrl(int ioctrl)

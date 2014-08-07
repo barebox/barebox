@@ -382,9 +382,6 @@ static struct dt_eccmode modes[] = {
 		.mode = OMAP_ECC_BCH4_CODE_HW,
 	}, {
 		.name = "bch8",
-		.mode = OMAP_ECC_BCH8_CODE_HW,
-	}, {
-		.name = "bch8-romcode",
 		.mode = OMAP_ECC_BCH8_CODE_HW_ROMCODE,
 	},
 };

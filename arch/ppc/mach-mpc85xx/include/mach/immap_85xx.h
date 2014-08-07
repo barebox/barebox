@@ -26,6 +26,7 @@
 
 #include <asm/types.h>
 #include <asm/fsl_lbc.h>
+#include <asm/fsl_ifc.h>
 #include <asm/config.h>
 
 #define MPC85xx_LOCAL_OFFSET	0x0000
@@ -35,6 +36,7 @@
 #define MPC85xx_PCI1_OFFSET	0x8000
 
 #define MPC85xx_GPIO_OFFSET	0xf000
+#define MPC85xx_IFC_OFFSET	0x1e000
 #define MPC85xx_L2_OFFSET	0x20000
 #ifdef FSL_TSECV2
 #define TSEC1_OFFSET		0xB0000
@@ -50,6 +52,7 @@
 #define MPC85xx_GUTS_ADDR	(CFG_IMMR + MPC85xx_GUTS_OFFSET)
 #define MPC85xx_DDR_ADDR	(CFG_IMMR + MPC85xx_DDR_OFFSET)
 #define LBC_ADDR		(CFG_IMMR + MPC85xx_LBC_OFFSET)
+#define IFC_ADDR		(CFG_IMMR + MPC85xx_IFC_OFFSET)
 #define MPC85xx_GPIO_ADDR	(CFG_IMMR + MPC85xx_GPIO_OFFSET)
 #define MPC85xx_L2_ADDR		(CFG_IMMR + MPC85xx_L2_OFFSET)
 #define MPC8xxx_PIC_ADDR	(CFG_IMMR + MPC85xx_PIC_OFFSET)
@@ -152,8 +155,13 @@
 /*
  * L2 Cache Register Offsets
  */
-#define MPC85xx_L2_CTL_OFFSET	0x0		/* L2 configuration 0 */
-#define		MPC85xx_L2CTL_L2E	0x80000000
+#define MPC85xx_L2_CTL_OFFSET		0x0	/* L2 configuration 0 */
+#define		MPC85xx_L2CTL_L2E		0x80000000
+#define		MPC85xx_L2CTL_L2SRAM_ENTIRE	0x00010000
+#define MPC85xx_L2_L2SRBAR0_OFFSET	0x100
+#define MPC85xx_L2_L2ERRDIS_OFFSET	0xe44
+#define		MPC85xx_L2ERRDIS_MBECC		0x00000008
+#define		MPC85xx_L2ERRDIS_SBECC		0x00000004
 
 /* PIC registers offsets */
 #define MPC85xx_PIC_WHOAMI_OFFSET	0x090
@@ -174,6 +182,7 @@
 #define MPC85xx_GUTS_PORDEVSR2_OFFSET	0x14
 #define		MPC85xx_PORDEVSR2_SEC_CFG		0x00000080
 #define MPC85xx_GUTS_PMUXCR_OFFSET	0x60
+#define		MPC85xx_PMUXCR_LCLK_IFC_CS3		0x000000C0
 #define MPC85xx_GUTS_PMUXCR2_OFFSET	0x64
 #define MPC85xx_GUTS_DEVDISR_OFFSET	0x70
 #define		MPC85xx_DEVDISR_TB0	0x00004000

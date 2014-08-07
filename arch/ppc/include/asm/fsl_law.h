@@ -69,6 +69,7 @@ enum law_trgt_if {
 #define LAW_TRGT_IF_PCIX	LAW_TRGT_IF_PCI
 #define LAW_TRGT_IF_PCIE_2	LAW_TRGT_IF_PCI_2
 #define LAW_TRGT_IF_RIO_1	LAW_TRGT_IF_RIO
+#define LAW_TRGT_IF_IFC		LAW_TRGT_IF_LBC
 
 
 #if defined(CONFIG_P2020)

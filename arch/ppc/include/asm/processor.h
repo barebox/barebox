@@ -851,7 +851,7 @@
 #define SVR_MIN(svr)	(((svr) >>  0) & 0xF)	/* Minor revision field*/
 
 /* Some parts define SVR[0:23] as the SOC version */
-#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFFFFF)	/* SOC Version fields */
+#define SVR_SOC_VER(svr) (((svr) >> 8) & 0xFFF7FF)	/* SOC w/o E bit */
 #define IS_E_PROCESSOR(svr)    ((svr) & 0x80000)
 
 /*
@@ -867,6 +867,7 @@
 #define SVR_8641	0x8090
 #define SVR_8544	0x803401
 #define SVR_8544_E	0x803C01
+#define SVR_P1010	0x80F100
 #define SVR_P1022	0x80E600
 #define SVR_P2020	0x80E200
 #define SVR_P2020_E	0x80EA00

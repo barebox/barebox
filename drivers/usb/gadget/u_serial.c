@@ -483,7 +483,12 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	cdev->getc = serial_getc;
 	cdev->flush = serial_flush;
 	cdev->setbrg = serial_setbaudrate;
-	console_register(cdev);
+	cdev->devname = "usbserial";
+
+	status = console_register(cdev);
+	if (status)
+		goto fail_out;
+
 	mycdev = cdev;
 
 	return status;

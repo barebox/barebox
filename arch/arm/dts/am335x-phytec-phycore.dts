@@ -209,6 +209,7 @@
 &davinci_mdio {
 	pinctrl-names = "default";
 	pinctrl-0 = <&davinci_mdio_default>;
+	status = "okay";
 };
 
 &phy_sel {
@@ -231,6 +232,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&emac_rmii1_pins>;
 	dual_emac = <1>;
+	status = "okay";
 };
 
 &gpmc {

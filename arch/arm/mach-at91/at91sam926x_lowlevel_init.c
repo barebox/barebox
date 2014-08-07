@@ -130,7 +130,7 @@ void __bare_init at91sam926x_lowlevel_init(struct at91sam926x_lowlevel_cfg *cfg)
 	at91_sys_write(cfg->matrix_csa, cfg->ebi_csa);
 
 	/* flash */
-	at91_smc_write(cfg->smc_cs, AT91_SMC_MODE, cfg->smc_mode);
+	at91_smc_write(cfg->smc_cs, AT91_SAM9_SMC_MODE, cfg->smc_mode);
 
 	at91_smc_write(cfg->smc_cs, AT91_SMC_CYCLE, cfg->smc_cycle);
 

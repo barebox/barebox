@@ -103,7 +103,7 @@ static noinline __noreturn void __start(unsigned long membase,
 
 	/*
 	 * Maximum malloc space is the Kconfig value if given
-	 * or 64MB.
+	 * or 1GB.
 	 */
 	if (MALLOC_SIZE > 0) {
 		malloc_start = malloc_end - MALLOC_SIZE;
@@ -111,8 +111,8 @@ static noinline __noreturn void __start(unsigned long membase,
 			malloc_start = membase;
 	} else {
 		malloc_start = malloc_end - (malloc_end - membase) / 2;
-		if (malloc_end - malloc_start > SZ_64M)
-			malloc_start = malloc_end - SZ_64M;
+		if (malloc_end - malloc_start > SZ_1G)
+			malloc_start = malloc_end - SZ_1G;
 	}
 
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);

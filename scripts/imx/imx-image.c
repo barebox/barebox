@@ -384,15 +384,30 @@ static int do_cmd_check(int argc, char *argv[])
 static int do_cmd_write_mem(int argc, char *argv[])
 {
 	uint32_t addr, val, width;
+	char *end;
 
 	if (argc != 4) {
 		fprintf(stderr, "usage: wm [8|16|32] <addr> <val>\n");
 		return -EINVAL;
 	}
 
-	width = strtoul(argv[1], NULL, 0);
-	addr = strtoul(argv[2], NULL, 0);
-	val = strtoul(argv[3], NULL, 0);
+	width = strtoul(argv[1], &end, 0);
+	if (*end != '\0') {
+		fprintf(stderr, "illegal width token \"%s\"\n", argv[1]);
+		return -EINVAL;
+	}
+
+	addr = strtoul(argv[2], &end, 0);
+	if (*end != '\0') {
+		fprintf(stderr, "illegal address token \"%s\"\n", argv[2]);
+		return -EINVAL;
+	}
+
+	val = strtoul(argv[3], &end, 0);
+	if (*end != '\0') {
+		fprintf(stderr, "illegal value token \"%s\"\n", argv[3]);
+		return -EINVAL;
+	}
 
 	width >>= 3;
 

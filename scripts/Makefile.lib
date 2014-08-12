@@ -372,7 +372,7 @@ cmd_imximage_S_dcd=						\
 ) > $@
 
 imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
-      -I $(srctree)/include -I $(MACH)/include \
+      -I $(srctree)/include -I $(srctree)/arch/arm/mach-imx/include \
       -include include/generated/autoconf.h
 
 dcd-tmp = $(subst $(comma),_,$(dot-target).dcd.tmp)

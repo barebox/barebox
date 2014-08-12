@@ -104,7 +104,7 @@ struct efi_boot *efi_get_boot(int num)
 
 	free(name);
 
-	if (!buf) {
+	if (IS_ERR(buf)) {
 		free(boot);
 		return NULL;
 	}

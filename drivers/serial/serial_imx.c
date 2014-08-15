@@ -338,9 +338,11 @@ static int imx_serial_probe(struct device_d *dev)
 	cdev->flush = imx_serial_flush;
 	cdev->setbrg = imx_serial_setbaudrate;
 	cdev->linux_console_name = "ttymxc";
-	devname = of_alias_get(dev->device_node);
-	if (devname)
-		cdev->devname = xstrdup(devname);
+	if (dev->device_node) {
+		devname = of_alias_get(dev->device_node);
+		if (devname)
+			cdev->devname = xstrdup(devname);
+	}
 
 	imx_serial_init_port(cdev);
 

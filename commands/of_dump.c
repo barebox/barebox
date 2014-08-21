@@ -35,15 +35,19 @@ static int do_of_dump(int argc, char *argv[])
 {
 	int opt;
 	int ret;
+	int fix = 0;
 	struct device_node *root = NULL, *node, *of_free = NULL;
 	char *dtbfile = NULL;
 	size_t size;
 	const char *nodename;
 
-	while ((opt = getopt(argc, argv, "f:")) > 0) {
+	while ((opt = getopt(argc, argv, "Ff:")) > 0) {
 		switch (opt) {
 		case 'f':
 			dtbfile = optarg;
+			break;
+		case 'F':
+			fix = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -76,6 +80,28 @@ static int do_of_dump(int argc, char *argv[])
 		of_free = root;
 	} else {
 		root = of_get_root_node();
+
+		if (fix) {
+			/* create a copy of internal devicetree */
+			void *fdt;
+			fdt = of_flatten_dtb(root);
+			root = of_unflatten_dtb(fdt);
+
+			free(fdt);
+
+			if (IS_ERR(root)) {
+				ret = PTR_ERR(root);
+				goto out;
+			}
+
+			of_free = root;
+		}
+	}
+
+	if (fix) {
+		ret = of_fix_tree(root);
+		if (ret)
+			goto out;
 	}
 
 	node = of_find_node_by_path_or_alias(root, nodename);
@@ -97,12 +123,13 @@ out:
 BAREBOX_CMD_HELP_START(of_dump)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT  ("-f dtb",  "work on dtb instead of internal devicetree\n")
+BAREBOX_CMD_HELP_OPT  ("-F",  "return fixed devicetree\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(of_dump)
 	.cmd		= do_of_dump,
 	BAREBOX_CMD_DESC("dump devicetree nodes")
-	BAREBOX_CMD_OPTS("[-f] [NODE]")
+	BAREBOX_CMD_OPTS("[-fF] [NODE]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_COMPLETE(devicetree_file_complete)
 	BAREBOX_CMD_HELP(cmd_of_dump_help)

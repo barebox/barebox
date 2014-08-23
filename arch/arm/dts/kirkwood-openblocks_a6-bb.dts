@@ -1,0 +1,13 @@
+/*
+ * Barebox specific DT overlay for OpenBlocks A6 board
+ */
+
+#include "arm/kirkwood-openblocks_a6.dts"
+
+/ {
+	gpio-leds {
+		led-green {
+			barebox,default-trigger = "heartbeat";
+		};
+	};
+};

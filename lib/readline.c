@@ -68,8 +68,12 @@ static const char *hist_prev(void)
 	struct history *history;
 
 	if (history_current->prev == &history_list) {
-		history = list_entry(history_current, struct history, list);
 		getcmd_cbeep();
+
+		if (list_empty(&history_list))
+			return "";
+
+		history = list_entry(history_current, struct history, list);
 		return history->line;
 	}
 

@@ -1157,7 +1157,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		}
 	}
 
-	nand_chip->ecc.mode = NAND_ECC_SOFT;
+	nand_chip->ecc.mode = pdata->ecc_mode;
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
 	    pdata->ecc_mode == NAND_ECC_HW) {

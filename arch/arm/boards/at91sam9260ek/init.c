@@ -18,6 +18,7 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <nand.h>
+#include <linux/mtd/nand.h>
 #include <sizes.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
@@ -51,6 +52,7 @@ static struct atmel_nand_data nand_pdata = {
 	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
+	.ecc_mode	= NAND_ECC_SOFT,
 	.on_flash_bbt	= 1,
 };
 

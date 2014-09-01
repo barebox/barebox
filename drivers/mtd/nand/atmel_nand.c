@@ -1219,7 +1219,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
 	    nand_chip->ecc.mode == NAND_ECC_HW) {
-		if (IS_ENABLED(CONFIG_NAND_ATMEL_PMECC))
+		if (IS_ENABLED(CONFIG_NAND_ATMEL_PMECC) && pdata->has_pmecc)
 			res = atmel_pmecc_nand_init_params(dev, host);
 		else
 			res = atmel_hw_nand_init_params(dev, host);

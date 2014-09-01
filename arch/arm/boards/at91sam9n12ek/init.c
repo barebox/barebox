@@ -47,6 +47,7 @@ static struct atmel_nand_data nand_pdata = {
 	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PD5,
 	.enable_pin	= AT91_PIN_PD4,
+	.has_pmecc	= 1,
 	.ecc_mode	= NAND_ECC_HW,
 	.pmecc_sector_size = 512,
 	.pmecc_corr_cap = 2,

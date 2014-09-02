@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2005 HP Labs
  * Copyright (C) 2011-2012 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+ * Copyright (C) 2014 Raphaël Poggi
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -24,38 +25,57 @@
 #include <linux/err.h>
 #include <errno.h>
 #include <io.h>
-#include <mach/iomux.h>
-#include <mach/io.h>
-#include <mach/cpu.h>
 #include <gpio.h>
 #include <init.h>
 #include <driver.h>
 #include <getopt.h>
 
+#include <mach/at91_pio.h>
 #include <mach/gpio.h>
 
-#define MAX_GPIO_BANKS		5
+#include <pinctrl.h>
 
-static int gpio_banks = 0;
+struct at91_pinctrl {
+	struct pinctrl_device pctl;
+	struct at91_pinctrl_mux_ops	*ops;
+};
 
-/*
- * Functionnality can change with newer chips
- */
 struct at91_gpio_chip {
 	struct gpio_chip	chip;
 	void __iomem		*regbase;	/* PIO bank virtual address */
 	struct at91_pinctrl_mux_ops *ops;	/* ops */
 };
 
+enum at91_mux {
+	AT91_MUX_GPIO = 0,
+	AT91_MUX_PERIPH_A = 1,
+	AT91_MUX_PERIPH_B = 2,
+	AT91_MUX_PERIPH_C = 3,
+	AT91_MUX_PERIPH_D = 4,
+};
+
+#define MAX_GPIO_BANKS		5
+#define to_at91_pinctrl(c) container_of(c, struct at91_pinctrl, pctl);
 #define to_at91_gpio_chip(c) container_of(c, struct at91_gpio_chip, chip)
+
+#define PULL_UP         (1 << 0)
+#define MULTI_DRIVE     (1 << 1)
+#define DEGLITCH        (1 << 2)
+#define PULL_DOWN       (1 << 3)
+#define DIS_SCHMIT      (1 << 4)
+#define DEBOUNCE        (1 << 16)
+#define DEBOUNCE_VAL_SHIFT      17
+#define DEBOUNCE_VAL    (0x3fff << DEBOUNCE_VAL_SHIFT)
+
+static int gpio_banks;
 
 static struct at91_gpio_chip gpio_chip[MAX_GPIO_BANKS];
 
-static inline struct at91_gpio_chip *pin_to_controller(unsigned pin)
+static inline void __iomem *pin_to_controller(unsigned pin)
 {
 	pin /= MAX_NB_GPIO_PER_BANK;
 	if (likely(pin < gpio_banks))
-		return &gpio_chip[pin];
+		return gpio_chip[pin].regbase;
 
 	return NULL;
 }
@@ -90,96 +110,6 @@ struct at91_pinctrl_mux_ops {
 	void (*set_pulldown)(void __iomem *pio, unsigned mask, bool in_on);
 	bool (*get_schmitt_trig)(void __iomem *pio, unsigned pin);
 	void (*disable_schmitt_trig)(void __iomem *pio, unsigned mask);
-};
-
-#ifdef CONFIG_CMD_AT91MUX
-static unsigned at91_mux_get_pullup(void __iomem *pio, unsigned pin)
-{
-	return (__raw_readl(pio + PIO_PUSR) >> pin) & 0x1;
-}
-
-static unsigned at91_mux_get_multidrive(void __iomem *pio, unsigned pin)
-{
-	return (__raw_readl(pio + PIO_MDSR) >> pin) & 0x1;
-}
-
-static enum at91_mux at91_mux_pio3_get_periph(void __iomem *pio, unsigned mask)
-{
-	unsigned select;
-
-	if (__raw_readl(pio + PIO_PSR) & mask)
-		return AT91_MUX_GPIO;
-
-	select = !!(__raw_readl(pio + PIO_ABCDSR1) & mask);
-	select |= (!!(__raw_readl(pio + PIO_ABCDSR2) & mask) << 1);
-
-	return select + 1;
-}
-
-static enum at91_mux at91_mux_get_periph(void __iomem *pio, unsigned mask)
-{
-	unsigned select;
-
-	if (__raw_readl(pio + PIO_PSR) & mask)
-		return AT91_MUX_GPIO;
-
-	select = __raw_readl(pio + PIO_ABSR) & mask;
-
-	return select + 1;
-}
-
-static bool at91_mux_get_deglitch(void __iomem *pio, unsigned pin)
-{
-	return (__raw_readl(pio + PIO_IFSR) >> pin) & 0x1;
-}
-
-static bool at91_mux_pio3_get_debounce(void __iomem *pio, unsigned pin, u32 *div)
-{
-	*div = __raw_readl(pio + PIO_SCDR);
-
-	return (__raw_readl(pio + PIO_IFSCSR) >> pin) & 0x1;
-}
-
-static bool at91_mux_pio3_get_pulldown(void __iomem *pio, unsigned pin)
-{
-	return (__raw_readl(pio + PIO_PPDSR) >> pin) & 0x1;
-}
-
-static bool at91_mux_pio3_get_schmitt_trig(void __iomem *pio, unsigned pin)
-{
-	return (__raw_readl(pio + PIO_SCHMITT) >> pin) & 0x1;
-}
-#else
-#define at91_mux_get_periph		NULL
-#define at91_mux_pio3_get_periph	NULL
-#define at91_mux_get_deglitch		NULL
-#define at91_mux_pio3_get_debounce	NULL
-#define at91_mux_pio3_get_pulldown	NULL
-#define at91_mux_pio3_get_schmitt_trig	NULL
-#endif
-
-static struct at91_pinctrl_mux_ops at91rm9200_ops = {
-	.get_periph	= at91_mux_get_periph,
-	.mux_A_periph	= at91_mux_set_A_periph,
-	.mux_B_periph	= at91_mux_set_B_periph,
-	.get_deglitch	= at91_mux_get_deglitch,
-	.set_deglitch	= at91_mux_set_deglitch,
-};
-
-static struct at91_pinctrl_mux_ops at91sam9x5_ops = {
-	.get_periph	= at91_mux_pio3_get_periph,
-	.mux_A_periph	= at91_mux_pio3_set_A_periph,
-	.mux_B_periph	= at91_mux_pio3_set_B_periph,
-	.mux_C_periph	= at91_mux_pio3_set_C_periph,
-	.mux_D_periph	= at91_mux_pio3_set_D_periph,
-	.get_deglitch	= at91_mux_get_deglitch,
-	.set_deglitch	= at91_mux_pio3_set_deglitch,
-	.get_debounce	= at91_mux_pio3_get_debounce,
-	.set_debounce	= at91_mux_pio3_set_debounce,
-	.get_pulldown	= at91_mux_pio3_get_pulldown,
-	.set_pulldown	= at91_mux_pio3_set_pulldown,
-	.get_schmitt_trig = at91_mux_pio3_get_schmitt_trig,
-	.disable_schmitt_trig = at91_mux_pio3_disable_schmitt_trig,
 };
 
 int at91_mux_pin(unsigned pin, enum at91_mux mux, int use_pullup)
@@ -376,157 +306,232 @@ int at91_disable_schmitt_trig(unsigned pin)
 }
 EXPORT_SYMBOL(at91_disable_schmitt_trig);
 
-#ifdef CONFIG_CMD_AT91MUX
-static void at91mux_printf_mode(unsigned bank, unsigned pin)
+static enum at91_mux at91_mux_pio3_get_periph(void __iomem *pio, unsigned mask)
 {
-	struct at91_gpio_chip *at91_gpio = &gpio_chip[bank];
-	void __iomem *pio = at91_gpio->regbase;
-	enum at91_mux mode;
-	u32 pdsr;
+	unsigned select;
 
-	unsigned mask = pin_to_mask(pin);
+	if (__raw_readl(pio + PIO_PSR) & mask)
+		return AT91_MUX_GPIO;
 
-	mode = at91_gpio->ops->get_periph(pio, mask);
+	select = !!(__raw_readl(pio + PIO_ABCDSR1) & mask);
+	select |= (!!(__raw_readl(pio + PIO_ABCDSR2) & mask) << 1);
 
-	if (mode == AT91_MUX_GPIO) {
-		pdsr = __raw_readl(pio + PIO_PDSR);
+	return select + 1;
+}
 
-		printf("[gpio] %s", pdsr & mask ? "set" : "clear");
-	} else {
-		printf("[periph %c]", mode + 'A' - 1);
+static enum at91_mux at91_mux_get_periph(void __iomem *pio, unsigned mask)
+{
+	unsigned select;
+
+	if (__raw_readl(pio + PIO_PSR) & mask)
+		return AT91_MUX_GPIO;
+
+	select = __raw_readl(pio + PIO_ABSR) & mask;
+
+	return select + 1;
+}
+
+static bool at91_mux_get_deglitch(void __iomem *pio, unsigned pin)
+{
+	return (__raw_readl(pio + PIO_IFSR) >> pin) & 0x1;
+}
+
+static bool at91_mux_pio3_get_debounce(void __iomem *pio, unsigned pin, u32 *div)
+{
+	*div = __raw_readl(pio + PIO_SCDR);
+
+	return (__raw_readl(pio + PIO_IFSCSR) >> pin) & 0x1;
+}
+
+static bool at91_mux_pio3_get_pulldown(void __iomem *pio, unsigned pin)
+{
+	return (__raw_readl(pio + PIO_PPDSR) >> pin) & 0x1;
+}
+
+static bool at91_mux_pio3_get_schmitt_trig(void __iomem *pio, unsigned pin)
+{
+	return (__raw_readl(pio + PIO_SCHMITT) >> pin) & 0x1;
+}
+
+static struct at91_pinctrl_mux_ops at91rm9200_ops = {
+	.get_periph	= at91_mux_get_periph,
+	.mux_A_periph	= at91_mux_set_A_periph,
+	.mux_B_periph	= at91_mux_set_B_periph,
+	.get_deglitch	= at91_mux_get_deglitch,
+	.set_deglitch	= at91_mux_set_deglitch,
+};
+
+static struct at91_pinctrl_mux_ops at91sam9x5_ops = {
+	.get_periph	= at91_mux_pio3_get_periph,
+	.mux_A_periph	= at91_mux_pio3_set_A_periph,
+	.mux_B_periph	= at91_mux_pio3_set_B_periph,
+	.mux_C_periph	= at91_mux_pio3_set_C_periph,
+	.mux_D_periph	= at91_mux_pio3_set_D_periph,
+	.get_deglitch	= at91_mux_get_deglitch,
+	.set_deglitch	= at91_mux_pio3_set_deglitch,
+	.get_debounce	= at91_mux_pio3_get_debounce,
+	.set_debounce	= at91_mux_pio3_set_debounce,
+	.get_pulldown	= at91_mux_pio3_get_pulldown,
+	.set_pulldown	= at91_mux_pio3_set_pulldown,
+	.get_schmitt_trig = at91_mux_pio3_get_schmitt_trig,
+	.disable_schmitt_trig = at91_mux_pio3_disable_schmitt_trig,
+};
+
+static struct of_device_id at91_pinctrl_dt_ids[] = {
+	{
+		.compatible = "atmel,at91rm9200-pinctrl",
+		.data = (unsigned long)&at91rm9200_ops,
+	}, {
+		.compatible = "atmel,at91sam9x5-pinctrl",
+		.data = (unsigned long)&at91sam9x5_ops,
+	}, {
+		/* sentinel */
 	}
-}
+};
 
-static void at91mux_dump_config(void)
+static struct at91_pinctrl_mux_ops *at91_pinctrl_get_driver_data(struct device_d *dev)
 {
-	int bank, j;
+	struct at91_pinctrl_mux_ops *ops_data = NULL;
+	int rc;
 
-	/* print heading */
-	printf("Pin\t");
-	for (bank = 0; bank < gpio_banks; bank++) {
-		printf("PIO%c\t\t", 'A' + bank);
-	};
-	printf("\n\n");
-
-	/* print pin status */
-	for (j = 0; j < 32; j++) {
-		printf("%i:\t", j);
-
-		for (bank = 0; bank < gpio_banks; bank++) {
-			at91mux_printf_mode(bank, j);
-
-			printf("\t");
-		}
-
-		printf("\n");
-	}
-}
-
-static void at91mux_print_en_disable(const char *str, bool is_on)
-{
-	printf("%s = ", str);
-
-	if (is_on)
-		printf("enable\n");
-	else
-		printf("disable\n");
-}
-
-static void at91mux_dump_pio_config(unsigned bank, unsigned pin)
-{
-	struct at91_gpio_chip *at91_gpio = &gpio_chip[bank];
-	void __iomem *pio = at91_gpio->regbase;
-	u32 div;
-
-	printf("pio%c%u configuration\n\n", bank + 'A', pin);
-
-	at91mux_printf_mode(bank, pin);
-	printf("\n");
-
-	at91mux_print_en_disable("multidrive",
-		at91_mux_get_multidrive(pio, pin));
-
-	at91mux_print_en_disable("pullup",
-		at91_mux_get_pullup(pio, pin));
-
-	if (at91_gpio->ops->get_deglitch)
-		at91mux_print_en_disable("degitch",
-			at91_gpio->ops->get_deglitch(pio, pin));
-
-	if (at91_gpio->ops->get_debounce) {
-		printf("debounce = ");
-		if (at91_gpio->ops->get_debounce(pio, pin, &div))
-			printf("enable at %d\n", div);
+	if (dev->device_node) {
+		const struct of_device_id *match;
+		match = of_match_node(at91_pinctrl_dt_ids, dev->device_node);
+		if (!match)
+			ops_data = NULL;
 		else
-			printf("disable\n");
+			ops_data = (struct at91_pinctrl_mux_ops *)match->data;
+	} else {
+		rc = dev_get_drvdata(dev, (unsigned long *)&ops_data);
+		if (rc)
+			ops_data = NULL;
 	}
 
-	if (at91_gpio->ops->get_pulldown)
-		at91mux_print_en_disable("pulldown",
-			at91_gpio->ops->get_pulldown(pio, pin));
-
-	if (at91_gpio->ops->get_schmitt_trig)
-		at91mux_print_en_disable("schmitt trigger",
-			!at91_gpio->ops->get_schmitt_trig(pio, pin));
+	return ops_data;
 }
 
-static int do_at91mux(int argc, char *argv[])
+static int at91_pinctrl_set_conf(struct at91_pinctrl *info, unsigned int pin_num, unsigned int mux, unsigned int conf)
 {
-	int opt;
-	unsigned bank = 0;
-	unsigned pin = 0;
+	unsigned int mask;
+	void __iomem *pio;
 
-	if (argc < 2) {
-		at91mux_dump_config();
-		return 0;
-	}
+	pio = pin_to_controller(pin_num);
+	mask = pin_to_mask(pin_num);
 
-	while ((opt = getopt(argc, argv, "b:p:")) > 0) {
-		switch (opt) {
-		case 'b':
-			bank = simple_strtoul(optarg, NULL, 10);
-			break;
-		case 'p':
-			pin = simple_strtoul(optarg, NULL, 10);
-			break;
-		}
-	}
+	if (conf & PULL_UP && conf & PULL_DOWN)
+		return -EINVAL;
 
-	if (bank >= gpio_banks) {
-		printf("bank %c >= supported %c banks\n", bank + 'A',
-			gpio_banks + 'A');
-		return 1;
-	}
-
-	if (pin >= 32) {
-		printf("pin %u >= supported %d pins\n", pin, 32);
-		return 1;
-	}
-
-	at91mux_dump_pio_config(bank, pin);
+	at91_mux_set_pullup(pio, mask, conf & PULL_UP);
+	at91_mux_set_multidrive(pio, mask, conf & MULTI_DRIVE);
+	if (info->ops->set_deglitch)
+		info->ops->set_deglitch(pio, mask, conf & DEGLITCH);
+	if (info->ops->set_debounce)
+		info->ops->set_debounce(pio, mask, conf & DEBOUNCE,
+			(conf & DEBOUNCE_VAL) >> DEBOUNCE_VAL_SHIFT);
+	if (info->ops->set_pulldown)
+		info->ops->set_pulldown(pio, mask, conf & PULL_DOWN);
+	if (info->ops->disable_schmitt_trig && conf & DIS_SCHMIT)
+		info->ops->disable_schmitt_trig(pio, mask);
 
 	return 0;
 }
 
-BAREBOX_CMD_HELP_START(at91mux)
-BAREBOX_CMD_HELP_TEXT("Dump current MUX configuration. If a BANK or PIN has been")
-BAREBOX_CMD_HELP_TEXT("specified dump pin details.")
-BAREBOX_CMD_HELP_TEXT("")
-BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-p PIN", "pin number")
-BAREBOX_CMD_HELP_OPT ("-b BANK", "bank number")
-BAREBOX_CMD_HELP_END
+static int at91_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node *np)
+{
+	struct at91_pinctrl *info;
+	const __be32 *list;
+	int i, size;
+	int ret = 0;
+	int bank_num, pin_num, mux, conf;
 
-BAREBOX_CMD_START(at91mux)
-	.cmd		= do_at91mux,
-	BAREBOX_CMD_DESC("list MUX configuration")
-	BAREBOX_CMD_OPTS("[-pb]")
-	BAREBOX_CMD_GROUP(CMD_GRP_INFO)
-	BAREBOX_CMD_HELP(cmd_at91mux_help)
-	BAREBOX_CMD_COMPLETE(empty_complete)
-BAREBOX_CMD_END
-#endif
-/*--------------------------------------------------------------------------*/
+	info = to_at91_pinctrl(pdev);
+
+	list = of_get_property(np, "atmel,pins", &size);
+	size /= sizeof(*list);
+
+	if (!size || size % 4) {
+		dev_err(pdev->dev, "wrong pins number or pins and configs should be by 4\n");
+		return -EINVAL;
+	}
+
+	for (i = 0; i < size; i += 4) {
+		bank_num = be32_to_cpu(*list++);
+		pin_num = be32_to_cpu(*list++);
+		mux = be32_to_cpu(*list++);
+		conf = be32_to_cpu(*list++);
+
+		ret = at91_mux_pin(pin_num, mux, conf & PULL_UP);
+		if (ret) {
+			dev_err(pdev->dev, "failed to mux pin %d\n", pin_num);
+			return ret;
+		}
+
+		ret = at91_pinctrl_set_conf(info, pin_num, mux, conf);
+		if (ret) {
+			dev_err(pdev->dev, "failed to set conf on pin %d\n", pin_num);
+			return ret;
+		}
+	}
+
+	return ret;
+}
+
+static struct pinctrl_ops at91_pinctrl_ops = {
+	.set_state = at91_pinctrl_set_state,
+};
+
+static int at91_pinctrl_probe(struct device_d *dev)
+{
+	struct at91_pinctrl *info;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_PINCTRL))
+		return 0;
+
+	info = xzalloc(sizeof(struct at91_pinctrl));
+
+	info->ops = at91_pinctrl_get_driver_data(dev);
+	if (!info->ops) {
+		dev_err(dev, "failed to retrieve driver data\n");
+		return -ENODEV;
+	}
+
+	info->pctl.dev = dev;
+	info->pctl.ops = &at91_pinctrl_ops;
+
+	ret = pinctrl_register(&info->pctl);
+	if (ret)
+		return ret;
+
+	dev_info(dev, "AT91 pinctrl registered\n");
+
+	return 0;
+}
+
+static struct platform_device_id at91_pinctrl_ids[] = {
+	{
+		.name = "at91rm9200-pinctrl",
+		.driver_data = (unsigned long)&at91rm9200_ops,
+	}, {
+		.name = "at91sam9x5-pinctrl",
+		.driver_data = (unsigned long)&at91sam9x5_ops,
+	}, {
+		/* sentinel */
+	},
+};
+
+static struct driver_d at91_pinctrl_driver = {
+	.name = "pinctrl-at91",
+	.probe = at91_pinctrl_probe,
+	.id_table = at91_pinctrl_ids,
+	.of_compatible = DRV_OF_COMPAT(at91_pinctrl_dt_ids),
+};
+
+static int at91_pinctrl_init(void)
+{
+	return platform_driver_register(&at91_pinctrl_driver);
+}
+coredevice_initcall(at91_pinctrl_init);
 
 static int at91_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
@@ -598,21 +603,26 @@ static struct gpio_ops at91_gpio_ops = {
 	.set = at91_gpio_set,
 };
 
+static struct of_device_id at91_gpio_dt_ids[] = {
+	{
+		.compatible = "atmel,at91rm9200-gpio",
+	}, {
+		.compatible = "atmel,at91sam9x5-gpio",
+	}, {
+		/* sentinel */
+	},
+};
+
 static int at91_gpio_probe(struct device_d *dev)
 {
 	struct at91_gpio_chip *at91_gpio;
 	struct clk *clk;
 	int ret;
+	int alias_idx = of_alias_get_id(dev->device_node, "gpio");
 
 	BUG_ON(dev->id > MAX_GPIO_BANKS);
 
-	at91_gpio = &gpio_chip[dev->id];
-
-	ret = dev_get_drvdata(dev, (unsigned long *)&at91_gpio->ops);
-	if (ret) {
-		dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
-		return ret;
-	}
+	at91_gpio = &gpio_chip[alias_idx];
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk)) {
@@ -628,8 +638,10 @@ static int at91_gpio_probe(struct device_d *dev)
 		return ret;
 	}
 
-	gpio_banks = max(gpio_banks, dev->id + 1);
+	gpio_banks = max(gpio_banks, alias_idx + 1);
 	at91_gpio->regbase = dev_request_mem_region(dev, 0);
+	if (!at91_gpio->regbase)
+		return -EBUSY;
 
 	at91_gpio->chip.ops = &at91_gpio_ops;
 	at91_gpio->chip.ngpio = MAX_NB_GPIO_PER_BANK;
@@ -642,29 +654,30 @@ static int at91_gpio_probe(struct device_d *dev)
 		return ret;
 	}
 
+	dev_info(dev, "AT91 gpio driver registered\n");
+
 	return 0;
 }
 
 static struct platform_device_id at91_gpio_ids[] = {
 	{
 		.name = "at91rm9200-gpio",
-		.driver_data = (unsigned long)&at91rm9200_ops,
 	}, {
 		.name = "at91sam9x5-gpio",
-		.driver_data = (unsigned long)&at91sam9x5_ops,
 	}, {
 		/* sentinel */
 	},
 };
 
 static struct driver_d at91_gpio_driver = {
-	.name = "at91-gpio",
+	.name = "gpio-at91",
 	.probe = at91_gpio_probe,
 	.id_table = at91_gpio_ids,
+	.of_compatible	= DRV_OF_COMPAT(at91_gpio_dt_ids),
 };
 
 static int at91_gpio_init(void)
 {
 	return platform_driver_register(&at91_gpio_driver);
 }
-postcore_initcall(at91_gpio_init);
+coredevice_initcall(at91_gpio_init);

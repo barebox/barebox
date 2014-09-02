@@ -32,7 +32,7 @@
 #include <driver.h>
 #include <getopt.h>
 
-#include "gpio.h"
+#include <mach/gpio.h>
 
 #define MAX_GPIO_BANKS		5
 

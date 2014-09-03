@@ -31,6 +31,7 @@
 #include <linux/err.h>
 #include <boot.h>
 #include <fs.h>
+#include <libfile.h>
 #include <binfmt.h>
 #include <wchar.h>
 #include <mach/efi.h>

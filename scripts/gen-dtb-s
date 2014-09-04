@@ -36,7 +36,7 @@ if [ "$imd" = "y" ]; then
 	if [ "$model" != "notfound" ]; then
 		modellen=$($FDTGET -t s "$dtb" / model | wc -c)
 		le32 0x640c8004
-		le32 $compatlen
+		le32 $modellen
 		echo ".byte " $model
 		echo ".balign 4"
 	fi

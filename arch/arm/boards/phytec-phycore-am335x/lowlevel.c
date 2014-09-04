@@ -33,14 +33,14 @@ struct pcm051_sdram_timings {
 };
 
 enum {
-	MT41J128M16125IT_1x256M16,
-	MT41J64M1615IT_1x128M16,
-	MT41J256M16HA15EIT_1x512M16,
+	MT41J128M16125IT_256MB,
+	MT41J64M1615IT_128MB,
+	MT41J256M16HA15EIT_512MB,
 };
 
 struct pcm051_sdram_timings timings[] = {
-	/* 1x256M16 */
-	[MT41J128M16125IT_1x256M16] = {
+	/* 256MB */
+	[MT41J128M16125IT_256MB] = {
 		.regs = {
 			.emif_read_latency	= 0x7,
 			.emif_tim1		= 0x0AAAD4DB,
@@ -58,8 +58,8 @@ struct pcm051_sdram_timings timings[] = {
 		},
 	},
 
-	/* 1x128M16 */
-	[MT41J64M1615IT_1x128M16] = {
+	/* 128MB */
+	[MT41J64M1615IT_128MB] = {
 		.regs =  {
 			.emif_read_latency	= 0x7,
 			.emif_tim1		= 0x0AAAE4DB,
@@ -77,8 +77,8 @@ struct pcm051_sdram_timings timings[] = {
 		},
 	},
 
-	/* 1x512MB */
-	[MT41J256M16HA15EIT_1x512M16] = {
+	/* 512MB */
+	[MT41J256M16HA15EIT_512MB] = {
 		.regs = {
 			.emif_read_latency	= 0x7,
 			.emif_tim1		= 0x0AAAE4DB,
@@ -154,19 +154,19 @@ static noinline void pcm051_board_entry(unsigned long bootinfo, int sdram)
 	pcm051_board_init(sdram);
 }
 
-ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_1x256m16, bootinfo, r1, r2)
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_256mb, bootinfo, r1, r2)
 {
-	pcm051_board_entry(bootinfo, MT41J128M16125IT_1x256M16);
+	pcm051_board_entry(bootinfo, MT41J128M16125IT_256MB);
 }
 
-ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_1x128m16, bootinfo, r1, r2)
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_128mb, bootinfo, r1, r2)
 {
-	pcm051_board_entry(bootinfo, MT41J64M1615IT_1x128M16);
+	pcm051_board_entry(bootinfo, MT41J64M1615IT_128MB);
 }
 
-ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_1x512m16, bootinfo, r1, r2)
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_512mb, bootinfo, r1, r2)
 {
-	pcm051_board_entry(bootinfo, MT41J256M16HA15EIT_1x512M16);
+	pcm051_board_entry(bootinfo, MT41J256M16HA15EIT_512MB);
 }
 
 ENTRY_FUNCTION(start_am33xx_phytec_phycore_sdram, r0, r1, r2)

@@ -36,6 +36,7 @@ enum {
 	MT41J128M16125IT_256MB,
 	MT41J64M1615IT_128MB,
 	MT41J256M16HA15EIT_512MB,
+	MT41J512M8125IT_2x512MB,
 };
 
 struct pcm051_sdram_timings timings[] = {
@@ -93,6 +94,25 @@ struct pcm051_sdram_timings timings[] = {
 			.wr_dqs_slave_ratio0	= 0x43,
 			.fifo_we_slave_ratio0	= 0x97,
 			.wr_slave_ratio0	= 0x7b,
+		},
+	},
+
+	/* 1024MB */
+	[MT41J512M8125IT_2x512MB] = {
+		.regs = {
+			.emif_read_latency	= 0x7,
+			.emif_tim1		= 0x0AAAE4DB,
+			.emif_tim2		= 0x266B7FDA,
+			.emif_tim3		= 0x501F867F,
+			.sdram_config		= 0x61C053B2,
+			.zq_config		= 0x50074BE4,
+			.sdram_ref_ctrl		= 0x00000C30
+		},
+		.data = {
+			.rd_slave_ratio0	= 0x32,
+			.wr_dqs_slave_ratio0	= 0x48,
+			.fifo_we_slave_ratio0	= 0x99,
+			.wr_slave_ratio0	= 0x80,
 		},
 	},
 };
@@ -167,6 +187,11 @@ ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_128mb, bootinfo, r1, r2)
 ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_512mb, bootinfo, r1, r2)
 {
 	pcm051_board_entry(bootinfo, MT41J256M16HA15EIT_512MB);
+}
+
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_2x512mb, bootinfo, r1, r2)
+{
+	pcm051_board_entry(bootinfo, MT41J512M8125IT_2x512MB);
 }
 
 ENTRY_FUNCTION(start_am33xx_phytec_phycore_sdram, r0, r1, r2)

@@ -1,4 +1,4 @@
-obj-y += setup.o clock.o gpio.o irq_fixup.o
+obj-y += setup.o clock.o irq_fixup.o
 obj-$(CONFIG_CMD_AT91_BOOT_TEST) += boot_test_cmd.o
 
 obj-$(CONFIG_AT91_BOOTSTRAP) += bootstrap.o

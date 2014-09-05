@@ -37,6 +37,7 @@ config ARCH_AT91
 	select HAS_DEBUG_LL
 	select HAVE_MACH_ARM_HEAD
 	select HAVE_CLK
+	select PINCTRL_AT91
 
 config ARCH_BCM2835
 	bool "Broadcom BCM2835 boards"

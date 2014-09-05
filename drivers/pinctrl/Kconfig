@@ -7,6 +7,12 @@ config PINCTRL
 	  from the devicetree. Legacy drivers here may not need this core
 	  support but instead provide their own SoC specific APIs
 
+config PINCTRL_AT91
+	select PINCTRL if OFDEVICE
+	bool
+	help
+	    The pinmux controller found on AT91 SoCs.
+
 config PINCTRL_IMX_IOMUX_V1
 	select PINCTRL if OFDEVICE
 	bool

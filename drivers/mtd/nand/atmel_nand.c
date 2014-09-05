@@ -28,6 +28,10 @@
 #include <init.h>
 #include <gpio.h>
 
+#include <of.h>
+#include <of_gpio.h>
+#include <of_mtd.h>
+
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 
@@ -1038,6 +1042,92 @@ static void atmel_nand_hwctl(struct mtd_info *mtd, int mode)
 #endif
 }
 
+static int atmel_nand_of_init(struct atmel_nand_host *host, struct device_node *np)
+{
+	u32 val;
+	u32 offset[2];
+	int ecc_mode;
+	struct atmel_nand_data *board = host->board;
+	enum of_gpio_flags flags = 0;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return -ENOSYS;
+
+	if (of_property_read_u32(np, "atmel,nand-addr-offset", &val) == 0) {
+		if (val >= 32) {
+			dev_err(host->dev, "invalid addr-offset %u\n", val);
+			return -EINVAL;
+		}
+		board->ale = val;
+	}
+
+	if (of_property_read_u32(np, "atmel,nand-cmd-offset", &val) == 0) {
+		if (val >= 32) {
+			dev_err(host->dev, "invalid cmd-offset %u\n", val);
+			return -EINVAL;
+		}
+		board->cle = val;
+	}
+
+	ecc_mode = of_get_nand_ecc_mode(np);
+
+	board->ecc_mode = ecc_mode < 0 ? NAND_ECC_SOFT : ecc_mode;
+
+	board->on_flash_bbt = of_get_nand_on_flash_bbt(np);
+
+	if (of_get_nand_bus_width(np) == 16)
+		board->bus_width_16 = 1;
+
+	board->rdy_pin = of_get_gpio_flags(np, 0, &flags);
+	board->enable_pin = of_get_gpio(np, 1);
+	board->det_pin = of_get_gpio(np, 2);
+
+	board->has_pmecc = of_property_read_bool(np, "atmel,has-pmecc");
+
+	if (!(board->ecc_mode == NAND_ECC_HW) || !board->has_pmecc)
+		return 0;	/* Not using PMECC */
+
+	/* use PMECC, get correction capability, sector size and lookup
+	* table offset.
+	* If correction bits and sector size are not specified, then
+	*   find
+	* them from NAND ONFI parameters.
+	*/
+	if (of_property_read_u32(np, "atmel,pmecc-cap", &val) == 0) {
+		if ((val != 2) && (val != 4) && (val != 8) && (val != 12) && (val != 24)) {
+			dev_err(host->dev, "Unsupported PMECC correction capability: %d"
+					" should be 2, 4, 8, 12 or 24\n", val);
+			return -EINVAL;
+		}
+
+		board->pmecc_corr_cap = (u8)val;
+	}
+
+	if (of_property_read_u32(np, "atmel,pmecc-sector-size", &val) == 0) {
+		if ((val != 512) && (val != 1024)) {
+				dev_err(host->dev, "Unsupported PMECC sector size: %d"
+					" should be 512 or 1024 bytes\n", val);
+			return -EINVAL;
+		}
+
+		board->pmecc_sector_size = (u16)val;
+	}
+
+	if (of_property_read_u32_array(np, "atmel,pmecc-lookup-table-offset", offset, 2) != 0) {
+		dev_err(host->dev, "Cannot get PMECC lookup table offset\n");
+		return -EINVAL;
+	}
+
+	if (!offset[0] && !offset[1]) {
+		dev_err(host->dev, "Invalid PMECC lookup table offset\n");
+		return -EINVAL;
+	}
+
+	board->pmecc_lookup_table_offset = (board->pmecc_sector_size == 512) ? offset[0] : offset[1];
+
+	return 0;
+}
+
 static int atmel_hw_nand_init_params(struct device_d *dev,
 					 struct atmel_nand_host *host)
 {
@@ -1093,7 +1183,7 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
  */
 static int __init atmel_nand_probe(struct device_d *dev)
 {
-	struct atmel_nand_data *pdata = dev->platform_data;
+	struct atmel_nand_data *pdata = NULL;
 	struct atmel_nand_host *host;
 	struct mtd_info *mtd;
 	struct nand_chip *nand_chip;
@@ -1104,12 +1194,24 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	if (!host)
 		return -ENOMEM;
 
+	pdata = kzalloc(sizeof(struct atmel_nand_data), GFP_KERNEL);
+	if (!pdata)
+		return -ENOMEM;
+
 	host->io_base = dev_request_mem_region(dev, 0);
 
 	mtd = &host->mtd;
 	nand_chip = &host->nand_chip;
 	host->board = pdata;
 	host->dev = dev;
+
+	if (dev->device_node) {
+		res = atmel_nand_of_init(host, dev->device_node);
+		if (res)
+			goto err_no_card;
+	} else {
+		memcpy(host->board, dev->platform_data, sizeof(struct atmel_nand_data));
+	}
 
 	nand_chip->priv = host;		/* link the private data structures */
 	mtd->priv = nand_chip;
@@ -1157,7 +1259,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		}
 	}
 
-	nand_chip->ecc.mode = NAND_ECC_SOFT;
+	nand_chip->ecc.mode = pdata->ecc_mode;
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
 	    pdata->ecc_mode == NAND_ECC_HW) {
@@ -1219,7 +1321,7 @@ static int __init atmel_nand_probe(struct device_d *dev)
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
 	    nand_chip->ecc.mode == NAND_ECC_HW) {
-		if (IS_ENABLED(CONFIG_NAND_ATMEL_PMECC))
+		if (IS_ENABLED(CONFIG_NAND_ATMEL_PMECC) && pdata->has_pmecc)
 			res = atmel_pmecc_nand_init_params(dev, host);
 		else
 			res = atmel_hw_nand_init_params(dev, host);
@@ -1245,13 +1347,20 @@ err_hw_ecc:
 err_scan_ident:
 err_no_card:
 	atmel_nand_disable(host);
+	kfree(pdata);
 	kfree(host);
 	return res;
 }
 
+static struct of_device_id atmel_nand_dt_ids[] = {
+	{ .compatible = "atmel,at91rm9200-nand" },
+	{ /* sentinel */ }
+};
+
 static struct driver_d atmel_nand_driver = {
 	.name	= "atmel_nand",
 	.probe	= atmel_nand_probe,
+	.of_compatible	= DRV_OF_COMPAT(atmel_nand_dt_ids),
 };
 device_platform_driver(atmel_nand_driver);
 

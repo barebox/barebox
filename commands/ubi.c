@@ -65,9 +65,13 @@ static int do_ubiattach(int argc, char *argv[])
 	struct mtd_info_user user;
 	int fd, ret;
 	int vid_hdr_offset = 0;
+	int devnum = UBI_DEV_NUM_AUTO;
 
-	while((opt = getopt(argc, argv, "O:")) > 0) {
+	while((opt = getopt(argc, argv, "d:O:")) > 0) {
 		switch(opt) {
+		case 'd':
+			devnum = simple_strtoul(optarg, NULL, 0);
+			break;
 		case 'O':
 			vid_hdr_offset = simple_strtoul(optarg, NULL, 0);
 			break;
@@ -91,7 +95,7 @@ static int do_ubiattach(int argc, char *argv[])
 		goto err;
 	}
 
-	ret = ubi_attach_mtd_dev(user.mtd, UBI_DEV_NUM_AUTO, vid_hdr_offset, 20);
+	ret = ubi_attach_mtd_dev(user.mtd, devnum, vid_hdr_offset, 20);
 	if (ret < 0)
 		printf("failed to attach: %s\n", strerror(-ret));
 	else
@@ -104,13 +108,14 @@ err:
 
 BAREBOX_CMD_HELP_START(ubiattach)
 BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-d DEVNUM",  "device number")
 BAREBOX_CMD_HELP_OPT ("-O OFFS",  "VID header offset")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ubiattach)
 	.cmd		= do_ubiattach,
 	BAREBOX_CMD_DESC("attach mtd device to UBI")
-	BAREBOX_CMD_OPTS("[-O] MTDDEV")
+	BAREBOX_CMD_OPTS("[-dO] MTDDEV")
 	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubiattach_help)
 BAREBOX_CMD_END

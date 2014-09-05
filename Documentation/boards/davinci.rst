@@ -33,12 +33,14 @@ Running barebox
   4. Upload ``barebox.bin`` via Ymodem
 
 .. code-block:: none
+
     virt2real ># loady
 ..
 
   5. Run barebox
 
 .. code-block:: none
+
     virt2real ># go 0x82000000
 ..
 

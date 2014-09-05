@@ -90,6 +90,13 @@ config NAND_OMAP_GPMC
 	  Support for NAND flash using GPMC. GPMC is a common memory
 	  interface found on Texas Instrument's OMAP platforms
 
+config NAND_ORION
+	bool
+	prompt "Orion NAND driver"
+	depends on ARCH_MVEBU
+	help
+	  Support for the Orion NAND controller, present in Kirkwood SoCs.
+
 config NAND_ATMEL
 	bool
 	prompt "Atmel (AT91SAM9xxx) NAND driver"

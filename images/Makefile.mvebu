@@ -72,6 +72,17 @@ image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug.img
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-uart.img
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-2nd.img
 
+PLATHOME_OPENBLOCKS_A6_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-a6/kwbimage.cfg
+OPTS_start_plathome_openblocks_a6.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_A6_KWBOPTS)
+OPTS_start_plathome_openblocks_a6.pblx.kwbuartimg = -m uart $(PLATHOME_OPENBLOCKS_A6_KWBOPTS)
+FILE_barebox-plathome-openblocks-a6.img   = start_plathome_openblocks_a6.pblx.kwbimg
+FILE_barebox-plathome-openblocks-a6-uart.img = start_plathome_openblocks_a6.pblx.kwbuartimg
+FILE_barebox-plathome-openblocks-a6-2nd.img = start_plathome_openblocks_a6.pblx
+pblx-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += start_plathome_openblocks_a6
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += barebox-plathome-openblocks-a6.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += barebox-plathome-openblocks-a6-uart.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += barebox-plathome-openblocks-a6-2nd.img
+
 USI_TOPKICK_KWBOPTS = ${KWBOPTS} -i $(board)/usi-topkick/kwbimage.cfg
 OPTS_start_usi_topkick.pblx.kwbimg = $(USI_TOPKICK_KWBOPTS)
 OPTS_start_usi_topkick.pblx.kwbuartimg = -m uart $(USI_TOPKICK_KWBOPTS)

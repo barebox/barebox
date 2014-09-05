@@ -81,6 +81,9 @@ if ARCH_KIRKWOOD
 config MACH_GLOBALSCALE_GURUPLUG
 	bool "Guruplug"
 
+config MACH_PLATHOME_OPENBLOCKS_A6
+	bool "PlatHome OpenBlocks A6"
+
 config MACH_USI_TOPKICK
 	bool "Topkick"
 

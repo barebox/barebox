@@ -19,6 +19,7 @@
 	flash: m25p80@0 {
 		compatible = "m25p80";
 		spi-max-frequency = <20000000>;
+		reg = <0>;
 	};
 };
 

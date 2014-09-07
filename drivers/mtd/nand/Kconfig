@@ -93,7 +93,7 @@ config NAND_OMAP_GPMC
 config NAND_ORION
 	bool
 	prompt "Orion NAND driver"
-	depends on ARCH_MVEBU
+	depends on ARCH_KIRKWOOD
 	help
 	  Support for the Orion NAND controller, present in Kirkwood SoCs.
 

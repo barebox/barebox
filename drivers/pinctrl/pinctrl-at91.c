@@ -606,8 +606,10 @@ static struct gpio_ops at91_gpio_ops = {
 static struct of_device_id at91_gpio_dt_ids[] = {
 	{
 		.compatible = "atmel,at91rm9200-gpio",
+                .data = (unsigned long)&at91rm9200_ops,
 	}, {
 		.compatible = "atmel,at91sam9x5-gpio",
+		.data = (unsigned long)&at91sam9x5_ops,
 	}, {
 		/* sentinel */
 	},
@@ -623,6 +625,12 @@ static int at91_gpio_probe(struct device_d *dev)
 	BUG_ON(dev->id > MAX_GPIO_BANKS);
 
 	at91_gpio = &gpio_chip[alias_idx];
+
+	ret = dev_get_drvdata(dev, (unsigned long *)&at91_gpio->ops);
+        if (ret) {
+                dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
+                return ret;
+        }
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk)) {
@@ -662,8 +670,10 @@ static int at91_gpio_probe(struct device_d *dev)
 static struct platform_device_id at91_gpio_ids[] = {
 	{
 		.name = "at91rm9200-gpio",
+                .driver_data = (unsigned long)&at91rm9200_ops,
 	}, {
 		.name = "at91sam9x5-gpio",
+		.driver_data = (unsigned long)&at91sam9x5_ops,
 	}, {
 		/* sentinel */
 	},

@@ -25,7 +25,6 @@
 #include <init.h>
 #include <sizes.h>
 
-#define __gpio_init inline
 #include "gpio.h"
 
 static void inline access_sdram(void)

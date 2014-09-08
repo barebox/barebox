@@ -8,4 +8,7 @@ config FIRMWARE_ALTERA_SERIAL
 	  Programming an Altera FPGA via a few GPIOs for the control lines and
 	  MOSI, MISO and clock from an SPI interface for the data lines
 
+config FIRMWARE_ALTERA_SOCFPGA
+	bool "Altera SoCFPGA fpga loader"
+
 endmenu

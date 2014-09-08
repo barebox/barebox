@@ -103,3 +103,4 @@ obj-$(CONFIG_CMD_LSPCI)		+= lspci.o
 obj-$(CONFIG_CMD_IMD)		+= imd.o
 obj-$(CONFIG_CMD_HWCLOCK)	+= hwclock.o
 obj-$(CONFIG_CMD_USBGADGET)	+= usbgadget.o
+obj-$(CONFIG_CMD_FIRMWARELOAD)	+= firmwareload.o

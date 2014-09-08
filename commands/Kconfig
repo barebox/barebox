@@ -1905,6 +1905,15 @@ config CMD_BAREBOX_UPDATE
 		  -y		autom. use 'yes' when asking confirmations
 		  -f LEVEL	set force level
 
+config CMD_FIRMWARELOAD
+	bool
+	select FIRMWARE
+	prompt "firmwareload"
+	help
+	  Provides the "firmwareload" command which deals with devices which need
+	  firmware to work. It is also used to upload firmware to FPGA devices.
+
+
 config CMD_LINUX_EXEC
 	bool "linux exec"
 	depends on LINUX

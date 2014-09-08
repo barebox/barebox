@@ -328,6 +328,9 @@ config CBSIZE
 	prompt "Buffer size for input from the Console"
 	default 1024
 
+config FIRMWARE
+	bool
+
 choice
 	prompt "Select your shell"
 

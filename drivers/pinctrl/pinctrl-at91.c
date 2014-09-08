@@ -620,9 +620,14 @@ static int at91_gpio_probe(struct device_d *dev)
 	struct at91_gpio_chip *at91_gpio;
 	struct clk *clk;
 	int ret;
-	int alias_idx = of_alias_get_id(dev->device_node, "gpio");
+	int alias_idx;
 
-	BUG_ON(dev->id > MAX_GPIO_BANKS);
+	if (dev->device_node)
+		alias_idx = of_alias_get_id(dev->device_node, "gpio");
+	else
+		alias_idx = dev->id;
+
+	BUG_ON(alias_idx > MAX_GPIO_BANKS);
 
 	at91_gpio = &gpio_chip[alias_idx];
 
@@ -654,7 +659,7 @@ static int at91_gpio_probe(struct device_d *dev)
 	at91_gpio->chip.ops = &at91_gpio_ops;
 	at91_gpio->chip.ngpio = MAX_NB_GPIO_PER_BANK;
 	at91_gpio->chip.dev = dev;
-	at91_gpio->chip.base = dev->id * MAX_NB_GPIO_PER_BANK;
+	at91_gpio->chip.base = alias_idx * MAX_NB_GPIO_PER_BANK;
 
 	ret = gpiochip_add(&at91_gpio->chip);
 	if (ret) {

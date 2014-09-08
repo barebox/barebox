@@ -71,11 +71,11 @@ static int gpio_banks;
 
 static struct at91_gpio_chip gpio_chip[MAX_GPIO_BANKS];
 
-static inline void __iomem *pin_to_controller(unsigned pin)
+static inline struct at91_gpio_chip *pin_to_controller(unsigned pin)
 {
 	pin /= MAX_NB_GPIO_PER_BANK;
 	if (likely(pin < gpio_banks))
-		return gpio_chip[pin].regbase;
+		return &gpio_chip[pin];
 
 	return NULL;
 }

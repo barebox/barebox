@@ -29,5 +29,6 @@ source "drivers/regulator/Kconfig"
 source "drivers/reset/Kconfig"
 source "drivers/pci/Kconfig"
 source "drivers/rtc/Kconfig"
+source "drivers/firmware/Kconfig"
 
 endmenu

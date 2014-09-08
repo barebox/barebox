@@ -192,11 +192,6 @@ static struct clk_lookup periph_clocks_lookups[] = {
 	CLKDEV_CON_DEV_ID("mci_clk", "atmel_mci1", &mmc1_clk),
 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi0", &spi0_clk),
 	CLKDEV_CON_DEV_ID("spi_clk", "atmel_spi1", &spi1_clk),
-	CLKDEV_DEV_ID("at91rm9200-gpio0", &pioA_clk),
-	CLKDEV_DEV_ID("at91rm9200-gpio1", &pioB_clk),
-	CLKDEV_DEV_ID("at91rm9200-gpio2", &pioC_clk),
-	CLKDEV_DEV_ID("at91rm9200-gpio3", &pioDE_clk),
-	CLKDEV_DEV_ID("at91rm9200-gpio4", &pioDE_clk),
 	CLKDEV_DEV_ID("at91-pit", &mck),
 	CLKDEV_CON_DEV_ID("hck1", "atmel_lcdfb", &lcdc_clk),
 };
@@ -237,6 +232,14 @@ static void __init at91sam9g45_register_clocks(void)
 			 ARRAY_SIZE(periph_clocks_lookups));
 	clkdev_add_table(usart_clocks_lookups,
 			 ARRAY_SIZE(usart_clocks_lookups));
+
+	clkdev_add_physbase(&twi0_clk, AT91SAM9G45_BASE_TWI0, NULL);
+	clkdev_add_physbase(&twi1_clk, AT91SAM9G45_BASE_TWI1, NULL);
+	clkdev_add_physbase(&pioA_clk, AT91SAM9G45_BASE_PIOA, NULL);
+	clkdev_add_physbase(&pioB_clk, AT91SAM9G45_BASE_PIOB, NULL);
+	clkdev_add_physbase(&pioC_clk, AT91SAM9G45_BASE_PIOC, NULL);
+	clkdev_add_physbase(&pioDE_clk, AT91SAM9G45_BASE_PIOD, NULL);
+	clkdev_add_physbase(&pioDE_clk, AT91SAM9G45_BASE_PIOE, NULL);
 
 	if (cpu_is_at91sam9m10() || cpu_is_at91sam9m11())
 		clk_register(&vdec_clk);

@@ -766,7 +766,7 @@ static int dm9k_probe(struct device_d *dev)
 		break;
 	case 2:
 		dev_dbg(dev, "8 bit data bus\n");
-		if (priv->buswidth != IORESOURCE_MEM_32BIT)
+		if (priv->buswidth != IORESOURCE_MEM_8BIT)
 			dev_err(dev,
 			"Wrong databus width defined at compile time\n");
 		break;

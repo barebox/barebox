@@ -6,6 +6,13 @@ config ARCH_TEXT_BASE
 
 config CPU_JZ4755
 	bool
+	select SYS_HAS_CPU_MIPS32_R1
+	select WATCHDOG
+	select WATCHDOG_JZ4740
+
+config CPU_JZ4780
+	bool
+	select SYS_HAS_CPU_MIPS32_R2
 	select WATCHDOG
 	select WATCHDOG_JZ4740
 

@@ -10,24 +10,24 @@
 		device_type = "soc";
 		ranges;
 
-		serial0: serial@b8020000 {
+		serial0: serial@18020000 {
 			compatible = "qca,ar9330-uart";
-			reg = <0xb8020000 0x14>;
+			reg = <0x18020000 0x14>;
 			clocks = <&ar9331_clk AR933X_CLK_UART>;
 			status = "disabled";
 		};
 
 		ar9331_clk: clock {
 			compatible = "qca,ar933x-clk";
-			reg = <0xb8050000 0x48>;
+			reg = <0x18050000 0x48>;
 			#clock-cells = <1>;
 		};
 
-		spi: spi@bf000000{
+		spi: spi@1f000000{
 			#address-cells = <1>;
 			#size-cells = <0>;
 			compatible = "qca,ath79-spi";
-			reg = <0xbf000000 0x01000000>;
+			reg = <0x1f000000 0x01000000>;
 			status = "disabled";
 		};
 	};

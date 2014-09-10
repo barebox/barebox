@@ -17,9 +17,9 @@
 		device_type = "soc";
 		ranges;
 
-		serial0: serial@b8000300 {
+		serial0: serial@18000300 {
 			compatible = "ns16550a";
-			reg = <0xb8000300 0x08>;
+			reg = <0x18000300 0x08>;
 			reg-shift = <0>;
 			clock-frequency = <25804800>;
 			status = "disabled";

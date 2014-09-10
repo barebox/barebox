@@ -17,9 +17,9 @@
 		reg = <0x00000000 0x10000000>;
 	};
 
-	uart0: serial@b80003f8 {
+	uart0: serial@180003f8 {
 		compatible = "ns16550a";
-		reg = <0xb80003f8 0x08>;
+		reg = <0x180003f8 0x08>;
 		reg-shift = <0>;
 		/* no matter for emulated port */
 		clock-frequency = <1843200>;
@@ -28,7 +28,7 @@
 	gpio: gpio@1f000b00 {
 		compatible = "mti,malta-fpga-i2c-gpio";
 		gpio-controller;
-		reg = <0xbf000b00 0x20>;
+		reg = <0x1f000b00 0x20>;
 		#gpio-cells = <2>;
 	};
 
@@ -44,19 +44,19 @@
 		status = "disabled";
 	};
 
-	uart2: serial@bf000900 {
+	uart2: serial@1f000900 {
 		compatible = "ns16550a";
-		reg = <0xbf000900 0x40>;
+		reg = <0x1f000900 0x40>;
 		reg-shift = <3>;
 		/* no matter for emulated port */
 		clock-frequency = <1843200>;
 	};
 
-	nor0: flash@be000000 {
+	nor0: flash@1e000000 {
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "cfi-flash";
-		reg = <0xbe000000 0x00400000>;
+		reg = <0x1e000000 0x00400000>;
 
 		partition@0 {
 			label = "barebox";

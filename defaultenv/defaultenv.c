@@ -50,10 +50,20 @@ static void defaultenv_add_base(void)
 		defaultenv_append_directory(defaultenv_2_dfu);
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
 		defaultenv_append_directory(defaultenv_1);
+}
+
+static void defaultenv_add_external(void)
+{
+	static int external_added;
+
+	if (external_added)
+		return;
+
+	external_added = 1;
 
 	/*
-	 * The traditional environment given with CONFIG_DEFAULT_ENVIRONMENT_PATH.
-	 * Once all users are converted to bbenv-y this can go.
+	 * The traditional or external environment given with
+	 * CONFIG_DEFAULT_ENVIRONMENT_PATH.
 	 */
 	defaultenv_append((void *)default_environment,
 			default_environment_size, "defaultenv");
@@ -140,6 +150,8 @@ int defaultenv_load(const char *dir, unsigned flags)
 	int ret;
 
 	defaultenv_add_base();
+
+	defaultenv_add_external();
 
 	list_for_each_entry(df, &defaultenv_list, list) {
 		ret = defaultenv_load_one(df, dir, flags);

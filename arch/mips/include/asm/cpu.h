@@ -27,6 +27,7 @@
 #define PRID_COMP_MIPS		0x010000
 #define PRID_COMP_BROADCOM	0x020000
 #define PRID_COMP_INGENIC	0xd00000
+#define PRID_COMP_INGENIC2	0xe10000
 
 /*
  * Assigned Processor ID (implementation) values for bits 15:8 of the PRId

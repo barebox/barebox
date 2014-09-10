@@ -271,7 +271,13 @@ void barebox_set_model(const char *);
 const char *barebox_get_hostname(void);
 void barebox_set_hostname(const char *);
 
+#if defined(CONFIG_MIPS)
+#include <asm/addrspace.h>
+
+#define IOMEM(addr)	((void __force __iomem *)CKSEG1ADDR(addr))
+#else
 #define IOMEM(addr)	((void __force __iomem *)(addr))
+#endif
 
 #define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
 

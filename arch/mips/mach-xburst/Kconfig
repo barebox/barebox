@@ -27,21 +27,30 @@ config BOARD_RZX50
 endchoice
 
 if DEBUG_LL
-if CPU_JZ4755
 choice
 	prompt "DEBUG_LL port"
 
-config JZ4750D_DEBUG_LL_UART0
+config JZ47XX_DEBUG_LL_UART0
+	depends on CPU_JZ4755 || CPU_JZ4780
 	bool "UART0"
 
-config JZ4750D_DEBUG_LL_UART1
+config JZ47XX_DEBUG_LL_UART1
+	depends on CPU_JZ4755 || CPU_JZ4780
 	bool "UART1"
 
-config JZ4750D_DEBUG_LL_UART2
+config JZ47XX_DEBUG_LL_UART2
+	depends on CPU_JZ4755 || CPU_JZ4780
 	bool "UART2"
 
+config JZ47XX_DEBUG_LL_UART3
+	depends on CPU_JZ4780
+	bool "UART3"
+
+config JZ47XX_DEBUG_LL_UART4
+	depends on CPU_JZ4780
+	bool "UART4"
+
 endchoice
-endif # CPU_JZ4755
 endif # DEBUG_LL
 
 endif

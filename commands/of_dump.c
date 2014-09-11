@@ -34,7 +34,7 @@
 static int do_of_dump(int argc, char *argv[])
 {
 	int opt;
-	int ret;
+	int ret = 0;
 	int fix = 0;
 	struct device_node *root = NULL, *node, *of_free = NULL;
 	char *dtbfile = NULL;
@@ -117,7 +117,7 @@ out:
 	if (of_free)
 		of_delete_node(of_free);
 
-	return 0;
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(of_dump)

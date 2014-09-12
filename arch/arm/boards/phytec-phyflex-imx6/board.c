@@ -17,6 +17,7 @@
  *
  */
 
+#include <envfs.h>
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
@@ -101,6 +102,8 @@ static int phytec_pfla02_init(void)
 					   ksz9031rn_phy_fixup);
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+
+	defaultenv_append_directory(defaultenv_phyflex_imx6);
 
 	return 0;
 }

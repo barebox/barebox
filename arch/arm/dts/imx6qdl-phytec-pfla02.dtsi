@@ -9,6 +9,28 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+/ {
+	chosen {
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &gpmi, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-spinor {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+};
+
 &ecspi3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi3>;
@@ -214,4 +236,16 @@
         cd-gpios = <&gpio1 27 0>;
         wp-gpios = <&gpio1 29 0>;
         status = "disabled";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x80000>;
+	};
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
+	};
 };

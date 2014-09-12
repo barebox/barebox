@@ -57,4 +57,4 @@ config JZ47XX_DEBUG_LL_UART4
 endchoice
 endif # DEBUG_LL
 
-endif
+endif # MACH_MIPS_XBURST

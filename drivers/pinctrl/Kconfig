@@ -1,20 +1,21 @@
 config PINCTRL
 	bool "Pin controller core support"
-	depends on OFDEVICE
+	default y if OFDEVICE
 	help
 	  Pincontrollers allow to setup the iomux unit of SoCs. The pin
 	  controller core is needed when pin muxing shall be configured
 	  from the devicetree. Legacy drivers here may not need this core
 	  support but instead provide their own SoC specific APIs
 
+# The following drivers are needed even without PINCTRL because
+# the either have a legacy iomux interface or also register a gpio
+# chip.
 config PINCTRL_AT91
-	select PINCTRL if OFDEVICE
 	bool
 	help
 	    The pinmux controller found on AT91 SoCs.
 
 config PINCTRL_IMX_IOMUX_V1
-	select PINCTRL if OFDEVICE
 	bool
 	help
 	  This iomux controller is found on i.MX1,21,27.
@@ -25,13 +26,18 @@ config PINCTRL_IMX_IOMUX_V2
 	  This iomux controller is found on i.MX31.
 
 config PINCTRL_IMX_IOMUX_V3
-	select PINCTRL if OFDEVICE
 	bool
 	help
 	  This iomux controller is found on i.MX25,35,51,53,6.
 
+if PINCTRL
+
+if !OFDEVICE
+comment "OFDEVICE is not enabled."
+comment "Without device tree support PINCTRL won't do anything"
+endif
+
 config PINCTRL_ROCKCHIP
-	select PINCTRL
 	select GPIO_GENERIC
 	select MFD_SYSCON
 	bool
@@ -39,19 +45,21 @@ config PINCTRL_ROCKCHIP
 	  The pinmux controller found on Rockchip SoCs.
 
 config PINCTRL_SINGLE
-	select PINCTRL
 	bool "pinctrl single"
 
 config PINCTRL_TEGRA20
-	select PINCTRL
 	bool
+	default y if ARCH_TEGRA_2x_SOC
 	help
 	  The pinmux controller found on the Tegra 20 line of SoCs.
 
 config PINCTRL_TEGRA30
-	select PINCTRL
 	bool
+	default y if ARCH_TEGRA_3x_SOC
+	default y if ARCH_TEGRA_124_SOC
 	help
 	  The pinmux controller found on the Tegra 30+ line of SoCs.
 
 source drivers/pinctrl/mvebu/Kconfig
+
+endif

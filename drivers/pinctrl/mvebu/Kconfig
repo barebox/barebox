@@ -1,15 +1,15 @@
 config PINCTRL_ARMADA_370
+	default y if ARCH_ARMADA_370
 	bool
-	select PINCTRL
 
 config PINCTRL_ARMADA_XP
 	bool
-	select PINCTRL
+	default y if ARCH_ARMADA_XP
 
 config PINCTRL_DOVE
 	bool
-	select PINCTRL
+	default y if ARCH_DOVE
 
 config PINCTRL_KIRKWOOD
 	bool
-	select PINCTRL
+	default y if ARCH_KIRKWOOD

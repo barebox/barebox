@@ -18,6 +18,8 @@
  */
 
 #include <envfs.h>
+#include <environment.h>
+#include <bootsource.h>
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
@@ -102,6 +104,19 @@ static int phytec_pfla02_init(void)
 					   ksz9031rn_phy_fixup);
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+
+	switch (bootsource_get()) {
+	case BOOTSOURCE_MMC:
+		of_device_enable_path("/chosen/environment-sd");
+		break;
+	case BOOTSOURCE_NAND:
+		of_device_enable_path("/chosen/environment-nand");
+		break;
+	default:
+	case BOOTSOURCE_SPI:
+		of_device_enable_path("/chosen/environment-spinor");
+		break;
+	}
 
 	defaultenv_append_directory(defaultenv_phyflex_imx6);
 

@@ -390,7 +390,7 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	struct imx_keypad *keypad;
 	const struct matrix_keymap_data *keymap_data = dev->platform_data;
 	struct console_device *cdev;
-	int error, i;
+	int i;
 
 	if (!keymap_data) {
 		pr_err("no keymap defined\n");

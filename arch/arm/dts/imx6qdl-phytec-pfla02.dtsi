@@ -20,6 +20,20 @@
 		compatible = "m25p80";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x80000>;
+		};
+
+		partition@1 {
+			label = "barebox-environment";
+			reg = <0x80000 0x10000>;
+		};
+
 	};
 };
 

@@ -146,7 +146,7 @@ struct resource *request_ioport_region(const char *name,
 
 	res = __request_region(&ioport_resource, name, start, end);
 	if (IS_ERR(res))
-		return NULL;
+		return ERR_CAST(res);
 
 	return res;
 }

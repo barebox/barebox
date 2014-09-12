@@ -353,8 +353,8 @@ static int ns16550_init_ioport(struct device_d *dev, struct ns16550_priv *priv)
 		return PTR_ERR(res);
 
 	res = request_ioport_region(dev_name(dev), res->start, res->end);
-	if (!res)
-		return -ENODEV;
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
 	priv->iobase = res->start;
 

@@ -1,3 +1,5 @@
+#define SETUP_MDCFG0			\
+	wm 32 0x021b000c 0x565c9b85
 
 #define SETUP_S_DL_512MB_1GB		\
 	wm 32 0x021b0040 0x00000017;	\

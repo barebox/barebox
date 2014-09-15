@@ -246,7 +246,7 @@ static int __eth_rx(struct eth_device *edev)
 	if (ret)
 		return ret;
 
-	return edev->recv(eth_current);
+	return edev->recv(edev);
 }
 
 int eth_rx(void)

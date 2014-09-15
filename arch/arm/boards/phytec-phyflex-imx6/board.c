@@ -63,17 +63,9 @@ static void phyflex_err006282_workaround(void)
 	gpio_direction_input(MX6_PHYFLEX_ERR006282);
 }
 
-static void mmd_write_reg(struct phy_device *dev, int device, int reg, int val)
-{
-	phy_write(dev, 0x0d, device);
-	phy_write(dev, 0x0e, reg);
-	phy_write(dev, 0x0d, (1 << 14) | device);
-	phy_write(dev, 0x0e, val);
-}
-
 static int ksz9031rn_phy_fixup(struct phy_device *dev)
 {
-	mmd_write_reg(dev, 2, 8, 0x039F);
+	phy_write_mmd_indirect(dev, 8, 2, 0x039F);
 
 	return 0;
 }

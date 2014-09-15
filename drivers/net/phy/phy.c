@@ -86,9 +86,7 @@ int phy_register_fixup(const char *bus_id, u32 phy_uid, u32 phy_uid_mask,
 {
 	struct phy_fixup *fixup;
 
-	fixup = kzalloc(sizeof(struct phy_fixup), GFP_KERNEL);
-	if (!fixup)
-		return -ENOMEM;
+	fixup = xzalloc(sizeof(struct phy_fixup));
 
 	strlcpy(fixup->bus_id, bus_id, sizeof(fixup->bus_id));
 	fixup->phy_uid = phy_uid;
@@ -157,10 +155,7 @@ static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int p
 
 	/* We allocate the device, and initialize the
 	 * default values */
-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-
-	if (NULL == dev)
-		return (struct phy_device*) PTR_ERR((void*)-ENOMEM);
+	dev = xzalloc(sizeof(*dev));
 
 	dev->speed = 0;
 	dev->duplex = -1;

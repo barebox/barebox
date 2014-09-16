@@ -194,3 +194,8 @@ pblx-$(CONFIG_MACH_PCAAXL3) += start_phytec_pbaa03_2gib
 CFG_start_phytec_pbaa03_2gib.pblx.imximg = $(board)/phytec-phycard-imx6/flash-header-phytec-pcaaxl3-2gib.imxcfg
 FILE_barebox-phytec-pbaa03-2gib.img = start_phytec_pbaa03_2gib.pblx.imximg
 image-$(CONFIG_MACH_PCAAXL3) += barebox-phytec-pbaa03-2gib.img
+
+pblx-$(CONFIG_MACH_GW_VENTANA) += start_imx6q_gw54xx_1gx64
+CFG_start_imx6q_gw54xx_1gx64.pblx.imximg = $(board)/gateworks-ventana/flash-header-ventana-quad-1gx64.imxcfg
+FILE_barebox-gateworks-imx6q-ventana-1gx64.img = start_imx6q_gw54xx_1gx64.pblx.imximg
+image-$(CONFIG_MACH_GW_VENTANA) += barebox-gateworks-imx6q-ventana-1gx64.img

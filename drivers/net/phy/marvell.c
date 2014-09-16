@@ -10,22 +10,7 @@
 #include <linux/ethtool.h>
 #include <linux/phy.h>
 #include <linux/smscphy.h>
-
-/* Known PHY IDs */
-#define MARVELL_PHY_ID_88E1101		0x01410c60
-#define MARVELL_PHY_ID_88E1112		0x01410c90
-#define MARVELL_PHY_ID_88E1111		0x01410cc0
-#define MARVELL_PHY_ID_88E1118		0x01410e10
-#define MARVELL_PHY_ID_88E1121R		0x01410cb0
-#define MARVELL_PHY_ID_88E1145		0x01410cd0
-#define MARVELL_PHY_ID_88E1149R		0x01410e50
-#define MARVELL_PHY_ID_88E1240		0x01410e30
-#define MARVELL_PHY_ID_88E1318S		0x01410e90
-#define MARVELL_PHY_ID_88E1116R		0x01410e40
-#define MARVELL_PHY_ID_88E1510		0x01410dd0
-
-/* Mask used for ID comparisons */
-#define MARVELL_PHY_ID_MASK		0xfffffff0
+#include <linux/marvell_phy.h>
 
 /* Marvell Register Page register */
 #define MII_MARVELL_PHY_PAGE		22

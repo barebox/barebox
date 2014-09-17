@@ -49,6 +49,7 @@
 #define RQ7_GPIO_ENET_MODE2	IMX_GPIO_NR(6, 28)
 #define RQ7_GPIO_ENET_MODE3	IMX_GPIO_NR(6, 29)
 #define RQ7_GPIO_ENET_EN_CLK125	IMX_GPIO_NR(6, 24)
+#define RQ7_GPIO_ENET_RESET     IMX_GPIO_NR(1, 25)
 
 static iomux_v3_cfg_t realq7_pads_gpio[] = {
 	MX6Q_PAD_RGMII_RXC__GPIO_6_30,
@@ -57,6 +58,7 @@ static iomux_v3_cfg_t realq7_pads_gpio[] = {
 	MX6Q_PAD_RGMII_RD2__GPIO_6_28,
 	MX6Q_PAD_RGMII_RD3__GPIO_6_29,
 	MX6Q_PAD_RGMII_RX_CTL__GPIO_6_24,
+	MX6Q_PAD_ENET_CRS_DV__GPIO_1_25,
 };
 
 static int ksz9031rn_phy_fixup(struct phy_device *dev)
@@ -85,11 +87,13 @@ static int realq7_enet_init(void)
 	gpio_direction_output(RQ7_GPIO_ENET_MODE3, 1);
 	gpio_direction_output(RQ7_GPIO_ENET_EN_CLK125, 1);
 
-	gpio_direction_output(25, 0);
+	gpio_direction_output(RQ7_GPIO_ENET_RESET, 0);
 	mdelay(50);
 
-	gpio_direction_output(25, 1);
+	gpio_direction_output(RQ7_GPIO_ENET_RESET, 1);
 	mdelay(50);
+
+	gpio_free(RQ7_GPIO_ENET_RESET);
 
 	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,
 					   ksz9031rn_phy_fixup);

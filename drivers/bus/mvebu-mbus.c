@@ -744,6 +744,7 @@ static int mvebu_mbus_init(void)
 postcore_initcall(mvebu_mbus_init);
 
 struct mbus_range {
+	const char *compatible;
 	u32 mbusid;
 	u32 remap;
 	struct list_head list;
@@ -752,10 +753,11 @@ struct mbus_range {
 #define MBUS_ID(t,a)	(((t) << 24) | ((attr) << 16))
 static LIST_HEAD(mbus_ranges);
 
-void mvebu_mbus_add_range(u8 target, u8 attr, u32 remap)
+void mvebu_mbus_add_range(const char *compatible, u8 target, u8 attr, u32 remap)
 {
 	struct mbus_range *r = xzalloc(sizeof(*r));
 
+	r->compatible = strdup(compatible);
 	r->mbusid = MBUS_ID(target, attr);
 	r->remap = remap;
 	list_add_tail(&r->list, &mbus_ranges);
@@ -811,6 +813,8 @@ static int mvebu_mbus_of_fixup(struct device_node *root, void *context)
 				continue;
 
 			list_for_each_entry(r, &mbus_ranges, list) {
+				if (!of_machine_is_compatible(r->compatible))
+					continue;
 				if (r->mbusid == mbusid)
 					ranges[n + na + pa - 1] = r->remap;
 			}

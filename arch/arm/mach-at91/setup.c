@@ -89,7 +89,7 @@ static void __init soc_detect(u32 dbgu_base)
 		at91_boot_soc = at91sam9n12_soc;
 		break;
 
-	case ARCH_ID_SAMA5D3:
+	case ARCH_ID_SAMA5:
 		at91_soc_initdata.type = AT91_SOC_SAMA5D3;
 		at91_boot_soc = at91sama5d3_soc;
 		break;

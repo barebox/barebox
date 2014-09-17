@@ -66,6 +66,6 @@ static inline int at91_soc_is_enabled(void)
 #define at91sam9n12_soc	at91_boot_soc
 #endif
 
-#if !defined(CONFIG_SOC_SAMA5)
+#if !defined(CONFIG_ARCH_SAMA5D3)
 #define at91sama5d3_soc	at91_boot_soc
 #endif

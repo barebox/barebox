@@ -77,7 +77,7 @@ static void __noreturn dove_reset_cpu(unsigned long addr)
 		;
 }
 
-static int dove_init_soc(void)
+static int dove_init_soc(struct device_node *root, void *context)
 {
 	unsigned long phys_base, phys_size;
 
@@ -90,11 +90,16 @@ static int dove_init_soc(void)
 	dove_memory_find(&phys_base, &phys_size);
 
 	mvebu_set_memory(phys_base, phys_size);
+
+	return 0;
+}
+
+static int dove_register_soc_fixup(void)
+{
 	mvebu_mbus_add_range("marvell,dove", 0xf0, 0x01,
 			     MVEBU_REMAP_INT_REG_BASE);
 	mvebu_mbus_add_range("marvell,dove", 0xf0, 0x02,
 			     DOVE_REMAP_MC_REGS);
-
-	return 0;
+	return of_register_fixup(dove_init_soc, NULL);
 }
-core_initcall(dove_init_soc);
+pure_initcall(dove_register_soc_fixup);

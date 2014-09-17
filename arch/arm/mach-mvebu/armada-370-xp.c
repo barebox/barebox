@@ -52,7 +52,7 @@ static void __noreturn armada_370_xp_reset_cpu(unsigned long addr)
 		;
 }
 
-static int armada_370_xp_init_soc(void)
+static int armada_370_xp_init_soc(struct device_node *root, void *context)
 {
 	unsigned long phys_base, phys_size;
 	u32 reg;
@@ -70,9 +70,14 @@ static int armada_370_xp_init_soc(void)
 	armada_370_xp_memory_find(&phys_base, &phys_size);
 
 	mvebu_set_memory(phys_base, phys_size);
-	mvebu_mbus_add_range("marvell,armada-370-xp", 0xf0, 0x01,
-			     MVEBU_REMAP_INT_REG_BASE);
 
 	return 0;
 }
-core_initcall(armada_370_xp_init_soc);
+
+static int armada_370_xp_register_soc_fixup(void)
+{
+	mvebu_mbus_add_range("marvell,armada-370-xp", 0xf0, 0x01,
+			     MVEBU_REMAP_INT_REG_BASE);
+	return of_register_fixup(armada_370_xp_init_soc, NULL);
+}
+pure_initcall(armada_370_xp_register_soc_fixup);

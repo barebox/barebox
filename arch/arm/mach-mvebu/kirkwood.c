@@ -51,7 +51,7 @@ static void __noreturn kirkwood_reset_cpu(unsigned long addr)
 		;
 }
 
-static int kirkwood_init_soc(void)
+static int kirkwood_init_soc(struct device_node *root, void *context)
 {
 	unsigned long phys_base, phys_size;
 
@@ -63,9 +63,14 @@ static int kirkwood_init_soc(void)
 	kirkwood_memory_find(&phys_base, &phys_size);
 
 	mvebu_set_memory(phys_base, phys_size);
-	mvebu_mbus_add_range("marvell,kirkwood", 0xf0, 0x01,
-			     MVEBU_REMAP_INT_REG_BASE);
 
 	return 0;
 }
-core_initcall(kirkwood_init_soc);
+
+static int kirkwood_register_soc_fixup(void)
+{
+	mvebu_mbus_add_range("marvell,kirkwood", 0xf0, 0x01,
+			     MVEBU_REMAP_INT_REG_BASE);
+	return of_register_fixup(kirkwood_init_soc, NULL);
+}
+pure_initcall(kirkwood_register_soc_fixup);

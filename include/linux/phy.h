@@ -234,6 +234,9 @@ struct phy_driver {
 	 */
 	int (*config_aneg)(struct phy_device *phydev);
 
+	/* Determines the auto negotiation result */
+	int (*aneg_done)(struct phy_device *phydev);
+
 	/* Determines the negotiated speed and duplex */
 	int (*read_status)(struct phy_device *phydev);
 
@@ -295,6 +298,7 @@ int phy_wait_aneg_done(struct phy_device *phydev);
 /* Generic PHY support and helper functions */
 int genphy_restart_aneg(struct phy_device *phydev);
 int genphy_config_aneg(struct phy_device *phydev);
+int genphy_aneg_done(struct phy_device *phydev);
 int genphy_update_link(struct phy_device *phydev);
 int genphy_read_status(struct phy_device *phydev);
 int genphy_config_advert(struct phy_device *phydev);

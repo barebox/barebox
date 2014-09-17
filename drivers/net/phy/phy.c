@@ -31,6 +31,21 @@
 static struct phy_driver genphy_driver;
 static int genphy_config_init(struct phy_device *phydev);
 
+/**
+ * phy_aneg_done - return auto-negotiation status
+ * @phydev: target phy_device struct
+ *
+ * Description: Return the auto-negotiation status from this @phydev
+ * Returns > 0 on success or < 0 on error. 0 means that auto-negotiation
+ * is still pending.
+ */
+static int phy_aneg_done(struct phy_device *phydev)
+{
+	struct phy_driver *drv = to_phy_driver(phydev->dev.driver);
+
+	return drv->aneg_done(phydev);
+}
+
 int phy_update_status(struct phy_device *dev)
 {
 	struct phy_driver *drv = to_phy_driver(dev->dev.driver);
@@ -477,24 +492,14 @@ int genphy_setup_forced(struct phy_device *phydev)
 int phy_wait_aneg_done(struct phy_device *phydev)
 {
 	uint64_t start = get_time_ns();
-	int ctl;
 
 	if (phydev->autoneg == AUTONEG_DISABLE)
 		return 0;
 
 	while (!is_timeout(start, PHY_AN_TIMEOUT * SECOND)) {
-		ctl = phy_read(phydev, MII_BMSR);
-		if (ctl & BMSR_ANEGCOMPLETE) {
+		if (phy_aneg_done(phydev) > 0) {
 			phydev->link = 1;
 			return 0;
-		}
-
-		/* Restart auto-negotiation if remote fault */
-		if (ctl & BMSR_RFAULT) {
-			puts("PHY remote fault detected\n"
-			     "PHY restarting auto-negotiation\n");
-			phy_write(phydev, MII_BMCR,
-					  BMCR_ANENABLE | BMCR_ANRESTART);
 		}
 	}
 
@@ -570,6 +575,33 @@ int genphy_config_aneg(struct phy_device *phydev)
 
 	return result;
 }
+
+/**
+ * genphy_aneg_done - return auto-negotiation status
+ * @phydev: target phy_device struct
+ *
+ * Description: Reads the status register and returns 0 either if
+ *   auto-negotiation is incomplete, or if there was an error.
+ *   Returns BMSR_ANEGCOMPLETE if auto-negotiation is done.
+ */
+int genphy_aneg_done(struct phy_device *phydev)
+{
+	int bmsr = phy_read(phydev, MII_BMSR);
+
+	if (bmsr < 0)
+		return bmsr;
+
+	/* Restart auto-negotiation if remote fault */
+	if (bmsr & BMSR_RFAULT) {
+		puts("PHY remote fault detected\n"
+		     "PHY restarting auto-negotiation\n");
+		phy_write(phydev, MII_BMCR,
+				  BMCR_ANENABLE | BMCR_ANRESTART);
+	}
+
+	return bmsr & BMSR_ANEGCOMPLETE;
+}
+EXPORT_SYMBOL(genphy_aneg_done);
 
 /**
  * genphy_update_link - update link status in @phydev
@@ -824,6 +856,9 @@ int phy_driver_register(struct phy_driver *phydrv)
 
 	if (!phydrv->config_aneg)
 		phydrv->config_aneg = genphy_config_aneg;
+
+	if (!phydrv->aneg_done)
+		phydrv->aneg_done = genphy_aneg_done;
 
 	if (!phydrv->read_status)
 		phydrv->read_status = genphy_read_status;

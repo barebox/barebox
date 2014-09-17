@@ -81,6 +81,9 @@ static int dove_init_soc(struct device_node *root, void *context)
 {
 	unsigned long phys_base, phys_size;
 
+	if (!of_machine_is_compatible("marvell,dove"))
+		return 0;
+
 	mvebu_set_reset(dove_reset_cpu);
 
 	barebox_set_model("Marvell Dove");

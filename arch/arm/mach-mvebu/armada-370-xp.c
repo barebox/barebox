@@ -57,6 +57,9 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 	unsigned long phys_base, phys_size;
 	u32 reg;
 
+	if (!of_machine_is_compatible("marvell,armada-370-xp"))
+		return 0;
+
 	mvebu_set_reset(armada_370_xp_reset_cpu);
 
 	barebox_set_model("Marvell Armada 370/XP");

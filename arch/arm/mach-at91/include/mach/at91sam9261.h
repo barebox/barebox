@@ -102,6 +102,7 @@
 #define AT91_USART2	AT91SAM9261_BASE_US2
 #define AT91_NB_USART	4
 
+#define AT91_PMC	0xfffffc00
 
 /*
  * Internal Memory.

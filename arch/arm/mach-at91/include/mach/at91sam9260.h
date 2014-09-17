@@ -125,6 +125,8 @@
 #define AT91_ID_UHP	AT91SAM9260_ID_UHP
 #define AT91_PMC_UHP	AT91SAM926x_PMC_UHP
 
+#define AT91_PMC	0xfffffc00
+
 /*
  * Internal Memory.
  */

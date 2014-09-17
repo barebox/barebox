@@ -118,6 +118,7 @@
 
 #define AT91_MATRIX	0	/* not supported */
 
+#define AT91_PMC	0xfffffc00
 
 /*
  * Internal Memory.

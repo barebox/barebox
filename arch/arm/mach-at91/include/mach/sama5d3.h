@@ -108,6 +108,8 @@
 
 #define AT91_NB_USART	3
 
+#define AT91_PMC	0xfffffc00
+
 /*
  * Internal Memory.
  */

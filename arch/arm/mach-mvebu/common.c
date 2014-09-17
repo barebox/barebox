@@ -21,6 +21,7 @@
 #include <of.h>
 #include <of_address.h>
 #include <linux/clk.h>
+#include <mach/common.h>
 
 /*
  * Marvell MVEBU SoC id and revision can be read from any PCIe
@@ -138,3 +139,16 @@ static int mvebu_memory_fixup_register(void) {
 	return of_register_fixup(mvebu_memory_of_fixup, NULL);
 }
 pure_initcall(mvebu_memory_fixup_register);
+
+static __noreturn void (*mvebu_reset_cpu)(unsigned long addr);
+
+void __noreturn reset_cpu(unsigned long addr)
+{
+	mvebu_reset_cpu(addr);
+}
+EXPORT_SYMBOL(reset_cpu);
+
+void mvebu_set_reset(void __noreturn (*reset)(unsigned long addr))
+{
+	mvebu_reset_cpu = reset;
+}

@@ -43,9 +43,19 @@ static inline void kirkwood_memory_find(unsigned long *phys_base,
 	}
 }
 
+static void __noreturn kirkwood_reset_cpu(unsigned long addr)
+{
+	writel(SOFT_RESET_OUT_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
+	writel(SOFT_RESET_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_SYS_SOFT_RESET);
+	for(;;)
+		;
+}
+
 static int kirkwood_init_soc(void)
 {
 	unsigned long phys_base, phys_size;
+
+	mvebu_set_reset(kirkwood_reset_cpu);
 
 	barebox_set_model("Marvell Kirkwood");
 	barebox_set_hostname("kirkwood");
@@ -58,12 +68,3 @@ static int kirkwood_init_soc(void)
 	return 0;
 }
 core_initcall(kirkwood_init_soc);
-
-void __noreturn reset_cpu(unsigned long addr)
-{
-	writel(SOFT_RESET_OUT_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
-	writel(SOFT_RESET_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_SYS_SOFT_RESET);
-	for(;;)
-		;
-}
-EXPORT_SYMBOL(reset_cpu);

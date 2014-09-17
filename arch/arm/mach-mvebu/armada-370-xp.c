@@ -44,10 +44,20 @@ static inline void armada_370_xp_memory_find(unsigned long *phys_base,
 	}
 }
 
+static void __noreturn armada_370_xp_reset_cpu(unsigned long addr)
+{
+	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x60);
+	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x64);
+	while (1)
+		;
+}
+
 static int armada_370_xp_init_soc(void)
 {
 	unsigned long phys_base, phys_size;
 	u32 reg;
+
+	mvebu_set_reset(armada_370_xp_reset_cpu);
 
 	barebox_set_model("Marvell Armada 370/XP");
 	barebox_set_hostname("armada");
@@ -65,12 +75,3 @@ static int armada_370_xp_init_soc(void)
 	return 0;
 }
 core_initcall(armada_370_xp_init_soc);
-
-void __noreturn reset_cpu(unsigned long addr)
-{
-	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x60);
-	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x64);
-	while (1)
-		;
-}
-EXPORT_SYMBOL(reset_cpu);

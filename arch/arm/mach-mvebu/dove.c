@@ -68,9 +68,20 @@ static inline void dove_memory_find(unsigned long *phys_base,
 	}
 }
 
+static void __noreturn dove_reset_cpu(unsigned long addr)
+{
+	/* enable and assert RSTOUTn */
+	writel(SOFT_RESET_OUT_EN, DOVE_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
+	writel(SOFT_RESET_EN, DOVE_BRIDGE_BASE + BRIDGE_SYS_SOFT_RESET);
+	while (1)
+		;
+}
+
 static int dove_init_soc(void)
 {
 	unsigned long phys_base, phys_size;
+
+	mvebu_set_reset(dove_reset_cpu);
 
 	barebox_set_model("Marvell Dove");
 	barebox_set_hostname("dove");
@@ -85,13 +96,3 @@ static int dove_init_soc(void)
 	return 0;
 }
 core_initcall(dove_init_soc);
-
-void __noreturn reset_cpu(unsigned long addr)
-{
-	/* enable and assert RSTOUTn */
-	writel(SOFT_RESET_OUT_EN, DOVE_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
-	writel(SOFT_RESET_EN, DOVE_BRIDGE_BASE + BRIDGE_SYS_SOFT_RESET);
-	while (1)
-		;
-}
-EXPORT_SYMBOL(reset_cpu);

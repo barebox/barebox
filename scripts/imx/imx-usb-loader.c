@@ -615,8 +615,10 @@ static int write_dcd_table_ivt(struct libusb_device_handle *h, struct usb_id *p_
 		printf("sub dcd length %x\n", s_length);
 
 		if ((dcd[0] != 0xcc) || (dcd[3] != 0x04)) {
-			printf("Unknown sub tag\n");
-			return -1;
+			printf("Skipping unknown sub tag 0x%02x with len %04x\n", dcd[0], s_length);
+			usleep(50000);
+			dcd += s_length;
+			continue;
 		}
 		dcd += 4;
 

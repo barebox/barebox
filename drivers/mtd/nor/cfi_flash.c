@@ -996,8 +996,8 @@ static int cfi_probe (struct device_d *dev)
 		return -ENODEV;
 	}
 
-	dev_info(dev, "found cfi flash at %p, size %ld\n",
-			info->base, info->size);
+	dev_info(dev, "found cfi flash at 0x%p, size %s\n",
+			info->base, size_human_readable(info->size));
 
 	dev->info = cfi_info;
 

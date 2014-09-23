@@ -37,6 +37,7 @@
 #define clk_is_programmable(x)	((x)->type & CLK_TYPE_PROGRAMMABLE)
 #define clk_is_peripheral(x)	((x)->type & CLK_TYPE_PERIPHERAL)
 #define clk_is_sys(x)		((x)->type & CLK_TYPE_SYSTEM)
+#define clk_is_periph_h64mx(x)	((x)->type & CLK_TYPE_PERIPH_H64MX)
 
 
 /*
@@ -45,7 +46,10 @@
 #define cpu_has_utmi()		(  cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d3())
+				|| cpu_is_sama5d3() \
+				|| cpu_is_sama5d4())
+
+#define cpu_has_1200M_plla()	(cpu_is_sama5d4())
 
 #define cpu_has_1056M_plla()	(cpu_is_sama5d3())
 
@@ -65,11 +69,13 @@
 #define cpu_has_pllb()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d3()))
+				|| cpu_is_sama5d3() \
+				|| cpu_is_sama5d4()))
 
 #define cpu_has_upll()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d3())
+				|| cpu_is_sama5d3() \
+				|| cpu_is_sama5d4())
 
 /* USB host HS & FS */
 #define cpu_has_uhp()		(!cpu_is_at91sam9rl())
@@ -78,23 +84,30 @@
 #define cpu_has_udpfs()		(!(cpu_is_at91sam9rl() \
 				|| cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
-				|| cpu_is_sama5d3()))
+				|| cpu_is_sama5d3() \
+				|| cpu_is_sama5d4()))
 
 #define cpu_has_plladiv2()	(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
-				|| cpu_is_sama5d3())
+				|| cpu_is_sama5d3() \
+				|| cpu_is_sama5d4())
 
 #define cpu_has_mdiv3()		(cpu_is_at91sam9g45() \
 				|| cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
-				|| cpu_is_sama5d3())
+				|| cpu_is_sama5d3() \
+				|| cpu_is_sama5d4())
 
 #define cpu_has_alt_prescaler()	(cpu_is_at91sam9x5() \
 				|| cpu_is_at91sam9n12() \
-				|| cpu_is_sama5d3())
+				|| cpu_is_sama5d3() \
+				|| cpu_is_sama5d4())
 
-#define cpu_has_pcr()		(cpu_is_sama5d3())
+#define cpu_has_pcr()		(cpu_is_sama5d3() \
+				|| cpu_is_sama5d4())
+
+#define cpu_has_dual_matrix()	(cpu_is_sama5d4())
 
 static LIST_HEAD(clocks);
 
@@ -212,6 +225,12 @@ static struct clk uhpck = {
 struct clk mck = {
 	.name		= "mck",
 	.pmc_mask	= AT91_PMC_MCKRDY,	/* in PMC_SR */
+};
+
+struct clk h32mx_clk = {
+	.name		= "h32mx",
+	.parent		= &mck,
+	.pmc_mask	= AT91_PMC_H32MXDIV,	/* in PMC_MCKR */
 };
 
 static void pmc_periph_mode(struct clk *clk, int is_on)
@@ -455,8 +474,12 @@ static void __init at91_clk_add(struct clk *clk)
 int clk_register(struct clk *clk)
 {
 	if (clk_is_peripheral(clk)) {
-		if (!clk->parent)
-			clk->parent = &mck;
+		if (!clk->parent) {
+			if (!cpu_has_dual_matrix() || clk_is_periph_h64mx(clk))
+				clk->parent = &mck;
+			else
+				clk->parent = &h32mx_clk;
+		}
 		if (cpu_has_pcr())
 			clk->rate_hz = DIV_ROUND_UP(clk->parent->rate_hz, 1 << clk->div);
 		clk->mode = pmc_periph_mode;
@@ -484,7 +507,7 @@ static u32 at91_pll_rate(struct clk *pll, u32 freq, u32 reg)
 	unsigned mul, div;
 
 	div = reg & 0xff;
-	if (cpu_is_sama5d3())
+	if (cpu_is_sama5d3() || cpu_is_sama5d4())
 		mul = (reg >> 18) & 0x7ff;
 	else
 		mul = (reg >> 16) & 0x7ff;
@@ -649,7 +672,10 @@ int at91_clock_init(void)
 
 	/* report if PLLA is more than mildly overclocked */
 	plla.rate_hz = at91_pll_rate(&plla, main_clock, at91_pmc_read(AT91_CKGR_PLLAR));
-	if (cpu_has_1056M_plla()) {
+	if (cpu_has_1200M_plla()) {
+		if (plla.rate_hz > 1200000000)
+			pll_overclock = 1;
+	} else if (cpu_has_1056M_plla()) {
 		if (plla.rate_hz > 1056000000)
 			pll_overclock = 1;
 	} else if (cpu_has_300M_plla()) {
@@ -736,6 +762,12 @@ int at91_clock_init(void)
 		mck.id = 4;
 	}
 
+	if (cpu_has_dual_matrix()) {
+		at91_clk_add(&h32mx_clk);
+		h32mx_clk.rate_hz = h32mx_clk.parent->rate_hz;
+		h32mx_clk.rate_hz /= (1 << ((mckr & AT91_PMC_H32MXDIV) >> 24));	/* H32MX divisor by 2 */
+	}
+
 	cpu_freq = freq;
 
 	/* Register the PMC's standard clocks */
@@ -756,6 +788,8 @@ int at91_clock_init(void)
 
 	/* MCK and CPU clock are "always on" */
 	clk_enable(&mck);
+	if (cpu_has_dual_matrix())
+		clk_enable(&h32mx_clk);
 
 	return 0;
 }

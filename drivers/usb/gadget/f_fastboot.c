@@ -26,6 +26,7 @@
 #include <boot.h>
 #include <dma.h>
 #include <fs.h>
+#include <libfile.h>
 #include <file-list.h>
 #include <progress.h>
 #include <environment.h>

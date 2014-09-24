@@ -174,24 +174,32 @@ static void at91_twi_read_next_byte(struct at91_twi_dev *dev)
 static int at91_twi_wait_completion(struct at91_twi_dev *dev)
 {
 	uint64_t start = get_time_ns();
-	unsigned int status = at91_twi_read(dev, AT91_TWI_SR);
-	unsigned int irqstatus = at91_twi_read(dev, AT91_TWI_IMR);
+	unsigned int status;
+	unsigned int irqstatus;
 
-	if (irqstatus & AT91_TWI_RXRDY)
-		at91_twi_read_next_byte(dev);
-	else if (irqstatus & AT91_TWI_TXRDY)
-		at91_twi_write_next_byte(dev);
-	else
-		dev_warn(&dev->adapter.dev, "neither rx and tx are ready\n");
+	do {
+		status = at91_twi_read(dev, AT91_TWI_SR);
+		irqstatus = at91_twi_read(dev, AT91_TWI_IMR);
 
-	dev->transfer_status |= status;
-
-	while (!(at91_twi_read(dev, AT91_TWI_SR) & AT91_TWI_TXCOMP)) {
-		if (is_timeout(start, AT91_I2C_TIMEOUT)) {
-			dev_warn(&dev->adapter.dev, "timeout waiting for bus ready\n");
-			return -ETIMEDOUT;
+		if (!(status & irqstatus)) {
+			if (is_timeout(start, AT91_I2C_TIMEOUT)) {
+				dev_warn(&dev->adapter.dev, "timeout waiting for bus ready\n");
+				return -ETIMEDOUT;
+			} else {
+				continue;
+			}
 		}
-	}
+
+		if (irqstatus & AT91_TWI_RXRDY)
+			at91_twi_read_next_byte(dev);
+		else if (irqstatus & AT91_TWI_TXRDY)
+			at91_twi_write_next_byte(dev);
+		else
+			dev_warn(&dev->adapter.dev, "neither rx and tx are ready\n");
+
+		dev->transfer_status |= status;
+
+	} while (!(at91_twi_read(dev, AT91_TWI_SR) & AT91_TWI_TXCOMP));
 
 	at91_disable_twi_interrupts(dev);
 

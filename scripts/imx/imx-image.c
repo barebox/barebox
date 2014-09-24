@@ -37,6 +37,7 @@ static uint32_t image_dcd_offset;
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
 static int header_version;
+static int cpu_type;
 static int add_barebox_header;
 
 /*
@@ -448,14 +449,15 @@ static int do_dcd_offset(int argc, char *argv[])
 struct soc_type {
 	char *name;
 	int header_version;
+	int cpu_type;
 };
 
 static struct soc_type socs[] = {
-	{ .name = "imx25", .header_version = 1, },
-	{ .name = "imx35", .header_version = 1, },
-	{ .name = "imx51", .header_version = 1, },
-	{ .name = "imx53", .header_version = 2, },
-	{ .name = "imx6", .header_version = 2, },
+	{ .name = "imx25", .header_version = 1, .cpu_type = 25},
+	{ .name = "imx35", .header_version = 1, .cpu_type = 35 },
+	{ .name = "imx51", .header_version = 1, .cpu_type = 51 },
+	{ .name = "imx53", .header_version = 2, .cpu_type = 53 },
+	{ .name = "imx6", .header_version = 2, .cpu_type = 6 },
 };
 
 static int do_soc(int argc, char *argv[])
@@ -471,6 +473,7 @@ static int do_soc(int argc, char *argv[])
 	for (i = 0; i < ARRAY_SIZE(socs); i++) {
 		if (!strcmp(socs[i].name, soc)) {
 			header_version = socs[i].header_version;
+			cpu_type = socs[i].cpu_type;
 			return 0;
 		}
 	}
@@ -759,6 +762,14 @@ int main(int argc, char *argv[])
 	if (ret < 0) {
 		perror("write");
 		exit(1);
+	}
+
+	if (cpu_type == 35) {
+		ret = xwrite(outfd, buf, 4096);
+		if (ret < 0) {
+			perror("write");
+			exit(1);
+		}
 	}
 
 	infd = open(imagename, O_RDONLY);

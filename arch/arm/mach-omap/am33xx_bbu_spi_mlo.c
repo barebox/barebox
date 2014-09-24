@@ -36,9 +36,10 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 	int swap = 0;
 
 	header = data->image;
-	if (header[5] == 0x43485345) {
+
+	if (header[5] == 0x43485345 || header[10] == 0x62617265) {
 		swap = 0;
-	} else if (header[5] == 0x45534843) {
+	} else if (header[5] == 0x45534843 || header[10] == 0x65726142) {
 		swap = 1;
 	} else {
 		if (!bbu_force(data, "Not a MLO image"))

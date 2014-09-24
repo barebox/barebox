@@ -163,8 +163,10 @@ again:
 	buf = xzalloc(read_size + 1);
 
 	fd = open(filename, O_RDONLY);
-	if (fd < 0)
+	if (fd < 0) {
+		ret = fd;
 		goto err_out;
+	}
 
 	ret = read_full(fd, buf, read_size);
 	if (ret < 0)

@@ -346,22 +346,31 @@ static struct at91_twi_pdata at91sam9g10_config = {
 	.has_unre_flag = false,
 };
 
+static struct at91_twi_pdata at91sam9x5_config = {
+	.clk_max_div = 7,
+	.clk_offset = 4,
+	.has_unre_flag = false,
+};
+
 static struct platform_device_id at91_twi_devtypes[] = {
 	{
-		.name = "i2c-at91rm9200",
+		.name = "at91rm9200-i2c",
 		.driver_data = (unsigned long) &at91rm9200_config,
 	}, {
-		.name = "i2c-at91sam9261",
+		.name = "at91sam9261-i2c",
 		.driver_data = (unsigned long) &at91sam9261_config,
 	}, {
-		.name = "i2c-at91sam9260",
+		.name = "at91sam9260-i2c",
 		.driver_data = (unsigned long) &at91sam9260_config,
 	}, {
-		.name = "i2c-at91sam9g20",
+		.name = "at91sam9g20-i2c",
 		.driver_data = (unsigned long) &at91sam9g20_config,
 	}, {
-		.name = "i2c-at91sam9g10",
+		.name = "at91sam9g10-i2c",
 		.driver_data = (unsigned long) &at91sam9g10_config,
+	}, {
+		.name = "at91sam9x5-i2c",
+		.driver_data = (unsigned long) &at91sam9x5_config,
 	}, {
 		/* sentinel */
 	}

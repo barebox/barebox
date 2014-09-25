@@ -440,15 +440,6 @@ enum usb_dr_mode {
 enum usb_phy_interface of_usb_get_phy_mode(struct device_node *np,
 		const char *propname);
 
-enum usb_phy_interface {
-	USBPHY_INTERFACE_MODE_UNKNOWN,
-	USBPHY_INTERFACE_MODE_UTMI,
-	USBPHY_INTERFACE_MODE_UTMIW,
-	USBPHY_INTERFACE_MODE_ULPI,
-	USBPHY_INTERFACE_MODE_SERIAL,
-	USBPHY_INTERFACE_MODE_HSIC,
-};
-
 extern struct list_head usb_device_list;
 
 #endif /*_USB_H_ */

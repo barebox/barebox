@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <usb/usb.h>
+#include <usb/phy.h>
 #include <of.h>
 
 static const char *usb_dr_modes[] = {

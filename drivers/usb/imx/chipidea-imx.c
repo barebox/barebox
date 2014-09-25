@@ -22,6 +22,7 @@
 #include <usb/ehci.h>
 #include <regulator.h>
 #include <usb/chipidea-imx.h>
+#include <usb/phy.h>
 #include <usb/ulpi.h>
 #include <usb/fsl_usb2.h>
 

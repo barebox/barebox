@@ -722,6 +722,7 @@ static struct usb_composite_driver dfu_driver = {
 	.name		= "g_dfu",
 	.dev		= &dfu_dev_descriptor,
 	.strings	= dev_strings,
+	.max_speed	= USB_SPEED_HIGH,
 	.bind		= dfu_driver_bind,
 	.unbind		= dfu_driver_unbind,
 };

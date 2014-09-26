@@ -23,7 +23,6 @@
 #include <io.h>
 #include <gpio.h>
 #include <init.h>
-#include <poller.h>
 
 #include <usb/ch9.h>
 #include <usb/gadget.h>
@@ -884,6 +883,7 @@ static int pxa_udc_vbus_session(struct usb_gadget *_gadget, int is_active)
 
 static int pxa_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *driver);
 static int pxa_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver);
+static void pxa_udc_gadget_poll(struct usb_gadget *gadget);
 
 static const struct usb_gadget_ops pxa_udc_ops = {
 	.get_frame	= pxa_udc_get_frame,
@@ -892,6 +892,7 @@ static const struct usb_gadget_ops pxa_udc_ops = {
 	.vbus_session	= pxa_udc_vbus_session,
 	.udc_start	= pxa_udc_start,
 	.udc_stop	= pxa_udc_stop,
+	.udc_poll	= pxa_udc_gadget_poll,
 };
 
 static void clk_enable(void)
@@ -1366,14 +1367,13 @@ static void irq_udc_reset(struct pxa_udc *udc)
 	ep0_idle(udc);
 }
 
-int usb_gadget_poll(void)
+static void pxa_udc_gadget_poll(struct usb_gadget *gadget)
 {
-	struct pxa_udc *udc = the_controller;
+	struct pxa_udc *udc = to_gadget_udc(gadget);
 	u32 udcisr0 = udc_readl(udc, UDCISR0);
 	u32 udcisr1 = udc_readl(udc, UDCISR1);
 	u32 udccr = udc_readl(udc, UDCCR);
 	u32 udcisr1_spec;
-	int ret = 0;
 
 	udc->vbus_sensed = udc->mach->udc_is_connected();
 	if (should_enable_udc(udc))
@@ -1384,7 +1384,7 @@ int usb_gadget_poll(void)
 	}
 
 	if (!udc->enabled)
-		return -EIO;
+		return;
 
 	dev_dbg(udc->dev, "Interrupt, UDCISR0:0x%08x, UDCISR1:0x%08x, "
 		"UDCCR:0x%08x\n", udcisr0, udcisr1, udccr);
@@ -1398,15 +1398,9 @@ int usb_gadget_poll(void)
 		irq_udc_reconfig(udc);
 	if (unlikely(udcisr1_spec & UDCISR1_IRRS))
 		irq_udc_reset(udc);
-	if (udcisr1_spec)
-		ret = 1;
 
-	if ((udcisr0 & UDCCISR0_EP_MASK) | (udcisr1 & UDCCISR1_EP_MASK)) {
+	if ((udcisr0 & UDCCISR0_EP_MASK) | (udcisr1 & UDCCISR1_EP_MASK))
 		irq_handle_data(udc);
-		ret = 1;
-	}
-
-	return ret;
 }
 
 static struct pxa_udc memory = {
@@ -1453,14 +1447,6 @@ static struct pxa_udc memory = {
 	}
 };
 
-static void pxa27x_udc_poller(struct poller_struct *poller)
-{
-	usb_gadget_poll();
-}
-static struct poller_struct poller = {
-	.func		= pxa27x_udc_poller
-};
-
 static int __init pxa_udc_probe(struct device_d *dev)
 {
 	struct pxa_udc *udc = &memory;
@@ -1484,7 +1470,6 @@ static int __init pxa_udc_probe(struct device_d *dev)
 	the_controller = udc;
 	udc_init_data(udc);
 	pxa_eps_setup(udc);
-	poller_register(&poller);
 
 	ret = usb_add_gadget_udc_release(dev, &udc->gadget, NULL);
 	if (ret)

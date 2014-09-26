@@ -7,7 +7,6 @@
 #include <usb/gadget.h>
 #include <usb/fsl_usb2.h>
 #include <io.h>
-#include <poller.h>
 #include <asm/byteorder.h>
 
 /* ### define USB registers here
@@ -1937,18 +1936,17 @@ static void dtd_complete_irq(struct fsl_udc *udc)
 /*
  * USB device controller interrupt handler
  */
-int usb_gadget_poll(void)
+static void fsl_udc_gadget_poll(struct usb_gadget *gadget)
 {
 	struct fsl_udc *udc = udc_controller;
 	u32 irq_src;
-	int status = 0;
 
 	if (!udc)
-		return -ENODEV;
+		return;
 
 	/* Disable ISR for OTG host mode */
 	if (udc->stopped)
-		return -EIO;
+		return;
 
 	irq_src = readl(&dr_regs->usbsts) & readl(&dr_regs->usbintr);
 	/* Clear notification bits */
@@ -1961,43 +1959,27 @@ int usb_gadget_poll(void)
 			tripwire_handler(udc, 0,
 					(u8 *) (&udc->local_setup_buff));
 			setup_received_irq(udc, &udc->local_setup_buff);
-			status = 1;
 		}
 
 		/* completion of dtd */
-		if (readl(&dr_regs->endptcomplete)) {
+		if (readl(&dr_regs->endptcomplete))
 			dtd_complete_irq(udc);
-			status = 1;
-		}
-	}
-
-	/* SOF (for ISO transfer) */
-	if (irq_src & USB_STS_SOF) {
-		status = 1;
 	}
 
 	/* Port Change */
-	if (irq_src & USB_STS_PORT_CHANGE) {
+	if (irq_src & USB_STS_PORT_CHANGE)
 		port_change_irq(udc);
-		status = 1;
-	}
 
 	/* Reset Received */
-	if (irq_src & USB_STS_RESET) {
+	if (irq_src & USB_STS_RESET)
 		reset_irq(udc);
-		status = 1;
-	}
 
 	/* Sleep Enable (Suspend) */
-	if (irq_src & USB_STS_SUSPEND) {
+	if (irq_src & USB_STS_SUSPEND)
 		udc->driver->disconnect(&udc_controller->gadget);
-		status = 1;
-	}
 
 	if (irq_src & (USB_STS_ERR | USB_STS_SYS_ERR))
 		printf("Error IRQ %x\n", irq_src);
-
-	return status;
 }
 
 /*----------------------------------------------------------------*
@@ -2196,6 +2178,7 @@ static struct usb_gadget_ops fsl_gadget_ops = {
 	.pullup = fsl_pullup,
 	.udc_start = fsl_udc_start,
 	.udc_stop = fsl_udc_stop,
+	.udc_poll = fsl_udc_gadget_poll,
 };
 
 /*----------------------------------------------------------------
@@ -2232,15 +2215,6 @@ static int __init struct_ep_setup(struct fsl_udc *udc, unsigned char index,
 
 	return 0;
 }
-
-static void fsl_udc_poller(struct poller_struct *poller)
-{
-	usb_gadget_poll();
-}
-
-static struct poller_struct poller = {
-	.func		= fsl_udc_poller
-};
 
 int ci_udc_register(struct device_d *dev, void __iomem *regs)
 {
@@ -2303,8 +2277,6 @@ int ci_udc_register(struct device_d *dev, void __iomem *regs)
 		sprintf(name, "ep%din", i);
 		struct_ep_setup(udc_controller, i * 2 + 1, name, 1);
 	}
-
-	poller_register(&poller);
 
 	ret = usb_add_gadget_udc_release(dev, &udc_controller->gadget,
 			NULL);

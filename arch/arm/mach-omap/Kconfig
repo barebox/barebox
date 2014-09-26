@@ -124,6 +124,12 @@ config OMAP_MULTI_BOARDS
 
 if OMAP_MULTI_BOARDS
 
+config MACH_AFI_GF
+	bool "af inventions GF"
+	select ARCH_AM33XX
+	  help
+	  Say Y here if you are using afis GF
+
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
 	select ARCH_AM33XX
@@ -135,6 +141,7 @@ config MACH_PCM051
 	select ARCH_AM33XX
 	help
 	  Say Y here if you are using Phytecs phyCORE pcm051 board
+
 endif
 
 choice

@@ -7,6 +7,14 @@ quiet_cmd_mlo_image = MLO     $@
 $(obj)/%.mlo: $(obj)/% FORCE
 	$(call if_changed,mlo_image)
 
+pblx-$(CONFIG_MACH_AFI_GF) += start_am33xx_afi_gf_sdram
+FILE_barebox-am33xx-afi-gf.img = start_am33xx_afi_gf_sdram.pblx
+am33xx-barebox-$(CONFIG_MACH_AFI_GF) += barebox-am33xx-afi-gf.img
+
+pblx-$(CONFIG_MACH_AFI_GF) += start_am33xx_afi_gf_sram
+FILE_barebox-am33xx-afi-gf-mlo.img = start_am33xx_afi_gf_sram.pblx.mlo
+am33xx-mlo-$(CONFIG_MACH_AFI_GF) += barebox-am33xx-afi-gf-mlo.img
+
 pblx-$(CONFIG_MACH_PCM051) += start_am33xx_phytec_phycore_sdram
 FILE_barebox-am33xx-phytec-phycore.img = start_am33xx_phytec_phycore_sdram.pblx
 am33xx-barebox-$(CONFIG_MACH_PCM051) += barebox-am33xx-phytec-phycore.img

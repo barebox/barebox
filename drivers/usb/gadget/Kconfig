@@ -1,9 +1,4 @@
-config USB_HAVE_GADGET_DRIVER
-	bool
-	default y if ARCH_IMX || ARCH_MXS || ARCH_AT91 || ARCH_PXA
-
 menuconfig USB_GADGET
-	depends on USB_HAVE_GADGET_DRIVER
 	select USB
 	bool "USB gadget support"
 
@@ -12,13 +7,11 @@ if USB_GADGET
 config USB_GADGET_DUALSPEED
 	bool
 
-choice
-	prompt "USB Peripheral Controller"
-
 config USB_GADGET_DRIVER_ARC
 	bool
 	prompt "Arc OTG device core"
 	depends on ARCH_IMX || ARCH_MXS
+	default y
 	select USB_GADGET_DUALSPEED
 	select POLLER
 
@@ -26,6 +19,7 @@ config USB_GADGET_DRIVER_AT91
 	bool
 	prompt "at91 gadget driver"
 	depends on ARCH_AT91
+	default y
 	select USB_GADGET_DUALSPEED
 	select POLLER
 
@@ -33,9 +27,9 @@ config USB_GADGET_DRIVER_PXA27X
 	bool
 	prompt "PXA27x gadget driver"
 	depends on ARCH_PXA
+	default y
 	select USB_GADGET_DUALSPEED
 	select POLLER
-endchoice
 
 comment "USB Gadget drivers"
 

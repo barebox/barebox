@@ -1,0 +1,29 @@
+config USB_MUSB
+	bool "MUSB support"
+
+if USB_MUSB
+
+config USB_MUSB_DSPS
+	tristate
+
+config USB_MUSB_AM335X
+	tristate "AM335x USB support"
+	depends on ARCH_AM33XX
+	select USB_MUSB_DSPS
+	help
+	  This driver provides the necessary bit to enable USB support
+	  on the TI AM335x SoC.
+
+config USB_MUSB_HOST
+	bool "MUSB Host mode support"
+	depends on USB_HOST
+	help
+	  Select this when you want to use MUSB in host mode.
+
+config USB_MUSB_GADGET
+	bool "MUSB Gadget mode support"
+	depends on USB_GADGET
+	help
+	  Select this when you want to use MUSB in gadget mode.
+
+endif

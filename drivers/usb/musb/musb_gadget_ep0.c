@@ -33,14 +33,11 @@
  *
  */
 
-#include <linux/kernel.h>
-#include <linux/list.h>
-#include <linux/timer.h>
-#include <linux/spinlock.h>
-#include <linux/device.h>
-#include <linux/interrupt.h>
-
+#include <common.h>
+#include <malloc.h>
+#include <clock.h>
 #include "musb_core.h"
+#include "musb_gadget.h"
 
 /* ep0 is always musb->endpoints[0].ep_in */
 #define	next_ep0_request(musb)	next_in_request(&(musb)->endpoints[0])
@@ -638,7 +635,6 @@ musb_read_setup(struct musb *musb, struct usb_ctrlrequest *req)
 		musb_writew(regs, MUSB_CSR0, MUSB_CSR0_P_SVDRXPKTRDY);
 		while ((musb_readw(regs, MUSB_CSR0)
 				& MUSB_CSR0_RXPKTRDY) != 0)
-			cpu_relax();
 		musb->ackpend = 0;
 	} else
 		musb->ep0_state = MUSB_EP0_STAGE_RX;
@@ -708,7 +704,7 @@ irqreturn_t musb_g_ep0_irq(struct musb *musb)
 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
 			break;
 		default:
-			ERR("SetupEnd came in a wrong ep0stage %s\n",
+			dev_err(musb->controller, "SetupEnd came in a wrong ep0stage %s\n",
 			    decode_ep0stage(musb->ep0_state));
 		}
 		csr = musb_readw(regs, MUSB_CSR0);
@@ -801,7 +797,7 @@ setup:
 			int			handled = 0;
 
 			if (len != 8) {
-				ERR("SETUP packet len %d != 8 ?\n", len);
+				dev_err(musb->controller, "SETUP packet len %d != 8 ?\n", len);
 				break;
 			}
 			musb_read_setup(musb, &setup);
@@ -925,7 +921,7 @@ static int musb_g_ep0_disable(struct usb_ep *e)
 }
 
 static int
-musb_g_ep0_queue(struct usb_ep *e, struct usb_request *r, gfp_t gfp_flags)
+musb_g_ep0_queue(struct usb_ep *e, struct usb_request *r)
 {
 	struct musb_ep		*ep;
 	struct musb_request	*req;

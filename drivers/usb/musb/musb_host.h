@@ -35,7 +35,78 @@
 #ifndef _MUSB_HOST_H
 #define _MUSB_HOST_H
 
-#include <linux/scatterlist.h>
+//#include <linux/scatterlist.h>
+#include <linux/list.h>
+#include <usb/usb.h>
+#include <asm/unaligned.h>
+
+/*
+ * urb->transfer_flags:
+ *
+ * Note: URB_DIR_IN/OUT is automatically set in usb_submit_urb().
+ */
+#define URB_SHORT_NOT_OK   0x0001 /* report short reads as errors. */
+#define URB_ZERO_PACKET    0x0040 /* Finish bulk OUT with short packet */
+
+#define usb_hcd_link_urb_to_ep(hcd, urb)	({		\
+	int ret = 0;						\
+	list_add_tail(&urb->urb_list, &urb->ep->urb_list);	\
+	ret; })
+
+#define usb_hcd_unlink_urb_from_ep(hcd, urb)	list_del_init(&urb->urb_list)
+
+struct ep_device;
+struct urb;
+
+typedef void (*usb_complete_t)(struct urb *urb);
+
+struct urb {
+	void *hcpriv;				/* private data for host controller */
+	struct list_head urb_list;	/* list head for use by the urb's
+								 * current owner */
+	struct usb_device *dev;		/* (in) pointer to associated device */
+	struct usb_host_endpoint *ep;	/* (internal) pointer to endpoint */
+	unsigned int pipe;		/* (in) pipe information */
+	int status;			/* (return) non-ISO status */
+	unsigned int transfer_flags;	/* (in) URB_SHORT_NOT_OK | ...*/
+	void *transfer_buffer;	/* (in) associated data buffer */
+	dma_addr_t transfer_dma;	/* (in) dma addr for transfer_buffer */
+	u32 transfer_buffer_length;	/* (in) data buffer length */
+	u32 actual_length;			/* (return) actual transfer length */
+	unsigned char *setup_packet;	/* (in) setup packet (control only) */
+	int start_frame;			/* (modify) start frame (ISO) */
+	int error_count;			/* (return) number of ISO errors */
+	usb_complete_t complete;	/* (in) completion routine */
+};
+
+#define USB_DT_SS_EP_COMP_SIZE		6
+
+/**
+ * struct usb_host_endpoint - host-side endpoint descriptor and queue
+ * @desc: descriptor for this endpoint, wMaxPacketSize in native byteorder
+ * @ss_ep_comp: SuperSpeed companion descriptor for this endpoint
+ * @urb_list: urbs queued to this endpoint; maintained by usbcore
+ * @hcpriv: for use by HCD; typically holds hardware dma queue head (QH)
+ *	with one or more transfer descriptors (TDs) per urb
+ * @ep_dev: ep_device for sysfs info
+ * @extra: descriptors following this endpoint in the configuration
+ * @extralen: how many bytes of "extra" are valid
+ * @enabled: URBs may be submitted to this endpoint
+ *
+ * USB requests are always queued to a given endpoint, identified by a
+ * descriptor within an active interface in a given USB configuration.
+ */
+struct usb_host_endpoint {
+	struct usb_endpoint_descriptor		desc;
+	struct usb_ss_ep_comp_descriptor	ss_ep_comp;
+	struct list_head		urb_list;
+	void				*hcpriv;
+	//struct ep_device		*ep_dev;	/* For sysfs info */
+
+	unsigned char *extra;   /* Extra descriptors */
+	int extralen;
+	int enabled;
+};
 
 /* stored in "usb_host_endpoint.hcpriv" for scheduled endpoints */
 struct musb_qh {
@@ -63,8 +134,8 @@ struct musb_qh {
 	u16			maxpacket;
 	u16			frame;		/* for periodic schedule */
 	unsigned		iso_idx;	/* in urb->iso_frame_desc[] */
-	struct sg_mapping_iter sg_miter;	/* for highmem in PIO mode */
-	bool			use_sg;		/* to track urb using sglist */
+	//struct sg_mapping_iter sg_miter;	/* for highmem in PIO mode */
+	//bool			use_sg;		/* to track urb using sglist */
 };
 
 /* map from control or bulk queue head to the first qh on that ring */
@@ -75,26 +146,21 @@ static inline struct musb_qh *first_qh(struct list_head *q)
 	return list_entry(q->next, struct musb_qh, ring);
 }
 
+struct usb_hcd;
 
-#if IS_ENABLED(CONFIG_USB_MUSB_HOST) || IS_ENABLED(CONFIG_USB_MUSB_DUAL_ROLE)
+#if IS_ENABLED(CONFIG_USB_MUSB_HOST)
 extern struct musb *hcd_to_musb(struct usb_hcd *);
 extern irqreturn_t musb_h_ep0_irq(struct musb *);
 extern int musb_host_alloc(struct musb *);
 extern int musb_host_setup(struct musb *, int);
-extern void musb_host_cleanup(struct musb *);
-extern void musb_host_tx(struct musb *, u8);
-extern void musb_host_rx(struct musb *, u8);
 extern void musb_root_disconnect(struct musb *musb);
 extern void musb_host_free(struct musb *);
 extern void musb_host_cleanup(struct musb *);
 extern void musb_host_tx(struct musb *, u8);
 extern void musb_host_rx(struct musb *, u8);
-extern void musb_root_disconnect(struct musb *musb);
 extern void musb_host_resume_root_hub(struct musb *musb);
 extern void musb_host_poke_root_hub(struct musb *musb);
-extern void musb_port_suspend(struct musb *musb, bool do_suspend);
 extern void musb_port_reset(struct musb *musb, bool do_reset);
-extern void musb_host_finish_resume(struct work_struct *work);
 #else
 static inline struct musb *hcd_to_musb(struct usb_hcd *hcd)
 {
@@ -124,9 +190,7 @@ static inline void musb_root_disconnect(struct musb *musb)	{}
 static inline void musb_host_resume_root_hub(struct musb *musb)	{}
 static inline void musb_host_poll_rh_status(struct musb *musb)	{}
 static inline void musb_host_poke_root_hub(struct musb *musb)	{}
-static inline void musb_port_suspend(struct musb *musb, bool do_suspend) {}
 static inline void musb_port_reset(struct musb *musb, bool do_reset) {}
-static inline void musb_host_finish_resume(struct work_struct *work) {}
 #endif
 
 struct usb_hcd;
@@ -146,6 +210,49 @@ static inline struct urb *next_urb(struct musb_qh *qh)
 	if (list_empty(queue))
 		return NULL;
 	return list_entry(queue->next, struct urb, urb_list);
+}
+
+/*
+ * Endpoints
+ */
+#define USB_ENDPOINT_NUMBER_MASK	0x0f	/* in bEndpointAddress */
+#define USB_ENDPOINT_XFERTYPE_MASK	0x03	/* in bmAttributes */
+
+static inline u16 find_tt(struct usb_device *dev)
+{
+	u8 chid;
+	u8 hub;
+
+	/* Find out the nearest parent which is high speed */
+	while (dev->parent->parent != NULL)
+		if (dev->parent->speed != USB_SPEED_HIGH)
+			dev = dev->parent;
+		else
+			break;
+
+	/* determine the port address at that hub */
+	hub = dev->parent->devnum;
+	for (chid = 0; chid < USB_MAXCHILDREN; chid++)
+		if (dev->parent->children[chid] == dev)
+			break;
+
+	return (hub << 8) | chid;
+}
+
+int musb_urb_enqueue(
+	struct usb_hcd			*hcd,
+	struct urb			*urb,
+	gfp_t				mem_flags);
+
+int musb_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status);
+
+static inline void usb_hcd_giveback_urb(struct usb_hcd *hcd,
+					struct urb *urb,
+					int status)
+{
+	urb->status = status;
+	if (urb->complete)
+		urb->complete(urb);
 }
 
 #endif				/* _MUSB_HOST_H */

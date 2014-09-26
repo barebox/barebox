@@ -36,9 +36,10 @@
 #define __MUSB_GADGET_H
 
 #include <linux/list.h>
+#include <usb/gadget.h>
 
-#if IS_ENABLED(CONFIG_USB_MUSB_GADGET) || IS_ENABLED(CONFIG_USB_MUSB_DUAL_ROLE)
-extern irqreturn_t musb_g_ep0_irq(struct musb *);
+#if IS_ENABLED(CONFIG_USB_MUSB_GADGET)
+extern int musb_g_ep0_irq(struct musb *);
 extern void musb_g_tx(struct musb *, u8);
 extern void musb_g_rx(struct musb *, u8);
 extern void musb_g_reset(struct musb *);
@@ -50,7 +51,7 @@ extern void musb_gadget_cleanup(struct musb *);
 extern int musb_gadget_setup(struct musb *);
 
 #else
-static inline irqreturn_t musb_g_ep0_irq(struct musb *musb)
+static inline int musb_g_ep0_irq(struct musb *musb)
 {
 	return 0;
 }
@@ -90,8 +91,7 @@ static inline struct musb_request *to_musb_request(struct usb_request *req)
 	return req ? container_of(req, struct musb_request, request) : NULL;
 }
 
-extern struct usb_request *
-musb_alloc_request(struct usb_ep *ep, gfp_t gfp_flags);
+extern struct usb_request *musb_alloc_request(struct usb_ep *ep);
 extern void musb_free_request(struct usb_ep *ep, struct usb_request *req);
 
 

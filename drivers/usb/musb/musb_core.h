@@ -35,19 +35,10 @@
 #ifndef __MUSB_CORE_H__
 #define __MUSB_CORE_H__
 
-#include <linux/slab.h>
-#include <linux/list.h>
-#include <linux/interrupt.h>
-#include <linux/errno.h>
-#include <linux/timer.h>
-#include <linux/device.h>
-#include <linux/usb/ch9.h>
-#include <linux/usb/gadget.h>
-#include <linux/usb.h>
-#include <linux/usb/otg.h>
-#include <linux/usb/musb.h>
-#include <linux/phy/phy.h>
-#include <linux/workqueue.h>
+#include <poller.h>
+#include <notifier.h>
+#include <usb/usb.h>
+#include <usb/phy.h>
 
 struct musb;
 struct musb_hw_ep;
@@ -63,14 +54,12 @@ struct musb_ep;
 #define MUSB_HWVERS_1900	0x784
 #define MUSB_HWVERS_2000	0x800
 
-#include "musb_debug.h"
 #include "musb_dma.h"
 
 #include "musb_io.h"
 #include "musb_regs.h"
 
 #include "musb_gadget.h"
-#include <linux/usb/hcd.h>
 #include "musb_host.h"
 
 /* NOTE:  otg and peripheral-only state machines start at B_IDLE.
@@ -191,13 +180,13 @@ struct musb_platform_ops {
 	void	(*disable)(struct musb *musb);
 
 	int	(*set_mode)(struct musb *musb, u8 mode);
-	void	(*try_idle)(struct musb *musb, unsigned long timeout);
+	void	(*try_idle)(struct musb *musb, uint64_t timeout);
 	int	(*reset)(struct musb *musb);
 
 	int	(*vbus_status)(struct musb *musb);
 	void	(*set_vbus)(struct musb *musb, int on);
 
-	int	(*adjust_channel_params)(struct dma_channel *channel,
+	int	(*adjust_channel_params)(/*struct dma_channel *channel,*/
 				u16 packet_sz, u8 *mode,
 				dma_addr_t *dma_addr, u32 *len);
 };
@@ -285,6 +274,25 @@ struct musb_context_registers {
 	struct musb_csr_regs index_regs[MUSB_C_NUM_EPS];
 };
 
+struct usb_phy;
+struct usb_otg;
+
+/*
+ * Allocated per bus (tree of devices) we have:
+ */
+struct usb_bus {
+	u8 otg_port;			/* 0, or number of OTG/HNP port */
+	unsigned is_b_host:1;		/* true during some HNP roleswitches */
+	unsigned b_hnp_enable:1;	/* OTG: did A-Host enable HNP? */
+};
+
+struct usb_hcd {
+	struct usb_bus self;
+	void *hcd_priv;
+};
+
+#define to_musb(ptr) container_of(ptr, struct musb, host)
+
 /*
  * struct musb - Driver instance data.
  */
@@ -293,13 +301,8 @@ struct musb {
 	spinlock_t		lock;
 
 	const struct musb_platform_ops *ops;
-	struct musb_context_registers context;
 
-	irqreturn_t		(*isr)(int, void *);
-	struct work_struct	irq_work;
-	struct delayed_work	recover_work;
-	struct delayed_work	deassert_reset_work;
-	struct delayed_work	finish_resume_work;
+	int			(*isr)(struct musb *);
 	u16			hwvers;
 
 	u16			intrrxe;
@@ -309,7 +312,7 @@ struct musb {
 
 	u32			port1_status;
 
-	unsigned long		rh_timer;
+	uint64_t		rh_timer;
 
 	enum musb_h_ep0_state	ep0_stage;
 
@@ -325,12 +328,11 @@ struct musb {
 	struct list_head	in_bulk;	/* of musb_qh */
 	struct list_head	out_bulk;	/* of musb_qh */
 
-	struct timer_list	otg_timer;
-	struct notifier_block	nb;
+	struct poller_async	otg_timer;
 
 	struct dma_controller	*dma_controller;
 
-	struct device		*controller;
+	struct device_d		*controller;
 	void __iomem		*ctrl_base;
 	void __iomem		*mregs;
 
@@ -339,7 +341,6 @@ struct musb {
 	dma_addr_t		async;
 	dma_addr_t		sync;
 	void __iomem		*sync_va;
-	u8			tusb_revision;
 #endif
 
 	/* passed down from chip/board specific irq handlers */
@@ -347,8 +348,9 @@ struct musb {
 	u16			int_rx;
 	u16			int_tx;
 
+	//struct device_d		*phydev;
+	struct usb_host		host;
 	struct usb_phy		*xceiv;
-	struct phy		*phy;
 
 	int nIrq;
 	unsigned		irq_wake:1;
@@ -369,7 +371,6 @@ struct musb {
 	bool			is_host;
 
 	int			a_wait_bcon;	/* VBUS timeout in msecs */
-	unsigned long		idle_timeout;	/* Next timeout in jiffies */
 
 	/* active means connected and not suspended */
 	unsigned		is_active:1;
@@ -427,11 +428,7 @@ struct musb {
 	unsigned                double_buffer_not_ok:1;
 
 	struct musb_hdrc_config	*config;
-
-	int			xceiv_old_state;
-#ifdef CONFIG_DEBUG_FS
-	struct dentry		*debugfs_root;
-#endif
+	int host_speed;
 };
 
 static inline struct musb *gadget_to_musb(struct usb_gadget *g)
@@ -518,7 +515,7 @@ extern void musb_read_fifo(struct musb_hw_ep *ep, u16 len, u8 *dst);
 
 extern void musb_load_testpacket(struct musb *);
 
-extern irqreturn_t musb_interrupt(struct musb *);
+extern int musb_interrupt(struct musb *);
 
 extern void musb_hnp_stop(struct musb *musb);
 
@@ -540,16 +537,8 @@ static inline void musb_platform_disable(struct musb *musb)
 		musb->ops->disable(musb);
 }
 
-static inline int musb_platform_set_mode(struct musb *musb, u8 mode)
-{
-	if (!musb->ops->set_mode)
-		return 0;
-
-	return musb->ops->set_mode(musb, mode);
-}
-
 static inline void musb_platform_try_idle(struct musb *musb,
-		unsigned long timeout)
+		uint64_t timeout)
 {
 	if (musb->ops->try_idle)
 		musb->ops->try_idle(musb, timeout);
@@ -586,5 +575,11 @@ static inline int musb_platform_exit(struct musb *musb)
 
 	return musb->ops->exit(musb);
 }
+
+struct musb_hdrc_platform_data;
+
+int musb_init_controller(struct musb *musb, struct musb_hdrc_platform_data *plat);
+int musb_register(struct musb *data);
+int musb_init(struct usb_host *host);
 
 #endif	/* __MUSB_CORE_H__ */

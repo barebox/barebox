@@ -1,43 +1,29 @@
-#include <linux/platform_device.h>
-#include <linux/pm_runtime.h>
-#include <linux/module.h>
-#include <linux/of_platform.h>
+#include <common.h>
+#include <init.h>
+#include <linux/clk.h>
 
-static int am335x_child_probe(struct platform_device *pdev)
+static int am335x_child_probe(struct device_d *dev)
 {
 	int ret;
 
-	pm_runtime_enable(&pdev->dev);
-
-	ret = of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
+	ret = of_platform_populate(dev->device_node, NULL, dev);
 	if (ret)
-		goto err;
+		return ret;
 
 	return 0;
-err:
-	pm_runtime_disable(&pdev->dev);
-	return ret;
 }
 
-static const struct of_device_id am335x_child_of_match[] = {
-	{ .compatible = "ti,am33xx-usb" },
-	{  },
-};
-MODULE_DEVICE_TABLE(of, am335x_child_of_match);
-
-static struct platform_driver am335x_child_driver = {
-	.probe		= am335x_child_probe,
-	.driver         = {
-		.name   = "am335x-usb-childs",
-		.of_match_table	= am335x_child_of_match,
+static __maybe_unused struct of_device_id am335x_child_dt_ids[] = {
+	{
+		.compatible = "ti,am33xx-usb",
+	}, {
+		/* sentinel */
 	},
 };
 
-static int __init am335x_child_init(void)
-{
-	return platform_driver_register(&am335x_child_driver);
-}
-module_init(am335x_child_init);
-
-MODULE_DESCRIPTION("AM33xx child devices");
-MODULE_LICENSE("GPL v2");
+static struct driver_d am335x_child_driver = {
+	.name   = "am335x_child_probe",
+	.probe  = am335x_child_probe,
+	.of_compatible = DRV_OF_COMPAT(am335x_child_dt_ids),
+};
+device_platform_driver(am335x_child_driver);

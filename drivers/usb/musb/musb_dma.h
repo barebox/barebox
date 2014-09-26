@@ -129,7 +129,6 @@ struct dma_channel {
 	size_t			actual_len;
 	enum dma_channel_status	status;
 	bool			desired_mode;
-	bool			rx_packet_done;
 };
 
 /*

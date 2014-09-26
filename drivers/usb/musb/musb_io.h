@@ -35,7 +35,7 @@
 #ifndef __MUSB_LINUX_PLATFORM_ARCH_H__
 #define __MUSB_LINUX_PLATFORM_ARCH_H__
 
-#include <linux/io.h>
+#include <io.h>
 
 #ifndef CONFIG_BLACKFIN
 

@@ -138,7 +138,6 @@ BAREBOX_CMD_HELP_START(usb)
 BAREBOX_CMD_HELP_TEXT("Scan for USB devices.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-f", "force rescan")
 BAREBOX_CMD_HELP_OPT("-s", "show devices")
 BAREBOX_CMD_HELP_OPT("-t", "show USB tree")
 BAREBOX_CMD_HELP_END
@@ -146,7 +145,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(usb)
 	.cmd		= do_usb,
 	BAREBOX_CMD_DESC("(re-)detect USB devices")
-	BAREBOX_CMD_OPTS("[-fts]")
+	BAREBOX_CMD_OPTS("[-ts]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_usb_help)
 	BAREBOX_CMD_COMPLETE(empty_complete)

@@ -714,6 +714,7 @@ int of_device_disable_path(const char *path);
 
 phandle of_get_tree_max_phandle(struct device_node *root);
 phandle of_node_create_phandle(struct device_node *node);
+int of_set_property_to_child_phandle(struct device_node *node, char *prop_name);
 struct device_node *of_find_node_by_alias(struct device_node *root,
 		const char *alias);
 struct device_node *of_find_node_by_path_or_alias(struct device_node *root,

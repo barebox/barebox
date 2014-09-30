@@ -356,6 +356,27 @@ phandle of_node_create_phandle(struct device_node *node)
 }
 EXPORT_SYMBOL(of_node_create_phandle);
 
+int of_set_property_to_child_phandle(struct device_node *node, char *prop_name)
+{
+	int ret;
+	phandle p;
+
+	/* Check if property exist */
+	if (!of_get_property(of_get_parent(node), prop_name, NULL))
+		return -EINVAL;
+
+	/* Create or get existing phandle of child node */
+	p = of_node_create_phandle(node);
+	p = cpu_to_be32(p);
+
+	node = of_get_parent(node);
+
+	ret = of_set_property(node, prop_name, &p, sizeof(p), 0);
+
+	return ret;
+}
+EXPORT_SYMBOL(of_set_property_to_child_phandle);
+
 /*
  * Find a property with a given name for a given node
  * and return the value.

@@ -568,6 +568,9 @@ static inline struct device_d *of_find_device_by_node(struct device_node *np)
 #define for_each_node_by_name(dn, name) \
 	for (dn = of_find_node_by_name(NULL, name); dn; \
 	     dn = of_find_node_by_name(dn, name))
+#define for_each_node_by_name_from(dn, root, name) \
+	for (dn = of_find_node_by_name(root, name); dn; \
+	     dn = of_find_node_by_name(dn, name))
 #define for_each_compatible_node(dn, type, compatible) \
 	for (dn = of_find_compatible_node(NULL, type, compatible); dn; \
 	     dn = of_find_compatible_node(dn, type, compatible))

@@ -1130,6 +1130,33 @@ int of_property_write_u64_array(struct device_node *np,
 }
 
 /**
+ * of_parse_phandle_from - Resolve a phandle property to a device_node pointer from
+ * a given root node
+ * @np: Pointer to device node holding phandle property
+ * @root: root node of the tree to search in. If NULL use the internal tree.
+ * @phandle_name: Name of property holding a phandle value
+ * @index: For properties holding a table of phandles, this is the index into
+ *         the table
+ *
+ * Returns the device_node pointer found or NULL.
+ */
+struct device_node *of_parse_phandle_from(const struct device_node *np,
+					struct device_node *root,
+					const char *phandle_name, int index)
+{
+	const __be32 *phandle;
+	int size;
+
+	phandle = of_get_property(np, phandle_name, &size);
+	if ((!phandle) || (size < sizeof(*phandle) * (index + 1)))
+		return NULL;
+
+	return of_find_node_by_phandle_from(be32_to_cpup(phandle + index),
+					root);
+}
+EXPORT_SYMBOL(of_parse_phandle_from);
+
+/**
  * of_parse_phandle - Resolve a phandle property to a device_node pointer
  * @np: Pointer to device node holding phandle property
  * @phandle_name: Name of property holding a phandle value
@@ -1141,14 +1168,7 @@ int of_property_write_u64_array(struct device_node *np,
 struct device_node *of_parse_phandle(const struct device_node *np,
 				     const char *phandle_name, int index)
 {
-	const __be32 *phandle;
-	int size;
-
-	phandle = of_get_property(np, phandle_name, &size);
-	if ((!phandle) || (size < sizeof(*phandle) * (index + 1)))
-		return NULL;
-
-	return of_find_node_by_phandle(be32_to_cpup(phandle + index));
+	return of_parse_phandle_from(np, root_node, phandle_name, index);
 }
 EXPORT_SYMBOL(of_parse_phandle);
 

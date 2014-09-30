@@ -205,6 +205,10 @@ extern int of_property_write_u64_array(struct device_node *np,
 extern struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name,
 					    int index);
+extern struct device_node *of_parse_phandle_from(const struct device_node *np,
+					    struct device_node *root,
+					    const char *phandle_name,
+					    int index);
 extern int of_parse_phandle_with_args(const struct device_node *np,
 	const char *list_name, const char *cells_name, int index,
 	struct of_phandle_args *out_args);
@@ -434,6 +438,13 @@ static inline int of_property_write_u64_array(struct device_node *np,
 }
 
 static inline struct device_node *of_parse_phandle(const struct device_node *np,
+					    const char *phandle_name, int index)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_parse_phandle_from(const struct device_node *np,
+					    struct device_node *root,
 					    const char *phandle_name, int index)
 {
 	return NULL;

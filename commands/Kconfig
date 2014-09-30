@@ -84,6 +84,13 @@ config CMD_DEVINFO
 	  If called with a device path being the argument, devinfo shows more
 	  default information about this device and its parameters.
 
+config CMD_DMESG
+	tristate
+	prompt "dmesg"
+	select LOGBUF
+	help
+	  Print or control the log message buffer.
+
 config CMD_DRVINFO
 	tristate
 	default y

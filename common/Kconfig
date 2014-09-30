@@ -66,6 +66,9 @@ config UIMAGE
 	select CRC32
 	bool
 
+config LOGBUF
+	bool
+
 config GLOBALVAR
 	bool
 

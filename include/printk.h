@@ -72,4 +72,21 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 #define debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 #define pr_vdebug(fmt, arg...)	__pr_printk(8, pr_fmt(fmt), ##arg)
 
+struct log_entry {
+	struct list_head list;
+	char *msg;
+	void *dummy;
+	uint64_t timestamp;
+	int level;
+};
+
+extern struct list_head barebox_logbuf;
+
+extern void log_clean(unsigned int limit);
+
+#define BAREBOX_LOG_PRINT_TIME	(1 << 0)
+#define BAREBOX_LOG_DIFF_TIME	(1 << 1)
+
+void log_print(unsigned flags);
+
 #endif

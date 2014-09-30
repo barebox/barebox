@@ -19,6 +19,7 @@
 #include <bbu.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <linux/stat.h>
 
 /*
  * AM35xx, AM33xx chips use big endian MLO for SPI NOR flash
@@ -34,6 +35,7 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 	void *image = data->image;
 	uint32_t *header;
 	int swap = 0;
+	struct stat s;
 
 	header = data->image;
 
@@ -44,6 +46,17 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 	} else {
 		if (!bbu_force(data, "Not a MLO image"))
 			return -EINVAL;
+	}
+
+	ret = stat(data->devicefile, &s);
+	if (ret) {
+		printf("could not open %s: %s", data->devicefile, errno_str());
+		return ret;
+	}
+
+	if (size > s.st_size) {
+		printf("Image too big, need %d, have %lld\n", size, s.st_size);
+		return -ENOSPC;
 	}
 
 	dstfd = open(data->devicefile, O_WRONLY);

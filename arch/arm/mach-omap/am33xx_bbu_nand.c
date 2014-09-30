@@ -80,12 +80,12 @@ static int nand_xloadslots_update_handler(struct bbu_handler *handler,
 
 	nh = container_of(handler, struct nand_bbu_handler, bbu_handler);
 
+	ret = bbu_confirm(data);
+	if (ret != 0)
+		return ret;
+
 	/* check if the devicefile has been overwritten */
 	if (strcmp(data->devicefile, nh->devicefile[0]) != 0) {
-		ret = bbu_confirm(data);
-		if (ret != 0)
-			return ret;
-
 		ret = write_image(data->devicefile, image, size);
 		if (ret != 0)
 			return ret;

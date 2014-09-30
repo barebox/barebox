@@ -1,0 +1,42 @@
+Texas Instruments AM335x
+========================
+
+The Texas Instruments AM335x SoCs have a two-stage boot process. The first stage
+loader, also known as MLO is loaded by the ROM code. The MLO loads the second stage
+loader from the same medium.
+
+Building barebox
+----------------
+
+The TI AM335x boards in barebox are covered by the ``am335x_mlo_defconfig``
+for the MLO and ``am335x_defconfig`` for the regular barebox image. The
+resulting images will be placed under ``images/``:
+
+::
+  barebox-am33xx-afi-gf.img
+  barebox-am33xx-afi-gf-mlo.img
+  barebox-am33xx-beaglebone.img
+  barebox-am33xx-beaglebone-mlo.img
+  barebox-am33xx-phytec-phycore.img
+  barebox-am33xx-phytec-phycore-mlo-1x128m16.img
+  barebox-am33xx-phytec-phycore-mlo-1x256m16.img
+  barebox-am33xx-phytec-phycore-mlo-1x512m16.img
+
+Some boards come in different variants, make sure to pick the correct one.
+
+Starting and updating barebox
+-----------------------------
+
+SPI NOR and NAND
+^^^^^^^^^^^^^^^^
+
+The regular board images can be started from another bootloader, see
+:ref:`second_stage`. The board should provide update handlers
+to update (or initially install) barebox on SPI NOR or NAND, see :ref:`update`.
+
+SD/MMC
+^^^^^^
+
+To start barebox from SD/MMC prepare a card with a FAT filesystem. Copy the MLO
+file for your board to the card and name it ``MLO``. Copy the regular image
+for your board to the card and name it ``barebox.bin``.

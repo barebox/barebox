@@ -120,3 +120,42 @@ int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
 
 	return ret;
 }
+
+static int nand_update_handler(struct bbu_handler *handler,
+		struct bbu_data *data)
+{
+	int ret = 0;
+	const void *image = data->image;
+	size_t size = data->len;
+	struct nand_bbu_handler *nh;
+
+	if (file_detect_type(image, size) != filetype_arm_barebox) {
+		pr_err("%s is not a valid barebox image\n", data->imagefile);
+		return -EINVAL;
+	}
+
+	nh = container_of(handler, struct nand_bbu_handler, bbu_handler);
+
+	ret = bbu_confirm(data);
+	if (ret != 0)
+		return ret;
+
+	return write_image(data->devicefile, image, size);
+}
+
+int am33xx_bbu_nand_register_handler(const char *name, char *devicefile)
+{
+	struct nand_bbu_handler *handler;
+	int ret;
+
+	handler = xzalloc(sizeof(*handler));
+	handler->bbu_handler.devicefile = devicefile;
+	handler->bbu_handler.handler = nand_update_handler;
+	handler->bbu_handler.name = name;
+
+	ret = bbu_register_handler(&handler->bbu_handler);
+	if (ret)
+		free(handler);
+
+	return ret;
+}

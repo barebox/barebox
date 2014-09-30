@@ -18,14 +18,20 @@ static inline int am33xx_bbu_spi_nor_register_handler(const char *name, char *de
 }
 #endif
 
-#ifdef CONFIG_BAREBOX_UPDATE_AM33XX_NAND_XLOADSLOTS
+#ifdef CONFIG_BAREBOX_UPDATE_AM33XX_NAND
 int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
 						char **devicefile,
 						int num_devicefiles);
+int am33xx_bbu_nand_register_handler(const char *name, char *devicefile);
 #else
 static inline int am33xx_bbu_nand_xloadslots_register_handler(const char *name,
 							char **devicefile,
 							int num_devicefiles)
+{
+	return 0;
+}
+
+static inline int am33xx_bbu_nand_register_handler(const char *name, char *devicefile)
 {
 	return 0;
 }

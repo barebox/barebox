@@ -44,6 +44,9 @@ uint64_t get_time_ns(void)
         uint64_t cycle_now, cycle_delta;
         uint64_t ns_offset;
 
+	if (!cs)
+		return 0;
+
         /* read clocksource: */
 	cycle_now = cs->read() & cs->mask;
 

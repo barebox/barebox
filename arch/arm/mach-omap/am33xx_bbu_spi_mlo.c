@@ -59,6 +59,10 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 		return -ENOSPC;
 	}
 
+	ret = bbu_confirm(data);
+	if (ret != 0)
+		return ret;
+
 	dstfd = open(data->devicefile, O_WRONLY);
 	if (dstfd < 0) {
 		printf("could not open %s: %s", data->devicefile, errno_str());

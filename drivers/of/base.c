@@ -265,18 +265,38 @@ struct device_node *of_find_node_by_alias(struct device_node *root, const char *
 EXPORT_SYMBOL_GPL(of_find_node_by_alias);
 
 /*
+ * of_find_node_by_phandle_from - Find a node given a phandle from given
+ * root node.
+ * @handle:  phandle of the node to find
+ * @root:    root node of the tree to search in. If NULL use the
+ *           internal tree.
+ */
+struct device_node *of_find_node_by_phandle_from(phandle phandle,
+		struct device_node *root)
+{
+	struct device_node *node;
+
+	if (!root)
+		root = root_node;
+
+	if (!root)
+		return 0;
+
+	of_tree_for_each_node_from(node, root)
+		if (node->phandle == phandle)
+			return node;
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_node_by_phandle_from);
+
+/*
  * of_find_node_by_phandle - Find a node given a phandle
  * @handle:    phandle of the node to find
  */
 struct device_node *of_find_node_by_phandle(phandle phandle)
 {
-	struct device_node *node;
-
-	of_tree_for_each_node_from(node, root_node)
-		if (node->phandle == phandle)
-			return node;
-
-	return NULL;
+	return of_find_node_by_phandle_from(phandle, root_node);
 }
 EXPORT_SYMBOL(of_find_node_by_phandle);
 

@@ -151,7 +151,6 @@ struct omap_i2c_struct {
 	u8			reg_shift;
 	struct omap_i2c_driver_data	*data;
 	struct resource		*ioarea;
-	u32			fclk_rate;
 	u32			speed;		/* Speed of bus in Khz */
 	u16			scheme;
 	u16			cmd_err;
@@ -421,7 +420,7 @@ static int omap_i2c_init(struct omap_i2c_struct *i2c_omap)
 		internal_clk = 4000;
 
 	/* Compute prescaler divisor */
-	psc = i2c_omap->fclk_rate / internal_clk;
+	psc = i2c_data->fclk_rate / internal_clk;
 	psc = psc - 1;
 
 	/* If configured for High Speed */
@@ -1016,9 +1015,16 @@ i2c_omap_probe(struct device_d *pdev)
 	i2c_omap->reg_shift = (i2c_data->flags >>
 					OMAP_I2C_FLAG_BUS_SHIFT__SHIFT) & 3;
 
-	if (pdev->platform_data != NULL)
+	if (pdev->platform_data != NULL) {
 		speed = *(u32 *)pdev->platform_data;
-	else
+	} else {
+		of_property_read_u32(pdev->device_node, "clock-frequency",
+			&speed);
+		/* convert DT freq value in Hz into kHz for speed */
+		speed /= 1000;
+	}
+
+	if (!speed)
 		speed = 100;	/* Default speed */
 
 	i2c_omap->speed = speed;
@@ -1079,12 +1085,6 @@ i2c_omap_probe(struct device_d *pdev)
 		if (i2c_omap->rev < OMAP_I2C_REV_ON_3630)
 			i2c_omap->b_hw = 1; /* Enable hardware fixes */
 	}
-
-	i2c_omap->fclk_rate = i2c_data->fclk_rate;
-
-	if (!i2c_omap->fclk_rate)
-		of_property_read_u32(pdev->device_node, "clock-frequency",
-				&i2c_omap->fclk_rate);
 
 	/* reset ASAP, clearing any IRQs */
 	omap_i2c_init(i2c_omap);

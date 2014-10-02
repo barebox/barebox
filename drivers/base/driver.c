@@ -377,28 +377,6 @@ const char *dev_id(const struct device_d *dev)
 	return buf;
 }
 
-int dev_printf(int level, const struct device_d *dev, const char *format, ...)
-{
-	va_list args;
-	int ret = 0;
-
-	if (level > barebox_loglevel)
-		return 0;
-
-	if (dev->driver && dev->driver->name)
-		ret += printf("%s ", dev->driver->name);
-
-	ret += printf("%s: ", dev_name(dev));
-
-	va_start(args, format);
-
-	ret += vprintf(format, args);
-
-	va_end(args);
-
-	return ret;
-}
-
 void devices_shutdown(void)
 {
 	struct device_d *dev;

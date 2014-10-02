@@ -43,6 +43,8 @@ void mdelay(unsigned long msecs);
 #define MSECOND ((uint64_t)(1000 * 1000))
 #define USECOND ((uint64_t)(1000))
 
+extern uint64_t time_beginning;
+
 /*
  * Convenience wrapper to implement a typical polling loop with
  * timeout. returns 0 if the condition became true within the

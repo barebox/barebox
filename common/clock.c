@@ -29,6 +29,12 @@
 static struct clocksource *current_clock;
 static uint64_t time_ns;
 
+/*
+ * The first timestamp when the clocksource is registered.
+ * Useful for measuring the time spent in barebox.
+ */
+uint64_t time_beginning;
+
 /**
  * get_time_ns - get current timestamp in nanoseconds
  */
@@ -37,6 +43,9 @@ uint64_t get_time_ns(void)
 	struct clocksource *cs = current_clock;
         uint64_t cycle_now, cycle_delta;
         uint64_t ns_offset;
+
+	if (!cs)
+		return 0;
 
         /* read clocksource: */
 	cycle_now = cs->read() & cs->mask;
@@ -180,5 +189,7 @@ EXPORT_SYMBOL(mdelay);
 int init_clock(struct clocksource *cs)
 {
 	current_clock = cs;
+	time_beginning = get_time_ns();
+
 	return 0;
 }

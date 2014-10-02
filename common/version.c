@@ -12,6 +12,8 @@ EXPORT_SYMBOL(release_string);
 
 void barebox_banner (void)
 {
-	pr_info("\n\n%s\n\n", version_string);
+	printf("\n\n");
+	pr_info("%s", version_string);
+	printf("\n\n");
 	pr_info("Board: %s\n", barebox_get_model());
 }

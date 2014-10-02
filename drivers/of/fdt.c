@@ -1,5 +1,5 @@
 /*
- * dtb.c - flat devicetree functions
+ * fdt.c - flat devicetree functions
  *
  * Copyright (c) 2013 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *

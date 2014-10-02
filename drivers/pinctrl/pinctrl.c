@@ -62,6 +62,9 @@ int of_pinctrl_select_state(struct device_node *np, const char *name)
 	struct device_node *np_config;
 	const char *statename;
 
+	if (!IS_ENABLED(CONFIG_PINCTRL))
+		return -ENOSYS;
+
 	if (!of_find_property(np, "pinctrl-0", NULL))
 		return 0;
 
@@ -146,6 +149,9 @@ int pinctrl_select_state_default(struct device_d *dev)
 
 int pinctrl_register(struct pinctrl_device *pdev)
 {
+	if (!IS_ENABLED(CONFIG_PINCTRL))
+		return -ENOSYS;
+
 	BUG_ON(!pdev->dev->device_node);
 
 	list_add_tail(&pdev->list, &pinctrl_list);

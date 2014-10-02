@@ -443,6 +443,9 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
+	if (!IS_ENABLED(CONFIG_PINCTRL))
+		return 0;
+
 	ret = pinctrl_register(&info->pctl_dev);
 	if (ret)
 		return ret;

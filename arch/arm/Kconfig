@@ -109,6 +109,7 @@ config ARCH_MVEBU
 	select MVEBU_MBUS
 	select OFTREE
 	select OF_ADDRESS_PCI
+	select PINCTRL
 
 config ARCH_MXS
 	bool "Freescale i.MX23/28 (mxs) based"
@@ -208,6 +209,7 @@ config ARCH_TEGRA
 	select OFTREE
 	select RELOCATABLE
 	select RESET_CONTROLLER
+	select PINCTRL
 
 config ARCH_UEMD
 	bool "RC Module UEMD Platform"

@@ -17,6 +17,9 @@
  *
  */
 
+#include <envfs.h>
+#include <environment.h>
+#include <bootsource.h>
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
@@ -28,8 +31,6 @@
 
 #include <mach/iomux-mx6.h>
 #include <mach/imx6.h>
-
-#define ETH_PHY_RST	IMX_GPIO_NR(3, 23)
 
 #define GPIO_2_11_PD_CTL	MX6_PAD_CTL_PUS_100K_DOWN | MX6_PAD_CTL_PUE | MX6_PAD_CTL_PKE | \
 				MX6_PAD_CTL_SPEED_MED | MX6_PAD_CTL_DSE_40ohm | MX6_PAD_CTL_HYS
@@ -62,27 +63,9 @@ static void phyflex_err006282_workaround(void)
 	gpio_direction_input(MX6_PHYFLEX_ERR006282);
 }
 
-static int eth_phy_reset(void)
-{
-	gpio_request(ETH_PHY_RST, "phy reset");
-	gpio_direction_output(ETH_PHY_RST, 0);
-	mdelay(1);
-	gpio_set_value(ETH_PHY_RST, 1);
-
-	return 0;
-}
-
-static void mmd_write_reg(struct phy_device *dev, int device, int reg, int val)
-{
-	phy_write(dev, 0x0d, device);
-	phy_write(dev, 0x0e, reg);
-	phy_write(dev, 0x0d, (1 << 14) | device);
-	phy_write(dev, 0x0e, val);
-}
-
 static int ksz9031rn_phy_fixup(struct phy_device *dev)
 {
-	mmd_write_reg(dev, 2, 8, 0x039F);
+	phy_write_mmd_indirect(dev, 8, 2, 0x039F);
 
 	return 0;
 }
@@ -96,11 +79,25 @@ static int phytec_pfla02_init(void)
 
 	phyflex_err006282_workaround();
 
-	eth_phy_reset();
 	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,
 					   ksz9031rn_phy_fixup);
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+
+	switch (bootsource_get()) {
+	case BOOTSOURCE_MMC:
+		of_device_enable_path("/chosen/environment-sd");
+		break;
+	case BOOTSOURCE_NAND:
+		of_device_enable_path("/chosen/environment-nand");
+		break;
+	default:
+	case BOOTSOURCE_SPI:
+		of_device_enable_path("/chosen/environment-spinor");
+		break;
+	}
+
+	defaultenv_append_directory(defaultenv_phyflex_imx6);
 
 	return 0;
 }

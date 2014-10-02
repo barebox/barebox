@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# board defaults, do not change in running system. Change /env/config
+# instead
+
+global.boot.default=nand
+
+global.hostname=phyFLEX-i.MX6
+global.linux.bootargs.base="console=ttymxc3,115200"

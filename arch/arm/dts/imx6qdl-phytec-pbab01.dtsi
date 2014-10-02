@@ -9,21 +9,8 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-/ {
-	chosen {
-		environment@0 {
-			compatible = "barebox,environment";
-			device-path = &flash, "partname:barebox-environment";
-		};
-	};
-};
-
 &fec {
 	status = "okay";
-};
-
-&ocotp {
-	barebox,provide-mac-address = <&fec 0x620>;
 };
 
 &uart1 {

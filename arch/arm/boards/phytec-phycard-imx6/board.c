@@ -17,6 +17,7 @@
  *
  */
 
+#include <envfs.h>
 #include <environment.h>
 #include <bootsource.h>
 #include <common.h>
@@ -43,6 +44,8 @@ static int phytec_pcaaxl3_init(void)
 	}
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+
+	defaultenv_append_directory(defaultenv_phycard_imx6);
 
 	return 0;
 }

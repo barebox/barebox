@@ -3,5 +3,7 @@
 # board defaults, do not change in running system. Change /env/config
 # instead
 
+global.boot.default=nand
+
 global.hostname=phyCARD-i.MX6
 global.linux.bootargs.base="console=ttymxc2,115200"

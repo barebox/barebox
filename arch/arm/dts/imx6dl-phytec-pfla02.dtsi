@@ -15,27 +15,8 @@
 / {
 	model = "Phytec phyFLEX-i.MX6 Dual Lite";
 	compatible = "phytec,imx6dl-pfla02", "fsl,imx6dl";
-
-	memory {
-		reg = <0x10000000 0x40000000>;
-	};
 };
 
 &ecspi3 {
 	status = "okay";
-};
-
-&flash {
-        #address-cells = <1>;
-        #size-cells = <1>;
-
-        partition@0 {
-                label = "barebox";
-                reg = <0x0 0x80000>;
-        };
-
-        partition@1 {
-                label = "barebox-environment";
-                reg = <0x80000 0x10000>;
-        };
 };

@@ -15,8 +15,4 @@
 / {
 	model = "Phytec phyFLEX-i.MX6 Single";
 	compatible = "phytec,imx6s-pfla02", "fsl,imx6dl";
-
-	memory {
-		reg = <0x10000000 0x20000000>;
-	};
 };

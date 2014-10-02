@@ -9,6 +9,28 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+/ {
+	chosen {
+		environment-nand {
+			compatible = "barebox,environment";
+			device-path = &gpmi, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-spinor {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:barebox-environment";
+			status = "disabled";
+		};
+	};
+};
+
 &ecspi3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_ecspi3>;
@@ -20,6 +42,20 @@
 		compatible = "m25p80";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x80000>;
+		};
+
+		partition@1 {
+			label = "barebox-environment";
+			reg = <0x80000 0x10000>;
+		};
+
 	};
 };
 
@@ -36,6 +72,33 @@
 	pinctrl-0 = <&pinctrl_gpmi_nand>;
 	nand-on-flash-bbt;
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x400000>;
+	};
+
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x400000 0x20000>;
+	};
+
+	partition@2 {
+		label = "oftree";
+		reg = <0x420000 0x20000>;
+	};
+
+	partition@3 {
+		label = "kernel";
+		reg = <0x440000 0x800000>;
+	};
+
+	partition@4 {
+		label = "root";
+		reg = <0xC40000 0x0>;
+	};
 };
 
 &iomuxc {
@@ -149,6 +212,10 @@
 	};
 };
 
+&ocotp {
+	barebox,provide-mac-address = <&fec 0x620>;
+};
+
 &uart4 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart4>;
@@ -169,4 +236,16 @@
         cd-gpios = <&gpio1 27 0>;
         wp-gpios = <&gpio1 29 0>;
         status = "disabled";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x80000>;
+	};
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
+	};
 };

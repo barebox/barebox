@@ -265,18 +265,38 @@ struct device_node *of_find_node_by_alias(struct device_node *root, const char *
 EXPORT_SYMBOL_GPL(of_find_node_by_alias);
 
 /*
+ * of_find_node_by_phandle_from - Find a node given a phandle from given
+ * root node.
+ * @handle:  phandle of the node to find
+ * @root:    root node of the tree to search in. If NULL use the
+ *           internal tree.
+ */
+struct device_node *of_find_node_by_phandle_from(phandle phandle,
+		struct device_node *root)
+{
+	struct device_node *node;
+
+	if (!root)
+		root = root_node;
+
+	if (!root)
+		return 0;
+
+	of_tree_for_each_node_from(node, root)
+		if (node->phandle == phandle)
+			return node;
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_find_node_by_phandle_from);
+
+/*
  * of_find_node_by_phandle - Find a node given a phandle
  * @handle:    phandle of the node to find
  */
 struct device_node *of_find_node_by_phandle(phandle phandle)
 {
-	struct device_node *node;
-
-	of_tree_for_each_node_from(node, root_node)
-		if (node->phandle == phandle)
-			return node;
-
-	return NULL;
+	return of_find_node_by_phandle_from(phandle, root_node);
 }
 EXPORT_SYMBOL(of_find_node_by_phandle);
 
@@ -335,6 +355,27 @@ phandle of_node_create_phandle(struct device_node *node)
 	return node->phandle;
 }
 EXPORT_SYMBOL(of_node_create_phandle);
+
+int of_set_property_to_child_phandle(struct device_node *node, char *prop_name)
+{
+	int ret;
+	phandle p;
+
+	/* Check if property exist */
+	if (!of_get_property(of_get_parent(node), prop_name, NULL))
+		return -EINVAL;
+
+	/* Create or get existing phandle of child node */
+	p = of_node_create_phandle(node);
+	p = cpu_to_be32(p);
+
+	node = of_get_parent(node);
+
+	ret = of_set_property(node, prop_name, &p, sizeof(p), 0);
+
+	return ret;
+}
+EXPORT_SYMBOL(of_set_property_to_child_phandle);
 
 /*
  * Find a property with a given name for a given node
@@ -1110,6 +1151,33 @@ int of_property_write_u64_array(struct device_node *np,
 }
 
 /**
+ * of_parse_phandle_from - Resolve a phandle property to a device_node pointer from
+ * a given root node
+ * @np: Pointer to device node holding phandle property
+ * @root: root node of the tree to search in. If NULL use the internal tree.
+ * @phandle_name: Name of property holding a phandle value
+ * @index: For properties holding a table of phandles, this is the index into
+ *         the table
+ *
+ * Returns the device_node pointer found or NULL.
+ */
+struct device_node *of_parse_phandle_from(const struct device_node *np,
+					struct device_node *root,
+					const char *phandle_name, int index)
+{
+	const __be32 *phandle;
+	int size;
+
+	phandle = of_get_property(np, phandle_name, &size);
+	if ((!phandle) || (size < sizeof(*phandle) * (index + 1)))
+		return NULL;
+
+	return of_find_node_by_phandle_from(be32_to_cpup(phandle + index),
+					root);
+}
+EXPORT_SYMBOL(of_parse_phandle_from);
+
+/**
  * of_parse_phandle - Resolve a phandle property to a device_node pointer
  * @np: Pointer to device node holding phandle property
  * @phandle_name: Name of property holding a phandle value
@@ -1121,14 +1189,7 @@ int of_property_write_u64_array(struct device_node *np,
 struct device_node *of_parse_phandle(const struct device_node *np,
 				     const char *phandle_name, int index)
 {
-	const __be32 *phandle;
-	int size;
-
-	phandle = of_get_property(np, phandle_name, &size);
-	if ((!phandle) || (size < sizeof(*phandle) * (index + 1)))
-		return NULL;
-
-	return of_find_node_by_phandle(be32_to_cpup(phandle + index));
+	return of_parse_phandle_from(np, root_node, phandle_name, index);
 }
 EXPORT_SYMBOL(of_parse_phandle);
 

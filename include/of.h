@@ -123,6 +123,8 @@ extern struct device_node *of_find_node_by_path_from(struct device_node *from,
 						const char *path);
 extern struct device_node *of_find_node_by_path(const char *path);
 extern struct device_node *of_find_node_by_phandle(phandle phandle);
+extern struct device_node *of_find_node_by_phandle_from(phandle phandle,
+	struct device_node *root);
 extern struct device_node *of_find_node_by_type(struct device_node *from,
 	const char *type);
 extern struct device_node *of_find_compatible_node(struct device_node *from,
@@ -201,6 +203,10 @@ extern int of_property_write_u64_array(struct device_node *np,
 				size_t sz);
 
 extern struct device_node *of_parse_phandle(const struct device_node *np,
+					    const char *phandle_name,
+					    int index);
+extern struct device_node *of_parse_phandle_from(const struct device_node *np,
+					    struct device_node *root,
 					    const char *phandle_name,
 					    int index);
 extern int of_parse_phandle_with_args(const struct device_node *np,
@@ -437,6 +443,13 @@ static inline struct device_node *of_parse_phandle(const struct device_node *np,
 	return NULL;
 }
 
+static inline struct device_node *of_parse_phandle_from(const struct device_node *np,
+					    struct device_node *root,
+					    const char *phandle_name, int index)
+{
+	return NULL;
+}
+
 static inline int of_parse_phandle_with_args(const struct device_node *np,
 		const char *list_name, const char *cells_name, int index,
 		struct of_phandle_args *out_args)
@@ -468,6 +481,12 @@ static inline struct device_node *of_find_node_by_name(struct device_node *from,
 }
 
 static inline struct device_node *of_find_node_by_phandle(phandle phandle)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_find_node_by_phandle_from(phandle phandle,
+	struct device_node *root)
 {
 	return NULL;
 }
@@ -567,6 +586,9 @@ static inline struct device_d *of_find_device_by_node(struct device_node *np)
 
 #define for_each_node_by_name(dn, name) \
 	for (dn = of_find_node_by_name(NULL, name); dn; \
+	     dn = of_find_node_by_name(dn, name))
+#define for_each_node_by_name_from(dn, root, name) \
+	for (dn = of_find_node_by_name(root, name); dn; \
 	     dn = of_find_node_by_name(dn, name))
 #define for_each_compatible_node(dn, type, compatible) \
 	for (dn = of_find_compatible_node(NULL, type, compatible); dn; \
@@ -692,6 +714,7 @@ int of_device_disable_path(const char *path);
 
 phandle of_get_tree_max_phandle(struct device_node *root);
 phandle of_node_create_phandle(struct device_node *node);
+int of_set_property_to_child_phandle(struct device_node *node, char *prop_name);
 struct device_node *of_find_node_by_alias(struct device_node *root,
 		const char *alias);
 struct device_node *of_find_node_by_path_or_alias(struct device_node *root,

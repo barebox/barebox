@@ -1989,6 +1989,21 @@ config CMD_OF_PROPERTY
 	  [00 11 22 .. nn]  - byte stream
 	  If the value does not start with '<' or '[' it is interpreted as string
 
+config CMD_OF_DISPLAY_TIMINGS
+	tristate
+	select OFTREE
+	prompt "of_display_timings"
+	help
+	  List and select display timings
+
+	  Usage: of_display_timings [-lS] [-s path] [-f dtb]
+
+	  Options:
+		  -l		list path of all available display-timings
+		  -S		list path of all selected display-timings
+		  -s path	select display-timings and register oftree fixup
+		  -f dtb	work on dtb. Has no effect on -s option
+
 config CMD_OFTREE
 	tristate
 	select OFTREE

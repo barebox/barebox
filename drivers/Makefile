@@ -28,3 +28,4 @@ obj-$(CONFIG_REGULATOR) += regulator/
 obj-$(CONFIG_RESET_CONTROLLER) += reset/
 obj-$(CONFIG_PCI) += pci/
 obj-y += rtc/
+obj-$(CONFIG_FIRMWARE) += firmware/

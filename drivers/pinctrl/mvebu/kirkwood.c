@@ -13,6 +13,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <of.h>
+#include <linux/err.h>
 
 #include "common.h"
 
@@ -437,8 +438,8 @@ static int kirkwood_pinctrl_probe(struct device_d *dev)
 		(struct mvebu_pinctrl_soc_info *)match->data;
 
 	mpp_base = dev_request_mem_region(dev, 0);
-	if (!mpp_base)
-		return -EBUSY;
+	if (IS_ERR(mpp_base))
+		return PTR_ERR(mpp_base);
 
 	return mvebu_pinctrl_probe(dev, soc);
 }

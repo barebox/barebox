@@ -16,6 +16,7 @@
 #include <mach/sdma.h>
 #include <mach/clocks.h>
 #include <linux/phy.h>
+#include <linux/err.h>
 #include "fec_mpc5200.h"
 
 #define CONFIG_PHY_ADDR 1 /* FIXME */
@@ -655,6 +656,8 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	edev->parent = dev;
 
 	fec->eth = dev_request_mem_region(dev, 0);
+	if (IS_ERR(fec->eth))
+		return PTR_ERR(fec->eth);
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
 

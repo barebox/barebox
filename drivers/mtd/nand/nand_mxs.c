@@ -1254,7 +1254,12 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	nand_info->type = type;
 	nand_info->io_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(nand_info->io_base))
+		return PTR_ERR(nand_info->io_base);
+
 	nand_info->bch_base = dev_request_mem_region(dev, 1);
+	if (IS_ERR(nand_info->bch_base))
+		return PTR_ERR(nand_info->bch_base);
 
 	nand_info->clk = clk_get(dev, NULL);
 	if (IS_ERR(nand_info->clk))

@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <ata_drive.h>
 #include <platform_ide.h>
+#include <linux/err.h>
 
 /**
  * Setup the register specific addresses for an ATA like divice
@@ -81,43 +82,43 @@ static int platform_ide_probe(struct device_d *dev)
 	int rc;
 	struct ide_port_info *pdata = dev->platform_data;
 	struct ide_port *ide;
-	void *reg_base, *alt_base;
+	void *reg_base, *alt_base = NULL;
 	struct resource *reg, *alt;
-	int mmio;
+	int mmio = 0;
 
 	if (pdata == NULL) {
 		dev_err(dev, "No platform data. Cannot continue\n");
 		return -EINVAL;
 	}
 
-	alt = NULL;
-	reg = dev_get_resource(dev, IORESOURCE_MEM, 0);
-	mmio = (reg != NULL);
-	if (reg != NULL) {
-		reg = request_iomem_region(dev_name(dev), reg->start,
-					   reg->end);
-		alt = dev_get_resource(dev, IORESOURCE_MEM, 1);
-		if (alt != NULL)
-			alt = request_iomem_region(dev_name(dev), alt->start,
-						   alt->end);
+	reg_base = dev_request_mem_region(dev, 0);
+
+	if (!IS_ERR(reg_base)) {
+		mmio = 1;
+		alt_base = dev_request_mem_region(dev, 1);
+		if (IS_ERR(alt_base))
+			alt_base = NULL;
 	} else {
 		reg = dev_get_resource(dev, IORESOURCE_IO, 0);
-		if (reg != NULL) {
-			reg = request_ioport_region(dev_name(dev), reg->start,
-						    reg->end);
-			alt = dev_get_resource(dev, IORESOURCE_IO, 1);
-			if (alt != NULL)
-				alt = request_ioport_region(dev_name(dev),
-							    alt->start,
-							    alt->end);
+		if (IS_ERR(reg))
+			return PTR_ERR(reg);
+
+		reg = request_ioport_region(dev_name(dev), reg->start,
+					    reg->end);
+		if (!reg)
+			return -ENODEV;
+
+		reg_base = (void __force __iomem *) reg->start;
+
+		alt = dev_get_resource(dev, IORESOURCE_IO, 1);
+		if (!IS_ERR(alt)) {
+			alt = request_ioport_region(dev_name(dev),
+						    alt->start,
+						    alt->end);
+			if (!alt)
+				return -ENODEV;
 		}
 	}
-
-	reg_base = (reg != NULL ? (void __force __iomem *) reg->start : NULL);
-	alt_base = (alt != NULL ? (void __force __iomem *) alt->start : NULL);
-
-	if (!reg_base)
-		return -ENODEV;
 
 	ide = xzalloc(sizeof(*ide));
 	ide->io.mmio = mmio;

@@ -536,6 +536,8 @@ static int fsl_esdhc_probe(struct device_d *dev)
 
 	host->dev = dev;
 	host->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(host->regs))
+		return PTR_ERR(host->regs);
 
 	/* First reset the eSDHC controller */
 	ret = esdhc_reset(host->regs);

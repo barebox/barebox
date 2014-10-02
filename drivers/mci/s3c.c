@@ -36,6 +36,7 @@
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
+#include <linux/err.h>
 #include <mach/s3c-mci.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-iomap.h>
@@ -741,6 +742,9 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 
 	hw_dev->priv = s3c_host;
 	s3c_host->base = dev_request_mem_region(hw_dev, 0);
+	if (IS_ERR(s3c_host->base))
+		return PTR_ERR(s3c_host->base);
+
 	s3c_host->host.hw_dev = hw_dev;
 
 	/* feed forward the platform specific values */

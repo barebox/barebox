@@ -375,8 +375,8 @@ static int armada_xp_pinctrl_probe(struct device_d *dev)
 	struct mvebu_pinctrl_soc_info *soc = &armada_xp_pinctrl_info;
 
 	mpp_base = dev_request_mem_region(dev, 0);
-	if (!mpp_base)
-		return -EBUSY;
+	if (IS_ERR(mpp_base))
+		return PTR_ERR(mpp_base);
 
 	soc->variant = (enum armada_xp_variant)match->data;
 

@@ -34,6 +34,7 @@
 #include <xfuncs.h>
 #include <asm/mmu.h>
 #include <asm/system.h>
+#include <linux/err.h>
 
 #include <mach/cpsw.h>
 
@@ -1109,6 +1110,8 @@ int cpsw_probe(struct device_d *dev)
 	dev_dbg(dev, "* %s\n", __func__);
 
 	regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(regs))
+		return PTR_ERR(regs);
 
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;

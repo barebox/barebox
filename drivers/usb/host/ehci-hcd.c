@@ -30,6 +30,7 @@
 #include <of.h>
 #include <usb/ehci.h>
 #include <asm/mmu.h>
+#include <linux/err.h>
 
 #include "ehci.h"
 
@@ -924,6 +925,9 @@ static int ehci_probe(struct device_d *dev)
 		data.flags = EHCI_HAS_TT;
 
 	data.hccr = dev_request_mem_region(dev, 0);
+	if (IS_ERR(data.hccr))
+		return PTR_ERR(data.hccr);
+
 	if (dev->num_resources > 1)
 		data.hcor = dev_request_mem_region(dev, 1);
 	else

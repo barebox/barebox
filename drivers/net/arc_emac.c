@@ -22,6 +22,7 @@
 #include <net.h>
 #include <io.h>
 #include <init.h>
+#include <linux/err.h>
 
 /* ARC EMAC register set combines entries for MAC and MDIO */
 enum {
@@ -400,6 +401,8 @@ static int arc_emac_probe(struct device_d *dev)
 
 	priv = edev->priv;
 	priv->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->regs))
+		return PTR_ERR(priv->regs);
 	priv->bus = miibus;
 
 	id = arc_reg_get(priv, R_ID);

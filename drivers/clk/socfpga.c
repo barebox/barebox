@@ -358,8 +358,8 @@ static int socfpga_ccm_probe(struct device_d *dev)
 	struct device_node *clknode;
 
 	regs = dev_request_mem_region(dev, 0);
-	if (!regs)
-		return -EBUSY;
+	if (IS_ERR(regs))
+		return PTR_ERR(regs);
 
 	clk_mgr_base_addr = regs;
 

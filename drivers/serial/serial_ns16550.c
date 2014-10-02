@@ -317,10 +317,12 @@ static int ns16550_init_iomem(struct device_d *dev, struct ns16550_priv *priv)
 	int width;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
-	if (!res)
-		return -ENODEV;
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
 	priv->mmiobase = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->mmiobase))
+		return PTR_ERR(priv->mmiobase);
 
 	width = res->flags & IORESOURCE_MEM_TYPE_MASK;
 	switch (width) {
@@ -347,12 +349,12 @@ static int ns16550_init_ioport(struct device_d *dev, struct ns16550_priv *priv)
 	int width;
 
 	res = dev_get_resource(dev, IORESOURCE_IO, 0);
-	if (!res)
-		return -ENODEV;
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
 	res = request_ioport_region(dev_name(dev), res->start, res->end);
-	if (!res)
-		return -ENODEV;
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
 	priv->iobase = res->start;
 

@@ -47,6 +47,7 @@
 #include <usb/usb_defs.h>
 #include <init.h>
 #include <errno.h>
+#include <linux/err.h>
 
 #include <asm/byteorder.h>
 #include <io.h>
@@ -1812,6 +1813,8 @@ static int ohci_probe(struct device_d *dev)
 	usb_register_host(host);
 
 	ohci->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(ohci->regs))
+		return PTR_ERR(ohci->regs);
 
 	return 0;
 }

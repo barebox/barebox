@@ -96,6 +96,8 @@ static int imx35_ccm_probe(struct device_d *dev)
 	void __iomem *base;
 
 	base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	writel(0xffffffff, base + CCM_CGR0);
 	writel(0xffffffff, base + CCM_CGR1);

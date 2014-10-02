@@ -34,6 +34,7 @@
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/err.h>
 
 #include <io.h>
 #include <mach/board.h>
@@ -1312,6 +1313,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	host->io_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(host->io_base))
+		return PTR_ERR(host->io_base);
 
 	mtd = &host->mtd;
 	nand_chip = &host->nand_chip;

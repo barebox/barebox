@@ -14,6 +14,7 @@
 #include <mach/hardware.h>
 #include <mach/cpu.h>
 #include <mach/io.h>
+#include <linux/err.h>
 
 #include <mach/at91sam9_smc.h>
 
@@ -182,9 +183,9 @@ static int at91sam9_smc_probe(struct device_d *dev)
 	}
 
 	smc_base_addr[id] = dev_request_mem_region(dev, 0);
-	if (!smc_base_addr[id]) {
+	if (IS_ERR(smc_base_addr[id])) {
 		dev_err(dev, "Impossible to request smc.%d\n", id);
-		return -ENOMEM;
+		return PTR_ERR(smc_base_addr[id]);
 	}
 
 	return 0;

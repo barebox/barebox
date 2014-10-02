@@ -415,6 +415,8 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 		port->intf = PHY_INTERFACE_MODE_RGMII;
 
 	port->regs = dev_get_mem_region(parent, 0) + PORTn_REGS(port->portno);
+	if (IS_ERR(port->regs))
+		return PTR_ERR(port->regs);
 
 	/* allocate rx/tx descriptors and buffers */
 	port->txdesc = dma_alloc_coherent(ALIGN(sizeof(*port->txdesc), 16));
@@ -490,6 +492,9 @@ static int orion_gbe_probe(struct device_d *dev)
 	dev->priv = gbe;
 
 	gbe->regs = dev_get_mem_region(dev, 0);
+	if (IS_ERR(gbe->regs))
+		return PTR_ERR(gbe->regs);
+
 	gbe->clk = clk_get(dev, 0);
 	if (!IS_ERR(gbe->clk))
 		clk_enable(gbe->clk);

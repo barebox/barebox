@@ -35,6 +35,7 @@
 #include <malloc.h>
 #include <clock.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 
 #include "mci-bcm2835.h"
 #include "sdhci.h"
@@ -505,9 +506,9 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	host->hw_dev = hw_dev;
 	host->max_clock = clk_get_rate(clk);
 	host->regs = dev_request_mem_region(hw_dev, 0);
-	if (host->regs == NULL) {
+	if (IS_ERR(host->regs)) {
 		dev_err(host->hw_dev, "Failed request mem region, aborting...\n");
-		return -EBUSY;
+		return PTR_ERR(host->regs);
 	}
 
 	host->mci.host_caps |= MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED |

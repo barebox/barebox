@@ -147,6 +147,8 @@ static int clps711x_probe(struct device_d *dev)
 	}
 
 	s->base = dev_get_mem_region(dev, 0);
+	if (IS_ERR(s->base))
+		return PTR_ERR(s->base);
 
 	if (!dev->device_node) {
 		sprintf(syscon_dev, "syscon%i", id + 1);

@@ -22,6 +22,7 @@
 #include <io.h>
 #include <gpio.h>
 #include <init.h>
+#include <linux/err.h>
 
 #define DW_GPIO_DR 		0x0
 #define DW_GPIO_DDR		0x4
@@ -114,8 +115,8 @@ static int dw_gpio_probe(struct device_d *dev)
 
 	chip = xzalloc(sizeof(*chip));
 	chip->regs = dev_request_mem_region(dev, 0);
-	if (!chip->regs)
-		return -EBUSY;
+	if (IS_ERR(chip->regs))
+		return PTR_ERR(chip->regs);
 
 	chip->chip.ops = &imx_gpio_ops;
 	if (dev->id < 0) {

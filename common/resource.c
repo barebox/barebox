@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <init.h>
 #include <linux/ioport.h>
+#include <linux/err.h>
 #include <asm/io.h>
 
 static int init_resource(struct resource *res, const char *name)
@@ -48,7 +49,7 @@ struct resource *__request_region(struct resource *parent,
 				__func__,
 				(unsigned long long)start,
 				(unsigned long long)end);
-		return NULL;
+		return ERR_PTR(-EINVAL);
 	}
 
 	/* outside parent resource? */
@@ -59,7 +60,7 @@ struct resource *__request_region(struct resource *parent,
 				(unsigned long long)end,
 				(unsigned long long)parent->start,
 				(unsigned long long)parent->end);
-		return NULL;
+		return ERR_PTR(-EINVAL);
 	}
 
 	/*
@@ -77,7 +78,7 @@ struct resource *__request_region(struct resource *parent,
 				(unsigned long long)end,
 				(unsigned long long)r->start,
 				(unsigned long long)r->end);
-		return NULL;
+		return ERR_PTR(-EBUSY);
 	}
 
 ok:
@@ -141,5 +142,11 @@ struct resource ioport_resource = {
 struct resource *request_ioport_region(const char *name,
 		resource_size_t start, resource_size_t end)
 {
-	return __request_region(&ioport_resource, name, start, end);
+	struct resource *res;
+
+	res = __request_region(&ioport_resource, name, start, end);
+	if (IS_ERR(res))
+		return ERR_CAST(res);
+
+	return res;
 }

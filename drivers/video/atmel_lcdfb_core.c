@@ -258,6 +258,8 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 	sinfo = xzalloc(sizeof(*sinfo));
 	sinfo->pdata = pdata;
 	sinfo->mmio = dev_request_mem_region(dev, 0);
+	if (IS_ERR(sinfo->mmio))
+		return PTR_ERR(sinfo->mmio);
 
 	sinfo->dev_data = data;
 

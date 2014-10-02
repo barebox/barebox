@@ -644,6 +644,8 @@ static int macb_probe(struct device_d *dev)
 	macb->phy_flags = pdata->phy_flags;
 
 	macb->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(macb->regs))
+		return PTR_ERR(macb->regs);
 
 	/*
 	 * Do some basic initialization so that we at least can talk

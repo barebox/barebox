@@ -508,6 +508,8 @@ static int mxcmci_probe(struct device_d *dev)
 	host->mci.hw_dev = dev;
 
 	host->base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(host->base))
+		return PTR_ERR(host->base);
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

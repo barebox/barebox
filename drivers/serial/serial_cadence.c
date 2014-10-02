@@ -240,8 +240,8 @@ static int cadence_serial_probe(struct device_d *dev)
 		clk_set_rate(priv->clk, clk_get_rate(priv->clk) / 8);
 
 	priv->regs = dev_request_mem_region(dev, 0);
-	if (!priv->regs) {
-		ret = -EBUSY;
+	if (IS_ERR(priv->regs)) {
+		ret = PTR_ERR(priv->regs);
 		goto err_free;
 	}
 

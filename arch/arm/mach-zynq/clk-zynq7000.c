@@ -363,8 +363,8 @@ static int zynq_clock_probe(struct device_d *dev)
 	unsigned long ps_clk_rate = 33333330;
 
 	slcr_base = dev_request_mem_region(dev, 0);
-	if (!slcr_base)
-		return -EBUSY;
+	if (IS_ERR(slcr_base))
+		return PTR_ERR(slcr_base);
 
 	clks[ps_clk]  = clk_fixed("ps_clk", ps_clk_rate);
 

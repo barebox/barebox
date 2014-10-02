@@ -22,6 +22,7 @@
 #include <sizes.h>
 #include <init.h>
 #include <of.h>
+#include <linux/err.h>
 #include <asm/barebox-arm.h>
 #include <asm/memory.h>
 #include <mach/esdctl.h>
@@ -297,8 +298,8 @@ static int imx_esdctl_probe(struct device_d *dev)
 		return ret;
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base)
-		return -ENOMEM;
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	if (imx_esdctl_disabled)
 		return 0;

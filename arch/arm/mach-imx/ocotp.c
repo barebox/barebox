@@ -397,8 +397,8 @@ static int imx_ocotp_probe(struct device_d *dev)
 	int ret = 0;
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base)
-		return -EBUSY;
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	imx_ocotp_init_dt(dev, base);
 

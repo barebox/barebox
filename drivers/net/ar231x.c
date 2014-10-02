@@ -26,6 +26,7 @@
 #include <net.h>
 #include <init.h>
 #include <io.h>
+#include <linux/err.h>
 
 #include "ar231x.h"
 
@@ -384,18 +385,18 @@ static int ar231x_eth_probe(struct device_d *dev)
 	priv->reset_bit = pdata->reset_bit;
 
 	priv->eth_regs = dev_request_mem_region(dev, 0);
-	if (priv->eth_regs == NULL) {
+	if (IS_ERR(priv->eth_regs)) {
 		dev_err(dev, "No eth_regs!!\n");
-		return -ENODEV;
+		return PTR_ERR(priv->eth_regs);
 	}
 	/* we have 0x100000 for eth, part of it are dma regs.
 	 * So they are already requested */
 	priv->dma_regs = (void *)(priv->eth_regs + 0x1000);
 
 	priv->phy_regs = dev_request_mem_region(dev, 1);
-	if (priv->phy_regs == NULL) {
+	if (IS_ERR(priv->phy_regs)) {
 		dev_err(dev, "No phy_regs!!\n");
-		return -ENODEV;
+		return PTR_ERR(priv->phy_regs);
 	}
 
 	priv->cfg = pdata;

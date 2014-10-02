@@ -17,6 +17,7 @@
 #include <driver.h>
 #include <malloc.h>
 #include <init.h>
+#include <linux/err.h>
 
 struct sram {
 	struct resource *res;
@@ -39,8 +40,8 @@ static int sram_probe(struct device_d *dev)
 	int ret;
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base)
-		return -EBUSY;
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	sram = xzalloc(sizeof(*sram));
 
@@ -48,6 +49,8 @@ static int sram_probe(struct device_d *dev)
 			cdev_find_free_index("sram"));
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
 	sram->cdev.size = (unsigned long)resource_size(res);
 	sram->cdev.ops = &memops;

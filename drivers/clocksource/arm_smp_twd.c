@@ -62,6 +62,8 @@ static int smp_twd_probe(struct device_d *dev)
 	}
 
 	twd_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(twd_base))
+		return PTR_ERR(twd_base);
 
 	tick_rate = clk_get_rate(twd_clk);
 	if (tick_rate > SMP_TWD_MAX_FREQ) {

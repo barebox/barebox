@@ -15,6 +15,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <io.h>
+#include <linux/err.h>
 
 #define I2C_CONTROL	0x00
 #define I2C_CONTROLS	0x00
@@ -75,8 +76,8 @@ static int i2c_versatile_probe(struct device_d *dev)
 	}
 
 	i2c->base = dev_request_mem_region(dev, 0);
-	if (!i2c->base) {
-		ret = -ENOMEM;
+	if (IS_ERR(i2c->base)) {
+		ret = PTR_ERR(i2c->base);
 		goto err_free;
 	}
 

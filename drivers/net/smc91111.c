@@ -66,6 +66,7 @@
 #include <clock.h>
 #include <io.h>
 #include <linux/phy.h>
+#include <linux/err.h>
 #include <net/smc91111.h>
 
 /*---------------------------------------------------------------
@@ -1330,6 +1331,8 @@ static int smc91c111_probe(struct device_d *dev)
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
 	priv->base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->base))
+		return PTR_ERR(priv->base);
 
 	smc91c111_reset(edev);
 

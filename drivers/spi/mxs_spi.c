@@ -267,6 +267,9 @@ static int mxs_spi_probe(struct device_d *dev)
 	mxs->mode = SPI_CPOL | SPI_CPHA;
 
 	mxs->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(mxs->regs))
+		return PTR_ERR(mxs->regs);
+
 	mxs->clk = clk_get(dev, NULL);
 	if (IS_ERR(mxs->clk))
 		return PTR_ERR(mxs->clk);

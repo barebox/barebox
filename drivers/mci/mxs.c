@@ -566,6 +566,8 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 	host->set_ios = mxs_mci_set_ios;
 	host->init = mxs_mci_initialize;
 	mxs_mci->regs = dev_request_mem_region(hw_dev, 0);
+	if (IS_ERR(mxs_mci->regs))
+		return PTR_ERR(mxs_mci->regs);
 
 	/* feed forward the platform specific values */
 	host->voltages = pd->voltages;

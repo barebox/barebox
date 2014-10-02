@@ -573,6 +573,8 @@ static int atmci_probe(struct device_d *hw_dev)
 	host->slot_b = pd->slot_b;
 
 	host->regs = dev_request_mem_region(hw_dev, 0);
+	if (IS_ERR(host->regs))
+		return PTR_ERR(host->regs);
 	host->hw_dev = hw_dev;
 	hw_dev->priv = host;
 	host->clk = clk_get(hw_dev, "mci_clk");

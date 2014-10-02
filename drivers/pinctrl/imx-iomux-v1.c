@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <pinctrl.h>
 #include <mach/iomux-v1.h>
+#include <linux/err.h>
 
 /*
  *  GPIO Module and I/O Multiplexer
@@ -284,6 +285,8 @@ static int imx_iomux_v1_probe(struct device_d *dev)
 		return -EBUSY;
 
 	iomuxv1_base = dev_get_mem_region(dev, 0);
+	if (IS_ERR(iomuxv1_base))
+		return PTR_ERR(iomuxv1_base);
 
 	ret = of_platform_populate(dev->device_node, NULL, NULL);
 

@@ -336,8 +336,8 @@ static struct tegra_clk_init_table init_table[] = {
 static int tegra30_car_probe(struct device_d *dev)
 {
 	car_base = dev_request_mem_region(dev, 0);
-	if (!car_base)
-		return -EBUSY;
+	if (IS_ERR(car_base))
+		return PTR_ERR(car_base);
 
 	tegra30_osc_clk_init();
 	tegra30_pll_init();

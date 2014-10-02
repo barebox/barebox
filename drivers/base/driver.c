@@ -32,6 +32,7 @@
 #include <fs.h>
 #include <of.h>
 #include <linux/list.h>
+#include <linux/err.h>
 #include <complete.h>
 #include <pinctrl.h>
 
@@ -255,7 +256,7 @@ struct resource *dev_get_resource(struct device_d *dev, unsigned long type,
 		}
 	}
 
-	return NULL;
+	return ERR_PTR(-ENOENT);
 }
 
 void *dev_get_mem_region(struct device_d *dev, int num)
@@ -263,8 +264,8 @@ void *dev_get_mem_region(struct device_d *dev, int num)
 	struct resource *res;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, num);
-	if (!res)
-		return NULL;
+	if (IS_ERR(res))
+		return ERR_CAST(res);
 
 	return (void __force *)res->start;
 }
@@ -286,7 +287,7 @@ struct resource *dev_get_resource_by_name(struct device_d *dev,
 			return res;
 	}
 
-	return NULL;
+	return ERR_PTR(-ENOENT);
 }
 
 void *dev_get_mem_region_by_name(struct device_d *dev, const char *name)
@@ -294,8 +295,8 @@ void *dev_get_mem_region_by_name(struct device_d *dev, const char *name)
 	struct resource *res;
 
 	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
-	if (!res)
-		return NULL;
+	if (IS_ERR(res))
+		return ERR_CAST(res);
 
 	return (void __force *)res->start;
 }
@@ -306,12 +307,12 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 	struct resource *res;
 
 	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
-	if (!res)
-		return NULL;
+	if (IS_ERR(res))
+		return ERR_CAST(res);
 
 	res = request_iomem_region(dev_name(dev), res->start, res->end);
-	if (!res)
-		return NULL;
+	if (IS_ERR(res))
+		return ERR_CAST(res);
 
 	return (void __force __iomem *)res->start;
 }
@@ -322,12 +323,12 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 	struct resource *res;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, num);
-	if (!res)
-		return NULL;
+	if (IS_ERR(res))
+		return ERR_CAST(res);
 
 	res = request_iomem_region(dev_name(dev), res->start, res->end);
-	if (!res)
-		return NULL;
+	if (IS_ERR(res))
+		return ERR_CAST(res);
 
 	return (void __force __iomem *)res->start;
 }
@@ -347,6 +348,8 @@ int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 	if (flags & PROT_WRITE)
 		return -EACCES;
 	*map = dev_get_mem_region(cdev->dev, 0);
+	if (IS_ERR(*map))
+		return PTR_ERR(*map);
 	return 0;
 }
 
@@ -356,6 +359,9 @@ int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 		return -EINVAL;
 
 	*map = dev_get_mem_region(cdev->dev, 0);
+	if (IS_ERR(*map))
+		return PTR_ERR(*map);
+
 	return 0;
 }
 

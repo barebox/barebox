@@ -112,6 +112,8 @@ static int imx21_ccm_probe(struct device_d *dev)
 	unsigned long href = 26000000;
 
 	base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	writel(PCCR0_UART1_EN | PCCR0_UART2_EN | PCCR0_UART3_EN | PCCR0_UART4_EN |
 			PCCR0_CSPI1_EN | PCCR0_CSPI2_EN | PCCR0_SDHC1_EN |

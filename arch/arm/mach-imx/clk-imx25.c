@@ -88,6 +88,8 @@ static int imx25_ccm_probe(struct device_d *dev)
 	void __iomem *base;
 
 	base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	writel((1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 8) | (1 << 9) |
 			(1 << 10) | (1 << 15) |	(1 << 19) | (1 << 21) | (1 << 22) |

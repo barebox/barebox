@@ -161,6 +161,8 @@ static int imx_pata_probe(struct device_d *dev)
 
 	ide = xzalloc(sizeof(*ide));
 	base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	clk = clk_get(dev, NULL);
 	if (IS_ERR(clk)) {

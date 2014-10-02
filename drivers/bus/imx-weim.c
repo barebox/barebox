@@ -12,6 +12,7 @@
 #include <init.h>
 #include <io.h>
 #include <of.h>
+#include <linux/err.h>
 
 struct imx_weim_devtype {
 	unsigned int	cs_count;
@@ -144,8 +145,8 @@ static int weim_probe(struct device_d *dev)
 
 	/* get the resource */
 	weim->base = dev_request_mem_region(dev, 0);
-	if (!weim->base) {
-		ret = -EBUSY;
+	if (IS_ERR(weim->base)) {
+		ret = PTR_ERR(weim->base);
 		goto weim_err;
 	}
 

@@ -19,6 +19,7 @@
 #include <io.h>
 #include <init.h>
 #include <clock.h>
+#include <linux/err.h>
 
 #define DIGIC_TIMER_CLOCK 1000000
 
@@ -44,9 +45,9 @@ static int digic_timer_probe(struct device_d *dev)
 		return -EBUSY;
 
 	timer_base = dev_request_mem_region(dev, 0);
-	if (!timer_base) {
+	if (IS_ERR(timer_base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(timer_base);
 	}
 
 	clocks_calc_mult_shift(&digic_cs.mult, &digic_cs.shift,

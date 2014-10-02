@@ -13,7 +13,9 @@
 
 #include <init.h>
 #include <malloc.h>
+#include <linux/err.h>
 #include <linux/log2.h>
+#include <linux/err.h>
 #include <linux/basic_mmio_gpio.h>
 
 static void bgpio_write8(void __iomem *reg, unsigned int data)
@@ -311,7 +313,7 @@ static void __iomem *bgpio_map(struct device_d *dev, const char *name,
 	*err = 0;
 
 	r = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
-	if (!r)
+	if (IS_ERR(r))
 		return NULL;
 
 	if (resource_size(r) != sane_sz) {
@@ -320,8 +322,8 @@ static void __iomem *bgpio_map(struct device_d *dev, const char *name,
 	}
 
 	ret = request_iomem_region(dev_name(dev), r->start, r->end);
-	if (!ret) {
-		*err = -ENOMEM;
+	if (IS_ERR(ret)) {
+		*err = PTR_ERR(ret);
 		return NULL;
 	}
 
@@ -343,8 +345,8 @@ static int bgpio_dev_probe(struct device_d *dev)
 	struct bgpio_pdata *pdata = dev->platform_data;
 
 	r = dev_get_resource_by_name(dev, IORESOURCE_MEM, "dat");
-	if (!r)
-		return -EINVAL;
+	if (IS_ERR(r))
+		return PTR_ERR(r);
 
 	sz = resource_size(r);
 

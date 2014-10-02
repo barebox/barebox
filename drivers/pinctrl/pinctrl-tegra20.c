@@ -28,6 +28,7 @@
 #include <io.h>
 #include <malloc.h>
 #include <pinctrl.h>
+#include <linux/err.h>
 
 struct pinctrl_tegra20 {
 	struct {
@@ -309,9 +310,9 @@ static int pinctrl_tegra20_probe(struct device_d *dev)
 	regs = (u32 **)&ctrl->regs;
 	for (i = 0; i <= 2; i++) {
 		regs[i] = dev_request_mem_region(dev, i);
-		if (!regs[i]) {
+		if (IS_ERR(regs[i])) {
 			dev_err(dev, "Could not get iomem region %d\n", i);
-			return -ENODEV;
+			return PTR_ERR(regs[i]);
 		}
 	}
 

@@ -222,6 +222,9 @@ static int altera_spi_probe(struct device_d *dev)
 	master->bus_num = pdata->bus_num;
 
 	altera_spi->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(altera_spi->regs))
+		return PTR_ERR(altera_spi->regs);
+
 	altera_spi->databits = pdata->databits;
 	altera_spi->speed = pdata->speed;
 	altera_spi->mode = pdata->spi_mode;

@@ -22,6 +22,7 @@
 #include <of.h>
 #include <init.h>
 #include <linux/ioport.h>
+#include <linux/err.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <malloc.h>
@@ -123,8 +124,8 @@ int barebox_add_memory_bank(const char *name, resource_size_t start,
 	struct device_d *dev;
 
 	bank->res = request_iomem_region(name, start, start + size - 1);
-	if (!bank->res)
-		return -EBUSY;
+	if (IS_ERR(bank->res))
+		return PTR_ERR(bank->res);
 
 	dev = add_mem_device(name, start, size, IORESOURCE_MEM_WRITEABLE);
 
@@ -150,7 +151,7 @@ struct resource *request_sdram_region(const char *name, resource_size_t start,
 
 		res = __request_region(bank->res, name, start,
 				       start + size - 1);
-		if (res)
+		if (!IS_ERR(res))
 			return res;
 	}
 

@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <init.h>
 
+#include <linux/err.h>
 #include <linux/types.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
@@ -190,7 +191,11 @@ static int nomadik_nand_probe(struct device_d *dev)
 	}
 
 	host->cmd_va = dev_request_mem_region_by_name(dev, "nand_cmd");
+	if (IS_ERR(host->cmd_va))
+		return PTR_ERR(host->cmd_va);
 	host->addr_va = dev_request_mem_region_by_name(dev, "nand_addr");
+	if (IS_ERR(host->addr_va))
+		return PTR_ERR(host->addr_va);
 
 	/* Link all private pointers */
 	mtd = &host->mtd;
@@ -200,6 +205,8 @@ static int nomadik_nand_probe(struct device_d *dev)
 	mtd->parent = dev;
 
 	nand->IO_ADDR_W = nand->IO_ADDR_R = dev_request_mem_region_by_name(dev, "nand_data");
+	if (IS_ERR(nand->IO_ADDR_W))
+		return PTR_ERR(nand->IO_ADDR_W);
 	nand->cmd_ctrl = nomadik_cmd_ctrl;
 
 	nand->ecc.mode = NAND_ECC_HW;

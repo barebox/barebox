@@ -15,6 +15,7 @@
 #include <init.h>
 #include <of.h>
 #include <linux/clk.h>
+#include <linux/err.h>
 #include <linux/clkdev.h>
 
 #include "common.h"
@@ -166,8 +167,8 @@ int mvebu_clk_gating_probe(struct device_d *dev)
 	desc = (const struct clk_gating_soc_desc *)match->data;
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base)
-		return -EINVAL;
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	clk = of_clk_get(np, 0);
 	if (IS_ERR(clk))

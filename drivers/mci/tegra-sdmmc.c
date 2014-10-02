@@ -29,6 +29,7 @@
 #include <of_gpio.h>
 #include <linux/clk.h>
 #include <linux/reset.h>
+#include <linux/err.h>
 
 #include "sdhci.h"
 
@@ -432,9 +433,9 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 		return PTR_ERR(host->reset);
 
 	host->regs = dev_request_mem_region(dev, 0);
-	if (!host->regs) {
+	if (IS_ERR(host->regs)) {
 		dev_err(dev, "could not get iomem region\n");
-		return -ENODEV;
+		return PTR_ERR(host->regs);
 	}
 
 	mci->hw_dev = dev;

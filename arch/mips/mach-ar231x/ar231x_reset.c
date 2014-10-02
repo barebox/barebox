@@ -10,6 +10,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <linux/err.h>
 
 #include <mach/ar2312_regs.h>
 #include <mach/ar231x_platform.h>
@@ -53,9 +54,9 @@ EXPORT_SYMBOL(ar231x_reset_bit);
 static int ar231x_reset_probe(struct device_d *dev)
 {
 	reset_base = dev_request_mem_region(dev, 0);
-	if (!reset_base) {
+	if (IS_ERR(reset_base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(reset_base);
 	}
 
 	return 0;

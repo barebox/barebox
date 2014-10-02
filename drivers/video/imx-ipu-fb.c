@@ -1001,6 +1001,8 @@ static int imxfb_probe(struct device_d *dev)
 		return PTR_ERR(fbi->clk);
 
 	fbi->regs = dev_request_mem_region(dev, 0);
+	if (IS_ERR(fbi->regs))
+		return PTR_ERR(fbi->regs);
 	fbi->dev = dev;
 	fbi->enable = pdata->enable;
 	fbi->disp_data_fmt = pdata->disp_data_fmt;

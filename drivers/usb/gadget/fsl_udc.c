@@ -8,6 +8,7 @@
 #include <usb/fsl_usb2.h>
 #include <io.h>
 #include <asm/byteorder.h>
+#include <linux/err.h>
 
 /* ### define USB registers here
  */
@@ -2291,6 +2292,9 @@ err_out:
 static int fsl_udc_probe(struct device_d *dev)
 {
 	void __iomem *regs = dev_request_mem_region(dev, 0);
+
+	if (IS_ERR(regs))
+		return PTR_ERR(regs);
 
 	return ci_udc_register(dev, regs);
 }

@@ -17,6 +17,7 @@
 #include <init.h>
 #include <io.h>
 #include <asm/cache.h>
+#include <linux/err.h>
 
 /* register offsets */
 #define	MODER		0x00
@@ -542,6 +543,8 @@ static int ethoc_probe(struct device_d *dev)
 
 	priv = edev->priv;
 	priv->iobase = dev_request_mem_region(dev, 0);
+	if (IS_ERR(priv->iobase))
+		return PTR_ERR(priv->iobase);
 
 	priv->miibus.read = ethoc_mdio_read;
 	priv->miibus.write = ethoc_mdio_write;

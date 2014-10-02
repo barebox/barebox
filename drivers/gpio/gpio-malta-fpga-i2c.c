@@ -138,9 +138,9 @@ static int malta_i2c_gpio_probe(struct device_d *dev)
 	int ret;
 
 	gpio_base = dev_request_mem_region(dev, 0);
-	if (!gpio_base) {
+	if (IS_ERR(gpio_base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(gpio_base);
 	}
 
 	sc = xzalloc(sizeof(*sc));

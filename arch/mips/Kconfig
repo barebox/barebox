@@ -82,7 +82,6 @@ config MACH_MIPS_LOONGSON
 
 config MACH_MIPS_XBURST
 	bool "Ingenic XBurst-based boards"
-	select SYS_HAS_CPU_MIPS32_R1
 	select SYS_SUPPORTS_LITTLE_ENDIAN
 	select SYS_SUPPORTS_32BIT_KERNEL
 	select DRIVER_SERIAL_NS16550

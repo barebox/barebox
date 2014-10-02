@@ -1,0 +1,56 @@
+#include "skeleton.dtsi"
+
+/ {
+	soc {
+		model = "Ingenic JZ4780";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		ranges = <>;
+
+		wdt: wdt@10002000 {
+			compatible = "ingenic,jz4740-wdt";
+			reg = <0x10002000 0x10>;
+		};
+
+		uart0: serial@10030000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0x10030000 0x100>;
+			reg-shift = <2>;
+			clock-frequency = <48000000>;
+			status = "disabled";
+		};
+
+		uart1: serial@10031000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0x10031000 0x100>;
+			reg-shift = <2>;
+			clock-frequency = <48000000>;
+			status = "disabled";
+		};
+
+		uart2: serial@10032000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0x10032000 0x100>;
+			reg-shift = <2>;
+			clock-frequency = <48000000>;
+			status = "disabled";
+		};
+
+		uart3: serial@10033000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0x10033000 0x100>;
+			reg-shift = <2>;
+			clock-frequency = <48000000>;
+			status = "disabled";
+		};
+
+		uart4: serial@10034000 {
+			compatible = "ingenic,jz4740-uart";
+			reg = <0x10034000 0x100>;
+			reg-shift = <2>;
+			clock-frequency = <48000000>;
+			status = "disabled";
+		};
+	};
+};

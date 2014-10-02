@@ -8,35 +8,35 @@
 		#size-cells = <1>;
 		ranges;
 
-		wdt: wdt@b0002000 {
+		wdt: wdt@10002000 {
 			compatible = "ingenic,jz4740-wdt";
-			reg = <0xb0002000 0x10>;
+			reg = <0x10002000 0x10>;
 		};
 
 		rtc: rtc@10003000 {
 			compatible = "ingenic,jz4740-rtc";
-			reg = <0xb0003000 0x38>;
+			reg = <0x10003000 0x38>;
 		};
 
-		serial0: serial@b0030000 {
+		serial0: serial@10030000 {
 			compatible = "ingenic,jz4740-uart";
-			reg = <0xb0030000 0x20>;
+			reg = <0x10030000 0x20>;
 			reg-shift = <2>;
 			clock-frequency = <12000000>;
 			status = "disabled";
 		};
 
-		serial1: serial@b0031000 {
+		serial1: serial@10031000 {
 			compatible = "ingenic,jz4740-uart";
-			reg = <0xb0031000 0x20>;
+			reg = <0x10031000 0x20>;
 			reg-shift = <2>;
 			clock-frequency = <12000000>;
 			status = "disabled";
 		};
 
-		serial2: serial@b0032000 {
+		serial2: serial@10032000 {
 			compatible = "ingenic,jz4740-uart";
-			reg = <0xb0032000 0x20>;
+			reg = <0x10032000 0x20>;
 			reg-shift = <2>;
 			clock-frequency = <12000000>;
 			status = "disabled";
@@ -45,42 +45,42 @@
 		gpio0: gpio@10010000 {
 			compatible = "ingenic,jz4740-gpio";
 			gpio-controller;
-			reg = <0xb0010000 0x100>;
+			reg = <0x10010000 0x100>;
 			#gpio-cells = <2>;
 		};
 
 		gpio1: gpio@10010100 {
 			compatible = "ingenic,jz4740-gpio";
 			gpio-controller;
-			reg = <0xb0010100 0x100>;
+			reg = <0x10010100 0x100>;
 			#gpio-cells = <2>;
 		};
 
 		gpio2: gpio@10010200 {
 			compatible = "ingenic,jz4740-gpio";
 			gpio-controller;
-			reg = <0xb0010200 0x100>;
+			reg = <0x10010200 0x100>;
 			#gpio-cells = <2>;
 		};
 
 		gpio3: gpio@10010300 {
 			compatible = "ingenic,jz4740-gpio";
 			gpio-controller;
-			reg = <0xb0010300 0x100>;
+			reg = <0x10010300 0x100>;
 			#gpio-cells = <2>;
 		};
 
 		gpio4: gpio@10010400 {
 			compatible = "ingenic,jz4740-gpio";
 			gpio-controller;
-			reg = <0xb0010400 0x100>;
+			reg = <0x10010400 0x100>;
 			#gpio-cells = <2>;
 		};
 
 		gpio5: gpio@10010500 {
 			compatible = "ingenic,jz4740-gpio";
 			gpio-controller;
-			reg = <0xb0010500 0x100>;
+			reg = <0x10010500 0x100>;
 			#gpio-cells = <2>;
 		};
 	};

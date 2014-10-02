@@ -37,6 +37,7 @@ static uint32_t image_dcd_offset;
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
 static int header_version;
+static int cpu_type;
 static int add_barebox_header;
 
 /*
@@ -259,34 +260,29 @@ struct command {
 	int (*parse)(int argc, char *argv[]);
 };
 
-static uint32_t last_cmd;
+static uint32_t last_write_cmd;
 static int last_cmd_len;
 static uint32_t *last_dcd;
 
 static void check_last_dcd(uint32_t cmd)
 {
-	if (last_dcd) {
-		if (last_cmd == cmd) {
-			return;
-		} else {
-			uint32_t l = be32toh(*last_dcd);
+	cmd &= 0xff0000ff;
 
-			l |= last_cmd_len << 8;
-
-			*last_dcd = htobe32(l);
-
-			last_dcd = NULL;
-		}
+	if (cmd == last_write_cmd) {
+		last_cmd_len += sizeof(uint32_t) * 2;
+		return;
 	}
 
-	if (!cmd)
-		return;
+	/* write length ... */
+	if (last_write_cmd)
+		*last_dcd = htobe32(last_write_cmd | (last_cmd_len << 8));
 
-	if (!last_dcd) {
+	if ((cmd >> 24) == TAG_WRITE) {
+		last_write_cmd = cmd;
 		last_dcd = &dcdtable[curdcd++];
-		*last_dcd = htobe32(cmd);
-		last_cmd_len = sizeof(uint32_t);
-		last_cmd = cmd;
+		last_cmd_len = sizeof(uint32_t) * 3;
+	} else {
+		last_write_cmd = 0;
 	}
 }
 
@@ -303,7 +299,6 @@ static int write_mem_v2(uint32_t addr, uint32_t val, int width)
 
 	check_last_dcd(cmd);
 
-	last_cmd_len += sizeof(uint32_t) * 2;
 	dcdtable[curdcd++] = htobe32(addr);
 	dcdtable[curdcd++] = htobe32(val);
 
@@ -370,11 +365,11 @@ static int do_cmd_check(int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	cmd = (TAG_CHECK << 24) | (i << 3) | width;
+	cmd = (TAG_CHECK << 24) | (i << 3) | width | ((sizeof(uint32_t) * 3) << 8);
 
 	check_last_dcd(cmd);
 
-	last_cmd_len += sizeof(uint32_t) * 2;
+	dcdtable[curdcd++] = htobe32(cmd);
 	dcdtable[curdcd++] = htobe32(addr);
 	dcdtable[curdcd++] = htobe32(mask);
 
@@ -454,14 +449,15 @@ static int do_dcd_offset(int argc, char *argv[])
 struct soc_type {
 	char *name;
 	int header_version;
+	int cpu_type;
 };
 
 static struct soc_type socs[] = {
-	{ .name = "imx25", .header_version = 1, },
-	{ .name = "imx35", .header_version = 1, },
-	{ .name = "imx51", .header_version = 1, },
-	{ .name = "imx53", .header_version = 2, },
-	{ .name = "imx6", .header_version = 2, },
+	{ .name = "imx25", .header_version = 1, .cpu_type = 25},
+	{ .name = "imx35", .header_version = 1, .cpu_type = 35 },
+	{ .name = "imx51", .header_version = 1, .cpu_type = 51 },
+	{ .name = "imx53", .header_version = 2, .cpu_type = 53 },
+	{ .name = "imx6", .header_version = 2, .cpu_type = 6 },
 };
 
 static int do_soc(int argc, char *argv[])
@@ -477,6 +473,7 @@ static int do_soc(int argc, char *argv[])
 	for (i = 0; i < ARRAY_SIZE(socs); i++) {
 		if (!strcmp(socs[i].name, soc)) {
 			header_version = socs[i].header_version;
+			cpu_type = socs[i].cpu_type;
 			return 0;
 		}
 	}
@@ -765,6 +762,14 @@ int main(int argc, char *argv[])
 	if (ret < 0) {
 		perror("write");
 		exit(1);
+	}
+
+	if (cpu_type == 35) {
+		ret = xwrite(outfd, buf, 4096);
+		if (ret < 0) {
+			perror("write");
+			exit(1);
+		}
 	}
 
 	infd = open(imagename, O_RDONLY);

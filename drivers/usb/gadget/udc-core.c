@@ -20,6 +20,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
+#include <poller.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>
 
@@ -38,6 +39,7 @@ struct usb_udc {
 	struct usb_gadget		*gadget;
 	struct device_d			dev;
 	struct list_head		list;
+	struct poller_struct		poller;
 };
 
 static LIST_HEAD(udc_list);
@@ -146,6 +148,18 @@ static inline void usb_gadget_udc_stop(struct usb_gadget *gadget,
 	gadget->ops->udc_stop(gadget, driver);
 }
 
+int usb_gadget_poll(void)
+{
+	struct usb_udc		*udc;
+
+	list_for_each_entry(udc, &udc_list, list) {
+		if (udc->gadget->ops->udc_poll)
+			udc->gadget->ops->udc_poll(udc->gadget);
+	}
+
+	return 0;
+}
+
 /**
  * usb_add_gadget_udc_release - adds a new gadget to the udc class driver list
  * @parent: the parent device to this udc. Usually the controller driver's
@@ -223,6 +237,9 @@ static void usb_gadget_remove_driver(struct usb_udc *udc)
 	dev_dbg(&udc->dev, "unregistering UDC driver [%s]\n",
 			udc->gadget->name);
 
+	if (udc->gadget->ops->udc_poll)
+		poller_unregister(&udc->poller);
+
 	usb_gadget_disconnect(udc->gadget);
 	udc->driver->disconnect(udc->gadget);
 	udc->driver->unbind(udc->gadget);
@@ -267,6 +284,13 @@ EXPORT_SYMBOL_GPL(usb_del_gadget_udc);
 
 /* ------------------------------------------------------------------------- */
 
+static void udc_poll_driver(struct poller_struct *poller)
+{
+	struct usb_udc *udc = container_of(poller, struct usb_udc, poller);
+
+	udc->gadget->ops->udc_poll(udc->gadget);
+}
+
 static int udc_bind_to_driver(struct usb_udc *udc, struct usb_gadget_driver *driver)
 {
 	int ret;
@@ -277,6 +301,13 @@ static int udc_bind_to_driver(struct usb_udc *udc, struct usb_gadget_driver *dri
 	udc->driver = driver;
 	udc->dev.driver = &driver->driver;
 	udc->gadget->dev.driver = &driver->driver;
+
+	if (udc->gadget->ops->udc_poll) {
+		udc->poller.func = udc_poll_driver;
+		ret = poller_register(&udc->poller);
+		if (ret)
+			return ret;
+	}
 
 	ret = driver->bind(udc->gadget, driver);
 	if (ret)
@@ -291,6 +322,9 @@ static int udc_bind_to_driver(struct usb_udc *udc, struct usb_gadget_driver *dri
 
 	return 0;
 err1:
+	if (udc->gadget->ops->udc_poll)
+		poller_unregister(&udc->poller);
+
 	if (ret != -EISNAM)
 		dev_err(&udc->dev, "failed to start %s: %d\n",
 			udc->driver->function, ret);

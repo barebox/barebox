@@ -21,7 +21,6 @@
 #include <clock.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>
-#include <poller.h>
 #include <gpio.h>
 
 #include <linux/list.h>
@@ -1257,6 +1256,8 @@ static int at91_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 	return 0;
 }
 
+static void at91_udc_gadget_poll(struct usb_gadget *gadget);
+
 static const struct usb_gadget_ops at91_udc_ops = {
 	.get_frame		= at91_get_frame,
 	.wakeup			= at91_wakeup,
@@ -1271,6 +1272,7 @@ static const struct usb_gadget_ops at91_udc_ops = {
 	/* .vbus_power		= at91_vbus_power, */
 	.udc_start		= at91_udc_start,
 	.udc_stop		= at91_udc_stop,
+	.udc_poll		= at91_udc_gadget_poll,
 };
 
 /*-------------------------------------------------------------------------*/
@@ -1350,13 +1352,13 @@ static int at91_udc_vbus_set(struct param_d *p, void *priv)
 	return -EROFS;
 }
 
-int usb_gadget_poll(void)
+static void at91_udc_gadget_poll(struct usb_gadget *gadget)
 {
 	struct at91_udc	*udc = &controller;
 	u32 value;
 
 	if (!udc->udp_baseaddr)
-		return -ENODEV;
+		return;
 
 	if (gpio_is_valid(udc->board.vbus_pin)) {
 		value = gpio_get_value(udc->board.vbus_pin);
@@ -1365,26 +1367,15 @@ int usb_gadget_poll(void)
 		udc->gpio_vbus_val = value;
 
 		if (!value)
-			return 0;
+			return;
 	}
 
 	value = at91_udp_read(udc, AT91_UDP_ISR) & (~(AT91_UDP_SOFINT));
 	if (value)
 		at91_udc_irq(udc);
-
-	return value;
 }
 
 /*-------------------------------------------------------------------------*/
-
-static void at91_udc_poller(struct poller_struct *poller)
-{
-	usb_gadget_poll();
-}
-
-static struct poller_struct poller = {
-	.func		= at91_udc_poller
-};
 
 static int __init at91udc_probe(struct device_d *dev)
 {
@@ -1479,8 +1470,6 @@ static int __init at91udc_probe(struct device_d *dev)
 		DBG(udc, "no VBUS detection, assuming always-on\n");
 		udc->vbus = 1;
 	}
-
-	poller_register(&poller);
 
 	retval = usb_add_gadget_udc_release(dev, &udc->gadget, NULL);
 	if (retval)

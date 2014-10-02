@@ -88,8 +88,10 @@ static void power_domain_transition_enable(void)
 /*
  * Enable the module clock and the power domain for required peripherals
  */
-static void per_clocks_enable(void)
+void am33xx_enable_per_clocks(void)
 {
+	u32 clkdcoldo;
+
 	/* Enable the module clock */
 	__raw_writel(PRCM_MOD_EN, CM_PER_TIMER2_CLKCTRL);
 	while (__raw_readl(CM_PER_TIMER2_CLKCTRL) != PRCM_MOD_EN);
@@ -154,6 +156,15 @@ static void per_clocks_enable(void)
 
 	__raw_writel(PRCM_MOD_EN, CM_PER_SPI1_CLKCTRL);
 	while (__raw_readl(CM_PER_SPI1_CLKCTRL) != PRCM_MOD_EN);
+
+	/* USB */
+	__raw_writel(PRCM_MOD_EN, CM_PER_USB0_CLKCTRL);
+	while ((__raw_readl(CM_PER_USB0_CLKCTRL) & 0x30000) != 0x0);
+
+	clkdcoldo = __raw_readl(CM_CLKDCOLDO_DPLL_PER);
+	clkdcoldo = clkdcoldo | 0x100;
+	__raw_writel(clkdcoldo, CM_CLKDCOLDO_DPLL_PER);
+	while ((__raw_readl(CM_CLKDCOLDO_DPLL_PER) & 0x00000200) != 0x200);
 }
 
 static void mpu_pll_config(int mpupll_M, int osc)
@@ -305,5 +316,5 @@ void am33xx_pll_init(int mpupll_M, int osc, int ddrpll_M)
 	/* Enable power domain transition */
 	power_domain_transition_enable();
 	/* Enable the required peripherals */
-	per_clocks_enable();
+	am33xx_enable_per_clocks();
 }

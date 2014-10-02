@@ -483,6 +483,7 @@ struct usb_gadget_ops {
 			struct usb_gadget_driver *);
 	int	(*udc_stop)(struct usb_gadget *,
 			struct usb_gadget_driver *);
+	void	(*udc_poll)(struct usb_gadget *);
 };
 
 /**

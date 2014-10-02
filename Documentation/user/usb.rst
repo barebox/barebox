@@ -143,3 +143,24 @@ USB CDC ACM compliant serial device.
 
 Unlike the :ref:`command_dfu` command the ``usbgadget`` command returns immediately
 after creating the gadget. The gadget can be removed with ``usbgadget -d``.
+
+USB OTG support
+---------------
+
+barebox does not have USB OTG support. However, barebox supports some USB cores in
+both host and device mode. If these are specified for otg in the device tree
+(dr_mode = "otg";) barebox registers a OTG device which can be used to decide which
+mode shall be used. The device has a ``mode`` parameter which by default has the
+value ``otg``. setting this to ``host`` or ``device`` puts the device in the corresponding
+mode. Once a specific mode has been selected it can't be changed later anymore.
+
+.. code-block:: sh
+  barebox:/ devinfo otg0
+  Parameters:
+    mode: otg ("otg", "host", "peripheral")
+  barebox:/ otg0.mode=host
+  musb-hdrc: ConfigData=0xde (UTMI-8, dyn FIFOs, bulk combine, bulk split, HB-ISO Rx, HB-ISO Tx, SoftConn)
+  musb-hdrc: MHDRC RTL version 2.0
+  musb-hdrc: setup fifo_mode 4
+  musb-hdrc: 28/31 max ep, 16384/16384 memory
+  barebox:/

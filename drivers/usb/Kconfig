@@ -19,3 +19,5 @@ endif
 
 source drivers/usb/gadget/Kconfig
 
+source drivers/usb/musb/Kconfig
+

@@ -33,11 +33,14 @@ typedef int     gfp_t;
 #define MODULE_AUTHOR(x)
 #define MODULE_DESCRIPTION(x)
 #define MODULE_LICENSE(x)
+#define MODULE_ALIAS(x)
 
 typedef int   spinlock_t;
 #define spin_lock_init(...)
 #define spin_lock(...)
 #define spin_unlock(...)
+static inline void spin_lock_irqsave(spinlock_t *lock, unsigned long flags) {}
+static inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags) {}
 
 #define mutex_init(...)
 #define mutex_lock(...)
@@ -65,5 +68,9 @@ typedef int	wait_queue_head_t;
 #define cond_resched()			do { } while (0)
 
 #define init_waitqueue_head(...)	do { } while (0)
+
+typedef int irqreturn_t;
+#define IRQ_NONE 0
+#define IRQ_HANDLED 0
 
 #endif /* __INCLUDE_LINUX_BAREBOX_WRAPPER_H */

@@ -50,10 +50,10 @@
 
 	spi0_pins: pinmux_spi0_pins {
 		pinctrl-single,pins = <
-			0x150 (INPUT_EN | MUX_MODE0)
-			0x154 (PULL_UP | INPUT_EN | MUX_MODE0)
-			0x158 (INPUT_EN | MUX_MODE0)
-			0x15c (PULL_UP | INPUT_EN | MUX_MODE0)
+			0x150 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* spi0_clk.spi0_clk */
+			0x154 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* spi0_d0.spi0_d0 */
+			0x158 (PIN_INPUT_PULLUP | MUX_MODE0)	/* spi0_d1.spi0_d1 */
+			0x15c (PIN_INPUT_PULLUP | MUX_MODE0)	/* spi0_cs0.spi0_cs0 */
 		>;
 	};
 
@@ -172,9 +172,9 @@
 	status = "okay";
 
 	flash: m25p80 {
-		compatible = "sst,sst25vf032b", "m25p80";
-		spi-max-frequency = <15000000>;
-		reg = <1>;
+		compatible = "m25p80";
+		spi-max-frequency = <48000000>;
+		reg = <0>;
 		#address-cells = <1>;
 		#size-cells = <1>;
 
@@ -194,8 +194,13 @@
 		};
 
 		partition@3 {
+			label = "oftree";
+			reg = <0xc0000 0x20000>;
+		};
+
+		partition@4 {
 			label = "kernel";
-			reg = <0xc0000 0x400000>;
+			reg = <0xe0000 0x400000>;
 		};
 	};
 };
@@ -305,13 +310,22 @@
 		};
 
 		partition@6 {
-			label = "kernel";
-			reg = <0x120000 0x800000>;
+			label = "oftree";
+			reg = <0x120000 0x20000>;
 		};
 
 		partition@7 {
+			label = "kernel";
+			reg = <0x140000 0x800000>;
+		};
+
+		partition@8 {
 			label = "root";
-			reg = <0x920000 0x1f6e0000>;
+			/*
+			 * Size 0x0 extends partition to
+			 * end of nand flash.
+			 */
+			reg = <0x940000 0x0>;
 		};
 	};
 };

@@ -16,15 +16,15 @@
 #include <debug_ll.h>
 
 static const struct am33xx_cmd_control pcm051_cmd = {
-	.slave_ratio0 = 0x40,
+	.slave_ratio0 = 0x80,
 	.dll_lock_diff0 = 0x0,
-	.invert_clkout0 = 0x1,
-	.slave_ratio1 = 0x40,
+	.invert_clkout0 = 0x0,
+	.slave_ratio1 = 0x80,
 	.dll_lock_diff1 = 0x0,
-	.invert_clkout1 = 0x1,
-	.slave_ratio2 = 0x40,
+	.invert_clkout1 = 0x0,
+	.slave_ratio2 = 0x80,
 	.dll_lock_diff2 = 0x0,
-	.invert_clkout2 = 0x1,
+	.invert_clkout2 = 0x0,
 };
 
 struct pcm051_sdram_timings {
@@ -33,66 +33,86 @@ struct pcm051_sdram_timings {
 };
 
 enum {
-	MT41J128M16125IT_1x256M16,
-	MT41J64M1615IT_1x128M16,
-	MT41J256M16HA15EIT_1x512M16,
+	MT41J128M16125IT_256MB,
+	MT41J64M1615IT_128MB,
+	MT41J256M16HA15EIT_512MB,
+	MT41J512M8125IT_2x512MB,
 };
 
 struct pcm051_sdram_timings timings[] = {
-	/* 1x256M16 */
-	[MT41J128M16125IT_1x256M16] = {
+	/* 256MB */
+	[MT41J128M16125IT_256MB] = {
 		.regs = {
-			.emif_read_latency	= 0x6,
-			.emif_tim1		= 0x0888A39B,
-			.emif_tim2		= 0x26337FDA,
-			.emif_tim3		= 0x501F830F,
-			.sdram_config		= 0x61C04AB2,
+			.emif_read_latency	= 0x7,
+			.emif_tim1		= 0x0AAAD4DB,
+			.emif_tim2		= 0x26437FDA,
+			.emif_tim3		= 0x501F83FF,
+			.sdram_config		= 0x61C052B2,
 			.zq_config		= 0x50074BE4,
-			.sdram_ref_ctrl		= 0x0000093B,
+			.sdram_ref_ctrl		= 0x00000C30,
 		},
 		.data = {
 			.rd_slave_ratio0	= 0x3B,
-			.wr_dqs_slave_ratio0	= 0x3B,
-			.fifo_we_slave_ratio0	= 0x97,
-			.wr_slave_ratio0	= 0x76,
+			.wr_dqs_slave_ratio0	= 0x33,
+			.fifo_we_slave_ratio0	= 0x9c,
+			.wr_slave_ratio0	= 0x6f,
 		},
 	},
 
-	/* 1x128M16 */
-	[MT41J64M1615IT_1x128M16] = {
+	/* 128MB */
+	[MT41J64M1615IT_128MB] = {
 		.regs =  {
-			.emif_read_latency	= 0x6,
-			.emif_tim1		= 0x0888A39B,
-			.emif_tim2		= 0x26247FDA,
-			.emif_tim3		= 0x501F821F,
-			.sdram_config		= 0x61C04A32,
+			.emif_read_latency	= 0x7,
+			.emif_tim1		= 0x0AAAE4DB,
+			.emif_tim2		= 0x262F7FDA,
+			.emif_tim3		= 0x501F82BF,
+			.sdram_config		= 0x61C05232,
 			.zq_config		= 0x50074BE4,
-			.sdram_ref_ctrl		= 0x0000093B,
+			.sdram_ref_ctrl		= 0x00000C30,
 		},
 		.data = {
-			.rd_slave_ratio0	= 0x3A,
-			.wr_dqs_slave_ratio0	= 0x36,
+			.rd_slave_ratio0	= 0x38,
+			.wr_dqs_slave_ratio0	= 0x34,
 			.fifo_we_slave_ratio0	= 0xA2,
-			.wr_slave_ratio0	= 0x74,
+			.wr_slave_ratio0	= 0x72,
 		},
 	},
 
-	/* 1x512MB */
-	[MT41J256M16HA15EIT_1x512M16] = {
+	/* 512MB */
+	[MT41J256M16HA15EIT_512MB] = {
 		.regs = {
-			.emif_read_latency	= 0x6,
-			.emif_tim1		= 0x0888A39B,
-			.emif_tim2		= 0x26517FDA,
-			.emif_tim3		= 0x501F84EF,
-			.sdram_config		= 0x61C04B32,
+			.emif_read_latency	= 0x7,
+			.emif_tim1		= 0x0AAAE4DB,
+			.emif_tim2		= 0x266B7FDA,
+			.emif_tim3		= 0x501F867F,
+			.sdram_config		= 0x61C05332,
 			.zq_config		= 0x50074BE4,
-			.sdram_ref_ctrl		= 0x0000093B,
+			.sdram_ref_ctrl		= 0x00000C30
 		},
 		.data = {
-			.rd_slave_ratio0	= 0x3B,
-			.wr_dqs_slave_ratio0	= 0x3B,
-			.fifo_we_slave_ratio0	= 0x96,
-			.wr_slave_ratio0	= 0x76,
+			.rd_slave_ratio0	= 0x35,
+			.wr_dqs_slave_ratio0	= 0x43,
+			.fifo_we_slave_ratio0	= 0x97,
+			.wr_slave_ratio0	= 0x7b,
+		},
+	},
+
+	/* 1024MB */
+	[MT41J512M8125IT_2x512MB] = {
+		.regs = {
+			.emif_read_latency	= 0x7,
+			.emif_tim1		= 0x0AAAE4DB,
+			.emif_tim2		= 0x266B7FDA,
+			.emif_tim3		= 0x501F867F,
+			.sdram_config		= 0x61C053B2,
+			.zq_config		= 0x50074BE4,
+			.sdram_ref_ctrl		= 0x00000C30
+		},
+		.data = {
+			.rd_slave_ratio0	= 0x32,
+			.wr_dqs_slave_ratio0	= 0x48,
+			.fifo_we_slave_ratio0	= 0x99,
+			.wr_slave_ratio0	= 0x80,
 		},
 	},
 };
@@ -122,7 +142,7 @@ static noinline void pcm051_board_init(int sdram)
 	writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
-	am33xx_pll_init(MPUPLL_M_600, 25, DDRPLL_M_303);
+	am33xx_pll_init(MPUPLL_M_600, 25, DDRPLL_M_400);
 
 	am335x_sdram_init(0x18B, &pcm051_cmd,
 			&timing->regs,
@@ -154,19 +174,24 @@ static noinline void pcm051_board_entry(unsigned long bootinfo, int sdram)
 	pcm051_board_init(sdram);
 }
 
-ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_1x256m16, bootinfo, r1, r2)
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_256mb, bootinfo, r1, r2)
 {
-	pcm051_board_entry(bootinfo, MT41J128M16125IT_1x256M16);
+	pcm051_board_entry(bootinfo, MT41J128M16125IT_256MB);
 }
 
-ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_1x128m16, bootinfo, r1, r2)
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_128mb, bootinfo, r1, r2)
 {
-	pcm051_board_entry(bootinfo, MT41J64M1615IT_1x128M16);
+	pcm051_board_entry(bootinfo, MT41J64M1615IT_128MB);
 }
 
-ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_1x512m16, bootinfo, r1, r2)
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_512mb, bootinfo, r1, r2)
 {
-	pcm051_board_entry(bootinfo, MT41J256M16HA15EIT_1x512M16);
+	pcm051_board_entry(bootinfo, MT41J256M16HA15EIT_512MB);
+}
+
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_sram_2x512mb, bootinfo, r1, r2)
+{
+	pcm051_board_entry(bootinfo, MT41J512M8125IT_2x512MB);
 }
 
 ENTRY_FUNCTION(start_am33xx_phytec_phycore_sdram, r0, r1, r2)

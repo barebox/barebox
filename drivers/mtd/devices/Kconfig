@@ -58,4 +58,9 @@ config MTD_DOCG3
 	  M-Systems and now Sandisk. The support is very experimental,
 	  and doesn't give access to any write operations.
 
+config MTD_MTDRAM
+	tristate "Support for NVRAM devices (FRAM, MRAM, ...)"
+	help
+	  This enables non volatile RAM to used as MTD devices.
+
 endmenu

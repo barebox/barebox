@@ -19,3 +19,10 @@ common-y += arch/openrisc/lib/
 common-y += arch/openrisc/cpu/
 
 lds-y += arch/openrisc/cpu/barebox.lds
+
+common-$(CONFIG_BUILTIN_DTB) += arch/openrisc/dts/
+
+dts := arch/openrisc/dts
+
+%.dtb: scripts
+	$(Q)$(MAKE) $(build)=$(dts) $(dts)/$@

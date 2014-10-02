@@ -565,8 +565,14 @@ static int ethoc_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct of_device_id ethoc_dt_ids[] = {
+	{ .compatible = "opencores,ethoc", },
+	{ }
+};
+
 static struct driver_d ethoc_driver = {
 	.name  = "ethoc",
 	.probe = ethoc_probe,
+	.of_compatible = DRV_OF_COMPAT(ethoc_dt_ids),
 };
 device_platform_driver(ethoc_driver);

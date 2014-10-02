@@ -19,8 +19,8 @@
 #define AT91_BASE_DBGU0	0xfffff200
 /* 9263, 9g45 */
 #define AT91_BASE_DBGU1	0xffffee00
-
-#define AT91_PMC	0xfffffc00
+/* sama5d4 */
+#define AT91_BASE_DBGU2	0xfc069000
 
 #if defined(CONFIG_ARCH_AT91RM9200)
 #include <mach/at91rm9200.h>
@@ -40,6 +40,8 @@
 #include <mach/at91sam9x5.h>
 #elif defined(CONFIG_ARCH_SAMA5D3)
 #include <mach/sama5d3.h>
+#elif defined(CONFIG_ARCH_SAMA5D4)
+#include <mach/sama5d4.h>
 #elif defined(CONFIG_ARCH_AT91CAP9)
 #include <mach/at91cap9.h>
 #elif defined(CONFIG_ARCH_AT91X40)

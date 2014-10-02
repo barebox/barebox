@@ -511,6 +511,7 @@ static void atmci_get_cap(struct atmel_mci *host)
 	host->caps.need_reset_after_xfer = 1;
 
 	switch (version & 0xf00) {
+	case 0x600:
 	case 0x500:
 		host->caps.has_odd_clk_div = 1;
 	case 0x400:

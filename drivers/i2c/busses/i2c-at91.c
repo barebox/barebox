@@ -174,24 +174,32 @@ static void at91_twi_read_next_byte(struct at91_twi_dev *dev)
 static int at91_twi_wait_completion(struct at91_twi_dev *dev)
 {
 	uint64_t start = get_time_ns();
-	unsigned int status = at91_twi_read(dev, AT91_TWI_SR);
-	unsigned int irqstatus = at91_twi_read(dev, AT91_TWI_IMR);
+	unsigned int status;
+	unsigned int irqstatus;
 
-	if (irqstatus & AT91_TWI_RXRDY)
-		at91_twi_read_next_byte(dev);
-	else if (irqstatus & AT91_TWI_TXRDY)
-		at91_twi_write_next_byte(dev);
-	else
-		dev_warn(&dev->adapter.dev, "neither rx and tx are ready\n");
+	do {
+		status = at91_twi_read(dev, AT91_TWI_SR);
+		irqstatus = at91_twi_read(dev, AT91_TWI_IMR);
 
-	dev->transfer_status |= status;
-
-	while(!(at91_twi_read(dev, AT91_TWI_SR) & AT91_TWI_TXCOMP)) {
-		if(is_timeout(start, AT91_I2C_TIMEOUT)) {
-			dev_warn(&dev->adapter.dev, "timeout waiting for bus ready\n");
-			return -ETIMEDOUT;
+		if (!(status & irqstatus)) {
+			if (is_timeout(start, AT91_I2C_TIMEOUT)) {
+				dev_warn(&dev->adapter.dev, "timeout waiting for bus ready\n");
+				return -ETIMEDOUT;
+			} else {
+				continue;
+			}
 		}
-	}
+
+		if (irqstatus & AT91_TWI_RXRDY)
+			at91_twi_read_next_byte(dev);
+		else if (irqstatus & AT91_TWI_TXRDY)
+			at91_twi_write_next_byte(dev);
+		else
+			dev_warn(&dev->adapter.dev, "neither rx and tx are ready\n");
+
+		dev->transfer_status |= status;
+
+	} while (!(at91_twi_read(dev, AT91_TWI_SR) & AT91_TWI_TXCOMP));
 
 	at91_disable_twi_interrupts(dev);
 
@@ -346,22 +354,55 @@ static struct at91_twi_pdata at91sam9g10_config = {
 	.has_unre_flag = false,
 };
 
+static struct at91_twi_pdata at91sam9x5_config = {
+	.clk_max_div = 7,
+	.clk_offset = 4,
+	.has_unre_flag = false,
+};
+
 static struct platform_device_id at91_twi_devtypes[] = {
 	{
-		.name = "i2c-at91rm9200",
+		.name = "at91rm9200-i2c",
 		.driver_data = (unsigned long) &at91rm9200_config,
 	}, {
-		.name = "i2c-at91sam9261",
+		.name = "at91sam9261-i2c",
 		.driver_data = (unsigned long) &at91sam9261_config,
 	}, {
-		.name = "i2c-at91sam9260",
+		.name = "at91sam9260-i2c",
 		.driver_data = (unsigned long) &at91sam9260_config,
 	}, {
-		.name = "i2c-at91sam9g20",
+		.name = "at91sam9g20-i2c",
 		.driver_data = (unsigned long) &at91sam9g20_config,
 	}, {
-		.name = "i2c-at91sam9g10",
+		.name = "at91sam9g10-i2c",
 		.driver_data = (unsigned long) &at91sam9g10_config,
+	}, {
+		.name = "at91sam9x5-i2c",
+		.driver_data = (unsigned long) &at91sam9x5_config,
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct of_device_id at91_twi_dt_ids[] = {
+	{
+		.compatible = "atmel,at91rm9200-i2c",
+		.data = (unsigned long) &at91rm9200_config,
+	} , {
+		.compatible = "atmel,at91sam9260-i2c",
+		.data = (unsigned long) &at91sam9260_config,
+	} , {
+		.compatible = "atmel,at91sam9261-i2c",
+		.data = (unsigned long) &at91sam9261_config,
+	} , {
+		.compatible = "atmel,at91sam9g20-i2c",
+		.data = (unsigned long) &at91sam9g20_config,
+	} , {
+		.compatible = "atmel,at91sam9g10-i2c",
+		.data = (unsigned long) &at91sam9g10_config,
+	}, {
+		.compatible = "atmel,at91sam9x5-i2c",
+		.data = (unsigned long) &at91sam9x5_config,
 	}, {
 		/* sentinel */
 	}
@@ -371,14 +412,16 @@ static int at91_twi_probe(struct device_d *dev)
 {
 	struct at91_twi_dev *i2c_at91;
 	struct at91_twi_pdata *i2c_data;
-	int rc;
+	int rc = 0;
 	u32 bus_clk_rate;
 
 	i2c_at91 = xzalloc(sizeof(struct at91_twi_dev));
 
 	rc = dev_get_drvdata(dev, (unsigned long *)&i2c_data);
-	if (rc)
+	if (rc < 0) {
+		dev_err(dev, "failed to retrieve driver data\n");
 		goto out_free;
+	}
 
 	i2c_at91->pdata = i2c_data;
 
@@ -389,7 +432,7 @@ static int at91_twi_probe(struct device_d *dev)
 		goto out_free;
 	}
 
-	i2c_at91->clk = clk_get(dev, "twi_clk");
+	i2c_at91->clk = clk_get(dev, NULL);
 	if (IS_ERR(i2c_at91->clk)) {
 		dev_err(dev, "no clock defined\n");
 		rc = -ENODEV;
@@ -418,17 +461,18 @@ static int at91_twi_probe(struct device_d *dev)
 	return 0;
 
 out_adap_fail:
-    clk_disable(i2c_at91->clk);
-    clk_put(i2c_at91->clk);
+	clk_disable(i2c_at91->clk);
+	clk_put(i2c_at91->clk);
 out_free:
-    kfree(i2c_at91);
-    return rc;
+	kfree(i2c_at91);
+	return rc;
 }
 
 static struct driver_d at91_twi_driver = {
 	.name		= "at91-twi",
 	.probe		= at91_twi_probe,
 	.id_table	= at91_twi_devtypes,
+	.of_compatible	= DRV_OF_COMPAT(at91_twi_dt_ids),
 };
 device_platform_driver(at91_twi_driver);
 

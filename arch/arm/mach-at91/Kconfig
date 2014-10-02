@@ -6,6 +6,9 @@ config HAVE_AT91_DBGU0
 config HAVE_AT91_DBGU1
 	bool
 
+config HAVE_AT91_DBGU2
+	bool
+
 config HAVE_AT91_LOWLEVEL_INIT
 	bool
 
@@ -165,6 +168,13 @@ config ARCH_SAMA5D3
 	bool "SAMA5D3x"
 	select SOC_SAMA5
 	select HAVE_AT91_DBGU1
+	select HAS_MACB
+	select AT91SAM9G45_RESET
+
+config ARCH_SAMA5D4
+	bool "SAMA5D4"
+	select SOC_SAMA5
+	select HAVE_AT91_DBGU2
 	select HAS_MACB
 	select AT91SAM9G45_RESET
 
@@ -465,6 +475,22 @@ config MACH_SAMA5D3_XPLAINED
 	bool "Atmel SAMA5D3_XPLAINED Evaluation Kit"
 	help
 	  Select this if you are using Atmel's SAMA5D3_XPLAINED Evaluation Kit.
+
+endchoice
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_SAMA5D4
+
+choice
+	prompt "SAMA5D4 Board Type"
+
+config MACH_SAMA5D4EK
+	bool "Atmel SAMA5D4 Evaluation Kit"
+	help
+	  Select this if you are using Atmel's SAMA5D4-EK Evaluation Kit.
 
 endchoice
 

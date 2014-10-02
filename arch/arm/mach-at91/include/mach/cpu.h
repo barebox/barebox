@@ -26,7 +26,7 @@
 #define ARCH_ID_AT91SAM9G45ES	0x819b05a1	/* 9G45-ES (Engineering Sample) */
 #define ARCH_ID_AT91SAM9X5	0x819a05a0
 #define ARCH_ID_AT91SAM9N12	0x819a07a0
-#define ARCH_ID_SAMA5D3		0x8A5C07C0
+#define ARCH_ID_SAMA5		0x8A5C07C0
 
 #define ARCH_ID_AT91SAM9XE128	0x329973a0
 #define ARCH_ID_AT91SAM9XE256	0x329a93a0
@@ -48,11 +48,18 @@
 #define ARCH_EXID_AT91SAM9G25	0x00000003
 #define ARCH_EXID_AT91SAM9X25	0x00000004
 
+#define ARCH_EXID_SAMA5D3	0x00004300
 #define ARCH_EXID_SAMA5D31	0x00444300
 #define ARCH_EXID_SAMA5D33	0x00414300
 #define ARCH_EXID_SAMA5D34	0x00414301
 #define ARCH_EXID_SAMA5D35	0x00584300
 #define ARCH_EXID_SAMA5D36	0x00004301
+
+#define ARCH_EXID_SAMA5D4	0x00000007
+#define ARCH_EXID_SAMA5D41	0x00000001
+#define ARCH_EXID_SAMA5D42	0x00000002
+#define ARCH_EXID_SAMA5D43	0x00000003
+#define ARCH_EXID_SAMA5D44	0x00000004
 
 #define ARCH_FAMILY_AT91X92	0x09200000
 #define ARCH_FAMILY_AT91SAM9	0x01900000
@@ -85,6 +92,9 @@ enum at91_soc_type {
 	/* SAMA5D3 */
 	AT91_SOC_SAMA5D3,
 
+	/* SAMA5D4 */
+	AT91_SOC_SAMA5D4,
+
 	/* Unknown type */
 	AT91_SOC_NONE
 };
@@ -106,6 +116,10 @@ enum at91_soc_subtype {
 	/* SAMA5D3 */
 	AT91_SOC_SAMA5D31, AT91_SOC_SAMA5D33, AT91_SOC_SAMA5D34,
 	AT91_SOC_SAMA5D35, AT91_SOC_SAMA5D36,
+
+	/* SAMA5D4 */
+	AT91_SOC_SAMA5D41, AT91_SOC_SAMA5D42, AT91_SOC_SAMA5D43,
+	AT91_SOC_SAMA5D44,
 
 	/* Unknown subtype */
 	AT91_SOC_SUBTYPE_NONE
@@ -215,6 +229,20 @@ static inline int at91_soc_is_detected(void)
 #define cpu_is_sama5d34()	(0)
 #define cpu_is_sama5d35()	(0)
 #define cpu_is_sama5d36()	(0)
+#endif
+
+#ifdef CONFIG_ARCH_SAMA5D4
+#define cpu_is_sama5d4()	(at91_soc_initdata.type == AT91_SOC_SAMA5D4)
+#define cpu_is_sama5d41()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D41)
+#define cpu_is_sama5d42()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D42)
+#define cpu_is_sama5d43()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D43)
+#define cpu_is_sama5d44()	(at91_soc_initdata.subtype == AT91_SOC_SAMA5D44)
+#else
+#define cpu_is_sama5d4()	(0)
+#define cpu_is_sama5d41()	(0)
+#define cpu_is_sama5d42()	(0)
+#define cpu_is_sama5d43()	(0)
+#define cpu_is_sama5d44()	(0)
 #endif
 
 /*

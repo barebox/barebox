@@ -13,7 +13,7 @@
 #define CLK_TYPE_PROGRAMMABLE	0x4
 #define CLK_TYPE_PERIPHERAL	0x8
 #define CLK_TYPE_SYSTEM		0x10
-
+#define CLK_TYPE_PERIPH_H64MX   0x80
 
 struct clk {
 	struct list_head node;

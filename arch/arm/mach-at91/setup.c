@@ -39,6 +39,9 @@ static void __init soc_detect(u32 dbgu_base)
 	cidr = __raw_readl(dbgu_base + AT91_DBGU_CIDR);
 	socid = cidr & ~AT91_CIDR_VERSION;
 
+	/* sub version of soc */
+	at91_soc_initdata.exid = __raw_readl(dbgu_base + AT91_DBGU_EXID);
+
 	switch (socid) {
 	case ARCH_ID_AT91RM9200:
 		at91_soc_initdata.type = AT91_SOC_RM9200;
@@ -89,9 +92,16 @@ static void __init soc_detect(u32 dbgu_base)
 		at91_boot_soc = at91sam9n12_soc;
 		break;
 
-	case ARCH_ID_SAMA5D3:
-		at91_soc_initdata.type = AT91_SOC_SAMA5D3;
-		at91_boot_soc = at91sama5d3_soc;
+	case ARCH_ID_SAMA5:
+		if (at91_soc_initdata.exid & ARCH_EXID_SAMA5D3) {
+			at91_soc_initdata.type = AT91_SOC_SAMA5D3;
+			at91_boot_soc = at91sama5d3_soc;
+		} else {
+			if (at91_soc_initdata.exid & ARCH_EXID_SAMA5D4) {
+				at91_soc_initdata.type = AT91_SOC_SAMA5D4;
+				at91_boot_soc = at91sama5d4_soc;
+			}
+		}
 		break;
 	}
 
@@ -111,9 +121,6 @@ static void __init soc_detect(u32 dbgu_base)
 		return;
 
 	at91_soc_initdata.cidr = cidr;
-
-	/* sub version of soc */
-	at91_soc_initdata.exid = __raw_readl(dbgu_base + AT91_DBGU_EXID);
 
 	if (at91_soc_initdata.type == AT91_SOC_SAM9G45) {
 		switch (at91_soc_initdata.exid) {
@@ -168,6 +175,23 @@ static void __init soc_detect(u32 dbgu_base)
 			break;
 		}
 	}
+
+	if (at91_soc_initdata.type == AT91_SOC_SAMA5D4) {
+		switch (at91_soc_initdata.exid) {
+		case ARCH_EXID_SAMA5D41:
+			at91_soc_initdata.subtype = AT91_SOC_SAMA5D41;
+			break;
+		case ARCH_EXID_SAMA5D42:
+			at91_soc_initdata.subtype = AT91_SOC_SAMA5D42;
+			break;
+		case ARCH_EXID_SAMA5D43:
+			at91_soc_initdata.subtype = AT91_SOC_SAMA5D43;
+			break;
+		case ARCH_EXID_SAMA5D44:
+			at91_soc_initdata.subtype = AT91_SOC_SAMA5D44;
+			break;
+		}
+	}
 }
 
 static const char *soc_name[] = {
@@ -182,6 +206,7 @@ static const char *soc_name[] = {
 	[AT91_SOC_SAM9X5]	= "at91sam9x5",
 	[AT91_SOC_SAM9N12]	= "at91sam9n12",
 	[AT91_SOC_SAMA5D3]	= "sama5d3",
+	[AT91_SOC_SAMA5D4]	= "sama5d4",
 	[AT91_SOC_NONE]		= "Unknown"
 };
 
@@ -209,6 +234,10 @@ static const char *soc_subtype_name[] = {
 	[AT91_SOC_SAMA5D34]	= "sama5d34",
 	[AT91_SOC_SAMA5D35]	= "sama5d35",
 	[AT91_SOC_SAMA5D36]	= "sama5d36",
+	[AT91_SOC_SAMA5D41]	= "sama5d41",
+	[AT91_SOC_SAMA5D42]	= "sama5d42",
+	[AT91_SOC_SAMA5D43]	= "sama5d43",
+	[AT91_SOC_SAMA5D44]	= "sama5d44",
 	[AT91_SOC_SUBTYPE_NONE]	= "Unknown"
 };
 
@@ -226,6 +255,8 @@ static int at91_detect(void)
 	soc_detect(AT91_BASE_DBGU0);
 	if (!at91_soc_is_detected())
 		soc_detect(AT91_BASE_DBGU1);
+	if (!at91_soc_is_detected())
+		soc_detect(AT91_BASE_DBGU2);
 
 	if (!at91_soc_is_detected())
 		panic("AT91: Impossible to detect the SOC type");

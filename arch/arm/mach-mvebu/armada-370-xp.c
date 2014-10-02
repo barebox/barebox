@@ -44,10 +44,23 @@ static inline void armada_370_xp_memory_find(unsigned long *phys_base,
 	}
 }
 
-static int armada_370_xp_init_soc(void)
+static void __noreturn armada_370_xp_reset_cpu(unsigned long addr)
+{
+	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x60);
+	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x64);
+	while (1)
+		;
+}
+
+static int armada_370_xp_init_soc(struct device_node *root, void *context)
 {
 	unsigned long phys_base, phys_size;
 	u32 reg;
+
+	if (!of_machine_is_compatible("marvell,armada-370-xp"))
+		return 0;
+
+	mvebu_set_reset(armada_370_xp_reset_cpu);
 
 	barebox_set_model("Marvell Armada 370/XP");
 	barebox_set_hostname("armada");
@@ -60,17 +73,14 @@ static int armada_370_xp_init_soc(void)
 	armada_370_xp_memory_find(&phys_base, &phys_size);
 
 	mvebu_set_memory(phys_base, phys_size);
-	mvebu_mbus_add_range(0xf0, 0x01, MVEBU_REMAP_INT_REG_BASE);
 
 	return 0;
 }
-core_initcall(armada_370_xp_init_soc);
 
-void __noreturn reset_cpu(unsigned long addr)
+static int armada_370_xp_register_soc_fixup(void)
 {
-	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x60);
-	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x64);
-	while (1)
-		;
+	mvebu_mbus_add_range("marvell,armada-370-xp", 0xf0, 0x01,
+			     MVEBU_REMAP_INT_REG_BASE);
+	return of_register_fixup(armada_370_xp_init_soc, NULL);
 }
-EXPORT_SYMBOL(reset_cpu);
+pure_initcall(armada_370_xp_register_soc_fixup);

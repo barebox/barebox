@@ -21,6 +21,7 @@
 #include <of.h>
 #include <of_address.h>
 #include <linux/clk.h>
+#include <mach/common.h>
 
 /*
  * Marvell MVEBU SoC id and revision can be read from any PCIe
@@ -80,29 +81,21 @@ static int mvebu_soc_id_init(void)
 }
 postcore_initcall(mvebu_soc_id_init);
 
-static u64 mvebu_mem[2];
-
-void mvebu_set_memory(u64 phys_base, u64 phys_size)
-{
-	mvebu_mem[0] = phys_base;
-	mvebu_mem[1] = phys_size;
-}
-
 /*
  * Memory size is set up by BootROM and can be read from SoC's ram controller
  * registers. Fixup provided DTs to reflect accessible amount of directly
  * attached RAM. Removable RAM, e.g. SODIMM, should be added by a per-board
  * fixup.
  */
-static int mvebu_memory_of_fixup(struct device_node *root, void *context)
+int mvebu_set_memory(u64 phys_base, u64 phys_size)
 {
-	struct device_node *np;
+	struct device_node *np, *root;
 	__be32 reg[4];
 	int na, ns;
 
-	/* bail out on zero-sized mem */
-	if (!mvebu_mem[1])
-		return -ENODEV;
+	root = of_get_root_node();
+	if (!root)
+		return -EINVAL;
 
 	np = of_find_node_by_path("/memory");
 	if (!np)
@@ -114,17 +107,17 @@ static int mvebu_memory_of_fixup(struct device_node *root, void *context)
 	ns = of_n_size_cells(np);
 
 	if (na == 2) {
-		reg[0] = cpu_to_be32(mvebu_mem[0] >> 32);
-		reg[1] = cpu_to_be32(mvebu_mem[0] & 0xffffffff);
+		reg[0] = cpu_to_be32(phys_base >> 32);
+		reg[1] = cpu_to_be32(phys_base & 0xffffffff);
 	} else {
-		reg[0] = cpu_to_be32(mvebu_mem[0] & 0xffffffff);
+		reg[0] = cpu_to_be32(phys_base & 0xffffffff);
 	}
 
 	if (ns == 2) {
-		reg[2] = cpu_to_be32(mvebu_mem[1] >> 32);
-		reg[3] = cpu_to_be32(mvebu_mem[1] & 0xffffffff);
+		reg[2] = cpu_to_be32(phys_size >> 32);
+		reg[3] = cpu_to_be32(phys_size & 0xffffffff);
 	} else {
-		reg[1] = cpu_to_be32(mvebu_mem[1] & 0xffffffff);
+		reg[1] = cpu_to_be32(phys_size & 0xffffffff);
 	}
 
 	if (of_set_property(np, "device_type", "memory", sizeof("memory"), 1) ||
@@ -134,7 +127,15 @@ static int mvebu_memory_of_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
-static int mvebu_memory_fixup_register(void) {
-	return of_register_fixup(mvebu_memory_of_fixup, NULL);
+static __noreturn void (*mvebu_reset_cpu)(unsigned long addr);
+
+void __noreturn reset_cpu(unsigned long addr)
+{
+	mvebu_reset_cpu(addr);
 }
-pure_initcall(mvebu_memory_fixup_register);
+EXPORT_SYMBOL(reset_cpu);
+
+void mvebu_set_reset(void __noreturn (*reset)(unsigned long addr))
+{
+	mvebu_reset_cpu = reset;
+}

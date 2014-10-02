@@ -7,87 +7,81 @@ config ARCH_TEXT_BASE
 	default 0x2000000 if ARCH_DOVE
 	default 0x2000000 if ARCH_KIRKWOOD
 
-choice
-	prompt "Marvell EBU Processor"
-
 config ARCH_ARMADA_370
-	bool "Armada 370"
+	bool
 	select CPU_V7
 	select CLOCKSOURCE_MVEBU
 	select PINCTRL_ARMADA_370
 
 config ARCH_ARMADA_XP
-	bool "Armada XP"
+	bool
 	select CPU_V7
 	select CLOCKSOURCE_MVEBU
 	select PINCTRL_ARMADA_XP
 
 config ARCH_DOVE
-	bool "Dove 88AP510"
+	bool
 	select CPU_V7
 	select CLOCKSOURCE_ORION
 	select PINCTRL_DOVE
 
 config ARCH_KIRKWOOD
-	bool "Kirkwood"
+	bool
 	select CPU_FEROCEON
 	select CLOCKSOURCE_ORION
 	select PINCTRL_KIRKWOOD
-
-endchoice
 
 #
 # Armada 370 SoC boards
 #
 
-if ARCH_ARMADA_370
+comment "Armada 370 based boards"
 
 config MACH_GLOBALSCALE_MIRABOX
 	bool "Globalscale Mirabox"
-
-endif # ARCH_ARMADA_370
+	select ARCH_ARMADA_370
 
 #
 # Armada XP SoC boards
 #
 
-if ARCH_ARMADA_XP
+comment "Armada XP based boards"
 
 config MACH_PLATHOME_OPENBLOCKS_AX3
 	bool "PlatHome OpenBlocks AX3"
+	select ARCH_ARMADA_XP
 
 config MACH_MARVELL_ARMADA_XP_GP
 	bool "Marvell Armada XP GP"
-
-endif # ARCH_ARMADA_XP
+	select ARCH_ARMADA_XP
 
 #
 # Dove 88AP510 SoC boards
 #
 
-if ARCH_DOVE
+comment "Dove based boards"
 
 config MACH_SOLIDRUN_CUBOX
 	bool "SolidRun CuBox"
-
-endif # ARCH_DOVE
+	select ARCH_DOVE
 
 #
 # Kirkwood SoC boards
 #
 
-if ARCH_KIRKWOOD
+comment "Kirkwood based boards"
 
 config MACH_GLOBALSCALE_GURUPLUG
 	bool "Guruplug"
+	select ARCH_KIRKWOOD
 
 config MACH_PLATHOME_OPENBLOCKS_A6
 	bool "PlatHome OpenBlocks A6"
+	select ARCH_KIRKWOOD
 
 config MACH_USI_TOPKICK
 	bool "Topkick"
-
-endif # ARCH_KIRKWOOD
+	select ARCH_KIRKWOOD
 
 #
 # Common options

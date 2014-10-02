@@ -31,26 +31,41 @@
 static struct phy_driver genphy_driver;
 static int genphy_config_init(struct phy_device *phydev);
 
-int phy_update_status(struct phy_device *dev)
+/**
+ * phy_aneg_done - return auto-negotiation status
+ * @phydev: target phy_device struct
+ *
+ * Description: Return the auto-negotiation status from this @phydev
+ * Returns > 0 on success or < 0 on error. 0 means that auto-negotiation
+ * is still pending.
+ */
+static int phy_aneg_done(struct phy_device *phydev)
 {
-	struct phy_driver *drv = to_phy_driver(dev->dev.driver);
-	struct eth_device *edev = dev->attached_dev;
-	int ret;
-	int oldspeed = dev->speed, oldduplex = dev->duplex;
+	struct phy_driver *drv = to_phy_driver(phydev->dev.driver);
 
-	ret = drv->read_status(dev);
+	return drv->aneg_done(phydev);
+}
+
+int phy_update_status(struct phy_device *phydev)
+{
+	struct phy_driver *drv = to_phy_driver(phydev->dev.driver);
+	struct eth_device *edev = phydev->attached_dev;
+	int ret;
+	int oldspeed = phydev->speed, oldduplex = phydev->duplex;
+
+	ret = drv->read_status(phydev);
 	if (ret)
 		return ret;
 
-	if (dev->speed == oldspeed && dev->duplex == oldduplex)
+	if (phydev->speed == oldspeed && phydev->duplex == oldduplex)
 		return 0;
 
-	if (dev->adjust_link)
-		dev->adjust_link(edev);
+	if (phydev->adjust_link)
+		phydev->adjust_link(edev);
 
-	if (dev->link)
-		dev_info(&edev->dev, "%dMbps %s duplex link detected\n", dev->speed,
-			dev->duplex ? "full" : "half");
+	if (phydev->link)
+		dev_info(&edev->dev, "%dMbps %s duplex link detected\n",
+				phydev->speed, phydev->duplex ? "full" : "half");
 
 	return 0;
 }
@@ -71,9 +86,7 @@ int phy_register_fixup(const char *bus_id, u32 phy_uid, u32 phy_uid_mask,
 {
 	struct phy_fixup *fixup;
 
-	fixup = kzalloc(sizeof(struct phy_fixup), GFP_KERNEL);
-	if (!fixup)
-		return -ENOMEM;
+	fixup = xzalloc(sizeof(struct phy_fixup));
 
 	strlcpy(fixup->bus_id, bus_id, sizeof(fixup->bus_id));
 	fixup->phy_uid = phy_uid;
@@ -138,31 +151,28 @@ int phy_scan_fixups(struct phy_device *phydev)
 
 static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 {
-	struct phy_device *dev;
+	struct phy_device *phydev;
 
 	/* We allocate the device, and initialize the
 	 * default values */
-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+	phydev = xzalloc(sizeof(*phydev));
 
-	if (NULL == dev)
-		return (struct phy_device*) PTR_ERR((void*)-ENOMEM);
+	phydev->speed = 0;
+	phydev->duplex = -1;
+	phydev->pause = phydev->asym_pause = 0;
+	phydev->link = 1;
+	phydev->autoneg = AUTONEG_ENABLE;
 
-	dev->speed = 0;
-	dev->duplex = -1;
-	dev->pause = dev->asym_pause = 0;
-	dev->link = 1;
-	dev->autoneg = AUTONEG_ENABLE;
+	phydev->addr = addr;
+	phydev->phy_id = phy_id;
 
-	dev->addr = addr;
-	dev->phy_id = phy_id;
+	phydev->bus = bus;
+	phydev->dev.bus = &mdio_bus_type;
 
-	dev->bus = bus;
-	dev->dev.bus = &mdio_bus_type;
+	strcpy(phydev->dev.name, "phy");
+	phydev->dev.id = DEVICE_ID_DYNAMIC;
 
-	strcpy(dev->dev.name, "phy");
-	dev->dev.id = DEVICE_ID_DYNAMIC;
-
-	return dev;
+	return phydev;
 }
 /**
  * get_phy_id - reads the specified addr for its ID.
@@ -207,7 +217,7 @@ int get_phy_id(struct mii_bus *bus, int addr, u32 *phy_id)
  */
 struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 {
-	struct phy_device *dev = NULL;
+	struct phy_device *phydev = NULL;
 	u32 phy_id = 0;
 	int r;
 
@@ -219,9 +229,9 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 	if ((phy_id & 0x1fffffff) == 0x1fffffff)
 		return ERR_PTR(-ENODEV);
 
-	dev = phy_device_create(bus, addr, phy_id);
+	phydev = phy_device_create(bus, addr, phy_id);
 
-	return dev;
+	return phydev;
 }
 
 static void phy_config_aneg(struct phy_device *phydev)
@@ -232,31 +242,31 @@ static void phy_config_aneg(struct phy_device *phydev)
 	drv->config_aneg(phydev);
 }
 
-int phy_register_device(struct phy_device* dev)
+int phy_register_device(struct phy_device *phydev)
 {
 	int ret;
 
-	if (dev->registered)
+	if (phydev->registered)
 		return -EBUSY;
 
-	dev->dev.parent = &dev->bus->dev;
+	phydev->dev.parent = &phydev->bus->dev;
 
-	ret = register_device(&dev->dev);
+	ret = register_device(&phydev->dev);
 	if (ret)
 		return ret;
 
-	dev->bus->phy_map[dev->addr] = dev;
+	phydev->bus->phy_map[phydev->addr] = phydev;
 
-	dev->registered = 1;
+	phydev->registered = 1;
 
-	if (dev->dev.driver)
+	if (phydev->dev.driver)
 		return 0;
 
-	dev->dev.driver = &genphy_driver.drv;
-	ret = device_probe(&dev->dev);
+	phydev->dev.driver = &genphy_driver.drv;
+	ret = device_probe(&phydev->dev);
 	if (ret) {
-		unregister_device(&dev->dev);
-		dev->registered = 0;
+		unregister_device(&phydev->dev);
+		phydev->registered = 0;
 	}
 
 	return ret;
@@ -477,24 +487,14 @@ int genphy_setup_forced(struct phy_device *phydev)
 int phy_wait_aneg_done(struct phy_device *phydev)
 {
 	uint64_t start = get_time_ns();
-	int ctl;
 
 	if (phydev->autoneg == AUTONEG_DISABLE)
 		return 0;
 
 	while (!is_timeout(start, PHY_AN_TIMEOUT * SECOND)) {
-		ctl = phy_read(phydev, MII_BMSR);
-		if (ctl & BMSR_ANEGCOMPLETE) {
+		if (phy_aneg_done(phydev) > 0) {
 			phydev->link = 1;
 			return 0;
-		}
-
-		/* Restart auto-negotiation if remote fault */
-		if (ctl & BMSR_RFAULT) {
-			puts("PHY remote fault detected\n"
-			     "PHY restarting auto-negotiation\n");
-			phy_write(phydev, MII_BMCR,
-					  BMCR_ANENABLE | BMCR_ANRESTART);
 		}
 	}
 
@@ -570,6 +570,33 @@ int genphy_config_aneg(struct phy_device *phydev)
 
 	return result;
 }
+
+/**
+ * genphy_aneg_done - return auto-negotiation status
+ * @phydev: target phy_device struct
+ *
+ * Description: Reads the status register and returns 0 either if
+ *   auto-negotiation is incomplete, or if there was an error.
+ *   Returns BMSR_ANEGCOMPLETE if auto-negotiation is done.
+ */
+int genphy_aneg_done(struct phy_device *phydev)
+{
+	int bmsr = phy_read(phydev, MII_BMSR);
+
+	if (bmsr < 0)
+		return bmsr;
+
+	/* Restart auto-negotiation if remote fault */
+	if (bmsr & BMSR_RFAULT) {
+		puts("PHY remote fault detected\n"
+		     "PHY restarting auto-negotiation\n");
+		phy_write(phydev, MII_BMCR,
+				  BMCR_ANENABLE | BMCR_ANRESTART);
+	}
+
+	return bmsr & BMSR_ANEGCOMPLETE;
+}
+EXPORT_SYMBOL(genphy_aneg_done);
 
 /**
  * genphy_update_link - update link status in @phydev
@@ -824,6 +851,9 @@ int phy_driver_register(struct phy_driver *phydrv)
 
 	if (!phydrv->config_aneg)
 		phydrv->config_aneg = genphy_config_aneg;
+
+	if (!phydrv->aneg_done)
+		phydrv->aneg_done = genphy_aneg_done;
 
 	if (!phydrv->read_status)
 		phydrv->read_status = genphy_read_status;

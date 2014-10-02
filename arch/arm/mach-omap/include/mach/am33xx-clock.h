@@ -44,6 +44,7 @@
 
 /* DDR Freq is 266 MHZ for now*/
 /* Set Fdll = 400 MHZ , Fdll = M * 2 * CLKINP/ N + 1; clkout = Fdll /(2 * M2) */
+#define DDRPLL_M_200	200
 #define DDRPLL_M_266	266
 #define DDRPLL_M_303	303
 #define DDRPLL_M_400	400

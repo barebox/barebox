@@ -163,7 +163,7 @@ KBUILD_IMAGE := barebox.ubl
 endif
 
 quiet_cmd_am35xx_spi_image = SPI-IMG $@
-      cmd_am35xx_spi_image = scripts/mk-am3xxx-spi-image -s am35xx -a $(TEXT_BASE) $< > $@
+      cmd_am35xx_spi_image = scripts/mk-omap-image -s -a $(TEXT_BASE) $< > $@
 
 barebox.spi: $(KBUILD_BINARY) FORCE
 	$(call if_changed,am35xx_spi_image)

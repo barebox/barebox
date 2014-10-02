@@ -171,6 +171,8 @@ the compilation process will finish with a list of images built under ``images/`
   barebox-guf-santaro.img
   barebox-gk802.img
 
+.. _second_stage:
+
 Starting barebox
 -----------------
 

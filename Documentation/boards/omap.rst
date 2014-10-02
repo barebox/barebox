@@ -1,5 +1,5 @@
-Texas Instruments OMAP/AM335x
-=============================
+Texas Instruments OMAP
+======================
 
 Texas Instruments OMAP SoCs have a two-stage boot process. The first stage is
 known as Xload which only loads the second stage bootloader. barebox can act as

@@ -93,15 +93,16 @@ config BAREBOX_UPDATE_AM33XX_SPI_NOR_MLO
 	  Say Y for barebox update SPI NOR MLO handler.
 	  AM35xx, AM33xx chips use big endian MLO for SPI NOR flash.
 
-config BAREBOX_UPDATE_AM33XX_NAND_XLOADSLOTS
-	prompt "barebox update nand xload slots handler"
+config BAREBOX_UPDATE_AM33XX_NAND
+	prompt "barebox update NAND handler"
 	bool
 	depends on BAREBOX_UPDATE
 	help
-	  Say Y for barebox update nand xload slots handler.
-	  This update handler updates 4 default nand xload slots
-	  with a single command.
+	  Say Y for barebox update NAND handler. This update handler updates
+	  4 default NAND xload slots with a single command.
 	  The Handler also checks if the given image has a valid CH header.
+	  This also includes a handler for updating the regular barebox binary
+	  in NAND.
 
 config ARCH_TEXT_BASE
 	hex
@@ -124,6 +125,12 @@ config OMAP_MULTI_BOARDS
 
 if OMAP_MULTI_BOARDS
 
+config MACH_AFI_GF
+	bool "af inventions GF"
+	select ARCH_AM33XX
+	  help
+	  Say Y here if you are using afis GF
+
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
 	select ARCH_AM33XX
@@ -135,6 +142,7 @@ config MACH_PCM051
 	select ARCH_AM33XX
 	help
 	  Say Y here if you are using Phytecs phyCORE pcm051 board
+
 endif
 
 choice

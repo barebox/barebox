@@ -48,64 +48,36 @@
 #include <getopt.h>
 #include <endian.h>
 
-enum soc {
-	SOC_AM33XX,
-	SOC_AM35XX,
-	SOC_UNKNOWN,
-};
-
-static char *soc_names[] = {
-	[SOC_AM33XX] = "am33xx",
-	[SOC_AM35XX] = "am35xx",
-};
-
 void usage(char *prgname)
 {
 	printf("usage: %s [OPTION] FILE > IMAGE\n"
 	       "\n"
 	       "options:\n"
 	       "  -a <address> memory address for the loaded image in SRAM\n"
-	       "  -s <soc>     SoC to use (am33xx, am35xx)\n",
+	       "  -s           Write big endian image needed for direct flashing to SPI\n",
 	       prgname);
 }
 
 int main(int argc, char *argv[])
 {
 	FILE *input;
-	int opt, i;
+	int opt;
 	off_t pos;
 	size_t size;
 	uint32_t addr = 0x40200000;
 	uint32_t temp;
-	enum soc soc = SOC_UNKNOWN;
-	char *socname = NULL;
+	int chsettings = 0;
+	int swap = 0;
 
-	while((opt = getopt(argc, argv, "a:s:")) != -1) {
+	while((opt = getopt(argc, argv, "a:s")) != -1) {
 		switch (opt) {
 		case 'a':
 			addr = strtoul(optarg, NULL, 0);
 			break;
 		case 's':
-			socname = optarg;
+			swap = 1;
 			break;
 		}
-	}
-
-	if (!socname) {
-		fprintf(stderr, "SoC not specified. Use -s <soc>\n");
-		exit(EXIT_FAILURE);
-	}
-
-	for (i = 0; i < 2; i++) {
-		if (!strcmp(socname, soc_names[i])) {
-			soc = i;
-			break;
-		}
-	}
-
-	if (soc == SOC_UNKNOWN) {
-		fprintf(stderr, "SoC %s unknown\n", socname);
-		exit(EXIT_FAILURE);
 	}
 
 	if (optind >= argc) {
@@ -134,20 +106,43 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (fseeko(input, 0, SEEK_SET) == -1) {
+	if (fseeko(input, 0x14, SEEK_SET) == -1) {
+		perror("fseeko");
+		exit(EXIT_FAILURE);
+	}
+
+	size = fread(&temp, 1, sizeof(uint32_t), input);
+	if (!size) {
+		perror("fseeko");
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * Test if this is an image generated with omap_signGP. These don't
+	 * need size and load address prepended.
+	 */
+	if (le32toh(temp) == 0x45534843)
+		chsettings = 1;
+
+	if (fseeko(input, 0x0, SEEK_SET) == -1) {
 		perror("fseeko");
 		exit(EXIT_FAILURE);
 	}
 
 	pos = (pos + 3) & ~3;
 
-	/* image size */
-	if (soc == SOC_AM35XX) {
-		temp = htobe32((uint32_t)pos);
+	if (!chsettings) {
+		/* image size */
+		temp = pos;
+		if (swap)
+			temp = htobe32(temp);
+
 		fwrite(&temp, sizeof(uint32_t), 1, stdout);
 
 		/* memory address */
-		temp = htobe32(addr);
+		temp = addr;
+		if (swap)
+			temp = htobe32(temp);
 		fwrite(&temp, sizeof(uint32_t), 1, stdout);
 	}
 
@@ -159,7 +154,8 @@ int main(int argc, char *argv[])
 			perror("fread");
 			exit(EXIT_FAILURE);
 		}
-		temp = htobe32(le32toh(temp));
+		if (swap)
+			temp = htobe32(le32toh(temp));
 		if (fwrite(&temp, 1, sizeof(uint32_t), stdout) != 4) {
 			perror("fwrite");
 			exit(EXIT_FAILURE);

@@ -33,3 +33,5 @@
 #define CRC_RST_DEV_V_CLR		0x434
 
 #define CRC_CLK_OUT_ENB_V_SET		0x440
+
+#define CRC_PLLE_AUX			0x48c

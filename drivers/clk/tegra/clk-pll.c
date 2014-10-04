@@ -17,11 +17,14 @@
  */
 
 #include <common.h>
+#include <clock.h>
 #include <io.h>
 #include <malloc.h>
 #include <asm-generic/div64.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+
+#include <mach/iomap.h>
 
 #include "clk.h"
 
@@ -393,6 +396,108 @@ const struct clk_ops tegra_clk_pll_ops = {
 	.set_rate = clk_pll_set_rate,
 };
 
+static unsigned long clk_plle_recalc_rate(struct clk *hw,
+					 unsigned long parent_rate)
+{
+	struct tegra_clk_pll *pll = to_clk_pll(hw);
+	u32 val = pll_readl_base(pll);
+	u32 divn = 0, divm = 0, divp = 0;
+	u64 rate = parent_rate;
+
+	divp = (val >> 16) & 0x3f;
+	divn = (val >> 8) & (0xff);
+	divm = (val >> 0) & (0xff);
+	divm *= divp;
+
+	rate *= divn;
+	do_div(rate, divm);
+	return rate;
+}
+
+static int clk_plle_training(struct tegra_clk_pll *pll)
+{
+	u32 val;
+
+	/*
+	 * PLLE is already disabled, and setup cleared;
+	 * create falling edge on PLLE IDDQ input.
+	 */
+	val = readl(TEGRA_PMC_BASE + PMC_SATA_PWRGT);
+	val |= PMC_SATA_PWRGT_PLLE_IDDQ_VALUE;
+	writel(val, TEGRA_PMC_BASE + PMC_SATA_PWRGT);
+
+	val = readl(TEGRA_PMC_BASE + PMC_SATA_PWRGT);
+	val |= PMC_SATA_PWRGT_PLLE_IDDQ_SWCTL;
+	writel(val, TEGRA_PMC_BASE + PMC_SATA_PWRGT);
+
+	val = readl(TEGRA_PMC_BASE + PMC_SATA_PWRGT);
+	val &= ~PMC_SATA_PWRGT_PLLE_IDDQ_VALUE;
+	writel(val, TEGRA_PMC_BASE + PMC_SATA_PWRGT);
+
+	return wait_on_timeout(100 * MSECOND,
+			(pll_readl_misc(pll) & PLLE_MISC_READY));
+}
+
+static int clk_plle_enable(struct clk *hw)
+{
+	struct tegra_clk_pll *pll = to_clk_pll(hw);
+	unsigned long input_rate = clk_get_rate(clk_get_parent(hw));
+	struct tegra_clk_pll_freq_table sel;
+	u32 val;
+	int err;
+
+	if (_get_table_rate(hw, &sel, pll->fixed_rate, input_rate))
+		return -EINVAL;
+
+	clk_pll_disable(hw);
+
+	val = pll_readl_misc(pll);
+	val &= ~(PLLE_MISC_LOCK_ENABLE | PLLE_MISC_SETUP_MASK);
+	pll_writel_misc(val, pll);
+
+	val = pll_readl_misc(pll);
+	if (!(val & PLLE_MISC_READY)) {
+		err = clk_plle_training(pll);
+		if (err)
+			return err;
+	}
+
+	/* configure dividers */
+	val = pll_readl_base(pll);
+	val &= ~(0x3fffff);
+	val &= ~(PLLE_BASE_DIVCML_WIDTH << PLLE_BASE_DIVCML_SHIFT);
+	val |= sel.m << 0;
+	val |= sel.n << 8;
+	val |= sel.p << 16;
+	val |= sel.cpcon << PLLE_BASE_DIVCML_SHIFT;
+	pll_writel_base(val, pll);
+
+	val = pll_readl_misc(pll);
+	val |= PLLE_MISC_SETUP_VALUE;
+	val |= PLLE_MISC_LOCK_ENABLE;
+	pll_writel_misc(val, pll);
+
+	val = readl(pll->clk_base + PLLE_SS_CTRL);
+	val |= PLLE_SS_DISABLE;
+	writel(val, pll->clk_base + PLLE_SS_CTRL);
+
+	val = pll_readl_base(pll);
+	val |= (PLL_BASE_BYPASS | PLL_BASE_ENABLE);
+	pll_writel_base(val, pll);
+
+	clk_pll_wait_for_lock(pll, pll->clk_base + pll->params->base_reg,
+			      pll->params->lock_bit_idx);
+
+	return 0;
+}
+
+const struct clk_ops tegra_clk_plle_ops = {
+	.recalc_rate = clk_plle_recalc_rate,
+	.is_enabled = clk_pll_is_enabled,
+	.disable = clk_pll_disable,
+	.enable = clk_plle_enable,
+};
+
 static struct clk *_tegra_clk_register_pll(const char *name,
 		const char *parent_name, void __iomem *clk_base,
 		unsigned long flags, unsigned long fixed_rate,
@@ -446,4 +551,15 @@ struct clk *tegra_clk_register_pll(const char *name, const char *parent_name,
 	return _tegra_clk_register_pll(name, parent_name, clk_base,
 			flags, fixed_rate, pll_params, pll_flags, freq_table,
 			&tegra_clk_pll_ops);
+}
+
+struct clk *tegra_clk_register_plle(const char *name, const char *parent_name,
+		void __iomem *clk_base,
+		unsigned long flags, unsigned long fixed_rate,
+		struct tegra_clk_pll_params *pll_params, u8 pll_flags,
+		struct tegra_clk_pll_freq_table *freq_table)
+{
+	return _tegra_clk_register_pll(name, parent_name, clk_base,
+			flags, fixed_rate, pll_params, pll_flags, freq_table,
+			&tegra_clk_plle_ops);
 }

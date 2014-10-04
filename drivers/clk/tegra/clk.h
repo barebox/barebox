@@ -101,6 +101,12 @@ struct clk *tegra_clk_register_pll(const char *name, const char *parent_name,
 		struct tegra_clk_pll_params *pll_params, u8 pll_flags,
 		struct tegra_clk_pll_freq_table *freq_table);
 
+struct clk *tegra_clk_register_plle(const char *name, const char *parent_name,
+		void __iomem *clk_base,
+		unsigned long flags, unsigned long fixed_rate,
+		struct tegra_clk_pll_params *pll_params, u8 pll_flags,
+		struct tegra_clk_pll_freq_table *freq_table);
+
 /* struct tegra_clk_pll_out - PLL output divider */
 struct tegra_clk_pll_out {
 	struct clk	hw;

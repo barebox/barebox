@@ -40,6 +40,7 @@ void register_pci_controller(struct pci_controller *hose)
 
 	bus = pci_alloc_bus();
 	hose->bus = bus;
+	bus->parent = hose->parent;
 	bus->host = hose;
 	bus->ops = hose->pci_ops;
 	bus->resource[PCI_BUS_RESOURCE_MEM] = hose->mem_resource;
@@ -309,6 +310,7 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 		dev->devfn = devfn;
 		dev->vendor = l & 0xffff;
 		dev->device = (l >> 16) & 0xffff;
+		dev->dev.parent = bus->parent;
 
 		/* non-destructively determine if device can be a master: */
 		pci_read_config_byte(dev, PCI_COMMAND, &cmd);
@@ -354,6 +356,8 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 				bus->resource[PCI_BUS_RESOURCE_MEM_PREF];
 			child_bus->resource[PCI_BUS_RESOURCE_IO] =
 				bus->resource[PCI_BUS_RESOURCE_IO];
+
+			child_bus->parent = &dev->dev;
 			child_bus->number = bus_index++;
 			list_add_tail(&child_bus->node, &bus->children);
 			dev->subordinate = child_bus;

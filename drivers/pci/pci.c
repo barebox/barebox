@@ -211,9 +211,73 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 	pci_register_device(dev);
 }
 
+static void prescan_setup_bridge(struct pci_dev *dev)
+{
+	u16 cmdstat;
+
+	pci_read_config_word(dev, PCI_COMMAND, &cmdstat);
+
+	/* Configure bus number registers */
+	pci_write_config_byte(dev, PCI_PRIMARY_BUS, dev->bus->number);
+	pci_write_config_byte(dev, PCI_SECONDARY_BUS, dev->subordinate->number);
+	pci_write_config_byte(dev, PCI_SUBORDINATE_BUS, 0xff);
+
+	if (last_mem) {
+		/* Set up memory and I/O filter limits, assume 32-bit I/O space */
+		pci_write_config_word(dev, PCI_MEMORY_BASE,
+				      (last_mem & 0xfff00000) >> 16);
+		cmdstat |= PCI_COMMAND_MEMORY;
+	}
+
+	if (last_mem_pref) {
+		/* Set up memory and I/O filter limits, assume 32-bit I/O space */
+		pci_write_config_word(dev, PCI_PREF_MEMORY_BASE,
+				      (last_mem_pref & 0xfff00000) >> 16);
+		cmdstat |= PCI_COMMAND_MEMORY;
+	} else {
+
+		/* We don't support prefetchable memory for now, so disable */
+		pci_write_config_word(dev, PCI_PREF_MEMORY_BASE, 0x1000);
+		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT, 0x0);
+	}
+
+	if (last_io) {
+		pci_write_config_byte(dev, PCI_IO_BASE,
+				      (last_io & 0x0000f000) >> 8);
+		pci_write_config_word(dev, PCI_IO_BASE_UPPER16,
+				      (last_io & 0xffff0000) >> 16);
+		cmdstat |= PCI_COMMAND_IO;
+	}
+
+	/* Enable memory and I/O accesses, enable bus master */
+	pci_write_config_word(dev, PCI_COMMAND, cmdstat | PCI_COMMAND_MASTER);
+}
+
+static void postscan_setup_bridge(struct pci_dev *dev)
+{
+	/* limit subordinate to last used bus number */
+	pci_write_config_byte(dev, PCI_SUBORDINATE_BUS, bus_index - 1);
+
+	if (last_mem)
+		pci_write_config_word(dev, PCI_MEMORY_LIMIT,
+				      ((last_mem - 1) & 0xfff00000) >> 16);
+
+	if (last_mem_pref)
+		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT,
+				      ((last_mem_pref - 1) & 0xfff00000) >> 16);
+
+	if (last_io) {
+		pci_write_config_byte(dev, PCI_IO_LIMIT,
+				((last_io - 1) & 0x0000f000) >> 8);
+		pci_write_config_word(dev, PCI_IO_LIMIT_UPPER16,
+				((last_io - 1) & 0xffff0000) >> 16);
+	}
+}
+
 unsigned int pci_scan_bus(struct pci_bus *bus)
 {
 	struct pci_dev *dev;
+	struct pci_bus *child_bus;
 	unsigned int devfn, l, max, class;
 	unsigned char cmd, tmp, hdr_type, is_multi = 0;
 
@@ -264,8 +328,8 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 		DBG("PCI: %02x:%02x [%04x:%04x]\n", bus->number, dev->devfn,
 		    dev->vendor, dev->device);
 
-		switch (hdr_type & 0x7f) {		    /* header type */
-		case PCI_HEADER_TYPE_NORMAL:		    /* standard header */
+		switch (hdr_type & 0x7f) {
+		case PCI_HEADER_TYPE_NORMAL:
 			if (class == PCI_CLASS_BRIDGE_PCI)
 				goto bad;
 
@@ -278,7 +342,28 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 
 			setup_device(dev, 6);
 			break;
-		default:				    /* unknown header */
+		case PCI_HEADER_TYPE_BRIDGE:
+			setup_device(dev, 2);
+
+			child_bus = pci_alloc_bus();
+			/* inherit parent properties */
+			child_bus->host = bus->host;
+			child_bus->ops = bus->host->pci_ops;
+			child_bus->resource[PCI_BUS_RESOURCE_MEM] =
+				bus->resource[PCI_BUS_RESOURCE_MEM];
+			child_bus->resource[PCI_BUS_RESOURCE_MEM_PREF] =
+				bus->resource[PCI_BUS_RESOURCE_MEM_PREF];
+			child_bus->resource[PCI_BUS_RESOURCE_IO] =
+				bus->resource[PCI_BUS_RESOURCE_IO];
+			child_bus->number = bus_index++;
+			list_add_tail(&child_bus->node, &bus->children);
+			dev->subordinate = child_bus;
+
+			prescan_setup_bridge(dev);
+			pci_scan_bus(child_bus);
+			postscan_setup_bridge(dev);
+			break;
+		default:
 		bad:
 			printk(KERN_ERR "PCI: %02x:%02x [%04x/%04x/%06x] has unknown header type %02x, ignoring.\n",
 			       bus->number, dev->devfn, dev->vendor, dev->device, class, hdr_type);
@@ -298,6 +383,7 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 	 *
 	 * Return how far we've got finding sub-buses.
 	 */
+	max = bus_index;
 	DBG("PCI: pci_scan_bus returning with max=%02x\n", max);
 
 	return max;

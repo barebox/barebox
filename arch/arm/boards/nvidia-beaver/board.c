@@ -35,4 +35,4 @@ static int nvidia_beaver_devices_init(void)
 
 	return 0;
 }
-device_initcall(nvidia_beaver_devices_init);
+fs_initcall(nvidia_beaver_devices_init);

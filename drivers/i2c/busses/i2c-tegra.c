@@ -696,4 +696,4 @@ static struct driver_d tegra_i2c_driver = {
 	.probe   = tegra_i2c_probe,
 	.of_compatible = DRV_OF_COMPAT(tegra_i2c_compatible),
 };
-device_platform_driver(tegra_i2c_driver);
+register_driver_macro(fs, platform, tegra_i2c_driver);

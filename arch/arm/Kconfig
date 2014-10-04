@@ -198,6 +198,7 @@ config ARCH_TEGRA
 	bool "NVIDIA Tegra"
 	select CPU_V7
 	select HAS_DEBUG_LL
+	select HW_HAS_PCI
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP

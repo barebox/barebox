@@ -15,8 +15,10 @@
  */
 
 #include <common.h>
-#include <init.h>
+#include <dt-bindings/gpio/tegra-gpio.h>
+#include <gpio.h>
 #include <i2c/i2c.h>
+#include <init.h>
 
 static int nvidia_beaver_devices_init(void)
 {
@@ -32,6 +34,13 @@ static int nvidia_beaver_devices_init(void)
 	/* TPS659110: LDO5_REG = 3.3v, ACTIVE to SDMMC1 */
 	data = 0x65;
 	i2c_write_reg(&client, 0x32, &data, 1);
+
+	/* TPS659110: LDO1_REG = 1.05v, ACTIVE to PEX */
+	data = 0x15;
+	i2c_write_reg(&client, 0x30, &data, 1);
+
+	/* enable SYS_3V3_PEXS */
+	gpio_direction_output(TEGRA_GPIO(L, 7), 1);
 
 	return 0;
 }

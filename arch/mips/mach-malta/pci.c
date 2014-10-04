@@ -151,7 +151,7 @@ static struct pci_controller gt64120_controller = {
 
 static int pcibios_init(void)
 {
-	resource_size_t start, end, map, start1, end1, map1, mask, res_end;
+	resource_size_t start, end, map, start1, end1, map1, mask;
 
 	/*
 	 * Due to a bug in the Galileo system controller, we need
@@ -207,7 +207,7 @@ static int pcibios_init(void)
 	BUG_ON((start & GT_PCI_HD_MSK) != (map & GT_PCI_HD_MSK) &&
 		mask != ~((mask & -mask) - 1));
 	gt64120_io_resource.start = map & mask;
-	res_end = (map & mask) | ~mask;
+	gt64120_io_resource.end = (map & mask) | ~mask;
 	gt64120_controller.io_offset = 0;
 	/* Addresses are 36-bit, so do shifts in the destinations. */
 	gt64120_io_resource.start <<= GT_PCI_DCRM_SHF;

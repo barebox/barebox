@@ -162,6 +162,7 @@ struct pci_controller {
 
 	struct pci_ops *pci_ops;
 	struct resource *mem_resource;
+	struct resource *mem_pref_resource;
 	unsigned long mem_offset;
 	struct resource *io_resource;
 	unsigned long io_offset;

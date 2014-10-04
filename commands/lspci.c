@@ -20,10 +20,24 @@
 #include <complete.h>
 #include <linux/pci.h>
 
+static void traverse_bus(struct pci_bus *bus)
+{
+	struct pci_dev *dev;
+
+	list_for_each_entry(dev, &bus->devices, bus_list) {
+		printf("%02x:%02x.%1x %04x: %04x:%04x (rev %02x)\n",
+		       dev->bus->number, PCI_SLOT(dev->devfn),
+		       PCI_FUNC(dev->devfn), (dev->class >> 8) & 0xffff,
+		       dev->vendor, dev->device, dev->revision);
+
+		if (dev->subordinate)
+			traverse_bus(dev->subordinate);
+	}
+}
+
 static int do_lspci(int argc, char *argv[])
 {
 	struct pci_bus *root_bus;
-	struct pci_dev *dev;
 
 	if (list_empty(&pci_root_buses)) {
 		printf("No PCI bus detected\n");
@@ -31,14 +45,7 @@ static int do_lspci(int argc, char *argv[])
 	}
 
 	list_for_each_entry(root_bus, &pci_root_buses, node) {
-		list_for_each_entry(dev, &root_bus->devices, bus_list) {
-			printf("%02x: %04x: %04x:%04x (rev %02x)\n",
-				      dev->devfn,
-				      (dev->class >> 8) & 0xffff,
-				      dev->vendor,
-				      dev->device,
-				      dev->revision);
-		}
+		traverse_bus(root_bus);
 	}
 
 	return 0;

@@ -114,6 +114,12 @@ struct pci_dev {
 };
 #define	to_pci_dev(dev) container_of(dev, struct pci_dev, dev)
 
+enum {
+	PCI_BUS_RESOURCE_IO = 0,
+	PCI_BUS_RESOURCE_MEM = 1,
+	PCI_BUS_RESOURCE_MEM_PREF = 2,
+	PCI_BUS_RESOURCE_BUSN = 3,
+};
 struct pci_bus {
 	struct pci_controller *host;	/* associated host controller */
 	struct list_head node;		/* node in list of buses */

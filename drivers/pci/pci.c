@@ -41,15 +41,15 @@ void register_pci_controller(struct pci_controller *hose)
 	hose->bus = bus;
 	bus->host = hose;
 	bus->ops = hose->pci_ops;
-	bus->resource[0] = hose->mem_resource;
-	bus->resource[1] = hose->io_resource;
+	bus->resource[PCI_BUS_RESOURCE_MEM] = hose->mem_resource;
+	bus->resource[PCI_BUS_RESOURCE_IO] = hose->io_resource;
 	bus->number = bus_index++;
 
 	if (hose->set_busno)
 		hose->set_busno(hose, bus->number);
 
-	last_mem = bus->resource[0]->start;
-	last_io = bus->resource[1]->start;
+	last_mem = bus->resource[PCI_BUS_RESOURCE_MEM]->start;
+	last_io = bus->resource[PCI_BUS_RESOURCE_IO]->start;
 
 	pci_scan_bus(bus);
 
@@ -141,7 +141,8 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		if (mask & 0x01) { /* IO */
 			size = -(mask & 0xfffffffe);
 			DBG("  PCI: pbar%d: mask=%08x io %d bytes\n", bar, mask, size);
-			if (last_mem + size > dev->bus->resource[0]->end) {
+			if (last_io + size >
+			    dev->bus->resource[PCI_BUS_RESOURCE_IO]->end) {
 				DBG("BAR does not fit within bus IO res\n");
 				return;
 			}
@@ -152,7 +153,8 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		} else { /* MEM */
 			size = -(mask & 0xfffffff0);
 			DBG("  PCI: pbar%d: mask=%08x memory %d bytes\n", bar, mask, size);
-			if (last_mem + size > dev->bus->resource[0]->end) {
+			if (last_mem + size >
+			    dev->bus->resource[PCI_BUS_RESOURCE_MEM]->end) {
 				DBG("BAR does not fit within bus mem res\n");
 				return;
 			}

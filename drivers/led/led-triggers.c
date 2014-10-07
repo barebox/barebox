@@ -90,13 +90,13 @@ void led_trigger(enum led_trigger trigger, enum trigger_type type)
 
 	if (type == TRIGGER_FLASH) {
 		if (is_timeout(triggers[trigger].flash_start, 400 * MSECOND)) {
-			led_set(triggers[trigger].led, 1);
+			led_set(triggers[trigger].led, triggers[trigger].led->max_value);
 			triggers[trigger].flash_start = get_time_ns();
 		}
 		return;
 	}
 
-	led_set(triggers[trigger].led, type == TRIGGER_ENABLE ? 1 : 0);
+	led_set(triggers[trigger].led, type == TRIGGER_ENABLE ? triggers[trigger].led->max_value : 0);
 }
 
 /**

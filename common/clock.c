@@ -41,25 +41,25 @@ uint64_t time_beginning;
 uint64_t get_time_ns(void)
 {
 	struct clocksource *cs = current_clock;
-        uint64_t cycle_now, cycle_delta;
-        uint64_t ns_offset;
+	uint64_t cycle_now, cycle_delta;
+	uint64_t ns_offset;
 
 	if (!cs)
 		return 0;
 
-        /* read clocksource: */
+	/* read clocksource: */
 	cycle_now = cs->read() & cs->mask;
 
-        /* calculate the delta since the last call: */
-        cycle_delta = (cycle_now - cs->cycle_last) & cs->mask;
+	/* calculate the delta since the last call: */
+	cycle_delta = (cycle_now - cs->cycle_last) & cs->mask;
 
-        /* convert to nanoseconds: */
-        ns_offset = cyc2ns(cs, cycle_delta);
+	/* convert to nanoseconds: */
+	ns_offset = cyc2ns(cs, cycle_delta);
 
 	cs->cycle_last = cycle_now;
 
 	time_ns += ns_offset;
-        return time_ns;
+	return time_ns;
 }
 EXPORT_SYMBOL(get_time_ns);
 
@@ -89,32 +89,32 @@ EXPORT_SYMBOL(get_time_ns);
 
 void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from, uint32_t to, uint32_t maxsec)
 {
-        uint64_t tmp;
-        uint32_t sft, sftacc = 32;
+	uint64_t tmp;
+	uint32_t sft, sftacc = 32;
 
-        /*
-         * Calculate the shift factor which is limiting the conversion
-         * range:
-         */
-        tmp = ((uint64_t)maxsec * from) >> 32;
-        while (tmp) {
-                tmp >>=1;
-                sftacc--;
-        }
+	/*
+	 * Calculate the shift factor which is limiting the conversion
+	 * range:
+	 */
+	tmp = ((uint64_t)maxsec * from) >> 32;
+	while (tmp) {
+		tmp >>= 1;
+		sftacc--;
+	}
 
-        /*
-         * Find the conversion shift/mult pair which has the best
-         * accuracy and fits the maxsec conversion range:
-         */
-        for (sft = 32; sft > 0; sft--) {
-                tmp = (uint64_t) to << sft;
-                tmp += from / 2;
-                do_div(tmp, from);
-                if ((tmp >> sftacc) == 0)
-                        break;
-        }
-        *mult = tmp;
-        *shift = sft;
+	/*
+	 * Find the conversion shift/mult pair which has the best
+	 * accuracy and fits the maxsec conversion range:
+	 */
+	for (sft = 32; sft > 0; sft--) {
+		tmp = (uint64_t) to << sft;
+		tmp += from / 2;
+		do_div(tmp, from);
+		if ((tmp >> sftacc) == 0)
+			break;
+	}
+	*mult = tmp;
+	*shift = sft;
 }
 
 
@@ -129,19 +129,19 @@ void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from, uint
  */
 uint32_t clocksource_hz2mult(uint32_t hz, uint32_t shift_constant)
 {
-        /*  hz = cyc/(Billion ns)
-         *  mult/2^shift  = ns/cyc
-         *  mult = ns/cyc * 2^shift
-         *  mult = 1Billion/hz * 2^shift
-         *  mult = 1000000000 * 2^shift / hz
-         *  mult = (1000000000<<shift) / hz
-         */
-        uint64_t tmp = ((uint64_t)1000000000) << shift_constant;
+	/*  hz = cyc/(Billion ns)
+	 *  mult/2^shift  = ns/cyc
+	 *  mult = ns/cyc * 2^shift
+	 *  mult = 1Billion/hz * 2^shift
+	 *  mult = 1000000000 * 2^shift / hz
+	 *  mult = (1000000000<<shift) / hz
+	 */
+	uint64_t tmp = ((uint64_t)1000000000) << shift_constant;
 
-        tmp += hz/2; /* round for do_div */
-        do_div(tmp, hz);
+	tmp += hz/2; /* round for do_div */
+	do_div(tmp, hz);
 
-        return (uint32_t)tmp;
+	return (uint32_t)tmp;
 }
 
 int is_timeout_non_interruptible(uint64_t start_ns, uint64_t time_offset_ns)

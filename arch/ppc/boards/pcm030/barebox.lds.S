@@ -26,7 +26,21 @@ SECTIONS
 {
   . = TEXT_BASE;
 
+  .text      :
+  {
+    _text = .;
+    _stext = .;
+    arch/ppc/mach-mpc5xxx/start.o	(.text)
+    *(.text*)
+    *(.got1*)
+    . = ALIGN(16);
+    *(.rodata*)
+    *(.rodata1*)
+    *(.rodata.str1.4)
+  }
+
   /* Read-only sections, merged into text segment: */
+/*
   .interp : { *(.interp) }
   .hash          : { *(.hash)		}
   .dynsym        : { *(.dynsym)		}
@@ -50,20 +64,10 @@ SECTIONS
   .init          : { *(.init)	}
   .plt : { *(.plt) }
   .text      :
-  {
-    _text = .;
-    _stext = .;
-    arch/ppc/mach-mpc5xxx/start.o	(.text)
-    *(.text*)
-    *(.got1*)
-    . = ALIGN(16);
-    *(.rodata*)
-    *(.rodata1*)
-    *(.rodata.str1.4)
-  }
   .fini      : { *(.fini)    } =0
   .ctors     : { *(.ctors)   }
   .dtors     : { *(.dtors)   }
+*/
 
   /* Read-write section, merged into data segment: */
   . = (. + 0x0FFF) & 0xFFFFF000;

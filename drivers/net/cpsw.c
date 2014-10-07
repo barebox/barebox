@@ -581,8 +581,7 @@ static void cpsw_slave_update_link(struct cpsw_slave *slave,
 		else if (phydev->speed == SPEED_100)
 			mac_control |= BIT(15);
 		else if (phydev->speed == SPEED_1000)
-			mac_control &= ~BIT(7);	/* TODO: Do not enable
-						 * gig support now */
+			mac_control |= BIT(7);
 		if (phydev->duplex == DUPLEX_FULL)
 			mac_control |= BIT(0);	/* FULLDUPLEXEN	*/
 	}

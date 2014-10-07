@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# board defaults, do not change in running system. Change /env/config
+# instead
+
+global.hostname=pfla03
+global.linux.bootargs.base="console=ttyO0,115200"
+
+if [ $bootsource = mmc ]; then
+	global.boot.default="mmc nand spi net"
+elif [ $boosource = nand ]; then
+	global.boot.default="nand spi mmc net"
+elif [ $boosource = spi ]; then
+	global.boot.default="spi nand mmc net"
+elif [ $boosource = net ]; then
+	global.boot.default="net nand spi mmc"
+fi

@@ -143,6 +143,11 @@ config MACH_PCM051
 	help
 	  Say Y here if you are using Phytecs phyCORE pcm051 board
 
+config MACH_PFLA03
+	bool "Phytec phyFLEX am335x pfla03"
+	select ARCH_AM33XX
+	help
+	  Say Y here if you are using Phytecs phyFLEX pfla03 board
 endif
 
 choice

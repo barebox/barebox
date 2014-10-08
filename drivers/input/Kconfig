@@ -3,6 +3,7 @@
 #
 
 menu "Input device support"
+	depends on !CONSOLE_NONE
 
 config KEYBOARD_GPIO
 	bool "GPIO Buttons"

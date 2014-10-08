@@ -251,6 +251,8 @@ static FILE *get_file(void)
 
 static void put_file(FILE *f)
 {
+	free(f->path);
+	f->path = NULL;
 	f->in_use = 0;
 }
 
@@ -670,6 +672,9 @@ int open(const char *pathname, int flags, ...)
 		if (ret)
 			goto out;
 	}
+
+	f->path = xstrdup(path);
+
 	ret = fsdrv->open(&fsdev->dev, f, path);
 	if (ret)
 		goto out;

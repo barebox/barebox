@@ -653,7 +653,7 @@ int open(const char *pathname, int flags, ...)
 
 	fsdrv = fsdev->driver;
 
-	f->dev = &fsdev->dev;
+	f->fsdev = fsdev;
 	f->flags = flags;
 
 	if ((flags & O_ACCMODE) && !fsdrv->write) {
@@ -705,7 +705,6 @@ EXPORT_SYMBOL(creat);
 
 int ioctl(int fd, int request, void *buf)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
 	int ret;
@@ -714,12 +713,11 @@ int ioctl(int fd, int request, void *buf)
 		return -errno;
 
 	f = &files[fd];
-	dev = f->dev;
 
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 
 	if (fsdrv->ioctl)
-		ret = fsdrv->ioctl(dev, f, request, buf);
+		ret = fsdrv->ioctl(&f->fsdev->dev, f, request, buf);
 	else
 		ret = -ENOSYS;
 	if (ret)
@@ -729,13 +727,10 @@ int ioctl(int fd, int request, void *buf)
 
 static ssize_t __read(FILE *f, void *buf, size_t count)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	int ret;
 
-	dev = f->dev;
-
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size)
 		count = f->size - f->pos;
@@ -743,7 +738,7 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 	if (!count)
 		return 0;
 
-	ret = fsdrv->read(dev, f, buf, count);
+	ret = fsdrv->read(&f->fsdev->dev, f, buf, count);
 
 	if (ret < 0)
 		errno = -ret;
@@ -790,15 +785,12 @@ EXPORT_SYMBOL(read);
 
 static ssize_t __write(FILE *f, const void *buf, size_t count)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	int ret;
 
-	dev = f->dev;
-
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {
-		ret = fsdrv->truncate(dev, f, f->pos + count);
+		ret = fsdrv->truncate(&f->fsdev->dev, f, f->pos + count);
 		if (ret) {
 			if (ret != -ENOSPC)
 				goto out;
@@ -809,7 +801,7 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 			f->size = f->pos + count;
 		}
 	}
-	ret = fsdrv->write(dev, f, buf, count);
+	ret = fsdrv->write(&f->fsdev->dev, f, buf, count);
 out:
 	if (ret < 0)
 		errno = -ret;
@@ -856,7 +848,6 @@ EXPORT_SYMBOL(write);
 
 int flush(int fd)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
 	int ret;
@@ -865,11 +856,10 @@ int flush(int fd)
 		return -errno;
 
 	f = &files[fd];
-	dev = f->dev;
 
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 	if (fsdrv->flush)
-		ret = fsdrv->flush(dev, f);
+		ret = fsdrv->flush(&f->fsdev->dev, f);
 	else
 		ret = 0;
 
@@ -881,7 +871,6 @@ int flush(int fd)
 
 loff_t lseek(int fildes, loff_t offset, int whence)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
 	loff_t pos;
@@ -891,8 +880,7 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 		return -1;
 
 	f = &files[fildes];
-	dev = f->dev;
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 	if (!fsdrv->lseek) {
 		ret = -ENOSYS;
 		goto out;
@@ -920,7 +908,7 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 		goto out;
 	}
 
-	return fsdrv->lseek(dev, f, pos);
+	return fsdrv->lseek(&f->fsdev->dev, f, pos);
 
 out:
 	if (ret)
@@ -932,7 +920,6 @@ EXPORT_SYMBOL(lseek);
 
 int erase(int fd, size_t count, unsigned long offset)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
 	int ret;
@@ -945,10 +932,9 @@ int erase(int fd, size_t count, unsigned long offset)
 	if (count > f->size - offset)
 		count = f->size - offset;
 
-	dev = f->dev;
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 	if (fsdrv->erase)
-		ret = fsdrv->erase(dev, f, count, offset);
+		ret = fsdrv->erase(&f->fsdev->dev, f, count, offset);
 	else
 		ret = -ENOSYS;
 
@@ -961,7 +947,6 @@ EXPORT_SYMBOL(erase);
 
 int protect(int fd, size_t count, unsigned long offset, int prot)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
 	int ret;
@@ -974,10 +959,9 @@ int protect(int fd, size_t count, unsigned long offset, int prot)
 	if (count > f->size - offset)
 		count = f->size - offset;
 
-	dev = f->dev;
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 	if (fsdrv->protect)
-		ret = fsdrv->protect(dev, f, count, offset, prot);
+		ret = fsdrv->protect(&f->fsdev->dev, f, count, offset, prot);
 	else
 		ret = -ENOSYS;
 
@@ -1005,7 +989,6 @@ int protect_file(const char *file, int prot)
 
 void *memmap(int fd, int flags)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
 	void *retp = (void *)-1;
@@ -1015,12 +998,11 @@ void *memmap(int fd, int flags)
 		return retp;
 
 	f = &files[fd];
-	dev = f->dev;
 
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = f->fsdev->driver;
 
 	if (fsdrv->memmap)
-		ret = fsdrv->memmap(dev, f, &retp, flags);
+		ret = fsdrv->memmap(&f->fsdev->dev, f, &retp, flags);
 	else
 		ret = -EINVAL;
 
@@ -1033,7 +1015,6 @@ EXPORT_SYMBOL(memmap);
 
 int close(int fd)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	FILE *f;
 	int ret;
@@ -1042,10 +1023,9 @@ int close(int fd)
 		return -errno;
 
 	f = &files[fd];
-	dev = f->dev;
 
-	fsdrv = dev_to_fs_driver(dev);
-	ret = fsdrv->close(dev, f);
+	fsdrv = f->fsdev->driver;
+	ret = fsdrv->close(&f->fsdev->dev, f);
 
 	put_file(f);
 
@@ -1152,7 +1132,8 @@ static int fs_match(struct device_d *dev, struct driver_d *drv)
 static int fs_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
-	struct fs_driver_d *fsdrv = dev_to_fs_driver(dev);
+	struct driver_d *drv = dev->driver;
+	struct fs_driver_d *fsdrv = container_of(drv, struct fs_driver_d, drv);
 	int ret;
 
 	ret = dev->driver->probe(dev);
@@ -1449,7 +1430,6 @@ EXPORT_SYMBOL(stat);
 
 int lstat(const char *filename, struct stat *s)
 {
-	struct device_d *dev;
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
 	char *f = normalise_path(filename);
@@ -1466,18 +1446,17 @@ int lstat(const char *filename, struct stat *s)
 		goto out;
 	}
 
-	if (fsdev != fs_dev_root && strcmp(f, fsdev->path)) {
+	if (fsdev != fs_dev_root && strcmp(f, fsdev->path))
 		f += strlen(fsdev->path);
-		dev = &fsdev->dev;
-	} else
-		dev = &fs_dev_root->dev;
+	else
+		fsdev = fs_dev_root;
 
-	fsdrv = dev_to_fs_driver(dev);
+	fsdrv = fsdev->driver;
 
 	if (*f == 0)
 		f = "/";
 
-	ret = fsdrv->stat(dev, f, s);
+	ret = fsdrv->stat(&fsdev->dev, f, s);
 out:
 	free(freep);
 

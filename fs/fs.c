@@ -1472,6 +1472,22 @@ out:
 }
 EXPORT_SYMBOL(lstat);
 
+int fstat(int fd, struct stat *s)
+{
+	FILE *f;
+	struct fs_device_d *fsdev;
+
+	if (check_fd(fd))
+		return -errno;
+
+	f = &files[fd];
+
+	fsdev = f->fsdev;
+
+	return fsdev->driver->stat(&fsdev->dev, f->path, s);
+}
+EXPORT_SYMBOL(fstat);
+
 int mkdir (const char *pathname, mode_t mode)
 {
 	struct fs_driver_d *fsdrv;

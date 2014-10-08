@@ -114,6 +114,7 @@ int close(int fd);
 int flush(int fd);
 int lstat(const char *filename, struct stat *s);
 int stat(const char *filename, struct stat *s);
+int fstat(int fd, struct stat *s);
 ssize_t read(int fd, void *buf, size_t count);
 ssize_t pread(int fd, void *buf, size_t count, loff_t offset);
 int ioctl(int fd, int request, void *buf);

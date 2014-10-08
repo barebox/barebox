@@ -251,7 +251,7 @@ static FILE *get_file(void)
 
 static void put_file(FILE *f)
 {
-	files[f->no].in_use = 0;
+	f->in_use = 0;
 }
 
 static int check_fd(int fd)

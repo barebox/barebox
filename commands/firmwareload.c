@@ -62,5 +62,6 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(firmwareload)
 	.cmd = do_firmwareload,
 	BAREBOX_CMD_DESC("Program a firmware file into a device")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_firmwareload_help)
 BAREBOX_CMD_END

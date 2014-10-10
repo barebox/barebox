@@ -1,11 +1,4 @@
-/dts-v1/;
-
-#include "am33xx.dtsi"
-
 / {
-	model = "Phytec phyCORE AM335x";
-	compatible = "phytec,phycore-am335x", "phytec,pcm051", "ti,am33xx";
-
 	chosen {
 		linux,stdout-path = &uart0;
 
@@ -122,6 +115,7 @@
 	clock-frequency = <400000>;
 
 	eeprom: 24c32@52 {
+		status = "disabled";
 		compatible = "atmel,24c32";
 		pagesize = <32>;
 		reg = <0x52>;
@@ -137,7 +131,7 @@
 &spi0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi0_pins>;
-	status = "okay";
+	status = "disabled";
 
 	flash: m25p80 {
 		compatible = "m25p80";

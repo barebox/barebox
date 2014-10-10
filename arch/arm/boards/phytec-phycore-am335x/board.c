@@ -34,7 +34,7 @@
 
 static int pcm051_coredevice_init(void)
 {
-	if (!of_machine_is_compatible("phytec,pcm051"))
+	if (!of_machine_is_compatible("phytec,phycore-am335x-som"))
 		return 0;
 
 	am33xx_register_ethaddr(0, 0);
@@ -58,7 +58,7 @@ static char *xloadslots[] = {
 
 static int pcm051_devices_init(void)
 {
-	if (!of_machine_is_compatible("phytec,pcm051"))
+	if (!of_machine_is_compatible("phytec,phycore-am335x-som"))
 		return 0;
 
 	switch (bootsource_get()) {

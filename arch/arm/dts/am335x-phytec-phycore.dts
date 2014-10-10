@@ -21,23 +21,6 @@
 			status = "disabled";
 		};
 	};
-
-	gpio-leds {
-		compatible = "gpio-leds";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pcm051_led_pins>;
-
-		led-green {
-			label = "green";
-			gpios = <&gpio1 30 0>;
-			linux,default-trigger = "heartbeat";
-		};
-
-		led-amber {
-			label = "amber";
-			gpios = <&gpio1 31 1>;
-		};
-	};
 };
 
 &am33xx_pinmux {
@@ -72,7 +55,6 @@
 			0xfc (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_dat0.mmc0_dat0 */
 			0x100 (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_clk.mmc0_clk */
 			0x104 (MUX_MODE0 | INPUT_EN | PULL_UP)	/* mmc0_cmd.mmc0_cmd */
-			0x160 (MUX_MODE7 | INPUT_EN | PULL_UP)	/* spi0_cs1.??, card detect */
 		>;
 	};
 
@@ -86,20 +68,6 @@
 			0x13c (PIN_INPUT_PULLDOWN | MUX_MODE1)	/* mii1_rxd1.rmii1_rxd1 */
 			0x140 (PIN_INPUT_PULLDOWN | MUX_MODE1)	/* mii1_rxd0.rmii1_rxd0 */
 			0x144 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* rmii1_refclk.rmii1_refclk */
-
-			/* Slave 2 */
-			0x40 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)  /* gpmc_a0.rgmii2_tctl */
-			0x44 (PIN_INPUT_PULLDOWN | MUX_MODE2)   /* gpmc_a1.rgmii2_rctl */
-			0x48 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)  /* gpmc_a2.rgmii2_td3 */
-			0x4c (PIN_OUTPUT_PULLDOWN | MUX_MODE2)  /* gpmc_a3.rgmii2_td2 */
-			0x50 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)  /* gpmc_a4.rgmii2_td1 */
-			0x54 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)  /* gpmc_a5.rgmii2_td0 */
-			0x58 (PIN_OUTPUT_PULLDOWN | MUX_MODE2)  /* gpmc_a6.rgmii2_tclk */
-			0x5c (PIN_INPUT_PULLDOWN | MUX_MODE2)   /* gpmc_a7.rgmii2_rclk */
-			0x60 (PIN_INPUT_PULLDOWN | MUX_MODE2)   /* gpmc_a8.rgmii2_rd3 */
-			0x64 (PIN_INPUT_PULLDOWN | MUX_MODE2)   /* gpmc_a9.rgmii2_rd2 */
-			0x68 (PIN_INPUT_PULLDOWN | MUX_MODE2)   /* gpmc_a10.rgmii2_rd1 */
-			0x6c (PIN_INPUT_PULLDOWN | MUX_MODE2)   /* gpmc_a11.rgmii2_rd0 */
 		>;
 	};
 
@@ -224,19 +192,12 @@
 &cpsw_emac0 {
 	phy_id = <&davinci_mdio>, <0>;
 	phy-mode = "rmii";
-	dual_emac_res_vlan = <1>;
-};
-
-&cpsw_emac1 {
-	phy_id = <&davinci_mdio>, <2>;
-	phy-mode = "rgmii";
-	dual_emac_res_vlan = <2>;
 };
 
 &mac {
 	pinctrl-names = "default";
 	pinctrl-0 = <&emac_rmii1_pins>;
-	dual_emac = <1>;
+	slaves = <1>;
 	status = "okay";
 };
 

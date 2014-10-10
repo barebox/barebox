@@ -1070,7 +1070,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 				return ret;
 		}
 
-		if (!strncmp(child->name, "slave", 5)) {
+		if (i < priv->num_slaves && !strncmp(child->name, "slave", 5)) {
 			struct cpsw_slave *slave = &priv->slaves[i];
 			uint32_t phy_id[2];
 
@@ -1087,7 +1087,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 		}
 	}
 
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < priv->num_slaves; i++) {
 		struct cpsw_slave *slave = &priv->slaves[i];
 
 		cpsw_gmii_sel_am335x(slave);

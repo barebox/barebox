@@ -118,6 +118,7 @@ struct pcm051_sdram_timings timings[] = {
 };
 
 extern char __dtb_am335x_phytec_phycore_som_start[];
+extern char __dtb_am335x_phytec_phycore_som_no_spi_start[];
 
 /**
  * @brief The basic entry point for board initialization.
@@ -199,6 +200,15 @@ ENTRY_FUNCTION(start_am33xx_phytec_phycore_sdram, r0, r1, r2)
 	void *fdt;
 
 	fdt = __dtb_am335x_phytec_phycore_som_start - get_runtime_offset();
+
+	am335x_barebox_entry(fdt);
+}
+
+ENTRY_FUNCTION(start_am33xx_phytec_phycore_no_spi_sdram, r0, r1, r2)
+{
+	void *fdt;
+
+	fdt = __dtb_am335x_phytec_phycore_som_no_spi_start - get_runtime_offset();
 
 	am335x_barebox_entry(fdt);
 }

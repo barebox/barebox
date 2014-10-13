@@ -776,8 +776,8 @@ with device paramters. Device parameters are always strings, although there
 are functions to interpret them as something else. 'hush' users can access
 parameters as a local variable which have a dot (.) in them. So setting the
 IP address of the first ethernet device is a matter of typing
-'eth0.ip=192.168.0.7' on the console and can then be read back with
-'echo $eth0.ip'. The @ref devinfo_command command shows a summary about all
+'eth0.ipaddr=192.168.0.7' on the console and can then be read back with
+'echo $eth0.ipaddr'. The @ref devinfo_command command shows a summary about all
 devices currently present. If called with a device id as parameter it shows the
 parameters available for a device.
 

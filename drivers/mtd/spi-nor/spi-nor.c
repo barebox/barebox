@@ -923,7 +923,8 @@ static int spi_nor_check(struct spi_nor *nor)
 	return 0;
 }
 
-int spi_nor_scan(struct spi_nor *nor, const char *name, enum read_mode mode)
+int spi_nor_scan(struct spi_nor *nor, const char *name, enum read_mode mode,
+		 bool use_large_blocks)
 {
 	const struct spi_device_id	*id = NULL;
 	struct flash_info		*info;
@@ -1012,10 +1013,10 @@ int spi_nor_scan(struct spi_nor *nor, const char *name, enum read_mode mode)
 
 #ifdef CONFIG_MTD_SPI_NOR_USE_4K_SECTORS
 	/* prefer "small sector" erase if possible */
-	if (info->flags & SECT_4K) {
+	if (info->flags & SECT_4K && !use_large_blocks) {
 		nor->erase_opcode = SPINOR_OP_BE_4K;
 		mtd->erasesize = 4096;
-	} else if (info->flags & SECT_4K_PMC) {
+	} else if (info->flags & SECT_4K_PMC && !use_large_blocks) {
 		nor->erase_opcode = SPINOR_OP_BE_4K_PMC;
 		mtd->erasesize = 4096;
 	} else

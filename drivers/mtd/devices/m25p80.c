@@ -235,6 +235,7 @@ static int m25p_probe(struct device_d *dev)
 	enum read_mode mode =		SPI_NOR_NORMAL;
 	const char			*flash_name = NULL;
 	int				device_id;
+	bool				use_large_blocks;
 	int ret;
 
 	data = dev->platform_data;
@@ -272,7 +273,10 @@ static int m25p_probe(struct device_d *dev)
 	else
 		flash_name = NULL; /* auto-detect */
 
-	ret = spi_nor_scan(nor, flash_name, mode);
+	use_large_blocks = of_property_read_bool(dev->device_node,
+			"use-large-blocks");
+
+	ret = spi_nor_scan(nor, flash_name, mode, use_large_blocks);
 	if (ret)
 		return ret;
 

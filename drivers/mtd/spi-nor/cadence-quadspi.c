@@ -1078,7 +1078,7 @@ static int cqspi_setup_flash(struct device_d *dev,
 	nor->write = cqspi_write;
 	nor->erase = cqspi_erase;
 
-	ret = spi_nor_scan(nor, NULL, SPI_NOR_QUAD);
+	ret = spi_nor_scan(nor, NULL, SPI_NOR_QUAD, false);
 	if (ret)
 		goto probe_failed;
 

@@ -582,6 +582,7 @@ choice
 	prompt "default compression for in-barebox binaries"
 	default DEFAULT_COMPRESSION_NONE if PBL_IMAGE
 	default DEFAULT_COMPRESSION_LZO if LZO_DECOMPRESS
+	default DEFAULT_COMPRESSION_XZ if XZ_DECOMPRESS
 	default DEFAULT_COMPRESSION_GZIP if ZLIB
 	default DEFAULT_COMPRESSION_LZ4 if LZ4_DECOMPRESS
 	default DEFAULT_COMPRESSION_BZIP2 if BZLIB
@@ -605,6 +606,10 @@ config DEFAULT_COMPRESSION_LZO
 config DEFAULT_COMPRESSION_LZ4
 	bool "lz4"
 	depends on LZ4_DECOMPRESS
+
+config DEFAULT_COMPRESSION_XZ
+	bool "xz"
+	depends on XZ_DECOMPRESS
 
 config DEFAULT_COMPRESSION_NONE
 	bool "no compression"

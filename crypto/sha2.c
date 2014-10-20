@@ -208,7 +208,7 @@ static void sha2_update(sha2_context * ctx, const uint8_t * input, size_t length
 	size_t fill;
 	uint32_t left;
 
-	if (length <= 0)
+	if (length == 0)
 		return;
 
 	left = ctx->total[0] & 0x3F;

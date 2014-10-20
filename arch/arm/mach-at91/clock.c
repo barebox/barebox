@@ -347,7 +347,6 @@ EXPORT_SYMBOL(clk_get_rate);
 
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
-	unsigned long	flags;
 	unsigned	prescale;
 	unsigned long	actual;
 	unsigned long	prev = ULONG_MAX;
@@ -376,7 +375,6 @@ EXPORT_SYMBOL(clk_round_rate);
 
 int clk_set_rate(struct clk *clk, unsigned long rate)
 {
-	unsigned long	flags;
 	unsigned	prescale;
 	unsigned long	prescale_offset, css_mask;
 	unsigned long	actual;
@@ -421,8 +419,6 @@ EXPORT_SYMBOL(clk_get_parent);
 
 int clk_set_parent(struct clk *clk, struct clk *parent)
 {
-	unsigned long	flags;
-
 	if (clk->users)
 		return -EBUSY;
 	if (!clk_is_primary(parent) || !clk_is_programmable(clk))

@@ -140,7 +140,7 @@ static void at91_calc_twi_clock(struct at91_twi_dev *dev, int twi_clk)
 
 static void at91_twi_write_next_byte(struct at91_twi_dev *dev)
 {
-	if (dev->buf_len <= 0)
+	if (!dev->buf_len)
 		return;
 
 	at91_twi_write(dev, AT91_TWI_THR, *dev->buf);
@@ -156,7 +156,7 @@ static void at91_twi_write_next_byte(struct at91_twi_dev *dev)
 
 static void at91_twi_read_next_byte(struct at91_twi_dev *dev)
 {
-	if (dev->buf_len <= 0)
+	if (!dev->buf_len)
 		return;
 
 	*dev->buf = at91_twi_read(dev, AT91_TWI_RHR) & 0xff;

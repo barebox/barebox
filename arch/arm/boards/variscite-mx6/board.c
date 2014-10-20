@@ -49,7 +49,7 @@ static int setup_pmic_voltages(void)
 	unsigned char value, rev_id = 0 ;
 	struct i2c_adapter *adapter = NULL;
 	struct i2c_client client;
-	int addr = -1, ret, bus = 0;
+	int addr = -1, bus = 0;
 
 	/* I2C2 bus (2-1 = 1 in barebox numbering) */
 	bus = 1;
@@ -80,7 +80,10 @@ static int setup_pmic_voltages(void)
 
 	/* Set Gigabit Ethernet voltage (SOM v1.1/1.0)*/
         value = 0x60;
-	ret = i2c_write_reg(&client, 0x4a, &value, 1);
+	if (i2c_write_reg(&client, 0x4a, &value, 1) != 1) {
+		pr_err("Set ETH error!\n");
+		return -EIO;
+	}
 
 	/* set VGEN3 to 2.5V */
 	value = 0x77;

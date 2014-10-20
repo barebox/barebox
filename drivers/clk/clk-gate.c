@@ -132,14 +132,5 @@ struct clk *clk_gate(const char *name, const char *parent, void __iomem *reg,
 struct clk *clk_gate_inverted(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, unsigned flags)
 {
-	struct clk *clk;
-	struct clk_gate *g;
-
-	clk = clk_gate(name, parent, reg, shift, flags, CLK_GATE_INVERTED);
-	if (IS_ERR(clk))
-		return clk;
-
-	g = container_of(clk, struct clk_gate, clk);
-
-	return clk;
+	return clk_gate(name, parent, reg, shift, flags, CLK_GATE_INVERTED);
 }

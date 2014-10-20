@@ -207,6 +207,7 @@ dfu_bind(struct usb_configuration *c, struct usb_function *f)
 	dfu->dnreq = usb_ep_alloc_request(c->cdev->gadget->ep0);
 	if (!dfu->dnreq) {
 		printf("usb_ep_alloc_request failed\n");
+		status = -ENOMEM;
 		goto out;
 	}
 	dfu->dnreq->buf = dma_alloc(CONFIG_USBD_DFU_XFER_SIZE);

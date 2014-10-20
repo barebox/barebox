@@ -28,6 +28,8 @@
 #include <linux/reset.h>
 #include <mach/lowlevel.h>
 #include <mach/tegra-powergate.h>
+#include <reset_source.h>
+
 #include <mach/tegra20-pmc.h>
 
 static void __iomem *pmc_base;
@@ -171,6 +173,33 @@ static int tegra_powergate_init(void)
 	return 0;
 }
 
+static void tegra20_pmc_detect_reset_cause(void)
+{
+	u32 reg = readl(pmc_base + PMC_RST_STATUS);
+
+	switch ((reg & PMC_RST_STATUS_RST_SRC_MASK) >>
+	         PMC_RST_STATUS_RST_SRC_SHIFT) {
+	case PMC_RST_STATUS_RST_SRC_POR:
+		reset_source_set(RESET_POR);
+		break;
+	case PMC_RST_STATUS_RST_SRC_WATCHDOG:
+		reset_source_set(RESET_WDG);
+		break;
+	case PMC_RST_STATUS_RST_SRC_LP0:
+		reset_source_set(RESET_WKE);
+		break;
+	case PMC_RST_STATUS_RST_SRC_SW_MAIN:
+		reset_source_set(RESET_RST);
+		break;
+	case PMC_RST_STATUS_RST_SRC_SENSOR:
+		reset_source_set(RESET_THERM);
+		break;
+	default:
+		reset_source_set(RESET_UKWN);
+		break;
+	}
+}
+
 static int tegra20_pmc_probe(struct device_d *dev)
 {
 	pmc_base = dev_request_mem_region(dev, 0);
@@ -180,6 +209,9 @@ static int tegra20_pmc_probe(struct device_d *dev)
 	}
 
 	tegra_powergate_init();
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		tegra20_pmc_detect_reset_cause();
 
 	return 0;
 }

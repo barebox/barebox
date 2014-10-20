@@ -796,7 +796,7 @@ static int ipu_probe(struct device_d *dev)
 	dev_dbg(dev, "vdi:      0x%p\n",
 			ipu_base + devtype->vdi_ofs);
 
-	ipu->cm_reg = ipu_base + devtype->cm_ofs, PAGE_SIZE;
+	ipu->cm_reg = ipu_base + devtype->cm_ofs;
 	ipu->idmac_reg = ipu_base + devtype->cm_ofs + IPU_CM_IDMAC_REG_OFS;
 	ipu->cpmem_base = ipu_base + devtype->cpmem_ofs;
 

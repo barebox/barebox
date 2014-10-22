@@ -21,6 +21,7 @@
 #define _ENVIRONMENT_H_
 
 #include <linux/list.h>
+#include <errno.h>
 
 /**
  * Managment of a environment variable

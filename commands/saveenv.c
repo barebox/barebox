@@ -39,16 +39,16 @@ static int do_saveenv(int argc, char *argv[])
 	}
 
 	/* destination and source are given? */
-	if (argc == optind + 2)
-		dirname = argv[optind + 1];
-	else
+	if (argc - optind < 2)
 		dirname = "/env";
+	else
+		dirname = argv[optind + 1];
 
 	/* destination only given? */
-	if (argc == optind + 1)
-		filename = argv[optind];
-	else
+	if (argc - optind < 1)
 		filename = default_environment_path_get();
+	else
+		filename = argv[optind];
 
 	ret = envfs_save(filename, dirname, envfs_flags);
 

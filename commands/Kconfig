@@ -699,6 +699,13 @@ config CMD_EXPORT
 
 	  Export an environment variable to subsequently executed scripts.
 
+config CMD_DEFAULTENV
+	tristate
+	select ENV_HANDLING
+	prompt "defaultenv"
+	help
+	  restore environment from default environment
+
 config CMD_GLOBAL
 	select GLOBALVAR
 	tristate

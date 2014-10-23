@@ -42,7 +42,6 @@
 #endif
 
 struct action_data {
-	int fd;
 	const char *base;
 	void *writep;
 };

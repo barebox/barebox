@@ -39,13 +39,16 @@ static int do_cp(int argc, char *argv[])
 	int last_is_dir = 0;
 	int i;
 	int opt;
-	int verbose = 0;
+	int verbose = 0, recursive = 0;
 	int argc_min;
 
-	while ((opt = getopt(argc, argv, "v")) > 0) {
+	while ((opt = getopt(argc, argv, "vr")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose = 1;
+			break;
+		case 'r':
+			recursive = 1;
 			break;
 		}
 	}
@@ -60,24 +63,31 @@ static int do_cp(int argc, char *argv[])
 			last_is_dir = 1;
 	}
 
-	if (argc > argc_min && !last_is_dir) {
+	if (((recursive && argc - optind > 2) || (argc > argc_min)) && !last_is_dir) {
 		printf("cp: target `%s' is not a directory\n", argv[argc - 1]);
 		return 1;
 	}
 
+	if (recursive && argc - optind == 2 && !last_is_dir) {
+		ret = make_directory(argv[argc - 1]);
+		if (ret)
+			goto out;
+	}
+
 	for (i = optind; i < argc - 1; i++) {
-		if (last_is_dir) {
-			char *dst;
-			dst = concat_path_file(argv[argc - 1], basename(argv[i]));
+		char *dst;
+		dst = concat_path_file(argv[argc - 1], basename(argv[i]));
+
+		if (recursive)
+			ret = copy_recursive(argv[i], dst);
+		else if (last_is_dir)
 			ret = copy_file(argv[i], dst, verbose);
-			free(dst);
-			if (ret)
-				goto out;
-		} else {
+		else
 			ret = copy_file(argv[i], argv[argc - 1], verbose);
-			if (ret)
-				goto out;
-		}
+
+		free(dst);
+		if (ret)
+			goto out;
 	}
 
 	ret = 0;

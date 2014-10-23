@@ -1,0 +1,6 @@
+#!/bin/sh
+
+#  In OLinuXino board i.MX233 SoC uses LAN9512 (attached to USB) to connect
+#  to an Ethernet LAN.
+
+usb

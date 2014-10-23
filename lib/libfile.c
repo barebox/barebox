@@ -332,6 +332,46 @@ out:
 }
 EXPORT_SYMBOL(copy_file);
 
+int copy_recursive(const char *src, const char *dst)
+{
+	struct stat s;
+	DIR *dir;
+	struct dirent *d;
+	int ret;
+
+	ret = stat(src, &s);
+	if (ret)
+		return ret;
+
+	if (!S_ISDIR(s.st_mode))
+		return copy_file(src, dst, 0);
+
+	ret = make_directory(dst);
+	if (ret)
+		return ret;
+
+	dir = opendir(src);
+	if (!dir)
+		return -EIO;
+
+	while ((d = readdir(dir))) {
+		char *from, *to;
+		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
+			continue;
+
+		from = asprintf("%s/%s", src, d->d_name);
+		to = asprintf("%s/%s", dst, d->d_name);
+		ret = copy_recursive(from, to);
+		if (ret)
+			break;
+		free(from);
+		free(to);
+	}
+	closedir(dir);
+
+	return ret;
+}
+
 /**
  * compare_file - Compare two files
  * @f1:		The first file

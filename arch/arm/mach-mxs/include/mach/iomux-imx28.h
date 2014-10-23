@@ -10,68 +10,8 @@
  * GNU General Public License for more details.
  */
 
-/* 3322222222221111111111
- * 10987654321098765432109876543210
- *                            ^^^^^_ Bit offset
- *                         ^^^______ Register Number
- *                       ^^_________ Function
- *                      ^___________ Drive strength feature present
- *                     ^____________ Pull up present
- *                   ^^_____________ Drive strength setting
- *                  ^_______________ Pull up / bit keeper setting
- *                 ^________________ Voltage select present
- *                ^_________________ Voltage selection
- *            ^_____________________ direction if enabled as GPIO (1 = output)
- *           ^______________________ initial output value if enabled as GPIO
- *                                   and configured as output
- *          ^_______________________ Bit keeper present
- */
 #ifndef __MACH_IOMUX_IMX28_H
 #define __MACH_IOMUX_IMX28_H
-
-/* control pad's function */
-#define FBANK_SHIFT (5)
-#define PORTF(bank,bit)	(((bank) << FBANK_SHIFT) | (bit))
-#define GET_GPIO_NO(x) ((x) & 0xff)
-#define FUNC_SHIFT 8
-#define FUNC(x)	((x) << FUNC_SHIFT)
-#define GET_FUNC(x) (((x) >> FUNC_SHIFT) & 3)
-#define IS_GPIO (3)
-
-/* control pad's GPIO feature if enabled */
-#define GPIO_OUT (1 << 20)
-#define GPIO_VALUE(x) ((x) << 21)
-#define GPIO_IN (0 << 20)
-#define GET_GPIODIR(x) (!!((x) & (1 << 20)))
-#define GET_GPIOVAL(x) (!!((x) & (1 << 21)))
-
-/* control pad's drive strength */
-#define SE (1 << 10)
-#define SE_PRESENT(x) (!!((x) & SE))
-#define STRENGTH(x) ((x) << 12)
-#define S4MA 0	/* used to define a 4 mA drive strength */
-#define S8MA 1	/* used to define a 8 mA drive strength */
-#define S12MA 2	/* used to define a 12 mA drive strength */
-#define S16MA 3	/* used to define a 16 mA drive strength,
-		   not all pads can drive this current! */
-#define GET_STRENGTH(x) (((x) >> 12) & 0x3)
-
-/* control pad's pull up / bit keeper feature */
-#define PE (1 << 11)
-#define BK (1 << 22)
-#define PE_PRESENT(x) (!!((x) & PE))
-#define BK_PRESENT(x) (!!((x) & BK))
-#define PULLUP(x) ((x) << 14)
-#define BITKEEPER(x) ((x) << 14)
-#define GET_PULLUP(x) (!!((x) & PULLUP(1)))
-#define GET_BITKEEPER(x) (!!((x) & BITKEEPER(1)))
-
-/* control pad's voltage feature */
-#define VE (1 << 15)
-#define VE_PRESENT(x) (!!((x) & VE))
-#define VE_1_8V (0 << 16)
-#define VE_3_3V (1 << 16)
-#define GET_VOLTAGE(x) (!!((x) & (1 << 16)))
 
 /* Bank 0, GPIO pins 0 ... 31 */
 #define GPMI_RESETN		(FUNC(0) | PORTF(0, 28) | SE | VE | PE)

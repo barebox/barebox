@@ -97,20 +97,35 @@ void imx_gpio_mode(uint32_t m)
 	reg |= GET_FUNC(m) << ((gpio_pin % 16) << 1);
 	writel(reg, IMX_IOMUXC_BASE + reg_offset);
 
+	if (m & ERROR(1))
+		printf("%s: broken mode: 0x%08x\n", __func__, m);
+
+	if ((m & (PE | PEVALID)) == PEVALID)
+		printf("%s: mode specifies PE, but pin not configurable: 0x%08x\n", __func__, m);
+
+	if ((m & (BK | BKVALID)) == BKVALID)
+		printf("%s: mode specifies BK, but pin not configurable: 0x%08x\n", __func__, m);
+
+	if ((m & (SE | SEVALID)) == SEVALID)
+		printf("%s: mode specifies SE, but pin not configurable: 0x%08x\n", __func__, m);
+
+	if ((m & (VE | VEVALID)) == VEVALID)
+		printf("%s: mode specifies VE, but pin not configurable: 0x%08x\n", __func__, m);
+
 	/* some pins are disabled when configured for GPIO */
 	if ((gpio_pin > MAX_GPIO_NO) && (GET_FUNC(m) == IS_GPIO)) {
 		printf("Cannot configure pad %u to GPIO\n", gpio_pin);
 		return;
 	}
 
-	if (SE_PRESENT(m)) {
+	if (SE_PRESENT(m) && (m & SEVALID)) {
 		reg_offset = calc_strength_reg(gpio_pin);
 		reg = readl(IMX_IOMUXC_BASE + reg_offset) & ~(0x3 << ((gpio_pin % 8) << 2));
 		reg |= GET_STRENGTH(m) << ((gpio_pin % 8) << 2);
 		writel(reg, IMX_IOMUXC_BASE + reg_offset);
 	}
 
-	if (VE_PRESENT(m)) {
+	if (VE_PRESENT(m) && (m & VEVALID)) {
 		reg_offset = calc_strength_reg(gpio_pin);
 		if (GET_VOLTAGE(m) == 1)
 			writel(0x1 << (((gpio_pin % 8) << 2) + 2),
@@ -120,14 +135,14 @@ void imx_gpio_mode(uint32_t m)
 				IMX_IOMUXC_BASE + reg_offset + STMP_OFFSET_REG_CLR);
 	}
 
-	if (PE_PRESENT(m)) {
+	if (PE_PRESENT(m) && (m & PEVALID)) {
 		reg_offset = calc_pullup_reg(gpio_pin);
 		writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset +
 				(GET_PULLUP(m) == 1 ?
 				 STMP_OFFSET_REG_SET : STMP_OFFSET_REG_CLR));
 	}
 
-	if (BK_PRESENT(m)) {
+	if (BK_PRESENT(m) && (m & BKVALID)) {
 		reg_offset = calc_pullup_reg(gpio_pin);
 		writel(0x1 << (gpio_pin % 32), IMX_IOMUXC_BASE + reg_offset +
 				(GET_BITKEEPER(m) == 1 ?

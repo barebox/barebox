@@ -492,6 +492,11 @@ config MACH_SAMA5D4EK
 	help
 	  Select this if you are using Atmel's SAMA5D4-EK Evaluation Kit.
 
+config MACH_SAMA5D4_XPLAINED
+	bool "Atmel SAMA5D4 XPLAINED ULTRA Evaluation Kit"
+	help
+	  Select this if you are using Atmel's SAMA5D4_XPLAINED ULTRA Evaluation Kit.
+
 endchoice
 
 endif

@@ -86,9 +86,7 @@ static int smp_twd_probe(struct device_d *dev)
 
 	smp_twd_clksrc.mult = clocksource_hz2mult(tick_rate, smp_twd_clksrc.shift);
 
-	init_clock(&smp_twd_clksrc);
-
-	return 0;
+	return init_clock(&smp_twd_clksrc);
 }
 
 static __maybe_unused struct of_device_id smp_twd_compatible[] = {

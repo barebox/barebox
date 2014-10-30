@@ -62,9 +62,8 @@ static int orion_timer_probe(struct device_d *dev)
 		     timer_base + TIMER_CTRL);
 
 	clksrc.mult = clocksource_hz2mult(clk_get_rate(tclk), clksrc.shift);
-	init_clock(&clksrc);
 
-	return 0;
+	return init_clock(&clksrc);
 }
 
 static struct of_device_id orion_timer_dt_ids[] = {

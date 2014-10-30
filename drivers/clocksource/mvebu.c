@@ -88,9 +88,7 @@ static int mvebu_timer_probe(struct device_d *dev)
 
 	cs.mult = clocksource_hz2mult(rate, cs.shift);
 
-	init_clock(&cs);
-
-	return 0;
+	return init_clock(&cs);
 }
 
 static struct of_device_id mvebu_timer_dt_ids[] = {

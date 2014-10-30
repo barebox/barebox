@@ -132,9 +132,7 @@ static int nmdk_mtu_probe(struct device_d *dev)
 
 	nmdk_clksrc.mult = clocksource_hz2mult(rate, nmdk_clksrc.shift);
 
-	init_clock(&nmdk_clksrc);
-
-	return 0;
+	return init_clock(&nmdk_clksrc);
 }
 
 static struct driver_d nmdk_mtu_driver = {

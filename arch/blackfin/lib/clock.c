@@ -70,9 +70,7 @@ static int clocksource_init (void)
 
         cs.mult = clocksource_hz2mult(get_cclk(), cs.shift);
 
-        init_clock(&cs);
-
-	return 0;
+	return init_clock(&cs);
 }
 
 core_initcall(clocksource_init);

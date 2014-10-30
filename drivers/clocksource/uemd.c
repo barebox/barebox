@@ -105,9 +105,7 @@ static int uemd_timer_probe(struct device_d *dev)
 	clocks_calc_mult_shift(&uemd_cs.mult, &uemd_cs.shift,
 		clk_get_rate(timer_clk), NSEC_PER_SEC, 10);
 
-	init_clock(&uemd_cs);
-
-	return 0;
+	return init_clock(&uemd_cs);
 }
 
 static __maybe_unused struct of_device_id uemd_timer_dt_ids[] = {

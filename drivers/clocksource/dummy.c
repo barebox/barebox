@@ -49,8 +49,7 @@ static int clocksource_init(void)
 
 	pr_debug("clocksource_init: mult=%08x, shift=%08x\n",
 			dummy_cs.mult, dummy_cs.shift);
-	init_clock(&dummy_cs);
 
-	return 0;
+	return init_clock(&dummy_cs);
 }
 pure_initcall(clocksource_init);

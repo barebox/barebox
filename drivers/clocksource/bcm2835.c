@@ -66,9 +66,8 @@ static int bcm2835_cs_probe(struct device_d *dev)
 		return PTR_ERR(stc_base);
 
 	clocks_calc_mult_shift(&bcm2835_stc.mult, &bcm2835_stc.shift, rate, NSEC_PER_SEC, 60);
-	init_clock(&bcm2835_stc);
 
-	return 0;
+	return init_clock(&bcm2835_stc);
 }
 
 static __maybe_unused struct of_device_id bcm2835_cs_dt_ids[] = {

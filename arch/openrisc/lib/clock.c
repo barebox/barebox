@@ -38,9 +38,7 @@ static int clocksource_init(void)
 	mtspr(SPR_TTMR, SPR_TTMR_CR | 0xFFFFFF);
 	cs.mult = clocksource_hz2mult(OPENRISC_TIMER_FREQ, cs.shift);
 
-	init_clock(&cs);
-
-	return 0;
+	return init_clock(&cs);
 }
 
 core_initcall(clocksource_init);

@@ -99,9 +99,7 @@ static int at91_pit_probe(struct device_d *dev)
 
 	cs.mult = clocksource_hz2mult(pit_rate, cs.shift);
 
-	init_clock(&cs);
-
-	return 0;
+	return init_clock(&cs);
 }
 
 static struct driver_d at91_pit_driver = {

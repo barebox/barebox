@@ -66,9 +66,7 @@ static int sp804_probe(struct amba_device *dev, const struct amba_id *id)
 
 	sp804_clksrc.mult = clocksource_hz2mult(tick_rate, sp804_clksrc.shift);
 
-	init_clock(&sp804_clksrc);
-
-	return 0;
+	return init_clock(&sp804_clksrc);
 }
 
 static struct amba_id sp804_ids[] = {

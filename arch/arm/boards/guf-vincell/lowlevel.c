@@ -1,7 +1,9 @@
 #include <common.h>
+#include <debug_ll.h>
 #include <io.h>
 #include <init.h>
 #include <mach/imx53-regs.h>
+#include <mach/clock-imx51_53.h>
 #include <mach/imx5.h>
 #include <mach/iomux-v3.h>
 #include <mach/esdctl-v4.h>
@@ -9,7 +11,6 @@
 #include <mach/generic.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
-#include <io.h>
 
 #define IOMUX_PADCTL_DDRI_DDR (1 << 9)
 
@@ -122,31 +123,56 @@ void disable_watchdog(void)
 	writew(0x0, MX53_WDOG2_BASE_ADDR + 8);
 }
 
-void sdram_init(void);
-
-void __bare_init __naked barebox_arm_reset_vector(void)
+static noinline void imx53_guf_vincell_init(void *fdt)
 {
+	void __iomem *ccm = (void *)MX53_CCM_BASE_ADDR;
 	u32 r;
 
 	imx5_cpu_lowlevel_init();
 	arm_setup_stack(0xf8020000 - 8);
 
+	writel(0x0088494c, ccm + MX5_CCM_CBCDR);
+	writel(0x02b12f0a, ccm + MX5_CCM_CSCMR2);
+	imx53_ungate_all_peripherals();
+
+	imx53_init_lowlevel_early(800);
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
+		writel(0x3, MX53_IOMUXC_BASE_ADDR + 0x27c);
+		writel(0x3, MX53_IOMUXC_BASE_ADDR + 0x278);
+		imx53_uart_setup_ll();
+		putc_ll('>');
+	}
+
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();
-	if (r > 0x70000000 && r < 0xf0000000)
-		imx53_barebox_entry(NULL);
+	if (!(r > 0x70000000 && r < 0xf0000000)) {
+		disable_watchdog();
+		configure_dram_iomux();
+		imx_esdctlv4_init();
+	}
 
-	/* Setup a preliminary stack */
-	r = 0xf8000000 + 0x60000 - 16;
-	__asm__ __volatile__("mov sp, %0" : : "r"(r));
+	imx53_barebox_entry(fdt);
+}
 
-	disable_watchdog();
+extern char __dtb_imx53_guf_vincell_lt_start[];
 
-	configure_dram_iomux();
+ENTRY_FUNCTION(start_imx53_guf_vincell_lt, r0, r1, r2)
+{
+	void *fdt;
 
-	imx5_init_lowlevel();
+	fdt = __dtb_imx53_guf_vincell_lt_start - get_runtime_offset();
 
-	imx_esdctlv4_init();
+	imx53_guf_vincell_init(fdt);
+}
 
-	imx53_barebox_entry(NULL);
+extern char __dtb_imx53_guf_vincell_start[];
+
+ENTRY_FUNCTION(start_imx53_guf_vincell, r0, r1, r2)
+{
+	void *fdt;
+
+	fdt = __dtb_imx53_guf_vincell_start - get_runtime_offset();
+
+	imx53_guf_vincell_init(fdt);
 }

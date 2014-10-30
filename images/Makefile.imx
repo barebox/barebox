@@ -70,6 +70,16 @@ CFG_start_imx53_vmx53.pblx.imximg = $(board)/freescale-mx53-vmx53/flash-header-i
 FILE_barebox-freescale-imx53-vmx53.img = start_imx53_vmx53.pblx.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += barebox-freescale-imx53-vmx53.img
 
+pblx-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell
+CFG_start_imx53_guf_vincell.pblx.imximg = $(board)/guf-vincell/flash-header.imxcfg
+FILE_barebox-guf-vincell.img = start_imx53_guf_vincell.pblx.imximg
+image-$(CONFIG_MACH_GUF_VINCELL) += barebox-guf-vincell.img
+
+pblx-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell_lt
+CFG_start_imx53_guf_vincell_lt.pblx.imximg = $(board)/guf-vincell/flash-header.imxcfg
+FILE_barebox-guf-vincell-lt.img = start_imx53_guf_vincell_lt.pblx.imximg
+image-$(CONFIG_MACH_GUF_VINCELL) += barebox-guf-vincell-lt.img
+
 pblx-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_512mib
 CFG_start_imx53_mba53_512mib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-512mib.imxcfg
 FILE_barebox-tq-mba53-512mib.img = start_imx53_mba53_512mib.pblx.imximg

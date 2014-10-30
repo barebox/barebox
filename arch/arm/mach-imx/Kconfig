@@ -29,7 +29,6 @@ config ARCH_TEXT_BASE
 	default 0x97f00000 if MACH_CCMX51
 	default 0x4fc00000 if MACH_SABRELITE
 	default 0x8fe00000 if MACH_TX53
-	default 0x7fc00000 if MACH_GUF_VINCELL
 	default 0x97f00000 if MACH_EFIKA_MX_SMARTBOOK
 	default 0x17800000 if MACH_SABRESD
 	default 0x4fc00000 if MACH_REALQ7
@@ -250,6 +249,10 @@ config MACH_FREESCALE_MX53_LOCO
 	select I2C
 	select I2C_IMX
 	select MFD_MC13XXX
+
+config MACH_GUF_VINCELL
+	bool "Garz-Fricke Vincell"
+	select ARCH_IMX53
 
 config MACH_TQMA53
 	bool "TQ i.MX53 TQMa53"
@@ -532,11 +535,6 @@ config MACH_TX53
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using the Ka-Ro tx53 board
-
-config MACH_GUF_VINCELL
-	bool "Garz-Fricke Vincell"
-	select ARCH_IMX53
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 endchoice
 

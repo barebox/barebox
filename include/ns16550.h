@@ -34,9 +34,6 @@ struct NS16550_plat {
 	/** Clock speed */
 	unsigned int clock;
 	int shift;
-	unsigned int flags;
-	int mmio;
-#define NS16650_FLAG_DISABLE_FIFO	1
 };
 
 #endif				/* __NS16650_PLATFORM_H_ */

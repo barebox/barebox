@@ -441,10 +441,7 @@ static int ns16550_probe(struct device_d *dev)
 	cdev->setbrg = ns16550_setbaudrate;
 	cdev->linux_console_name = devtype->linux_console_name;
 
-	if (plat && (plat->flags & NS16650_FLAG_DISABLE_FIFO))
-		priv->fcrval = FCRVAL & ~FCR_FIFO_EN;
-	else
-		priv->fcrval = FCRVAL;
+	priv->fcrval = FCRVAL;
 
 	devtype->init_port(cdev);
 

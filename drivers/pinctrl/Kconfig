@@ -60,6 +60,14 @@ config PINCTRL_TEGRA30
 	help
 	  The pinmux controller found on the Tegra 30+ line of SoCs.
 
+config PINCTRL_TEGRA_XUSB
+	bool
+	default y if ARCH_TEGRA_124_SOC
+	select GENERIC_PHY
+	help
+	  The pinmux controller found on the Tegra 124 line of SoCs used for
+	  the SerDes lanes.
+
 source drivers/pinctrl/mvebu/Kconfig
 
 endif

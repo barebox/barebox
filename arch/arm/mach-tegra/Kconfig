@@ -70,6 +70,8 @@ config MACH_NVIDIA_BEAVER
 config MACH_NVIDIA_JETSON
 	bool "NVIDIA Jetson TK1"
 	select ARCH_TEGRA_124_SOC
+	select I2C
+	select I2C_TEGRA
 
 endmenu
 

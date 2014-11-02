@@ -233,6 +233,8 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 	priv->rx_desc = dma_alloc_coherent(NUM_RX_DESC *
 				sizeof(struct bufdesc));
 	priv->rx_buf = malloc(NUM_RX_DESC * PKT_BUF_SIZE);
+	dma_clean_range((unsigned long)priv->rx_buf,
+			(unsigned long)priv->rx_buf + NUM_RX_DESC * PKT_BUF_SIZE);
 
 	memset(priv->tx_desc, 0, NUM_TX_DESC * sizeof(struct bufdesc));
 	memset(priv->rx_desc, 0, NUM_RX_DESC * sizeof(struct bufdesc));
@@ -420,6 +422,15 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 
 			net_receive(edev, priv->rx_buf + entry * PKT_BUF_SIZE,
 			            pkt_size);
+
+			/*
+			 * the buffer is going to be reused by HW, make sure to
+			 * clean out any potentially modified data
+			 */
+			dma_clean_range((unsigned long)priv->rx_buf
+			               + entry * PKT_BUF_SIZE,
+			              (unsigned long)priv->rx_buf
+			               + entry * PKT_BUF_SIZE + pkt_size);
 
 			if (entry == NUM_RX_DESC - 1)
 				priv->rx_desc[entry].status = BD_STAT_OWN |

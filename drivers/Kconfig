@@ -30,5 +30,6 @@ source "drivers/reset/Kconfig"
 source "drivers/pci/Kconfig"
 source "drivers/rtc/Kconfig"
 source "drivers/firmware/Kconfig"
+source "drivers/phy/Kconfig"
 
 endmenu

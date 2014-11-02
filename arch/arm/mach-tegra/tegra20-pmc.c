@@ -53,6 +53,8 @@ static int tegra_powergate_set(int id, bool new_state)
 	}
 
 	writel(PMC_PWRGATE_TOGGLE_START | id, pmc_base + PMC_PWRGATE_TOGGLE);
+	/* I don't know exactly why this is needed, seems to flush the write */
+	readl(pmc_base + PMC_PWRGATE_TOGGLE);
 
 	return 0;
 }

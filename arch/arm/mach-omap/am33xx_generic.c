@@ -428,3 +428,20 @@ void am335x_sdram_init(int ioctrl, const struct am33xx_cmd_control *cmd_ctrl,
 
 	am33xx_config_sdram(emif_regs);
 }
+
+#define AM33XX_CONTROL_SMA2_OFS	0x1320
+
+/**
+ * am33xx_select_rmii2_crs_dv - Select RMII2_CRS_DV on GPMC_A9 pin in MODE3
+ */
+void am33xx_select_rmii2_crs_dv(void)
+{
+	uint32_t val;
+
+	if (am33xx_get_cpu_rev() == AM335X_ES1_0)
+		return;
+
+	val = readl(AM33XX_CTRL_BASE + AM33XX_CONTROL_SMA2_OFS);
+	val |= 0x00000001;
+	writel(val, AM33XX_CTRL_BASE + AM33XX_CONTROL_SMA2_OFS);
+}

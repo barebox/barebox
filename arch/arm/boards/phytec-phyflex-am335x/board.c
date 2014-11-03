@@ -89,6 +89,8 @@ static int pfla03_devices_init(void)
 	armlinux_set_architecture(MACH_TYPE_PFLA03);
 	defaultenv_append_directory(defaultenv_phyflex_am335x);
 
+	am33xx_select_rmii2_crs_dv();
+
 	am33xx_bbu_spi_nor_mlo_register_handler("MLO.spi", "/dev/m25p0.xload");
 	am33xx_bbu_spi_nor_register_handler("spi", "/dev/m25p0.barebox");
 	am33xx_bbu_nand_xloadslots_register_handler("MLO.nand",

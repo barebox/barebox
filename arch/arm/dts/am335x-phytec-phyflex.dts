@@ -212,6 +212,17 @@
 	phy_id = <&davinci_mdio>, <1>;
 	phy-mode = "rgmii";
 	dual_emac_res_vlan = <1>;
+
+	/* clock skew correction, maximum possible on KSZ9031 is
+	2^5 - 1 * 0,06ns = 1860ps, micrel datasheet M9999-081712-0.11 p.58*/
+	rxc-skew-ps = <1860>;
+	txc-skew-ps = <1860>;
+
+	/* align tx signals to zero, leave rx to default */
+	txd0-skew-ps = <0>;
+	txd1-skew-ps = <0>;
+	txd2-skew-ps = <0>;
+	txd3-skew-ps = <0>;
 };
 
 &cpsw_emac1 {

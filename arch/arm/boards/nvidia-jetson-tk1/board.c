@@ -26,7 +26,7 @@
 #define AS3722_GPIO_SIGNAL_OUT	0x20
 #define AS3722_SD_CONTROL	0x4d
 
-static int nvidia_jetson_tk1_devices_init(void)
+static int nvidia_jetson_tk1_fs_init(void)
 {
 	struct i2c_client client;
 	u8 data;
@@ -47,4 +47,15 @@ static int nvidia_jetson_tk1_devices_init(void)
 
 	return 0;
 }
-fs_initcall(nvidia_jetson_tk1_devices_init);
+fs_initcall(nvidia_jetson_tk1_fs_init);
+
+static int nvidia_jetson_tk1_device_init(void)
+{
+	if (!of_machine_is_compatible("nvidia,jetson-tk1"))
+		return 0;
+
+	barebox_set_hostname("jetson-tk1");
+
+	return 0;
+}
+device_initcall(nvidia_jetson_tk1_device_init);

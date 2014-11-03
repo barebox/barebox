@@ -418,6 +418,7 @@ static int ns16550_probe(struct device_d *dev)
 			ret = PTR_ERR(priv->clk);
 			goto err;
 		}
+		clk_enable(priv->clk);
 		priv->plat.clock = clk_get_rate(priv->clk);
 	}
 

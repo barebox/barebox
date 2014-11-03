@@ -12,6 +12,8 @@
 	};
 
 	chosen {
+		stdout-path = &uarta;
+
 		environment@0 {
 			compatible = "barebox,environment";
 			device-path = &emmc, "partname:boot1";

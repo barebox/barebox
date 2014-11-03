@@ -1,1 +1,8 @@
-#include <arm/tegra124.dtsi>
+/ {
+	aliases {
+		serial0 = "/serial@0,70006000/";
+		serial1 = "/serial@0,70006040/";
+		serial2 = "/serial@0,70006200/";
+		serial3 = "/serial@0,70006300/";
+	};
+};

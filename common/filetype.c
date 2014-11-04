@@ -24,6 +24,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <envfs.h>
+#include <disks.h>
 
 struct filetype_str {
 	const char *name;	/* human readable filetype */
@@ -87,6 +88,10 @@ const char *file_type_to_short_string(enum filetype f)
 #define MBR_PART_start_sect	8
 #define MBR_OSTYPE_EFI_GPT	0xee
 
+#define FAT_BS_reserved		14
+#define FAT_BS_fats		16
+#define FAT_BS_media		21
+
 static inline int pmbr_part_valid(const uint8_t *buf)
 {
 	if (buf[MBR_PART_sys_ind] == MBR_OSTYPE_EFI_GPT &&
@@ -123,6 +128,49 @@ static int is_gpt_valid(const uint8_t *buf)
 		if (pmbr_part_valid(buf))
 			return 1;
 	}
+	return 0;
+}
+
+static inline int fat_valid_media(u8 media)
+{
+	return (0xf8 <= media || media == 0xf0);
+}
+
+static int is_fat_with_no_mbr(const unsigned char  *sect)
+{
+	if (!get_unaligned_le16(&sect[FAT_BS_reserved]))
+		return 0;
+
+	if (!sect[FAT_BS_fats])
+		return 0;
+
+	if (!fat_valid_media(sect[FAT_BS_media]))
+		return 0;
+
+	return 1;
+}
+
+int is_fat_boot_sector(const void *sect)
+{
+	struct partition_entry *p;
+	int slot;
+
+	p = (struct partition_entry *) (sect + MBR_Table);
+	/* max 4 partitions */
+	for (slot = 1; slot <= 4; slot++, p++) {
+		if (p->boot_indicator && p->boot_indicator != 0x80) {
+			/*
+			 * Even without a valid boot inidicator value
+			 * its still possible this is valid FAT filesystem
+			 * without a partition table.
+			 */
+			if (slot == 1 && is_fat_with_no_mbr(sect))
+				return 1;
+			 else
+				return -EINVAL;
+		}
+	}
+
 	return 0;
 }
 

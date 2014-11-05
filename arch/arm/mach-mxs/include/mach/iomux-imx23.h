@@ -9,71 +9,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
-/* 3322222222221111111111
- * 10987654321098765432109876543210
- *                              ^^^_ Register Number
- *                          ^^^^____ Bit offset
- *                        ^^________ Function
- *                       ^__________ Drive strength feature present
- *                      ^___________ Pull up present
- *                    ^^____________ Drive strength setting
- *                   ^______________ Pull up / bit keeper setting
- *                  ^_______________ Voltage select present
- *                 ^________________ Voltage selection
- *             ^____________________ direction if enabled as GPIO (1 = output)
- *            ^_____________________ initial output value if enabled as GPIO and configured as output
- *           ^______________________ Bit keeper present
- */
 #ifndef __ASM_MACH_IOMUX_MX23_H
 #define __ASM_MACH_IOMUX_MX23_H
-
-/* control pad's function */
-#define FBIT_SHIFT (3)
-#define PORTF(bank,bit)	(((bit) << FBIT_SHIFT) | (bank))
-#define GET_PORTF(x) ((x) & 0x7)
-#define GET_FBITPOS(x) (((x) >> FBIT_SHIFT) & 0xf)
-#define GET_GPIO_NO(x) ((GET_PORTF(x) << 4) + GET_FBITPOS(m))
-#define FUNC_SHIFT 7
-#define FUNC(x)	((x) << FUNC_SHIFT)
-#define GET_FUNC(x) (((x) >> FUNC_SHIFT) & 3)
-#define IS_GPIO (3)
-
-/* control pad's GPIO feature if enabled */
-#define GPIO_OUT (1 << 19)
-#define GPIO_VALUE(x) ((x) << 20)
-#define GPIO_IN (0 << 19)
-#define GET_GPIODIR(x) (!!((x) & (1 << 19)))
-#define GET_GPIOVAL(x) (!!((x) & (1 << 20)))
-
-/* control pad's drive strength */
-#define SE (1 << 9)
-#define SE_PRESENT(x) (!!((x) & SE))
-#define STRENGTH(x) ((x) << 11)
-#define S4MA 0	/* used to define a 4 mA drive strength */
-#define S8MA 1	/* used to define a 8 mA drive strength */
-#define S12MA 2	/* used to define a 12 mA drive strength */
-#define S16MA 3	/* used to define a 16 mA drive strength, not all pads can drive this current! */
-#define GET_STRENGTH(x) (((x) >> 11) & 0x3)
-
-/* control pad's pull up / bit keeper feature */
-#define PE (1 << 10)
-#define BK (1 << 21)
-#define PE_PRESENT(x) (!!((x) & PE))
-#define BK_PRESENT(x) (!!((x) & BK))
-#define PULLUP(x) ((x) << 13)
-#define BITKEEPER(x) ((x) << 14)
-#define GET_PULLUP(x) (!!((x) & (1 << 13)))
-#define GET_BITKEEPER(x) (!!((x) & BITKEEPER(1)))
-
-/* control pad's voltage feature */
-#define VE (1 << 14)
-#define VE_PRESENT(x) (!!((x) & VE))
-#define VE_1_8V (0 << 15)
-#define VE_2_5V (0 << 15) /* don't ask my why, RTFM */
-#define GET_VOLTAGE(x) (!!((x) & (1 << 15)))
 
 /* Bank 0, pins 0 ... 15, GPIO pins 0 ... 15 */
 #define GPMI_D15		(FUNC(0) | PORTF(0, 15) | SE | PE)

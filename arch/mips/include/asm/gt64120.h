@@ -76,6 +76,13 @@
 #define GT_PCI0_CFGADDR_CONFIGEN_MSK	(MSK(1) << GT_PCI0_CFGADDR_CONFIGEN_SHF)
 #define GT_PCI0_CFGADDR_CONFIGEN_BIT	GT_PCI0_CFGADDR_CONFIGEN_MSK
 
+#define GT_PCI0_CMD_MBYTESWAP_SHF       0
+#define GT_PCI0_CMD_MBYTESWAP_MSK       (MSK(1) << GT_PCI0_CMD_MBYTESWAP_SHF)
+#define GT_PCI0_CMD_MBYTESWAP_BIT       GT_PCI0_CMD_MBYTESWAP_MSK
+#define GT_PCI0_CMD_SBYTESWAP_SHF       16
+#define GT_PCI0_CMD_SBYTESWAP_MSK       (MSK(1) << GT_PCI0_CMD_SBYTESWAP_SHF)
+#define GT_PCI0_CMD_SBYTESWAP_BIT       GT_PCI0_CMD_SBYTESWAP_MSK
+
 /*
  * Because of an error/peculiarity in the Galileo chip, we need to swap the
  * bytes when running bigendian.  We also provide non-swapping versions.

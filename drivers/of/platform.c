@@ -197,6 +197,49 @@ static struct device_d *of_platform_device_create(struct device_node *np,
 	return NULL;
 }
 
+/**
+ * of_device_enable_and_register - Enable and register device
+ * @np: pointer to node to enable create device for
+ *
+ * Returns pointer to created platform device, or NULL if a device was not
+ * registered. Unavailable devices will not get registered.
+ */
+struct device_d *of_device_enable_and_register(struct device_node *np)
+{
+	struct device_d *dev;
+
+	of_device_enable(np);
+
+	dev = of_platform_device_create(np, NULL);
+	if (!dev)
+		return NULL;
+
+	return dev;
+}
+EXPORT_SYMBOL(of_device_enable_and_register);
+
+/**
+ * of_device_enable_and_register_by_name - Enable and register device by name
+ * @name: name or path of the device node
+ *
+ * Returns pointer to created platform device, or NULL if a device was not
+ * registered. Unavailable devices will not get registered.
+ */
+struct device_d *of_device_enable_and_register_by_name(const char *name)
+{
+	struct device_node *node;
+
+	node = of_find_node_by_name(NULL, name);
+	if (!node)
+		node = of_find_node_by_path(name);
+
+	if (!node)
+		return NULL;
+
+	return of_device_enable_and_register(node);
+}
+EXPORT_SYMBOL(of_device_enable_and_register_by_name);
+
 #ifdef CONFIG_ARM_AMBA
 static struct device_d *of_amba_device_create(struct device_node *np)
 {

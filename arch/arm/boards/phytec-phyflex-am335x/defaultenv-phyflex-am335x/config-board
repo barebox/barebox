@@ -3,7 +3,7 @@
 # board defaults, do not change in running system. Change /env/config
 # instead
 
-global.hostname=pcm051
+global.hostname=pfla03
 global.linux.bootargs.base="console=ttyO0,115200"
 
 if [ $bootsource = mmc ]; then

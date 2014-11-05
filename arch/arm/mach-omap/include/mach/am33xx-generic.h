@@ -33,5 +33,7 @@ void __noreturn am33xx_reset_cpu(unsigned long addr);
 void am33xx_enable_per_clocks(void);
 int am33xx_init(void);
 int am33xx_devices_init(void);
+void am33xx_select_rmii2_crs_dv(void);
+int am33xx_of_register_bootdevice(void);
 
 #endif /* __MACH_AM33XX_GENERIC_H */

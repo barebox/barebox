@@ -20,6 +20,7 @@ obj-y			+= make_directory.o
 obj-y			+= math.o
 obj-$(CONFIG_BZLIB)	+= decompress_bunzip2.o
 obj-$(CONFIG_ZLIB)	+= decompress_inflate.o zlib_inflate/
+obj-$(CONFIG_XZ_DECOMPRESS) += decompress_unxz.o xz/
 obj-$(CONFIG_CMDLINE_EDITING)	+= readline.o
 obj-$(CONFIG_SIMPLE_READLINE)	+= readline_simple.o
 obj-$(CONFIG_GLOB)		+= fnmatch.o

@@ -18,6 +18,10 @@ config LZ4_DECOMPRESS
 	bool "include lz4 uncompression support"
 	select UNCOMPRESS
 
+config XZ_DECOMPRESS
+	bool "include xz uncompression support"
+	select UNCOMPRESS
+
 config GENERIC_FIND_NEXT_BIT
 	def_bool n
 

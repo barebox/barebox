@@ -58,6 +58,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_ch_image] = { "TI OMAP CH boot image", "ch-image" },
 	[filetype_ch_image_be] = {
 			"TI OMAP CH boot image (big endian)", "ch-image-be" },
+	[filetype_xz_compressed] = { "XZ compressed", "xz" },
 	[filetype_exe] = { "MS-DOS executable", "exe" },
 };
 
@@ -272,6 +273,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf8[0] == 'B' && buf8[1] == 'Z' && buf8[2] == 'h' &&
 			buf8[3] > '0' && buf8[3] <= '9')
                 return filetype_bzip2;
+	if (buf8[0] == 0xfd && buf8[1] == 0x37 && buf8[2] == 0x7a &&
+			buf8[3] == 0x58 && buf8[4] == 0x5a && buf8[5] == 0x00)
+		return filetype_xz_compressed;
 	if (buf[0] == be32_to_cpu(0xd00dfeed))
 		return filetype_oftree;
 	if (strncmp(buf8, "ANDROID!", 8) == 0)

@@ -33,6 +33,7 @@ enum filetype {
 	filetype_ch_image,
 	filetype_ch_image_be,
 	filetype_exe,
+	filetype_xz_compressed,
 	filetype_max,
 };
 

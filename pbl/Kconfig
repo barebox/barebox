@@ -64,6 +64,9 @@ config IMAGE_COMPRESSION_LZO
 config IMAGE_COMPRESSION_GZIP
 	bool "gzip"
 
+config IMAGE_COMPRESSION_XZKERN
+	bool "xz"
+
 config IMAGE_COMPRESSION_NONE
 	bool "none"
 

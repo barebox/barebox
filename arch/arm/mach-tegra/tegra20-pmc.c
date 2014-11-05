@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2013-2014 Lucas Stach <l.stach@pengutronix.de>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -19,15 +19,21 @@
  * @brief Device driver for the Tegra 20 power management controller.
  */
 
-#include <common.h>
 #include <command.h>
+#include <common.h>
 #include <init.h>
 #include <io.h>
 #include <linux/err.h>
+#include <linux/clk.h>
+#include <linux/reset.h>
+#include <mach/lowlevel.h>
+#include <mach/tegra-powergate.h>
+#include <reset_source.h>
 
 #include <mach/tegra20-pmc.h>
 
 static void __iomem *pmc_base;
+static int tegra_num_powerdomains;
 
 /* main SoC reset trigger */
 void __noreturn reset_cpu(ulong addr)
@@ -38,6 +44,162 @@ void __noreturn reset_cpu(ulong addr)
 }
 EXPORT_SYMBOL(reset_cpu);
 
+static int tegra_powergate_set(int id, bool new_state)
+{
+	bool status;
+
+	status = readl(pmc_base + PMC_PWRGATE_STATUS) & (1 << id);
+
+	if (status == new_state) {
+		return 0;
+	}
+
+	writel(PMC_PWRGATE_TOGGLE_START | id, pmc_base + PMC_PWRGATE_TOGGLE);
+	/* I don't know exactly why this is needed, seems to flush the write */
+	readl(pmc_base + PMC_PWRGATE_TOGGLE);
+
+	return 0;
+}
+
+int tegra_powergate_power_on(int id)
+{
+	if (id < 0 || id >= tegra_num_powerdomains)
+		return -EINVAL;
+
+	return tegra_powergate_set(id, true);
+}
+
+int tegra_powergate_power_off(int id)
+{
+	if (id < 0 || id >= tegra_num_powerdomains)
+		return -EINVAL;
+
+	return tegra_powergate_set(id, false);
+}
+EXPORT_SYMBOL(tegra_powergate_power_off);
+
+int tegra_powergate_is_powered(int id)
+{
+	u32 status;
+
+	if (id < 0 || id >= tegra_num_powerdomains)
+		return -EINVAL;
+
+	status = readl(pmc_base + PMC_PWRGATE_STATUS) & (1 << id);
+	return !!status;
+}
+
+int tegra_powergate_remove_clamping(int id)
+{
+	u32 mask;
+
+	if (id < 0 || id >= tegra_num_powerdomains)
+		return -EINVAL;
+
+	/*
+	 * Tegra 2 has a bug where PCIE and VDE clamping masks are
+	 * swapped relatively to the partition ids
+	 */
+	if (id == TEGRA_POWERGATE_VDEC)
+		mask = (1 << TEGRA_POWERGATE_PCIE);
+	else if (id == TEGRA_POWERGATE_PCIE)
+		mask = (1 << TEGRA_POWERGATE_VDEC);
+	else
+		mask = (1 << id);
+
+	writel(mask, pmc_base + PMC_REMOVE_CLAMPING_CMD);
+
+	return 0;
+}
+EXPORT_SYMBOL(tegra_powergate_remove_clamping);
+
+/* Must be called with clk disabled, and returns with clk enabled */
+int tegra_powergate_sequence_power_up(int id, struct clk *clk,
+					struct reset_control *rst)
+{
+	int ret;
+
+	reset_control_assert(rst);
+
+	ret = tegra_powergate_power_on(id);
+	if (ret)
+		goto err_power;
+
+	ret = clk_enable(clk);
+	if (ret)
+		goto err_clk;
+
+	udelay(10);
+
+	ret = tegra_powergate_remove_clamping(id);
+	if (ret)
+		goto err_clamp;
+
+	udelay(10);
+	reset_control_deassert(rst);
+
+	return 0;
+
+err_clamp:
+	clk_disable(clk);
+err_clk:
+	tegra_powergate_power_off(id);
+err_power:
+	return ret;
+}
+EXPORT_SYMBOL(tegra_powergate_sequence_power_up);
+
+static int tegra_powergate_init(void)
+{
+	switch (tegra_get_chiptype()) {
+	case TEGRA20:
+		tegra_num_powerdomains = 7;
+		break;
+	case TEGRA30:
+		tegra_num_powerdomains = 14;
+		break;
+	case TEGRA114:
+		tegra_num_powerdomains = 23;
+		break;
+	case TEGRA124:
+		tegra_num_powerdomains = 25;
+		break;
+	default:
+		/* Unknown Tegra variant. Disable powergating */
+		tegra_num_powerdomains = 0;
+		break;
+	}
+
+	return 0;
+}
+
+static void tegra20_pmc_detect_reset_cause(void)
+{
+	u32 reg = readl(pmc_base + PMC_RST_STATUS);
+
+	switch ((reg & PMC_RST_STATUS_RST_SRC_MASK) >>
+	         PMC_RST_STATUS_RST_SRC_SHIFT) {
+	case PMC_RST_STATUS_RST_SRC_POR:
+		reset_source_set(RESET_POR);
+		break;
+	case PMC_RST_STATUS_RST_SRC_WATCHDOG:
+		reset_source_set(RESET_WDG);
+		break;
+	case PMC_RST_STATUS_RST_SRC_LP0:
+		reset_source_set(RESET_WKE);
+		break;
+	case PMC_RST_STATUS_RST_SRC_SW_MAIN:
+		reset_source_set(RESET_RST);
+		break;
+	case PMC_RST_STATUS_RST_SRC_SENSOR:
+		reset_source_set(RESET_THERM);
+		break;
+	default:
+		reset_source_set(RESET_UKWN);
+		break;
+	}
+}
+
 static int tegra20_pmc_probe(struct device_d *dev)
 {
 	pmc_base = dev_request_mem_region(dev, 0);
@@ -45,6 +207,11 @@ static int tegra20_pmc_probe(struct device_d *dev)
 		dev_err(dev, "could not get memory region\n");
 		return PTR_ERR(pmc_base);
 	}
+
+	tegra_powergate_init();
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		tegra20_pmc_detect_reset_cause();
 
 	return 0;
 }

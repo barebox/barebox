@@ -63,6 +63,7 @@ struct tegra_clk_pll_params {
 
 	u32		base_reg;
 	u32		misc_reg;
+	u32		aux_reg;
 	u32		lock_reg;
 	u8		lock_bit_idx;
 	u8		lock_enable_bit_idx;
@@ -97,6 +98,18 @@ struct tegra_clk_pll {
 
 struct clk *tegra_clk_register_pll(const char *name, const char *parent_name,
 		void __iomem *clk_base,
+		unsigned long flags, unsigned long fixed_rate,
+		struct tegra_clk_pll_params *pll_params, u8 pll_flags,
+		struct tegra_clk_pll_freq_table *freq_table);
+
+struct clk *tegra_clk_register_plle(const char *name, const char *parent_name,
+		void __iomem *clk_base,
+		unsigned long flags, unsigned long fixed_rate,
+		struct tegra_clk_pll_params *pll_params, u8 pll_flags,
+		struct tegra_clk_pll_freq_table *freq_table);
+
+struct clk *tegra_clk_register_plle_tegra114(const char *name,
+		const char *parent_name, void __iomem *clk_base,
 		unsigned long flags, unsigned long fixed_rate,
 		struct tegra_clk_pll_params *pll_params, u8 pll_flags,
 		struct tegra_clk_pll_freq_table *freq_table);

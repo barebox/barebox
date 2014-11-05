@@ -130,6 +130,13 @@ static struct tegra_clk_pll_freq_table pll_u_freq_table[] = {
 	{ 0, 0, 0, 0, 0, 0 },
 };
 
+static struct tegra_clk_pll_freq_table pll_e_freq_table[] = {
+	/* PLLE special case: use cpcon field to store cml divider value */
+	{ 12000000,  100000000, 150, 1,  18, 11},
+	{ 216000000, 100000000, 200, 18, 24, 13},
+	{ 0, 0, 0, 0, 0, 0 },
+};
+
 /* PLL parameters */
 static struct tegra_clk_pll_params pll_c_params = {
 	.input_min = 2000000,
@@ -201,6 +208,19 @@ static struct tegra_clk_pll_params pll_u_params = {
 	.lock_delay = 1000,
 };
 
+static struct tegra_clk_pll_params pll_e_params = {
+	.input_min = 12000000,
+	.input_max = 216000000,
+	.cf_min = 12000000,
+	.cf_max = 12000000,
+	.vco_min = 1200000000,
+	.vco_max = 2400000000U,
+	.base_reg = CRC_PLLE_BASE,
+	.misc_reg = CRC_PLLE_MISC,
+	.lock_enable_bit_idx = CRC_PLLE_MISC_LOCK_ENABLE,
+	.lock_delay = 300,
+};
+
 static void tegra30_pll_init(void)
 {
 	/* PLLC */
@@ -251,6 +271,11 @@ static void tegra30_pll_init(void)
 	clks[TEGRA30_CLK_PLL_U] = tegra_clk_register_pll("pll_u", "pll_ref",
 			car_base, 0, 0, &pll_u_params, TEGRA_PLLU |
 			TEGRA_PLL_HAS_CPCON, pll_u_freq_table);
+
+	/* PLLE */
+	clks[TEGRA30_CLK_PLL_E] = tegra_clk_register_plle("pll_e", "pll_ref",
+			car_base, 0, 100000000, &pll_e_params,
+			TEGRA_PLL_FIXED | TEGRA_PLL_USE_LOCK, pll_e_freq_table);
 }
 
 static const char *mux_pllpcm_clkm[] = {"pll_p", "pll_c", "pll_m", "clk_m"};
@@ -278,6 +303,12 @@ static void tegra30_periph_init(void)
 			mux_pllpcm_clkm, ARRAY_SIZE(mux_pllpcm_clkm), car_base,
 			CRC_CLK_SOURCE_UARTE, TEGRA30_CLK_UARTE,
 			TEGRA_PERIPH_ON_APB);
+	clks[TEGRA30_CLK_PCIE] = clk_gate("pcie", "clk_m",
+			car_base + CRC_CLK_OUT_ENB_U, 6, 0, 0);
+	clks[TEGRA30_CLK_AFI] = clk_gate("afi", "clk_m",
+			car_base + CRC_CLK_OUT_ENB_U, 8, 0, 0);
+	clks[TEGRA30_CLK_CML0] = clk_gate("cml0", "pll_e",
+			car_base + CRC_PLLE_AUX, 0, 0, 0);
 
 	/* peripheral clocks with a divider */
 	clks[TEGRA30_CLK_MSELECT] = tegra_clk_register_periph("mselect",
@@ -320,12 +351,12 @@ static struct tegra_clk_init_table init_table[] = {
 	{TEGRA30_CLK_PLL_P_OUT2,	TEGRA30_CLK_CLK_MAX,	48000000,	1},
 	{TEGRA30_CLK_PLL_P_OUT3,	TEGRA30_CLK_CLK_MAX,	102000000,	1},
 	{TEGRA30_CLK_PLL_P_OUT4,	TEGRA30_CLK_CLK_MAX,	204000000,	1},
-	{TEGRA30_CLK_MSELECT,		TEGRA30_CLK_PLL_P,	204000000,	1},
-	{TEGRA30_CLK_UARTA,		TEGRA30_CLK_PLL_P,	0,		1},
-	{TEGRA30_CLK_UARTB,		TEGRA30_CLK_PLL_P,	0,		1},
-	{TEGRA30_CLK_UARTC,		TEGRA30_CLK_PLL_P,	0,		1},
-	{TEGRA30_CLK_UARTD,		TEGRA30_CLK_PLL_P,	0,		1},
-	{TEGRA30_CLK_UARTE,		TEGRA30_CLK_PLL_P,	0,		1},
+	{TEGRA30_CLK_MSELECT,		TEGRA30_CLK_PLL_P,	102000000,	1},
+	{TEGRA30_CLK_UARTA,		TEGRA30_CLK_PLL_P,	0,		0},
+	{TEGRA30_CLK_UARTB,		TEGRA30_CLK_PLL_P,	0,		0},
+	{TEGRA30_CLK_UARTC,		TEGRA30_CLK_PLL_P,	0,		0},
+	{TEGRA30_CLK_UARTD,		TEGRA30_CLK_PLL_P,	0,		0},
+	{TEGRA30_CLK_UARTE,		TEGRA30_CLK_PLL_P,	0,		0},
 	{TEGRA30_CLK_SDMMC1,		TEGRA30_CLK_PLL_P,	48000000,	0},
 	{TEGRA30_CLK_SDMMC2,		TEGRA30_CLK_PLL_P,	48000000,	0},
 	{TEGRA30_CLK_SDMMC3,		TEGRA30_CLK_PLL_P,	48000000,	0},

@@ -897,10 +897,14 @@ static int pinctrl_tegra30_probe(struct device_d *dev)
 	ctrl->pinctrl.ops = &pinctrl_tegra30_ops;
 
 	ret = pinctrl_register(&ctrl->pinctrl);
-	if (ret)
+	if (ret) {
 		free(ctrl);
+		return ret;
+	}
 
-	return ret;
+	of_pinctrl_select_state(dev->device_node, "boot");
+
+	return 0;
 }
 
 static __maybe_unused struct of_device_id pinctrl_tegra30_dt_ids[] = {

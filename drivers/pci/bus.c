@@ -86,7 +86,8 @@ int pci_register_device(struct pci_dev *pdev)
 	struct device_d *dev = &pdev->dev;
 	int ret;
 
-	strcpy(dev->name, "pci");
+	snprintf(dev->name, MAX_DRIVER_NAME, "pci-%04x:%04x.",
+	         pdev->vendor, pdev->device);
 	dev->bus = &pci_bus;
 	dev->id = DEVICE_ID_DYNAMIC;
 

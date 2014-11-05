@@ -3,5 +3,5 @@ CFLAGS_pbl-entry.o := \
 	-fno-tree-switch-conversion -fno-jump-tables
 soc := tegra124
 lwl-y += entry.o
-#obj-y += board.o
+obj-y += board.o
 extra-y += jetson-tk1-2gb-emmc.bct

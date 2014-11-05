@@ -30,6 +30,7 @@ config OF_GPIO
 config OF_PCI
 	bool
 	depends on PCI
+	select OF_ADDRESS_PCI
 	help
 	  OpenFirmware PCI bus accessors
 

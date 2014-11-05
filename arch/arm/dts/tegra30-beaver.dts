@@ -1,6 +1,6 @@
 /dts-v1/;
 
-#include "tegra30.dtsi"
+#include <arm/tegra30.dtsi>
 
 / {
 	model = "NVIDIA Tegra30 Beaver evaluation board";
@@ -9,6 +9,15 @@
 	aliases {
 		rtc0 = "/i2c@7000d000/tps65911@2d";
 		rtc1 = "/rtc@7000e000";
+	};
+
+	chosen {
+		stdout-path = &uarta;
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &emmc, "partname:boot1";
+		};
 	};
 
 	memory {
@@ -750,7 +759,7 @@
 		bus-width = <4>;
 	};
 
-	sdhci@78000600 {
+	emmc: sdhci@78000600 {
 		status = "okay";
 		bus-width = <8>;
 		non-removable;

@@ -20,39 +20,42 @@
 #include <i2c/i2c.h>
 #include <init.h>
 
-static int nvidia_beaver_fs_init(void)
+#define AS3722_SD_VOLTAGE(n)	(0x00 + (n))
+#define AS3722_GPIO_CONTROL(n)	(0x08 + (n))
+#define  AS3722_GPIO_CONTROL_MODE_OUTPUT_VDDH (1 << 0)
+#define AS3722_GPIO_SIGNAL_OUT	0x20
+#define AS3722_SD_CONTROL	0x4d
+
+static int nvidia_jetson_tk1_fs_init(void)
 {
 	struct i2c_client client;
 	u8 data;
 
-	if (!of_machine_is_compatible("nvidia,beaver"))
+	if (!of_machine_is_compatible("nvidia,jetson-tk1"))
 		return 0;
 
 	client.adapter = i2c_get_adapter(4);
-	client.addr = 0x2d;
+	client.addr = 0x40;
 
-	/* TPS659110: LDO5_REG = 3.3v, ACTIVE to SDMMC1 */
-	data = 0x65;
-	i2c_write_reg(&client, 0x32, &data, 1);
+	/* AS3722: enable SD4 and set voltage to 1.05v */
+	i2c_read_reg(&client, AS3722_SD_CONTROL, &data, 1);
+	data |= 1 << 4;
+	i2c_write_reg(&client, AS3722_SD_CONTROL, &data, 1);
 
-	/* TPS659110: LDO1_REG = 1.05v, ACTIVE to PEX */
-	data = 0x15;
-	i2c_write_reg(&client, 0x30, &data, 1);
-
-	/* enable SYS_3V3_PEXS */
-	gpio_direction_output(TEGRA_GPIO(L, 7), 1);
+	data = 0x24;
+	i2c_write_reg(&client, AS3722_SD_VOLTAGE(4), &data, 1);
 
 	return 0;
 }
-fs_initcall(nvidia_beaver_fs_init);
+fs_initcall(nvidia_jetson_tk1_fs_init);
 
-static int nvidia_beaver_device_init(void)
+static int nvidia_jetson_tk1_device_init(void)
 {
-	if (!of_machine_is_compatible("nvidia,beaver"))
+	if (!of_machine_is_compatible("nvidia,jetson-tk1"))
 		return 0;
 
-	barebox_set_hostname("beaver");
+	barebox_set_hostname("jetson-tk1");
 
 	return 0;
 }
-device_initcall(nvidia_beaver_device_init);
+device_initcall(nvidia_jetson_tk1_device_init);

@@ -14,24 +14,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Register definitions */
-#define CRC_CLK_OUT_ENB_V		0x360
-#define CRC_CLK_OUT_ENB_V_MSELECT	(1 << 3)
+#include <common.h>
+#include <init.h>
 
-#define CRC_CLK_SOURCE_MSEL		0x3b4
-#define CRC_CLK_SOURCE_MSEL_SRC_SHIFT	30
-#define CRC_CLK_SOURCE_MSEL_SRC_PLLP	0
-#define CRC_CLK_SOURCE_MSEL_SRC_PLLC	1
-#define CRC_CLK_SOURCE_MSEL_SRC_PLLM	2
-#define CRC_CLK_SOURCE_MSEL_SRC_CLKM	3
+static int toradex_colibri_t20_device_init(void)
+{
+	if (!of_machine_is_compatible("toradex,colibri_t20-512"))
+		return 0;
 
-#define CRC_CLK_SOURCE_I2C4		0x3c4
+	barebox_set_hostname("colibri-t20");
 
-#define CRC_RST_DEV_V_SET		0x430
-#define CRC_RST_DEV_V_MSELECT		(1 << 3)
-
-#define CRC_RST_DEV_V_CLR		0x434
-
-#define CRC_CLK_OUT_ENB_V_SET		0x440
-
-#define CRC_PLLE_AUX			0x48c
+	return 0;
+}
+device_initcall(toradex_colibri_t20_device_init);

@@ -7,39 +7,6 @@ config ARCH_TEXT_BASE
 config BOARDINFO
 	default ""
 
-choice
-	prompt "Tegra debug UART"
-	help
-	  This is the first serial console that gets activated by barebox.
-	  Normally each board vendor should program a valid debug UART into
-	  the ODMdata section of the boot configuration table, so it's a
-	  reasonably good bet to use that.
-	  If you know your ODMdata is broken, or you don't wish to activate
-	  any serial console at all you can override the default here.
-
-config TEGRA_UART_ODMDATA
-	bool "ODMdata defined UART"
-
-config TEGRA_UART_A
-	bool "UART A"
-
-config TEGRA_UART_B
-	bool "UART B"
-
-config TEGRA_UART_C
-	bool "UART C"
-
-config TEGRA_UART_D
-	bool "UART D"
-
-config TEGRA_UART_E
-	bool "UART E"
-
-config TEGRA_UART_NONE
-	bool "None"
-
-endchoice
-
 # ---------------------------------------------------------
 
 config ARCH_TEGRA_2x_SOC
@@ -70,6 +37,8 @@ config MACH_NVIDIA_BEAVER
 config MACH_NVIDIA_JETSON
 	bool "NVIDIA Jetson TK1"
 	select ARCH_TEGRA_124_SOC
+	select I2C
+	select I2C_TEGRA
 
 endmenu
 

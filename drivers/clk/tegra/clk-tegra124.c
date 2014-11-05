@@ -62,6 +62,15 @@ static struct tegra_clk_pll_freq_table pll_c_freq_table[] = {
 	{ 0, 0, 0, 0, 0, 0 },
 };
 
+static struct tegra_clk_pll_freq_table pll_e_freq_table[] = {
+	/* PLLE special case: use cpcon field to store cml divider value */
+	{336000000, 100000000, 100, 21, 16, 11},
+	{312000000, 100000000, 200, 26, 24, 13},
+	{13000000,  100000000, 200, 1,  26, 13},
+	{12000000,  100000000, 200, 1,  24, 13},
+	{0, 0, 0, 0, 0, 0},
+};
+
 static struct tegra_clk_pll_freq_table pll_p_freq_table[] = {
 	{12000000, 408000000, 408, 12, 0, 8},
 	{13000000, 408000000, 408, 13, 0, 8},
@@ -111,6 +120,21 @@ static struct tegra_clk_pll_params pll_c_params = {
 	.misc_reg = CRC_PLLC_MISC,
 	.lock_bit_idx = CRC_PLL_BASE_LOCK,
 	.lock_enable_bit_idx = CRC_PLL_MISC_LOCK_ENABLE,
+	.lock_delay = 300,
+};
+
+static struct tegra_clk_pll_params pll_e_params = {
+	.input_min = 12000000,
+	.input_max = 1000000000,
+	.cf_min = 12000000,
+	.cf_max = 75000000,
+	.vco_min = 1600000000,
+	.vco_max = 2400000000U,
+	.base_reg = CRC_PLLE_BASE,
+	.misc_reg = CRC_PLLE_MISC,
+	.aux_reg = CRC_PLLE_AUX,
+	.lock_bit_idx = CRC_PLLE_MISC_LOCK,
+	.lock_enable_bit_idx = CRC_PLLE_MISC_LOCK_ENABLE,
 	.lock_delay = 300,
 };
 
@@ -220,6 +244,11 @@ static void tegra124_pll_init(void)
 	clks[TEGRA124_CLK_PLL_U] = tegra_clk_register_pll("pll_u", "pll_ref",
 			car_base, 0, 0, &pll_u_params, TEGRA_PLLU |
 			TEGRA_PLL_HAS_CPCON, pll_u_freq_table);
+
+	/* PLLE */
+	clks[TEGRA124_CLK_PLL_E] = tegra_clk_register_plle_tegra114("pll_e",
+			"pll_ref", car_base, 0, 100000000, &pll_e_params,
+			TEGRA_PLL_FIXED | TEGRA_PLL_USE_LOCK, pll_e_freq_table);
 }
 
 static const char *mux_pllpcm_clkm[] = {"pll_p", "pll_c2", "pll_c", "pll_c3",
@@ -244,6 +273,12 @@ static void tegra124_periph_init(void)
 			mux_pllpcm_clkm, ARRAY_SIZE(mux_pllpcm_clkm), car_base,
 			CRC_CLK_SOURCE_UARTD, TEGRA124_CLK_UARTD,
 			TEGRA_PERIPH_ON_APB);
+	clks[TEGRA124_CLK_PCIE] = clk_gate("pcie", "clk_m",
+			car_base + CRC_CLK_OUT_ENB_U, 6, 0, 0);
+	clks[TEGRA124_CLK_AFI] = clk_gate("afi", "clk_m",
+			car_base + CRC_CLK_OUT_ENB_U, 8, 0, 0);
+	clks[TEGRA124_CLK_CML0] = clk_gate("cml0", "pll_e",
+			car_base + CRC_PLLE_AUX, 0, 0, 0);
 
 	/* peripheral clocks with a divider */
 	clks[TEGRA124_CLK_MSELECT] = tegra_clk_register_periph("mselect",
@@ -286,11 +321,11 @@ static struct tegra_clk_init_table init_table[] = {
 	{TEGRA124_CLK_PLL_P_OUT2,	TEGRA124_CLK_CLK_MAX,	48000000,	1},
 	{TEGRA124_CLK_PLL_P_OUT3,	TEGRA124_CLK_CLK_MAX,	102000000,	1},
 	{TEGRA124_CLK_PLL_P_OUT4,	TEGRA124_CLK_CLK_MAX,	204000000,	1},
-	{TEGRA124_CLK_MSELECT,		TEGRA124_CLK_PLL_P,	204000000,	1},
-	{TEGRA124_CLK_UARTA,		TEGRA124_CLK_PLL_P,	0,		1},
-	{TEGRA124_CLK_UARTB,		TEGRA124_CLK_PLL_P,	0,		1},
-	{TEGRA124_CLK_UARTC,		TEGRA124_CLK_PLL_P,	0,		1},
-	{TEGRA124_CLK_UARTD,		TEGRA124_CLK_PLL_P,	0,		1},
+	{TEGRA124_CLK_MSELECT,		TEGRA124_CLK_PLL_P,	102000000,	1},
+	{TEGRA124_CLK_UARTA,		TEGRA124_CLK_PLL_P,	0,		0},
+	{TEGRA124_CLK_UARTB,		TEGRA124_CLK_PLL_P,	0,		0},
+	{TEGRA124_CLK_UARTC,		TEGRA124_CLK_PLL_P,	0,		0},
+	{TEGRA124_CLK_UARTD,		TEGRA124_CLK_PLL_P,	0,		0},
 	{TEGRA124_CLK_SDMMC1,		TEGRA124_CLK_PLL_P,	48000000,	0},
 	{TEGRA124_CLK_SDMMC2,		TEGRA124_CLK_PLL_P,	48000000,	0},
 	{TEGRA124_CLK_SDMMC3,		TEGRA124_CLK_PLL_P,	48000000,	0},

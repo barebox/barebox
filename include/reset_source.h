@@ -20,6 +20,7 @@ enum reset_src_type {
 	RESET_WDG,	/* watchdog */
 	RESET_WKE,	/* wake-up (some SoCs can handle this) */
 	RESET_JTAG,	/* JTAG reset */
+	RESET_THERM,	/* SoC shut down because of overtemperature */
 };
 
 #ifdef CONFIG_RESET_SOURCE

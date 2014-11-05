@@ -176,37 +176,6 @@ uint32_t tegra30_get_ramsize(void)
 	}
 }
 
-static long uart_id_to_base[] = {
-	TEGRA_UARTA_BASE,
-	TEGRA_UARTB_BASE,
-	TEGRA_UARTC_BASE,
-	TEGRA_UARTD_BASE,
-	TEGRA_UARTE_BASE,
-};
-
-static __always_inline
-long tegra20_get_debuguart_base(void)
-{
-	u32 odmdata;
-	int id;
-
-	odmdata = tegra_get_odmdata();
-
-	/*
-	 * Get type, we accept both "2" and "3", as they both demark a UART,
-	 * depending on the board type.
-	 */
-	if (!(((odmdata & T20_ODMDATA_UARTTYPE_MASK) >>
-	      T20_ODMDATA_UARTTYPE_SHIFT) & 0x2))
-		return 0;
-
-	id = (odmdata & T20_ODMDATA_UARTID_MASK) >> T20_ODMDATA_UARTID_SHIFT;
-	if (id > ARRAY_SIZE(uart_id_to_base))
-		return 0;
-
-	return uart_id_to_base[id];
-}
-
 #define CRC_OSC_CTRL			0x050
 #define CRC_OSC_CTRL_OSC_FREQ_SHIFT	30
 #define CRC_OSC_CTRL_OSC_FREQ_MASK	(0x3 << CRC_OSC_CTRL_OSC_FREQ_SHIFT)
@@ -226,20 +195,6 @@ int tegra_get_osc_clock(void)
 		return 12000000;
 	case 3:
 		return 26000000;
-	default:
-		return 0;
-	}
-}
-
-static __always_inline
-int tegra_get_pllp_rate(void)
-{
-	switch (tegra_get_chiptype()) {
-	case TEGRA20:
-		return 216000000;
-	case TEGRA30:
-	case TEGRA124:
-		return 408000000;
 	default:
 		return 0;
 	}

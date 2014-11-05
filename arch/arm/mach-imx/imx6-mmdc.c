@@ -512,34 +512,47 @@ int mmdc_do_dqs_calibration(void)
 	/* poll to make sure the con_ack bit is clear */
 	while (readl(P0_IPS + MDSCR) & 0x00004000) ;
 
-	pr_debug("MMDC registers updated from calibration \n");
-	pr_debug("\nRead DQS Gating calibration\n");
-	pr_debug("MPDGCTRL0 PHY0 (0x021b083c) = 0x%08X\n", readl(P0_IPS + MPDGCTRL0));
-	pr_debug("MPDGCTRL1 PHY0 (0x021b0840) = 0x%08X\n", readl(P0_IPS + MPDGCTRL1));
-	pr_debug("MPDGCTRL0 PHY1 (0x021b483c) = 0x%08X\n", readl(P1_IPS + MPDGCTRL0));
-	pr_debug("MPDGCTRL1 PHY1 (0x021b4840) = 0x%08X\n", readl(P1_IPS + MPDGCTRL1));
-	pr_debug("\nRead calibration\n");
-	pr_debug("MPRDDLCTL PHY0 (0x021b0848) = 0x%08X\n", readl(P0_IPS + MPRDDLCTL));
-	pr_debug("MPRDDLCTL PHY1 (0x021b4848) = 0x%08X\n", readl(P1_IPS + MPRDDLCTL));
-	pr_debug("\nWrite calibration\n");
-	pr_debug("MPWRDLCTL PHY0 (0x021b0850) = 0x%08X\n", readl(P0_IPS + MPWRDLCTL));
-	pr_debug("MPWRDLCTL PHY1 (0x021b4850) = 0x%08X\n", readl(P1_IPS + MPWRDLCTL));
-	pr_debug("\n");
+	return errorcount;
+}
+
+void mmdc_print_calibration_results(void)
+{
+	int data_bus_size;
+
+	data_bus_size = (readl(P0_IPS + MDCTL) & 0x30000) >> 16;
+
+	printf("MMDC registers updated from calibration \n");
+	printf("\nRead DQS Gating calibration\n");
+	printf("MPDGCTRL0 PHY0 (0x021b083c) = 0x%08X\n", readl(P0_IPS + MPDGCTRL0));
+	printf("MPDGCTRL1 PHY0 (0x021b0840) = 0x%08X\n", readl(P0_IPS + MPDGCTRL1));
+	if (data_bus_size == 0x2) {
+		printf("MPDGCTRL0 PHY1 (0x021b483c) = 0x%08X\n", readl(P1_IPS + MPDGCTRL0));
+		printf("MPDGCTRL1 PHY1 (0x021b4840) = 0x%08X\n", readl(P1_IPS + MPDGCTRL1));
+	}
+	printf("\nRead calibration\n");
+	printf("MPRDDLCTL PHY0 (0x021b0848) = 0x%08X\n", readl(P0_IPS + MPRDDLCTL));
+	if (data_bus_size == 0x2)
+		printf("MPRDDLCTL PHY1 (0x021b4848) = 0x%08X\n", readl(P1_IPS + MPRDDLCTL));
+	printf("\nWrite calibration\n");
+	printf("MPWRDLCTL PHY0 (0x021b0850) = 0x%08X\n", readl(P0_IPS + MPWRDLCTL));
+	if (data_bus_size == 0x2)
+		printf("MPWRDLCTL PHY1 (0x021b4850) = 0x%08X\n", readl(P1_IPS + MPWRDLCTL));
+	printf("\n");
 	/*
 	 * registers below are for debugging purposes
 	 * these print out the upper and lower boundaries captured during read DQS gating calibration
 	 */
-	pr_debug("Status registers, upper and lower bounds, for read DQS gating. \n");
-	pr_debug("MPDGHWST0 PHY0 (0x021b087c) = 0x%08X\n", readl(P0_IPS + MPDGHWST0));
-	pr_debug("MPDGHWST1 PHY0 (0x021b0880) = 0x%08X\n", readl(P0_IPS + MPDGHWST1));
-	pr_debug("MPDGHWST2 PHY0 (0x021b0884) = 0x%08X\n", readl(P0_IPS + MPDGHWST2));
-	pr_debug("MPDGHWST3 PHY0 (0x021b0888) = 0x%08X\n", readl(P0_IPS + MPDGHWST3));
-	pr_debug("MPDGHWST0 PHY1 (0x021b487c) = 0x%08X\n", readl(P1_IPS + MPDGHWST0));
-	pr_debug("MPDGHWST1 PHY1 (0x021b4880) = 0x%08X\n", readl(P1_IPS + MPDGHWST1));
-	pr_debug("MPDGHWST2 PHY1 (0x021b4884) = 0x%08X\n", readl(P1_IPS + MPDGHWST2));
-	pr_debug("MPDGHWST3 PHY1 (0x021b4888) = 0x%08X\n", readl(P1_IPS + MPDGHWST3));
-
-	return errorcount;
+	printf("Status registers, upper and lower bounds, for read DQS gating. \n");
+	printf("MPDGHWST0 PHY0 (0x021b087c) = 0x%08X\n", readl(P0_IPS + MPDGHWST0));
+	printf("MPDGHWST1 PHY0 (0x021b0880) = 0x%08X\n", readl(P0_IPS + MPDGHWST1));
+	printf("MPDGHWST2 PHY0 (0x021b0884) = 0x%08X\n", readl(P0_IPS + MPDGHWST2));
+	printf("MPDGHWST3 PHY0 (0x021b0888) = 0x%08X\n", readl(P0_IPS + MPDGHWST3));
+	if (data_bus_size == 0x2) {
+		printf("MPDGHWST0 PHY1 (0x021b487c) = 0x%08X\n", readl(P1_IPS + MPDGHWST0));
+		printf("MPDGHWST1 PHY1 (0x021b4880) = 0x%08X\n", readl(P1_IPS + MPDGHWST1));
+		printf("MPDGHWST2 PHY1 (0x021b4884) = 0x%08X\n", readl(P1_IPS + MPDGHWST2));
+		printf("MPDGHWST3 PHY1 (0x021b4888) = 0x%08X\n", readl(P1_IPS + MPDGHWST3));
+	}
 }
 
 #ifdef MMDC_SOFTWARE_CALIBRATION

@@ -52,5 +52,6 @@
 
 int mmdc_do_write_level_calibration(void);
 int mmdc_do_dqs_calibration(void);
+void mmdc_print_calibration_results(void);
 
 #endif /* __MACH_MMDC_H */

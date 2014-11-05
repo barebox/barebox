@@ -1,0 +1,27 @@
+#
+# This list is used by git-shortlog to fix a few botched name translations
+# in the git archive, either because the author's full name was messed up
+# and/or not always written the same way, making contributions from the
+# same person appearing not to be so or badly displayed.
+#
+# This file can be modified by hand or updated by the following command:
+#  scripts/mailmapper > tmp; mv tmp .mailmap
+#
+
+Alexander Shiyan <shc@milas.spb.ru>
+Eric Bénard <eric@eukrea.com>
+Franck Jullien <franck.jullien@gmail.com>
+Jin Zhengxiong <Jason.Jin@freescale.com>
+Juergen Beisert <jbe@pengutronix.de>
+Marc Reilly <marc@cpdesign.com.au>
+Nishanth Menon <x0nishan@ti.com>
+Raphaël Poggi <poggi.raph@gmail.com>
+Robert Schwebel <rsc@thebe.(none)>
+Sascha Hauer <sascha@nomad.localdomain>
+Silvio Fricke <sfricke@data-modul.com>
+Stefan Roese <stroese>
+Vicente Bergas <vicencb@gmail.com>
+Wjatscheslaw Stoljarski <wjatscheslaw.stoljarski@kiwigrid.com>
+Wolfgang Denk <wdenk>
+gregory hermant <gregory.hermant@calao-systems.com>
+shravan <shravan.k@phytec.in>

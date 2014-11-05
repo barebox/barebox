@@ -152,7 +152,7 @@ static void mxs_mci_setup_timeout(struct mxs_mci_host *mxs_mci, unsigned to)
  * @return 0 on success, negative values else
  *
  * @note This routine uses PIO to read in the data bytes from the FIFO. This
- * may fail whith high clock speeds. If you receive -EIO errors you can try
+ * may fail with high clock speeds. If you receive -EIO errors you can try
  * again with reduced clock speeds.
  */
 static int mxs_mci_read_data(struct mxs_mci_host *mxs_mci, void *buffer, unsigned length)

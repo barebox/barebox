@@ -107,6 +107,8 @@ static struct partition_parser *partition_parser_get_by_filetype(uint8_t *buf)
 	 * useful for compatibility
 	 */
 	type = file_detect_partition_table(buf, SECTOR_SIZE);
+	if (type == filetype_fat && !is_fat_boot_sector(buf))
+		type = filetype_mbr;
 
 	list_for_each_entry(parser, &partition_parser_list, list) {
 		if (parser->type == type)

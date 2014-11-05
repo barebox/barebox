@@ -81,7 +81,8 @@ static int loco_late_init(void)
 	struct mc13xxx *mc34708;
 	int rev;
 
-	if (!of_machine_is_compatible("fsl,imx53-qsb"))
+	if (!of_machine_is_compatible("fsl,imx53-qsb") &&
+	    !of_machine_is_compatible("fsl,imx53-qsrb"))
 		return 0;
 
 	device_detect_by_name("mmc0");
@@ -167,7 +168,8 @@ late_initcall(loco_late_init);
 
 static int loco_postcore_init(void)
 {
-	if (!of_machine_is_compatible("fsl,imx53-qsb"))
+	if (!of_machine_is_compatible("fsl,imx53-qsb") &&
+	    !of_machine_is_compatible("fsl,imx53-qsrb"))
 		return 0;
 
 	imx53_init_lowlevel(1000);

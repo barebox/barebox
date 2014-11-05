@@ -331,3 +331,74 @@ out:
 	return ret;
 }
 EXPORT_SYMBOL(copy_file);
+
+/**
+ * compare_file - Compare two files
+ * @f1:		The first file
+ * @f2:		The second file
+ *
+ * Return: 0 if both files are identical, 1 if they differ,
+ *         a negative error code if some error occured
+ */
+int compare_file(const char *f1, const char *f2)
+{
+	int fd1, fd2, ret;
+	struct stat s1, s2;
+	void *buf1, *buf2;
+	loff_t left;
+
+	fd1 = open(f1, O_RDONLY);
+	if (fd1 < 0)
+		return -errno;
+
+	fd2 = open(f2, O_RDONLY);
+	if (fd2 < 0) {
+		ret = -errno;
+		goto err_out1;
+	}
+
+	ret = fstat(fd1, &s1);
+	if (ret)
+		goto err_out2;
+
+	ret = fstat(fd2, &s2);
+	if (ret)
+		goto err_out2;
+
+	if (s1.st_size != s2.st_size)
+		return 1;
+
+	buf1 = xmalloc(RW_BUF_SIZE);
+	buf2 = xmalloc(RW_BUF_SIZE);
+
+	left = s1.st_size;
+	while (left) {
+		loff_t now = min(left, (loff_t)RW_BUF_SIZE);
+
+		ret = read_full(fd1, buf1, now);
+		if (ret < 0)
+			goto err_out3;
+
+		ret = read_full(fd2, buf2, now);
+		if (ret < 0)
+			goto err_out3;
+
+		if (memcmp(buf1, buf2, now)) {
+			ret = 1;
+			goto err_out3;
+		}
+
+		left -= now;
+	}
+
+	ret = 0;
+
+err_out3:
+	free(buf1);
+	free(buf2);
+err_out2:
+	close(fd2);
+err_out1:
+	close(fd1);
+	return ret;
+}

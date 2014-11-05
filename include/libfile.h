@@ -15,4 +15,6 @@ int write_file(const char *filename, void *buf, size_t size);
 
 int copy_file(const char *src, const char *dst, int verbose);
 
+int compare_file(const char *f1, const char *f2);
+
 #endif /* __LIBFILE_H */

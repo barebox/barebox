@@ -23,7 +23,8 @@ typedef struct dir {
 } DIR;
 
 typedef struct filep {
-	struct device_d *dev; /* The device this FILE belongs to              */
+	struct fs_device_d *fsdev; /* The device this FILE belongs to              */
+	char *path;
 	loff_t pos;            /* current position in stream                   */
 #define FILE_SIZE_STREAM	((loff_t) -1)
 	loff_t size;           /* The size of this inode                       */
@@ -82,7 +83,6 @@ struct fs_driver_d {
 	unsigned long flags;
 };
 
-#define dev_to_fs_driver(d) container_of(d->driver, struct fs_driver_d, drv)
 #define dev_to_fs_device(d) container_of(d, struct fs_device_d, dev)
 
 extern struct list_head fs_device_list;
@@ -114,6 +114,7 @@ int close(int fd);
 int flush(int fd);
 int lstat(const char *filename, struct stat *s);
 int stat(const char *filename, struct stat *s);
+int fstat(int fd, struct stat *s);
 ssize_t read(int fd, void *buf, size_t count);
 ssize_t pread(int fd, void *buf, size_t count, loff_t offset);
 int ioctl(int fd, int request, void *buf);

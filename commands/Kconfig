@@ -811,6 +811,16 @@ config CMD_CP
 	  Options:
 		  -v	verbose
 
+config CMD_CMP
+	tristate
+	prompt "cmp"
+	help
+	  compare two files
+
+	  Usage: cmp FILE1 FILE2
+
+	  Returns successfully if the two files are the same, return with an error if not
+
 config CMD_DIRNAME
 	tristate
 	prompt "dirname"

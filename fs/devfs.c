@@ -168,9 +168,9 @@ static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
 
 static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
-	if (f->dev->num_resources < 1)
+	if (f->fsdev->dev.num_resources < 1)
 		return -ENOSPC;
-	if (size > resource_size(&f->dev->resource[0]))
+	if (size > resource_size(&f->fsdev->dev.resource[0]))
 		return -ENOSPC;
 	return 0;
 }

@@ -49,6 +49,7 @@
 struct led_trigger_struct {
 	struct led *led;
 	uint64_t flash_start;
+	int flash;
 };
 
 static struct led_trigger_struct triggers[LED_TRIGGER_MAX];
@@ -59,9 +60,10 @@ static void trigger_func(struct poller_struct *poller)
 
 	for (i = 0; i < LED_TRIGGER_MAX; i++) {
 		if (triggers[i].led &&
-		    triggers[i].flash_start &&
+		    triggers[i].flash &&
 		    is_timeout(triggers[i].flash_start, 200 * MSECOND)) {
 			led_set(triggers[i].led, 0);
+			triggers[i].flash = 0;
 		}
 	}
 
@@ -90,13 +92,14 @@ void led_trigger(enum led_trigger trigger, enum trigger_type type)
 
 	if (type == TRIGGER_FLASH) {
 		if (is_timeout(triggers[trigger].flash_start, 400 * MSECOND)) {
-			led_set(triggers[trigger].led, 1);
+			led_set(triggers[trigger].led, triggers[trigger].led->max_value);
 			triggers[trigger].flash_start = get_time_ns();
+			triggers[trigger].flash = 1;
 		}
 		return;
 	}
 
-	led_set(triggers[trigger].led, type == TRIGGER_ENABLE ? 1 : 0);
+	led_set(triggers[trigger].led, type == TRIGGER_ENABLE ? triggers[trigger].led->max_value : 0);
 }
 
 /**

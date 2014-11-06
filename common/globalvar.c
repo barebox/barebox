@@ -197,6 +197,11 @@ void nvvar_print(void)
 	device_param_print(&nv_device);
 }
 
+void globalvar_print(void)
+{
+	device_param_print(&global_device);
+}
+
 /*
  * globalvar_get_match
  *

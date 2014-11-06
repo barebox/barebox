@@ -77,6 +77,7 @@ int nvvar_load(void);
 void nvvar_print(void);
 int nvvar_add(const char *name, const char *value);
 int nvvar_remove(const char *name);
+void globalvar_print(void);
 
 #else
 static inline int globalvar_add_simple(const char *name, const char *value)

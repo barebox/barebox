@@ -12,6 +12,18 @@
  * GNU General Public License for more details.
  */
 
+static inline void enable_arm_errata_709718_war(void)
+{
+	__asm__ __volatile__ (
+		"mrc	p15, 0, r0, c10, c2, 0\n"
+		"bic	r0, #3 << 16\n"
+		"mcr	p15, 0, r0, c10, c2, 0\n"
+		"mrc	p15, 0, r0, c1, c0, 0\n"
+		"orr	r0, r0, #1 << 28\n"
+		"mcr	p15, 0, r0, c1, c0, 0\n"
+	);
+}
+
 static inline void enable_arm_errata_716044_war(void)
 {
 	__asm__ __volatile__ (

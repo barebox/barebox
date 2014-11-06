@@ -28,7 +28,7 @@
 
 		environment-emmc {
 			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
+			device-path = &usdhc4, "partname:boot1";
 		};
 	};
 

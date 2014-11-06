@@ -294,7 +294,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 	}
 
 	pr_info("ignoring entry with incompatible devicetree \"%s\"\n",
-			(char *)of_get_property(root, "compatible", &size));
+			(char *)of_get_property(root, "compatible", NULL));
 
 	ret = false;
 

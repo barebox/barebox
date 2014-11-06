@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ -n "$nv.boot.default" ]; then
+	exit
+fi
+
 if [ -f /mnt/sd/zImage ]; then
 	global.boot.default=sd-card-linux
 elif [ -f /mnt/sd/android ]; then

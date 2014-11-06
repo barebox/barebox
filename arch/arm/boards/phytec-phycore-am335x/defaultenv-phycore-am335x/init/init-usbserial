@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#otg1.mode=peripheral
+usbgadget -a -A /dev/nand0.kernel.bb(kernel)

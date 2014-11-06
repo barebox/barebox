@@ -16,9 +16,12 @@ global editcmd
 
 [ -z "${global.hostname}" ] && global.hostname=generic
 [ -z "${global.user}" ] && global.user=none
+magicvar -a global.user "username (used in network filenames)"
 [ -z "${global.autoboot_timeout}" ] && global.autoboot_timeout=3
+magicvar -a global.autoboot_timeout "timeout in seconds before automatic booting"
 [ -z "${global.boot.default}" ] && global.boot.default=net
 [ -z "${global.allow_color}" ] && global.allow_color=true
+magicvar -a global.allow_color "Allow color on the console (boolean)"
 [ -z "${global.editcmd}" ] && global.editcmd=sedit
 
 [ -e /env/config-board ] && /env/config-board

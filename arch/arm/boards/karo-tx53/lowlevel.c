@@ -3,10 +3,11 @@
 #include <asm/barebox-arm.h>
 #include <mach/imx5.h>
 #include <mach/esdctl.h>
+#include <mach/generic.h>
 
 void __naked barebox_arm_reset_vector(void)
 {
-	arm_cpu_lowlevel_init();
+	imx5_cpu_lowlevel_init();
 
 	/*
 	 * For the TX53 rev 8030 the SDRAM setup is not stable without

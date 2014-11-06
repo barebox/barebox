@@ -33,6 +33,7 @@ int imx51_devices_init(void);
 int imx53_devices_init(void);
 int imx6_devices_init(void);
 
+void imx5_cpu_lowlevel_init(void);
 void imx6_cpu_lowlevel_init(void);
 
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */

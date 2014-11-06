@@ -6,6 +6,7 @@
 #include <mach/iomux-v3.h>
 #include <mach/esdctl-v4.h>
 #include <mach/esdctl.h>
+#include <mach/generic.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <io.h>
@@ -127,7 +128,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	u32 r;
 
-	arm_cpu_lowlevel_init();
+	imx5_cpu_lowlevel_init();
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();

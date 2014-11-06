@@ -20,7 +20,7 @@ CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dfputs=barebox_fputs -Dsetenv=barebox_setenv \
 		-Dgetenv=barebox_getenv -Dprintf=barebox_printf \
 		-Dglob=barebox_glob -Dglobfree=barebox_globfree \
-		-Dioctl=barebox_ioctl
+		-Dioctl=barebox_ioctl -Dfstat=barebox_fstat
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 

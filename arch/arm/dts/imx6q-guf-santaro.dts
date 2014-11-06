@@ -41,7 +41,7 @@
 		enable-active-high;
 	};
 
-	backlight {
+	backlight: backlight {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight>;
 		compatible = "pwm-backlight";
@@ -56,6 +56,18 @@
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <25000000>;
+	};
+
+	panel {
+		compatible = "unknown,the-display-on-the-garz-fricke-santaro";
+		backlight = <&backlight>;
+		enable-gpios = <&gpio5 21 GPIO_ACTIVE_LOW>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
 	};
 };
 
@@ -517,6 +529,13 @@
 				vback-porch = <5>;
 				vsync-len = <3>;
 				vsync-active = <1>;
+			};
+		};
+
+		port@4 {
+			reg = <4>;
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in>;
 			};
 		};
 	};

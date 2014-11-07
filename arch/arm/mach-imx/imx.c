@@ -28,7 +28,7 @@ void imx_set_silicon_revision(const char *soc, int revision)
 {
 	__imx_silicon_revision = revision;
 
-	printf("detected %s revision %d.%d\n", soc,
+	pr_info("detected %s revision %d.%d\n", soc,
 			(revision >> 4) & 0xf,
 			revision & 0xf);
 }

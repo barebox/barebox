@@ -2210,3 +2210,25 @@ struct device_node *of_graph_get_remote_port(const struct device_node *node)
 	return np->parent;
 }
 EXPORT_SYMBOL(of_graph_get_remote_port);
+
+int of_graph_port_is_available(struct device_node *node)
+{
+	struct device_node *endpoint;
+	int available = 0;
+
+	for_each_child_of_node(node, endpoint) {
+		struct device_node *remote_parent;
+
+		remote_parent = of_graph_get_remote_port_parent(endpoint);
+		if (!remote_parent)
+			continue;
+
+		if (!of_device_is_available(remote_parent))
+			continue;
+
+		available = 1;
+	}
+
+	return available;
+}
+EXPORT_SYMBOL(of_graph_port_is_available);

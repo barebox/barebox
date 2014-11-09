@@ -153,6 +153,8 @@ extern int of_device_is_available(const struct device_node *device);
 extern struct device_node *of_get_parent(const struct device_node *node);
 extern struct device_node *of_get_next_available_child(
 	const struct device_node *node, struct device_node *prev);
+struct device_node *of_get_next_child(const struct device_node *node,
+	struct device_node *prev);
 extern int of_get_child_count(const struct device_node *parent);
 extern int of_get_available_child_count(const struct device_node *parent);
 extern struct device_node *of_get_child_by_name(const struct device_node *node,
@@ -304,6 +306,12 @@ static inline struct device_node *of_get_parent(const struct device_node *node)
 
 static inline struct device_node *of_get_next_available_child(
 		const struct device_node *node, struct device_node *prev)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_get_next_child(const struct device_node *node,
+	struct device_node *prev)
 {
 	return NULL;
 }

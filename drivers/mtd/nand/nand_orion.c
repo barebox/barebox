@@ -142,7 +142,7 @@ static int orion_nand_probe(struct device_d *dev)
 no_dev:
 	if (!IS_ERR(clk))
 		clk_disable(clk);
-no_res:
+
 	free(priv);
 	return ret;
 }

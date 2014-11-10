@@ -225,6 +225,15 @@ static struct phy_driver marvell_phys[] = {
 		.read_status	= marvell_read_status,
 	},
 	{
+		.phy_id		= MARVELL_PHY_ID_88E1543,
+		.phy_id_mask	= MARVELL_PHY_ID_MASK,
+		.drv.name	= "Marvell 88E1543",
+		.features	= PHY_GBIT_FEATURES,
+		.config_init	= m88e1540_config_init,
+		.config_aneg	= genphy_config_aneg,
+		.read_status	= marvell_read_status,
+	},
+	{
 		.phy_id		= MARVELL_PHY_ID_88E1545,
 		.phy_id_mask	= MARVELL_PHY_ID_MASK,
 		.drv.name	= "Marvell 88E1545",

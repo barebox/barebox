@@ -30,6 +30,13 @@
 #define  SAR_TCLK_FREQ			BIT(20)
 #define  SAR_HIGH			0x04
 
+#define ARMADA_XP_PUP_ENABLE_BASE       (ARMADA_370_XP_INT_REGS_BASE + 0x1864c)
+#define  GE0_PUP_EN			BIT(0)
+#define  GE1_PUP_EN			BIT(1)
+#define  LCD_PUP_EN			BIT(2)
+#define  NAND_PUP_EN			BIT(4)
+#define  SPI_PUP_EN			BIT(5)
+
 #define ARMADA_370_XP_SDRAM_BASE	(ARMADA_370_XP_INT_REGS_BASE + 0x20000)
 #define  DDR_BASE_CS			0x180
 #define  DDR_BASE_CSn(n)		(DDR_BASE_CS + ((n) * 0x8))

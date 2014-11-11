@@ -63,13 +63,6 @@ static void phyflex_err006282_workaround(void)
 	gpio_direction_input(MX6_PHYFLEX_ERR006282);
 }
 
-static int ksz9031rn_phy_fixup(struct phy_device *dev)
-{
-	phy_write_mmd_indirect(dev, 8, 2, 0x039F);
-
-	return 0;
-}
-
 static int phytec_pfla02_init(void)
 {
 	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
@@ -78,9 +71,6 @@ static int phytec_pfla02_init(void)
 		return 0;
 
 	phyflex_err006282_workaround();
-
-	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,
-					   ksz9031rn_phy_fixup);
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 

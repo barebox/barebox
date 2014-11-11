@@ -10,6 +10,7 @@
  */
 
 /dts-v1/;
+#include "imx51.dtsi"
 #include <arm/imx51.dtsi>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>

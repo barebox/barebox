@@ -58,6 +58,7 @@ extern char __dtb_imx6q_phytec_pbab01_start[];
 extern char __dtb_imx6dl_phytec_pbab01_start[];
 extern char __dtb_imx6s_phytec_pbab01_start[];
 extern char __dtb_imx6q_phytec_phyboard_alcor_start[];
+extern char __dtb_imx6dl_phytec_phyboard_subra_start[];
 
 BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_512M, IMD_TYPE_PARAMETER, "memsize=512", 0);
 BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_1G, IMD_TYPE_PARAMETER, "memsize=1024", 0);
@@ -150,4 +151,19 @@ ENTRY_FUNCTION(start_phytec_phyboard_alcor_1gib, r0, r1, r2)
 	fdt = __dtb_imx6q_phytec_phyboard_alcor_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+}
+
+ENTRY_FUNCTION(start_phytec_phyboard_subra_512mb, r0, r1, r2)
+{
+	void *fdt;
+
+	imx6_cpu_lowlevel_init();
+
+	arm_setup_stack(0x00920000 - 8);
+
+	IMD_USED(phyflex_mx6_memsize_512M);
+
+	fdt = __dtb_imx6dl_phytec_phyboard_subra_start - get_runtime_offset();
+
+	barebox_arm_entry(0x10000000, SZ_512M, fdt);
 }

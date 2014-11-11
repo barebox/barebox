@@ -27,8 +27,6 @@ int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 		unsigned long flags);
 
-int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
-
 int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
 		unsigned long flags);
 
@@ -70,13 +68,17 @@ static inline int imx6_bbu_internal_spi_i2c_register_handler(const char *name, c
 	return -ENOSYS;
 }
 
-static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
+static inline int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
+		unsigned long flags)
 {
 	return -ENOSYS;
 }
+#endif
 
-static inline int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
+#if defined(CONFIG_BAREBOX_UPDATE_IMX6_NAND)
+int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
+#else
+static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 {
 	return -ENOSYS;
 }

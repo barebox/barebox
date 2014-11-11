@@ -376,21 +376,23 @@ kwboot_xm_sendblock(int fd, struct kwboot_block *block)
 
 	} while (c == NAK && retries-- > 0);
 
-	rc = -1;
+	if (!rc) {
+		rc = -1;
 
-	switch (c) {
-	case ACK:
-		rc = 0;
-		break;
-	case NAK:
-		errno = EBADMSG;
-		break;
-	case CAN:
-		errno = ECANCELED;
-		break;
-	default:
-		errno = EPROTO;
-		break;
+		switch (c) {
+		case ACK:
+			rc = 0;
+			break;
+		case NAK:
+			errno = EBADMSG;
+			break;
+		case CAN:
+			errno = ECANCELED;
+			break;
+		default:
+			errno = EPROTO;
+			break;
+		}
 	}
 
 	return rc;

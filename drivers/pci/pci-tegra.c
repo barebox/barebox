@@ -1145,7 +1145,7 @@ static bool tegra_pcie_port_check_link(struct tegra_pcie_port *port)
 	writel(value, port->base + RP_PRIV_MISC);
 
 	do {
-		timeout = wait_on_timeout(50 * MSECOND,
+		timeout = wait_on_timeout(150 * MSECOND,
 			readl(port->regs.start + RP_VEND_XP) & RP_VEND_XP_DL_UP);
 
 		if (timeout) {

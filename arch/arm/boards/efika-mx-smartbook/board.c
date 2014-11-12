@@ -17,6 +17,7 @@
 #include <bootsource.h>
 #include <partition.h>
 #include <common.h>
+#include <envfs.h>
 #include <fcntl.h>
 #include <gpio.h>
 #include <init.h>
@@ -246,6 +247,8 @@ static int efikamx_late_init(void)
 		return 0;
 
 	efikamx_power_init();
+
+	defaultenv_append_directory(defaultenv_efikasb);
 
 	gpio_direction_output(GPIO_BACKLIGHT_POWER, 1);
 

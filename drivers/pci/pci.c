@@ -154,7 +154,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		}
 
 		if (mask & 0x01) { /* IO */
-			size = -(mask & 0xfffffffe);
+			size = ((~(mask & 0xfffffffe)) & 0xffff) + 1;
 			DBG("  PCI: pbar%d: mask=%08x io %d bytes\n", bar, mask, size);
 			if (last_io + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_IO]->end) {
@@ -167,7 +167,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			last_io += size;
 		} else if ((mask & PCI_BASE_ADDRESS_MEM_PREFETCH) &&
 		           last_mem_pref) /* prefetchable MEM */ {
-			size = -(mask & 0xfffffff0);
+			size = (~(mask & 0xfffffff0)) + 1;
 			DBG("  PCI: pbar%d: mask=%08x P memory %d bytes\n",
 			    bar, mask, size);
 			if (last_mem_pref + size >
@@ -181,7 +181,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			last_addr = last_mem_pref;
 			last_mem_pref += size;
 		} else { /* non-prefetch MEM */
-			size = -(mask & 0xfffffff0);
+			size = (~(mask & 0xfffffff0)) + 1;
 			DBG("  PCI: pbar%d: mask=%08x NP memory %d bytes\n",
 			    bar, mask, size);
 			if (last_mem + size >

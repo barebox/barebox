@@ -481,7 +481,6 @@ config CMD_LOADS
 	  Load S-Record file over serial line with offset OFFS.
 
 config CMD_LOADY
-	select CRC16
 	select XYMODEM
 	depends on !CONSOLE_NONE
 	tristate

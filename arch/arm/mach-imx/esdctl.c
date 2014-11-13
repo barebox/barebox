@@ -280,11 +280,30 @@ static void imx_esdctl_v4_add_mem(void *esdctlbase, struct imx_esdctl_data *data
 			data->base1, imx_v4_sdram_size(esdctlbase, 1));
 }
 
+/*
+ * On i.MX6 the adress space reserved for SDRAM is 0x10000000 to 0xFFFFFFFF
+ * which makes the maximum supported RAM size 0xF0000000.
+ */
+#define IMX6_MAX_SDRAM_SIZE 0xF0000000
+
 static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 {
+	/*
+	 * It is possible to have a configuration in which both chip
+	 * selects of the memory controller have 2GB of memory. To
+	 * account for this case we need to use 64-bit arithmetic and
+	 * also make sure we do not report more than
+	 * IMX6_MAX_SDRAM_SIZE bytes of memory available.
+	 */
+
+	u64 size_cs0 = imx6_mmdc_sdram_size(mmdcbase, 0);
+	u64 size_cs1 = imx6_mmdc_sdram_size(mmdcbase, 1);
+	u64 total    = size_cs0 + size_cs1;
+
+	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
+
 	arm_add_mem_device("ram0", data->base0,
-			imx6_mmdc_sdram_size(mmdcbase, 0) +
-			imx6_mmdc_sdram_size(mmdcbase, 1));
+			size);
 }
 
 static int imx_esdctl_probe(struct device_d *dev)

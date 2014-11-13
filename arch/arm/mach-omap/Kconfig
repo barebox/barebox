@@ -118,6 +118,15 @@ config OMAP4_USBBOOT
 	  You need the utility program omap4_usbboot to boot from USB.
 	  Please read omap4_usb_booting.txt for more information.
 
+config OMAP_SERIALBOOT
+	bool "enable booting from serial"
+	select XYMODEM
+	select FS_RAMFS
+	depends on ARCH_AM33XX && SHELL_NONE
+	help
+	  Say Y here if you want to load the 2nd stage barebox.bin with
+	  xmodem after booting from serial line.
+
 config OMAP_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
 	select HAVE_DEFAULT_ENVIRONMENT_NEW

@@ -11,6 +11,7 @@
 #include <sizes.h>
 #include <malloc.h>
 #include <filetype.h>
+#include <xymodem.h>
 #include <mach/generic.h>
 
 struct omap_barebox_part *barebox_part;
@@ -184,6 +185,45 @@ static void *omap4_xload_boot_usb(void){
 	return buf;
 }
 
+static void *omap_serial_boot(void){
+	struct console_device *cdev;
+	int ret;
+	void *buf;
+	int len;
+	int fd;
+
+	/* need temporary place to store file */
+	ret = mount("none", "ramfs", "/", NULL);
+	if (ret < 0) {
+		printf("failed to mount ramfs\n");
+		return NULL;
+	}
+
+	cdev = console_get_first_active();
+	if (!cdev) {
+		printf("failed to get console\n");
+		return NULL;
+	}
+
+	fd = open("/barebox.bin", O_WRONLY | O_CREAT);
+	if (fd < 0) {
+		printf("could not create barebox.bin\n");
+		return NULL;
+	}
+
+	ret = do_load_serial_xmodem(cdev, fd);
+	if (ret < 0) {
+		printf("loadx failed\n");
+		return NULL;
+	}
+
+	buf = read_file("/barebox.bin", &len);
+	if (!buf)
+		printf("could not read barebox.bin from serial\n");
+
+	return buf;
+}
+
 /*
  * Replaces the default shell in xload configuration
  */
@@ -218,6 +258,12 @@ static __noreturn int omap_xload(void)
 		func = omap_xload_boot_spi(barebox_part->nor_offset,
 					barebox_part->nor_size);
 		break;
+	case BOOTSOURCE_SERIAL:
+		if (IS_ENABLED(CONFIG_OMAP_SERIALBOOT)) {
+			printf("booting from serial\n");
+			func = omap_serial_boot();
+			break;
+		}
 	default:
 		printf("unknown boot source. Fall back to nand\n");
 		func = omap_xload_boot_nand(barebox_part->nand_offset,

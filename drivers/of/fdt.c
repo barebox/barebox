@@ -120,17 +120,13 @@ struct device_node *of_unflatten_dtb(void *infdt)
 				goto err;
 			}
 
-			dt_struct = dt_struct_advance(&f, dt_struct,
-					sizeof(struct fdt_node_header) + len + 1);
-			if (!dt_struct) {
-				ret = -ESPIPE;
-				goto err;
-			}
-
 			if (!node)
 				node = root;
 			else
 				node = of_new_node(node, pathp);
+
+			dt_struct = dt_struct_advance(&f, dt_struct,
+					sizeof(struct fdt_node_header) + len + 1);
 
 			break;
 
@@ -144,10 +140,6 @@ struct device_node *of_unflatten_dtb(void *infdt)
 			node = node->parent;
 
 			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
-			if (!dt_struct) {
-				ret = -ESPIPE;
-				goto err;
-			}
 
 			break;
 
@@ -162,25 +154,17 @@ struct device_node *of_unflatten_dtb(void *infdt)
 				goto err;
 			}
 
-			dt_struct = dt_struct_advance(&f, dt_struct,
-					sizeof(struct fdt_property) + len);
-			if (!dt_struct) {
-				ret = -ESPIPE;
-				goto err;
-			}
-
 			p = of_new_property(node, name, nodep, len);
 			if (!strcmp(name, "phandle") && len == 4)
 				node->phandle = be32_to_cpup(p->value);
+
+			dt_struct = dt_struct_advance(&f, dt_struct,
+					sizeof(struct fdt_property) + len);
 
 			break;
 
 		case FDT_NOP:
 			dt_struct = dt_struct_advance(&f, dt_struct, FDT_TAGSIZE);
-			if (!dt_struct) {
-				ret = -ESPIPE;
-				goto err;
-			}
 
 			break;
 
@@ -190,6 +174,11 @@ struct device_node *of_unflatten_dtb(void *infdt)
 		default:
 			pr_err("unflatten: Unknown tag 0x%08X\n", tag);
 			ret = -EINVAL;
+			goto err;
+		}
+
+		if (!dt_struct) {
+			ret = -ESPIPE;
 			goto err;
 		}
 	}

@@ -60,7 +60,7 @@ int string_list_add_sorted(struct string_list *sl, char *str)
 	return 0;
 }
 
-int string_list_contains(struct string_list *sl, char *str)
+int string_list_contains(struct string_list *sl, const char *str)
 {
 	struct string_list *entry;
 

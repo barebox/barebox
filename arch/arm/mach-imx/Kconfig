@@ -196,6 +196,9 @@ config MACH_PCA100
 config MACH_PCM038
 	bool "phyCORE-i.MX27"
 	select ARCH_IMX27
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_IMX_EXTERNAL_BOOT_NAND
 	help
@@ -205,6 +208,9 @@ config MACH_PCM038
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
 	help
 	  Choose this to compile barebox for the Efika MX Smartbook
 
@@ -217,10 +223,16 @@ config MACH_EMBEDSKY_E9
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select ARCH_IMX51
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
 
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53
+	select I2C
+	select I2C_IMX
+	select MFD_MC13XXX
 
 config MACH_TQMA53
 	bool "TQ i.MX53 TQMa53"

@@ -276,6 +276,8 @@ config MACH_TQMA6X
 config MACH_TX6X
 	bool "Karo TX6x"
 	select ARCH_IMX6
+	select I2C
+	select I2C_IMX
 
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
@@ -306,10 +308,14 @@ config MACH_UDOO
 config MACH_VARISCITE_MX6
 	bool "Variscite i.MX6 Quad SOM"
 	select ARCH_IMX6
+	select I2C
+	select I2C_IMX
 
 config MACH_GW_VENTANA
 	bool "Gateworks Ventana SBC"
 	select ARCH_IMX6
+	select I2C
+	select I2C_IMX
 
 endif
 

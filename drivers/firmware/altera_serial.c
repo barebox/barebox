@@ -81,9 +81,7 @@ static int altera_spi_open(struct firmware_handler *fh)
 	}
 
 	/* arm the FPGA to await its new firmware */
-	ret = gpio_set_value(this->nconfig_gpio, 1);
-	if (ret)
-		return ret;
+	gpio_set_value(this->nconfig_gpio, 1);
 
 	/* once again, we might need padding the data */
 	this->padding_done = false;

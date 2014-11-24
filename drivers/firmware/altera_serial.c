@@ -113,7 +113,7 @@ static int altera_spi_write(struct firmware_handler *fh, const void *buf, size_t
 	u32 dummy;
 	int ret;
 
-	dev_dbg(dev, "Start writing %d bytes.\n", __func__, sz);
+	dev_dbg(dev, "Start writing %zu bytes.\n", sz);
 
 	spi_message_init(&m);
 

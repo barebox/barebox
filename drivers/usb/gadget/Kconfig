@@ -45,6 +45,7 @@ config USB_GADGET_SERIAL
 
 config USB_GADGET_FASTBOOT
 	bool
+	select BANNER
 	prompt "Android Fastboot support"
 
 endif

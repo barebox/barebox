@@ -10,5 +10,6 @@ config FIRMWARE_ALTERA_SERIAL
 
 config FIRMWARE_ALTERA_SOCFPGA
 	bool "Altera SoCFPGA fpga loader"
+	depends on ARCH_SOCFPGA
 
 endmenu

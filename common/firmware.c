@@ -17,6 +17,7 @@
 #include <xfuncs.h>
 #include <fcntl.h>
 #include <libbb.h>
+#include <libfile.h>
 #include <fs.h>
 #include <linux/list.h>
 #include <linux/stat.h>

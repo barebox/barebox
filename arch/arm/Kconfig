@@ -27,6 +27,11 @@ config BUILTIN_DTB
 config BUILTIN_DTB_NAME
 	string "DTB to build into the barebox image"
 	depends on BUILTIN_DTB
+	default "canon-a1100" if MACH_CANON_A1100
+	default "imx51-genesi-efika-sb" if MACH_EFIKA_MX_SMARTBOOK
+	default "versatile-pb" if ARCH_VERSATILE_PB
+	default "virt2real" if MACH_VIRT2REAL
+	default "module-mb7707" if MACH_MB7707
 
 choice
 	prompt "ARM system type"

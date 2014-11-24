@@ -56,6 +56,8 @@
 #define ESDHC_HOSTCAPBLT_DMAS	0x00400000
 #define ESDHC_HOSTCAPBLT_HSS	0x00200000
 
+#define PIO_TIMEOUT		100000
+
 struct fsl_esdhc_cfg {
 	u32	esdhc_base;
 	u32	no_snoop;

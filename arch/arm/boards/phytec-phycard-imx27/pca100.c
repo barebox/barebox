@@ -41,6 +41,7 @@
 #include <mach/iomux-mx27.h>
 #include <mach/devices-imx27.h>
 
+#if defined(CONFIG_USB) && defined(CONFIG_USB_ULPI)
 static void pca100_usb_register(void)
 {
 	mdelay(10);
@@ -55,6 +56,9 @@ static void pca100_usb_register(void)
 	ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x570), 1);
 	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
 }
+#else
+static void pca100_usb_register(void) { };
+#endif
 
 static void pca100_usb_init(void)
 {
@@ -131,8 +135,7 @@ static int pca100_devices_init(void)
 	for (i = 0; i < ARRAY_SIZE(mode); i++)
 		imx_gpio_mode(mode[i]);
 
-	if (IS_ENABLED(CONFIG_USB))
-		pca100_usb_register();
+	pca100_usb_register();
 
 	imx_bbu_external_nand_register_handler("nand", "/dev/nand0.boot",
 			BBU_HANDLER_FLAG_DEFAULT);

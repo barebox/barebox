@@ -437,7 +437,7 @@ fail:
 	return -1;
 }
 
-#ifdef CONFIG_MACH_EFIKA_MX_SMARTBOOK
+#if defined(CONFIG_MACH_EFIKA_MX_SMARTBOOK) && defined(CONFIG_USB_ULPI)
 #include <usb/ulpi.h>
 /*
  * Add support for setting CHRGVBUS to workaround a hardware bug on efika mx/sb

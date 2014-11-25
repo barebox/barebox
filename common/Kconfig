@@ -479,8 +479,8 @@ config TIMESTAMP
 
 config BLSPEC
 	depends on BLOCK
+	depends on FLEXIBLE_BOOTARGS
 	select OFTREE
-	select FLEXIBLE_BOOTARGS
 	bool
 	prompt "Support bootloader spec"
 	help

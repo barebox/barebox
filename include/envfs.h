@@ -2,6 +2,7 @@
 #define _ENVFS_H
 
 #ifdef __BAREBOX__
+#include <errno.h>
 #include <asm/byteorder.h>
 #include <linux/stringify.h>
 #endif

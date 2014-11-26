@@ -1372,7 +1372,7 @@ config CMD_MENUTREE
 
 config CMD_PASSWD
 	tristate
-	select CMD_LOGIN
+	depends on CMD_LOGIN
 	prompt "passwd"
 	help
 	  Set password

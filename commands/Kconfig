@@ -1263,6 +1263,7 @@ config CMD_EDIT
 config CMD_LOGIN
 	tristate
 	select PASSWORD
+	depends on !CONSOLE_NONE
 	prompt "login"
 	help
 	  Ask for a password

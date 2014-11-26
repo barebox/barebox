@@ -283,6 +283,12 @@ config MACH_SABRESD
 	bool "Freescale i.MX6 SabreSD"
 	select ARCH_IMX6
 
+config MACH_FREESCALE_IMX6SX_SABRESDB
+	bool "Freescale i.MX6sx SabreSDB"
+	select ARCH_IMX6SX
+	select I2C
+	select I2C_IMX
+
 config MACH_NITROGEN6X
 	bool "BoundaryDevices Nitrogen6x"
 	select ARCH_IMX6

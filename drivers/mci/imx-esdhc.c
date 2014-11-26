@@ -607,6 +607,8 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	}, {
 		.compatible = "fsl,imx6q-usdhc",
 	}, {
+		.compatible = "fsl,imx6sl-usdhc",
+	}, {
 		/* sentinel */
 	}
 };

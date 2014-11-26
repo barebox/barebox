@@ -88,6 +88,7 @@ config CMD_DMESG
 	tristate
 	prompt "dmesg"
 	select LOGBUF
+	depends on !CONSOLE_NONE
 	help
 	  Print or control the log message buffer.
 

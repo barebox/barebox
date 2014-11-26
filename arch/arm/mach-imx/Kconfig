@@ -173,6 +173,11 @@ config ARCH_IMX6
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
 
+config ARCH_IMX6SX
+	bool
+	select ARCH_IMX6
+	select COMMON_CLK_OF_PROVIDER
+
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
 	select HAVE_DEFAULT_ENVIRONMENT_NEW

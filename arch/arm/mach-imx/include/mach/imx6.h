@@ -11,6 +11,7 @@ void imx6_init_lowlevel(void);
 
 #define IMX6_CPUTYPE_IMX6S	0x161
 #define IMX6_CPUTYPE_IMX6DL	0x261
+#define IMX6_CPUTYPE_IMX6SX	0x462
 #define IMX6_CPUTYPE_IMX6D	0x263
 #define IMX6_CPUTYPE_IMX6Q	0x463
 
@@ -65,6 +66,11 @@ static inline int cpu_is_mx6d(void)
 static inline int cpu_is_mx6q(void)
 {
 	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
+}
+
+static inline int cpu_is_mx6sx(void)
+{
+	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6SX;
 }
 
 #endif /* __MACH_IMX6_H */

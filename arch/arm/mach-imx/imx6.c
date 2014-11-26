@@ -161,6 +161,9 @@ int imx6_init(void)
 	case IMX6_CPUTYPE_IMX6S:
 		cputypestr = "i.MX6 Solo";
 		break;
+	case IMX6_CPUTYPE_IMX6SX:
+		cputypestr = "i.MX6 SoloX";
+		break;
 	default:
 		cputypestr = "unknown i.MX6";
 		break;

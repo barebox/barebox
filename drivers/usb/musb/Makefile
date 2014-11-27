@@ -2,9 +2,9 @@
 # for USB OTG silicon based on Mentor Graphics INVENTRA designs
 #
 
-obj-y += musb_core.o musb_barebox.o
+obj-y += musb_core.o
 
-obj-$(CONFIG_USB_MUSB_HOST) += musb_host.o
+obj-$(CONFIG_USB_MUSB_HOST) += musb_host.o musb_barebox.o
 obj-$(CONFIG_USB_MUSB_GADGET) += musb_gadget.o musb_gadget_ep0.o
 
 obj-$(CONFIG_USB_MUSB_DSPS)	+= musb_dsps.o

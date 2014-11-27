@@ -4,6 +4,7 @@
 
 config RTC_LIB
 	bool
+	select GREGORIAN_CALENDER
 
 menuconfig RTC_CLASS
 	bool "Real Time Clock"

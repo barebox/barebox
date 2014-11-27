@@ -32,12 +32,6 @@
 
 #include <asm/mmu.h>
 
-#include <mach/generic.h>
-#include <mach/clock.h>
-#ifndef CONFIG_ARCH_MXS
-# include <mach/iim.h>
-#endif
-
 #include "fec_imx.h"
 
 struct fec_frame {

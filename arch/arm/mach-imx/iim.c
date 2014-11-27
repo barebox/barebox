@@ -371,7 +371,8 @@ static void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 			dev_err(dev, "cannot read: %s\n", strerror(-ret));
 		}
 
-		imx_iim_add_mac_param(iim, macnum, bank, offset);
+		if (IS_ENABLED(CONFIG_NET))
+			imx_iim_add_mac_param(iim, macnum, bank, offset);
 		macnum++;
 
 		len -= MAC_ADDRESS_PROPLEN;

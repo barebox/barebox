@@ -432,8 +432,10 @@ static int imx_ocotp_probe(struct device_d *dev)
 				NULL, NULL, &priv->permanent_write_enable, NULL);
 	}
 
-	dev_add_param_mac(&(priv->dev), "mac_addr", imx_ocotp_set_mac,
-			imx_ocotp_get_mac, priv->ethaddr, priv);
+	if (IS_ENABLED(CONFIG_NET))
+		dev_add_param_mac(&(priv->dev), "mac_addr", imx_ocotp_set_mac,
+				imx_ocotp_get_mac, priv->ethaddr, priv);
+
 	dev_add_param_bool(&(priv->dev), "sense_enable", NULL, NULL, &priv->sense_enable, priv);
 
 	return 0;

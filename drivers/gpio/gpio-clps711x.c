@@ -10,7 +10,7 @@
 #include <init.h>
 #include <common.h>
 #include <malloc.h>
-
+#include <linux/err.h>
 #include <linux/basic_mmio_gpio.h>
 
 static int clps711x_gpio_probe(struct device_d *dev)

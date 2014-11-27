@@ -454,7 +454,7 @@ config CMD_GO
 	  in which case the file is memmapped and executed
 
 config CMD_LOADB
-	depends on !CONSOLE_NONE
+	depends on CONSOLE_FULL
 	select CRC16
 	tristate
 	prompt "loadb"
@@ -470,7 +470,7 @@ config CMD_LOADB
 		  -c	create file if not present
 
 config CMD_LOADS
-	depends on !CONSOLE_NONE
+	depends on CONSOLE_FULL
 	tristate
 	prompt "loads"
 	help
@@ -482,7 +482,7 @@ config CMD_LOADS
 
 config CMD_LOADY
 	select XYMODEM
-	depends on !CONSOLE_NONE
+	depends on CONSOLE_FULL
 	tristate
 	prompt "loady"
 	help

@@ -248,7 +248,6 @@ endmenu
 
 config BROKEN
 	bool
-	prompt "Prompt for broken or incomplete code"
 
 config EXPERIMENTAL
 	bool

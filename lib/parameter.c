@@ -185,7 +185,7 @@ struct param_d *dev_add_param(struct device_d *dev, const char *name,
  * @param name	The name of the parameter
  * @param value	The value of the parameter
  */
-int dev_add_param_fixed(struct device_d *dev, char *name, const char *value)
+int dev_add_param_fixed(struct device_d *dev, const char *name, const char *value)
 {
 	struct param_d *param;
 	int ret;

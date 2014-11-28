@@ -145,6 +145,7 @@ source "pbl/Kconfig"
 
 config MMU
 	bool "Enable MMU"
+	depends on !CPU_ARM946E
 	help
 	  Saying yes here enables the MMU. This is useful on some architectures
 	  to enable the data cache which depends on the MMU. See Documentation/mmu.txt

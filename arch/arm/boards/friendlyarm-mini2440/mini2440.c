@@ -96,7 +96,6 @@ static struct fb_videomode s3c24x0_fb_modes[] = {
 		.pixclock	= 41848,
 		.sync		= FB_SYNC_USE_PWREN | FB_SYNC_DE_HIGH_ACT,
 		.vmode		= FB_VMODE_NONINTERLACED,
-		.flag		= 0,
 	},
 #endif
 #ifdef CONFIG_MINI2440_VIDEO_SVGA
@@ -115,7 +114,6 @@ static struct fb_videomode s3c24x0_fb_modes[] = {
 		.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT | FB_SYNC_DE_HIGH_ACT
                                   /* | FB_SYNC_SWAP_HW */ /* FIXME maybe */ ,
 		.vmode		= FB_VMODE_NONINTERLACED,
-		.flag		= 0,
 	},
 #endif
 };

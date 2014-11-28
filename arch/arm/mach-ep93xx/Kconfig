@@ -18,12 +18,15 @@ config ARCH_EP9302
 	bool "EP9302"
 
 config ARCH_EP9307
+	depends on BROKEN
 	bool "EP9307"
 
 config ARCH_EP9312
+	depends on BROKEN
 	bool "EP9312"
 
 config ARCH_EP9315
+	depends on BROKEN
 	bool "EP9315"
 
 endchoice

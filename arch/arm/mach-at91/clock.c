@@ -336,8 +336,6 @@ EXPORT_SYMBOL(clk_get_rate);
 
 /*------------------------------------------------------------------------*/
 
-#ifdef CONFIG_AT91_PROGRAMMABLE_CLOCKS
-
 /*
  * For now, only the programmable clocks support reparenting (MCK could
  * do this too, with care) or rate changing (the PLLs could do this too,
@@ -379,6 +377,9 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	unsigned long	prescale_offset, css_mask;
 	unsigned long	actual;
 
+	if (!IS_ENABLED(CONFIG_PROGRAMMABLE_CLOCKS))
+		return 0;
+
 	if (!clk_is_programmable(clk))
 		return -EINVAL;
 	if (clk->users)
@@ -419,6 +420,9 @@ EXPORT_SYMBOL(clk_get_parent);
 
 int clk_set_parent(struct clk *clk, struct clk *parent)
 {
+	if (!IS_ENABLED(CONFIG_PROGRAMMABLE_CLOCKS))
+		return -ENOSYS;
+
 	if (clk->users)
 		return -EBUSY;
 	if (!clk_is_primary(parent) || !clk_is_programmable(clk))
@@ -453,8 +457,6 @@ static void init_programmable_clock(struct clk *clk)
 	clk->rate_hz = parent->rate_hz / pmc_prescaler_divider(pckr);
 }
 
-#endif	/* CONFIG_AT91_PROGRAMMABLE_CLOCKS */
-
 /*------------------------------------------------------------------------*/
 
 /* Register a new clock */
@@ -483,13 +485,10 @@ int clk_register(struct clk *clk)
 	else if (clk_is_sys(clk)) {
 		clk->parent = &mck;
 		clk->mode = pmc_sys_mode;
-	}
-#ifdef CONFIG_AT91_PROGRAMMABLE_CLOCKS
-	else if (clk_is_programmable(clk)) {
+	} else if (IS_ENABLED(CONFIG_PROGRAMMABLE_CLOCKS) && clk_is_programmable(clk)) {
 		clk->mode = pmc_sys_mode;
 		init_programmable_clock(clk);
 	}
-#endif
 
 	at91_clk_add(clk);
 

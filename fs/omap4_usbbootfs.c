@@ -104,7 +104,7 @@ static int omap4_usbbootfs_open(
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
-	file->inode = priv;
+	file->priv = priv;
 	file->size = priv->size;
 
 	return 0;
@@ -123,14 +123,14 @@ static int omap4_usbbootfs_do_close(struct file_priv *priv)
 
 static int omap4_usbbootfs_close(struct device_d *dev, FILE *f)
 {
-	struct file_priv *priv = f->inode;
+	struct file_priv *priv = f->priv;
 	return omap4_usbbootfs_do_close(priv);
 }
 
 static int omap4_usbbootfs_read(
 	struct device_d *dev, FILE *f, void *buf, size_t size)
 {
-	struct file_priv *priv = f->inode;
+	struct file_priv *priv = f->priv;
 	u32 data;
 
 	if (size > priv->size - f->pos)

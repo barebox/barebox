@@ -30,7 +30,7 @@ typedef struct filep {
 	loff_t size;           /* The size of this inode                       */
 	ulong flags;          /* the O_* flags from open                      */
 
-	void *inode;         /* private to the filesystem driver              */
+	void *priv;         /* private to the filesystem driver              */
 
 	/* private fields. Mapping between FILE and filedescriptor number     */
 	int no;

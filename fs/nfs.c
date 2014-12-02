@@ -1144,7 +1144,7 @@ static int nfs_open(struct device_d *dev, FILE *file, const char *filename)
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
-	file->inode = priv;
+	file->priv = priv;
 	file->size = s.st_size;
 
 	priv->fifo = kfifo_alloc(1024);
@@ -1158,7 +1158,7 @@ static int nfs_open(struct device_d *dev, FILE *file, const char *filename)
 
 static int nfs_close(struct device_d *dev, FILE *file)
 {
-	struct file_priv *priv = file->inode;
+	struct file_priv *priv = file->priv;
 
 	nfs_do_close(priv);
 
@@ -1173,7 +1173,7 @@ static int nfs_write(struct device_d *_dev, FILE *file, const void *inbuf,
 
 static int nfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
 {
-	struct file_priv *priv = file->inode;
+	struct file_priv *priv = file->priv;
 
 	if (insize > 1024)
 		insize = 1024;
@@ -1189,7 +1189,7 @@ static int nfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
 
 static loff_t nfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
-	struct file_priv *priv = file->inode;
+	struct file_priv *priv = file->priv;
 
 	file->pos = pos;
 	kfifo_reset(priv->fifo);

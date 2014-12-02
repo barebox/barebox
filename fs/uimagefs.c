@@ -89,14 +89,14 @@ static int uimagefs_open(struct device_d *dev, FILE *file, const char *filename)
 	}
 
 	file->size = d->size;
-	file->inode = d;
+	file->priv = d;
 
 	return 0;
 }
 
 static int uimagefs_close(struct device_d *dev, FILE *file)
 {
-	struct uimagefs_handle_data *d = file->inode;
+	struct uimagefs_handle_data *d = file->priv;
 
 	close(d->fd);
 
@@ -105,7 +105,7 @@ static int uimagefs_close(struct device_d *dev, FILE *file)
 
 static int uimagefs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
 {
-	struct uimagefs_handle_data *d = file->inode;
+	struct uimagefs_handle_data *d = file->priv;
 
 	if (!uimagefs_is_data_file(d)) {
 		memcpy(buf, &d->data[d->pos], insize);
@@ -117,7 +117,7 @@ static int uimagefs_read(struct device_d *dev, FILE *file, void *buf, size_t ins
 
 static loff_t uimagefs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
-	struct uimagefs_handle_data *d = file->inode;
+	struct uimagefs_handle_data *d = file->priv;
 
 	if (uimagefs_is_data_file(d))
 		lseek(d->fd, d->offset + pos, SEEK_SET);

@@ -54,7 +54,7 @@ static inline char *dt_string(struct fdt_header *f, char *strstart, uint32_t ofs
  * Parse a flat device tree binary blob and return a pointer to the
  * unflattened tree.
  */
-struct device_node *of_unflatten_dtb(void *infdt)
+struct device_node *of_unflatten_dtb(const void *infdt)
 {
 	const void *nodep;	/* property node pointer */
 	uint32_t tag;		/* tag */
@@ -69,7 +69,7 @@ struct device_node *of_unflatten_dtb(void *infdt)
 	struct fdt_header f;
 	int ret;
 	unsigned int maxlen;
-	struct fdt_header *fdt = infdt;
+	const struct fdt_header *fdt = infdt;
 
 	if (fdt->magic != cpu_to_fdt32(FDT_MAGIC)) {
 		pr_err("bad magic: 0x%08x\n", fdt32_to_cpu(fdt->magic));

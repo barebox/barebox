@@ -65,7 +65,9 @@ BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_1G, IMD_TYPE_PARAMETER, "memsize=1024
 BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_2G, IMD_TYPE_PARAMETER, "memsize=2048", 0);
 BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_4G, IMD_TYPE_PARAMETER, "memsize=4096", 0);
 
-static void __noreturn start_imx6q_phytec_pbab01_common(uint32_t size)
+static void __noreturn start_imx6_phytec_common(uint32_t size,
+						bool do_early_uart_config,
+						void *fdt_blob_fixed_offset)
 {
 	void *fdt;
 
@@ -73,25 +75,10 @@ static void __noreturn start_imx6q_phytec_pbab01_common(uint32_t size)
 
 	arm_setup_stack(0x00920000 - 8);
 
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
+	if (do_early_uart_config && IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx6q_phytec_pbab01_start - get_runtime_offset();
-
-	barebox_arm_entry(0x10000000, size, fdt);
-}
-
-
-static void __noreturn start_imx6dl_phytec_pbab01_common(uint32_t size)
-{
-	void *fdt;
-
-	imx6_cpu_lowlevel_init();
-
-	arm_setup_stack(0x00920000 - 8);
-
-	fdt = __dtb_imx6dl_phytec_pbab01_start - get_runtime_offset();
-
+	fdt = fdt_blob_fixed_offset - get_runtime_offset();
 	barebox_arm_entry(0x10000000, size, fdt);
 }
 
@@ -99,71 +86,54 @@ ENTRY_FUNCTION(start_phytec_pbab01_1gib, r0, r1, r2)
 {
 	IMD_USED(phyflex_mx6_memsize_1G);
 
-	start_imx6q_phytec_pbab01_common(SZ_1G);
+	start_imx6_phytec_common(SZ_1G, true,
+				 __dtb_imx6q_phytec_pbab01_start);
 }
 
 ENTRY_FUNCTION(start_phytec_pbab01_2gib, r0, r1, r2)
 {
 	IMD_USED(phyflex_mx6_memsize_2G);
 
-	start_imx6q_phytec_pbab01_common(SZ_2G);
+	start_imx6_phytec_common(SZ_2G, true,
+				 __dtb_imx6q_phytec_pbab01_start);
 }
 
 ENTRY_FUNCTION(start_phytec_pbab01_4gib, r0, r1, r2)
 {
 	IMD_USED(phyflex_mx6_memsize_4G);
 
-	start_imx6q_phytec_pbab01_common(0xEFFFFFF8);
+	start_imx6_phytec_common(0xEFFFFFF8, true,
+				 __dtb_imx6q_phytec_pbab01_start);
 }
 
 ENTRY_FUNCTION(start_phytec_pbab01dl_1gib, r0, r1, r2)
 {
 	IMD_USED(phyflex_mx6_memsize_1G);
 
-	start_imx6dl_phytec_pbab01_common(SZ_1G);
+	start_imx6_phytec_common(SZ_1G, false,
+				 __dtb_imx6dl_phytec_pbab01_start);
 }
 
 ENTRY_FUNCTION(start_phytec_pbab01s_512mb, r0, r1, r2)
 {
-	void *fdt;
-
-	imx6_cpu_lowlevel_init();
-
-	arm_setup_stack(0x00920000 - 8);
-
 	IMD_USED(phyflex_mx6_memsize_512M);
 
-	fdt = __dtb_imx6s_phytec_pbab01_start - get_runtime_offset();
-
-	barebox_arm_entry(0x10000000, SZ_512M, fdt);
+	start_imx6_phytec_common(SZ_512M, false,
+				 __dtb_imx6s_phytec_pbab01_start);
 }
 
 ENTRY_FUNCTION(start_phytec_phyboard_alcor_1gib, r0, r1, r2)
 {
-	void *fdt;
-
-	imx6_cpu_lowlevel_init();
-
-	arm_setup_stack(0x00920000 - 8);
-
 	IMD_USED(phyflex_mx6_memsize_1G);
 
-	fdt = __dtb_imx6q_phytec_phyboard_alcor_start - get_runtime_offset();
-
-	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+	start_imx6_phytec_common(SZ_1G, false,
+				 __dtb_imx6q_phytec_phyboard_alcor_start);
 }
 
 ENTRY_FUNCTION(start_phytec_phyboard_subra_512mb, r0, r1, r2)
 {
-	void *fdt;
-
-	imx6_cpu_lowlevel_init();
-
-	arm_setup_stack(0x00920000 - 8);
-
 	IMD_USED(phyflex_mx6_memsize_512M);
 
-	fdt = __dtb_imx6dl_phytec_phyboard_subra_start - get_runtime_offset();
-
-	barebox_arm_entry(0x10000000, SZ_512M, fdt);
+	start_imx6_phytec_common(SZ_512M, false,
+				 __dtb_imx6dl_phytec_phyboard_subra_start);
 }

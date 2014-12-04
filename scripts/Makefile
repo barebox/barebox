@@ -19,6 +19,8 @@ hostprogs-$(CONFIG_ARCH_S5PCxx)  += s5p_cksum
 hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 hostprogs-$(CONFIG_ARCH_ZYNQ)	 += zynq_mkimage
 hostprogs-$(CONFIG_ARCH_SOCFPGA) += socfpga_mkimage
+hostprogs-$(CONFIG_ARCH_MXS)     += mxsimage
+HOSTLOADLIBES_mxsimage  = `pkg-config --libs openssl`
 
 subdir-y			+= mod
 subdir-$(CONFIG_OMAP4_USBBOOT)	+= omap4_usbboot

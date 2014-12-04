@@ -15,7 +15,7 @@
  */
 #include <common.h>
 #include <io.h>
-#include <mach/imx-regs.h>
+#include <mach/imx23-regs.h>
 #include <mach/power.h>
 
 #define USBPHY_PWD			(IMX_USBPHY_BASE + 0x0)

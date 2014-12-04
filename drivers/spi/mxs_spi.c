@@ -25,7 +25,6 @@
 #include <linux/err.h>
 #include <asm/mmu.h>
 #include <mach/generic.h>
-#include <mach/imx-regs.h>
 #include <mach/clock.h>
 #include <mach/ssp.h>
 

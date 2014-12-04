@@ -40,7 +40,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm/bitops.h>
-#include <mach/imx-regs.h>
 #include <mach/mci.h>
 #include <mach/clock.h>
 #include <mach/ssp.h>

@@ -27,7 +27,6 @@
 #include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
 #include <mach/fb.h>
 
 #define HW_LCDIF_CTRL 0x00

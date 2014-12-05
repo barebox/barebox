@@ -16,6 +16,7 @@
 #include <mach/sequencer.c>
 #include "sequencer_auto_inst_init.c"
 #include "sequencer_auto_ac_init.c"
+#include "iocsr_config_cyclone5.c"
 
 static inline void ledon(void)
 {
@@ -58,6 +59,7 @@ ENTRY_FUNCTION(start_socfpga_socrates, r0, r1, r2)
 
 static noinline void socrates_entry(void)
 {
+	struct socfpga_io_config io_config;
 	int ret;
 
 	arm_early_mmu_cache_invalidate();
@@ -65,8 +67,14 @@ static noinline void socrates_entry(void)
 	relocate_to_current_adr();
 	setup_c();
 
-	socfpga_lowlevel_init(&cm_default_cfg,
-			sys_mgr_init_table, ARRAY_SIZE(sys_mgr_init_table));
+	io_config.pinmux = sys_mgr_init_table;
+	io_config.num_pin = ARRAY_SIZE(sys_mgr_init_table);
+	io_config.iocsr_emac_mixed2 = iocsr_scan_chain0_table;
+	io_config.iocsr_mixed1_flash = iocsr_scan_chain1_table;
+	io_config.iocsr_general = iocsr_scan_chain2_table;
+	io_config.iocsr_ddr = iocsr_scan_chain3_table;
+
+	socfpga_lowlevel_init(&cm_default_cfg, &io_config);
 
 	puts_ll("lowlevel init done\n");
 	puts_ll("SDRAM setup...\n");

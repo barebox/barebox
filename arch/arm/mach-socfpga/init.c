@@ -10,7 +10,7 @@
 #include <mach/generic.h>
 
 void socfpga_lowlevel_init(struct socfpga_cm_config *cm_config,
-		unsigned long *pinmux, int num_pinmux)
+			   struct socfpga_io_config *io_config)
 {
 	uint32_t val;
 
@@ -34,13 +34,13 @@ void socfpga_lowlevel_init(struct socfpga_cm_config *cm_config,
 
 	debug("Configure IOCSR\n");
 	/* configure the IOCSR through scan chain */
-	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_0, CONFIG_HPS_IOCSR_SCANCHAIN0_LENGTH, iocsr_scan_chain0_table);
-	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_1, CONFIG_HPS_IOCSR_SCANCHAIN1_LENGTH, iocsr_scan_chain1_table);
-	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_2, CONFIG_HPS_IOCSR_SCANCHAIN2_LENGTH, iocsr_scan_chain2_table);
-	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_3, CONFIG_HPS_IOCSR_SCANCHAIN3_LENGTH, iocsr_scan_chain3_table);
+	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_0, CONFIG_HPS_IOCSR_SCANCHAIN0_LENGTH, io_config->iocsr_emac_mixed2);
+	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_1, CONFIG_HPS_IOCSR_SCANCHAIN1_LENGTH, io_config->iocsr_mixed1_flash);
+	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_2, CONFIG_HPS_IOCSR_SCANCHAIN2_LENGTH, io_config->iocsr_general);
+	scan_mgr_io_scan_chain_prg(IO_SCAN_CHAIN_3, CONFIG_HPS_IOCSR_SCANCHAIN3_LENGTH, io_config->iocsr_ddr);
 
 	/* configure the pin muxing through system manager */
-	socfpga_sysmgr_pinmux_init(pinmux, num_pinmux);
+	socfpga_sysmgr_pinmux_init(io_config->pinmux, io_config->num_pin);
 
 	writel(RSTMGR_PERMODRST_L4WD0 | RSTMGR_PERMODRST_L4WD1,
 			CYCLONE5_RSTMGR_ADDRESS + RESET_MGR_PER_MOD_RESET_OFS);

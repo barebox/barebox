@@ -119,13 +119,13 @@ int scan_mgr_io_scan_chain_prg(enum io_scan_chain io_scan_chain_id,
 		uint32_t io_scan_chain_len_in_bits,
 		const unsigned long *iocsr_scan_chain);
 
-extern const unsigned long iocsr_scan_chain0_table[
-	((CONFIG_HPS_IOCSR_SCANCHAIN0_LENGTH / 32) + 1)];
-extern const unsigned long iocsr_scan_chain1_table[
-	((CONFIG_HPS_IOCSR_SCANCHAIN1_LENGTH / 32) + 1)];
-extern const unsigned long iocsr_scan_chain2_table[
-	((CONFIG_HPS_IOCSR_SCANCHAIN2_LENGTH / 32) + 1)];
-extern const unsigned long iocsr_scan_chain3_table[
-	((CONFIG_HPS_IOCSR_SCANCHAIN3_LENGTH / 32) + 1)];
+struct socfpga_io_config {
+	unsigned long *pinmux;
+	unsigned int num_pin;
+	const unsigned long *iocsr_emac_mixed2;
+	const unsigned long *iocsr_mixed1_flash;
+	const unsigned long *iocsr_general;
+	const unsigned long *iocsr_ddr;
+};
 
 #endif	/* _SCAN_MANAGER_H_ */

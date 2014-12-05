@@ -1,0 +1,23 @@
+#
+# barebox image generation Makefile for MXS images
+#
+
+# %.mxsbs - convert into MXS BootStream image
+# ----------------------------------------------------------------
+quiet_cmd_mxs_bootstream = MXS-BOOTSTREAM $@
+      cmd_mxs_bootstream = $(objtree)/scripts/mxsimage -c $(CFG_$(@F)) -b $< -o $@ -p $(word 2,$^)
+
+$(obj)/%.mxsbs: $(obj)/%.pblx $(obj)/prep_%.pblb FORCE
+	$(call if_changed,mxs_bootstream)
+
+# %.mxssd - convert into MXS SD card image
+# ----------------------------------------------------------------
+quiet_cmd_mxs_sd = MXS-SD $@
+      cmd_mxs_sd = $(objtree)/scripts/mxsboot sd $< $@
+
+$(obj)/%.mxssd: $(obj)/%
+	$(call if_changed,mxs_sd)
+
+board = $(srctree)/arch/$(ARCH)/boards
+mxs23cfg = $(srctree)/arch/arm/mach-mxs/mxs23img.cfg
+mxs28cfg = $(srctree)/arch/arm/mach-mxs/mxs28img.cfg

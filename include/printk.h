@@ -22,18 +22,23 @@
 /* debugging and troubleshooting/diagnostic helpers. */
 
 #ifndef CONFIG_CONSOLE_NONE
-int pr_print(int level, const char *format, ...)
-	__attribute__ ((format(__printf__, 2, 3)));
-
 int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 	__attribute__ ((format(__printf__, 3, 4)));
 #else
-static inline int pr_print(int level, const char *format, ...)
+static inline int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 {
 	return 0;
 }
+#endif
 
-static inline int dev_printf(int level, const struct device_d *dev, const char *format, ...)
+#if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
+	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
+int pr_print(int level, const char *format, ...)
+	__attribute__ ((format(__printf__, 2, 3)));
+#else
+static int pr_print(int level, const char *format, ...)
+	__attribute__ ((format(__printf__, 2, 3)));
+static inline int pr_print(int level, const char *format, ...)
 {
 	return 0;
 }

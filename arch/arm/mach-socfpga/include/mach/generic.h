@@ -3,8 +3,10 @@
 
 struct socfpga_cm_config;
 
+struct socfpga_io_config;
+
 void socfpga_lowlevel_init(struct socfpga_cm_config *cm_config,
-		unsigned long *pinmux, int num_pinmux);
+			   struct socfpga_io_config *io_config);
 
 static inline void __udelay(unsigned us)
 {

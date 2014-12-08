@@ -2,31 +2,32 @@
 #define _SEQUENCER_H_
 
 /*
-Copyright (c) 2012, Altera Corporation
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of Altera Corporation nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL ALTERA CORPORATION BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright Altera Corporation (C) 2012-2014. All rights reserved
+ *
+ * SPDX-License-Identifier:  BSD-3-Clause
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *  * Redistributions of source code must retain the above copyright
+ *  notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *  notice, this list of conditions and the following disclaimer in the
+ *  documentation and/or other materials provided with the distribution.
+ *  * Neither the name of Altera Corporation nor the
+ *  names of its contributors may be used to endorse or promote products
+ *  derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ALTERA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #define MRS_MIRROR_PING_PONG_ATSO 0
 #define DYNAMIC_CALIBRATION_MODE 0
@@ -396,6 +397,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PHY_DEBUG_DISABLE_GUARANTEED_READ 0x00000010
 #define PHY_DEBUG_ENABLE_NON_DESTRUCTIVE_CALIBRATION 0x00000020
 
+/* Init and Reset delay constants - Only use if defined by sequencer_defines.h,
+ * otherwise, revert to defaults
+ * Default for Tinit = (0+1) * ((202+1) * (2 * 131 + 1) + 1) = 53532 = 200.75us @ 266MHz
+ */
+#ifdef TINIT_CNTR0_VAL
+   #define SEQ_TINIT_CNTR0_VAL TINIT_CNTR0_VAL
+#else
+   #define SEQ_TINIT_CNTR0_VAL 0
+#endif
+
+#ifdef TINIT_CNTR1_VAL
+   #define SEQ_TINIT_CNTR1_VAL TINIT_CNTR1_VAL
+#else
+   #define SEQ_TINIT_CNTR1_VAL 202
+#endif
+
+#ifdef TINIT_CNTR2_VAL
+   #define SEQ_TINIT_CNTR2_VAL TINIT_CNTR2_VAL
+#else
+   #define SEQ_TINIT_CNTR2_VAL 131
+#endif
+
+
+/* Default for Treset = (2+1) * ((252+1) * (2 * 131 + 1) + 1) = 133563 = 500.86us @ 266MHz */
+#ifdef TRESET_CNTR0_VAL
+   #define SEQ_TRESET_CNTR0_VAL TRESET_CNTR0_VAL
+#else
+   #define SEQ_TRESET_CNTR0_VAL 2
+#endif
+
+#ifdef TRESET_CNTR1_VAL
+   #define SEQ_TRESET_CNTR1_VAL TRESET_CNTR1_VAL
+#else
+   #define SEQ_TRESET_CNTR1_VAL 252
+#endif
+
+#ifdef TRESET_CNTR2_VAL
+   #define SEQ_TRESET_CNTR2_VAL TRESET_CNTR2_VAL
+#else
+   #define SEQ_TRESET_CNTR2_VAL 131
+#endif
+
 /* Bitfield type changes depending on protocol */
 typedef uint32_t t_btfld;
 
@@ -409,6 +452,9 @@ typedef struct param_type {
 	t_btfld read_correct_mask_vg;
 	t_btfld write_correct_mask;
 	t_btfld write_correct_mask_vg;
+	uint32_t skip_ranks[MAX_RANKS];
+	uint32_t skip_groups;
+	uint32_t skip_shadow_regs[NUM_SHADOW_REGS];
 
 	/* set a particular entry to 1 if we need to skip a particular group */
 } param_t;

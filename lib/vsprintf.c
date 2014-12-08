@@ -21,6 +21,8 @@
 
 /* we use this so that we can do without the ctype library */
 #define is_digit(c)	((c) >= '0' && (c) <= '9')
+#define is_alpha(c)	(((c) >= 'A' && (c) <= 'Z') || ((c) >= 'a' && (c) <= 'z'))
+#define is_alnum(c)	(is_digit(c) || is_alpha(c))
 
 static int skip_atoi(const char **s)
 {
@@ -351,7 +353,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
 		/* get field width */
 		field_width = -1;
-		if (isdigit(*fmt))
+		if (is_digit(*fmt))
 			field_width = skip_atoi(&fmt);
 		else if (*fmt == '*') {
 			++fmt;
@@ -367,7 +369,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		precision = -1;
 		if (*fmt == '.') {
 			++fmt;
-			if (isdigit(*fmt))
+			if (is_digit(*fmt))
 				precision = skip_atoi(&fmt);
 			else if (*fmt == '*') {
 				++fmt;
@@ -422,7 +424,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 						va_arg(args, void *),
 						field_width, precision, flags);
 				/* Skip all alphanumeric pointer suffixes */
-				while (isalnum(fmt[1]))
+				while (is_alnum(fmt[1]))
 					fmt++;
 				continue;
 

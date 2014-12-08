@@ -1,7 +1,7 @@
 /*
- * ramfs.c - a malloc based filesystem
+ * efivars.c - EFI variable filesystem
  *
- * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -75,8 +75,8 @@ int efi_guid_parse(const char *str, efi_guid_t *guid)
 			if (*str != '-')
 				return -EINVAL;
 			str++;
-                        break;
-                }
+			break;
+		}
 	}
 
 	return 0;

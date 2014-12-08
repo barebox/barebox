@@ -1,5 +1,6 @@
 menuconfig USB_GADGET
 	select USB
+	select POLLER
 	bool "USB gadget support"
 
 if USB_GADGET
@@ -13,7 +14,6 @@ config USB_GADGET_DRIVER_ARC
 	depends on ARCH_IMX || ARCH_MXS
 	default y
 	select USB_GADGET_DUALSPEED
-	select POLLER
 
 config USB_GADGET_DRIVER_AT91
 	bool
@@ -21,7 +21,6 @@ config USB_GADGET_DRIVER_AT91
 	depends on ARCH_AT91
 	default y
 	select USB_GADGET_DUALSPEED
-	select POLLER
 
 config USB_GADGET_DRIVER_PXA27X
 	bool
@@ -29,7 +28,6 @@ config USB_GADGET_DRIVER_PXA27X
 	depends on ARCH_PXA
 	default y
 	select USB_GADGET_DUALSPEED
-	select POLLER
 
 comment "USB Gadget drivers"
 
@@ -46,6 +44,7 @@ config USB_GADGET_SERIAL
 config USB_GADGET_FASTBOOT
 	bool
 	select BANNER
+	depends on COMMAND_SUPPORT
 	prompt "Android Fastboot support"
 
 endif

@@ -87,6 +87,7 @@ config DRIVER_VIDEO_SIMPLEFB
 	  based on the active barebox framebuffer.
 
 config DRIVER_VIDEO_EDID
+	depends on I2C
 	bool "Add EDID support"
 	help
 	  This enabled support for reading and parsing EDID data from an attached

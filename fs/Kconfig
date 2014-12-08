@@ -76,6 +76,7 @@ config FS_BPKFS
 
 config FS_UIMAGEFS
 	bool
+	select CRC32
 	prompt "uImage FS support"
 
 endmenu

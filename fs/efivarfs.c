@@ -131,6 +131,7 @@ struct efivars_file {
 	unsigned long size;
 	efi_guid_t vendor;
 	s16 *name;
+	u32 attributes;
 };
 
 static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
@@ -138,7 +139,6 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 	struct efivars_file *efile;
 	efi_status_t efiret;
 	int ret;
-	uint32_t attributes;
 
 	efile = xzalloc(sizeof(*efile));
 
@@ -146,28 +146,27 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 	if (ret)
 		return -ENOENT;
 
-	efiret = RT->get_variable(efile->name, &efile->vendor, &attributes, &efile->size, NULL);
+	efiret = RT->get_variable(efile->name, &efile->vendor,
+				  &efile->attributes, &efile->size, NULL);
 	if (EFI_ERROR(efiret) && efiret != EFI_BUFFER_TOO_SMALL) {
 		ret = -efi_errno(efiret);
 		goto out;
 	}
 
-	efile->buf = malloc(efile->size + sizeof(uint32_t));
+	efile->buf = malloc(efile->size);
 	if (!efile->buf) {
 		ret = -ENOMEM;
 		goto out;
 	}
 
 	efiret = RT->get_variable(efile->name, &efile->vendor, NULL, &efile->size,
-			efile->buf + sizeof(uint32_t));
+			efile->buf);
 	if (EFI_ERROR(efiret)) {
 		ret = -efi_errno(efiret);
 		goto out;
 	}
 
-	*(uint32_t *)efile->buf = attributes;
-
-	f->size = efile->size + sizeof(uint32_t);
+	f->size = efile->size;
 	f->inode = efile;
 
 	return 0;

@@ -115,8 +115,7 @@ static int s3c_clk_src_init(void)
 	s3c_timer_start();
 
 	cs.mult = clocksource_hz2mult(s3c_get_t4_clk(), cs.shift);
-	init_clock(&cs);
 
-	return 0;
+	return init_clock(&cs);
 }
 core_initcall(s3c_clk_src_init);

@@ -38,8 +38,7 @@ static struct clocksource cs = {
 static int clocksource_init(void)
 {
 	cs.mult = clocksource_hz2mult(100000000, cs.shift);
-	init_clock(&cs);
 
-	return 0;
+	return init_clock(&cs);
 }
 core_initcall(clocksource_init);

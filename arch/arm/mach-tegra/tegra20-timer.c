@@ -84,9 +84,8 @@ static int tegra20_timer_probe(struct device_d *dev)
 	writel(reg, timer_base + TIMERUS_USEC_CFG);
 
 	cs.mult = clocksource_hz2mult(1000000, cs.shift);
-	init_clock(&cs);
 
-	return 0;
+	return init_clock(&cs);
 }
 
 static __maybe_unused struct of_device_id tegra20_timer_dt_ids[] = {

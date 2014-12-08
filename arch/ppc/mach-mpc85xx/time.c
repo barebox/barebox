@@ -41,9 +41,7 @@ static int clocksource_init(void)
 	clocks_calc_mult_shift(&cs.mult, &cs.shift,
 				fsl_get_timebase_clock(), NSEC_PER_SEC, 10);
 
-	init_clock(&cs);
-
-	return 0;
+	return init_clock(&cs);
 }
 
 core_initcall(clocksource_init);

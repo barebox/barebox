@@ -54,7 +54,5 @@ int efi_clocksource_init(void)
 
 	freq = ticks_freq();
 
-	init_clock(&cs);
-
-	return 0;
+	return init_clock(&cs);
 }

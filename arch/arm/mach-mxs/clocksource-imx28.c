@@ -65,9 +65,8 @@ static int imx28_clocksource_init(void)
 	writel(TIMCTRL_UPDATE | TIMCTRL_RELOAD | TIMCTRL_PRESCALE(0) |
 			TIMCTRL_SELECT(0xb), timer_base + TIMCTRL1);
 	imx28_cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, imx28_cs.shift);
-	init_clock(&imx28_cs);
 
-	return 0;
+	return init_clock(&imx28_cs);
 }
 
 core_initcall(imx28_clocksource_init);

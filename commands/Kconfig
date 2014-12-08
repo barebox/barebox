@@ -88,6 +88,7 @@ config CMD_DMESG
 	tristate
 	prompt "dmesg"
 	select LOGBUF
+	depends on !CONSOLE_NONE
 	help
 	  Print or control the log message buffer.
 
@@ -1262,6 +1263,7 @@ config CMD_EDIT
 config CMD_LOGIN
 	tristate
 	select PASSWORD
+	depends on !CONSOLE_NONE
 	prompt "login"
 	help
 	  Ask for a password
@@ -1370,7 +1372,7 @@ config CMD_MENUTREE
 
 config CMD_PASSWD
 	tristate
-	select CMD_LOGIN
+	depends on CMD_LOGIN
 	prompt "passwd"
 	help
 	  Set password

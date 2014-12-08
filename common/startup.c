@@ -40,6 +40,7 @@
 #include <envfs.h>
 #include <asm/sections.h>
 #include <uncompress.h>
+#include <globalvar.h>
 
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
@@ -78,17 +79,13 @@ void __noreturn start_barebox(void)
 	pr_debug("initcalls done\n");
 
 	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
-		int ret;
 		char *default_environment_path = default_environment_path_get();
 
-		ret = envfs_load(default_environment_path, "/env", 0);
-
-		if (ret && IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT)) {
-			pr_err("no valid environment found on %s. "
-				"Using default environment\n",
-				default_environment_path);
+		if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 			defaultenv_load("/env", 0);
-		}
+
+		envfs_load(default_environment_path, "/env", 0);
+		nvvar_load();
 	}
 
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {

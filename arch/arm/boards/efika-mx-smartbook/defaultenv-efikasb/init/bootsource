@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ -n "$nv.boot.default" ]; then
+	exit
+fi
+
 # by default pick kernel from MMC card if booting from
 # it, otherwise default to boot from internal harddisk
 

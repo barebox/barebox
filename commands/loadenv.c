@@ -27,12 +27,13 @@
 #include <errno.h>
 #include <fs.h>
 #include <malloc.h>
+#include <globalvar.h>
 
 static int do_loadenv(int argc, char *argv[])
 {
 	char *filename = NULL, *dirname;
 	unsigned flags = 0;
-	int opt;
+	int opt, ret;
 	int scrub = 0;
 	int defaultenv = 0;
 
@@ -97,9 +98,13 @@ static int do_loadenv(int argc, char *argv[])
 	printf("loading environment from %s\n", defaultenv ? "defaultenv" : filename);
 
 	if (defaultenv)
-		return defaultenv_load(dirname, flags);
+		ret = defaultenv_load(dirname, flags);
 	else
-		return envfs_load(filename, dirname, flags);
+		ret = envfs_load(filename, dirname, flags);
+
+	nvvar_load();
+
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(loadenv)

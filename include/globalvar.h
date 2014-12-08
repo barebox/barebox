@@ -72,6 +72,13 @@ static inline int globalvar_add_simple_ip(const char *name,
 
 	return 0;
 }
+
+int nvvar_load(void);
+void nvvar_print(void);
+int nvvar_add(const char *name, const char *value);
+int nvvar_remove(const char *name);
+void globalvar_print(void);
+
 #else
 static inline int globalvar_add_simple(const char *name, const char *value)
 {
@@ -116,6 +123,12 @@ static inline char *globalvar_get_match(const char *match, const char *separator
 }
 
 static inline void globalvar_set_match(const char *match, const char *val) {}
+
+static inline int nvvar_load(void)
+{
+	return 0;
+}
+
 #endif
 
 #endif /* __GLOBALVAR_H */

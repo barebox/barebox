@@ -37,6 +37,11 @@ static int do_global(int argc, char *argv[])
 		}
 	}
 
+	if (argc == optind) {
+		globalvar_print();
+		return 0;
+	}
+
 	argc -= optind;
 	argv += optind;
 

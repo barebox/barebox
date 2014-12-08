@@ -32,21 +32,11 @@
 #include <mach/am33xx-silicon.h>
 #include <mach/bbu.h>
 
-static int ksz9031rn_phy_fixup(struct phy_device *dev)
-{
-	phy_write_mmd_indirect(dev, 6, 2, 0);
-	phy_write_mmd_indirect(dev, 8, 2, 0x003ff);
-
-	return 0;
-}
-
 static int pfla03_coredevice_init(void)
 {
 	if (!of_machine_is_compatible("phytec,phyflex-am335x-som"))
 		return 0;
 
-	phy_register_fixup_for_uid(PHY_ID_KSZ9031, MICREL_PHY_ID_MASK,
-					ksz9031rn_phy_fixup);
 	am33xx_register_ethaddr(0, 0);
 	am33xx_register_ethaddr(1, 1);
 

@@ -615,6 +615,7 @@ static inline int efi_compare_guid(efi_guid_t *a, efi_guid_t *b)
 }
 
 char *device_path_to_str(struct efi_device_path *dev_path);
+u8 device_path_to_type(struct efi_device_path *dev_path);
 
 const char *efi_guid_string(efi_guid_t *g);
 

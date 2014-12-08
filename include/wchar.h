@@ -5,6 +5,8 @@
 
 typedef u16 wchar_t;
 
+wchar_t *strdup_wchar(const wchar_t *src);
+
 char *strcpy_wchar_to_char(char *dst, const wchar_t *src);
 
 wchar_t *strcpy_char_to_wchar(wchar_t *dst, const char *src);

@@ -279,7 +279,8 @@ typedef struct {
 			u32 *Attributes, unsigned long *data_size, void *data);
 	efi_status_t (EFIAPI *get_next_variable)(unsigned long *variable_name_size,
 			s16 *variable_name, efi_guid_t *vendor);
-	void *set_variable;
+	efi_status_t (EFIAPI *set_variable)(s16 *variable_name, efi_guid_t *vendor,
+			u32 Attributes, unsigned long data_size, void *data);
 	void *get_next_high_mono_count;
 	void (EFIAPI *reset_system)(efi_reset_type_t reset_type, efi_status_t reset_status,
 			unsigned long data_size, void *reset_data);

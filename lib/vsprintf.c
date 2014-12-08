@@ -175,6 +175,7 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
 	return buf;
 }
 
+#ifndef __PBL__
 static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int precision, int flags)
 {
 	unsigned long value = (unsigned long) ptr;
@@ -277,6 +278,17 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
 	}
 	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
 }
+#else
+static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+{
+	flags |= SMALL;
+	if (field_width == -1) {
+		field_width = 2*sizeof(void *);
+		flags |= ZEROPAD;
+	}
+	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+}
+#endif
 
 /**
  * vsnprintf - Format a string and place it in a buffer

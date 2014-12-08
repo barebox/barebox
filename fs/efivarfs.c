@@ -196,12 +196,12 @@ static loff_t efivarfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 
 struct efivarfs_dir_entry {
 	char *name;
-	struct efivarfs_dir_entry *next;
+	struct list_head node;
 };
 
 struct efivarfs_dir {
-	struct efivarfs_dir_entry *first;
-	struct efivarfs_dir_entry *current;
+	struct list_head entries;
+	struct list_head *current;
 	DIR dir;
 };
 
@@ -217,6 +217,7 @@ static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)
 	name[0] = 0;
 
 	edir = xzalloc(sizeof(*edir));
+	INIT_LIST_HEAD(&edir->entries);
 
 	while (1) {
 		struct efivarfs_dir_entry *entry;
@@ -230,19 +231,12 @@ static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)
 		name8 = strdup_wchar_to_char(name);
 
 		entry->name = asprintf("%s-%pUl", name8, &vendor);
-
 		free(name8);
 
-		if (!edir->first)
-			edir->first = entry;
-
-		if (edir->current)
-			edir->current->next = entry;
-
-		edir->current = entry;
+		list_add_tail(&entry->node, &edir->entries);
 	}
 
-	edir->current = edir->first;
+	edir->current = edir->entries.next;
 
 	return &edir->dir;
 }
@@ -250,11 +244,14 @@ static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)
 static struct dirent *efivarfs_readdir(struct device_d *dev, DIR *dir)
 {
 	struct efivarfs_dir *edir = container_of(dir, struct efivarfs_dir, dir);
+	struct efivarfs_dir_entry *entry;
 
-	if (!edir->current)
+	if (edir->current == &edir->entries)
 		return NULL;
 
-	strcpy(dir->d.d_name, edir->current->name);
+	entry = list_entry(edir->current, struct efivarfs_dir_entry, node);
+
+	strcpy(dir->d.d_name, entry->name);
 
 	edir->current = edir->current->next;
 
@@ -264,16 +261,11 @@ static struct dirent *efivarfs_readdir(struct device_d *dev, DIR *dir)
 static int efivarfs_closedir(struct device_d *dev, DIR *dir)
 {
 	struct efivarfs_dir *edir = container_of(dir, struct efivarfs_dir, dir);
-	struct efivarfs_dir_entry *entry;
+	struct efivarfs_dir_entry *entry, *tmp;
 
-	entry = edir->first;
-
-	while (entry) {
-		struct efivarfs_dir_entry *tmp;
+	list_for_each_entry_safe(entry, tmp, &edir->entries, node) {
 		free(entry->name);
-		tmp = entry->next;
 		free(entry);
-		entry = tmp;
 	}
 
 	free(edir);

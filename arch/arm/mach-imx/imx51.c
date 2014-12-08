@@ -41,11 +41,26 @@ static int imx51_silicon_revision(void)
 	return 0;
 }
 
+static void imx51_ipu_mipi_setup(void)
+{
+	void __iomem *hsc_addr = (void __iomem *)MX51_MIPI_HSC_BASE_ADDR;
+	u32 val;
+
+	/* setup MIPI module to legacy mode */
+	writel(0xf00, hsc_addr);
+
+	/* CSI mode: reserved; DI control mode: legacy (from Freescale BSP) */
+	val = readl(hsc_addr + 0x800);
+	val |= 0x30ff;
+	writel(val, hsc_addr + 0x800);
+}
+
 int imx51_init(void)
 {
 	imx_set_silicon_revision("i.MX51", imx51_silicon_revision());
 	imx51_boot_save_loc((void *)MX51_SRC_BASE_ADDR);
 	add_generic_device("imx51-esdctl", 0, NULL, MX51_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+	imx51_ipu_mipi_setup();
 
 	return 0;
 }

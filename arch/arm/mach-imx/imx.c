@@ -28,7 +28,7 @@ void imx_set_silicon_revision(const char *soc, int revision)
 {
 	__imx_silicon_revision = revision;
 
-	printf("detected %s revision %d.%d\n", soc,
+	pr_info("detected %s revision %d.%d\n", soc,
 			(revision >> 4) & 0xf,
 			revision & 0xf);
 }
@@ -56,6 +56,8 @@ static int imx_soc_from_dt(void)
 	if (of_machine_is_compatible("fsl,imx6q"))
 		return IMX_CPU_IMX6;
 	if (of_machine_is_compatible("fsl,imx6dl"))
+		return IMX_CPU_IMX6;
+	if (of_machine_is_compatible("fsl,imx6sx"))
 		return IMX_CPU_IMX6;
 
 	return 0;

@@ -474,8 +474,9 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	/* Set the initial clock speed */
 	set_sysctl(mci, 400000);
 
-	/* Disable the BRR and BWR bits in IRQSTAT */
-	esdhc_clrbits32(regs + SDHCI_INT_ENABLE, IRQSTATEN_BRR | IRQSTATEN_BWR);
+	writel(IRQSTATEN_CC | IRQSTATEN_TC | IRQSTATEN_CINT | IRQSTATEN_CTOE |
+			IRQSTATEN_CCE | IRQSTATEN_CEBE | IRQSTATEN_CIE | IRQSTATEN_DTOE |
+			IRQSTATEN_DCE | IRQSTATEN_DEBE | IRQSTATEN_DINT, regs + SDHCI_INT_ENABLE);
 
 	/* Put the PROCTL reg back to the default */
 	esdhc_write32(regs + SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,
@@ -605,6 +606,8 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 		.compatible = "fsl,imx53-esdhc",
 	}, {
 		.compatible = "fsl,imx6q-usdhc",
+	}, {
+		.compatible = "fsl,imx6sl-usdhc",
 	}, {
 		/* sentinel */
 	}

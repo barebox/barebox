@@ -17,6 +17,7 @@
 #include <bootsource.h>
 #include <partition.h>
 #include <common.h>
+#include <envfs.h>
 #include <fcntl.h>
 #include <gpio.h>
 #include <init.h>
@@ -63,16 +64,9 @@ static inline int machine_is_efikasb(void)
 	return 1;
 }
 
-static int efikamx_power_init(void)
+static void efikamx_power_init(struct mc13xxx *mc)
 {
 	unsigned int val;
-	struct mc13xxx *mc;
-
-	mc = mc13xxx_get();
-	if (!mc) {
-		printf("could not get mc13892\n");
-		return -ENODEV;
-	}
 
 	/* Write needed to Power Gate 2 register */
 	mc13xxx_reg_read(mc, MC13892_REG_POWER_MISC, &val);
@@ -177,8 +171,6 @@ static int efikamx_power_init(void)
 	mc13xxx_reg_write(mc, MC13892_REG_POWER_CTL2, val);
 
 	udelay(2500);
-
-	return 0;
 }
 
 static int efikamx_usb_init(void)
@@ -187,6 +179,8 @@ static int efikamx_usb_init(void)
 		return 0;
 
 	barebox_set_hostname("efikasb");
+
+	mc13xxx_register_init_callback(efikamx_power_init);
 
 	gpio_direction_output(GPIO_BLUETOOTH, 0);
 	gpio_direction_output(GPIO_WIFI_ENABLE, 1);
@@ -245,7 +239,7 @@ static int efikamx_late_init(void)
 	if (!of_machine_is_compatible("genesi,imx51-sb"))
 		return 0;
 
-	efikamx_power_init();
+	defaultenv_append_directory(defaultenv_efikasb);
 
 	gpio_direction_output(GPIO_BACKLIGHT_POWER, 1);
 

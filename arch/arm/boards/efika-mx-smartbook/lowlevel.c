@@ -1,5 +1,6 @@
 #include <common.h>
 #include <mach/esdctl.h>
+#include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx5.h>
@@ -10,7 +11,7 @@ ENTRY_FUNCTION(start_imx51_genesi_efikasb, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx5_cpu_lowlevel_init();
 	arm_setup_stack(0x20000000 - 16);
 	imx51_init_lowlevel(800);
 

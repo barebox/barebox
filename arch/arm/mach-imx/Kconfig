@@ -102,11 +102,13 @@ endchoice
 
 config ARCH_IMX_EXTERNAL_BOOT_NAND
 	bool
+	depends on MTD
 	depends on ARCH_IMX25 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35
 	prompt "Support Starting barebox from NAND in external bootmode"
 
 config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	bool
+	depends on MTD
 	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
 	depends on BAREBOX_UPDATE
 	depends on MTD
@@ -115,6 +117,7 @@ config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 
 config BAREBOX_UPDATE_IMX6_NAND
 	bool
+	depends on MTD
 	depends on ARCH_IMX6
 	depends on BAREBOX_UPDATE
 	depends on MTD
@@ -173,6 +176,11 @@ config ARCH_IMX6
 	select ARCH_HAS_FEC_IMX
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
+
+config ARCH_IMX6SX
+	bool
+	select ARCH_IMX6
+	select COMMON_CLK_OF_PROVIDER
 
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
@@ -292,6 +300,12 @@ config MACH_SABRELITE
 config MACH_SABRESD
 	bool "Freescale i.MX6 SabreSD"
 	select ARCH_IMX6
+
+config MACH_FREESCALE_IMX6SX_SABRESDB
+	bool "Freescale i.MX6sx SabreSDB"
+	select ARCH_IMX6SX
+	select I2C
+	select I2C_IMX
 
 config MACH_NITROGEN6X
 	bool "BoundaryDevices Nitrogen6x"

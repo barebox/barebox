@@ -89,7 +89,7 @@ enum mx6q_clks {
 	sata_ref, sata_ref_100m, pcie_ref, pcie_ref_125m, enet_ref, usbphy1_gate,
 	usbphy2_gate, pll4_post_div, pll5_post_div, pll5_video_div, eim_slow,
 	spdif, cko2_sel, cko2_podf, cko2, cko, vdoa, pll4_audio_div,
-	lvds1_sel, lvds2_sel, lvds1_gate, lvds2_gate, clk_max
+	lvds1_sel, lvds2_sel, lvds1_gate, lvds2_gate, enfc_gate, clk_max,
 };
 
 static struct clk *clks[clk_max];
@@ -398,6 +398,8 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[periph]  = imx_clk_busy_mux("periph",  base + 0x14, 25,  1,   base + 0x48, 5,  periph_sels,  ARRAY_SIZE(periph_sels));
 	clks[periph2] = imx_clk_busy_mux("periph2", base + 0x14, 26,  1,   base + 0x48, 3,  periph2_sels, ARRAY_SIZE(periph2_sels));
 
+	clks[enfc_gate] = imx_clk_gate2("enfc_gate", "enfc_sel", base + 0x70, 14);
+
 	/*                                      name                 parent_name               reg       shift width */
 	clks[periph_clk2]      = imx_clk_divider("periph_clk2",      "periph_clk2_sel",   base + 0x14, 27, 3);
 	clks[periph2_clk2]     = imx_clk_divider("periph2_clk2",     "periph2_clk2_sel",  base + 0x14, 0,  3);
@@ -410,7 +412,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[usdhc2_podf]      = imx_clk_divider("usdhc2_podf",      "usdhc2_sel",        base + 0x24, 16, 3);
 	clks[usdhc3_podf]      = imx_clk_divider("usdhc3_podf",      "usdhc3_sel",        base + 0x24, 19, 3);
 	clks[usdhc4_podf]      = imx_clk_divider("usdhc4_podf",      "usdhc4_sel",        base + 0x24, 22, 3);
-	clks[enfc_pred]        = imx_clk_divider("enfc_pred",        "enfc_sel",          base + 0x2c, 18, 3);
+	clks[enfc_pred]        = imx_clk_divider("enfc_pred",        "enfc_gate",         base + 0x2c, 18, 3);
 	clks[enfc_podf]        = imx_clk_divider("enfc_podf",        "enfc_pred",         base + 0x2c, 21, 6);
 	clks[emi_podf]         = imx_clk_divider("emi_podf",         "emi_sel",           base + 0x1c, 20, 3);
 	clks[emi_slow_podf]    = imx_clk_divider("emi_slow_podf",    "emi_slow_sel",      base + 0x1c, 23, 3);
@@ -469,6 +471,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 
 	clk_enable(clks[pll6_enet]);
 	clk_enable(clks[sata_ref_100m]);
+	clk_enable(clks[enfc_podf]);
 
 	return 0;
 }

@@ -1,0 +1,6 @@
+/{
+	aliases {
+		pwm0 = &pwm1;
+		pwm1 = &pwm2;
+	};
+};

@@ -320,6 +320,14 @@ static struct file_operations imx6_ocotp_ops = {
 	.lseek	= dev_lseek_default,
 };
 
+static uint32_t inc_offset(uint32_t offset)
+{
+	if ((offset & 0x3) == 0x3)
+		return offset + 0xd;
+	else
+		return offset + 1;
+}
+
 static void imx_ocotp_init_dt(struct device_d *dev, void __iomem *base)
 {
 	char mac[6];
@@ -336,21 +344,24 @@ static void imx_ocotp_init_dt(struct device_d *dev, void __iomem *base)
 
 	while (len >= MAC_ADDRESS_PROPLEN) {
 		struct device_node *rnode;
-		uint32_t phandle, offset, value;
+		uint32_t phandle, offset;
 
 		phandle = be32_to_cpup(prop++);
 
 		rnode = of_find_node_by_phandle(phandle);
 		offset = be32_to_cpup(prop++);
 
-		value = readl(base + offset + 0x10);
-		mac[0] = (value >> 8);
-		mac[1] = value;
-		value = readl(base + offset);
-		mac[2] = value >> 24;
-		mac[3] = value >> 16;
-		mac[4] = value >> 8;
-		mac[5] = value;
+		mac[5] = readb(base + offset);
+		offset = inc_offset(offset);
+		mac[4] = readb(base + offset);
+		offset = inc_offset(offset);
+		mac[3] = readb(base + offset);
+		offset = inc_offset(offset);
+		mac[2] = readb(base + offset);
+		offset = inc_offset(offset);
+		mac[1] = readb(base + offset);
+		offset = inc_offset(offset);
+		mac[0] = readb(base + offset);
 
 		of_eth_register_ethaddr(rnode, mac);
 
@@ -444,6 +455,8 @@ static int imx_ocotp_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-ocotp",
+	}, {
+		.compatible = "fsl,imx6sx-ocotp",
 	}, {
 		/* sentinel */
 	}

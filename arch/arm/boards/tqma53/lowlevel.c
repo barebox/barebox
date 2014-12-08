@@ -5,6 +5,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx5.h>
+#include <mach/generic.h>
 #include <image-metadata.h>
 
 extern char __dtb_imx53_mba53_start[];
@@ -41,7 +42,7 @@ ENTRY_FUNCTION(start_imx53_mba53_512mib, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx5_cpu_lowlevel_init();
 
 	arm_setup_stack(0xf8020000 - 8);
 
@@ -60,7 +61,7 @@ ENTRY_FUNCTION(start_imx53_mba53_1gib, r0, r1, r2)
 {
 	void *fdt;
 
-	arm_cpu_lowlevel_init();
+	imx5_cpu_lowlevel_init();
 
 	arm_setup_stack(0xf8020000 - 8);
 

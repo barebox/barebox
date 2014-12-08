@@ -324,7 +324,7 @@ static int imx_serial_probe(struct device_d *dev)
 	cdev = &priv->cdev;
 	dev->priv = priv;
 
-	priv->clk = clk_get(dev, NULL);
+	priv->clk = clk_get(dev, "per");
 	if (IS_ERR(priv->clk)) {
 		ret = PTR_ERR(priv->clk);
 		goto err_free;

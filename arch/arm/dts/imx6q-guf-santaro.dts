@@ -28,7 +28,7 @@
 
 		environment-emmc {
 			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
+			device-path = &usdhc4, "partname:boot1";
 		};
 	};
 
@@ -41,7 +41,7 @@
 		enable-active-high;
 	};
 
-	backlight {
+	backlight: backlight {
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_backlight>;
 		compatible = "pwm-backlight";
@@ -51,6 +51,24 @@
 		power-supply = <&reg_backlight>;
 		status = "okay";
 	};
+
+	phyclk: phyclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <25000000>;
+	};
+
+	panel {
+		compatible = "unknown,the-display-on-the-garz-fricke-santaro";
+		backlight = <&backlight>;
+		enable-gpios = <&gpio5 21 GPIO_ACTIVE_LOW>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
+	};
 };
 
 &fec {
@@ -58,6 +76,9 @@
 	pinctrl-0 = <&pinctrl_enet>;
 	phy-mode = "rmii";
 	status = "okay";
+	clocks = <&clks IMX6QDL_CLK_ENET>,
+		 <&clks IMX6QDL_CLK_ENET>,
+		 <&phyclk>;
 };
 
 &i2c1 {
@@ -195,7 +216,7 @@
 	status = "okay";
 
 	polytouch: edt-ft5x06@38 {
-		compatible = "edt,edt-ft5x06";
+		compatible = "edt,edt-ft5206";
 		reg = <0x38>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_touch>;
@@ -510,6 +531,13 @@
 				vsync-active = <1>;
 			};
 		};
+
+		port@4 {
+			reg = <4>;
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
 	};
 };
 
@@ -549,8 +577,8 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc2>;
 	bus-width = <4>;
-	cd-gpios = <&gpio2 2 0>;
-	wp-gpios = <&gpio2 3 0>;
+	cd-gpios = <&gpio1 4 0>;
+	wp-gpios = <&gpio1 2 0>;
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <1>;

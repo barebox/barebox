@@ -74,6 +74,11 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 
 	mvebu_set_memory(phys_base, phys_size);
 
+	/* Enable peripherals PUP */
+	reg = readl(ARMADA_XP_PUP_ENABLE_BASE);
+	reg |= GE0_PUP_EN | GE1_PUP_EN | LCD_PUP_EN | NAND_PUP_EN | SPI_PUP_EN;
+	writel(reg, ARMADA_XP_PUP_ENABLE_BASE);
+
 	return 0;
 }
 

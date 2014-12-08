@@ -138,6 +138,12 @@ config DRIVER_NET_MPC5200
 	depends on ARCH_MPC5200
 	select PHYLIB
 
+config DRIVER_NET_MVNETA
+	bool "Marvell NETA"
+	depends on ARCH_MVEBU
+	select PHYLIB
+	select MDIO_MVEBU
+
 config DRIVER_NET_NETX
 	bool "Hilscher Netx ethernet driver"
 	depends on HAS_NETX_ETHER

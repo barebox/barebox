@@ -19,6 +19,7 @@ obj-$(CONFIG_DRIVER_NET_KS8851_MLL)	+= ks8851_mll.o
 obj-$(CONFIG_DRIVER_NET_MACB)		+= macb.o
 obj-$(CONFIG_DRIVER_NET_MICREL)		+= ksz8864rmn.o
 obj-$(CONFIG_DRIVER_NET_MPC5200)	+= fec_mpc5200.o
+obj-$(CONFIG_DRIVER_NET_MVNETA)		+= mvneta.o
 obj-$(CONFIG_DRIVER_NET_NETX)		+= netx_eth.o
 obj-$(CONFIG_DRIVER_NET_ORION)		+= orion-gbe.o
 obj-$(CONFIG_DRIVER_NET_RTL8139)	+= rtl8139.o

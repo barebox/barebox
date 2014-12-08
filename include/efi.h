@@ -255,9 +255,11 @@ extern efi_boot_services_t *BS;
 /*
  * Types and defines for EFI ResetSystem
  */
-#define EFI_RESET_COLD 0
-#define EFI_RESET_WARM 1
-#define EFI_RESET_SHUTDOWN 2
+typedef enum {
+	EFI_RESET_COLD = 0,
+	EFI_RESET_WARM = 1,
+	EFI_RESET_SHUTDOWN = 2
+} efi_reset_type_t;
 
 /*
  * EFI Runtime Services table
@@ -279,7 +281,8 @@ typedef struct {
 			s16 *variable_name, efi_guid_t *vendor);
 	void *set_variable;
 	void *get_next_high_mono_count;
-	void *reset_system;
+	void (EFIAPI *reset_system)(efi_reset_type_t reset_type, efi_status_t reset_status,
+			unsigned long data_size, void *reset_data);
 	void *update_capsule;
 	void *query_capsule_caps;
 	void *query_variable_info;

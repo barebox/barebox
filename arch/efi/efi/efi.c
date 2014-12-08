@@ -248,7 +248,7 @@ console_initcall(efi_console_init);
 
 void reset_cpu(unsigned long addr)
 {
-	BS->exit(efi_parent_image, EFI_SUCCESS, 0, NULL);
+	RT->reset_system(EFI_RESET_WARM, EFI_SUCCESS, 0, NULL);
 
 	while(1);
 }

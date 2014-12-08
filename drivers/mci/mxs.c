@@ -53,10 +53,8 @@ struct mxs_mci_host {
 	void __iomem	*regs;
 	struct clk	*clk;
 	unsigned	clock;	/* current clock speed in Hz ("0" if disabled) */
-#ifdef CONFIG_MCI_INFO
 	unsigned	f_min;
 	unsigned	f_max;
-#endif
 	unsigned	bus_width:2; /* 0 = 1 bit, 1 = 4 bit, 2 = 8 bit */
 };
 

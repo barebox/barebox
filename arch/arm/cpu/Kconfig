@@ -42,7 +42,6 @@ config CPU_ARM926T
 # ARM946E-S
 config CPU_ARM946E
 	bool
-	depends on !MMU
 	select CPU_32v4T
 	help
 	  ARM946E-S is a member of the ARM9E-S family of high-

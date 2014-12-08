@@ -67,7 +67,7 @@ struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
 		int (*get)(struct param_d *p, void *priv),
 		u8 *mac, void *priv);
 
-int dev_add_param_fixed(struct device_d *dev, char *name, const char *value);
+int dev_add_param_fixed(struct device_d *dev, const char *name, const char *value);
 
 void dev_remove_param(struct param_d *p);
 
@@ -161,7 +161,7 @@ static inline struct param_d *dev_add_param_mac(struct device_d *dev, const char
 	return NULL;
 }
 
-static inline int dev_add_param_fixed(struct device_d *dev, char *name, char *value)
+static inline int dev_add_param_fixed(struct device_d *dev, const char *name, const char *value)
 {
 	return 0;
 }

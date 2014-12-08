@@ -45,7 +45,7 @@ static int ep93xx_mem_init(void)
 #endif
 #if (CONFIG_EP93XX_SDRAM_NUM_BANKS == 4)
 	arm_add_mem_device("ram3", CONFIG_EP93XX_SDRAM_BANK3_BASE,
-				   CONFIG_EP93XX_SDRAM_BANK2_SIZE);
+				   CONFIG_EP93XX_SDRAM_BANK3_SIZE);
 #endif
 
 	return 0;

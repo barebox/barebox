@@ -61,6 +61,7 @@ source fs/ubifs/Kconfig
 
 config FS_BPKFS
 	bool
+	select CRC32
 	prompt "BPKFS support"
 	help
 	  Simple update file format developed for Somfy, tools and library are

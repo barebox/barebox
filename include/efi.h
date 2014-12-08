@@ -468,6 +468,10 @@ extern efi_runtime_services_t *RT;
 #define EFI_VLANCONFIGDXE_INF_GUID \
 	EFI_GUID(0xe4f61863, 0xfe2c, 0x4b56, 0xa8, 0xf4, 0x08, 0x51, 0x9b, 0xc4, 0x39, 0xdf)
 
+/* barebox specific GUIDs */
+#define EFI_BAREBOX_VENDOR_GUID \
+	EFI_GUID(0x5b91f69c, 0x8b88, 0x4a2b, 0x92, 0x69, 0x5f, 0x1d, 0x80, 0x2b, 0x51, 0x75)
+
 extern efi_guid_t efi_file_info_id;
 extern efi_guid_t efi_simple_file_system_protocol_guid;
 extern efi_guid_t efi_device_path_protocol_guid;

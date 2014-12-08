@@ -155,6 +155,7 @@ value ``otg``. setting this to ``host`` or ``device`` puts the device in the cor
 mode. Once a specific mode has been selected it can't be changed later anymore.
 
 .. code-block:: sh
+
   barebox:/ devinfo otg0
   Parameters:
     mode: otg ("otg", "host", "peripheral")

@@ -4,6 +4,7 @@ obj-y			+= ctype.o
 obj-y			+= rbtree.o
 obj-y			+= display_options.o
 obj-y			+= string.o
+obj-y			+= strtox.o
 obj-y			+= vsprintf.o
 obj-y			+= div64.o
 obj-y			+= misc.o

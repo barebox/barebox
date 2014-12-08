@@ -35,7 +35,9 @@
 #include <mach/efi-device.h>
 
 struct efivarfs_inode {
-	char *name;
+	s16 *name;
+	efi_guid_t vendor;
+	char *full_name; /* name including vendor namespacing */
 	struct list_head node;
 };
 
@@ -225,7 +227,7 @@ static struct dirent *efivarfs_readdir(struct device_d *dev, DIR *dir)
 
 	inode = list_entry(edir->current, struct efivarfs_inode, node);
 
-	strcpy(dir->d.d_name, inode->name);
+	strcpy(dir->d.d_name, inode->full_name);
 
 	edir->current = edir->current->next;
 
@@ -271,8 +273,8 @@ static int efivarfs_probe(struct device_d *dev)
 	efi_status_t efiret;
 	efi_guid_t vendor;
 	s16 name[1024];
+	char *name8;
 	unsigned long size;
-	unsigned char *name8;
 	struct efivarfs_priv *priv;
 
 	name[0] = 0;
@@ -289,9 +291,12 @@ static int efivarfs_probe(struct device_d *dev)
 			break;
 
 		inode = xzalloc(sizeof(*inode));
-		name8 = strdup_wchar_to_char(name);
+		inode->name = strdup_wchar(name);
 
-		inode->name = asprintf("%s-%pUl", name8, &vendor);
+		inode->vendor = vendor;
+
+		name8 = strdup_wchar_to_char(inode->name);
+		inode->full_name = asprintf("%s-%pUl", name8, &vendor);
 		free(name8);
 
 		list_add_tail(&inode->node, &priv->inodes);

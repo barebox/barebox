@@ -51,6 +51,12 @@ static int mount_root(void)
 	mount("none", "ramfs", "/", NULL);
 	mkdir("/dev", 0);
 	mount("none", "devfs", "/dev", NULL);
+
+	if (IS_ENABLED(CONFIG_FS_EFIVARFS)) {
+		mkdir("/efivars", 0);
+		mount("none", "efivarfs", "/efivars", NULL);
+	}
+
 	return 0;
 }
 fs_initcall(mount_root);

@@ -23,3 +23,4 @@ bareboxstate
 bareboxstate-target
 mk-am35xx-spi-image
 mxsimage
+mxsboot

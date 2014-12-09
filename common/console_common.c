@@ -101,7 +101,7 @@ void pr_puts(int level, const char *str)
 {
 	struct log_entry *log;
 
-	if (IS_ENABLED(CONFIG_LOGBUF)) {
+	if (IS_ENABLED(CONFIG_LOGBUF) && mem_malloc_is_initialized()) {
 		if (barebox_log_max_messages > 0)
 			log_clean(barebox_log_max_messages - 1);
 

@@ -64,7 +64,7 @@ struct device_node *of_unflatten_dtb(const void *infdt)
 	struct device_node *root, *node = NULL;
 	struct property *p;
 	uint32_t dt_struct;
-	struct fdt_node_header *fnh;
+	const struct fdt_node_header *fnh;
 	void *dt_strings;
 	struct fdt_header f;
 	int ret;

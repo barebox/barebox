@@ -49,6 +49,13 @@ unsigned long mem_malloc_end(void)
 tlsf_pool tlsf_mem_pool;
 #endif
 
+int mem_malloc_initialized;
+
+int mem_malloc_is_initialized(void)
+{
+	return mem_malloc_initialized;
+}
+
 void mem_malloc_init(void *start, void *end)
 {
 	malloc_start = (unsigned long)start;
@@ -57,6 +64,7 @@ void mem_malloc_init(void *start, void *end)
 #ifdef CONFIG_MALLOC_TLSF
 	tlsf_mem_pool = tlsf_create(start, end - start + 1);
 #endif
+	mem_malloc_initialized = 1;
 }
 
 #if !defined __SANDBOX__ && !defined CONFIG_ARCH_EFI

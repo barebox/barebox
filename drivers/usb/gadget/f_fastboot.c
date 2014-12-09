@@ -653,7 +653,8 @@ static void do_bootm_on_complete(struct usb_ep *ep, struct usb_request *req)
 		pr_err("Booting failed\n");
 }
 
-static void cb_boot(struct usb_ep *ep, struct usb_request *req, const char *opt)
+static void __maybe_unused cb_boot(struct usb_ep *ep, struct usb_request *req,
+				   const char *opt)
 {
 	struct f_fastboot *f_fb = req->context;
 
@@ -857,9 +858,11 @@ static const struct cmd_dispatch_info cmd_dispatch_info[] = {
 	}, {
 		.cmd = "download:",
 		.cb = cb_download,
+#if defined(CONFIG_BOOTM)
 	}, {
 		.cmd = "boot",
 		.cb = cb_boot,
+#endif
 	}, {
 		.cmd = "flash:",
 		.cb = cb_flash,

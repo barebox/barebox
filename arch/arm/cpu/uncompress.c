@@ -17,6 +17,7 @@
  * GNU General Public License for more details.
  *
  */
+#define pr_fmt(fmt) "uncompress.c: " fmt
 
 #include <common.h>
 #include <init.h>
@@ -76,9 +77,12 @@ static void __noreturn noinline uncompress_start_payload(unsigned long membase,
 
 	setup_c();
 
+	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
+
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
 		endmem &= ~0x3fff;
 		endmem -= SZ_16K; /* ttb */
+		pr_debug("enabling MMU, ttb @ 0x%08x\n", endmem);
 		mmu_early_enable(membase, memsize, endmem);
 	}
 
@@ -93,6 +97,9 @@ static void __noreturn noinline uncompress_start_payload(unsigned long membase,
 	pg_start = image_end + 1;
 	pg_len = *(image_end);
 
+	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx\n",
+			pg_start, pg_len, barebox_base);
+
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 
 	arm_early_mmu_cache_flush();
@@ -102,6 +109,8 @@ static void __noreturn noinline uncompress_start_payload(unsigned long membase,
 		barebox = (void *)(barebox_base + 1);
 	else
 		barebox = (void *)barebox_base;
+
+	pr_debug("jumping to uncompressed image at 0x%p\n", barebox);
 
 	barebox(membase, memsize, boarddata);
 }

@@ -34,20 +34,9 @@ Build the binary image::
 
 **NOTE:** replace the armv5compiler with your ARM v5 cross compiler.
 
-**NOTE:** to use the result, you also need the following resources from Freescale:
+This produces the following images:
 
-  * the 'bootlets' archive
-  * the 'elftosb2' encryption tool
-  * in the case you want to start barebox from an attached SD card
-    the 'sdimage' tool from Freescale's 'uuc' archive.
+ * barebox-karo-tx28-bootstream.img - Use with the bcb command
+ * barebox-karo-tx28-sd.img - Use for SD cards
+ * barebox-karo-tx28-2nd.img - Use for 2nd stage booting (with bootm)
 
-Memory layout when barebox is running
--------------------------------------
-
-  * 0x40000000 start of SDRAM
-  * 0x40000100 start of kernel's boot parameters
-
-    * below malloc area: stack area
-    * below barebox: malloc area
-
-  * 0x47000000 start of barebox

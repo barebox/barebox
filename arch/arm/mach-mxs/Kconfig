@@ -59,6 +59,8 @@ choice
 
 config MACH_TX28
 	bool "KARO tx28"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the KARO TX28 CPU module.
 

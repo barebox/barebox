@@ -15,7 +15,7 @@
 	compatible = "phytec,phycore-am335x-som", "ti,am33xx";
 };
 
-/* Keep all boosources disabled, we enable and register them
+/* Keep all bootsources disabled, we enable and register them
  * later while booting.
  */
 

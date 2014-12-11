@@ -271,11 +271,6 @@ static struct omap_i2c_driver_data am33xx_data = {
 	.fclk_rate =	48000,
 };
 
-static struct omap_i2c_driver_data omap4_of_data = {
-	.flags =	OMAP_I2C_FLAG_BUS_SHIFT_NONE,
-	.fclk_rate =	0,
-};
-
 static inline void omap_i2c_write_reg(struct omap_i2c_struct *i2c_omap,
 				      int reg, u16 val)
 {
@@ -1011,6 +1006,11 @@ i2c_omap_probe(struct device_d *pdev)
 	if (r)
 		return r;
 
+	if (of_machine_is_compatible("ti,am33xx"))
+		i2c_data = &am33xx_data;
+	if (of_machine_is_compatible("ti,omap4"))
+		i2c_data = &omap4_data;
+
 	i2c_omap->data = i2c_data;
 	i2c_omap->reg_shift = (i2c_data->flags >>
 					OMAP_I2C_FLAG_BUS_SHIFT__SHIFT) & 3;
@@ -1140,7 +1140,6 @@ static __maybe_unused struct of_device_id omap_i2c_dt_ids[] = {
 		.data = (unsigned long)&omap3_data,
 	}, {
 		.compatible = "ti,omap4-i2c",
-		.data = (unsigned long)&omap4_of_data,
 	}, {
 		/* sentinel */
 	}

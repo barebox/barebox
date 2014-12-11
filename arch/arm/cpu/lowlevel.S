@@ -4,7 +4,6 @@
 
 .section ".text_bare_init_","ax"
 ENTRY(arm_cpu_lowlevel_init)
-	mov	r2, lr
 	/* set the cpu to SVC32 mode, mask irq and fiq */
 	mrs	r12, cpsr
 	bic	r12, r12, #0x1f
@@ -55,5 +54,5 @@ ENTRY(arm_cpu_lowlevel_init)
 
 	mcr	p15, 0, r12, c1, c0, 0		/* SCTLR */
 
-	mov	pc, r2
+	mov	pc, lr
 ENDPROC(arm_cpu_lowlevel_init)

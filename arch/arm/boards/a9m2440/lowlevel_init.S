@@ -84,7 +84,7 @@ SDRAMDATA:
 	/*
 	 *  - MT = 11 (= sync dram type)
 	 *  - Trcd = 01 (= CL3)
-	 *  - SCAN = 00 (= 8 bit collumns)
+	 *  - SCAN = 00 (= 8 bit columns)
 	 */
 	.word ((0x3 << 15) + (0x1 << 2) + (0x0))
 	.word ((0x3 << 15) + (0x1 << 2) + (0x0))
@@ -117,7 +117,7 @@ SDRAMDATA:
 	/*
 	 *  - MT = 11 (= sync dram type)
 	 *  - Trcd = 00 (= CL2)
-	 *  - SCAN = 01 (= 9 bit collumns)
+	 *  - SCAN = 01 (= 9 bit columns)
 	 */
 	.word ((0x3 << 15) + (0x0 << 2) + (0x1))
 	.word ((0x3 << 15) + (0x0 << 2) + (0x1))
@@ -150,7 +150,7 @@ SDRAMDATA:
 	/*
 	 *  - MT = 11 (= sync dram type)
 	 *  - Trcd = 00 (= CL2)
-	 *  - SCAN = 01 (= 9 bit collumns)
+	 *  - SCAN = 01 (= 9 bit columns)
 	 */
 	.word ((0x3 << 15) + (0x0 << 2) + (0x1))
 	.word ((0x3 << 15) + (0x0 << 2) + (0x1))
@@ -183,7 +183,7 @@ SDRAMDATA:
 	/*
 	 *  - MT = 11 (= sync dram type)
 	 *  - Trcd = 00 (= CL2)
-	 *  - SCAN = 01 (= 9 bit collumns)
+	 *  - SCAN = 01 (= 9 bit columns)
 	 */
 	.word ((0x3 << 15) + (0x0 << 2) + (0x1))
 	.word ((0x3 << 15) + (0x0 << 2) + (0x1))

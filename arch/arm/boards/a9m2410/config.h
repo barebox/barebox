@@ -58,7 +58,7 @@
  * 32MiB SDRAM in bank6
  *  - MT = 11 (= sync dram type)
  *  - Trcd = 00 (= CL2)
- *  - SCAN = 01 (= 9 bit collumns)
+ *  - SCAN = 01 (= 9 bit columns)
  */
 #define BOARD_SPECIFIC_BANKCON6 ((0x3 << 15) + (0x0 << 2) + 0x1)
 /*

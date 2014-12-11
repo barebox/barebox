@@ -516,12 +516,12 @@ static void __nand_boot_init wait_for_completion(void __iomem *host)
  *
  * Uses the offset of the page to generate an page address into the NAND. This
  * differs when using a 512 byte or 2048 bytes per page NAND.
- * The collumn part of the page address to be generated is always forced to '0'.
+ * The column part of the page address to be generated is always forced to '0'.
  */
 static void __nand_boot_init nfc_addr(void __iomem *host, uint32_t offs,
 					int ps, int c)
 {
-	send_addr(host, 0); /* collumn part 1 */
+	send_addr(host, 0); /* column part 1 */
 
 	if (ps == 512) {
 		send_addr(host, offs >> 9);
@@ -529,7 +529,7 @@ static void __nand_boot_init nfc_addr(void __iomem *host, uint32_t offs,
 		if (c > 3)
 			send_addr(host, offs >> 25);
 	} else {
-		send_addr(host, 0); /* collumn part 2 */
+		send_addr(host, 0); /* column part 2 */
 		send_addr(host, offs >> 11);
 		send_addr(host, offs >> 19);
 		if (c > 4)

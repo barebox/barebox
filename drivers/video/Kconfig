@@ -108,4 +108,13 @@ config DRIVER_VIDEO_BACKLIGHT_PWM
 	help
 	  Enable this to get support for backlight devices driven by a PWM.
 
+comment "Video encoder chips"
+
+config DRIVER_VIDEO_MTL017
+	bool "MTL017 LVDS encoder"
+	select VIDEO_VPL
+	help
+	  The MTL017 is a parallel to lvds video encoder chip found on the
+	  Efika MX Smartbook.
+
 endif

@@ -99,6 +99,7 @@ struct display_timings {
 
 	unsigned int num_modes;
 	struct fb_videomode *modes;
+	void *edid;
 };
 
 struct i2c_adapter;

@@ -5,6 +5,9 @@ menuconfig VIDEO
 
 if VIDEO
 
+config VIDEO_VPL
+	bool
+
 config DRIVER_VIDEO_ATMEL
 	bool "Atmel LCDC framebuffer driver"
 	depends on ARCH_AT91

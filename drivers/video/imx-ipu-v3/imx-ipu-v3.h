@@ -44,7 +44,6 @@ struct ipu_di_signal_cfg {
 
 	u16 width;
 	u16 height;
-	u32 pixel_fmt;
 	u16 h_start_width;
 	u16 h_sync_width;
 	u16 h_end_width;

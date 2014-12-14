@@ -115,7 +115,6 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	sig_cfg.clk_pol = 1;
 	sig_cfg.width = mode->xres;
 	sig_cfg.height = mode->yres;
-	sig_cfg.pixel_fmt = out_pixel_fmt;
 	sig_cfg.h_start_width = mode->left_margin;
 	sig_cfg.h_sync_width = mode->hsync_len;
 	sig_cfg.h_end_width = mode->right_margin;

@@ -61,15 +61,15 @@ Network console
 barebox has a UDP-based network console. If enabled in the config, you will see
 something like this during startup::
 
-  registered netconsole as cs1
+  registered netconsole as netconsole
 
 By default the network console is disabled during runtime to prevent security
 risks. It can be enabled using:
 
 .. code-block:: sh
 
-  cs1.ip=192.168.23.2
-  cs1.active=ioe
+  netconsole.ip=192.168.23.2
+  netconsole.active=ioe
 
 This will send UDP packets to 192.168.23.2 on port 6666. On 192.168.23.2 the
 scripts/netconsole script can be used to control barebox:

@@ -117,4 +117,13 @@ config DRIVER_VIDEO_MTL017
 	  The MTL017 is a parallel to lvds video encoder chip found on the
 	  Efika MX Smartbook.
 
+config DRIVER_VIDEO_SIMPLE_PANEL
+	bool "Simple panel support"
+	select VIDEO_VPL
+	help
+	  This enabled support for simple panels, i.e. panels which consist of
+	  a mode definition and enable gpios in the devicetree. Unlike the
+	  Linux Kernel implementation this one is able to understand display-timings
+	  nodes so that it's not necessary to keep a list of all known displays
+	  with their corresponding timings in barebox.
 endif

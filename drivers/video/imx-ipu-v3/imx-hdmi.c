@@ -23,6 +23,7 @@
 #include <asm-generic/div64.h>
 #include <linux/clk.h>
 #include <i2c/i2c.h>
+#include <video/vpl.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx53-regs.h>
 
@@ -133,13 +134,13 @@ struct imx_hdmi {
 	bool phy_enabled;
 
 	struct regmap *regmap;
-	struct i2c_adapter *ddc;
+	struct device_node *ddc_node;;
 	void __iomem *regs;
 
 	unsigned int sample_rate;
 	int ratio;
 
-	struct ipu_output output;
+	struct vpl vpl;
 };
 
 static void imx_hdmi_set_ipu_di_mux(struct imx_hdmi *hdmi, int ipu_di)
@@ -1011,7 +1012,7 @@ static void imx_hdmi_clear_overflow(struct imx_hdmi *hdmi)
 		hdmi_writeb(hdmi, val, HDMI_FC_INVIDCONF);
 }
 
-static int imx_hdmi_setup(struct imx_hdmi *hdmi, struct fb_videomode *mode)
+static int imx_hdmi_setup(struct imx_hdmi *hdmi)
 {
 	int ret;
 
@@ -1134,43 +1135,58 @@ static struct of_device_id imx_hdmi_dt_ids[] = {
 	}
 };
 
-static int imx_hdmi_prepare(struct ipu_output *output, struct fb_videomode *mode, int di)
+static int imx_hdmi_get_modes(struct imx_hdmi *hdmi, struct display_timings *timings)
 {
-	struct imx_hdmi *hdmi = container_of(output, struct imx_hdmi, output);
+	int ret = -ENOENT;
 
-	imx_hdmi_set_ipu_di_mux(hdmi, di);
+	if (hdmi->ddc_node) {
+		struct i2c_adapter *i2c;
+
+                i2c = of_find_i2c_adapter_by_node(hdmi->ddc_node);
+		if (!i2c)
+			return -ENODEV;
+		timings->edid = edid_read_i2c(i2c);
+		if (!timings->edid)
+			return -EINVAL;
+
+		ret = edid_to_display_timings(timings, timings->edid);
+	}
+
+	return ret;
+}
+
+static int imx_hdmi_ioctl(struct vpl *vpl, unsigned int port,
+		unsigned int cmd, void *data)
+{
+	struct imx_hdmi *hdmi = container_of(vpl, struct imx_hdmi, vpl);
+	struct ipu_di_mode *mode;
+
+	switch (cmd) {
+	case VPL_ENABLE:
+		return imx_hdmi_setup(hdmi);
+	case VPL_DISABLE:
+		imx_hdmi_phy_disable(hdmi);
+		return 0;
+	case VPL_PREPARE:
+		imx_hdmi_set_ipu_di_mux(hdmi, port);
+		return 0;
+	case VPL_GET_VIDEOMODES:
+		return imx_hdmi_get_modes(hdmi, data);
+	case IMX_IPU_VPL_DI_MODE:
+		mode = data;
+
+		mode->di_clkflags = IPU_DI_CLKMODE_EXT | IPU_DI_CLKMODE_SYNC;
+		mode->interface_pix_fmt = V4L2_PIX_FMT_RGB24;
+
+		return 0;
+	}
 
 	return 0;
 }
-
-static int imx_hdmi_commit(struct ipu_output *output, struct fb_videomode *mode, int di)
-{
-	struct imx_hdmi *hdmi = container_of(output, struct imx_hdmi, output);
-
-	imx_hdmi_setup(hdmi, mode);
-
-	return 0;
-}
-
-static int imx_hdmi_disable(struct ipu_output *output)
-{
-	struct imx_hdmi *hdmi = container_of(output, struct imx_hdmi, output);
-
-	imx_hdmi_phy_disable(hdmi);
-
-	return 0;
-}
-
-static struct ipu_output_ops imx_hdmi_ops = {
-	.prepare = imx_hdmi_prepare,
-	.enable = imx_hdmi_commit,
-	.disable = imx_hdmi_disable,
-};
 
 static int imx_hdmi_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
-	struct device_node *ddc_node;
 	struct imx_hdmi *hdmi;
 	int ret;
 	const struct imx_hdmi_data *devtype;
@@ -1190,18 +1206,7 @@ static int imx_hdmi_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EDID)) {
-		ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
-		if (ddc_node) {
-			hdmi->ddc = of_find_i2c_adapter_by_node(ddc_node);
-			if (!hdmi->ddc)
-				dev_dbg(hdmi->dev, "failed to read ddc node\n");
-		} else {
-			dev_dbg(hdmi->dev, "no ddc property found\n");
-		}
-
-		ddc_node = NULL;
-	}
+	hdmi->ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
 
 	hdmi->regs = dev_request_mem_region(dev, 0);
 	if (!hdmi->regs)
@@ -1269,15 +1274,11 @@ static int imx_hdmi_probe(struct device_d *dev)
 	/* Unmute interrupts */
 	hdmi_writeb(hdmi, ~HDMI_IH_PHY_STAT0_HPD, HDMI_IH_MUTE_PHY_STAT0);
 
-	hdmi->output.ops = &imx_hdmi_ops;
-	hdmi->output.di_clkflags = IPU_DI_CLKMODE_EXT | IPU_DI_CLKMODE_SYNC;
-	hdmi->output.out_pixel_fmt = V4L2_PIX_FMT_RGB24;
-	hdmi->output.name = asprintf("hdmi-0");
-	hdmi->output.ipu_mask = devtype->ipu_mask;
-	hdmi->output.edid_i2c_adapter = hdmi->ddc;
-	hdmi->output.modes = of_get_display_timings(np);
-
-	ipu_register_output(&hdmi->output);
+	hdmi->vpl.node = np;
+	hdmi->vpl.ioctl = imx_hdmi_ioctl;
+	ret = vpl_register(&hdmi->vpl);
+	if (ret)
+		return ret;
 
 	return 0;
 

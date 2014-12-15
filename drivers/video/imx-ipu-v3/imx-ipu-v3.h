@@ -14,6 +14,7 @@
 
 #include <io.h>
 #include <fb.h>
+#include <video/vpl.h>
 #include <video/fourcc.h>
 
 struct ipu_soc;
@@ -318,26 +319,11 @@ struct ipu_client_platformdata {
 	struct device_node *device_node;
 };
 
-struct ipu_output;
-
-struct ipu_output_ops {
-	int (*prepare)(struct ipu_output *ipu_video_output, struct fb_videomode *mode, int di);
-	int (*enable)(struct ipu_output *ipu_video_output, struct fb_videomode *mode, int di);
-	int (*disable)(struct ipu_output *ipu_video_output);
-	int (*unprepare)(struct ipu_output *ipu_video_output);
+struct ipu_di_mode {
+	u32 di_clkflags;
+	u32 interface_pix_fmt;
 };
 
-struct ipu_output {
-	struct ipu_output_ops *ops;
-	struct list_head list;
-	unsigned int di_clkflags;
-	uint32_t out_pixel_fmt;
-	struct i2c_adapter *edid_i2c_adapter;
-	struct display_timings *modes;
-	char *name;
-	int ipu_mask;
-};
-
-int ipu_register_output(struct ipu_output *ouput);
+#define IMX_IPU_VPL_DI_MODE	0x12660001
 
 #endif /* __DRM_IPU_H__ */

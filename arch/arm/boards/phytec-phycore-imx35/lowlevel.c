@@ -49,6 +49,8 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 	arm_cpu_lowlevel_init();
 
+	arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
+
 	r = get_cr();
 	r |= CR_Z; /* Flow prediction (Z) */
 	r |= CR_U; /* unaligned accesses  */
@@ -188,9 +190,6 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 		r &= ~(0xf << 28);
 		r |= 0x1 << 28;
 		writel(r, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
-
-		/* setup a stack to be able to call imx35_barebox_boot_nand_external() */
-		arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
 
 		imx35_barebox_boot_nand_external(0);
 	}

@@ -313,9 +313,6 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 		r0 |= 0x1 << 28;
 		writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
 
-		/* setup a stack to be able to call imx35_barebox_boot_nand_external() */
-		arm_setup_stack(MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 8);
-
 		imx35_barebox_boot_nand_external(0);
 	}
 

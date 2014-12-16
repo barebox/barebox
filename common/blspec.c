@@ -278,6 +278,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 
 	fdt = read_file(filename, &size);
 	if (!fdt) {
+		pr_err("Cannot read: %s\n", filename);
 		ret = false;
 		goto out;
 	}

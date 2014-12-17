@@ -64,6 +64,7 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	struct console_device *cdev = to_console_dev(dev);
 	char active[4];
 	unsigned int flag = 0, i = 0;
+	int ret;
 
 	if (val) {
 		if (strchr(val, 'i') && cdev->getc) {
@@ -88,6 +89,12 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 		/* The device is being activated, set its baudrate */
 		if (cdev->setbrg)
 			cdev->setbrg(cdev, cdev->baudrate);
+	}
+
+	if (cdev->set_active) {
+		ret = cdev->set_active(cdev, flag);
+		if (ret)
+			return ret;
 	}
 
 	active[i] = 0;

@@ -22,6 +22,13 @@
 #include <getopt.h>
 #include <malloc.h>
 #include <fs.h>
+
+#ifndef CONFIG_CMD_IMD
+int imd_command_setenv(const char *variable_name, const char *value)
+{
+	return -ENOSYS;
+}
+#endif
 #endif
 
 /*

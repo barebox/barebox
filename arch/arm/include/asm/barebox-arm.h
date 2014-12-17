@@ -27,6 +27,8 @@
 
 #include <sizes.h>
 #include <asm-generic/memory_layout.h>
+#include <linux/kernel.h>
+#include <linux/types.h>
 
 /* cpu/.../cpu.c */
 int	cleanup_before_linux(void);

@@ -104,7 +104,7 @@ void set_pixel(struct fb_info *info, void *adr, u32 px)
 	case 8:
 		break;
 	case 16:
-		*(u16 *)adr = px;
+		*(u16 *)adr = px & 0xffff;
 		break;
 	case 32:
 		*(u32 *)adr = px;

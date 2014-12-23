@@ -11,6 +11,7 @@ config MACH_VERSATILEPB
 	bool "ARM Versatile/PB (ARM926EJ-S)"
 	select ARM_AMBA
 	select CLKDEV_LOOKUP
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 endchoice
 

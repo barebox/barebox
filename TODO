@@ -4,7 +4,6 @@ TODO
 [ ] ask jbe about:
     ./commands/Makefile:40:obj-$(CONFIG_SIMPLE_PARSER)      += setenv.o
 [ ] bark on partition not ending on flash sector boundaries
-[ ] distclean doesn't work without a config
 [ ] Every driver should have a remove function.
     (It must have. Currently there is no provision to given to remove my
     interrupt handlers and to reset all hardware in use, before the target
@@ -108,3 +107,4 @@ DONE
     countdown -m msg -t timeout -x [ctrl-c|anykey|string]
     If done, remove the corresponding stuff from common/main.c
 [X] Board support should go to arch/*/boards/*
+[X] distclean doesn't work without a config

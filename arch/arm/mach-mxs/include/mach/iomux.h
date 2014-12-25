@@ -97,7 +97,7 @@
  * .. PORTF(1, 15). So the PORTF macro is more ugly than necessary.
  */
 # define PORTF(bank,bit)	(BANK((bank) / 2) | BANKPIN((((bank) & 1) << 4) | (bit)) | ERROR((bit) & ~15) | ERROR((bank) & ~7))
-# define VE_2_5V		VOLTAGE(1)
+# define VE_2_5V		VOLTAGE(0)
 # include <mach/iomux-imx23.h>
 #endif
 

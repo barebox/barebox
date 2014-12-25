@@ -31,3 +31,13 @@ FILE_barebox-karo-tx28-sd.img = start_barebox_karo_tx28.mxsbs.mxssd
 image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-sd.img
 FILE_barebox-karo-tx28-2nd.img = start_barebox_karo_tx28.pblx
 image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-2nd.img
+
+pblx-$(CONFIG_MACH_IMX233_OLINUXINO) += start_barebox_olinuxino_imx23 prep_start_barebox_olinuxino_imx23
+PREP_start_barebox_olinuxino_imx23.pblx.mxsbs = start_barebox_olinuxino_imx23_prep;
+CFG_start_barebox_olinuxino_imx23.mxsbs = $(mxs23cfg)
+FILE_barebox-olinuxino-imx23-bootstream.img = start_barebox_olinuxino_imx23.mxsbs
+image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-bootstream.img
+FILE_barebox-olinuxino-imx23-sd.img = start_barebox_olinuxino_imx23.mxsbs.mxssd
+image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-sd.img
+FILE_barebox-olinuxino-imx23-2nd.img = start_barebox_olinuxino_imx23.pblx
+image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-2nd.img

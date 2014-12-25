@@ -45,6 +45,8 @@ config MACH_CHUMBY
 
 config MACH_IMX233_OLINUXINO
 	bool "Olimex.ltd imx223-olinuxino"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the imx233-olinuxino
 

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+mkdir -p /mnt/sd-boot
+automount -d /mnt/sd-boot 'detect mci0 && [ -e /dev/disk0.1 ] && mount /dev/disk0.1 /mnt/sd-boot'

@@ -65,6 +65,7 @@ static struct gpio_led led1 = {
 static int imx23_olinuxino_devices_init(void)
 {
 	armlinux_set_architecture(MACH_TYPE_IMX233_OLINUXINO);
+	defaultenv_append_directory(defaultenv_imx233_olinuxino);
 
 	led_gpio_register(&led1);
 	led_set_trigger(LED_TRIGGER_HEARTBEAT, &led1.led);

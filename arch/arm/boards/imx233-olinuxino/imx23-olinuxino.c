@@ -20,6 +20,7 @@
 #include <common.h>
 #include <init.h>
 #include <gpio.h>
+#include <led.h>
 #include <environment.h>
 #include <envfs.h>
 #include <errno.h>
@@ -54,9 +55,19 @@ static void olinuxino_init_usb(void)
 	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, IMX_USB_BASE, NULL);
 }
 
+static struct gpio_led led1 = {
+	.gpio = 65,
+	.led = {
+		.name = "led1",
+	}
+};
+
 static int imx23_olinuxino_devices_init(void)
 {
 	armlinux_set_architecture(MACH_TYPE_IMX233_OLINUXINO);
+
+	led_gpio_register(&led1);
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &led1.led);
 
 	add_generic_device("mxs_mci", DEVICE_ID_DYNAMIC, NULL, IMX_SSP1_BASE,
 					0x8000, IORESOURCE_MEM, &mci_pdata);

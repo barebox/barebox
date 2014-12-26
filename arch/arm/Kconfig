@@ -191,6 +191,7 @@ config ARCH_VERSATILE
 	select CPU_ARM926T
 	select GPIOLIB
 	select HAVE_CLK
+	select HAS_DEBUG_LL
 
 config ARCH_VEXPRESS
 	bool "ARM Vexpres boards"

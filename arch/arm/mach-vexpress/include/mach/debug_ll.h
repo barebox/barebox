@@ -14,20 +14,11 @@
 #define DEBUG_LL_PHYS_BASE_RS1		0x1c000000
 
 #ifdef MP
-#define UART_BASE DEBUG_LL_PHYS_BASE
+#define DEBUG_LL_UART_ADDR DEBUG_LL_PHYS_BASE
 #else
-#define UART_BASE DEBUG_LL_PHYS_BASE_RS1
+#define DEBUG_LL_UART_ADDR DEBUG_LL_PHYS_BASE_RS1
 #endif
 
-static inline void PUTC_LL(char c)
-{
-	/* Wait until there is space in the FIFO */
-	while (readl(UART_BASE + UART01x_FR) & UART01x_FR_TXFF);
+#include <asm/debug_ll_pl011.h>
 
-	/* Send the character */
-	writel(c, UART_BASE + UART01x_DR);
-
-	/* Wait to make sure it hits the line, in case we die too soon. */
-	while (readl(UART_BASE + UART01x_FR) & UART01x_FR_TXFF);
-}
 #endif

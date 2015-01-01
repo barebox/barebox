@@ -582,6 +582,43 @@ static inline void SMC_SELECT_BANK(struct smc91c111_priv *p, int bank)
 	SMC_outw(p, bank, BANK_SELECT);
 }
 
+#if SMC_DEBUG > 2
+static void print_packet( unsigned char * buf, int length )
+{
+	int i;
+	int remainder;
+	int lines;
+
+	printf("Packet of length %d \n", length );
+
+#if SMC_DEBUG > 3
+	lines = length / 16;
+	remainder = length % 16;
+
+	for ( i = 0; i < lines ; i ++ ) {
+		int cur;
+
+		for ( cur = 0; cur < 8; cur ++ ) {
+			unsigned char a, b;
+
+			a = *(buf ++ );
+			b = *(buf ++ );
+			printf("%02x%02x ", a, b );
+		}
+		printf("\n");
+	}
+	for ( i = 0; i < remainder/2 ; i++ ) {
+		unsigned char a, b;
+
+		a = *(buf ++ );
+		b = *(buf ++ );
+		printf("%02x%02x ", a, b );
+	}
+	printf("\n");
+#endif
+}
+#endif
+
 /* note: timeout in seconds */
 static int poll4int(struct smc91c111_priv *priv, unsigned char mask,
 			int timeout)
@@ -1252,44 +1289,6 @@ static void smc_dump_mii_stream (unsigned char * bits, int size)
 	}
 
 	printf ("\n");
-}
-#endif
-
-
-#if SMC_DEBUG > 2
-static void print_packet( unsigned char * buf, int length )
-{
-	int i;
-	int remainder;
-	int lines;
-
-	printf("Packet of length %d \n", length );
-
-#if SMC_DEBUG > 3
-	lines = length / 16;
-	remainder = length % 16;
-
-	for ( i = 0; i < lines ; i ++ ) {
-		int cur;
-
-		for ( cur = 0; cur < 8; cur ++ ) {
-			unsigned char a, b;
-
-			a = *(buf ++ );
-			b = *(buf ++ );
-			printf("%02x%02x ", a, b );
-		}
-		printf("\n");
-	}
-	for ( i = 0; i < remainder/2 ; i++ ) {
-		unsigned char a, b;
-
-		a = *(buf ++ );
-		b = *(buf ++ );
-		printf("%02x%02x ", a, b );
-	}
-	printf("\n");
-#endif
 }
 #endif
 

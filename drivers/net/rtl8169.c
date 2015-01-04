@@ -50,11 +50,11 @@ struct rtl8169_priv {
 	struct pci_dev		*pci_dev;
 	int			chipset;
 
-	struct bufdesc		*tx_desc;
+	volatile struct bufdesc	*tx_desc;
 	void			*tx_buf;
 	unsigned int		cur_tx;
 
-	struct bufdesc		*rx_desc;
+	volatile struct bufdesc	*rx_desc;
 	void			*rx_buf;
 	unsigned int		cur_rx;
 
@@ -250,10 +250,6 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 		priv->rx_desc[i].buf_addr =
 				virt_to_phys(priv->rx_buf + i * PKT_BUF_SIZE);
 	}
-
-	dma_flush_range((unsigned long)priv->rx_desc,
-			(unsigned long)priv->rx_desc +
-			NUM_RX_DESC * sizeof(struct bufdesc));
 }
 
 static void rtl8169_hw_start(struct rtl8169_priv *priv)
@@ -386,14 +382,10 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 			((packet_length > ETH_ZLEN) ? packet_length : ETH_ZLEN);
 	}
 
-	dma_flush_range((unsigned long)&priv->tx_desc[entry],
-			(unsigned long)&priv->tx_desc[entry + 1]);
-
 	RTL_W8(priv, TxPoll, 0x40);
-	do {
-		dma_inv_range((unsigned long)&priv->tx_desc[entry],
-		              (unsigned long)&priv->tx_desc[entry + 1]);
-	} while (priv->tx_desc[entry].status & BD_STAT_OWN);
+
+	while (priv->tx_desc[entry].status & BD_STAT_OWN)
+		;
 
 	priv->cur_tx++;
 
@@ -407,9 +399,6 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 	u8 status;
 
 	entry = priv->cur_rx % NUM_RX_DESC;
-
-	dma_inv_range((unsigned long)&priv->rx_desc[entry],
-	              (unsigned long)&priv->rx_desc[entry + 1]);
 
 	if ((priv->rx_desc[entry].status & BD_STAT_OWN) == 0) {
 		if (!(priv->rx_desc[entry].status & BD_STAT_RX_RES)) {
@@ -441,9 +430,6 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 			priv->rx_desc[entry].buf_addr =
 				virt_to_phys(priv->rx_buf +
 				             entry * PKT_BUF_SIZE);
-
-			dma_flush_range((unsigned long)&priv->rx_desc[entry],
-			                (unsigned long)&priv->rx_desc[entry + 1]);
 		} else {
 			dev_err(&edev->dev, "rx error\n");
 		}

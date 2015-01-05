@@ -22,6 +22,7 @@
 #include <common.h>
 #include <init.h>
 #include <asm/armlinux.h>
+#include <asm/system_info.h>
 #include <generated/mach-types.h>
 #include <mach/init.h>
 #include <mach/platform.h>
@@ -32,7 +33,19 @@
 
 static int vpb_console_init(void)
 {
-	barebox_set_hostname("versatilepb");
+	char *hostname = "versatilepb-unknown";
+	char *model = "ARM Versatile PB";
+
+	if (cpu_is_arm926()) {
+		hostname = "versatilepb-arm926";
+		model = "ARM Versatile PB (arm926)";
+	} else if (cpu_is_arm1176()) {
+		hostname = "versatilepb-arm1176";
+		model = "ARM Versatile PB (arm1176)";
+	}
+
+	barebox_set_hostname(hostname);
+	barebox_set_model(model);
 
 	versatile_register_uart(0);
 	return 0;

@@ -18,6 +18,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <linux/clk.h>
+#include <linux/mtd/nand.h>
 #include <mach/at91_rstc.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/board.h>
@@ -33,6 +34,7 @@ static struct atmel_nand_data nand_pdata = {
 	.det_pin	= -EINVAL,
 	.rdy_pin	= AT91_PIN_PC13,
 	.enable_pin	= AT91_PIN_PC14,
+	.ecc_mode	= NAND_ECC_SOFT,
 	.on_flash_bbt	= 1,
 };
 

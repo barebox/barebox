@@ -92,6 +92,9 @@ static int beaglebone_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_BEAGLEBONE);
 
+	if (IS_ENABLED(CONFIG_SHELL_NONE))
+		return am33xx_of_register_bootdevice();
+
 	return 0;
 }
 coredevice_initcall(beaglebone_devices_init);

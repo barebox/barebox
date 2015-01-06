@@ -1,9 +1,25 @@
 /dts-v1/;
 
+/*
+ * DTS for the beaglebone white/black MLO
+ *
+ * Only contains the common parts of both boards which is
+ * all we need for the MLO
+ */
+
 #include "am33xx.dtsi"
 #include "am335x-bone-common.dtsi"
 
 / {
 	model = "TI AM335x BeagleBone";
 	compatible = "ti,am335x-bone", "ti,am33xx";
+};
+
+&mmc2 {
+	vmmc-supply = <&vmmcsd_fixed>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_pins>;
+	bus-width = <8>;
+	status = "disabled"; /* only present on beaglebone black, enabled during runtime */
+	ti,vcc-aux-disable-is-sleep;
 };

@@ -206,6 +206,14 @@ void *dev_get_mem_region(struct device_d *dev, int num);
  */
 void __iomem *dev_request_mem_region(struct device_d *dev, int num);
 
+/*
+ * exlusively request register base 'num' for a device
+ * will return NULL on error
+ * only used on platform like at91 where the Ressource address collision with
+ * PTR errno
+ */
+void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num);
+
 struct device_d *device_alloc(const char *devname, int id);
 
 int device_add_resources(struct device_d *dev, const struct resource *res, int num);

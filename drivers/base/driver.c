@@ -318,6 +318,22 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 }
 EXPORT_SYMBOL(dev_request_mem_region_by_name);
 
+void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num)
+{
+	struct resource *res;
+
+	res = dev_get_resource(dev, IORESOURCE_MEM, num);
+	if (IS_ERR(res))
+		return NULL;
+
+	res = request_iomem_region(dev_name(dev), res->start, res->end);
+	if (IS_ERR(res))
+		return NULL;
+
+	return (void __force __iomem *)res->start;
+}
+EXPORT_SYMBOL(dev_request_mem_region_err_null);
+
 void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 {
 	struct resource *res;

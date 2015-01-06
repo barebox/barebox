@@ -398,9 +398,9 @@ static int atmel_serial_init_port(struct console_device *cdev)
 	struct device_d *dev = cdev->dev;
 	struct atmel_uart_port *uart = to_atmel_uart_port(cdev);
 
-	uart->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(uart->base))
-		return PTR_ERR(uart->base);
+	uart->base = dev_request_mem_region_err_null(dev, 0);
+	if (!uart->base)
+		return -ENOENT;
 
 	uart->clk = clk_get(dev, "usart");
 	clk_enable(uart->clk);

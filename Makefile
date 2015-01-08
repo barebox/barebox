@@ -961,7 +961,7 @@ CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
 
 # Directories & files removed with 'make mrproper'
 MRPROPER_DIRS  += include/config usr/include include/generated
-MRPROPER_FILES += .config .config.old include/asm .version .old_version \
+MRPROPER_FILES += .config .config.old .version .old_version \
                   include/config.h           \
 		  Module.symvers tags TAGS cscope*
 

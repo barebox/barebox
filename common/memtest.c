@@ -24,7 +24,7 @@
 #include <common.h>
 #include <memory.h>
 #include <types.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <errno.h>
 #include <memtest.h>
 

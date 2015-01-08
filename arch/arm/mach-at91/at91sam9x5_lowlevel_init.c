@@ -14,7 +14,7 @@
 #include <mach/io.h>
 #include <mach/at91sam9_ddrsdr.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 void __naked __bare_init barebox_arm_reset_vector(void)
 {

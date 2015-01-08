@@ -19,7 +19,7 @@
 #define __ASM_ARCH_BOARD_H
 
 #include <mach/hardware.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <net.h>
 #include <i2c/i2c.h>
 #include <spi/spi.h>

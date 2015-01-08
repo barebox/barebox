@@ -30,7 +30,7 @@
 #include <init.h>
 #include <nand.h>
 #include <net.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <partition.h>
 #include <gpio.h>
 

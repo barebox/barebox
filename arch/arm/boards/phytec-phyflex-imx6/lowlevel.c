@@ -14,7 +14,7 @@
  */
 #include <debug_ll.h>
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <image-metadata.h>
 #include <asm/barebox-arm-head.h>

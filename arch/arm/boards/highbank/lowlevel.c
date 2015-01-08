@@ -5,7 +5,7 @@
  */
 
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <asm/system_info.h>

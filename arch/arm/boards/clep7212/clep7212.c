@@ -12,7 +12,7 @@
 #include <init.h>
 #include <partition.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/armlinux.h>
 #include <asm/mmu.h>
 #include <generated/mach-types.h>

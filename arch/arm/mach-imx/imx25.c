@@ -18,7 +18,7 @@
 #include <io.h>
 #include <mach/weim.h>
 #include <mach/generic.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 void imx25_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 		unsigned additional)

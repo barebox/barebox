@@ -17,7 +17,7 @@
 #include <environment.h>
 #include <partition.h>
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <gpio.h>
 #include <init.h>
 #include <fs.h>

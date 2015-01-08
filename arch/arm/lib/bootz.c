@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <malloc.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/byteorder.h>
 #include <asm/armlinux.h>
 #include <asm/system.h>

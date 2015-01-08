@@ -23,7 +23,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <memory.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
 

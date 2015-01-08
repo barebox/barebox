@@ -1,6 +1,6 @@
 #include <common.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/memory.h>
 
 static int mem_init(void)

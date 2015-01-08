@@ -19,7 +19,7 @@
 #include <console.h>
 #include <init.h>
 #include <driver.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>

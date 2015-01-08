@@ -6,7 +6,7 @@
 #include <malloc.h>
 #include <init.h>
 #include <envfs.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <fs.h>
 #include <io.h>
 

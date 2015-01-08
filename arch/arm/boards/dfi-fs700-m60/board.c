@@ -23,7 +23,7 @@
 #include <bootsource.h>
 #include <globalvar.h>
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <envfs.h>
 #include <init.h>
 #include <gpio.h>

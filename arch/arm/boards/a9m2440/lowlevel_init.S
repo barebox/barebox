@@ -3,7 +3,7 @@
  */
 
 #include <config.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c24xx-gpio.h>
 #include <asm/barebox-arm-head.h>

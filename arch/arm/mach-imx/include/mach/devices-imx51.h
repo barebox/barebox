@@ -1,5 +1,5 @@
 
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/devices.h>
 #include <mach/imx51-regs.h>
 

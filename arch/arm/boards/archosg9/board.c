@@ -18,7 +18,7 @@
 #include <mach/omap4-silicon.h>
 #include <mach/omap4-devices.h>
 #include <mach/omap4_rom_usb.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
 #include <gpio_keys.h>

@@ -20,7 +20,7 @@
 #include <of_address.h>
 #include <of_gpio.h>
 #include <of_pci.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include "pci-mvebu.h"
 

@@ -32,7 +32,7 @@
 #include <linux/pci.h>
 #include <linux/phy/phy.h>
 #include <linux/reset.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/tegra-powergate.h>
 #include <regulator.h>
 

@@ -20,7 +20,7 @@
  *
  */
 
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/ep93xx-regs.h>
 #include <asm/barebox-arm-head.h>
 

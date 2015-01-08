@@ -15,7 +15,7 @@
 #include <environment.h>
 #include <malloc.h>
 #include <nand.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <errno.h>
 #include <io.h>
 

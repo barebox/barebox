@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  *
  */
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 
 .globl barebox_arm_reset_vector

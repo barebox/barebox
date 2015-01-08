@@ -8,7 +8,7 @@
 #include <libfile.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <malloc.h>
 #include <filetype.h>
 #include <xymodem.h>

@@ -18,7 +18,7 @@
  */
 
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <init.h>
 #include <asm/barebox-arm-head.h>

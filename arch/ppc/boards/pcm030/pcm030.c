@@ -30,7 +30,7 @@
 #include <types.h>
 #include <partition.h>
 #include <memory.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/stat.h>
 #include <fs.h>
 

@@ -7,7 +7,7 @@
 #include <common.h>
 #include <bootstrap.h>
 #include <mach/bootstrap.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <malloc.h>
 #include <init.h>
 #include <menu.h>

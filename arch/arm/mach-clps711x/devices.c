@@ -9,7 +9,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include <asm/io.h>
 #include <asm/memory.h>

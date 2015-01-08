@@ -9,7 +9,7 @@
  *
  */
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/mtd/nand.h>
 
 #ifdef CONFIG_NAND_INFO

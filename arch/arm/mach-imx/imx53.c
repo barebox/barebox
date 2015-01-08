@@ -15,7 +15,7 @@
 #include <common.h>
 #include <io.h>
 #include <notifier.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/imx5.h>
 #include <mach/imx53-regs.h>
 #include <mach/revision.h>

@@ -20,7 +20,7 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <mach/generic.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <bootsource.h>
 #include <bbu.h>
 #include <mach/bbu.h>

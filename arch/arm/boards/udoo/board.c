@@ -29,7 +29,7 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <mach/generic.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <net.h>
 #include <linux/micrel_phy.h>
 #include <mach/imx6.h>

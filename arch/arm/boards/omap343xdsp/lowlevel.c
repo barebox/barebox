@@ -1,7 +1,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/generic.h>

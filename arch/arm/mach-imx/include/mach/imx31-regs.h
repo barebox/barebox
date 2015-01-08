@@ -19,7 +19,7 @@
 #ifndef __ASM_ARCH_MX31_REGS_H
 #define __ASM_ARCH_MX31_REGS_H
 
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #define MX31_IRAM_BASE_ADDR		0x1fffc000
 #define MX31_IRAM_SIZE			0x00004000

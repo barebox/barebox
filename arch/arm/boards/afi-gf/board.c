@@ -16,7 +16,7 @@
 #include <common.h>
 #include <string.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <envfs.h>
 #include <bootsource.h>
 #include <asm/armlinux.h>

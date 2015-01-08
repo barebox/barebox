@@ -19,7 +19,7 @@
 #include <generated/mach-types.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
 #include <gpio.h>

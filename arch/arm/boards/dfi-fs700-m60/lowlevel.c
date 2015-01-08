@@ -13,7 +13,7 @@
  *
  */
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <asm/sections.h>
 #include <asm/mmu.h>

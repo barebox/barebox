@@ -19,7 +19,7 @@
 #include <envfs.h>
 #include <errno.h>
 #include <mci.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <usb/ehci.h>
 #include <asm/armlinux.h>
 #include <io.h>

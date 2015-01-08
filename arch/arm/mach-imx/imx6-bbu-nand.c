@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <ioctl.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <bbu.h>
 #include <fs.h>
 #include <mach/bbu.h>

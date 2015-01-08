@@ -23,7 +23,7 @@
 #include <init.h>
 #include <asm/mmu.h>
 #include <errno.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/memory.h>
 #include <asm/barebox-arm.h>
 #include <asm/system.h>

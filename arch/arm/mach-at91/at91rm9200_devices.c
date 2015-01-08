@@ -20,7 +20,7 @@
 #include <mach/io.h>
 #include <mach/at91rm9200_mc.h>
 #include <i2c/i2c-gpio.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include "generic.h"
 

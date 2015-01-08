@@ -24,7 +24,7 @@
 #include <fs.h>
 #include <init.h>
 #include <partition.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include <plat/gpio.h>
 #include <mach/mfp-pxa27x.h>

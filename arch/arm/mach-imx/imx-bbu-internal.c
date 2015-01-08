@@ -25,7 +25,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/mtd/mtd-abi.h>
 #include <linux/stat.h>
 #include <ioctl.h>

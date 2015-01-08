@@ -15,7 +15,7 @@
 #include <mach/control.h>
 #include <usb/ehci.h>
 #include <linux/err.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/mmu.h>
 #include <envfs.h>
 #include <i2c/i2c.h>

@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  */
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm-generic/barebox.lds.h>
 #include <asm-generic/memory_layout.h>
 

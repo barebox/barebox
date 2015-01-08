@@ -34,7 +34,7 @@
 #include <asm/io.h>
 #include <asm/mmu.h>
 #include <mach/generic.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/imx6.h>
 #include <mach/devices-imx6.h>
 #include <mach/iomux-mx6.h>

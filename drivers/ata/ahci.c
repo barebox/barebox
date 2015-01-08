@@ -32,7 +32,7 @@
 #include <disks.h>
 #include <asm/mmu.h>
 #include <ata_drive.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <clock.h>
 
 #include "ahci.h"

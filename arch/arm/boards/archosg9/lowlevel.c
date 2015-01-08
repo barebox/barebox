@@ -13,7 +13,7 @@
 #include <common.h>
 #include <io.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/generic.h>
 #include <mach/omap4-mux.h>
 #include <mach/omap4-silicon.h>

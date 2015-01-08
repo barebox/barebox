@@ -22,7 +22,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <gpio.h>
 #include <environment.h>
 #include <mach/imx25-regs.h>

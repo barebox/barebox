@@ -21,7 +21,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #define VIRT2REAL_SRAM_BASE 0x82000000
 #define VIRT2REAL_SRAM_SIZE SZ_16M

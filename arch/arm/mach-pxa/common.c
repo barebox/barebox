@@ -32,7 +32,7 @@ extern void pxa_clear_reset_source(void);
 void reset_cpu(ulong addr)
 {
 	/* Clear last reset source */
-	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
+	pxa_clear_reset_source();
 
 	/* Initialize the watchdog and let it fire */
 	writel(OWER_WME, OWER);

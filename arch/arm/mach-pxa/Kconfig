@@ -11,12 +11,22 @@ config ARCH_PXA2XX
 	bool
 	select CPU_XSCALE
 
+config ARCH_PXA3XX
+       bool
+       select CPU_XSC3
+
+config ARCH_PXA310
+       bool
+
 choice
 	prompt "Intel/Marvell PXA Processor"
 
 config ARCH_PXA27X
 	bool "PXA27x"
 	select ARCH_PXA2XX
+
+config ARCH_PXA3XX
+	bool "PXA3xx"
 
 endchoice
 
@@ -50,6 +60,18 @@ config BCH_CONST_T
 	int
 	default 4 if MACH_MIOA701
 endif
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_PXA3XX
+
+choice
+	prompt "PXA3xx Board Type"
+	bool
+
+endchoice
 
 endif
 

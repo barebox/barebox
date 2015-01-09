@@ -161,7 +161,7 @@
 
 		partition@4 {
 			label = "kernel";
-			reg = <0xe0000 0x400000>;
+			reg = <0xe0000 0x0>;
 		};
 	};
 };

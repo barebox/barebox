@@ -5,7 +5,7 @@
 #include <asm/armlinux.h>
 #include <linux/micrel_phy.h>
 #include <linux/phy.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <fcntl.h>
 #include <fs.h>
 #include <mach/socfpga-regs.h>

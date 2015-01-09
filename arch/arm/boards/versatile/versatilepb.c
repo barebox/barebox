@@ -28,7 +28,7 @@
 #include <mach/platform.h>
 #include <environment.h>
 #include <partition.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <net/smc91111.h>
 
 static int vpb_console_init(void)

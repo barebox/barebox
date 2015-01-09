@@ -2,7 +2,7 @@
 #define __MACH_MXS_DEVICES_H
 
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <xfuncs.h>
 #include <driver.h>
 #include <mach/imx-regs.h>

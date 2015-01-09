@@ -27,7 +27,7 @@
 #include <io.h>
 #include <mach/hardware.h>
 #include <nand.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/mtd/nand.h>
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>

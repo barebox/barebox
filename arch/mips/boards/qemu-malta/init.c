@@ -18,7 +18,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 static int malta_core_init(void)
 {

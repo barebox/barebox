@@ -26,7 +26,7 @@
 #include <mach/imx6.h>
 #include <mach/bbu.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/phy.h>
 
 static int ar8035_phy_fixup(struct phy_device *dev)

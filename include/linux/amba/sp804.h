@@ -8,7 +8,7 @@
 #define __AMBA_SP804_H__
 
 #include <linux/amba/bus.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #define AMBA_ARM_SP804_ID	0x00141804
 #define AMBA_ARM_SP804_ID_MASK	0x00ffffff

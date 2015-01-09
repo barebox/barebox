@@ -5,7 +5,7 @@
  */
 
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include <linux/amba/bus.h>
 

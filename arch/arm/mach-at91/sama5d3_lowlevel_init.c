@@ -7,7 +7,7 @@
 #define __LOWLEVEL_INIT__
 
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <init.h>
 #include <asm/system.h>
 #include <asm/barebox-arm.h>

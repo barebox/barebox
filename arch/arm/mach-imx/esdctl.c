@@ -19,7 +19,7 @@
 #include <common.h>
 #include <io.h>
 #include <errno.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <init.h>
 #include <of.h>
 #include <linux/err.h>

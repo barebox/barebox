@@ -23,7 +23,7 @@
 #include <partition.h>
 #include <common.h>
 #include <envfs.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <init.h>
 #include <gpio.h>
 #include <fec.h>

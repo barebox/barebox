@@ -26,7 +26,7 @@
 #include <init.h>
 #include <clock.h>
 #include <debug_ll.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include <linux/clkdev.h>
 #include <linux/clk.h>

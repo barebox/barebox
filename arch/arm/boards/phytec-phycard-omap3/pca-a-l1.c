@@ -46,7 +46,7 @@
 #include <nand.h>
 #include <ns16550.h>
 #include <partition.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
 #include <generated/mach-types.h>

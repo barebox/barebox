@@ -1,5 +1,5 @@
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>

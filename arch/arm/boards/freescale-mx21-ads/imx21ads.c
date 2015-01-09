@@ -30,7 +30,7 @@
 #include <mach/weim.h>
 #include <partition.h>
 #include <fs.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <fcntl.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>

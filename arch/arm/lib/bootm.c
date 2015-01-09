@@ -12,7 +12,7 @@
 #include <malloc.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <libbb.h>
 #include <magicvar.h>
 #include <binfmt.h>

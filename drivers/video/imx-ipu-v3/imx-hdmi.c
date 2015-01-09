@@ -1190,16 +1190,18 @@ static int imx_hdmi_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
-	if (ddc_node) {
-		hdmi->ddc = of_find_i2c_adapter_by_node(ddc_node);
-		if (!hdmi->ddc)
-			dev_dbg(hdmi->dev, "failed to read ddc node\n");
-	} else {
-		dev_dbg(hdmi->dev, "no ddc property found\n");
-	}
+	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EDID)) {
+		ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
+		if (ddc_node) {
+			hdmi->ddc = of_find_i2c_adapter_by_node(ddc_node);
+			if (!hdmi->ddc)
+				dev_dbg(hdmi->dev, "failed to read ddc node\n");
+		} else {
+			dev_dbg(hdmi->dev, "no ddc property found\n");
+		}
 
-	ddc_node = NULL;
+		ddc_node = NULL;
+	}
 
 	hdmi->regs = dev_request_mem_region(dev, 0);
 	if (!hdmi->regs)

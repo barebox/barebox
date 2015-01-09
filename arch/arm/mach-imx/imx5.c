@@ -1,6 +1,6 @@
 #include <common.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/imx5.h>
 #include <mach/clock-imx51_53.h>
 

@@ -8,7 +8,7 @@
 #include <common.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <errno.h>
 #include <malloc.h>
 #include <libfile.h>

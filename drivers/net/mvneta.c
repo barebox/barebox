@@ -28,7 +28,7 @@
 #include <io.h>
 #include <net.h>
 #include <of_net.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm/mmu.h>
 #include <linux/clk.h>
 #include <linux/err.h>

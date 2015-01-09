@@ -26,7 +26,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <nand.h>
 #include <notifier.h>
 #include <spi/spi.h>

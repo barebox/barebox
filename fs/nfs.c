@@ -33,7 +33,7 @@
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <kfifo.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <byteorder.h>
 
 #include "parseopt.h"

@@ -27,7 +27,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <generated/mach-types.h>
 #include <dm9000.h>
 #include <gpio.h>

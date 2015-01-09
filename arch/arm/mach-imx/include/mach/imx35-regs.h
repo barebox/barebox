@@ -19,7 +19,7 @@
 #ifndef __ASM_ARCH_MX35_REGS_H
 #define __ASM_ARCH_MX35_REGS_H
 
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #define MX35_IRAM_BASE_ADDR		0x10000000	/* internal ram */
 #define MX35_IRAM_SIZE			SZ_128K

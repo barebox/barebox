@@ -15,7 +15,7 @@
 #include <malloc.h>
 #include <of.h>
 #include <of_address.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include "common.h"
 

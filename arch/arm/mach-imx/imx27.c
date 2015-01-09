@@ -15,7 +15,7 @@
 #include <mach/imx27-regs.h>
 #include <mach/weim.h>
 #include <mach/iomux-v1.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/revision.h>
 #include <mach/generic.h>
 #include <init.h>

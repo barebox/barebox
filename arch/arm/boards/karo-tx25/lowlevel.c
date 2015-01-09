@@ -21,7 +21,7 @@
 #include <mach/imx25-regs.h>
 #include <mach/esdctl.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/imx-nand.h>
 #include <mach/esdctl.h>
 #include <asm/barebox-arm.h>

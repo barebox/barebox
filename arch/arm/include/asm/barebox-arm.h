@@ -25,8 +25,10 @@
 #ifndef _BAREBOX_ARM_H_
 #define _BAREBOX_ARM_H_
 
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm-generic/memory_layout.h>
+#include <linux/kernel.h>
+#include <linux/types.h>
 
 /* cpu/.../cpu.c */
 int	cleanup_before_linux(void);

@@ -23,7 +23,7 @@
 #include <mach/gpio.h>
 #include <mach/io.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include "gpio.h"
 

@@ -22,7 +22,7 @@
 #include <nand.h>
 #include <init.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

@@ -19,7 +19,7 @@
 #include <common.h>
 #include <pbl.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <string.h>
 #include <asm/sections.h>
 #include <asm-generic/memory_layout.h>

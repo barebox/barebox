@@ -17,7 +17,7 @@
 #ifndef __ASM_ARCH_AM33XX_H
 #define __ASM_ARCH_AM33XX_H
 
-#include <sizes.h>
+#include <linux/sizes.h>
 
 /** AM335x Internal Bus Base addresses */
 #define AM33XX_L4_WKUP_BASE		0x44C00000

@@ -26,7 +26,7 @@
 #include <environment.h>
 #include <fs.h>
 #include <gpio.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/imx35-regs.h>
 #include <asm/armlinux.h>
 #include <io.h>

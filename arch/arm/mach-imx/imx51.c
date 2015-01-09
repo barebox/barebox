@@ -13,7 +13,7 @@
 
 #include <init.h>
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <environment.h>
 #include <io.h>
 #include <mach/imx5.h>

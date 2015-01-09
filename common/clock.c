@@ -22,6 +22,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <asm-generic/div64.h>
 #include <clock.h>
 #include <poller.h>
@@ -35,6 +36,16 @@ static uint64_t time_ns;
  */
 uint64_t time_beginning;
 
+static int dummy_csrc_warn(void)
+{
+	if (!current_clock) {
+		pr_warn("Warning: Using dummy clocksource\n");
+	}
+
+	return 0;
+}
+late_initcall(dummy_csrc_warn);
+
 /**
  * get_time_ns - get current timestamp in nanoseconds
  */
@@ -44,8 +55,13 @@ uint64_t get_time_ns(void)
 	uint64_t cycle_now, cycle_delta;
 	uint64_t ns_offset;
 
-	if (!cs)
-		return 0;
+	if (!cs) {
+		static uint64_t dummy_counter;
+
+		dummy_counter += CONFIG_CLOCKSOURCE_DUMMY_RATE;
+
+		return dummy_counter;
+	}
 
 	/* read clocksource: */
 	cycle_now = cs->read() & cs->mask;

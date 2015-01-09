@@ -24,7 +24,7 @@
  */
 
 #include <config.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/pxa-regs.h>
 #include <mach/regs-ost.h>
 #include <mach/regs-intc.h>

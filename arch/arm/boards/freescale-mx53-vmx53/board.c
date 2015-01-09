@@ -18,7 +18,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include <generated/mach-types.h>
 #include <mach/imx5.h>

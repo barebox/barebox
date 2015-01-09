@@ -24,7 +24,7 @@
 #include <mach/imx6-regs.h>
 #include <mach/imx6.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <of.h>
 
 #define GK802_GPIO_RECOVERY_BTN	IMX_GPIO_NR(3, 16)	/* recovery button */

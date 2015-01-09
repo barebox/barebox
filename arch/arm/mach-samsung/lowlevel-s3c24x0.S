@@ -15,7 +15,7 @@
  */
 
 #include <config.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/s3c-iomap.h>
 
 	.section ".text_bare_init.s3c24x0_disable_wd","ax"

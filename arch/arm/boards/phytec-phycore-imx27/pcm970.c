@@ -16,7 +16,7 @@
 #include <init.h>
 #include <io.h>
 #include <platform_ide.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>
 

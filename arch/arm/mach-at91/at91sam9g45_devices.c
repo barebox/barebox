@@ -11,7 +11,7 @@
  */
 #include <common.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
 #include <mach/hardware.h>

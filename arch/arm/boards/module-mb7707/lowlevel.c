@@ -21,7 +21,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #define MB7707_SRAM_BASE 0x40000000
 #define MB7707_SRAM_SIZE SZ_128M

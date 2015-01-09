@@ -19,7 +19,7 @@
 #include <init.h>
 #include <mach/devices.h>
 #include <mach/zynq7000-regs.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 static int zedboard_mem_init(void)
 {

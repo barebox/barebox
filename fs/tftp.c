@@ -31,7 +31,7 @@
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <kfifo.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #define TFTP_PORT	69	/* Well known TFTP port number */
 

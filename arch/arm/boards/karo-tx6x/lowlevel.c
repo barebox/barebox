@@ -18,7 +18,7 @@
 #include <asm/barebox-arm.h>
 #include <image-metadata.h>
 #include <mach/generic.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 static inline void setup_uart(void)
 {

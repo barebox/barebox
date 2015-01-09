@@ -12,7 +12,7 @@
 #include <mach/devices.h>
 #include <environment.h>
 #include <partition.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <globalvar.h>
 #include <linux/amba/sp804.h>

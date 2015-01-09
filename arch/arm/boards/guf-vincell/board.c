@@ -23,7 +23,7 @@
 #include <nand.h>
 #include <net.h>
 #include <partition.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <bbu.h>
 #include <gpio.h>
 #include <io.h>

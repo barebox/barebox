@@ -1,22 +1,13 @@
 /*
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * include/linux/sizes.h
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- * GNU General Public License for more details.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
  */
-/*  Size defintions
- *  Copyright (C) ARM Limited 1998. All rights reserved.
- */
+#ifndef __LINUX_SIZES_H__
+#define __LINUX_SIZES_H__
 
-#ifndef __sizes_h
-#define __sizes_h			1
-
-/* handy sizes */
 #define SZ_1				0x00000001
 #define SZ_2				0x00000002
 #define SZ_4				0x00000004
@@ -53,4 +44,4 @@
 #define SZ_1G				0x40000000
 #define SZ_2G				0x80000000
 
-#endif	/* __sizes_h */
+#endif /* __LINUX_SIZES_H__ */

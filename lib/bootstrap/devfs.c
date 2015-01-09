@@ -12,7 +12,7 @@
 #include <linux/mtd/mtd.h>
 #include <fcntl.h>
 #include <filetype.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <errno.h>
 #include <malloc.h>
 #include <bootstrap.h>

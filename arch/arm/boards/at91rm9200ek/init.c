@@ -25,7 +25,7 @@
 #include <gpio.h>
 #include <fcntl.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/board.h>

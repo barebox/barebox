@@ -25,7 +25,7 @@
 #define __TEGRA_LOWLEVEL_H
 
 #include <linux/compiler.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <mach/iomap.h>
 

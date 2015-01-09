@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <mci.h>
 #include <fec.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <net.h>
 #include <asm/sections.h>

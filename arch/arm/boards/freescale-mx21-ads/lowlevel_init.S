@@ -14,7 +14,7 @@
  */
 
 #include <config.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx21-regs.h>
 #include <asm/barebox-arm-head.h>

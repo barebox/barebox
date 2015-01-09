@@ -12,7 +12,7 @@
  */
 
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <init.h>
 #include <io.h>
 #include <mach/weim.h>

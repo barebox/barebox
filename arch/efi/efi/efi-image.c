@@ -18,7 +18,7 @@
  */
 
 #include <common.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <memory.h>
 #include <command.h>
 #include <magicvar.h>

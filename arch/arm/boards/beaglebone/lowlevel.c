@@ -1,5 +1,5 @@
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <io.h>
 #include <linux/string.h>
 #include <debug_ll.h>

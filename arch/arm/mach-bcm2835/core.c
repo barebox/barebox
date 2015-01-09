@@ -25,7 +25,7 @@
 
 #include <io.h>
 #include <asm/armlinux.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 #include <mach/platform.h>
 #include <mach/wd.h>

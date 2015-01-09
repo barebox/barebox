@@ -1,7 +1,7 @@
 #ifndef __MACH_OMAP3_GENERIC_H
 #define __MACH_OMAP3_GENERIC_H
 
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <linux/string.h>
 #include <mach/generic.h>
 #include <mach/omap3-silicon.h>

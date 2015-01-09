@@ -23,7 +23,7 @@
 #include <init.h>
 #include <clock.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/s3c-iomap.h>
 #include <mach/s3c-generic.h>
 #include <mach/s3c-busctl.h>

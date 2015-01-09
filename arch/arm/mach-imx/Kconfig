@@ -102,13 +102,11 @@ endchoice
 
 config ARCH_IMX_EXTERNAL_BOOT_NAND
 	bool
-	depends on MTD
 	depends on ARCH_IMX25 || ARCH_IMX27 || ARCH_IMX31 || ARCH_IMX35
 	prompt "Support Starting barebox from NAND in external bootmode"
 
 config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	bool
-	depends on MTD
 	depends on ARCH_IMX_EXTERNAL_BOOT_NAND
 	depends on BAREBOX_UPDATE
 	depends on MTD
@@ -117,7 +115,6 @@ config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 
 config BAREBOX_UPDATE_IMX6_NAND
 	bool
-	depends on MTD
 	depends on ARCH_IMX6
 	depends on BAREBOX_UPDATE
 	depends on MTD

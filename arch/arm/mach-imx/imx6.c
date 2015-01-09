@@ -14,7 +14,7 @@
 #include <init.h>
 #include <common.h>
 #include <io.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <mach/imx6.h>
 #include <mach/generic.h>

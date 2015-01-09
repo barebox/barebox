@@ -20,7 +20,7 @@
 #include <init.h>
 #include <io.h>
 #include <notifier.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <envfs.h>
 #include <mach/devices-imx27.h>
 #include <mach/imx-pll.h>

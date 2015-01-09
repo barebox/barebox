@@ -2,7 +2,7 @@
 #define __MACH_OMAP3_DEVICES_H
 
 #include <driver.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 #include <mach/omap3-silicon.h>
 #include <mach/devices.h>
 #include <mach/mcspi.h>

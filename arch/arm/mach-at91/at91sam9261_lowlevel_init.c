@@ -21,7 +21,7 @@
 #include <mach/at91_lowlevel_init.h>
 #include <mach/io.h>
 #include <init.h>
-#include <sizes.h>
+#include <linux/sizes.h>
 
 void __bare_init at91sam9261_lowlevel_init(void)
 {

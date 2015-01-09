@@ -44,6 +44,7 @@ struct console_device {
 	int (*setbrg)(struct console_device *cdev, int baudrate);
 	void (*flush)(struct console_device *cdev);
 	int (*set_mode)(struct console_device *cdev, enum console_mode mode);
+	int (*set_active)(struct console_device *cdev, unsigned active);
 
 	char *devname;
 

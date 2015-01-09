@@ -112,9 +112,10 @@ ifneq ($(KBUILD_OUTPUT),)
 # Invoke a second make in the output directory, passing relevant variables
 # check that the output directory actually exists
 saved-output := $(KBUILD_OUTPUT)
-KBUILD_OUTPUT := $(shell cd $(KBUILD_OUTPUT) && /bin/pwd)
+KBUILD_OUTPUT := $(shell mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) \
+								&& /bin/pwd)
 $(if $(KBUILD_OUTPUT),, \
-     $(error output directory "$(saved-output)" does not exist))
+     $(error failed to create output directory "$(saved-output)"))
 
 PHONY += $(MAKECMDGOALS)
 
@@ -291,10 +292,9 @@ export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_ve
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
 LINUXINCLUDE    := -Iinclude -I$(srctree)/dts/include \
-                   $(if $(KBUILD_SRC),-Iinclude2 -I$(srctree)/include) \
+                   $(if $(KBUILD_SRC), -I$(srctree)/include) \
 		   -I$(srctree)/arch/$(ARCH)/include \
 		   -I$(objtree)/arch/$(ARCH)/include \
-                   -include include/generated/autoconf.h \
                    -include $(srctree)/include/linux/kconfig.h
 
 CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffreestanding
@@ -790,7 +790,6 @@ PHONY += prepare-all
 # prepare3 is used to check if we are building in a separate output directory,
 # and if so do:
 # 1) Check that make has not been executed in the kernel src $(srctree)
-# 2) Create the include2 directory, used for the second asm symlink
 prepare3: include/config/kernel.release
 ifneq ($(KBUILD_SRC),)
 	@echo '  Using $(srctree) as source for kernel'
@@ -799,17 +798,13 @@ ifneq ($(KBUILD_SRC),)
 		echo "  in the '$(srctree)' directory.";\
 		false; \
 	fi;
-	$(Q)if [ ! -d include2 ]; then mkdir -p include2; fi;
-	$(Q)if [ -e $(srctree)/include/asm-$(SRCARCH)/barebox.h ]; then  \
-	    ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \
-	    fi
 endif
 
 # prepare2 creates a makefile if using a separate output directory
 prepare2: prepare3 outputmakefile
 
 prepare1: prepare2 include/generated/version.h include/generated/utsrelease.h \
-                   include/asm include/config.h include/config/auto.conf
+                   include/config.h include/config/auto.conf
 
 ifneq ($(KBUILD_MODULES),)
 	$(Q)mkdir -p $(MODVERDIR)
@@ -828,39 +823,6 @@ prepare prepare-all: prepare0
 # done in arch/$(ARCH)/kernel/Makefile
 
 export CPPFLAGS_barebox.lds += -C -U$(ARCH)
-
-# FIXME: The asm symlink changes when $(ARCH) changes. That's
-# hard to detect, but I suppose "make mrproper" is a good idea
-# before switching between archs anyway.
-
-define check-symlink
-	set -e;								\
-	if [ -L include/asm ]; then					\
-		asmlink=`readlink include/asm | cut -d '-' -f 2`;	\
-		if [ "$$asmlink" != "$(SRCARCH)" ]; then		\
-			echo "ERROR: the symlink $@ points to asm-$$asmlink but asm-$(SRCARCH) was expected";	\
-			echo "       set ARCH or save .config and run 'make mrproper' to fix it";		\
-			exit 1;						\
-		fi;							\
-	fi
-endef
-
-# We create the target directory of the symlink if it does
-# not exist so the test in chack-symlink works and we have a
-# directory for generated filesas used by some architectures.
-define create-symlink
-	if [ ! -L include/asm ]; then					\
-			$(kecho) '  SYMLINK $@ -> include/asm-$(SRCARCH)';	\
-			if [ ! -d include/asm-$(SRCARCH) ]; then	\
-				mkdir -p include/asm-$(SRCARCH);	\
-			fi;						\
-			ln -fsn asm-$(SRCARCH) $@;			\
-	fi
-endef
-
-include/asm:
-	$(Q)$(check-symlink)
-	$(Q)$(create-symlink)
 
 define symlink-config-h
 	if [ -f $(srctree)/$(BOARD)/config.h ]; then		\
@@ -998,10 +960,9 @@ CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
 		barebox.efi barebox.canon-a1100.bin
 
 # Directories & files removed with 'make mrproper'
-MRPROPER_DIRS  += include/config include2 usr/include
-MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                  include/generated/autoconf.h include/generated/version.h      \
-                  include/generated/utsrelease.h include/config.h           \
+MRPROPER_DIRS  += include/config usr/include include/generated
+MRPROPER_FILES += .config .config.old .version .old_version \
+                  include/config.h           \
 		  Module.symvers tags TAGS cscope*
 
 # clean - Delete most, but leave enough to build external modules

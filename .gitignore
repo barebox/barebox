@@ -61,7 +61,6 @@ barebox_default_env*
 #
 # Generated include files
 #
-include/asm
 include/asm-*/asm-offsets.h
 include/config
 include/linux/compile.h

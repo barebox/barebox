@@ -22,6 +22,7 @@
 #include <common.h>
 #include <init.h>
 #include <asm/armlinux.h>
+#include <asm/system_info.h>
 #include <generated/mach-types.h>
 #include <mach/init.h>
 #include <mach/platform.h>
@@ -32,7 +33,19 @@
 
 static int vpb_console_init(void)
 {
-	barebox_set_hostname("versatilepb");
+	char *hostname = "versatilepb-unknown";
+	char *model = "ARM Versatile PB";
+
+	if (cpu_is_arm926()) {
+		hostname = "versatilepb-arm926";
+		model = "ARM Versatile PB (arm926)";
+	} else if (cpu_is_arm1176()) {
+		hostname = "versatilepb-arm1176";
+		model = "ARM Versatile PB (arm1176)";
+	}
+
+	barebox_set_hostname(hostname);
+	barebox_set_model(model);
 
 	versatile_register_uart(0);
 	return 0;
@@ -46,8 +59,8 @@ static struct smc91c111_pdata net_pdata = {
 static int vpb_devices_init(void)
 {
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, VERSATILE_FLASH_BASE, VERSATILE_FLASH_SIZE, 0);
-	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
-	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
+	devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED, "self");
+	devfs_add_partition("nor0", SZ_512K, SZ_512K, DEVFS_PARTITION_FIXED, "env0");
 
 	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL, VERSATILE_ETH_BASE,
 			64 * 1024, IORESOURCE_MEM, &net_pdata);

@@ -4,23 +4,41 @@
 
 .section ".text_bare_init_","ax"
 ENTRY(arm_cpu_lowlevel_init)
-	mov	r2, lr
-	/* set the cpu to SVC32 mode */
+	/* set the cpu to SVC32 mode, mask irq and fiq */
 	mrs	r12, cpsr
 	bic	r12, r12, #0x1f
 	orr	r12, r12, #0xd3
 	msr	cpsr, r12
 
-#if __LINUX_ARM_ARCH__ >= 7
-	isb
-#elif __LINUX_ARM_ARCH__ == 6
+#if __LINUX_ARM_ARCH__ >= 6
+	/*
+	 * ICIALLU: Invalidate all instruction caches to PoU,
+	 * includes flushing of branch predictors.
+	 * Even if the i-cache is off it might contain stale entries
+	 * that are better discarded before enabling the cache.
+	 * Architectually this is even possible after a cold reset.
+	 */
+	mcr	p15, 0, r12, c7, c5, 0
+	/* DSB, ensure completion of the invalidation */
+	mcr	p15, 0, r12, c7, c10, 4
+	/*
+	 * ISB, ensure instruction fetch path is in sync.
+	 * Note that the ARM Architecture Reference Manual, ARMv7-A and ARMv7-R
+	 * edition (ARM DDI 0406C.c) doesn't define this instruction in the
+	 * ARMv6 part (D12.7.10). It only has: "Support of additional
+	 * operations is IMPLEMENTATION DEFINED".
+	 * But an earlier version of the ARMARM (ARM DDI 0100I) does define it
+	 * as "Flush prefetch buffer (PrefetchFlush)".
+	 */
 	mcr	p15, 0, r12, c7, c5, 4
 #endif
 
-	/* disable MMU stuff and caches */
-	mrc	p15, 0, r12, c1, c0, 0
-	bic	r12, r12 , #(CR_M | CR_C | CR_B)
+	/* disable MMU stuff and data/unified caches */
+	mrc	p15, 0, r12, c1, c0, 0		/* SCTLR */
+	bic	r12, r12, #(CR_M | CR_C | CR_B)
 	bic	r12, r12, #(CR_S | CR_R | CR_V)
+
+	/* enable instruction cache */
 	orr	r12, r12, #CR_I
 
 #if __LINUX_ARM_ARCH__ >= 6
@@ -34,7 +52,7 @@ ENTRY(arm_cpu_lowlevel_init)
 	orr	r12, r12, #CR_B
 #endif
 
-	mcr	p15, 0, r12, c1, c0, 0
+	mcr	p15, 0, r12, c1, c0, 0		/* SCTLR */
 
-	mov	pc, r2
+	mov	pc, lr
 ENDPROC(arm_cpu_lowlevel_init)

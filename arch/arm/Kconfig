@@ -53,6 +53,7 @@ config ARCH_BCM2835
 	select COMMON_CLK
 	select CLOCKSOURCE_BCM2835
 	select ARM_AMBA
+	select HAS_DEBUG_LL
 
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
@@ -188,9 +189,9 @@ config ARCH_S3C64xx
 
 config ARCH_VERSATILE
 	bool "ARM Versatile boards (ARM926EJ-S)"
-	select CPU_ARM926T
 	select GPIOLIB
 	select HAVE_CLK
+	select HAS_DEBUG_LL
 
 config ARCH_VEXPRESS
 	bool "ARM Vexpres boards"

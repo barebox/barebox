@@ -152,6 +152,7 @@
 /* Memory Information Register */
 /* BANK 0  */
 #define MIR_REG		0x0008
+#define MIR_FREE_MASK	0xff00
 
 /* Receive/Phy Control Register */
 /* BANK 0  */
@@ -953,6 +954,30 @@ static int smc91c111_eth_open(struct eth_device *edev)
 	return 0;
 }
 
+static void smc91c111_ensure_freemem(struct eth_device *edev)
+{
+	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
+	u16 mir, rxfifo;
+
+	SMC_SELECT_BANK(priv, 0);
+	mir = SMC_inw(priv, MIR_REG);
+	SMC_SELECT_BANK(priv, 2);
+
+	if ((mir & MIR_FREE_MASK) == 0) {
+		do {
+			SMC_outw(priv, MC_RELEASE, MMU_CMD_REG);
+			smc_wait_mmu_release_complete(priv);
+
+			SMC_SELECT_BANK(priv, 0);
+			mir = SMC_inw(priv, MIR_REG);
+			SMC_SELECT_BANK(priv, 2);
+			rxfifo = SMC_inw(priv, RXFIFO_REG);
+			dev_dbg(&edev->dev, "%s: card memory saturated, tidying up (rx_tx_fifo=0x%04x mir=0x%04x)\n",
+				SMC_DEV_NAME, rxfifo, mir);
+		} while (!(rxfifo & RXFIFO_REMPTY));
+	}
+}
+
 static int smc91c111_eth_send(struct eth_device *edev, void *packet,
 				int packet_length)
 {
@@ -994,6 +1019,7 @@ static int smc91c111_eth_send(struct eth_device *edev, void *packet,
 		return -EOVERFLOW;
 	}
 
+	smc91c111_ensure_freemem(edev);
 	/* now, try to allocate the memory */
 	SMC_SELECT_BANK(priv, 2);
 	SMC_outw(priv, MC_ALLOC | numPages, MMU_CMD_REG);

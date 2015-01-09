@@ -1,13 +1,26 @@
 
 if ARCH_VERSATILE
 
+config ARCH_TEXT_BASE
+	default 0x02000000
+
+config MACH_VERSATILEPB
+	bool
+	default y
+	select ARM_AMBA
+	select CLKDEV_LOOKUP
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+
 choice
 	prompt "ARM Board type"
 
-config MACH_VERSATILEPB
+config MACH_VERSATILEPB_926T
 	bool "ARM Versatile/PB (ARM926EJ-S)"
-	select ARM_AMBA
-	select CLKDEV_LOOKUP
+	select CPU_ARM926T
+
+config MACH_VERSATILEPB_ARM1176
+	bool "ARM Versatile/PB (ARM1176)"
+	select CPU_ARM1176
 
 endchoice
 

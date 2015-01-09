@@ -23,7 +23,7 @@
 #define CPU_IS_ARM926		0x41069260
 #define CPU_IS_ARM926_MASK	0xff0ffff0
 
-#define CPU_IS_ARM1176		0x410fb767
+#define CPU_IS_ARM1176		0x410fb760
 #define CPU_IS_ARM1176_MASK	0xff0ffff0
 
 #define CPU_IS_CORTEX_A8	0x410fc080

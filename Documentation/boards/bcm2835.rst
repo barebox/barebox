@@ -1,0 +1,17 @@
+Broadcom BCM2835
+================
+
+Raspberry Pi
+------------
+
+  1. Prepare a card with a FAT filesystem. Download a tiny NOOBS LITE
+     zip archive and unpack it into FAT partition.
+     See http://www.raspberrypi.org/help/noobs-setup/ for details.
+
+  2. Compile ``barebox.bin`` image (use ``rpi_defconfig``).
+     Copy it to the SD/microSD card and name it ``recovery.img``.
+
+  3. Connect to board's UART (115200 8N1);
+     Use PIN6 (GND), PIN8 (UART_TX), PIN10 (UART_RX) pins.
+
+  4. Turn board's power on.

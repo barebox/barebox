@@ -910,6 +910,16 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	struct eth_device	*edev = &slave->edev;
 	struct device_d		*dev = &slave->dev;
 	int ret;
+	struct phy_device *phy;
+
+	phy = mdiobus_scan(&priv->miibus, priv->slaves[slave_num].phy_id);
+	if (IS_ERR(phy))
+		return PTR_ERR(phy);
+
+	phy->dev.device_node = priv->slaves[slave_num].dev.device_node;
+	ret = phy_register_device(phy);
+	if (ret)
+		return ret;
 
 	sprintf(dev->name, "cpsw-slave");
 	dev->id = slave->slave_num;
@@ -1199,22 +1209,11 @@ int cpsw_probe(struct device_d *dev)
 	mdiobus_register(&priv->miibus);
 
 	for (i = 0; i < priv->num_slaves; i++) {
-		struct phy_device *phy;
-
-		phy = mdiobus_scan(&priv->miibus, priv->slaves[i].phy_id);
-		if (IS_ERR(phy)) {
-			ret = PTR_ERR(phy);
-			goto out;
-		}
-
-		phy->dev.device_node = priv->slaves[i].dev.device_node;
-		ret = phy_register_device(phy);
-		if (ret)
-			goto out;
-
 		ret = cpsw_slave_setup(&priv->slaves[i], i, priv);
-		if (ret)
-			goto out;
+		if (ret) {
+			dev_err(dev, "Failed to setup slave %d: %s\n", i, strerror(-ret));
+			continue;
+		}
 	}
 
 	return 0;

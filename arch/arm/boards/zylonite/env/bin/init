@@ -1,0 +1,25 @@
+#!/bin/sh
+
+PATH=/env/bin
+export PATH
+
+. /env/config
+addpart /dev/nand0 $mtdparts
+usbserial -s "Zylonite usb gadget"
+
+# Phase1: check for MTD override
+mtd_env_override
+if [ $? = 0 ]; then
+    echo "Switching to custom environment"
+    /env/init
+    exit
+fi
+
+# Phase2: initiate network
+dhcp -H zylonite
+
+# Phase3: activate netconsole, broadcast everywhere
+netconsole.ip=255.255.255.255
+netconsole.active=ioe
+netconsole.port=6666
+

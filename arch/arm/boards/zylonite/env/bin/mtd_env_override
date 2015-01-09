@@ -1,0 +1,4 @@
+#!/bin/sh
+
+loadenv /dev/nand0.barebox-env
+exit $?

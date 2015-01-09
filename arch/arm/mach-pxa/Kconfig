@@ -4,6 +4,7 @@ config ARCH_TEXT_BASE
 	hex
 	default 0xa0000000 if MACH_MIOA701
 	default 0xa3f00000 if MACH_PCM027
+	default 0x83f00000 if MACH_ZYLONITE
 
 # ----------------------------------------------------------
 
@@ -67,9 +68,19 @@ endif
 
 if ARCH_PXA3XX
 
+config MACH_ZYLONITE
+       bool
+
 choice
 	prompt "PXA3xx Board Type"
-	bool
+
+config MACH_ZYLONITE_PXA310
+	bool "Zylonite board based on a PXA310 pxa SoC"
+	help
+	  Say Y here if you are using a Zylonite board, based
+	  on a PXA31x SoC.
+	select ARCH_PXA310
+	select MACH_ZYLONITE
 
 endchoice
 

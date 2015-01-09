@@ -1,0 +1,6 @@
+#!/bin/sh
+
+autoboot_timeout=3
+
+mtdparts="128k@0(TIMH)ro,128k@128k(OBMI)ro,768k@256k(barebox),256k@1024k(barebox-env),12M@1280k(kernel),38016k@13568k(root)"
+bootargs="$bootargs mtdparts=pxa3xx_nand-0:$mtdparts ubi.mtd=5 rootfstype=ubifs root=ubi0:root ro ram=64M console=ttyS0,115200"

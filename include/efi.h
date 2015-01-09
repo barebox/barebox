@@ -255,9 +255,11 @@ extern efi_boot_services_t *BS;
 /*
  * Types and defines for EFI ResetSystem
  */
-#define EFI_RESET_COLD 0
-#define EFI_RESET_WARM 1
-#define EFI_RESET_SHUTDOWN 2
+typedef enum {
+	EFI_RESET_COLD = 0,
+	EFI_RESET_WARM = 1,
+	EFI_RESET_SHUTDOWN = 2
+} efi_reset_type_t;
 
 /*
  * EFI Runtime Services table
@@ -277,9 +279,11 @@ typedef struct {
 			u32 *Attributes, unsigned long *data_size, void *data);
 	efi_status_t (EFIAPI *get_next_variable)(unsigned long *variable_name_size,
 			s16 *variable_name, efi_guid_t *vendor);
-	void *set_variable;
+	efi_status_t (EFIAPI *set_variable)(s16 *variable_name, efi_guid_t *vendor,
+			u32 Attributes, unsigned long data_size, void *data);
 	void *get_next_high_mono_count;
-	void *reset_system;
+	void (EFIAPI *reset_system)(efi_reset_type_t reset_type, efi_status_t reset_status,
+			unsigned long data_size, void *reset_data);
 	void *update_capsule;
 	void *query_capsule_caps;
 	void *query_variable_info;
@@ -465,6 +469,10 @@ extern efi_runtime_services_t *RT;
 #define EFI_VLANCONFIGDXE_INF_GUID \
 	EFI_GUID(0xe4f61863, 0xfe2c, 0x4b56, 0xa8, 0xf4, 0x08, 0x51, 0x9b, 0xc4, 0x39, 0xdf)
 
+/* barebox specific GUIDs */
+#define EFI_BAREBOX_VENDOR_GUID \
+	EFI_GUID(0x5b91f69c, 0x8b88, 0x4a2b, 0x92, 0x69, 0x5f, 0x1d, 0x80, 0x2b, 0x51, 0x75)
+
 extern efi_guid_t efi_file_info_id;
 extern efi_guid_t efi_simple_file_system_protocol_guid;
 extern efi_guid_t efi_device_path_protocol_guid;
@@ -615,6 +623,7 @@ static inline int efi_compare_guid(efi_guid_t *a, efi_guid_t *b)
 }
 
 char *device_path_to_str(struct efi_device_path *dev_path);
+u8 device_path_to_type(struct efi_device_path *dev_path);
 
 const char *efi_guid_string(efi_guid_t *g);
 

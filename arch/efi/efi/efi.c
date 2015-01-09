@@ -248,7 +248,7 @@ console_initcall(efi_console_init);
 
 void reset_cpu(unsigned long addr)
 {
-	BS->exit(efi_parent_image, EFI_SUCCESS, 0, NULL);
+	RT->reset_system(EFI_RESET_WARM, EFI_SUCCESS, 0, NULL);
 
 	while(1);
 }
@@ -341,3 +341,19 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 
 	return EFI_SUCCESS;
 }
+
+static int do_efiexit(int argc, char *argv[])
+{
+	return BS->exit(efi_parent_image, EFI_SUCCESS, 0, NULL);
+}
+
+BAREBOX_CMD_HELP_START(efiexit)
+BAREBOX_CMD_HELP_TEXT("Leave barebox and return to the calling EFI process\n")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(efiexit)
+	.cmd = do_efiexit,
+	BAREBOX_CMD_DESC("Usage: efiexit")
+	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
+	BAREBOX_CMD_HELP(cmd_efiexit_help)
+BAREBOX_CMD_END

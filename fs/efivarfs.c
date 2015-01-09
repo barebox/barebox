@@ -1,7 +1,7 @@
 /*
- * ramfs.c - a malloc based filesystem
+ * efivars.c - EFI variable filesystem
  *
- * Copyright (c) 2007 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
+ * Copyright (c) 2014 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -34,9 +34,20 @@
 #include <mach/efi.h>
 #include <mach/efi-device.h>
 
+struct efivarfs_inode {
+	s16 *name;
+	efi_guid_t vendor;
+	char *full_name; /* name including vendor namespacing */
+	struct list_head node;
+};
+
+struct efivarfs_dir {
+	struct list_head *current;
+	DIR dir;
+};
+
 struct efivarfs_priv {
-	struct efi_file_handle *root_dir;
-	struct efi_file_io_interface *protocol;
+	struct list_head inodes;
 };
 
 static int char_to_nibble(char c)
@@ -75,8 +86,8 @@ int efi_guid_parse(const char *str, efi_guid_t *guid)
 			if (*str != '-')
 				return -EINVAL;
 			str++;
-                        break;
-                }
+			break;
+		}
 	}
 
 	return 0;
@@ -115,11 +126,81 @@ static int efivarfs_parse_filename(const char *filename, efi_guid_t *vendor, s16
 	return 0;
 }
 
+static int efivars_create(struct device_d *dev, const char *pathname, mode_t mode)
+{
+	struct efivarfs_priv *priv = dev->priv;
+	struct efivarfs_inode *inode;
+	efi_guid_t vendor;
+	efi_status_t efiret;
+	u8 dummydata;
+	char *name8;
+	s16 *name;
+	int ret;
+
+	if (pathname[0] == '/')
+		pathname++;
+
+	/* deny creating files with other vendor GUID than our own */
+	ret = efivarfs_parse_filename(pathname, &vendor, &name);
+	if (ret)
+		return -ENOENT;
+
+	if (memcmp(&vendor, &EFI_BAREBOX_VENDOR_GUID, sizeof(efi_guid_t)))
+		return -EPERM;
+
+	inode = xzalloc(sizeof(*inode));
+	inode->name = name;
+	inode->vendor = vendor;
+
+
+	name8 = strdup_wchar_to_char(inode->name);
+	inode->full_name = asprintf("%s-%pUl", name8, &inode->vendor);
+	free(name8);
+
+	efiret = RT->set_variable(inode->name, &inode->vendor,
+				  EFI_VARIABLE_NON_VOLATILE |
+				  EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				  EFI_VARIABLE_RUNTIME_ACCESS,
+				  1, &dummydata);
+	if (EFI_ERROR(efiret)) {
+		free(inode);
+		return -efi_errno(efiret);
+	}
+
+	list_add_tail(&inode->node, &priv->inodes);
+
+	return 0;
+}
+
+static int efivars_unlink(struct device_d *dev, const char *pathname)
+{
+	struct efivarfs_priv *priv = dev->priv;
+	struct efivarfs_inode *inode, *tmp;
+	efi_status_t efiret;
+
+	if (pathname[0] == '/')
+		pathname++;
+
+	list_for_each_entry_safe(inode, tmp, &priv->inodes, node) {
+		if (!strcmp(inode->full_name, pathname)) {
+			efiret = RT->set_variable(inode->name, &inode->vendor,
+						  0, 0, NULL);
+			if (EFI_ERROR(efiret))
+				return -efi_errno(efiret);
+			list_del(&inode->node);
+			free(inode);
+		}
+	}
+
+	return 0;
+}
+
 struct efivars_file {
 	void *buf;
 	unsigned long size;
 	efi_guid_t vendor;
 	s16 *name;
+	u32 attributes;
 };
 
 static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
@@ -127,7 +208,6 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 	struct efivars_file *efile;
 	efi_status_t efiret;
 	int ret;
-	uint32_t attributes;
 
 	efile = xzalloc(sizeof(*efile));
 
@@ -135,28 +215,27 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 	if (ret)
 		return -ENOENT;
 
-	efiret = RT->get_variable(efile->name, &efile->vendor, &attributes, &efile->size, NULL);
+	efiret = RT->get_variable(efile->name, &efile->vendor,
+				  &efile->attributes, &efile->size, NULL);
 	if (EFI_ERROR(efiret) && efiret != EFI_BUFFER_TOO_SMALL) {
 		ret = -efi_errno(efiret);
 		goto out;
 	}
 
-	efile->buf = malloc(efile->size + sizeof(uint32_t));
+	efile->buf = malloc(efile->size);
 	if (!efile->buf) {
 		ret = -ENOMEM;
 		goto out;
 	}
 
 	efiret = RT->get_variable(efile->name, &efile->vendor, NULL, &efile->size,
-			efile->buf + sizeof(uint32_t));
+			efile->buf);
 	if (EFI_ERROR(efiret)) {
 		ret = -efi_errno(efiret);
 		goto out;
 	}
 
-	*(uint32_t *)efile->buf = attributes;
-
-	f->size = efile->size + sizeof(uint32_t);
+	f->size = efile->size;
 	f->inode = efile;
 
 	return 0;
@@ -187,6 +266,38 @@ static int efivarfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insiz
 	return insize;
 }
 
+static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
+{
+	struct efivars_file *efile = f->inode;
+
+	if (efile->size < f->pos + insize) {
+		efile->buf = realloc(efile->buf, f->pos + insize);
+		efile->size = f->pos + insize;
+	}
+
+	memcpy(efile->buf + f->pos, buf, insize);
+
+	RT->set_variable(efile->name, &efile->vendor, efile->attributes,
+			 efile->size ? efile->size : 1, efile->buf);
+
+	return insize;
+}
+
+static int efivarfs_truncate(struct device_d *dev, FILE *f, ulong size)
+{
+	struct efivars_file *efile = f->inode;
+
+	efile->size = size;
+	efile->buf = realloc(efile->buf, efile->size + sizeof(uint32_t));
+
+	RT->set_variable(efile->name, &efile->vendor, efile->attributes,
+			 efile->size ? efile->size : 1, efile->buf);
+
+	f->size = efile->size;
+
+	return 0;
+}
+
 static loff_t efivarfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
 	f->pos = pos;
@@ -194,67 +305,29 @@ static loff_t efivarfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	return f->pos;
 }
 
-struct efivarfs_dir_entry {
-	char *name;
-	struct efivarfs_dir_entry *next;
-};
-
-struct efivarfs_dir {
-	struct efivarfs_dir_entry *first;
-	struct efivarfs_dir_entry *current;
-	DIR dir;
-};
-
 static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)
 {
-	efi_status_t efiret;
-	efi_guid_t vendor;
-	s16 name[1024];
+	struct efivarfs_priv *priv = dev->priv;
 	struct efivarfs_dir *edir;
-	unsigned long size;
-	unsigned char *name8;
-
-	name[0] = 0;
 
 	edir = xzalloc(sizeof(*edir));
-
-	while (1) {
-		struct efivarfs_dir_entry *entry;
-
-		size = sizeof(name);
-		efiret = RT->get_next_variable(&size, name, &vendor);
-		if (EFI_ERROR(efiret))
-			break;
-
-		entry = xzalloc(sizeof(*entry));
-		name8 = strdup_wchar_to_char(name);
-
-		entry->name = asprintf("%s-%pUl", name8, &vendor);
-
-		free(name8);
-
-		if (!edir->first)
-			edir->first = entry;
-
-		if (edir->current)
-			edir->current->next = entry;
-
-		edir->current = entry;
-	}
-
-	edir->current = edir->first;
+	edir->current = priv->inodes.next;
 
 	return &edir->dir;
 }
 
 static struct dirent *efivarfs_readdir(struct device_d *dev, DIR *dir)
 {
+	struct efivarfs_priv *priv = dev->priv;
 	struct efivarfs_dir *edir = container_of(dir, struct efivarfs_dir, dir);
+	struct efivarfs_inode *inode;
 
-	if (!edir->current)
+	if (edir->current == &priv->inodes)
 		return NULL;
 
-	strcpy(dir->d.d_name, edir->current->name);
+	inode = list_entry(edir->current, struct efivarfs_inode, node);
+
+	strcpy(dir->d.d_name, inode->full_name);
 
 	edir->current = edir->current->next;
 
@@ -264,17 +337,6 @@ static struct dirent *efivarfs_readdir(struct device_d *dev, DIR *dir)
 static int efivarfs_closedir(struct device_d *dev, DIR *dir)
 {
 	struct efivarfs_dir *edir = container_of(dir, struct efivarfs_dir, dir);
-	struct efivarfs_dir_entry *entry;
-
-	entry = edir->first;
-
-	while (entry) {
-		struct efivarfs_dir_entry *tmp;
-		free(entry->name);
-		tmp = entry->next;
-		free(entry);
-		entry = tmp;
-	}
 
 	free(edir);
 
@@ -308,18 +370,64 @@ static int efivarfs_stat(struct device_d *dev, const char *filename, struct stat
 
 static int efivarfs_probe(struct device_d *dev)
 {
+	efi_status_t efiret;
+	efi_guid_t vendor;
+	s16 name[1024];
+	char *name8;
+	unsigned long size;
+	struct efivarfs_priv *priv;
+
+	name[0] = 0;
+
+	priv = xzalloc(sizeof(*priv));
+	INIT_LIST_HEAD(&priv->inodes);
+
+	while (1) {
+		struct efivarfs_inode *inode;
+
+		size = sizeof(name);
+		efiret = RT->get_next_variable(&size, name, &vendor);
+		if (EFI_ERROR(efiret))
+			break;
+
+		inode = xzalloc(sizeof(*inode));
+		inode->name = strdup_wchar(name);
+
+		inode->vendor = vendor;
+
+		name8 = strdup_wchar_to_char(inode->name);
+		inode->full_name = asprintf("%s-%pUl", name8, &vendor);
+		free(name8);
+
+		list_add_tail(&inode->node, &priv->inodes);
+	}
+
+	dev->priv = priv;
+
 	return 0;
 }
 
 static void efivarfs_remove(struct device_d *dev)
 {
-	free(dev->priv);
+	struct efivarfs_priv *priv = dev->priv;
+	struct efivarfs_inode *inode, *tmp;
+
+	list_for_each_entry_safe(inode, tmp, &priv->inodes, node) {
+		free(inode->name);
+		free(inode);
+	}
+
+	free(priv);
 }
 
 static struct fs_driver_d efivarfs_driver = {
+	.create    = efivars_create,
+	.unlink    = efivars_unlink,
 	.open      = efivarfs_open,
 	.close     = efivarfs_close,
 	.read      = efivarfs_read,
+	.write     = efivarfs_write,
+	.truncate  = efivarfs_truncate,
 	.lseek     = efivarfs_lseek,
 	.opendir   = efivarfs_opendir,
 	.readdir   = efivarfs_readdir,

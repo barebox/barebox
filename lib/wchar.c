@@ -31,6 +31,22 @@ size_t wcslen(const wchar_t *s)
 	return len;
 }
 
+wchar_t *strdup_wchar(const wchar_t *src)
+{
+	int len = wcslen(src);
+	wchar_t *tmp, *dst;
+
+	if (!(dst = malloc((len + 1) * sizeof(wchar_t))))
+		return NULL;
+
+	tmp = dst;
+
+	while ((*dst++ = *src++))
+		/* nothing */;
+
+	return tmp;
+}
+
 char *strcpy_wchar_to_char(char *dst, const wchar_t *src)
 {
 	char *ret = dst;

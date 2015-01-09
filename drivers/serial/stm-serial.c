@@ -31,7 +31,6 @@
 #include <malloc.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/imx-regs.h>
 #include <mach/clock.h>
 
 #define UARTDBGDR 0x00

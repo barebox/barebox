@@ -1,0 +1,43 @@
+#
+# barebox image generation Makefile for MXS images
+#
+
+# %.mxsbs - convert into MXS BootStream image
+# ----------------------------------------------------------------
+quiet_cmd_mxs_bootstream = MXS-BOOTSTREAM $@
+      cmd_mxs_bootstream = $(objtree)/scripts/mxsimage -c $(CFG_$(@F)) -b $< -o $@ -p $(word 2,$^)
+
+$(obj)/%.mxsbs: $(obj)/%.pblx $(obj)/prep_%.pblb FORCE
+	$(call if_changed,mxs_bootstream)
+
+# %.mxssd - convert into MXS SD card image
+# ----------------------------------------------------------------
+quiet_cmd_mxs_sd = MXS-SD $@
+      cmd_mxs_sd = $(objtree)/scripts/mxsboot sd $< $@
+
+$(obj)/%.mxssd: $(obj)/%
+	$(call if_changed,mxs_sd)
+
+board = $(srctree)/arch/$(ARCH)/boards
+mxs23cfg = $(srctree)/arch/arm/mach-mxs/mxs23img.cfg
+mxs28cfg = $(srctree)/arch/arm/mach-mxs/mxs28img.cfg
+
+pblx-$(CONFIG_MACH_TX28) += start_barebox_karo_tx28 prep_start_barebox_karo_tx28
+PREP_start_barebox_karo_tx28.pblx.mxsbs = start_barebox_karo_tx28_prep
+CFG_start_barebox_karo_tx28.mxsbs = $(mxs28cfg)
+FILE_barebox-karo-tx28-bootstream.img = start_barebox_karo_tx28.mxsbs
+image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-bootstream.img
+FILE_barebox-karo-tx28-sd.img = start_barebox_karo_tx28.mxsbs.mxssd
+image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-sd.img
+FILE_barebox-karo-tx28-2nd.img = start_barebox_karo_tx28.pblx
+image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-2nd.img
+
+pblx-$(CONFIG_MACH_IMX233_OLINUXINO) += start_barebox_olinuxino_imx23 prep_start_barebox_olinuxino_imx23
+PREP_start_barebox_olinuxino_imx23.pblx.mxsbs = start_barebox_olinuxino_imx23_prep;
+CFG_start_barebox_olinuxino_imx23.mxsbs = $(mxs23cfg)
+FILE_barebox-olinuxino-imx23-bootstream.img = start_barebox_olinuxino_imx23.mxsbs
+image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-bootstream.img
+FILE_barebox-olinuxino-imx23-sd.img = start_barebox_olinuxino_imx23.mxsbs.mxssd
+image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-sd.img
+FILE_barebox-olinuxino-imx23-2nd.img = start_barebox_olinuxino_imx23.pblx
+image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-2nd.img

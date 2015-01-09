@@ -27,7 +27,6 @@
 
 #include <mach/generic.h>
 #include <mach/ocotp.h>
-#include <mach/imx-regs.h>
 #include <mach/power.h>
 
 #define DRIVERNAME "ocotp"

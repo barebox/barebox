@@ -29,8 +29,6 @@ int	getc(void);
 int	console_puts(unsigned int ch, const char *s);
 void	console_flush(void);
 
-
-int	printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 int	vprintf(const char *fmt, va_list args);
 #else
 static inline int tstc(void)
@@ -52,13 +50,6 @@ static inline void console_putc(unsigned int ch, char c) {}
 
 static inline void console_flush(void) {}
 
-static int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
-static inline int printf(const char *fmt, ...)
-{
-	return 0;
-}
-
-
 static inline int vprintf(const char *fmt, va_list args)
 {
 	return 0;
@@ -72,6 +63,17 @@ static inline int ctrlc (void)
 }
 #endif /* ARCH_HAS_CTRLC */
 
+#endif
+
+#if (!defined(__PBL__) && !defined(CONFIG_CONSOLE_NONE)) || \
+	(defined(__PBL__) && defined(CONFIG_PBL_CONSOLE))
+int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+#else
+static int printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+static inline int printf(const char *fmt, ...)
+{
+	return 0;
+}
 #endif
 
 static inline int puts(const char *s)

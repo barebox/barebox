@@ -1,0 +1,6 @@
+#!/bin/sh
+
+global.bootm.image=/mnt/sd-boot/linuximage
+global.bootm.oftree=/mnt/sd-boot/imx23-olinuxino.dtb
+#global.bootm.initrd=<path to initrd>
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p3 rootfstype=ext4 rw rootwait"

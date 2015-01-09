@@ -16,6 +16,8 @@
 *.t124img.cfg
 *.mlo
 *.mlospi
+*.mxsbs
+*.mxssd
 pbl.lds
 barebox.x
 barebox.z

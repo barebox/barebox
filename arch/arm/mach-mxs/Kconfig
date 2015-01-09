@@ -45,6 +45,8 @@ config MACH_CHUMBY
 
 config MACH_IMX233_OLINUXINO
 	bool "Olimex.ltd imx223-olinuxino"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the imx233-olinuxino
 
@@ -59,6 +61,8 @@ choice
 
 config MACH_TX28
 	bool "KARO tx28"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the KARO TX28 CPU module.
 
@@ -133,5 +137,12 @@ endchoice
 endif
 
 endmenu
+
+config ARCH_MXS_USBLOADER
+	bool "compile mxs-usb-loader"
+	help
+	  mxs-usb-loader is a tool to upload and start mxs bootstream images to an
+	  i.MX SoC in ROM boot mode. It requires libusb, so make sure you have the libusb
+	  devel package installed on your machine.
 
 endif

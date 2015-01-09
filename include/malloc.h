@@ -11,4 +11,6 @@ void *calloc(size_t, size_t);
 void malloc_stats(void);
 void *sbrk(ptrdiff_t increment);
 
+int mem_malloc_is_initialized(void);
+
 #endif /* __MALLOC_H */

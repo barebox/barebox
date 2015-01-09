@@ -18,75 +18,11 @@
 #include <kallsyms.h>
 
 #include <common.h>
-#include <led.h>
-
-unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
-{
-	unsigned long result = 0,value;
-
-	if (*cp == '0') {
-		cp++;
-		if ((*cp == 'x') && isxdigit(cp[1])) {
-			base = 16;
-			cp++;
-		}
-		if (!base) {
-			base = 8;
-		}
-	}
-	if (!base) {
-		base = 10;
-	}
-	while (isxdigit(*cp) && (value = isdigit(*cp) ? *cp-'0' : (islower(*cp)
-	    ? toupper(*cp) : *cp)-'A'+10) < base) {
-		result = result*base + value;
-		cp++;
-	}
-	if (endp)
-		*endp = (char *)cp;
-	return result;
-}
-EXPORT_SYMBOL(simple_strtoul);
-
-long simple_strtol(const char *cp,char **endp,unsigned int base)
-{
-	if(*cp=='-')
-		return -simple_strtoul(cp+1,endp,base);
-	return simple_strtoul(cp,endp,base);
-}
-EXPORT_SYMBOL(simple_strtol);
-
-unsigned long long simple_strtoull (const char *cp, char **endp, unsigned int base)
-{
-	unsigned long long result = 0, value;
-
-	if (*cp == '0') {
-		cp++;
-		if ((*cp == 'x') && isxdigit (cp[1])) {
-			base = 16;
-			cp++;
-		}
-		if (!base) {
-			base = 8;
-		}
-	}
-	if (!base) {
-		base = 10;
-	}
-	while (isxdigit (*cp) && (value = isdigit (*cp)
-				? *cp - '0'
-				: (islower (*cp) ? toupper (*cp) : *cp) - 'A' + 10) < base) {
-		result = result * base + value;
-		cp++;
-	}
-	if (endp)
-		*endp = (char *) cp;
-	return result;
-}
-EXPORT_SYMBOL(simple_strtoull);
 
 /* we use this so that we can do without the ctype library */
 #define is_digit(c)	((c) >= '0' && (c) <= '9')
+#define is_alpha(c)	(((c) >= 'A' && (c) <= 'Z') || ((c) >= 'a' && (c) <= 'z'))
+#define is_alnum(c)	(is_digit(c) || is_alpha(c))
 
 static int skip_atoi(const char **s)
 {
@@ -239,6 +175,7 @@ static char *string(char *buf, char *end, char *s, int field_width, int precisio
 	return buf;
 }
 
+#ifndef __PBL__
 static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int precision, int flags)
 {
 	unsigned long value = (unsigned long) ptr;
@@ -341,6 +278,17 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
 	}
 	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
 }
+#else
+static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field_width, int precision, int flags)
+{
+	flags |= SMALL;
+	if (field_width == -1) {
+		field_width = 2*sizeof(void *);
+		flags |= ZEROPAD;
+	}
+	return number(buf, end, (unsigned long) ptr, 16, field_width, precision, flags);
+}
+#endif
 
 /**
  * vsnprintf - Format a string and place it in a buffer
@@ -417,7 +365,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 
 		/* get field width */
 		field_width = -1;
-		if (isdigit(*fmt))
+		if (is_digit(*fmt))
 			field_width = skip_atoi(&fmt);
 		else if (*fmt == '*') {
 			++fmt;
@@ -433,7 +381,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 		precision = -1;
 		if (*fmt == '.') {
 			++fmt;
-			if (isdigit(*fmt))
+			if (is_digit(*fmt))
 				precision = skip_atoi(&fmt);
 			else if (*fmt == '*') {
 				++fmt;
@@ -488,7 +436,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
 						va_arg(args, void *),
 						field_width, precision, flags);
 				/* Skip all alphanumeric pointer suffixes */
-				while (isalnum(fmt[1]))
+				while (is_alnum(fmt[1]))
 					fmt++;
 				continue;
 
@@ -680,24 +628,3 @@ char *asprintf(const char *fmt, ...)
 	return p;
 }
 EXPORT_SYMBOL(asprintf);
-
-void __noreturn panic(const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	vprintf(fmt, args);
-	putchar('\n');
-	va_end(args);
-
-	dump_stack();
-
-	led_trigger(LED_TRIGGER_PANIC, TRIGGER_ENABLE);
-
-	if (IS_ENABLED(CONFIG_PANIC_HANG)) {
-		hang();
-	} else {
-		udelay(100000);	/* allow messages to go out */
-		reset_cpu(0);
-	}
-}
-EXPORT_SYMBOL(panic);

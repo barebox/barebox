@@ -16,7 +16,7 @@
 
 #include <common.h>
 #include <init.h>
-#include <mach/imx-regs.h>
+#include <mach/imx28-regs.h>
 #include <io.h>
 
 #define HW_CLKCTRL_RESET 0x1e0

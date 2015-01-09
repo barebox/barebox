@@ -16,6 +16,7 @@
  * GNU General Public License for more details.
  *
  */
+#define pr_fmt(fmt) "start.c: " fmt
 
 #include <common.h>
 #include <init.h>
@@ -62,6 +63,8 @@ static noinline __noreturn void __start(unsigned long membase,
 
 	setup_c();
 
+	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
+
 	barebox_boarddata = boarddata;
 	arm_stack_top = endmem;
 	endmem -= STACK_SIZE; /* Stack */
@@ -74,6 +77,7 @@ static noinline __noreturn void __start(unsigned long membase,
 		if (IS_ENABLED(CONFIG_PBL_IMAGE)) {
 			arm_set_cache_functions();
 		} else {
+			pr_debug("enabling MMU, ttb @ 0x%08lx\n", endmem);
 			arm_early_mmu_cache_invalidate();
 			mmu_early_enable(membase, memsize, endmem);
 		}
@@ -87,6 +91,8 @@ static noinline __noreturn void __start(unsigned long membase,
 		uint32_t totalsize = get_unaligned_be32(boarddata + 4);
 		endmem -= ALIGN(totalsize, 64);
 		barebox_boot_dtb = (void *)endmem;
+		pr_debug("found DTB in boarddata, copying to 0x%p\n",
+				barebox_boot_dtb);
 		memcpy(barebox_boot_dtb, boarddata, totalsize);
 	}
 
@@ -115,7 +121,12 @@ static noinline __noreturn void __start(unsigned long membase,
 			malloc_start = malloc_end - SZ_1G;
 	}
 
+	pr_debug("initializing malloc pool at 0x%08lx (size 0x%08lx)\n",
+			malloc_start, malloc_end - malloc_start);
+
 	mem_malloc_init((void *)malloc_start, (void *)malloc_end - 1);
+
+	pr_debug("starting barebox...\n");
 
 	start_barebox();
 }

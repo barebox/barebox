@@ -17,7 +17,7 @@
 #include <init.h>
 #include <clock.h>
 #include <notifier.h>
-#include <mach/imx-regs.h>
+#include <mach/imx23-regs.h>
 #include <mach/clock.h>
 #include <io.h>
 

@@ -16,6 +16,32 @@ static inline unsigned long get_pc(void)
 	return pc;
 }
 
+static inline unsigned long get_lr(void)
+{
+	unsigned long lr;
+
+	__asm__ __volatile__(
+                "mov    %0, lr\n"
+                : "=r" (lr)
+                :
+                : "memory");
+
+	return lr;
+}
+
+static inline unsigned long get_sp(void)
+{
+	unsigned long sp;
+
+	__asm__ __volatile__(
+                "mov    %0, sp\n"
+                : "=r" (sp)
+                :
+                : "memory");
+
+	return sp;
+}
+
 static inline void arm_setup_stack(unsigned long top)
 {
 	__asm__ __volatile__("mov sp, %0" : : "r"(top));

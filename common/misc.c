@@ -22,6 +22,7 @@
 #include <magicvar.h>
 #include <globalvar.h>
 #include <environment.h>
+#include <led.h>
 #include <of.h>
 
 int errno;
@@ -188,3 +189,24 @@ EXPORT_SYMBOL(barebox_get_hostname);
 
 BAREBOX_MAGICVAR_NAMED(global_hostname, global.hostname,
 		"shortname of the board. Also used as hostname for DHCP requests");
+
+void __noreturn panic(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	vprintf(fmt, args);
+	putchar('\n');
+	va_end(args);
+
+	dump_stack();
+
+	led_trigger(LED_TRIGGER_PANIC, TRIGGER_ENABLE);
+
+	if (IS_ENABLED(CONFIG_PANIC_HANG)) {
+		hang();
+	} else {
+		udelay(100000);	/* allow messages to go out */
+		reset_cpu(0);
+	}
+}
+EXPORT_SYMBOL(panic);

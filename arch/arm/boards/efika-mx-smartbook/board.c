@@ -246,6 +246,8 @@ static int efikamx_late_init(void)
 	for (i = 0; i < ARRAY_SIZE(leds); i++)
 		led_gpio_register(&leds[i]);
 
+	led_set_trigger(LED_TRIGGER_HEARTBEAT, &leds[0].led);
+
 	writew(0x0, MX51_WDOG_BASE_ADDR + 0x8);
 
 	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc1",

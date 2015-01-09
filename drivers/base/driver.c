@@ -346,7 +346,7 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 
-	return (void __force __iomem *)res->start;
+	return IOMEM(res->start);
 }
 EXPORT_SYMBOL(dev_request_mem_region);
 

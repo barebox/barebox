@@ -83,9 +83,8 @@ static noinline void socrates_entry(void)
 
 	puts_ll("SDRAM calibration...\n");
 
-	ret = socfpga_sdram_calibration(inst_rom_init, inst_rom_init_size,
-				ac_rom_init, ac_rom_init_size);
-	if (ret)
+	ret = socfpga_mem_calibration();
+	if (!ret)
 		hang();
 
 	puts_ll("done\n");

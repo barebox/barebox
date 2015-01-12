@@ -123,11 +123,14 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg)
 	 * Put all plls VCO registers back to reset value.
 	 * Some code might have messed with them.
 	 */
-	writel(CLKMGR_MAINPLLGRP_VCO_RESET_VALUE,
+	writel(CLKMGR_MAINPLLGRP_VCO_RESET_VALUE &
+		~CLKMGR_MAINPLLGRP_VCO_REGEXTSEL_MASK,
 		cm + CLKMGR_MAINPLLGRP_VCO_ADDRESS);
-	writel(CLKMGR_PERPLLGRP_VCO_RESET_VALUE,
+	writel(CLKMGR_PERPLLGRP_VCO_RESET_VALUE &
+		~CLKMGR_PERPLLGRP_VCO_REGEXTSEL_MASK,
 		cm + CLKMGR_PERPLLGRP_VCO_ADDRESS);
-	writel(CLKMGR_SDRPLLGRP_VCO_RESET_VALUE,
+	writel(CLKMGR_SDRPLLGRP_VCO_RESET_VALUE &
+		~CLKMGR_SDRPLLGRP_VCO_REGEXTSEL_MASK,
 		cm + CLKMGR_SDRPLLGRP_VCO_ADDRESS);
 
 	/*
@@ -151,12 +154,15 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg)
 	 * We made sure bgpwr down was assert for 5 us. Now deassert BG PWR DN
 	 * with numerator and denominator.
 	 */
-	writel(cfg->main_vco_base | CLKMGR_MAINPLLGRP_VCO_REGEXTSEL_MASK,
+	writel(cfg->main_vco_base | CLEAR_BGP_EN_PWRDN,
 		cm + CLKMGR_MAINPLLGRP_VCO_ADDRESS);
-	writel(cfg->peri_vco_base | CLKMGR_PERPLLGRP_VCO_REGEXTSEL_MASK,
+	writel(cfg->peri_vco_base | CLEAR_BGP_EN_PWRDN,
 		cm + CLKMGR_PERPLLGRP_VCO_ADDRESS);
-	writel(cfg->sdram_vco_base | CLKMGR_SDRPLLGRP_VCO_REGEXTSEL_MASK,
-		cm + CLKMGR_SDRPLLGRP_VCO_ADDRESS);
+	writel(cfg->sdram_vco_base |
+	       CLKMGR_SDRPLLGRP_VCO_OUTRESET_SET(0) |
+	       CLKMGR_SDRPLLGRP_VCO_OUTRESETALL_SET(0) |
+	       CLEAR_BGP_EN_PWRDN,
+	       cm + CLKMGR_SDRPLLGRP_VCO_ADDRESS);
 
 	writel(cfg->mpuclk, cm + CLKMGR_MAINPLLGRP_MPUCLK_ADDRESS);
 	writel(cfg->mainclk, cm + CLKMGR_MAINPLLGRP_MAINCLK_ADDRESS);

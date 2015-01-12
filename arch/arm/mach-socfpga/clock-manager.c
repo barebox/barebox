@@ -290,4 +290,8 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg)
 	writel(~0, cm + CLKMGR_MAINPLLGRP_EN_ADDRESS);
 	writel(~0, cm + CLKMGR_PERPLLGRP_EN_ADDRESS);
 	writel(~0, cm + CLKMGR_SDRPLLGRP_EN_ADDRESS);
+
+	val = readl(cm + CLKMGR_DBCTRL_ADDRESS);
+	val |= CLKMGR_DBCTRL_STAYOSC1_MASK;
+	writel(val, cm + CLKMGR_DBCTRL_ADDRESS);
 }

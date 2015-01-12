@@ -422,12 +422,7 @@ static gbl_t *gbl;
 static param_t *param;
 
 // External functions
-static uint32_t rw_mgr_mem_calibrate_full_test(uint32_t min_correct, t_btfld * bit_chk,
-					       uint32_t test_dm);
 static uint32_t run_mem_calibrate(void);
-static void rw_mgr_mem_calibrate_eye_diag_aid(void);
-static void rw_mgr_load_mrs_calib(void);
-static void rw_mgr_load_mrs_exec(void);
 static void rw_mgr_mem_initialize(void);
 static void rw_mgr_mem_dll_lock_wait(void);
 static inline void scc_mgr_set_dq_in_delay(uint32_t write_group, uint32_t dq_in_group,
@@ -440,14 +435,11 @@ static inline void scc_mgr_load_dq(uint32_t dq_in_group);
 static inline void scc_mgr_set_dqs_bus_in_delay(uint32_t read_group, uint32_t delay);
 static inline void scc_mgr_load_dqs(uint32_t dqs);
 static void scc_mgr_set_group_dqs_io_and_oct_out1_gradual(uint32_t write_group, uint32_t delay);
-static void scc_mgr_set_group_dqs_io_and_oct_out2_gradual(uint32_t write_group, uint32_t delay);
 static void scc_mgr_set_dqs_en_delay_all_ranks(uint32_t read_group, uint32_t delay);
 static void scc_mgr_set_dqs_en_phase_all_ranks(uint32_t read_group, uint32_t phase);
 static void scc_mgr_set_dqdqs_output_phase_all_ranks(uint32_t write_group, uint32_t phase);
 static inline void scc_mgr_set_dm_out1_delay(uint32_t write_group, uint32_t dm, uint32_t delay);
 static inline void scc_mgr_set_dm_out2_delay(uint32_t write_group, uint32_t dm, uint32_t delay);
 static inline void scc_mgr_load_dm(uint32_t dm);
-static void rw_mgr_incr_vfifo_auto(uint32_t grp);
-static void rw_mgr_decr_vfifo_auto(uint32_t grp);
-static int sdram_calibration(void);
+int sdram_calibration(void);
 #endif

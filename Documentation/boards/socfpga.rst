@@ -45,15 +45,6 @@ handoff files. As these files are split up in the code base and generated
 explicitely for some specific U-boot code base, some manual work might be
 necessary.
 
-The following files are generic and belong into the
-`arch/arm/mach-socfpga` directory tree:
-
-* sequencer.c (Not for the faint of heart.)
-* sequencer.h
-* system.h
-
-It should normally not be necessary to touch these if barebox is up-to-date.
-
 The boardspecific files for `arch/arm/boards/<yourboard>` are:
 
 * iocsr_config_cyclone5.c
@@ -78,3 +69,20 @@ To update the handoff files, the following procedure is necessary::
  7. Click ``Ok`` than ``Generate``
  8. Copy the files generated in `software/spl_bsp/generated/` to your
     board folder
+
+The following files are generic and belong into the
+`arch/arm/mach-socfpga` directory tree:
+
+* sdram_io.h
+* sequencer.c
+* sequencer.h
+* sequencer_defines.h
+* system.h
+* tclrpt.h
+
+To add these files, run::
+
+  scripts/socfpga_get_sequencer <UBOOT-SRC> scripts/socfpga_sequencer_defines_defaults
+
+where `<UBOOT-SRC>` is the directory where the Altera bsp-editor generated the u-boot
+directory. Refer to the Altera documentation for how to use the bsp-editor.

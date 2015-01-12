@@ -1,0 +1,78 @@
+#!/bin/bash
+
+if [ "$#" -lt "2" ]
+then
+	echo "USAGE: $0 <UBOOT-SRC> <SEQUENCER_DEFINES>"
+	exit 1
+fi
+
+ubootsrc=$1
+sequencer_defines=$2
+bareboxsrc=.
+
+cd ${bareboxsrc}
+
+copy_source() {
+	local src
+	local tgt
+	src=$1
+	tgt=$2
+
+	echo "Merging source code $src to $tgt"
+
+	cp $src $tgt
+
+	unifdef -f ${sequencer_defines} $tgt -o $tgt
+
+	echo "	Fixing extern/static keywords..."
+	# Statify all global variables with missing static keyword
+	sed -i 's/^\(extern \|static \|\)\([^*#\/ 	][^(]* [^( ]*\((.*).*$\|=.*;.*$\)\)/static \2/g' $tgt
+	sed -i 's/^extern /static /g' $tgt
+
+	echo "	Translating altera int types..."
+	# Replace altera types
+	sed -i 's/alt_u32/uint32_t/g' $tgt
+	sed -i 's/alt_u16/uint16_t/g' $tgt
+	sed -i 's/alt_16/int16_t/g' $tgt
+	sed -i 's/alt_32/int32_t/g' $tgt
+	sed -i 's/alt_u8/uint8_t/g' $tgt
+	sed -i 's/alt_8/int8_t/g' $tgt
+	sed -i 's/#include "alt_types.h"//g' $tgt
+
+	echo "	Fixing include pathes..."
+	# Fix include pathes
+	sed -i 's/#include <sdram.h>/#include <mach\/sdram.h>/g' $tgt
+	sed -i 's/#include "sequencer_auto.h"//g' $tgt
+
+	echo "	Automated readability fixup..."
+	indent -npro -kr -i8 -ts8 -sob -l100 -ss -ncs -cp1 -il0 $tgt
+}
+
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.c arch/arm/mach-socfpga/include/mach/sequencer.c
+sed -i 's/static int sdram_calibration(void)/static int socfpga_mem_calibration(void)/g' arch/arm/mach-socfpga/include/mach/sequencer.c
+
+cat <<'EOF' > arch/arm/mach-socfpga/include/mach/sequencer_defines.h
+#define TINIT_CNTR1_VAL 32
+#define TINIT_CNTR2_VAL 32
+#define TINIT_CNTR0_VAL 99
+#define TRESET_CNTR1_VAL 99
+#define TRESET_CNTR2_VAL 10
+#define TRESET_CNTR0_VAL 99
+EOF
+
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.h arch/arm/mach-socfpga/include/mach/sequencer.h
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/tclrpt.h arch/arm/mach-socfpga/include/mach/tclrpt.h
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sdram_io.h arch/arm/mach-socfpga/include/mach/sdram_io.h
+cat <<'EOF' >> arch/arm/mach-socfpga/include/mach/sdram_io.h
+	#define write_register(BASE, OFFSET, DATA) \
+		writel(DATA, ((BASE) + (OFFSET)))
+	#define read_register(BASE, OFFSET) \
+		readl((BASE) + (OFFSET))
+	#define HPS_SDR_BASE 0xffc20000
+EOF
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/system.h arch/arm/mach-socfpga/include/mach/system.h
+
+#unifdef -f ${sequencer_defines} ${ubootsrc}/board/altera/socfpga/sdram/tclrpt.c -o arch/arm/mach-socfpga/include/mach/tclrpt.c
+
+echo "DONE"
+

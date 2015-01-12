@@ -50,6 +50,10 @@ struct socfpga_cm_config {
 	uint32_t ddr2xdqsclk;
 	uint32_t ddrdqclk;
 	uint32_t s2fuser2clk;
+
+	/* altera group */
+	uint32_t alteragrp_mpu;
+	uint32_t alteregrp_main;
 };
 
 void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg);
@@ -95,6 +99,8 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg);
 #define CLKMGR_SDRPLLGRP_DDRDQCLK_ADDRESS 0xd0
 #define CLKMGR_SDRPLLGRP_S2FUSER2CLK_ADDRESS 0xd4
 #define CLKMGR_SDRPLLGRP_EN_ADDRESS 0xd8
+#define CLKMGR_ALTERAGRP_MPUCLK 0xe0
+#define CLKMGR_ALTERAGRP_MAINCLK 0xe4
 
 #define CLKMGR_MAINPLLGRP_EN_S2FUSER0CLK_MASK 0x00000200
 #define CLKMGR_MAINPLLGRP_EN_DBGTIMERCLK_MASK 0x00000080

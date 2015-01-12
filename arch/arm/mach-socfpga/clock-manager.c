@@ -166,7 +166,9 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg)
 
 	writel(cfg->mpuclk, cm + CLKMGR_MAINPLLGRP_MPUCLK_ADDRESS);
 	writel(cfg->mainclk, cm + CLKMGR_MAINPLLGRP_MAINCLK_ADDRESS);
+	writel(cfg->alteragrp_mpu, cm + CLKMGR_ALTERAGRP_MPUCLK);
 	writel(cfg->dbgatclk, cm + CLKMGR_MAINPLLGRP_DBGATCLK_ADDRESS);
+	writel(cfg->alteregrp_main, cm + CLKMGR_ALTERAGRP_MAINCLK);
 	writel(cfg->cfg2fuser0clk, cm + CLKMGR_MAINPLLGRP_CFGS2FUSER0CLK_ADDRESS);
 	writel(cfg->emac0clk, cm + CLKMGR_PERPLLGRP_EMAC0CLK_ADDRESS);
 	writel(cfg->emac1clk, cm + CLKMGR_PERPLLGRP_EMAC1CLK_ADDRESS);

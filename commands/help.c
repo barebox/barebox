@@ -54,7 +54,7 @@ static void list_group(int verbose, const char *grpname, uint32_t group)
 				printf(", ");
 				pos += 2;
 			}
-			printf(cmdtp->name);
+			puts(cmdtp->name);
 			pos += len;
 		}
 	}

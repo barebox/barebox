@@ -79,6 +79,7 @@ series
 
 # cscope files
 cscope.*
+ncscope.*
 
 # patches
 *.patch

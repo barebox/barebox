@@ -530,6 +530,7 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	cdev->flush = serial_flush;
 	cdev->setbrg = serial_setbaudrate;
 	cdev->devname = "usbserial";
+	cdev->devid = DEVICE_ID_SINGLE;
 
 	status = console_register(cdev);
 	if (status)

@@ -15,7 +15,17 @@ struct regulator_ops {
 	int (*is_enabled) (struct regulator_dev *);
 };
 
+#ifdef CONFIG_OFDEVICE
 int of_regulator_register(struct regulator_dev *rd, struct device_node *node);
+#else
+static inline int of_regulator_register(struct regulator_dev *rd,
+					struct device_node *node)
+{
+	return -ENOSYS;
+}
+#endif
+int dev_regulator_register(struct regulator_dev *rd, const char * name,
+			   const char* supply);
 
 void regulators_print(void);
 

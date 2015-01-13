@@ -33,6 +33,7 @@ struct regulator_internal {
 	int min_uv;
 	int max_uv;
 	char *name;
+	const char *supply;
 	struct list_head consumer_list;
 };
 
@@ -42,6 +43,25 @@ struct regulator {
 	struct device_d *dev;
 };
 
+static struct regulator_internal * __regulator_register(struct regulator_dev *rd, const char *name)
+{
+	struct regulator_internal *ri;
+
+	ri = xzalloc(sizeof(*ri));
+	ri->rdev = rd;
+
+	INIT_LIST_HEAD(&ri->consumer_list);
+
+	list_add_tail(&ri->list, &regulator_list);
+
+	if (name)
+		ri->name = xstrdup(name);
+
+	return ri;
+}
+
+
+#ifdef CONFIG_OFDEVICE
 /*
  * of_regulator_register - register a regulator corresponding to a device_node
  * @rd:		the regulator device providing the ops
@@ -54,18 +74,10 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 	struct regulator_internal *ri;
 	const char *name;
 
-	ri = xzalloc(sizeof(*ri));
-	ri->rdev = rd;
-	ri->node = node;
-
-	INIT_LIST_HEAD(&ri->consumer_list);
-
-	list_add_tail(&ri->list, &regulator_list);
-
 	name = of_get_property(node, "regulator-name", NULL);
 
-	if (name)
-		ri->name = xstrdup(name);
+	ri = __regulator_register(rd, name);
+	ri->node = node;
 
 	of_property_read_u32(node, "regulator-enable-ramp-delay",
 			&ri->enable_time_us);
@@ -127,6 +139,55 @@ out:
 
 	return ri;
 }
+#else
+static struct regulator_internal *of_regulator_get(struct device_d *dev, const char *supply)
+{
+	return NULL;
+}
+#endif
+
+int dev_regulator_register(struct regulator_dev *rd, const char * name, const char* supply)
+{
+	struct regulator_internal *ri;
+
+	ri = __regulator_register(rd, name);
+
+	ri->supply = supply;
+
+	return 0;
+}
+
+static struct regulator_internal *dev_regulator_get(struct device_d *dev, const char *supply)
+{
+	struct regulator_internal *ri;
+	struct regulator_internal *ret = NULL;
+	int match, best = 0;
+	const char *dev_id = dev ? dev_name(dev) : NULL;
+
+	list_for_each_entry(ri, &regulator_list, list) {
+		match = 0;
+		if (ri->name) {
+			if (!dev_id || strcmp(ri->name, dev_id))
+				continue;
+			match += 2;
+		}
+		if (ri->supply) {
+			if (!supply || strcmp(ri->supply, supply))
+				continue;
+			match += 1;
+		}
+
+		if (match > best) {
+			ret = ri;
+			if (match != 3)
+				best = match;
+			else
+				break;
+		}
+	}
+
+	return ret;
+}
 
 /*
  * regulator_get - get the supply for a device.
@@ -140,15 +201,20 @@ out:
  */
 struct regulator *regulator_get(struct device_d *dev, const char *supply)
 {
-	struct regulator_internal *ri;
+	struct regulator_internal *ri = NULL;
 	struct regulator *r;
 
-	if (!dev->device_node)
-		return NULL;
+	if (dev->device_node) {
+		ri = of_regulator_get(dev, supply);
+		if (IS_ERR(ri))
+			return ERR_CAST(ri);
+	}
 
-	ri = of_regulator_get(dev, supply);
-	if (IS_ERR(ri))
-		return ERR_CAST(ri);
+	if (!ri) {
+		ri = dev_regulator_get(dev, supply);
+		if (IS_ERR(ri))
+			return ERR_CAST(ri);
+	}
 
 	if (!ri)
 		return NULL;

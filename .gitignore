@@ -31,8 +31,6 @@
 #
 tags
 TAGS
-cross_arch
-cross_compile
 barebox
 barebox.S
 barebox.bin

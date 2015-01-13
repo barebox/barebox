@@ -11,7 +11,8 @@ static int do_splash(int argc, char *argv[])
 {
 	struct surface s;
 	struct screen sc;
-	int ret, opt, fd;
+	int ret = 0;
+	int opt, fd;
 	char *fbdev = "/dev/fb0";
 	char *image_file;
 	int offscreen = 0;
@@ -54,7 +55,7 @@ static int do_splash(int argc, char *argv[])
 	fd = fb_open(fbdev, &sc, offscreen);
 	if (fd < 0) {
 		perror("fd_open");
-		return 1;
+		return fd;
 	}
 
 	if (sc.offscreenbuf) {
@@ -67,8 +68,9 @@ static int do_splash(int argc, char *argv[])
 		memset_pixel(&sc.info, sc.fb, bg_color, sc.s.width * sc.s.height);
 	}
 
-	if (image_renderer_file(&sc, &s, image_file) < 0)
-		ret = 1;
+	ret = image_renderer_file(&sc, &s, image_file);
+	if (ret > 0)
+		ret = 0;
 
 	screen_blit(&sc);
 

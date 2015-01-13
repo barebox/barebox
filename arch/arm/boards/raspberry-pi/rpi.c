@@ -21,6 +21,8 @@
 #include <linux/clkdev.h>
 #include <envfs.h>
 #include <malloc.h>
+#include <gpio.h>
+#include <led.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 
@@ -86,6 +88,49 @@ static int rpi_register_clkdev(u32 clock_id, const char *name)
 	return 0;
 }
 
+
+static struct gpio_led leds[] = {
+	{
+		.gpio	= -EINVAL,
+		.led	= {
+			.name = "ACT",
+		},
+	}, {
+		.gpio	= -EINVAL,
+		.led	= {
+			.name = "PWR",
+		},
+	},
+};
+
+static void rpi_add_led(void)
+{
+	int i;
+	struct gpio_led *l;
+
+	for (i = 0; i < ARRAY_SIZE(leds); i++) {
+		l = &leds[i];
+
+		if (gpio_is_valid(l->gpio))
+			led_gpio_register(l);
+	}
+
+	l = &leds[0];
+	if (gpio_is_valid(l->gpio))
+		led_set_trigger(LED_TRIGGER_HEARTBEAT, &l->led);
+}
+
+static void rpi_b_plus_init(void)
+{
+	leds[0].gpio = 47;
+	leds[1].gpio = 35;
+}
+
+static void rpi_b_init(void)
+{
+	leds[0].gpio = 16;
+	leds[0].active_low = 1;
+}
 
 #define RPI_MODEL(_id, _name, _init)	\
 	[_id] = {				\
@@ -159,6 +204,15 @@ unknown_rev:
 	barebox_set_model("RaspberryPi (BCM2835/ARM1176JZF-S)");
 }
 
+static void rpi_model_init(void)
+{
+	if (!models[rpi_board_rev].init)
+		return;
+
+	models[rpi_board_rev].init();
+	rpi_add_led();
+}
+
 static int rpi_mem_init(void)
 {
 	u32 size = 0;
@@ -219,6 +273,7 @@ static int rpi_env_init(void)
 
 static int rpi_devices_init(void)
 {
+	rpi_model_init();
 	bcm2835_register_mci();
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);

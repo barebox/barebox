@@ -1,3 +1,5 @@
+KBUILD_DEFCONFIG := efi_defconfig
+
 CFLAGS += -fpic -fshort-wchar -mno-sse -mno-mmx
 
 ifeq ($(CONFIG_X86_32),y)

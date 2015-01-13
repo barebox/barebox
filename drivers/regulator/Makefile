@@ -1,2 +1,3 @@
 obj-$(CONFIG_REGULATOR) += core.o
 obj-$(CONFIG_REGULATOR_FIXED) += fixed.o
+obj-$(CONFIG_REGULATOR_BCM2835) += bcm2835.o

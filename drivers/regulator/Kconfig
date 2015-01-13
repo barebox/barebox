@@ -11,4 +11,9 @@ config REGULATOR_FIXED
 	  This enables a simple fixed regulator. It is used for regulators
 	  which are not software controllable or controllable via gpio.
 
+config REGULATOR_BCM2835
+	bool
+	depends on ARCH_BCM2835
+	default y
+
 endif

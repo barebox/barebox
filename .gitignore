@@ -89,3 +89,6 @@ GTAGS
 
 # patches
 *.patch
+
+# Kconfig presets
+all.config

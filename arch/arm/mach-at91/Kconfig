@@ -352,6 +352,11 @@ config MACH_QIL_A9G20
 	  Select this if you are using a Calao Systems QIL-A9G20 Board.
 	  <http://www.calao-systems.com>
 
+config MACH_HABA_KNX_LITE
+	bool "CALAO HABA-KNX-LITE"
+	help
+	  Select this if you are using a Calao Systems HABA-KNX-LITE.
+	  <http://www.calao-systems.com>
 endchoice
 
 endif

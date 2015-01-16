@@ -87,8 +87,19 @@ static int phytec_pfla02_init(void)
 		break;
 	}
 
+	return 0;
+}
+device_initcall(phytec_pfla02_init);
+
+static int phytec_pbab0x_init(void)
+{
+	if (!of_machine_is_compatible("phytec,imx6x-pbab01") &&
+		!of_machine_is_compatible("phytec,imx6dl-pbab05") &&
+		!of_machine_is_compatible("phytec,imx6q-pbab02"))
+		return 0;
+
 	defaultenv_append_directory(defaultenv_phyflex_imx6);
 
 	return 0;
 }
-device_initcall(phytec_pfla02_init);
+device_initcall(phytec_pbab0x_init);

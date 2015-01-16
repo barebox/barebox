@@ -17,6 +17,7 @@
  *
  */
 
+#include <malloc.h>
 #include <envfs.h>
 #include <environment.h>
 #include <bootsource.h>
@@ -79,14 +80,15 @@ static int phytec_pfla02_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
-		environment_path = "/chosen/environment-sd";
+		environment_path = asprintf("/chosen/environment-sd%d",
+					bootsource_get_instance() + 1);
 		break;
 	case BOOTSOURCE_NAND:
-		environment_path = "/chosen/environment-nand";
+		environment_path = asprintf("/chosen/environment-nand");
 		break;
 	default:
 	case BOOTSOURCE_SPI:
-		environment_path = "/chosen/environment-spinor";
+		environment_path = asprintf("/chosen/environment-spinor");
 		break;
 	}
 
@@ -94,6 +96,8 @@ static int phytec_pfla02_init(void)
 	if (ret < 0)
 		pr_warn("Failed to enable environment partition '%s' (%d)\n",
 			environment_path, ret);
+
+	free(environment_path);
 
 	return 0;
 }

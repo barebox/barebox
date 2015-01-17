@@ -40,6 +40,7 @@
 #include <mach/spi.h>
 #include <mach/usb.h>
 #include <envfs.h>
+#include <bootsource.h>
 
 #define PHY_ID_RTL8211E	0x001cc915
 #define PHY_ID_MASK	0xffffffff
@@ -59,11 +60,25 @@ static int rtl8211e_phy_fixup(struct phy_device *dev)
 
 static int e9_devices_init(void)
 {
+	int ret;
+	char *environment_path;
+
 	if (!of_machine_is_compatible("embedsky,e9"))
 		return 0;
 
 	armlinux_set_architecture(3980);
-	barebox_set_hostname("e9");
+
+	environment_path = asprintf("/chosen/environment-mmc%d",
+				bootsource_get_instance());
+
+	ret = of_device_enable_path(environment_path);
+
+	if (ret < 0)
+		pr_warn("Failed to enable environment partition '%s' (%d)\n",
+			environment_path, ret);
+
+	free(environment_path);
+
 	defaultenv_append_directory(defaultenv_e9);
 
 	return 0;

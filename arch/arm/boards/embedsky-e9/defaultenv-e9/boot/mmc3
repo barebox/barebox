@@ -2,5 +2,5 @@
 
 mount /dev/mmc3.0
 
-global.bootm.image=/mnt/mmc3.0/boot/zImage
-global.linux.bootargs.dyn.root="root=/dev/mmcblk1p1 rootwait"
+global.bootm.image=/mnt/mmc3.0/zImage
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait"

@@ -5,6 +5,7 @@ if USB_MUSB
 
 config USB_MUSB_DSPS
 	tristate
+	select OFDEVICE
 
 config USB_MUSB_AM335X
 	tristate "AM335x USB support"

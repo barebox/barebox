@@ -247,6 +247,41 @@ int vprintf(const char *fmt, va_list args)
 }
 EXPORT_SYMBOL(vprintf);
 
+struct console_device *console_get_by_dev(struct device_d *dev)
+{
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (cdev->dev == dev)
+			return cdev;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(console_get_by_dev);
+
+/*
+ * @brief returns current used console device
+ *
+ * @return console device which is registered with CONSOLE_STDIN and
+ * CONSOLE_STDOUT
+ */
+struct console_device *console_get_first_active(void)
+{
+	struct console_device *cdev;
+	/*
+	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
+	 * same output console
+	 */
+	for_each_console(cdev) {
+		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
+			return cdev;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(console_get_first_active);
+
 #endif /* !CONFIG_CONSOLE_NONE */
 
 int fprintf(int file, const char *fmt, ...)
@@ -291,38 +326,3 @@ int fputc(int fd, char c)
 	return 0;
 }
 EXPORT_SYMBOL(fputc);
-
-struct console_device *console_get_by_dev(struct device_d *dev)
-{
-	struct console_device *cdev;
-
-	for_each_console(cdev) {
-		if (cdev->dev == dev)
-			return cdev;
-	}
-
-	return NULL;
-}
-EXPORT_SYMBOL(console_get_by_dev);
-
-/*
- * @brief returns current used console device
- *
- * @return console device which is registered with CONSOLE_STDIN and
- * CONSOLE_STDOUT
- */
-struct console_device *console_get_first_active(void)
-{
-	struct console_device *cdev;
-	/*
-	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
-	 * same output console
-	 */
-	for_each_console(cdev) {
-		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
-			return cdev;
-	}
-
-	return NULL;
-}
-EXPORT_SYMBOL(console_get_first_active);

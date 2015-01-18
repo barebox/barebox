@@ -16,6 +16,7 @@ network or any other medium the Santaro supports. You can backup the original bo
 with:
 
 .. code-block:: sh
+
   cat /dev/mmcblk0boot0 > /mnt/mmcblk0boot0.backup
   cat /dev/mmcblk0boot1 > /mnt/mmcblk0boot1.backup
 
@@ -25,6 +26,7 @@ device.
 To install barebox on the board do:
 
 .. code-block:: sh
+
   echo 0 > /sys/block/mmcblk0boot0/force_ro
   cat barebox-guf-santaro.img > /dev/mmcblk0boot0
 

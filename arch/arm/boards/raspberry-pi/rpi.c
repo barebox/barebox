@@ -22,6 +22,7 @@
 #include <envfs.h>
 #include <malloc.h>
 #include <gpio.h>
+#include <net.h>
 #include <led.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -44,6 +45,12 @@ struct msg_get_clock_rate {
 struct msg_get_board_rev {
 	struct bcm2835_mbox_hdr hdr;
 	struct bcm2835_mbox_tag_get_board_rev get_board_rev;
+	u32 end_tag;
+};
+
+struct msg_get_mac_address {
+	struct bcm2835_mbox_hdr hdr;
+	struct bcm2835_mbox_tag_get_mac_address get_mac_address;
 	u32 end_tag;
 };
 
@@ -88,6 +95,23 @@ static int rpi_register_clkdev(u32 clock_id, const char *name)
 	return 0;
 }
 
+static void rpi_set_usbethaddr(void)
+{
+	BCM2835_MBOX_STACK_ALIGN(struct msg_get_mac_address, msg);
+	int ret;
+
+	BCM2835_MBOX_INIT_HDR(msg);
+	BCM2835_MBOX_INIT_TAG(&msg->get_mac_address, GET_MAC_ADDRESS);
+
+	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
+	if (ret) {
+		printf("bcm2835: Could not query MAC address\n");
+		/* Ignore error; not critical */
+		return;
+	}
+
+	eth_register_ethaddr(0, msg->get_mac_address.body.resp.mac);
+}
 
 static struct gpio_led leds[] = {
 	{
@@ -124,12 +148,14 @@ static void rpi_b_plus_init(void)
 {
 	leds[0].gpio = 47;
 	leds[1].gpio = 35;
+	rpi_set_usbethaddr();
 }
 
 static void rpi_b_init(void)
 {
 	leds[0].gpio = 16;
 	leds[0].active_low = 1;
+	rpi_set_usbethaddr();
 }
 
 #define RPI_MODEL(_id, _name, _init)	\
@@ -143,18 +169,18 @@ static const struct {
 	void (*init)(void);
 } models[] = {
 	RPI_MODEL(0, "Unknown model", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_2, "Model B (no P5)", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_3, "Model B (no P5)", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_4, "Model B", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_5, "Model B", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_6, "Model B", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_2, "Model B (no P5)", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_3, "Model B (no P5)", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_4, "Model B", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_5, "Model B", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_6, "Model B", rpi_b_init),
 	RPI_MODEL(BCM2835_BOARD_REV_A_7, "Model A", NULL),
 	RPI_MODEL(BCM2835_BOARD_REV_A_8, "Model A", NULL),
 	RPI_MODEL(BCM2835_BOARD_REV_A_9, "Model A", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_d, "Model B rev2", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_e, "Model B rev2", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_f, "Model B rev2", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_B_PLUS, "Model B+", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_d, "Model B rev2", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_e, "Model B rev2", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_f, "Model B rev2", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_PLUS, "Model B+", rpi_b_plus_init),
 	RPI_MODEL(BCM2835_BOARD_REV_CM, "Compute Module", NULL),
 	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS, "Model A+", NULL),
 };

@@ -49,11 +49,13 @@
 
 #include "hw_version.h"
 
+#ifdef CONFIG_W1_MASTER_GPIO
 struct w1_gpio_platform_data w1_pdata = {
 	.pin = AT91_PIN_PE25,
 	.ext_pullup_enable_pin = -EINVAL,
 	.is_open_drain = 0,
 };
+#endif
 
 #if defined(CONFIG_NAND_ATMEL)
 static struct atmel_nand_data nand_pdata = {
@@ -323,11 +325,13 @@ struct gpio_led leds[] = {
 			.name = "d1",
 		},
 	}, {
+#ifndef CONFIG_W1_MASTER_GPIO
 		.gpio	= AT91_PIN_PE25,
 		.active_low	= 1,
 		.led	= {
 			.name = "d2",
 		},
+#endif
 	},
 };
 
@@ -353,6 +357,7 @@ static int at91sama5d3xek_mem_init(void)
 }
 mem_initcall(at91sama5d3xek_mem_init);
 
+#ifdef CONFIG_W1_MASTER_GPIO
 static void ek_add_device_w1(void)
 {
 	at91_set_gpio_input(w1_pdata.pin, 0);
@@ -361,6 +366,9 @@ static void ek_add_device_w1(void)
 
 	at91sama5d3xek_devices_detect_hw();
 }
+#else
+static void ek_add_device_w1(void) {}
+#endif
 
 #ifdef CONFIG_POLLER
 /*

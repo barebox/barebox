@@ -68,6 +68,7 @@ config MACH_TX28
 
 config MACH_MX28EVK
 	bool "mx28-evk"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select MXS_OCOTP
 	select HAVE_PBL_MULTI_IMAGES
 	help

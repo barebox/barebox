@@ -161,7 +161,7 @@ static void ek_add_device_mci(void)
 	at91_add_device_mci(1, &mci1_data);
 
 	/* power on MCI1 */
-	at91_set_gpio_output(AT91_PIN_PE15, 0);
+	at91_set_gpio_output(AT91_PIN_PE4, 0);
 }
 #else
 static void ek_add_device_mci(void) {}

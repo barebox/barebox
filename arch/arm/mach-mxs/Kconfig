@@ -69,6 +69,7 @@ config MACH_TX28
 config MACH_MX28EVK
 	bool "mx28-evk"
 	select MXS_OCOTP
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the Freescale i.MX28-EVK board
 

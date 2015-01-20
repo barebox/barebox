@@ -32,6 +32,16 @@ image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-sd.img
 FILE_barebox-karo-tx28-2nd.img = start_barebox_karo_tx28.pblx
 image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-2nd.img
 
+pblx-$(CONFIG_MACH_MX28EVK) += start_barebox_freescale_mx28evk prep_start_barebox_freescale_mx28evk
+PREP_start_barebox_freescale_mx28evk.pblx.mxsbs = start_barebox_freescale_mx28evk_prep
+CFG_start_barebox_freescale_mx28evk.mxsbs = $(mxs28cfg)
+FILE_barebox-freescale-mx28evk-bootstream.img = start_barebox_freescale_mx28evk.mxsbs
+image-$(CONFIG_MACH_MX28EVK) += barebox-freescale-mx28evk-bootstream.img
+FILE_barebox-freescale-mx28evk-sd.img = start_barebox_freescale_mx28evk.mxsbs.mxssd
+image-$(CONFIG_MACH_MX28EVK) += barebox-freescale-mx28evk-sd.img
+FILE_barebox-freescale-mx28evk-2nd.img = start_barebox_freescale_mx28evk.pblx
+image-$(CONFIG_MACH_MX28EVK) += barebox-freescale-mx28evk-2nd.img
+
 pblx-$(CONFIG_MACH_IMX233_OLINUXINO) += start_barebox_olinuxino_imx23 prep_start_barebox_olinuxino_imx23
 PREP_start_barebox_olinuxino_imx23.pblx.mxsbs = start_barebox_olinuxino_imx23_prep;
 CFG_start_barebox_olinuxino_imx23.mxsbs = $(mxs23cfg)

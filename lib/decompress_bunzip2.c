@@ -53,10 +53,6 @@
 #include <bunzip2.h>
 #endif /* STATIC */
 
-#ifndef INT_MAX
-#define INT_MAX 0x7fffffff
-#endif
-
 /* Constants for Huffman coding */
 #define MAX_GROUPS		6
 #define GROUP_SIZE   		50	/* 64 would have been more efficient */

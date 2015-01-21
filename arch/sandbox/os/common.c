@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
 {
 	void *ram;
 	int opt, ret, fd;
-	int malloc_size = 8 * 1024 * 1024;
+	int malloc_size = CONFIG_MALLOC_SIZE;
 	char str[6];
 	int fdno = 0, envno = 0, option_index = 0;
 

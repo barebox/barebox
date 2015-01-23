@@ -108,7 +108,7 @@ static int request_memtest_regions(struct list_head *list)
 		start = PAGE_ALIGN(r->end);
 		end = bank->res->end;
 		size = PAGE_ALIGN_DOWN(end - start + 1);
-		if (start < end) {
+		if (start < end && start > r->end) {
 			ret = alloc_memtest_region(list, start, size);
 			if (ret < 0)
 				return ret;

@@ -41,6 +41,7 @@ static int do_splash(int argc, char *argv[])
 			break;
 		case 'y':
 			s.y = simple_strtoul(optarg, NULL, 0);
+			break;
 		case 'o':
 			offscreen = 1;
 		}

@@ -38,5 +38,5 @@ This produces the following images:
 
  * barebox-karo-tx28-bootstream.img - Use with the bcb command
  * barebox-karo-tx28-sd.img - Use for SD cards
- * barebox-karo-tx28-2nd.img - Use for 2nd stage booting (with bootm)
+ * barebox-karo-tx28-2nd.img - Use for 2nd stage booting (with :ref:`command_bootm`)
 

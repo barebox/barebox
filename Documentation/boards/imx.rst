@@ -101,4 +101,3 @@ or ``imx_defconfig`` instead.
   :maxdepth: 1
 
   imx/*
-  mxs/*

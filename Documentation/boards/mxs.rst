@@ -117,3 +117,15 @@ Booting second stage
 
 The second stage images can be started with the barebox :ref:`command_bootm` command or
 just jumped into using the :ref:`command_go` command.
+
+i.MXs boards
+------------
+
+Not all supported boards have a description here.
+
+.. toctree::
+  :glob:
+  :numbered:
+  :maxdepth: 1
+
+  mxs/*

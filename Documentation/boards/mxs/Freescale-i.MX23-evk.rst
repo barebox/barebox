@@ -21,7 +21,7 @@ How to get the bootloader binary image
 
 Using the default configuration::
 
-  make ARCH=arm imx23evk_defconfig
+  make ARCH=arm freescale-mx23-evk_defconfig
 
 Build the bootloader binary image::
 

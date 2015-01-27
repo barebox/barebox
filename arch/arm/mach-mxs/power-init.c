@@ -993,6 +993,19 @@ static const struct mxs_vddx_cfg mxs_vddmem_cfg = {
 	.bo_offset_offset	= 0,
 };
 
+static const struct mxs_vddx_cfg mxs_vdda_cfg = {
+	.reg			= &(((struct mxs_power_regs *)IMX_POWER_BASE)->
+					hw_power_vddactrl),
+	.step_mV		= 25,
+	.lowest_mV		= 1500,
+	.powered_by_linreg	= NULL,
+	.trg_mask		= POWER_VDDACTRL_TRG_MASK,
+	.bo_irq			= POWER_CTRL_VDDA_BO_IRQ,
+	.bo_enirq		= POWER_CTRL_ENIRQ_VDDA_BO,
+	.bo_offset_mask		= POWER_VDDACTRL_BO_OFFSET_MASK,
+	.bo_offset_offset	= POWER_VDDACTRL_BO_OFFSET_OFFSET,
+};
+
 /**
  * mxs_power_set_vddx() - Configure voltage on DC-DC converter rail
  * @cfg:		Configuration data of the DC-DC converter rail
@@ -1151,6 +1164,7 @@ static void __mx23_power_init(int has_battery)
 	mxs_power_set_vddx(&mx23_vddio_cfg, 3300, 3150);
 	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
 	mxs_power_set_vddx(&mxs_vddmem_cfg, 2500, 1700);
+	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |
@@ -1207,6 +1221,7 @@ static void __mx28_power_init(int has_battery)
 
 	mxs_power_set_vddx(&mx28_vddio_cfg, 3300, 3150);
 	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
+	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |

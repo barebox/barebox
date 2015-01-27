@@ -24,6 +24,40 @@
 #include <mach/regs-rtc.h>
 #include <mach/regs-lradc.h>
 
+static void mxs_power_status(void)
+{
+	struct mxs_power_regs *power_regs =
+		(struct mxs_power_regs *)IMX_POWER_BASE;
+	static int linregofs[] = { 0, 1, -1, -2 };
+
+	uint32_t vddio = readl(&power_regs->hw_power_vddioctrl);
+	uint32_t vdda = readl(&power_regs->hw_power_vddactrl);
+	uint32_t vddd = readl(&power_regs->hw_power_vdddctrl);
+	uint32_t vddmem = readl(&power_regs->hw_power_vddmemctrl);
+
+	printf("vddio:  %dmV (BO -%dmV), Linreg enabled, Linreg offset: %d, FET %sabled\n",
+			(vddio & 0x1f) * 50 + 2800,
+			((vddio >> 8) & 0x7) * 50,
+			linregofs[((vdda >> 12) & 0x3)],
+			(vddio & (1 << 16)) ? "dis" : "en");
+	printf("vdda:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
+			(vdda & 0x1f) * 25 + 1500,
+			((vdda >> 8) & 0x7) * 25,
+			(vdda & (1 << 17)) ? "en" : "dis",
+			linregofs[((vdda >> 12) & 0x3)],
+			(vdda & (1 << 16)) ? "dis" : "en");
+	printf("vddd:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
+			(vddd & 0x1f) * 25 + 800,
+			((vddd >> 8) & 0x7) * 25,
+			(vddd & (1 << 21)) ? "en" : "dis",
+			linregofs[((vdda >> 16) & 0x3)],
+			(vdda & (1 << 20)) ? "dis" : "en");
+	printf("vddmem: %dmV (BO -%dmV), Linreg %sabled\n",
+			(vddmem & 0x1f) * 25 + 1100,
+			((vddmem >> 5) & 0x7) * 25,
+			(vddmem & (1 << 8)) ? "en" : "dis");
+}
+
 /*
  * This delay function is intended to be used only in early stage of boot, where
  * clock are not set up yet. The timer used here is reset on every boot and
@@ -1197,6 +1231,7 @@ static void __mx28_power_init(int has_battery)
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
 
+	mxs_power_status();
 	mxs_power_clock2xtal();
 	mxs_power_set_auto_restart();
 	mxs_power_set_linreg();
@@ -1231,6 +1266,8 @@ static void __mx28_power_init(int has_battery)
 	writel(POWER_5VCTRL_PWDN_5VBRNOUT, &power_regs->hw_power_5vctrl_set);
 
 	mxs_early_delay(1000);
+
+	mxs_power_status();
 }
 
 void mx28_power_init(void)

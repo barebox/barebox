@@ -24,6 +24,22 @@
 #include <mach/regs-rtc.h>
 #include <mach/regs-lradc.h>
 
+/*
+ * has_battery - true when this board has a battery.
+ */
+static int has_battery;
+
+/*
+ * use_battery_input - true when this board is supplied from the
+ * battery input, but has a DC source instead of a real battery
+ */
+static int use_battery_input;
+
+/*
+ * use_5v_input - true when this board can use the 5V input
+ */
+static int use_5v_input;
+
 static void mxs_power_status(void)
 {
 	struct mxs_power_regs *power_regs =
@@ -472,7 +488,7 @@ static void mxs_power_enable_4p2(void)
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
 	uint32_t vdddctrl, vddactrl, vddioctrl;
-	uint32_t tmp, tmp2;
+	uint32_t tmp, tmp2, dropout_ctrl;
 
 	vdddctrl = readl(&power_regs->hw_power_vdddctrl);
 	vddactrl = readl(&power_regs->hw_power_vddactrl);
@@ -498,10 +514,15 @@ static void mxs_power_enable_4p2(void)
 		POWER_5VCTRL_HEADROOM_ADJ_MASK,
 		0x4 << POWER_5VCTRL_HEADROOM_ADJ_OFFSET);
 
+	if (has_battery || use_battery_input)
+		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_SEL;
+	else
+		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_4P2;
+
 	clrsetbits_le32(&power_regs->hw_power_dcdc4p2,
 		POWER_DCDC4P2_DROPOUT_CTRL_MASK,
 		POWER_DCDC4P2_DROPOUT_CTRL_100MV |
-		POWER_DCDC4P2_DROPOUT_CTRL_SRC_SEL);
+		dropout_ctrl);
 
 	clrsetbits_le32(&power_regs->hw_power_5vctrl,
 		POWER_5VCTRL_CHARGE_4P2_ILIMIT_MASK,
@@ -1162,10 +1183,15 @@ static void mx23_ungate_power(void)
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
  */
-static void __mx23_power_init(int has_battery)
+void mx23_power_init(int __has_battery, int __use_battery_input,
+		int __use_5v_input)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
+
+	has_battery = __has_battery;
+	use_battery_input = __use_battery_input;
+	use_5v_input = __use_5v_input;
 
 	mx23_ungate_power();
 
@@ -1180,8 +1206,10 @@ static void __mx23_power_init(int has_battery)
 
 	if (has_battery)
 		mxs_power_configure_power_source();
-	else
+	else if (use_battery_input)
 		mxs_enable_battery_input();
+	else if (use_5v_input)
+		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();
 
@@ -1210,26 +1238,21 @@ static void __mx23_power_init(int has_battery)
 	mxs_early_delay(1000);
 }
 
-void mx23_power_init(void)
-{
-	__mx23_power_init(1);
-}
-
-void mx23_power_init_battery_input(void)
-{
-	__mx23_power_init(0);
-}
-
 /**
  * mx28_power_init() - The power block init main function
  *
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
  */
-static void __mx28_power_init(int has_battery)
+void mx28_power_init(int __has_battery, int __use_battery_input,
+		int __use_5v_input)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
+
+	has_battery = __has_battery;
+	use_battery_input = __use_battery_input;
+	use_5v_input = __use_5v_input;
 
 	mxs_power_status();
 	mxs_power_clock2xtal();
@@ -1243,8 +1266,10 @@ static void __mx28_power_init(int has_battery)
 
 	if (has_battery)
 		mxs_power_configure_power_source();
-	else
+	else if (use_battery_input)
 		mxs_enable_battery_input();
+	else if (use_5v_input)
+		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();
 
@@ -1268,16 +1293,6 @@ static void __mx28_power_init(int has_battery)
 	mxs_early_delay(1000);
 
 	mxs_power_status();
-}
-
-void mx28_power_init(void)
-{
-	__mx28_power_init(1);
-}
-
-void mx28_power_init_battery_input(void)
-{
-	__mx28_power_init(0);
 }
 
 /**

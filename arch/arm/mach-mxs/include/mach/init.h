@@ -12,10 +12,10 @@
 
 void mxs_early_delay(int delay);
 
-void mx23_power_init(void);
-void mx23_power_init_battery_input(void);
-void mx28_power_init(void);
-void mx28_power_init_battery_input(void);
+void mx23_power_init(int __has_battery, int __use_battery_input,
+		int __use_5v_input);
+void mx28_power_init(int __has_battery, int __use_battery_input,
+		int __use_5v_input);
 void mxs_power_wait_pswitch(void);
 
 extern uint32_t mx28_dram_vals[];

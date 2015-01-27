@@ -2018,7 +2018,7 @@ config CMD_OF_PROPERTY
 
 	  Valid formats for values:
 	  <0x00112233 4 05> - an array of cells. cells not beginning with a digit are
-                    interpreted as node pathes and converted to phandles
+                    interpreted as node paths and converted to phandles
 	  [00 11 22 .. nn]  - byte stream
 	  If the value does not start with '<' or '[' it is interpreted as string
 

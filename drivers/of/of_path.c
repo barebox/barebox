@@ -113,7 +113,7 @@ out:
  * @outpath: if this function returns 0 outpath will contain the path belonging
  *           to the input path description. Must be freed with free().
  *
- * pathes in the devicetree have the form of a multistring property. The first
+ * paths in the devicetree have the form of a multistring property. The first
  * string contains the full path to the physical device containing the path.
  * The remaining strings have the form "<type>:<options>". Currently supported
  * for <type> are:

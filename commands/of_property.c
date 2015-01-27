@@ -308,7 +308,7 @@ BAREBOX_CMD_HELP_OPT ("-d",  "delete property")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Valid formats for values:")
 BAREBOX_CMD_HELP_TEXT("<0x00112233 4 05> - an array of cells. cells not beginning with a digit are")
-BAREBOX_CMD_HELP_TEXT("                    interpreted as node pathes and converted to phandles")
+BAREBOX_CMD_HELP_TEXT("                    interpreted as node paths and converted to phandles")
 BAREBOX_CMD_HELP_TEXT("[00 11 22 .. nn]  - byte stream")
 BAREBOX_CMD_HELP_TEXT("If the value does not start with '<' or '[' it is interpreted as string")
 BAREBOX_CMD_HELP_END

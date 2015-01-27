@@ -674,9 +674,9 @@ config DEFAULT_ENVIRONMENT_PATH
 	depends on DEFAULT_ENVIRONMENT
 	prompt "Default environment path"
 	help
-	  Space separated list of pathes the default environment will be taken from.
-	  Relative pathes will be relative to the barebox Toplevel dir, but absolute
-	  pathes are fine aswell.
+	  Space separated list of paths the default environment will be taken from.
+	  Relative paths will be relative to the barebox Toplevel dir, but absolute
+	  paths are fine aswell.
 
 config BAREBOXENV_TARGET
 	bool

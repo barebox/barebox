@@ -2,8 +2,8 @@
 
 # Generate the default environment file from a list of directories
 # usage: genenv <basedir> <objdir> <target> <dir>...
-# where <basedir> is the base directory for relative pathes in <dir>
-# where <objdir> is the base directory for relative pathes for result
+# where <basedir> is the base directory for relative paths in <dir>
+# where <objdir> is the base directory for relative paths for result
 # and <target> is the resulting binary environment
 objtree=$2
 basedir=$1

@@ -79,7 +79,7 @@ of all variables with special meaning along with a short description::
 
   barebox:/ magicvar
   OPTARG                           optarg for hush builtin getopt
-  PATH                             colon separated list of pathes to search for executables
+  PATH                             colon separated list of paths to search for executables
   PS1                              hush prompt
   armlinux_architecture            ARM machine ID
   armlinux_system_rev              ARM system revision

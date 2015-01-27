@@ -166,7 +166,7 @@ A Bootloader Spec Entry consists of key value pairs::
   linux      /6a9857a393724b7a981ebb5b8495b9ea/3.8.0-2.fc19.x86_64/linux
   initrd     /6a9857a393724b7a981ebb5b8495b9ea/3.8.0-2.fc19.x86_64/initrd
 
-All pathes are absolute pathes in the partition. Bootloader Spec Entries can
+All paths are absolute paths in the partition. Bootloader Spec Entries can
 be created manually, but there also is the ``scripts/kernel-install`` tool to
 create/list/modify entries directly on a MMC/SD card or other media. To use
 it create a SD card / USB memory stick with a /boot partition with type 0xea.
@@ -246,7 +246,7 @@ link target is exported from the server.
 
 ``boot net`` will then start the Kernel.
 
-If the pathes or names are not suitable they can be adjusted in
+If the paths or names are not suitable they can be adjusted in
 ``/env/boot/net``:
 
 .. code-block:: sh

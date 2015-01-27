@@ -164,20 +164,20 @@ Care must be taken that a partition is only accessed either via the Block IO Pro
 the File IO Interface. Doing both at the same time will most likely result in data
 corruption on the partition
 
-EFI device pathes
------------------
+EFI device paths
+----------------
 
-In EFI each device can be pointed to using a device path. Device pathes have multiple
+In EFI each device can be pointed to using a device path. Device paths have multiple
 components. The toplevel component on X86 systems will be the PCI root complex, on
 other systems this can be the physical memory space. Each component will now descrive
 how to find the child component on the parent bus. Additional device path nodes can
-describe network addresses or filenames on partitions. Device pathes have a binary
+describe network addresses or filenames on partitions. Device paths have a binary
 representation and a clearly defined string representation. These characteristics make
-device pathes suitable for describing boot entries. barebox could use device pathes
-to store the reference to kernels on boot media. Also device pathes could be used to
+device paths suitable for describing boot entries. barebox could use device paths
+to store the reference to kernels on boot media. Also device paths could be used to
 pass a root filesystem to the Kernel.
 
-Currently device pathes are only integrated into barebox in a way that each EFI device
+Currently device paths are only integrated into barebox in a way that each EFI device
 has a device parameter ``devpath`` which contains its device path:
 
 .. code-block:: sh

@@ -1,0 +1,15 @@
+#include <arm/imx28-duckbill.dts>
+
+/ {
+	chosen {
+		stdout-path = &duart;
+	};
+};
+
+&duart {
+	arm,primecell-periphid = <0x00041011>;
+};
+
+&ocotp {
+	status = "okay";
+};

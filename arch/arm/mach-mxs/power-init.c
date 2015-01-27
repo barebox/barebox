@@ -1177,7 +1177,7 @@ static void __mx23_power_init(int has_battery)
 	mxs_enable_output_rail_protection();
 
 	mxs_power_set_vddx(&mx23_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1000);
+	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
 	mxs_power_set_vddx(&mxs_vddmem_cfg, 2500, 1700);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
@@ -1234,7 +1234,7 @@ static void __mx28_power_init(int has_battery)
 	mxs_enable_output_rail_protection();
 
 	mxs_power_set_vddx(&mx28_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1000);
+	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |

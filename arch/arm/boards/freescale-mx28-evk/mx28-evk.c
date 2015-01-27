@@ -275,8 +275,6 @@ static int mx28_evk_devices_init(void)
 	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 0x2000,
 			   IORESOURCE_MEM, &mx28_evk_fb_pdata);
 
-	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0x2000,
-			IORESOURCE_MEM, NULL);
 	mx28_evk_get_ethaddr(); /* must be after registering ocotp */
 
 	mx28_evk_fec_reset();

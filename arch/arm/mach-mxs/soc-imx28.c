@@ -66,6 +66,7 @@ static int imx28_devices_init(void)
 	add_generic_device("imx28-gpio", 2, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx28-gpio", 3, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx28-gpio", 4, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
+	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0x2000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

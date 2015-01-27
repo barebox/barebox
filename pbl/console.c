@@ -30,3 +30,13 @@ int pr_print(int level, const char *fmt, ...)
 
 	return i;
 }
+
+int ctrlc(void)
+{
+	return 0;
+}
+
+void console_putc(unsigned int ch, char c)
+{
+	putc_ll(c);
+}

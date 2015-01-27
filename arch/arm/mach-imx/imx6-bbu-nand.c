@@ -437,6 +437,16 @@ static int imx6_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *da
 
 	fcb_create(fcb, mtd);
 	encode_hamming_13_8(fcb, ecc, 512);
+
+	/*
+	 * Set the first and second byte of OOB data to 0xFF, not 0x00. These
+	 * bytes are used as the Manufacturers Bad Block Marker (MBBM). Since
+	 * the FCB is mostly written to the first page in a block, a scan for
+	 * factory bad blocks will detect these blocks as bad, e.g. when
+	 * function nand_scan_bbt() is executed to build a new bad block table.
+	 */
+	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
+
 	ret = raw_write_page(mtd, fcb_raw_page, 0);
 	if (ret)
 		goto out;

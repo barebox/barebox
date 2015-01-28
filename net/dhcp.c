@@ -559,9 +559,7 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	bp->bp_hops = 0;
 	/* FIXME what is this? */
 //	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
-	net_copy_ip(&bp->bp_ciaddr, &bp_offer->bp_ciaddr); /* both in network byte order */
-	net_copy_ip(&bp->bp_yiaddr, &bp_offer->bp_yiaddr);
-	net_copy_ip(&bp->bp_siaddr, &bp_offer->bp_siaddr);
+
 	/*
 	 * RFC3046 requires Relay Agents to discard packets with
 	 * nonzero and offered giaddr

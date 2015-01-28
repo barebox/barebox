@@ -40,7 +40,7 @@ ENDPROC(setup_c)
 /*
  * void relocate_to_adr(unsigned long targetadr)
  *
- * Copy binary to targetadr, relocate code, clear bss and continue
+ * Copy binary to targetadr, relocate code and continue
  * executing at new address.
  */
 .section .text.relocate_to_adr

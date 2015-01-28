@@ -557,8 +557,7 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	bp->bp_htype = HWT_ETHER;
 	bp->bp_hlen = HWL_ETHER;
 	bp->bp_hops = 0;
-	/* FIXME what is this? */
-//	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
+	bp->bp_secs = htons(get_time_ns() >> 30);
 
 	/*
 	 * RFC3046 requires Relay Agents to discard packets with

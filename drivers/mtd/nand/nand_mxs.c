@@ -20,6 +20,7 @@
 
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/mtd/nand_mxs.h>
 #include <linux/types.h>
 #include <linux/clk.h>
 #include <linux/err.h>
@@ -231,7 +232,7 @@ static uint32_t mxs_nand_aux_status_offset(void)
 	return (MXS_NAND_METADATA_SIZE + 0x3) & ~0x3;
 }
 
-static inline uint32_t mxs_nand_get_ecc_strength(uint32_t page_data_size,
+uint32_t mxs_nand_get_ecc_strength(uint32_t page_data_size,
 						uint32_t page_oob_size)
 {
 	int ecc_chunk_count = mxs_nand_ecc_chunk_cnt(page_data_size);
@@ -294,14 +295,14 @@ static inline uint32_t mxs_nand_get_mark_offset(uint32_t page_data_size,
 	return block_mark_bit_offset;
 }
 
-static uint32_t mxs_nand_mark_byte_offset(struct mtd_info *mtd)
+uint32_t mxs_nand_mark_byte_offset(struct mtd_info *mtd)
 {
 	uint32_t ecc_strength;
 	ecc_strength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);
 	return mxs_nand_get_mark_offset(mtd->writesize, ecc_strength) >> 3;
 }
 
-static uint32_t mxs_nand_mark_bit_offset(struct mtd_info *mtd)
+uint32_t mxs_nand_mark_bit_offset(struct mtd_info *mtd)
 {
 	uint32_t ecc_strength;
 	ecc_strength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);

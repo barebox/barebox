@@ -66,14 +66,23 @@
 
 		partition@0 {
 			label = "barebox";
-			reg = <0x0 0x80000>;
+			reg = <0x0 0x100000>;
 		};
 
 		partition@1 {
 			label = "barebox-environment";
-			reg = <0x80000 0x10000>;
+			reg = <0x100000 0x20000>;
 		};
 
+		partition@2 {
+			label = "oftree";
+			reg = <0x120000 0x20000>;
+		};
+
+		partition@3 {
+			label = "kernel";
+			reg = <0x140000 0x0>;
+		};
 	};
 };
 

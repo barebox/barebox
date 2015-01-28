@@ -12,7 +12,7 @@ ip=dhcp
 #eth0.ipaddr=a.b.c.d.e
 #eth0.netmask=a.b.c.d.e
 #eth0.gateway=a.b.c.d.e
-eth0.ethaddr=08:90:90:90:90:90
+#eth0.ethaddr=
 
 # can be either 'nfs', 'tftp' or 'nand'
 kernel_loc=tftp

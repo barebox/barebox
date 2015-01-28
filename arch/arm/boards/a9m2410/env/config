@@ -23,4 +23,4 @@ eth0.ipaddr=192.168.42.31
 eth0.netmask=255.255.0.0
 eth0.gateway=192.168.23.1
 eth0.serverip=192.168.23.2
-eth0.ethaddr=00:04:f3:00:06:35
+#eth0.ethaddr=

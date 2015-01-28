@@ -579,7 +579,7 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	/*
 	 * Copy options from OFFER packet if present
 	 */
-	net_copy_ip(&OfferedIP, &bp->bp_yiaddr);
+	net_copy_ip(&OfferedIP, &bp_offer->bp_yiaddr);
 	extlen = dhcp_extended((u8 *)bp->bp_vend, DHCP_REQUEST, net_dhcp_server_ip,
 				OfferedIP);
 

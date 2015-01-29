@@ -1,6 +1,8 @@
 #ifndef _LINUX_BUG_H
 #define _LINUX_BUG_H
 
+#include <asm-generic/bug.h>
+
 #ifdef __CHECKER__
 #define BUILD_BUG_ON_NOT_POWER_OF_2(n) (0)
 #define BUILD_BUG_ON_ZERO(e) (0)

@@ -3,37 +3,41 @@
 # subdirectories here. Add them in the ".gitignore" file
 # in that subdirectory instead.
 #
+# NOTE! Please use 'git ls-files -i --exclude-standard'
+# command after changing this file, to see if there are
+# any tracked files which get ignored after the change.
+#
 # Normal rules
 #
-*~
 .*
-\#*\#
 *.o
+*.o.*
 *.a
 *.s
 *.ko
 *.so
+*.so.dbg
 *.mod.c
 *.i
 *.lst
 *.symtypes
 *.elf
+*.patch
 *.mcp
-*.orig
 *.bct
 *.dcd
 *.dcd.S
 *.bbenv
 *.bbenv.*
+Module.symvers
 
 #
 # Top-level generic files
 #
-tags
-TAGS
+/tags
+/TAGS
 /barebox*
-System.map
-Module.symvers
+/System.map
 
 #
 # git files that we don't want to ignore even it they are dot-files
@@ -68,8 +72,9 @@ GRTAGS
 GSYMS
 GTAGS
 
-# patches
-*.patch
+*.orig
+*~
+\#*\#
 
 # Kconfig presets
 all.config

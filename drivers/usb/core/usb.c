@@ -372,7 +372,7 @@ int usb_new_device(struct usb_device *dev)
 		goto err_out;
 	}
 
-	wait_ms(10);	/* Let the SET_ADDRESS settle */
+	mdelay(10);	/* Let the SET_ADDRESS settle */
 
 	tmp = sizeof(*dev->descriptor);
 

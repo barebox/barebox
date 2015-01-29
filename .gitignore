@@ -34,7 +34,6 @@ TAGS
 /barebox*
 System.map
 Module.symvers
-barebox_default_env*
 
 #
 # git files that we don't want to ignore even it they are dot-files

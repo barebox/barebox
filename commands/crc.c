@@ -46,9 +46,10 @@ static int do_crc(int argc, char *argv[])
 #ifdef CONFIG_CMD_CRC_CMP
 	char *vfilename = NULL;
 #endif
+	char *crcvarname = NULL, *sizevarname = NULL;
 	int opt, err = 0, filegiven = 0, verify = 0;
 
-	while((opt = getopt(argc, argv, "f:F:v:V:")) > 0) {
+	while((opt = getopt(argc, argv, "f:F:v:V:r:s:")) > 0) {
 		switch(opt) {
 		case 'f':
 			filename = optarg;
@@ -60,6 +61,12 @@ static int do_crc(int argc, char *argv[])
 			vfilename = optarg;
 			break;
 #endif
+		case 'r':
+			crcvarname = optarg;
+			break;
+		case 's':
+			sizevarname = optarg;
+			break;
 		case 'v':
 			verify = 1;
 			vcrc = simple_strtoul(optarg, NULL, 0);
@@ -88,6 +95,18 @@ static int do_crc(int argc, char *argv[])
 
 	printf("CRC32 for %s 0x%08lx ... 0x%08lx ==> 0x%08lx",
 			filename, (ulong)start, (ulong)start + total - 1, crc);
+
+	if (crcvarname) {
+		char *crcstr = asprintf("0x%lx", crc);
+		setenv(crcvarname, crcstr);
+		kfree(crcstr);
+	}
+
+	if (sizevarname) {
+		char *sizestr = asprintf("0x%lx", total);
+		setenv(sizevarname, sizestr);
+		kfree(sizestr);
+	}
 
 #ifdef CONFIG_CMD_CRC_CMP
 	if (vfilename) {
@@ -118,6 +137,8 @@ BAREBOX_CMD_HELP_OPT ("-F FILE", "Use file to compare.")
 #endif
 BAREBOX_CMD_HELP_OPT ("-v CRC",  "Verify")
 BAREBOX_CMD_HELP_OPT ("-V FILE", "Verify with CRC read from FILE")
+BAREBOX_CMD_HELP_OPT  ("-r <var>",  "Set <var> to the checksum result\n")
+BAREBOX_CMD_HELP_OPT  ("-s <var>",  "Set <var> to the data size\n")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(crc32)

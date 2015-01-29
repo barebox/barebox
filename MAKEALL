@@ -172,7 +172,7 @@ do_build_all() {
 
 		if [ -d $i ]
 		then
-			do_build ${arch}
+			do_build ${arch} "*"
 			build_target=$((build_target + 1))
 		fi
 	done

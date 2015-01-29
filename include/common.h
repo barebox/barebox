@@ -27,6 +27,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
+#include <linux/bug.h>
 #include <linux/stddef.h>
 #include <asm/common.h>
 #include <printk.h>
@@ -174,25 +175,6 @@ static inline char *shell_expand(char *str)
 	return strdup(str);
 }
 #endif
-
-/* Force a compilation error if condition is true */
-#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
-
-/* Force a compilation error if condition is constant and true */
-#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
-
-/* Force a compilation error if a constant expression is not a power of 2 */
-#define BUILD_BUG_ON_NOT_POWER_OF_2(n)			\
-	BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
-
-/*
- * Force a compilation error if condition is true, but also produce a
- * result (of value 0 and type size_t), so the expression can be used
- * e.g. in a structure initializer (or where-ever else comma
- * expressions aren't permitted).
- */
-#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
-#define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
 
 #define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
 #define __ALIGN_MASK(x, mask)	(((x) + (mask)) & ~(mask))

@@ -488,9 +488,9 @@ images/%.s: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
 ifdef CONFIG_PBL_MULTI_IMAGES
-all: $(KBUILD_DTBS) barebox.bin images
+all: barebox.bin images
 else
-all: barebox-flash-image $(KBUILD_DTBS)
+all: barebox-flash-image
 endif
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/

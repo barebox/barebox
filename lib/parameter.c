@@ -114,7 +114,7 @@ int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 		return 0;
 	}
 	p->value = strdup(val);
-	return 0;
+	return p->value ? 0 : -ENOMEM;
 }
 
 static const char *param_get_generic(struct device_d *dev, struct param_d *p)

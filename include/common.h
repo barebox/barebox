@@ -27,7 +27,6 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
-#include <linux/bug.h>
 #include <linux/stddef.h>
 #include <asm/common.h>
 #include <printk.h>
@@ -58,7 +57,6 @@
 void reginfo(void);
 
 void __noreturn hang (void);
-void __noreturn panic(const char *fmt, ...);
 
 char *size_human_readable(unsigned long long size);
 
@@ -75,11 +73,6 @@ void __noreturn poweroff(void);
 /* lib_$(ARCH)/time.c */
 void	udelay (unsigned long);
 void	mdelay (unsigned long);
-
-/* lib_generic/vsprintf.c */
-ulong	simple_strtoul(const char *cp,char **endp,unsigned int base);
-unsigned long long	simple_strtoull(const char *cp,char **endp,unsigned int base);
-long	simple_strtol(const char *cp,char **endp,unsigned int base);
 
 /* lib_generic/crc32.c */
 uint32_t crc32(uint32_t, const void*, unsigned int);
@@ -144,13 +137,8 @@ static inline char *shell_expand(char *str)
 }
 #endif
 
-#define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
-#define __ALIGN_MASK(x, mask)	(((x) + (mask)) & ~(mask))
 #define ALIGN_DOWN(x, a)	((x) & ~((typeof(x))(a) - 1))
-#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
-#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 
-#define ARRAY_SIZE(arr)		(sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
 /*
@@ -163,17 +151,6 @@ static inline char *shell_expand(char *str)
 #define STACK_ALIGN_ARRAY(type, name, size, align)		\
 	char __##name[sizeof(type) * (size) + (align) - 1];	\
 	type *name = (type *)ALIGN((uintptr_t)__##name, align)
-
-/**
- * container_of - cast a member of a structure out to the containing structure
- * @ptr:	the pointer to the member.
- * @type:	the type of the container struct this is embedded in.
- * @member:	the name of the member within the struct.
- *
- */
-#define container_of(ptr, type, member) ({			\
-	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
 
 #define PAGE_SIZE	4096
 #define PAGE_SHIFT	12
@@ -215,41 +192,6 @@ void barebox_set_hostname(const char *);
 #else
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 #endif
-
-#define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
-
-#define DIV_ROUND_CLOSEST(x, divisor)(			\
-{							\
-	typeof(divisor) __divisor = divisor;		\
-	(((x) + ((__divisor) / 2)) / (__divisor));	\
-}							\
-)
-
-/**
- * upper_32_bits - return bits 32-63 of a number
- * @n: the number we're accessing
- *
- * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
- * the "right shift count >= width of type" warning when that quantity is
- * 32-bits.
- */
-#define upper_32_bits(n)	((u32)(((n) >> 16) >> 16))
-
-/**
- * lower_32_bits - return bits 0-31 of a number
- * @n: the number we're accessing
- */
-#define lower_32_bits(n)	((u32)(n))
-
-#define abs(x) ({                               \
-		long __x = (x);                 \
-		(__x < 0) ? -__x : __x;         \
-	})
-
-#define abs64(x) ({                             \
-		s64 __x = (x);                  \
-		(__x < 0) ? -__x : __x;         \
-	})
 
 /*
  * Check if two regions overlap. returns true if they do, false otherwise

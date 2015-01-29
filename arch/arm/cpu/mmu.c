@@ -1,6 +1,4 @@
 /*
- * start-pbl.c
- *
  * Copyright (c) 2009-2013 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this

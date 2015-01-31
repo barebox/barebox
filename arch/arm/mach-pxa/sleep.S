@@ -21,7 +21,7 @@
 #define UNCACHED_PHYS_0	0
 		.text
 
-#ifdef CONFIG_ARCH_PXA27X
+#if (defined CONFIG_ARCH_PXA27X || defined CONFIG_ARCH_PXA25X)
 /*
  * pxa27x_finish_suspend()
  *

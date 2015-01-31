@@ -169,8 +169,10 @@ static int __init pxa2xx_mfp_init(void)
 	if (!cpu_is_pxa2xx())
 		return 0;
 
-	if (cpu_is_pxa25x())
+	if (cpu_is_pxa25x()) {
+		pxa_init_gpio(0, 84);
 		pxa25x_mfp_init();
+	}
 
 	if (cpu_is_pxa27x()) {
 		pxa_init_gpio(2, 120);

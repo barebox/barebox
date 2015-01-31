@@ -53,6 +53,7 @@
 #define MECR		__REG(0x48000014)  /* Expansion Memory (PCMCIA/Compact Flash) Bus Configuration */
 #define SXLCR		__REG(0x48000018)  /* LCR value to be written to SDRAM-Timing Synchronous Flash */
 #define SXCNFG		__REG(0x4800001C)  /* Synchronous Static Memory Control Register */
+#define FLYCNFG		__REG(0x48000020)  /* Flycnfg Register */
 #define SXMRS		__REG(0x48000024)  /* MRS value to be written to Synchronous Flash or SMROM */
 #define MCMEM0		__REG(0x48000028)  /* Card interface Common Memory Space Socket 0 Timing */
 #define MCMEM1		__REG(0x4800002C)  /* Card interface Common Memory Space Socket 1 Timing */

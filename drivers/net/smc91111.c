@@ -435,14 +435,14 @@
 #define MEMORY_WAIT_TIME 16
 
 struct accessors {
-	void (*ob)(unsigned, void __iomem *);
-	void (*ow)(unsigned, void __iomem *);
-	void (*ol)(unsigned long, void __iomem *);
-	void (*osl)(void __iomem *, const void  *, int);
-	unsigned (*ib)(void __iomem *);
-	unsigned (*iw)(void __iomem *);
-	unsigned long (*il)(void __iomem *);
-	void (*isl)(void __iomem *, void*, int);
+	void (*ob)(unsigned, void __iomem *, unsigned, unsigned);
+	void (*ow)(unsigned, void __iomem *, unsigned, unsigned);
+	void (*ol)(unsigned long, void __iomem *, unsigned, unsigned);
+	void (*osl)(void __iomem *, unsigned, const void  *, int, unsigned);
+	unsigned (*ib)(void __iomem *, unsigned, unsigned);
+	unsigned (*iw)(void __iomem *, unsigned, unsigned);
+	unsigned long (*il)(void __iomem *, unsigned, unsigned);
+	void (*isl)(void __iomem *, unsigned, void*, int, unsigned);
 };
 
 struct smc91c111_priv {
@@ -450,6 +450,7 @@ struct smc91c111_priv {
 	struct accessors a;
 	void __iomem *base;
 	int qemu_fixup;
+	unsigned shift;
 };
 
 #if (SMC_DEBUG > 2 )
@@ -479,56 +480,103 @@ struct smc91c111_priv {
 
 #define ETH_ZLEN 60
 
-static void a_outb(unsigned value, void __iomem *offset)
+static void a8_outb(unsigned value, void __iomem *base, unsigned int offset,
+		    unsigned shift)
 {
-	writeb(value, offset);
+	writeb(value, base + (offset << shift));
 }
 
-static void a_outw(unsigned value, void __iomem *offset)
+static void a16_outw(unsigned value, void __iomem *base, unsigned int offset,
+		     unsigned shift)
 {
-	writew(value, offset);
+	writew(value, base + (offset << shift));
 }
 
-static void a_outl(unsigned long value, void __iomem *offset)
+static void a32_outl(unsigned long value, void __iomem *base,
+		     unsigned int offset, unsigned shift)
 {
-	writel(value, offset);
+	writel(value, base + (offset << shift));
 }
 
-static void a_outsl(void __iomem *offset, const void *data, int count)
+static void a16_outsl(void __iomem *base, unsigned int offset,
+		      const void *data, int count, unsigned shift)
 {
-	writesl(offset, data, count);
+	writesw(base + (offset << shift), data, count * 2);
 }
 
-static unsigned a_inb(void __iomem *offset)
+static void a16_outl(unsigned long value, void __iomem *base,
+		     unsigned int offset, unsigned shift)
 {
-	return readb(offset);
+	writew(value & 0xffff, base + (offset << shift));
+	writew(value >> 16, base + ((offset + 2) << shift));
 }
 
-static unsigned a_inw(void __iomem *offset)
+static void a32_outsl(void __iomem *base, unsigned int offset,
+		      const void *data, int count, unsigned shift)
 {
-	return readw(offset);
+	writesw(base + (offset << shift), data, count * 2);
 }
 
-static unsigned long a_inl(void __iomem *offset)
+static unsigned a8_inb(void __iomem *base, unsigned int offset, unsigned shift)
 {
-	return readl(offset);
+	return readb(base + (offset << shift));
 }
 
-static inline void a_insl(void __iomem *offset, void *data, int count)
+static unsigned a16_inw(void __iomem *base, unsigned int offset, unsigned shift)
 {
-	readsl(offset, data, count);
+	return readw(base + (offset << shift));
 }
+
+static unsigned long a16_inl(void __iomem *base, unsigned int offset,
+			     unsigned shift)
+{
+	u32 value;
+
+	value = readw(base + (offset << shift));
+	value |= readw(base + (offset << shift)) << 16;
+
+	return value;
+}
+
+static inline void a16_insl(void __iomem *base, unsigned int offset, void *data,
+			    int count, unsigned shift)
+{
+	readsw(base + (offset << shift), data, count * 2);
+}
+
+static unsigned long a32_inl(void __iomem *base, unsigned int offset,
+			     unsigned shift)
+{
+	return readl(base + (offset << shift));
+}
+
+static inline void a32_insl(void __iomem *base, unsigned int offset, void *data,
+			    int count, unsigned shift)
+{
+	readsl(base + (offset << shift), data, count);
+}
+
+static const struct accessors access_via_16bit = {
+	.ob = a8_outb,
+	.ow = a16_outw,
+	.ol = a16_outl,
+	.osl = a16_outsl,
+	.ib = a8_inb,
+	.iw = a16_inw,
+	.il = a16_inl,
+	.isl = a16_insl,
+};
 
 /* access happens via a 32 bit bus */
 static const struct accessors access_via_32bit = {
-	.ob = a_outb,
-	.ow = a_outw,
-	.ol = a_outl,
-	.osl = a_outsl,
-	.ib = a_inb,
-	.iw = a_inw,
-	.il = a_inl,
-	.isl = a_insl,
+	.ob = a8_outb,
+	.ow = a16_outw,
+	.ol = a32_outl,
+	.osl = a32_outsl,
+	.ib = a8_inb,
+	.iw = a16_inw,
+	.il = a32_inl,
+	.isl = a32_insl,
 };
 
 /* ------------------------------------------------------------------------ */
@@ -536,46 +584,46 @@ static const struct accessors access_via_32bit = {
 static inline void SMC_outb(struct smc91c111_priv *p, unsigned value,
 				unsigned offset)
 {
-	(p->a.ob)(value, p->base + offset);
+	(p->a.ob)(value, p->base, offset, p->shift);
 }
 
 static inline void SMC_outw(struct smc91c111_priv *p, unsigned value,
 				unsigned offset)
 {
-	(p->a.ow)(value, p->base + offset);
+	(p->a.ow)(value, p->base, offset, p->shift);
 }
 
 static inline void SMC_outl(struct smc91c111_priv *p, unsigned long value,
 				unsigned offset)
 {
-	(p->a.ol)(value, p->base + offset);
+	(p->a.ol)(value, p->base, offset, p->shift);
 }
 
 static inline void SMC_outsl(struct smc91c111_priv *p, unsigned offset,
 				const void *data, int count)
 {
-	(p->a.osl)(p->base + offset, data, count);
+	(p->a.osl)(p->base, offset, data, count, p->shift);
 }
 
 static inline unsigned SMC_inb(struct smc91c111_priv *p, unsigned offset)
 {
-	return (p->a.ib)(p->base + offset);
+	return (p->a.ib)(p->base, offset, p->shift);
 }
 
 static inline unsigned SMC_inw(struct smc91c111_priv *p, unsigned offset)
 {
-	return (p->a.iw)(p->base + offset);
+	return (p->a.iw)(p->base, offset, p->shift);
 }
 
 static inline unsigned long SMC_inl(struct smc91c111_priv *p, unsigned offset)
 {
-	return (p->a.il)(p->base + offset);
+	return (p->a.il)(p->base, offset, p->shift);
 }
 
 static inline void SMC_insl(struct smc91c111_priv *p, unsigned offset,
 				void *data, int count)
 {
-	(p->a.isl)(p->base + offset, data, count);
+	(p->a.isl)(p->base, offset, data, count, p->shift);
 }
 
 static inline void SMC_SELECT_BANK(struct smc91c111_priv *p, int bank)
@@ -1333,14 +1381,16 @@ static int smc91c111_probe(struct device_d *dev)
 	edev->priv = (struct smc91c111_priv *)(edev + 1);
 
 	priv = edev->priv;
+	priv->a = access_via_32bit;
 
 	if (dev->platform_data) {
 		struct smc91c111_pdata *pdata = dev->platform_data;
 
 		priv->qemu_fixup = pdata->qemu_fixup;
+		priv->shift = pdata->addr_shift;
+		if (pdata->bus_width == 16)
+			priv->a = access_via_16bit;
 	}
-
-	priv->a = access_via_32bit;
 
 	edev->init = smc91c111_init_dev;
 	edev->open = smc91c111_eth_open;

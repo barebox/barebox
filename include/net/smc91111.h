@@ -9,6 +9,8 @@
 
 struct smc91c111_pdata {
 	int qemu_fixup;
+	int addr_shift;
+	int bus_width;
 };
 
 #endif /* __SMC91111_H__ */

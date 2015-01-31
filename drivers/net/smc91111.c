@@ -585,55 +585,75 @@ static const struct accessors access_via_32bit = {
 
 /* ------------------------------------------------------------------------ */
 
-static inline void SMC_outb(struct smc91c111_priv *p, unsigned value,
-				unsigned offset)
-{
-	(p->a.ob)(value, p->base, offset, p->shift);
-}
+static unsigned last_bank;
+#define SMC_outb(p, value, offset) \
+	do {								\
+		PRINTK3("\t%s:%d outb: %s[%1d:0x%04x] = 0x%02x\n",	\
+			__func__, __LINE__, #offset, last_bank,		\
+			(offset), (value));				\
+		((p)->a.ob)((value), (p)->base, (offset), (p)->shift);	\
+	} while (0)
 
-static inline void SMC_outw(struct smc91c111_priv *p, unsigned value,
-				unsigned offset)
-{
-	(p->a.ow)(value, p->base, offset, p->shift);
-}
+#define SMC_outw(p, value, offset)					\
+	do {								\
+		PRINTK3("\t%s:%d outw: %s[%1d:0x%04x] = 0x%04x\n",	\
+			__func__, __LINE__, #offset, last_bank,		\
+			(offset), (value));				\
+		((p)->a.ow)((value), (p)->base, (offset), (p)->shift);	\
+	} while (0)
 
-static inline void SMC_outl(struct smc91c111_priv *p, unsigned long value,
-				unsigned offset)
-{
-	(p->a.ol)(value, p->base, offset, p->shift);
-}
+#define SMC_outl(p, value, offset)					\
+	do {								\
+		PRINTK3("\t%s:%d outl: %s[%1d:0x%04x] = 0x%08lx\n",	\
+			__func__, __LINE__, #offset, last_bank,		\
+			(offset), (unsigned long)(value));		\
+		((p)->a.ol)((value), (p)->base, (offset), (p)->shift);	\
+	} while (0)
 
-static inline void SMC_outsl(struct smc91c111_priv *p, unsigned offset,
-				const void *data, int count)
-{
-	(p->a.osl)(p->base, offset, data, count, p->shift);
-}
+#define SMC_outsl(p, offset, data, count)\
+	do {								\
+		PRINTK3("\t%s:%d outsl: %5d@%p -> [%1d:0x%04x]\n",	\
+			__func__, __LINE__, (count) * 4, data,		\
+			last_bank, (offset));				\
+		((p)->a.osl)((p)->base, (offset), data, (count),	\
+			     (p)->shift);				\
+	} while (0)
 
-static inline unsigned SMC_inb(struct smc91c111_priv *p, unsigned offset)
-{
-	return (p->a.ib)(p->base, offset, p->shift);
-}
+#define SMC_inb(p, offset)						\
+	({								\
+		unsigned _v = ((p)->a.ib)((p)->base, (offset),		\
+					  (p)->shift);			\
+		PRINTK3("\t%s:%d inb: %s[%1d:0x%04x] -> 0x%02x\n",	\
+			__func__, __LINE__, #offset, last_bank,		\
+			(offset), _v);					\
+		_v; })
 
-static inline unsigned SMC_inw(struct smc91c111_priv *p, unsigned offset)
-{
-	return (p->a.iw)(p->base, offset, p->shift);
-}
+#define SMC_inw(p, offset)						\
+	({								\
+		unsigned _v = ((p)->a.iw)((p)->base, (offset),		\
+					  (p)->shift);			\
+		PRINTK3("\t%s:%d inw: %s[%1d:0x%04x] -> 0x%04x\n",	\
+			__func__, __LINE__, #offset, last_bank,		\
+			(offset), _v);					\
+		_v; })
 
-static inline unsigned long SMC_inl(struct smc91c111_priv *p, unsigned offset)
-{
-	return (p->a.il)(p->base, offset, p->shift);
-}
+#define SMC_inl(p, offset)						\
+	({								\
+		unsigned long _v = ((p)->a.il)((p)->base, (offset),	\
+			(p)->shift);					\
+		PRINTK3("\t%s:%d inl: %s[%1d:0x%04x] -> 0x%08lx\n",	\
+			__func__, __LINE__, #offset, last_bank,		\
+			(offset), _v);					\
+		_v; })
 
-static inline void SMC_insl(struct smc91c111_priv *p, unsigned offset,
-				void *data, int count)
-{
-	(p->a.isl)(p->base, offset, data, count, p->shift);
-}
+#define SMC_insl(p, offset, data, count)				\
+	((p)->a.isl)((p)->base, (offset), data, (count), (p)->shift)
 
-static inline void SMC_SELECT_BANK(struct smc91c111_priv *p, int bank)
-{
-	SMC_outw(p, bank, BANK_SELECT);
-}
+#define SMC_SELECT_BANK(p, bank)			\
+	do {						\
+		SMC_outw(p, bank & 0xf, BANK_SELECT);	\
+		last_bank = bank & 0xf;			\
+	} while (0)
 
 #if SMC_DEBUG > 2
 static void print_packet( unsigned char * buf, int length )

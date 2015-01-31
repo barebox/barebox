@@ -451,6 +451,10 @@ struct smc91c111_priv {
 	void __iomem *base;
 	int qemu_fixup;
 	unsigned shift;
+	int version;
+	int revision;
+	unsigned int control_setup;
+	unsigned int config_setup;
 };
 
 #if (SMC_DEBUG > 2 )
@@ -911,6 +915,7 @@ static int smc91c111_phy_read(struct mii_bus *bus, int phyaddr, int phyreg)
 static void smc91c111_reset(struct eth_device *edev)
 {
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
+	int rev_vers;
 
 	/* This resets the registers mostly to defaults, but doesn't
 	   affect EEPROM.  That seems unnecessary */
@@ -926,8 +931,11 @@ static void smc91c111_reset(struct eth_device *edev)
 
 	/* Release from possible power-down state */
 	/* Configuration register is not affected by Soft Reset */
-	SMC_outw(priv, SMC_inw(priv, CONFIG_REG) | CONFIG_EPH_POWER_EN,
-			CONFIG_REG);
+	if (priv->config_setup)
+		SMC_outw(priv, priv->config_setup, CONFIG_REG);
+	else
+		SMC_outw(priv, SMC_inw(priv, CONFIG_REG) | CONFIG_EPH_POWER_EN,
+			 CONFIG_REG);
 
 	SMC_SELECT_BANK(priv, 0);
 
@@ -940,7 +948,10 @@ static void smc91c111_reset(struct eth_device *edev)
 
 	/* set the control register */
 	SMC_SELECT_BANK(priv, 1);
-	SMC_outw(priv, CTL_DEFAULT, CTL_REG);
+	if (priv->control_setup)
+		SMC_outw(priv, priv->control_setup, CTL_REG);
+	else
+		SMC_outw(priv, CTL_DEFAULT, CTL_REG);
 
 	/* Reset the MMU */
 	SMC_SELECT_BANK(priv, 2);
@@ -956,6 +967,14 @@ static void smc91c111_reset(struct eth_device *edev)
 
 	/* Disable all interrupts */
 	SMC_outb(priv, 0, IM_REG);
+
+	/* Check chip revision (91c94, 91c96, 91c100, ...) */
+	SMC_SELECT_BANK(priv, 3);
+	rev_vers = SMC_inb(priv, REV_REG);
+	priv->revision = (rev_vers >> 4) & 0xf;
+	priv->version = rev_vers & 0xf;
+	dev_info(edev->parent, "chip is revision=%2d, version=%2d\n",
+		 priv->revision, priv->version);
 }
 
 static void smc91c111_enable(struct eth_device *edev)
@@ -975,9 +994,15 @@ static int smc91c111_eth_open(struct eth_device *edev)
 
 	/* Configure the Receive/Phy Control register */
 	SMC_SELECT_BANK(priv, 0);
-	SMC_outw(priv, RPC_DEFAULT, RPC_REG);
+	if (priv->revision > 4)
+		SMC_outw(priv, RPC_DEFAULT, RPC_REG);
 
 	smc91c111_enable(edev);
+
+	if (priv->revision <= 4) {
+		dev_info(edev->parent, "force link at 10Mpbs on internal phy\n");
+		return 0;
+	}
 
 	ret = phy_device_connect(edev, &priv->miibus, 0, NULL,
 				 0, PHY_INTERFACE_MODE_NA);
@@ -1390,6 +1415,8 @@ static int smc91c111_probe(struct device_d *dev)
 		priv->shift = pdata->addr_shift;
 		if (pdata->bus_width == 16)
 			priv->a = access_via_16bit;
+		pdata->config_setup = pdata->config_setup;
+		pdata->control_setup = pdata->control_setup;
 	}
 
 	edev->init = smc91c111_init_dev;
@@ -1411,7 +1438,8 @@ static int smc91c111_probe(struct device_d *dev)
 
 	smc91c111_reset(edev);
 
-	mdiobus_register(&priv->miibus);
+	if (priv->revision > 4)
+		mdiobus_register(&priv->miibus);
 	eth_register(edev);
 
 	return 0;

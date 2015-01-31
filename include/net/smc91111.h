@@ -11,6 +11,8 @@ struct smc91c111_pdata {
 	int qemu_fixup;
 	int addr_shift;
 	int bus_width;
+	int config_setup;
+	int control_setup;
 };
 
 #endif /* __SMC91111_H__ */

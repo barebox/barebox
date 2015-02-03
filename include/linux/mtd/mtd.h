@@ -220,6 +220,9 @@ struct mtd_info {
 
 	struct mtd_info *master;
 	loff_t master_offset;
+
+	struct list_head partitions;
+	struct list_head partitions_entry;
 };
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr);

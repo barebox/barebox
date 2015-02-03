@@ -400,6 +400,8 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	else
 		mtd->cdev.name = asprintf("%s%d", devname, mtd->class_dev.id);
 
+	INIT_LIST_HEAD(&mtd->partitions);
+
 	mtd->cdev.priv = mtd;
 	mtd->cdev.dev = &mtd->class_dev;
 	mtd->cdev.mtd = mtd;
@@ -420,6 +422,9 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 
 	if (mtd->parent && !mtd->master)
 		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
+
+	if (mtd->master)
+		list_add_tail(&mtd->partitions_entry, &mtd->master->partitions);
 
 	list_for_each_entry(hook, &mtd_register_hooks, hook)
 		if (hook->add_mtd_device)
@@ -445,6 +450,9 @@ int del_mtd_device (struct mtd_info *mtd)
 	unregister_device(&mtd->class_dev);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);
+	if (mtd->master)
+		list_del(&mtd->partitions_entry);
+
 	return 0;
 }
 

@@ -10,8 +10,6 @@ errors_list=""
 nb_defconfigs=0
 ret=0
 
-here=$(pwd)
-
 time_start=$(date +%s)
 
 filename=$(basename $0)
@@ -111,7 +109,7 @@ do_build_target() {
 		fi
 	fi
 
-	MAKE="make -C ${here} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
+	MAKE="make CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
 	${MAKE} -j${JOBS} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
 
 	check_pipe_status

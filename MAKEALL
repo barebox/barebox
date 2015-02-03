@@ -14,7 +14,7 @@ here=$(pwd)
 
 time_start=$(date +%s)
 
-filename=`basename $0`
+filename=$(basename $0)
 
 is_print_stats=1
 
@@ -97,14 +97,14 @@ do_build_target() {
 	mkdir -p "${LOGDIR}/${target}"
 	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
 
-	tmp=`echo "${target}" | tr - _`
+	tmp=$(echo "${target}" | tr - _)
 
-	cross_compile=`eval echo '$CROSS_COMPILE_'${tmp}`
-	cross_compile_set=`eval echo '${CROSS_COMPILE_'${tmp}'+set}'`
+	cross_compile=$(eval echo '$CROSS_COMPILE_'${tmp})
+	cross_compile_set=$(eval echo '${CROSS_COMPILE_'${tmp}'+set}')
 	if [ "${cross_compile_set}" = "" ]
 	then
-		cross_compile=`eval echo '$CROSS_COMPILE_'${arch}`
-		cross_compile_set=`eval echo '${CROSS_COMPILE_'${arch}'+set}'`
+		cross_compile=$(eval echo '$CROSS_COMPILE_'${arch})
+		cross_compile_set=$(eval echo '${CROSS_COMPILE_'${arch}'+set}')
 		if [ "${cross_compile_set}" = "" ]
 		then
 			cross_compile=${CROSS_COMPILE}
@@ -239,7 +239,7 @@ fi
 
 if [ "${CONFIG}" ]
 then
-	basedir=`dirname ${CONFIG}`
+	basedir=$(dirname ${CONFIG})
 
 	if [ ! "${basedir}" ] || [ "${basedir}" = "." ]
 	then

@@ -114,17 +114,22 @@ do_build_target() {
 	MAKE="make -C ${here} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
 	${MAKE} -j${JOBS} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
 
-	printf "Configure: " | tee -a "${log_report}"
 	check_pipe_status
-	if [ "$?" = "0" ]; then
+	result="$?"
+
+	printf "Configure: " | tee -a "${log_report}"
+
+	if [ "$result" = "0" ]; then
 		printf "OK     \n" | tee -a "${log_report}"
 
 		${MAKE} -j${JOBS} -s 2>&1 >> "${log_report}" | tee -a "${log_err}"
 
+		check_pipe_status
+		result="$?"
+
 		printf "Compile: " ${target} | tee -a "${log_report}"
 
-		check_pipe_status
-		if [ "$?" = "0" ]; then
+		if [ "$result" = "0" ]; then
 			printf "OK     \n" | tee -a "${log_report}"
 			${cross_compile}size ${BUILDDIR}/barebox | tee -a "${log_report}"
 		else

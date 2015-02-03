@@ -256,13 +256,6 @@ then
 	REGEX="*"
 fi
 
-if [ ! "${CONFIG}" ] && [ ! "${CROSS_COMPILE+set}" ]
-then
-	echo "You need to specify a CONFIG or a CROSS_COMPILE"
-	usage
-	exit 1
-fi
-
 if [ ! "${ARCH}" ] || [ ! -d arch/${ARCH} ]
 then
 	do_build_all

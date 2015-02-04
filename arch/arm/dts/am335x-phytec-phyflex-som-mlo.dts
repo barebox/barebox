@@ -1,0 +1,28 @@
+/*
+ * Copyright (C) 2015 Wadim Egorov <w.egorov@phytec.de> PHYTEC Messtechnik GmbH
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+/dts-v1/;
+
+#include "am33xx.dtsi"
+#include "am335x-phytec-phyflex-som.dtsi"
+
+/ {
+	model = "Phytec phyFLEX AM335x";
+	compatible = "phytec,phyflex-am335x-som", "ti,am33xx";
+};
+
+/* Keep all bootsources disabled, we enable and register them
+ * later while booting.
+ */
+
+&mmc1 {
+	status = "disabled";
+};
+
+&gpmc {
+	status = "disabled";
+};

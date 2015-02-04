@@ -87,6 +87,10 @@ static int pfla03_devices_init(void)
 		xloadslots, ARRAY_SIZE(xloadslots));
 	am33xx_bbu_nand_register_handler("nand", "/dev/nand0.barebox.bb");
 
+	if (IS_ENABLED(CONFIG_SHELL_NONE))
+		return am33xx_of_register_bootdevice();
+
+
 	return 0;
 }
 device_initcall(pfla03_devices_init);

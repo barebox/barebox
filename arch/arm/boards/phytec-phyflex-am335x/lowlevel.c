@@ -102,7 +102,8 @@ struct pfla03_sdram_timings pfla03_timings[] = {
 	},
 };
 
-extern char __dtb_am335x_phytec_phyflex_start[];
+extern char __dtb_am335x_phytec_phyflex_som_start[];
+extern char __dtb_am335x_phytec_phyflex_som_mlo_start[];
 
 /**
  * @brief The basic entry point for board initialization.
@@ -139,7 +140,7 @@ static noinline void pfla03_board_init(int sdram)
 	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');
 
-	fdt = __dtb_am335x_phytec_phyflex_start - get_runtime_offset();
+	fdt = __dtb_am335x_phytec_phyflex_som_mlo_start - get_runtime_offset();
 
 	am335x_barebox_entry(fdt);
 }
@@ -174,7 +175,7 @@ ENTRY_FUNCTION(start_am33xx_phytec_phyflex_sdram, r0, r1, r2)
 {
 	void *fdt;
 
-	fdt = __dtb_am335x_phytec_phyflex_start - get_runtime_offset();
+	fdt = __dtb_am335x_phytec_phyflex_som_start - get_runtime_offset();
 
 	am335x_barebox_entry(fdt);
 }

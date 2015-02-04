@@ -1,6 +1,7 @@
 #!/bin/sh
 
 global.bootm.image="/dev/m25p0.kernel"
+global.bootm.oftree="/dev/m25p0.oftree"
 
 bootargs-ip
 

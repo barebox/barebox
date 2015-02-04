@@ -1,8 +1,0 @@
-#!/bin/sh
-
-global.bootm.image="/dev/m25p0.kernel"
-
-bootargs-ip
-
-# Use rootfs from NAND
-global.linux.bootargs.dyn.root="root=ubi0:root ubi.mtd=nand0.root,2048 rw rootfstype=ubifs"

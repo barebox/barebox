@@ -147,17 +147,11 @@ config MACH_BEAGLEBONE
 	help
 	  Say Y here if you are using Beagle Bone
 
-config MACH_PCM051
-	bool "Phytec phyCORE pcm051"
+config MACH_PHYTEC_SOM_AM335X
+	bool "Phytec AM335X SOMs"
 	select ARCH_AM33XX
 	help
-	  Say Y here if you are using Phytecs phyCORE pcm051 board
-
-config MACH_PFLA03
-	bool "Phytec phyFLEX am335x pfla03"
-	select ARCH_AM33XX
-	help
-	  Say Y here if you are using Phytecs phyFLEX pfla03 board
+	  Say Y here if you are using a am335x based Phytecs SOM
 endif
 
 choice

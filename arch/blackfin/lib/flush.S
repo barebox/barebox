@@ -8,7 +8,7 @@
  */
 #define ASSEMBLY
 
-#include <asm/linkage.h>
+#include <linux/linkage.h>
 #include <asm/cplb.h>
 #include <asm/blackfin.h>
 

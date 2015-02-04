@@ -3,67 +3,52 @@
 # subdirectories here. Add them in the ".gitignore" file
 # in that subdirectory instead.
 #
+# NOTE! Please use 'git ls-files -i --exclude-standard'
+# command after changing this file, to see if there are
+# any tracked files which get ignored after the change.
+#
 # Normal rules
 #
-*~
 .*
-\#*\#
 *.o
+*.o.*
 *.a
 *.s
 *.ko
 *.so
+*.so.dbg
 *.mod.c
 *.i
 *.lst
 *.symtypes
 *.elf
+*.patch
 *.mcp
-*.orig
 *.bct
 *.dcd
 *.dcd.S
 *.bbenv
 *.bbenv.*
+Module.symvers
 
 #
 # Top-level generic files
 #
-tags
-TAGS
-cross_arch
-cross_compile
-barebox
-barebox.S
-barebox.bin
-barebox.srec
-barebox.netx
-barebox.s5p
-barebox.spi
-barebox.ubl
-barebox.zynq
-barebox.uimage
-barebox.map
-barebox.kwb
-barebox.kwbuart
-barebox.efi
-barebox.canon-a1100.bin
-barebox-flash-image
-System.map
-Module.symvers
-barebox_default_env*
+/tags
+/TAGS
+/barebox*
+/System.map
 
 #
 # git files that we don't want to ignore even it they are dot-files
 #
 !.gitignore
+!.mailmap
 
 #
 # Generated include files
 #
-include/asm-*/asm-offsets.h
 include/config
-include/linux/compile.h
 include/generated
 
 # Generated files
@@ -79,6 +64,17 @@ series
 
 # cscope files
 cscope.*
+ncscope.*
 
-# patches
-*.patch
+# gnu global files
+GPATH
+GRTAGS
+GSYMS
+GTAGS
+
+*.orig
+*~
+\#*\#
+
+# Kconfig presets
+all.config

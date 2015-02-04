@@ -194,7 +194,7 @@ int console_register(struct console_device *newcdev)
 		console_init_early();
 
 	if (newcdev->devname) {
-		dev->id = DEVICE_ID_SINGLE;
+		dev->id = newcdev->devid;
 		strcpy(dev->name, newcdev->devname);
 	} else {
 		dev->id = DEVICE_ID_DYNAMIC;

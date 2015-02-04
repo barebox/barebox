@@ -114,7 +114,7 @@ int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 		return 0;
 	}
 	p->value = strdup(val);
-	return 0;
+	return p->value ? 0 : -ENOMEM;
 }
 
 static const char *param_get_generic(struct device_d *dev, struct param_d *p)
@@ -130,6 +130,10 @@ static int __dev_add_param(struct param_d *param, struct device_d *dev, const ch
 	if (get_param_by_name(dev, name))
 		return -EEXIST;
 
+	param->name = strdup(name);
+	if (!param->name)
+		return -ENOMEM;
+
 	if (set)
 		param->set = set;
 	else
@@ -139,7 +143,6 @@ static int __dev_add_param(struct param_d *param, struct device_d *dev, const ch
 	else
 		param->get = param_get_generic;
 
-	param->name = strdup(name);
 	param->flags = flags;
 	param->dev = dev;
 	list_add_tail(&param->list, &dev->parameters);

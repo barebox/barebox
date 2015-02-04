@@ -91,7 +91,6 @@ do_build_target() {
 	local log_err="${LOGDIR}/${target}/errors.log"
 
 	rm -rf "${BUILDDIR}"
-	mkdir -p "${BUILDDIR}"
 	mkdir -p "${LOGDIR}/${target}"
 	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
 
@@ -175,7 +174,7 @@ do_build_all() {
 
 		if [ -d $i ]
 		then
-			do_build ${arch}
+			do_build ${arch} "*"
 			build_target=$((build_target + 1))
 		fi
 	done

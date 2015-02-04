@@ -1,3 +1,5 @@
+KBUILD_DEFCONFIG := generic_defconfig
+
 CPPFLAGS += -D__X86__ -fno-strict-aliasing
 
 board-y := x86_generic

@@ -328,7 +328,7 @@ sub top_of_kernel_tree {
 	my ($root) = @_;
 
 	my @tree_check = (
-		"arch", "commands", "common", "COPYING", "CREDITS", "defaultenv",  
+		"arch", "commands", "common", "COPYING", "defaultenv",
 		"Documentation", "drivers", "fs", "include", "lib",
 		"MAKEALL", "Makefile", "net", "README", "scripts", "TODO"
 	);

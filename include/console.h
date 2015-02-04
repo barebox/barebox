@@ -47,6 +47,7 @@ struct console_device {
 	int (*set_active)(struct console_device *cdev, unsigned active);
 
 	char *devname;
+	int devid;
 
 	struct list_head list;
 

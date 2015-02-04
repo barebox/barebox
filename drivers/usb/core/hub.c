@@ -122,7 +122,7 @@ int hub_port_reset(struct usb_device *dev, int port,
 	for (tries = 0; tries < MAX_TRIES; tries++) {
 
 		usb_set_port_feature(dev, port + 1, USB_PORT_FEAT_RESET);
-		wait_ms(200);
+		mdelay(200);
 
 		if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
 			dev_dbg(&dev->dev, "get_port_status failed status %lX\n",
@@ -149,7 +149,7 @@ int hub_port_reset(struct usb_device *dev, int port,
 		if (portstatus & USB_PORT_STAT_ENABLE)
 			break;
 
-		wait_ms(200);
+		mdelay(200);
 	}
 
 	if (tries == MAX_TRIES) {
@@ -196,7 +196,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	if (dev->children[port] && !(portstatus & USB_PORT_STAT_ENABLE))
 		usb_remove_device(dev->children[port]);
 
-	wait_ms(200);
+	mdelay(200);
 
 	/* Reset the port */
 	if (hub_port_reset(dev, port, &portstatus) < 0) {
@@ -204,7 +204,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		return;
 	}
 
-	wait_ms(200);
+	mdelay(200);
 
 	/* Allocate a new device struct for it */
 	usb = usb_alloc_new_device();

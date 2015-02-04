@@ -471,6 +471,9 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	esdhc_write32(regs + SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_HCKEN | SYSCTL_IPGEN);
 
+	/* RSTA doesn't reset MMC_BOOT register, so manually reset it */
+	esdhc_write32(regs + SDHCI_MMC_BOOT, 0);
+
 	/* Set the initial clock speed */
 	set_sysctl(mci, 400000);
 

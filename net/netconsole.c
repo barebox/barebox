@@ -154,6 +154,7 @@ static int netconsole_init(void)
 	cdev->putc = nc_putc;
 	cdev->getc = nc_getc;
 	cdev->devname = "netconsole";
+	cdev->devid = DEVICE_ID_SINGLE;
 	cdev->set_active = nc_set_active;
 
 	g_priv = priv;

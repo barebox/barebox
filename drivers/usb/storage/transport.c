@@ -133,7 +133,7 @@ int usb_stor_Bulk_transport(ccb *srb, struct us_data *us)
 	/* DATA STAGE */
 	/* send/receive data payload, if there is any */
 
-	wait_ms(1);
+	mdelay(1);
 
 	data_actlen = 0;
 	if (srb->datalen) {
@@ -229,17 +229,17 @@ int usb_stor_Bulk_reset(struct us_data *us)
 		US_DEBUGP("Soft reset stalled: %d\n", result);
 		return result;
 	}
-	wait_ms(150);
+	mdelay(150);
 
 	/* clear the bulk endpoints halt */
 	US_DEBUGP("Soft reset: clearing %s endpoint halt\n", "bulk-in");
 	pipe = usb_rcvbulkpipe(us->pusb_dev, us->recv_bulk_ep);
 	result = usb_clear_halt(us->pusb_dev, pipe);
-	wait_ms(150);
+	mdelay(150);
 	US_DEBUGP("Soft reset: clearing %s endpoint halt\n", "bulk-out");
 	pipe = usb_sndbulkpipe(us->pusb_dev, us->send_bulk_ep);
 	result2 = usb_clear_halt(us->pusb_dev, pipe);
-	wait_ms(150);
+	mdelay(150);
 
 	if (result >= 0)
 		result = result2;

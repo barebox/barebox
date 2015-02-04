@@ -18,6 +18,7 @@
 #define SDHCI_SIGNAL_ENABLE					0x38
 #define SDHCI_ACMD12_ERR__HOST_CONTROL2				0x3C
 #define SDHCI_CAPABILITIES					0x40
+#define SDHCI_MMC_BOOT						0xC4
 
 #define COMMAND_CMD(x)		((x & 0x3f) << 24)
 #define COMMAND_CMDTYP_NORMAL	0x0

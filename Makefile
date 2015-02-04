@@ -488,9 +488,9 @@ images/%.s: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 
 ifdef CONFIG_PBL_MULTI_IMAGES
-all: $(KBUILD_DTBS) barebox.bin images
+all: barebox.bin images
 else
-all: barebox-flash-image $(KBUILD_DTBS)
+all: barebox-flash-image
 endif
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/
@@ -953,7 +953,7 @@ endif # CONFIG_MODULES
 CLEAN_DIRS  += $(MODVERDIR)
 CLEAN_FILES +=	barebox System.map include/generated/barebox_default_env.h \
                 .tmp_version .tmp_barebox* barebox.bin barebox.map barebox.S \
-		.tmp_kallsyms* common/barebox_default_env* barebox.ldr \
+		.tmp_kallsyms* barebox.ldr \
 		scripts/bareboxenv-target barebox-flash-image \
 		barebox.srec barebox.s5p barebox.ubl barebox.zynq \
 		barebox.uimage barebox.spi barebox.kwb barebox.kwbuart \

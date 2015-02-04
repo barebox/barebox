@@ -60,8 +60,7 @@ static int request_memtest_regions(struct list_head *list)
 		 */
 		if (list_empty(&bank->res->children)) {
 			start = PAGE_ALIGN(bank->res->start);
-			end = PAGE_ALIGN_DOWN(bank->res->end) - 1;
-			size = end - start + 1;
+			size = PAGE_ALIGN_DOWN(bank->res->end - start + 1);
 
 			ret = alloc_memtest_region(list, start, size);
 			if (ret < 0)
@@ -89,13 +88,13 @@ static int request_memtest_regions(struct list_head *list)
 		 * Between used regions. Start from second entry.
 		 */
 		list_for_each_entry_from(r, &bank->res->children, sibling) {
-			start = PAGE_ALIGN(r_prev->end);
-			end = PAGE_ALIGN_DOWN(r->start);
+			start = PAGE_ALIGN(r_prev->end + 1);
+			end = r->start - 1;
 			r_prev = r;
 			if (start >= end)
 				continue;
 
-			size = end - start;
+			size = PAGE_ALIGN_DOWN(end - start + 1);
 			ret = alloc_memtest_region(list, start, size);
 			if (ret < 0)
 				return ret;
@@ -107,9 +106,9 @@ static int request_memtest_regions(struct list_head *list)
 		r = list_last_entry(&bank->res->children,
 				     struct resource, sibling);
 		start = PAGE_ALIGN(r->end);
-		end = PAGE_ALIGN_DOWN(bank->res->end) - 1;
-		size = end - start + 1;
-		if (start < end) {
+		end = bank->res->end;
+		size = PAGE_ALIGN_DOWN(end - start + 1);
+		if (start < end && start > r->end) {
 			ret = alloc_memtest_region(list, start, size);
 			if (ret < 0)
 				return ret;

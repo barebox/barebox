@@ -43,7 +43,7 @@
  * To preserve the factory bad block information we take the following
  * strategy:
  *
- * - If the NAND driver detects that no flasg BBT is present on 2k NAND
+ * - If the NAND driver detects that no flash BBT is present on 2k NAND
  *   chips it will not create one because it would do so based on the wrong
  *   BBM position
  * - This command is used to create a flash BBT then.

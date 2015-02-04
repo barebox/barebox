@@ -1,3 +1,4 @@
+KBUILD_DEFCONFIG := sandbox_defconfig
 
 CPPFLAGS += -D__SANDBOX__ -fno-strict-aliasing
 

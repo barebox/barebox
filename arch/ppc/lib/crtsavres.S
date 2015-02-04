@@ -33,12 +33,10 @@
  *    the executable file might be covered by the GNU General Public License.
  */
 
+#include <linux/stringify.h>
 #include <asm/ppc_asm.tmpl>
 
 #define N_FUN   36
-
-#define __stringify_1(x...)	#x
-#define __stringify(x...)	__stringify_1(x)
 
 #define _GLOBAL(n)	\
 	.text;		\

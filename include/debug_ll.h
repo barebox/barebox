@@ -33,7 +33,7 @@
 
 #if defined (CONFIG_DEBUG_LL)
 
-static inline void putc_ll(unsigned char value)
+static inline void putc_ll(char value)
 {
 	PUTC_LL(value);
 }
@@ -67,7 +67,7 @@ static inline void puts_ll(const char * str)
 
 #else
 
-static inline void putc_ll(unsigned char value)
+static inline void putc_ll(char value)
 {
 }
 

@@ -101,7 +101,7 @@ static int usb_stor_test_unit_ready(ccb *srb, struct us_data *us)
 		if (result == USB_STOR_TRANSPORT_GOOD)
 			return 0;
 		usb_stor_request_sense(srb, us);
-		wait_ms(100);
+		mdelay(100);
 	} while (retries--);
 
 	return -1;

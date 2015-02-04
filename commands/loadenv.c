@@ -109,7 +109,7 @@ static int do_loadenv(int argc, char *argv[])
 
 BAREBOX_CMD_HELP_START(loadenv)
 BAREBOX_CMD_HELP_TEXT("Load environment from files in ENVFS (default /dev/env0) in")
-BAREBOX_CMD_HELP_TEXT("DIRECTORY (default /env")
+BAREBOX_CMD_HELP_TEXT("DIRECTORY (default /env)")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-n", "do not overwrite existing files")
@@ -120,7 +120,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(loadenv)
 	.cmd		= do_loadenv,
 	BAREBOX_CMD_DESC("load environment from ENVFS")
-	BAREBOX_CMD_OPTS("{-nsd] [ENVFS] [DIRECTORY]")
+	BAREBOX_CMD_OPTS("[-nsd] [ENVFS] [DIRECTORY]")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_loadenv_help)
 BAREBOX_CMD_END

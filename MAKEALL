@@ -10,11 +10,9 @@ errors_list=""
 nb_defconfigs=0
 ret=0
 
-here=$(pwd)
-
 time_start=$(date +%s)
 
-filename=`basename $0`
+filename=$(basename $0)
 
 is_print_stats=1
 
@@ -97,34 +95,39 @@ do_build_target() {
 	mkdir -p "${LOGDIR}/${target}"
 	printf "Building ${arch} ${target} \n" >&2 | tee -a "${log_report}"
 
-	tmp=`echo "${target}" | tr - _`
+	tmp=$(echo "${target}" | tr - _)
 
-	cross_compile=`eval echo '$CROSS_COMPILE_'${tmp}`
-	cross_compile_set=`eval echo '${CROSS_COMPILE_'${tmp}'+set}'`
+	cross_compile=$(eval echo '$CROSS_COMPILE_'${tmp})
+	cross_compile_set=$(eval echo '${CROSS_COMPILE_'${tmp}'+set}')
 	if [ "${cross_compile_set}" = "" ]
 	then
-		cross_compile=`eval echo '$CROSS_COMPILE_'${arch}`
-		cross_compile_set=`eval echo '${CROSS_COMPILE_'${arch}'+set}'`
+		cross_compile=$(eval echo '$CROSS_COMPILE_'${arch})
+		cross_compile_set=$(eval echo '${CROSS_COMPILE_'${arch}'+set}')
 		if [ "${cross_compile_set}" = "" ]
 		then
 			cross_compile=${CROSS_COMPILE}
 		fi
 	fi
 
-	MAKE="make -C ${here} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
-	${MAKE} -j${JOBS} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
+	MAKE="make -j${JOBS} CROSS_COMPILE=${cross_compile} ARCH=${arch} O=${BUILDDIR}"
+	${MAKE} ${target} 2>&1 > "${log_report}" | tee "${log_err}"
+
+	check_pipe_status
+	result="$?"
 
 	printf "Configure: " | tee -a "${log_report}"
-	check_pipe_status
-	if [ "$?" = "0" ]; then
+
+	if [ "$result" = "0" ]; then
 		printf "OK     \n" | tee -a "${log_report}"
 
-		${MAKE} -j${JOBS} -s 2>&1 >> "${log_report}" | tee -a "${log_err}"
+		${MAKE} -s 2>&1 >> "${log_report}" | tee -a "${log_err}"
+
+		check_pipe_status
+		result="$?"
 
 		printf "Compile: " ${target} | tee -a "${log_report}"
 
-		check_pipe_status
-		if [ "$?" = "0" ]; then
+		if [ "$result" = "0" ]; then
 			printf "OK     \n" | tee -a "${log_report}"
 			${cross_compile}size ${BUILDDIR}/barebox | tee -a "${log_report}"
 		else
@@ -234,7 +237,7 @@ fi
 
 if [ "${CONFIG}" ]
 then
-	basedir=`dirname ${CONFIG}`
+	basedir=$(dirname ${CONFIG})
 
 	if [ ! "${basedir}" ] || [ "${basedir}" = "." ]
 	then
@@ -249,13 +252,6 @@ fi
 if [ ! "${REGEX}" ]
 then
 	REGEX="*"
-fi
-
-if [ ! "${CONFIG}" ] && [ ! "${CROSS_COMPILE+set}" ]
-then
-	echo "You need to specify a CONFIG or a CROSS_COMPILE"
-	usage
-	exit 1
 fi
 
 if [ ! "${ARCH}" ] || [ ! -d arch/${ARCH} ]

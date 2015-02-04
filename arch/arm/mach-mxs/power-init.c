@@ -25,6 +25,56 @@
 #include <mach/regs-lradc.h>
 
 /*
+ * has_battery - true when this board has a battery.
+ */
+static int has_battery;
+
+/*
+ * use_battery_input - true when this board is supplied from the
+ * battery input, but has a DC source instead of a real battery
+ */
+static int use_battery_input;
+
+/*
+ * use_5v_input - true when this board can use the 5V input
+ */
+static int use_5v_input;
+
+static void mxs_power_status(void)
+{
+	struct mxs_power_regs *power_regs =
+		(struct mxs_power_regs *)IMX_POWER_BASE;
+	static int linregofs[] = { 0, 1, -1, -2 };
+
+	uint32_t vddio = readl(&power_regs->hw_power_vddioctrl);
+	uint32_t vdda = readl(&power_regs->hw_power_vddactrl);
+	uint32_t vddd = readl(&power_regs->hw_power_vdddctrl);
+	uint32_t vddmem = readl(&power_regs->hw_power_vddmemctrl);
+
+	printf("vddio:  %dmV (BO -%dmV), Linreg enabled, Linreg offset: %d, FET %sabled\n",
+			(vddio & 0x1f) * 50 + 2800,
+			((vddio >> 8) & 0x7) * 50,
+			linregofs[((vdda >> 12) & 0x3)],
+			(vddio & (1 << 16)) ? "dis" : "en");
+	printf("vdda:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
+			(vdda & 0x1f) * 25 + 1500,
+			((vdda >> 8) & 0x7) * 25,
+			(vdda & (1 << 17)) ? "en" : "dis",
+			linregofs[((vdda >> 12) & 0x3)],
+			(vdda & (1 << 16)) ? "dis" : "en");
+	printf("vddd:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
+			(vddd & 0x1f) * 25 + 800,
+			((vddd >> 8) & 0x7) * 25,
+			(vddd & (1 << 21)) ? "en" : "dis",
+			linregofs[((vdda >> 16) & 0x3)],
+			(vdda & (1 << 20)) ? "dis" : "en");
+	printf("vddmem: %dmV (BO -%dmV), Linreg %sabled\n",
+			(vddmem & 0x1f) * 25 + 1100,
+			((vddmem >> 5) & 0x7) * 25,
+			(vddmem & (1 << 8)) ? "en" : "dis");
+}
+
+/*
  * This delay function is intended to be used only in early stage of boot, where
  * clock are not set up yet. The timer used here is reset on every boot and
  * takes a few seconds to roll. The boot doesn't take that long, so to keep the
@@ -299,36 +349,6 @@ static void mxs_src_power_init(void)
 }
 
 /**
- * mxs_power_init_4p2_params() - Configure the parameters of the 4P2 regulator
- *
- * This function configures the necessary parameters for the 4P2 linear
- * regulator to supply the DC-DC converter from 5V input.
- */
-static void mxs_power_init_4p2_params(void)
-{
-	struct mxs_power_regs *power_regs =
-		(struct mxs_power_regs *)IMX_POWER_BASE;
-
-	/* Setup 4P2 parameters */
-	clrsetbits_le32(&power_regs->hw_power_dcdc4p2,
-		POWER_DCDC4P2_CMPTRIP_MASK | POWER_DCDC4P2_TRG_MASK,
-		POWER_DCDC4P2_TRG_4V2 | (31 << POWER_DCDC4P2_CMPTRIP_OFFSET));
-
-	clrsetbits_le32(&power_regs->hw_power_5vctrl,
-		POWER_5VCTRL_HEADROOM_ADJ_MASK,
-		0x4 << POWER_5VCTRL_HEADROOM_ADJ_OFFSET);
-
-	clrsetbits_le32(&power_regs->hw_power_dcdc4p2,
-		POWER_DCDC4P2_DROPOUT_CTRL_MASK,
-		POWER_DCDC4P2_DROPOUT_CTRL_100MV |
-		POWER_DCDC4P2_DROPOUT_CTRL_SRC_SEL);
-
-	clrsetbits_le32(&power_regs->hw_power_5vctrl,
-		POWER_5VCTRL_CHARGE_4P2_ILIMIT_MASK,
-		0x3f << POWER_5VCTRL_CHARGE_4P2_ILIMIT_OFFSET);
-}
-
-/**
  * mxs_enable_4p2_dcdc_input() - Enable or disable the DCDC input from 4P2
  * @xfer:	Select if the input shall be enabled or disabled
  *
@@ -431,16 +451,82 @@ static void mxs_enable_4p2_dcdc_input(int xfer)
 }
 
 /**
- * mxs_power_init_4p2_regulator() - Start the 4P2 regulator
+ * mxs_power_init_dcdc_4p2_source() - Switch DC-DC converter to 4P2 source
  *
- * This function enables the 4P2 regulator and switches the DC-DC converter
- * to use the 4P2 input.
+ * This function configures the DC-DC converter to be supplied from the 4P2
+ * linear regulator.
  */
-static void mxs_power_init_4p2_regulator(void)
+static void mxs_power_init_dcdc_4p2_source(void)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
-	uint32_t tmp, tmp2;
+
+	if (!(readl(&power_regs->hw_power_dcdc4p2) &
+		POWER_DCDC4P2_ENABLE_DCDC)) {
+		hang();
+	}
+
+	mxs_enable_4p2_dcdc_input(1);
+
+	if (readl(&power_regs->hw_power_ctrl) & POWER_CTRL_VBUS_VALID_IRQ) {
+		clrbits_le32(&power_regs->hw_power_dcdc4p2,
+			POWER_DCDC4P2_ENABLE_DCDC);
+		writel(POWER_5VCTRL_ENABLE_DCDC,
+			&power_regs->hw_power_5vctrl_clr);
+		charger_4p2_disable();
+	}
+}
+
+/**
+ * mxs_power_enable_4p2() - Power up the 4P2 regulator
+ *
+ * This function drives the process of powering up the 4P2 linear regulator
+ * and switching the DC-DC converter input over to the 4P2 linear regulator.
+ */
+static void mxs_power_enable_4p2(void)
+{
+	struct mxs_power_regs *power_regs =
+		(struct mxs_power_regs *)IMX_POWER_BASE;
+	uint32_t vdddctrl, vddactrl, vddioctrl;
+	uint32_t tmp, tmp2, dropout_ctrl;
+
+	vdddctrl = readl(&power_regs->hw_power_vdddctrl);
+	vddactrl = readl(&power_regs->hw_power_vddactrl);
+	vddioctrl = readl(&power_regs->hw_power_vddioctrl);
+
+	setbits_le32(&power_regs->hw_power_vdddctrl,
+		POWER_VDDDCTRL_DISABLE_FET | POWER_VDDDCTRL_ENABLE_LINREG |
+		POWER_VDDDCTRL_PWDN_BRNOUT);
+
+	setbits_le32(&power_regs->hw_power_vddactrl,
+		POWER_VDDACTRL_DISABLE_FET | POWER_VDDACTRL_ENABLE_LINREG |
+		POWER_VDDACTRL_PWDN_BRNOUT);
+
+	setbits_le32(&power_regs->hw_power_vddioctrl,
+		POWER_VDDIOCTRL_DISABLE_FET | POWER_VDDIOCTRL_PWDN_BRNOUT);
+
+	/* Setup 4P2 parameters */
+	clrsetbits_le32(&power_regs->hw_power_dcdc4p2,
+		POWER_DCDC4P2_CMPTRIP_MASK | POWER_DCDC4P2_TRG_MASK,
+		POWER_DCDC4P2_TRG_4V2 | (31 << POWER_DCDC4P2_CMPTRIP_OFFSET));
+
+	clrsetbits_le32(&power_regs->hw_power_5vctrl,
+		POWER_5VCTRL_HEADROOM_ADJ_MASK,
+		0x4 << POWER_5VCTRL_HEADROOM_ADJ_OFFSET);
+
+	if (has_battery || use_battery_input)
+		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_SEL;
+	else
+		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_4P2;
+
+	clrsetbits_le32(&power_regs->hw_power_dcdc4p2,
+		POWER_DCDC4P2_DROPOUT_CTRL_MASK,
+		POWER_DCDC4P2_DROPOUT_CTRL_100MV |
+		dropout_ctrl);
+
+	clrsetbits_le32(&power_regs->hw_power_5vctrl,
+		POWER_5VCTRL_CHARGE_4P2_ILIMIT_MASK,
+		0x3f << POWER_5VCTRL_CHARGE_4P2_ILIMIT_OFFSET);
 
 	setbits_le32(&power_regs->hw_power_dcdc4p2, POWER_DCDC4P2_ENABLE_4P2);
 
@@ -516,65 +602,6 @@ static void mxs_power_init_4p2_regulator(void)
 
 	clrbits_le32(&power_regs->hw_power_dcdc4p2, POWER_DCDC4P2_BO_MASK);
 	writel(POWER_CTRL_DCDC4P2_BO_IRQ, &power_regs->hw_power_ctrl_clr);
-}
-
-/**
- * mxs_power_init_dcdc_4p2_source() - Switch DC-DC converter to 4P2 source
- *
- * This function configures the DC-DC converter to be supplied from the 4P2
- * linear regulator.
- */
-static void mxs_power_init_dcdc_4p2_source(void)
-{
-	struct mxs_power_regs *power_regs =
-		(struct mxs_power_regs *)IMX_POWER_BASE;
-
-	if (!(readl(&power_regs->hw_power_dcdc4p2) &
-		POWER_DCDC4P2_ENABLE_DCDC)) {
-		hang();
-	}
-
-	mxs_enable_4p2_dcdc_input(1);
-
-	if (readl(&power_regs->hw_power_ctrl) & POWER_CTRL_VBUS_VALID_IRQ) {
-		clrbits_le32(&power_regs->hw_power_dcdc4p2,
-			POWER_DCDC4P2_ENABLE_DCDC);
-		writel(POWER_5VCTRL_ENABLE_DCDC,
-			&power_regs->hw_power_5vctrl_clr);
-		charger_4p2_disable();
-	}
-}
-
-/**
- * mxs_power_enable_4p2() - Power up the 4P2 regulator
- *
- * This function drives the process of powering up the 4P2 linear regulator
- * and switching the DC-DC converter input over to the 4P2 linear regulator.
- */
-static void mxs_power_enable_4p2(void)
-{
-	struct mxs_power_regs *power_regs =
-		(struct mxs_power_regs *)IMX_POWER_BASE;
-	uint32_t vdddctrl, vddactrl, vddioctrl;
-	uint32_t tmp;
-
-	vdddctrl = readl(&power_regs->hw_power_vdddctrl);
-	vddactrl = readl(&power_regs->hw_power_vddactrl);
-	vddioctrl = readl(&power_regs->hw_power_vddioctrl);
-
-	setbits_le32(&power_regs->hw_power_vdddctrl,
-		POWER_VDDDCTRL_DISABLE_FET | POWER_VDDDCTRL_ENABLE_LINREG |
-		POWER_VDDDCTRL_PWDN_BRNOUT);
-
-	setbits_le32(&power_regs->hw_power_vddactrl,
-		POWER_VDDACTRL_DISABLE_FET | POWER_VDDACTRL_ENABLE_LINREG |
-		POWER_VDDACTRL_PWDN_BRNOUT);
-
-	setbits_le32(&power_regs->hw_power_vddioctrl,
-		POWER_VDDIOCTRL_DISABLE_FET | POWER_VDDIOCTRL_PWDN_BRNOUT);
-
-	mxs_power_init_4p2_params();
-	mxs_power_init_4p2_regulator();
 
 	/* Shutdown battery (none present) */
 	if (!mxs_is_batt_ready()) {
@@ -1021,6 +1048,19 @@ static const struct mxs_vddx_cfg mxs_vddmem_cfg = {
 	.bo_offset_offset	= 0,
 };
 
+static const struct mxs_vddx_cfg mxs_vdda_cfg = {
+	.reg			= &(((struct mxs_power_regs *)IMX_POWER_BASE)->
+					hw_power_vddactrl),
+	.step_mV		= 25,
+	.lowest_mV		= 1500,
+	.powered_by_linreg	= NULL,
+	.trg_mask		= POWER_VDDACTRL_TRG_MASK,
+	.bo_irq			= POWER_CTRL_VDDA_BO_IRQ,
+	.bo_enirq		= POWER_CTRL_ENIRQ_VDDA_BO,
+	.bo_offset_mask		= POWER_VDDACTRL_BO_OFFSET_MASK,
+	.bo_offset_offset	= POWER_VDDACTRL_BO_OFFSET_OFFSET,
+};
+
 /**
  * mxs_power_set_vddx() - Configure voltage on DC-DC converter rail
  * @cfg:		Configuration data of the DC-DC converter rail
@@ -1143,10 +1183,15 @@ static void mx23_ungate_power(void)
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
  */
-static void __mx23_power_init(int has_battery)
+void mx23_power_init(int __has_battery, int __use_battery_input,
+		int __use_5v_input)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
+
+	has_battery = __has_battery;
+	use_battery_input = __use_battery_input;
+	use_5v_input = __use_5v_input;
 
 	mx23_ungate_power();
 
@@ -1161,8 +1206,10 @@ static void __mx23_power_init(int has_battery)
 
 	if (has_battery)
 		mxs_power_configure_power_source();
-	else
+	else if (use_battery_input)
 		mxs_enable_battery_input();
+	else if (use_5v_input)
+		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();
 
@@ -1177,8 +1224,9 @@ static void __mx23_power_init(int has_battery)
 	mxs_enable_output_rail_protection();
 
 	mxs_power_set_vddx(&mx23_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1000);
+	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
 	mxs_power_set_vddx(&mxs_vddmem_cfg, 2500, 1700);
+	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |
@@ -1190,27 +1238,23 @@ static void __mx23_power_init(int has_battery)
 	mxs_early_delay(1000);
 }
 
-void mx23_power_init(void)
-{
-	__mx23_power_init(1);
-}
-
-void mx23_power_init_battery_input(void)
-{
-	__mx23_power_init(0);
-}
-
 /**
  * mx28_power_init() - The power block init main function
  *
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
  */
-static void __mx28_power_init(int has_battery)
+void mx28_power_init(int __has_battery, int __use_battery_input,
+		int __use_5v_input)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
 
+	has_battery = __has_battery;
+	use_battery_input = __use_battery_input;
+	use_5v_input = __use_5v_input;
+
+	mxs_power_status();
 	mxs_power_clock2xtal();
 	mxs_power_set_auto_restart();
 	mxs_power_set_linreg();
@@ -1222,8 +1266,10 @@ static void __mx28_power_init(int has_battery)
 
 	if (has_battery)
 		mxs_power_configure_power_source();
-	else
+	else if (use_battery_input)
 		mxs_enable_battery_input();
+	else if (use_5v_input)
+		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();
 
@@ -1234,7 +1280,8 @@ static void __mx28_power_init(int has_battery)
 	mxs_enable_output_rail_protection();
 
 	mxs_power_set_vddx(&mx28_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1000);
+	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
+	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |
@@ -1244,16 +1291,8 @@ static void __mx28_power_init(int has_battery)
 	writel(POWER_5VCTRL_PWDN_5VBRNOUT, &power_regs->hw_power_5vctrl_set);
 
 	mxs_early_delay(1000);
-}
 
-void mx28_power_init(void)
-{
-	__mx28_power_init(1);
-}
-
-void mx28_power_init_battery_input(void)
-{
-	__mx28_power_init(0);
+	mxs_power_status();
 }
 
 /**

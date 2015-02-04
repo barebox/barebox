@@ -43,7 +43,7 @@ static noinline void karo_tx28_init(void)
 
 	pr_debug("initializing power...\n");
 
-	mx28_power_init_battery_input();
+	mx28_power_init(0, 1, 0);
 
 	pr_debug("initializing SDRAM...\n");
 

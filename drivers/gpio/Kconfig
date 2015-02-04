@@ -41,6 +41,9 @@ config GPIO_GENERIC_PLATFORM
 config GPIO_IMX
 	def_bool ARCH_IMX
 
+config GPIO_MXS
+	def_bool ARCH_MXS
+
 config GPIO_JZ4740
 	bool "GPIO support for Ingenic SoCs"
 	depends on MACH_MIPS_XBURST

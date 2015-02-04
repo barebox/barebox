@@ -12,9 +12,17 @@
 #include <mach/iomux.h>
 #include <stmp-device.h>
 
-ENTRY_FUNCTION(start_barebox_freescale_mx28evk, r0, r1, r2)
+extern char __dtb_imx28_duckbill_start[];
+
+ENTRY_FUNCTION(start_barebox_duckbill, r0, r1, r2)
 {
-	barebox_arm_entry(IMX_MEMORY_BASE, SZ_128M, NULL);
+	void *fdt;
+
+	pr_debug("here we are!\n");
+
+	fdt = __dtb_imx28_duckbill_start - get_runtime_offset();
+
+	barebox_arm_entry(IMX_MEMORY_BASE, SZ_128M, fdt);
 }
 
 static const uint32_t iomux_pads[] = {
@@ -33,7 +41,7 @@ static const uint32_t iomux_pads[] = {
 	PWM1_DUART_TX | VE_3_3V,
 };
 
-static noinline void freescale_mx28evk_init(void)
+static noinline void duckbill_init(void)
 {
 	int i;
 
@@ -43,7 +51,7 @@ static noinline void freescale_mx28evk_init(void)
 
 	pr_debug("initializing power...\n");
 
-	mx28_power_init(0, 1, 0);
+	mx28_power_init(0, 0, 1);
 
 	pr_debug("initializing SDRAM...\n");
 
@@ -52,14 +60,14 @@ static noinline void freescale_mx28evk_init(void)
 	pr_debug("DONE\n");
 }
 
-ENTRY_FUNCTION(prep_start_barebox_freescale_mx28evk, r0, r1, r2)
+ENTRY_FUNCTION(prep_start_barebox_duckbill, r0, r1, r2)
 {
 	void (*back)(unsigned long) = (void *)get_lr();
 
 	relocate_to_current_adr();
 	setup_c();
 
-	freescale_mx28evk_init();
+	duckbill_init();
 
 	back(0);
 }

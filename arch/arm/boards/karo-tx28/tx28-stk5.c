@@ -382,9 +382,6 @@ void base_board_init(void)
 	add_generic_device("stmfb", 0, NULL, IMX_FB_BASE, 0x2000,
 			   IORESOURCE_MEM, &tx28_fb_pdata);
 
-	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0x2000,
-			   IORESOURCE_MEM, NULL);
-
 	tx28_get_ethaddr();
 
 	add_generic_device("imx28-fec", 0, NULL, IMX_FEC0_BASE, 0x4000,

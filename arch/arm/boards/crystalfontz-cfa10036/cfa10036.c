@@ -127,9 +127,6 @@ static int cfa10036_devices_init(void)
 	add_generic_device("mxs_mci", 0, NULL, IMX_SSP0_BASE, SZ_8K,
 			   IORESOURCE_MEM, &mci_pdata);
 
-	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, SZ_8K,
-			   IORESOURCE_MEM, NULL);
-
 	i2c_register_board_info(0, cfa10036_i2c_devices, ARRAY_SIZE(cfa10036_i2c_devices));
 	add_generic_device_res("i2c-gpio", 0, NULL, 0, &i2c_gpio_pdata);
 

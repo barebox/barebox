@@ -255,17 +255,6 @@ void mxs_mem_setup_cpu_and_hbus(void)
 	mxs_early_delay(15000);
 }
 
-void mxs_mem_setup_vdda(void)
-{
-	struct mxs_power_regs *power_regs =
-		(struct mxs_power_regs *)IMX_POWER_BASE;
-
-	writel((0xc << POWER_VDDACTRL_TRG_OFFSET) |
-		(0x7 << POWER_VDDACTRL_BO_OFFSET_OFFSET) |
-		POWER_VDDACTRL_LINREG_OFFSET_1STEPS_BELOW,
-		&power_regs->hw_power_vddactrl);
-}
-
 static void mx23_mem_setup_vddmem(void)
 {
 	struct mxs_power_regs *power_regs =
@@ -286,8 +275,6 @@ void mx23_mem_init(void)
 
 	/* Fractional divider for ref_emi is 33 ; 480 * 18 / 33 = 266MHz */
 	mxs_mem_init_clock(33);
-
-	mxs_mem_setup_vdda();
 
 	/*
 	 * Reset/ungate the EMI block. This is essential, otherwise the system
@@ -339,8 +326,6 @@ void mx28_mem_init(void)
 
 	/* Fractional divider for ref_emi is 21 ; 480 * 18 / 21 = 411MHz */
 	mxs_mem_init_clock(21);
-
-	mxs_mem_setup_vdda();
 
 	/* Set DDR2 mode */
 	writel(PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2,

@@ -312,8 +312,8 @@ static int of_platform_bus_create(struct device_node *bus,
 	}
 
 	if (of_device_is_compatible(bus, "arm,primecell")) {
-		of_amba_device_create(bus);
-		return 0;
+		if (of_amba_device_create(bus))
+			return 0;
 	}
 
 	dev = of_platform_device_create(bus, parent);

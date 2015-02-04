@@ -56,8 +56,17 @@ postcore_initcall(imx28_init);
 
 static int imx28_devices_init(void)
 {
+	if (of_get_root_node())
+		return 0;
+
 	add_generic_device("imx28-dma-apbh", 0, NULL, MXS_APBH_BASE, 0x2000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx28-clkctrl", 0, NULL, IMX_CCM_BASE, 0x100, IORESOURCE_MEM, NULL);
+	add_generic_device("imx28-gpio", 0, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx28-gpio", 1, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx28-gpio", 2, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx28-gpio", 3, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
+	add_generic_device("imx28-gpio", 4, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
+	add_generic_device("ocotp", 0, NULL, IMX_OCOTP_BASE, 0x2000, IORESOURCE_MEM, NULL);
 
 	return 0;
 }

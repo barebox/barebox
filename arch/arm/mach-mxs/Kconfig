@@ -68,9 +68,19 @@ config MACH_TX28
 
 config MACH_MX28EVK
 	bool "mx28-evk"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select MXS_OCOTP
+	select HAVE_PBL_MULTI_IMAGES
 	help
 	  Say Y here if you are using the Freescale i.MX28-EVK board
+
+config MACH_DUCKBILL
+	bool "Duckbill"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select MXS_OCOTP
+	select HAVE_PBL_MULTI_IMAGES
+	help
+	  Say Y here if you are using the I2SE Duckbill board
 
 config MACH_CFA10036
 	bool "cfa-10036"

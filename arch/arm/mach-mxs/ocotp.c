@@ -207,9 +207,18 @@ static int mxs_ocotp_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id mxs_ocotp_compatible[] = {
+	{
+		.compatible = "fsl,ocotp",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d mxs_ocotp_driver = {
 	.name	= DRIVERNAME,
 	.probe	= mxs_ocotp_probe,
+	.of_compatible = DRV_OF_COMPAT(mxs_ocotp_compatible),
 };
 
 static int mxs_ocotp_init(void)

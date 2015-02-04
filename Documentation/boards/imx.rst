@@ -91,7 +91,7 @@ command for writing to NAND flash.
 i.MX boards
 -----------
 
-Not supported all boards have a description here. Many newer boards also do
+Not all supported boards have a description here. Many newer boards also do
 not have individual defconfig files, they are covered by ``imx_v7_defconfig``
 or ``imx_defconfig`` instead.
 
@@ -101,4 +101,3 @@ or ``imx_defconfig`` instead.
   :maxdepth: 1
 
   imx/*
-  mxs/*

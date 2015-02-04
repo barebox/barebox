@@ -557,11 +557,8 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	bp->bp_htype = HWT_ETHER;
 	bp->bp_hlen = HWL_ETHER;
 	bp->bp_hops = 0;
-	/* FIXME what is this? */
-//	bp->bp_secs = htons(get_timer(0) / CFG_HZ);
-	net_copy_ip(&bp->bp_ciaddr, &bp_offer->bp_ciaddr); /* both in network byte order */
-	net_copy_ip(&bp->bp_yiaddr, &bp_offer->bp_yiaddr);
-	net_copy_ip(&bp->bp_siaddr, &bp_offer->bp_siaddr);
+	bp->bp_secs = htons(get_time_ns() >> 30);
+
 	/*
 	 * RFC3046 requires Relay Agents to discard packets with
 	 * nonzero and offered giaddr
@@ -579,7 +576,7 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	/*
 	 * Copy options from OFFER packet if present
 	 */
-	net_copy_ip(&OfferedIP, &bp->bp_yiaddr);
+	net_copy_ip(&OfferedIP, &bp_offer->bp_yiaddr);
 	extlen = dhcp_extended((u8 *)bp->bp_vend, DHCP_REQUEST, net_dhcp_server_ip,
 				OfferedIP);
 

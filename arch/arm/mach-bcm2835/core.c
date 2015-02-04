@@ -72,7 +72,7 @@ void bcm2835_add_device_sdram(u32 size)
 }
 #define RESET_TIMEOUT 10
 
-void __noreturn reset_cpu (unsigned long addr)
+void __noreturn reset_cpu(unsigned long addr)
 {
 	uint32_t rstc;
 

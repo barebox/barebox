@@ -13,7 +13,7 @@
 
 #include <mach/mbox.h>
 
-#define TIMEOUT (MSECOND * 100) /* 100mS */
+#define TIMEOUT (MSECOND * 1000)
 
 static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 					u32 *recv)

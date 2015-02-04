@@ -28,6 +28,7 @@
 #include <init.h>
 #include <malloc.h>
 #include <io.h>
+#include <regulator.h>
 #include <linux/amba/serial.h>
 #include <linux/clk.h>
 #include <linux/err.h>
@@ -181,6 +182,16 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 {
 	struct amba_uart_port *uart;
 	struct console_device *cdev;
+	struct regulator *r;
+
+	r = regulator_get(&dev->dev, NULL);
+	if (r) {
+		int ret;
+
+		ret = regulator_enable(r);
+		if (ret)
+			return ret;
+	}
 
 	uart = xzalloc(sizeof(struct amba_uart_port));
 	uart->clk = clk_get(&dev->dev, NULL);

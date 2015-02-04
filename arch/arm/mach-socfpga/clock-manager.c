@@ -123,11 +123,14 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg)
 	 * Put all plls VCO registers back to reset value.
 	 * Some code might have messed with them.
 	 */
-	writel(CLKMGR_MAINPLLGRP_VCO_RESET_VALUE,
+	writel(CLKMGR_MAINPLLGRP_VCO_RESET_VALUE &
+		~CLKMGR_MAINPLLGRP_VCO_REGEXTSEL_MASK,
 		cm + CLKMGR_MAINPLLGRP_VCO_ADDRESS);
-	writel(CLKMGR_PERPLLGRP_VCO_RESET_VALUE,
+	writel(CLKMGR_PERPLLGRP_VCO_RESET_VALUE &
+		~CLKMGR_PERPLLGRP_VCO_REGEXTSEL_MASK,
 		cm + CLKMGR_PERPLLGRP_VCO_ADDRESS);
-	writel(CLKMGR_SDRPLLGRP_VCO_RESET_VALUE,
+	writel(CLKMGR_SDRPLLGRP_VCO_RESET_VALUE &
+		~CLKMGR_SDRPLLGRP_VCO_REGEXTSEL_MASK,
 		cm + CLKMGR_SDRPLLGRP_VCO_ADDRESS);
 
 	/*
@@ -151,21 +154,27 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg)
 	 * We made sure bgpwr down was assert for 5 us. Now deassert BG PWR DN
 	 * with numerator and denominator.
 	 */
-	writel(cfg->main_vco_base | CLKMGR_MAINPLLGRP_VCO_REGEXTSEL_MASK,
+	writel(cfg->main_vco_base | CLEAR_BGP_EN_PWRDN,
 		cm + CLKMGR_MAINPLLGRP_VCO_ADDRESS);
-	writel(cfg->peri_vco_base | CLKMGR_PERPLLGRP_VCO_REGEXTSEL_MASK,
+	writel(cfg->peri_vco_base | CLEAR_BGP_EN_PWRDN,
 		cm + CLKMGR_PERPLLGRP_VCO_ADDRESS);
-	writel(cfg->sdram_vco_base | CLKMGR_SDRPLLGRP_VCO_REGEXTSEL_MASK,
-		cm + CLKMGR_SDRPLLGRP_VCO_ADDRESS);
+	writel(cfg->sdram_vco_base |
+	       CLKMGR_SDRPLLGRP_VCO_OUTRESET_SET(0) |
+	       CLKMGR_SDRPLLGRP_VCO_OUTRESETALL_SET(0) |
+	       CLEAR_BGP_EN_PWRDN,
+	       cm + CLKMGR_SDRPLLGRP_VCO_ADDRESS);
 
 	writel(cfg->mpuclk, cm + CLKMGR_MAINPLLGRP_MPUCLK_ADDRESS);
 	writel(cfg->mainclk, cm + CLKMGR_MAINPLLGRP_MAINCLK_ADDRESS);
+	writel(cfg->alteragrp_mpu, cm + CLKMGR_ALTERAGRP_MPUCLK);
 	writel(cfg->dbgatclk, cm + CLKMGR_MAINPLLGRP_DBGATCLK_ADDRESS);
+	writel(cfg->alteregrp_main, cm + CLKMGR_ALTERAGRP_MAINCLK);
 	writel(cfg->cfg2fuser0clk, cm + CLKMGR_MAINPLLGRP_CFGS2FUSER0CLK_ADDRESS);
 	writel(cfg->emac0clk, cm + CLKMGR_PERPLLGRP_EMAC0CLK_ADDRESS);
 	writel(cfg->emac1clk, cm + CLKMGR_PERPLLGRP_EMAC1CLK_ADDRESS);
 	writel(cfg->mainqspiclk, cm + CLKMGR_MAINPLLGRP_MAINQSPICLK_ADDRESS);
 	writel(cfg->perqspiclk, cm + CLKMGR_PERPLLGRP_PERQSPICLK_ADDRESS);
+	writel(cfg->mainnandsdmmcclk, cm + CLKMGR_MAINPLLGRP_MAINNANDSDMMCCLK_ADDRESS);
 	writel(cfg->pernandsdmmcclk, cm + CLKMGR_PERPLLGRP_PERNANDSDMMCCLK_ADDRESS);
 	writel(cfg->perbaseclk, cm + CLKMGR_PERPLLGRP_PERBASECLK_ADDRESS);
 	writel(cfg->s2fuser1clk, cm + CLKMGR_PERPLLGRP_S2FUSER1CLK_ADDRESS);
@@ -282,4 +291,8 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg)
 	writel(~0, cm + CLKMGR_MAINPLLGRP_EN_ADDRESS);
 	writel(~0, cm + CLKMGR_PERPLLGRP_EN_ADDRESS);
 	writel(~0, cm + CLKMGR_SDRPLLGRP_EN_ADDRESS);
+
+	val = readl(cm + CLKMGR_DBCTRL_ADDRESS);
+	val |= CLKMGR_DBCTRL_STAYOSC1_MASK;
+	writel(val, cm + CLKMGR_DBCTRL_ADDRESS);
 }

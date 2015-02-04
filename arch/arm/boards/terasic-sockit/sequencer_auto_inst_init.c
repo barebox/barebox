@@ -28,8 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <common.h>
-const uint32_t inst_rom_init_size = 127;
-const uint32_t inst_rom_init[127] =
+static const uint32_t inst_rom_init_size = 127;
+static const uint32_t inst_rom_init[127] =
 {
 	0x80000,
 	0x80680,

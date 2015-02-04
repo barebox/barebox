@@ -24,8 +24,12 @@
 # include <mach/pxa2xx-regs.h>
 #endif
 
-#ifdef CONFIG_ARCH_PXA27X
+#if defined(CONFIG_ARCH_PXA27X)
 # include <mach/pxa27x-regs.h>
+#elif defined(CONFIG_ARCH_PXA3XX)
+# include <mach/pxa3xx-regs.h>
+#elif defined(CONFIG_ARCH_PXA25X)
+# include <mach/pxa25x-regs.h>
 #else
 # error "unknown PXA soc type"
 #endif

@@ -27,12 +27,12 @@
 #define OWER_WME	(1 << 0)	/* Watch-dog Match Enable */
 #define OSSR_M3		(1 << 3)	/* Match status channel 3 */
 
-extern void pxa_suspend(int mode);
+extern void pxa_clear_reset_source(void);
 
 void reset_cpu(ulong addr)
 {
 	/* Clear last reset source */
-	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
+	pxa_clear_reset_source();
 
 	/* Initialize the watchdog and let it fire */
 	writel(OWER_WME, OWER);
@@ -40,15 +40,4 @@ void reset_cpu(ulong addr)
 	writel(readl(OSCR) + 368640, OSMR3);  /* ... in 100 ms */
 
 	while (1);
-}
-
-void __noreturn poweroff()
-{
-	shutdown_barebox();
-
-	/* Clear last reset source */
-	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
-
-	pxa_suspend(PWRMODE_DEEPSLEEP);
-	unreachable();
 }

@@ -416,7 +416,7 @@ typedef unsigned long mfp_cfg_t;
 	((MFP_CFG_DEFAULT & ~(MFP_AF_MASK | MFP_DS_MASK | MFP_LPM_STATE_MASK)) |\
 	 (MFP_PIN(MFP_PIN_##pin) | MFP_##af | MFP_##drv | MFP_LPM_##lpm))
 
-#if defined(CONFIG_PXA3xx) || defined(CONFIG_ARCH_MMP)
+#if defined(CONFIG_ARCH_PXA3XX)
 /*
  * each MFP pin will have a MFPR register, since the offset of the
  * register varies between processors, the processor specific code
@@ -449,7 +449,7 @@ struct mfp_addr_map {
 
 #define MFP_ADDR_END	{ MFP_PIN_INVALID, 0 }
 
-void __init mfp_init_base(unsigned long mfpr_base);
+void __init mfp_init_base(void __iomem *mfpr_base);
 void __init mfp_init_addr(struct mfp_addr_map *map);
 
 /*
@@ -463,6 +463,7 @@ void mfp_write(int mfp, unsigned long mfpr_val);
 void mfp_config(unsigned long *mfp_cfgs, int num);
 void mfp_config_run(void);
 void mfp_config_lpm(void);
-#endif /* CONFIG_PXA3xx || CONFIG_ARCH_MMP */
+void mfp_init(void);
+#endif /* CONFIG_ARCH_PXA3XX */
 
 #endif /* __ASM_PLAT_MFP_H */

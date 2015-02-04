@@ -21,7 +21,7 @@
 #define UNCACHED_PHYS_0	0
 		.text
 
-#ifdef CONFIG_ARCH_PXA27X
+#if (defined CONFIG_ARCH_PXA27X || defined CONFIG_ARCH_PXA25X)
 /*
  * pxa27x_finish_suspend()
  *
@@ -79,3 +79,10 @@ pxa_cpu_do_suspend:
 	@ enter sleep mode
 	mcr	p14, 0, r1, c7, c0, 0		@ PWRMODE
 20:	b	20b				@ loop waiting for sleep
+
+	/*
+	 * pxa3xx_finish_suspend() - forces CPU into sleep state
+	*/
+ENTRY(pxa3xx_suspend)
+	mcr     p14, 0, r0, c7, c0, 0   @ enter sleep
+20:	b       20b                     @ waiting for sleep

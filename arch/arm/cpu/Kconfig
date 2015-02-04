@@ -69,6 +69,12 @@ config CPU_V7
 	bool
 	select CPU_32v7
 
+config CPU_XSC3
+        bool
+        select CPU_32v4T
+        help
+          Select code specific to PXA3xx variants
+
 # Xscale PXA25x, PXA27x
 config CPU_XSCALE
 	bool

@@ -13,7 +13,7 @@
 #ifdef CONFIG_ARCH_PXA2XX
 #define cpu_is_pxa2xx()	(1)
 #else
-#define cpi_is_pxa2xx()	(0)
+#define cpu_is_pxa2xx()	(0)
 #endif
 
 #ifdef CONFIG_ARCH_PXA25X
@@ -26,6 +26,22 @@
 #define cpu_is_pxa27x()	(1)
 #else
 #define cpu_is_pxa27x()	(0)
+#endif
+
+#ifdef CONFIG_ARCH_PXA3XX
+#define cpu_is_pxa3xx()	(1)
+# ifdef CONFIG_ARCH_PXA320
+# define cpu_is_pxa320() (1)
+# else
+# define cpu_is_pxa320() (0)
+# endif
+# ifdef CONFIG_ARCH_PXA310
+# define cpu_is_pxa310() (1)
+# else
+# define cpu_is_pxa310() (0)
+# endif
+#else
+#define cpu_is_pxa3xx()	(0)
 #endif
 
 #ifdef __ASSEMBLY__

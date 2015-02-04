@@ -4,6 +4,7 @@ config ARCH_TEXT_BASE
 	hex
 	default 0xa0000000 if MACH_MIOA701
 	default 0xa3f00000 if MACH_PCM027
+	default 0x83f00000 if MACH_ZYLONITE
 
 # ----------------------------------------------------------
 
@@ -11,14 +12,45 @@ config ARCH_PXA2XX
 	bool
 	select CPU_XSCALE
 
+config ARCH_PXA3XX
+       bool
+       select CPU_XSC3
+
+config ARCH_PXA310
+       bool
+
 choice
 	prompt "Intel/Marvell PXA Processor"
+
+config ARCH_PXA25X
+	bool "PXA25x"
+	select ARCH_PXA2XX
 
 config ARCH_PXA27X
 	bool "PXA27x"
 	select ARCH_PXA2XX
 
+config ARCH_PXA3XX
+	bool "PXA3xx"
+
 endchoice
+
+# ----------------------------------------------------------
+
+if ARCH_PXA25X
+
+choice
+	prompt "PXA25x Board Type"
+	bool
+
+config MACH_LUBBOCK
+	bool "Lubbock board"
+	select PWM
+	help
+	  Say Y here if you are using a Lubbock board
+endchoice
+
+endif
 
 # ----------------------------------------------------------
 
@@ -50,6 +82,28 @@ config BCH_CONST_T
 	int
 	default 4 if MACH_MIOA701
 endif
+
+endif
+
+# ----------------------------------------------------------
+
+if ARCH_PXA3XX
+
+config MACH_ZYLONITE
+       bool
+
+choice
+	prompt "PXA3xx Board Type"
+
+config MACH_ZYLONITE_PXA310
+	bool "Zylonite board based on a PXA310 pxa SoC"
+	help
+	  Say Y here if you are using a Zylonite board, based
+	  on a PXA31x SoC.
+	select ARCH_PXA310
+	select MACH_ZYLONITE
+
+endchoice
 
 endif
 

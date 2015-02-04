@@ -97,6 +97,13 @@ config NAND_ORION
 	help
 	  Support for the Orion NAND controller, present in Kirkwood SoCs.
 
+config NAND_MRVL_NFC
+	bool
+	prompt "Marvell NAND driver"
+	depends on ARCH_PXA3XX
+	help
+	  Support for the PXA3xx NAND controller, present in pxa3xx SoCs.
+
 config NAND_ATMEL
 	bool
 	prompt "Atmel (AT91SAM9xxx) NAND driver"

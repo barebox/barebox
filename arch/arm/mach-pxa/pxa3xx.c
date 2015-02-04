@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Robert Jarzmik <robert.jarzmik@free.fr>
+ * (C) Copyright 2015 Robert Jarzmik <robert.jarzmik@free.fr>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -15,22 +15,25 @@
 #include <common.h>
 #include <init.h>
 #include <reset_source.h>
+#include <mach/hardware.h>
 #include <mach/pxa-regs.h>
+
+extern void pxa3xx_suspend(int mode);
 
 static int pxa_detect_reset_source(void)
 {
-	u32 reg = RCSR;
+	u32 reg = ARSR;
 
 	/*
 	 * Order is important, as many bits can be set together
 	 */
-	if (reg & RCSR_GPR)
+	if (reg & ARSR_GPR)
 		reset_source_set(RESET_RST);
-	else if (reg & RCSR_WDR)
+	else if (reg & ARSR_WDT)
 		reset_source_set(RESET_WDG);
-	else if (reg & RCSR_HWR)
+	else if (reg & ARSR_HWR)
 		reset_source_set(RESET_POR);
-	else if (reg & RCSR_SMR)
+	else if (reg & ARSR_LPMR)
 		reset_source_set(RESET_WKE);
 	else
 		reset_source_set(RESET_UKWN);
@@ -38,4 +41,19 @@ static int pxa_detect_reset_source(void)
 	return 0;
 }
 
+void pxa_clear_reset_source(void)
+{
+	ARSR = ARSR_GPR | ARSR_LPMR | ARSR_WDT | ARSR_HWR;
+}
+
 device_initcall(pxa_detect_reset_source);
+
+void __noreturn poweroff(void)
+{
+	shutdown_barebox();
+
+	/* Clear last reset source */
+	pxa_clear_reset_source();
+	pxa3xx_suspend(PXA3xx_PM_S3D4C4);
+	unreachable();
+}

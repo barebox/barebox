@@ -49,38 +49,6 @@
 #error "None of __LITTLE_ENDIAN and __BIG_ENDIAN are defined"
 #endif
 
-#define BUG() do { \
-	printf("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
-	panic("BUG!"); \
-} while (0)
-#define BUG_ON(condition) do { if (unlikely((condition)!=0)) BUG(); } while(0)
-
-
-#define __WARN() do { 								\
-	printf("WARNING: at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__);	\
-} while (0)
-
-#ifndef WARN_ON
-#define WARN_ON(condition) ({						\
-	int __ret_warn_on = !!(condition);				\
-	if (unlikely(__ret_warn_on))					\
-		__WARN();						\
-	unlikely(__ret_warn_on);					\
-})
-#endif
-
-#ifndef WARN
-#define WARN(condition, format...) ({					\
-	int __ret_warn_on = !!(condition);				\
-	if (unlikely(__ret_warn_on)) {					\
-		__WARN();						\
-		puts("WARNING: ");					\
-		printf(format);						\
-	}								\
-	unlikely(__ret_warn_on);					\
-})
-#endif
-
 #include <asm/barebox.h> /* boot information for Linux kernel */
 
 /*
@@ -89,7 +57,6 @@
 void reginfo(void);
 
 void __noreturn hang (void);
-void __noreturn panic(const char *fmt, ...);
 
 char *size_human_readable(unsigned long long size);
 
@@ -106,11 +73,6 @@ void __noreturn poweroff(void);
 /* lib_$(ARCH)/time.c */
 void	udelay (unsigned long);
 void	mdelay (unsigned long);
-
-/* lib_generic/vsprintf.c */
-ulong	simple_strtoul(const char *cp,char **endp,unsigned int base);
-unsigned long long	simple_strtoull(const char *cp,char **endp,unsigned int base);
-long	simple_strtol(const char *cp,char **endp,unsigned int base);
 
 /* lib_generic/crc32.c */
 uint32_t crc32(uint32_t, const void*, unsigned int);
@@ -175,32 +137,8 @@ static inline char *shell_expand(char *str)
 }
 #endif
 
-/* Force a compilation error if condition is true */
-#define BUILD_BUG_ON(condition) ((void)BUILD_BUG_ON_ZERO(condition))
-
-/* Force a compilation error if condition is constant and true */
-#define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
-
-/* Force a compilation error if a constant expression is not a power of 2 */
-#define BUILD_BUG_ON_NOT_POWER_OF_2(n)			\
-	BUILD_BUG_ON((n) == 0 || (((n) & ((n) - 1)) != 0))
-
-/*
- * Force a compilation error if condition is true, but also produce a
- * result (of value 0 and type size_t), so the expression can be used
- * e.g. in a structure initializer (or where-ever else comma
- * expressions aren't permitted).
- */
-#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
-#define BUILD_BUG_ON_NULL(e) ((void *)sizeof(struct { int:-!!(e); }))
-
-#define ALIGN(x, a)		__ALIGN_MASK(x, (typeof(x))(a) - 1)
-#define __ALIGN_MASK(x, mask)	(((x) + (mask)) & ~(mask))
 #define ALIGN_DOWN(x, a)	((x) & ~((typeof(x))(a) - 1))
-#define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
-#define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
 
-#define ARRAY_SIZE(arr)		(sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
 /*
@@ -213,30 +151,6 @@ static inline char *shell_expand(char *str)
 #define STACK_ALIGN_ARRAY(type, name, size, align)		\
 	char __##name[sizeof(type) * (size) + (align) - 1];	\
 	type *name = (type *)ALIGN((uintptr_t)__##name, align)
-
-/**
- * container_of - cast a member of a structure out to the containing structure
- * @ptr:	the pointer to the member.
- * @type:	the type of the container struct this is embedded in.
- * @member:	the name of the member within the struct.
- *
- */
-#define container_of(ptr, type, member) ({			\
-	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
-
-#define USHORT_MAX	((u16)(~0U))
-#define SHORT_MAX	((s16)(USHORT_MAX>>1))
-#define SHORT_MIN	(-SHORT_MAX - 1)
-#define INT_MAX		((int)(~0U>>1))
-#define INT_MIN		(-INT_MAX - 1)
-#define UINT_MAX	(~0U)
-#define LONG_MAX	((long)(~0UL>>1))
-#define LONG_MIN	(-LONG_MAX - 1)
-#define ULONG_MAX	(~0UL)
-#define LLONG_MAX	((long long)(~0ULL>>1))
-#define LLONG_MIN	(-LLONG_MAX - 1)
-#define ULLONG_MAX	(~0ULL)
 
 #define PAGE_SIZE	4096
 #define PAGE_SHIFT	12
@@ -278,41 +192,6 @@ void barebox_set_hostname(const char *);
 #else
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 #endif
-
-#define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
-
-#define DIV_ROUND_CLOSEST(x, divisor)(			\
-{							\
-	typeof(divisor) __divisor = divisor;		\
-	(((x) + ((__divisor) / 2)) / (__divisor));	\
-}							\
-)
-
-/**
- * upper_32_bits - return bits 32-63 of a number
- * @n: the number we're accessing
- *
- * A basic shift-right of a 64- or 32-bit quantity.  Use this to suppress
- * the "right shift count >= width of type" warning when that quantity is
- * 32-bits.
- */
-#define upper_32_bits(n)	((u32)(((n) >> 16) >> 16))
-
-/**
- * lower_32_bits - return bits 0-31 of a number
- * @n: the number we're accessing
- */
-#define lower_32_bits(n)	((u32)(n))
-
-#define abs(x) ({                               \
-		long __x = (x);                 \
-		(__x < 0) ? -__x : __x;         \
-	})
-
-#define abs64(x) ({                             \
-		s64 __x = (x);                  \
-		(__x < 0) ? -__x : __x;         \
-	})
 
 /*
  * Check if two regions overlap. returns true if they do, false otherwise

@@ -26,7 +26,7 @@ again:
 	}
 
 	v = simple_strtoul(start + optlen + 1, &endp, 0);
-	if (v > USHORT_MAX)
+	if (v > USHRT_MAX)
 		return;
 
 	if (*endp == ',' || *endp == '\0')

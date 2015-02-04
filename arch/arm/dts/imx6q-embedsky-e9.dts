@@ -19,15 +19,36 @@
 	chosen {
 		linux,stdout-path = &uart4;
 
-		environment@0 {
+		environment-mmc1 {
 			compatible = "barebox,environment";
 			device-path = &usdhc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-mmc3 {
+			compatible = "barebox,environment";
+			device-path = &usdhc4, "partname:barebox-environment";
+			status = "disabled";
 		};
 
 	};
 };
 
 &usdhc2 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x80000>;
+	};
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
+	};
+};
+
+&usdhc4 {
 	#address-cells = <1>;
 	#size-cells = <1>;
 

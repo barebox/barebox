@@ -30,6 +30,7 @@
 #include <fs.h>
 #include <mach/bbu.h>
 #include <linux/mtd/mtd-abi.h>
+#include <linux/mtd/nand_mxs.h>
 #include <linux/mtd/mtd.h>
 #include <linux/stat.h>
 
@@ -235,22 +236,9 @@ static int fcb_create(struct fcb_block *fcb, struct mtd_info *mtd)
 	fcb->TotalPageSize = mtd->writesize + mtd->oobsize;
 	fcb->SectorsPerBlock = mtd->erasesize / mtd->writesize;
 
-	if (mtd->writesize == 2048) {
-		fcb->EccBlock0EccType = 4;
-	} else if (mtd->writesize == 4096) {
-		if (mtd->oobsize == 218) {
-			fcb->EccBlock0EccType = 8;
-		} else if (mtd->oobsize == 128) {
-			fcb->EccBlock0EccType = 4;
-		} else {
-			pr_err("Illegal oobsize %d\n", mtd->oobsize);
-			return -EINVAL;
-		}
-	} else {
-		pr_err("Illegal writesize %d\n", mtd->writesize);
-		return -EINVAL;
-	}
-
+	/* Divide ECC strength by two and save the value into FCB structure. */
+	fcb->EccBlock0EccType =
+		mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1;
 	fcb->EccBlockNEccType = fcb->EccBlock0EccType;
 
 	/* Also hardcoded in kobs-ng */
@@ -267,12 +255,8 @@ static int fcb_create(struct fcb_block *fcb, struct mtd_info *mtd)
 	/* DBBT search area starts at third block */
 	fcb->DBBTSearchAreaStartAddress = mtd->erasesize / mtd->writesize * 2;
 
-	if (mtd->writesize == 2048) {
-		fcb->BadBlockMarkerByte = 0x000007cf;
-	} else {
-		pr_err("BadBlockMarkerByte unknown for writesize %d\n", mtd->writesize);
-		return -EINVAL;
-	}
+	fcb->BadBlockMarkerByte = mxs_nand_mark_byte_offset(mtd);
+	fcb->BadBlockMarkerStartBit = mxs_nand_mark_bit_offset(mtd);
 
 	fcb->BBMarkerPhysicalOffset = mtd->writesize;
 
@@ -437,6 +421,16 @@ static int imx6_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *da
 
 	fcb_create(fcb, mtd);
 	encode_hamming_13_8(fcb, ecc, 512);
+
+	/*
+	 * Set the first and second byte of OOB data to 0xFF, not 0x00. These
+	 * bytes are used as the Manufacturers Bad Block Marker (MBBM). Since
+	 * the FCB is mostly written to the first page in a block, a scan for
+	 * factory bad blocks will detect these blocks as bad, e.g. when
+	 * function nand_scan_bbt() is executed to build a new bad block table.
+	 */
+	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
+
 	ret = raw_write_page(mtd, fcb_raw_page, 0);
 	if (ret)
 		goto out;

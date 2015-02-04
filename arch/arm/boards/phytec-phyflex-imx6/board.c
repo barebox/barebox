@@ -17,6 +17,7 @@
  *
  */
 
+#include <malloc.h>
 #include <envfs.h>
 #include <environment.h>
 #include <bootsource.h>
@@ -65,6 +66,9 @@ static void phyflex_err006282_workaround(void)
 
 static int phytec_pfla02_init(void)
 {
+	int ret;
+	char *environment_path;
+
 	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
 			!of_machine_is_compatible("phytec,imx6dl-pfla02") &&
 			!of_machine_is_compatible("phytec,imx6s-pfla02"))
@@ -76,19 +80,38 @@ static int phytec_pfla02_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
-		of_device_enable_path("/chosen/environment-sd");
+		environment_path = asprintf("/chosen/environment-sd%d",
+					bootsource_get_instance() + 1);
 		break;
 	case BOOTSOURCE_NAND:
-		of_device_enable_path("/chosen/environment-nand");
+		environment_path = asprintf("/chosen/environment-nand");
 		break;
 	default:
 	case BOOTSOURCE_SPI:
-		of_device_enable_path("/chosen/environment-spinor");
+		environment_path = asprintf("/chosen/environment-spinor");
 		break;
 	}
+
+	ret = of_device_enable_path(environment_path);
+	if (ret < 0)
+		pr_warn("Failed to enable environment partition '%s' (%d)\n",
+			environment_path, ret);
+
+	free(environment_path);
+
+	return 0;
+}
+device_initcall(phytec_pfla02_init);
+
+static int phytec_pbab0x_init(void)
+{
+	if (!of_machine_is_compatible("phytec,imx6x-pbab01") &&
+		!of_machine_is_compatible("phytec,imx6dl-pbab05") &&
+		!of_machine_is_compatible("phytec,imx6q-pbab02"))
+		return 0;
 
 	defaultenv_append_directory(defaultenv_phyflex_imx6);
 
 	return 0;
 }
-device_initcall(phytec_pfla02_init);
+device_initcall(phytec_pbab0x_init);

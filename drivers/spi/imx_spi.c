@@ -137,6 +137,25 @@ static int imx_spi_setup(struct spi_device *spi)
 	return 0;
 }
 
+static unsigned int imx_spi_maybe_reverse_bits(struct spi_device *spi, unsigned int word)
+{
+	unsigned int result = word;
+
+	if (spi->mode & SPI_LSB_FIRST) {
+		size_t bits_left = spi->bits_per_word - 1;
+
+		for (word >>= 1; word; word >>= 1) {
+			result <<= 1;
+			result |= word & 1;
+			bits_left--;
+		}
+
+		result <<= bits_left;
+	}
+
+	return result;
+}
+
 static unsigned int cspi_0_0_xchg_single(struct imx_spi *imx, unsigned int data)
 {
 	void __iomem *base = imx->regs;
@@ -382,9 +401,20 @@ static void cspi_2_3_chipselect(struct spi_device *spi, int is_active)
 		gpio_set_value(gpio, gpio_cs);
 }
 
+static u32 imx_xchg_single(struct spi_device *spi, u32 tx_val)
+{
+	u32 rx_val;
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+
+
+	tx_val = imx_spi_maybe_reverse_bits(spi, tx_val);
+	rx_val = imx->xchg_single(imx, tx_val);
+
+	return imx_spi_maybe_reverse_bits(spi, rx_val);
+}
+
 static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
 {
-	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
 	unsigned i;
 
 	if (spi->bits_per_word <= 8) {
@@ -393,7 +423,8 @@ static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
 		u8		rx_val;
 
 		for (i = 0; i < t->len; i++) {
-			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			rx_val = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0);
+
 			if (rx_buf)
 				rx_buf[i] = rx_val;
 		}
@@ -403,7 +434,8 @@ static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
 		u16		rx_val;
 
 		for (i = 0; i < t->len >> 1; i++) {
-			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			rx_val = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0);
+
 			if (rx_buf)
 				rx_buf[i] = rx_val;
 		}
@@ -413,7 +445,8 @@ static void imx_spi_do_transfer(struct spi_device *spi, struct spi_transfer *t)
 		u32		rx_val;
 
 		for (i = 0; i < t->len >> 2; i++) {
-			rx_val = imx->xchg_single(imx, tx_buf ? tx_buf[i] : 0);
+			rx_val = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0);
+
 			if (rx_buf)
 				rx_buf[i] = rx_val;
 		}

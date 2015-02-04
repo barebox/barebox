@@ -23,9 +23,27 @@
 			status = "disabled";
 		};
 
-		environment-sd {
+		environment-sd1 {
+			compatible = "barebox,environment";
+			device-path = &usdhc1, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-sd2 {
+			compatible = "barebox,environment";
+			device-path = &usdhc2, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-sd3 {
 			compatible = "barebox,environment";
 			device-path = &usdhc3, "partname:barebox-environment";
+			status = "disabled";
+		};
+
+		environment-sd4 {
+			compatible = "barebox,environment";
+			device-path = &usdhc4, "partname:barebox-environment";
 			status = "disabled";
 		};
 	};
@@ -48,14 +66,23 @@
 
 		partition@0 {
 			label = "barebox";
-			reg = <0x0 0x80000>;
+			reg = <0x0 0x100000>;
 		};
 
 		partition@1 {
 			label = "barebox-environment";
-			reg = <0x80000 0x10000>;
+			reg = <0x100000 0x20000>;
 		};
 
+		partition@2 {
+			label = "oftree";
+			reg = <0x120000 0x20000>;
+		};
+
+		partition@3 {
+			label = "kernel";
+			reg = <0x140000 0x0>;
+		};
 	};
 };
 
@@ -95,22 +122,22 @@
 
 	partition@1 {
 		label = "barebox-environment";
-		reg = <0x400000 0x20000>;
+		reg = <0x400000 0x100000>;
 	};
 
 	partition@2 {
 		label = "oftree";
-		reg = <0x420000 0x20000>;
+		reg = <0x500000 0x100000>;
 	};
 
 	partition@3 {
 		label = "kernel";
-		reg = <0x440000 0x800000>;
+		reg = <0x600000 0x800000>;
 	};
 
 	partition@4 {
 		label = "root";
-		reg = <0xC40000 0x0>;
+		reg = <0xe00000 0x0>;
 	};
 };
 

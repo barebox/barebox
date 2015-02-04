@@ -119,6 +119,7 @@ config BAREBOX_UPDATE_IMX6_NAND
 	depends on BAREBOX_UPDATE
 	depends on MTD
 	depends on MTD_WRITE
+	depends on NAND_MXS
 	default y
 
 comment "Freescale i.MX System-on-Chip"

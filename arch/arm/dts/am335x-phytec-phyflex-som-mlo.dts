@@ -12,7 +12,7 @@
 
 / {
 	model = "Phytec phyFLEX AM335x";
-	compatible = "phytec,phyflex-am335x-som", "ti,am33xx";
+	compatible = "phytec,phyflex-am335x-som", "phytec,am335x-som", "ti,am33xx";
 };
 
 /* Keep all bootsources disabled, we enable and register them

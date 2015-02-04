@@ -39,6 +39,13 @@
 };
 
 &am33xx_pinmux {
+	usb_pins: pinmux_usb {
+		pinctrl-single,pins = <
+			0x21c (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* usb0_drvvbus.usb0_drvvbus */
+			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* usb1_drvvbus.usb1_drvvbus */
+		>;
+	};
+
 	i2c0_pins: pinmux_i2c0_pins {
 			pinctrl-single,pins = <
 			0x188 (PIN_INPUT_PULLUP | MUX_MODE0)    /* i2c0_sda */
@@ -127,6 +134,30 @@
 			0x09c (PIN_OUTPUT_PULLDOWN | MUX_MODE0)	/* gpmc_be0n_cle */
 		>;
 	};
+};
+
+&cppi41dma {
+        status = "okay";
+};
+
+
+&usb_ctrl_mod {
+        status = "okay";
+};
+
+&usb {
+        pinctrl-names = "default";
+        pinctrl-0 = <&usb_pins>;
+        status = "okay";
+};
+
+&usb1 {
+        dr_mode = "host";
+        status = "okay";
+};
+
+&usb1_phy {
+        status = "okay";
 };
 
 &i2c0 {

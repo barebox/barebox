@@ -246,15 +246,15 @@ static void ek_add_led(void)
 static void ek_add_led(void) {}
 #endif
 
-static int sama5d4ek_mem_init(void)
+static int sama5d4_xplained_mem_init(void)
 {
 	at91_add_device_sdram(0);
 
 	return 0;
 }
-mem_initcall(sama5d4ek_mem_init);
+mem_initcall(sama5d4_xplained_mem_init);
 
-static const struct devfs_partition sama5d4ek_nand0_partitions[] = {
+static const struct devfs_partition sama5d4_xplained_nand0_partitions[] = {
 	{
 		.offset = 0x00000,
 		.size = SZ_256K,
@@ -284,7 +284,7 @@ static const struct devfs_partition sama5d4ek_nand0_partitions[] = {
 	}
 };
 
-static int sama5d4ek_devices_init(void)
+static int sama5d4_xplained_devices_init(void)
 {
 	ek_add_device_i2c();
 	ek_add_device_nand();
@@ -294,27 +294,27 @@ static int sama5d4ek_devices_init(void)
 	ek_add_device_mci();
 	ek_add_device_lcdc();
 
-	devfs_create_partitions("nand0", sama5d4ek_nand0_partitions);
+	devfs_create_partitions("nand0", sama5d4_xplained_nand0_partitions);
 
 	return 0;
 }
-device_initcall(sama5d4ek_devices_init);
+device_initcall(sama5d4_xplained_devices_init);
 
-static int sama5d4ek_console_init(void)
+static int sama5d4_xplained_console_init(void)
 {
-	barebox_set_model("Atmel sama5d4ek");
-	barebox_set_hostname("sama5d4ek");
+	barebox_set_model("Atmel sama5d4_xplained");
+	barebox_set_hostname("sama5d4_xplained");
 
 	at91_register_uart(4, 0);
 
 	return 0;
 }
-console_initcall(sama5d4ek_console_init);
+console_initcall(sama5d4_xplained_console_init);
 
-static int sama5d4ek_main_clock(void)
+static int sama5d4_xplained_main_clock(void)
 {
 	at91_set_main_clock(12000000);
 
 	return 0;
 }
-pure_initcall(sama5d4ek_main_clock);
+pure_initcall(sama5d4_xplained_main_clock);

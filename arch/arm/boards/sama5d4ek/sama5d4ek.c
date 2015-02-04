@@ -1,5 +1,5 @@
 /*
- * SAMA5D4EK board configureation.
+ * SAMA5D4EK board configuration.
  *
  * Copyright (C) 2014 Atmel Corporation,
  *		      Bo Shen <voice.shen@atmel.com>

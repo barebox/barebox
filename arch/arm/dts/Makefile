@@ -5,7 +5,7 @@ endif
 
 # just to build a built-in.o. Otherwise compilation fails when no devicetree is
 # created.
-obj-y += empty.o
+obj- += dummy.o
 
 pbl-dtb-$(CONFIG_MACH_AFI_GF) += am335x-afi-gf.dtb.o
 pbl-dtb-$(CONFIG_MACH_BEAGLEBONE) += am335x-bone.dtb.o am335x-boneblack.dtb.o am335x-bone-common.dtb.o

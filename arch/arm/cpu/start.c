@@ -1,6 +1,4 @@
 /*
- * start-arm.c
- *
  * Copyright (c) 2010 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this

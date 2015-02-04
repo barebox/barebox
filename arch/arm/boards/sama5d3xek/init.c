@@ -125,12 +125,12 @@ static void ek_add_device_nand(void) {}
 #if defined(CONFIG_DRIVER_NET_MACB)
 static struct macb_platform_data gmac_pdata = {
 	.phy_interface = PHY_INTERFACE_MODE_RGMII,
-	.phy_addr = 7,
+	.phy_addr = -1,
 };
 
 static struct macb_platform_data macb_pdata = {
 	.phy_interface = PHY_INTERFACE_MODE_RMII,
-	.phy_addr = 0,
+	.phy_addr = -1,
 };
 
 static bool used_23 = false;

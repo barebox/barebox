@@ -29,6 +29,8 @@
 #include <asm-generic/memory_layout.h>
 #include <linux/kernel.h>
 #include <linux/types.h>
+#include <linux/compiler.h>
+#include <asm/barebox-arm-head.h>
 
 /* cpu/.../cpu.c */
 int	cleanup_before_linux(void);

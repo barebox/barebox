@@ -1464,6 +1464,8 @@ static int __init at91udc_probe(struct device_d *dev)
 		DBG(udc, "VBUS detection: host:%s \n",
 			udc->vbus ? "present":"absent");
 
+		udc->gpio_vbus_val = udc->vbus;
+
 		dev_add_param_bool(dev, "vbus",
 			at91_udc_vbus_set, NULL, &udc->gpio_vbus_val, udc);
 	} else {

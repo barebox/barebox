@@ -159,16 +159,34 @@ static int nand_bb_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct nand_bb *bb = cdev->priv;
 	struct erase_info erase = {};
+	int ret;
 
 	if (offset != 0) {
 		printf("can only erase from beginning of device\n");
 		return -EINVAL;
 	}
 
-	erase.addr = 0;
-	erase.len = bb->mtd->size;
+	while (count) {
+		if (offset + bb->mtd->erasesize > bb->mtd->size)
+			return 0;
 
-	return mtd_erase(bb->mtd, &erase);
+		if (mtd_block_isbad(bb->mtd, offset)) {
+			offset += bb->mtd->erasesize;
+			continue;
+		}
+
+		erase.addr = offset;
+		erase.len = bb->mtd->erasesize;
+
+		ret = mtd_erase(bb->mtd, &erase);
+		if (ret)
+			return ret;
+
+		offset += bb->mtd->erasesize;
+		count -= bb->mtd->erasesize;
+	}
+
+	return 0;
 }
 #endif
 

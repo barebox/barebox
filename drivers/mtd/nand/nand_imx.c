@@ -362,7 +362,11 @@ static void send_read_id_v3(struct imx_nand_host *host)
 
 	wait_op_done(host);
 
-	memcpy(host->data_buf, host->main_area0, 16);
+	/*
+	 * NFC_ID results in reading 6 bytes or words (depending on data width),
+	 * so copying 3 32-bit values is just fine.
+	 */
+	memcpy(host->data_buf, host->main_area0, 12);
 }
 
 static void send_read_param_v3(struct imx_nand_host *host)

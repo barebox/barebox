@@ -815,8 +815,8 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 			omap_oobinfo.eccpos[i] = i + offset;
 		break;
 	case OMAP_ECC_BCH8_CODE_HW:
-		oinfo->nand.ecc.bytes    = 13;
-		oinfo->nand.ecc.size     = 512;
+		oinfo->nand.ecc.bytes    = 13 * 4;
+		oinfo->nand.ecc.size     = 512 * 4;
 		oinfo->nand.ecc.strength = BCH8_MAX_ERROR;
 		omap_oobinfo.oobfree->offset = offset;
 		omap_oobinfo.oobfree->length = minfo->oobsize -

@@ -2768,14 +2768,9 @@ static int nand_flash_detect_onfi(struct mtd_info *mtd, struct nand_chip *chip,
 					int *busw)
 {
 	struct nand_onfi_params *p = &chip->onfi_params;
-	int i;
+	int i, j;
 	int val;
 
-	/* ONFI need to be probed in 8 bits mode, and 16 bits should be selected with NAND_BUSWIDTH_AUTO */
-	if (chip->options & NAND_BUSWIDTH_16) {
-		pr_err("Trying ONFI probe in 16 bits mode, aborting !\n");
-		return 0;
-	}
 	/* Try ONFI for unknown chip or LP */
 	chip->cmdfunc(mtd, NAND_CMD_READID, 0x20, -1);
 	if (chip->read_byte(mtd) != 'O' || chip->read_byte(mtd) != 'N' ||
@@ -2784,16 +2779,18 @@ static int nand_flash_detect_onfi(struct mtd_info *mtd, struct nand_chip *chip,
 
 	chip->cmdfunc(mtd, NAND_CMD_PARAM, 0, -1);
 	for (i = 0; i < 3; i++) {
-		chip->read_buf(mtd, (uint8_t *)p, sizeof(*p));
+		for (j = 0; j < sizeof(*p); j++)
+			((uint8_t *)p)[j] = chip->read_byte(mtd);
 		if (onfi_crc16(ONFI_CRC_BASE, (uint8_t *)p, 254) ==
 				le16_to_cpu(p->crc)) {
-			pr_info("ONFI param page %d valid\n", i);
 			break;
 		}
 	}
 
-	if (i == 3)
+	if (i == 3) {
+		pr_err("Could not find valid ONFI parameter page; aborting\n");
 		return 0;
+	}
 
 	/* Check version */
 	val = le16_to_cpu(p->revision);

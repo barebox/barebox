@@ -57,6 +57,11 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 	debug("%s 0x%08llx %d\n", __func__, offset, count);
 
 	while (count) {
+		loff_t max = bb->mtd->size - bb->offset;
+
+		if (max <= 0)
+			break;
+
 		if (mtd_block_isbad(bb->mtd, offset)) {
 			printf("skipping bad block at 0x%08llx\n", bb->offset);
 			bb->offset += bb->mtd->erasesize;
@@ -65,6 +70,9 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 
 		now = min(count, (size_t)(bb->mtd->erasesize -
 				((size_t)bb->offset % bb->mtd->erasesize)));
+
+		if (now > max)
+			now = max;
 
 		ret = mtd_read(bb->mtd, bb->offset, now, &retlen, buf);
 		if (ret < 0)
@@ -90,6 +98,11 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 	loff_t cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
 
 	while (count) {
+		loff_t max = bb->mtd->size - bb->offset;
+
+		if (max <= 0)
+			return -ENOSPC;
+
 		if (mtd_block_isbad(bb->mtd, cur_ofs)) {
 			debug("skipping bad block at 0x%08llx\n", cur_ofs);
 			bb->offset += bb->mtd->erasesize;
@@ -98,6 +111,9 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 		}
 
 		now = min(count, (size_t)(bb->mtd->erasesize));
+		if (now > max)
+			return -ENOSPC;
+
 		ret = mtd_write(bb->mtd, cur_ofs, now, &retlen, buf);
 		if (ret < 0)
 			return ret;

@@ -168,10 +168,10 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	while (count > 0) {
 		dev_dbg(cdev->dev, "erase %d %d\n", addr, erase.len);
 
-		if (!mtd->allow_erasebad)
-			ret = mtd_block_isbad(mtd, addr);
-		else
+		if (mtd->allow_erasebad || (mtd->master && mtd->master->allow_erasebad))
 			ret = 0;
+		else
+			ret = mtd_block_isbad(mtd, addr);
 
 		erase.addr = addr;
 

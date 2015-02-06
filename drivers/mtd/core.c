@@ -380,6 +380,7 @@ static struct file_operations mtd_ops = {
 int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
+	int ret;
 
 	if (!devname)
 		devname = "mtd";
@@ -387,7 +388,10 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	mtd->class_dev.id = device_id;
 	if (mtd->parent)
 		mtd->class_dev.parent = mtd->parent;
-	register_device(&mtd->class_dev);
+
+	ret = register_device(&mtd->class_dev);
+	if (ret)
+		return ret;
 
 	mtd->cdev.ops = &mtd_ops;
 	mtd->cdev.size = mtd->size;
@@ -407,7 +411,9 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 		dev_add_param_int_ro(&mtd->class_dev, "oobsize", mtd->oobsize, "%u");
 	}
 
-	devfs_create(&mtd->cdev);
+	ret = devfs_create(&mtd->cdev);
+	if (ret)
+		goto err;
 
 	if (mtd_can_have_bb(mtd))
 		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
@@ -420,6 +426,11 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 			hook->add_mtd_device(mtd, devname, &hook->priv);
 
 	return 0;
+err:
+	free(mtd->cdev.name);
+	unregister_device(&mtd->class_dev);
+
+	return ret;
 }
 
 int del_mtd_device (struct mtd_info *mtd)

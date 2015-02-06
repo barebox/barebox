@@ -22,7 +22,7 @@
 #include <linux/err.h>
 #include <cmdlinepart.h>
 
-#define SIZE_REMAINING ((size_t)-1)
+#define SIZE_REMAINING ((loff_t)-1)
 
 int cmdlinepart_do_parse_one(char *devname, const char *partstr,
 				 char **endp, loff_t *offset,

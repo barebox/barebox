@@ -123,6 +123,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	part->ecclayout = mtd->ecclayout;
 	part->ecc_strength = mtd->ecc_strength;
 	part->subpage_sft = mtd->subpage_sft;
+	part->cdev.flags = flags;
 
 	if (mtd->numeraseregions > 1) {
 		/* Deal with variable erase size stuff */

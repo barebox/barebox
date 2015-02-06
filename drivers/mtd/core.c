@@ -377,6 +377,18 @@ static struct file_operations mtd_ops = {
 	.lseek  = dev_lseek_default,
 };
 
+static int mtd_part_compare(struct list_head *a, struct list_head *b)
+{
+	struct mtd_info *mtda = container_of(a, struct mtd_info, partitions_entry);
+	struct mtd_info *mtdb = container_of(b, struct mtd_info, partitions_entry);
+
+	if (mtda->master_offset > mtdb->master_offset)
+		return 1;
+	if (mtda->master_offset < mtdb->master_offset)
+		return -1;
+	return 0;
+}
+
 int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
@@ -417,20 +429,35 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	if (ret)
 		goto err;
 
+	if (mtd->master && !(mtd->cdev.flags & DEVFS_PARTITION_FIXED)) {
+		struct mtd_info *mtdpart;
+
+		list_for_each_entry(mtdpart, &mtd->master->partitions, partitions_entry) {
+			if (mtdpart->master_offset + mtdpart->size <= mtd->master_offset)
+				continue;
+			if (mtd->master_offset + mtd->size <= mtdpart->master_offset)
+				continue;
+			dev_err(&mtd->class_dev, "New partition %s conflicts with %s\n",
+					mtd->name, mtdpart->name);
+			goto err1;
+		}
+
+		list_add_sort(&mtd->partitions_entry, &mtd->master->partitions, mtd_part_compare);
+	}
+
 	if (mtd_can_have_bb(mtd))
 		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
 
 	if (mtd->parent && !mtd->master)
 		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
 
-	if (mtd->master)
-		list_add_tail(&mtd->partitions_entry, &mtd->master->partitions);
-
 	list_for_each_entry(hook, &mtd_register_hooks, hook)
 		if (hook->add_mtd_device)
 			hook->add_mtd_device(mtd, devname, &hook->priv);
 
 	return 0;
+err1:
+	devfs_remove(&mtd->cdev);
 err:
 	free(mtd->cdev.name);
 	unregister_device(&mtd->class_dev);

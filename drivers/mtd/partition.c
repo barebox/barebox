@@ -160,7 +160,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 
 	part->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
 	part->size = size;
-	part->name = strdup(name);
+	part->name = xstrdup(name);
 
 	part->master_offset = offset;
 	part->master = mtd;

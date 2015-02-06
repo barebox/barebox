@@ -35,81 +35,8 @@
 #include <linux/stat.h>
 #include <libgen.h>
 #include <getopt.h>
+#include <cmdlinepart.h>
 #include <linux/err.h>
-
-#define SIZE_REMAINING ((ulong)-1)
-
-#define PART_ADD_DEVNAME (1 << 0)
-
-static int mtd_part_do_parse_one(char *devname, const char *partstr,
-				 char **endp, loff_t *offset,
-				 loff_t devsize, size_t *retsize,
-				 unsigned int pflags)
-{
-	loff_t size;
-	char *end;
-	char buf[PATH_MAX] = {};
-	unsigned long flags = 0;
-	int ret = 0;
-	struct cdev *cdev;
-
-	memset(buf, 0, PATH_MAX);
-
-	if (*partstr == '-') {
-		size = SIZE_REMAINING;
-		end = (char *)partstr + 1;
-	} else {
-		size = strtoull_suffix(partstr, &end, 0);
-	}
-
-	if (*end == '@')
-		*offset = strtoull_suffix(end+1, &end, 0);
-
-	if (size == SIZE_REMAINING)
-		size = devsize - *offset;
-
-	partstr = end;
-
-	if (*partstr == '(') {
-		partstr++;
-		end = strchr((char *) partstr, ')');
-		if (!end) {
-			printf("could not find matching ')'\n");
-			return -EINVAL;
-		}
-
-		if (pflags & PART_ADD_DEVNAME)
-			sprintf(buf, "%s.", devname);
-		memcpy(buf + strlen(buf), partstr, end - partstr);
-
-		end++;
-	}
-
-	if (size + *offset > devsize) {
-		printf("%s: partition end is beyond device\n", buf);
-		return -EINVAL;
-	}
-
-	partstr = end;
-
-	if (*partstr == 'r' && *(partstr + 1) == 'o') {
-		flags |= DEVFS_PARTITION_READONLY;
-		end = (char *)(partstr + 2);
-	}
-
-	if (endp)
-		*endp = end;
-
-	*retsize = size;
-
-	cdev = devfs_add_partition(devname, *offset, size, flags, buf);
-	if (IS_ERR(cdev)) {
-		ret = PTR_ERR(cdev);
-		printf("cannot create %s: %s\n", buf, strerror(-ret));
-	}
-
-	return ret;
-}
 
 static int do_addpart(int argc, char *argv[])
 {
@@ -119,12 +46,12 @@ static int do_addpart(int argc, char *argv[])
 	loff_t devsize;
 	struct stat s;
 	int opt;
-	unsigned int flags = PART_ADD_DEVNAME;
+	unsigned int flags = CMDLINEPART_ADD_DEVNAME;
 
 	while ((opt = getopt(argc, argv, "n")) > 0) {
 		switch (opt) {
 		case 'n':
-			flags &= ~PART_ADD_DEVNAME;
+			flags &= ~CMDLINEPART_ADD_DEVNAME;
 			break;
 		}
 	}
@@ -145,7 +72,7 @@ static int do_addpart(int argc, char *argv[])
 	while (1) {
 		size_t size = 0;
 
-		if (mtd_part_do_parse_one(devname, endp, &endp, &offset,
+		if (cmdlinepart_do_parse_one(devname, endp, &endp, &offset,
 					devsize, &size, flags))
 			return 1;
 

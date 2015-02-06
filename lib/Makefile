@@ -18,6 +18,7 @@ obj-y			+= kfifo.o
 obj-y			+= libbb.o
 obj-y			+= libgen.o
 obj-y			+= stringlist.o
+obj-y			+= cmdlinepart.o
 obj-y			+= recursive_action.o
 obj-y			+= make_directory.o
 obj-y			+= math.o

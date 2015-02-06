@@ -41,7 +41,7 @@
 static int do_addpart(int argc, char *argv[])
 {
 	char *devname;
-	char *endp;
+	const char *endp;
 	loff_t offset = 0;
 	loff_t devsize;
 	struct stat s;
@@ -70,7 +70,7 @@ static int do_addpart(int argc, char *argv[])
 	endp = argv[optind + 1];
 
 	while (1) {
-		size_t size = 0;
+		loff_t size = 0;
 
 		if (cmdlinepart_do_parse_one(devname, endp, &endp, &offset,
 					devsize, &size, flags))

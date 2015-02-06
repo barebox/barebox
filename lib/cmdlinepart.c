@@ -24,9 +24,9 @@
 
 #define SIZE_REMAINING ((loff_t)-1)
 
-int cmdlinepart_do_parse_one(char *devname, const char *partstr,
-				 char **endp, loff_t *offset,
-				 loff_t devsize, size_t *retsize,
+int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
+				 const char **endp, loff_t *offset,
+				 loff_t devsize, loff_t *retsize,
 				 unsigned int partition_flags)
 {
 	loff_t size;

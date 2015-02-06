@@ -93,3 +93,31 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 
 	return ret;
 }
+
+int cmdlinepart_do_parse(const char *devname, const char *parts, loff_t devsize,
+		unsigned partition_flags)
+{
+	loff_t offset = 0;
+	int ret;
+
+	while (1) {
+		loff_t size = 0;
+
+		ret = cmdlinepart_do_parse_one(devname, parts, &parts, &offset,
+				devsize, &size, partition_flags);
+		if (ret)
+			return ret;
+
+		offset += size;
+		if (!*parts)
+			break;
+
+		if (*parts != ',') {
+			printf("parse error\n");
+			return -EINVAL;
+		}
+		parts++;
+	}
+
+	return 0;
+}

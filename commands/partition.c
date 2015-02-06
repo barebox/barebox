@@ -41,8 +41,6 @@
 static int do_addpart(int argc, char *argv[])
 {
 	char *devname;
-	const char *endp;
-	loff_t offset = 0;
 	loff_t devsize;
 	struct stat s;
 	int opt;
@@ -67,28 +65,7 @@ static int do_addpart(int argc, char *argv[])
 
 	devname = basename(argv[optind]);
 
-	endp = argv[optind + 1];
-
-	while (1) {
-		loff_t size = 0;
-
-		if (cmdlinepart_do_parse_one(devname, endp, &endp, &offset,
-					devsize, &size, flags))
-			return 1;
-
-		offset += size;
-
-		if (!*endp)
-			break;
-
-		if (*endp != ',') {
-			printf("parse error\n");
-			return 1;
-		}
-		endp++;
-	}
-
-	return 0;
+	return cmdlinepart_do_parse(devname, argv[optind + 1], devsize, flags);
 }
 
 BAREBOX_CMD_HELP_START(addpart)

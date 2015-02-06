@@ -8,4 +8,7 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 				 loff_t devsize, loff_t *retsize,
 				 unsigned int partition_flags);
 
+int cmdlinepart_do_parse(const char *devname, const char *parts, loff_t devsize,
+		unsigned partition_flags);
+
 #endif /* __CMD_LINE_PART_H */

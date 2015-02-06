@@ -648,7 +648,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 	if (initrd)
 		data.initrd_file = asprintf("%s/%s", abspath, initrd);
 
-	globalvar_add_simple("linux.bootargs.blspec", options);
+	globalvar_add_simple("linux.bootargs.dyn.blspec", options);
 
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
 			entry->cdev ? dev_name(entry->cdev->dev) : "none");

@@ -223,6 +223,8 @@ struct mtd_info {
 
 	struct list_head partitions;
 	struct list_head partitions_entry;
+
+	char *of_path;
 };
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr);

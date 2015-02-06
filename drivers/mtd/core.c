@@ -482,6 +482,66 @@ static int mtd_part_compare(struct list_head *a, struct list_head *b)
 	return 0;
 }
 
+static int of_mtd_fixup(struct device_node *root, void *ctx)
+{
+	struct mtd_info *mtd = ctx, *partmtd;
+	struct device_node *np, *part, *tmp;
+	int ret, i = 0;
+
+	np = of_find_node_by_path(mtd->of_path);
+	if (!np) {
+		dev_err(&mtd->class_dev, "Cannot find nodepath %s, cannot fixup\n",
+				mtd->of_path);
+		return -EINVAL;
+	}
+
+	for_each_child_of_node_safe(np, tmp, part) {
+		if (of_get_property(part, "compatible", NULL))
+			continue;
+		of_delete_node(part);
+	}
+
+	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
+		int na, ns, len = 0;
+		char *name = asprintf("partition@%d", i++);
+		void *p;
+		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
+
+		if (!name)
+			return -ENOMEM;
+
+		part = of_new_node(np, name);
+		free(name);
+		if (!part)
+			return -ENOMEM;
+
+		p = of_new_property(part, "label", partmtd->cdev.partname,
+                                strlen(partmtd->cdev.partname) + 1);
+		if (!p)
+			return -ENOMEM;
+
+		na = of_n_addr_cells(np);
+		ns = of_n_size_cells(np);
+
+		of_write_number(tmp + len, partmtd->master_offset, na);
+		len += na * 4;
+		of_write_number(tmp + len, partmtd->size, ns);
+		len += ns * 4;
+
+		ret = of_set_property(part, "reg", tmp, len, 1);
+		if (ret)
+			return ret;
+
+		if (partmtd->cdev.flags & DEVFS_PARTITION_READONLY) {
+			ret = of_set_property(part, "read-only", NULL, 0, 1);
+			if (ret)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
 int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
@@ -544,6 +604,10 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	if (mtd->parent && !mtd->master) {
 		dev_add_param(&mtd->class_dev, "partitions", mtd_partition_set, mtd_partition_get, 0);
 		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
+		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->parent->device_node) {
+			mtd->of_path = xstrdup(mtd->parent->device_node->full_name);
+			of_register_fixup(of_mtd_fixup, mtd);
+		}
 	}
 
 	list_for_each_entry(hook, &mtd_register_hooks, hook)

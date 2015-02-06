@@ -108,6 +108,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 		uint64_t size, unsigned long flags, const char *name)
 {
 	struct mtd_info *part;
+	int ret;
 
 	part = xzalloc(sizeof(*part));
 
@@ -168,9 +169,17 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	if (!strncmp(mtd->cdev.name, name, strlen(mtd->cdev.name)))
 		part->cdev.partname = xstrdup(name + strlen(mtd->cdev.name) + 1);
 
-	add_mtd_device(part, part->name, DEVICE_ID_SINGLE);
+	ret = add_mtd_device(part, part->name, DEVICE_ID_SINGLE);
+	if (ret)
+		goto err;
 
 	return part;
+err:
+	free(part->cdev.partname);
+	free(part->name);
+	free(part);
+
+	return ERR_PTR(ret);
 }
 
 int mtd_del_partition(struct mtd_info *part)

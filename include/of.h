@@ -623,6 +623,8 @@ static inline struct device_node *of_find_matching_node(
 	for (dn = of_find_node_with_property(NULL, prop_name); dn; \
 	     dn = of_find_node_with_property(dn, prop_name))
 
+#define for_each_child_of_node_safe(parent, tmp, child) \
+	list_for_each_entry_safe(child, tmp, &parent->children, parent_list)
 #define for_each_child_of_node(parent, child) \
 	list_for_each_entry(child, &parent->children, parent_list)
 #define for_each_available_child_of_node(parent, child) \

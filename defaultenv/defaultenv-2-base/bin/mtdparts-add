@@ -30,9 +30,6 @@ if [ -z "${parts}" ]; then
 fi
 
 if [ -e /tmp/mtdparts/${device} ]; then
-	if [ -n "/dev/${device}.*.bb" ]; then
-		nand -d /dev/${device}.*.bb
-	fi
 	delpart /dev/${device}.*
 fi
 

@@ -307,6 +307,17 @@ err:
 	return ERR_PTR(ret);
 }
 
+void mtd_del_bb(struct mtd_info *mtd)
+{
+	struct cdev *cdev = mtd->cdev_bb;
+	struct nand_bb *bb = container_of(cdev, struct nand_bb, cdev);
+
+	devfs_remove(&bb->cdev);
+	list_del_init(&bb->list);
+	free(bb->name);
+	free(bb);
+}
+
 /**
  * Add a bad block aware device ontop of another (NAND) device
  * @param[in] dev The device to add a partition on
@@ -335,10 +346,7 @@ int dev_remove_bb_dev(const char *name)
 
 	list_for_each_entry_safe(bb, tmp, &bb_list, list) {
 		if (!strcmp(bb->cdev.name, name)) {
-			devfs_remove(&bb->cdev);
-			list_del_init(&bb->list);
-			free(bb->name);
-			free(bb);
+			mtd_del_bb(bb->mtd);
 			return 0;
 		}
 	}

@@ -447,6 +447,8 @@ int del_mtd_device (struct mtd_info *mtd)
 			hook->del_mtd_device(mtd, &hook->priv);
 
 	devfs_remove(&mtd->cdev);
+	if (mtd->cdev_bb)
+		mtd_del_bb(mtd);
 	unregister_device(&mtd->class_dev);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);

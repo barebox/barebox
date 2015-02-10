@@ -62,7 +62,7 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 		if (max <= 0)
 			break;
 
-		if (mtd_block_isbad(bb->mtd, offset)) {
+		if (mtd_block_isbad(bb->mtd, bb->offset)) {
 			printf("skipping bad block at 0x%08llx\n", bb->offset);
 			bb->offset += bb->mtd->erasesize;
 			continue;

@@ -54,7 +54,8 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 	size_t retlen;
 	int ret, bytes = 0, now;
 
-	debug("%s 0x%08llx %d\n", __func__, offset, count);
+	debug("%s offset: 0x%08llx (raw: 0x%08llx) count: 0x%08x\n",
+			__func__, offset, bb->offset, count);
 
 	while (count) {
 		loff_t max = bb->mtd->size - bb->offset;
@@ -131,7 +132,8 @@ static ssize_t nand_bb_write(struct cdev *cdev, const void *buf, size_t count,
 	struct nand_bb *bb = cdev->priv;
 	int bytes = count, now, wroffs, ret;
 
-	debug("%s offset: 0x%08llx count: 0x%08x\n", __func__, offset, count);
+	debug("%s offset: 0x%08llx (raw: 0x%08llx) count: 0x%08x\n",
+			__func__, offset, bb->offset, count);
 
 	while (count) {
 		wroffs = bb->offset % BB_WRITEBUF_SIZE;

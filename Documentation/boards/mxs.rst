@@ -3,7 +3,7 @@ Freescale i.MXs
 
 Freescale i.MXs or MXS are a SoC family which consists of the i.MX23
 and the i.MX28. These are quite different from the regular i.MX SoCs
-and thus are represented by its own architecture in both the Kernel
+and thus are represented by their own architecture in both the Kernel
 and barebox.
 
 Bootlets
@@ -107,10 +107,10 @@ the partition::
 The MXS SoCs require a special partition of type 0x53 (OnTrack DM6 Aux)
 which contains the BCB header. For some unknown reason the BCB header is
 inside a partition, but contains the sector number of the raw device from
-which the rest of the image is read from. With standard settings booting
-from SD card only works if the partition containing the bootloader starts
-at sector 2048 (the standard for fdisk). See the -p parameter to the
-mxsboot tool which changes this sector number in the image.
+which the rest of the image is read. With standard settings booting from
+SD card only works if the partition containing the bootloader starts at
+sector 2048 (the standard for fdisk). See the -p parameter to the mxsboot
+tool which changes this sector number in the image.
 
 Booting second stage
 --------------------

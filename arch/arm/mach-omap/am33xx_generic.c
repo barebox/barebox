@@ -26,6 +26,7 @@
 #include <mach/sys_info.h>
 #include <mach/am33xx-generic.h>
 #include <mach/gpmc.h>
+#include <reset_source.h>
 
 void __noreturn am33xx_reset_cpu(unsigned long addr)
 {
@@ -152,6 +153,38 @@ static int am33xx_bootsource(void)
 	return 0;
 }
 
+static void am33xx_detect_reset_reason(void)
+{
+	uint32_t val = 0;
+
+	val = readl(AM33XX_PRM_RSTST);
+	/* clear AM33XX_PRM_RSTST - must be cleared by software
+	 * (warm reset insensitive) */
+	writel(val, AM33XX_PRM_RSTST);
+
+	switch (val) {
+	case (1 << 9):
+		reset_source_set(RESET_JTAG);
+		break;
+	case (1 << 5):
+		reset_source_set(RESET_EXT);
+		break;
+	case (1 << 4):
+	case (1 << 3):
+		reset_source_set(RESET_WDG);
+		break;
+	case (1 << 1):
+		reset_source_set(RESET_RST);
+		break;
+	case (1 << 0):
+		reset_source_set(RESET_POR);
+		break;
+	default:
+		reset_source_set(RESET_UKWN);
+		break;
+	}
+}
+
 int am33xx_register_ethaddr(int eth_id, int mac_id)
 {
 	void __iomem *mac_id_low = (void *)AM33XX_MAC_ID0_LO + mac_id * 8;
@@ -208,6 +241,9 @@ int am33xx_init(void)
 	omap_gpmc_base = (void *)AM33XX_GPMC_BASE;
 
 	am33xx_enable_per_clocks();
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		am33xx_detect_reset_reason();
 
 	return am33xx_bootsource();
 }

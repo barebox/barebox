@@ -61,7 +61,8 @@ int cmdlinepart_do_parse_one(const char *devname, const char *partstr,
 			return -EINVAL;
 		}
 
-		if (partition_flags & CMDLINEPART_ADD_DEVNAME)
+		if ((partition_flags & CMDLINEPART_ADD_DEVNAME) &&
+				strncmp(devname, partstr, strlen(devname)))
 			sprintf(buf, "%s.", devname);
 		memcpy(buf + strlen(buf), partstr, end - partstr);
 

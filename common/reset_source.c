@@ -26,6 +26,7 @@ static const char * const reset_src_names[] = {
 	[RESET_WKE] = "WKE",
 	[RESET_JTAG] = "JTAG",
 	[RESET_THERM] = "THERM",
+	[RESET_EXT] = "EXT",
 };
 
 static enum reset_src_type reset_source;

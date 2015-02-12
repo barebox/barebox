@@ -21,6 +21,7 @@ enum reset_src_type {
 	RESET_WKE,	/* wake-up (some SoCs can handle this) */
 	RESET_JTAG,	/* JTAG reset */
 	RESET_THERM,	/* SoC shut down because of overtemperature */
+	RESET_EXT,	/* External reset through device pin */
 };
 
 #ifdef CONFIG_RESET_SOURCE

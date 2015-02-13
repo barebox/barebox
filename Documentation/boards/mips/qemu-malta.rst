@@ -10,10 +10,6 @@ QEMU run string::
       -nographic -serial stdio -monitor null \
       -bios barebox-flash-image
 
-Also you can use GXemul::
-
-  gxemul -Q -x -e maltabe -M 256 0xbfc00000:barebox-flash-image
-
 
 Little-endian mode
 ------------------
@@ -33,6 +29,19 @@ QEMU run string::
   qemu-system-mipsel -nodefaults -M malta -m 256 \
       -nographic -serial stdio -monitor null \
       -bios barebox-flash-image
+
+
+Using GXemul
+------------
+
+GXemul supports MIPS Malta except PCI stuff.
+You can use GXemul to run little-endian barebox (use gxemul-malta_defconfig).
+
+N.B. There is no need to swap words in ``zbarebox.bin`` for little-endian GXemul!
+
+GXemul run string::
+
+  gxemul -Q -e malta -M 256 0xbfc00000:barebox-flash-image
 
 
 Links

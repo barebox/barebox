@@ -4,6 +4,7 @@
  * Device initialization for the following modules and board variants:
  *   - phyCORE: PCM-953, phyBOARD-MAIA, phyBOARD-WEGA
  *   - phyFLEX: PBA-B-01
+ *   - phyCARD: PCA-A-XS1
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -87,6 +88,11 @@ static int physom_devices_init(void)
 		armlinux_set_architecture(MACH_TYPE_PFLA03);
 		am33xx_select_rmii2_crs_dv();
 		barebox_set_hostname("pfla03");
+	}
+
+	if (of_machine_is_compatible("phytec,phycard-am335x-som")) {
+		armlinux_set_architecture(MACH_TYPE_PCAAXS1);
+		barebox_set_hostname("pcaaxs1");
 	}
 
 	/* Register update handler */

@@ -51,6 +51,14 @@ pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_sram_512mb
 FILE_barebox-am33xx-phytec-phyflex-mlo-512mb.img = start_am33xx_phytec_phyflex_sram_512mb.pblx.mlo
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-mlo-512mb.img
 
+pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycard_sdram
+FILE_barebox-am33xx-phytec-phycard.img = start_am33xx_phytec_phycard_sdram.pblx
+am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycard.img
+
+pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycard_sram_256mb
+FILE_barebox-am33xx-phytec-phycard-mlo-256mb.img = start_am33xx_phytec_phycard_sram_256mb.pblx.mlo
+am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycard-mlo-256mb.img
+
 pblx-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sdram
 FILE_barebox-am33xx-beaglebone.img = start_am33xx_beaglebone_sdram.pblx
 am33xx-barebox-$(CONFIG_MACH_BEAGLEBONE) += barebox-am33xx-beaglebone.img

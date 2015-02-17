@@ -23,6 +23,10 @@ Currently, barebox supports the following SOMs and boards:
 
     - PBA-B-01
 
+  - phyCARD
+
+    - PCA-A-XS1
+
 
 Building phycore-som-am335x
 ---------------------------

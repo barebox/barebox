@@ -374,10 +374,6 @@
 	status = "okay";
 };
 
-&pcie {
-	status = "okay";
-};
-
 &can1 {
 	status = "okay";
 };

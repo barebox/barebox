@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <fs.h>
 
+
 /*
  * Physical requirements:
  * - three free GPIOs for the signals nCONFIG, CONFIGURE_DONE, nSTATUS
@@ -67,13 +68,19 @@ static int altera_spi_open(struct firmware_handler *fh)
 	 * after about 2 µs the FPGA must acknowledge with
 	 * STATUS and CONFIG DONE lines at low level
 	 */
-	ret = wait_on_timeout(2 * USECOND,
+	if (gpio_is_valid(this->nstat_gpio)) {
+		ret = wait_on_timeout(2 * USECOND,
 				(gpio_get_value(this->nstat_gpio) == 0) &&
 				(gpio_get_value(this->confd_gpio) == 0));
+	} else {
+		ret = wait_on_timeout(2 * USECOND,
+				(gpio_get_value(this->confd_gpio) == 0));
+	}
+
 
 	if (ret != 0) {
 		dev_err(dev, "FPGA does not acknowledge the programming initiation\n");
-		if (gpio_get_value(this->nstat_gpio))
+		if (gpio_is_valid(this->nstat_gpio) && gpio_get_value(this->nstat_gpio))
 			dev_err(dev, "STATUS is still high!\n");
 		if (gpio_get_value(this->confd_gpio))
 			dev_err(dev, "CONFIG DONE is still high!\n");
@@ -90,11 +97,16 @@ static int altera_spi_open(struct firmware_handler *fh)
 	 * after about 1506 µs the FPGA must acknowledge this step
 	 * with the STATUS line at high level
 	 */
-	ret = wait_on_timeout(1600 * USECOND,
+
+	if (gpio_is_valid(this->nstat_gpio)) {
+		ret = wait_on_timeout(1600 * USECOND,
 				gpio_get_value(this->nstat_gpio) == 1);
-	if (ret != 0) {
-		dev_err(dev, "FPGA does not acknowledge the programming start\n");
-		return ret;
+		if (ret != 0) {
+			dev_err(dev, "FPGA does not acknowledge the programming start\n");
+			return ret;
+		}
+	} else {
+		udelay(1600);
 	}
 
 	dev_dbg(dev, "Initiating passed\n");
@@ -177,16 +189,24 @@ static int altera_spi_close(struct firmware_handler *fh)
 	 * when programming was successful,
 	 * both status lines should be at high level
 	 */
-	ret = wait_on_timeout(10 * USECOND,
+	if (gpio_is_valid(this->nstat_gpio)) {
+		ret = wait_on_timeout(10 * USECOND,
 				(gpio_get_value(this->nstat_gpio) == 1) &&
 				(gpio_get_value(this->confd_gpio) == 1));
+	} else {
+		ret = wait_on_timeout(10 * USECOND,
+				(gpio_get_value(this->confd_gpio) == 1));
+
+	}
+
 	if (ret == 0) {
 		dev_dbg(dev, "Programming successful\n");
 		return ret;
 	}
 
 	dev_err(dev, "Programming failed due to time out\n");
-	if (gpio_get_value(this->nstat_gpio) == 0)
+	if (gpio_is_valid(this->nstat_gpio) &&
+		gpio_get_value(this->nstat_gpio) == 0)
 		dev_err(dev, "STATUS is still low!\n");
 	if (gpio_get_value(this->confd_gpio) == 0)
 		dev_err(dev, "CONFIG DONE is still low!\n");
@@ -201,10 +221,15 @@ static int altera_spi_of(struct device_d *dev, struct fpga_spi *this)
 	int ret;
 
 	name = "nstat-gpio";
-	this->nstat_gpio = of_get_named_gpio(n, name, 0);
-	if (this->nstat_gpio < 0) {
-		ret = this->nstat_gpio;
-		goto out;
+	if (!of_get_property(n, name, NULL)) {
+		dev_info(dev, "nstat-gpio is not specified, assuming it is not connected\n");
+		this->nstat_gpio = -1;
+	} else {
+		this->nstat_gpio = of_get_named_gpio(n, name, 0);
+		if (this->nstat_gpio < 0) {
+			ret = this->nstat_gpio;
+			goto out;
+		}
 	}
 
 	name = "confd-gpio";
@@ -225,9 +250,13 @@ static int altera_spi_of(struct device_d *dev, struct fpga_spi *this)
 	ret = gpio_direction_output(this->nconfig_gpio, 1);
 	if (ret)
 		return ret;
-	ret = gpio_direction_input(this->nstat_gpio);
-	if (ret)
-		return ret;
+
+	if (gpio_is_valid(this->nstat_gpio)) {
+		ret = gpio_direction_input(this->nstat_gpio);
+		if (ret)
+			return ret;
+	}
+
 	ret = gpio_direction_input(this->confd_gpio);
 	if (ret)
 		return ret;

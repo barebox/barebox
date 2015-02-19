@@ -230,6 +230,9 @@ static int file_remove_action(const char *filename, struct stat *statbuf,
 static int dir_remove_action(const char *filename, struct stat *statbuf,
 		void *userdata, int depth)
 {
+	if (!depth)
+		return 1;
+
 	rmdir(filename);
 
 	return 1;

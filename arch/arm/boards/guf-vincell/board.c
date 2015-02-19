@@ -29,6 +29,7 @@
 #include <io.h>
 #include <i2c/i2c.h>
 #include <linux/clk.h>
+#include <usb/fsl_usb2.h>
 
 #include <generated/mach-types.h>
 
@@ -42,6 +43,7 @@
 #include <mach/bbu.h>
 #include <mach/imx-flash-header.h>
 #include <mach/imx5.h>
+#include <mach/usb.h>
 
 #include <asm/armlinux.h>
 #include <asm/mmu.h>
@@ -265,6 +267,11 @@ static struct i2c_board_info i2c_devices[] = {
 	},
 };
 
+static struct fsl_usb2_platform_data usb_pdata = {
+	.operating_mode	= FSL_USB2_DR_DEVICE,
+	.phy_mode	= FSL_USB2_PHY_UTMI,
+};
+
 static int vincell_devices_init(void)
 {
 	writel(0, MX53_M4IF_BASE_ADDR + 0xc);
@@ -279,6 +286,9 @@ static int vincell_devices_init(void)
 	imx53_add_mmc0(NULL);
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	imx53_add_i2c0(NULL);
+
+	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, MX53_OTG_BASE_ADDR, 0x200,
+			   IORESOURCE_MEM, &usb_pdata);
 
 	vincell_fec_reset();
 

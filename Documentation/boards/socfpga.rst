@@ -67,8 +67,14 @@ To update the handoff files, the following procedure is necessary::
  6. Select the directory `hps_isw_handoff/soc_system_hps_0` under the
     preloader settings directory
  7. Click ``Ok`` than ``Generate``
- 8. Copy the files generated in `software/spl_bsp/generated/` to your
-    board folder
+
+Now run the command::
+
+  scripts/socfpga_import_preloader <SPL_GENERATED_DIR> <ISW_HANDOFF> <BOARD_DIRECTORY>
+
+where `<SPL_GENERATED_DIR>` is the directory where the bsp-editor generated the files,
+`<ISW_HANDOFF>` is the directory where Quartus generated the handoff files, and
+`<BOARD_DIRECTORY>` is your board directory under `arch/arm/boards`.
 
 The following files are generic and belong into the
 `arch/arm/mach-socfpga` directory tree:

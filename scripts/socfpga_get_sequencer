@@ -46,6 +46,9 @@ copy_source() {
 
 	echo "	Automated readability fixup..."
 	indent -npro -kr -i8 -ts8 -sob -l100 -ss -ncs -cp1 -il0 $tgt
+
+	echo "  Running coccinelle cleanups..."
+	spatch -sp_file scripts/coccinelle/misc/altera_sequencer.cocci -in_place arch/arm/mach-socfpga/include/mach
 }
 
 copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.c arch/arm/mach-socfpga/include/mach/sequencer.c

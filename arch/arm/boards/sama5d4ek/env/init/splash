@@ -1,10 +1,5 @@
 #!/bin/sh
 
-PATH=/env/bin
-export PATH
-
-. /env/config
-
 splash=/env/splash.png
 
 if [ -f ${splash} -a -e /dev/fb0 ]; then

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+global.bootm.image="/dev/nand0.kernel.bb"
+global.bootm.oftree="/dev/nand0.oftree.bb"
+
+global.linux.bootargs.dyn.root="root=ubi0:rootfs ubi.mtd=rootfs rootfstype=ubifs noinitrd"

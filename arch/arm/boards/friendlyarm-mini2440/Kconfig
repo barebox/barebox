@@ -25,4 +25,10 @@ config MINI2440_VIDEO_SVGA
 	help
 	  This adds support for MINI2440 SVGA (1024x768) video output adapter.
 
+config MINI2440_VIDEO_W35
+	bool "Support W35 display (320x240)"
+	select MINI2440_VIDEO
+	help
+	  This adds support for Sharp 3.5 inch TFT display.
+
 endif

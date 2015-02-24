@@ -116,6 +116,23 @@ static struct fb_videomode s3c24x0_fb_modes[] = {
 		.vmode		= FB_VMODE_NONINTERLACED,
 	},
 #endif
+#ifdef CONFIG_MINI2440_VIDEO_W35
+	{
+		.name		= "W35",
+		.refresh	= 60,
+		.xres		= 320,
+		.left_margin	= 68,
+		.right_margin	= 66,
+		.hsync_len	= 4,
+		.yres		= 240,
+		.upper_margin	= 4,
+		.lower_margin	= 4,
+		.vsync_len	= 9,
+		.pixclock	= 115913,
+		.sync		= FB_SYNC_USE_PWREN | FB_SYNC_CLK_INVERT,
+		.vmode		= FB_VMODE_NONINTERLACED,
+	},
+#endif
 };
 
 static struct s3c_fb_platform_data s3c24x0_fb_data = {

@@ -234,3 +234,8 @@ pblx-$(CONFIG_MACH_GW_VENTANA) += start_imx6q_gw54xx_1gx64
 CFG_start_imx6q_gw54xx_1gx64.pblx.imximg = $(board)/gateworks-ventana/flash-header-ventana-quad-1gx64.imxcfg
 FILE_barebox-gateworks-imx6q-ventana-1gx64.img = start_imx6q_gw54xx_1gx64.pblx.imximg
 image-$(CONFIG_MACH_GW_VENTANA) += barebox-gateworks-imx6q-ventana-1gx64.img
+
+pblx-$(CONFIG_MACH_ELTEC_HIPERCAM) += start_imx6dl_eltec_hipercam
+CFG_start_imx6dl_eltec_hipercam.pblx.imximg = $(board)/eltec-hipercam/flash-header-eltec-hipercam.imxcfg
+FILE_barebox-eltec-hipercam.img = start_imx6dl_eltec_hipercam.pblx.imximg
+image-$(CONFIG_MACH_ELTEC_HIPERCAM) += barebox-eltec-hipercam.img

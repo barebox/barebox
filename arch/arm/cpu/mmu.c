@@ -393,7 +393,7 @@ void *dma_alloc_coherent(size_t size)
 	return ret;
 }
 
-unsigned long virt_to_phys(void *virt)
+unsigned long virt_to_phys(volatile void *virt)
 {
 	return (unsigned long)virt;
 }

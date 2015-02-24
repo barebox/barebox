@@ -39,7 +39,7 @@ void dma_free_coherent(void *mem, size_t size);
 void dma_clean_range(unsigned long, unsigned long);
 void dma_flush_range(unsigned long, unsigned long);
 void dma_inv_range(unsigned long, unsigned long);
-unsigned long virt_to_phys(void *virt);
+unsigned long virt_to_phys(volatile void *virt);
 void *phys_to_virt(unsigned long phys);
 void remap_range(void *_start, size_t size, uint32_t flags);
 void *map_io_sections(unsigned long physaddr, void *start, size_t size);
@@ -62,7 +62,7 @@ static inline void *phys_to_virt(unsigned long phys)
 	return (void *)phys;
 }
 
-static inline unsigned long virt_to_phys(void *mem)
+static inline unsigned long virt_to_phys(volatile void *mem)
 {
 	return (unsigned long)mem;
 }

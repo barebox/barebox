@@ -236,8 +236,8 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 	dma_clean_range((unsigned long)priv->rx_buf,
 			(unsigned long)priv->rx_buf + NUM_RX_DESC * PKT_BUF_SIZE);
 
-	memset(priv->tx_desc, 0, NUM_TX_DESC * sizeof(struct bufdesc));
-	memset(priv->rx_desc, 0, NUM_RX_DESC * sizeof(struct bufdesc));
+	memset((void *)priv->tx_desc, 0, NUM_TX_DESC * sizeof(struct bufdesc));
+	memset((void *)priv->rx_desc, 0, NUM_RX_DESC * sizeof(struct bufdesc));
 
 	for (i = 0; i < NUM_RX_DESC; i++) {
 		if (i == (NUM_RX_DESC - 1))

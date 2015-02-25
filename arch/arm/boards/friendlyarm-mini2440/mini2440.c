@@ -29,6 +29,7 @@
 #include <asm/sections.h>
 #include <io.h>
 #include <gpio.h>
+#include <mach/bbu.h>
 #include <mach/iomux.h>
 #include <mach/s3c-iomap.h>
 #include <mach/devices-s3c24xx.h>
@@ -317,6 +318,8 @@ static int mini2440_devices_init(void)
 	devfs_del_partition("env_raw");
 	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+
+	s3c24x0_bbu_nand_register_handler();
 #endif
 	s3c24xx_add_mci(&mci_data);
 	s3c24xx_add_fb(&s3c24x0_fb_data);

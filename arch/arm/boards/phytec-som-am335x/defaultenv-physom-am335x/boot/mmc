@@ -5,4 +5,4 @@ global.bootm.oftree=/boot/oftree
 
 bootargs-ip
 
-global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootfstype=ext3 rw rootwait"
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rw rootwait"

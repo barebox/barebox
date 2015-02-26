@@ -53,7 +53,7 @@ void register_pci_controller(struct pci_controller *hose)
 	else
 		last_mem = 0;
 
-	if (bus->resource[PCI_BUS_RESOURCE_MEM])
+	if (bus->resource[PCI_BUS_RESOURCE_MEM_PREF])
 		last_mem_pref = bus->resource[PCI_BUS_RESOURCE_MEM_PREF]->start;
 	else
 		last_mem_pref = 0;

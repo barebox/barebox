@@ -23,6 +23,7 @@
  */
 
 #include <common.h>
+#include <abort.h>
 #include <asm/ptrace.h>
 #include <asm/unwind.h>
 
@@ -160,4 +161,20 @@ void do_irq (struct pt_regs *pt_regs)
 {
 	printf ("interrupt request\n");
 	do_exception(pt_regs);
+}
+
+extern volatile int arm_ignore_data_abort;
+extern volatile int arm_data_abort_occurred;
+
+void data_abort_mask(void)
+{
+	arm_data_abort_occurred = 0;
+	arm_ignore_data_abort = 1;
+}
+
+int data_abort_unmask(void)
+{
+	arm_ignore_data_abort = 0;
+
+	return arm_data_abort_occurred != 0;
 }

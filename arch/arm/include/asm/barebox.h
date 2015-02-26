@@ -5,4 +5,8 @@
 #define ARCH_HAS_STACK_DUMP
 #endif
 
+#ifdef CONFIG_ARM_EXCEPTIONS
+#define ARCH_HAS_DATA_ABORT_MASK
+#endif
+
 #endif	/* _BAREBOX_H_ */

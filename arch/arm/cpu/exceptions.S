@@ -88,6 +88,21 @@
 	movs	pc, lr
 	.endm
 
+	.macro try_data_abort
+	ldr	r13, =arm_ignore_data_abort	@ check try mode
+	ldr	r13, [r13]
+	cmp	r13, #0
+	beq	do_abort_\@
+	ldr	r13, =arm_data_abort_occurred
+	str	r13, [r13]
+	mrs	r13, spsr			@ read saved CPSR
+	tst	r13, #1<<5			@ check Thumb mode
+	subeq	lr, #4				@ next ARM instr
+	subne	lr, #6				@ next Thumb instr
+	movs	pc, lr
+do_abort_\@:
+	.endm
+
 	.macro get_irq_stack			@ setup IRQ stack
 	ldr	sp, IRQ_STACK_START
 	.endm
@@ -122,6 +137,7 @@ prefetch_abort:
 
 	.align	5
 data_abort:
+	try_data_abort
 	get_bad_stack
 	bad_save_user_regs
 	bl 	do_data_abort
@@ -202,5 +218,11 @@ _fiq: .word fiq
 
 .section .data
 .align 4
+.global arm_ignore_data_abort
+arm_ignore_data_abort:
+.word arm_ignore_data_abort /* When != 0 data aborts are ignored */
+.global arm_data_abort_occurred
+arm_data_abort_occurred:
+.word arm_data_abort_occurred /* set != 0 by the data abort handler */
 abort_stack:
 .space 8

@@ -24,6 +24,9 @@ config PCI_DEBUG
 
 	  When in doubt, say N.
 
+config PCIE_DW
+	bool
+
 config PCI_MVEBU
 	bool "Marvell EBU PCIe driver"
 	depends on ARCH_MVEBU

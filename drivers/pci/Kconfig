@@ -40,6 +40,13 @@ config PCI_TEGRA
 	select OF_PCI
 	select PCI
 
+config PCI_IMX6
+	bool "Freescale i.MX6 PCIe controller"
+	depends on ARCH_IMX6
+	select PCIE_DW
+	select OF_PCI
+	select PCI
+
 endmenu
 
 endif

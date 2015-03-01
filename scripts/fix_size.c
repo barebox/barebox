@@ -1,3 +1,6 @@
+#define _BSD_SOURCE             /* See feature_test_macros(7) */
+#define _DEFAULT_SOURCE
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -6,9 +9,6 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <fcntl.h>
-#ifndef _BSD_SOURCE
-#define _BSD_SOURCE             /* See feature_test_macros(7) */
-#endif
 #include <endian.h>
 
 int main(int argc, char**argv)

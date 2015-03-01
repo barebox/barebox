@@ -61,7 +61,6 @@ struct device_d;
 struct driver_d;
 
 int of_fix_tree(struct device_node *);
-int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);
 
 int of_match(struct device_d *dev, struct driver_d *drv);
 
@@ -240,6 +239,7 @@ void of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size);
 struct device_d *of_find_device_by_node_path(const char *path);
 int of_find_path(struct device_node *node, const char *propname, char **outpath);
+int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);
 #else
 static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
@@ -595,6 +595,12 @@ static inline struct device_d *of_device_enable_and_register_by_name(
 				const char *name)
 {
 	return NULL;
+}
+
+static inline int of_register_fixup(int (*fixup)(struct device_node *, void *),
+				void *context)
+{
+	return -ENOSYS;
 }
 #endif
 

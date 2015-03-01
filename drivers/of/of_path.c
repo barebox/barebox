@@ -132,9 +132,9 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath)
 	struct of_path op = {};
 	struct device_node *rnode;
 	const char *path, *str;
-	int i, len, ret;
+	int i, ret;
 
-	path = of_get_property(node, propname, &len);
+	path = of_get_property(node, propname, NULL);
 	if (!path)
 		return -EINVAL;
 

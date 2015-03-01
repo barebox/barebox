@@ -331,8 +331,6 @@ struct driver_d *get_driver_by_name(const char *name);
 
 struct cdev;
 
-int     dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot);
-
 /* These are used by drivers which work with direct memory accesses */
 ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags);
 ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags);

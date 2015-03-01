@@ -240,6 +240,10 @@ void of_add_memory_bank(struct device_node *node, bool dump, int r,
 struct device_d *of_find_device_by_node_path(const char *path);
 int of_find_path(struct device_node *node, const char *propname, char **outpath);
 int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);
+struct device_node *of_find_node_by_alias(struct device_node *root,
+		const char *alias);
+struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
+		const char *str);
 #else
 static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
@@ -602,6 +606,18 @@ static inline int of_register_fixup(int (*fixup)(struct device_node *, void *),
 {
 	return -ENOSYS;
 }
+
+static inline struct device_node *of_find_node_by_alias(
+				struct device_node *root, const char *alias)
+{
+	return NULL;
+}
+
+static inline struct device_node *of_find_node_by_path_or_alias(
+				struct device_node *root, const char *str)
+{
+	return NULL;
+}
 #endif
 
 #define for_each_node_by_name(dn, name) \
@@ -735,10 +751,6 @@ int of_device_disable_path(const char *path);
 phandle of_get_tree_max_phandle(struct device_node *root);
 phandle of_node_create_phandle(struct device_node *node);
 int of_set_property_to_child_phandle(struct device_node *node, char *prop_name);
-struct device_node *of_find_node_by_alias(struct device_node *root,
-		const char *alias);
-struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
-		const char *str);
 
 static inline struct device_node *of_find_root_node(struct device_node *node)
 {

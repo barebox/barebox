@@ -147,8 +147,8 @@ int mount (const char *device, const char *fsname, const char *path,
 int umount(const char *pathname);
 
 /* not-so-standard functions */
-int erase(int fd, size_t count, unsigned long offset);
-int protect(int fd, size_t count, unsigned long offset, int prot);
+int erase(int fd, size_t count, loff_t offset);
+int protect(int fd, size_t count, loff_t offset, int prot);
 int protect_file(const char *file, int prot);
 void *memmap(int fd, int flags);
 

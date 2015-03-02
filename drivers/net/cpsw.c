@@ -888,6 +888,7 @@ static int cpsw_recv(struct eth_device *edev)
 	while (cpdma_process(priv, &priv->rx_chan, &buffer, &len) >= 0) {
 		dma_inv_range((ulong)buffer, (ulong)buffer + len);
 		net_receive(edev, buffer, len);
+		dma_inv_range((ulong)buffer, (ulong)buffer + len);
 		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE);
 	}
 

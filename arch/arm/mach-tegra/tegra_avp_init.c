@@ -262,6 +262,9 @@ void tegra_avp_reset_vector(uint32_t boarddata)
 	int num_cores;
 	unsigned int entry_address = 0;
 
+	/* put boarddata in scratch reg, for main CPU to fetch after startup */
+	writel(boarddata, TEGRA_PMC_BASE + PMC_SCRATCH(10));
+
 	if (tegra_cpu_is_maincomplex())
 		tegra_maincomplex_entry();
 
@@ -290,9 +293,6 @@ void tegra_avp_reset_vector(uint32_t boarddata)
 		break;
 	}
 	writel(entry_address, TEGRA_EXCEPTION_VECTORS_BASE + 0x100);
-
-	/* put boarddata in scratch reg, for main CPU to fetch after startup */
-	writel(boarddata, TEGRA_PMC_BASE + PMC_SCRATCH(10));
 
 	/* bring up main CPU complex */
 	start_cpu0_clocks();

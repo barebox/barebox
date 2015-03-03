@@ -208,13 +208,13 @@ extern void mem_malloc_init(void *start, void *end);
 
 static int add_image(char *str, char *devname_template, int *devname_number)
 {
+	struct hf_info *hf = malloc(sizeof(struct hf_info));
 	char *filename, *devname;
 	char tmp[16];
 	int readonly = 0;
 	struct stat s;
 	char *opt;
 	int fd, ret;
-	struct hf_platform_data *hf = malloc(sizeof(struct hf_platform_data));
 
 	if (!hf)
 		return -1;

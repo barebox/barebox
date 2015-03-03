@@ -28,12 +28,13 @@
 
 struct hf_priv {
 	struct cdev cdev;
+	int fd;
 };
 
 static ssize_t hf_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
-	struct hf_platform_data *hf = cdev->priv;
-	int fd = hf->fd;
+	struct hf_priv *priv= cdev->priv;
+	int fd = priv->fd;
 
 	if (linux_lseek(fd, offset) != offset)
 		return -EINVAL;
@@ -43,8 +44,8 @@ static ssize_t hf_read(struct cdev *cdev, void *buf, size_t count, loff_t offset
 
 static ssize_t hf_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
 {
-	struct hf_platform_data *hf = cdev->priv;
-	int fd = hf->fd;
+	struct hf_priv *priv = cdev->priv;
+	int fd = priv->fd;
 
 	if (linux_lseek(fd, offset) != offset)
 		return -EINVAL;
@@ -70,11 +71,12 @@ static int hf_probe(struct device_d *dev)
 	struct hf_platform_data *hf = dev->platform_data;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));
 
+	priv->fd = hf->fd;
 	priv->cdev.name = hf->devname;
 	priv->cdev.size = hf->size;
 	priv->cdev.dev = dev;
 	priv->cdev.ops = &hf_fops;
-	priv->cdev.priv = hf;
+	priv->cdev.priv = priv;
 
 	dev->info = hf_info;
 

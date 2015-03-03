@@ -50,4 +50,6 @@ cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 
 common-y += $(BOARD) arch/sandbox/os/
 
+common-$(CONFIG_OFTREE) += arch/sandbox/dts/
+
 CLEAN_FILES += $(BOARD)/barebox.lds

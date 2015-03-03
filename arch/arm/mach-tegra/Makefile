@@ -13,3 +13,4 @@ lwl-y += tegra_maincomplex_init.o
 obj-y += tegra20.o
 obj-y += tegra20-pmc.o
 obj-y += tegra20-timer.o
+obj-$(CONFIG_BAREBOX_UPDATE) += tegra-bbu.o

@@ -28,7 +28,6 @@
 
 struct hf_priv {
 	struct cdev cdev;
-	struct hf_platform_data *pdata;
 };
 
 static ssize_t hf_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
@@ -70,8 +69,6 @@ static int hf_probe(struct device_d *dev)
 {
 	struct hf_platform_data *hf = dev->platform_data;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));
-
-	priv->pdata = hf;
 
 	priv->cdev.name = hf->devname;
 	priv->cdev.size = hf->size;

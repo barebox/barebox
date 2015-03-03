@@ -75,6 +75,7 @@ static int hf_probe(struct device_d *dev)
 
 	priv->cdev.name = hf->devname;
 	priv->cdev.size = hf->size;
+	priv->cdev.dev = dev;
 	priv->cdev.ops = &hf_fops;
 	priv->cdev.priv = hf;
 

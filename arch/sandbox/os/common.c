@@ -206,9 +206,9 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[])
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
-static int add_image(char *str, char *name)
+static int add_image(char *str, char *devname)
 {
-	char *file;
+	char *filename;
 	int readonly = 0, map = 1;
 	struct stat s;
 	char *opt;
@@ -218,7 +218,7 @@ static int add_image(char *str, char *name)
 	if (!hf)
 		return -1;
 
-	file = strtok(str, ",");
+	filename = strtok(str, ",");
 	while ((opt = strtok(NULL, ","))) {
 		if (!strcmp(opt, "ro"))
 			readonly = 1;
@@ -226,11 +226,11 @@ static int add_image(char *str, char *name)
 			map = 1;
 	}
 
-	printf("add file %s(%s)\n", file, readonly ? "ro" : "");
+	printf("add file %s(%s)\n", filename, readonly ? "ro" : "");
 
-	fd = open(file, readonly ? O_RDONLY : O_RDWR);
+	fd = open(filename, readonly ? O_RDONLY : O_RDWR);
 	hf->fd = fd;
-	hf->filename = file;
+	hf->filename = filename;
 
 	if (fd < 0) {
 		perror("open");
@@ -243,14 +243,14 @@ static int add_image(char *str, char *name)
 	}
 
 	hf->size = s.st_size;
-	hf->name = strdup(name);
+	hf->devname = strdup(devname);
 
 	if (map) {
 		hf->base = (unsigned long)mmap(NULL, hf->size,
 				PROT_READ | (readonly ? 0 : PROT_WRITE),
 				MAP_SHARED, fd, 0);
 		if ((void *)hf->base == MAP_FAILED)
-			printf("warning: mmapping %s failed\n", file);
+			printf("warning: mmapping %s failed\n", filename);
 	}
 
 	ret = barebox_register_filedev(hf);

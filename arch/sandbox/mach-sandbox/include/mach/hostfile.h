@@ -6,7 +6,7 @@ struct hf_platform_data {
 	size_t size;
 	unsigned long base;
 	char *filename;
-	char *name;
+	char *devname;
 };
 
 int barebox_register_filedev(struct hf_platform_data *hf);

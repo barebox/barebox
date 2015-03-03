@@ -19,6 +19,7 @@
 #include <gpio.h>
 #include <i2c/i2c.h>
 #include <init.h>
+#include <mach/tegra-bbu.h>
 
 #define AS3722_SD_VOLTAGE(n)	(0x00 + (n))
 #define AS3722_GPIO_CONTROL(n)	(0x08 + (n))
@@ -55,6 +56,9 @@ static int nvidia_jetson_tk1_device_init(void)
 		return 0;
 
 	barebox_set_hostname("jetson-tk1");
+
+	tegra_bbu_register_emmc_handler("eMMC", "/dev/mmc3.boot0",
+					BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

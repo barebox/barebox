@@ -225,9 +225,15 @@ static int add_image(char *str, char *devname_template, int *devname_number)
 			readonly = 1;
 	}
 
-	snprintf(tmp, sizeof(tmp),
-		 devname_template, (*devname_number)++);
-	devname = strdup(tmp);
+	/* parses: "devname=filename" */
+	devname = strtok(filename, "=");
+	filename = strtok(NULL, "=");
+	if (!filename) {
+		filename = devname;
+		snprintf(tmp, sizeof(tmp),
+			 devname_template, (*devname_number)++);
+		devname = strdup(tmp);
+	}
 
 	printf("add %s backed by file %s%s\n", devname,
 	       filename, readonly ? "(ro)" : "");
@@ -444,6 +450,9 @@ static void print_usage(const char *prgname)
 "  -i, --image=<file>   Map an image file to barebox. This option can be given\n"
 "                       multiple times. The files will show up as\n"
 "                       /dev/fd0 ... /dev/fdx under barebox.\n"
+"  -i, --image=<dev>=<file>\n"
+"                       Same as above, the files will show up as\n"
+"                       /dev/<dev>\n"
 "  -e, --env=<file>     Map a file with an environment to barebox. With this \n"
 "                       option, files are mapped as /dev/env0 ... /dev/envx\n"
 "                       and thus are used as the default environment.\n"

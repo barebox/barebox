@@ -209,7 +209,7 @@ extern void mem_malloc_init(void *start, void *end);
 static int add_image(char *str, char *devname)
 {
 	char *filename;
-	int readonly = 0, map = 1;
+	int readonly = 0;
 	struct stat s;
 	char *opt;
 	int fd, ret;
@@ -222,8 +222,6 @@ static int add_image(char *str, char *devname)
 	while ((opt = strtok(NULL, ","))) {
 		if (!strcmp(opt, "ro"))
 			readonly = 1;
-		if (!strcmp(opt, "map"))
-			map = 1;
 	}
 
 	printf("add file %s(%s)\n", filename, readonly ? "ro" : "");
@@ -245,13 +243,11 @@ static int add_image(char *str, char *devname)
 	hf->size = s.st_size;
 	hf->devname = strdup(devname);
 
-	if (map) {
-		hf->base = (unsigned long)mmap(NULL, hf->size,
-				PROT_READ | (readonly ? 0 : PROT_WRITE),
-				MAP_SHARED, fd, 0);
-		if ((void *)hf->base == MAP_FAILED)
-			printf("warning: mmapping %s failed\n", filename);
-	}
+	hf->base = (unsigned long)mmap(NULL, hf->size,
+			PROT_READ | (readonly ? 0 : PROT_WRITE),
+			MAP_SHARED, fd, 0);
+	if ((void *)hf->base == MAP_FAILED)
+		printf("warning: mmapping %s failed\n", filename);
 
 	ret = barebox_register_filedev(hf);
 	if (ret)

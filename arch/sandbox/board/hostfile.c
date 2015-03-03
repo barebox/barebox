@@ -91,7 +91,7 @@ static struct driver_d hf_drv = {
 	.name  = "hostfile",
 	.probe = hf_probe,
 };
-device_platform_driver(hf_drv);
+coredevice_platform_driver(hf_drv);
 
 int barebox_register_filedev(struct hf_platform_data *hf)
 {

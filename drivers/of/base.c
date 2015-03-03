@@ -227,11 +227,11 @@ EXPORT_SYMBOL_GPL(of_alias_get_id);
 
 const char *of_alias_get(struct device_node *np)
 {
-	struct property *pp;
+	struct alias_prop *app;
 
-	list_for_each_entry(pp, &of_aliases->properties, list) {
-		if (!of_node_cmp(np->full_name, pp->value))
-			return pp->name;
+	list_for_each_entry(app, &aliases_lookup, link) {
+		if (np == app->np)
+			return app->alias;
 	}
 
 	return NULL;

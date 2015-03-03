@@ -206,9 +206,10 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[])
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
-static int add_image(char *str, char *devname)
+static int add_image(char *str, char *devname_template, int *devname_number)
 {
-	char *filename;
+	char *filename, *devname;
+	char tmp[16];
 	int readonly = 0;
 	struct stat s;
 	char *opt;
@@ -224,7 +225,12 @@ static int add_image(char *str, char *devname)
 			readonly = 1;
 	}
 
-	printf("add file %s(%s)\n", filename, readonly ? "ro" : "");
+	snprintf(tmp, sizeof(tmp),
+		 devname_template, (*devname_number)++);
+	devname = strdup(tmp);
+
+	printf("add %s backed by file %s%s\n", devname,
+	       filename, readonly ? "(ro)" : "");
 
 	fd = open(filename, readonly ? O_RDONLY : O_RDWR);
 	hf->fd = fd;
@@ -319,7 +325,6 @@ int main(int argc, char *argv[])
 	void *ram;
 	int opt, ret, fd;
 	int malloc_size = CONFIG_MALLOC_SIZE;
-	char str[6];
 	int fdno = 0, envno = 0, option_index = 0;
 
 	while (1) {
@@ -401,18 +406,14 @@ int main(int argc, char *argv[])
 
 		switch (opt) {
 		case 'i':
-			sprintf(str, "fd%d", fdno);
-			ret = add_image(optarg, str);
+			ret = add_image(optarg, "fd%d", &fdno);
 			if (ret)
 				exit(1);
-			fdno++;
 			break;
 		case 'e':
-			sprintf(str, "env%d", envno);
-			ret = add_image(optarg, str);
+			ret = add_image(optarg, "env%d", &envno);
 			if (ret)
 				exit(1);
-			envno++;
 			break;
 		default:
 			break;

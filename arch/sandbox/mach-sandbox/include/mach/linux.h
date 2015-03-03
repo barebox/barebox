@@ -20,6 +20,8 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[]);
 
 int barebox_register_console(char *name_template, int stdinfd, int stdoutfd);
 
+int barebox_register_dtb(const void *dtb);
+
 struct linux_console_data {
 	int stdinfd;
 	int stdoutfd;

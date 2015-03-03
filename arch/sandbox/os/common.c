@@ -265,6 +265,42 @@ err_out:
 	return -1;
 }
 
+static int add_dtb(const char *file)
+{
+	struct stat s;
+	void *dtb = NULL;
+	int fd;
+
+	fd = open(file, O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		goto err_out;
+	}
+
+	if (fstat(fd, &s)) {
+		perror("fstat");
+		goto err_out;
+	}
+
+	dtb = mmap(NULL, s.st_size, PROT_READ, MAP_SHARED, fd, 0);
+	if (dtb == MAP_FAILED) {
+		perror("mmap");
+		goto err_out;
+	}
+
+	if (barebox_register_dtb(dtb))
+		goto err_out;
+
+	return 0;
+
+ err_out:
+	if (dtb)
+		munmap(dtb, s.st_size);
+	if (fd > 0)
+		close(fd);
+	return -1;
+}
+
 static void print_usage(const char*);
 
 static struct option long_options[] = {
@@ -272,6 +308,7 @@ static struct option long_options[] = {
 	{"malloc", 1, 0, 'm'},
 	{"image",  1, 0, 'i'},
 	{"env",    1, 0, 'e'},
+	{"dtb",    1, 0, 'd'},
 	{"stdout", 1, 0, 'O'},
 	{"stdin",  1, 0, 'I'},
 	{"xres",  1, 0, 'x'},
@@ -279,7 +316,7 @@ static struct option long_options[] = {
 	{0, 0, 0, 0},
 };
 
-static const char optstring[] = "hm:i:e:O:I:x:y:";
+static const char optstring[] = "hm:i:e:d:O:I:x:y:";
 
 int main(int argc, char *argv[])
 {
@@ -307,6 +344,13 @@ int main(int argc, char *argv[])
 		case 'i':
 			break;
 		case 'e':
+			break;
+		case 'd':
+			ret = add_dtb(optarg);
+			if (ret) {
+				printf("Failed to load dtb: '%s'\n", optarg);
+				exit(1);
+			}
 			break;
 		case 'O':
 			fd = open(optarg, O_WRONLY);
@@ -408,6 +452,7 @@ static void print_usage(const char *prgname)
 "                       and thus are used as the default environment.\n"
 "                       An empty file generated with dd will do to get started\n"
 "                       with an empty environment.\n"
+"  -d, --dtb=<file>     Map a device tree binary blob (dtb) into barebox.\n"
 "  -O, --stdout=<file>  Register a file as a console capable of doing stdout.\n"
 "                       <file> can be a regular file or a FIFO.\n"
 "  -I, --stdin=<file>   Register a file as a console capable of doing stdin.\n"

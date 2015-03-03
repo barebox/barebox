@@ -23,6 +23,7 @@
 #include <mach/linux.h>
 #include <init.h>
 #include <errno.h>
+#include <linux/err.h>
 #include <mach/hostfile.h>
 #include <xfuncs.h>
 
@@ -70,10 +71,15 @@ static int hf_probe(struct device_d *dev)
 {
 	struct hf_platform_data *hf = dev->platform_data;
 	struct hf_priv *priv = xzalloc(sizeof(*priv));
+	struct resource *res;
+
+	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
+	if (IS_ERR(res))
+		return PTR_ERR(res);
 
 	priv->fd = hf->fd;
 	priv->cdev.name = hf->devname;
-	priv->cdev.size = hf->size;
+	priv->cdev.size = resource_size(res);
 	priv->cdev.dev = dev;
 	priv->cdev.ops = &hf_fops;
 	priv->cdev.priv = priv;

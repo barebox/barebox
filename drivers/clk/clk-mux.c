@@ -45,6 +45,9 @@ static int clk_mux_set_parent(struct clk *clk, u8 idx)
 	val = readl(m->reg);
 	val &= ~(((1 << m->width) - 1) << m->shift);
 	val |= idx << m->shift;
+
+	if (clk->flags & CLK_MUX_HIWORD_MASK)
+		val |= ((1 << m->width) - 1) << (m->shift + 16);
 	writel(val, m->reg);
 
 	return 0;

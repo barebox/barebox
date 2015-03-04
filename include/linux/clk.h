@@ -254,6 +254,9 @@ struct clk_divider {
 
 extern struct clk_ops clk_divider_ops;
 
+struct clk *clk_divider_alloc(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width, unsigned flags);
+void clk_divider_free(struct clk *clk_divider);
 struct clk *clk_divider(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width, unsigned flags);
 struct clk *clk_divider_one_based(const char *name, const char *parent,

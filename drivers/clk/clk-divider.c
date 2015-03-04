@@ -212,11 +212,10 @@ struct clk_ops clk_divider_ops = {
 	.round_rate = clk_divider_round_rate,
 };
 
-struct clk *clk_divider(const char *name, const char *parent,
+struct clk *clk_divider_alloc(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width, unsigned flags)
 {
 	struct clk_divider *div = xzalloc(sizeof(*div));
-	int ret;
 
 	div->shift = shift;
 	div->reg = reg;
@@ -228,13 +227,31 @@ struct clk *clk_divider(const char *name, const char *parent,
 	div->clk.parent_names = &div->parent;
 	div->clk.num_parents = 1;
 
-	ret = clk_register(&div->clk);
+	return &div->clk;
+}
+
+void clk_divider_free(struct clk *clk)
+{
+	struct clk_divider *d =  container_of(clk, struct clk_divider, clk);
+
+	free(d);
+}
+
+struct clk *clk_divider(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width, unsigned flags)
+{
+	struct clk *d;
+	int ret;
+
+	d = clk_divider_alloc(name , parent, reg, shift, width, flags);
+
+	ret = clk_register(d);
 	if (ret) {
-		free(div);
+		clk_divider_free(d);
 		return ERR_PTR(ret);
 	}
 
-	return &div->clk;
+	return d;
 }
 
 struct clk *clk_divider_one_based(const char *name, const char *parent,

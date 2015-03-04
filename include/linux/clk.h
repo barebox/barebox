@@ -248,6 +248,8 @@ struct clk_divider {
 	int table_size;
 };
 
+#define CLK_DIVIDER_HIWORD_MASK		(1 << 3)
+
 #define CLK_MUX_HIWORD_MASK		(1 << 2)
 
 extern struct clk_ops clk_divider_ops;

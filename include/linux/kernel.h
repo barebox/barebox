@@ -257,5 +257,10 @@ static inline char *hex_byte_pack_upper(char *buf, u8 byte)
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
+/*
+ * swap - swap value of @a and @b
+ */
+#define swap(a, b) \
+	do { typeof(a) __tmp = (a); (a) = (b); (b) = __tmp; } while (0)
 
 #endif /* _LINUX_KERNEL_H */

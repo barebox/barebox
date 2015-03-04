@@ -1,0 +1,9 @@
+#!/bin/sh
+
+mount /dev/mshc1.0
+
+oftree -f
+oftree -l /mnt/mshc1.0/rk3188-radxarock.dtb
+
+global.bootm.image=/mnt/mshc1.0/zImage
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait"

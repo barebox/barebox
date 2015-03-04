@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/log2.h>
 
 #define div_mask(d)	((1 << ((d)->width)) - 1)
 
@@ -26,6 +27,8 @@ static unsigned int _get_maxdiv(struct clk_divider *divider)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return div_mask(divider);
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return 1 << div_mask(divider);
 	return div_mask(divider) + 1;
 }
 
@@ -44,6 +47,8 @@ static unsigned int _get_div(struct clk_divider *divider, unsigned int val)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return val;
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return 1 << val;
 	if (divider->table)
 		return _get_table_div(divider->table, val);
 	return val + 1;
@@ -64,6 +69,8 @@ static unsigned int _get_val(struct clk_divider *divider, unsigned int div)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return div;
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return __ffs(div);
 	if (divider->table)
 		return  _get_table_val(divider->table, div);
 	return div - 1;
@@ -102,6 +109,8 @@ static bool _is_valid_table_div(const struct clk_div_table *table,
 
 static bool _is_valid_div(struct clk_divider *divider, unsigned int div)
 {
+	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
+		return is_power_of_2(div);
 	if (divider->table)
 		return _is_valid_table_div(divider->table, div);
 	return true;

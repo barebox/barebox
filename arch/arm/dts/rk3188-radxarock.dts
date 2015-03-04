@@ -12,22 +12,30 @@
  * GNU General Public License for more details.
  */
 
-/dts-v1/;
-#include "rk3188.dtsi"
+#include <arm/rk3188-radxarock.dts>
 
 / {
-	model = "Radxa Rock";
-	compatible = "radxa,rock", "rockchip,rk3188";
+	chosen {
+		linux,stdout-path = &uart2;
 
-	memory {
-		reg = <0x60000000 0x80000000>;
-	};
-
-	soc {
-		uart2: serial@20064000 {
-			pinctrl-names = "default";
-			pinctrl-0 = <&uart2_xfer>;
+		environment {
+			compatible = "barebox,environment";
+			device-path = &mmc0, "partname:barebox-environment";
 			status = "okay";
 		};
+	};
+};
+
+&mmc0 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0x80000>;
+	};
+	partition@1 {
+		label = "barebox-environment";
+		reg = <0x80000 0x80000>;
 	};
 };

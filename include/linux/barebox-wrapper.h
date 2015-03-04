@@ -73,4 +73,10 @@ typedef int irqreturn_t;
 #define IRQ_NONE 0
 #define IRQ_HANDLED 0
 
+/* To ease clk drivers porting from Linux kernel */
+#define __clk_get_name(clk)		(clk->name)
+#define __clk_lookup			clk_lookup
+#define __clk_get_rate			clk_get_rate
+#define __clk_get_parent		clk_get_parent
+
 #endif /* __INCLUDE_LINUX_BAREBOX_WRAPPER_H */

@@ -291,6 +291,12 @@ struct clk *clk_lookup(const char *name);
 
 void clk_dump(int verbose);
 
+struct clk *clk_register_composite(const char *name,
+			const char **parent_names, int num_parents,
+			struct clk *mux_clk,
+			struct clk *rate_clk,
+			struct clk *gate_clk,
+			unsigned long flags);
 #endif
 
 struct device_node;

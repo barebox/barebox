@@ -204,6 +204,7 @@ static int led_gpio_of_probe(struct device_d *dev)
 
 	for_each_child_of_node(dev->device_node, child) {
 		struct gpio_led *gled;
+		const char *default_state;
 		enum of_gpio_flags flags;
 		int gpio;
 		const char *label;
@@ -225,6 +226,13 @@ static int led_gpio_of_probe(struct device_d *dev)
 
 		led_gpio_register(gled);
 		led_of_parse_trigger(&gled->led, child);
+
+		if (!of_property_read_string(child, "default-state", &default_state)) {
+			if (!strcmp(default_state, "on"))
+				led_gpio_set(&gled->led, 1);
+			else if (!strcmp(default_state, "off"))
+				led_gpio_set(&gled->led, 0);
+		}
 	}
 
 	return 0;

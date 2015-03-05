@@ -30,7 +30,6 @@
 #include <errno.h>
 #include <of.h>
 #include <usb/ehci.h>
-#include <asm/mmu.h>
 #include <linux/err.h>
 
 #include "ehci.h"
@@ -331,7 +330,9 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 			struct qTD *qtd = &ehci->td[i];
 			if (!qtd->qtd_dma)
 				continue;
-			dma_flush_range(qtd->qtd_dma, qtd->qtd_dma + qtd->length);
+			dma_sync_single_for_device((unsigned long)qtd->qtd_dma,
+						   qtd->length,
+						   DMA_BIDIRECTIONAL);
 		}
 	}
 
@@ -372,7 +373,8 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 			struct qTD *qtd = &ehci->td[i];
 			if (!qtd->qtd_dma)
 				continue;
-			dma_inv_range(qtd->qtd_dma, qtd->qtd_dma + qtd->length);
+			dma_sync_single_for_cpu((unsigned long)qtd->qtd_dma,
+						qtd->length, DMA_BIDIRECTIONAL);
 		}
 	}
 

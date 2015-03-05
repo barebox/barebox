@@ -31,8 +31,6 @@
 #include <of_gpio.h>
 #include <gpio.h>
 
-#include <asm/mmu.h>
-
 #include "fec_imx.h"
 
 struct fec_frame {
@@ -479,8 +477,9 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	writew(data_length, &fec->tbd_base[fec->tbd_index].data_length);
 
 	writel((uint32_t)(eth_data), &fec->tbd_base[fec->tbd_index].data_pointer);
-	dma_flush_range((unsigned long)eth_data,
-			(unsigned long)(eth_data + data_length));
+
+	dma_sync_single_for_device((unsigned long)eth_data, data_length,
+				   DMA_TO_DEVICE);
 	/*
 	 * update BD's status now
 	 * This block:
@@ -503,6 +502,8 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 			break;
 		}
 	}
+	dma_sync_single_for_cpu((unsigned long)eth_data, data_length,
+				DMA_TO_DEVICE);
 
 	/* for next transmission use the other buffer */
 	if (fec->tbd_index)
@@ -576,7 +577,11 @@ static int fec_recv(struct eth_device *dev)
 			 */
 			frame = phys_to_virt(readl(&rbd->data_pointer));
 			frame_length = readw(&rbd->data_length) - 4;
+			dma_sync_single_for_cpu((unsigned long)frame->data,
+						frame_length, DMA_FROM_DEVICE);
 			net_receive(dev, frame->data, frame_length);
+			dma_sync_single_for_device((unsigned long)frame->data,
+						   frame_length, DMA_FROM_DEVICE);
 			len = frame_length;
 		} else {
 			if (bd_status & FEC_RBD_ERR) {

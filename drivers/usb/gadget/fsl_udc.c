@@ -568,8 +568,8 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
 		dma_free_coherent(curr_td, 0, sizeof(struct ep_td_struct));
 	}
 
-	dma_inv_range((unsigned long)req->req.buf,
-		(unsigned long)(req->req.buf + req->req.length));
+	dma_sync_single_for_cpu((unsigned long)req->req.buf, req->req.length,
+				DMA_BIDIRECTIONAL);
 
 	if (status && (status != -ESHUTDOWN))
 		VDBG("complete %s req %p stat %d len %u/%u",
@@ -1251,8 +1251,8 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req)
 
 	req->ep = ep;
 
-	dma_flush_range((unsigned long)req->req.buf,
-			(unsigned long)(req->req.buf + req->req.length));
+	dma_sync_single_for_device((unsigned long)req->req.buf, req->req.length,
+				   DMA_BIDIRECTIONAL);
 
 	req->req.status = -EINPROGRESS;
 	req->req.actual = 0;

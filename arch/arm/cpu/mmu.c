@@ -159,6 +159,20 @@ static u32 *find_pte(unsigned long adr)
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
 }
 
+static void dma_flush_range(unsigned long start, unsigned long end)
+{
+	if (outer_cache.flush_range)
+		outer_cache.flush_range(start, end);
+	__dma_flush_range(start, end);
+}
+
+static void dma_inv_range(unsigned long start, unsigned long end)
+{
+	if (outer_cache.inv_range)
+		outer_cache.inv_range(start, end);
+	__dma_inv_range(start, end);
+}
+
 void remap_range(void *_start, size_t size, uint32_t flags)
 {
 	unsigned long start = (unsigned long)_start;
@@ -412,27 +426,6 @@ void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 	remap_range(mem, size, pte_flags_cached);
 
 	free(mem);
-}
-
-void dma_clean_range(unsigned long start, unsigned long end)
-{
-	if (outer_cache.clean_range)
-		outer_cache.clean_range(start, end);
-	__dma_clean_range(start, end);
-}
-
-void dma_flush_range(unsigned long start, unsigned long end)
-{
-	if (outer_cache.flush_range)
-		outer_cache.flush_range(start, end);
-	__dma_flush_range(start, end);
-}
-
-void dma_inv_range(unsigned long start, unsigned long end)
-{
-	if (outer_cache.inv_range)
-		outer_cache.inv_range(start, end);
-	__dma_inv_range(start, end);
 }
 
 void dma_sync_single_for_cpu(unsigned long address, size_t size,

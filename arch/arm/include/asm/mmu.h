@@ -27,26 +27,12 @@ static inline void setup_dma_coherent(unsigned long offset)
 }
 
 #ifdef CONFIG_MMU
-void dma_clean_range(unsigned long, unsigned long);
-void dma_flush_range(unsigned long, unsigned long);
-void dma_inv_range(unsigned long, unsigned long);
 void remap_range(void *_start, size_t size, uint32_t flags);
 void *map_io_sections(unsigned long physaddr, void *start, size_t size);
 uint32_t mmu_get_pte_cached_flags(void);
 uint32_t mmu_get_pte_uncached_flags(void);
 
 #else
-static inline void dma_clean_range(unsigned long s, unsigned long e)
-{
-}
-
-static inline void dma_flush_range(unsigned long s, unsigned long e)
-{
-}
-
-static inline void dma_inv_range(unsigned long s, unsigned long e)
-{
-}
 
 static inline void remap_range(void *_start, size_t size, uint32_t flags)
 {

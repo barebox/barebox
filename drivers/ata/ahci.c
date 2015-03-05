@@ -31,7 +31,6 @@
 #include <linux/ctype.h>
 #include <linux/err.h>
 #include <disks.h>
-#include <asm/mmu.h>
 #include <ata_drive.h>
 #include <linux/sizes.h>
 #include <clock.h>
@@ -170,7 +169,11 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 		return -EIO;
 
 	if (wbuf)
-		dma_flush_range((unsigned long)wbuf, (unsigned long)wbuf + buf_len);
+		dma_sync_single_for_device((unsigned long)wbuf, buf_len,
+					   DMA_TO_DEVICE);
+	if (rbuf)
+		dma_sync_single_for_device((unsigned long)rbuf, buf_len,
+					   DMA_FROM_DEVICE);
 
 	memcpy((unsigned char *)ahci_port->cmd_tbl, fis, fis_len);
 
@@ -187,8 +190,12 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 	if (ret)
 		return -ETIMEDOUT;
 
+	if (wbuf)
+		dma_sync_single_for_cpu((unsigned long)wbuf, buf_len,
+					DMA_TO_DEVICE);
 	if (rbuf)
-		dma_inv_range((unsigned long)rbuf, (unsigned long)rbuf + buf_len);
+		dma_sync_single_for_cpu((unsigned long)rbuf, buf_len,
+					DMA_FROM_DEVICE);
 
 	return 0;
 }

@@ -14,24 +14,25 @@
  */
 
 #if (DCACHE_SIZE != 0)
-static inline void *dma_alloc_coherent(size_t len, unsigned long *handle)
+static inline void *dma_alloc_coherent(size_t len, dma_addr_t *handle)
 {
 	void *addr = malloc(len + DCACHE_LINE_SIZE);
 	if (!addr)
 		return 0;
 	flush_dcache_range((unsigned long)addr,(unsigned long)addr + len + DCACHE_LINE_SIZE);
-	*handle = ((unsigned long)addr +
-		   (DCACHE_LINE_SIZE - 1)) &
-		~(DCACHE_LINE_SIZE - 1) & ~(IO_REGION_BASE);
+	if (handle)
+		*handle = ((dma_addr_t)addr + (DCACHE_LINE_SIZE - 1)) &
+			  ~(DCACHE_LINE_SIZE - 1) & ~(IO_REGION_BASE);
 	return (void *)(*handle | IO_REGION_BASE);
 }
 #else
-static inline void *dma_alloc_coherent(size_t len, unsigned long *handle)
+static inline void *dma_alloc_coherent(size_t len, dma_addr_t *handle)
 {
 	void *addr = malloc(len);
 	if (!addr)
 		return 0;
-	*handle = (unsigned long)addr;
+	if (handle)
+		*handle = (dma_addr_t)addr;
 	return (void *)(*handle | IO_REGION_BASE);
 }
 #endif

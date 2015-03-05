@@ -29,6 +29,7 @@ copy_source() {
 	echo "	Fixing extern/static keywords..."
 	# Statify all global variables with missing static keyword
 	sed -i 's/^const /static const /g' $tgt
+	sed -i 's/^unsigned long sys_mgr_init_table/static unsigned long sys_mgr_init_table/g' $tgt
 
 	echo "	Remove unused defines..."
 	sed -i 's/\[CONFIG_HPS_PINMUX_NUM\]/\[\]/g' $tgt

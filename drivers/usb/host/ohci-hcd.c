@@ -43,6 +43,7 @@
 #include <common.h>
 #include <dma.h>
 #include <clock.h>
+#include <dma.h>
 #include <malloc.h>
 #include <usb/usb.h>
 #include <usb/usb_defs.h>
@@ -52,7 +53,6 @@
 
 #include <asm/byteorder.h>
 #include <io.h>
-#include <asm/mmu.h>
 
 #include "ohci.h"
 
@@ -857,7 +857,7 @@ static void td_fill(struct ohci *ohci, unsigned int info,
 
 	td->hwNextTD = virt_to_phys((void *)m32_swap((unsigned long)td_pt));
 
-	dma_flush_range((unsigned long)data, (unsigned long)(data + len));
+	dma_sync_single_for_device((unsigned long)data, len, DMA_BIDIRECTIONAL);
 
 	/* append to queue */
 	td->ed->hwTailP = td->hwNextTD;
@@ -1093,7 +1093,8 @@ static int dl_done_list(struct ohci *ohci)
 	unsigned long ptdphys = virt_to_phys(ptd);
 	struct td *td_list;
 
-	dma_clean_range(ptdphys, ptdphys + (sizeof(struct td) * NUM_TD));
+	dma_sync_single_for_device((unsigned long)ptdphys,
+				sizeof(struct td) * NUM_TD, DMA_BIDIRECTIONAL);
 
 	td_list = dl_reverse_done_list(ohci);
 
@@ -1529,7 +1530,8 @@ static int submit_common_msg(struct usb_device *dev, unsigned long pipe, void *b
 	dev->status = stat;
 	dev->act_len = urb->actual_length;
 
-	dma_inv_range((unsigned long)buffer, (unsigned long)(buffer + transfer_len));
+	dma_sync_single_for_cpu((unsigned long)buffer, transfer_len,
+				DMA_BIDIRECTIONAL);
 
 	pkt_print(urb, dev, pipe, buffer, transfer_len,
 		  setup, "RET(ctlr)", usb_pipein(pipe));

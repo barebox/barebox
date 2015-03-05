@@ -18,6 +18,7 @@
 #define pr_fmt(fmt)	"mmu: " fmt
 
 #include <common.h>
+#include <dma-dir.h>
 #include <init.h>
 #include <asm/mmu.h>
 #include <errno.h>
@@ -434,3 +435,26 @@ void dma_inv_range(unsigned long start, unsigned long end)
 	__dma_inv_range(start, end);
 }
 
+void dma_sync_single_for_cpu(unsigned long address, size_t size,
+			     enum dma_data_direction dir)
+{
+	if (dir != DMA_TO_DEVICE) {
+		if (outer_cache.inv_range)
+			outer_cache.inv_range(address, address + size);
+		__dma_inv_range(address, address + size);
+	}
+}
+
+void dma_sync_single_for_device(unsigned long address, size_t size,
+				enum dma_data_direction dir)
+{
+	if (dir == DMA_FROM_DEVICE) {
+		__dma_inv_range(address, address + size);
+		if (outer_cache.inv_range)
+			outer_cache.inv_range(address, address + size);
+	} else {
+		__dma_clean_range(address, address + size);
+		if (outer_cache.clean_range)
+			outer_cache.clean_range(address, address + size);
+	}
+}

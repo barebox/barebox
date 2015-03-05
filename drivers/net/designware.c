@@ -22,6 +22,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <init.h>
 #include <io.h>
 #include <net.h>

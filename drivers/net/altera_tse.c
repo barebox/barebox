@@ -21,6 +21,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <net.h>
 #include <init.h>
 #include <clock.h>

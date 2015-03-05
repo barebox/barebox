@@ -23,7 +23,6 @@
 #include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm/mmu.h>
 #include <mach/generic.h>
 #include <mach/clock.h>
 #include <mach/ssp.h>

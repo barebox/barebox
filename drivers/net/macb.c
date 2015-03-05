@@ -38,6 +38,7 @@
 
 #include <net.h>
 #include <clock.h>
+#include <dma.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <init.h>

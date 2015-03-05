@@ -21,6 +21,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <init.h>
 #include <errno.h>
 #include <io.h>

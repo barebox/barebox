@@ -19,6 +19,7 @@
 #include <asm/mmu.h>
 #include <clock.h>
 #include <common.h>
+#include <dma.h>
 #include <net.h>
 #include <io.h>
 #include <init.h>

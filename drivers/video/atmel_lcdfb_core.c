@@ -19,11 +19,11 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <io.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <malloc.h>
-#include <asm/mmu.h>
 
 #include "atmel_lcdfb.h"
 

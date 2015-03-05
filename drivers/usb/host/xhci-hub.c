@@ -14,7 +14,6 @@
  * warranty of any kind, whether express or implied.
  */
 //#define DEBUG
-#include <asm/mmu.h>
 #include <clock.h>
 #include <common.h>
 #include <io.h>

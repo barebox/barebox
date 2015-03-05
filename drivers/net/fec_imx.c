@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <malloc.h>
 #include <net.h>
 #include <init.h>

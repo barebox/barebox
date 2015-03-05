@@ -12,6 +12,7 @@
 #define pr_fmt(fmt) "IPU: " fmt
 
 #include <common.h>
+#include <dma.h>
 #include <fb.h>
 #include <io.h>
 #include <driver.h>
@@ -21,7 +22,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm-generic/div64.h>
-#include <asm/mmu.h>
 
 #include "imx-ipu-v3.h"
 #include "ipuv3-plane.h"

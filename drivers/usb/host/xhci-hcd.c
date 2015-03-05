@@ -12,9 +12,9 @@
  * warranty of any kind, whether express or implied.
  */
 //#define DEBUG
-#include <asm/mmu.h>
 #include <clock.h>
 #include <common.h>
+#include <dma.h>
 #include <init.h>
 #include <io.h>
 #include <linux/err.h>

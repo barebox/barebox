@@ -16,6 +16,7 @@
 
 #include <asm/mmu.h>
 #include <common.h>
+#include <dma.h>
 #include <init.h>
 #include <net.h>
 #include <malloc.h>

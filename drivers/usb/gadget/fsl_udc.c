@@ -1,4 +1,5 @@
 #include <common.h>
+#include <dma.h>
 #include <errno.h>
 #include <dma.h>
 #include <init.h>
@@ -9,6 +10,8 @@
 #include <io.h>
 #include <asm/byteorder.h>
 #include <linux/err.h>
+
+#include <asm/mmu.h>
 
 /* ### define USB registers here
  */

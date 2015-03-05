@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <net.h>
 #include <clock.h>
 #include <malloc.h>

@@ -18,6 +18,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <driver.h>
 #include <malloc.h>
 #include <clock.h>

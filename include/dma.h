@@ -14,6 +14,8 @@
 #include <dma-dir.h>
 #include <asm/dma.h>
 
+#define DMA_ADDRESS_BROKEN	NULL
+
 #ifndef dma_alloc
 static inline void *dma_alloc(size_t size)
 {

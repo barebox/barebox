@@ -24,6 +24,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <driver.h>
 #include <errno.h>
 #include <fb.h>
@@ -37,7 +38,6 @@
 #include <mach/pxafb.h>
 
 #include <asm/io.h>
-#include <asm/mmu.h>
 #include <asm-generic/div64.h>
 
 /* PXA LCD DMA descriptor */

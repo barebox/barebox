@@ -18,6 +18,7 @@
  */
 /*#define DEBUG */
 #include <common.h>
+#include <dma.h>
 #include <asm/byteorder.h>
 #include <usb/usb.h>
 #include <io.h>

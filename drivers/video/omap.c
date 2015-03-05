@@ -19,6 +19,7 @@
  */
 
 #include <driver.h>
+#include <dma.h>
 #include <fb.h>
 #include <errno.h>
 #include <xfuncs.h>

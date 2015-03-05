@@ -226,20 +226,18 @@ static int imx_pwm_probe(struct device_d *dev)
 	if (IS_ERR(imx->clk_per))
 		return PTR_ERR(imx->clk_per);
 
-	imx->chip.ops = &imx_pwm_ops;
-	if (dev->device_node) {
-		imx->chip.devname = of_alias_get(dev->device_node);
-		if (!imx->chip.devname) {
-			dev_err(dev, "no alias for pwm\n");
-			return -EINVAL;
-		}
-	} else {
-		imx->chip.devname = asprintf("pwm%d", dev->id);
-	}
-
 	imx->mmio_base = dev_request_mem_region(dev, 0);
 	if (IS_ERR(imx->mmio_base))
 		return PTR_ERR(imx->mmio_base);
+
+	imx->chip.ops = &imx_pwm_ops;
+	if (dev->device_node) {
+		imx->chip.devname = of_alias_get(dev->device_node);
+		if (!imx->chip.devname)
+			imx->chip.devname = asprintf("pwm_%p", imx->mmio_base);
+	} else {
+		imx->chip.devname = asprintf("pwm%d", dev->id);
+	}
 
 	imx->config = data->config;
 	imx->set_enable = data->set_enable;

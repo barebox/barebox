@@ -27,7 +27,6 @@
 #include <io.h>
 #include <net.h>
 #include <of_net.h>
-#include <asm/mmu.h>
 #include <net/designware.h>
 #include <linux/phy.h>
 #include <linux/err.h>
@@ -197,8 +196,8 @@ static void rx_descs_init(struct eth_device *dev)
 		else
 			desc_p->dmamac_cntl |= DESC_RXCTRL_RXCHAIN;
 
-		dma_inv_range((unsigned long)desc_p->dmamac_addr,
-			      (unsigned long)desc_p->dmamac_addr + CONFIG_ETH_BUFSIZE);
+		dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr,
+					CONFIG_ETH_BUFSIZE, DMA_FROM_DEVICE);
 		desc_p->txrx_status = DESC_RXSTS_OWNBYDMA;
 	}
 
@@ -302,8 +301,8 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 	}
 
 	memcpy((void *)desc_p->dmamac_addr, packet, length);
-	dma_flush_range((unsigned long)desc_p->dmamac_addr,
-			(unsigned long)desc_p->dmamac_addr + length);
+	dma_sync_single_for_device((unsigned long)desc_p->dmamac_addr, length,
+				   DMA_TO_DEVICE);
 
 	if (priv->enh_desc) {
 		desc_p->txrx_status |= DESC_ENH_TXSTS_TXFIRST | DESC_ENH_TXSTS_TXLAST;
@@ -328,6 +327,9 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 
 	/* Start the transmission */
 	writel(POLL_DATA, &dma_p->txpolldemand);
+	dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr, length,
+				DMA_TO_DEVICE);
+
 	return 0;
 }
 
@@ -351,10 +353,11 @@ static int dwc_ether_rx(struct eth_device *dev)
 	 * Make the current descriptor valid again and go to
 	 * the next one
 	 */
-	dma_inv_range((unsigned long)desc_p->dmamac_addr,
-		      (unsigned long)desc_p->dmamac_addr + length);
-
+	dma_sync_single_for_cpu((unsigned long)desc_p->dmamac_addr, length,
+				DMA_FROM_DEVICE);
 	net_receive(dev, desc_p->dmamac_addr, length);
+	dma_sync_single_for_device((unsigned long)desc_p->dmamac_addr, length,
+				   DMA_FROM_DEVICE);
 
 	desc_p->txrx_status |= DESC_RXSTS_OWNBYDMA;
 

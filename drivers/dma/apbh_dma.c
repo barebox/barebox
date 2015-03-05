@@ -380,7 +380,8 @@ struct mxs_dma_desc *mxs_dma_desc_alloc(void)
 {
 	struct mxs_dma_desc *pdesc;
 
-	pdesc = dma_alloc_coherent(sizeof(struct mxs_dma_desc));
+	pdesc = dma_alloc_coherent(sizeof(struct mxs_dma_desc),
+				   DMA_ADDRESS_BROKEN);
 
 	if (pdesc == NULL)
 		return NULL;

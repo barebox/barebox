@@ -228,10 +228,10 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 	priv->cur_rx = priv->cur_tx = 0;
 
 	priv->tx_desc = dma_alloc_coherent(NUM_TX_DESC *
-				sizeof(struct bufdesc));
+				sizeof(struct bufdesc), DMA_ADDRESS_BROKEN);
 	priv->tx_buf = malloc(NUM_TX_DESC * PKT_BUF_SIZE);
 	priv->rx_desc = dma_alloc_coherent(NUM_RX_DESC *
-				sizeof(struct bufdesc));
+				sizeof(struct bufdesc), DMA_ADDRESS_BROKEN);
 	priv->rx_buf = malloc(NUM_RX_DESC * PKT_BUF_SIZE);
 	dma_clean_range((unsigned long)priv->rx_buf,
 			(unsigned long)priv->rx_buf + NUM_RX_DESC * PKT_BUF_SIZE);

@@ -698,9 +698,11 @@ static int hb_xgmac_probe(struct device_d *dev)
 	priv->dev = dev;
 	priv->base = base;
 
-	priv->rxbuffer = dma_alloc_coherent(RX_BUF_SZ);
-	priv->rx_chain = dma_alloc_coherent(RX_NUM_DESC * sizeof(struct xgmac_dma_desc));
-	priv->tx_chain = dma_alloc_coherent(TX_NUM_DESC * sizeof(struct xgmac_dma_desc));
+	priv->rxbuffer = dma_alloc_coherent(RX_BUF_SZ, DMA_ADDRESS_BROKEN);
+	priv->rx_chain = dma_alloc_coherent(RX_NUM_DESC * sizeof(struct xgmac_dma_desc),
+					    DMA_ADDRESS_BROKEN);
+	priv->tx_chain = dma_alloc_coherent(TX_NUM_DESC * sizeof(struct xgmac_dma_desc),
+					    DMA_ADDRESS_BROKEN);
 
 	edev = &priv->edev;
 	edev->priv = priv;

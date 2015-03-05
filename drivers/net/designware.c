@@ -448,9 +448,11 @@ static int dwc_ether_probe(struct device_d *dev)
 	dwc_version(dev, readl(&priv->mac_regs_p->version));
 	priv->dma_regs_p = base + DW_DMA_BASE_OFFSET;
 	priv->tx_mac_descrtable = dma_alloc_coherent(
-		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr));
+		CONFIG_TX_DESCR_NUM * sizeof(struct dmamacdescr),
+		DMA_ADDRESS_BROKEN);
 	priv->rx_mac_descrtable = dma_alloc_coherent(
-		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr));
+		CONFIG_RX_DESCR_NUM * sizeof(struct dmamacdescr),
+		DMA_ADDRESS_BROKEN);
 	priv->txbuffs = dma_alloc(TX_TOTAL_BUFSIZE);
 	priv->rxbuffs = dma_alloc(RX_TOTAL_BUFSIZE);
 

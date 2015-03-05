@@ -600,7 +600,7 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 	int i;
 
 	/* reserve data memory and consider alignment */
-	p = dma_alloc_coherent(size * count);
+	p = dma_alloc_coherent(size * count, DMA_ADDRESS_BROKEN);
 	if (!p)
 		return -ENOMEM;
 
@@ -698,7 +698,7 @@ static int fec_probe(struct device_d *dev)
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
 	base = dma_alloc_coherent((2 + FEC_RBD_NUM) *
-			sizeof(struct buffer_descriptor));
+			sizeof(struct buffer_descriptor), DMA_ADDRESS_BROKEN);
 	fec->rbd_base = base;
 	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
 	fec->tbd_base = base;

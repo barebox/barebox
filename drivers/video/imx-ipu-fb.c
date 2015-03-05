@@ -1030,7 +1030,8 @@ static int imxfb_probe(struct device_d *dev)
 			fbi->info.screen_size,
 			mmu_get_pte_uncached_flags());
 	} else {
-		fbi->info.screen_base = dma_alloc_coherent(fbi->info.screen_size);
+		fbi->info.screen_base = dma_alloc_coherent(fbi->info.screen_size,
+							   DMA_ADDRESS_BROKEN);
 		if (!fbi->info.screen_base)
 			return -ENOMEM;
 	}

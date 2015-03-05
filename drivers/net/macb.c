@@ -597,7 +597,8 @@ static void macb_init_rx_buffer_size(struct macb_device *bp, size_t size)
 			bp->rx_buffer_size =
 				roundup(bp->rx_buffer_size, RX_BUFFER_MULTIPLE);
 		}
-		bp->rx_buffer = dma_alloc_coherent(bp->rx_buffer_size * bp->rx_ring_size);
+		bp->rx_buffer = dma_alloc_coherent(bp->rx_buffer_size * bp->rx_ring_size,
+						   DMA_ADDRESS_BROKEN);
 	}
 
 	dev_dbg(bp->dev, "[%d] rx_buffer_size [%d]\n",
@@ -667,9 +668,10 @@ static int macb_probe(struct device_d *dev)
 		edev->recv = macb_recv;
 
 	macb_init_rx_buffer_size(macb, PKTSIZE);
-	macb->rx_buffer = dma_alloc_coherent(macb->rx_buffer_size * macb->rx_ring_size);
-	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb));
-	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES);
+	macb->rx_buffer = dma_alloc_coherent(macb->rx_buffer_size * macb->rx_ring_size,
+					     DMA_ADDRESS_BROKEN);
+	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb), DMA_ADDRESS_BROKEN);
+	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES, DMA_ADDRESS_BROKEN);
 
 	macb_reset_hw(macb);
 	ncfgr = macb_mdc_clk_div(macb);

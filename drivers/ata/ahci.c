@@ -310,7 +310,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * First item in chunk of DMA memory: 32-slot command table,
 	 * 32 bytes each in size
 	 */
-	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_SLOT_SZ * 32);
+	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_SLOT_SZ * 32,
+						 DMA_ADDRESS_BROKEN);
 	if (!ahci_port->cmd_slot) {
 		ret = -ENOMEM;
 		goto err_alloc;
@@ -321,7 +322,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	/*
 	 * Second item: Received-FIS area
 	 */
-	ahci_port->rx_fis = (unsigned long)dma_alloc_coherent(AHCI_RX_FIS_SZ);
+	ahci_port->rx_fis = (unsigned long)dma_alloc_coherent(AHCI_RX_FIS_SZ,
+							      DMA_ADDRESS_BROKEN);
 	if (!ahci_port->rx_fis) {
 		ret = -ENOMEM;
 		goto err_alloc1;
@@ -331,7 +333,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * Third item: data area for storing a single command
 	 * and its scatter-gather table
 	 */
-	ahci_port->cmd_tbl = dma_alloc_coherent(AHCI_CMD_TBL_SZ);
+	ahci_port->cmd_tbl = dma_alloc_coherent(AHCI_CMD_TBL_SZ,
+						DMA_ADDRESS_BROKEN);
 	if (!ahci_port->cmd_tbl) {
 		ret = -ENOMEM;
 		goto err_alloc2;
@@ -429,11 +432,11 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ret = -ENODEV;
 
 err_init:
-	dma_free_coherent(ahci_port->cmd_tbl, AHCI_CMD_TBL_SZ);
+	dma_free_coherent(ahci_port->cmd_tbl, 0, AHCI_CMD_TBL_SZ);
 err_alloc2:
-	dma_free_coherent((void *)ahci_port->rx_fis, AHCI_RX_FIS_SZ);
+	dma_free_coherent((void *)ahci_port->rx_fis, 0, AHCI_RX_FIS_SZ);
 err_alloc1:
-	dma_free_coherent(ahci_port->cmd_slot, AHCI_CMD_SLOT_SZ * 32);
+	dma_free_coherent(ahci_port->cmd_slot, 0, AHCI_CMD_SLOT_SZ * 32);
 err_alloc:
 	return ret;
 }

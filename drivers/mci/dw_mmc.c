@@ -564,7 +564,8 @@ static int dw_mmc_probe(struct device_d *dev)
 	/* divider is 0 based in pdata and 1 based in our private struct */
 	host->ciu_div++;
 
-	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS);
+	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS,
+					 DMA_ADDRESS_BROKEN);
 
 	host->mci.send_cmd = dwmci_cmd;
 	host->mci.set_ios = dwmci_set_ios;

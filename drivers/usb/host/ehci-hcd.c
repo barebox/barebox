@@ -890,8 +890,10 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 	ehci->init = data->init;
 	ehci->post_init = data->post_init;
 
-	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD);
-	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD);
+	ehci->qh_list = dma_alloc_coherent(sizeof(struct QH) * NUM_TD,
+					   DMA_ADDRESS_BROKEN);
+	ehci->td = dma_alloc_coherent(sizeof(struct qTD) * NUM_TD,
+				      DMA_ADDRESS_BROKEN);
 
 	host->hw_dev = dev;
 	host->init = ehci_init;

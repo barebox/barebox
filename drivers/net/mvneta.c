@@ -590,9 +590,11 @@ void mvneta_setup_tx_rx(struct mvneta_port *priv)
 	u32 val;
 
 	/* Allocate descriptors and buffers */
-	priv->txdesc = dma_alloc_coherent(ALIGN(sizeof(*priv->txdesc), 32));
+	priv->txdesc = dma_alloc_coherent(ALIGN(sizeof(*priv->txdesc), 32),
+					  DMA_ADDRESS_BROKEN);
 	priv->rxdesc = dma_alloc_coherent(RX_RING_SIZE *
-					  ALIGN(sizeof(*priv->rxdesc), 32));
+					  ALIGN(sizeof(*priv->rxdesc), 32),
+					  DMA_ADDRESS_BROKEN);
 	priv->rxbuf = dma_alloc(RX_RING_SIZE * ALIGN(PKTSIZE, 8));
 
 	mvneta_init_rx_ring(priv);

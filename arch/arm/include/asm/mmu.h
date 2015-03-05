@@ -11,6 +11,8 @@
 #define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
+#define DMA_ADDRESS_BROKEN	NULL
+
 struct arm_memory;
 
 static inline void mmu_enable(void)
@@ -33,8 +35,8 @@ static inline void *dma_alloc(size_t size)
 }
 
 #ifdef CONFIG_MMU
-void *dma_alloc_coherent(size_t size);
-void dma_free_coherent(void *mem, size_t size);
+void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle);
+void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size);
 
 void dma_clean_range(unsigned long, unsigned long);
 void dma_flush_range(unsigned long, unsigned long);
@@ -47,12 +49,17 @@ uint32_t mmu_get_pte_cached_flags(void);
 uint32_t mmu_get_pte_uncached_flags(void);
 
 #else
-static inline void *dma_alloc_coherent(size_t size)
+static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
-	return xmemalign(4096, size);
+	void *ret = xmemalign(4096, size);
+	if (dma_handle)
+		*dma_handle = (dma_addr_t)ret;
+
+	return ret;
 }
 
-static inline void dma_free_coherent(void *mem, size_t size)
+static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
+				     size_t size)
 {
 	free(mem);
 }

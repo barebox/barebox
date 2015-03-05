@@ -379,12 +379,14 @@ static int mmu_init(void)
 }
 mmu_initcall(mmu_init);
 
-void *dma_alloc_coherent(size_t size)
+void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
 	void *ret;
 
 	size = PAGE_ALIGN(size);
 	ret = xmemalign(PAGE_SIZE, size);
+	if (dma_handle)
+		*dma_handle = (dma_addr_t)ret;
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
@@ -403,7 +405,7 @@ void *phys_to_virt(unsigned long phys)
 	return (void *)phys;
 }
 
-void dma_free_coherent(void *mem, size_t size)
+void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);
 	remap_range(mem, size, pte_flags_cached);

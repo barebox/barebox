@@ -522,11 +522,12 @@ static int pxafb_probe(struct device_d *dev)
 	else
 		fbi->info.screen_base =
 			PTR_ALIGN(dma_alloc_coherent(info->xres * info->yres *
-						     (info->bits_per_pixel >> 3) + PAGE_SIZE),
+						     (info->bits_per_pixel >> 3) + PAGE_SIZE,
+						     DMA_ADDRESS_BROKEN),
 				  PAGE_SIZE);
 
-	fbi->dma_buff = PTR_ALIGN(dma_alloc_coherent(sizeof(struct pxafb_dma_buff) + 16),
-				  16);
+	fbi->dma_buff = PTR_ALIGN(dma_alloc_coherent(sizeof(struct pxafb_dma_buff) + 16,
+				DMA_ADDRESS_BROKEN), 16);
 
 	pxafb_activate_var(fbi);
 

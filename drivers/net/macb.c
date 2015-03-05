@@ -47,7 +47,6 @@
 #include <platform_data/macb.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm/mmu.h>
 #include <linux/phy.h>
 
 #include "macb.h"
@@ -122,7 +121,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 	macb->tx_ring[tx_head].ctrl = ctrl;
 	macb->tx_ring[tx_head].addr = (ulong)packet;
 	barrier();
-	dma_flush_range((ulong) packet, (ulong)packet + length);
+	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART));
 
 	start = get_time_ns();
@@ -135,6 +134,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 			break;
 		}
 	} while (!is_timeout(start, 100 * MSECOND));
+	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
 
 	if (ctrl & MACB_BIT(TX_UNDERRUN))
 		dev_err(macb->dev, "TX underrun\n");
@@ -188,7 +188,11 @@ static int gem_recv(struct eth_device *edev)
 		status = macb->rx_ring[macb->rx_tail].ctrl;
 		length = MACB_BFEXT(RX_FRMLEN, status);
 		buffer = macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail;
+		dma_sync_single_for_cpu((unsigned long)buffer, length,
+					DMA_FROM_DEVICE);
 		net_receive(edev, buffer, length);
+		dma_sync_single_for_device((unsigned long)buffer, length,
+					   DMA_FROM_DEVICE);
 		macb->rx_ring[macb->rx_tail].addr &= ~MACB_BIT(RX_USED);
 		barrier();
 

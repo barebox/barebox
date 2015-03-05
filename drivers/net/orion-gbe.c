@@ -33,7 +33,6 @@
 #include <net.h>
 #include <of_net.h>
 #include <linux/sizes.h>
-#include <asm/mmu.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/mbus.h>
@@ -243,7 +242,7 @@ static int port_send(struct eth_device *edev, void *data, int len)
 	int ret;
 
 	/* flush transmit data */
-	dma_flush_range((unsigned long)data, (unsigned long)data+len);
+	dma_sync_single_for_device((unsigned long)data, len, DMA_TO_DEVICE);
 
 	txdesc->cmd_sts = TXDESC_OWNED_BY_DMA;
 	txdesc->cmd_sts |= TXDESC_FIRST | TXDESC_LAST;
@@ -258,6 +257,7 @@ static int port_send(struct eth_device *edev, void *data, int len)
 	/* wait for packet transmit completion */
 	ret = wait_on_timeout(TRANSFER_TIMEOUT,
 		      (readl(&txdesc->cmd_sts) & TXDESC_OWNED_BY_DMA) == 0);
+	dma_sync_single_for_cpu((unsigned long)data, len, DMA_TO_DEVICE);
 	if (ret) {
 		dev_err(&edev->dev, "transmit timeout\n");
 		return ret;
@@ -301,12 +301,15 @@ static int port_recv(struct eth_device *edev)
 	}
 
 	/* invalidate current receive buffer */
-	dma_inv_range((unsigned long)rxdesc->buf_ptr,
-		      (unsigned long)rxdesc->buf_ptr +
-		      ALIGN(PKTSIZE, 8));
+	dma_sync_single_for_cpu((unsigned long)rxdesc->buf_ptr,
+				ALIGN(PKTSIZE, 8), DMA_FROM_DEVICE);
 
 	/* received packet is padded with two null bytes */
 	net_receive(edev, rxdesc->buf_ptr + 0x2, rxdesc->byte_cnt - 0x2);
+
+	dma_sync_single_for_device((unsigned long)rxdesc->buf_ptr,
+				   ALIGN(PKTSIZE, 8), DMA_FROM_DEVICE);
+
 	ret = 0;
 
 recv_err:

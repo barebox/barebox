@@ -320,44 +320,27 @@ static int dwmci_read_data_pio(struct dwmci_host *host, struct mci_data *data)
 {
 	u32 *pdata = (u32 *)data->dest;
 	u32 val, status, timeout;
-	u32 fcnt, bcnt, rcnt, rlen = 0;
+	u32 rcnt, rlen = 0;
 
-	timeout = 100;
-	status = dwmci_readl(host, DWMCI_RINTSTS);
-	while (--timeout && !(status & DWMCI_INTMSK_RXDR))
-		status = dwmci_readl(host, DWMCI_RINTSTS);
-
-	if (!timeout) {
-		dev_err(host->dev, "%s: RX ready wait timeout\n", __func__);
-		return 0;
-	}
-
-	fcnt = data->blocksize;
-	bcnt = data->blocks;
-
-	do {
-		for (rcnt = fcnt>>2; rcnt; rcnt--) {
-			timeout = 20000;
+	for (rcnt = (data->blocksize * data->blocks)>>2; rcnt; rcnt--) {
+		timeout = 20000;
+		status = dwmci_readl(host, DWMCI_STATUS);
+		while (--timeout
+		    && (status & DWMCI_STATUS_FIFO_EMPTY)) {
+			udelay(200);
 			status = dwmci_readl(host, DWMCI_STATUS);
-			while (--timeout
-			    && (status & DWMCI_STATUS_FIFO_EMPTY)) {
-				udelay(200);
-				status = dwmci_readl(host, DWMCI_STATUS);
-			}
-			if (!timeout) {
-				dev_err(host->dev, "%s: FIFO underflow timeout\n",
-				    __func__);
-				break;
-			}
-
-			val = dwmci_readl(host, DWMCI_DATA);
-
-			*pdata++ = val;
-			rlen += 4;
 		}
-		status = dwmci_readl(host, DWMCI_RINTSTS);
-		dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_RXDR);
-	} while (--bcnt && (status & DWMCI_INTMSK_RXDR));
+		if (!timeout) {
+			dev_err(host->dev, "%s: FIFO underflow timeout\n",
+			    __func__);
+			break;
+		}
+
+		val = dwmci_readl(host, DWMCI_DATA);
+		*pdata++ = val;
+		rlen += 4;
+	}
+	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_RXDR);
 
 	return rlen;
 }
@@ -366,43 +349,39 @@ static int dwmci_write_data_pio(struct dwmci_host *host, struct mci_data *data)
 {
 	u32 *pdata = (u32 *)data->src;
 	u32 status, timeout;
-	u32 fcnt, bcnt, wcnt, wlen = 0;
+	u32 wcnt, wlen = 0;
 
-	fcnt = host->fifo_size_bytes;
-
-	bcnt = (data->blocks*data->blocksize)/fcnt;
-
-	timeout = 100;
-	status = dwmci_readl(host, DWMCI_RINTSTS);
-
-	while (--timeout && !(status & DWMCI_INTMSK_TXDR))
-		status = dwmci_readl(host, DWMCI_RINTSTS);
-
-	if (!timeout) {
-		dev_err(host->dev, "%s: TX ready wait timeout\n", __func__);
-		return 0;
-	}
-
-	do {
-		for (wcnt = fcnt>>2; wcnt; wcnt--) {
-			timeout = 20000;
+	for (wcnt = (data->blocksize * data->blocks)>>2; wcnt; wcnt--) {
+		timeout = 20000;
+		status = dwmci_readl(host, DWMCI_STATUS);
+		while (--timeout
+		    && (status & DWMCI_STATUS_FIFO_FULL)) {
+			udelay(200);
 			status = dwmci_readl(host, DWMCI_STATUS);
-			while (--timeout
-			    && (status & DWMCI_STATUS_FIFO_FULL)) {
-				udelay(200);
-				status = dwmci_readl(host, DWMCI_STATUS);
-			}
-			if (!timeout) {
-				dev_err(host->dev, "%s: FIFO overflow timeout\n",
-				    __func__);
-				break;
-			}
-			dwmci_writel(host, DWMCI_DATA, *pdata++);
-			wlen += 4;
 		}
-		status = dwmci_readl(host, DWMCI_RINTSTS);
-		dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_TXDR);
-	} while (--bcnt && (status & DWMCI_INTMSK_TXDR));
+		if (!timeout) {
+			dev_err(host->dev, "%s: FIFO overflow timeout\n",
+			    __func__);
+			break;
+		}
+		dwmci_writel(host, DWMCI_DATA, *pdata++);
+		wlen += 4;
+	}
+	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_TXDR);
+
+	/* Wait for FIFO is flushed for slow-speed cards */
+	timeout = 20000;
+	status = dwmci_readl(host, DWMCI_STATUS);
+	while (--timeout
+	    && !(status & DWMCI_STATUS_FIFO_EMPTY)) {
+		udelay(10);
+		status = dwmci_readl(host, DWMCI_STATUS);
+	}
+	if (!timeout) {
+		dev_err(host->dev, "%s: FIFO flush timeout\n",
+		    __func__);
+		return -EIO;
+	}
 
 	return wlen;
 }
@@ -527,10 +506,14 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 				return -ETIMEDOUT;
 			}
 
-			if (dwmci_use_pio(host) && (mask & DWMCI_INTMSK_RXDR))
+			if (dwmci_use_pio(host) && (mask & DWMCI_INTMSK_RXDR)) {
 				dwmci_read_data_pio(host, data);
-			if (dwmci_use_pio(host) && (mask & DWMCI_INTMSK_TXDR))
+				mask = dwmci_readl(host, DWMCI_RINTSTS);
+			}
+			if (dwmci_use_pio(host) && (mask & DWMCI_INTMSK_TXDR)) {
 				dwmci_write_data_pio(host, data);
+				mask = dwmci_readl(host, DWMCI_RINTSTS);
+			}
 		} while (!(mask & DWMCI_INTMSK_DTO));
 
 		dwmci_writel(host, DWMCI_RINTSTS, mask);

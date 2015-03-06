@@ -2,8 +2,6 @@
 # barebox image generation Makefile for Rockchip images
 #
 
-board = $(srctree)/arch/$(ARCH)/boards
-
 pblx-$(CONFIG_MACH_RADXA_ROCK) += start_radxa_rock
 FILE_barebox-radxa-rock.img = start_radxa_rock.pblx
 image-$(CONFIG_MACH_RADXA_ROCK) += barebox-radxa-rock.img

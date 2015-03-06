@@ -9,8 +9,6 @@ $(obj)/%.kwbimg: $(obj)/% FORCE
 $(obj)/%.kwbuartimg: $(obj)/% FORCE
 	$(call if_changed,kwb_image)
 
-board = $(srctree)/arch/$(ARCH)/boards
-
 KWBOPTS = -c -d 0x1000000 -e 0x1000000
 
 # ----------------------- Armada 370 based boards ---------------------------

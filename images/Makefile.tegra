@@ -28,8 +28,6 @@ quiet_cmd_tegra124_image = T124IMG  $@
 $(obj)/%.t124img: $(obj)/% FORCE
 	$(call if_changed,tegra124_image)
 
-board = $(srctree)/arch/$(ARCH)/boards
-
 # ----------------------- Tegra20 based boards ---------------------------
 pblx-$(CONFIG_MACH_TOSHIBA_AC100) += start_toshiba_ac100
 FILE_barebox-tegra20-toshiba-ac100-usbloader.img = start_toshiba_ac100.pblx

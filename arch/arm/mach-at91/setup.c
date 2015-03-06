@@ -156,6 +156,20 @@ static void __init soc_detect(u32 dbgu_base)
 		}
 	}
 
+	if (at91_soc_initdata.type == AT91_SOC_SAM9N12) {
+		switch (at91_soc_initdata.exid) {
+		case ARCH_EXID_AT91SAM9N12:
+			at91_soc_initdata.subtype = AT91_SOC_SAM9N12;
+			break;
+		case ARCH_EXID_AT91SAM9CN11:
+			at91_soc_initdata.subtype = AT91_SOC_SAM9CN11;
+			break;
+		case ARCH_EXID_AT91SAM9CN12:
+			at91_soc_initdata.subtype = AT91_SOC_SAM9CN12;
+			break;
+		}
+	}
+
 	if (at91_soc_initdata.type == AT91_SOC_SAMA5D3) {
 		switch (at91_soc_initdata.exid) {
 		case ARCH_EXID_SAMA5D31:
@@ -229,6 +243,9 @@ static const char *soc_subtype_name[] = {
 	[AT91_SOC_SAM9X35]	= "at91sam9x35",
 	[AT91_SOC_SAM9G25]	= "at91sam9g25",
 	[AT91_SOC_SAM9X25]	= "at91sam9x25",
+	[AT91_SOC_SAM9N12]	= "at91sam9n12",
+	[AT91_SOC_SAM9CN11]	= "at91sam9cn11",
+	[AT91_SOC_SAM9CN12]	= "at91sam9cn12",
 	[AT91_SOC_SAMA5D31]	= "sama5d31",
 	[AT91_SOC_SAMA5D33]	= "sama5d33",
 	[AT91_SOC_SAMA5D34]	= "sama5d34",

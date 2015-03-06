@@ -12,7 +12,7 @@
 
 / {
 	model = "Phytec phyCORE AM335x";
-	compatible = "phytec,phycore-am335x-som", "ti,am33xx";
+	compatible = "phytec,phycore-am335x-som", "phytec,am335x-som", "ti,am33xx";
 };
 
 &eeprom {

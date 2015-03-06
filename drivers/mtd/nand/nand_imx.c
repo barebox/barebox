@@ -362,7 +362,11 @@ static void send_read_id_v3(struct imx_nand_host *host)
 
 	wait_op_done(host);
 
-	memcpy(host->data_buf, host->main_area0, 16);
+	/*
+	 * NFC_ID results in reading 6 bytes or words (depending on data width),
+	 * so copying 3 32-bit values is just fine.
+	 */
+	memcpy(host->data_buf, host->main_area0, 12);
 }
 
 static void send_read_param_v3(struct imx_nand_host *host)
@@ -377,8 +381,6 @@ static void send_read_param_v3(struct imx_nand_host *host)
 
 static void send_read_id_v1_v2(struct imx_nand_host *host)
 {
-	struct nand_chip *this = &host->nand;
-
 	/* NANDFC buffer 0 is used for device ID output */
 	writew(0x0, host->regs + NFC_V1_V2_BUF_ADDR);
 
@@ -387,20 +389,11 @@ static void send_read_id_v1_v2(struct imx_nand_host *host)
 	/* Wait for operation to complete */
 	wait_op_done(host);
 
-	if (this->options & NAND_BUSWIDTH_16) {
-		volatile u16 *mainbuf = host->main_area0;
-
-		/*
-		 * Pack the every-other-byte result for 16-bit ID reads
-		 * into every-byte as the generic code expects and various
-		 * chips implement.
-		 */
-
-		mainbuf[0] = (mainbuf[0] & 0xff) | ((mainbuf[1] & 0xff) << 8);
-		mainbuf[1] = (mainbuf[2] & 0xff) | ((mainbuf[3] & 0xff) << 8);
-		mainbuf[2] = (mainbuf[4] & 0xff) | ((mainbuf[5] & 0xff) << 8);
-	}
-	memcpy32(host->data_buf, host->main_area0, 16);
+	/*
+	 * NFC_ID results in reading 6 bytes or words (depending on data width),
+	 * so copying 3 32-bit values is just fine.
+	 */
+	memcpy32(host->data_buf, host->main_area0, 12);
 }
 
 static void send_read_param_v1_v2(struct imx_nand_host *host)
@@ -572,8 +565,16 @@ static u_char imx_nand_read_byte(struct mtd_info *mtd)
 	if (host->status_request)
 		return host->get_dev_status(host) & 0xFF;
 
-	ret = *(uint8_t *)(host->data_buf + host->buf_start);
-	host->buf_start++;
+	if (nand_chip->options & NAND_BUSWIDTH_16) {
+		/* only take the lower byte of each word */
+		BUG_ON(host->buf_start & 1);
+		ret = *(uint16_t *)(host->data_buf + host->buf_start);
+
+		host->buf_start += 2;
+	} else {
+		ret = *(uint8_t *)(host->data_buf + host->buf_start);
+		host->buf_start++;
+	}
 
 	return ret;
 }

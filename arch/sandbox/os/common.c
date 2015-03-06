@@ -206,31 +206,41 @@ int linux_execve(const char * filename, char *const argv[], char *const envp[])
 extern void start_barebox(void);
 extern void mem_malloc_init(void *start, void *end);
 
-static int add_image(char *str, char *name)
+static int add_image(char *str, char *devname_template, int *devname_number)
 {
-	char *file;
-	int readonly = 0, map = 1;
+	struct hf_info *hf = malloc(sizeof(struct hf_info));
+	char *filename, *devname;
+	char tmp[16];
+	int readonly = 0;
 	struct stat s;
 	char *opt;
 	int fd, ret;
-	struct hf_platform_data *hf = malloc(sizeof(struct hf_platform_data));
 
 	if (!hf)
 		return -1;
 
-	file = strtok(str, ",");
+	filename = strtok(str, ",");
 	while ((opt = strtok(NULL, ","))) {
 		if (!strcmp(opt, "ro"))
 			readonly = 1;
-		if (!strcmp(opt, "map"))
-			map = 1;
 	}
 
-	printf("add file %s(%s)\n", file, readonly ? "ro" : "");
+	/* parses: "devname=filename" */
+	devname = strtok(filename, "=");
+	filename = strtok(NULL, "=");
+	if (!filename) {
+		filename = devname;
+		snprintf(tmp, sizeof(tmp),
+			 devname_template, (*devname_number)++);
+		devname = strdup(tmp);
+	}
 
-	fd = open(file, readonly ? O_RDONLY : O_RDWR);
+	printf("add %s backed by file %s%s\n", devname,
+	       filename, readonly ? "(ro)" : "");
+
+	fd = open(filename, readonly ? O_RDONLY : O_RDWR);
 	hf->fd = fd;
-	hf->filename = file;
+	hf->filename = filename;
 
 	if (fd < 0) {
 		perror("open");
@@ -243,15 +253,13 @@ static int add_image(char *str, char *name)
 	}
 
 	hf->size = s.st_size;
-	hf->name = strdup(name);
+	hf->devname = strdup(devname);
 
-	if (map) {
-		hf->base = (unsigned long)mmap(NULL, hf->size,
-				PROT_READ | (readonly ? 0 : PROT_WRITE),
-				MAP_SHARED, fd, 0);
-		if ((void *)hf->base == MAP_FAILED)
-			printf("warning: mmapping %s failed\n", file);
-	}
+	hf->base = (unsigned long)mmap(NULL, hf->size,
+			PROT_READ | (readonly ? 0 : PROT_WRITE),
+			MAP_SHARED, fd, 0);
+	if ((void *)hf->base == MAP_FAILED)
+		printf("warning: mmapping %s failed\n", filename);
 
 	ret = barebox_register_filedev(hf);
 	if (ret)
@@ -265,6 +273,42 @@ err_out:
 	return -1;
 }
 
+static int add_dtb(const char *file)
+{
+	struct stat s;
+	void *dtb = NULL;
+	int fd;
+
+	fd = open(file, O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		goto err_out;
+	}
+
+	if (fstat(fd, &s)) {
+		perror("fstat");
+		goto err_out;
+	}
+
+	dtb = mmap(NULL, s.st_size, PROT_READ, MAP_SHARED, fd, 0);
+	if (dtb == MAP_FAILED) {
+		perror("mmap");
+		goto err_out;
+	}
+
+	if (barebox_register_dtb(dtb))
+		goto err_out;
+
+	return 0;
+
+ err_out:
+	if (dtb)
+		munmap(dtb, s.st_size);
+	if (fd > 0)
+		close(fd);
+	return -1;
+}
+
 static void print_usage(const char*);
 
 static struct option long_options[] = {
@@ -272,6 +316,7 @@ static struct option long_options[] = {
 	{"malloc", 1, 0, 'm'},
 	{"image",  1, 0, 'i'},
 	{"env",    1, 0, 'e'},
+	{"dtb",    1, 0, 'd'},
 	{"stdout", 1, 0, 'O'},
 	{"stdin",  1, 0, 'I'},
 	{"xres",  1, 0, 'x'},
@@ -279,14 +324,13 @@ static struct option long_options[] = {
 	{0, 0, 0, 0},
 };
 
-static const char optstring[] = "hm:i:e:O:I:x:y:";
+static const char optstring[] = "hm:i:e:d:O:I:x:y:";
 
 int main(int argc, char *argv[])
 {
 	void *ram;
 	int opt, ret, fd;
 	int malloc_size = CONFIG_MALLOC_SIZE;
-	char str[6];
 	int fdno = 0, envno = 0, option_index = 0;
 
 	while (1) {
@@ -307,6 +351,13 @@ int main(int argc, char *argv[])
 		case 'i':
 			break;
 		case 'e':
+			break;
+		case 'd':
+			ret = add_dtb(optarg);
+			if (ret) {
+				printf("Failed to load dtb: '%s'\n", optarg);
+				exit(1);
+			}
 			break;
 		case 'O':
 			fd = open(optarg, O_WRONLY);
@@ -361,18 +412,14 @@ int main(int argc, char *argv[])
 
 		switch (opt) {
 		case 'i':
-			sprintf(str, "fd%d", fdno);
-			ret = add_image(optarg, str);
+			ret = add_image(optarg, "fd%d", &fdno);
 			if (ret)
 				exit(1);
-			fdno++;
 			break;
 		case 'e':
-			sprintf(str, "env%d", envno);
-			ret = add_image(optarg, str);
+			ret = add_image(optarg, "env%d", &envno);
 			if (ret)
 				exit(1);
-			envno++;
 			break;
 		default:
 			break;
@@ -399,15 +446,19 @@ static void print_usage(const char *prgname)
 "Usage: %s [OPTIONS]\n"
 "Start barebox.\n\n"
 "Options:\n\n"
-"  -m, --malloc=<size>	Start sandbox with a specified malloc-space size in bytes.\n"
+"  -m, --malloc=<size>  Start sandbox with a specified malloc-space size in bytes.\n"
 "  -i, --image=<file>   Map an image file to barebox. This option can be given\n"
 "                       multiple times. The files will show up as\n"
 "                       /dev/fd0 ... /dev/fdx under barebox.\n"
+"  -i, --image=<dev>=<file>\n"
+"                       Same as above, the files will show up as\n"
+"                       /dev/<dev>\n"
 "  -e, --env=<file>     Map a file with an environment to barebox. With this \n"
 "                       option, files are mapped as /dev/env0 ... /dev/envx\n"
 "                       and thus are used as the default environment.\n"
 "                       An empty file generated with dd will do to get started\n"
 "                       with an empty environment.\n"
+"  -d, --dtb=<file>     Map a device tree binary blob (dtb) into barebox.\n"
 "  -O, --stdout=<file>  Register a file as a console capable of doing stdout.\n"
 "                       <file> can be a regular file or a FIFO.\n"
 "  -I, --stdin=<file>   Register a file as a console capable of doing stdin.\n"

@@ -350,12 +350,6 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_request_mem_region);
 
-int dev_protect(struct device_d *dev, size_t count, unsigned long offset, int prot)
-{
-	printf("%s: currently broken\n", __func__);
-	return -EINVAL;
-}
-
 int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
 {
 	if (!cdev->dev)

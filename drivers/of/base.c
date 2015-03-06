@@ -184,7 +184,7 @@ void of_alias_scan(void)
 			end--;
 		len = end - start;
 
-		id = simple_strtol(end, 0, 10);
+		id = simple_strtol(end, NULL, 10);
 		if (id < 0)
 			continue;
 
@@ -280,7 +280,7 @@ struct device_node *of_find_node_by_phandle_from(phandle phandle,
 		root = root_node;
 
 	if (!root)
-		return 0;
+		return NULL;
 
 	of_tree_for_each_node_from(node, root)
 		if (node->phandle == phandle)

@@ -923,7 +923,7 @@ out:
 }
 EXPORT_SYMBOL(lseek);
 
-int erase(int fd, size_t count, unsigned long offset)
+int erase(int fd, size_t count, loff_t offset)
 {
 	struct fs_driver_d *fsdrv;
 	FILE *f;
@@ -950,7 +950,7 @@ int erase(int fd, size_t count, unsigned long offset)
 }
 EXPORT_SYMBOL(erase);
 
-int protect(int fd, size_t count, unsigned long offset, int prot)
+int protect(int fd, size_t count, loff_t offset, int prot)
 {
 	struct fs_driver_d *fsdrv;
 	FILE *f;

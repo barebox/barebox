@@ -1,15 +1,14 @@
 #ifndef __ASM_ARCH_HOSTFILE_H
 #define __ASM_ARCH_HOSTFILE_H
 
-struct hf_platform_data {
+struct hf_info {
 	int fd;
-	size_t size;
 	unsigned long base;
-	char *filename;
-	char *name;
+	size_t size;
+	const char *devname;
+	const char *filename;
 };
 
-int barebox_register_filedev(struct hf_platform_data *hf);
+int barebox_register_filedev(struct hf_info *hf);
 
 #endif /* __ASM_ARCH_HOSTFILE_H */
-

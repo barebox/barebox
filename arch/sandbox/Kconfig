@@ -1,5 +1,6 @@
 config SANDBOX
 	bool
+	select OFTREE
 	default y
 
 config ARCH_TEXT_BASE

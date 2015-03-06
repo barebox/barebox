@@ -5,7 +5,6 @@ mkdir -p /tmp/mtdparts
 parts=
 device=
 kernelname=
-bbdev=
 
 while getopt "p:d:k:b" opt; do
         if [ ${opt} = p ]; then
@@ -14,8 +13,6 @@ while getopt "p:d:k:b" opt; do
                 device=${OPTARG}
         elif [ ${opt} = k ]; then
                 kernelname=${OPTARG}
-	elif [ ${opt} = b ]; then
-		bbdev=true
         fi
 done
 
@@ -29,15 +26,11 @@ if [ -z "${parts}" ]; then
 	exit
 fi
 
-if [ -e /tmp/mtdparts/${device} ]; then
-	if [ -n "/dev/${device}.*.bb" ]; then
-		nand -d /dev/${device}.*.bb
-	fi
-	delpart /dev/${device}.*
+${device}.partitions="$parts"
+if [ $? != 0 ]; then
+	echo "Failed to add partitions $parts to $device"
+	exit 1
 fi
-
-addpart -n /dev/${device} "$parts" || exit
-mkdir -p /tmp/mtdparts/${device}
 
 if [ -n ${kernelname} ]; then
 	global linux.mtdparts.${device}

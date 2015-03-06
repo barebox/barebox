@@ -18,6 +18,7 @@
 #include <common.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/mtd.h>
+#include <cmdlinepart.h>
 #include <init.h>
 #include <xfuncs.h>
 #include <driver.h>
@@ -377,9 +378,174 @@ static struct file_operations mtd_ops = {
 	.lseek  = dev_lseek_default,
 };
 
+static int mtd_partition_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	struct mtd_info *mtdpart, *tmp;
+	int ret;
+
+	list_for_each_entry_safe(mtdpart, tmp, &mtd->partitions, partitions_entry) {
+		ret = mtd_del_partition(mtdpart);
+		if (ret)
+			return ret;
+	}
+
+	return cmdlinepart_do_parse(mtd->cdev.name, val, mtd->size, CMDLINEPART_ADD_DEVNAME);
+}
+
+static char *print_size(uint64_t s)
+{
+	if (!(s & ((1 << 20) - 1)))
+		return asprintf("%lldM", s >> 20);
+	if (!(s & ((1 << 10) - 1)))
+		return asprintf("%lldk", s >> 10);
+	return asprintf("0x%lld", s);
+}
+
+static int print_part(char *buf, int bufsize, struct mtd_info *mtd, uint64_t last_ofs,
+		int is_last)
+{
+	char *size = print_size(mtd->size);
+	char *ofs = print_size(mtd->master_offset);
+	int ret;
+
+	if (!size || !ofs) {
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	if (mtd->master_offset == last_ofs)
+		ret = snprintf(buf, bufsize, "%s(%s)%s", size,
+				mtd->cdev.partname,
+				is_last ? "" : ",");
+	else
+		ret = snprintf(buf, bufsize, "%s@%s(%s)%s", size,
+				ofs,
+				mtd->cdev.partname,
+				is_last ? "" : ",");
+out:
+	free(size);
+	free(ofs);
+
+	return ret;
+}
+
+static int print_parts(char *buf, int bufsize, struct mtd_info *mtd)
+{
+	struct mtd_info *mtdpart;
+	uint64_t last_ofs = 0;
+	int ret = 0;
+
+	list_for_each_entry(mtdpart, &mtd->partitions, partitions_entry) {
+		int now;
+		int is_last = list_is_last(&mtdpart->partitions_entry,
+					&mtd->partitions);
+
+		now = print_part(buf, bufsize, mtdpart, last_ofs, is_last);
+		if (now < 0)
+			return now;
+
+		if (buf && bufsize) {
+			buf += now;
+			bufsize -= now;
+		}
+		ret += now;
+		last_ofs = mtdpart->master_offset + mtdpart->size;
+	}
+
+	return ret;
+}
+
+static const char *mtd_partition_get(struct device_d *dev, struct param_d *p)
+{
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	int len = 0;
+
+	free(p->value);
+
+	len = print_parts(NULL, 0, mtd);
+	p->value = xzalloc(len + 1);
+	print_parts(p->value, len + 1, mtd);
+
+	return p->value;
+}
+
+static int mtd_part_compare(struct list_head *a, struct list_head *b)
+{
+	struct mtd_info *mtda = container_of(a, struct mtd_info, partitions_entry);
+	struct mtd_info *mtdb = container_of(b, struct mtd_info, partitions_entry);
+
+	if (mtda->master_offset > mtdb->master_offset)
+		return 1;
+	if (mtda->master_offset < mtdb->master_offset)
+		return -1;
+	return 0;
+}
+
+static int of_mtd_fixup(struct device_node *root, void *ctx)
+{
+	struct mtd_info *mtd = ctx, *partmtd;
+	struct device_node *np, *part, *tmp;
+	int ret, i = 0;
+
+	np = of_find_node_by_path(mtd->of_path);
+	if (!np) {
+		dev_err(&mtd->class_dev, "Cannot find nodepath %s, cannot fixup\n",
+				mtd->of_path);
+		return -EINVAL;
+	}
+
+	for_each_child_of_node_safe(np, tmp, part) {
+		if (of_get_property(part, "compatible", NULL))
+			continue;
+		of_delete_node(part);
+	}
+
+	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
+		int na, ns, len = 0;
+		char *name = asprintf("partition@%d", i++);
+		void *p;
+		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
+
+		if (!name)
+			return -ENOMEM;
+
+		part = of_new_node(np, name);
+		free(name);
+		if (!part)
+			return -ENOMEM;
+
+		p = of_new_property(part, "label", partmtd->cdev.partname,
+                                strlen(partmtd->cdev.partname) + 1);
+		if (!p)
+			return -ENOMEM;
+
+		na = of_n_addr_cells(np);
+		ns = of_n_size_cells(np);
+
+		of_write_number(tmp + len, partmtd->master_offset, na);
+		len += na * 4;
+		of_write_number(tmp + len, partmtd->size, ns);
+		len += ns * 4;
+
+		ret = of_set_property(part, "reg", tmp, len, 1);
+		if (ret)
+			return ret;
+
+		if (partmtd->cdev.flags & DEVFS_PARTITION_READONLY) {
+			ret = of_set_property(part, "read-only", NULL, 0, 1);
+			if (ret)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
 int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
+	int ret;
 
 	if (!devname)
 		devname = "mtd";
@@ -387,7 +553,10 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	mtd->class_dev.id = device_id;
 	if (mtd->parent)
 		mtd->class_dev.parent = mtd->parent;
-	register_device(&mtd->class_dev);
+
+	ret = register_device(&mtd->class_dev);
+	if (ret)
+		return ret;
 
 	mtd->cdev.ops = &mtd_ops;
 	mtd->cdev.size = mtd->size;
@@ -395,6 +564,8 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 		mtd->cdev.name = xstrdup(devname);
 	else
 		mtd->cdev.name = asprintf("%s%d", devname, mtd->class_dev.id);
+
+	INIT_LIST_HEAD(&mtd->partitions);
 
 	mtd->cdev.priv = mtd;
 	mtd->cdev.dev = &mtd->class_dev;
@@ -407,19 +578,50 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 		dev_add_param_int_ro(&mtd->class_dev, "oobsize", mtd->oobsize, "%u");
 	}
 
-	devfs_create(&mtd->cdev);
+	ret = devfs_create(&mtd->cdev);
+	if (ret)
+		goto err;
+
+	if (mtd->master && !(mtd->cdev.flags & DEVFS_PARTITION_FIXED)) {
+		struct mtd_info *mtdpart;
+
+		list_for_each_entry(mtdpart, &mtd->master->partitions, partitions_entry) {
+			if (mtdpart->master_offset + mtdpart->size <= mtd->master_offset)
+				continue;
+			if (mtd->master_offset + mtd->size <= mtdpart->master_offset)
+				continue;
+			dev_err(&mtd->class_dev, "New partition %s conflicts with %s\n",
+					mtd->name, mtdpart->name);
+			goto err1;
+		}
+
+		list_add_sort(&mtd->partitions_entry, &mtd->master->partitions, mtd_part_compare);
+	}
 
 	if (mtd_can_have_bb(mtd))
 		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
 
-	if (mtd->parent && !mtd->master)
+	if (mtd->parent && !mtd->master) {
+		dev_add_param(&mtd->class_dev, "partitions", mtd_partition_set, mtd_partition_get, 0);
 		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
+		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->parent->device_node) {
+			mtd->of_path = xstrdup(mtd->parent->device_node->full_name);
+			of_register_fixup(of_mtd_fixup, mtd);
+		}
+	}
 
 	list_for_each_entry(hook, &mtd_register_hooks, hook)
 		if (hook->add_mtd_device)
 			hook->add_mtd_device(mtd, devname, &hook->priv);
 
 	return 0;
+err1:
+	devfs_remove(&mtd->cdev);
+err:
+	free(mtd->cdev.name);
+	unregister_device(&mtd->class_dev);
+
+	return ret;
 }
 
 int del_mtd_device (struct mtd_info *mtd)
@@ -431,9 +633,14 @@ int del_mtd_device (struct mtd_info *mtd)
 			hook->del_mtd_device(mtd, &hook->priv);
 
 	devfs_remove(&mtd->cdev);
+	if (mtd->cdev_bb)
+		mtd_del_bb(mtd);
 	unregister_device(&mtd->class_dev);
 	free(mtd->param_size.value);
 	free(mtd->cdev.name);
+	if (mtd->master)
+		list_del(&mtd->partitions_entry);
+
 	return 0;
 }
 

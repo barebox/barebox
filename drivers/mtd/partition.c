@@ -108,6 +108,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 		uint64_t size, unsigned long flags, const char *name)
 {
 	struct mtd_info *part;
+	int ret;
 
 	part = xzalloc(sizeof(*part));
 
@@ -122,6 +123,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	part->ecclayout = mtd->ecclayout;
 	part->ecc_strength = mtd->ecc_strength;
 	part->subpage_sft = mtd->subpage_sft;
+	part->cdev.flags = flags;
 
 	if (mtd->numeraseregions > 1) {
 		/* Deal with variable erase size stuff */
@@ -160,7 +162,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 
 	part->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
 	part->size = size;
-	part->name = strdup(name);
+	part->name = xstrdup(name);
 
 	part->master_offset = offset;
 	part->master = mtd;
@@ -168,9 +170,17 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	if (!strncmp(mtd->cdev.name, name, strlen(mtd->cdev.name)))
 		part->cdev.partname = xstrdup(name + strlen(mtd->cdev.name) + 1);
 
-	add_mtd_device(part, part->name, DEVICE_ID_SINGLE);
+	ret = add_mtd_device(part, part->name, DEVICE_ID_SINGLE);
+	if (ret)
+		goto err;
 
 	return part;
+err:
+	free(part->cdev.partname);
+	free(part->name);
+	free(part);
+
+	return ERR_PTR(ret);
 }
 
 int mtd_del_partition(struct mtd_info *part)

@@ -63,7 +63,7 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 
 static int hummingboard_device_init(void)
 {
-	if (!of_machine_is_compatible("solidrun,hummingboard"))
+	if (!of_machine_is_compatible("solidrun,hummingboard/dl"))
 		return 0;
 
 	phy_register_fixup_for_uid(0x004dd072, 0xffffffef, ar8035_phy_fixup);
@@ -80,7 +80,7 @@ device_initcall(hummingboard_device_init);
 
 static int hummingboard_late_init(void)
 {
-	if (!of_machine_is_compatible("solidrun,hummingboard"))
+	if (!of_machine_is_compatible("solidrun,hummingboard/dl"))
 		return 0;
 
 	imx6_bbu_internal_mmc_register_handler("sdcard", "/dev/mmc1.barebox",

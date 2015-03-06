@@ -4,11 +4,9 @@
  * The code contained herein is licensed under the GNU General Public
  * License version 2.
  */
-/dts-v1/;
 
-#include "imx6dl.dtsi"
-#include "imx6qdl-microsom.dtsi"
-#include "imx6qdl-microsom-ar8035.dtsi"
+#include <arm/imx6dl-hummingboard.dts>
+#include "imx6qdl.dtsi"
 
 / {
 	chosen {

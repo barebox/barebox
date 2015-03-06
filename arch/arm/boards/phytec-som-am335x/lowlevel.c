@@ -1,9 +1,5 @@
 /*
- * pfla03 - phyFLEX-AM335x lowlevel code
- *
- * Copyright (C) 2014 Stefan Müller-Klieser, Phytec Messtechnik GmbH
- *
- * Based on arch/arm/boards/omap/board-beagle.c
+ * Copyright (C) 2015 Wadim Egorov, PHYTEC Messtechnik GmbH
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -34,10 +30,12 @@
 #include <mach/wdt.h>
 #include <debug_ll.h>
 
+#include "ram-timings.h"
+
 #define CLK_M_OSC_MHZ	25
 #define DDR_IOCTRL	0x18B
 
-static const struct am33xx_cmd_control pfla03_cmd = {
+static const struct am33xx_cmd_control physom_cmd = {
 	.slave_ratio0	= 0x80,
 	.dll_lock_diff0	= 0x0,
 	.invert_clkout0	= 0x0,
@@ -49,61 +47,6 @@ static const struct am33xx_cmd_control pfla03_cmd = {
 	.invert_clkout2	= 0x0,
 };
 
-struct pfla03_sdram_timings {
-	struct am33xx_emif_regs regs;
-	struct am33xx_ddr_data data;
-};
-
-enum {
-	MT41K128M16JT_256MB,
-	MT41K256M16HA_512MB,
-};
-
-struct pfla03_sdram_timings pfla03_timings[] = {
-	/* 256 MB */
-	[MT41K128M16JT_256MB] = {
-		.regs = {
-			.emif_read_latency	= 0x7,
-			.emif_tim1		= 0x0AAAD4DB,
-			.emif_tim2		= 0x26437FDA,
-			.emif_tim3		= 0x501F83FF,
-			.sdram_config		= 0x61C052B2,
-			.zq_config		= 0x50074BE4,
-			.sdram_ref_ctrl		= 0x00000C30,
-		},
-		.data = {
-			.rd_slave_ratio0	= 0x34,
-			.wr_dqs_slave_ratio0	= 0x47,
-			.fifo_we_slave_ratio0	= 0x9a,
-			.wr_slave_ratio0	= 0x7e,
-			.use_rank0_delay	= 0x0,
-			.dll_lock_diff0		= 0x0,
-		},
-	},
-	/* 512 MB */
-	[MT41K256M16HA_512MB] = {
-		.regs = {
-			.emif_read_latency	= 0x7,
-			.emif_tim1		= 0x0AAAE4DB,
-			.emif_tim2		= 0x266B7FDA,
-			.emif_tim3		= 0x501F867F,
-			.sdram_config		= 0x61C05332,
-			.zq_config		= 0x50074BE4,
-			.sdram_ref_ctrl		= 0x00000C30,
-		},
-		.data = {
-			.rd_slave_ratio0	= 0x36,
-			.wr_dqs_slave_ratio0	= 0x47,
-			.fifo_we_slave_ratio0	= 0x95,
-			.wr_slave_ratio0	= 0x7f,
-			.use_rank0_delay	= 0x0,
-			.dll_lock_diff0		= 0x0,
-		},
-	},
-};
-
-extern char __dtb_am335x_phytec_phyflex_start[];
-
 /**
  * @brief The basic entry point for board initialization.
  *
@@ -113,10 +56,9 @@ extern char __dtb_am335x_phytec_phyflex_start[];
  *
  * @return void
  */
-static noinline void pfla03_board_init(int sdram)
+static noinline void physom_board_init(int sdram, void *fdt)
 {
-	void *fdt;
-	struct pfla03_sdram_timings *timing = &pfla03_timings[sdram];
+	struct am335x_sdram_timings *timing = &physom_timings[sdram];
 
 	/*
 	 * WDT1 is already running when the bootloader gets control
@@ -125,12 +67,13 @@ static noinline void pfla03_board_init(int sdram)
 	writel(WDT_DISABLE_CODE1, AM33XX_WDT_REG(WSPR));
 	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
+
 	writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
 	am33xx_pll_init(MPUPLL_M_600, CLK_M_OSC_MHZ, DDRPLL_M_400);
 
-	am335x_sdram_init(DDR_IOCTRL, &pfla03_cmd,
+	am335x_sdram_init(DDR_IOCTRL, &physom_cmd,
 			&timing->regs,
 			&timing->data);
 
@@ -139,12 +82,10 @@ static noinline void pfla03_board_init(int sdram)
 	omap_uart_lowlevel_init((void *)AM33XX_UART0_BASE);
 	putc_ll('>');
 
-	fdt = __dtb_am335x_phytec_phyflex_start - get_runtime_offset();
-
 	am335x_barebox_entry(fdt);
 }
 
-static noinline void pfla03_board_entry(unsigned long bootinfo, int sdram)
+static noinline void physom_board_entry(unsigned long bootinfo, int sdram, void *fdt)
 {
 	am33xx_save_bootinfo((void *)bootinfo);
 
@@ -157,24 +98,40 @@ static noinline void pfla03_board_entry(unsigned long bootinfo, int sdram)
 	relocate_to_current_adr();
 	setup_c();
 
-	pfla03_board_init(sdram);
+	physom_board_init(sdram, fdt);
 }
 
-ENTRY_FUNCTION(start_am33xx_phytec_phyflex_sram_256mb, bootinfo, r1, r2)
-{
-	pfla03_board_entry(bootinfo, MT41K128M16JT_256MB);
-}
+#define PHYTEC_ENTRY_MLO(name, fdt_name, sdram)			\
+	ENTRY_FUNCTION(name, bootinfo, r1, r2)			\
+	{							\
+		extern char __dtb_##fdt_name##_start[];		\
+		void *fdt =__dtb_##fdt_name##_start -		\
+			get_runtime_offset();			\
+		physom_board_entry(bootinfo, sdram, fdt);	\
+	}
 
-ENTRY_FUNCTION(start_am33xx_phytec_phyflex_sram_512mb, bootinfo, r1, r2)
-{
-	pfla03_board_entry(bootinfo, MT41K256M16HA_512MB);
-}
+#define PHYTEC_ENTRY(name, fdt_name)				\
+	ENTRY_FUNCTION(name, r0, r1, r2)			\
+	{							\
+		extern char __dtb_##fdt_name##_start[];		\
+		void *fdt =__dtb_##fdt_name##_start -		\
+			get_runtime_offset();			\
+		am335x_barebox_entry(fdt);			\
+	}
 
-ENTRY_FUNCTION(start_am33xx_phytec_phyflex_sdram, r0, r1, r2)
-{
-	void *fdt;
+/* phycore-som */
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_128mb, am335x_phytec_phycore_som_mlo, PHYCORE_MT41J64M1615IT_128MB);
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_256mb, am335x_phytec_phycore_som_mlo, PHYCORE_MT41J128M16125IT_256MB);
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_512mb, am335x_phytec_phycore_som_mlo, PHYCORE_MT41J256M16HA15EIT_512MB);
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_2x512mb, am335x_phytec_phycore_som_mlo, PHYCORE_MT41J512M8125IT_2x512MB);
+PHYTEC_ENTRY(start_am33xx_phytec_phycore_sdram, am335x_phytec_phycore_som);
+PHYTEC_ENTRY(start_am33xx_phytec_phycore_no_spi_sdram, am335x_phytec_phycore_som_no_spi);
 
-	fdt = __dtb_am335x_phytec_phyflex_start - get_runtime_offset();
+/* phyflex-som */
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phyflex_sram_256mb, am335x_phytec_phyflex_som_mlo, PHYFLEX_MT41K128M16JT_256MB);
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phyflex_sram_512mb, am335x_phytec_phyflex_som_mlo, PHYFLEX_MT41K256M16HA_512MB);
+PHYTEC_ENTRY(start_am33xx_phytec_phyflex_sdram, am335x_phytec_phyflex_som);
 
-	am335x_barebox_entry(fdt);
-}
+/* phycard-som */
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycard_sram_256mb, am335x_phytec_phycard_som_mlo, PHYCARD_NT5CB128M16BP_256MB);
+PHYTEC_ENTRY(start_am33xx_phytec_phycard_sdram, am335x_phytec_phycard_som);

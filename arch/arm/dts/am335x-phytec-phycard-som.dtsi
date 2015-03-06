@@ -2,12 +2,6 @@
 	chosen {
 		linux,stdout-path = &uart0;
 
-		environment-spi {
-			compatible = "barebox,environment";
-			device-path = &flash, "partname:bareboxenv";
-			status = "disabled";
-		};
-
 		environment-nand {
 			compatible = "barebox,environment";
 			device-path = &nand, "partname:bareboxenv";
@@ -17,12 +11,6 @@
 };
 
 &am33xx_pinmux {
-	usb_pins: pinmux_usb_pins {
-		pinctrl-single,pins = <
-			0x21c (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* usb0_drvvbus.usb0_drvvbus */
-			0x234 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* usb1_drvvbus.usb1_drvvbus */
-		>;
-	};
 
 	i2c0_pins: pinmux_i2c0_pins {
 			pinctrl-single,pins = <
@@ -31,19 +19,17 @@
 		>;
 	};
 
-	spi0_pins: pinmux_spi0_pins {
-		pinctrl-single,pins = <
-			0x150 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* spi0_clk.spi0_clk */
-			0x154 (PIN_INPUT_PULLDOWN | MUX_MODE0)	/* spi0_d0.spi0_d0 */
-			0x158 (PIN_INPUT_PULLUP | MUX_MODE0)	/* spi0_d1.spi0_d1 */
-			0x15c (PIN_INPUT_PULLUP | MUX_MODE0)	/* spi0_cs0.spi0_cs0 */
-		>;
-	};
-
 	uart0_pins: pinmux_uart0_pins {
 		pinctrl-single,pins = <
 			0x170 (PIN_INPUT_PULLUP | MUX_MODE0)    /* uart0_rxd.uart0_rxd */
 			0x174 (PIN_OUTPUT_PULLDOWN | MUX_MODE0) /* uart0_txd.uart0_txd */
+		>;
+	};
+
+	uart3_pins: pinmux_uart3 {
+		pinctrl-single,pins = <
+			0x134 (PIN_INPUT_PULLUP | MUX_MODE1)    /* mii1_rxd3.uart3_rxd */
+			0x138 (PIN_OUTPUT_PULLDOWN | MUX_MODE1) /* mii1_rxd2.uart3_txd */
 		>;
 	};
 
@@ -97,43 +83,6 @@
 			0x14c (PIN_OUTPUT_PULLUP | MUX_MODE0)			/* mdio_clk.mdio_clk */
 		>;
 	};
-
-	pcm051_led_pins: pinmux_pcm051_led_pins {
-		pinctrl-single,pins = <
-			0x80 (MUX_MODE7)
-			0x84 (MUX_MODE7)
-		>;
-	};
-
-	pcm051_user_pins: pinmux_pcm051_user_pins {
-		pinctrl-single,pins = <
-			0x1e4 (PULL_UP |INPUT_EN |MUX_MODE7)
-			0x1e8 (PULL_UP |INPUT_EN |MUX_MODE7)
-		>;
-	};
-};
-
-&cppi41dma {
-        status = "okay";
-};
-
-&usb_ctrl_mod {
-        status = "okay";
-};
-
-&usb {
-        pinctrl-names = "default";
-        pinctrl-0 = <&usb_pins>;
-        status = "okay";
-};
-
-&usb1 {
-        status = "okay";
-        dr_mode = "host";
-};
-
-&usb1_phy {
-        status = "okay";
 };
 
 &i2c0 {
@@ -147,7 +96,7 @@
 		status = "disabled";
 		compatible = "atmel,24c32";
 		pagesize = <32>;
-		reg = <0x52>;
+		reg = <0x54>;
 	};
 };
 
@@ -157,48 +106,15 @@
 	status = "okay";
 };
 
-&spi0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&spi0_pins>;
-	status = "disabled";
-
-	flash: m25p80 {
-		compatible = "m25p80";
-		spi-max-frequency = <48000000>;
-		reg = <0>;
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		partition@0 {
-			label = "xload";
-			reg = <0x0 0x20000>;
-		};
-
-		partition@1 {
-			label = "barebox";
-			reg = <0x20000 0x80000>;
-		};
-
-		partition@2 {
-			label = "bareboxenv";
-			reg = <0xa0000 0x20000>;
-		};
-
-		partition@3 {
-			label = "oftree";
-			reg = <0xc0000 0x20000>;
-		};
-
-		partition@4 {
-			label = "kernel";
-			reg = <0xe0000 0x0>;
-		};
-	};
-};
-
 &uart0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart0_pins>;
+	status = "okay";
+};
+
+&uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart3_pins>;
 	status = "okay";
 };
 
@@ -306,10 +222,6 @@
 
 		partition@8 {
 			label = "root";
-			/*
-			 * Size 0x0 extends partition to
-			 * end of nand flash.
-			 */
 			reg = <0x980000 0x0>;
 		};
 	};

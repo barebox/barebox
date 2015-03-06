@@ -13,14 +13,20 @@ for the MLO and ``am335x_defconfig`` for the regular barebox image. The
 resulting images will be placed under ``images/``:
 
 ::
+
   barebox-am33xx-afi-gf.img
   barebox-am33xx-afi-gf-mlo.img
   barebox-am33xx-beaglebone.img
   barebox-am33xx-beaglebone-mlo.img
+  barebox-am33xx-phytec-phycore-mlo-256mb.img
+  barebox-am33xx-phytec-phycore-mlo-128mb.img
+  barebox-am33xx-phytec-phycore-mlo-512mb.img
+  barebox-am33xx-phytec-phycore-mlo-2x512mb.img
+  barebox-am33xx-phytec-phyflex-mlo-256mb.img
+  barebox-am33xx-phytec-phyflex-mlo-512mb.img
   barebox-am33xx-phytec-phycore.img
-  barebox-am33xx-phytec-phycore-mlo-1x128m16.img
-  barebox-am33xx-phytec-phycore-mlo-1x256m16.img
-  barebox-am33xx-phytec-phycore-mlo-1x512m16.img
+  barebox-am33xx-phytec-phycore-no-spi.img
+  barebox-am33xx-phytec-phyflex.img
 
 Some boards come in different variants, make sure to pick the correct one.
 
@@ -40,3 +46,13 @@ SD/MMC
 To start barebox from SD/MMC prepare a card with a FAT filesystem. Copy the MLO
 file for your board to the card and name it ``MLO``. Copy the regular image
 for your board to the card and name it ``barebox.bin``.
+
+AM335x Boards
+------
+
+.. toctree::
+  :glob:
+  :numbered:
+  :maxdepth: 1
+
+  am335x/*

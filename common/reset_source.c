@@ -26,6 +26,7 @@ static const char * const reset_src_names[] = {
 	[RESET_WKE] = "WKE",
 	[RESET_JTAG] = "JTAG",
 	[RESET_THERM] = "THERM",
+	[RESET_EXT] = "EXT",
 };
 
 static enum reset_src_type reset_source;
@@ -40,14 +41,14 @@ void reset_source_set(enum reset_src_type st)
 {
 	reset_source = st;
 
-	setenv("global.system.reset", reset_src_names[st]);
+	globalvar_add_simple("system.reset", reset_src_names[reset_source]);
 }
 EXPORT_SYMBOL(reset_source_set);
 
 /* ensure this runs after the 'global' device is already registerd */
 static int reset_source_init(void)
 {
-	globalvar_add_simple("system.reset", reset_src_names[RESET_UKWN]);
+	reset_source_set(reset_source);
 
 	return 0;
 }

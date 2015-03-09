@@ -1,1 +1,1 @@
-obj-y += clk-rockchip.o
+obj-y += clk-cpu.o clk-pll.o clk-rk3188.o clk.o

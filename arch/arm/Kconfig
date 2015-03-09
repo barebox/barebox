@@ -160,6 +160,7 @@ config ARCH_ROCKCHIP
 	select PINCTRL_ROCKCHIP
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
+	select ARCH_HAS_L2X0
 
 config ARCH_SOCFPGA
 	bool "Altera SOCFPGA cyclone5"

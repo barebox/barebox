@@ -16,8 +16,9 @@
 #include <io.h>
 #include <i2c/i2c.h>
 #include <i2c/i2c-gpio.h>
-#include <mach/rockchip-pll.h>
+#include <mach/rockchip-regs.h>
 #include <mfd/act8846.h>
+#include <asm/armlinux.h>
 
 static struct i2c_board_info radxa_rock_i2c_devices[] = {
 	{
@@ -43,20 +44,6 @@ static void radxa_rock_pmic_init(void)
 	act8846_set_bits(pmic, ACT8846_LDO9_CTRL, BIT(7), BIT(7));
 }
 
-static int setup_plls(void)
-{
-	if (!of_machine_is_compatible("radxa,rock"))
-		return 0;
-
-	/* Codec PLL frequency: 594 MHz */
-	rk3188_pll_set_parameters(RK3188_CPLL, 2, 198, 4);
-	/* General PLL frequency: 300 MHz */
-	rk3188_pll_set_parameters(RK3188_GPLL, 1, 50, 4);
-
-	return 0;
-}
-coredevice_initcall(setup_plls);
-
 static int devices_init(void)
 {
 	if (!of_machine_is_compatible("radxa,rock"))
@@ -68,20 +55,12 @@ static int devices_init(void)
 
 	radxa_rock_pmic_init();
 
-	/* Set mac_pll divisor to 6 (50MHz output) */
-	writel((5 << 8) | (0x1f << 24), 0x20000098);
+	armlinux_set_architecture(3066);
+
+	/* Map SRAM to address 0, kernel relies on this */
+	writel((RK_SOC_CON0_REMAP << 16) | RK_SOC_CON0_REMAP,
+	    RK_GRF_BASE + RK_GRF_SOC_CON0);
 
 	return 0;
 }
 device_initcall(devices_init);
-
-static int hostname_init(void)
-{
-	if (!of_machine_is_compatible("radxa,rock"))
-		return 0;
-
-	barebox_set_hostname("radxa-rock");
-
-	return 0;
-}
-postcore_initcall(hostname_init);

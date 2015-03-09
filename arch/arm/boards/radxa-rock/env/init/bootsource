@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ -n "$nv.boot.default" ]; then
+	exit
+fi
+
+global.boot.default=mshc1

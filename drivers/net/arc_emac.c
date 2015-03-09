@@ -23,6 +23,7 @@
 #include <io.h>
 #include <init.h>
 #include <linux/err.h>
+#include <linux/clk.h>
 
 /* ARC EMAC register set combines entries for MAC and MDIO */
 enum {
@@ -99,6 +100,8 @@ struct arc_emac_priv {
 	u8 *rxbuf;
 	unsigned int txbd_curr;
 	unsigned int last_rx_bd;
+	struct clk *clk;
+	struct clk *refclk;
 };
 
 /**
@@ -379,20 +382,18 @@ static int arc_emac_mdio_write(struct mii_bus *bus, int phy_addr, int reg_num,
 	return arc_mdio_complete_wait(priv);
 }
 
+#define DEFAULT_EMAC_CLOCK_FREQUENCY 50000000UL;
+
 static int arc_emac_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
 	struct arc_emac_priv *priv;
-	unsigned int clock_frequency;
+	unsigned long clock_frequency;
 	struct mii_bus *miibus;
 	u32 id;
 
-	/* Get CPU clock frequency from device tree */
-	if (of_property_read_u32(dev->device_node, "clock-frequency",
-				 &clock_frequency)) {
-		dev_err(dev, "failed to retrieve <clock-frequency> from device tree\n");
-		return -EINVAL;
-	}
+	/* clock-frequency is dropped from DTS, so hardcode it here */
+	clock_frequency = DEFAULT_EMAC_CLOCK_FREQUENCY;
 
 	edev = xzalloc(sizeof(struct eth_device) +
 		       sizeof(struct arc_emac_priv));
@@ -404,6 +405,13 @@ static int arc_emac_probe(struct device_d *dev)
 	if (IS_ERR(priv->regs))
 		return PTR_ERR(priv->regs);
 	priv->bus = miibus;
+
+	priv->clk = clk_get(dev, "hclk");
+	clk_enable(priv->clk);
+
+	priv->refclk = clk_get(dev, "macref");
+	clk_set_rate(priv->refclk, clock_frequency);
+	clk_enable(priv->refclk);
 
 	id = arc_reg_get(priv, R_ID);
 	/* Check for EMAC revision 5 or 7, magic number */
@@ -449,6 +457,8 @@ static int arc_emac_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id arc_emac_dt_ids[] = {
 	{
 		.compatible = "snps,arc-emac",
+	}, {
+		.compatible = "rockchip,rk3188-emac",
 	}, {
 		/* sentinel */
 	}

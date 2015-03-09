@@ -248,8 +248,16 @@ struct clk_divider {
 	int table_size;
 };
 
+#define CLK_DIVIDER_POWER_OF_TWO	(1 << 1)
+#define CLK_DIVIDER_HIWORD_MASK		(1 << 3)
+
+#define CLK_MUX_HIWORD_MASK		(1 << 2)
+
 extern struct clk_ops clk_divider_ops;
 
+struct clk *clk_divider_alloc(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width, unsigned flags);
+void clk_divider_free(struct clk *clk_divider);
 struct clk *clk_divider(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width, unsigned flags);
 struct clk *clk_divider_one_based(const char *name, const char *parent,
@@ -260,6 +268,15 @@ struct clk *clk_divider_table(const char *name,
 struct clk *clk_fixed_factor(const char *name,
 		const char *parent, unsigned int mult, unsigned int div,
 		unsigned flags);
+struct clk *clk_fractional_divider_alloc(
+		const char *name, const char *parent_name, unsigned long flags,
+		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
+		u8 clk_divider_flags);
+struct clk *clk_fractional_divider(
+		const char *name, const char *parent_name, unsigned long flags,
+		void __iomem *reg, u8 mshift, u8 mwidth, u8 nshift, u8 nwidth,
+		u8 clk_divider_flags);
+void clk_fractional_divider_free(struct clk *clk_fd);
 
 struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents,
@@ -291,6 +308,12 @@ struct clk *clk_lookup(const char *name);
 
 void clk_dump(int verbose);
 
+struct clk *clk_register_composite(const char *name,
+			const char **parent_names, int num_parents,
+			struct clk *mux_clk,
+			struct clk *rate_clk,
+			struct clk *gate_clk,
+			unsigned long flags);
 #endif
 
 struct device_node;

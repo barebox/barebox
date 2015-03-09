@@ -1,0 +1,69 @@
+#!/bin/bash
+
+if [ "$#" -lt "2" ]
+then
+	echo "USAGE: $0 <SPL_GENERATED_DIR> <ISW_HANDOFF> <BOARD_DIRECTORY>"
+	echo "EXAMPLE: $0 ~/cv_soc_devkit_ghrd/software/spl_bsp/generated ~/cv_soc_devkit_ghrd/hps_isw_handoff/soc_system_hps_0/ arch/arm/boards/altera-socdk"
+	exit 1
+fi
+
+splroot=$1
+handoff=$2
+boardroot=$3
+bareboxsrc=.
+
+cd ${bareboxsrc}
+
+copy_source() {
+	local src
+	local tgt
+	src=$1
+	tgt=$2
+
+	echo "Merging source code $src to $tgt"
+
+	cp $src $tgt
+
+	unifdef -D HCX_COMPAT_MODE=1 -D ENABLE_INST_ROM_WRITE=1 $tgt -o $tgt
+
+	echo "	Fixing extern/static keywords..."
+	# Statify all global variables with missing static keyword
+	sed -i 's/^const /static const /g' $tgt
+	sed -i 's/^unsigned long sys_mgr_init_table/static unsigned long sys_mgr_init_table/g' $tgt
+
+	echo "	Remove unused defines..."
+	sed -i 's/\[CONFIG_HPS_PINMUX_NUM\]/\[\]/g' $tgt
+
+	echo "	Translating altera int types..."
+	# Replace altera types
+	sed -i 's/alt_u32/uint32_t/g' $tgt
+	sed -i 's/alt_u16/uint16_t/g' $tgt
+	sed -i 's/alt_16/int16_t/g' $tgt
+	sed -i 's/alt_32/int32_t/g' $tgt
+	sed -i 's/alt_u8/uint8_t/g' $tgt
+	sed -i 's/alt_8/int8_t/g' $tgt
+	sed -i 's/#include "alt_types.h"//g' $tgt
+
+	echo "	Fixing include pathes..."
+	# Fix include pathes
+	sed -i 's/#include <iocsr_config_cyclone5.h>/#include <mach\/scan-manager.h>/g' $tgt
+	sed -i 's/#include <pinmux_config.h>/#include <common.h>/g' $tgt
+	sed -i 's/#include "sequencer_auto.h"//g' $tgt
+	sed -i 's/#include "sequencer_defines.h"//g' $tgt
+
+	echo "	Automated readability fixup..."
+	indent -npro -kr -i8 -ts8 -sob -l100 -ss -ncs -cp1 -il0 $tgt
+	sed -i 's/ $//g' $tgt
+}
+
+copy_source ${splroot}/iocsr_config_cyclone5.c ${boardroot}/iocsr_config_cyclone5.c
+copy_source ${splroot}/pinmux_config_cyclone5.c ${boardroot}/pinmux_config.c
+copy_source ${splroot}/pll_config.h ${boardroot}/pll_config.h
+copy_source ${splroot}/sdram/sdram_config.h ${boardroot}/sdram_config.h
+
+copy_source ${handoff}/sequencer_auto.h ${boardroot}/sequencer_auto.h
+copy_source ${handoff}/sequencer_auto_ac_init.c ${boardroot}/sequencer_auto_ac_init.c
+copy_source ${handoff}/sequencer_auto_inst_init.c ${boardroot}/sequencer_auto_inst_init.c
+copy_source ${handoff}/sequencer_defines.h ${boardroot}/sequencer_defines.h
+
+echo "DONE"

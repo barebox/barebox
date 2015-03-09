@@ -16,6 +16,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <net.h>
 #include <clock.h>
 #include <malloc.h>
@@ -24,7 +25,6 @@
 #include <errno.h>
 #include <io.h>
 #include <linux/err.h>
-#include <asm/mmu.h>
 
 #define TX_NUM_DESC			1
 #define RX_NUM_DESC			32
@@ -586,7 +586,7 @@ static int xgmac_send(struct eth_device *edev, void *packet, int length)
 	struct xgmac_dma_desc *txdesc = &priv->tx_chain[currdesc];
 	int ret;
 
-	dma_flush_range((ulong) packet, (ulong)packet + length);
+	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
 	desc_set_buf_addr_and_size(txdesc, packet, length);
 	desc_set_tx_owner(txdesc, TXDESC_FIRST_SEG |
 		TXDESC_LAST_SEG | TXDESC_CRC_EN_APPEND);
@@ -595,6 +595,7 @@ static int xgmac_send(struct eth_device *edev, void *packet, int length)
 	writel(1, priv->base + XGMAC_DMA_TX_POLL);
 
 	ret = wait_on_timeout(1 * SECOND, !desc_get_owner(txdesc));
+	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
 	if (ret) {
 		dev_err(priv->dev, "TX timeout\n");
 		return ret;
@@ -610,14 +611,19 @@ static int xgmac_recv(struct eth_device *edev)
 	u32 currdesc = priv->rx_currdesc;
 	struct xgmac_dma_desc *rxdesc = &priv->rx_chain[currdesc];
 	int length = 0;
+	void *buf_addr;
 
 	/* check if the host has the desc */
 	if (desc_get_owner(rxdesc))
 		return -1; /* something bad happened */
 
 	length = desc_get_rx_frame_len(rxdesc);
+	buf_addr = desc_get_buf_addr(rxdesc);
 
-	net_receive(edev, desc_get_buf_addr(rxdesc), length);
+	dma_sync_single_for_cpu((unsigned long)buf_addr, length, DMA_FROM_DEVICE);
+	net_receive(edev, buf_addr, length);
+	dma_sync_single_for_device((unsigned long)buf_addr, length,
+				   DMA_FROM_DEVICE);
 
 	/* set descriptor back to owned by XGMAC */
 	desc_set_rx_owner(rxdesc);
@@ -698,9 +704,11 @@ static int hb_xgmac_probe(struct device_d *dev)
 	priv->dev = dev;
 	priv->base = base;
 
-	priv->rxbuffer = dma_alloc_coherent(RX_BUF_SZ);
-	priv->rx_chain = dma_alloc_coherent(RX_NUM_DESC * sizeof(struct xgmac_dma_desc));
-	priv->tx_chain = dma_alloc_coherent(TX_NUM_DESC * sizeof(struct xgmac_dma_desc));
+	priv->rxbuffer = dma_alloc_coherent(RX_BUF_SZ, DMA_ADDRESS_BROKEN);
+	priv->rx_chain = dma_alloc_coherent(RX_NUM_DESC * sizeof(struct xgmac_dma_desc),
+					    DMA_ADDRESS_BROKEN);
+	priv->tx_chain = dma_alloc_coherent(TX_NUM_DESC * sizeof(struct xgmac_dma_desc),
+					    DMA_ADDRESS_BROKEN);
 
 	edev = &priv->edev;
 	edev->priv = priv;

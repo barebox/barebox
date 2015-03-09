@@ -7,9 +7,9 @@
  */
 
 #include <asm/io.h>
-#include <asm/mmu.h>
 #include <common.h>
 #include <clock.h>
+#include <dma.h>
 
 #include <mach/mbox.h>
 
@@ -55,7 +55,8 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 	/* Send the request */
 	val = BCM2835_MBOX_PACK(chan, send);
 	debug("mbox: TX raw: 0x%08x\n", val);
-	dma_flush_range(send, send + buffer->buf_size);
+	dma_sync_single_for_device((unsigned long)send, buffer->buf_size,
+				   DMA_BIDIRECTIONAL);
 	writel(val, &regs->write);
 
 	/* Wait for the response */
@@ -72,7 +73,8 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 	/* Read the response */
 	val = readl(&regs->read);
 	debug("mbox: RX raw: 0x%08x\n", val);
-	dma_inv_range(send, send + buffer->buf_size);
+	dma_sync_single_for_cpu((unsigned long)send, buffer->buf_size,
+				DMA_BIDIRECTIONAL);
 
 	/* Validate the response */
 	if (BCM2835_MBOX_UNPACK_CHAN(val) != chan) {

@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <asm/mmu.h>
 #include <common.h>
+#include <dma.h>
 #include <init.h>
 #include <net.h>
 #include <malloc.h>
@@ -228,13 +228,13 @@ static void rtl8169_init_ring(struct rtl8169_priv *priv)
 	priv->cur_rx = priv->cur_tx = 0;
 
 	priv->tx_desc = dma_alloc_coherent(NUM_TX_DESC *
-				sizeof(struct bufdesc));
+				sizeof(struct bufdesc), DMA_ADDRESS_BROKEN);
 	priv->tx_buf = malloc(NUM_TX_DESC * PKT_BUF_SIZE);
 	priv->rx_desc = dma_alloc_coherent(NUM_RX_DESC *
-				sizeof(struct bufdesc));
+				sizeof(struct bufdesc), DMA_ADDRESS_BROKEN);
 	priv->rx_buf = malloc(NUM_RX_DESC * PKT_BUF_SIZE);
-	dma_clean_range((unsigned long)priv->rx_buf,
-			(unsigned long)priv->rx_buf + NUM_RX_DESC * PKT_BUF_SIZE);
+	dma_sync_single_for_device((unsigned long)priv->rx_buf,
+				   NUM_RX_DESC * PKT_BUF_SIZE, DMA_FROM_DEVICE);
 
 	memset((void *)priv->tx_desc, 0, NUM_TX_DESC * sizeof(struct bufdesc));
 	memset((void *)priv->rx_desc, 0, NUM_RX_DESC * sizeof(struct bufdesc));
@@ -365,8 +365,8 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 	if (packet_length < ETH_ZLEN)
 		memset(priv->tx_buf + entry * PKT_BUF_SIZE, 0, ETH_ZLEN);
 	memcpy(priv->tx_buf + entry * PKT_BUF_SIZE, packet, packet_length);
-	dma_flush_range((unsigned long)priv->tx_buf + entry * PKT_BUF_SIZE,
-			(unsigned long)priv->tx_buf + (entry + 1) * PKT_BUF_SIZE);
+	dma_sync_single_for_device((unsigned long)priv->tx_buf + entry *
+				   PKT_BUF_SIZE, PKT_BUF_SIZE, DMA_TO_DEVICE);
 
 	priv->tx_desc[entry].buf_Haddr = 0;
 	priv->tx_desc[entry].buf_addr =
@@ -387,6 +387,9 @@ static int rtl8169_eth_send(struct eth_device *edev, void *packet,
 	while (priv->tx_desc[entry].status & BD_STAT_OWN)
 		;
 
+	dma_sync_single_for_cpu((unsigned long)priv->tx_buf + entry *
+				PKT_BUF_SIZE, PKT_BUF_SIZE, DMA_TO_DEVICE);
+
 	priv->cur_tx++;
 
 	return 0;
@@ -404,22 +407,16 @@ static int rtl8169_eth_rx(struct eth_device *edev)
 		if (!(priv->rx_desc[entry].status & BD_STAT_RX_RES)) {
 			pkt_size = (priv->rx_desc[entry].status & 0x1fff) - 4;
 
-			dma_inv_range((unsigned long)priv->rx_buf
-			               + entry * PKT_BUF_SIZE,
-			              (unsigned long)priv->rx_buf
-			               + entry * PKT_BUF_SIZE + pkt_size);
+			dma_sync_single_for_cpu((unsigned long)priv->rx_buf
+						+ entry * PKT_BUF_SIZE,
+						pkt_size, DMA_FROM_DEVICE);
 
 			net_receive(edev, priv->rx_buf + entry * PKT_BUF_SIZE,
 			            pkt_size);
 
-			/*
-			 * the buffer is going to be reused by HW, make sure to
-			 * clean out any potentially modified data
-			 */
-			dma_clean_range((unsigned long)priv->rx_buf
-			               + entry * PKT_BUF_SIZE,
-			              (unsigned long)priv->rx_buf
-			               + entry * PKT_BUF_SIZE + pkt_size);
+			dma_sync_single_for_device((unsigned long)priv->rx_buf
+						   + entry * PKT_BUF_SIZE,
+						   pkt_size, DMA_FROM_DEVICE);
 
 			if (entry == NUM_RX_DESC - 1)
 				priv->rx_desc[entry].status = BD_STAT_OWN |

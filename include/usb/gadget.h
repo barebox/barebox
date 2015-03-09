@@ -15,6 +15,7 @@
 #ifndef __LINUX_USB_GADGET_H
 #define __LINUX_USB_GADGET_H
 
+#include <common.h>
 #include <malloc.h>
 #include <driver.h>
 #include <linux/list.h>

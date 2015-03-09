@@ -20,13 +20,13 @@
 #include <linux/list.h>
 #include <linux/err.h>
 #include <common.h>
+#include <dma.h>
 #include <driver.h>
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
 #include <io.h>
 
-#include <asm/mmu.h>
 
 #define HW_APBHX_CTRL0				0x000
 #define BM_APBH_CTRL0_APB_BURST8_EN		(1 << 29)
@@ -380,7 +380,8 @@ struct mxs_dma_desc *mxs_dma_desc_alloc(void)
 {
 	struct mxs_dma_desc *pdesc;
 
-	pdesc = dma_alloc_coherent(sizeof(struct mxs_dma_desc));
+	pdesc = dma_alloc_coherent(sizeof(struct mxs_dma_desc),
+				   DMA_ADDRESS_BROKEN);
 
 	if (pdesc == NULL)
 		return NULL;

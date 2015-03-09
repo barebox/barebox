@@ -38,6 +38,7 @@
 
 #include <net.h>
 #include <clock.h>
+#include <dma.h>
 #include <malloc.h>
 #include <xfuncs.h>
 #include <init.h>
@@ -46,7 +47,6 @@
 #include <platform_data/macb.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm/mmu.h>
 #include <linux/phy.h>
 
 #include "macb.h"
@@ -121,7 +121,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 	macb->tx_ring[tx_head].ctrl = ctrl;
 	macb->tx_ring[tx_head].addr = (ulong)packet;
 	barrier();
-	dma_flush_range((ulong) packet, (ulong)packet + length);
+	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
 	macb_writel(macb, NCR, MACB_BIT(TE) | MACB_BIT(RE) | MACB_BIT(TSTART));
 
 	start = get_time_ns();
@@ -134,6 +134,7 @@ static int macb_send(struct eth_device *edev, void *packet,
 			break;
 		}
 	} while (!is_timeout(start, 100 * MSECOND));
+	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
 
 	if (ctrl & MACB_BIT(TX_UNDERRUN))
 		dev_err(macb->dev, "TX underrun\n");
@@ -187,7 +188,11 @@ static int gem_recv(struct eth_device *edev)
 		status = macb->rx_ring[macb->rx_tail].ctrl;
 		length = MACB_BFEXT(RX_FRMLEN, status);
 		buffer = macb->rx_buffer + macb->rx_buffer_size * macb->rx_tail;
+		dma_sync_single_for_cpu((unsigned long)buffer, length,
+					DMA_FROM_DEVICE);
 		net_receive(edev, buffer, length);
+		dma_sync_single_for_device((unsigned long)buffer, length,
+					   DMA_FROM_DEVICE);
 		macb->rx_ring[macb->rx_tail].addr &= ~MACB_BIT(RX_USED);
 		barrier();
 
@@ -597,7 +602,8 @@ static void macb_init_rx_buffer_size(struct macb_device *bp, size_t size)
 			bp->rx_buffer_size =
 				roundup(bp->rx_buffer_size, RX_BUFFER_MULTIPLE);
 		}
-		bp->rx_buffer = dma_alloc_coherent(bp->rx_buffer_size * bp->rx_ring_size);
+		bp->rx_buffer = dma_alloc_coherent(bp->rx_buffer_size * bp->rx_ring_size,
+						   DMA_ADDRESS_BROKEN);
 	}
 
 	dev_dbg(bp->dev, "[%d] rx_buffer_size [%d]\n",
@@ -667,9 +673,10 @@ static int macb_probe(struct device_d *dev)
 		edev->recv = macb_recv;
 
 	macb_init_rx_buffer_size(macb, PKTSIZE);
-	macb->rx_buffer = dma_alloc_coherent(macb->rx_buffer_size * macb->rx_ring_size);
-	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb));
-	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES);
+	macb->rx_buffer = dma_alloc_coherent(macb->rx_buffer_size * macb->rx_ring_size,
+					     DMA_ADDRESS_BROKEN);
+	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb), DMA_ADDRESS_BROKEN);
+	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES, DMA_ADDRESS_BROKEN);
 
 	macb_reset_hw(macb);
 	ncfgr = macb_mdc_clk_div(macb);

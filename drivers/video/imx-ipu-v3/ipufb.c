@@ -12,6 +12,7 @@
 #define pr_fmt(fmt) "IPU: " fmt
 
 #include <common.h>
+#include <dma.h>
 #include <fb.h>
 #include <io.h>
 #include <driver.h>
@@ -21,7 +22,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm-generic/div64.h>
-#include <asm/mmu.h>
 
 #include "imx-ipu-v3.h"
 #include "ipuv3-plane.h"
@@ -203,7 +203,8 @@ static int ipufb_activate_var(struct fb_info *info)
 	struct ipufb_info *fbi = container_of(info, struct ipufb_info, info);
 
 	info->line_length = info->xres * (info->bits_per_pixel >> 3);
-	fbi->info.screen_base = dma_alloc_coherent(info->line_length * info->yres);
+	fbi->info.screen_base = dma_alloc_coherent(info->line_length * info->yres,
+						   DMA_ADDRESS_BROKEN);
 	if (!fbi->info.screen_base)
 		return -ENOMEM;
 

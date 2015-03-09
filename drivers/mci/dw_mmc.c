@@ -18,6 +18,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <driver.h>
 #include <malloc.h>
 #include <clock.h>
@@ -28,7 +29,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm-generic/errno.h>
-#include <asm/mmu.h>
 
 #define DWMCI_CTRL		0x000
 #define	DWMCI_PWREN		0x004
@@ -417,7 +417,6 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	uint64_t start;
 	int ret;
 	unsigned int num_bytes = 0;
-	const void *writebuf = NULL;
 
 	start = get_time_ns();
 	while (1) {
@@ -435,12 +434,12 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	if (data) {
 		num_bytes = data->blocks * data->blocksize;
 
-		if (data->flags & MMC_DATA_WRITE) {
-			dma_flush_range((unsigned long)data->src,
-				(unsigned long)(data->src + data->blocks * 512));
-
-			writebuf = data->src;
-		}
+		if (data->flags & MMC_DATA_WRITE)
+			dma_sync_single_for_device((unsigned long)data->src,
+						   num_bytes, DMA_TO_DEVICE);
+		else
+			dma_sync_single_for_device((unsigned long)data->dest,
+						   num_bytes, DMA_FROM_DEVICE);
 
 		ret = dwmci_prepare_data(host, data);
 		if (ret)
@@ -541,11 +540,12 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 			ctrl &= ~(DWMCI_DMA_EN);
 			dwmci_writel(host, DWMCI_CTRL, ctrl);
 
-			if (data->flags & MMC_DATA_READ) {
-				dma_inv_range((unsigned long)data->dest,
-						(unsigned long)(data->dest +
-							data->blocks * 512));
-			}
+			if (data->flags & MMC_DATA_WRITE)
+				dma_sync_single_for_cpu((unsigned long)data->src,
+							num_bytes, DMA_TO_DEVICE);
+			else
+				dma_sync_single_for_cpu((unsigned long)data->dest,
+							num_bytes, DMA_FROM_DEVICE);
 		}
 	}
 
@@ -729,7 +729,8 @@ static int dw_mmc_probe(struct device_d *dev)
 	/* divider is 0 based in pdata and 1 based in our private struct */
 	host->ciu_div++;
 
-	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS);
+	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS,
+					 DMA_ADDRESS_BROKEN);
 
 	host->mci.send_cmd = dwmci_cmd;
 	host->mci.set_ios = dwmci_set_ios;

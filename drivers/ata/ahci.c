@@ -21,6 +21,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <init.h>
 #include <errno.h>
 #include <io.h>
@@ -30,7 +31,6 @@
 #include <linux/ctype.h>
 #include <linux/err.h>
 #include <disks.h>
-#include <asm/mmu.h>
 #include <ata_drive.h>
 #include <linux/sizes.h>
 #include <clock.h>
@@ -169,7 +169,11 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 		return -EIO;
 
 	if (wbuf)
-		dma_flush_range((unsigned long)wbuf, (unsigned long)wbuf + buf_len);
+		dma_sync_single_for_device((unsigned long)wbuf, buf_len,
+					   DMA_TO_DEVICE);
+	if (rbuf)
+		dma_sync_single_for_device((unsigned long)rbuf, buf_len,
+					   DMA_FROM_DEVICE);
 
 	memcpy((unsigned char *)ahci_port->cmd_tbl, fis, fis_len);
 
@@ -186,8 +190,12 @@ static int ahci_io(struct ahci_port *ahci_port, u8 *fis, int fis_len, void *rbuf
 	if (ret)
 		return -ETIMEDOUT;
 
+	if (wbuf)
+		dma_sync_single_for_cpu((unsigned long)wbuf, buf_len,
+					DMA_TO_DEVICE);
 	if (rbuf)
-		dma_inv_range((unsigned long)rbuf, (unsigned long)rbuf + buf_len);
+		dma_sync_single_for_cpu((unsigned long)rbuf, buf_len,
+					DMA_FROM_DEVICE);
 
 	return 0;
 }
@@ -310,7 +318,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * First item in chunk of DMA memory: 32-slot command table,
 	 * 32 bytes each in size
 	 */
-	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_SLOT_SZ * 32);
+	ahci_port->cmd_slot = dma_alloc_coherent(AHCI_CMD_SLOT_SZ * 32,
+						 DMA_ADDRESS_BROKEN);
 	if (!ahci_port->cmd_slot) {
 		ret = -ENOMEM;
 		goto err_alloc;
@@ -321,7 +330,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	/*
 	 * Second item: Received-FIS area
 	 */
-	ahci_port->rx_fis = (unsigned long)dma_alloc_coherent(AHCI_RX_FIS_SZ);
+	ahci_port->rx_fis = (unsigned long)dma_alloc_coherent(AHCI_RX_FIS_SZ,
+							      DMA_ADDRESS_BROKEN);
 	if (!ahci_port->rx_fis) {
 		ret = -ENOMEM;
 		goto err_alloc1;
@@ -331,7 +341,8 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	 * Third item: data area for storing a single command
 	 * and its scatter-gather table
 	 */
-	ahci_port->cmd_tbl = dma_alloc_coherent(AHCI_CMD_TBL_SZ);
+	ahci_port->cmd_tbl = dma_alloc_coherent(AHCI_CMD_TBL_SZ,
+						DMA_ADDRESS_BROKEN);
 	if (!ahci_port->cmd_tbl) {
 		ret = -ENOMEM;
 		goto err_alloc2;
@@ -429,11 +440,11 @@ static int ahci_init_port(struct ahci_port *ahci_port)
 	ret = -ENODEV;
 
 err_init:
-	dma_free_coherent(ahci_port->cmd_tbl, AHCI_CMD_TBL_SZ);
+	dma_free_coherent(ahci_port->cmd_tbl, 0, AHCI_CMD_TBL_SZ);
 err_alloc2:
-	dma_free_coherent((void *)ahci_port->rx_fis, AHCI_RX_FIS_SZ);
+	dma_free_coherent((void *)ahci_port->rx_fis, 0, AHCI_RX_FIS_SZ);
 err_alloc1:
-	dma_free_coherent(ahci_port->cmd_slot, AHCI_CMD_SLOT_SZ * 32);
+	dma_free_coherent(ahci_port->cmd_slot, 0, AHCI_CMD_SLOT_SZ * 32);
 err_alloc:
 	return ret;
 }

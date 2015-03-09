@@ -18,6 +18,7 @@
 #define pr_fmt(fmt)	"mmu: " fmt
 
 #include <common.h>
+#include <dma-dir.h>
 #include <init.h>
 #include <asm/mmu.h>
 #include <errno.h>
@@ -154,6 +155,20 @@ static u32 *find_pte(unsigned long adr)
 
 	/* find second level descriptor */
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
+}
+
+static void dma_flush_range(unsigned long start, unsigned long end)
+{
+	if (outer_cache.flush_range)
+		outer_cache.flush_range(start, end);
+	__dma_flush_range(start, end);
+}
+
+static void dma_inv_range(unsigned long start, unsigned long end)
+{
+	if (outer_cache.inv_range)
+		outer_cache.inv_range(start, end);
+	__dma_inv_range(start, end);
 }
 
 void remap_range(void *_start, size_t size, uint32_t flags)
@@ -377,12 +392,14 @@ static int mmu_init(void)
 }
 mmu_initcall(mmu_init);
 
-void *dma_alloc_coherent(size_t size)
+void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
 	void *ret;
 
 	size = PAGE_ALIGN(size);
 	ret = xmemalign(PAGE_SIZE, size);
+	if (dma_handle)
+		*dma_handle = (dma_addr_t)ret;
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
@@ -401,7 +418,7 @@ void *phys_to_virt(unsigned long phys)
 	return (void *)phys;
 }
 
-void dma_free_coherent(void *mem, size_t size)
+void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);
 	remap_range(mem, size, pte_flags_cached);
@@ -409,24 +426,26 @@ void dma_free_coherent(void *mem, size_t size)
 	free(mem);
 }
 
-void dma_clean_range(unsigned long start, unsigned long end)
+void dma_sync_single_for_cpu(unsigned long address, size_t size,
+			     enum dma_data_direction dir)
 {
-	if (outer_cache.clean_range)
-		outer_cache.clean_range(start, end);
-	__dma_clean_range(start, end);
+	if (dir != DMA_TO_DEVICE) {
+		if (outer_cache.inv_range)
+			outer_cache.inv_range(address, address + size);
+		__dma_inv_range(address, address + size);
+	}
 }
 
-void dma_flush_range(unsigned long start, unsigned long end)
+void dma_sync_single_for_device(unsigned long address, size_t size,
+				enum dma_data_direction dir)
 {
-	if (outer_cache.flush_range)
-		outer_cache.flush_range(start, end);
-	__dma_flush_range(start, end);
+	if (dir == DMA_FROM_DEVICE) {
+		__dma_inv_range(address, address + size);
+		if (outer_cache.inv_range)
+			outer_cache.inv_range(address, address + size);
+	} else {
+		__dma_clean_range(address, address + size);
+		if (outer_cache.clean_range)
+			outer_cache.clean_range(address, address + size);
+	}
 }
-
-void dma_inv_range(unsigned long start, unsigned long end)
-{
-	if (outer_cache.inv_range)
-		outer_cache.inv_range(start, end);
-	__dma_inv_range(start, end);
-}
-

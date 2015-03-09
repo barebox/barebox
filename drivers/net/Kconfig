@@ -167,6 +167,7 @@ config DRIVER_NET_RTL8139
 config DRIVER_NET_RTL8169
 	bool "RealTek RTL-8169 PCI Ethernet driver"
 	depends on PCI
+	depends on HAS_DMA
 	select PHYLIB
 	help
 	  This is a driver for the Fast Ethernet PCI network cards based on

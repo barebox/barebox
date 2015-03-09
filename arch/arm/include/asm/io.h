@@ -69,4 +69,19 @@ extern void memset_io(volatile void __iomem *, int, size_t);
 #define setbits_8(addr, set) setbits(8, addr, set)
 #define clrsetbits_8(addr, clear, set) clrsetbits(8, addr, clear, set)
 
+#ifdef CONFIG_MMU
+void *phys_to_virt(unsigned long phys);
+unsigned long virt_to_phys(volatile void *virt);
+#else
+static inline void *phys_to_virt(unsigned long phys)
+{
+	return (void *)phys;
+}
+
+static inline unsigned long virt_to_phys(volatile void *mem)
+{
+	return (unsigned long)mem;
+}
+#endif
+
 #endif	/* __ASM_ARM_IO_H */

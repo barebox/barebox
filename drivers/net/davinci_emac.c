@@ -40,12 +40,12 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <io.h>
 #include <clock.h>
 #include <net.h>
 #include <malloc.h>
 #include <init.h>
-#include <asm/mmu.h>
 #include <asm/system.h>
 #include <linux/phy.h>
 #include <mach/emac_defs.h>
@@ -411,7 +411,7 @@ static int davinci_emac_send(struct eth_device *edev, void *packet, int length)
 				    EMAC_CPPI_OWNERSHIP_BIT |
 				    EMAC_CPPI_EOP_BIT),
 		priv->emac_tx_desc + EMAC_DESC_PKT_FLAG_LEN);
-	dma_flush_range((ulong) packet, (ulong)packet + length);
+	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
 	/* Send the packet */
 	writel(BD_TO_HW(priv->emac_tx_desc), priv->adap_emac + EMAC_TX0HDP);
 
@@ -429,6 +429,7 @@ static int davinci_emac_send(struct eth_device *edev, void *packet, int length)
 			break;
 		}
 	}
+	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
 
 	dev_dbg(priv->dev, "- emac_send (ret_status %i)\n", ret_status);
 	return ret_status;
@@ -460,9 +461,9 @@ static int davinci_emac_recv(struct eth_device *edev)
 		pkt = (unsigned char *)readl(rx_curr_desc + EMAC_DESC_BUFFER);
 		len = readl(rx_curr_desc + EMAC_DESC_BUFF_OFF_LEN) & 0xffff;
 		dev_dbg(priv->dev, "| emac_recv got packet (length %i)\n", len);
-		dma_inv_range((ulong)pkt,
-				(ulong)readl(rx_curr_desc + EMAC_DESC_BUFFER) + len);
+		dma_sync_single_for_cpu((unsigned long)pkt, len, DMA_FROM_DEVICE);
 		net_receive(edev, pkt, len);
+		dma_sync_single_for_device((unsigned long)pkt, len, DMA_FROM_DEVICE);
 		ret = len;
 	}
 

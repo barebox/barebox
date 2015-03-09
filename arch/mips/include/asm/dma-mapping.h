@@ -12,12 +12,14 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 
 	ret = xmemalign(PAGE_SIZE, size);
 
-	*dma_handle = CPHYSADDR(ret);
+	if (dma_handle)
+		*dma_handle = CPHYSADDR(ret);
 
 	return (void *)CKSEG1ADDR(ret);
 }
 
-static inline void dma_free_coherent(void *vaddr)
+static inline void dma_free_coherent(void *vaddr, dma_addr_t dma_handle,
+				     size_t size)
 {
 	free(vaddr);
 }

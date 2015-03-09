@@ -12,9 +12,9 @@
  * warranty of any kind, whether express or implied.
  */
 //#define DEBUG
-#include <asm/mmu.h>
 #include <clock.h>
 #include <common.h>
+#include <dma.h>
 #include <init.h>
 #include <io.h>
 #include <linux/err.h>
@@ -444,7 +444,7 @@ static struct xhci_virtual_device *xhci_alloc_virtdev(struct xhci_hcd *xhci,
 	sz_ictx = ALIGN(sz_ctx + HCC_CTX_SIZE(xhci->hcc_params), 64);
 
 	vdev->dma_size = sz_ictx + sz_dctx;
-	p = vdev->dma = dma_alloc_coherent(vdev->dma_size);
+	p = vdev->dma = dma_alloc_coherent(vdev->dma_size, DMA_ADDRESS_BROKEN);
 	memset(vdev->dma, 0, vdev->dma_size);
 
 	vdev->out_ctx = p; p += sz_dctx;
@@ -463,7 +463,7 @@ static void xhci_free_virtdev(struct xhci_virtual_device *vdev)
 			xhci_put_endpoint_ring(xhci, vdev->ep[i]);
 
 	list_del(&vdev->list);
-	dma_free_coherent(vdev->dma, vdev->dma_size);
+	dma_free_coherent(vdev->dma, 0, vdev->dma_size);
 	free(vdev);
 }
 
@@ -1203,7 +1203,7 @@ static void xhci_dma_alloc(struct xhci_hcd *xhci)
 	num_ep = max(MAX_EP_RINGS, MIN_EP_RINGS + num_ep);
 	xhci->dma_size += num_ep * sz_ep;
 
-	p = xhci->dma = dma_alloc_coherent(xhci->dma_size);
+	p = xhci->dma = dma_alloc_coherent(xhci->dma_size, DMA_ADDRESS_BROKEN);
 	memset(xhci->dma, 0, xhci->dma_size);
 
 	xhci->sp = p; p += sz_sp;

@@ -19,11 +19,11 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <io.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <malloc.h>
-#include <asm/mmu.h>
 
 #include "atmel_lcdfb.h"
 
@@ -200,7 +200,7 @@ static int atmel_lcdfb_alloc_video_memory(struct atmel_lcdfb_info *sinfo)
 		    * ((info->bits_per_pixel + 7) / 8));
 	smem_len = max(smem_len, sinfo->smem_len);
 
-	info->screen_base = dma_alloc_coherent(smem_len);
+	info->screen_base = dma_alloc_coherent(smem_len, DMA_ADDRESS_BROKEN);
 
 	if (!info->screen_base)
 		return -ENOMEM;
@@ -289,7 +289,8 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 	atmel_lcdfb_start_clock(sinfo);
 
 	if (data->dma_desc_size)
-		sinfo->dma_desc = dma_alloc_coherent(data->dma_desc_size);
+		sinfo->dma_desc = dma_alloc_coherent(data->dma_desc_size,
+						     DMA_ADDRESS_BROKEN);
 
 	ret = register_framebuffer(info);
 	if (ret != 0) {

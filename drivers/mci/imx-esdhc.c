@@ -22,6 +22,7 @@
  */
 #include <config.h>
 #include <common.h>
+#include <dma.h>
 #include <driver.h>
 #include <init.h>
 #include <of.h>
@@ -31,7 +32,6 @@
 #include <io.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <asm/mmu.h>
 #include <mach/generic.h>
 #include <mach/esdhc.h>
 #include <gpio.h>
@@ -211,6 +211,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	u32	irqstat;
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	void __iomem *regs = host->regs;
+	unsigned int num_bytes = 0;
 	int ret;
 
 	esdhc_write32(regs + SDHCI_INT_STATUS, -1);
@@ -225,12 +226,15 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 		err = esdhc_setup_data(mci, data);
 		if(err)
 			return err;
-		if (data->flags & MMC_DATA_WRITE) {
-			dma_flush_range((unsigned long)data->src,
-				(unsigned long)(data->src + data->blocks * 512));
-		} else
-			dma_clean_range((unsigned long)data->src,
-				(unsigned long)(data->src + data->blocks * 512));
+
+		num_bytes = data->blocks * data->blocksize;
+
+		if (data->flags & MMC_DATA_WRITE)
+			dma_sync_single_for_device((unsigned long)data->src,
+						   num_bytes, DMA_TO_DEVICE);
+		else
+			dma_sync_single_for_device((unsigned long)data->dest,
+						   num_bytes, DMA_FROM_DEVICE);
 
 	}
 
@@ -313,10 +317,12 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 		} while (!(irqstat & IRQSTAT_TC) &&
 				(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_DLA));
 
-		if (data->flags & MMC_DATA_READ) {
-			dma_inv_range((unsigned long)data->dest,
-					(unsigned long)(data->dest + data->blocks * 512));
-		}
+		if (data->flags & MMC_DATA_WRITE)
+			dma_sync_single_for_cpu((unsigned long)data->src,
+						num_bytes, DMA_TO_DEVICE);
+		else
+			dma_sync_single_for_cpu((unsigned long)data->dest,
+						num_bytes, DMA_FROM_DEVICE);
 #endif
 	}
 

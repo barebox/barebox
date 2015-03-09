@@ -26,6 +26,7 @@
 #include <linux/err.h>
 #include <of_mtd.h>
 #include <common.h>
+#include <dma.h>
 #include <malloc.h>
 #include <errno.h>
 #include <driver.h>
@@ -33,7 +34,6 @@
 #include <io.h>
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
-#include <asm/mmu.h>
 #include <mach/generic.h>
 
 #define	MX28_BLOCK_SFTRST				(1 << 31)
@@ -1141,7 +1141,7 @@ int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 	const int size = NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE;
 
 	/* DMA buffers */
-	buf = dma_alloc_coherent(size);
+	buf = dma_alloc_coherent(size, DMA_ADDRESS_BROKEN);
 	if (!buf) {
 		printf("MXS NAND: Error allocating DMA buffers\n");
 		return -ENOMEM;
@@ -1153,7 +1153,8 @@ int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 	nand_info->oob_buf = buf + NAND_MAX_PAGESIZE;
 
 	/* Command buffers */
-	nand_info->cmd_buf = dma_alloc_coherent(MXS_NAND_COMMAND_BUFFER_SIZE);
+	nand_info->cmd_buf = dma_alloc_coherent(MXS_NAND_COMMAND_BUFFER_SIZE,
+						DMA_ADDRESS_BROKEN);
 	if (!nand_info->cmd_buf) {
 		free(buf);
 		printf("MXS NAND: Error allocating command buffers\n");

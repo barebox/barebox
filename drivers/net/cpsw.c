@@ -21,6 +21,7 @@
 #include <init.h>
 
 #include <command.h>
+#include <dma.h>
 #include <net.h>
 #include <malloc.h>
 #include <net.h>
@@ -32,7 +33,6 @@
 #include <of_net.h>
 #include <of_address.h>
 #include <xfuncs.h>
-#include <asm/mmu.h>
 #include <asm/system.h>
 #include <linux/err.h>
 
@@ -871,9 +871,9 @@ static int cpsw_send(struct eth_device *edev, void *packet, int length)
 
 	dev_dbg(&slave->dev, "%s: %i bytes @ 0x%p\n", __func__, length, packet);
 
-	dma_flush_range((ulong) packet, (ulong)packet + length);
-
+	dma_sync_single_for_device((unsigned long)packet, length, DMA_TO_DEVICE);
 	ret = cpdma_submit(priv, &priv->tx_chan, packet, length);
+	dma_sync_single_for_cpu((unsigned long)packet, length, DMA_TO_DEVICE);
 
 	return ret;
 }
@@ -886,9 +886,11 @@ static int cpsw_recv(struct eth_device *edev)
 	int len;
 
 	while (cpdma_process(priv, &priv->rx_chan, &buffer, &len) >= 0) {
-		dma_inv_range((ulong)buffer, (ulong)buffer + len);
+		dma_sync_single_for_cpu((unsigned long)buffer, len,
+				DMA_FROM_DEVICE);
 		net_receive(edev, buffer, len);
-		dma_inv_range((ulong)buffer, (ulong)buffer + len);
+		dma_sync_single_for_device((unsigned long)buffer, len,
+				DMA_FROM_DEVICE);
 		cpdma_submit(priv, &priv->rx_chan, buffer, PKTSIZE);
 	}
 

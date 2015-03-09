@@ -36,7 +36,7 @@ comment "--- MCI host drivers ---"
 
 config MCI_DW
 	bool "Synopsys DesignWare Memory Card Interface"
-	depends on ARM
+	depends on HAS_DMA
 	help
 	  This selects support for the Synopsys DesignWare Mobile Storage IP
 	  block, this provides host support for SD and MMC interfaces, in both

@@ -16,9 +16,9 @@
  * GNU General Public License for more details.
  */
 
-#include <asm/mmu.h>
 #include <clock.h>
 #include <common.h>
+#include <dma.h>
 #include <net.h>
 #include <io.h>
 #include <init.h>
@@ -197,6 +197,8 @@ static int arc_emac_open(struct eth_device *edev)
 		rxbd->data = cpu_to_le32(rxbuf);
 
 		/* Return ownership to EMAC */
+		dma_sync_single_for_device((unsigned long)rxbuf, PKTSIZE,
+					   DMA_FROM_DEVICE);
 		rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);
 
 		*last_rx_bd = (*last_rx_bd + 1) % RX_BD_NUM;
@@ -246,7 +248,7 @@ static int arc_emac_send(struct eth_device *edev, void *data, int length)
 		length = EMAC_ZLEN;
 	}
 
-	dma_flush_range((unsigned long)data, (unsigned long)data + length);
+	dma_sync_single_for_device((unsigned long)data, length, DMA_TO_DEVICE);
 
 	bd->data = cpu_to_le32(data);
 	bd->info = cpu_to_le32(FOR_EMAC | FIRST_OR_LAST_MASK | length);
@@ -254,6 +256,8 @@ static int arc_emac_send(struct eth_device *edev, void *data, int length)
 
 	ret = wait_on_timeout(20 * MSECOND,
 			      (arc_reg_get(priv, R_STATUS) & TXINT_MASK) != 0);
+
+	dma_sync_single_for_cpu((unsigned long)data, length, DMA_TO_DEVICE);
 
 	if (ret) {
 		dev_err(&edev->dev, "transmit timeout\n");
@@ -296,17 +300,18 @@ static int arc_emac_recv(struct eth_device *edev)
 			printk(KERN_DEBUG "incomplete packet received\n");
 
 			/* Return ownership to EMAC */
-			rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);
 			continue;
 		}
 
 		pktlen = info & LEN_MASK;
 
-		/* invalidate current receive buffer */
-		dma_inv_range((unsigned long)rxbd->data,
-			      (unsigned long)rxbd->data + pktlen);
+		dma_sync_single_for_cpu((unsigned long)rxbd->data, pktlen,
+					DMA_FROM_DEVICE);
 
 		net_receive(edev, (unsigned char *)rxbd->data, pktlen);
+
+		dma_sync_single_for_device((unsigned long)rxbd->data, pktlen,
+					   DMA_FROM_DEVICE);
 
 		rxbd->info = cpu_to_le32(FOR_EMAC | PKTSIZE);
 	}
@@ -438,8 +443,10 @@ static int arc_emac_probe(struct device_d *dev)
 	miibus->parent = dev;
 
 	/* allocate rx/tx descriptors */
-	priv->rxbd = dma_alloc_coherent(RX_BD_NUM * sizeof(struct arc_emac_bd));
-	priv->txbd = dma_alloc_coherent(TX_BD_NUM * sizeof(struct arc_emac_bd));
+	priv->rxbd = dma_alloc_coherent(RX_BD_NUM * sizeof(struct arc_emac_bd),
+					DMA_ADDRESS_BROKEN);
+	priv->txbd = dma_alloc_coherent(TX_BD_NUM * sizeof(struct arc_emac_bd),
+					DMA_ADDRESS_BROKEN);
 	priv->rxbuf = dma_alloc(RX_BD_NUM * PKTSIZE);
 
 	/* Set poll rate so that it polls every 1 ms */

@@ -1,4 +1,5 @@
 #include <common.h>
+#include <dma.h>
 #include <net.h>
 #include <malloc.h>
 #include <init.h>

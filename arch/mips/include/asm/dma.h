@@ -8,6 +8,6 @@
 #ifndef __ASM_DMA_H
 #define __ASM_DMA_H
 
-/* empty */
+#include "asm/dma-mapping.h"
 
 #endif /* __ASM_DMA_H */

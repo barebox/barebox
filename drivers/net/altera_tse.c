@@ -21,6 +21,7 @@
  */
 
 #include <common.h>
+#include <dma.h>
 #include <net.h>
 #include <init.h>
 #include <clock.h>
@@ -520,7 +521,7 @@ static int tse_probe(struct device_d *dev)
 		return PTR_ERR(tx_desc);
 	rx_desc = tx_desc + 2;
 #else
-	tx_desc = dma_alloc_coherent(sizeof(*tx_desc) * (3 + PKTBUFSRX), (unsigned long *)&dma_handle);
+	tx_desc = dma_alloc_coherent(sizeof(*tx_desc) * (3 + PKTBUFSRX), (dma_addr_t *)&dma_handle);
 	rx_desc = tx_desc + 2;
 
 	if (!tx_desc) {

@@ -27,7 +27,6 @@
 #include <mach/io.h>
 #include <mach/cpu.h>
 #include <errno.h>
-#include <asm/mmu.h>
 
 #include "atmel_lcdfb.h"
 

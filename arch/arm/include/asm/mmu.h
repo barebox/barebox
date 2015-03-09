@@ -26,58 +26,13 @@ static inline void setup_dma_coherent(unsigned long offset)
 {
 }
 
-#define dma_alloc dma_alloc
-static inline void *dma_alloc(size_t size)
-{
-	return xmemalign(64, ALIGN(size, 64));
-}
-
 #ifdef CONFIG_MMU
-void *dma_alloc_coherent(size_t size);
-void dma_free_coherent(void *mem, size_t size);
-
-void dma_clean_range(unsigned long, unsigned long);
-void dma_flush_range(unsigned long, unsigned long);
-void dma_inv_range(unsigned long, unsigned long);
-unsigned long virt_to_phys(volatile void *virt);
-void *phys_to_virt(unsigned long phys);
 void remap_range(void *_start, size_t size, uint32_t flags);
 void *map_io_sections(unsigned long physaddr, void *start, size_t size);
 uint32_t mmu_get_pte_cached_flags(void);
 uint32_t mmu_get_pte_uncached_flags(void);
 
 #else
-static inline void *dma_alloc_coherent(size_t size)
-{
-	return xmemalign(4096, size);
-}
-
-static inline void dma_free_coherent(void *mem, size_t size)
-{
-	free(mem);
-}
-
-static inline void *phys_to_virt(unsigned long phys)
-{
-	return (void *)phys;
-}
-
-static inline unsigned long virt_to_phys(volatile void *mem)
-{
-	return (unsigned long)mem;
-}
-
-static inline void dma_clean_range(unsigned long s, unsigned long e)
-{
-}
-
-static inline void dma_flush_range(unsigned long s, unsigned long e)
-{
-}
-
-static inline void dma_inv_range(unsigned long s, unsigned long e)
-{
-}
 
 static inline void remap_range(void *_start, size_t size, uint32_t flags)
 {

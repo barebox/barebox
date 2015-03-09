@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <asm/mmu.h>
 #include <common.h>
 #include <clock.h>
 #include <driver.h>
+#include <dma.h>
 #include <gpio.h>
 #include <init.h>
 #include <io.h>
@@ -100,6 +100,7 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 				struct mci_data *data)
 {
 	struct tegra_sdmmc_host *host = to_tegra_sdmmc_host(mci);
+	unsigned int num_bytes = 0;
 	u32 val = 0;
 	int ret;
 
@@ -109,15 +110,15 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 
 	/* Set up for a data transfer if we have one */
 	if (data) {
+		num_bytes = data->blocks * data->blocksize;
+
 		if (data->flags & MMC_DATA_WRITE) {
-			dma_flush_range((unsigned long)data->src,
-			                (unsigned long)(data->src +
-			                data->blocks * 512));
+			dma_sync_single_for_device((unsigned long)data->src,
+						   num_bytes, DMA_TO_DEVICE);
 			writel((u32)data->src, host->regs + SDHCI_DMA_ADDRESS);
 		} else {
-			dma_clean_range((unsigned long)data->src,
-			                (unsigned long)(data->src +
-			                data->blocks * 512));
+			dma_sync_single_for_device((unsigned long)data->dest,
+						   num_bytes, DMA_FROM_DEVICE);
 			writel((u32)data->dest, host->regs + SDHCI_DMA_ADDRESS);
 		}
 
@@ -255,11 +256,12 @@ static int tegra_sdmmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 		}
 		writel(val, host->regs + SDHCI_INT_STATUS);
 
-		if (data->flags & MMC_DATA_READ) {
-			dma_inv_range((unsigned long)data->dest,
-			              (unsigned long)(data->dest +
-			              data->blocks * 512));
-		}
+		if (data->flags & MMC_DATA_WRITE)
+			dma_sync_single_for_cpu((unsigned long)data->src,
+						num_bytes, DMA_TO_DEVICE);
+		else
+			dma_sync_single_for_cpu((unsigned long)data->dest,
+						num_bytes, DMA_FROM_DEVICE);
 	}
 
 	return 0;

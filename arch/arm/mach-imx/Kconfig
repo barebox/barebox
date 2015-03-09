@@ -26,7 +26,6 @@ config ARCH_TEXT_BASE
 	default 0x93d00000 if MACH_TX25
 	default 0x7ff00000 if MACH_TQMA53
 	default 0x97f00000 if MACH_TX51
-	default 0x4fc00000 if MACH_MX6Q_ARM2
 	default 0x97f00000 if MACH_CCMX51
 	default 0x4fc00000 if MACH_SABRELITE
 	default 0x8fe00000 if MACH_TX53
@@ -174,6 +173,7 @@ config ARCH_IMX6
 	select ARCH_HAS_FEC_IMX
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
+	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_IMX6SX
 	bool
@@ -526,12 +526,6 @@ config MACH_GUF_VINCELL
 	bool "Garz-Fricke Vincell"
 	select ARCH_IMX53
 	select HAVE_DEFAULT_ENVIRONMENT_NEW
-
-comment "i.MX6 Boards"
-
-config MACH_MX6Q_ARM2
-	bool "Freescale i.MX6q Armadillo2"
-	select ARCH_IMX6
 
 endchoice
 

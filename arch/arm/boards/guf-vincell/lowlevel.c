@@ -129,6 +129,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	u32 r;
 
 	imx5_cpu_lowlevel_init();
+	arm_setup_stack(0xf8020000 - 8);
 
 	/* Skip SDRAM initialization if we run from RAM */
 	r = get_pc();

@@ -39,6 +39,8 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 	arm_cpu_lowlevel_init();
 
+	arm_setup_stack(MX31_IRAM_BASE_ADDR + MX31_IRAM_SIZE - 12);
+
 	writel(1 << 6, MX31_IPU_CTRL_BASE_ADDR);
 
 	writel(0x074B0BF5, MX31_CCM_BASE_ADDR + MX31_CCM_CCMR);
@@ -125,12 +127,8 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	writel(0x0000000c, MX31_ESDCTL_BASE_ADDR + IMX_ESDMISC);
 #endif
 
-	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND)) {
-		/* setup a stack to be able to call imx31_barebox_boot_nand_external() */
-		arm_setup_stack(MX31_IRAM_BASE_ADDR + MX31_IRAM_SIZE - 12);
-
+	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND))
 		imx31_barebox_boot_nand_external(0);
-	} else {
+	else
 		imx31_barebox_entry(NULL);
-	}
 }

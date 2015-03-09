@@ -372,10 +372,7 @@
 
 &hdmi {
 	status = "okay";
-};
-
-&pcie {
-	status = "okay";
+	ddc-i2c-bus = <&i2c2>;
 };
 
 &can1 {

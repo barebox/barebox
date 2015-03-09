@@ -76,6 +76,8 @@ barebox_arm_reset_vector:
 
 	bl		arm_cpu_lowlevel_init
 
+	ldr	sp, =MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 4;
+
 	/* ahb lite ip interface */
 	writel(0x20040304, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR0)
 	writel(0xDFFBFCFB, MX27_AIPI_BASE_ADDR + MX27_AIPI1_PSR1)
@@ -124,9 +126,6 @@ barebox_arm_reset_vector:
 	sdram_init
 
 #ifdef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND
-	/* Setup a temporary stack in SDRAM */
-	ldr	sp, =MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 4;
-
 	mov	r0, #0
 	b	imx27_barebox_boot_nand_external
 #endif /* CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND */

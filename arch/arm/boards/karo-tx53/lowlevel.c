@@ -8,6 +8,7 @@
 void __naked barebox_arm_reset_vector(void)
 {
 	imx5_cpu_lowlevel_init();
+	arm_setup_stack(0xf8020000 - 8);
 
 	/*
 	 * For the TX53 rev 8030 the SDRAM setup is not stable without

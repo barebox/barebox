@@ -85,10 +85,6 @@ static int loco_late_init(void)
 	    !of_machine_is_compatible("fsl,imx53-qsrb"))
 		return 0;
 
-	device_detect_by_name("mmc0");
-
-	devfs_add_partition("mmc0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
-
 	mc34708 = mc13xxx_get();
 	if (mc34708) {
 		unsigned int val;

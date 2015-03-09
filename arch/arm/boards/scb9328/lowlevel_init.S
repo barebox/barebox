@@ -100,7 +100,7 @@ barebox_arm_reset_vector:
 	cmp	pc, #0x09000000
 	bhi	1f
 
-	b imx1_barebox_entry
+	b 2f
 
 1:
 
@@ -129,5 +129,7 @@ barebox_arm_reset_vector:
 	writel(0x0, 0x08223000)
 	/* Set to Normal Mode CAS 2 */
 	writel(0x810a8200, MX1_SDRAMC_BASE_ADDR + MX1_SDCTL0)
+2:
+	ldr     sp, =0x08100000 - 4;
 
 	b imx1_barebox_entry

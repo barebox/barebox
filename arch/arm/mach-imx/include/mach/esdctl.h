@@ -128,14 +128,14 @@
 #define ESDCFGx_tRC_16			0x0000000f
 
 #ifndef __ASSEMBLY__
-void __naked __noreturn imx1_barebox_entry(void *boarddata);
-void __naked __noreturn imx25_barebox_entry(void *boarddata);
-void __naked __noreturn imx27_barebox_entry(void *boarddata);
-void __naked __noreturn imx31_barebox_entry(void *boarddata);
-void __naked __noreturn imx35_barebox_entry(void *boarddata);
-void __naked __noreturn imx51_barebox_entry(void *boarddata);
-void __naked __noreturn imx53_barebox_entry(void *boarddata);
-void __naked __noreturn imx6_barebox_entry(void *boarddata);
+void __noreturn imx1_barebox_entry(void *boarddata);
+void __noreturn imx25_barebox_entry(void *boarddata);
+void __noreturn imx27_barebox_entry(void *boarddata);
+void __noreturn imx31_barebox_entry(void *boarddata);
+void __noreturn imx35_barebox_entry(void *boarddata);
+void __noreturn imx51_barebox_entry(void *boarddata);
+void __noreturn imx53_barebox_entry(void *boarddata);
+void __noreturn imx6_barebox_entry(void *boarddata);
 void imx_esdctl_disable(void);
 #endif
 

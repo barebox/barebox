@@ -60,6 +60,9 @@ CCM_BASE_ADDR_W:	.word	MX35_CCM_BASE_ADDR
 barebox_arm_reset_vector:
 	bl	arm_cpu_lowlevel_init
 
+	/* Setup a temporary stack in internal SRAM */
+	ldr	sp, =MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 4
+
 	mrc	15, 0, r1, c1, c0, 0
 
 	mrc	15, 0, r0, c1, c0, 1
@@ -155,9 +158,6 @@ barebox_arm_reset_vector:
 	str	r3, [r0, #0x30]
 
 #ifdef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND
-	/* Setup a temporary stack in internal SRAM */
-	ldr	sp, =MX35_IRAM_BASE_ADDR + MX35_IRAM_SIZE - 4
-
 	mov	r0, #0
 	b	imx35_barebox_boot_nand_external
 #endif /* CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND */

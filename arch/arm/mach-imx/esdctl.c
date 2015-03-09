@@ -480,7 +480,7 @@ upper_or_coalesced_range(unsigned long base0, unsigned long size0,
 	}
 }
 
-void __naked __noreturn imx1_barebox_entry(void *boarddata)
+void __noreturn imx1_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
@@ -493,7 +493,7 @@ void __naked __noreturn imx1_barebox_entry(void *boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx25_barebox_entry(void *boarddata)
+void __noreturn imx25_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
@@ -506,7 +506,7 @@ void __naked __noreturn imx25_barebox_entry(void *boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx27_barebox_entry(void *boarddata)
+void __noreturn imx27_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
@@ -521,7 +521,7 @@ void __naked __noreturn imx27_barebox_entry(void *boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx31_barebox_entry(void *boarddata)
+void __noreturn imx31_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
@@ -536,7 +536,7 @@ void __naked __noreturn imx31_barebox_entry(void *boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx35_barebox_entry(void *boarddata)
+void __noreturn imx35_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
@@ -551,7 +551,7 @@ void __naked __noreturn imx35_barebox_entry(void *boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx51_barebox_entry(void *boarddata)
+void __noreturn imx51_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
@@ -564,7 +564,7 @@ void __naked __noreturn imx51_barebox_entry(void *boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __naked __noreturn imx53_barebox_entry(void *boarddata)
+void __noreturn imx53_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 

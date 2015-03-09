@@ -17,6 +17,7 @@
  *
  */
 
+#include <linux/sizes.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/imx25-regs.h>
 #include <mach/imx-pll.h>
@@ -71,6 +72,9 @@ barebox_arm_reset_vector:
 	writel(0x000FDFFF, MX25_CCM_BASE_ADDR + MX25_CCM_CGCR2)
 	writel(0x0000FEFF, MX25_CCM_BASE_ADDR + MX25_CCM_MCR)
 
+	/* Setup a temporary stack in SRAM */
+	ldr	sp, =MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 4
+
 	/* Skip SDRAM initialization if we run from RAM */
 	cmp	pc, #0x80000000
 	bls	1f
@@ -98,9 +102,6 @@ barebox_arm_reset_vector:
 	str r3, [r0, #0x30]
 
 #ifdef CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND
-
-	/* Setup a temporary stack in SRAM */
-	ldr	sp, =MX25_IRAM_BASE_ADDR + MX25_IRAM_SIZE - 4
 
 	mov	r0, #0
 	b	imx25_barebox_boot_nand_external

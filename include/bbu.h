@@ -2,6 +2,8 @@
 #define __INCLUDE_BBU_H
 
 #include <asm-generic/errno.h>
+#include <linux/list.h>
+#include <linux/types.h>
 
 struct bbu_data {
 #define BBU_FLAG_FORCE	(1 << 0)

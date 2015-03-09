@@ -65,8 +65,10 @@ int bbu_confirm(struct bbu_data *data)
 
 	key = read_key();
 
-	if (key == 'y')
+	if (key == 'y') {
+		printf("updating barebox...\n");
 		return 0;
+	}
 
 	return -EINTR;
 }

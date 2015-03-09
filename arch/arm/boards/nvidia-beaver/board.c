@@ -19,6 +19,7 @@
 #include <gpio.h>
 #include <i2c/i2c.h>
 #include <init.h>
+#include <mach/tegra-bbu.h>
 
 static int nvidia_beaver_fs_init(void)
 {
@@ -52,6 +53,9 @@ static int nvidia_beaver_device_init(void)
 		return 0;
 
 	barebox_set_hostname("beaver");
+
+	tegra_bbu_register_emmc_handler("eMMC", "/dev/mmc3.boot0",
+					BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

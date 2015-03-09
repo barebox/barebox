@@ -1,1 +1,8 @@
-#include <arm/tegra20.dtsi>
+/ {
+	aliases {
+		mmc0 = "/sdhci@c8000000/";
+		mmc1 = "/sdhci@c8000200/";
+		mmc2 = "/sdhci@c8000400/";
+		mmc3 = "/sdhci@c8000600/";
+	};
+};

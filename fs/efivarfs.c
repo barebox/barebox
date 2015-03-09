@@ -236,7 +236,7 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 	}
 
 	f->size = efile->size;
-	f->inode = efile;
+	f->priv = efile;
 
 	return 0;
 
@@ -249,7 +249,7 @@ out:
 
 static int efivarfs_close(struct device_d *dev, FILE *f)
 {
-	struct efivars_file *efile = f->inode;
+	struct efivars_file *efile = f->priv;
 
 	free(efile->buf);
 	free(efile);
@@ -259,7 +259,7 @@ static int efivarfs_close(struct device_d *dev, FILE *f)
 
 static int efivarfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	struct efivars_file *efile = f->inode;
+	struct efivars_file *efile = f->priv;
 
 	memcpy(buf, efile->buf + f->pos, insize);
 
@@ -268,7 +268,7 @@ static int efivarfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insiz
 
 static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
 {
-	struct efivars_file *efile = f->inode;
+	struct efivars_file *efile = f->priv;
 
 	if (efile->size < f->pos + insize) {
 		efile->buf = realloc(efile->buf, f->pos + insize);
@@ -285,7 +285,7 @@ static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_
 
 static int efivarfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
-	struct efivars_file *efile = f->inode;
+	struct efivars_file *efile = f->priv;
 
 	efile->size = size;
 	efile->buf = realloc(efile->buf, efile->size + sizeof(uint32_t));

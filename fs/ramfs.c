@@ -311,7 +311,7 @@ static int ramfs_open(struct device_d *dev, FILE *file, const char *filename)
 		return -ENOENT;
 
 	file->size = node->size;
-	file->inode = node;
+	file->priv = node;
 	return 0;
 }
 
@@ -351,7 +351,7 @@ static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node, int chunk)
 
 static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
+	struct ramfs_inode *node = f->priv;
 	int chunk;
 	struct ramfs_chunk *data;
 	int ofs;
@@ -400,7 +400,7 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 
 static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
 {
-	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
+	struct ramfs_inode *node = f->priv;
 	int chunk;
 	struct ramfs_chunk *data;
 	int ofs;
@@ -455,7 +455,7 @@ static loff_t ramfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 
 static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
-	struct ramfs_inode *node = (struct ramfs_inode *)f->inode;
+	struct ramfs_inode *node = f->priv;
 	int oldchunks, newchunks;
 	struct ramfs_chunk *data = node->data;
 

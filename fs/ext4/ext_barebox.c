@@ -57,7 +57,7 @@ static int ext_open(struct device_d *dev, FILE *file, const char *filename)
 		return ret;
 
 	file->size = __le32_to_cpu(inode->inode.size);
-	file->inode = inode;
+	file->priv = inode;
 
 	return 0;
 }
@@ -66,14 +66,14 @@ static int ext_close(struct device_d *dev, FILE *f)
 {
 	struct ext_filesystem *fs = dev->priv;
 
-	ext4fs_free_node(f->inode, &fs->data->diropen);
+	ext4fs_free_node(f->priv, &fs->data->diropen);
 
 	return 0;
 }
 
 static int ext_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	return ext4fs_read_file(f->inode, f->pos, insize, buf);
+	return ext4fs_read_file(f->priv, f->pos, insize, buf);
 }
 
 static loff_t ext_lseek(struct device_d *dev, FILE *f, loff_t pos)

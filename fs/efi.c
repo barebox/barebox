@@ -243,7 +243,7 @@ static int efifs_open(struct device_d *dev, FILE *f, const char *filename)
 	f->size = info->FileSize;
 
 	free(info);
-	f->inode = ufile;
+	f->priv = ufile;
 
 	return 0;
 out:
@@ -254,7 +254,7 @@ out:
 
 static int efifs_close(struct device_d *dev, FILE *f)
 {
-	struct efifs_file *ufile = f->inode;
+	struct efifs_file *ufile = f->priv;
 
 	ufile->entry->close(ufile->entry);
 
@@ -265,7 +265,7 @@ static int efifs_close(struct device_d *dev, FILE *f)
 
 static int efifs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	struct efifs_file *ufile = f->inode;
+	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
 	unsigned long bufsize = insize;
 
@@ -279,7 +279,7 @@ static int efifs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 
 static int efifs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
 {
-	struct efifs_file *ufile = f->inode;
+	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
 	unsigned long bufsize = insize;
 
@@ -294,7 +294,7 @@ static int efifs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 
 static loff_t efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
-	struct efifs_file *ufile = f->inode;
+	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
 
 	f->pos = pos;
@@ -309,7 +309,7 @@ static loff_t efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 
 static int efifs_truncate(struct device_d *dev, FILE *f, unsigned long size)
 {
-	struct efifs_file *ufile = f->inode;
+	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
 	struct efi_file_info *info;
 	unsigned long bufsize = 1024;

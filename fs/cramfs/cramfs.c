@@ -290,7 +290,7 @@ static int cramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 	if (!inodei)
 		return -ENOENT;
 
-	file->inode = inodei;
+	file->priv = inodei;
 	file->size = inodei->inode.size;
 
 	inodei->block_ptrs = xzalloc(4096);
@@ -301,7 +301,7 @@ static int cramfs_open(struct device_d *_dev, FILE *file, const char *filename)
 
 static int cramfs_close(struct device_d *dev, FILE *file)
 {
-	struct cramfs_inode_info *inodei = file->inode;
+	struct cramfs_inode_info *inodei = file->priv;
 
 	free(inodei->block_ptrs);
 	free(inodei);
@@ -312,7 +312,7 @@ static int cramfs_close(struct device_d *dev, FILE *file)
 static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 {
 	struct cramfs_priv *priv = _dev->priv;
-	struct cramfs_inode_info *inodei = f->inode;
+	struct cramfs_inode_info *inodei = f->priv;
 	struct cramfs_inode *inode = &inodei->inode;
 	unsigned int blocknr;
 	int outsize = 0;

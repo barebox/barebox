@@ -469,7 +469,7 @@ static int tftp_open(struct device_d *dev, FILE *file, const char *filename)
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
-	file->inode = priv;
+	file->priv = priv;
 	file->size = SZ_2G;
 
 	return 0;
@@ -515,7 +515,7 @@ static int tftp_do_close(struct file_priv *priv)
 
 static int tftp_close(struct device_d *dev, FILE *f)
 {
-	struct file_priv *priv = f->inode;
+	struct file_priv *priv = f->priv;
 
 	return tftp_do_close(priv);
 }
@@ -523,7 +523,7 @@ static int tftp_close(struct device_d *dev, FILE *f)
 static int tftp_write(struct device_d *_dev, FILE *f, const void *inbuf,
 		size_t insize)
 {
-	struct file_priv *priv = f->inode;
+	struct file_priv *priv = f->priv;
 	size_t size, now;
 	int ret;
 
@@ -558,7 +558,7 @@ static int tftp_write(struct device_d *_dev, FILE *f, const void *inbuf,
 
 static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 {
-	struct file_priv *priv = f->inode;
+	struct file_priv *priv = f->priv;
 	size_t outsize = 0, now;
 	int ret;
 

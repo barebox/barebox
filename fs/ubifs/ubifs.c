@@ -350,14 +350,14 @@ static int ubifs_open(struct device_d *dev, FILE *file, const char *filename)
 	uf->block = -1;
 
 	file->size = inode->i_size;
-	file->inode = uf;
+	file->priv = uf;
 
 	return 0;
 }
 
 static int ubifs_close(struct device_d *dev, FILE *f)
 {
-	struct ubifs_file *uf = f->inode;
+	struct ubifs_file *uf = f->priv;
 	struct inode *inode = uf->inode;
 
 	ubifs_iput(inode);
@@ -386,7 +386,7 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 
 static int ubifs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	struct ubifs_file *uf = f->inode;
+	struct ubifs_file *uf = f->priv;
 	unsigned int pos = f->pos;
 	unsigned int ofs;
 	unsigned int now;

@@ -4,8 +4,6 @@
 #include <asm/cache.h>
 #include <asm/system_info.h>
 
-int arm_architecture;
-
 struct cache_fns {
 	void (*dma_clean_range)(unsigned long start, unsigned long end);
 	void (*dma_flush_range)(unsigned long start, unsigned long end);

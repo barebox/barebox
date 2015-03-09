@@ -29,6 +29,7 @@
 #include <asm/sections.h>
 #include <io.h>
 #include <gpio.h>
+#include <mach/bbu.h>
 #include <mach/iomux.h>
 #include <mach/s3c-iomap.h>
 #include <mach/devices-s3c24xx.h>
@@ -113,6 +114,23 @@ static struct fb_videomode s3c24x0_fb_modes[] = {
 		.pixclock	= 40492,
 		.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT | FB_SYNC_DE_HIGH_ACT
                                   /* | FB_SYNC_SWAP_HW */ /* FIXME maybe */ ,
+		.vmode		= FB_VMODE_NONINTERLACED,
+	},
+#endif
+#ifdef CONFIG_MINI2440_VIDEO_W35
+	{
+		.name		= "W35",
+		.refresh	= 60,
+		.xres		= 320,
+		.left_margin	= 68,
+		.right_margin	= 66,
+		.hsync_len	= 4,
+		.yres		= 240,
+		.upper_margin	= 4,
+		.lower_margin	= 4,
+		.vsync_len	= 9,
+		.pixclock	= 115913,
+		.sync		= FB_SYNC_USE_PWREN | FB_SYNC_CLK_INVERT,
 		.vmode		= FB_VMODE_NONINTERLACED,
 	},
 #endif
@@ -300,6 +318,8 @@ static int mini2440_devices_init(void)
 	devfs_del_partition("env_raw");
 	devfs_add_partition("nand0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+
+	s3c24x0_bbu_nand_register_handler();
 #endif
 	s3c24xx_add_mci(&mci_data);
 	s3c24xx_add_fb(&s3c24x0_fb_data);

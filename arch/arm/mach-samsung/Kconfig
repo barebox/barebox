@@ -166,6 +166,12 @@ config S3C_NAND_BOOT
 	  Add generic support to boot from NAND flash. Image loading will be
 	  skipped if the code is running from NOR or already from SDRAM.
 
+config BAREBOX_UPDATE_NAND_S3C24XX
+	bool
+	depends on BAREBOX_UPDATE
+	depends on S3C_NAND_BOOT
+	default y
+
 endmenu
 
 endif

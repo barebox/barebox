@@ -37,6 +37,7 @@ fi
 # allow to stop the boot before execute the /env/init/*
 # but without waiting
 timeout -s -a -v key 0
+autoboot="$?"
 
 if [ "${key}" = "q" ]; then
 	${login_cmd}
@@ -57,8 +58,10 @@ fi
 
 [ -n ${login_cmd} ] && global.console.input_allow=1
 
-timeout -a $global.autoboot_timeout -v key
-autoboot="$?"
+if [ "$autoboot" = 0 ]; then
+	timeout -a $global.autoboot_timeout -v key
+	autoboot="$?"
+fi
 
 [ -n ${login_cmd} ] && global.console.input_allow=0
 

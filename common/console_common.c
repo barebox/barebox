@@ -97,7 +97,7 @@ void log_clean(unsigned int limit)
 	}
 }
 
-void pr_puts(int level, const char *str)
+static void pr_puts(int level, const char *str)
 {
 	struct log_entry *log;
 

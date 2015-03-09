@@ -38,7 +38,7 @@ static int linux_bootargs_overwritten;
  */
 const char *linux_bootargs_get(void)
 {
-	char *bootargs, *mtdparts;
+	char *bootargs, *parts;
 
 	if (linux_bootargs_overwritten)
 		return linux_bootargs;
@@ -49,14 +49,21 @@ const char *linux_bootargs_get(void)
 	if (!strlen(bootargs))
 		return getenv("bootargs");
 
-	mtdparts = globalvar_get_match("linux.mtdparts.", ";");
+	linux_bootargs = bootargs;
 
-	if (strlen(mtdparts)) {
-		linux_bootargs = asprintf("%s mtdparts=%s", bootargs, mtdparts);
-		free(bootargs);
-		free(mtdparts);
-	} else {
-		free(mtdparts);
+	parts = globalvar_get_match("linux.mtdparts.", ";");
+	if (strlen(parts)) {
+		bootargs = asprintf("%s mtdparts=%s", linux_bootargs, parts);
+		free(linux_bootargs);
+		free(parts);
+		linux_bootargs = bootargs;
+	}
+
+	parts = globalvar_get_match("linux.blkdevparts.", ";");
+	if (strlen(parts)) {
+		bootargs = asprintf("%s blkdevparts=%s", linux_bootargs, parts);
+		free(linux_bootargs);
+		free(parts);
 		linux_bootargs = bootargs;
 	}
 
@@ -78,3 +85,4 @@ int linux_bootargs_overwrite(const char *bootargs)
 
 BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_, global.linux.bootargs.*, "Linux bootargs variables");
 BAREBOX_MAGICVAR_NAMED(global_linux_mtdparts_, global.linux.mtdparts.*, "Linux mtdparts variables");
+BAREBOX_MAGICVAR_NAMED(global_linux_blkdevparts_, global.linux.blkdevparts.*, "Linux blkdevparts variables");

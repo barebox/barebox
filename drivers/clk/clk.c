@@ -44,6 +44,9 @@ int clk_enable(struct clk *clk)
 {
 	int ret;
 
+	if (!clk)
+		return 0;
+
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
@@ -68,6 +71,9 @@ int clk_enable(struct clk *clk)
 
 void clk_disable(struct clk *clk)
 {
+	if (!clk)
+		return;
+
 	if (IS_ERR(clk))
 		return;
 
@@ -89,10 +95,15 @@ unsigned long clk_get_rate(struct clk *clk)
 	struct clk *parent;
 	unsigned long parent_rate = 0;
 
+	if (!clk)
+		return 0;
+
 	if (IS_ERR(clk))
 		return 0;
 
 	parent = clk_get_parent(clk);
+
+
 	if (!IS_ERR_OR_NULL(parent))
 		parent_rate = clk_get_rate(parent);
 
@@ -106,6 +117,9 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
 {
 	unsigned long parent_rate = 0;
 	struct clk *parent;
+
+	if (!clk)
+		return 0;
 
 	if (IS_ERR(clk))
 		return 0;
@@ -124,6 +138,9 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 {
 	struct clk *parent;
 	unsigned long parent_rate = 0;
+
+	if (!clk)
+		return 0;
 
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);

@@ -1,5 +1,6 @@
 #include <common.h>
 #include <errno.h>
+#include <abort.h>
 
 #define DISP_LINE_LEN	16
 
@@ -26,18 +27,41 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 		for (i = 0; i < linebytes; i += size) {
 			if (size == 4) {
 				u32 res;
-				res = (*uip++ = *((uint *)addr));
+				data_abort_mask();
+				res = *((uint *)addr);
 				if (swab)
 					res = __swab32(res);
-				count -= printf(" %08x", res);
+				if (data_abort_unmask()) {
+					res = 0xffffffff;
+					count -= printf(" xxxxxxxx");
+				} else {
+					count -= printf(" %08x", res);
+				}
+				*uip++ = res;
 			} else if (size == 2) {
 				u16 res;
-				res = (*usp++ = *((ushort *)addr));
+				data_abort_mask();
+				res = *((ushort *)addr);
 				if (swab)
 					res = __swab16(res);
-				count -= printf(" %04x", res);
+				if (data_abort_unmask()) {
+					res = 0xffff;
+					count -= printf(" xxxx");
+				} else {
+					count -= printf(" %04x", res);
+				}
+				*usp++ = res;
 			} else {
-				count -= printf(" %02x", (*ucp++ = *((u_char *)addr)));
+				u8 res;
+				data_abort_mask();
+				res = *((u_char *)addr);
+				if (data_abort_unmask()) {
+					res = 0xff;
+					count -= printf(" xx");
+				} else {
+					count -= printf(" %02x", res);
+				}
+				*ucp++ = res;
 			}
 			addr += size;
 			offs += size;

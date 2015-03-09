@@ -406,6 +406,9 @@ static void dwc_version(struct device_d *dev, u32 hwid)
 
 static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
 {
+	if (!IS_ENABLED(CONFIG_OFTREE))
+		return -ENODEV;
+
 	priv->phy_addr = -1;
 	priv->interface = of_get_phy_mode(dev->device_node);
 

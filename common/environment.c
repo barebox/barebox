@@ -256,6 +256,12 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 	void *buf = NULL, *wbuf;
 	struct envfs_entry *env;
 
+	if (!filename)
+		filename = default_environment_path_get();
+
+	if (!dirname)
+		dirname = "/env";
+
 	data.writep = NULL;
 	data.base = dirname;
 
@@ -542,6 +548,12 @@ int envfs_load(const char *filename, const char *dir, unsigned flags)
 	int envfd;
 	int ret = 0;
 	size_t size, rsize;
+
+	if (!filename)
+		filename = default_environment_path_get();
+
+	if (!dir)
+		dir = "/env";
 
 	envfd = open(filename, O_RDONLY);
 	if (envfd < 0) {

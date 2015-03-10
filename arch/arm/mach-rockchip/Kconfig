@@ -7,6 +7,8 @@ config ARCH_TEXT_BASE
 comment "select Rockchip boards:"
 
 config MACH_RADXA_ROCK
+	select I2C
+	select MFD_ACT8846
 	bool "Radxa rock board"
 
 endif

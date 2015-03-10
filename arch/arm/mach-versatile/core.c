@@ -57,6 +57,12 @@ unsigned long clk_get_rate(struct clk *clk)
 EXPORT_SYMBOL(clk_get_rate);
 
 /* enable and disable do nothing */
+int clk_set_rate(struct clk *clk, unsigned long rate)
+{
+	return 0;
+}
+EXPORT_SYMBOL(clk_set_rate);
+
 int clk_enable(struct clk *clk)
 {
 	return 0;

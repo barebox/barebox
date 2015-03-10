@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# SD card slot, first partition
+mkdir -p /mnt/mmcblk0p1
+automount -d /mnt/mmcblk0p1 'mount /dev/disk0.0 /mnt/mmcblk0p1'

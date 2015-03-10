@@ -1,6 +1,7 @@
 #ifndef PARAM_H
 #define PARAM_H
 
+#include <linux/err.h>
 #include <linux/types.h>
 #include <linux/list.h>
 

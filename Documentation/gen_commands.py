@@ -161,7 +161,11 @@ for name in CMDS.keys():
 for name, cmd in CMDS.items():
   #pprint({name: cmd})
   rst = gen_rst(name, cmd)
-  subdir = os.path.join(sys.argv[2], cmd['c_group'][0])
+  group = cmd.get('c_group')
+  if group is None:
+    print >> sys.stderr, "gen_commands: warning: using default group 'misc' for command '%s'" % name
+    group = ['misc']
+  subdir = os.path.join(sys.argv[2], group[0])
   try:
     os.makedirs(subdir)
   except OSError as e:

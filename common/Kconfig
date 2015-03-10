@@ -901,6 +901,7 @@ config DEBUG_INITCALLS
 
 config PBL_CONSOLE
 	depends on DEBUG_LL
+	depends on !CONSOLE_NONE
 	bool "Enable console support in PBL"
 	help
 	  This enables printf/pr_* support in the PBL to get more

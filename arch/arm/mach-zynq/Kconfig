@@ -28,7 +28,6 @@ choice
 
 config MACH_ZEDBOARD
 	bool "Avnet Zynq-7000 ZedBoard"
-	select DRIVER_SERIAL_CADENCE
 
 endchoice
 endif

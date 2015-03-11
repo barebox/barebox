@@ -24,4 +24,10 @@ config SHA224
 config SHA256
 	bool "SHA256"
 
+config SHA384
+	bool "SHA384"
+
+config SHA512
+	bool "SHA512"
+
 endif

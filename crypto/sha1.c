@@ -26,6 +26,8 @@
 #include <linux/string.h>
 #include <asm/byteorder.h>
 
+#include "internal.h"
+
 #define SHA1_SUM_POS	-0x20
 #define SHA1_SUM_LEN	20
 
@@ -319,8 +321,12 @@ static struct digest_algo m = {
 
 static int sha1_digest_register(void)
 {
-	digest_algo_register(&m);
+	int ret;
 
-	return 0;
+	ret = digest_algo_register(&m);
+	if (ret)
+		return ret;
+
+	return digest_hmac_register(&m, 64);
 }
 device_initcall(sha1_digest_register);

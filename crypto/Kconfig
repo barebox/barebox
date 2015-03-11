@@ -30,4 +30,7 @@ config SHA384
 config SHA512
 	bool "SHA512"
 
+config DIGEST_HMAC
+	bool "HMAC"
+
 endif

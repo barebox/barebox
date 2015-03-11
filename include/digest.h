@@ -31,6 +31,7 @@ struct digest_algo {
 	int (*init)(struct digest *d);
 	int (*update)(struct digest *d, const void *data, unsigned long len);
 	int (*final)(struct digest *d, unsigned char *md);
+	int (*set_key)(struct digest *d, unsigned char *key, unsigned int len);
 
 	unsigned int length;
 	unsigned int ctx_length;
@@ -79,6 +80,13 @@ static inline int digest_final(struct digest *d, unsigned char *md)
 static inline int digest_length(struct digest *d)
 {
 	return d->algo->length;
+}
+
+static inline int digest_set_key(struct digest *d, unsigned char *key, unsigned int len)
+{
+	if (!d->algo->set_key)
+		return -ENOTSUPP;
+	return d->algo->set_key(d, key, len);
 }
 
 #endif /* __SH_ST_DEVICES_H__ */

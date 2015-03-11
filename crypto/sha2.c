@@ -21,6 +21,8 @@
 #include <linux/string.h>
 #include <asm/byteorder.h>
 
+#include "internal.h"
+
 #define SHA224_SUM_LEN	28
 #define SHA256_SUM_LEN	32
 
@@ -290,7 +292,6 @@ static int digest_sha2_final(struct digest *d, unsigned char *md)
 	return 0;
 }
 
-#ifdef CONFIG_SHA224
 static int digest_sha224_init(struct digest *d)
 {
 	sha2_starts(d->ctx, 1);
@@ -306,9 +307,22 @@ static struct digest_algo m224 = {
 	.length = SHA224_SUM_LEN,
 	.ctx_length = sizeof(sha2_context),
 };
-#endif
 
-#ifdef CONFIG_SHA256
+static int sha224_digest_register(void)
+{
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_SHA224))
+		return 0;
+
+	ret = digest_algo_register(&m224);
+	if (ret)
+		return ret;
+
+	return digest_hmac_register(&m224, 64);
+}
+device_initcall(sha224_digest_register);
+
 static int digest_sha256_init(struct digest *d)
 {
 	sha2_starts(d->ctx, 0);
@@ -324,17 +338,18 @@ static struct digest_algo m256 = {
 	.length = SHA256_SUM_LEN,
 	.ctx_length = sizeof(sha2_context),
 };
-#endif
 
-static int sha2_digest_register(void)
+static int sha256_digest_register(void)
 {
-#ifdef CONFIG_SHA224
-	digest_algo_register(&m224);
-#endif
-#ifdef CONFIG_SHA256
-	digest_algo_register(&m256);
-#endif
+	int ret;
 
-	return 0;
+	if (!IS_ENABLED(CONFIG_SHA256))
+		return 0;
+
+	ret = digest_algo_register(&m256);
+	if (ret)
+		return ret;
+
+	return digest_hmac_register(&m256, 64);
 }
-device_initcall(sha2_digest_register);
+device_initcall(sha256_digest_register);

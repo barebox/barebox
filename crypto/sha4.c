@@ -29,6 +29,8 @@
 #include <linux/string.h>
 #include <asm/byteorder.h>
 
+#include "internal.h"
+
 #define SHA384_SUM_LEN	48
 #define SHA512_SUM_LEN	64
 
@@ -311,6 +313,22 @@ static struct digest_algo m384 = {
 	.ctx_length = sizeof(sha4_context),
 };
 
+
+static int sha384_digest_register(void)
+{
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_SHA384))
+		return 0;
+
+	ret = digest_algo_register(&m384);
+	if (ret)
+		return ret;
+
+	return digest_hmac_register(&m384, 128);
+}
+device_initcall(sha384_digest_register);
+
 static int digest_sha512_init(struct digest *d)
 {
 	sha4_starts(d->ctx, 0);
@@ -327,14 +345,17 @@ static struct digest_algo m512 = {
 	.ctx_length = sizeof(sha4_context),
 };
 
-static int sha4_digest_register(void)
+static int sha512_digest_register(void)
 {
-	if IS_ENABLED(CONFIG_SHA384)
-		digest_algo_register(&m384);
+	int ret;
 
-	if IS_ENABLED(CONFIG_SHA512)
-		digest_algo_register(&m512);
+	if (!IS_ENABLED(CONFIG_SHA512))
+		return 0;
 
-	return 0;
+	ret = digest_algo_register(&m512);
+	if (ret)
+		return ret;
+
+	return digest_hmac_register(&m512, 128);
 }
-device_initcall(sha4_digest_register);
+device_initcall(sha512_digest_register);

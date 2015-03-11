@@ -33,6 +33,8 @@
 #define PASSWD_SUM "sha1"
 #elif defined(CONFIG_PASSWD_SUM_SHA256)
 #define PASSWD_SUM "sha256"
+#elif defined(CONFIG_PASSWD_SUM_SHA512)
+#define PASSWD_SUM "sha512"
 #endif
 
 int password(unsigned char *passwd, size_t length, int flags, int timeout)

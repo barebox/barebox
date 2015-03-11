@@ -449,6 +449,10 @@ config PASSWD_SUM_SHA256
 	bool "SHA256"
 	select SHA256
 
+config PASSWD_SUM_SHA512
+	bool "SHA512"
+	select SHA512
+
 endchoice
 
 endif

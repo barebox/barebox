@@ -84,7 +84,7 @@ int digest_file_window(struct digest *d, char *filename,
 	unsigned char *buf;
 	int flags = 0;
 
-	d->init(d);
+	digest_init(d);
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
@@ -128,12 +128,12 @@ int digest_file_window(struct digest *d, char *filename,
 			goto out_free;
 		}
 
-		d->update(d, buf, now);
+		digest_update(d, buf, now);
 		size -= now;
 		len += now;
 	}
 
-	d->final(d, hash);
+	digest_final(d, hash);
 
 out_free:
 	if (flags)

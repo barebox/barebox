@@ -50,4 +50,25 @@ int digest_file(struct digest *d, char *filename,
 int digest_file_by_name(char *algo, char *filename,
 		       unsigned char *hash);
 
+static inline int digest_init(struct digest *d)
+{
+	return d->init(d);
+}
+
+static inline int digest_update(struct digest *d, const void *data,
+				      unsigned long len)
+{
+	return d->update(d, data, len);
+}
+
+static inline int digest_final(struct digest *d, unsigned char *md)
+{
+	return d->final(d, md);
+}
+
+static inline int digest_length(struct digest *d)
+{
+	return d->length;
+}
+
 #endif /* __SH_ST_DEVICES_H__ */

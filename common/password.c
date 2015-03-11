@@ -282,33 +282,33 @@ static int __check_passwd(unsigned char* passwd, size_t length, int std)
 
 	d = digest_get_by_name(PASSWD_SUM);
 
-	passwd1_sum = calloc(d->length, sizeof(unsigned char));
+	passwd1_sum = calloc(digest_length(d), sizeof(unsigned char));
 
 	if (!passwd1_sum)
 		return -ENOMEM;
 
-	passwd2_sum = calloc(d->length, sizeof(unsigned char));
+	passwd2_sum = calloc(digest_length(d), sizeof(unsigned char));
 
 	if (!passwd2_sum) {
 		ret = -ENOMEM;
 		goto err1;
 	}
 
-	d->init(d);
+	digest_init(d);
 
-	d->update(d, passwd, length);
+	digest_update(d, passwd, length);
 
-	d->final(d, passwd1_sum);
+	digest_final(d, passwd1_sum);
 
 	if (std)
-		ret = read_env_passwd(passwd2_sum, d->length);
+		ret = read_env_passwd(passwd2_sum, digest_length(d));
 	else
-		ret = read_default_passwd(passwd2_sum, d->length);
+		ret = read_default_passwd(passwd2_sum, digest_length(d));
 
 	if (ret < 0)
 		goto err2;
 
-	if (strncmp(passwd1_sum, passwd2_sum, d->length) == 0)
+	if (strncmp(passwd1_sum, passwd2_sum, digest_length(d)) == 0)
 		ret = 1;
 
 err2:
@@ -349,18 +349,18 @@ int set_env_passwd(unsigned char* passwd, size_t length)
 
 	d = digest_get_by_name(PASSWD_SUM);
 
-	passwd_sum = calloc(d->length, sizeof(unsigned char));
+	passwd_sum = calloc(digest_length(d), sizeof(unsigned char));
 
 	if (!passwd_sum)
 		return -ENOMEM;
 
-	d->init(d);
+	digest_init(d);
 
-	d->update(d, passwd, length);
+	digest_update(d, passwd, length);
 
-	d->final(d, passwd_sum);
+	digest_final(d, passwd_sum);
 
-	ret = write_env_passwd(passwd_sum, d->length);
+	ret = write_env_passwd(passwd_sum, digest_length(d));
 
 	free(passwd_sum);
 

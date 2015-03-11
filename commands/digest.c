@@ -39,7 +39,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	hash = calloc(d->length, sizeof(unsigned char));
+	hash = calloc(digest_length(d), sizeof(unsigned char));
 	if (!hash) {
 		perror("calloc");
 		return COMMAND_ERROR_USAGE;
@@ -60,7 +60,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 		if (digest_file_window(d, filename, hash, start, size) < 0) {
 			ret = 1;
 		} else {
-			for (i = 0; i < d->length; i++)
+			for (i = 0; i < digest_length(d); i++)
 				printf("%02x", hash[i]);
 
 			printf("  %s\t0x%08llx ... 0x%08llx\n",

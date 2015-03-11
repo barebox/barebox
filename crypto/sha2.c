@@ -275,26 +275,17 @@ static void sha2_finish(sha2_context * ctx, uint8_t digest[32])
 		PUT_UINT32_BE(ctx->state[7], digest, 28);
 }
 
-struct sha2 {
-	sha2_context context;
-	struct digest d;
-};
-
 static int digest_sha2_update(struct digest *d, const void *data,
 				unsigned long len)
 {
-	struct sha2 *m = container_of(d, struct sha2, d);
-
-	sha2_update(&m->context, (uint8_t *)data, len);
+	sha2_update(d->ctx, (uint8_t *)data, len);
 
 	return 0;
 }
 
 static int digest_sha2_final(struct digest *d, unsigned char *md)
 {
-	struct sha2 *m = container_of(d, struct sha2, d);
-
-	sha2_finish(&m->context, md);
+	sha2_finish(d->ctx, md);
 
 	return 0;
 }
@@ -302,52 +293,46 @@ static int digest_sha2_final(struct digest *d, unsigned char *md)
 #ifdef CONFIG_SHA224
 static int digest_sha224_init(struct digest *d)
 {
-	struct sha2 *m = container_of(d, struct sha2, d);
-
-	sha2_starts(&m->context, 1);
+	sha2_starts(d->ctx, 1);
 
 	return 0;
 }
 
-static struct sha2 m224 = {
-	.d = {
-		.name = "sha224",
-		.init = digest_sha224_init,
-		.update = digest_sha2_update,
-		.final = digest_sha2_final,
-		.length = SHA224_SUM_LEN,
-	}
+static struct digest_algo m224 = {
+	.name = "sha224",
+	.init = digest_sha224_init,
+	.update = digest_sha2_update,
+	.final = digest_sha2_final,
+	.length = SHA224_SUM_LEN,
+	.ctx_length = sizeof(sha2_context),
 };
 #endif
 
 #ifdef CONFIG_SHA256
 static int digest_sha256_init(struct digest *d)
 {
-	struct sha2 *m = container_of(d, struct sha2, d);
-
-	sha2_starts(&m->context, 0);
+	sha2_starts(d->ctx, 0);
 
 	return 0;
 }
 
-static struct sha2 m256 = {
-	.d = {
-		.name = "sha256",
-		.init = digest_sha256_init,
-		.update = digest_sha2_update,
-		.final = digest_sha2_final,
-		.length = SHA256_SUM_LEN,
-	}
+static struct digest_algo m256 = {
+	.name = "sha256",
+	.init = digest_sha256_init,
+	.update = digest_sha2_update,
+	.final = digest_sha2_final,
+	.length = SHA256_SUM_LEN,
+	.ctx_length = sizeof(sha2_context),
 };
 #endif
 
 static int sha2_digest_register(void)
 {
 #ifdef CONFIG_SHA224
-	digest_register(&m224.d);
+	digest_algo_register(&m224);
 #endif
 #ifdef CONFIG_SHA256
-	digest_register(&m256.d);
+	digest_algo_register(&m256);
 #endif
 
 	return 0;

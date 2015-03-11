@@ -265,16 +265,9 @@ MD5Transform(__u32 buf[4], __u32 const in[16])
 	buf[3] += d;
 }
 
-struct md5 {
-	struct MD5Context context;
-	struct digest d;
-};
-
 static int digest_md5_init(struct digest *d)
 {
-	struct md5 *m = container_of(d, struct md5, d);
-
-	MD5Init(&m->context);
+	MD5Init(d->ctx);
 
 	return 0;
 }
@@ -282,35 +275,30 @@ static int digest_md5_init(struct digest *d)
 static int digest_md5_update(struct digest *d, const void *data,
 			     unsigned long len)
 {
-	struct md5 *m = container_of(d, struct md5, d);
-
-	MD5Update(&m->context, data, len);
+	MD5Update(d->ctx, data, len);
 
 	return 0;
 }
 
 static int digest_md5_final(struct digest *d, unsigned char *md)
 {
-	struct md5 *m = container_of(d, struct md5, d);
-
-	MD5Final(md, &m->context);
+	MD5Final(md, d->ctx);
 
 	return 0;
 }
 
-static struct md5 m = {
-	.d = {
-		.name = "md5",
-		.init = digest_md5_init,
-		.update = digest_md5_update,
-		.final = digest_md5_final,
-		.length = 16,
-	}
+static struct digest_algo md5 = {
+	.name = "md5",
+	.init = digest_md5_init,
+	.update = digest_md5_update,
+	.final = digest_md5_final,
+	.length = 16,
+	.ctx_length = sizeof(struct MD5Context),
 };
 
 static int md5_digest_register(void)
 {
-	digest_register(&m.d);
+	digest_algo_register(&md5);
 
 	return 0;
 }

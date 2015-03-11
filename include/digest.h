@@ -21,26 +21,36 @@
 
 #include <linux/list.h>
 
-struct digest
-{
+struct digest;
+
+struct digest_algo {
 	char *name;
 
+	int (*alloc)(struct digest *d);
+	void (*free)(struct digest *d);
 	int (*init)(struct digest *d);
 	int (*update)(struct digest *d, const void *data, unsigned long len);
 	int (*final)(struct digest *d, unsigned char *md);
 
 	unsigned int length;
+	unsigned int ctx_length;
 
 	struct list_head list;
+};
+
+struct digest {
+	struct digest_algo *algo;
+	void *ctx;
 };
 
 /*
  * digest functions
  */
-int digest_register(struct digest *d);
-void digest_unregister(struct digest *d);
+int digest_algo_register(struct digest_algo *d);
+void digest_algo_unregister(struct digest_algo *d);
 
-struct digest* digest_get_by_name(char* name);
+struct digest *digest_alloc(char* name);
+void digest_free(struct digest *d);
 
 int digest_file_window(struct digest *d, char *filename,
 		       unsigned char *hash,
@@ -52,23 +62,23 @@ int digest_file_by_name(char *algo, char *filename,
 
 static inline int digest_init(struct digest *d)
 {
-	return d->init(d);
+	return d->algo->init(d);
 }
 
 static inline int digest_update(struct digest *d, const void *data,
 				      unsigned long len)
 {
-	return d->update(d, data, len);
+	return d->algo->update(d, data, len);
 }
 
 static inline int digest_final(struct digest *d, unsigned char *md)
 {
-	return d->final(d, md);
+	return d->algo->final(d, md);
 }
 
 static inline int digest_length(struct digest *d)
 {
-	return d->length;
+	return d->algo->length;
 }
 
 #endif /* __SH_ST_DEVICES_H__ */

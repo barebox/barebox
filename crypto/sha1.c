@@ -286,16 +286,9 @@ static void sha1_finish (sha1_context * ctx, uint8_t output[20])
 	PUT_UINT32_BE (ctx->state[4], output, 16);
 }
 
-struct sha1 {
-	sha1_context context;
-	struct digest d;
-};
-
 static int digest_sha1_init(struct digest *d)
 {
-	struct sha1 *m = container_of(d, struct sha1, d);
-
-	sha1_starts(&m->context);
+	sha1_starts(d->ctx);
 
 	return 0;
 }
@@ -303,35 +296,30 @@ static int digest_sha1_init(struct digest *d)
 static int digest_sha1_update(struct digest *d, const void *data,
 			     unsigned long len)
 {
-	struct sha1 *m = container_of(d, struct sha1, d);
-
-	sha1_update(&m->context, (uint8_t*)data, len);
+	sha1_update(d->ctx, (uint8_t*)data, len);
 
 	return 0;
 }
 
 static int digest_sha1_final(struct digest *d, unsigned char *md)
 {
-	struct sha1 *m = container_of(d, struct sha1, d);
-
-	sha1_finish(&m->context, md);
+	sha1_finish(d->ctx, md);
 
 	return 0;
 }
 
-static struct sha1 m = {
-	.d = {
-		.name = "sha1",
-		.init = digest_sha1_init,
-		.update = digest_sha1_update,
-		.final = digest_sha1_final,
-		.length = SHA1_SUM_LEN,
-	}
+static struct digest_algo m = {
+	.name = "sha1",
+	.init = digest_sha1_init,
+	.update = digest_sha1_update,
+	.final = digest_sha1_final,
+	.length = SHA1_SUM_LEN,
+	.ctx_length = sizeof(sha1_context),
 };
 
 static int sha1_digest_register(void)
 {
-	digest_register(&m.d);
+	digest_algo_register(&m);
 
 	return 0;
 }

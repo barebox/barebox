@@ -28,12 +28,16 @@
 
 static LIST_HEAD(digests);
 
+static struct digest_algo* digest_algo_get_by_name(char* name);
+
 static int dummy_init(struct digest *d)
 {
 	return 0;
 }
 
-int digest_register(struct digest *d)
+static void dummy_free(struct digest *d) {}
+
+int digest_algo_register(struct digest_algo *d)
 {
 	if (!d || !d->name || !d->update || !d->final || d->length < 1)
 		return -EINVAL;
@@ -41,27 +45,33 @@ int digest_register(struct digest *d)
 	if (!d->init)
 		d->init = dummy_init;
 
-	if (digest_get_by_name(d->name))
+	if (!d->alloc)
+		d->alloc = dummy_init;
+
+	if (!d->free)
+		d->free = dummy_free;
+
+	if (digest_algo_get_by_name(d->name))
 		return -EEXIST;
 
 	list_add_tail(&d->list, &digests);
 
 	return 0;
 }
-EXPORT_SYMBOL(digest_register);
+EXPORT_SYMBOL(digest_algo_register);
 
-void digest_unregister(struct digest *d)
+void digest_algo_unregister(struct digest_algo *d)
 {
 	if (!d)
 		return;
 
 	list_del(&d->list);
 }
-EXPORT_SYMBOL(digest_unregister);
+EXPORT_SYMBOL(digest_algo_unregister);
 
-struct digest* digest_get_by_name(char* name)
+static struct digest_algo *digest_algo_get_by_name(char* name)
 {
-	struct digest* d;
+	struct digest_algo* d;
 
 	if (!name)
 		return NULL;
@@ -73,7 +83,37 @@ struct digest* digest_get_by_name(char* name)
 
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(digest_get_by_name);
+
+struct digest *digest_alloc(char* name)
+{
+	struct digest* d;
+	struct digest_algo* algo;
+
+	algo = digest_algo_get_by_name(name);
+	if (!algo)
+		return NULL;
+
+	d = xzalloc(sizeof(*d));
+	d->algo = algo;
+	d->ctx = xzalloc(algo->ctx_length);
+	if (d->algo->alloc(d)) {
+		digest_free(d);
+		return NULL;
+	}
+
+	return d;
+}
+EXPORT_SYMBOL_GPL(digest_alloc);
+
+void digest_free(struct digest *d)
+{
+	if (!d)
+		return;
+	d->algo->free(d);
+	free(d->ctx);
+	free(d);
+}
+EXPORT_SYMBOL_GPL(digest_free);
 
 int digest_file_window(struct digest *d, char *filename,
 		       unsigned char *hash,
@@ -164,11 +204,14 @@ int digest_file_by_name(char *algo, char *filename,
 		       unsigned char *hash)
 {
 	struct digest *d;
+	int ret;
 
-	d = digest_get_by_name(algo);
+	d = digest_alloc(algo);
 	if (!d)
 		return -EIO;
 
-	return digest_file(d, filename, hash);
+	ret = digest_file(d, filename, hash);
+	digest_free(d);
+	return ret;
 }
 EXPORT_SYMBOL_GPL(digest_file_by_name);

@@ -33,7 +33,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 	int i;
 	unsigned char *hash;
 
-	d = digest_get_by_name(algorithm);
+	d = digest_alloc(algorithm);
 	BUG_ON(!d);
 
 	if (argc < 2)
@@ -71,6 +71,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 	}
 
 	free(hash);
+	digest_free(d);
 
 	return ret;
 }

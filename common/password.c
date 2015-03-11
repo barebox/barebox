@@ -280,7 +280,7 @@ static int __check_passwd(unsigned char* passwd, size_t length, int std)
 	unsigned char *passwd2_sum;
 	int ret = 0;
 
-	d = digest_get_by_name(PASSWD_SUM);
+	d = digest_alloc(PASSWD_SUM);
 
 	passwd1_sum = calloc(digest_length(d), sizeof(unsigned char));
 
@@ -315,6 +315,7 @@ err2:
 	free(passwd2_sum);
 err1:
 	free(passwd1_sum);
+	digest_free(d);
 
 	return ret;
 }
@@ -347,7 +348,7 @@ int set_env_passwd(unsigned char* passwd, size_t length)
 	unsigned char *passwd_sum;
 	int ret;
 
-	d = digest_get_by_name(PASSWD_SUM);
+	d = digest_alloc(PASSWD_SUM);
 
 	passwd_sum = calloc(digest_length(d), sizeof(unsigned char));
 

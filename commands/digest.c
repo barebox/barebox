@@ -25,6 +25,7 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <digest.h>
+#include <getopt.h>
 
 static int do_digest(char *algorithm, int argc, char *argv[])
 {
@@ -32,11 +33,32 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 	int ret = 0;
 	int i;
 	unsigned char *hash;
+	unsigned char *key = NULL;
+	size_t keylen = 0;
+	int opt;
 
-	d = digest_alloc(algorithm);
+	while((opt = getopt(argc, argv, "h:")) > 0) {
+		switch(opt) {
+		case 'h':
+			key = optarg;
+			keylen = strlen(key);
+			break;
+		}
+	}
+
+	argc -= optind;
+	argv += optind;
+
+	if (key) {
+		char *tmp = asprintf("hmac(%s)", algorithm);
+		d = digest_alloc(tmp);
+		free(tmp);
+	} else {
+		d = digest_alloc(algorithm);
+	}
 	BUG_ON(!d);
 
-	if (argc < 2)
+	if (argc < 1)
 		return COMMAND_ERROR_USAGE;
 
 	hash = calloc(digest_length(d), sizeof(unsigned char));
@@ -45,7 +67,6 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 	}
 
-	argv++;
 	while (*argv) {
 		char *filename = "/dev/mem";
 		loff_t start = 0, size = ~0;
@@ -53,11 +74,14 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 		/* arguments are either file, file+area or area */
 		if (parse_area_spec(*argv, &start, &size)) {
 			filename = *argv;
-			if (argv[1] && !parse_area_spec(argv[1], &start, &size))
+			if (argv[0] && !parse_area_spec(argv[0], &start, &size))
 				argv++;
 		}
 
-		if (digest_file_window(d, filename, hash, start, size) < 0) {
+		ret = digest_file_window(d, filename,
+					 key, keylen,
+					 hash, start, size);
+		if (ret < 0) {
 			ret = 1;
 		} else {
 			for (i = 0; i < digest_length(d); i++)

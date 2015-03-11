@@ -116,6 +116,7 @@ void digest_free(struct digest *d)
 EXPORT_SYMBOL_GPL(digest_free);
 
 int digest_file_window(struct digest *d, char *filename,
+		       unsigned char *key, size_t keylen,
 		       unsigned char *hash,
 		       ulong start, ulong size)
 {
@@ -123,6 +124,9 @@ int digest_file_window(struct digest *d, char *filename,
 	int fd, now, ret = 0;
 	unsigned char *buf;
 	int flags = 0;
+
+	if (key)
+		digest_set_key(d, key, keylen);
 
 	digest_init(d);
 
@@ -186,6 +190,7 @@ out:
 EXPORT_SYMBOL_GPL(digest_file_window);
 
 int digest_file(struct digest *d, char *filename,
+		       unsigned char *key, size_t keylen,
 		       unsigned char *hash)
 {
 	struct stat st;
@@ -196,11 +201,12 @@ int digest_file(struct digest *d, char *filename,
 	if (ret < 0)
 		return ret;
 
-	return digest_file_window(d, filename, hash, 0, st.st_size);
+	return digest_file_window(d, filename, key, keylen, hash, 0, st.st_size);
 }
 EXPORT_SYMBOL_GPL(digest_file);
 
 int digest_file_by_name(char *algo, char *filename,
+		       unsigned char *key, size_t keylen,
 		       unsigned char *hash)
 {
 	struct digest *d;
@@ -210,7 +216,7 @@ int digest_file_by_name(char *algo, char *filename,
 	if (!d)
 		return -EIO;
 
-	ret = digest_file(d, filename, hash);
+	ret = digest_file(d, filename, key, keylen, hash);
 	digest_free(d);
 	return ret;
 }

@@ -159,3 +159,45 @@ BAREBOX_CMD_START(sha256sum)
 BAREBOX_CMD_END
 
 #endif /* CMD_CMD_SHA256SUM */
+
+#ifdef CONFIG_CMD_SHA384SUM
+
+static int do_sha384(int argc, char *argv[])
+{
+	return do_digest("sha384", argc, argv);
+}
+
+BAREBOX_CMD_HELP_START(sha384sum)
+BAREBOX_CMD_HELP_TEXT("Calculate a SHA384 digest over a FILE or a memory area.")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(sha384sum)
+	.cmd		= do_sha384,
+	BAREBOX_CMD_DESC("calculate SHA384 digest")
+	BAREBOX_CMD_OPTS("FILE|AREA")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
+	BAREBOX_CMD_HELP(cmd_sha384sum_help)
+BAREBOX_CMD_END
+
+#endif /* CMD_CMD_SHA384SUM */
+
+#ifdef CONFIG_CMD_SHA512SUM
+
+static int do_sha512(int argc, char *argv[])
+{
+	return do_digest("sha512", argc, argv);
+}
+
+BAREBOX_CMD_HELP_START(sha512sum)
+BAREBOX_CMD_HELP_TEXT("Calculate a SHA512 digest over a FILE or a memory area.")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(sha512sum)
+	.cmd		= do_sha512,
+	BAREBOX_CMD_DESC("calculate SHA512 digest")
+	BAREBOX_CMD_OPTS("FILE|AREA")
+	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
+	BAREBOX_CMD_HELP(cmd_sha512sum_help)
+BAREBOX_CMD_END
+
+#endif /* CMD_CMD_SHA512SUM */

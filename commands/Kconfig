@@ -1016,6 +1016,30 @@ config CMD_SHA256SUM
 
 	  Calculate a SHA256 digest over a FILE or a memory area.
 
+config CMD_SHA384SUM
+	tristate
+	select COMPILE_DIGEST
+	select SHA384
+	prompt "sha384sum"
+	help
+	  Calculate SHA384 digest
+
+	  Usage: sha384sum FILE|AREA
+
+	  Calculate a SHA384 digest over a FILE or a memory area.
+
+config CMD_SHA512SUM
+	tristate
+	select COMPILE_DIGEST
+	select SHA512
+	prompt "sha512sum"
+	help
+	  sha512sum - calculate SHA512 digest
+
+	  Usage: sha512sum FILE|AREA
+
+	  Calculate a SHA512 digest over a FILE or a memory area.
+
 config CMD_UNCOMPRESS
 	bool
 	select UNCOMPRESS

@@ -97,7 +97,7 @@ static const uint64_t K[80] = {
 /*
  * SHA-512 context setup
  */
-static void sha4_starts(sha4_context * ctx, int is384)
+static void sha4_starts(sha4_context *ctx, int is384)
 {
 	ctx->total[0] = 0;
 	ctx->total[1] = 0;
@@ -127,7 +127,7 @@ static void sha4_starts(sha4_context * ctx, int is384)
 	ctx->is384 = is384;
 }
 
-static void sha4_process(sha4_context * ctx, unsigned char data[128])
+static void sha4_process(sha4_context *ctx, unsigned char data[128])
 {
 	int i;
 	uint64_t temp1, temp2, W[80];
@@ -202,7 +202,7 @@ static void sha4_process(sha4_context * ctx, unsigned char data[128])
 /*
  * SHA-512 process buffer
  */
-static void sha4_update(sha4_context * ctx, unsigned char *input, int ilen)
+static void sha4_update(sha4_context *ctx, unsigned char *input, int ilen)
 {
 	int fill;
 	uint64_t left;
@@ -250,7 +250,7 @@ static const unsigned char sha4_padding[128] = {
 /*
  * SHA-512 final digest
  */
-static void sha4_finish(sha4_context * ctx, unsigned char output[64])
+static void sha4_finish(sha4_context *ctx, unsigned char output[64])
 {
 	int last, padn;
 	uint64_t high, low;

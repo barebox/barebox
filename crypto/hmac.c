@@ -26,7 +26,7 @@ struct digest_hmac_ctx {
 	unsigned int keylen;
 };
 
-static inline struct digest_hmac * to_digest_hmac(struct digest_algo *algo)
+static inline struct digest_hmac *to_digest_hmac(struct digest_algo *algo)
 {
 	return container_of(algo, struct digest_hmac, algo);
 }

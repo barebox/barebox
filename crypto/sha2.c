@@ -39,7 +39,7 @@ typedef struct {
 #define GET_UINT32_BE(n,b,i) (n) = be32_to_cpu(((uint32_t*)(b))[i / 4])
 #define PUT_UINT32_BE(n,b,i) ((uint32_t*)(b))[i / 4] = cpu_to_be32(n)
 
-static void sha2_starts(sha2_context * ctx, int is224)
+static void sha2_starts(sha2_context *ctx, int is224)
 {
 	ctx->total[0] = 0;
 	ctx->total[1] = 0;
@@ -74,7 +74,7 @@ static void sha2_starts(sha2_context * ctx, int is224)
 	ctx->is224 = is224;
 }
 
-static void sha2_process(sha2_context * ctx, const uint8_t data[64])
+static void sha2_process(sha2_context *ctx, const uint8_t data[64])
 {
 	uint32_t temp1, temp2;
 	uint32_t W[64];
@@ -205,7 +205,7 @@ static void sha2_process(sha2_context * ctx, const uint8_t data[64])
 	ctx->state[7] += H;
 }
 
-static void sha2_update(sha2_context * ctx, const uint8_t * input, size_t length)
+static void sha2_update(sha2_context *ctx, const uint8_t *input, size_t length)
 {
 	size_t fill;
 	uint32_t left;
@@ -247,7 +247,7 @@ static const uint8_t sha2_padding[64] = {
 	   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static void sha2_finish(sha2_context * ctx, uint8_t digest[32])
+static void sha2_finish(sha2_context *ctx, uint8_t digest[32])
 {
 	uint32_t last, padn;
 	uint32_t high, low;

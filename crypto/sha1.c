@@ -48,7 +48,7 @@ sha1_context;
 /*
  * SHA-1 context setup
  */
-static void sha1_starts (sha1_context * ctx)
+static void sha1_starts (sha1_context *ctx)
 {
 	ctx->total[0] = 0;
 	ctx->total[1] = 0;
@@ -60,7 +60,7 @@ static void sha1_starts (sha1_context * ctx)
 	ctx->state[4] = 0xC3D2E1F0;
 }
 
-static void sha1_process (sha1_context * ctx, uint8_t data[64])
+static void sha1_process (sha1_context *ctx, uint8_t data[64])
 {
 	uint32_t temp, W[16], A, B, C, D, E;
 
@@ -217,7 +217,7 @@ static void sha1_process (sha1_context * ctx, uint8_t data[64])
 /*
  * SHA-1 process buffer
  */
-static void sha1_update (sha1_context * ctx, uint8_t *input, uint32_t ilen)
+static void sha1_update (sha1_context *ctx, uint8_t *input, uint32_t ilen)
 {
 	uint32_t fill, left;
 
@@ -262,7 +262,7 @@ static uint8_t sha1_padding[64] = {
 /*
  * SHA-1 final digest
  */
-static void sha1_finish (sha1_context * ctx, uint8_t output[20])
+static void sha1_finish (sha1_context *ctx, uint8_t output[20])
 {
 	uint32_t last, padn;
 	uint32_t high, low;

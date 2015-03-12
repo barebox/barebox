@@ -28,7 +28,7 @@
 
 static LIST_HEAD(digests);
 
-static struct digest_algo* digest_algo_get_by_name(const char *name);
+static struct digest_algo *digest_algo_get_by_name(const char *name);
 
 static int dummy_init(struct digest *d)
 {
@@ -71,7 +71,7 @@ EXPORT_SYMBOL(digest_algo_unregister);
 
 static struct digest_algo *digest_algo_get_by_name(const char *name)
 {
-	struct digest_algo* d;
+	struct digest_algo *d;
 
 	if (!name)
 		return NULL;
@@ -86,8 +86,8 @@ static struct digest_algo *digest_algo_get_by_name(const char *name)
 
 struct digest *digest_alloc(const char *name)
 {
-	struct digest* d;
-	struct digest_algo* algo;
+	struct digest *d;
+	struct digest_algo *algo;
 
 	algo = digest_algo_get_by_name(name);
 	if (!algo)

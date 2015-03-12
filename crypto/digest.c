@@ -28,7 +28,7 @@
 
 static LIST_HEAD(digests);
 
-static struct digest_algo* digest_algo_get_by_name(char* name);
+static struct digest_algo* digest_algo_get_by_name(const char *name);
 
 static int dummy_init(struct digest *d)
 {
@@ -69,7 +69,7 @@ void digest_algo_unregister(struct digest_algo *d)
 }
 EXPORT_SYMBOL(digest_algo_unregister);
 
-static struct digest_algo *digest_algo_get_by_name(char* name)
+static struct digest_algo *digest_algo_get_by_name(const char *name)
 {
 	struct digest_algo* d;
 
@@ -84,7 +84,7 @@ static struct digest_algo *digest_algo_get_by_name(char* name)
 	return NULL;
 }
 
-struct digest *digest_alloc(char* name)
+struct digest *digest_alloc(const char *name)
 {
 	struct digest* d;
 	struct digest_algo* algo;
@@ -115,8 +115,8 @@ void digest_free(struct digest *d)
 }
 EXPORT_SYMBOL_GPL(digest_free);
 
-int digest_file_window(struct digest *d, char *filename,
-		       unsigned char *key, size_t keylen,
+int digest_file_window(struct digest *d, const char *filename,
+		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash,
 		       ulong start, ulong size)
 {
@@ -189,8 +189,8 @@ out:
 }
 EXPORT_SYMBOL_GPL(digest_file_window);
 
-int digest_file(struct digest *d, char *filename,
-		       unsigned char *key, size_t keylen,
+int digest_file(struct digest *d, const char *filename,
+		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash)
 {
 	struct stat st;
@@ -205,8 +205,8 @@ int digest_file(struct digest *d, char *filename,
 }
 EXPORT_SYMBOL_GPL(digest_file);
 
-int digest_file_by_name(char *algo, char *filename,
-		       unsigned char *key, size_t keylen,
+int digest_file_by_name(const char *algo, const char *filename,
+		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash)
 {
 	struct digest *d;

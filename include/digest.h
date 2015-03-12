@@ -31,7 +31,7 @@ struct digest_algo {
 	int (*init)(struct digest *d);
 	int (*update)(struct digest *d, const void *data, unsigned long len);
 	int (*final)(struct digest *d, unsigned char *md);
-	int (*set_key)(struct digest *d, unsigned char *key, unsigned int len);
+	int (*set_key)(struct digest *d, const unsigned char *key, unsigned int len);
 
 	unsigned int length;
 	unsigned int ctx_length;
@@ -50,18 +50,18 @@ struct digest {
 int digest_algo_register(struct digest_algo *d);
 void digest_algo_unregister(struct digest_algo *d);
 
-struct digest *digest_alloc(char* name);
+struct digest *digest_alloc(const char *name);
 void digest_free(struct digest *d);
 
-int digest_file_window(struct digest *d, char *filename,
-		       unsigned char *key, size_t keylen,
+int digest_file_window(struct digest *d, const char *filename,
+		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash,
 		       ulong start, ulong size);
-int digest_file(struct digest *d, char *filename,
-		       unsigned char *key, size_t keylen,
+int digest_file(struct digest *d, const char *filename,
+		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash);
-int digest_file_by_name(char *algo, char *filename,
-		       unsigned char *key, size_t keylen,
+int digest_file_by_name(const char *algo, const char *filename,
+		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash);
 
 static inline int digest_init(struct digest *d)
@@ -85,7 +85,8 @@ static inline int digest_length(struct digest *d)
 	return d->algo->length;
 }
 
-static inline int digest_set_key(struct digest *d, unsigned char *key, unsigned int len)
+static inline int digest_set_key(struct digest *d, const unsigned char *key,
+		unsigned int len)
 {
 	if (!d->algo->set_key)
 		return -ENOTSUPP;

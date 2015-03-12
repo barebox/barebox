@@ -23,12 +23,25 @@
 
 #define div_mask(d)	((1 << ((d)->width)) - 1)
 
+static unsigned int _get_table_maxdiv(const struct clk_div_table *table)
+{
+	unsigned int maxdiv = 0;
+	const struct clk_div_table *clkt;
+
+	for (clkt = table; clkt->div; clkt++)
+		if (clkt->div > maxdiv)
+			maxdiv = clkt->div;
+	return maxdiv;
+}
+
 static unsigned int _get_maxdiv(struct clk_divider *divider)
 {
 	if (divider->flags & CLK_DIVIDER_ONE_BASED)
 		return div_mask(divider);
 	if (divider->flags & CLK_DIVIDER_POWER_OF_TWO)
 		return 1 << div_mask(divider);
+	if (divider->table)
+		return _get_table_maxdiv(divider->table);
 	return div_mask(divider) + 1;
 }
 

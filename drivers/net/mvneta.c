@@ -393,7 +393,7 @@ static int mvneta_send(struct eth_device *edev, void *data, int len)
 	int ret, error, last_desc;
 
 	/* Flush transmit data */
-	dma_flush_range((unsigned long)data, (unsigned long)data+len);
+	dma_sync_single_for_device((unsigned long)data, len, DMA_TO_DEVICE);
 
 	/* Fill the Tx descriptor */
 	txdesc->cmd_sts |= MVNETA_TX_L4_CSUM_NOT | MVNETA_TXD_FLZ_DESC;
@@ -409,6 +409,7 @@ static int mvneta_send(struct eth_device *edev, void *data, int len)
 	 * the Tx port status register (PTXS).
 	 */
 	ret = wait_on_timeout(TRANSFER_TIMEOUT, !mvneta_pending_tx(priv));
+	dma_sync_single_for_cpu((unsigned long)data, len, DMA_TO_DEVICE);
 	if (ret) {
 		dev_err(&edev->dev, "transmit timeout\n");
 		return ret;
@@ -459,14 +460,16 @@ static int mvneta_recv(struct eth_device *edev)
 	}
 
 	/* invalidate current receive buffer */
-	dma_inv_range((unsigned long)rxdesc->buf_phys_addr,
-		      (unsigned long)rxdesc->buf_phys_addr +
-		      ALIGN(PKTSIZE, 8));
+	dma_sync_single_for_cpu((unsigned long)rxdesc->buf_phys_addr,
+				ALIGN(PKTSIZE, 8), DMA_FROM_DEVICE);
 
 	/* received packet is padded with two null bytes (Marvell header) */
 	net_receive(edev, (void *)(rxdesc->buf_phys_addr + MVNETA_MH_SIZE),
 			  rxdesc->data_size - MVNETA_MH_SIZE);
 	ret = 0;
+
+	dma_sync_single_for_device((unsigned long)rxdesc->buf_phys_addr,
+				   ALIGN(PKTSIZE, 8), DMA_FROM_DEVICE);
 
 recv_err:
 	/* reset this and get next rx descriptor*/

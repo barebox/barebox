@@ -259,15 +259,17 @@ static void postscan_setup_bridge(struct pci_dev *dev)
 	/* limit subordinate to last used bus number */
 	pci_write_config_byte(dev, PCI_SUBORDINATE_BUS, bus_index - 1);
 
-	if (last_mem)
+	if (last_mem) {
 		last_mem = ALIGN(last_mem, SZ_1M);
 		pci_write_config_word(dev, PCI_MEMORY_LIMIT,
 				      ((last_mem - 1) & 0xfff00000) >> 16);
+	}
 
-	if (last_mem_pref)
+	if (last_mem_pref) {
 		last_mem_pref = ALIGN(last_mem_pref, SZ_1M);
 		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT,
 				      ((last_mem_pref - 1) & 0xfff00000) >> 16);
+	}
 
 	if (last_io) {
 		last_io = ALIGN(last_io, SZ_4K);

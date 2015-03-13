@@ -114,5 +114,3 @@ int parse_area_spec(const char *str, loff_t *start, loff_t *size)
 	return -1;
 }
 EXPORT_SYMBOL(parse_area_spec);
-
-const char hex_asc[] = "0123456789abcdef";

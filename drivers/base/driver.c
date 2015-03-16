@@ -399,8 +399,8 @@ void devices_shutdown(void)
 	struct device_d *dev;
 
 	list_for_each_entry(dev, &active, active) {
-		if (dev->driver->remove)
-			dev->driver->remove(dev);
+		if (dev->bus->remove)
+			dev->bus->remove(dev);
 	}
 }
 

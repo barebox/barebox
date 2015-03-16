@@ -328,7 +328,8 @@ static void efi_bus_remove(struct device_d *dev)
 	struct efi_driver *efidrv = to_efi_driver(dev->driver);
 	struct efi_device *efidev = to_efi_device(dev);
 
-	return efidrv->remove(efidev);
+	if (efidrv->remove)
+		efidrv->remove(efidev);
 }
 
 struct bus_type efi_bus = {

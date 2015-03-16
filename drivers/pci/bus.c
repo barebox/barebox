@@ -51,7 +51,8 @@ static void pci_remove(struct device_d *dev)
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct pci_driver *pdrv = to_pci_driver(dev->driver);
 
-	pdrv->remove(pdev);
+	if (pdrv->remove)
+		pdrv->remove(pdev);
 }
 
 struct bus_type pci_bus = {

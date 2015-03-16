@@ -472,7 +472,8 @@ static int i2c_probe(struct device_d *dev)
 
 static void i2c_remove(struct device_d *dev)
 {
-	dev->driver->remove(dev);
+	if (dev->driver->remove)
+		dev->driver->remove(dev);
 }
 
 struct bus_type i2c_bus = {

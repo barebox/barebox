@@ -311,7 +311,8 @@ static int spi_probe(struct device_d *dev)
 
 static void spi_remove(struct device_d *dev)
 {
-	dev->driver->remove(dev);
+	if (dev->driver->remove)
+		dev->driver->remove(dev);
 }
 
 struct bus_type spi_bus = {

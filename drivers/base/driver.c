@@ -85,13 +85,14 @@ int device_probe(struct device_d *dev)
 
 	pinctrl_select_state_default(dev);
 
+	list_add(&dev->active, &active);
+
 	ret = dev->bus->probe(dev);
 	if (ret) {
+		list_del(&dev->active);
 		dev_err(dev, "probe failed: %s\n", strerror(-ret));
 		return ret;
 	}
-
-	list_add(&dev->active, &active);
 
 	return 0;
 }

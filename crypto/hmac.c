@@ -62,15 +62,15 @@ static int digest_hmac_set_key(struct digest *d, const unsigned char *key,
 {
 	struct digest_hmac_ctx *dh = d->ctx;
 	struct digest_hmac *hmac = to_digest_hmac(d->algo);
+	unsigned char *sum = NULL;
+	int ret;
 
 	free(dh->key);
 	if (len > hmac->pad_length) {
-		unsigned char *sum;
-
 		sum = xmalloc(digest_length(dh->d));
-		digest_init(dh->d);
-		digest_update(dh->d, dh->key, dh->keylen);
-		digest_final(dh->d, sum);
+		ret = digest_digest(dh->d, dh->key, dh->keylen, sum);
+		if (ret)
+			goto err;
 		dh->keylen = digest_length(dh->d);
 		dh->key = sum;
 	} else {
@@ -79,14 +79,17 @@ static int digest_hmac_set_key(struct digest *d, const unsigned char *key,
 		dh->keylen = len;
 	}
 
-	return 0;
+	ret = 0;
+err:
+	free(sum);
+	return ret;
 }
 
 static int digest_hmac_init(struct digest *d)
 {
 	struct digest_hmac_ctx *dh = d->ctx;
 	struct digest_hmac *hmac = to_digest_hmac(d->algo);
-	int i;
+	int i, ret;
 	unsigned char *key = dh->key;
 	unsigned int keylen = dh->keylen;
 
@@ -98,10 +101,10 @@ static int digest_hmac_init(struct digest *d)
 		dh->opad[i] = (unsigned char)(dh->opad[i] ^ key[i]);
 	}
 
-	digest_init(dh->d);
-	digest_update(dh->d, dh->ipad, hmac->pad_length);
-
-	return 0;
+	ret = digest_init(dh->d);
+	if (ret)
+		return ret;
+	return digest_update(dh->d, dh->ipad, hmac->pad_length);
 }
 
 static int digest_hmac_update(struct digest *d, const void *data,
@@ -117,18 +120,28 @@ static int digest_hmac_final(struct digest *d, unsigned char *md)
 	struct digest_hmac_ctx *dh = d->ctx;
 	struct digest_hmac *hmac = to_digest_hmac(d->algo);
 	unsigned char *tmp = NULL;
+	int ret;
 
 	tmp = xmalloc(digest_length(d));
 
-	digest_final(dh->d, tmp);
-	digest_init(dh->d);
-	digest_update(dh->d, dh->opad, hmac->pad_length);
-	digest_update(dh->d, tmp, digest_length(d));
-	digest_final(dh->d, md);
+	ret = digest_final(dh->d, tmp);
+	if (ret)
+		goto err;
+	ret = digest_init(dh->d);
+	if (ret)
+		goto err;
+	ret = digest_update(dh->d, dh->opad, hmac->pad_length);
+	if (ret)
+		goto err;
+	ret = digest_update(dh->d, tmp, digest_length(d));
+	if (ret)
+		goto err;
+	ret = digest_final(dh->d, md);
 
+err:
 	free(tmp);
 
-	return 0;
+	return ret;
 }
 
 struct digest_algo hmac_algo = {

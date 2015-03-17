@@ -336,6 +336,7 @@ static struct digest_algo m256 = {
 	.init = digest_sha256_init,
 	.update = digest_sha2_update,
 	.final = digest_sha2_final,
+	.digest = digest_generic_digest,
 	.verify = digest_generic_verify,
 	.length = SHA256_SUM_LEN,
 	.ctx_length = sizeof(sha2_context),

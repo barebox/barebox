@@ -294,6 +294,7 @@ static struct digest_algo md5 = {
 	.init = digest_md5_init,
 	.update = digest_md5_update,
 	.final = digest_md5_final,
+	.digest = digest_generic_digest,
 	.verify = digest_generic_verify,
 	.length = 16,
 	.ctx_length = sizeof(struct MD5Context),

@@ -315,6 +315,7 @@ static struct digest_algo m = {
 	.init = digest_sha1_init,
 	.update = digest_sha1_update,
 	.final = digest_sha1_final,
+	.digest = digest_generic_digest,
 	.verify = digest_generic_verify,
 	.length = SHA1_SUM_LEN,
 	.ctx_length = sizeof(sha1_context),

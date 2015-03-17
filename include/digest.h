@@ -52,17 +52,21 @@ struct digest {
  */
 int digest_algo_register(struct digest_algo *d);
 void digest_algo_unregister(struct digest_algo *d);
+void digest_algo_prints(const char *prefix);
 
 struct digest *digest_alloc(const char *name);
 void digest_free(struct digest *d);
 
 int digest_file_window(struct digest *d, const char *filename,
 		       unsigned char *hash,
+		       unsigned char *sig,
 		       ulong start, ulong size);
 int digest_file(struct digest *d, const char *filename,
-		       unsigned char *hash);
+		       unsigned char *hash,
+		       unsigned char *sig);
 int digest_file_by_name(const char *algo, const char *filename,
-		       unsigned char *hash);
+		       unsigned char *hash,
+		       unsigned char *sig);
 
 static inline int digest_init(struct digest *d)
 {

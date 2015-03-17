@@ -124,6 +124,15 @@ static struct digest_algo *digest_algo_get_by_name(const char *name)
 	return NULL;
 }
 
+void digest_algo_prints(const char *prefix)
+{
+	struct digest_algo* d;
+
+	list_for_each_entry(d, &digests, list) {
+		printf("%s%s\n", prefix, d->name);
+	}
+}
+
 struct digest *digest_alloc(const char *name)
 {
 	struct digest *d;
@@ -157,6 +166,7 @@ EXPORT_SYMBOL_GPL(digest_free);
 
 int digest_file_window(struct digest *d, const char *filename,
 		       unsigned char *hash,
+		       unsigned char *sig,
 		       ulong start, ulong size)
 {
 	ulong len = 0;
@@ -217,7 +227,10 @@ int digest_file_window(struct digest *d, const char *filename,
 		len += now;
 	}
 
-	ret = digest_final(d, hash);
+	if (sig)
+		ret = digest_verify(d, sig);
+	else
+		ret = digest_final(d, hash);
 
 out_free:
 	if (flags)
@@ -230,7 +243,8 @@ out:
 EXPORT_SYMBOL_GPL(digest_file_window);
 
 int digest_file(struct digest *d, const char *filename,
-		       unsigned char *hash)
+		       unsigned char *hash,
+		       unsigned char *sig)
 {
 	struct stat st;
 	int ret;
@@ -240,12 +254,13 @@ int digest_file(struct digest *d, const char *filename,
 	if (ret < 0)
 		return ret;
 
-	return digest_file_window(d, filename, hash, 0, st.st_size);
+	return digest_file_window(d, filename, hash, sig, 0, st.st_size);
 }
 EXPORT_SYMBOL_GPL(digest_file);
 
 int digest_file_by_name(const char *algo, const char *filename,
-		       unsigned char *hash)
+		       unsigned char *hash,
+		       unsigned char *sig)
 {
 	struct digest *d;
 	int ret;
@@ -254,7 +269,7 @@ int digest_file_by_name(const char *algo, const char *filename,
 	if (!d)
 		return -EIO;
 
-	ret = digest_file(d, filename, hash);
+	ret = digest_file(d, filename, hash, sig);
 	digest_free(d);
 	return ret;
 }

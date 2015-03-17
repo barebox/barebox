@@ -27,12 +27,11 @@
 #include <digest.h>
 #include <getopt.h>
 
-static int do_digest(char *algorithm, int argc, char *argv[])
+#include "internal.h"
+
+static int do_hash(char *algo, int argc, char *argv[])
 {
 	struct digest *d;
-	int ret = 0;
-	int i;
-	unsigned char *hash;
 	unsigned char *key = NULL;
 	size_t keylen = 0;
 	int opt;
@@ -46,71 +45,26 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 		}
 	}
 
+	if (key) {
+		char *tmp = asprintf("hmac(%s)", algo);
+		d = digest_alloc(tmp);
+		free(tmp);
+	} else {
+		d = digest_alloc(algo);
+	}
+	BUG_ON(!d);
+
 	argc -= optind;
 	argv += optind;
 
-	if (key) {
-		char *tmp = asprintf("hmac(%s)", algorithm);
-		d = digest_alloc(tmp);
-		BUG_ON(!d);
-		ret = digest_set_key(d, key, keylen);
-		free(tmp);
-		if (ret) {
-			perror("set_key");
-			goto err;
-		}
-	} else {
-		d = digest_alloc(algorithm);
-		BUG_ON(!d);
-	}
-
-	if (argc < 1)
-		return COMMAND_ERROR_USAGE;
-
-	hash = calloc(digest_length(d), sizeof(unsigned char));
-	if (!hash) {
-		perror("calloc");
-		return COMMAND_ERROR_USAGE;
-	}
-
-	while (*argv) {
-		char *filename = "/dev/mem";
-		loff_t start = 0, size = ~0;
-
-		/* arguments are either file, file+area or area */
-		if (parse_area_spec(*argv, &start, &size)) {
-			filename = *argv;
-			if (argv[0] && !parse_area_spec(argv[0], &start, &size))
-				argv++;
-		}
-
-		ret = digest_file_window(d, filename,
-					 hash, start, size);
-		if (ret < 0) {
-			ret = 1;
-		} else {
-			for (i = 0; i < digest_length(d); i++)
-				printf("%02x", hash[i]);
-
-			printf("  %s\t0x%08llx ... 0x%08llx\n",
-				filename, start, start + size);
-		}
-
-		argv++;
-	}
-
-err:
-	free(hash);
-	digest_free(d);
-
-	return ret;
+	return __do_digest(d, key, keylen, NULL, argc, argv);
 }
 
 #ifdef CONFIG_CMD_MD5SUM
 
 static int do_md5(int argc, char *argv[])
 {
-	return do_digest("md5", argc, argv);
+	return do_hash("md5", argc, argv);
 }
 
 BAREBOX_CMD_HELP_START(md5sum)
@@ -131,7 +85,7 @@ BAREBOX_CMD_END
 
 static int do_sha1(int argc, char *argv[])
 {
-	return do_digest("sha1", argc, argv);
+	return do_hash("sha1", argc, argv);
 }
 
 BAREBOX_CMD_HELP_START(sha1sum)
@@ -152,7 +106,7 @@ BAREBOX_CMD_END
 
 static int do_sha224(int argc, char *argv[])
 {
-	return do_digest("sha224", argc, argv);
+	return do_hash("sha224", argc, argv);
 }
 
 BAREBOX_CMD_HELP_START(sha224sum)
@@ -173,7 +127,7 @@ BAREBOX_CMD_END
 
 static int do_sha256(int argc, char *argv[])
 {
-	return do_digest("sha256", argc, argv);
+	return do_hash("sha256", argc, argv);
 }
 
 BAREBOX_CMD_HELP_START(sha256sum)
@@ -194,7 +148,7 @@ BAREBOX_CMD_END
 
 static int do_sha384(int argc, char *argv[])
 {
-	return do_digest("sha384", argc, argv);
+	return do_hash("sha384", argc, argv);
 }
 
 BAREBOX_CMD_HELP_START(sha384sum)
@@ -215,7 +169,7 @@ BAREBOX_CMD_END
 
 static int do_sha512(int argc, char *argv[])
 {
-	return do_digest("sha512", argc, argv);
+	return do_hash("sha512", argc, argv);
 }
 
 BAREBOX_CMD_HELP_START(sha512sum)

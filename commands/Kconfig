@@ -14,7 +14,7 @@ if COMMAND_SUPPORT
 
 config COMPILE_HASH
 	tristate
-	select DIGEST
+	select CMD_DIGEST
 	help
 	  Turns on compilation of digest.c
 
@@ -841,6 +841,16 @@ config CMD_CMP
 	  Usage: cmp FILE1 FILE2
 
 	  Returns successfully if the two files are the same, return with an error if not
+
+config CMD_DIGEST
+	tristate
+	select DIGEST
+	prompt "digest"
+	help
+	  Usage: digest -a <algo> [-k <key> | -K <file>] [-s <sig> | -S <file>] FILE|AREA
+
+	  Calculate a digest over a FILE or a memory area with the possibility
+	  to checkit.
 
 config CMD_DIRNAME
 	tristate

@@ -13,3 +13,5 @@ static inline int digest_hmac_register(struct digest_algo *algo,
 	return 0;
 }
 #endif
+
+int digest_generic_verify(struct digest *d, const unsigned char *md);

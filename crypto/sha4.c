@@ -309,6 +309,7 @@ static struct digest_algo m384 = {
 	.init = digest_sha384_init,
 	.update = digest_sha4_update,
 	.final = digest_sha4_final,
+	.verify = digest_generic_verify,
 	.length = SHA384_SUM_LEN,
 	.ctx_length = sizeof(sha4_context),
 };
@@ -341,6 +342,7 @@ static struct digest_algo m512 = {
 	.init = digest_sha512_init,
 	.update = digest_sha4_update,
 	.final = digest_sha4_final,
+	.verify = digest_generic_verify,
 	.length = SHA512_SUM_LEN,
 	.ctx_length = sizeof(sha4_context),
 };

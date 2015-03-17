@@ -136,6 +136,7 @@ struct digest_algo hmac_algo = {
 	.init = digest_hmac_init,
 	.update = digest_hmac_update,
 	.final = digest_hmac_final,
+	.verify = digest_generic_verify,
 	.set_key = digest_hmac_set_key,
 	.free = digest_hmac_free,
 	.ctx_length = sizeof(struct digest_hmac),

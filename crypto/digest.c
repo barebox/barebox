@@ -26,6 +26,8 @@
 #include <module.h>
 #include <linux/err.h>
 
+#include "internal.h"
+
 static LIST_HEAD(digests);
 
 static struct digest_algo *digest_algo_get_by_name(const char *name);
@@ -37,9 +39,29 @@ static int dummy_init(struct digest *d)
 
 static void dummy_free(struct digest *d) {}
 
+int digest_generic_verify(struct digest *d, const unsigned char *md)
+{
+	int ret;
+	int len = digest_length(d);
+	unsigned char *tmp;
+
+	tmp = xmalloc(len);
+
+	ret = digest_final(d, tmp);
+	if (ret)
+		goto end;
+
+	ret = memcmp(md, tmp, len);
+	ret = ret ? -EINVAL : 0;
+end:
+	free(tmp);
+	return ret;
+}
+
 int digest_algo_register(struct digest_algo *d)
 {
-	if (!d || !d->name || !d->update || !d->final || d->length < 1)
+	if (!d || !d->name || !d->update || !d->final || !d->verify ||
+	    d->length < 1)
 		return -EINVAL;
 
 	if (!d->init)

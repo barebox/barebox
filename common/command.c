@@ -47,6 +47,8 @@ void barebox_cmd_usage(struct command *cmdtp)
 		puts(cmdtp->help);
 		putchar('\n');
 	}
+	if (cmdtp->usage)
+		cmdtp->usage();
 #endif
 }
 EXPORT_SYMBOL(barebox_cmd_usage);

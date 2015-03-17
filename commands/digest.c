@@ -52,11 +52,17 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 	if (key) {
 		char *tmp = asprintf("hmac(%s)", algorithm);
 		d = digest_alloc(tmp);
+		BUG_ON(!d);
+		ret = digest_set_key(d, key, keylen);
 		free(tmp);
+		if (ret) {
+			perror("set_key");
+			goto err;
+		}
 	} else {
 		d = digest_alloc(algorithm);
+		BUG_ON(!d);
 	}
-	BUG_ON(!d);
 
 	if (argc < 1)
 		return COMMAND_ERROR_USAGE;
@@ -79,7 +85,6 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 		}
 
 		ret = digest_file_window(d, filename,
-					 key, keylen,
 					 hash, start, size);
 		if (ret < 0) {
 			ret = 1;
@@ -94,6 +99,7 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 		argv++;
 	}
 
+err:
 	free(hash);
 	digest_free(d);
 

@@ -54,14 +54,11 @@ struct digest *digest_alloc(const char *name);
 void digest_free(struct digest *d);
 
 int digest_file_window(struct digest *d, const char *filename,
-		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash,
 		       ulong start, ulong size);
 int digest_file(struct digest *d, const char *filename,
-		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash);
 int digest_file_by_name(const char *algo, const char *filename,
-		       const unsigned char *key, size_t keylen,
 		       unsigned char *hash);
 
 static inline int digest_init(struct digest *d)

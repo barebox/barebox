@@ -128,7 +128,9 @@ int digest_file_window(struct digest *d, const char *filename,
 	if (key)
 		digest_set_key(d, key, keylen);
 
-	digest_init(d);
+	ret = digest_init(d);
+	if (ret)
+		return ret;
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
@@ -172,12 +174,14 @@ int digest_file_window(struct digest *d, const char *filename,
 			goto out_free;
 		}
 
-		digest_update(d, buf, now);
+		ret = digest_update(d, buf, now);
+		if (ret)
+			goto out_free;
 		size -= now;
 		len += now;
 	}
 
-	digest_final(d, hash);
+	ret = digest_final(d, hash);
 
 out_free:
 	if (flags)

@@ -34,3 +34,8 @@ config DIGEST_HMAC
 	bool "HMAC"
 
 endif
+
+config CRYPTO_PBKDF2
+	select DIGEST
+	select SHA1
+	bool

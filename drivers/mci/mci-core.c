@@ -1774,7 +1774,8 @@ int mci_register(struct mci_host *host)
 	mci->param_probe = dev_add_param_bool(&mci->dev, "probe",
 			mci_set_probe, NULL, &mci->probe, mci);
 
-	if (IS_ERR(mci->param_probe)) {
+	if (IS_ERR(mci->param_probe) && PTR_ERR(mci->param_probe) != -ENOSYS) {
+		ret = PTR_ERR(mci->param_probe);
 		dev_dbg(&mci->dev, "Failed to add 'probe' parameter to the MCI device\n");
 		goto err_unregister;
 	}

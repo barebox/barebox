@@ -145,6 +145,7 @@ err:
 }
 
 struct digest_algo hmac_algo = {
+	.flags = DIGEST_ALGO_NEED_KEY,
 	.alloc = digest_hmac_alloc,
 	.init = digest_hmac_init,
 	.update = digest_hmac_update,

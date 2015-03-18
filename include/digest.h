@@ -25,6 +25,8 @@ struct digest;
 
 struct digest_algo {
 	char *name;
+#define DIGEST_ALGO_NEED_KEY	(1 << 0)
+	unsigned int flags;
 
 	int (*alloc)(struct digest *d);
 	void (*free)(struct digest *d);
@@ -106,6 +108,16 @@ static inline int digest_set_key(struct digest *d, const unsigned char *key,
 	if (!d->algo->set_key)
 		return -ENOTSUPP;
 	return d->algo->set_key(d, key, len);
+}
+
+static inline int digest_is_flags(struct digest *d, unsigned int flags)
+{
+	return d->algo->flags & flags;
+}
+
+static inline const char *digest_name(struct digest *d)
+{
+	return d->algo->name;
 }
 
 #endif /* __SH_ST_DEVICES_H__ */

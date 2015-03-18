@@ -34,6 +34,9 @@ int __do_digest(struct digest *d, unsigned char *key, int keylen,
 			perror("set_key");
 			goto err;
 		}
+	} else if (digest_is_flags(d, DIGEST_ALGO_NEED_KEY)) {
+		eprintf("%s need a key to be used\n", digest_name(d));
+		goto err;
 	}
 
 	hash = calloc(digest_length(d), sizeof(unsigned char));

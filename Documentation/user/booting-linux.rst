@@ -60,7 +60,7 @@ are to ways to pass bootargs to the Kernel. With ``CONFIG_FLEXIBLE_BOOTARGS``
 disabled the bootm command takes the bootargs from the ``bootargs`` environment
 variable. With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled the bootargs are composed
 from different :ref:`global_device` variables. All variables beginning with
-``global.bootargs.`` will be concatenated to the bootargs:
+``global.linux.bootargs.`` will be concatenated to the bootargs:
 
 .. code-block:: sh
 

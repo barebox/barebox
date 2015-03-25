@@ -328,12 +328,6 @@ static struct digest_algo m = {
 
 static int sha1_digest_register(void)
 {
-	int ret;
-
-	ret = digest_algo_register(&m);
-	if (ret)
-		return ret;
-
-	return digest_hmac_register(&m, 64);
+	return digest_algo_register(&m);
 }
 device_initcall(sha1_digest_register);

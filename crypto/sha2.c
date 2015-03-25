@@ -315,16 +315,10 @@ static struct digest_algo m224 = {
 
 static int sha224_digest_register(void)
 {
-	int ret;
-
 	if (!IS_ENABLED(CONFIG_SHA224))
 		return 0;
 
-	ret = digest_algo_register(&m224);
-	if (ret)
-		return ret;
-
-	return digest_hmac_register(&m224, 64);
+	return digest_algo_register(&m224);
 }
 device_initcall(sha224_digest_register);
 
@@ -353,15 +347,9 @@ static struct digest_algo m256 = {
 
 static int sha256_digest_register(void)
 {
-	int ret;
-
 	if (!IS_ENABLED(CONFIG_SHA256))
 		return 0;
 
-	ret = digest_algo_register(&m256);
-	if (ret)
-		return ret;
-
-	return digest_hmac_register(&m256, 64);
+	return digest_algo_register(&m256);
 }
 device_initcall(sha256_digest_register);

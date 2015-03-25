@@ -7,6 +7,7 @@
 #include <common.h>
 #include <digest.h>
 #include <malloc.h>
+#include <init.h>
 #include <crypto/internal.h>
 
 struct digest_hmac {
@@ -38,6 +39,8 @@ static int digest_hmac_alloc(struct digest *d)
 	dh->d = digest_alloc(hmac->name);
 	if (!dh->d)
 		return -EINVAL;
+
+	d->length = dh->d->algo->length;
 
 	dh->ipad = xmalloc(hmac->pad_length);
 	dh->opad = xmalloc(hmac->pad_length);
@@ -148,34 +151,49 @@ struct digest_algo hmac_algo = {
 		.priority	= 0,
 		.flags		= DIGEST_ALGO_NEED_KEY,
 	},
-	.alloc = digest_hmac_alloc,
-	.init = digest_hmac_init,
-	.update = digest_hmac_update,
-	.final = digest_hmac_final,
-	.digest = digest_generic_digest,
-	.verify = digest_generic_verify,
-	.set_key = digest_hmac_set_key,
-	.free = digest_hmac_free,
-	.ctx_length = sizeof(struct digest_hmac),
+	.alloc		= digest_hmac_alloc,
+	.init		= digest_hmac_init,
+	.update		= digest_hmac_update,
+	.final		= digest_hmac_final,
+	.digest		= digest_generic_digest,
+	.verify		= digest_generic_verify,
+	.set_key	= digest_hmac_set_key,
+	.free		= digest_hmac_free,
+	.ctx_length	= sizeof(struct digest_hmac),
 };
 
-int digest_hmac_register(struct digest_algo *algo, unsigned int pad_length)
+static int digest_hmac_register(char *name, unsigned int pad_length)
 {
 	struct digest_hmac *dh;
-	char *name;
 
-	if (!algo || !pad_length)
+	if (!name || !pad_length)
 		return -EINVAL;
 
-	name = algo->base.name;
 	dh = xzalloc(sizeof(*dh));
 	dh->name = xstrdup(name);
 	dh->pad_length = pad_length;
 	dh->algo = hmac_algo;
-	dh->algo.length = algo->length;
 	dh->algo.base.name = asprintf("hmac(%s)", name);
 	dh->algo.base.driver_name = asprintf("hmac(%s)-generic", name);
-	dh->algo.base.priority = algo->base.priority;
 
 	return digest_algo_register(&dh->algo);
 }
+
+static int digest_hmac_initcall(void)
+{
+	if (IS_ENABLED(CONFIG_MD5))
+		digest_hmac_register("md5", 64);
+	if (IS_ENABLED(CONFIG_SHA1))
+		digest_hmac_register("sha1", 64);
+	if (IS_ENABLED(CONFIG_SHA224))
+		digest_hmac_register("sha224", 64);
+	if (IS_ENABLED(CONFIG_SHA256))
+		digest_hmac_register("sha256", 64);
+	if (IS_ENABLED(CONFIG_SHA384))
+		digest_hmac_register("sha384", 128);
+	if (IS_ENABLED(CONFIG_SHA512))
+		digest_hmac_register("sha512", 128);
+
+	return 0;
+}
+crypto_initcall(digest_hmac_initcall);

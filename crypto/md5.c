@@ -305,12 +305,6 @@ static struct digest_algo md5 = {
 
 static int md5_digest_register(void)
 {
-	int ret;
-
-	ret = digest_algo_register(&md5);
-	if (ret)
-		return ret;
-
-	return digest_hmac_register(&md5, 64);
+	return digest_algo_register(&md5);
 }
 device_initcall(md5_digest_register);

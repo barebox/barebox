@@ -321,16 +321,10 @@ static struct digest_algo m384 = {
 
 static int sha384_digest_register(void)
 {
-	int ret;
-
 	if (!IS_ENABLED(CONFIG_SHA384))
 		return 0;
 
-	ret = digest_algo_register(&m384);
-	if (ret)
-		return ret;
-
-	return digest_hmac_register(&m384, 128);
+	return digest_algo_register(&m384);
 }
 device_initcall(sha384_digest_register);
 
@@ -359,15 +353,9 @@ static struct digest_algo m512 = {
 
 static int sha512_digest_register(void)
 {
-	int ret;
-
 	if (!IS_ENABLED(CONFIG_SHA512))
 		return 0;
 
-	ret = digest_algo_register(&m512);
-	if (ret)
-		return ret;
-
-	return digest_hmac_register(&m512, 128);
+	return digest_algo_register(&m512);
 }
 device_initcall(sha512_digest_register);

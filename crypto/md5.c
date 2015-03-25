@@ -28,8 +28,7 @@
 #include <common.h>
 #include <digest.h>
 #include <init.h>
-
-#include "internal.h"
+#include <crypto/internal.h>
 
 struct MD5Context {
 	__u32 buf[4];
@@ -290,7 +289,11 @@ static int digest_md5_final(struct digest *d, unsigned char *md)
 }
 
 static struct digest_algo md5 = {
-	.name = "md5",
+	.base = {
+		.name		= "md5",
+		.driver_name	= "md5-generic",
+		.priority	= 0,
+	},
 	.init = digest_md5_init,
 	.update = digest_md5_update,
 	.final = digest_md5_final,

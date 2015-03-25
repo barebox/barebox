@@ -25,8 +25,7 @@
 #include <errno.h>
 #include <module.h>
 #include <linux/err.h>
-
-#include "internal.h"
+#include <crypto/internal.h>
 
 static LIST_HEAD(digests);
 
@@ -78,7 +77,7 @@ int digest_generic_digest(struct digest *d, const void *data,
 
 int digest_algo_register(struct digest_algo *d)
 {
-	if (!d || !d->name || !d->update || !d->final || !d->verify)
+	if (!d || !d->base.name || !d->update || !d->final || !d->verify) 
 		return -EINVAL;
 
 	if (!d->init)
@@ -89,9 +88,6 @@ int digest_algo_register(struct digest_algo *d)
 
 	if (!d->free)
 		d->free = dummy_free;
-
-	if (digest_algo_get_by_name(d->name))
-		return -EEXIST;
 
 	list_add_tail(&d->list, &digests);
 
@@ -110,25 +106,36 @@ EXPORT_SYMBOL(digest_algo_unregister);
 
 static struct digest_algo *digest_algo_get_by_name(const char *name)
 {
-	struct digest_algo *d;
+	struct digest_algo *d = NULL;
+	struct digest_algo *tmp;
+	int priority = -1;
 
 	if (!name)
 		return NULL;
 
-	list_for_each_entry(d, &digests, list) {
-		if(strcmp(d->name, name) == 0)
-			return d;
+	list_for_each_entry(tmp, &digests, list) {
+		if (strcmp(tmp->base.name, name) != 0)
+			continue;
+		
+		if (tmp->base.priority <= priority)
+			continue;
+
+		d = tmp;
+		priority = tmp->base.priority;
 	}
 
-	return NULL;
+	return d;
 }
 
 void digest_algo_prints(const char *prefix)
 {
 	struct digest_algo* d;
 
+	printf("%s%-15s\t%-20s\t%-15s\n", prefix, "name", "driver", "priority");
+	printf("%s--------------------------------------------------\n", prefix);
 	list_for_each_entry(d, &digests, list) {
-		printf("%s%s\n", prefix, d->name);
+		printf("%s%-15s\t%-20s\t%d\n", prefix, d->base.name,
+			d->base.driver_name, d->base.priority);
 	}
 }
 

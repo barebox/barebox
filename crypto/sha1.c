@@ -26,7 +26,7 @@
 #include <linux/string.h>
 #include <asm/byteorder.h>
 
-#include "internal.h"
+#include <crypto/internal.h>
 
 #define SHA1_SUM_POS	-0x20
 #define SHA1_SUM_LEN	20
@@ -311,7 +311,12 @@ static int digest_sha1_final(struct digest *d, unsigned char *md)
 }
 
 static struct digest_algo m = {
-	.name = "sha1",
+	.base = {
+		.name		=	"sha1",
+		.driver_name	=	"sha1-generic",
+		.priority	=	0,
+	},
+
 	.init = digest_sha1_init,
 	.update = digest_sha1_update,
 	.final = digest_sha1_final,

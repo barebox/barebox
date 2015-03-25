@@ -20,8 +20,7 @@
 #include <init.h>
 #include <linux/string.h>
 #include <asm/byteorder.h>
-
-#include "internal.h"
+#include <crypto/internal.h>
 
 #define SHA224_SUM_LEN	28
 #define SHA256_SUM_LEN	32
@@ -300,7 +299,12 @@ static int digest_sha224_init(struct digest *d)
 }
 
 static struct digest_algo m224 = {
-	.name = "sha224",
+	.base = {
+		.name		=	"sha224",
+		.driver_name	=	"sha224-generic",
+		.priority	=	0,
+	},
+
 	.init = digest_sha224_init,
 	.update = digest_sha2_update,
 	.final = digest_sha2_final,
@@ -332,7 +336,12 @@ static int digest_sha256_init(struct digest *d)
 }
 
 static struct digest_algo m256 = {
-	.name = "sha256",
+	.base = {
+		.name		=	"sha256",
+		.driver_name	=	"sha256-generic",
+		.priority	=	0,
+	},
+
 	.init = digest_sha256_init,
 	.update = digest_sha2_update,
 	.final = digest_sha2_final,

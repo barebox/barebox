@@ -7,8 +7,7 @@
 #include <common.h>
 #include <digest.h>
 #include <malloc.h>
-
-#include "internal.h"
+#include <crypto/internal.h>
 
 struct digest_hmac {
 	char *name;
@@ -145,7 +144,10 @@ err:
 }
 
 struct digest_algo hmac_algo = {
-	.flags = DIGEST_ALGO_NEED_KEY,
+	.base = {
+		.priority	= 0,
+		.flags		= DIGEST_ALGO_NEED_KEY,
+	},
 	.alloc = digest_hmac_alloc,
 	.init = digest_hmac_init,
 	.update = digest_hmac_update,
@@ -160,16 +162,20 @@ struct digest_algo hmac_algo = {
 int digest_hmac_register(struct digest_algo *algo, unsigned int pad_length)
 {
 	struct digest_hmac *dh;
+	char *name;
 
 	if (!algo || !pad_length)
 		return -EINVAL;
 
+	name = algo->base.name;
 	dh = xzalloc(sizeof(*dh));
-	dh->name = xstrdup(algo->name);
+	dh->name = xstrdup(name);
 	dh->pad_length = pad_length;
 	dh->algo = hmac_algo;
 	dh->algo.length = algo->length;
-	dh->algo.name = asprintf("hmac(%s)", algo->name);
+	dh->algo.base.name = asprintf("hmac(%s)", name);
+	dh->algo.base.driver_name = asprintf("hmac(%s)-generic", name);
+	dh->algo.base.priority = algo->base.priority;
 
 	return digest_algo_register(&dh->algo);
 }

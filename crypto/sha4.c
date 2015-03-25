@@ -28,8 +28,7 @@
 #include <init.h>
 #include <linux/string.h>
 #include <asm/byteorder.h>
-
-#include "internal.h"
+#include <crypto/internal.h>
 
 #define SHA384_SUM_LEN	48
 #define SHA512_SUM_LEN	64
@@ -305,7 +304,12 @@ static int digest_sha384_init(struct digest *d)
 }
 
 static struct digest_algo m384 = {
-	.name = "sha384",
+	.base = {
+		.name		=	"sha384",
+		.driver_name	=	"sha384-generic",
+		.priority	=	0,
+	},
+
 	.init = digest_sha384_init,
 	.update = digest_sha4_update,
 	.final = digest_sha4_final,
@@ -338,7 +342,12 @@ static int digest_sha512_init(struct digest *d)
 }
 
 static struct digest_algo m512 = {
-	.name = "sha512",
+	.base = {
+		.name		=	"sha512",
+		.driver_name	=	"sha512-generic",
+		.priority	=	0,
+	},
+
 	.init = digest_sha512_init,
 	.update = digest_sha4_update,
 	.final = digest_sha4_final,

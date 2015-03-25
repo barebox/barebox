@@ -127,4 +127,9 @@ static inline const char *digest_name(struct digest *d)
 	return d->algo->base.name;
 }
 
+static inline void* digest_ctx(struct digest *d)
+{
+	return d->ctx;
+}
+
 #endif /* __SH_ST_DEVICES_H__ */

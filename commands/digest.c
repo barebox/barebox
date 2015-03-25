@@ -17,8 +17,7 @@
 
 #include "internal.h"
 
-int __do_digest(struct digest *d, unsigned char *key, int keylen,
-		       unsigned char *sig,
+int __do_digest(struct digest *d, unsigned char *sig,
 		       int argc, char *argv[])
 {
 	int ret = COMMAND_ERROR_USAGE;
@@ -27,17 +26,6 @@ int __do_digest(struct digest *d, unsigned char *key, int keylen,
 
 	if (argc < 1)
 		goto err;
-
-	if (key) {
-		ret = digest_set_key(d, key, keylen);
-		if (ret) {
-			perror("set_key");
-			goto err;
-		}
-	} else if (digest_is_flags(d, DIGEST_ALGO_NEED_KEY)) {
-		eprintf("%s need a key to be used\n", digest_name(d));
-		goto err;
-	}
 
 	hash = calloc(digest_length(d), sizeof(unsigned char));
 	if (!hash) {
@@ -147,10 +135,15 @@ static int do_digest(int argc, char *argv[])
 		}
 	}
 
-	ret = digest_set_key(d, key, keylen);
-	free(tmp_key);
-	if (ret)
+	if (key) {
+		ret = digest_set_key(d, key, keylen);
+		free(tmp_key);
+		if (ret)
+			goto err;
+	} else if (digest_is_flags(d, DIGEST_ALGO_NEED_KEY)) {
+		eprintf("%s need a key to be used\n", digest_name(d));
 		goto err;
+	}
 
 	if (sigfile) {
 		sig = tmp_sig = read_file(sigfile, &siglen);
@@ -178,7 +171,7 @@ static int do_digest(int argc, char *argv[])
 		}
 	}
 
-	ret = __do_digest(d, NULL, 0, sig, argc, argv);
+	ret = __do_digest(d, sig, argc, argv);
 	free(tmp_sig);
 	return ret;
 

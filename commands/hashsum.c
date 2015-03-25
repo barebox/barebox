@@ -34,7 +34,7 @@ static int do_hash(char *algo, int argc, char *argv[])
 	struct digest *d;
 	unsigned char *key = NULL;
 	size_t keylen = 0;
-	int opt;
+	int opt, ret;
 
 	while((opt = getopt(argc, argv, "h:")) > 0) {
 		switch(opt) {
@@ -49,15 +49,22 @@ static int do_hash(char *algo, int argc, char *argv[])
 		char *tmp = asprintf("hmac(%s)", algo);
 		d = digest_alloc(tmp);
 		free(tmp);
+		BUG_ON(!d);
+
+		ret = digest_set_key(d, key, keylen);
+		if (ret) {
+			perror("set_key");
+			return ret;
+		}
 	} else {
 		d = digest_alloc(algo);
+		BUG_ON(!d);
 	}
-	BUG_ON(!d);
 
 	argc -= optind;
 	argv += optind;
 
-	return __do_digest(d, key, keylen, NULL, argc, argv);
+	return __do_digest(d, NULL, argc, argv);
 }
 
 #ifdef CONFIG_CMD_MD5SUM

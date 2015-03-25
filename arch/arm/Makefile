@@ -269,6 +269,7 @@ endif
 
 common-y += $(BOARD) arch/arm/boards/ $(MACH)
 common-y += arch/arm/lib/ arch/arm/cpu/
+common-y += arch/arm/crypto/
 
 common-$(CONFIG_OFTREE) += arch/arm/dts/
 

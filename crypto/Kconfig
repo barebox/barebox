@@ -61,6 +61,14 @@ config DIGEST_HMAC_GENERIC
 	bool "HMAC"
 	select DIGEST_HMAC
 
+config DIGEST_SHA1_ARM
+	tristate "SHA1 digest algorithm (ARM-asm)"
+	depends on ARM
+	select SHA1
+	help
+	  SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2) implemented
+	  using optimized ARM assembler.
+
 endif
 
 config CRYPTO_PBKDF2

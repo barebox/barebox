@@ -149,4 +149,4 @@ struct clk *clk_fractional_divider(
 
 	return fd;
 }
-EXPORT_SYMBOL_GPL(clk_register_fractional_divider);
+EXPORT_SYMBOL_GPL(clk_fractional_divider);

@@ -18,6 +18,7 @@
  */
 
 ENTRY(highbank_smc1)
+	.arch_extension sec
 	stmfd	sp!, {r4-r11, lr}
 	mov	r12, r0
 	mov	r0, r1

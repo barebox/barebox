@@ -26,6 +26,7 @@ endif
 
 config USB_XHCI
 	bool "xHCI driver"
+	depends on HAS_DMA
 	help
 	  The eXtensible Host Controller Interface (xHCI) is standard for
 	  USB 3.0 "SuperSpeed" host controller hardware. xHCI specification
@@ -37,6 +38,7 @@ config USB_XHCI
 
 config USB_XHCI_PCI
 	depends on PCI
+	depends on HAS_DMA
 	select USB_XHCI
 	bool "PCI xHCI driver"
 	help

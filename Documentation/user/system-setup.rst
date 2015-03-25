@@ -29,7 +29,7 @@ A good alternative terminal program is microcom. On Debian it can be installed
 with ``apt-get install microcom``, on other distributions it can be installed
 from source:
 
-http://git.pengutronix.de/?p=tools/microcom;a=summary
+http://git.pengutronix.de/?p=tools/microcom.git;a=summary
 
 Usage is simple::
 

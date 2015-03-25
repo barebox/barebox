@@ -78,8 +78,7 @@ int digest_generic_digest(struct digest *d, const void *data,
 
 int digest_algo_register(struct digest_algo *d)
 {
-	if (!d || !d->name || !d->update || !d->final || !d->verify ||
-	    d->length < 1)
+	if (!d || !d->name || !d->update || !d->final || !d->verify)
 		return -EINVAL;
 
 	if (!d->init)

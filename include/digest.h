@@ -47,6 +47,7 @@ struct digest_algo {
 struct digest {
 	struct digest_algo *algo;
 	void *ctx;
+	unsigned int length;
 };
 
 /*
@@ -99,7 +100,7 @@ static inline int digest_verify(struct digest *d, const unsigned char *md)
 
 static inline int digest_length(struct digest *d)
 {
-	return d->algo->length;
+	return d->length ? d->length : d->algo->length;
 }
 
 static inline int digest_set_key(struct digest *d, const unsigned char *key,

@@ -36,7 +36,7 @@ static int do_hash(char *algo, int argc, char *argv[])
 	size_t keylen = 0;
 	int opt, ret;
 
-	while((opt = getopt(argc, argv, "h:")) > 0) {
+	while ((opt = getopt(argc, argv, "h:")) > 0) {
 		switch(opt) {
 		case 'h':
 			key = optarg;

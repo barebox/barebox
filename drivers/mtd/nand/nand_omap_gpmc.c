@@ -130,53 +130,6 @@ static struct nand_bbt_descr bb_descrip_flashbased = {
 	.pattern = scan_ff_pattern,
 };
 
-/** Large Page x8 NAND device Layout */
-static struct nand_ecclayout ecc_lp_x8 = {
-	.eccbytes = 12,
-	.eccpos = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
-	.oobfree = {
-		{
-			.offset = 60,
-			.length = 2,
-		}
-	}
-};
-
-/** Large Page x16 NAND device Layout */
-static struct nand_ecclayout ecc_lp_x16 = {
-	.eccbytes = 12,
-	.eccpos = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
-	.oobfree = {
-		{
-			.offset = 60,
-			.length = 2,
-		}
-	}
-};
-
-/** Small Page x8 NAND device Layout */
-static struct nand_ecclayout ecc_sp_x8 = {
-	.eccbytes = 3,
-	.eccpos = {1, 2, 3},
-	.oobfree = {
-		{
-			.offset = 14,
-			.length = 2,
-		}
-	}
-};
-
-/** Small Page x16 NAND device Layout */
-static struct nand_ecclayout ecc_sp_x16 = {
-	.eccbytes = 3,
-	.eccpos = {2, 3, 4},
-	.oobfree = {
-		{
-			.offset = 14,
-			.length = 2 }
-	}
-};
-
 /**
  * @brief calls the platform specific dev_ready functionds
  *
@@ -891,7 +844,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	struct mtd_info *minfo;
 	void __iomem *cs_base;
 	int err;
-	struct nand_ecclayout *layout, *lsp, *llp;
 
 	pdata = (struct gpmc_nand_platform_data *)pdev->platform_data;
 	if (pdata == NULL) {
@@ -1011,26 +963,6 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	}
 
 	gpmc_set_buswidth(nand, nand->options & NAND_BUSWIDTH_16);
-
-	if (nand->options & NAND_BUSWIDTH_16) {
-		lsp = &ecc_sp_x16;
-		llp = &ecc_lp_x16;
-	} else {
-		lsp = &ecc_sp_x8;
-		llp = &ecc_lp_x8;
-	}
-
-	switch (minfo->writesize) {
-	case 512:
-		layout = lsp;
-		break;
-	case 2048:
-		layout = llp;
-		break;
-	default:
-		err = -EINVAL;
-		goto out_release_mem;
-	}
 
 	nand->read_buf   = omap_read_buf_pref;
 	if (IS_ENABLED(CONFIG_MTD_WRITE))

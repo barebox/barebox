@@ -298,37 +298,45 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	int i, j, eccsize, eccflag, count, totalcount;
+	int i, j, eccflag, count, totalcount, actual_eccsize;
 	unsigned int err_loc[8];
-	int blocks = 0;
 	int select_4_8;
 
-	if (oinfo->ecc_mode == OMAP_ECC_BCH4_CODE_HW) {
-		eccsize = 7;
-		select_4_8 = 0;
-	} else {
-		eccsize = 13;
-		select_4_8 = 1;
-	}
+	int eccsteps = oinfo->nand.ecc.steps;
+	int eccsize = oinfo->nand.ecc.bytes;
 
-	if (nand->ecc.size  == 2048)
-		blocks = 4;
-	else
-		blocks = 1;
+	switch (oinfo->ecc_mode) {
+	case OMAP_ECC_BCH4_CODE_HW:
+		actual_eccsize = eccsize;
+		select_4_8 = 0;
+		break;
+	case OMAP_ECC_BCH8_CODE_HW:
+		eccsize /= eccsteps;
+		actual_eccsize = eccsize;
+		select_4_8 = 1;
+		break;
+	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
+		actual_eccsize = eccsize - 1;
+		select_4_8 = 1;
+		break;
+	default:
+		dev_err(oinfo->pdev, "invalid driver configuration\n");
+		return -EINVAL;
+	}
 
 	totalcount = 0;
 
-	for (i = 0; i < blocks; i++) {
+	for (i = 0; i < eccsteps; i++) {
 		/* check if any ecc error */
 		eccflag = 0;
-		for (j = 0; (j < eccsize) && (eccflag == 0); j++) {
+		for (j = 0; (j < actual_eccsize) && (eccflag == 0); j++) {
 			if (calc_ecc[j] != 0)
 				eccflag = 1;
 		}
 
 		if (eccflag == 1) {
 			eccflag = 0;
-			for (j = 0; (j < eccsize) &&
+			for (j = 0; (j < actual_eccsize) &&
 					(eccflag == 0); j++)
 				if (read_ecc[j] != 0xFF)
 					eccflag = 1;
@@ -350,7 +358,7 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 			/* else, not interested to correct ecc */
 		}
 
-		calc_ecc = calc_ecc + eccsize;
+		calc_ecc = calc_ecc + actual_eccsize;
 		read_ecc = read_ecc + eccsize;
 		dat += 512;
 	}

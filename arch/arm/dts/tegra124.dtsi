@@ -1,9 +1,5 @@
 / {
 	aliases {
-		serial0 = "/serial@0,70006000/";
-		serial1 = "/serial@0,70006040/";
-		serial2 = "/serial@0,70006200/";
-		serial3 = "/serial@0,70006300/";
 		mmc0 = "/sdhci@0,700b0000/";
 		mmc1 = "/sdhci@0,700b0200/";
 		mmc2 = "/sdhci@0,700b0400/";

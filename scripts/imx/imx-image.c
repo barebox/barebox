@@ -653,6 +653,7 @@ int main(int argc, char *argv[])
 	struct stat s;
 	int infd, outfd;
 	int dcd_only = 0;
+	int now = 0;
 
 	while ((opt = getopt(argc, argv, "c:hf:o:bd")) != -1) {
 		switch (opt) {
@@ -785,7 +786,7 @@ int main(int argc, char *argv[])
 	}
 
 	while (image_size) {
-		int now = image_size < 4096 ? image_size : 4096;
+		now = image_size < 4096 ? image_size : 4096;
 
 		ret = xread(infd, buf, now);
 		if (ret) {
@@ -800,6 +801,18 @@ int main(int argc, char *argv[])
 		}
 
 		image_size -= now;
+	}
+
+	/* pad until next 4k boundary */
+	now = 4096 - now;
+	if (now) {
+		memset(buf, 0x5a, now);
+
+		ret = xwrite(outfd, buf, now);
+		if (ret) {
+			perror("write");
+			exit(1);
+		}
 	}
 
 	ret = close(outfd);

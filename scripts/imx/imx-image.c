@@ -710,8 +710,9 @@ int main(int argc, char *argv[])
 		exit(1);
 
 	if (!image_dcd_offset) {
-		fprintf(stderr, "no dcd offset given ('dcdofs'). Defaulting to 0x400\n");
-		image_dcd_offset = 0x400;
+		fprintf(stderr, "no dcd offset given ('dcdofs'). Defaulting to 0x%08x\n",
+			FLASH_HEADER_OFFSET);
+		image_dcd_offset = FLASH_HEADER_OFFSET;
 	}
 
 	if (!header_version) {

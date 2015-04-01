@@ -31,6 +31,7 @@
 #define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
 
 #define MAX_DCD 1024
+#define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
 
 static uint32_t image_load_addr;
 static uint32_t image_dcd_offset;
@@ -184,7 +185,7 @@ static int add_header_v2(void *buf, int offset, uint32_t loadaddr, uint32_t imag
 	hdr->header.length	= htobe16(32);
 	hdr->header.version	= IVT_VERSION;
 
-	hdr->entry		= loadaddr + 0x1000;
+	hdr->entry		= loadaddr + HEADER_LEN;
 	hdr->dcd_ptr		= loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
 	hdr->boot_data_ptr	= loadaddr + offset + offsetof(struct imx_flash_header_v2, boot_data);
 	hdr->self		= loadaddr + offset;
@@ -705,7 +706,7 @@ int main(int argc, char *argv[])
 	if (ret)
 		exit(1);
 
-	buf = calloc(4096, 1);
+	buf = calloc(1, HEADER_LEN);
 	if (!buf)
 		exit(1);
 
@@ -731,14 +732,14 @@ int main(int argc, char *argv[])
 	}
 
 	/*
-	 * Add 0x1000 to the image size for the DCD.
+	 * Add HEADER_LEN to the image size for the blank aera + IVT + DCD.
 	 * Align up to a 4k boundary, because:
 	 * - at least i.MX5 NAND boot only reads full NAND pages and misses the
 	 *   last partial NAND page.
 	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
 	 *   in ver funy ways when the image size is not 4 byte aligned
 	 */
-	load_size = ((image_size + 0x1000) + 0xfff) & ~0xfff;
+	load_size = ((image_size + HEADER_LEN) + 0xfff) & ~0xfff;
 
 	switch (header_version) {
 	case 1:
@@ -759,14 +760,14 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	ret = xwrite(outfd, buf, 4096);
+	ret = xwrite(outfd, buf, HEADER_LEN);
 	if (ret < 0) {
 		perror("write");
 		exit(1);
 	}
 
 	if (cpu_type == 35) {
-		ret = xwrite(outfd, buf, 4096);
+		ret = xwrite(outfd, buf, HEADER_LEN);
 		if (ret < 0) {
 			perror("write");
 			exit(1);

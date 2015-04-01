@@ -741,6 +741,9 @@ int main(int argc, char *argv[])
 	 */
 	load_size = ((image_size + HEADER_LEN) + 0xfff) & ~0xfff;
 
+	if (cpu_type == 35)
+		load_size += HEADER_LEN;
+
 	switch (header_version) {
 	case 1:
 		add_header_v1(buf, image_dcd_offset, image_load_addr, load_size);

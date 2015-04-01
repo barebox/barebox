@@ -29,6 +29,7 @@
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
+#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 
 #define MAX_DCD 1024
 #define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
@@ -739,7 +740,7 @@ int main(int argc, char *argv[])
 	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
 	 *   in ver funy ways when the image size is not 4 byte aligned
 	 */
-	load_size = ((image_size + HEADER_LEN) + 0xfff) & ~0xfff;
+	load_size = roundup(image_size + HEADER_LEN, 0x1000);
 
 	if (cpu_type == 35)
 		load_size += HEADER_LEN;

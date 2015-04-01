@@ -185,9 +185,9 @@ static int add_header_v2(void *buf, int offset, uint32_t loadaddr, uint32_t imag
 	hdr->header.version	= IVT_VERSION;
 
 	hdr->entry		= loadaddr + 0x1000;
-	hdr->dcd_ptr		= loadaddr + 0x400 + offsetof(struct imx_flash_header_v2, dcd_header);
-	hdr->boot_data_ptr	= loadaddr + 0x400 + offsetof(struct imx_flash_header_v2, boot_data);
-	hdr->self		= loadaddr + 0x400;
+	hdr->dcd_ptr		= loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
+	hdr->boot_data_ptr	= loadaddr + offset + offsetof(struct imx_flash_header_v2, boot_data);
+	hdr->self		= loadaddr + offset;
 
 	hdr->boot_data.start	= loadaddr;
 	hdr->boot_data.size	= imagesize;

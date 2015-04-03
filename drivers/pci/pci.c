@@ -348,6 +348,12 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			dev->rom_address = (l == 0xffffffff) ? 0 : l;
 
 			setup_device(dev, 6);
+			/*
+			 * If this device is on the root bus, there is no bridge
+			 * to configure, so we can activate it right away.
+			 */
+			if (!bus->parent_bus)
+				pci_register_device(dev);
 			break;
 		case PCI_HEADER_TYPE_BRIDGE:
 			setup_device(dev, 2);
@@ -356,6 +362,7 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			/* inherit parent properties */
 			child_bus->host = bus->host;
 			child_bus->ops = bus->host->pci_ops;
+			child_bus->parent_bus = bus;
 			child_bus->resource[PCI_BUS_RESOURCE_MEM] =
 				bus->resource[PCI_BUS_RESOURCE_MEM];
 			child_bus->resource[PCI_BUS_RESOURCE_MEM_PREF] =

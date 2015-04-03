@@ -123,6 +123,7 @@ enum {
 struct pci_bus {
 	struct pci_controller *host;	/* associated host controller */
 	struct device_d *parent;
+	struct pci_bus *parent_bus;	/* parent bus */
 	struct list_head node;		/* node in list of buses */
 	struct list_head children;	/* list of child buses */
 	struct list_head devices;	/* list of devices on this bus */

@@ -900,6 +900,7 @@ config DEBUG_INITCALLS
 	  If enabled this will print initcall traces.
 
 config PBL_CONSOLE
+	depends on PBL_IMAGE
 	depends on DEBUG_LL
 	depends on !CONSOLE_NONE
 	bool "Enable console support in PBL"

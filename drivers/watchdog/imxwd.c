@@ -46,6 +46,7 @@ struct imx_wd {
 #define IMX21_WDOG_WCR	0x00 /* Watchdog Control Register */
 #define IMX21_WDOG_WSR	0x02 /* Watchdog Service Register */
 #define IMX21_WDOG_WSTR	0x04 /* Watchdog Status Register  */
+#define IMX21_WDOG_WMCR	0x08 /* Misc Register */
 #define IMX21_WDOG_WCR_WDE	(1 << 2)
 #define IMX21_WDOG_WCR_SRS	(1 << 4)
 #define IMX21_WDOG_WCR_WDA	(1 << 5)
@@ -157,6 +158,11 @@ static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
 static int imx21_wd_init(struct imx_wd *priv)
 {
 	imx_watchdog_detect_reset_source(priv);
+
+	/*
+	 * Disable watchdog powerdown counter
+	 */
+	writew(0x0, priv->base + IMX21_WDOG_WMCR);
 
 	return 0;
 }

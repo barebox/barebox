@@ -396,7 +396,7 @@ static int mvneta_send(struct eth_device *edev, void *data, int len)
 	dma_sync_single_for_device((unsigned long)data, len, DMA_TO_DEVICE);
 
 	/* Fill the Tx descriptor */
-	txdesc->cmd_sts |= MVNETA_TX_L4_CSUM_NOT | MVNETA_TXD_FLZ_DESC;
+	txdesc->cmd_sts = MVNETA_TX_L4_CSUM_NOT | MVNETA_TXD_FLZ_DESC;
 	txdesc->buf_ptr = (u32)data;
 	txdesc->byte_cnt = len;
 

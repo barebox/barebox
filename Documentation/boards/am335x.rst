@@ -48,7 +48,7 @@ file for your board to the card and name it ``MLO``. Copy the regular image
 for your board to the card and name it ``barebox.bin``.
 
 AM335x Boards
-------
+-------------
 
 .. toctree::
   :glob:

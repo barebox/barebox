@@ -60,6 +60,11 @@ choice
 	prompt "PXA27x Board Type"
 	bool
 
+config MACH_MAINSTONE
+	bool "Mainstone board"
+	select PWM
+	help
+	  Say Y here if you are using a Mainstone board
 config MACH_MIOA701
 	bool "Mitac Mio A701"
 	select BCH_CONST_PARAMS

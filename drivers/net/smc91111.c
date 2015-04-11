@@ -1435,8 +1435,8 @@ static int smc91c111_probe(struct device_d *dev)
 		priv->shift = pdata->addr_shift;
 		if (pdata->bus_width == 16)
 			priv->a = access_via_16bit;
-		pdata->config_setup = pdata->config_setup;
-		pdata->control_setup = pdata->control_setup;
+		priv->config_setup = pdata->config_setup;
+		priv->control_setup = pdata->control_setup;
 	}
 
 	edev->init = smc91c111_init_dev;

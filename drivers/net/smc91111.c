@@ -560,6 +560,20 @@ static inline void a32_insl(void __iomem *base, unsigned int offset, void *data,
 	readsl(base + (offset << shift), data, count);
 }
 
+static void a16_outw_algn4(unsigned value, void __iomem *base,
+			   unsigned int offset, unsigned shift)
+{
+	u32 v;
+
+	if ((offset << shift) & 2) {
+		v = value << 16;
+		v |= (a32_inl(base, offset & ~2, shift) & 0xffff);
+		a32_outl(v, base, offset & ~2, shift);
+	} else {
+		writew(value, base + (offset << shift));
+	}
+}
+
 static const struct accessors access_via_16bit = {
 	.ob = a8_outb,
 	.ow = a16_outw,
@@ -575,6 +589,18 @@ static const struct accessors access_via_16bit = {
 static const struct accessors access_via_32bit = {
 	.ob = a8_outb,
 	.ow = a16_outw,
+	.ol = a32_outl,
+	.osl = a32_outsl,
+	.ib = a8_inb,
+	.iw = a16_inw,
+	.il = a32_inl,
+	.isl = a32_insl,
+};
+
+/* access happens via a 32 bit bus, writes must by word aligned */
+static const struct accessors access_via_32bit_aligned_short_writes = {
+	.ob = a8_outb,
+	.ow = a16_outw_algn4,
 	.ol = a32_outl,
 	.osl = a32_outsl,
 	.ib = a8_inb,
@@ -1435,6 +1461,9 @@ static int smc91c111_probe(struct device_d *dev)
 		priv->shift = pdata->addr_shift;
 		if (pdata->bus_width == 16)
 			priv->a = access_via_16bit;
+		if (((pdata->bus_width == 0) || (pdata->bus_width == 32)) &&
+		    (pdata->word_aligned_short_writes))
+			priv->a = access_via_32bit_aligned_short_writes;
 		priv->config_setup = pdata->config_setup;
 		priv->control_setup = pdata->control_setup;
 	}

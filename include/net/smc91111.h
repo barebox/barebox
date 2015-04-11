@@ -11,6 +11,7 @@ struct smc91c111_pdata {
 	int qemu_fixup;
 	int addr_shift;
 	int bus_width;
+	bool word_aligned_short_writes;
 	int config_setup;
 	int control_setup;
 };

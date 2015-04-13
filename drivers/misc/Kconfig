@@ -15,4 +15,8 @@ config SRAM
 	help
 	  This driver adds support for memory mapped SRAM.
 
+config STATE_DRV
+	tristate "state driver"
+	depends on STATE
+
 endmenu

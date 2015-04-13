@@ -42,6 +42,7 @@ obj-$(CONFIG_POLLER)		+= poller.o
 obj-$(CONFIG_RESET_SOURCE)	+= reset_source.o
 obj-$(CONFIG_SHELL_HUSH)	+= hush.o
 obj-$(CONFIG_SHELL_SIMPLE)	+= parser.o
+obj-$(CONFIG_STATE)		+= state.o
 obj-$(CONFIG_UIMAGE)		+= image.o uimage.o
 obj-$(CONFIG_MENUTREE)		+= menutree.o
 obj-$(CONFIG_EFI_GUID)		+= efi-guid.o

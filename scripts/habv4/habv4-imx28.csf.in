@@ -1,0 +1,33 @@
+[Header]
+Version = 4.0
+Hash Algorithm = sha256
+Engine Configuration = 0
+Certificate Format = X509
+Signature Format = CMS
+Engine = DCP
+
+[Install SRK]
+File = "@TABLE_BIN@"
+# SRK index within SRK-Table 0..3
+Source index = 0
+
+[Install CSFK]
+File = "@CSF_CRT_PEM@"
+
+[Authenticate CSF]
+
+[Install Key]
+# verification key index in key store (0, 2...5)
+Verification index = 0
+# target key index in key store (2...5)
+Target index = 2
+File = "@IMG_CRT_PEM@"
+
+[Authenticate Data]
+# verification key index in key store (2...5)
+Verification index = 2
+# "starting load address in memory"
+# "starting offset within the source file"
+# "length (in bytes)"
+# "file (binary)"
+Blocks = @LOADADDR@ @OFFSET@ @LENGTH@ "@FILE@"

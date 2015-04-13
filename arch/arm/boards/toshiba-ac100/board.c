@@ -15,11 +15,7 @@
  */
 
 #include <common.h>
-#include <types.h>
-#include <driver.h>
 #include <init.h>
-#include <asm/armlinux.h>
-#include <linux/sizes.h>
 #include <usb/ehci.h>
 #include <mach/iomap.h>
 

@@ -7,8 +7,6 @@
 $(obj)/%.imximg: $(obj)/% FORCE
 	$(call if_changed,imx_image)
 
-board = $(srctree)/arch/$(ARCH)/boards
-
 # ----------------------- i.MX25 based boards ---------------------------
 pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
 FILE_barebox-karo-tx25.img = start_imx25_karo_tx25.pblx

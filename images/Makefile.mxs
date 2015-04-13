@@ -18,7 +18,6 @@ quiet_cmd_mxs_sd = MXS-SD $@
 $(obj)/%.mxssd: $(obj)/%
 	$(call if_changed,mxs_sd)
 
-board = $(srctree)/arch/$(ARCH)/boards
 mxs23cfg = $(srctree)/arch/arm/mach-mxs/mxs23img.cfg
 mxs28cfg = $(srctree)/arch/arm/mach-mxs/mxs28img.cfg
 

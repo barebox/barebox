@@ -68,7 +68,7 @@ static int do_dmesg(int argc, char *argv[])
 		*(buf + len) = '\n';
 		*(buf + len + 1) = 0;
 
-		pr_info(buf);
+		pr_info("%s", buf);
 
 		free(buf);
 

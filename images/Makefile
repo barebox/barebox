@@ -97,6 +97,9 @@ $(obj)/%.img: $(obj)/$$(FILE_$$(@F))
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
 	$(call if_changed,shipped)
 
+board = $(srctree)/arch/$(ARCH)/boards
+objboard = $(objtree)/arch/$(ARCH)/boards
+
 include $(srctree)/images/Makefile.am33xx
 include $(srctree)/images/Makefile.imx
 include $(srctree)/images/Makefile.mvebu

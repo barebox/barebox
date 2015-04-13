@@ -500,6 +500,7 @@ config MACH_SAMA5D4EK
 
 config MACH_SAMA5D4_XPLAINED
 	bool "Atmel SAMA5D4 XPLAINED ULTRA Evaluation Kit"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Select this if you are using Atmel's SAMA5D4_XPLAINED ULTRA Evaluation Kit.
 

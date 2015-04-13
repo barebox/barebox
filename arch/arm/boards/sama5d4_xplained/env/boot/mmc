@@ -1,0 +1,8 @@
+#!/bin/sh
+
+global.bootm.oftree="/mnt/mmcblk0p1/at91-sama5d4_xplained.dtb"
+global.bootm.image="/mnt/mmcblk0p1/zImage"
+
+bootargs-ip
+
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rw rootwait"

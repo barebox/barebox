@@ -92,4 +92,7 @@ static inline struct clk *imx_clk_busy_mux(const char *name, void __iomem *reg, 
 	return imx_clk_mux(name, reg, shift, width, parents, num_parents);
 }
 
+struct clk *imx_clk_gate_exclusive(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u32 exclusive_mask);
+
 #endif /* __IMX_CLK_H */

@@ -24,6 +24,9 @@ config PCI_DEBUG
 
 	  When in doubt, say N.
 
+config PCIE_DW
+	bool
+
 config PCI_MVEBU
 	bool "Marvell EBU PCIe driver"
 	depends on ARCH_MVEBU
@@ -34,6 +37,13 @@ config PCI_TEGRA
 	bool "NVDIA Tegra PCIe driver"
 	depends on ARCH_TEGRA
 	select OF_ADDRESS_PCI
+	select OF_PCI
+	select PCI
+
+config PCI_IMX6
+	bool "Freescale i.MX6 PCIe controller"
+	depends on ARCH_IMX6
+	select PCIE_DW
 	select OF_PCI
 	select PCI
 

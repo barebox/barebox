@@ -37,7 +37,8 @@ typedef int (*initcall_t)(void);
 #define coredevice_initcall(fn)		__define_initcall("8",fn,8)
 #define fs_initcall(fn)			__define_initcall("9",fn,9)
 #define device_initcall(fn)		__define_initcall("10",fn,10)
-#define late_initcall(fn)		__define_initcall("11",fn,11)
+#define crypto_initcall(fn)		__define_initcall("11",fn,11)
+#define late_initcall(fn)		__define_initcall("12",fn,12)
 
 /* section for code used very early when
  * - we're not running from where we linked at

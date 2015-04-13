@@ -449,6 +449,14 @@ config PASSWD_SUM_SHA256
 	bool "SHA256"
 	select SHA256
 
+config PASSWD_SUM_SHA512
+	bool "SHA512"
+	select SHA512
+
+config PASSWD_CRYPTO_PBKDF2
+	bool "PBKDF2"
+	select CRYPTO_PBKDF2
+
 endchoice
 
 endif

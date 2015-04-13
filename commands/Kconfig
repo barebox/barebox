@@ -12,9 +12,9 @@ config HAS_POWEROFF
 
 if COMMAND_SUPPORT
 
-config COMPILE_DIGEST
+config COMPILE_HASH
 	tristate
-	select DIGEST
+	select CMD_DIGEST
 	help
 	  Turns on compilation of digest.c
 
@@ -842,6 +842,16 @@ config CMD_CMP
 
 	  Returns successfully if the two files are the same, return with an error if not
 
+config CMD_DIGEST
+	tristate
+	select DIGEST
+	prompt "digest"
+	help
+	  Usage: digest -a <algo> [-k <key> | -K <file>] [-s <sig> | -S <file>] FILE|AREA
+
+	  Calculate a digest over a FILE or a memory area with the possibility
+	  to checkit.
+
 config CMD_DIRNAME
 	tristate
 	prompt "dirname"
@@ -917,7 +927,7 @@ config CMD_LS
 
 config CMD_MD5SUM
 	tristate
-	select COMPILE_DIGEST
+	select COMPILE_HASH
 	select MD5
 	prompt "md5sum"
 	help
@@ -982,7 +992,7 @@ config CMD_RMDIR
 
 config CMD_SHA1SUM
 	tristate
-	select COMPILE_DIGEST
+	select COMPILE_HASH
 	select SHA1
 	prompt "sha1sum"
 	help
@@ -994,7 +1004,7 @@ config CMD_SHA1SUM
 
 config CMD_SHA224SUM
 	tristate
-	select COMPILE_DIGEST
+	select COMPILE_HASH
 	select SHA224
 	prompt "sha224sum"
 	help
@@ -1006,7 +1016,7 @@ config CMD_SHA224SUM
 
 config CMD_SHA256SUM
 	tristate
-	select COMPILE_DIGEST
+	select COMPILE_HASH
 	select SHA256
 	prompt "sha256sum"
 	help
@@ -1015,6 +1025,30 @@ config CMD_SHA256SUM
 	  Usage: sha256sum FILE|AREA
 
 	  Calculate a SHA256 digest over a FILE or a memory area.
+
+config CMD_SHA384SUM
+	tristate
+	select COMPILE_HASH
+	select SHA384
+	prompt "sha384sum"
+	help
+	  Calculate SHA384 digest
+
+	  Usage: sha384sum FILE|AREA
+
+	  Calculate a SHA384 digest over a FILE or a memory area.
+
+config CMD_SHA512SUM
+	tristate
+	select COMPILE_HASH
+	select SHA512
+	prompt "sha512sum"
+	help
+	  sha512sum - calculate SHA512 digest
+
+	  Usage: sha512sum FILE|AREA
+
+	  Calculate a SHA512 digest over a FILE or a memory area.
 
 config CMD_UNCOMPRESS
 	bool

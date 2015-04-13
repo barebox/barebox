@@ -13,15 +13,74 @@ menuconfig DIGEST
 if DIGEST
 
 config MD5
-	bool "MD5"
+	bool
 
 config SHA1
-	bool "SHA1"
+	bool
 
 config SHA224
-	bool "SHA224"
+	bool
 
 config SHA256
+	bool
+
+config SHA384
+	bool
+
+config SHA512
+	bool
+
+config DIGEST_HMAC
+	bool
+
+config DIGEST_MD5_GENERIC
+	bool "MD5"
+	select MD5
+
+config DIGEST_SHA1_GENERIC
+	bool "SHA1"
+	select SHA1
+
+config DIGEST_SHA224_GENERIC
+	bool "SHA224"
+	select SHA224
+
+config DIGEST_SHA256_GENERIC
 	bool "SHA256"
+	select SHA256
+
+config DIGEST_SHA384_GENERIC
+	bool "SHA384"
+	select SHA384
+
+config DIGEST_SHA512_GENERIC
+	bool "SHA512"
+	select SHA512
+
+config DIGEST_HMAC_GENERIC
+	bool "HMAC"
+	select DIGEST_HMAC
+
+config DIGEST_SHA1_ARM
+	tristate "SHA1 digest algorithm (ARM-asm)"
+	depends on ARM
+	select SHA1
+	help
+	  SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2) implemented
+	  using optimized ARM assembler.
+
+config DIGEST_SHA256_ARM
+	tristate "SHA-224/256 digest algorithm (ARM-asm and NEON)"
+	depends on ARM
+	select SHA256
+	select SHA224
+	help
+	  SHA-256 secure hash standard (DFIPS 180-2) implemented
+	  using optimized ARM assembler and NEON, when available.
 
 endif
+
+config CRYPTO_PBKDF2
+	select DIGEST
+	select SHA1
+	bool

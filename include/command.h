@@ -54,6 +54,7 @@ struct command {
 	uint32_t	group;
 #ifdef	CONFIG_LONGHELP
 	const char	*help;		/* Help  message	(long)	*/
+	void		(*usage)(void);
 #endif
 }
 #ifdef __x86_64__
@@ -115,8 +116,10 @@ static const __maybe_unused char cmd_##_name##_help[] =
 
 #ifdef CONFIG_LONGHELP
 #define BAREBOX_CMD_HELP(text)	.help = text,
+#define BAREBOX_CMD_USAGE(fn)	.usage = fn,
 #else
 #define BAREBOX_CMD_HELP(text)
+#define BAREBOX_CMD_USAGE(fn)
 #endif
 
 #define BAREBOX_CMD_GROUP(grp)	.group = grp,

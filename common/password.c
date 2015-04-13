@@ -25,7 +25,9 @@
 #include <malloc.h>
 #include <xfuncs.h>
 #include <clock.h>
+#include <stdlib.h>
 #include <generated/passwd.h>
+#include <crypto/pbkdf2.h>
 
 #if defined(CONFIG_PASSWD_SUM_MD5)
 #define PASSWD_SUM "md5"
@@ -33,7 +35,15 @@
 #define PASSWD_SUM "sha1"
 #elif defined(CONFIG_PASSWD_SUM_SHA256)
 #define PASSWD_SUM "sha256"
+#elif defined(CONFIG_PASSWD_SUM_SHA512)
+#define PASSWD_SUM "sha512"
+#else
+#define PASSWD_SUM	NULL
 #endif
+
+#define PBKDF2_SALT_LEN	32
+#define PBKDF2_LENGTH	64
+#define PBKDF2_COUNT	10000
 
 int password(unsigned char *passwd, size_t length, int flags, int timeout)
 {
@@ -275,46 +285,59 @@ EXPORT_SYMBOL(write_env_passwd);
 
 static int __check_passwd(unsigned char* passwd, size_t length, int std)
 {
-	struct digest *d;
+	struct digest *d = NULL;
 	unsigned char *passwd1_sum;
 	unsigned char *passwd2_sum;
 	int ret = 0;
+	int hash_len;
 
-	d = digest_get_by_name(PASSWD_SUM);
+	if (IS_ENABLED(CONFIG_PASSWD_CRYPTO_PBKDF2)) {
+		hash_len = PBKDF2_LENGTH;
+	} else {
+		d = digest_alloc(PASSWD_SUM);
 
-	passwd1_sum = calloc(d->length, sizeof(unsigned char));
+		hash_len = digest_length(d);
+	}
 
+	passwd1_sum = calloc(hash_len * 2, sizeof(unsigned char));
 	if (!passwd1_sum)
 		return -ENOMEM;
 
-	passwd2_sum = calloc(d->length, sizeof(unsigned char));
-
-	if (!passwd2_sum) {
-		ret = -ENOMEM;
-		goto err1;
-	}
-
-	d->init(d);
-
-	d->update(d, passwd, length);
-
-	d->final(d, passwd1_sum);
+	passwd2_sum = passwd1_sum + hash_len;
 
 	if (std)
-		ret = read_env_passwd(passwd2_sum, d->length);
+		ret = read_env_passwd(passwd2_sum, hash_len);
 	else
-		ret = read_default_passwd(passwd2_sum, d->length);
+		ret = read_default_passwd(passwd2_sum, hash_len);
 
 	if (ret < 0)
-		goto err2;
+		goto err;
 
-	if (strncmp(passwd1_sum, passwd2_sum, d->length) == 0)
-		ret = 1;
+	if (IS_ENABLED(CONFIG_PASSWD_CRYPTO_PBKDF2)) {
+		char *key = passwd2_sum + PBKDF2_SALT_LEN;
+		char *salt = passwd2_sum;
+		int keylen = PBKDF2_LENGTH - PBKDF2_SALT_LEN;
 
-err2:
-	free(passwd2_sum);
-err1:
+		ret = pkcs5_pbkdf2_hmac_sha1(passwd, length, salt,
+			PBKDF2_SALT_LEN, PBKDF2_COUNT, keylen, passwd1_sum);
+		if (ret)
+			goto err;
+
+		if (strncmp(passwd1_sum, key, keylen) == 0)
+			ret = 1;
+	} else {
+		ret = digest_digest(d, passwd, length, passwd1_sum);
+
+		if (ret)
+			goto err;
+
+		if (strncmp(passwd1_sum, passwd2_sum, hash_len) == 0)
+			ret = 1;
+	}
+
+err:
 	free(passwd1_sum);
+	digest_free(d);
 
 	return ret;
 }
@@ -343,25 +366,41 @@ int check_passwd(unsigned char* passwd, size_t length)
 
 int set_env_passwd(unsigned char* passwd, size_t length)
 {
-	struct digest *d;
+	struct digest *d = NULL;
 	unsigned char *passwd_sum;
-	int ret;
+	int ret, hash_len;
 
-	d = digest_get_by_name(PASSWD_SUM);
+	if (IS_ENABLED(CONFIG_PASSWD_CRYPTO_PBKDF2)) {
+		hash_len = PBKDF2_LENGTH;
+	} else {
+		d = digest_alloc(PASSWD_SUM);
 
-	passwd_sum = calloc(d->length, sizeof(unsigned char));
+		hash_len = digest_length(d);
+	}
 
+	passwd_sum = calloc(hash_len, sizeof(unsigned char));
 	if (!passwd_sum)
 		return -ENOMEM;
 
-	d->init(d);
+	if (IS_ENABLED(CONFIG_PASSWD_CRYPTO_PBKDF2)) {
+		char *key = passwd_sum + PBKDF2_SALT_LEN;
+		char *salt = passwd_sum;
+		int keylen = PBKDF2_LENGTH - PBKDF2_SALT_LEN;
 
-	d->update(d, passwd, length);
+		get_random_bytes(passwd_sum, PBKDF2_SALT_LEN);
 
-	d->final(d, passwd_sum);
+		ret = pkcs5_pbkdf2_hmac_sha1(passwd, length, salt,
+				PBKDF2_SALT_LEN, PBKDF2_COUNT, keylen, key);
+	} else {
+		ret = digest_digest(d, passwd, length, passwd_sum);
+	}
+	if (ret)
+		goto err;
 
-	ret = write_env_passwd(passwd_sum, d->length);
+	ret = write_env_passwd(passwd_sum, hash_len);
 
+err:
+	digest_free(d);
 	free(passwd_sum);
 
 	return ret;

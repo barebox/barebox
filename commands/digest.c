@@ -1,20 +1,7 @@
 /*
- * digest.c - Calculate a md5/sha1/sha256 checksum of a memory area
+ * Copyright (c) 2015 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
  *
- * Copyright (c) 2011 Peter Korsgaard <jacmet@sunsite.dk>
- *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
+ * GPLv2 ONLY
  */
 
 #include <common.h>
@@ -25,27 +12,27 @@
 #include <xfuncs.h>
 #include <malloc.h>
 #include <digest.h>
+#include <getopt.h>
+#include <libfile.h>
 
-static int do_digest(char *algorithm, int argc, char *argv[])
+#include "internal.h"
+
+int __do_digest(struct digest *d, unsigned char *sig,
+		       int argc, char *argv[])
 {
-	struct digest *d;
-	int ret = 0;
+	int ret = COMMAND_ERROR_USAGE;
 	int i;
 	unsigned char *hash;
 
-	d = digest_get_by_name(algorithm);
-	BUG_ON(!d);
+	if (argc < 1)
+		goto err;
 
-	if (argc < 2)
-		return COMMAND_ERROR_USAGE;
-
-	hash = calloc(d->length, sizeof(unsigned char));
+	hash = calloc(digest_length(d), sizeof(unsigned char));
 	if (!hash) {
 		perror("calloc");
-		return COMMAND_ERROR_USAGE;
+		goto err;
 	}
 
-	argv++;
 	while (*argv) {
 		char *filename = "/dev/mem";
 		loff_t start = 0, size = ~0;
@@ -57,104 +44,157 @@ static int do_digest(char *algorithm, int argc, char *argv[])
 				argv++;
 		}
 
-		if (digest_file_window(d, filename, hash, start, size) < 0) {
+		ret = digest_file_window(d, filename,
+					 hash, sig, start, size);
+		if (ret < 0) {
 			ret = 1;
 		} else {
-			for (i = 0; i < d->length; i++)
-				printf("%02x", hash[i]);
+			if (!sig) {
+				for (i = 0; i < digest_length(d); i++)
+					printf("%02x", hash[i]);
 
-			printf("  %s\t0x%08llx ... 0x%08llx\n",
-				filename, start, start + size);
+				printf("  %s\t0x%08llx ... 0x%08llx\n",
+					filename, start, start + size);
+			}
 		}
 
 		argv++;
 	}
 
 	free(hash);
+err:
+	digest_free(d);
 
 	return ret;
 }
 
-#ifdef CONFIG_CMD_MD5SUM
-
-static int do_md5(int argc, char *argv[])
+static void prints_algo_help(void)
 {
-	return do_digest("md5", argc, argv);
+	puts("\navailable algo:\n");
+	digest_algo_prints("\t");
 }
 
-BAREBOX_CMD_HELP_START(md5sum)
-BAREBOX_CMD_HELP_TEXT("Calculate a MD5 digest over a FILE or a memory area.")
-BAREBOX_CMD_HELP_END
-
-BAREBOX_CMD_START(md5sum)
-	.cmd		= do_md5,
-	BAREBOX_CMD_DESC("calculate MD5 checksum")
-	BAREBOX_CMD_OPTS("FILE|AREA...")
-	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
-	BAREBOX_CMD_HELP(cmd_md5sum_help)
-BAREBOX_CMD_END
-
-#endif /* CMD_CMD_MD5SUM */
-
-#ifdef CONFIG_CMD_SHA1SUM
-
-static int do_sha1(int argc, char *argv[])
+static int do_digest(int argc, char *argv[])
 {
-	return do_digest("sha1", argc, argv);
+	struct digest *d;
+	unsigned char *tmp_key = NULL;
+	unsigned char *tmp_sig = NULL;
+	char *sig = NULL;
+	char *sigfile = NULL;
+	size_t siglen = 0;
+	char *key = NULL;
+	char *keyfile = NULL;
+	size_t keylen = 0;
+	size_t digestlen = 0;
+	char *algo = NULL;
+	int opt;
+	int ret = COMMAND_ERROR;
+
+	if (argc < 2)
+		return COMMAND_ERROR_USAGE;
+
+	while((opt = getopt(argc, argv, "a:k:K:s:S:")) > 0) {
+		switch(opt) {
+		case 'k':
+			key = optarg;
+			keylen = strlen(key);
+			break;
+		case 'K':
+			keyfile = optarg;
+			break;
+		case 'a':
+			algo = optarg;
+			break;
+		case 's':
+			sig = optarg;
+			siglen = strlen(sig);
+			break;
+		case 'S':
+			sigfile = optarg;
+			break;
+		}
+	}
+
+	if (!algo)
+		return COMMAND_ERROR_USAGE;
+
+	d = digest_alloc(algo);
+	if (!d) {
+		eprintf("algo '%s' not found\n", algo);
+		return COMMAND_ERROR_USAGE;
+	}
+
+	argc -= optind;
+	argv += optind;
+
+	if (keyfile) {
+		tmp_key = key = read_file(keyfile, &keylen);
+		if (!key) {
+			eprintf("file '%s' not found\n", keyfile);
+			goto err;
+		}
+	}
+
+	if (key) {
+		ret = digest_set_key(d, key, keylen);
+		free(tmp_key);
+		if (ret)
+			goto err;
+	} else if (digest_is_flags(d, DIGEST_ALGO_NEED_KEY)) {
+		eprintf("%s need a key to be used\n", digest_name(d));
+		goto err;
+	}
+
+	if (sigfile) {
+		sig = tmp_sig = read_file(sigfile, &siglen);
+		if (!tmp_sig) {
+			eprintf("file '%s' not found\n", sigfile);
+			goto err;
+		}
+	}
+
+	if (sig) {
+		digestlen = digest_length(d);
+		if (siglen == 2 * digestlen) {
+			if (!tmp_sig)
+				tmp_sig = xmalloc(digestlen);
+
+			ret = hex2bin(tmp_sig, sig, digestlen);
+			if (ret)
+				goto err;
+
+			sig = tmp_sig;
+		} else if (siglen != digestlen) {
+			eprintf("%s wrong size %zu, expected %zu\n",
+				sigfile, siglen, digestlen);
+			goto err;
+		}
+	}
+
+	ret = __do_digest(d, sig, argc, argv);
+	free(tmp_sig);
+	return ret;
+
+err:
+	digest_free(d);
+	return ret;
 }
 
-BAREBOX_CMD_HELP_START(sha1sum)
-BAREBOX_CMD_HELP_TEXT("Calculate a SHA1 digest over a FILE or a memory area.")
+BAREBOX_CMD_HELP_START(digest)
+BAREBOX_CMD_HELP_TEXT("Calculate a digest over a FILE or a memory area.")
+BAREBOX_CMD_HELP_TEXT("Options:")
+BAREBOX_CMD_HELP_OPT ("-a <algo>\t",  "hash or signature algorithm to use")
+BAREBOX_CMD_HELP_OPT ("-k <key>\t",   "use supplied <key> (ASCII or hex) for MAC")
+BAREBOX_CMD_HELP_OPT ("-K <file>\t",  "use key from <file> (binary) for MAC")
+BAREBOX_CMD_HELP_OPT ("-v <hex>\t",   "verify data against supplied <hex> (hash, MAC or signature)")
+BAREBOX_CMD_HELP_OPT ("-V <file>\t",  "verify data against <file> (hash, MAC or signature)")
 BAREBOX_CMD_HELP_END
 
-BAREBOX_CMD_START(sha1sum)
-	.cmd		= do_sha1,
-	BAREBOX_CMD_DESC("calculate SHA1 digest")
-	BAREBOX_CMD_OPTS("FILE|AREA")
+BAREBOX_CMD_START(digest)
+	.cmd		= do_digest,
+	BAREBOX_CMD_DESC("calculate digest")
+	BAREBOX_CMD_OPTS("-a <algo> [-k <key> | -K <file>] [-s <sig> | -S <file>] FILE|AREA")
 	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
-	BAREBOX_CMD_HELP(cmd_sha1sum_help)
+	BAREBOX_CMD_HELP(cmd_digest_help)
+	BAREBOX_CMD_USAGE(prints_algo_help)
 BAREBOX_CMD_END
-
-#endif /* CMD_CMD_SHA1SUM */
-
-#ifdef CONFIG_CMD_SHA224SUM
-
-static int do_sha224(int argc, char *argv[])
-{
-	return do_digest("sha224", argc, argv);
-}
-
-BAREBOX_CMD_HELP_START(sha224sum)
-BAREBOX_CMD_HELP_TEXT("Calculate a SHA224 digest over a FILE or a memory area.")
-BAREBOX_CMD_HELP_END
-
-BAREBOX_CMD_START(sha224sum)
-	.cmd		= do_sha224,
-	BAREBOX_CMD_DESC("calculate SHA224 digest")
-	BAREBOX_CMD_OPTS("FILE|AREA")
-	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
-	BAREBOX_CMD_HELP(cmd_sha224sum_help)
-BAREBOX_CMD_END
-
-#endif /* CMD_CMD_SHA224SUM */
-
-#ifdef CONFIG_CMD_SHA256SUM
-
-static int do_sha256(int argc, char *argv[])
-{
-	return do_digest("sha256", argc, argv);
-}
-
-BAREBOX_CMD_HELP_START(sha256sum)
-BAREBOX_CMD_HELP_TEXT("Calculate a SHA256 digest over a FILE or a memory area.")
-BAREBOX_CMD_HELP_END
-
-BAREBOX_CMD_START(sha256sum)
-	.cmd		= do_sha256,
-	BAREBOX_CMD_DESC("calculate SHA256 digest")
-	BAREBOX_CMD_OPTS("FILE|AREA")
-	BAREBOX_CMD_GROUP(CMD_GRP_FILE)
-	BAREBOX_CMD_HELP(cmd_sha256sum_help)
-BAREBOX_CMD_END
-
-#endif /* CMD_CMD_SHA256SUM */

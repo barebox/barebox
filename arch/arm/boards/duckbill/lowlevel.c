@@ -1,4 +1,4 @@
-#define pr_fmt(fmt) "Freescale MX28evk: " fmt
+#define pr_fmt(fmt) "I2SE Duckbill: " fmt
 #define DEBUG
 
 #include <common.h>

@@ -21,11 +21,18 @@
 #include <watchdog.h>
 #include <reset_source.h>
 
+struct imx_wd;
+
+struct imx_wd_ops {
+	int (*set_timeout)(struct imx_wd *, int);
+	int (*init)(struct imx_wd *);
+};
+
 struct imx_wd {
 	struct watchdog wd;
 	void __iomem *base;
 	struct device_d *dev;
-	int (*set_timeout)(struct imx_wd *, unsigned);
+	const struct imx_wd_ops *ops;
 };
 
 #define to_imx_wd(h) container_of(h, struct imx_wd, wd)
@@ -39,6 +46,7 @@ struct imx_wd {
 #define IMX21_WDOG_WCR	0x00 /* Watchdog Control Register */
 #define IMX21_WDOG_WSR	0x02 /* Watchdog Service Register */
 #define IMX21_WDOG_WSTR	0x04 /* Watchdog Status Register  */
+#define IMX21_WDOG_WMCR	0x08 /* Misc Register */
 #define IMX21_WDOG_WCR_WDE	(1 << 2)
 #define IMX21_WDOG_WCR_SRS	(1 << 4)
 #define IMX21_WDOG_WCR_WDA	(1 << 5)
@@ -110,7 +118,7 @@ static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 {
 	struct imx_wd *priv = (struct imx_wd *)to_imx_wd(wd);
 
-	return priv->set_timeout(priv, timeout);
+	return priv->ops->set_timeout(priv, timeout);
 }
 
 static struct imx_wd *reset_wd;
@@ -118,7 +126,7 @@ static struct imx_wd *reset_wd;
 void __noreturn reset_cpu(unsigned long addr)
 {
 	if (reset_wd)
-		reset_wd->set_timeout(reset_wd, -1);
+		reset_wd->ops->set_timeout(reset_wd, -1);
 
 	mdelay(1000);
 
@@ -147,13 +155,25 @@ static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
 	/* else keep the default 'unknown' state */
 }
 
+static int imx21_wd_init(struct imx_wd *priv)
+{
+	imx_watchdog_detect_reset_source(priv);
+
+	/*
+	 * Disable watchdog powerdown counter
+	 */
+	writew(0x0, priv->base + IMX21_WDOG_WMCR);
+
+	return 0;
+}
+
 static int imx_wd_probe(struct device_d *dev)
 {
 	struct imx_wd *priv;
-	void *fn;
+	void *ops;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&fn);
+	ret = dev_get_drvdata(dev, (unsigned long *)&ops);
 	if (ret)
 		return ret;
 
@@ -163,7 +183,7 @@ static int imx_wd_probe(struct device_d *dev)
 		dev_err(dev, "could not get memory region\n");
 		return -ENODEV;
 	}
-	priv->set_timeout = fn;
+	priv->ops = ops;
 	priv->wd.set_timeout = imx_watchdog_set_timeout;
 	priv->dev = dev;
 
@@ -176,13 +196,21 @@ static int imx_wd_probe(struct device_d *dev)
 			goto on_error;
 	}
 
-	if (fn != imx1_watchdog_set_timeout)
-		imx_watchdog_detect_reset_source(priv);
+	if (priv->ops->init) {
+		ret = priv->ops->init(priv);
+		if (ret) {
+			dev_err(dev, "Failed to init watchdog device %d\n", ret);
+			goto error_unregister;
+		}
+	}
 
 	dev->priv = priv;
 
 	return 0;
 
+error_unregister:
+	if (IS_ENABLED(CONFIG_WATCHDOG_IMX))
+		watchdog_deregister(&priv->wd);
 on_error:
 	if (reset_wd && reset_wd != priv)
 		free(priv);
@@ -200,13 +228,22 @@ static void imx_wd_remove(struct device_d *dev)
 		free(priv);
 }
 
+static const struct imx_wd_ops imx21_wd_ops = {
+	.set_timeout = imx21_watchdog_set_timeout,
+	.init = imx21_wd_init,
+};
+
+static const struct imx_wd_ops imx1_wd_ops = {
+	.set_timeout = imx1_watchdog_set_timeout,
+};
+
 static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-wdt",
-		.data = (unsigned long)&imx1_watchdog_set_timeout,
+		.data = (unsigned long)&imx1_wd_ops,
 	}, {
 		.compatible = "fsl,imx21-wdt",
-		.data = (unsigned long)&imx21_watchdog_set_timeout,
+		.data = (unsigned long)&imx21_wd_ops,
 	}, {
 		/* sentinel */
 	}
@@ -215,10 +252,10 @@ static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {
 static struct platform_device_id imx_wdt_ids[] = {
 	{
 		.name = "imx1-wdt",
-		.driver_data = (unsigned long)&imx1_watchdog_set_timeout,
+		.driver_data = (unsigned long)&imx1_wd_ops,
 	}, {
 		.name = "imx21-wdt",
-		.driver_data = (unsigned long)&imx21_watchdog_set_timeout,
+		.driver_data = (unsigned long)&imx21_wd_ops,
 	}, {
 		/* sentinel */
 	},

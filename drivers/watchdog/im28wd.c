@@ -176,6 +176,13 @@ static void __maybe_unused imx28_detect_reset_source(const struct imx28_wd *p)
 		reset_source_set(RESET_RST);
 		return;
 	}
+	reg = readl(p->regs + MXS_RTC_PERSISTENT1);
+	if (reg & MXS_RTC_PERSISTENT1_FORCE_UPDATER) {
+		writel(MXS_RTC_PERSISTENT1_FORCE_UPDATER,
+			p->regs + MXS_RTC_PERSISTENT1 + MXS_RTC_CLR_ADDR);
+		reset_source_set(RESET_WDG);
+		return;
+	}
 
 	reset_source_set(RESET_RST);
 }

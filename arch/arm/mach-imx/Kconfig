@@ -279,6 +279,10 @@ config MACH_GK802
 	bool "Zealz GK802 Mini PC"
 	select ARCH_IMX6
 
+config MACH_ELTEC_HIPERCAM
+	bool "ELTEC HiPerCam"
+	select ARCH_IMX6
+
 config MACH_TQMA6X
 	bool "TQ tqma6x on mba6x"
 	select ARCH_IMX6

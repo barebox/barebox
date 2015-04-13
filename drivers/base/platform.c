@@ -29,7 +29,8 @@ static int platform_probe(struct device_d *dev)
 
 static void platform_remove(struct device_d *dev)
 {
-	dev->driver->remove(dev);
+	if (dev->driver->remove)
+		dev->driver->remove(dev);
 }
 
 int platform_driver_register(struct driver_d *drv)

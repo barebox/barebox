@@ -85,13 +85,14 @@ int device_probe(struct device_d *dev)
 
 	pinctrl_select_state_default(dev);
 
+	list_add(&dev->active, &active);
+
 	ret = dev->bus->probe(dev);
 	if (ret) {
+		list_del(&dev->active);
 		dev_err(dev, "probe failed: %s\n", strerror(-ret));
 		return ret;
 	}
-
-	list_add(&dev->active, &active);
 
 	return 0;
 }
@@ -398,8 +399,8 @@ void devices_shutdown(void)
 	struct device_d *dev;
 
 	list_for_each_entry(dev, &active, active) {
-		if (dev->driver->remove)
-			dev->driver->remove(dev);
+		if (dev->bus->remove)
+			dev->bus->remove(dev);
 	}
 }
 

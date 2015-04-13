@@ -392,7 +392,8 @@ static void w1_bus_remove(struct device_d *_dev)
 	struct w1_driver *drv = to_w1_driver(_dev->driver);
 	struct w1_device *dev = to_w1_device(_dev);
 
-	return drv->remove(dev);
+	if (drv->remove)
+		drv->remove(dev);
 }
 
 struct bus_type w1_bustype= {

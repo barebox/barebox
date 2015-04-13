@@ -1024,6 +1024,11 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 		GET_SLOT_STATE(le32_to_cpu(vdev->out_ctx->slot.dev_state)), epi,
 		vdev->in_ctx, vdev->out_ctx);
 
+	/* pass ownership of data buffer to device */
+	dma_sync_single_for_device((unsigned long)buffer, length,
+				   usb_pipein(pipe) ?
+				   DMA_FROM_DEVICE : DMA_TO_DEVICE);
+
 	/* Normal TRB */
 	memset(&trb, 0, sizeof(union xhci_trb));
 	trb.event_cmd.cmd_trb = cpu_to_le64((dma_addr_t)buffer);
@@ -1036,6 +1041,11 @@ static int xhci_submit_normal(struct usb_device *udev, unsigned long pipe,
 	xhci_virtdev_issue_transfer(vdev, epi, &trb, true);
 	ret = xhci_wait_for_event(xhci, TRB_TRANSFER, &trb);
 	xhci_print_trb(xhci, &trb, "Response Normal");
+
+	/* Regain ownership of data buffer from device */
+	dma_sync_single_for_cpu((unsigned long)buffer, length,
+				usb_pipein(pipe) ?
+				DMA_FROM_DEVICE : DMA_TO_DEVICE);
 
 	switch (ret) {
 	case -COMP_SHORT_TX:
@@ -1094,6 +1104,11 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 			return ret;
 	}
 
+	/* Pass ownership of data buffer to device */
+	dma_sync_single_for_device((unsigned long)buffer, length,
+				   (req->requesttype & USB_DIR_IN) ?
+				   DMA_FROM_DEVICE : DMA_TO_DEVICE);
+
 	/* Setup TRB */
 	memset(&trb, 0, sizeof(union xhci_trb));
 	trb.generic.field[0] = le16_to_cpu(req->value) << 16 |
@@ -1141,11 +1156,17 @@ static int xhci_submit_control(struct usb_device *udev, unsigned long pipe,
 		if (ret == -COMP_SHORT_TX)
 			length -= EVENT_TRB_LEN(trb.event_cmd.status);
 		else if (ret < 0)
-			return ret;
+			goto dma_regain;
 	}
 
 	ret = xhci_wait_for_event(xhci, TRB_TRANSFER, &trb);
 	xhci_print_trb(xhci, &trb, "Response Status");
+
+dma_regain:
+	/* Regain ownership of data buffer from device */
+	dma_sync_single_for_cpu((unsigned long)buffer, length,
+				(req->requesttype & USB_DIR_IN) ?
+				DMA_FROM_DEVICE : DMA_TO_DEVICE);
 	if (ret < 0)
 		return ret;
 

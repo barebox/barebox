@@ -76,6 +76,14 @@ config DRIVER_NET_DM9K
 	depends on HAS_DM9000
 	select PHYLIB
 
+config DRIVER_NET_E1000
+	bool "Intel e1000 ethernet driver"
+	depends on PCI
+	select PHYLIB
+	help
+	  This is a driver for the Gigabit Ethernet PCI network cards based on
+	  the Intel e1000 chips.
+
 config DRIVER_NET_ENC28J60
 	bool "ENC28J60 support"
 	depends on SPI

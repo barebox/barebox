@@ -67,6 +67,9 @@ static int do_ping(int argc, char *argv[])
 		return 1;
 	}
 
+	ping_state = PING_STATE_INIT;
+	ping_sequence_number = 0;
+
 	ping_con = net_icmp_new(net_ping_ip, ping_handler, NULL);
 	if (IS_ERR(ping_con)) {
 		ret = PTR_ERR(ping_con);
@@ -77,9 +80,6 @@ static int do_ping(int argc, char *argv[])
 	ret = ping_send();
 	if (ret)
 		goto out_unreg;
-
-	ping_state = PING_STATE_INIT;
-	ping_sequence_number = 0;
 
 	while (ping_state == PING_STATE_INIT) {
 		if (ctrlc()) {

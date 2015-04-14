@@ -20,6 +20,7 @@
 #include <common.h>
 #include <init.h>
 #include <led.h>
+#include <malloc.h>
 #include <gpio.h>
 #include <of_gpio.h>
 
@@ -201,19 +202,32 @@ void led_gpio_rgb_unregister(struct gpio_led *led)
 static int led_gpio_of_probe(struct device_d *dev)
 {
 	struct device_node *child;
+	struct gpio_led *leds;
+	int num_leds;
+	int ret = 0, n = 0;
+
+	num_leds = of_get_child_count(dev->device_node);
+	if (num_leds <= 0)
+		return num_leds;
+
+	leds = xzalloc(num_leds * sizeof(struct gpio_led));
 
 	for_each_child_of_node(dev->device_node, child) {
-		struct gpio_led *gled;
+		struct gpio_led *gled = &leds[n];
 		const char *default_state;
 		enum of_gpio_flags flags;
 		int gpio;
 		const char *label;
 
 		gpio = of_get_named_gpio_flags(child, "gpios", 0, &flags);
-		if (gpio < 0)
-			continue;
+		if (gpio < 0) {
+			if (gpio != -EPROBE_DEFER)
+				dev_err(dev, "failed to get gpio for %s: %d\n",
+					child->full_name, gpio);
+			ret = gpio;
+			goto err;
+		}
 
-		gled = xzalloc(sizeof(*gled));
 		if (of_property_read_string(child, "label", &label))
 			label = child->name;
 		gled->led.name = xstrdup(label);
@@ -233,9 +247,17 @@ static int led_gpio_of_probe(struct device_d *dev)
 			else if (!strcmp(default_state, "off"))
 				led_gpio_set(&gled->led, 0);
 		}
+
+		n++;
 	}
 
 	return 0;
+
+err:
+	for (n = n - 1; n >= 0; n--)
+		led_gpio_unregister(&leds[n]);
+	free(leds);
+	return ret;
 }
 
 static struct of_device_id led_gpio_of_ids[] = {

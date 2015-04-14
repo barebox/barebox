@@ -64,6 +64,7 @@ int led_gpio_register(struct gpio_led *led)
 void led_gpio_unregister(struct gpio_led *led)
 {
 	led_unregister(&led->led);
+	gpio_free(led->gpio);
 }
 
 #ifdef CONFIG_LED_GPIO_BICOLOR
@@ -131,6 +132,8 @@ err_gpio_c0:
 void led_gpio_bicolor_unregister(struct gpio_bicolor_led *led)
 {
 	led_unregister(&led->led);
+	gpio_free(led->gpio_c1);
+	gpio_free(led->gpio_c0);
 }
 #endif
 
@@ -195,6 +198,9 @@ err_gpio_r:
 void led_gpio_rgb_unregister(struct gpio_rgb_led *led)
 {
 	led_unregister(&led->led);
+	gpio_free(led->gpio_b);
+	gpio_free(led->gpio_g);
+	gpio_free(led->gpio_r);
 }
 #endif /* CONFIG_LED_GPIO_RGB */
 

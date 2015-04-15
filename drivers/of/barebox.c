@@ -26,15 +26,6 @@
 #include <envfs.h>
 #include <linux/mtd/mtd.h>
 
-struct of_partition {
-	struct list_head list;
-	char *nodepath;
-	struct device_d *dev;
-	struct device_node *of_partitions;
-};
-
-static LIST_HEAD(of_partition_list);
-
 static int environment_probe(struct device_d *dev)
 {
 	char *path;

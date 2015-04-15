@@ -27,11 +27,11 @@ static int pci_match(struct device_d *dev, struct driver_d *drv)
 {
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct pci_driver *pdrv = to_pci_driver(drv);
-	struct pci_device_id *id;
+	const struct pci_device_id *id;
 
-	for (id = (struct pci_device_id *)pdrv->id_table; id->vendor; id++)
+	for (id = pdrv->id_table; id->vendor; id++)
 		if (pci_match_one_device(id, pdev)) {
-			dev->priv = id;
+			pdev->id = id;
 			return 0;
 		}
 
@@ -43,7 +43,7 @@ static int pci_probe(struct device_d *dev)
 	struct pci_dev *pdev = to_pci_dev(dev);
 	struct pci_driver *pdrv = to_pci_driver(dev->driver);
 
-	return pdrv->probe(pdev, dev->priv);
+	return pdrv->probe(pdev, pdev->id);
 }
 
 static void pci_remove(struct device_d *dev)

@@ -1,6 +1,8 @@
 #ifndef _FDT_H
 #define _FDT_H
 
+#include <linux/types.h>
+
 #ifndef __ASSEMBLY__
 
 #define _B(n)	((unsigned long long)((uint8_t *)&x)[n])

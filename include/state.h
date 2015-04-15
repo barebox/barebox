@@ -1,6 +1,8 @@
 #ifndef __STATE_H
 #define __STATE_H
 
+#include <of.h>
+
 struct state;
 
 int state_backend_dtb_file(struct state *state, const char *path);

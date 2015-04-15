@@ -3,6 +3,8 @@
 
 #include <fdt.h>
 #include <errno.h>
+#include <linux/types.h>
+#include <linux/list.h>
 #include <asm/byteorder.h>
 
 /* Default string compare functions */

@@ -62,16 +62,18 @@ static int do_state(int argc, char *argv[])
 	return ret;
 }
 
-static const __maybe_unused char cmd_state_help[] =
-"Usage: state [OPTIONS] [STATENAME]\n"
-"\n"
-"options:\n"
-"-s        save state\n"
-"-l        load state\n";
+BAREBOX_CMD_HELP_START(state)
+BAREBOX_CMD_HELP_TEXT("Usage: state [OPTIONS] [STATENAME]")
+BAREBOX_CMD_HELP_TEXT("")
+BAREBOX_CMD_HELP_TEXT("options:")
+BAREBOX_CMD_HELP_OPT ("-s", "save state")
+BAREBOX_CMD_HELP_OPT ("-l", "load state")
+BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(state)
 	.cmd		= do_state,
-	BAREBOX_CMD_DESC("handle state information")
+	BAREBOX_CMD_DESC("load and save state information")
+	BAREBOX_CMD_OPTS("[-sl] [STATENAME]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_state_help)
 BAREBOX_CMD_END

@@ -24,6 +24,17 @@ image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-uart.img
 image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-2nd.img
 
 # ----------------------- Armada XP based boards ---------------------------
+LENOVO_IX4_300D_KWBOPTS = ${KWBOPTS} -i $(board)/lenovo-ix4-300d/kwbimage.cfg
+OPTS_start_lenovo_ix4_300d.pblx.kwbimg = $(LENOVO_IX4_300D_KWBOPTS)
+OPTS_start_lenovo_ix4_300d.pblx.kwbuartimg = -m uart $(LENOVO_IX4_300D_KWBOPTS)
+FILE_barebox-lenovo-ix4-300d.img   = start_lenovo_ix4_300d.pblx.kwbimg
+FILE_barebox-lenovo-ix4-300d-uart.img = start_lenovo_ix4_300d.pblx.kwbuartimg
+FILE_barebox-lenovo-ix4-300d-2nd.img = start_lenovo_ix4_300d.pblx
+pblx-$(CONFIG_MACH_LENOVO_IX4_300D) += start_lenovo_ix4_300d.pblx
+image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d.img
+image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d-uart.img
+image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d-2nd.img
+
 MARVELL_ARMADA_XP_GP_KWBOPTS = ${KWBOPTS} -i $(board)/marvell-armada-xp-gp/kwbimage.cfg
 OPTS_start_marvell_armada_xp_gp.pblx.kwbimg = $(MARVELL_ARMADA_XP_GP_KWBOPTS)
 OPTS_start_marvell_armada_xp_gp.pblx.kwbuartimg = -m uart $(MARVELL_ARMADA_XP_GP_KWBOPTS)

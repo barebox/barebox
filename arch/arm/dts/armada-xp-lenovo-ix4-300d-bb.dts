@@ -1,0 +1,14 @@
+/*
+ * Barebox specific DT overlay for Lenovo Iomega ix4-300d
+ *   Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ */
+
+#include "arm/armada-xp-lenovo-ix4-300d.dts"
+
+/ {
+	gpio-leds {
+		power-led {
+			linux,default-trigger = "heartbeat";
+		};
+	};
+};

@@ -109,7 +109,6 @@ struct mvebu_mbus_state {
 	struct resource pcie_mem_aperture;
 	struct resource pcie_io_aperture;
 	const struct mvebu_mbus_soc_data *soc;
-	int hw_io_coherency;
 };
 
 static struct mvebu_mbus_state mbus_state;
@@ -361,8 +360,6 @@ static void mvebu_mbus_default_setup_cpu_target(struct mvebu_mbus_state *mbus)
 			w = &mbus_dram_info.cs[cs++];
 			w->cs_index = i;
 			w->mbus_attr = 0xf & ~(1 << i);
-			if (mbus->hw_io_coherency)
-				w->mbus_attr |= ATTR_HW_COHERENCY;
 			w->base = base & DDR_BASE_CS_LOW_MASK;
 			w->size = (size | ~DDR_SIZE_MASK) + 1;
 		}
@@ -718,9 +715,6 @@ static int mvebu_mbus_probe(struct device_d *dev)
 	/* Get optional pcie-{mem,io}-aperture properties */
 	mvebu_mbus_get_pcie_resources(np, &mbus_state.pcie_mem_aperture,
 					  &mbus_state.pcie_io_aperture);
-
-	if (of_find_compatible_node(NULL, NULL, "marvell,coherency-fabric"))
-		mbus_state.hw_io_coherency = 1;
 
 	for (win = 0; win < mbus_state.soc->num_wins; win++)
 		mvebu_mbus_disable_window(&mbus_state, win);

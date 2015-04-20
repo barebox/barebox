@@ -13,6 +13,14 @@ config GPIO_DIGIC
 	bool "GPIO support for Canon DIGIC"
 	depends on ARCH_DIGIC
 
+config GPIO_74164
+	bool "Generic SPI attached shift register"
+	depends on SPI
+	help
+	  Driver for 74x164 compatible serial-in/parallel-out 8-outputs
+	  shift registers. This driver can be used to provide access
+	  to more gpio outputs.
+
 config GPIO_BCM2835
 	bool "GPIO support for BCM2835"
 	depends on ARCH_BCM2835

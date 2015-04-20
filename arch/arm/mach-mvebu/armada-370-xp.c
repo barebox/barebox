@@ -138,9 +138,9 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 	barebox_set_hostname("armada");
 
 	/* Disable MBUS error propagation */
-	reg = readl(ARMADA_370_XP_FABRIC_BASE);
-	reg &= ~BIT(8);
-	writel(reg, ARMADA_370_XP_FABRIC_BASE);
+	reg = readl(ARMADA_370_XP_FABRIC_CTRL);
+	reg &= ~MBUS_ERR_PROP_EN;
+	writel(reg, ARMADA_370_XP_FABRIC_CTRL);
 
 	armada_370_xp_memory_find(&phys_base, &phys_size);
 

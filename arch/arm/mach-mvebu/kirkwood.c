@@ -66,6 +66,7 @@ static int kirkwood_init_soc(struct device_node *root, void *context)
 	kirkwood_memory_find(&phys_base, &phys_size);
 
 	mvebu_set_memory(phys_base, phys_size);
+	mvebu_mbus_init();
 
 	return 0;
 }

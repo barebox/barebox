@@ -673,7 +673,7 @@ static void mvebu_mbus_get_pcie_resources(struct device_node *np,
 	}
 }
 
-static int mvebu_mbus_probe(struct device_d *dev)
+int mvebu_mbus_init(void)
 {
 	struct device_node *np, *controller;
 	const struct of_device_id *match;
@@ -724,18 +724,6 @@ static int mvebu_mbus_probe(struct device_d *dev)
 	/* Setup statically declared windows in the DT */
 	return mbus_dt_setup(&mbus_state);
 }
-
-static struct driver_d mvebu_mbus_driver = {
-	.probe	= mvebu_mbus_probe,
-	.name	= "mvebu-mbus",
-	.of_compatible = DRV_OF_COMPAT(mvebu_mbus_dt_ids),
-};
-
-static int mvebu_mbus_init(void)
-{
-	return platform_driver_register(&mvebu_mbus_driver);
-}
-postcore_initcall(mvebu_mbus_init);
 
 struct mbus_range {
 	const char *compatible;

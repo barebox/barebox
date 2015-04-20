@@ -73,6 +73,7 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 	armada_370_xp_memory_find(&phys_base, &phys_size);
 
 	mvebu_set_memory(phys_base, phys_size);
+	mvebu_mbus_init();
 
 	/* Enable peripherals PUP */
 	reg = readl(ARMADA_XP_PUP_ENABLE_BASE);

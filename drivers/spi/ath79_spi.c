@@ -100,6 +100,8 @@ static inline u32 getmiso(struct spi_device *spi)
 	return !!((ath79_spi_rr(sc, AR71XX_SPI_REG_RDS) & 1));
 }
 
+#define spidelay(nsecs) udelay(nsecs/1000)
+
 #include "spi-bitbang-txrx.h"
 
 static inline void ath79_spi_chipselect(struct ath79_spi *sp, int chipselect)

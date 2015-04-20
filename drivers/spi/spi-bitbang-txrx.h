@@ -42,8 +42,6 @@
  * particular CPU clock rate.
  */
 
-#define spidelay(nsecs) udelay(nsecs/1000)
-
 static inline u32
 bitbang_txrx_be_cpha0(struct spi_device *spi,
 		unsigned nsecs, unsigned cpol,

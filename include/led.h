@@ -110,14 +110,14 @@ static inline void led_gpio_bicolor_unregister(struct gpio_bicolor_led *led)
 
 #ifdef CONFIG_LED_GPIO_RGB
 int led_gpio_rgb_register(struct gpio_rgb_led *led);
-void led_gpio_rgb_unregister(struct gpio_led *led);
+void led_gpio_rgb_unregister(struct gpio_rgb_led *led);
 #else
 static inline int led_gpio_rgb_register(struct gpio_rgb_led *led)
 {
 	return -ENOSYS;
 }
 
-static inline void led_gpio_rgb_unregister(struct gpio_led *led)
+static inline void led_gpio_rgb_unregister(struct gpio_rgb_led *led)
 {
 }
 #endif

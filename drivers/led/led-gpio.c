@@ -192,7 +192,7 @@ err_gpio_r:
  * led_gpio_rgb_unregister - remove a gpio controlled rgb LED from the framework
  * @param led	The gpio LED
  */
-void led_gpio_rgb_unregister(struct gpio_led *led)
+void led_gpio_rgb_unregister(struct gpio_rgb_led *led)
 {
 	led_unregister(&led->led);
 }

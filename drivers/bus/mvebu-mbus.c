@@ -50,6 +50,8 @@
  *   configuration (file 'devices').
  */
 
+#define pr_fmt(fmt)	"mvebu-mbus: " fmt
+
 #include <common.h>
 #include <init.h>
 #include <io.h>
@@ -100,7 +102,7 @@ struct mvebu_mbus_soc_data {
 };
 
 struct mvebu_mbus_state {
-	struct device_d *dev;
+	struct device_node *np;
 	void __iomem *mbuswins_base;
 	void __iomem *sdramwins_base;
 	struct dentry *debugfs_root;
@@ -496,7 +498,7 @@ int mvebu_mbus_add_window_remap_by_id(unsigned int target,
 	struct mvebu_mbus_state *s = &mbus_state;
 
 	if (!mvebu_mbus_window_conflicts(s, base, size, target, attribute)) {
-		dev_err(s->dev, "cannot add window '%x:%x', conflicts with another window\n",
+		pr_err("cannot add window '%x:%x', conflicts with another window\n",
 		       target, attribute);
 		return -EINVAL;
 	}
@@ -552,14 +554,14 @@ static int mbus_dt_setup_win(struct mvebu_mbus_state *mbus,
 			     u32 base, u32 size, u8 target, u8 attr)
 {
 	if (!mvebu_mbus_window_conflicts(mbus, base, size, target, attr)) {
-		dev_err(mbus->dev, "cannot add window '%04x:%04x', conflicts with another window\n",
+		pr_err("cannot add window '%04x:%04x', conflicts with another window\n",
 		       target, attr);
 		return -EBUSY;
 	}
 
 	if (mvebu_mbus_alloc_window(mbus, base, size, MVEBU_MBUS_NO_REMAP,
 				    target, attr)) {
-		dev_err(mbus->dev, "cannot add window '%04x:%04x', too many windows\n",
+		pr_err("cannot add window '%04x:%04x', too many windows\n",
 		       target, attr);
 		return -ENOMEM;
 	}
@@ -571,7 +573,7 @@ static int mbus_parse_ranges(struct mvebu_mbus_state *mbus, int *addr_cells,
 			     int *cell_count, const __be32 **ranges_start,
 			     const __be32 **ranges_end)
 {
-	struct device_node *node = mbus->dev->device_node;
+	struct device_node *node = mbus->np;
 	const __be32 *prop;
 	int ranges_len, tuple_len;
 
@@ -596,8 +598,7 @@ static int mbus_parse_ranges(struct mvebu_mbus_state *mbus, int *addr_cells,
 	tuple_len = (*cell_count) * sizeof(__be32);
 
 	if (ranges_len % tuple_len) {
-		dev_warn(mbus->dev, "malformed ranges entry '%s'\n",
-			node->name);
+		pr_warn("malformed ranges entry '%s'\n", node->name);
 		return -EINVAL;
 	}
 	return 0;
@@ -679,36 +680,35 @@ static int mvebu_mbus_probe(struct device_d *dev)
 	const __be32 *prop;
 	int win;
 
-	mbus_state.dev = dev;
-
 	np = of_find_matching_node_and_match(NULL, mvebu_mbus_dt_ids, &match);
 	if (!np) {
-		dev_err(dev, "could not find a matching SoC family\n");
+		pr_err("could not find a matching SoC family\n");
 		return -ENODEV;
 	}
+	mbus_state.np = np;
 	mbus_state.soc = (struct mvebu_mbus_soc_data *)match->data;
 
 	prop = of_get_property(np, "controller", NULL);
 	if (!prop) {
-		dev_err(dev, "required 'controller' property missing\n");
+		pr_err("required 'controller' property missing\n");
 		return -EINVAL;
 	}
 
 	controller = of_find_node_by_phandle(be32_to_cpup(prop));
 	if (!controller) {
-		dev_err(dev, "could not find an 'mbus-controller' node\n");
+		pr_err("could not find an 'mbus-controller' node\n");
 		return -ENODEV;
 	}
 
 	mbus_state.mbuswins_base = of_iomap(controller, 0);
 	if (!mbus_state.mbuswins_base) {
-		dev_err(dev, "cannot get MBUS register address\n");
+		pr_err("cannot get MBUS register address\n");
 		return -ENOMEM;
 	}
 
 	mbus_state.sdramwins_base = of_iomap(controller, 1);
 	if (!mbus_state.sdramwins_base) {
-		dev_err(dev, "cannot get SDRAM register address\n");
+		pr_err("cannot get SDRAM register address\n");
 		return -ENOMEM;
 	}
 

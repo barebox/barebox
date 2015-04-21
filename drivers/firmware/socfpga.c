@@ -324,11 +324,25 @@ static int fpgamgr_program_write_buf(struct firmware_handler *fh, const void *bu
 	const uint32_t *buf32 = buf;
 
 	/* write to FPGA Manager AXI data */
-	while (size) {
+	while (size >= sizeof(uint32_t)) {
 		writel(*buf32, mgr->regs_data);
 		readl(mgr->regs + FPGAMGRREGS_MON_GPIO_EXT_PORTA_ADDRESS);
 		buf32++;
 		size -= sizeof(uint32_t);
+	}
+
+	if (size) {
+		const uint8_t *buf8 = (const uint8_t *)buf32;
+		uint32_t word = 0;
+
+		while (size--) {
+			word |= *buf8;
+			word <<= 8;
+			buf8++;
+		}
+
+		writel(word, mgr->regs_data);
+		readl(mgr->regs + FPGAMGRREGS_MON_GPIO_EXT_PORTA_ADDRESS);
 	}
 
 	return 0;

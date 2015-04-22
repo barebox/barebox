@@ -37,7 +37,7 @@ static int do_timeout(int argc, char *argv[])
 	uint64_t start, second;
 	const char *varname = NULL;
 
-	while((opt = getopt(argc, argv, "t:crsav:")) > 0) {
+	while((opt = getopt(argc, argv, "crsav:")) > 0) {
 		switch(opt) {
 		case 'r':
 			flags |= TIMEOUT_RETURN;

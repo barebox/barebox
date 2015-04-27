@@ -846,6 +846,10 @@ static const struct usb_device_id products [] = {
 	// LevelOne USB Fast Ethernet Adapter
 	USB_DEVICE(0x0b95, 0x772b),
 	.driver_info = &ax88772b_info,
+}, {
+	// DLink DUB-E100 H/W Ver C1
+	USB_DEVICE(0x2001, 0x1a02),
+	.driver_info = &ax88772_info,
 },
 	{ },		// END
 };

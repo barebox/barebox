@@ -520,8 +520,8 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 		if (!p)
 			return -ENOMEM;
 
-		na = of_n_addr_cells(np);
-		ns = of_n_size_cells(np);
+		na = of_n_addr_cells(part);
+		ns = of_n_size_cells(part);
 
 		of_write_number(tmp + len, partmtd->master_offset, na);
 		len += na * 4;

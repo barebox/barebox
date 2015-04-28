@@ -663,7 +663,7 @@ int usb_clear_halt(struct usb_device *dev, int pipe)
 
 	result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
 				 USB_REQ_CLEAR_FEATURE, USB_RECIP_ENDPOINT, 0,
-				 endp, NULL, 0, USB_CNTL_TIMEOUT * 3);
+				 endp, NULL, 0, USB_CNTL_TIMEOUT);
 
 	/* don't clear if failed */
 	if (result < 0)
@@ -748,7 +748,7 @@ int usb_set_interface(struct usb_device *dev, int interface, int alternate)
 	ret = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
 				USB_REQ_SET_INTERFACE, USB_RECIP_INTERFACE,
 				alternate, interface, NULL, 0,
-				USB_CNTL_TIMEOUT * 5);
+				USB_CNTL_TIMEOUT);
 	if (ret < 0)
 		return ret;
 

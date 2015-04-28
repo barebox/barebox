@@ -39,7 +39,7 @@
 #define USB_MAXCHILDREN			8	/* This is arbitrary */
 #define USB_MAX_HUB			16
 
-#define USB_CNTL_TIMEOUT 100 /* 100ms timeout */
+#define USB_CNTL_TIMEOUT 5000 /* 5000ms timeout */
 
 /* device request (setup) */
 struct devrequest {

@@ -266,6 +266,7 @@ int phy_init(void);
 int phy_init_hw(struct phy_device *phydev);
 
 int phy_register_device(struct phy_device* dev);
+void phy_unregister_device(struct phy_device *phydev);
 
 /**
  * phy_read - Convenience function for reading a given PHY register

@@ -218,15 +218,17 @@ int setenv(const char *_name, const char *value)
 
 		*par++ = 0;
 		dev = get_device_by_name(name);
-		if (dev)
+		if (dev) {
 			ret = dev_set_param(dev, par, value);
-		else
+			if (ret)
+				eprintf("%s: set parameter %s: %s\n",
+						dev_name(dev), par, strerror(-ret));
+		} else {
 			ret = -ENODEV;
+			eprintf("set parameter: no such device %s\n", name);
+		}
 
 		errno = -ret;
-
-		if (ret < 0)
-			perror("set parameter");
 
 		goto out;
 	}

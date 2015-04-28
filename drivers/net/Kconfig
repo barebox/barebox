@@ -79,6 +79,7 @@ config DRIVER_NET_DM9K
 config DRIVER_NET_E1000
 	bool "Intel e1000 ethernet driver"
 	depends on PCI
+	depends on HAS_DMA
 	select PHYLIB
 	help
 	  This is a driver for the Gigabit Ethernet PCI network cards based on

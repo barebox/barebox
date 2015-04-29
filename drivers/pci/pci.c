@@ -371,11 +371,15 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			list_add_tail(&child_bus->node, &bus->children);
 			dev->subordinate = child_bus;
 
+			/* activate bridge device */
+			pci_register_device(dev);
+
+			/* scan pci hierarchy behind bridge */
 			prescan_setup_bridge(dev);
 			pci_scan_bus(child_bus);
 			postscan_setup_bridge(dev);
-			/* first activate bridge then all devices on it's bus */
-			pci_register_device(dev);
+
+			/* finally active all devices behind the bridge */
 			list_for_each_entry(dev, &child_bus->devices, bus_list)
 				if (!dev->subordinate)
 					pci_register_device(dev);

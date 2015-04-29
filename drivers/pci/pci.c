@@ -368,6 +368,7 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 
 			child_bus->parent = &dev->dev;
 			child_bus->number = bus_index++;
+			child_bus->primary = bus->number;
 			list_add_tail(&child_bus->node, &bus->children);
 			dev->subordinate = child_bus;
 

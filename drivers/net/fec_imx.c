@@ -652,7 +652,7 @@ static int fec_probe(struct device_d *dev)
 	enum fec_type type;
 	int phy_reset;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&type);
+	ret = dev_get_drvdata(dev, (const void **)&type);
 	if (ret)
 		return ret;
 
@@ -762,19 +762,19 @@ static void fec_remove(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
 	{
 		.compatible = "fsl,imx25-fec",
-		.data = FEC_TYPE_IMX27,
+		.data = (void *)FEC_TYPE_IMX27,
 	}, {
 		.compatible = "fsl,imx27-fec",
-		.data = FEC_TYPE_IMX27,
+		.data = (void *)FEC_TYPE_IMX27,
 	}, {
 		.compatible = "fsl,imx28-fec",
-		.data = FEC_TYPE_IMX28,
+		.data = (void *)FEC_TYPE_IMX28,
 	}, {
 		.compatible = "fsl,imx6q-fec",
-		.data = FEC_TYPE_IMX6,
+		.data = (void *)FEC_TYPE_IMX6,
 	},  {
 		.compatible = "fsl,imx6sx-fec",
-		.data = FEC_TYPE_IMX6,
+		.data = (void *)FEC_TYPE_IMX6,
 	}, {
 		/* sentinel */
 	}

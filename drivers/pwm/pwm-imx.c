@@ -205,8 +205,8 @@ static struct imx_pwm_data imx_pwm_data_v2 = {
 };
 
 static struct of_device_id imx_pwm_dt_ids[] = {
-	{ .compatible = "fsl,imx1-pwm", .data = (unsigned long)&imx_pwm_data_v1, },
-	{ .compatible = "fsl,imx27-pwm", .data = (unsigned long)&imx_pwm_data_v2, },
+	{ .compatible = "fsl,imx1-pwm", .data = &imx_pwm_data_v1, },
+	{ .compatible = "fsl,imx27-pwm", .data = &imx_pwm_data_v2, },
 	{ /* sentinel */ }
 };
 
@@ -216,7 +216,7 @@ static int imx_pwm_probe(struct device_d *dev)
 	struct imx_chip *imx;
 	int ret = 0;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&data);
+	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
 		return ret;
 

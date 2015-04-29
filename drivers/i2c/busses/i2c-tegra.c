@@ -640,7 +640,7 @@ static int tegra_i2c_probe(struct device_d *dev)
 		i2c_dev->bus_clk_rate = 100000; /* default clock rate */
 
 	i2c_dev->hw = &tegra20_i2c_hw;
-	dev_get_drvdata(dev, (unsigned long *)&i2c_dev->hw);
+	dev_get_drvdata(dev, (const void **)&i2c_dev->hw);
 	i2c_dev->is_dvc = of_device_is_compatible(dev->device_node,
 	                                          "nvidia,tegra20-i2c-dvc");
 
@@ -676,16 +676,16 @@ static int tegra_i2c_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id tegra_i2c_compatible[] = {
 	{
 		.compatible = "nvidia,tegra114-i2c",
-		.data = (unsigned long)&tegra114_i2c_hw,
+		.data = &tegra114_i2c_hw,
 	}, {
 		.compatible = "nvidia,tegra30-i2c",
-		.data = (unsigned long)&tegra30_i2c_hw,
+		.data = &tegra30_i2c_hw,
 	}, {
 		.compatible = "nvidia,tegra20-i2c",
-		.data = (unsigned long)&tegra20_i2c_hw,
+		.data = &tegra20_i2c_hw,
 	}, {
 		.compatible = "nvidia,tegra20-i2c-dvc",
-		.data = (unsigned long)&tegra20_i2c_hw,
+		.data = &tegra20_i2c_hw,
 	}, {
 		/* sentinel */
 	}

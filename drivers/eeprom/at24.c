@@ -359,7 +359,7 @@ static int at24_probe(struct device_d *dev)
 	} else {
 		unsigned long magic;
 
-		err = dev_get_drvdata(dev, (unsigned long *)&magic);
+		err = dev_get_drvdata(dev, (const void **)&magic);
 		if (err)
 			return err;
 

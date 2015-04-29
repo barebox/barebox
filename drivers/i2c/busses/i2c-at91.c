@@ -387,22 +387,22 @@ static struct platform_device_id at91_twi_devtypes[] = {
 static struct of_device_id at91_twi_dt_ids[] = {
 	{
 		.compatible = "atmel,at91rm9200-i2c",
-		.data = (unsigned long) &at91rm9200_config,
+		.data = &at91rm9200_config,
 	} , {
 		.compatible = "atmel,at91sam9260-i2c",
-		.data = (unsigned long) &at91sam9260_config,
+		.data = &at91sam9260_config,
 	} , {
 		.compatible = "atmel,at91sam9261-i2c",
-		.data = (unsigned long) &at91sam9261_config,
+		.data = &at91sam9261_config,
 	} , {
 		.compatible = "atmel,at91sam9g20-i2c",
-		.data = (unsigned long) &at91sam9g20_config,
+		.data = &at91sam9g20_config,
 	} , {
 		.compatible = "atmel,at91sam9g10-i2c",
-		.data = (unsigned long) &at91sam9g10_config,
+		.data = &at91sam9g10_config,
 	}, {
 		.compatible = "atmel,at91sam9x5-i2c",
-		.data = (unsigned long) &at91sam9x5_config,
+		.data = &at91sam9x5_config,
 	}, {
 		/* sentinel */
 	}
@@ -417,7 +417,7 @@ static int at91_twi_probe(struct device_d *dev)
 
 	i2c_at91 = xzalloc(sizeof(struct at91_twi_dev));
 
-	rc = dev_get_drvdata(dev, (unsigned long *)&i2c_data);
+	rc = dev_get_drvdata(dev, (const void **)&i2c_data);
 	if (rc < 0) {
 		dev_err(dev, "failed to retrieve driver data\n");
 		goto out_free;

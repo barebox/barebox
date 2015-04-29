@@ -380,10 +380,10 @@ static struct at91_pinctrl_mux_ops at91sam9x5_ops = {
 static struct of_device_id at91_pinctrl_dt_ids[] = {
 	{
 		.compatible = "atmel,at91rm9200-pinctrl",
-		.data = (unsigned long)&at91rm9200_ops,
+		.data = &at91rm9200_ops,
 	}, {
 		.compatible = "atmel,at91sam9x5-pinctrl",
-		.data = (unsigned long)&at91sam9x5_ops,
+		.data = &at91sam9x5_ops,
 	}, {
 		/* sentinel */
 	}
@@ -402,7 +402,7 @@ static struct at91_pinctrl_mux_ops *at91_pinctrl_get_driver_data(struct device_d
 		else
 			ops_data = (struct at91_pinctrl_mux_ops *)match->data;
 	} else {
-		rc = dev_get_drvdata(dev, (unsigned long *)&ops_data);
+		rc = dev_get_drvdata(dev, (const void **)&ops_data);
 		if (rc)
 			ops_data = NULL;
 	}
@@ -606,10 +606,10 @@ static struct gpio_ops at91_gpio_ops = {
 static struct of_device_id at91_gpio_dt_ids[] = {
 	{
 		.compatible = "atmel,at91rm9200-gpio",
-                .data = (unsigned long)&at91rm9200_ops,
+		.data = &at91rm9200_ops,
 	}, {
 		.compatible = "atmel,at91sam9x5-gpio",
-		.data = (unsigned long)&at91sam9x5_ops,
+		.data = &at91sam9x5_ops,
 	}, {
 		/* sentinel */
 	},
@@ -631,7 +631,7 @@ static int at91_gpio_probe(struct device_d *dev)
 
 	at91_gpio = &gpio_chip[alias_idx];
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&at91_gpio->ops);
+	ret = dev_get_drvdata(dev, (const void **)&at91_gpio->ops);
         if (ret) {
                 dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
                 return ret;

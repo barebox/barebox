@@ -521,7 +521,7 @@ static int imx_spi_probe(struct device_d *dev)
 	struct spi_imx_devtype_data *devdata = NULL;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devdata);
+	ret = dev_get_drvdata(dev, (const void **)&devdata);
 	if (ret)
 		return -ENODEV;
 
@@ -569,19 +569,19 @@ static __maybe_unused struct of_device_id imx_spi_dt_ids[] = {
 #if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_0)
 	{
 		.compatible = "fsl,imx27-cspi",
-		.data = (unsigned long)&spi_imx_devtype_data_0_0,
+		.data = &spi_imx_devtype_data_0_0,
 	},
 #endif
 #if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_0_7)
 	{
 		.compatible = "fsl,imx35-cspi",
-		.data = (unsigned long)&spi_imx_devtype_data_0_7,
+		.data = &spi_imx_devtype_data_0_7,
 	},
 #endif
 #if IS_ENABLED(CONFIG_DRIVER_SPI_IMX_2_3)
 	{
 		.compatible = "fsl,imx51-ecspi",
-		.data = (unsigned long)&spi_imx_devtype_data_2_3,
+		.data = &spi_imx_devtype_data_2_3,
 	},
 #endif
 	{

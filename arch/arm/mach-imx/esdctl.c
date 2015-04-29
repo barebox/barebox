@@ -312,7 +312,7 @@ static int imx_esdctl_probe(struct device_d *dev)
 	int ret;
 	void *base;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&data);
+	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
 		return ret;
 
@@ -426,7 +426,7 @@ static struct platform_device_id imx_esdctl_ids[] = {
 static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-mmdc",
-		.data = (unsigned long)&imx6q_data
+		.data = &imx6q_data
 	}, {
 		/* sentinel */
 	}

@@ -399,7 +399,7 @@ static int ns16550_probe(struct device_d *dev)
 	struct ns16550_drvdata *devtype;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		devtype = &ns16550_drvdata;
 
@@ -462,36 +462,36 @@ err:
 static struct of_device_id ns16550_serial_dt_ids[] = {
 	{
 		.compatible = "ns16450",
-		.data = (unsigned long)&ns16450_drvdata,
+		.data = &ns16450_drvdata,
 	}, {
 		.compatible = "ns16550a",
-		.data = (unsigned long)&ns16550_drvdata,
+		.data = &ns16550_drvdata,
 	}, {
 		.compatible = "snps,dw-apb-uart",
-		.data = (unsigned long)&ns16550_drvdata,
+		.data = &ns16550_drvdata,
 	},
 #if IS_ENABLED(CONFIG_ARCH_OMAP)
 	{
 		.compatible = "ti,omap2-uart",
-		.data = (unsigned long)&omap_drvdata,
+		.data = &omap_drvdata,
 	}, {
 		.compatible = "ti,omap3-uart",
-		.data = (unsigned long)&omap_drvdata,
+		.data = &omap_drvdata,
 	}, {
 		.compatible = "ti,omap4-uart",
-		.data = (unsigned long)&omap_drvdata,
+		.data = &omap_drvdata,
 	},
 #endif
 #if IS_ENABLED(CONFIG_ARCH_TEGRA)
 	{
 		.compatible = "nvidia,tegra20-uart",
-		.data = (unsigned long)&tegra_drvdata,
+		.data = &tegra_drvdata,
 	},
 #endif
 #if IS_ENABLED(CONFIG_MACH_MIPS_XBURST)
 	{
 		.compatible = "ingenic,jz4740-uart",
-		.data = (unsigned long)&jz_drvdata,
+		.data = &jz_drvdata,
 	},
 #endif
 	{

@@ -395,7 +395,7 @@ static int imx_iim_probe(struct device_d *dev)
 
 	iim = xzalloc(sizeof(*iim));
 
-	dev_get_drvdata(dev, (unsigned long *)&drvdata);
+	dev_get_drvdata(dev, (const void **)&drvdata);
 
 	if (drvdata && drvdata->supply)
 		iim->supply = drvdata->supply;
@@ -471,13 +471,13 @@ static struct imx_iim_drvdata imx53_drvdata = {
 static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
 	{
 		.compatible = "fsl,imx53-iim",
-		.data = (unsigned long)&imx53_drvdata,
+		.data = &imx53_drvdata,
 	}, {
 		.compatible = "fsl,imx51-iim",
-		.data = (unsigned long)&imx51_drvdata,
+		.data = &imx51_drvdata,
 	}, {
 		.compatible = "fsl,imx27-iim",
-		.data = (unsigned long)&imx27_drvdata,
+		.data = &imx27_drvdata,
 	}, {
 		/* sentinel */
 	}

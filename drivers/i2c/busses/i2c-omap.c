@@ -1002,7 +1002,7 @@ i2c_omap_probe(struct device_d *pdev)
 		goto err_free_mem;
 	}
 
-	r = dev_get_drvdata(pdev, (unsigned long *)&i2c_data);
+	r = dev_get_drvdata(pdev, (const void **)&i2c_data);
 	if (r)
 		return r;
 
@@ -1137,7 +1137,7 @@ static struct platform_device_id omap_i2c_ids[] = {
 static __maybe_unused struct of_device_id omap_i2c_dt_ids[] = {
 	{
 		.compatible = "ti,omap3-i2c",
-		.data = (unsigned long)&omap3_data,
+		.data = &omap3_data,
 	}, {
 		.compatible = "ti,omap4-i2c",
 	}, {

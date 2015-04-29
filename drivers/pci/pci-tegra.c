@@ -1239,13 +1239,13 @@ static const struct tegra_pcie_soc_data tegra124_pcie_data = {
 static __maybe_unused struct of_device_id tegra_pcie_of_match[] = {
 	{
 		.compatible = "nvidia,tegra124-pcie",
-		.data = (unsigned long)&tegra124_pcie_data
+		.data = &tegra124_pcie_data
 	}, {
 		.compatible = "nvidia,tegra30-pcie",
-		.data = (unsigned long)&tegra30_pcie_data
+		.data = &tegra30_pcie_data
 	}, {
 		.compatible = "nvidia,tegra20-pcie",
-		.data = (unsigned long)&tegra20_pcie_data
+		.data = &tegra20_pcie_data
 	}, {
 		/* sentinel */
 	},
@@ -1262,7 +1262,7 @@ static int tegra_pcie_probe(struct device_d *dev)
 
 	INIT_LIST_HEAD(&pcie->buses);
 	INIT_LIST_HEAD(&pcie->ports);
-	dev_get_drvdata(dev, (unsigned long *)&pcie->soc_data);
+	dev_get_drvdata(dev, (const void **)&pcie->soc_data);
 	pcie->dev = dev;
 
 	err = tegra_pcie_parse_dt(pcie);

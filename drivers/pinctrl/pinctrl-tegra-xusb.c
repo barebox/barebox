@@ -387,7 +387,7 @@ static int pinctrl_tegra_xusb_probe(struct device_d *dev)
 	dev->priv = padctl;
 	padctl->dev = dev;
 
-	dev_get_drvdata(dev, (unsigned long *)&padctl->soc);
+	dev_get_drvdata(dev, (const void **)&padctl->soc);
 
 	padctl->regs = dev_request_mem_region(dev, 0);
 	if (IS_ERR(padctl->regs)) {
@@ -500,7 +500,7 @@ static const struct tegra_xusb_padctl_soc tegra124_soc = {
 static __maybe_unused struct of_device_id pinctrl_tegra_xusb_dt_ids[] = {
 	{
 		.compatible = "nvidia,tegra124-xusb-padctl",
-		.data = (unsigned long)&tegra124_soc,
+		.data = &tegra124_soc,
 	}, {
 		/* sentinel */
 	}

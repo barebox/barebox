@@ -383,10 +383,10 @@ static struct mvebu_pcie_ops __maybe_unused armada_xp_ops = {
 
 static struct of_device_id mvebu_pcie_dt_ids[] = {
 #if defined(CONFIG_ARCH_ARMADA_XP)
-	{ .compatible = "marvell,armada-xp-pcie", .data = (u32)&armada_xp_ops, },
+	{ .compatible = "marvell,armada-xp-pcie", .data = &armada_xp_ops, },
 #endif
 #if defined(CONFIG_ARCH_ARMADA_370)
-	{ .compatible = "marvell,armada-370-pcie", .data = (u32)&armada_370_ops, },
+	{ .compatible = "marvell,armada-370-pcie", .data = &armada_370_ops, },
 #endif
 #if defined(CONFIG_ARCH_DOVE)
 	{ .compatible = "marvell,dove-pcie", },

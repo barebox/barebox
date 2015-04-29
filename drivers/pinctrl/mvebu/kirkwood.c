@@ -405,27 +405,27 @@ static struct mvebu_pinctrl_soc_info mv98dx4122_info = {
 static struct of_device_id kirkwood_pinctrl_of_match[] = {
 	{
 		.compatible = "marvell,88f6180-pinctrl",
-		.data = (u32)&mv88f6180_info
+		.data = &mv88f6180_info
 	},
 	{
 		.compatible = "marvell,88f6190-pinctrl",
-		.data = (u32)&mv88f6190_info
+		.data = &mv88f6190_info
 	},
 	{
 		.compatible = "marvell,88f6192-pinctrl",
-		.data = (u32)&mv88f6192_info
+		.data = &mv88f6192_info
 	},
 	{
 		.compatible = "marvell,88f6281-pinctrl",
-		.data = (u32)&mv88f6281_info
+		.data = &mv88f6281_info
 	},
 	{
 		.compatible = "marvell,88f6282-pinctrl",
-		.data = (u32)&mv88f6282_info
+		.data = &mv88f6282_info
 	},
 	{
 		.compatible = "marvell,98dx4122-pinctrl",
-		.data = (u32)&mv98dx4122_info
+		.data = &mv98dx4122_info
 	},
 	{ }
 };

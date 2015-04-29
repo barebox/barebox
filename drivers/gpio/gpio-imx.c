@@ -136,7 +136,7 @@ static int imx_gpio_probe(struct device_d *dev)
 	struct imx_gpio_regs *regs;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&regs);
+	ret = dev_get_drvdata(dev, (const void **)&regs);
 	if (ret)
 		return ret;
 
@@ -164,28 +164,28 @@ static int imx_gpio_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_gpio_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-gpio",
-		.data = (unsigned long)&regs_imx1,
+		.data = &regs_imx1,
 	}, {
 		.compatible = "fsl,imx21-gpio",
-		.data = (unsigned long)&regs_imx1,
+		.data = &regs_imx1,
 	}, {
 		.compatible = "fsl,imx27-gpio",
-		.data = (unsigned long)&regs_imx1,
+		.data = &regs_imx1,
 	}, {
 		.compatible = "fsl,imx31-gpio",
-		.data = (unsigned long)&regs_imx31,
+		.data = &regs_imx31,
 	}, {
 		.compatible = "fsl,imx35-gpio",
-		.data = (unsigned long)&regs_imx31,
+		.data = &regs_imx31,
 	}, {
 		.compatible = "fsl,imx51-gpio",
-		.data = (unsigned long)&regs_imx31,
+		.data = &regs_imx31,
 	}, {
 		.compatible = "fsl,imx53-gpio",
-		.data = (unsigned long)&regs_imx31,
+		.data = &regs_imx31,
 	}, {
 		.compatible = "fsl,imx6q-gpio",
-		.data = (unsigned long)&regs_imx31,
+		.data = &regs_imx31,
 	}, {
 		/* sentinel */
 	}

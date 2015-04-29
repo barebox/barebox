@@ -325,7 +325,7 @@ static int __init mc13xxx_probe(struct device_d *dev)
 	if (mc_dev)
 		return -EBUSY;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 
@@ -391,9 +391,9 @@ static struct platform_device_id mc13xxx_ids[] = {
 };
 
 static __maybe_unused struct of_device_id mc13xxx_dt_ids[] = {
-	{ .compatible = "fsl,mc13783", .data = (ulong)&mc13783_devtype, },
-	{ .compatible = "fsl,mc13892", .data = (ulong)&mc13892_devtype, },
-	{ .compatible = "fsl,mc34708", .data = (ulong)&mc34708_devtype, },
+	{ .compatible = "fsl,mc13783", .data = &mc13783_devtype, },
+	{ .compatible = "fsl,mc13892", .data = &mc13892_devtype, },
+	{ .compatible = "fsl,mc34708", .data = &mc34708_devtype, },
 	{ }
 };
 

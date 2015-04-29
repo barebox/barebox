@@ -474,43 +474,43 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 #ifdef CONFIG_ARCH_IMX25
 	{
 		.compatible = "fsl,imx25-usbmisc",
-		.data = (unsigned long)&mx25_data,
+		.data = &mx25_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX27
 	{
 		.compatible = "fsl,imx27-usbmisc",
-		.data = (unsigned long)&mx27_mx31_data,
+		.data = &mx27_mx31_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX31
 	{
 		.compatible = "fsl,imx31-usbmisc",
-		.data = (unsigned long)&mx27_mx31_data,
+		.data = &mx27_mx31_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX35
 	{
 		.compatible = "fsl,imx35-usbmisc",
-		.data = (unsigned long)&mx35_data,
+		.data = &mx35_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX51
 	{
 		.compatible = "fsl,imx51-usbmisc",
-		.data = (unsigned long)&mx5_data,
+		.data = &mx5_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX53
 	{
 		.compatible = "fsl,imx53-usbmisc",
-		.data = (unsigned long)&mx5_data,
+		.data = &mx5_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_IMX6
 	{
 		.compatible = "fsl,imx6q-usbmisc",
-		.data = (unsigned long)&mx6_data,
+		.data = &mx6_data,
 	},
 #endif
 	{
@@ -548,7 +548,7 @@ static int imx_usbmisc_probe(struct device_d *dev)
 	struct imx_usb_misc_data *devtype;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 

@@ -357,7 +357,7 @@ static int dsps_probe(struct device_d *dev)
 	struct dsps_glue *glue;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&wrp);
+	ret = dev_get_drvdata(dev, (const void **)&wrp);
 	if (ret)
 		return ret;
 
@@ -445,7 +445,7 @@ static const struct dsps_musb_wrapper am33xx_driver_data = {
 static __maybe_unused struct of_device_id musb_dsps_dt_ids[] = {
 	{
 		.compatible = "ti,musb-am33xx",
-		.data = (unsigned long) &am33xx_driver_data,
+		.data = &am33xx_driver_data,
 	}, {
 		/* sentinel */
 	},

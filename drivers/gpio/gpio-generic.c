@@ -370,7 +370,7 @@ static int bgpio_dev_probe(struct device_d *dev)
 	if (err)
 		return err;
 
-	dev_get_drvdata(dev, &flags);
+	dev_get_drvdata(dev, (const void **)&flags);
 
 	bgc = xzalloc(sizeof(struct bgpio_chip));
 	if (!bgc)

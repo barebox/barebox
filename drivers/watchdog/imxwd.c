@@ -173,7 +173,7 @@ static int imx_wd_probe(struct device_d *dev)
 	void *ops;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&ops);
+	ret = dev_get_drvdata(dev, (const void **)&ops);
 	if (ret)
 		return ret;
 
@@ -240,10 +240,10 @@ static const struct imx_wd_ops imx1_wd_ops = {
 static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-wdt",
-		.data = (unsigned long)&imx1_wd_ops,
+		.data = &imx1_wd_ops,
 	}, {
 		.compatible = "fsl,imx21-wdt",
-		.data = (unsigned long)&imx21_wd_ops,
+		.data = &imx21_wd_ops,
 	}, {
 		/* sentinel */
 	}

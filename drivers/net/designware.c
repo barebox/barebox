@@ -431,7 +431,7 @@ static int dwc_ether_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(struct dw_eth_dev));
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&drvdata);
+	ret = dev_get_drvdata(dev, (const void **)&drvdata);
 	if (ret)
 		return ret;
 
@@ -489,7 +489,7 @@ static int dwc_ether_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
 	{
 		.compatible = "snps,dwmac-3.70a",
-		.data = (unsigned long)&dwmac_370a_drvdata,
+		.data = &dwmac_370a_drvdata,
 	}, {
 		/* sentinel */
 	}

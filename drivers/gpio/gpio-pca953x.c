@@ -431,7 +431,7 @@ static int pca953x_probe(struct device_d *dev)
 	} else {
 		int err;
 
-		err = dev_get_drvdata(dev, &driver_data);
+		err = dev_get_drvdata(dev, (const void **)&driver_data);
 		if (err)
 			return err;
 

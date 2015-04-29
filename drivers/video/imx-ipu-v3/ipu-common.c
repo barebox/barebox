@@ -612,9 +612,9 @@ static struct ipu_devtype ipu_type_imx6q = {
 };
 
 static struct of_device_id imx_ipu_dt_ids[] = {
-	{ .compatible = "fsl,imx51-ipu", .data = (unsigned long)&ipu_type_imx51, },
-	{ .compatible = "fsl,imx53-ipu", .data = (unsigned long)&ipu_type_imx53, },
-	{ .compatible = "fsl,imx6q-ipu", .data = (unsigned long)&ipu_type_imx6q, },
+	{ .compatible = "fsl,imx51-ipu", .data = &ipu_type_imx51, },
+	{ .compatible = "fsl,imx53-ipu", .data = &ipu_type_imx53, },
+	{ .compatible = "fsl,imx6q-ipu", .data = &ipu_type_imx6q, },
 	{ /* sentinel */ }
 };
 
@@ -755,7 +755,7 @@ static int ipu_probe(struct device_d *dev)
 	int i, ret;
 	const struct ipu_devtype *devtype;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 

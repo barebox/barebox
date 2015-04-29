@@ -249,7 +249,7 @@ static int imx_ldb_probe(struct device_d *dev)
 	int mapping;
 	const struct imx_ldb_data *devtype;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 
@@ -322,8 +322,8 @@ static int imx_ldb_probe(struct device_d *dev)
 }
 
 static struct of_device_id imx_ldb_dt_ids[] = {
-	{ .compatible = "fsl,imx6q-ldb", (unsigned long)&imx_ldb_data_imx6q},
-	{ .compatible = "fsl,imx53-ldb", (unsigned long)&imx_ldb_data_imx53},
+	{ .compatible = "fsl,imx6q-ldb", &imx_ldb_data_imx6q},
+	{ .compatible = "fsl,imx53-ldb", &imx_ldb_data_imx53},
 	{ /* sentinel */ }
 };
 

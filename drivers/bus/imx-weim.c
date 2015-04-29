@@ -48,22 +48,22 @@ static struct of_device_id weim_id_table[] = {
 	{
 		/* i.MX1/21 */
 		.compatible = "fsl,imx1-weim",
-		.data = (unsigned long)&imx1_weim_devtype,
+		.data = &imx1_weim_devtype,
 	}, {
 		/* i.MX25/27/31/35 */
 		.compatible = "fsl,imx27-weim",
-		.data = (unsigned long)&imx27_weim_devtype,
+		.data = &imx27_weim_devtype,
 	}, {
 		/* i.MX50/53/6Q */
 		.compatible = "fsl,imx50-weim",
-		.data = (unsigned long)&imx50_weim_devtype,
+		.data = &imx50_weim_devtype,
 	}, {
 		/* i.MX51 */
 		.compatible = "fsl,imx51-weim",
-		.data = (unsigned long)&imx51_weim_devtype,
+		.data = &imx51_weim_devtype,
 	}, {
 		.compatible = "fsl,imx6q-weim",
-		.data = (unsigned long)&imx50_weim_devtype,
+		.data = &imx50_weim_devtype,
 	}, {
 	}
 };
@@ -134,7 +134,7 @@ static int weim_probe(struct device_d *dev)
 	struct imx_weim *weim;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 

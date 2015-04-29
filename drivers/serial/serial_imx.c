@@ -315,7 +315,7 @@ static int imx_serial_probe(struct device_d *dev)
 	int ret;
 	const char *devname;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 
@@ -377,10 +377,10 @@ static void imx_serial_remove(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_serial_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-uart",
-		.data = (unsigned long)&imx1_data,
+		.data = &imx1_data,
 	}, {
 		.compatible = "fsl,imx21-uart",
-		.data = (unsigned long)&imx21_data,
+		.data = &imx21_data,
 	}, {
 		/* sentinel */
 	}

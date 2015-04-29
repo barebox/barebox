@@ -404,7 +404,7 @@ void devices_shutdown(void)
 	}
 }
 
-int dev_get_drvdata(struct device_d *dev, unsigned long *data)
+int dev_get_drvdata(struct device_d *dev, const void **data)
 {
 	if (dev->of_id_entry) {
 		*data = dev->of_id_entry->data;
@@ -412,7 +412,7 @@ int dev_get_drvdata(struct device_d *dev, unsigned long *data)
 	}
 
 	if (dev->id_entry) {
-		*data = dev->id_entry->driver_data;
+		*data = (const void **)dev->id_entry->driver_data;
 		return 0;
 	}
 

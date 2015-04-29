@@ -590,7 +590,7 @@ static int omap_mmc_probe(struct device_d *dev)
 	unsigned long reg_ofs = 0;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&drvdata);
+	ret = dev_get_drvdata(dev, (const void **)&drvdata);
 	if (!ret)
 		reg_ofs = drvdata->reg_ofs;
 
@@ -652,10 +652,10 @@ static struct platform_device_id omap_mmc_ids[] = {
 static __maybe_unused struct of_device_id omap_mmc_dt_ids[] = {
 	{
 		.compatible = "ti,omap3-hsmmc",
-		.data = (unsigned long)&omap3_data,
+		.data = &omap3_data,
 	}, {
 		.compatible = "ti,omap4-hsmmc",
-		.data = (unsigned long)&omap4_data,
+		.data = &omap4_data,
 	}, {
 		/* sentinel */
 	}

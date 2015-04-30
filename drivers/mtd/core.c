@@ -488,7 +488,7 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 	struct device_node *np, *part, *tmp;
 	int ret, i = 0;
 
-	np = of_find_node_by_path(mtd->of_path);
+	np = of_find_node_by_path_from(root, mtd->of_path);
 	if (!np) {
 		dev_err(&mtd->class_dev, "Cannot find nodepath %s, cannot fixup\n",
 				mtd->of_path);

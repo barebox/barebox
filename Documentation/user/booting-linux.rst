@@ -55,12 +55,13 @@ to free the internal devicetree before calling ``bootm``
 Passing Kernel Arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Depending on the barebox configuration (``CONFIG_FLEXIBLE_BOOTARGS``) there
-are to ways to pass bootargs to the Kernel. With ``CONFIG_FLEXIBLE_BOOTARGS``
-disabled the bootm command takes the bootargs from the ``bootargs`` environment
-variable. With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled the bootargs are composed
-from different :ref:`global_device` variables. All variables beginning with
-``global.linux.bootargs.`` will be concatenated to the bootargs:
+The simple method to pass bootargs to the kernel is with
+``CONFIG_FLEXIBLE_BOOTARGS`` disabled: in this case the bootm command
+takes the bootargs from the ``bootargs`` environment variable.
+
+With ``CONFIG_FLEXIBLE_BOOTARGS`` enabled, the bootargs are composed
+from different :ref:`global device<global_device>` variables. All variables beginning
+with ``global.linux.bootargs.`` will be concatenated to the bootargs:
 
 .. code-block:: sh
 

@@ -17,6 +17,7 @@
  */
 
 #include <asm/pbl_macros.h>
+#include <asm/pbl_nmon.h>
 
 	.macro	board_pbl_start
 	.set	push
@@ -25,6 +26,8 @@
 	mips_barebox_10h
 
 	mips_disable_interrupts
+
+	mips_nmon
 
 	copy_to_link_location	pbl_start
 

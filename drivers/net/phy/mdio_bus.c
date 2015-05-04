@@ -331,12 +331,14 @@ static void mdio_bus_remove(struct device_d *_dev)
 {
 	struct phy_device *dev = to_phy_device(_dev);
 	struct phy_driver *drv = to_phy_driver(_dev->driver);
+	struct mii_bus *bus = dev->bus;
 
 	if (drv->remove)
 		drv->remove(dev);
 
 	free(dev->cdev.name);
 	devfs_remove(&dev->cdev);
+	bus->phy_map[dev->addr] = NULL;
 }
 
 struct bus_type mdio_bus_type = {

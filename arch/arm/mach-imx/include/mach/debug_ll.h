@@ -82,8 +82,8 @@ static inline void imx6_uart_setup_ll(void)
 
 static inline void PUTC_LL(int c)
 {
-	void __iomem *base = (void *)IMX_UART_BASE(IMX_DEBUG_SOC,
-			CONFIG_DEBUG_IMX_UART_PORT);
+	void __iomem *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
+						 CONFIG_DEBUG_IMX_UART_PORT));
 
 	if (!base)
 		return;

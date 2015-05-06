@@ -48,7 +48,6 @@ static inline char *dt_string(struct fdt_header *f, char *strstart, uint32_t ofs
 
 /**
  * of_unflatten_dtb - unflatten a dtb binary blob
- * @root - node in which the fdt blob should be merged into or NULL
  * @infdt - the fdt blob to unflatten
  *
  * Parse a flat device tree binary blob and return a pointer to the

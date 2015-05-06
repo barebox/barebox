@@ -92,6 +92,7 @@ struct pci_dev {
 	struct pci_bus	*bus;		/* bus this device is on */
 	struct pci_bus	*subordinate;	/* bus this device bridges to */
 	struct pci_slot	*slot;		/* Physical slot this device is in */
+	const struct pci_device_id *id;	/* the id this device matches */
 
 	struct device_d dev;
 

@@ -41,7 +41,7 @@ static int state_probe(struct device_d *dev)
 	if (IS_ERR(state))
 		return PTR_ERR(state);
 
-	ret = of_find_path(np, "backend", &path);
+	ret = of_find_path(np, "backend", &path, 0);
 	if (ret)
 		return ret;
 

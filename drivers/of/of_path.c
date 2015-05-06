@@ -21,6 +21,8 @@
 #include <malloc.h>
 #include <of.h>
 
+#include <linux/mtd/mtd.h>
+
 struct of_path {
 	struct cdev *cdev;
 	struct device_d *dev;
@@ -112,6 +114,7 @@ out:
  * @propname: the property name of the path description
  * @outpath: if this function returns 0 outpath will contain the path belonging
  *           to the input path description. Must be freed with free().
+ * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available
  *
  * paths in the devicetree have the form of a multistring property. The first
  * string contains the full path to the physical device containing the path.
@@ -127,11 +130,12 @@ out:
  * device-path = &mmc0, "partname:0";
  * device-path = &norflash, "partname:barebox-environment";
  */
-int of_find_path(struct device_node *node, const char *propname, char **outpath)
+int of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags)
 {
 	struct of_path op = {};
 	struct device_node *rnode;
 	const char *path, *str;
+	bool add_bb = false;
 	int i, ret;
 
 	path = of_get_property(node, propname, NULL);
@@ -166,7 +170,11 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath)
 	if (!op.cdev)
 		return -ENOENT;
 
-	*outpath = asprintf("/dev/%s", op.cdev->name);
+	if ((flags & OF_FIND_PATH_FLAGS_BB) && op.cdev->mtd &&
+	    mtd_can_have_bb(op.cdev->mtd))
+		add_bb = true;
+
+	*outpath = asprintf("/dev/%s%s", op.cdev->name, add_bb ? ".bb" : "");
 
 	return 0;
 }

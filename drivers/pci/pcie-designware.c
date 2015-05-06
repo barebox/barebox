@@ -350,13 +350,6 @@ static void dw_pcie_prog_viewport_io_outbound(struct pcie_port *pp)
 	dw_pcie_writel_rc(pp, PCIE_ATU_ENABLE, PCIE_ATU_CR2);
 }
 
-struct pci_bus *get_parent_bus(struct pci_bus *bus)
-{
-	struct pci_dev *bridge = container_of(bus->parent, struct pci_dev, dev);
-
-	return bridge->bus;
-}
-
 static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
 		u32 devfn, int where, int size, u32 *val)
 {
@@ -367,7 +360,7 @@ static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
 		 PCIE_ATU_FUNC(PCI_FUNC(devfn));
 	address = where & ~0x3;
 
-	if (get_parent_bus(bus)->number == pp->root_bus_nr) {
+	if (bus->primary == pp->root_bus_nr) {
 		dw_pcie_prog_viewport_cfg0(pp, busdev);
 		ret = dw_pcie_cfg_read(pp->va_cfg0_base + address, where, size,
 				val);
@@ -392,7 +385,7 @@ static int dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
 		 PCIE_ATU_FUNC(PCI_FUNC(devfn));
 	address = where & ~0x3;
 
-	if (get_parent_bus(bus)->number == pp->root_bus_nr) {
+	if (bus->primary == pp->root_bus_nr) {
 		dw_pcie_prog_viewport_cfg0(pp, busdev);
 		ret = dw_pcie_cfg_write(pp->va_cfg0_base + address, where, size,
 				val);

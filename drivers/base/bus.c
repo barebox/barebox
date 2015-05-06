@@ -58,7 +58,7 @@ int device_match(struct device_d *dev, struct driver_d *drv)
 		return 0;
 
 	if (drv->id_table) {
-		struct platform_device_id *id = drv->id_table;
+		const struct platform_device_id *id = drv->id_table;
 
 		while (id->name) {
 			if (!strcmp(id->name, dev->name)) {
@@ -74,7 +74,7 @@ int device_match(struct device_d *dev, struct driver_d *drv)
 
 int device_match_of_modalias(struct device_d *dev, struct driver_d *drv)
 {
-	struct platform_device_id *id = drv->id_table;
+	const struct platform_device_id *id = drv->id_table;
 	const char *of_modalias = NULL, *p;
 	int cplen;
 	const char *compat;

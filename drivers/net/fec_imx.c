@@ -308,7 +308,10 @@ static int fec_init(struct eth_device *dev)
 		}
 	}
 
-	if (fec->interface == PHY_INTERFACE_MODE_RGMII)
+	if (fec->interface == PHY_INTERFACE_MODE_RGMII ||
+	    fec->interface == PHY_INTERFACE_MODE_RGMII_ID ||
+	    fec->interface == PHY_INTERFACE_MODE_RGMII_TXID ||
+	    fec->interface == PHY_INTERFACE_MODE_RGMII_RXID)
 		rcntl |= 1 << 6;
 
 	writel(rcntl, fec->regs + FEC_R_CNTRL);

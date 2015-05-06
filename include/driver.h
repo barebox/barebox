@@ -77,7 +77,7 @@ struct device_d {
 
 	struct list_head cdevs;
 
-	struct platform_device_id *id_entry;
+	const struct platform_device_id *id_entry;
 	struct device_node *device_node;
 
 	const struct of_device_id *of_id_entry;
@@ -107,8 +107,8 @@ struct driver_d {
 
 	struct bus_type *bus;
 
-	struct platform_device_id *id_table;
-	struct of_device_id *of_compatible;
+	const struct platform_device_id *id_table;
+	const struct of_device_id *of_compatible;
 };
 
 /*@}*/	/* do not delete, doxygen relevant */

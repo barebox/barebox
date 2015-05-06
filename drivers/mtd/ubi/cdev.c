@@ -25,7 +25,7 @@ static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
 	loff_t offp = offset;
 	int usable_leb_size = vol->usable_leb_size;
 
-	ubi_debug("%s: %zd @ 0x%08llx\n", __func__, size, offset);
+	ubi_debug("%s: %zd @ 0x%08llx", __func__, size, offset);
 
 	len = size > usable_leb_size ? usable_leb_size : size;
 
@@ -38,7 +38,7 @@ static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
 
 		err = ubi_eba_read_leb(ubi, vol, lnum, buf, off, len, 0);
 		if (err) {
-			ubi_err("read error: %s\n", strerror(-err));
+			ubi_err("read error: %s", strerror(-err));
 			break;
 		}
 		off += len;
@@ -68,14 +68,14 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 	if (!priv->written) {
 		err = ubi_start_update(ubi, vol, vol->used_bytes);
 		if (err < 0) {
-			ubi_err("Cannot start volume update\n");
+			ubi_err("Cannot start volume update");
 			return err;
 		}
 	}
 
 	err = ubi_more_update_data(ubi, vol, buf, size);
 	if (err < 0) {
-		ubi_err("Couldnt or partially wrote data \n");
+		ubi_err("Couldnt or partially wrote data");
 		return err;
 	}
 
@@ -117,7 +117,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 			kfree(buf);
 
 			if (err < 0) {
-				ubi_err("Couldnt or partially wrote data \n");
+				ubi_err("Couldnt or partially wrote data");
 				return err;
 			}
 		}
@@ -128,7 +128,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 
 		err = ubi_check_volume(ubi, vol->vol_id);
 		if (err < 0) {
-			ubi_err("ubi volume check failed: %s\n", strerror(err));
+			ubi_err("ubi volume check failed: %s", strerror(err));
 			return err;
 		}
 
@@ -180,7 +180,7 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 	cdev->priv = priv;
 	cdev->size = vol->used_bytes;
 	cdev->dev = &vol->dev;
-	ubi_msg("registering %s as /dev/%s\n", vol->name, cdev->name);
+	ubi_msg("registering %s as /dev/%s", vol->name, cdev->name);
 	ret = devfs_create(cdev);
 	if (ret) {
 		kfree(priv);

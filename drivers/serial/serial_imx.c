@@ -178,9 +178,9 @@ static int imx_serial_setbaudrate(struct console_device *cdev, int baudrate)
 	writel(val, regs + UCR1);
 
 	/* Set the numerator value minus one of the BRM ratio */
-	writel((baudrate / 100) - 1, regs + UBIR);
+	writel(baudrate_to_ubir(baudrate), regs + UBIR);
 	/* Set the denominator value minus one of the BRM ratio    */
-	writel((imx_serial_reffreq(priv) / 1600) - 1, regs + UBMR);
+	writel(refclock_to_ubmr(imx_serial_reffreq(priv)), regs + UBMR);
 
 	writel(ucr1, regs + UCR1);
 

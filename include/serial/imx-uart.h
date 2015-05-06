@@ -115,5 +115,14 @@
 #define  UTS_RXFULL 	 (1<<3)	 /* RxFIFO full */
 #define  UTS_SOFTRST	 (1<<0)	 /* Software reset */
 
+static inline int baudrate_to_ubir(int baudrate)
+{
+	return baudrate / 100 - 1;
+}
+
+static inline int refclock_to_ubmr(int clock_hz)
+{
+	return clock_hz / 1600 - 1;
+}
 
 #endif	/* __IMX_UART_H__ */

@@ -678,27 +678,6 @@ struct state *state_new_from_node(const char *name, struct device_node *node)
 		return ERR_PTR(ret);
 	}
 
-	return state;
-}
-
-/*
- * state_new_from_fdt - create a new state instance from a fdt binary blob
- *
- * @name	The name of the new state instance
- * @fdt		The fdt binary blob describing the new state instance
- */
-struct state *state_new_from_fdt(const char *name, void *fdt)
-{
-	struct state *state;
-	struct device_node *root;
-
-	root = of_unflatten_dtb(fdt);
-	if (!root)
-		return ERR_PTR(-EINVAL);
-
-	state = state_new_from_node(name, root);
-
-	of_delete_node(root);
 
 	return state;
 }

@@ -68,6 +68,21 @@ config ARCH_IMX_IMXIMAGE
 	help
 	  if enabled the imx-image tool is compiled
 
+config ARCH_IMX_XLOAD
+	bool
+	depends on ARCH_IMX51
+	prompt "Build preloader image"
+
+config ARCH_IMX_UNUSED_IRAM_BASE
+       hex
+       depends on ARCH_IMX_XLOAD
+       default 0x1ffe2000 if ARCH_IMX51
+
+config ARCH_IMX_UNUSED_IRAM_SIZE
+       hex
+       depends on ARCH_IMX_XLOAD
+       default 0x16000 if ARCH_IMX51
+
 choice
 	depends on ARCH_IMX_INTERNAL_BOOT
 	prompt "Internal boot source"

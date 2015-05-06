@@ -1,0 +1,3 @@
+loadaddr CONFIG_ARCH_IMX_UNUSED_IRAM_BASE
+
+#include "flash-header-common.imxcfg"

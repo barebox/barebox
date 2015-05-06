@@ -1,4 +1,6 @@
-barebox,state
+.. _barebox,state:
+
+barebox state
 =============
 
 Overview

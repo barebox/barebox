@@ -81,7 +81,7 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 {
 	int ret;
 	int size = 0;
-	void *to, *header;
+	void *to, *header, *result = NULL;
 	struct cdev *cdev, *partition;
 	char *partname = "x";
 
@@ -116,16 +116,21 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 	cdev = cdev_open(partname, O_RDONLY);
 	if (!cdev) {
 		bootstrap_err("%s: failed to open %s\n", devname, partname);
-		return NULL;
+		goto free_memory;
 	}
 
 	ret = cdev_read(cdev, to, size, 0, 0);
 	cdev_close(cdev);
 
-	if (ret != size) {
+	if (ret != size)
 		bootstrap_err("%s: failed to read from %s\n", devname, partname);
-		return NULL;
-	}
+	else
+		result = to;
 
-	return to;
+free_memory:
+	free(header);
+	if (!result)
+		free(to);
+
+	return result;
 }

@@ -39,6 +39,8 @@ typedef int (*initcall_t)(void);
 #define device_initcall(fn)		__define_initcall("10",fn,10)
 #define crypto_initcall(fn)		__define_initcall("11",fn,11)
 #define late_initcall(fn)		__define_initcall("12",fn,12)
+#define environment_initcall(fn)	__define_initcall("13",fn,13)
+#define postenvironment_initcall(fn)	__define_initcall("14",fn,14)
 
 /* section for code used very early when
  * - we're not running from where we linked at

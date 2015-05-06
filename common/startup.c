@@ -62,6 +62,24 @@ static int mount_root(void)
 fs_initcall(mount_root);
 #endif
 
+#ifdef CONFIG_ENV_HANDLING
+static int load_environment(void)
+{
+	const char *default_environment_path;
+
+	default_environment_path = default_environment_path_get();
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+		defaultenv_load("/env", 0);
+
+	envfs_load(default_environment_path, "/env", 0);
+	nvvar_load();
+
+	return 0;
+}
+environment_initcall(load_environment);
+#endif
+
 int (*barebox_main)(void);
 
 void __noreturn start_barebox(void)
@@ -83,16 +101,6 @@ void __noreturn start_barebox(void)
 	}
 
 	pr_debug("initcalls done\n");
-
-	if (IS_ENABLED(CONFIG_ENV_HANDLING)) {
-		char *default_environment_path = default_environment_path_get();
-
-		if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-			defaultenv_load("/env", 0);
-
-		envfs_load(default_environment_path, "/env", 0);
-		nvvar_load();
-	}
 
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
 		pr_info("running /env/bin/init...\n");

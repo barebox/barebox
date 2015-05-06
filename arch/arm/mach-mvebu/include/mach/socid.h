@@ -16,6 +16,10 @@
 #ifndef __MACH_MVEBU_SOCID_H
 #define __MACH_MVEBU_SOCID_H
 
+#define PCIE_VEN_DEV_ID		0x000
+#define PCIE_REV_ID		0x008
+#define  REV_ID_MASK		0xff
+
 extern u16 soc_devid;
 extern u16 soc_revid;
 

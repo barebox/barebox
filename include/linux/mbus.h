@@ -61,4 +61,6 @@ int mvebu_mbus_del_window(phys_addr_t base, size_t size);
 void mvebu_mbus_add_range(const char *compatible,
 			  u8 target, u8 attr, u32 remap);
 
+int mvebu_mbus_init(void);
+
 #endif /* __LINUX_MBUS_H */

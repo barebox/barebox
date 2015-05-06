@@ -22,6 +22,7 @@
 #include <of_address.h>
 #include <linux/clk.h>
 #include <mach/common.h>
+#include <mach/socid.h>
 
 /*
  * Marvell MVEBU SoC id and revision can be read from any PCIe
@@ -39,10 +40,6 @@ static const struct of_device_id mvebu_pcie_of_ids[] = {
 	{ .compatible = "marvell,kirkwood-pcie" },
 	{ },
 };
-
-#define PCIE_VEN_DEV_ID		0x000
-#define PCIE_REV_ID		0x008
-#define  REV_ID_MASK		0xff
 
 static int mvebu_soc_id_init(void)
 {

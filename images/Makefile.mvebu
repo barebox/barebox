@@ -24,16 +24,16 @@ image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-uart.img
 image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-2nd.img
 
 # ----------------------- Armada XP based boards ---------------------------
-PLATHOME_OPENBLOCKS_AX3_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-ax3/kwbimage.cfg
-OPTS_start_plathome_openblocks_ax3.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
-OPTS_start_plathome_openblocks_ax3.pblx.kwbuartimg = -m uart $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
-FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblx.kwbimg
-FILE_barebox-plathome-openblocks-ax3-uart.img = start_plathome_openblocks_ax3.pblx.kwbuartimg
-FILE_barebox-plathome-openblocks-ax3-2nd.img = start_plathome_openblocks_ax3.pblx
-pblx-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += start_plathome_openblocks_ax3
-image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3.img
-image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-uart.img
-image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-2nd.img
+LENOVO_IX4_300D_KWBOPTS = ${KWBOPTS} -i $(board)/lenovo-ix4-300d/kwbimage.cfg
+OPTS_start_lenovo_ix4_300d.pblx.kwbimg = $(LENOVO_IX4_300D_KWBOPTS)
+OPTS_start_lenovo_ix4_300d.pblx.kwbuartimg = -m uart $(LENOVO_IX4_300D_KWBOPTS)
+FILE_barebox-lenovo-ix4-300d.img   = start_lenovo_ix4_300d.pblx.kwbimg
+FILE_barebox-lenovo-ix4-300d-uart.img = start_lenovo_ix4_300d.pblx.kwbuartimg
+FILE_barebox-lenovo-ix4-300d-2nd.img = start_lenovo_ix4_300d.pblx
+pblx-$(CONFIG_MACH_LENOVO_IX4_300D) += start_lenovo_ix4_300d.pblx
+image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d.img
+image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d-uart.img
+image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d-2nd.img
 
 MARVELL_ARMADA_XP_GP_KWBOPTS = ${KWBOPTS} -i $(board)/marvell-armada-xp-gp/kwbimage.cfg
 OPTS_start_marvell_armada_xp_gp.pblx.kwbimg = $(MARVELL_ARMADA_XP_GP_KWBOPTS)
@@ -45,6 +45,17 @@ pblx-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += start_marvell_armada_xp_gp
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp.img
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp-uart.img
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp-2nd.img
+
+PLATHOME_OPENBLOCKS_AX3_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-ax3/kwbimage.cfg
+OPTS_start_plathome_openblocks_ax3.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
+OPTS_start_plathome_openblocks_ax3.pblx.kwbuartimg = -m uart $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
+FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblx.kwbimg
+FILE_barebox-plathome-openblocks-ax3-uart.img = start_plathome_openblocks_ax3.pblx.kwbuartimg
+FILE_barebox-plathome-openblocks-ax3-2nd.img = start_plathome_openblocks_ax3.pblx
+pblx-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += start_plathome_openblocks_ax3
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-uart.img
+image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-2nd.img
 
 # ----------------------- Dove 88AP510 based boards ---------------------------
 SOLIDRUN_CUBOX_KWBOPTS = ${KWBOPTS} -i $(board)/solidrun-cubox/kwbimage.cfg

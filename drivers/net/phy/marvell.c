@@ -35,6 +35,9 @@
 #define MII_88E1121_PHY_MSCR_DELAY_MASK	\
 	(MII_88E1121_PHY_MSCR_RX_DELAY | MII_88E1121_PHY_MSCR_TX_DELAY)
 
+#define MII_88E1318S_PHY_MSCR1_REG	16
+#define MII_88E1318S_PHY_MSCR1_PAD_ODD	BIT(6)
+
 #define MII_88E1540_LED_PAGE		0x3
 #define MII_88E1540_LED_CONTROL		0x10
 
@@ -214,6 +217,25 @@ static int m88e1121_config_init(struct phy_device *phydev)
 	return 0;
 }
 
+static int m88e1318s_config_init(struct phy_device *phydev)
+{
+	u16 reg;
+	int ret;
+
+	ret = phy_write(phydev, MII_MARVELL_PHY_PAGE,
+			MII_88E1121_PHY_MSCR_PAGE);
+	if (ret < 0)
+		return ret;
+
+	reg = phy_read(phydev, MII_88E1318S_PHY_MSCR1_REG);
+	reg |= MII_88E1318S_PHY_MSCR1_PAD_ODD;
+	ret = phy_write(phydev, MII_88E1318S_PHY_MSCR1_REG, reg);
+	if (ret < 0)
+		return ret;
+
+	return m88e1121_config_init(phydev);
+}
+
 static struct phy_driver marvell_phys[] = {
 	{
 		.phy_id		= MARVELL_PHY_ID_88E1121R,
@@ -221,6 +243,15 @@ static struct phy_driver marvell_phys[] = {
 		.drv.name	= "Marvell 88E1121R",
 		.features	= PHY_GBIT_FEATURES,
 		.config_init	= m88e1121_config_init,
+		.config_aneg	= genphy_config_aneg,
+		.read_status	= marvell_read_status,
+	},
+	{
+		.phy_id		= MARVELL_PHY_ID_88E1318S,
+		.phy_id_mask	= MARVELL_PHY_ID_MASK,
+		.drv.name	= "Marvell 88E1318S",
+		.features	= PHY_GBIT_FEATURES,
+		.config_init	= m88e1318s_config_init,
 		.config_aneg	= genphy_config_aneg,
 		.read_status	= marvell_read_status,
 	},

@@ -43,12 +43,16 @@ config MACH_GLOBALSCALE_MIRABOX
 
 comment "Armada XP based boards"
 
-config MACH_PLATHOME_OPENBLOCKS_AX3
-	bool "PlatHome OpenBlocks AX3"
+config MACH_LENOVO_IX4_300D
+	bool "Lenovo Iomega ix4-300d"
 	select ARCH_ARMADA_XP
 
 config MACH_MARVELL_ARMADA_XP_GP
 	bool "Marvell Armada XP GP"
+	select ARCH_ARMADA_XP
+
+config MACH_PLATHOME_OPENBLOCKS_AX3
+	bool "PlatHome OpenBlocks AX3"
 	select ARCH_ARMADA_XP
 
 #

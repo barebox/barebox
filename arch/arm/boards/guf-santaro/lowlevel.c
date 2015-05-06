@@ -9,20 +9,11 @@
 
 static inline void setup_uart(void)
 {
-	void __iomem *uartbase = (void *)MX6_UART2_BASE_ADDR;
 	void __iomem *iomuxbase = (void *)MX6_IOMUXC_BASE_ADDR;
 
 	writel(0x1, iomuxbase + 0x2b0);
 
-	writel(0x00000000, uartbase + 0x80);
-	writel(0x00004027, uartbase + 0x84);
-	writel(0x00000704, uartbase + 0x88);
-	writel(0x00000a81, uartbase + 0x90);
-	writel(0x0000002b, uartbase + 0x9c);
-	writel(0x00013880, uartbase + 0xb0);
-	writel(0x0000047f, uartbase + 0xa4);
-	writel(0x0000c34f, uartbase + 0xa8);
-	writel(0x00000001, uartbase + 0x80);
+	imx6_uart_setup_ll();
 
 	putc_ll('>');
 }
@@ -38,10 +29,12 @@ ENTRY_FUNCTION(start_imx6q_guf_santaro, r0, r1, r2)
 
 	arm_setup_stack(0x00920000 - 8);
 
-	for (i = 0x68; i <= 0x80; i += 4)
-		writel(0xffffffff, MX6_CCM_BASE_ADDR + i);
+	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
+		for (i = 0x68; i <= 0x80; i += 4)
+			writel(0xffffffff, MX6_CCM_BASE_ADDR + i);
 
-	setup_uart();
+		setup_uart();
+	}
 
 	fdt = __dtb_imx6q_guf_santaro_start - get_runtime_offset();
 

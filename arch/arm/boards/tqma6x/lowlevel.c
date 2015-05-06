@@ -24,20 +24,6 @@
 #include <mach/imx6-mmdc.h>
 #include <mach/imx6.h>
 
-static inline void setup_uart(void)
-{
-	/* Enable UART for lowlevel debugging purposes */
-	writel(0x00000000, 0x021e8080);
-	writel(0x00004027, 0x021e8084);
-	writel(0x00000704, 0x021e8088);
-	writel(0x00000a81, 0x021e8090);
-	writel(0x0000002b, 0x021e809c);
-	writel(0x00013880, 0x021e80b0);
-	writel(0x0000047f, 0x021e80a4);
-	writel(0x0000c34f, 0x021e80a8);
-	writel(0x00000001, 0x021e8080);
-}
-
 extern char __dtb_imx6q_mba6x_start[];
 extern char __dtb_imx6dl_mba6x_start[];
 
@@ -51,7 +37,7 @@ ENTRY_FUNCTION(start_imx6q_mba6x, r0, r1, r2)
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e0338);
-		setup_uart();
+		imx6_uart_setup_ll();
 		putc_ll('a');
 	}
 
@@ -72,7 +58,7 @@ ENTRY_FUNCTION(start_imx6dl_mba6x, r0, r1, r2)
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		writel(0x2, 0x020e035c);
-		setup_uart();
+		imx6_uart_setup_ll();
 		putc_ll('a');
 	}
 

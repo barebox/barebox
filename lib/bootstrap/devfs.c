@@ -99,7 +99,7 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 			bootstrap_err(
 				"%s: failed to add bad block aware partition (%d)\n",
 				devname, ret);
-			goto exit;
+			goto delete_devfs_partition;
 		}
 
 		partname = "bbx";
@@ -138,6 +138,14 @@ free_memory:
 	free(header);
 	if (!result)
 		free(to);
-exit:
+
+	if (use_bb) {
+		dev_remove_bb_dev(partname);
+		partname = "x";
+	}
+
+delete_devfs_partition:
+	devfs_del_partition(partname);
+
 	return result;
 }

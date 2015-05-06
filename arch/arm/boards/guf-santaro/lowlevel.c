@@ -13,6 +13,7 @@ static inline void setup_uart(void)
 
 	writel(0x1, iomuxbase + 0x2b0);
 
+	imx6_ungate_all_peripherals();
 	imx6_uart_setup_ll();
 
 	putc_ll('>');
@@ -23,18 +24,13 @@ extern char __dtb_imx6q_guf_santaro_start[];
 ENTRY_FUNCTION(start_imx6q_guf_santaro, r0, r1, r2)
 {
 	void *fdt;
-	int i;
 
 	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00920000 - 8);
 
-	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
-		for (i = 0x68; i <= 0x80; i += 4)
-			writel(0xffffffff, MX6_CCM_BASE_ADDR + i);
-
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
-	}
 
 	fdt = __dtb_imx6q_guf_santaro_start - get_runtime_offset();
 

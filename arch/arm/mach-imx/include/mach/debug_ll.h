@@ -101,8 +101,22 @@ static inline void imx_uart_setup_ll(void __iomem *uartbase,
 				     unsigned int refclock)
 {
 }
+
 static inline void imx51_uart_setup_ll(void) {}
 static inline void imx6_uart_setup_ll(void)  {}
 
 #endif /* CONFIG_DEBUG_LL */
+
+static inline void imx_ungate_all_peripherals(void __iomem *ccmbase)
+{
+	int i;
+	for (i = 0x68; i <= 0x80; i += 4)
+		writel(0xffffffff, ccmbase + i);
+}
+
+static inline void imx6_ungate_all_peripherals(void)
+{
+	imx_ungate_all_peripherals(IOMEM(MX6_CCM_BASE_ADDR));
+}
+
 #endif /* __MACH_DEBUG_LL_H__ */

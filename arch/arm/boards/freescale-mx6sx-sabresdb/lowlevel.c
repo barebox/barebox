@@ -21,16 +21,9 @@
 
 static inline void setup_uart(void)
 {
-	void __iomem *ccmbase = (void *)MX6_CCM_BASE_ADDR;
 	void __iomem *iomuxbase = (void *)MX6_IOMUXC_BASE_ADDR;
 
-	writel(0xffffffff, ccmbase + 0x68);
-	writel(0xffffffff, ccmbase + 0x6c);
-	writel(0xffffffff, ccmbase + 0x70);
-	writel(0xffffffff, ccmbase + 0x74);
-	writel(0xffffffff, ccmbase + 0x78);
-	writel(0xffffffff, ccmbase + 0x7c);
-	writel(0xffffffff, ccmbase + 0x80);
+	imx6_ungate_all_peripherals();
 
 	writel(0x0, iomuxbase + 0x24);
 	writel(0x1b0b1, iomuxbase + 0x036C);

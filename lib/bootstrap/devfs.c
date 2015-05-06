@@ -120,6 +120,8 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 	}
 
 	ret = cdev_read(cdev, to, size, 0, 0);
+	cdev_close(cdev);
+
 	if (ret != size) {
 		bootstrap_err("%s: failed to read from %s\n", devname, partname);
 		return NULL;

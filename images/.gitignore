@@ -3,6 +3,8 @@
 *.pblb
 *.img
 *.imximg
+*.imximg.prep
+*.imximg.signed
 *.map
 *.src
 *.kwbimg

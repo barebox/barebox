@@ -29,6 +29,7 @@
 #include <mach/generic.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <clock.h>
 
 #define CSPI_0_0_RXDATA		0x00
 #define CSPI_0_0_TXDATA		0x04
@@ -457,17 +458,34 @@ static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
 	struct spi_transfer *t;
+	unsigned int cs_change;
+	const int nsecs = 50;
 
 	imx->chipselect(spi, 1);
+
+	cs_change = 0;
 
 	mesg->actual_length = 0;
 
 	list_for_each_entry(t, &mesg->transfers, transfer_list) {
+		if (cs_change) {
+			ndelay(nsecs);
+			imx->chipselect(spi, 0);
+			ndelay(nsecs);
+			imx->chipselect(spi, 1);
+		}
+
+		cs_change = t->cs_change;
+
 		imx_spi_do_transfer(spi, t);
 		mesg->actual_length += t->len;
+
+		if (cs_change)
+			imx->chipselect(spi, 1);
 	}
 
-	imx->chipselect(spi, 0);
+	if (!cs_change)
+		imx->chipselect(spi, 0);
 
 	return 0;
 }

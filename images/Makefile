@@ -102,11 +102,12 @@ objboard = $(objtree)/arch/$(ARCH)/boards
 
 include $(srctree)/images/Makefile.am33xx
 include $(srctree)/images/Makefile.imx
+include $(srctree)/images/Makefile.imxhabv4
 include $(srctree)/images/Makefile.mvebu
+include $(srctree)/images/Makefile.mxs
 include $(srctree)/images/Makefile.rockchip
 include $(srctree)/images/Makefile.socfpga
 include $(srctree)/images/Makefile.tegra
-include $(srctree)/images/Makefile.mxs
 
 targets += $(image-y) pbl.lds barebox.x barebox.z
 targets += $(patsubst %,%.pblx,$(pblx-y))

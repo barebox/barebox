@@ -121,6 +121,11 @@ static const char *vdo_axi_sels[] = {
 	"ahb",
 };
 
+static const char *cko_sels[] = {
+	"cko1",
+	"cko2",
+};
+
 static const char *cko1_sels[] = {
 	"pll3_usb_otg",
 	"pll2_bus",
@@ -138,6 +143,41 @@ static const char *cko1_sels[] = {
 	"ipg_per",
 	"ckil",
 	"pll4_audio",
+};
+
+static const char *cko2_sels[] = {
+	"mmdc_ch0_axi",
+	"mmdc_ch1_axi",
+	"usdhc4",
+	"usdhc1",
+	"gpu2d_axi",
+	"dummy",
+	"ecspi_root",
+	"gpu3d_axi",
+	"usdhc3",
+	"dummy",
+	"arm",
+	"ipu1",
+	"ipu2",
+	"vdo_axi",
+	"osc",
+	"gpu2d_core",
+	"gpu3d_core",
+	"usdhc2",
+	"ssi1",
+	"ssi2",
+	"ssi3",
+	"gpu3d_shader",
+	"vpu_axi",
+	"can_root",
+	"ldb_di0",
+	"ldb_di1",
+	"esai",
+	"eim_slow",
+	"uart_serial",
+	"spdif",
+	"asrc",
+	"hsi_tx",
 };
 
 static const char *ipu_sels[] = {
@@ -367,6 +407,8 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[IMX6QDL_CLK_EIM_SLOW_SEL]     = imx_clk_mux("eim_slow_sel",     base + 0x1c, 29, 2, eim_sels,          ARRAY_SIZE(eim_sels));
 	clks[IMX6QDL_CLK_VDO_AXI_SEL]      = imx_clk_mux("vdo_axi_sel",      base + 0x18, 11, 1, vdo_axi_sels,      ARRAY_SIZE(vdo_axi_sels));
 	clks[IMX6QDL_CLK_CKO1_SEL]         = imx_clk_mux("cko1_sel",         base + 0x60, 0,  4, cko1_sels,         ARRAY_SIZE(cko1_sels));
+	clks[IMX6QDL_CLK_CKO2_SEL]         = imx_clk_mux("cko2_sel",         base + 0x60, 16, 5, cko2_sels,         ARRAY_SIZE(cko2_sels));
+	clks[IMX6QDL_CLK_CKO]              = imx_clk_mux("cko",              base + 0x60, 8,  1, cko_sels,          ARRAY_SIZE(cko_sels));
 	clks[IMX6QDL_CLK_PCIE_AXI_SEL]     = imx_clk_mux("pcie_axi_sel",     base + 0x18, 10, 1, pcie_axi_sels,     ARRAY_SIZE(pcie_axi_sels));
 
 	/*                              name         reg       shift width busy: reg, shift parent_names  num_parents */
@@ -390,6 +432,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[IMX6QDL_CLK_EIM_PODF]         = imx_clk_divider("eim_podf",         "eim_sel",           base + 0x1c, 20, 3);
 	clks[IMX6QDL_CLK_EIM_SLOW_PODF]    = imx_clk_divider("eim_slow_podf",    "eim_slow_sel",      base + 0x1c, 23, 3);
 	clks[IMX6QDL_CLK_CKO1_PODF]        = imx_clk_divider("cko1_podf",        "cko1_sel",          base + 0x60, 4,  3);
+	clks[IMX6QDL_CLK_CKO2_PODF]        = imx_clk_divider("cko2_podf",        "cko2_sel",          base + 0x60, 21, 3);
 
 	/*                                            name                  parent_name         reg        shift width busy: reg, shift */
 	clks[IMX6QDL_CLK_AXI]               = imx_clk_busy_divider("axi",               "axi_sel",     base + 0x14, 16,  3,   base + 0x48, 0);

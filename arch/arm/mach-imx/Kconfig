@@ -675,6 +675,46 @@ config IMX_OCOTP_WRITE
 		mw -l -d /dev/imx-ocotp 0x8C 0x00001234
 		mw -l -d /dev/imx-ocotp 0x88 0x56789ABC
 
+config HABV4
+	tristate "HABv4 support"
+	depends on ARCH_IMX6
+	help
+	  High Assurance Boot, as found on i.MX28/i.MX6.
+
+if HABV4
+
+config HABV4_TABLE_BIN
+	string "Path to SRK table"
+	default "../crts/SRK_1_2_3_4_table.bin"
+	help
+	  Path to the Super Root Key (SRK) table, produced by the
+	  Freescale Code Signing Tool (cst).
+
+	  This file will be inserted into the Command Sequence File
+	  (CSF) when using the CSF template that comes with barebox.
+
+config HABV4_CSF_CRT_PEM
+	string "Path to CSF certificate"
+	default "../crts/CSF1_1_sha256_4096_65537_v3_usr_crt.pem"
+	help
+	  Path to the Command Sequence File (CSF) certificate, produced by the
+	  Freescale Public Key Infrastructure (PKI) script.
+
+	  This file will be inserted into the Command Sequence File
+	  (CSF) when using the CSF template that comes with barebox.
+
+config HABV4_IMG_CRT_PEM
+	string "Path to IMG certificate"
+	default "../crts/IMG_1_sha256_4096_65537_v3_usr_crt.pem"
+	help
+	  Path to the Image certificate, produced by the Freescale
+	  Public Key Infrastructure (PKI) script.
+
+	  This file will be inserted into the Command Sequence File
+	  (CSF) when using the CSF template that comes with barebox.
+
+endif
+
 endmenu
 
 endif

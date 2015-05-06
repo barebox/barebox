@@ -132,6 +132,7 @@
 #define ERESTARTNOINTR	513
 #define ERESTARTNOHAND	514	/* restart if no handler.. */
 #define ENOIOCTLCMD	515	/* No ioctl command */
+#define EPROBE_DEFER	517	/* Driver requests probe retry */
 
 #define ENOTSUPP	524	/* Operation is not supported */
 

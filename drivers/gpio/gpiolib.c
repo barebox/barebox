@@ -292,12 +292,15 @@ int gpio_get_num(struct device_d *dev, int gpio)
 {
 	struct gpio_chip *chip;
 
+	if (!dev)
+		return -ENODEV;
+
 	list_for_each_entry(chip, &chip_list, list) {
 		if (chip->dev == dev)
 			return chip->base + gpio;
 	}
 
-	return -ENODEV;
+	return -EPROBE_DEFER;
 }
 
 #ifdef CONFIG_CMD_GPIO

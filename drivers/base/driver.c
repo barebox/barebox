@@ -29,6 +29,7 @@
 #include <console.h>
 #include <linux/ctype.h>
 #include <errno.h>
+#include <init.h>
 #include <fs.h>
 #include <of.h>
 #include <linux/list.h>
@@ -43,6 +44,7 @@ LIST_HEAD(driver_list);
 EXPORT_SYMBOL(driver_list);
 
 static LIST_HEAD(active);
+static LIST_HEAD(deferred);
 
 struct device_d *get_device_by_name(const char *name)
 {
@@ -88,13 +90,20 @@ int device_probe(struct device_d *dev)
 	list_add(&dev->active, &active);
 
 	ret = dev->bus->probe(dev);
-	if (ret) {
+	if (ret == 0)
+		return 0;
+
+	if (ret == -EPROBE_DEFER) {
 		list_del(&dev->active);
-		dev_err(dev, "probe failed: %s\n", strerror(-ret));
+		list_add(&dev->active, &deferred);
+		dev_dbg(dev, "probe deferred\n");
 		return ret;
 	}
 
-	return 0;
+	list_del(&dev->active);
+	dev_err(dev, "probe failed: %s\n", strerror(-ret));
+
+	return ret;
 }
 
 int device_detect(struct device_d *dev)
@@ -212,6 +221,47 @@ int unregister_device(struct device_d *old_dev)
 	return 0;
 }
 EXPORT_SYMBOL(unregister_device);
+
+/*
+ * Loop over list of deferred devices as long as at least one
+ * device is successfully probed. Devices that again request
+ * deferral are re-added to deferred list in device_probe().
+ * For devices finally left in deferred list -EPROBE_DEFER
+ * becomes a fatal error.
+ */
+static int device_probe_deferred(void)
+{
+	struct device_d *dev, *tmp;
+	struct driver_d *drv;
+	bool success;
+
+	do {
+		success = false;
+
+		if (list_empty(&deferred))
+			break;
+
+		list_for_each_entry_safe(dev, tmp, &deferred, active) {
+			list_del(&dev->active);
+			dev_dbg(dev, "re-probe device\n");
+			bus_for_each_driver(dev->bus, drv) {
+				if (match(drv, dev))
+					continue;
+				success = true;
+				break;
+			}
+		}
+	} while (success);
+
+	if (list_empty(&deferred))
+		return 0;
+
+	list_for_each_entry(dev, &deferred, active)
+		dev_err(dev, "probe permanently deferred\n");
+
+	return 0;
+}
+late_initcall(device_probe_deferred);
 
 struct driver_d *get_driver_by_name(const char *name)
 {

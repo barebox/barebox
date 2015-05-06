@@ -20,6 +20,7 @@
 #include <common.h>
 #include <init.h>
 #include <led.h>
+#include <malloc.h>
 #include <gpio.h>
 #include <of_gpio.h>
 
@@ -63,6 +64,7 @@ int led_gpio_register(struct gpio_led *led)
 void led_gpio_unregister(struct gpio_led *led)
 {
 	led_unregister(&led->led);
+	gpio_free(led->gpio);
 }
 
 #ifdef CONFIG_LED_GPIO_BICOLOR
@@ -130,6 +132,8 @@ err_gpio_c0:
 void led_gpio_bicolor_unregister(struct gpio_bicolor_led *led)
 {
 	led_unregister(&led->led);
+	gpio_free(led->gpio_c1);
+	gpio_free(led->gpio_c0);
 }
 #endif
 
@@ -191,9 +195,12 @@ err_gpio_r:
  * led_gpio_rgb_unregister - remove a gpio controlled rgb LED from the framework
  * @param led	The gpio LED
  */
-void led_gpio_rgb_unregister(struct gpio_led *led)
+void led_gpio_rgb_unregister(struct gpio_rgb_led *led)
 {
 	led_unregister(&led->led);
+	gpio_free(led->gpio_b);
+	gpio_free(led->gpio_g);
+	gpio_free(led->gpio_r);
 }
 #endif /* CONFIG_LED_GPIO_RGB */
 
@@ -201,19 +208,32 @@ void led_gpio_rgb_unregister(struct gpio_led *led)
 static int led_gpio_of_probe(struct device_d *dev)
 {
 	struct device_node *child;
+	struct gpio_led *leds;
+	int num_leds;
+	int ret = 0, n = 0;
+
+	num_leds = of_get_child_count(dev->device_node);
+	if (num_leds <= 0)
+		return num_leds;
+
+	leds = xzalloc(num_leds * sizeof(struct gpio_led));
 
 	for_each_child_of_node(dev->device_node, child) {
-		struct gpio_led *gled;
+		struct gpio_led *gled = &leds[n];
 		const char *default_state;
 		enum of_gpio_flags flags;
 		int gpio;
 		const char *label;
 
 		gpio = of_get_named_gpio_flags(child, "gpios", 0, &flags);
-		if (gpio < 0)
-			continue;
+		if (gpio < 0) {
+			if (gpio != -EPROBE_DEFER)
+				dev_err(dev, "failed to get gpio for %s: %d\n",
+					child->full_name, gpio);
+			ret = gpio;
+			goto err;
+		}
 
-		gled = xzalloc(sizeof(*gled));
 		if (of_property_read_string(child, "label", &label))
 			label = child->name;
 		gled->led.name = xstrdup(label);
@@ -233,9 +253,17 @@ static int led_gpio_of_probe(struct device_d *dev)
 			else if (!strcmp(default_state, "off"))
 				led_gpio_set(&gled->led, 0);
 		}
+
+		n++;
 	}
 
 	return 0;
+
+err:
+	for (n = n - 1; n >= 0; n--)
+		led_gpio_unregister(&leds[n]);
+	free(leds);
+	return ret;
 }
 
 static struct of_device_id led_gpio_of_ids[] = {

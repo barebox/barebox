@@ -82,10 +82,17 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 	int ret;
 	int size = 0;
 	void *to, *header;
-	struct cdev *cdev;
+	struct cdev *cdev, *partition;
 	char *partname = "x";
 
-	devfs_add_partition(devname, offset, max_size, DEVFS_PARTITION_FIXED, partname);
+	partition = devfs_add_partition(devname, offset, max_size,
+					DEVFS_PARTITION_FIXED, partname);
+	if (IS_ERR(partition)) {
+		bootstrap_err("%s: failed to add partition (%ld)\n",
+			      devname, PTR_ERR(partition));
+		return NULL;
+	}
+
 	if (use_bb) {
 		dev_add_bb_dev(partname, "bbx");
 		partname = "bbx";

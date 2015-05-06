@@ -35,7 +35,7 @@ static void *read_image_head(const char *name)
 	cdev = cdev_open(name, O_RDONLY);
 	if (!cdev) {
 		bootstrap_err("failed to open partition\n");
-		return NULL;
+		goto free_header;
 	}
 
 	ret = cdev_read(cdev, header, BAREBOX_HEAD_SIZE, 0, 0);
@@ -43,10 +43,14 @@ static void *read_image_head(const char *name)
 
 	if (ret != BAREBOX_HEAD_SIZE) {
 		bootstrap_err("failed to read from partition\n");
-		return NULL;
+		goto free_header;
 	}
 
 	return header;
+
+free_header:
+	free(header);
+	return NULL;
 }
 
 static unsigned int get_image_size(void *head)

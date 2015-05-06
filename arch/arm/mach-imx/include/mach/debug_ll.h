@@ -13,6 +13,8 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 
+#include <serial/imx-uart.h>
+
 #ifdef CONFIG_DEBUG_LL
 
 #ifdef CONFIG_DEBUG_IMX1_UART
@@ -39,14 +41,6 @@
 
 #define __IMX_UART_BASE(soc, num) soc##_UART##num##_BASE_ADDR
 #define IMX_UART_BASE(soc, num) __IMX_UART_BASE(soc, num)
-
-#define URTX0		0x40		/* Transmitter Register */
-
-#define UCR1		0x80		/* Control Register 1 */
-#define UCR1_UARTEN	(1 << 0)	/* UART enabled */
-
-#define USR2		0x98		/* Status Register 2 */
-#define USR2_TXDC	(1 << 3)	/* Transmitter complete */
 
 static inline void PUTC_LL(int c)
 {

@@ -35,7 +35,7 @@
 	pbl_ar2312_rst_uart0
 	debug_ll_ns16550_init
 
-	debug_ll_ns16550_outc 'a'
+	debug_ll_outc 'a'
 	debug_ll_ns16550_outnl
 
 	/* check if SDRAM is already configured,
@@ -60,7 +60,7 @@
 	pbl_probe_mem t0, t1, KSEG1
 	beq t0, t1, sdram_configured
 	 nop
-	debug_ll_ns16550_outc '#'
+	debug_ll_outc '#'
 	debug_ll_ns16550_outnl
 
 1:
@@ -68,7 +68,7 @@
 	 nop
 
 sdram_configured:
-	debug_ll_ns16550_outc 'b'
+	debug_ll_outc 'b'
 	debug_ll_ns16550_outnl
 
 	copy_to_link_location	pbl_start

@@ -1,7 +1,6 @@
 /*
- * Startup Code for Imagination Creator CI20 board
- *
- * Copyright (C) 2014 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2013, 2015 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2013 Oleksij Rempel <linux@rempel-privat.de>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -18,22 +17,15 @@
  */
 
 #include <asm/pbl_macros.h>
-#include <mach/debug_ll.h>
 #include <asm/pbl_nmon.h>
 
 	.macro	board_pbl_start
 	.set	push
 	.set	noreorder
 
+	mips_barebox_10h
+
 	mips_disable_interrupts
-
-	/* CPU/SoC specific setup ... */
-	/* ... absent */
-
-	debug_ll_ns16550_init
-
-	debug_ll_outc '.'
-	debug_ll_ns16550_outnl
 
 	mips_nmon
 

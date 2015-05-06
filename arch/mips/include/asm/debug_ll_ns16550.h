@@ -90,7 +90,7 @@ static __inline__ void PUTC_LL(char ch)
 /*
  * output a character in a0
  */
-.macro	debug_ll_ns16550_outc_a0
+.macro	debug_ll_outc_a0
 #ifdef CONFIG_DEBUG_LL
 	.set	push
 	.set	reorder
@@ -110,10 +110,10 @@ static __inline__ void PUTC_LL(char ch)
 /*
  * output a character
  */
-.macro	debug_ll_ns16550_outc chr
+.macro	debug_ll_outc chr
 #ifdef CONFIG_DEBUG_LL
 	li	a0, \chr
-	debug_ll_ns16550_outc_a0
+	debug_ll_outc_a0
 #endif /* CONFIG_DEBUG_LL */
 .endm
 
@@ -122,15 +122,15 @@ static __inline__ void PUTC_LL(char ch)
  */
 .macro	debug_ll_ns16550_outnl
 #ifdef CONFIG_DEBUG_LL
-	debug_ll_ns16550_outc '\r'
-	debug_ll_ns16550_outc '\n'
+	debug_ll_outc '\r'
+	debug_ll_outc '\n'
 #endif /* CONFIG_DEBUG_LL */
 .endm
 
 /*
  * output a 32-bit value in hex
  */
-.macro debug_ll_ns16550_outhexw
+.macro debug_ll_outhexw
 #ifdef CONFIG_DEBUG_LL
 	.set	push
 	.set	reorder
@@ -151,7 +151,7 @@ static __inline__ void PUTC_LL(char ch)
 203:
 	addi	a0, a0, '0'
 
-	debug_ll_ns16550_outc_a0
+	debug_ll_outc_a0
 
 	bgtz	t5, 202b
 
@@ -165,7 +165,7 @@ static __inline__ void PUTC_LL(char ch)
  *  v0 = 0   no character in input buffer
  *  v0 != 0  character in input buffer
  */
-.macro	debug_ll_ns16550_check_char
+.macro	debug_ll_tstc
 #ifdef CONFIG_DEBUG_LL
 	.set	push
 	.set	reorder
@@ -183,13 +183,13 @@ static __inline__ void PUTC_LL(char ch)
 /*
  * get character to v0
  */
-.macro	debug_ll_ns16550_getc
+.macro	debug_ll_getc
 #ifdef CONFIG_DEBUG_LL
 	.set	push
 	.set	reorder
 
 204:
-	debug_ll_ns16550_check_char
+	debug_ll_tstc
 
 	/* try again */
 	beqz	v0, 204b

@@ -9,6 +9,9 @@ choice
 
 config BOARD_TPLINK_MR3020
 	bool "TP-LINK MR3020"
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
+	select HAS_NMON
 
 endchoice
 

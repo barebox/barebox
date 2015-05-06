@@ -17,8 +17,7 @@
  *
  */
 
-#include <board/debug_ll.h>
-#include <asm/debug_ll_ns16550.h>
+#include <mach/debug_ll.h>
 
 #define CODE_ESC	0x1b
 
@@ -74,7 +73,7 @@ nmon_wait_user:
 
 	nmon_outs	msg_bsp
 
-	debug_ll_ns16550_check_char
+	debug_ll_tstc
 
 	bnez	v0, 3f
 
@@ -91,7 +90,7 @@ msg_nmon_press_any_key:
 	.align	4
 3:
 	/* get received char from ns16550's buffer */
-	debug_ll_ns16550_getc
+	debug_ll_getc
 #endif /* CONFIG_NMON_USER_START */
 
 nmon_main_help:
@@ -102,9 +101,9 @@ nmon_main_help:
 nmon_main:
 	nmon_outs	msg_prompt
 
-	debug_ll_ns16550_getc
+	debug_ll_getc
 
-	/* prepare a0 for debug_ll_ns16550_outc_a0 */
+	/* prepare a0 for debug_ll_outc_a0 */
 	move	a0, v0
 
 	li	v1, 'q'
@@ -137,7 +136,7 @@ nmon_cmd_d:
 	nmon_outs	msg_nl
 
 	lw	a0, (v0)
-	debug_ll_ns16550_outhexw
+	debug_ll_outhexw
 
 	b	nmon_main
 
@@ -170,7 +169,7 @@ nmon_cmd_g:
 	b	nmon_main
 
 _nmon_outc_a0:
-	debug_ll_ns16550_outc_a0
+	debug_ll_outc_a0
 	jr	ra
 
 _nmon_outs:
@@ -178,7 +177,7 @@ _nmon_outs:
 	addi	a1, a1, 1
 	beqz	a0, _nmon_jr_ra_exit
 
-	debug_ll_ns16550_outc_a0
+	debug_ll_outc_a0
 
 	b	_nmon_outs
 
@@ -188,7 +187,7 @@ _nmon_gethexw:
 	li	t2, 0
 
 _get_hex_digit:
-	debug_ll_ns16550_getc
+	debug_ll_getc
 
 	li	v1, CODE_ESC
 	beq	v0, v1, nmon_main
@@ -221,7 +220,7 @@ _get_hex_digit:
 	sub	a3, v0, a3
 
 0:	move	a0, v0
-	debug_ll_ns16550_outc_a0
+	debug_ll_outc_a0
 
 	sll	t2, t2, 4
 	or	t2, t2, a3

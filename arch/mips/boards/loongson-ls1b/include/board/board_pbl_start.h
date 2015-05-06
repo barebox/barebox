@@ -30,7 +30,7 @@
 
 	debug_ll_ns16550_init
 
-	debug_ll_ns16550_outc '.'
+	debug_ll_outc '.'
 	debug_ll_ns16550_outnl
 
 	mips_nmon

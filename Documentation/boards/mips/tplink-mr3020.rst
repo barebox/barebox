@@ -23,7 +23,8 @@ But you have to encode barebox image in a very special way.
 First obtain ``lzma`` and ``mktplinkfw`` utilities.
 
 The ``lzma`` utility can be obtained in Debian/Ubuntu
-distro by installing lzma package.
+distro by installing lzma package
+(lzma from xz-utils package is unusable).
 
 The ``mktplinkfw`` utility can be obtained from openwrt, e.g.::
 
@@ -36,8 +37,8 @@ The ``mktplinkfw`` utility can be obtained from openwrt, e.g.::
 To convert your barebox.bin to U-Boot-loadable image (``6F01A8C0.img``)
 use this command sequence::
 
-  $ lzma -c -k barebox.bin > barebox.lzma
-  $ ./FW/mktplinkfw -c -H 0x07200103 -W 1 -N TL-WR720N-v3 \
+  $ lzma -c -k barebox-flash-image > barebox.lzma
+  $ ./mktplinkfw -c -H 0x07200103 -W 1 -N TL-WR720N-v3 \
       -s -F 4Mlzma -k barebox.lzma -o 6F01A8C0.img
 
 You must setup tftp-server on host 192.168.0.1.

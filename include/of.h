@@ -37,7 +37,7 @@ struct device_node {
 
 struct of_device_id {
 	char *compatible;
-	unsigned long data;
+	const void *data;
 };
 
 #define MAX_PHANDLE_ARGS 8

@@ -1242,7 +1242,7 @@ static int mxs_nand_probe(struct device_d *dev)
 	enum gpmi_type type;
 	int err;
 
-	err = dev_get_drvdata(dev, (unsigned long *)&type);
+	err = dev_get_drvdata(dev, (const void **)&type);
 	if (err)
 		type = GPMI_MXS;
 
@@ -1342,13 +1342,13 @@ err1:
 static __maybe_unused struct of_device_id gpmi_dt_ids[] = {
 	{
 		.compatible = "fsl,imx23-gpmi-nand",
-		.data = GPMI_MXS,
+		.data = (void *)GPMI_MXS,
 	}, {
 		.compatible = "fsl,imx28-gpmi-nand",
-		.data = GPMI_MXS,
+		.data = (void *)GPMI_MXS,
 	}, {
 		.compatible = "fsl,imx6q-gpmi-nand",
-		.data = GPMI_IMX6,
+		.data = (void *)GPMI_IMX6,
 	}, {
 		/* sentinel */
 	}

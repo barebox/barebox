@@ -251,7 +251,7 @@ static int ds1307_probe(struct device_d *dev)
 
 	ds1307 = xzalloc(sizeof(struct ds1307));
 
-	err = dev_get_drvdata(dev, &driver_data);
+	err = dev_get_drvdata(dev, (const void **)&driver_data);
 	if (err)
 		goto exit;
 

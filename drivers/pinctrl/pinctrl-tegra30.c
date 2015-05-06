@@ -891,7 +891,7 @@ static int pinctrl_tegra30_probe(struct device_d *dev)
 		}
 	}
 
-	dev_get_drvdata(dev, (unsigned long *)&ctrl->drvdata);
+	dev_get_drvdata(dev, (const void **)&ctrl->drvdata);
 
 	ctrl->pinctrl.dev = dev;
 	ctrl->pinctrl.ops = &pinctrl_tegra30_ops;
@@ -911,12 +911,12 @@ static __maybe_unused struct of_device_id pinctrl_tegra30_dt_ids[] = {
 	{
 #ifdef CONFIG_ARCH_TEGRA_3x_SOC
 		.compatible = "nvidia,tegra30-pinmux",
-		.data = (unsigned long)&tegra30_drvdata,
+		.data = &tegra30_drvdata,
 	}, {
 #endif
 #ifdef CONFIG_ARCH_TEGRA_124_SOC
 		.compatible = "nvidia,tegra124-pinmux",
-		.data = (unsigned long)&tegra124_drvdata,
+		.data = &tegra124_drvdata,
 	}, {
 #endif
 		/* sentinel */

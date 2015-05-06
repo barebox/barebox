@@ -99,7 +99,7 @@ static int imx_gpt_probe(struct device_d *dev)
 	if (timer_base)
 		return 0;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&regs);
+	ret = dev_get_drvdata(dev, (const void **)&regs);
 	if (ret)
 		return ret;
 
@@ -136,10 +136,10 @@ static int imx_gpt_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id imx_gpt_dt_ids[] = {
 	{
 		.compatible = "fsl,imx1-gpt",
-		.data = (unsigned long)&regs_imx1,
+		.data = &regs_imx1,
 	}, {
 		.compatible = "fsl,imx31-gpt",
-		.data = (unsigned long)&regs_imx31,
+		.data = &regs_imx31,
 	}, {
 		/* sentinel */
 	}

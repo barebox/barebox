@@ -517,19 +517,19 @@ static struct rockchip_pin_ctrl rk3188_pin_ctrl = {
 static struct of_device_id rockchip_pinctrl_dt_match[] = {
 	{
 		.compatible = "rockchip,rk2928-pinctrl",
-		.data = (long)&rk2928_pin_ctrl,
+		.data = &rk2928_pin_ctrl,
 	},
 	{
 		.compatible = "rockchip,rk3066a-pinctrl",
-		.data = (long)&rk3066a_pin_ctrl,
+		.data = &rk3066a_pin_ctrl,
 	},
 	{
 		.compatible = "rockchip,rk3066b-pinctrl",
-		.data = (long)&rk3066b_pin_ctrl,
+		.data = &rk3066b_pin_ctrl,
 	},
 	{
 		.compatible = "rockchip,rk3188-pinctrl",
-		.data = (long)&rk3188_pin_ctrl,
+		.data = &rk3188_pin_ctrl,
 	}, {
 		/* sentinel */
 	}

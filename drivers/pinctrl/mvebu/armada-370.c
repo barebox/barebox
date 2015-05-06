@@ -384,7 +384,7 @@ static struct mvebu_pinctrl_soc_info mv88f6710_pinctrl_info = {
 static struct of_device_id armada_370_pinctrl_of_match[] = {
 	{
 		.compatible = "marvell,mv88f6710-pinctrl",
-		.data = (u32)&mv88f6710_pinctrl_info,
+		.data = &mv88f6710_pinctrl_info,
 	},
 	{ },
 };

@@ -453,31 +453,31 @@ mv78xx0_mbus_data __maybe_unused = {
 static struct of_device_id mvebu_mbus_dt_ids[] = {
 #if defined(CONFIG_ARCH_ARMADA_370) || defined(CONFIG_ARCH_ARMADA_XP)
 	{ .compatible = "marvell,armada370-mbus",
-	  .data = (u32)&armada_370_xp_mbus_data, },
+	  .data = &armada_370_xp_mbus_data, },
 	{ .compatible = "marvell,armadaxp-mbus",
-	  .data = (u32)&armada_370_xp_mbus_data, },
+	  .data = &armada_370_xp_mbus_data, },
 #endif
 #if defined(CONFIG_ARCH_DOVE)
 	{ .compatible = "marvell,dove-mbus",
-	  .data = (u32)&dove_mbus_data, },
+	  .data = &dove_mbus_data, },
 #endif
 #if defined(CONFIG_ARCH_KIRKWOOD)
 	{ .compatible = "marvell,kirkwood-mbus",
-	  .data = (u32)&kirkwood_mbus_data, },
+	  .data = &kirkwood_mbus_data, },
 #endif
 #if defined(CONFIG_ARCH_ORION5X)
 	{ .compatible = "marvell,orion5x-88f5281-mbus",
-	  .data = (u32)&orion5x_4win_mbus_data, },
+	  .data = &orion5x_4win_mbus_data, },
 	{ .compatible = "marvell,orion5x-88f5182-mbus",
-	  .data = (u32)&orion5x_2win_mbus_data, },
+	  .data = &orion5x_2win_mbus_data, },
 	{ .compatible = "marvell,orion5x-88f5181-mbus",
-	  .data = (u32)&orion5x_2win_mbus_data, },
+	  .data = &orion5x_2win_mbus_data, },
 	{ .compatible = "marvell,orion5x-88f6183-mbus",
-	  .data = (u32)&orion5x_4win_mbus_data, },
+	  .data = &orion5x_4win_mbus_data, },
 #endif
 #if defined(CONFIG_ARCH_MV78XX0)
 	{ .compatible = "marvell,mv78xx0-mbus",
-	  .data = (u32)&mv78xx0_mbus_data, },
+	  .data = &mv78xx0_mbus_data, },
 #endif
 	{ },
 };

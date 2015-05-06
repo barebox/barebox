@@ -144,7 +144,7 @@ static int omap_gpio_probe(struct device_d *dev)
 	struct omap_gpio_chip *omapgpio;
 	struct omap_gpio_drvdata *drvdata = NULL;
 
-	dev_get_drvdata(dev, (unsigned long *)&drvdata);
+	dev_get_drvdata(dev, (const void **)&drvdata);
 
 	omapgpio = xzalloc(sizeof(*omapgpio));
 	omapgpio->base = dev_request_mem_region(dev, 0);
@@ -176,10 +176,10 @@ static int omap_gpio_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id omap_gpio_dt_ids[] = {
 	{
 		.compatible = "ti,omap4-gpio",
-		.data = (unsigned long)&gpio_omap4_drvdata,
+		.data = &gpio_omap4_drvdata,
 	}, {
 		.compatible = "ti,omap3-gpio",
-		.data = (unsigned long)&gpio_omap3_drvdata,
+		.data = &gpio_omap3_drvdata,
 	}, {
 	}
 };

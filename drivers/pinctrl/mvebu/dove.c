@@ -689,7 +689,7 @@ static struct mvebu_pinctrl_soc_info dove_pinctrl_info = {
 static struct of_device_id dove_pinctrl_of_match[] = {
 	{
 		.compatible = "marvell,dove-pinctrl",
-		.data = (u32)&dove_pinctrl_info
+		.data = &dove_pinctrl_info
 	},
 	{ }
 };

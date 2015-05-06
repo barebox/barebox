@@ -98,7 +98,7 @@ static const struct phy_control ctrl_am335x = {
 
 static __maybe_unused struct of_device_id omap_control_usb_dt_ids[] = {
 	{
-		.compatible = "ti,am335x-usb-ctrl-module", .data = (unsigned long)&ctrl_am335x
+		.compatible = "ti,am335x-usb-ctrl-module", .data = &ctrl_am335x
 	}, {
 		/* sentinel */
 	},
@@ -133,7 +133,7 @@ static int am335x_control_usb_probe(struct device_d *dev)
 	const struct phy_control *phy_ctrl;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&phy_ctrl);
+	ret = dev_get_drvdata(dev, (const void **)&phy_ctrl);
 	if (ret)
 		return ret;
 

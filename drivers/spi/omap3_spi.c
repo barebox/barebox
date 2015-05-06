@@ -363,7 +363,7 @@ static int omap3_spi_probe(struct device_d *dev)
 	struct omap_spi_drvdata *devtype;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 
@@ -422,10 +422,10 @@ static struct omap_spi_drvdata omap4_data = {
 static __maybe_unused struct of_device_id omap_spi_dt_ids[] = {
 	{
 		.compatible = "ti,omap2-mcspi",
-		.data = (unsigned long)&omap3_data,
+		.data = &omap3_data,
 	}, {
 		.compatible = "ti,omap4-mcspi",
-		.data = (unsigned long)&omap4_data,
+		.data = &omap4_data,
 	}, {
 		/* sentinel */
 	}

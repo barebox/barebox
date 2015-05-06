@@ -112,7 +112,7 @@ static int mxs_gpio_probe(struct device_d *dev)
 	struct mxs_gpio_regs *regs;
 	int ret, id;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&regs);
+	ret = dev_get_drvdata(dev, (const void **)&regs);
 	if (ret)
 		return ret;
 
@@ -150,10 +150,10 @@ static int mxs_gpio_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id mxs_gpio_dt_ids[] = {
 	{
 		.compatible = "fsl,imx23-gpio",
-		.data = (unsigned long)&regs_mxs23,
+		.data = &regs_mxs23,
 	}, {
 		.compatible = "fsl,imx28-gpio",
-		.data = (unsigned long)&regs_mxs28,
+		.data = &regs_mxs28,
 	}, {
 		/* sentinel */
 	}

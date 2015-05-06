@@ -362,9 +362,9 @@ static struct mvebu_pinctrl_soc_info armada_xp_pinctrl_info = {
 };
 
 static struct of_device_id armada_xp_pinctrl_of_match[] = {
-	{ .compatible = "marvell,mv78230-pinctrl", .data = (u32)V_MV78230, },
-	{ .compatible = "marvell,mv78260-pinctrl", .data = (u32)V_MV78260, },
-	{ .compatible = "marvell,mv78460-pinctrl", .data = (u32)V_MV78460, },
+	{ .compatible = "marvell,mv78230-pinctrl", .data = (void *)V_MV78230, },
+	{ .compatible = "marvell,mv78260-pinctrl", .data = (void *)V_MV78260, },
+	{ .compatible = "marvell,mv78460-pinctrl", .data = (void *)V_MV78460, },
 	{ },
 };
 

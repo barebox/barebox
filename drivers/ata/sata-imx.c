@@ -86,7 +86,7 @@ static int imx_sata_probe(struct device_d *dev)
 	struct imx_sata_data *data;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&data);
+	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
 		return ret;
 
@@ -145,10 +145,10 @@ static struct platform_device_id imx_sata_ids[] = {
 static __maybe_unused struct of_device_id imx_sata_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-ahci",
-		.data = (unsigned long)&data_imx6,
+		.data = &data_imx6,
 	}, {
 		.compatible = "fsl,imx53-ahci",
-		.data = (unsigned long)&data_imx53,
+		.data = &data_imx53,
 	}, {
 		/* sentinel */
 	}

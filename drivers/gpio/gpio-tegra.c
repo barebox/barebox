@@ -142,7 +142,7 @@ static int tegra_gpio_probe(struct device_d *dev)
 {
 	int i, j, ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&config);
+	ret = dev_get_drvdata(dev, (const void **)&config);
 	if (ret) {
 		dev_err(dev, "dev_get_drvdata failed: %d\n", ret);
 		return ret;
@@ -184,10 +184,10 @@ static struct tegra_gpio_soc_config tegra30_gpio_config = {
 static __maybe_unused struct of_device_id tegra_gpio_dt_ids[] = {
 	{
 		.compatible = "nvidia,tegra20-gpio",
-		.data = (unsigned long)&tegra20_gpio_config
+		.data = &tegra20_gpio_config
 	}, {
 		.compatible = "nvidia,tegra30-gpio",
-		.data = (unsigned long)&tegra30_gpio_config
+		.data = &tegra30_gpio_config
 	}, {
 		/* sentinel */
 	},

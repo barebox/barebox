@@ -221,7 +221,7 @@ static int cadence_serial_probe(struct device_d *dev)
 	struct cadence_serial_devtype_data *devtype;
 	int ret;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 
@@ -276,7 +276,7 @@ static void cadence_serial_remove(struct device_d *dev)
 static __maybe_unused struct of_device_id cadence_serial_dt_ids[] = {
 	{
 		.compatible = "xlnx,xuartps",
-		.data = (unsigned long)&cadence_r1p08_data,
+		.data = &cadence_r1p08_data,
 	}, {
 		/* sentinel */
 	}

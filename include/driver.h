@@ -512,7 +512,7 @@ int devfs_create_partitions(const char *devname,
 #define DRV_OF_COMPAT(compat) \
 	IS_ENABLED(CONFIG_OFDEVICE) ? (compat) : NULL
 
-int dev_get_drvdata(struct device_d *dev, unsigned long *data);
+int dev_get_drvdata(struct device_d *dev, const void **data);
 
 int device_match_of_modalias(struct device_d *dev, struct driver_d *drv);
 

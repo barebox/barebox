@@ -1125,10 +1125,10 @@ static struct imx_hdmi_data imx6dl_hdmi_data = {
 static struct of_device_id imx_hdmi_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-hdmi",
-		.data = (unsigned long)&imx6q_hdmi_data,
+		.data = &imx6q_hdmi_data,
 	}, {
 		.compatible = "fsl,imx6dl-hdmi",
-		.data = (unsigned long)&imx6dl_hdmi_data,
+		.data = &imx6dl_hdmi_data,
 	}, {
 		/* sentinel */
 	}
@@ -1175,7 +1175,7 @@ static int imx_hdmi_probe(struct device_d *dev)
 	int ret;
 	const struct imx_hdmi_data *devtype;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&devtype);
+	ret = dev_get_drvdata(dev, (const void **)&devtype);
 	if (ret)
 		return ret;
 
@@ -1186,7 +1186,7 @@ static int imx_hdmi_probe(struct device_d *dev)
 	hdmi->sample_rate = 48000;
 	hdmi->ratio = 100;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&hdmi->dev_type);
+	ret = dev_get_drvdata(dev, (const void **)&hdmi->dev_type);
 	if (ret)
 		return ret;
 

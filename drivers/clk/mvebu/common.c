@@ -28,15 +28,15 @@ static struct clk_onecell_data clk_data;
 
 static struct of_device_id mvebu_coreclk_ids[] = {
 	{ .compatible = "marvell,armada-370-core-clock",
-	  .data = (u32)&armada_370_coreclks },
+	  .data = &armada_370_coreclks },
 	{ .compatible = "marvell,armada-xp-core-clock",
-	  .data = (u32)&armada_xp_coreclks },
+	  .data = &armada_xp_coreclks },
 	{ .compatible = "marvell,dove-core-clock",
-	  .data = (u32)&dove_coreclks },
+	  .data = &dove_coreclks },
 	{ .compatible = "marvell,kirkwood-core-clock",
-	  .data = (u32)&kirkwood_coreclks },
+	  .data = &kirkwood_coreclks },
 	{ .compatible = "marvell,mv88f6180-core-clock",
-	  .data = (u32)&mv88f6180_coreclks },
+	  .data = &mv88f6180_coreclks },
 	{ }
 };
 
@@ -139,13 +139,13 @@ static struct clk *clk_gating_get_src(
 
 static struct of_device_id mvebu_clk_gating_ids[] = {
 	{ .compatible = "marvell,armada-370-gating-clock",
-	  .data = (u32)&armada_370_gating_desc },
+	  .data = &armada_370_gating_desc },
 	{ .compatible = "marvell,armada-xp-gating-clock",
-	  .data = (u32)&armada_xp_gating_desc },
+	  .data = &armada_xp_gating_desc },
 	{ .compatible = "marvell,dove-gating-clock",
-	  .data = (u32)&dove_gating_desc },
+	  .data = &dove_gating_desc },
 	{ .compatible = "marvell,kirkwood-gating-clock",
-	  .data = (u32)&kirkwood_gating_desc },
+	  .data = &kirkwood_gating_desc },
 	{ }
 };
 

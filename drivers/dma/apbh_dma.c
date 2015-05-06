@@ -593,7 +593,7 @@ static int apbh_dma_probe(struct device_d *dev)
 	enum mxs_dma_id id;
 	int ret, channel;
 
-	ret = dev_get_drvdata(dev, (unsigned long *)&id);
+	ret = dev_get_drvdata(dev, (const void **)&id);
 	if (ret)
 		return ret;
 
@@ -652,10 +652,10 @@ static struct platform_device_id apbh_ids[] = {
 static __maybe_unused struct of_device_id apbh_dt_ids[] = {
 	{
 		.compatible = "fsl,imx23-dma-apbh",
-		.data = (unsigned long)IMX23_DMA,
+		.data = (void *)IMX23_DMA,
 	}, {
 		.compatible = "fsl,imx28-dma-apbh",
-		.data = (unsigned long)IMX28_DMA,
+		.data = (void *)IMX28_DMA,
 	}, {
 		/* sentinel */
 	}

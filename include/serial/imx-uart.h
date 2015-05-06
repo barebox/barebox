@@ -77,6 +77,13 @@
 #define  UCR4_DREN  	 (1<<0)  /* Recv data ready interrupt enable */
 #define  UFCR_RXTL_SHF   0       /* Receiver trigger level shift */
 #define  UFCR_RFDIV      (7<<7)  /* Reference freq divider mask */
+#define	 UFCR_RFDIV6	  (0b000<<7)  /* Reference freq divider mask */
+#define	 UFCR_RFDIV5	  (0b001<<7)  /* Reference freq divider mask */
+#define	 UFCR_RFDIV4	  (0b010<<7)  /* Reference freq divider mask */
+#define	 UFCR_RFDIV3	  (0b011<<7)  /* Reference freq divider mask */
+#define	 UFCR_RFDIV2	  (0b100<<7)  /* Reference freq divider mask */
+#define	 UFCR_RFDIV1	  (0b101<<7)  /* Reference freq divider mask */
+#define	 UFCR_RFDIV7	  (0b110<<7)  /* Reference freq divider mask */
 #define  UFCR_TXTL_SHF   10      /* Transmitter trigger level shift */
 #define  USR1_PARITYERR  (1<<15) /* Parity error interrupt flag */
 #define  USR1_RTSS  	 (1<<14) /* RTS pin status */

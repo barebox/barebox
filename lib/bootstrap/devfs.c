@@ -58,8 +58,12 @@ static unsigned int get_image_size(void *head)
 	unsigned int ret = 0;
 	unsigned int *psize = head + BAREBOX_HEAD_SIZE_OFFSET;
 
-	if (is_barebox_head(head))
+	if (is_barebox_head(head)) {
 		ret = *psize;
+		if (!ret)
+			bootstrap_err(
+				"image has correct magic, but the length is zero\n");
+	}
 	debug("Detected barebox image size %u\n", ret);
 
 	return ret;

@@ -189,7 +189,7 @@ static void __init mx5_clocks_common_init(struct device_d *dev, void __iomem *ba
 	writel(0xffffffff, base + CCM_CCGR6);
 	writel(0xffffffff, base + CCM_CCGR7);
 
-	if (!IS_ENABLED(COMMON_CLK_OF_PROVIDER) || !dev->device_node) {
+	if (!IS_ENABLED(CONFIG_COMMON_CLK_OF_PROVIDER) || !dev->device_node) {
 		clks[IMX5_CLK_CKIL] = clk_fixed("ckil", 32768);
 		clks[IMX5_CLK_OSC] = clk_fixed("osc", 24000000);
 	}

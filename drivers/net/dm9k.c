@@ -359,6 +359,11 @@ static int dm9k_phy_read(struct mii_bus *bus, int addr, int reg)
 	struct dm9k *priv = bus->priv;
 	struct device_d *dev = &bus->dev;
 
+	/* only internal phy supported by now, so show only one phy on miibus */
+	if (addr != 0) {
+		return 0xffff;
+	}
+
 	/* Fill the phyxcer register into REG_0C */
 	dm9k_iow(priv, DM9K_EPAR, DM9K_PHY | reg);
 	dm9k_iow(priv, DM9K_EPCR, 0xc);	/* Issue phyxcer read command */
@@ -377,6 +382,11 @@ static int dm9k_phy_write(struct mii_bus *bus, int addr, int reg, u16 val)
 {
 	struct dm9k *priv = bus->priv;
 	struct device_d *dev = &bus->dev;
+
+	/* only internal phy supported by now, so show only one phy on miibus */
+	if (addr != 0) {
+		return 0;
+	}
 
 	/* Fill the phyxcer register into REG_0C */
 	dm9k_iow(priv, DM9K_EPAR, DM9K_PHY | reg);

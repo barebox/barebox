@@ -48,6 +48,7 @@
 # define NCR_FCOL	(1 << 4)
 # define NCR_FDX	(1 << 3)
 # define NCR_LBK	(3 << 1)
+# define NCR_MAC_LBK	(1 << 1)
 # define NCR_RST	(1 << 0)
 
 #define DM9K_NSR	0x01
@@ -472,8 +473,28 @@ static void dm9k_reset(struct dm9k *priv)
 	struct device_d *dev = priv->miibus.parent;
 
 	dev_dbg(dev, "%s\n", __func__);
-	dm9k_iow(priv, DM9K_NCR, NCR_RST);
-	udelay(1000);		/* delay 1ms */
+
+	/* Reset DM9000, see DM9000 Application Notes V1.22 Jun 11, 2004 page 29
+	 * The essential point is that we have to do a double reset, and the
+	 * instruction is to set LBK into MAC internal loopback mode.
+	 */
+
+	/* Make all GPIO pins outputs */
+	dm9k_iow(priv, DM9K_GPCR, 0x0F);
+	/* Power internal PHY by writing 0 to GPIO0 pin */
+	dm9k_iow(priv, DM9K_GPR, 0);
+
+	dm9k_iow(priv, DM9K_NCR, NCR_RST | NCR_MAC_LBK);
+	udelay(100); /* Application note says at least 20 us */
+	if (dm9k_ior(priv, DM9K_NCR) & NCR_RST)
+		dev_err(dev, "dm9000 did not respond to first reset\n");
+
+	dm9k_iow(priv, DM9K_NCR, 0);
+	dm9k_iow(priv, DM9K_NCR, NCR_RST | NCR_MAC_LBK);
+	udelay(100);
+
+	if (dm9k_ior(priv, DM9K_NCR) & NCR_RST)
+		dev_err(dev, "dm9000 did not respond to second reset\n");
 }
 
 static int dm9k_eth_open(struct eth_device *edev)

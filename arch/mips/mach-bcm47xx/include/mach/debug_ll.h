@@ -24,16 +24,12 @@
 #include <io.h>
 #include <mach/hardware.h>
 
-#define rbr		0
-#define lsr		5
-#define LSR_THRE	0x20	/* Xmit holding register empty */
+#define DEBUG_LL_UART_SHIFT	0
 
-static __inline__ void PUTC_LL(char ch)
-{
-	void *base = (void *)DEBUG_LL_UART_ADDR;
+#define DEBUG_LL_UART_CLK   (25804800 / 16)
+#define DEBUG_LL_UART_BPS   CONFIG_BAUDRATE
+#define DEBUG_LL_UART_DIVISOR   (DEBUG_LL_UART_CLK / DEBUG_LL_UART_BPS)
 
-	while (!(__raw_readb(base + lsr) & LSR_THRE));
-	__raw_writeb(ch, base + rbr);
-}
+#include <asm/debug_ll_ns16550.h>
 
 #endif  /* __INCLUDE_ARCH_DEBUG_LL_H__ */

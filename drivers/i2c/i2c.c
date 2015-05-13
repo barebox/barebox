@@ -183,7 +183,7 @@ int i2c_read_reg(struct i2c_client *client, u32 addr, u8 *buf, u16 count)
 	msg->len = i;
 
 	status = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-	dev_dbg(&client->dev, "%s: %zu@%u --> %d\n", __func__,
+	dev_dbg(&client->dev, "%s: %u@%u --> %d\n", __func__,
 		count, addr, status);
 
 	if (status == ARRAY_SIZE(msg))

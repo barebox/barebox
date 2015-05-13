@@ -31,7 +31,7 @@ static int am33xx_scrm_probe(struct device_d *dev)
 
 static __maybe_unused struct of_device_id am33xx_scrm_dt_ids[] = {
 	{
-		.compatible = "ti,am3-scrm",
+		.compatible = "ti,am3-scm",
 	}, {
 		/* sentinel */
 	}

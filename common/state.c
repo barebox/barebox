@@ -426,7 +426,7 @@ static struct state *state_new(const char *name)
 	return state;
 }
 
-static void state_release(struct state *state)
+void state_release(struct state *state)
 {
 	list_del(&state->list);
 	unregister_device(&state->dev);

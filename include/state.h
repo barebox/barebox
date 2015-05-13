@@ -10,6 +10,7 @@ int state_backend_raw_file(struct state *state, const char *path,
 		off_t offset, size_t size);
 
 struct state *state_new_from_node(const char *name, struct device_node *node);
+void state_release(struct state *state);
 
 struct state *state_by_name(const char *name);
 struct state *state_by_node(const struct device_node *node);

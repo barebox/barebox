@@ -24,10 +24,12 @@
 static int state_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
+	struct device_node *partition_node;
 	struct state *state;
 	const char *alias;
 	const char *backend_type = NULL;
-	int ret;
+	int len, ret;
+	const char *of_path;
 	char *path;
 
 	if (!np)
@@ -41,28 +43,70 @@ static int state_probe(struct device_d *dev)
 	if (IS_ERR(state))
 		return PTR_ERR(state);
 
-	ret = of_find_path(np, "backend", &path, 0);
-	if (ret)
-		return ret;
+	of_path = of_get_property(np, "backend", &len);
+	if (!of_path) {
+		ret = -ENODEV;
+		goto out_release;
+	}
 
-	dev_info(dev, "outpath: %s\n", path);
+	/* guess if of_path is a path, not a phandle */
+	if (of_path[0] == '/' && len > 1) {
+		ret = of_find_path(np, "backend", &path, 0);
+		if (ret)
+			goto out_release;
+	} else {
+		struct device_d *dev;
+		struct cdev *cdev;
+
+		partition_node = of_parse_phandle(np, "backend", 0);
+		if (!partition_node) {
+			ret = -ENODEV;
+			goto out_release;
+		}
+
+		dev = of_find_device_by_node(partition_node);
+		if (!list_is_singular(&dev->cdevs)) {
+			ret = -ENODEV;
+			goto out_release;
+		}
+
+		cdev = list_first_entry(&dev->cdevs, struct cdev, devices_list);
+		if (!cdev) {
+			ret = -ENODEV;
+			goto out_release;
+		}
+
+		path = asprintf("/dev/%s", cdev->name);
+		of_path = partition_node->full_name;
+	}
 
 	ret = of_property_read_string(np, "backend-type", &backend_type);
-	if (ret)
-		return ret;
-	else if (!strcmp(backend_type, "raw"))
-		ret = state_backend_raw_file(state, path, 0, 0);
-	else if (!strcmp(backend_type, "dtb"))
-		ret = state_backend_dtb_file(state, path);
-	else
+	if (ret) {
+		goto out_free;
+	} else if (!strcmp(backend_type, "raw")) {
+		ret = state_backend_raw_file(state, of_path, path, 0, 0);
+	} else if (!strcmp(backend_type, "dtb")) {
+		ret = state_backend_dtb_file(state, of_path, path);
+	} else {
 		dev_warn(dev, "invalid backend type: %s\n", backend_type);
+		ret = -ENODEV;
+		goto out_free;
+	}
 
 	if (ret)
-		return ret;
+		goto out_free;
+
+	dev_info(dev, "backend: %s, path: %s, of_path: %s\n", backend_type, path, of_path);
+	free(path);
 
 	state_load(state);
-
 	return 0;
+
+ out_free:
+	free(path);
+ out_release:
+	state_release(state);
+	return ret;
 }
 
 static __maybe_unused struct of_device_id state_ids[] = {

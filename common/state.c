@@ -54,6 +54,7 @@ struct state_backend {
 	int (*load)(struct state_backend *backend, struct state *state);
 	int (*save)(struct state_backend *backend, struct state *state);
 	const char *name;
+	const char *of_path;
 	const char *path;
 };
 
@@ -903,7 +904,7 @@ out:
  * @state	The state instance to work on
  * @path	The path where the state will be stored to
  */
-int state_backend_dtb_file(struct state *state, const char *path)
+int state_backend_dtb_file(struct state *state, const char *of_path, const char *path)
 {
 	struct state_backend_dtb *backend_dtb;
 	struct state_backend *backend;
@@ -918,6 +919,7 @@ int state_backend_dtb_file(struct state *state, const char *path)
 
 	backend->load = state_backend_dtb_load;
 	backend->save = state_backend_dtb_save;
+	backend->of_path = xstrdup(of_path);
 	backend->path = xstrdup(path);
 	backend->name = "dtb";
 
@@ -1133,8 +1135,8 @@ out_free:
  * device @size may be 0. The two copies are spread to different
  * eraseblocks if approriate for this device.
  */
-int state_backend_raw_file(struct state *state, const char *path, off_t offset,
-		size_t size)
+int state_backend_raw_file(struct state *state, const char *of_path,
+		const char *path, off_t offset, size_t size)
 {
 	struct state_backend_raw *backend_raw;
 	struct state_backend *backend;
@@ -1159,6 +1161,7 @@ int state_backend_raw_file(struct state *state, const char *path, off_t offset,
 
 	backend->load = state_backend_raw_load;
 	backend->save = state_backend_raw_save;
+	backend->of_path = xstrdup(of_path);
 	backend->path = xstrdup(path);
 	backend->name = "raw";
 

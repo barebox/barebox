@@ -5,9 +5,10 @@
 
 struct state;
 
-int state_backend_dtb_file(struct state *state, const char *path);
-int state_backend_raw_file(struct state *state, const char *path,
-		off_t offset, size_t size);
+int state_backend_dtb_file(struct state *state, const char *of_path,
+		const char *path);
+int state_backend_raw_file(struct state *state, const char *of_path,
+		const char *path, off_t offset, size_t size);
 
 struct state *state_new_from_node(const char *name, struct device_node *node);
 void state_release(struct state *state);

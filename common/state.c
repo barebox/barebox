@@ -517,8 +517,8 @@ static int state_convert_node_variable(struct state *state,
 
 		if (start_size[1] != sv->size) {
 			dev_err(&state->dev,
-				"size mismatch: type=%s(size=%u) size=%u\n",
-			       type_name, sv->size, start_size[1]);
+				"%s: size mismatch: type=%s(size=%u) size=%u\n",
+				name, type_name, sv->size, start_size[1]);
 			ret = -EOVERFLOW;
 			goto out_free;
 		}

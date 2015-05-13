@@ -512,8 +512,11 @@ static int state_convert_node_variable(struct state *state,
 
 		ret = of_property_read_u32_array(node, "reg", start_size,
 						 ARRAY_SIZE(start_size));
-		if (ret)
+		if (ret) {
+			dev_err(&state->dev,
+				"%s: reg property not found\n", name);
 			goto out_free;
+		}
 
 		if (start_size[1] != sv->size) {
 			dev_err(&state->dev,

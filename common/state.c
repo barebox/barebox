@@ -435,13 +435,6 @@ static struct state *state_new(const char *name)
 	return state;
 }
 
-void state_release(struct state *state)
-{
-	list_del(&state->list);
-	unregister_device(&state->dev);
-	free(state);
-}
-
 static struct state_variable *state_find_var(struct state *state,
 					     const char *name)
 {
@@ -676,6 +669,101 @@ static int state_from_node(struct state *state, struct device_node *node,
 	return ret;
 }
 
+static int of_state_fixup(struct device_node *root, void *ctx)
+{
+	struct state *state = ctx;
+	const char *compatible = "barebox,state";
+	struct device_node *new_node, *node, *parent, *backend_node;
+	struct property *p;
+	int ret;
+	phandle phandle;
+
+	node = of_find_node_by_path_from(root, state->root->full_name);
+	if (node) {
+		/* replace existing node - it will be deleted later */
+		parent = node->parent;
+	} else {
+		char *of_path, *c;
+
+		/* look for parent, remove last '/' from path */
+		of_path = xstrdup(state->root->full_name);
+		c = strrchr(of_path, '/');
+		if (!c)
+			return -ENODEV;
+		*c = '0';
+		parent = of_find_node_by_path(of_path);
+		if (!parent)
+			parent = root;
+
+		free(of_path);
+	}
+
+	/* serialize variable definitions */
+	new_node = state_to_node(state, parent, STATE_CONVERT_FIXUP);
+	if (IS_ERR(new_node))
+		return PTR_ERR(new_node);
+
+	/* compatible */
+	p = of_new_property(new_node, "compatible", compatible,
+			    strlen(compatible) + 1);
+	if (!p) {
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	/* backend-type */
+	if (!state->backend) {
+		ret = -ENODEV;
+		goto out;
+	}
+
+	p = of_new_property(new_node, "backend-type", state->backend->name,
+			    strlen(state->backend->name) + 1);
+	if (!p) {
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	/* backend phandle */
+	backend_node = of_find_node_by_path_from(root, state->backend->of_path);
+	if (!backend_node) {
+		ret = -ENODEV;
+		goto out;
+	}
+
+	phandle = of_node_create_phandle(backend_node);
+	ret = of_property_write_u32(new_node, "backend", phandle);
+	if (ret)
+		goto out;
+
+	/* address-cells + size-cells */
+	ret = of_property_write_u32(new_node, "#address-cells", 1);
+	if (ret)
+		goto out;
+
+	ret = of_property_write_u32(new_node, "#size-cells", 1);
+	if (ret)
+		goto out;
+
+	/* delete existing node */
+	if (node)
+		of_delete_node(node);
+
+	return 0;
+
+ out:
+	of_delete_node(new_node);
+	return ret;
+}
+
+void state_release(struct state *state)
+{
+	of_unregister_fixup(of_state_fixup, state);
+	list_del(&state->list);
+	unregister_device(&state->dev);
+	free(state);
+}
+
 /*
  * state_new_from_node - create a new state instance from a device_node
  *
@@ -697,6 +785,11 @@ struct state *state_new_from_node(const char *name, struct device_node *node)
 		return ERR_PTR(ret);
 	}
 
+	ret = of_register_fixup(of_state_fixup, state);
+	if (ret) {
+		state_release(state);
+		return ERR_PTR(ret);
+	}
 
 	return state;
 }

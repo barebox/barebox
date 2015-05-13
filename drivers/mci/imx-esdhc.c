@@ -93,7 +93,7 @@ static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 /*
  * PIO Read/Write Mode reduce the performace as DMA is not used in this mode.
  */
-static void
+static int
 esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
@@ -116,7 +116,7 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 				&& --timeout);
 			if (timeout <= 0) {
 				printf("\nData Read Failed in PIO Mode.");
-				return;
+				return -ETIMEDOUT;
 			}
 			while (size && (!(irqstat & IRQSTAT_TC))) {
 				udelay(100); /* Wait before last byte transfer complete */
@@ -139,7 +139,7 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 				&& --timeout);
 			if (timeout <= 0) {
 				printf("\nData Write Failed in PIO Mode.");
-				return;
+				return -ETIMEDOUT;
 			}
 			while (size && (!(irqstat & IRQSTAT_TC))) {
 				udelay(100); /* Wait before last byte transfer complete */
@@ -152,6 +152,8 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 			blocks--;
 		}
 	}
+
+	return 0;
 }
 
 static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
@@ -206,10 +208,8 @@ static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
 	unsigned int num_bytes = data->blocks * data->blocksize;
 	u32 irqstat;
 
-	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
-		esdhc_pio_read_write(mci, data);
-		return 0;
-	}
+	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
+		return esdhc_pio_read_write(mci, data);
 
 	do {
 		irqstat = esdhc_read32(regs + SDHCI_INT_STATUS);

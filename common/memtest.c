@@ -91,8 +91,7 @@ int mem_test(resource_size_t _start,
 	 * '0's and '0' bits through a field of '1's (i.e.
 	 * pattern and ~pattern).
 	 */
-	for (i = 0; i < ARRAY_SIZE(bitpattern)/
-			sizeof(resource_size_t); i++) {
+	for (i = 0; i < ARRAY_SIZE(bitpattern); i++) {
 		val = bitpattern[i];
 
 		for (; val != 0; val <<= 1) {

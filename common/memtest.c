@@ -28,35 +28,22 @@
 #include <errno.h>
 #include <memtest.h>
 
-static const resource_size_t bitpattern[] = {
-	0x00000001,	/* single bit */
-	0x00000003,	/* two adjacent bits */
-	0x00000007,	/* three adjacent bits */
-	0x0000000F,	/* four adjacent bits */
-	0x00000005,	/* two non-adjacent bits */
-	0x00000015,	/* three non-adjacent bits */
-	0x00000055,	/* four non-adjacent bits */
-	0xAAAAAAAA,	/* alternating 1/0 */
-};
-
-/*
- * Perform a memory test. The complete test
- * loops until interrupted by ctrl-c.
- *
- * Prameters:
- * start: start address for memory test.
- * end: end address of memory test.
- * bus_only: skip integrity check and do only a address/data bus
- *	     testing.
- *
- * Return value can be -EINVAL for invalid parameter or -EINTR
- * if memory test was interrupted.
- */
-int mem_test(resource_size_t _start,
-	       resource_size_t _end, int bus_only)
+int mem_test_bus_integrity(resource_size_t _start,
+			   resource_size_t _end)
 {
-	volatile resource_size_t *start, *dummy, val, readback, offset,
-		offset2, pattern, temp, anti_pattern, num_words;
+	static const resource_size_t bitpattern[] = {
+		0x00000001,	/* single bit */
+		0x00000003,	/* two adjacent bits */
+		0x00000007,	/* three adjacent bits */
+		0x0000000F,	/* four adjacent bits */
+		0x00000005,	/* two non-adjacent bits */
+		0x00000015,	/* three non-adjacent bits */
+		0x00000055,	/* four non-adjacent bits */
+		0xAAAAAAAA,	/* alternating 1/0 */
+	};
+
+	volatile resource_size_t *start, *dummy, num_words, val, readback, offset,
+		offset2, pattern, temp, anti_pattern;
 	int i;
 
 	_start = ALIGN(_start, sizeof(resource_size_t));
@@ -66,7 +53,7 @@ int mem_test(resource_size_t _start,
 		return -EINVAL;
 
 	start = (resource_size_t *)_start;
-	/*
+		/*
 	 * Point the dummy to start[1]
 	 */
 	dummy = start + 1;
@@ -227,15 +214,25 @@ int mem_test(resource_size_t _start,
 		start[offset2] = pattern;
 	}
 
-	/*
-	 * We tested only the bus if != 0
-	 * leaving here
-	 */
-	if (bus_only)
-		return 0;
+	return 0;
+}
+
+int mem_test_dram(resource_size_t _start,
+		  resource_size_t _end)
+{
+	volatile resource_size_t *start, num_words, offset, temp, anti_pattern;
+
+	_start = ALIGN(_start, sizeof(resource_size_t));
+	_end = ALIGN_DOWN(_end, sizeof(resource_size_t)) - 1;
+
+	if (_end <= _start)
+		return -EINVAL;
+
+	start = (resource_size_t *)_start;
+	num_words = (_end - _start + 1)/sizeof(resource_size_t);
 
 	printf("Starting integrity check of physicaly ram.\n"
-			"Filling ram with patterns...\n");
+	       "Filling ram with patterns...\n");
 
 	/*
 	 * Description: Test the integrity of a physical
@@ -252,16 +249,17 @@ int mem_test(resource_size_t _start,
 	 * Fill memory with a known pattern.
 	 */
 	init_progression_bar(num_words);
+
 	for (offset = 0; offset < num_words; offset++) {
 		/*
 		 * Every 4K we update the progressbar.
 		 */
+
 		if (!(offset & (SZ_4K - 1))) {
 			if (ctrlc())
 				return -EINTR;
 			show_progress(offset);
 		}
-
 		start[offset] = offset + 1;
 	}
 	show_progress(offset);
@@ -325,4 +323,37 @@ int mem_test(resource_size_t _start,
 	printf("\n");
 
 	return 0;
+}
+
+/*
+ * Perform a memory test. The complete test
+ * loops until interrupted by ctrl-c.
+ *
+ * Prameters:
+ * start: start address for memory test.
+ * end: end address of memory test.
+ * bus_only: skip integrity check and do only a address/data bus
+ *	     testing.
+ *
+ * Return value can be -EINVAL for invalid parameter or -EINTR
+ * if memory test was interrupted.
+ */
+int mem_test(resource_size_t _start,
+	       resource_size_t _end, int bus_only)
+{
+	int ret;
+
+	ret = mem_test_bus_integrity(_start, _end);
+
+	if (ret < 0)
+		return ret;
+
+	/*
+	 * We tested only the bus if != 0
+	 * leaving here
+	 */
+	if (!bus_only)
+		ret = mem_test_dram(_start, _end);
+
+	return ret;
 }

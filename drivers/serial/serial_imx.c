@@ -113,10 +113,10 @@ static int imx_serial_init_port(struct console_device *cdev)
 	writel(val, regs + USR2);
 
   	/* Clear status flags */
-	val = readl(regs + USR2);
+	val = readl(regs + USR1);
 	val |= USR1_PARITYERR | USR1_RTSD | USR1_ESCF | USR1_FRAMERR | USR1_AIRINT |
 	       USR1_AWAKE;
-	writel(val, regs + USR2);
+	writel(val, regs + USR1);
 
 	return 0;
 }

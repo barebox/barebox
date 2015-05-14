@@ -170,6 +170,15 @@ int mem_test(resource_size_t _start,
 	for (offset = 1; offset <= num_words; offset <<= 1)
 		start[offset] = pattern;
 
+	/*
+	 * Now write anti-pattern at offset 0. If during the previous
+	 * step one of the address lines got stuck high this
+	 * operation would result in a memory cell at power-of-two
+	 * offset being set to anti-pattern which hopefully would be
+	 * detected byt the loop that follows.
+	 */
+	start[0] = anti_pattern;
+
 	printf("Check for address bits stuck high.\n");
 
 	/*
@@ -187,6 +196,11 @@ int mem_test(resource_size_t _start,
 		}
 	}
 
+	/*
+	  Restore original value
+	 */
+	start[0] = pattern;
+
 	printf("Check for address bits stuck "
 			"low or shorted.\n");
 
@@ -196,7 +210,8 @@ int mem_test(resource_size_t _start,
 	for (offset2 = 1; offset2 <= num_words; offset2 <<= 1) {
 		start[offset2] = anti_pattern;
 
-		for (offset = 1; offset <= num_words; offset <<= 1) {
+		for (offset = 0; offset <= num_words;
+		     offset = (offset) ? offset << 1 : 1) {
 			temp = start[offset];
 
 			if ((temp != pattern) &&

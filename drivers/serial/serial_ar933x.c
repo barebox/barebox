@@ -40,7 +40,7 @@ static inline void ar933x_serial_writel(struct console_device *cdev,
 {
 	struct ar933x_uart_priv *priv = cdev->dev->priv;
 
-	cpu_writel(b, priv->base + offset);
+	__raw_writel(b, priv->base + offset);
 }
 
 static inline u32 ar933x_serial_readl(struct console_device *cdev,
@@ -48,7 +48,7 @@ static inline u32 ar933x_serial_readl(struct console_device *cdev,
 {
 	struct ar933x_uart_priv *priv = cdev->dev->priv;
 
-	return cpu_readl(priv->base + offset);
+	return __raw_readl(priv->base + offset);
 }
 
 /*

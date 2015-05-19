@@ -111,9 +111,9 @@ u32 tegra_get_odmdata(void)
 		return 0;
 	}
 
-	bctptr = cpu_readl(TEGRA_IRAM_BASE + bctptr_offset);
+	bctptr = __raw_readl(TEGRA_IRAM_BASE + bctptr_offset);
 
-	return cpu_readl(bctptr + odmdata_offset);
+	return __raw_readl(bctptr + odmdata_offset);
 }
 
 static __always_inline

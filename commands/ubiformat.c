@@ -84,7 +84,7 @@ static int parse_opt(int argc, char *argv[])
 		int key;
 		unsigned long int image_seq;
 
-		key = getopt(argc, argv, "nyyqve:x:s:O:f:S:");
+		key = getopt(argc, argv, "nyqve:x:s:O:f:S:Q:");
 		if (key == -1)
 			break;
 

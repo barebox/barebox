@@ -21,7 +21,7 @@
 #ifdef CONFIG_HABV4
 int habv4_get_status(void);
 #else
-static inline int habv4_get_status()
+static inline int habv4_get_status(void)
 {
 	return -EPERM;
 }

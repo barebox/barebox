@@ -73,6 +73,6 @@ typedef unsigned long long u64;
 
 #endif /* __ASSEMBLY__ */
 
-#define BITS_PER_LONG 32
+#include <asm/bitsperlong.h>
 
 #endif

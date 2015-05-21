@@ -31,7 +31,7 @@ typedef unsigned long long __u64;
  */
 #ifdef __KERNEL__
 
-#define BITS_PER_LONG 32
+#include <asm/bitsperlong.h>
 
 #ifndef __ASSEMBLY__
 

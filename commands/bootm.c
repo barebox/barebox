@@ -183,6 +183,7 @@ BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default bo
 BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
+BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
 
 static struct binfmt_hook binfmt_uimage_hook = {
 	.type = filetype_uimage,

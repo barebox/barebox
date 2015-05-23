@@ -385,7 +385,7 @@ config CMD_BOOTM_OFTREE
 	  Add support to pass a device tree (a.k.a Open Firmware Tree, oftree). Adds
 	  this command line option:
 
-	  -o DTS  specify device tre
+	  -o DTS  specify device tree
 
 config CMD_BOOTM_OFTREE_UIMAGE
 	bool

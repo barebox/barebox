@@ -172,7 +172,7 @@ EXPORT_SYMBOL_GPL(digest_free);
 
 int digest_file_window(struct digest *d, const char *filename,
 		       unsigned char *hash,
-		       unsigned char *sig,
+		       const unsigned char *sig,
 		       ulong start, ulong size)
 {
 	ulong len = 0;
@@ -249,8 +249,8 @@ out:
 EXPORT_SYMBOL_GPL(digest_file_window);
 
 int digest_file(struct digest *d, const char *filename,
-		       unsigned char *hash,
-		       unsigned char *sig)
+		unsigned char *hash,
+		const unsigned char *sig)
 {
 	struct stat st;
 	int ret;
@@ -265,8 +265,8 @@ int digest_file(struct digest *d, const char *filename,
 EXPORT_SYMBOL_GPL(digest_file);
 
 int digest_file_by_name(const char *algo, const char *filename,
-		       unsigned char *hash,
-		       unsigned char *sig)
+			unsigned char *hash,
+			const unsigned char *sig)
 {
 	struct digest *d;
 	int ret;

@@ -68,14 +68,14 @@ void digest_free(struct digest *d);
 
 int digest_file_window(struct digest *d, const char *filename,
 		       unsigned char *hash,
-		       unsigned char *sig,
+		       const unsigned char *sig,
 		       ulong start, ulong size);
 int digest_file(struct digest *d, const char *filename,
-		       unsigned char *hash,
-		       unsigned char *sig);
+		unsigned char *hash,
+		const unsigned char *sig);
 int digest_file_by_name(const char *algo, const char *filename,
-		       unsigned char *hash,
-		       unsigned char *sig);
+			unsigned char *hash,
+			const unsigned char *sig);
 
 static inline int digest_init(struct digest *d)
 {

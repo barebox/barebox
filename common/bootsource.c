@@ -35,6 +35,7 @@ static const char *bootsource_str[] = {
 	[BOOTSOURCE_ONENAND] = "onenand",
 	[BOOTSOURCE_HD] = "harddisk",
 	[BOOTSOURCE_USB] = "usb",
+	[BOOTSOURCE_NET] = "net",
 };
 
 static enum bootsource bootsource = BOOTSOURCE_UNKNOWN;

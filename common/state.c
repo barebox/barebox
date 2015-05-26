@@ -1150,7 +1150,7 @@ static int backend_raw_write_one(struct state_backend_raw *backend_raw,
 		return ret;
 
 	if (backend_raw->need_erase) {
-		ret = erase(fd, backend_raw->size_full, offset);
+		ret = erase(fd, backend_raw->stride, offset);
 		if (ret)
 			return ret;
 	}
@@ -1167,14 +1167,12 @@ static int state_backend_raw_save(struct state_backend *backend,
 {
 	struct state_backend_raw *backend_raw = container_of(backend,
 			struct state_backend_raw, backend);
-	int ret = 0, size, fd, i;
+	int ret = 0, fd, i;
 	void *buf, *data;
 	struct backend_raw_header *header;
 	struct state_variable *sv;
 
-	size = backend_raw->size_data + sizeof(struct backend_raw_header);
-
-	buf = xzalloc(size);
+	buf = xzalloc(backend_raw->size_full);
 
 	header = buf;
 	data = buf + sizeof(*header);
@@ -1198,14 +1196,14 @@ static int state_backend_raw_save(struct state_backend *backend,
 			continue;
 
 		ret = backend_raw_write_one(backend_raw, state, fd,
-					    i, buf, size);
+					    i, buf, backend_raw->size_full);
 		if (ret)
 			goto out_close;
 
 	}
 
 	ret = backend_raw_write_one(backend_raw, state, fd,
-				    backend_raw->num_copy_read, buf, size);
+				    backend_raw->num_copy_read, buf, backend_raw->size_full);
 	if (ret)
 		goto out_close;
 
@@ -1277,6 +1275,8 @@ int state_backend_raw_file(struct state *state, const char *of_path,
 	ret = mtd_get_meminfo(backend->path, &meminfo);
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {
 		backend_raw->need_erase = true;
+		backend_raw->size_full = ALIGN(backend_raw->size_full,
+					       meminfo.writesize);
 		backend_raw->stride = ALIGN(backend_raw->size_full,
 					    meminfo.erasesize);
 		dev_dbg(&state->dev, "is a mtd, adjust stepsize to %ld\n",

@@ -1053,14 +1053,18 @@ static int backend_raw_load_one(struct state_backend_raw *backend_raw,
 	uint32_t crc;
 	struct state_variable *sv;
 	struct backend_raw_header header = {};
+	unsigned long max_len;
 	int ret;
 	void *buf;
+
+	max_len = backend_raw->stride;
 
 	ret = lseek(fd, offset, SEEK_SET);
 	if (ret < 0)
 		return ret;
 
 	ret = read_full(fd, &header, sizeof(header));
+	max_len -= sizeof(header);
 	if (ret < 0)
 		return ret;
 
@@ -1076,6 +1080,13 @@ static int backend_raw_load_one(struct state_backend_raw *backend_raw,
 		dev_err(&state->dev,
 			"invalid magic 0x%08x, should be 0x%08x\n",
 			header.magic, state->magic);
+		return -EINVAL;
+	}
+
+	if (header.data_len > max_len) {
+		dev_err(&state->dev,
+			"invalid data_len %u in header, max is %lu\n",
+			header.data_len, max_len);
 		return -EINVAL;
 	}
 

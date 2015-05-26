@@ -1216,6 +1216,60 @@ out_free:
 	return ret;
 }
 
+#ifdef __BAREBOX__
+#define STAT_GIVES_SIZE(s) (S_ISREG(s.st_mode) || S_ISCHR(s.st_mode))
+#define BLKGET_GIVES_SIZE(s) 0
+#ifndef BLKGETSIZE64
+#define BLKGETSIZE64 -1
+#endif
+#else
+#define STAT_GIVES_SIZE(s) (S_ISREG(s.st_mode))
+#define BLKGET_GIVES_SIZE(s) (S_ISBLK(s.st_mode))
+#endif
+
+static int state_backend_raw_file_get_size(const char *path, size_t *out_size)
+{
+	struct mtd_info_user meminfo;
+	struct stat s;
+	int ret;
+
+	ret = stat(path, &s);
+	if (ret)
+		return -errno;
+
+	/*
+	 * under Linux, stat() gives the size only on regular files
+	 * under barebox, it works on char dev, too
+	 */
+	if (STAT_GIVES_SIZE(s)) {
+		*out_size = s.st_size;
+		return 0;
+	}
+
+	/* this works under Linux on block devs */
+	if (BLKGET_GIVES_SIZE(s)) {
+		int fd;
+
+		fd = open(path, O_RDONLY);
+		if (fd < 0)
+			return -errno;
+
+		ret = ioctl(fd, BLKGETSIZE64, out_size);
+		close(fd);
+		if (!ret)
+			return 0;
+	}
+
+	/* try mtd next */
+	ret = mtd_get_meminfo(path, &meminfo);
+	if (!ret) {
+		*out_size = meminfo.size;
+		return 0;
+	}
+
+	return ret;
+}
+
 /*
  * state_backend_raw_file - create a raw file backend store for a state instance
  *
@@ -1239,20 +1293,21 @@ int state_backend_raw_file(struct state *state, const char *of_path,
 	struct state_backend_raw *backend_raw;
 	struct state_backend *backend;
 	struct state_variable *sv;
-	int ret;
-	struct stat s;
 	struct mtd_info_user meminfo;
+	size_t path_size = 0;
+	int ret;
 
 	if (state->backend)
 		return -EBUSY;
 
-	ret = stat(path, &s);
-	if (!ret && S_ISCHR(s.st_mode)) {
-		if (size == 0)
-			size = s.st_size;
-		else if (offset + size > s.st_size)
-			return -EINVAL;
-	}
+	ret = state_backend_raw_file_get_size(path, &path_size);
+	if (ret)
+		return ret;
+
+	if (size == 0)
+		size = path_size;
+	else if (offset + size > path_size)
+		return -EINVAL;
 
 	backend_raw = xzalloc(sizeof(*backend_raw));
 	backend = &backend_raw->backend;

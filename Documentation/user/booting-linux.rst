@@ -197,6 +197,13 @@ The entry can be listed with the -l option:
 When on barebox the SD card shows up as ``mmc1`` then this entry can be booted with
 ``boot mmc1`` or with setting ``global.boot.default`` to ``mmc1``.
 
+A bootloader spec entry can also reside on an NFS server in which case a RFC2224
+compatible NFS URI string must be passed to the boot command:
+
+.. code-block:: sh
+
+  boot nfs://nfshost//path/
+
 Network boot
 ------------
 

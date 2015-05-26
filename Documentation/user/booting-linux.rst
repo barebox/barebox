@@ -194,7 +194,7 @@ The entry can be listed with the -l option:
         options:    console=ttymxc0,115200 root=PARTUUID=0007CB20-01
         linux:      11ab7c89d02c4f66a4e2474ea25b2b84.15/linux
 
-When on barebox the SD card shows up as ``mmc`` then this entry can be booted with
+When on barebox the SD card shows up as ``mmc1`` then this entry can be booted with
 ``boot mmc1`` or with setting ``global.boot.default`` to ``mmc1``.
 
 Network boot

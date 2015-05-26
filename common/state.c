@@ -1030,8 +1030,8 @@ int state_backend_dtb_file(struct state *state, const char *of_path, const char 
  */
 struct state_backend_raw {
 	struct state_backend backend;
-	unsigned long size_data; /* The raw data size (without magic and crc) */
-	unsigned long size_full;
+	unsigned long size_data; /* The raw data size (without header) */
+	unsigned long size_full; /* The size header + raw data */
 	unsigned long stride; /* The stride size in bytes of the copies */
 	off_t offset; /* offset in the storage file */
 	size_t size; /* size of the storage area */

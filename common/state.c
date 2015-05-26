@@ -1136,7 +1136,7 @@ static int state_backend_raw_load(struct state_backend *backend,
 	return ret;
 }
 
-static int backend_raw_write_one(struct state_backend_raw *backend_raw,
+static int backend_raw_save_one(struct state_backend_raw *backend_raw,
 		struct state *state, int fd, int num, void *buf, size_t size)
 {
 	int ret;
@@ -1195,15 +1195,15 @@ static int state_backend_raw_save(struct state_backend *backend,
 		if (i == backend_raw->num_copy_read)
 			continue;
 
-		ret = backend_raw_write_one(backend_raw, state, fd,
-					    i, buf, backend_raw->size_full);
+		ret = backend_raw_save_one(backend_raw, state, fd,
+					   i, buf, backend_raw->size_full);
 		if (ret)
 			goto out_close;
 
 	}
 
-	ret = backend_raw_write_one(backend_raw, state, fd,
-				    backend_raw->num_copy_read, buf, backend_raw->size_full);
+	ret = backend_raw_save_one(backend_raw, state, fd,
+				   backend_raw->num_copy_read, buf, backend_raw->size_full);
 	if (ret)
 		goto out_close;
 

@@ -900,7 +900,7 @@ static int mtd_get_meminfo(const char *path, struct mtd_info_user *meminfo)
 {
 	int fd, ret;
 
-	fd = open(path, O_RDWR);
+	fd = open(path, O_RDONLY);
 	if (fd < 0)
 		return fd;
 

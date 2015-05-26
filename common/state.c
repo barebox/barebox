@@ -1019,7 +1019,7 @@ int state_backend_dtb_file(struct state *state, const char *of_path, const char 
 	state->backend = backend;
 
 	ret = mtd_get_meminfo(backend->path, &meminfo);
-	if (!ret && !(meminfo.mtd->flags & MTD_NO_ERASE))
+	if (!ret && !(meminfo.flags & MTD_NO_ERASE))
 		backend_dtb->need_erase = true;
 
 	return 0;
@@ -1268,7 +1268,7 @@ int state_backend_raw_file(struct state *state, const char *of_path,
 	state->backend = backend;
 
 	ret = mtd_get_meminfo(backend->path, &meminfo);
-	if (!ret && !(meminfo.mtd->flags & MTD_NO_ERASE)) {
+	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {
 		backend_raw->need_erase = true;
 		backend_raw->step = ALIGN(backend_raw->size_full,
 					  meminfo.erasesize);

@@ -1167,7 +1167,7 @@ static int state_backend_raw_save(struct state_backend *backend,
 {
 	struct state_backend_raw *backend_raw = container_of(backend,
 			struct state_backend_raw, backend);
-	int ret = 0, size, fd;
+	int ret = 0, size, fd, i;
 	void *buf, *data;
 	struct backend_raw_header *header;
 	struct state_variable *sv;
@@ -1192,10 +1192,17 @@ static int state_backend_raw_save(struct state_backend *backend,
 	if (fd < 0)
 		goto out_free;
 
-	ret = backend_raw_write_one(backend_raw, state, fd,
-				    !backend_raw->num_copy_read, buf, size);
-	if (ret)
-		goto out_close;
+	/* save other slots first */
+	for (i = 0; i < RAW_BACKEND_COPIES; i++) {
+		if (i == backend_raw->num_copy_read)
+			continue;
+
+		ret = backend_raw_write_one(backend_raw, state, fd,
+					    i, buf, size);
+		if (ret)
+			goto out_close;
+
+	}
 
 	ret = backend_raw_write_one(backend_raw, state, fd,
 				    backend_raw->num_copy_read, buf, size);

@@ -6,8 +6,8 @@
 
 int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int swab)
 {
-	ulong linebytes, i;
-	u_char	*cp;
+	unsigned long linebytes, i;
+	unsigned char *cp;
 
 	/* Print the lines.
 	 *
@@ -15,10 +15,10 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 	 * once, and all accesses are with the specified bus width.
 	 */
 	do {
-		char linebuf[DISP_LINE_LEN];
-		uint32_t *uip = (uint   *)linebuf;
-		uint16_t *usp = (ushort *)linebuf;
-		uint8_t *ucp = (u_char *)linebuf;
+		unsigned char linebuf[DISP_LINE_LEN];
+		uint32_t *uip = (uint32_t *)linebuf;
+		uint16_t *usp = (uint16_t *)linebuf;
+		uint8_t *ucp = (uint8_t *)linebuf;
 		unsigned count = 52;
 
 		printf("%08llx:", offs);
@@ -26,9 +26,9 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 
 		for (i = 0; i < linebytes; i += size) {
 			if (size == 4) {
-				u32 res;
+				uint32_t res;
 				data_abort_mask();
-				res = *((uint *)addr);
+				res = *((uint32_t *)addr);
 				if (swab)
 					res = __swab32(res);
 				if (data_abort_unmask()) {
@@ -39,9 +39,9 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 				}
 				*uip++ = res;
 			} else if (size == 2) {
-				u16 res;
+				uint16_t res;
 				data_abort_mask();
-				res = *((ushort *)addr);
+				res = *((uint16_t *)addr);
 				if (swab)
 					res = __swab16(res);
 				if (data_abort_unmask()) {
@@ -52,9 +52,9 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 				}
 				*usp++ = res;
 			} else {
-				u8 res;
+				uint8_t res;
 				data_abort_mask();
-				res = *((u_char *)addr);
+				res = *((uint8_t *)addr);
 				if (data_abort_unmask()) {
 					res = 0xff;
 					count -= printf(" xx");
@@ -70,7 +70,7 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 		while (count--)
 			putchar(' ');
 
-		cp = (uint8_t *)linebuf;
+		cp = linebuf;
 		for (i = 0; i < linebytes; i++) {
 			if ((*cp < 0x20) || (*cp > 0x7e))
 				putchar('.');

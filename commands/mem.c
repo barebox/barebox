@@ -84,6 +84,9 @@ int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		case 'l':
 			*mode = O_RWSIZE_4;
 			break;
+		case 'q':
+			*mode = O_RWSIZE_8;
+			break;
 		case 's':
 			*sourcefile = optarg;
 			break;

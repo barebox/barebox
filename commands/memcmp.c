@@ -49,7 +49,7 @@ static int do_memcmp(int argc, char *argv[])
 	int     offset = 0;
 	struct  stat statbuf;
 
-	if (mem_parse_options(argc, argv, "bwls:d:", &mode, &sourcefile,
+	if (mem_parse_options(argc, argv, "bwlqs:d:", &mode, &sourcefile,
 			&destfile, NULL) < 0)
 		return 1;
 
@@ -138,6 +138,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
 BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
 BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-q",  "quad access (64 bit)")
 BAREBOX_CMD_HELP_OPT ("-s FILE", "source file (default /dev/mem)")
 BAREBOX_CMD_HELP_OPT ("-d FILE", "destination file (default /dev/mem)")
 BAREBOX_CMD_HELP_END

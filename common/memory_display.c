@@ -16,6 +16,7 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 	 */
 	do {
 		unsigned char linebuf[DISP_LINE_LEN];
+		uint64_t *ullp = (uint64_t *)linebuf;
 		uint32_t *uip = (uint32_t *)linebuf;
 		uint16_t *usp = (uint16_t *)linebuf;
 		uint8_t *ucp = (uint8_t *)linebuf;
@@ -25,7 +26,20 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
 		for (i = 0; i < linebytes; i += size) {
-			if (size == 4) {
+			if (size == 8) {
+				uint64_t res;
+				data_abort_mask();
+				res = *((uint64_t *)addr);
+				if (swab)
+					res = __swab64(res);
+				if (data_abort_unmask()) {
+					res = 0xffffffffffffffffULL;
+					count -= printf(" xxxxxxxxxxxxxxxx");
+				} else {
+					count -= printf(" %016llx", res);
+				}
+				*ullp++ = res;
+			} else if (size == 4) {
 				uint32_t res;
 				data_abort_mask();
 				res = *((uint32_t *)addr);

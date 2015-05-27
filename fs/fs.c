@@ -1590,6 +1590,9 @@ static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 		case 4:
 			*((ulong  *)dst) = *((ulong  *)src);
 			break;
+		case 8:
+			*((u64  *)dst) = *((u64  *)src);
+			break;
 		}
 		dst += rwsize;
 		src += rwsize;

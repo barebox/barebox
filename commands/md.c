@@ -44,6 +44,7 @@ static int do_mem_md(int argc, char *argv[])
 	char *filename = "/dev/mem";
 	int mode = O_RWSIZE_4;
 	int swab = 0;
+	void *map;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
@@ -64,6 +65,13 @@ static int do_mem_md(int argc, char *argv[])
 	fd = open_and_lseek(filename, mode | O_RDONLY, start);
 	if (fd < 0)
 		return 1;
+
+	map = memmap(fd, PROT_READ);
+	if (map != (void *)-1) {
+		ret = memory_display(map + start, start, size,
+				mode >> O_RWSIZE_SHIFT, swab);
+		goto out;
+	}
 
 	do {
 		now = min(size, (loff_t)RW_BUF_SIZE);

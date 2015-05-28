@@ -272,6 +272,17 @@ int phy_register_device(struct phy_device *phydev)
 	return ret;
 }
 
+void phy_unregister_device(struct phy_device *phydev)
+{
+	if (!phydev->registered)
+		return;
+
+	phydev->bus->phy_map[phydev->addr] = NULL;
+
+	unregister_device(&phydev->dev);
+	phydev->registered = 0;
+}
+
 static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 {
 	struct device_d *dev;

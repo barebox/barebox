@@ -139,6 +139,7 @@ int musb_register(struct musb *musb)
 	host->submit_control_msg = submit_control_msg;
 	host->submit_bulk_msg = submit_bulk_msg;
 
+	musb->controller->priv = musb;
 	musb->controller->detect = musb_detect;
 	usb_register_host(host);
 

@@ -916,20 +916,22 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	struct phy_device *phy;
 
 	phy = mdiobus_scan(&priv->miibus, priv->slaves[slave_num].phy_id);
-	if (IS_ERR(phy))
-		return PTR_ERR(phy);
+	if (IS_ERR(phy)) {
+		ret = PTR_ERR(phy);
+		goto err_out;
+	}
 
 	phy->dev.device_node = priv->slaves[slave_num].dev.device_node;
 	ret = phy_register_device(phy);
 	if (ret)
-		return ret;
+		goto err_out;
 
 	sprintf(dev->name, "cpsw-slave");
 	dev->id = slave->slave_num;
 	dev->parent = priv->dev;
 	ret = register_device(dev);
 	if (ret)
-		return ret;
+		goto err_register_dev;
 
 	dev_dbg(&slave->dev, "* %s\n", __func__);
 
@@ -948,7 +950,20 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	edev->set_ethaddr = cpsw_set_hwaddr;
 	edev->parent	= dev;
 
-	return eth_register(edev);
+	ret = eth_register(edev);
+	if (ret)
+		goto err_register_edev;
+
+	return 0;
+
+err_register_dev:
+	phy_unregister_device(phy);
+err_register_edev:
+	unregister_device(dev);
+err_out:
+	slave->slave_num = -1;
+
+	return ret;
 }
 
 struct cpsw_data {
@@ -1219,12 +1234,30 @@ int cpsw_probe(struct device_d *dev)
 		}
 	}
 
+	dev->priv = priv;
+
 	return 0;
 out:
 	free(priv->slaves);
 	free(priv);
 
 	return ret;
+}
+
+static void cpsw_remove(struct device_d *dev)
+{
+	struct cpsw_priv	*priv = dev->priv;
+	int i;
+
+	for (i = 0; i < priv->num_slaves; i++) {
+		struct cpsw_slave *slave = &priv->slaves[i];
+		if (slave->slave_num < 0)
+			continue;
+
+		eth_unregister(&slave->edev);
+	}
+
+	mdiobus_unregister(&priv->miibus);
 }
 
 static __maybe_unused struct of_device_id cpsw_dt_ids[] = {
@@ -1238,6 +1271,7 @@ static __maybe_unused struct of_device_id cpsw_dt_ids[] = {
 static struct driver_d cpsw_driver = {
 	.name   = "cpsw",
 	.probe  = cpsw_probe,
+	.remove = cpsw_remove,
 	.of_compatible = DRV_OF_COMPAT(cpsw_dt_ids),
 };
 device_platform_driver(cpsw_driver);

@@ -11,10 +11,34 @@ build the ``socfpga-xload_defconfig``; for second stage use the normal
 Bootstrapping
 -------------
 
-The supported bootsource is a SD card. The Boot ROM searches for a partition of
-type A2 and loads what it finds there. When barebox is placed in such a partition
-it will then itself try and mount the second partition of the SD card, which must
-be of type FAT32. On this partition barebox searches for a file called barebox.bin.
+The supported bootsources are: SD card and QSPI.
+
+Bootsource selection
+^^^^^^^^^^^^^^^^^^^^
+
++--------------+-----------+-----------+
+| Board        | BSEL[2:0] | CSEL[1:0] |
++==============+===========+===========+
+| Sockit SD    | 0b100     | 0b00      |
++--------------+-----------+-----------+
+| Sockit QSPI  | 0b110     | 0b00      |
++--------------+-----------+-----------+
+| Socrates SD  | 0b101     | 0b11      |
++--------------+-----------+-----------+
+| Socrates QSPI| 0b111     | 0b11      |
++--------------+-----------+-----------+
+| SocDK SD     | 0b100     | 0b00      |
++--------------+-----------+-----------+
+| SocDK QSPI   | 0b110     | 0b00      |
++--------------+-----------+-----------+
+
+SD card
+^^^^^^^
+
+The Boot ROM searches for a partition of type A2 and loads what it finds there.
+When barebox is placed in such a partition it will then itself try and mount the
+second partition of the SD card, which must be of type FAT32. On this partition
+barebox searches for a file called barebox.bin.
 
 To boot barebox on a Terasic SoCkit, the procedure is as follows (sdb1 is the A2 and
 sdb2 the FAT32 partition)::
@@ -33,6 +57,30 @@ proceed with::
   umount /mnt
 
 For the EBV Socrates use ``images/barebox-socfpga-socrates(-xload).img`` instead.
+
+QSPI
+^^^^
+
+The Boot ROM loads the preloader starting from address 0x0 on the QSPI flash.
+barebox then searches for a barebox image at the 256K offset and loads it.
+
+The default bootsource is SD card, so to change that to QSPI, you have to::
+
+  make socfpga-xload_defconfig
+  make menuconfig
+
+And then select the options `MTD` and `SPI_CADENCE_QUADSPI`. Now::
+
+  make
+  cat images/barebox-socfpga-<board>-xload.img > /dev/mtd0
+
+For barebox itself, the build step is like for SD card. The resulting image has to be
+written to the offset 256K.
+
+Warning! There is a known issue with booting from QSPI and doing Cold/Warm-Resets.
+Please consult `Rocketboards <http://rocketboards.org/foswiki/Documentation/SocBoardQspiBoot#Serial_Flash_Challenges>`_
+to see how to fix this.
+
 
 Updating handoff files
 ----------------------

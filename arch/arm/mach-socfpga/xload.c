@@ -1,3 +1,4 @@
+#include <platform_data/cadence_qspi.h>
 #include <platform_data/dw_mmc.h>
 #include <bootsource.h>
 #include <bootstrap.h>
@@ -14,11 +15,19 @@
 #include <linux/stat.h>
 #include <linux/clk.h>
 
+#include <mach/generic.h>
 #include <mach/system-manager.h>
 #include <mach/socfpga-regs.h>
 
+struct socfpga_barebox_part *barebox_part;
+
+static struct socfpga_barebox_part default_part = {
+	.nor_offset = SZ_256K,
+	.nor_size = SZ_1M,
+};
+
 enum socfpga_clks {
-	timer, mmc, uart, clk_max
+	timer, mmc, qspi_clk, uart, clk_max
 };
 
 static struct clk *clks[clk_max];
@@ -34,6 +43,43 @@ static void socfpga_mmc_init(void)
 	add_generic_device("dw_mmc", 0, NULL, CYCLONE5_SDMMC_ADDRESS, SZ_4K,
 			IORESOURCE_MEM, &mmc_pdata);
 }
+
+#if defined(CONFIG_SPI_CADENCE_QUADSPI)
+static struct cadence_qspi_platform_data qspi_pdata = {
+	.ext_decoder = 0,
+	.fifo_depth = 128,
+};
+
+static __maybe_unused void add_cadence_qspi_device(int id, resource_size_t ctrl,
+				    resource_size_t data, void *pdata)
+{
+	struct resource *res;
+
+	res = xzalloc(sizeof(struct resource) * 2);
+	res[0].start = ctrl;
+	res[0].end = ctrl + 0x100 - 1;
+	res[0].flags = IORESOURCE_MEM;
+	res[1].start = data;
+	res[1].end = data + 0x100 - 1;
+	res[1].flags = IORESOURCE_MEM;
+
+	add_generic_device_res("cadence_qspi", id, res, 2, pdata);
+}
+
+static __maybe_unused void socfpga_qspi_init(void)
+{
+	clks[qspi_clk] = clk_fixed("qspi_clk", 370000000);
+	clkdev_add_physbase(clks[qspi_clk], CYCLONE5_QSPI_CTRL_ADDRESS, NULL);
+	clkdev_add_physbase(clks[qspi_clk], CYCLONE5_QSPI_DATA_ADDRESS, NULL);
+	add_cadence_qspi_device(0, CYCLONE5_QSPI_CTRL_ADDRESS,
+				CYCLONE5_QSPI_DATA_ADDRESS, &qspi_pdata);
+}
+#else
+static void socfpga_qspi_init(void)
+{
+	return;
+}
+#endif
 
 static struct NS16550_plat uart_pdata = {
 	.clock = 100000000,
@@ -62,9 +108,18 @@ static __noreturn int socfpga_xload(void)
 	enum bootsource bootsource = bootsource_get();
 	void *buf;
 
+	if (!barebox_part)
+		barebox_part = &default_part;
+
 	switch (bootsource) {
 	case BOOTSOURCE_MMC:
+		socfpga_mmc_init();
 		buf = bootstrap_read_disk("disk0.1", "fat");
+		break;
+	case BOOTSOURCE_SPI:
+		socfpga_qspi_init();
+		buf = bootstrap_read_devfs("mtd0", false, barebox_part->nor_offset,
+					barebox_part->nor_size, SZ_1M);
 		break;
 	default:
 		pr_err("unknown bootsource %d\n", bootsource);
@@ -88,7 +143,6 @@ static int socfpga_devices_init(void)
 	barebox_set_model("SoCFPGA");
 	socfpga_timer_init();
 	socfpga_uart_init();
-	socfpga_mmc_init();
 
 	barebox_main = socfpga_xload;
 

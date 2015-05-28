@@ -15,4 +15,9 @@ static inline void __udelay(unsigned us)
 	for (i = 0; i < us * 3; i++);
 }
 
+struct socfpga_barebox_part {
+	unsigned int nor_offset;
+	unsigned int nor_size;
+};
+
 #endif /* __MACH_SOCFPGA_GENERIC_H */

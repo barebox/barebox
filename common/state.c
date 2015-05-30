@@ -61,6 +61,7 @@ struct state_backend {
 enum state_variable_type {
 	STATE_TYPE_INVALID = 0,
 	STATE_TYPE_ENUM,
+	STATE_TYPE_U8,
 	STATE_TYPE_U32,
 	STATE_TYPE_MAC,
 };
@@ -160,6 +161,32 @@ static int state_uint32_import(struct state_variable *sv,
 		su32->value = su32->value_default;
 
 	return 0;
+}
+
+static struct state_variable *state_uint8_create(struct state *state,
+		const char *name, struct device_node *node)
+{
+	struct state_uint32 *su32;
+	struct param_d *param;
+
+	su32 = xzalloc(sizeof(*su32));
+
+	param = dev_add_param_int(&state->dev, name, state_set_dirty,
+				  NULL, &su32->value, "%d", state);
+	if (IS_ERR(param)) {
+		free(su32);
+		return ERR_CAST(param);
+	}
+
+	su32->param = param;
+	su32->var.size = sizeof(uint8_t);
+#ifdef __LITTLE_ENDIAN
+	su32->var.raw = &su32->value;
+#else
+	su32->var.raw = &su32->value + 3;
+#endif
+
+	return &su32->var;
 }
 
 static struct state_variable *state_uint32_create(struct state *state,
@@ -372,6 +399,12 @@ out:
 
 static struct variable_type types[] =  {
 	{
+		.type = STATE_TYPE_U8,
+		.type_name = "uint8",
+		.export = state_uint32_export,
+		.import = state_uint32_import,
+		.create = state_uint8_create,
+	}, {
 		.type = STATE_TYPE_U32,
 		.type_name = "uint32",
 		.export = state_uint32_export,

@@ -848,10 +848,13 @@ int state_load(struct state *state)
 		return -ENOSYS;
 
 	ret = state->backend->load(state->backend, state);
-	if (ret)
+	if (ret) {
+		dev_warn(&state->dev, "load failed\n");
 		state->dirty = 1;
-	else
+	} else {
+		dev_info(&state->dev, "load successful\n");
 		state->dirty = 0;
+	}
 
 	return ret;
 }
@@ -1065,8 +1068,11 @@ static int backend_raw_load_one(struct state_backend_raw *backend_raw,
 
 	ret = read_full(fd, &header, sizeof(header));
 	max_len -= sizeof(header);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(&state->dev,
+			"cannot read header from backend device");
 		return ret;
+	}
 
 	crc = crc32(0, &header, sizeof(header) - sizeof(uint32_t));
 	if (crc != header.header_crc) {
@@ -1127,8 +1133,10 @@ static int state_backend_raw_load(struct state_backend *backend,
 	int ret = 0, fd, i;
 
 	fd = open(backend->path, O_RDONLY);
-	if (fd < 0)
+	if (fd < 0) {
+		dev_err(&state->dev, "cannot open %s\n", backend->path);
 		return fd;
+	}
 
 	for (i = 0; i < RAW_BACKEND_COPIES; i++) {
 		off_t offset = backend_raw->offset + i * backend_raw->stride;
@@ -1352,7 +1360,8 @@ int state_backend_raw_file(struct state *state, const char *of_path,
 	}
 
 	if (backend_raw->size / backend_raw->stride < RAW_BACKEND_COPIES) {
-		dev_err(&state->dev, "not enough space for two copies\n");
+		dev_err(&state->dev, "not enough space for two copies (%lu each)\n",
+			backend_raw->stride);
 		ret = -ENOSPC;
 		goto err;
 	}

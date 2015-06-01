@@ -26,6 +26,8 @@ static int hipercam_init(void)
 	imx6_bbu_internal_spi_i2c_register_handler("nor", "/dev/m25p0.barebox",
 			BBU_HANDLER_FLAG_DEFAULT);
 
+	barebox_set_hostname("hipercam");
+
 	return 0;
 }
 device_initcall(hipercam_init);

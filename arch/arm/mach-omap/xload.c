@@ -13,6 +13,10 @@
 #include <filetype.h>
 #include <xymodem.h>
 #include <mach/generic.h>
+#include <mach/am33xx-generic.h>
+#include <net.h>
+#include <environment.h>
+#include <dhcp.h>
 
 struct omap_barebox_part *barebox_part;
 
@@ -224,6 +228,45 @@ static void *omap_serial_boot(void){
 	return buf;
 }
 
+static void *am33xx_net_boot(void)
+{
+	void *buf = NULL;
+	int err;
+	int len;
+	struct dhcp_req_param dhcp_param;
+	const char *bootfile;
+
+	am33xx_register_ethaddr(0, 0);
+
+	memset(&dhcp_param, 0, sizeof(struct dhcp_req_param));
+	dhcp_param.vendor_id = "am335x barebox-mlo";
+	err = dhcp(20, &dhcp_param);
+	if (err) {
+		printf("dhcp failed\n");
+		return NULL;
+	}
+
+	err = mount(ip_to_string(net_get_serverip()), "tftp", "/", NULL);
+	if (err < 0) {
+		printf("Unable to mount.\n");
+		return NULL;
+	}
+
+	bootfile = getenv("bootfile");
+	if (!bootfile) {
+		printf("bootfile not found.\n");
+		return NULL;
+	}
+
+	buf = read_file(bootfile, &len);
+	if (!buf)
+		printf("could not read %s.\n", bootfile);
+
+	umount("/");
+
+	return buf;
+}
+
 /*
  * Replaces the default shell in xload configuration
  */
@@ -263,6 +306,14 @@ static __noreturn int omap_xload(void)
 			printf("booting from serial\n");
 			func = omap_serial_boot();
 			break;
+		}
+	case BOOTSOURCE_NET:
+		if (IS_ENABLED(CONFIG_AM33XX_NET_BOOT)) {
+			printf("booting from NET\n");
+			func = am33xx_net_boot();
+			break;
+		} else {
+			printf("booting from network not enabled\n");
 		}
 	default:
 		printf("unknown boot source. Fall back to nand\n");

@@ -1183,6 +1183,7 @@ menu "Network"
 
 config CMD_DHCP
 	bool
+	select NET_DHCP
 	prompt "dhcp"
 	help
 	  DHCP client to obtain IP or boot params

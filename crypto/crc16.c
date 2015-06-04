@@ -90,7 +90,7 @@ static const uint16_t crc16_tab[] = {
 };
 
 uint16_t
-cyg_crc16(unsigned char *buf, int len)
+cyg_crc16(const unsigned char *buf, int len)
 {
     int i;
     uint16_t cksum;

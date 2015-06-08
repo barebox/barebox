@@ -154,8 +154,8 @@ int console_set_baudrate(struct console_device *cdev, unsigned baudrate)
 	 * The baudrate of an inactive device will be set at activation time.
 	 */
 	if (cdev->f_active) {
-		printf("## Switch baudrate to %d bps and press ENTER ...\n",
-			baudrate);
+		printf("## Switch baudrate on console %s to %d bps and press ENTER ...\n",
+			dev_name(&cdev->class_dev), baudrate);
 		mdelay(50);
 	}
 

@@ -23,6 +23,7 @@
 *.symtypes
 *.elf
 *.patch
+*.pyc
 *.mcp
 *.bct
 *.dcd

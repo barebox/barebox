@@ -1,0 +1,3 @@
+loadaddr 0x00907000
+soc imx6
+dcdofs 0x400

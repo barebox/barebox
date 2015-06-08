@@ -330,6 +330,11 @@ config MACH_SOLIDRUN_MICROSOM
 	bool "SolidRun MicroSOM based devices"
 	select ARCH_IMX6
 
+config MACH_TECHNEXION_WANDBOARD
+	bool "Technexion Wandboard"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_EMBEST_RIOTBOARD
 	bool "Embest RIoTboard"
 	select ARCH_IMX6

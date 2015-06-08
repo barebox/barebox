@@ -260,6 +260,19 @@ struct console_device *console_get_by_dev(struct device_d *dev)
 }
 EXPORT_SYMBOL(console_get_by_dev);
 
+struct console_device *console_get_by_name(const char *name)
+{
+	struct console_device *cdev;
+
+	for_each_console(cdev) {
+		if (!strcmp(cdev->devname, name))
+			return cdev;
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(console_get_by_name);
+
 /*
  * @brief returns current used console device
  *

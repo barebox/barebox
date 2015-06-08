@@ -635,7 +635,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
 		return -ENODEV;
 	}
-	current_baudrate = (int)simple_strtoul(dev_get_param(&cdev->class_dev, "baudrate"), NULL, 10);
+	current_baudrate = console_get_baudrate(cdev);
 
 	/* Load Defaults */
 	if (load_baudrate == 0)

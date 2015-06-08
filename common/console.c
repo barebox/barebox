@@ -58,32 +58,14 @@ static struct kfifo __console_output_fifo;
 static struct kfifo *console_input_fifo = &__console_input_fifo;
 static struct kfifo *console_output_fifo = &__console_output_fifo;
 
-static int console_std_set(struct device_d *dev, struct param_d *param,
-		const char *val)
+int console_set_active(struct console_device *cdev, unsigned flag)
 {
-	struct console_device *cdev = to_console_dev(dev);
-	char active[4];
-	unsigned int flag = 0, i = 0;
-	int ret;
+	int ret, i;
 
-	if (val) {
-		if (strchr(val, 'i') && cdev->getc) {
-			active[i++] = 'i';
-			flag |= CONSOLE_STDIN;
-		}
-
-		if (cdev->putc) {
-			if (strchr(val, 'o')) {
-				active[i++] = 'o';
-				flag |= CONSOLE_STDOUT;
-			}
-
-			if (strchr(val, 'e')) {
-				active[i++] = 'e';
-				flag |= CONSOLE_STDERR;
-			}
-		}
-	}
+	if (!cdev->getc)
+		flag &= ~CONSOLE_STDIN;
+	if (!cdev->putc)
+		flag &= ~(CONSOLE_STDOUT | CONSOLE_STDERR);
 
 	if (flag && !cdev->f_active) {
 		/* The device is being activated, set its baudrate */
@@ -97,16 +79,25 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 			return ret;
 	}
 
-	active[i] = 0;
 	cdev->f_active = flag;
 
-	dev_param_set_generic(dev, param, active);
+	if (IS_ENABLED(CONFIG_PARAMETER)) {
+		i = 0;
+
+		if (flag & CONSOLE_STDIN)
+			cdev->active[i++] = 'i';
+		if (flag & CONSOLE_STDOUT)
+			cdev->active[i++] = 'o';
+		if (flag & CONSOLE_STDERR)
+			cdev->active[i++] = 'e';
+		cdev->active[i] = 0;
+	}
 
 	if (initialized < CONSOLE_INIT_FULL) {
 		char ch;
 		initialized = CONSOLE_INIT_FULL;
 		puts_ll("Switch to console [");
-		puts_ll(dev_name(dev));
+		puts_ll(dev_name(&cdev->class_dev));
 		puts_ll("]\n");
 		barebox_banner();
 		while (kfifo_getc(console_output_fifo, &ch) == 0)
@@ -114,6 +105,37 @@ static int console_std_set(struct device_d *dev, struct param_d *param,
 	}
 
 	return 0;
+}
+
+unsigned console_get_active(struct console_device *cdev)
+{
+	return cdev->f_active;
+}
+
+static int console_active_set(struct device_d *dev, struct param_d *param,
+		const char *val)
+{
+	struct console_device *cdev = to_console_dev(dev);
+	unsigned int flag = 0;
+
+	if (val) {
+		if (strchr(val, 'i'))
+			flag |= CONSOLE_STDIN;
+		if (strchr(val, 'o'))
+			flag |= CONSOLE_STDOUT;
+		if (strchr(val, 'e'))
+			flag |= CONSOLE_STDERR;
+	}
+
+	return console_set_active(cdev, flag);
+}
+
+static const char *console_active_get(struct device_d *dev,
+		struct param_d *param)
+{
+	struct console_device *cdev = to_console_dev(dev);
+
+	return cdev->active;
 }
 
 static int console_baudrate_set(struct param_d *param, void *priv)
@@ -214,7 +236,7 @@ int console_register(struct console_device *newcdev)
 	if (newcdev->putc && !newcdev->puts)
 		newcdev->puts = __console_puts;
 
-	dev_add_param(dev, "active", console_std_set, NULL, 0);
+	dev_add_param(dev, "active", console_active_set, console_active_get, 0);
 
 	if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_FIRST)) {
 		if (list_empty(&console_list))
@@ -230,12 +252,9 @@ int console_register(struct console_device *newcdev)
 
 	list_add_tail(&newcdev->list, &console_list);
 
-	if (activate) {
-		if (IS_ENABLED(CONFIG_PARAMETER))
-			dev_set_param(dev, "active", "ioe");
-		else
-			console_std_set(dev, NULL, "ioe");
-	}
+	if (activate)
+		console_set_active(newcdev, CONSOLE_STDIN |
+				CONSOLE_STDOUT | CONSOLE_STDERR);
 
 	return 0;
 }

@@ -52,6 +52,7 @@ struct console_device {
 	struct list_head list;
 
 	unsigned char f_active;
+	char active[4];
 
 	unsigned int baudrate;
 
@@ -74,5 +75,8 @@ void console_allow_input(bool val);
 extern int barebox_loglevel;
 
 struct console_device *console_get_first_active(void);
+
+int console_set_active(struct console_device *cdev, unsigned active);
+unsigned console_get_active(struct console_device *cdev);
 
 #endif

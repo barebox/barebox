@@ -57,28 +57,6 @@ static int console_change_speed(struct console_device *cdev, int baudrate)
 	return current_baudrate;
 }
 
-static struct console_device *get_named_console(const char *cname)
-{
-	struct console_device *cdev;
-	const char *target;
-
-	/*
-	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
-	 * same output console
-	 */
-	for_each_console(cdev) {
-		target = dev_id(&cdev->class_dev);
-		if (strlen(target) != strlen(cname))
-			continue;
-		printf("RJK: looking for %s in console name %s\n",
-		       cname, target);
-		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT))
-		    && !strcmp(cname, target))
-			return cdev;
-	}
-	return NULL;
-}
-
 /**
  * @brief provide the loady(Y-Modem or Y-Modem/G) support
  *
@@ -112,7 +90,7 @@ static int do_loady(int argc, char *argv[])
 	}
 
 	if (cname)
-		cdev = get_named_console(cname);
+		cdev = console_get_by_name(cname);
 	else
 		cdev = console_get_first_active();
 	if (!cdev) {
@@ -196,7 +174,7 @@ static int do_loadx(int argc, char *argv[])
 	}
 
 	if (cname)
-		cdev = get_named_console(cname);
+		cdev = console_get_by_name(cname);
 	else
 		cdev = console_get_first_active();
 	if (!cdev) {

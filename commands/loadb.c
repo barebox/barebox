@@ -660,17 +660,9 @@ static int do_load_serial_bin(int argc, char *argv[])
 		}
 	}
 
-	if (load_baudrate != current_baudrate) {
-		printf("## Switch baudrate to %d bps and press ENTER ...\n",
-		       load_baudrate);
-		udelay(50000);
-		cdev->setbrg(cdev, load_baudrate);
-		udelay(50000);
-		for (;;) {
-			if (getc() == '\r')
-				break;
-		}
-	}
+	ret = console_set_baudrate(cdev, load_baudrate);
+	if (ret)
+		return ret;
 
 	printf("## Ready for binary (kermit) download "
 	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
@@ -681,17 +673,9 @@ static int do_load_serial_bin(int argc, char *argv[])
 		rcode = 1;
 	}
 
-	if (load_baudrate != current_baudrate) {
-		printf("## Switch baudrate to %d bps and press ESC ...\n",
-		       current_baudrate);
-		udelay(50000);
-		cdev->setbrg(cdev, current_baudrate);
-		udelay(50000);
-		for (;;) {
-			if (getc() == 0x1B)	/* ESC */
-				break;
-		}
-	}
+	ret = console_set_baudrate(cdev, current_baudrate);
+	if (ret)
+		return ret;
 
 	close(ofd);
 	ofd = 0;

@@ -138,10 +138,16 @@ static const char *console_active_get(struct device_d *dev,
 	return cdev->active;
 }
 
-static int console_baudrate_set(struct param_d *param, void *priv)
+int console_set_baudrate(struct console_device *cdev, unsigned baudrate)
 {
-	struct console_device *cdev = priv;
+	int ret;
 	unsigned char c;
+
+	if (!cdev->setbrg)
+		return -ENOSYS;
+
+	if (cdev->baudrate == baudrate)
+		return 0;
 
 	/*
 	 * If the device is already active, change its baudrate.
@@ -149,16 +155,37 @@ static int console_baudrate_set(struct param_d *param, void *priv)
 	 */
 	if (cdev->f_active) {
 		printf("## Switch baudrate to %d bps and press ENTER ...\n",
-			cdev->baudrate);
+			baudrate);
 		mdelay(50);
-		cdev->setbrg(cdev, cdev->baudrate);
+	}
+
+	ret = cdev->setbrg(cdev, baudrate);
+	if (ret)
+		return ret;
+
+	if (cdev->f_active) {
 		mdelay(50);
 		do {
 			c = getc();
 		} while (c != '\r' && c != '\n');
 	}
 
+	cdev->baudrate = baudrate;
+	cdev->baudrate_param = baudrate;
+
 	return 0;
+}
+
+unsigned console_get_baudrate(struct console_device *cdev)
+{
+	return cdev->baudrate;
+}
+
+static int console_baudrate_set(struct param_d *param, void *priv)
+{
+	struct console_device *cdev = priv;
+
+	return console_set_baudrate(cdev, cdev->baudrate_param);
 }
 
 static void console_init_early(void)
@@ -230,7 +257,7 @@ int console_register(struct console_device *newcdev)
 	if (newcdev->setbrg) {
 		newcdev->baudrate = CONFIG_BAUDRATE;
 		dev_add_param_int(dev, "baudrate", console_baudrate_set,
-			NULL, &newcdev->baudrate, "%u", newcdev);
+			NULL, &newcdev->baudrate_param, "%u", newcdev);
 	}
 
 	if (newcdev->putc && !newcdev->puts)

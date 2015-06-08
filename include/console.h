@@ -55,6 +55,7 @@ struct console_device {
 	char active[4];
 
 	unsigned int baudrate;
+	unsigned int baudrate_param;
 
 	const char *linux_console_name;
 };
@@ -78,5 +79,7 @@ struct console_device *console_get_first_active(void);
 
 int console_set_active(struct console_device *cdev, unsigned active);
 unsigned console_get_active(struct console_device *cdev);
+int console_set_baudrate(struct console_device *cdev, unsigned baudrate);
+unsigned console_get_baudrate(struct console_device *cdev);
 
 #endif

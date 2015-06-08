@@ -43,10 +43,8 @@
 static int console_change_speed(struct console_device *cdev, int baudrate)
 {
 	int current_baudrate;
-	const char *bstr;
 
-	bstr = dev_get_param(&cdev->class_dev, "baudrate");
-	current_baudrate = bstr ? (int)simple_strtoul(bstr, NULL, 10) : 0;
+	current_baudrate = console_get_baudrate(cdev);
 	if (baudrate && baudrate != current_baudrate) {
 		printf("## Switch baudrate from %d to %d bps and press ENTER ...\n",
 		       current_baudrate, baudrate);

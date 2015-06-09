@@ -160,6 +160,25 @@ int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context)
 }
 
 /*
+ * Remove a previously registered fixup. Only the first (if any) is removed.
+ * Returns 0 if a match was found (and removed), -ENOENT otherwise.
+ */
+int of_unregister_fixup(int (*fixup)(struct device_node *, void *),
+			void *context)
+{
+	struct of_fixup *of_fixup;
+
+	list_for_each_entry(of_fixup, &of_fixup_list, list) {
+		if (of_fixup->fixup == fixup && of_fixup->context == context) {
+			list_del(&of_fixup->list);
+			return 0;
+		}
+	}
+
+	return -ENOENT;
+}
+
+/*
  * Apply registered fixups for the given fdt. The fdt must have
  * enough free space to apply the fixups.
  */

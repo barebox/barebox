@@ -536,7 +536,8 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	if (status)
 		goto fail_out;
 
-	dev_set_param(&cdev->class_dev, "active", "ioe");
+	console_set_active(cdev, CONSOLE_STDIN | CONSOLE_STDOUT |
+		CONSOLE_STDERR);
 
 	/* REVISIT if waiting on "carrier detect", signal. */
 

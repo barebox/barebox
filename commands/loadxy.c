@@ -40,45 +40,6 @@
 
 #define DEF_FILE	"image.bin"
 
-static int console_change_speed(struct console_device *cdev, int baudrate)
-{
-	int current_baudrate;
-	const char *bstr;
-
-	bstr = dev_get_param(&cdev->class_dev, "baudrate");
-	current_baudrate = bstr ? (int)simple_strtoul(bstr, NULL, 10) : 0;
-	if (baudrate && baudrate != current_baudrate) {
-		printf("## Switch baudrate from %d to %d bps and press ENTER ...\n",
-		       current_baudrate, baudrate);
-		mdelay(50);
-		cdev->setbrg(cdev, baudrate);
-		mdelay(50);
-	}
-	return current_baudrate;
-}
-
-static struct console_device *get_named_console(const char *cname)
-{
-	struct console_device *cdev;
-	const char *target;
-
-	/*
-	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
-	 * same output console
-	 */
-	for_each_console(cdev) {
-		target = dev_id(&cdev->class_dev);
-		if (strlen(target) != strlen(cname))
-			continue;
-		printf("RJK: looking for %s in console name %s\n",
-		       cname, target);
-		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT))
-		    && !strcmp(cname, target))
-			return cdev;
-	}
-	return NULL;
-}
-
 /**
  * @brief provide the loady(Y-Modem or Y-Modem/G) support
  *
@@ -112,7 +73,7 @@ static int do_loady(int argc, char *argv[])
 	}
 
 	if (cname)
-		cdev = get_named_console(cname);
+		cdev = console_get_by_name(cname);
 	else
 		cdev = console_get_first_active();
 	if (!cdev) {
@@ -121,7 +82,15 @@ static int do_loady(int argc, char *argv[])
 		return -ENODEV;
 	}
 
-	current_baudrate = console_change_speed(cdev, load_baudrate);
+	current_baudrate = console_get_baudrate(cdev);
+
+	if (!load_baudrate)
+		load_baudrate = current_baudrate;
+
+	rc = console_set_baudrate(cdev, load_baudrate);
+	if (rc)
+		return rc;
+
 	printf("## Ready for binary (ymodem) download at %d bps...\n",
 	       load_baudrate ? load_baudrate : current_baudrate);
 
@@ -135,7 +104,9 @@ static int do_loady(int argc, char *argv[])
 		rcode = 1;
 	}
 
-	console_change_speed(cdev, current_baudrate);
+	rc = console_set_baudrate(cdev, current_baudrate);
+	if (rc)
+		return rc;
 
 	return rcode;
 }
@@ -167,8 +138,7 @@ BAREBOX_CMD_END
 static int do_loadx(int argc, char *argv[])
 {
 	ulong offset = 0;
-	int load_baudrate = 0, current_baudrate, ofd, opt, rcode = 0;
-	int open_mode = O_WRONLY;
+	int load_baudrate = 0, current_baudrate, rc, ofd, opt, rcode = 0;
 	char *output_file = NULL, *cname = NULL;
 	struct console_device *cdev = NULL;
 
@@ -183,9 +153,6 @@ static int do_loadx(int argc, char *argv[])
 		case 'o':
 			offset = (int)simple_strtoul(optarg, NULL, 10);
 			break;
-		case 'c':
-			open_mode |= O_CREAT;
-			break;
 		case 't':
 			cname = optarg;
 			break;
@@ -196,7 +163,7 @@ static int do_loadx(int argc, char *argv[])
 	}
 
 	if (cname)
-		cdev = get_named_console(cname);
+		cdev = console_get_by_name(cname);
 	else
 		cdev = console_get_first_active();
 	if (!cdev) {
@@ -210,7 +177,7 @@ static int do_loadx(int argc, char *argv[])
 		output_file = DEF_FILE;
 
 	/* File should exist */
-	ofd = open(output_file, open_mode);
+	ofd = open(output_file, O_WRONLY | O_CREAT);
 	if (ofd < 0) {
 		perror(argv[0]);
 		return 3;
@@ -226,7 +193,15 @@ static int do_loadx(int argc, char *argv[])
 		}
 	}
 
-	current_baudrate = console_change_speed(cdev, load_baudrate);
+	current_baudrate = console_get_baudrate(cdev);
+
+	if (!load_baudrate)
+		load_baudrate = current_baudrate;
+
+	rc = console_set_baudrate(cdev, load_baudrate);
+	if (rc)
+		return rc;
+
 	printf("## Ready for binary (xmodem) download "
 	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
 	       output_file, load_baudrate ? load_baudrate : current_baudrate);
@@ -235,7 +210,10 @@ static int do_loadx(int argc, char *argv[])
 		printf("## Binary (xmodem) download aborted (%d)\n", rcode);
 		rcode = 1;
 	}
-	console_change_speed(cdev, current_baudrate);
+
+	rc = console_set_baudrate(cdev, current_baudrate);
+	if (rc)
+		return rc;
 
 	return rcode;
 }
@@ -246,7 +224,6 @@ BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
 BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate")
 BAREBOX_CMD_HELP_OPT("-t NAME", "console name to use (default: current)")
-BAREBOX_CMD_HELP_OPT("-c",      "create file if not present")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loadx)

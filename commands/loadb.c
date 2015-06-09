@@ -604,9 +604,8 @@ static int do_load_serial_bin(int argc, char *argv[])
 	ulong offset = 0;
 	ulong addr;
 	int load_baudrate = 0, current_baudrate;
-	int rcode = 0;
+	int rcode = 0, ret;
 	int opt;
-	int open_mode = O_WRONLY;
 	char *output_file = NULL;
 	struct console_device *cdev = NULL;
 
@@ -621,9 +620,6 @@ static int do_load_serial_bin(int argc, char *argv[])
 		case 'o':
 			offset = (int)simple_strtoul(optarg, NULL, 10);
 			break;
-		case 'c':
-			open_mode |= O_CREAT;
-			break;
 		default:
 			perror(argv[0]);
 			return 1;
@@ -635,7 +631,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
 		return -ENODEV;
 	}
-	current_baudrate = (int)simple_strtoul(dev_get_param(&cdev->class_dev, "baudrate"), NULL, 10);
+	current_baudrate = console_get_baudrate(cdev);
 
 	/* Load Defaults */
 	if (load_baudrate == 0)
@@ -644,7 +640,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 		output_file = DEF_FILE;
 
 	/* File should exist */
-	ofd = open(output_file, open_mode);
+	ofd = open(output_file, O_WRONLY | O_CREAT);
 	if (ofd < 0) {
 		perror(argv[0]);
 		return 3;
@@ -660,17 +656,9 @@ static int do_load_serial_bin(int argc, char *argv[])
 		}
 	}
 
-	if (load_baudrate != current_baudrate) {
-		printf("## Switch baudrate to %d bps and press ENTER ...\n",
-		       load_baudrate);
-		udelay(50000);
-		cdev->setbrg(cdev, load_baudrate);
-		udelay(50000);
-		for (;;) {
-			if (getc() == '\r')
-				break;
-		}
-	}
+	ret = console_set_baudrate(cdev, load_baudrate);
+	if (ret)
+		return ret;
 
 	printf("## Ready for binary (kermit) download "
 	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
@@ -681,17 +669,9 @@ static int do_load_serial_bin(int argc, char *argv[])
 		rcode = 1;
 	}
 
-	if (load_baudrate != current_baudrate) {
-		printf("## Switch baudrate to %d bps and press ESC ...\n",
-		       current_baudrate);
-		udelay(50000);
-		cdev->setbrg(cdev, current_baudrate);
-		udelay(50000);
-		for (;;) {
-			if (getc() == 0x1B)	/* ESC */
-				break;
-		}
-	}
+	ret = console_set_baudrate(cdev, current_baudrate);
+	if (ret)
+		return ret;
 
 	close(ofd);
 	ofd = 0;
@@ -704,7 +684,6 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
 BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate")
-BAREBOX_CMD_HELP_OPT("-c",      "create file if not present")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loadb)

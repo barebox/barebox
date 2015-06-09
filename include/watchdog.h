@@ -17,8 +17,25 @@ struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
 };
 
+#ifdef CONFIG_WATCHDOG
 int watchdog_register(struct watchdog *);
 int watchdog_deregister(struct watchdog *);
 int watchdog_set_timeout(unsigned);
+#else
+static inline int watchdog_register(struct watchdog *w)
+{
+	return 0;
+}
+
+int watchdog_deregister(struct watchdog *w)
+{
+	return 0;
+}
+
+int watchdog_set_timeout(unsigned t)
+{
+	return 0;
+}
+#endif
 
 #endif /* INCLUDE_WATCHDOG_H */

@@ -48,12 +48,12 @@ struct ath79_spi {
 
 static inline u32 ath79_spi_rr(struct ath79_spi *sp, int reg)
 {
-	return cpu_readl(sp->regs + reg);
+	return __raw_readl(sp->regs + reg);
 }
 
 static inline void ath79_spi_wr(struct ath79_spi *sp, u32 val, int reg)
 {
-	cpu_writel(val, sp->regs + reg);
+	__raw_writel(val, sp->regs + reg);
 }
 
 static inline void setbits(struct ath79_spi *sp, int bits, int on)

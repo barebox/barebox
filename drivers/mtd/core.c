@@ -191,7 +191,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	return 0;
 }
 
-static ssize_t mtd_op_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
+static int mtd_op_protect(struct cdev *cdev, size_t count, loff_t offset, int prot)
 {
 	struct mtd_info *mtd = cdev->priv;
 

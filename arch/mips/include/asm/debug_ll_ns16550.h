@@ -57,7 +57,7 @@
 
 #include <asm/io.h>
 
-static __inline__ void PUTC_LL(char ch)
+static inline void PUTC_LL(char ch)
 {
 #ifdef CONFIG_DEBUG_LL
 	while (!(__raw_readb((u8 *)DEBUG_LL_UART_ADDR + UART_LSR) & UART_LSR_THRE))

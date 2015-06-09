@@ -41,12 +41,12 @@
 
 static inline void ar933x_debug_ll_writel(u32 b, int offset)
 {
-	cpu_writel(b, (u8 *)DEBUG_LL_UART_ADDR + offset);
+	__raw_writel(b, (u8 *)DEBUG_LL_UART_ADDR + offset);
 }
 
 static inline u32 ar933x_debug_ll_readl(int offset)
 {
-	return cpu_readl((u8 *)DEBUG_LL_UART_ADDR + offset);
+	return __raw_readl((u8 *)DEBUG_LL_UART_ADDR + offset);
 }
 
 static inline void PUTC_LL(int ch)

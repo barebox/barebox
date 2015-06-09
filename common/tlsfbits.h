@@ -3,6 +3,10 @@
 
 #include <linux/bitops.h>
 
+#ifdef CONFIG_64BIT
+#define TLSF_64BIT
+#endif
+
 /*
 ** Architecture-specific bit manipulation routines.
 **
@@ -33,7 +37,7 @@ static int tlsf_fls(unsigned int word)
 
 /* Possibly 64-bit version of tlsf_fls. */
 #if defined (TLSF_64BIT)
-tlsf_decl int tlsf_fls_sizet(size_t size)
+static int tlsf_fls_sizet(size_t size)
 {
 	int high = (int)(size >> 32);
 	int bits = 0;

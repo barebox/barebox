@@ -1564,14 +1564,11 @@ out:
 }
 EXPORT_SYMBOL(rmdir);
 
-static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
+static void memcpy_sz(void *dst, const void *src, size_t count, int rwsize)
 {
-	ulong dst = (ulong)_dst;
-	ulong src = (ulong)_src;
-
 	/* no rwsize specification given. Do whatever memcpy likes best */
 	if (!rwsize) {
-		memcpy(_dst, _src, count);
+		memcpy(dst, src, count);
 		return;
 	}
 
@@ -1582,13 +1579,13 @@ static void memcpy_sz(void *_dst, const void *_src, ulong count, ulong rwsize)
 	while (count-- > 0) {
 		switch (rwsize) {
 		case 1:
-			*((u_char *)dst) = *((u_char *)src);
+			*((u8 *)dst) = *((u8 *)src);
 			break;
 		case 2:
-			*((ushort *)dst) = *((ushort *)src);
+			*((u16 *)dst) = *((u16 *)src);
 			break;
 		case 4:
-			*((ulong  *)dst) = *((ulong  *)src);
+			*((u32  *)dst) = *((u32  *)src);
 			break;
 		case 8:
 			*((u64  *)dst) = *((u64  *)src);

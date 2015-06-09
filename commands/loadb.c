@@ -604,7 +604,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 	ulong offset = 0;
 	ulong addr;
 	int load_baudrate = 0, current_baudrate;
-	int rcode = 0;
+	int rcode = 0, ret;
 	int opt;
 	int open_mode = O_WRONLY;
 	char *output_file = NULL;

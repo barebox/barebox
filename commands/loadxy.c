@@ -40,21 +40,6 @@
 
 #define DEF_FILE	"image.bin"
 
-static int console_change_speed(struct console_device *cdev, int baudrate)
-{
-	int current_baudrate;
-
-	current_baudrate = console_get_baudrate(cdev);
-	if (baudrate && baudrate != current_baudrate) {
-		printf("## Switch baudrate from %d to %d bps and press ENTER ...\n",
-		       current_baudrate, baudrate);
-		mdelay(50);
-		cdev->setbrg(cdev, baudrate);
-		mdelay(50);
-	}
-	return current_baudrate;
-}
-
 /**
  * @brief provide the loady(Y-Modem or Y-Modem/G) support
  *
@@ -97,7 +82,15 @@ static int do_loady(int argc, char *argv[])
 		return -ENODEV;
 	}
 
-	current_baudrate = console_change_speed(cdev, load_baudrate);
+	current_baudrate = console_get_baudrate(cdev);
+
+	if (!load_baudrate)
+		load_baudrate = current_baudrate;
+
+	rc = console_set_baudrate(cdev, load_baudrate);
+	if (rc)
+		return rc;
+
 	printf("## Ready for binary (ymodem) download at %d bps...\n",
 	       load_baudrate ? load_baudrate : current_baudrate);
 
@@ -111,7 +104,9 @@ static int do_loady(int argc, char *argv[])
 		rcode = 1;
 	}
 
-	console_change_speed(cdev, current_baudrate);
+	rc = console_set_baudrate(cdev, current_baudrate);
+	if (rc)
+		return rc;
 
 	return rcode;
 }
@@ -143,7 +138,7 @@ BAREBOX_CMD_END
 static int do_loadx(int argc, char *argv[])
 {
 	ulong offset = 0;
-	int load_baudrate = 0, current_baudrate, ofd, opt, rcode = 0;
+	int load_baudrate = 0, current_baudrate, rc, ofd, opt, rcode = 0;
 	char *output_file = NULL, *cname = NULL;
 	struct console_device *cdev = NULL;
 
@@ -198,7 +193,15 @@ static int do_loadx(int argc, char *argv[])
 		}
 	}
 
-	current_baudrate = console_change_speed(cdev, load_baudrate);
+	current_baudrate = console_get_baudrate(cdev);
+
+	if (!load_baudrate)
+		load_baudrate = current_baudrate;
+
+	rc = console_set_baudrate(cdev, load_baudrate);
+	if (rc)
+		return rc;
+
 	printf("## Ready for binary (xmodem) download "
 	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
 	       output_file, load_baudrate ? load_baudrate : current_baudrate);
@@ -207,7 +210,10 @@ static int do_loadx(int argc, char *argv[])
 		printf("## Binary (xmodem) download aborted (%d)\n", rcode);
 		rcode = 1;
 	}
-	console_change_speed(cdev, current_baudrate);
+
+	rc = console_set_baudrate(cdev, current_baudrate);
+	if (rc)
+		return rc;
 
 	return rcode;
 }

@@ -44,7 +44,7 @@ static int do_memset(int argc, char *argv[])
 	int     ret = 1;
 	char	*file = "/dev/mem";
 
-	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &file,
+	if (mem_parse_options(argc, argv, "bwlqd:", &mode, NULL, &file,
 			NULL) < 0)
 		return 1;
 
@@ -92,6 +92,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
 BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
 BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-q",  "quad access (64 bit)")
 BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
 BAREBOX_CMD_HELP_END
 

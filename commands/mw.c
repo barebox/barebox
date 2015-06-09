@@ -42,7 +42,7 @@ static int do_mem_mw(int argc, char *argv[])
 	loff_t adr;
 	int swab = 0;
 
-	if (mem_parse_options(argc, argv, "bwld:x", &mode, NULL, &filename,
+	if (mem_parse_options(argc, argv, "bwlqd:x", &mode, NULL, &filename,
 			&swab) < 0)
 		return 1;
 
@@ -59,6 +59,7 @@ static int do_mem_mw(int argc, char *argv[])
 		u8 val8;
 		u16 val16;
 		u32 val32;
+		u64 val64;
 		switch (mode) {
 		case O_RWSIZE_1:
 			val8 = simple_strtoul(argv[optind], NULL, 0);
@@ -75,6 +76,12 @@ static int do_mem_mw(int argc, char *argv[])
 			if (swab)
 				val32 = __swab32(val32);
 			ret = write(fd, &val32, 4);
+			break;
+		case O_RWSIZE_8:
+			val64 = simple_strtoull(argv[optind], NULL, 0);
+			if (swab)
+				val64 = __swab64(val64);
+			ret = write(fd, &val64, 8);
 			break;
 		}
 		if (ret < 0) {
@@ -97,6 +104,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
 BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
 BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-q",  "quad access (64 bit)")
 BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
 BAREBOX_CMD_HELP_END
 

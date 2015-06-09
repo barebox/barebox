@@ -49,7 +49,7 @@ static int do_mem_md(int argc, char *argv[])
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	if (mem_parse_options(argc, argv, "bwls:x", &mode, &filename, NULL,
+	if (mem_parse_options(argc, argv, "bwlqs:x", &mode, &filename, NULL,
 			&swab) < 0)
 		return 1;
 
@@ -105,6 +105,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
 BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
 BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-q",  "quad access (64 bit)")
 BAREBOX_CMD_HELP_OPT ("-s FILE",  "display file (default /dev/mem)")
 BAREBOX_CMD_HELP_OPT ("-x",       "swap bytes at output")
 BAREBOX_CMD_HELP_TEXT("")

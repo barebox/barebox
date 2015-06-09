@@ -38,9 +38,10 @@ static int do_mem_mm(int argc, char *argv[])
 	u8 val8;
 	u16 val16;
 	u32 val32;
-	u32 value, mask;
+	u64 val64;
+	u64 value, mask;
 
-	if (mem_parse_options(argc, argv, "bwld:", &mode, NULL, &filename,
+	if (mem_parse_options(argc, argv, "bwlqd:", &mode, NULL, &filename,
 			&swab) < 0)
 		return 1;
 
@@ -48,8 +49,8 @@ static int do_mem_mm(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
-	value = simple_strtoul(argv[optind++], NULL, 0);
-	mask = simple_strtoul(argv[optind++], NULL, 0);
+	value = simple_strtoull(argv[optind++], NULL, 0);
+	mask = simple_strtoull(argv[optind++], NULL, 0);
 
 	fd = open_and_lseek(filename, mode | O_RDWR, adr);
 	if (fd < 0)
@@ -86,6 +87,16 @@ static int do_mem_mm(int argc, char *argv[])
 		if (ret < 0)
 			goto out_write;
 		break;
+	case O_RWSIZE_8:
+		if (ret < 0)
+			goto out_read;
+		ret = pread(fd, &val64, 8, adr);
+		val64 &= ~mask;
+		val64 |= (value & mask);
+		ret = pwrite(fd, &val64, 8, adr);
+		if (ret < 0)
+			goto out_write;
+		break;
 	}
 
 	close(fd);
@@ -110,6 +121,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b",  "byte access")
 BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
 BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
+BAREBOX_CMD_HELP_OPT ("-q",  "quad access (64 bit)")
 BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
 BAREBOX_CMD_HELP_END
 

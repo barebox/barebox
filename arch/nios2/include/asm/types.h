@@ -3,7 +3,4 @@
 
 #include <asm/int-ll64.h>
 
-typedef u32 dma_addr_t;
-
 #endif
-

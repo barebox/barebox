@@ -31,7 +31,7 @@ typedef unsigned long long __u64;
  */
 #ifdef __KERNEL__
 
-#define BITS_PER_LONG 32
+#include <asm/bitsperlong.h>
 
 #ifndef __ASSEMBLY__
 
@@ -46,11 +46,6 @@ typedef unsigned int u32;
 
 typedef signed long long s64;
 typedef unsigned long long u64;
-
-/* Dma addresses are 32-bits wide.  */
-
-typedef u32 dma_addr_t;
-typedef u32 dma64_addr_t;
 
 #endif /* __ASSEMBLY__ */
 

@@ -94,6 +94,9 @@ config EFI_DEVICEPATH
 config FILE_LIST
 	bool
 
+config ARCH_DMA_ADDR_T_64BIT
+	bool
+
 menu "General Settings"
 
 config LOCALVERSION

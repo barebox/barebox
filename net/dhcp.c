@@ -21,8 +21,7 @@
 #include <getopt.h>
 #include <globalvar.h>
 #include <init.h>
-
-#define DHCP_DEFAULT_RETRY 20
+#include <dhcp.h>
 
 #define OPT_SIZE 312	/* Minimum DHCP Options size per RFC2131 - results in 576 byte pkt */
 
@@ -142,7 +141,8 @@ static void env_ip_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen)
 	IPaddr_t ip;
 
 	ip = net_read_ip(popt);
-	setenv_ip(opt->barebox_var_name, ip);
+	if (IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES))
+		setenv_ip(opt->barebox_var_name, ip);
 }
 
 static void env_str_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen)
@@ -158,10 +158,9 @@ static void env_str_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen
 
 	if (opt->copy_only_if_valid && !strlen(tmp))
 		return;
-
-	if (opt->barebox_var_name)
+	if (opt->barebox_var_name && IS_ENABLED(EVIRONMENT_VARIABLES))
 		setenv(opt->barebox_var_name, tmp);
-	if (opt->barebox_dhcp_global)
+	if (opt->barebox_dhcp_global && IS_ENABLED(CONFIG_GLOBALVAR))
 		dhcp_set_barebox_global(opt->barebox_dhcp_global, tmp);
 
 }
@@ -263,10 +262,10 @@ static int dhcp_set_string_options(struct dhcp_param *param, u8 *e)
 	int str_len;
 	char* str = param->data;
 
-	if (!str && param->barebox_var_name)
+	if (!str && param->barebox_var_name && IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES))
 		str = (char*)getenv(param->barebox_var_name);
 
-	if (!str && param->barebox_dhcp_global)
+	if (!str && param->barebox_dhcp_global && IS_ENABLED(CONFIG_GLOBALVAR))
 		str = (char*)dhcp_get_barebox_global(param->barebox_dhcp_global);
 
 	if (!str)
@@ -391,8 +390,10 @@ static void bootp_copy_net_params(struct bootp *bp)
 		net_set_serverip(tmp_ip);
 
 	if (strlen(bp->bp_file) > 0) {
-		setenv("bootfile", bp->bp_file);
-		dhcp_set_barebox_global("bootfile", bp->bp_file);
+		if (IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES))
+			setenv("bootfile", bp->bp_file);
+		if (IS_ENABLED(CONFIG_GLOBALVAR))
+			dhcp_set_barebox_global("bootfile", bp->bp_file);
 	}
 
 	debug("bootfile: %s\n", bp->bp_file);
@@ -651,87 +652,27 @@ static void dhcp_reset_env(void)
 		if (!opt->barebox_var_name || opt->copy_only_if_valid)
 			continue;
 
-		setenv(opt->barebox_var_name,"");
-		if (opt->barebox_dhcp_global)
-			dhcp_set_barebox_global(opt->barebox_dhcp_global,"");
+		if (IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES))
+			setenv(opt->barebox_var_name, "");
+		if (opt->barebox_dhcp_global && IS_ENABLED(CONFIG_GLOBALVAR))
+			dhcp_set_barebox_global(opt->barebox_dhcp_global, "");
 	}
 }
 
-static void dhcp_global_add(const char *var)
+int dhcp(int retries, struct dhcp_req_param *param)
 {
-	char * var_global = asprintf("dhcp.%s", var);
-
-	if (!var_global)
-		return;
-
-	globalvar_add_simple(var_global, NULL);
-	free(var_global);
-}
-
-static int dhcp_global_init(void)
-{
-	struct dhcp_opt *opt;
-	struct dhcp_param *param;
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(dhcp_options); i++) {
-		opt = &dhcp_options[i];
-
-		if (!opt->barebox_dhcp_global)
-			continue;
-
-		dhcp_global_add(opt->barebox_dhcp_global);
-	}
-
-	for (i = 0; i < ARRAY_SIZE(dhcp_params); i++) {
-		param = &dhcp_params[i];
-
-		if (!param->barebox_dhcp_global)
-			continue;
-
-		dhcp_global_add(param->barebox_dhcp_global);
-	}
-
-	return 0;
-}
-late_initcall(dhcp_global_init);
-
-static int do_dhcp(int argc, char *argv[])
-{
-	int ret, opt;
-	int retries = DHCP_DEFAULT_RETRY;
+	int ret = 0;
 
 	dhcp_reset_env();
 
-	getenv_uint("global.dhcp.retries", &retries);
+	dhcp_set_param_data(DHCP_HOSTNAME, param->hostname);
+	dhcp_set_param_data(DHCP_VENDOR_ID, param->vendor_id);
+	dhcp_set_param_data(DHCP_CLIENT_ID, param->client_id);
+	dhcp_set_param_data(DHCP_USER_CLASS, param->user_class);
+	dhcp_set_param_data(DHCP_CLIENT_UUID, param->client_uuid);
 
-	while((opt = getopt(argc, argv, "H:v:c:u:U:r:")) > 0) {
-		switch(opt) {
-		case 'H':
-			dhcp_set_param_data(DHCP_HOSTNAME, optarg);
-			break;
-		case 'v':
-			dhcp_set_param_data(DHCP_VENDOR_ID, optarg);
-			break;
-		case 'c':
-			dhcp_set_param_data(DHCP_CLIENT_ID, optarg);
-			break;
-		case 'u':
-			dhcp_set_param_data(DHCP_CLIENT_UUID, optarg);
-			break;
-		case 'U':
-			dhcp_set_param_data(DHCP_USER_CLASS, optarg);
-			break;
-		case 'r':
-			retries = simple_strtoul(optarg, NULL, 10);
-			break;
-		}
-	}
-
-	if (!retries) {
-		printf("retries is set to zero, set it to %d\n", DHCP_DEFAULT_RETRY);
+	if (!retries)
 		retries = DHCP_DEFAULT_RETRY;
-	}
 
 	dhcp_con = net_udp_new(0xffffffff, PORT_BOOTPS, dhcp_handler, NULL);
 	if (IS_ERR(dhcp_con)) {
@@ -781,29 +722,50 @@ out1:
 	net_unregister(dhcp_con);
 out:
 	if (ret)
-		printf("dhcp failed: %s\n", strerror(-ret));
+		debug("dhcp failed: %s\n", strerror(-ret));
 
 	return ret;
 }
 
-BAREBOX_CMD_HELP_START(dhcp)
-BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-H HOSTNAME", "hostname to send to the DHCP server")
-BAREBOX_CMD_HELP_OPT ("-v ID\t", "DHCP Vendor ID (code 60) submitted in DHCP requests")
-BAREBOX_CMD_HELP_OPT ("-c ID\t", "DHCP Client ID (code 61) submitted in DHCP requests")
-BAREBOX_CMD_HELP_OPT ("-u UUID\t", "DHCP Client UUID (code 97) submitted in DHCP requests")
-BAREBOX_CMD_HELP_OPT ("-U CLASS", "DHCP User class (code 77) submitted in DHCP requests")
-BAREBOX_CMD_HELP_OPT ("-r RETRY", "retry limit (default 20)");
-BAREBOX_CMD_HELP_END
+#ifdef CONFIG_GLOBALVAR
+static void dhcp_global_add(const char *var)
+{
+	char *var_global = asprintf("dhcp.%s", var);
 
-BAREBOX_CMD_START(dhcp)
-	.cmd		= do_dhcp,
-	BAREBOX_CMD_DESC("DHCP client to obtain IP or boot params")
-	BAREBOX_CMD_OPTS("[-HvcuUr]")
-	BAREBOX_CMD_GROUP(CMD_GRP_NET)
-	BAREBOX_CMD_HELP(cmd_dhcp_help)
-	BAREBOX_CMD_COMPLETE(empty_complete)
-BAREBOX_CMD_END
+	if (!var_global)
+		return;
+
+	globalvar_add_simple(var_global, NULL);
+	free(var_global);
+}
+
+static int dhcp_global_init(void)
+{
+	struct dhcp_opt *opt;
+	struct dhcp_param *param;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(dhcp_options); i++) {
+		opt = &dhcp_options[i];
+
+		if (!opt->barebox_dhcp_global)
+			continue;
+
+		dhcp_global_add(opt->barebox_dhcp_global);
+	}
+
+	for (i = 0; i < ARRAY_SIZE(dhcp_params); i++) {
+		param = &dhcp_params[i];
+
+		if (!param->barebox_dhcp_global)
+			continue;
+
+		dhcp_global_add(param->barebox_dhcp_global);
+	}
+
+	return 0;
+}
+late_initcall(dhcp_global_init);
 
 BAREBOX_MAGICVAR_NAMED(global_dhcp_bootfile, global.dhcp.bootfile, "bootfile returned from DHCP request");
 BAREBOX_MAGICVAR_NAMED(global_dhcp_rootpath, global.dhcp.rootpath, "rootpath returned from DHCP request");
@@ -814,3 +776,4 @@ BAREBOX_MAGICVAR_NAMED(global_dhcp_user_class, global.dhcp.user_class, "user cla
 BAREBOX_MAGICVAR_NAMED(global_dhcp_tftp_server_name, global.dhcp.tftp_server_name, "TFTP server Name returned from DHCP request");
 BAREBOX_MAGICVAR_NAMED(global_dhcp_oftree_file, global.dhcp.oftree_file, "OF tree returned from DHCP request (option 224)");
 BAREBOX_MAGICVAR_NAMED(global_dhcp_retries, global.dhcp.retries, "retry limit");
+#endif

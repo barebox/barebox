@@ -110,6 +110,15 @@ config ARCH_TEXT_BASE
 	default 0x80e80000 if MACH_OMAP343xSDP
 	default 0x80e80000 if MACH_BEAGLE
 
+config AM33XX_NET_BOOT
+	bool "enable AM335x network boot"
+	select ENVIRONMENT_VARIABLES
+	select NET_DHCP
+	select FS_TFTP
+	select DRIVER_NET_CPSW
+	default n
+	depends on ARCH_AM33XX && NET
+
 config OMAP4_USBBOOT
 	bool "enable booting from USB"
 	default n

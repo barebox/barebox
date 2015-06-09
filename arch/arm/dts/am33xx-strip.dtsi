@@ -1,0 +1,48 @@
+/*
+ * Copyright (C) 2015 PHYTEC Messtechnik GmbH,
+ * Author: Wadim Egorov <w.egorov@phytec.de>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/ {
+	aliases {
+		/delete-property/ i2c1;
+		/delete-property/ i2c2;
+		/delete-property/ mmc0;
+		/delete-property/ mmc1;
+		/delete-property/ mmc2;
+		/delete-property/ d_can0;
+		/delete-property/ d_can1;
+	};
+};
+
+/delete-node/ &i2c1;
+/delete-node/ &i2c2;
+/delete-node/ &mmc2;
+/delete-node/ &mmc3;
+/delete-node/ &hwspinlock;
+/delete-node/ &wdt2;
+/delete-node/ &dcan0;
+/delete-node/ &dcan1;
+/delete-node/ &mailbox;
+/delete-node/ &timer1;
+/delete-node/ &timer2;
+/delete-node/ &timer3;
+/delete-node/ &timer4;
+/delete-node/ &timer5;
+/delete-node/ &timer6;
+/delete-node/ &timer7;
+/delete-node/ &spi1;
+/delete-node/ &epwmss0;
+/delete-node/ &epwmss1;
+/delete-node/ &epwmss2;
+/delete-node/ &lcdc;
+/delete-node/ &tscadc;
+/delete-node/ &sham;
+/delete-node/ &aes;
+/delete-node/ &mcasp0;
+/delete-node/ &mcasp1;
+/delete-node/ &rng;

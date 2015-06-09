@@ -22,4 +22,8 @@ config NET_IFUP
 	default y
 	bool
 
+config NET_DHCP
+	bool
+	prompt "dhcp support"
+
 endif

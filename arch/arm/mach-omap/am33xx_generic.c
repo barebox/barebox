@@ -145,6 +145,9 @@ static int am33xx_bootsource(void)
 	case 0x44:
 		src = BOOTSOURCE_USB;
 		break;
+	case 0x46:
+		src = BOOTSOURCE_NET;
+		break;
 	default:
 		src = BOOTSOURCE_UNKNOWN;
 	}

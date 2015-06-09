@@ -1,7 +1,8 @@
 @r_shadow@
+type T;
 @@
 
-- ...curr_shadow_reg = 0;
+- static T curr_shadow_reg = 0;
 
 @r_out2_delay@
 type T;

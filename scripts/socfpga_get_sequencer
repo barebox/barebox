@@ -49,6 +49,14 @@ copy_source() {
 
 	echo "  Running coccinelle cleanups..."
 	spatch -sp_file scripts/coccinelle/misc/altera_sequencer.cocci -in_place arch/arm/mach-socfpga/include/mach
+
+	echo "  Cleanup header..."
+	sed -i 's/^static void rw_mgr_mem_calibrate_eye_diag_aid(void);$//g' $tgt
+	sed -i 's/^static void rw_mgr_load_mrs_calib(void);$//g' $tgt
+	sed -i 's/^static void rw_mgr_load_mrs_exec(void);$//g' $tgt
+	sed -i 's/^static void scc_mgr_set_group_dqs_io_and_oct_out2_gradual(uint32_t write_group, uint32_t delay);$//g' $tgt
+	sed -i 's/^static void rw_mgr_incr_vfifo_auto(uint32_t grp);$//g' $tgt
+	sed -i 's/^static void rw_mgr_decr_vfifo_auto(uint32_t grp);$//g' $tgt
 }
 
 copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.c arch/arm/mach-socfpga/include/mach/sequencer.c

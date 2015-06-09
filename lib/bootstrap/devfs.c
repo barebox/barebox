@@ -35,7 +35,7 @@ static void *read_image_head(const char *name)
 	cdev = cdev_open(name, O_RDONLY);
 	if (!cdev) {
 		bootstrap_err("failed to open partition\n");
-		return NULL;
+		goto free_header;
 	}
 
 	ret = cdev_read(cdev, header, BAREBOX_HEAD_SIZE, 0, 0);
@@ -43,10 +43,14 @@ static void *read_image_head(const char *name)
 
 	if (ret != BAREBOX_HEAD_SIZE) {
 		bootstrap_err("failed to read from partition\n");
-		return NULL;
+		goto free_header;
 	}
 
 	return header;
+
+free_header:
+	free(header);
+	return NULL;
 }
 
 static unsigned int get_image_size(void *head)
@@ -54,8 +58,12 @@ static unsigned int get_image_size(void *head)
 	unsigned int ret = 0;
 	unsigned int *psize = head + BAREBOX_HEAD_SIZE_OFFSET;
 
-	if (is_barebox_head(head))
+	if (is_barebox_head(head)) {
 		ret = *psize;
+		if (!ret)
+			bootstrap_err(
+				"image has correct magic, but the length is zero\n");
+	}
 	debug("Detected barebox image size %u\n", ret);
 
 	return ret;
@@ -77,13 +85,27 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 {
 	int ret;
 	int size = 0;
-	void *to, *header;
-	struct cdev *cdev;
+	void *to, *header, *result = NULL;
+	struct cdev *cdev, *partition;
 	char *partname = "x";
 
-	devfs_add_partition(devname, offset, max_size, DEVFS_PARTITION_FIXED, partname);
+	partition = devfs_add_partition(devname, offset, max_size,
+					DEVFS_PARTITION_FIXED, partname);
+	if (IS_ERR(partition)) {
+		bootstrap_err("%s: failed to add partition (%ld)\n",
+			      devname, PTR_ERR(partition));
+		return NULL;
+	}
+
 	if (use_bb) {
-		dev_add_bb_dev(partname, "bbx");
+		ret = dev_add_bb_dev(partname, "bbx");
+		if (ret) {
+			bootstrap_err(
+				"%s: failed to add bad block aware partition (%d)\n",
+				devname, ret);
+			goto delete_devfs_partition;
+		}
+
 		partname = "bbx";
 	}
 
@@ -105,14 +127,29 @@ void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 	cdev = cdev_open(partname, O_RDONLY);
 	if (!cdev) {
 		bootstrap_err("%s: failed to open %s\n", devname, partname);
-		return NULL;
+		goto free_memory;
 	}
 
 	ret = cdev_read(cdev, to, size, 0, 0);
-	if (ret != size) {
+	cdev_close(cdev);
+
+	if (ret != size)
 		bootstrap_err("%s: failed to read from %s\n", devname, partname);
-		return NULL;
+	else
+		result = to;
+
+free_memory:
+	free(header);
+	if (!result)
+		free(to);
+
+	if (use_bb) {
+		dev_remove_bb_dev(partname);
+		partname = "x";
 	}
 
-	return to;
+delete_devfs_partition:
+	devfs_del_partition(partname);
+
+	return result;
 }

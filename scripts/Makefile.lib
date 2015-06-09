@@ -388,10 +388,10 @@ quiet_cmd_ln = LN      $@
 cmd_ln = ln -sf $< $@
 
 # Check size of a file
-quiet_cmd_check_file_size = CHKSIZE $@
+quiet_cmd_check_file_size = CHKSIZE $2
       cmd_check_file_size = set -e;					\
-	size=`stat -c%s $@`;						\
-	max_size=`printf "%d" $2`;					\
+	size=`stat -c%s $2`;						\
+	max_size=`printf "%d" $3`;					\
 	if [ $$size -gt $$max_size ] ;					\
 	then								\
 		echo "$@ size $$size > of the maximum size $$max_size" >&2;	\

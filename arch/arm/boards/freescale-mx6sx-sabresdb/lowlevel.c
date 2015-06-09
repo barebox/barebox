@@ -21,32 +21,16 @@
 
 static inline void setup_uart(void)
 {
-	void __iomem *ccmbase = (void *)MX6_CCM_BASE_ADDR;
-	void __iomem *uartbase = (void *)MX6_UART1_BASE_ADDR;
 	void __iomem *iomuxbase = (void *)MX6_IOMUXC_BASE_ADDR;
 
-	writel(0xffffffff, ccmbase + 0x68);
-	writel(0xffffffff, ccmbase + 0x6c);
-	writel(0xffffffff, ccmbase + 0x70);
-	writel(0xffffffff, ccmbase + 0x74);
-	writel(0xffffffff, ccmbase + 0x78);
-	writel(0xffffffff, ccmbase + 0x7c);
-	writel(0xffffffff, ccmbase + 0x80);
+	imx6_ungate_all_peripherals();
 
 	writel(0x0, iomuxbase + 0x24);
 	writel(0x1b0b1, iomuxbase + 0x036C);
 	writel(0x0, iomuxbase + 0x28);
 	writel(0x1b0b1, iomuxbase + 0x0370);
 
-	writel(0x00000000, uartbase + 0x80);
-	writel(0x00004027, uartbase + 0x84);
-	writel(0x00000784, uartbase + 0x88);
-	writel(0x00000a81, uartbase + 0x90);
-	writel(0x0000002b, uartbase + 0x9c);
-	writel(0x0001b0b0, uartbase + 0xb0);
-	writel(0x0000047f, uartbase + 0xa4);
-	writel(0x0000c34f, uartbase + 0xa8);
-	writel(0x00000001, uartbase + 0x80);
+	imx6_uart_setup_ll();
 
 	putc_ll('>');
 }

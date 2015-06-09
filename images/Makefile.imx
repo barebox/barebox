@@ -4,8 +4,15 @@
 
 # %.imximg - convert into i.MX image
 # ----------------------------------------------------------------
+
+ifdef CONFIG_ARCH_IMX_XLOAD
+$(obj)/%.imximg: $(obj)/% FORCE
+	$(call cmd,check_file_size,$<,$(CONFIG_ARCH_IMX_UNUSED_IRAM_SIZE))
+	$(call if_changed,imx_image)
+else
 $(obj)/%.imximg: $(obj)/% FORCE
 	$(call if_changed,imx_image)
+endif
 
 # ----------------------- i.MX25 based boards ---------------------------
 pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
@@ -29,7 +36,18 @@ image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img
 pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg
 FILE_barebox-freescale-imx51-babbage.img = start_imx51_babbage.pblx.imximg
-image-$(CONFIG_MACH_FREESCALE_MX51_PDK) += barebox-freescale-imx51-babbage.img
+imx-barebox-$(CONFIG_MACH_FREESCALE_MX51_PDK) += barebox-freescale-imx51-babbage.img
+
+pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage_xload
+CFG_start_imx51_babbage_xload.pblx.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage-xload.imxcfg
+FILE_barebox-freescale-imx51-babbage-xload.img = start_imx51_babbage_xload.pblx.imximg
+imx-xload-$(CONFIG_MACH_FREESCALE_MX51_PDK) += barebox-freescale-imx51-babbage-xload.img
+
+ifdef CONFIG_ARCH_IMX_XLOAD
+image-y += $(imx-xload-y)
+else
+image-y += $(imx-barebox-y)
+endif
 
 pblx-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK) += start_imx51_genesi_efikasb
 CFG_start_imx51_genesi_efikasb.pblx.imximg = $(board)/efika-mx-smartbook/flash-header-imx51-genesi-efikasb.imxcfg

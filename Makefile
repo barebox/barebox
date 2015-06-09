@@ -700,7 +700,7 @@ OBJCOPYFLAGS_barebox.bin = -O binary
 barebox.bin: barebox FORCE
 	$(call if_changed,objcopy)
 ifndef CONFIG_PBL_IMAGE
-	$(call cmd,check_file_size,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
+	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_IMAGE_SIZE))
 endif
 
 # By default the uImage load address is 2MB below CONFIG_TEXT_BASE,

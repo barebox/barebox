@@ -3,6 +3,7 @@
 
 #include <io.h>
 #include <config.h>
+#include <common.h>
 #include <mach/imx1-regs.h>
 #include <mach/imx21-regs.h>
 #include <mach/imx25-regs.h>
@@ -13,7 +14,39 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 
+#include <serial/imx-uart.h>
+
 #ifdef CONFIG_DEBUG_LL
+
+#define __IMX_UART_BASE(soc, num) soc##_UART##num##_BASE_ADDR
+#define IMX_UART_BASE(soc, num) __IMX_UART_BASE(soc, num)
+
+static inline void imx_uart_setup_ll(void __iomem *uartbase,
+				     unsigned int refclock)
+{
+	writel(0x00000000, uartbase + UCR1);
+
+	writel(UCR2_IRTS | UCR2_WS | UCR2_TXEN | UCR2_RXEN | UCR2_SRST,
+	       uartbase + UCR2);
+	writel(UCR3_DSR | UCR3_DCD | UCR3_RI | UCR3_ADNIMP | UCR3_RXDMUXSEL,
+	       uartbase + UCR3);
+	writel((0b10 << UFCR_TXTL_SHF) | UFCR_RFDIV1 | (1 << UFCR_RXTL_SHF),
+	       uartbase + UFCR);
+
+	writel(baudrate_to_ubir(CONFIG_BAUDRATE),
+	       uartbase + UBIR);
+	writel(refclock_to_ubmr(refclock),
+	       uartbase + UBMR);
+
+	writel(UCR1_UARTEN, uartbase + UCR1);
+}
+
+#define __imx_uart_setup_ll(refclock)					\
+	do {								\
+		imx_uart_setup_ll(IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,	\
+						      CONFIG_DEBUG_IMX_UART_PORT)), \
+				  refclock);				\
+	} while(0)
 
 #ifdef CONFIG_DEBUG_IMX1_UART
 #define IMX_DEBUG_SOC MX1
@@ -37,21 +70,20 @@
 #error "unknown i.MX debug uart soc type"
 #endif
 
-#define __IMX_UART_BASE(soc, num) soc##_UART##num##_BASE_ADDR
-#define IMX_UART_BASE(soc, num) __IMX_UART_BASE(soc, num)
+static inline void imx51_uart_setup_ll(void)
+{
+	__imx_uart_setup_ll(54000000);
+}
 
-#define URTX0		0x40		/* Transmitter Register */
-
-#define UCR1		0x80		/* Control Register 1 */
-#define UCR1_UARTEN	(1 << 0)	/* UART enabled */
-
-#define USR2		0x98		/* Status Register 2 */
-#define USR2_TXDC	(1 << 3)	/* Transmitter complete */
+static inline void imx6_uart_setup_ll(void)
+{
+	__imx_uart_setup_ll(80000000);
+}
 
 static inline void PUTC_LL(int c)
 {
-	void __iomem *base = (void *)IMX_UART_BASE(IMX_DEBUG_SOC,
-			CONFIG_DEBUG_IMX_UART_PORT);
+	void __iomem *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
+						 CONFIG_DEBUG_IMX_UART_PORT));
 
 	if (!base)
 		return;
@@ -63,5 +95,28 @@ static inline void PUTC_LL(int c)
 
 	writel(c, base + URTX0);
 }
+#else
+
+static inline void imx_uart_setup_ll(void __iomem *uartbase,
+				     unsigned int refclock)
+{
+}
+
+static inline void imx51_uart_setup_ll(void) {}
+static inline void imx6_uart_setup_ll(void)  {}
+
 #endif /* CONFIG_DEBUG_LL */
+
+static inline void imx_ungate_all_peripherals(void __iomem *ccmbase)
+{
+	int i;
+	for (i = 0x68; i <= 0x80; i += 4)
+		writel(0xffffffff, ccmbase + i);
+}
+
+static inline void imx6_ungate_all_peripherals(void)
+{
+	imx_ungate_all_peripherals(IOMEM(MX6_CCM_BASE_ADDR));
+}
+
 #endif /* __MACH_DEBUG_LL_H__ */

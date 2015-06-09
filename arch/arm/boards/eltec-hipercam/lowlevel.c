@@ -24,18 +24,10 @@
 
 static void setup_uart(void)
 {
-	void __iomem *uart_base = (void *)0x02020000;
-
 	writel(0x1, 0x020e0330);
-	writel(0x00000000, uart_base + 0x80);
-	writel(0x00004027, uart_base + 0x84);
-	writel(0x00000704, uart_base + 0x88);
-	writel(0x00000a81, uart_base + 0x90);
-	writel(0x0000002b, uart_base + 0x9c);
-	writel(0x00013880, uart_base + 0xb0);
-	writel(0x0000047f, uart_base + 0xa4);
-	writel(0x0000c34f, uart_base + 0xa8);
-	writel(0x00000001, uart_base + 0x80);
+
+	imx6_uart_setup_ll();
+
 	putc_ll('>');
 }
 
@@ -48,7 +40,9 @@ ENTRY_FUNCTION(start_imx6dl_eltec_hipercam, r0, r1, r2)
 	imx6_cpu_lowlevel_init();
 
 	arm_setup_stack(0x00940000 - 8);
-	setup_uart();
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart();
 
 	fdt = __dtb_imx6dl_eltec_hipercam_start - get_runtime_offset();
 

@@ -27,6 +27,8 @@
 #include <fcntl.h>
 #include <endian.h>
 
+#include <include/filetype.h>
+
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
 #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
@@ -91,9 +93,12 @@ static int add_header_v1(void *buf, int offset, uint32_t loadaddr, uint32_t imag
 {
 	struct imx_flash_header *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
+	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
 
-	if (add_barebox_header)
+	if (add_barebox_header) {
 		memcpy(buf, bb_header, sizeof(bb_header));
+		*psize = imagesize;
+	}
 
 	buf += offset;
 	hdr = buf;
@@ -177,6 +182,7 @@ static int add_header_v2(void *buf, int offset, uint32_t loadaddr, uint32_t imag
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
+	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
 
 	if (add_barebox_header)
 		memcpy(buf, bb_header, sizeof(bb_header));
@@ -200,6 +206,9 @@ static int add_header_v2(void *buf, int offset, uint32_t loadaddr, uint32_t imag
 		hdr->csf = loadaddr + imagesize;
 		hdr->boot_data.size += CSF_LEN;
 	}
+
+	if (add_barebox_header)
+		*psize = hdr->boot_data.size;
 
 	hdr->dcd_header.tag	= TAG_DCD_HEADER;
 	hdr->dcd_header.length	= htobe16(sizeof(uint32_t) + dcdsize);

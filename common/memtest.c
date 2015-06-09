@@ -28,35 +28,33 @@
 #include <errno.h>
 #include <memtest.h>
 
-static const resource_size_t bitpattern[] = {
-	0x00000001,	/* single bit */
-	0x00000003,	/* two adjacent bits */
-	0x00000007,	/* three adjacent bits */
-	0x0000000F,	/* four adjacent bits */
-	0x00000005,	/* two non-adjacent bits */
-	0x00000015,	/* three non-adjacent bits */
-	0x00000055,	/* four non-adjacent bits */
-	0xAAAAAAAA,	/* alternating 1/0 */
-};
-
-/*
- * Perform a memory test. The complete test
- * loops until interrupted by ctrl-c.
- *
- * Prameters:
- * start: start address for memory test.
- * end: end address of memory test.
- * bus_only: skip integrity check and do only a address/data bus
- *	     testing.
- *
- * Return value can be -EINVAL for invalid parameter or -EINTR
- * if memory test was interrupted.
- */
-int mem_test(resource_size_t _start,
-	       resource_size_t _end, int bus_only)
+static void mem_test_report_failure(const char *failure_description,
+				    resource_size_t expected_value,
+				    resource_size_t actual_value,
+				    volatile resource_size_t *address)
 {
-	volatile resource_size_t *start, *dummy, val, readback, offset,
-		offset2, pattern, temp, anti_pattern, num_words;
+	printf("FAILURE (%s): "
+	       "expected 0x%08x, actual 0x%08x at address 0x%08x.\n",
+	       failure_description, expected_value, actual_value,
+	       (resource_size_t)address);
+}
+
+int mem_test_bus_integrity(resource_size_t _start,
+			   resource_size_t _end)
+{
+	static const resource_size_t bitpattern[] = {
+		0x00000001,	/* single bit */
+		0x00000003,	/* two adjacent bits */
+		0x00000007,	/* three adjacent bits */
+		0x0000000F,	/* four adjacent bits */
+		0x00000005,	/* two non-adjacent bits */
+		0x00000015,	/* three non-adjacent bits */
+		0x00000055,	/* four non-adjacent bits */
+		0xAAAAAAAA,	/* alternating 1/0 */
+	};
+
+	volatile resource_size_t *start, *dummy, num_words, val, readback, offset,
+		offset2, pattern, temp, anti_pattern;
 	int i;
 
 	_start = ALIGN(_start, sizeof(resource_size_t));
@@ -66,7 +64,7 @@ int mem_test(resource_size_t _start,
 		return -EINVAL;
 
 	start = (resource_size_t *)_start;
-	/*
+		/*
 	 * Point the dummy to start[1]
 	 */
 	dummy = start + 1;
@@ -91,8 +89,7 @@ int mem_test(resource_size_t _start,
 	 * '0's and '0' bits through a field of '1's (i.e.
 	 * pattern and ~pattern).
 	 */
-	for (i = 0; i < ARRAY_SIZE(bitpattern)/
-			sizeof(resource_size_t); i++) {
+	for (i = 0; i < ARRAY_SIZE(bitpattern); i++) {
 		val = bitpattern[i];
 
 		for (; val != 0; val <<= 1) {
@@ -101,9 +98,8 @@ int mem_test(resource_size_t _start,
 			*dummy = ~val;
 			readback = *start;
 			if (readback != val) {
-				printf("FAILURE (data line): "
-					"expected 0x%08x, actual 0x%08x at address 0x%08x.\n",
-					val, readback, (resource_size_t)start);
+				mem_test_report_failure("data line",
+							val, readback, start);
 				return -EIO;
 			}
 
@@ -111,10 +107,8 @@ int mem_test(resource_size_t _start,
 			*dummy = val;
 			readback = *start;
 			if (readback != ~val) {
-				printf("FAILURE (data line): "
-					"Is 0x%08x, should be 0x%08x at address 0x%08x.\n",
-					readback,
-					~val, (resource_size_t)start);
+				mem_test_report_failure("data line",
+							~val, readback, start);
 				return -EIO;
 			}
 		}
@@ -171,6 +165,15 @@ int mem_test(resource_size_t _start,
 	for (offset = 1; offset <= num_words; offset <<= 1)
 		start[offset] = pattern;
 
+	/*
+	 * Now write anti-pattern at offset 0. If during the previous
+	 * step one of the address lines got stuck high this
+	 * operation would result in a memory cell at power-of-two
+	 * offset being set to anti-pattern which hopefully would be
+	 * detected byt the loop that follows.
+	 */
+	start[0] = anti_pattern;
+
 	printf("Check for address bits stuck high.\n");
 
 	/*
@@ -179,14 +182,16 @@ int mem_test(resource_size_t _start,
 	for (offset = 1; offset <= num_words; offset <<= 1) {
 		temp = start[offset];
 		if (temp != pattern) {
-			printf("FAILURE: Address bit "
-					"stuck high @ 0x%08x:"
-					" expected 0x%08x, actual 0x%08x.\n",
-					(resource_size_t)&start[offset],
-					pattern, temp);
+			mem_test_report_failure("address bit stuck high",
+						pattern, temp, &start[offset]);
 			return -EIO;
 		}
 	}
+
+	/*
+	  Restore original value
+	 */
+	start[0] = pattern;
 
 	printf("Check for address bits stuck "
 			"low or shorted.\n");
@@ -197,31 +202,40 @@ int mem_test(resource_size_t _start,
 	for (offset2 = 1; offset2 <= num_words; offset2 <<= 1) {
 		start[offset2] = anti_pattern;
 
-		for (offset = 1; offset <= num_words; offset <<= 1) {
+		for (offset = 0; offset <= num_words;
+		     offset = (offset) ? offset << 1 : 1) {
 			temp = start[offset];
 
 			if ((temp != pattern) &&
 					(offset != offset2)) {
-				printf("FAILURE: Address bit stuck"
-						" low or shorted @"
-						" 0x%08x: expected 0x%08x, actual 0x%08x.\n",
-						(resource_size_t)&start[offset],
-						pattern, temp);
+				mem_test_report_failure(
+					"address bit stuck low or shorted",
+					pattern, temp, &start[offset]);
 				return -EIO;
 			}
 		}
 		start[offset2] = pattern;
 	}
 
-	/*
-	 * We tested only the bus if != 0
-	 * leaving here
-	 */
-	if (bus_only)
-		return 0;
+	return 0;
+}
+
+int mem_test_dram(resource_size_t _start,
+		  resource_size_t _end)
+{
+	volatile resource_size_t *start, num_words, offset, temp, anti_pattern;
+
+	_start = ALIGN(_start, sizeof(resource_size_t));
+	_end = ALIGN_DOWN(_end, sizeof(resource_size_t)) - 1;
+
+	if (_end <= _start)
+		return -EINVAL;
+
+	start = (resource_size_t *)_start;
+	num_words = (_end - _start + 1)/sizeof(resource_size_t);
 
 	printf("Starting integrity check of physicaly ram.\n"
-			"Filling ram with patterns...\n");
+	       "Filling ram with patterns...\n");
 
 	/*
 	 * Description: Test the integrity of a physical
@@ -238,16 +252,17 @@ int mem_test(resource_size_t _start,
 	 * Fill memory with a known pattern.
 	 */
 	init_progression_bar(num_words);
+
 	for (offset = 0; offset < num_words; offset++) {
 		/*
 		 * Every 4K we update the progressbar.
 		 */
+
 		if (!(offset & (SZ_4K - 1))) {
 			if (ctrlc())
 				return -EINTR;
 			show_progress(offset);
 		}
-
 		start[offset] = offset + 1;
 	}
 	show_progress(offset);
@@ -266,10 +281,10 @@ int mem_test(resource_size_t _start,
 
 		temp = start[offset];
 		if (temp != (offset + 1)) {
-			printf("\nFAILURE (read/write) @ 0x%08x:"
-					" expected 0x%08x, actual 0x%08x.\n",
-					(resource_size_t)&start[offset],
-					(offset + 1), temp);
+			printf("\n");
+			mem_test_report_failure("read/write",
+						(offset + 1),
+						temp, &start[offset]);
 			return -EIO;
 		}
 
@@ -294,10 +309,10 @@ int mem_test(resource_size_t _start,
 		temp = start[offset];
 
 		if (temp != anti_pattern) {
-			printf("\nFAILURE (read/write): @ 0x%08x:"
-					" expected 0x%08x, actual 0x%08x.\n",
-					(resource_size_t)&start[offset],
-					anti_pattern, temp);
+			printf("\n");
+			mem_test_report_failure("read/write",
+						anti_pattern,
+						temp, &start[offset]);
 			return -EIO;
 		}
 
@@ -311,4 +326,37 @@ int mem_test(resource_size_t _start,
 	printf("\n");
 
 	return 0;
+}
+
+/*
+ * Perform a memory test. The complete test
+ * loops until interrupted by ctrl-c.
+ *
+ * Prameters:
+ * start: start address for memory test.
+ * end: end address of memory test.
+ * bus_only: skip integrity check and do only a address/data bus
+ *	     testing.
+ *
+ * Return value can be -EINVAL for invalid parameter or -EINTR
+ * if memory test was interrupted.
+ */
+int mem_test(resource_size_t _start,
+	       resource_size_t _end, int bus_only)
+{
+	int ret;
+
+	ret = mem_test_bus_integrity(_start, _end);
+
+	if (ret < 0)
+		return ret;
+
+	/*
+	 * We tested only the bus if != 0
+	 * leaving here
+	 */
+	if (!bus_only)
+		ret = mem_test_dram(_start, _end);
+
+	return ret;
 }

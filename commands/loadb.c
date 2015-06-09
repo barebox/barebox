@@ -606,7 +606,6 @@ static int do_load_serial_bin(int argc, char *argv[])
 	int load_baudrate = 0, current_baudrate;
 	int rcode = 0, ret;
 	int opt;
-	int open_mode = O_WRONLY;
 	char *output_file = NULL;
 	struct console_device *cdev = NULL;
 
@@ -620,9 +619,6 @@ static int do_load_serial_bin(int argc, char *argv[])
 			break;
 		case 'o':
 			offset = (int)simple_strtoul(optarg, NULL, 10);
-			break;
-		case 'c':
-			open_mode |= O_CREAT;
 			break;
 		default:
 			perror(argv[0]);
@@ -644,7 +640,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 		output_file = DEF_FILE;
 
 	/* File should exist */
-	ofd = open(output_file, open_mode);
+	ofd = open(output_file, O_WRONLY | O_CREAT);
 	if (ofd < 0) {
 		perror(argv[0]);
 		return 3;
@@ -688,7 +684,6 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
 BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate")
-BAREBOX_CMD_HELP_OPT("-c",      "create file if not present")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loadb)

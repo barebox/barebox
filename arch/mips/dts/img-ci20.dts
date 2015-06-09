@@ -28,6 +28,21 @@
 		device_type = "memory";
 		reg = <0x0 0x10000000>;
 	};
+
+	board {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		ranges = <>;
+
+		dm9000@16000000 {
+			compatible = "davicom,dm9000";
+			davicom,no-eeprom;
+
+			reg = <0x16000000 1   /* addr */
+			       0x16000002 1>; /* data */
+		};
+	};
 };
 
 &uart0 {

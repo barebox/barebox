@@ -27,6 +27,7 @@ config BOARD_RZX50
 config BOARD_CI20
 	bool "Imagination Creator CI20"
 	select CPU_JZ4780
+	select HAS_DM9000
 
 endchoice
 

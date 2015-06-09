@@ -48,6 +48,7 @@
 # define NCR_FCOL	(1 << 4)
 # define NCR_FDX	(1 << 3)
 # define NCR_LBK	(3 << 1)
+# define NCR_MAC_LBK	(1 << 1)
 # define NCR_RST	(1 << 0)
 
 #define DM9K_NSR	0x01
@@ -359,6 +360,11 @@ static int dm9k_phy_read(struct mii_bus *bus, int addr, int reg)
 	struct dm9k *priv = bus->priv;
 	struct device_d *dev = &bus->dev;
 
+	/* only internal phy supported by now, so show only one phy on miibus */
+	if (addr != 0) {
+		return 0xffff;
+	}
+
 	/* Fill the phyxcer register into REG_0C */
 	dm9k_iow(priv, DM9K_EPAR, DM9K_PHY | reg);
 	dm9k_iow(priv, DM9K_EPCR, 0xc);	/* Issue phyxcer read command */
@@ -377,6 +383,11 @@ static int dm9k_phy_write(struct mii_bus *bus, int addr, int reg, u16 val)
 {
 	struct dm9k *priv = bus->priv;
 	struct device_d *dev = &bus->dev;
+
+	/* only internal phy supported by now, so show only one phy on miibus */
+	if (addr != 0) {
+		return 0;
+	}
 
 	/* Fill the phyxcer register into REG_0C */
 	dm9k_iow(priv, DM9K_EPAR, DM9K_PHY | reg);
@@ -462,8 +473,28 @@ static void dm9k_reset(struct dm9k *priv)
 	struct device_d *dev = priv->miibus.parent;
 
 	dev_dbg(dev, "%s\n", __func__);
-	dm9k_iow(priv, DM9K_NCR, NCR_RST);
-	udelay(1000);		/* delay 1ms */
+
+	/* Reset DM9000, see DM9000 Application Notes V1.22 Jun 11, 2004 page 29
+	 * The essential point is that we have to do a double reset, and the
+	 * instruction is to set LBK into MAC internal loopback mode.
+	 */
+
+	/* Make all GPIO pins outputs */
+	dm9k_iow(priv, DM9K_GPCR, 0x0F);
+	/* Power internal PHY by writing 0 to GPIO0 pin */
+	dm9k_iow(priv, DM9K_GPR, 0);
+
+	dm9k_iow(priv, DM9K_NCR, NCR_RST | NCR_MAC_LBK);
+	udelay(100); /* Application note says at least 20 us */
+	if (dm9k_ior(priv, DM9K_NCR) & NCR_RST)
+		dev_err(dev, "dm9000 did not respond to first reset\n");
+
+	dm9k_iow(priv, DM9K_NCR, 0);
+	dm9k_iow(priv, DM9K_NCR, NCR_RST | NCR_MAC_LBK);
+	udelay(100);
+
+	if (dm9k_ior(priv, DM9K_NCR) & NCR_RST)
+		dev_err(dev, "dm9000 did not respond to second reset\n");
 }
 
 static int dm9k_eth_open(struct eth_device *edev)
@@ -698,17 +729,66 @@ static int dm9k_init_dev(struct eth_device *edev)
 	return 0;
 }
 
+static int dm9000_setup_buswidth(struct device_d *dev, struct dm9k *priv, uint32_t width)
+{
+	switch (width) {
+	case 1:
+		priv->buswidth = IORESOURCE_MEM_8BIT;
+		break;
+	case 2:
+		priv->buswidth = IORESOURCE_MEM_16BIT;
+		break;
+	case 4:
+		priv->buswidth = IORESOURCE_MEM_32BIT;
+		break;
+	default:
+		dev_err(dev, "Wrong io resource size\n");
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int dm9000_parse_dt(struct device_d *dev, struct dm9k *priv)
+{
+	struct device_node *np = dev->device_node;
+	uint32_t prop;
+
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !np)
+		return -ENODEV;
+
+	if (of_find_property(np, "davicom,no-eeprom", NULL)) {
+		priv->srom = 0;
+	} else {
+		priv->srom = 1;
+	}
+
+	if (of_property_read_u32(np, "reg-io-width", &prop)) {
+		/* Use 8-bit registers by default */
+		prop = 1;
+	}
+
+	return dm9000_setup_buswidth(dev, priv, prop);
+}
+
+static int dm9000_parse_pdata(struct device_d *dev, struct dm9k *priv)
+{
+	struct dm9000_platform_data *pdata = dev->platform_data;
+	uint32_t width;
+
+	priv->srom = pdata->srom;
+
+	width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+
+	return dm9000_setup_buswidth(dev, priv, width);
+}
+
 static int dm9k_probe(struct device_d *dev)
 {
 	unsigned io_mode;
 	struct eth_device *edev;
 	struct dm9k *priv;
-	struct dm9000_platform_data *pdata;
-
-	if (!dev->platform_data) {
-		dev_err(dev, "No platform_data\n");
-		return -ENODEV;
-	}
+	int ret;
 
 	if (dev->num_resources < 2) {
 		dev_err(dev, "Need 2 resources base and data");
@@ -717,19 +797,28 @@ static int dm9k_probe(struct device_d *dev)
 
 	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct dm9k));
 	edev->priv = (struct dm9k *)(edev + 1);
-
-	pdata = dev->platform_data;
-
 	priv = edev->priv;
 
-	priv->buswidth = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+	if (dev->platform_data) {
+		ret = dm9000_parse_pdata(dev, priv);
+	} else {
+		ret = dm9000_parse_dt(dev, priv);
+	}
+
+	if (ret)
+		goto err;
+
 	priv->iodata = dev_request_mem_region(dev, 1);
-	if (!priv->iodata)
-		return -EBUSY;
+	if (!priv->iodata) {
+		ret = -EBUSY;
+		goto err;
+	}
+
 	priv->iobase = dev_request_mem_region(dev, 0);
-	if (!priv->iobase)
-		return -EBUSY;
-	priv->srom = pdata->srom;
+	if (!priv->iobase) {
+		ret = -EBUSY;
+		goto err;
+	}
 
 	edev->init = dm9k_init_dev;
 	edev->open = dm9k_eth_open;
@@ -747,8 +836,10 @@ static int dm9k_probe(struct device_d *dev)
 
 	/* RESET device */
 	dm9k_reset(priv);
-	if(dm9k_check_id(priv))
-		return -ENODEV;
+	if (dm9k_check_id(priv)) {
+		ret = -ENODEV;
+		goto err;
+	}
 
 	io_mode = dm9k_ior(priv, DM9K_ISR) >> 6;
 	switch (io_mode) {
@@ -780,10 +871,21 @@ static int dm9k_probe(struct device_d *dev)
 	eth_register(edev);
 
 	return 0;
+
+err:
+	free(edev);
+
+	return ret;
 }
+
+static struct of_device_id dm9000_of_matches[] = {
+	{ .compatible = "davicom,dm9000", },
+	{ /* sentinel */ }
+};
 
 static struct driver_d dm9k_driver = {
 	.name  = "dm9000",
 	.probe = dm9k_probe,
+	.of_compatible = DRV_OF_COMPAT(dm9000_of_matches),
 };
 device_platform_driver(dm9k_driver);

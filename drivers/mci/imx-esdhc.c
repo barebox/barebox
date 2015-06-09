@@ -60,9 +60,10 @@ static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 
 	if (data) {
 		xfertyp |= COMMAND_DPSEL;
-#ifndef CONFIG_MCI_IMX_ESDHC_PIO
-		xfertyp |= TRANSFER_MODE_DMAEN;
-#endif
+
+		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
+			xfertyp |= TRANSFER_MODE_DMAEN;
+
 		if (data->blocks > 1) {
 			xfertyp |= TRANSFER_MODE_MSBSEL;
 			xfertyp |= TRANSFER_MODE_BCEN;
@@ -89,11 +90,10 @@ static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 	return COMMAND_CMD(cmd->cmdidx) | xfertyp;
 }
 
-#ifdef CONFIG_MCI_IMX_ESDHC_PIO
 /*
  * PIO Read/Write Mode reduce the performace as DMA is not used in this mode.
  */
-static void
+static int
 esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
@@ -115,8 +115,8 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 			while (!(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_BREN)
 				&& --timeout);
 			if (timeout <= 0) {
-				printf("\nData Read Failed in PIO Mode.");
-				return;
+				dev_err(host->dev, "Data Read Failed\n");
+				return -ETIMEDOUT;
 			}
 			while (size && (!(irqstat & IRQSTAT_TC))) {
 				udelay(100); /* Wait before last byte transfer complete */
@@ -138,8 +138,8 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 			while (!(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_BWEN)
 				&& --timeout);
 			if (timeout <= 0) {
-				printf("\nData Write Failed in PIO Mode.");
-				return;
+				dev_err(host->dev, "Data Write Failed\n");
+				return -ETIMEDOUT;
 			}
 			while (size && (!(irqstat & IRQSTAT_TC))) {
 				udelay(100); /* Wait before last byte transfer complete */
@@ -152,53 +152,85 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 			blocks--;
 		}
 	}
+
+	return 0;
 }
-#endif
 
 static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	void __iomem *regs = host->regs;
-#ifndef CONFIG_MCI_IMX_ESDHC_PIO
 	u32 wml_value;
 
-	wml_value = data->blocksize/4;
-
-	if (data->flags & MMC_DATA_READ) {
-		if (wml_value > 0x10)
-			wml_value = 0x10;
-
-		esdhc_clrsetbits32(regs + IMX_SDHCI_WML, WML_RD_WML_MASK, wml_value);
-		esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
+	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
+		if (!(data->flags & MMC_DATA_READ)) {
+			if ((esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL) == 0)
+				goto err_locked;
+			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->src);
+		} else {
+			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
+		}
 	} else {
-		if (wml_value > 0x80)
-			wml_value = 0x80;
-		if ((esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL) == 0) {
-			printf("\nThe SD card is locked. Can not write to a locked card.\n\n");
-			return -ETIMEDOUT;
-		}
+		wml_value = data->blocksize/4;
 
-		esdhc_clrsetbits32(regs + IMX_SDHCI_WML, WML_WR_WML_MASK,
-					wml_value << 16);
-		esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->src);
-	}
-#else	/* CONFIG_MCI_IMX_ESDHC_PIO */
-	if (!(data->flags & MMC_DATA_READ)) {
-		if ((esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL) == 0) {
-			printf("\nThe SD card is locked. "
-				"Can not write to a locked card.\n\n");
-			return -ETIMEDOUT;
+		if (data->flags & MMC_DATA_READ) {
+			if (wml_value > 0x10)
+				wml_value = 0x10;
+
+			esdhc_clrsetbits32(regs + IMX_SDHCI_WML, WML_RD_WML_MASK, wml_value);
+			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
+		} else {
+			if (wml_value > 0x80)
+				wml_value = 0x80;
+			if ((esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL) == 0)
+				goto err_locked;
+
+			esdhc_clrsetbits32(regs + IMX_SDHCI_WML, WML_WR_WML_MASK,
+						wml_value << 16);
+			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->src);
 		}
-		esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->src);
-	} else
-		esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
-#endif	/* CONFIG_MCI_IMX_ESDHC_PIO */
+	}
 
 	esdhc_write32(regs + SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | data->blocksize);
 
 	return 0;
+
+err_locked:
+	dev_err(host->dev, "Can not write to locked card.\n\n");
+
+	return -ETIMEDOUT;
 }
 
+static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
+{
+	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
+	void __iomem *regs = host->regs;
+	unsigned int num_bytes = data->blocks * data->blocksize;
+	u32 irqstat;
+
+	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
+		return esdhc_pio_read_write(mci, data);
+
+	do {
+		irqstat = esdhc_read32(regs + SDHCI_INT_STATUS);
+
+		if (irqstat & DATA_ERR)
+			return -EIO;
+
+		if (irqstat & IRQSTAT_DTOE)
+			return -ETIMEDOUT;
+	} while (!(irqstat & IRQSTAT_TC) &&
+		(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_DLA));
+
+	if (data->flags & MMC_DATA_WRITE)
+		dma_sync_single_for_cpu((unsigned long)data->src,
+					num_bytes, DMA_TO_DEVICE);
+	else
+		dma_sync_single_for_cpu((unsigned long)data->dest,
+					num_bytes, DMA_FROM_DEVICE);
+
+	return 0;
+}
 
 /*
  * Sends a command out on the bus.  Takes the mci pointer,
@@ -303,27 +335,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	/* Wait until all of the blocks are transferred */
 	if (data) {
-#ifdef CONFIG_MCI_IMX_ESDHC_PIO
-		esdhc_pio_read_write(mci, data);
-#else
-		do {
-			irqstat = esdhc_read32(regs + SDHCI_INT_STATUS);
-
-			if (irqstat & DATA_ERR)
-				return -EIO;
-
-			if (irqstat & IRQSTAT_DTOE)
-				return -ETIMEDOUT;
-		} while (!(irqstat & IRQSTAT_TC) &&
-				(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_DLA));
-
-		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_cpu((unsigned long)data->src,
-						num_bytes, DMA_TO_DEVICE);
-		else
-			dma_sync_single_for_cpu((unsigned long)data->dest,
-						num_bytes, DMA_FROM_DEVICE);
-#endif
+		ret = esdhc_do_data(mci, data);
+		if (ret)
+			return ret;
 	}
 
 	esdhc_write32(regs + SDHCI_INT_STATUS, -1);
@@ -498,8 +512,9 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	return ret;
 }
 
-static int esdhc_reset(void __iomem *regs)
+static int esdhc_reset(struct fsl_esdhc_host *host)
 {
+	void __iomem *regs = host->regs;
 	uint64_t start;
 
 	/* reset the controller */
@@ -513,7 +528,7 @@ static int esdhc_reset(void __iomem *regs)
 					& SYSCTL_RSTA))
 			break;
 		if (is_timeout(start, 100 * MSECOND)) {
-			printf("MMC/SD: Reset never completed.\n");
+			dev_err(host->dev, "Reset never completed.\n");
 			return -EIO;
 		}
 	}
@@ -550,7 +565,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 		return PTR_ERR(host->regs);
 
 	/* First reset the eSDHC controller */
-	ret = esdhc_reset(host->regs);
+	ret = esdhc_reset(host);
 	if (ret) {
 		free(host);
 		return ret;

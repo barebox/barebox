@@ -321,7 +321,7 @@ struct of_phandle_args;
 
 #define CLK_OF_DECLARE(name, compat, fn)				\
 const struct of_device_id __clk_of_table_##name				\
-__attribute__ ((unused,section (".__clk_of_table_" __stringify(name)))) \
+__attribute__ ((unused,section (".__clk_of_table"))) \
 	= { .compatible = compat, .data = fn }
 
 #if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)

@@ -60,6 +60,7 @@ static const struct filetype_str filetype_str[] = {
 			"TI OMAP CH boot image (big endian)", "ch-image-be" },
 	[filetype_xz_compressed] = { "XZ compressed", "xz" },
 	[filetype_exe] = { "MS-DOS executable", "exe" },
+	[filetype_mxs_bootstream] = { "Freescale MXS bootstream", "mxsbs" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -292,6 +293,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (buf8[0] == 'M' && buf8[1] == 'Z')
 		return filetype_exe;
+	if (le32_to_cpu(buf[5]) == 0x504d5453)
+		return filetype_mxs_bootstream;
 
 	if (is_barebox_arm_head(_buf))
 		return filetype_arm_barebox;

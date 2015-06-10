@@ -34,6 +34,7 @@ enum filetype {
 	filetype_ch_image_be,
 	filetype_exe,
 	filetype_xz_compressed,
+	filetype_mxs_bootstream,
 	filetype_max,
 };
 

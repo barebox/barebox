@@ -31,6 +31,16 @@ static int mtd_part_write(struct mtd_info *mtd, loff_t to, size_t len,
 					len, retlen, buf);
 }
 
+static int mtd_part_write_oob(struct mtd_info *mtd, loff_t to,
+		struct mtd_oob_ops *ops)
+{
+	if (to >= mtd->size)
+		return -EINVAL;
+	if (ops->datbuf && to + ops->len > mtd->size)
+		return -EINVAL;
+	return mtd->master->write_oob(mtd->master, to + mtd->master_offset, ops);
+}
+
 static int mtd_part_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
 	int ret;
@@ -159,6 +169,9 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 		part->unlock = mtd_part_unlock;
 		part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
 	}
+
+	if (mtd->write_oob)
+		part->write_oob = mtd_part_write_oob;
 
 	part->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
 	part->size = size;

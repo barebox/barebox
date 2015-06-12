@@ -370,7 +370,7 @@ static int imx6_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *da
 	if (ret)
 		return ret;
 
-	bcb_cdev = cdev_by_name("nand0");
+	bcb_cdev = cdev_by_name(handler->devicefile);
 	if (!bcb_cdev) {
 		pr_err("%s: No FCB device!\n", __func__);
 		return -ENODEV;
@@ -478,7 +478,7 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 	int ret;
 
 	handler = xzalloc(sizeof(*handler));
-	handler->devicefile = "/dev/nand0";
+	handler->devicefile = "nand0.barebox";
 	handler->name = name;
 	handler->flags = flags;
 	handler->handler = imx6_bbu_nand_update;

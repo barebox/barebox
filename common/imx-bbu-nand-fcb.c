@@ -257,8 +257,8 @@ static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 
 	fcb->NumEccBlocksPerPage = mtd->writesize / fcb->EccBlock0Size - 1;
 
-	/* DBBT search area starts at third block */
-	fcb->DBBTSearchAreaStartAddress = mtd->erasesize / mtd->writesize * 2;
+	/* DBBT search area starts at second page on first block */
+	fcb->DBBTSearchAreaStartAddress = 1;
 
 	fcb->BadBlockMarkerByte = mxs_nand_mark_byte_offset(mtd);
 	fcb->BadBlockMarkerStartBit = mxs_nand_mark_bit_offset(mtd);
@@ -445,10 +445,6 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	 */
 	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
 
-	ret = raw_write_page(mtd, fcb_raw_page, 0);
-	if (ret)
-		goto out;
-
 	ret = raw_write_page(mtd, fcb_raw_page, mtd->erasesize);
 	if (ret)
 		goto out;
@@ -467,14 +463,19 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 			imx_handler->dbbt_create(imx_handler, dbbt, ret);
 	}
 
-	for (i = 2; i < 4; i++) {
-		ret = mtd_write(mtd, mtd->erasesize * i, 2048, &written, dbbt_page);
+	for (i = 0; i < 4; i++) {
+		ret = raw_write_page(mtd, fcb_raw_page, mtd->erasesize * i);
+		if (ret)
+			goto out;
+
+		ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize,
+				mtd->writesize, &written, dbbt_page);
 		if (ret)
 			goto out;
 
 		if (dbbt->DBBTNumOfPages > 0) {
-			ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize * 4,
-					2048, &written, dbbt_data_page);
+			ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize * 5,
+					mtd->writesize, &written, dbbt_data_page);
 			if (ret)
 				goto out;
 		}

@@ -275,11 +275,10 @@ static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 static int imx_bbu_erase(struct mtd_info *mtd)
 {
 	uint64_t offset = 0;
-	int len = SZ_2M;
 	struct erase_info erase;
 	int ret;
 
-	while (len > 0) {
+	while (offset < mtd->size) {
 		pr_debug("erasing at 0x%08llx\n", offset);
 		if (mtd_block_isbad(mtd, offset)) {
 			pr_debug("erase skip block @ 0x%08llx\n", offset);
@@ -296,7 +295,6 @@ static int imx_bbu_erase(struct mtd_info *mtd)
 			return ret;
 
 		offset += mtd->erasesize;
-		len -= mtd->erasesize;
 	}
 
 	return 0;

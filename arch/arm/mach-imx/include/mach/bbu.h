@@ -75,15 +75,6 @@ static inline int imx_bbu_external_nor_register_handler(const char *name, char *
 }
 #endif
 
-#if defined(CONFIG_BAREBOX_UPDATE_IMX6_NAND)
-int imx6_bbu_nand_register_handler(const char *name, unsigned long flags);
-#else
-static inline int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
-{
-	return -ENOSYS;
-}
-#endif
-
 #if defined(CONFIG_BAREBOX_UPDATE_IMX_EXTERNAL_NAND)
 int imx_bbu_external_nand_register_handler(const char *name, char *devicefile,
 		unsigned long flags);

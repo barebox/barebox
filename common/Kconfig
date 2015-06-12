@@ -94,6 +94,14 @@ config EFI_DEVICEPATH
 config FILE_LIST
 	bool
 
+config BAREBOX_UPDATE_IMX_NAND_FCB
+	bool
+	depends on ARCH_IMX6
+	depends on BAREBOX_UPDATE
+	depends on MTD_WRITE
+	depends on NAND_MXS
+	default y
+
 menu "General Settings"
 
 config LOCALVERSION

@@ -300,7 +300,8 @@ static int imx_bbu_erase(struct mtd_info *mtd)
 	return 0;
 }
 
-static int imx_bbu_write_firmware(struct mtd_info *mtd, int block, void *buf, size_t len)
+static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned block,
+		unsigned num_blocks, void *buf, size_t len)
 {
 	uint64_t offset = block * mtd->erasesize;
 	int ret;
@@ -308,6 +309,9 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, int block, void *buf, si
 
 	while (len > 0) {
 		int now = min(len, mtd->erasesize);
+
+		if (!num_blocks)
+			return -ENOSPC;
 
 		pr_debug("writing %p at 0x%08llx, left 0x%08x\n",
 				buf, offset, len);
@@ -327,6 +331,7 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, int block, void *buf, si
 		len -= now;
 		buf += now;
 		block++;
+		num_blocks--;
 	}
 
 	return block;
@@ -359,16 +364,17 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 		container_of(handler, struct imx_nand_fcb_bbu_handler, handler);
 	struct cdev *bcb_cdev;
 	struct mtd_info *mtd;
-	int ret, block_fw1, block_fw2, block_last;
+	int ret, block_fw1, block_fw2;
 	struct fcb_block *fcb;
 	struct dbbt_block *dbbt;
 	void *fcb_raw_page, *dbbt_page, *dbbt_data_page;
 	void *ecc;
 	int written;
 	void *fw;
-	unsigned fw_size;
+	unsigned fw_size, partition_size;
 	int i;
 	enum filetype filetype;
+	unsigned num_blocks_fcb_dbbt, num_blocks, num_blocks_fw;
 
 	filetype = file_detect_type(data->image, data->len);
 
@@ -378,10 +384,6 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 				file_type_to_string(filetype)))
 		return -EINVAL;
 
-	ret = bbu_confirm(data);
-	if (ret)
-		return ret;
-
 	bcb_cdev = cdev_by_name(handler->devicefile);
 	if (!bcb_cdev) {
 		pr_err("%s: No FCB device!\n", __func__);
@@ -389,6 +391,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	}
 
 	mtd = bcb_cdev->mtd;
+	partition_size = mtd->size;
 
 	fcb_raw_page = xzalloc(mtd->writesize + mtd->oobsize);
 
@@ -408,23 +411,38 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	fw = xzalloc(fw_size);
 	memcpy(fw, data->image, data->len);
 
-	block_fw1 = 4;
+	num_blocks_fcb_dbbt = 4;
+	num_blocks = partition_size / mtd->erasesize;
+	num_blocks_fw = (num_blocks - num_blocks_fcb_dbbt) / 2;
+
+	block_fw1 = num_blocks_fcb_dbbt;
+	block_fw2 = num_blocks_fcb_dbbt + num_blocks_fw;
+
+	pr_info("writing first firmware to block %d (ofs 0x%08x)\n",
+			block_fw1, block_fw1 * mtd->erasesize);
+	pr_info("writing second firmware to block %d (ofs 0x%08x)\n",
+			block_fw2, block_fw2 * mtd->erasesize);
+	pr_info("maximum size per firmware: 0x%08x bytes\n",
+			num_blocks_fw * mtd->erasesize);
+
+	if (num_blocks_fw * mtd->erasesize < fw_size)
+		return -ENOSPC;
+
+	ret = bbu_confirm(data);
+	if (ret)
+		goto out;
 
 	ret = imx_bbu_erase(mtd);
 	if (ret)
 		goto out;
 
-	ret = imx_bbu_write_firmware(mtd, block_fw1, fw, fw_size);
+	ret = imx_bbu_write_firmware(mtd, block_fw1, num_blocks_fw, fw, fw_size);
 	if (ret < 0)
 		goto out;
 
-	block_fw2 = ret;
-
-	ret = imx_bbu_write_firmware(mtd, block_fw2, fw, fw_size);
+	ret = imx_bbu_write_firmware(mtd, block_fw2, num_blocks_fw, fw, fw_size);
 	if (ret < 0)
 		goto out;
-
-	block_last = ret;
 
 	fcb->Firmware1_startingPage = block_fw1 * mtd->erasesize / mtd->writesize;
 	fcb->Firmware2_startingPage = block_fw2 * mtd->erasesize / mtd->writesize;
@@ -451,7 +469,7 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	dbbt->FingerPrint = 0x54424244;
 	dbbt->Version = 0x01000000;
 
-	ret = dbbt_data_create(mtd, dbbt_data_page, block_last);
+	ret = dbbt_data_create(mtd, dbbt_data_page, block_fw2 + num_blocks_fw);
 	if (ret < 0)
 		goto out;
 

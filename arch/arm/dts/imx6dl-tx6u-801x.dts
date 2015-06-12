@@ -18,12 +18,12 @@
 &gpmi {
 	partition@0 {
 		label = "barebox";
-		reg = <0x0 0x100000>;
+		reg = <0x0 0x400000>;
 	};
 
 	partition@1 {
 		label = "barebox-environment";
-		reg = <0x100000 0x100000>;
+		reg = <0x400000 0x100000>;
 	};
 };
 

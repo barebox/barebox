@@ -275,8 +275,8 @@ static int imx6_bbu_erase(struct mtd_info *mtd)
 	while (len > 0) {
 		pr_debug("erasing at 0x%08llx\n", offset);
 		if (mtd_block_isbad(mtd, offset)) {
-			offset += mtd->erasesize;
 			pr_debug("erase skip block @ 0x%08llx\n", offset);
+			offset += mtd->erasesize;
 			continue;
 		}
 
@@ -308,9 +308,9 @@ static int imx6_bbu_write_firmware(struct mtd_info *mtd, int block, void *buf, s
 				buf, offset, len);
 
 		if (mtd_block_isbad(mtd, offset)) {
+			pr_debug("write skip block @ 0x%08llx\n", offset);
 			offset += mtd->erasesize;
 			block++;
-			pr_debug("write skip block @ 0x%08llx\n", offset);
 			continue;
 		}
 

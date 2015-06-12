@@ -57,12 +57,14 @@ struct pwm_ops {
 
 /**
  * struct pwm_chip - abstract a PWM
+ * @id: The id of this pwm
  * @devname: unique identifier for this pwm
  * @ops: The callbacks for this PWM
  * @duty_ns: The duty cycle of the PWM, in nano-seconds
  * @period_ns: The period of the PWM, in nano-seconds
  */
 struct pwm_chip {
+	int			id;
 	const char		*devname;
 	struct pwm_ops		*ops;
 	int			duty_ns;

@@ -158,6 +158,7 @@ int __init mx28_clocks_init(void __iomem *regs)
 	clkdev_add_physbase(clks[uart], IMX_UART3_BASE, NULL);
 	clkdev_add_physbase(clks[uart], IMX_UART4_BASE, NULL);
 	clkdev_add_physbase(clks[gpmi], MXS_GPMI_BASE, NULL);
+	clkdev_add_physbase(clks[pwm], IMX_PWM_BASE, NULL);
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_STM))
 		clkdev_add_physbase(clks[lcdif_comp], IMX_FB_BASE, NULL);
 

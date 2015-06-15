@@ -101,7 +101,7 @@ Android Fastboot support
 
 barebox has support for the android fastboot protocol. There is no dedicated command
 for initializing the fastboot protocol, instead it is integrated into the Multifunction
-Composite Gadget, see :`ref:command_usbgadget` for a usage description.
+Composite Gadget, see :ref:`command_usbgadget` for a usage description.
 
 The Fastboot gadget supports the following commands:
 

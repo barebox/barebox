@@ -317,8 +317,15 @@ int main(int argc, char *argv[])
 		if (fwrite(&config_header, 1, 512, ofile) <= 0)
 			pdie("fwrite");
 
+	/* The size field in the header needs to include the
+	 * size of the gp_header */
+	len += sizeof(struct gp_header);
+
 	if (fwrite(&len, 1, 4, ofile) <= 0)
 		pdie("fwrite");
+
+	len -= sizeof(struct gp_header);
+
 	if (fwrite(&loadaddr, 1, 4, ofile) <= 0)
 		pdie("fwrite");
 	for (i = 0; i < len; i++) {

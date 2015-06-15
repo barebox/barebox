@@ -172,7 +172,7 @@ static struct state_variable *state_uint8_create(struct state *state,
 	su32 = xzalloc(sizeof(*su32));
 
 	param = dev_add_param_int(&state->dev, name, state_set_dirty,
-				  NULL, &su32->value, "%d", state);
+				  NULL, &su32->value, "%u", state);
 	if (IS_ERR(param)) {
 		free(su32);
 		return ERR_CAST(param);

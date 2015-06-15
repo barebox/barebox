@@ -113,6 +113,7 @@ static int state_set_dirty(struct param_d *p, void *priv)
 struct state_uint32 {
 	struct state_variable var;
 	struct param_d *param;
+	struct state *state;
 	uint32_t value;
 	uint32_t value_default;
 };
@@ -163,6 +164,17 @@ static int state_uint32_import(struct state_variable *sv,
 	return 0;
 }
 
+static int state_uint8_set(struct param_d *p, void *priv)
+{
+	struct state_uint32 *su32 = priv;
+	struct state *state = su32->state;
+
+	if (su32->value > 255)
+		return -ERANGE;
+
+	return state_set_dirty(p, state);
+}
+
 static struct state_variable *state_uint8_create(struct state *state,
 		const char *name, struct device_node *node)
 {
@@ -171,8 +183,8 @@ static struct state_variable *state_uint8_create(struct state *state,
 
 	su32 = xzalloc(sizeof(*su32));
 
-	param = dev_add_param_int(&state->dev, name, state_set_dirty,
-				  NULL, &su32->value, "%u", state);
+	param = dev_add_param_int(&state->dev, name, state_uint8_set,
+				  NULL, &su32->value, "%u", su32);
 	if (IS_ERR(param)) {
 		free(su32);
 		return ERR_CAST(param);
@@ -185,6 +197,7 @@ static struct state_variable *state_uint8_create(struct state *state,
 #else
 	su32->var.raw = &su32->value + 3;
 #endif
+	su32->state = state;
 
 	return &su32->var;
 }

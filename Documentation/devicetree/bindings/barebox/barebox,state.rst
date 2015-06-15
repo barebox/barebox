@@ -70,15 +70,15 @@ Example::
 
   	foo {
 		reg = <0x00 0x4>;
-  		type = "u32";
+		type = "uint32";
   		default = <0x0>;
   	};
 
   	bar {
 		reg = <0x10 0x4>;
-  		type = "enum32";
+		type = "enum32";
   		names = "baz", "qux";
-  		default ="qux";
+		default = <1>;
   	};
   };
 

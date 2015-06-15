@@ -348,7 +348,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 		random_ether_addr(edev->ethaddr);
 		ethaddr_to_string(edev->ethaddr, str);
 		printf("warning: No MAC address set. Using random address %s\n", str);
-		dev_set_param(&edev->dev, "ethaddr", str);
+		eth_set_ethaddr(edev, edev->ethaddr);
 	}
 
 	/* If we don't have an ip only broadcast is allowed */

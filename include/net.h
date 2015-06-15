@@ -60,6 +60,7 @@ struct eth_device {
 	IPaddr_t serverip;
 	IPaddr_t netmask;
 	IPaddr_t gateway;
+	char ethaddr_param[6];
 	char ethaddr[6];
 };
 
@@ -67,6 +68,7 @@ struct eth_device {
 
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
+int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr);
 
 int eth_send(struct eth_device *edev, void *packet, int length);	   /* Send a packet		*/
 int eth_rx(void);			/* Check for received packets	*/

@@ -42,15 +42,27 @@ struct eth_ethaddr {
 
 static LIST_HEAD(ethaddr_list);
 
+int eth_set_ethaddr(struct eth_device *edev, const char *ethaddr)
+{
+	int ret;
+
+	ret = edev->set_ethaddr(edev, ethaddr);
+	if (ret)
+		return ret;
+
+	memcpy(edev->ethaddr, ethaddr, ETH_ALEN);
+
+	return 0;
+}
+
 static void register_preset_mac_address(struct eth_device *edev, const char *ethaddr)
 {
 	unsigned char ethaddr_str[sizeof("xx:xx:xx:xx:xx:xx")];
 
-	ethaddr_to_string(ethaddr, ethaddr_str);
-
 	if (is_valid_ether_addr(ethaddr)) {
+		ethaddr_to_string(ethaddr, ethaddr_str);
 		dev_info(&edev->dev, "got preset MAC address: %s\n", ethaddr_str);
-		dev_set_param(&edev->dev, "ethaddr", ethaddr_str);
+		eth_set_ethaddr(edev, ethaddr);
 	}
 }
 
@@ -261,13 +273,11 @@ int eth_rx(void)
 	return 0;
 }
 
-static int eth_set_ethaddr(struct param_d *param, void *priv)
+static int eth_param_set_ethaddr(struct param_d *param, void *priv)
 {
 	struct eth_device *edev = priv;
 
-	edev->set_ethaddr(edev, edev->ethaddr);
-
-	return 0;
+	return eth_set_ethaddr(edev, edev->ethaddr_param);
 }
 
 #ifdef CONFIG_OFTREE
@@ -350,7 +360,8 @@ int eth_register(struct eth_device *edev)
 	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);
 	dev_add_param_ip(dev, "gateway", NULL, NULL, &edev->gateway, edev);
 	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
-	dev_add_param_mac(dev, "ethaddr", eth_set_ethaddr, NULL, edev->ethaddr, edev);
+	dev_add_param_mac(dev, "ethaddr", eth_param_set_ethaddr, NULL,
+			edev->ethaddr_param, edev);
 
 	if (edev->init)
 		edev->init(edev);

@@ -29,9 +29,6 @@ Required properties:
 
 * ``compatible``: should be ``barebox,state``;
 * ``magic``: A 32bit number used as a magic to identify the state
-
-Optional properties:
-
 * ``backend``: describes where the data for this state is stored
 * ``backend-type``: should be ``raw`` or ``dtb``.
 

@@ -28,6 +28,7 @@ Contents:
    ubi
    booting-linux
    system-setup
+   reset-reason
 
 * :ref:`search`
 * :ref:`genindex`

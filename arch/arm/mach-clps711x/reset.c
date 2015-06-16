@@ -11,7 +11,7 @@
 
 void __noreturn reset_cpu(unsigned long addr)
 {
-	arch_shutdown();
+	shutdown_barebox();
 
 	asm("mov pc, #0");
 

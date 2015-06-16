@@ -30,6 +30,7 @@
 #include <of.h>
 #include <linux/stat.h>
 #include <linux/err.h>
+#include <mtd/ubi-user.h>
 
 /*
  * blspec_entry_var_set - set a variable to a value
@@ -436,6 +437,35 @@ err_out:
 }
 
 /*
+ * blspec_scan_ubi - scan over a cdev containing UBI volumes
+ *
+ * This function attaches a cdev as UBI devices and collects all blspec
+ * entries found in the UBI volumes
+ *
+ * returns the number of entries found or a negative error code if some unexpected
+ * error occured.
+ */
+static int blspec_scan_ubi(struct blspec *blspec, struct cdev *cdev)
+{
+	struct device_d *child;
+	int ret, found = 0;
+
+	pr_debug("%s: %s\n", __func__, cdev->name);
+
+	ret = ubi_attach_mtd_dev(cdev->mtd, UBI_DEV_NUM_AUTO, 0, 20);
+	if (ret && ret != -EEXIST)
+		return 0;
+
+	device_for_each_child(cdev->dev, child) {
+		ret = blspec_scan_device(blspec, child);
+		if (ret > 0)
+			found += ret;
+	}
+
+	return found;
+}
+
+/*
  * blspec_scan_cdev - scan over a cdev
  *
  * Given a cdev this function mounts the filesystem and collects all blspec
@@ -446,9 +476,9 @@ err_out:
  */
 static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 {
-	int ret;
+	int ret, found = 0;
 	void *buf = xzalloc(512);
-	enum filetype type;
+	enum filetype type, filetype;
 	const char *rootpath;
 
 	pr_debug("%s: %s\n", __func__, cdev->name);
@@ -460,16 +490,26 @@ static int blspec_scan_cdev(struct blspec *blspec, struct cdev *cdev)
 	}
 
 	type = file_detect_partition_table(buf, 512);
+	filetype = file_detect_type(buf, 512);
 	free(buf);
 
 	if (type == filetype_mbr || type == filetype_gpt)
 		return -EINVAL;
 
-	rootpath = cdev_mount_default(cdev, NULL);
-	if (IS_ERR(rootpath))
-		return PTR_ERR(rootpath);
+	if (filetype == filetype_ubi && IS_ENABLED(CONFIG_MTD_UBI)) {
+		ret = blspec_scan_ubi(blspec, cdev);
+		if (ret > 0)
+			found += ret;
+	}
 
-	return blspec_scan_directory(blspec, rootpath);
+	rootpath = cdev_mount_default(cdev, NULL);
+	if (!IS_ERR(rootpath)) {
+		ret = blspec_scan_directory(blspec, rootpath);
+		if (ret > 0)
+			found += ret;
+	}
+
+	return found;
 }
 
 /*

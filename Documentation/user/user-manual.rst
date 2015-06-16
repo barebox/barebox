@@ -29,6 +29,7 @@ Contents:
    booting-linux
    system-setup
    reset-reason
+   system-reset
 
 * :ref:`search`
 * :ref:`genindex`

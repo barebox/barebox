@@ -64,6 +64,7 @@ static int register_one_partition(struct block_device *blk,
 	}
 
 	cdev->dos_partition_type = part->dos_partition_type;
+	strcpy(cdev->partuuid, part->partuuid);
 
 	free(partition_name);
 

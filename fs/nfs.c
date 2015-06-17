@@ -35,6 +35,7 @@
 #include <kfifo.h>
 #include <linux/sizes.h>
 #include <byteorder.h>
+#include <globalvar.h>
 
 #include "parseopt.h"
 
@@ -1306,6 +1307,23 @@ static int nfs_stat(struct device_d *dev, const char *filename, struct stat *s)
 	}
 }
 
+static char *rootnfsopts;
+
+static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
+{
+	char *str;
+	const char *ip;
+
+	ip = ip_to_string(npriv->server);
+	str = asprintf("root=/dev/nfs nfsroot=%s:%s%s%s",
+			ip, npriv->path, rootnfsopts[0] ? "," : "",
+			rootnfsopts);
+
+	fsdev_set_linux_rootarg(fsdev, str);
+
+	free(str);
+}
+
 static int nfs_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
@@ -1369,6 +1387,8 @@ static int nfs_probe(struct device_d *dev)
 		goto err2;
 	}
 
+	nfs_set_rootarg(npriv, fsdev);
+
 	free(tmp);
 
 	return 0;
@@ -1421,6 +1441,10 @@ static struct fs_driver_d nfs_driver = {
 
 static int nfs_init(void)
 {
+	rootnfsopts = xstrdup("v3,tcp");
+
+	globalvar_add_simple_string("linux.rootnfsopts", &rootnfsopts);
+
 	return register_fs_driver(&nfs_driver);
 }
 coredevice_initcall(nfs_init);

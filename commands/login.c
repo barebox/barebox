@@ -71,7 +71,7 @@ static int do_login(int argc, char *argv[])
 			run_command(timeout_cmd);
 		}
 
-		if (check_passwd(passwd, passwd_len))
+		if (check_passwd(passwd, passwd_len) == 1)
 			return 0;
 	} while(1);
 

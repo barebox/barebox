@@ -148,14 +148,14 @@ static int m25p80_erase(struct spi_nor *nor, loff_t offset)
 {
 	struct m25p *flash = nor->priv;
 
-        dev_dbg(nor->dev, "%dKiB at 0x%08x\n",
-                flash->mtd.erasesize / 1024, (u32)offset);
+	dev_dbg(nor->dev, "%dKiB at 0x%08x\n",
+			flash->mtd.erasesize / 1024, (u32)offset);
 
-        /* Set up command buffer. */
-        flash->command[0] = nor->erase_opcode;
-        m25p_addr2cmd(nor, offset, flash->command);
+	/* Set up command buffer. */
+	flash->command[0] = nor->erase_opcode;
+	m25p_addr2cmd(nor, offset, flash->command);
 
-        spi_write(flash->spi, flash->command, m25p_cmdsz(nor));
+	spi_write(flash->spi, flash->command, m25p_cmdsz(nor));
 
 	return 0;
 }
@@ -213,11 +213,11 @@ static const struct platform_device_id m25p_ids[] = {
 	{"w25q128"},    {"w25q256"},    {"cat25c11"},
 	{"cat25c03"},   {"cat25c09"},   {"cat25c17"},   {"cat25128"},
 
-        /*
-         * Generic support for SPI NOR that can be identified by the JEDEC READ
-         * ID opcode (0x9F). Use this, if possible.
-         */
-        {"nor-jedec"},
+	/*
+	 * Generic support for SPI NOR that can be identified by the JEDEC READ
+	 * ID opcode (0x9F). Use this, if possible.
+	 */
+	{"nor-jedec"},
 	{ },
 };
 

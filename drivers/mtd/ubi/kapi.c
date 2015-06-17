@@ -36,6 +36,7 @@ void ubi_do_get_device_info(struct ubi_device *ubi, struct ubi_device_info *di)
 	di->min_io_size = ubi->min_io_size;
 	di->max_write_size = ubi->max_write_size;
 	di->ro_mode = ubi->ro_mode;
+	di->mtd = ubi->mtd;
 }
 EXPORT_SYMBOL_GPL(ubi_do_get_device_info);
 

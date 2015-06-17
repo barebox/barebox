@@ -1298,6 +1298,12 @@ int mount(const char *device, const char *fsname, const char *_path,
 		goto err_no_driver;
 	}
 
+	if (!fsdev->linux_rootarg && fsdev->cdev && fsdev->cdev->partuuid[0] != 0) {
+		char *str = asprintf("root=PARTUUID=%s", fsdev->cdev->partuuid);
+
+		fsdev_set_linux_rootarg(fsdev, str);
+	}
+
 	return 0;
 
 err_no_driver:
@@ -1707,4 +1713,35 @@ void mount_all(void)
 		list_for_each_entry(cdev, &bdev->dev->cdevs, devices_list)
 			cdev_mount_default(cdev, NULL);
 	}
+}
+
+void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str)
+{
+	fsdev->linux_rootarg = xstrdup(str);
+
+	dev_add_param_fixed(&fsdev->dev, "linux.bootargs", fsdev->linux_rootarg);
+}
+
+/**
+ * path_get_linux_rootarg() - Given a path return a suitable root= option for
+ *                            Linux
+ * @path: The path
+ *
+ * Return: A string containing the root= option or an ERR_PTR. the returned
+ *         string must be freed by the caller.
+ */
+char *path_get_linux_rootarg(const char *path)
+{
+	struct fs_device_d *fsdev;
+	const char *str;
+
+	fsdev = get_fsdevice_by_path(path);
+	if (!fsdev)
+		return ERR_PTR(-EINVAL);
+
+	str = dev_get_param(&fsdev->dev, "linux.bootargs");
+	if (!str)
+		return ERR_PTR(-ENOSYS);
+
+	return xstrdup(str);
 }

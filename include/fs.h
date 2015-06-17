@@ -100,6 +100,7 @@ struct fs_device_d {
 	struct device_d *parent_device;
 	struct list_head list;
 	char *options;
+	char *linux_rootarg;
 };
 
 #define drv_to_fs_driver(d) container_of(d, struct fs_driver_d, drv)
@@ -188,5 +189,8 @@ int fsdev_open_cdev(struct fs_device_d *fsdev);
 const char *cdev_get_mount_path(struct cdev *cdev);
 const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);
 void mount_all(void);
+
+void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str);
+char *path_get_linux_rootarg(const char *path);
 
 #endif /* __FS_H */

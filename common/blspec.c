@@ -601,6 +601,29 @@ int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 	return blspec_scan_device(blspec, dev);
 }
 
+static int blspec_append_root(struct blspec_entry *entry)
+{
+	const char *appendroot;
+	char *rootarg;
+
+	appendroot = blspec_entry_var_get(entry, "linux-appendroot");
+	if (!appendroot || strcmp(appendroot, "true"))
+		return 0;
+
+	rootarg = path_get_linux_rootarg(entry->rootpath);
+	if (IS_ERR(rootarg)) {
+		pr_err("Getting root argument for %s failed with: %s\n",
+				entry->rootpath, strerror(-PTR_ERR(rootarg)));
+		return PTR_ERR(rootarg);
+	}
+
+	globalvar_add_simple("linux.bootargs.dyn.blspec.appendroot", rootarg);
+
+	free(rootarg);
+
+	return 0;
+}
+
 /*
  * blspec_boot - boot an entry
  *
@@ -650,6 +673,10 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 
 	globalvar_add_simple("linux.bootargs.dyn.blspec", options);
 
+	ret = blspec_append_root(entry);
+	if (ret)
+		goto err_out;
+
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
 			entry->cdev ? dev_name(entry->cdev->dev) : "none");
 
@@ -668,7 +695,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 	ret = bootm_boot(&data);
 	if (ret)
 		pr_err("Booting failed\n");
-
+err_out:
 	free((char *)data.oftree_file);
 	free((char *)data.initrd_file);
 	free((char *)data.os_file);

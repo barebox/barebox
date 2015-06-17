@@ -205,6 +205,13 @@ compatible NFS URI string must be passed to the boot command:
 
   boot nfs://nfshost//path/
 
+Additionally to the options defined in the original spec barebox understands the
+``linux-appendroot`` option. This is a boolean value and if set to ``true`` barebox
+will automatically append a ``root=`` string to the Linux commandline based on the
+device where the entry is found on. This makes it possible to use the same rootfs
+image on different devices without having to specify a different root= option each
+time.
+
 Network boot
 ------------
 

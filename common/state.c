@@ -90,7 +90,7 @@ struct variable_type {
 	struct list_head list;
 	int (*export)(struct state_variable *, struct device_node *,
 			enum state_convert);
-	int (*import)(struct state_variable *, const struct device_node *);
+	int (*import)(struct state_variable *, struct device_node *);
 	struct state_variable *(*create)(struct state *state,
 			const char *name, struct device_node *);
 };
@@ -153,7 +153,7 @@ static int state_uint32_export(struct state_variable *var,
 }
 
 static int state_uint32_import(struct state_variable *sv,
-		const struct device_node *node)
+			       struct device_node *node)
 {
 	struct state_uint32 *su32 = to_state_uint32(sv);
 
@@ -278,7 +278,7 @@ static int state_enum32_export(struct state_variable *var,
 }
 
 static int state_enum32_import(struct state_variable *sv,
-			       const struct device_node *node)
+			       struct device_node *node)
 {
 	struct state_enum32 *enum32 = to_state_enum32(sv);
 	int len;
@@ -373,7 +373,7 @@ static int state_mac_export(struct state_variable *var,
 }
 
 static int state_mac_import(struct state_variable *sv,
-			    const struct device_node *node)
+			    struct device_node *node)
 {
 	struct state_mac *mac = to_state_mac(sv);
 

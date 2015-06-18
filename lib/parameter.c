@@ -122,6 +122,14 @@ static const char *param_get_generic(struct device_d *dev, struct param_d *p)
 	return p->value ? p->value : "";
 }
 
+static int compare(struct list_head *a, struct list_head *b)
+{
+	char *na = (char*)list_entry(a, struct param_d, list)->name;
+	char *nb = (char*)list_entry(b, struct param_d, list)->name;
+
+	return strcmp(na, nb);
+}
+
 static int __dev_add_param(struct param_d *param, struct device_d *dev, const char *name,
 		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
 		const char *(*get)(struct device_d *dev, struct param_d *p),
@@ -145,7 +153,7 @@ static int __dev_add_param(struct param_d *param, struct device_d *dev, const ch
 
 	param->flags = flags;
 	param->dev = dev;
-	list_add_tail(&param->list, &dev->parameters);
+	list_add_sort(&param->list, &dev->parameters, compare);
 
 	return 0;
 }

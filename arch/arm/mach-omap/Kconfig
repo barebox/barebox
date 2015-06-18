@@ -54,14 +54,6 @@ config OMAP_CLOCK_SOURCE_S32K
 config OMAP_CLOCK_SOURCE_DMTIMER0
 	bool
 
-config OMAP3_CLOCK_CONFIG
-	prompt "Clock Configuration"
-	bool
-	depends on ARCH_OMAP3
-	default y
-	help
-	  Say Y here if you like to have OMAP3 Clock configuration done.
-
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool

@@ -435,9 +435,6 @@ static void try_unlock_memory(void)
  * Does early system init of disabling the watchdog, enable
  * memory and configuring the clocks.
  *
- * prcm_init is called only if CONFIG_OMAP3_CLOCK_CONFIG is defined.
- * We depend on link time clean up to remove a_init if no caller exists.
- *
  * @warning Called path is with SRAM stack
  *
  * @return void
@@ -459,9 +456,7 @@ void omap3_core_init(void)
 
 	sdelay(100);
 
-#ifdef CONFIG_OMAP3_CLOCK_CONFIG
 	prcm_init();
-#endif
 }
 
 #define OMAP3_TRACING_VECTOR1 0x4020ffb4

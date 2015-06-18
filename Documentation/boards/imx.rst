@@ -47,7 +47,7 @@ The images can also always be started second stage::
   bootm /mnt/tftp/barebox-freescale-imx51-babbage.img
 
 Internal Boot Mode Through Internal RAM(IRAM)
----------------------------------------
+---------------------------------------------
 
 The Internal Boot Mode Through Internal RAM is supported on:
 

@@ -295,10 +295,8 @@ static ulong flash_get_size (struct flash_info *info)
 	int erase_region_size;
 	int erase_region_count;
 	int cur_offset = 0;
-	struct cfi_qry qry;
+	struct cfi_qry qry = {};
 	unsigned long base = (unsigned long)info->base;
-
-	memset(&qry, 0, sizeof(qry));
 
 	info->ext_addr = 0;
 	info->cfi_version = 0;

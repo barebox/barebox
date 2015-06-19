@@ -224,6 +224,8 @@ extern int of_modalias_node(struct device_node *node, char *modalias, int len);
 extern struct device_node *of_get_root_node(void);
 extern int of_set_root_node(struct device_node *node);
 
+extern struct device_d *of_platform_device_create(struct device_node *np,
+						struct device_d *parent);
 extern int of_platform_populate(struct device_node *root,
 				const struct of_device_id *matches,
 				struct device_d *parent);

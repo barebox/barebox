@@ -224,42 +224,49 @@ static void flash_read_cfi (struct flash_info *info, void *buf,
 		p[i] = flash_read_uchar(info, start + i);
 }
 
-static int flash_detect_width (struct flash_info *info, struct cfi_qry *qry)
+static int flash_detect_width(struct flash_info *info, struct cfi_qry *qry)
 {
 	int cfi_offset;
+	int pw, cw;
 
+	for (pw = CFG_FLASH_CFI_WIDTH; pw <= FLASH_CFI_64BIT; pw <<= 1) {
+		for (cw = FLASH_CFI_BY8; cw <= pw; cw <<= 1) {
+			info->chipwidth = cw;
+			info->portwidth = pw;
 
-	for (info->portwidth = CFG_FLASH_CFI_WIDTH;
-	     info->portwidth <= FLASH_CFI_64BIT; info->portwidth <<= 1) {
-		for (info->chipwidth = FLASH_CFI_BY8;
-		     info->chipwidth <= info->portwidth;
-		     info->chipwidth <<= 1) {
-			flash_write_cmd (info, 0, 0, AMD_CMD_RESET);
-			flash_write_cmd (info, 0, 0, FLASH_CMD_RESET);
-			for (cfi_offset=0; cfi_offset < sizeof(flash_offset_cfi)/sizeof(uint); cfi_offset++) {
-				flash_write_cmd (info, 0, flash_offset_cfi[cfi_offset], FLASH_CMD_CFI);
-				if (flash_isequal (info, 0, FLASH_OFFSET_CFI_RESP, 'Q')
-				 && flash_isequal (info, 0, FLASH_OFFSET_CFI_RESP + 1, 'R')
-				 && flash_isequal (info, 0, FLASH_OFFSET_CFI_RESP + 2, 'Y')) {
-					flash_read_cfi(info, qry, FLASH_OFFSET_CFI_RESP,
-						       sizeof(struct cfi_qry));
-					info->interface = le16_to_cpu(qry->interface_desc);
+			flash_write_cmd(info, 0, 0, AMD_CMD_RESET);
+			flash_write_cmd(info, 0, 0, FLASH_CMD_RESET);
 
-					info->cfi_offset=flash_offset_cfi[cfi_offset];
-					dev_dbg(info->dev, "device interface is %d\n",
-						info->interface);
-					dev_dbg(info->dev, "found port %d chip %d chip_lsb %d ",
-						info->portwidth, info->chipwidth, info->chip_lsb);
-					dev_dbg(info->dev, "port %d bits chip %d bits\n",
-						info->portwidth << CFI_FLASH_SHIFT_WIDTH,
-						info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
-					return 1;
-				}
+			for (cfi_offset = 0; cfi_offset < sizeof(flash_offset_cfi) / sizeof(uint);
+					cfi_offset++) {
+
+				flash_write_cmd(info, 0, flash_offset_cfi[cfi_offset], FLASH_CMD_CFI);
+
+				if (flash_isequal(info, 0, FLASH_OFFSET_CFI_RESP, 'Q') &&
+				    flash_isequal(info, 0, FLASH_OFFSET_CFI_RESP + 1, 'R') &&
+				    flash_isequal(info, 0, FLASH_OFFSET_CFI_RESP + 2, 'Y'))
+					goto found;
 			}
 		}
 	}
-	dev_dbg(info->dev, "not found\n");
+
+	dev_dbg(info->dev, "no flash found\n");
+
 	return 0;
+
+found:
+	flash_read_cfi(info, qry, FLASH_OFFSET_CFI_RESP,
+			       sizeof(struct cfi_qry));
+	info->interface = le16_to_cpu(qry->interface_desc);
+	info->cfi_offset=flash_offset_cfi[cfi_offset];
+	dev_dbg(info->dev, "device interface is %d\n", info->interface);
+	dev_dbg(info->dev, "found port %d chip %d chip_lsb %d ",
+			info->portwidth, info->chipwidth, info->chip_lsb);
+	dev_dbg(info->dev, "port %d bits chip %d bits\n",
+			info->portwidth << CFI_FLASH_SHIFT_WIDTH,
+			info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
+
+	return 1;
 }
 
 static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)

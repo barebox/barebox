@@ -49,7 +49,7 @@ But there are some drawbacks within this simple approach.
   currently used clock speeds. But don't rely on it.
 
 To workaround these issues the reset signal triggered by a SoC internal source
-must be 'visible' to the external devices to also reset them like a real POR do.
+must be 'visible' to the external devices to also reset them like a real POR does.
 But many SoCs do not provide such a signal. So you can't use the internal reset
 source if you face one of the above listed issues!
 

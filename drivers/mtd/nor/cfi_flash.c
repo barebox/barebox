@@ -828,7 +828,7 @@ void flash_write_cmd(struct flash_info *info, flash_sect_t sect,
 	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
 
-	dev_dbg(info->dev, "%s: %p %lX %X => %p " CFI_WORD_FMT "\n", __func__,
+	dev_vdbg(info->dev, "%s: %p %lX %X => %p " CFI_WORD_FMT "\n", __func__,
 			info, sect, offset, addr, cword);
 
 	flash_write_word(info, cword, addr);
@@ -844,18 +844,18 @@ int flash_isequal(struct flash_info *info, flash_sect_t sect,
 	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
 
-	dev_dbg(info->dev, "is= cmd %x(%c) addr %p ", cmd, cmd, addr);
+	dev_vdbg(info->dev, "is= cmd %x(%c) addr %p ", cmd, cmd, addr);
 	if (bankwidth_is_1(info)) {
-		dev_dbg(info->dev, "is= %x %x\n", flash_read8(addr), (u8)cword);
+		dev_vdbg(info->dev, "is= %x %x\n", flash_read8(addr), (u8)cword);
 		retval = (flash_read8(addr) == cword);
 	} else if (bankwidth_is_2(info)) {
-		dev_dbg(info->dev, "is= %4.4x %4.4x\n", flash_read16(addr), (u16)cword);
+		dev_vdbg(info->dev, "is= %4.4x %4.4x\n", flash_read16(addr), (u16)cword);
 		retval = (flash_read16(addr) == cword);
 	} else if (bankwidth_is_4(info)) {
-		dev_dbg(info->dev, "is= %8.8x %8.8x\n", flash_read32(addr), (u32)cword);
+		dev_vdbg(info->dev, "is= %8.8x %8.8x\n", flash_read32(addr), (u32)cword);
 		retval = (flash_read32(addr) == cword);
 	} else if (bankwidth_is_8(info)) {
-		dev_dbg(info->dev, "is= %16.16llx %16.16llx\n", flash_read64(addr), (u64)cword);
+		dev_vdbg(info->dev, "is= %16.16llx %16.16llx\n", flash_read64(addr), (u64)cword);
 		retval = (flash_read64(addr) == cword);
 	} else
 		retval = 0;

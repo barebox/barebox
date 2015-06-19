@@ -332,18 +332,14 @@ u32 jedec_read_mfr(struct flash_info *info);
 
 static inline void flash_write_word(struct flash_info *info, cfiword_t datum, void *addr)
 {
-	if (bankwidth_is_1(info)) {
-		debug("fw addr %p val %02x\n", addr, (u8)datum);
+	if (bankwidth_is_1(info))
 		flash_write8(datum, addr);
-	} else if (bankwidth_is_2(info)) {
-		debug("fw addr %p val %04x\n", addr, (u16)datum);
+	else if (bankwidth_is_2(info))
 		flash_write16(datum, addr);
-	} else if (bankwidth_is_4(info)) {
-		debug("fw addr %p val %08x\n", addr, (u32)datum);
+	else if (bankwidth_is_4(info))
 		flash_write32(datum, addr);
-	} else if (bankwidth_is_8(info)) {
+	else if (bankwidth_is_8(info))
 		flash_write64(datum, addr);
-	}
 }
 
 extern void flash_print_info (struct flash_info *);

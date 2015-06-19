@@ -1,11 +1,11 @@
 .. _system_reset:
 
-System Reset
-------------
+System Restart
+--------------
 
-When running the reset command barebox restarts the SoC somehow. Reset can
+When running the reset command barebox restarts the SoC somehow. Restart can
 be done in software, but a more reliable way is to use a hard reset line, which
-really resets the SoC.
+really resets the whole machine.
 The most common way to force such a hard reset is by using a watchdog. Its
 trigger time will be setup as short as possible and after that the software just
 waits for its reset. Very simple and most of the time it does what's expected.

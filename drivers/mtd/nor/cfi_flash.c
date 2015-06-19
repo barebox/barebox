@@ -110,10 +110,10 @@ static int flash_write_cfiword (struct flash_info *info, ulong dest,
 	else if (bankwidth_is_8(info))
 		flag = ((flash_read64(dstaddr) & cword) == cword);
 	else
-		return 2;
+		return -EIO;
 
 	if (!flag)
-		return 2;
+		return -EIO;
 
 	info->cfi_cmd_set->flash_prepare_write(info);
 
@@ -252,7 +252,7 @@ static int flash_detect_width(struct flash_info *info, struct cfi_qry *qry)
 
 	dev_dbg(info->dev, "no flash found\n");
 
-	return 0;
+	return -ENODEV;
 
 found:
 	flash_read_cfi(info, qry, FLASH_OFFSET_CFI_RESP,
@@ -266,10 +266,10 @@ found:
 			info->portwidth << CFI_FLASH_SHIFT_WIDTH,
 			info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
 
-	return 1;
+	return 0;
 }
 
-static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
+static int flash_detect_cfi(struct flash_info *info, struct cfi_qry *qry)
 {
 	int ret;
 
@@ -277,19 +277,19 @@ static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
 
 	info->chip_lsb = 0;
 	ret = flash_detect_width (info, qry);
-	if (!ret) {
-		info->chip_lsb = 1;
-		ret = flash_detect_width (info, qry);
-	}
-	return ret;
+	if (!ret)
+		return 0;
+
+	info->chip_lsb = 1;
+	return flash_detect_width (info, qry);
 }
 
 /*
  * The following code cannot be run from FLASH!
  */
-static ulong flash_get_size (struct flash_info *info)
+static int flash_detect_size(struct flash_info *info)
 {
-	int i, j;
+	int i, j, ret;
 	flash_sect_t sect_cnt;
 	unsigned long sector;
 	unsigned long tmp;
@@ -313,8 +313,9 @@ static ulong flash_get_size (struct flash_info *info)
 	info->start[0] = base;
 	info->protect = 0;
 
-	if (!flash_detect_cfi (info, &qry))
-		return 0;
+	ret = flash_detect_cfi(info, &qry);
+	if (ret)
+		return ret;
 
 	info->vendor = le16_to_cpu(qry.p_id);
 	info->ext_addr = le16_to_cpu(qry.p_adr);
@@ -346,7 +347,7 @@ static ulong flash_get_size (struct flash_info *info)
 
 	if (!info->cfi_cmd_set) {
 		dev_err(info->dev, "unsupported vendor 0x%04x\n", info->vendor);
-		return 0;
+		return -ENOSYS;
 	}
 
 	info->cfi_cmd_set->flash_read_jedec_ids (info);
@@ -443,7 +444,7 @@ static ulong flash_get_size (struct flash_info *info)
 
 	flash_write_cmd (info, 0, 0, info->cmd_reset);
 
-	return info->size;
+	return 0;
 }
 
 /* loop through the sectors from the highest address
@@ -486,13 +487,7 @@ out:
         return ret;
 }
 
-/*
- * Copy memory to flash, returns:
- * 0 - OK
- * 1 - write timeout
- * 2 - Flash not erased
- */
-static int write_buff (struct flash_info *info, const uchar * src, ulong addr, ulong cnt)
+static int write_buff(struct flash_info *info, const uchar * src, ulong addr, ulong cnt)
 {
 	ulong wp;
 	uchar *p;
@@ -548,8 +543,11 @@ static int write_buff (struct flash_info *info, const uchar * src, ulong addr, u
 		i = buffered_size - (wp % buffered_size);
 		if (i > cnt)
 			i = cnt;
-		if ((rc = info->cfi_cmd_set->flash_write_cfibuffer (info, wp, src, i)) != ERR_OK)
+
+		rc = info->cfi_cmd_set->flash_write_cfibuffer(info, wp, src, i);
+		if (rc)
 			return rc;
+
 		i -= i & (info->portwidth - 1);
 		wp += i;
 		src += i;
@@ -797,11 +795,11 @@ int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 				prompt, info->start[sector],
 				flash_read_long (info, sector, 0));
 			flash_write_cmd (info, sector, 0, info->cmd_reset);
-			return ERR_TIMOUT;
+			return -ETIMEDOUT;
 		}
 		udelay (1);		/* also triggers watchdog */
 	}
-	return ERR_OK;
+	return 0;
 }
 
 /*
@@ -962,6 +960,7 @@ static void cfi_init_mtd(struct flash_info *info)
 static int cfi_probe (struct device_d *dev)
 {
 	struct flash_info *info = xzalloc(sizeof(*info));
+	int ret;
 
 	dev->priv = (void *)info;
 
@@ -973,9 +972,9 @@ static int cfi_probe (struct device_d *dev)
 		return PTR_ERR(info->base);
 
 	info->dev = dev;
-	info->size = flash_get_size(info);
 
-	if (info->flash_id == FLASH_UNKNOWN) {
+	ret = flash_detect_size(info);
+	if (ret) {
 		dev_warn(dev, "## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
 			dev->resource[0].start, info->size, info->size << 20);
 		return -ENODEV;

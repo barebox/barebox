@@ -364,19 +364,6 @@ extern void flash_read_factory_serial(struct flash_info *info, void * buffer, in
 #endif	/* CFG_FLASH_PROTECTION */
 
 /*-----------------------------------------------------------------------
- * return codes from flash_write():
- */
-#define ERR_OK				0
-#define ERR_TIMOUT			1
-#define ERR_NOT_ERASED			2
-#define ERR_PROTECTED			4
-#define ERR_INVAL			8
-#define ERR_ALIGN			16
-#define ERR_UNKNOWN_FLASH_VENDOR	32
-#define ERR_UNKNOWN_FLASH_TYPE		64
-#define ERR_PROG_ERROR			128
-
-/*-----------------------------------------------------------------------
  * Protection Flags for flash_protect():
  */
 #define FLAG_PROTECT_SET	0x01

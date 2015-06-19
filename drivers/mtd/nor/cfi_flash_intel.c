@@ -67,7 +67,7 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 
 	retcode = flash_generic_status_check (info, sector, info->buffer_write_tout,
 					   "write to buffer");
-	if (retcode != ERR_OK)
+	if (retcode)
 		return retcode;
 
 	/* reduce the number of loops by the width of the port	*/
@@ -110,24 +110,22 @@ static int intel_flash_status_check (struct flash_info *info, flash_sect_t secto
 {
 	int retcode;
 
-	retcode = flash_generic_status_check (info, sector, tout, prompt);
-
-	if ((retcode == ERR_OK)
-	    && !flash_isequal (info, sector, 0, FLASH_STATUS_DONE)) {
-		retcode = ERR_INVAL;
+	retcode = flash_generic_status_check(info, sector, tout, prompt);
+	if (!retcode && !flash_isequal(info, sector, 0, FLASH_STATUS_DONE)) {
+		retcode = -EINVAL;
 		printf ("Flash %s error at address %lx\n", prompt,
 			info->start[sector]);
 		if (flash_isset (info, sector, 0, FLASH_STATUS_ECLBS | FLASH_STATUS_PSLBS)) {
 			puts ("Command Sequence Error.\n");
 		} else if (flash_isset (info, sector, 0, FLASH_STATUS_ECLBS)) {
 			puts ("Block Erase Error.\n");
-			retcode = ERR_NOT_ERASED;
+			retcode = -EIO;
 		} else if (flash_isset (info, sector, 0, FLASH_STATUS_PSLBS)) {
 			puts ("Locking Error\n");
 		}
 		if (flash_isset (info, sector, 0, FLASH_STATUS_DPS)) {
 			puts ("Block locked.\n");
-			retcode = ERR_PROTECTED;
+			retcode = -EROFS;
 		}
 		if (flash_isset (info, sector, 0, FLASH_STATUS_VPENS))
 			puts ("Vpp Low Error.\n");

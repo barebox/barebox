@@ -329,22 +329,23 @@ static ulong flash_get_size (struct flash_info *info)
 #endif
 
 	switch (info->vendor) {
-#ifdef CONFIG_DRIVER_CFI_INTEL
 	case CFI_CMDSET_INTEL_EXTENDED:
 	case CFI_CMDSET_INTEL_STANDARD:
-		info->cfi_cmd_set = &cfi_cmd_set_intel;
+		if (IS_ENABLED(CONFIG_DRIVER_CFI_INTEL))
+			info->cfi_cmd_set = &cfi_cmd_set_intel;
 		break;
-#endif
-#ifdef CONFIG_DRIVER_CFI_AMD
 	case CFI_CMDSET_AMD_STANDARD:
 	case CFI_CMDSET_AMD_EXTENDED:
-		info->cfi_cmd_set = &cfi_cmd_set_amd;
+		if (IS_ENABLED(CONFIG_DRIVER_CFI_AMD))
+			info->cfi_cmd_set = &cfi_cmd_set_amd;
 		break;
-#endif
-	default:
-		dev_err(info->dev, "unsupported vendor\n");
+	}
+
+	if (!info->cfi_cmd_set) {
+		dev_err(info->dev, "unsupported vendor 0x%04x\n", info->vendor);
 		return 0;
 	}
+
 	info->cfi_cmd_set->flash_read_jedec_ids (info);
 	flash_write_cmd (info, 0, info->cfi_offset, FLASH_CMD_CFI);
 

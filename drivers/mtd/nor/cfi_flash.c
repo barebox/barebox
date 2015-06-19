@@ -41,6 +41,7 @@
 #include <progress.h>
 #include <linux/err.h>
 #include <asm/unaligned.h>
+#include <linux/mtd/concat.h>
 #include "cfi_flash.h"
 
 /*
@@ -920,6 +921,12 @@ static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	return 0;
 }
 
+struct cfi_priv {
+	struct flash_info *infos;
+	int num_devs;
+	struct mtd_info **mtds;
+};
+
 static void cfi_init_mtd(struct flash_info *info)
 {
 	struct mtd_info *mtd = &info->mtd;
@@ -948,39 +955,84 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->flags = MTD_CAP_NORFLASH;
 	mtd->type = MTD_NORFLASH;
 	mtd->parent = info->dev;
+}
 
-	add_mtd_device(mtd, "nor", DEVICE_ID_DYNAMIC);
+static int cfi_probe_one(struct flash_info *info, int num)
+{
+	int ret;
+
+	info->flash_id = FLASH_UNKNOWN;
+	info->cmd_reset = FLASH_CMD_RESET;
+	info->base = dev_request_mem_region(info->dev, num);
+	if (IS_ERR(info->base))
+		return PTR_ERR(info->base);
+
+	ret = flash_detect_size(info);
+	if (ret) {
+		dev_warn(info->dev, "## Unknown FLASH on Bank at 0x%p - Size = 0x%08lx = %ld MB\n",
+			info->base, info->size, info->size << 20);
+		return -ENODEV;
+	}
+
+	dev_info(info->dev, "found cfi flash at 0x%p, size %s\n",
+			info->base, size_human_readable(info->size));
+
+	cfi_init_mtd(info);
+
+	return 0;
 }
 
 static int cfi_probe(struct device_d *dev)
 {
-	struct flash_info *info = xzalloc(sizeof(*info));
-	int ret;
+	struct cfi_priv *priv;
+	int i, ret;
+	struct mtd_info *mtd;
+	const char *mtd_name = NULL;
 
-	dev->priv = info;
+	priv = xzalloc(sizeof(*priv));
 
-	/* Init: no FLASHes known */
-	info->flash_id = FLASH_UNKNOWN;
-	info->cmd_reset = FLASH_CMD_RESET;
-	info->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(info->base))
-		return PTR_ERR(info->base);
+	priv->num_devs = dev->num_resources;
+	priv->infos = xzalloc(sizeof(*priv->infos) * priv->num_devs);
+	priv->mtds = xzalloc(sizeof(*priv->mtds) * priv->num_devs);
 
-	info->dev = dev;
+	of_property_read_string(dev->device_node, "linux,mtd-name", &mtd_name);
 
-	ret = flash_detect_size(info);
-	if (ret) {
-		dev_warn(dev, "## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
-			dev->resource[0].start, info->size, info->size << 20);
-		return -ENODEV;
+	if (!mtd_name)
+		mtd_name = dev_name(dev);
+
+	dev->priv = priv;
+
+	for (i = 0; i < priv->num_devs; i++) {
+		struct flash_info *info = &priv->infos[i];
+
+		info->dev = dev;
+		info->mtd.name = xstrdup(mtd_name);
+
+		ret = cfi_probe_one(info, i);
+		if (ret)
+			return ret;
+		priv->mtds[i] = &priv->infos[i].mtd;
 	}
-
-	dev_info(dev, "found cfi flash at 0x%p, size %s\n",
-			info->base, size_human_readable(info->size));
 
 	dev->info = cfi_info;
 
-	cfi_init_mtd(info);
+	if (priv->num_devs > 1 && IS_ENABLED(CONFIG_MTD_CONCAT)) {
+		mtd = mtd_concat_create(priv->mtds, priv->num_devs, "nor");
+		if (!mtd) {
+			dev_err(dev, "failed to create concat mtd device\n");
+			return -ENODEV;
+		}
+	} else {
+		if (priv->num_devs > 1)
+			dev_warn(dev, "mtd concat disabled. using first chip only\n");
+		mtd = &priv->infos[0].mtd;
+	}
+
+	mtd->parent = dev;
+
+	ret = add_mtd_device(mtd, "nor", DEVICE_ID_DYNAMIC);
+	if (ret)
+		return ret;
 
 	return 0;
 }

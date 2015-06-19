@@ -40,6 +40,7 @@
 #include <errno.h>
 #include <progress.h>
 #include <linux/err.h>
+#include <asm/unaligned.h>
 #include "cfi_flash.h"
 
 /*
@@ -257,8 +258,8 @@ static int flash_detect_width(struct flash_info *info, struct cfi_qry *qry)
 found:
 	flash_read_cfi(info, qry, FLASH_OFFSET_CFI_RESP,
 			       sizeof(struct cfi_qry));
-	info->interface = le16_to_cpu(qry->interface_desc);
-	info->cfi_offset=flash_offset_cfi[cfi_offset];
+	info->interface = get_unaligned_le16(&qry->interface_desc);
+	info->cfi_offset = flash_offset_cfi[cfi_offset];
 	dev_dbg(info->dev, "device interface is %d\n", info->interface);
 	dev_dbg(info->dev, "found port %d chip %d chip_lsb %d ",
 			info->portwidth, info->chipwidth, info->chip_lsb);
@@ -317,8 +318,8 @@ static int flash_detect_size(struct flash_info *info)
 	if (ret)
 		return ret;
 
-	info->vendor = le16_to_cpu(qry.p_id);
-	info->ext_addr = le16_to_cpu(qry.p_adr);
+	info->vendor = get_unaligned_le16(&qry.p_id);
+	info->ext_addr = get_unaligned_le16(&qry.p_adr);
 	num_erase_regions = qry.num_erase_regions;
 
 	if (info->ext_addr) {
@@ -386,7 +387,7 @@ static int flash_detect_size(struct flash_info *info)
 			break;
 		}
 
-		tmp = le32_to_cpu(qry.erase_region_info[i]);
+		tmp = get_unaligned_le32(&qry.erase_region_info[i]);
 		dev_dbg(info->dev, "erase region %u: 0x%08lx\n", i, tmp);
 
 		erase_region_count = (tmp & 0xffff) + 1;
@@ -431,7 +432,7 @@ static int flash_detect_size(struct flash_info *info)
 	info->sector_count = sect_cnt;
 	/* multiply the size by the number of chips */
 	info->size = (1 << qry.dev_size) * size_ratio;
-	info->buffer_size = (1 << le16_to_cpu(qry.max_buf_write_size));
+	info->buffer_size = (1 << get_unaligned_le16(&qry.max_buf_write_size));
 	info->erase_blk_tout = 1 << (qry.block_erase_timeout_typ +
 				     qry.block_erase_timeout_max);
 	info->buffer_write_tout = 1 << (qry.buf_write_timeout_typ +

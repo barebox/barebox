@@ -124,19 +124,6 @@ static int flash_write_cfiword (struct flash_info *info, ulong dest,
 }
 
 #ifdef DEBUG
-/*
- * Debug support
- */
-void print_longlong (char *str, unsigned long long data)
-{
-	int i;
-	char *cp;
-
-	cp = (unsigned char *) &data;
-	for (i = 0; i < 8; i++)
-		sprintf (&str[i * 2], "%2.2x", *cp++);
-}
-
 static void flash_printqry (struct cfi_qry *qry)
 {
 	u8 *p = (u8 *)qry;
@@ -867,16 +854,7 @@ int flash_isequal(struct flash_info *info, flash_sect_t sect,
 		dev_dbg(info->dev, "is= %8.8x %8.8x\n", flash_read32(addr), (u32)cword);
 		retval = (flash_read32(addr) == cword);
 	} else if (bankwidth_is_8(info)) {
-#ifdef DEBUG
-		{
-			char str1[20];
-			char str2[20];
-
-			print_longlong (str1, flash_read32(addr));
-			print_longlong (str2, cword);
-			dev_dbg(info->dev, "is= %s %s\n", str1, str2);
-		}
-#endif
+		dev_dbg(info->dev, "is= %16.16llx %16.16llx\n", flash_read64(addr), (u64)cword);
 		retval = (flash_read64(addr) == cword);
 	} else
 		retval = 0;

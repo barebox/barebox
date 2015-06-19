@@ -168,19 +168,15 @@ static ulong flash_read_long (struct flash_info *info, flash_sect_t sect, uint o
 {
 	uchar *addr;
 	ulong retval;
-
-#ifdef DEBUG
 	int x;
-#endif
+
 	addr = flash_make_addr (info, sect, offset);
 
-#ifdef DEBUG
 	dev_dbg(info->dev, "long addr is at %p info->portwidth = %d\n", addr,
 	       info->portwidth);
-	for (x = 0; x < 4 * info->portwidth; x++) {
+	for (x = 0; x < 4 * info->portwidth; x++)
 		dev_dbg(info->dev, "addr[%x] = 0x%x\n", x, flash_read8(addr + x));
-	}
-#endif
+
 #if defined __LITTLE_ENDIAN
 	retval = ((flash_read8(addr) << 16) |
 		  (flash_read8(addr + info->portwidth) << 24) |

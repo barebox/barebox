@@ -308,9 +308,6 @@ static int flash_detect_size(struct flash_info *info)
 
 	info->ext_addr = 0;
 	info->cfi_version = 0;
-#ifdef CFG_FLASH_PROTECTION
-	info->legacy_unlock = 0;
-#endif
 
 	/* first only malloc space for the first sector */
 	info->start = xmalloc(sizeof(*info->eraseregions));
@@ -762,39 +759,6 @@ static void cfi_info (struct device_d* dev)
 	putchar('\n');
 	return;
 }
-
-#if 0
-/*
- * flash_read_user_serial - read the OneTimeProgramming cells
- */
-static void flash_read_user_serial (struct flash_info *info, void *buffer, int offset,
-			     int len)
-{
-	uchar *src;
-	uchar *dst;
-
-	dst = buffer;
-	src = flash_make_addr (info, 0, FLASH_OFFSET_USER_PROTECTION);
-	flash_write_cmd (info, 0, 0, FLASH_CMD_READ_ID);
-	memcpy (dst, src + offset, len);
-	flash_write_cmd (info, 0, 0, info->cmd_reset);
-}
-
-/*
- * flash_read_factory_serial - read the device Id from the protection area
- */
-static void flash_read_factory_serial (struct flash_info *info, void *buffer, int offset,
-				int len)
-{
-	uchar *src;
-
-	src = flash_make_addr (info, 0, FLASH_OFFSET_INTEL_PROTECTION);
-	flash_write_cmd (info, 0, 0, FLASH_CMD_READ_ID);
-	memcpy (buffer, src + offset, len);
-	flash_write_cmd (info, 0, 0, info->cmd_reset);
-}
-
-#endif
 
 int flash_status_check(struct flash_info *info, flash_sect_t sector,
 			       u64 tout, char *prompt)

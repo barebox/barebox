@@ -355,12 +355,6 @@ extern void flash_protect(int flag, unsigned long from, unsigned long to,
 		struct flash_info *info);
 extern int flash_write(char *, unsigned long, unsigned long);
 
-#if defined(CFG_FLASH_PROTECTION)
-extern int flash_real_protect(struct flash_info *info, long sector, int prot);
-extern void flash_read_user_serial(struct flash_info *info, void *buffer, int offset, int len);
-extern void flash_read_factory_serial(struct flash_info *info, void *buffer, int offset, int len);
-#endif	/* CFG_FLASH_PROTECTION */
-
 /*-----------------------------------------------------------------------
  * Protection Flags for flash_protect():
  */

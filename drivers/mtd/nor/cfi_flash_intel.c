@@ -154,12 +154,6 @@ static int intel_flash_real_protect(struct flash_info *info, long sector, int pr
 
 static void intel_flash_fixup(struct flash_info *info, struct cfi_qry *qry)
 {
-#ifdef CFG_FLASH_PROTECTION
-	/* read legacy lock/unlock bit from intel flash */
-	if (info->ext_addr)
-		info->legacy_unlock = flash_read_uchar(info,
-				info->ext_addr + 5) & 0x08;
-#endif
 }
 
 struct cfi_cmd_set cfi_cmd_set_intel = {

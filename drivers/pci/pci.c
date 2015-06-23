@@ -420,11 +420,6 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			       bus->number, dev->devfn, dev->vendor, dev->device, class, hdr_type);
 			continue;
 		}
-
-		if (class == PCI_CLASS_BRIDGE_HOST) {
-			pr_debug("skip pci host bridge\n");
-			continue;
-		}
 	}
 
 	/*

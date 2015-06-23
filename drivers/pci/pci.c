@@ -129,10 +129,24 @@ static struct pci_dev *alloc_pci_dev(void)
 	return dev;
 }
 
+static u32 pci_size(u32 base, u32 maxbase, u32 mask)
+{
+	u32 size = maxbase & mask;
+	if (!size)
+		return 0;
+
+	size = (size & ~(size-1)) - 1;
+
+	if (base == maxbase && ((base | size) & mask) != mask)
+		return 0;
+
+	return size + 1;
+}
+
+
 static void setup_device(struct pci_dev *dev, int max_bar)
 {
-	int bar, size;
-	u32 mask;
+	int bar;
 	u8 cmd;
 
 	pci_read_config_byte(dev, PCI_COMMAND, &cmd);
@@ -141,9 +155,12 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 
 	for (bar = 0; bar < max_bar; bar++) {
 		resource_size_t last_addr;
+		u32 orig, mask, size;
 
+		pci_read_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, &orig);
 		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, 0xfffffffe);
 		pci_read_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, &mask);
+		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, orig);
 
 		if (mask == 0 || mask == 0xffffffff) {
 			pr_debug("pbar%d set bad mask\n", bar);
@@ -151,7 +168,11 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		}
 
 		if (mask & 0x01) { /* IO */
-			size = ((~(mask & 0xfffffffe)) & 0xffff) + 1;
+			size = pci_size(orig, mask, 0xfffffffe);
+			if (!size) {
+				pr_debug("pbar%d bad IO mask\n", bar);
+				continue;
+			}
 			pr_debug("pbar%d: mask=%08x io %d bytes\n", bar, mask, size);
 			if (last_io + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_IO]->end) {
@@ -164,7 +185,11 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			last_io += size;
 		} else if ((mask & PCI_BASE_ADDRESS_MEM_PREFETCH) &&
 		           last_mem_pref) /* prefetchable MEM */ {
-			size = (~(mask & 0xfffffff0)) + 1;
+			size = pci_size(orig, mask, 0xfffffff0);
+			if (!size) {
+				pr_debug("pbar%d bad P-MEM mask\n", bar);
+				continue;
+			}
 			pr_debug("pbar%d: mask=%08x P memory %d bytes\n",
 			    bar, mask, size);
 			if (last_mem_pref + size >
@@ -178,7 +203,11 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			last_addr = last_mem_pref;
 			last_mem_pref += size;
 		} else { /* non-prefetch MEM */
-			size = (~(mask & 0xfffffff0)) + 1;
+			size = pci_size(orig, mask, 0xfffffff0);
+			if (!size) {
+				pr_debug("pbar%d bad NP-MEM mask\n", bar);
+				continue;
+			}
 			pr_debug("pbar%d: mask=%08x NP memory %d bytes\n",
 			    bar, mask, size);
 			if (last_mem + size >

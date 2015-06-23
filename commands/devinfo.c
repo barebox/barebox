@@ -68,11 +68,8 @@ static int do_devinfo(int argc, char *argv[])
 		}
 	} else {
 		dev = get_device_by_name(argv[1]);
-
-		if (!dev) {
-			printf("no such device: %s\n",argv[1]);
-			return -1;
-		}
+		if (!dev)
+			return -ENODEV;
 
 		if (dev->num_resources)
 			printf("Resources:\n");

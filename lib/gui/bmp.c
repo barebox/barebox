@@ -7,6 +7,7 @@
 #include <gui/graphic_utils.h>
 #include <init.h>
 #include <gui/image_renderer.h>
+#include <asm/unaligned.h>
 
 struct image *bmp_open(char *inbuf, int insize)
 {
@@ -19,9 +20,9 @@ struct image *bmp_open(char *inbuf, int insize)
 	}
 
 	img->data = inbuf;
-	img->height = le32_to_cpu(bmp->header.height);
-	img->width = le32_to_cpu(bmp->header.width);
-	img->bits_per_pixel = le16_to_cpu(bmp->header.bit_count);
+	img->height = get_unaligned_le32(&bmp->header.height);
+	img->width = get_unaligned_le32(&bmp->header.width);
+	img->bits_per_pixel = get_unaligned_le16(&bmp->header.bit_count);
 
 	pr_debug("bmp: %d x %d  x %d data@0x%p\n", img->width, img->height,
 		 img->bits_per_pixel, img->data);
@@ -76,7 +77,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 
 		for (y = 0; y < height; y++) {
 			image = (char *)bmp +
-					le32_to_cpu(bmp->header.data_offset);
+					get_unaligned_le32(&bmp->header.data_offset);
 			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
 			adr = buf + (y + starty) * sc->info.line_length +
 					startx * (sc->info.bits_per_pixel >> 3);
@@ -98,7 +99,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 
 		for (y = 0; y < height; y++) {
 			image = (char *)bmp +
-					le32_to_cpu(bmp->header.data_offset);
+					get_unaligned_le32(&bmp->header.data_offset);
 			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
 			adr = buf + (y + starty) * sc->info.line_length +
 					startx * (sc->info.bits_per_pixel >> 3);

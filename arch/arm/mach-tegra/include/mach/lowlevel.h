@@ -243,10 +243,19 @@ void tegra_ll_delay_usec(int delay)
 	while ((int)readl(TEGRA_TMRUS_BASE + TIMER_CNTR_1US) - timeout < 0);
 }
 
+/* reset vector for the AVP, to be called from board reset vector */
+void tegra_avp_reset_vector(uint32_t boarddata);
+
+/* reset vector for the main CPU complex */
+void tegra_maincomplex_entry(void);
+
 static __always_inline
 void tegra_cpu_lowlevel_setup(void)
 {
 	uint32_t r;
+
+	if (tegra_cpu_is_maincomplex())
+		tegra_maincomplex_entry();
 
 	/* set the cpu to SVC32 mode */
 	__asm__ __volatile__("mrs %0, cpsr":"=r"(r));
@@ -257,11 +266,5 @@ void tegra_cpu_lowlevel_setup(void)
 	arm_setup_stack(TEGRA_IRAM_BASE + SZ_256K - 8);
 	tegra_ll_delay_setup();
 }
-
-/* reset vector for the AVP, to be called from board reset vector */
-void tegra_avp_reset_vector(uint32_t boarddata);
-
-/* reset vector for the main CPU complex */
-void tegra_maincomplex_entry(void);
 
 #endif /* __TEGRA_LOWLEVEL_H */

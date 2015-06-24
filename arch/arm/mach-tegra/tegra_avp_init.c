@@ -265,9 +265,6 @@ void tegra_avp_reset_vector(uint32_t boarddata)
 	/* put boarddata in scratch reg, for main CPU to fetch after startup */
 	writel(boarddata, TEGRA_PMC_BASE + PMC_SCRATCH(10));
 
-	if (tegra_cpu_is_maincomplex())
-		tegra_maincomplex_entry();
-
 	/* we want to bring up the high performance CPU complex */
 	if (tegra_get_chiptype() >= TEGRA30)
 		tegra_cluster_switch_hp();

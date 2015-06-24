@@ -29,4 +29,6 @@ void __noreturn omap3_reset_cpu(unsigned long addr);
 int omap3_init(void);
 int omap3_devices_init(void);
 
+void *omap3_xload_boot_usb(void);
+
 #endif /* __MACH_OMAP3_GENERIC_H */

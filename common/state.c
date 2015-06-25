@@ -143,12 +143,15 @@ static int state_uint32_export(struct state_variable *var,
 	struct state_uint32 *su32 = to_state_uint32(var);
 	int ret;
 
-	if (su32->value_default || conv == STATE_CONVERT_FIXUP) {
+	if (su32->value_default) {
 		ret = of_property_write_u32(node, "default",
 					    su32->value_default);
-		if (ret || conv == STATE_CONVERT_FIXUP)
+		if (ret)
 			return ret;
 	}
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
 
 	return of_property_write_u32(node, "value", su32->value);
 }
@@ -249,12 +252,15 @@ static int state_enum32_export(struct state_variable *var,
 	int ret, i, len;
 	char *prop, *str;
 
-	if (enum32->value_default || conv == STATE_CONVERT_FIXUP) {
+	if (enum32->value_default) {
 		ret = of_property_write_u32(node, "default",
 					    enum32->value_default);
-		if (ret || conv == STATE_CONVERT_FIXUP)
+		if (ret)
 			return ret;
 	}
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
 
 	ret = of_property_write_u32(node, "value", enum32->value);
 	if (ret)
@@ -364,10 +370,15 @@ static int state_mac_export(struct state_variable *var,
 	struct state_mac *mac = to_state_mac(var);
 	int ret;
 
-	ret = of_property_write_u8_array(node, "default", mac->value_default,
-					 ARRAY_SIZE(mac->value_default));
-	if (ret || conv == STATE_CONVERT_FIXUP)
-		return ret;
+	if (!is_zero_ether_addr(mac->value_default)) {
+		ret = of_property_write_u8_array(node, "default", mac->value_default,
+						 ARRAY_SIZE(mac->value_default));
+		if (ret)
+			return ret;
+	}
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
 
 	return of_property_write_u8_array(node, "value", mac->value,
 					  ARRAY_SIZE(mac->value));

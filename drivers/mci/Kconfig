@@ -95,7 +95,7 @@ config MCI_OMAP_HSMMC
 
 config MCI_PXA
 	bool "PXA"
-	depends on ARCH_PXA
+	depends on ARCH_PXA2XX
 	help
 	  Enable this entry to add support to read and write SD cards on a
 	  XScale PXA25x / PXA27x based system.

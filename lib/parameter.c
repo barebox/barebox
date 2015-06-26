@@ -583,7 +583,6 @@ struct param_d *dev_add_param_llint_ro(struct device_d *dev, const char *name,
 	return &piro->param;
 }
 
-#ifdef CONFIG_NET
 struct param_ip {
 	struct param_d param;
 	IPaddr_t *ip;
@@ -747,7 +746,6 @@ struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
 
 	return &pm->param;
 }
-#endif
 
 /**
  * dev_remove_param - remove a parameter from a device and free its

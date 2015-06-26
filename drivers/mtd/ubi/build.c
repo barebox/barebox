@@ -518,7 +518,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	for (i = 0; i < UBI_MAX_DEVICES; i++) {
 		ubi = ubi_devices[i];
 		if (ubi && mtd == ubi->mtd) {
-			ubi_err("mtd%d is already attached to ubi%d",
+			ubi_debug("mtd%d is already attached to ubi%d",
 				mtd->index, i);
 			return -EEXIST;
 		}

@@ -571,7 +571,7 @@ static int ks8851_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return 0;
 }
 
-static int ks8851_set_ethaddr(struct eth_device *edev, unsigned char *adr)
+static int ks8851_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	struct ks_net *priv = (struct ks_net *)edev->priv;
 

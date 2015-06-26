@@ -178,7 +178,7 @@ static int davinci_emac_get_ethaddr(struct eth_device *edev, unsigned char *adr)
  * This function must be called before emac_open() if you want to override
  * the default mac address.
  */
-static int davinci_emac_set_ethaddr(struct eth_device *edev, unsigned char *addr)
+static int davinci_emac_set_ethaddr(struct eth_device *edev, const unsigned char *addr)
 {
 	struct davinci_emac_priv *priv = edev->priv;
 	int i;

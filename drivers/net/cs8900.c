@@ -341,7 +341,7 @@ static int cs8900_get_ethaddr(struct eth_device *dev, unsigned char *mac)
 	return 0;
 }
 
-static int cs8900_set_ethaddr(struct eth_device *dev, unsigned char *mac)
+static int cs8900_set_ethaddr(struct eth_device *dev, const unsigned char *mac)
 {
 	struct cs8900_priv *priv = (struct cs8900_priv *)dev->priv;
 	int i;

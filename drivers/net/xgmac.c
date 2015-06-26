@@ -674,7 +674,7 @@ static int xgmac_get_ethaddr(struct eth_device *edev, unsigned char *addr)
 	return 0;
 }
 
-static int xgmac_set_ethaddr(struct eth_device *dev, unsigned char *addr)
+static int xgmac_set_ethaddr(struct eth_device *dev, const unsigned char *addr)
 {
 	struct xgmac_priv *priv = dev->priv;
 	u32 data;

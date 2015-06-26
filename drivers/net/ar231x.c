@@ -70,7 +70,7 @@ static void ar231x_reset_bit_(struct ar231x_eth_priv *priv,
 		(*priv->reset_bit)(val, state);
 }
 
-static int ar231x_set_ethaddr(struct eth_device *edev, unsigned char *addr);
+static int ar231x_set_ethaddr(struct eth_device *edev, const unsigned char *addr);
 static void ar231x_reset_regs(struct eth_device *edev)
 {
 	struct ar231x_eth_priv *priv = edev->priv;

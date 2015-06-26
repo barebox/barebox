@@ -384,7 +384,7 @@ static int dwc_ether_get_ethaddr(struct eth_device *dev, u8 adr[6])
 	return -1;
 }
 
-static int dwc_ether_set_ethaddr(struct eth_device *dev, u8 adr[6])
+static int dwc_ether_set_ethaddr(struct eth_device *dev, const unsigned char *adr)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_mac_regs *mac_p = priv->mac_regs_p;

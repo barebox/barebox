@@ -403,7 +403,7 @@ static int asix_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return 0;
 }
 
-static int asix_set_ethaddr(struct eth_device *edev, unsigned char *adr)
+static int asix_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	/* not possible? */
 	return 0;

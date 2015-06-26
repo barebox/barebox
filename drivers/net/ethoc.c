@@ -435,7 +435,7 @@ static int ethoc_get_ethaddr(struct eth_device *edev, unsigned char *mac)
 	return 0;
 }
 
-static int ethoc_set_ethaddr(struct eth_device *edev, unsigned char *mac)
+static int ethoc_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 {
 	struct ethoc *dev = edev->priv;
 

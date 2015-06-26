@@ -332,7 +332,7 @@ static int arc_emac_get_ethaddr(struct eth_device *edev, unsigned char *mac)
 	return -1;
 }
 
-static int arc_emac_set_ethaddr(struct eth_device *edev, unsigned char *mac)
+static int arc_emac_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 {
 	struct arc_emac_priv *priv = edev->priv;
 	unsigned int addr_low, addr_hi;

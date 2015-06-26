@@ -1378,7 +1378,7 @@ static int smc91c111_get_ethaddr(struct eth_device *edev, unsigned char *m)
 }
 
 static int smc91c111_set_ethaddr(struct eth_device *edev,
-					unsigned char *mac_addr)
+					const unsigned char *mac_addr)
 {
 	struct smc91c111_priv *priv = (struct smc91c111_priv *)edev->priv;
 	unsigned address;

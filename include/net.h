@@ -42,7 +42,7 @@ struct eth_device {
 	int  (*recv) (struct eth_device*);
 	void (*halt) (struct eth_device*);
 	int  (*get_ethaddr) (struct eth_device*, u8 adr[6]);
-	int  (*set_ethaddr) (struct eth_device*, u8 adr[6]);
+	int  (*set_ethaddr) (struct eth_device*, const unsigned char *adr);
 
 	struct eth_device *next;
 	void *priv;

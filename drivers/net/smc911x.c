@@ -182,7 +182,7 @@ static int smc911x_get_ethaddr(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int smc911x_set_ethaddr(struct eth_device *edev, unsigned char *m)
+static int smc911x_set_ethaddr(struct eth_device *edev, const unsigned char *m)
 {
 	unsigned long addrh, addrl;
 

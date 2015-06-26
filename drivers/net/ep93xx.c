@@ -466,7 +466,7 @@ static int ep93xx_eth_get_ethaddr(struct eth_device *edev,
 }
 
 static int ep93xx_eth_set_ethaddr(struct eth_device *edev,
-				unsigned char *mac_addr)
+				const unsigned char *mac_addr)
 {
 	struct mac_regs *regs = ep93xx_get_regs(edev);
 

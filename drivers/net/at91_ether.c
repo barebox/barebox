@@ -261,7 +261,7 @@ static int at91_ether_get_ethaddr(struct eth_device *eth, unsigned char *adr)
 	return -1;
 }
 
-static int at91_ether_set_ethaddr(struct eth_device *eth, unsigned char *adr)
+static int at91_ether_set_ethaddr(struct eth_device *eth, const unsigned char *adr)
 {
 	int i;
 

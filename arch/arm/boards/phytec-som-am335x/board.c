@@ -68,7 +68,10 @@ static int physom_devices_init(void)
 		of_device_enable_path("/chosen/environment-spi");
 		break;
 	case BOOTSOURCE_MMC:
-		omap_set_bootmmc_devname("mmc0");
+		if (bootsource_get_instance() == 0)
+			omap_set_bootmmc_devname("mmc0");
+		else
+			omap_set_bootmmc_devname("mmc1");
 		break;
 	default:
 		of_device_enable_path("/chosen/environment-nand");

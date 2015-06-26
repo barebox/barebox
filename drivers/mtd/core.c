@@ -18,7 +18,9 @@
 #include <common.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/mtd.h>
+#include <mtd/ubi-user.h>
 #include <cmdlinepart.h>
+#include <filetype.h>
 #include <init.h>
 #include <xfuncs.h>
 #include <driver.h>
@@ -542,6 +544,41 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 	return 0;
 }
 
+static int mtd_detect(struct device_d *dev)
+{
+	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	int bufsize = 512;
+	void *buf;
+	int ret;
+	enum filetype filetype;
+	size_t retlen;
+
+	/*
+	 * Do not try to attach an UBI device if this device has partitions
+	 * as it's not a good idea to attach UBI on a raw device when the
+	 * real UBI only spans the first partition.
+	 */
+	if (!list_empty(&mtd->partitions))
+		return -EBUSY;
+
+	buf = xmalloc(bufsize);
+
+	ret = mtd_read(mtd, 0, bufsize, &retlen, buf);
+	if (ret)
+		goto out;
+
+	filetype = file_detect_type(buf, bufsize);
+	if (filetype == filetype_ubi) {
+		ret = ubi_attach_mtd_dev(mtd, UBI_DEV_NUM_AUTO, 0, 20);
+		if (ret == -EEXIST)
+			ret = 0;
+	}
+out:
+	free(buf);
+
+	return ret;
+}
+
 int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
@@ -553,6 +590,9 @@ int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
 	mtd->class_dev.id = device_id;
 	if (mtd->parent)
 		mtd->class_dev.parent = mtd->parent;
+
+	if (IS_ENABLED(CONFIG_MTD_UBI))
+		mtd->class_dev.detect = mtd_detect;
 
 	ret = register_device(&mtd->class_dev);
 	if (ret)

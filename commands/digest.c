@@ -68,7 +68,7 @@ err:
 	return ret;
 }
 
-static void prints_algo_help(void)
+static void __maybe_unused prints_algo_help(void)
 {
 	puts("\navailable algo:\n");
 	digest_algo_prints("\t");

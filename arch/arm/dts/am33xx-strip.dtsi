@@ -43,3 +43,5 @@
 /delete-node/ &mcasp0;
 /delete-node/ &mcasp1;
 /delete-node/ &rng;
+/delete-node/ &rtc;
+/delete-node/ &wkup_m3;

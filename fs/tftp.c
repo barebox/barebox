@@ -256,22 +256,21 @@ static void tftp_timer_reset(struct file_priv *priv)
 static void tftp_recv(struct file_priv *priv,
 			uint8_t *pkt, unsigned len, uint16_t uh_sport)
 {
-	uint16_t proto;
-	uint16_t *s;
+	uint16_t opcode;
 
 	/* according to RFC1350 minimal tftp packet length is 4 bytes */
 	if (len < 4)
 		return;
 
+	opcode = ntohs(*(uint16_t *)pkt);
+
+	/* skip tftp opcode 2-byte field */
 	len -= 2;
+	pkt += 2;
 
-	s = (uint16_t *)pkt;
-	proto = *s++;
-	pkt = (unsigned char *)s;
+	debug("%s: opcode 0x%04x\n", __func__, opcode);
 
-	debug("%s: proto 0x%04x\n", __func__, proto);
-
-	switch (ntohs(proto)) {
+	switch (opcode) {
 	case TFTP_RRQ:
 	case TFTP_WRQ:
 	default:

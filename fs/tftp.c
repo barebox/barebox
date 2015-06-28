@@ -259,7 +259,8 @@ static void tftp_recv(struct file_priv *priv,
 	uint16_t proto;
 	uint16_t *s;
 
-	if (len < 2)
+	/* according to RFC1350 minimal tftp packet length is 4 bytes */
+	if (len < 4)
 		return;
 
 	len -= 2;
@@ -315,8 +316,6 @@ static void tftp_recv(struct file_priv *priv,
 
 		break;
 	case TFTP_DATA:
-		if (len < 2)
-			return;
 		len -= 2;
 		priv->block = ntohs(*(uint16_t *)pkt);
 

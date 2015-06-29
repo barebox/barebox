@@ -184,8 +184,8 @@ again:
 
 	if (read_size < s.st_size)
 		return -EFBIG;
-	else
-		return 0;
+
+	return 0;
 
 err_out1:
 	close(fd);

@@ -281,7 +281,7 @@ static const struct file_operations mtd_raw_fops = {
 	.lseek		= dev_lseek_default,
 };
 
-static int add_mtdraw_device(struct mtd_info *mtd, char *devname, void **priv)
+static int add_mtdraw_device(struct mtd_info *mtd, const char *devname, void **priv)
 {
 	struct mtdraw *mtdraw;
 

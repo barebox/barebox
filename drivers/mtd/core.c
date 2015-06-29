@@ -542,7 +542,7 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 	return 0;
 }
 
-int add_mtd_device(struct mtd_info *mtd, char *devname, int device_id)
+int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 {
 	struct mtddev_hook *hook;
 	int ret;

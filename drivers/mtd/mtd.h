@@ -25,7 +25,7 @@
  */
 struct mtddev_hook {
 	struct list_head hook;
-	int (*add_mtd_device)(struct mtd_info *mtd, char *devname, void **priv);
+	int (*add_mtd_device)(struct mtd_info *mtd, const char *devname, void **priv);
 	int (*del_mtd_device)(struct mtd_info *mtd, void **priv);
 	void *priv;
 };

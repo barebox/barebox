@@ -233,7 +233,7 @@ static int m25p_probe(struct device_d *dev)
 	struct m25p			*flash;
 	struct spi_nor			*nor;
 	enum read_mode mode =		SPI_NOR_NORMAL;
-	char				*flash_name = NULL;
+	const char			*flash_name = NULL;
 	int				device_id;
 	int ret;
 
@@ -277,13 +277,10 @@ static int m25p_probe(struct device_d *dev)
 		return ret;
 
 	device_id = DEVICE_ID_SINGLE;
-	if (dev->device_node) {
-		const char *alias = of_alias_get(dev->device_node);
-		if (alias)
-			flash_name = xstrdup(alias);
-	} else if (data && data->name) {
+	if (dev->device_node)
+		flash_name = of_alias_get(dev->device_node);
+	else if (data && data->name)
 		flash_name = data->name;
-	}
 
 	if (!flash_name) {
 		device_id = DEVICE_ID_DYNAMIC;

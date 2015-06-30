@@ -148,4 +148,3 @@ BAREBOX_CMD_START(help)
 	BAREBOX_CMD_HELP(cmd_help_help)
 	BAREBOX_CMD_COMPLETE(command_complete)
 BAREBOX_CMD_END
-

@@ -25,4 +25,3 @@ void get_random_bytes(void *_buf, int len)
 	while (len--)
 		*buf++ = rand() % 256;
 }
-

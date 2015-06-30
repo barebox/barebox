@@ -644,4 +644,3 @@ static int ramfs_init(void)
 }
 
 coredevice_initcall(ramfs_init);
-

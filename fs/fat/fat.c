@@ -434,4 +434,3 @@ static int fat_init(void)
 }
 
 coredevice_initcall(fat_init);
-

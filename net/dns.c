@@ -116,9 +116,8 @@ static int dns_send(char *name)
 	return ret;
 }
 
-static void dns_handler(void *ctx, char *packet, unsigned len)
+static void dns_recv(struct header *header, unsigned len)
 {
-	struct header *header;
 	unsigned char *p, *e, *s;
 	u16 type;
 	int found, stop, dlen;
@@ -127,7 +126,6 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 	debug("%s\n", __func__);
 
 	/* We sent 1 query. We want to see more that 1 answer. */
-	header = (struct header *)net_eth_to_udp_payload(packet);
 	if (ntohs(header->nqueries) != 1)
 		return;
 
@@ -140,7 +138,7 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 
 	/* Skip host name */
 	s = &header->data[0];
-	e = packet + len;
+	e = ((uint8_t *)header) + len;
 	for (p = s; p < e && *p != '\0'; p++)
 		continue;
 
@@ -192,6 +190,13 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 		dns_ip = net_read_ip(p);
 		dns_state = STATE_DONE;
 	}
+}
+
+static void dns_handler(void *ctx, char *packet, unsigned len)
+{
+	(void)ctx;
+	dns_recv((struct header *)net_eth_to_udp_payload(packet),
+		net_eth_to_udplen(packet));
 }
 
 IPaddr_t resolv(char *host)

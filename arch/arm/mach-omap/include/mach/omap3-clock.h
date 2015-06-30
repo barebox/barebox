@@ -107,7 +107,7 @@
 /* PER DPLL */
 #define PER_M6X2		3         /* 288MHz: CM_CLKSEL1_EMU */
 #define PER_M5X2		4         /* 216MHz: CM_CLKSEL_CAM */
-#define PER_M4X2		9         /* 96MHz : CM_CLKSEL_DSS-dss1 */
+#define PER_M4X2		2         /* 432MHz: CM_CLKSEL_DSS-dss1 */
 #define PER_M3X2		16        /* 54MHz : CM_CLKSEL_DSS-tv */
 
 #define CLSEL1_EMU_VAL ((CORE_M3X2 << 16) | (PER_M6X2 << 24) | (0x0a50))

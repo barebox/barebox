@@ -157,6 +157,13 @@ config MACH_AFI_GF
 	  help
 	  Say Y here if you are using afis GF
 
+config MACH_BEAGLE
+	bool "Texas Instrument's Beagle Board"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select ARCH_OMAP3
+	help
+	  Say Y here if you are using Beagle Board
+
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
 	select ARCH_AM33XX
@@ -179,13 +186,6 @@ config MACH_OMAP343xSDP
 	select ARCH_OMAP3
 	help
 	  Say Y here if you are using SDP343x platform
-
-config MACH_BEAGLE
-	bool "Texas Instrument's Beagle Board"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select ARCH_OMAP3
-	help
-	  Say Y here if you are using Beagle Board
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"

@@ -153,7 +153,7 @@ static inline int ffz(unsigned int x)
 	return __ilog2(x & -x);
 }
 
-static __inline__ int __ffs(unsigned long x)
+static inline int __ffs(unsigned long x)
 {
 	return __ilog2(x & -x);
 }

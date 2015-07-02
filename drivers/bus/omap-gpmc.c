@@ -149,7 +149,7 @@ static void gpmc_cs_bool_timings(struct gpmc_config *gpmc_config, const struct g
 	if (p->oe_extra_delay)
 		gpmc_config->cfg[3] |= GPMC_CONFIG4_OEEXTRADELAY;
 	if (p->we_extra_delay)
-		gpmc_config->cfg[3] |= GPMC_CONFIG4_OEEXTRADELAY;
+		gpmc_config->cfg[3] |= GPMC_CONFIG4_WEEXTRADELAY;
 	if (p->cycle2cyclesamecsen)
 		gpmc_config->cfg[5] |= GPMC_CONFIG6_CYCLE2CYCLESAMECSEN;
 	if (p->cycle2cyclediffcsen)

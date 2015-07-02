@@ -61,6 +61,8 @@ static noinline __noreturn void __start(unsigned long membase,
 
 	setup_c();
 
+	barrier();
+
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
 	barebox_boarddata = boarddata;

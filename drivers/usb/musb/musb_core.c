@@ -119,8 +119,6 @@ MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("platform:" MUSB_DRIVER_NAME);
 
-#define MUSB_HOST_TIMEOUT 0x5fffff
-
 /*-------------------------------------------------------------------------*/
 
 #ifndef CONFIG_BLACKFIN
@@ -1025,17 +1023,18 @@ int musb_init(struct usb_host *host)
 {
 	struct musb *musb = to_musb(host);
 	void *mbase;
-	int timeout = MUSB_HOST_TIMEOUT;
+	u64 start;
 	u8 power;
 
 	musb_start(musb);
 	mbase = musb->mregs;
-	do {
+	start = get_time_ns();
+	while (1) {
 		if (musb_readb(mbase, MUSB_DEVCTL) & MUSB_DEVCTL_HM)
 			break;
-	} while (--timeout);
-	if (!timeout)
-		return -ENODEV;
+		if (is_timeout(start, 4 * SECOND))
+			return -ENODEV;
+	}
 
 	power = musb_readb(mbase, MUSB_POWER);
 	musb_writeb(mbase, MUSB_POWER, MUSB_POWER_RESET | power);

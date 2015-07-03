@@ -453,17 +453,6 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	return 0;
 }
 
-static void stmfb_info(struct device_d *hw_dev)
-{
-	struct imx_fb_platformdata *pdata = hw_dev->platform_data;
-	unsigned u;
-
-	printf(" Supported video modes:\n");
-	for (u = 0; u < pdata->mode_cnt; u++)
-		printf("  - '%s': %u x %u\n", pdata->mode_list[u].name,
-			pdata->mode_list[u].xres, pdata->mode_list[u].yres);
-}
-
 /*
  * There is only one video hardware instance available.
  * It makes no sense to dynamically allocate this data
@@ -528,8 +517,6 @@ static int stmfb_probe(struct device_d *hw_dev)
 		fbi.info.modes.modes = modes->modes;
 		fbi.info.modes.num_modes = modes->num_modes;
 	}
-
-	hw_dev->info = stmfb_info;
 
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {

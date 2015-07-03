@@ -112,3 +112,4 @@ obj-$(CONFIG_CMD_NV)		+= nv.o
 obj-$(CONFIG_CMD_DEFAULTENV)	+= defaultenv.o
 obj-$(CONFIG_CMD_STATE)		+= state.o
 obj-$(CONFIG_CMD_DHCP)		+= dhcp.o
+obj-$(CONFIG_CMD_SPD_DECODE)	+= spd_decode.o

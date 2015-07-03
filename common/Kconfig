@@ -97,6 +97,14 @@ config FILE_LIST
 config ARCH_DMA_ADDR_T_64BIT
 	bool
 
+config BAREBOX_UPDATE_IMX_NAND_FCB
+	bool
+	depends on ARCH_IMX6 || ARCH_IMX28
+	depends on BAREBOX_UPDATE
+	depends on MTD_WRITE
+	depends on NAND_MXS
+	default y
+
 menu "General Settings"
 
 config LOCALVERSION

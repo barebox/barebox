@@ -127,15 +127,6 @@ config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	depends on MTD_WRITE
 	default y
 
-config BAREBOX_UPDATE_IMX6_NAND
-	bool
-	depends on ARCH_IMX6
-	depends on BAREBOX_UPDATE
-	depends on MTD
-	depends on MTD_WRITE
-	depends on NAND_MXS
-	default y
-
 comment "Freescale i.MX System-on-Chip"
 
 config ARCH_IMX1

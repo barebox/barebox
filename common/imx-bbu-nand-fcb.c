@@ -17,7 +17,7 @@
  *
  */
 
-#define pr_fmt(fmt) "imx6-bbu-nand: " fmt
+#define pr_fmt(fmt) "imx-bbu-nand-fcb: " fmt
 
 #include <filetype.h>
 #include <common.h>
@@ -28,17 +28,17 @@
 #include <linux/sizes.h>
 #include <bbu.h>
 #include <fs.h>
-#include <mach/bbu.h>
 #include <linux/mtd/mtd-abi.h>
 #include <linux/mtd/nand_mxs.h>
 #include <linux/mtd/mtd.h>
 #include <linux/stat.h>
+#include <io.h>
 
 struct dbbt_block {
 	uint32_t Checksum;
 	uint32_t FingerPrint;
 	uint32_t Version;
-	uint32_t reserved;
+	uint32_t numberBB; /* reserved on i.MX6 */
 	uint32_t DBBTNumOfPages;
 };
 
@@ -100,6 +100,16 @@ struct fcb_block {
 
 	uint32_t DISBBM;	/* the flag to enable (1)/disable(0) bi swap */
 	uint32_t BBMarkerPhysicalOffsetInSpareData; /* The swap position of main area in spare area */
+};
+
+struct imx_nand_fcb_bbu_handler {
+	struct bbu_handler handler;
+
+	void (*fcb_create)(struct imx_nand_fcb_bbu_handler *imx_handler,
+		struct fcb_block *fcb, struct mtd_info *mtd);
+	void (*dbbt_create)(struct imx_nand_fcb_bbu_handler *imx_handler,
+		struct dbbt_block *dbbt, int num_bad_blocks);
+	enum filetype filetype;
 };
 
 #define BF_VAL(v, bf)		(((v) & bf##_MASK) >> bf##_OFFSET)
@@ -228,7 +238,8 @@ static ssize_t raw_write_page(struct mtd_info *mtd, void *buf, loff_t offset)
         return ret;
 }
 
-static int fcb_create(struct fcb_block *fcb, struct mtd_info *mtd)
+static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
+		struct fcb_block *fcb, struct mtd_info *mtd)
 {
 	fcb->FingerPrint = 0x20424346;
 	fcb->Version = 0x01000000;
@@ -241,42 +252,37 @@ static int fcb_create(struct fcb_block *fcb, struct mtd_info *mtd)
 		mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1;
 	fcb->EccBlockNEccType = fcb->EccBlock0EccType;
 
-	/* Also hardcoded in kobs-ng */
-	fcb->DataSetup = 80;
-	fcb->DataHold = 60;
-	fcb->AddressSetup = 25;
-	fcb->DSAMPLE_TIME = 6;
-	fcb->MetadataBytes = 0x0000000a;
 	fcb->EccBlock0Size = 0x00000200;
 	fcb->EccBlockNSize = 0x00000200;
 
 	fcb->NumEccBlocksPerPage = mtd->writesize / fcb->EccBlock0Size - 1;
 
-	/* DBBT search area starts at third block */
-	fcb->DBBTSearchAreaStartAddress = mtd->erasesize / mtd->writesize * 2;
+	/* DBBT search area starts at second page on first block */
+	fcb->DBBTSearchAreaStartAddress = 1;
 
 	fcb->BadBlockMarkerByte = mxs_nand_mark_byte_offset(mtd);
 	fcb->BadBlockMarkerStartBit = mxs_nand_mark_bit_offset(mtd);
 
 	fcb->BBMarkerPhysicalOffset = mtd->writesize;
 
+	imx_handler->fcb_create(imx_handler, fcb, mtd);
+
 	fcb->Checksum = calc_chksum((void *)fcb + 4, sizeof(*fcb) - 4);
 
 	return 0;
 }
 
-static int imx6_bbu_erase(struct mtd_info *mtd)
+static int imx_bbu_erase(struct mtd_info *mtd)
 {
 	uint64_t offset = 0;
-	int len = SZ_2M;
 	struct erase_info erase;
 	int ret;
 
-	while (len > 0) {
+	while (offset < mtd->size) {
 		pr_debug("erasing at 0x%08llx\n", offset);
 		if (mtd_block_isbad(mtd, offset)) {
-			offset += mtd->erasesize;
 			pr_debug("erase skip block @ 0x%08llx\n", offset);
+			offset += mtd->erasesize;
 			continue;
 		}
 
@@ -289,13 +295,13 @@ static int imx6_bbu_erase(struct mtd_info *mtd)
 			return ret;
 
 		offset += mtd->erasesize;
-		len -= mtd->erasesize;
 	}
 
 	return 0;
 }
 
-static int imx6_bbu_write_firmware(struct mtd_info *mtd, int block, void *buf, size_t len)
+static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned block,
+		unsigned num_blocks, void *buf, size_t len)
 {
 	uint64_t offset = block * mtd->erasesize;
 	int ret;
@@ -304,13 +310,16 @@ static int imx6_bbu_write_firmware(struct mtd_info *mtd, int block, void *buf, s
 	while (len > 0) {
 		int now = min(len, mtd->erasesize);
 
+		if (!num_blocks)
+			return -ENOSPC;
+
 		pr_debug("writing %p at 0x%08llx, left 0x%08x\n",
 				buf, offset, len);
 
 		if (mtd_block_isbad(mtd, offset)) {
+			pr_debug("write skip block @ 0x%08llx\n", offset);
 			offset += mtd->erasesize;
 			block++;
-			pr_debug("write skip block @ 0x%08llx\n", offset);
 			continue;
 		}
 
@@ -322,6 +331,7 @@ static int imx6_bbu_write_firmware(struct mtd_info *mtd, int block, void *buf, s
 		len -= now;
 		buf += now;
 		block++;
+		num_blocks--;
 	}
 
 	return block;
@@ -348,35 +358,40 @@ static int dbbt_data_create(struct mtd_info *mtd, void *buf, int block_last)
 	return n_bad_blocks;
 }
 
-static int imx6_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *data)
+static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *data)
 {
+	struct imx_nand_fcb_bbu_handler *imx_handler =
+		container_of(handler, struct imx_nand_fcb_bbu_handler, handler);
 	struct cdev *bcb_cdev;
 	struct mtd_info *mtd;
-	int ret, block_fw1, block_fw2, block_last;
+	int ret, block_fw1, block_fw2;
 	struct fcb_block *fcb;
 	struct dbbt_block *dbbt;
 	void *fcb_raw_page, *dbbt_page, *dbbt_data_page;
 	void *ecc;
 	int written;
 	void *fw;
-	unsigned fw_size;
+	unsigned fw_size, partition_size;
 	int i;
+	enum filetype filetype;
+	unsigned num_blocks_fcb_dbbt, num_blocks, num_blocks_fw;
 
-	if (file_detect_type(data->image, data->len) != filetype_arm_barebox &&
-			!bbu_force(data, "Not an ARM barebox image"))
+	filetype = file_detect_type(data->image, data->len);
+
+	if (filetype != imx_handler->filetype &&
+			!bbu_force(data, "Image is not of type %s but of type %s",
+				file_type_to_string(imx_handler->filetype),
+				file_type_to_string(filetype)))
 		return -EINVAL;
 
-	ret = bbu_confirm(data);
-	if (ret)
-		return ret;
-
-	bcb_cdev = cdev_by_name("nand0");
+	bcb_cdev = cdev_by_name(handler->devicefile);
 	if (!bcb_cdev) {
 		pr_err("%s: No FCB device!\n", __func__);
 		return -ENODEV;
 	}
 
 	mtd = bcb_cdev->mtd;
+	partition_size = mtd->size;
 
 	fcb_raw_page = xzalloc(mtd->writesize + mtd->oobsize);
 
@@ -396,30 +411,45 @@ static int imx6_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *da
 	fw = xzalloc(fw_size);
 	memcpy(fw, data->image, data->len);
 
-	block_fw1 = 4;
+	num_blocks_fcb_dbbt = 4;
+	num_blocks = partition_size / mtd->erasesize;
+	num_blocks_fw = (num_blocks - num_blocks_fcb_dbbt) / 2;
 
-	ret = imx6_bbu_erase(mtd);
+	block_fw1 = num_blocks_fcb_dbbt;
+	block_fw2 = num_blocks_fcb_dbbt + num_blocks_fw;
+
+	pr_info("writing first firmware to block %d (ofs 0x%08x)\n",
+			block_fw1, block_fw1 * mtd->erasesize);
+	pr_info("writing second firmware to block %d (ofs 0x%08x)\n",
+			block_fw2, block_fw2 * mtd->erasesize);
+	pr_info("maximum size per firmware: 0x%08x bytes\n",
+			num_blocks_fw * mtd->erasesize);
+
+	if (num_blocks_fw * mtd->erasesize < fw_size)
+		return -ENOSPC;
+
+	ret = bbu_confirm(data);
 	if (ret)
 		goto out;
 
-	ret = imx6_bbu_write_firmware(mtd, block_fw1, fw, fw_size);
+	ret = imx_bbu_erase(mtd);
+	if (ret)
+		goto out;
+
+	ret = imx_bbu_write_firmware(mtd, block_fw1, num_blocks_fw, fw, fw_size);
 	if (ret < 0)
 		goto out;
 
-	block_fw2 = ret;
-
-	ret = imx6_bbu_write_firmware(mtd, block_fw2, fw, fw_size);
+	ret = imx_bbu_write_firmware(mtd, block_fw2, num_blocks_fw, fw, fw_size);
 	if (ret < 0)
 		goto out;
-
-	block_last = ret;
 
 	fcb->Firmware1_startingPage = block_fw1 * mtd->erasesize / mtd->writesize;
 	fcb->Firmware2_startingPage = block_fw2 * mtd->erasesize / mtd->writesize;
 	fcb->PagesInFirmware1 = ALIGN(data->len, mtd->writesize) / mtd->writesize;
 	fcb->PagesInFirmware2 = fcb->PagesInFirmware1;
 
-	fcb_create(fcb, mtd);
+	fcb_create(imx_handler, fcb, mtd);
 	encode_hamming_13_8(fcb, ecc, 512);
 
 	/*
@@ -431,10 +461,6 @@ static int imx6_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *da
 	 */
 	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
 
-	ret = raw_write_page(mtd, fcb_raw_page, 0);
-	if (ret)
-		goto out;
-
 	ret = raw_write_page(mtd, fcb_raw_page, mtd->erasesize);
 	if (ret)
 		goto out;
@@ -443,21 +469,29 @@ static int imx6_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *da
 	dbbt->FingerPrint = 0x54424244;
 	dbbt->Version = 0x01000000;
 
-	ret = dbbt_data_create(mtd, dbbt_data_page, block_last);
+	ret = dbbt_data_create(mtd, dbbt_data_page, block_fw2 + num_blocks_fw);
 	if (ret < 0)
 		goto out;
 
-	if (ret > 0)
+	if (ret > 0) {
 		dbbt->DBBTNumOfPages = 1;
+		if (imx_handler->dbbt_create)
+			imx_handler->dbbt_create(imx_handler, dbbt, ret);
+	}
 
-	for (i = 2; i < 4; i++) {
-		ret = mtd_write(mtd, mtd->erasesize * i, 2048, &written, dbbt_page);
+	for (i = 0; i < 4; i++) {
+		ret = raw_write_page(mtd, fcb_raw_page, mtd->erasesize * i);
+		if (ret)
+			goto out;
+
+		ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize,
+				mtd->writesize, &written, dbbt_page);
 		if (ret)
 			goto out;
 
 		if (dbbt->DBBTNumOfPages > 0) {
-			ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize * 4,
-					2048, &written, dbbt_data_page);
+			ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize * 5,
+					mtd->writesize, &written, dbbt_data_page);
 			if (ret)
 				goto out;
 		}
@@ -472,16 +506,32 @@ out:
 	return ret;
 }
 
+static void imx6_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
+		struct fcb_block *fcb, struct mtd_info *mtd)
+{
+	/* Also hardcoded in kobs-ng */
+	fcb->DataSetup = 80;
+	fcb->DataHold = 60;
+	fcb->AddressSetup = 25;
+	fcb->DSAMPLE_TIME = 6;
+	fcb->MetadataBytes = 10;
+}
+
 int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 {
+	struct imx_nand_fcb_bbu_handler *imx_handler;
 	struct bbu_handler *handler;
 	int ret;
 
-	handler = xzalloc(sizeof(*handler));
-	handler->devicefile = "/dev/nand0";
+	imx_handler = xzalloc(sizeof(*imx_handler));
+	imx_handler->fcb_create = imx6_fcb_create;
+	imx_handler->filetype = filetype_arm_barebox;
+
+	handler = &imx_handler->handler;
+	handler->devicefile = "nand0.barebox";
 	handler->name = name;
 	handler->flags = flags;
-	handler->handler = imx6_bbu_nand_update;
+	handler->handler = imx_bbu_nand_update;
 
 	ret = bbu_register_handler(handler);
 	if (ret)
@@ -489,3 +539,99 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 
 	return ret;
 }
+
+#ifdef CONFIG_ARCH_IMX28
+#include <mach/imx28-regs.h>
+
+#define GPMI_TIMING0				0x00000070
+#define	GPMI_TIMING0_ADDRESS_SETUP_MASK			(0xff << 16)
+#define	GPMI_TIMING0_ADDRESS_SETUP_OFFSET		16
+#define	GPMI_TIMING0_DATA_HOLD_MASK			(0xff << 8)
+#define	GPMI_TIMING0_DATA_HOLD_OFFSET			8
+#define	GPMI_TIMING0_DATA_SETUP_MASK			0xff
+#define	GPMI_TIMING0_DATA_SETUP_OFFSET			0
+
+#define GPMI_TIMING1				0x00000080
+
+#define BCH_MODE				0x00000020
+
+#define BCH_FLASH0LAYOUT0			0x00000080
+#define	BCH_FLASHLAYOUT0_NBLOCKS_MASK			(0xff << 24)
+#define	BCH_FLASHLAYOUT0_NBLOCKS_OFFSET			24
+#define	BCH_FLASHLAYOUT0_META_SIZE_MASK			(0xff << 16)
+#define	BCH_FLASHLAYOUT0_META_SIZE_OFFSET		16
+#define	BCH_FLASHLAYOUT0_ECC0_MASK			(0xf << 12)
+#define	BCH_FLASHLAYOUT0_ECC0_OFFSET			12
+#define	BCH_FLASHLAYOUT0_DATA0_SIZE_MASK		0xfff
+#define	BCH_FLASHLAYOUT0_DATA0_SIZE_OFFSET		0
+
+#define BCH_FLASH0LAYOUT1			0x00000090
+#define	BCH_FLASHLAYOUT1_PAGE_SIZE_MASK			(0xffff << 16)
+#define	BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET		16
+#define	BCH_FLASHLAYOUT1_ECCN_MASK			(0xf << 12)
+#define	BCH_FLASHLAYOUT1_ECCN_OFFSET			12
+#define	BCH_FLASHLAYOUT1_DATAN_SIZE_MASK		0xfff
+#define	BCH_FLASHLAYOUT1_DATAN_SIZE_OFFSET		0
+
+static void imx28_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
+		struct fcb_block *fcb, struct mtd_info *mtd)
+{
+	u32 fl0, fl1, t0;
+	void __iomem *bch_regs = (void *)MXS_BCH_BASE;
+	void __iomem *gpmi_regs = (void *)MXS_GPMI_BASE;
+
+	fl0 = readl(bch_regs + BCH_FLASH0LAYOUT0);
+	fl1 = readl(bch_regs + BCH_FLASH0LAYOUT1);
+	t0 = readl(gpmi_regs + GPMI_TIMING0);
+
+	fcb->MetadataBytes = BF_VAL(fl0, BCH_FLASHLAYOUT0_META_SIZE);
+	fcb->DataSetup = BF_VAL(t0, GPMI_TIMING0_DATA_SETUP);
+	fcb->DataHold = BF_VAL(t0, GPMI_TIMING0_DATA_HOLD);
+	fcb->AddressSetup = BF_VAL(t0, GPMI_TIMING0_ADDRESS_SETUP);
+	fcb->MetadataBytes = BF_VAL(fl0, BCH_FLASHLAYOUT0_META_SIZE);
+	fcb->NumEccBlocksPerPage = BF_VAL(fl0, BCH_FLASHLAYOUT0_NBLOCKS);
+	fcb->EraseThreshold = readl(bch_regs + BCH_MODE);
+}
+
+static void imx28_dbbt_create(struct imx_nand_fcb_bbu_handler *imx_handler,
+		struct dbbt_block *dbbt, int num_bad_blocks)
+{
+	uint32_t a = 0;
+	uint8_t *p = (void *)dbbt;
+	int i;
+
+	dbbt->numberBB = num_bad_blocks;
+
+	for (i = 4; i < 512; i++)
+		a += p[i];
+
+	a ^= 0xffffffff;
+
+	dbbt->Checksum = a;
+}
+
+int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
+{
+	struct imx_nand_fcb_bbu_handler *imx_handler;
+	struct bbu_handler *handler;
+	int ret;
+
+	imx_handler = xzalloc(sizeof(*imx_handler));
+	imx_handler->fcb_create = imx28_fcb_create;
+	imx_handler->dbbt_create = imx28_dbbt_create;
+
+	imx_handler->filetype = filetype_mxs_bootstream;
+
+	handler = &imx_handler->handler;
+	handler->devicefile = "nand0.barebox";
+	handler->name = name;
+	handler->flags = flags;
+	handler->handler = imx_bbu_nand_update;
+
+	ret = bbu_register_handler(handler);
+	if (ret)
+		free(handler);
+
+	return ret;
+}
+#endif

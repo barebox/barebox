@@ -167,6 +167,7 @@ static int do_digest(int argc, char *argv[])
 		} else if (siglen != digestlen) {
 			eprintf("%s wrong size %zu, expected %zu\n",
 				sigfile, siglen, digestlen);
+			ret = COMMAND_ERROR;
 			goto err;
 		}
 	}
@@ -186,8 +187,8 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a <algo>\t",  "hash or signature algorithm to use")
 BAREBOX_CMD_HELP_OPT ("-k <key>\t",   "use supplied <key> (ASCII or hex) for MAC")
 BAREBOX_CMD_HELP_OPT ("-K <file>\t",  "use key from <file> (binary) for MAC")
-BAREBOX_CMD_HELP_OPT ("-v <hex>\t",   "verify data against supplied <hex> (hash, MAC or signature)")
-BAREBOX_CMD_HELP_OPT ("-V <file>\t",  "verify data against <file> (hash, MAC or signature)")
+BAREBOX_CMD_HELP_OPT ("-s <hex>\t",   "verify data against supplied <hex> (hash, MAC or signature)")
+BAREBOX_CMD_HELP_OPT ("-S <file>\t",  "verify data against <file> (hash, MAC or signature)")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(digest)

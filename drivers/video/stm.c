@@ -559,6 +559,9 @@ static int stmfb_probe(struct device_d *hw_dev)
 			dev_err(hw_dev, "failed to get bus-width property\n");
 			return -EINVAL;
 		}
+
+		of_property_read_u32(display, "bits-per-pixel",
+				&fbi.info.bits_per_pixel);
 	}
 
 	ret = register_framebuffer(&fbi.info);

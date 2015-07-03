@@ -615,17 +615,10 @@ int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 {
 	struct device_d *dev;
 	struct cdev *cdev;
-	const char *colon;
 
 	pr_debug("%s: %s\n", __func__, devname);
 
-	colon = strchr(devname, '.');
-	if (colon) {
-		char *name = xstrdup(devname);
-		*strchr(name, '.') = 0;
-		device_detect_by_name(name);
-		free(name);
-	}
+	device_detect_by_name(devname);
 
 	cdev = cdev_by_name(devname);
 	if (cdev) {

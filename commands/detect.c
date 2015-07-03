@@ -68,10 +68,7 @@ static int do_detect(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	for (i = optind; i < argc; i++) {
-		dev = get_device_by_name(argv[i]);
-		if (!dev)
-			return -ENODEV;
-		ret = device_detect(dev);
+		ret = device_detect_by_name(argv[i]);
 		if (ret && option_error)
 			return ret;
 	}

@@ -113,14 +113,29 @@ int device_detect(struct device_d *dev)
 	return dev->detect(dev);
 }
 
-int device_detect_by_name(const char *devname)
+int device_detect_by_name(const char *__devname)
 {
-	struct device_d *dev = get_device_by_name(devname);
+	char *devname = xstrdup(__devname);
+	char *str = devname;
+	struct device_d *dev;
+	int ret = -ENODEV;
 
-	if (!dev)
-		return -ENODEV;
+	while (1) {
+		strsep(&str, ".");
 
-	return device_detect(dev);
+		dev = get_device_by_name(devname);
+		if (dev)
+			ret = device_detect(dev);
+
+		if (!str)
+			break;
+		else
+			*(str - 1) = '.';
+	}
+
+	free(devname);
+
+	return ret;
 }
 
 static int match(struct driver_d *drv, struct device_d *dev)

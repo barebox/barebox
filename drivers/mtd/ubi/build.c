@@ -155,8 +155,8 @@ static int uif_init(struct ubi_device *ubi, int *ref)
 	*ref = 0;
 	sprintf(ubi->ubi_name, UBI_NAME_STR "%d", ubi->ubi_num);
 
-	sprintf(ubi->dev.name, "ubi");
-	ubi->dev.id = DEVICE_ID_DYNAMIC;
+	sprintf(ubi->dev.name, "%s.ubi", ubi->mtd->cdev.name);
+	ubi->dev.id = DEVICE_ID_SINGLE;
 	ubi->dev.parent = &ubi->mtd->class_dev;
 
 	err = register_device(&ubi->dev);
@@ -518,7 +518,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	for (i = 0; i < UBI_MAX_DEVICES; i++) {
 		ubi = ubi_devices[i];
 		if (ubi && mtd == ubi->mtd) {
-			ubi_err("mtd%d is already attached to ubi%d",
+			ubi_debug("mtd%d is already attached to ubi%d",
 				mtd->index, i);
 			return -EEXIST;
 		}
@@ -596,9 +596,6 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 #else
 	ubi->fm_disabled = 1;
 #endif
-
-	ubi_msg("attaching mtd%d to ubi%d", mtd->index, ubi_num);
-
 	err = io_init(ubi, max_beb_per1024);
 	if (err)
 		goto out_free;

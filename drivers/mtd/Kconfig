@@ -20,6 +20,16 @@ config MTD_RAW_DEVICE
 	default n
 	prompt "mtdraw device to read/write both data+oob"
 
+config MTD_CONCAT
+	bool
+	prompt "MTD concatenating support"
+	help
+	  Support for concatenating several MTD devices into a single
+	  (virtual) one. This allows you to have -for example- a JFFS(2)
+	  file system spanning multiple physical flash chips. This option
+	  needs driver support, currently only the cfi-flash driver supports
+	  concatenating MTD devices.
+
 source "drivers/mtd/devices/Kconfig"
 source "drivers/mtd/nor/Kconfig"
 source "drivers/mtd/nand/Kconfig"

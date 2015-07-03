@@ -19,7 +19,7 @@ static void cfi_reverse_geometry(struct cfi_qry *qry)
 	}
 }
 
-static void flash_unlock_seq (struct flash_info *info)
+static void flash_unlock_seq(struct flash_info *info)
 {
 	flash_write_cmd (info, 0, info->addr_unlock1, AMD_CMD_UNLOCK_START);
 	flash_write_cmd (info, 0, info->addr_unlock2, AMD_CMD_UNLOCK_ACK);
@@ -31,7 +31,7 @@ static void flash_unlock_seq (struct flash_info *info)
  * Note: assume cfi->vendor, cfi->portwidth and cfi->chipwidth are correct
  *
 */
-static void amd_read_jedec_ids (struct flash_info *info)
+static void amd_read_jedec_ids(struct flash_info *info)
 {
 	info->cmd_reset		= AMD_CMD_RESET;
 	info->manufacturer_id = 0;
@@ -62,20 +62,21 @@ static void amd_read_jedec_ids (struct flash_info *info)
 	udelay(1000); /* some flash are slow to respond */
 
 	info->manufacturer_id = jedec_read_mfr(info);
-	info->device_id = flash_read_uchar (info,
+	info->device_id = flash_read_uchar(info,
 					FLASH_OFFSET_DEVICE_ID);
 	if (info->device_id == 0x7E) {
 		/* AMD 3-byte (expanded) device ids */
-		info->device_id2 = flash_read_uchar (info,
+		info->device_id2 = flash_read_uchar(info,
 					FLASH_OFFSET_DEVICE_ID2);
 		info->device_id2 <<= 8;
-		info->device_id2 |= flash_read_uchar (info,
+		info->device_id2 |= flash_read_uchar(info,
 					FLASH_OFFSET_DEVICE_ID3);
 	}
 	flash_write_cmd(info, 0, 0, info->cmd_reset);
 }
 
-static int flash_toggle (struct flash_info *info, flash_sect_t sect, uint offset, uchar cmd)
+static int flash_toggle(struct flash_info *info, flash_sect_t sect,
+		unsigned int offset, u8 cmd)
 {
 	void *addr;
 	cfiword_t cword;
@@ -83,6 +84,7 @@ static int flash_toggle (struct flash_info *info, flash_sect_t sect, uint offset
 
 	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
+
 	if (bankwidth_is_1(info)) {
 		retval = flash_read8(addr) != flash_read8(addr);
 	} else if (bankwidth_is_2(info)) {
@@ -92,8 +94,9 @@ static int flash_toggle (struct flash_info *info, flash_sect_t sect, uint offset
 	} else if (bankwidth_is_8(info)) {
 		retval = ( (flash_read32( addr ) != flash_read32( addr )) ||
 			   (flash_read32(addr+4) != flash_read32(addr+4)) );
-	} else
+	} else {
 		retval = 0;
+	}
 
 	return retval;
 }
@@ -102,12 +105,12 @@ static int flash_toggle (struct flash_info *info, flash_sect_t sect, uint offset
  * flash_is_busy - check to see if the flash is busy
  * This routine checks the status of the chip and returns true if the chip is busy
  */
-static int amd_flash_is_busy (struct flash_info *info, flash_sect_t sect)
+static int amd_flash_is_busy(struct flash_info *info, flash_sect_t sect)
 {
 	return flash_toggle (info, sect, 0, AMD_STATUS_TOGGLE);
 }
 
-static int amd_flash_erase_one (struct flash_info *info, long sect)
+static int amd_flash_erase_one(struct flash_info *info, long sect)
 {
 	flash_unlock_seq(info);
 	flash_write_cmd (info, 0, info->addr_unlock1, AMD_CMD_ERASE_START);
@@ -124,13 +127,12 @@ static void amd_flash_prepare_write(struct flash_info *info)
 }
 
 #ifdef CONFIG_CFI_BUFFER_WRITE
-static int amd_flash_write_cfibuffer (struct flash_info *info, ulong dest, const uchar * cp,
-				  int len)
+static int amd_flash_write_cfibuffer(struct flash_info *info, unsigned long dest,
+		const u8 *cp, int len)
 {
 	flash_sect_t sector;
 	int cnt;
-	int retcode;
-	void *src = (void*)cp;
+	void *src = (void *)cp;
 	void *dst = (void *)dest;
 	cfiword_t cword;
 
@@ -170,18 +172,18 @@ static int amd_flash_write_cfibuffer (struct flash_info *info, ulong dest, const
 		}
 	}
 
-	flash_write_cmd (info, sector, 0, AMD_CMD_WRITE_BUFFER_CONFIRM);
-	retcode = flash_status_check (info, sector, info->buffer_write_tout,
+	flash_write_cmd(info, sector, 0, AMD_CMD_WRITE_BUFFER_CONFIRM);
+
+	return flash_status_check(info, sector, info->buffer_write_tout,
 					   "buffer write");
-	return retcode;
 }
 #else
 #define amd_flash_write_cfibuffer NULL
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
-static int amd_flash_real_protect (struct flash_info *info, long sector, int prot)
+static int amd_flash_real_protect(struct flash_info *info, long sector, int prot)
 {
-	if (info->manufacturer_id != (uchar)ATM_MANUFACT)
+	if (info->manufacturer_id != (u8)ATM_MANUFACT)
 		return 0;
 
 	if (prot) {
@@ -205,7 +207,7 @@ static int amd_flash_real_protect (struct flash_info *info, long sector, int pro
  * Manufacturer-specific quirks. Add workarounds for geometry
  * reversal, etc. here.
  */
-static void flash_fixup_amd (struct flash_info *info, struct cfi_qry *qry)
+static void flash_fixup_amd(struct flash_info *info, struct cfi_qry *qry)
 {
 	/* check if flash geometry needs reversal */
 	if (qry->num_erase_regions > 1) {
@@ -265,4 +267,3 @@ struct cfi_cmd_set cfi_cmd_set_amd = {
 	.flash_real_protect = amd_flash_real_protect,
 	.flash_fixup = amd_flash_fixup,
 };
-

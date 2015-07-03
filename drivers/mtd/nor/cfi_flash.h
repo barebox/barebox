@@ -49,32 +49,32 @@ struct cfi_cmd_set;
 
 struct flash_info {
 	struct device_d *dev;
-	ulong	size;			/* total bank size in bytes		*/
-	ushort	sector_count;		/* number of erase units		*/
-	ulong	flash_id;		/* combined device & manufacturer code	*/
-	ulong	*start;			/* physical sector start addresses	*/
-	uchar	*protect;		/* sector protection status		*/
+	unsigned long size;		/* total bank size in bytes		*/
+	unsigned int sector_count;	/* number of erase units		*/
+	unsigned long flash_id;		/* combined device & manufacturer code	*/
+	unsigned long *start;		/* physical sector start addresses	*/
+	unsigned char *protect;		/* sector protection status		*/
 
-	uchar	portwidth;		/* the width of the port		*/
-	uchar	chipwidth;		/* the width of the chip		*/
-	uchar	chip_lsb;		/* extra Least Significant Bit in the	*/
+	unsigned int portwidth;		/* the width of the port		*/
+	unsigned int chipwidth;		/* the width of the chip		*/
+	unsigned int chip_lsb;		/* extra Least Significant Bit in the	*/
 					/*   address of chip.			*/
-	ushort	buffer_size;		/* # of bytes in write buffer		*/
-	ulong	erase_blk_tout;		/* maximum block erase timeout		*/
-	ulong	write_tout;		/* maximum write timeout		*/
-	ulong	buffer_write_tout;	/* maximum buffer write timeout		*/
-	ushort	vendor;			/* the primary vendor id		*/
-	ushort	cmd_reset;		/* vendor specific reset command	*/
-	ushort	interface;		/* used for x8/x16 adjustments		*/
-	ushort	legacy_unlock;		/* support Intel legacy (un)locking	*/
-	uchar	manufacturer_id;	/* manufacturer id			*/
-	ushort	device_id;		/* device id				*/
-	ushort	device_id2;		/* extended device id			*/
-	ushort	ext_addr;		/* extended query table address		*/
-	ushort	cfi_version;		/* cfi version				*/
-	ushort	cfi_offset;		/* offset for cfi query 		*/
-	ulong	addr_unlock1;		/* unlock address 1 for AMD flash roms	*/
-	ulong	addr_unlock2;		/* unlock address 2 for AMD flash roms	*/
+	unsigned int buffer_size;	/* # of bytes in write buffer		*/
+	unsigned long erase_blk_tout;	/* maximum block erase timeout		*/
+	unsigned long write_tout;	/* maximum write timeout		*/
+	unsigned long buffer_write_tout;/* maximum buffer write timeout		*/
+	unsigned int vendor;		/* the primary vendor id		*/
+	unsigned int cmd_reset;		/* vendor specific reset command	*/
+	unsigned int interface;		/* used for x8/x16 adjustments		*/
+	unsigned int legacy_unlock;	/* support Intel legacy (un)locking	*/
+	unsigned int manufacturer_id;	/* manufacturer id			*/
+	unsigned int device_id;		/* device id				*/
+	unsigned int device_id2;	/* extended device id			*/
+	unsigned int ext_addr;		/* extended query table address		*/
+	unsigned int cfi_version;	/* cfi version				*/
+	unsigned int cfi_offset;	/* offset for cfi query 		*/
+	unsigned long addr_unlock1;	/* unlock address 1 for AMD flash roms	*/
+	unsigned long addr_unlock2;	/* unlock address 2 for AMD flash roms	*/
 	struct cfi_cmd_set *cfi_cmd_set;
 	struct mtd_info mtd;
 	int numeraseregions;
@@ -118,14 +118,16 @@ struct cfi_pri_hdr {
 
 
 struct cfi_cmd_set {
-	int (*flash_write_cfibuffer) (struct flash_info *info, ulong dest, const uchar * cp, int len);
-	int (*flash_erase_one) (struct flash_info *info, long sect);
-	int (*flash_is_busy) (struct flash_info *info, flash_sect_t sect);
-	void (*flash_read_jedec_ids) (struct flash_info *info);
-	void (*flash_prepare_write) (struct flash_info *info);
-	int (*flash_status_check) (struct flash_info *info, flash_sect_t sector, uint64_t tout, char *prompt);
-	int (*flash_real_protect) (struct flash_info *info, long sector, int prot);
-	void (*flash_fixup) (struct flash_info *info, struct cfi_qry *qry);
+	int (*flash_write_cfibuffer)(struct flash_info *info, unsigned long dest,
+			const u8 *cp, int len);
+	int (*flash_erase_one)(struct flash_info *info, long sect);
+	int (*flash_is_busy)(struct flash_info *info, flash_sect_t sect);
+	void (*flash_read_jedec_ids)(struct flash_info *info);
+	void (*flash_prepare_write)(struct flash_info *info);
+	int (*flash_status_check)(struct flash_info *info, flash_sect_t sector,
+			u64 tout, char *prompt);
+	int (*flash_real_protect)(struct flash_info *info, long sector, int prot);
+	void (*flash_fixup)(struct flash_info *info, struct cfi_qry *qry);
 };
 
 extern struct cfi_cmd_set cfi_cmd_set_intel;
@@ -241,17 +243,17 @@ extern struct cfi_cmd_set cfi_cmd_set_amd;
 /* Prototypes */
 
 int flash_isset(struct flash_info *info, flash_sect_t sect,
-				uint offset, u32 cmd);
+				unsigned int offset, u32 cmd);
 void flash_write_cmd(struct flash_info *info, flash_sect_t sect,
-				uint offset, u32 cmd);
-flash_sect_t find_sector (struct flash_info *info, ulong addr);
-int flash_status_check (struct flash_info *info, flash_sect_t sector,
-			       uint64_t tout, char *prompt);
-int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
-			       uint64_t tout, char *prompt);
+				unsigned int offset, u32 cmd);
+flash_sect_t find_sector(struct flash_info *info, unsigned long addr);
+int flash_status_check(struct flash_info *info, flash_sect_t sector,
+			       u64 tout, char *prompt);
+int flash_generic_status_check(struct flash_info *info, flash_sect_t sector,
+			       u64 tout, char *prompt);
 
 int flash_isequal(struct flash_info *info, flash_sect_t sect,
-				uint offset, u32 cmd);
+				unsigned int offset, u32 cmd);
 void flash_make_cmd(struct flash_info *info, u32 cmd, cfiword_t *cmdbuf);
 
 static inline void flash_write8(u8 value, void *addr)
@@ -298,12 +300,13 @@ static inline u64 flash_read64(void *addr)
 /*
  * create an address based on the offset and the port width
  */
-static inline uchar *flash_make_addr (struct flash_info *info, flash_sect_t sect, uint offset)
+static inline u8 *flash_make_addr(struct flash_info *info, flash_sect_t sect,
+		unsigned int offset)
 {
-	return ((uchar *) (info->start[sect] + ((offset * info->portwidth) << info->chip_lsb)));
+	return ((u8 *)(info->start[sect] + ((offset * info->portwidth) << info->chip_lsb)));
 }
 
-uchar flash_read_uchar (struct flash_info *info, uint offset);
+u8 flash_read_uchar(struct flash_info *info, unsigned int offset);
 u32 jedec_read_mfr(struct flash_info *info);
 
 #ifdef CONFIG_DRIVER_CFI_BANK_WIDTH_1
@@ -332,49 +335,25 @@ u32 jedec_read_mfr(struct flash_info *info);
 
 static inline void flash_write_word(struct flash_info *info, cfiword_t datum, void *addr)
 {
-	if (bankwidth_is_1(info)) {
-		debug("fw addr %p val %02x\n", addr, (u8)datum);
+	if (bankwidth_is_1(info))
 		flash_write8(datum, addr);
-	} else if (bankwidth_is_2(info)) {
-		debug("fw addr %p val %04x\n", addr, (u16)datum);
+	else if (bankwidth_is_2(info))
 		flash_write16(datum, addr);
-	} else if (bankwidth_is_4(info)) {
-		debug("fw addr %p val %08x\n", addr, (u32)datum);
+	else if (bankwidth_is_4(info))
 		flash_write32(datum, addr);
-	} else if (bankwidth_is_8(info)) {
+	else if (bankwidth_is_8(info))
 		flash_write64(datum, addr);
-	}
 }
 
-extern void flash_print_info (struct flash_info *);
-extern int flash_sect_erase (ulong addr_first, ulong addr_last);
-extern int flash_sect_protect (int flag, ulong addr_first, ulong addr_last);
+extern void flash_print_info(struct flash_info *);
+extern int flash_sect_erase(unsigned long addr_first, unsigned long addr_last);
+extern int flash_sect_protect(int flag, unsigned long addr_first,
+		unsigned long addr_last);
 
 /* common/flash.c */
-extern void flash_protect (int flag, ulong from, ulong to, struct flash_info *info);
-extern int flash_write (char *, ulong, ulong);
-extern struct flash_info *addr2info (ulong);
-//extern int write_buff (flash_info_t *info, const uchar *src, ulong addr, ulong cnt);
-
-/* board/?/flash.c */
-#if defined(CFG_FLASH_PROTECTION)
-extern int flash_real_protect(struct flash_info *info, long sector, int prot);
-extern void flash_read_user_serial(struct flash_info *info, void * buffer, int offset, int len);
-extern void flash_read_factory_serial(struct flash_info *info, void * buffer, int offset, int len);
-#endif	/* CFG_FLASH_PROTECTION */
-
-/*-----------------------------------------------------------------------
- * return codes from flash_write():
- */
-#define ERR_OK				0
-#define ERR_TIMOUT			1
-#define ERR_NOT_ERASED			2
-#define ERR_PROTECTED			4
-#define ERR_INVAL			8
-#define ERR_ALIGN			16
-#define ERR_UNKNOWN_FLASH_VENDOR	32
-#define ERR_UNKNOWN_FLASH_TYPE		64
-#define ERR_PROG_ERROR			128
+extern void flash_protect(int flag, unsigned long from, unsigned long to,
+		struct flash_info *info);
+extern int flash_write(char *, unsigned long, unsigned long);
 
 /*-----------------------------------------------------------------------
  * Protection Flags for flash_protect():
@@ -729,4 +708,3 @@ extern void flash_read_factory_serial(struct flash_info *info, void * buffer, in
 #define FLASH_WRITE_TIMEOUT	500	/* timeout for writes  in ms		*/
 
 #endif /* __CFI_FLASH_H */
-

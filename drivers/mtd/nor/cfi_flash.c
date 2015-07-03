@@ -40,6 +40,8 @@
 #include <errno.h>
 #include <progress.h>
 #include <linux/err.h>
+#include <asm/unaligned.h>
+#include <linux/mtd/concat.h>
 #include "cfi_flash.h"
 
 /*
@@ -58,7 +60,9 @@
  *
  */
 
-static uint flash_offset_cfi[2]={FLASH_OFFSET_CFI,FLASH_OFFSET_CFI_ALT};
+static unsigned int flash_offset_cfi[2] = {
+	FLASH_OFFSET_CFI,FLASH_OFFSET_CFI_ALT
+};
 
 /*
  * Check if chip width is defined. If not, start detecting with 8bit.
@@ -72,7 +76,7 @@ static uint flash_offset_cfi[2]={FLASH_OFFSET_CFI,FLASH_OFFSET_CFI_ALT};
  * Functions
  */
 
-static void flash_add_byte (struct flash_info *info, cfiword_t * cword, uchar c)
+static void flash_add_byte(struct flash_info *info, cfiword_t *cword, u8 c)
 {
 	if (bankwidth_is_1(info)) {
 		*cword = c;
@@ -94,7 +98,7 @@ static void flash_add_byte (struct flash_info *info, cfiword_t * cword, uchar c)
 #endif
 }
 
-static int flash_write_cfiword (struct flash_info *info, ulong dest,
+static int flash_write_cfiword(struct flash_info *info, unsigned long dest,
 				cfiword_t cword)
 {
 	void *dstaddr = (void *)dest;
@@ -110,34 +114,21 @@ static int flash_write_cfiword (struct flash_info *info, ulong dest,
 	else if (bankwidth_is_8(info))
 		flag = ((flash_read64(dstaddr) & cword) == cword);
 	else
-		return 2;
+		return -EIO;
 
 	if (!flag)
-		return 2;
+		return -EIO;
 
 	info->cfi_cmd_set->flash_prepare_write(info);
 
 	flash_write_word(info, cword, (void *)dest);
 
-	return flash_status_check (info, find_sector (info, dest),
+	return flash_status_check(info, find_sector (info, dest),
 					info->write_tout, "write");
 }
 
 #ifdef DEBUG
-/*
- * Debug support
- */
-void print_longlong (char *str, unsigned long long data)
-{
-	int i;
-	char *cp;
-
-	cp = (unsigned char *) &data;
-	for (i = 0; i < 8; i++)
-		sprintf (&str[i * 2], "%2.2x", *cp++);
-}
-
-static void flash_printqry (struct cfi_qry *qry)
+static void flash_printqry(struct cfi_qry *qry)
 {
 	u8 *p = (u8 *)qry;
 	int x, y;
@@ -163,9 +154,9 @@ static void flash_printqry (struct cfi_qry *qry)
 /*
  * read a character at a port width address
  */
-uchar flash_read_uchar (struct flash_info *info, uint offset)
+u8 flash_read_uchar(struct flash_info *info, unsigned int offset)
 {
-	uchar *cp = flash_make_addr(info, 0, offset);
+	u8 *cp = flash_make_addr(info, 0, offset);
 #if defined __LITTLE_ENDIAN
 	return flash_read8(cp);
 #else
@@ -177,23 +168,20 @@ uchar flash_read_uchar (struct flash_info *info, uint offset)
  * read a long word by picking the least significant byte of each maximum
  * port size word. Swap for ppc format.
  */
-static ulong flash_read_long (struct flash_info *info, flash_sect_t sect, uint offset)
+static unsigned long flash_read_long(struct flash_info *info, flash_sect_t sect,
+		unsigned int offset)
 {
-	uchar *addr;
-	ulong retval;
-
-#ifdef DEBUG
+	u8 *addr;
+	unsigned long retval;
 	int x;
-#endif
+
 	addr = flash_make_addr (info, sect, offset);
 
-#ifdef DEBUG
 	dev_dbg(info->dev, "long addr is at %p info->portwidth = %d\n", addr,
 	       info->portwidth);
-	for (x = 0; x < 4 * info->portwidth; x++) {
+	for (x = 0; x < 4 * info->portwidth; x++)
 		dev_dbg(info->dev, "addr[%x] = 0x%x\n", x, flash_read8(addr + x));
-	}
-#endif
+
 #if defined __LITTLE_ENDIAN
 	retval = ((flash_read8(addr) << 16) |
 		  (flash_read8(addr + info->portwidth) << 24) |
@@ -216,14 +204,14 @@ static ulong flash_read_long (struct flash_info *info, flash_sect_t sect, uint o
 u32 jedec_read_mfr(struct flash_info *info)
 {
 	int bank = 0;
-	uchar mfr;
+	u8 mfr;
 
 	/* According to JEDEC "Standard Manufacturer's Identification Code"
 	 * (http://www.jedec.org/download/search/jep106W.pdf)
 	 * several first banks can contain 0x7f instead of actual ID
 	 */
 	do {
-		mfr = flash_read_uchar (info,
+		mfr = flash_read_uchar(info,
 				(bank << 8) | FLASH_OFFSET_MANUFACTURER_ID);
 		bank++;
 	} while (mfr == FLASH_ID_CONTINUATION);
@@ -231,7 +219,7 @@ u32 jedec_read_mfr(struct flash_info *info)
 	return mfr;
 }
 
-static void flash_read_cfi (struct flash_info *info, void *buf,
+static void flash_read_cfi(struct flash_info *info, void *buf,
 		unsigned int start, size_t len)
 {
 	u8 *p = buf;
@@ -241,45 +229,53 @@ static void flash_read_cfi (struct flash_info *info, void *buf,
 		p[i] = flash_read_uchar(info, start + i);
 }
 
-static int flash_detect_width (struct flash_info *info, struct cfi_qry *qry)
+static int flash_detect_width(struct flash_info *info, struct cfi_qry *qry)
 {
 	int cfi_offset;
+	int pw, cw;
 
+	for (pw = CFG_FLASH_CFI_WIDTH; pw <= FLASH_CFI_64BIT; pw <<= 1) {
+		for (cw = FLASH_CFI_BY8; cw <= pw; cw <<= 1) {
+			info->chipwidth = cw;
+			info->portwidth = pw;
 
-	for (info->portwidth = CFG_FLASH_CFI_WIDTH;
-	     info->portwidth <= FLASH_CFI_64BIT; info->portwidth <<= 1) {
-		for (info->chipwidth = FLASH_CFI_BY8;
-		     info->chipwidth <= info->portwidth;
-		     info->chipwidth <<= 1) {
-			flash_write_cmd (info, 0, 0, AMD_CMD_RESET);
-			flash_write_cmd (info, 0, 0, FLASH_CMD_RESET);
-			for (cfi_offset=0; cfi_offset < sizeof(flash_offset_cfi)/sizeof(uint); cfi_offset++) {
-				flash_write_cmd (info, 0, flash_offset_cfi[cfi_offset], FLASH_CMD_CFI);
-				if (flash_isequal (info, 0, FLASH_OFFSET_CFI_RESP, 'Q')
-				 && flash_isequal (info, 0, FLASH_OFFSET_CFI_RESP + 1, 'R')
-				 && flash_isequal (info, 0, FLASH_OFFSET_CFI_RESP + 2, 'Y')) {
-					flash_read_cfi(info, qry, FLASH_OFFSET_CFI_RESP,
-						       sizeof(struct cfi_qry));
-					info->interface = le16_to_cpu(qry->interface_desc);
+			flash_write_cmd(info, 0, 0, AMD_CMD_RESET);
+			flash_write_cmd(info, 0, 0, FLASH_CMD_RESET);
 
-					info->cfi_offset=flash_offset_cfi[cfi_offset];
-					dev_dbg(info->dev, "device interface is %d\n",
-						info->interface);
-					dev_dbg(info->dev, "found port %d chip %d chip_lsb %d ",
-						info->portwidth, info->chipwidth, info->chip_lsb);
-					dev_dbg(info->dev, "port %d bits chip %d bits\n",
-						info->portwidth << CFI_FLASH_SHIFT_WIDTH,
-						info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
-					return 1;
-				}
+			for (cfi_offset = 0;
+			     cfi_offset < sizeof(flash_offset_cfi) / sizeof(unsigned int);
+			     cfi_offset++) {
+
+				flash_write_cmd(info, 0, flash_offset_cfi[cfi_offset], FLASH_CMD_CFI);
+
+				if (flash_isequal(info, 0, FLASH_OFFSET_CFI_RESP, 'Q') &&
+				    flash_isequal(info, 0, FLASH_OFFSET_CFI_RESP + 1, 'R') &&
+				    flash_isequal(info, 0, FLASH_OFFSET_CFI_RESP + 2, 'Y'))
+					goto found;
 			}
 		}
 	}
-	dev_dbg(info->dev, "not found\n");
+
+	dev_dbg(info->dev, "no flash found\n");
+
+	return -ENODEV;
+
+found:
+	flash_read_cfi(info, qry, FLASH_OFFSET_CFI_RESP,
+			       sizeof(struct cfi_qry));
+	info->interface = get_unaligned_le16(&qry->interface_desc);
+	info->cfi_offset = flash_offset_cfi[cfi_offset];
+	dev_dbg(info->dev, "device interface is %d\n", info->interface);
+	dev_dbg(info->dev, "found port %d chip %d chip_lsb %d ",
+			info->portwidth, info->chipwidth, info->chip_lsb);
+	dev_dbg(info->dev, "port %d bits chip %d bits\n",
+			info->portwidth << CFI_FLASH_SHIFT_WIDTH,
+			info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
+
 	return 0;
 }
 
-static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
+static int flash_detect_cfi(struct flash_info *info, struct cfi_qry *qry)
 {
 	int ret;
 
@@ -287,180 +283,184 @@ static int flash_detect_cfi (struct flash_info *info, struct cfi_qry *qry)
 
 	info->chip_lsb = 0;
 	ret = flash_detect_width (info, qry);
-	if (!ret) {
-		info->chip_lsb = 1;
-		ret = flash_detect_width (info, qry);
-	}
-	return ret;
+	if (!ret)
+		return 0;
+
+	info->chip_lsb = 1;
+	return flash_detect_width (info, qry);
 }
 
 /*
  * The following code cannot be run from FLASH!
  */
-static ulong flash_get_size (struct flash_info *info)
+static int flash_detect_size(struct flash_info *info)
 {
-	int i, j;
+	int i, j, ret;
 	flash_sect_t sect_cnt;
 	unsigned long sector;
 	unsigned long tmp;
 	int size_ratio;
-	uchar num_erase_regions;
+	int num_erase_regions;
 	int erase_region_size;
 	int erase_region_count;
 	int cur_offset = 0;
-	struct cfi_qry qry;
+	struct cfi_qry qry = {};
 	unsigned long base = (unsigned long)info->base;
-
-	memset(&qry, 0, sizeof(qry));
 
 	info->ext_addr = 0;
 	info->cfi_version = 0;
-#ifdef CFG_FLASH_PROTECTION
-	info->legacy_unlock = 0;
-#endif
 
 	/* first only malloc space for the first sector */
-	info->start = xmalloc(sizeof(ulong));
+	info->start = xmalloc(sizeof(*info->eraseregions));
 
 	info->start[0] = base;
 	info->protect = 0;
 
-	if (flash_detect_cfi (info, &qry)) {
-		info->vendor = le16_to_cpu(qry.p_id);
-		info->ext_addr = le16_to_cpu(qry.p_adr);
-		num_erase_regions = qry.num_erase_regions;
+	ret = flash_detect_cfi(info, &qry);
+	if (ret)
+		return ret;
 
-		if (info->ext_addr) {
-			info->cfi_version = (ushort) flash_read_uchar (info,
-						info->ext_addr + 3) << 8;
-			info->cfi_version |= (ushort) flash_read_uchar (info,
-						info->ext_addr + 4);
-		}
+	info->vendor = get_unaligned_le16(&qry.p_id);
+	info->ext_addr = get_unaligned_le16(&qry.p_adr);
+	num_erase_regions = qry.num_erase_regions;
 
-#ifdef DEBUG
-		flash_printqry (&qry);
-#endif
-
-		switch (info->vendor) {
-#ifdef CONFIG_DRIVER_CFI_INTEL
-		case CFI_CMDSET_INTEL_EXTENDED:
-		case CFI_CMDSET_INTEL_STANDARD:
-			info->cfi_cmd_set = &cfi_cmd_set_intel;
-			break;
-#endif
-#ifdef CONFIG_DRIVER_CFI_AMD
-		case CFI_CMDSET_AMD_STANDARD:
-		case CFI_CMDSET_AMD_EXTENDED:
-			info->cfi_cmd_set = &cfi_cmd_set_amd;
-			break;
-#endif
-		default:
-			dev_err(info->dev, "unsupported vendor\n");
-			return 0;
-		}
-		info->cfi_cmd_set->flash_read_jedec_ids (info);
-		flash_write_cmd (info, 0, info->cfi_offset, FLASH_CMD_CFI);
-
-		info->cfi_cmd_set->flash_fixup (info, &qry);
-
-		dev_dbg(info->dev, "manufacturer is %d\n", info->vendor);
-		dev_dbg(info->dev, "manufacturer id is 0x%x\n", info->manufacturer_id);
-		dev_dbg(info->dev, "device id is 0x%x\n", info->device_id);
-		dev_dbg(info->dev, "device id2 is 0x%x\n", info->device_id2);
-		dev_dbg(info->dev, "cfi version is 0x%04x\n", info->cfi_version);
-
-		size_ratio = info->portwidth / info->chipwidth;
-		/* if the chip is x8/x16 reduce the ratio by half */
-		if ((info->interface == FLASH_CFI_X8X16)
-		    && (info->chipwidth == FLASH_CFI_BY8)
-		    && (size_ratio != 1)) {
-			size_ratio >>= 1;
-		}
-		dev_dbg(info->dev, "size_ratio %d port %d bits chip %d bits\n",
-		       size_ratio, info->portwidth << CFI_FLASH_SHIFT_WIDTH,
-		       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
-		dev_dbg(info->dev, "found %d erase regions\n", num_erase_regions);
-		info->eraseregions = xzalloc(sizeof(*(info->eraseregions)) * num_erase_regions);
-		info->numeraseregions = num_erase_regions;
-		sect_cnt = 0;
-		sector = base;
-
-		for (i = 0; i < num_erase_regions; i++) {
-			struct mtd_erase_region_info *region = &info->eraseregions[i];
-
-			if (i > NUM_ERASE_REGIONS) {
-				dev_info(info->dev, "%d erase regions found, only %d used\n",
-					num_erase_regions, NUM_ERASE_REGIONS);
-				break;
-			}
-
-			tmp = le32_to_cpu(qry.erase_region_info[i]);
-			dev_dbg(info->dev, "erase region %u: 0x%08lx\n", i, tmp);
-
-			erase_region_count = (tmp & 0xffff) + 1;
-			tmp >>= 16;
-			erase_region_size =
-				(tmp & 0xffff) ? ((tmp & 0xffff) * 256) : 128;
-			dev_dbg(info->dev, "erase_region_count = %d erase_region_size = %d\n",
-				erase_region_count, erase_region_size);
-
-			region->offset = cur_offset;
-			region->erasesize = erase_region_size * size_ratio;
-			region->numblocks = erase_region_count;
-			cur_offset += erase_region_size * size_ratio * erase_region_count;
-
-			/* increase the space malloced for the sector start addresses */
-			info->start = xrealloc(info->start, sizeof(ulong) * (erase_region_count + sect_cnt));
-			info->protect = xrealloc(info->protect, sizeof(uchar) * (erase_region_count + sect_cnt));
-
-			for (j = 0; j < erase_region_count; j++) {
-				info->start[sect_cnt] = sector;
-				sector += (erase_region_size * size_ratio);
-
-				/*
-				 * Only read protection status from supported devices (intel...)
-				 */
-				switch (info->vendor) {
-				case CFI_CMDSET_INTEL_EXTENDED:
-				case CFI_CMDSET_INTEL_STANDARD:
-					info->protect[sect_cnt] =
-						flash_isset (info, sect_cnt,
-							     FLASH_OFFSET_PROTECT,
-							     FLASH_STATUS_PROTECT);
-					break;
-				default:
-					info->protect[sect_cnt] = 0; /* default: not protected */
-				}
-
-				sect_cnt++;
-			}
-		}
-
-		info->sector_count = sect_cnt;
-		/* multiply the size by the number of chips */
-		info->size = (1 << qry.dev_size) * size_ratio;
-		info->buffer_size = (1 << le16_to_cpu(qry.max_buf_write_size));
-		info->erase_blk_tout = 1 << (qry.block_erase_timeout_typ +
-					     qry.block_erase_timeout_max);
-		info->buffer_write_tout = 1 << (qry.buf_write_timeout_typ +
-						qry.buf_write_timeout_max);
-		info->write_tout = 1 << (qry.word_write_timeout_typ +
-					 qry.word_write_timeout_max);
-		info->flash_id = FLASH_MAN_CFI;
-		if ((info->interface == FLASH_CFI_X8X16) && (info->chipwidth == FLASH_CFI_BY8)) {
-			info->portwidth >>= 1;	/* XXX - Need to test on x8/x16 in parallel. */
-		}
-		flash_write_cmd (info, 0, 0, info->cmd_reset);
+	if (info->ext_addr) {
+		info->cfi_version = (u16)flash_read_uchar (info,
+					info->ext_addr + 3) << 8;
+		info->cfi_version |= (u16)flash_read_uchar (info,
+					info->ext_addr + 4);
 	}
 
-	return info->size;
+#ifdef DEBUG
+	flash_printqry(&qry);
+#endif
+
+	switch (info->vendor) {
+	case CFI_CMDSET_INTEL_EXTENDED:
+	case CFI_CMDSET_INTEL_STANDARD:
+		if (IS_ENABLED(CONFIG_DRIVER_CFI_INTEL))
+			info->cfi_cmd_set = &cfi_cmd_set_intel;
+		break;
+	case CFI_CMDSET_AMD_STANDARD:
+	case CFI_CMDSET_AMD_EXTENDED:
+		if (IS_ENABLED(CONFIG_DRIVER_CFI_AMD))
+			info->cfi_cmd_set = &cfi_cmd_set_amd;
+		break;
+	}
+
+	if (!info->cfi_cmd_set) {
+		dev_err(info->dev, "unsupported vendor 0x%04x\n", info->vendor);
+		return -ENOSYS;
+	}
+
+	info->cfi_cmd_set->flash_read_jedec_ids (info);
+	flash_write_cmd(info, 0, info->cfi_offset, FLASH_CMD_CFI);
+
+	info->cfi_cmd_set->flash_fixup (info, &qry);
+
+	dev_dbg(info->dev, "manufacturer is %d\n", info->vendor);
+	dev_dbg(info->dev, "manufacturer id is 0x%x\n", info->manufacturer_id);
+	dev_dbg(info->dev, "device id is 0x%x\n", info->device_id);
+	dev_dbg(info->dev, "device id2 is 0x%x\n", info->device_id2);
+	dev_dbg(info->dev, "cfi version is 0x%04x\n", info->cfi_version);
+
+	size_ratio = info->portwidth / info->chipwidth;
+
+	/* if the chip is x8/x16 reduce the ratio by half */
+	if ((info->interface == FLASH_CFI_X8X16)
+	    && (info->chipwidth == FLASH_CFI_BY8)
+	    && (size_ratio != 1)) {
+		size_ratio >>= 1;
+	}
+
+	dev_dbg(info->dev, "size_ratio %d port %d bits chip %d bits\n",
+	       size_ratio, info->portwidth << CFI_FLASH_SHIFT_WIDTH,
+	       info->chipwidth << CFI_FLASH_SHIFT_WIDTH);
+	dev_dbg(info->dev, "found %d erase regions\n", num_erase_regions);
+
+	info->eraseregions = xzalloc(sizeof(*info->eraseregions) * num_erase_regions);
+	info->numeraseregions = num_erase_regions;
+	sect_cnt = 0;
+	sector = base;
+
+	for (i = 0; i < num_erase_regions; i++) {
+		struct mtd_erase_region_info *region = &info->eraseregions[i];
+
+		if (i > NUM_ERASE_REGIONS) {
+			dev_info(info->dev, "%d erase regions found, only %d used\n",
+				num_erase_regions, NUM_ERASE_REGIONS);
+			break;
+		}
+
+		tmp = get_unaligned_le32(&qry.erase_region_info[i]);
+		dev_dbg(info->dev, "erase region %u: 0x%08lx\n", i, tmp);
+
+		erase_region_count = (tmp & 0xffff) + 1;
+		tmp >>= 16;
+		erase_region_size =
+			(tmp & 0xffff) ? ((tmp & 0xffff) * 256) : 128;
+		dev_dbg(info->dev, "erase_region_count = %d erase_region_size = %d\n",
+			erase_region_count, erase_region_size);
+
+		region->offset = cur_offset;
+		region->erasesize = erase_region_size * size_ratio;
+		region->numblocks = erase_region_count;
+		cur_offset += erase_region_size * size_ratio * erase_region_count;
+
+		/* increase the space malloced for the sector start addresses */
+		info->start = xrealloc(info->start, sizeof(*info->eraseregions) *
+				(erase_region_count + sect_cnt));
+		info->protect = xrealloc(info->protect, sizeof(*info->eraseregions) *
+				(erase_region_count + sect_cnt));
+
+		for (j = 0; j < erase_region_count; j++) {
+			info->start[sect_cnt] = sector;
+			sector += (erase_region_size * size_ratio);
+
+			/*
+			 * Only read protection status from supported devices (intel...)
+			 */
+			switch (info->vendor) {
+			case CFI_CMDSET_INTEL_EXTENDED:
+			case CFI_CMDSET_INTEL_STANDARD:
+				info->protect[sect_cnt] =
+					flash_isset (info, sect_cnt,
+						     FLASH_OFFSET_PROTECT,
+						     FLASH_STATUS_PROTECT);
+				break;
+			default:
+				info->protect[sect_cnt] = 0; /* default: not protected */
+			}
+
+			sect_cnt++;
+		}
+	}
+
+	info->sector_count = sect_cnt;
+	/* multiply the size by the number of chips */
+	info->size = (1 << qry.dev_size) * size_ratio;
+	info->buffer_size = (1 << get_unaligned_le16(&qry.max_buf_write_size));
+	info->erase_blk_tout = 1 << (qry.block_erase_timeout_typ +
+				     qry.block_erase_timeout_max);
+	info->buffer_write_tout = 1 << (qry.buf_write_timeout_typ +
+					qry.buf_write_timeout_max);
+	info->write_tout = 1 << (qry.word_write_timeout_typ +
+				 qry.word_write_timeout_max);
+	info->flash_id = FLASH_MAN_CFI;
+
+	if ((info->interface == FLASH_CFI_X8X16) && (info->chipwidth == FLASH_CFI_BY8))
+		info->portwidth >>= 1;	/* XXX - Need to test on x8/x16 in parallel. */
+
+	flash_write_cmd(info, 0, 0, info->cmd_reset);
+
+	return 0;
 }
 
 /* loop through the sectors from the highest address
  * when the passed address is greater or equal to the sector address
  * we have a match
  */
-flash_sect_t find_sector (struct flash_info *info, ulong addr)
+flash_sect_t find_sector(struct flash_info *info, unsigned long addr)
 {
 	flash_sect_t sector;
 
@@ -468,6 +468,7 @@ flash_sect_t find_sector (struct flash_info *info, ulong addr)
 		if (addr >= info->start[sector])
 			break;
 	}
+
 	return sector;
 }
 
@@ -496,43 +497,40 @@ out:
         return ret;
 }
 
-/*
- * Copy memory to flash, returns:
- * 0 - OK
- * 1 - write timeout
- * 2 - Flash not erased
- */
-static int write_buff (struct flash_info *info, const uchar * src, ulong addr, ulong cnt)
+static int write_buff(struct flash_info *info, const u8 *src,
+		unsigned long addr, unsigned long cnt)
 {
-	ulong wp;
-	uchar *p;
+	unsigned long wp;
+	u8 *p;
 	int aln;
 	cfiword_t cword;
-	int i, rc;
+	int i, ret;
 
 #ifdef CONFIG_CFI_BUFFER_WRITE
 	int buffered_size;
 #endif
 	/* get lower aligned address */
-	wp = (addr & ~(info->portwidth - 1));
+	wp = addr & ~(info->portwidth - 1);
 
 	/* handle unaligned start */
-	if ((aln = addr - wp) != 0) {
+	aln = addr - wp;
+	if (aln) {
 		cword = 0;
-		p = (uchar*)wp;
+		p = (u8 *)wp;
 		for (i = 0; i < aln; ++i)
-			flash_add_byte (info, &cword, flash_read8(p + i));
+			flash_add_byte(info, &cword, flash_read8(p + i));
 
 		for (; (i < info->portwidth) && (cnt > 0); i++) {
-			flash_add_byte (info, &cword, *src++);
+			flash_add_byte(info, &cword, *src++);
 			cnt--;
 		}
-		for (; (cnt == 0) && (i < info->portwidth); ++i)
-			flash_add_byte (info, &cword, flash_read8(p + i));
 
-		rc = flash_write_cfiword (info, wp, cword);
-		if (rc != 0)
-			return rc;
+		for (; (cnt == 0) && (i < info->portwidth); ++i)
+			flash_add_byte(info, &cword, flash_read8(p + i));
+
+		ret = flash_write_cfiword(info, wp, cword);
+		if (ret)
+			return ret;
 
 		wp += i;
 	}
@@ -545,12 +543,17 @@ static int write_buff (struct flash_info *info, const uchar * src, ulong addr, u
 		/* prohibit buffer write when buffer_size is 1 */
 		if (info->buffer_size == 1) {
 			cword = 0;
+
 			for (i = 0; i < info->portwidth; i++)
-				flash_add_byte (info, &cword, *src++);
-			if ((rc = flash_write_cfiword (info, wp, cword)) != 0)
-				return rc;
+				flash_add_byte(info, &cword, *src++);
+
+			ret = flash_write_cfiword(info, wp, cword);
+			if (ret)
+				return ret;
+
 			wp += info->portwidth;
 			cnt -= info->portwidth;
+
 			continue;
 		}
 
@@ -558,8 +561,11 @@ static int write_buff (struct flash_info *info, const uchar * src, ulong addr, u
 		i = buffered_size - (wp % buffered_size);
 		if (i > cnt)
 			i = cnt;
-		if ((rc = info->cfi_cmd_set->flash_write_cfibuffer (info, wp, src, i)) != ERR_OK)
-			return rc;
+
+		ret = info->cfi_cmd_set->flash_write_cfibuffer(info, wp, src, i);
+		if (ret)
+			return ret;
+
 		i -= i & (info->portwidth - 1);
 		wp += i;
 		src += i;
@@ -568,64 +574,67 @@ static int write_buff (struct flash_info *info, const uchar * src, ulong addr, u
 #else
 	while (cnt >= info->portwidth) {
 		cword = 0;
-		for (i = 0; i < info->portwidth; i++) {
-			flash_add_byte (info, &cword, *src++);
-		}
-		if ((rc = flash_write_cfiword (info, wp, cword)) != 0)
-			return rc;
+
+		for (i = 0; i < info->portwidth; i++)
+			flash_add_byte(info, &cword, *src++);
+
+		ret = flash_write_cfiword(info, wp, cword);
+		if (ret)
+			return ret;
+
 		wp += info->portwidth;
 		cnt -= info->portwidth;
 	}
 #endif /* CONFIG_CFI_BUFFER_WRITE */
-	if (cnt == 0) {
+	if (cnt == 0)
 		return 0;
-	}
 
 	/*
 	 * handle unaligned tail bytes
 	 */
 	cword = 0;
-	p = (uchar*)wp;
+	p = (u8 *)wp;
+
 	for (i = 0; (i < info->portwidth) && (cnt > 0); ++i) {
-		flash_add_byte (info, &cword, *src++);
+		flash_add_byte(info, &cword, *src++);
 		--cnt;
 	}
-	for (; i < info->portwidth; ++i) {
-		flash_add_byte (info, &cword, flash_read8(p + i));
-	}
 
-	return flash_write_cfiword (info, wp, cword);
+	for (; i < info->portwidth; ++i)
+		flash_add_byte(info, &cword, flash_read8(p + i));
+
+	return flash_write_cfiword(info, wp, cword);
 }
 
-static int flash_real_protect (struct flash_info *info, long sector, int prot)
+static int flash_real_protect(struct flash_info *info, long sector, int prot)
 {
-	int retcode = 0;
+	int ret;
 
-	retcode = info->cfi_cmd_set->flash_real_protect(info, sector, prot);
+	ret = info->cfi_cmd_set->flash_real_protect(info, sector, prot);
+	if (ret)
+		return ret;
 
-	if (retcode)
-		return retcode;
+	ret = flash_status_check(info, sector, info->erase_blk_tout,
+				      prot ? "protect" : "unprotect");
+	if (ret)
+		return ret;
 
-	if ((retcode =
-	     flash_status_check (info, sector, info->erase_blk_tout,
-				      prot ? "protect" : "unprotect")) == 0) {
+	info->protect[sector] = prot;
 
-		info->protect[sector] = prot;
+	/*
+	 * On some of Intel's flash chips (marked via legacy_unlock)
+	 * unprotect unprotects all locking.
+	 */
+	if (prot == 0 && info->legacy_unlock) {
+		flash_sect_t i;
 
-		/*
-		 * On some of Intel's flash chips (marked via legacy_unlock)
-		 * unprotect unprotects all locking.
-		 */
-		if ((prot == 0) && (info->legacy_unlock)) {
-			flash_sect_t i;
-
-			for (i = 0; i < info->sector_count; i++) {
-				if (info->protect[i])
-					flash_real_protect (info, i, 1);
-			}
+		for (i = 0; i < info->sector_count; i++) {
+			if (info->protect[i])
+				flash_real_protect (info, i, 1);
 		}
 	}
-	return retcode;
+
+	return 0;
 }
 
 static int cfi_mtd_protect(struct flash_info *finfo, loff_t offset, size_t len, int prot)
@@ -637,12 +646,12 @@ static int cfi_mtd_protect(struct flash_info *finfo, loff_t offset, size_t len, 
 	end   = find_sector(finfo, (unsigned long)finfo->base + offset + len - 1);
 
 	for (i = start; i <= end; i++) {
-		ret = flash_real_protect (finfo, i, prot);
+		ret = flash_real_protect(finfo, i, prot);
 		if (ret)
-			goto out;
+			return ret;
 	}
-out:
-	return ret;
+
+	return 0;
 }
 
 static int cfi_mtd_lock(struct mtd_info *mtd, loff_t offset, size_t len)
@@ -665,50 +674,53 @@ static void cfi_info (struct device_d* dev)
 	int i;
 
 	if (info->flash_id != FLASH_MAN_CFI) {
-		puts ("missing or unknown FLASH type\n");
+		printf("missing or unknown FLASH type\n");
 		return;
 	}
 
-	printf ("CFI conformant FLASH (%d x %d)",
+	printf("CFI conformant FLASH (%d x %d)",
 		(info->portwidth << 3), (info->chipwidth << 3));
-	printf ("  Size: %ld MB in %d Sectors\n",
+	printf("  Size: %ld MB in %d Sectors\n  ",
 		info->size >> 20, info->sector_count);
-	printf ("  ");
+
 	switch (info->vendor) {
 		case CFI_CMDSET_INTEL_STANDARD:
-			printf ("Intel Standard");
+			printf("Intel Standard");
 			break;
 		case CFI_CMDSET_INTEL_EXTENDED:
-			printf ("Intel Extended");
+			printf("Intel Extended");
 			break;
 		case CFI_CMDSET_AMD_STANDARD:
-			printf ("AMD Standard");
+			printf("AMD Standard");
 			break;
 		case CFI_CMDSET_AMD_EXTENDED:
-			printf ("AMD Extended");
+			printf("AMD Extended");
 			break;
 		default:
-			printf ("Unknown (%d)", info->vendor);
+			printf("Unknown (%d)", info->vendor);
 			break;
 	}
-	printf (" command set, Manufacturer ID: 0x%02X, Device ID: 0x%02X",
+	printf(" command set, Manufacturer ID: 0x%02X, Device ID: 0x%02X",
 		info->manufacturer_id, info->device_id);
-	if (info->device_id == 0x7E) {
+
+	if (info->device_id == 0x7E)
 		printf("%04X", info->device_id2);
-	}
-	printf ("\n  Erase timeout: %ld ms, write timeout: %ld us\n",
+
+	printf("\n  Erase timeout: %ld ms, write timeout: %ld us\n",
 		info->erase_blk_tout,
 		info->write_tout);
+
 	if (info->buffer_size > 1) {
-		printf ("  Buffer write timeout: %ld us, buffer size: %d bytes\n",
+		printf("  Buffer write timeout: %ld us, buffer size: %d bytes\n",
 		info->buffer_write_tout,
 		info->buffer_size);
 	}
 
-	puts ("\n  Sector Start Addresses:");
+	printf("\n  Sector Start Addresses:");
+
 	for (i = 0; i < info->sector_count; ++i) {
 		if ((i % 5) == 0)
-			printf ("\n");
+			printf("\n");
 #ifdef CFG_FLASH_EMPTY_INFO
 	{
 		int k;
@@ -724,7 +736,7 @@ static void cfi_info (struct device_d* dev)
 		else
 			size = info->start[0] + info->size - info->start[i];
 		erased = 1;
-		flash = (volatile unsigned long *) info->start[i];
+		flash = (volatile unsigned long *)info->start[i];
 		size = size >> 2;	/* divide by 4 for longword access */
 		for (k = 0; k < size; k++) {
 			if (*flash++ != 0xffffffff) {
@@ -734,13 +746,13 @@ static void cfi_info (struct device_d* dev)
 		}
 
 		/* print empty and read-only info */
-		printf ("  %08lX %c %s ",
+		printf("  %08lX %c %s ",
 			info->start[i],
 			erased ? 'E' : ' ',
 			info->protect[i] ? "RO" : "  ");
 	}
 #else	/* ! CFG_FLASH_EMPTY_INFO */
-		printf ("  %08lX   %s ",
+		printf("  %08lX   %s ",
 			info->start[i],
 			info->protect[i] ? "RO" : "  ");
 #endif
@@ -749,41 +761,8 @@ static void cfi_info (struct device_d* dev)
 	return;
 }
 
-#if 0
-/*
- * flash_read_user_serial - read the OneTimeProgramming cells
- */
-static void flash_read_user_serial (struct flash_info *info, void *buffer, int offset,
-			     int len)
-{
-	uchar *src;
-	uchar *dst;
-
-	dst = buffer;
-	src = flash_make_addr (info, 0, FLASH_OFFSET_USER_PROTECTION);
-	flash_write_cmd (info, 0, 0, FLASH_CMD_READ_ID);
-	memcpy (dst, src + offset, len);
-	flash_write_cmd (info, 0, 0, info->cmd_reset);
-}
-
-/*
- * flash_read_factory_serial - read the device Id from the protection area
- */
-static void flash_read_factory_serial (struct flash_info *info, void *buffer, int offset,
-				int len)
-{
-	uchar *src;
-
-	src = flash_make_addr (info, 0, FLASH_OFFSET_INTEL_PROTECTION);
-	flash_write_cmd (info, 0, 0, FLASH_CMD_READ_ID);
-	memcpy (buffer, src + offset, len);
-	flash_write_cmd (info, 0, 0, info->cmd_reset);
-}
-
-#endif
-
-int flash_status_check (struct flash_info *info, flash_sect_t sector,
-			       uint64_t tout, char *prompt)
+int flash_status_check(struct flash_info *info, flash_sect_t sector,
+			       u64 tout, char *prompt)
 {
 	return info->cfi_cmd_set->flash_status_check(info, sector, tout, prompt);
 }
@@ -792,10 +771,10 @@ int flash_status_check (struct flash_info *info, flash_sect_t sector,
  *  wait for XSR.7 to be set. Time out with an error if it does not.
  *  This routine does not set the flash to read-array mode.
  */
-int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
-			       uint64_t tout, char *prompt)
+int flash_generic_status_check(struct flash_info *info, flash_sect_t sector,
+			       u64 tout, char *prompt)
 {
-	uint64_t start;
+	u64 start;
 
         tout *= 1000000;
 
@@ -806,12 +785,15 @@ int flash_generic_status_check (struct flash_info *info, flash_sect_t sector,
 			dev_err(info->dev, "Flash %s timeout at address %lx data %lx\n",
 				prompt, info->start[sector],
 				flash_read_long (info, sector, 0));
-			flash_write_cmd (info, sector, 0, info->cmd_reset);
-			return ERR_TIMOUT;
+
+			flash_write_cmd(info, sector, 0, info->cmd_reset);
+
+			return -ETIMEDOUT;
 		}
-		udelay (1);		/* also triggers watchdog */
+		udelay(1);		/* also triggers watchdog */
 	}
-	return ERR_OK;
+
+	return 0;
 }
 
 /*
@@ -831,23 +813,22 @@ void flash_make_cmd(struct flash_info *info, u32 cmd, cfiword_t *cmdbuf)
  * Write a proper sized command to the correct address
  */
 void flash_write_cmd(struct flash_info *info, flash_sect_t sect,
-				uint offset, u32 cmd)
+				unsigned int offset, u32 cmd)
 {
-
-	uchar *addr;
+	u8 *addr;
 	cfiword_t cword;
 
 	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
 
-	dev_dbg(info->dev, "%s: %p %lX %X => %p " CFI_WORD_FMT "\n", __func__,
+	dev_vdbg(info->dev, "%s: %p %lX %X => %p " CFI_WORD_FMT "\n", __func__,
 			info, sect, offset, addr, cword);
 
 	flash_write_word(info, cword, addr);
 }
 
 int flash_isequal(struct flash_info *info, flash_sect_t sect,
-				uint offset, u32 cmd)
+				unsigned int offset, u32 cmd)
 {
 	void *addr;
 	cfiword_t cword;
@@ -856,36 +837,29 @@ int flash_isequal(struct flash_info *info, flash_sect_t sect,
 	addr = flash_make_addr (info, sect, offset);
 	flash_make_cmd (info, cmd, &cword);
 
-	dev_dbg(info->dev, "is= cmd %x(%c) addr %p ", cmd, cmd, addr);
+	dev_vdbg(info->dev, "is= cmd %x(%c) addr %p ", cmd, cmd, addr);
+
 	if (bankwidth_is_1(info)) {
-		dev_dbg(info->dev, "is= %x %x\n", flash_read8(addr), (u8)cword);
+		dev_vdbg(info->dev, "is= %x %x\n", flash_read8(addr), (u8)cword);
 		retval = (flash_read8(addr) == cword);
 	} else if (bankwidth_is_2(info)) {
-		dev_dbg(info->dev, "is= %4.4x %4.4x\n", flash_read16(addr), (u16)cword);
+		dev_vdbg(info->dev, "is= %4.4x %4.4x\n", flash_read16(addr), (u16)cword);
 		retval = (flash_read16(addr) == cword);
 	} else if (bankwidth_is_4(info)) {
-		dev_dbg(info->dev, "is= %8.8x %8.8x\n", flash_read32(addr), (u32)cword);
+		dev_vdbg(info->dev, "is= %8.8x %8.8x\n", flash_read32(addr), (u32)cword);
 		retval = (flash_read32(addr) == cword);
 	} else if (bankwidth_is_8(info)) {
-#ifdef DEBUG
-		{
-			char str1[20];
-			char str2[20];
-
-			print_longlong (str1, flash_read32(addr));
-			print_longlong (str2, cword);
-			dev_dbg(info->dev, "is= %s %s\n", str1, str2);
-		}
-#endif
+		dev_vdbg(info->dev, "is= %16.16llx %16.16llx\n", flash_read64(addr), (u64)cword);
 		retval = (flash_read64(addr) == cword);
-	} else
+	} else {
 		retval = 0;
+	}
 
 	return retval;
 }
 
 int flash_isset(struct flash_info *info, flash_sect_t sect,
-				uint offset, u32 cmd)
+				unsigned int offset, u32 cmd)
 {
 	void *addr = flash_make_addr (info, sect, offset);
 	cfiword_t cword;
@@ -900,14 +874,15 @@ int flash_isset(struct flash_info *info, flash_sect_t sect,
 		retval = ((flash_read32(addr) & cword) == cword);
 	} else if (bankwidth_is_8(info)) {
 		retval = ((flash_read64(addr) & cword) == cword);
-	} else
+	} else {
 		retval = 0;
+	}
 
 	return retval;
 }
 
 static int cfi_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
-		size_t *retlen, u_char *buf)
+		size_t *retlen, u8 *buf)
 {
 	struct flash_info *info = container_of(mtd, struct flash_info, mtd);
 
@@ -918,7 +893,7 @@ static int cfi_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
 }
 
 static int cfi_mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
-		size_t *retlen, const u_char *buf)
+		size_t *retlen, const u8 *buf)
 {
 	struct flash_info *info = container_of(mtd, struct flash_info, mtd);
 	int ret;
@@ -935,7 +910,6 @@ static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	int ret;
 
 	ret = cfi_erase(info, instr->len, instr->addr);
-
 	if (ret) {
 		instr->state = MTD_ERASE_FAILED;
 		return -EIO;
@@ -947,10 +921,16 @@ static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 	return 0;
 }
 
+struct cfi_priv {
+	struct flash_info *infos;
+	int num_devs;
+	struct mtd_info **mtds;
+};
+
 static void cfi_init_mtd(struct flash_info *info)
 {
 	struct mtd_info *mtd = &info->mtd;
-	u_int32_t erasesize;
+	u32 erasesize;
 	int i;
 
 	mtd->read = cfi_mtd_read;
@@ -961,10 +941,11 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->size = info->size;
 
 	erasesize = 0;
-	for (i=0; i < info->numeraseregions; i++) {
+	for (i = 0; i < info->numeraseregions; i++) {
 		if (erasesize < info->eraseregions[i].erasesize)
 			erasesize = info->eraseregions[i].erasesize;
 	}
+
 	mtd->erasesize = erasesize;
 
 	mtd->writesize = 1;
@@ -974,38 +955,84 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->flags = MTD_CAP_NORFLASH;
 	mtd->type = MTD_NORFLASH;
 	mtd->parent = info->dev;
-
-	add_mtd_device(mtd, "nor", DEVICE_ID_DYNAMIC);
 }
 
-static int cfi_probe (struct device_d *dev)
+static int cfi_probe_one(struct flash_info *info, int num)
 {
-	struct flash_info *info = xzalloc(sizeof(*info));
+	int ret;
 
-	dev->priv = (void *)info;
-
-	/* Init: no FLASHes known */
 	info->flash_id = FLASH_UNKNOWN;
 	info->cmd_reset = FLASH_CMD_RESET;
-	info->base = dev_request_mem_region(dev, 0);
+	info->base = dev_request_mem_region(info->dev, num);
 	if (IS_ERR(info->base))
 		return PTR_ERR(info->base);
 
-	info->dev = dev;
-	info->size = flash_get_size(info);
-
-	if (info->flash_id == FLASH_UNKNOWN) {
-		dev_warn(dev, "## Unknown FLASH on Bank at 0x%08x - Size = 0x%08lx = %ld MB\n",
-			dev->resource[0].start, info->size, info->size << 20);
+	ret = flash_detect_size(info);
+	if (ret) {
+		dev_warn(info->dev, "## Unknown FLASH on Bank at 0x%p - Size = 0x%08lx = %ld MB\n",
+			info->base, info->size, info->size << 20);
 		return -ENODEV;
 	}
 
-	dev_info(dev, "found cfi flash at 0x%p, size %s\n",
+	dev_info(info->dev, "found cfi flash at 0x%p, size %s\n",
 			info->base, size_human_readable(info->size));
+
+	cfi_init_mtd(info);
+
+	return 0;
+}
+
+static int cfi_probe(struct device_d *dev)
+{
+	struct cfi_priv *priv;
+	int i, ret;
+	struct mtd_info *mtd;
+	const char *mtd_name = NULL;
+
+	priv = xzalloc(sizeof(*priv));
+
+	priv->num_devs = dev->num_resources;
+	priv->infos = xzalloc(sizeof(*priv->infos) * priv->num_devs);
+	priv->mtds = xzalloc(sizeof(*priv->mtds) * priv->num_devs);
+
+	of_property_read_string(dev->device_node, "linux,mtd-name", &mtd_name);
+
+	if (!mtd_name)
+		mtd_name = dev_name(dev);
+
+	dev->priv = priv;
+
+	for (i = 0; i < priv->num_devs; i++) {
+		struct flash_info *info = &priv->infos[i];
+
+		info->dev = dev;
+		info->mtd.name = xstrdup(mtd_name);
+
+		ret = cfi_probe_one(info, i);
+		if (ret)
+			return ret;
+		priv->mtds[i] = &priv->infos[i].mtd;
+	}
 
 	dev->info = cfi_info;
 
-	cfi_init_mtd(info);
+	if (priv->num_devs > 1 && IS_ENABLED(CONFIG_MTD_CONCAT)) {
+		mtd = mtd_concat_create(priv->mtds, priv->num_devs, "nor");
+		if (!mtd) {
+			dev_err(dev, "failed to create concat mtd device\n");
+			return -ENODEV;
+		}
+	} else {
+		if (priv->num_devs > 1)
+			dev_warn(dev, "mtd concat disabled. using first chip only\n");
+		mtd = &priv->infos[0].mtd;
+	}
+
+	mtd->parent = dev;
+
+	ret = add_mtd_device(mtd, "nor", DEVICE_ID_DYNAMIC);
+	if (ret)
+		return ret;
 
 	return 0;
 }

@@ -6,8 +6,8 @@
  *
  * Note: assume cfi->vendor, cfi->portwidth and cfi->chipwidth are correct
  *
-*/
-static void intel_read_jedec_ids (struct flash_info *info)
+ */
+static void intel_read_jedec_ids(struct flash_info *info)
 {
 	info->cmd_reset		= FLASH_CMD_RESET;
 	info->manufacturer_id = 0;
@@ -19,7 +19,7 @@ static void intel_read_jedec_ids (struct flash_info *info)
 	udelay(1000); /* some flash are slow to respond */
 
 	info->manufacturer_id = jedec_read_mfr(info);
-	info->device_id = flash_read_uchar (info,
+	info->device_id = flash_read_uchar(info,
 					FLASH_OFFSET_DEVICE_ID);
 	flash_write_cmd(info, 0, 0, info->cmd_reset);
 }
@@ -28,16 +28,16 @@ static void intel_read_jedec_ids (struct flash_info *info)
  * flash_is_busy - check to see if the flash is busy
  * This routine checks the status of the chip and returns true if the chip is busy
  */
-static int intel_flash_is_busy (struct flash_info *info, flash_sect_t sect)
+static int intel_flash_is_busy(struct flash_info *info, flash_sect_t sect)
 {
 	return !flash_isset (info, sect, 0, FLASH_STATUS_DONE);
 }
 
-static int intel_flash_erase_one (struct flash_info *info, long sect)
+static int intel_flash_erase_one(struct flash_info *info, long sect)
 {
-	flash_write_cmd (info, sect, 0, FLASH_CMD_CLEAR_STATUS);
-	flash_write_cmd (info, sect, 0, FLASH_CMD_BLOCK_ERASE);
-	flash_write_cmd (info, sect, 0, FLASH_CMD_ERASE_CONFIRM);
+	flash_write_cmd(info, sect, 0, FLASH_CMD_CLEAR_STATUS);
+	flash_write_cmd(info, sect, 0, FLASH_CMD_BLOCK_ERASE);
+	flash_write_cmd(info, sect, 0, FLASH_CMD_ERASE_CONFIRM);
 
 	return flash_status_check(info, sect, info->erase_blk_tout, "erase");
 }
@@ -49,26 +49,26 @@ static void intel_flash_prepare_write(struct flash_info *info)
 }
 
 #ifdef CONFIG_CFI_BUFFER_WRITE
-static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, const uchar * cp,
-				  int len)
+static int intel_flash_write_cfibuffer(struct flash_info *info,
+		unsigned long dest, const u8 *cp, int len)
 {
 	flash_sect_t sector;
 	int cnt;
-	int retcode;
+	int ret;
 	void *src = (void*)cp;
 	void *dst = (void *)dest;
 	/* reduce width due to possible alignment problems */
 	const unsigned long ptr = (unsigned long)dest | (unsigned long)cp | info->portwidth;
 	const int width = ptr & -ptr;
 
-	sector = find_sector (info, dest);
-	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
-	flash_write_cmd (info, sector, 0, FLASH_CMD_WRITE_TO_BUFFER);
+	sector = find_sector(info, dest);
+	flash_write_cmd(info, sector, 0, FLASH_CMD_CLEAR_STATUS);
+	flash_write_cmd(info, sector, 0, FLASH_CMD_WRITE_TO_BUFFER);
 
-	retcode = flash_generic_status_check (info, sector, info->buffer_write_tout,
+	ret = flash_generic_status_check(info, sector, info->buffer_write_tout,
 					   "write to buffer");
-	if (retcode != ERR_OK)
-		return retcode;
+	if (ret)
+		return ret;
 
 	/* reduce the number of loops by the width of the port	*/
 	cnt = len / width;
@@ -95,69 +95,65 @@ static int intel_flash_write_cfibuffer (struct flash_info *info, ulong dest, con
 		}
 	}
 
-	flash_write_cmd (info, sector, 0, FLASH_CMD_WRITE_BUFFER_CONFIRM);
-	retcode = flash_status_check (info, sector,
+	flash_write_cmd(info, sector, 0, FLASH_CMD_WRITE_BUFFER_CONFIRM);
+	ret = flash_status_check(info, sector,
 					   info->buffer_write_tout,
 					   "buffer write");
-	return retcode;
+	return ret;
 }
 #else
 #define intel_flash_write_cfibuffer NULL
 #endif /* CONFIG_CFI_BUFFER_WRITE */
 
-static int intel_flash_status_check (struct flash_info *info, flash_sect_t sector,
-				    uint64_t tout, char *prompt)
+static int intel_flash_status_check(struct flash_info *info, flash_sect_t sector,
+				    u64 tout, char *prompt)
 {
-	int retcode;
+	int ret;
 
-	retcode = flash_generic_status_check (info, sector, tout, prompt);
-
-	if ((retcode == ERR_OK)
-	    && !flash_isequal (info, sector, 0, FLASH_STATUS_DONE)) {
-		retcode = ERR_INVAL;
-		printf ("Flash %s error at address %lx\n", prompt,
+	ret = flash_generic_status_check(info, sector, tout, prompt);
+	if (!ret && !flash_isequal(info, sector, 0, FLASH_STATUS_DONE)) {
+		ret = -EINVAL;
+		printf("Flash %s error at address %lx\n", prompt,
 			info->start[sector]);
-		if (flash_isset (info, sector, 0, FLASH_STATUS_ECLBS | FLASH_STATUS_PSLBS)) {
-			puts ("Command Sequence Error.\n");
-		} else if (flash_isset (info, sector, 0, FLASH_STATUS_ECLBS)) {
-			puts ("Block Erase Error.\n");
-			retcode = ERR_NOT_ERASED;
-		} else if (flash_isset (info, sector, 0, FLASH_STATUS_PSLBS)) {
-			puts ("Locking Error\n");
-		}
-		if (flash_isset (info, sector, 0, FLASH_STATUS_DPS)) {
-			puts ("Block locked.\n");
-			retcode = ERR_PROTECTED;
-		}
-		if (flash_isset (info, sector, 0, FLASH_STATUS_VPENS))
-			puts ("Vpp Low Error.\n");
-	}
-	flash_write_cmd (info, sector, 0, info->cmd_reset);
 
-	return retcode;
+		if (flash_isset(info, sector, 0, FLASH_STATUS_ECLBS | FLASH_STATUS_PSLBS)) {
+			printf("Command Sequence Error.\n");
+		} else if (flash_isset (info, sector, 0, FLASH_STATUS_ECLBS)) {
+			printf("Block Erase Error.\n");
+			ret = -EIO;
+		} else if (flash_isset(info, sector, 0, FLASH_STATUS_PSLBS)) {
+			printf("Locking Error\n");
+		}
+
+		if (flash_isset(info, sector, 0, FLASH_STATUS_DPS)) {
+			printf("Block locked.\n");
+			ret = -EROFS;
+		}
+
+		if (flash_isset(info, sector, 0, FLASH_STATUS_VPENS))
+			printf("Vpp Low Error.\n");
+	}
+
+	flash_write_cmd(info, sector, 0, info->cmd_reset);
+
+	return ret;
 }
 
-static int intel_flash_real_protect (struct flash_info *info, long sector, int prot)
+static int intel_flash_real_protect(struct flash_info *info, long sector, int prot)
 {
-	flash_write_cmd (info, sector, 0, FLASH_CMD_CLEAR_STATUS);
-	flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT);
+	flash_write_cmd(info, sector, 0, FLASH_CMD_CLEAR_STATUS);
+	flash_write_cmd(info, sector, 0, FLASH_CMD_PROTECT);
+
 	if (prot)
-		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_SET);
+		flash_write_cmd(info, sector, 0, FLASH_CMD_PROTECT_SET);
 	else
-		flash_write_cmd (info, sector, 0, FLASH_CMD_PROTECT_CLEAR);
+		flash_write_cmd(info, sector, 0, FLASH_CMD_PROTECT_CLEAR);
 
 	return 0;
 }
 
-static void intel_flash_fixup (struct flash_info *info, struct cfi_qry *qry)
+static void intel_flash_fixup(struct flash_info *info, struct cfi_qry *qry)
 {
-#ifdef CFG_FLASH_PROTECTION
-	/* read legacy lock/unlock bit from intel flash */
-	if (info->ext_addr) {
-		info->legacy_unlock = flash_read_uchar (info,
-				info->ext_addr + 5) & 0x08;
-	}
-#endif
 }
 
 struct cfi_cmd_set cfi_cmd_set_intel = {
@@ -170,4 +166,3 @@ struct cfi_cmd_set cfi_cmd_set_intel = {
 	.flash_real_protect = intel_flash_real_protect,
 	.flash_fixup = intel_flash_fixup,
 };
-

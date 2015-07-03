@@ -43,6 +43,7 @@
 #define OCOTP_WORD_OFFSET		0x20
 
 struct ocotp_priv {
+	struct device_d dev;
 	struct cdev cdev;
 	void __iomem *base;
 	unsigned int write_enable;
@@ -194,13 +195,19 @@ static int mxs_ocotp_probe(struct device_d *dev)
 	priv->cdev.size = cpu_is_mx23() ? 128 : 160;
 	priv->cdev.name = DRIVERNAME;
 
+	strcpy(priv->dev.name, "ocotp");
+	priv->dev.parent = dev;
+	err = register_device(&priv->dev);
+	if (err)
+		return err;
+
 	err = devfs_create(&priv->cdev);
 	if (err < 0)
 		return err;
 
 	if (IS_ENABLED(CONFIG_MXS_OCOTP_WRITABLE)) {
 		mxs_ocotp_ops.write = mxs_ocotp_cdev_write;
-		dev_add_param_bool(dev, "permanent_write_enable",
+		dev_add_param_bool(&priv->dev, "permanent_write_enable",
 			NULL, NULL, &priv->write_enable, NULL);
 	}
 

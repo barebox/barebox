@@ -449,9 +449,11 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 		reg |= VDCTRL0_HSYNC_POL;
 	if (mode->sync & FB_SYNC_VERT_HIGH_ACT)
 		reg |= VDCTRL0_VSYNC_POL;
-	if (mode->sync & FB_SYNC_DE_HIGH_ACT)
+	if (mode->sync & FB_SYNC_DE_HIGH_ACT ||
+			mode->display_flags & DISPLAY_FLAGS_DE_LOW)
 		reg |= VDCTRL0_ENABLE_POL;
-	if (mode->sync & FB_SYNC_CLK_INVERT)
+	if (mode->sync & FB_SYNC_CLK_INVERT ||
+			mode->display_flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
 		reg |= VDCTRL0_DOTCLK_POL;
 
 	reg |= SET_VSYNC_PULSE_WIDTH(mode->vsync_len);

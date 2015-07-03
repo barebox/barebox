@@ -20,6 +20,12 @@
 #include <linux/list.h>
 #include <errno.h>
 #include <readkey.h>
+#include <filetype.h>
+#include <libfile.h>
+#include <fs.h>
+#include <fcntl.h>
+#include <malloc.h>
+#include <linux/stat.h>
 
 static LIST_HEAD(bbu_image_handlers);
 
@@ -152,4 +158,111 @@ int bbu_register_handler(struct bbu_handler *handler)
 	list_add_tail(&handler->list, &bbu_image_handlers);
 
 	return 0;
+}
+
+struct bbu_std {
+	struct bbu_handler handler;
+	enum filetype filetype;
+};
+
+static int bbu_std_file_handler(struct bbu_handler *handler,
+					struct bbu_data *data)
+{
+	struct bbu_std *std = container_of(handler, struct bbu_std, handler);
+	int fd, ret;
+	enum filetype filetype;
+	struct stat s;
+	unsigned oflags = O_WRONLY;
+
+	filetype = file_detect_type(data->image, data->len);
+	if (filetype != std->filetype) {
+		if (!bbu_force(data, "incorrect image type. Expected: %s, got %s",
+				file_type_to_string(std->filetype),
+				file_type_to_string(filetype)))
+			return -EINVAL;
+	}
+
+	ret = stat(data->devicefile, &s);
+	if (ret) {
+		oflags |= O_CREAT;
+	} else {
+		if (!S_ISREG(s.st_mode) && s.st_size < data->len) {
+			printf("Image (%lld) is too big for device (%d)\n",
+					s.st_size, data->len);
+		}
+	}
+
+	ret = bbu_confirm(data);
+	if (ret)
+		return ret;
+
+	fd = open(data->devicefile, oflags);
+	if (fd < 0)
+		return fd;
+
+	ret = protect(fd, data->len, 0, 0);
+	if (ret && ret != -ENOSYS) {
+		printf("unprotecting %s failed with %s\n", data->devicefile,
+				strerror(-ret));
+		goto err_close;
+	}
+
+	ret = erase(fd, data->len, 0);
+	if (ret && ret != -ENOSYS) {
+		printf("erasing %s failed with %s\n", data->devicefile,
+				strerror(-ret));
+		goto err_close;
+	}
+
+	ret = write_full(fd, data->image, data->len);
+	if (ret < 0)
+		goto err_close;
+
+	protect(fd, data->len, 0, 1);
+
+	ret = 0;
+
+err_close:
+	close(fd);
+
+	return ret;
+}
+
+/**
+ * bbu_register_std_file_update() - register a barebox update handler for a
+ *                                  standard file-to-device-copy operation
+ * @name:	Name of the handler
+ * @flags:	BBU_HANDLER_FLAG_* flags
+ * @devicefile: the file to write the update image to
+ * @imagetype:	The filetype that the update image must have
+ *
+ * This update handler us suitable for a standard file-to-device copy operation.
+ * The handler checks for a filetype and unprotects/erases the device if
+ * necessary. If devicefile belongs to a device then the device is checkd for
+ * enough space before touching it.
+ *
+ * Return: 0 if successful, negative error code otherwise
+ */
+int bbu_register_std_file_update(const char *name, unsigned long flags,
+		char *devicefile, enum filetype imagetype)
+{
+	struct bbu_std *std;
+	struct bbu_handler *handler;
+	int ret;
+
+	std = xzalloc(sizeof(*std));
+	std->filetype = imagetype;
+
+	handler = &std->handler;
+
+	handler->flags = flags;
+	handler->devicefile = devicefile;
+	handler->name = name;
+	handler->handler = bbu_std_file_handler;
+
+	ret = bbu_register_handler(handler);
+	if (ret)
+		free(std);
+
+	return ret;
 }

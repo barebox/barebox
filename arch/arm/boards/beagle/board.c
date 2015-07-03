@@ -21,6 +21,8 @@
 #include <driver.h>
 #include <linux/sizes.h>
 #include <io.h>
+#include <bbu.h>
+#include <filetype.h>
 #include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -106,6 +108,11 @@ static int beagle_devices_init(void)
 	omap3_add_mmc1(NULL);
 
 	armlinux_set_architecture(MACH_TYPE_OMAP3_BEAGLE);
+
+	bbu_register_std_file_update("nand-xload", 0,
+			"/dev/nand0.xload.bb", filetype_ch_image);
+	bbu_register_std_file_update("nand", 0,
+			"/dev/nand0.barebox.bb", filetype_arm_barebox);
 
 	return 0;
 }

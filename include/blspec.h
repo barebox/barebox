@@ -35,6 +35,7 @@ int blspec_boot_devicename(const char *devname, int verbose, int dryrun);
 
 int blspec_scan_devices(struct blspec *blspec);
 
+int blspec_scan_device(struct blspec *blspec, struct device_d *dev);
 int blspec_scan_devicename(struct blspec *blspec, const char *devname);
 int blspec_scan_directory(struct blspec *blspec, const char *root);
 

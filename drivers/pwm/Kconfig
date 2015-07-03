@@ -22,4 +22,10 @@ config PWM_IMX
 	help
 	  This enables PWM support for Freescale i.MX SoCs
 
+config PWM_MXS
+	bool "i.MXs PWM Support"
+	depends on ARCH_MXS
+	help
+	  This enables PWM support for Freescale i.MX23/i.MX28 SoCs
+
 endif

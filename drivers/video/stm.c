@@ -317,7 +317,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	size = calc_line_length(mode->xres, fb_info->bits_per_pixel) *
 		mode->yres;
 
-	if (pdata->fixed_screen) {
+	if (pdata && pdata->fixed_screen) {
 		if (pdata->fixed_screen_size < size)
 			return -ENOMEM;
 		fb_info->screen_base = pdata->fixed_screen;
@@ -497,16 +497,37 @@ static int stmfb_probe(struct device_d *hw_dev)
 		return PTR_ERR(fbi.clk);
 	clk_enable(fbi.clk);
 
+	fbi.info.bits_per_pixel = 16;
+
 	/* add runtime video info */
-	fbi.info.modes.modes = pdata->mode_list;
-	fbi.info.modes.num_modes = pdata->mode_cnt;
-	fbi.info.mode = &fbi.info.modes.modes[0];
-	fbi.info.xres = fbi.info.mode->xres;
-	fbi.info.yres = fbi.info.mode->yres;
-	if (pdata->bits_per_pixel)
-		fbi.info.bits_per_pixel = pdata->bits_per_pixel;
-	else
-		fbi.info.bits_per_pixel = 16;
+	if (pdata) {
+		fbi.info.modes.modes = pdata->mode_list;
+		fbi.info.modes.num_modes = pdata->mode_cnt;
+		fbi.info.mode = &fbi.info.modes.modes[0];
+		if (pdata->bits_per_pixel)
+			fbi.info.bits_per_pixel = pdata->bits_per_pixel;
+	} else {
+		struct display_timings *modes;
+		struct device_node *display;
+
+		if (!IS_ENABLED(CONFIG_OFDEVICE) || !hw_dev->device_node)
+			return -EINVAL;
+
+		display = of_parse_phandle(hw_dev->device_node, "display", 0);
+		if (!display) {
+			dev_err(hw_dev, "no display phandle\n");
+			return -EINVAL;
+		}
+
+		modes = of_get_display_timings(display);
+		if (IS_ERR(modes)) {
+			dev_err(hw_dev, "unable to parse display timings\n");
+			return PTR_ERR(modes);
+		}
+
+		fbi.info.modes.modes = modes->modes;
+		fbi.info.modes.num_modes = modes->num_modes;
+	}
 
 	hw_dev->info = stmfb_info;
 
@@ -519,9 +540,20 @@ static int stmfb_probe(struct device_d *hw_dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id stmfb_compatible[] = {
+	{
+		.compatible = "fsl,imx23-lcdif",
+	}, {
+		.compatible = "fsl,imx28-lcdif",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d stmfb_driver = {
 	.name	= "stmfb",
 	.probe	= stmfb_probe,
+	.of_compatible = DRV_OF_COMPAT(stmfb_compatible),
 };
 device_platform_driver(stmfb_driver);
 

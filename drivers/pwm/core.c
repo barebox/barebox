@@ -181,12 +181,13 @@ struct pwm_device *pwm_request(const char *devname)
 }
 EXPORT_SYMBOL_GPL(pwm_request);
 
-static struct pwm_device *of_node_to_pwm_device(struct device_node *np)
+static struct pwm_device *of_node_to_pwm_device(struct device_node *np, int id)
 {
 	struct pwm_device *pwm;
 
 	list_for_each_entry(pwm, &pwm_list, node) {
-		if (pwm->hwdev && pwm->hwdev->device_node == np)
+		if (pwm->hwdev && pwm->hwdev->device_node == np &&
+				pwm->chip->id == id)
 			return pwm;
 	}
 
@@ -210,7 +211,7 @@ struct pwm_device *of_pwm_request(struct device_node *np, const char *con_id)
 		return ERR_PTR(ret);
 	}
 
-	pwm = of_node_to_pwm_device(args.np);
+	pwm = of_node_to_pwm_device(args.np, args.args[0]);
 	if (IS_ERR(pwm)) {
 		pr_debug("%s(): PWM chip not found\n", __func__);
 		return pwm;

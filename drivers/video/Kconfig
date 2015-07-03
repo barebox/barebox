@@ -93,4 +93,16 @@ config DRIVER_VIDEO_EDID
 	  This enabled support for reading and parsing EDID data from an attached
 	  monitor.
 
+config DRIVER_VIDEO_BACKLIGHT
+	bool "Add backlight support"
+	help
+	  Enable this for backlight support.
+
+config DRIVER_VIDEO_BACKLIGHT_PWM
+	bool "PWM backlight support"
+	depends on PWM
+	depends on DRIVER_VIDEO_BACKLIGHT
+	help
+	  Enable this to get support for backlight devices driven by a PWM.
+
 endif

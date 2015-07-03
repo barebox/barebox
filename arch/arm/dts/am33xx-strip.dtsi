@@ -11,8 +11,6 @@
 	aliases {
 		/delete-property/ i2c1;
 		/delete-property/ i2c2;
-		/delete-property/ mmc0;
-		/delete-property/ mmc1;
 		/delete-property/ mmc2;
 		/delete-property/ d_can0;
 		/delete-property/ d_can1;
@@ -21,7 +19,6 @@
 
 /delete-node/ &i2c1;
 /delete-node/ &i2c2;
-/delete-node/ &mmc2;
 /delete-node/ &mmc3;
 /delete-node/ &hwspinlock;
 /delete-node/ &wdt2;
@@ -46,3 +43,5 @@
 /delete-node/ &mcasp0;
 /delete-node/ &mcasp1;
 /delete-node/ &rng;
+/delete-node/ &rtc;
+/delete-node/ &wkup_m3;

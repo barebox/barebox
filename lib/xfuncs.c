@@ -63,6 +63,28 @@ char *xstrdup(const char *s)
 }
 EXPORT_SYMBOL(xstrdup);
 
+char *xstrndup(const char *s, size_t n)
+{
+	int m;
+	char *t;
+
+	/* We can just xmalloc(n+1) and strncpy into it, */
+	/* but think about xstrndup("abc", 10000) wastage! */
+	m = n;
+	t = (char*) s;
+	while (m) {
+		if (!*t) break;
+		m--;
+		t++;
+	}
+	n -= m;
+	t = xmalloc(n + 1);
+	t[n] = '\0';
+
+	return memcpy(t, s, n);
+}
+EXPORT_SYMBOL(xstrndup);
+
 void* xmemalign(size_t alignment, size_t bytes)
 {
 	void *p = memalign(alignment, bytes);

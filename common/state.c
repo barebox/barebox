@@ -64,6 +64,7 @@ enum state_variable_type {
 	STATE_TYPE_U8,
 	STATE_TYPE_U32,
 	STATE_TYPE_MAC,
+	STATE_TYPE_STRING,
 };
 
 /* instance of a single variable */
@@ -90,7 +91,7 @@ struct variable_type {
 	struct list_head list;
 	int (*export)(struct state_variable *, struct device_node *,
 			enum state_convert);
-	int (*import)(struct state_variable *, const struct device_node *);
+	int (*import)(struct state_variable *, struct device_node *);
 	struct state_variable *(*create)(struct state *state,
 			const char *name, struct device_node *);
 };
@@ -113,6 +114,7 @@ static int state_set_dirty(struct param_d *p, void *priv)
 struct state_uint32 {
 	struct state_variable var;
 	struct param_d *param;
+	struct state *state;
 	uint32_t value;
 	uint32_t value_default;
 };
@@ -141,18 +143,21 @@ static int state_uint32_export(struct state_variable *var,
 	struct state_uint32 *su32 = to_state_uint32(var);
 	int ret;
 
-	if (su32->value_default || conv == STATE_CONVERT_FIXUP) {
+	if (su32->value_default) {
 		ret = of_property_write_u32(node, "default",
 					    su32->value_default);
-		if (ret || conv == STATE_CONVERT_FIXUP)
+		if (ret)
 			return ret;
 	}
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
 
 	return of_property_write_u32(node, "value", su32->value);
 }
 
 static int state_uint32_import(struct state_variable *sv,
-		const struct device_node *node)
+			       struct device_node *node)
 {
 	struct state_uint32 *su32 = to_state_uint32(sv);
 
@@ -163,6 +168,17 @@ static int state_uint32_import(struct state_variable *sv,
 	return 0;
 }
 
+static int state_uint8_set(struct param_d *p, void *priv)
+{
+	struct state_uint32 *su32 = priv;
+	struct state *state = su32->state;
+
+	if (su32->value > 255)
+		return -ERANGE;
+
+	return state_set_dirty(p, state);
+}
+
 static struct state_variable *state_uint8_create(struct state *state,
 		const char *name, struct device_node *node)
 {
@@ -171,8 +187,8 @@ static struct state_variable *state_uint8_create(struct state *state,
 
 	su32 = xzalloc(sizeof(*su32));
 
-	param = dev_add_param_int(&state->dev, name, state_set_dirty,
-				  NULL, &su32->value, "%d", state);
+	param = dev_add_param_int(&state->dev, name, state_uint8_set,
+				  NULL, &su32->value, "%u", su32);
 	if (IS_ERR(param)) {
 		free(su32);
 		return ERR_CAST(param);
@@ -185,6 +201,7 @@ static struct state_variable *state_uint8_create(struct state *state,
 #else
 	su32->var.raw = &su32->value + 3;
 #endif
+	su32->state = state;
 
 	return &su32->var;
 }
@@ -235,12 +252,15 @@ static int state_enum32_export(struct state_variable *var,
 	int ret, i, len;
 	char *prop, *str;
 
-	if (enum32->value_default || conv == STATE_CONVERT_FIXUP) {
+	if (enum32->value_default) {
 		ret = of_property_write_u32(node, "default",
 					    enum32->value_default);
-		if (ret || conv == STATE_CONVERT_FIXUP)
+		if (ret)
 			return ret;
 	}
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
 
 	ret = of_property_write_u32(node, "value", enum32->value);
 	if (ret)
@@ -265,7 +285,7 @@ static int state_enum32_export(struct state_variable *var,
 }
 
 static int state_enum32_import(struct state_variable *sv,
-			       const struct device_node *node)
+			       struct device_node *node)
 {
 	struct state_enum32 *enum32 = to_state_enum32(sv);
 	int len;
@@ -350,17 +370,22 @@ static int state_mac_export(struct state_variable *var,
 	struct state_mac *mac = to_state_mac(var);
 	int ret;
 
-	ret = of_property_write_u8_array(node, "default", mac->value_default,
-					 ARRAY_SIZE(mac->value_default));
-	if (ret || conv == STATE_CONVERT_FIXUP)
-		return ret;
+	if (!is_zero_ether_addr(mac->value_default)) {
+		ret = of_property_write_u8_array(node, "default", mac->value_default,
+						 ARRAY_SIZE(mac->value_default));
+		if (ret)
+			return ret;
+	}
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
 
 	return of_property_write_u8_array(node, "value", mac->value,
 					  ARRAY_SIZE(mac->value));
 }
 
 static int state_mac_import(struct state_variable *sv,
-			    const struct device_node *node)
+			    struct device_node *node)
 {
 	struct state_mac *mac = to_state_mac(sv);
 
@@ -397,6 +422,151 @@ out:
 	return ERR_PTR(ret);
 }
 
+/*
+ *  string
+ */
+struct state_string {
+	struct state_variable var;
+	struct param_d *param;
+	struct state *state;
+	char *value;
+	const char *value_default;
+	char raw[];
+};
+
+static inline struct state_string *to_state_string(struct state_variable *s)
+{
+	return container_of(s, struct state_string, var);
+}
+
+static int state_string_export(struct state_variable *var,
+		struct device_node *node, enum state_convert conv)
+{
+	struct state_string *string = to_state_string(var);
+	int ret = 0;
+
+	if (string->value_default) {
+		ret = of_set_property(node, "default", string->value_default,
+				      strlen(string->value_default) + 1, 1);
+
+		if (ret)
+			return ret;
+	}
+
+	if (conv == STATE_CONVERT_FIXUP)
+		return 0;
+
+	if (string->value)
+		ret = of_set_property(node, "value", string->value,
+				      strlen(string->value) + 1, 1);
+
+	return ret;
+}
+
+static int state_string_copy_to_raw(struct state_string *string,
+				    const char *src)
+{
+	size_t len;
+
+	len = strlen(src);
+	if (len > string->var.size)
+		return -EILSEQ;
+
+	/* copy string and clear remaining contents of buffer */
+	memcpy(string->raw, src, len);
+	memset(string->raw + len, 0x0, string->var.size - len);
+
+	return 0;
+}
+
+static int state_string_import(struct state_variable *sv,
+			       struct device_node *node)
+{
+	struct state_string *string = to_state_string(sv);
+	const char *value = NULL;
+	size_t len;
+	int ret;
+
+	of_property_read_string(node, "default", &string->value_default);
+	if (string->value_default) {
+		len = strlen(string->value_default);
+		if (len > string->var.size)
+			return -EILSEQ;
+	}
+
+	ret = of_property_read_string(node, "value", &value);
+	if (ret)
+		value = string->value_default;
+
+	if (value)
+		return state_string_copy_to_raw(string, value);
+
+	return 0;
+}
+
+static int state_string_set(struct param_d *p, void *priv)
+{
+	struct state_string *string = priv;
+	struct state *state = string->state;
+	int ret;
+
+	ret = state_string_copy_to_raw(string, string->value);
+	if (ret)
+		return ret;
+
+	return state_set_dirty(p, state);
+}
+
+static int state_string_get(struct param_d *p, void *priv)
+{
+	struct state_string *string = priv;
+
+	free(string->value);
+	if (string->raw[0])
+		string->value = xstrndup(string->raw, string->var.size);
+	else
+		string->value = xstrdup("");
+
+	return 0;
+}
+
+static struct state_variable *state_string_create(struct state *state,
+		const char *name, struct device_node *node)
+{
+	struct state_string *string;
+	u32 start_size[2];
+	int ret;
+
+	ret = of_property_read_u32_array(node, "reg", start_size,
+					 ARRAY_SIZE(start_size));
+	if (ret) {
+		dev_err(&state->dev,
+			"%s: reg property not found\n", name);
+		return ERR_PTR(ret);
+	}
+
+	/* limit to arbitrary len of 4k */
+	if (start_size[1] > 4096)
+		return ERR_PTR(-EILSEQ);
+
+	string = xzalloc(sizeof(*string) + start_size[1]);
+	string->var.size = start_size[1];
+	string->var.raw = &string->raw;
+	string->state = state;
+
+	string->param = dev_add_param_string(&state->dev, name, state_string_set,
+					     state_string_get, &string->value, string);
+	if (IS_ERR(string->param)) {
+		ret = PTR_ERR(string->param);
+		goto out;
+	}
+
+	return &string->var;
+out:
+	free(string);
+	return ERR_PTR(ret);
+}
+
 static struct variable_type types[] =  {
 	{
 		.type = STATE_TYPE_U8,
@@ -422,6 +592,12 @@ static struct variable_type types[] =  {
 		.export = state_mac_export,
 		.import = state_mac_import,
 		.create = state_mac_create,
+	}, {
+		.type = STATE_TYPE_STRING,
+		.type_name = "string",
+		.export = state_string_export,
+		.import = state_string_import,
+		.create = state_string_create,
 	},
 };
 

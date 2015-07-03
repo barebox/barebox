@@ -233,7 +233,7 @@ static int param_string_set(struct device_d *dev, struct param_d *p, const char 
 	char *value_save = *ps->value;
 
 	if (!val)
-		return -EINVAL;
+		val = "";
 
 	*ps->value = xstrdup(val);
 

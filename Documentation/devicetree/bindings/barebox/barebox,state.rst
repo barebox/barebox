@@ -40,8 +40,8 @@ variable. The node name may end with ``@<ADDRESS>``, but the suffix is
 sripped from the variable name.
 
 State variables have a type. Currenty supported types are: ``uint8``,
-``uint32``, ``enum32`` and ``mac`` address. Fixed length strings are
-planned but not implemented. Variable length strings are not planned.
+``uint32``, ``enum32``, ``mac`` address or ``string``. Variable length
+strings are not planned.
 
 Required properties:
 
@@ -49,8 +49,8 @@ Required properties:
   ``#size-cells = <1>``. Defines the ``offset`` and ``size`` of the
   variable in the ``raw`` backend. ``size`` must fit the node
   ``type``. Variables are not allowed to overlap.
-* ``type``: Should be ``uint8``, ``uint32``, ``enum32`` or ``mac`` for
-  the type of the variable
+* ``type``: Should be ``uint8``, ``uint32``, ``enum32``, ``mac`` or
+  ``string`` for the type of the variable
 * ``names``: For ``enum32`` values only, this specifies the values
   possible for ``enum32``.
 
@@ -81,6 +81,17 @@ Example::
 		default = <1>;
   	};
   };
+
+Variable Types
+--------------
+
+* ``uint8``:
+* ``uint32``:
+* ``enum32``: The ``default`` value is an integer representing an
+  offset into the names array.
+* ``mac``:
+* ``string``: The length of the string excluding the trailing 0 is
+  determined by the length given in the ``reg`` property.
 
 Backends
 --------

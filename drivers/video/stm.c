@@ -36,7 +36,10 @@
 # define CTRL_VSYNC_MODE (1 << 18)
 # define CTRL_DOTCLK_MODE (1 << 17)
 # define CTRL_DATA_SELECT (1 << 16)
-# define SET_BUS_WIDTH(x) (((x) & 0x3) << 10)
+# define CTRL_BUS_WIDTH_8 (1 << 10)
+# define CTRL_BUS_WIDTH_16 (0 << 10)
+# define CTRL_BUS_WIDTH_18 (2 << 10)
+# define CTRL_BUS_WIDTH_24 (3 << 10)
 # define SET_WORD_LENGTH(x) (((x) & 0x3) << 8)
 # define GET_WORD_LENGTH(x) (((x) >> 8) & 0x3)
 # define CTRL_MASTER (1 << 5)
@@ -353,7 +356,24 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	/*
 	 * Configure videomode and interface mode
 	 */
-	reg |= SET_BUS_WIDTH(fbi->ld_intf_width);
+	switch (fbi->ld_intf_width) {
+	case 8:
+		reg |= CTRL_BUS_WIDTH_8;
+		break;
+	case 16:
+		reg |= CTRL_BUS_WIDTH_16;
+		break;
+	case 18:
+		reg |= CTRL_BUS_WIDTH_18;
+		break;
+	case 24:
+		reg |= CTRL_BUS_WIDTH_24;
+		break;
+	default:
+		dev_err(fbi->hw_dev, "Unsupported interface width %d\n",
+				fbi->ld_intf_width);
+		return -EINVAL;
+	}
 
 	switch (fb_info->bits_per_pixel) {
 	case 8:
@@ -377,12 +397,12 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 		reg |= SET_WORD_LENGTH(3);
 
 		switch (fbi->ld_intf_width) {
-		case STMLCDIF_8BIT:
+		case 8:
 			dev_dbg(fbi->hw_dev,
 				"Unsupported LCD bus width mapping\n");
 			break;
-		case STMLCDIF_16BIT:
-		case STMLCDIF_18BIT:
+		case 16:
+		case 18:
 			/* 24 bit to 18 bit mapping
 			 * which means: ignore the upper 2 bits in
 			 * each colour component
@@ -393,7 +413,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 			fb_info->blue = def_rgb666[BLUE];
 			fb_info->transp =  def_rgb666[TRANSP];
 			break;
-		case STMLCDIF_24BIT:
+		case 24:
 			/* real 24 bit */
 			fb_info->red = def_rgb888[RED];
 			fb_info->green = def_rgb888[GREEN];

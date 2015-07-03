@@ -363,7 +363,7 @@ static int smsc95xx_set_csums(struct usbnet *dev)
 	return 0;
 }
 
-static int smsc95xx_set_ethaddr(struct eth_device *edev, unsigned char *adr)
+static int smsc95xx_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	struct usbnet *udev = container_of(edev, struct usbnet, edev);
 

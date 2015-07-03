@@ -210,7 +210,7 @@ static int netx_eth_get_ethaddr(struct eth_device *edev, unsigned char *adr)
         return -1;
 }
 
-static int netx_eth_set_ethaddr(struct eth_device *edev, unsigned char *adr)
+static int netx_eth_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	struct netx_eth_priv *priv = (struct netx_eth_priv *)edev->priv;
 	int xcno = priv->xcno;

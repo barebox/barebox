@@ -25,7 +25,7 @@ config USB_GADGET_DRIVER_AT91
 config USB_GADGET_DRIVER_PXA27X
 	bool
 	prompt "PXA27x gadget driver"
-	depends on ARCH_PXA
+	depends on ARCH_PXA27X
 	default y
 	select USB_GADGET_DUALSPEED
 

@@ -211,7 +211,7 @@ static int mpc5xxx_fec_get_ethaddr(struct eth_device *dev, unsigned char *mac)
 	return -1;
 }
 
-static int mpc5xxx_fec_set_ethaddr(struct eth_device *dev, unsigned char *mac)
+static int mpc5xxx_fec_set_ethaddr(struct eth_device *dev, const unsigned char *mac)
 {
 	mpc5xxx_fec_priv *fec = (mpc5xxx_fec_priv *)dev->priv;
 	uint8_t currByte;			/* byte for which to compute the CRC */

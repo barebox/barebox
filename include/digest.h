@@ -59,6 +59,7 @@ struct digest {
 /*
  * digest functions
  */
+#ifdef CONFIG_DIGEST
 int digest_algo_register(struct digest_algo *d);
 void digest_algo_unregister(struct digest_algo *d);
 void digest_algo_prints(const char *prefix);
@@ -76,6 +77,16 @@ int digest_file(struct digest *d, const char *filename,
 int digest_file_by_name(const char *algo, const char *filename,
 			unsigned char *hash,
 			const unsigned char *sig);
+#else
+static inline struct digest *digest_alloc(const char *name)
+{
+	return NULL;
+}
+
+static inline void digest_free(struct digest *d)
+{
+}
+#endif
 
 static inline int digest_init(struct digest *d)
 {

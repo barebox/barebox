@@ -37,10 +37,10 @@ struct image *image_renderer_open(const char* file)
 	struct image *img;
 	int ret;
 
-	data = read_file(file, &size);
-	if (!data) {
-		printf("unable to read %s\n", file);
-		return ERR_PTR(-ENOMEM);
+	ret = read_file_2(file, &size, &data, FILESIZE_MAX);
+	if (ret) {
+		printf("unable to read %s: %s\n", file, strerror(-ret));
+		return ERR_PTR(ret);
 	}
 
 	ir = get_renderer(data, size);

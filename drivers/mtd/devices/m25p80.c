@@ -148,14 +148,14 @@ static int m25p80_erase(struct spi_nor *nor, loff_t offset)
 {
 	struct m25p *flash = nor->priv;
 
-        dev_dbg(nor->dev, "%dKiB at 0x%08x\n",
-                flash->mtd.erasesize / 1024, (u32)offset);
+	dev_dbg(nor->dev, "%dKiB at 0x%08x\n",
+			flash->mtd.erasesize / 1024, (u32)offset);
 
-        /* Set up command buffer. */
-        flash->command[0] = nor->erase_opcode;
-        m25p_addr2cmd(nor, offset, flash->command);
+	/* Set up command buffer. */
+	flash->command[0] = nor->erase_opcode;
+	m25p_addr2cmd(nor, offset, flash->command);
 
-        spi_write(flash->spi, flash->command, m25p_cmdsz(nor));
+	spi_write(flash->spi, flash->command, m25p_cmdsz(nor));
 
 	return 0;
 }
@@ -213,11 +213,11 @@ static const struct platform_device_id m25p_ids[] = {
 	{"w25q128"},    {"w25q256"},    {"cat25c11"},
 	{"cat25c03"},   {"cat25c09"},   {"cat25c17"},   {"cat25128"},
 
-        /*
-         * Generic support for SPI NOR that can be identified by the JEDEC READ
-         * ID opcode (0x9F). Use this, if possible.
-         */
-        {"nor-jedec"},
+	/*
+	 * Generic support for SPI NOR that can be identified by the JEDEC READ
+	 * ID opcode (0x9F). Use this, if possible.
+	 */
+	{"nor-jedec"},
 	{ },
 };
 
@@ -233,7 +233,7 @@ static int m25p_probe(struct device_d *dev)
 	struct m25p			*flash;
 	struct spi_nor			*nor;
 	enum read_mode mode =		SPI_NOR_NORMAL;
-	char				*flash_name = NULL;
+	const char			*flash_name = NULL;
 	int				device_id;
 	int ret;
 
@@ -277,13 +277,10 @@ static int m25p_probe(struct device_d *dev)
 		return ret;
 
 	device_id = DEVICE_ID_SINGLE;
-	if (dev->device_node) {
-		const char *alias = of_alias_get(dev->device_node);
-		if (alias)
-			flash_name = xstrdup(alias);
-	} else if (data && data->name) {
+	if (dev->device_node)
+		flash_name = of_alias_get(dev->device_node);
+	else if (data && data->name)
 		flash_name = data->name;
-	}
 
 	if (!flash_name) {
 		device_id = DEVICE_ID_DYNAMIC;

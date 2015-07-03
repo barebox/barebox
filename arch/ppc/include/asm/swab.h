@@ -19,7 +19,7 @@
 
 #ifdef __KERNEL__
 
-static __inline__ __u16 ld_le16(const volatile __u16 *addr)
+static inline __u16 ld_le16(const volatile __u16 *addr)
 {
 	__u16 val;
 
@@ -28,7 +28,7 @@ static __inline__ __u16 ld_le16(const volatile __u16 *addr)
 }
 #define __arch_swab16p ld_le16
 
-static __inline__ void st_le16(volatile __u16 *addr, const __u16 val)
+static inline void st_le16(volatile __u16 *addr, const __u16 val)
 {
 	__asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
 }
@@ -39,7 +39,7 @@ static inline void __arch_swab16s(__u16 *addr)
 }
 #define __arch_swab16s __arch_swab16s
 
-static __inline__ __u32 ld_le32(const volatile __u32 *addr)
+static inline __u32 ld_le32(const volatile __u32 *addr)
 {
 	__u32 val;
 
@@ -48,7 +48,7 @@ static __inline__ __u32 ld_le32(const volatile __u32 *addr)
 }
 #define __arch_swab32p ld_le32
 
-static __inline__ void st_le32(volatile __u32 *addr, const __u32 val)
+static inline void st_le32(volatile __u32 *addr, const __u32 val)
 {
 	__asm__ __volatile__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
 }

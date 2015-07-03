@@ -36,7 +36,7 @@
 #include <asm/ptrace.h>
 #include <asm/current.h>
 
-extern inline unsigned long rdusp(void)
+static inline unsigned long rdusp(void)
 {
 	unsigned long usp;
 
@@ -44,7 +44,7 @@ extern inline unsigned long rdusp(void)
 	return usp;
 }
 
-extern inline void wrusp(unsigned long usp)
+static inline void wrusp(unsigned long usp)
 {
 	__asm__ __volatile__("usp = %0;\n\t"::"da"(usp));
 }
@@ -130,7 +130,7 @@ static inline void exit_thread(void)
 /*
  * Return saved PC of a blocked thread.
  */
-extern inline unsigned long thread_saved_pc(struct thread_struct *t)
+static inline unsigned long thread_saved_pc(struct thread_struct *t)
 {
 	extern void scheduling_functions_start_here(void);
 	extern void scheduling_functions_end_here(void);

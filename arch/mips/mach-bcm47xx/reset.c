@@ -15,11 +15,6 @@
  *
  */
 
-/**
- * @file
- * @brief Resetting an malta board
- */
-
 #include <common.h>
 #include <io.h>
 #include <mach/hardware.h>

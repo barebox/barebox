@@ -493,7 +493,7 @@ static int macb_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return -1;
 }
 
-static int macb_set_ethaddr(struct eth_device *edev, unsigned char *adr)
+static int macb_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	struct macb_device *macb = edev->priv;
 

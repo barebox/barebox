@@ -12,7 +12,7 @@
 
 #ifdef __GNUC__
 
-static __inline__ __attribute_const__ __u32 __arch_swahb32(__u32 xx)
+static inline __attribute_const__ __u32 __arch_swahb32(__u32 xx)
 {
 	__u32 tmp;
 	__asm__("%1 = %0 >> 8 (V);\n\t"
@@ -23,7 +23,7 @@ static __inline__ __attribute_const__ __u32 __arch_swahb32(__u32 xx)
 }
 #define __arch_swahb32 __arch_swahb32
 
-static __inline__ __attribute_const__ __u32 __arch_swahw32(__u32 xx)
+static inline __attribute_const__ __u32 __arch_swahw32(__u32 xx)
 {
 	__u32 rv;
 	__asm__("%0 = PACK(%1.L, %1.H);\n\t": "=d"(rv): "d"(xx));
@@ -31,13 +31,13 @@ static __inline__ __attribute_const__ __u32 __arch_swahw32(__u32 xx)
 }
 #define __arch_swahw32 __arch_swahw32
 
-static __inline__ __attribute_const__ __u32 __arch_swab32(__u32 xx)
+static inline __attribute_const__ __u32 __arch_swab32(__u32 xx)
 {
 	return __arch_swahb32(__arch_swahw32(xx));
 }
 #define __arch_swab32 __arch_swab32
 
-static __inline__ __attribute_const__ __u16 __arch_swab16(__u16 xx)
+static inline __attribute_const__ __u16 __arch_swab16(__u16 xx)
 {
 	__u32 xw = xx;
 	__asm__("%0 <<= 8;\n	%0.L = %0.L + %0.H (NS);\n": "+d"(xw));

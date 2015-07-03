@@ -1,5 +1,9 @@
 if ARCH_SOCFPGA
 
+config ARCH_TEXT_BASE
+	hex
+	default 0x0
+
 config ARCH_SOCFPGA_XLOAD
 	bool
 	prompt "Build preloader image"

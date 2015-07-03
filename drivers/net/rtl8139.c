@@ -352,7 +352,7 @@ static int rtl8139_get_ethaddr(struct eth_device *edev, unsigned char *m)
 }
 
 static int rtl8139_set_ethaddr(struct eth_device *edev,
-					unsigned char *mac_addr)
+					const unsigned char *mac_addr)
 {
 	struct rtl8139_priv *priv = edev->priv;
 	int i;

@@ -182,7 +182,7 @@ static int smc911x_get_ethaddr(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int smc911x_set_ethaddr(struct eth_device *edev, unsigned char *m)
+static int smc911x_set_ethaddr(struct eth_device *edev, const unsigned char *m)
 {
 	unsigned long addrh, addrl;
 
@@ -630,8 +630,14 @@ static int smc911x_probe(struct device_d *dev)
         return 0;
 }
 
+static const struct of_device_id smsc911x_dt_ids[] = {
+	{ .compatible = "smsc,lan9115", },
+	{ /* sentinel */ }
+};
+
 static struct driver_d smc911x_driver = {
         .name  = "smc911x",
         .probe = smc911x_probe,
+	.of_compatible = DRV_OF_COMPAT(smsc911x_dt_ids),
 };
 device_platform_driver(smc911x_driver);

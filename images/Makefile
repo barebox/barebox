@@ -75,6 +75,8 @@ quiet_cmd_pblx ?= PBLX    $@
 
 $(obj)/%.pblx: $(obj)/%.pblb $(obj)/barebox.z FORCE
 	$(call if_changed,pblx,$(@F))
+	$(call cmd,check_file_size,$@,$(CONFIG_BAREBOX_MAX_PBLX_SIZE))
+
 
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)

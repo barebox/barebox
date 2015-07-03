@@ -212,4 +212,3 @@ int sprint_symbol(char *buffer, unsigned long address)
 	return len;
 }
 EXPORT_SYMBOL_GPL(sprint_symbol);
-

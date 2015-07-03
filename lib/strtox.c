@@ -65,4 +65,3 @@ unsigned long long simple_strtoull (const char *cp, char **endp, unsigned int ba
 	return result;
 }
 EXPORT_SYMBOL(simple_strtoull);
-

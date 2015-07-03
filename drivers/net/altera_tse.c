@@ -231,7 +231,7 @@ static int tse_get_ethaddr(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int tse_set_ethaddr(struct eth_device *edev, unsigned char *m)
+static int tse_set_ethaddr(struct eth_device *edev, const unsigned char *m)
 {
 	struct altera_tse_priv *priv = edev->priv;
 	struct alt_tse_mac *mac_dev = priv->tse_regs;

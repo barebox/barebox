@@ -4,6 +4,7 @@ config ARCH_TEXT_BASE
 	hex
 	default 0xa0000000 if MACH_MIOA701
 	default 0xa3f00000 if MACH_PCM027
+	default 0xa3d00000 if MACH_LUBBOCK
 	default 0x83f00000 if MACH_ZYLONITE
 
 # ----------------------------------------------------------

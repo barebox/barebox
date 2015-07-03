@@ -456,7 +456,7 @@ static int rtl8169_get_ethaddr(struct eth_device *edev, unsigned char *m)
 	return 0;
 }
 
-static int rtl8169_set_ethaddr(struct eth_device *edev, unsigned char *mac_addr)
+static int rtl8169_set_ethaddr(struct eth_device *edev, const unsigned char *mac_addr)
 {
 	struct rtl8169_priv *priv = edev->priv;
 	int i;

@@ -249,7 +249,7 @@ static int fec_get_hwaddr(struct eth_device *dev, unsigned char *mac)
 	return -1;
 }
 
-static int fec_set_hwaddr(struct eth_device *dev, unsigned char *mac)
+static int fec_set_hwaddr(struct eth_device *dev, const unsigned char *mac)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 

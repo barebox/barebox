@@ -65,7 +65,7 @@ static int tap_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return -1;
 }
 
-static int tap_set_ethaddr(struct eth_device *edev, unsigned char *adr)
+static int tap_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 {
 	return 0;
 }

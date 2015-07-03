@@ -322,7 +322,7 @@ recv_err:
 	return ret;
 }
 
-static int port_set_ethaddr(struct eth_device *edev, unsigned char *mac)
+static int port_set_ethaddr(struct eth_device *edev, const unsigned char *mac)
 {
 	struct port_priv *port = edev->priv;
 	u32 mac_h = (mac[0] << 24) | (mac[1] << 16) | (mac[2] << 8) | mac[3];

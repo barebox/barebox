@@ -69,7 +69,7 @@ static struct file_operations mtd_ops_oob = {
 	.lseek  = dev_lseek_default,
 };
 
-static int add_mtdoob_device(struct mtd_info *mtd, char *devname, void **priv)
+static int add_mtdoob_device(struct mtd_info *mtd, const char *devname, void **priv)
 {
 	struct mtdoob *mtdoob;
 

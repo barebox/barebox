@@ -547,7 +547,7 @@ static int cpsw_get_hwaddr(struct eth_device *edev, unsigned char *mac)
 	return -1;
 }
 
-static int cpsw_set_hwaddr(struct eth_device *edev, unsigned char *mac)
+static int cpsw_set_hwaddr(struct eth_device *edev, const unsigned char *mac)
 {
 	struct cpsw_slave *slave = edev->priv;
 	struct cpsw_priv *priv = slave->cpsw;

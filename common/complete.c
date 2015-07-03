@@ -466,4 +466,3 @@ int complete(char *instr, char **outstr)
 
 	return reprint;
 }
-

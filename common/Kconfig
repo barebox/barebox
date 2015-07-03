@@ -209,6 +209,16 @@ config BAREBOX_MAX_BARE_INIT_SIZE
 	  this will allow your bare_init to fit in SRAM as example
 	  ARCH can overwrite it via ARCH_BAREBOX_MAX_BARE_INIT_SIZE
 
+config BAREBOX_MAX_PBLX_SIZE
+	depends on PBL_MULTI_IMAGES
+	depends on IMAGE_COMPRESSION
+	prompt "Maximum PBLX size"
+	hex
+	default 0xffffffff
+	help
+	  Define the maximum size of the PBLX image.
+	  The pblx is a self extracting barebox binary.
+
 config HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	bool
 

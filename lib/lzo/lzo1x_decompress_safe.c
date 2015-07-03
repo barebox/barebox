@@ -258,4 +258,3 @@ lookbehind_overrun:
 }
 
 EXPORT_SYMBOL(lzo1x_decompress_safe);
-

@@ -28,7 +28,7 @@
  * These used to be if'd out here because using : "cc" as a constraint
  * resulted in errors from egcs.  Things may be OK with gcc-2.95.
  */
-extern __inline__ void set_bit(int nr, volatile void * addr)
+static inline void set_bit(int nr, volatile void * addr)
 {
 	unsigned long old;
 	unsigned long mask = 1 << (nr & 0x1f);
@@ -45,7 +45,7 @@ extern __inline__ void set_bit(int nr, volatile void * addr)
 	: "cc" );
 }
 
-extern __inline__ void clear_bit(int nr, volatile void *addr)
+static inline void clear_bit(int nr, volatile void *addr)
 {
 	unsigned long old;
 	unsigned long mask = 1 << (nr & 0x1f);
@@ -62,7 +62,7 @@ extern __inline__ void clear_bit(int nr, volatile void *addr)
 	: "cc");
 }
 
-extern __inline__ void change_bit(int nr, volatile void *addr)
+static inline void change_bit(int nr, volatile void *addr)
 {
 	unsigned long old;
 	unsigned long mask = 1 << (nr & 0x1f);
@@ -79,7 +79,7 @@ extern __inline__ void change_bit(int nr, volatile void *addr)
 	: "cc");
 }
 
-extern __inline__ int test_and_set_bit(int nr, volatile void *addr)
+static inline int test_and_set_bit(int nr, volatile void *addr)
 {
 	unsigned int old, t;
 	unsigned int mask = 1 << (nr & 0x1f);
@@ -98,7 +98,7 @@ extern __inline__ int test_and_set_bit(int nr, volatile void *addr)
 	return (old & mask) != 0;
 }
 
-extern __inline__ int test_and_clear_bit(int nr, volatile void *addr)
+static inline int test_and_clear_bit(int nr, volatile void *addr)
 {
 	unsigned int old, t;
 	unsigned int mask = 1 << (nr & 0x1f);
@@ -117,7 +117,7 @@ extern __inline__ int test_and_clear_bit(int nr, volatile void *addr)
 	return (old & mask) != 0;
 }
 
-extern __inline__ int test_and_change_bit(int nr, volatile void *addr)
+static inline int test_and_change_bit(int nr, volatile void *addr)
 {
 	unsigned int old, t;
 	unsigned int mask = 1 << (nr & 0x1f);
@@ -138,7 +138,7 @@ extern __inline__ int test_and_change_bit(int nr, volatile void *addr)
 #endif /* __INLINE_BITOPS */
 
 /* Return the bit position of the most significant 1 bit in a word */
-extern __inline__ int __ilog2(unsigned int x)
+static inline int __ilog2(unsigned int x)
 {
 	int lz;
 
@@ -146,14 +146,14 @@ extern __inline__ int __ilog2(unsigned int x)
 	return 31 - lz;
 }
 
-extern __inline__ int ffz(unsigned int x)
+static inline int ffz(unsigned int x)
 {
 	if ((x = ~x) == 0)
 		return 32;
 	return __ilog2(x & -x);
 }
 
-static __inline__ int __ffs(unsigned long x)
+static inline int __ffs(unsigned long x)
 {
 	return __ilog2(x & -x);
 }
@@ -177,7 +177,7 @@ static inline int fls(unsigned int x)
  * the libc and compiler builtin ffs routines, therefore
  * differs in spirit from the above ffz (man ffs).
  */
-extern __inline__ int ffs(int x)
+static inline int ffs(int x)
 {
 	return __ilog2(x & -x) + 1;
 }

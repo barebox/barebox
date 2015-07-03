@@ -481,4 +481,3 @@ static int cramfs_init(void)
 }
 
 device_initcall(cramfs_init);
-

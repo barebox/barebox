@@ -253,27 +253,24 @@ static void tftp_timer_reset(struct file_priv *priv)
 	priv->progress_timeout = priv->resend_timeout = get_time_ns();
 }
 
-static void tftp_handler(void *ctx, char *packet, unsigned len)
+static void tftp_recv(struct file_priv *priv,
+			uint8_t *pkt, unsigned len, uint16_t uh_sport)
 {
-	struct file_priv *priv = ctx;
-	uint16_t proto;
-	uint16_t *s;
-	char *pkt = net_eth_to_udp_payload(packet);
-	struct udphdr *udp = net_eth_to_udphdr(packet);
+	uint16_t opcode;
 
-	len = net_eth_to_udplen(packet);
-	if (len < 2)
+	/* according to RFC1350 minimal tftp packet length is 4 bytes */
+	if (len < 4)
 		return;
 
+	opcode = ntohs(*(uint16_t *)pkt);
+
+	/* skip tftp opcode 2-byte field */
 	len -= 2;
+	pkt += 2;
 
-	s = (uint16_t *)pkt;
-	proto = *s++;
-	pkt = (unsigned char *)s;
+	debug("%s: opcode 0x%04x\n", __func__, opcode);
 
-	debug("%s: proto 0x%04x\n", __func__, proto);
-
-	switch (ntohs(proto)) {
+	switch (opcode) {
 	case TFTP_RRQ:
 	case TFTP_WRQ:
 	default:
@@ -296,14 +293,14 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 			priv->state = STATE_DONE;
 			break;
 		}
-		priv->tftp_con->udp->uh_dport = udp->uh_sport;
+		priv->tftp_con->udp->uh_dport = uh_sport;
 		priv->state = STATE_WDATA;
 		break;
 
 	case TFTP_OACK:
 		tftp_parse_oack(priv, pkt, len);
-		priv->server_port = ntohs(udp->uh_sport);
-		priv->tftp_con->udp->uh_dport = udp->uh_sport;
+		priv->server_port = ntohs(uh_sport);
+		priv->tftp_con->udp->uh_dport = uh_sport;
 
 		if (priv->push) {
 			/* send first block */
@@ -318,16 +315,14 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 
 		break;
 	case TFTP_DATA:
-		if (len < 2)
-			return;
 		len -= 2;
 		priv->block = ntohs(*(uint16_t *)pkt);
 
 		if (priv->state == STATE_RRQ || priv->state == STATE_OACK) {
 			/* first block received */
 			priv->state = STATE_RDATA;
-			priv->tftp_con->udp->uh_dport = udp->uh_sport;
-			priv->server_port = ntohs(udp->uh_sport);
+			priv->tftp_con->udp->uh_dport = uh_sport;
+			priv->server_port = ntohs(uh_sport);
 			priv->last_block = 0;
 
 			if (priv->block != 1) {	/* Assertion */
@@ -374,6 +369,16 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 		priv->state = STATE_DONE;
 		break;
 	}
+}
+
+static void tftp_handler(void *ctx, char *packet, unsigned len)
+{
+	struct file_priv *priv = ctx;
+	char *pkt = net_eth_to_udp_payload(packet);
+	struct udphdr *udp = net_eth_to_udphdr(packet);
+
+	(void)len;
+	tftp_recv(priv, pkt, net_eth_to_udplen(packet), udp->uh_sport);
 }
 
 static struct file_priv *tftp_do_open(struct device_d *dev,

@@ -118,7 +118,7 @@ static void of_device_make_bus_id(struct device_d *dev)
  * Returns pointer to created platform device, or NULL if a device was not
  * registered. Unavailable devices will not get registered.
  */
-static struct device_d *of_platform_device_create(struct device_node *np,
+struct device_d *of_platform_device_create(struct device_node *np,
 						struct device_d *parent)
 {
 	struct device_d *dev;

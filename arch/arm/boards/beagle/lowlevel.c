@@ -1,4 +1,5 @@
 #include <init.h>
+#include <debug_ll.h>
 #include <io.h>
 #include <linux/sizes.h>
 #include <asm/barebox-arm-head.h>
@@ -11,6 +12,7 @@
 #include <mach/sdrc.h>
 #include <mach/syslib.h>
 #include <mach/sys_info.h>
+#include <generated/mach-types.h>
 
 /**
  * @brief Do the pin muxing required for Board operation.
@@ -157,6 +159,22 @@ static void sdrc_init(void)
 	return;
 }
 
+static noinline int beagle_board_init_sdram(void)
+{
+	struct barebox_arm_boarddata *bd = (void *)OMAP3_SRAM_SCRATCH_SPACE + 0x10;
+
+	boarddata_create(bd, MACH_TYPE_OMAP3_BEAGLE);
+
+	barebox_arm_entry(0x80000000, SZ_128M, bd);
+}
+
+ENTRY_FUNCTION(start_omap3_beagleboard_sdram, bootinfo, r1, r2)
+{
+	omap3_save_bootinfo((void *)bootinfo);
+
+	beagle_board_init_sdram();
+}
+
 /**
  * @brief The basic entry point for board initialization.
  *
@@ -166,28 +184,37 @@ static void sdrc_init(void)
  *
  * @return void
  */
-static int beagle_board_init(void)
+static noinline int beagle_board_init(void)
 {
 	int in_sdram = omap3_running_in_sdram();
+	struct barebox_arm_boarddata bd;
 
 	if (!in_sdram)
 		omap3_core_init();
 
 	mux_config();
+
+	omap_uart_lowlevel_init((void *)OMAP3_UART3_BASE);
+
 	/* Dont reconfigure SDRAM while running in SDRAM! */
 	if (!in_sdram)
 		sdrc_init();
 
-	return 0;
+	boarddata_create(&bd, MACH_TYPE_OMAP3_BEAGLE);
+
+	barebox_arm_entry(0x80000000, SZ_128M, &bd);
 }
 
-void __naked  __bare_init barebox_arm_reset_vector(uint32_t *data)
+ENTRY_FUNCTION(start_omap3_beagleboard_sram, bootinfo, r1, r2)
 {
-	omap3_save_bootinfo(data);
+	omap3_save_bootinfo((void *)bootinfo);
 
 	arm_cpu_lowlevel_init();
 
-	beagle_board_init();
+	omap3_gp_romcode_call(OMAP3_GP_ROMCODE_API_L2_INVAL, 0);
 
-	barebox_arm_entry(0x80000000, SZ_128M, NULL);
+	relocate_to_current_adr();
+	setup_c();
+
+	beagle_board_init();
 }

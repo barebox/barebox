@@ -48,7 +48,32 @@ void setup_c(void);
 void relocate_to_current_adr(void);
 void relocate_to_adr(unsigned long target);
 void __noreturn barebox_arm_entry(unsigned long membase, unsigned long memsize, void *boarddata);
-void *barebox_arm_boarddata(void);
+
+struct barebox_arm_boarddata {
+#define BAREBOX_ARM_BOARDDATA_MAGIC	0xabe742c3
+	u32 magic;
+	u32 machine; /* machine number to pass to barebox. This may or may
+		      * not be a ARM machine number registered on arm.linux.org.uk.
+		      * It must only be unique across barebox. Please use a number
+		      * that do not potientially clashes with registered machines,
+		      * i.e. use a number > 0x10000.
+		      */
+};
+
+/*
+ * Create a boarddata struct at given address. Suitable to be passed
+ * as boarddata to barebox_arm_entry(). The machine can be retrieved
+ * later with barebox_arm_machine().
+ */
+static inline void boarddata_create(void *adr, u32 machine)
+{
+	struct barebox_arm_boarddata *bd = adr;
+
+	bd->magic = BAREBOX_ARM_BOARDDATA_MAGIC;
+	bd->machine = machine;
+}
+
+u32 barebox_arm_machine(void);
 
 #if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
 void arm_fixup_vectors(void);

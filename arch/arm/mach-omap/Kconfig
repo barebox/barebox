@@ -54,14 +54,6 @@ config OMAP_CLOCK_SOURCE_S32K
 config OMAP_CLOCK_SOURCE_DMTIMER0
 	bool
 
-config OMAP3_CLOCK_CONFIG
-	prompt "Clock Configuration"
-	bool
-	depends on ARCH_OMAP3
-	default y
-	help
-	  Say Y here if you like to have OMAP3 Clock configuration done.
-
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool
@@ -128,6 +120,21 @@ config OMAP4_USBBOOT
 	  You need the utility program omap4_usbboot to boot from USB.
 	  Please read omap4_usb_booting.txt for more information.
 
+config OMAP3_USBBOOT
+	bool "enable booting from USB"
+	depends on ARCH_OMAP3
+	help
+	  Say Y here if you want to be able to boot the 2nd stage via USB. This
+	  works by transferring the 2nd stage image using the MUSB controller
+	  which is already initialized by the ROM code. Use the omap3-usb-loader
+	  tool selectable below to upload images.
+
+config OMAP3_USB_LOADER
+	bool "enable omap3 USB loader host tool"
+	depends on ARCH_OMAP3
+	help
+	  Say Y here to build the omap3 usb loader tool.
+
 config OMAP_SERIALBOOT
 	bool "enable booting from serial"
 	select XYMODEM
@@ -149,6 +156,13 @@ config MACH_AFI_GF
 	select ARCH_AM33XX
 	  help
 	  Say Y here if you are using afis GF
+
+config MACH_BEAGLE
+	bool "Texas Instrument's Beagle Board"
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	select ARCH_OMAP3
+	help
+	  Say Y here if you are using Beagle Board
 
 config MACH_BEAGLEBONE
 	bool "Texas Instrument's Beagle Bone"
@@ -172,13 +186,6 @@ config MACH_OMAP343xSDP
 	select ARCH_OMAP3
 	help
 	  Say Y here if you are using SDP343x platform
-
-config MACH_BEAGLE
-	bool "Texas Instrument's Beagle Board"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
-	select ARCH_OMAP3
-	help
-	  Say Y here if you are using Beagle Board
 
 config MACH_OMAP3EVM
 	bool "Texas Instrument's OMAP3 EVM"

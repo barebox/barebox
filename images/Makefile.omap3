@@ -1,0 +1,19 @@
+# %.mlo - convert into mlo image
+# ----------------------------------------------------------------
+quiet_cmd_omap3_mlo_image = MLO     $@
+      cmd_omap3_mlo_image = scripts/omap_signGP -o $@ -l 0x40200000 -c $<
+
+$(obj)/%.omap3_mlo: $(obj)/% FORCE
+	$(call if_changed,omap3_mlo_image)
+
+pblx-$(CONFIG_MACH_BEAGLE) += start_omap3_beagleboard_sdram start_omap3_beagleboard_sram
+FILE_barebox-beagleboard.img = start_omap3_beagleboard_sdram.pblx
+omap3-barebox-$(CONFIG_MACH_BEAGLE) += barebox-beagleboard.img
+FILE_barebox-beagleboard-mlo.img = start_omap3_beagleboard_sram.pblx.omap3_mlo
+omap3-mlo-$(CONFIG_MACH_BEAGLE) += barebox-beagleboard-mlo.img
+
+ifdef CONFIG_OMAP_BUILD_IFT
+image-y += $(omap3-mlo-y)
+else
+image-y += $(omap3-barebox-y)
+endif

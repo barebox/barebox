@@ -28,17 +28,22 @@
 #include <asm/cache.h>
 #include <memory.h>
 
+#include <debug_ll.h>
 #include "mmu-early.h"
 
 unsigned long arm_stack_top;
 static void *barebox_boarddata;
 
-/*
- * return the boarddata variable passed to barebox_arm_entry
- */
-void *barebox_arm_boarddata(void)
+u32 barebox_arm_machine(void)
 {
-	return barebox_boarddata;
+	struct barebox_arm_boarddata *bd;
+
+	if (!barebox_boarddata)
+		return 0;
+
+	bd = barebox_boarddata;
+
+	return bd->machine;
 }
 
 static void *barebox_boot_dtb;
@@ -83,17 +88,23 @@ static noinline __noreturn void __start(unsigned long membase,
 		}
 	}
 
-	/*
-	 * If boarddata is a pointer inside valid memory and contains a
-	 * FDT magic then use it as later to probe devices
-	 */
-	if (boarddata && get_unaligned_be32(boarddata) == FDT_MAGIC) {
-		uint32_t totalsize = get_unaligned_be32(boarddata + 4);
-		endmem -= ALIGN(totalsize, 64);
-		barebox_boot_dtb = (void *)endmem;
-		pr_debug("found DTB in boarddata, copying to 0x%p\n",
-				barebox_boot_dtb);
-		memcpy(barebox_boot_dtb, boarddata, totalsize);
+	if (boarddata) {
+		if (get_unaligned_be32(boarddata) == FDT_MAGIC) {
+			uint32_t totalsize = get_unaligned_be32(boarddata + 4);
+			endmem -= ALIGN(totalsize, 64);
+			barebox_boot_dtb = (void *)endmem;
+			pr_debug("found DTB in boarddata, copying to 0x%p\n",
+					barebox_boot_dtb);
+			memcpy(barebox_boot_dtb, boarddata, totalsize);
+		} else if (((struct barebox_arm_boarddata *)boarddata)->magic ==
+				BAREBOX_ARM_BOARDDATA_MAGIC) {
+			endmem -= ALIGN(sizeof(struct barebox_arm_boarddata), 64);
+			barebox_boarddata = (void *)endmem;
+			pr_debug("found machine type in boarddata, copying to 0x%p\n",
+					barebox_boarddata);
+			memcpy(barebox_boarddata, boarddata,
+					sizeof(struct barebox_arm_boarddata));
+		}
 	}
 
 	if ((unsigned long)_text > membase + memsize ||

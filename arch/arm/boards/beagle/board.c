@@ -24,6 +24,7 @@
 #include <bbu.h>
 #include <filetype.h>
 #include <ns16550.h>
+#include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/gpmc.h>
@@ -33,6 +34,7 @@
 #include <i2c/i2c.h>
 #include <linux/err.h>
 #include <usb/ehci.h>
+#include <asm/barebox-arm.h>
 
 #ifdef CONFIG_DRIVER_SERIAL_NS16550
 
@@ -44,6 +46,9 @@
  */
 static int beagle_console_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_OMAP3_BEAGLE)
+		return 0;
+
 	barebox_set_model("Texas Instruments beagle");
 	barebox_set_hostname("beagle");
 
@@ -84,6 +89,9 @@ static struct gpmc_nand_platform_data nand_plat = {
 
 static int beagle_mem_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_OMAP3_BEAGLE)
+		return 0;
+
 	omap_add_ram0(SZ_128M);
 
 	return 0;
@@ -92,6 +100,9 @@ mem_initcall(beagle_mem_init);
 
 static int beagle_devices_init(void)
 {
+	if (barebox_arm_machine() != MACH_TYPE_OMAP3_BEAGLE)
+		return 0;
+
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 	omap3_add_i2c1(NULL);
 
@@ -113,6 +124,8 @@ static int beagle_devices_init(void)
 			"/dev/nand0.xload.bb", filetype_ch_image);
 	bbu_register_std_file_update("nand", 0,
 			"/dev/nand0.barebox.bb", filetype_arm_barebox);
+
+	defaultenv_append_directory(defaultenv_beagle);
 
 	return 0;
 }

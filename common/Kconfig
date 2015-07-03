@@ -951,3 +951,7 @@ endmenu
 
 config HAS_DEBUG_LL
 	bool
+
+config DDR_SPD
+	bool
+	select CRC16

@@ -81,10 +81,6 @@ config P1022
 config MPC8544
 	bool
 
-config DDR_SPD
-	bool
-	select CRC16
-
 config FSL_DDR2
 	bool
 

@@ -9,5 +9,6 @@ obj-y			+= fsl_i2c.o
 obj-$(CONFIG_MP)	+= mp.o
 obj-$(CONFIG_OFTREE)	+= fdt.o
 obj-$(CONFIG_DRIVER_NET_GIANFAR) += eth-devices.o
-obj-$(CONFIG_DDR_SPD)	+= ../ddr-8xxx/
+obj-$(CONFIG_FSL_DDR2) += ../ddr-8xxx/
+obj-$(CONFIG_FSL_DDR3) += ../ddr-8xxx/
 extra-y += barebox.lds

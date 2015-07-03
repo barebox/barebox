@@ -553,6 +553,12 @@ static int stmfb_probe(struct device_d *hw_dev)
 
 		fbi.info.modes.modes = modes->modes;
 		fbi.info.modes.num_modes = modes->num_modes;
+
+		ret = of_property_read_u32(display, "bus-width", &fbi.ld_intf_width);
+		if (ret < 0) {
+			dev_err(hw_dev, "failed to get bus-width property\n");
+			return -EINVAL;
+		}
 	}
 
 	ret = register_framebuffer(&fbi.info);

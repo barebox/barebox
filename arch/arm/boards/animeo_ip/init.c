@@ -346,6 +346,7 @@ static void animeo_ip_shutdown(void)
 	animeo_ip_shutdown_uart(IOMEM(AT91SAM9260_BASE_US0));
 	animeo_ip_shutdown_uart(IOMEM(AT91SAM9260_BASE_US1));
 }
+postdevshutdown_exitcall(animeo_ip_shutdown);
 
 static int animeo_ip_console_init(void)
 {
@@ -353,7 +354,6 @@ static int animeo_ip_console_init(void)
 
 	usart0 = at91_register_uart(1, ATMEL_UART_RTS);
 	usart1 = at91_register_uart(2, ATMEL_UART_RTS);
-	board_shutdown = animeo_ip_shutdown;
 
 	barebox_set_model("Somfy Animeo IP");
 	barebox_set_hostname("animeoip");

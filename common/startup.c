@@ -151,7 +151,6 @@ void shutdown_barebox(void)
 		(*exitcall)();
 	}
 
-	devices_shutdown();
 #ifdef ARCH_SHUTDOWN
 	arch_shutdown();
 #endif

@@ -1,8 +1,6 @@
 #ifndef __ASM_ARM_COMMON_H
 #define __ASM_ARM_COMMON_H
 
-#define ARCH_SHUTDOWN
-
 static inline unsigned long get_pc(void)
 {
 	unsigned long pc;

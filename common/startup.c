@@ -151,9 +151,6 @@ void shutdown_barebox(void)
 		(*exitcall)();
 	}
 
-#ifdef ARCH_SHUTDOWN
-	arch_shutdown();
-#endif
 	if (board_shutdown)
 		board_shutdown();
 }

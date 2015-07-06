@@ -124,8 +124,6 @@ extern void (*board_shutdown)(void);
  */
 extern void (*do_execute)(void *func, int argc, char *argv[]);
 
-void arch_shutdown(void);
-
 int run_shell(void);
 
 #ifdef CONFIG_SHELL_HUSH

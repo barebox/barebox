@@ -38,6 +38,15 @@
 	KEEP(*(.initcall.13))			\
 	KEEP(*(.initcall.14))
 
+#define EXITCALLS			\
+	KEEP(*(.exitcall.0))			\
+	KEEP(*(.exitcall.1))			\
+	KEEP(*(.exitcall.2))			\
+	KEEP(*(.exitcall.3))			\
+	KEEP(*(.exitcall.4))			\
+	KEEP(*(.exitcall.5))			\
+	KEEP(*(.exitcall.6))
+
 #define BAREBOX_CMDS	KEEP(*(SORT_BY_NAME(.barebox_cmd*)))
 
 #define BAREBOX_SYMS	KEEP(*(__usymtab))

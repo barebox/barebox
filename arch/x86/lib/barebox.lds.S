@@ -185,7 +185,14 @@ SECTIONS
 		. = ALIGN(4);
 	} > barebox
 
-	.__usymtab : AT ( LOADADDR(.barebox_initcalls) + SIZEOF (.barebox_initcalls) ) {
+	.barebox_exitcalls : AT ( LOADADDR(.barebox_initcalls) + SIZEOF (.barebox_initcalls) ) {
+		__barebox_exitcalls_start = .;
+		EXITCALLS
+		__barebox_exitcalls_end = .;
+		. = ALIGN(4);
+	} > barebox
+
+	.__usymtab : AT ( LOADADDR(.barebox_exitcalls) + SIZEOF (.barebox_exitcalls) ) {
 		__usymtab_start = .;
 		BAREBOX_SYMS
 		__usymtab_end = .;

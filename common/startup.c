@@ -45,6 +45,9 @@
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
 
+extern exitcall_t __barebox_exitcalls_start[], __barebox_exitcalls_end[];
+
+
 #if defined CONFIG_FS_RAMFS && defined CONFIG_FS_DEVFS
 static int mount_root(void)
 {
@@ -140,6 +143,14 @@ void (*board_shutdown)(void);
  */
 void shutdown_barebox(void)
 {
+	exitcall_t *exitcall;
+
+	for (exitcall = __barebox_exitcalls_start;
+			exitcall < __barebox_exitcalls_end; exitcall++) {
+		pr_debug("exitcall-> %pS\n", *exitcall);
+		(*exitcall)();
+	}
+
 	devices_shutdown();
 #ifdef ARCH_SHUTDOWN
 	arch_shutdown();

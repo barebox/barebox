@@ -65,6 +65,10 @@ SECTIONS
 	.barebox_initcalls : { INITCALLS } > ram
 	__barebox_initcalls_end = .;
 
+	__barebox_exitcalls_start = .;
+	.barebox_exitcalls : { EXITCALLS } > ram
+	__barebox_exitcalls_end = .;
+
 	___usymtab_start = .;
 	__usymtab : { BAREBOX_SYMS } > ram
 	___usymtab_end = .;

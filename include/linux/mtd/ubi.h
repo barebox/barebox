@@ -154,6 +154,7 @@ struct ubi_device_info {
 	int max_write_size;
 	int ro_mode;
 	dev_t cdev;
+	struct mtd_info *mtd;
 };
 
 /*

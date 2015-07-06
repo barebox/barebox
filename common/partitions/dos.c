@@ -185,6 +185,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 	uint8_t *buffer = buf;
 	int i;
 	struct disk_signature_priv *dsp;
+	uint32_t signature = get_unaligned_le32(buf + 0x1b8);
 
 	table = (struct partition_entry *)&buffer[446];
 
@@ -202,6 +203,9 @@ static void dos_partition(void *buf, struct block_device *blk,
 			pd->parts[n].first_sec = pentry.first_sec;
 			pd->parts[n].size = pentry.size;
 			pd->parts[n].dos_partition_type = pentry.dos_partition_type;
+			if (signature)
+				sprintf(pd->parts[n].partuuid, "%08x-%02d",
+						signature, i + 1);
 			pd->used_entries++;
 			/*
 			 * Partitions of type 0x05 and 0x0f (and some more)

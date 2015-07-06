@@ -36,6 +36,7 @@
 #include <linux/zlib.h>
 #include <xfuncs.h>
 #include <fcntl.h>
+#include <linux/mtd/mtd.h>
 
 #include "ubifs.h"
 
@@ -584,6 +585,26 @@ static int ubifs_readlink(struct device_d *dev, const char *pathname, char *buf,
 	return 0;
 }
 
+static void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev)
+{
+	struct ubi_volume_info vi = {};
+	struct ubi_device_info di = {};
+	struct mtd_info *mtd;
+	char *str;
+
+	ubi_get_volume_info(priv->ubi, &vi);
+	ubi_get_device_info(vi.ubi_num, &di);
+
+	mtd = di.mtd;
+
+	str = asprintf("root=ubi0:%s ubi.mtd=%s rootfstype=ubifs",
+			vi.name, mtd->cdev.partname);
+
+	fsdev_set_linux_rootarg(fsdev, str);
+
+	free(str);
+}
+
 static int ubifs_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
@@ -611,6 +632,8 @@ static int ubifs_probe(struct device_d *dev)
 		ret = PTR_ERR(priv->sb);
 		goto err;
 	}
+
+	ubifs_set_rootarg(priv, fsdev);
 
 	return 0;
 err:

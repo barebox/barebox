@@ -106,6 +106,7 @@ config AM33XX_NET_BOOT
 	bool "enable AM335x network boot"
 	select ENVIRONMENT_VARIABLES
 	select NET_DHCP
+	select FS_RAMFS
 	select FS_TFTP
 	select DRIVER_NET_CPSW
 	default n

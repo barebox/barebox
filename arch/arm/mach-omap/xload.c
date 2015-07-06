@@ -229,13 +229,16 @@ static void *omap_serial_boot(void){
 	return buf;
 }
 
+#define TFTP_MOUNT "/.tftp"
+
 static void *am33xx_net_boot(void)
 {
 	void *buf = NULL;
 	int err;
 	int len;
 	struct dhcp_req_param dhcp_param;
-	const char *bootfile;
+	const char *bootfile, *ip;
+	char *file;
 
 	am33xx_register_ethaddr(0, 0);
 
@@ -247,7 +250,22 @@ static void *am33xx_net_boot(void)
 		return NULL;
 	}
 
-	err = mount(ip_to_string(net_get_serverip()), "tftp", "/", NULL);
+	/*
+	 * Older tftp server don't send the file size.
+	 * Then tftpfs needs temporary place to store the file.
+	 */
+	err = mount("none", "ramfs", "/", NULL);
+	if (err < 0) {
+		printf("failed to mount ramfs\n");
+		return NULL;
+	}
+
+	err = make_directory(TFTP_MOUNT);
+	if (err)
+		return NULL;
+
+	ip = ip_to_string(net_get_serverip());
+	err = mount(ip, "tftp", TFTP_MOUNT, NULL);
 	if (err < 0) {
 		printf("Unable to mount.\n");
 		return NULL;
@@ -259,11 +277,15 @@ static void *am33xx_net_boot(void)
 		return NULL;
 	}
 
-	buf = read_file(bootfile, &len);
+	file = asprintf("%s/%s", TFTP_MOUNT, bootfile);
+
+	buf = read_file(file, &len);
 	if (!buf)
 		printf("could not read %s.\n", bootfile);
 
-	umount("/");
+	free(file);
+
+	umount(TFTP_MOUNT);
 
 	return buf;
 }

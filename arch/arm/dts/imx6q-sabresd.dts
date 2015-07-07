@@ -12,6 +12,7 @@
 
 /dts-v1/;
 
+#include <arm/imx6q.dtsi>
 #include "imx6q.dtsi"
 #include "imx6qdl-sabresd.dtsi"
 

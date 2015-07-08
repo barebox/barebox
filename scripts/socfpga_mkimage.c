@@ -234,8 +234,8 @@ int main(int argc, char *argv[])
 	}
 
 	if (s.st_size > max_image_size) {
-		fprintf(stderr, "input image too big. Maximum is %d bytes\n",
-				MAX_IMAGE_SIZE);
+		fprintf(stderr, "input image too big. Maximum is %d bytes, got %ld bytes\n",
+				max_image_size, s.st_size);
 		exit(1);
 	}
 

@@ -2000,7 +2000,7 @@ int of_device_enable_path(const char *path)
 }
 
 /**
- * of_device_enable - disable a devicenode device
+ * of_device_disable - disable a devicenode device
  * @node - the node to disable
  *
  * This sets the status of a devicenode to "disabled"

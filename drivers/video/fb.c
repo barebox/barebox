@@ -238,6 +238,9 @@ int register_framebuffer(struct fb_info *info)
 					strerror(-ret));
 	}
 
+	if (IS_ENABLED(CONFIG_FRAMEBUFFER_CONSOLE))
+		register_fbconsole(info);
+
 	return 0;
 
 err_unregister:

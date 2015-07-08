@@ -163,4 +163,6 @@ int edid_to_display_timings(struct display_timings *, unsigned char *edid);
 void *edid_read_i2c(struct i2c_adapter *adapter);
 void fb_edid_add_modes(struct fb_info *info);
 
+int register_fbconsole(struct fb_info *fb);
+
 #endif /* __FB_H */

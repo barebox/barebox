@@ -41,3 +41,11 @@ A typical script to enable the framebuffer could look like this:
   # finally enable backlight
   gpio_direction_output 42 1
 
+Framebuffer console
+-------------------
+
+barebox has framebuffer console support which can be enabled with CONFIG_FRAMEBUFFER_CONSOLE.
+When registered each framebuffer device gets a corresponding fbconsole device. The console
+can be activated with ``fbconsolex.active=oe``. Depending on compile time options there are
+different fonts available. These can be selected with the fbconsolex.font variable. To get a
+list of fonts use ``devinfo fbconsolex``.

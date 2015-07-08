@@ -5,6 +5,12 @@ menuconfig VIDEO
 
 if VIDEO
 
+config FRAMEBUFFER_CONSOLE
+	bool
+	select IMAGE_RENDERER
+	select FONTS
+	prompt "framebuffer console support"
+
 config DRIVER_VIDEO_ATMEL
 	bool "Atmel LCDC framebuffer driver"
 	depends on ARCH_AT91

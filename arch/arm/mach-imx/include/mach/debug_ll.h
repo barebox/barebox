@@ -75,6 +75,11 @@ static inline void imx51_uart_setup_ll(void)
 	__imx_uart_setup_ll(54000000);
 }
 
+static inline void imx53_uart_setup_ll(void)
+{
+	__imx_uart_setup_ll(66666666);
+}
+
 static inline void imx6_uart_setup_ll(void)
 {
 	__imx_uart_setup_ll(80000000);
@@ -103,6 +108,7 @@ static inline void imx_uart_setup_ll(void __iomem *uartbase,
 }
 
 static inline void imx51_uart_setup_ll(void) {}
+static inline void imx53_uart_setup_ll(void) {}
 static inline void imx6_uart_setup_ll(void)  {}
 
 #endif /* CONFIG_DEBUG_LL */
@@ -117,6 +123,16 @@ static inline void imx_ungate_all_peripherals(void __iomem *ccmbase)
 static inline void imx6_ungate_all_peripherals(void)
 {
 	imx_ungate_all_peripherals(IOMEM(MX6_CCM_BASE_ADDR));
+}
+
+static inline void imx51_ungate_all_peripherals(void)
+{
+	imx_ungate_all_peripherals(IOMEM(MX51_CCM_BASE_ADDR));
+}
+
+static inline void imx53_ungate_all_peripherals(void)
+{
+	imx_ungate_all_peripherals(IOMEM(MX53_CCM_BASE_ADDR));
 }
 
 #endif /* __MACH_DEBUG_LL_H__ */

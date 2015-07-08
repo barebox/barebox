@@ -278,7 +278,7 @@ static void of_i2c_register_devices(struct i2c_adapter *adap)
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !adap->dev.device_node)
 		return;
 
-	for_each_child_of_node(adap->dev.device_node, n) {
+	for_each_available_child_of_node(adap->dev.device_node, n) {
 		struct i2c_board_info info = {};
 		struct i2c_client *result;
 		const __be32 *addr;

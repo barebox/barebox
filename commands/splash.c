@@ -61,19 +61,19 @@ static int do_splash(int argc, char *argv[])
 
 	if (sc.offscreenbuf) {
 		if (do_bg)
-			memset_pixel(&sc.info, sc.offscreenbuf, bg_color,
+			gu_memset_pixel(&sc.info, sc.offscreenbuf, bg_color,
 					sc.s.width * sc.s.height);
 		else
 			memcpy(sc.offscreenbuf, sc.fb, sc.fbsize);
 	} else if (do_bg) {
-		memset_pixel(&sc.info, sc.fb, bg_color, sc.s.width * sc.s.height);
+		gu_memset_pixel(&sc.info, sc.fb, bg_color, sc.s.width * sc.s.height);
 	}
 
 	ret = image_renderer_file(&sc, &s, image_file);
 	if (ret > 0)
 		ret = 0;
 
-	screen_blit(&sc);
+	gu_screen_blit(&sc);
 
 	fb_close(&sc);
 

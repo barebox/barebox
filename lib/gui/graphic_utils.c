@@ -46,7 +46,7 @@ static void memsetl(void *s, u32 c, size_t n)
 		*tmp++ = c;
 }
 
-void memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size)
+void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size)
 {
 	u32 px;
 	u8 *screen = buf;
@@ -98,7 +98,7 @@ static void get_rgb_pixel(struct fb_info *info, void *adr, u8 *r ,u8 *g, u8 *b)
 	*b = ((px & ~bmask) >> info->blue.offset) << (8 - info->blue.length);
 }
 
-void set_pixel(struct fb_info *info, void *adr, u32 px)
+void gu_set_pixel(struct fb_info *info, void *adr, u32 px)
 {
 	switch (info->bits_per_pixel) {
 	case 8:
@@ -112,7 +112,7 @@ void set_pixel(struct fb_info *info, void *adr, u32 px)
 	}
 }
 
-void set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b)
+void gu_set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b)
 {
 	u32 px;
 
@@ -120,7 +120,7 @@ void set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b)
 		(g >> (8 - info->green.length)) << info->green.offset |
 		(b >> (8 - info->blue.length)) << info->blue.offset;
 
-	set_pixel(info, adr, px);
+	gu_set_pixel(info, adr, px);
 }
 
 static u8 alpha_mux(int s, int d, int a)
@@ -128,7 +128,7 @@ static u8 alpha_mux(int s, int d, int a)
 	return (d * a + s * (255 - a)) >> 8;
 }
 
-void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
+void gu_set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 {
 	u32 px = 0x0;
 
@@ -149,7 +149,7 @@ void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 			g = alpha_mux(sg, g, a);
 			b = alpha_mux(sb, b, a);
 
-			set_rgb_pixel(info, adr, r, g, b);
+			gu_set_rgb_pixel(info, adr, r, g, b);
 
 			return;
 		}
@@ -159,10 +159,10 @@ void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 		(g >> (8 - info->green.length)) << info->green.offset |
 		(b >> (8 - info->blue.length)) << info->blue.offset;
 
-	set_pixel(info, adr, px);
+	gu_set_pixel(info, adr, px);
 }
 
-void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
+void gu_rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 	int width, int startx, int starty, bool is_rgba)
 {
 	unsigned char *adr;
@@ -185,10 +185,10 @@ void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 			uint8_t *pixel = image;
 
 			if (is_rgba)
-				set_rgba_pixel(info, adr, pixel[0], pixel[1],
+				gu_set_rgba_pixel(info, adr, pixel[0], pixel[1],
 						pixel[2], pixel[3]);
 			else
-				set_rgb_pixel(info, adr, pixel[0], pixel[1],
+				gu_set_rgb_pixel(info, adr, pixel[0], pixel[1],
 						pixel[2]);
 			adr += info->bits_per_pixel >> 3;
 			image += img_byte_per_pixel;
@@ -243,7 +243,7 @@ void fb_close(struct screen *sc)
 	close(sc->fd);
 }
 
-void screen_blit(struct screen *sc)
+void gu_screen_blit(struct screen *sc)
 {
 	if (!sc->offscreenbuf)
 		return;

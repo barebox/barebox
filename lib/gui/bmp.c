@@ -86,7 +86,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 
 				pixel = *image;
 
-				set_rgb_pixel(&sc->info, adr, color_table[pixel].red,
+				gu_set_rgb_pixel(&sc->info, adr, color_table[pixel].red,
 						color_table[pixel].green,
 						color_table[pixel].blue);
 				adr += sc->info.bits_per_pixel >> 3;
@@ -108,7 +108,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 
 				pixel = image;
 
-				set_rgb_pixel(&sc->info, adr, pixel[2], pixel[1],
+				gu_set_rgb_pixel(&sc->info, adr, pixel[2], pixel[1],
 						pixel[0]);
 				adr += sc->info.bits_per_pixel >> 3;
 

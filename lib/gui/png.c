@@ -67,7 +67,7 @@ static int png_renderer(struct screen *sc, struct surface *s, struct image *img)
 
 	buf = gui_screen_redering_buffer(sc);
 
-	rgba_blend(&sc->info, img, buf, height, width, startx, starty, true);
+	gu_rgba_blend(&sc->info, img, buf, height, width, startx, starty, true);
 
 	return img->height;
 }

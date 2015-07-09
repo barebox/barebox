@@ -100,7 +100,7 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 		sig_cfg.Vsync_pol = 1;
 
 	sig_cfg.enable_pol = 1;
-	sig_cfg.clk_pol = 1;
+	sig_cfg.clk_pol = 0;
 	sig_cfg.width = mode->xres;
 	sig_cfg.height = mode->yres;
 	sig_cfg.h_start_width = mode->left_margin;

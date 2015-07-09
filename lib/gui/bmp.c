@@ -67,7 +67,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 	width = min(width, sc->s.width - startx);
 	height = min(height, sc->s.height - starty);
 
-	buf = gui_screen_redering_buffer(sc);
+	buf = gui_screen_render_buffer(sc);
 
 	bits_per_pixel = img->bits_per_pixel;
 

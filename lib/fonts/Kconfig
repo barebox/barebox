@@ -14,8 +14,12 @@ config FONT_8x16
 	  This is the "high resolution" font for the VGA frame buffer (the one
 	  provided by the VGA text console 80x25 mode).
 
+config FONT_MINI_4x6
+	bool "Mini 4x6 font"
+
 config FONT_AUTOSELECT
 	def_bool y
+	depends on !FONT_MINI_4x6
 	select FONT_8x16
 
 endif # FONTS

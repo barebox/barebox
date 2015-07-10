@@ -227,6 +227,16 @@ CFG_start_imx6_udoo.pblx.imximg = $(board)/udoo/flash-header-mx6-udoo.imxcfg
 FILE_barebox-udoo-imx6q.img = start_imx6_udoo.pblx.imximg
 image-$(CONFIG_MACH_UDOO) += barebox-udoo-imx6q.img
 
+pblx-$(CONFIG_MACH_CM_FX6) += start_imx6_cm_fx6
+CFG_start_imx6_cm_fx6.imx-sram-img = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
+FILE_barebox-cm-fx6.img = start_imx6_cm_fx6.imx-sram-img
+image-$(CONFIG_MACH_CM_FX6) += barebox-cm-fx6.img
+
+pblx-$(CONFIG_MACH_CM_FX6) += start_imx6_utilite
+CFG_start_imx6_utilite.imx-sram-img = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
+FILE_barebox-utilite.img = start_imx6_utilite.imx-sram-img
+image-$(CONFIG_MACH_CM_FX6) += barebox-utilite.img
+
 pblx-$(CONFIG_MACH_VARISCITE_MX6) += start_variscite_custom
 CFG_start_variscite_custom.pblx.imximg = $(board)/variscite-mx6/flash-header-variscite.imxcfg
 FILE_barebox-variscite-custom.img = start_variscite_custom.pblx.imximg

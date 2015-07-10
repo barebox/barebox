@@ -344,6 +344,10 @@ config MACH_GW_VENTANA
 	select I2C
 	select I2C_IMX
 
+config MACH_CM_FX6
+	bool "CM FX6"
+	select ARCH_IMX6
+
 endif
 
 # ----------------------------------------------------------

@@ -1,0 +1,21 @@
+/*
+ * Copyright 2015 CompuLab Ltd.
+ *
+ * Author: Valentin Raevsky <valentin@compulab.co.il>
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+/dts-v1/;
+#include "imx6dl.dtsi"
+#include "imx6qdl-cm-fx6.dtsi"
+
+/ {
+	model = "CompuLab CM-FX6";
+	compatible = "compulab,cm-fx6", "fsl,imx6dl";
+};

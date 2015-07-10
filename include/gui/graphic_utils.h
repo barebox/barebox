@@ -20,5 +20,7 @@ void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size);
 int fb_open(const char * fbdev, struct screen *sc, bool offscreen);
 void fb_close(struct screen *sc);
 void gu_screen_blit(struct screen *sc);
+void gu_invert_area(struct fb_info *info, void *buf, int startx, int starty, int width,
+		int height);
 
 #endif /* __GRAPHIC_UTILS_H__ */

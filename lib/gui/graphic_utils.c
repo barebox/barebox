@@ -128,6 +128,25 @@ static u8 alpha_mux(int s, int d, int a)
 	return (d * a + s * (255 - a)) >> 8;
 }
 
+void gu_invert_area(struct fb_info *info, void *buf, int startx, int starty, int width,
+		int height)
+{
+	unsigned char *adr;
+	int x, y;
+	int line_length;
+	int bpp = info->bits_per_pixel >> 3;
+
+	line_length = info->line_length;
+
+	for (y = starty; y < starty + height; y++) {
+		adr = buf + line_length * y + startx * bpp;
+
+		for (x = 0; x < width * bpp; x++) {
+			*adr++ ^= 0xff;
+		}
+	}
+}
+
 void gu_set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 {
 	u32 px = 0x0;

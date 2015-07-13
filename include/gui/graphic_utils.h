@@ -19,7 +19,8 @@ void gu_set_pixel(struct fb_info *info, void *adr, u32 px);
 void gu_set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b);
 void gu_set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a);
 void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size);
-int fb_open(const char * fbdev, struct screen *sc, bool offscreen);
+struct screen *fb_create_screen(struct fb_info *info, bool offscreen);
+struct screen *fb_open(const char *fbdev, bool offscreen);
 void fb_close(struct screen *sc);
 void gu_screen_blit(struct screen *sc);
 void gu_invert_area(struct fb_info *info, void *buf, int startx, int starty, int width,

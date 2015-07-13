@@ -10,9 +10,9 @@
 static int do_splash(int argc, char *argv[])
 {
 	struct surface s;
-	struct screen sc;
+	struct screen *sc;
 	int ret = 0;
-	int opt, fd;
+	int opt;
 	char *fbdev = "/dev/fb0";
 	char *image_file;
 	int offscreen = 0;
@@ -20,7 +20,6 @@ static int do_splash(int argc, char *argv[])
 	bool do_bg = false;
 
 	memset(&s, 0, sizeof(s));
-	memset(&sc, 0, sizeof(sc));
 
 	s.x = -1;
 	s.y = -1;
@@ -53,29 +52,29 @@ static int do_splash(int argc, char *argv[])
 	}
 	image_file = argv[optind];
 
-	fd = fb_open(fbdev, &sc, offscreen);
-	if (fd < 0) {
+	sc = fb_open(fbdev, offscreen);
+	if (IS_ERR(sc)) {
 		perror("fd_open");
-		return fd;
+		return PTR_ERR(sc);
 	}
 
-	if (sc.offscreenbuf) {
+	if (sc->offscreenbuf) {
 		if (do_bg)
-			gu_memset_pixel(&sc.info, sc.offscreenbuf, bg_color,
-					sc.s.width * sc.s.height);
+			gu_memset_pixel(sc->info, sc->offscreenbuf, bg_color,
+					sc->s.width * sc->s.height);
 		else
-			memcpy(sc.offscreenbuf, sc.fb, sc.fbsize);
+			memcpy(sc->offscreenbuf, sc->fb, sc->fbsize);
 	} else if (do_bg) {
-		gu_memset_pixel(&sc.info, sc.fb, bg_color, sc.s.width * sc.s.height);
+		gu_memset_pixel(sc->info, sc->fb, bg_color, sc->s.width * sc->s.height);
 	}
 
-	ret = image_renderer_file(&sc, &s, image_file);
+	ret = image_renderer_file(sc, &s, image_file);
 	if (ret > 0)
 		ret = 0;
 
-	gu_screen_blit(&sc);
+	gu_screen_blit(sc);
 
-	fb_close(&sc);
+	fb_close(sc);
 
 	return ret;
 }

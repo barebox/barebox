@@ -18,7 +18,7 @@ struct surface {
 
 struct screen {
 	int fd;
-	struct fb_info info;
+	struct fb_info *info;
 
 	struct surface s;
 

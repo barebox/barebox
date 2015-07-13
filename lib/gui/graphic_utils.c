@@ -245,51 +245,77 @@ void gu_rgba_blend(struct fb_info *info, struct image *img, void* buf, int heigh
 	}
 }
 
-int fb_open(const char * fbdev, struct screen *sc, bool offscreen)
+struct screen *fb_create_screen(struct fb_info *info, bool offscreen)
 {
-	int ret;
+	struct screen *sc;
 
-	sc->fd = open(fbdev, O_RDWR);
-	if (sc->fd < 0)
-		return sc->fd;
-
-	sc->fb = memmap(sc->fd, PROT_READ | PROT_WRITE);
-	if (sc->fb == (void *)-1) {
-		ret = -ENOMEM;
-		goto failed_memmap;
-	}
-
-	ret = ioctl(sc->fd, FBIOGET_SCREENINFO, &sc->info);
-	if (ret) {
-		goto failed_memmap;
-	}
+	sc = xzalloc(sizeof(*sc));
 
 	sc->s.x = 0;
 	sc->s.y = 0;
-	sc->s.width = sc->info.xres;
-	sc->s.height = sc->info.yres;
-	sc->fbsize = sc->info.line_length * sc->s.height;
+	sc->s.width = info->xres;
+	sc->s.height = info->yres;
+	sc->fbsize = info->line_length * sc->s.height;
+	sc->fb = info->screen_base;
 
 	if (offscreen) {
-		/* Don't fail if malloc fails, just continue rendering directly
+		/*
+		 * Don't fail if malloc fails, just continue rendering directly
 		 * on the framebuffer
 		 */
 		sc->offscreenbuf = malloc(sc->fbsize);
 	}
 
-	return sc->fd;
+	return sc;
+}
 
-failed_memmap:
-	sc->fb = NULL;
-	close(sc->fd);
+struct screen *fb_open(const char * fbdev, bool offscreen)
+{
+	int fd, ret;
+	struct fb_info *info;
+	struct screen *sc;
 
-	return ret;
+	fd = open(fbdev, O_RDWR);
+	if (fd < 0)
+		return ERR_PTR(fd);
+
+	info = xzalloc(sizeof(*info));
+
+	ret = ioctl(fd, FBIOGET_SCREENINFO, info);
+	if (ret) {
+		goto failed_screeninfo;
+	}
+
+	sc = fb_create_screen(info, offscreen);
+	if (IS_ERR(sc)) {
+		ret = PTR_ERR(sc);
+		goto failed_create;
+	}
+
+	sc->fd = fd;
+	sc->info = info;
+
+	return sc;
+
+failed_create:
+	free(sc->offscreenbuf);
+	free(sc);
+failed_screeninfo:
+	close(fd);
+
+	return ERR_PTR(ret);
 }
 
 void fb_close(struct screen *sc)
 {
 	free(sc->offscreenbuf);
-	close(sc->fd);
+
+	if (sc->fd > 0) {
+		close(sc->fd);
+		free(sc->info);
+	}
+
+	free(sc);
 }
 
 void gu_screen_blit(struct screen *sc)

@@ -293,6 +293,7 @@ static __noreturn int omap_xload(void)
 			func = omap4_xload_boot_usb();
 		} else {
 			printf("booting from USB not enabled\n");
+			func = NULL;
 		}
 		break;
 	case BOOTSOURCE_NAND:

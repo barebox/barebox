@@ -21,6 +21,7 @@
 #include <mach/generic.h>
 #include <mach/imx25-regs.h>
 #include <mach/imx35-regs.h>
+#include <mach/imx6-regs.h>
 
 /* [CTRL][TYPE] */
 static const enum bootsource locations[4][4] = {
@@ -214,10 +215,9 @@ void imx53_boot_save_loc(void __iomem *src_base)
 #define IMX6_SRC_SBMR1	0x04
 #define IMX6_SRC_SBMR2	0x1c
 
-void imx6_boot_save_loc(void __iomem *src_base)
+void imx6_get_boot_source(enum bootsource *src, int *instance)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+	void __iomem *src_base = IOMEM(MX6_SRC_BASE_ADDR);
 	uint32_t sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
 	uint32_t boot_cfg_4_2_0;
@@ -231,13 +231,11 @@ void imx6_boot_save_loc(void __iomem *src_base)
 	case 2: /* internal boot */
 		goto internal_boot;
 	case 1: /* Serial Downloader */
-		src = BOOTSOURCE_SERIAL;
+		*src = BOOTSOURCE_SERIAL;
 		break;
 	case 3: /* reserved */
 		break;
 	};
-
-	bootsource_set(src);
 
 	return;
 
@@ -246,28 +244,28 @@ internal_boot:
 	/* BOOT_CFG1[7:4] */
 	switch ((sbmr1 >> 4) & 0xf) {
 	case 2:
-		src = BOOTSOURCE_HD;
+		*src = BOOTSOURCE_HD;
 		break;
 	case 3:
 		/* BOOT_CFG4[2:0] */
 		boot_cfg_4_2_0 = (sbmr1 >> 24) & 0x7;
 
 		if (boot_cfg_4_2_0 > 4) {
-			src = BOOTSOURCE_I2C;
-			instance = boot_cfg_4_2_0 - 5;
+			*src = BOOTSOURCE_I2C;
+			*instance = boot_cfg_4_2_0 - 5;
 		} else {
-			src = BOOTSOURCE_SPI;
-			instance = boot_cfg_4_2_0;
+			*src = BOOTSOURCE_SPI;
+			*instance = boot_cfg_4_2_0;
 		}
 		break;
 	case 4:
 	case 5:
 	case 6:
 	case 7:
-		src = BOOTSOURCE_MMC;
+		*src = BOOTSOURCE_MMC;
 
 		/* BOOT_CFG2[4:3] */
-		instance = (sbmr1 >> 11) & 0x3;
+		*instance = (sbmr1 >> 11) & 0x3;
 		break;
 	default:
 		break;
@@ -275,10 +273,18 @@ internal_boot:
 
 	/* BOOT_CFG1[7:0] */
 	if (sbmr1 & (1 << 7))
-		src = BOOTSOURCE_NAND;
+		*src = BOOTSOURCE_NAND;
+
+	return;
+}
+
+void imx6_boot_save_loc(void __iomem *src_base)
+{
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	imx6_get_boot_source(&src, &instance);
 
 	bootsource_set(src);
 	bootsource_set_instance(instance);
-
-	return;
 }

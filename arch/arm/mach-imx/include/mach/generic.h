@@ -3,6 +3,7 @@
 
 #include <linux/compiler.h>
 #include <linux/types.h>
+#include <bootsource.h>
 
 u64 imx_uid(void);
 
@@ -12,6 +13,7 @@ void imx27_boot_save_loc(void __iomem *sysctrl_base);
 void imx51_boot_save_loc(void __iomem *src_base);
 void imx53_boot_save_loc(void __iomem *src_base);
 void imx6_boot_save_loc(void __iomem *src_base);
+void imx6_get_boot_source(enum bootsource *src, int *instance);
 
 int imx1_init(void);
 int imx21_init(void);

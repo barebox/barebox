@@ -825,7 +825,7 @@ int main(int argc, char *argv[])
 
 	/* pad until next 4k boundary */
 	now = 4096 - now;
-	if (now) {
+	if (prepare_sign && now) {
 		memset(buf, 0x5a, now);
 
 		ret = xwrite(outfd, buf, now);

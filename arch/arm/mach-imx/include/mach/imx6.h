@@ -48,29 +48,22 @@ static inline int imx6_cpu_type(void)
 	return __imx6_cpu_type();
 }
 
-static inline int cpu_is_mx6s(void)
-{
-	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6S;
-}
+#define DEFINE_MX6_CPU_TYPE(str, type)					\
+	static inline int cpu_mx6_is_##str(void)			\
+	{								\
+		return __imx6_cpu_type() == type;			\
+	}								\
+									\
+	static inline int cpu_is_##str(void)				\
+	{								\
+		if (!cpu_is_mx6())					\
+			return 0;					\
+		return cpu_mx6_is_##str();				\
+	}
 
-static inline int cpu_is_mx6dl(void)
-{
-	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6DL;
-}
-
-static inline int cpu_is_mx6d(void)
-{
-	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
-}
-
-static inline int cpu_is_mx6q(void)
-{
-	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
-}
-
-static inline int cpu_is_mx6sx(void)
-{
-	return imx6_cpu_type() == IMX6_CPUTYPE_IMX6SX;
-}
+DEFINE_MX6_CPU_TYPE(mx6dl, IMX6_CPUTYPE_IMX6DL);
+DEFINE_MX6_CPU_TYPE(mx6q, IMX6_CPUTYPE_IMX6Q);
+DEFINE_MX6_CPU_TYPE(mx6d, IMX6_CPUTYPE_IMX6D);
+DEFINE_MX6_CPU_TYPE(mx6sx, IMX6_CPUTYPE_IMX6SX);
 
 #endif /* __MACH_IMX6_H */

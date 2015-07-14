@@ -146,6 +146,9 @@ struct display_timings *of_get_display_timings(struct device_node *np);
 
 int register_framebuffer(struct fb_info *info);
 
+int fb_enable(struct fb_info *info);
+int fb_disable(struct fb_info *info);
+
 #define FBIOGET_SCREENINFO	_IOR('F', 1, loff_t)
 #define	FBIO_ENABLE		_IO('F', 2)
 #define	FBIO_DISABLE		_IO('F', 3)

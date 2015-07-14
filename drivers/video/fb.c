@@ -29,6 +29,30 @@ static int fb_ioctl(struct cdev* cdev, int req, void *data)
 	return 0;
 }
 
+int fb_enable(struct fb_info *info)
+{
+	if (info->enabled)
+		return 0;
+
+	info->fbops->fb_enable(info);
+
+	info->enabled = true;
+
+	return 0;
+}
+
+int fb_disable(struct fb_info *info)
+{
+	if (!info->enabled)
+		return 0;
+
+	info->fbops->fb_disable(info);
+
+	info->enabled = false;
+
+	return 0;
+}
+
 static int fb_enable_set(struct param_d *param, void *priv)
 {
 	struct fb_info *info = priv;
@@ -36,15 +60,10 @@ static int fb_enable_set(struct param_d *param, void *priv)
 
 	enable = info->p_enable;
 
-	if (enable == info->enabled)
-		return 0;
-
 	if (enable)
 		info->fbops->fb_enable(info);
 	else
 		info->fbops->fb_disable(info);
-
-	info->enabled = enable;
 
 	return 0;
 }

@@ -7,7 +7,17 @@
 #include <fs.h>
 #include <malloc.h>
 
-static u32 get_pixel(struct fb_info *info, u32 color)
+/**
+ * gu_hex_to_pixel - convert a 32bit color to fb format
+ * @info: The framebuffer info to convert the pixel for
+ * @color: The color in 0xttrrggbb format
+ *
+ * This converts a color in 0xttrrggbb format to the format
+ * suitable for writing directly into the framebuffer.
+ *
+ * Return: The pixel suitable for the framebuffer
+ */
+u32 gu_hex_to_pixel(struct fb_info *info, u32 color)
 {
 	u32 px;
 	u8 t = (color >> 24) & 0xff;
@@ -51,7 +61,7 @@ void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size)
 	u32 px;
 	u8 *screen = buf;
 
-	px = get_pixel(info, color);
+	px = gu_hex_to_pixel(info, color);
 
 	switch (info->bits_per_pixel) {
 	case 8:

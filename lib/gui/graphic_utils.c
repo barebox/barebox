@@ -8,6 +8,31 @@
 #include <malloc.h>
 
 /**
+ * gu_get_pixel_rgb - convert a rgb triplet color to fb format
+ * @info: The framebuffer info to convert the pixel for
+ * @r: red component
+ * @g: green component
+ * @b: blue component
+ * @t: transparent component
+ *
+ * This converts a color to the format suitable for writing directly into
+ * the framebuffer.
+ *
+ * Return: The pixel suitable for the framebuffer
+ */
+u32 gu_rgb_to_pixel(struct fb_info *info, u8 r, u8 g, u8 b, u8 t)
+{
+	u32 px;
+
+	px = (t >> (8 - info->transp.length)) << info->transp.offset |
+		 (r >> (8 - info->red.length)) << info->red.offset |
+		 (g >> (8 - info->green.length)) << info->green.offset |
+		 (b >> (8 - info->blue.length)) << info->blue.offset;
+
+	return px;
+}
+
+/**
  * gu_hex_to_pixel - convert a 32bit color to fb format
  * @info: The framebuffer info to convert the pixel for
  * @color: The color in 0xttrrggbb format
@@ -30,12 +55,7 @@ u32 gu_hex_to_pixel(struct fb_info *info, u32 color)
 		 return px;
 	}
 
-	px = (t >> (8 - info->transp.length)) << info->transp.offset |
-		 (r >> (8 - info->red.length)) << info->red.offset |
-		 (g >> (8 - info->green.length)) << info->green.offset |
-		 (b >> (8 - info->blue.length)) << info->blue.offset;
-
-	return px;
+	return gu_rgb_to_pixel(info, r, g, b, t);
 }
 
 static void memsetw(void *s, u16 c, size_t n)

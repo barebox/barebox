@@ -12,6 +12,7 @@
 #include <gui/gui.h>
 
 u32 gu_hex_to_pixel(struct fb_info *info, u32 color);
+u32 gu_rgb_to_pixel(struct fb_info *info, u8 r, u8 g, u8 b, u8 t);
 void gu_rgba_blend(struct fb_info *info, struct image *img, void* dest, int height,
 	int width, int startx, int starty, bool is_rgba);
 void gu_set_pixel(struct fb_info *info, void *adr, u32 px);

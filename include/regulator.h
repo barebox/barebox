@@ -6,6 +6,7 @@ struct regulator;
 
 struct regulator_dev {
 	struct regulator_ops *ops;
+	int boot_on;
 };
 
 struct regulator_ops {

@@ -89,6 +89,7 @@ static int regulator_disable_internal(struct regulator_internal *ri)
 static struct regulator_internal * __regulator_register(struct regulator_dev *rd, const char *name)
 {
 	struct regulator_internal *ri;
+	int ret;
 
 	ri = xzalloc(sizeof(*ri));
 	ri->rdev = rd;
@@ -100,7 +101,19 @@ static struct regulator_internal * __regulator_register(struct regulator_dev *rd
 	if (name)
 		ri->name = xstrdup(name);
 
+	if (rd->boot_on) {
+		ret = regulator_enable_internal(ri);
+		if (ret && ret != -ENOSYS)
+			goto err;
+	}
+
 	return ri;
+err:
+	list_del(&ri->list);
+	free(ri->name);
+	free(ri);
+
+	return ERR_PTR(ret);
 }
 
 
@@ -116,6 +129,8 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 {
 	struct regulator_internal *ri;
 	const char *name;
+
+	rd->boot_on = of_property_read_bool(node, "regulator-boot-on");
 
 	name = of_get_property(node, "regulator-name", NULL);
 

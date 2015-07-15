@@ -20,6 +20,7 @@ struct font_desc {
 };
 
 extern const struct font_desc	font_vga_8x16,
+			font_7x14,
 			font_mini_4x6;
 
 /* Max. length for the name of a predefined font */

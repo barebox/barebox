@@ -207,6 +207,8 @@ static void spl_mx6q_dram_init(enum ddr_config dram_config, bool reset)
 		cm_fx6_sysinfo_q.ncs = 1;
 		break;
 	case DDR_64BIT_2GB:
+		cm_fx6_sysinfo_q.cs_density = 8;
+		cm_fx6_ddr3_cfg_q.density = 2;
 		cm_fx6_sysinfo_q.dsize = 2;
 		cm_fx6_sysinfo_q.ncs = 2;
 		break;

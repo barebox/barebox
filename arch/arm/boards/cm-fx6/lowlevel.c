@@ -258,8 +258,8 @@ static unsigned long cm_fx6_spl_dram_init(void)
 			return SZ_2G;
 
 		if (bank1_size == 0x40000000) {
-			bank2_size = get_ram_size((long int *)0x80000000,
-								0x80000000);
+			bank2_size = get_ram_size((long int *)0x90000000,
+								0x40000000);
 			if (bank2_size == 0x40000000) {
 				/* Don't do a full reset here */
 				spl_mx6q_dram_init(DDR_64BIT_2GB, false);

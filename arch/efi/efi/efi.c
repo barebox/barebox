@@ -326,7 +326,12 @@ static void fixup_tables(void)
 
 static int efi_init(void)
 {
+	char *env;
+
 	defaultenv_append_directory(env_efi);
+
+	env = xasprintf("/efivars/barebox-env-%pUl", &efi_barebox_vendor_guid);
+	default_environment_path_set(env);
 
 	return 0;
 }

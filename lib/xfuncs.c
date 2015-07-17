@@ -103,3 +103,27 @@ void *xmemdup(const void *orig, size_t size)
 	return buf;
 }
 EXPORT_SYMBOL(xmemdup);
+
+char *xvasprintf(const char *fmt, va_list ap)
+{
+	char *p;
+
+	p = vasprintf(fmt, ap);
+	if (!p)
+		panic("ERROR: out of memory\n");
+	return p;
+}
+EXPORT_SYMBOL(xvasprintf);
+
+char *xasprintf(const char *fmt, ...)
+{
+	va_list ap;
+	char *p;
+
+	va_start(ap, fmt);
+	p = xvasprintf(fmt, ap);
+	va_end(ap);
+
+	return p;
+}
+EXPORT_SYMBOL(xasprintf);

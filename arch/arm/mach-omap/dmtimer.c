@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief Support DMTimer0 counter
+ * @brief Support DMTimer counter
  *
- * FileName: arch/arm/mach-omap/dmtimer0.c
+ * FileName: arch/arm/mach-omap/dmtimer.c
  */
 /*
  * This File is based on arch/arm/mach-omap/s32k_clksource.c
@@ -10,7 +10,10 @@
  * Texas Instruments, <www.ti.com>
  * Nishanth Menon <x0nishan@ti.com>
  *
- * (C) Copyright 2012 Teresa Gámez, Phytec Messtechnik GmbH
+ * (C) Copyright 2012 Phytec Messtechnik GmbH
+ * Author: Teresa Gámez <t.gamez@phytec.de>
+ * (C) Copyright 2015 Phytec Messtechnik GmbH
+ * Author: Daniel Schultz <d.schultz@phytec.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -28,6 +31,8 @@
 #include <init.h>
 #include <io.h>
 #include <mach/am33xx-silicon.h>
+
+#include <stdio.h>
 
 #define CLK_RC32K	32768
 
@@ -49,18 +54,20 @@
 #define TSICR			0x54
 #define TCAR2			0x58
 
+static void *base = (void *)AM33XX_DMTIMER2_BASE;
+
 /**
  * @brief Provide a simple counter read
  *
- * @return DMTimer0 counter
+ * @return DMTimer counter
  */
-static uint64_t dmtimer0_read(void)
+static uint64_t dmtimer_read(void)
 {
-	return readl(AM33XX_DMTIMER0_BASE + TCRR);
+	return readl(base + TCRR);
 }
 
-static struct clocksource dmtimer0_cs = {
-	.read	= dmtimer0_read,
+static struct clocksource dmtimer_cs = {
+	.read	= dmtimer_read,
 	.mask	= CLOCKSOURCE_MASK(32),
 	.shift	= 10,
 };
@@ -68,18 +75,38 @@ static struct clocksource dmtimer0_cs = {
 /**
  * @brief Initialize the Clock
  *
- * Enable dmtimer0.
+ * Enable dmtimer.
  *
  * @return result of @ref init_clock
  */
-static int dmtimer0_init(void)
+static int dmtimer_init(void)
 {
-	dmtimer0_cs.mult = clocksource_hz2mult(CLK_RC32K, dmtimer0_cs.shift);
-	/* Enable counter */
-	writel(0x3, AM33XX_DMTIMER0_BASE + TCLR);
+	u64 clk_speed;
+	int sysboot;
 
-	return init_clock(&dmtimer0_cs);
+	sysboot = (readl(AM33XX_CTRL_STATUS) >> 22) & 3;
+	switch (sysboot) {
+	case 0:
+		clk_speed = 19200000;
+		break;
+	case 1:
+		clk_speed = 24000000;
+		break;
+	case 2:
+		clk_speed = 25000000;
+		break;
+	case 3:
+		clk_speed = 26000000;
+		break;
+	}
+
+	dmtimer_cs.mult = clocksource_hz2mult(clk_speed, dmtimer_cs.shift);
+
+	/* Enable counter */
+	writel(0x3, base + TCLR);
+
+	return init_clock(&dmtimer_cs);
 }
 
 /* Run me at boot time */
-core_initcall(dmtimer0_init);
+core_initcall(dmtimer_init);

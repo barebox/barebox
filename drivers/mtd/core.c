@@ -386,6 +386,9 @@ static int mtd_partition_set(struct device_d *dev, struct param_d *p, const char
 	struct mtd_info *mtdpart, *tmp;
 	int ret;
 
+	if (!val)
+		return -EINVAL;
+
 	list_for_each_entry_safe(mtdpart, tmp, &mtd->partitions, partitions_entry) {
 		ret = mtd_del_partition(mtdpart);
 		if (ret)

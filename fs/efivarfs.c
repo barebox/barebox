@@ -153,7 +153,7 @@ static int efivars_create(struct device_d *dev, const char *pathname, mode_t mod
 	inode->vendor = vendor;
 
 
-	name8 = strdup_wchar_to_char(inode->name);
+	name8 = xstrdup_wchar_to_char(inode->name);
 	inode->full_name = asprintf("%s-%pUl", name8, &inode->vendor);
 	free(name8);
 
@@ -391,11 +391,11 @@ static int efivarfs_probe(struct device_d *dev)
 			break;
 
 		inode = xzalloc(sizeof(*inode));
-		inode->name = strdup_wchar(name);
+		inode->name = xstrdup_wchar(name);
 
 		inode->vendor = vendor;
 
-		name8 = strdup_wchar_to_char(inode->name);
+		name8 = xstrdup_wchar_to_char(inode->name);
 		inode->full_name = asprintf("%s-%pUl", name8, &vendor);
 		free(name8);
 

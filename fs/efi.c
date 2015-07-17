@@ -114,9 +114,9 @@ static wchar_t *path_to_efi(const char *path)
 	wchar_t *ret;
 
 	if (!*path)
-		return strdup_char_to_wchar("\\");
+		return xstrdup_char_to_wchar("\\");
 
-	dst = strdup_char_to_wchar(path);
+	dst = xstrdup_char_to_wchar(path);
 	if (!dst)
 		return NULL;
 

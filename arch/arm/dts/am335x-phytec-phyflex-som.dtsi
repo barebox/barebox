@@ -138,6 +138,7 @@
 		byte_len = <4096>;
 		pagesize = <32>;
 		reg = <0x52>;
+		status = "disabled";
 	};
 };
 

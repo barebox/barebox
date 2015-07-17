@@ -310,7 +310,8 @@ device_initcall(efi_init);
  */
 efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 {
-	void *mem;
+	efi_physical_addr_t mem;
+	size_t memsize;
 	efi_status_t efiret;
 
 #ifdef DEBUG
@@ -332,8 +333,21 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 
 	fixup_tables();
 
-	BS->allocate_pool(efi_loaded_image->image_data_type, SZ_16M, &mem);
-	mem_malloc_init(mem, mem + SZ_16M);
+	mem = 0x3fffffff;
+	for (memsize = SZ_256M; memsize >= SZ_8M; memsize /= 2) {
+		efiret  = BS->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
+					     EFI_LOADER_DATA,
+					     memsize/PAGE_SIZE, &mem);
+		if (!EFI_ERROR(efiret))
+			break;
+		if (efiret != EFI_OUT_OF_RESOURCES)
+			panic("failed to allocate malloc pool: %s\n",
+			      efi_strerror(efiret));
+	}
+	if (EFI_ERROR(efiret))
+		panic("failed to allocate malloc pool: %s\n",
+		      efi_strerror(efiret));
+	mem_malloc_init((void *)mem, (void *)mem + memsize);
 
 	efi_clocksource_init();
 

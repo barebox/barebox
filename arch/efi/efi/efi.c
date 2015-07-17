@@ -83,6 +83,33 @@ out:
 	return buf;
 }
 
+int efi_set_variable(char *name, efi_guid_t *vendor, uint32_t attributes,
+		     void *buf, unsigned long size)
+{
+	efi_status_t efiret = EFI_SUCCESS;
+	s16 *name16 = strdup_char_to_wchar(name);
+
+	efiret = RT->set_variable(name16, vendor, attributes, size, buf);
+
+	free(name16);
+
+	return -efi_errno(efiret);
+}
+
+int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec)
+{
+	char buf[20];
+	wchar_t buf16[40];
+
+	snprintf(buf, sizeof(buf), "%lld", usec);
+	strcpy_char_to_wchar(buf16, buf);
+
+	return efi_set_variable(name, vendor,
+				EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				EFI_VARIABLE_RUNTIME_ACCESS, buf16,
+				(strlen(buf)+1) * sizeof(wchar_t));
+}
+
 struct efi_boot {
 	u32 attributes;
 	u16 file_path_len;

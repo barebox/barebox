@@ -211,7 +211,7 @@ typedef struct {
 			unsigned long *exitdata_size, s16 **exitdata);
 	efi_status_t(EFIAPI *exit)(efi_handle_t handle,  efi_status_t exit_status,
 			unsigned long exitdata_size, s16 *exitdata);
-	void *unload_image;
+	efi_status_t (EFIAPI *unload_image)(efi_handle_t handle);
 	efi_status_t (EFIAPI *exit_boot_services)(efi_handle_t, unsigned long);
 	void *get_next_monotonic_count;
 	efi_status_t (EFIAPI *stall)(unsigned long usecs);

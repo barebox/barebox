@@ -340,6 +340,7 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	efi_physical_addr_t mem;
 	size_t memsize;
 	efi_status_t efiret;
+	char *uuid;
 
 #ifdef DEBUG
 	sys_table->con_out->output_string(sys_table->con_out, L"barebox\n");
@@ -377,6 +378,21 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	mem_malloc_init((void *)mem, (void *)mem + memsize);
 
 	efi_clocksource_init();
+	efi_set_variable_usec("LoaderTimeInitUSec", &efi_systemd_vendor_guid,
+			      get_time_ns()/1000);
+
+	uuid = device_path_to_partuuid(device_path_from_handle(
+				       efi_loaded_image->device_handle));
+	if (uuid) {
+		wchar_t *uuid16 = xstrdup_char_to_wchar(uuid);
+		efi_set_variable("LoaderDevicePartUUID",
+				 &efi_systemd_vendor_guid,
+				 EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				 EFI_VARIABLE_RUNTIME_ACCESS,
+				 uuid16, (strlen(uuid)+1) * sizeof(wchar_t));
+		free(uuid);
+		free(uuid16);
+	}
 
 	start_barebox();
 

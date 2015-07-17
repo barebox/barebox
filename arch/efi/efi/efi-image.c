@@ -17,6 +17,7 @@
  *
  */
 
+#include <clock.h>
 #include <common.h>
 #include <linux/sizes.h>
 #include <memory.h>
@@ -242,6 +243,10 @@ static int do_bootm_efi(struct image_data *data)
 			       boot_header->ramdisk_image);
 		printf("...\n");
 	}
+
+	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
+			      get_time_ns()/1000);
+
 	linux_efi_handover(handle, boot_header);
 
 	return 0;

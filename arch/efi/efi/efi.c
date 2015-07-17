@@ -125,7 +125,7 @@ struct efi_boot *efi_get_boot(int num)
 	int size;
 	char *name;
 
-	name = asprintf("Boot%04X", num);
+	name = xasprintf("Boot%04X", num);
 
 	buf = efi_get_global_var(name, &size);
 

@@ -622,6 +622,7 @@ static inline int efi_compare_guid(efi_guid_t *a, efi_guid_t *b)
 	return memcmp(a, b, sizeof(efi_guid_t));
 }
 
+struct efi_device_path *device_path_from_handle(efi_handle_t Handle);
 char *device_path_to_str(struct efi_device_path *dev_path);
 u8 device_path_to_type(struct efi_device_path *dev_path);
 char *device_path_to_partuuid(struct efi_device_path *dev_path);

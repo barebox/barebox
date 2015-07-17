@@ -216,7 +216,7 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 		return -ENOENT;
 
 	efiret = RT->get_variable(efile->name, &efile->vendor,
-				  &efile->attributes, &efile->size, NULL);
+				  NULL, &efile->size, NULL);
 	if (EFI_ERROR(efiret) && efiret != EFI_BUFFER_TOO_SMALL) {
 		ret = -efi_errno(efiret);
 		goto out;
@@ -228,8 +228,9 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 		goto out;
 	}
 
-	efiret = RT->get_variable(efile->name, &efile->vendor, NULL, &efile->size,
-			efile->buf);
+	efiret = RT->get_variable(efile->name, &efile->vendor,
+				  &efile->attributes, &efile->size,
+				  efile->buf);
 	if (EFI_ERROR(efiret)) {
 		ret = -efi_errno(efiret);
 		goto out;

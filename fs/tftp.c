@@ -75,7 +75,6 @@ struct file_priv {
 	uint16_t last_block;
 	int state;
 	int err;
-	int server_port;
 	const char *filename;
 	int filesize;
 	uint64_t resend_timeout;
@@ -299,7 +298,6 @@ static void tftp_recv(struct file_priv *priv,
 
 	case TFTP_OACK:
 		tftp_parse_oack(priv, pkt, len);
-		priv->server_port = ntohs(uh_sport);
 		priv->tftp_con->udp->uh_dport = uh_sport;
 
 		if (priv->push) {
@@ -322,7 +320,6 @@ static void tftp_recv(struct file_priv *priv,
 			/* first block received */
 			priv->state = STATE_RDATA;
 			priv->tftp_con->udp->uh_dport = uh_sport;
-			priv->server_port = ntohs(uh_sport);
 			priv->last_block = 0;
 
 			if (priv->block != 1) {	/* Assertion */

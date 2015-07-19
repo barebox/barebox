@@ -132,8 +132,8 @@ struct nfs_priv {
 	struct net_connection *con;
 	IPaddr_t server;
 	char *path;
-	unsigned short mount_port;
-	unsigned short nfs_port;
+	uint16_t mount_port;
+	uint16_t nfs_port;
 	uint32_t rpc_id;
 	uint32_t rootfh_len;
 	char rootfh[NFS3_FHSIZE];

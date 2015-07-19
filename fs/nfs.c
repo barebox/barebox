@@ -1350,7 +1350,7 @@ static int nfs_probe(struct device_d *dev)
 
 	debug("nfs: server: %s path: %s\n", tmp, npriv->path);
 
-	npriv->con = net_udp_new(npriv->server, 0, nfs_handler, npriv);
+	npriv->con = net_udp_new(npriv->server, SUNRPC_PORT, nfs_handler, npriv);
 	if (IS_ERR(npriv->con)) {
 		ret = PTR_ERR(npriv->con);
 		goto err1;

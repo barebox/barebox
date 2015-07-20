@@ -491,7 +491,7 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 {
 	struct mtd_info *mtd = ctx, *partmtd;
 	struct device_node *np, *part, *tmp;
-	int ret, i = 0;
+	int ret;
 
 	np = of_find_node_by_path_from(root, mtd->of_path);
 	if (!np) {
@@ -508,7 +508,7 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 
 	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
 		int na, ns, len = 0;
-		char *name = asprintf("partition@%d", i++);
+		char *name = asprintf("partition@%0llx", partmtd->master_offset);
 		void *p;
 		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
 

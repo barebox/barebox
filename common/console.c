@@ -73,6 +73,9 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 			cdev->setbrg(cdev, cdev->baudrate);
 	}
 
+	if (!flag && cdev->f_active && cdev->flush)
+		cdev->flush(cdev);
+
 	if (cdev->set_active) {
 		ret = cdev->set_active(cdev, flag);
 		if (ret)

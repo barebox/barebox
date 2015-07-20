@@ -37,6 +37,8 @@ static int imx6_sata_init(struct imx_ahci *imx_ahci)
 	writel(val, base + IOMUXC_GPR13);
 	writel(val | 2, base + IOMUXC_GPR13);
 
+	udelay(100);
+
 	return 0;
 }
 

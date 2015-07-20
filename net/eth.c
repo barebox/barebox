@@ -243,7 +243,7 @@ int eth_send(struct eth_device *edev, void *packet, int length)
 
 	led_trigger_network(LED_TRIGGER_NET_TX);
 
-	return edev->send(eth_current, packet, length);
+	return edev->send(edev, packet, length);
 }
 
 static int __eth_rx(struct eth_device *edev)

@@ -164,8 +164,8 @@ static int sabrelite_devices_init(void)
 
 	armlinux_set_architecture(3769);
 
-	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
-			BBU_HANDLER_FLAG_DEFAULT);
+	imx6_bbu_internal_spi_i2c_register_handler("spiflash",
+			"/dev/spinor0.barebox", BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

@@ -18,6 +18,10 @@
 / {
 	model = "Freescale i.MX6 Quad SABRE Lite Board";
 	compatible = "fsl,imx6q-sabrelite", "fsl,imx6q";
+
+	aliases {
+		spinor0 = &flash;
+	};
 };
 
 &sata {

@@ -16,8 +16,6 @@
 ** of the document, therefore no GPL restrictions apply.
 */
 
-#include <stddef.h>
-
 #if defined(__cplusplus)
 extern "C" {
 #endif

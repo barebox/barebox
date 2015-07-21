@@ -30,7 +30,6 @@
 
 #include <common.h>
 #include <malloc.h>
-#include <stddef.h>
 #include <linux/stat.h>
 #include <linux/time.h>
 #include <asm/byteorder.h>

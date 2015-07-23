@@ -71,6 +71,11 @@ static unsigned int flash_offset_cfi[2] = {
 #define CFG_FLASH_CFI_WIDTH	FLASH_CFI_8BIT
 #endif
 
+struct cfi_priv {
+	struct flash_info *infos;
+	int num_devs;
+	struct mtd_info **mtds;
+};
 
 /*
  * Functions
@@ -668,9 +673,8 @@ static int cfi_mtd_unlock(struct mtd_info *mtd, loff_t offset, size_t len)
 	return cfi_mtd_protect(finfo, offset, len, 0);
 }
 
-static void cfi_info (struct device_d* dev)
+static void cfi_info_one(struct flash_info *info)
 {
-        struct flash_info *info = (struct flash_info *)dev->priv;
 	int i;
 
 	if (info->flash_id != FLASH_MAN_CFI) {
@@ -759,6 +763,15 @@ static void cfi_info (struct device_d* dev)
 	}
 	putchar('\n');
 	return;
+}
+
+static void cfi_info(struct device_d *dev)
+{
+	struct cfi_priv *priv = dev->priv;
+	int i;
+
+	for (i = 0; i < priv->num_devs; i++)
+		cfi_info_one(&priv->infos[i]);
 }
 
 int flash_status_check(struct flash_info *info, flash_sect_t sector,
@@ -920,12 +933,6 @@ static int cfi_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 	return 0;
 }
-
-struct cfi_priv {
-	struct flash_info *infos;
-	int num_devs;
-	struct mtd_info **mtds;
-};
 
 static void cfi_init_mtd(struct flash_info *info)
 {

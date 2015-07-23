@@ -536,8 +536,9 @@ int gserial_connect(struct gserial *gser, u8 port_num)
 	if (status)
 		goto fail_out;
 
-	console_set_active(cdev, CONSOLE_STDIN | CONSOLE_STDOUT |
-		CONSOLE_STDERR);
+	if (IS_ENABLED(CONFIG_CONSOLE_FULL))
+		console_set_active(cdev, CONSOLE_STDIN | CONSOLE_STDOUT |
+				   CONSOLE_STDERR);
 
 	/* REVISIT if waiting on "carrier detect", signal. */
 

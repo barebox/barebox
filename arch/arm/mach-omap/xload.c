@@ -119,12 +119,13 @@ static void *omap_xload_boot_mmc(void)
 
 	ret = mount(partname, "fat", "/", NULL);
 
-	free(partname);
-
 	if (ret) {
 		printf("Unable to mount %s (%d)\n", partname, ret);
+		free(partname);
 		return NULL;
 	}
+
+	free(partname);
 
 	buf = read_file("/barebox.bin", &len);
 	if (!buf) {

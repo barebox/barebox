@@ -83,17 +83,21 @@ static int of_mpc5200_fixup(struct device_node *root, void *unused)
 
 	int div = in_8((void*)CFG_MBAR + 0x204) & 0x0020 ? 8 : 4;
 
-	node = of_find_node_by_path("/cpus/PowerPC,5200@0");
-	if (!node)
+	node = of_find_node_by_path_from(root, "/cpus/PowerPC,5200@0");
+	if (!node) {
+		pr_err("Cannot find node '/cpus/PowerPC,5200@0' for proper CPU frequency fixup\n");
 		return -EINVAL;
+	}
 
 	of_property_write_u32(node, "timebase-frequency", get_timebase_clock());
 	of_property_write_u32(node, "bus-frequency", get_bus_clock());
 	of_property_write_u32(node, "clock-frequency", get_cpu_clock());
 
-	node = of_find_node_by_path("/soc5200@f0000000");
-	if (!node)
+	node = of_find_node_by_path_from(root, "/soc5200@f0000000");
+	if (!node) {
+		pr_err("Cannot find node '/soc5200@f0000000' for proper SOC frequency fixup\n");
 		return -EINVAL;
+	}
 
 	of_property_write_u32(node, "bus-frequency", get_ipb_clock());
 	of_property_write_u32(node, "system-frequency", get_bus_clock() * div);

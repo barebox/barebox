@@ -58,7 +58,7 @@ int imx_iomux_mode(unsigned int pin_mode)
 
 	return ret;
 }
-EXPORT_SYMBOL(mxc_iomux_mode);
+EXPORT_SYMBOL(imx_iomux_mode);
 
 /*
  * This function configures the pad value for a IOMUX pin.
@@ -83,7 +83,7 @@ void imx_iomux_set_pad(enum iomux_pins pin, u32 config)
 	l |= config << (field * 10);
 	writel(l, reg);
 }
-EXPORT_SYMBOL(mxc_iomux_set_pad);
+EXPORT_SYMBOL(imx_iomux_set_pad);
 
 /*
  * This function enables/disables the general purpose function for a particular
@@ -104,7 +104,7 @@ void imx_iomux_set_gpr(enum iomux_gp_func gp, bool en)
 
 	writel(l, base + IOMUXGPR);
 }
-EXPORT_SYMBOL(mxc_iomux_set_gpr);
+EXPORT_SYMBOL(imx_iomux_set_gpr);
 
 int imx_iomux_setup_multiple_pins(const unsigned int *pin_list, unsigned count)
 {

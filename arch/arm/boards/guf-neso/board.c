@@ -110,7 +110,7 @@ static struct imx_fb_platform_data neso_fb_data = {
 	.framebuffer_ovl = (void *)0xa7f00000,
 };
 
-#ifdef CONFIG_USB
+#if defined(CONFIG_USB) && defined(CONFIG_USB_ULPI)
 static void neso_usbh_init(void)
 {
 	uint32_t temp;
@@ -130,7 +130,11 @@ static void neso_usbh_init(void)
 	gpio_set_value(USBH2_PHY_CS_GPIO, 0);
 	mdelay(10);
 	ulpi_setup((void *)(MX27_USB_OTG_BASE_ADDR + 0x570), 1);
+	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC,
+				    MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
 }
+#else
+static void neso_usbh_init(void) { }
 #endif
 
 static int neso_devices_init(void)
@@ -266,10 +270,7 @@ static int neso_devices_init(void)
 	imx27_add_nand(&nand_info);
 	imx27_add_fb(&neso_fb_data);
 
-#ifdef CONFIG_USB
 	neso_usbh_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX27_USB_OTG_BASE_ADDR + 0x400, NULL);
-#endif
 
 	imx27_add_fec(&fec_info);
 

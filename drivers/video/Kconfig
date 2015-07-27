@@ -100,7 +100,7 @@ config DRIVER_VIDEO_BACKLIGHT
 
 config DRIVER_VIDEO_BACKLIGHT_PWM
 	bool "PWM backlight support"
-	depends on PWM
+	depends on PWM && GPIOLIB
 	depends on DRIVER_VIDEO_BACKLIGHT
 	help
 	  Enable this to get support for backlight devices driven by a PWM.

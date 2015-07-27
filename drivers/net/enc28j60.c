@@ -422,7 +422,7 @@ static int enc28j60_get_ethaddr(struct eth_device *edev, unsigned char *m)
  * Program the hardware MAC address from dev->dev_addr.
  */
 static int enc28j60_set_ethaddr(struct eth_device *edev,
-					unsigned char *mac_addr)
+				const unsigned char *mac_addr)
 {
 	int ret;
 	struct enc28j60_net *priv = edev->priv;

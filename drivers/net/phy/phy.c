@@ -29,7 +29,6 @@
 #define PHY_AN_TIMEOUT	10
 
 static struct phy_driver genphy_driver;
-static int genphy_config_init(struct phy_device *phydev);
 
 /**
  * phy_aneg_done - return auto-negotiation status
@@ -806,7 +805,7 @@ void phy_write_mmd_indirect(struct phy_device *phydev, int prtad, int devad,
 	phy_write(phydev, MII_MMD_DATA, data);
 }
 
-static int genphy_config_init(struct phy_device *phydev)
+int genphy_config_init(struct phy_device *phydev)
 {
 	int val;
 	u32 features;

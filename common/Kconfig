@@ -594,6 +594,17 @@ config CONSOLE_ACTIVATE_NONE
 
 endchoice
 
+config PBL_CONSOLE
+	depends on PBL_IMAGE
+	depends on !CONSOLE_NONE
+	bool "Enable console support in PBL"
+	help
+	  This enables printf/pr_* support in the PBL to get more
+	  informational output earlier during startup. Note that
+	  printf/pr_* need a valid C environment, so the binary
+	  must be running at the address it's linked at and bss must
+	  be cleared. On ARM that would be after setup_c().
+
 config PARTITION
 	bool
 	prompt "Enable Partitions"
@@ -934,18 +945,6 @@ config DEBUG_INITCALLS
 	bool "Trace initcalls"
 	help
 	  If enabled this will print initcall traces.
-
-config PBL_CONSOLE
-	depends on PBL_IMAGE
-	depends on DEBUG_LL
-	depends on !CONSOLE_NONE
-	bool "Enable console support in PBL"
-	help
-	  This enables printf/pr_* support in the PBL to get more
-	  informational output earlier during startup. Note that
-	  printf/pr_* need a valid C environment, so the binary
-	  must be running at the address it's linked at and bss must
-	  be cleared. On ARM that would be after setup_c().
 
 endmenu
 

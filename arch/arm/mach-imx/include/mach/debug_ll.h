@@ -21,33 +21,6 @@
 #define __IMX_UART_BASE(soc, num) soc##_UART##num##_BASE_ADDR
 #define IMX_UART_BASE(soc, num) __IMX_UART_BASE(soc, num)
 
-static inline void imx_uart_setup_ll(void __iomem *uartbase,
-				     unsigned int refclock)
-{
-	writel(0x00000000, uartbase + UCR1);
-
-	writel(UCR2_IRTS | UCR2_WS | UCR2_TXEN | UCR2_RXEN | UCR2_SRST,
-	       uartbase + UCR2);
-	writel(UCR3_DSR | UCR3_DCD | UCR3_RI | UCR3_ADNIMP | UCR3_RXDMUXSEL,
-	       uartbase + UCR3);
-	writel((0b10 << UFCR_TXTL_SHF) | UFCR_RFDIV1 | (1 << UFCR_RXTL_SHF),
-	       uartbase + UFCR);
-
-	writel(baudrate_to_ubir(CONFIG_BAUDRATE),
-	       uartbase + UBIR);
-	writel(refclock_to_ubmr(refclock),
-	       uartbase + UBMR);
-
-	writel(UCR1_UARTEN, uartbase + UCR1);
-}
-
-#define __imx_uart_setup_ll(refclock)					\
-	do {								\
-		imx_uart_setup_ll(IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,	\
-						      CONFIG_DEBUG_IMX_UART_PORT)), \
-				  refclock);				\
-	} while(0)
-
 #ifdef CONFIG_DEBUG_IMX1_UART
 #define IMX_DEBUG_SOC MX1
 #elif defined CONFIG_DEBUG_IMX21_UART
@@ -72,12 +45,16 @@ static inline void imx_uart_setup_ll(void __iomem *uartbase,
 
 static inline void imx51_uart_setup_ll(void)
 {
-	__imx_uart_setup_ll(54000000);
+	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC, CONFIG_DEBUG_IMX_UART_PORT));
+
+	imx51_uart_setup(base);
 }
 
 static inline void imx6_uart_setup_ll(void)
 {
-	__imx_uart_setup_ll(80000000);
+	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC, CONFIG_DEBUG_IMX_UART_PORT));
+
+	imx6_uart_setup(base);
 }
 
 static inline void PUTC_LL(int c)
@@ -88,19 +65,9 @@ static inline void PUTC_LL(int c)
 	if (!base)
 		return;
 
-	if (!(readl(base + UCR1) & UCR1_UARTEN))
-		return;
-
-	while (!(readl(base + USR2) & USR2_TXDC));
-
-	writel(c, base + URTX0);
+	imx_uart_putc(base, c);
 }
 #else
-
-static inline void imx_uart_setup_ll(void __iomem *uartbase,
-				     unsigned int refclock)
-{
-}
 
 static inline void imx51_uart_setup_ll(void) {}
 static inline void imx6_uart_setup_ll(void)  {}

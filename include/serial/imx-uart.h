@@ -125,4 +125,44 @@ static inline int refclock_to_ubmr(int clock_hz)
 	return clock_hz / 1600 - 1;
 }
 
+static inline void imx_uart_setup(void __iomem *uartbase,
+				     unsigned int refclock)
+{
+	writel(0x00000000, uartbase + UCR1);
+
+	writel(UCR2_IRTS | UCR2_WS | UCR2_TXEN | UCR2_RXEN | UCR2_SRST,
+	       uartbase + UCR2);
+	writel(UCR3_DSR | UCR3_DCD | UCR3_RI | UCR3_ADNIMP | UCR3_RXDMUXSEL,
+	       uartbase + UCR3);
+	writel((0b10 << UFCR_TXTL_SHF) | UFCR_RFDIV1 | (1 << UFCR_RXTL_SHF),
+	       uartbase + UFCR);
+
+	writel(baudrate_to_ubir(CONFIG_BAUDRATE),
+	       uartbase + UBIR);
+	writel(refclock_to_ubmr(refclock),
+	       uartbase + UBMR);
+
+	writel(UCR1_UARTEN, uartbase + UCR1);
+}
+
+static inline void imx51_uart_setup(void __iomem *uartbase)
+{
+	imx_uart_setup(uartbase, 54000000);
+}
+
+static inline void imx6_uart_setup(void __iomem *uartbase)
+{
+	imx_uart_setup(uartbase, 80000000);
+}
+
+static inline void imx_uart_putc(void *base, int c)
+{
+	if (!(readl(base + UCR1) & UCR1_UARTEN))
+		return;
+
+	while (!(readl(base + USR2) & USR2_TXDC));
+
+	writel(c, base + URTX0);
+}
+
 #endif	/* __IMX_UART_H__ */

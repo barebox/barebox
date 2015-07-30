@@ -10,6 +10,7 @@
 
 #include <common.h>
 #include <driver.h>
+#include <malloc.h>
 #include <i2c/i2c.h>
 #include <i2c/i2c-algo-bit.h>
 #include <i2c/i2c-gpio.h>
@@ -187,6 +188,13 @@ static int i2c_gpio_probe(struct device_d *dev)
 	adap->algo_data = bit_data;
 	adap->dev.parent = dev;
 	adap->dev.device_node = dev->device_node;
+	adap->bus_recovery_info = xzalloc(sizeof(*adap->bus_recovery_info));
+	adap->bus_recovery_info->scl_gpio = pdata->scl_pin;
+	adap->bus_recovery_info->sda_gpio = pdata->sda_pin;
+	adap->bus_recovery_info->get_sda = i2c_get_sda_gpio_value;
+	adap->bus_recovery_info->get_scl = i2c_get_scl_gpio_value;
+	adap->bus_recovery_info->set_scl = i2c_set_scl_gpio_value;
+	adap->bus_recovery_info->recover_bus = i2c_generic_scl_recovery;
 
 	adap->nr = dev->id;
 	ret = i2c_bit_add_numbered_bus(adap);
@@ -201,10 +209,12 @@ static int i2c_gpio_probe(struct device_d *dev)
 	return 0;
 
 err_add_bus:
+	free(adap->bus_recovery_info);
 	gpio_free(pdata->scl_pin);
 err_request_scl:
 	gpio_free(pdata->sda_pin);
 err_request_sda:
+	free(priv);
 	return ret;
 }
 

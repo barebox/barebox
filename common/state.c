@@ -1377,6 +1377,8 @@ static int backend_raw_save_one(struct state_backend_raw *backend_raw,
 	if (ret < 0)
 		return ret;
 
+	protect(fd, backend_raw->stride, offset, false);
+
 	if (backend_raw->need_erase) {
 		ret = erase(fd, backend_raw->stride, offset);
 		if (ret)
@@ -1386,6 +1388,8 @@ static int backend_raw_save_one(struct state_backend_raw *backend_raw,
 	ret = write_full(fd, buf, size);
 	if (ret < 0)
 		return ret;
+
+	protect(fd, backend_raw->stride, offset, true);
 
 	return 0;
 }

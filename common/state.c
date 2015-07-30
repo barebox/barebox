@@ -1279,7 +1279,7 @@ static int backend_raw_load_one(struct state_backend_raw *backend_raw,
 	max_len -= sizeof(header);
 	if (ret < 0) {
 		dev_err(&state->dev,
-			"cannot read header from backend device");
+			"cannot read header from backend device\n");
 		return ret;
 	}
 

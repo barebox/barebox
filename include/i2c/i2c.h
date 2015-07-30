@@ -19,6 +19,8 @@
 #include <driver.h>
 #include <linux/types.h>
 
+struct i2c_adapter;
+
 /*
  * struct i2c_platform_data - structure of platform data for MXC I2C driver
  * @param	bitrate	Bus speed measured in Hz
@@ -61,6 +63,47 @@ struct i2c_msg {
 	__u16			len;	/**< Number of data bytes in @buf being read from or written to the I2C slave address. */
 };
 
+/**
+ * struct i2c_bus_recovery_info - I2C bus recovery information
+ * @recover_bus: Recover routine. Either pass driver's recover_bus() routine, or
+ *	i2c_generic_scl_recovery() or i2c_generic_gpio_recovery().
+ * @get_scl: This gets current value of SCL line. Mandatory for generic SCL
+ *	recovery. Used internally for generic GPIO recovery.
+ * @set_scl: This sets/clears SCL line. Mandatory for generic SCL recovery. Used
+ *	internally for generic GPIO recovery.
+ * @get_sda: This gets current value of SDA line. Optional for generic SCL
+ *	recovery. Used internally, if sda_gpio is a valid GPIO, for generic GPIO
+ *	recovery.
+ * @prepare_recovery: This will be called before starting recovery. Platform may
+ *	configure padmux here for SDA/SCL line or something else they want.
+ * @unprepare_recovery: This will be called after completing recovery. Platform
+ *	may configure padmux here for SDA/SCL line or something else they want.
+ * @scl_gpio: gpio number of the SCL line. Only required for GPIO recovery.
+ * @sda_gpio: gpio number of the SDA line. Only required for GPIO recovery.
+ */
+struct i2c_bus_recovery_info {
+	int (*recover_bus)(struct i2c_adapter *);
+
+	int (*get_scl)(struct i2c_adapter *);
+	void (*set_scl)(struct i2c_adapter *, int val);
+	int (*get_sda)(struct i2c_adapter *);
+
+	void (*prepare_recovery)(struct i2c_adapter *);
+	void (*unprepare_recovery)(struct i2c_adapter *);
+
+	/* gpio recovery */
+	int scl_gpio;
+	int sda_gpio;
+};
+
+int i2c_recover_bus(struct i2c_adapter *adap);
+
+/* Generic recovery routines */
+int i2c_get_scl_gpio_value(struct i2c_adapter *adap);
+void i2c_set_scl_gpio_value(struct i2c_adapter *adap, int val);
+int i2c_get_sda_gpio_value(struct i2c_adapter *adap);
+int i2c_generic_gpio_recovery(struct i2c_adapter *adap);
+int i2c_generic_scl_recovery(struct i2c_adapter *adap);
 
 /**
  * i2c_adapter is the structure used to identify a physical i2c bus
@@ -74,6 +117,8 @@ struct i2c_adapter {
 	struct list_head	list;
 	int			retries;
 	void 			*algo_data;
+
+	struct i2c_bus_recovery_info *bus_recovery_info;
 };
 
 

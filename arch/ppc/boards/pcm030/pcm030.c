@@ -34,9 +34,19 @@
 #include <linux/stat.h>
 #include <asm/io.h>
 #include <fs.h>
+#include <i2c/i2c.h>
 
 static struct fec_platform_data fec_info = {
 	.xcv_type = PHY_INTERFACE_MODE_MII,
+};
+
+static struct i2c_board_info pcm030_i2c_devices[] = {
+	{ I2C_BOARD_INFO("pcf8563", 0x51), },
+	{ I2C_BOARD_INFO("24c32", 0x52), },
+};
+
+struct i2c_platform_data pcm030_i2c_plat = {
+	.bitrate = 100000,
 };
 
 static int devices_init (void)
@@ -53,6 +63,9 @@ static int devices_init (void)
 
 	add_generic_device("fec_mpc5xxx", DEVICE_ID_DYNAMIC, NULL, MPC5XXX_FEC, 0x200,
 			   IORESOURCE_MEM, &fec_info);
+	i2c_register_board_info(0, pcm030_i2c_devices, ARRAY_SIZE(pcm030_i2c_devices));
+	add_generic_device("i2c-fsl", DEVICE_ID_DYNAMIC, NULL, MPC5XXX_I2C2, 0x100,
+			IORESOURCE_MEM, &pcm030_i2c_plat);
 
 	ret = stat("/dev/nor0", &s);
 	if (ret)

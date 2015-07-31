@@ -32,6 +32,7 @@
 #include <memory.h>
 #include <linux/sizes.h>
 #include <linux/stat.h>
+#include <asm/io.h>
 #include <fs.h>
 
 static struct fec_platform_data fec_info = {
@@ -144,6 +145,12 @@ void initdram (int board_type)
 	*(vu_long *)MPC5XXX_GPS_PORT_CONFIG = 0x00558c10;
 	*(vu_long *)MPC5XXX_CS_BURST = 0x00000000;
 	*(vu_long *)MPC5XXX_CS_DEADCYCLE = 0x33333333;
+
+	/*
+	 * Make USB work due to the special base crystal frequency:
+	 * 33,3330MHz * 16 = 533,328MHz main clock, but should be 528 MHz Clock
+	 */
+	out_be32((void *)MPC5XXX_CDM_48_FDC, 0x00015555);
 
 	mpc5200_setup_bus_clocks(1, 4);
 

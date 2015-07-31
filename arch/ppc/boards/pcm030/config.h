@@ -25,7 +25,7 @@
 
 #include <mach/mpc5xxx.h>
 
-#define CFG_MPC5XXX_CLKIN	33333333 /* ... running at 33.333333MHz */
+#define CFG_MPC5XXX_CLKIN	33333000 /* ... running at 33.333MHz */
 
 #define CFG_HID0_INIT		HID0_ICE | HID0_ICFI
 #define CFG_HID0_FINAL		HID0_ICE

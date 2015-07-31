@@ -142,7 +142,7 @@ void initdram (int board_type)
 	/* Setup pin multiplexing */
 
 	/* PSC6=UART, PSC3=UART ; Ether=100MBit with MD */
-	*(vu_long *)MPC5XXX_GPS_PORT_CONFIG = 0x00558c10;
+	*(vu_long *)MPC5XXX_GPS_PORT_CONFIG = 0x00559c10;
 	*(vu_long *)MPC5XXX_CS_BURST = 0x00000000;
 	*(vu_long *)MPC5XXX_CS_DEADCYCLE = 0x33333333;
 

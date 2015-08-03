@@ -2102,6 +2102,12 @@ config CMD_STATE
 	depends on STATE
 	prompt "state"
 
+config CMD_DHRYSTONE
+	bool
+	prompt "dhrystone"
+	help
+	  CPU benchmark tool
+
 # end Miscellaneous commands
 endmenu
 

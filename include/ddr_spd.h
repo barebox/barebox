@@ -228,6 +228,7 @@ struct ddr3_spd_eeprom_s {
 	uint8_t cust[80];        /* 176-255 Open for Customer Use */
 };
 
+extern void ddr_spd_print(uint8_t *record);
 extern uint32_t ddr3_spd_checksum_pass(const struct ddr3_spd_eeprom_s *spd);
 extern uint32_t ddr2_spd_checksum_pass(const struct ddr2_spd_eeprom_s *spd);
 

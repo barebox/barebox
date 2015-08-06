@@ -2108,6 +2108,13 @@ config CMD_DHRYSTONE
 	help
 	  CPU benchmark tool
 
+config CMD_SPD_DECODE
+	tristate
+	prompt "spd_decode"
+	select DDR_SPD
+	help
+	  decode spd eeprom
+
 # end Miscellaneous commands
 endmenu
 

@@ -169,14 +169,11 @@ int device_complete(struct string_list *sl, char *instr)
 }
 EXPORT_SYMBOL(device_complete);
 
-static int device_param_complete(char *begin, struct device_d *dev,
-				 struct string_list *sl, char *instr)
+static int device_param_complete(struct device_d *dev, struct string_list *sl,
+				 char *instr, int eval)
 {
 	struct param_d *param;
 	int len;
-
-	if (!instr)
-		instr = "";
 
 	len = strlen(instr);
 
@@ -185,8 +182,8 @@ static int device_param_complete(char *begin, struct device_d *dev,
 			continue;
 
 		string_list_add_asprintf(sl, "%s%s.%s%c",
-			begin ? begin : "", dev_name(dev), param->name,
-			begin ? ' ' : '=');
+			eval ? "$" : "", dev_name(dev), param->name,
+			eval ? ' ' : '=');
 	}
 
 	return 0;
@@ -316,20 +313,26 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 	}
 
 	if (instr_param) {
+		char *devname;
+
 		len = (instr_param - instr);
+
+		devname = xstrndup(instr, len);
+
 		instr_param++;
-	} else {
-		len = strlen(instr);
-		instr_param = "";
+
+		dev = get_device_by_name(devname);
+		free(devname);
+		if (dev)
+			device_param_complete(dev, sl, instr_param, eval);
+		return 0;
 	}
 
+	len = strlen(instr);
+
 	for_each_device(dev) {
-		if (!strncmp(instr, dev_name(dev), len)) {
-			if (eval)
-				device_param_complete("$", dev, sl, instr_param);
-			else
-				device_param_complete(NULL, dev, sl, instr_param);
-		}
+		if (!strncmp(instr, dev_name(dev), len))
+			device_param_complete(dev, sl, "", eval);
 	}
 
 	return 0;

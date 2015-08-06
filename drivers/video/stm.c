@@ -24,6 +24,8 @@
 #include <errno.h>
 #include <xfuncs.h>
 #include <io.h>
+#include <dma.h>
+#include <asm/mmu.h>
 #include <stmp-device.h>
 #include <linux/clk.h>
 #include <linux/err.h>
@@ -36,7 +38,10 @@
 # define CTRL_VSYNC_MODE (1 << 18)
 # define CTRL_DOTCLK_MODE (1 << 17)
 # define CTRL_DATA_SELECT (1 << 16)
-# define SET_BUS_WIDTH(x) (((x) & 0x3) << 10)
+# define CTRL_BUS_WIDTH_8 (1 << 10)
+# define CTRL_BUS_WIDTH_16 (0 << 10)
+# define CTRL_BUS_WIDTH_18 (2 << 10)
+# define CTRL_BUS_WIDTH_24 (3 << 10)
 # define SET_WORD_LENGTH(x) (((x) & 0x3) << 8)
 # define GET_WORD_LENGTH(x) (((x) >> 8) & 0x3)
 # define CTRL_MASTER (1 << 5)
@@ -144,8 +149,13 @@ struct imxfb_info {
 	unsigned memory_size;
 	struct fb_info info;
 	struct device_d *hw_dev;
-	struct imx_fb_platformdata *pdata;
 	struct clk *clk;
+	void *fixed_screen;
+	unsigned fixed_screen_size;
+	unsigned flags;
+	unsigned ld_intf_width;
+	void (*enable)(int enable);
+	unsigned dotclk_delay;
 };
 
 /* the RGB565 true colour mode */
@@ -258,14 +268,14 @@ static void stmfb_enable_controller(struct fb_info *fb_info)
 	writel(CTRL1_FIFO_CLEAR, fbi->base + HW_LCDIF_CTRL1 + STMP_OFFSET_REG_CLR);
 
 	/* enable LCD using LCD_RESET signal*/
-	if (fbi->pdata->flags & USE_LCD_RESET)
+	if (fbi->flags & USE_LCD_RESET)
 		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + STMP_OFFSET_REG_SET);
 
 	/* start the engine right now */
 	writel(CTRL_RUN, fbi->base + HW_LCDIF_CTRL + STMP_OFFSET_REG_SET);
 
-	if (fbi->pdata->enable)
-		fbi->pdata->enable(1);
+	if (fbi->enable)
+		fbi->enable(1);
 }
 
 static void stmfb_disable_controller(struct fb_info *fb_info)
@@ -276,11 +286,11 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 
 
 	/* disable LCD using LCD_RESET signal*/
-	if (fbi->pdata->flags & USE_LCD_RESET)
+	if (fbi->flags & USE_LCD_RESET)
 		writel(CTRL1_RESET,  fbi->base + HW_LCDIF_CTRL1 + STMP_OFFSET_REG_CLR);
 
-	if (fbi->pdata->enable)
-		fbi->pdata->enable(0);
+	if (fbi->enable)
+		fbi->enable(0);
 
 	/*
 	 * Even if we disable the controller here, it will still continue
@@ -306,7 +316,6 @@ static void stmfb_disable_controller(struct fb_info *fb_info)
 static int stmfb_activate_var(struct fb_info *fb_info)
 {
 	struct imxfb_info *fbi = fb_info->priv;
-	struct imx_fb_platformdata *pdata = fbi->pdata;
 	struct fb_videomode *mode = fb_info->mode;
 	uint32_t reg;
 	unsigned size;
@@ -317,13 +326,18 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	size = calc_line_length(mode->xres, fb_info->bits_per_pixel) *
 		mode->yres;
 
-	if (pdata && pdata->fixed_screen) {
-		if (pdata->fixed_screen_size < size)
+	if (fbi->fixed_screen) {
+		if (fbi->fixed_screen_size < size)
 			return -ENOMEM;
-		fb_info->screen_base = pdata->fixed_screen;
-		fbi->memory_size = pdata->fixed_screen_size;
+		fb_info->screen_base = fbi->fixed_screen;
+		fbi->memory_size = fbi->fixed_screen_size;
+		remap_range(fbi->fixed_screen,
+				fbi->fixed_screen_size,
+				mmu_get_pte_uncached_flags());
 	} else {
-		fb_info->screen_base = xrealloc(fb_info->screen_base, size);
+		fb_info->screen_base = dma_alloc_coherent(size, NULL);
+		if (!fb_info->screen_base)
+			return -ENOMEM;
 		fbi->memory_size = size;
 	}
 
@@ -349,7 +363,25 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	/*
 	 * Configure videomode and interface mode
 	 */
-	reg |= SET_BUS_WIDTH(pdata->ld_intf_width);
+	switch (fbi->ld_intf_width) {
+	case 8:
+		reg |= CTRL_BUS_WIDTH_8;
+		break;
+	case 16:
+		reg |= CTRL_BUS_WIDTH_16;
+		break;
+	case 18:
+		reg |= CTRL_BUS_WIDTH_18;
+		break;
+	case 24:
+		reg |= CTRL_BUS_WIDTH_24;
+		break;
+	default:
+		dev_err(fbi->hw_dev, "Unsupported interface width %d\n",
+				fbi->ld_intf_width);
+		return -EINVAL;
+	}
+
 	switch (fb_info->bits_per_pixel) {
 	case 8:
 		reg |= SET_WORD_LENGTH(1);
@@ -370,13 +402,14 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	case 32:
 		pr_debug("Setting up an RGB888/666 mode\n");
 		reg |= SET_WORD_LENGTH(3);
-		switch (pdata->ld_intf_width) {
-		case STMLCDIF_8BIT:
+
+		switch (fbi->ld_intf_width) {
+		case 8:
 			dev_dbg(fbi->hw_dev,
 				"Unsupported LCD bus width mapping\n");
 			break;
-		case STMLCDIF_16BIT:
-		case STMLCDIF_18BIT:
+		case 16:
+		case 18:
 			/* 24 bit to 18 bit mapping
 			 * which means: ignore the upper 2 bits in
 			 * each colour component
@@ -387,7 +420,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 			fb_info->blue = def_rgb666[BLUE];
 			fb_info->transp =  def_rgb666[TRANSP];
 			break;
-		case STMLCDIF_24BIT:
+		case 24:
 			/* real 24 bit */
 			fb_info->red = def_rgb888[RED];
 			fb_info->green = def_rgb888[GREEN];
@@ -416,9 +449,11 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 		reg |= VDCTRL0_HSYNC_POL;
 	if (mode->sync & FB_SYNC_VERT_HIGH_ACT)
 		reg |= VDCTRL0_VSYNC_POL;
-	if (mode->sync & FB_SYNC_DE_HIGH_ACT)
+	if (mode->sync & FB_SYNC_DE_HIGH_ACT ||
+			mode->display_flags & DISPLAY_FLAGS_DE_LOW)
 		reg |= VDCTRL0_ENABLE_POL;
-	if (mode->sync & FB_SYNC_CLK_INVERT)
+	if (mode->sync & FB_SYNC_CLK_INVERT ||
+			mode->display_flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
 		reg |= VDCTRL0_DOTCLK_POL;
 
 	reg |= SET_VSYNC_PULSE_WIDTH(mode->vsync_len);
@@ -442,7 +477,7 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 
 	writel(
 #ifdef CONFIG_ARCH_IMX28
-		SET_DOTCLK_DLY(pdata->dotclk_delay) |
+		SET_DOTCLK_DLY(fbi->dotclk_delay) |
 #endif
 		SET_DOTCLK_H_VALID_DATA_CNT(mode->xres),
 		fbi->base + HW_LCDIF_VDCTRL4);
@@ -451,17 +486,6 @@ static int stmfb_activate_var(struct fb_info *fb_info)
 	writel((uint32_t)fb_info->screen_base, fbi->base + HW_LCDIF_NEXT_BUF);
 
 	return 0;
-}
-
-static void stmfb_info(struct device_d *hw_dev)
-{
-	struct imx_fb_platformdata *pdata = hw_dev->platform_data;
-	unsigned u;
-
-	printf(" Supported video modes:\n");
-	for (u = 0; u < pdata->mode_cnt; u++)
-		printf("  - '%s': %u x %u\n", pdata->mode_list[u].name,
-			pdata->mode_list[u].xres, pdata->mode_list[u].yres);
 }
 
 /*
@@ -491,7 +515,6 @@ static int stmfb_probe(struct device_d *hw_dev)
 	/* add runtime hardware info */
 	fbi.hw_dev = hw_dev;
 	fbi.base = dev_request_mem_region(hw_dev, 0);
-	fbi.pdata = pdata;
 	fbi.clk = clk_get(hw_dev, NULL);
 	if (IS_ERR(fbi.clk))
 		return PTR_ERR(fbi.clk);
@@ -504,6 +527,11 @@ static int stmfb_probe(struct device_d *hw_dev)
 		fbi.info.modes.modes = pdata->mode_list;
 		fbi.info.modes.num_modes = pdata->mode_cnt;
 		fbi.info.mode = &fbi.info.modes.modes[0];
+		fbi.flags = pdata->flags;
+		fbi.enable = pdata->enable;
+		fbi.fixed_screen = pdata->fixed_screen;
+		fbi.fixed_screen_size = pdata->fixed_screen_size;
+		fbi.ld_intf_width = pdata->ld_intf_width;
 		if (pdata->bits_per_pixel)
 			fbi.info.bits_per_pixel = pdata->bits_per_pixel;
 	} else {
@@ -527,9 +555,18 @@ static int stmfb_probe(struct device_d *hw_dev)
 
 		fbi.info.modes.modes = modes->modes;
 		fbi.info.modes.num_modes = modes->num_modes;
+
+		ret = of_property_read_u32(display, "bus-width", &fbi.ld_intf_width);
+		if (ret < 0) {
+			dev_err(hw_dev, "failed to get bus-width property\n");
+			return -EINVAL;
+		}
+
+		of_property_read_u32(display, "bits-per-pixel",
+				&fbi.info.bits_per_pixel);
 	}
 
-	hw_dev->info = stmfb_info;
+	fb_of_reserve_add_fixup(&fbi.info);
 
 	ret = register_framebuffer(&fbi.info);
 	if (ret != 0) {

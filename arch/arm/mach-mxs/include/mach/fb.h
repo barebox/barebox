@@ -15,11 +15,6 @@
 
 #include <fb.h>
 
-#define STMLCDIF_8BIT 1	/** pixel data bus to the display is of 8 bit width */
-#define STMLCDIF_16BIT 0 /** pixel data bus to the display is of 16 bit width */
-#define STMLCDIF_18BIT 2 /** pixel data bus to the display is of 18 bit width */
-#define STMLCDIF_24BIT 3 /** pixel data bus to the display is of 24 bit width */
-
 /** LC display uses active high data enable signal */
 #define FB_SYNC_DE_HIGH_ACT	(1 << 27)
 /** LC display will latch its data at clock's rising edge */
@@ -38,7 +33,7 @@ struct imx_fb_platformdata {
 	unsigned mode_cnt;
 
 	unsigned dotclk_delay;	/**< refer manual HW_LCDIF_VDCTRL4 register */
-	unsigned ld_intf_width;	/**< refer STMLCDIF_* macros */
+	unsigned ld_intf_width;	/* interface width in bits */
 	unsigned bits_per_pixel;
 
 	void *fixed_screen;	/**< if != NULL use this as framebuffer memory */

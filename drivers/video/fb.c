@@ -122,6 +122,27 @@ static int fb_setup_mode(struct fb_info *info)
 	return 0;
 }
 
+static int fb_of_reserve_fixup(struct device_node *root, void *context)
+{
+	struct fb_info *info = context;
+
+	if (!info->enabled)
+		return 0;
+
+	of_add_reserve_entry((unsigned long)info->screen_base,
+			(unsigned long)info->screen_base + info->screen_size);
+
+	return 0;
+}
+
+void fb_of_reserve_add_fixup(struct fb_info *info)
+{
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return;
+
+	of_register_fixup(fb_of_reserve_fixup, info);
+}
+
 static int fb_set_modename(struct param_d *param, void *priv)
 {
 	struct fb_info *info = priv;

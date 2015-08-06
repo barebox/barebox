@@ -20,7 +20,6 @@
 #ifndef __ASM_ARCH_PXA_GPIO_H
 #define __ASM_ARCH_PXA_GPIO_H
 
-#include <asm-generic/gpio.h>
 #include <mach/hardware.h>
 
 #define GPIO_REGS_VIRT	(0x40E00000)

@@ -21,6 +21,7 @@
 #include <driver.h>
 #include <asm/io.h>
 #include <net.h>
+#include <gpio.h>
 #include <ns16550.h>
 #include <partition.h>
 #include <environment.h>

@@ -1,7 +1,28 @@
 #ifndef __GPIO_H
 #define __GPIO_H
 
-#include <asm/gpio.h>
+#ifdef CONFIG_GENERIC_GPIO
+void gpio_set_value(unsigned gpio, int value);
+int gpio_get_value(unsigned gpio);
+int gpio_direction_output(unsigned gpio, int value);
+int gpio_direction_input(unsigned gpio);
+#else
+static inline void gpio_set_value(unsigned gpio, int value)
+{
+}
+static inline int gpio_get_value(unsigned gpio)
+{
+	return 0;
+}
+static inline int gpio_direction_output(unsigned gpio, int value)
+{
+	return -EINVAL;
+}
+static inline int gpio_direction_input(unsigned gpio)
+{
+	return -EINVAL;
+}
+#endif
 
 #define ARCH_NR_GPIOS 256
 

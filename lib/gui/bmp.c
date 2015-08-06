@@ -67,7 +67,7 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 	width = min(width, sc->s.width - startx);
 	height = min(height, sc->s.height - starty);
 
-	buf = gui_screen_redering_buffer(sc);
+	buf = gui_screen_render_buffer(sc);
 
 	bits_per_pixel = img->bits_per_pixel;
 
@@ -79,17 +79,17 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 			image = (char *)bmp +
 					get_unaligned_le32(&bmp->header.data_offset);
 			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
-			adr = buf + (y + starty) * sc->info.line_length +
-					startx * (sc->info.bits_per_pixel >> 3);
+			adr = buf + (y + starty) * sc->info->line_length +
+					startx * (sc->info->bits_per_pixel >> 3);
 			for (x = 0; x < width; x++) {
 				int pixel;
 
 				pixel = *image;
 
-				set_rgb_pixel(&sc->info, adr, color_table[pixel].red,
+				gu_set_rgb_pixel(sc->info, adr, color_table[pixel].red,
 						color_table[pixel].green,
 						color_table[pixel].blue);
-				adr += sc->info.bits_per_pixel >> 3;
+				adr += sc->info->bits_per_pixel >> 3;
 
 				image += bits_per_pixel >> 3;
 			}
@@ -101,16 +101,16 @@ static int bmp_renderer(struct screen *sc, struct surface *s, struct image *img)
 			image = (char *)bmp +
 					get_unaligned_le32(&bmp->header.data_offset);
 			image += (img->height - y - 1) * img->width * (bits_per_pixel >> 3);
-			adr = buf + (y + starty) * sc->info.line_length +
-					startx * (sc->info.bits_per_pixel >> 3);
+			adr = buf + (y + starty) * sc->info->line_length +
+					startx * (sc->info->bits_per_pixel >> 3);
 			for (x = 0; x < width; x++) {
 				char *pixel;
 
 				pixel = image;
 
-				set_rgb_pixel(&sc->info, adr, pixel[2], pixel[1],
+				gu_set_rgb_pixel(sc->info, adr, pixel[2], pixel[1],
 						pixel[0]);
-				adr += sc->info.bits_per_pixel >> 3;
+				adr += sc->info->bits_per_pixel >> 3;
 
 				image += bits_per_pixel >> 3;
 			}

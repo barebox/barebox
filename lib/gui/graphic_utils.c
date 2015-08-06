@@ -7,7 +7,42 @@
 #include <fs.h>
 #include <malloc.h>
 
-static u32 get_pixel(struct fb_info *info, u32 color)
+/**
+ * gu_get_pixel_rgb - convert a rgb triplet color to fb format
+ * @info: The framebuffer info to convert the pixel for
+ * @r: red component
+ * @g: green component
+ * @b: blue component
+ * @t: transparent component
+ *
+ * This converts a color to the format suitable for writing directly into
+ * the framebuffer.
+ *
+ * Return: The pixel suitable for the framebuffer
+ */
+u32 gu_rgb_to_pixel(struct fb_info *info, u8 r, u8 g, u8 b, u8 t)
+{
+	u32 px;
+
+	px = (t >> (8 - info->transp.length)) << info->transp.offset |
+		 (r >> (8 - info->red.length)) << info->red.offset |
+		 (g >> (8 - info->green.length)) << info->green.offset |
+		 (b >> (8 - info->blue.length)) << info->blue.offset;
+
+	return px;
+}
+
+/**
+ * gu_hex_to_pixel - convert a 32bit color to fb format
+ * @info: The framebuffer info to convert the pixel for
+ * @color: The color in 0xttrrggbb format
+ *
+ * This converts a color in 0xttrrggbb format to the format
+ * suitable for writing directly into the framebuffer.
+ *
+ * Return: The pixel suitable for the framebuffer
+ */
+u32 gu_hex_to_pixel(struct fb_info *info, u32 color)
 {
 	u32 px;
 	u8 t = (color >> 24) & 0xff;
@@ -20,12 +55,7 @@ static u32 get_pixel(struct fb_info *info, u32 color)
 		 return px;
 	}
 
-	px = (t >> (8 - info->transp.length)) << info->transp.offset |
-		 (r >> (8 - info->red.length)) << info->red.offset |
-		 (g >> (8 - info->green.length)) << info->green.offset |
-		 (b >> (8 - info->blue.length)) << info->blue.offset;
-
-	return px;
+	return gu_rgb_to_pixel(info, r, g, b, t);
 }
 
 static void memsetw(void *s, u16 c, size_t n)
@@ -46,12 +76,12 @@ static void memsetl(void *s, u32 c, size_t n)
 		*tmp++ = c;
 }
 
-void memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size)
+void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size)
 {
 	u32 px;
 	u8 *screen = buf;
 
-	px = get_pixel(info, color);
+	px = gu_hex_to_pixel(info, color);
 
 	switch (info->bits_per_pixel) {
 	case 8:
@@ -98,7 +128,7 @@ static void get_rgb_pixel(struct fb_info *info, void *adr, u8 *r ,u8 *g, u8 *b)
 	*b = ((px & ~bmask) >> info->blue.offset) << (8 - info->blue.length);
 }
 
-void set_pixel(struct fb_info *info, void *adr, u32 px)
+void gu_set_pixel(struct fb_info *info, void *adr, u32 px)
 {
 	switch (info->bits_per_pixel) {
 	case 8:
@@ -112,7 +142,7 @@ void set_pixel(struct fb_info *info, void *adr, u32 px)
 	}
 }
 
-void set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b)
+void gu_set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b)
 {
 	u32 px;
 
@@ -120,7 +150,7 @@ void set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b)
 		(g >> (8 - info->green.length)) << info->green.offset |
 		(b >> (8 - info->blue.length)) << info->blue.offset;
 
-	set_pixel(info, adr, px);
+	gu_set_pixel(info, adr, px);
 }
 
 static u8 alpha_mux(int s, int d, int a)
@@ -128,7 +158,26 @@ static u8 alpha_mux(int s, int d, int a)
 	return (d * a + s * (255 - a)) >> 8;
 }
 
-void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
+void gu_invert_area(struct fb_info *info, void *buf, int startx, int starty, int width,
+		int height)
+{
+	unsigned char *adr;
+	int x, y;
+	int line_length;
+	int bpp = info->bits_per_pixel >> 3;
+
+	line_length = info->line_length;
+
+	for (y = starty; y < starty + height; y++) {
+		adr = buf + line_length * y + startx * bpp;
+
+		for (x = 0; x < width * bpp; x++) {
+			*adr++ ^= 0xff;
+		}
+	}
+}
+
+void gu_set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 {
 	u32 px = 0x0;
 
@@ -149,7 +198,7 @@ void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 			g = alpha_mux(sg, g, a);
 			b = alpha_mux(sb, b, a);
 
-			set_rgb_pixel(info, adr, r, g, b);
+			gu_set_rgb_pixel(info, adr, r, g, b);
 
 			return;
 		}
@@ -159,10 +208,10 @@ void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a)
 		(g >> (8 - info->green.length)) << info->green.offset |
 		(b >> (8 - info->blue.length)) << info->blue.offset;
 
-	set_pixel(info, adr, px);
+	gu_set_pixel(info, adr, px);
 }
 
-void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
+void gu_rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 	int width, int startx, int starty, bool is_rgba)
 {
 	unsigned char *adr;
@@ -185,10 +234,10 @@ void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 			uint8_t *pixel = image;
 
 			if (is_rgba)
-				set_rgba_pixel(info, adr, pixel[0], pixel[1],
+				gu_set_rgba_pixel(info, adr, pixel[0], pixel[1],
 						pixel[2], pixel[3]);
 			else
-				set_rgb_pixel(info, adr, pixel[0], pixel[1],
+				gu_set_rgb_pixel(info, adr, pixel[0], pixel[1],
 						pixel[2]);
 			adr += info->bits_per_pixel >> 3;
 			image += img_byte_per_pixel;
@@ -196,54 +245,80 @@ void rgba_blend(struct fb_info *info, struct image *img, void* buf, int height,
 	}
 }
 
-int fb_open(const char * fbdev, struct screen *sc, bool offscreen)
+struct screen *fb_create_screen(struct fb_info *info, bool offscreen)
 {
-	int ret;
+	struct screen *sc;
 
-	sc->fd = open(fbdev, O_RDWR);
-	if (sc->fd < 0)
-		return sc->fd;
-
-	sc->fb = memmap(sc->fd, PROT_READ | PROT_WRITE);
-	if (sc->fb == (void *)-1) {
-		ret = -ENOMEM;
-		goto failed_memmap;
-	}
-
-	ret = ioctl(sc->fd, FBIOGET_SCREENINFO, &sc->info);
-	if (ret) {
-		goto failed_memmap;
-	}
+	sc = xzalloc(sizeof(*sc));
 
 	sc->s.x = 0;
 	sc->s.y = 0;
-	sc->s.width = sc->info.xres;
-	sc->s.height = sc->info.yres;
-	sc->fbsize = sc->info.line_length * sc->s.height;
+	sc->s.width = info->xres;
+	sc->s.height = info->yres;
+	sc->fbsize = info->line_length * sc->s.height;
+	sc->fb = info->screen_base;
 
 	if (offscreen) {
-		/* Don't fail if malloc fails, just continue rendering directly
+		/*
+		 * Don't fail if malloc fails, just continue rendering directly
 		 * on the framebuffer
 		 */
 		sc->offscreenbuf = malloc(sc->fbsize);
 	}
 
-	return sc->fd;
+	return sc;
+}
 
-failed_memmap:
-	sc->fb = NULL;
-	close(sc->fd);
+struct screen *fb_open(const char * fbdev, bool offscreen)
+{
+	int fd, ret;
+	struct fb_info *info;
+	struct screen *sc;
 
-	return ret;
+	fd = open(fbdev, O_RDWR);
+	if (fd < 0)
+		return ERR_PTR(fd);
+
+	info = xzalloc(sizeof(*info));
+
+	ret = ioctl(fd, FBIOGET_SCREENINFO, info);
+	if (ret) {
+		goto failed_screeninfo;
+	}
+
+	sc = fb_create_screen(info, offscreen);
+	if (IS_ERR(sc)) {
+		ret = PTR_ERR(sc);
+		goto failed_create;
+	}
+
+	sc->fd = fd;
+	sc->info = info;
+
+	return sc;
+
+failed_create:
+	free(sc->offscreenbuf);
+	free(sc);
+failed_screeninfo:
+	close(fd);
+
+	return ERR_PTR(ret);
 }
 
 void fb_close(struct screen *sc)
 {
 	free(sc->offscreenbuf);
-	close(sc->fd);
+
+	if (sc->fd > 0) {
+		close(sc->fd);
+		free(sc->info);
+	}
+
+	free(sc);
 }
 
-void screen_blit(struct screen *sc)
+void gu_screen_blit(struct screen *sc)
 {
 	if (!sc->offscreenbuf)
 		return;

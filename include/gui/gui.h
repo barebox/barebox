@@ -18,7 +18,7 @@ struct surface {
 
 struct screen {
 	int fd;
-	struct fb_info info;
+	struct fb_info *info;
 
 	struct surface s;
 
@@ -27,7 +27,7 @@ struct screen {
 	int fbsize;
 };
 
-static inline void* gui_screen_redering_buffer(struct screen *sc)
+static inline void *gui_screen_render_buffer(struct screen *sc)
 {
 	if (sc->offscreenbuf)
 		return sc->offscreenbuf;

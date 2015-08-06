@@ -11,14 +11,19 @@
 #include <gui/image.h>
 #include <gui/gui.h>
 
-void rgba_blend(struct fb_info *info, struct image *img, void* dest, int height,
+u32 gu_hex_to_pixel(struct fb_info *info, u32 color);
+u32 gu_rgb_to_pixel(struct fb_info *info, u8 r, u8 g, u8 b, u8 t);
+void gu_rgba_blend(struct fb_info *info, struct image *img, void* dest, int height,
 	int width, int startx, int starty, bool is_rgba);
-void set_pixel(struct fb_info *info, void *adr, u32 px);
-void set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b);
-void set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a);
-void memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size);
-int fb_open(const char * fbdev, struct screen *sc, bool offscreen);
+void gu_set_pixel(struct fb_info *info, void *adr, u32 px);
+void gu_set_rgb_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b);
+void gu_set_rgba_pixel(struct fb_info *info, void *adr, u8 r, u8 g, u8 b, u8 a);
+void gu_memset_pixel(struct fb_info *info, void* buf, u32 color, size_t size);
+struct screen *fb_create_screen(struct fb_info *info, bool offscreen);
+struct screen *fb_open(const char *fbdev, bool offscreen);
 void fb_close(struct screen *sc);
-void screen_blit(struct screen *sc);
+void gu_screen_blit(struct screen *sc);
+void gu_invert_area(struct fb_info *info, void *buf, int startx, int starty, int width,
+		int height);
 
 #endif /* __GRAPHIC_UTILS_H__ */

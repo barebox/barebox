@@ -1,0 +1,29 @@
+#
+# Font configuration
+#
+
+config FONTS
+	bool "Select compiled-in fonts"
+	depends on FRAMEBUFFER_CONSOLE
+
+if FONTS
+
+config FONT_8x16
+	bool "VGA 8x16 font"
+	help
+	  This is the "high resolution" font for the VGA frame buffer (the one
+	  provided by the VGA text console 80x25 mode).
+
+config FONT_7x14
+	bool "7x14 font"
+
+config FONT_MINI_4x6
+	bool "Mini 4x6 font"
+
+config FONT_AUTOSELECT
+	def_bool y
+	depends on !FONT_MINI_4x6
+	depends on !FONT_7x14
+	select FONT_8x16
+
+endif # FONTS

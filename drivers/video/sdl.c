@@ -15,12 +15,21 @@
 
 static void sdlfb_enable(struct fb_info *info)
 {
+	int ret;
+
+	ret = sdl_open(info->xres, info->yres, info->bits_per_pixel,
+		     info->screen_base);
+	if (ret)
+		return;
+	sdl_get_bitfield_rgba(&info->red, &info->green, &info->blue, &info->transp);
+
 	sdl_start_timer();
 }
 
 static void sdlfb_disable(struct fb_info *info)
 {
 	sdl_stop_timer();
+	sdl_close();
 }
 
 static struct fb_ops sdlfb_ops = {
@@ -50,12 +59,6 @@ static int sdlfb_probe(struct device_d *dev)
 	fb->screen_base = xzalloc(fb->xres * fb->yres *
 				  fb->bits_per_pixel >> 3);
 
-	if (sdl_open(fb->xres, fb->yres, fb->bits_per_pixel,
-		     fb->screen_base))
-		goto err;
-
-	sdl_get_bitfield_rgba(&fb->red, &fb->green, &fb->blue, &fb->transp);
-
 	dev_dbg(dev, "red: length = %d, offset = %d\n",
 		fb->red.length, fb->red.offset);
 	dev_dbg(dev, "green: length = %d, offset = %d\n",
@@ -72,7 +75,6 @@ static int sdlfb_probe(struct device_d *dev)
 	if (!ret)
 		return 0;
 
-err:
 	kfree(fb->screen_base);
 	kfree(fb);
 	sdl_close();

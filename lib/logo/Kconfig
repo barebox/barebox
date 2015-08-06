@@ -1,0 +1,21 @@
+menuconfig BAREBOX_LOGO
+	bool "include barebox logos in build"
+	help
+	  Say yes here to build the barebox logos. This adds inkscape to the build
+	  dependencies. The logo can be found under /logo/barebox-logo-<width>.png
+	  in the running barebox.
+
+config BAREBOX_LOGO_64
+	bool "include 64x32 pixel logo"
+
+config BAREBOX_LOGO_240
+	bool "include 240x120 pixel logo"
+
+config BAREBOX_LOGO_320
+	bool "include 320x160 pixel logo"
+
+config BAREBOX_LOGO_400
+	bool "include 400x200 pixel logo"
+
+config BAREBOX_LOGO_640
+	bool "include 640x320 pixel logo"

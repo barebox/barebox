@@ -29,6 +29,7 @@ enum {
 	PHYCORE_MT41J64M1615IT_128MB,
 	PHYCORE_MT41J256M16HA15EIT_512MB,
 	PHYCORE_MT41J512M8125IT_2x512MB,
+	PHYCORE_IM8G16D3FBBG15EI_1024MB,
 
 	PHYCARD_NT5CB128M16BP_256MB,
 };
@@ -133,7 +134,7 @@ struct am335x_sdram_timings physom_timings[] = {
 		},
 	},
 
-	/* 1024MB */
+	/* 2x512MB */
 	[PHYCORE_MT41J512M8125IT_2x512MB] = {
 		.regs = {
 			.emif_read_latency	= 0x7,
@@ -149,6 +150,25 @@ struct am335x_sdram_timings physom_timings[] = {
 			.wr_dqs_slave_ratio0	= 0x48,
 			.fifo_we_slave_ratio0	= 0x99,
 			.wr_slave_ratio0	= 0x80,
+		},
+	},
+
+	/* 1024MB */
+	[PHYCORE_IM8G16D3FBBG15EI_1024MB] = {
+		.regs = {
+			.emif_read_latency	= 0x7,
+			.emif_tim1		= 0x0AAAE4DB,
+			.emif_tim2		= 0x268F7FDA,
+			.emif_tim3		= 0x501F88BF,
+			.sdram_config		= 0x61C053B2,
+			.zq_config		= 0x50074BE4,
+			.sdram_ref_ctrl		= 0x00000C30
+		},
+		.data = {
+			.rd_slave_ratio0	= 0x33,
+			.wr_dqs_slave_ratio0	= 0x4a,
+			.fifo_we_slave_ratio0	= 0xa4,
+			.wr_slave_ratio0	= 0x85,
 		},
 	},
 

@@ -138,6 +138,7 @@
 		byte_len = <4096>;
 		pagesize = <32>;
 		reg = <0x52>;
+		status = "disabled";
 	};
 };
 
@@ -151,7 +152,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi0_pins>;
 	status = "disabled";
-	flash: m25p80 {
+	flash: m25p80@0 {
 		compatible = "m25p80";
 		spi-max-frequency = <48000000>;
 		reg = <0>;

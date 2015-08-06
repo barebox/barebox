@@ -162,7 +162,7 @@
 	pinctrl-0 = <&spi0_pins>;
 	status = "disabled";
 
-	flash: m25p80 {
+	flash: m25p80@0 {
 		compatible = "m25p80";
 		spi-max-frequency = <48000000>;
 		reg = <0>;

@@ -445,7 +445,7 @@ struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
 
 void net_unregister(struct net_connection *con);
 
-static inline int net_udp_bind(struct net_connection *con, int sport)
+static inline int net_udp_bind(struct net_connection *con, uint16_t sport)
 {
 	con->udp->uh_sport = ntohs(sport);
 	return 0;

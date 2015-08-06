@@ -100,8 +100,16 @@ static void eth_drop_ethaddr(int ethid)
 void eth_register_ethaddr(int ethid, const char *ethaddr)
 {
 	struct eth_ethaddr *addr;
+	struct eth_device *edev;
 
 	eth_drop_ethaddr(ethid);
+
+	list_for_each_entry(edev, &netdev_list, list) {
+		if (edev->dev.id == ethid) {
+			register_preset_mac_address(edev, ethaddr);
+			return;
+		}
+	}
 
 	addr = xzalloc(sizeof(*addr));
 	addr->ethid = ethid;

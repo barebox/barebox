@@ -15,7 +15,7 @@
 #include <errno.h>
 #include <io.h>
 #include <mach/s3c-iomap.h>
-#include <mach/gpio.h>
+#include <gpio.h>
 #include <mach/s3c24xx-gpio.h>
 #include <mach/iomux.h>
 

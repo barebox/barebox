@@ -26,7 +26,7 @@
 #include <partition.h>
 #include <linux/sizes.h>
 
-#include <plat/gpio.h>
+#include <gpio.h>
 #include <mach/mfp-pxa27x.h>
 #include <mach/pxa-regs.h>
 #include <mach/pxafb.h>

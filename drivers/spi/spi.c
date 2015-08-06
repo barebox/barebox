@@ -113,7 +113,7 @@ static void spi_of_register_slaves(struct spi_master *master)
 	if (!node)
 		return;
 
-	for_each_child_of_node(node, n) {
+	for_each_available_child_of_node(node, n) {
 		memset(&chip, 0, sizeof(chip));
 		chip.name = xstrdup(n->name);
 		chip.bus_num = master->bus_num;

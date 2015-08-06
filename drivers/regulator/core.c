@@ -43,9 +43,53 @@ struct regulator {
 	struct device_d *dev;
 };
 
+static int regulator_enable_internal(struct regulator_internal *ri)
+{
+	int ret;
+
+	if (ri->enable_count) {
+		ri->enable_count++;
+		return 0;
+	}
+
+	if (!ri->rdev->ops->enable)
+		return -ENOSYS;
+
+	ret = ri->rdev->ops->enable(ri->rdev);
+	if (ret)
+		return ret;
+
+	if (ri->enable_time_us)
+		udelay(ri->enable_time_us);
+
+	ri->enable_count++;
+
+	return 0;
+}
+
+static int regulator_disable_internal(struct regulator_internal *ri)
+{
+	int ret;
+
+	if (!ri->enable_count)
+		return -EINVAL;
+
+	if (!ri->rdev->ops->disable)
+		return -ENOSYS;
+
+	ret = ri->rdev->ops->disable(ri->rdev);
+	if (ret)
+		return ret;
+
+	ri->enable_count--;
+
+	return 0;
+}
+
 static struct regulator_internal * __regulator_register(struct regulator_dev *rd, const char *name)
 {
 	struct regulator_internal *ri;
+	int ret;
 
 	ri = xzalloc(sizeof(*ri));
 	ri->rdev = rd;
@@ -57,7 +101,19 @@ static struct regulator_internal * __regulator_register(struct regulator_dev *rd
 	if (name)
 		ri->name = xstrdup(name);
 
+	if (rd->boot_on) {
+		ret = regulator_enable_internal(ri);
+		if (ret && ret != -ENOSYS)
+			goto err;
+	}
+
 	return ri;
+err:
+	list_del(&ri->list);
+	free(ri->name);
+	free(ri);
+
+	return ERR_PTR(ret);
 }
 
 
@@ -73,6 +129,8 @@ int of_regulator_register(struct regulator_dev *rd, struct device_node *node)
 {
 	struct regulator_internal *ri;
 	const char *name;
+
+	rd->boot_on = of_property_read_bool(node, "regulator-boot-on");
 
 	name = of_get_property(node, "regulator-name", NULL);
 
@@ -239,32 +297,10 @@ struct regulator *regulator_get(struct device_d *dev, const char *supply)
  */
 int regulator_enable(struct regulator *r)
 {
-	struct regulator_internal *ri;
-	int ret;
-
 	if (!r)
 		return 0;
 
-	ri = r->ri;
-
-	if (ri->enable_count) {
-		ri->enable_count++;
-		return 0;
-	}
-
-	if (!ri->rdev->ops->enable)
-		return -ENOSYS;
-
-	ret = ri->rdev->ops->enable(ri->rdev);
-	if (ret)
-		return ret;
-
-	if (ri->enable_time_us)
-		udelay(ri->enable_time_us);
-
-	ri->enable_count++;
-
-	return 0;
+	return regulator_enable_internal(r->ri);
 }
 
 /*
@@ -278,27 +314,10 @@ int regulator_enable(struct regulator *r)
  */
 int regulator_disable(struct regulator *r)
 {
-	struct regulator_internal *ri;
-	int ret;
-
 	if (!r)
 		return 0;
 
-	ri = r->ri;
-
-	if (!ri->enable_count)
-		return -EINVAL;
-
-	if (!ri->rdev->ops->disable)
-		return -ENOSYS;
-
-	ret = ri->rdev->ops->disable(ri->rdev);
-	if (ret)
-		return ret;
-
-	ri->enable_count--;
-
-	return 0;
+	return regulator_disable_internal(r->ri);
 }
 
 static void regulator_print_one(struct regulator_internal *ri)

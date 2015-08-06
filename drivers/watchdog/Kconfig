@@ -10,6 +10,12 @@ menuconfig WATCHDOG
 
 if WATCHDOG
 
+config WATCHDOG_DAVINCI
+	bool "TI Davinci"
+	depends on ARCH_DAVINCI
+	help
+	  Add support for watchdog on the TI Davinci SoC.
+
 config WATCHDOG_MXS28
 	bool "i.MX28"
 	depends on ARCH_IMX28

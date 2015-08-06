@@ -158,6 +158,7 @@ config ARCH_ROCKCHIP
 	select GPIOLIB
 	select PINCTRL
 	select PINCTRL_ROCKCHIP
+	select OFTREE
 	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DEBUG_LL
 	select ARCH_HAS_L2X0
@@ -278,7 +279,7 @@ config AEABI
 config THUMB2_BAREBOX
 	select ARM_ASM_UNIFIED
 	select AEABI
-	depends on !ARCH_TEGRA
+	depends on !ARCH_TEGRA && !ARCH_AT91
 	depends on CPU_V7 && !CPU_32v4T && !CPU_32v5 && !CPU_32v6
 	bool "Compile barebox in thumb-2 mode (read help)"
 	help

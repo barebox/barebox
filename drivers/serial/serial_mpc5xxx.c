@@ -35,7 +35,7 @@
 #include <init.h>
 #include <console.h>
 #include <xfuncs.h>
-#include <mach/clocks.h>
+#include <mach/clock.h>
 #include <linux/err.h>
 
 static int __mpc5xxx_serial_setbaudrate(struct mpc5xxx_psc *psc, int baudrate)

@@ -14,7 +14,7 @@
 #include <init.h>
 #include <driver.h>
 #include <mach/sdma.h>
-#include <mach/clocks.h>
+#include <mach/clock.h>
 #include <linux/phy.h>
 #include <linux/err.h>
 #include "fec_mpc5200.h"

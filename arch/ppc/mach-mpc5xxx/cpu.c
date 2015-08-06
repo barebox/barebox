@@ -31,7 +31,7 @@
 #include <types.h>
 #include <errno.h>
 #include <of.h>
-#include <mach/clocks.h>
+#include <mach/clock.h>
 
 int checkcpu (void)
 {

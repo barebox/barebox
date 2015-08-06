@@ -576,3 +576,14 @@ void __noreturn imx53_barebox_entry(void *boarddata)
 
 	barebox_arm_entry(base, size, boarddata);
 }
+
+void __noreturn imx6q_barebox_entry(void *boarddata)
+{
+	u64 size_cs0 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 0);
+	u64 size_cs1 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 1);
+	u64 total    = size_cs0 + size_cs1;
+
+	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
+
+	barebox_arm_entry(0x10000000, size, boarddata);
+}

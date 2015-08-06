@@ -1,5 +1,4 @@
 #include "imx6qdl.dtsi"
-#include <arm/imx6q.dtsi>
 
 / {
 	aliases {

@@ -83,4 +83,10 @@ unsigned console_get_active(struct console_device *cdev);
 int console_set_baudrate(struct console_device *cdev, unsigned baudrate);
 unsigned console_get_baudrate(struct console_device *cdev);
 
+#ifdef CONFIG_PBL_CONSOLE
+void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx);
+#else
+static inline void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx) {}
+#endif
+
 #endif

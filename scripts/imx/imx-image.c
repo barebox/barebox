@@ -666,7 +666,8 @@ int main(int argc, char *argv[])
 	char *imagename = NULL;
 	char *outfile = NULL;
 	void *buf;
-	size_t image_size = 0, load_size;
+	size_t image_size = 0, load_size, insize;
+	void *infile;
 	struct stat s;
 	int infd, outfd;
 	int dcd_only = 0;
@@ -779,6 +780,24 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	infd = open(imagename, O_RDONLY);
+	if (infd < 0) {
+		perror("open");
+		exit(1);
+	}
+
+	ret = fstat(infd, &s);
+	if (ret)
+		return ret;
+
+	insize = s.st_size;
+	infile = malloc(insize);
+	if (!infile)
+		exit(1);
+
+	xread(infd, infile, insize);
+	close(infd);
+
 	outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {
 		perror("open");
@@ -799,33 +818,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	infd = open(imagename, O_RDONLY);
-	if (infd < 0) {
-		perror("open");
+	ret = xwrite(outfd, infile, insize);
+	if (ret) {
+		perror("write");
 		exit(1);
 	}
 
-	while (image_size) {
-		now = image_size < 4096 ? image_size : 4096;
-
-		ret = xread(infd, buf, now);
-		if (ret) {
-			perror("read");
-			exit(1);
-		}
-
-		ret = xwrite(outfd, buf, now);
-		if (ret) {
-			perror("write");
-			exit(1);
-		}
-
-		image_size -= now;
-	}
-
 	/* pad until next 4k boundary */
-	now = 4096 - now;
-	if (now) {
+	now = 4096 - (insize % 4096);
+	if (prepare_sign && now) {
 		memset(buf, 0x5a, now);
 
 		ret = xwrite(outfd, buf, now);

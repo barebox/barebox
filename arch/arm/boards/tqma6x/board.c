@@ -38,7 +38,6 @@
 #include <mach/devices-imx6.h>
 #include <mach/imx6-regs.h>
 #include <mach/iomux-mx6.h>
-#include <mach/imx6-mmdc.h>
 #include <mach/generic.h>
 #include <mach/imx6.h>
 #include <mach/bbu.h>

@@ -1,0 +1,46 @@
+/dts-v1/;
+#include <arm/imx6q.dtsi>
+#include "imx6qdl-cm-fx6.dtsi"
+
+/ {
+	model = "CompuLab Utilite";
+	compatible = "compulab,utilite", "compulab,cm-fx6", "fsl,imx6q";
+
+	chosen {
+		stdout-path = &uart4;
+	};
+};
+
+&iomuxc {
+	pinctrl_usdhc3: usdhc3grp {
+		fsl,pins = <
+			MX6QDL_PAD_SD3_CMD__SD3_CMD             0x17059
+			MX6QDL_PAD_SD3_CLK__SD3_CLK             0x10059
+			MX6QDL_PAD_SD3_DAT0__SD3_DATA0          0x17059
+			MX6QDL_PAD_SD3_DAT1__SD3_DATA1          0x17059
+			MX6QDL_PAD_SD3_DAT2__SD3_DATA2          0x17059
+			MX6QDL_PAD_SD3_DAT3__SD3_DATA3          0x17059
+		>;
+	};
+};
+
+&usdhc3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc3>;
+	status = "okay";
+};
+
+&hdmi {
+	status = "okay";
+	ddc-i2c-bus = <&i2c2>;
+};
+
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
+};

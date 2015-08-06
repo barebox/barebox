@@ -13,6 +13,7 @@
 
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>
+#include <arm/imx6q.dtsi>
 #include "imx6q.dtsi"
 
 / {

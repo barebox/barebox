@@ -1,5 +1,7 @@
 /*
- * Copyright 2013 Gateworks Corporation
+ * Copyright 2014 CompuLab Ltd.
+ *
+ * Author: Valentin Raevsky <valentin@compulab.co.il>
  *
  * The code contained herein is licensed under the GNU General Public
  * License. You may obtain a copy of the GNU General Public License
@@ -11,12 +13,15 @@
 
 /dts-v1/;
 #include <arm/imx6q.dtsi>
-#include "imx6q.dtsi"
-#include "imx6qdl-gw54xx.dtsi"
+#include "imx6qdl-cm-fx6.dtsi"
 
 / {
-	model = "Gateworks Ventana i.MX6 Quad GW54XX";
-	compatible = "gw,imx6q-gw54xx", "gw,ventana", "fsl,imx6q";
+	model = "CompuLab CM-FX6";
+	compatible = "compulab,cm-fx6", "fsl,imx6q";
+
+	chosen {
+		stdout-path = &uart4;
+	};
 };
 
 &sata {

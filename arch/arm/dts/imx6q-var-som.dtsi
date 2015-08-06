@@ -10,6 +10,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
+#include <arm/imx6q.dtsi>
 #include "imx6q.dtsi"
 
 / {

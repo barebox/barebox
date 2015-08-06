@@ -7,16 +7,23 @@
 #define __init
 #define __initdata
 #define __initconst
+#define __exit
+#define __exitdata
 
 /* For assembly routines */
 #define __BARE_INIT	.section ".text_bare_init.text","ax"
 
 #ifndef __ASSEMBLY__
 typedef int (*initcall_t)(void);
+typedef void (*exitcall_t)(void);
 
 #define __define_initcall(level,fn,id) \
 	static initcall_t __initcall_##fn##id __attribute__((__used__)) \
 	__attribute__((__section__(".initcall." level))) = fn
+
+#define __define_exitcall(level,fn,id) \
+	static exitcall_t __exitcall_##fn##id __attribute__((__used__)) \
+	__attribute__((__section__(".exitcall." level))) = fn
 
 
 /*
@@ -41,6 +48,14 @@ typedef int (*initcall_t)(void);
 #define late_initcall(fn)		__define_initcall("12",fn,12)
 #define environment_initcall(fn)	__define_initcall("13",fn,13)
 #define postenvironment_initcall(fn)	__define_initcall("14",fn,14)
+
+#define early_exitcall(fn)		__define_exitcall("0",fn,0)
+#define predevshutdown_exitcall(fn)	__define_exitcall("1",fn,1)
+#define devshutdown_exitcall(fn)	__define_exitcall("2",fn,2)
+#define postdevshutdown_exitcall(fn)	__define_exitcall("3",fn,3)
+#define prearchshutdown_exitcall(fn)	__define_exitcall("4",fn,4)
+#define archshutdown_exitcall(fn)	__define_exitcall("5",fn,5)
+#define postarchshutdown_exitcall(fn)	__define_exitcall("6",fn,6)
 
 /* section for code used very early when
  * - we're not running from where we linked at

@@ -38,7 +38,11 @@ void __noreturn blackfin_start_barebox(void)
 	start_barebox();
 }
 
-void arch_shutdown(void)
+/* We have to disable instruction cache before
+ * executing an external program
+ */
+static void arch_shutdown(void)
 {
 	icache_disable();
 }
+archshutdown_exitcall(arch_shutdown);

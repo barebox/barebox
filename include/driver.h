@@ -339,11 +339,6 @@ int mem_memmap(struct cdev *cdev, void **map, int flags);
 /* Use this if you have nothing to do in your drivers probe function */
 int dummy_probe(struct device_d *);
 
-/* Iterate over all activated devices (i.e. the ones with drivers and shut
- * them down.
- */
-void devices_shutdown(void);
-
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 

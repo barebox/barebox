@@ -45,6 +45,9 @@
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
 
+extern exitcall_t __barebox_exitcalls_start[], __barebox_exitcalls_end[];
+
+
 #if defined CONFIG_FS_RAMFS && defined CONFIG_FS_DEVFS
 static int mount_root(void)
 {
@@ -132,18 +135,17 @@ void __noreturn hang (void)
 	for (;;);
 }
 
-void (*board_shutdown)(void);
-
 /* Everything needed to cleanly shutdown barebox.
  * Should be called before starting an OS to get
  * the devices into a clean state
  */
 void shutdown_barebox(void)
 {
-	devices_shutdown();
-#ifdef ARCH_SHUTDOWN
-	arch_shutdown();
-#endif
-	if (board_shutdown)
-		board_shutdown();
+	exitcall_t *exitcall;
+
+	for (exitcall = __barebox_exitcalls_start;
+			exitcall < __barebox_exitcalls_end; exitcall++) {
+		pr_debug("exitcall-> %pS\n", *exitcall);
+		(*exitcall)();
+	}
 }

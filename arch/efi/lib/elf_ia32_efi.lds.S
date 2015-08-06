@@ -56,6 +56,10 @@ SECTIONS
 	__barebox_initcalls : { INITCALLS }
 	__barebox_initcalls_end = .;
 
+	__barebox_exitcalls_start = .;
+	__barebox_exitcalls : { EXITCALLS }
+	__barebox_exitcalls_end = .;
+
 	. = ALIGN(64);
 	__barebox_magicvar_start = .;
 	.barebox_magicvar : { BAREBOX_MAGICVARS }

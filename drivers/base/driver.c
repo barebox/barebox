@@ -459,7 +459,7 @@ const char *dev_id(const struct device_d *dev)
 	return buf;
 }
 
-void devices_shutdown(void)
+static void devices_shutdown(void)
 {
 	struct device_d *dev;
 
@@ -468,6 +468,7 @@ void devices_shutdown(void)
 			dev->bus->remove(dev);
 	}
 }
+devshutdown_exitcall(devices_shutdown);
 
 int dev_get_drvdata(struct device_d *dev, const void **data)
 {

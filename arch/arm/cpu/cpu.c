@@ -93,7 +93,7 @@ void mmu_disable(void)
  * This function is called by shutdown_barebox to get a clean
  * memory/cache state.
  */
-void arch_shutdown(void)
+static void arch_shutdown(void)
 {
 	uint32_t r;
 
@@ -108,6 +108,7 @@ void arch_shutdown(void)
 	r |= PSR_I_BIT;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 }
+archshutdown_exitcall(arch_shutdown);
 
 extern unsigned long arm_stack_top;
 

@@ -30,7 +30,3 @@ void __noreturn nios_start_barebox(void)
 
 	start_barebox();
 }
-
-void arch_shutdown(void)
-{
-}

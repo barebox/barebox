@@ -150,6 +150,11 @@ static inline void imx51_uart_setup(void __iomem *uartbase)
 	imx_uart_setup(uartbase, 54000000);
 }
 
+static inline void imx53_uart_setup(void __iomem *uartbase)
+{
+	imx_uart_setup(uartbase, 66666666);
+}
+
 static inline void imx6_uart_setup(void __iomem *uartbase)
 {
 	imx_uart_setup(uartbase, 80000000);

@@ -50,6 +50,13 @@ static inline void imx51_uart_setup_ll(void)
 	imx51_uart_setup(base);
 }
 
+static inline void imx53_uart_setup_ll(void)
+{
+	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC, CONFIG_DEBUG_IMX_UART_PORT));
+
+	imx53_uart_setup(base);
+}
+
 static inline void imx6_uart_setup_ll(void)
 {
 	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC, CONFIG_DEBUG_IMX_UART_PORT));
@@ -70,6 +77,7 @@ static inline void PUTC_LL(int c)
 #else
 
 static inline void imx51_uart_setup_ll(void) {}
+static inline void imx53_uart_setup_ll(void) {}
 static inline void imx6_uart_setup_ll(void)  {}
 
 #endif /* CONFIG_DEBUG_LL */
@@ -84,6 +92,16 @@ static inline void imx_ungate_all_peripherals(void __iomem *ccmbase)
 static inline void imx6_ungate_all_peripherals(void)
 {
 	imx_ungate_all_peripherals(IOMEM(MX6_CCM_BASE_ADDR));
+}
+
+static inline void imx51_ungate_all_peripherals(void)
+{
+	imx_ungate_all_peripherals(IOMEM(MX51_CCM_BASE_ADDR));
+}
+
+static inline void imx53_ungate_all_peripherals(void)
+{
+	imx_ungate_all_peripherals(IOMEM(MX53_CCM_BASE_ADDR));
 }
 
 #endif /* __MACH_DEBUG_LL_H__ */

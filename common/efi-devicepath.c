@@ -1383,3 +1383,33 @@ u8 device_path_to_type(struct efi_device_path *dev_path)
 
 	return device_path_type(dev_path);
 }
+
+char *device_path_to_partuuid(struct efi_device_path *dev_path)
+{
+	struct efi_device_path *dev_path_node;
+	struct harddrive_device_path *hd;
+	char *str = NULL;;
+
+	dev_path = unpack_device_path(dev_path);
+
+	for (dev_path_node = dev_path; !is_device_path_end(dev_path_node);
+	     dev_path_node = next_device_path_node(dev_path_node)) {
+
+		if (device_path_type(dev_path_node) != MEDIA_DEVICE_PATH)
+			continue;
+
+		if (dev_path_node->sub_type != MEDIA_HARDDRIVE_DP)
+			continue;
+
+		hd = (struct harddrive_device_path *)dev_path_node;
+
+		if (hd->signature_type != SIGNATURE_TYPE_GUID)
+			continue;
+
+		str = xasprintf("%pUl", (efi_guid_t *)&(hd->signature[0]));
+		break;
+	}
+
+	return str;
+}
+

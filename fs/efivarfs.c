@@ -153,7 +153,7 @@ static int efivars_create(struct device_d *dev, const char *pathname, mode_t mod
 	inode->vendor = vendor;
 
 
-	name8 = strdup_wchar_to_char(inode->name);
+	name8 = xstrdup_wchar_to_char(inode->name);
 	inode->full_name = asprintf("%s-%pUl", name8, &inode->vendor);
 	free(name8);
 
@@ -216,7 +216,7 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 		return -ENOENT;
 
 	efiret = RT->get_variable(efile->name, &efile->vendor,
-				  &efile->attributes, &efile->size, NULL);
+				  NULL, &efile->size, NULL);
 	if (EFI_ERROR(efiret) && efiret != EFI_BUFFER_TOO_SMALL) {
 		ret = -efi_errno(efiret);
 		goto out;
@@ -228,8 +228,9 @@ static int efivarfs_open(struct device_d *dev, FILE *f, const char *filename)
 		goto out;
 	}
 
-	efiret = RT->get_variable(efile->name, &efile->vendor, NULL, &efile->size,
-			efile->buf);
+	efiret = RT->get_variable(efile->name, &efile->vendor,
+				  &efile->attributes, &efile->size,
+				  efile->buf);
 	if (EFI_ERROR(efiret)) {
 		ret = -efi_errno(efiret);
 		goto out;
@@ -269,6 +270,7 @@ static int efivarfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insiz
 static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
 {
 	struct efivars_file *efile = f->priv;
+	efi_status_t efiret;
 
 	if (efile->size < f->pos + insize) {
 		efile->buf = realloc(efile->buf, f->pos + insize);
@@ -277,8 +279,11 @@ static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_
 
 	memcpy(efile->buf + f->pos, buf, insize);
 
-	RT->set_variable(efile->name, &efile->vendor, efile->attributes,
-			 efile->size ? efile->size : 1, efile->buf);
+	efiret = RT->set_variable(efile->name, &efile->vendor,
+				  efile->attributes,
+				  efile->size ? efile->size : 1, efile->buf);
+	if (EFI_ERROR(efiret))
+		return -efi_errno(efiret);
 
 	return insize;
 }
@@ -286,12 +291,16 @@ static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_
 static int efivarfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
 	struct efivars_file *efile = f->priv;
+	efi_status_t efiret;
 
 	efile->size = size;
 	efile->buf = realloc(efile->buf, efile->size + sizeof(uint32_t));
 
-	RT->set_variable(efile->name, &efile->vendor, efile->attributes,
-			 efile->size ? efile->size : 1, efile->buf);
+	efiret = RT->set_variable(efile->name, &efile->vendor,
+				  efile->attributes,
+				  efile->size ? efile->size : 1, efile->buf);
+	if (EFI_ERROR(efiret))
+		return -efi_errno(efiret);
 
 	f->size = efile->size;
 
@@ -391,11 +400,11 @@ static int efivarfs_probe(struct device_d *dev)
 			break;
 
 		inode = xzalloc(sizeof(*inode));
-		inode->name = strdup_wchar(name);
+		inode->name = xstrdup_wchar(name);
 
 		inode->vendor = vendor;
 
-		name8 = strdup_wchar_to_char(inode->name);
+		name8 = xstrdup_wchar_to_char(inode->name);
 		inode->full_name = asprintf("%s-%pUl", name8, &vendor);
 		free(name8);
 

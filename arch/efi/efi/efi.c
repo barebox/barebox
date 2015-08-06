@@ -52,7 +52,7 @@ void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size)
 	efi_status_t efiret;
 	void *buf;
 	unsigned long size = 0;
-	s16 *name16 = strdup_char_to_wchar(name);
+	s16 *name16 = xstrdup_char_to_wchar(name);
 
 	efiret = RT->get_variable(name16, vendor, NULL, &size, NULL);
 
@@ -83,6 +83,33 @@ out:
 	return buf;
 }
 
+int efi_set_variable(char *name, efi_guid_t *vendor, uint32_t attributes,
+		     void *buf, unsigned long size)
+{
+	efi_status_t efiret = EFI_SUCCESS;
+	s16 *name16 = xstrdup_char_to_wchar(name);
+
+	efiret = RT->set_variable(name16, vendor, attributes, size, buf);
+
+	free(name16);
+
+	return -efi_errno(efiret);
+}
+
+int efi_set_variable_usec(char *name, efi_guid_t *vendor, uint64_t usec)
+{
+	char buf[20];
+	wchar_t buf16[40];
+
+	snprintf(buf, sizeof(buf), "%lld", usec);
+	strcpy_char_to_wchar(buf16, buf);
+
+	return efi_set_variable(name, vendor,
+				EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				EFI_VARIABLE_RUNTIME_ACCESS, buf16,
+				(strlen(buf)+1) * sizeof(wchar_t));
+}
+
 struct efi_boot {
 	u32 attributes;
 	u16 file_path_len;
@@ -98,7 +125,7 @@ struct efi_boot *efi_get_boot(int num)
 	int size;
 	char *name;
 
-	name = asprintf("Boot%04X", num);
+	name = xasprintf("Boot%04X", num);
 
 	buf = efi_get_global_var(name, &size);
 
@@ -119,7 +146,7 @@ struct efi_boot *efi_get_boot(int num)
 
 	ptr += sizeof(u16);
 
-	boot->description = strdup_wchar_to_char(ptr);
+	boot->description = xstrdup_wchar_to_char(ptr);
 
 	ptr += (strlen(boot->description) + 1) * 2;
 
@@ -299,7 +326,12 @@ static void fixup_tables(void)
 
 static int efi_init(void)
 {
+	char *env;
+
 	defaultenv_append_directory(env_efi);
+
+	env = xasprintf("/efivars/barebox-env-%pUl", &efi_barebox_vendor_guid);
+	default_environment_path_set(env);
 
 	return 0;
 }
@@ -310,8 +342,10 @@ device_initcall(efi_init);
  */
 efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 {
-	void *mem;
+	efi_physical_addr_t mem;
+	size_t memsize;
 	efi_status_t efiret;
+	char *uuid;
 
 #ifdef DEBUG
 	sys_table->con_out->output_string(sys_table->con_out, L"barebox\n");
@@ -332,10 +366,38 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 
 	fixup_tables();
 
-	BS->allocate_pool(efi_loaded_image->image_data_type, SZ_16M, &mem);
-	mem_malloc_init(mem, mem + SZ_16M);
+	mem = 0x3fffffff;
+	for (memsize = SZ_256M; memsize >= SZ_8M; memsize /= 2) {
+		efiret  = BS->allocate_pages(EFI_ALLOCATE_MAX_ADDRESS,
+					     EFI_LOADER_DATA,
+					     memsize/PAGE_SIZE, &mem);
+		if (!EFI_ERROR(efiret))
+			break;
+		if (efiret != EFI_OUT_OF_RESOURCES)
+			panic("failed to allocate malloc pool: %s\n",
+			      efi_strerror(efiret));
+	}
+	if (EFI_ERROR(efiret))
+		panic("failed to allocate malloc pool: %s\n",
+		      efi_strerror(efiret));
+	mem_malloc_init((void *)mem, (void *)mem + memsize);
 
 	efi_clocksource_init();
+	efi_set_variable_usec("LoaderTimeInitUSec", &efi_systemd_vendor_guid,
+			      get_time_ns()/1000);
+
+	uuid = device_path_to_partuuid(device_path_from_handle(
+				       efi_loaded_image->device_handle));
+	if (uuid) {
+		wchar_t *uuid16 = xstrdup_char_to_wchar(uuid);
+		efi_set_variable("LoaderDevicePartUUID",
+				 &efi_systemd_vendor_guid,
+				 EFI_VARIABLE_BOOTSERVICE_ACCESS |
+				 EFI_VARIABLE_RUNTIME_ACCESS,
+				 uuid16, (strlen(uuid)+1) * sizeof(wchar_t));
+		free(uuid);
+		free(uuid16);
+	}
 
 	start_barebox();
 

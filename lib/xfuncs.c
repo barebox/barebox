@@ -22,6 +22,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <module.h>
+#include <wchar.h>
 
 void *xmalloc(size_t size)
 {
@@ -103,3 +104,57 @@ void *xmemdup(const void *orig, size_t size)
 	return buf;
 }
 EXPORT_SYMBOL(xmemdup);
+
+char *xvasprintf(const char *fmt, va_list ap)
+{
+	char *p;
+
+	p = vasprintf(fmt, ap);
+	if (!p)
+		panic("ERROR: out of memory\n");
+	return p;
+}
+EXPORT_SYMBOL(xvasprintf);
+
+char *xasprintf(const char *fmt, ...)
+{
+	va_list ap;
+	char *p;
+
+	va_start(ap, fmt);
+	p = xvasprintf(fmt, ap);
+	va_end(ap);
+
+	return p;
+}
+EXPORT_SYMBOL(xasprintf);
+
+wchar_t *xstrdup_wchar(const wchar_t *s)
+{
+	wchar_t *p = strdup_wchar(s);
+
+	if (!p)
+		panic("ERROR: out of memory\n");
+	return p;
+}
+EXPORT_SYMBOL(xstrdup_wchar);
+
+wchar_t *xstrdup_char_to_wchar(const char *s)
+{
+	wchar_t *p = strdup_char_to_wchar(s);
+
+	if (!p)
+		panic("ERROR: out of memory\n");
+	return p;
+}
+EXPORT_SYMBOL(xstrdup_char_to_wchar);
+
+char *xstrdup_wchar_to_char(const wchar_t *s)
+{
+	char *p = strdup_wchar_to_char(s);
+
+	if (!p)
+		panic("ERROR: out of memory\n");
+	return p;
+}
+EXPORT_SYMBOL(xstrdup_wchar_to_char);

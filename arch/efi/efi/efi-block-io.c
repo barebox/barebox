@@ -147,7 +147,7 @@ int efi_bio_probe(struct efi_device *efidev)
 	efi_bio_print_info(priv);
 	priv->dev = &efidev->dev;
 
-	priv->blk.cdev.name = asprintf("disk%d", cdev_find_free_index("disk"));
+	priv->blk.cdev.name = xasprintf("disk%d", cdev_find_free_index("disk"));
 	priv->blk.blockbits = ffs(media->block_size) - 1;
 	priv->blk.num_blocks = media->last_block + 1;
 	priv->blk.ops = &efi_bio_ops;

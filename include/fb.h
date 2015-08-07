@@ -99,6 +99,7 @@ struct display_timings {
 
 	unsigned int num_modes;
 	struct fb_videomode *modes;
+	void *edid;
 };
 
 struct i2c_adapter;
@@ -143,6 +144,7 @@ struct fb_info {
 };
 
 struct display_timings *of_get_display_timings(struct device_node *np);
+void display_timings_release(struct display_timings *);
 
 int register_framebuffer(struct fb_info *info);
 

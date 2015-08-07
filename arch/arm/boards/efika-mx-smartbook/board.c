@@ -187,6 +187,7 @@ static int efikamx_usb_init(void)
 	gpio_direction_output(GPIO_WIFI_RESET, 0);
 	gpio_direction_output(GPIO_SMSC3317_RESET, 0);
 	gpio_direction_output(GPIO_HUB_RESET, 0);
+	gpio_direction_output(GPIO_BACKLIGHT_POWER, 1);
 
 	mdelay(10);
 
@@ -240,8 +241,6 @@ static int efikamx_late_init(void)
 		return 0;
 
 	defaultenv_append_directory(defaultenv_efikasb);
-
-	gpio_direction_output(GPIO_BACKLIGHT_POWER, 1);
 
 	for (i = 0; i < ARRAY_SIZE(leds); i++)
 		led_gpio_register(&leds[i]);

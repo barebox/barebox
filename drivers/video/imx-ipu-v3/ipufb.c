@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
+#include <of_graph.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm-generic/div64.h>
@@ -62,8 +63,9 @@ struct ipufb_info {
 	struct list_head	list;
 	char			*name;
 	int			id;
+	int			dino;
 
-	struct ipu_output	*output;
+	struct vpl	vpl;
 };
 
 static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
@@ -73,23 +75,6 @@ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
 	return chan << bf->offset;
 }
 
-static LIST_HEAD(ipu_outputs);
-static LIST_HEAD(ipu_fbs);
-
-int ipu_register_output(struct ipu_output *ouput)
-{
-	list_add_tail(&ouput->list, &ipu_outputs);
-
-	return 0;
-}
-
-static int ipu_register_fb(struct ipufb_info *ipufb)
-{
-	list_add_tail(&ipufb->list, &ipu_fbs);
-
-	return 0;
-}
-
 int ipu_crtc_mode_set(struct ipufb_info *fbi,
 			       struct fb_videomode *mode,
 			       int x, int y)
@@ -97,14 +82,17 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	struct fb_info *info = &fbi->info;
 	int ret;
 	struct ipu_di_signal_cfg sig_cfg = {};
-	u32 out_pixel_fmt;
+	struct ipu_di_mode di_mode = {};
+	u32 interface_pix_fmt;
 
 	dev_info(fbi->dev, "%s: mode->xres: %d\n", __func__,
 			mode->xres);
 	dev_info(fbi->dev, "%s: mode->yres: %d\n", __func__,
 			mode->yres);
 
-	out_pixel_fmt = fbi->output->out_pixel_fmt;
+	vpl_ioctl(&fbi->vpl, 2 + fbi->dino, IMX_IPU_VPL_DI_MODE, &di_mode);
+	interface_pix_fmt = di_mode.interface_pix_fmt ?
+		di_mode.interface_pix_fmt : fbi->interface_pix_fmt;
 
 	if (mode->sync & FB_SYNC_HOR_HIGH_ACT)
 		sig_cfg.Hsync_pol = 1;
@@ -112,10 +100,9 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 		sig_cfg.Vsync_pol = 1;
 
 	sig_cfg.enable_pol = 1;
-	sig_cfg.clk_pol = 1;
+	sig_cfg.clk_pol = 0;
 	sig_cfg.width = mode->xres;
 	sig_cfg.height = mode->yres;
-	sig_cfg.pixel_fmt = out_pixel_fmt;
 	sig_cfg.h_start_width = mode->left_margin;
 	sig_cfg.h_sync_width = mode->hsync_len;
 	sig_cfg.h_end_width = mode->right_margin;
@@ -124,7 +111,7 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	sig_cfg.v_sync_width = mode->vsync_len;
 	sig_cfg.v_end_width = mode->lower_margin;
 	sig_cfg.pixelclock = PICOS2KHZ(mode->pixclock) * 1000UL;
-	sig_cfg.clkflags = fbi->output->di_clkflags;
+	sig_cfg.clkflags = di_mode.di_clkflags;
 
 	sig_cfg.v_to_h_sync = 0;
 
@@ -132,7 +119,7 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	sig_cfg.vsync_pin = 3;
 
 	ret = ipu_dc_init_sync(fbi->dc, fbi->di, sig_cfg.interlaced,
-			out_pixel_fmt, mode->xres);
+			interface_pix_fmt, mode->xres);
 	if (ret) {
 		dev_err(fbi->dev,
 				"initializing display controller failed with %d\n",
@@ -171,31 +158,25 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 static void ipufb_enable_controller(struct fb_info *info)
 {
 	struct ipufb_info *fbi = container_of(info, struct ipufb_info, info);
-	struct ipu_output *output = fbi->output;
 
-	if (output->ops->prepare)
-		output->ops->prepare(output, info->mode, fbi->id);
+	vpl_ioctl_prepare(&fbi->vpl, 2 + fbi->dino, info->mode);
 
 	ipu_crtc_mode_set(fbi, info->mode, 0, 0);
 
-	if (output->ops->enable)
-		output->ops->enable(output, info->mode, fbi->id);
+	vpl_ioctl_enable(&fbi->vpl, 2 + fbi->dino);
 }
 
 static void ipufb_disable_controller(struct fb_info *info)
 {
 	struct ipufb_info *fbi = container_of(info, struct ipufb_info, info);
-	struct ipu_output *output = fbi->output;
 
-	if (output->ops->disable)
-		output->ops->disable(output);
+	vpl_ioctl_disable(&fbi->vpl, 2 + fbi->dino);
 
 	ipu_plane_disable(fbi->plane[0]);
 	ipu_dc_disable_channel(fbi->dc);
 	ipu_di_disable(fbi->di);
 
-	if (output->ops->unprepare)
-		output->ops->unprepare(output);
+	vpl_ioctl_unprepare(&fbi->vpl, 2 + fbi->dino);
 }
 
 static int ipufb_activate_var(struct fb_info *info)
@@ -208,7 +189,7 @@ static int ipufb_activate_var(struct fb_info *info)
 	if (!fbi->info.screen_base)
 		return -ENOMEM;
 
-	memset(fbi->info.screen_base, 0, info->line_length * info->yres);
+	memset(fbi->info.screen_base, 0x0, info->line_length * info->yres);
 
 	return 0;
 }
@@ -218,56 +199,6 @@ static struct fb_ops ipufb_ops = {
 	.fb_disable	= ipufb_disable_controller,
 	.fb_activate_var = ipufb_activate_var,
 };
-
-static struct ipufb_info *ipu_output_find_di(struct ipu_output *output)
-{
-	struct ipufb_info *ipufb;
-
-	list_for_each_entry(ipufb, &ipu_fbs, list) {
-		if (!(output->ipu_mask & (1 << ipufb->id)))
-			continue;
-		if (ipufb->output)
-			continue;
-
-		return ipufb;
-	}
-
-	return NULL;
-}
-
-static int ipu_init(void)
-{
-	struct ipu_output *output;
-	struct ipufb_info *ipufb;
-	int ret;
-
-	list_for_each_entry(output, &ipu_outputs, list) {
-		pr_info("found output: %s\n", output->name);
-		ipufb = ipu_output_find_di(output);
-		if (!ipufb) {
-			pr_info("no di found for output %s\n", output->name);
-			continue;
-		}
-		pr_info("using di %s for output %s\n", ipufb->name, output->name);
-
-		ipufb->output = output;
-
-		ipufb->info.edid_i2c_adapter = output->edid_i2c_adapter;
-		if (output->modes) {
-			ipufb->info.modes.modes = output->modes->modes;
-			ipufb->info.modes.num_modes = output->modes->num_modes;
-		}
-
-		ret = register_framebuffer(&ipufb->info);
-		if (ret < 0) {
-			dev_err(ipufb->dev, "failed to register framebuffer\n");
-			return ret;
-		}
-	}
-
-	return 0;
-}
-late_initcall(ipu_init);
 
 static int ipu_get_resources(struct ipufb_info *fbi,
 		struct ipu_client_platformdata *pdata)
@@ -311,6 +242,8 @@ static int ipufb_probe(struct device_d *dev)
 	int ret, ipuid;
 	struct ipu_client_platformdata *pdata = dev->platform_data;
 	struct ipu_rgb *ipu_rgb;
+	struct device_node *node;
+	const char *fmt;
 
 	fbi = xzalloc(sizeof(*fbi));
 	info = &fbi->info;
@@ -318,6 +251,7 @@ static int ipufb_probe(struct device_d *dev)
 	ipuid = of_alias_get_id(dev->parent->device_node, "ipu");
 	fbi->name = asprintf("ipu%d-di%d", ipuid + 1, pdata->di);
 	fbi->id = ipuid * 2 + pdata->di;
+	fbi->dino = pdata->di;
 
 	fbi->dev = dev;
 	info->priv = fbi;
@@ -337,7 +271,38 @@ static int ipufb_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	ret = ipu_register_fb(fbi);
+	node = of_graph_get_port_by_id(dev->parent->device_node, 2 + pdata->di);
+	if (node && of_graph_port_is_available(node)) {
+		dev_info(fbi->dev, "register vpl for %s\n", dev->parent->device_node->full_name);
+
+		fbi->vpl.node = dev->parent->device_node;
+		ret = vpl_register(&fbi->vpl);
+		if (ret)
+			return ret;
+
+		ret = of_property_read_string(node, "interface-pix-fmt", &fmt);
+		if (!ret) {
+			if (!strcmp(fmt, "rgb24"))
+				fbi->interface_pix_fmt = V4L2_PIX_FMT_RGB24;
+			else if (!strcmp(fmt, "rgb565"))
+				fbi->interface_pix_fmt = V4L2_PIX_FMT_RGB565;
+			else if (!strcmp(fmt, "bgr666"))
+				fbi->interface_pix_fmt = V4L2_PIX_FMT_BGR666;
+			else if (!strcmp(fmt, "lvds666"))
+				fbi->interface_pix_fmt =
+					v4l2_fourcc('L', 'V', 'D', '6');
+		}
+
+		ret = vpl_ioctl(&fbi->vpl, 2 + fbi->dino, VPL_GET_VIDEOMODES, &info->modes);
+		if (ret)
+			return ret;
+
+		ret = register_framebuffer(info);
+		if (ret < 0) {
+			dev_err(fbi->dev, "failed to register framebuffer\n");
+			return ret;
+		}
+	}
 
 	return ret;
 }
@@ -351,4 +316,9 @@ static struct driver_d ipufb_driver = {
 	.probe		= ipufb_probe,
 	.remove		= ipufb_remove,
 };
-device_platform_driver(ipufb_driver);
+
+static int ipufb_register(void)
+{
+	return platform_driver_register(&ipufb_driver);
+}
+late_initcall(ipufb_register);

@@ -21,10 +21,13 @@
 #include <common.h>
 #include <fb.h>
 #include <io.h>
+#include <of_graph.h>
 #include <driver.h>
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
+#include <video/vpl.h>
+#include <mfd/imx6q-iomuxc-gpr.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm-generic/div64.h>
@@ -57,13 +60,17 @@ struct imx_ldb_channel {
 	int chno;
 	int mode_valid;
 	struct display_timings *modes;
-	struct ipu_output output;
+	struct device_node *remote;
+	struct vpl vpl;
+	int output_port;
+	int datawidth;
 };
 
 struct imx_ldb_data {
 	void __iomem *base;
 	int (*prepare)(struct imx_ldb_channel *imx_ldb_ch, int di);
 	unsigned ipu_mask;
+	int have_mux;
 };
 
 struct imx_ldb {
@@ -102,15 +109,10 @@ static const int of_get_data_mapping(struct device_node *np)
 	return -EINVAL;
 }
 
-static int imx_ldb_prepare(struct ipu_output *output, struct fb_videomode *mode, int di)
+static int imx_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, struct fb_videomode *mode,
+		int di)
 {
-	struct imx_ldb_channel *imx_ldb_ch = container_of(output, struct imx_ldb_channel, output);
 	struct imx_ldb *ldb = imx_ldb_ch->ldb;
-
-	if (PICOS2KHZ(mode->pixclock) > 85000) {
-		dev_warn(ldb->dev,
-			 "%s: mode exceeds 85 MHz pixel clock\n", __func__);
-	}
 
 	ldb->soc_data->prepare(imx_ldb_ch, di);
 
@@ -141,7 +143,20 @@ static int imx_ldb_prepare(struct ipu_output *output, struct fb_videomode *mode,
 
 	writel(ldb->ldb_ctrl, ldb->base);
 
-	return 0;
+	return vpl_ioctl(&imx_ldb_ch->vpl, imx_ldb_ch->output_port,
+			VPL_PREPARE, NULL);
+}
+
+static int imx_ldb_enable(struct imx_ldb_channel *imx_ldb_ch, int di)
+{
+	return vpl_ioctl(&imx_ldb_ch->vpl, imx_ldb_ch->output_port,
+				VPL_ENABLE, NULL);
+}
+
+static int imx_ldb_disable(struct imx_ldb_channel *imx_ldb_ch, int di)
+{
+	return vpl_ioctl(&imx_ldb_ch->vpl, imx_ldb_ch->output_port,
+			VPL_DISABLE, NULL);
 }
 
 static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
@@ -226,6 +241,7 @@ static struct imx_ldb_data imx_ldb_data_imx6q = {
 	.base = (void *)MX6_IOMUXC_BASE_ADDR + 0x8,
 	.prepare = imx6q_ldb_prepare,
 	.ipu_mask = 0xf,
+	.have_mux = 1,
 };
 
 static struct imx_ldb_data imx_ldb_data_imx53 = {
@@ -234,9 +250,42 @@ static struct imx_ldb_data imx_ldb_data_imx53 = {
 	.ipu_mask = 0x3,
 };
 
-static struct ipu_output_ops imx_ldb_ops = {
-	.prepare = imx_ldb_prepare,
-};
+static int imx_ldb_ioctl(struct vpl *vpl, unsigned int port,
+		unsigned int cmd, void *data)
+{
+	struct imx_ldb_channel *imx_ldb_ch = container_of(vpl,
+			struct imx_ldb_channel, vpl);
+	int ret;
+	struct ipu_di_mode *mode;
+
+	switch (cmd) {
+	case VPL_ENABLE:
+		ret = vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
+		if (ret)
+			return ret;
+		return imx_ldb_enable(imx_ldb_ch, port);
+	case VPL_DISABLE:
+		ret = vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
+		if (ret)
+			return ret;
+		return imx_ldb_disable(imx_ldb_ch, port);
+	case VPL_PREPARE:
+		ret = vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
+		if (ret)
+			return ret;
+		return imx_ldb_prepare(imx_ldb_ch, data, port);
+	case IMX_IPU_VPL_DI_MODE:
+		mode = data;
+
+		mode->di_clkflags = IPU_DI_CLKMODE_EXT | IPU_DI_CLKMODE_SYNC;
+		mode->interface_pix_fmt = (imx_ldb_ch->datawidth == 24) ?
+			V4L2_PIX_FMT_RGB24 : V4L2_PIX_FMT_BGR666;
+
+		return 0;
+	default:
+		return vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
+	}
+}
 
 static int imx_ldb_probe(struct device_d *dev)
 {
@@ -245,7 +294,6 @@ static int imx_ldb_probe(struct device_d *dev)
 	struct imx_ldb *imx_ldb;
 	int ret, i;
 	int dual = 0;
-	int datawidth;
 	int mapping;
 	const struct imx_ldb_data *devtype;
 
@@ -259,6 +307,8 @@ static int imx_ldb_probe(struct device_d *dev)
 
 	for_each_child_of_node(np, child) {
 		struct imx_ldb_channel *channel;
+		struct device_node *port;
+		struct device_node *endpoint;
 
 		ret = of_property_read_u32(child, "reg", &i);
 		if (ret || i < 0 || i > 1)
@@ -275,17 +325,37 @@ static int imx_ldb_probe(struct device_d *dev)
 		channel = &imx_ldb->channel[i];
 		channel->ldb = imx_ldb;
 		channel->chno = i;
+		channel->output_port = imx_ldb->soc_data->have_mux ? 4 : 1;
 
-		ret = of_property_read_u32(child, "fsl,data-width", &datawidth);
+		/* The output port is port@4 with mux or port@1 without mux */
+		port = of_graph_get_port_by_id(child, channel->output_port);
+		if (!port) {
+			dev_warn(dev, "No port found for %s\n", child->full_name);
+			continue;
+		}
+
+		endpoint = of_get_child_by_name(port, "endpoint");
+		if (!endpoint) {
+			dev_warn(dev, "No endpoint found on %s\n", port->full_name);
+			continue;
+		}
+
+		channel->vpl.node = child;
+		channel->vpl.ioctl = &imx_ldb_ioctl;
+		ret = vpl_register(&channel->vpl);
 		if (ret)
-			datawidth = 0;
-		else if (datawidth != 18 && datawidth != 24)
+			return ret;
+
+		ret = of_property_read_u32(child, "fsl,data-width", &channel->datawidth);
+		if (ret)
+			channel->datawidth = 0;
+		else if (channel->datawidth != 18 && channel->datawidth != 24)
 			return -EINVAL;
 
 		mapping = of_get_data_mapping(child);
 		switch (mapping) {
 		case LVDS_BIT_MAP_SPWG:
-			if (datawidth == 24) {
+			if (channel->datawidth == 24) {
 				if (i == 0 || dual)
 					imx_ldb->ldb_ctrl |= LDB_DATA_WIDTH_CH0_24;
 				if (i == 1 || dual)
@@ -293,7 +363,7 @@ static int imx_ldb_probe(struct device_d *dev)
 			}
 			break;
 		case LVDS_BIT_MAP_JEIDA:
-			if (datawidth == 18) {
+			if (channel->datawidth == 18) {
 				dev_err(dev, "JEIDA standard only supported in 24 bit\n");
 				return -EINVAL;
 			}
@@ -306,16 +376,6 @@ static int imx_ldb_probe(struct device_d *dev)
 			dev_err(dev, "data mapping not specified or invalid\n");
 			return -EINVAL;
 		}
-
-		channel->output.ops = &imx_ldb_ops;
-		channel->output.di_clkflags = IPU_DI_CLKMODE_EXT | IPU_DI_CLKMODE_SYNC;
-		channel->output.out_pixel_fmt = (datawidth == 24) ?
-			V4L2_PIX_FMT_RGB24 : V4L2_PIX_FMT_BGR666;
-		channel->output.modes = of_get_display_timings(child);
-		channel->output.name = asprintf("ldb-%d", i);
-		channel->output.ipu_mask = devtype->ipu_mask;
-
-		ipu_register_output(&channel->output);
 	}
 
 	return 0;

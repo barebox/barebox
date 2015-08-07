@@ -58,6 +58,7 @@ static void cls(struct fbc_priv *priv)
 	void *buf = gui_screen_render_buffer(priv->sc);
 
 	memset(buf, 0, priv->fb->line_length * priv->fb->yres);
+	gu_screen_blit(priv->sc);
 }
 
 struct rgb {
@@ -138,6 +139,8 @@ static void video_invertchar(struct fbc_priv *priv, int x, int y)
 
 	gu_invert_area(priv->fb, buf, x * priv->font_width, y * priv->font_height,
 			priv->font_width, priv->font_height);
+	gu_screen_blit_area(priv->sc, x * priv->font_width, y * priv->font_height,
+			priv->font_width, priv->font_height);
 }
 
 static void printchar(struct fbc_priv *priv, int c)
@@ -170,7 +173,10 @@ static void printchar(struct fbc_priv *priv, int c)
 
 	default:
 		drawchar(priv, priv->x, priv->y, c);
-		gu_screen_blit(priv->sc);
+
+		gu_screen_blit_area(priv->sc, priv->x * priv->font_width,
+				priv->y * priv->font_height,
+				priv->font_width, priv->font_height);
 
 		priv->x++;
 		if (priv->x > priv->cols) {
@@ -188,6 +194,7 @@ static void printchar(struct fbc_priv *priv, int c)
 
 		memcpy(buf, buf + line_height, line_height * (priv->rows + 1));
 		memset(buf + line_height * priv->rows, 0, line_height);
+		gu_screen_blit(priv->sc);
 		priv->y = priv->rows;
 	}
 

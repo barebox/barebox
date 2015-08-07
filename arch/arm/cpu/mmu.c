@@ -159,9 +159,9 @@ static u32 *find_pte(unsigned long adr)
 
 static void dma_flush_range(unsigned long start, unsigned long end)
 {
+	__dma_flush_range(start, end);
 	if (outer_cache.flush_range)
 		outer_cache.flush_range(start, end);
-	__dma_flush_range(start, end);
 }
 
 static void dma_inv_range(unsigned long start, unsigned long end)

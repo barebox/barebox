@@ -376,7 +376,7 @@ static int fbc_set_active(struct console_device *cdev, unsigned flags)
 	if (ret)
 		return ret;
 
-	priv->sc = fb_create_screen(fb, 0);
+	priv->sc = fb_create_screen(fb);
 	if (IS_ERR(priv->sc))
 		return PTR_ERR(priv->sc);
 

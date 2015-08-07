@@ -245,7 +245,7 @@ void gu_rgba_blend(struct fb_info *info, struct image *img, void* buf, int heigh
 	}
 }
 
-struct screen *fb_create_screen(struct fb_info *info, bool offscreen)
+struct screen *fb_create_screen(struct fb_info *info)
 {
 	struct screen *sc;
 
@@ -257,19 +257,12 @@ struct screen *fb_create_screen(struct fb_info *info, bool offscreen)
 	sc->s.height = info->yres;
 	sc->fbsize = info->line_length * sc->s.height;
 	sc->fb = info->screen_base;
-
-	if (offscreen) {
-		/*
-		 * Don't fail if malloc fails, just continue rendering directly
-		 * on the framebuffer
-		 */
-		sc->offscreenbuf = malloc(sc->fbsize);
-	}
+	sc->info = info;
 
 	return sc;
 }
 
-struct screen *fb_open(const char * fbdev, bool offscreen)
+struct screen *fb_open(const char * fbdev)
 {
 	int fd, ret;
 	struct fb_info *info;
@@ -286,7 +279,7 @@ struct screen *fb_open(const char * fbdev, bool offscreen)
 		goto failed_screeninfo;
 	}
 
-	sc = fb_create_screen(info, offscreen);
+	sc = fb_create_screen(info);
 	if (IS_ERR(sc)) {
 		ret = PTR_ERR(sc);
 		goto failed_create;
@@ -298,7 +291,6 @@ struct screen *fb_open(const char * fbdev, bool offscreen)
 	return sc;
 
 failed_create:
-	free(sc->offscreenbuf);
 	free(sc);
 failed_screeninfo:
 	close(fd);
@@ -308,8 +300,6 @@ failed_screeninfo:
 
 void fb_close(struct screen *sc)
 {
-	free(sc->offscreenbuf);
-
 	if (sc->fd > 0)
 		close(sc->fd);
 
@@ -318,8 +308,8 @@ void fb_close(struct screen *sc)
 
 void gu_screen_blit(struct screen *sc)
 {
-	if (!sc->offscreenbuf)
-		return;
+	struct fb_info *info = sc->info;
 
-	memcpy(sc->fb, sc->offscreenbuf, sc->fbsize);
+	if (info->screen_base_shadow)
+		memcpy(info->screen_base, info->screen_base_shadow, sc->fbsize);
 }

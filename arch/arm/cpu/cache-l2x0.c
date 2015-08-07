@@ -113,6 +113,13 @@ static void l2x0_flush_range(unsigned long start, unsigned long end)
 	cache_sync();
 }
 
+static void l2x0_flush_all(void)
+{
+	writel(l2x0_way_mask, l2x0_base + L2X0_CLEAN_INV_WAY);
+	cache_wait(l2x0_base + L2X0_CLEAN_INV_WAY, l2x0_way_mask);
+	cache_sync();
+}
+
 static void l2x0_disable(void)
 {
 	writel(0xff, l2x0_base + L2X0_CLEAN_INV_WAY);
@@ -178,5 +185,9 @@ void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
 	outer_cache.clean_range = l2x0_clean_range;
 	outer_cache.flush_range = l2x0_flush_range;
 	outer_cache.disable = l2x0_disable;
-}
+	outer_cache.flush_all = l2x0_flush_all;
 
+	pr_debug("%s cache controller enabled\n", type);
+	pr_debug("l2x0: %d ways, CACHE_ID 0x%08x, AUX_CTRL 0x%08x\n",
+			ways, cache_id, aux);
+}

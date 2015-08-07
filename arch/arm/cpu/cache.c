@@ -71,6 +71,8 @@ void __mmu_cache_flush(void)
 {
 	if (cache_fns)
 		cache_fns->mmu_cache_flush();
+	if (outer_cache.flush_all)
+		outer_cache.flush_all();
 }
 
 int arm_set_cache_functions(void)

@@ -40,6 +40,7 @@ struct fbc_priv {
 	u8 csi[256];
 
 	int active;
+	int in_console;
 };
 
 static int fbc_getc(struct console_device *cdev)
@@ -282,6 +283,10 @@ static void fbc_putc(struct console_device *cdev, char c)
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
 
+	if (priv->in_console)
+		return;
+	priv->in_console = 1;
+
 	switch (priv->state) {
 	case LIT:
 		switch (c) {
@@ -329,6 +334,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 		}
 		break;
 	}
+	priv->in_console = 0;
 }
 
 static int setup_font(struct fbc_priv *priv)

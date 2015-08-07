@@ -7,6 +7,7 @@
 #define CACHE_LINE_SIZE		32
 
 static void __iomem *l2x0_base;
+static uint32_t l2x0_way_mask; /* Bitmask of active ways */
 
 static inline void cache_wait(void __iomem *reg, unsigned long mask)
 {
@@ -50,8 +51,8 @@ static inline void l2x0_flush_line(unsigned long addr)
 static inline void l2x0_inv_all(void)
 {
 	/* invalidate all ways */
-	writel(0xff, l2x0_base + L2X0_INV_WAY);
-	cache_wait(l2x0_base + L2X0_INV_WAY, 0xff);
+	writel(l2x0_way_mask, l2x0_base + L2X0_INV_WAY);
+	cache_wait(l2x0_base + L2X0_INV_WAY, l2x0_way_mask);
 	cache_sync();
 }
 
@@ -122,8 +123,36 @@ static void l2x0_disable(void)
 void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
 {
 	__u32 aux;
+	__u32 cache_id;
+	int ways;
+	const char *type;
 
 	l2x0_base = base;
+
+	cache_id = readl(l2x0_base + L2X0_CACHE_ID);
+	aux = readl(l2x0_base + L2X0_AUX_CTRL);
+
+	/* Determine the number of ways */
+	switch (cache_id & L2X0_CACHE_ID_PART_MASK) {
+	case L2X0_CACHE_ID_PART_L310:
+		if (aux & (1 << 16))
+			ways = 16;
+		else
+			ways = 8;
+		type = "L310";
+		break;
+	case L2X0_CACHE_ID_PART_L210:
+		ways = (aux >> 13) & 0xf;
+		type = "L210";
+		break;
+	default:
+		/* Assume unknown chips have 8 ways */
+		ways = 8;
+		type = "L2x0 series";
+		break;
+	}
+
+       l2x0_way_mask = (1 << ways) - 1;
 
 	/*
 	 * Check if l2x0 controller is already enabled.

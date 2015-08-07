@@ -251,6 +251,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		return;
 	case 'J':
 		cls(priv);
+		video_invertchar(priv, priv->x, priv->y);
 		return;
 	case 'H':
 		video_invertchar(priv, priv->x, priv->y);

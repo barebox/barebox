@@ -281,7 +281,7 @@ struct screen *fb_open(const char * fbdev, bool offscreen)
 
 	info = xzalloc(sizeof(*info));
 
-	ret = ioctl(fd, FBIOGET_SCREENINFO, info);
+	ret = ioctl(fd, FBIOGET_SCREENINFO, &info);
 	if (ret) {
 		goto failed_screeninfo;
 	}
@@ -310,10 +310,8 @@ void fb_close(struct screen *sc)
 {
 	free(sc->offscreenbuf);
 
-	if (sc->fd > 0) {
+	if (sc->fd > 0)
 		close(sc->fd);
-		free(sc->info);
-	}
 
 	free(sc);
 }

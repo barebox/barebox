@@ -11,10 +11,12 @@
 static int fb_ioctl(struct cdev* cdev, int req, void *data)
 {
 	struct fb_info *info = cdev->priv;
+	struct fb_info **fb;
 
 	switch (req) {
 	case FBIOGET_SCREENINFO:
-		memcpy(data, info, sizeof(*info));
+		fb = data;
+		*fb = info;
 		break;
 	case FBIO_ENABLE:
 		info->fbops->fb_enable(info);

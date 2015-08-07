@@ -306,6 +306,25 @@ void fb_close(struct screen *sc)
 	free(sc);
 }
 
+void gu_screen_blit_area(struct screen *sc, int startx, int starty, int width,
+		int height)
+{
+	struct fb_info *info = sc->info;
+	int bpp = info->bits_per_pixel >> 3;
+
+	if (info->screen_base_shadow) {
+		int y;
+		void *fb = info->screen_base + starty * sc->info->line_length + startx * bpp;
+		void *fboff = info->screen_base_shadow + starty * sc->info->line_length + startx * bpp;
+
+		for (y = starty; y < starty + height; y++) {
+			memcpy(fb, fboff, width * bpp);
+			fb += sc->info->line_length;
+			fboff += sc->info->line_length;
+		}
+	}
+}
+
 void gu_screen_blit(struct screen *sc)
 {
 	struct fb_info *info = sc->info;

@@ -25,5 +25,7 @@ void fb_close(struct screen *sc);
 void gu_screen_blit(struct screen *sc);
 void gu_invert_area(struct fb_info *info, void *buf, int startx, int starty, int width,
 		int height);
+void gu_screen_blit_area(struct screen *sc, int startx, int starty, int width,
+		int height);
 
 #endif /* __GRAPHIC_UTILS_H__ */

@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "l2x0: " fmt
+
 #include <common.h>
 #include <init.h>
 #include <io.h>

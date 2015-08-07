@@ -18,6 +18,7 @@ static int do_splash(int argc, char *argv[])
 	int offscreen = 0;
 	u32 bg_color = 0x00000000;
 	bool do_bg = false;
+	void *buf;
 
 	memset(&s, 0, sizeof(s));
 
@@ -58,15 +59,11 @@ static int do_splash(int argc, char *argv[])
 		return PTR_ERR(sc);
 	}
 
-	if (sc->offscreenbuf) {
-		if (do_bg)
-			gu_memset_pixel(sc->info, sc->offscreenbuf, bg_color,
-					sc->s.width * sc->s.height);
-		else
-			memcpy(sc->offscreenbuf, sc->fb, sc->fbsize);
-	} else if (do_bg) {
-		gu_memset_pixel(sc->info, sc->fb, bg_color, sc->s.width * sc->s.height);
-	}
+	buf = gui_screen_render_buffer(sc);
+
+	if (do_bg)
+		gu_memset_pixel(sc->info, buf, bg_color,
+				sc->s.width * sc->s.height);
 
 	ret = image_renderer_file(sc, &s, image_file);
 	if (ret > 0)

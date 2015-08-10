@@ -54,15 +54,6 @@
 
 static void __iomem *clk_mgr_base_addr;
 
-static struct clk *socfpga_fixed_clk(struct device_node *node)
-{
-	uint32_t f = 0;
-
-	of_property_read_u32(node, "clock-frequency", &f);
-
-	return clk_fixed(node->name, f);
-}
-
 struct clk_pll {
 	struct clk clk;
 	const char *parent;
@@ -369,9 +360,7 @@ static void socfpga_register_clocks(struct device_d *dev, struct device_node *no
 		socfpga_register_clocks(dev, child);
 	}
 
-	if (of_device_is_compatible(node, "fixed-clock"))
-		clk = socfpga_fixed_clk(node);
-	else if (of_device_is_compatible(node, "altr,socfpga-pll-clock"))
+	if (of_device_is_compatible(node, "altr,socfpga-pll-clock"))
 		clk = socfpga_pll_clk(node);
 	else if (of_device_is_compatible(node, "altr,socfpga-perip-clk"))
 		clk = socfpga_periph_clk(node);

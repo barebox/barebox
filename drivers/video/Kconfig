@@ -119,6 +119,7 @@ comment "Video encoder chips"
 config DRIVER_VIDEO_MTL017
 	bool "MTL017 LVDS encoder"
 	select VIDEO_VPL
+	depends on I2C
 	help
 	  The MTL017 is a parallel to lvds video encoder chip found on the
 	  Efika MX Smartbook.

@@ -82,7 +82,8 @@ static int simple_panel_get_modes(struct simple_panel *panel, struct display_tim
 {
 	int ret = -ENOENT;
 
-	if (panel->ddc_node) {
+	if (panel->ddc_node && IS_ENABLED(CONFIG_DRIVER_VIDEO_EDID) &&
+	    IS_ENABLED(CONFIG_I2C)) {
 		struct i2c_adapter *i2c;
 
                 i2c = of_find_i2c_adapter_by_node(panel->ddc_node);

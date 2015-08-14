@@ -539,8 +539,10 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 
 #ifdef CONFIG_COMMON_CLK
 	i2c_fsl->clk = clk_get(pdev, NULL);
-	if (IS_ERR(i2c_fsl->clk))
-		return PTR_ERR(i2c_fsl->clk);
+	if (IS_ERR(i2c_fsl->clk)) {
+		ret = PTR_ERR(i2c_fsl->clk);
+		goto fail;
+	}
 #endif
 	/* Setup i2c_fsl driver structure */
 	i2c_fsl->adapter.master_xfer = i2c_fsl_xfer;
@@ -548,8 +550,10 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	i2c_fsl->adapter.dev.parent = pdev;
 	i2c_fsl->adapter.dev.device_node = pdev->device_node;
 	i2c_fsl->base = dev_request_mem_region(pdev, 0);
-	if (IS_ERR(i2c_fsl->base))
-		return PTR_ERR(i2c_fsl->base);
+	if (IS_ERR(i2c_fsl->base)) {
+		ret = PTR_ERR(i2c_fsl->base);
+		goto fail;
+	}
 
 	i2c_fsl->dfsrr = -1;
 

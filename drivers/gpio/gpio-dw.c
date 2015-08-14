@@ -99,7 +99,7 @@ static int dw_gpio_get_direction(struct gpio_chip *gc, unsigned offset)
 		GPIOF_DIR_OUT : GPIOF_DIR_IN;
 }
 
-static struct gpio_ops imx_gpio_ops = {
+static struct gpio_ops dw_gpio_ops = {
 	.direction_input = dw_gpio_direction_input,
 	.direction_output = dw_gpio_direction_output,
 	.get_direction = dw_gpio_get_direction,
@@ -118,7 +118,7 @@ static int dw_gpio_probe(struct device_d *dev)
 	if (IS_ERR(chip->regs))
 		return PTR_ERR(chip->regs);
 
-	chip->chip.ops = &imx_gpio_ops;
+	chip->chip.ops = &dw_gpio_ops;
 	if (dev->id < 0) {
 		chip->chip.base = of_alias_get_id(dev->device_node, "gpio");
 		if (chip->chip.base < 0)

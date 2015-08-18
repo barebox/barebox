@@ -17,7 +17,3 @@
 	model = "Phytec phyFLEX-i.MX6 Quad";
 	compatible = "phytec,imx6q-pfla02", "fsl,imx6q";
 };
-
-&ecspi3 {
-	status = "okay";
-};

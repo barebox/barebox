@@ -16,7 +16,3 @@
 	model = "Phytec phyFLEX-i.MX6 Dual Lite";
 	compatible = "phytec,imx6dl-pfla02", "fsl,imx6dl";
 };
-
-&ecspi3 {
-	status = "okay";
-};

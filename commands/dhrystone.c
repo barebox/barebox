@@ -432,8 +432,7 @@ again:
 }
 
 BAREBOX_CMD_HELP_START(dhrystone)
-BAREBOX_CMD_HELP_TEXT(
-"this command runs the dhrystone benchmark to get an estimation of the CPU freq")
+BAREBOX_CMD_HELP_TEXT("Run dhrystone benchmark to get an estimation of the CPU freq")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dhrystone)

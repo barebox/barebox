@@ -1458,6 +1458,7 @@ endif
 config CMD_SPLASH
 	bool
 	select IMAGE_RENDERER
+	depends on VIDEO
 	prompt "splash"
 	help
 	  Display a BMP image on a framebuffer device

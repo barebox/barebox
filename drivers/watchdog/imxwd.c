@@ -217,17 +217,6 @@ on_error:
 	return ret;
 }
 
-static void imx_wd_remove(struct device_d *dev)
-{
-	struct imx_wd *priv = dev->priv;
-
-	if (IS_ENABLED(CONFIG_WATCHDOG_IMX))
-		watchdog_deregister(&priv->wd);
-
-	if (reset_wd && reset_wd != priv)
-		free(priv);
-}
-
 static const struct imx_wd_ops imx21_wd_ops = {
 	.set_timeout = imx21_watchdog_set_timeout,
 	.init = imx21_wd_init,
@@ -264,7 +253,6 @@ static struct platform_device_id imx_wdt_ids[] = {
 static struct driver_d imx_wd_driver = {
 	.name   = "imx-watchdog",
 	.probe  = imx_wd_probe,
-	.remove = imx_wd_remove,
 	.of_compatible = DRV_OF_COMPAT(imx_wdt_dt_ids),
 	.id_table = imx_wdt_ids,
 };

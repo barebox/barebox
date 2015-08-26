@@ -40,15 +40,13 @@ EXPORT_SYMBOL(reset_source_get);
 void reset_source_set(enum reset_src_type st)
 {
 	reset_source = st;
-
-	globalvar_add_simple("system.reset", reset_src_names[reset_source]);
 }
 EXPORT_SYMBOL(reset_source_set);
 
-/* ensure this runs after the 'global' device is already registerd */
 static int reset_source_init(void)
 {
-	reset_source_set(reset_source);
+	globalvar_add_simple_enum("system.reset", (unsigned int *)&reset_source,
+			reset_src_names, ARRAY_SIZE(reset_src_names));
 
 	return 0;
 }

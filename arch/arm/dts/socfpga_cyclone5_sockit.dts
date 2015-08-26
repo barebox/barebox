@@ -22,6 +22,10 @@
 	model = "Terasic SoCkit";
 	compatible = "terasic,sockit", "altr,socfpga";
 
+	chosen {
+		stdout-path = &uart0;
+	};
+
 	leds: gpio-leds {
 	};
 

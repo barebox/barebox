@@ -22,6 +22,10 @@
 	model = "EBV SoCrates";
 	compatible = "ebv,socrates", "altr,socfpga";
 
+	chosen {
+		stdout-path = &uart0;
+	};
+
 	leds: gpio-leds {
 	};
 };

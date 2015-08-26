@@ -15,6 +15,8 @@
 
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
+	const char *name;
+	struct device_d *dev;
 	unsigned int priority;
 	struct list_head list;
 };

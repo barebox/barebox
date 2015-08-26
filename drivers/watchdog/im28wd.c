@@ -197,6 +197,7 @@ static int imx28_wd_probe(struct device_d *dev)
 	if (IS_ERR(priv->regs))
 		return PTR_ERR(priv->regs);
 	priv->wd.set_timeout = imx28_watchdog_set_timeout;
+	priv->wd.dev = dev;
 
 	if (!(readl(priv->regs + MXS_RTC_STAT) & MXS_RTC_STAT_WD_PRESENT)) {
 		rc = -ENODEV;

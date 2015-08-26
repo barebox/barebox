@@ -21,6 +21,16 @@
 
 static LIST_HEAD(watchdog_list);
 
+static const char *watchdog_name(struct watchdog *wd)
+{
+	if (wd->dev)
+		return dev_name(wd->dev);
+	if (wd->name)
+		return wd->name;
+
+	return "unknown";
+}
+
 int watchdog_register(struct watchdog *wd)
 {
 	if (!wd->priority)
@@ -28,7 +38,8 @@ int watchdog_register(struct watchdog *wd)
 
 	list_add_tail(&wd->list, &watchdog_list);
 
-	pr_debug("registering watchdog with priority %d\n", wd->priority);
+	pr_debug("registering watchdog %s with priority %d\n", watchdog_name(wd),
+			wd->priority);
 
 	return 0;
 }
@@ -69,6 +80,8 @@ int watchdog_set_timeout(unsigned timeout)
 
 	if (!wd)
 		return -ENODEV;
+
+	pr_debug("setting timeout on %s to %ds\n", watchdog_name(wd), timeout);
 
 	return wd->set_timeout(wd, timeout);
 }

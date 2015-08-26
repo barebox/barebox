@@ -186,6 +186,7 @@ static int imx_wd_probe(struct device_d *dev)
 	}
 	priv->ops = ops;
 	priv->wd.set_timeout = imx_watchdog_set_timeout;
+	priv->wd.dev = dev;
 	priv->dev = dev;
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {

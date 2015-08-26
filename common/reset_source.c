@@ -11,6 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#define pr_fmt(fmt) "reset-source: " fmt
 
 #include <common.h>
 #include <init.h>
@@ -45,6 +46,9 @@ void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 
 	reset_source = st;
 	reset_source_priority = priority;
+
+	pr_debug("Setting reset source to %s with priority %d\n",
+			reset_src_names[reset_source], priority);
 }
 EXPORT_SYMBOL(reset_source_set);
 

@@ -26,12 +26,13 @@
 #include <common.h>
 #include <memory.h>
 #include <init.h>
+#include <restart.h>
 #include <asm/fsl_ddr_sdram.h>
 #include <asm-generic/memory_layout.h>
 #include <mach/mmu.h>
 #include <mach/immap_85xx.h>
 
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn mpc85xx_restart_soc(struct restart_handler *rst)
 {
 	void __iomem *regs = (void __iomem *)MPC85xx_GUTS_ADDR;
 
@@ -39,9 +40,16 @@ void __noreturn reset_cpu(unsigned long addr)
 	out_be32(regs + MPC85xx_GUTS_RSTCR_OFFSET, 0x2);  /* HRESET_REQ */
 	udelay(100);
 
-	while (1)
-		;
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(mpc85xx_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);
 
 long int initdram(int board_type)
 {

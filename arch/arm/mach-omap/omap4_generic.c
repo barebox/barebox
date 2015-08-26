@@ -1,6 +1,7 @@
 #include <common.h>
 #include <bootsource.h>
 #include <init.h>
+#include <restart.h>
 #include <io.h>
 #include <mach/omap4-clock.h>
 #include <mach/omap4-silicon.h>
@@ -34,11 +35,11 @@
 #define EMIF_L3_CONFIG_VAL_SYS_10_LL_0		0x0A0000FF
 #define EMIF_L3_CONFIG_VAL_SYS_10_MPU_3_LL_0	0x0A300000
 
-void __noreturn omap4_reset_cpu(unsigned long addr)
+static void __noreturn omap4_restart_soc(struct restart_handler *rst)
 {
 	writel(OMAP44XX_PRM_RSTCTRL_RESET, OMAP44XX_PRM_RSTCTRL);
 
-	while (1);
+	hang();
 }
 
 void omap4_set_warmboot_order(u32 *device_list)
@@ -532,6 +533,8 @@ static int omap4_bootsource(void)
 int omap4_init(void)
 {
 	omap_gpmc_base = (void *)OMAP44XX_GPMC_BASE;
+
+	restart_handler_register_fn(omap4_restart_soc);
 
 	return omap4_bootsource();
 }

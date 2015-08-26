@@ -17,7 +17,18 @@
 #include <asm-generic/io.h>
 #include <common.h>
 #include <init.h>
+#include <restart.h>
 #include <mach/zynq7000-regs.h>
+
+static void __noreturn zynq_restart_soc(struct restart_handler *rst)
+{
+	/* write unlock key to slcr */
+	writel(0xDF0D, ZYNQ_SLCR_UNLOCK);
+	/* reset */
+	writel(0x1, ZYNQ_PSS_RST_CTRL);
+
+	hang();
+}
 
 static int zynq_init(void)
 {
@@ -40,17 +51,8 @@ static int zynq_init(void)
 	add_generic_device("zynq-clock", 0, NULL, ZYNQ_SLCR_BASE, 0x4000, IORESOURCE_MEM, NULL);
 	add_generic_device("smp_twd", 0, NULL, CORTEXA9_SCU_TIMER_BASE_ADDR,
 				0x4000, IORESOURCE_MEM, NULL);
+	restart_handler_register_fn(zynq_restart_soc);
+
 	return 0;
 }
 postcore_initcall(zynq_init);
-
-void __noreturn reset_cpu(unsigned long addr)
-{
-	/* write unlock key to slcr */
-	writel(0xDF0D, ZYNQ_SLCR_UNLOCK);
-	/* reset */
-	writel(0x1, ZYNQ_PSS_RST_CTRL);
-
-	while (1)
-		;
-}

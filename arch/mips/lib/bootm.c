@@ -5,6 +5,7 @@
 #include <fs.h>
 #include <errno.h>
 #include <binfmt.h>
+#include <restart.h>
 
 #include <asm/byteorder.h>
 
@@ -20,7 +21,7 @@ static int do_bootm_barebox(struct image_data *data)
 
 	barebox();
 
-	reset_cpu(0);
+	restart_machine();
 }
 
 static struct image_handler barebox_handler = {

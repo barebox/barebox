@@ -18,8 +18,6 @@ static inline void omap4_save_bootinfo(uint32_t *info)
 	memcpy((void *)OMAP44XX_SRAM_SCRATCH_SPACE, info, 3 * sizeof(uint32_t));
 }
 
-void __noreturn omap4_reset_cpu(unsigned long addr);
-
 int omap4_init(void);
 int omap4_devices_init(void);
 

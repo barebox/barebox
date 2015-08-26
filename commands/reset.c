@@ -21,6 +21,7 @@
 #include <command.h>
 #include <complete.h>
 #include <getopt.h>
+#include <restart.h>
 
 static int cmd_reset(int argc, char *argv[])
 {
@@ -39,7 +40,7 @@ static int cmd_reset(int argc, char *argv[])
 	if (shutdown_flag)
 		shutdown_barebox();
 
-	reset_cpu(0);
+	restart_machine();
 
 	/* Not reached */
 	return 1;

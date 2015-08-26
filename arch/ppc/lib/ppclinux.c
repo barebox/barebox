@@ -10,6 +10,7 @@
 #include <asm/processor.h>
 #include <boot.h>
 #include <errno.h>
+#include <restart.h>
 #include <fs.h>
 
 static int bootm_relocate_fdt(void *addr, struct image_data *data)
@@ -87,7 +88,7 @@ static int do_bootm_linux(struct image_data *data)
 	 */
 	kernel(data->oftree, kernel, 0, 0, 0);
 
-	reset_cpu(0);
+	restart_machine();
 
 error:
 	return -1;

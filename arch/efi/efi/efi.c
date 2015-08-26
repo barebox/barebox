@@ -24,6 +24,7 @@
 #include <command.h>
 #include <magicvar.h>
 #include <init.h>
+#include <restart.h>
 #include <driver.h>
 #include <ns16550.h>
 #include <io.h>
@@ -273,12 +274,20 @@ static int efi_console_init(void)
 }
 console_initcall(efi_console_init);
 
-void reset_cpu(unsigned long addr)
+static void __noreturn efi_restart_system(struct restart_handler *rst)
 {
 	RT->reset_system(EFI_RESET_WARM, EFI_SUCCESS, 0, NULL);
 
-	while(1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(efi_restart_system);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);
 
 extern char image_base[];
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],

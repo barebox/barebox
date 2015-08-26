@@ -24,6 +24,7 @@
 #include <environment.h>
 #include <led.h>
 #include <of.h>
+#include <restart.h>
 
 int errno;
 EXPORT_SYMBOL(errno);
@@ -206,7 +207,7 @@ void __noreturn panic(const char *fmt, ...)
 		hang();
 	} else {
 		udelay(100000);	/* allow messages to go out */
-		reset_cpu(0);
+		restart_machine();
 	}
 }
 EXPORT_SYMBOL(panic);

@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <restart.h>
 #include <mach/imx28-regs.h>
 #include <io.h>
 
@@ -24,18 +25,16 @@
 #define HW_CLKCTRL_WDOG_POR_DISABLE (1 << 5)
 
 /* Reset the full i.MX28 SoC via a chipset feature */
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn imx28_restart_soc(struct restart_handler *rst)
 {
 	u32 reg;
 
 	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_RESET);
 	writel(reg | HW_CLKCTRL_RESET_CHIP, IMX_CCM_BASE + HW_CLKCTRL_RESET);
 
-	while (1)
-		;
+	hang();
 	/*NOTREACHED*/
 }
-EXPORT_SYMBOL(reset_cpu);
 
 static int imx28_init(void)
 {
@@ -49,6 +48,8 @@ static int imx28_init(void)
 	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_RESET) |
 		HW_CLKCTRL_WDOG_POR_DISABLE;
 	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_RESET);
+
+	restart_handler_register_fn(imx28_restart_soc);
 
 	return 0;
 }

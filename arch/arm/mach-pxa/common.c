@@ -16,6 +16,8 @@
  */
 
 #include <common.h>
+#include <init.h>
+#include <restart.h>
 #include <mach/pxa-regs.h>
 #include <asm/io.h>
 
@@ -29,7 +31,7 @@
 
 extern void pxa_clear_reset_source(void);
 
-void reset_cpu(ulong addr)
+static void __noreturn pxa_restart_soc(struct restart_handler *rst)
 {
 	/* Clear last reset source */
 	pxa_clear_reset_source();
@@ -39,5 +41,13 @@ void reset_cpu(ulong addr)
 	writel(OSSR_M3, OSSR);
 	writel(readl(OSCR) + 368640, OSMR3);  /* ... in 100 ms */
 
-	while (1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(pxa_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

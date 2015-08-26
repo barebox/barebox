@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <restart.h>
 #include <mach/imx23-regs.h>
 #include <io.h>
 
@@ -23,18 +24,16 @@
 # define HW_CLKCTRL_RESET_CHIP (1 << 1)
 
 /* Reset the full i.MX23 SoC via a chipset feature */
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn imx23_restart_soc(struct restart_handler *rst)
 {
 	u32 reg;
 
 	reg = readl(IMX_CCM_BASE + HW_CLKCTRL_RESET);
 	writel(reg | HW_CLKCTRL_RESET_CHIP, IMX_CCM_BASE + HW_CLKCTRL_RESET);
 
-	while (1)
-		;
+	hang();
 	/*NOTREACHED*/
 }
-EXPORT_SYMBOL(reset_cpu);
 
 static int imx23_devices_init(void)
 {
@@ -46,6 +45,7 @@ static int imx23_devices_init(void)
 	add_generic_device("imx23-gpio", 0, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx23-gpio", 1, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
 	add_generic_device("imx23-gpio", 2, NULL, IMX_IOMUXC_BASE, 0x2000, IORESOURCE_MEM, NULL);
+	restart_handler_register_fn(imx23_restart_soc);
 
 	return 0;
 }

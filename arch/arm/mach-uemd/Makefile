@@ -1,1 +1,1 @@
-obj-y += reset.o
+obj- := __dummy__.o

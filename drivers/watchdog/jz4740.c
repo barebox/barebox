@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <restart.h>
 #include <io.h>
 
 #define JZ_REG_WDT_TIMER_DATA     0x0
@@ -39,33 +40,30 @@
 #define JZ_EXTAL 24000000
 
 struct jz4740_wdt_drvdata {
+	struct restart_handler restart;
 	void __iomem *base;
 };
 
-static struct jz4740_wdt_drvdata *reset_wd;
-
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn jz4740_reset_soc(struct restart_handler *rst)
 {
-	if (reset_wd) {
-		void __iomem *base = reset_wd->base;
+	struct jz4740_wdt_drvdata *priv =
+		container_of(rst, struct jz4740_wdt_drvdata, restart);
+	void __iomem *base = priv->base;
 
-		writew(JZ_WDT_CLOCK_DIV_4 | JZ_WDT_CLOCK_EXT,
-				base + JZ_REG_WDT_TIMER_CONTROL);
-		writew(0, base + JZ_REG_WDT_TIMER_COUNTER);
+	writew(JZ_WDT_CLOCK_DIV_4 | JZ_WDT_CLOCK_EXT,
+			base + JZ_REG_WDT_TIMER_CONTROL);
+	writew(0, base + JZ_REG_WDT_TIMER_COUNTER);
 
-		/* reset after 4ms */
-		writew(JZ_EXTAL / 1000, base + JZ_REG_WDT_TIMER_DATA);
+	/* reset after 4ms */
+	writew(JZ_EXTAL / 1000, base + JZ_REG_WDT_TIMER_DATA);
 
-		/* start wdt */
-		writeb(0x1, base + JZ_REG_WDT_COUNTER_ENABLE);
+	/* start wdt */
+	writeb(0x1, base + JZ_REG_WDT_COUNTER_ENABLE);
 
-		mdelay(1000);
-	} else
-		pr_err("%s: can't reset cpu\n", __func__);
+	mdelay(1000);
 
 	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
 
 static int jz4740_wdt_probe(struct device_d *dev)
 {
@@ -78,10 +76,11 @@ static int jz4740_wdt_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	if (!reset_wd)
-		reset_wd = priv;
-
 	dev->priv = priv;
+
+	priv->restart.name = "jz4740-wdt";
+	priv->restart.restart = jz4740_reset_soc;
+	restart_handler_register(&priv->restart);
 
 	return 0;
 }

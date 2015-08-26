@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <restart.h>
 #include <asm/system.h>
 #include <asm/openrisc_exc.h>
 
@@ -29,11 +30,17 @@ int cleanup_before_linux(void)
 
 extern void __reset(void);
 
-void __noreturn reset_cpu(ulong ignored)
+static void __noreturn openrisc_restart_cpu(struct restart_handler *rst)
 {
 	__reset();
 	/* not reached, __reset does not return */
 
 	/* Not reached */
-	while (1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(openrisc_restart_cpu, NULL, RESET_SCOPE_CPU);
+}
+coredevice_initcall(restart_register_feature);

@@ -150,17 +150,6 @@ static int omap_env_init(void)
 late_initcall(omap_env_init);
 #endif
 
-void __noreturn reset_cpu(unsigned long addr)
-{
-	if (cpu_is_omap3())
-		omap3_reset_cpu(addr);
-	if (cpu_is_omap4())
-		omap4_reset_cpu(addr);
-	if (cpu_is_am33xx())
-		am33xx_reset_cpu(addr);
-	while (1);
-}
-
 static int omap_soc_from_dt(void)
 {
         if (of_machine_is_compatible("ti,am33xx"))

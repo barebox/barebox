@@ -18,14 +18,22 @@
  */
 
 #include <common.h>
+#include <init.h>
+#include <restart.h>
 #include <asm/system.h>
 
-void __noreturn reset_cpu(ulong ignored)
+static void __noreturn nios2_restart_soc(struct restart_handler *rst)
 {
 	/* indirect call to go beyond 256MB limitation of toolchain */
 	nios2_callr(RESET_ADDR);
 
 	/* Not reached */
-	while (1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(nios2_restart_soc);
+}
+coredevice_initcall(restart_register_feature);
 

@@ -31,6 +31,7 @@
 #include <progress.h>
 #include <environment.h>
 #include <globalvar.h>
+#include <restart.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>
 #include <usb/fastboot.h>
@@ -520,7 +521,7 @@ static int fastboot_tx_print(struct f_fastboot *f_fb, const char *fmt, ...)
 
 static void compl_do_reset(struct usb_ep *ep, struct usb_request *req)
 {
-	reset_cpu(0);
+	restart_machine();
 }
 
 static void cb_reboot(struct usb_ep *ep, struct usb_request *req, const char *cmd)

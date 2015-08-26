@@ -15,6 +15,7 @@ int linux_read_nonblock(int fd, void *buf, size_t count);
 ssize_t linux_write(int fd, const void *buf, size_t count);
 off_t linux_lseek(int fildes, off_t offset);
 int linux_tstc(int fd);
+void __attribute__((noreturn)) linux_exit(void);
 
 int linux_execve(const char * filename, char *const argv[], char *const envp[]);
 

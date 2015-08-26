@@ -17,6 +17,8 @@
 
 #include <common.h>
 #include <io.h>
+#include <init.h>
+#include <restart.h>
 #include <mach/socfpga-regs.h>
 #include <mach/reset-manager.h>
 
@@ -38,7 +40,7 @@ void watchdog_disable(void)
 }
 
 /* Write the reset manager register to cause reset */
-void reset_cpu(ulong addr)
+static void __noreturn socfpga_restart_soc(struct restart_handler *rst)
 {
 	/* request a warm reset */
 	writel((1 << RSTMGR_CTRL_SWWARMRSTREQ_LSB),
@@ -47,5 +49,13 @@ void reset_cpu(ulong addr)
 	 * infinite loop here as watchdog will trigger and reset
 	 * the processor
 	 */
-	while (1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(socfpga_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

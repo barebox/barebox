@@ -16,6 +16,7 @@
 #include <libbb.h>
 #include <magicvar.h>
 #include <binfmt.h>
+#include <restart.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -111,7 +112,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 
 	start_linux((void *)kernel, swap, initrd_start, initrd_size, data->oftree);
 
-	reset_cpu(0);
+	restart_machine();
 
 	return -ERESTARTSYS;
 }
@@ -378,7 +379,7 @@ static int do_bootm_barebox(struct image_data *data)
 
 	start_linux(barebox, 0, 0, 0, data->oftree);
 
-	reset_cpu(0);
+	restart_machine();
 }
 
 static struct image_handler barebox_handler = {
@@ -518,7 +519,7 @@ static int do_bootm_aimage(struct image_data *data)
 
 		second();
 
-		reset_cpu(0);
+		restart_machine();
 	}
 
 	close(fd);

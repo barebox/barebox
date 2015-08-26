@@ -25,10 +25,11 @@ enum reset_src_type {
 };
 
 #ifdef CONFIG_RESET_SOURCE
-void reset_source_set(enum reset_src_type);
+void reset_source_set_priority(enum reset_src_type, unsigned int priority);
 enum reset_src_type reset_source_get(void);
 #else
-static inline void reset_source_set(enum reset_src_type unused)
+static inline void reset_source_set_priority(enum reset_src_type type,
+		unsigned int priority)
 {
 }
 
@@ -37,5 +38,14 @@ static inline enum reset_src_type reset_source_get(void)
 	return RESET_UKWN;
 }
 #endif
+
+#define RESET_SOURCE_DEFAULT_PRIORITY 100
+
+static inline void reset_source_set(enum reset_src_type type)
+{
+	reset_source_set_priority(type, RESET_SOURCE_DEFAULT_PRIORITY);
+}
+
+unsigned int of_get_reset_source_priority(struct device_node *node);
 
 #endif /* __INCLUDE_RESET_SOURCE_H */

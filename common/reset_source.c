@@ -30,6 +30,7 @@ static const char * const reset_src_names[] = {
 };
 
 static enum reset_src_type reset_source;
+static unsigned int reset_source_priority;
 
 enum reset_src_type reset_source_get(void)
 {
@@ -37,9 +38,13 @@ enum reset_src_type reset_source_get(void)
 }
 EXPORT_SYMBOL(reset_source_get);
 
-void reset_source_set(enum reset_src_type st)
+void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 {
+	if (priority <= reset_source_priority)
+		return;
+
 	reset_source = st;
+	reset_source_priority = priority;
 }
 EXPORT_SYMBOL(reset_source_set);
 
@@ -52,3 +57,19 @@ static int reset_source_init(void)
 }
 
 coredevice_initcall(reset_source_init);
+
+/**
+ * of_get_reset_source_priority() - get the desired reset source priority from
+ *                                  device tree
+ * @node:	The device_node to read the property from
+ *
+ * return: The priority
+ */
+unsigned int of_get_reset_source_priority(struct device_node *node)
+{
+	unsigned int priority = RESET_SOURCE_DEFAULT_PRIORITY;
+
+	of_property_read_u32(node, "reset-source-priority", &priority);
+
+	return priority;
+}

@@ -158,17 +158,7 @@ static unsigned char to_hexa(unsigned char c)
 	return c;
 }
 
-int read_passwd(unsigned char *sum, size_t length)
-{
-	if (is_passwd_env_enable())
-		return read_env_passwd(sum, length);
-	else if (is_passwd_default_enable())
-		return read_default_passwd(sum, length);
-	else
-		return -EINVAL;
-}
-
-int read_default_passwd(unsigned char *sum, size_t length)
+static int read_default_passwd(unsigned char *sum, size_t length)
 {
 	int i = 0;
 	int len = strlen(default_passwd);
@@ -195,7 +185,7 @@ int read_default_passwd(unsigned char *sum, size_t length)
 }
 EXPORT_SYMBOL(read_default_passwd);
 
-int read_env_passwd(unsigned char *sum, size_t length)
+static int read_env_passwd(unsigned char *sum, size_t length)
 {
 	int fd;
 	int ret = 0;
@@ -286,7 +276,7 @@ exit:
 }
 EXPORT_SYMBOL(write_env_passwd);
 
-static int __check_passwd(unsigned char* passwd, size_t length, int std)
+static int check_passwd(unsigned char *passwd, size_t length)
 {
 	struct digest *d = NULL;
 	unsigned char *passwd1_sum;
@@ -308,10 +298,12 @@ static int __check_passwd(unsigned char* passwd, size_t length, int std)
 
 	passwd2_sum = passwd1_sum + hash_len;
 
-	if (std)
+	if (is_passwd_env_enable())
 		ret = read_env_passwd(passwd2_sum, hash_len);
-	else
+	else if (is_passwd_default_enable())
 		ret = read_default_passwd(passwd2_sum, hash_len);
+	else
+		ret = -EINVAL;
 
 	if (ret < 0)
 		goto err;
@@ -343,28 +335,6 @@ err:
 	digest_free(d);
 
 	return ret;
-}
-
-int check_default_passwd(unsigned char* passwd, size_t length)
-{
-	return __check_passwd(passwd, length, 0);
-}
-EXPORT_SYMBOL(check_default_passwd);
-
-int check_env_passwd(unsigned char* passwd, size_t length)
-{
-	return __check_passwd(passwd, length, 1);
-}
-EXPORT_SYMBOL(check_env_passwd);
-
-int check_passwd(unsigned char* passwd, size_t length)
-{
-	if (is_passwd_env_enable())
-		return check_env_passwd(passwd, length);
-	else if (is_passwd_default_enable())
-		return check_default_passwd(passwd, length);
-	else
-		return -EINVAL;
 }
 
 int set_env_passwd(unsigned char* passwd, size_t length)
@@ -423,7 +393,7 @@ EXPORT_SYMBOL(set_env_passwd);
 #endif
 
 static int logged_in;
-static int login_timeout;
+static int login_timeout = 60;
 static char *login_fail_command;
 
 /**
@@ -438,7 +408,7 @@ void login(void)
 	unsigned char passwd[PASSWD_MAX_LENGTH];
 	int ret;
 
-	if (!is_passwd_enable())
+	if (!is_passwd_default_enable() && !is_passwd_env_enable())
 		return;
 
 	if (logged_in)

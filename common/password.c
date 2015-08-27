@@ -288,6 +288,10 @@ static int check_passwd(unsigned char *passwd, size_t length)
 		hash_len = PBKDF2_LENGTH;
 	} else {
 		d = digest_alloc(PASSWD_SUM);
+		if (!d) {
+			pr_err("No such digest: %s\n", PASSWD_SUM);
+			return -ENOENT;
+		}
 
 		hash_len = digest_length(d);
 	}

@@ -24,8 +24,11 @@
 #include <digest.h>
 #include <malloc.h>
 #include <xfuncs.h>
+#include <magicvar.h>
 #include <clock.h>
+#include <init.h>
 #include <stdlib.h>
+#include <globalvar.h>
 #include <generated/passwd.h>
 #include <crypto/pbkdf2.h>
 
@@ -73,7 +76,7 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 			case CTL_CH('c'):
 				passwd[0] = '\0';
 				puts("\r\n");
-				return 0;
+				return -EINTR;
 			case CTL_CH('h'):
 			case BB_KEY_DEL7:
 			case BB_KEY_DEL:
@@ -104,7 +107,7 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 		}
 	} while (!is_timeout(start, timeout * SECOND) || timeout == 0);
 
-	return -1;
+	return -ETIMEDOUT;
 }
 EXPORT_SYMBOL(password);
 
@@ -374,6 +377,8 @@ int set_env_passwd(unsigned char* passwd, size_t length)
 		hash_len = PBKDF2_LENGTH;
 	} else {
 		d = digest_alloc(PASSWD_SUM);
+		if (!d)
+			return -EINVAL;
 
 		hash_len = digest_length(d);
 	}
@@ -406,3 +411,69 @@ err:
 	return ret;
 }
 EXPORT_SYMBOL(set_env_passwd);
+
+#define PASSWD_MAX_LENGTH	(128 + 1)
+
+#if defined(CONFIG_PASSWD_MODE_STAR)
+#define LOGIN_MODE STAR
+#elif defined(CONFIG_PASSWD_MODE_CLEAR)
+#define LOGIN_MODE CLEAR
+#else
+#define LOGIN_MODE HIDE
+#endif
+
+static int logged_in;
+static int login_timeout;
+static char *login_fail_command;
+
+/**
+ * login() - Prompt for password
+ *
+ * This function only returns when the correct password has been entered or
+ * no password is necessary because either no password is configured or the
+ * correct password has been entered in a previous call to this function.
+ */
+void login(void)
+{
+	unsigned char passwd[PASSWD_MAX_LENGTH];
+	int ret;
+
+	if (!is_passwd_enable())
+		return;
+
+	if (logged_in)
+		return;
+
+	while (1) {
+		printf("Password: ");
+
+		ret = password(passwd, PASSWD_MAX_LENGTH, LOGIN_MODE, login_timeout);
+		if (ret < 0)
+			run_command(login_fail_command);
+
+		if (ret < 0)
+			continue;
+
+		if (check_passwd(passwd, ret) != 1)
+			continue;
+
+		logged_in = 1;
+		return;
+	}
+}
+
+static int login_global_init(void)
+{
+	login_fail_command = xstrdup("boot");
+
+	globalvar_add_simple_int("login.timeout", &login_timeout, "%d");
+	globalvar_add_simple_string("login.fail_command", &login_fail_command);
+
+	return 0;
+}
+late_initcall(login_global_init);
+
+BAREBOX_MAGICVAR_NAMED(global_login_fail_command, global.login.fail_command,
+		"command to run when password entry failed");
+BAREBOX_MAGICVAR_NAMED(global_login_timeout, global.login.timeout,
+		"timeout to type the password");

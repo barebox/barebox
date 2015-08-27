@@ -27,24 +27,14 @@ magicvar -a global.allow_color "Allow color on the console (boolean)"
 [ -e /env/config-board ] && /env/config-board
 /env/config
 
-# request password to login if a timeout is specified and password set
-if [ -n ${global.login.timeout} ]; then
-	[ ${global.login.timeout} -gt 0 ] && login_cmd=login
-fi
-# allow the input if not
-[ -n ${global.console.input_allow} ] && global.console.input_allow=1
-
 # allow to stop the boot before execute the /env/init/*
 # but without waiting
 timeout -s -a -v key 0
 autoboot="$?"
 
 if [ "${key}" = "q" ]; then
-	${login_cmd}
 	exit
 fi
-
-[ -n ${login_cmd} ] && global.console.input_allow=0
 
 for i in /env/init/*; do
 	. $i
@@ -56,17 +46,12 @@ else
 	echo -e -n "\nHit any key to stop autoboot: "
 fi
 
-[ -n ${login_cmd} ] && global.console.input_allow=1
-
 if [ "$autoboot" = 0 ]; then
 	timeout -a $global.autoboot_timeout -v key
 	autoboot="$?"
 fi
 
-[ -n ${login_cmd} ] && global.console.input_allow=0
-
 if [ "${key}" = "q" ]; then
-	${login_cmd}
 	exit
 fi
 
@@ -75,12 +60,9 @@ if [ "$autoboot" = 0 ]; then
 fi
 
 if [ -e /env/menu ]; then
-	${login_cmd}
 	if [ "${key}" != "m" ]; then
 		echo -e "\ntype exit to get to the menu"
 		sh
 	fi
 	/env/menu/mainmenu
 fi
-
-${login_cmd}

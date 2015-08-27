@@ -12,11 +12,14 @@
 #include <common.h>
 #include <getopt.h>
 #include <menu.h>
+#include <password.h>
 
 static int do_menutree(int argc, char *argv[])
 {
 	int opt, ret;
 	char *path = "/env/menu";
+
+	login();
 
 	while ((opt = getopt(argc, argv, "m:")) > 0) {
 		switch (opt) {

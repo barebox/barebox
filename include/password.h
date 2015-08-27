@@ -42,6 +42,14 @@ int passwd_env_disable(void);
 int check_env_passwd(unsigned char* passwd, size_t length);
 int set_env_passwd(unsigned char* passwd, size_t length);
 
+#ifdef CONFIG_PASSWORD
+void login(void);
+#else
+static inline void login(void)
+{
+}
+#endif
+
 static inline int is_passwd_enable(void)
 {
 	return is_passwd_default_enable() || is_passwd_env_enable();

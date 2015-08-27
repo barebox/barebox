@@ -71,9 +71,6 @@ extern struct list_head console_list;
 
 #define CFG_PBSIZE (CONFIG_CBSIZE+sizeof(CONFIG_PROMPT)+16)
 
-bool console_is_input_allow(void);
-void console_allow_input(bool val);
-
 extern int barebox_loglevel;
 
 struct console_device *console_get_first_active(void);

@@ -108,13 +108,10 @@ void __noreturn start_barebox(void)
 	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
 		pr_info("running /env/bin/init...\n");
 
-		if (!stat("/env/bin/init", &s)) {
+		if (!stat("/env/bin/init", &s))
 			run_command("source /env/bin/init");
-		} else {
+		else
 			pr_err("/env/bin/init not found\n");
-			if (IS_ENABLED(CONFIG_CMD_LOGIN))
-				while(run_command("login -t 0"));
-		}
 	}
 
 	if (!barebox_main) {

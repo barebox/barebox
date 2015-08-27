@@ -928,7 +928,7 @@ config CMD_LS
 config CMD_MD5SUM
 	tristate
 	select COMPILE_HASH
-	select MD5
+	select DIGEST_MD5_GENERIC
 	prompt "md5sum"
 	help
 	  Usage: md5sum FILE|AREA...
@@ -993,7 +993,7 @@ config CMD_RMDIR
 config CMD_SHA1SUM
 	tristate
 	select COMPILE_HASH
-	select SHA1
+	select DIGEST_SHA1_GENERIC
 	prompt "sha1sum"
 	help
 	  Calculate SHA1 digest
@@ -1005,7 +1005,7 @@ config CMD_SHA1SUM
 config CMD_SHA224SUM
 	tristate
 	select COMPILE_HASH
-	select SHA224
+	select DIGEST_SHA224_GENERIC
 	prompt "sha224sum"
 	help
 	  Calculate SHA224 digest
@@ -1017,7 +1017,7 @@ config CMD_SHA224SUM
 config CMD_SHA256SUM
 	tristate
 	select COMPILE_HASH
-	select SHA256
+	select DIGEST_SHA256_GENERIC
 	prompt "sha256sum"
 	help
 	  sha256sum - calculate SHA256 digest
@@ -1029,7 +1029,7 @@ config CMD_SHA256SUM
 config CMD_SHA384SUM
 	tristate
 	select COMPILE_HASH
-	select SHA384
+	select DIGEST_SHA384_GENERIC
 	prompt "sha384sum"
 	help
 	  Calculate SHA384 digest
@@ -1041,7 +1041,7 @@ config CMD_SHA384SUM
 config CMD_SHA512SUM
 	tristate
 	select COMPILE_HASH
-	select SHA512
+	select DIGEST_SHA512_GENERIC
 	prompt "sha512sum"
 	help
 	  sha512sum - calculate SHA512 digest

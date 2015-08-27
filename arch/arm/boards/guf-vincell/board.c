@@ -40,6 +40,9 @@ static void vincell_fec_reset(void)
 
 static int vincell_devices_init(void)
 {
+	if (!of_machine_is_compatible("guf,imx53-vincell"))
+		return 0;
+
 	writel(0, MX53_M4IF_BASE_ADDR + 0xc);
 
 	clk_set_rate(clk_lookup("emi_slow_podf"), 133333334);

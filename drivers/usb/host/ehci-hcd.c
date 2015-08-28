@@ -934,13 +934,18 @@ static int ehci_probe(struct device_d *dev)
 {
 	struct ehci_data data = {};
 	struct ehci_platform_data *pdata = dev->platform_data;
+	struct device_node *dn = dev->device_node;
 
-	/* default to EHCI_HAS_TT to not change behaviour of boards
-	 * without platform_data
-	 */
 	if (pdata)
 		data.flags = pdata->flags;
-	else
+	else if (dn) {
+		data.flags = 0;
+		if (of_property_read_bool(dn, "has-transaction-translator"))
+			data.flags |= EHCI_HAS_TT;
+	} else
+		/* default to EHCI_HAS_TT to not change behaviour of boards
+		 * without platform_data
+		 */
 		data.flags = EHCI_HAS_TT;
 
 	data.hccr = dev_request_mem_region(dev, 0);
@@ -961,9 +966,18 @@ static void ehci_remove(struct device_d *dev)
 	ehci_halt(ehci);
 }
 
+static __maybe_unused struct of_device_id ehci_platform_dt_ids[] = {
+	{
+		.compatible = "generic-ehci",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d ehci_driver = {
 	.name  = "ehci",
 	.probe = ehci_probe,
 	.remove = ehci_remove,
+	.of_compatible = DRV_OF_COMPAT(ehci_platform_dt_ids),
 };
 device_platform_driver(ehci_driver);

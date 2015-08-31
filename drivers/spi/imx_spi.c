@@ -230,13 +230,7 @@ static unsigned int cspi_2_3_xchg_single(struct imx_spi *imx, unsigned int data)
 {
 	void __iomem *base = imx->regs;
 
-	unsigned int cfg_reg = readl(base + CSPI_2_3_CTRL);
-
 	writel(data, base + CSPI_2_3_TXDATA);
-
-	cfg_reg |= CSPI_2_3_CTRL_XCH;
-
-	writel(cfg_reg, base + CSPI_2_3_CTRL);
 
 	while (!(readl(base + CSPI_2_3_STAT) & CSPI_2_3_STAT_RR));
 
@@ -305,6 +299,8 @@ static void cspi_2_3_chipselect(struct spi_device *spi, int is_active)
 	ctrl |= CSPI_2_3_CTRL_CS(cs);
 
 	ctrl |= (spi->bits_per_word - 1) << CSPI_2_3_CTRL_BL_OFFSET;
+
+	ctrl |= CSPI_2_3_CTRL_SMC;
 
 	cfg |= CSPI_2_3_CONFIG_SBBCTRL(cs);
 

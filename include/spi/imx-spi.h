@@ -61,6 +61,7 @@
 #define CSPI_2_3_CTRL		0x08
 #define CSPI_2_3_CTRL_ENABLE		(1 <<  0)
 #define CSPI_2_3_CTRL_XCH		(1 <<  2)
+#define CSPI_2_3_CTRL_SMC		(1 <<  3)
 #define CSPI_2_3_CTRL_MODE(cs)	(1 << ((cs) +  4))
 #define CSPI_2_3_CTRL_POSTDIV_OFFSET	8
 #define CSPI_2_3_CTRL_PREDIV_OFFSET	12

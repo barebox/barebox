@@ -79,6 +79,7 @@
 #define CSPI_2_3_INT_RREN		(1 <<  3)
 
 #define CSPI_2_3_STAT		0x18
-#define CSPI_2_3_STAT_RR		(1 <<  3)
+#define CSPI_2_3_STAT_TF		(1 << 2)
+#define CSPI_2_3_STAT_RR		(1 << 3)
 
 #endif /* __SPI_IMX_SPI_H */

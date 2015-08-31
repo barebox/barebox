@@ -340,6 +340,8 @@ int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
 		const u_char *buf)
 {
+	*retlen = 0;
+
 	return mtd->write(mtd, to, len, retlen, buf);
 }
 

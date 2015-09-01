@@ -64,8 +64,8 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	if (IS_ERR(new))
 		new = NULL;
 
-	if (new && new->dev)
-		new->dev->device_node = node;
+	if (new)
+		new->device_node = node;;
 
 	free(filename);
 

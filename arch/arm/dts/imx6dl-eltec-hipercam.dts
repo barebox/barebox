@@ -15,7 +15,7 @@
 
 		environment@0 {
 			compatible = "barebox,environment";
-			device-path = &norflash0, "partname:bareboxenv";
+			device-path = &environment_nor0;
 		};
 	};
 };
@@ -39,7 +39,7 @@
 			reg = <0x0 0xc0000>;
 		};
 
-		partition@1 {
+		environment_nor0: partition@1 {
 			label = "bareboxenv";
 			reg = <0xc0000 0x8000>;
 		};

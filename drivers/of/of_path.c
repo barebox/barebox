@@ -117,7 +117,8 @@ out:
  * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available
  *
  * paths in the devicetree have the form of a multistring property. The first
- * string contains the full path to the physical device containing the path.
+ * string contains the full path to the physical device containing the path or
+ * a full path to a partition described by the OF partition binding.
  * The remaining strings have the form "<type>:<options>". Currently supported
  * for <type> are:
  *
@@ -129,6 +130,7 @@ out:
  *
  * device-path = &mmc0, "partname:0";
  * device-path = &norflash, "partname:barebox-environment";
+ * device-path = &environment_nor;
  */
 int of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags)
 {
@@ -147,13 +149,15 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath,
 		return -ENODEV;
 
 	op.dev = of_find_device_by_node_path(rnode->full_name);
-	if (!op.dev)
-		return -ENODEV;
+	if (!op.dev) {
+		op.dev = of_find_device_by_node_path(rnode->parent->full_name);
+		if (!op.dev)
+			return -ENODEV;
+	}
 
 	device_detect(op.dev);
 
-	if (list_is_singular(&op.dev->cdevs))
-		op.cdev = list_first_entry(&op.dev->cdevs, struct cdev, devices_list);
+	op.cdev = cdev_by_device_node(rnode);
 
 	i = 1;
 

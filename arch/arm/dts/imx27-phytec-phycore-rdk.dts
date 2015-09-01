@@ -10,13 +10,13 @@
 
 		environment-nor {
 			compatible = "barebox,environment";
-			device-path = &nor, "partname:env";
+			device-path = &environment_nor;
 			status = "disabled";
 		};
 
 		environment-nand {
 			compatible = "barebox,environment";
-			device-path = &nfc, "partname:env";
+			device-path = &environment_nand;
 			status = "disabled";
 		};
 	};
@@ -32,7 +32,7 @@
 		reg = <0x00000000 0x00080000>;
 	};
 
-	partition@1 {
+	environment_nand: partition@1 {
 		label = "env";
 		reg = <0x00080000 0x00020000>;
 	};
@@ -54,7 +54,7 @@
 		reg = <0x00000000 0x00080000>;
 	};
 
-	partition@1 {
+	environment_nor: partition@1 {
 		label = "env";
 		reg = <0x00080000 0x00020000>;
 	};

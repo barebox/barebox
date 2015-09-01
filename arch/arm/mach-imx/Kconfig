@@ -179,12 +179,14 @@ config ARCH_IMX6
 	select ARCH_HAS_FEC_IMX
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3
+	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
 
 config ARCH_IMX6SX
 	bool
 	select ARCH_IMX6
+	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
 
 config IMX_MULTI_BOARDS

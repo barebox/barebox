@@ -9,22 +9,8 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-&fec {
-	status = "okay";
-};
+#include <arm/imx6qdl-phytec-pbab01.dtsi>
 
 &uart1 {
-	status = "okay";
-};
-
-&uart4 {
-	status = "okay";
-};
-
-&usdhc2 {
-	status = "okay";
-};
-
-&usdhc3 {
 	status = "okay";
 };

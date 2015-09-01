@@ -16,6 +16,7 @@
  * Foundation.
  *
  */
+#define pr_fmt(fmt) "phyFLEX-i.MX6: " fmt
 
 #include <malloc.h>
 #include <envfs.h>
@@ -27,11 +28,15 @@
 #include <of.h>
 #include <mach/bbu.h>
 #include <fec.h>
+#include <globalvar.h>
 
 #include <linux/micrel_phy.h>
 
 #include <mach/iomux-mx6.h>
 #include <mach/imx6.h>
+
+#define PHYFLEX_MODULE_REV_1	0x1
+#define PHYFLEX_MODULE_REV_2	0x2
 
 #define GPIO_2_11_PD_CTL	MX6_PAD_CTL_PUS_100K_DOWN | MX6_PAD_CTL_PUE | MX6_PAD_CTL_PKE | \
 				MX6_PAD_CTL_SPEED_MED | MX6_PAD_CTL_DSE_40ohm | MX6_PAD_CTL_HYS
@@ -64,10 +69,24 @@ static void phyflex_err006282_workaround(void)
 	gpio_direction_input(MX6_PHYFLEX_ERR006282);
 }
 
+static unsigned int pfla02_module_revision;
+
+static unsigned int get_module_rev(void)
+{
+	unsigned int val = 0;
+
+	val = gpio_get_value(IMX_GPIO_NR(2, 12));
+	val |= (gpio_get_value(IMX_GPIO_NR(2, 13)) << 1);
+	val |= (gpio_get_value(IMX_GPIO_NR(2, 14)) << 2);
+	val |= (gpio_get_value(IMX_GPIO_NR(2, 15)) << 3);
+
+	return 16 - val;
+}
+
 static int phytec_pfla02_init(void)
 {
 	int ret;
-	char *environment_path;
+	char *environment_path, *envdev;
 
 	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
 			!of_machine_is_compatible("phytec,imx6dl-pfla02") &&
@@ -78,17 +97,25 @@ static int phytec_pfla02_init(void)
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 
+	pfla02_module_revision = get_module_rev();
+	globalvar_add_simple_int("board.revision", &pfla02_module_revision, "%u");
+
+	pr_info("Module Revision: %u\n", pfla02_module_revision);
+
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
 		environment_path = asprintf("/chosen/environment-sd%d",
 					bootsource_get_instance() + 1);
+		envdev = "MMC";
 		break;
 	case BOOTSOURCE_NAND:
 		environment_path = asprintf("/chosen/environment-nand");
+		envdev = "NAND flash";
 		break;
 	default:
 	case BOOTSOURCE_SPI:
 		environment_path = asprintf("/chosen/environment-spinor");
+		envdev = "SPI NOR flash";
 		break;
 	}
 
@@ -98,6 +125,8 @@ static int phytec_pfla02_init(void)
 			environment_path, ret);
 
 	free(environment_path);
+
+	pr_notice("Using environment in %s\n", envdev);
 
 	return 0;
 }

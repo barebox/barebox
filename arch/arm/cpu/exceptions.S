@@ -220,9 +220,9 @@ _fiq: .word fiq
 .align 4
 .global arm_ignore_data_abort
 arm_ignore_data_abort:
-.word arm_ignore_data_abort /* When != 0 data aborts are ignored */
+.word 0 /* When != 0 data aborts are ignored */
 .global arm_data_abort_occurred
 arm_data_abort_occurred:
-.word arm_data_abort_occurred /* set != 0 by the data abort handler */
+.word 0 /* set != 0 by the data abort handler */
 abort_stack:
 .space 8

@@ -297,10 +297,12 @@ static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 
 static struct ns16550_drvdata ns16450_drvdata = {
 	.init_port = ns16450_serial_init_port,
+	.linux_console_name = "ttyS",
 };
 
 static struct ns16550_drvdata ns16550_drvdata = {
 	.init_port = ns16550_serial_init_port,
+	.linux_console_name = "ttyS",
 };
 
 static __maybe_unused struct ns16550_drvdata omap_drvdata = {

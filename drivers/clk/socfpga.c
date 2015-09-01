@@ -42,21 +42,17 @@
 #define SOCFPGA_PLL_DIVQ_SHIFT	16
 #define SOCFGPA_MAX_PARENTS	3
 
+#define SOCFPGA_L4_MP_CLK		"l4_mp_clk"
+#define SOCFPGA_L4_SP_CLK		"l4_sp_clk"
+#define SOCFPGA_NAND_CLK		"nand_clk"
+#define SOCFPGA_NAND_X_CLK		"nand_x_clk"
+#define SOCFPGA_MMC_CLK			"sdmmc_clk"
 #define SOCFPGA_DB_CLK			"gpio_db_clk"
 
 #define div_mask(width)	((1 << (width)) - 1)
 #define streq(a, b) (strcmp((a), (b)) == 0)
 
 static void __iomem *clk_mgr_base_addr;
-
-static struct clk *socfpga_fixed_clk(struct device_node *node)
-{
-	uint32_t f = 0;
-
-	of_property_read_u32(node, "clock-frequency", &f);
-
-	return clk_fixed(node->name, f);
-}
 
 struct clk_pll {
 	struct clk clk;
@@ -173,13 +169,10 @@ struct clk_socfpga {
 	const char *parent;
 	void __iomem *reg;
 	void __iomem *div_reg;
-	void __iomem *parent_reg;
 	unsigned int fixed_div;
 	unsigned int bit_idx;
 	unsigned int shift;
 	unsigned int width;
-	unsigned int parent_shift;
-	unsigned int parent_width;
 	const char *parent_names[SOCFGPA_MAX_PARENTS];
 };
 
@@ -240,21 +233,58 @@ static unsigned long clk_socfpga_recalc_rate(struct clk *clk,
 
 static int clk_socfpga_get_parent(struct clk *clk)
 {
-	struct clk_socfpga *cs = container_of(clk, struct clk_socfpga, clk);
+	u32 perpll_src;
+	u32 l4_src;
 
-	return readl(cs->parent_reg) >> cs->parent_shift &
-		((1 << cs->parent_width) - 1);
+	if (streq(clk->name, SOCFPGA_L4_MP_CLK)) {
+		l4_src = readl(clk_mgr_base_addr + CLKMGR_L4SRC);
+		return l4_src &= 0x1;
+	}
+	if (streq(clk->name, SOCFPGA_L4_SP_CLK)) {
+		l4_src = readl(clk_mgr_base_addr + CLKMGR_L4SRC);
+		return !!(l4_src & 2);
+	}
+
+	perpll_src = readl(clk_mgr_base_addr + CLKMGR_PERPLL_SRC);
+	if (streq(clk->name, SOCFPGA_MMC_CLK))
+		return perpll_src &= 0x3;
+	if (streq(clk->name, SOCFPGA_NAND_CLK) ||
+	    streq(clk->name, SOCFPGA_NAND_X_CLK))
+		return (perpll_src >> 2) & 3;
+
+	/* QSPI clock */
+	return (perpll_src >> 4) & 3;
 }
 
 static int clk_socfpga_set_parent(struct clk *clk, u8 parent)
 {
-	struct clk_socfpga *cs = container_of(clk, struct clk_socfpga, clk);
-	uint32_t val;
+	u32 src_reg;
 
-	val = readl(cs->parent_reg);
-	val &= ~(((1 << cs->parent_width) - 1) << cs->parent_shift);
-	val |= parent << cs->parent_shift;
-	writel(val, cs->parent_reg);
+	if (streq(clk->name, SOCFPGA_L4_MP_CLK)) {
+		src_reg = readl(clk_mgr_base_addr + CLKMGR_L4SRC);
+		src_reg &= ~0x1;
+		src_reg |= parent;
+		writel(src_reg, clk_mgr_base_addr + CLKMGR_L4SRC);
+	} else if (streq(clk->name, SOCFPGA_L4_SP_CLK)) {
+		src_reg = readl(clk_mgr_base_addr + CLKMGR_L4SRC);
+		src_reg &= ~0x2;
+		src_reg |= (parent << 1);
+		writel(src_reg, clk_mgr_base_addr + CLKMGR_L4SRC);
+	} else {
+		src_reg = readl(clk_mgr_base_addr + CLKMGR_PERPLL_SRC);
+		if (streq(clk->name, SOCFPGA_MMC_CLK)) {
+			src_reg &= ~0x3;
+			src_reg |= parent;
+		} else if (streq(clk->name, SOCFPGA_NAND_CLK) ||
+			streq(clk->name, SOCFPGA_NAND_X_CLK)) {
+			src_reg &= ~0xC;
+			src_reg |= (parent << 2);
+		} else {/* QSPI clock */
+			src_reg &= ~0x30;
+			src_reg |= (parent << 4);
+		}
+		writel(src_reg, clk_mgr_base_addr + CLKMGR_PERPLL_SRC);
+	}
 
 	return 0;
 }
@@ -272,7 +302,6 @@ static struct clk *socfpga_gate_clk(struct device_node *node)
 {
 	u32 clk_gate[2];
 	u32 div_reg[3];
-	u32 parent_reg[3];
 	u32 fixed_div;
 	struct clk_socfpga *cs;
 	int ret;
@@ -300,13 +329,6 @@ static struct clk *socfpga_gate_clk(struct device_node *node)
 		cs->div_reg = clk_mgr_base_addr + div_reg[0];
 		cs->shift = div_reg[1];
 		cs->width = div_reg[2];
-	}
-
-	ret = of_property_read_u32_array(node, "parent-reg", parent_reg, 3);
-	if (!ret) {
-		cs->parent_reg = clk_mgr_base_addr + parent_reg[0];
-		cs->parent_shift = parent_reg[1];
-		cs->parent_width = parent_reg[2];
 	}
 
 	for (i = 0; i < SOCFGPA_MAX_PARENTS; i++) {
@@ -338,9 +360,7 @@ static void socfpga_register_clocks(struct device_d *dev, struct device_node *no
 		socfpga_register_clocks(dev, child);
 	}
 
-	if (of_device_is_compatible(node, "fixed-clock"))
-		clk = socfpga_fixed_clk(node);
-	else if (of_device_is_compatible(node, "altr,socfpga-pll-clock"))
+	if (of_device_is_compatible(node, "altr,socfpga-pll-clock"))
 		clk = socfpga_pll_clk(node);
 	else if (of_device_is_compatible(node, "altr,socfpga-perip-clk"))
 		clk = socfpga_periph_clk(node);

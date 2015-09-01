@@ -15,19 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/include/ "socfpga_cyclone5.dtsi"
+#include <arm/socfpga_cyclone5_sockit.dts>
+#include "socfpga.dtsi"
 
 / {
 	model = "Terasic SoCkit";
 	compatible = "terasic,sockit", "altr,socfpga";
 
 	chosen {
-	};
-
-	memory {
-		name = "memory";
-		device_type = "memory";
-		reg = <0x0 0x0>;
+		stdout-path = &uart0;
 	};
 
 	leds: gpio-leds {
@@ -37,28 +33,36 @@
 	};
 };
 
+&gpio1 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
 &leds {
 	compatible = "gpio-leds";
 
 	led@0 {
 		label = "0";
-		gpios = <&gpio1 24 0>;
+		gpios = <&portb 24 0>;
 		linux,default-trigger = "heartbeat";
 	};
 
 	led@1 {
 		label = "1";
-		gpios = <&gpio1 25 0>;
+		gpios = <&portb 25 0>;
 	};
 
 	led@2 {
 		label = "2";
-		gpios = <&gpio1 26 0>;
+		gpios = <&portb 26 0>;
 	};
 
 	led@3 {
 		label = "3";
-		gpios = <&gpio1 27 0>;
+		gpios = <&portb 27 0>;
 	};
 };
 
@@ -67,36 +71,27 @@
 
         key@0 {
 		label = "F1";
-		gpios = <&gpio2 21 0>;
+		gpios = <&portc 21 0>;
 		linux,code = <59>;
 	};
 
         key@1 {
 		label = "F2";
-		gpios = <&gpio2 22 0>;
+		gpios = <&portc 22 0>;
 		linux,code = <60>;
 	};
 
         key@2 {
 		label = "F3";
-		gpios = <&gpio2 23 0>;
+		gpios = <&portc 23 0>;
 		linux,code = <61>;
 	};
 
         key@3 {
 		label = "F4";
-		gpios = <&gpio2 24 0>;
+		gpios = <&portc 24 0>;
 		linux,code = <62>;
 	};
-};
-
-&gmac1 {
-	phy-mode = "rgmii";
-	status = "okay";
-};
-
-&mmc {
-	status = "okay";
 };
 
 &i2c0 {

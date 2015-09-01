@@ -15,23 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/include/ "socfpga_cyclone5.dtsi"
+#include <arm/socfpga_cyclone5_socrates.dts>
+#include "socfpga.dtsi"
 
 / {
 	model = "EBV SoCrates";
 	compatible = "ebv,socrates", "altr,socfpga";
 
 	chosen {
-	};
-
-	memory {
-		name = "memory";
-		device_type = "memory";
-		reg = <0x0 0x0>;
+		stdout-path = &uart0;
 	};
 
 	leds: gpio-leds {
 	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
 };
 
 &leds {
@@ -39,28 +43,19 @@
 
 	led@0 {
 		label = "0";
-		gpios = <&gpio0 28 1>;
+		gpios = <&porta 28 1>;
 		linux,default-trigger = "heartbeat";
 	};
 
 	led@1 {
 		label = "1";
-		gpios = <&gpio1 19 1>;
+		gpios = <&portb 19 1>;
 	};
 
 	led@2 {
 		label = "2";
-		gpios = <&gpio1 25 1>;
+		gpios = <&portb 25 1>;
 	};
-};
-
-&gmac1 {
-	phy-mode = "rgmii";
-	status = "okay";
-};
-
-&mmc {
-	status = "okay";
 };
 
 &qspi {

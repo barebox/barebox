@@ -475,13 +475,8 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 	int len, srclen;
 	uint32_t reg;
 	uint32_t *status_reg;
+	int port = le16_to_cpu(req->index);
 
-	if (le16_to_cpu(req->index) >= CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS) {
-		dev_err(ehci->dev, "The request port(%d) is not configured\n",
-			le16_to_cpu(req->index) - 1);
-		return -1;
-	}
-	status_reg = (uint32_t *)&ehci->hcor->or_portsc[le16_to_cpu(req->index) - 1];
 	srclen = 0;
 
 	dev_dbg(ehci->dev, "req=%u (%#x), type=%u (%#x), value=%u, index=%u\n",
@@ -490,6 +485,21 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 	      le16_to_cpu(req->value), le16_to_cpu(req->index));
 
 	typeReq = req->request | (req->requesttype << 8);
+
+	switch (typeReq) {
+	case USB_REQ_GET_STATUS | ((USB_RT_PORT | USB_DIR_IN) << 8):
+	case USB_REQ_SET_FEATURE | ((USB_DIR_OUT | USB_RT_PORT) << 8):
+	case USB_REQ_CLEAR_FEATURE | ((USB_DIR_OUT | USB_RT_PORT) << 8):
+		if (!port || port > CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS) {
+			printf("The request port(%d) is not configured\n", port - 1);
+			return -1;
+		}
+		status_reg = (uint32_t *)&ehci->hcor->or_portsc[port - 1];
+		break;
+	default:
+		status_reg = NULL;
+		break;
+	}
 
 	switch (typeReq) {
 	case DeviceRequest | USB_REQ_GET_DESCRIPTOR:
@@ -570,7 +580,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		if (reg & EHCI_PS_OCA)
 			tmpbuf[0] |= USB_PORT_STAT_OVERCURRENT;
 		if (reg & EHCI_PS_PR &&
-		    (ehci->portreset & (1 << le16_to_cpu(req->index)))) {
+		    (ehci->portreset & (1 << port))) {
 			int ret;
 			/* force reset to complete */
 			reg = reg & ~(EHCI_PS_PR | EHCI_PS_CLEAR);
@@ -580,7 +590,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				tmpbuf[0] |= USB_PORT_STAT_RESET;
 			else
 				dev_err(ehci->dev, "port(%d) reset error\n",
-					le16_to_cpu(req->index) - 1);
+					port - 1);
 		}
 		if (reg & EHCI_PS_PP)
 			tmpbuf[1] |= USB_PORT_STAT_POWER >> 8;
@@ -607,7 +617,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 			tmpbuf[2] |= USB_PORT_STAT_C_ENABLE;
 		if (reg & EHCI_PS_OCC)
 			tmpbuf[2] |= USB_PORT_STAT_C_OVERCURRENT;
-		if (ehci->portreset & (1 << le16_to_cpu(req->index)))
+		if (ehci->portreset & (1 << port))
 			tmpbuf[2] |= USB_PORT_STAT_C_RESET;
 
 		srcptr = tmpbuf;
@@ -633,7 +643,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 			    EHCI_PS_IS_LOWSPEED(reg)) {
 				/* Low speed device, give up ownership. */
 				dev_dbg(ehci->dev, "port %d low speed --> companion\n",
-				      req->index - 1);
+				      port - 1);
 				reg |= EHCI_PS_PO;
 				ehci_writel(status_reg, reg);
 				break;
@@ -650,7 +660,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				 */
 				ehci_powerup_fixup(ehci);
 				mdelay(50);
-				ehci->portreset |= 1 << le16_to_cpu(req->index);
+				ehci->portreset |= 1 << port;
 				/* terminate the reset */
 				ehci_writel(status_reg, reg & ~EHCI_PS_PR);
 				/*
@@ -662,10 +672,10 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 						2 * 1000);
 				if (!ret)
 					ehci->portreset |=
-						1 << le16_to_cpu(req->index);
+						1 << port;
 				else
 					dev_err(ehci->dev, "port(%d) reset error\n",
-						le16_to_cpu(req->index) - 1);
+						port - 1);
 
 			}
 			break;
@@ -697,7 +707,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 			reg |= EHCI_PS_OCC;
 			break;
 		case USB_PORT_FEAT_C_RESET:
-			ehci->portreset &= ~(1 << le16_to_cpu(req->index));
+			ehci->portreset &= ~(1 << port);
 			break;
 		default:
 			dev_dbg(ehci->dev, "unknown feature %x\n", le16_to_cpu(req->value));
@@ -770,6 +780,8 @@ static int ehci_init(struct usb_host *host)
 		if (ret)
 			return ret;
 	}
+
+	memset(ehci->qh_list, 0, sizeof(struct QH) * NUM_TD);
 
 	ehci->qh_list->qh_link = cpu_to_hc32((uint32_t)ehci->qh_list | QH_LINK_TYPE_QH);
 	ehci->qh_list->qh_endpt1 = cpu_to_hc32((1 << 15) | (USB_SPEED_HIGH << 12));

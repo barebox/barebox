@@ -881,8 +881,9 @@ static int mrvl_nand_scan(struct mtd_info *mtd)
 		 * We'll use a bad block table stored in-flash and don't
 		 * allow writing the bad block marker to the flash.
 		 */
-		chip->bbt_options |= NAND_BBT_USE_FLASH |
-				     NAND_BBT_NO_OOB_BBM;
+		chip->bbt_options |=
+			NAND_BBT_USE_FLASH | NAND_BBT_NO_OOB_BBM |
+			NAND_BBT_CREATE_EMPTY;
 		chip->bbt_td = &bbt_main_descr;
 		chip->bbt_md = &bbt_mirror_descr;
 	}

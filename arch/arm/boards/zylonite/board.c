@@ -28,6 +28,7 @@
 #include <net/smc91111.h>
 #include <platform_data/mtd-nand-mrvl.h>
 #include <pwm.h>
+#include <linux/sizes.h>
 
 #include <mach/devices.h>
 #include <mach/mfp-pxa3xx.h>
@@ -66,6 +67,8 @@ static int zylonite_devices_init(void)
 			   &smsc91x_pdata);
 	add_generic_device("mrvl_nand", DEVICE_ID_DYNAMIC, NULL,
 			   0x43100000, 0x1000, IORESOURCE_MEM, &nand_pdata);
+	devfs_add_partition("nand0", SZ_1M, SZ_256K, DEVFS_PARTITION_FIXED,
+			    "env0");
 	return 0;
 }
 device_initcall(zylonite_devices_init);

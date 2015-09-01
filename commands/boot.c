@@ -14,6 +14,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <magicvar.h>
+#include <watchdog.h>
 #include <command.h>
 #include <readkey.h>
 #include <common.h>
@@ -24,6 +25,7 @@
 #include <clock.h>
 #include <boot.h>
 #include <glob.h>
+#include <init.h>
 #include <menu.h>
 #include <fs.h>
 #include <complete.h>
@@ -71,9 +73,27 @@ out:
 	return ret;
 }
 
+static unsigned int boot_watchdog_timeout;
+
+static int init_boot_watchdog_timeout(void)
+{
+	return globalvar_add_simple_int("boot.watchdog_timeout",
+			&boot_watchdog_timeout, "%u");
+}
+late_initcall(init_boot_watchdog_timeout);
+
+BAREBOX_MAGICVAR_NAMED(global_watchdog_timeout, global.boot.watchdog_timeout,
+		"Watchdog enable timeout in seconds before booting");
+
 static int boot_entry(struct blspec_entry *be)
 {
 	int ret;
+
+	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
+		ret = watchdog_set_timeout(boot_watchdog_timeout);
+		if (ret)
+			pr_warn("Failed to enable watchdog: %s\n", strerror(-ret));
+	}
 
 	if (be->scriptpath) {
 		ret = boot_script(be->scriptpath);
@@ -375,7 +395,7 @@ static int do_boot(int argc, char *argv[])
 	dryrun = 0;
 	timeout = -1;
 
-	while ((opt = getopt(argc, argv, "vldmt:")) > 0) {
+	while ((opt = getopt(argc, argv, "vldmt:w:")) > 0) {
 		switch (opt) {
 		case 'v':
 			verbose++;
@@ -391,6 +411,9 @@ static int do_boot(int argc, char *argv[])
 			break;
 		case 't':
 			timeout = simple_strtoul(optarg, NULL, 0);
+			break;
+		case 'w':
+			boot_watchdog_timeout = simple_strtoul(optarg, NULL, 0);
 			break;
 		}
 	}
@@ -477,6 +500,7 @@ BAREBOX_CMD_HELP_OPT ("-v","Increase verbosity")
 BAREBOX_CMD_HELP_OPT ("-d","Dryrun. See what happens but do no actually boot")
 BAREBOX_CMD_HELP_OPT ("-l","List available boot sources")
 BAREBOX_CMD_HELP_OPT ("-m","Show a menu with boot options")
+BAREBOX_CMD_HELP_OPT ("-w SECS","Start watchdog with timeout SECS before booting")
 BAREBOX_CMD_HELP_OPT ("-t SECS","specify timeout in SECS")
 BAREBOX_CMD_HELP_END
 

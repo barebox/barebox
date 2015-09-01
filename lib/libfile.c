@@ -262,7 +262,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 	char *rw_buf = NULL;
 	int srcfd = 0, dstfd = 0;
 	int r, w;
-	int ret = 1;
+	int ret = 1, err1 = 0;
 	void *buf;
 	int total = 0;
 	struct stat statbuf;
@@ -326,9 +326,9 @@ out:
 	if (srcfd > 0)
 		close(srcfd);
 	if (dstfd > 0)
-		close(dstfd);
+		err1 = close(dstfd);
 
-	return ret;
+	return ret ?: err1;
 }
 EXPORT_SYMBOL(copy_file);
 

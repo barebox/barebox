@@ -27,12 +27,12 @@ static inline int watchdog_register(struct watchdog *w)
 	return 0;
 }
 
-int watchdog_deregister(struct watchdog *w)
+static inline int watchdog_deregister(struct watchdog *w)
 {
 	return 0;
 }
 
-int watchdog_set_timeout(unsigned t)
+static inline int watchdog_set_timeout(unsigned t)
 {
 	return 0;
 }

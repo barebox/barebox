@@ -269,18 +269,18 @@ static int read_bytes(struct mci_host *mci, char *dest, unsigned int blkcount, u
 		xfercount -= len;
 		dest += len;
 		status = mmci_readl(host, MMCISTATUS);
-		status_err = status & (MCI_CMDCRCFAIL | MCI_DATATIMEOUT |
-			       MCI_RXOVERRUN);
+		status_err = status & (MCI_DATACRCFAIL | MCI_DATATIMEOUT |
+			     MCI_RXOVERRUN);
 	} while(xfercount && !status_err);
 
 	status_err = status &
-		(MCI_CMDCRCFAIL | MCI_DATATIMEOUT | MCI_DATABLOCKEND |
+		(MCI_DATACRCFAIL | MCI_DATATIMEOUT | MCI_DATABLOCKEND |
 		 MCI_RXOVERRUN);
 
 	while (!status_err) {
 		status = mmci_readl(host, MMCISTATUS);
 		status_err = status &
-			(MCI_CMDCRCFAIL | MCI_DATATIMEOUT | MCI_DATABLOCKEND |
+			(MCI_DATACRCFAIL | MCI_DATATIMEOUT | MCI_DATABLOCKEND |
 			 MCI_RXOVERRUN);
 	}
 
@@ -288,7 +288,7 @@ static int read_bytes(struct mci_host *mci, char *dest, unsigned int blkcount, u
 		dev_err(host->hw_dev, "Read data timed out, xfercount: %u, status: 0x%08X\n",
 			xfercount, status);
 		return -ETIMEDOUT;
-	} else if (status & MCI_CMDCRCFAIL) {
+	} else if (status & MCI_DATACRCFAIL) {
 		dev_err(host->hw_dev, "Read data bytes CRC error: 0x%x\n", status);
 		return -EILSEQ;
 	} else if (status & MCI_RXOVERRUN) {
@@ -351,7 +351,7 @@ static int write_bytes(struct mci_host *mci, char *dest, unsigned int blkcount, 
 	dev_dbg(host->hw_dev, "write_bytes: blkcount=%u blksize=%u\n", blkcount, blksize);
 
 	status = mmci_readl(host, MMCISTATUS);
-	status_err = status & (MCI_CMDCRCFAIL | MCI_DATATIMEOUT);
+	status_err = status & (MCI_DATACRCFAIL | MCI_DATATIMEOUT);
 
 	do {
 		len = mmci_pio_write(host, dest, xfercount, status);
@@ -359,11 +359,11 @@ static int write_bytes(struct mci_host *mci, char *dest, unsigned int blkcount, 
 		dest += len;
 
 		status = mmci_readl(host, MMCISTATUS);
-		status_err = status & (MCI_CMDCRCFAIL | MCI_DATATIMEOUT);
+		status_err = status & (MCI_DATACRCFAIL | MCI_DATATIMEOUT);
 	} while (!status_err && xfercount);
 
 	status_err = status &
-		(MCI_CMDCRCFAIL | MCI_DATATIMEOUT | MCI_DATABLOCKEND);
+		(MCI_DATACRCFAIL | MCI_DATATIMEOUT | MCI_DATABLOCKEND);
 	while (!status_err) {
 		status = mmci_readl(host, MMCISTATUS);
 		status_err = status &
@@ -374,7 +374,7 @@ static int write_bytes(struct mci_host *mci, char *dest, unsigned int blkcount, 
 		dev_err(host->hw_dev, "Write data timed out, xfercount:%u,status:0x%08X\n",
 		       xfercount, status);
 		return -ETIMEDOUT;
-	} else if (status & MCI_CMDCRCFAIL) {
+	} else if (status & MCI_DATACRCFAIL) {
 		dev_err(host->hw_dev, "Write data CRC error\n");
 		return -EILSEQ;
 	}

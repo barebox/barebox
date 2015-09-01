@@ -10,8 +10,6 @@
 #ifndef _MACH_PPC_GPIO_H
 #define _MACH_PPC_GPIO_H
 
-#include <asm-generic/gpio.h>
-
 extern void fsl_enable_gpiout(void);
 
 #endif /* _MACH_PPC_GPIO_H */

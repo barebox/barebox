@@ -7,8 +7,6 @@
 #ifndef __AT91_GPIO_H__
 #define __AT91_GPIO_H__
 
-#include <asm-generic/gpio.h>
-
 #define MAX_NB_GPIO_PER_BANK	32
 
 static inline unsigned pin_to_bank(unsigned pin)

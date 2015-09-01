@@ -31,38 +31,6 @@
 #define GFER_OFFSET	0x3C
 #define GEDR_OFFSET	0x48
 
-static inline int gpio_get_value(unsigned gpio)
-{
-	return GPLR(gpio) & GPIO_bit(gpio);
-}
-
-static inline void gpio_set_value(unsigned gpio, int value)
-{
-	if (value)
-		GPSR(gpio) = GPIO_bit(gpio);
-	else
-		GPCR(gpio) = GPIO_bit(gpio);
-}
-
-static inline int gpio_direction_input(unsigned gpio)
-{
-	if (__gpio_is_inverted(gpio))
-		GPDR(gpio) |= GPIO_bit(gpio);
-	else
-		GPDR(gpio) &= ~GPIO_bit(gpio);
-	return 0;
-}
-
-static inline int gpio_direction_output(unsigned gpio, int value)
-{
-	gpio_set_value(gpio, value);
-	if (__gpio_is_inverted(gpio))
-		GPDR(gpio) &= ~GPIO_bit(gpio);
-	else
-		GPDR(gpio) |= GPIO_bit(gpio);
-	return 0;
-}
-
 /* NOTE: some PXAs have fewer on-chip GPIOs (like PXA255, with 85).
  * Those cases currently cause holes in the GPIO number space, the
  * actual number of the last GPIO is recorded by 'pxa_last_gpio'.

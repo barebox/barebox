@@ -21,6 +21,7 @@
 #include <net.h>
 #include <types.h>
 #include <i2c/i2c.h>
+#include <gpio.h>
 #include <partition.h>
 #include <memory.h>
 #include <asm/cache.h>
@@ -32,7 +33,6 @@
 #include <mach/immap_85xx.h>
 #include <mach/gianfar.h>
 #include <mach/clock.h>
-#include <mach/gpio.h>
 #include <mach/early_udelay.h>
 #include <of.h>
 

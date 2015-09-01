@@ -21,6 +21,8 @@
 #include <linux/log2.h>
 #include <i2c/i2c.h>
 #include <i2c/at24.h>
+#include <gpio.h>
+#include <of_gpio.h>
 
 /*
  * I2C EEPROMs from most vendors are inexpensive and mostly interchangeable.
@@ -55,6 +57,8 @@ struct at24_data {
 	u8 *writebuf;
 	unsigned write_max;
 	unsigned num_addresses;
+	int wp_gpio;
+	int wp_active_low;
 
 	/*
 	 * Some chips tie up multiple I2C addresses; dummy devices reserve
@@ -345,6 +349,25 @@ static ssize_t at24_cdev_write(struct cdev *cdev, const void *buf, size_t count,
 	return at24_write(at24, buf, off, count);
 }
 
+static ssize_t at24_cdev_protect(struct cdev *cdev, size_t count, loff_t offset,
+		int prot)
+{
+	struct at24_data *at24 = cdev->priv;
+
+	if (!gpio_is_valid(at24->wp_gpio))
+		return -EOPNOTSUPP;
+
+	prot = !!prot;
+	if (at24->wp_active_low)
+		prot = !prot;
+
+	gpio_set_value(at24->wp_gpio, prot);
+
+	udelay(50);
+
+	return 0;
+}
+
 static int at24_probe(struct device_d *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
@@ -403,6 +426,7 @@ static int at24_probe(struct device_d *dev)
 	at24->cdev.ops = &at24->fops;
 	at24->fops.lseek = dev_lseek_default;
 	at24->fops.read	= at24_cdev_read,
+	at24->fops.protect = at24_cdev_protect,
 	at24->cdev.size = chip.byte_len;
 
 	writable = !(chip.flags & AT24_FLAG_READONLY);
@@ -417,6 +441,19 @@ static int at24_probe(struct device_d *dev)
 
 		/* buffer (data + address at the beginning) */
 		at24->writebuf = xmalloc(write_max + 2);
+	}
+
+	at24->wp_gpio = -1;
+	if (dev->device_node) {
+		enum of_gpio_flags flags;
+		at24->wp_gpio = of_get_named_gpio_flags(dev->device_node,
+				"wp-gpios", 0, &flags);
+		if (gpio_is_valid(at24->wp_gpio)) {
+			at24->wp_active_low = flags & OF_GPIO_ACTIVE_LOW;
+			gpio_request(at24->wp_gpio, "eeprom-wp");
+			gpio_direction_output(at24->wp_gpio,
+					!at24->wp_active_low);
+		}
 	}
 
 	at24->client[0] = client;
@@ -440,6 +477,7 @@ static int at24_probe(struct device_d *dev)
 	return 0;
 
 err_clients:
+	gpio_free(at24->wp_gpio);
 	kfree(at24->writebuf);
 	kfree(at24);
 err_out:

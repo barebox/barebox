@@ -106,9 +106,10 @@ static int sclhi(struct i2c_algo_bit_data *adap)
 		}
 	}
 #ifdef DEBUG
-	if (jiffies != start && i2c_debug >= 3)
-		pr_debug("i2c-algo-bit: needed %ld jiffies for SCL to go "
-			 "high\n", jiffies - start);
+	if ((get_time_ns() - start) < 10000)
+		pr_debug("i2c-algo-bit: needed %u usecs for SCL to go "
+			 "high\n", (unsigned int)(get_time_ns() - start) /
+			 1000);
 #endif
 
 done:
@@ -116,6 +117,31 @@ done:
 	return 0;
 }
 
+static int wait_busy(struct i2c_algo_bit_data *adap)
+{
+	uint64_t start;
+
+	if (sclhi(adap) < 0)
+		return -ETIMEDOUT;
+
+	start = get_time_ns();
+	while (!getsda(adap)) {
+		if (is_timeout(start, adap->timeout_ms * MSECOND)) {
+			if (getsda(adap))
+				break;
+			return -ETIMEDOUT;
+		}
+	}
+#ifdef DEBUG
+	if ((get_time_ns() - start) < 10000)
+		pr_debug("i2c-algo-bit: needed %u usecs for SDA to go "
+			 "high\n", (unsigned int)(get_time_ns() - start) /
+			 1000);
+#endif
+
+	udelay(adap->udelay);
+	return 0;
+}
 
 /* --- other auxiliary functions --------------------------------------	*/
 static void i2c_start(struct i2c_algo_bit_data *adap)
@@ -426,10 +452,7 @@ static int readbytes(struct i2c_adapter *i2c_adap, struct i2c_msg *msg)
 		count--;
 
 		bit_dbg(2, &i2c_adap->dev, "readbytes: 0x%02x %s\n",
-			inval,
-			(flags & I2C_M_NO_RD_ACK)
-				? "(no ack/nak)"
-				: (count ? "A" : "NA"));
+			inval, count ? "A" : "NA");
 
 		inval = acknak(i2c_adap, count);
 		if (inval < 0)
@@ -510,6 +533,13 @@ static int bit_xfer(struct i2c_adapter *i2c_adap,
 
 	if (adap->pre_xfer) {
 		ret = adap->pre_xfer(i2c_adap);
+		if (ret < 0)
+			return ret;
+	}
+
+	if (wait_busy(adap) < 0) { /* timeout */
+		dev_warn(&i2c_adap->dev, "timeout waiting for bus ready\n");
+		ret = i2c_recover_bus(i2c_adap);
 		if (ret < 0)
 			return ret;
 	}

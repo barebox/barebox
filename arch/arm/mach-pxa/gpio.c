@@ -66,3 +66,35 @@ int __init pxa_init_gpio(int start, int end)
 
 	return 0;
 }
+
+int gpio_get_value(unsigned gpio)
+{
+	return GPLR(gpio) & GPIO_bit(gpio);
+}
+
+void gpio_set_value(unsigned gpio, int value)
+{
+	if (value)
+		GPSR(gpio) = GPIO_bit(gpio);
+	else
+		GPCR(gpio) = GPIO_bit(gpio);
+}
+
+int gpio_direction_input(unsigned gpio)
+{
+	if (__gpio_is_inverted(gpio))
+		GPDR(gpio) |= GPIO_bit(gpio);
+	else
+		GPDR(gpio) &= ~GPIO_bit(gpio);
+	return 0;
+}
+
+int gpio_direction_output(unsigned gpio, int value)
+{
+	gpio_set_value(gpio, value);
+	if (__gpio_is_inverted(gpio))
+		GPDR(gpio) &= ~GPIO_bit(gpio);
+	else
+		GPDR(gpio) |= GPIO_bit(gpio);
+	return 0;
+}

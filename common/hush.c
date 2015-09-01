@@ -116,6 +116,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <libbb.h>
+#include <password.h>
 #include <glob.h>
 #include <getopt.h>
 #include <libfile.h>
@@ -1913,6 +1914,8 @@ int run_shell(void)
 	struct in_str input;
 	struct p_context ctx;
 	int exit = 0;
+
+	login();
 
 	do {
 		setup_file_in_str(&input);

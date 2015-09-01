@@ -33,33 +33,6 @@
 
 #ifndef CONFIG_CONSOLE_NONE
 
-static int console_input_allow;
-
-static int console_global_init(void)
-{
-	if (IS_ENABLED(CONFIG_CMD_LOGIN) && is_passwd_enable())
-		console_input_allow = 0;
-	else
-		console_input_allow = 1;
-
-	globalvar_add_simple_bool("console.input_allow", &console_input_allow);
-
-	return 0;
-}
-late_initcall(console_global_init);
-
-BAREBOX_MAGICVAR_NAMED(global_console_input_allow, global.console.input_allow, "console input allowed");
-
-bool console_is_input_allow(void)
-{
-	return console_input_allow;
-}
-
-void console_allow_input(bool val)
-{
-	console_input_allow = val;
-}
-
 int barebox_loglevel = CONFIG_DEFAULT_LOGLEVEL;
 
 LIST_HEAD(barebox_logbuf);

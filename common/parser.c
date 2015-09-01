@@ -1,5 +1,6 @@
 #include <common.h>
 #include <command.h>
+#include <password.h>
 #include <environment.h>
 #include <shell.h>
 
@@ -265,6 +266,8 @@ int run_shell(void)
 	static char lastcommand[CONFIG_CBSIZE] = { 0, };
 	int len;
 	int rc = 1;
+
+	login();
 
 	for (;;) {
 		len = readline (CONFIG_PROMPT, console_buffer, CONFIG_CBSIZE);

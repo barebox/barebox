@@ -41,9 +41,6 @@ EXPORT_SYMBOL(console_putc);
 
 int tstc(void)
 {
-	if (unlikely(!console_is_input_allow()))
-		return 0;
-
 	if (!console)
 		return 0;
 
@@ -53,9 +50,6 @@ EXPORT_SYMBOL(tstc);
 
 int getc(void)
 {
-	if (unlikely(!console_is_input_allow()))
-		return -EPERM;
-
 	if (!console)
 		return -EINVAL;
 	return console->getc(console);

@@ -450,8 +450,14 @@ config PASSWORD
 
 config PASSWORD_DEFAULT
 	string
-	prompt "Password default"
+	prompt "Password default file"
 	depends on PASSWORD
+	help
+	  Set this to a file which is used as default password file. This file
+	  has to contain the passwd encoded with the selected password digest.
+	  i.e.:
+	  echo -ne "MyPassword" | md5sum | while read a b; do echo $a > passwdfile; done
+
 
 if PASSWORD
 
@@ -460,19 +466,19 @@ choice
 
 config PASSWD_SUM_MD5
 	bool "MD5"
-	select MD5
+	select DIGEST_MD5_GENERIC
 
 config PASSWD_SUM_SHA1
 	bool "SHA1"
-	select SHA1
+	select DIGEST_SHA1_GENERIC
 
 config PASSWD_SUM_SHA256
 	bool "SHA256"
-	select SHA256
+	select DIGEST_SHA256_GENERIC
 
 config PASSWD_SUM_SHA512
 	bool "SHA512"
-	select SHA512
+	select DIGEST_SHA512_GENERIC
 
 config PASSWD_CRYPTO_PBKDF2
 	bool "PBKDF2"

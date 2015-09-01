@@ -82,5 +82,5 @@ endif
 
 config CRYPTO_PBKDF2
 	select DIGEST
-	select SHA1
+	select DIGEST_SHA1_GENERIC
 	bool

@@ -190,6 +190,7 @@ struct spi_nor {
  * @nor:	the spi_nor structure
  * @name:	the chip type name
  * @mode:	the read mode supported by the driver
+ * @use_large_blocks: prefer large blocks even if 4k blocks are supported
  *
  * The drivers can use this fuction to scan the SPI NOR.
  * In the scanning, it will try to get all the necessary information to
@@ -199,6 +200,7 @@ struct spi_nor {
  *
  * Return: 0 for success, others for failure.
  */
-int spi_nor_scan(struct spi_nor *nor, const char *name, enum read_mode mode);
+int spi_nor_scan(struct spi_nor *nor, const char *name, enum read_mode mode,
+		 bool use_large_blocks);
 
 #endif

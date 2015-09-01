@@ -17,7 +17,7 @@
 
 		environment@0 {
 			compatible = "barebox,environment";
-			device-path = &usdhc4, "partname:barebox-environment";
+			device-path = &environment_usdhc4;
 		};
 	};
 
@@ -232,7 +232,7 @@
 		reg = <0x0 0x80000>;
 	};
 
-	partition@1 {
+	environment_usdhc4: partition@1 {
 		label = "barebox-environment";
 		reg = <0x80000 0x80000>;
 	};

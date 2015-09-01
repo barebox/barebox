@@ -19,13 +19,13 @@
 	chosen {
 		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &usdhc3, "partname:barebox-environment";
+			device-path = &environment_usdhc3;
 			status = "disabled";
 		};
 
 		environment-nand {
 			compatible = "barebox,environment";
-			device-path = &gpmi, "partname:barebox-environment";
+			device-path = &environment_nand;
 			status = "disabled";
 		};
 	};
@@ -139,7 +139,7 @@
 		reg = <0x0 0x400000>;
 	};
 
-	partition@1 {
+	environment_nand: partition@1 {
 		label = "barebox-environment";
 		reg = <0x400000 0x20000>;
 	};
@@ -183,7 +183,7 @@
 		label = "barebox";
 		reg = <0x0 0x80000>;
 	};
-	partition@1 {
+	environment_usdhc3: partition@1 {
 		label = "barebox-environment";
 		reg = <0x80000 0x80000>;
 	};

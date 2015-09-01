@@ -25,7 +25,7 @@
 
 		environment@0 {
 			compatible = "barebox,environment";
-			device-path = &usdhc3, "partname:barebox-environment";
+			device-path = &environment_usdhc3;
 		};
 	};
 };

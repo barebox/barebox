@@ -30,7 +30,7 @@
 
 		environment@0 {
 			compatible = "barebox,environment";
-			device-path = &gpmi, "partname:barebox-environment";
+			device-path = &environment_nand;
 		};
 
 	};

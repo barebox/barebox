@@ -75,6 +75,31 @@ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
 	return chan << bf->offset;
 }
 
+static int ipu_crtc_adjust_videomode(struct ipufb_info *fbi, struct fb_videomode *mode)
+{
+	u32 diff;
+
+	if (mode->lower_margin >= 2)
+		return 0;
+
+	diff = 2 - mode->lower_margin;
+
+	if (mode->upper_margin >= diff) {
+		mode->upper_margin -= diff;
+	} else if (mode->vsync_len > diff) {
+		mode->vsync_len = mode->vsync_len - diff;
+	} else {
+		dev_warn(fbi->dev, "failed to adjust videomode\n");
+		return -EINVAL;
+	}
+
+	mode->lower_margin = 2;
+
+	dev_warn(fbi->dev, "videomode adapted for IPU restrictions\n");
+
+	return 0;
+}
+
 int ipu_crtc_mode_set(struct ipufb_info *fbi,
 			       struct fb_videomode *mode,
 			       int x, int y)
@@ -109,6 +134,11 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 
 	sig_cfg.v_start_width = mode->upper_margin;
 	sig_cfg.v_sync_width = mode->vsync_len;
+
+	ret = ipu_crtc_adjust_videomode(fbi, mode);
+	if (ret)
+		return ret;
+
 	sig_cfg.v_end_width = mode->lower_margin;
 	sig_cfg.pixelclock = PICOS2KHZ(mode->pixclock) * 1000UL;
 	sig_cfg.clkflags = di_mode.di_clkflags;
@@ -184,7 +214,7 @@ static int ipufb_activate_var(struct fb_info *info)
 	struct ipufb_info *fbi = container_of(info, struct ipufb_info, info);
 
 	info->line_length = info->xres * (info->bits_per_pixel >> 3);
-	fbi->info.screen_base = dma_alloc_coherent(info->line_length * info->yres,
+	fbi->info.screen_base = dma_alloc_writecombine(info->line_length * info->yres,
 						   DMA_ADDRESS_BROKEN);
 	if (!fbi->info.screen_base)
 		return -ENOMEM;

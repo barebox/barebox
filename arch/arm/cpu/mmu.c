@@ -66,6 +66,7 @@ static inline void tlb_invalidate(void)
 }
 
 #define PTE_FLAGS_CACHED_V7 (PTE_EXT_TEX(1) | PTE_BUFFERABLE | PTE_CACHEABLE)
+#define PTE_FLAGS_WC_V7 PTE_EXT_TEX(1)
 #define PTE_FLAGS_UNCACHED_V7 (0)
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
@@ -75,6 +76,7 @@ static inline void tlb_invalidate(void)
  * This will be determined at runtime.
  */
 static uint32_t pte_flags_cached;
+static uint32_t pte_flags_wc;
 static uint32_t pte_flags_uncached;
 
 #define PTE_MASK ((1 << 12) - 1)
@@ -325,9 +327,11 @@ static int mmu_init(void)
 
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
 		pte_flags_cached = PTE_FLAGS_CACHED_V7;
+		pte_flags_wc = PTE_FLAGS_WC_V7;
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V7;
 	} else {
 		pte_flags_cached = PTE_FLAGS_CACHED_V4;
+		pte_flags_wc = PTE_FLAGS_UNCACHED_V4;
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 
@@ -404,6 +408,22 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
 	remap_range(ret, size, pte_flags_uncached);
+
+	return ret;
+}
+
+void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
+{
+	void *ret;
+
+	size = PAGE_ALIGN(size);
+	ret = xmemalign(PAGE_SIZE, size);
+	if (dma_handle)
+		*dma_handle = (dma_addr_t)ret;
+
+	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
+
+	remap_range(ret, size, pte_flags_wc);
 
 	return ret;
 }

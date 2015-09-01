@@ -39,5 +39,6 @@ void dma_sync_single_for_device(unsigned long address, size_t size,
 
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle);
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size);
+void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle);
 
 #endif /* __DMA_H */

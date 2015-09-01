@@ -355,7 +355,8 @@ struct ipu_ch_param {
 	struct ipu_cpmem_word word[2];
 };
 
-void ipu_ch_param_write_field(struct ipu_ch_param __iomem *base, u32 wbs, u32 v)
+static void ipu_ch_param_write_field(struct ipu_ch_param __iomem *base,
+				     u32 wbs, u32 v)
 {
 	u32 bit = (wbs >> 8) % 160;
 	u32 size = wbs & 0xff;
@@ -500,7 +501,8 @@ static int sdc_init_panel(struct fb_info *info, enum disp_data_mapping fmt)
 	return 0;
 }
 
-int ipu_cpmem_set_format_rgb(struct ipu_ch_param *p, struct imx_ipu_fb_rgb *rgb)
+static int ipu_cpmem_set_format_rgb(struct ipu_ch_param *p,
+				    struct imx_ipu_fb_rgb *rgb)
 {
 	int bpp = 0, npb = 0, ro, go, bo, to;
 

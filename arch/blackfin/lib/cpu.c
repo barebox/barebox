@@ -27,8 +27,9 @@
 #include <asm/entry.h>
 #include <asm/cpu.h>
 #include <init.h>
+#include <restart.h>
 
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn blackfin_restart_cpu(struct restart_handler *rst)
 {
 	icache_disable();
 
@@ -41,8 +42,16 @@ void __noreturn reset_cpu(unsigned long addr)
 	);
 
 	/* Not reached */
-	while (1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(blackfin_restart_cpu);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);
 
 void icache_disable(void)
 {

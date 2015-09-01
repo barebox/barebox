@@ -23,6 +23,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <restart.h>
 #include <linux/err.h>
 #include <linux/clk.h>
 #include <linux/reset.h>
@@ -36,13 +37,12 @@ static void __iomem *pmc_base;
 static int tegra_num_powerdomains;
 
 /* main SoC reset trigger */
-void __noreturn reset_cpu(ulong addr)
+static void __noreturn tegra20_restart_soc(struct restart_handler *rst)
 {
 	writel(PMC_CNTRL_MAIN_RST, pmc_base + PMC_CNTRL);
 
-	unreachable();
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
 
 static int tegra_powergate_set(int id, bool new_state)
 {
@@ -219,7 +219,7 @@ static int tegra20_pmc_probe(struct device_d *dev)
 static int do_tegrarcm(int argc, char *argv[])
 {
 	writel(2, pmc_base + PMC_SCRATCH(0));
-	reset_cpu(0);
+	restart_machine();
 
 	return 0;
 }
@@ -244,6 +244,7 @@ static struct driver_d tegra20_pmc_driver = {
 
 static int tegra20_pmc_init(void)
 {
+	restart_handler_register_fn(tegra20_restart_soc);
 	return platform_driver_register(&tegra20_pmc_driver);
 }
 coredevice_initcall(tegra20_pmc_init);

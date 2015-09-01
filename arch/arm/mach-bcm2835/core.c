@@ -18,6 +18,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <restart.h>
 
 #include <linux/clk.h>
 #include <linux/clkdev.h>
@@ -51,13 +52,6 @@ static int bcm2835_clk_init(void)
 }
 postcore_initcall(bcm2835_clk_init);
 
-static int bcm2835_dev_init(void)
-{
-	add_generic_device("bcm2835-gpio", 0, NULL, BCM2835_GPIO_BASE, 0xB0, IORESOURCE_MEM, NULL);
-	return 0;
-}
-coredevice_initcall(bcm2835_dev_init);
-
 void bcm2835_register_uart(void)
 {
 	amba_apb_device_add(NULL, "uart0-pl011", 0, BCM2835_UART0_BASE, 4096, NULL, 0);
@@ -72,7 +66,7 @@ void bcm2835_add_device_sdram(u32 size)
 }
 #define RESET_TIMEOUT 10
 
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn bcm2835_restart_soc(struct restart_handler *rst)
 {
 	uint32_t rstc;
 
@@ -82,6 +76,13 @@ void __noreturn reset_cpu(unsigned long addr)
 	writel(PM_PASSWORD | RESET_TIMEOUT, PM_WDOG);
 	writel(PM_PASSWORD | rstc, PM_RSTC);
 
-	while (1);
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
+
+static int bcm2835_dev_init(void)
+{
+	add_generic_device("bcm2835-gpio", 0, NULL, BCM2835_GPIO_BASE, 0xB0, IORESOURCE_MEM, NULL);
+	restart_handler_register_fn(bcm2835_restart_soc);
+	return 0;
+}
+coredevice_initcall(bcm2835_dev_init);

@@ -12,6 +12,7 @@
 #include <common.h>
 #include <io.h>
 #include <init.h>
+#include <restart.h>
 #include <clock.h>
 
 #include <mach/time.h>
@@ -164,7 +165,7 @@ static int clocksource_init(void)
 core_initcall(clocksource_init);
 
 /* reset board using watchdog timer */
-void __noreturn reset_cpu(ulong addr)
+static void __noreturn davinci_restart_soc(struct restart_handler *rst)
 {
 	u32 tgcr, wdtcr;
 	void __iomem *base;
@@ -204,6 +205,13 @@ void __noreturn reset_cpu(ulong addr)
 	wdtcr = 0x00004000;
 	__raw_writel(wdtcr, base + WDTCR);
 
-	unreachable();
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(davinci_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

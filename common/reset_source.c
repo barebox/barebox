@@ -11,6 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+#define pr_fmt(fmt) "reset-source: " fmt
 
 #include <common.h>
 #include <init.h>
@@ -30,6 +31,7 @@ static const char * const reset_src_names[] = {
 };
 
 static enum reset_src_type reset_source;
+static unsigned int reset_source_priority;
 
 enum reset_src_type reset_source_get(void)
 {
@@ -37,20 +39,41 @@ enum reset_src_type reset_source_get(void)
 }
 EXPORT_SYMBOL(reset_source_get);
 
-void reset_source_set(enum reset_src_type st)
+void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 {
-	reset_source = st;
+	if (priority <= reset_source_priority)
+		return;
 
-	globalvar_add_simple("system.reset", reset_src_names[reset_source]);
+	reset_source = st;
+	reset_source_priority = priority;
+
+	pr_debug("Setting reset source to %s with priority %d\n",
+			reset_src_names[reset_source], priority);
 }
 EXPORT_SYMBOL(reset_source_set);
 
-/* ensure this runs after the 'global' device is already registerd */
 static int reset_source_init(void)
 {
-	reset_source_set(reset_source);
+	globalvar_add_simple_enum("system.reset", (unsigned int *)&reset_source,
+			reset_src_names, ARRAY_SIZE(reset_src_names));
 
 	return 0;
 }
 
 coredevice_initcall(reset_source_init);
+
+/**
+ * of_get_reset_source_priority() - get the desired reset source priority from
+ *                                  device tree
+ * @node:	The device_node to read the property from
+ *
+ * return: The priority
+ */
+unsigned int of_get_reset_source_priority(struct device_node *node)
+{
+	unsigned int priority = RESET_SOURCE_DEFAULT_PRIORITY;
+
+	of_property_read_u32(node, "reset-source-priority", &priority);
+
+	return priority;
+}

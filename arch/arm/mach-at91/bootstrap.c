@@ -9,6 +9,7 @@
 #include <mach/bootstrap.h>
 #include <linux/sizes.h>
 #include <malloc.h>
+#include <restart.h>
 #include <init.h>
 #include <menu.h>
 
@@ -145,7 +146,7 @@ static void boot_mmc_disk_action(struct menu *m, struct menu_entry *me)
 
 static void boot_reset_action(struct menu *m, struct menu_entry *me)
 {
-	reset_cpu(0);
+	restart_machine();
 }
 
 void at91_bootstrap_menu(void)

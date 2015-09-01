@@ -17,6 +17,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <restart.h>
 #include <of.h>
 #include <of_address.h>
 #include <asm/memory.h>
@@ -104,12 +105,12 @@ static int armada_370_xp_soc_id_fixup(void)
 	return 0;
 }
 
-static void __noreturn armada_370_xp_reset_cpu(unsigned long addr)
+static void __noreturn armada_370_xp_restart_soc(struct restart_handler *rst)
 {
 	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x60);
 	writel(0x1, ARMADA_370_XP_SYSCTL_BASE + 0x64);
-	while (1)
-		;
+
+	hang();
 }
 
 static int armada_xp_init_soc(struct device_node *root)
@@ -132,7 +133,7 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 	if (!of_machine_is_compatible("marvell,armada-370-xp"))
 		return 0;
 
-	mvebu_set_reset(armada_370_xp_reset_cpu);
+	restart_handler_register_fn(armada_370_xp_restart_soc);
 
 	barebox_set_model("Marvell Armada 370/XP");
 	barebox_set_hostname("armada");

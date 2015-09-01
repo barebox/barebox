@@ -15,10 +15,12 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <io.h>
+#include <restart.h>
 #include <mach/hardware.h>
 
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn nomadik_restart_soc(struct restart_handler *rst)
 {
 	void __iomem *src_rstsr = (void *)(NOMADIK_SRC_BASE + 0x18);
 
@@ -28,6 +30,13 @@ void __noreturn reset_cpu(unsigned long addr)
 	writel(1, src_rstsr);
 
 	/* Not reached */
-	while (1);
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(nomadik_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

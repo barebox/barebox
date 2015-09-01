@@ -28,6 +28,7 @@
 #include <common.h>
 #include <init.h>
 #include <clock.h>
+#include <restart.h>
 #include <mach/hardware.h>
 #include <mach/at91_tc.h>
 #include <mach/at91_st.h>
@@ -77,7 +78,7 @@ core_initcall(clocksource_init);
 /*
  * Reset the cpu through the reset controller
  */
-void __noreturn reset_cpu (unsigned long ignored)
+static void __noreturn at91rm9200_restart_soc(struct restart_handler *rst)
 {
 	/*
 	 * Perform a hardware reset with the use of the Watchdog timer.
@@ -86,6 +87,13 @@ void __noreturn reset_cpu (unsigned long ignored)
 	at91_sys_write(AT91_ST_CR, AT91_ST_WDRST);
 
 	/* Not reached */
-	while (1);
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(at91rm9200_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

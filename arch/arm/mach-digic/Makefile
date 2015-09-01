@@ -1,1 +1,1 @@
-obj-y += core.o
+obj- := __dummy__.o

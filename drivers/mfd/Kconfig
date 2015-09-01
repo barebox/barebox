@@ -4,6 +4,17 @@ config MFD_ACT8846
 	depends on I2C
 	bool "ACT8846 driver"
 
+config MFD_DA9053
+	depends on I2C
+	bool "DA9053 PMIC driver"
+	help
+	  This power management controller provides configurable power supplies,
+	  a machine restart feature and a watchdog.
+
+config MFD_DA9063
+	depends on I2C
+	bool "DA9063 PMIC driver"
+
 config MFD_LP3972
 	depends on I2C
 	bool "LP3972 driver"

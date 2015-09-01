@@ -67,7 +67,6 @@ int	readline	(const char *prompt, char *buf, int len);
 long	get_ram_size  (volatile long *, long);
 
 /* $(CPU)/cpu.c */
-void __noreturn reset_cpu(unsigned long addr);
 void __noreturn poweroff(void);
 
 /* lib_$(ARCH)/time.c */

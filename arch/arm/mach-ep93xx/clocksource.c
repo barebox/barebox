@@ -20,6 +20,7 @@
 #include <init.h>
 #include <clock.h>
 #include <io.h>
+#include <restart.h>
 #include <mach/ep93xx-regs.h>
 
 #define TIMER_CLKSEL		(1 << 3)
@@ -63,10 +64,8 @@ static int clocksource_init(void)
 
 core_initcall(clocksource_init);
 
-/*
- * Reset the cpu
- */
-void __noreturn reset_cpu(unsigned long addr)
+/* Reset the SoC */
+static void __noreturn ep92xx_restart_soc(struct restart_handler *rst)
 {
 	struct syscon_regs *syscon = (struct syscon_regs *)SYSCON_BASE;
 	uint32_t value;
@@ -84,7 +83,13 @@ void __noreturn reset_cpu(unsigned long addr)
 	writel(value, &syscon->devicecfg);
 
 	/* Dying... */
-	while (1)
-		; /* noop */
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(ep92xx_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

@@ -22,12 +22,22 @@
 
 #include <common.h>
 #include <io.h>
+#include <init.h>
+#include <restart.h>
 #include <mach/hardware.h>
 
-void __noreturn reset_cpu(ulong addr)
+static void __noreturn malta_restart_soc(struct restart_handler *rst)
 {
 	__raw_writel(GORESET, (char *)SOFTRES_REG);
-	while (1);
+
+	hang();
 	/*NOTREACHED*/
 }
-EXPORT_SYMBOL(reset_cpu);
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(malta_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

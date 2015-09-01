@@ -6,17 +6,27 @@
 
 #include <common.h>
 #include <io.h>
+#include <restart.h>
+#include <init.h>
 
 #include <mach/devices.h>
 #include <mach/sysregs.h>
 
-void __noreturn reset_cpu(ulong addr)
+static void __noreturn highbank_restart_soc(struct restart_handler *rst)
 {
 	hingbank_set_pwr_hard_reset();
 	asm("	wfi");
 
-	while(1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(highbank_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);
 
 void __noreturn poweroff()
 {

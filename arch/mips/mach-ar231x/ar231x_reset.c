@@ -10,6 +10,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <restart.h>
 #include <linux/err.h>
 
 #include <mach/ar2312_regs.h>
@@ -17,16 +18,16 @@
 
 static void __iomem *reset_base;
 
-void __noreturn reset_cpu(ulong addr)
+static void __noreturn ar2312x_restart_soc(struct restart_handler *rst)
 {
 	printf("reseting cpu\n");
 	__raw_writel(0x10000,
 		(char *)KSEG1ADDR(AR2312_WD_TIMER));
 	__raw_writel(AR2312_WD_CTRL_RESET,
 		(char *)KSEG1ADDR(AR2312_WD_CTRL));
-	unreachable();
+
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
 
 static u32 ar231x_reset_readl(void)
 {
@@ -69,6 +70,7 @@ static struct driver_d ar231x_reset_driver = {
 
 static int ar231x_reset_init(void)
 {
+	restart_handler_register_fn(ar2312x_restart_soc);
 	return platform_driver_register(&ar231x_reset_driver);
 }
 coredevice_initcall(ar231x_reset_init);

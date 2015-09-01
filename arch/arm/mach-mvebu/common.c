@@ -123,16 +123,3 @@ int mvebu_set_memory(u64 phys_base, u64 phys_size)
 
 	return 0;
 }
-
-static __noreturn void (*mvebu_reset_cpu)(unsigned long addr);
-
-void __noreturn reset_cpu(unsigned long addr)
-{
-	mvebu_reset_cpu(addr);
-}
-EXPORT_SYMBOL(reset_cpu);
-
-void mvebu_set_reset(void __noreturn (*reset)(unsigned long addr))
-{
-	mvebu_reset_cpu = reset;
-}

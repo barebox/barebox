@@ -18,6 +18,7 @@
 #include <of.h>
 #include <errno.h>
 #include <malloc.h>
+#include <restart.h>
 #include <watchdog.h>
 #include <reset_source.h>
 
@@ -33,6 +34,7 @@ struct imx_wd {
 	void __iomem *base;
 	struct device_d *dev;
 	const struct imx_wd_ops *ops;
+	struct restart_handler restart;
 };
 
 #define to_imx_wd(h) container_of(h, struct imx_wd, wd)
@@ -121,12 +123,11 @@ static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	return priv->ops->set_timeout(priv, timeout);
 }
 
-static struct imx_wd *reset_wd;
-
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst)
 {
-	if (reset_wd)
-		reset_wd->ops->set_timeout(reset_wd, -1);
+	struct imx_wd *priv = container_of(rst, struct imx_wd, restart);
+
+	priv->ops->set_timeout(priv, -1);
 
 	mdelay(1000);
 
@@ -185,10 +186,8 @@ static int imx_wd_probe(struct device_d *dev)
 	}
 	priv->ops = ops;
 	priv->wd.set_timeout = imx_watchdog_set_timeout;
+	priv->wd.dev = dev;
 	priv->dev = dev;
-
-	if (!reset_wd)
-		reset_wd = priv;
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {
 		ret = watchdog_register(&priv->wd);
@@ -206,26 +205,19 @@ static int imx_wd_probe(struct device_d *dev)
 
 	dev->priv = priv;
 
+	priv->restart.name = "imxwd";
+	priv->restart.restart = imxwd_force_soc_reset;
+
+	restart_handler_register(&priv->restart);
+
 	return 0;
 
 error_unregister:
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX))
 		watchdog_deregister(&priv->wd);
 on_error:
-	if (reset_wd && reset_wd != priv)
-		free(priv);
+	free(priv);
 	return ret;
-}
-
-static void imx_wd_remove(struct device_d *dev)
-{
-	struct imx_wd *priv = dev->priv;
-
-	if (IS_ENABLED(CONFIG_WATCHDOG_IMX))
-		watchdog_deregister(&priv->wd);
-
-	if (reset_wd && reset_wd != priv)
-		free(priv);
 }
 
 static const struct imx_wd_ops imx21_wd_ops = {
@@ -264,7 +256,6 @@ static struct platform_device_id imx_wdt_ids[] = {
 static struct driver_d imx_wd_driver = {
 	.name   = "imx-watchdog",
 	.probe  = imx_wd_probe,
-	.remove = imx_wd_remove,
 	.of_compatible = DRV_OF_COMPAT(imx_wdt_dt_ids),
 	.id_table = imx_wdt_ids,
 };

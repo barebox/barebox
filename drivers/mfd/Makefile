@@ -1,4 +1,6 @@
 obj-$(CONFIG_MFD_ACT8846)	+= act8846.o
+obj-$(CONFIG_MFD_DA9053)	+= da9053.o
+obj-$(CONFIG_MFD_DA9063)	+= da9063.o
 obj-$(CONFIG_MFD_LP3972)	+= lp3972.o
 obj-$(CONFIG_MFD_MC13XXX)	+= mc13xxx.o
 obj-$(CONFIG_MFD_MC34704)	+= mc34704.o

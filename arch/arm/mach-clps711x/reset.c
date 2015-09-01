@@ -8,8 +8,10 @@
  */
 
 #include <common.h>
+#include <init.h>
+#include <restart.h>
 
-void __noreturn reset_cpu(unsigned long addr)
+static void __noreturn clps711x_restart_soc(struct restart_handler *rst)
 {
 	shutdown_barebox();
 
@@ -17,3 +19,11 @@ void __noreturn reset_cpu(unsigned long addr)
 
 	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(clps711x_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

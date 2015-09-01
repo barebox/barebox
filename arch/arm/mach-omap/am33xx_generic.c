@@ -19,6 +19,7 @@
 #include <init.h>
 #include <io.h>
 #include <net.h>
+#include <restart.h>
 #include <asm/barebox-arm.h>
 #include <mach/am33xx-silicon.h>
 #include <mach/am33xx-clock.h>
@@ -28,11 +29,11 @@
 #include <mach/gpmc.h>
 #include <reset_source.h>
 
-void __noreturn am33xx_reset_cpu(unsigned long addr)
+static void __noreturn am33xx_restart_soc(struct restart_handler *rst)
 {
 	writel(AM33XX_PRM_RSTCTRL_RESET, AM33XX_PRM_RSTCTRL);
 
-	while (1);
+	hang();
 }
 
 /**
@@ -242,6 +243,8 @@ static int am33xx_gpio_init(void)
 int am33xx_init(void)
 {
 	omap_gpmc_base = (void *)AM33XX_GPMC_BASE;
+
+	restart_handler_register_fn(am33xx_restart_soc);
 
 	am33xx_enable_per_clocks();
 

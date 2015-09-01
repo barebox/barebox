@@ -31,6 +31,7 @@
 #include <types.h>
 #include <errno.h>
 #include <of.h>
+#include <restart.h>
 #include <mach/clock.h>
 
 int checkcpu (void)
@@ -59,7 +60,7 @@ int checkcpu (void)
 
 /* ------------------------------------------------------------------------- */
 
-void __noreturn reset_cpu (unsigned long addr)
+static void __noreturn mpc5xxx_restart_soc(struct restart_handler *rst)
 {
 	ulong msr;
 	/* Interrupts and MMU off */
@@ -71,8 +72,14 @@ void __noreturn reset_cpu (unsigned long addr)
 	/* Charge the watchdog timer */
 	*(vu_long *)(MPC5XXX_GPT0_COUNTER) = 0x0001000f;
 	*(vu_long *)(MPC5XXX_GPT0_ENABLE) = 0x9004; /* wden|ce|timer_ms */
-	while(1);
+	hang();
 }
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(mpc5xxx_restart_soc);
+}
+coredevice_initcall(restart_register_feature);
 
 /* ------------------------------------------------------------------------- */
 

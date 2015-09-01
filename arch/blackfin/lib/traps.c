@@ -30,6 +30,7 @@
  */
 
 #include <common.h>
+#include <restart.h>
 #include <linux/types.h>
 #include <asm/system.h>
 #include <asm/traps.h>
@@ -91,7 +92,7 @@ void trap_c (struct pt_regs *regs)
 
 	printf("\nPlease reset the board\n");
 
-	reset_cpu(0);
+	restart_machine();
 }
 
 void blackfin_irq_panic(int reason, struct pt_regs *regs)
@@ -101,6 +102,6 @@ void blackfin_irq_panic(int reason, struct pt_regs *regs)
 	printf("Unhandled IRQ or exceptions!\n");
 	printf("Please reset the board \n");
 
-	reset_cpu(0);
+	restart_machine();
 }
 

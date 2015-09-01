@@ -15,8 +15,10 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <command.h>
 #include <io.h>
+#include <restart.h>
 #include <mach/netx-regs.h>
 #include "eth_firmware.h"
 
@@ -134,17 +136,24 @@ failure:
 	return COMMAND_ERROR_USAGE;
 }
 
-void __noreturn reset_cpu(unsigned long addr)
-{
-	SYSTEM_REG(SYSTEM_RES_CR) = 0x01000008;
-
-	/* Not reached */
-	while (1);
-}
-
-
 BAREBOX_CMD_START(loadxc)
 	.cmd		= do_loadxc,
 	BAREBOX_CMD_DESC("load XMAC/XPEC engine with ethernet firmware")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 BAREBOX_CMD_END
+
+static void __noreturn netx_restart_soc(struct restart_handler *rst)
+{
+	SYSTEM_REG(SYSTEM_RES_CR) = 0x01000008;
+
+	/* Not reached */
+	hang();
+}
+
+static int restart_register_feature(void)
+{
+	restart_handler_register_fn(netx_restart_soc);
+
+	return 0;
+}
+coredevice_initcall(restart_register_feature);

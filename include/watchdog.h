@@ -15,6 +15,10 @@
 
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
+	const char *name;
+	struct device_d *dev;
+	unsigned int priority;
+	struct list_head list;
 };
 
 #ifdef CONFIG_WATCHDOG
@@ -37,5 +41,9 @@ static inline int watchdog_set_timeout(unsigned t)
 	return 0;
 }
 #endif
+
+#define WATCHDOG_DEFAULT_PRIORITY 100
+
+unsigned int of_get_watchdog_priority(struct device_node *node);
 
 #endif /* INCLUDE_WATCHDOG_H */

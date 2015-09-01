@@ -26,6 +26,7 @@
 #include <init.h>
 #include <clock.h>
 #include <debug_ll.h>
+#include <restart.h>
 #include <linux/sizes.h>
 
 #include <linux/clkdev.h>
@@ -184,7 +185,7 @@ void versatile_register_uart(unsigned id)
 	amba_apb_device_add(NULL, "uart-pl011", id, start, 4096, NULL, 0);
 }
 
-void __noreturn reset_cpu (unsigned long ignored)
+static void versatile_reset_soc(struct restart_handler *rst)
 {
 	u32 val;
 
@@ -195,9 +196,8 @@ void __noreturn reset_cpu (unsigned long ignored)
 	__raw_writel(val, VERSATILE_SYS_RESETCTL);
 	__raw_writel(0, VERSATILE_SYS_LOCK);
 
-	while(1);
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
 
 static int versatile_init(void)
 {
@@ -205,6 +205,7 @@ static int versatile_init(void)
 	amba_apb_device_add(NULL, "pl061_gpio", 1, 0x101e5000, 4096, NULL, 0);
 	amba_apb_device_add(NULL, "pl061_gpio", 2, 0x101e6000, 4096, NULL, 0);
 	amba_apb_device_add(NULL, "pl061_gpio", 3, 0x101e7000, 4096, NULL, 0);
+	restart_handler_register_fn(versatile_reset_soc);
 	return 0;
 }
 coredevice_initcall(versatile_init);

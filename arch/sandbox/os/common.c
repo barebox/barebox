@@ -115,7 +115,7 @@ uint64_t linux_get_time(void)
 	return now;
 }
 
-void __attribute__((noreturn)) reset_cpu(unsigned long addr)
+void __attribute__((noreturn)) linux_exit(void)
 {
 	cookmode();
 	exit(0);
@@ -133,7 +133,7 @@ int linux_read(int fd, void *buf, size_t count)
 
 		if (ret == 0) {
 			printf("read on fd %d returned 0, device gone? - exiting\n", fd);
-			reset_cpu(0);
+			linux_exit();
 		} else if (ret == -1) {
 			if (errno == EAGAIN)
 				return -errno;
@@ -141,7 +141,7 @@ int linux_read(int fd, void *buf, size_t count)
 				continue;
 			else {
 				printf("read on fd %d returned -1, errno %d - exiting\n", fd, errno);
-				reset_cpu(0);
+				linux_exit();
 			}
 		}
 	} while (ret <= 0);

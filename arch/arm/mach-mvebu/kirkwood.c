@@ -16,6 +16,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
+#include <restart.h>
 #include <asm/memory.h>
 #include <linux/mbus.h>
 #include <mach/kirkwood-regs.h>
@@ -43,12 +44,12 @@ static inline void kirkwood_memory_find(unsigned long *phys_base,
 	}
 }
 
-static void __noreturn kirkwood_reset_cpu(unsigned long addr)
+static void __noreturn kirkwood_restart_soc(struct restart_handler *rst)
 {
 	writel(SOFT_RESET_OUT_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
 	writel(SOFT_RESET_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_SYS_SOFT_RESET);
-	for(;;)
-		;
+
+	hang();
 }
 
 static int kirkwood_init_soc(struct device_node *root, void *context)
@@ -58,7 +59,7 @@ static int kirkwood_init_soc(struct device_node *root, void *context)
 	if (!of_machine_is_compatible("marvell,kirkwood"))
 		return 0;
 
-	mvebu_set_reset(kirkwood_reset_cpu);
+	restart_handler_register_fn(kirkwood_restart_soc);
 
 	barebox_set_model("Marvell Kirkwood");
 	barebox_set_hostname("kirkwood");

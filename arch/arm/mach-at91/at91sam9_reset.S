@@ -20,9 +20,9 @@
 
 			.arm
 
-			.globl	reset_cpu
+			.globl	restart_sam9
 
-reset_cpu:		ldr	r0, .at91_va_base_sdramc			@ preload constants
+restart_sam9:		ldr	r0, .at91_va_base_sdramc			@ preload constants
 			ldr	r1, .at91_va_base_rstc_cr
 
 			mov	r2, #1

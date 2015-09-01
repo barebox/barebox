@@ -31,6 +31,7 @@
 #include <bootsource.h>
 #include <init.h>
 #include <io.h>
+#include <restart.h>
 #include <mach/omap3-silicon.h>
 #include <mach/gpmc.h>
 #include <mach/generic.h>
@@ -52,13 +53,12 @@
  *
  * @return void
  */
-void __noreturn omap3_reset_cpu(unsigned long addr)
+static void __noreturn omap3_restart_soc(struct restart_handler *rst)
 {
 	writel(OMAP3_PRM_RSTCTRL_RESET, OMAP3_PRM_REG(RSTCTRL));
 
-	while (1);
+	hang();
 }
-EXPORT_SYMBOL(reset_cpu);
 
 /**
  * @brief Low level CPU type
@@ -489,6 +489,8 @@ static int omap3_bootsource(void)
 int omap3_init(void)
 {
 	omap_gpmc_base = (void *)OMAP3_GPMC_BASE;
+
+	restart_handler_register_fn(omap3_restart_soc);
 
 	return omap3_bootsource();
 }

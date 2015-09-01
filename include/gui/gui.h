@@ -23,16 +23,12 @@ struct screen {
 	struct surface s;
 
 	void *fb;
-	void *offscreenbuf;
 	int fbsize;
 };
 
 static inline void *gui_screen_render_buffer(struct screen *sc)
 {
-	if (sc->offscreenbuf)
-		return sc->offscreenbuf;
-	return sc->fb;
+	return fb_get_screen_base(sc->info);
 }
-
 
 #endif /* __GUI_H__ */

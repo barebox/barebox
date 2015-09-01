@@ -118,6 +118,7 @@ struct fb_info {
 	struct device_d dev;		/* This is this fb device */
 
 	void *screen_base;
+	void *screen_base_shadow;
 	unsigned long screen_size;
 
 	void *priv;
@@ -141,6 +142,7 @@ struct fb_info {
 	int register_simplefb;		/* If true a simplefb device node will
 					 * be created.
 					 */
+	int shadowfb;
 };
 
 struct display_timings *of_get_display_timings(struct device_node *np);
@@ -167,5 +169,6 @@ void fb_edid_add_modes(struct fb_info *info);
 void fb_of_reserve_add_fixup(struct fb_info *info);
 
 int register_fbconsole(struct fb_info *fb);
+void *fb_get_screen_base(struct fb_info *info);
 
 #endif /* __FB_H */

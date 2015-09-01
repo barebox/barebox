@@ -11,10 +11,12 @@
 static int fb_ioctl(struct cdev* cdev, int req, void *data)
 {
 	struct fb_info *info = cdev->priv;
+	struct fb_info **fb;
 
 	switch (req) {
 	case FBIOGET_SCREENINFO:
-		memcpy(data, info, sizeof(*info));
+		fb = data;
+		*fb = info;
 		break;
 	case FBIO_ENABLE:
 		info->fbops->fb_enable(info);
@@ -29,10 +31,39 @@ static int fb_ioctl(struct cdev* cdev, int req, void *data)
 	return 0;
 }
 
+static int fb_alloc_shadowfb(struct fb_info *info)
+{
+	if (info->screen_base_shadow && info->shadowfb)
+		return 0;
+
+	if (!info->screen_base_shadow && !info->shadowfb)
+		return 0;
+
+	if (info->shadowfb) {
+		info->screen_base_shadow = memalign(PAGE_SIZE,
+				info->line_length * info->yres);
+		if (!info->screen_base_shadow)
+			return -ENOMEM;
+		memcpy(info->screen_base_shadow, info->screen_base,
+				info->line_length * info->yres);
+	} else {
+		free(info->screen_base_shadow);
+		info->screen_base_shadow = NULL;
+	}
+
+	return 0;
+}
+
 int fb_enable(struct fb_info *info)
 {
+	int ret;
+
 	if (info->enabled)
 		return 0;
+
+	ret = fb_alloc_shadowfb(info);
+	if (ret)
+		return ret;
 
 	info->fbops->fb_enable(info);
 
@@ -186,6 +217,22 @@ static void fb_info(struct device_d *dev)
 	fb_print_modes(&info->edid_modes);
 }
 
+void *fb_get_screen_base(struct fb_info *info)
+{
+	return info->screen_base_shadow ?
+		info->screen_base_shadow : info->screen_base;
+}
+
+int fb_set_shadowfb(struct param_d *p, void *priv)
+{
+	struct fb_info *info = priv;
+
+	if (!info->enabled)
+		return 0;
+
+	return fb_alloc_shadowfb(info);
+}
+
 int register_framebuffer(struct fb_info *info)
 {
 	int id = get_free_deviceid("fb");
@@ -243,6 +290,8 @@ int register_framebuffer(struct fb_info *info)
 	for (i = 0; i < info->edid_modes.num_modes; i++)
 		names[i + info->modes.num_modes] = info->edid_modes.modes[i].name;
 	dev_add_param_enum(dev, "mode_name", fb_set_modename, NULL, &info->current_mode, names, num_modes, info);
+	info->shadowfb = 1;
+	dev_add_param_bool(dev, "shadowfb", fb_set_shadowfb, NULL, &info->shadowfb, info);
 
 	info->mode = fb_num_to_mode(info, 0);
 

@@ -40,6 +40,7 @@ struct fbc_priv {
 	u8 csi[256];
 
 	int active;
+	int in_console;
 };
 
 static int fbc_getc(struct console_device *cdev)
@@ -57,6 +58,7 @@ static void cls(struct fbc_priv *priv)
 	void *buf = gui_screen_render_buffer(priv->sc);
 
 	memset(buf, 0, priv->fb->line_length * priv->fb->yres);
+	gu_screen_blit(priv->sc);
 }
 
 struct rgb {
@@ -137,6 +139,8 @@ static void video_invertchar(struct fbc_priv *priv, int x, int y)
 
 	gu_invert_area(priv->fb, buf, x * priv->font_width, y * priv->font_height,
 			priv->font_width, priv->font_height);
+	gu_screen_blit_area(priv->sc, x * priv->font_width, y * priv->font_height,
+			priv->font_width, priv->font_height);
 }
 
 static void printchar(struct fbc_priv *priv, int c)
@@ -169,7 +173,10 @@ static void printchar(struct fbc_priv *priv, int c)
 
 	default:
 		drawchar(priv, priv->x, priv->y, c);
-		gu_screen_blit(priv->sc);
+
+		gu_screen_blit_area(priv->sc, priv->x * priv->font_width,
+				priv->y * priv->font_height,
+				priv->font_width, priv->font_height);
 
 		priv->x++;
 		if (priv->x > priv->cols) {
@@ -187,6 +194,7 @@ static void printchar(struct fbc_priv *priv, int c)
 
 		memcpy(buf, buf + line_height, line_height * (priv->rows + 1));
 		memset(buf + line_height * priv->rows, 0, line_height);
+		gu_screen_blit(priv->sc);
 		priv->y = priv->rows;
 	}
 
@@ -250,6 +258,7 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		return;
 	case 'J':
 		cls(priv);
+		video_invertchar(priv, priv->x, priv->y);
 		return;
 	case 'H':
 		video_invertchar(priv, priv->x, priv->y);
@@ -281,6 +290,10 @@ static void fbc_putc(struct console_device *cdev, char c)
 {
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
+
+	if (priv->in_console)
+		return;
+	priv->in_console = 1;
 
 	switch (priv->state) {
 	case LIT:
@@ -329,6 +342,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 		}
 		break;
 	}
+	priv->in_console = 0;
 }
 
 static int setup_font(struct fbc_priv *priv)
@@ -370,7 +384,7 @@ static int fbc_set_active(struct console_device *cdev, unsigned flags)
 	if (ret)
 		return ret;
 
-	priv->sc = fb_create_screen(fb, 0);
+	priv->sc = fb_create_screen(fb);
 	if (IS_ERR(priv->sc))
 		return PTR_ERR(priv->sc);
 

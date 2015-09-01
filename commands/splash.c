@@ -15,9 +15,9 @@ static int do_splash(int argc, char *argv[])
 	int opt;
 	char *fbdev = "/dev/fb0";
 	char *image_file;
-	int offscreen = 0;
 	u32 bg_color = 0x00000000;
 	bool do_bg = false;
+	void *buf;
 
 	memset(&s, 0, sizeof(s));
 
@@ -41,8 +41,6 @@ static int do_splash(int argc, char *argv[])
 		case 'y':
 			s.y = simple_strtoul(optarg, NULL, 0);
 			break;
-		case 'o':
-			offscreen = 1;
 		}
 	}
 
@@ -52,21 +50,17 @@ static int do_splash(int argc, char *argv[])
 	}
 	image_file = argv[optind];
 
-	sc = fb_open(fbdev, offscreen);
+	sc = fb_open(fbdev);
 	if (IS_ERR(sc)) {
 		perror("fd_open");
 		return PTR_ERR(sc);
 	}
 
-	if (sc->offscreenbuf) {
-		if (do_bg)
-			gu_memset_pixel(sc->info, sc->offscreenbuf, bg_color,
-					sc->s.width * sc->s.height);
-		else
-			memcpy(sc->offscreenbuf, sc->fb, sc->fbsize);
-	} else if (do_bg) {
-		gu_memset_pixel(sc->info, sc->fb, bg_color, sc->s.width * sc->s.height);
-	}
+	buf = gui_screen_render_buffer(sc);
+
+	if (do_bg)
+		gu_memset_pixel(sc->info, buf, bg_color,
+				sc->s.width * sc->s.height);
 
 	ret = image_renderer_file(sc, &s, image_file);
 	if (ret > 0)
@@ -89,7 +83,6 @@ BAREBOX_CMD_HELP_OPT ("-f FB\t",    "framebuffer device (default /dev/fb0)")
 BAREBOX_CMD_HELP_OPT ("-x XOFFS", "x offset (default center)")
 BAREBOX_CMD_HELP_OPT ("-y YOFFS", "y offset (default center)")
 BAREBOX_CMD_HELP_OPT ("-b COLOR", "background color in 0xttrrggbb")
-BAREBOX_CMD_HELP_OPT ("-o\t",       "render offscreen")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(splash)

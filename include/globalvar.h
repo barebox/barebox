@@ -60,7 +60,7 @@ static inline int globalvar_add_simple_bool(const char *name,
 }
 
 static inline int globalvar_add_simple_enum(const char *name,
-		int *value, const char **names, int max)
+		int *value, const char * const *names, int max)
 {
 	struct param_d *p;
 
@@ -117,7 +117,7 @@ static inline int globalvar_add_simple_bool(const char *name,
 }
 
 static inline int globalvar_add_simple_enum(const char *name,
-		int *value, const char **names, int max)
+		int *value, const char * const *names, int max)
 {
 	return 0;
 }

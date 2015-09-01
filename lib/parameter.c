@@ -389,8 +389,8 @@ struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
 
 struct param_enum {
 	struct param_d param;
-	int *value;
-	const char **names;
+	unsigned int *value;
+	const char * const *names;
 	int num_names;
 	int (*set)(struct param_d *p, void *priv);
 	int (*get)(struct param_d *p, void *priv);
@@ -441,7 +441,11 @@ static const char *param_enum_get(struct device_d *dev, struct param_d *p)
 	}
 
 	free(p->value);
-	p->value = strdup(pe->names[*pe->value]);
+
+	if (*pe->value >= pe->num_names)
+		p->value = asprintf("invalid:%d", *pe->value);
+	else
+		p->value = strdup(pe->names[*pe->value]);
 
 	return p->value;
 }
@@ -467,7 +471,7 @@ static void param_enum_info(struct param_d *p)
 struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
-		int *value, const char **names, int num_names, void *priv)
+		int *value, const char * const *names, int num_names, void *priv)
 {
 	struct param_enum *pe;
 	struct param_d *p;

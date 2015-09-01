@@ -191,7 +191,7 @@ static int usb_parse_config(struct usb_device *dev, unsigned char *buffer, int c
 		return -1;
 	}
 	memcpy(&dev->config, buffer, buffer[0]);
-	le16_to_cpus(&(dev->config.wTotalLength));
+	le16_to_cpus(&(dev->config.desc.wTotalLength));
 	dev->config.no_of_if = 0;
 
 	index = dev->config.desc.bLength;

@@ -8,8 +8,9 @@ Required properties:
 * ``compatible``: should be ``barebox,environment``
 * ``device-path``: path to the environment
 
-The device-path is a multistring property. The first string should be a
-nodepath to the node containing the physical device of the environment.
+The device-path is a multistring property. The first string should contain
+a nodepath to the node containing the physical device of the environment or
+a nodepath to a partition described by the OF partition binding.
 The subsequent strings are of the form <type>:<options> to further describe
 the path to the environment. Supported values for <type>:
 

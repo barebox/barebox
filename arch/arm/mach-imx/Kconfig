@@ -175,6 +175,7 @@ config ARCH_IMX53
 
 config ARCH_IMX6
 	bool
+	select ARCH_HAS_L2X0
 	select ARCH_HAS_FEC_IMX
 	select CPU_V7
 	select PINCTRL_IMX_IOMUX_V3

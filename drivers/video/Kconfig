@@ -13,6 +13,7 @@ config FRAMEBUFFER_CONSOLE
 	prompt "framebuffer console support"
 
 config VIDEO_VPL
+	depends on OFTREE
 	bool
 
 config DRIVER_VIDEO_ATMEL
@@ -121,6 +122,7 @@ config DRIVER_VIDEO_MTL017
 	bool "MTL017 LVDS encoder"
 	select VIDEO_VPL
 	depends on I2C
+	depends on OFTREE
 	help
 	  The MTL017 is a parallel to lvds video encoder chip found on the
 	  Efika MX Smartbook.
@@ -128,6 +130,7 @@ config DRIVER_VIDEO_MTL017
 config DRIVER_VIDEO_SIMPLE_PANEL
 	bool "Simple panel support"
 	select VIDEO_VPL
+	depends on OFTREE
 	help
 	  This enabled support for simple panels, i.e. panels which consist of
 	  a mode definition and enable gpios in the devicetree. Unlike the

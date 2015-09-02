@@ -370,7 +370,7 @@ static int mmc_send_op_cond(struct mci *mci)
  * Note: Only cards newer than Version 1.1 (Physical Layer Spec) support
  * this command
  */
-static int mci_send_ext_csd(struct mci *mci, char *ext_csd)
+int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
@@ -394,7 +394,7 @@ static int mci_send_ext_csd(struct mci *mci, char *ext_csd)
  * @param value FIXME
  * @return Transaction status (0 on success)
  */
-static int mci_switch(struct mci *mci, unsigned set, unsigned index,
+int mci_switch(struct mci *mci, unsigned set, unsigned index,
 			unsigned value)
 {
 	struct mci_cmd cmd;

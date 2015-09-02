@@ -372,6 +372,9 @@ struct mci {
 int mci_register(struct mci_host*);
 void mci_of_parse(struct mci_host *host);
 int mci_detect_card(struct mci_host *);
+int mci_send_ext_csd(struct mci *mci, char *ext_csd);
+int mci_switch(struct mci *mci, unsigned set, unsigned index,
+			unsigned value);
 
 static inline int mmc_host_is_spi(struct mci_host *host)
 {

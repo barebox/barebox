@@ -44,6 +44,7 @@ obj-$(CONFIG_LZ4_DECOMPRESS) += decompress_unlz4.o
 obj-$(CONFIG_PROCESS_ESCAPE_SEQUENCE)	+= process_escape_sequence.o
 obj-$(CONFIG_UNCOMPRESS)	+= uncompress.o
 obj-$(CONFIG_BCH)	+= bch.o
+obj-$(CONFIG_BASE64)	+= base64.o
 obj-$(CONFIG_BITREV)	+= bitrev.o
 obj-$(CONFIG_QSORT)	+= qsort.o
 obj-$(CONFIG_LIBSCAN)	+= libscan.o

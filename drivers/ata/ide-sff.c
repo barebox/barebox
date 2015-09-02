@@ -118,7 +118,7 @@ static int ata_wait_ready(struct ide_port *ide, unsigned timeout)
 {
 	uint8_t status;
 	uint64_t start = get_time_ns();
-	uint64_t toffs = timeout * 1000 * 1000;
+	uint64_t toffs = timeout * MSECOND;
 
 	do {
 		status = ata_rd_status(ide);

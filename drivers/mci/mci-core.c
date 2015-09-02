@@ -53,6 +53,8 @@
 		__res & __mask;						\
 	})
 
+LIST_HEAD(mci_list);
+
 /**
  * @file
  * @brief Memory Card framework
@@ -1787,6 +1789,8 @@ int mci_register(struct mci_host *host)
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))
 		mci_card_probe(mci);
 
+	list_add_tail(&mci->list, &mci_list);
+
 	return 0;
 
 err_unregister:
@@ -1843,4 +1847,18 @@ void mci_of_parse(struct mci_host *host)
 	}
 
 	host->non_removable = of_property_read_bool(np, "non-removable");
+}
+
+struct mci *mci_get_device_by_name(const char *name)
+{
+	struct mci *mci;
+
+	list_for_each_entry(mci, &mci_list, list) {
+		if (!mci->cdevname)
+			continue;
+		if (!strcmp(mci->cdevname, name))
+			return mci;
+	}
+
+	return NULL;
 }

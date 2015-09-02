@@ -466,6 +466,8 @@ struct mci {
 
 	struct mci_part *part_curr;
 	u8 ext_csd_part_config;
+
+	struct list_head list;     /* The list of all mci devices */
 };
 
 int mci_register(struct mci_host*);
@@ -482,5 +484,7 @@ static inline int mmc_host_is_spi(struct mci_host *host)
 	else
 		return 0;
 }
+
+struct mci *mci_get_device_by_name(const char *name);
 
 #endif /* _MCI_H_ */

@@ -1,0 +1,79 @@
+/*
+ * Copyright (C) 2015 PHYTEC Messtechnik GmbH,
+ * Author: Daniel Schultz <d.schultz@phytec.de>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/delete-node/ &adc_tsc_fck;
+/delete-node/ &dcan0_fck;
+/delete-node/ &dcan1_fck;
+/delete-node/ &mcasp0_fck;
+/delete-node/ &mcasp1_fck;
+/delete-node/ &smartreflex0_fck;
+/delete-node/ &smartreflex1_fck;
+/delete-node/ &sha0_fck;
+/delete-node/ &aes0_fck;
+/delete-node/ &rng_fck;
+/delete-node/ &ehrpwm0_tbclk;
+/delete-node/ &ehrpwm1_tbclk;
+/delete-node/ &ehrpwm2_tbclk;
+/delete-node/ &clk_32768_ck;
+/delete-node/ &clk_rc32k_ck;
+/delete-node/ &tclkin_ck;
+/delete-node/ &dpll_core_m6_ck;
+/delete-node/ &dpll_mpu_m2_ck;
+/delete-node/ &dpll_ddr_ck;
+/delete-node/ &dpll_ddr_m2_ck;
+/delete-node/ &dpll_ddr_m2_div2_ck;
+/delete-node/ &dpll_disp_ck;
+/delete-node/ &dpll_disp_m2_ck;
+/delete-node/ &dpll_per_ck;
+/delete-node/ &dpll_per_m2_ck;
+/delete-node/ &dpll_per_m2_div4_wkupdm_ck;
+/delete-node/ &dpll_per_m2_div4_ck;
+/delete-node/ &cefuse_fck;
+/delete-node/ &clk_24mhz;
+/delete-node/ &clkdiv32k_ck;
+/delete-node/ &clkdiv32k_ick;
+/delete-node/ &l3_gclk;
+/delete-node/ &pruss_ocp_gclk;
+/delete-node/ &mmu_fck;
+/delete-node/ &timer1_fck;
+/delete-node/ &timer2_fck;
+/delete-node/ &timer3_fck;
+/delete-node/ &timer4_fck;
+/delete-node/ &timer5_fck;
+/delete-node/ &timer6_fck;
+/delete-node/ &timer7_fck;
+/delete-node/ &usbotg_fck;
+/delete-node/ &dpll_core_m4_div2_ck;
+/delete-node/ &ieee5000_fck;
+/delete-node/ &wdt1_fck;
+/delete-node/ &l4_rtc_gclk;
+/delete-node/ &l4hs_gclk;
+/delete-node/ &l3s_gclk;
+/delete-node/ &l4fw_gclk;
+/delete-node/ &l4ls_gclk;
+/delete-node/ &sysclk_div_ck;
+/delete-node/ &gpio0_dbclk_mux_ck;
+/delete-node/ &gpio0_dbclk;
+/delete-node/ &gpio1_dbclk;
+/delete-node/ &gpio2_dbclk;
+/delete-node/ &gpio3_dbclk;
+/delete-node/ &lcd_gclk;
+/delete-node/ &mmc_clk;
+/delete-node/ &gfx_fclk_clksel_ck;
+/delete-node/ &gfx_fck_div_ck;
+/delete-node/ &sysclkout_pre_ck;
+/delete-node/ &clkout2_div_ck;
+/delete-node/ &dbg_sysclk_ck;
+/delete-node/ &dbg_clka_ck;
+/delete-node/ &stm_pmd_clock_mux_ck;
+/delete-node/ &trace_pmd_clk_mux_ck;
+/delete-node/ &stm_clk_div_ck;
+/delete-node/ &trace_clk_div_ck;
+/delete-node/ &clkout2_ck;
+/delete-node/ &clk_24mhz_clkdm;

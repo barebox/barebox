@@ -149,7 +149,7 @@ static int da9053_enable_multiwrite(struct da9053_priv *da9053)
 static int da9053_set_timeout(struct watchdog *wd, unsigned timeout)
 {
 	struct da9053_priv *da9053 = wd_to_da9053_priv(wd);
-	struct device_d *dev = da9053->cdev.dev;
+	struct device_d *dev = da9053->dev;
 	unsigned scale = 0;
 	int ret;
 	u8 val;
@@ -269,7 +269,6 @@ static int da9053_probe(struct device_d *dev)
 
 	da9053 = xzalloc(sizeof(*da9053));
 	da9053->dev = dev;
-	da9053->cdev.name = DRIVERNAME;
 	da9053->client = to_i2c_client(dev);
 	da9053->wd.set_timeout = da9053_set_timeout;
 	da9053->wd.priority = of_get_watchdog_priority(dev->device_node);

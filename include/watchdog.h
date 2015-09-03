@@ -25,6 +25,7 @@ struct watchdog {
 int watchdog_register(struct watchdog *);
 int watchdog_deregister(struct watchdog *);
 int watchdog_set_timeout(unsigned);
+unsigned int of_get_watchdog_priority(struct device_node *node);
 #else
 static inline int watchdog_register(struct watchdog *w)
 {
@@ -40,10 +41,13 @@ static inline int watchdog_set_timeout(unsigned t)
 {
 	return 0;
 }
+
+static inline unsigned int of_get_watchdog_priority(struct device_node *node)
+{
+	return 0;
+}
 #endif
 
 #define WATCHDOG_DEFAULT_PRIORITY 100
-
-unsigned int of_get_watchdog_priority(struct device_node *node);
 
 #endif /* INCLUDE_WATCHDOG_H */

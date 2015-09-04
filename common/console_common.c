@@ -105,7 +105,7 @@ nolog:
 int pr_print(int level, const char *fmt, ...)
 {
 	va_list args;
-	uint i;
+	int i;
 	char printbuffer[CFG_PBSIZE];
 
 	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
@@ -191,7 +191,7 @@ void log_print(unsigned flags)
 int printf(const char *fmt, ...)
 {
 	va_list args;
-	uint i;
+	int i;
 	char printbuffer[CFG_PBSIZE];
 
 	va_start(args, fmt);
@@ -212,7 +212,7 @@ EXPORT_SYMBOL(printf);
 
 int vprintf(const char *fmt, va_list args)
 {
-	uint i;
+	int i;
 	char printbuffer[CFG_PBSIZE];
 
 	/*

@@ -242,6 +242,22 @@ config CMD_VERSION
 
 	  barebox 2014.05.0-00142-gb289373 #177 Mon May 12 20:35:55 CEST 2014
 
+config CMD_MMC_EXTCSD
+	tristate
+	prompt "read/write eMMC ext. CSD register"
+	depends on MCI
+	help
+	  Read or write the extended CSD register of a MMC device.
+
+	  Usage: mmc_extcsd dev [-r | -i index [-r | -v value -y]]
+
+	  Options:
+		  -i      field index of the register
+		  -r      print the register as raw data
+		  -v      value which will be written
+		  -y      don't request when writing to one time programmable fields
+		  __CAUTION__: this could damage the device!
+
 # end Information commands
 endmenu
 

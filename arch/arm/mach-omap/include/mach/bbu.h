@@ -36,4 +36,22 @@ static inline int am33xx_bbu_nand_register_handler(const char *name, char *devic
 }
 #endif
 
+#ifdef CONFIG_BAREBOX_UPDATE_AM33XX_EMMC
+int am33xx_bbu_emmc_mlo_register_handler(const char *name, char *devicefile);
+int am33xx_bbu_emmc_register_handler(const char *name, char *devicefile);
+#else
+static inline int am33xx_bbu_emmc_mlo_register_handler(const char *name,
+							char *devicefile)
+{
+	return 0;
+}
+
+static inline int am33xx_bbu_emmc_register_handler(const char *name,
+							char *devicefile)
+{
+	return 0;
+}
+#endif
+
+
 #endif

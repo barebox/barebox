@@ -36,3 +36,4 @@ pbl-$(CONFIG_OMAP3_USBBOOT) += omap3_xload_usb.o
 obj-$(CONFIG_CMD_BOOT_ORDER) += boot_order.o
 obj-$(CONFIG_BAREBOX_UPDATE_AM33XX_SPI_NOR_MLO) += am33xx_bbu_spi_mlo.o
 obj-$(CONFIG_BAREBOX_UPDATE_AM33XX_NAND) += am33xx_bbu_nand.o
+obj-$(CONFIG_BAREBOX_UPDATE_AM33XX_EMMC) += am33xx_bbu_emmc.o

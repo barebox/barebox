@@ -38,6 +38,7 @@
 #include <mach/syslib.h>
 #include <mach/gpmc.h>
 #include <linux/err.h>
+#include <mach/bbu.h>
 
 #include "beaglebone.h"
 
@@ -91,6 +92,9 @@ static int beaglebone_devices_init(void)
 	printf("detected 'BeagleBone %s'\n", black ? "Black" : "White");
 
 	armlinux_set_architecture(MACH_TYPE_BEAGLEBONE);
+
+	/* Register update handler */
+	am33xx_bbu_emmc_mlo_register_handler("MLO.emmc", "/dev/mmc1");
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();

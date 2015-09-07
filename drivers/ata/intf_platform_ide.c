@@ -29,6 +29,7 @@
 #include <ata_drive.h>
 #include <platform_ide.h>
 #include <linux/err.h>
+#include <of.h>
 
 /**
  * Setup the register specific addresses for an ATA like divice
@@ -85,8 +86,18 @@ static int platform_ide_probe(struct device_d *dev)
 	void *reg_base, *alt_base = NULL;
 	struct resource *reg, *alt;
 	int mmio = 0;
+	struct device_node *dn = dev->device_node;
+	u32 ioport_shift = 0;
+	int dataif_be = 0;
+	void (*reset)(int) = NULL;
 
-	if (pdata == NULL) {
+	if (pdata) {
+		ioport_shift = pdata->ioport_shift;
+		dataif_be = pdata->dataif_be;
+		reset = pdata->reset;
+	} else if (dn) {
+		of_property_read_u32(dn, "reg-shift", &ioport_shift);
+	} else {
 		dev_err(dev, "No platform data. Cannot continue\n");
 		return -EINVAL;
 	}
@@ -123,9 +134,9 @@ static int platform_ide_probe(struct device_d *dev)
 	ide = xzalloc(sizeof(*ide));
 	ide->io.mmio = mmio;
 
-	platform_ide_setup_port(reg_base, alt_base, &ide->io, pdata->ioport_shift);
-	ide->io.reset = pdata->reset;
-	ide->io.dataif_be = pdata->dataif_be;
+	platform_ide_setup_port(reg_base, alt_base, &ide->io, ioport_shift);
+	ide->io.reset = reset;
+	ide->io.dataif_be = dataif_be;
 
 	rc = ide_port_register(ide);
 	if (rc != 0) {
@@ -136,9 +147,18 @@ static int platform_ide_probe(struct device_d *dev)
 	return rc;
 }
 
+static __maybe_unused struct of_device_id platform_ide_dt_ids[] = {
+	{
+		.compatible = "ata-generic",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d platform_ide_driver = {
 	.name   = "ide_intf",
 	.probe  = platform_ide_probe,
+	.of_compatible = DRV_OF_COMPAT(platform_ide_dt_ids),
 };
 device_platform_driver(platform_ide_driver);
 

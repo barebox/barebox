@@ -289,7 +289,8 @@ static int check_passwd(unsigned char *passwd, size_t length)
 	} else {
 		d = digest_alloc(PASSWD_SUM);
 		if (!d) {
-			pr_err("No such digest: %s\n", PASSWD_SUM);
+			pr_err("No such digest: %s\n",
+			       PASSWD_SUM ? PASSWD_SUM : "NULL");
 			return -ENOENT;
 		}
 

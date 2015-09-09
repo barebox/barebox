@@ -23,6 +23,11 @@ static inline void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	return ret;
 }
 
+static inline void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
+{
+	return dma_alloc_coherent(size, dma_handle);
+}
+
 static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
 				     size_t size)
 {

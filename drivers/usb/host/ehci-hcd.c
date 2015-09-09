@@ -137,7 +137,7 @@ static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 		result &= mask;
 		if (result == done)
 			return 0;
-		if (is_timeout(start, usec * USECOND))
+		if (is_timeout_non_interruptible(start, usec * USECOND))
 			return -ETIMEDOUT;
 	}
 }
@@ -356,7 +356,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	vtd = td;
 	do {
 		token = hc32_to_cpu(vtd->qt_token);
-		if (is_timeout(start, timeout_val)) {
+		if (is_timeout_non_interruptible(start, timeout_val)) {
 			/* Disable async schedule. */
 			cmd = ehci_readl(&ehci->hcor->or_usbcmd);
 			cmd &= ~CMD_ASE;

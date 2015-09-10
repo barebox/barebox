@@ -176,7 +176,7 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 	diclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(diclk)) {
-		dev_err(ldb->dev, "failed to get di clk: %s\n", strerror(PTR_ERR(diclk)));
+		dev_err(ldb->dev, "failed to get di clk: %s\n", strerrorp(diclk));
 		return PTR_ERR(diclk);
 	}
 
@@ -184,7 +184,7 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 	ldbclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(ldbclk)) {
-		dev_err(ldb->dev, "failed to get ldb clk: %s\n", strerror(PTR_ERR(ldbclk)));
+		dev_err(ldb->dev, "failed to get ldb clk: %s\n", strerrorp(ldbclk));
 		return PTR_ERR(ldbclk);
 	}
 
@@ -216,7 +216,7 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 	diclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(diclk)) {
-		dev_err(ldb->dev, "failed to get di clk: %s\n", strerror(PTR_ERR(diclk)));
+		dev_err(ldb->dev, "failed to get di clk: %s\n", strerrorp(diclk));
 		return PTR_ERR(diclk);
 	}
 
@@ -224,7 +224,7 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 	ldbclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(ldbclk)) {
-		dev_err(ldb->dev, "failed to get ldb clk: %s\n", strerror(PTR_ERR(ldbclk)));
+		dev_err(ldb->dev, "failed to get ldb clk: %s\n", strerrorp(ldbclk));
 		return PTR_ERR(ldbclk);
 	}
 

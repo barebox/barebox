@@ -318,6 +318,10 @@ static struct state_variable *state_enum32_create(struct state *state,
 	enum32 = xzalloc(sizeof(*enum32));
 
 	num_names = of_property_count_strings(node, "names");
+	if (num_names < 0) {
+		dev_err(&state->dev, "enum32 node without \"names\" property\n");
+		return ERR_PTR(-EINVAL);
+	}
 
 	enum32->names = xzalloc(sizeof(char *) * num_names);
 	enum32->num_names = num_names;

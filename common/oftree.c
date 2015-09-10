@@ -189,11 +189,9 @@ int of_fix_tree(struct device_node *node)
 
 	list_for_each_entry(of_fixup, &of_fixup_list, list) {
 		ret = of_fixup->fixup(node, of_fixup->context);
-		if (ret) {
-			pr_err("Failed to fixup node in %pS: %s\n",
+		if (ret)
+			pr_warn("Failed to fixup node in %pS: %s\n",
 					of_fixup->fixup, strerror(-ret));
-			return ret;
-		}
 	}
 
 	return 0;

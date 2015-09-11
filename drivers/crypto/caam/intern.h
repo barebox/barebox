@@ -93,5 +93,6 @@ void caam_jr_algapi_init(struct device *dev);
 void caam_jr_algapi_remove(struct device *dev);
 
 int caam_rng_probe(struct device_d *dev, struct device_d *jrdev);
+int caam_blob_gen_probe(struct device_d *dev, struct device_d *jrdev);
 int caam_jr_probe(struct device_d *dev);
 #endif /* INTERN_H */

@@ -54,7 +54,7 @@ static const unsigned char us_direction[256/8] = {
  */
 
 /* Clear a stall on an endpoint - special for bulk-only devices */
-int usb_stor_Bulk_clear_endpt_stall(struct us_data *us, unsigned int pipe)
+static int usb_stor_Bulk_clear_endpt_stall(struct us_data *us, unsigned int pipe)
 {
 	return usb_clear_halt(us->pusb_dev, pipe);
 }

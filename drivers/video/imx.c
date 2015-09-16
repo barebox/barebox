@@ -24,6 +24,7 @@
 #include <init.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/sizes.h>
 #include <asm-generic/div64.h>
 
 #define LCDC_SSA	0x00
@@ -390,6 +391,37 @@ static struct fb_ops imxfb_ops = {
 	.fb_activate_var = imxfb_activate_var,
 };
 
+static int imxfb_allocate_fbbuffer(const struct device_d *dev,
+				   struct fb_info *info, void *forcefb)
+{
+	size_t fbsize = info->xres * info->yres * (info->bits_per_pixel >> 3);
+
+	/*
+	 * The buffer must be completely contained in an aligned 4 MiB memory
+	 * area.
+	 */
+	if (forcefb) {
+		if (ALIGN((unsigned long)forcefb, SZ_4M) !=
+		    ALIGN((unsigned long)forcefb + fbsize, SZ_4M)) {
+			dev_err(dev,
+				"provided frame buffer crosses a 4 MiB boundary\n");
+			return -EINVAL;
+		}
+		info->screen_base = forcefb;
+	} else {
+		/*
+		 * memalign implements a stricter condition on the memory
+		 * allocation as necessary, but in the absense of a better
+		 * function just use it.
+		 */
+		info->screen_base = memalign(fbsize, SZ_4M);
+		if (!info->screen_base)
+			return -ENOMEM;
+		memset(info->screen_base, 0, fbsize);
+	}
+	return 0;
+}
+
 #ifdef CONFIG_IMXFB_DRIVER_VIDEO_IMX_OVERLAY
 static void imxfb_overlay_enable_controller(struct fb_info *overlay)
 {
@@ -455,11 +487,9 @@ static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 	overlay->bits_per_pixel = fbi->info.bits_per_pixel;
 	overlay->fbops = &imxfb_overlay_ops;
 
-	if (fb)
-		overlay->screen_base = fb;
-	else
-		overlay->screen_base = xzalloc(overlay->xres * overlay->yres *
-			(overlay->bits_per_pixel >> 3));
+	ret = imxfb_allocate_fbbuffer(fbi->dev, overlay, fb);
+	if (ret < 0)
+		return ret;
 
 	writel((unsigned long)overlay->screen_base, fbi->regs + LCDC_LGWSAR);
 	writel(SIZE_XMAX(overlay->xres) | SIZE_YMAX(overlay->yres),
@@ -564,11 +594,10 @@ static int imxfb_probe(struct device_d *dev)
 
 	dev_info(dev, "i.MX Framebuffer driver\n");
 
-	if (pdata->framebuffer)
-		fbi->info.screen_base = pdata->framebuffer;
-	else
-		fbi->info.screen_base = xzalloc(info->xres * info->yres *
-			(info->bits_per_pixel >> 3));
+
+	ret = imxfb_allocate_fbbuffer(dev, info, pdata->framebuffer);
+	if (ret < 0)
+		return ret;
 
 	imxfb_activate_var(&fbi->info);
 

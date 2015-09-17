@@ -2293,6 +2293,13 @@ err_out:
 	return ret;
 }
 
+void ci_udc_unregister(void)
+{
+	if (udc_controller)
+		usb_del_gadget_udc(&udc_controller->gadget);
+
+}
+
 static int fsl_udc_probe(struct device_d *dev)
 {
 	void __iomem *regs = dev_request_mem_region(dev, 0);
@@ -2303,8 +2310,14 @@ static int fsl_udc_probe(struct device_d *dev)
 	return ci_udc_register(dev, regs);
 }
 
+static void fsl_udc_remove(struct device_d *dev)
+{
+	ci_udc_unregister();
+}
+
 static struct driver_d fsl_udc_driver = {
         .name   = "fsl-udc",
         .probe  = fsl_udc_probe,
+	.remove = fsl_udc_remove,
 };
 device_platform_driver(fsl_udc_driver);

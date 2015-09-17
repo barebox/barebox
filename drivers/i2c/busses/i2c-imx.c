@@ -35,11 +35,14 @@
 #include <driver.h>
 #include <init.h>
 #include <of.h>
+#include <gpio.h>
 #include <malloc.h>
 #include <types.h>
 #include <xfuncs.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <pinctrl.h>
+#include <of_gpio.h>
 
 #include <io.h>
 #include <i2c/i2c.h>
@@ -108,6 +111,7 @@ struct fsl_i2c_struct {
 	int			stopped;
 	unsigned int		ifdr;	/* FSL_I2C_IFDR */
 	unsigned int		dfsrr;  /* FSL_I2C_DFSRR */
+	struct i2c_bus_recovery_info rinfo;
 };
 #define to_fsl_i2c_struct(a)	container_of(a, struct fsl_i2c_struct, adapter)
 
@@ -232,8 +236,12 @@ static int i2c_fsl_start(struct i2c_adapter *adapter)
 	writeb(temp, base + FSL_I2C_I2CR);
 
 	result = i2c_fsl_bus_busy(adapter, 1);
-	if (result)
-		return result;
+	if (result) {
+		result = i2c_recover_bus(&i2c_fsl->adapter);
+		if (result)
+			return result;
+		return -EAGAIN;
+	}
 
 	i2c_fsl->stopped = 0;
 
@@ -494,9 +502,14 @@ static int i2c_fsl_xfer(struct i2c_adapter *adapter,
 	int result;
 
 	/* Start I2C transfer */
-	result = i2c_fsl_start(adapter);
-	if (result)
-		goto fail0;
+	for (i = 0; i < 3; i++) {
+		result = i2c_fsl_start(adapter);
+		if (!result)
+			break;
+		if (result == -EAGAIN)
+			continue;
+		return result;
+	}
 
 	/* read/write data */
 	for (i = 0; i < num; i++) {
@@ -527,6 +540,48 @@ fail0:
 	return (result < 0) ? result : num;
 }
 
+static void i2c_fsl_prepare_recovery(struct i2c_adapter *adapter)
+{
+	int ret;
+
+	ret = pinctrl_select_state(adapter->dev.parent, "gpio");
+	if (ret)
+		dev_err(adapter->dev.parent, "pinctrl failed: %s\n", strerror(-ret));
+}
+static void i2c_fsl_unprepare_recovery(struct i2c_adapter *adapter)
+{
+	int ret;
+
+	ret = pinctrl_select_state(adapter->dev.parent, "default");
+	if (ret)
+		dev_err(adapter->dev.parent, "pinctrl failed: %s\n", strerror(-ret));
+}
+
+static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl, struct device_d *dev)
+{
+	if (!dev->device_node)
+		return;
+
+	i2c_fsl->rinfo.sda_gpio = of_get_named_gpio_flags(dev->device_node,
+			"sda-gpios", 0, NULL);
+	i2c_fsl->rinfo.scl_gpio = of_get_named_gpio_flags(dev->device_node,
+			"scl-gpios", 0, NULL);
+
+	if (!gpio_is_valid(i2c_fsl->rinfo.sda_gpio) ||
+	    !gpio_is_valid(i2c_fsl->rinfo.scl_gpio))
+		return;
+
+	i2c_fsl->rinfo.get_scl = i2c_get_scl_gpio_value;
+	i2c_fsl->rinfo.get_sda = i2c_get_sda_gpio_value;
+	i2c_fsl->rinfo.set_scl = i2c_set_scl_gpio_value;
+	i2c_fsl->rinfo.prepare_recovery = i2c_fsl_prepare_recovery;
+	i2c_fsl->rinfo.unprepare_recovery = i2c_fsl_unprepare_recovery;
+	i2c_fsl->rinfo.recover_bus = i2c_generic_gpio_recovery;
+	i2c_fsl->adapter.bus_recovery_info = &i2c_fsl->rinfo;
+
+	dev_dbg(dev, "initialized recovery info\n");
+}
+
 static int __init i2c_fsl_probe(struct device_d *pdev)
 {
 	struct fsl_i2c_struct *i2c_fsl;
@@ -554,6 +609,8 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 		ret = PTR_ERR(i2c_fsl->base);
 		goto fail;
 	}
+
+	i2c_fsl_init_recovery(i2c_fsl, pdev);
 
 	i2c_fsl->dfsrr = -1;
 

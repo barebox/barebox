@@ -248,7 +248,8 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 	}
 
 	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
-	dma_flush_range((unsigned long)ptes, num_ptes * sizeof(u32));
+	dma_flush_range((unsigned long)ptes,
+			(unsigned long)ptes + num_ptes * sizeof(u32));
 
 	tlb_invalidate();
 

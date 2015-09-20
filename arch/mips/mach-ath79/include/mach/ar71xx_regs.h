@@ -15,7 +15,11 @@
 #ifndef __ASM_MACH_AR71XX_REGS_H
 #define __ASM_MACH_AR71XX_REGS_H
 
+#ifndef __ASSEMBLER__
 #include <linux/bitops.h>
+#else
+#define BIT(nr)  (1 << (nr))
+#endif
 
 #define AR71XX_APB_BASE		0x18000000
 

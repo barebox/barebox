@@ -19,10 +19,7 @@
 #define __AR933X_DEBUG_LL__
 
 #include <asm/addrspace.h>
-
-/* Alas! <mach/ar71xx_regs.h> isn't assembly-tolerant */
-#define AR71XX_APB_BASE     0x18000000
-#define AR933X_UART_BASE    (AR71XX_APB_BASE + 0x00020000)
+#include <mach/ar71xx_regs.h>
 
 #define DEBUG_LL_UART_ADDR	KSEG1ADDR(AR933X_UART_BASE)
 

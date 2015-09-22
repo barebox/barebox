@@ -17,6 +17,16 @@
 			status = "disabled";
 		};
 
+		gpio: gpio@18040000 {
+			compatible = "qca,ar7100-gpio";
+			gpio-controller;
+			reg = <0x18040000 0x100>;
+			#gpio-cells = <2>;
+
+			ngpios = <30>;
+			status = "disabled";
+		};
+
 		ar9331_clk: clock {
 			compatible = "qca,ar933x-clk";
 			reg = <0x18050000 0x48>;

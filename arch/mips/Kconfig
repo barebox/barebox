@@ -68,6 +68,7 @@ config MACH_MIPS_ATH79
 	select COMMON_CLK_OF_PROVIDER
 	select CLKDEV_LOOKUP
 	select OFTREE
+	select GPIOLIB
 
 config MACH_MIPS_BCM47XX
 	bool "Broadcom BCM47xx-based boards"

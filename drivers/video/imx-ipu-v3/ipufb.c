@@ -189,6 +189,11 @@ static void ipufb_enable_controller(struct fb_info *info)
 {
 	struct ipufb_info *fbi = container_of(info, struct ipufb_info, info);
 
+	if (!info->mode) {
+		dev_err(fbi->dev, "No valid mode found\n");
+		return;
+	}
+
 	vpl_ioctl_prepare(&fbi->vpl, 2 + fbi->dino, info->mode);
 
 	ipu_crtc_mode_set(fbi, info->mode, 0, 0);

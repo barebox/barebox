@@ -308,7 +308,6 @@ static int imx_ldb_probe(struct device_d *dev)
 	for_each_child_of_node(np, child) {
 		struct imx_ldb_channel *channel;
 		struct device_node *port;
-		struct device_node *endpoint;
 
 		ret = of_property_read_u32(child, "reg", &i);
 		if (ret || i < 0 || i > 1)
@@ -331,12 +330,6 @@ static int imx_ldb_probe(struct device_d *dev)
 		port = of_graph_get_port_by_id(child, channel->output_port);
 		if (!port) {
 			dev_warn(dev, "No port found for %s\n", child->full_name);
-			continue;
-		}
-
-		endpoint = of_get_child_by_name(port, "endpoint");
-		if (!endpoint) {
-			dev_warn(dev, "No endpoint found on %s\n", port->full_name);
 			continue;
 		}
 

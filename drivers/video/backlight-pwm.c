@@ -160,8 +160,10 @@ static int backlight_pwm_of_probe(struct device_d *dev)
 	struct pwm_device *pwm;
 
 	pwm = of_pwm_request(dev->device_node, NULL);
-	if (IS_ERR(pwm))
+	if (IS_ERR(pwm)) {
+		dev_err(dev, "Cannot find PWM device\n");
 		return PTR_ERR(pwm);
+	}
 
 	pwm_backlight = xzalloc(sizeof(*pwm_backlight));
 	pwm_backlight->pwm = pwm;

@@ -542,6 +542,10 @@
 	};
 };
 
+&pwm1 {
+	status = "okay";
+};
+
 &uart1 {
 	/* RS485 */
 	pinctrl-names = "default";

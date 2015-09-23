@@ -87,6 +87,7 @@ static int simple_panel_disable(struct simple_panel *panel)
 
 static int simple_panel_get_modes(struct simple_panel *panel, struct display_timings *timings)
 {
+	struct display_timings *modes;
 	int ret;
 
 	if (panel->ddc_node && IS_ENABLED(CONFIG_DRIVER_VIDEO_EDID) &&
@@ -109,6 +110,13 @@ static int simple_panel_get_modes(struct simple_panel *panel, struct display_tim
 			dev_err(panel->dev, "cannot convert edid data to timings\n");
 			return ret;
 		}
+	}
+
+	modes = of_get_display_timings(panel->dev->device_node);
+	if (modes) {
+		timings->modes = modes->modes;
+		timings->num_modes = modes->num_modes;
+		return 0;
 	}
 
 	dev_err(panel->dev, "No modes found\n");

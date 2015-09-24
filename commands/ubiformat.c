@@ -297,7 +297,7 @@ static int mark_bad(const struct mtd_dev_info *mtd, struct ubi_scan_info *si, in
 static int flash_image(const struct mtd_dev_info *mtd,
 		       const struct ubigen_info *ui, struct ubi_scan_info *si)
 {
-	int fd, img_ebs, eb, written_ebs = 0, divisor, ret = -1;
+	int fd, img_ebs, eb, written_ebs = 0, ret = -1;
 	off_t st_size;
 	char *buf = NULL;
 
@@ -332,7 +332,6 @@ static int flash_image(const struct mtd_dev_info *mtd,
 	}
 
 	verbose(args.verbose, "will write %d eraseblocks", img_ebs);
-	divisor = img_ebs;
 	for (eb = 0; eb < mtd->eb_cnt; eb++) {
 		int err, new_len;
 		long long ec;
@@ -342,10 +341,8 @@ static int flash_image(const struct mtd_dev_info *mtd,
 			       eb, (eb + 1) * 100 / mtd->eb_cnt);
 		}
 
-		if (si->ec[eb] == EB_BAD) {
-			divisor += 1;
+		if (si->ec[eb] == EB_BAD)
 			continue;
-		}
 
 		if (args.verbose) {
 			normsg_cont("eraseblock %d: erase", eb);

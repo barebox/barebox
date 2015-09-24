@@ -20,6 +20,15 @@
 
 #include <io.h>
 
+#define QH_ENDPT1_EPS(x)	(((x) & 0x3) << 12)	/* Endpoint Speed */
+#define QH_ENDPT2_PORTNUM(x)	(((x) & 0x7f) << 23)	/* Port Number */
+#define QH_ENDPT2_HUBADDR(x)	(((x) & 0x7f) << 16)	/* Hub Address */
+
+#define QT_TOKEN_DT(x)		(((x) & 0x1) << 31)	/* Data Toggle */
+#define QT_TOKEN_GET_STATUS(x)	(((x) >> 0) & 0xff)
+#define QT_TOKEN_STATUS_ACTIVE	0x80
+#define QT_TOKEN_GET_DT(x)	(((x) >> 31) & 0x1)
+
 #if !defined(CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS)
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS	16
 #endif
@@ -51,6 +60,7 @@ struct ehci_hcor {
 #define CMD_RUN		(1 << 0)		/* start/stop HC */
 	uint32_t or_usbsts;
 #define	STD_ASS		(1 << 15)
+#define STS_PSS         (1 << 14)
 #define STS_HALT	(1 << 12)
 	uint32_t or_usbintr;
 	uint32_t or_frindex;
@@ -148,7 +158,10 @@ struct QH {
 	 * Add dummy fill value to make the size of this struct
 	 * aligned to 32 bytes
 	 */
-	uint8_t fill[16];
+	union {
+		uint8_t fill[16];
+		void* buffer;
+	};
 };
 
 #endif /* USB_EHCI_H */

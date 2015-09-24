@@ -46,4 +46,11 @@ config KEYBOARD_TWL6030
 	help
 	  Say Y here if you want to use TWL6030 power button as a key.
 
+config KEYBOARD_USB
+	bool "USB keyboard"
+	depends on USB_HOST
+	select POLLER
+	help
+	  This driver implements support for usb keyboard.
+
 endmenu

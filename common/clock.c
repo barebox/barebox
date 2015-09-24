@@ -202,6 +202,15 @@ void mdelay(unsigned long msecs)
 }
 EXPORT_SYMBOL(mdelay);
 
+void mdelay_non_interruptible(unsigned long msecs)
+{
+	uint64_t start = get_time_ns();
+
+	while (!is_timeout_non_interruptible(start, msecs * MSECOND))
+		;
+}
+EXPORT_SYMBOL(mdelay_non_interruptible);
+
 int init_clock(struct clocksource *cs)
 {
 	current_clock = cs;

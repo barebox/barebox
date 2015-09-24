@@ -72,6 +72,7 @@ void __noreturn poweroff(void);
 /* lib_$(ARCH)/time.c */
 void	udelay (unsigned long);
 void	mdelay (unsigned long);
+void	mdelay_non_interruptible (unsigned long);
 
 /* lib_generic/crc32.c */
 uint32_t crc32(uint32_t, const void*, unsigned int);

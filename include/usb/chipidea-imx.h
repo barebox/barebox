@@ -1,6 +1,8 @@
 #ifndef __USB_CHIPIDEA_IMX_H
 #define __USB_CHIPIDEA_IMX_H
 
+#include <usb/phy.h>
+
 /*
  * POTSC flags
  */
@@ -42,6 +44,7 @@ enum imx_usb_mode {
 
 struct imxusb_platformdata {
 	unsigned long flags;
+	enum usb_phy_interface phymode;
 	enum imx_usb_mode mode;
 };
 

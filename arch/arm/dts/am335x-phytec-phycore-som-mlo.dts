@@ -28,3 +28,7 @@
 &gpmc {
 	status = "disabled";
 };
+
+&mac {
+	status = "disabled";
+};

@@ -158,7 +158,7 @@ static void env_str_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen
 
 	if (opt->copy_only_if_valid && !strlen(tmp))
 		return;
-	if (opt->barebox_var_name && IS_ENABLED(EVIRONMENT_VARIABLES))
+	if (opt->barebox_var_name && IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES))
 		setenv(opt->barebox_var_name, tmp);
 	if (opt->barebox_dhcp_global && IS_ENABLED(CONFIG_GLOBALVAR))
 		dhcp_set_barebox_global(opt->barebox_dhcp_global, tmp);

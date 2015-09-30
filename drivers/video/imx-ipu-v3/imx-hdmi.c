@@ -132,7 +132,6 @@ struct dw_hdmi {
 
 	bool phy_enabled;
 
-	struct regmap *regmap;
 	struct device_node *ddc_node;;
 	void __iomem *regs;
 

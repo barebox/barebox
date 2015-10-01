@@ -361,3 +361,40 @@ err_out:
 
 	return type;
 }
+
+enum filetype cdev_detect_type(const char *name)
+{
+	enum filetype type = filetype_unknown;
+	int ret;
+	struct cdev *cdev;
+	void *buf;
+
+	cdev = cdev_by_name(name);
+	if (!cdev)
+		return type;
+	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
+	ret = cdev_read(cdev, buf, FILE_TYPE_SAFE_BUFSIZE, 0, 0);
+	if (ret < 0)
+		goto err_out;
+
+	type = file_detect_type(buf, ret);
+
+	if (type == filetype_mbr) {
+		unsigned long bootsec;
+		/*
+		 * Get the first partition start sector
+		 * and check for FAT in it
+		 */
+		is_fat_or_mbr(buf, &bootsec);
+
+		ret = cdev_read(cdev, buf, 512, bootsec * 512, 0);
+		if (ret < 0)
+			goto err_out;
+
+		type = is_fat_or_mbr((u8 *)buf, NULL);
+	}
+
+err_out:
+	free(buf);
+	return type;
+}

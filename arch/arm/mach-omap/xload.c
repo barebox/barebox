@@ -117,7 +117,7 @@ static void *omap_xload_boot_mmc(void)
 
 	partname = asprintf("%s.0", diskdev);
 
-	ret = mount(partname, "fat", "/", NULL);
+	ret = mount(partname, NULL, "/", NULL);
 
 	if (ret) {
 		printf("Unable to mount %s (%d)\n", partname, ret);
@@ -128,6 +128,8 @@ static void *omap_xload_boot_mmc(void)
 	free(partname);
 
 	buf = read_file("/barebox.bin", &len);
+	if (!buf)
+		buf = read_file("/boot/barebox.bin", &len);
 	if (!buf) {
 		printf("could not read barebox.bin from sd card\n");
 		return NULL;

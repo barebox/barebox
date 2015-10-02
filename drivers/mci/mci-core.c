@@ -652,6 +652,9 @@ retry_scr:
 	if ((__be32_to_cpu(switch_status[4]) & 0x0f000000) == 0x01000000)
 		mci->card_caps |= MMC_CAP_SD_HIGHSPEED;
 
+	if (mci_caps(mci) & MMC_CAP_SD_HIGHSPEED)
+		mci->tran_speed = 50000000;
+
 	return 0;
 }
 

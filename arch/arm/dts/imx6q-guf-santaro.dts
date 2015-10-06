@@ -60,9 +60,9 @@
 	};
 
 	panel {
-		compatible = "unknown,the-display-on-the-garz-fricke-santaro";
+		compatible = "simple-panel";
 		backlight = <&backlight>;
-		enable-gpios = <&gpio5 21 GPIO_ACTIVE_LOW>;
+		enable-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
 
 		port {
 			panel_in: endpoint {
@@ -515,7 +515,6 @@
 		status = "okay";
 		fsl,data-mapping = "spwg";
 		fsl,data-width = <18>;
-		gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
 
 		display-timings {
 			timing0: 800x480 {
@@ -540,6 +539,10 @@
 			};
 		};
 	};
+};
+
+&pwm1 {
+	status = "okay";
 };
 
 &uart1 {

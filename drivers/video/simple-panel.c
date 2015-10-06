@@ -30,6 +30,7 @@
 #include <i2c/i2c.h>
 
 struct simple_panel {
+	struct device_d *dev;
 	struct vpl vpl;
 	int enable_gpio;
 	int enable_active_high;
@@ -44,10 +45,14 @@ static int simple_panel_enable(struct simple_panel *panel)
 {
 	int ret;
 
+	dev_dbg(panel->dev, "enabling\n");
+
 	if (panel->backlight_node && !panel->backlight) {
 		panel->backlight = of_backlight_find(panel->backlight_node);
-		if (!panel->backlight)
+		if (!panel->backlight) {
+			dev_err(panel->dev, "Cannot find backlight\n");
 			return -ENODEV;
+		}
 	}
 
 	if (gpio_is_valid(panel->enable_gpio))
@@ -68,6 +73,8 @@ static int simple_panel_enable(struct simple_panel *panel)
 
 static int simple_panel_disable(struct simple_panel *panel)
 {
+	dev_dbg(panel->dev, "disabling\n");
+
 	if (panel->backlight)
 		backlight_set_brightness(panel->backlight, 0);
 
@@ -80,23 +87,41 @@ static int simple_panel_disable(struct simple_panel *panel)
 
 static int simple_panel_get_modes(struct simple_panel *panel, struct display_timings *timings)
 {
-	int ret = -ENOENT;
+	struct display_timings *modes;
+	int ret;
 
 	if (panel->ddc_node && IS_ENABLED(CONFIG_DRIVER_VIDEO_EDID) &&
 	    IS_ENABLED(CONFIG_I2C)) {
 		struct i2c_adapter *i2c;
 
                 i2c = of_find_i2c_adapter_by_node(panel->ddc_node);
-		if (!i2c)
+		if (!i2c) {
+			dev_err(panel->dev, "cannot find edid i2c node\n");
 			return -ENODEV;
+		}
 		timings->edid = edid_read_i2c(i2c);
-		if (!timings->edid)
+		if (!timings->edid) {
+			dev_err(panel->dev, "cannot read edid data\n");
 			return -EINVAL;
+		}
 
 		ret = edid_to_display_timings(timings, timings->edid);
+		if (ret) {
+			dev_err(panel->dev, "cannot convert edid data to timings\n");
+			return ret;
+		}
 	}
 
-	return ret;
+	modes = of_get_display_timings(panel->dev->device_node);
+	if (modes) {
+		timings->modes = modes->modes;
+		timings->num_modes = modes->num_modes;
+		return 0;
+	}
+
+	dev_err(panel->dev, "No modes found\n");
+
+	return -ENOENT;
 }
 
 static int simple_panel_ioctl(struct vpl *vpl, unsigned int port,
@@ -129,6 +154,7 @@ static int simple_panel_probe(struct device_d *dev)
 	panel->enable_gpio = of_get_named_gpio_flags(node, "enable-gpios", 0, &flags);
 	panel->vpl.node = node;
 	panel->vpl.ioctl = simple_panel_ioctl;
+	panel->dev = dev;
 
 	if (gpio_is_valid(panel->enable_gpio)) {
 		if (!(flags & OF_GPIO_ACTIVE_LOW))

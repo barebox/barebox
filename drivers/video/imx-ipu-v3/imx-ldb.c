@@ -143,20 +143,7 @@ static int imx_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, struct fb_videomo
 
 	writel(ldb->ldb_ctrl, ldb->base);
 
-	return vpl_ioctl(&imx_ldb_ch->vpl, imx_ldb_ch->output_port,
-			VPL_PREPARE, NULL);
-}
-
-static int imx_ldb_enable(struct imx_ldb_channel *imx_ldb_ch, int di)
-{
-	return vpl_ioctl(&imx_ldb_ch->vpl, imx_ldb_ch->output_port,
-				VPL_ENABLE, NULL);
-}
-
-static int imx_ldb_disable(struct imx_ldb_channel *imx_ldb_ch, int di)
-{
-	return vpl_ioctl(&imx_ldb_ch->vpl, imx_ldb_ch->output_port,
-			VPL_DISABLE, NULL);
+	return 0;
 }
 
 static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
@@ -260,20 +247,14 @@ static int imx_ldb_ioctl(struct vpl *vpl, unsigned int port,
 
 	switch (cmd) {
 	case VPL_ENABLE:
-		ret = vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
-		if (ret)
-			return ret;
-		return imx_ldb_enable(imx_ldb_ch, port);
+		break;
 	case VPL_DISABLE:
-		ret = vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
-		if (ret)
-			return ret;
-		return imx_ldb_disable(imx_ldb_ch, port);
+		break;
 	case VPL_PREPARE:
-		ret = vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
+		ret = imx_ldb_prepare(imx_ldb_ch, data, port);
 		if (ret)
 			return ret;
-		return imx_ldb_prepare(imx_ldb_ch, data, port);
+		break;
 	case IMX_IPU_VPL_DI_MODE:
 		mode = data;
 
@@ -282,9 +263,22 @@ static int imx_ldb_ioctl(struct vpl *vpl, unsigned int port,
 			V4L2_PIX_FMT_RGB24 : V4L2_PIX_FMT_BGR666;
 
 		return 0;
-	default:
-		return vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
+	case VPL_GET_VIDEOMODES:
+		if (imx_ldb_ch->modes) {
+			struct display_timings *timings = data;
+			timings->num_modes = imx_ldb_ch->modes->num_modes;
+			timings->modes = imx_ldb_ch->modes->modes;
+			dev_dbg(imx_ldb_ch->ldb->dev, "Using ldb provided timings\n");
+			return 0;
+		}
+
+		break;
 	}
+
+	if (imx_ldb_ch->output_port > 0)
+		return vpl_ioctl(vpl, imx_ldb_ch->output_port, cmd, data);
+
+	return 0;
 }
 
 static int imx_ldb_probe(struct device_d *dev)
@@ -308,7 +302,6 @@ static int imx_ldb_probe(struct device_d *dev)
 	for_each_child_of_node(np, child) {
 		struct imx_ldb_channel *channel;
 		struct device_node *port;
-		struct device_node *endpoint;
 
 		ret = of_property_read_u32(child, "reg", &i);
 		if (ret || i < 0 || i > 1)
@@ -327,16 +320,15 @@ static int imx_ldb_probe(struct device_d *dev)
 		channel->chno = i;
 		channel->output_port = imx_ldb->soc_data->have_mux ? 4 : 1;
 
+		channel->modes = of_get_display_timings(child);
+
 		/* The output port is port@4 with mux or port@1 without mux */
 		port = of_graph_get_port_by_id(child, channel->output_port);
-		if (!port) {
-			dev_warn(dev, "No port found for %s\n", child->full_name);
-			continue;
-		}
+		if (!port)
+			channel->output_port = -1;
 
-		endpoint = of_get_child_by_name(port, "endpoint");
-		if (!endpoint) {
-			dev_warn(dev, "No endpoint found on %s\n", port->full_name);
+		if (!channel->modes && !port) {
+			dev_err(dev, "Neither display timings in ldb node nor remote panel found\n");
 			continue;
 		}
 

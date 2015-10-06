@@ -24,6 +24,7 @@
 #include <pwm.h>
 #include <linux/err.h>
 #include <of.h>
+#include <regulator.h>
 #include <gpio.h>
 #include <of_gpio.h>
 #include <asm-generic/div64.h>
@@ -31,6 +32,7 @@
 struct pwm_backlight {
 	struct backlight_device backlight;
 	struct pwm_device *pwm;
+	struct regulator *power;
 	uint32_t period;
 	unsigned int *levels;
 	int enable_gpio;
@@ -50,6 +52,8 @@ static int backlight_pwm_enable(struct pwm_backlight *pwm_backlight)
 	if (ret)
 		return ret;
 
+	regulator_enable(pwm_backlight->power);
+
 	if (gpio_is_valid(pwm_backlight->enable_gpio)) {
 		gpio_direction_output(pwm_backlight->enable_gpio,
 				pwm_backlight->enable_active_high);
@@ -68,6 +72,9 @@ static int backlight_pwm_disable(struct pwm_backlight *pwm_backlight)
 	if (gpio_is_valid(pwm_backlight->enable_gpio)) {
 		gpio_direction_output(pwm_backlight->enable_gpio,
 				!pwm_backlight->enable_active_high);
+
+		regulator_disable(pwm_backlight->power);
+
 		/*
 		 * Only disable PWM when an enable gpio is present.
 		 * The output of the PWM is undefined when the PWM
@@ -160,8 +167,10 @@ static int backlight_pwm_of_probe(struct device_d *dev)
 	struct pwm_device *pwm;
 
 	pwm = of_pwm_request(dev->device_node, NULL);
-	if (IS_ERR(pwm))
+	if (IS_ERR(pwm)) {
+		dev_err(dev, "Cannot find PWM device\n");
 		return PTR_ERR(pwm);
+	}
 
 	pwm_backlight = xzalloc(sizeof(*pwm_backlight));
 	pwm_backlight->pwm = pwm;
@@ -170,6 +179,12 @@ static int backlight_pwm_of_probe(struct device_d *dev)
 	ret = pwm_backlight_parse_dt(dev, pwm_backlight);
 	if (ret)
 		return ret;
+
+	pwm_backlight->power = regulator_get(dev, "power");
+	if (IS_ERR(pwm_backlight->power)) {
+		dev_err(dev, "Cannot find regulator\n");
+		return PTR_ERR(pwm_backlight->power);
+	}
 
 	pwm_backlight->period = pwm_get_period(pwm_backlight->pwm);
 

@@ -236,6 +236,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 		}
 		ci->portno = dev->id;
 		ci->flags = pdata->flags;
+		ci->phymode = pdata->phymode;
 		ci->mode = pdata->mode;
 	}
 

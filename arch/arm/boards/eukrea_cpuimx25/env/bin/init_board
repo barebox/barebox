@@ -9,24 +9,26 @@ elif [ -f /env/logo.bmp.lzo ]; then
 	fb0.enable=1
 fi
 
-gpio_get_value 82
-if [ $? -eq 0 ]; then
-	gpio_set_value 83 0
-	usbserial
-	timeout -s -a 2
+if [ ! -z $use_dfu ]; then
 	gpio_get_value 82
 	if [ $? -eq 0 ]; then
-		usbserial -d
-		dfu -V 0x1234 -P 0x1234 /dev/nand0.barebox.bb(barebox)sr,/dev/nand0.kernel.bb(kernel)r,/dev/nand0.root.bb(root)r
+		gpio_set_value 83 0
+		usbserial
+		timeout -s -a 2
 		gpio_get_value 82
 		if [ $? -eq 0 ]; then
-			usbserial
-			autoboot_timeout=60
+			usbserial -d
+			dfu -V 0x1234 -P 0x1234 /dev/nand0.barebox.bb(barebox)sr,/dev/nand0.kernel.bb(kernel)r,/dev/nand0.root.bb(root)r
+			gpio_get_value 82
+			if [ $? -eq 0 ]; then
+				usbserial
+				autoboot_timeout=60
+			else
+				reset
+			fi
 		else
-			reset
+			autoboot_timeout=28
 		fi
-	else
-		autoboot_timeout=28
 	fi
 fi
 

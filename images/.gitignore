@@ -5,6 +5,7 @@
 *.imximg
 *.imximg.prep
 *.imximg.signed
+*.imx-sram-img
 *.map
 *.src
 *.kwbimg

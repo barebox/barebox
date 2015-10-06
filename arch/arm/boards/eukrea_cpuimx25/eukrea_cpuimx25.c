@@ -87,36 +87,6 @@ struct gpio_led led0 = {
 	.active_low = 1,
 };
 
-#ifdef CONFIG_USB
-static void imx25_usb_init(void)
-{
-	unsigned int tmp;
-
-	/* Host 1 */
-	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x600);
-	tmp &= ~(MX35_H1_SIC_MASK | MX35_H1_PM_BIT | MX35_H1_TLL_BIT |
-		MX35_H1_USBTE_BIT | MX35_H1_IPPUE_DOWN_BIT | MX35_H1_IPPUE_UP_BIT);
-	tmp |= (MXC_EHCI_INTERFACE_SINGLE_UNI) << MX35_H1_SIC_SHIFT;
-	tmp |= MX35_H1_USBTE_BIT;
-	tmp |= MX35_H1_IPPUE_DOWN_BIT;
-	writel(tmp, MX25_USB_OTG_BASE_ADDR + 0x600);
-
-	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x584);
-	tmp |= 3 << 30;
-	writel(tmp, MX25_USB_OTG_BASE_ADDR + 0x584);
-
-	/* Set to Host mode */
-	tmp = readl(MX25_USB_OTG_BASE_ADDR + 0x5a8);
-	writel(tmp | 0x3, MX25_USB_OTG_BASE_ADDR + 0x5a8);
-}
-
-#endif
-
-static struct fsl_usb2_platform_data usb_pdata = {
-	.operating_mode	= FSL_USB2_DR_DEVICE,
-	.phy_mode	= FSL_USB2_PHY_UTMI,
-};
-
 static iomux_v3_cfg_t eukrea_cpuimx25_pads[] = {
 	MX25_PAD_FEC_MDC__FEC_MDC,
 	MX25_PAD_FEC_MDIO__FEC_MDIO,
@@ -173,6 +143,28 @@ static iomux_v3_cfg_t eukrea_cpuimx25_pads[] = {
 	MX25_PAD_VSTBY_ACK__GPIO_3_18,
 };
 
+#ifdef CONFIG_USB
+#ifndef CONFIG_USB_GADGET
+struct imxusb_platformdata otg_pdata = {
+	.flags = MXC_EHCI_INTERFACE_DIFF_UNI,
+	.mode = IMX_USB_MODE_HOST,
+	.phymode = USBPHY_INTERFACE_MODE_UTMI,
+};
+#endif
+
+struct imxusb_platformdata hs_pdata = {
+	.flags = MXC_EHCI_INTERFACE_SINGLE_UNI | MXC_EHCI_INTERNAL_PHY | MXC_EHCI_IPPUE_DOWN,
+	.mode = IMX_USB_MODE_HOST,
+};
+#endif
+
+#ifdef CONFIG_USB_GADGET
+static struct fsl_usb2_platform_data usb_pdata = {
+	.operating_mode	= FSL_USB2_DR_DEVICE,
+	.phy_mode	= FSL_USB2_PHY_UTMI,
+};
+#endif
+
 static int eukrea_cpuimx25_devices_init(void)
 {
 	mxc_iomux_v3_setup_multiple_pads(eukrea_cpuimx25_pads,
@@ -206,19 +198,22 @@ static int eukrea_cpuimx25_devices_init(void)
 
 	imx25_add_fb(&eukrea_cpuimx25_fb_data);
 
-	imx25_add_i2c0(NULL);
-	imx25_add_mmc0(NULL);
-
-#ifdef CONFIG_USB
-	imx25_usb_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX25_USB_OTG_BASE_ADDR + 0x400, NULL);
-#endif
 #ifdef CONFIG_USB_GADGET
 	/* Workaround ENGcm09152 */
 	writel(readl(MX25_USB_OTG_BASE_ADDR + 0x608) | (1 << 23), MX25_USB_OTG_BASE_ADDR + 0x608);
 	add_generic_device("fsl-udc", DEVICE_ID_DYNAMIC, NULL, MX25_USB_OTG_BASE_ADDR, 0x200,
 			   IORESOURCE_MEM, &usb_pdata);
 #endif
+
+#ifdef CONFIG_USB
+#ifndef CONFIG_USB_GADGET
+	imx_add_usb((void *)MX25_USB_OTG_BASE_ADDR, 0, &otg_pdata);
+#endif
+	imx_add_usb((void *)MX25_USB_HS_BASE_ADDR, 1, &hs_pdata);
+#endif
+
+	imx25_add_mmc0(NULL);
+	imx25_add_i2c0(NULL);
 
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25SD);
 

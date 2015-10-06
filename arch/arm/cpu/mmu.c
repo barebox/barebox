@@ -215,7 +215,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 	unsigned long phys = (unsigned long)bank->start;
 	unsigned long ttb_start = phys >> 20;
 	unsigned long ttb_end = (phys >> 20) + (bank->size >> 20);
-	unsigned long num_ptes = bank->size >> 10;
+	unsigned long num_ptes = bank->size >> 12;
 	int i, pte;
 	u32 *ptes;
 
@@ -248,7 +248,8 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 	}
 
 	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
-	dma_flush_range((unsigned long)ptes, num_ptes * sizeof(u32));
+	dma_flush_range((unsigned long)ptes,
+			(unsigned long)ptes + num_ptes * sizeof(u32));
 
 	tlb_invalidate();
 

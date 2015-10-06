@@ -53,6 +53,8 @@
 		__res & __mask;						\
 	})
 
+LIST_HEAD(mci_list);
+
 /**
  * @file
  * @brief Memory Card framework
@@ -370,7 +372,7 @@ static int mmc_send_op_cond(struct mci *mci)
  * Note: Only cards newer than Version 1.1 (Physical Layer Spec) support
  * this command
  */
-static int mci_send_ext_csd(struct mci *mci, char *ext_csd)
+int mci_send_ext_csd(struct mci *mci, char *ext_csd)
 {
 	struct mci_cmd cmd;
 	struct mci_data data;
@@ -394,7 +396,7 @@ static int mci_send_ext_csd(struct mci *mci, char *ext_csd)
  * @param value FIXME
  * @return Transaction status (0 on success)
  */
-static int mci_switch(struct mci *mci, unsigned set, unsigned index,
+int mci_switch(struct mci *mci, unsigned set, unsigned index,
 			unsigned value)
 {
 	struct mci_cmd cmd;
@@ -649,6 +651,9 @@ retry_scr:
 
 	if ((__be32_to_cpu(switch_status[4]) & 0x0f000000) == 0x01000000)
 		mci->card_caps |= MMC_CAP_SD_HIGHSPEED;
+
+	if (mci_caps(mci) & MMC_CAP_SD_HIGHSPEED)
+		mci->tran_speed = 50000000;
 
 	return 0;
 }
@@ -1787,6 +1792,8 @@ int mci_register(struct mci_host *host)
 	if (IS_ENABLED(CONFIG_MCI_STARTUP))
 		mci_card_probe(mci);
 
+	list_add_tail(&mci->list, &mci_list);
+
 	return 0;
 
 err_unregister:
@@ -1843,4 +1850,18 @@ void mci_of_parse(struct mci_host *host)
 	}
 
 	host->non_removable = of_property_read_bool(np, "non-removable");
+}
+
+struct mci *mci_get_device_by_name(const char *name)
+{
+	struct mci *mci;
+
+	list_for_each_entry(mci, &mci_list, list) {
+		if (!mci->cdevname)
+			continue;
+		if (!strcmp(mci->cdevname, name))
+			return mci;
+	}
+
+	return NULL;
 }

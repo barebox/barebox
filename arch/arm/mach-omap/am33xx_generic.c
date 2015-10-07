@@ -505,6 +505,9 @@ int am33xx_of_register_bootdevice(void)
 	case BOOTSOURCE_SPI:
 		dev = of_device_enable_and_register_by_name("spi@48030000");
 		break;
+	case BOOTSOURCE_NET:
+		dev = of_device_enable_and_register_by_name("ethernet@4a100000");
+		break;
 	default:
 		/* Use nand fallback */
 		dev = of_device_enable_and_register_by_name("gpmc@50000000");

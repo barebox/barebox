@@ -97,6 +97,13 @@ config BAREBOX_UPDATE_AM33XX_NAND
 	  This also includes a handler for updating the regular barebox binary
 	  in NAND.
 
+config BAREBOX_UPDATE_AM33XX_EMMC
+	prompt "barebox update eMMC handler"
+	bool
+	depends on BAREBOX_UPDATE
+	help
+	  Say Y for barebox update eMMC handler.
+
 config ARCH_TEXT_BASE
 	hex
 	default 0x80e80000 if MACH_OMAP343xSDP

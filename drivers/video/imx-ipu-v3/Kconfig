@@ -13,6 +13,7 @@ config DRIVER_VIDEO_IMX_IPUV3_LVDS
 
 config DRIVER_VIDEO_IMX_IPUV3_HDMI
 	bool "IPUv3 HDMI support"
+	depends on DRIVER_VIDEO_EDID
 	select OFDEVICE
 
 endif

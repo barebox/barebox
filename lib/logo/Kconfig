@@ -5,6 +5,8 @@ menuconfig BAREBOX_LOGO
 	  dependencies. The logo can be found under /logo/barebox-logo-<width>.png
 	  in the running barebox.
 
+if BAREBOX_LOGO
+
 config BAREBOX_LOGO_64
 	bool "include 64x32 pixel logo"
 
@@ -19,3 +21,5 @@ config BAREBOX_LOGO_400
 
 config BAREBOX_LOGO_640
 	bool "include 640x320 pixel logo"
+
+endif # BAREBOX_LOGO

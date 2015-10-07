@@ -495,7 +495,7 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 			data->next = ramfs_get_chunk();
 			if (!data->next)
 				return -ENOMEM;
-		data = data->next;
+			data = data->next;
 		}
 	}
 	node->size = size;

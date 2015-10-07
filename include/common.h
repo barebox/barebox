@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <module.h>
 #include <config.h>
+#include <clock.h>
 #include <linux/bitops.h>
 #include <linux/types.h>
 #include <linux/string.h>
@@ -68,10 +69,6 @@ long	get_ram_size  (volatile long *, long);
 
 /* $(CPU)/cpu.c */
 void __noreturn poweroff(void);
-
-/* lib_$(ARCH)/time.c */
-void	udelay (unsigned long);
-void	mdelay (unsigned long);
 
 /* lib_generic/crc32.c */
 uint32_t crc32(uint32_t, const void*, unsigned int);

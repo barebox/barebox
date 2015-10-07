@@ -78,7 +78,7 @@ static int imx_usbphy_probe(struct device_d *dev)
 
 	imxphy->clk = clk_get(dev, NULL);
 	if (IS_ERR(imxphy->clk)) {
-		dev_err(dev, "could not get clk: %s\n", strerror(-PTR_ERR(imxphy->clk)));
+		dev_err(dev, "could not get clk: %s\n", strerrorp(imxphy->clk));
 		goto err_clk;
 	}
 

@@ -622,7 +622,7 @@ static int ubifs_probe(struct device_d *dev)
 	priv->ubi = ubi_open_volume_cdev(priv->cdev, UBI_READONLY);
 	if (IS_ERR(priv->ubi)) {
 		dev_err(dev, "failed to open ubi volume: %s\n",
-				strerror(-PTR_ERR(priv->ubi)));
+				strerrorp(priv->ubi));
 		ret = PTR_ERR(priv->ubi);
 		goto err_free;
 	}

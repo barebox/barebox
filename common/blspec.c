@@ -646,7 +646,7 @@ static int blspec_append_root(struct blspec_entry *entry)
 	rootarg = path_get_linux_rootarg(entry->rootpath);
 	if (IS_ERR(rootarg)) {
 		pr_err("Getting root argument for %s failed with: %s\n",
-				entry->rootpath, strerror(-PTR_ERR(rootarg)));
+				entry->rootpath, strerrorp(rootarg));
 		return PTR_ERR(rootarg);
 	}
 

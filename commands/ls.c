@@ -32,7 +32,7 @@ static void ls_one(const char *path, const char* fullname, struct stat *s)
 	unsigned int namelen = strlen(path);
 
 	mkmodestr(s->st_mode, modestr);
-	printf("%s %10llu %*.*s", modestr, s->st_size, namelen, namelen, path);
+	printf("%s %14llu %*.*s", modestr, s->st_size, namelen, namelen, path);
 
 	if (S_ISLNK(s->st_mode)) {
 		char realname[PATH_MAX];

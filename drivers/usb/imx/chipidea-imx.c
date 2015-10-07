@@ -276,6 +276,12 @@ static int imx_chipidea_probe(struct device_d *dev)
 	return ret;
 };
 
+static void imx_chipidea_remove(struct device_d *dev)
+{
+	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC))
+		ci_udc_unregister();
+}
+
 static __maybe_unused struct of_device_id imx_chipidea_dt_ids[] = {
 	{
 		.compatible = "fsl,imx27-usb",
@@ -288,5 +294,6 @@ static struct driver_d imx_chipidea_driver = {
 	.name   = "imx-usb",
 	.probe  = imx_chipidea_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_chipidea_dt_ids),
+	.remove = imx_chipidea_remove,
 };
 device_platform_driver(imx_chipidea_driver);

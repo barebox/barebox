@@ -37,6 +37,7 @@ int is_timeout_non_interruptible(uint64_t start_ns, uint64_t time_offset_ns);
 void ndelay(unsigned long nsecs);
 void udelay(unsigned long usecs);
 void mdelay(unsigned long msecs);
+void mdelay_non_interruptible(unsigned long msecs);
 
 #define SECOND ((uint64_t)(1000 * 1000 * 1000))
 #define MSECOND ((uint64_t)(1000 * 1000))

@@ -24,5 +24,6 @@ struct fsl_usb2_platform_data {
 };
 
 int ci_udc_register(struct device_d *dev, void __iomem *regs);
+void ci_udc_unregister(void);
 
 #endif /* __USB_FSL_USB2_H */

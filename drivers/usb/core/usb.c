@@ -191,7 +191,7 @@ static int usb_parse_config(struct usb_device *dev, unsigned char *buffer, int c
 		return -1;
 	}
 	memcpy(&dev->config, buffer, buffer[0]);
-	le16_to_cpus(&(dev->config.wTotalLength));
+	le16_to_cpus(&(dev->config.desc.wTotalLength));
 	dev->config.no_of_if = 0;
 
 	index = dev->config.desc.bLength;
@@ -445,9 +445,9 @@ int usb_new_device(struct usb_device *dev)
 	dev_add_param_fixed(&dev->dev, "Product", dev->prod);
 	dev_add_param_fixed(&dev->dev, "SerialNumber", dev->serial);
 	dev_add_param_int_ro(&dev->dev, "idVendor",
-			le16_to_cpu(dev->descriptor->idVendor), "%04x");
+			dev->descriptor->idVendor, "%04x");
 	dev_add_param_int_ro(&dev->dev, "idProduct",
-			le16_to_cpu(dev->descriptor->idProduct), "%04x");
+			dev->descriptor->idProduct, "%04x");
 	list_add_tail(&dev->list, &usb_device_list);
 	dev_count++;
 
@@ -938,11 +938,11 @@ int usb_driver_register(struct usb_driver *drv)
 static int usb_match_device(struct usb_device *dev, const struct usb_device_id *id)
 {
 	if ((id->match_flags & USB_DEVICE_ID_MATCH_VENDOR) &&
-	    id->idVendor != le16_to_cpu(dev->descriptor->idVendor))
+	    id->idVendor != dev->descriptor->idVendor)
 		return 0;
 
 	if ((id->match_flags & USB_DEVICE_ID_MATCH_PRODUCT) &&
-	    id->idProduct != le16_to_cpu(dev->descriptor->idProduct))
+	    id->idProduct != dev->descriptor->idProduct)
 		return 0;
 
 	return 1;

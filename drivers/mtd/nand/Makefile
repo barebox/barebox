@@ -16,3 +16,6 @@ obj-$(CONFIG_NAND_ATMEL)		+= atmel_nand.o
 obj-$(CONFIG_NAND_S3C24XX)		+= nand_s3c24xx.o
 pbl-$(CONFIG_NAND_S3C24XX)		+= nand_s3c24xx.o
 obj-$(CONFIG_NAND_MXS)			+= nand_mxs.o
+obj-$(CONFIG_MTD_NAND_DENALI)		+= nand_denali.o
+obj-$(CONFIG_MTD_NAND_DENALI_DT)	+= nand_denali_dt.o
+

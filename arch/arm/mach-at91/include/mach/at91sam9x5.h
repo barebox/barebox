@@ -144,7 +144,7 @@
 #define AT91SAM9X5_SRAM_BASE	0x00300000	/* Internal SRAM base address */
 #define AT91SAM9X5_SRAM_SIZE	SZ_32K		/* Internal SRAM size (32Kb) */
 
-#define AT91SAM9X5_ROM_BASE	0x00400000	/* Internal ROM base address */
+#define AT91SAM9X5_ROM_BASE	0x00100000	/* Internal ROM base address */
 #define AT91SAM9X5_ROM_SIZE	SZ_64K		/* Internal ROM size (64Kb) */
 
 #define AT91SAM9X5_SMD_BASE	0x00400000	/* SMD Controller */

@@ -430,6 +430,7 @@ struct nand_buffers {
  * @badblockbits:	[INTERN] minimum number of set bits in a good block's
  *			bad block marker position; i.e., BBM == 11110111b is
  *			not bad when badblockbits == 7
+ * @bits_per_cell:	[INTERN] number of bits per cell. i.e., 1 means SLC.
  * @cellinfo:		[INTERN] MLC/multichip data from chip ident
  * @numchips:		[INTERN] number of physical chips
  * @chipsize:		[INTERN] the size of one chip for multichip arrays
@@ -506,6 +507,7 @@ struct nand_chip {
 	int pagebuf;
 	unsigned int pagebuf_bitflips;
 	int subpagesize;
+	uint8_t bits_per_cell;
 	uint8_t cellinfo;
 	int badblockpos;
 	int badblockbits;
@@ -720,6 +722,16 @@ static inline int onfi_get_sync_timing_mode(struct nand_chip *chip)
 	if (!chip->onfi_version)
 		return ONFI_TIMING_MODE_UNKNOWN;
 	return le16_to_cpu(chip->onfi_params.src_sync_timing_mode);
+}
+
+/*
+ * Check if it is a SLC nand.
+ * The !nand_is_slc() can be used to check the MLC/TLC nand chips.
+ * We do not distinguish the MLC and TLC now.
+ */
+static inline bool nand_is_slc(struct nand_chip *chip)
+{
+	return chip->bits_per_cell == 1;
 }
 
 #endif /* __LINUX_MTD_NAND_H */

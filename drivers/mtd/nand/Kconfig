@@ -140,4 +140,30 @@ config MTD_NAND_NOMADIK
 	help
 	  Driver for the NAND flash controller on the Nomadik, with ECC.
 
+config MTD_NAND_DENALI
+        tristate "Support Denali NAND controller"
+        depends on HAS_DMA
+        help
+          Enable support for the Denali NAND controller.  This should be
+          combined with either the PCI or platform drivers to provide device
+          registration.
+
+config MTD_NAND_DENALI_DT
+        tristate "Support Denali NAND controller as a DT device"
+        depends on HAVE_CLK && MTD_NAND_DENALI
+        help
+          Enable the driver for NAND flash on platforms using a Denali NAND
+          controller as a DT device.
+
+if MTD_NAND_DENALI
+
+config MTD_NAND_DENALI_TIMING_MODE
+	int "Overrides default ONFI timing mode."
+	default -1
+	range -1 5
+	help
+	   -1 indicates use default timings
+
+endif
+
 endif

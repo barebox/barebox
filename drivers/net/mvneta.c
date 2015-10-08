@@ -761,6 +761,7 @@ static int mvneta_probe(struct device_d *dev)
 
 static struct of_device_id mvneta_dt_ids[] = {
 	{ .compatible = "marvell,armada-370-neta", },
+	{ .compatible = "marvell,armada-xp-neta" },
 	{ }
 };
 

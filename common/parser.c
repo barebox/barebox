@@ -266,7 +266,6 @@ int run_shell(void)
 {
 	static char lastcommand[CONFIG_CBSIZE] = { 0, };
 	int len;
-	int rc = 1;
 
 	login();
 
@@ -276,14 +275,14 @@ int run_shell(void)
 		if (len > 0)
 			strcpy (lastcommand, console_buffer);
 
-		if (len == -1)
+		if (len == -1) {
 			puts ("<INTERRUPT>\n");
-		else
-			rc = run_command(lastcommand);
-
-		if (rc <= 0) {
-			/* invalid command or not repeatable, forget it */
-			lastcommand[0] = 0;
+		} else {
+			const int rc = run_command(lastcommand);
+			if (rc < 0) {
+				/* invalid command or not repeatable, forget it */
+				lastcommand[0] = 0;
+			}
 		}
 	}
 	return 0;

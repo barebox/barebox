@@ -253,7 +253,8 @@ int run_command(const char *cmd)
 			continue;
 		}
 
-		rc = execute_command(argc, argv);
+		if (execute_command(argc, argv) != COMMAND_SUCCESS)
+			rc = -1;
 	}
 
 	return rc;

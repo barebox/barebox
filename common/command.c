@@ -83,7 +83,7 @@ int execute_command(int argc, char **argv)
 #else
 		printf ("Unknown command '%s'\n", argv[0]);
 #endif
-		ret = 1;	/* give up after bad command */
+		ret = COMMAND_ERROR;	/* give up after bad command */
 	}
 
 	getopt_context_restore(&gc);

@@ -124,8 +124,6 @@ static void l2x0_flush_all(void)
 
 static void l2x0_disable(void)
 {
-	writel(0xff, l2x0_base + L2X0_CLEAN_INV_WAY);
-	while (readl(l2x0_base + L2X0_CLEAN_INV_WAY));
 	writel(0, l2x0_base + L2X0_CTRL);
 }
 

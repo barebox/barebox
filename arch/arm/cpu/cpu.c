@@ -80,8 +80,10 @@ struct outer_cache_fns outer_cache;
 void mmu_disable(void)
 {
 	__mmu_cache_flush();
-	if (outer_cache.disable)
+	if (outer_cache.disable) {
+		outer_cache.flush_all();
 		outer_cache.disable();
+	}
 	__mmu_cache_off();
 }
 

@@ -222,6 +222,17 @@ static int imx6_mmu_init(void)
 
 	writel(val, l2x0_base + L2X0_PREFETCH_CTRL);
 
+	/*
+	 * Set shared attribute override bit in AUX_CTRL register, this is done
+	 * here as it must be done regardless of the usage of the L2 cache in
+	 * barebox itself. The kernel will not touch this bit, but it must be
+	 * set to make the system compliant to the ARMv7 ARM RevC clarifications
+	 * regarding conflicting memory aliases.
+	 */
+	val = readl(l2x0_base + L2X0_AUX_CTRL);
+	val |= (1 << 22);
+	writel(val, l2x0_base + L2X0_AUX_CTRL);
+
 	l2x0_init(l2x0_base, 0x0, ~0UL);
 
 	return 0;

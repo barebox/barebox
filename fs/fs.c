@@ -1201,9 +1201,13 @@ EXPORT_SYMBOL(register_fs_driver);
 
 static const char *detect_fs(const char *filename)
 {
-	enum filetype type = cdev_detect_type(filename);
+	enum filetype type;
 	struct driver_d *drv;
 	struct fs_driver_d *fdrv;
+
+	if (!strncmp(filename, "/dev/", 5))
+		filename += 5;
+	type = cdev_detect_type(filename);
 
 	if (type == filetype_unknown)
 		return NULL;

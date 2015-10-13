@@ -17,12 +17,12 @@
 #define O_NOFOLLOW	00400000	/* don't follow links */
 
 /* barebox additional flags */
-#define O_RWSIZE_MASK	00000170
-#define O_RWSIZE_SHIFT	3
-#define O_RWSIZE_1      00000010
-#define O_RWSIZE_2      00000020
-#define O_RWSIZE_4      00000040
-#define O_RWSIZE_8      00000100
+#define O_RWSIZE_MASK	017000000
+#define O_RWSIZE_SHIFT	18
+#define O_RWSIZE_1	001000000
+#define O_RWSIZE_2	002000000
+#define O_RWSIZE_4	004000000
+#define O_RWSIZE_8	010000000
 
 #define F_DUPFD		0	/* dup */
 #define F_GETFD		1	/* get close_on_exec */

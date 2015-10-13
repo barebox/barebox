@@ -1205,8 +1205,6 @@ static const char *detect_fs(const char *filename)
 	struct driver_d *drv;
 	struct fs_driver_d *fdrv;
 
-	if (!strncmp(filename, "/dev/", 5))
-		filename += 5;
 	type = cdev_detect_type(filename);
 
 	if (type == filetype_unknown)

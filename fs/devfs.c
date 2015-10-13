@@ -228,6 +228,13 @@ static int devfs_stat(struct device_d *_dev, const char *filename, struct stat *
 
 static int devfs_probe(struct device_d *dev)
 {
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+
+	if (strcmp(fsdev->path, "/dev")) {
+		dev_err(dev, "devfs can only be mounted on /dev/\n");
+		return -EINVAL;
+	}
+
 	return 0;
 }
 

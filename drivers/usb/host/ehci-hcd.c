@@ -954,7 +954,9 @@ enable_periodic(struct ehci_priv *ehci)
 		printf("EHCI failed: timeout when enabling periodic list\n");
 		return -ETIMEDOUT;
 	}
-	mdelay_non_interruptible(1);
+
+	mdelay(1);
+
 	return 0;
 }
 

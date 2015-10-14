@@ -19,7 +19,6 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
-#include <mach/generic.h>
 #include <io.h>
 #include <of_mtd.h>
 #include <errno.h>

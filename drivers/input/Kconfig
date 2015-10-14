@@ -49,6 +49,7 @@ config KEYBOARD_TWL6030
 config KEYBOARD_USB
 	bool "USB keyboard"
 	depends on USB_HOST
+	depends on CONSOLE_FULL
 	select POLLER
 	help
 	  This driver implements support for usb keyboard.

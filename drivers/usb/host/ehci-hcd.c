@@ -688,7 +688,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				 * root
 				 */
 				ehci_powerup_fixup(ehci);
-				mdelay_non_interruptible(50);
+				mdelay(50);
 				ehci->portreset |= 1 << port;
 				/* terminate the reset */
 				ehci_writel(status_reg, reg & ~EHCI_PS_PR);
@@ -751,7 +751,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		goto unknown;
 	}
 
-	mdelay_non_interruptible(1);
+	mdelay(1);
 	len = min3(srclen, (int)le16_to_cpu(req->length), length);
 	if (srcptr != NULL && len > 0)
 		memcpy(buffer, srcptr, len);
@@ -888,7 +888,7 @@ static int ehci_init(struct usb_host *host)
 	ehci_writel(&ehci->hcor->or_configflag, cmd);
 	/* unblock posted write */
 	cmd = ehci_readl(&ehci->hcor->or_usbcmd);
-	mdelay_non_interruptible(5);
+	mdelay(5);
 
 	ehci->rootdev = 0;
 

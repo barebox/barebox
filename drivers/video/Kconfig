@@ -130,7 +130,7 @@ config DRIVER_VIDEO_MTL017
 config DRIVER_VIDEO_SIMPLE_PANEL
 	bool "Simple panel support"
 	select VIDEO_VPL
-	depends on OFTREE
+	depends on OFTREE && OFDEVICE
 	help
 	  This enabled support for simple panels, i.e. panels which consist of
 	  a mode definition and enable gpios in the devicetree. Unlike the

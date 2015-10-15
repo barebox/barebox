@@ -51,6 +51,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 
 #define ALIGN_SUP(x, a) (((x) + (a - 1)) & ~(a - 1))
 
@@ -187,7 +188,7 @@ struct image_cfg_element {
 		unsigned int version;
 		unsigned int bootfrom;
 		struct {
-			const char *file;
+			char *file;
 			unsigned int args[BINARY_MAX_ARGS];
 			unsigned int nargs;
 		} binary;
@@ -1003,7 +1004,8 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 }
 
 static int image_create_config_parse_oneline(char *line,
-					     struct image_cfg_element *el)
+					     struct image_cfg_element *el,
+					     char *configpath)
 {
 	char *keyword, *saveptr;
 
@@ -1056,7 +1058,10 @@ static int image_create_config_parse_oneline(char *line,
 		int argi = 0;
 
 		el->type = IMAGE_CFG_BINARY;
-		el->binary.file = strdup(value);
+		if (*value == '/')
+			el->binary.file = strdup(value);
+		else
+			asprintf(&el->binary.file, "%s/%s", configpath, value);
 		while (1) {
 			value = strtok_r(NULL, " ", &saveptr);
 			if (!value)
@@ -1105,11 +1110,13 @@ static int image_create_config_parse(const char *input,
 	int ret;
 	int cfgi = 0;
 	FILE *fcfg;
+	char *configpath = dirname(strdup(input));
 
 	fcfg = fopen(input, "r");
 	if (!fcfg) {
 		fprintf(stderr, "Could not open input file %s\n",
 			input);
+		free(configpath);
 		return -1;
 	}
 
@@ -1134,7 +1141,8 @@ static int image_create_config_parse(const char *input,
 
 		/* Parse the current line */
 		ret = image_create_config_parse_oneline(line,
-							&image_cfg[cfgi]);
+							&image_cfg[cfgi],
+							configpath);
 		if (ret)
 			goto out;
 
@@ -1151,6 +1159,7 @@ static int image_create_config_parse(const char *input,
 	*cfgn = cfgi;
 out:
 	fclose(fcfg);
+	free(configpath);
 	return ret;
 }
 

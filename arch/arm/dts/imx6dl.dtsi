@@ -1,2 +1,1 @@
 #include "imx6qdl.dtsi"
-#include <arm/imx6dl.dtsi>

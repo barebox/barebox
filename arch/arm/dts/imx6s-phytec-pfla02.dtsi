@@ -10,6 +10,7 @@
  */
 
 #include "imx6dl.dtsi"
+#include <arm/imx6dl.dtsi>
 #include "imx6qdl-phytec-pfla02.dtsi"
 
 / {

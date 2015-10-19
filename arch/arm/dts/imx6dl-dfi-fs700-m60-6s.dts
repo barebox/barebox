@@ -15,6 +15,7 @@
 #endif
 
 #include "imx6dl.dtsi"
+#include <arm/imx6dl.dtsi>
 #include "imx6qdl-dfi-fs700-m60.dtsi"
 
 / {

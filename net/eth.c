@@ -323,12 +323,20 @@ static void eth_of_fixup_node(struct device_node *root,
 
 static int eth_of_fixup(struct device_node *root, void *unused)
 {
+	struct eth_ethaddr *addr;
 	struct eth_device *edev;
 
 	/*
-	 * Add the mac-address property for each network device we
-	 * find a nodepath for and which has a valid mac address.
+	 * Add the mac-address property for each ethaddr and then each network
+	 * device we find a node path for and which has a valid mac address.
+	 * This will find both network devices barebox was told about as well as
+	 * addresses registered by boards but for which no network device was
+	 * ever loaded.
 	 */
+	list_for_each_entry(addr, &ethaddr_list, list)
+		eth_of_fixup_node(root, addr->node ? addr->node->full_name : NULL,
+				  addr->ethid, addr->ethaddr);
+
 	list_for_each_entry(edev, &netdev_list, list)
 		eth_of_fixup_node(root, edev->nodepath, edev->dev.id, edev->ethaddr);
 

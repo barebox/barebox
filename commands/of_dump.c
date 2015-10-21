@@ -31,6 +31,16 @@
 #include <getopt.h>
 #include <linux/err.h>
 
+static void of_print_nodenames(struct device_node *node)
+{
+	struct device_node *n;
+
+	printf("%s\n", node->full_name);
+
+	list_for_each_entry(n, &node->children, parent_list)
+		of_print_nodenames(n);
+}
+
 static int do_of_dump(int argc, char *argv[])
 {
 	int opt;
@@ -40,14 +50,18 @@ static int do_of_dump(int argc, char *argv[])
 	char *dtbfile = NULL;
 	size_t size;
 	const char *nodename;
+	int names_only = 0;
 
-	while ((opt = getopt(argc, argv, "Ff:")) > 0) {
+	while ((opt = getopt(argc, argv, "Ff:n")) > 0) {
 		switch (opt) {
 		case 'f':
 			dtbfile = optarg;
 			break;
 		case 'F':
 			fix = 1;
+			break;
+		case 'n':
+			names_only = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -111,7 +125,10 @@ static int do_of_dump(int argc, char *argv[])
 		goto out;
 	}
 
-	of_print_nodes(node, 0);
+	if (names_only)
+		of_print_nodenames(node);
+	else
+		of_print_nodes(node, 0);
 
 out:
 	if (of_free)

@@ -40,7 +40,7 @@ static int do_clk_disable(int argc, char *argv[])
 
 	clk_disable(clk);
 
-	return 0;
+	return COMMAND_SUCCESS;
 }
 
 BAREBOX_CMD_START(clk_disable)
@@ -149,7 +149,7 @@ static int do_clk_dump(int argc, char *argv[])
 
 	clk_dump(verbose);
 
-	return 0;
+	return COMMAND_SUCCESS;
 }
 
 BAREBOX_CMD_HELP_START(clk_dump)

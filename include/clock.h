@@ -1,8 +1,7 @@
-#include <types.h>
-
 #ifndef CLOCK_H
 #define CLOCK_H
 
+#include <types.h>
 #include <linux/time.h>
 
 #define CLOCKSOURCE_MASK(bits) (uint64_t)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)

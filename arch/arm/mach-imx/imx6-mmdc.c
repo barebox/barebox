@@ -103,9 +103,9 @@ int mmdc_do_write_level_calibration(void)
 	val |= 0x00005500;
 	writel(val, (P0_IPS + MDPDC));
 
-	/* enable Adopt power down timer: */
+	/* enable auto power down timer: */
 	val = readl(P0_IPS + MAPSR);
-	val &= 0xfffffff7;
+	val &= ~1;
 	writel(val, (P0_IPS + MAPSR));
 
 	/* clear CON_REQ */

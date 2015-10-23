@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <memtest.h>
 #include <malloc.h>
-#include <asm/mmu.h>
+#include <mmu.h>
 
 static int alloc_memtest_region(struct list_head *list,
 		resource_size_t start, resource_size_t size)
@@ -126,14 +126,13 @@ int mem_test_request_regions(struct list_head *list)
 void mem_test_release_regions(struct list_head *list)
 {
 	struct mem_test_resource *r, *r_tmp;
-	uint32_t pte_flags_cached = mmu_get_pte_cached_flags();
 
 	list_for_each_entry_safe(r, r_tmp, list, list) {
 		/*
 		 * Ensure to leave with a cached on non used sdram regions.
 		 */
 		remap_range((void *)r->r->start, r->r->end -
-				r->r->start + 1, pte_flags_cached);
+				r->r->start + 1, MAP_DEFAULT);
 
 		release_sdram_region(r->r);
 		free(r);

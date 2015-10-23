@@ -27,30 +27,15 @@ static inline void setup_dma_coherent(unsigned long offset)
 }
 
 #ifdef CONFIG_MMU
-void remap_range(void *_start, size_t size, uint32_t flags);
+#define ARCH_HAS_REMAP
+#define MAP_ARCH_DEFAULT MAP_CACHED
+int arch_remap_range(void *_start, size_t size, unsigned flags);
 void *map_io_sections(unsigned long physaddr, void *start, size_t size);
-uint32_t mmu_get_pte_cached_flags(void);
-uint32_t mmu_get_pte_uncached_flags(void);
-
 #else
-
-static inline void remap_range(void *_start, size_t size, uint32_t flags)
-{
-}
-
+#define MAP_ARCH_DEFAULT MAP_UNCACHED
 static inline void *map_io_sections(unsigned long phys, void *start, size_t size)
 {
 	return (void *)phys;
-}
-
-static inline uint32_t mmu_get_pte_cached_flags(void)
-{
-	return 0;
-}
-
-static inline uint32_t mmu_get_pte_uncached_flags(void)
-{
-	return 0;
 }
 
 #endif

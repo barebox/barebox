@@ -14,17 +14,29 @@
 
 #include <common.h>
 #include <asm/cache.h>
+#include <mmu.h>
 #include <mach/mmu.h>
 
-void remap_range(void *_start, size_t size, uint32_t flags)
+int arch_remap_range(void *_start, size_t size, unsigned flags)
 {
-	uint32_t ptr, start, tsize, valid, wimge;
+	uint32_t ptr, start, tsize, valid, wimge, pte_flags;
 	unsigned long epn;
 	phys_addr_t rpn = 0;
 	int esel = 0;
 
+	switch (flags) {
+	case MAP_UNCACHED:
+		pte_flags = MAS2_I;
+		break;
+	case MAP_CACHED:
+		pte_flags = 0;
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	ptr = start = (uint32_t)_start;
-	wimge = flags | MAS2_M;
+	wimge = pte_flags | MAS2_M;
 
 	while (ptr < (start + size)) {
 		esel = e500_find_tlb_idx((void *)ptr, 1);
@@ -41,14 +53,6 @@ void remap_range(void *_start, size_t size, uint32_t flags)
 		/* convert tsize to bytes to increment address. */
 		ptr += (1ULL << ((tsize) + 10));
 	}
-}
 
-uint32_t mmu_get_pte_cached_flags(void)
-{
 	return 0;
-}
-
-uint32_t mmu_get_pte_uncached_flags(void)
-{
-	return MAS2_I;
 }

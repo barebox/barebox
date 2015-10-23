@@ -27,7 +27,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <asm-generic/div64.h>
-#include <asm/mmu.h>
+#include <mmu.h>
 #include <mach/imx-ipu-fb.h>
 #include <linux/clk.h>
 #include <linux/err.h>
@@ -1030,8 +1030,7 @@ static int imxfb_probe(struct device_d *dev)
 	fbi->info.screen_base = pdata->framebuffer;
 	if (fbi->info.screen_base) {
 		remap_range(fbi->info.screen_base,
-			fbi->info.screen_size,
-			mmu_get_pte_uncached_flags());
+			fbi->info.screen_size, MAP_UNCACHED);
 	} else {
 		fbi->info.screen_base = dma_alloc_coherent(fbi->info.screen_size,
 							   DMA_ADDRESS_BROKEN);

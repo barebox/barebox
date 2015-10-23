@@ -35,7 +35,7 @@
 #include <mach/omap4-silicon.h>
 #include <mach/omap-fb.h>
 
-#include <asm/mmu.h>
+#include <mmu.h>
 
 #include "omap.h"
 
@@ -487,8 +487,7 @@ static int omapfb_probe(struct device_d *dev)
 				(void __iomem *)pdata->screen->start;
 		fbi->prealloc_screen.size = resource_size(pdata->screen);
 		remap_range(fbi->prealloc_screen.addr,
-			fbi->prealloc_screen.size,
-			mmu_get_pte_uncached_flags());
+			fbi->prealloc_screen.size, MAP_UNCACHED);
 	}
 
 	rc = omapfb_reset(fbi);

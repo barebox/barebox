@@ -20,7 +20,7 @@
 #include <common.h>
 #include <dma-dir.h>
 #include <init.h>
-#include <asm/mmu.h>
+#include <mmu.h>
 #include <errno.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
@@ -80,16 +80,6 @@ static uint32_t pte_flags_wc;
 static uint32_t pte_flags_uncached;
 
 #define PTE_MASK ((1 << 12) - 1)
-
-uint32_t mmu_get_pte_cached_flags()
-{
-	return pte_flags_cached;
-}
-
-uint32_t mmu_get_pte_uncached_flags()
-{
-	return pte_flags_uncached;
-}
 
 static void arm_mmu_not_initialized_error(void)
 {
@@ -173,24 +163,38 @@ static void dma_inv_range(unsigned long start, unsigned long end)
 	__dma_inv_range(start, end);
 }
 
-void remap_range(void *_start, size_t size, uint32_t flags)
+int arch_remap_range(void *_start, size_t size, unsigned flags)
 {
 	unsigned long start = (unsigned long)_start;
 	u32 *p;
 	int numentries, i;
+	u32 pte_flags;
+
+	switch (flags) {
+	case MAP_CACHED:
+		pte_flags = pte_flags_cached;
+		break;
+	case MAP_UNCACHED:
+		pte_flags = pte_flags_uncached;
+		break;
+	default:
+		return -EINVAL;
+	}
 
 	numentries = size >> PAGE_SHIFT;
 	p = find_pte(start);
 
 	for (i = 0; i < numentries; i++) {
 		p[i] &= ~PTE_MASK;
-		p[i] |= flags | PTE_TYPE_SMALL;
+		p[i] |= pte_flags | PTE_TYPE_SMALL;
 	}
 
 	dma_flush_range((unsigned long)p,
 			(unsigned long)p + numentries * sizeof(u32));
 
 	tlb_invalidate();
+
+	return 0;
 }
 
 void *map_io_sections(unsigned long phys, void *_start, size_t size)

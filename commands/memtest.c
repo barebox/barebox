@@ -21,15 +21,15 @@
 
 #include <command.h>
 #include <getopt.h>
-#include <asm/mmu.h>
 #include <memory.h>
 #include <malloc.h>
 #include <common.h>
 #include <errno.h>
 #include <memtest.h>
+#include <mmu.h>
 
 static int __do_memtest(struct list_head *memtest_regions,
-		int bus_only, uint32_t cache_flag)
+		int bus_only, unsigned cache_flag)
 {
 	struct mem_test_resource *r;
 	int ret;
@@ -53,7 +53,7 @@ static int __do_memtest(struct list_head *memtest_regions,
 static int do_memtest(int argc, char *argv[])
 {
 	int bus_only = 0, ret, opt;
-	uint32_t i, max_i = 1, pte_flags_cached, pte_flags_uncached;
+	uint32_t i, max_i = 1;
 	struct list_head memtest_used_regions;
 
 	while ((opt = getopt(argc, argv, "i:b")) > 0) {
@@ -72,12 +72,6 @@ static int do_memtest(int argc, char *argv[])
 	if (optind > argc)
 		return COMMAND_ERROR_USAGE;
 
-	/*
-	 * Get pte flags for enable and disable cache support on page.
-	 */
-	pte_flags_cached = mmu_get_pte_cached_flags();
-	pte_flags_uncached = mmu_get_pte_uncached_flags();
-
 	INIT_LIST_HEAD(&memtest_used_regions);
 
 	ret = mem_test_request_regions(&memtest_used_regions);
@@ -87,24 +81,31 @@ static int do_memtest(int argc, char *argv[])
 	for (i = 1; (i <= max_i) || !max_i; i++) {
 		if (max_i)
 			printf("Start iteration %u of %u.\n", i, max_i);
-		/*
-		 * First try a memtest with caching enabled.
-		 */
-		if (IS_ENABLED(CONFIG_MMU)) {
+
+		if (arch_can_remap()) {
+			/*
+			 * First try a memtest with caching enabled.
+			 */
 			printf("Do memtest with caching enabled.\n");
 			ret = __do_memtest(&memtest_used_regions,
-					bus_only, pte_flags_cached);
+					bus_only, MAP_CACHED);
+			if (ret < 0)
+				goto out;
+
+			/*
+			 * Second try a memtest with caching disabled.
+			 */
+			printf("Do memtest with caching disabled.\n");
+			ret = __do_memtest(&memtest_used_regions,
+					bus_only, MAP_UNCACHED);
+			if (ret < 0)
+				goto out;
+		} else {
+			ret = __do_memtest(&memtest_used_regions,
+					bus_only, MAP_DEFAULT);
 			if (ret < 0)
 				goto out;
 		}
-		/*
-		 * Second try a memtest with caching disabled.
-		 */
-		printf("Do memtest with caching disabled.\n");
-		ret = __do_memtest(&memtest_used_regions,
-				bus_only, pte_flags_uncached);
-		if (ret < 0)
-			goto out;
 	}
 
 out:

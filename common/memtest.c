@@ -139,6 +139,22 @@ void mem_test_release_regions(struct list_head *list)
 	}
 }
 
+struct mem_test_resource *mem_test_biggest_region(struct list_head *list)
+{
+	struct mem_test_resource *r, *best = NULL;
+	resource_size_t size = 0;
+
+	list_for_each_entry(r, list, list) {
+		resource_size_t now = resource_size(r->r);
+		if (now > size) {
+			size = now;
+			best = r;
+		}
+	}
+
+	return best;
+}
+
 static void mem_test_report_failure(const char *failure_description,
 				    resource_size_t expected_value,
 				    resource_size_t actual_value,

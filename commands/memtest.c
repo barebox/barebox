@@ -28,33 +28,58 @@
 #include <memtest.h>
 #include <mmu.h>
 
-static int __do_memtest(struct list_head *memtest_regions,
+static int do_test_one_area(struct mem_test_resource *r, int bus_only,
+		unsigned cache_flag)
+{
+	int ret;
+
+	printf("Testing memory space: "
+			"0x%08x -> 0x%08x:\n",
+			r->r->start,  r->r->end);
+
+	remap_range((void *)r->r->start, r->r->end -
+			r->r->start + 1, cache_flag);
+
+	ret = mem_test_bus_integrity(r->r->start, r->r->end);
+	if (ret < 0)
+		return ret;
+
+	if (bus_only)
+		return 0;
+
+	ret = mem_test_moving_inversions(r->r->start, r->r->end);
+	if (ret < 0)
+		return ret;
+	printf("done.\n\n");
+
+	return 0;
+}
+
+static int do_memtest_thorough(struct list_head *memtest_regions,
 		int bus_only, unsigned cache_flag)
 {
 	struct mem_test_resource *r;
 	int ret;
 
 	list_for_each_entry(r, memtest_regions, list) {
-		printf("Testing memory space: "
-				"0x%08x -> 0x%08x:\n",
-				r->r->start,  r->r->end);
-		remap_range((void *)r->r->start, r->r->end -
-				r->r->start + 1, cache_flag);
-
-		ret = mem_test_bus_integrity(r->r->start, r->r->end);
-		if (ret < 0)
+		ret = do_test_one_area(r, bus_only, cache_flag);
+		if (ret)
 			return ret;
-
-		if (bus_only)
-			continue;
-
-		ret = mem_test_moving_inversions(r->r->start, r->r->end);
-		if (ret < 0)
-			return ret;
-		printf("done.\n\n");
 	}
 
 	return 0;
+}
+
+static int do_memtest_biggest(struct list_head *memtest_regions,
+		int bus_only, unsigned cache_flag)
+{
+	struct mem_test_resource *r;
+
+	r = mem_test_biggest_region(memtest_regions);
+	if (!r)
+		return -EINVAL;
+
+	return do_test_one_area(r, bus_only, cache_flag);
 }
 
 static int do_memtest(int argc, char *argv[])
@@ -62,14 +87,20 @@ static int do_memtest(int argc, char *argv[])
 	int bus_only = 0, ret, opt;
 	uint32_t i, max_i = 1;
 	struct list_head memtest_used_regions;
+	int (*memtest)(struct list_head *, int, unsigned);
 
-	while ((opt = getopt(argc, argv, "i:b")) > 0) {
+	memtest = do_memtest_biggest;
+
+	while ((opt = getopt(argc, argv, "i:bt")) > 0) {
 		switch (opt) {
 		case 'i':
 			max_i = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'b':
 			bus_only = 1;
+			break;
+		case 't':
+			memtest = do_memtest_thorough;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -90,25 +121,21 @@ static int do_memtest(int argc, char *argv[])
 			printf("Start iteration %u of %u.\n", i, max_i);
 
 		if (arch_can_remap()) {
-			/*
-			 * First try a memtest with caching enabled.
-			 */
+			/* First do a memtest with caching enabled. */
 			printf("Do memtest with caching enabled.\n");
-			ret = __do_memtest(&memtest_used_regions,
+			ret = memtest(&memtest_used_regions,
 					bus_only, MAP_CACHED);
 			if (ret < 0)
 				goto out;
 
-			/*
-			 * Second try a memtest with caching disabled.
-			 */
+			/* Second do a memtest with caching disabled. */
 			printf("Do memtest with caching disabled.\n");
-			ret = __do_memtest(&memtest_used_regions,
+			ret = memtest(&memtest_used_regions,
 					bus_only, MAP_UNCACHED);
 			if (ret < 0)
 				goto out;
 		} else {
-			ret = __do_memtest(&memtest_used_regions,
+			ret = memtest(&memtest_used_regions,
 					bus_only, MAP_DEFAULT);
 			if (ret < 0)
 				goto out;
@@ -139,6 +166,7 @@ BAREBOX_CMD_HELP_START(memtest)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-i ITERATIONS", "perform number of iterations (default 1, 0 is endless)")
 BAREBOX_CMD_HELP_OPT("-b", "perform only a test on bus lines")
+BAREBOX_CMD_HELP_OPT("-t", "thorough. test all free areas. If unset, only test biggest free area")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(memtest)

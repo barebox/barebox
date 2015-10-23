@@ -88,10 +88,11 @@ static int do_memtest(int argc, char *argv[])
 	uint32_t i, max_i = 1;
 	struct list_head memtest_used_regions;
 	int (*memtest)(struct list_head *, int, unsigned);
+	int cached = 0, uncached = 0;
 
 	memtest = do_memtest_biggest;
 
-	while ((opt = getopt(argc, argv, "i:bt")) > 0) {
+	while ((opt = getopt(argc, argv, "i:btcu")) > 0) {
 		switch (opt) {
 		case 'i':
 			max_i = simple_strtoul(optarg, NULL, 0);
@@ -102,9 +103,20 @@ static int do_memtest(int argc, char *argv[])
 		case 't':
 			memtest = do_memtest_thorough;
 			break;
+		case 'c':
+			cached = 1;
+			break;
+		case 'u':
+			uncached = 1;
+			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
+	}
+
+	if (!arch_can_remap() && (cached || uncached)) {
+		printf("Cannot map cached or uncached\n");
+		return -EINVAL;
 	}
 
 	if (optind > argc)
@@ -120,21 +132,23 @@ static int do_memtest(int argc, char *argv[])
 		if (max_i)
 			printf("Start iteration %u of %u.\n", i, max_i);
 
-		if (arch_can_remap()) {
-			/* First do a memtest with caching enabled. */
+		if (cached) {
 			printf("Do memtest with caching enabled.\n");
 			ret = memtest(&memtest_used_regions,
 					bus_only, MAP_CACHED);
 			if (ret < 0)
 				goto out;
+		}
 
-			/* Second do a memtest with caching disabled. */
+		if (uncached) {
 			printf("Do memtest with caching disabled.\n");
 			ret = memtest(&memtest_used_regions,
 					bus_only, MAP_UNCACHED);
 			if (ret < 0)
 				goto out;
-		} else {
+		}
+
+		if (!cached && !uncached) {
 			ret = memtest(&memtest_used_regions,
 					bus_only, MAP_DEFAULT);
 			if (ret < 0)
@@ -166,6 +180,8 @@ BAREBOX_CMD_HELP_START(memtest)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-i ITERATIONS", "perform number of iterations (default 1, 0 is endless)")
 BAREBOX_CMD_HELP_OPT("-b", "perform only a test on bus lines")
+BAREBOX_CMD_HELP_OPT("-c", "cached. Test using cached memory")
+BAREBOX_CMD_HELP_OPT("-u", "uncached. Test using uncached memory")
 BAREBOX_CMD_HELP_OPT("-t", "thorough. test all free areas. If unset, only test biggest free area")
 BAREBOX_CMD_HELP_END
 

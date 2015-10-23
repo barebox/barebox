@@ -8,6 +8,9 @@ struct mem_test_resource {
 	struct list_head list;
 };
 
+int mem_test_request_regions(struct list_head *list);
+void mem_test_release_regions(struct list_head *list);
+
 int mem_test(resource_size_t _start,
 		resource_size_t _end, int bus_only);
 

@@ -27,6 +27,118 @@
 #include <linux/sizes.h>
 #include <errno.h>
 #include <memtest.h>
+#include <malloc.h>
+#include <asm/mmu.h>
+
+static int alloc_memtest_region(struct list_head *list,
+		resource_size_t start, resource_size_t size)
+{
+	struct resource *r_new;
+	struct mem_test_resource *r;
+
+	r = xzalloc(sizeof(struct mem_test_resource));
+	r_new = request_sdram_region("memtest", start, size);
+	if (!r_new)
+		return -EINVAL;
+
+	r->r = r_new;
+	list_add_tail(&r->list, list);
+
+	return 0;
+}
+
+int mem_test_request_regions(struct list_head *list)
+{
+	int ret;
+	struct memory_bank *bank;
+	struct resource *r, *r_prev = NULL;
+	resource_size_t start, end, size;
+
+	for_each_memory_bank(bank) {
+		/*
+		 * If we don't have any allocated region on bank,
+		 * we use the whole bank boundary
+		 */
+		if (list_empty(&bank->res->children)) {
+			start = PAGE_ALIGN(bank->res->start);
+			size = PAGE_ALIGN_DOWN(bank->res->end - start + 1);
+
+			if (size) {
+				ret = alloc_memtest_region(list, start, size);
+				if (ret < 0)
+					return ret;
+			}
+
+			continue;
+		}
+
+		r = list_first_entry(&bank->res->children,
+				     struct resource, sibling);
+		start = PAGE_ALIGN(bank->res->start);
+		end = PAGE_ALIGN_DOWN(r->start);
+		r_prev = r;
+		if (start != end) {
+			size = end - start;
+			ret = alloc_memtest_region(list, start, size);
+			if (ret < 0)
+				return ret;
+		}
+		/*
+		 * We assume that the regions are sorted in this list
+		 * So the first element has start boundary on bank->res->start
+		 * and the last element hast end boundary on bank->res->end.
+		 *
+		 * Between used regions. Start from second entry.
+		 */
+		list_for_each_entry_from(r, &bank->res->children, sibling) {
+			start = PAGE_ALIGN(r_prev->end + 1);
+			end = r->start - 1;
+			r_prev = r;
+			if (start >= end)
+				continue;
+
+			size = PAGE_ALIGN_DOWN(end - start + 1);
+			if (size == 0)
+				continue;
+			ret = alloc_memtest_region(list, start, size);
+			if (ret < 0)
+				return ret;
+		}
+
+		/*
+		 * Do on head element for bank boundary.
+		 */
+		r = list_last_entry(&bank->res->children,
+				     struct resource, sibling);
+		start = PAGE_ALIGN(r->end);
+		end = bank->res->end;
+		size = PAGE_ALIGN_DOWN(end - start + 1);
+		if (size && start < end && start > r->end) {
+			ret = alloc_memtest_region(list, start, size);
+			if (ret < 0)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
+void mem_test_release_regions(struct list_head *list)
+{
+	struct mem_test_resource *r, *r_tmp;
+	uint32_t pte_flags_cached = mmu_get_pte_cached_flags();
+
+	list_for_each_entry_safe(r, r_tmp, list, list) {
+		/*
+		 * Ensure to leave with a cached on non used sdram regions.
+		 */
+		remap_range((void *)r->r->start, r->r->end -
+				r->r->start + 1, pte_flags_cached);
+
+		release_sdram_region(r->r);
+		free(r);
+	}
+}
 
 static void mem_test_report_failure(const char *failure_description,
 				    resource_size_t expected_value,

@@ -474,7 +474,7 @@ int mmdc_do_dqs_calibration(void)
 	writel(v, P0_IPS + MAPSR);
 
 	/* restore MDMISC value (RALAT, WALAT) */
-	writel(esdmisc_val, P1_IPS + MDMISC);
+	writel(esdmisc_val, P0_IPS + MDMISC);
 
 	/* clear DQS pull ups */
 	v = readl(IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS0) & ~0x7000;

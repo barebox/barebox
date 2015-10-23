@@ -331,8 +331,7 @@ int mem_test_bus_integrity(resource_size_t _start,
 	return 0;
 }
 
-int mem_test_dram(resource_size_t _start,
-		  resource_size_t _end)
+int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 {
 	volatile resource_size_t *start, num_words, offset, temp, anti_pattern;
 
@@ -437,37 +436,4 @@ int mem_test_dram(resource_size_t _start,
 	printf("\n");
 
 	return 0;
-}
-
-/*
- * Perform a memory test. The complete test
- * loops until interrupted by ctrl-c.
- *
- * Prameters:
- * start: start address for memory test.
- * end: end address of memory test.
- * bus_only: skip integrity check and do only a address/data bus
- *	     testing.
- *
- * Return value can be -EINVAL for invalid parameter or -EINTR
- * if memory test was interrupted.
- */
-int mem_test(resource_size_t _start,
-	       resource_size_t _end, int bus_only)
-{
-	int ret;
-
-	ret = mem_test_bus_integrity(_start, _end);
-
-	if (ret < 0)
-		return ret;
-
-	/*
-	 * We tested only the bus if != 0
-	 * leaving here
-	 */
-	if (!bus_only)
-		ret = mem_test_dram(_start, _end);
-
-	return ret;
 }

@@ -41,7 +41,14 @@ static int __do_memtest(struct list_head *memtest_regions,
 		remap_range((void *)r->r->start, r->r->end -
 				r->r->start + 1, cache_flag);
 
-		ret = mem_test(r->r->start, r->r->end, bus_only);
+		ret = mem_test_bus_integrity(r->r->start, r->r->end);
+		if (ret < 0)
+			return ret;
+
+		if (bus_only)
+			continue;
+
+		ret = mem_test_moving_inversions(r->r->start, r->r->end);
 		if (ret < 0)
 			return ret;
 		printf("done.\n\n");

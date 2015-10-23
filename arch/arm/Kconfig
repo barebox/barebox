@@ -17,6 +17,11 @@ config ARM_LINUX
 config HAVE_MACH_ARM_HEAD
 	bool
 
+config ARM_USE_COMPRESSED_DTB
+	bool
+	select UNCOMPRESS
+	select LZO_DECOMPRESS
+
 menu "System Type"
 
 config BUILTIN_DTB

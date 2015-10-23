@@ -75,6 +75,15 @@ static inline void boarddata_create(void *adr, u32 machine)
 
 u32 barebox_arm_machine(void);
 
+struct barebox_arm_boarddata_compressed_dtb {
+#define BAREBOX_ARM_BOARDDATA_COMPRESSED_DTB_MAGIC 0x7b66bcbd
+	u32 magic;
+	u32 datalen;
+	u32 datalen_uncompressed;
+};
+
+struct barebox_arm_boarddata *barebox_arm_get_boarddata(void);
+
 #if defined(CONFIG_RELOCATABLE) && defined(CONFIG_ARM_EXCEPTIONS)
 void arm_fixup_vectors(void);
 #else

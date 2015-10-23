@@ -27,6 +27,8 @@
 #include <asm/unaligned.h>
 #include <asm/cache.h>
 #include <memory.h>
+#include <uncompress.h>
+#include <malloc.h>
 
 #include <debug_ll.h>
 #include "mmu-early.h"
@@ -46,10 +48,46 @@ u32 barebox_arm_machine(void)
 	return bd->machine;
 }
 
+struct barebox_arm_boarddata *barebox_arm_get_boarddata(void)
+{
+	return barebox_boarddata;
+}
+
 static void *barebox_boot_dtb;
+struct barebox_arm_boarddata_compressed_dtb *compressed_dtb;
 
 void *barebox_arm_boot_dtb(void)
 {
+	void *dtb;
+	void *data;
+	int ret;
+
+	if (barebox_boot_dtb) {
+		pr_debug("%s: using barebox_boot_dtb\n", __func__);
+		return barebox_boot_dtb;
+	}
+
+	if (!IS_ENABLED(CONFIG_ARM_USE_COMPRESSED_DTB) || !compressed_dtb)
+		return NULL;
+
+	pr_debug("%s: using compressed_dtb\n", __func__);
+
+	dtb = malloc(compressed_dtb->datalen_uncompressed);
+	if (!dtb)
+		return NULL;
+
+	data = compressed_dtb + 1;
+
+	ret = uncompress(data, compressed_dtb->datalen, NULL, NULL,
+			dtb, NULL, NULL);
+	if (ret) {
+		pr_err("uncompressing dtb failed\n");
+		free(dtb);
+		return NULL;
+	}
+
+	barebox_boot_dtb = dtb;
+
 	return barebox_boot_dtb;
 }
 
@@ -104,6 +142,14 @@ static noinline __noreturn void __start(unsigned long membase,
 					barebox_boarddata);
 			memcpy(barebox_boarddata, boarddata,
 					sizeof(struct barebox_arm_boarddata));
+		} else if (((struct barebox_arm_boarddata_compressed_dtb *)boarddata)->magic ==
+				BAREBOX_ARM_BOARDDATA_COMPRESSED_DTB_MAGIC) {
+			struct barebox_arm_boarddata_compressed_dtb *bd = boarddata;
+			endmem -= ALIGN(sizeof(*bd) + bd->datalen, 64);
+			compressed_dtb = (void *)endmem;
+			pr_debug("found compressed DTB in boarddata, copying to 0x%p\n",
+					compressed_dtb);
+			memcpy(compressed_dtb, boarddata, sizeof(*bd) + bd->datalen);
 		}
 	}
 

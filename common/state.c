@@ -1254,7 +1254,7 @@ static int backend_raw_load_one(struct state_backend_raw *backend_raw,
 	struct backend_raw_header header = {};
 	unsigned long max_len;
 	int ret;
-	void *buf;
+	void *buf, *data;
 
 	max_len = backend_raw->stride;
 
@@ -1292,13 +1292,18 @@ static int backend_raw_load_one(struct state_backend_raw *backend_raw,
 		return -EINVAL;
 	}
 
-	buf = xzalloc(header.data_len);
+	buf = xzalloc(sizeof(header) + header.data_len);
+	data = buf + sizeof(header);
 
-	ret = read_full(fd, buf, header.data_len);
+	ret = lseek(fd, offset, SEEK_SET);
 	if (ret < 0)
 		goto out_free;
 
-	crc = crc32(0, buf, header.data_len);
+	ret = read_full(fd, buf, sizeof(header) + header.data_len);
+	if (ret < 0)
+		goto out_free;
+
+	crc = crc32(0, data, header.data_len);
 	if (crc != header.data_crc) {
 		dev_err(&state->dev,
 			"invalid crc, calculated 0x%08x, found 0x%08x\n",
@@ -1310,7 +1315,7 @@ static int backend_raw_load_one(struct state_backend_raw *backend_raw,
 	list_for_each_entry(sv, &state->variables, list) {
 		if (sv->start + sv->size > header.data_len)
 			break;
-		memcpy(sv->raw, buf + sv->start, sv->size);
+		memcpy(sv->raw, data + sv->start, sv->size);
 	}
 
 	free(buf);

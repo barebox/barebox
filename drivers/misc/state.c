@@ -37,7 +37,7 @@ static int state_probe(struct device_d *dev)
 
 	alias = of_alias_get(np);
 	if (!alias)
-		alias = "state";
+		alias = np->name;
 
 	state = state_new_from_node(alias, np);
 	if (IS_ERR(state))

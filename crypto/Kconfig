@@ -1,3 +1,5 @@
+menu "Crypto support"
+
 config CRC32
 	bool
 
@@ -84,3 +86,5 @@ config CRYPTO_PBKDF2
 	select DIGEST
 	select DIGEST_SHA1_GENERIC
 	bool
+
+endmenu

@@ -86,7 +86,6 @@ static int state_probe(struct device_d *dev)
 	dev_info(dev, "backend: %s, path: %s, of_path: %s\n", backend_type, path, of_path);
 	free(path);
 
-	state_load(state);
 	return 0;
 
  out_free:

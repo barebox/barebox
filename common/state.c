@@ -51,7 +51,6 @@ struct state {
 };
 
 struct state_backend {
-	int (*load)(struct state_backend *backend, struct state *state);
 	int (*save)(struct state_backend *backend, struct state *state);
 	const char *name;
 	const char *of_path;
@@ -1049,30 +1048,6 @@ int state_get_name(const struct state *state, char const **name)
 }
 
 /*
- * state_load - load a state from the backing store
- *
- * @state	The state instance to load
- */
-int state_load(struct state *state)
-{
-	int ret;
-
-	if (!state->backend)
-		return -ENOSYS;
-
-	ret = state->backend->load(state->backend, state);
-	if (ret) {
-		dev_warn(&state->dev, "load failed\n");
-		state->dirty = 1;
-	} else {
-		dev_info(&state->dev, "load successful\n");
-		state->dirty = 0;
-	}
-
-	return ret;
-}
-
-/*
  * state_save - save a state to the backing store
  *
  * @state	The state instance to save
@@ -1226,7 +1201,6 @@ int state_backend_dtb_file(struct state *state, const char *of_path, const char 
 	backend_dtb = xzalloc(sizeof(*backend_dtb));
 	backend = &backend_dtb->backend;
 
-	backend->load = state_backend_dtb_load;
 	backend->save = state_backend_dtb_save;
 	backend->of_path = xstrdup(of_path);
 	backend->path = xstrdup(path);
@@ -1238,6 +1212,15 @@ int state_backend_dtb_file(struct state *state, const char *of_path, const char 
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE))
 		backend_dtb->need_erase = true;
 
+	ret = state_backend_dtb_load(backend, state);
+	if (ret) {
+		dev_warn(&state->dev, "load failed - using defaults\n");
+	} else {
+		dev_info(&state->dev, "load successful\n");
+		state->dirty = 0;
+	}
+
+	/* ignore return value of load() */
 	return 0;
 }
 
@@ -1548,7 +1531,6 @@ int state_backend_raw_file(struct state *state, const char *of_path,
 	backend_raw = xzalloc(sizeof(*backend_raw));
 	backend = &backend_raw->backend;
 
-	backend->load = state_backend_raw_load;
 	backend->save = state_backend_raw_save;
 	backend->of_path = xstrdup(of_path);
 	backend->path = xstrdup(path);
@@ -1583,6 +1565,15 @@ int state_backend_raw_file(struct state *state, const char *of_path,
 		goto err;
 	}
 
+	ret = state_backend_raw_load(backend, state);
+	if (ret) {
+		dev_warn(&state->dev, "load failed - using defaults\n");
+	} else {
+		dev_info(&state->dev, "load successful\n");
+		state->dirty = 0;
+	}
+
+	/* ignore return value of load() */
 	return 0;
 err:
 	free(backend_raw);

@@ -126,7 +126,7 @@ static int __of_find_path(struct device_node *node, const char *propname, char *
 
 	i = 1;
 
-	while (1) {
+	while (propname) {
 		ret = of_property_read_string_index(node, propname, i++, &str);
 		if (ret)
 			break;
@@ -146,6 +146,21 @@ static int __of_find_path(struct device_node *node, const char *propname, char *
 	*outpath = asprintf("/dev/%s%s", op.cdev->name, add_bb ? ".bb" : "");
 
 	return 0;
+}
+
+/**
+ * of_find_path_by_node - translate a node in the devicetree to a
+ *                     	  barebox device path
+ *
+ * @node: the node we're interested in
+ * @outpath: if this function returns 0 outpath will contain the path belonging
+ *           to the input path description. Must be freed with free().
+ * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available
+ *
+ */
+int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flags)
+{
+	return __of_find_path(node, NULL, outpath, flags);
 }
 
 /**

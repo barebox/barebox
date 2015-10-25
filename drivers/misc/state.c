@@ -52,33 +52,20 @@ static int state_probe(struct device_d *dev)
 	/* guess if of_path is a path, not a phandle */
 	if (of_path[0] == '/' && len > 1) {
 		ret = of_find_path(np, "backend", &path, 0);
-		if (ret)
-			goto out_release;
 	} else {
-		struct device_d *dev;
-		struct cdev *cdev;
 
 		partition_node = of_parse_phandle(np, "backend", 0);
-		if (!partition_node) {
-			ret = -ENODEV;
-			goto out_release;
-		}
+		if (!partition_node)
+			return -EINVAL;
 
-		dev = of_find_device_by_node(partition_node);
-		if (!list_is_singular(&dev->cdevs)) {
-			ret = -ENODEV;
-			goto out_release;
-		}
-
-		cdev = list_first_entry(&dev->cdevs, struct cdev, devices_list);
-		if (!cdev) {
-			ret = -ENODEV;
-			goto out_release;
-		}
-
-		path = asprintf("/dev/%s", cdev->name);
 		of_path = partition_node->full_name;
+		ret = of_find_path_by_node(partition_node, &path, 0);
 	}
+
+	if (ret == -ENODEV)
+		ret = -EPROBE_DEFER;
+	if (ret)
+		goto out_release;
 
 	ret = of_property_read_string(np, "backend-type", &backend_type);
 	if (ret) {

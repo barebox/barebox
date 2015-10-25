@@ -87,4 +87,10 @@ config CRYPTO_PBKDF2
 	select DIGEST_SHA1_GENERIC
 	bool
 
+config CRYPTO_KEYSTORE
+	bool "Keystore"
+	help
+	  This is a simple keystore, which can be used to pass keys
+	  between several components via simple interface.
+
 endmenu

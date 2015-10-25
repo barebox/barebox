@@ -751,6 +751,24 @@ config STATE
 	select OFTREE
 	select PARAMETER
 
+config STATE_CRYPTO
+	bool "HMAC based authentication support"
+	depends on STATE
+	select CRYPTO_KEYSTORE
+	select DIGEST
+	select DIGEST_HMAC_GENERIC
+	help
+	  This options enables HMAC based authentication support for
+	  the state's header and data. This means the state framework
+	  can verify both the data integrity and the authentication of
+	  the state's header and data.
+
+	  Don't forget to select a hash algorithm in the
+	  crypto/digests menu.
+
+	  See Documentation/devicetree/bindings/barebox/barebox,state.rst
+	  for more information.
+
 config RESET_SOURCE
 	bool "detect Reset cause"
 	depends on GLOBALVAR

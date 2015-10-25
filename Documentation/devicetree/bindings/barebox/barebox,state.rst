@@ -32,6 +32,12 @@ Required properties:
 * ``backend``: describes where the data for this state is stored
 * ``backend-type``: should be ``raw`` or ``dtb``.
 
+Optional properties:
+
+* ``algo``: A HMAC algorithm used to detect manipulation of the data
+  or header, sensible values follow this pattern ``hmac(<HASH>)``,
+  e.g. ``hmac(sha256)``.
+
 Variable nodes
 --------------
 
@@ -104,6 +110,19 @@ the state as a devicetree binary blob. This is exactly the original
 devicetree description of the state itself, but additionally contains
 the actual values of the variables. Unlike the raw state backend the
 dtb state backend can describe itself.
+
+HMAC
+----
+
+With the optional property ``algo = "hmac(<HASH>)";`` a HMAC algorithm
+can be defined to detect unauthorized modification of the state's
+header and/or data. For this to work the HMAC and the selected hash
+algorithm have to be compiled into barebox.
+
+The shared secret for the HMAC is requested via
+``keystore_get_secret()``, using the state's name, from the barebox
+simple keystore. It's up to the developer to populate the keystore via
+``keystore_set_secret()`` in beforehand.
 
 Frontend
 --------

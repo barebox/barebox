@@ -141,6 +141,9 @@ static __maybe_unused struct of_device_id imx_gpt_dt_ids[] = {
 		.compatible = "fsl,imx31-gpt",
 		.data = &regs_imx31,
 	}, {
+		.compatible = "fsl,imx6q-gpt",
+		.data = &regs_imx31,
+	}, {
 		/* sentinel */
 	}
 };

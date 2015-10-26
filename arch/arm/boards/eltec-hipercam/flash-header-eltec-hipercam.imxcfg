@@ -1,5 +1,6 @@
 soc imx6
 loadaddr 0x10000000
+dcdofs 0x400
 
 wm 32 0x020e04bc 0x00000030
 wm 32 0x020e04c0 0x00000030

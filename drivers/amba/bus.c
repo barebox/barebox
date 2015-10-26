@@ -70,7 +70,8 @@ static void amba_remove(struct device_d *dev)
 	struct amba_device *pcdev = to_amba_device(dev);
 	struct amba_driver *drv = to_amba_driver(dev->driver);
 
-	drv->remove(pcdev);
+	if (drv->remove)
+		drv->remove(pcdev);
 }
 
 struct bus_type amba_bustype = {

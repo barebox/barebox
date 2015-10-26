@@ -121,9 +121,25 @@ targets += $(foreach m, $(image-y), $(FILE_$(m)))
 
 SECONDARY: $(addprefix $(obj)/,$(targets))
 
-images: $(addprefix $(obj)/, $(image-y)) FORCE
+# Images with full paths
+image-y-path := $(addprefix $(obj)/,$(image-y))
+# File will have a list of images generated
+flash-list := $(obj)/../barebox-flash-images
+# Symlink, which will point to non-existent 'multi-image-build' if there are
+# multiple images
+flash-link := $(obj)/../barebox-flash-image
+link-dest := $(if $(filter 1,$(words $(image-y))),$(image-y-path),multi-image-build)
+multi-image-build:
+
+images: $(image-y-path) $(flash-link) $(flash-list) FORCE
 	@echo "images built:"
 	@for i in $(image-y); do echo $$i; done
+
+$(flash-link): $(link-dest) FORCE
+	$(call if_changed,ln)
+
+$(flash-list): $(image-y-path)
+	@for i in $^; do echo $$i; done > $@
 
 clean-files := *.pbl *.pblb *.pblx *.map start_*.imximg *.img barebox.z start_*.kwbimg \
 	start_*.kwbuartimg *.socfpgaimg *.mlo *.t20img *.t20img.cfg *.t30img \

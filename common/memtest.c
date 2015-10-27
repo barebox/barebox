@@ -360,14 +360,9 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 
 	init_progression_bar(3 * num_words);
 
-	/*
-	 * Fill memory with a known pattern.
-	 */
+	/* Fill memory with a known pattern */
 	for (offset = 0; offset < num_words; offset++) {
-		/*
-		 * Every 4K we update the progressbar.
-		 */
-
+		/* Every 4K we update the progressbar */
 		if (!(offset & (SZ_4K - 1))) {
 			if (ctrlc())
 				return -EINTR;
@@ -376,9 +371,7 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 		start[offset] = offset + 1;
 	}
 
-	/*
-	 * Check each location and invert it for the second pass.
-	 */
+	/* Check each location and invert it for the second pass */
 	for (offset = 0; offset < num_words; offset++) {
 		if (!(offset & (SZ_4K - 1))) {
 			if (ctrlc())
@@ -399,9 +392,7 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 		start[offset] = anti_pattern;
 	}
 
-	/*
-	 * Check each location for the inverted pattern and zero it.
-	 */
+	/* Check each location for the inverted pattern and zero it */
 	for (offset = 0; offset < num_words; offset++) {
 		if (!(offset & (SZ_4K - 1))) {
 			if (ctrlc())
@@ -424,9 +415,7 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 	}
 	show_progress(3 * num_words);
 
-	/*
-	 * end of progressbar
-	 */
+	/* end of progressbar */
 	printf("\n");
 
 	return 0;

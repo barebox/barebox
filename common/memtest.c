@@ -347,7 +347,7 @@ static int update_progress(resource_size_t offset)
 
 int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 {
-	volatile resource_size_t *start, num_words, offset, temp, anti_pattern;
+	volatile resource_size_t *start, num_words, offset, pattern, expected;
 	int ret;
 
 	_start = ALIGN(_start, sizeof(resource_size_t));
@@ -389,17 +389,13 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 		if (ret)
 			return ret;
 
-		temp = start[offset];
-		if (temp != (offset + 1)) {
-			printf("\n");
-			mem_test_report_failure("read/write",
-						(offset + 1),
-						temp, &start[offset]);
-			return -EIO;
-		}
+		pattern = start[offset];
+		expected = offset + 1;
 
-		anti_pattern = ~(offset + 1);
-		start[offset] = anti_pattern;
+		if (pattern != expected)
+			goto mem_err;
+
+		start[offset] = ~start[offset];
 	}
 
 	/* Check each location for the inverted pattern and zero it */
@@ -408,16 +404,11 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 		if (ret)
 			return ret;
 
-		anti_pattern = ~(offset + 1);
-		temp = start[offset];
+		pattern = start[offset];
+		expected = ~(offset + 1);
 
-		if (temp != anti_pattern) {
-			printf("\n");
-			mem_test_report_failure("read/write",
-						anti_pattern,
-						temp, &start[offset]);
-			return -EIO;
-		}
+		if (pattern != expected)
+			goto mem_err;
 
 		start[offset] = 0;
 	}
@@ -427,4 +418,10 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 	printf("\n");
 
 	return 0;
+
+mem_err:
+	printf("\n");
+	mem_test_report_failure("read/write", expected, pattern, &start[offset]);
+
+	return -EIO;
 }

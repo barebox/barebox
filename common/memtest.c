@@ -331,9 +331,24 @@ int mem_test_bus_integrity(resource_size_t _start,
 	return 0;
 }
 
+static int update_progress(resource_size_t offset)
+{
+	/* Only check every 4k to reduce overhead */
+	if (offset & (SZ_4K - 1))
+		return 0;
+
+	if (ctrlc())
+		return -EINTR;
+
+	show_progress(offset);
+
+	return 0;
+}
+
 int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 {
 	volatile resource_size_t *start, num_words, offset, temp, anti_pattern;
+	int ret;
 
 	_start = ALIGN(_start, sizeof(resource_size_t));
 	_end = ALIGN_DOWN(_end, sizeof(resource_size_t)) - 1;
@@ -362,22 +377,17 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 
 	/* Fill memory with a known pattern */
 	for (offset = 0; offset < num_words; offset++) {
-		/* Every 4K we update the progressbar */
-		if (!(offset & (SZ_4K - 1))) {
-			if (ctrlc())
-				return -EINTR;
-			show_progress(offset);
-		}
+		ret = update_progress(offset);
+		if (ret)
+			return ret;
 		start[offset] = offset + 1;
 	}
 
 	/* Check each location and invert it for the second pass */
 	for (offset = 0; offset < num_words; offset++) {
-		if (!(offset & (SZ_4K - 1))) {
-			if (ctrlc())
-				return -EINTR;
-			show_progress(num_words + offset);
-		}
+		ret = update_progress(num_words + offset);
+		if (ret)
+			return ret;
 
 		temp = start[offset];
 		if (temp != (offset + 1)) {
@@ -394,11 +404,9 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 
 	/* Check each location for the inverted pattern and zero it */
 	for (offset = 0; offset < num_words; offset++) {
-		if (!(offset & (SZ_4K - 1))) {
-			if (ctrlc())
-				return -EINTR;
-			show_progress(2 * num_words + offset);
-		}
+		ret = update_progress(2 * num_words + offset);
+		if (ret)
+			return ret;
 
 		anti_pattern = ~(offset + 1);
 		temp = start[offset];

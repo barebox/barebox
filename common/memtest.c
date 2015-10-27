@@ -344,8 +344,8 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 	start = (resource_size_t *)_start;
 	num_words = (_end - _start + 1)/sizeof(resource_size_t);
 
-	printf("Starting integrity check of physicaly ram.\n"
-	       "Filling ram with patterns...\n");
+	printf("Starting moving inversions test of RAM:\n"
+	       "Fill with address, compare, fill with inverted address, compare again\n");
 
 	/*
 	 * Description: Test the integrity of a physical
@@ -358,11 +358,11 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 	 *		selected by the caller.
 	 */
 
+	init_progression_bar(3 * num_words);
+
 	/*
 	 * Fill memory with a known pattern.
 	 */
-	init_progression_bar(num_words);
-
 	for (offset = 0; offset < num_words; offset++) {
 		/*
 		 * Every 4K we update the progressbar.
@@ -375,18 +375,15 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 		}
 		start[offset] = offset + 1;
 	}
-	show_progress(offset);
 
-	printf("\nCompare written patterns...\n");
 	/*
 	 * Check each location and invert it for the second pass.
 	 */
-	init_progression_bar(num_words - 1);
 	for (offset = 0; offset < num_words; offset++) {
 		if (!(offset & (SZ_4K - 1))) {
 			if (ctrlc())
 				return -EINTR;
-			show_progress(offset);
+			show_progress(num_words + offset);
 		}
 
 		temp = start[offset];
@@ -401,18 +398,15 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 		anti_pattern = ~(offset + 1);
 		start[offset] = anti_pattern;
 	}
-	show_progress(offset);
 
-	printf("\nFilling ram with inverted pattern and compare it...\n");
 	/*
 	 * Check each location for the inverted pattern and zero it.
 	 */
-	init_progression_bar(num_words - 1);
 	for (offset = 0; offset < num_words; offset++) {
 		if (!(offset & (SZ_4K - 1))) {
 			if (ctrlc())
 				return -EINTR;
-			show_progress(offset);
+			show_progress(2 * num_words + offset);
 		}
 
 		anti_pattern = ~(offset + 1);
@@ -428,7 +422,7 @@ int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
 
 		start[offset] = 0;
 	}
-	show_progress(offset);
+	show_progress(3 * num_words);
 
 	/*
 	 * end of progressbar

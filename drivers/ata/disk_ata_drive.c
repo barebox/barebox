@@ -26,16 +26,6 @@
 #include <disks.h>
 #include <dma.h>
 
-static int ata_id_is_valid(const uint16_t *id)
-{
-	if ((id[ATA_ID_FIELD_VALID] & 1) == 0) {
-		pr_debug("Drive's ID seems invalid\n");
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
 static uint64_t ata_id_n_sectors(uint16_t *id)
 {
 	if (ata_id_has_lba(id)) {
@@ -243,13 +233,6 @@ static int ata_port_init(struct ata_port *port)
 	}
 
 	ata_fix_endianess(port->id, SECTOR_SIZE / sizeof(uint16_t));
-
-	rc = ata_id_is_valid(port->id);
-	if (rc) {
-		dev_err(dev, "ata id invalid\n");
-		free(port->id);
-		return rc;
-	}
 
 #ifdef DEBUG
 	ata_dump_id(port->id);

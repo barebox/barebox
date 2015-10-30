@@ -111,13 +111,12 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 }
 EXPORT_SYMBOL(password);
 
-int is_passwd_default_enable(void)
+static int is_passwd_default_enable(void)
 {
 	return strlen(default_passwd) > 0;
 }
-EXPORT_SYMBOL(is_passwd_default_enable);
 
-int is_passwd_env_enable(void)
+static int is_passwd_env_enable(void)
 {
 	int fd;
 
@@ -130,7 +129,6 @@ int is_passwd_env_enable(void)
 
 	return 1;
 }
-EXPORT_SYMBOL(is_passwd_env_enable);
 
 int passwd_env_disable(void)
 {
@@ -227,7 +225,7 @@ exit:
 }
 EXPORT_SYMBOL(read_env_passwd);
 
-int write_env_passwd(unsigned char *sum, size_t length)
+static int write_env_passwd(unsigned char *sum, size_t length)
 {
 	int fd;
 	unsigned char c;
@@ -274,7 +272,6 @@ exit:
 
 	return ret;
 }
-EXPORT_SYMBOL(write_env_passwd);
 
 static int check_passwd(unsigned char *passwd, size_t length)
 {

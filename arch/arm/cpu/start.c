@@ -64,7 +64,7 @@ void *barebox_arm_boot_dtb(void)
 		return NULL;
 }
 
-static noinline __noreturn void __start(unsigned long membase,
+__noreturn void barebox_non_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	unsigned long endmem = membase + memsize;
@@ -161,31 +161,6 @@ void __naked __section(.text_entry) start(void)
 	barebox_arm_head();
 }
 
-/*
- * Main ARM entry point in the uncompressed image. Call this with the memory
- * region you can spare for barebox. This doesn't necessarily have to be the
- * full SDRAM. The currently running binary can be inside or outside of this
- * region. TEXT_BASE can be inside or outside of this region. boarddata will
- * be preserved and can be accessed later with barebox_arm_boarddata().
- *
- * -> membase + memsize
- *   STACK_SIZE              - stack
- *   16KiB, aligned to 16KiB - First level page table if early MMU support
- *                             is enabled
- * -> maximum end of barebox binary
- *
- * Usually a TEXT_BASE of 1MiB below your lowest possible end of memory should
- * be fine.
- */
-void __naked __noreturn barebox_arm_entry(unsigned long membase,
-		unsigned long memsize, void *boarddata)
-{
-	arm_setup_stack(membase + memsize - 16);
-
-	arm_early_mmu_cache_invalidate();
-
-	__start(membase, memsize, boarddata);
-}
 #else
 /*
  * First function in the uncompressed image. We get here from
@@ -194,6 +169,6 @@ void __naked __noreturn barebox_arm_entry(unsigned long membase,
 void __naked __section(.text_entry) start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
-	__start(membase, memsize, boarddata);
+	barebox_non_pbl_start(membase, memsize, boarddata);
 }
 #endif

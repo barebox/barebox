@@ -45,7 +45,7 @@ void __naked __section(.text_head_entry) pbl_start(void)
 extern void *input_data;
 extern void *input_data_end;
 
-static noinline __noreturn void __barebox_arm_entry(unsigned long membase,
+__noreturn void barebox_single_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	uint32_t offset;
@@ -55,8 +55,6 @@ static noinline __noreturn void __barebox_arm_entry(unsigned long membase,
 	unsigned long barebox_base;
 
 	endmem -= STACK_SIZE; /* stack */
-
-	arm_early_mmu_cache_invalidate();
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
 		relocate_to_current_adr();
@@ -105,29 +103,4 @@ static noinline __noreturn void __barebox_arm_entry(unsigned long membase,
 		barebox = (void *)barebox_base;
 
 	barebox(membase, memsize, boarddata);
-}
-
-/*
- * Main ARM entry point in the compressed image. Call this with the memory
- * region you can spare for barebox. This doesn't necessarily have to be the
- * full SDRAM. The currently running binary can be inside or outside of this
- * region. TEXT_BASE can be inside or outside of this region. boarddata will
- * be preserved and can be accessed later with barebox_arm_boarddata().
- *
- * -> membase + memsize
- *   STACK_SIZE              - stack
- *   16KiB, aligned to 16KiB - First level page table if early MMU support
- *                             is enabled
- *   128KiB                  - early memory space
- * -> maximum end of barebox binary
- *
- * Usually a TEXT_BASE of 1MiB below your lowest possible end of memory should
- * be fine.
- */
-void __naked __noreturn barebox_arm_entry(unsigned long membase,
-		unsigned long memsize, void *boarddata)
-{
-	arm_setup_stack(membase + memsize - 16);
-
-	__barebox_arm_entry(membase, memsize, boarddata);
 }

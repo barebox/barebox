@@ -75,8 +75,6 @@ static void decode_configs(struct cpuinfo_mips *c)
 	c->options = MIPS_CPU_4KEX | MIPS_CPU_4K_CACHE | MIPS_CPU_COUNTER |
 	             MIPS_CPU_DIVEC | MIPS_CPU_LLSC | MIPS_CPU_MCHECK;
 
-	c->scache.flags = MIPS_CACHE_NOT_PRESENT;
-
 	ok = decode_config0(c);			/* Read Config registers.  */
 	BUG_ON(!ok);				/* Arch spec violation!  */
 }

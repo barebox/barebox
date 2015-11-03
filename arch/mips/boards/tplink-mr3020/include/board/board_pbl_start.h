@@ -17,6 +17,7 @@
  */
 
 #include <asm/pbl_macros.h>
+#include <mach/pbl_macros.h>
 #include <asm/pbl_nmon.h>
 
 	.macro	board_pbl_start
@@ -27,6 +28,11 @@
 
 	mips_disable_interrupts
 
+	pbl_ar9331_pll
+	pbl_ar9331_ddr1_config
+
+	pbl_ar9331_uart_enable
+	debug_ll_ar9331_init
 	mips_nmon
 
 	copy_to_link_location	pbl_start

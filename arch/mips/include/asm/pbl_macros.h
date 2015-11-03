@@ -28,6 +28,27 @@
 #include <generated/compile.h>
 #include <generated/utsrelease.h>
 
+	.macro	pbl_reg_writel val addr
+	.set push
+	.set noreorder
+	li	t9, \addr
+	li	t8, \val
+	sw	t8, 0(t9)
+	.set	pop
+	.endm
+
+	.macro	pbl_reg_clr clr addr
+	.set push
+	.set noreorder
+	li	t9, \addr
+	li	t8, \clr
+	lw	t7, 0(t9)
+	not	t8, t8
+	and	t7, t8
+	sw	t7, 0(t9)
+	.set	pop
+	.endm
+
 	.macro	pbl_sleep reg count
 	.set push
 	.set noreorder

@@ -129,4 +129,11 @@
 	.set	pop
 .endm
 
+#define GPIO_FUNC	((KSEG1 | AR71XX_GPIO_BASE) | AR71XX_GPIO_REG_FUNC)
+
+.macro	pbl_ar9331_uart_enable
+	pbl_reg_set AR933X_GPIO_FUNC_UART_EN \
+			| AR933X_GPIO_FUNC_RSRV15, GPIO_FUNC
+.endm
+
 #endif /* __ASM_MACH_ATH79_PBL_MACROS_H */

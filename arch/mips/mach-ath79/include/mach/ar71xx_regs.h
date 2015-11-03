@@ -67,6 +67,9 @@
 #define AR71XX_GPIO_REG_INT_PENDING	0x20
 #define AR71XX_GPIO_REG_INT_ENABLE	0x24
 #define AR71XX_GPIO_REG_FUNC		0x28
+/* Warning! GPIO_FUNC[15] must be written with 1 */
+#define AR933X_GPIO_FUNC_RSRV15			BIT(15)
+#define AR933X_GPIO_FUNC_UART_EN		BIT(1)
 
 /*
  * PLL block

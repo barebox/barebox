@@ -37,6 +37,17 @@
 	.set	pop
 	.endm
 
+	.macro	pbl_reg_set val addr
+	.set push
+	.set noreorder
+	li	t9, \addr
+	li	t8, \val
+	lw	t7, 0(t9)
+	or	t7, t8
+	sw	t7, 0(t9)
+	.set	pop
+	.endm
+
 	.macro	pbl_reg_clr clr addr
 	.set push
 	.set noreorder

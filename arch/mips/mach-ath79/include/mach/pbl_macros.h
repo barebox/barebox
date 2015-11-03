@@ -67,6 +67,49 @@
 #define DDR_EMR2		(DDR_BASE | AR933X_DDR_DDR_EMR2)
 #define DDR_EMR3		(DDR_BASE | AR933X_DDR_DDR_EMR3)
 
+.macro	pbl_ar9331_ddr1_config
+	.set	push
+	.set	noreorder
+
+	pbl_reg_writel	0x7fbc8cd0, DDR_CONFIG
+	pbl_reg_writel	0x9dd0e6a8, DDR_CONFIG2
+
+	pbl_reg_writel	DDR_CTRL_PREA, DDR_CTRL
+
+	/* 0x133: on reset Mode Register value */
+	pbl_reg_writel	0x133, DDR_MODE
+	pbl_reg_writel	DDR_CTRL_MRS, DDR_CTRL
+
+	/*
+	 * DDR_EXT_MODE[1] = 1: Reduced Drive Strength
+	 * DDR_EXT_MODE[0] = 0: Enable DLL
+	 */
+	pbl_reg_writel	0x2, DDR_EXT_MODE
+	pbl_reg_writel	DDR_CTRL_EMRS, DDR_CTRL
+
+	pbl_reg_writel	DDR_CTRL_PREA, DDR_CTRL
+
+	/* DLL out of reset, CAS Latency 3 */
+	pbl_reg_writel	0x33, DDR_MODE
+	pbl_reg_writel	DDR_CTRL_MRS, DDR_CTRL
+
+	/* Refresh control. Bit 14 is enable. Bits<13:0> Refresh time */
+	pbl_reg_writel	0x4186, DDR_REFRESH
+	/* This register is used along with DQ Lane 0; DQ[7:0], DQS_0 */
+	pbl_reg_writel	0x8, DDR_TAP_CTRL0
+	/* This register is used along with DQ Lane 1; DQ[15:8], DQS_1 */
+	pbl_reg_writel	0x9, DDR_TAP_CTRL1
+
+	/*
+	 * DDR read and capture bit mask.
+	 * Each bit represents a cycle of valid data.
+	 * 0xff: use 16-bit DDR
+	 */
+	pbl_reg_writel	0xff, DDR_RD_DATA
+
+	.set	pop
+.endm
+
 .macro	pbl_ar9331_ddr2_config
 	.set	push
 	.set	noreorder

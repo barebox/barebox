@@ -13,6 +13,12 @@ config BOARD_TPLINK_MR3020
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
 
+config BOARD_BLACK_SWIFT
+	bool "Black Swift"
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
+	select HAS_NMON
+
 endchoice
 
 endif

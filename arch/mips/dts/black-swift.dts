@@ -1,0 +1,34 @@
+/dts-v1/;
+
+#include "ar9331.dtsi"
+
+/ {
+	model = "Black Swift";
+	compatible = "smartlx,black-swift";
+
+	memory {
+		reg = <0x00000000 0x4000000>;
+	};
+
+	aliases {
+		spiflash = &spiflash;
+	};
+};
+
+&serial0 {
+	status = "okay";
+};
+
+&spi {
+	num-chipselects = <1>;
+	status = "okay";
+
+	/* Winbond W25Q128FV SPI flash */
+	spiflash: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "m25p80";
+		spi-max-frequency = <104000000>;
+		reg = <0>;
+	};
+};

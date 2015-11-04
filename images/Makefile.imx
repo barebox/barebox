@@ -259,8 +259,8 @@ image-$(CONFIG_MACH_VARISCITE_MX6) += barebox-variscite-custom.img
 
 pblx-$(CONFIG_MACH_EMBEDSKY_E9) += start_imx6q_embedsky_e9
 CFG_start_imx6q_embedsky_e9.pblx.imximg = $(board)/embedsky-e9/flash-header-e9.imxcfg
-FILE_barebox-freescale-imx6q-embedsky-e9.img = start_imx6q_embedsky_e9.pblx.imximg
-image-$(CONFIG_MACH_EMBEDSKY_E9) += barebox-freescale-imx6q-embedsky-e9.img
+FILE_barebox-embedsky-imx6q-e9.img = start_imx6q_embedsky_e9.pblx.imximg
+image-$(CONFIG_MACH_EMBEDSKY_E9) += barebox-embedsky-imx6q-e9.img
 
 pblx-$(CONFIG_MACH_EMBEST_RIOTBOARD) += start_imx6s_riotboard
 CFG_start_imx6s_riotboard.pblx.imximg = $(board)/embest-riotboard/flash-header-embest-riotboard.imxcfg

@@ -258,6 +258,7 @@ static int save_file(const char *path)
 {
 	struct line *line, *tmp;
 	int fd;
+	int ret = 0;
 
 	fd = open(path, O_WRONLY | O_TRUNC | O_CREAT);
 	if (fd < 0) {
@@ -269,12 +270,20 @@ static int save_file(const char *path)
 
 	while(line) {
 		tmp = line->next;
-		write(fd, line->data, strlen(line->data));
-		write(fd, "\n", 1);
+		ret = write_full(fd, line->data, strlen(line->data));
+		if (ret < 0)
+			goto out;
+		ret = write_full(fd, "\n", 1);
+		if (ret < 0)
+			goto out;
 		line = tmp;
 	}
+
+	ret = 0;
+
+out:
 	close(fd);
-	return 0;
+	return ret;
 }
 
 static void insert_char(char c)

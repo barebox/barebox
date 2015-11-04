@@ -384,6 +384,7 @@ static int do_edit(int argc, char *argv[])
 	int i;
 	int linepos;
 	int c;
+	int ret = COMMAND_SUCCESS;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
@@ -542,7 +543,7 @@ static int do_edit(int argc, char *argv[])
 			}
 			break;
 		case 4:
-			save_file(argv[1]);
+			ret = save_file(argv[1]);
 			goto out;
 		case 3:
 			goto out;
@@ -555,7 +556,7 @@ out:
 	free_buffer();
 	printf("%c[2J%c[r", 27, 27);
 	printf("\n");
-	return 0;
+	return ret;
 }
 
 static const char *edit_aliases[] = { "sedit", NULL};

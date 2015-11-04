@@ -502,13 +502,16 @@ int phy_wait_aneg_done(struct phy_device *phydev)
 		return 0;
 
 	while (!is_timeout(start, PHY_AN_TIMEOUT * SECOND)) {
-		if (phy_aneg_done(phydev) > 0) {
-			phydev->link = 1;
-			return 0;
-		}
+		if (phy_aneg_done(phydev) > 0)
+			break;
 	}
 
-	phydev->link = 0;
+	do {
+		genphy_update_link(phydev);
+		if (phydev->link == 1)
+			return 0;
+	} while (!is_timeout(start, PHY_AN_TIMEOUT * SECOND));
+
 	return -ETIMEDOUT;
 }
 

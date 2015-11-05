@@ -814,6 +814,8 @@ static int run_pipe_real(struct p_context *ctx, struct pipe *pi)
 		char * str = NULL;
 		struct p_context ctx1;
 
+		initialize_context(&ctx1);
+
 		str = make_string((child->argv + i));
 		rcode = parse_string_outer(&ctx1, str, FLAG_EXIT_FROM_LOOP | FLAG_REPARSING);
 		release_context(&ctx1);
@@ -1866,6 +1868,8 @@ int run_command(const char *cmd)
 	struct p_context ctx;
 	int ret;
 
+	initialize_context(&ctx);
+
 	ret = parse_string_outer(&ctx, cmd, FLAG_PARSE_SEMICOLON);
 	release_context(&ctx);
 
@@ -1888,6 +1892,8 @@ static int source_script(const char *path, int argc, char *argv[])
 	struct p_context ctx;
 	char *script;
 	int ret;
+
+	initialize_context(&ctx);
 
 	ctx.global_argc = argc;
 	ctx.global_argv = argv;

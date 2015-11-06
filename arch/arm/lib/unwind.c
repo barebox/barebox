@@ -331,6 +331,11 @@ void unwind_backtrace(struct pt_regs *regs)
 	}
 }
 
+void dump_stack(void)
+{
+	unwind_backtrace(NULL);
+}
+
 static int unwind_init(void)
 {
 	struct unwind_idx *idx;

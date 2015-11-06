@@ -28,7 +28,7 @@ static char *way_string[] = { NULL, "direct mapped", "2-way",
 
 static int do_cpuinfo(int argc, char *argv[])
 {
-	unsigned int icache_size, dcache_size;
+	unsigned int icache_size, dcache_size, scache_size;
 	struct cpuinfo_mips *c = &current_cpu_data;
 
 	printk(KERN_INFO "CPU revision is: %08x (%s)\n",
@@ -48,6 +48,15 @@ static int do_cpuinfo(int argc, char *argv[])
 	       (c->dcache.flags & MIPS_CACHE_ALIASES) ?
 			"cache aliases" : "no aliases",
 	       c->dcache.linesz);
+	if (c->scache.flags & MIPS_CACHE_NOT_PRESENT)
+		return 0;
+	scache_size = c->scache.sets * c->scache.ways * c->scache.linesz;
+	printk("Secondary data cache %ldkB, %s, %s, %s, linesize %d bytes\n",
+	       scache_size >> 10, way_string[c->scache.ways],
+	       (c->scache.flags & MIPS_CACHE_PINDEX) ? "PIPT" : "VIPT",
+	       (c->scache.flags & MIPS_CACHE_ALIASES) ?
+			"cache aliases" : "no aliases",
+	       c->scache.linesz);
 
 	return 0;
 }

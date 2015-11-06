@@ -91,7 +91,38 @@ static void probe_pcache(void)
 	}
 }
 
+#define CONFIG_M	(1 << 31)
+#define CONFIG2_SS_OFFSET	8
+#define CONFIG2_SL_OFFSET	4
+#define CONFIG2_SA_OFFSET	0
+static void probe_scache(void)
+{
+	struct cpuinfo_mips *c = &current_cpu_data;
+	unsigned int config2, config1, config = read_c0_config();
+	unsigned int ss, sl, sa;
+
+	if ((config & CONFIG_M) == 0)
+		goto noscache;
+	config1 = read_c0_config1();
+	if ((config1 & CONFIG_M) == 0)
+		goto noscache;
+	config2 = read_c0_config2();
+	ss = 0xf & (config2 >> CONFIG2_SS_OFFSET);
+	sl = 0xf & (config2 >> CONFIG2_SL_OFFSET);
+	sa = 0xf & (config2 >> CONFIG2_SA_OFFSET);
+	if (sl == 0)
+		goto noscache;
+	c->scache.linesz = 1 << (sl + 1);
+	c->scache.sets = 64 << ss;
+	c->scache.ways = 1 + sa;
+	c->scache.waysize = c->scache.linesz * c->scache.sets;
+	return;
+noscache:
+	c->scache.flags = MIPS_CACHE_NOT_PRESENT;
+}
+
 void r4k_cache_init(void)
 {
 	probe_pcache();
+	probe_scache();
 }

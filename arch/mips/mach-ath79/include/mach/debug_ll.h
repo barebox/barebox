@@ -63,6 +63,35 @@ static inline void PUTC_LL(int ch)
  * Macros for use in assembly language code
  */
 
+#define AR933X_UART_CS_REG		0x04
+#define UART_CS_REG	((KSEG1 | AR933X_UART_BASE) | AR933X_UART_CS_REG)
+#define AR933X_UART_CS_IF_MODE_S	2
+#define	  AR933X_UART_CS_IF_MODE_DCE	2
+#define AR933X_UART_CS_TX_READY_ORIDE	BIT(7)
+#define AR933X_UART_CS_RX_READY_ORIDE	BIT(8)
+
+/*
+ * simple uart clock setup
+ * from u-boot_mod/u-boot/cpu/mips/ar7240/hornet_serial.c
+ */
+#define BAUD_CLOCK 25000000
+#define CLOCK_SCALE ((BAUD_CLOCK / (16 * CONFIG_BAUDRATE)) - 1)
+#define CLOCK_STEP 0x2000
+
+#define AR933X_UART_CLOCK_REG		0x08
+#define CLOCK_REG	((KSEG1 | AR933X_UART_BASE) | AR933X_UART_CLOCK_REG)
+
+.macro debug_ll_ar9331_init
+#ifdef CONFIG_DEBUG_LL
+
+	pbl_reg_writel ((AR933X_UART_CS_IF_MODE_DCE << AR933X_UART_CS_IF_MODE_S) \
+			| AR933X_UART_CS_TX_READY_ORIDE \
+			| AR933X_UART_CS_RX_READY_ORIDE), UART_CS_REG
+	pbl_reg_writel ((CLOCK_SCALE << 16) | CLOCK_STEP), CLOCK_REG
+
+#endif /* CONFIG_DEBUG_LL */
+.endm
+
 /*
  * output a character in a0
  */

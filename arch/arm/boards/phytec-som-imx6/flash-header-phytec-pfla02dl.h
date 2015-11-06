@@ -1,5 +1,5 @@
 soc imx6
-loadaddr 0x20000000
+loadaddr 0x10000000
 dcdofs 0x400
 
 wm 32 0x020e0774 0x000C0000

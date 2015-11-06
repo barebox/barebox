@@ -6,7 +6,7 @@
 
 extern char __dtb_imx6dl_hummingboard_start[];
 
-ENTRY_FUNCTION(start_imx6dl_hummingboard, r0, r1, r2)
+ENTRY_FUNCTION(start_hummingboard_microsom_i1, r0, r1, r2)
 {
 	void *fdt;
 

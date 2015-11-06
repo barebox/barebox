@@ -111,6 +111,13 @@ static int physom_imx6_devices_init(void)
 		default_environment_path = "/chosen/environment-nand";
 		default_envdev = "NAND flash";
 
+	} else if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")) {
+
+		barebox_set_hostname("phyCORE-i.MX6");
+		default_environment_path = "/chosen/environment-spinor";
+		default_envdev = "SPI NOR flash";
+
 	} else
 		return 0;
 
@@ -147,6 +154,12 @@ static int physom_imx6_devices_init(void)
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 
 	defaultenv_append_directory(defaultenv_physom_imx6);
+
+	/* Overwrite file /env/init/automount */
+	if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")) {
+		defaultenv_append_directory(defaultenv_physom_imx6_mira);
+	}
 
 	return 0;
 }

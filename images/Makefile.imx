@@ -207,6 +207,11 @@ CFG_start_imx6dl_hummingboard.pblx.imximg = $(board)/solidrun-microsom/flash-hea
 FILE_barebox-solidrun-imx6dl-hummingboard.img = start_imx6dl_hummingboard.pblx.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-imx6dl-hummingboard.img
 
+pblx-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += start_imx6_wandboard
+CFG_start_imx6_wandboard.imx-sram-img = $(board)/technexion-wandboard/flash-header-technexion-wandboard.imxcfg
+FILE_barebox-imx6-wandboard.img = start_imx6_wandboard.imx-sram-img
+image-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += barebox-imx6-wandboard.img
+
 pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6q_nitrogen6x_1g
 CFG_start_imx6q_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6q-1g.imxcfg
 FILE_barebox-boundarydevices-imx6q-nitrogen6x-1g.img = start_imx6q_nitrogen6x_1g.pblx.imximg
@@ -254,8 +259,8 @@ image-$(CONFIG_MACH_VARISCITE_MX6) += barebox-variscite-custom.img
 
 pblx-$(CONFIG_MACH_EMBEDSKY_E9) += start_imx6q_embedsky_e9
 CFG_start_imx6q_embedsky_e9.pblx.imximg = $(board)/embedsky-e9/flash-header-e9.imxcfg
-FILE_barebox-freescale-imx6q-embedsky-e9.img = start_imx6q_embedsky_e9.pblx.imximg
-image-$(CONFIG_MACH_EMBEDSKY_E9) += barebox-freescale-imx6q-embedsky-e9.img
+FILE_barebox-embedsky-imx6q-e9.img = start_imx6q_embedsky_e9.pblx.imximg
+image-$(CONFIG_MACH_EMBEDSKY_E9) += barebox-embedsky-imx6q-e9.img
 
 pblx-$(CONFIG_MACH_EMBEST_RIOTBOARD) += start_imx6s_riotboard
 CFG_start_imx6s_riotboard.pblx.imximg = $(board)/embest-riotboard/flash-header-embest-riotboard.imxcfg

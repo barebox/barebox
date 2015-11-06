@@ -238,3 +238,42 @@ static int imx6_mmu_init(void)
 	return 0;
 }
 postmmu_initcall(imx6_mmu_init);
+
+#define SCU_CONFIG	0x04
+
+static int imx6_fixup_cpus(struct device_node *root, void *context)
+{
+	struct device_node *cpus_node, *np, *tmp;
+	unsigned long scu_phys_base;
+	unsigned int max_core_index;
+
+	cpus_node = of_find_node_by_name(root, "cpus");
+	if (!cpus_node)
+		return 0;
+
+	/* get actual number of available CPU cores from SCU */
+	asm("mrc p15, 4, %0, c15, c0, 0" : "=r" (scu_phys_base));
+	max_core_index = (readl(IOMEM(scu_phys_base) + SCU_CONFIG) & 0x03);
+
+	for_each_child_of_node_safe(cpus_node, tmp, np) {
+		u32 cpu_index;
+
+		if (of_property_read_u32(np, "reg", &cpu_index))
+			continue;
+
+		if (cpu_index > max_core_index)
+			of_delete_node(np);
+	}
+
+	return 0;
+}
+
+static int imx6_fixup_cpus_register(void)
+{
+	if (!of_machine_is_compatible("fsl,imx6q") &&
+	    !of_machine_is_compatible("fsl,imx6dl"))
+		return 0;
+
+	return of_register_fixup(imx6_fixup_cpus, NULL);
+}
+device_initcall(imx6_fixup_cpus_register);

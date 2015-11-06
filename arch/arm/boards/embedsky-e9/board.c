@@ -41,6 +41,8 @@
 #include <mach/usb.h>
 #include <envfs.h>
 #include <bootsource.h>
+#include <bbu.h>
+#include <mach/bbu.h>
 
 #define PHY_ID_RTL8211E	0x001cc915
 #define PHY_ID_MASK	0xffffffff
@@ -80,6 +82,12 @@ static int e9_devices_init(void)
 	free(environment_path);
 
 	defaultenv_append_directory(defaultenv_e9);
+
+	imx6_bbu_internal_mmc_register_handler("sd", "/dev/mmc1",
+		BBU_HANDLER_FLAG_DEFAULT);
+
+	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc3",
+		BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }

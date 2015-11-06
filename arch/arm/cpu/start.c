@@ -27,6 +27,8 @@
 #include <asm/unaligned.h>
 #include <asm/cache.h>
 #include <memory.h>
+#include <uncompress.h>
+#include <malloc.h>
 
 #include <debug_ll.h>
 #include "mmu-early.h"
@@ -37,6 +39,13 @@ static void *barebox_boarddata;
 static bool blob_is_fdt(const void *blob)
 {
 	return get_unaligned_be32(blob) == FDT_MAGIC;
+}
+
+static bool blob_is_compressed_fdt(const void *blob)
+{
+	const struct barebox_arm_boarddata_compressed_dtb *dtb = blob;
+
+	return dtb->magic == BAREBOX_ARM_BOARDDATA_COMPRESSED_DTB_MAGIC;
 }
 
 static bool blob_is_arm_boarddata(const void *blob)
@@ -58,10 +67,41 @@ u32 barebox_arm_machine(void)
 
 void *barebox_arm_boot_dtb(void)
 {
-	if (barebox_boarddata && blob_is_fdt(barebox_boarddata))
+	void *dtb;
+	void *data;
+	int ret;
+	struct barebox_arm_boarddata_compressed_dtb *compressed_dtb;
+
+	if (barebox_boarddata && blob_is_fdt(barebox_boarddata)) {
+		pr_debug("%s: using barebox_boarddata\n", __func__);
 		return barebox_boarddata;
-	else
+	}
+
+	if (!IS_ENABLED(CONFIG_ARM_USE_COMPRESSED_DTB) || !barebox_boarddata
+			|| !blob_is_compressed_fdt(barebox_boarddata))
 		return NULL;
+
+	compressed_dtb = barebox_boarddata;
+
+	pr_debug("%s: using compressed_dtb\n", __func__);
+
+	dtb = malloc(compressed_dtb->datalen_uncompressed);
+	if (!dtb)
+		return NULL;
+
+	data = compressed_dtb + 1;
+
+	ret = uncompress(data, compressed_dtb->datalen, NULL, NULL,
+			dtb, NULL, NULL);
+	if (ret) {
+		pr_err("uncompressing dtb failed\n");
+		free(dtb);
+		return NULL;
+	}
+
+	barebox_boarddata = dtb;
+
+	return barebox_boarddata;
 }
 
 __noreturn void barebox_non_pbl_start(unsigned long membase,
@@ -105,6 +145,10 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 		if (blob_is_fdt(boarddata)) {
 			totalsize = get_unaligned_be32(boarddata + 4);
 			name = "DTB";
+		} else if (blob_is_compressed_fdt(boarddata)) {
+			struct barebox_arm_boarddata_compressed_dtb *bd = boarddata;
+			totalsize = bd->datalen;
+			name = "Compressed DTB";
 		} else if (blob_is_arm_boarddata(boarddata)) {
 			totalsize = sizeof(struct barebox_arm_boarddata);
 			name = "machine type";

@@ -51,6 +51,25 @@ echo "__dtb_${name}_end:"
 echo ".global __dtb_${name}_end"
 echo ".balign STRUCT_ALIGNMENT"
 
+lzop -f -9 $dtb -o $dtb.lzo
+if [ $? != 0 ]; then
+	exit 1
+fi
+compressed=$(stat $dtb.lzo -c "%s")
+uncompressed=$(stat $dtb -c "%s")
+
+echo ".section .dtb.rodata.${name}.z,\"a\""
+echo ".balign STRUCT_ALIGNMENT"
+echo ".global __dtb_z_${name}_start"
+echo "__dtb_z_${name}_start:"
+printf ".word 0x%08x\n"  0x7b66bcbd
+printf ".word 0x%08x\n"  $compressed
+printf ".word 0x%08x\n"  $uncompressed
+echo ".incbin \"$dtb.lzo\""
+echo "__dtb_z_${name}_end:"
+echo ".global __dtb_z_${name}_end"
+echo ".balign STRUCT_ALIGNMENT"
+
 if [ "$imd" = "y" ]; then
 	echo ".word __imd_${name}_start"
 fi

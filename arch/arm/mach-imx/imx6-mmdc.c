@@ -103,9 +103,9 @@ int mmdc_do_write_level_calibration(void)
 	val |= 0x00005500;
 	writel(val, (P0_IPS + MDPDC));
 
-	/* enable Adopt power down timer: */
+	/* enable auto power down timer: */
 	val = readl(P0_IPS + MAPSR);
-	val &= 0xfffffff7;
+	val &= ~1;
 	writel(val, (P0_IPS + MAPSR));
 
 	/* clear CON_REQ */
@@ -474,7 +474,7 @@ int mmdc_do_dqs_calibration(void)
 	writel(v, P0_IPS + MAPSR);
 
 	/* restore MDMISC value (RALAT, WALAT) */
-	writel(esdmisc_val, P1_IPS + MDMISC);
+	writel(esdmisc_val, P0_IPS + MDMISC);
 
 	/* clear DQS pull ups */
 	v = readl(IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS0) & ~0x7000;

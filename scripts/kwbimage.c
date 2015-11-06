@@ -51,6 +51,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 
 #define ALIGN_SUP(x, a) (((x) + (a - 1)) & ~(a - 1))
 
@@ -187,7 +188,7 @@ struct image_cfg_element {
 		unsigned int version;
 		unsigned int bootfrom;
 		struct {
-			const char *file;
+			char *file;
 			unsigned int args[BINARY_MAX_ARGS];
 			unsigned int nargs;
 		} binary;
@@ -1003,7 +1004,8 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 }
 
 static int image_create_config_parse_oneline(char *line,
-					     struct image_cfg_element *el)
+					     struct image_cfg_element *el,
+					     char *configpath)
 {
 	char *keyword, *saveptr;
 
@@ -1056,7 +1058,10 @@ static int image_create_config_parse_oneline(char *line,
 		int argi = 0;
 
 		el->type = IMAGE_CFG_BINARY;
-		el->binary.file = strdup(value);
+		if (*value == '/')
+			el->binary.file = strdup(value);
+		else
+			asprintf(&el->binary.file, "%s/%s", configpath, value);
 		while (1) {
 			value = strtok_r(NULL, " ", &saveptr);
 			if (!value)
@@ -1098,12 +1103,22 @@ static int image_create_config_parse_oneline(char *line,
  * elements 'image_cfg', and return the number of configuration
  * elements in 'cfgn'.
  */
-static int image_create_config_parse(FILE *fcfg,
+static int image_create_config_parse(const char *input,
 				     struct image_cfg_element *image_cfg,
 				     int *cfgn)
 {
 	int ret;
 	int cfgi = 0;
+	FILE *fcfg;
+	char *configpath = dirname(strdup(input));
+
+	fcfg = fopen(input, "r");
+	if (!fcfg) {
+		fprintf(stderr, "Could not open input file %s\n",
+			input);
+		free(configpath);
+		return -1;
+	}
 
 	/* Parse the configuration file */
 	while (!feof(fcfg)) {
@@ -1126,20 +1141,26 @@ static int image_create_config_parse(FILE *fcfg,
 
 		/* Parse the current line */
 		ret = image_create_config_parse_oneline(line,
-							&image_cfg[cfgi]);
+							&image_cfg[cfgi],
+							configpath);
 		if (ret)
-			return ret;
+			goto out;
 
 		cfgi++;
 
 		if (cfgi >= IMAGE_CFG_ELEMENT_MAX) {
 			fprintf(stderr, "Too many configuration elements in .cfg file\n");
-			return -1;
+			ret = -1;
+			goto out;
 		}
 	}
 
+	ret = 0;
 	*cfgn = cfgi;
-	return 0;
+out:
+	fclose(fcfg);
+	free(configpath);
+	return ret;
 }
 
 static int image_override_payload(struct image_cfg_element *image_cfg,
@@ -1316,34 +1337,24 @@ static int image_create(const char *input, const char *output,
 			int verbose)
 {
 	struct image_cfg_element *image_cfg;
-	FILE *fcfg, *outputimg;
+	FILE *outputimg;
 	void *image = NULL;
 	int version;
 	size_t imagesz;
 	int cfgn;
 	int ret;
 
-	fcfg = fopen(input, "r");
-	if (!fcfg) {
-		fprintf(stderr, "Could not open input file %s\n",
-			input);
-		return -1;
-	}
-
 	image_cfg = malloc(IMAGE_CFG_ELEMENT_MAX *
 			   sizeof(struct image_cfg_element));
 	if (!image_cfg) {
 		fprintf(stderr, "Cannot allocate memory\n");
-		fclose(fcfg);
 		return -1;
 	}
 
 	memset(image_cfg, 0,
 	       IMAGE_CFG_ELEMENT_MAX * sizeof(struct image_cfg_element));
-	rewind(fcfg);
 
-	ret = image_create_config_parse(fcfg, image_cfg, &cfgn);
-	fclose(fcfg);
+	ret = image_create_config_parse(input, image_cfg, &cfgn);
 	if (ret) {
 		free(image_cfg);
 		return -1;

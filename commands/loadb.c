@@ -681,9 +681,9 @@ static int do_load_serial_bin(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(loadb)
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin")
+BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin)")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
-BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate")
+BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate)")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loadb)

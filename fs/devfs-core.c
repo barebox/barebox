@@ -121,9 +121,13 @@ int cdev_do_open(struct cdev *cdev, unsigned long flags)
 
 struct cdev *cdev_open(const char *name, unsigned long flags)
 {
-	struct cdev *cdev = cdev_by_name(name);
+	struct cdev *cdev;
 	int ret;
 
+	if (!strncmp(name, "/dev/", 5))
+		name += 5;
+
+	cdev = cdev_by_name(name);
 	if (!cdev)
 		return NULL;
 

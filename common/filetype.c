@@ -369,9 +369,10 @@ enum filetype cdev_detect_type(const char *name)
 	struct cdev *cdev;
 	void *buf;
 
-	cdev = cdev_by_name(name);
+	cdev = cdev_open(name, O_RDONLY);
 	if (!cdev)
 		return type;
+
 	buf = xzalloc(FILE_TYPE_SAFE_BUFSIZE);
 	ret = cdev_read(cdev, buf, FILE_TYPE_SAFE_BUFSIZE, 0, 0);
 	if (ret < 0)
@@ -396,5 +397,6 @@ enum filetype cdev_detect_type(const char *name)
 
 err_out:
 	free(buf);
+	cdev_close(cdev);
 	return type;
 }

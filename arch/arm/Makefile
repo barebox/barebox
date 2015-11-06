@@ -13,6 +13,13 @@ AS		+= -EL
 LD		+= -EL
 endif
 
+# Unaligned access is not supported when MMU is disabled, so given how
+# at least some of the code would be executed with MMU off, lets be
+# conservative and instruct the compiler not to generate any unaligned
+# accesses
+CFLAGS += -mno-unaligned-access
+
+
 # This selects which instruction set is used.
 # Note that GCC does not numerically define an architecture version
 # macro, but instead defines a whole series of macros which makes

@@ -1205,8 +1205,6 @@ static const char *detect_fs(const char *filename)
 	struct driver_d *drv;
 	struct fs_driver_d *fdrv;
 
-	if (!strncmp(filename, "/dev/", 5))
-		filename += 5;
 	type = cdev_detect_type(filename);
 
 	if (type == filetype_unknown)
@@ -1224,12 +1222,7 @@ static const char *detect_fs(const char *filename)
 
 int fsdev_open_cdev(struct fs_device_d *fsdev)
 {
-	const char *backingstore = fsdev->backingstore;
-
-	if (!strncmp(backingstore , "/dev/", 5))
-		backingstore += 5;
-
-	fsdev->cdev = cdev_open(backingstore, O_RDWR);
+	fsdev->cdev = cdev_open(fsdev->backingstore, O_RDWR);
 	if (!fsdev->cdev)
 		return -EINVAL;
 

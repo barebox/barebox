@@ -484,6 +484,9 @@ export KBUILD_BINARY ?= barebox.bin
 barebox-flash-image: $(KBUILD_IMAGE) FORCE
 	$(call if_changed,ln)
 
+barebox-flash-images: $(KBUILD_IMAGE)
+	@echo $^ > $@
+
 images: barebox.bin FORCE
 	$(Q)$(MAKE) $(build)=images $@
 images/%.s: barebox.bin FORCE
@@ -492,7 +495,7 @@ images/%.s: barebox.bin FORCE
 ifdef CONFIG_PBL_MULTI_IMAGES
 all: barebox.bin images
 else
-all: barebox-flash-image
+all: barebox-flash-image barebox-flash-images
 endif
 
 common-$(CONFIG_PBL_IMAGE)	+= pbl/

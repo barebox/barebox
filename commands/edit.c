@@ -258,6 +258,7 @@ static int save_file(const char *path)
 {
 	struct line *line, *tmp;
 	int fd;
+	int ret = 0;
 
 	fd = open(path, O_WRONLY | O_TRUNC | O_CREAT);
 	if (fd < 0) {
@@ -269,12 +270,20 @@ static int save_file(const char *path)
 
 	while(line) {
 		tmp = line->next;
-		write(fd, line->data, strlen(line->data));
-		write(fd, "\n", 1);
+		ret = write_full(fd, line->data, strlen(line->data));
+		if (ret < 0)
+			goto out;
+		ret = write_full(fd, "\n", 1);
+		if (ret < 0)
+			goto out;
 		line = tmp;
 	}
+
+	ret = 0;
+
+out:
 	close(fd);
-	return 0;
+	return ret;
 }
 
 static void insert_char(char c)
@@ -375,6 +384,7 @@ static int do_edit(int argc, char *argv[])
 	int i;
 	int linepos;
 	int c;
+	int ret = COMMAND_SUCCESS;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
@@ -533,7 +543,7 @@ static int do_edit(int argc, char *argv[])
 			}
 			break;
 		case 4:
-			save_file(argv[1]);
+			ret = save_file(argv[1]);
 			goto out;
 		case 3:
 			goto out;
@@ -546,7 +556,7 @@ out:
 	free_buffer();
 	printf("%c[2J%c[r", 27, 27);
 	printf("\n");
-	return 0;
+	return ret;
 }
 
 static const char *edit_aliases[] = { "sedit", NULL};

@@ -129,8 +129,11 @@ static int do_memtest(int argc, char *argv[])
 		goto out;
 
 	for (i = 1; (i <= max_i) || !max_i; i++) {
+		printf("Start iteration %u", i);
 		if (max_i)
-			printf("Start iteration %u of %u.\n", i, max_i);
+			printf(" of %u.\n", max_i);
+		else
+			putchar('\n');
 
 		if (cached) {
 			printf("Do memtest with caching enabled.\n");

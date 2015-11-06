@@ -192,8 +192,9 @@ static void printchar(struct fbc_priv *priv, int c)
 
 		buf = gui_screen_render_buffer(priv->sc);
 
-		memcpy(buf, buf + line_height, line_height * (priv->rows + 1));
+		memcpy(buf, buf + line_height, line_height * priv->rows);
 		memset(buf + line_height * priv->rows, 0, line_height);
+
 		gu_screen_blit(priv->sc);
 		priv->y = priv->rows;
 	}

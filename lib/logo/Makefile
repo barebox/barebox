@@ -41,7 +41,6 @@ cmd_logo_S =							\
 quiet_cmd_logo = LOGO.S   $@
 cmd_logo =							\
 (								\
-	echo OPTS: $(OPTS_$(@F));				\
 	inkscape -z $(OPTS_$(@F)) -e $@ $< > /dev/null;		\
 )
 

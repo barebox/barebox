@@ -31,6 +31,12 @@ static int fb_ioctl(struct cdev* cdev, int req, void *data)
 	return 0;
 }
 
+static void fb_release_shadowfb(struct fb_info *info)
+{
+	free(info->screen_base_shadow);
+	info->screen_base_shadow = NULL;
+}
+
 static int fb_alloc_shadowfb(struct fb_info *info)
 {
 	if (info->screen_base_shadow && info->shadowfb)
@@ -47,8 +53,7 @@ static int fb_alloc_shadowfb(struct fb_info *info)
 		memcpy(info->screen_base_shadow, info->screen_base,
 				info->line_length * info->yres);
 	} else {
-		free(info->screen_base_shadow);
-		info->screen_base_shadow = NULL;
+		fb_release_shadowfb(info);
 	}
 
 	return 0;
@@ -79,6 +84,8 @@ int fb_disable(struct fb_info *info)
 
 	info->fbops->fb_disable(info);
 
+	fb_release_shadowfb(info);
+
 	info->enabled = false;
 
 	return 0;
@@ -92,9 +99,9 @@ static int fb_enable_set(struct param_d *param, void *priv)
 	enable = info->p_enable;
 
 	if (enable)
-		info->fbops->fb_enable(info);
+		fb_enable(info);
 	else
-		info->fbops->fb_disable(info);
+		fb_disable(info);
 
 	return 0;
 }

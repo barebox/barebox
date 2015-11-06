@@ -289,42 +289,56 @@ static int eth_param_set_ethaddr(struct param_d *param, void *priv)
 }
 
 #ifdef CONFIG_OFTREE
-static int eth_of_fixup(struct device_node *root, void *unused)
+static void eth_of_fixup_node(struct device_node *root,
+			      const char *node_path, int ethid,
+			      const u8 ethaddr[6])
 {
-	struct eth_device *edev;
 	struct device_node *node;
 	int ret;
 
-	/*
-	 * Add the mac-address property for each network device we
-	 * find a nodepath for and which has a valid mac address.
-	 */
-	list_for_each_entry(edev, &netdev_list, list) {
-		if (!is_valid_ether_addr(edev->ethaddr)) {
-			dev_dbg(&edev->dev,
-				"%s: no valid mac address, cannot fixup\n",
-				__func__);
-			continue;
-		}
-
-		if (edev->nodepath) {
-			node = of_find_node_by_path_from(root, edev->nodepath);
-		} else {
-			char eth[12];
-			sprintf(eth, "ethernet%d", edev->dev.id);
-			node = of_find_node_by_alias(root, eth);
-		}
-
-		if (!node) {
-			dev_dbg(&edev->dev, "%s: no node to fixup\n", __func__);
-			continue;
-		}
-
-		ret = of_set_property(node, "mac-address", edev->ethaddr, 6, 1);
-		if (ret)
-			pr_err("Setting mac-address property of %s failed with: %s\n",
-					node->full_name, strerror(-ret));
+	if (!is_valid_ether_addr(ethaddr)) {
+		pr_debug("%s: no valid mac address, cannot fixup\n",
+			 __func__);
+		return;
 	}
+
+	if (node_path) {
+		node = of_find_node_by_path_from(root, node_path);
+	} else {
+		char eth[12];
+		sprintf(eth, "ethernet%d", ethid);
+		node = of_find_node_by_alias(root, eth);
+	}
+
+	if (!node) {
+		pr_debug("%s: no node to fixup\n", __func__);
+		return;
+	}
+
+	ret = of_set_property(node, "mac-address", ethaddr, 6, 1);
+	if (ret)
+		pr_err("Setting mac-address property of %s failed with: %s\n",
+		       node->full_name, strerror(-ret));
+}
+
+static int eth_of_fixup(struct device_node *root, void *unused)
+{
+	struct eth_ethaddr *addr;
+	struct eth_device *edev;
+
+	/*
+	 * Add the mac-address property for each ethaddr and then each network
+	 * device we find a node path for and which has a valid mac address.
+	 * This will find both network devices barebox was told about as well as
+	 * addresses registered by boards but for which no network device was
+	 * ever loaded.
+	 */
+	list_for_each_entry(addr, &ethaddr_list, list)
+		eth_of_fixup_node(root, addr->node ? addr->node->full_name : NULL,
+				  addr->ethid, addr->ethaddr);
+
+	list_for_each_entry(edev, &netdev_list, list)
+		eth_of_fixup_node(root, edev->nodepath, edev->dev.id, edev->ethaddr);
 
 	return 0;
 }

@@ -17,7 +17,7 @@
 	compatible = "phytec,imx6q-pcaaxl3", "fsl,imx6q";
 
 	chosen {
-		environment-sd {
+		environment-sd3 {
 			compatible = "barebox,environment";
 			device-path = &environment_usdhc3;
 			status = "disabled";

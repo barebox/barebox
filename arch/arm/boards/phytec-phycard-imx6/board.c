@@ -35,7 +35,7 @@ static int phytec_pcaaxl3_init(void)
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
-		of_device_enable_path("/chosen/environment-sd");
+		of_device_enable_path("/chosen/environment-sd3");
 		break;
 	default:
 	case BOOTSOURCE_NAND:

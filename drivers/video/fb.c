@@ -99,9 +99,9 @@ static int fb_enable_set(struct param_d *param, void *priv)
 	enable = info->p_enable;
 
 	if (enable)
-		info->fbops->fb_enable(info);
+		fb_enable(info);
 	else
-		info->fbops->fb_disable(info);
+		fb_disable(info);
 
 	return 0;
 }

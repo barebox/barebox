@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2013 Sascha Hauer <s.hauer@pengutronix.de>
+ * Copyright (C) 2015 PHYTEC Messtechnik GmbH,
+ * Author: Stefan Christ <s.christ@phytec.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -38,10 +40,10 @@ static inline void setup_uart(void)
 
 #define SZ_4G 0xEFFFFFF8
 
-BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_SZ_512M, IMD_TYPE_PARAMETER, "memsize=512", 0);
-BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_SZ_1G, IMD_TYPE_PARAMETER, "memsize=1024", 0);
-BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_SZ_2G, IMD_TYPE_PARAMETER, "memsize=2048", 0);
-BAREBOX_IMD_TAG_STRING(phyflex_mx6_memsize_SZ_4G, IMD_TYPE_PARAMETER, "memsize=4096", 0);
+BAREBOX_IMD_TAG_STRING(physom_mx6_memsize_SZ_512M, IMD_TYPE_PARAMETER, "memsize=512", 0);
+BAREBOX_IMD_TAG_STRING(physom_mx6_memsize_SZ_1G, IMD_TYPE_PARAMETER, "memsize=1024", 0);
+BAREBOX_IMD_TAG_STRING(physom_mx6_memsize_SZ_2G, IMD_TYPE_PARAMETER, "memsize=2048", 0);
+BAREBOX_IMD_TAG_STRING(physom_mx6_memsize_SZ_4G, IMD_TYPE_PARAMETER, "memsize=4096", 0);
 
 static void __noreturn start_imx6_phytec_common(uint32_t size,
 						bool do_early_uart_config,
@@ -65,11 +67,15 @@ static void __noreturn start_imx6_phytec_common(uint32_t size,
 	{								\
 		extern char __dtb_##fdt_name##_start[];			\
 									\
-		IMD_USED(phyflex_mx6_memsize_##memory_size);		\
+		IMD_USED(physom_mx6_memsize_##memory_size);		\
 									\
 		start_imx6_phytec_common(memory_size, do_early_uart_config, \
 					 __dtb_##fdt_name##_start);	\
 	}
+
+PHYTEC_ENTRY(start_phytec_pbaa03_1gib, imx6q_phytec_pbaa03, SZ_1G, true);
+PHYTEC_ENTRY(start_phytec_pbaa03_1gib_1bank, imx6q_phytec_pbaa03, SZ_1G, true);
+PHYTEC_ENTRY(start_phytec_pbaa03_2gib, imx6q_phytec_pbaa03, SZ_2G, true);
 
 PHYTEC_ENTRY(start_phytec_pbab01_1gib, imx6q_phytec_pbab01, SZ_1G, true);
 PHYTEC_ENTRY(start_phytec_pbab01_1gib_1bank, imx6q_phytec_pbab01, SZ_1G, true);

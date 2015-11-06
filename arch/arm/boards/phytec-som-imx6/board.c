@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2013 Sascha Hauer, Pengutronix
+ * Copyright (C) 2015 PHYTEC Messtechnik GmbH,
+ * Author: Stefan Christ <s.christ@phytec.de>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -16,7 +18,7 @@
  * Foundation.
  *
  */
-#define pr_fmt(fmt) "phyFLEX-i.MX6: " fmt
+#define pr_fmt(fmt) "phySOM-i.MX6: " fmt
 
 #include <malloc.h>
 #include <envfs.h>
@@ -83,24 +85,34 @@ static unsigned int get_module_rev(void)
 	return 16 - val;
 }
 
-static int phytec_pfla02_init(void)
+static int physom_imx6_devices_init(void)
 {
 	int ret;
-	char *environment_path, *envdev;
+	char *environment_path, *default_environment_path;
+	char *envdev, *default_envdev;
 
-	if (!of_machine_is_compatible("phytec,imx6q-pfla02") &&
-			!of_machine_is_compatible("phytec,imx6dl-pfla02") &&
-			!of_machine_is_compatible("phytec,imx6s-pfla02"))
+	if (of_machine_is_compatible("phytec,imx6q-pfla02")
+		|| of_machine_is_compatible("phytec,imx6dl-pfla02")
+		|| of_machine_is_compatible("phytec,imx6s-pfla02")) {
+
+		phyflex_err006282_workaround();
+
+		pfla02_module_revision = get_module_rev();
+		globalvar_add_simple_int("board.revision", &pfla02_module_revision, "%u");
+		pr_info("Module Revision: %u\n", pfla02_module_revision);
+
+		barebox_set_hostname("phyFLEX-i.MX6");
+		default_environment_path = "/chosen/environment-spinor";
+		default_envdev = "SPI NOR flash";
+
+	} else if (of_machine_is_compatible("phytec,imx6q-pcaaxl3")) {
+
+		barebox_set_hostname("phyCARD-i.MX6");
+		default_environment_path = "/chosen/environment-nand";
+		default_envdev = "NAND flash";
+
+	} else
 		return 0;
-
-	phyflex_err006282_workaround();
-
-	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
-
-	pfla02_module_revision = get_module_rev();
-	globalvar_add_simple_int("board.revision", &pfla02_module_revision, "%u");
-
-	pr_info("Module Revision: %u\n", pfla02_module_revision);
 
 	switch (bootsource_get()) {
 	case BOOTSOURCE_MMC:
@@ -112,35 +124,30 @@ static int phytec_pfla02_init(void)
 		environment_path = asprintf("/chosen/environment-nand");
 		envdev = "NAND flash";
 		break;
-	default:
 	case BOOTSOURCE_SPI:
 		environment_path = asprintf("/chosen/environment-spinor");
 		envdev = "SPI NOR flash";
 		break;
+	default:
+		environment_path = asprintf(default_environment_path);
+		envdev = default_envdev;
+		break;
 	}
 
-	ret = of_device_enable_path(environment_path);
-	if (ret < 0)
-		pr_warn("Failed to enable environment partition '%s' (%d)\n",
-			environment_path, ret);
-
-	free(environment_path);
+	if (environment_path) {
+		ret = of_device_enable_path(environment_path);
+		if (ret < 0)
+			pr_warn("Failed to enable environment partition '%s' (%d)\n",
+				environment_path, ret);
+		free(environment_path);
+	}
 
 	pr_notice("Using environment in %s\n", envdev);
 
-	return 0;
-}
-device_initcall(phytec_pfla02_init);
+	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 
-static int phytec_pbab0x_init(void)
-{
-	if (!of_machine_is_compatible("phytec,imx6x-pbab01") &&
-		!of_machine_is_compatible("phytec,imx6dl-pbab05") &&
-		!of_machine_is_compatible("phytec,imx6q-pbab02"))
-		return 0;
-
-	defaultenv_append_directory(defaultenv_phyflex_imx6);
+	defaultenv_append_directory(defaultenv_physom_imx6);
 
 	return 0;
 }
-device_initcall(phytec_pbab0x_init);
+device_initcall(physom_imx6_devices_init);

@@ -1,3 +1,3 @@
 obj-y += board.o
 lwl-y += lowlevel.o
-bbenv-y += defaultenv-phyflex-imx6
+bbenv-y += defaultenv-physom-imx6

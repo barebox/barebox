@@ -224,12 +224,13 @@
 	phy_id = <&davinci_mdio>, <2>;
 	phy-mode = "rmii";
 	dual_emac_res_vlan = <2>;
+	status = "disabled";
 };
 
 &mac {
 	pinctrl-names = "default";
-	pinctrl-0 = <&emac_rgmii1_pins &emac_rmii2_pins>;
-	dual_emac;
+	slaves = <1>;
+	pinctrl-0 = <&emac_rgmii1_pins>;
 	status = "okay";
 };
 

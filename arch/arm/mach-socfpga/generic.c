@@ -76,7 +76,8 @@ static int socfpga_init(void)
 }
 core_initcall(socfpga_init);
 
-#if defined(CONFIG_DEFAULT_ENVIRONMENT)
+#if defined(CONFIG_ENV_HANDLING)
+#define ENV_PATH "/boot/barebox.env"
 static int socfpga_env_init(void)
 {
 	struct stat s;
@@ -92,18 +93,19 @@ static int socfpga_env_init(void)
 	ret = stat(partname, &s);
 
 	if (ret) {
-		printf("no %s. using default env\n", diskdev);
+		pr_err("Failed to load environment: no device '%s'\n", diskdev);
 		goto out_free;
 	}
 
 	mkdir("/boot", 0666);
 	ret = mount(partname, "fat", "/boot", NULL);
 	if (ret) {
-		printf("failed to mount %s\n", diskdev);
+		pr_err("Failed to load environment: mount %s failed (%d)\n", partname, ret);
 		goto out_free;
 	}
 
-	default_environment_path_set("/boot/barebox.env");
+	pr_debug("Loading default env from %s on device %s\n", ENV_PATH, diskdev);
+	default_environment_path_set(ENV_PATH);
 
 out_free:
 	free(partname);

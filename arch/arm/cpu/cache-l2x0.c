@@ -124,12 +124,10 @@ static void l2x0_flush_all(void)
 
 static void l2x0_disable(void)
 {
-	writel(0xff, l2x0_base + L2X0_CLEAN_INV_WAY);
-	while (readl(l2x0_base + L2X0_CLEAN_INV_WAY));
 	writel(0, l2x0_base + L2X0_CTRL);
 }
 
-void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
+void l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
 {
 	__u32 aux;
 	__u32 cache_id;
@@ -161,7 +159,7 @@ void __init l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
 		break;
 	}
 
-       l2x0_way_mask = (1 << ways) - 1;
+	l2x0_way_mask = (1 << ways) - 1;
 
 	/*
 	 * Check if l2x0 controller is already enabled.

@@ -41,7 +41,7 @@ static int __attribute__((__used__))
 	__attribute__((__section__(".image_end")))
 	__image_end_dummy = 0xdeadbeef;
 
-static void __noreturn noinline uncompress_start_payload(unsigned long membase,
+void __noreturn barebox_multi_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	uint32_t pg_len;
@@ -51,8 +51,6 @@ static void __noreturn noinline uncompress_start_payload(unsigned long membase,
 	uint32_t *image_end;
 	void *pg_start;
 	unsigned long pc = get_pc();
-
-	arm_early_mmu_cache_invalidate();
 
 	endmem -= STACK_SIZE; /* stack */
 
@@ -113,16 +111,4 @@ static void __noreturn noinline uncompress_start_payload(unsigned long membase,
 	pr_debug("jumping to uncompressed image at 0x%p\n", barebox);
 
 	barebox(membase, memsize, boarddata);
-}
-
-/*
- * For the multi images startup process board code jumps here. We will uncompress
- * the attached barebox image and start it.
- */
-void __naked __noreturn barebox_arm_entry(unsigned long membase,
-		unsigned long memsize, void *boarddata)
-{
-	arm_setup_stack(membase + memsize - 16);
-
-	uncompress_start_payload(membase, memsize, boarddata);
 }

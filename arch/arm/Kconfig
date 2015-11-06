@@ -325,6 +325,15 @@ config ARM_UNWIND
 	  the performance is not affected. Currently, this feature
 	  only works with EABI compilers. If unsure say Y.
 
+config ARM_SEMIHOSTING
+	bool "enable ARM semihosting support"
+	help
+	  This option enables ARM semihosting support in barebox. ARM
+	  semihosting is a communication discipline that allows code
+	  running on target ARM cpu perform system calls and access
+	  the data on the host computer connected to the target via
+	  debugging channel (JTAG, SWD). If unsure say N
+
 endmenu
 
 source common/Kconfig

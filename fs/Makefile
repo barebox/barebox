@@ -13,3 +13,4 @@ obj-$(CONFIG_FS_BPKFS) += bpkfs.o
 obj-$(CONFIG_FS_UIMAGEFS)	+= uimagefs.o
 obj-$(CONFIG_FS_EFI)	 += efi.o
 obj-$(CONFIG_FS_EFIVARFS) += efivarfs.o
+obj-$(CONFIG_FS_SMHFS) += smhfs.o

@@ -80,4 +80,13 @@ config FS_UIMAGEFS
 	select CRC32
 	prompt "uImage FS support"
 
+config FS_SMHFS
+	depends on ARM_SEMIHOSTING
+	bool
+	prompt "Semihosting FS support"
+	help
+	  If enabled this filesystem provides access to the files
+	  located on a debugging host connected to the target running
+	  Barebox
+
 endmenu

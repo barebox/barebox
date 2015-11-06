@@ -1,0 +1,9 @@
+loadaddr 0x10000000
+soc imx6
+dcdofs 0x400
+
+#include <mach/imx6-ddr-regs.h>
+#include <mach/imx6q-ddr-regs.h>
+
+#include "1066mhz-64b.imxcfg"
+#include "1066mhz-4x256mx16.imxcfg"

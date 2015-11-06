@@ -27,6 +27,133 @@
 #include <linux/sizes.h>
 #include <errno.h>
 #include <memtest.h>
+#include <malloc.h>
+#include <mmu.h>
+
+static int alloc_memtest_region(struct list_head *list,
+		resource_size_t start, resource_size_t size)
+{
+	struct resource *r_new;
+	struct mem_test_resource *r;
+
+	r = xzalloc(sizeof(struct mem_test_resource));
+	r_new = request_sdram_region("memtest", start, size);
+	if (!r_new)
+		return -EINVAL;
+
+	r->r = r_new;
+	list_add_tail(&r->list, list);
+
+	return 0;
+}
+
+int mem_test_request_regions(struct list_head *list)
+{
+	int ret;
+	struct memory_bank *bank;
+	struct resource *r, *r_prev = NULL;
+	resource_size_t start, end, size;
+
+	for_each_memory_bank(bank) {
+		/*
+		 * If we don't have any allocated region on bank,
+		 * we use the whole bank boundary
+		 */
+		if (list_empty(&bank->res->children)) {
+			start = PAGE_ALIGN(bank->res->start);
+			size = PAGE_ALIGN_DOWN(bank->res->end - start + 1);
+
+			if (size) {
+				ret = alloc_memtest_region(list, start, size);
+				if (ret < 0)
+					return ret;
+			}
+
+			continue;
+		}
+
+		r = list_first_entry(&bank->res->children,
+				     struct resource, sibling);
+		start = PAGE_ALIGN(bank->res->start);
+		end = PAGE_ALIGN_DOWN(r->start);
+		r_prev = r;
+		if (start != end) {
+			size = end - start;
+			ret = alloc_memtest_region(list, start, size);
+			if (ret < 0)
+				return ret;
+		}
+		/*
+		 * We assume that the regions are sorted in this list
+		 * So the first element has start boundary on bank->res->start
+		 * and the last element hast end boundary on bank->res->end.
+		 *
+		 * Between used regions. Start from second entry.
+		 */
+		list_for_each_entry_from(r, &bank->res->children, sibling) {
+			start = PAGE_ALIGN(r_prev->end + 1);
+			end = r->start - 1;
+			r_prev = r;
+			if (start >= end)
+				continue;
+
+			size = PAGE_ALIGN_DOWN(end - start + 1);
+			if (size == 0)
+				continue;
+			ret = alloc_memtest_region(list, start, size);
+			if (ret < 0)
+				return ret;
+		}
+
+		/*
+		 * Do on head element for bank boundary.
+		 */
+		r = list_last_entry(&bank->res->children,
+				     struct resource, sibling);
+		start = PAGE_ALIGN(r->end);
+		end = bank->res->end;
+		size = PAGE_ALIGN_DOWN(end - start + 1);
+		if (size && start < end && start > r->end) {
+			ret = alloc_memtest_region(list, start, size);
+			if (ret < 0)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
+void mem_test_release_regions(struct list_head *list)
+{
+	struct mem_test_resource *r, *r_tmp;
+
+	list_for_each_entry_safe(r, r_tmp, list, list) {
+		/*
+		 * Ensure to leave with a cached on non used sdram regions.
+		 */
+		remap_range((void *)r->r->start, r->r->end -
+				r->r->start + 1, MAP_DEFAULT);
+
+		release_sdram_region(r->r);
+		free(r);
+	}
+}
+
+struct mem_test_resource *mem_test_biggest_region(struct list_head *list)
+{
+	struct mem_test_resource *r, *best = NULL;
+	resource_size_t size = 0;
+
+	list_for_each_entry(r, list, list) {
+		resource_size_t now = resource_size(r->r);
+		if (now > size) {
+			size = now;
+			best = r;
+		}
+	}
+
+	return best;
+}
 
 static void mem_test_report_failure(const char *failure_description,
 				    resource_size_t expected_value,
@@ -220,10 +347,24 @@ int mem_test_bus_integrity(resource_size_t _start,
 	return 0;
 }
 
-int mem_test_dram(resource_size_t _start,
-		  resource_size_t _end)
+static int update_progress(resource_size_t offset)
 {
-	volatile resource_size_t *start, num_words, offset, temp, anti_pattern;
+	/* Only check every 4k to reduce overhead */
+	if (offset & (SZ_4K - 1))
+		return 0;
+
+	if (ctrlc())
+		return -EINTR;
+
+	show_progress(offset);
+
+	return 0;
+}
+
+int mem_test_moving_inversions(resource_size_t _start, resource_size_t _end)
+{
+	volatile resource_size_t *start, num_words, offset, pattern, expected;
+	int ret;
 
 	_start = ALIGN(_start, sizeof(resource_size_t));
 	_end = ALIGN_DOWN(_end, sizeof(resource_size_t)) - 1;
@@ -234,8 +375,8 @@ int mem_test_dram(resource_size_t _start,
 	start = (resource_size_t *)_start;
 	num_words = (_end - _start + 1)/sizeof(resource_size_t);
 
-	printf("Starting integrity check of physicaly ram.\n"
-	       "Filling ram with patterns...\n");
+	printf("Starting moving inversions test of RAM:\n"
+	       "Fill with address, compare, fill with inverted address, compare again\n");
 
 	/*
 	 * Description: Test the integrity of a physical
@@ -248,115 +389,55 @@ int mem_test_dram(resource_size_t _start,
 	 *		selected by the caller.
 	 */
 
-	/*
-	 * Fill memory with a known pattern.
-	 */
-	init_progression_bar(num_words);
+	init_progression_bar(3 * num_words);
 
+	/* Fill memory with a known pattern */
 	for (offset = 0; offset < num_words; offset++) {
-		/*
-		 * Every 4K we update the progressbar.
-		 */
-
-		if (!(offset & (SZ_4K - 1))) {
-			if (ctrlc())
-				return -EINTR;
-			show_progress(offset);
-		}
+		ret = update_progress(offset);
+		if (ret)
+			return ret;
 		start[offset] = offset + 1;
 	}
-	show_progress(offset);
 
-	printf("\nCompare written patterns...\n");
-	/*
-	 * Check each location and invert it for the second pass.
-	 */
-	init_progression_bar(num_words - 1);
+	/* Check each location and invert it for the second pass */
 	for (offset = 0; offset < num_words; offset++) {
-		if (!(offset & (SZ_4K - 1))) {
-			if (ctrlc())
-				return -EINTR;
-			show_progress(offset);
-		}
+		ret = update_progress(num_words + offset);
+		if (ret)
+			return ret;
 
-		temp = start[offset];
-		if (temp != (offset + 1)) {
-			printf("\n");
-			mem_test_report_failure("read/write",
-						(offset + 1),
-						temp, &start[offset]);
-			return -EIO;
-		}
+		pattern = start[offset];
+		expected = offset + 1;
 
-		anti_pattern = ~(offset + 1);
-		start[offset] = anti_pattern;
+		if (pattern != expected)
+			goto mem_err;
+
+		start[offset] = ~start[offset];
 	}
-	show_progress(offset);
 
-	printf("\nFilling ram with inverted pattern and compare it...\n");
-	/*
-	 * Check each location for the inverted pattern and zero it.
-	 */
-	init_progression_bar(num_words - 1);
+	/* Check each location for the inverted pattern and zero it */
 	for (offset = 0; offset < num_words; offset++) {
-		if (!(offset & (SZ_4K - 1))) {
-			if (ctrlc())
-				return -EINTR;
-			show_progress(offset);
-		}
+		ret = update_progress(2 * num_words + offset);
+		if (ret)
+			return ret;
 
-		anti_pattern = ~(offset + 1);
-		temp = start[offset];
+		pattern = start[offset];
+		expected = ~(offset + 1);
 
-		if (temp != anti_pattern) {
-			printf("\n");
-			mem_test_report_failure("read/write",
-						anti_pattern,
-						temp, &start[offset]);
-			return -EIO;
-		}
+		if (pattern != expected)
+			goto mem_err;
 
 		start[offset] = 0;
 	}
-	show_progress(offset);
+	show_progress(3 * num_words);
 
-	/*
-	 * end of progressbar
-	 */
+	/* end of progressbar */
 	printf("\n");
 
 	return 0;
-}
 
-/*
- * Perform a memory test. The complete test
- * loops until interrupted by ctrl-c.
- *
- * Prameters:
- * start: start address for memory test.
- * end: end address of memory test.
- * bus_only: skip integrity check and do only a address/data bus
- *	     testing.
- *
- * Return value can be -EINVAL for invalid parameter or -EINTR
- * if memory test was interrupted.
- */
-int mem_test(resource_size_t _start,
-	       resource_size_t _end, int bus_only)
-{
-	int ret;
+mem_err:
+	printf("\n");
+	mem_test_report_failure("read/write", expected, pattern, &start[offset]);
 
-	ret = mem_test_bus_integrity(_start, _end);
-
-	if (ret < 0)
-		return ret;
-
-	/*
-	 * We tested only the bus if != 0
-	 * leaving here
-	 */
-	if (!bus_only)
-		ret = mem_test_dram(_start, _end);
-
-	return ret;
+	return -EIO;
 }

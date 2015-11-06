@@ -51,8 +51,6 @@ struct ehci_priv {
 	int periodic_schedules;
 	struct QH *periodic_queue;
 	uint32_t *periodic_list;
-	int sem;
-	struct device_d *usedby;
 };
 
 struct int_queue {
@@ -137,20 +135,6 @@ static struct descriptor {
 };
 
 #define ehci_is_TDI()	(ehci->flags & EHCI_HAS_TT)
-
-static void inline ehci_reentrance_detect(struct ehci_priv *ehci,
-					  struct usb_device *dev,
-					  const char *fname)
-{
-	if (ehci->sem)
-		dev_err(&dev->dev, "%s: re-entrance %d (%s:%s)\n",
-			fname,
-			ehci->sem,
-			ehci->usedby->driver->name,
-			ehci->usedby->name);
-	ehci->sem++;
-	ehci->usedby = &dev->dev;
-}
 
 static int handshake(uint32_t *ptr, uint32_t mask, uint32_t done, int usec)
 {
@@ -688,7 +672,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				 * root
 				 */
 				ehci_powerup_fixup(ehci);
-				mdelay_non_interruptible(50);
+				mdelay(50);
 				ehci->portreset |= 1 << port;
 				/* terminate the reset */
 				ehci_writel(status_reg, reg & ~EHCI_PS_PR);
@@ -751,7 +735,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		goto unknown;
 	}
 
-	mdelay_non_interruptible(1);
+	mdelay(1);
 	len = min3(srclen, (int)le16_to_cpu(req->length), length);
 	if (srcptr != NULL && len > 0)
 		memcpy(buffer, srcptr, len);
@@ -888,7 +872,7 @@ static int ehci_init(struct usb_host *host)
 	ehci_writel(&ehci->hcor->or_configflag, cmd);
 	/* unblock posted write */
 	cmd = ehci_readl(&ehci->hcor->or_usbcmd);
-	mdelay_non_interruptible(5);
+	mdelay(5);
 
 	ehci->rootdev = 0;
 
@@ -904,18 +888,12 @@ submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 {
 	struct usb_host *host = dev->host;
 	struct ehci_priv *ehci = to_ehci(host);
-	int ret;
-
-	ehci_reentrance_detect(ehci, dev, __func__);
 
 	if (usb_pipetype(pipe) != PIPE_BULK) {
 		dev_dbg(ehci->dev, "non-bulk pipe (type=%lu)", usb_pipetype(pipe));
-		ehci->sem--;
 		return -1;
 	}
-	ret = ehci_submit_async(dev, pipe, buffer, length, NULL);
-	ehci->sem--;
-	return ret;
+	return ehci_submit_async(dev, pipe, buffer, length, NULL);
 }
 
 static int
@@ -924,9 +902,6 @@ submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 {
 	struct usb_host *host = dev->host;
 	struct ehci_priv *ehci = to_ehci(host);
-	int ret;
-
-	ehci_reentrance_detect(ehci, dev, __func__);
 
 	if (usb_pipetype(pipe) != PIPE_CONTROL) {
 		dev_dbg(ehci->dev, "non-control pipe (type=%lu)", usb_pipetype(pipe));
@@ -936,13 +911,9 @@ submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	if (usb_pipedevice(pipe) == ehci->rootdev) {
 		if (ehci->rootdev == 0)
 			dev->speed = USB_SPEED_HIGH;
-		ret = ehci_submit_root(dev, pipe, buffer, length, setup);
-		ehci->sem--;
-		return ret;
+		return ehci_submit_root(dev, pipe, buffer, length, setup);
 	}
-	ret = ehci_submit_async(dev, pipe, buffer, length, setup);
-	ehci->sem--;
-	return ret;
+	return ehci_submit_async(dev, pipe, buffer, length, setup);
 }
 
 static int
@@ -983,7 +954,9 @@ enable_periodic(struct ehci_priv *ehci)
 		printf("EHCI failed: timeout when enabling periodic list\n");
 		return -ETIMEDOUT;
 	}
-	mdelay_non_interruptible(1);
+
+	mdelay(1);
+
 	return 0;
 }
 
@@ -1265,8 +1238,6 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	void *backbuffer;
 	int result = 0, ret;
 
-	ehci_reentrance_detect(ehci, dev, __func__);
-
 	dev_dbg(ehci->dev, "dev=%p, pipe=%lu, buffer=%p, length=%d, interval=%d",
 	      dev, pipe, buffer, length, interval);
 
@@ -1274,10 +1245,8 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 				   DMA_BIDIRECTIONAL);
 
 	queue = ehci_create_int_queue(dev, pipe, 1, length, buffer, interval);
-	if (!queue) {
-		ehci->sem--;
+	if (!queue)
 		return -EINVAL;
-	}
 
 	start = get_time_ns();
 	while ((backbuffer = ehci_poll_int_queue(dev, queue)) == NULL)
@@ -1303,7 +1272,6 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	ret = ehci_destroy_int_queue(dev, queue);
 	if (!result)
 		result = ret;
-	ehci->sem--;
 	return result;
 }
 

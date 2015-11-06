@@ -84,10 +84,25 @@ static void print_usb_device(struct usb_device *dev)
 
 static int host_busnum = 1;
 
+static inline int usb_host_acquire(struct usb_host *host)
+{
+	if (host->sem)
+		return -EAGAIN;
+	host->sem++;
+	return 0;
+}
+
+static inline void usb_host_release(struct usb_host *host)
+{
+	if (host->sem > 0)
+		host->sem--;
+}
+
 int usb_register_host(struct usb_host *host)
 {
 	list_add_tail(&host->list, &host_list);
 	host->busnum = host_busnum++;
+	host->sem = 0;
 	asynch_allowed = 1;
 	return 0;
 }
@@ -563,8 +578,17 @@ int usb_submit_int_msg(struct usb_device *dev, unsigned long pipe,
 			void *buffer, int transfer_len, int interval)
 {
 	struct usb_host *host = dev->host;
+	int ret;
 
-	return host->submit_int_msg(dev, pipe, buffer, transfer_len, interval);
+	ret = usb_host_acquire(host);
+	if (ret)
+		return ret;
+
+	ret = host->submit_int_msg(dev, pipe, buffer, transfer_len, interval);
+
+	usb_host_release(host);
+
+	return ret;
 }
 
 /*
@@ -590,6 +614,10 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 		return -1;
 	}
 
+	ret = usb_host_acquire(host);
+	if (ret)
+		return ret;
+
 	/* set setup command */
 	setup_packet->requesttype = requesttype;
 	setup_packet->request = request;
@@ -603,6 +631,9 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe,
 
 	ret = host->submit_control_msg(dev, pipe, data, size, setup_packet,
 			timeout);
+
+	usb_host_release(host);
+
 	if (ret)
 		return ret;
 
@@ -623,8 +654,15 @@ int usb_bulk_msg(struct usb_device *dev, unsigned int pipe,
 	if (len < 0)
 		return -1;
 
+	ret = usb_host_acquire(host);
+	if (ret)
+		return ret;
+
 	dev->status = USB_ST_NOT_PROC; /* not yet processed */
 	ret = host->submit_bulk_msg(dev, pipe, data, len, timeout);
+
+	usb_host_release(host);
+
 	if (ret)
 		return ret;
 

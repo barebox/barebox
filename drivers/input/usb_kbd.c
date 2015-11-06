@@ -274,7 +274,7 @@ static void usb_kbd_poll(struct poller_struct *poller)
 	struct usb_kbd_pdata *data = container_of(poller,
 						  struct usb_kbd_pdata, poller);
 	struct usb_device *usbdev = data->usbdev;
-	int diff, tout;
+	int diff, tout, ret;
 
 	if (data->lock)
 		return;
@@ -284,7 +284,10 @@ static void usb_kbd_poll(struct poller_struct *poller)
 		goto exit;
 	data->last_poll = get_time_ns();
 
-	if (0 > data->do_poll(data)) {
+	ret = data->do_poll(data);
+	if (ret == -EAGAIN)
+		goto exit;
+	if (ret < 0) {
 		/* exit and lock forever */
 		dev_err(&usbdev->dev,
 			"usb_submit_int_msg() failed. Keyboard disconnect?\n");

@@ -58,7 +58,7 @@ static int smhfs_truncate(struct device_d __always_unused *dev,
 			  FILE __always_unused *f,
 			  ulong __always_unused size)
 {
-	return -ENOSYS;
+	return 0;
 }
 
 static int smhfs_open(struct device_d __always_unused *dev,

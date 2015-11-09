@@ -45,7 +45,8 @@ pbl-dtb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += imx6q-phytec-pbaa03.dtb.o \
 				imx6q-phytec-phyboard-alcor.dtb.o \
 				imx6dl-phytec-phyboard-subra.dtb.o \
 				imx6q-phytec-phycore-som-nand.dtb.o \
-				imx6q-phytec-phycore-som-emmc.dtb.o
+				imx6q-phytec-phycore-som-emmc.dtb.o \
+				imx6dl-phytec-phycore-som-nand.dtb.o
 pbl-dtb-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += armada-xp-openblocks-ax3-4-bb.dtb.o
 pbl-dtb-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += kirkwood-openblocks_a6-bb.dtb.o
 pbl-dtb-$(CONFIG_MACH_RADXA_ROCK) += rk3188-radxarock.dtb.o

@@ -15,6 +15,6 @@
 #ifndef _ASM_MIPS_BAREBOX_H_
 #define _ASM_MIPS_BAREBOX_H_
 
-/* nothing special yet */
+#define ARCH_HAS_DATA_ABORT_MASK
 
 #endif /* _ASM_MIPS_BAREBOX_H_ */

@@ -9,7 +9,9 @@
  * (at your option) any later version.
  */
 #include <common.h>
+#include <gpio.h>
 #include <malloc.h>
+#include <of_gpio.h>
 #include <linux/err.h>
 #include <linux/kernel.h>
 #include <linux/reset.h>
@@ -26,6 +28,10 @@ static LIST_HEAD(reset_controller_list);
  */
 struct reset_control {
 	struct reset_controller_dev *rcdev;
+
+	int gpio;
+	int gpio_active_high;
+
 	struct device_d *dev;
 	unsigned int id;
 };
@@ -103,6 +109,9 @@ int reset_control_assert(struct reset_control *rstc)
 	if (!rstc)
 		return 0;
 
+	if (rstc->gpio >= 0)
+		return gpio_direction_output(rstc->gpio, rstc->gpio_active_high);
+
 	if (rstc->rcdev->ops->assert)
 		return rstc->rcdev->ops->assert(rstc->rcdev, rstc->id);
 
@@ -118,6 +127,9 @@ int reset_control_deassert(struct reset_control *rstc)
 {
 	if (!rstc)
 		return 0;
+
+	if (rstc->gpio >= 0)
+		return gpio_direction_output(rstc->gpio, !rstc->gpio_active_high);
 
 	if (rstc->rcdev->ops->deassert)
 		return rstc->rcdev->ops->deassert(rstc->rcdev, rstc->id);
@@ -183,6 +195,29 @@ struct reset_control *of_reset_control_get(struct device_node *node,
 }
 EXPORT_SYMBOL_GPL(of_reset_control_get);
 
+struct reset_control *gpio_reset_control_get(struct device_d *dev, const char *id)
+{
+	struct reset_control *rc;
+	int gpio;
+	enum of_gpio_flags flags;
+
+	if (id)
+		return ERR_PTR(-EINVAL);
+
+	if (!of_get_property(dev->device_node, "reset-gpios", NULL))
+		return NULL;
+
+	gpio = of_get_named_gpio_flags(dev->device_node, "reset-gpios", 0, &flags);
+	if (gpio < 0)
+		return ERR_PTR(gpio);
+
+	rc = xzalloc(sizeof(*rc));
+	rc->gpio = gpio;
+	rc->gpio_active_high = !(flags & OF_GPIO_ACTIVE_LOW);
+
+	return rc;
+}
+
 /**
  * reset_control_get - Lookup and obtain a reference to a reset controller.
  * @dev: device to be reset by the controller
@@ -202,6 +237,16 @@ struct reset_control *reset_control_get(struct device_d *dev, const char *id)
 	rstc = of_reset_control_get(dev->device_node, id);
 	if (IS_ERR(rstc))
 		return ERR_CAST(rstc);
+
+	/*
+	 * If there is no dedicated reset controller device, check if we have
+	 * a reset line controlled by a GPIO instead.
+	 */
+	if (!rstc) {
+		rstc = gpio_reset_control_get(dev, id);
+		if (IS_ERR(rstc))
+			return ERR_CAST(rstc);
+	}
 
 	if (!rstc)
 		return NULL;
@@ -241,8 +286,12 @@ int device_reset(struct device_d *dev)
 	int ret;
 
 	rstc = reset_control_get(dev, NULL);
-	if (IS_ERR(rstc))
+	if (IS_ERR(rstc)) {
+		if (PTR_ERR(rstc) == -ENOENT)
+			return 0;
+
 		return PTR_ERR(rstc);
+	}
 
 	ret = reset_control_reset(rstc);
 
@@ -251,3 +300,32 @@ int device_reset(struct device_d *dev)
 	return ret;
 }
 EXPORT_SYMBOL_GPL(device_reset);
+
+int device_reset_us(struct device_d *dev, int us)
+{
+	struct reset_control *rstc;
+	int ret;
+
+	rstc = reset_control_get(dev, NULL);
+	if (IS_ERR(rstc)) {
+		if (PTR_ERR(rstc) == -ENOENT)
+			return 0;
+
+		return PTR_ERR(rstc);
+	}
+
+	ret = reset_control_assert(rstc);
+	if (ret)
+		return ret;
+
+	udelay(us);
+
+	ret = reset_control_deassert(rstc);
+	if (ret)
+		return ret;
+
+	reset_control_put(rstc);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(device_reset_us);

@@ -15,6 +15,8 @@ void reset_control_put(struct reset_control *rstc);
 
 int __must_check device_reset(struct device_d *dev);
 
+int __must_check device_reset_us(struct device_d *dev, int us);
+
 #else
 
 static inline int reset_control_reset(struct reset_control *rstc)
@@ -38,6 +40,12 @@ static inline int reset_control_deassert(struct reset_control *rstc)
 static inline void reset_control_put(struct reset_control *rstc)
 {
 	WARN_ON(1);
+}
+
+static inline int device_reset_us(struct device_d *dev, int us)
+{
+	WARN_ON(1);
+	return 0;
 }
 
 #endif /* CONFIG_RESET_CONTROLLER */

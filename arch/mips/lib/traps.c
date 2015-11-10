@@ -96,13 +96,10 @@ static char *get_exc_name(u32 cause)
 	return "unknown exception";
 }
 
-void barebox_exc_handler(const struct pt_regs *regs)
+static void show_regs(const struct pt_regs *regs)
 {
-	const int field = 2 * sizeof(unsigned long);
-	unsigned int cause = regs->cp0_cause;
 	int i;
-
-	printf("\nOoops, %s!\n\n", get_exc_name(cause));
+	const int field = 2 * sizeof(unsigned long);
 
 	/*
 	 * Saved main processor registers
@@ -131,9 +128,17 @@ void barebox_exc_handler(const struct pt_regs *regs)
 	printf("epc   : %0*lx\n", field, regs->cp0_epc);
 	printf("ra    : %0*lx\n", field, regs->regs[31]);
 
-	printf("Status: %08x\n", (uint32_t) regs->cp0_status);
-	printf("Cause : %08x\n", cause);
+	printf("Status: %08x\n", (uint32_t)regs->cp0_status);
+	printf("Cause : %08x\n", (uint32_t)regs->cp0_cause);
 	printf("Config: %08x\n\n", read_c0_config());
+}
+
+void barebox_exc_handler(const struct pt_regs *regs)
+{
+	unsigned int cause = regs->cp0_cause;
+
+	printf("\nOoops, %s!\n\n", get_exc_name(cause));
+	show_regs(regs);
 
 	hang();
 }

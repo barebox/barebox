@@ -147,7 +147,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 			name = "DTB";
 		} else if (blob_is_compressed_fdt(boarddata)) {
 			struct barebox_arm_boarddata_compressed_dtb *bd = boarddata;
-			totalsize = bd->datalen;
+			totalsize = bd->datalen + sizeof(*bd);
 			name = "Compressed DTB";
 		} else if (blob_is_arm_boarddata(boarddata)) {
 			totalsize = sizeof(struct barebox_arm_boarddata);

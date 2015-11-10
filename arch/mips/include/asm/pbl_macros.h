@@ -145,7 +145,7 @@ copy_loop_exit:
 	.set	push
 	.set	noreorder
 	mfc0	k0, CP0_STATUS
-	li	k1, ~ST0_IE
+	li	k1, ~(ST0_ERL | ST0_IE)
 	and	k0, k1
 	mtc0	k0, CP0_STATUS
 	.set	pop

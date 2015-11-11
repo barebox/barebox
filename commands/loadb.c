@@ -617,6 +617,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 	int rcode = 0, ret;
 	int opt;
 	char *output_file = NULL;
+	int current_active;
 
 	while ((opt = getopt(argc, argv, "f:b:o:c")) > 0) {
 		switch (opt) {
@@ -641,6 +642,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 		return -ENODEV;
 	}
 	current_baudrate = console_get_baudrate(cdev);
+	current_active = console_get_active(cdev);
 
 	/* Load Defaults */
 	if (load_baudrate == 0)
@@ -665,13 +667,15 @@ static int do_load_serial_bin(int argc, char *argv[])
 		}
 	}
 
+	printf("## Ready for binary (kermit) download "
+	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
+	       output_file, load_baudrate);
+
+	console_set_active(cdev, 0);
 	ret = console_set_baudrate(cdev, load_baudrate);
 	if (ret)
 		return ret;
 
-	printf("## Ready for binary (kermit) download "
-	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
-	       output_file, load_baudrate);
 	addr = load_serial_bin();
 	if (addr == 0) {
 		printf("## Binary (kermit) download aborted\n");
@@ -681,6 +685,8 @@ static int do_load_serial_bin(int argc, char *argv[])
 	ret = console_set_baudrate(cdev, current_baudrate);
 	if (ret)
 		return ret;
+
+	console_set_active(cdev, current_active);
 
 	close(ofd);
 	ofd = 0;

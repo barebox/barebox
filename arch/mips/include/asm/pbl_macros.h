@@ -60,6 +60,18 @@
 	.set	pop
 	.endm
 
+	.macro	pbl_blt addr label tmp
+	.set	push
+	.set	noreorder
+	move	\tmp, ra			# preserve ra beforehand
+	bal	253f
+	 nop
+253:
+	bltu	ra, \addr, \label
+	 move	ra, \tmp			# restore ra
+	.set	pop
+	.endm
+
 	.macro	pbl_sleep reg count
 	.set push
 	.set noreorder

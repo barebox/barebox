@@ -32,7 +32,7 @@ int console_puts(unsigned int ch, const char *str)
 
 	while (*str) {
 		if (*str == '\n')
-			putc_ll('\r');
+			console_putc(CONSOLE_STDOUT, '\r');
 
 		console_putc(CONSOLE_STDOUT, *str);
 		str++;

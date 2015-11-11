@@ -8,4 +8,3 @@ dcdofs 0x400
 
 #include "ram-base.imxcfg"
 #include "quad_128x64.imxcfg"
-#include "clocks.imxcfg"

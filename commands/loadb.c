@@ -618,8 +618,9 @@ static int do_load_serial_bin(int argc, char *argv[])
 	int opt;
 	char *output_file = NULL;
 	int current_active;
+	char *console_dev_name = NULL;
 
-	while ((opt = getopt(argc, argv, "f:b:o:c")) > 0) {
+	while ((opt = getopt(argc, argv, "f:b:o:c:")) > 0) {
 		switch (opt) {
 		case 'f':
 			output_file = optarg;
@@ -630,16 +631,27 @@ static int do_load_serial_bin(int argc, char *argv[])
 		case 'o':
 			offset = (int)simple_strtoul(optarg, NULL, 10);
 			break;
+		case 'c':
+			console_dev_name = optarg;
+			break;
 		default:
 			perror(argv[0]);
 			return 1;
 		}
 	}
 
-	cdev = console_get_first_active();
-	if (NULL == cdev) {
-		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
-		return -ENODEV;
+	if (console_dev_name) {
+		cdev = console_get_by_name(console_dev_name);
+		if (!cdev) {
+			printf("Console %s not found\n", console_dev_name);
+			return -ENODEV;
+		}
+	} else {
+		cdev = console_get_first_active();
+		if (!cdev) {
+			printf("No console device with STDIN and STDOUT\n");
+			return -ENODEV;
+		}
 	}
 	current_baudrate = console_get_baudrate(cdev);
 	current_active = console_get_active(cdev);
@@ -699,6 +711,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin)")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
 BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate)")
+BAREBOX_CMD_HELP_OPT("-c CONSOLE", "Specify console (default: first active console")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loadb)

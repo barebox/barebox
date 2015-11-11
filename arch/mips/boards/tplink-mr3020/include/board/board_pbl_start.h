@@ -28,9 +28,12 @@
 
 	mips_disable_interrupts
 
+	pbl_blt 0xbf000000 skip_pll_ram_config t8
+
 	pbl_ar9331_pll
 	pbl_ar9331_ddr1_config
 
+skip_pll_ram_config:
 	pbl_ar9331_uart_enable
 	debug_ll_ar9331_init
 	mips_nmon

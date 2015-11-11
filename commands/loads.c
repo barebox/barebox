@@ -127,7 +127,7 @@ static ulong load_serial(ulong offset)
 		}
 		if (!do_echo) {	/* print a '.' every 100 lines */
 			if ((++line_count % 100) == 0)
-				console_putc(CONSOLE_STDOUT, '.');
+				putchar('.');
 		}
 	}
 
@@ -144,7 +144,7 @@ static int read_record(char *buf, ulong len)
 	for (p=buf; p < buf+len; ++p) {
 		c = getc();		/* read character		*/
 		if (do_echo)
-			console_putc(CONSOLE_STDOUT, c);
+			putchar(c);
 
 		switch (c) {
 		case '\r':
@@ -259,7 +259,7 @@ static int write_record(char *buf)
 	char c;
 
 	while ((c = *buf++))
-		console_putc(CONSOLE_STDOUT, c);
+		putchar(c);
 
 	/* Check for the console hangup (if any different from serial) */
 

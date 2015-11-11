@@ -235,6 +235,10 @@ extern int i2c_add_numbered_adapter(struct i2c_adapter *adapter);
 struct i2c_adapter *i2c_get_adapter(int busnum);
 struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node);
 
+extern struct list_head i2c_adapter_list;
+#define for_each_i2c_adapter(adap) \
+	list_for_each_entry(adap, &i2c_adapter_list, list)
+
 /* For devices that use several addresses, use i2c_new_dummy() to make
  * client handles for the extra addresses.
  */

@@ -213,11 +213,33 @@ static void descs_init(struct eth_device *dev)
 	rx_descs_init(dev);
 }
 
+/* Get PHY out of power saving mode.  If this is needed elsewhere then
+ * consider making it part of phy-core and adding a resume method to
+ * the phy device ops.  */
+static int phy_resume(struct phy_device *phydev)
+{
+	int bmcr;
+
+	bmcr = phy_read(phydev, MII_BMCR);
+	if (bmcr < 0)
+		return bmcr;
+	if (bmcr & BMCR_PDOWN) {
+		bmcr &= ~BMCR_PDOWN;
+		return phy_write(phydev, MII_BMCR, bmcr);
+	}
+	return 0;
+}
+
 static int dwc_ether_init(struct eth_device *dev)
 {
 	struct dw_eth_dev *priv = dev->priv;
 	struct eth_mac_regs *mac_p = priv->mac_regs_p;
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+
+	/* Before we reset the mac, we must insure the PHY is not powered down
+	 * as the dw controller needs all clock domains to be running, including
+	 * the PHY clock, to come out of a mac reset.  */
+	phy_resume(dev->phydev);
 
 	if (mac_reset(dev) < 0)
 		return -1;
@@ -274,6 +296,8 @@ static int dwc_ether_open(struct eth_device *dev)
 				 dwc_update_linkspeed, 0, priv->interface);
 	if (ret)
 		return ret;
+
+	dwc_ether_init(dev);
 
 	descs_init(dev);
 
@@ -468,7 +492,6 @@ static int dwc_ether_probe(struct device_d *dev)
 	edev->priv = priv;
 
 	edev->parent = dev;
-	edev->init = dwc_ether_init;
 	edev->open = dwc_ether_open;
 	edev->send = dwc_ether_send;
 	edev->recv = dwc_ether_rx;

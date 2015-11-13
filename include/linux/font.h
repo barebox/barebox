@@ -17,11 +17,8 @@ struct font_desc {
 	const char *name;
 	int width, height;
 	const void *data;
+	struct list_head list;
 };
-
-extern const struct font_desc	font_vga_8x16,
-			font_7x14,
-			font_mini_4x6;
 
 /* Max. length for the name of a predefined font */
 #define MAX_FONT_NAME	32
@@ -31,5 +28,7 @@ extern struct param_d *add_param_font(struct device_d *dev,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),
 		int *value, void *priv);
+
+int font_register(struct font_desc *font);
 
 #endif /* _VIDEO_FONT_H */

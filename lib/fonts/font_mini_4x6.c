@@ -39,6 +39,7 @@ __END__;
    MSBit to LSBit = left to right.
  */
 
+#include <init.h>
 #include <linux/font.h>
 
 #define FONTDATAMAX 1536
@@ -2147,9 +2148,15 @@ static const unsigned char fontdata_mini_4x6[FONTDATAMAX] = {
 	/*}*/
 };
 
-const struct font_desc font_mini_4x6 = {
+static struct font_desc font_mini_4x6 = {
 	.name	= "MINI4x6",
 	.width	= 4,
 	.height	= 6,
 	.data	= fontdata_mini_4x6,
 };
+
+static int font_mini_4x6_register(void)
+{
+	return font_register(&font_mini_4x6);
+}
+postcore_initcall(font_mini_4x6_register);

@@ -470,7 +470,7 @@ int mmdc_do_dqs_calibration(void)
 	writel(v, P0_IPS + MDPDC);
 
 	/* enable Adopt power down timer */
-	v = readl(P0_IPS + MAPSR) & 0xfffffff7;
+	v = readl(P0_IPS + MAPSR) & 0xfffffffe;
 	writel(v, P0_IPS + MAPSR);
 
 	/* restore MDMISC value (RALAT, WALAT) */

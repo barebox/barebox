@@ -249,6 +249,10 @@ struct screen *fb_create_screen(struct fb_info *info)
 {
 	struct screen *sc;
 
+	if (!info->xres || !info->yres || !info->line_length ||
+			!info->screen_base)
+		return ERR_PTR(-EINVAL);
+
 	sc = xzalloc(sizeof(*sc));
 
 	sc->s.x = 0;

@@ -163,23 +163,11 @@ static void dma_inv_range(unsigned long start, unsigned long end)
 	__dma_inv_range(start, end);
 }
 
-int arch_remap_range(void *_start, size_t size, unsigned flags)
+static int __remap_range(void *_start, size_t size, u32 pte_flags)
 {
 	unsigned long start = (unsigned long)_start;
 	u32 *p;
 	int numentries, i;
-	u32 pte_flags;
-
-	switch (flags) {
-	case MAP_CACHED:
-		pte_flags = pte_flags_cached;
-		break;
-	case MAP_UNCACHED:
-		pte_flags = pte_flags_uncached;
-		break;
-	default:
-		return -EINVAL;
-	}
 
 	numentries = size >> PAGE_SHIFT;
 	p = find_pte(start);
@@ -195,6 +183,24 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 	tlb_invalidate();
 
 	return 0;
+}
+
+int arch_remap_range(void *start, size_t size, unsigned flags)
+{
+	u32 pte_flags;
+
+	switch (flags) {
+	case MAP_CACHED:
+		pte_flags = pte_flags_cached;
+		break;
+	case MAP_UNCACHED:
+		pte_flags = pte_flags_uncached;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	return __remap_range(start, size, pte_flags);
 }
 
 void *map_io_sections(unsigned long phys, void *_start, size_t size)
@@ -412,7 +418,7 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
-	remap_range(ret, size, pte_flags_uncached);
+	__remap_range(ret, size, pte_flags_uncached);
 
 	return ret;
 }
@@ -428,7 +434,7 @@ void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
-	remap_range(ret, size, pte_flags_wc);
+	__remap_range(ret, size, pte_flags_wc);
 
 	return ret;
 }
@@ -446,7 +452,7 @@ void *phys_to_virt(unsigned long phys)
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);
-	remap_range(mem, size, pte_flags_cached);
+	__remap_range(mem, size, pte_flags_cached);
 
 	free(mem);
 }

@@ -262,6 +262,14 @@ int readline(const char *prompt, char *buf, int len)
 				eol_num--;
 			}
 			break;
+		case CTL_CH('l'):
+			printf(ANSI_CLEAR_SCREEN);
+			buf[eol_num] = 0;
+			printf("%s%s", prompt, buf);
+			wlen = eol_num - num;
+			while (wlen--)
+				getcmd_putch(CTL_BACKSPACE);
+			break;
 		case BB_KEY_ERASE_TO_EOL:
 			ERASE_TO_EOL();
 			break;

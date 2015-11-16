@@ -124,7 +124,7 @@ out:
 
 static int do_ls(int argc, char *argv[])
 {
-	int ret, opt, o;
+	int ret, opt, o, exitcode = 0;
 	struct stat s;
 	ulong flags = LS_COLUMN;
 	struct string_list sl;
@@ -165,6 +165,7 @@ static int do_ls(int argc, char *argv[])
 			printf("%s: %s: %s\n", argv[0],
 					argv[o], errno_str());
 			o++;
+			exitcode = COMMAND_ERROR;
 			continue;
 		}
 
@@ -190,6 +191,7 @@ static int do_ls(int argc, char *argv[])
 		ret = lstat(argv[o], &s);
 		if (ret) {
 			o++;
+			exitcode = COMMAND_ERROR;
 			continue;
 		}
 
@@ -197,6 +199,7 @@ static int do_ls(int argc, char *argv[])
 			ret = ls(argv[o], flags);
 			if (ret) {
 				perror("ls");
+				exitcode = COMMAND_ERROR;
 				o++;
 				continue;
 			}
@@ -205,7 +208,7 @@ static int do_ls(int argc, char *argv[])
 		o++;
 	}
 
-	return 0;
+	return exitcode;
 }
 
 BAREBOX_CMD_HELP_START(ls)

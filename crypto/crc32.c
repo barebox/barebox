@@ -16,6 +16,9 @@
 #include <malloc.h>
 #include <linux/ctype.h>
 #include <errno.h>
+#define STATIC
+#else
+#define STATIC static inline
 #endif
 
 #ifdef CONFIG_DYNAMIC_CRC_TABLE
@@ -138,7 +141,7 @@ static const ulong crc_table[256] = {
 #define DO8(buf)  DO4(buf); DO4(buf);
 
 /* ========================================================================= */
-uint32_t crc32(uint32_t crc, const void *_buf, unsigned int len)
+STATIC uint32_t crc32(uint32_t crc, const void *_buf, unsigned int len)
 {
     const unsigned char *buf = _buf;
 
@@ -164,7 +167,7 @@ EXPORT_SYMBOL(crc32);
 /* No ones complement version. JFFS2 (and other things ?)
  * don't use ones compliment in their CRC calculations.
  */
-uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
+STATIC uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
 {
    const unsigned char *buf = _buf;
 
@@ -184,7 +187,7 @@ uint32_t crc32_no_comp(uint32_t crc, const void *_buf, unsigned int len)
     return crc;
 }
 
-int file_crc(char *filename, ulong start, ulong size, ulong *crc,
+STATIC int file_crc(char *filename, ulong start, ulong size, ulong *crc,
 		    ulong *total)
 {
 	int fd, now;

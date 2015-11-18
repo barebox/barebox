@@ -676,11 +676,9 @@ static int dw_mmc_detect(struct device_d *dev)
 static int dw_mmc_probe(struct device_d *dev)
 {
 	struct dwmci_host *host;
-	struct mci_host *mci;
 	struct dw_mmc_platform_data *pdata = dev->platform_data;
 
 	host = xzalloc(sizeof(*host));
-	mci = &host->mci;
 
 	host->clk_biu = clk_get(dev, "biu");
 	if (IS_ERR(host->clk_biu))
@@ -710,14 +708,13 @@ static int dw_mmc_probe(struct device_d *dev)
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA;
 
 	if (pdata) {
-		mci->devname = pdata->devname;
 		host->ciu_div = pdata->ciu_div;
 		host->mci.host_caps &= ~MMC_CAP_BIT_DATA_MASK;
 		host->mci.host_caps |= pdata->bus_width_caps;
 	} else if (dev->device_node) {
 		const char *alias = of_alias_get(dev->device_node);
 		if (alias)
-			mci->devname = xstrdup(alias);
+			host->mci.devname = xstrdup(alias);
 		of_property_read_u32(dev->device_node, "dw-mshc-ciu-div",
 				&host->ciu_div);
 	}

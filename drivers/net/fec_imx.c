@@ -692,7 +692,7 @@ static int fec_probe(struct device_d *dev)
 		if (ret)
 			goto err_free;
 
-		udelay(10);
+		mdelay(1);
 		gpio_set_value(phy_reset, 1);
 	}
 

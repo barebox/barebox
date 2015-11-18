@@ -3,6 +3,7 @@
 
 struct dw_mmc_platform_data {
 	char *devname;
+	unsigned int bus_width_caps;
 	int ciu_div;
 };
 

@@ -698,20 +698,6 @@ static int dw_mmc_probe(struct device_d *dev)
 	if (IS_ERR(host->ioaddr))
 		return PTR_ERR(host->ioaddr);
 
-	if (pdata) {
-		mci->devname = pdata->devname;
-		host->ciu_div = pdata->ciu_div;
-	} else if (dev->device_node) {
-		const char *alias = of_alias_get(dev->device_node);
-		if (alias)
-			mci->devname = xstrdup(alias);
-		of_property_read_u32(dev->device_node, "dw-mshc-ciu-div",
-				&host->ciu_div);
-	}
-
-	/* divider is 0 based in pdata and 1 based in our private struct */
-	host->ciu_div++;
-
 	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS,
 					 DMA_ADDRESS_BROKEN);
 
@@ -722,6 +708,22 @@ static int dw_mmc_probe(struct device_d *dev)
 	host->mci.hw_dev = dev;
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA;
+
+	if (pdata) {
+		mci->devname = pdata->devname;
+		host->ciu_div = pdata->ciu_div;
+		host->mci.host_caps &= ~MMC_CAP_BIT_DATA_MASK;
+		host->mci.host_caps |= pdata->bus_width_caps;
+	} else if (dev->device_node) {
+		const char *alias = of_alias_get(dev->device_node);
+		if (alias)
+			mci->devname = xstrdup(alias);
+		of_property_read_u32(dev->device_node, "dw-mshc-ciu-div",
+				&host->ciu_div);
+	}
+
+	/* divider is 0 based in pdata and 1 based in our private struct */
+	host->ciu_div++;
 
 	if (of_device_is_compatible(dev->device_node,
 	    "rockchip,rk2928-dw-mshc"))

@@ -1,3 +1,2 @@
-obj-y += board.o flash-header-mx6sx-sabresdb.dcd.o
-extra-y += flash-header-mx6sx-sabresdb.dcd.S flash-header-mx6sx-sabresdb.dcd
+obj-y += board.o
 lwl-y += lowlevel.o

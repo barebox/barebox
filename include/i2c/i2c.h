@@ -121,14 +121,27 @@ struct i2c_adapter {
 	struct i2c_bus_recovery_info *bus_recovery_info;
 };
 
+#define to_i2c_adapter(d) container_of(d, struct i2c_adapter, dev)
 
 struct i2c_client {
 	struct device_d		dev;
 	struct i2c_adapter	*adapter;
 	unsigned short		addr;
+	void			*driver_data;	/* Driver data, set and get with
+							dev_set/get_drvdata */
 };
 
 #define to_i2c_client(a)	container_of(a, struct i2c_client, dev)
+
+static inline void *i2c_get_clientdata(const struct i2c_client *dev)
+{
+	return dev->driver_data;
+}
+
+static inline void i2c_set_clientdata(struct i2c_client *dev, void *data)
+{
+	dev->driver_data = data;
+}
 
 /*flags for the client struct: */
 #define I2C_CLIENT_PEC	0x04		/* Use Packet Error Checking */

@@ -13,4 +13,6 @@ config I2C_MUX
 	  handle multiplexed I2C bus topologies, by presenting each
 	  multiplexed segment as a I2C adapter.
 
+source drivers/i2c/muxes/Kconfig
+
 endif

@@ -259,7 +259,7 @@ static int fec_set_hwaddr(struct eth_device *dev, const unsigned char *mac)
 	writel((mac[0] << 24) + (mac[1] << 16) + (mac[2] << 8) + mac[3], fec->regs + FEC_PADDR1);
 	writel((mac[4] << 24) + (mac[5] << 16) + 0x8808, fec->regs + FEC_PADDR2);
 
-        return 0;
+	return 0;
 }
 
 static int fec_init(struct eth_device *dev)
@@ -647,8 +647,8 @@ static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 #endif
 static int fec_probe(struct device_d *dev)
 {
-        struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
-        struct eth_device *edev;
+	struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
+	struct eth_device *edev;
 	struct fec_priv *fec;
 	void *base;
 	int ret;
@@ -778,7 +778,7 @@ static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6q-fec",
 		.data = (void *)FEC_TYPE_IMX6,
-	},  {
+	}, {
 		.compatible = "fsl,imx6sx-fec",
 		.data = (void *)FEC_TYPE_IMX6,
 	}, {

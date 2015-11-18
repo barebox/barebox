@@ -245,6 +245,13 @@ config MACH_FREESCALE_MX51_PDK
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
 
+config MACH_CCMX53
+	bool "Digi ConnectCore i.MX53"
+	select ARCH_IMX53
+	help
+	  Say Y here if you are using the Digi ConnectCore ccxmx53
+	  series SoM
+
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53

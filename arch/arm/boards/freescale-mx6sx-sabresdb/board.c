@@ -241,9 +241,11 @@ static int imx6sx_sdb_coredevices_init(void)
 
 	imx6sx_sdb_setup_fec();
 
+	barebox_set_hostname("mx6sx-sabresdb");
+
 	imx6_bbu_internal_mmc_register_handler("sd", "/dev/mmc3",
 			BBU_HANDLER_FLAG_DEFAULT);
 
 	return 0;
 }
-console_initcall(imx6sx_sdb_coredevices_init);
+coredevice_initcall(imx6sx_sdb_coredevices_init);

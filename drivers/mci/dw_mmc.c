@@ -706,6 +706,8 @@ static int dw_mmc_probe(struct device_d *dev)
 	host->mci.hw_dev = dev;
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA | MMC_CAP_8_BIT_DATA;
+	host->mci.host_caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED_52MHZ |
+			       MMC_CAP_SD_HIGHSPEED;
 
 	if (pdata) {
 		host->ciu_div = pdata->ciu_div;

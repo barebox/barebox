@@ -415,6 +415,28 @@ int bootm_boot(struct bootm_data *bootm_data)
 		goto err_out;
 	}
 
+	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data->initrd_file) {
+		initrd_type = file_name_detect_type(data->initrd_file);
+
+		if ((int)initrd_type < 0) {
+			printf("could not open %s: %s\n", data->initrd_file,
+					strerror(-initrd_type));
+			ret = (int)initrd_type;
+			goto err_out;
+		}
+	}
+
+	if (IS_ENABLED(CONFIG_OFTREE) && data->oftree_file) {
+		oftree_type = file_name_detect_type(data->oftree_file);
+
+		if ((int)oftree_type < 0) {
+			printf("could not open %s: %s\n", data->oftree_file,
+					strerror(-oftree_type));
+			ret = (int) oftree_type;
+			goto err_out;
+		}
+	}
+
 	if (os_type == filetype_uimage) {
 		ret = bootm_open_os_uimage(data);
 		if (ret) {
@@ -425,14 +447,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 	}
 
 	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data->initrd_file) {
-
-		initrd_type = file_name_detect_type(data->initrd_file);
-		if ((int)initrd_type < 0) {
-			printf("could not open %s: %s\n", data->initrd_file,
-					strerror(-initrd_type));
-			ret = (int)initrd_type;
-			goto err_out;
-		}
 		if (initrd_type == filetype_uimage) {
 			ret = bootm_open_initrd_uimage(data);
 			if (ret) {
@@ -452,19 +466,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	if (IS_ENABLED(CONFIG_OFTREE)) {
 		if (data->oftree_file) {
-			oftree_type = file_name_detect_type(data->oftree_file);
-
 			if (oftree_type == filetype_uimage)
 				ret = bootm_open_oftree_uimage(data);
 			if (oftree_type == filetype_oftree)
 				ret = bootm_open_oftree(data);
-			if ((int)oftree_type < 0) {
-				printf("could not open %s: %s\n",
-					data->oftree_file,
-					strerror(-oftree_type));
-				ret = (int) oftree_type;
-			}
-
 			if (ret)
 				goto err_out;
 		} else {

@@ -358,6 +358,14 @@ int i2c_recover_bus(struct i2c_adapter *adap)
 	return adap->bus_recovery_info->recover_bus(adap);
 }
 
+static void i2c_info(struct device_d *dev)
+{
+	const struct i2c_client *client = to_i2c_client(dev);
+
+	printf("  Address: 0x%02x\n", client->addr);
+	return;
+}
+
 /**
  * i2c_new_device - instantiate one new I2C device
  *
@@ -396,6 +404,7 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 		free(client);
 		return NULL;
 	}
+	client->dev.info = i2c_info;
 
 	return client;
 }

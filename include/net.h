@@ -60,7 +60,6 @@ struct eth_device {
 	IPaddr_t serverip;
 	IPaddr_t netmask;
 	IPaddr_t gateway;
-	char ethaddr_param[6];
 	char ethaddr[6];
 };
 

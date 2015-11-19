@@ -285,7 +285,7 @@ static int eth_param_set_ethaddr(struct param_d *param, void *priv)
 {
 	struct eth_device *edev = priv;
 
-	return eth_set_ethaddr(edev, edev->ethaddr_param);
+	return eth_set_ethaddr(edev, edev->ethaddr);
 }
 
 #ifdef CONFIG_OFTREE
@@ -383,7 +383,7 @@ int eth_register(struct eth_device *edev)
 	dev_add_param_ip(dev, "gateway", NULL, NULL, &edev->gateway, edev);
 	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
 	dev_add_param_mac(dev, "ethaddr", eth_param_set_ethaddr, NULL,
-			edev->ethaddr_param, edev);
+			edev->ethaddr, edev);
 
 	if (edev->init)
 		edev->init(edev);

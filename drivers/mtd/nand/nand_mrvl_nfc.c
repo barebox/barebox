@@ -153,6 +153,7 @@ struct mrvl_nand_host {
 	int			ecc_strength;
 	int			ecc_step;
 
+	int			num_cs;		/* avaiable CS signals */
 	int			cs;		/* selected chip 0/1 */
 	int			use_ecc;	/* use HW ECC ? */
 	int			use_spare;	/* use spare ? */
@@ -929,6 +930,7 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 
 	pdata = dev->platform_data;
 	host = xzalloc(sizeof(*host));
+	host->num_cs = 1;
 	host->cs = 0;
 	mtd = &host->mtd;
 	mtd->priv = &host->chip;
@@ -988,7 +990,7 @@ static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 
 	if (of_get_property(np, "marvell,nand-keep-config", NULL))
 		host->keep_config = 1;
-	of_property_read_u32(np, "num-cs", &host->cs);
+	of_property_read_u32(np, "num-cs", &host->num_cs);
 	if (of_get_nand_on_flash_bbt(np))
 		host->flash_bbt = 1;
 

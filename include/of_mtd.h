@@ -12,6 +12,8 @@
 #include <of.h>
 
 int of_get_nand_ecc_mode(struct device_node *np);
+int of_get_nand_ecc_step_size(struct device_node *np);
+int of_get_nand_ecc_strength(struct device_node *np);
 int of_get_nand_bus_width(struct device_node *np);
 bool of_get_nand_on_flash_bbt(struct device_node *np);
 

@@ -24,7 +24,6 @@
 #include <linux/types.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/clock.h>
 #include <malloc.h>
 #include <of_mtd.h>
 #include <stmp-device.h>
@@ -135,6 +134,7 @@ struct mrvl_nand_host {
 	struct nand_chip	chip;
 	struct mtd_partition	*parts;
 	struct device_d		*dev;
+	struct clk		*core_clk;
 
 	/* calculated from mrvl_nand_flash data */
 	unsigned int		col_addr_cycles;
@@ -281,10 +281,10 @@ static struct mrvl_nand_timing timings[] = {
 static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 {
 	struct mtd_info *mtd = &host->mtd;
+	unsigned long nand_clk = clk_get_rate(host->core_clk);
 	struct mrvl_nand_timing *t;
 	uint32_t ndtr0, ndtr1;
 	u16 id;
-	unsigned long nand_clk = pxa_get_nandclk();
 
 	if (use_default) {
 		id = 0;
@@ -954,6 +954,13 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 		free(host);
 		return host->mmio_base;
 	}
+	host->core_clk = clk_get(dev, NULL);
+	if (IS_ERR(host->core_clk)) {
+		free(host);
+		return (void *)host->core_clk;
+	}
+	clk_enable(host->core_clk);
+
 	if (pdata) {
 		host->keep_config = pdata->keep_config;
 		host->flash_bbt = pdata->flash_bbt;

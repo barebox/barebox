@@ -285,10 +285,18 @@ static const struct mrvl_nand_variant pxa3xx_variant = {
 	.hwflags	= 0,
 };
 
+static const struct mrvl_nand_variant armada370_variant = {
+	.hwflags	= HWFLAGS_ECC_BCH | HWFLAGS_HAS_NDCB3,
+};
+
 static struct of_device_id mrvl_nand_dt_ids[] = {
 	{
 		.compatible = "marvell,pxa3xx-nand",
 		.data = &pxa3xx_variant,
+	},
+	{
+		.compatible = "marvell,armada370-nand",
+		.data = &armada370_variant,
 	},
 	{}
 };

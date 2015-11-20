@@ -562,6 +562,7 @@ static int prepare_set_command(struct mrvl_nand_host *host, int command,
 
 	case NAND_CMD_PAGEPROG:
 		host->ndcb0 |= NDCB0_CMD_TYPE(0x1)
+				| NDCB0_AUTO_RS
 				| NDCB0_DBC
 				| (NAND_CMD_PAGEPROG << 8)
 				| NAND_CMD_SEQIN
@@ -599,6 +600,7 @@ static int prepare_set_command(struct mrvl_nand_host *host, int command,
 
 	case NAND_CMD_ERASE1:
 		host->ndcb0 |= NDCB0_CMD_TYPE(2)
+				| NDCB0_AUTO_RS
 				| NDCB0_ADDR_CYC(3)
 				| NDCB0_DBC
 				| (NAND_CMD_ERASE2 << 8)

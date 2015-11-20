@@ -719,7 +719,7 @@ static int mrvl_nand_write_page_hwecc(struct mtd_info *mtd,
 		memcpy(host->data_buff + mtd->writesize, chip->oob_poi,
 		       mtd->oobsize);
 	else
-		memset(host->data_buff + mtd->writesize, 0, mtd->oobsize);
+		memset(host->data_buff + mtd->writesize, 0xff, mtd->oobsize);
 	dev_dbg(host->dev, "%s(buf=%p, oob_required=%d) => 0\n",
 		__func__, buf, oob_required);
 	return 0;

@@ -152,6 +152,7 @@ config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	select GENERIC_GPIO
 	select HAS_POWEROFF
+	select HAVE_CLK
 
 config ARCH_ROCKCHIP
 	bool "Rockchip RX3xxx"

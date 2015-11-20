@@ -983,6 +983,9 @@ static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 {
 	struct device_node *np = host->dev->device_node;
 
+	if (!IS_ENABLED(CONFIG_OFTREE) || host->dev->platform_data)
+		return 0;
+
 	if (of_get_property(np, "marvell,nand-keep-config", NULL))
 		host->keep_config = 1;
 	of_property_read_u32(np, "num-cs", &host->cs);

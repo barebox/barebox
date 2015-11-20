@@ -994,6 +994,14 @@ static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 	if (of_get_nand_on_flash_bbt(np))
 		host->flash_bbt = 1;
 
+	host->ecc_strength = of_get_nand_ecc_strength(np);
+	if (host->ecc_strength < 0)
+		host->ecc_strength = 0;
+
+	host->ecc_step = of_get_nand_ecc_step_size(np);
+	if (host->ecc_step < 0)
+		host->ecc_step = 0;
+
 	return 0;
 }
 

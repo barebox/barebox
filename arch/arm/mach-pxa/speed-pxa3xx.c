@@ -27,14 +27,6 @@ unsigned long pxa_get_pwmclk(void)
 	return BASE_CLK;
 }
 
-unsigned long pxa_get_nandclk(void)
-{
-	if (cpu_is_pxa320())
-		return 104000000;
-	else
-		return 156000000;
-}
-
 static int pxa3xx_clock_init(void)
 {
 	unsigned long nand_rate = (cpu_is_pxa320()) ? 104000000 : 156000000;

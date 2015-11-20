@@ -129,6 +129,10 @@
 #define nand_readsl(host, off, buf, nbbytes)		\
 	readsl((host)->mmio_base + (off), buf, nbbytes)
 
+struct mrvl_nand_variant {
+	unsigned int	hwflags;
+};
+
 struct mrvl_nand_host {
 	struct mtd_info		mtd;
 	struct nand_chip	chip;
@@ -142,6 +146,8 @@ struct mrvl_nand_host {
 	size_t			read_id_bytes;
 
 	void __iomem		*mmio_base;
+	unsigned int		hwflags;
+#define HWFLAGS_ECC_BCH		BIT(0)
 
 	unsigned int		buf_start;
 	unsigned int		buf_count;
@@ -235,9 +241,14 @@ static struct nand_ecclayout ecc_layout_2KB_hwecc = {
 #define mtd_info_to_host(mtd) ((struct mrvl_nand_host *) \
 			       (((struct nand_chip *)((mtd)->priv))->priv))
 
+static const struct mrvl_nand_variant pxa3xx_variant = {
+	.hwflags	= 0,
+};
+
 static struct of_device_id mrvl_nand_dt_ids[] = {
 	{
 		.compatible = "marvell,pxa3xx-nand",
+		.data = &pxa3xx_variant,
 	},
 	{}
 };
@@ -1009,9 +1020,16 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 {
 	struct device_node *np = host->dev->device_node;
+	const struct of_device_id *match;
+	const struct mrvl_nand_variant *variant;
 
 	if (!IS_ENABLED(CONFIG_OFTREE) || host->dev->platform_data)
 		return 0;
+
+	match = of_match_node(mrvl_nand_dt_ids, np);
+	if (!match)
+		return -EINVAL;
+	variant = match->data;
 
 	if (of_get_property(np, "marvell,nand-keep-config", NULL))
 		host->keep_config = 1;
@@ -1026,6 +1044,8 @@ static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 	host->ecc_step = of_get_nand_ecc_step_size(np);
 	if (host->ecc_step < 0)
 		host->ecc_step = 0;
+
+	host->hwflags = variant->hwflags;
 
 	return 0;
 }

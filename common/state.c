@@ -716,6 +716,8 @@ static int state_convert_node_variable(struct state *state,
 
 	vtype = state_find_type_by_name(type_name);
 	if (!vtype) {
+		dev_err(&state->dev, "unkown type: %s in %s\n", type_name,
+			node->full_name);
 		ret = -ENOENT;
 		goto out_free;
 	}

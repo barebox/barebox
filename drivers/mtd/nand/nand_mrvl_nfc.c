@@ -156,6 +156,7 @@ struct mrvl_nand_host {
 	int			num_cs;		/* avaiable CS signals */
 	int			cs;		/* selected chip 0/1 */
 	int			use_ecc;	/* use HW ECC ? */
+	int			ecc_bch;	/* HW ECC is BCH */
 	int			use_spare;	/* use spare ? */
 	int			flash_bbt;
 
@@ -824,32 +825,56 @@ static void mrvl_nand_config_flash(struct mrvl_nand_host *host)
 	host->reg_ndcr = ndcr;
 }
 
-static int pxa_ecc_init(struct mrvl_nand_host *host,
-			struct nand_ecc_ctrl *ecc,
-			int strength, int ecc_stepsize, int page_size)
+static int pxa_ecc_strength1(struct mrvl_nand_host *host,
+		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
-	if (strength == 1 && ecc_stepsize == 512 && page_size == 2048) {
+	if (ecc_stepsize == 512 && page_size == 2048) {
 		host->chunk_size = 2048;
 		host->spare_size = 40;
 		host->ecc_size = 24;
+		host->ecc_bch = 0;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
 		ecc->strength = 1;
 		ecc->layout = &ecc_layout_2KB_hwecc;
+		return 0;
+	}
 
-	} else if (strength == 1 && ecc_stepsize == 512 && page_size == 512) {
+	if (ecc_stepsize == 512 && page_size == 512) {
 		host->chunk_size = 512;
 		host->spare_size = 8;
 		host->ecc_size = 8;
+		host->ecc_bch = 0;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
 		ecc->layout = &ecc_layout_512B_hwecc;
 		ecc->strength = 1;
-	} else {
+		return 0;
+	}
+
+	return -ENODEV;
+}
+
+static int pxa_ecc_init(struct mrvl_nand_host *host,
+			struct nand_ecc_ctrl *ecc,
+			int strength, int ecc_stepsize, int page_size)
+{
+	int ret;
+
+	switch (strength) {
+	case 1:
+		ret = pxa_ecc_strength1(host, ecc, ecc_stepsize, page_size);
+		break;
+	default:
+		ret = -ENODEV;
+		break;
+	}
+
+	if (ret) {
 		dev_err(host->dev,
 			"ECC strength %d at page size %d is not supported\n",
 			strength, page_size);
-		return -ENODEV;
+		return ret;
 	}
 
 	dev_info(host->dev, "ECC strength %d, ECC step size %d\n",

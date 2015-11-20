@@ -332,7 +332,7 @@ static struct driver_d imx51_ccm_driver = {
 static void mx53_clocks_ipu_init(void __iomem *regs)
 {
 	clks[IMX5_CLK_LDB_DI1_DIV_3_5]	= imx_clk_fixed_factor("ldb_di1_div_3_5", "ldb_di1_sel", 2, 7);
-	clks[IMX5_CLK_LDB_DI1_DIV]	= imx_clk_divider("ldb_di1_div", "ldb_di1_div_3_5", regs + CCM_CSCMR2, 11, 1);
+	clks[IMX5_CLK_LDB_DI1_DIV]	= imx_clk_divider_np("ldb_di1_div", "ldb_di1_div_3_5", regs + CCM_CSCMR2, 11, 1);
 	clks[IMX5_CLK_LDB_DI1_SEL]	= imx_clk_mux_p("ldb_di1_sel", regs + CCM_CSCMR2, 9, 1,
 						mx53_ldb_di1_sel, ARRAY_SIZE(mx53_ldb_di1_sel));
 	clks[IMX5_CLK_DI_PLL4_PODF]	= imx_clk_divider("di_pll4_podf", "pll4_sw", regs + CCM_CDCDR, 16, 3);

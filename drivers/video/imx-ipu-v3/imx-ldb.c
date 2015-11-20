@@ -68,7 +68,7 @@ struct imx_ldb_channel {
 
 struct imx_ldb_data {
 	void __iomem *base;
-	int (*prepare)(struct imx_ldb_channel *imx_ldb_ch, int di);
+	int (*prepare)(struct imx_ldb_channel *imx_ldb_ch, int di, unsigned long clkrate);
 	unsigned ipu_mask;
 	int have_mux;
 };
@@ -114,7 +114,7 @@ static int imx_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, struct fb_videomo
 {
 	struct imx_ldb *ldb = imx_ldb_ch->ldb;
 
-	ldb->soc_data->prepare(imx_ldb_ch, di);
+	ldb->soc_data->prepare(imx_ldb_ch, di, PICOS2KHZ(mode->pixclock) * 1000UL);
 
 	/* FIXME - assumes straight connections DI0 --> CH0, DI1 --> CH1 */
 	if (imx_ldb_ch == &ldb->channel[0]) {
@@ -146,7 +146,8 @@ static int imx_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, struct fb_videomo
 	return 0;
 }
 
-static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
+static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
+			     unsigned long pixclk)
 {
 	struct clk *diclk, *ldbclk;
 	struct imx_ldb *ldb = imx_ldb_ch->ldb;
@@ -155,6 +156,7 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 	void __iomem *gpr3 = (void *)MX6_IOMUXC_BASE_ADDR + 0xc;
 	uint32_t val;
 	int shift;
+	int dual = ldb->ldb_ctrl & LDB_SPLIT_MODE_EN;
 
 	ipuno = ((di >> 1) & 1) + 1;
 	dino = di & 0x1;
@@ -181,6 +183,11 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 		return ret;
 	}
 
+	if (!dual)
+		pixclk *= 2;
+
+	clk_set_rate(clk_get_parent(ldbclk), pixclk);
+
 	val = readl(gpr3);
 	shift = (imx_ldb_ch->chno == 0) ? 6 : 8;
 	val &= ~(3 << shift);
@@ -190,12 +197,14 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 	return 0;
 }
 
-static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
+static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
+			     unsigned long pixclk)
 {
 	struct clk *diclk, *ldbclk;
 	struct imx_ldb *ldb = imx_ldb_ch->ldb;
 	int ret, dino;
 	char *clkname;
+	int dual = ldb->ldb_ctrl & LDB_SPLIT_MODE_EN;
 
 	dino = di & 0x1;
 
@@ -220,6 +229,11 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di)
 		dev_err(ldb->dev, "failed to set display clock parent: %s\n", strerror(-ret));
 		return ret;
 	}
+
+	if (!dual)
+		pixclk *= 2;
+
+	clk_set_rate(clk_get_parent(ldbclk), pixclk);
 
 	return 0;
 }
@@ -298,6 +312,10 @@ static int imx_ldb_probe(struct device_d *dev)
 	imx_ldb = xzalloc(sizeof(*imx_ldb));
 	imx_ldb->base = devtype->base;
 	imx_ldb->soc_data = devtype;
+
+	dual = of_property_read_bool(np, "fsl,dual-channel");
+	if (dual)
+		imx_ldb->ldb_ctrl |= LDB_SPLIT_MODE_EN;
 
 	for_each_child_of_node(np, child) {
 		struct imx_ldb_channel *channel;

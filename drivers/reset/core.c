@@ -84,6 +84,9 @@ EXPORT_SYMBOL_GPL(reset_controller_unregister);
  */
 int reset_control_reset(struct reset_control *rstc)
 {
+	if (!rstc)
+		return 0;
+
 	if (rstc->rcdev->ops->reset)
 		return rstc->rcdev->ops->reset(rstc->rcdev, rstc->id);
 
@@ -97,6 +100,9 @@ EXPORT_SYMBOL_GPL(reset_control_reset);
  */
 int reset_control_assert(struct reset_control *rstc)
 {
+	if (!rstc)
+		return 0;
+
 	if (rstc->rcdev->ops->assert)
 		return rstc->rcdev->ops->assert(rstc->rcdev, rstc->id);
 
@@ -110,6 +116,9 @@ EXPORT_SYMBOL_GPL(reset_control_assert);
  */
 int reset_control_deassert(struct reset_control *rstc)
 {
+	if (!rstc)
+		return 0;
+
 	if (rstc->rcdev->ops->deassert)
 		return rstc->rcdev->ops->deassert(rstc->rcdev, rstc->id);
 
@@ -135,6 +144,9 @@ struct reset_control *of_reset_control_get(struct device_node *node,
 	int index = 0;
 	int rstc_id;
 	int ret;
+
+	if (!of_get_property(node, "resets", NULL))
+		return NULL;
 
 	if (id)
 		index = of_property_match_string(node,
@@ -188,8 +200,13 @@ struct reset_control *reset_control_get(struct device_d *dev, const char *id)
 		return ERR_PTR(-EINVAL);
 
 	rstc = of_reset_control_get(dev->device_node, id);
-	if (!IS_ERR(rstc))
-		rstc->dev = dev;
+	if (IS_ERR(rstc))
+		return ERR_CAST(rstc);
+
+	if (!rstc)
+		return NULL;
+
+	rstc->dev = dev;
 
 	return rstc;
 }
@@ -202,7 +219,7 @@ EXPORT_SYMBOL_GPL(reset_control_get);
 
 void reset_control_put(struct reset_control *rstc)
 {
-	if (IS_ERR(rstc))
+	if (IS_ERR_OR_NULL(rstc))
 		return;
 
 	kfree(rstc);

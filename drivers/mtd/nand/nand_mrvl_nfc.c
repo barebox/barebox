@@ -92,6 +92,8 @@
 #define NDSR_RDDREQ		(0x1 << 1)
 #define NDSR_WRCMDREQ		(0x1)
 
+#define NDECCCTRL_BCH_EN	BIT(0)
+
 #define NDCB0_LEN_OVRD		(0x1 << 28)
 #define NDCB0_ST_ROW_EN         (0x1 << 26)
 #define NDCB0_AUTO_RS		(0x1 << 25)
@@ -425,6 +427,17 @@ static unsigned int mrvl_datasize(struct mrvl_nand_host *host)
 static void mrvl_nand_start(struct mrvl_nand_host *host)
 {
 	uint32_t ndcr;
+
+	if (host->hwflags & HWFLAGS_ECC_BCH) {
+		uint32_t reg = nand_readl(host, NDECCCTRL);
+
+		if (host->use_ecc && host->ecc_bch)
+			reg |= NDECCCTRL_BCH_EN;
+		else
+			reg &= ~NDECCCTRL_BCH_EN;
+
+		nand_writel(host, NDECCCTRL, reg);
+	}
 
 	ndcr = host->reg_ndcr;
 	if (host->use_ecc)
@@ -794,8 +807,14 @@ static int mrvl_nand_read_page_hwecc(struct mtd_info *mtd,
 		else
 			ret = -EBADMSG;
 	}
-	if (ndsr & NDSR_CORERR)
+	if (ndsr & NDSR_CORERR) {
 		ret = 1;
+		if ((host->hwflags & HWFLAGS_ECC_BCH) && host->ecc_bch) {
+			ret = NDSR_ERR_CNT(ndsr);
+			ndsr &= ~(NDSR_ERR_CNT_MASK << NDSR_ERR_CNT_OFF);
+			nand_writel(host, NDSR, ndsr);
+		}
+	}
 	dev_dbg(host->dev, "%s(buf=%p, page=%d, oob_required=%d) => %d\n",
 		__func__, buf, page, oob_required, ret);
 	return ret;
@@ -1010,6 +1029,11 @@ static int mrvl_nand_scan(struct mtd_info *mtd)
 	ndcr = NDCR_ND_ARB_EN | NDCR_SPARE_EN;
 	ndcr |= NDCR_RD_ID_CNT(host->read_id_bytes);
 	host->reg_ndcr = ndcr;
+
+	/* Device detection must be done with BCH ECC disabled */
+	if (host->hwflags & HWFLAGS_ECC_BCH)
+		nand_writel(host, NDECCCTRL,
+			    nand_readl(host, NDECCCTRL) & ~NDECCCTRL_BCH_EN);
 
 	mrvl_nand_set_timing(host, true);
 	if (nand_scan_ident(mtd, 1, NULL)) {

@@ -53,6 +53,7 @@
 #define NDCB0		(0x48) /* Command Buffer0 */
 #define NDCB1		(0x4C) /* Command Buffer1 */
 #define NDCB2		(0x50) /* Command Buffer2 */
+#define NDCB3		(0x54) /* Command Buffer3 */
 
 #define NDCR_SPARE_EN		(0x1 << 31)
 #define NDCR_ECC_EN		(0x1 << 30)
@@ -150,6 +151,7 @@ struct mrvl_nand_host {
 	void __iomem		*mmio_base;
 	unsigned int		hwflags;
 #define HWFLAGS_ECC_BCH		BIT(0)
+#define HWFLAGS_HAS_NDCB3	BIT(1)
 
 	unsigned int		buf_start;
 	unsigned int		buf_count;
@@ -465,12 +467,19 @@ static void mrvl_nand_start(struct mrvl_nand_host *host)
 		dev_err(host->dev, "Waiting for command request failed\n");
 	} else {
 		/*
-		 * Writing 12 bytes to NDBC0 sets NDBC0, NDBC1 and NDBC2 !
+		 * Command buffer registers NDCB{0-2,3}
+		 * must be loaded by writing directly either 12 or 16
+		 * bytes directly to NDCB0, four bytes at a time.
+		 *
+		 * Direct write access to NDCB1, NDCB2 and NDCB3 is ignored
+		 * but each NDCBx register can be read.
 		 */
 		nand_writel(host, NDSR, NDSR_WRCMDREQ);
 		nand_writel(host, NDCB0, host->ndcb0);
 		nand_writel(host, NDCB0, host->ndcb1);
 		nand_writel(host, NDCB0, host->ndcb2);
+		if (host->hwflags & HWFLAGS_HAS_NDCB3)
+			nand_writel(host, NDCB0, host->ndcb3);
 	}
 }
 

@@ -1493,9 +1493,9 @@ config CMD_SPLASH
 
 config CMD_READLINE
 	tristate
-	prompt "Readline"
+	prompt "readline"
 	help
-	  rompt for user input
+	  Prompt for user input
 
 	  Usage: readline PROMPT VAR
 

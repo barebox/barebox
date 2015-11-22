@@ -424,7 +424,7 @@ static int ax88172_get_ethaddr(struct eth_device *edev, unsigned char *adr)
 	return 0;
 }
 
-int asix_rx_fixup_internal(struct usbnet *dev, void *buf, int len,
+static int asix_rx_fixup_internal(struct usbnet *dev, void *buf, int len,
 			   struct asix_rx_fixup_info *rx)
 {
 	int offset = 0;

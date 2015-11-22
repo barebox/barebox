@@ -158,7 +158,7 @@ struct asix_rx_fixup_info {
 	u16 size;
 	u16 offset;
 	bool split_head;
-	unsigned char ax_skb[RX_FIXUP_SIZE];
+	unsigned char ax_skb[RX_FIXUP_SIZE] __aligned(2);
 };
 
 struct asix_common_private {

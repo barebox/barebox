@@ -84,7 +84,7 @@ static struct rgb colors[] = {
 	{ 255, 255, 255 },
 };
 
-static void drawchar(struct fbc_priv *priv, int x, int y, char c)
+static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 {
 	void *buf;
 	int bpp = priv->fb->bits_per_pixel >> 3;
@@ -97,7 +97,8 @@ static void drawchar(struct fbc_priv *priv, int x, int y, char c)
 
 	buf = gui_screen_render_buffer(priv->sc);
 
-	inbuf = priv->font->data + c * priv->font->height;
+	i = find_font_index(priv->font, c);
+	inbuf = priv->font->data + i;
 
 	line_length = priv->fb->line_length;
 

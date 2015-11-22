@@ -20,6 +20,11 @@ config FONT_7x14
 config FONT_MINI_4x6
 	bool "Mini 4x6 font"
 
+config FONT_CUSTOM_16X
+	bool "Custom 16x16 font"
+	help
+	  This font is useful for Chinese and other non ascii chars.
+
 config FONT_AUTOSELECT
 	def_bool y
 	depends on !FONT_MINI_4x6

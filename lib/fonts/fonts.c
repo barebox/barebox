@@ -31,6 +31,29 @@ int font_register(struct font_desc *font)
 
 	return 0;
 }
+int find_font_index(const struct font_desc *font, int ch)
+{
+	int index;
+	if (font->index == NULL) {
+		index  = font->width + 7;
+		index /= 8;
+		index *= font->height;
+		index *= ch;
+	} else {
+		/*
+		* FIXME: use binary search instead!
+		*/
+		index = font->num_chars - 1;
+
+		while (index && font->index[index].wc != ch)
+			index--;
+
+		/* return 0 if not found. */
+		index = font->index->index;
+	}
+
+	return index;
+}
 
 const struct font_desc *find_font_enum(int n)
 {

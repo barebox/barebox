@@ -384,6 +384,7 @@ static int at24_probe(struct device_d *dev)
 		chip = *(struct at24_platform_data *)dev->platform_data;
 	} else {
 		unsigned long magic;
+		u32 page_size;
 
 		err = dev_get_drvdata(dev, (const void **)&magic);
 		if (err)
@@ -392,12 +393,17 @@ static int at24_probe(struct device_d *dev)
 		chip.byte_len = BIT(magic & AT24_BITMASK(AT24_SIZE_BYTELEN));
 		magic >>= AT24_SIZE_BYTELEN;
 		chip.flags = magic & AT24_BITMASK(AT24_SIZE_FLAGS);
-		/*
-		 * This is slow, but we can't know all eeproms, so we better
-		 * play safe. Specifying custom eeprom-types via platform_data
-		 * is recommended anyhow.
-		 */
-		chip.page_size = 1;
+		if (dev->device_node &&
+		    !of_property_read_u32(dev->device_node, "pagesize", &page_size))
+			chip.page_size = page_size;
+		else {
+			/*
+			 * This is slow, but we can't know all eeproms, so we better
+			 * play safe. Specifying custom eeprom-types via platform_data
+			 * is recommended anyhow.
+			 */
+			chip.page_size = 1;
+		}
 	}
 
 	if (!is_power_of_2(chip.byte_len))

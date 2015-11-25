@@ -22,6 +22,13 @@
 #ifndef __ASM_MIPS_STRING_H
 #define __ASM_MIPS_STRING_H
 
-/* nothing special yet */
+#ifdef CONFIG_MIPS_OPTIMIZED_STRING_FUNCTIONS
+
+#define __HAVE_ARCH_MEMCPY
+extern void *memcpy(void *, const void *, __kernel_size_t);
+#define __HAVE_ARCH_MEMSET
+extern void *memset(void *, int, __kernel_size_t);
+
+#endif
 
 #endif

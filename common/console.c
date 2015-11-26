@@ -31,6 +31,7 @@
 #include <kfifo.h>
 #include <module.h>
 #include <poller.h>
+#include <ratp_bb.h>
 #include <magicvar.h>
 #include <globalvar.h>
 #include <linux/list.h>
@@ -313,8 +314,16 @@ static int getc_raw(void)
 			if (!(cdev->f_active & CONSOLE_STDIN))
 				continue;
 			active = 1;
-			if (cdev->tstc(cdev))
-				return cdev->getc(cdev);
+			if (cdev->tstc(cdev)) {
+				int ch = cdev->getc(cdev);
+
+				if (IS_ENABLED(CONFIG_RATP) && ch == 0x01) {
+					barebox_ratp(cdev);
+					return -1;
+				}
+
+				return ch;
+			}
 		}
 		if (!active)
 			/* no active console found. bail out */
@@ -349,16 +358,26 @@ int getc(void)
 	start = get_time_ns();
 	while (1) {
 		if (tstc_raw()) {
-			kfifo_putc(console_input_fifo, getc_raw());
+			int c = getc_raw();
+
+			if (c < 0)
+				break;
+
+			kfifo_putc(console_input_fifo, c);
 
 			start = get_time_ns();
 		}
+
 		if (is_timeout(start, 100 * USECOND) &&
 				kfifo_len(console_input_fifo))
 			break;
 	}
 
+	if (!kfifo_len(console_input_fifo))
+		return -1;
+
 	kfifo_getc(console_input_fifo, &ch);
+
 	return ch;
 }
 EXPORT_SYMBOL(getc);

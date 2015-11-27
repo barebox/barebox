@@ -324,16 +324,16 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 
 	ret = protect(envfd, ~0, 0, 0);
 
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != ENOSYS) {
+	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
+	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {
 		printf("could not unprotect %s: %s\n", filename, errno_str());
 		goto out;
 	}
 
 	ret = erase(envfd, ~0, 0);
 
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != ENOSYS) {
+	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
+	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {
 		printf("could not erase %s: %s\n", filename, errno_str());
 		goto out;
 	}
@@ -355,8 +355,8 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 
 	ret = protect(envfd, ~0, 0, 1);
 
-	/* ENOSYS is no error here, many devices do not need it */
-	if (ret && errno != ENOSYS) {
+	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
+	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {
 		printf("could not protect %s: %s\n", filename, errno_str());
 		goto out;
 	}

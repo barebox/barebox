@@ -380,7 +380,7 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 
-	return (void __force __iomem *)res->start;
+	return IOMEM(res->start);
 }
 EXPORT_SYMBOL(dev_request_mem_region_by_name);
 
@@ -396,7 +396,7 @@ void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num)
 	if (IS_ERR(res))
 		return NULL;
 
-	return (void __force __iomem *)res->start;
+	return IOMEM(res->start);
 }
 EXPORT_SYMBOL(dev_request_mem_region_err_null);
 

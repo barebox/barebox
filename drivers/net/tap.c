@@ -99,14 +99,15 @@ static int tap_probe(struct device_d *dev)
 
 	eth_register(edev);
 
-        return 0;
+	return 0;
+
 out:
 	free(priv);
 	return ret;
 }
 
 static struct driver_d tap_driver = {
-        .name  = "tap",
-        .probe = tap_probe,
+	.name  = "tap",
+	.probe = tap_probe,
 };
 device_platform_driver(tap_driver);

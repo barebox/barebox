@@ -130,9 +130,6 @@ void perror(const char *s)
 }
 EXPORT_SYMBOL(perror);
 
-void (*do_execute)(void *func, int argc, char *argv[]);
-EXPORT_SYMBOL(do_execute);
-
 static char *model;
 
 /*

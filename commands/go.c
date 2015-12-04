@@ -60,10 +60,7 @@ static int do_go(int argc, char *argv[])
 
 	shutdown_barebox();
 
-	if (do_execute)
-		do_execute(func, argc - 1, &argv[1]);
-	else
-		func(argc - 1, &argv[1]);
+	func(argc - 1, &argv[1]);
 
 	/*
 	 * The application returned. Since we have shutdown barebox and

@@ -113,12 +113,6 @@ extern int (*barebox_main)(void);
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
 
-/*
- * architectures which have special calling conventions for
- * executing programs should set this. Used by the 'go' command
- */
-extern void (*do_execute)(void *func, int argc, char *argv[]);
-
 int run_shell(void);
 
 #ifdef CONFIG_SHELL_HUSH

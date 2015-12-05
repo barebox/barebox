@@ -1392,7 +1392,7 @@ static int smc91c111_set_ethaddr(struct eth_device *edev,
 		SMC_outw(priv, address, (ADDR0_REG + i));
 	}
 
-	return -1;
+	return 0;
 }
 
 #if (SMC_DEBUG > 2 )

@@ -243,7 +243,7 @@ static inline void pxa2xx_dram_init(void)
 
 void __bare_init __naked barebox_arm_reset_vector(void)
 {
-	unsigned long pssr = PSSR;
+	unsigned long pssr = PSPR;
 	unsigned long pc = get_pc();
 
 	arm_cpu_lowlevel_init();

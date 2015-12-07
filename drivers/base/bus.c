@@ -54,9 +54,6 @@ int device_match(struct device_d *dev, struct driver_d *drv)
 	    drv->of_compatible)
 		return of_match(dev, drv);
 
-	if (!strcmp(dev->name, drv->name))
-		return 0;
-
 	if (drv->id_table) {
 		const struct platform_device_id *id = drv->id_table;
 
@@ -67,6 +64,8 @@ int device_match(struct device_d *dev, struct driver_d *drv)
 			}
 			id++;
 		}
+	} else if (!strcmp(dev->name, drv->name)) {
+		return 0;
 	}
 
 	return -1;

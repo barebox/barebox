@@ -79,9 +79,10 @@
 
 struct fpgamgr {
 	struct firmware_handler fh;
-	struct device_d *dev;
+	struct device_d dev;
 	void __iomem *regs;
 	void __iomem *regs_data;
+	int programmed;
 };
 
 /* Get the FPGA mode */
@@ -303,12 +304,12 @@ static int fpgamgr_program_start(struct firmware_handler *fh)
 	/* unmap the bridges from NIC-301 */
 	writel(0x1, CYCLONE5_L3REGS_ADDRESS);
 
-	dev_dbg(mgr->dev, "start programming...\n");
+	dev_dbg(&mgr->dev, "start programming...\n");
 
 	/* initialize the FPGA Manager */
 	status = fpgamgr_program_init(mgr);
 	if (status) {
-		dev_err(mgr->dev, "program init failed with: %s\n",
+		dev_err(&mgr->dev, "program init failed with: %s\n",
 				strerror(-status));
 		return status;
 	}
@@ -356,31 +357,39 @@ static int fpgamgr_program_finish(struct firmware_handler *fh)
 	/* Ensure the FPGA entering config done */
 	status = fpgamgr_program_poll_cd(mgr);
 	if (status) {
-		dev_err(mgr->dev, "poll for config done failed with: %s\n",
+		dev_err(&mgr->dev, "poll for config done failed with: %s\n",
 				strerror(-status));
 		return status;
 	}
 
-	dev_dbg(mgr->dev, "waiting for init phase...\n");
+	dev_dbg(&mgr->dev, "waiting for init phase...\n");
 
 	/* Ensure the FPGA entering init phase */
 	status = fpgamgr_program_poll_initphase(mgr);
 	if (status) {
-		dev_err(mgr->dev, "poll for init phase failed with: %s\n",
+		dev_err(&mgr->dev, "poll for init phase failed with: %s\n",
 				strerror(-status));
 		return status;
 	}
 
-	dev_dbg(mgr->dev, "waiting for user mode...\n");
+	dev_dbg(&mgr->dev, "waiting for user mode...\n");
 
 	/* Ensure the FPGA entering user mode */
 	status = fpgamgr_program_poll_usermode(mgr);
 	if (status) {
-		dev_err(mgr->dev, "poll for user mode with: %s\n",
+		dev_err(&mgr->dev, "poll for user mode with: %s\n",
 				strerror(-status));
 		return status;
 	}
 
+	return 0;
+}
+
+/* Get current programmed state of fpga and put in "programmed" parameter */
+static int programmed_get(struct param_d *p, void *priv)
+{
+	struct fpgamgr *mgr = priv;
+	mgr->programmed = fpgamgr_get_mode(mgr) == FPGAMGRREGS_MODE_USERMODE;
 	return 0;
 }
 
@@ -390,6 +399,7 @@ static int fpgamgr_probe(struct device_d *dev)
 	struct firmware_handler *fh;
 	const char *alias = of_alias_get(dev->device_node);
 	const char *model = NULL;
+	struct param_d *p;
 	int ret;
 
 	dev_dbg(dev, "Probing FPGA firmware programmer\n");
@@ -422,17 +432,31 @@ static int fpgamgr_probe(struct device_d *dev)
 		fh->model = xstrdup(model);
 	fh->dev = dev;
 
-	mgr->dev = dev;
-
 	dev_dbg(dev, "Registering FPGA firmware programmer\n");
 
+	mgr->dev.id = DEVICE_ID_SINGLE;
+	strcpy(mgr->dev.name, "fpga");
+	mgr->dev.parent = dev;
+	ret = register_device(&mgr->dev);
+	if (ret)
+		goto out;
+
+	p = dev_add_param_bool(&mgr->dev, "programmed", NULL, programmed_get, &mgr->programmed, mgr);
+	if (IS_ERR(p)) {
+		ret = PTR_ERR(p);
+		goto out_unreg;
+	}
+
+	fh->dev = &mgr->dev;
 	ret = firmwaremgr_register(fh);
 	if (ret != 0) {
 		free(mgr);
-		goto out;
+		goto out_unreg;
 	}
 
 	return 0;
+out_unreg:
+	unregister_device(&mgr->dev);
 out:
 	free(fh->id);
 	free(mgr);

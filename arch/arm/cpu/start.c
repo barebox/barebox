@@ -118,6 +118,12 @@ static inline unsigned long arm_mem_boarddata(unsigned long membase,
 	return mem;
 }
 
+unsigned long arm_mem_ramoops_get(void)
+{
+	return arm_mem_ramoops(0, arm_stack_top);
+}
+EXPORT_SYMBOL_GPL(arm_mem_ramoops_get);
+
 static int barebox_memory_areas_init(void)
 {
 	unsigned long start = arm_head_bottom;

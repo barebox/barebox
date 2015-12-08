@@ -122,11 +122,23 @@ static inline unsigned long arm_mem_early_malloc_end(unsigned long membase,
 	return arm_mem_ttb(membase, endmem);
 }
 
+static inline unsigned long arm_mem_ramoops(unsigned long membase,
+					    unsigned long endmem)
+{
+	endmem = arm_mem_ttb(membase, endmem);
+#ifdef CONFIG_FS_PSTORE_RAMOOPS
+	endmem -= CONFIG_FS_PSTORE_RAMOOPS_SIZE;
+	endmem &= ~(SZ_4K - 1); /* Align to 4K */
+#endif
+
+	return endmem;
+}
+
 static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 						  unsigned long endmem,
 						  unsigned long size)
 {
-	endmem = arm_mem_ttb(membase, endmem);
+	endmem = arm_mem_ramoops(membase, endmem);
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
 		endmem -= size;

@@ -34,6 +34,8 @@
 #include "mmu-early.h"
 
 unsigned long arm_stack_top;
+static unsigned long arm_head_bottom;
+static unsigned long arm_barebox_size;
 static void *barebox_boarddata;
 
 static bool blob_is_fdt(const void *blob)
@@ -116,6 +118,18 @@ static inline unsigned long arm_mem_boarddata(unsigned long membase,
 	return mem;
 }
 
+static int barebox_memory_areas_init(void)
+{
+	unsigned long start = arm_head_bottom;
+	unsigned long size = arm_mem_barebox_image(0, arm_stack_top,
+						   arm_barebox_size) -
+			     arm_head_bottom;
+	request_sdram_region("board data", start, size);
+
+	return 0;
+}
+device_initcall(barebox_memory_areas_init);
+
 __noreturn void barebox_non_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
@@ -123,7 +137,6 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	unsigned long malloc_start, malloc_end;
 	unsigned long barebox_size = barebox_image_size +
 		((unsigned long)&__bss_stop - (unsigned long)&__bss_start);
-	unsigned long arm_head_bottom;
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
 		unsigned long barebox_base = arm_mem_barebox_image(membase,
@@ -139,6 +152,9 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
 	arm_stack_top = endmem;
+	arm_barebox_size = barebox_size;
+	arm_head_bottom = arm_mem_barebox_image(membase, endmem,
+						arm_barebox_size);
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
 		unsigned long ttb = arm_mem_ttb(membase, endmem);
@@ -175,6 +191,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 				 name, mem);
 			barebox_boarddata = memcpy((void *)mem, boarddata,
 						   totalsize);
+			arm_head_bottom = mem;
 		}
 	}
 

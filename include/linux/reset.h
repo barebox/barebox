@@ -15,16 +15,7 @@ void reset_control_put(struct reset_control *rstc);
 
 int __must_check device_reset(struct device_d *dev);
 
-static inline int device_reset_optional(struct device_d *dev)
-{
-	return device_reset(dev);
-}
-
-static inline struct reset_control *reset_control_get_optional(
-					struct device_d *dev, const char *id)
-{
-	return reset_control_get(dev, id);
-}
+int __must_check device_reset_us(struct device_d *dev, int us);
 
 #else
 
@@ -51,15 +42,10 @@ static inline void reset_control_put(struct reset_control *rstc)
 	WARN_ON(1);
 }
 
-static inline int device_reset_optional(struct device_d *dev)
+static inline int device_reset_us(struct device_d *dev, int us)
 {
-	return -ENOSYS;
-}
-
-static inline struct reset_control *reset_control_get_optional(
-					struct device_d *dev, const char *id)
-{
-	return ERR_PTR(-ENOSYS);
+	WARN_ON(1);
+	return 0;
 }
 
 #endif /* CONFIG_RESET_CONTROLLER */

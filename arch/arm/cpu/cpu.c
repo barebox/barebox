@@ -121,29 +121,3 @@ static int arm_request_stack(void)
 	return 0;
 }
 coredevice_initcall(arm_request_stack);
-
-#ifdef CONFIG_THUMB2_BAREBOX
-static void thumb2_execute(void *func, int argc, char *argv[])
-{
-	/*
-	 * Switch back to ARM mode before executing external
-	 * programs.
-	 */
-	__asm__ __volatile__ (
-		"mov r0, #0\n"
-		"mov r1, %0\n"
-		"mov r2, %1\n"
-		"bx %2\n"
-		:
-		: "r" (argc - 1), "r" (&argv[1]), "r" (func)
-		: "r0", "r1", "r2"
-	);
-}
-
-static int execute_init(void)
-{
-	do_execute = thumb2_execute;
-	return 0;
-}
-postcore_initcall(execute_init);
-#endif

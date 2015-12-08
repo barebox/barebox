@@ -21,6 +21,7 @@
 #include <init.h>
 #include <i2c/i2c.h>
 #include <linux/clk.h>
+#include <linux/kernel.h>
 #include <environment.h>
 #include <mach/bbu.h>
 #include <mach/imx6.h>
@@ -29,7 +30,6 @@
 #define ETH_PHY_RST	IMX_GPIO_NR(7, 6)
 #define ETH_PHY_PWR	IMX_GPIO_NR(3, 20)
 #define ETH_PHY_INT	IMX_GPIO_NR(7, 1)
-#define DIV_ROUND_UP(n,d)      (((n) + (d) - 1) / (d))
 #define DIV_ROUND(n,d)         (((n) + ((d)/2)) / (d))
 
 #define LTC3676_BUCK1		0x01

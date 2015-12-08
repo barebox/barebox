@@ -6,4 +6,13 @@ if I2C
 source drivers/i2c/algos/Kconfig
 source drivers/i2c/busses/Kconfig
 
+config I2C_MUX
+	tristate "I2C bus multiplexing support"
+	help
+	  Say Y here if you want the I2C core to support the ability to
+	  handle multiplexed I2C bus topologies, by presenting each
+	  multiplexed segment as a I2C adapter.
+
+source drivers/i2c/muxes/Kconfig
+
 endif

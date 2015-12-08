@@ -590,7 +590,7 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 
 	pdata = pdev->platform_data;
 
-	i2c_fsl = kzalloc(sizeof(struct fsl_i2c_struct), GFP_KERNEL);
+	i2c_fsl = xzalloc(sizeof(*i2c_fsl));
 
 #ifdef CONFIG_COMMON_CLK
 	i2c_fsl->clk = clk_get(pdev, NULL);

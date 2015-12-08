@@ -42,7 +42,7 @@ struct boardinfo {
 };
 
 static LIST_HEAD(board_list);
-static LIST_HEAD(adapter_list);
+LIST_HEAD(i2c_adapter_list);
 
 /**
  * i2c_transfer - execute a single or combined I2C message
@@ -358,6 +358,14 @@ int i2c_recover_bus(struct i2c_adapter *adap)
 	return adap->bus_recovery_info->recover_bus(adap);
 }
 
+static void i2c_info(struct device_d *dev)
+{
+	const struct i2c_client *client = to_i2c_client(dev);
+
+	printf("  Address: 0x%02x\n", client->addr);
+	return;
+}
+
 /**
  * i2c_new_device - instantiate one new I2C device
  *
@@ -396,6 +404,7 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 		free(client);
 		return NULL;
 	}
+	client->dev.info = i2c_info;
 
 	return client;
 }
@@ -529,7 +538,7 @@ struct i2c_adapter *i2c_get_adapter(int busnum)
 {
 	struct i2c_adapter *adap;
 
-	list_for_each_entry(adap, &adapter_list, list)
+	for_each_i2c_adapter(adap)
 		if (adap->nr == busnum)
 			return adap;
 	return NULL;
@@ -539,7 +548,7 @@ struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node)
 {
 	struct i2c_adapter *adap;
 
-	list_for_each_entry(adap, &adapter_list, list)
+	for_each_i2c_adapter(adap)
 		if (adap->dev.device_node == node)
 			return adap;
 
@@ -584,7 +593,7 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	if (ret)
 		return ret;
 
-	list_add_tail(&adapter->list, &adapter_list);
+	list_add_tail(&adapter->list, &i2c_adapter_list);
 
 	/* populate children from any i2c device tables */
 	scan_boardinfo(adapter);

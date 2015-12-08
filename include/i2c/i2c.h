@@ -121,14 +121,27 @@ struct i2c_adapter {
 	struct i2c_bus_recovery_info *bus_recovery_info;
 };
 
+#define to_i2c_adapter(d) container_of(d, struct i2c_adapter, dev)
 
 struct i2c_client {
 	struct device_d		dev;
 	struct i2c_adapter	*adapter;
 	unsigned short		addr;
+	void			*driver_data;	/* Driver data, set and get with
+							dev_set/get_drvdata */
 };
 
 #define to_i2c_client(a)	container_of(a, struct i2c_client, dev)
+
+static inline void *i2c_get_clientdata(const struct i2c_client *dev)
+{
+	return dev->driver_data;
+}
+
+static inline void i2c_set_clientdata(struct i2c_client *dev, void *data)
+{
+	dev->driver_data = data;
+}
 
 /*flags for the client struct: */
 #define I2C_CLIENT_PEC	0x04		/* Use Packet Error Checking */
@@ -235,13 +248,21 @@ extern int i2c_add_numbered_adapter(struct i2c_adapter *adapter);
 struct i2c_adapter *i2c_get_adapter(int busnum);
 struct i2c_adapter *of_find_i2c_adapter_by_node(struct device_node *node);
 
+extern struct list_head i2c_adapter_list;
+#define for_each_i2c_adapter(adap) \
+	list_for_each_entry(adap, &i2c_adapter_list, list)
+
 /* For devices that use several addresses, use i2c_new_dummy() to make
  * client handles for the extra addresses.
  */
 extern struct i2c_client *
 i2c_new_dummy(struct i2c_adapter *adap, u16 address);
 
-
+/* Return the adapter number for a specific adapter */
+static inline int i2c_adapter_id(struct i2c_adapter *adap)
+{
+	return adap->nr;
+}
 
 extern int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num);
 extern int i2c_master_send(struct i2c_client *client, const char *buf, int count);

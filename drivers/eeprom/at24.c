@@ -84,7 +84,9 @@ static unsigned io_limit = 128;
  */
 static unsigned write_timeout = 25;
 
+/* number of bits in driver_data reserved for eeprom byte length */
 #define AT24_SIZE_BYTELEN 5
+/* number of bits in driver_data reserved for flags */
 #define AT24_SIZE_FLAGS 8
 
 #define AT24_BITMASK(x) (BIT(x) - 1)
@@ -113,6 +115,7 @@ static struct platform_device_id at24_ids[] = {
 	{ "24c256", AT24_DEVICE_MAGIC(262144 / 8, AT24_FLAG_ADDR16) },
 	{ "24c512", AT24_DEVICE_MAGIC(524288 / 8, AT24_FLAG_ADDR16) },
 	{ "24c1024", AT24_DEVICE_MAGIC(1048576 / 8, AT24_FLAG_ADDR16) },
+	{ "24c1025", AT24_DEVICE_MAGIC(1048576 / 8, AT24_FLAG_ADDR16 | AT24_FLAG_BANK_BIT_2) },
 	{ "at24", 0 },
 	{ /* END OF LIST */ }
 };
@@ -381,6 +384,7 @@ static int at24_probe(struct device_d *dev)
 		chip = *(struct at24_platform_data *)dev->platform_data;
 	} else {
 		unsigned long magic;
+		u32 page_size;
 
 		err = dev_get_drvdata(dev, (const void **)&magic);
 		if (err)
@@ -389,12 +393,17 @@ static int at24_probe(struct device_d *dev)
 		chip.byte_len = BIT(magic & AT24_BITMASK(AT24_SIZE_BYTELEN));
 		magic >>= AT24_SIZE_BYTELEN;
 		chip.flags = magic & AT24_BITMASK(AT24_SIZE_FLAGS);
-		/*
-		 * This is slow, but we can't know all eeproms, so we better
-		 * play safe. Specifying custom eeprom-types via platform_data
-		 * is recommended anyhow.
-		 */
-		chip.page_size = 1;
+		if (dev->device_node &&
+		    !of_property_read_u32(dev->device_node, "pagesize", &page_size))
+			chip.page_size = page_size;
+		else {
+			/*
+			 * This is slow, but we can't know all eeproms, so we better
+			 * play safe. Specifying custom eeprom-types via platform_data
+			 * is recommended anyhow.
+			 */
+			chip.page_size = 1;
+		}
 	}
 
 	if (!is_power_of_2(chip.byte_len))
@@ -460,11 +469,12 @@ static int at24_probe(struct device_d *dev)
 
 	/* use dummy devices for multiple-address chips */
 	for (i = 1; i < num_addresses; i++) {
+		const int shift = (chip.flags & AT24_FLAG_BANK_BIT_2) ? 2 : 0;
 		at24->client[i] = i2c_new_dummy(client->adapter,
-					client->addr + i);
+					client->addr + (i << shift));
 		if (!at24->client[i]) {
 			dev_err(&client->dev, "address 0x%02x unavailable\n",
-					client->addr + i);
+					client->addr + (i << shift));
 			err = -EADDRINUSE;
 			goto err_clients;
 		}

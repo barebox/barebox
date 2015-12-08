@@ -29,7 +29,7 @@ struct tap_priv {
 	char *name;
 };
 
-int tap_eth_send (struct eth_device *edev, void *packet, int length)
+static int tap_eth_send(struct eth_device *edev, void *packet, int length)
 {
 	struct tap_priv *priv = edev->priv;
 
@@ -37,7 +37,7 @@ int tap_eth_send (struct eth_device *edev, void *packet, int length)
 	return 0;
 }
 
-int tap_eth_rx (struct eth_device *edev)
+static int tap_eth_rx(struct eth_device *edev)
 {
 	struct tap_priv *priv = edev->priv;
 	int length;
@@ -50,12 +50,12 @@ int tap_eth_rx (struct eth_device *edev)
 	return 0;
 }
 
-int tap_eth_open(struct eth_device *edev)
+static int tap_eth_open(struct eth_device *edev)
 {
 	return 0;
 }
 
-void tap_eth_halt (struct eth_device *edev)
+static void tap_eth_halt(struct eth_device *edev)
 {
 	/* nothing to do here */
 }
@@ -70,7 +70,7 @@ static int tap_set_ethaddr(struct eth_device *edev, const unsigned char *adr)
 	return 0;
 }
 
-int tap_probe(struct device_d *dev)
+static int tap_probe(struct device_d *dev)
 {
 	struct eth_device *edev;
 	struct tap_priv *priv;
@@ -99,14 +99,15 @@ int tap_probe(struct device_d *dev)
 
 	eth_register(edev);
 
-        return 0;
+	return 0;
+
 out:
 	free(priv);
 	return ret;
 }
 
 static struct driver_d tap_driver = {
-        .name  = "tap",
-        .probe = tap_probe,
+	.name  = "tap",
+	.probe = tap_probe,
 };
 device_platform_driver(tap_driver);

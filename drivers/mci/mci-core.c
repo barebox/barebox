@@ -437,6 +437,9 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->area_type = area_type;
 	part->part_cfg = part_cfg;
 
+	if (area_type == MMC_BLK_DATA_AREA_MAIN)
+		part->blk.cdev.device_node = mci->host->hw_dev->device_node;
+
 	mci->nr_parts++;
 }
 

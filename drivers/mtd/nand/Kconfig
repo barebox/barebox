@@ -92,17 +92,18 @@ config NAND_OMAP_GPMC
 
 config NAND_ORION
 	bool
-	prompt "Orion NAND driver"
+	prompt "Marvell Orion NAND driver"
 	depends on ARCH_KIRKWOOD
 	help
 	  Support for the Orion NAND controller, present in Kirkwood SoCs.
 
 config NAND_MRVL_NFC
 	bool
-	prompt "Marvell NAND driver"
-	depends on ARCH_PXA3XX
+	prompt "Marvell PXA3xx NAND driver"
+	depends on ARCH_ARMADA_370 || ARCH_ARMADA_XP || ARCH_PXA3XX
 	help
-	  Support for the PXA3xx NAND controller, present in pxa3xx SoCs.
+	  Support for the PXA3xx NAND controller, present in Armada 370/XP and
+	  PXA3xx SoCs.
 
 config NAND_ATMEL
 	bool

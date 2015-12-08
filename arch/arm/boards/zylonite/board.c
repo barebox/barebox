@@ -28,6 +28,8 @@
 #include <net/smc91111.h>
 #include <platform_data/mtd-nand-mrvl.h>
 #include <pwm.h>
+#include <linux/clk.h>
+#include <linux/clkdev.h>
 #include <linux/sizes.h>
 
 #include <mach/devices.h>
@@ -60,11 +62,16 @@ static mfp_cfg_t pxa310_mfp_cfg[] = {
 
 static int zylonite_devices_init(void)
 {
+	struct clk *clk;
+
 	armlinux_set_architecture(MACH_TYPE_ZYLONITE);
 	pxa_add_uart((void *)0x40100000, 0);
 	add_generic_device("smc91c111", DEVICE_ID_DYNAMIC, NULL,
 			   0x14000300, 0x100000, IORESOURCE_MEM,
 			   &smsc91x_pdata);
+	clk = clk_get_sys("nand", NULL);
+	if (!IS_ERR(clk))
+		clkdev_add_physbase(clk, 0x43100000, NULL);
 	add_generic_device("mrvl_nand", DEVICE_ID_DYNAMIC, NULL,
 			   0x43100000, 0x1000, IORESOURCE_MEM, &nand_pdata);
 	devfs_add_partition("nand0", SZ_1M, SZ_256K, DEVFS_PARTITION_FIXED,

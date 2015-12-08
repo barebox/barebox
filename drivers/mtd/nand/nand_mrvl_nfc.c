@@ -24,7 +24,6 @@
 #include <linux/types.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/clock.h>
 #include <malloc.h>
 #include <of_mtd.h>
 #include <stmp-device.h>
@@ -54,6 +53,7 @@
 #define NDCB0		(0x48) /* Command Buffer0 */
 #define NDCB1		(0x4C) /* Command Buffer1 */
 #define NDCB2		(0x50) /* Command Buffer2 */
+#define NDCB3		(0x54) /* Command Buffer3 */
 
 #define NDCR_SPARE_EN		(0x1 << 31)
 #define NDCR_ECC_EN		(0x1 << 30)
@@ -93,6 +93,8 @@
 #define NDSR_RDDREQ		(0x1 << 1)
 #define NDSR_WRCMDREQ		(0x1)
 
+#define NDECCCTRL_BCH_EN	BIT(0)
+
 #define NDCB0_LEN_OVRD		(0x1 << 28)
 #define NDCB0_ST_ROW_EN         (0x1 << 26)
 #define NDCB0_AUTO_RS		(0x1 << 25)
@@ -130,11 +132,16 @@
 #define nand_readsl(host, off, buf, nbbytes)		\
 	readsl((host)->mmio_base + (off), buf, nbbytes)
 
+struct mrvl_nand_variant {
+	unsigned int	hwflags;
+};
+
 struct mrvl_nand_host {
 	struct mtd_info		mtd;
 	struct nand_chip	chip;
 	struct mtd_partition	*parts;
 	struct device_d		*dev;
+	struct clk		*core_clk;
 
 	/* calculated from mrvl_nand_flash data */
 	unsigned int		col_addr_cycles;
@@ -142,6 +149,9 @@ struct mrvl_nand_host {
 	size_t			read_id_bytes;
 
 	void __iomem		*mmio_base;
+	unsigned int		hwflags;
+#define HWFLAGS_ECC_BCH		BIT(0)
+#define HWFLAGS_HAS_NDCB3	BIT(1)
 
 	unsigned int		buf_start;
 	unsigned int		buf_count;
@@ -153,8 +163,10 @@ struct mrvl_nand_host {
 	int			ecc_strength;
 	int			ecc_step;
 
+	int			num_cs;		/* avaiable CS signals */
 	int			cs;		/* selected chip 0/1 */
 	int			use_ecc;	/* use HW ECC ? */
+	int			ecc_bch;	/* HW ECC is BCH */
 	int			use_spare;	/* use spare ? */
 	int			flash_bbt;
 
@@ -219,6 +231,42 @@ static struct nand_ecclayout ecc_layout_2KB_hwecc = {
 	.oobfree = { {0, 40} }
 };
 
+static struct nand_ecclayout ecc_layout_2KB_bch4bit = {
+	.eccbytes = 32,
+	.eccpos = {
+		32, 33, 34, 35, 36, 37, 38, 39,
+		40, 41, 42, 43, 44, 45, 46, 47,
+		48, 49, 50, 51, 52, 53, 54, 55,
+		56, 57, 58, 59, 60, 61, 62, 63},
+	.oobfree = { {2, 30} }
+};
+
+static struct nand_ecclayout ecc_layout_4KB_bch4bit = {
+	.eccbytes = 64,
+	.eccpos = {
+		32,  33,  34,  35,  36,  37,  38,  39,
+		40,  41,  42,  43,  44,  45,  46,  47,
+		48,  49,  50,  51,  52,  53,  54,  55,
+		56,  57,  58,  59,  60,  61,  62,  63,
+		96,  97,  98,  99,  100, 101, 102, 103,
+		104, 105, 106, 107, 108, 109, 110, 111,
+		112, 113, 114, 115, 116, 117, 118, 119,
+		120, 121, 122, 123, 124, 125, 126, 127},
+	/* Bootrom looks in bytes 0 & 5 for bad blocks */
+	.oobfree = { {1, 4}, {6, 26}, {64, 32} }
+};
+
+static struct nand_ecclayout ecc_layout_4KB_bch8bit = {
+	.eccbytes = 64,
+	.eccpos = {
+		32,  33,  34,  35,  36,  37,  38,  39,
+		40,  41,  42,  43,  44,  45,  46,  47,
+		48,  49,  50,  51,  52,  53,  54,  55,
+		56,  57,  58,  59,  60,  61,  62,  63},
+	/* Bootrom looks in bytes 0 & 5 for bad blocks */
+	.oobfree = { {1, 4}, {6, 26} }
+};
+
 #define NDTR0_tCH(c)	(min((c), 7) << 19)
 #define NDTR0_tCS(c)	(min((c), 7) << 16)
 #define NDTR0_tWH(c)	(min((c), 7) << 11)
@@ -233,9 +281,22 @@ static struct nand_ecclayout ecc_layout_2KB_hwecc = {
 #define mtd_info_to_host(mtd) ((struct mrvl_nand_host *) \
 			       (((struct nand_chip *)((mtd)->priv))->priv))
 
+static const struct mrvl_nand_variant pxa3xx_variant = {
+	.hwflags	= 0,
+};
+
+static const struct mrvl_nand_variant armada370_variant = {
+	.hwflags	= HWFLAGS_ECC_BCH | HWFLAGS_HAS_NDCB3,
+};
+
 static struct of_device_id mrvl_nand_dt_ids[] = {
 	{
 		.compatible = "marvell,pxa3xx-nand",
+		.data = &pxa3xx_variant,
+	},
+	{
+		.compatible = "marvell,armada370-nand",
+		.data = &armada370_variant,
 	},
 	{}
 };
@@ -270,6 +331,7 @@ static struct mrvl_nand_timing timings[] = {
 	{ 0x46ec, 10,  0, 20,  40, 30,  40, 11123, 110, 10, },
 	{ 0xdaec, 10,  0, 20,  40, 30,  40, 11123, 110, 10, },
 	{ 0xd7ec, 10,  0, 20,  40, 30,  40, 11123, 110, 10, },
+	{ 0xd3ec,  5, 20, 10,  12, 10,  12, 25000,  60, 10, },
 	{ 0xa12c, 10, 25, 15,  25, 15,  30, 25000,  60, 10, },
 	{ 0xb12c, 10, 25, 15,  25, 15,  30, 25000,  60, 10, },
 	{ 0xdc2c, 10, 25, 15,  25, 15,  30, 25000,  60, 10, },
@@ -281,10 +343,10 @@ static struct mrvl_nand_timing timings[] = {
 static void mrvl_nand_set_timing(struct mrvl_nand_host *host, bool use_default)
 {
 	struct mtd_info *mtd = &host->mtd;
+	unsigned long nand_clk = clk_get_rate(host->core_clk);
 	struct mrvl_nand_timing *t;
 	uint32_t ndtr0, ndtr1;
 	u16 id;
-	unsigned long nand_clk = pxa_get_nandclk();
 
 	if (use_default) {
 		id = 0;
@@ -377,6 +439,17 @@ static void mrvl_nand_start(struct mrvl_nand_host *host)
 {
 	uint32_t ndcr;
 
+	if (host->hwflags & HWFLAGS_ECC_BCH) {
+		uint32_t reg = nand_readl(host, NDECCCTRL);
+
+		if (host->use_ecc && host->ecc_bch)
+			reg |= NDECCCTRL_BCH_EN;
+		else
+			reg &= ~NDECCCTRL_BCH_EN;
+
+		nand_writel(host, NDECCCTRL, reg);
+	}
+
 	ndcr = host->reg_ndcr;
 	if (host->use_ecc)
 		ndcr |= NDCR_ECC_EN;
@@ -403,12 +476,19 @@ static void mrvl_nand_start(struct mrvl_nand_host *host)
 		dev_err(host->dev, "Waiting for command request failed\n");
 	} else {
 		/*
-		 * Writing 12 bytes to NDBC0 sets NDBC0, NDBC1 and NDBC2 !
+		 * Command buffer registers NDCB{0-2,3}
+		 * must be loaded by writing directly either 12 or 16
+		 * bytes directly to NDCB0, four bytes at a time.
+		 *
+		 * Direct write access to NDCB1, NDCB2 and NDCB3 is ignored
+		 * but each NDCBx register can be read.
 		 */
 		nand_writel(host, NDSR, NDSR_WRCMDREQ);
 		nand_writel(host, NDCB0, host->ndcb0);
 		nand_writel(host, NDCB0, host->ndcb1);
 		nand_writel(host, NDCB0, host->ndcb2);
+		if (host->hwflags & HWFLAGS_HAS_NDCB3)
+			nand_writel(host, NDCB0, host->ndcb3);
 	}
 }
 
@@ -562,6 +642,7 @@ static int prepare_set_command(struct mrvl_nand_host *host, int command,
 
 	case NAND_CMD_PAGEPROG:
 		host->ndcb0 |= NDCB0_CMD_TYPE(0x1)
+				| NDCB0_AUTO_RS
 				| NDCB0_DBC
 				| (NAND_CMD_PAGEPROG << 8)
 				| NAND_CMD_SEQIN
@@ -599,6 +680,7 @@ static int prepare_set_command(struct mrvl_nand_host *host, int command,
 
 	case NAND_CMD_ERASE1:
 		host->ndcb0 |= NDCB0_CMD_TYPE(2)
+				| NDCB0_AUTO_RS
 				| NDCB0_ADDR_CYC(3)
 				| NDCB0_DBC
 				| (NAND_CMD_ERASE2 << 8)
@@ -719,7 +801,7 @@ static int mrvl_nand_write_page_hwecc(struct mtd_info *mtd,
 		memcpy(host->data_buff + mtd->writesize, chip->oob_poi,
 		       mtd->oobsize);
 	else
-		memset(host->data_buff + mtd->writesize, 0, mtd->oobsize);
+		memset(host->data_buff + mtd->writesize, 0xff, mtd->oobsize);
 	dev_dbg(host->dev, "%s(buf=%p, oob_required=%d) => 0\n",
 		__func__, buf, oob_required);
 	return 0;
@@ -743,8 +825,14 @@ static int mrvl_nand_read_page_hwecc(struct mtd_info *mtd,
 		else
 			ret = -EBADMSG;
 	}
-	if (ndsr & NDSR_CORERR)
+	if (ndsr & NDSR_CORERR) {
 		ret = 1;
+		if ((host->hwflags & HWFLAGS_ECC_BCH) && host->ecc_bch) {
+			ret = NDSR_ERR_CNT(ndsr);
+			ndsr &= ~(NDSR_ERR_CNT_MASK << NDSR_ERR_CNT_OFF);
+			nand_writel(host, NDSR, ndsr);
+		}
+	}
 	dev_dbg(host->dev, "%s(buf=%p, page=%d, oob_required=%d) => %d\n",
 		__func__, buf, page, oob_required, ret);
 	return ret;
@@ -821,32 +909,124 @@ static void mrvl_nand_config_flash(struct mrvl_nand_host *host)
 	host->reg_ndcr = ndcr;
 }
 
-static int pxa_ecc_init(struct mrvl_nand_host *host,
-			struct nand_ecc_ctrl *ecc,
-			int strength, int ecc_stepsize, int page_size)
+static int pxa_ecc_strength1(struct mrvl_nand_host *host,
+		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
 {
-	if (strength == 1 && ecc_stepsize == 512 && page_size == 2048) {
+	if (ecc_stepsize == 512 && page_size == 2048) {
 		host->chunk_size = 2048;
 		host->spare_size = 40;
 		host->ecc_size = 24;
+		host->ecc_bch = 0;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
 		ecc->strength = 1;
 		ecc->layout = &ecc_layout_2KB_hwecc;
+		return 0;
+	}
 
-	} else if (strength == 1 && ecc_stepsize == 512 && page_size == 512) {
+	if (ecc_stepsize == 512 && page_size == 512) {
 		host->chunk_size = 512;
 		host->spare_size = 8;
 		host->ecc_size = 8;
+		host->ecc_bch = 0;
 		ecc->mode = NAND_ECC_HW;
 		ecc->size = 512;
 		ecc->layout = &ecc_layout_512B_hwecc;
 		ecc->strength = 1;
-	} else {
+		return 0;
+	}
+
+	return -ENODEV;
+}
+
+static int pxa_ecc_strength4(struct mrvl_nand_host *host,
+		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
+{
+	if (!(host->hwflags & HWFLAGS_ECC_BCH))
+		return -ENODEV;
+
+	/*
+	 * Required ECC: 4-bit correction per 512 bytes
+	 * Select: 16-bit correction per 2048 bytes
+	 */
+	if (ecc_stepsize == 512 && page_size == 2048) {
+		host->chunk_size = 2048;
+		host->spare_size = 32;
+		host->ecc_size = 32;
+		host->ecc_bch = 1;
+		ecc->mode = NAND_ECC_HW;
+		ecc->size = 2048;
+		ecc->layout = &ecc_layout_2KB_bch4bit;
+		ecc->strength = 16;
+		return 0;
+	}
+
+	if (ecc_stepsize == 512 && page_size == 4096) {
+		host->chunk_size = 2048;
+		host->spare_size = 32;
+		host->ecc_size = 32;
+		host->ecc_bch = 1;
+		ecc->mode = NAND_ECC_HW;
+		ecc->size = 2048;
+		ecc->layout = &ecc_layout_4KB_bch4bit;
+		ecc->strength = 16;
+		return 0;
+	}
+
+	return -ENODEV;
+}
+
+static int pxa_ecc_strength8(struct mrvl_nand_host *host,
+		struct nand_ecc_ctrl *ecc, int ecc_stepsize, int page_size)
+{
+	if (!(host->hwflags & HWFLAGS_ECC_BCH))
+		return -ENODEV;
+
+	/*
+	 * Required ECC: 8-bit correction per 512 bytes
+	 * Select: 16-bit correction per 1024 bytes
+	 */
+	if (ecc_stepsize == 512 && page_size == 4096) {
+		host->chunk_size = 1024;
+		host->spare_size = 0;
+		host->ecc_size = 32;
+		host->ecc_bch = 1;
+		ecc->mode = NAND_ECC_HW;
+		ecc->size = 1024;
+		ecc->layout = &ecc_layout_4KB_bch8bit;
+		ecc->strength = 16;
+		return 0;
+	}
+
+	return -ENODEV;
+}
+
+static int pxa_ecc_init(struct mrvl_nand_host *host,
+			struct nand_ecc_ctrl *ecc,
+			int strength, int ecc_stepsize, int page_size)
+{
+	int ret;
+
+	switch (strength) {
+	case 1:
+		ret = pxa_ecc_strength1(host, ecc, ecc_stepsize, page_size);
+		break;
+	case 4:
+		ret = pxa_ecc_strength4(host, ecc, ecc_stepsize, page_size);
+		break;
+	case 8:
+		ret = pxa_ecc_strength8(host, ecc, ecc_stepsize, page_size);
+		break;
+	default:
+		ret = -ENODEV;
+		break;
+	}
+
+	if (ret) {
 		dev_err(host->dev,
 			"ECC strength %d at page size %d is not supported\n",
 			strength, page_size);
-		return -ENODEV;
+		return ret;
 	}
 
 	dev_info(host->dev, "ECC strength %d, ECC step size %d\n",
@@ -867,6 +1047,11 @@ static int mrvl_nand_scan(struct mtd_info *mtd)
 	ndcr = NDCR_ND_ARB_EN | NDCR_SPARE_EN;
 	ndcr |= NDCR_RD_ID_CNT(host->read_id_bytes);
 	host->reg_ndcr = ndcr;
+
+	/* Device detection must be done with BCH ECC disabled */
+	if (host->hwflags & HWFLAGS_ECC_BCH)
+		nand_writel(host, NDECCCTRL,
+			    nand_readl(host, NDECCCTRL) & ~NDECCCTRL_BCH_EN);
 
 	mrvl_nand_set_timing(host, true);
 	if (nand_scan_ident(mtd, 1, NULL)) {
@@ -927,6 +1112,7 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 
 	pdata = dev->platform_data;
 	host = xzalloc(sizeof(*host));
+	host->num_cs = 1;
 	host->cs = 0;
 	mtd = &host->mtd;
 	mtd->priv = &host->chip;
@@ -954,6 +1140,13 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 		free(host);
 		return host->mmio_base;
 	}
+	host->core_clk = clk_get(dev, NULL);
+	if (IS_ERR(host->core_clk)) {
+		free(host);
+		return (void *)host->core_clk;
+	}
+	clk_enable(host->core_clk);
+
 	if (pdata) {
 		host->keep_config = pdata->keep_config;
 		host->flash_bbt = pdata->flash_bbt;
@@ -973,12 +1166,32 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 static int mrvl_nand_probe_dt(struct mrvl_nand_host *host)
 {
 	struct device_node *np = host->dev->device_node;
+	const struct of_device_id *match;
+	const struct mrvl_nand_variant *variant;
+
+	if (!IS_ENABLED(CONFIG_OFTREE) || host->dev->platform_data)
+		return 0;
+
+	match = of_match_node(mrvl_nand_dt_ids, np);
+	if (!match)
+		return -EINVAL;
+	variant = match->data;
 
 	if (of_get_property(np, "marvell,nand-keep-config", NULL))
 		host->keep_config = 1;
-	of_property_read_u32(np, "num-cs", &host->cs);
+	of_property_read_u32(np, "num-cs", &host->num_cs);
 	if (of_get_nand_on_flash_bbt(np))
 		host->flash_bbt = 1;
+
+	host->ecc_strength = of_get_nand_ecc_strength(np);
+	if (host->ecc_strength < 0)
+		host->ecc_strength = 0;
+
+	host->ecc_step = of_get_nand_ecc_step_size(np);
+	if (host->ecc_step < 0)
+		host->ecc_step = 0;
+
+	host->hwflags = variant->hwflags;
 
 	return 0;
 }

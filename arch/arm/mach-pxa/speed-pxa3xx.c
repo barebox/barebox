@@ -8,6 +8,9 @@
  */
 
 #include <common.h>
+#include <init.h>
+#include <linux/clk.h>
+#include <linux/clkdev.h>
 #include <mach/clock.h>
 #include <mach/pxa-regs.h>
 
@@ -24,10 +27,17 @@ unsigned long pxa_get_pwmclk(void)
 	return BASE_CLK;
 }
 
-unsigned long pxa_get_nandclk(void)
+static int pxa3xx_clock_init(void)
 {
-	if (cpu_is_pxa320())
-		return 104000000;
-	else
-		return 156000000;
+	unsigned long nand_rate = (cpu_is_pxa320()) ? 104000000 : 156000000;
+	struct clk *clk;
+	int ret;
+
+	clk = clk_fixed("nand", nand_rate);
+	ret = clk_register_clkdev(clk, NULL, "nand");
+	if (ret)
+		return ret;
+
+	return 0;
 }
+postcore_initcall(pxa3xx_clock_init);

@@ -17,6 +17,8 @@ config ARCH_PXA2XX
 config ARCH_PXA3XX
        bool
        select CPU_XSC3
+       select CLKDEV_LOOKUP
+       select COMMON_CLK
 
 config ARCH_PXA310
        bool

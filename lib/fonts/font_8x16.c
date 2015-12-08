@@ -4,6 +4,7 @@
 /*                                            */
 /**********************************************/
 
+#include <init.h>
 #include <module.h>
 #include <linux/font.h>
 
@@ -4621,10 +4622,15 @@ static const unsigned char fontdata_8x16[FONTDATAMAX] = {
 
 };
 
-const struct font_desc font_vga_8x16 = {
+static struct font_desc font_vga_8x16 = {
 	.name	= "VGA8x16",
 	.width	= 8,
 	.height	= 16,
 	.data	= fontdata_8x16,
 };
-EXPORT_SYMBOL(font_vga_8x16);
+
+static int font_vga_8x16_register(void)
+{
+	return font_register(&font_vga_8x16);
+}
+postcore_initcall(font_vga_8x16_register);

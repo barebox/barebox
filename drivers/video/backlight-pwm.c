@@ -39,6 +39,7 @@ struct pwm_backlight {
 	int enable_active_high;
 	int max_value;
 	int enabled;
+	unsigned int scale;
 };
 
 static int backlight_pwm_enable(struct pwm_backlight *pwm_backlight)
@@ -87,18 +88,26 @@ static int backlight_pwm_disable(struct pwm_backlight *pwm_backlight)
 	return 0;
 }
 
+static int compute_duty_cycle(struct pwm_backlight *pwm_backlight, int brightness)
+{
+	int duty_cycle;
+
+	if (pwm_backlight->levels)
+		duty_cycle = pwm_backlight->levels[brightness];
+	else
+		duty_cycle = brightness;
+
+	return duty_cycle * pwm_backlight->period / pwm_backlight->scale;
+}
+
 static int backlight_pwm_set(struct backlight_device *backlight,
 		int brightness)
 {
 	struct pwm_backlight *pwm_backlight = container_of(backlight,
 			struct pwm_backlight, backlight);
-	unsigned long long duty =  pwm_backlight->period;
-	unsigned int max = pwm_backlight->backlight.brightness_max;
 
-	duty *= brightness;
-	do_div(duty, max);
-
-	pwm_config(pwm_backlight->pwm, duty, pwm_backlight->period);
+	pwm_config(pwm_backlight->pwm, compute_duty_cycle(pwm_backlight, brightness),
+		   pwm_backlight->period);
 
 	if (brightness)
 		return backlight_pwm_enable(pwm_backlight);
@@ -113,7 +122,7 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 	struct property *prop;
 	int length;
 	u32 value;
-	int ret;
+	int ret, i;
 	enum of_gpio_flags flags;
 
 	if (!node)
@@ -140,6 +149,10 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 						 pwm_backlight->backlight.brightness_max);
 		if (ret < 0)
 			return ret;
+
+		for (i = 0; i <=  pwm_backlight->backlight.brightness_max; i++)
+			if (pwm_backlight->levels[i] > pwm_backlight->scale)
+				pwm_backlight->scale = pwm_backlight->levels[i];
 
 		ret = of_property_read_u32(node, "default-brightness-level",
 					   &value);

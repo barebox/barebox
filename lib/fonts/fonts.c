@@ -18,37 +18,55 @@
 #include <linux/string.h>
 #include <linux/font.h>
 
-#define NO_FONTS
-
-static const struct font_desc *fonts[] = {
-#ifdef CONFIG_FONT_8x16
-#undef NO_FONTS
-    &font_vga_8x16,
-#endif
-#ifdef CONFIG_FONT_7x14
-#undef NO_FONTS
-    &font_7x14,
-#endif
-#ifdef CONFIG_FONT_MINI_4x6
-#undef NO_FONTS
-    &font_mini_4x6,
-#endif
-};
-
-#define num_fonts ARRAY_SIZE(fonts)
-
-#ifdef NO_FONTS
-#error No fonts configured.
-#endif
-
 static char *font_names;
+
+static LIST_HEAD(fonts_list);
+
+int font_register(struct font_desc *font)
+{
+	if (font_names)
+		return -EBUSY;
+
+	list_add_tail(&font->list, &fonts_list);
+
+	return 0;
+}
+int find_font_index(const struct font_desc *font, int ch)
+{
+	int index;
+	if (font->index == NULL) {
+		index  = font->width + 7;
+		index /= 8;
+		index *= font->height;
+		index *= ch;
+	} else {
+		/*
+		* FIXME: use binary search instead!
+		*/
+		index = font->num_chars - 1;
+
+		while (index && font->index[index].wc != ch)
+			index--;
+
+		/* return 0 if not found. */
+		index = font->index->index;
+	}
+
+	return index;
+}
 
 const struct font_desc *find_font_enum(int n)
 {
-	if (n > num_fonts)
-		return NULL;
+	struct font_desc *f;
+	int i = 0;
 
-	return fonts[n];
+	list_for_each_entry(f, &fonts_list, list) {
+		if (i == n)
+			return f;
+		i++;
+	}
+
+	return NULL;
 }
 
 struct param_d *add_param_font(struct device_d *dev,
@@ -56,13 +74,21 @@ struct param_d *add_param_font(struct device_d *dev,
 		int (*get)(struct param_d *p, void *priv),
 		int *value, void *priv)
 {
-	unsigned int i;
+	struct font_desc *f;
+	int num_fonts = 0;
+
+	list_for_each_entry(f, &fonts_list, list)
+		num_fonts++;
 
 	if (!font_names) {
+		int i = 0;
+
 		font_names = xmalloc(sizeof(char *) * num_fonts);
 
-		for (i = 0; i < num_fonts; i++)
-			((const char **)font_names)[i] = fonts[i]->name;
+		list_for_each_entry(f, &fonts_list, list) {
+			((const char **)font_names)[i] = f->name;
+			i++;
+		}
 	}
 
 	return dev_add_param_enum(dev, "font",

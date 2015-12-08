@@ -3,6 +3,7 @@
 /* by Jurriaan Kalkman 05-2005        */
 /**************************************/
 
+#include <init.h>
 #include <linux/font.h>
 
 #define FONTDATAMAX 3584
@@ -4108,9 +4109,15 @@ static const unsigned char fontdata_7x14[FONTDATAMAX] = {
 };
 
 
-const struct font_desc font_7x14 = {
+static struct font_desc font_7x14 = {
 	.name	= "7x14",
 	.width	= 7,
 	.height	= 14,
 	.data	= fontdata_7x14,
 };
+
+static int font_7x14_register(void)
+{
+	return font_register(&font_7x14);
+}
+postcore_initcall(font_7x14_register);

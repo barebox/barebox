@@ -22,8 +22,8 @@ struct fbc_priv {
 	struct param_d *par_font;
 	int par_font_val;
 
-	int font_width, font_height;
-	const u8 *fontdata;
+	const struct font_desc *font;
+
 	unsigned int cols, rows;
 	unsigned int x, y; /* cursor position */
 
@@ -84,7 +84,7 @@ static struct rgb colors[] = {
 	{ 255, 255, 255 },
 };
 
-static void drawchar(struct fbc_priv *priv, int x, int y, char c)
+static void drawchar(struct fbc_priv *priv, int x, int y, int c)
 {
 	void *buf;
 	int bpp = priv->fb->bits_per_pixel >> 3;
@@ -97,7 +97,8 @@ static void drawchar(struct fbc_priv *priv, int x, int y, char c)
 
 	buf = gui_screen_render_buffer(priv->sc);
 
-	inbuf = &priv->fontdata[c * priv->font_height];
+	i = find_font_index(priv->font, c);
+	inbuf = priv->font->data + i;
 
 	line_length = priv->fb->line_length;
 
@@ -113,13 +114,13 @@ static void drawchar(struct fbc_priv *priv, int x, int y, char c)
 	rgb = &colors[bgcolor];
 	bgcolor = gu_rgb_to_pixel(priv->fb, rgb->r, rgb->g, rgb->b, 0xff);
 
-	for (i = 0; i < priv->font_height; i++) {
+	for (i = 0; i < priv->font->height; i++) {
 		uint8_t t = inbuf[i];
 		int j;
 
-		adr = buf + line_length * (y * priv->font_height + i) + x * priv->font_width * bpp;
+		adr = buf + line_length * (y * priv->font->height + i) + x * priv->font->width * bpp;
 
-		for (j = 0; j < priv->font_width; j++) {
+		for (j = 0; j < priv->font->width; j++) {
 			if (t & 0x80)
 				gu_set_pixel(priv->fb, adr, color);
 			else
@@ -137,10 +138,10 @@ static void video_invertchar(struct fbc_priv *priv, int x, int y)
 
 	buf = gui_screen_render_buffer(priv->sc);
 
-	gu_invert_area(priv->fb, buf, x * priv->font_width, y * priv->font_height,
-			priv->font_width, priv->font_height);
-	gu_screen_blit_area(priv->sc, x * priv->font_width, y * priv->font_height,
-			priv->font_width, priv->font_height);
+	gu_invert_area(priv->fb, buf, x * priv->font->width, y * priv->font->height,
+			priv->font->width, priv->font->height);
+	gu_screen_blit_area(priv->sc, x * priv->font->width, y * priv->font->height,
+			priv->font->width, priv->font->height);
 }
 
 static void printchar(struct fbc_priv *priv, int c)
@@ -174,9 +175,9 @@ static void printchar(struct fbc_priv *priv, int c)
 	default:
 		drawchar(priv, priv->x, priv->y, c);
 
-		gu_screen_blit_area(priv->sc, priv->x * priv->font_width,
-				priv->y * priv->font_height,
-				priv->font_width, priv->font_height);
+		gu_screen_blit_area(priv->sc, priv->x * priv->font->width,
+				priv->y * priv->font->height,
+				priv->font->width, priv->font->height);
 
 		priv->x++;
 		if (priv->x > priv->cols) {
@@ -188,7 +189,7 @@ static void printchar(struct fbc_priv *priv, int c)
 	if (priv->y > priv->rows) {
 		void *buf;
 		u32 line_length = priv->fb->line_length;
-		int line_height = line_length * priv->font_height;
+		int line_height = line_length * priv->font->height;
 
 		buf = gui_screen_render_buffer(priv->sc);
 
@@ -356,12 +357,10 @@ static int setup_font(struct fbc_priv *priv)
 		return -ENOENT;
 	}
 
-	priv->font_width = font->width;
-	priv->font_height = font->height;
-	priv->fontdata = font->data;
+	priv->font = font;
 
-	priv->rows = fb->yres / priv->font_height - 1;
-	priv->cols = fb->xres / priv->font_width - 1;
+	priv->rows = fb->yres / priv->font->height - 1;
+	priv->cols = fb->xres / priv->font->width - 1;
 
 	return 0;
 }

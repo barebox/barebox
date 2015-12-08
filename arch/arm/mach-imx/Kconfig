@@ -34,11 +34,10 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_REALQ7
 	default 0x4fc00000 if MACH_GK802
 	default 0x2fc00000 if MACH_TQMA6X
-	default 0x4fc00000 if MACH_PHYTEC_PFLA02
 	default 0x4fc00000 if MACH_DFI_FS700_M60
 	default 0x4fc00000 if MACH_UDOO
 	default 0x4fc00000 if MACH_VARISCITE_MX6
-	default 0x4fc00000 if MACH_PCAAXL3
+	default 0x4fc00000 if MACH_PHYTEC_SOM_IMX6
 
 config ARCH_IMX_INTERNAL_BOOT
 	bool "support internal boot mode"
@@ -246,6 +245,13 @@ config MACH_FREESCALE_MX51_PDK
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
 
+config MACH_CCMX53
+	bool "Digi ConnectCore i.MX53"
+	select ARCH_IMX53
+	help
+	  Say Y here if you are using the Digi ConnectCore ccxmx53
+	  series SoM
+
 config MACH_FREESCALE_MX53_LOCO
 	bool "Freescale i.MX53 LOCO"
 	select ARCH_IMX53
@@ -268,13 +274,9 @@ config MACH_FREESCALE_MX53_VMX53
 	  Say Y here if you are using the Voipac Technologies X53-DMM-668
 	  module equipped with a Freescale i.MX53 Processor
 
-config MACH_PCAAXL3
-        bool "Phytec phyCARD-i.MX6 Quad"
+config MACH_PHYTEC_SOM_IMX6
+        bool "Phytec phyCARD-i.MX6 and phyFLEX-i.MX6"
         select ARCH_IMX6
-
-config MACH_PHYTEC_PFLA02
-	bool "Phytec phyFLEX-i.MX6"
-	select ARCH_IMX6
 
 config MACH_DFI_FS700_M60
 	bool "DFI i.MX6 FS700 M60 Q7 Board"

@@ -426,6 +426,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 	cdev->priv	= priv;
 	cdev->size	= 192;
 	cdev->name	= "imx-ocotp";
+	cdev->device_node = dev->device_node;
 
 	ret = devfs_create(cdev);
 

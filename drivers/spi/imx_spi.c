@@ -380,6 +380,77 @@ static void imx_spi_do_transfer(struct spi_device *spi)
 	}
 }
 
+static int cspi_2_3_xchg_burst(struct spi_device *spi)
+{
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+	int now, txlen, rxlen;
+	u32 ctrl;
+	void __iomem *base = imx->regs;
+
+	now = min(imx->xfer_len, 512);
+	now >>= 2;
+
+	if (!now)
+		return 0;
+
+	txlen = rxlen = now;
+
+	ctrl = readl(base + CSPI_2_3_CTRL);
+	ctrl &= ~(0xfff << CSPI_2_3_CTRL_BL_OFFSET);
+	ctrl |= ((txlen * 32) - 1) << CSPI_2_3_CTRL_BL_OFFSET;
+	ctrl |= 1 << 3;
+	writel(ctrl, base + CSPI_2_3_CTRL);
+
+	while (txlen || rxlen) {
+		u32 status = readl(base + CSPI_2_3_STAT);
+
+		if (txlen && !(status & CSPI_2_3_STAT_TF)) {
+			if (imx->tx_buf) {
+				u32 data = swab32(*(u32 *)imx->tx_buf);
+				writel(data, base + CSPI_2_3_TXDATA);
+				imx->tx_buf += sizeof(u32);
+			} else {
+				writel(0, base + CSPI_2_3_TXDATA);
+			}
+			txlen--;
+		}
+
+		if (rxlen && (status & CSPI_2_3_STAT_RR)) {
+			u32 data = readl(base + CSPI_2_3_RXDATA);
+
+			if (imx->rx_buf) {
+				*(u32 *)imx->rx_buf = swab32(data);
+				imx->rx_buf += sizeof(u32);
+			}
+
+			rxlen--;
+		}
+	}
+
+	imx->xfer_len -= now * 4;
+
+	return now;
+}
+
+static void cspi_2_3_do_transfer(struct spi_device *spi)
+{
+	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
+	u32 ctrl;
+
+	if (imx->bits_per_word == 8 && !(spi->mode & SPI_LSB_FIRST))
+		while (cspi_2_3_xchg_burst(spi) > 0);
+
+	if (!imx->xfer_len)
+		return;
+
+	ctrl = readl(imx->regs + CSPI_2_3_CTRL);
+	ctrl &= ~(0xfff << CSPI_2_3_CTRL_BL_OFFSET);
+	ctrl |= (spi->bits_per_word - 1) << CSPI_2_3_CTRL_BL_OFFSET;
+	writel(ctrl, imx->regs + CSPI_2_3_CTRL);
+
+	imx_spi_do_transfer(spi);
+}
+
 static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
@@ -437,7 +508,7 @@ static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_0_7 = {
 
 static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
 	.chipselect = cspi_2_3_chipselect,
-	.do_transfer = imx_spi_do_transfer,
+	.do_transfer = cspi_2_3_do_transfer,
 	.xchg_single = cspi_2_3_xchg_single,
 };
 

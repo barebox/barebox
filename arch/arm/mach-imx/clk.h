@@ -10,6 +10,12 @@ static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 	return clk_divider(name, parent, reg, shift, width, CLK_SET_RATE_PARENT);
 }
 
+static inline struct clk *imx_clk_divider_np(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width)
+{
+	return clk_divider(name, parent, reg, shift, width, 0);
+}
+
 static inline struct clk *imx_clk_divider_table(const char *name,
 		const char *parent, void __iomem *reg, u8 shift, u8 width,
 		const struct clk_div_table *table)

@@ -25,6 +25,7 @@
 #include <mach/imx6-regs.h>
 #include <mach/imx6.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
+#include <linux/clk.h>
 #include <linux/sizes.h>
 #include <linux/phy.h>
 
@@ -61,12 +62,26 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 	return 0;
 }
 
-static int hummingboard_device_init(void)
+static void microsom_eth_init(void)
 {
-	if (!of_machine_is_compatible("solidrun,hummingboard/dl"))
-		return 0;
+	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
+	u32 val;
+
+	clk_set_rate(clk_lookup("enet_ref"), 25000000);
+
+	val = readl(iomux + IOMUXC_GPR1);
+	val |= IMX6Q_GPR1_ENET_CLK_SEL_ANATOP;
+	writel(val, iomux + IOMUXC_GPR1);
 
 	phy_register_fixup_for_uid(0x004dd072, 0xffffffef, ar8035_phy_fixup);
+}
+static int hummingboard_device_init(void)
+{
+	if (!of_machine_is_compatible("solidrun,hummingboard/dl") &&
+	    !of_machine_is_compatible("solidrun,hummingboard/q"))
+		return 0;
+
+	microsom_eth_init();
 
 	/* enable USB VBUS */
 	gpio_direction_output(IMX_GPIO_NR(3, 22), 1);
@@ -80,7 +95,8 @@ device_initcall(hummingboard_device_init);
 
 static int hummingboard_late_init(void)
 {
-	if (!of_machine_is_compatible("solidrun,hummingboard/dl"))
+	if (!of_machine_is_compatible("solidrun,hummingboard/dl") &&
+	    !of_machine_is_compatible("solidrun,hummingboard/q"))
 		return 0;
 
 	imx6_bbu_internal_mmc_register_handler("sdcard", "/dev/mmc1.barebox",

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+global.bootm.image="/mnt/mmc/linuximage"
+global.bootm.oftree="/mnt/mmc/oftree"
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait rw"

@@ -91,27 +91,18 @@ static struct imx_ipu_fb_platform_data ipu_fb_data = {
 };
 
 #ifdef CONFIG_USB
-static void imx35_usb_init(void)
-{
-	unsigned int tmp;
+#ifndef CONFIG_USB_GADGET
+struct imxusb_platformdata otg_pdata = {
+	.flags = MXC_EHCI_INTERFACE_DIFF_UNI,
+	.mode = IMX_USB_MODE_HOST,
+	.phymode = USBPHY_INTERFACE_MODE_UTMI,
+};
+#endif
 
-	/* Host 1 */
-	tmp = readl(MX35_USB_OTG_BASE_ADDR + 0x600);
-	tmp &= ~(MX35_H1_SIC_MASK | MX35_H1_PM_BIT | MX35_H1_TLL_BIT |
-		MX35_H1_USBTE_BIT | MX35_H1_IPPUE_DOWN_BIT | MX35_H1_IPPUE_UP_BIT);
-	tmp |= (MXC_EHCI_INTERFACE_SINGLE_UNI) << MX35_H1_SIC_SHIFT;
-	tmp |= MX35_H1_USBTE_BIT | MX35_H1_PM_BIT | MX35_H1_TLL_BIT ;
-	tmp |= MX35_H1_IPPUE_DOWN_BIT;
-	writel(tmp, MX35_USB_OTG_BASE_ADDR + 0x600);
-
-	tmp = readl(MX35_USB_OTG_BASE_ADDR + 0x584);
-	tmp |= 3 << 30;
-	writel(tmp, MX35_USB_OTG_BASE_ADDR + 0x584);
-
-	/* Set to Host mode */
-	tmp = readl(MX35_USB_OTG_BASE_ADDR + 0x5a8);
-	writel(tmp | 0x3, MX35_USB_OTG_BASE_ADDR + 0x5a8);
-}
+struct imxusb_platformdata hs_pdata = {
+	.flags = MXC_EHCI_INTERFACE_SINGLE_UNI | MXC_EHCI_INTERNAL_PHY | MXC_EHCI_IPPUE_DOWN,
+	.mode = IMX_USB_MODE_HOST,
+};
 #endif
 
 #ifdef CONFIG_USB_GADGET
@@ -206,9 +197,12 @@ static int eukrea_cpuimx35_devices_init(void)
 	gpio_direction_output(1, 0);
 
 #ifdef CONFIG_USB
-	imx35_usb_init();
-	add_generic_usb_ehci_device(DEVICE_ID_DYNAMIC, MX35_USB_HS_BASE_ADDR, NULL);
+#ifndef CONFIG_USB_GADGET
+	imx_add_usb((void *)MX35_USB_OTG_BASE_ADDR, 0, &otg_pdata);
 #endif
+	imx_add_usb((void *)MX35_USB_HS_BASE_ADDR, 1, &hs_pdata);
+#endif
+
 #ifdef CONFIG_USB_GADGET
 	/* Workaround ENGcm09152 */
 	tmp = readl(MX35_USB_OTG_BASE_ADDR + 0x608);

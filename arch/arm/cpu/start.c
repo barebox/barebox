@@ -104,14 +104,31 @@ void *barebox_arm_boot_dtb(void)
 	return barebox_boarddata;
 }
 
+static inline unsigned long arm_mem_boarddata(unsigned long membase,
+					      unsigned long endmem,
+					      unsigned long size)
+{
+	unsigned long mem;
+
+	mem = arm_mem_barebox_image(membase, endmem, barebox_image_size);
+	mem -= ALIGN(size, 64);
+
+	return mem;
+}
+
 __noreturn void barebox_non_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
+	unsigned long barebox_size = barebox_image_size +
+		((unsigned long)&__bss_stop - (unsigned long)&__bss_start);
+	unsigned long arm_head_bottom;
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
-		unsigned long barebox_base = arm_barebox_image_place(endmem);
+		unsigned long barebox_base = arm_mem_barebox_image(membase,
+								   endmem,
+								   barebox_size);
 		relocate_to_adr(barebox_base);
 	}
 
@@ -122,19 +139,16 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
 	arm_stack_top = endmem;
-	endmem -= STACK_SIZE; /* Stack */
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
-
-		endmem &= ~0x3fff;
-		endmem -= SZ_16K; /* ttb */
+		unsigned long ttb = arm_mem_ttb(membase, endmem);
 
 		if (IS_ENABLED(CONFIG_PBL_IMAGE)) {
 			arm_set_cache_functions();
 		} else {
-			pr_debug("enabling MMU, ttb @ 0x%08lx\n", endmem);
+			pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 			arm_early_mmu_cache_invalidate();
-			mmu_early_enable(membase, memsize, endmem);
+			mmu_early_enable(membase, memsize, ttb);
 		}
 	}
 
@@ -155,24 +169,16 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 		}
 
 		if (totalsize) {
-			endmem -= ALIGN(totalsize, 64);
+			unsigned long mem = arm_mem_boarddata(membase, endmem,
+							      totalsize);
 			pr_debug("found %s in boarddata, copying to 0x%lu\n",
-				 name, endmem);
-			barebox_boarddata = memcpy((void *)endmem,
-						      boarddata, totalsize);
+				 name, mem);
+			barebox_boarddata = memcpy((void *)mem, boarddata,
+						   totalsize);
 		}
 	}
 
-	if ((unsigned long)_text > membase + memsize ||
-			(unsigned long)_text < membase)
-		/*
-		 * barebox is either outside SDRAM or in another
-		 * memory bank, so we can use the whole bank for
-		 * malloc.
-		 */
-		malloc_end = endmem;
-	else
-		malloc_end = (unsigned long)_text;
+	malloc_end = arm_head_bottom;
 
 	/*
 	 * Maximum malloc space is the Kconfig value if given

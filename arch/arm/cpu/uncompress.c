@@ -52,8 +52,6 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 	void *pg_start;
 	unsigned long pc = get_pc();
 
-	endmem -= STACK_SIZE; /* stack */
-
 	image_end = (void *)ld_var(__image_end) - get_runtime_offset();
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE)) {
@@ -68,8 +66,16 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 			relocate_to_adr(membase);
 	}
 
+	/*
+	 * image_end is the first location after the executable. It contains
+	 * the size of the appended compressed binary followed by the binary.
+	 */
+	pg_start = image_end + 1;
+	pg_len = *(image_end);
+
 	if (IS_ENABLED(CONFIG_RELOCATABLE))
-		barebox_base = arm_barebox_image_place(membase + memsize);
+		barebox_base = arm_mem_barebox_image(membase, endmem,
+						     pg_len);
 	else
 		barebox_base = TEXT_BASE;
 
@@ -78,22 +84,13 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
-		endmem &= ~0x3fff;
-		endmem -= SZ_16K; /* ttb */
-		pr_debug("enabling MMU, ttb @ 0x%08x\n", endmem);
-		mmu_early_enable(membase, memsize, endmem);
+		unsigned long ttb = arm_mem_ttb(membase, endmem);
+		pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
+		mmu_early_enable(membase, memsize, ttb);
 	}
 
-	endmem -= SZ_128K; /* early malloc */
-	free_mem_ptr = endmem;
-	free_mem_end_ptr = free_mem_ptr + SZ_128K;
-
-	/*
-	 * image_end is the first location after the executable. It contains
-	 * the size of the appended compressed binary followed by the binary.
-	 */
-	pg_start = image_end + 1;
-	pg_len = *(image_end);
+	free_mem_ptr = arm_mem_early_malloc(membase, endmem);
+	free_mem_end_ptr = arm_mem_early_malloc_end(membase, endmem);
 
 	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx\n",
 			pg_start, pg_len, barebox_base);

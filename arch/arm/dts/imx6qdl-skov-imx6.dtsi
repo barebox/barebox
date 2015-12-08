@@ -1,0 +1,546 @@
+/*
+ * Copyright 2015 Juergen Borleis, Pengutronix <kernel@pengutronix.de>
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	aliases {
+		state = &state;
+	};
+
+	chosen {
+		environment-sd {
+			compatible = "barebox,environment";
+			device-path = &usdhc3, "partname:2";
+			status = "disabled";
+		};
+
+		environment-spinor {
+			compatible = "barebox,environment";
+			device-path = &barebox_env;
+			status = "disabled";
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led0: D1 {
+			label = "D1";
+			gpios = <&gpio1 2 0>;
+			default-state = "on";
+			linux,default-trigger = "heartbeat";
+		};
+
+		led1: D2 {
+			label = "D2";
+			gpios = <&gpio1 0 0>;
+			default-state = "off";
+		};
+
+		led2: D3 {
+			label = "D3";
+			gpios = <&gpio1 4 0>;
+			default-state = "on";
+		};
+	};
+
+	/* State: mutable part */
+	state: state {
+		magic = <0x34a0fc27>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&state_storage>;
+		backend-stridesize = <0x40>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			system0 { /* the node's name here must match the subnode's name in the 'bootstate' node */
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@0 {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@4 {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <30>;
+				};
+			};
+
+			system1 { /* the node's name here must match the subnode's name in the 'bootstate' node */
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts@8 {
+					reg = <0x8 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority@C {
+					reg = <0xC 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+
+			last_chosen@10 {
+				reg = <0x10 0x4>;
+				type = "uint32";
+			};
+		};
+
+		display {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			xres@14 {
+				reg = <0x14 0x4>;
+				type = "uint32";
+				default = <0>;
+			};
+
+			yres@18 {
+				reg = <0x18 0x4>;
+				type = "uint32";
+				default = <0>;
+			};
+
+			brightness@1C {
+				reg = <0x1C 0x1>;
+				type = "uint8";
+				default = <8>;
+			};
+
+			external@1D {
+				reg = <0x1D 0x1>;
+				type = "uint8";
+				default = <0>;
+			};
+		};
+
+		ethaddr {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			eth2 {
+				reg = <0x1E 0x6>;
+				type = "mac";
+				default = [00 11 22 33 44 55];
+			};
+		};
+	};
+
+	backlight_lcd: backlight_lcd {
+		compatible = "pwm-backlight";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_backlight>;
+		pwms = <&pwm2 0 20000 0>;
+		brightness-levels = <0 16 32 48 64 80 96 112 128 144 160 176 192 208 224 240 255>;
+		default-brightness-level = <8>;
+		enable-gpios = <&gpio6 23 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};
+
+	display {
+		status = "disabled";
+		compatible = "fsl,imx-parallel-display";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ipu1_4>;
+		interface-pix-fmt = "rgb24";
+
+		port {
+			display0_in: endpoint {
+				remote-endpoint = <&ipu1_di0_disp0>;
+			};
+		};
+
+		display-timings {
+			native-mode = &l2rt;
+
+			l2rt: l2rt {
+				native-mode;
+				clock-frequency = <33000000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <85>;
+				hfront-porch = <112>;
+				vback-porch = <29>;
+				vfront-porch = <38>;
+				hsync-len = <3>;
+				vsync-len = <3>;
+				pixelclk-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+
+			l6whrt: l6whrt {
+				native-mode;
+				clock-frequency = <33000000>;
+				hactive = <800>;
+				vactive = <480>;
+				hback-porch = <43>;
+				hfront-porch = <154>;
+				vback-porch = <20>;
+				vfront-porch = <47>;
+				hsync-len = <3>;
+				vsync-len = <3>;
+				pixelclk-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+		};
+	};
+
+	panel {
+		compatible = "simple-panel";
+		backlight = <&backlight_lcd>;
+		/* power-supply = <&reg_3p3v>; */
+
+		display-timings {
+			native-mode = &mi1010ait_1cp1;
+
+			mi1010ait_1cp1: mi1010ait-1cp1 {
+				native-mode;
+				clock-frequency = <70000000>;
+				hactive = <1280>;
+				vactive = <800>;
+				hback-porch = <60>;
+				hfront-porch = <60>;
+				vback-porch = <10>;
+				vfront-porch = <10>;
+				hsync-len = <10>;
+				vsync-len = <6>;
+				/* pixelclk-active = <>; */
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <1>;
+			};
+		};
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
+	};
+};
+
+&pwm2 {
+	/* used for backlight brightness */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm2_2>;
+	status = "okay";
+};
+
+&pwm3 {
+	/* used for LCD contrast control */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm3_2>;
+	status = "okay";
+};
+
+&i2c2 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2_2>;
+};
+
+&hdmi {
+	status = "okay";
+	ddc-i2c-bus = <&i2c2>;
+};
+
+/delete-node/&ipu1_di0_hdmi;
+/delete-node/&hdmi_mux_0;
+
+&ipu1_di0_disp0 {
+	remote-endpoint = <&display0_in>;
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		/* we need a few pins as GPIOs */
+		fsl,pins = <
+			/* MMC IO voltage select */
+			MX6QDL_PAD_GPIO_18__GPIO7_IO13 0x40000058
+			/* MMC Power Supply Switch (since revision C)
+			MX6QDL_PAD_SD3_RST__GPIO7_IO08 0x40000058
+			/* Backlight Power Supply Switch (since revision B)
+			MX6QDL_PAD_RGMII_TD3__GPIO6_IO23 0x40000058
+			/* Backlight Brightness */
+			MX6QDL_PAD_GPIO_1__GPIO1_IO01 0x40000058
+			/* must be high */
+			MX6QDL_PAD_ENET_RX_ER__GPIO1_IO24 0x40000058
+		>;
+	};
+
+	pinctrl_uart2: uart2grp {
+		fsl,pins = <
+			MX6QDL_PAD_EIM_D26__UART2_TX_DATA 0x1b0b1
+			MX6QDL_PAD_EIM_D27__UART2_RX_DATA 0x1b0b1
+		>;
+	};
+
+	pinctrl_ecspi1: ecspi1grp {
+		fsl,pins = <
+			MX6QDL_PAD_EIM_D17__ECSPI1_MISO 0x100b1
+			MX6QDL_PAD_EIM_D18__ECSPI1_MOSI 0x100b1
+			MX6QDL_PAD_EIM_D16__ECSPI1_SCLK 0x100b1
+			MX6QDL_PAD_EIM_D24__GPIO3_IO24 0x40000058 /* CS# signal */
+		>;
+	};
+
+	/* pins for eth0 */
+	pinctrl_enet: enetgrp {
+		fsl,pins = <
+			MX6QDL_PAD_ENET_MDIO__ENET_MDIO 0x100b0
+			MX6QDL_PAD_ENET_MDC__ENET_MDC 0x100b0
+			MX6QDL_PAD_ENET_CRS_DV__ENET_RX_EN 0x100b0
+			MX6QDL_PAD_ENET_TX_EN__ENET_TX_EN 0x100b0
+			MX6QDL_PAD_ENET_RXD0__ENET_RX_DATA0 0x100b0
+			MX6QDL_PAD_ENET_RXD1__ENET_RX_DATA1 0x100b0
+			MX6QDL_PAD_ENET_TXD0__ENET_TX_DATA0 0x100b0
+			MX6QDL_PAD_ENET_TXD1__ENET_TX_DATA1 0x100b0
+			MX6QDL_PAD_GPIO_16__ENET_REF_CLK 0x400000c0
+		>;
+	};
+
+	pinctrl_usdhc3: usdhc3grp {
+		fsl,pins = <
+			MX6QDL_PAD_SD3_CMD__SD3_CMD 0x17059
+			MX6QDL_PAD_SD3_CLK__SD3_CLK 0x10059
+			MX6QDL_PAD_SD3_DAT0__SD3_DATA0 0x17059
+			MX6QDL_PAD_SD3_DAT1__SD3_DATA1 0x17059
+			MX6QDL_PAD_SD3_DAT2__SD3_DATA2 0x17059
+			MX6QDL_PAD_SD3_DAT3__SD3_DATA3 0x17059
+			MX6QDL_PAD_SD3_DAT4__GPIO7_IO01 0x1b040 /* WP */
+			MX6QDL_PAD_SD3_DAT5__GPIO7_IO00 0x1b040 /* CD */
+		>;
+	};
+
+	pinctrl_gpmi_nand: gpminandgrp {
+		fsl,pins = <
+			MX6QDL_PAD_NANDF_CLE__NAND_CLE 0xb0b1
+			MX6QDL_PAD_NANDF_ALE__NAND_ALE 0xb0b1
+			MX6QDL_PAD_NANDF_RB0__NAND_READY_B 0xb000
+			MX6QDL_PAD_NANDF_CS0__NAND_CE0_B 0xb0b1
+			MX6QDL_PAD_NANDF_CS1__NAND_CE1_B 0xb0b1
+			MX6QDL_PAD_SD4_CMD__NAND_RE_B 0xb0b1
+			MX6QDL_PAD_SD4_CLK__NAND_WE_B 0xb0b1
+			MX6QDL_PAD_NANDF_D0__NAND_DATA00 0xb0b1
+			MX6QDL_PAD_NANDF_D1__NAND_DATA01 0xb0b1
+			MX6QDL_PAD_NANDF_D2__NAND_DATA02 0xb0b1
+			MX6QDL_PAD_NANDF_D3__NAND_DATA03 0xb0b1
+			MX6QDL_PAD_NANDF_D4__NAND_DATA04 0xb0b1
+			MX6QDL_PAD_NANDF_D5__NAND_DATA05 0xb0b1
+			MX6QDL_PAD_NANDF_D6__NAND_DATA06 0xb0b1
+			MX6QDL_PAD_NANDF_D7__NAND_DATA07 0xb0b1
+		>;
+	};
+
+	pinctrl_i2c2_2: i2c2grp-2 {
+		fsl,pins = <
+			/* internal 22 k pull up required */
+			MX6QDL_PAD_KEY_COL3__I2C2_SCL		0x4001F878
+			/* internal 22 k pull up required */
+			MX6QDL_PAD_KEY_ROW3__I2C2_SDA		0x4001F878
+		>;
+	};
+
+	pinctrl_ipu1_4: ipu1grp-4 {
+		fsl,pins = <
+			MX6QDL_PAD_DI0_DISP_CLK__IPU1_DI0_DISP_CLK	0x10
+			MX6QDL_PAD_DI0_PIN15__IPU1_DI0_PIN15		0x10
+			MX6QDL_PAD_DI0_PIN2__IPU1_DI0_PIN02		0x10
+			MX6QDL_PAD_DI0_PIN3__IPU1_DI0_PIN03		0x10
+			MX6QDL_PAD_DISP0_DAT0__IPU1_DISP0_DATA00	0x10
+			MX6QDL_PAD_DISP0_DAT1__IPU1_DISP0_DATA01	0x10
+			MX6QDL_PAD_DISP0_DAT2__IPU1_DISP0_DATA02	0x10
+			MX6QDL_PAD_DISP0_DAT3__IPU1_DISP0_DATA03	0x10
+			MX6QDL_PAD_DISP0_DAT4__IPU1_DISP0_DATA04	0x10
+			MX6QDL_PAD_DISP0_DAT5__IPU1_DISP0_DATA05	0x10
+			MX6QDL_PAD_DISP0_DAT6__IPU1_DISP0_DATA06	0x10
+			MX6QDL_PAD_DISP0_DAT7__IPU1_DISP0_DATA07	0x10
+			MX6QDL_PAD_DISP0_DAT8__IPU1_DISP0_DATA08	0x10
+			MX6QDL_PAD_DISP0_DAT9__IPU1_DISP0_DATA09	0x10
+			MX6QDL_PAD_DISP0_DAT10__IPU1_DISP0_DATA10	0x10
+			MX6QDL_PAD_DISP0_DAT11__IPU1_DISP0_DATA11	0x10
+			MX6QDL_PAD_DISP0_DAT12__IPU1_DISP0_DATA12	0x10
+			MX6QDL_PAD_DISP0_DAT13__IPU1_DISP0_DATA13	0x10
+			MX6QDL_PAD_DISP0_DAT14__IPU1_DISP0_DATA14	0x10
+			MX6QDL_PAD_DISP0_DAT15__IPU1_DISP0_DATA15	0x10
+			MX6QDL_PAD_DISP0_DAT16__IPU1_DISP0_DATA16	0x10
+			MX6QDL_PAD_DISP0_DAT17__IPU1_DISP0_DATA17	0x10
+			MX6QDL_PAD_DISP0_DAT18__IPU1_DISP0_DATA18	0x10
+			MX6QDL_PAD_DISP0_DAT19__IPU1_DISP0_DATA19	0x10
+			MX6QDL_PAD_DISP0_DAT20__IPU1_DISP0_DATA20	0x10
+			MX6QDL_PAD_DISP0_DAT21__IPU1_DISP0_DATA21	0x10
+			MX6QDL_PAD_DISP0_DAT22__IPU1_DISP0_DATA22	0x10
+			MX6QDL_PAD_DISP0_DAT23__IPU1_DISP0_DATA23	0x10
+		>;
+	};
+
+	pinctrl_backlight: backlight_grp {
+		fsl,pins = <
+			MX6QDL_PAD_RGMII_TD3__GPIO6_IO23	0x40000058
+		>;
+	};
+
+	pinctrl_pwm2_2: pwm2grp-2 {
+		fsl,pins = <
+			MX6QDL_PAD_GPIO_1__PWM2_OUT		0x00058
+		>;
+	};
+
+	pinctrl_pwm3_2: pwm3grp-2 {
+		fsl,pins = <
+			MX6QDL_PAD_SD1_DAT1__PWM3_OUT		0x00058
+		>;
+	};
+};
+
+&clks {
+	assigned-clocks = <&clks IMX6QDL_CLK_LDB_DI0_SEL>,
+			  <&clks IMX6QDL_CLK_LDB_DI1_SEL>;
+	assigned-clock-parents = <&clks IMX6QDL_CLK_PLL5_VIDEO_DIV>,
+				 <&clks IMX6QDL_CLK_PLL5_VIDEO_DIV>;
+};
+
+/* console */
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	status = "okay";
+};
+
+/* spi */
+&ecspi1 {
+	fsl,spi-num-chipselects = <1>;
+	cs-gpios = <&gpio3 24 0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi1>;
+	status = "okay";
+
+	norflash: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <54000000>;
+		reg = <0>;
+	};
+};
+
+/* eth0 */
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet>;
+	phy-mode = "rmii";
+	status = "okay";
+	phy-reset-gpios = <&gpio1 5 0>;
+	phy-reset-duration = <100>;
+	#address-cells = <0>;
+	#size-cells = <1>;
+	fixed-link {
+		speed = <100>;
+		full-duplex;
+	};
+};
+
+&ldb {
+	status = "disabled";
+
+	lvds0: lvds-channel@0 {
+		status = "disabled";
+		fsl,data-width = <24>;
+		fsl,data-mapping = "spwg";
+
+		port@4 {
+			reg = <4>;
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
+};
+
+&wdog1 {
+	status = "okay";
+};
+
+&usdhc3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc3>;
+	wp-gpios = <&gpio7 1 0>;
+	cd-gpios = <&gpio7 0 0>;
+	status = "okay";
+	fsl,delay-line;
+};
+
+&gpmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpmi_nand>;
+	nand-on-flash-bbt;
+	status = "okay";
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "firmware";
+			reg = <0x00000000 0x000000000>; /* keep zero sized to enable autodetection */
+		};
+	};
+};
+
+/* define the SPI based 8 MiB NOR flash layout */
+&norflash {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0x100000>;
+		};
+
+		/* space left to let barebox grow */
+
+		/* placed near the end of the NOR memory */
+		barebox_env: partition@780000 {
+			label = "barebox-environment";
+			reg = <0x780000 0x40000>;
+		};
+
+		/* placed at the end of the NOR memory */
+		state_storage: partition@7C0000 {
+			label = "barebox-state";
+			reg = <0x7C0000 0x40000>; /* four times mirrored */
+		};
+	};
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec 0x620>;
+};

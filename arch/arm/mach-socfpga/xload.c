@@ -10,6 +10,7 @@
 #include <linux/sizes.h>
 #include <fs.h>
 #include <io.h>
+#include <mci.h>
 
 #include <linux/clkdev.h>
 #include <linux/stat.h>
@@ -33,6 +34,7 @@ enum socfpga_clks {
 static struct clk *clks[clk_max];
 
 static struct dw_mmc_platform_data mmc_pdata = {
+	.bus_width_caps = MMC_CAP_4_BIT_DATA,
 	.ciu_div = 3,
 };
 

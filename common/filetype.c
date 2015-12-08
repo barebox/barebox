@@ -326,7 +326,6 @@ enum filetype file_name_detect_type(const char *filename)
 	int fd, ret;
 	void *buf;
 	enum filetype type = filetype_unknown;
-	unsigned long bootsec;
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0)
@@ -339,21 +338,6 @@ enum filetype file_name_detect_type(const char *filename)
 		goto err_out;
 
 	type = file_detect_type(buf, ret);
-
-	if (type == filetype_mbr) {
-		/*
-		 * Get the first partition start sector
-		 * and check for FAT in it
-		 */
-		is_fat_or_mbr(buf, &bootsec);
-		ret = lseek(fd, (bootsec) * 512, SEEK_SET);
-		if (ret < 0)
-			goto err_out;
-		ret = read(fd, buf, 512);
-		if (ret < 0)
-			goto err_out;
-		type = is_fat_or_mbr((u8 *)buf, NULL);
-	}
 
 err_out:
 	close(fd);
@@ -379,21 +363,6 @@ enum filetype cdev_detect_type(const char *name)
 		goto err_out;
 
 	type = file_detect_type(buf, ret);
-
-	if (type == filetype_mbr) {
-		unsigned long bootsec;
-		/*
-		 * Get the first partition start sector
-		 * and check for FAT in it
-		 */
-		is_fat_or_mbr(buf, &bootsec);
-
-		ret = cdev_read(cdev, buf, 512, bootsec * 512, 0);
-		if (ret < 0)
-			goto err_out;
-
-		type = is_fat_or_mbr((u8 *)buf, NULL);
-	}
 
 err_out:
 	free(buf);

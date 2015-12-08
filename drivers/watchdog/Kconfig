@@ -34,4 +34,10 @@ config WATCHDOG_JZ4740
 	help
 	  Hardware driver for the built-in watchdog timer on Ingenic jz4740 SoCs.
 
+config WATCHDOG_OMAP
+	bool "TI OMAP"
+	depends on ARCH_OMAP
+	help
+	  Add support for watchdog on the TI OMAP SoC.
+
 endif

@@ -111,7 +111,6 @@ const char *omap_get_bootmmc_devname(void)
 #define ENV_PATH "/boot/barebox.env"
 static int omap_env_init(void)
 {
-	struct stat s;
 	char *partname;
 	const char *diskdev;
 	int ret;
@@ -128,24 +127,18 @@ static int omap_env_init(void)
 
 	partname = asprintf("/dev/%s.0", diskdev);
 
-	ret = stat(partname, &s);
-
-	free(partname);
-
-	if (ret) {
-		pr_err("Failed to load environment: no device '%s'\n", diskdev);
-		return 0;
-	}
-
 	mkdir("/boot", 0666);
-	ret = mount(diskdev, "fat", "/boot", NULL);
+	ret = mount(partname, "fat", "/boot", NULL);
 	if (ret) {
-		pr_err("Failed to load environment: mount %s failed (%d)\n", diskdev, ret);
-		return 0;
+		pr_err("Failed to load environment: mount %s failed (%d)\n", partname, ret);
+		goto out;
 	}
 
-	pr_debug("Loading default env from %s on device %s\n", ENV_PATH, diskdev);
+	pr_debug("Loading default env from %s on device %s\n", ENV_PATH, partname);
 	default_environment_path_set(ENV_PATH);
+
+out:
+	free(partname);
 
 	return 0;
 }

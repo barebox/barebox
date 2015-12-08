@@ -106,6 +106,63 @@ out:
 	return ret;
 }
 
+static int __of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags)
+{
+	struct of_path op = {};
+	const char *str;
+	bool add_bb = false;
+	int i, ret;
+
+	op.dev = of_find_device_by_node_path(node->full_name);
+	if (!op.dev) {
+		op.dev = of_find_device_by_node_path(node->parent->full_name);
+		if (!op.dev)
+			return -ENODEV;
+	}
+
+	device_detect(op.dev);
+
+	op.cdev = cdev_by_device_node(node);
+
+	i = 1;
+
+	while (propname) {
+		ret = of_property_read_string_index(node, propname, i++, &str);
+		if (ret)
+			break;
+
+		ret = of_path_parse_one(&op, str);
+		if (ret)
+			return ret;
+	}
+
+	if (!op.cdev)
+		return -ENOENT;
+
+	if ((flags & OF_FIND_PATH_FLAGS_BB) && op.cdev->mtd &&
+	    mtd_can_have_bb(op.cdev->mtd))
+		add_bb = true;
+
+	*outpath = asprintf("/dev/%s%s", op.cdev->name, add_bb ? ".bb" : "");
+
+	return 0;
+}
+
+/**
+ * of_find_path_by_node - translate a node in the devicetree to a
+ *                     	  barebox device path
+ *
+ * @node: the node we're interested in
+ * @outpath: if this function returns 0 outpath will contain the path belonging
+ *           to the input path description. Must be freed with free().
+ * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available
+ *
+ */
+int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flags)
+{
+	return __of_find_path(node, NULL, outpath, flags);
+}
+
 /**
  * of_find_path - translate a path description in the devicetree to a barebox
  *                path
@@ -134,11 +191,8 @@ out:
  */
 int of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags)
 {
-	struct of_path op = {};
 	struct device_node *rnode;
-	const char *path, *str;
-	bool add_bb = false;
-	int i, ret;
+	const char *path;
 
 	path = of_get_property(node, propname, NULL);
 	if (!path)
@@ -148,37 +202,5 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath,
 	if (!rnode)
 		return -ENODEV;
 
-	op.dev = of_find_device_by_node_path(rnode->full_name);
-	if (!op.dev) {
-		op.dev = of_find_device_by_node_path(rnode->parent->full_name);
-		if (!op.dev)
-			return -ENODEV;
-	}
-
-	device_detect(op.dev);
-
-	op.cdev = cdev_by_device_node(rnode);
-
-	i = 1;
-
-	while (1) {
-		ret = of_property_read_string_index(node, propname, i++, &str);
-		if (ret)
-			break;
-
-		ret = of_path_parse_one(&op, str);
-		if (ret)
-			return ret;
-	}
-
-	if (!op.cdev)
-		return -ENOENT;
-
-	if ((flags & OF_FIND_PATH_FLAGS_BB) && op.cdev->mtd &&
-	    mtd_can_have_bb(op.cdev->mtd))
-		add_bb = true;
-
-	*outpath = asprintf("/dev/%s%s", op.cdev->name, add_bb ? ".bb" : "");
-
-	return 0;
+	return __of_find_path(rnode, propname, outpath, flags);
 }

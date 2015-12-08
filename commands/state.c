@@ -21,26 +21,20 @@ static int do_state(int argc, char *argv[])
 {
 	int opt, ret = 0;
 	struct state *state = NULL;
-	int do_save = 0, do_load = 0;
+	int do_save = 0;
 	const char *statename = "state";
 
-	while ((opt = getopt(argc, argv, "sl")) > 0) {
+	while ((opt = getopt(argc, argv, "s")) > 0) {
 		switch (opt) {
 		case 's':
 			do_save = 1;
-			break;
-		case 'l':
-			do_load = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
 	}
 
-	if (do_save && do_load)
-		return COMMAND_ERROR_USAGE;
-
-	if (!do_save && !do_load) {
+	if (!do_save) {
 		state_info();
 		return 0;
 	}
@@ -56,8 +50,6 @@ static int do_state(int argc, char *argv[])
 
 	if (do_save)
 		ret = state_save(state);
-	else if (do_load)
-		ret = state_load(state);
 
 	return ret;
 }
@@ -67,13 +59,12 @@ BAREBOX_CMD_HELP_TEXT("Usage: state [OPTIONS] [STATENAME]")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("options:")
 BAREBOX_CMD_HELP_OPT ("-s", "save state")
-BAREBOX_CMD_HELP_OPT ("-l", "load state")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(state)
 	.cmd		= do_state,
-	BAREBOX_CMD_DESC("load and save state information")
-	BAREBOX_CMD_OPTS("[-sl] [STATENAME]")
+	BAREBOX_CMD_DESC("save state information")
+	BAREBOX_CMD_OPTS("[-s] [STATENAME]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_state_help)
 BAREBOX_CMD_END

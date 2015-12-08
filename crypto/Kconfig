@@ -1,3 +1,5 @@
+menu "Crypto support"
+
 config CRC32
 	bool
 
@@ -84,3 +86,11 @@ config CRYPTO_PBKDF2
 	select DIGEST
 	select DIGEST_SHA1_GENERIC
 	bool
+
+config CRYPTO_KEYSTORE
+	bool "Keystore"
+	help
+	  This is a simple keystore, which can be used to pass keys
+	  between several components via simple interface.
+
+endmenu

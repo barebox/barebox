@@ -67,12 +67,6 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 	if (!cdev->putc)
 		flag &= ~(CONSOLE_STDOUT | CONSOLE_STDERR);
 
-	if (flag && !cdev->f_active) {
-		/* The device is being activated, set its baudrate */
-		if (cdev->setbrg)
-			cdev->setbrg(cdev, cdev->baudrate);
-	}
-
 	if (!flag && cdev->f_active && cdev->flush)
 		cdev->flush(cdev);
 
@@ -240,7 +234,7 @@ static int __console_puts(struct console_device *cdev, const char *s)
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = &newcdev->class_dev;
-	int activate = 0;
+	int activate = 0, ret;
 
 	if (initialized == CONSOLE_UNINITIALIZED)
 		console_init_early();
@@ -258,6 +252,9 @@ int console_register(struct console_device *newcdev)
 	platform_device_register(dev);
 
 	if (newcdev->setbrg) {
+		ret = newcdev->setbrg(newcdev, CONFIG_BAUDRATE);
+		if (ret)
+			return ret;
 		newcdev->baudrate = CONFIG_BAUDRATE;
 		dev_add_param_int(dev, "baudrate", console_baudrate_set,
 			NULL, &newcdev->baudrate_param, "%u", newcdev);

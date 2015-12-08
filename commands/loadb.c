@@ -67,13 +67,24 @@ static char his_eol;		/* character he needs at end of packet */
 static int his_pad_count;	/* number of pad chars he needs */
 static char his_pad_char;	/* pad chars he needs */
 static char his_quote;		/* quote chars he'll use */
+static struct console_device *cdev; /* The console device we are using */
+
+static void sendchar(char c)
+{
+	cdev->putc(cdev, c);
+}
+
+static int receivechar(void)
+{
+	return cdev->getc(cdev);
+}
 
 static void send_pad(void)
 {
 	int count = his_pad_count;
 
 	while (count-- > 0)
-		console_putc(CONSOLE_STDOUT, his_pad_char);
+		sendchar(his_pad_char);
 }
 
 /* converts escaped kermit char to binary char */
@@ -100,9 +111,8 @@ static int chk1(char *buffer)
 static void s1_sendpacket(char *packet)
 {
 	send_pad();
-	while (*packet) {
-		console_putc(CONSOLE_STDOUT, *packet++);
-	}
+	while (*packet)
+		sendchar(*packet++);
 }
 
 static char a_b[24];
@@ -397,7 +407,7 @@ static int k_recv(void)
 		/* get a packet */
 		/* wait for the starting character or ^C */
 		for (;;) {
-			switch (getc()) {
+			switch (receivechar()) {
 			case START_CHAR:	/* start packet */
 				goto START;
 			case ETX_CHAR:	/* ^C waiting for packet */
@@ -411,13 +421,13 @@ static int k_recv(void)
 START:
 		/* get length of packet */
 		sum = 0;
-		new_char = getc();
+		new_char = receivechar();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
 		sum += new_char & 0xff;
 		length = untochar(new_char);
 		/* get sequence number */
-		new_char = getc();
+		new_char = receivechar();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
 		sum += new_char & 0xff;
@@ -447,7 +457,7 @@ START:
 		/* END NEW CODE */
 
 		/* get packet type */
-		new_char = getc();
+		new_char = receivechar();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
 		sum += new_char & 0xff;
@@ -457,19 +467,19 @@ START:
 		if (length == -2) {
 			/* (length byte was 0, decremented twice) */
 			/* get the two length bytes */
-			new_char = getc();
+			new_char = receivechar();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
 			sum += new_char & 0xff;
 			len_hi = untochar(new_char);
-			new_char = getc();
+			new_char = receivechar();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
 			sum += new_char & 0xff;
 			len_lo = untochar(new_char);
 			length = len_hi * 95 + len_lo;
 			/* check header checksum */
-			new_char = getc();
+			new_char = receivechar();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
 			if (new_char !=
@@ -488,7 +498,7 @@ START:
 			}
 		}
 		while (length > 1) {
-			new_char = getc();
+			new_char = receivechar();
 			if ((new_char & 0xE0) == 0)
 				goto packet_error;
 			sum += new_char & 0xff;
@@ -505,13 +515,13 @@ START:
 			}
 		}
 		/* get and validate checksum character */
-		new_char = getc();
+		new_char = receivechar();
 		if ((new_char & 0xE0) == 0)
 			goto packet_error;
 		if (new_char != tochar((sum + ((sum >> 6) & 0x03)) & 0x3f))
 			goto packet_error;
 		/* get END_CHAR */
-		new_char = getc();
+		new_char = receivechar();
 		if (new_char != END_CHAR) {
 packet_error:
 			/* restore state machines */
@@ -566,8 +576,8 @@ static ulong load_serial_bin(void)
 	 * box some time (100 * 1 ms)
 	 */
 	for (i = 0; i < 100; ++i) {
-		if (tstc())
-			(void)getc();
+		if (cdev->tstc(cdev))
+			(void)receivechar();;
 		udelay(1000);
 	}
 
@@ -607,9 +617,10 @@ static int do_load_serial_bin(int argc, char *argv[])
 	int rcode = 0, ret;
 	int opt;
 	char *output_file = NULL;
-	struct console_device *cdev = NULL;
+	int current_active;
+	char *console_dev_name = NULL;
 
-	while ((opt = getopt(argc, argv, "f:b:o:c")) > 0) {
+	while ((opt = getopt(argc, argv, "f:b:o:c:")) > 0) {
 		switch (opt) {
 		case 'f':
 			output_file = optarg;
@@ -620,18 +631,30 @@ static int do_load_serial_bin(int argc, char *argv[])
 		case 'o':
 			offset = (int)simple_strtoul(optarg, NULL, 10);
 			break;
+		case 'c':
+			console_dev_name = optarg;
+			break;
 		default:
 			perror(argv[0]);
 			return 1;
 		}
 	}
 
-	cdev = console_get_first_active();
-	if (NULL == cdev) {
-		printf("%s:No console device with STDIN and STDOUT\n", argv[0]);
-		return -ENODEV;
+	if (console_dev_name) {
+		cdev = console_get_by_name(console_dev_name);
+		if (!cdev) {
+			printf("Console %s not found\n", console_dev_name);
+			return -ENODEV;
+		}
+	} else {
+		cdev = console_get_first_active();
+		if (!cdev) {
+			printf("No console device with STDIN and STDOUT\n");
+			return -ENODEV;
+		}
 	}
 	current_baudrate = console_get_baudrate(cdev);
+	current_active = console_get_active(cdev);
 
 	/* Load Defaults */
 	if (load_baudrate == 0)
@@ -656,13 +679,15 @@ static int do_load_serial_bin(int argc, char *argv[])
 		}
 	}
 
+	printf("## Ready for binary (kermit) download "
+	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
+	       output_file, load_baudrate);
+
+	console_set_active(cdev, 0);
 	ret = console_set_baudrate(cdev, load_baudrate);
 	if (ret)
 		return ret;
 
-	printf("## Ready for binary (kermit) download "
-	       "to 0x%08lX offset on %s device at %d bps...\n", offset,
-	       output_file, load_baudrate);
 	addr = load_serial_bin();
 	if (addr == 0) {
 		printf("## Binary (kermit) download aborted\n");
@@ -672,6 +697,8 @@ static int do_load_serial_bin(int argc, char *argv[])
 	ret = console_set_baudrate(cdev, current_baudrate);
 	if (ret)
 		return ret;
+
+	console_set_active(cdev, current_active);
 
 	close(ofd);
 	ofd = 0;
@@ -684,6 +711,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin)")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
 BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate)")
+BAREBOX_CMD_HELP_OPT("-c CONSOLE", "Specify console (default: first active console")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(loadb)

@@ -85,6 +85,9 @@ static int ccwmx53_devices_init(void)
 	u8 hwid[6] = {0};
 	char manloc = 0;
 
+	if (!of_machine_is_compatible("digi,imx53-ccxmx53"))
+		return 0;
+
 	if ((imx_iim_read(1, 9, hwid, sizeof(hwid)) != sizeof(hwid)) ||
 	    (hwid[0] < 0x02) ||
 	    (hwid[0] >= ARRAY_SIZE(ccwmx53_ids))) {

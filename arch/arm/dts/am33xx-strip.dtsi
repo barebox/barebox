@@ -45,3 +45,4 @@
 /delete-node/ &rng;
 /delete-node/ &rtc;
 /delete-node/ &wkup_m3;
+/delete-node/ &wkup_m3_ipc;

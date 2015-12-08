@@ -5,9 +5,12 @@
 #include <fs.h>
 #include <malloc.h>
 #include <common.h>
+#define STATIC
+#else
+#define STATIC static inline
 #endif
 
-int make_directory(const char *dir)
+STATIC int make_directory(const char *dir)
 {
 	char *s = strdup(dir);
 	char *path = s;

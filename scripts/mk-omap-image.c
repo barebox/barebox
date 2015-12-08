@@ -49,7 +49,7 @@
 #include <getopt.h>
 #include <endian.h>
 
-void usage(char *prgname)
+static void usage(char *prgname)
 {
 	printf("usage: %s [OPTION] FILE > IMAGE\n"
 	       "\n"

@@ -89,4 +89,6 @@ config FS_SMHFS
 	  located on a debugging host connected to the target running
 	  Barebox
 
+source fs/pstore/Kconfig
+
 endmenu

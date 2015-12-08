@@ -31,3 +31,9 @@ NESTED(except_vec3_generic, 0, sp)
 	 nop
 	END(except_vec3_generic)
 	.set	at
+
+FEXPORT(ret_from_exception)
+	.set	noat
+	RESTORE_ALL_AND_RET
+	 nop
+	.set	at

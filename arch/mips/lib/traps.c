@@ -1,9 +1,25 @@
 #include <common.h>
-
+#include <abort.h>
 #include <asm/mipsregs.h>
 #include <asm/ptrace.h>
 
-void barebox_exc_handler(const struct pt_regs *regs);
+static int mips_ignore_data_abort;
+static int mips_data_abort_occurred;
+
+void data_abort_mask(void)
+{
+	mips_data_abort_occurred = 0;
+	mips_ignore_data_abort = 1;
+}
+
+int data_abort_unmask(void)
+{
+	mips_ignore_data_abort = 0;
+
+	return mips_data_abort_occurred != 0;
+}
+
+void barebox_exc_handler(struct pt_regs *regs);
 
 /*
  * Trap codes from OpenBSD trap.h
@@ -31,9 +47,14 @@ void barebox_exc_handler(const struct pt_regs *regs);
 #define CR_EXC_CODE             0x0000007c
 #define CR_EXC_CODE_SHIFT       2
 
+static inline u32 get_exc_code(u32 cause)
+{
+	return (cause & CR_EXC_CODE) >> CR_EXC_CODE_SHIFT;
+}
+
 static char *get_exc_name(u32 cause)
 {
-	switch ((cause & CR_EXC_CODE) >> CR_EXC_CODE_SHIFT) {
+	switch (get_exc_code(cause)) {
 
 	case T_INT:
 		return "interrupt pending";
@@ -96,13 +117,10 @@ static char *get_exc_name(u32 cause)
 	return "unknown exception";
 }
 
-void barebox_exc_handler(const struct pt_regs *regs)
+static void show_regs(const struct pt_regs *regs)
 {
-	const int field = 2 * sizeof(unsigned long);
-	unsigned int cause = regs->cp0_cause;
 	int i;
-
-	printf("\nOoops, %s!\n\n", get_exc_name(cause));
+	const int field = 2 * sizeof(unsigned long);
 
 	/*
 	 * Saved main processor registers
@@ -131,9 +149,36 @@ void barebox_exc_handler(const struct pt_regs *regs)
 	printf("epc   : %0*lx\n", field, regs->cp0_epc);
 	printf("ra    : %0*lx\n", field, regs->regs[31]);
 
-	printf("Status: %08x\n", (uint32_t) regs->cp0_status);
-	printf("Cause : %08x\n", cause);
+	printf("Status: %08x\n", (uint32_t)regs->cp0_status);
+	printf("Cause : %08x\n", (uint32_t)regs->cp0_cause);
 	printf("Config: %08x\n\n", read_c0_config());
+}
+
+void barebox_exc_handler(struct pt_regs *regs)
+{
+	unsigned int cause = regs->cp0_cause;
+
+	if (get_exc_code(cause) == T_ADDR_ERR_LD && mips_ignore_data_abort) {
+
+		mips_data_abort_occurred = 1;
+
+		regs->cp0_epc += 4;
+
+		/*
+		 * Don't let your children do this ...
+		 */
+		__asm__ __volatile__(
+			"move\t$29, %0\n\t"
+			"j\tret_from_exception"
+			:/* no outputs */
+			:"r" (&regs));
+
+		/* Unreached */
+
+	} else {
+		printf("\nOoops, %s!\n\n", get_exc_name(cause));
+		show_regs(regs);
+	}
 
 	hang();
 }

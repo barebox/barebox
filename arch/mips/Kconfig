@@ -331,6 +331,14 @@ config NMON_HELP
 	  Say yes here to get the nmon commands message on
 	  every nmon start.
 
+config MIPS_OPTIMIZED_STRING_FUNCTIONS
+	bool "use assembler optimized string functions"
+	default y
+	help
+	  Say yes here to use assembler optimized memcpy / memset functions.
+	  These functions work much faster than the normal versions but
+	  increase your binary size.
+
 endmenu
 
 source common/Kconfig

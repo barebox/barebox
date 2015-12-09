@@ -21,6 +21,9 @@ struct gpio_key {
 	int active_low;
 
 	int previous_state;
+
+	int debounce_interval;
+	u64 debounce_start;
 };
 
 struct gpio_keys {
@@ -60,11 +63,17 @@ static void gpio_key_poller(struct poller_struct *poller)
 		gb = &gk->buttons[i];
 		val = gpio_get_value(gb->gpio);
 
-		if (val != gb->previous_state && val != gb->active_low) {
-			kfifo_put(gk->recv_fifo, (u_char*)&gb->code, sizeof(int));
-			debug("pressed gpio(%d) as %d\n", gb->gpio, gb->code);
+		if (!is_timeout(gb->debounce_start, gb->debounce_interval * MSECOND))
+			continue;
+
+		if (val != gb->previous_state) {
+			gb->debounce_start = get_time_ns();
+			if (val != gb->active_low) {
+				kfifo_put(gk->recv_fifo, (u_char*)&gb->code, sizeof(int));
+				debug("pressed gpio(%d) as %d\n", gb->gpio, gb->code);
+			}
+			gb->previous_state = val;
 		}
-		gb->previous_state = val;
 	}
 }
 
@@ -111,6 +120,7 @@ static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device_d *dev)
 		gk->buttons[i].gpio = pdata->buttons[i].gpio;
 		gk->buttons[i].code = pdata->buttons[i].code;
 		gk->buttons[i].active_low = pdata->buttons[i].active_low;
+		gk->buttons[i].debounce_interval = 20;
 	}
 
 	return 0;
@@ -141,6 +151,11 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device_d *dev)
 		ret = of_property_read_u32(npkey, "linux,code", &keycode);
 		if (ret)
 			return ret;
+
+		gk->buttons[i].debounce_interval = 20;
+
+		of_property_read_u32(npkey, "debounce-interval",
+				     &gk->buttons[i].debounce_interval);
 
 		gk->buttons[i].code = keycode;
 

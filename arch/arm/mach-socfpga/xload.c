@@ -20,12 +20,13 @@
 #include <mach/system-manager.h>
 #include <mach/socfpga-regs.h>
 
-struct socfpga_barebox_part *barebox_part;
 
 static struct socfpga_barebox_part default_part = {
 	.nor_offset = SZ_256K,
 	.nor_size = SZ_1M,
+	.mmc_disk = "disk0.1",
 };
+const struct socfpga_barebox_part *barebox_part = &default_part;
 
 enum socfpga_clks {
 	timer, mmc, qspi_clk, uart, clk_max
@@ -110,13 +111,10 @@ static __noreturn int socfpga_xload(void)
 	enum bootsource bootsource = bootsource_get();
 	void *buf;
 
-	if (!barebox_part)
-		barebox_part = &default_part;
-
 	switch (bootsource) {
 	case BOOTSOURCE_MMC:
 		socfpga_mmc_init();
-		buf = bootstrap_read_disk("disk0.1", "fat");
+		buf = bootstrap_read_disk(barebox_part->mmc_disk, "fat");
 		break;
 	case BOOTSOURCE_SPI:
 		socfpga_qspi_init();

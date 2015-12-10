@@ -80,7 +80,7 @@ static unsigned int get_image_size(void *head)
 }
 #endif
 
-void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
+void* bootstrap_read_devfs(const char *devname, bool use_bb, int offset,
 			   int default_size, int max_size)
 {
 	int ret;

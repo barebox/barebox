@@ -51,7 +51,7 @@ static char* is_barebox_to_str(bool is_barebox)
 static void at91bootstrap_boot_m25p80(bool is_barebox)
 {
 	char *name = is_barebox_to_str(is_barebox);
-	int (*func)(void) = NULL;
+	kernel_entry_func func = NULL;
 
 	func = bootstrap_board_read_m25p80();
 	printf("Boot %s from m25p80\n", name);
@@ -63,7 +63,7 @@ static void at91bootstrap_boot_m25p80(bool is_barebox)
 static void at91bootstrap_boot_dataflash(bool is_barebox)
 {
 	char *name = is_barebox_to_str(is_barebox);
-	int (*func)(void) = NULL;
+	kernel_entry_func func = NULL;
 
 	printf("Boot %s from dataflash\n", name);
 	func = bootstrap_board_read_dataflash();
@@ -75,7 +75,7 @@ static void at91bootstrap_boot_dataflash(bool is_barebox)
 static void at91bootstrap_boot_nand(bool is_barebox)
 {
 	char *name = is_barebox_to_str(is_barebox);
-	int (*func)(void) = NULL;
+	kernel_entry_func func = NULL;
 
 	printf("Boot %s from nand\n", name);
 	func = bootstrap_read_devfs("nand0", true, SZ_128K, SZ_256K, SZ_1M);
@@ -86,7 +86,7 @@ static void at91bootstrap_boot_nand(bool is_barebox)
 
 static void at91bootstrap_boot_mmc(void)
 {
-	int (*func)(void) = NULL;
+	kernel_entry_func func = NULL;
 
 	printf("Boot from mmc\n");
 	func = bootstrap_read_disk("disk0.0", NULL);

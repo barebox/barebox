@@ -200,7 +200,7 @@ EXPORT_SYMBOL(get_sdr_cs1_base);
  *
  * @return - Return the value of SYSBOOT.
  */
-inline u32 get_sysboot_value(void)
+u32 get_sysboot_value(void)
 {
 	return (0x0000003F & readl(OMAP3_CONTROL_REG(STATUS)));
 }

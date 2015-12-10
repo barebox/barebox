@@ -39,8 +39,8 @@ typedef int   spinlock_t;
 #define spin_lock_init(...)
 #define spin_lock(...)
 #define spin_unlock(...)
-static inline void spin_lock_irqsave(spinlock_t *lock, unsigned long flags) {}
-static inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags) {}
+#define spin_lock_irqsave(lock, flags) do { flags = 0; } while (0)
+#define spin_unlock_irqrestore(lock, flags) do { flags = flags; } while (0)
 
 #define mutex_init(...)
 #define mutex_lock(...)

@@ -22,13 +22,13 @@
 
 		environment-mmc1 {
 			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
+			device-path = &environment_mmc1;
 			status = "disabled";
 		};
 
 		environment-mmc3 {
 			compatible = "barebox,environment";
-			device-path = &usdhc4, "partname:barebox-environment";
+			device-path = &environment_mmc3;
 			status = "disabled";
 		};
 
@@ -43,7 +43,7 @@
 		label = "barebox";
 		reg = <0x0 0x80000>;
 	};
-	partition@1 {
+	environment_mmc1: partition@1 {
 		label = "barebox-environment";
 		reg = <0x80000 0x80000>;
 	};
@@ -57,7 +57,7 @@
 		label = "barebox";
 		reg = <0x0 0x80000>;
 	};
-	partition@1 {
+	environment_mmc3: partition@1 {
 		label = "barebox-environment";
 		reg = <0x80000 0x80000>;
 	};

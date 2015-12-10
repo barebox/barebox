@@ -21,7 +21,7 @@
 static int do_devinfo_subtree(struct device_d *dev, int depth)
 {
 	struct device_d *child;
-	struct cdev *cdev;
+	struct cdev *cdev, *cdevl;
 	int i;
 
 	for (i = 0; i < depth; i++)
@@ -33,11 +33,14 @@ static int do_devinfo_subtree(struct device_d *dev, int depth)
 		list_for_each_entry(cdev, &dev->cdevs, devices_list) {
 			for (i = 0; i < depth + 1; i++)
 				printf("   ");
-			printf("`-- 0x%08llx-0x%08llx (%10s): /dev/%s\n",
+			printf("`-- 0x%08llx-0x%08llx (%10s): /dev/%s",
 					cdev->offset,
 					cdev->offset + cdev->size - 1,
 					size_human_readable(cdev->size),
 					cdev->name);
+			list_for_each_entry(cdevl, &cdev->links, link_entry)
+				printf(", %s", cdevl->name);
+			printf("\n");
 		}
 	} else {
 		printf("\n");

@@ -124,8 +124,7 @@ static int do_hwclock(int argc, char *argv[])
 		return PTR_ERR(r);
 
 	if (set) {
-		rtc_set_time(r, &stm);
-		return 0;
+		return rtc_set_time(r, &stm);
 	}
 
 	rtc_read_time(r, &tm);

@@ -44,6 +44,7 @@
 unsigned char *NetRxPackets[PKTBUFSRX]; /* Receive packets		*/
 static unsigned int net_ip_id;
 
+IPaddr_t net_serverip;
 static IPaddr_t net_nameserver;
 static char *net_domainname;
 
@@ -244,16 +245,12 @@ static uint16_t net_udp_new_localport(void)
 
 IPaddr_t net_get_serverip(void)
 {
-	struct eth_device *edev = eth_get_current();
-
-	return edev->serverip;
+	return net_serverip;
 }
 
 void net_set_serverip(IPaddr_t ip)
 {
-	struct eth_device *edev = eth_get_current();
-
-	edev->serverip = ip;
+	net_serverip = ip;
 }
 
 void net_set_ip(IPaddr_t ip)
@@ -608,6 +605,7 @@ static int net_init(void)
 
 	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
 	globalvar_add_simple_string("net.domainname", &net_domainname);
+	globalvar_add_simple_ip("net.server", &net_serverip);
 
 	return 0;
 }
@@ -616,3 +614,4 @@ postcore_initcall(net_init);
 
 BAREBOX_MAGICVAR_NAMED(global_net_nameserver, global.net.nameserver, "The DNS server used for resolving host names");
 BAREBOX_MAGICVAR_NAMED(global_net_domainname, global.net.domainname, "Domain name used for DNS requests");
+BAREBOX_MAGICVAR_NAMED(global_net_server, global.net.server, "Standard server used for NFS/TFTP");

@@ -109,14 +109,19 @@ int ifup(const char *name, unsigned flags)
 		dev_set_param(dev, "linux.bootargs", "ip=dhcp");
 	} else if (!strcmp(ip, "static")) {
 		char *bootarg;
+		IPaddr_t serverip;
+
 		for (i = 0; i < ARRAY_SIZE(vars); i++) {
 			ret = eth_set_param(dev, vars[i]);
 			if (ret)
 				goto out;
 		}
+
+		serverip = net_get_serverip();
+
 		bootarg = basprintf("ip=%pI4:%pI4:%pI4:%pI4:::",
 				&edev->ipaddr,
-				&edev->serverip,
+				&serverip,
 				&edev->gateway,
 				&edev->netmask);
 		dev_set_param(dev, "linux.bootargs", bootarg);

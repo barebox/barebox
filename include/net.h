@@ -58,7 +58,6 @@ struct eth_device {
 	struct list_head list;
 
 	IPaddr_t ipaddr;
-	IPaddr_t serverip;
 	IPaddr_t netmask;
 	IPaddr_t gateway;
 	char ethaddr[6];

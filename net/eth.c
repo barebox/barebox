@@ -348,6 +348,8 @@ static int eth_register_of_fixup(void)
 late_initcall(eth_register_of_fixup);
 #endif
 
+extern IPaddr_t net_serverip;
+
 int eth_register(struct eth_device *edev)
 {
 	struct device_d *dev = &edev->dev;
@@ -379,7 +381,7 @@ int eth_register(struct eth_device *edev)
 	edev->devname = xstrdup(dev_name(&edev->dev));
 
 	dev_add_param_ip(dev, "ipaddr", NULL, NULL, &edev->ipaddr, edev);
-	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);
+	dev_add_param_ip(dev, "serverip", NULL, NULL, &net_serverip, edev);
 	dev_add_param_ip(dev, "gateway", NULL, NULL, &edev->gateway, edev);
 	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
 	dev_add_param_mac(dev, "ethaddr", eth_param_set_ethaddr, NULL,

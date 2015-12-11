@@ -46,6 +46,9 @@ EXPORT_SYMBOL(rtc_read_time);
 
 int rtc_set_time(struct rtc_device *rtc, struct rtc_time *tm)
 {
+	if (rtc_valid_tm(tm))
+		return -EINVAL;
+
 	return rtc->ops->set_time(rtc, tm);
 }
 EXPORT_SYMBOL(rtc_set_time);

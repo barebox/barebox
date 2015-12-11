@@ -55,4 +55,6 @@ unsigned long mktime (unsigned int, unsigned int, unsigned int,
 
 extern struct rtc_device *rtc_lookup(const char *name);
 
+const char *time_str(struct rtc_time *tm);
+
 #endif	/* _RTC_H_ */

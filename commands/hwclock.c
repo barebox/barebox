@@ -138,9 +138,7 @@ static int do_hwclock(int argc, char *argv[])
 		snprintf(t, 12, "%lu", time);
 		setenv(env_name, t);
 	} else {
-		printf("%02d:%02d:%02d %02d-%02d-%04d\n",
-			tm.tm_hour, tm.tm_min, tm.tm_sec,
-			tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+		printf("%s\n", time_str(&tm));
 	}
 
 	return 0;

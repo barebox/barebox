@@ -46,10 +46,16 @@ EXPORT_SYMBOL(rtc_read_time);
 
 int rtc_set_time(struct rtc_device *rtc, struct rtc_time *tm)
 {
+	struct rtc_time time;
+	unsigned long secs;
+
 	if (rtc_valid_tm(tm))
 		return -EINVAL;
 
-	return rtc->ops->set_time(rtc, tm);
+	rtc_tm_to_time(tm, &secs);
+	rtc_time_to_tm(secs, &time);
+
+	return rtc->ops->set_time(rtc, &time);
 }
 EXPORT_SYMBOL(rtc_set_time);
 

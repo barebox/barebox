@@ -36,11 +36,16 @@
 #include <errno.h>
 #include <malloc.h>
 #include <init.h>
+#include <globalvar.h>
+#include <magicvar.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
 
 unsigned char *NetRxPackets[PKTBUFSRX]; /* Receive packets		*/
 static unsigned int net_ip_id;
+
+static IPaddr_t net_nameserver;
+static char *net_domainname;
 
 int net_checksum_ok(unsigned char *ptr, int len)
 {
@@ -570,14 +575,6 @@ out:
 	return ret;
 }
 
-static struct device_d net_device = {
-	.name = "net",
-	.id = DEVICE_ID_SINGLE,
-};
-
-static char *net_nameserver;
-static char *net_domainname;
-
 static int net_init(void)
 {
 	int i;
@@ -585,15 +582,13 @@ static int net_init(void)
 	for (i = 0; i < PKTBUFSRX; i++)
 		NetRxPackets[i] = net_alloc_packet();
 
-	register_device(&net_device);
-	net_nameserver = xstrdup("");
-	dev_add_param_string(&net_device, "nameserver", NULL, NULL,
-			     &net_nameserver, NULL);
-	net_domainname = xstrdup("");
-	dev_add_param_string(&net_device, "domainname", NULL, NULL,
-			     &net_domainname, NULL);
+	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
+	globalvar_add_simple_string("net.domainname", &net_domainname);
 
 	return 0;
 }
 
 postcore_initcall(net_init);
+
+BAREBOX_MAGICVAR_NAMED(global_net_nameserver, global.net.nameserver, "The DNS server used for resolving host names");
+BAREBOX_MAGICVAR_NAMED(global_net_domainname, global.net.domainname, "Domain name used for DNS requests");

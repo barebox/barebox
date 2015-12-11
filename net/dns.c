@@ -77,7 +77,7 @@ static int dns_send(const char *name)
 	header->nauth    = 0;
 	header->nother   = 0;
 
-	domain = getenv("net.domainname");
+	domain = getenv("global.net.domainname");
 
 	if (!strchr(name, '.') && domain && *domain)
 		fullname = basprintf(".%s.%s.", name, domain);
@@ -211,7 +211,7 @@ IPaddr_t resolv(const char *host)
 
 	dns_state = STATE_INIT;
 
-	ns = getenv("net.nameserver");
+	ns = getenv("global.net.nameserver");
 	if (!ns || !*ns) {
 		printk("%s: no nameserver specified in $net.nameserver\n",
 				__func__);

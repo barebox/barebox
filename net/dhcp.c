@@ -242,7 +242,7 @@ struct dhcp_opt dhcp_options[] = {
 	}, {
 		.option = 6,
 		.handle = env_ip_handle,
-		.barebox_var_name = "net.nameserver",
+		.barebox_var_name = "global.net.nameserver",
 	}, {
 		.option = DHCP_HOSTNAME,
 		.copy_only_if_valid = 1,
@@ -252,7 +252,7 @@ struct dhcp_opt dhcp_options[] = {
 	}, {
 		.option = 15,
 		.handle = env_str_handle,
-		.barebox_var_name = "net.domainname",
+		.barebox_var_name = "global.net.domainname",
 	}, {
 		.option = 17,
 		.handle = env_str_handle,

@@ -204,13 +204,13 @@ static void bootfile_vendorex_handle(struct dhcp_opt *opt, unsigned char *popt, 
 static int dhcp_set_string_options(struct dhcp_opt *param, u8 *e)
 {
 	int str_len;
-	char* str = param->data;
+	const char *str = param->data;
 
 	if (!str && param->barebox_var_name && IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES))
-		str = (char*)getenv(param->barebox_var_name);
+		str = getenv(param->barebox_var_name);
 
 	if (!str && param->barebox_dhcp_global && IS_ENABLED(CONFIG_GLOBALVAR))
-		str = (char*)dhcp_get_barebox_global(param->barebox_dhcp_global);
+		str = dhcp_get_barebox_global(param->barebox_dhcp_global);
 
 	if (!str)
 		return 0;

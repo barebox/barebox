@@ -59,7 +59,7 @@ static uint64_t dns_timer_start;
 static int dns_state;
 static IPaddr_t dns_ip;
 
-static int dns_send(char *name)
+static int dns_send(const char *name)
 {
 	int ret;
 	struct header *header;
@@ -199,7 +199,7 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 		net_eth_to_udplen(packet));
 }
 
-IPaddr_t resolv(char *host)
+IPaddr_t resolv(const char *host)
 {
 	IPaddr_t ip;
 	const char *ns;

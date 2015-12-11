@@ -260,8 +260,11 @@ int devfs_create(struct cdev *new)
 		return -EEXIST;
 
 	list_add_tail(&new->list, &cdev_list);
-	if (new->dev)
+	if (new->dev) {
 		list_add_tail(&new->devices_list, &new->dev->cdevs);
+		if (!new->device_node)
+			new->device_node = new->dev->device_node;
+	}
 
 	return 0;
 }

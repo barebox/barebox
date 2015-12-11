@@ -33,6 +33,9 @@ config RTC_DRV_DS1307
 	  registers may add features such as NVRAM, a trickle charger for
 	  the RTC/NVRAM backup power, and alarms.
 
+config RTC_DRV_ABRACON
+	tristate "Abracon RTCs"
+
 endif # I2C
 
 config RTC_DRV_JZ4740

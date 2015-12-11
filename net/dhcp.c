@@ -115,6 +115,7 @@ struct dhcp_opt {
 	const char *barebox_var_name;
 	const char *barebox_dhcp_global;
 	void (*handle)(struct dhcp_opt *opt, unsigned char *data, int tlen);
+	int (*handle_param)(struct dhcp_opt *dhcp_opt, u8 *e);
 	void *data;
 
 	struct bootp *bp;
@@ -200,64 +201,7 @@ static void bootfile_vendorex_handle(struct dhcp_opt *opt, unsigned char *popt, 
 	env_str_handle(opt, popt, optlen);
 }
 
-struct dhcp_opt dhcp_options[] = {
-	{
-		.option = 1,
-		.handle = netmask_handle,
-	}, {
-		.option = 3,
-		.handle = gateway_handle,
-	}, {
-		.option = 6,
-		.handle = env_ip_handle,
-		.barebox_var_name = "net.nameserver",
-	}, {
-		.option = 12,
-		.copy_only_if_valid = 1,
-		.handle = env_str_handle,
-		.barebox_var_name = "global.hostname",
-	}, {
-		.option = 15,
-		.handle = env_str_handle,
-		.barebox_var_name = "net.domainname",
-	}, {
-		.option = 17,
-		.handle = env_str_handle,
-		.barebox_dhcp_global = "rootpath",
-	}, {
-		.option = 51,
-		.handle = copy_uint32_handle,
-		.data = &dhcp_leasetime,
-	}, {
-		.option = 54,
-		.handle = copy_ip_handle,
-		.data = &net_dhcp_server_ip,
-		.optional = true,
-	}, {
-		.option = 66,
-		.handle = env_str_handle,
-		.barebox_dhcp_global = "tftp_server_name",
-		.data = dhcp_tftpname,
-	}, {
-		.option = 67,
-		.handle = bootfile_vendorex_handle,
-		.barebox_dhcp_global = "bootfile",
-	}, {
-		.option = 224,
-		.handle = env_str_handle,
-		.barebox_dhcp_global = "oftree_file",
-	},
-};
-
-struct dhcp_param {
-	unsigned char option;
-	const char *barebox_var_name;
-	const char *barebox_dhcp_global;
-	int (*handle)(struct dhcp_param *param, u8 *e);
-	void *data;
-};
-
-static int dhcp_set_string_options(struct dhcp_param *param, u8 *e)
+static int dhcp_set_string_options(struct dhcp_opt *param, u8 *e)
 {
 	int str_len;
 	char* str = param->data;
@@ -288,40 +232,82 @@ static int dhcp_set_string_options(struct dhcp_param *param, u8 *e)
 #define DHCP_USER_CLASS		77
 #define DHCP_CLIENT_UUID	97
 
-struct dhcp_param dhcp_params[] = {
+struct dhcp_opt dhcp_options[] = {
 	{
+		.option = 1,
+		.handle = netmask_handle,
+	}, {
+		.option = 3,
+		.handle = gateway_handle,
+	}, {
+		.option = 6,
+		.handle = env_ip_handle,
+		.barebox_var_name = "net.nameserver",
+	}, {
 		.option = DHCP_HOSTNAME,
-		.handle = dhcp_set_string_options,
+		.copy_only_if_valid = 1,
+		.handle = env_str_handle,
+		.handle_param = dhcp_set_string_options,
 		.barebox_var_name = "global.hostname",
 	}, {
+		.option = 15,
+		.handle = env_str_handle,
+		.barebox_var_name = "net.domainname",
+	}, {
+		.option = 17,
+		.handle = env_str_handle,
+		.barebox_dhcp_global = "rootpath",
+	}, {
+		.option = 51,
+		.handle = copy_uint32_handle,
+		.data = &dhcp_leasetime,
+	}, {
+		.option = 54,
+		.handle = copy_ip_handle,
+		.data = &net_dhcp_server_ip,
+		.optional = true,
+	}, {
 		.option = DHCP_VENDOR_ID,
-		.handle = dhcp_set_string_options,
+		.handle_param = dhcp_set_string_options,
 		.barebox_dhcp_global = "vendor_id",
+	},{
+		.option = 66,
+		.handle = env_str_handle,
+		.barebox_dhcp_global = "tftp_server_name",
+		.data = dhcp_tftpname,
+	}, {
+		.option = 67,
+		.handle = bootfile_vendorex_handle,
+		.barebox_dhcp_global = "bootfile",
 	}, {
 		.option = DHCP_CLIENT_ID,
-		.handle = dhcp_set_string_options,
+		.handle_param = dhcp_set_string_options,
 		.barebox_dhcp_global = "client_id",
 	}, {
 		.option = DHCP_USER_CLASS,
-		.handle = dhcp_set_string_options,
+		.handle_param = dhcp_set_string_options,
 		.barebox_dhcp_global = "user_class",
 	}, {
 		.option = DHCP_CLIENT_UUID,
-		.handle = dhcp_set_string_options,
+		.handle_param = dhcp_set_string_options,
 		.barebox_dhcp_global = "client_uuid",
-	}
+	}, {
+		.option = 224,
+		.handle = env_str_handle,
+		.barebox_dhcp_global = "oftree_file",
+	},
 };
 
 static void dhcp_set_param_data(int option, void* data)
 {
-	struct dhcp_param *param;
+	struct dhcp_opt *opt;
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(dhcp_params); i++) {
-		param = &dhcp_params[i];
+	for (i = 0; i < ARRAY_SIZE(dhcp_options); i++) {
+		opt = &dhcp_options[i];
 
-		if (param->option == option) {
-			param->data = data;
+		if (opt->option == option) {
+			opt->data = data;
 			return;
 		}
 	}
@@ -405,6 +391,7 @@ static void bootp_copy_net_params(struct bootp *bp)
 static int dhcp_extended (u8 *e, int message_type, IPaddr_t ServerID,
 			  IPaddr_t RequestedIP)
 {
+	struct dhcp_opt *opt;
 	int i;
 	u8 *start = e;
 	u8 *cnt;
@@ -427,8 +414,11 @@ static int dhcp_extended (u8 *e, int message_type, IPaddr_t ServerID,
 	e += dhcp_set_ip_options(50, e, RequestedIP);
 	e += dhcp_set_ip_options(54, e, ServerID);
 
-	for (i = 0; i < ARRAY_SIZE(dhcp_params); i++)
-		e += dhcp_params[i].handle(&dhcp_params[i], e);
+	for (i = 0; i < ARRAY_SIZE(dhcp_options); i++) {
+		opt = &dhcp_options[i];
+		if (opt->handle_param)
+			e += opt->handle_param(opt, e);
+	}
 
 	*e++ = 55;		/* Parameter Request List */
 	 cnt = e++;		/* Pointer to count of requested items */
@@ -742,7 +732,6 @@ static void dhcp_global_add(const char *var)
 static int dhcp_global_init(void)
 {
 	struct dhcp_opt *opt;
-	struct dhcp_param *param;
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(dhcp_options); i++) {
@@ -752,15 +741,6 @@ static int dhcp_global_init(void)
 			continue;
 
 		dhcp_global_add(opt->barebox_dhcp_global);
-	}
-
-	for (i = 0; i < ARRAY_SIZE(dhcp_params); i++) {
-		param = &dhcp_params[i];
-
-		if (!param->barebox_dhcp_global)
-			continue;
-
-		dhcp_global_add(param->barebox_dhcp_global);
 	}
 
 	return 0;

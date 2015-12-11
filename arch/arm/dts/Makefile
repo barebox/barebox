@@ -71,4 +71,4 @@ pbl-dtb-$(CONFIG_MACH_UDOO) += imx6q-udoo.dtb.o
 pbl-dtb-$(CONFIG_MACH_USI_TOPKICK) += kirkwood-topkick-bb.dtb.o
 pbl-dtb-$(CONFIG_MACH_VARISCITE_MX6) += imx6q-var-custom.dtb.o
 
-clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts
+clean-files := *.dtb *.dtb.S .*.dtc .*.pre .*.dts *.dtb.lzo

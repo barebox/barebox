@@ -482,7 +482,7 @@ static int bootp_request(void)
 	return ret;
 }
 
-static int dhcp_options_handle(unsigned char option, unsigned char *popt,
+static void dhcp_options_handle(unsigned char option, unsigned char *popt,
 			       int optlen, struct bootp *bp)
 {
 	int i;
@@ -492,13 +492,13 @@ static int dhcp_options_handle(unsigned char option, unsigned char *popt,
 		opt = &dhcp_options[i];
 		if (opt->option == option) {
 			opt->bp = bp;
-			opt->handle(opt, popt, optlen);
-			goto end;
+			if (opt->handle)
+				opt->handle(opt, popt, optlen);
+			return;
 		}
 	}
 
-end:
-	return i;
+	debug("*** Unhandled DHCP Option in OFFER/ACK: %d\n", option);
 }
 
 static void dhcp_options_process(unsigned char *popt, struct bootp *bp)
@@ -506,15 +506,12 @@ static void dhcp_options_process(unsigned char *popt, struct bootp *bp)
 	unsigned char *end = popt + sizeof(*bp) + OPT_SIZE;
 	int oplen;
 	unsigned char option;
-	int i;
 
 	while (popt < end && *popt != 0xff) {
 		oplen = *(popt + 1);
 		option = *popt;
 
-		i = dhcp_options_handle(option, popt + 2, oplen, bp);
-		if (i == ARRAY_SIZE(dhcp_options))
-			debug("*** Unhandled DHCP Option in OFFER/ACK: %d\n", option);
+		dhcp_options_handle(option, popt + 2, oplen, bp);
 
 		popt += oplen + 2;	/* Process next option */
 	}

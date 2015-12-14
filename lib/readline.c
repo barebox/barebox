@@ -150,7 +150,7 @@ static void cread_add_char(char ichar, int insert, unsigned long *num,
 
 	/* room ??? */
 	if (insert || *num == *eol_num) {
-		if (*eol_num > len - 1) {
+		if (*eol_num > len - 2) {
 			getcmd_cbeep();
 			return;
 		}

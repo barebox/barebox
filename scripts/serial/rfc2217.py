@@ -341,9 +341,9 @@ class TelnetSubnegotiation(object):
         """
         timeout_time = time.time() + timeout
         while time.time() < timeout_time:
-            time.sleep(0.05)    # prevent 100% CPU load
             if self.isReady():
                 break
+            time.sleep(0.001)    # prevent 100% CPU load
         else:
             raise SerialException("timeout while waiting for option %r" % (self.name))
 
@@ -443,9 +443,9 @@ class RFC2217Serial(SerialBase):
         # now wait until important options are negotiated
         timeout_time = time.time() + self._network_timeout
         while time.time() < timeout_time:
-            time.sleep(0.05)    # prevent 100% CPU load
             if sum(o.active for o in mandadory_options) == sum(o.state != INACTIVE for o in mandadory_options):
                 break
+            time.sleep(0.001)    # prevent 100% CPU load
         else:
             raise SerialException("Remote does not seem to support RFC2217 or BINARY mode %r" % mandadory_options)
         if self.logger:
@@ -488,9 +488,9 @@ class RFC2217Serial(SerialBase):
             self.logger.debug("Negotiating settings: %s" % (items,))
         timeout_time = time.time() + self._network_timeout
         while time.time() < timeout_time:
-            time.sleep(0.05)    # prevent 100% CPU load
             if sum(o.active for o in items) == len(items):
                 break
+            time.sleep(0.001)    # prevent 100% CPU load
         else:
             raise SerialException("Remote does not accept parameter change (RFC2217): %r" % items)
         if self.logger:
@@ -865,13 +865,13 @@ class RFC2217Serial(SerialBase):
             self.rfc2217SendSubnegotiation(NOTIFY_MODEMSTATE)
             timeout_time = time.time() + self._network_timeout
             while time.time() < timeout_time:
-                time.sleep(0.05)    # prevent 100% CPU load
                 # when expiration time is updated, it means that there is a new
                 # value
                 if self._modemstate_expires > time.time():
                     if self.logger:
                         self.logger.warning('poll for modem state failed')
                     break
+                time.sleep(0.001)    # prevent 100% CPU load
             # even when there is a timeout, do not generate an error just
             # return the last known value. this way we can support buggy
             # servers that do not respond to polls, but send automatic

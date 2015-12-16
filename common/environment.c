@@ -23,7 +23,6 @@
  * the default environment when building the barebox binary. So
  * do not add any new barebox related functions here!
  */
-
 #ifdef __BAREBOX__
 #include <common.h>
 #include <command.h>
@@ -417,6 +416,7 @@ static int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 	int headerlen_full;
 	/* for envfs < 1.0 */
 	struct envfs_inode_end inode_end_dummy;
+	struct stat s;
 
 	inode_end_dummy.mode = ENVFS_32(S_IRWXU | S_IRWXG | S_IRWXO);
 	inode_end_dummy.magic = ENVFS_32(ENVFS_INODE_END_MAGIC);
@@ -460,11 +460,20 @@ static int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 		make_directory(dirname(tmp));
 		free(tmp);
 
+		ret = stat(str, &s);
+		if (!ret && (flags & ENV_FLAG_NO_OVERWRITE)) {
+			printf("skip %s\n", str);
+			goto skip;
+		}
+
 		if (S_ISLNK(ENVFS_32(inode_end->mode))) {
 			debug("symlink: %s -> %s\n", str, (char*)buf);
 			if (!strcmp(buf, basename(str))) {
 				unlink(str);
 			} else {
+				if (!ret)
+					unlink(str);
+
 				ret = symlink(buf, str);
 				if (ret < 0)
 					printf("symlink: %s -> %s : %s\n",
@@ -472,14 +481,6 @@ static int envfs_load_data(struct envfs_super *super, void *buf, size_t size,
 			}
 			free(str);
 		} else {
-			struct stat s;
-
-			if (flags & ENV_FLAG_NO_OVERWRITE &&
-					!stat(str, &s)) {
-				printf("skip %s\n", str);
-				goto skip;
-			}
-
 			fd = open(str, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			free(str);
 			if (fd < 0) {

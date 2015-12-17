@@ -43,3 +43,10 @@ config OF_BAREBOX_DRIVERS
 	  support for this feature. This currently allows to configure the
 	  environment path from devicetree and to partition devices. See
 	  Documentation/devicetree/bindings/barebox/ for more information.
+
+config OF_BAREBOX_ENV_IN_FS
+	depends on OF_BAREBOX_DRIVERS
+	bool "Allow environment to come from file"
+	help
+	  Allow the devie tree configuration of the barebox environment path
+	  to specify a file in filesystem, which will be mounted.

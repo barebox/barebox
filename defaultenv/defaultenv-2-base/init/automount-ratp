@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# automount ratp filesystem
+
+mkdir -p /mnt/ratp
+automount /mnt/ratp 'mount -t ratpfs none /mnt/ratp'

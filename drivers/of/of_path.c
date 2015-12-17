@@ -106,12 +106,22 @@ out:
 	return ret;
 }
 
-static int __of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags)
+/**
+ * __of_find_path
+ *
+ * @node: The node to find the cdev for, can be the device or a
+ *        partition in the device
+ * @part: Optionally, a description of a parition of @node.  See of_find_path
+ * @outpath: if this function returns 0 outpath will contain the path belonging
+ *           to the input path description. Must be freed with free().
+ * @flags: use OF_FIND_PATH_FLAGS_BB to return the .bb device if available
+ *
+ */
+static int __of_find_path(struct device_node *node, const char *part, char **outpath, unsigned flags)
 {
-	struct of_path op = {};
-	const char *str;
+	struct of_path op;
 	bool add_bb = false;
-	int i, ret;
+	int ret;
 
 	op.dev = of_find_device_by_node_path(node->full_name);
 	if (!op.dev) {
@@ -122,22 +132,17 @@ static int __of_find_path(struct device_node *node, const char *propname, char *
 
 	device_detect(op.dev);
 
-	op.cdev = cdev_by_device_node(node);
-
-	i = 1;
-
-	while (propname) {
-		ret = of_property_read_string_index(node, propname, i++, &str);
-		if (ret)
-			break;
-
-		ret = of_path_parse_one(&op, str);
+	if (part) {
+		/* Find a partition inside op.dev */
+		ret = of_path_parse_one(&op, part);
 		if (ret)
 			return ret;
+	} else {
+		/* node points directly to device */
+		op.cdev = cdev_by_device_node(node);
+		if (!op.cdev)
+			return -ENOENT;
 	}
-
-	if (!op.cdev)
-		return -ENOENT;
 
 	if ((flags & OF_FIND_PATH_FLAGS_BB) && op.cdev->mtd &&
 	    mtd_can_have_bb(op.cdev->mtd))
@@ -193,6 +198,8 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath,
 {
 	struct device_node *rnode;
 	const char *path;
+	const char *part;
+	int ret;
 
 	path = of_get_property(node, propname, NULL);
 	if (!path)
@@ -202,5 +209,9 @@ int of_find_path(struct device_node *node, const char *propname, char **outpath,
 	if (!rnode)
 		return -ENODEV;
 
-	return __of_find_path(rnode, propname, outpath, flags);
+	ret = of_property_read_string_index(node, propname, 1, &part);
+	if (ret)
+		part = NULL;
+
+	return __of_find_path(rnode, part, outpath, flags);
 }

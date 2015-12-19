@@ -203,7 +203,22 @@ static void rpi_get_board_rev(void)
 		return;
 	}
 
+	/* Comments from u-boot:
+	 * For details of old-vs-new scheme, see:
+	 * https://github.com/pimoroni/RPi.version/blob/master/RPi/version.py
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=99293&p=690282
+	 * (a few posts down)
+	 *
+	 * For the RPi 1, bit 24 is the "warranty bit", so we mask off just the
+	 * lower byte to use as the board rev:
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=63&t=98367&start=250
+	 * http://www.raspberrypi.org/forums/viewtopic.php?f=31&t=20594
+	 */
 	rpi_board_rev = msg->get_board_rev.body.resp.rev;
+	if (rpi_board_rev & 0x800000)
+		rpi_board_rev = (rpi_board_rev >> 4) & 0xff;
+	else
+		rpi_board_rev &= 0xff;
 	if (rpi_board_rev >= ARRAY_SIZE(models)) {
 		printf("RPI: Board rev %u outside known range\n",
 		       rpi_board_rev);

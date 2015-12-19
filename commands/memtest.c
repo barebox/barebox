@@ -191,7 +191,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(memtest)
 	.cmd		= do_memtest,
 	BAREBOX_CMD_DESC("extensive memory test")
-	BAREBOX_CMD_OPTS("[-ib]")
+	BAREBOX_CMD_OPTS("[-ibcut]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_memtest_help)
 BAREBOX_CMD_END

@@ -1,7 +1,10 @@
 #ifndef __LED_H
 #define __LED_H
 
+#include <linux/list.h>
+
 #include <errno.h>
+#include <of.h>
 
 struct led {
 	void (*set)(struct led *, unsigned int value);

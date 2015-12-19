@@ -64,6 +64,11 @@ config ARCH_BCM2835
 	select ARCH_BCM283X
 	select CPU_ARM1176
 
+config ARCH_BCM2836
+	bool "Broadcom BCM2836 boards"
+	select ARCH_BCM283X
+	select CPU_V7
+
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
 	select CLKDEV_LOOKUP

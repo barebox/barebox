@@ -1,14 +1,15 @@
-if ARCH_BCM2835
+if ARCH_BCM283X
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x04000000 if MACH_RPI
+	default 0x04000000
 
 choice
 	prompt "Broadcom Board type"
 
 config MACH_RPI
 	bool "RaspberryPi (BCM2835/ARM1176JZF-S)"
+	depends on ARCH_BCM2835
 
 endchoice
 

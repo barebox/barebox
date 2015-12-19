@@ -22,6 +22,15 @@ config ARM_USE_COMPRESSED_DTB
 	select UNCOMPRESS
 	select LZO_DECOMPRESS
 
+config ARCH_BCM283X
+	bool
+	select GPIOLIB
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select CLOCKSOURCE_BCM283X
+	select ARM_AMBA
+	select HAS_DEBUG_LL
+
 menu "System Type"
 
 config BUILTIN_DTB
@@ -52,13 +61,8 @@ config ARCH_AT91
 
 config ARCH_BCM2835
 	bool "Broadcom BCM2835 boards"
-	select GPIOLIB
+	select ARCH_BCM283X
 	select CPU_ARM1176
-	select CLKDEV_LOOKUP
-	select COMMON_CLK
-	select CLOCKSOURCE_BCM2835
-	select ARM_AMBA
-	select HAS_DEBUG_LL
 
 config ARCH_CLPS711X
 	bool "Cirrus Logic EP711x/EP721x/EP731x"
@@ -251,7 +255,7 @@ endchoice
 
 source arch/arm/cpu/Kconfig
 source arch/arm/mach-at91/Kconfig
-source arch/arm/mach-bcm2835/Kconfig
+source arch/arm/mach-bcm283x/Kconfig
 source arch/arm/mach-clps711x/Kconfig
 source arch/arm/mach-davinci/Kconfig
 source arch/arm/mach-digic/Kconfig

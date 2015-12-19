@@ -6,9 +6,9 @@ config ARM_SMP_TWD
 	bool
 	depends on ARM && CPU_V7
 
-config CLOCKSOURCE_BCM2835
+config CLOCKSOURCE_BCM283X
 	bool
-	depends on ARCH_BCM2835
+	depends on ARCH_BCM283X
 
 config CLOCKSOURCE_CLPS711X
 	bool

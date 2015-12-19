@@ -62,9 +62,9 @@ config MCI_S3C
 	  Enable this entry to add support to read and write SD cards on a
 	  Samsung S3C24xx based system.
 
-config MCI_BCM2835
-	bool "MCI support for BCM2835"
-	depends on ARCH_BCM2835
+config MCI_BCM283X
+	bool "MCI support for BCM283X"
+	depends on ARCH_BCM283X
 
 config MCI_IMX
 	bool "i.MX"

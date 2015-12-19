@@ -21,9 +21,9 @@ config GPIO_74164
 	  shift registers. This driver can be used to provide access
 	  to more gpio outputs.
 
-config GPIO_BCM2835
-	bool "GPIO support for BCM2835"
-	depends on ARCH_BCM2835
+config GPIO_BCM283X
+	bool "GPIO support for BCM283X"
+	depends on ARCH_BCM283X
 
 config GPIO_CLPS711X
 	bool "GPIO support for CLPS711X"

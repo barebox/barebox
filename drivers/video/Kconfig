@@ -82,11 +82,11 @@ config DRIVER_VIDEO_PXA
 	  Add support for the frame buffer device found on the PXA270
 	  CPU.
 
-config DRIVER_VIDEO_BCM2835
-	bool "BCM2835 framebuffer driver"
-	depends on ARCH_BCM2835
+config DRIVER_VIDEO_BCM283X
+	bool "BCM283X framebuffer driver"
+	depends on ARCH_BCM283X
 	help
-	  Add support for the BCM2835/VideoCore frame buffer device.
+	  Add support for the BCM283X/VideoCore frame buffer device.
 
 source drivers/video/imx-ipu-v3/Kconfig
 

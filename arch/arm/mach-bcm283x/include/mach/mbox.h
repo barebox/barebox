@@ -73,8 +73,10 @@ struct bcm2835_mbox_hdr {
 #define BCM2835_MBOX_REQ_CODE		0
 #define BCM2835_MBOX_RESP_CODE_SUCCESS	0x80000000
 
+#define BCM2835_CACHELINE_SIZE		32
+
 #define BCM2835_MBOX_STACK_ALIGN(type, name) \
-	STACK_ALIGN_ARRAY(type, name, 1, BCM2835_CHAN_MASK + 1)
+	STACK_ALIGN_ARRAY(type, name, 1, BCM2835_CACHELINE_SIZE)
 
 #define BCM2835_MBOX_INIT_HDR(_m_) { \
 		memset((_m_), 0, sizeof(*(_m_))); \

@@ -641,9 +641,13 @@ static inline struct device_node *of_find_node_by_path_or_alias(
 #define for_each_node_by_name_from(dn, root, name) \
 	for (dn = of_find_node_by_name(root, name); dn; \
 	     dn = of_find_node_by_name(dn, name))
-#define for_each_compatible_node(dn, type, compatible) \
-	for (dn = of_find_compatible_node(NULL, type, compatible); dn; \
+/* Iterate over compatible nodes starting from given root */
+#define for_each_compatible_node_from(dn, root, type, compatible) \
+	for (dn = of_find_compatible_node(root, type, compatible); dn; \
 	     dn = of_find_compatible_node(dn, type, compatible))
+/* Iterate over compatible nodes in default device tree */
+#define for_each_compatible_node(dn, type, compatible) \
+        for_each_compatible_node_from(dn, NULL, type, compatible)
 static inline struct device_node *of_find_matching_node(
 	struct device_node *from,
 	const struct of_device_id *matches)

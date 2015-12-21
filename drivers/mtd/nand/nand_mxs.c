@@ -737,6 +737,8 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 	/* Read DMA completed, now do the mark swapping. */
 	mxs_nand_swap_block_mark(mtd, nand_info->data_buf, nand_info->oob_buf);
 
+	memcpy(buf, nand_info->data_buf, mtd->writesize);
+
 	/* Loop over status bytes, accumulating ECC status. */
 	status = nand_info->oob_buf + mxs_nand_aux_status_offset();
 	for (i = 0; i < mxs_nand_ecc_chunk_cnt(mtd->writesize); i++) {
@@ -747,6 +749,44 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 			continue;
 
 		if (status[i] == 0xfe) {
+			int flips;
+
+			/*
+			 * The ECC hardware has an uncorrectable ECC status
+			 * code in case we have bitflips in an erased page. As
+			 * nothing was written into this subpage the ECC is
+			 * obviously wrong and we can not trust it. We assume
+			 * at this point that we are reading an erased page and
+			 * try to correct the bitflips in buffer up to
+			 * ecc_strength bitflips. If this is a page with random
+			 * data, we exceed this number of bitflips and have a
+			 * ECC failure. Otherwise we use the corrected buffer.
+			 */
+			if (i == 0) {
+				/* The first block includes metadata */
+				flips = nand_check_erased_ecc_chunk(
+						buf + i * MXS_NAND_CHUNK_DATA_CHUNK_SIZE,
+						MXS_NAND_CHUNK_DATA_CHUNK_SIZE,
+						NULL, 0,
+						nand_info->oob_buf,
+						MXS_NAND_METADATA_SIZE,
+						mtd->ecc_strength);
+			} else {
+				flips = nand_check_erased_ecc_chunk(
+						buf + i * MXS_NAND_CHUNK_DATA_CHUNK_SIZE,
+						MXS_NAND_CHUNK_DATA_CHUNK_SIZE,
+						NULL, 0,
+						NULL, 0,
+						mtd->ecc_strength);
+			}
+
+			if (flips > 0) {
+				max_bitflips = max_t(unsigned int,
+						     max_bitflips, flips);
+				corrected += flips;
+				continue;
+			}
+
 			failed++;
 			continue;
 		}
@@ -771,8 +811,6 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 	memset(nand->oob_poi, 0xff, mtd->oobsize);
 
 	nand->oob_poi[0] = nand_info->oob_buf[0];
-
-	memcpy(buf, nand_info->data_buf, mtd->writesize);
 
 	ret = 0;
 rtn:

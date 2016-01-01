@@ -362,13 +362,29 @@ static int imx6_pcie_wait_for_link(struct pcie_port *pp)
 	}
 }
 
+static int imx6_pcie_wait_for_speed_change(struct pcie_port *pp)
+{
+	uint32_t tmp;
+	uint64_t start = get_time_ns();
+
+	while (!is_timeout(start, SECOND)) {
+		tmp = readl(pp->dbi_base + PCIE_LINK_WIDTH_SPEED_CONTROL);
+		/* Test if the speed change finished. */
+		if (!(tmp & PORT_LOGIC_SPEED_CHANGE))
+			return 0;
+	}
+
+	dev_err(pp->dev, "Speed change timeout\n");
+	return -EINVAL;
+}
+
+
 static int imx6_pcie_start_link(struct pcie_port *pp)
 {
 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pp);
 	uint32_t tmp;
 	int ret;
 	u32 gpr12;
-	u64 start;
 
 	/*
 	 * Force Gen1 operation when starting the link.  In case the link is
@@ -403,28 +419,22 @@ static int imx6_pcie_start_link(struct pcie_port *pp)
 	tmp |= PORT_LOGIC_SPEED_CHANGE;
 	writel(tmp, pp->dbi_base + PCIE_LINK_WIDTH_SPEED_CONTROL);
 
-	start = get_time_ns();
-	while (!is_timeout(start, SECOND)) {
-		tmp = readl(pp->dbi_base + PCIE_LINK_WIDTH_SPEED_CONTROL);
-		/* Test if the speed change finished. */
-		if (!(tmp & PORT_LOGIC_SPEED_CHANGE))
-			break;
+	ret = imx6_pcie_wait_for_speed_change(pp);
+	if (ret) {
+		dev_err(pp->dev, "Failed to bring link up!\n");
+		return ret;
 	}
 
 	/* Make sure link training is finished as well! */
-	if (tmp & PORT_LOGIC_SPEED_CHANGE)
-		ret = -EINVAL;
-	else
-		ret = imx6_pcie_wait_for_link(pp);
-
+	ret = imx6_pcie_wait_for_link(pp);
 	if (ret) {
 		dev_err(pp->dev, "Failed to bring link up!\n");
-	} else {
-		tmp = readl(pp->dbi_base + PCIE_RC_LCSR);
-		dev_dbg(pp->dev, "Link up, Gen=%i\n", (tmp >> 16) & 0xf);
+		return ret;
 	}
 
-	return ret;
+	tmp = readl(pp->dbi_base + PCIE_RC_LCSR);
+	dev_dbg(pp->dev, "Link up, Gen=%i\n", (tmp >> 16) & 0xf);
+	return 0;
 }
 
 static void imx6_pcie_host_init(struct pcie_port *pp)

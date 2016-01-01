@@ -13,6 +13,7 @@
 
 #include <common.h>
 #include <clock.h>
+#include <abort.h>
 #include <malloc.h>
 #include <io.h>
 #include <init.h>
@@ -237,7 +238,10 @@ static int imx6_pcie_assert_core_reset(struct pcie_port *pp)
 		val = readl(pp->dbi_base + PCIE_PL_PFLR);
 		val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
 		val |= PCIE_PL_PFLR_FORCE_LINK;
+
+		data_abort_mask();
 		writel(val, pp->dbi_base + PCIE_PL_PFLR);
+		data_abort_unmask();
 
 		gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
 		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);

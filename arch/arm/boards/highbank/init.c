@@ -35,13 +35,13 @@ static int hb_fixup(struct device_node *root, void *unused)
 	__be32 latency;
 
 	if (!(reg & HB_PWRDOM_STAT_SATA)) {
-		for_each_compatible_node(node, NULL, "calxeda,hb-ahci")
+		for_each_compatible_node_from(node, root, NULL, "calxeda,hb-ahci")
 			of_set_property(node, "status", "disabled",
 					sizeof("disabled"), 1);
 	}
 
 	if (!(reg & HB_PWRDOM_STAT_EMMC)) {
-		for_each_compatible_node(node, NULL, "calxeda,hb-sdhci")
+		for_each_compatible_node_from(node, root, NULL, "calxeda,hb-sdhci")
 			of_set_property(node, "status", "disabled",
 					sizeof("disabled"), 1);
 	}

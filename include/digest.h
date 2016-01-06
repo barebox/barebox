@@ -23,12 +23,34 @@
 
 struct digest;
 
+enum hash_algo {
+	HASH_ALGO_MD4,
+	HASH_ALGO_MD5,
+	HASH_ALGO_SHA1,
+	HASH_ALGO_RIPE_MD_160,
+	HASH_ALGO_SHA224,
+	HASH_ALGO_SHA256,
+	HASH_ALGO_SHA384,
+	HASH_ALGO_SHA512,
+	HASH_ALGO_RIPE_MD_128,
+	HASH_ALGO_RIPE_MD_256,
+	HASH_ALGO_RIPE_MD_320,
+	HASH_ALGO_WP_256,
+	HASH_ALGO_WP_384,
+	HASH_ALGO_WP_512,
+	HASH_ALGO_TGR_128,
+	HASH_ALGO_TGR_160,
+	HASH_ALGO_TGR_192,
+	HASH_ALGO__LAST
+};
+
 struct crypto_alg {
 	char *name;
 	char *driver_name;
 	int priority;
 #define DIGEST_ALGO_NEED_KEY	(1 << 0)
 	unsigned int flags;
+	enum hash_algo algo;
 };
 
 struct digest_algo {
@@ -65,6 +87,7 @@ void digest_algo_unregister(struct digest_algo *d);
 void digest_algo_prints(const char *prefix);
 
 struct digest *digest_alloc(const char *name);
+struct digest *digest_alloc_by_algo(enum hash_algo);
 void digest_free(struct digest *d);
 
 int digest_file_window(struct digest *d, const char *filename,

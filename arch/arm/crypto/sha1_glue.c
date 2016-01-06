@@ -119,6 +119,7 @@ static struct digest_algo m = {
 		.name		=	"sha1",
 		.driver_name	=	"sha1-asm",
 		.priority	=	150,
+		.algo		=	HASH_ALGO_SHA1,
 	},
 
 	.init	=	sha1_init,

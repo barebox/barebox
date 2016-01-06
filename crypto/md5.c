@@ -293,6 +293,7 @@ static struct digest_algo md5 = {
 		.name		= "md5",
 		.driver_name	= "md5-generic",
 		.priority	= 0,
+		.algo		= HASH_ALGO_MD5,
 	},
 	.init = digest_md5_init,
 	.update = digest_md5_update,

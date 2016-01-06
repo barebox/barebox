@@ -116,7 +116,27 @@ static struct digest_algo *digest_algo_get_by_name(const char *name)
 	list_for_each_entry(tmp, &digests, list) {
 		if (strcmp(tmp->base.name, name) != 0)
 			continue;
-		
+
+		if (tmp->base.priority <= priority)
+			continue;
+
+		d = tmp;
+		priority = tmp->base.priority;
+	}
+
+	return d;
+}
+
+static struct digest_algo *digest_algo_get_by_algo(enum hash_algo algo)
+{
+	struct digest_algo *d = NULL;
+	struct digest_algo *tmp;
+	int priority = -1;
+
+	list_for_each_entry(tmp, &digests, list) {
+		if (tmp->base.algo != algo)
+			continue;
+
 		if (tmp->base.priority <= priority)
 			continue;
 
@@ -159,6 +179,27 @@ struct digest *digest_alloc(const char *name)
 	return d;
 }
 EXPORT_SYMBOL_GPL(digest_alloc);
+
+struct digest *digest_alloc_by_algo(enum hash_algo hash_algo)
+{
+	struct digest *d;
+	struct digest_algo *algo;
+
+	algo = digest_algo_get_by_algo(hash_algo);
+	if (!algo)
+		return NULL;
+
+	d = xzalloc(sizeof(*d));
+	d->algo = algo;
+	d->ctx = xzalloc(algo->ctx_length);
+	if (d->algo->alloc(d)) {
+		digest_free(d);
+		return NULL;
+	}
+
+	return d;
+}
+EXPORT_SYMBOL_GPL(digest_alloc_by_algo);
 
 void digest_free(struct digest *d)
 {

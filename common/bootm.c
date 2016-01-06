@@ -17,6 +17,7 @@
 #include <malloc.h>
 #include <memory.h>
 #include <libfile.h>
+#include <image-fit.h>
 #include <globalvar.h>
 #include <init.h>
 #include <linux/stat.h>
@@ -92,6 +93,17 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (load_address == UIMAGE_INVALID_ADDRESS)
 		return -EINVAL;
 
+	if (data->os_fit) {
+		data->os_res = request_sdram_region("kernel",
+				load_address,
+				data->os_fit->kernel_size);
+		if (!data->os_res)
+			return -ENOMEM;
+		memcpy((void *)load_address, data->os_fit->kernel,
+		       data->os_fit->kernel_size);
+		return 0;
+	}
+
 	if (data->os) {
 		int num;
 
@@ -120,6 +132,9 @@ bool bootm_has_initrd(struct image_data *data)
 {
 	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
 		return false;
+
+	if (data->os_fit && data->os_fit->initrd)
+		return true;
 
 	if (data->initrd_file)
 		return true;
@@ -178,6 +193,18 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 	if (data->initrd_res)
 		return 0;
 
+	if (data->os_fit && data->os_fit->initrd) {
+		data->initrd_res = request_sdram_region("initrd",
+				load_address,
+				data->os_fit->initrd_size);
+		if (!data->initrd_res)
+			return -ENOMEM;
+		memcpy((void *)load_address, data->os_fit->initrd,
+		       data->os_fit->initrd_size);
+		printf("Loaded initrd from FIT image\n");
+		goto done1;
+	}
+
 	type = file_name_detect_type(data->initrd_file);
 
 	if ((int)type < 0) {
@@ -216,7 +243,7 @@ done:
 	if (type == filetype_uimage && data->initrd->header.ih_type == IH_TYPE_MULTI)
 		printf(", multifile image %s", data->initrd_part);
 	printf("\n");
-
+done1:
 	printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
 		data->initrd_res->start,
 		data->initrd_res->end);
@@ -289,7 +316,9 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return 0;
 
-	if (data->oftree_file) {
+	if (data->os_fit && data->os_fit->oftree) {
+		data->of_root_node = of_unflatten_dtb(data->os_fit->oftree);
+	} else if (data->oftree_file) {
 		size_t size;
 
 		type = file_name_detect_type(data->oftree_file);
@@ -376,6 +405,8 @@ int bootm_get_os_size(struct image_data *data)
 	if (data->os)
 		return uimage_get_size(data->os,
 				       simple_strtoul(data->os_part, NULL, 0));
+	if (data->os_fit)
+		return data->os_fit->kernel_size;
 
 	if (data->os_file) {
 		struct stat s;
@@ -495,10 +526,24 @@ int bootm_boot(struct bootm_data *bootm_data)
 		goto err_out;
 	}
 
+	if (IS_ENABLED(CONFIG_FITIMAGE) && os_type == filetype_oftree) {
+		struct fit_handle *fit;
+
+		fit = fit_open(data->os_file, data->os_part, data->verbose, data->verify);
+		if (IS_ERR(fit)) {
+			printf("Loading FIT image %s failed with: %s\n", data->os_file,
+			       strerrorp(fit));
+			ret = PTR_ERR(fit);
+			goto err_out;
+		}
+
+		data->os_fit = fit;
+	}
+
 	if (os_type == filetype_uimage) {
 		ret = bootm_open_os_uimage(data);
 		if (ret) {
-			printf("Loading OS image failed with %s\n",
+			printf("Loading OS image failed with: %s\n",
 					strerror(-ret));
 			goto err_out;
 		}
@@ -544,6 +589,8 @@ err_out:
 		uimage_close(data->initrd);
 	if (data->os)
 		uimage_close(data->os);
+	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)
+		fit_close(data->os_fit);
 	if (data->of_root_node && data->of_root_node != of_get_root_node())
 		of_delete_node(data->of_root_node);
 

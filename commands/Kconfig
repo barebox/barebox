@@ -418,6 +418,31 @@ config CMD_BOOTM_AIMAGE
 	help
 	  Support using Android Images.
 
+config CMD_BOOTM_FITIMAGE
+	bool
+	prompt "FIT image support"
+	select FITIMAGE
+	depends on CMD_BOOTM && ARM
+	help
+	  Support using Flattened Image Tree (FIT) Images. FIT is an image
+	  format introduced by U-Boot. A FIT image contains one or multiple
+	  kernels, device trees and initrds. The FIT image itself is a flattened
+	  device tree binary. Have a look at the u-boot source tree
+	  in the "doc/uImage.FIT" folder for more information:
+	  http://git.denx.de/?p=u-boot.git;a=tree;f=doc/uImage.FIT
+
+config CMD_BOOTM_FITIMAGE_SIGNATURE
+	bool
+	prompt "support verifying signed FIT images"
+	depends on CMD_BOOTM_FITIMAGE
+	select FITIMAGE_SIGNATURE
+	help
+	  Support verifying signed FIT images. This requires FIT images
+	  as described in:
+	  http://git.denx.de/?p=u-boot.git;a=blob;f=doc/uImage.FIT/signature.txt
+	  Additionally the barebox device tree needs a /signature node with the
+	  public key with which the image has been signed.
+
 config CMD_BOOTU
 	tristate
 	default y

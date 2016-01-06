@@ -34,6 +34,10 @@ struct image_data {
 
 	/* if os is an uImage this will be provided */
 	struct uimage_handle *os;
+
+	/* if os is a FIT image this will be provided */
+	struct fit_handle *os_fit;
+
 	char *os_part;
 
 	/* otherwise only the filename will be provided */

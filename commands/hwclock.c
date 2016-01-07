@@ -93,11 +93,11 @@ static int do_hwclock(int argc, char *argv[])
 	char *env_name = NULL;
 	int opt;
 	int set = 0;
+	int ret;
 	int ntp_to_hw = 0;
 	char *ntpserver = NULL;
 
 	while ((opt = getopt(argc, argv, "f:s:e:n:")) > 0) {
-		int ret;
 
 		switch (opt) {
 		case 'f':
@@ -151,7 +151,9 @@ static int do_hwclock(int argc, char *argv[])
 		return rtc_set_time(r, &stm);
 	}
 
-	rtc_read_time(r, &tm);
+	ret = rtc_read_time(r, &tm);
+	if (ret < 0)
+		return ret;
 
 	if (env_name) {
 		unsigned long time;

@@ -608,7 +608,33 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 	if (ret < 0)
 		return ret;
 
+	dev->priv = imx6_pcie;
+
 	return 0;
+}
+
+static void imx6_pcie_remove(struct device_d *dev)
+{
+	struct imx6_pcie *imx6_pcie = dev->priv;
+	u32 val;
+
+	val = readl(imx6_pcie->pp.dbi_base + PCIE_PL_PFLR);
+	val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
+	val |= PCIE_PL_PFLR_FORCE_LINK;
+	data_abort_mask();
+	writel(val, imx6_pcie->pp.dbi_base + PCIE_PL_PFLR);
+	data_abort_unmask();
+
+	val = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+	val &= ~IMX6Q_GPR12_PCIE_CTL_2;
+	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+
+	val = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+	val |= IMX6Q_GPR1_PCIE_TEST_PD;
+	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+
+	val &= ~IMX6Q_GPR1_PCIE_REF_CLK_EN;
+	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 }
 
 static struct of_device_id imx6_pcie_of_match[] = {
@@ -620,6 +646,7 @@ static struct driver_d imx6_pcie_driver = {
 	.name = "imx6-pcie",
 	.of_compatible = DRV_OF_COMPAT(imx6_pcie_of_match),
 	.probe = imx6_pcie_probe,
+	.remove = imx6_pcie_remove,
 };
 device_platform_driver(imx6_pcie_driver);
 

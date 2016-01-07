@@ -17,6 +17,7 @@
 #include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
+#include <malloc.h>
 #include <errno.h>
 #include <i2c/i2c.h>
 #include <rtc.h>
@@ -422,6 +423,8 @@ read_rtc:
 	err = rtc_register(&ds1307->rtc);
 
 exit:
+	if (err)
+		free(ds1307);
 	return err;
 }
 

@@ -90,6 +90,8 @@ int rtc_valid_tm(struct rtc_time *tm)
 {
 	if (tm->tm_year < 70
 		|| ((unsigned)tm->tm_mon) >= 12
+		|| tm->tm_wday < 0
+		|| tm->tm_wday > 6
 		|| tm->tm_mday < 1
 		|| tm->tm_mday > rtc_month_days(tm->tm_mon, tm->tm_year + 1900)
 		|| ((unsigned)tm->tm_hour) >= 24

@@ -242,7 +242,8 @@ static int imx_chipidea_probe(struct device_d *dev)
 
 	ci->vbus = regulator_get(dev, "vbus");
 
-	regulator_enable(ci->vbus);
+	if (!IS_ERR(ci->vbus))
+		regulator_enable(ci->vbus);
 
 	base = dev_request_mem_region(dev, 0);
 	if (IS_ERR(base))

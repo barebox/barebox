@@ -346,6 +346,9 @@ static void automount_mount(const char *path, int instat)
 
 	in_automount++;
 
+	if (fs_dev_root != get_fsdevice_by_path(path))
+		goto out;
+
 	list_for_each_entry(am, &automount_list, list) {
 		int len_path = strlen(path);
 		int len_am_path = strlen(am->path);
@@ -377,12 +380,10 @@ static void automount_mount(const char *path, int instat)
 		if (ret)
 			printf("running automount command '%s' failed\n",
 					am->cmd);
-		else
-			automount_remove(am->path);
 
 		break;
 	}
-
+out:
 	in_automount--;
 }
 

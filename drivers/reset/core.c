@@ -190,6 +190,7 @@ struct reset_control *of_reset_control_get(struct device_node *node,
 
 	rstc->rcdev = rcdev;
 	rstc->id = rstc_id;
+	rstc->gpio = -ENODEV;
 
 	return rstc;
 }

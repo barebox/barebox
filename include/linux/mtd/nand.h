@@ -46,6 +46,11 @@ extern int nand_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 /* unlocks specified locked blocks */
 extern int nand_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 
+extern int nand_check_erased_ecc_chunk(void *data, int datalen,
+				       void *ecc, int ecclen,
+				       void *extraoob, int extraooblen,
+				       int bitflips_threshold);
+
 /* The maximum number of NAND chips in an array */
 #define NAND_MAX_CHIPS		8
 

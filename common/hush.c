@@ -1865,7 +1865,7 @@ static char * make_string(char ** inp)
 
 int run_command(const char *cmd)
 {
-	struct p_context ctx;
+	struct p_context ctx = {};
 	int ret;
 
 	initialize_context(&ctx);
@@ -1889,7 +1889,7 @@ static int execute_script(const char *path, int argc, char *argv[])
 
 static int source_script(const char *path, int argc, char *argv[])
 {
-	struct p_context ctx;
+	struct p_context ctx = {};
 	char *script;
 	int ret;
 
@@ -1918,7 +1918,7 @@ int run_shell(void)
 {
 	int rcode;
 	struct in_str input;
-	struct p_context ctx;
+	struct p_context ctx = {};
 	int exit = 0;
 
 	login();

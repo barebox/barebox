@@ -71,6 +71,26 @@ static inline void set_cr(unsigned int val)
 	isb();
 }
 
+#ifdef CONFIG_CPU_32v7
+static inline unsigned int get_vbar(void)
+{
+	unsigned int vbar;
+	asm volatile("mrc p15, 0, %0, c12, c0, 0 @ get VBAR"
+		     : "=r" (vbar) : : "cc");
+	return vbar;
+}
+
+static inline void set_vbar(unsigned int vbar)
+{
+	asm volatile("mcr p15, 0, %0, c12, c0, 0 @ set VBAR"
+		     : : "r" (vbar) : "cc");
+	isb();
+}
+#else
+static inline unsigned int get_vbar(void) { return 0; }
+static inline void set_vbar(unsigned int vbar) {}
+#endif
+
 #endif
 
 #endif /* __ASM_ARM_SYSTEM_H */

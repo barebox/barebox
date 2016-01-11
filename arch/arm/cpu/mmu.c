@@ -302,6 +302,16 @@ static void vectors_init(void)
 		 * live without being able to catch NULL pointer dereferences
 		 */
 		exc = arm_create_pte(0x0);
+
+		if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+			/*
+			 * ARMv7 CPUs allow to remap low vectors from
+			 * 0x0 to an arbitrary address using VBAR
+			 * register, so let's make sure we have it
+			 * pointing to the correct address
+			 */
+			set_vbar(0x0);
+		}
 	}
 
 	arm_fixup_vectors();

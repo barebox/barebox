@@ -18,6 +18,10 @@ static inline void __udelay(unsigned us)
 struct socfpga_barebox_part {
 	unsigned int nor_offset;
 	unsigned int nor_size;
+	const char *mmc_disk;
 };
+
+/* Partition/device for xloader to load main bootloader from */
+extern const struct socfpga_barebox_part *barebox_part;
 
 #endif /* __MACH_SOCFPGA_GENERIC_H */

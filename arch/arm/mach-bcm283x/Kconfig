@@ -1,0 +1,25 @@
+if ARCH_BCM283X
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x04000000
+
+config MACH_RPI_COMMON
+	bool
+
+choice
+	prompt "Broadcom Board type"
+
+config MACH_RPI
+	bool "RaspberryPi (BCM2835/ARM1176JZF-S)"
+	depends on ARCH_BCM2835
+	select MACH_RPI_COMMON
+
+config MACH_RPI2
+	bool "RaspberryPi 2 (BCM2836/CORTEX-A7)"
+	depends on ARCH_BCM2836
+	select MACH_RPI_COMMON
+
+endchoice
+
+endif

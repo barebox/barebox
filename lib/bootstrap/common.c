@@ -9,7 +9,7 @@
 #include <bootstrap.h>
 #include <filetype.h>
 
-void bootstrap_boot(int (*func)(void), bool barebox)
+void bootstrap_boot(kernel_entry_func func, bool barebox)
 {
 	if (!func)
 		return;
@@ -18,7 +18,7 @@ void bootstrap_boot(int (*func)(void), bool barebox)
 		return;
 
 	shutdown_barebox();
-	func();
+	func(0, 0, NULL);
 
 	while (1);
 }

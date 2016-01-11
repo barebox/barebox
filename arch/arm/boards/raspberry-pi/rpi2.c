@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2009 Carlo Caione <carlo@carlocaione.org>
- *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -13,23 +11,11 @@
  *
  */
 
-#ifndef __BCM2835_CORE_H__
-#define __BCM2835_CORE_H__
+#include "rpi.h"
 
-#include <mach/platform.h>
-
-void bcm2835_register_uart(void);
-void bcm2835_add_device_sdram(u32 size);
-
-static void inline bcm2835_register_mci(void)
-{
-	add_generic_device("bcm2835_mci", 0, NULL, BCM2835_EMMC_BASE, 0xFC,
-			IORESOURCE_MEM, NULL);
-}
-
-static void inline bcm2835_register_fb(void)
-{
-	add_generic_device("bcm2835_fb", 0, NULL, 0, 0, 0, NULL);
-}
-
-#endif
+const struct rpi_model rpi_models[] = {
+	RPI_MODEL(0, "Unknown model", NULL),
+	RPI_MODEL(BCM2836_BOARD_REV_2_B, "2 Model B", rpi_b_plus_init),
+};
+const size_t rpi_models_size = ARRAY_SIZE(rpi_models);
+const char *rpi_model_string = "(BCM2836/CORTEX-A7)";

@@ -11,6 +11,8 @@
 
 #include <common.h>
 
+#include <mach/platform.h>
+
 /*
  * The BCM2835 SoC contains (at least) two CPUs; the VideoCore (a/k/a "GPU")
  * and the ARM CPU. The ARM CPU is often thought of as the main CPU.
@@ -40,7 +42,7 @@
 
 /* Raw mailbox HW */
 
-#define BCM2835_MBOX_PHYSADDR	0x2000b880
+#define BCM2835_MBOX_PHYSADDR		(BCM2835_ARM_BASE + 0x880)
 
 struct bcm2835_mbox_regs {
 	u32 read;
@@ -74,7 +76,7 @@ struct bcm2835_mbox_hdr {
 #define BCM2835_MBOX_RESP_CODE_SUCCESS	0x80000000
 
 #define BCM2835_MBOX_STACK_ALIGN(type, name) \
-	STACK_ALIGN_ARRAY(type, name, 1, BCM2835_CHAN_MASK + 1)
+	STACK_ALIGN_ARRAY(type, name, 1, BCM2835_CACHELINE_SIZE)
 
 #define BCM2835_MBOX_INIT_HDR(_m_) { \
 		memset((_m_), 0, sizeof(*(_m_))); \
@@ -125,6 +127,9 @@ struct bcm2835_mbox_tag_hdr {
  */
 
 #define BCM2835_MBOX_TAG_GET_BOARD_REV	0x00010002
+
+/* RPi 2 */
+#define BCM2836_BOARD_REV_2_B		0x4
 
 /*
  * 0x2..0xf from:

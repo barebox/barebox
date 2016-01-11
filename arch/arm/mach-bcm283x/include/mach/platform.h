@@ -28,7 +28,16 @@
  * This file is manually generated.
  */
 
+#ifdef CONFIG_ARCH_BCM2835
 #define BCM2835_PERI_BASE	0x20000000
+#define BCM2835_CACHELINE_SIZE	32
+#elif defined CONFIG_ARCH_BCM2836
+#define BCM2835_PERI_BASE	0x3f000000
+#define BCM2835_CACHELINE_SIZE	64
+#else
+#error "no CONFIG_ARCH_BCM283X defined"
+#endif
+
 #define BCM2835_ST_BASE		(BCM2835_PERI_BASE + 0x3000)	/* System Timer */
 #define BCM2835_DMA_BASE	(BCM2835_PERI_BASE + 0x7000)	/* DMA controller */
 #define BCM2835_ARM_BASE	(BCM2835_PERI_BASE + 0xB000)	/* BCM2708 ARM control block */

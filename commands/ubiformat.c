@@ -503,9 +503,8 @@ static int format(const struct mtd_dev_info *mtd,
 				   write_size, eb);
 
 			if (errno != EIO) {
-				if (!args.subpage_size != mtd->min_io_size)
-					normsg("may be sub-page size is "
-					       "incorrect?");
+				if (args.subpage_size != mtd->min_io_size)
+					normsg("may be sub-page size is incorrect?");
 				goto out_free;
 			}
 

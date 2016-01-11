@@ -26,4 +26,8 @@ config NET_DHCP
 	bool
 	prompt "dhcp support"
 
+config NET_SNTP
+	bool
+	prompt "sntp support"
+
 endif

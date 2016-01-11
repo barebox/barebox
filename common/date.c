@@ -148,3 +148,21 @@ mktime (unsigned int year, unsigned int mon,
 	  )*60 + min /* now have minutes */
 	)*60 + sec; /* finally seconds */
 }
+
+const char *time_str(struct rtc_time *tm)
+{
+	const char *weekdays[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+	const char *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+				 "Sep", "Oct", "Nov", "Dec" };
+	static char buf[128];
+
+	sprintf(buf, "%s %02d %s %4d %02d:%02d:%02d",
+			weekdays[tm->tm_wday],
+			tm->tm_mday,
+			months[tm->tm_mon],
+			tm->tm_year + 1900,
+			tm->tm_hour,
+			tm->tm_min,
+			tm->tm_sec);
+	return buf;
+}

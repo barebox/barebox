@@ -4,6 +4,7 @@
 #include <linux/err.h>
 #include <linux/ctype.h>
 #include <rtc.h>
+#include <sntp.h>
 #include <linux/rtc.h>
 #include <string.h>
 #include <environment.h>
@@ -92,9 +93,11 @@ static int do_hwclock(int argc, char *argv[])
 	char *env_name = NULL;
 	int opt;
 	int set = 0;
+	int ret;
+	int ntp_to_hw = 0;
+	char *ntpserver = NULL;
 
-	while ((opt = getopt(argc, argv, "f:s:e:")) > 0) {
-		int ret;
+	while ((opt = getopt(argc, argv, "f:s:e:n:")) > 0) {
 
 		switch (opt) {
 		case 'f':
@@ -116,6 +119,10 @@ static int do_hwclock(int argc, char *argv[])
 		case 'e':
 			env_name = optarg;
 			break;
+		case 'n':
+			ntp_to_hw = 1;
+			ntpserver = optarg;
+			break;
 		}
 	}
 
@@ -124,11 +131,29 @@ static int do_hwclock(int argc, char *argv[])
 		return PTR_ERR(r);
 
 	if (set) {
-		rtc_set_time(r, &stm);
-		return 0;
+		return rtc_set_time(r, &stm);
 	}
 
-	rtc_read_time(r, &tm);
+	if (ntp_to_hw) {
+		s64 now;
+
+		if (!IS_ENABLED(CONFIG_NET_SNTP)) {
+			printf("SNTP support is disabled\n");
+			return 1;
+		}
+
+		now = sntp(ntpserver);
+		if (now < 0)
+			return now;
+
+		rtc_time_to_tm(now, &stm);
+		printf("%s\n", time_str(&stm));
+		return rtc_set_time(r, &stm);
+	}
+
+	ret = rtc_read_time(r, &tm);
+	if (ret < 0)
+		return ret;
 
 	if (env_name) {
 		unsigned long time;
@@ -138,9 +163,7 @@ static int do_hwclock(int argc, char *argv[])
 		snprintf(t, 12, "%lu", time);
 		setenv(env_name, t);
 	} else {
-		printf("%02d:%02d:%02d %02d-%02d-%04d\n",
-			tm.tm_hour, tm.tm_min, tm.tm_sec,
-			tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+		printf("%s\n", time_str(&tm));
 	}
 
 	return 0;
@@ -150,6 +173,7 @@ BAREBOX_CMD_HELP_START(hwclock)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-f NAME\t\t\t", "RTC device name (default rtc0)")
 BAREBOX_CMD_HELP_OPT ("-e VARNAME\t\t", "store RTC readout into variable VARNAME")
+BAREBOX_CMD_HELP_OPT ("-n NTPSERVER\t", "set RTC from NTP server")
 BAREBOX_CMD_HELP_OPT ("-s ccyymmddHHMM[.SS]\t", "set time")
 BAREBOX_CMD_HELP_END
 

@@ -22,6 +22,9 @@ config XZ_DECOMPRESS
 	bool "include xz uncompression support"
 	select UNCOMPRESS
 
+config REED_SOLOMON
+	bool
+
 config GENERIC_FIND_NEXT_BIT
 	def_bool n
 

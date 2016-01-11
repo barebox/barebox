@@ -56,3 +56,4 @@ obj-y			+= gcd.o
 obj-y			+= hexdump.o
 obj-$(CONFIG_FONTS)	+= fonts/
 obj-$(CONFIG_BAREBOX_LOGO)     += logo/
+obj-y			+= reed_solomon/

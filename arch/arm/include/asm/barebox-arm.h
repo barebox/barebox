@@ -94,25 +94,56 @@ static inline void arm_fixup_vectors(void)
 
 void *barebox_arm_boot_dtb(void);
 
-/*
- * For relocatable binaries find a suitable start address for the
- * relocated binary. Beginning at the memory end substract the reserved
- * space and round down a bit at the end. This is used by the pbl to
- * extract the image to a suitable place so that the uncompressed image
- * does not have to copy itself to another place. Also it's used by
- * the uncompressed image to relocate itself to the same place.
- */
-static inline unsigned long arm_barebox_image_place(unsigned long endmem)
+static inline unsigned long arm_mem_stack(unsigned long membase,
+					  unsigned long endmem)
 {
-	endmem -= STACK_SIZE;
-	endmem -= SZ_32K; /* ttb */
-	endmem -= SZ_128K; /* early malloc */
-	endmem -= SZ_1M; /* place for barebox image */
+	return endmem - STACK_SIZE;
+}
 
-	/*
-	 * round down to make translating the objdump easier
-	 */
-	endmem &= ~(SZ_1M - 1);
+static inline unsigned long arm_mem_ttb(unsigned long membase,
+					unsigned long endmem)
+{
+	endmem = arm_mem_stack(membase, endmem);
+	endmem &= ~(SZ_16K - 1);
+	endmem -= SZ_16K;
+
+	return endmem;
+}
+
+static inline unsigned long arm_mem_early_malloc(unsigned long membase,
+						 unsigned long endmem)
+{
+	return arm_mem_ttb(membase, endmem) - SZ_128K;
+}
+
+static inline unsigned long arm_mem_early_malloc_end(unsigned long membase,
+						     unsigned long endmem)
+{
+	return arm_mem_ttb(membase, endmem);
+}
+
+static inline unsigned long arm_mem_ramoops(unsigned long membase,
+					    unsigned long endmem)
+{
+	endmem = arm_mem_ttb(membase, endmem);
+#ifdef CONFIG_FS_PSTORE_RAMOOPS
+	endmem -= CONFIG_FS_PSTORE_RAMOOPS_SIZE;
+	endmem &= ~(SZ_4K - 1); /* Align to 4K */
+#endif
+
+	return endmem;
+}
+
+static inline unsigned long arm_mem_barebox_image(unsigned long membase,
+						  unsigned long endmem,
+						  unsigned long size)
+{
+	endmem = arm_mem_ramoops(membase, endmem);
+
+	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
+		endmem -= size;
+		endmem &= ~(SZ_1M - 1);
+	}
 
 	return endmem;
 }

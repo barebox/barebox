@@ -1,0 +1,86 @@
+menuconfig FS_PSTORE
+	bool
+	prompt "pstore fs support"
+	help
+	  Support for persistent storage to read data from the last crash, like
+	  panic, dmesg and ftrace.
+
+if FS_PSTORE
+
+config FS_PSTORE_RAMOOPS
+	bool
+	depends on RELOCATABLE
+	depends on ARM
+	select REED_SOLOMON
+	prompt "pstore RAM backend"
+	help
+	  Here the data is stored in a specific memory area that is neither
+	  overwritten by barebox nor the kernel.
+
+if FS_PSTORE_RAMOOPS
+
+config FS_PSTORE_RAMOOPS_RO
+	bool
+	default y
+	prompt "pstore RAM backend read only"
+	help
+	  This prevents the data from being erased by reinitializing the ramoops
+	  area with new empty ECCs. Select this if you want to see the same
+	  ramoops in the kernel.
+
+config FS_PSTORE_RAMOOPS_SIZE
+	int
+	prompt "Size of the RAMOOPS area"
+	default 2097152
+	help
+	  Size of the RAMOOPS area that is reserved. This is passed to the
+	  kernel as well as argument. Default is 2MiB.
+
+config FS_PSTORE_RAMOOPS_CONSOLE_SIZE
+	int
+	prompt "Size of the console area"
+	default 131072 # 2^17
+	range 4096 1073741824 # Random upper limitation of 1GiB
+	help
+	  Size of the RAMOOPS console area that is reserved. This is passed to
+	  the kernel as well as argument. It should be a power of 2.
+
+config FS_PSTORE_RAMOOPS_FTRACE_SIZE
+	int
+	prompt "Size of the ftrace area"
+	default 131072 # 2^17
+	range 4096 1073741824 # Random upper limitation of 1GiB
+	help
+	  Size of the RAMOOPS ftrace area that is reserved. This is passed to
+	  the kernel as well as argument. It should be a power of 2.
+
+config FS_PSTORE_RAMOOPS_PMSG_SIZE
+	int
+	prompt "Size of the userspace message area"
+	default 131072 # 2^17
+	range 4096 1073741824 # Random upper limitation of 1GiB
+	help
+	  Size of the RAMOOPS pmsg area that is reserved. This is passed to
+	  the kernel as well as argument. It should be a power of 2.
+
+config FS_PSTORE_RAMOOPS_RECORD_SIZE
+	int
+	prompt "Size of each oops area"
+	default 131072 # 2^17
+	range 4096 1073741824 # Random upper limitation of 1GiB
+	help
+	  Size of each RAMOOPS oops area. There are multiple oops/panic areas
+	  to store individual oops/panic messages. This is the size of each of
+	  these areas. It should be a power of 2.
+
+config FS_PSTORE_ECC_SIZE
+	int
+	prompt "ECC size"
+	default 16
+	help
+	  ECC size used. This is the amount of bytes for reed solomon codes
+	  that is used. 0 disables ECC.
+
+endif
+
+endif

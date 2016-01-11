@@ -54,8 +54,6 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 	uint32_t endmem = membase + memsize;
 	unsigned long barebox_base;
 
-	endmem -= STACK_SIZE; /* stack */
-
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
 		relocate_to_current_adr();
 
@@ -67,7 +65,7 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 	pg_len = pg_end - pg_start;
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE))
-		barebox_base = arm_barebox_image_place(membase + memsize);
+		barebox_base = arm_mem_barebox_image(membase, endmem, pg_len);
 	else
 		barebox_base = TEXT_BASE;
 
@@ -83,14 +81,12 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 	setup_c();
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
-		endmem &= ~0x3fff;
-		endmem -= SZ_16K; /* ttb */
-		mmu_early_enable(membase, memsize, endmem);
+		unsigned long ttb = arm_mem_ttb(membase, endmem);
+		mmu_early_enable(membase, memsize, ttb);
 	}
 
-	endmem -= SZ_128K; /* early malloc */
-	free_mem_ptr = endmem;
-	free_mem_end_ptr = free_mem_ptr + SZ_128K;
+	free_mem_ptr = arm_mem_early_malloc(membase, endmem);
+	free_mem_end_ptr = arm_mem_early_malloc_end(membase, endmem);
 
 	pbl_barebox_uncompress((void*)barebox_base, (void *)pg_start, pg_len);
 

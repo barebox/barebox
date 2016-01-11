@@ -34,6 +34,8 @@
 #include "mmu-early.h"
 
 unsigned long arm_stack_top;
+static unsigned long arm_head_bottom;
+static unsigned long arm_barebox_size;
 static void *barebox_boarddata;
 
 static bool blob_is_fdt(const void *blob)
@@ -104,14 +106,48 @@ void *barebox_arm_boot_dtb(void)
 	return barebox_boarddata;
 }
 
+static inline unsigned long arm_mem_boarddata(unsigned long membase,
+					      unsigned long endmem,
+					      unsigned long size)
+{
+	unsigned long mem;
+
+	mem = arm_mem_barebox_image(membase, endmem, barebox_image_size);
+	mem -= ALIGN(size, 64);
+
+	return mem;
+}
+
+unsigned long arm_mem_ramoops_get(void)
+{
+	return arm_mem_ramoops(0, arm_stack_top);
+}
+EXPORT_SYMBOL_GPL(arm_mem_ramoops_get);
+
+static int barebox_memory_areas_init(void)
+{
+	unsigned long start = arm_head_bottom;
+	unsigned long size = arm_mem_barebox_image(0, arm_stack_top,
+						   arm_barebox_size) -
+			     arm_head_bottom;
+	request_sdram_region("board data", start, size);
+
+	return 0;
+}
+device_initcall(barebox_memory_areas_init);
+
 __noreturn void barebox_non_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
+	unsigned long barebox_size = barebox_image_size +
+		((unsigned long)&__bss_stop - (unsigned long)&__bss_start);
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
-		unsigned long barebox_base = arm_barebox_image_place(endmem);
+		unsigned long barebox_base = arm_mem_barebox_image(membase,
+								   endmem,
+								   barebox_size);
 		relocate_to_adr(barebox_base);
 	}
 
@@ -122,19 +158,19 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	pr_debug("memory at 0x%08lx, size 0x%08lx\n", membase, memsize);
 
 	arm_stack_top = endmem;
-	endmem -= STACK_SIZE; /* Stack */
+	arm_barebox_size = barebox_size;
+	arm_head_bottom = arm_mem_barebox_image(membase, endmem,
+						arm_barebox_size);
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
-
-		endmem &= ~0x3fff;
-		endmem -= SZ_16K; /* ttb */
+		unsigned long ttb = arm_mem_ttb(membase, endmem);
 
 		if (IS_ENABLED(CONFIG_PBL_IMAGE)) {
 			arm_set_cache_functions();
 		} else {
-			pr_debug("enabling MMU, ttb @ 0x%08lx\n", endmem);
+			pr_debug("enabling MMU, ttb @ 0x%08lx\n", ttb);
 			arm_early_mmu_cache_invalidate();
-			mmu_early_enable(membase, memsize, endmem);
+			mmu_early_enable(membase, memsize, ttb);
 		}
 	}
 
@@ -155,24 +191,17 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 		}
 
 		if (totalsize) {
-			endmem -= ALIGN(totalsize, 64);
+			unsigned long mem = arm_mem_boarddata(membase, endmem,
+							      totalsize);
 			pr_debug("found %s in boarddata, copying to 0x%lu\n",
-				 name, endmem);
-			barebox_boarddata = memcpy((void *)endmem,
-						      boarddata, totalsize);
+				 name, mem);
+			barebox_boarddata = memcpy((void *)mem, boarddata,
+						   totalsize);
+			arm_head_bottom = mem;
 		}
 	}
 
-	if ((unsigned long)_text > membase + memsize ||
-			(unsigned long)_text < membase)
-		/*
-		 * barebox is either outside SDRAM or in another
-		 * memory bank, so we can use the whole bank for
-		 * malloc.
-		 */
-		malloc_end = endmem;
-	else
-		malloc_end = (unsigned long)_text;
+	malloc_end = arm_head_bottom;
 
 	/*
 	 * Maximum malloc space is the Kconfig value if given

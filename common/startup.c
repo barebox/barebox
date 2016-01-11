@@ -60,6 +60,11 @@ static int mount_root(void)
 		mount("none", "efivarfs", "/efivars", NULL);
 	}
 
+	if (IS_ENABLED(CONFIG_FS_PSTORE)) {
+		mkdir("/pstore", 0);
+		mount("none", "pstore", "/pstore", NULL);
+	}
+
 	return 0;
 }
 fs_initcall(mount_root);

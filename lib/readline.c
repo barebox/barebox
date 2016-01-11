@@ -1,6 +1,7 @@
 #include <common.h>
 #include <readkey.h>
 #include <init.h>
+#include <libbb.h>
 #include <xfuncs.h>
 #include <complete.h>
 #include <linux/ctype.h>
@@ -150,7 +151,7 @@ static void cread_add_char(char ichar, int insert, unsigned long *num,
 
 	/* room ??? */
 	if (insert || *num == *eol_num) {
-		if (*eol_num > len - 1) {
+		if (*eol_num > len - 2) {
 			getcmd_cbeep();
 			return;
 		}
@@ -321,7 +322,7 @@ int readline(const char *prompt, char *buf, int len)
 			ERASE_TO_EOL();
 
 			/* copy new line into place and display */
-			strcpy(buf, hline);
+			safe_strncpy(buf, hline, len);
 			eol_num = strlen(buf);
 			REFRESH_TO_EOL();
 			continue;

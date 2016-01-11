@@ -235,7 +235,7 @@ static int cm_cogent_fixup(struct device_node *root, void *unused)
 	int ret;
 	struct device_node *node;
 
-	for_each_compatible_node(node, NULL, "atmel,hsmci") {
+	for_each_compatible_node_from(node, root, NULL, "atmel,hsmci") {
 		struct device_node *slotnode =
 			of_get_child_by_name(node, "slot");
 		if (!slotnode)

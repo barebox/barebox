@@ -71,20 +71,14 @@ static int register_one_partition(struct block_device *blk,
 	if (!part->name[0])
 		return 0;
 
-	partition_name = asprintf("%s.%s", blk->cdev.name, part->name);
-	if (!partition_name)
-		return -ENOMEM;
+	partition_name = xasprintf("%s.%s", blk->cdev.name, part->name);
+	ret = devfs_create_link(cdev, partition_name);
+	if (ret)
+		dev_warn(blk->dev, "Failed to create link from %s to %s\n",
+			 partition_name, blk->cdev.name);
+	free(partition_name);
 
-	dev_dbg(blk->dev, "Registering partition %s on drive %s\n",
-				partition_name, blk->cdev.name);
-	cdev = devfs_add_partition(blk->cdev.name,
-				start, size, 0, partition_name);
-
-	if (IS_ERR(cdev))
-		dev_warn(blk->dev, "Registering partition %s on drive %s failed\n",
-				partition_name, blk->cdev.name);
-
-	ret = 0;
+	return 0;
 out:
 	free(partition_name);
 	return ret;

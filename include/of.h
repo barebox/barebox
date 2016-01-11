@@ -641,9 +641,13 @@ static inline struct device_node *of_find_node_by_path_or_alias(
 #define for_each_node_by_name_from(dn, root, name) \
 	for (dn = of_find_node_by_name(root, name); dn; \
 	     dn = of_find_node_by_name(dn, name))
-#define for_each_compatible_node(dn, type, compatible) \
-	for (dn = of_find_compatible_node(NULL, type, compatible); dn; \
+/* Iterate over compatible nodes starting from given root */
+#define for_each_compatible_node_from(dn, root, type, compatible) \
+	for (dn = of_find_compatible_node(root, type, compatible); dn; \
 	     dn = of_find_compatible_node(dn, type, compatible))
+/* Iterate over compatible nodes in default device tree */
+#define for_each_compatible_node(dn, type, compatible) \
+        for_each_compatible_node_from(dn, NULL, type, compatible)
 static inline struct device_node *of_find_matching_node(
 	struct device_node *from,
 	const struct of_device_id *matches)
@@ -731,6 +735,17 @@ static inline int of_property_read_u32(const struct device_node *np,
 		s = of_prop_next_string(prop, NULL);		\
 		s;						\
 		s = of_prop_next_string(prop, s))
+
+/*
+ * struct device_node *n;
+ *
+ * of_property_for_each_phandle(np, root, "propname", n)
+ *         printk("phandle points to: %s\n", n->full_name);
+ */
+#define of_property_for_each_phandle(np, root, propname, n)	\
+	for (int _i = 0; 					\
+	     (n = of_parse_phandle_from(np, root, propname, _i));\
+	     _i++)
 
 static inline int of_property_write_u8(struct device_node *np,
 				       const char *propname, u8 value)

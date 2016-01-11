@@ -46,7 +46,18 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 }
 #endif
 
-struct cdev *cdev_by_name(const char *filename)
+struct cdev *cdev_readlink(struct cdev *cdev)
+{
+	if (cdev->link)
+		cdev = cdev->link;
+
+	/* links to links are not allowed */
+	BUG_ON(cdev->link);
+
+	return cdev;
+}
+
+struct cdev *lcdev_by_name(const char *filename)
 {
 	struct cdev *cdev;
 
@@ -57,6 +68,17 @@ struct cdev *cdev_by_name(const char *filename)
 	return NULL;
 }
 
+struct cdev *cdev_by_name(const char *filename)
+{
+	struct cdev *cdev;
+
+	cdev = lcdev_by_name(filename);
+	if (!cdev)
+		return NULL;
+
+	return cdev_readlink(cdev);
+}
+
 struct cdev *cdev_by_device_node(struct device_node *node)
 {
 	struct cdev *cdev;
@@ -65,7 +87,7 @@ struct cdev *cdev_by_device_node(struct device_node *node)
 		if (!cdev->device_node)
 			continue;
 		if (cdev->device_node == node)
-			return cdev;
+			return cdev_readlink(cdev);
 	}
 	return NULL;
 }
@@ -111,14 +133,6 @@ int cdev_find_free_index(const char *basename)
 	return -EBUSY;	/* all indexes are used */
 }
 
-int cdev_do_open(struct cdev *cdev, unsigned long flags)
-{
-	if (cdev->ops->open)
-		return cdev->ops->open(cdev, flags);
-
-	return 0;
-}
-
 struct cdev *cdev_open(const char *name, unsigned long flags)
 {
 	struct cdev *cdev;
@@ -131,9 +145,11 @@ struct cdev *cdev_open(const char *name, unsigned long flags)
 	if (!cdev)
 		return NULL;
 
-	ret = cdev_do_open(cdev, flags);
-	if (ret)
-		return NULL;
+	if (cdev->ops->open) {
+		ret = cdev->ops->open(cdev, flags);
+		if (ret)
+			return NULL;
+	}
 
 	return cdev;
 }
@@ -259,21 +275,58 @@ int devfs_create(struct cdev *new)
 	if (cdev)
 		return -EEXIST;
 
+	INIT_LIST_HEAD(&new->links);
+
 	list_add_tail(&new->list, &cdev_list);
-	if (new->dev)
+	if (new->dev) {
 		list_add_tail(&new->devices_list, &new->dev->cdevs);
+		if (!new->device_node)
+			new->device_node = new->dev->device_node;
+	}
+
+	return 0;
+}
+
+int devfs_create_link(struct cdev *cdev, const char *name)
+{
+	struct cdev *new;
+
+	if (cdev_by_name(name))
+		return -EEXIST;
+
+	/*
+	 * Create a link to the real cdev instead of creating
+	 * a link to a link.
+	 */
+	cdev = cdev_readlink(cdev);
+
+	new = xzalloc(sizeof(*new));
+	new->name = xstrdup(name);
+	new->link = cdev;
+	INIT_LIST_HEAD(&new->links);
+	list_add_tail(&new->list, &cdev_list);
+	list_add_tail(&new->link_entry, &cdev->links);
 
 	return 0;
 }
 
 int devfs_remove(struct cdev *cdev)
 {
+	struct cdev *c, *tmp;
+
 	if (cdev->open)
 		return -EBUSY;
 
 	list_del(&cdev->list);
+
 	if (cdev->dev)
 		list_del(&cdev->devices_list);
+
+	list_for_each_entry_safe(c, tmp, &cdev->links, link_entry)
+		devfs_remove(c);
+
+	if (cdev->link)
+		free(cdev);
 
 	return 0;
 }

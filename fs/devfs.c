@@ -212,12 +212,18 @@ static int devfs_stat(struct device_d *_dev, const char *filename, struct stat *
 {
 	struct cdev *cdev;
 
-	cdev = cdev_by_name(filename + 1);
+	cdev = lcdev_by_name(filename + 1);
 	if (!cdev)
 		return -ENOENT;
 
 	s->st_mode = S_IFCHR;
 	s->st_size = cdev->size;
+
+	if (cdev->link)
+		s->st_mode |= S_IFLNK;
+
+	cdev = cdev_readlink(cdev);
+
 	if (cdev->ops->write)
 		s->st_mode |= S_IWUSR;
 	if (cdev->ops->read)
@@ -242,6 +248,24 @@ static void devfs_delete(struct device_d *dev)
 {
 }
 
+static int devfs_readlink(struct device_d *dev, const char *pathname,
+			  char *buf, size_t bufsz)
+{
+	struct cdev *cdev;
+
+	cdev = cdev_by_name(pathname + 1);
+	if (!cdev)
+		return -ENOENT;
+
+	while (cdev->link)
+		cdev = cdev->link;
+
+	bufsz = min(bufsz, strlen(cdev->name));
+	memcpy(buf, cdev->name, bufsz);
+
+	return 0;
+}
+
 static struct fs_driver_d devfs_driver = {
 	.read      = devfs_read,
 	.write     = devfs_write,
@@ -258,6 +282,7 @@ static struct fs_driver_d devfs_driver = {
 	.erase     = devfs_erase,
 	.protect   = devfs_protect,
 	.memmap    = devfs_memmap,
+	.readlink  = devfs_readlink,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = devfs_probe,

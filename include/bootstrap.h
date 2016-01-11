@@ -15,10 +15,10 @@ typedef void (*kernel_entry_func)(int zero, int arch, void *params);
 void bootstrap_boot(kernel_entry_func func, bool barebox);
 
 #ifdef CONFIG_BOOTSTRAP_DEVFS
-void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
+void* bootstrap_read_devfs(const char *devname, bool use_bb, int offset,
 			   int default_size, int max_size);
 #else
-static inline void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
+static inline void* bootstrap_read_devfs(const char *devname, bool use_bb, int offset,
 			   int default_size, int max_size)
 {
 	return NULL;
@@ -26,9 +26,9 @@ static inline void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
 #endif
 
 #ifdef CONFIG_BOOTSTRAP_DISK
-void* bootstrap_read_disk(char *devname, char *fstype);
+void* bootstrap_read_disk(const char *devname, const char *fstype);
 #else
-static inline void* bootstrap_read_disk(char *devname, char *fstype)
+static inline void* bootstrap_read_disk(const char *devname, const char *fstype)
 {
 	return NULL;
 }

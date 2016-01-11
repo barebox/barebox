@@ -14,12 +14,12 @@
 #include <libfile.h>
 #include <bootstrap.h>
 
-void* bootstrap_read_disk(char *dev, char *fstype)
+void* bootstrap_read_disk(const char *dev, const char *fstype)
 {
 	int ret;
 	void *buf;
 	int len;
-	char *path = "/";
+	const char *path = "/";
 
 	ret = mount(dev, fstype, path, NULL);
 	if (ret) {

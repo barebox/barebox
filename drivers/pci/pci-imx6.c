@@ -13,6 +13,7 @@
 
 #include <common.h>
 #include <clock.h>
+#include <abort.h>
 #include <malloc.h>
 #include <io.h>
 #include <init.h>
@@ -50,6 +51,8 @@ struct imx6_pcie {
 #define PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN1	0x1
 #define PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN2	0x2
 #define PCIE_RC_LCR_MAX_LINK_SPEEDS_MASK	0xf
+
+#define PCIE_RC_LCSR				0x80
 
 /* PCIe Port Logic registers (memory-mapped) */
 #define PL_OFFSET 0x700
@@ -235,7 +238,10 @@ static int imx6_pcie_assert_core_reset(struct pcie_port *pp)
 		val = readl(pp->dbi_base + PCIE_PL_PFLR);
 		val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
 		val |= PCIE_PL_PFLR_FORCE_LINK;
+
+		data_abort_mask();
 		writel(val, pp->dbi_base + PCIE_PL_PFLR);
+		data_abort_unmask();
 
 		gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
 		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
@@ -360,13 +366,29 @@ static int imx6_pcie_wait_for_link(struct pcie_port *pp)
 	}
 }
 
+static int imx6_pcie_wait_for_speed_change(struct pcie_port *pp)
+{
+	uint32_t tmp;
+	uint64_t start = get_time_ns();
+
+	while (!is_timeout(start, SECOND)) {
+		tmp = readl(pp->dbi_base + PCIE_LINK_WIDTH_SPEED_CONTROL);
+		/* Test if the speed change finished. */
+		if (!(tmp & PORT_LOGIC_SPEED_CHANGE))
+			return 0;
+	}
+
+	dev_err(pp->dev, "Speed change timeout\n");
+	return -EINVAL;
+}
+
+
 static int imx6_pcie_start_link(struct pcie_port *pp)
 {
 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pp);
 	uint32_t tmp;
 	int ret;
 	u32 gpr12;
-	u64 start;
 
 	/*
 	 * Force Gen1 operation when starting the link.  In case the link is
@@ -401,28 +423,22 @@ static int imx6_pcie_start_link(struct pcie_port *pp)
 	tmp |= PORT_LOGIC_SPEED_CHANGE;
 	writel(tmp, pp->dbi_base + PCIE_LINK_WIDTH_SPEED_CONTROL);
 
-	start = get_time_ns();
-	while (!is_timeout(start, SECOND)) {
-		tmp = readl(pp->dbi_base + PCIE_LINK_WIDTH_SPEED_CONTROL);
-		/* Test if the speed change finished. */
-		if (!(tmp & PORT_LOGIC_SPEED_CHANGE))
-			break;
+	ret = imx6_pcie_wait_for_speed_change(pp);
+	if (ret) {
+		dev_err(pp->dev, "Failed to bring link up!\n");
+		return ret;
 	}
 
 	/* Make sure link training is finished as well! */
-	if (tmp & PORT_LOGIC_SPEED_CHANGE)
-		ret = -EINVAL;
-	else
-		ret = imx6_pcie_wait_for_link(pp);
-
+	ret = imx6_pcie_wait_for_link(pp);
 	if (ret) {
 		dev_err(pp->dev, "Failed to bring link up!\n");
-	} else {
-		tmp = readl(pp->dbi_base + 0x80);
-		dev_dbg(pp->dev, "Link up, Gen=%i\n", (tmp >> 16) & 0xf);
+		return ret;
 	}
 
-	return ret;
+	tmp = readl(pp->dbi_base + PCIE_RC_LCSR);
+	dev_dbg(pp->dev, "Link up, Gen=%i\n", (tmp >> 16) & 0xf);
+	return 0;
 }
 
 static void imx6_pcie_host_init(struct pcie_port *pp)
@@ -592,7 +608,33 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 	if (ret < 0)
 		return ret;
 
+	dev->priv = imx6_pcie;
+
 	return 0;
+}
+
+static void imx6_pcie_remove(struct device_d *dev)
+{
+	struct imx6_pcie *imx6_pcie = dev->priv;
+	u32 val;
+
+	val = readl(imx6_pcie->pp.dbi_base + PCIE_PL_PFLR);
+	val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
+	val |= PCIE_PL_PFLR_FORCE_LINK;
+	data_abort_mask();
+	writel(val, imx6_pcie->pp.dbi_base + PCIE_PL_PFLR);
+	data_abort_unmask();
+
+	val = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+	val &= ~IMX6Q_GPR12_PCIE_CTL_2;
+	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+
+	val = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+	val |= IMX6Q_GPR1_PCIE_TEST_PD;
+	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+
+	val &= ~IMX6Q_GPR1_PCIE_REF_CLK_EN;
+	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 }
 
 static struct of_device_id imx6_pcie_of_match[] = {
@@ -604,6 +646,7 @@ static struct driver_d imx6_pcie_driver = {
 	.name = "imx6-pcie",
 	.of_compatible = DRV_OF_COMPAT(imx6_pcie_of_match),
 	.probe = imx6_pcie_probe,
+	.remove = imx6_pcie_remove,
 };
 device_platform_driver(imx6_pcie_driver);
 

@@ -55,8 +55,8 @@ Required properties:
   ``#size-cells = <1>``. Defines the ``offset`` and ``size`` of the
   variable in the ``raw`` backend. ``size`` must fit the node
   ``type``. Variables are not allowed to overlap.
-* ``type``: Should be ``uint8``, ``uint32``, ``enum32``, ``mac`` or
-  ``string`` for the type of the variable
+* ``type``: Should be ``uint8``, ``uint32``, ``int32``. ``enum32``, ``mac``
+  or ``string`` for the type of the variable
 * ``names``: For ``enum32`` values only, this specifies the values
   possible for ``enum32``.
 
@@ -93,6 +93,7 @@ Variable Types
 
 * ``uint8``:
 * ``uint32``:
+* ``int32``:
 * ``enum32``: The ``default`` value is an integer representing an
   offset into the names array.
 * ``mac``:

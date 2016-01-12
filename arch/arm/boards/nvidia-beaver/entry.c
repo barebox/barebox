@@ -15,9 +15,6 @@
  */
 
 #include <common.h>
-#include <linux/sizes.h>
-#include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
 #include <mach/lowlevel.h>
 #include <mach/lowlevel-dvc.h>
 
@@ -25,15 +22,11 @@ extern char __dtb_tegra30_beaver_start[];
 
 ENTRY_FUNCTION(start_nvidia_beaver, r0, r1, r2)
 {
-	uint32_t fdt;
-
-	tegra_cpu_lowlevel_setup();
+	tegra_cpu_lowlevel_setup(__dtb_tegra30_beaver_start);
 
 	tegra_dvc_init();
 	tegra30_tps62366a_ramp_vddcore();
 	tegra30_tps65911_cpu_rail_enable();
 
-	fdt = (uint32_t)__dtb_tegra30_beaver_start - get_runtime_offset();
-
-	tegra_avp_reset_vector(fdt);
+	tegra_avp_reset_vector();
 }

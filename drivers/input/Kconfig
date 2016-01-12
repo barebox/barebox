@@ -5,6 +5,9 @@
 menu "Input device support"
 	depends on !CONSOLE_NONE
 
+config INPUT
+	bool
+
 config KEYBOARD_GPIO
 	bool "GPIO Buttons"
 	depends on GENERIC_GPIO

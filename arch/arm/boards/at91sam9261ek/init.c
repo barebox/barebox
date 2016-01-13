@@ -39,6 +39,7 @@
 #include <readkey.h>
 #include <led.h>
 #include <spi/spi.h>
+#include <input/input.h>
 
 static struct atmel_nand_data nand_pdata = {
 	.ale		= 22,
@@ -235,13 +236,13 @@ static void ek_add_device_lcdc(void) {}
 #ifdef CONFIG_KEYBOARD_GPIO
 struct gpio_keys_button keys[] = {
 	{
-		.code = BB_KEY_UP,
+		.code = KEY_UP,
 		.gpio = AT91_PIN_PA26,
 	}, {
-		.code = BB_KEY_DOWN,
+		.code = KEY_DOWN,
 		.gpio = AT91_PIN_PA25,
 	}, {
-		.code = BB_KEY_ENTER,
+		.code = KEY_ENTER,
 		.gpio = AT91_PIN_PA24,
 	},
 };

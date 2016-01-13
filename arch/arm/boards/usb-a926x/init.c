@@ -41,6 +41,7 @@
 #include <gpio_keys.h>
 #include <readkey.h>
 #include <spi/spi.h>
+#include <input/input.h>
 
 static void usb_a9260_set_board_type(void)
 {
@@ -340,16 +341,16 @@ struct gpio_led dab_mmx_leds[] = {
 #ifdef CONFIG_KEYBOARD_GPIO
 struct gpio_keys_button keys[] = {
 	{
-		.code = BB_KEY_UP,
+		.code = KEY_UP,
 		.gpio = AT91_PIN_PB25,
 	}, {
-		.code = BB_KEY_HOME,
+		.code = KEY_HOME,
 		.gpio = AT91_PIN_PB13,
 	}, {
-		.code = BB_KEY_DOWN,
+		.code = KEY_DOWN,
 		.gpio = AT91_PIN_PA26,
 	}, {
-		.code = BB_KEY_ENTER,
+		.code = KEY_ENTER,
 		.gpio = AT91_PIN_PC9,
 	},
 };

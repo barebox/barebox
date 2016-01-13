@@ -36,8 +36,6 @@ struct gpio_keys {
 	struct kfifo *recv_fifo;
 	struct poller_struct poller;
 	struct console_device cdev;
-
-	int use_keycodes;
 };
 
 static inline struct gpio_keys *
@@ -91,10 +89,7 @@ static int gpio_keys_getc(struct console_device *cdev)
 
 	kfifo_get(gk->recv_fifo, (u_char*)&code, sizeof(int));
 
-	if (IS_ENABLED(CONFIG_OFDEVICE) && gk->use_keycodes)
-		return keycode_bb_keys[code];
-	else
-		return code;
+	return keycode_bb_keys[code];
 }
 
 static int gpio_keys_probe_pdata(struct gpio_keys *gk, struct device_d *dev)
@@ -161,8 +156,6 @@ static int gpio_keys_probe_dt(struct gpio_keys *gk, struct device_d *dev)
 
 		i++;
 	}
-
-	gk->use_keycodes = 1;
 
 	return 0;
 }

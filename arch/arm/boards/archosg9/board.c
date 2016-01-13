@@ -26,6 +26,7 @@
 #include <gpio_keys.h>
 #include <twl6030_pwrbtn.h>
 #include <readkey.h>
+#include <input/input.h>
 #include "archos_features.h"
 
 #define GPIO_LCD_PWON     38
@@ -72,8 +73,8 @@ static struct twl6030_pwrbtn_platform_data pwrbtn_data = {
 	.code = BB_KEY_ENTER
 };
 static struct gpio_keys_button keys[] = {
-	{ .code = BB_KEY_UP  , .gpio = 43, .active_low = 1 },
-	{ .code = BB_KEY_DOWN, .gpio = 44, .active_low = 1 },
+	{ .code = KEY_UP  , .gpio = 43, .active_low = 1 },
+	{ .code = KEY_DOWN, .gpio = 44, .active_low = 1 },
 };
 static struct gpio_keys_platform_data gk_data = {
 	.buttons = keys,

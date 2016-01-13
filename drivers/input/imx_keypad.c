@@ -228,7 +228,7 @@ static void imx_keypad_fire_events(struct imx_keypad *keypad,
 
 			kfifo_put(keypad->recv_fifo, (u_char*)(&keypad->keycodes[code]), sizeof(int));
 
-			pr_debug("Event code: %d, val: %d",
+			dev_dbg(keypad->dev, "Event code: %d, val: %d",
 				keypad->keycodes[code],
 				matrix_volatile_state[col] & (1 << row));
 		}
@@ -394,7 +394,7 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	int i;
 
 	if (!keymap_data) {
-		pr_err("no keymap defined\n");
+		dev_err(dev, "no keymap defined\n");
 		return -ENODEV;
 	}
 
@@ -418,12 +418,13 @@ static int __init imx_keypad_probe(struct device_d *dev)
 
 	if (keypad->rows_en_mask > ((1 << MAX_MATRIX_KEY_ROWS) - 1) ||
 	   keypad->cols_en_mask > ((1 << MAX_MATRIX_KEY_COLS) - 1)) {
-		pr_err("invalid key data (too many rows or colums)\n");
+		dev_err(dev, "invalid key data (too many rows or colums)\n");
 		free(keypad);
 		return -EINVAL;
 	}
-	pr_debug("enabled rows mask: %x\n", keypad->rows_en_mask);
-	pr_debug("enabled cols mask: %x\n", keypad->cols_en_mask);
+
+	dev_dbg(dev, "enabled rows mask: %x\n", keypad->rows_en_mask);
+	dev_dbg(dev, "enabled cols mask: %x\n", keypad->cols_en_mask);
 
 	matrix_keypad_build_keymap(keymap_data, MATRIX_ROW_SHIFT,
 				keypad->keycodes);

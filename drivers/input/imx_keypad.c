@@ -366,12 +366,7 @@ static int __init imx_keypad_probe(struct device_d *dev)
 {
 	struct imx_keypad *keypad;
 	const struct matrix_keymap_data *keymap_data = dev->platform_data;
-	int i, ret;
-
-	if (!keymap_data) {
-		dev_err(dev, "no keymap defined\n");
-		return -ENODEV;
-	}
+	int i, ret, row, col;
 
 	keypad = xzalloc(sizeof(struct imx_keypad));
 
@@ -380,10 +375,20 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	if (IS_ERR(keypad->mmio_base))
 		return PTR_ERR(keypad->mmio_base);
 
+	ret = matrix_keypad_build_keymap(dev, keymap_data, MATRIX_ROW_SHIFT,
+				keypad->keycodes);
+	if (ret)
+		return ret;
+
 	/* Search for rows and cols enabled */
-	for (i = 0; i < keymap_data->keymap_size; i++) {
-		keypad->rows_en_mask |= 1 << KEY_ROW(keymap_data->keymap[i]);
-		keypad->cols_en_mask |= 1 << KEY_COL(keymap_data->keymap[i]);
+	for (row = 0; row < MAX_MATRIX_KEY_ROWS; row++) {
+		for (col = 0; col < MAX_MATRIX_KEY_COLS; col++) {
+			i = MATRIX_SCAN_CODE(row, col, MATRIX_ROW_SHIFT);
+			if (keypad->keycodes[i] != KEY_RESERVED) {
+				keypad->rows_en_mask |= 1 << row;
+				keypad->cols_en_mask |= 1 << col;
+			}
+		}
 	}
 
 	if (keypad->rows_en_mask > ((1 << MAX_MATRIX_KEY_ROWS) - 1) ||
@@ -395,11 +400,6 @@ static int __init imx_keypad_probe(struct device_d *dev)
 
 	dev_dbg(dev, "enabled rows mask: %x\n", keypad->rows_en_mask);
 	dev_dbg(dev, "enabled cols mask: %x\n", keypad->cols_en_mask);
-
-	ret = matrix_keypad_build_keymap(dev, keymap_data, MATRIX_ROW_SHIFT,
-				keypad->keycodes);
-	if (ret)
-		return ret;
 
 	imx_keypad_config(keypad);
 
@@ -419,8 +419,14 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id imx_keypad_dt_ids[] = {
+        { .compatible = "fsl,imx21-kpp", },
+        { }
+};
+
 static struct driver_d imx_keypad_driver = {
 	.name   = "imx-kpp",
 	.probe  = imx_keypad_probe,
+	.of_compatible = DRV_OF_COMPAT(imx_keypad_dt_ids),
 };
 device_platform_driver(imx_keypad_driver);

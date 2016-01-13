@@ -396,8 +396,10 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	dev_dbg(dev, "enabled rows mask: %x\n", keypad->rows_en_mask);
 	dev_dbg(dev, "enabled cols mask: %x\n", keypad->cols_en_mask);
 
-	matrix_keypad_build_keymap(keymap_data, MATRIX_ROW_SHIFT,
+	ret = matrix_keypad_build_keymap(dev, keymap_data, MATRIX_ROW_SHIFT,
 				keypad->keycodes);
+	if (ret)
+		return ret;
 
 	imx_keypad_config(keypad);
 

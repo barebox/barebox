@@ -28,8 +28,8 @@ struct matrix_keymap_data {
 	unsigned int	keymap_size;
 };
 
-int matrix_keypad_build_keymap(const struct matrix_keymap_data *keymap_data,
-			   unsigned int row_shift,
-			   unsigned short *keymap);
+int matrix_keypad_build_keymap(struct device_d *dev,
+			       const struct matrix_keymap_data *keymap_data,
+			       unsigned int row_shift, unsigned short *keymap);
 
 #endif /* _MATRIX_KEYPAD_H */

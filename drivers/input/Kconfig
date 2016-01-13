@@ -54,6 +54,7 @@ config KEYBOARD_USB
 	depends on USB_HOST
 	depends on CONSOLE_FULL
 	select POLLER
+	select INPUT
 	help
 	  This driver implements support for usb keyboard.
 

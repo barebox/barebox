@@ -46,7 +46,7 @@
 #include <poller.h>
 #include <kfifo.h>
 #include <malloc.h>
-#include <matrix_keypad.h>
+#include <input/matrix_keypad.h>
 #include <linux/err.h>
 
 /*

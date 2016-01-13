@@ -8,6 +8,9 @@ menu "Input device support"
 config INPUT
 	bool
 
+config INPUT_MATRIXKMAP
+	bool
+
 config KEYBOARD_GPIO
 	bool "GPIO Buttons"
 	depends on GENERIC_GPIO
@@ -24,6 +27,7 @@ config KEYBOARD_GPIO
 config KEYBOARD_IMX_KEYPAD
 	bool "IMX Keypad"
 	depends on ARCH_IMX
+	select INPUT_MATRIXKMAP
 	select POLLER
 	help
 	  This driver implements support for buttons connected

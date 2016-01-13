@@ -1,6 +1,6 @@
 
 #include <fec.h>
-#include <matrix_keypad.h>
+#include <input/matrix_keypad.h>
 #include <i2c/i2c.h>
 #include <mach/spi.h>
 #include <mach/imx-nand.h>

@@ -29,6 +29,7 @@ config KEYBOARD_IMX_KEYPAD
 	depends on ARCH_IMX
 	select INPUT_MATRIXKMAP
 	select POLLER
+	select INPUT
 	help
 	  This driver implements support for buttons connected
 	  to the IMX keypad matrix.

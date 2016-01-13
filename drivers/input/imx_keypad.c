@@ -48,6 +48,7 @@
 #include <malloc.h>
 #include <input/matrix_keypad.h>
 #include <linux/err.h>
+#include <input/input.h>
 
 /*
  * Keypad Controller registers (halfword)
@@ -73,15 +74,11 @@
 #define MAX_MATRIX_KEY_NUM	(MAX_MATRIX_KEY_ROWS * MAX_MATRIX_KEY_COLS)
 
 struct imx_keypad {
+	struct input_device input;
 	struct clk *clk;
 	struct device_d *dev;
-	struct console_device cdev;
 	void __iomem *mmio_base;
 
-	/* optional */
-	int fifo_size;
-
-	struct kfifo *recv_fifo;
 	struct poller_struct poller;
 
 	/*
@@ -110,28 +107,6 @@ static inline struct imx_keypad *
 poller_to_imx_kp_pdata(struct poller_struct *poller)
 {
 	return container_of(poller, struct imx_keypad, poller);
-}
-
-static inline struct imx_keypad *
-cdev_to_imx_kp_pdata(struct console_device *cdev)
-{
-	return container_of(cdev, struct imx_keypad, cdev);
-}
-
-static int imx_keypad_tstc(struct console_device *cdev)
-{
-	struct imx_keypad *kp = cdev_to_imx_kp_pdata(cdev);
-
-	return (kfifo_len(kp->recv_fifo) == 0) ? 0 : 1;
-}
-
-static int imx_keypad_getc(struct console_device *cdev)
-{
-	int code = 0;
-	struct imx_keypad *kp = cdev_to_imx_kp_pdata(cdev);
-
-	kfifo_get(kp->recv_fifo, (u_char*)&code, sizeof(int));
-	return code;
 }
 
 /* Scan the matrix and return the new state in *matrix_volatile_state. */
@@ -226,7 +201,8 @@ static void imx_keypad_fire_events(struct imx_keypad *keypad,
 
 			code = MATRIX_SCAN_CODE(row, col, MATRIX_ROW_SHIFT);
 
-			kfifo_put(keypad->recv_fifo, (u_char*)(&keypad->keycodes[code]), sizeof(int));
+			input_report_key_event(&keypad->input, keypad->keycodes[code],
+					       matrix_volatile_state[col] & (1 << row));
 
 			dev_dbg(keypad->dev, "Event code: %d, val: %d",
 				keypad->keycodes[code],
@@ -390,8 +366,7 @@ static int __init imx_keypad_probe(struct device_d *dev)
 {
 	struct imx_keypad *keypad;
 	const struct matrix_keymap_data *keymap_data = dev->platform_data;
-	struct console_device *cdev;
-	int i;
+	int i, ret;
 
 	if (!keymap_data) {
 		dev_err(dev, "no keymap defined\n");
@@ -404,11 +379,6 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	keypad->mmio_base = dev_request_mem_region(dev, 0);
 	if (IS_ERR(keypad->mmio_base))
 		return PTR_ERR(keypad->mmio_base);
-
-	if(!keypad->fifo_size)
-		keypad->fifo_size = 50;
-
-	keypad->recv_fifo = kfifo_alloc(keypad->fifo_size);
 
 	/* Search for rows and cols enabled */
 	for (i = 0; i < keymap_data->keymap_size; i++) {
@@ -436,16 +406,15 @@ static int __init imx_keypad_probe(struct device_d *dev)
 
 	keypad->poller.func = imx_keypad_check_for_events;
 
-	cdev = &keypad->cdev;
-	dev->type_data = cdev;
-	cdev->dev = dev;
-	cdev->tstc = imx_keypad_tstc;
-	cdev->getc = imx_keypad_getc;
-	cdev->f_active = CONSOLE_STDIN;
+	ret = poller_register(&keypad->poller);
+	if (ret)
+		return ret;
 
-	console_register(&keypad->cdev);
+	ret = input_device_register(&keypad->input);
+	if (ret)
+		return ret;
 
-	return poller_register(&keypad->poller);
+	return 0;
 }
 
 static struct driver_d imx_keypad_driver = {

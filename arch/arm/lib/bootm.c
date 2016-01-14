@@ -135,7 +135,7 @@ static int do_bootm_linux(struct image_data *data)
 		 * relocate itself before decompression.
 		 */
 		load_address = mem_start + PAGE_ALIGN(
-		               uimage_get_size(data->os, data->os_num) * 4);
+		               bootm_get_os_size(data) * 4);
 		if (bootm_verbose(data))
 			printf("no OS load address, defaulting to 0x%08lx\n",
 				load_address);

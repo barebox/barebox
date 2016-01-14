@@ -19,6 +19,7 @@
 #include <libfile.h>
 #include <globalvar.h>
 #include <init.h>
+#include <linux/stat.h>
 
 static LIST_HEAD(handler_list);
 
@@ -183,6 +184,24 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 	data->oftree = oftree;
 
 	return 0;
+}
+
+int bootm_get_os_size(struct image_data *data)
+{
+	int ret;
+
+	if (data->os)
+		return uimage_get_size(data->os, data->os_num);
+
+	if (data->os_file) {
+		struct stat s;
+		ret = stat(data->os_file, &s);
+		if (ret)
+			return ret;
+		return s.st_size;
+	}
+
+	return -EINVAL;
 }
 
 static int bootm_open_os_uimage(struct image_data *data)

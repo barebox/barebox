@@ -91,6 +91,41 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	return -EINVAL;
 }
 
+bool bootm_has_initrd(struct image_data *data)
+{
+	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+		return false;
+
+	if (data->initrd_file)
+		return true;
+
+	return false;
+}
+
+static int bootm_open_initrd_uimage(struct image_data *data)
+{
+	int ret;
+
+	if (strcmp(data->os_file, data->initrd_file)) {
+		data->initrd = uimage_open(data->initrd_file);
+		if (!data->initrd)
+			return -EINVAL;
+
+		if (data->verify) {
+			ret = uimage_verify(data->initrd);
+			if (ret) {
+				printf("Checking data crc failed with %s\n",
+					strerror(-ret));
+			}
+		}
+		uimage_print_contents(data->initrd);
+	} else {
+		data->initrd = data->os;
+	}
+
+	return 0;
+}
+
 /*
  * bootm_load_initrd() - load initrd to RAM
  *
@@ -106,11 +141,34 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
  */
 int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 {
+	enum filetype type;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+		return -ENOSYS;
+
+	if (!bootm_has_initrd(data))
+		return -EINVAL;
+
 	if (data->initrd_res)
 		return 0;
 
-	if (data->initrd) {
+	type = file_name_detect_type(data->initrd_file);
+
+	if ((int)type < 0) {
+		printf("could not open %s: %s\n", data->initrd_file,
+				strerror(-type));
+		return (int)type;
+	}
+
+	if (type == filetype_uimage) {
 		int num;
+		ret = bootm_open_initrd_uimage(data);
+		if (ret) {
+			printf("loading initrd failed with %s\n",
+					strerror(-ret));
+			return ret;
+		}
 
 		num = simple_strtoul(data->initrd_part, NULL, 0);
 
@@ -119,16 +177,24 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		if (!data->initrd_res)
 			return -ENOMEM;
 
-		return 0;
+		goto done;
 	}
 
-	if (data->initrd_file) {
-		data->initrd_res = file_to_sdram(data->initrd_file, load_address);
-		if (!data->initrd_res)
-			return -ENOMEM;
+	data->initrd_res = file_to_sdram(data->initrd_file, load_address);
+	if (!data->initrd_res)
+		return -ENOMEM;
 
-		return 0;
-	}
+done:
+
+	printf("Loaded initrd %s '%s'", file_type_to_string(type),
+	       data->initrd_file);
+	if (type == filetype_uimage && data->initrd->header.ih_type == IH_TYPE_MULTI)
+		printf(", multifile image %s", data->initrd_part);
+	printf("\n");
+
+	printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
+		data->initrd_res->start,
+		data->initrd_res->end);
 
 	return 0;
 }
@@ -245,33 +311,6 @@ static int bootm_open_os_uimage(struct image_data *data)
 	return 0;
 }
 
-static int bootm_open_initrd_uimage(struct image_data *data)
-{
-	int ret;
-
-	if (!data->initrd_file)
-		return 0;
-
-	if (strcmp(data->os_file, data->initrd_file)) {
-		data->initrd = uimage_open(data->initrd_file);
-		if (!data->initrd)
-			return -EINVAL;
-
-		if (data->verify) {
-			ret = uimage_verify(data->initrd);
-			if (ret) {
-				printf("Checking data crc failed with %s\n",
-					strerror(-ret));
-			}
-		}
-		uimage_print_contents(data->initrd);
-	} else {
-		data->initrd = data->os;
-	}
-
-	return 0;
-}
-
 static int bootm_open_oftree_uimage(struct image_data *data)
 {
 	struct fdt_header *fdt;
@@ -358,24 +397,6 @@ static void bootm_print_info(struct image_data *data)
 				data->os_res->end);
 	else
 		printf("OS image not yet relocated\n");
-
-	if (data->initrd_file) {
-		enum filetype initrd_type = file_name_detect_type(data->initrd_file);
-
-		printf("Loading initrd %s '%s'",
-				file_type_to_string(initrd_type),
-				data->initrd_file);
-		if (initrd_type == filetype_uimage &&
-				data->initrd->header.ih_type == IH_TYPE_MULTI)
-			printf(", multifile image %s", data->initrd_part);
-		printf("\n");
-		if (data->initrd_res)
-			printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
-				data->initrd_res->start,
-				data->initrd_res->end);
-		else
-			printf("initrd image not yet relocated\n");
-	}
 }
 
 static int bootm_image_name_and_part(const char *name, char **filename, char **part)
@@ -409,7 +430,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	struct image_data *data;
 	struct image_handler *handler;
 	int ret;
-	enum filetype os_type, initrd_type = filetype_unknown;
+	enum filetype os_type;
 	enum filetype oftree_type = filetype_unknown;
 
 	if (!bootm_data->os_file) {
@@ -444,17 +465,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 		goto err_out;
 	}
 
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data->initrd_file) {
-		initrd_type = file_name_detect_type(data->initrd_file);
-
-		if ((int)initrd_type < 0) {
-			printf("could not open %s: %s\n", data->initrd_file,
-					strerror(-initrd_type));
-			ret = (int)initrd_type;
-			goto err_out;
-		}
-	}
-
 	if (IS_ENABLED(CONFIG_OFTREE) && data->oftree_file) {
 		oftree_type = file_name_detect_type(data->oftree_file);
 
@@ -472,17 +482,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 			printf("Loading OS image failed with %s\n",
 					strerror(-ret));
 			goto err_out;
-		}
-	}
-
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data->initrd_file) {
-		if (initrd_type == filetype_uimage) {
-			ret = bootm_open_initrd_uimage(data);
-			if (ret) {
-				printf("loading initrd failed with %s\n",
-						strerror(-ret));
-				goto err_out;
-			}
 		}
 	}
 

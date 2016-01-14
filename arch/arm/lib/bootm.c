@@ -86,9 +86,11 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		}
 	}
 
-	ret = bootm_load_initrd(data, initrd_start);
-	if (ret)
-		return ret;
+	if (bootm_has_initrd(data)) {
+		ret = bootm_load_initrd(data, initrd_start);
+		if (ret)
+			return ret;
+	}
 
 	if (data->initrd_res) {
 		initrd_start = data->initrd_res->start;

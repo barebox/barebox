@@ -110,7 +110,10 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 #endif
 
 int bootm_load_os(struct image_data *data, unsigned long load_address);
+
+bool bootm_has_initrd(struct image_data *data);
 int bootm_load_initrd(struct image_data *data, unsigned long load_address);
+
 int bootm_load_devicetree(struct image_data *data, unsigned long load_address);
 int bootm_get_os_size(struct image_data *data);
 

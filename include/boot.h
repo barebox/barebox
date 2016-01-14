@@ -28,7 +28,7 @@ struct image_data {
 
 	/* if os is an uImage this will be provided */
 	struct uimage_handle *os;
-	int os_num;
+	char *os_part;
 
 	/* otherwise only the filename will be provided */
 	char *os_file;
@@ -49,7 +49,7 @@ struct image_data {
 
 	/* if initrd is an uImage this will be provided */
 	struct uimage_handle *initrd;
-	int initrd_num;
+	char *initrd_part;
 
 	/* otherwise only the filename will be provided */
 	char *initrd_file;
@@ -57,7 +57,7 @@ struct image_data {
 	unsigned long initrd_address;
 
 	char *oftree_file;
-	int oftree_num;
+	char *oftree_part;
 
 	struct device_node *of_root_node;
 	struct fdt_header *oftree;

@@ -68,8 +68,12 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 		return -EINVAL;
 
 	if (data->os) {
+		int num;
+
+		num = simple_strtoul(data->os_part, NULL, 0);
+
 		data->os_res = uimage_load_to_sdram(data->os,
-			data->os_num, load_address);
+			num, load_address);
 		if (!data->os_res)
 			return -ENOMEM;
 
@@ -106,8 +110,12 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		return 0;
 
 	if (data->initrd) {
+		int num;
+
+		num = simple_strtoul(data->initrd_part, NULL, 0);
+
 		data->initrd_res = uimage_load_to_sdram(data->initrd,
-			data->initrd_num, load_address);
+			num, load_address);
 		if (!data->initrd_res)
 			return -ENOMEM;
 
@@ -191,7 +199,8 @@ int bootm_get_os_size(struct image_data *data)
 	int ret;
 
 	if (data->os)
-		return uimage_get_size(data->os, data->os_num);
+		return uimage_get_size(data->os,
+				       simple_strtoul(data->os_part, NULL, 0));
 
 	if (data->os_file) {
 		struct stat s;
@@ -268,7 +277,7 @@ static int bootm_open_oftree_uimage(struct image_data *data)
 	struct fdt_header *fdt;
 	enum filetype ft;
 	const char *oftree = data->oftree_file;
-	int num = data->oftree_num;
+	int num = simple_strtoul(data->oftree_part, NULL, 0);
 	struct uimage_handle *of_handle;
 	int release = 0;
 	size_t size;
@@ -358,7 +367,7 @@ static void bootm_print_info(struct image_data *data)
 				data->initrd_file);
 		if (initrd_type == filetype_uimage &&
 				data->initrd->header.ih_type == IH_TYPE_MULTI)
-			printf(", multifile image %d", data->initrd_num);
+			printf(", multifile image %s", data->initrd_part);
 		printf("\n");
 		if (data->initrd_res)
 			printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
@@ -369,25 +378,27 @@ static void bootm_print_info(struct image_data *data)
 	}
 }
 
-static char *bootm_image_name_and_no(const char *name, int *no)
+static int bootm_image_name_and_part(const char *name, char **filename, char **part)
 {
 	char *at, *ret;
 
 	if (!name || !*name)
-		return NULL;
-
-	*no = 0;
+		return -EINVAL;
 
 	ret = xstrdup(name);
+
+	*filename = ret;
+	*part = NULL;
+
 	at = strchr(ret, '@');
 	if (!at)
-		return ret;
+		return 0;
 
 	*at++ = 0;
 
-	*no = simple_strtoul(at, NULL, 10);
+	*part = at;
 
-	return ret;
+	return 0;
 }
 
 /*
@@ -408,9 +419,9 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	data = xzalloc(sizeof(*data));
 
-	data->os_file = bootm_image_name_and_no(bootm_data->os_file, &data->os_num);
-	data->oftree_file = bootm_image_name_and_no(bootm_data->oftree_file, &data->oftree_num);
-	data->initrd_file = bootm_image_name_and_no(bootm_data->initrd_file, &data->initrd_num);
+	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
+	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_part, &data->os_part);
+	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_part, &data->os_part);
 	data->verbose = bootm_data->verbose;
 	data->verify = bootm_data->verify;
 	data->force = bootm_data->force;
@@ -479,7 +490,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 			data->os_file);
 	if (os_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
-		printf(", multifile image %d", data->os_num);
+		printf(", multifile image %s", data->os_part);
 	printf("\n");
 
 	if (IS_ENABLED(CONFIG_OFTREE)) {

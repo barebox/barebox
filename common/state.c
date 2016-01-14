@@ -1583,16 +1583,16 @@ static int state_backend_raw_file_init_digest(struct state *state, struct state_
 	if (!p)			/* does not exist */
 		return 0;
 
+	ret = of_property_read_string(state->root, "algo", &algo);
+	if (ret)
+		return ret;
+
 	if (!IS_ENABLED(CONFIG_STATE_CRYPTO)) {
 		dev_err(&state->dev,
 			"algo %s specified, but crypto support for state framework (CONFIG_STATE_CRYPTO) not enabled.\n",
 			algo);
 		return -EINVAL;
 	}
-
-	ret = of_property_read_string(state->root, "algo", &algo);
-	if (ret)
-		return ret;
 
 	ret = keystore_get_secret(state->name, &key, &key_len);
 	if (ret == -ENOENT)	/* -ENOENT == does not exist */

@@ -526,10 +526,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("Passing control to %s handler\n", handler->name);
 	}
 
+	ret = handler->bootm(data);
 	if (data->dryrun)
-		ret = 0;
-	else
-		ret = handler->bootm(data);
+		printf("Dryrun. Aborted\n");
+
 err_out:
 	if (data->os_res)
 		release_sdram_region(data->os_res);

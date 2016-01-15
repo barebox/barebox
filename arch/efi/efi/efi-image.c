@@ -190,7 +190,7 @@ static inline void linux_efi_handover(efi_handle_t handle,
 static int do_bootm_efi(struct image_data *data)
 {
 	void *tmp;
-	void *initrd;
+	void *initrd = NULL;
 	size_t size;
 	efi_handle_t handle;
 	int ret;
@@ -242,6 +242,13 @@ static int do_bootm_efi(struct image_data *data)
 			printf(", initrd at 0x%08x",
 			       boot_header->ramdisk_image);
 		printf("...\n");
+	}
+
+	if (data->dryrun) {
+		BS->unload_image(handle);
+		free(boot_header);
+		free(initrd);
+		return 0;
 	}
 
 	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,

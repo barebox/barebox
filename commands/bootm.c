@@ -133,9 +133,6 @@ static int do_bootm(int argc, char *argv[])
 		goto err_out;
 	}
 
-	if (data.dryrun)
-		printf("Dryrun. Aborted\n");
-
 err_out:
 	return ret ? 1 : 0;
 }

@@ -1,6 +1,7 @@
 #include <boot.h>
 #include <common.h>
 #include <libfile.h>
+#include <malloc.h>
 #include <init.h>
 #include <fs.h>
 #include <errno.h>
@@ -16,6 +17,11 @@ static int do_bootm_barebox(struct image_data *data)
 	barebox = read_file(data->os_file, NULL);
 	if (!barebox)
 		return -EINVAL;
+
+	if (data->dryrun) {
+		free(barebox);
+		return 0;
+	}
 
 	shutdown_barebox();
 

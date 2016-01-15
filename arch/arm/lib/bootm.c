@@ -110,6 +110,9 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		printf("...\n");
 	}
 
+	if (data->dryrun)
+		return 0;
+
 	start_linux((void *)kernel, swap, initrd_start, initrd_size, data->oftree);
 
 	restart_machine();

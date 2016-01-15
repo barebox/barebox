@@ -60,6 +60,9 @@ static int do_bootm_linux(struct image_data *data)
 		return -EINVAL;
 	}
 
+	if (data->dryrun)
+		return 0;
+
 	/* Relocate the device tree if outside the initial
 	 * Linux mapped TLB.
 	 */

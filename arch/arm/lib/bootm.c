@@ -223,6 +223,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 			ret = -EINVAL;
 			goto err_free;
 		}
+		free(oftree);
 	} else {
 		data->oftree = oftree;
 	}

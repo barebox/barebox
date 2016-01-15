@@ -237,6 +237,29 @@ char *uuid_string(char *buf, char *end, const u8 *addr, int field_width,
 	return string(buf, end, uuid, field_width, precision, flags);
 }
 
+static noinline_for_stack
+char *address_val(char *buf, char *end, const void *addr,
+		int field_width, int precision, int flags, const char *fmt)
+{
+	unsigned long long num;
+
+	flags |= SPECIAL | SMALL | ZEROPAD;
+
+	switch (fmt[1]) {
+	case 'd':
+		num = *(const dma_addr_t *)addr;
+		field_width = sizeof(dma_addr_t) * 2 + 2;
+		break;
+	case 'p':
+	default:
+		num = *(const phys_addr_t *)addr;
+		field_width = sizeof(phys_addr_t) * 2 + 2;
+		break;
+	}
+
+	return number(buf, end, num, 16, field_width, precision, flags);
+}
+
 /*
  * Show a '%p' thing.  A kernel extension is that the '%p' is followed
  * by an extra set of alphanumeric characters that are extended format
@@ -256,6 +279,8 @@ char *uuid_string(char *buf, char *end, const u8 *addr, int field_width,
  *             [0][1][2][3]-[4][5]-[6][7]-[8][9]-[10][11][12][13][14][15]
  *           little endian output byte order is:
  *             [3][2][1][0]-[5][4]-[7][6]-[8][9]-[10][11][12][13][14][15]
+ * - 'a[pd]' For address types [p] phys_addr_t, [d] dma_addr_t and derivatives
+ *           (default assumed to be phys_addr_t, passed by reference)
  *
  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
  * function pointers are really function descriptors, which contain a
@@ -270,6 +295,8 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
 		if (IS_ENABLED(CONFIG_PRINTF_UUID))
 			return uuid_string(buf, end, ptr, field_width, precision, flags, fmt);
 		break;
+	case 'a':
+		return address_val(buf, end, ptr, field_width, precision, flags, fmt);
 	}
 	flags |= SMALL;
 	if (field_width == -1) {

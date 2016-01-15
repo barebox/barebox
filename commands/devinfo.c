@@ -77,13 +77,15 @@ static int do_devinfo(int argc, char *argv[])
 		if (dev->num_resources)
 			printf("Resources:\n");
 		for (i = 0; i < dev->num_resources; i++) {
+			resource_size_t size;
 			res = &dev->resource[i];
+			size = resource_size(res);
 			printf("  num: %d\n", i);
 			if (res->name)
 				printf("  name: %s\n", res->name);
-			printf("  start: " PRINTF_CONVERSION_RESOURCE "\n"
-				   "  size: "  PRINTF_CONVERSION_RESOURCE "\n",
-			       res->start, resource_size(res));
+			printf("  start: %pa\n"
+				   "  size: %pa\n",
+			       &res->start, &size);
 		}
 
 		if (dev->driver)

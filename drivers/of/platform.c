@@ -123,6 +123,7 @@ struct device_d *of_platform_device_create(struct device_node *np,
 {
 	struct device_d *dev;
 	struct resource *res = NULL, temp_res;
+	resource_size_t resinval;
 	int i, j, ret, num_reg = 0, match;
 
 	if (!of_device_is_available(np))
@@ -183,9 +184,11 @@ struct device_d *of_platform_device_create(struct device_node *np,
 	dev->num_resources = num_reg;
 	of_device_make_bus_id(dev);
 
-	debug("%s: register device %s, io=" PRINTF_CONVERSION_RESOURCE "\n",
+	resinval = (-1);
+
+	debug("%s: register device %s, io=%pa\n",
 			__func__, dev_name(dev),
-		(num_reg) ? dev->resource[0].start : (-1));
+		(num_reg) ? &dev->resource[0].start : &resinval);
 
 	ret = platform_device_register(dev);
 	if (!ret)

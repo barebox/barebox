@@ -56,7 +56,21 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	getenv_ul("global.bootm.image.loadaddr", &data->os_address);
 	getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
 	data->initrd_file = getenv_nonempty("global.bootm.initrd");
+	data->verify = bootm_get_verify_mode();
 }
+
+static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
+
+enum bootm_verify bootm_get_verify_mode(void)
+{
+	return bootm_verify_mode;
+}
+
+static const char * const bootm_verify_names[] = {
+	[BOOTM_VERIFY_NONE] = "none",
+	[BOOTM_VERIFY_HASH] = "hash",
+	[BOOTM_VERIFY_SIGNATURE] = "signature",
+};
 
 /*
  * bootm_load_os() - load OS to RAM
@@ -122,7 +136,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 		if (!data->initrd)
 			return -EINVAL;
 
-		if (data->verify) {
+		if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
 			ret = uimage_verify(data->initrd);
 			if (ret) {
 				printf("Checking data crc failed with %s\n",
@@ -382,7 +396,7 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (!data->os)
 		return -EINVAL;
 
-	if (data->verify) {
+	if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
 		ret = uimage_verify(data->os);
 		if (ret) {
 			printf("Checking data crc failed with %s\n",
@@ -550,6 +564,8 @@ static int bootm_init(void)
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
 	}
+	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
+				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
 
 	return 0;
 }

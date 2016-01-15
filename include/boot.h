@@ -7,12 +7,18 @@
 #include <linux/list.h>
 #include <environment.h>
 
+enum bootm_verify {
+	BOOTM_VERIFY_NONE,
+	BOOTM_VERIFY_HASH,
+	BOOTM_VERIFY_SIGNATURE,
+};
+
 struct bootm_data {
 	const char *os_file;
 	const char *initrd_file;
 	const char *oftree_file;
 	int verbose;
-	bool verify;
+	enum bootm_verify verify;
 	bool force;
 	bool dryrun;
 	unsigned long initrd_address;
@@ -63,7 +69,7 @@ struct image_data {
 	struct fdt_header *oftree;
 	struct resource *oftree_res;
 
-	int verify;
+	enum bootm_verify verify;
 	int verbose;
 	int force;
 	int dryrun;
@@ -118,6 +124,8 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address);
 
 int bootm_load_devicetree(struct image_data *data, unsigned long load_address);
 int bootm_get_os_size(struct image_data *data);
+
+enum bootm_verify bootm_get_verify_mode(void);
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 

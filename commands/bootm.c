@@ -46,7 +46,7 @@
 #include <magicvar.h>
 #include <asm-generic/memory_layout.h>
 
-#define BOOTM_OPTS_COMMON "ca:e:vo:fd"
+#define BOOTM_OPTS_COMMON "sca:e:vo:fd"
 
 #ifdef CONFIG_CMD_BOOTM_INITRD
 #define BOOTM_OPTS BOOTM_OPTS_COMMON "L:r:"
@@ -65,7 +65,11 @@ static int do_bootm(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, BOOTM_OPTS)) > 0) {
 		switch(opt) {
 		case 'c':
-			data.verify = 1;
+			if (data.verify < BOOTM_VERIFY_HASH)
+				data.verify = BOOTM_VERIFY_HASH;
+			break;
+		case 's':
+			data.verify = BOOTM_VERIFY_SIGNATURE;
 			break;
 #ifdef CONFIG_CMD_BOOTM_INITRD
 		case 'L':
@@ -118,7 +122,8 @@ err_out:
 
 BAREBOX_CMD_HELP_START(bootm)
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT ("-c\t",  "crc check uImage data")
+BAREBOX_CMD_HELP_OPT ("-c\t",  "hash check image integrity")
+BAREBOX_CMD_HELP_OPT ("-s\t",  "check signature of image")
 BAREBOX_CMD_HELP_OPT ("-d\t",  "dry run: check data, but do not run")
 BAREBOX_CMD_HELP_OPT ("-f\t",  "load images even if type is undetectable")
 #ifdef CONFIG_CMD_BOOTM_INITRD
@@ -160,6 +165,7 @@ BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr,
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
 BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
+BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
 
 static struct binfmt_hook binfmt_uimage_hook = {
 	.type = filetype_uimage,

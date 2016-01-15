@@ -109,6 +109,8 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 }
 #endif
 
+void bootm_data_init_defaults(struct bootm_data *data);
+
 int bootm_load_os(struct image_data *data, unsigned long load_address);
 
 bool bootm_has_initrd(struct image_data *data);

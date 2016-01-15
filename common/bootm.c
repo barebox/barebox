@@ -47,6 +47,17 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 	return NULL;
 }
 
+void bootm_data_init_defaults(struct bootm_data *data)
+{
+	data->initrd_address = UIMAGE_INVALID_ADDRESS;
+	data->os_address = UIMAGE_SOME_ADDRESS;
+	data->oftree_file = getenv_nonempty("global.bootm.oftree");
+	data->os_file = getenv_nonempty("global.bootm.image");
+	getenv_ul("global.bootm.image.loadaddr", &data->os_address);
+	getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
+	data->initrd_file = getenv_nonempty("global.bootm.initrd");
+}
+
 /*
  * bootm_load_os() - load OS to RAM
  *

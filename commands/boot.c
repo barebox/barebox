@@ -42,13 +42,9 @@ static int timeout;
 static int boot_script(char *path)
 {
 	int ret;
-	struct bootm_data data = {
-		.os_address = UIMAGE_SOME_ADDRESS,
-		.initrd_address = UIMAGE_SOME_ADDRESS,
-	};
+	struct bootm_data data = {};
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
-	globalvar_set_match("bootm.", "");
 
 	ret = run_command(path);
 	if (ret) {
@@ -56,15 +52,9 @@ static int boot_script(char *path)
 		goto out;
 	}
 
-	data.initrd_address = UIMAGE_INVALID_ADDRESS;
-	data.os_address = UIMAGE_SOME_ADDRESS;
-	data.oftree_file = getenv_nonempty("global.bootm.oftree");
-	data.os_file = getenv_nonempty("global.bootm.image");
-	getenv_ul("global.bootm.image.loadaddr", &data.os_address);
-	getenv_ul("global.bootm.initrd.loadaddr", &data.initrd_address);
-	data.initrd_file = getenv_nonempty("global.bootm.initrd");
 	data.verbose = verbose;
 	data.dryrun = dryrun;
+	bootm_data_init_defaults(&data);
 
 	ret = bootm_boot(&data);
 	if (ret)

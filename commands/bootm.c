@@ -59,19 +59,8 @@ static int do_bootm(int argc, char *argv[])
 	int opt;
 	struct bootm_data data = {};
 	int ret = 1;
-	const char *oftree = NULL, *initrd_file = NULL, *os_file = NULL;
 
-	data.initrd_address = UIMAGE_INVALID_ADDRESS;
-	data.os_address = UIMAGE_SOME_ADDRESS;
-	data.verify = 0;
-	data.verbose = 0;
-
-	oftree = getenv("global.bootm.oftree");
-	os_file = getenv("global.bootm.image");
-	getenv_ul("global.bootm.image.loadaddr", &data.os_address);
-	getenv_ul("global.bootm.initrd.loadaddr", &data.initrd_address);
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
-		initrd_file = getenv("global.bootm.initrd");
+	bootm_data_init_defaults(&data);
 
 	while ((opt = getopt(argc, argv, BOOTM_OPTS)) > 0) {
 		switch(opt) {
@@ -83,7 +72,7 @@ static int do_bootm(int argc, char *argv[])
 			data.initrd_address = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'r':
-			initrd_file = optarg;
+			data.initrd_file = optarg;
 			break;
 #endif
 		case 'a':
@@ -96,7 +85,7 @@ static int do_bootm(int argc, char *argv[])
 			data.verbose++;
 			break;
 		case 'o':
-			oftree = optarg;
+			data.oftree_file = optarg;
 			break;
 		case 'f':
 			data.force = 1;
@@ -110,22 +99,12 @@ static int do_bootm(int argc, char *argv[])
 	}
 
 	if (optind != argc)
-		os_file = argv[optind];
+		data.os_file = argv[optind];
 
-	if (!os_file || !*os_file) {
+	if (!data.os_file) {
 		printf("no boot image given\n");
 		goto err_out;
 	}
-
-	if (initrd_file && !*initrd_file)
-		initrd_file = NULL;
-
-	if (oftree && !*oftree)
-		oftree = NULL;
-
-	data.os_file = os_file;
-	data.oftree_file = oftree;
-	data.initrd_file = initrd_file;
 
 	ret = bootm_boot(&data);
 	if (ret) {

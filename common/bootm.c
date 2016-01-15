@@ -68,8 +68,10 @@ enum bootm_verify bootm_get_verify_mode(void)
 }
 
 static const char * const bootm_verify_names[] = {
+#ifndef CONFIG_BOOTM_FORCE_SIGNED_IMAGES
 	[BOOTM_VERIFY_NONE] = "none",
 	[BOOTM_VERIFY_HASH] = "hash",
+#endif
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };
 
@@ -524,6 +526,23 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("Unknown OS filetype (try -f)\n");
 		ret = -EINVAL;
 		goto err_out;
+	}
+
+	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES)) {
+		data->verify = BOOTM_VERIFY_SIGNATURE;
+
+		/*
+		 * When we only allow booting signed images make sure everything
+		 * we boot is in the OS image and not given separately.
+		 */
+		data->oftree = NULL;
+		data->oftree_file = NULL;
+		data->initrd_file = NULL;
+		if (os_type != filetype_oftree) {
+			printf("Signed boot and image is no FIT image, aborting\n");
+			ret = -EINVAL;
+			goto err_out;
+		}
 	}
 
 	if (IS_ENABLED(CONFIG_FITIMAGE) && os_type == filetype_oftree) {

@@ -208,7 +208,6 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (data->os->header.ih_arch != IH_ARCH) {
 		printf("Unsupported Architecture 0x%x\n",
 		       data->os->header.ih_arch);
-		uimage_close(data->os);
 		return -EINVAL;
 	}
 

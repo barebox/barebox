@@ -37,6 +37,10 @@ config MACH_GLOBALSCALE_MIRABOX
 	bool "Globalscale Mirabox"
 	select ARCH_ARMADA_370
 
+config MACH_NETGEAR_RN104
+	bool "Netgear ReadyNAS 104"
+	select ARCH_ARMADA_370
+
 #
 # Armada XP SoC boards
 #

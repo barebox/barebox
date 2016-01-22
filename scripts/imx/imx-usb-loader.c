@@ -190,9 +190,10 @@ static libusb_device *find_imx_dev(libusb_device **devs, struct mach_id **pp_id)
 	return NULL;
 }
 
-static void dump_long(unsigned char *src, unsigned cnt, unsigned addr)
+static void dump_long(const void *src, unsigned cnt, unsigned addr)
 {
-	unsigned *p = (unsigned *)src;
+	const unsigned *p = (unsigned *)src;
+
 	while (cnt >= 32) {
 		printf("%08x: %08x %08x %08x %08x  %08x %08x %08x %08x\n",
 				addr, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
@@ -211,9 +212,9 @@ static void dump_long(unsigned char *src, unsigned cnt, unsigned addr)
 	}
 }
 
-static void dump_bytes(unsigned char *src, unsigned cnt, unsigned addr)
+static void dump_bytes(const void *src, unsigned cnt, unsigned addr)
 {
-	unsigned char *p = src;
+	const unsigned char *p = src;
 	int i;
 
 	while (cnt >= 16) {

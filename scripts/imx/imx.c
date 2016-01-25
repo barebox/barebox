@@ -37,9 +37,6 @@ static int parse_line(char *line, char *argv[])
 		while ((*line == ' ') || (*line == '\t'))
 			++line;
 
-		if (*line == '\0')	/* end of line, no more args	*/
-			argv[nargs] = NULL;
-
 		if (*line == '\0') {	/* end of line, no more args	*/
 			argv[nargs] = NULL;
 			return nargs;

@@ -41,6 +41,7 @@ struct config_data {
 	uint32_t image_dcd_offset;
 	int header_version;
 	int cpu_type;
+	int (*write_mem)(struct config_data *data, uint32_t addr, uint32_t val, int width);
 };
 
 static uint32_t dcdtable[MAX_DCD];
@@ -391,14 +392,7 @@ static int do_cmd_write_mem(struct config_data *data, int argc, char *argv[])
 		return -EINVAL;
 	};
 
-	switch (data->header_version) {
-	case 1:
-		return write_mem_v1(addr, val, width);
-	case 2:
-		return write_mem_v2(addr, val, width);
-	default:
-		return -EINVAL;
-	}
+	return data->write_mem(data, addr, val, width);
 }
 
 static int do_loadaddr(struct config_data *data, int argc, char *argv[])
@@ -615,6 +609,18 @@ static int write_dcd(const char *outfile)
 	return 0;
 }
 
+static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width)
+{
+	switch (data->header_version) {
+	case 1:
+		return write_mem_v1(addr, val, width);
+	case 2:
+		return write_mem_v2(addr, val, width);
+	default:
+		return -EINVAL;
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	int opt, ret;
@@ -630,6 +636,7 @@ int main(int argc, char *argv[])
 	int now = 0;
 	struct config_data data = {
 		.image_dcd_offset = 0xffffffff,
+		.write_mem = write_mem,
 	};
 
 	while ((opt = getopt(argc, argv, "c:hf:o:bdp")) != -1) {

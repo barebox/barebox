@@ -44,6 +44,7 @@
 #define FT_LOAD_ONLY	0x00
 
 int verbose;
+static int skip_image_dcd;
 static struct libusb_device_handle *usb_dev_handle;
 static struct usb_id *usb_id;
 
@@ -864,6 +865,9 @@ static int perform_dcd(unsigned char *p, unsigned char *file_start, unsigned cnt
 	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
 	int ret = 0;
 
+	if (skip_image_dcd)
+		return 0;
+
 	switch (usb_id->mach_id->header_type) {
 	case HDR_MX51:
 		ret = write_dcd_table_old(ohdr, file_start, cnt);
@@ -1201,10 +1205,28 @@ cleanup:
 	return ret;
 }
 
+static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width)
+{
+	printf("wr 0x%08x 0x%08x\n", addr, val);
+
+	return write_memory(addr, val, width);
+}
+
+static int parse_initfile(const char *filename)
+{
+	struct config_data data = {
+		.write_mem = write_mem,
+	};
+
+	return parse_config(&data, filename);
+}
+
 static void usage(const char *prgname)
 {
 	fprintf(stderr, "usage: %s [OPTIONS] [FILENAME]\n\n"
 		"-c           check correctness of flashed image\n"
+		"-i <cfgfile> Specify custom SoC initialization file\n"
+		"-s           skip DCD included in image\n"
 		"-v           verbose (give multiple times to increase)\n"
 		"-h           this help\n", prgname);
 	exit(1);
@@ -1223,8 +1245,9 @@ int main(int argc, char *argv[])
 	int verify = 0;
 	struct usb_work w = {};
 	int opt;
+	char *initfile = NULL;
 
-	while ((opt = getopt(argc, argv, "cvh")) != -1) {
+	while ((opt = getopt(argc, argv, "cvhi:s")) != -1) {
 		switch (opt) {
 		case 'c':
 			verify = 1;
@@ -1234,6 +1257,12 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			usage(argv[0]);
+		case 'i':
+			initfile = optarg;
+			break;
+		case 's':
+			skip_image_dcd = 1;
+			break;
 		default:
 			exit(1);
 		}
@@ -1298,6 +1327,12 @@ int main(int argc, char *argv[])
 	if (err) {
 		printf("status failed\n");
 		goto out;
+	}
+
+	if (initfile) {
+		err = parse_initfile(initfile);
+		if (err)
+			goto out;
 	}
 
 	err = do_irom_download(&w, verify);

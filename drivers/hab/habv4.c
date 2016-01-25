@@ -19,7 +19,7 @@
 #define pr_fmt(fmt)  "HABv4: " fmt
 
 #include <common.h>
-#include <habv4.h>
+#include <hab.h>
 #include <types.h>
 
 #include <mach/generic.h>

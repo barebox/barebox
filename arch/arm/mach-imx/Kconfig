@@ -695,8 +695,12 @@ config IMX_OCOTP_WRITE
 		mw -l -d /dev/imx-ocotp 0x8C 0x00001234
 		mw -l -d /dev/imx-ocotp 0x88 0x56789ABC
 
+config HAB
+	bool
+
 config HABV4
 	tristate "HABv4 support"
+	select HAB
 	depends on ARCH_IMX6
 	help
 	  High Assurance Boot, as found on i.MX28/i.MX6.
@@ -737,6 +741,7 @@ endif
 
 config HABV3
 	tristate "HABv3 support"
+	select HAB
 	depends on ARCH_IMX25
 	help
 	  High Assurance Boot, as found on i.MX25.

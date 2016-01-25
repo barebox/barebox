@@ -27,4 +27,13 @@ static inline int habv4_get_status(void)
 }
 #endif
 
+#ifdef CONFIG_HABV3
+int imx25_hab_get_status(void);
+#else
+static inline int imx25_hab_get_status(void)
+{
+	return -EPERM;
+}
+#endif
+
 #endif /* __HABV4_H */

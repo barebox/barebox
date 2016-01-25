@@ -41,6 +41,7 @@ struct config_data {
 	uint32_t image_dcd_offset;
 	int header_version;
 	int cpu_type;
+	int (*check)(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask);
 	int (*write_mem)(struct config_data *data, uint32_t addr, uint32_t val, int width);
 };
 
@@ -311,6 +312,9 @@ static int do_cmd_check(struct config_data *data, int argc, char *argv[])
 		return -EINVAL;
 	}
 
+	if (!data->check)
+		return -ENOSYS;
+
 	width = strtoul(argv[1], NULL, 0) >> 3;
 	scmd = argv[2];
 	addr = strtoul(argv[3], NULL, 0);
@@ -343,13 +347,7 @@ static int do_cmd_check(struct config_data *data, int argc, char *argv[])
 
 	cmd = (TAG_CHECK << 24) | (i << 3) | width | ((sizeof(uint32_t) * 3) << 8);
 
-	check_last_dcd(cmd);
-
-	dcdtable[curdcd++] = htobe32(cmd);
-	dcdtable[curdcd++] = htobe32(addr);
-	dcdtable[curdcd++] = htobe32(mask);
-
-	return 0;
+	return data->check(data, cmd, addr, mask);
 }
 
 static int do_cmd_write_mem(struct config_data *data, int argc, char *argv[])
@@ -609,6 +607,22 @@ static int write_dcd(const char *outfile)
 	return 0;
 }
 
+static int check(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask)
+{
+	if (curdcd > MAX_DCD - 3) {
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		return -ENOMEM;
+	}
+
+	check_last_dcd(cmd);
+
+	dcdtable[curdcd++] = htobe32(cmd);
+	dcdtable[curdcd++] = htobe32(addr);
+	dcdtable[curdcd++] = htobe32(mask);
+
+	return 0;
+}
+
 static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width)
 {
 	switch (data->header_version) {
@@ -637,6 +651,7 @@ int main(int argc, char *argv[])
 	struct config_data data = {
 		.image_dcd_offset = 0xffffffff,
 		.write_mem = write_mem,
+		.check = check,
 	};
 
 	while ((opt = getopt(argc, argv, "c:hf:o:bdp")) != -1) {

@@ -8,5 +8,5 @@ HOSTLOADLIBES_imx-usb-loader  = `pkg-config --libs libusb-1.0`
 
 HOSTCFLAGS_imx-image.o = -I$(srctree)
 
-imx-usb-loader-objs := imx-usb-loader.o
-imx-image-objs := imx-image.o
+imx-usb-loader-objs := imx-usb-loader.o imx.o
+imx-image-objs := imx-image.o imx.o

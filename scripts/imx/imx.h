@@ -50,3 +50,14 @@ struct imx_flash_header_v2 {
 	struct imx_boot_data boot_data;
 	struct imx_ivt_header dcd_header;
 } __attribute__((packed));
+
+struct config_data {
+	uint32_t image_load_addr;
+	uint32_t image_dcd_offset;
+	int header_version;
+	int cpu_type;
+	int (*check)(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask);
+	int (*write_mem)(struct config_data *data, uint32_t addr, uint32_t val, int width);
+};
+
+int parse_config(struct config_data *data, const char *filename);

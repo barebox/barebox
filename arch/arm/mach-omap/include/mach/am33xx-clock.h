@@ -185,5 +185,6 @@
 
 void am33xx_pll_init(int mpupll_M, int osc, int ddrpll_M);
 void am33xx_enable_ddr_clocks(void);
+int am33xx_get_osc_clock(void);
 
 #endif  /* endif _AM33XX_CLOCKS_H_ */

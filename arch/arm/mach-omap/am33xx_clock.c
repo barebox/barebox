@@ -318,3 +318,30 @@ void am33xx_pll_init(int mpupll_M, int osc, int ddrpll_M)
 	/* Enable the required peripherals */
 	am33xx_enable_per_clocks();
 }
+
+/*
+ * Return the OSC clock value from SYSBOOT pins in kHz.
+ */
+int am33xx_get_osc_clock(void)
+{
+	int osc;
+	u32 sysboot;
+
+	sysboot = (readl(AM33XX_CTRL_STATUS) >> 22) & 3;
+	switch (sysboot) {
+	case 0:
+		osc = 19200;
+		break;
+	case 1:
+		osc = 24000;
+		break;
+	case 2:
+		osc = 25000;
+		break;
+	case 3:
+		osc = 26000;
+		break;
+	}
+
+	return osc;
+}

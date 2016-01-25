@@ -36,6 +36,11 @@
 
 #define get_min(a, b) (((a) < (b)) ? (a) : (b))
 
+#define FT_APP	0xaa
+#define FT_CSF	0xcc
+#define FT_DCD	0xee
+#define FT_LOAD_ONLY	0x00
+
 int verbose;
 
 struct mach_id {
@@ -1115,11 +1120,6 @@ static int load_file(struct libusb_device_handle *h, struct usb_id *p_id,
 
 	return transfer_size;
 }
-
-#define FT_APP	0xaa
-#define FT_CSF	0xcc
-#define FT_DCD	0xee
-#define FT_LOAD_ONLY	0x00
 
 static int do_irom_download(struct libusb_device_handle *h, struct usb_id *p_id,
 		struct usb_work *curr, int verify)

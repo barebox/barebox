@@ -222,7 +222,7 @@ static noinline int gf_sram_init(void)
 	while(__raw_readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
 	/* Setup the PLLs and the clocks for the peripherals */
-	am33xx_pll_init(MPUPLL_M_500, 24, DDRPLL_M_200);
+	am33xx_pll_init(MPUPLL_M_500, DDRPLL_M_200);
 
 	board_config_ddr();
 

@@ -34,7 +34,7 @@
 #define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
 
 static uint32_t image_load_addr;
-static uint32_t image_dcd_offset;
+static uint32_t image_dcd_offset = 0xffffffff;
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
 static int header_version;
@@ -729,7 +729,7 @@ int main(int argc, char *argv[])
 	if (!buf)
 		exit(1);
 
-	if (!image_dcd_offset) {
+	if (image_dcd_offset == 0xffffffff) {
 		fprintf(stderr, "no dcd offset given ('dcdofs'). Defaulting to 0x%08x\n",
 			FLASH_HEADER_OFFSET);
 		image_dcd_offset = FLASH_HEADER_OFFSET;

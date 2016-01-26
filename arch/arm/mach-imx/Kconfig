@@ -735,6 +735,28 @@ config HABV4_IMG_CRT_PEM
 
 endif
 
+config HABV3
+	tristate "HABv3 support"
+	depends on ARCH_IMX25
+	help
+	  High Assurance Boot, as found on i.MX25.
+
+if HABV3
+
+config HABV3_SRK_PEM
+	string "Path to SRK Certificate (PEM)"
+	default "../crts/SRK1_sha256_2048_65537_v3_ca_x509_crt.pem"
+
+config HABV3_CSF_CRT_DER
+	string "Path to CSF certificate"
+	default "../crts/CSF1_1_sha256_2048_65537_v3_ca_crt.der"
+
+config HABV3_IMG_CRT_DER
+	string "Path to IMG certificate"
+	default "../crts/IMG1_1_sha256_2048_65537_v3_usr_crt.der"
+
+endif
+
 endmenu
 
 endif

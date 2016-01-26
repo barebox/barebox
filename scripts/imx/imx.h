@@ -54,6 +54,9 @@ struct imx_flash_header_v2 {
 struct config_data {
 	uint32_t image_load_addr;
 	uint32_t image_dcd_offset;
+	uint32_t image_size;
+	uint32_t load_size;
+	char *outfile;
 	int header_version;
 	int cpu_type;
 	int (*check)(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask);

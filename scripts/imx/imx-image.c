@@ -314,9 +314,8 @@ int main(int argc, char *argv[])
 	int opt, ret;
 	char *configfile = NULL;
 	char *imagename = NULL;
-	char *outfile = NULL;
 	void *buf;
-	size_t image_size = 0, load_size, insize;
+	size_t insize;
 	void *infile;
 	struct stat s;
 	int infd, outfd;
@@ -337,7 +336,7 @@ int main(int argc, char *argv[])
 			imagename = optarg;
 			break;
 		case 'o':
-			outfile = optarg;
+			data.outfile = optarg;
 			break;
 		case 'b':
 			add_barebox_header = 1;
@@ -365,7 +364,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (!outfile) {
+	if (!data.outfile) {
 		fprintf(stderr, "output file not given\n");
 		exit(1);
 	}
@@ -377,7 +376,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
-		image_size = s.st_size;
+		data.image_size = s.st_size;
 	}
 
 	ret = parse_config(&data, configfile);
@@ -403,7 +402,7 @@ int main(int argc, char *argv[])
 		check_last_dcd(0);
 
 	if (dcd_only) {
-		ret = write_dcd(outfile);
+		ret = write_dcd(data.outfile);
 		if (ret)
 			exit(1);
 		exit (0);
@@ -417,17 +416,17 @@ int main(int argc, char *argv[])
 	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
 	 *   in ver funy ways when the image size is not 4 byte aligned
 	 */
-	load_size = roundup(image_size + HEADER_LEN, 0x1000);
+	data.load_size = roundup(data.image_size + HEADER_LEN, 0x1000);
 
 	if (data.cpu_type == 35)
-		load_size += HEADER_LEN;
+		data.load_size += HEADER_LEN;
 
 	switch (data.header_version) {
 	case 1:
-		add_header_v1(buf, data.image_dcd_offset, data.image_load_addr, load_size);
+		add_header_v1(buf, data.image_dcd_offset, data.image_load_addr, data.load_size);
 		break;
 	case 2:
-		add_header_v2(buf, data.image_dcd_offset, data.image_load_addr, load_size);
+		add_header_v2(buf, data.image_dcd_offset, data.image_load_addr, data.load_size);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",
@@ -453,7 +452,7 @@ int main(int argc, char *argv[])
 	xread(infd, infile, insize);
 	close(infd);
 
-	outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	outfd = open(data.outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {
 		perror("open");
 		exit(1);

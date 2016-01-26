@@ -77,13 +77,6 @@ void iput(struct inode *inode);
 #define atomic_long_dec(a)
 #define	atomic_long_sub(a, b)
 
-/* linux/include/time.h */
-
-struct timespec {
-	time_t	tv_sec;		/* seconds */
-	long	tv_nsec;	/* nanoseconds */
-};
-
 /* linux/include/dcache.h */
 
 /*

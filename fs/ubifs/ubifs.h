@@ -37,6 +37,7 @@
 #include <linux/fs.h>
 #include <linux/pagemap.h>
 #include <linux/stat.h>
+#include <linux/dcache.h>
 #include <linux/ctype.h>
 #include <linux/math64.h>
 #include <linux/rbtree.h>
@@ -78,19 +79,6 @@ void iput(struct inode *inode);
 #define	atomic_long_sub(a, b)
 
 /* linux/include/dcache.h */
-
-/*
- * "quick string" -- eases parameter passing, but more importantly
- * saves "metadata" about the string (ie length and the hash).
- *
- * hash comes first so it snuggles against d_parent in the
- * dentry.
- */
-struct qstr {
-	unsigned int hash;
-	unsigned int len;
-	const char *name;
-};
 
 struct file_system_type {
 	const char *name;
@@ -172,39 +160,6 @@ struct file {
  * get_seconds() not really needed in the read-only implmentation
  */
 #define get_seconds()		0
-
-/* linux/include/dcache.h */
-
-#define DNAME_INLINE_LEN_MIN 36
-
-struct dentry {
-	unsigned int d_flags;		/* protected by d_lock */
-	spinlock_t d_lock;		/* per dentry lock */
-	struct inode *d_inode;		/* Where the name belongs to - NULL is
-					 * negative */
-	/*
-	 * The next three fields are touched by __d_lookup.  Place them here
-	 * so they all fit in a cache line.
-	 */
-	struct hlist_node d_hash;	/* lookup hash list */
-	struct dentry *d_parent;	/* parent directory */
-	struct qstr d_name;
-
-	struct list_head d_lru;		/* LRU list */
-	/*
-	 * d_child and d_rcu can share memory
-	 */
-	struct list_head d_subdirs;	/* our children */
-	struct list_head d_alias;	/* inode alias list */
-	unsigned long d_time;		/* used by d_revalidate */
-	struct super_block *d_sb;	/* The root of the dentry tree */
-	void *d_fsdata;			/* fs-specific data */
-#ifdef CONFIG_PROFILING
-	struct dcookie_struct *d_cookie; /* cookie, if any */
-#endif
-	int d_mounted;
-	unsigned char d_iname[DNAME_INLINE_LEN_MIN];	/* small names */
-};
 
 static inline ino_t parent_ino(struct dentry *dentry)
 {

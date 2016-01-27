@@ -35,11 +35,6 @@ typedef int     gfp_t;
 #define MODULE_LICENSE(x)
 #define MODULE_ALIAS(x)
 
-#define mutex_init(...)
-#define mutex_lock(...)
-#define mutex_unlock(...)
-struct mutex { int i; };
-
 struct rw_semaphore { int i; };
 
 #define __user

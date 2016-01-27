@@ -58,8 +58,6 @@ extern unsigned int ubifs_msg_flags;
 extern unsigned int ubifs_chk_flags;
 extern unsigned int ubifs_tst_flags;
 
-#define pgoff_t		unsigned long
-
 /*
  * We "simulate" the Linux page struct much simpler here
  */

@@ -35,6 +35,7 @@
 #include <malloc.h>
 #include <lzo.h>
 #include <linux/fs.h>
+#include <linux/pagemap.h>
 #include <linux/ctype.h>
 #include <linux/math64.h>
 #include <linux/rbtree.h>
@@ -172,10 +173,6 @@ struct file {
  * get_seconds() not really needed in the read-only implmentation
  */
 #define get_seconds()		0
-
-/* 4k page size */
-#define PAGE_CACHE_SHIFT	12
-#define PAGE_CACHE_SIZE		(1 << PAGE_CACHE_SHIFT)
 
 /* Page cache limit. The filesystems should put that into their s_maxbytes
    limits, otherwise bad things can happen in VM. */

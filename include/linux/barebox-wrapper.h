@@ -65,8 +65,6 @@ struct rw_semaphore { int i; };
 
 typedef int	wait_queue_head_t;
 
-#define cond_resched()			do { } while (0)
-
 #define init_waitqueue_head(...)	do { } while (0)
 
 typedef int irqreturn_t;

@@ -40,6 +40,7 @@
 #include <linux/dcache.h>
 #include <linux/mount.h>
 #include <linux/path.h>
+#include <linux/sched.h>
 #include <linux/ctype.h>
 #include <linux/math64.h>
 #include <linux/rbtree.h>

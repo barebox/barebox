@@ -39,6 +39,7 @@
 #include <notifier.h>
 #include <usb/usb.h>
 #include <usb/phy.h>
+#include <linux/spinlock.h>
 
 struct musb;
 struct musb_hw_ep;

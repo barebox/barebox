@@ -16,6 +16,7 @@
 #include <fb.h>
 #include <video/vpl.h>
 #include <video/fourcc.h>
+#include <linux/spinlock.h>
 
 struct ipu_soc;
 

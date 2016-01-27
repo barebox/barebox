@@ -23,6 +23,7 @@
 #include <linux/pstore.h>
 #include <linux/string.h>
 #include <linux/kernel.h>
+#include <linux/spinlock.h>
 #include <malloc.h>
 #include <printk.h>
 #include <module.h>

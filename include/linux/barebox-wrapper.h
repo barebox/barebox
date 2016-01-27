@@ -35,13 +35,6 @@ typedef int     gfp_t;
 #define MODULE_LICENSE(x)
 #define MODULE_ALIAS(x)
 
-typedef int   spinlock_t;
-#define spin_lock_init(...)
-#define spin_lock(...)
-#define spin_unlock(...)
-#define spin_lock_irqsave(lock, flags) do { flags = 0; } while (0)
-#define spin_unlock_irqrestore(lock, flags) do { flags = flags; } while (0)
-
 #define mutex_init(...)
 #define mutex_lock(...)
 #define mutex_unlock(...)

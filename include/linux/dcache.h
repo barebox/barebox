@@ -10,6 +10,8 @@
  * with heavy changes by Linus Torvalds
  */
 
+#include <linux/spinlock.h>
+
 #define IS_ROOT(x) ((x) == (x)->d_parent)
 
 /* The hash is always the low bits of hash_len */

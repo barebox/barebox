@@ -38,6 +38,7 @@
 #include <usb/gadget.h>
 #include <linux/log2.h>
 #include <linux/stringify.h>
+#include <linux/spinlock.h>
 
 /*
  * USB function drivers should return USB_GADGET_DELAYED_STATUS if they

@@ -3,6 +3,7 @@
 
 #include <driver.h>
 #include <filetype.h>
+#include <linux/fs.h>
 
 #define PATH_MAX       1024        /* include/linux/limits.h */
 
@@ -121,10 +122,6 @@ ssize_t pread(int fd, void *buf, size_t count, loff_t offset);
 int ioctl(int fd, int request, void *buf);
 ssize_t write(int fd, const void *buf, size_t count);
 ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset);
-
-#define SEEK_SET	1
-#define SEEK_CUR	2
-#define SEEK_END	3
 
 loff_t lseek(int fildes, loff_t offset, int whence);
 int mkdir (const char *pathname, mode_t mode);

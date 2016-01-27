@@ -4,6 +4,8 @@
 #include <linux/barebox-wrapper.h>
 #include <linux/list.h>
 #include <linux/time.h>
+#include <linux/mount.h>
+#include <linux/path.h>
 
 /* Page cache limit. The filesystems should put that into their s_maxbytes
    limits, otherwise bad things can happen in VM. */
@@ -174,6 +176,43 @@ struct super_block {
 	 * generic_show_options()
 	 */
 	char *s_options;
+};
+
+struct file_system_type {
+	const char *name;
+	int fs_flags;
+	int (*get_sb) (struct file_system_type *, int,
+		       const char *, void *, struct vfsmount *);
+	void (*kill_sb) (struct super_block *);
+	struct module *owner;
+	struct file_system_type * next;
+	struct list_head fs_supers;
+};
+
+struct file {
+	struct path		f_path;
+#define f_dentry	f_path.dentry
+#define f_vfsmnt	f_path.mnt
+	const struct file_operations	*f_op;
+	unsigned int 		f_flags;
+	loff_t			f_pos;
+	unsigned int		f_uid, f_gid;
+
+	u64			f_version;
+#ifdef CONFIG_SECURITY
+	void			*f_security;
+#endif
+	/* needed for tty driver, and maybe others */
+	void			*private_data;
+
+#ifdef CONFIG_EPOLL
+	/* Used by fs/eventpoll.c to link all the hooks to this file */
+	struct list_head	f_ep_links;
+	spinlock_t		f_ep_lock;
+#endif /* #ifdef CONFIG_EPOLL */
+#ifdef CONFIG_DEBUG_WRITECOUNT
+	unsigned long f_mnt_write_state;
+#endif
 };
 
 /*

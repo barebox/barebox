@@ -39,6 +39,7 @@
 #include <linux/stat.h>
 #include <linux/dcache.h>
 #include <linux/mount.h>
+#include <linux/path.h>
 #include <linux/ctype.h>
 #include <linux/math64.h>
 #include <linux/rbtree.h>
@@ -90,11 +91,6 @@ struct file_system_type {
 	struct module *owner;
 	struct file_system_type * next;
 	struct list_head fs_supers;
-};
-
-struct path {
-	struct vfsmount *mnt;
-	struct dentry *dentry;
 };
 
 struct file {

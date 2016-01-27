@@ -35,18 +35,10 @@ typedef int     gfp_t;
 #define MODULE_LICENSE(x)
 #define MODULE_ALIAS(x)
 
-struct rw_semaphore { int i; };
-
 #define __user
 #define __init
 #define __exit
 
-#define init_rwsem(...)			do { } while (0)
-#define down_read(...)			do { } while (0)
-#define down_write(...)			do { } while (0)
-#define down_write_trylock(...)		1
-#define up_read(...)			do { } while (0)
-#define up_write(...)			do { } while (0)
 #define kthread_create(...)	__builtin_return_address(0)
 #define kthread_stop(...)	do { } while (0)
 #define wake_up_process(...)	do { } while (0)

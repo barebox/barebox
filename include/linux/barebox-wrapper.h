@@ -51,10 +51,6 @@ struct rw_semaphore { int i; };
 #define kthread_stop(...)	do { } while (0)
 #define wake_up_process(...)	do { } while (0)
 
-typedef int	wait_queue_head_t;
-
-#define init_waitqueue_head(...)	do { } while (0)
-
 typedef int irqreturn_t;
 #define IRQ_NONE 0
 #define IRQ_HANDLED 0

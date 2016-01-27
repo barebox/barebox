@@ -8,6 +8,7 @@
 #include <linux/path.h>
 #include <linux/spinlock.h>
 #include <linux/mutex.h>
+#include <linux/wait.h>
 
 /* Page cache limit. The filesystems should put that into their s_maxbytes
    limits, otherwise bad things can happen in VM. */

@@ -23,6 +23,7 @@
  */
 #include <common.h>
 #include <malloc.h>
+#include <linux/wait.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/concat.h>
 

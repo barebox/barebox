@@ -62,6 +62,8 @@ struct config_data {
 	int cpu_type;
 	int (*check)(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask);
 	int (*write_mem)(struct config_data *data, uint32_t addr, uint32_t val, int width);
+	int csf_space;
+	char *csf;
 };
 
 int parse_config(struct config_data *data, const char *filename);

@@ -16,6 +16,7 @@
  *
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +26,7 @@
 
 #include "imx.h"
 
-#define MAXARGS 5
+#define MAXARGS 32
 
 static int parse_line(char *line, char *argv[])
 {
@@ -232,6 +233,102 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 	return -EINVAL;
 }
 
+static int hab_add_str(struct config_data *data, const char *str)
+{
+	int len = strlen(str);
+
+	if (data->csf_space < len)
+		return -ENOMEM;
+
+	strcat(data->csf, str);
+
+	data->csf_space -= len;
+
+	return 0;
+}
+
+static int do_hab(struct config_data *data, int argc, char *argv[])
+{
+	int i, ret;
+
+	if (!data->csf) {
+		data->csf_space = 0x10000;
+
+		data->csf = malloc(data->csf_space + 1);
+		if (!data->csf)
+			return -ENOMEM;
+	}
+
+	for (i = 1; i < argc; i++) {
+		ret = hab_add_str(data, argv[i]);
+		if (ret)
+			return ret;
+
+		ret = hab_add_str(data, " ");
+		if (ret)
+			return ret;
+	}
+
+	ret = hab_add_str(data, "\n");
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
+{
+	char *str;
+	int ret;
+
+	if (!data->csf)
+		return -EINVAL;
+
+	ret = asprintf(&str, "Blocks = 0x%08x 0 %d \"%s\"\n",
+		       data->image_load_addr,
+		       data->load_size, data->outfile);
+	if (ret < 0)
+		return -ENOMEM;
+
+	ret = hab_add_str(data, str);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static int do_super_root_key(struct config_data *data, int argc, char *argv[])
+{
+	int len;
+	char *srkfile;
+
+	if (argc != 2) {
+		fprintf(stderr, "usage: super_root_key <keyfile>\n");
+		return -EINVAL;
+	}
+
+	if (data->cpu_type != 35 && data->cpu_type != 25) {
+		fprintf(stderr, "Warning: The super_root_key command is meaningless "
+			"on non HABv3 based SoCs\n");
+		return 0;
+	}
+
+	srkfile = argv[1];
+
+	if (*srkfile == '"')
+		srkfile++;
+
+	data->srkfile = strdup(srkfile);
+	if (!data->srkfile)
+		return -ENOMEM;
+
+	len = strlen(data->srkfile);
+	if (data->srkfile[len - 1] == '"')
+		data->srkfile[len - 1] = 0;
+
+	return 0;
+}
+
 struct command cmds[] = {
 	{
 		.name = "wm",
@@ -248,6 +345,15 @@ struct command cmds[] = {
 	}, {
 		.name = "soc",
 		.parse = do_soc,
+	}, {
+		.name = "hab",
+		.parse = do_hab,
+	}, {
+		.name = "hab_blocks",
+		.parse = do_hab_blocks,
+	}, {
+		.name = "super_root_key",
+		.parse = do_super_root_key,
 	},
 };
 

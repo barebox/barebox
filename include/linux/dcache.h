@@ -10,6 +10,7 @@
  * with heavy changes by Linus Torvalds
  */
 
+#include <linux/list.h>
 #include <linux/spinlock.h>
 
 #define IS_ROOT(x) ((x) == (x)->d_parent)

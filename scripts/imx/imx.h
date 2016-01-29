@@ -1,3 +1,6 @@
+
+#define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
+
 /*
  * ============================================================================
  * i.MX flash header v1 handling. Found on i.MX35 and i.MX51

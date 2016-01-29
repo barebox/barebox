@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  *
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -27,19 +28,19 @@
 #include <fcntl.h>
 #include <endian.h>
 #include <linux/kernel.h>
+#include <sys/file.h>
 
 #include "imx.h"
 
 #include <include/filetype.h>
 
 #define MAX_DCD 1024
-#define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
 #define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
 
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
 static int add_barebox_header;
-static int prepare_sign;
+static char *prgname;
 
 /*
  * ============================================================================
@@ -229,6 +230,11 @@ static int add_header_v1(struct config_data *data, void *buf)
 
 	buf += dcdsize;
 
+	if (data->csf) {
+		hdr->app_code_csf = loadaddr + imagesize;
+		imagesize += CSF_LEN;
+	}
+
 	*(uint32_t *)buf = imagesize;
 
 	return 0;
@@ -281,7 +287,7 @@ static int add_header_v2(struct config_data *data, void *buf)
 	hdr->boot_data.start	= loadaddr;
 	hdr->boot_data.size	= imagesize;
 
-	if (prepare_sign) {
+	if (data->csf) {
 		hdr->csf = loadaddr + imagesize;
 		hdr->boot_data.size += CSF_LEN;
 	}
@@ -309,7 +315,6 @@ static void usage(const char *prgname)
 		"-b           add barebox header to image. If used, barebox recognizes\n"
 		"             the image as regular barebox image which can be used as\n"
 		"             second stage image\n"
-		"-p           prepare image for signing\n"
 		"-h           this help\n", prgname);
 	exit(1);
 }
@@ -439,6 +444,132 @@ static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int 
 	}
 }
 
+/*
+ * This uses the Freescale Code Signing Tool (CST) to sign the image.
+ * The cst is expected to be executable as 'cst' or if exists, the content
+ * of the environment variable 'CST' is used.
+ */
+static int hab_sign(struct config_data *data)
+{
+	int fd, outfd, ret, lockfd;
+	char *csffile, *command;
+	struct stat s;
+	char *cst;
+	void *buf;
+
+	cst = getenv("CST");
+	if (!cst)
+		cst = "cst";
+
+	ret = asprintf(&csffile, "%s.csfbin", data->outfile);
+	if (ret < 0)
+		exit(1);
+
+	ret = stat(csffile, &s);
+	if (!ret) {
+		if (S_ISREG(s.st_mode)) {
+			ret = unlink(csffile);
+			if (ret) {
+				fprintf(stderr, "Cannot remove %s: %s\n",
+					csffile, strerror(errno));
+				return -errno;
+			}
+		} else {
+			fprintf(stderr, "%s exists and is no regular file\n",
+				csffile);
+			return -EINVAL;
+		}
+	}
+
+	ret = asprintf(&command, "%s -o %s", cst, csffile);
+	if (ret < 0)
+		return -ENOMEM;
+
+	/*
+	 * The cst uses "csfsig.bin" as temporary file. This of course breaks when it's
+	 * called multiple times as often happens with parallel builds. Until cst learns
+	 * how to properly create temporary files without races lock accesses to this
+	 * file.
+	 */
+	lockfd = open(prgname, O_RDONLY);
+	if (lockfd < 0) {
+		fprintf(stderr, "Cannot open csfsig.bin: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	ret = flock(lockfd, LOCK_EX);
+	if (ret) {
+		fprintf(stderr, "Cannot lock csfsig.bin: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	FILE *f = popen(command, "w");
+	if (!f) {
+		perror("popen");
+		return -errno;
+	}
+
+	fwrite(data->csf, 1, strlen(data->csf) + 1, f);
+
+	pclose(f);
+
+	flock(lockfd, LOCK_UN);
+	close(lockfd);
+
+	/*
+	 * the Freescale code signing tool doesn't fail if there
+	 * are errors in the command sequence file, it just doesn't
+	 * produce any output, so we have to check for existence of
+	 * the output file rather than checking the return value of
+	 * the cst call.
+	 */
+	fd = open(csffile, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "Failed to open %s: %s\n", csffile, strerror(errno));
+		fprintf(stderr, "%s failed\n", cst);
+		return -errno;
+	}
+
+	ret = fstat(fd, &s);
+	if (ret < 0) {
+		fprintf(stderr, "stat failed: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	buf = malloc(CSF_LEN);
+	if (!buf)
+		return -ENOMEM;
+
+	memset(buf, 0x5a, CSF_LEN);
+
+	if (s.st_size > CSF_LEN) {
+		fprintf(stderr, "CSF file size exceeds maximum CSF len of %d bytes\n",
+			CSF_LEN);
+	}
+
+	ret = xread(fd, buf, s.st_size);
+	if (ret < 0) {
+		fprintf(stderr, "read failed: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	outfd = open(data->outfile, O_WRONLY | O_APPEND);
+
+	ret = xwrite(outfd, buf, CSF_LEN);
+	if (ret < 0) {
+		fprintf(stderr, "write failed: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	ret = close(outfd);
+	if (ret) {
+		perror("close");
+		exit(1);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int opt, ret;
@@ -451,13 +582,16 @@ int main(int argc, char *argv[])
 	int infd, outfd;
 	int dcd_only = 0;
 	int now = 0;
+	int sign_image = 0;
 	struct config_data data = {
 		.image_dcd_offset = 0xffffffff,
 		.write_mem = write_mem,
 		.check = check,
 	};
 
-	while ((opt = getopt(argc, argv, "c:hf:o:bdp")) != -1) {
+	prgname = argv[0];
+
+	while ((opt = getopt(argc, argv, "c:hf:o:bds")) != -1) {
 		switch (opt) {
 		case 'c':
 			configfile = optarg;
@@ -474,8 +608,8 @@ int main(int argc, char *argv[])
 		case 'd':
 			dcd_only = 1;
 			break;
-		case 'p':
-			prepare_sign = 1;
+		case 's':
+			sign_image = 1;
 			break;
 		case 'h':
 			usage(argv[0]);
@@ -509,9 +643,22 @@ int main(int argc, char *argv[])
 		data.image_size = s.st_size;
 	}
 
+	/*
+	 * Add HEADER_LEN to the image size for the blank aera + IVT + DCD.
+	 * Align up to a 4k boundary, because:
+	 * - at least i.MX5 NAND boot only reads full NAND pages and misses the
+	 *   last partial NAND page.
+	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
+	 *   in ver funy ways when the image size is not 4 byte aligned
+	 */
+	data.load_size = roundup(data.image_size + HEADER_LEN, 0x1000);
+
 	ret = parse_config(&data, configfile);
 	if (ret)
 		exit(1);
+
+	if (!sign_image)
+		data.csf = NULL;
 
 	buf = calloc(1, HEADER_LEN);
 	if (!buf)
@@ -537,19 +684,6 @@ int main(int argc, char *argv[])
 			exit(1);
 		exit (0);
 	}
-
-	/*
-	 * Add HEADER_LEN to the image size for the blank aera + IVT + DCD.
-	 * Align up to a 4k boundary, because:
-	 * - at least i.MX5 NAND boot only reads full NAND pages and misses the
-	 *   last partial NAND page.
-	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
-	 *   in ver funy ways when the image size is not 4 byte aligned
-	 */
-	data.load_size = roundup(data.image_size + HEADER_LEN, 0x1000);
-
-	if (data.cpu_type == 35)
-		data.load_size += HEADER_LEN;
 
 	switch (data.header_version) {
 	case 1:
@@ -616,7 +750,7 @@ int main(int argc, char *argv[])
 
 	/* pad until next 4k boundary */
 	now = 4096 - (insize % 4096);
-	if (prepare_sign && now) {
+	if (data.csf && now) {
 		memset(buf, 0x5a, now);
 
 		ret = xwrite(outfd, buf, now);
@@ -630,6 +764,12 @@ int main(int argc, char *argv[])
 	if (ret) {
 		perror("close");
 		exit(1);
+	}
+
+	if (data.csf) {
+		ret = hab_sign(&data);
+		if (ret)
+			exit(1);
 	}
 
 	exit(0);

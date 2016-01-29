@@ -230,6 +230,9 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 		fprintf(stderr, "%s ", socs[i].name);
 	fprintf(stderr, "\n");
 
+	if (data->cpu_type == 35)
+		data->load_size += HEADER_LEN;
+
 	return -EINVAL;
 }
 

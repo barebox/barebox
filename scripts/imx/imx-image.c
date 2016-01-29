@@ -72,11 +72,14 @@ static uint32_t bb_header[] = {
 	0x55555555,
 };
 
-static int add_header_v1(void *buf, int offset, uint32_t loadaddr, uint32_t imagesize)
+static int add_header_v1(struct config_data *data, void *buf)
 {
 	struct imx_flash_header *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
 	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
+	int offset = data->image_dcd_offset;
+	uint32_t loadaddr = data->image_load_addr;
+	uint32_t imagesize = data->load_size;
 
 	if (add_barebox_header) {
 		memcpy(buf, bb_header, sizeof(bb_header));
@@ -127,11 +130,14 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width)
  * ============================================================================
  */
 
-static int add_header_v2(void *buf, int offset, uint32_t loadaddr, uint32_t imagesize)
+static int add_header_v2(struct config_data *data, void *buf)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
 	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
+	int offset = data->image_dcd_offset;
+	uint32_t loadaddr = data->image_load_addr;
+	uint32_t imagesize = data->load_size;
 
 	if (add_barebox_header)
 		memcpy(buf, bb_header, sizeof(bb_header));
@@ -423,10 +429,10 @@ int main(int argc, char *argv[])
 
 	switch (data.header_version) {
 	case 1:
-		add_header_v1(buf, data.image_dcd_offset, data.image_load_addr, data.load_size);
+		add_header_v1(&data, buf);
 		break;
 	case 2:
-		add_header_v2(buf, data.image_dcd_offset, data.image_load_addr, data.load_size);
+		add_header_v2(&data, buf);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",

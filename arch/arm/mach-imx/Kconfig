@@ -66,6 +66,12 @@ config ARCH_IMX_IMXIMAGE
 	help
 	  if enabled the imx-image tool is compiled
 
+config ARCH_IMX_IMXIMAGE_SSL_SUPPORT
+	bool
+	help
+	  This enables SSL support for the imx-image tool. This is required
+	  for created images for HABv3. This adds openssl to the build dependencies
+
 config ARCH_IMX_XLOAD
 	bool
 	depends on ARCH_IMX51
@@ -742,6 +748,7 @@ endif
 config HABV3
 	tristate "HABv3 support"
 	select HAB
+	select ARCH_IMX_IMXIMAGE_SSL_SUPPORT
 	depends on ARCH_IMX25
 	help
 	  High Assurance Boot, as found on i.MX25.

@@ -57,6 +57,7 @@ struct config_data {
 	uint32_t image_size;
 	uint32_t load_size;
 	char *outfile;
+	char *srkfile;
 	int header_version;
 	int cpu_type;
 	int (*check)(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask);

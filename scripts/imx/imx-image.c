@@ -72,6 +72,130 @@ static uint32_t bb_header[] = {
 	0x55555555,
 };
 
+struct hab_rsa_public_key {
+	uint8_t rsa_exponent[4]; /* RSA public exponent */
+	uint32_t rsa_modulus; /* RSA modulus pointer */
+	uint16_t exponent_size; /* Exponent size in bytes */
+	uint16_t modulus_size; /* Modulus size in bytes*/
+	uint8_t init_flag; /* Indicates if key initialized */
+};
+
+#ifdef IMXIMAGE_SSL_SUPPORT
+#define PUBKEY_ALGO_LEN 2048
+
+#include <openssl/x509v3.h>
+#include <openssl/bn.h>
+#include <openssl/asn1.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
+#include <openssl/pem.h>
+#include <openssl/bio.h>
+
+static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len,
+	uint8_t **exponent, int *exponent_len)
+{
+	char buf[PUBKEY_ALGO_LEN];
+	int pubkey_algonid;
+	const char *sslbuf;
+	EVP_PKEY *pkey;
+	FILE *fp;
+	X509 *cert;
+	RSA *rsa_key;
+
+	fp = fopen(certfile, "r");
+	if (!fp) {
+		fprintf(stderr, "unable to open certfile: %s\n", certfile);
+		return -errno;
+	}
+
+	cert = PEM_read_X509(fp, NULL, NULL, NULL);
+	if (!cert) {
+		fprintf(stderr, "unable to parse certificate in: %s\n", certfile);
+		fclose(fp);
+		return -errno;
+	}
+
+	fclose(fp);
+
+	pubkey_algonid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
+	if (pubkey_algonid == NID_undef) {
+		fprintf(stderr, "unable to find specified public key algorithm name.\n");
+		return -EINVAL;
+	}
+
+	if (pubkey_algonid != NID_rsaEncryption)
+		return -EINVAL;
+
+	sslbuf = OBJ_nid2ln(pubkey_algonid);
+	strncpy(buf, sslbuf, PUBKEY_ALGO_LEN);
+
+	pkey = X509_get_pubkey(cert);
+	if (!pkey) {
+		fprintf(stderr, "unable to extract public key from certificate");
+		return -EINVAL;
+	}
+
+	rsa_key = pkey->pkey.rsa;
+	if (!rsa_key) {
+		fprintf(stderr, "unable to extract RSA public key");
+		return -EINVAL;
+	}
+
+	*modulus_len = BN_num_bytes(rsa_key->n);
+	*modulus = malloc(*modulus_len);
+	BN_bn2bin(rsa_key->n, *modulus);
+
+	*exponent_len = BN_num_bytes(rsa_key->e);
+	*exponent = malloc(*exponent_len);
+	BN_bn2bin(rsa_key->e, *exponent);
+
+	EVP_PKEY_free(pkey);
+	X509_free(cert);
+
+	return 0;
+}
+
+static int add_srk(void *buf, int offset, uint32_t loadaddr, const char *srkfile)
+{
+	struct imx_flash_header *hdr = buf + offset;
+	struct hab_rsa_public_key *key = buf + 0xc00;
+	uint8_t *exponent = NULL, *modulus = NULL, *modulus_dest;
+	int exponent_len = 0, modulus_len = 0;
+	int ret;
+
+	hdr->super_root_key = loadaddr + 0xc00;
+
+	key->init_flag = 1;
+	key->exponent_size = htole16(3);
+
+	ret = extract_key(srkfile, &modulus, &modulus_len, &exponent, &exponent_len);
+	if (ret)
+		return ret;
+
+	modulus_dest = (void *)(key + 1);
+
+	memcpy(modulus_dest, modulus, modulus_len);
+
+	key->modulus_size = htole16(modulus_len);
+	key->rsa_modulus = htole32(hdr->super_root_key + sizeof(*key));
+
+	if (exponent_len > 4)
+		return -EINVAL;
+
+	key->exponent_size = exponent_len;
+	memcpy(&key->rsa_exponent, exponent, key->exponent_size);
+
+	return 0;
+}
+#else
+static int add_srk(void *buf, int offset, uint32_t loadaddr, const char *srkfile)
+{
+	fprintf(stderr, "This version of imx-image is compiled without SSL support\n");
+
+	return -EINVAL;
+}
+#endif /* IMXIMAGE_SSL_SUPPORT */
+
 static int add_header_v1(struct config_data *data, void *buf)
 {
 	struct imx_flash_header *hdr;
@@ -430,6 +554,12 @@ int main(int argc, char *argv[])
 	switch (data.header_version) {
 	case 1:
 		add_header_v1(&data, buf);
+		if (data.srkfile) {
+			ret = add_srk(buf, data.image_dcd_offset, data.image_load_addr,
+				      data.srkfile);
+			if (ret)
+				exit(1);
+		}
 		break;
 	case 2:
 		add_header_v2(&data, buf);

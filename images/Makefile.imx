@@ -14,6 +14,12 @@ $(obj)/%.imximg: $(obj)/% FORCE
 	$(call if_changed,imx_image,$(CFG_$(@F)),)
 endif
 
+$(obj)/%.simximg: $(obj)/% FORCE
+	$(call if_changed,imx_image,$(CFG_$(patsubst %.simximg,%.imximg,$(@F))),-s)
+
+$(obj)/%.usimximg: $(obj)/% FORCE
+	$(call if_changed,imx_image,$(CFG_$(patsubst %.usimximg,%.imximg,$(@F))),-s -u)
+
 quiet_cmd_imx_sram_img ?= IMX-SRAM-IMG    $@
       cmd_imx_sram_img ?= cat $(obj)/$(patsubst %.imx-sram-img,%.pblb,$(2)) > $@; \
 		  $(call size_append, $(obj)/barebox.z) >> $@; \

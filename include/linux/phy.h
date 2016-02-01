@@ -271,6 +271,7 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr);
 int phy_init(void);
 int phy_init_hw(struct phy_device *phydev);
 
+struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id);
 int phy_register_device(struct phy_device* dev);
 void phy_unregister_device(struct phy_device *phydev);
 

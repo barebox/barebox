@@ -43,7 +43,7 @@ int mdiobus_detect(struct device_d *dev)
 		ret = phy_register_device(phydev);
 		if (ret)
 			dev_err(dev, "failed to register phy: %s\n", strerror(-ret));
-		dev_info(dev, "registered phy as /dev/%s\n", phydev->cdev.name);
+		dev_dbg(dev, "registered phy as /dev/%s\n", phydev->cdev.name);
 	}
 
 	return 0;

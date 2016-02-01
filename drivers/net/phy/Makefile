@@ -7,3 +7,5 @@ obj-$(CONFIG_NATIONAL_PHY)	+= national.o
 obj-$(CONFIG_SMSC_PHY)		+= smsc.o
 
 obj-$(CONFIG_MDIO_MVEBU)	+= mdio-mvebu.o
+obj-$(CONFIG_MDIO_BITBANG)	+= mdio-bitbang.o
+obj-$(CONFIG_MDIO_GPIO)		+= mdio-gpio.o

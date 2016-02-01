@@ -46,6 +46,21 @@ config MDIO_MVEBU
 	---help---
 	  Driver for the MDIO bus found on Marvell EBU SoCs.
 
+config MDIO_BITBANG
+        bool "Support for bitbanged MDIO buses"
+	---help---
+          This module implements the MDIO bus protocol in software,
+          for use by low level drivers that export the ability to
+          drive the relevant pins.
+
+          If in doubt, say N.
+
+config MDIO_GPIO
+	bool "Support for GPIO lib-based bitbanged MDIO buses"
+	depends on MDIO_BITBANG && GPIOLIB
+	---help---
+	  Supports GPIO lib-based MDIO busses.
+
 endif
 
 endmenu

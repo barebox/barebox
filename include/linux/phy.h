@@ -69,6 +69,10 @@ typedef enum {
  */
 #define MII_BUS_ID_SIZE	(20 - 3)
 
+/* Or MII_ADDR_C45 into regnum for read/write on mii_bus to enable the 21 bit
+   IEEE 802.3ae clause 45 addressing mode used by 10GIGE phy chips. */
+#define MII_ADDR_C45 (1<<30)
+
 #define PHYLIB_FORCE_10		(1 << 0)
 #define PHYLIB_FORCE_100	(1 << 1)
 #define PHYLIB_FORCE_LINK	(1 << 2)

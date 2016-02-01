@@ -233,18 +233,27 @@ static void mdiobus_show(struct device_d *dev, char *phydevname, int verbose)
 		struct phy_device *phydev;
 
 		phydev = mdiobus_scan(mii, i);
-		if (IS_ERR(phydev))
+		if (IS_ERR(phydev) || !phydev->registered)
 			continue;
-		if (phydev->registered) {
 
-			show_basic_mii(mii, phydev, verbose);
+		/*
+		 * If we are looking for a secific phy, called
+		 * 'phydevname', but current phydev is not it, skip to
+		 * the next iteration
+		 */
+		if (phydevname &&
+		    strcmp(phydev->cdev.name, phydevname))
+			continue;
 
-			if (phydevname &&
-				!strcmp(phydev->cdev.name, phydevname)) {
-				return;
-			}
-		}
+		show_basic_mii(mii, phydev, verbose);
 
+		/*
+		 * We were looking for a specific device and at this
+		 * point we already shown the info about it so end the
+		 * loop and exit
+		 */
+		if (phydevname)
+			break;
 	}
 
 	return;

@@ -333,7 +333,9 @@ static int mdio_bus_probe(struct device_d *_dev)
 	dev_add_param_int_ro(&dev->dev, "phy_addr", dev->addr, "%d");
 	dev_add_param_int_ro(&dev->dev, "phy_id", dev->phy_id, "0x%08x");
 
-	dev->cdev.name = asprintf("phy%d", _dev->id);
+	dev->cdev.name = xasprintf("mdio%d-phy%02x",
+				   dev->bus->dev.id,
+				   dev->addr);
 	dev->cdev.size = 64;
 	dev->cdev.ops = &phydev_ops;
 	dev->cdev.priv = dev;

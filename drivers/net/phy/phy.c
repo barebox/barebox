@@ -168,8 +168,10 @@ static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int p
 	phydev->bus = bus;
 	phydev->dev.bus = &mdio_bus_type;
 
-	strcpy(phydev->dev.name, "phy");
-	phydev->dev.id = DEVICE_ID_DYNAMIC;
+	sprintf(phydev->dev.name, "mdio%d-phy%02x",
+				   phydev->bus->dev.id,
+				   phydev->addr);
+	phydev->dev.id = DEVICE_ID_SINGLE;
 
 	return phydev;
 }

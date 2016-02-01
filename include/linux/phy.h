@@ -114,6 +114,8 @@ int mdiobus_detect(struct device_d *dev);
 #define for_each_mii_bus(mii) \
 	list_for_each_entry(mii, &mii_bus_list, list)
 
+struct mii_bus *mdiobus_get_bus(int busnum);
+
 /**
  * mdiobus_read - Convenience function for reading a given MII mgmt register
  * @bus: the mii_bus struct

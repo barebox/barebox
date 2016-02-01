@@ -187,6 +187,25 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
 }
 EXPORT_SYMBOL(mdiobus_scan);
 
+
+/**
+ *
+ * mdio_get_bus - get a MDIO bus from its busnum
+ *
+ * @param	busnum	the desired bus number
+ *
+ */
+struct mii_bus *mdiobus_get_bus(int busnum)
+{
+	struct mii_bus *mii;
+
+	for_each_mii_bus(mii)
+		if (mii->dev.id == busnum)
+			return mii;
+
+	return NULL;
+}
+
 /**
  * mdio_bus_match - determine if given PHY driver supports the given PHY device
  * @dev: target PHY device

@@ -40,6 +40,7 @@
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
 static int add_barebox_header;
+static int create_usb_image;
 static char *prgname;
 
 /*
@@ -197,6 +198,9 @@ static int add_srk(void *buf, int offset, uint32_t loadaddr, const char *srkfile
 }
 #endif /* IMXIMAGE_SSL_SUPPORT */
 
+static int dcd_ptr_offset;
+static uint32_t dcd_ptr_content;
+
 static int add_header_v1(struct config_data *data, void *buf)
 {
 	struct imx_flash_header *hdr;
@@ -219,10 +223,17 @@ static int add_header_v1(struct config_data *data, void *buf)
 	hdr->app_code_csf = 0x0;
 	hdr->dcd_ptr_ptr = loadaddr + offset + offsetof(struct imx_flash_header, dcd);
 	hdr->super_root_key = 0x0;
-	hdr->dcd = loadaddr + offset + offsetof(struct imx_flash_header, dcd_barker);
+	hdr->dcd =  loadaddr + offset + offsetof(struct imx_flash_header, dcd_barker);
+
 	hdr->app_dest = loadaddr;
 	hdr->dcd_barker = DCD_BARKER;
-	hdr->dcd_block_len = dcdsize;
+	if (create_usb_image) {
+		dcd_ptr_offset = offsetof(struct imx_flash_header, dcd_block_len) + offset;
+		hdr->dcd_block_len = 0;
+		dcd_ptr_content = dcdsize;
+	} else {
+		hdr->dcd_block_len = dcdsize;
+	}
 
 	buf += sizeof(struct imx_flash_header);
 
@@ -281,6 +292,11 @@ static int add_header_v2(struct config_data *data, void *buf)
 
 	hdr->entry		= loadaddr + HEADER_LEN;
 	hdr->dcd_ptr		= loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
+	if (create_usb_image) {
+		dcd_ptr_content = hdr->dcd_ptr;
+		dcd_ptr_offset = offsetof(struct imx_flash_header_v2, dcd_ptr) + offset;
+		hdr->dcd_ptr = 0;
+	}
 	hdr->boot_data_ptr	= loadaddr + offset + offsetof(struct imx_flash_header_v2, boot_data);
 	hdr->self		= loadaddr + offset;
 
@@ -619,7 +635,7 @@ int main(int argc, char *argv[])
 
 	prgname = argv[0];
 
-	while ((opt = getopt(argc, argv, "c:hf:o:bds")) != -1) {
+	while ((opt = getopt(argc, argv, "c:hf:o:bdus")) != -1) {
 		switch (opt) {
 		case 'c':
 			configfile = optarg;
@@ -638,6 +654,9 @@ int main(int argc, char *argv[])
 			break;
 		case 's':
 			sign_image = 1;
+			break;
+		case 'u':
+			create_usb_image = 1;
 			break;
 		case 'h':
 			usage(argv[0]);
@@ -688,14 +707,20 @@ int main(int argc, char *argv[])
 	if (!sign_image)
 		data.csf = NULL;
 
+	if (create_usb_image && !data.csf) {
+		fprintf(stderr, "Warning: the -u option only has effect with signed images\n");
+		create_usb_image = 0;
+	}
+
 	buf = calloc(1, HEADER_LEN);
 	if (!buf)
 		exit(1);
 
 	if (data.image_dcd_offset == 0xffffffff) {
-		fprintf(stderr, "no dcd offset given ('dcdofs'). Defaulting to 0x%08x\n",
-			FLASH_HEADER_OFFSET);
-		data.image_dcd_offset = FLASH_HEADER_OFFSET;
+		if (create_usb_image)
+			data.image_dcd_offset = 0x0;
+		else
+			data.image_dcd_offset = FLASH_HEADER_OFFSET;
 	}
 
 	if (!data.header_version) {
@@ -784,6 +809,29 @@ int main(int argc, char *argv[])
 		ret = hab_sign(&data);
 		if (ret)
 			exit(1);
+	}
+
+	if (create_usb_image) {
+		uint32_t *dcd;
+
+		infile = read_file(data.outfile, &insize);
+
+		dcd = infile + dcd_ptr_offset;
+		*dcd = dcd_ptr_content;
+
+		outfd = open(data.outfile, O_WRONLY | O_TRUNC);
+		if (outfd < 0) {
+			fprintf(stderr, "Cannot open %s: %s\n", data.outfile, strerror(errno));
+			exit(1);
+		}
+
+		ret = xwrite(outfd, infile, insize);
+		if (ret < 0) {
+			perror("write");
+			exit (1);
+		}
+
+		close(outfd);
 	}
 
 	exit(0);

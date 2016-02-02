@@ -871,7 +871,7 @@ static int perform_dcd(unsigned char *p, unsigned char *file_start, unsigned cnt
 	switch (usb_id->mach_id->header_type) {
 	case HDR_MX51:
 		ret = write_dcd_table_old(ohdr, file_start, cnt);
-		ohdr->dcd = 0;
+		ohdr->dcd_block_len = 0;
 
 		break;
 	case HDR_MX53:

@@ -20,6 +20,7 @@ hostprogs-$(CONFIG_ARCH_DAVINCI) += mkublheader
 hostprogs-$(CONFIG_ARCH_ZYNQ)	 += zynq_mkimage
 hostprogs-$(CONFIG_ARCH_SOCFPGA) += socfpga_mkimage
 hostprogs-$(CONFIG_ARCH_MXS)     += mxsimage mxsboot
+HOSTCFLAGS += -I$(srctree)/scripts/include/
 HOSTLOADLIBES_mxsimage  = `pkg-config --libs openssl`
 HOSTCFLAGS_mxs-usb-loader.o = `pkg-config --cflags libusb-1.0`
 HOSTLOADLIBES_mxs-usb-loader  = `pkg-config --libs libusb-1.0`

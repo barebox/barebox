@@ -570,6 +570,34 @@ static int hab_sign(struct config_data *data)
 	return 0;
 }
 
+static void *read_file(const char *filename, size_t *size)
+{
+	int fd, ret;
+	void *buf;
+	struct stat s;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
+
+	ret = fstat(fd, &s);
+	if (ret)
+		return NULL;
+
+	*size = s.st_size;
+	buf = malloc(*size);
+	if (!buf)
+		exit(1);
+
+	xread(fd, buf, *size);
+
+	close(fd);
+
+	return buf;
+}
+
 int main(int argc, char *argv[])
 {
 	int opt, ret;
@@ -579,7 +607,7 @@ int main(int argc, char *argv[])
 	size_t insize;
 	void *infile;
 	struct stat s;
-	int infd, outfd;
+	int outfd;
 	int dcd_only = 0;
 	int now = 0;
 	int sign_image = 0;
@@ -704,23 +732,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	infd = open(imagename, O_RDONLY);
-	if (infd < 0) {
-		perror("open");
-		exit(1);
-	}
-
-	ret = fstat(infd, &s);
-	if (ret)
-		return ret;
-
-	insize = s.st_size;
-	infile = malloc(insize);
+	infile = read_file(imagename, &insize);
 	if (!infile)
 		exit(1);
-
-	xread(infd, infile, insize);
-	close(infd);
 
 	outfd = open(data.outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {

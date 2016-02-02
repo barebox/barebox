@@ -941,8 +941,6 @@ static int get_dl_start(unsigned char *p, unsigned char *file_start,
 		*plugin = ((struct imx_boot_data *)bd)->plugin;
 		((struct imx_boot_data *)bd)->plugin = 0;
 
-		hdr->boot_data_ptr = 0;
-
 		break;
 	}
 	}

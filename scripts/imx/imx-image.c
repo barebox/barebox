@@ -26,12 +26,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <endian.h>
-
+#include <linux/kernel.h>
 #include <include/filetype.h>
-
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-#define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
-#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 
 #define MAX_DCD 1024
 #define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */

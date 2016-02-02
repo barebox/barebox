@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <libusb.h>
 #include <getopt.h>
+#include <linux/kernel.h>
 
 #define get_min(a, b) (((a) < (b)) ? (a) : (b))
 
@@ -52,11 +53,6 @@ struct mach_id {
 	unsigned char header_type;
 	unsigned short max_transfer;
 };
-
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-#ifndef offsetof
-#define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
-#endif
 
 struct usb_work {
 	char filename[256];

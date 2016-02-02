@@ -19,9 +19,14 @@
 #define __HABV4_H
 
 #ifdef CONFIG_HABV4
-int habv4_get_status(void);
+int imx28_hab_get_status(void);
+int imx6_hab_get_status(void);
 #else
-static inline int habv4_get_status(void)
+static inline int imx28_hab_get_status(void)
+{
+	return -EPERM;
+}
+static inline int imx6_hab_get_status(void)
 {
 	return -EPERM;
 }

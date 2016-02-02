@@ -16,11 +16,9 @@
 #include <getopt.h>
 #include <stdint.h>
 #include <arpa/inet.h>
+#include <linux/kernel.h>
 
 #define SB_BLOCK_SIZE		16
-
-#define roundup(x, y)		((((x) + ((y) - 1)) / (y)) * (y))
-#define ARRAY_SIZE(x)		(sizeof(x) / sizeof((x)[0]))
 
 static char *prepfile;
 static char *bootloaderfile;

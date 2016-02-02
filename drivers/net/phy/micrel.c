@@ -233,7 +233,7 @@ static int ksz9031_config_init(struct phy_device *phydev)
 #define KSZ8873MLL_GLOBAL_CONTROL_4	0x06
 #define KSZ8873MLL_GLOBAL_CONTROL_4_DUPLEX	(1 << 6)
 #define KSZ8873MLL_GLOBAL_CONTROL_4_SPEED	(1 << 4)
-int ksz8873mll_read_status(struct phy_device *phydev)
+static int ksz8873mll_read_status(struct phy_device *phydev)
 {
 	int regval;
 

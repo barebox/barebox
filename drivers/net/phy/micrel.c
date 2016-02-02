@@ -91,8 +91,8 @@ static int ks8051_config_init(struct phy_device *phydev)
 }
 
 static int ksz9021_load_values_from_of(struct phy_device *phydev,
-				       struct device_node *of_node, u16 reg,
-				       const char *field[])
+				       const struct device_node *of_node,
+				       u16 reg, const char *field[])
 {
 	int val, regval, i;
 
@@ -113,8 +113,8 @@ static int ksz9021_load_values_from_of(struct phy_device *phydev,
 
 static int ksz9021_config_init(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
-	struct device_node *of_node = dev->device_node;
+	const struct device_d *dev = &phydev->dev;
+	const struct device_node *of_node = dev->device_node;
 	const char *clk_pad_skew_names[] = {
 		"txen-skew-ps", "txc-skew-ps",
 		"rxdv-skew-ps", "rxc-skew-ps"
@@ -155,9 +155,9 @@ static int ksz9021_config_init(struct phy_device *phydev)
 #define MII_KSZ9031RN_CLK_PAD_SKEW	8
 
 static int ksz9031_of_load_skew_values(struct phy_device *phydev,
-					struct device_node *of_node,
+					const struct device_node *of_node,
 					u16 reg, size_t field_sz,
-					char *field[], u8 numfields)
+					const char *field[], u8 numfields)
 {
 	int val[4] = {-1, -2, -3, -4};
 	int matches = 0;
@@ -194,18 +194,18 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 
 static int ksz9031_config_init(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
-	struct device_node *of_node = dev->device_node;
-	char *clk_skews[2] = {"rxc-skew-ps", "txc-skew-ps"};
-	char *rx_data_skews[4] = {
+	const struct device_d *dev = &phydev->dev;
+	const struct device_node *of_node = dev->device_node;
+	static const char *clk_skews[2] = {"rxc-skew-ps", "txc-skew-ps"};
+	static const char *rx_data_skews[4] = {
 		"rxd0-skew-ps", "rxd1-skew-ps",
 		"rxd2-skew-ps", "rxd3-skew-ps"
 	};
-	char *tx_data_skews[4] = {
+	static const char *tx_data_skews[4] = {
 		"txd0-skew-ps", "txd1-skew-ps",
 		"txd2-skew-ps", "txd3-skew-ps"
 	};
-	char *control_skews[2] = {"txen-skew-ps", "rxdv-skew-ps"};
+	static const char *control_skews[2] = {"txen-skew-ps", "rxdv-skew-ps"};
 
 	if (!of_node && dev->parent->device_node)
 		of_node = dev->parent->device_node;

@@ -20,6 +20,9 @@
 #include <mach/generic.h>
 #include <linux/sizes.h>
 
+#define MX25_BOOTROM_HAB_MAGIC		0x3c95cac6
+#define MX25_DRYICE_GPR			0x3c
+
 void imx25_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
 		unsigned additional)
 {
@@ -55,8 +58,31 @@ u64 imx_uid(void)
 
 int imx25_init(void)
 {
+	int val;
+
 	imx25_boot_save_loc((void *)MX25_CCM_BASE_ADDR);
 	add_generic_device("imx25-esdctl", 0, NULL, MX25_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
+
+	/*
+	 * When the i.MX25 is used with internal boot, the boot ROM always
+	 * performs some HAB actions. These will copy the value from DryIce
+	 * GPR (0x53ffc03c) to a location in SRAM (0x78001734) and then overwrites
+	 * the GPR with 0x3c95cac6.
+	 * After the HAB routine is done, the boot ROM should copy the previously
+	 * saved value from SRAM back to the GPR. The last step is not done.
+	 * The boot ROM is officially broken in this regard.
+	 * This renders the Non-volatile memory to a Non-Non-volatile memory.
+	 * To still be able to use the GPR for its intended purpose, copy the
+	 * saved SRAM value back manually.
+	 */
+	val = readl(MX25_IRAM_BASE_ADDR + 0x1734);
+
+	/*
+	 * When there is a different value in SRAM than the magic value
+	 * it must be a value saved to the GPR.
+	 */
+	if (val != MX25_BOOTROM_HAB_MAGIC)
+		writel(val, MX25_DRYICE_BASE_ADDR + MX25_DRYICE_GPR);
 
 	return 0;
 }

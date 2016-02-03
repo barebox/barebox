@@ -420,7 +420,13 @@ cmd_imximage_S_dcd=						\
 
 imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
       -I $(srctree)/include -I $(srctree)/arch/arm/mach-imx/include \
-      -include include/generated/autoconf.h
+      -include include/generated/autoconf.h \
+      -DCONFIG_HABV3_SRK_PEM=\"$(CONFIG_HABV3_SRK_PEM)\" \
+      -DCONFIG_HABV3_CSF_CRT_DER=\"$(CONFIG_HABV3_CSF_CRT_DER)\" \
+      -DCONFIG_HABV3_IMG_CRT_DER=\"$(CONFIG_HABV3_IMG_CRT_DER)\" \
+      -DCONFIG_HABV4_TABLE_BIN=\"$(CONFIG_HABV4_TABLE_BIN)\" \
+      -DCONFIG_HABV4_CSF_CRT_PEM=\"$(CONFIG_HABV4_CSF_CRT_PEM)\" \
+      -DCONFIG_HABV4_IMG_CRT_PEM=\"$(CONFIG_HABV4_IMG_CRT_PEM)\"
 
 dcd-tmp = $(subst $(comma),_,$(dot-target).dcd.tmp)
 

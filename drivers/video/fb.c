@@ -230,7 +230,7 @@ void *fb_get_screen_base(struct fb_info *info)
 		info->screen_base_shadow : info->screen_base;
 }
 
-int fb_set_shadowfb(struct param_d *p, void *priv)
+static int fb_set_shadowfb(struct param_d *p, void *priv)
 {
 	struct fb_info *info = priv;
 

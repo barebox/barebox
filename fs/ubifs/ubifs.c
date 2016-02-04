@@ -377,7 +377,7 @@ static int ubifs_get_block(struct ubifs_file *uf, unsigned int pos)
 
 	if (block != uf->block) {
 		ret = read_block(uf->inode, uf->buf, block, uf->dn);
-		if (ret)
+		if (ret && ret != -ENOENT)
 			return ret;
 		uf->block = block;
 	}

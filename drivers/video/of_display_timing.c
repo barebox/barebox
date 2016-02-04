@@ -99,31 +99,6 @@ static int of_parse_display_timing(const struct device_node *np,
 }
 
 /**
- * of_get_display_timing - parse a display_timing entry
- * @np: device_node with the timing subnode
- * @name: name of the timing node
- * @dt: display_timing struct to fill
- **/
-int of_get_display_timing(struct device_node *np, const char *name,
-		struct fb_videomode *mode)
-{
-	struct device_node *timing_np;
-
-	if (!np)
-		return -EINVAL;
-
-	timing_np = of_get_child_by_name(np, name);
-	if (!timing_np) {
-		pr_err("%s: could not find node '%s'\n",
-			np->full_name, name);
-		return -ENOENT;
-	}
-
-	return of_parse_display_timing(timing_np, mode);
-}
-EXPORT_SYMBOL_GPL(of_get_display_timing);
-
-/**
  * of_get_display_timings - parse all display_timing entries from a device_node
  * @np: device_node with the subnodes
  **/

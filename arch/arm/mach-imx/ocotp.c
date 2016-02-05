@@ -110,14 +110,9 @@ static int imx6_ocotp_wait_busy(struct ocotp_priv *priv, u32 flags)
 {
 	uint64_t start = get_time_ns();
 
-	while ((OCOTP_CTRL_BUSY | OCOTP_CTRL_ERROR | flags) &
-			readl(priv->base + OCOTP_CTRL)) {
-		if (is_timeout(start, MSECOND)) {
-			/* Clear ERROR bit */
-			writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
+	while (readl(priv->base + OCOTP_CTRL) & (OCOTP_CTRL_BUSY | flags))
+		if (is_timeout(start, MSECOND))
 			return -ETIMEDOUT;
-		}
-	}
 
 	return 0;
 }
@@ -142,6 +137,8 @@ static int fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 	u32 ctrl_reg;
 	int ret;
 
+	writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
+
 	ctrl_reg = readl(priv->base + OCOTP_CTRL);
 	ctrl_reg &= ~OCOTP_CTRL_ADDR_MASK;
 	ctrl_reg &= ~OCOTP_CTRL_WR_UNLOCK_MASK;
@@ -153,7 +150,10 @@ static int fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 	if (ret)
 		return ret;
 
-	*pdata = readl(priv->base + OCOTP_READ_FUSE_DATA);
+	if (readl(priv->base + OCOTP_CTRL) & OCOTP_CTRL_ERROR)
+		*pdata = 0xbadabada;
+	else
+		*pdata = readl(priv->base + OCOTP_READ_FUSE_DATA);
 
 	return 0;
 }
@@ -173,11 +173,6 @@ int imx6_ocotp_read_one_u32(struct ocotp_priv *priv, u32 index, u32 *pdata)
 	if (ret) {
 		dev_err(priv->cdev.dev, "failed to read fuse 0x%08x\n", index);
 		return ret;
-	}
-
-	if (readl(priv->base + OCOTP_CTRL) & OCOTP_CTRL_ERROR) {
-		dev_err(priv->cdev.dev, "bad read status at fuse 0x%08x\n", index);
-		return -EFAULT;
 	}
 
 	return 0;
@@ -217,6 +212,8 @@ static int fuse_blow_addr(struct ocotp_priv *priv, u32 addr, u32 value)
 {
 	u32 ctrl_reg;
 	int ret;
+
+	writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
 
 	/* Control register */
 	ctrl_reg = readl(priv->base + OCOTP_CTRL);

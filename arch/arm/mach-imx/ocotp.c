@@ -106,7 +106,7 @@ static int imx6_ocotp_set_timing(struct ocotp_priv *priv)
 	return 0;
 }
 
-static int imx6_ocotp_wait_busy(u32 flags, struct ocotp_priv *priv)
+static int imx6_ocotp_wait_busy(struct ocotp_priv *priv, u32 flags)
 {
 	uint64_t start = get_time_ns();
 
@@ -130,14 +130,14 @@ static int imx6_ocotp_prepare(struct ocotp_priv *priv)
 	if (ret)
 		return ret;
 
-	ret = imx6_ocotp_wait_busy(0, priv);
+	ret = imx6_ocotp_wait_busy(priv, 0);
 	if (ret)
 		return ret;
 
 	return 0;
 }
 
-static int fuse_read_addr(u32 addr, u32 *pdata, struct ocotp_priv *priv)
+static int fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 {
 	u32 ctrl_reg;
 	int ret;
@@ -149,7 +149,7 @@ static int fuse_read_addr(u32 addr, u32 *pdata, struct ocotp_priv *priv)
 	writel(ctrl_reg, priv->base + OCOTP_CTRL);
 
 	writel(OCOTP_READ_CTRL_READ_FUSE, priv->base + OCOTP_READ_CTRL);
-	ret = imx6_ocotp_wait_busy(0, priv);
+	ret = imx6_ocotp_wait_busy(priv, 0);
 	if (ret)
 		return ret;
 
@@ -158,7 +158,7 @@ static int fuse_read_addr(u32 addr, u32 *pdata, struct ocotp_priv *priv)
 	return 0;
 }
 
-int imx6_ocotp_read_one_u32(u32 index, u32 *pdata, struct ocotp_priv *priv)
+int imx6_ocotp_read_one_u32(struct ocotp_priv *priv, u32 index, u32 *pdata)
 {
 	int ret;
 
@@ -169,7 +169,7 @@ int imx6_ocotp_read_one_u32(u32 index, u32 *pdata, struct ocotp_priv *priv)
 		return ret;
 	}
 
-	ret = fuse_read_addr(index, pdata, priv);
+	ret = fuse_read_addr(priv, index, pdata);
 	if (ret) {
 		dev_err(priv->cdev.dev, "failed to read fuse 0x%08x\n", index);
 		return ret;
@@ -199,7 +199,7 @@ static ssize_t imx6_ocotp_cdev_read(struct cdev *cdev, void *buf,
 
 	for (i = index; i < (index + count); i++) {
 		if (priv->sense_enable) {
-			ret = imx6_ocotp_read_one_u32(i, buf, priv);
+			ret = imx6_ocotp_read_one_u32(priv, i, buf);
 			if (ret)
 				return ret;
 		} else {
@@ -213,7 +213,7 @@ static ssize_t imx6_ocotp_cdev_read(struct cdev *cdev, void *buf,
 	return read_count << 2;
 }
 
-static int fuse_blow_addr(u32 addr, u32 value, struct ocotp_priv *priv)
+static int fuse_blow_addr(struct ocotp_priv *priv, u32 addr, u32 value)
 {
 	u32 ctrl_reg;
 	int ret;
@@ -226,7 +226,7 @@ static int fuse_blow_addr(u32 addr, u32 value, struct ocotp_priv *priv)
 	writel(ctrl_reg, priv->base + OCOTP_CTRL);
 
 	writel(value, priv->base + OCOTP_DATA);
-	ret = imx6_ocotp_wait_busy(0, priv);
+	ret = imx6_ocotp_wait_busy(priv, 0);
 	if (ret)
 		return ret;
 
@@ -241,11 +241,11 @@ static int imx6_ocotp_reload_shadow(struct ocotp_priv *priv)
 	writel(OCOTP_CTRL_RELOAD_SHADOWS, priv->base + OCOTP_CTRL_SET);
 	udelay(1);
 
-	return imx6_ocotp_wait_busy(OCOTP_CTRL_RELOAD_SHADOWS, priv);
+	return imx6_ocotp_wait_busy(priv, OCOTP_CTRL_RELOAD_SHADOWS);
 }
 
-int imx6_ocotp_blow_one_u32(u32 index, u32 data, u32 *pfused_value,
-		struct ocotp_priv *priv)
+int imx6_ocotp_blow_one_u32(struct ocotp_priv *priv, u32 index, u32 data,
+			    u32 *pfused_value)
 {
 	int ret;
 
@@ -255,7 +255,7 @@ int imx6_ocotp_blow_one_u32(u32 index, u32 data, u32 *pfused_value,
 		return ret;
 	}
 
-	ret = fuse_blow_addr(index, data, priv);
+	ret = fuse_blow_addr(priv, index, data);
 	if (ret) {
 		dev_err(priv->cdev.dev, "fuse blow failed\n");
 		return ret;
@@ -266,7 +266,7 @@ int imx6_ocotp_blow_one_u32(u32 index, u32 data, u32 *pfused_value,
 		return -EFAULT;
 	}
 
-	ret = imx6_ocotp_read_one_u32(index, pfused_value, priv);
+	ret = imx6_ocotp_read_one_u32(priv, index, pfused_value);
 
 	return ret;
 }
@@ -297,8 +297,8 @@ static ssize_t imx6_ocotp_cdev_write(struct cdev *cdev, const void *buf,
 
 	for (i = index; i < (index + count); i++) {
 		if (priv->permanent_write_enable) {
-			ret = imx6_ocotp_blow_one_u32(i, *data,
-					&pfuse, priv);
+			ret = imx6_ocotp_blow_one_u32(priv, i, *data,
+					&pfuse);
 			if (ret < 0) {
 				goto out;
 			}

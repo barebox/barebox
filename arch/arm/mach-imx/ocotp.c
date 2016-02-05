@@ -70,6 +70,10 @@
 #define MAC_OFFSET			(0x22 * 4)
 #define MAC_BYTES			8
 
+struct imx_ocotp_data {
+	int num_regs;
+};
+
 struct ocotp_priv {
 	struct cdev cdev;
 	void __iomem *base;
@@ -406,6 +410,11 @@ static int imx_ocotp_probe(struct device_d *dev)
 	struct ocotp_priv *priv;
 	struct cdev *cdev;
 	int ret = 0;
+	struct imx_ocotp_data *data;
+
+	ret = dev_get_drvdata(dev, (const void **)&data);
+	if (ret)
+		return ret;
 
 	base = dev_request_mem_region(dev, 0);
 	if (IS_ERR(base))
@@ -424,7 +433,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 	cdev->dev	= dev;
 	cdev->ops	= &imx6_ocotp_ops;
 	cdev->priv	= priv;
-	cdev->size	= 192;
+	cdev->size	= data->num_regs;
 	cdev->name	= "imx-ocotp";
 
 	ret = devfs_create(cdev);
@@ -450,11 +459,24 @@ static int imx_ocotp_probe(struct device_d *dev)
 	return 0;
 }
 
+static struct imx_ocotp_data imx6q_ocotp_data = {
+	.num_regs = 512,
+};
+
+static struct imx_ocotp_data imx6sl_ocotp_data = {
+	.num_regs = 256,
+};
+
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-ocotp",
+		.data = &imx6q_ocotp_data,
 	}, {
 		.compatible = "fsl,imx6sx-ocotp",
+		.data = &imx6q_ocotp_data,
+	}, {
+		.compatible = "fsl,imx6sl-ocotp",
+		.data = &imx6sl_ocotp_data,
 	}, {
 		/* sentinel */
 	}

@@ -18,6 +18,7 @@
  */
 #include <common.h>
 #include <fs.h>
+#include <globalvar.h>
 #include <libbb.h>
 #include <shell.h>
 
@@ -56,6 +57,11 @@ int process_escape_sequence(const char *source, char *dest, int destlen)
 				break;
 			case 'h':
 				i += snprintf(dest + i, destlen - i, "%s", barebox_get_model());
+				break;
+			case 'u':
+				if (IS_ENABLED(CONFIG_GLOBALVAR))
+					i += snprintf(dest + i, destlen - i, "%s",
+						      dev_get_param(&global_device, "user"));
 				break;
 			case 'w':
 				i += snprintf(dest + i, destlen - i, "%s", getcwd());

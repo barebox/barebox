@@ -35,6 +35,7 @@
 #define MAC_ADDRESS_PROPLEN	(2 * sizeof(__be32))
 
 /* OCOTP Registers offsets */
+#define OCOTP_CTRL			0x00
 #define OCOTP_CTRL_SET			0x04
 #define OCOTP_CTRL_CLR			0x08
 #define OCOTP_TIMING			0x10
@@ -110,7 +111,7 @@ static int imx6_ocotp_wait_busy(u32 flags, struct ocotp_priv *priv)
 	uint64_t start = get_time_ns();
 
 	while ((OCOTP_CTRL_BUSY | OCOTP_CTRL_ERROR | flags) &
-			readl(priv->base)) {
+			readl(priv->base + OCOTP_CTRL)) {
 		if (is_timeout(start, MSECOND)) {
 			/* Clear ERROR bit */
 			writel(OCOTP_CTRL_ERROR, priv->base + OCOTP_CTRL_CLR);
@@ -141,11 +142,11 @@ static int fuse_read_addr(u32 addr, u32 *pdata, struct ocotp_priv *priv)
 	u32 ctrl_reg;
 	int ret;
 
-	ctrl_reg = readl(priv->base);
+	ctrl_reg = readl(priv->base + OCOTP_CTRL);
 	ctrl_reg &= ~OCOTP_CTRL_ADDR_MASK;
 	ctrl_reg &= ~OCOTP_CTRL_WR_UNLOCK_MASK;
 	ctrl_reg |= BF(addr, OCOTP_CTRL_ADDR);
-	writel(ctrl_reg, priv->base);
+	writel(ctrl_reg, priv->base + OCOTP_CTRL);
 
 	writel(OCOTP_READ_CTRL_READ_FUSE, priv->base + OCOTP_READ_CTRL);
 	ret = imx6_ocotp_wait_busy(0, priv);
@@ -174,7 +175,7 @@ int imx6_ocotp_read_one_u32(u32 index, u32 *pdata, struct ocotp_priv *priv)
 		return ret;
 	}
 
-	if (readl(priv->base) & OCOTP_CTRL_ERROR) {
+	if (readl(priv->base + OCOTP_CTRL) & OCOTP_CTRL_ERROR) {
 		dev_err(priv->cdev.dev, "bad read status at fuse 0x%08x\n", index);
 		return -EFAULT;
 	}
@@ -218,11 +219,11 @@ static int fuse_blow_addr(u32 addr, u32 value, struct ocotp_priv *priv)
 	int ret;
 
 	/* Control register */
-	ctrl_reg = readl(priv->base);
+	ctrl_reg = readl(priv->base + OCOTP_CTRL);
 	ctrl_reg &= ~OCOTP_CTRL_ADDR_MASK;
 	ctrl_reg |= BF(addr, OCOTP_CTRL_ADDR);
 	ctrl_reg |= BF(OCOTP_CTRL_WR_UNLOCK_KEY, OCOTP_CTRL_WR_UNLOCK);
-	writel(ctrl_reg, priv->base);
+	writel(ctrl_reg, priv->base + OCOTP_CTRL);
 
 	writel(value, priv->base + OCOTP_DATA);
 	ret = imx6_ocotp_wait_busy(0, priv);
@@ -260,7 +261,7 @@ int imx6_ocotp_blow_one_u32(u32 index, u32 data, u32 *pfused_value,
 		return ret;
 	}
 
-	if (readl(priv->base) & OCOTP_CTRL_ERROR) {
+	if (readl(priv->base + OCOTP_CTRL) & OCOTP_CTRL_ERROR) {
 		dev_err(priv->cdev.dev, "bad write status\n");
 		return -EFAULT;
 	}

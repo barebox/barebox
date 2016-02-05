@@ -133,7 +133,9 @@ struct nfs_priv {
 	IPaddr_t server;
 	char *path;
 	uint16_t mount_port;
+	unsigned manual_mount_port:1;
 	uint16_t nfs_port;
+	unsigned manual_nfs_port:1;
 	uint32_t rpc_id;
 	uint32_t rootfh_len;
 	char rootfh[NFS3_FHSIZE];
@@ -1311,13 +1313,26 @@ static char *rootnfsopts;
 
 static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
 {
-	char *str;
+	char *str, *tmp;
 	const char *ip;
 
 	ip = ip_to_string(npriv->server);
 	str = asprintf("root=/dev/nfs nfsroot=%s:%s%s%s",
 			ip, npriv->path, rootnfsopts[0] ? "," : "",
 			rootnfsopts);
+
+	/* forward specific mount options on demand */
+	if (npriv->manual_nfs_port == 1) {
+		tmp = asprintf("%s,port=%hu", str, npriv->nfs_port);
+		free(str);
+		str = tmp;
+	}
+
+	if (npriv->manual_mount_port == 1) {
+		tmp = asprintf("%s,mountport=%hu", str, npriv->mount_port);
+		free(str);
+		str = tmp;
+	}
 
 	fsdev_set_linux_rootarg(fsdev, str);
 
@@ -1367,6 +1382,8 @@ static int nfs_probe(struct device_d *dev)
 			goto err2;
 		}
 		npriv->mount_port = ret;
+	} else {
+		npriv->manual_mount_port = 1;
 	}
 	debug("mount port: %hu\n", npriv->mount_port);
 
@@ -1378,6 +1395,8 @@ static int nfs_probe(struct device_d *dev)
 			goto err2;
 		}
 		npriv->nfs_port = ret;
+	} else {
+		npriv->manual_nfs_port = 1;
 	}
 	debug("nfs port: %d\n", npriv->nfs_port);
 

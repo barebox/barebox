@@ -25,7 +25,8 @@
 #include <mach/generic.h>
 
 #define HABV4_RVT_IMX28 0xffff8af8
-#define HABV4_RVT_IMX6 0x00000094
+#define HABV4_RVT_IMX6_OLD 0x00000094
+#define HABV4_RVT_IMX6_NEW 0x00000098
 
 enum hab_tag {
 	HAB_TAG_IVT = 0xd1,		/* Image Vector Table */
@@ -216,9 +217,19 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 
 int imx6_hab_get_status(void)
 {
-	const struct habv4_rvt *rvt = (void *)HABV4_RVT_IMX6;
+	const struct habv4_rvt *rvt;
 
-	return habv4_get_status(rvt);
+	rvt = (void *)HABV4_RVT_IMX6_OLD;
+	if (rvt->header.tag == HAB_TAG_RVT)
+		return habv4_get_status(rvt);
+
+	rvt = (void *)HABV4_RVT_IMX6_NEW;
+	if (rvt->header.tag == HAB_TAG_RVT)
+		return habv4_get_status(rvt);
+
+	pr_err("ERROR - RVT not found!\n");
+
+	return -EINVAL;
 }
 
 int imx28_hab_get_status(void)

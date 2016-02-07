@@ -15,6 +15,7 @@
 #include <driver.h>
 #include <errno.h>
 #include <linux/err.h>
+#include <linux/sizes.h>
 #include <linux/math64.h>
 #include <linux/mod_devicetable.h>
 #include <linux/mtd/mtd.h>
@@ -24,6 +25,18 @@
 #include <spi/flash.h>
 
 #define SPI_NOR_MAX_ID_LEN	6
+
+/*
+ * For everything but full-chip erase; probably could be much smaller, but kept
+ * around for safety for now
+ */
+#define DEFAULT_READY_WAIT		(40 * SECOND)
+
+/*
+ * For full-chip erase, calibrated to a 2MB flash (M25P16); should be scaled up
+ * for larger flash
+ */
+#define CHIP_ERASE_2MB_READY_WAIT	(40 * SECOND)
 
 struct flash_info {
 	/*
@@ -228,14 +241,15 @@ static int spi_nor_ready(struct spi_nor *nor)
  * Service routine to read status register until ready, or timeout occurs.
  * Returns non-zero if error.
  */
-static int spi_nor_wait_till_ready(struct spi_nor *nor)
+static int spi_nor_wait_till_ready_with_timeout(struct spi_nor *nor,
+						uint64_t timeout_ns)
 {
 	uint64_t start = get_time_ns();
 	int timeout = 0;
 	int ret;
 
 	while (!timeout) {
-		if (is_timeout(start, 40 * SECOND))
+		if (is_timeout(start, timeout_ns))
 			timeout = 1;
 
 		ret = spi_nor_ready(nor);
@@ -248,6 +262,12 @@ static int spi_nor_wait_till_ready(struct spi_nor *nor)
 	dev_err(nor->dev, "flash operation timed out\n");
 
 	return -ETIMEDOUT;
+}
+
+static int spi_nor_wait_till_ready(struct spi_nor *nor)
+{
+	return spi_nor_wait_till_ready_with_timeout(nor,
+						    DEFAULT_READY_WAIT);
 }
 
 /*
@@ -318,6 +338,8 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 
 	/* whole-chip erase? */
 	if (len == mtd->size) {
+		uint64_t timeout;
+
 		write_enable(nor);
 
 		if (erase_chip(nor)) {
@@ -325,7 +347,16 @@ static int spi_nor_erase(struct mtd_info *mtd, struct erase_info *instr)
 			goto erase_err;
 		}
 
-		ret = spi_nor_wait_till_ready(nor);
+		/*
+		 * Scale the timeout linearly with the size of the flash, with
+		 * a minimum calibrated to an old 2MB flash. We could try to
+		 * pull these from CFI/SFDP, but these values should be good
+		 * enough for now.
+		 */
+		timeout = max(CHIP_ERASE_2MB_READY_WAIT,
+			      CHIP_ERASE_2MB_READY_WAIT *
+			      (uint64_t)(mtd->size / SZ_2M));
+		ret = spi_nor_wait_till_ready_with_timeout(nor, timeout);
 		if (ret)
 			goto erase_err;
 

@@ -67,14 +67,13 @@ int mtd_all_ff(const void *buf, unsigned int len)
 }
 
 static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
-			  loff_t _offset, ulong flags)
+			  loff_t offset, ulong flags)
 {
 	struct mtd_info *mtd = cdev->priv;
 	size_t retlen;
 	int ret;
-	unsigned long offset = _offset;
 
-	dev_dbg(cdev->dev, "read ofs: 0x%08lx count: 0x%08zx\n",
+	dev_dbg(cdev->dev, "read ofs: 0x%08llx count: 0x%08zx\n",
 			offset, count);
 
 	ret = mtd_read(mtd, offset, count, &retlen, buf);

@@ -10,13 +10,13 @@
 #include <asm-generic/div64.h>
 
 struct erase_info_user {
-	uint32_t start;
-	uint32_t length;
+	uint64_t start;
+	uint64_t length;
 };
 
 struct mtd_oob_buf {
-	uint32_t start;
-	uint32_t length;
+	uint64_t start;
+	uint64_t length;
 	unsigned char *ptr;
 };
 

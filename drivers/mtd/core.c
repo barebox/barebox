@@ -169,7 +169,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	erase.len = mtd->erasesize;
 
 	while (count > 0) {
-		dev_dbg(cdev->dev, "erase %d %d\n", addr, erase.len);
+		dev_dbg(cdev->dev, "erase 0x%08llx len: 0x%08llx\n", addr, erase.len);
 
 		if (mtd->allow_erasebad || (mtd->master && mtd->master->allow_erasebad))
 			ret = 0;

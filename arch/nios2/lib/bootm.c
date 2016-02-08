@@ -42,6 +42,9 @@ static int do_bootm_linux(struct image_data *idata)
 	if (ret)
 		return ret;
 
+	if (idata->dryrun)
+		return 0;
+
 	kernel = (void *)(idata->os_address + idata->os_entry);
 
 	/* kernel parameters passing

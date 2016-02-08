@@ -173,6 +173,7 @@ static struct digest_algo sha224 = {
 		.name		=	"sha224",
 		.driver_name 	=	"sha224-asm",
 		.priority	=	150,
+		.algo		=	HASH_ALGO_SHA224,
 	},
 
 	.length	=	SHA224_DIGEST_SIZE,
@@ -195,6 +196,7 @@ static struct digest_algo sha256 = {
 		.name		=	"sha256",
 		.driver_name 	=	"sha256-asm",
 		.priority	=	150,
+		.algo		=	HASH_ALGO_SHA256,
 	},
 
 	.length	=	SHA256_DIGEST_SIZE,

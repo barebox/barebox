@@ -17,8 +17,10 @@
 #include <malloc.h>
 #include <memory.h>
 #include <libfile.h>
+#include <image-fit.h>
 #include <globalvar.h>
 #include <init.h>
+#include <linux/stat.h>
 
 static LIST_HEAD(handler_list);
 
@@ -46,6 +48,33 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 	return NULL;
 }
 
+void bootm_data_init_defaults(struct bootm_data *data)
+{
+	data->initrd_address = UIMAGE_INVALID_ADDRESS;
+	data->os_address = UIMAGE_SOME_ADDRESS;
+	data->oftree_file = getenv_nonempty("global.bootm.oftree");
+	data->os_file = getenv_nonempty("global.bootm.image");
+	getenv_ul("global.bootm.image.loadaddr", &data->os_address);
+	getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
+	data->initrd_file = getenv_nonempty("global.bootm.initrd");
+	data->verify = bootm_get_verify_mode();
+}
+
+static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
+
+enum bootm_verify bootm_get_verify_mode(void)
+{
+	return bootm_verify_mode;
+}
+
+static const char * const bootm_verify_names[] = {
+#ifndef CONFIG_BOOTM_FORCE_SIGNED_IMAGES
+	[BOOTM_VERIFY_NONE] = "none",
+	[BOOTM_VERIFY_HASH] = "hash",
+#endif
+	[BOOTM_VERIFY_SIGNATURE] = "signature",
+};
+
 /*
  * bootm_load_os() - load OS to RAM
  *
@@ -66,9 +95,24 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (load_address == UIMAGE_INVALID_ADDRESS)
 		return -EINVAL;
 
+	if (data->os_fit) {
+		data->os_res = request_sdram_region("kernel",
+				load_address,
+				data->os_fit->kernel_size);
+		if (!data->os_res)
+			return -ENOMEM;
+		memcpy((void *)load_address, data->os_fit->kernel,
+		       data->os_fit->kernel_size);
+		return 0;
+	}
+
 	if (data->os) {
+		int num;
+
+		num = simple_strtoul(data->os_part, NULL, 0);
+
 		data->os_res = uimage_load_to_sdram(data->os,
-			data->os_num, load_address);
+			num, load_address);
 		if (!data->os_res)
 			return -ENOMEM;
 
@@ -86,6 +130,44 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	return -EINVAL;
 }
 
+bool bootm_has_initrd(struct image_data *data)
+{
+	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+		return false;
+
+	if (data->os_fit && data->os_fit->initrd)
+		return true;
+
+	if (data->initrd_file)
+		return true;
+
+	return false;
+}
+
+static int bootm_open_initrd_uimage(struct image_data *data)
+{
+	int ret;
+
+	if (strcmp(data->os_file, data->initrd_file)) {
+		data->initrd = uimage_open(data->initrd_file);
+		if (!data->initrd)
+			return -EINVAL;
+
+		if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
+			ret = uimage_verify(data->initrd);
+			if (ret) {
+				printf("Checking data crc failed with %s\n",
+					strerror(-ret));
+			}
+		}
+		uimage_print_contents(data->initrd);
+	} else {
+		data->initrd = data->os;
+	}
+
+	return 0;
+}
+
 /*
  * bootm_load_initrd() - load initrd to RAM
  *
@@ -101,24 +183,112 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
  */
 int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 {
+	enum filetype type;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+		return -ENOSYS;
+
+	if (!bootm_has_initrd(data))
+		return -EINVAL;
+
 	if (data->initrd_res)
 		return 0;
 
-	if (data->initrd) {
-		data->initrd_res = uimage_load_to_sdram(data->initrd,
-			data->initrd_num, load_address);
+	if (data->os_fit && data->os_fit->initrd) {
+		data->initrd_res = request_sdram_region("initrd",
+				load_address,
+				data->os_fit->initrd_size);
 		if (!data->initrd_res)
 			return -ENOMEM;
-
-		return 0;
+		memcpy((void *)load_address, data->os_fit->initrd,
+		       data->os_fit->initrd_size);
+		printf("Loaded initrd from FIT image\n");
+		goto done1;
 	}
 
-	if (data->initrd_file) {
-		data->initrd_res = file_to_sdram(data->initrd_file, load_address);
+	type = file_name_detect_type(data->initrd_file);
+
+	if ((int)type < 0) {
+		printf("could not open %s: %s\n", data->initrd_file,
+				strerror(-type));
+		return (int)type;
+	}
+
+	if (type == filetype_uimage) {
+		int num;
+		ret = bootm_open_initrd_uimage(data);
+		if (ret) {
+			printf("loading initrd failed with %s\n",
+					strerror(-ret));
+			return ret;
+		}
+
+		num = simple_strtoul(data->initrd_part, NULL, 0);
+
+		data->initrd_res = uimage_load_to_sdram(data->initrd,
+			num, load_address);
 		if (!data->initrd_res)
 			return -ENOMEM;
 
-		return 0;
+		goto done;
+	}
+
+	data->initrd_res = file_to_sdram(data->initrd_file, load_address);
+	if (!data->initrd_res)
+		return -ENOMEM;
+
+done:
+
+	printf("Loaded initrd %s '%s'", file_type_to_string(type),
+	       data->initrd_file);
+	if (type == filetype_uimage && data->initrd->header.ih_type == IH_TYPE_MULTI)
+		printf(", multifile image %s", data->initrd_part);
+	printf("\n");
+done1:
+	printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
+		data->initrd_res->start,
+		data->initrd_res->end);
+
+	return 0;
+}
+
+static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
+				    struct fdt_header **fdt)
+{
+	enum filetype ft;
+	const char *oftree = data->oftree_file;
+	int num = simple_strtoul(data->oftree_part, NULL, 0);
+	struct uimage_handle *of_handle;
+	int release = 0;
+
+	printf("Loading devicetree from '%s'@%d\n", oftree, num);
+
+	if (!IS_ENABLED(CONFIG_CMD_BOOTM_OFTREE_UIMAGE))
+		return -EINVAL;
+
+	if (!strcmp(data->os_file, oftree)) {
+		of_handle = data->os;
+	} else if (!strcmp(data->initrd_file, oftree)) {
+		of_handle = data->initrd;
+	} else {
+		of_handle = uimage_open(oftree);
+		if (!of_handle)
+			return -ENODEV;
+		uimage_print_contents(of_handle);
+		release = 1;
+	}
+
+	*fdt = uimage_load_to_buf(of_handle, num, size);
+
+	if (release)
+		uimage_close(of_handle);
+
+	ft = file_detect_type(*fdt, *size);
+	if (ft != filetype_oftree) {
+		printf("%s is not an oftree but %s\n",
+			data->oftree_file, file_type_to_string(ft));
+		return -EINVAL;
 	}
 
 	return 0;
@@ -137,8 +307,10 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
  */
 int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 {
+	enum filetype type;
 	int fdt_size;
 	struct fdt_header *oftree;
+	int ret;
 
 	if (data->oftree)
 		return 0;
@@ -146,8 +318,51 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return 0;
 
-	if (!data->of_root_node)
-		return 0;
+	if (data->os_fit && data->os_fit->oftree) {
+		data->of_root_node = of_unflatten_dtb(data->os_fit->oftree);
+	} else if (data->oftree_file) {
+		size_t size;
+
+		type = file_name_detect_type(data->oftree_file);
+
+		if ((int)type < 0) {
+			printf("could not open %s: %s\n", data->oftree_file,
+					strerror(-type));
+			return (int)type;
+		}
+
+		switch (type) {
+		case filetype_uimage:
+			ret = bootm_open_oftree_uimage(data, &size, &oftree);
+			break;
+		case filetype_oftree:
+			ret = read_file_2(data->oftree_file, &size, (void *)&oftree,
+					  FILESIZE_MAX);
+			break;
+		default:
+			return -EINVAL;
+		}
+
+		if (ret)
+			return ret;
+
+		data->of_root_node = of_unflatten_dtb(oftree);
+
+		free(oftree);
+
+		if (!data->of_root_node) {
+			pr_err("unable to unflatten devicetree\n");
+			return -EINVAL;
+		}
+
+	} else {
+		data->of_root_node = of_get_root_node();
+		if (!data->of_root_node)
+			return 0;
+
+		if (bootm_verbose(data) > 1 && data->of_root_node)
+			printf("using internal devicetree\n");
+	}
 
 	if (data->initrd_res) {
 		of_add_initrd(data->of_root_node, data->initrd_res->start,
@@ -185,6 +400,27 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 	return 0;
 }
 
+int bootm_get_os_size(struct image_data *data)
+{
+	int ret;
+
+	if (data->os)
+		return uimage_get_size(data->os,
+				       simple_strtoul(data->os_part, NULL, 0));
+	if (data->os_fit)
+		return data->os_fit->kernel_size;
+
+	if (data->os_file) {
+		struct stat s;
+		ret = stat(data->os_file, &s);
+		if (ret)
+			return ret;
+		return s.st_size;
+	}
+
+	return -EINVAL;
+}
+
 static int bootm_open_os_uimage(struct image_data *data)
 {
 	int ret;
@@ -193,7 +429,7 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (!data->os)
 		return -EINVAL;
 
-	if (data->verify) {
+	if (bootm_get_verify_mode() > BOOTM_VERIFY_NONE) {
 		ret = uimage_verify(data->os);
 		if (ret) {
 			printf("Checking data crc failed with %s\n",
@@ -208,117 +444,11 @@ static int bootm_open_os_uimage(struct image_data *data)
 	if (data->os->header.ih_arch != IH_ARCH) {
 		printf("Unsupported Architecture 0x%x\n",
 		       data->os->header.ih_arch);
-		uimage_close(data->os);
 		return -EINVAL;
 	}
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
 		data->os_address = data->os->header.ih_load;
-
-	return 0;
-}
-
-static int bootm_open_initrd_uimage(struct image_data *data)
-{
-	int ret;
-
-	if (!data->initrd_file)
-		return 0;
-
-	if (strcmp(data->os_file, data->initrd_file)) {
-		data->initrd = uimage_open(data->initrd_file);
-		if (!data->initrd)
-			return -EINVAL;
-
-		if (data->verify) {
-			ret = uimage_verify(data->initrd);
-			if (ret) {
-				printf("Checking data crc failed with %s\n",
-					strerror(-ret));
-			}
-		}
-		uimage_print_contents(data->initrd);
-	} else {
-		data->initrd = data->os;
-	}
-
-	return 0;
-}
-
-static int bootm_open_oftree_uimage(struct image_data *data)
-{
-	struct fdt_header *fdt;
-	enum filetype ft;
-	const char *oftree = data->oftree_file;
-	int num = data->oftree_num;
-	struct uimage_handle *of_handle;
-	int release = 0;
-	size_t size;
-
-	printf("Loading devicetree from '%s'@%d\n", oftree, num);
-
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_OFTREE_UIMAGE)) {
-		if (!strcmp(data->os_file, oftree)) {
-			of_handle = data->os;
-		} else if (!strcmp(data->initrd_file, oftree)) {
-			of_handle = data->initrd;
-		} else {
-			of_handle = uimage_open(oftree);
-			if (!of_handle)
-				return -ENODEV;
-			uimage_print_contents(of_handle);
-			release = 1;
-		}
-
-		fdt = uimage_load_to_buf(of_handle, num, &size);
-
-		if (release)
-			uimage_close(of_handle);
-
-		ft = file_detect_type(fdt, size);
-		if (ft != filetype_oftree) {
-			printf("%s is not an oftree but %s\n",
-				data->oftree_file, file_type_to_string(ft));
-			return -EINVAL;
-		}
-
-		data->of_root_node = of_unflatten_dtb(fdt);
-		if (!data->of_root_node) {
-			pr_err("unable to unflatten devicetree\n");
-			free(fdt);
-			return -EINVAL;
-		}
-
-		free(fdt);
-
-		return 0;
-	} else {
-		return -EINVAL;
-	}
-}
-
-static int bootm_open_oftree(struct image_data *data)
-{
-	struct fdt_header *fdt;
-	const char *oftree = data->oftree_file;
-	size_t size;
-
-	printf("Loading devicetree from '%s'\n", oftree);
-
-	fdt = read_file(oftree, &size);
-	if (!fdt) {
-		perror("open");
-		return -ENODEV;
-	}
-
-	data->of_root_node = of_unflatten_dtb(fdt);
-	if (!data->of_root_node) {
-		pr_err("unable to unflatten devicetree\n");
-		free(fdt);
-		return -EINVAL;
-	}
-
-	free(fdt);
 
 	return 0;
 }
@@ -331,45 +461,29 @@ static void bootm_print_info(struct image_data *data)
 				data->os_res->end);
 	else
 		printf("OS image not yet relocated\n");
-
-	if (data->initrd_file) {
-		enum filetype initrd_type = file_name_detect_type(data->initrd_file);
-
-		printf("Loading initrd %s '%s'",
-				file_type_to_string(initrd_type),
-				data->initrd_file);
-		if (initrd_type == filetype_uimage &&
-				data->initrd->header.ih_type == IH_TYPE_MULTI)
-			printf(", multifile image %d", data->initrd_num);
-		printf("\n");
-		if (data->initrd_res)
-			printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
-				data->initrd_res->start,
-				data->initrd_res->end);
-		else
-			printf("initrd image not yet relocated\n");
-	}
 }
 
-static char *bootm_image_name_and_no(const char *name, int *no)
+static int bootm_image_name_and_part(const char *name, char **filename, char **part)
 {
 	char *at, *ret;
 
 	if (!name || !*name)
-		return NULL;
-
-	*no = 0;
+		return -EINVAL;
 
 	ret = xstrdup(name);
+
+	*filename = ret;
+	*part = NULL;
+
 	at = strchr(ret, '@');
 	if (!at)
-		return ret;
+		return 0;
 
 	*at++ = 0;
 
-	*no = simple_strtoul(at, NULL, 10);
+	*part = at;
 
-	return ret;
+	return 0;
 }
 
 /*
@@ -380,8 +494,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	struct image_data *data;
 	struct image_handler *handler;
 	int ret;
-	enum filetype os_type, initrd_type = filetype_unknown;
-	enum filetype oftree_type = filetype_unknown;
+	enum filetype os_type;
 
 	if (!bootm_data->os_file) {
 		printf("no image given\n");
@@ -390,9 +503,9 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 	data = xzalloc(sizeof(*data));
 
-	data->os_file = bootm_image_name_and_no(bootm_data->os_file, &data->os_num);
-	data->oftree_file = bootm_image_name_and_no(bootm_data->oftree_file, &data->oftree_num);
-	data->initrd_file = bootm_image_name_and_no(bootm_data->initrd_file, &data->initrd_num);
+	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
+	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_part, &data->os_part);
+	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_part, &data->os_part);
 	data->verbose = bootm_data->verbose;
 	data->verify = bootm_data->verify;
 	data->force = bootm_data->force;
@@ -415,45 +528,43 @@ int bootm_boot(struct bootm_data *bootm_data)
 		goto err_out;
 	}
 
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data->initrd_file) {
-		initrd_type = file_name_detect_type(data->initrd_file);
+	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES)) {
+		data->verify = BOOTM_VERIFY_SIGNATURE;
 
-		if ((int)initrd_type < 0) {
-			printf("could not open %s: %s\n", data->initrd_file,
-					strerror(-initrd_type));
-			ret = (int)initrd_type;
+		/*
+		 * When we only allow booting signed images make sure everything
+		 * we boot is in the OS image and not given separately.
+		 */
+		data->oftree = NULL;
+		data->oftree_file = NULL;
+		data->initrd_file = NULL;
+		if (os_type != filetype_oftree) {
+			printf("Signed boot and image is no FIT image, aborting\n");
+			ret = -EINVAL;
 			goto err_out;
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_OFTREE) && data->oftree_file) {
-		oftree_type = file_name_detect_type(data->oftree_file);
+	if (IS_ENABLED(CONFIG_FITIMAGE) && os_type == filetype_oftree) {
+		struct fit_handle *fit;
 
-		if ((int)oftree_type < 0) {
-			printf("could not open %s: %s\n", data->oftree_file,
-					strerror(-oftree_type));
-			ret = (int) oftree_type;
+		fit = fit_open(data->os_file, data->os_part, data->verbose, data->verify);
+		if (IS_ERR(fit)) {
+			printf("Loading FIT image %s failed with: %s\n", data->os_file,
+			       strerrorp(fit));
+			ret = PTR_ERR(fit);
 			goto err_out;
 		}
+
+		data->os_fit = fit;
 	}
 
 	if (os_type == filetype_uimage) {
 		ret = bootm_open_os_uimage(data);
 		if (ret) {
-			printf("Loading OS image failed with %s\n",
+			printf("Loading OS image failed with: %s\n",
 					strerror(-ret));
 			goto err_out;
-		}
-	}
-
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD) && data->initrd_file) {
-		if (initrd_type == filetype_uimage) {
-			ret = bootm_open_initrd_uimage(data);
-			if (ret) {
-				printf("loading initrd failed with %s\n",
-						strerror(-ret));
-				goto err_out;
-			}
 		}
 	}
 
@@ -461,23 +572,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 			data->os_file);
 	if (os_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
-		printf(", multifile image %d", data->os_num);
+		printf(", multifile image %s", data->os_part);
 	printf("\n");
-
-	if (IS_ENABLED(CONFIG_OFTREE)) {
-		if (data->oftree_file) {
-			if (oftree_type == filetype_uimage)
-				ret = bootm_open_oftree_uimage(data);
-			if (oftree_type == filetype_oftree)
-				ret = bootm_open_oftree(data);
-			if (ret)
-				goto err_out;
-		} else {
-			data->of_root_node = of_get_root_node();
-			if (bootm_verbose(data) > 1 && data->of_root_node)
-				printf("using internal devicetree\n");
-		}
-	}
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)
 		data->os_address = UIMAGE_INVALID_ADDRESS;
@@ -497,10 +593,10 @@ int bootm_boot(struct bootm_data *bootm_data)
 		printf("Passing control to %s handler\n", handler->name);
 	}
 
+	ret = handler->bootm(data);
 	if (data->dryrun)
-		ret = 0;
-	else
-		ret = handler->bootm(data);
+		printf("Dryrun. Aborted\n");
+
 err_out:
 	if (data->os_res)
 		release_sdram_region(data->os_res);
@@ -512,6 +608,8 @@ err_out:
 		uimage_close(data->initrd);
 	if (data->os)
 		uimage_close(data->os);
+	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit)
+		fit_close(data->os_fit);
 	if (data->of_root_node && data->of_root_node != of_get_root_node())
 		of_delete_node(data->of_root_node);
 
@@ -532,6 +630,8 @@ static int bootm_init(void)
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
 	}
+	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
+				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
 
 	return 0;
 }

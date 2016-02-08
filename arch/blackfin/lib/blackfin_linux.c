@@ -50,6 +50,9 @@ static int do_bootm_linux(struct image_data *idata)
 	appl = (void *)(idata->os_address + idata->os_entry);
 	printf("Starting Kernel at 0x%p\n", appl);
 
+	if (idata->dryrun)
+		return 0;
+
 	icache_disable();
 
 	strncpy(cmdlinedest, cmdline, 0x1000);

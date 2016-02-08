@@ -87,6 +87,9 @@ config CRYPTO_PBKDF2
 	select DIGEST_SHA1_GENERIC
 	bool
 
+config CRYPTO_RSA
+	bool
+
 config CRYPTO_KEYSTORE
 	bool "Keystore"
 	help

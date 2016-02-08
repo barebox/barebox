@@ -246,6 +246,7 @@ static struct digest_algo m384 = {
 		.name		=	"sha384",
 		.driver_name	=	"sha384-generic",
 		.priority	=	0,
+		.algo		=	HASH_ALGO_SHA384,
 	},
 
 	.init		= sha384_init,
@@ -272,6 +273,7 @@ static struct digest_algo m512 = {
 		.name		=	"sha512",
 		.driver_name	=	"sha512-generic",
 		.priority	=	0,
+		.algo		=	HASH_ALGO_SHA512,
 	},
 
 	.init		= sha512_init,

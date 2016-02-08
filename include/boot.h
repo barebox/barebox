@@ -7,12 +7,18 @@
 #include <linux/list.h>
 #include <environment.h>
 
+enum bootm_verify {
+	BOOTM_VERIFY_NONE,
+	BOOTM_VERIFY_HASH,
+	BOOTM_VERIFY_SIGNATURE,
+};
+
 struct bootm_data {
 	const char *os_file;
 	const char *initrd_file;
 	const char *oftree_file;
 	int verbose;
-	bool verify;
+	enum bootm_verify verify;
 	bool force;
 	bool dryrun;
 	unsigned long initrd_address;
@@ -28,7 +34,11 @@ struct image_data {
 
 	/* if os is an uImage this will be provided */
 	struct uimage_handle *os;
-	int os_num;
+
+	/* if os is a FIT image this will be provided */
+	struct fit_handle *os_fit;
+
+	char *os_part;
 
 	/* otherwise only the filename will be provided */
 	char *os_file;
@@ -49,7 +59,7 @@ struct image_data {
 
 	/* if initrd is an uImage this will be provided */
 	struct uimage_handle *initrd;
-	int initrd_num;
+	char *initrd_part;
 
 	/* otherwise only the filename will be provided */
 	char *initrd_file;
@@ -57,13 +67,13 @@ struct image_data {
 	unsigned long initrd_address;
 
 	char *oftree_file;
-	int oftree_num;
+	char *oftree_part;
 
 	struct device_node *of_root_node;
 	struct fdt_header *oftree;
 	struct resource *oftree_res;
 
-	int verify;
+	enum bootm_verify verify;
 	int verbose;
 	int force;
 	int dryrun;
@@ -109,9 +119,17 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 }
 #endif
 
+void bootm_data_init_defaults(struct bootm_data *data);
+
 int bootm_load_os(struct image_data *data, unsigned long load_address);
+
+bool bootm_has_initrd(struct image_data *data);
 int bootm_load_initrd(struct image_data *data, unsigned long load_address);
+
 int bootm_load_devicetree(struct image_data *data, unsigned long load_address);
+int bootm_get_os_size(struct image_data *data);
+
+enum bootm_verify bootm_get_verify_mode(void);
 
 #define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
 

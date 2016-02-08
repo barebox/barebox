@@ -79,6 +79,11 @@ static int do_bootm_omap_barebox(struct image_data *data)
 	if (!barebox)
 		return -EINVAL;
 
+	if (data->dryrun) {
+		free(barebox);
+		return 0;
+	}
+
 	omap_start_barebox(barebox);
 }
 

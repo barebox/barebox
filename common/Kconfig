@@ -66,6 +66,15 @@ config UIMAGE
 	select CRC32
 	bool
 
+config FITIMAGE
+	bool
+	select OFTREE
+	select DIGEST
+
+config FITIMAGE_SIGNATURE
+	select CRYPTO_RSA
+	bool
+
 config LOGBUF
 	bool
 

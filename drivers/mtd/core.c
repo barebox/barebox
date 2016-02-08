@@ -148,7 +148,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 {
 	struct mtd_info *mtd = cdev->priv;
 	struct erase_info erase;
-	uint32_t addr;
+	loff_t addr;
 	int ret;
 
 	ret = mtd_erase_align(mtd, &count, &offset);
@@ -178,7 +178,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 		erase.addr = addr;
 
 		if (ret > 0) {
-			printf("Skipping bad block at 0x%08x\n", addr);
+			printf("Skipping bad block at 0x%08llx\n", addr);
 		} else {
 			ret = mtd_erase(mtd, &erase);
 			if (ret)

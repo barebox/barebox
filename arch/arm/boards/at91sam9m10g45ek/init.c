@@ -40,6 +40,7 @@
 #include <gpio_keys.h>
 #include <readkey.h>
 #include <spi/spi.h>
+#include <input/input.h>
 
 /*
  * board revision encoding
@@ -183,25 +184,25 @@ static void ek_device_add_leds(void) {}
 #ifdef CONFIG_KEYBOARD_GPIO
 struct gpio_keys_button keys[] = {
 	{
-		.code = BB_KEY_HOME,
+		.code = KEY_HOME,
 		.gpio = AT91_PIN_PB6,
 	}, {
-		.code = BB_KEY_RETURN,
+		.code = KEY_ENTER,
 		.gpio = AT91_PIN_PB7,
 	}, {
-		.code = BB_KEY_LEFT,
+		.code = KEY_LEFT,
 		.gpio = AT91_PIN_PB14,
 	}, {
-		.code = BB_KEY_RIGHT,
+		.code = KEY_RIGHT,
 		.gpio = AT91_PIN_PB15,
 	}, {
-		.code = BB_KEY_UP,
+		.code = KEY_UP,
 		.gpio = AT91_PIN_PB16,
 	}, {
-		.code = BB_KEY_DOWN,
+		.code = KEY_DOWN,
 		.gpio = AT91_PIN_PB17,
 	}, {
-		.code = BB_KEY_RETURN,
+		.code = KEY_ENTER,
 		.gpio = AT91_PIN_PB18,
 	},
 };

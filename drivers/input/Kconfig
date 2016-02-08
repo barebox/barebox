@@ -5,10 +5,17 @@
 menu "Input device support"
 	depends on !CONSOLE_NONE
 
+config INPUT
+	bool
+
+config INPUT_MATRIXKMAP
+	bool
+
 config KEYBOARD_GPIO
 	bool "GPIO Buttons"
 	depends on GENERIC_GPIO
 	select POLLER
+	select INPUT
 	help
 	  This driver implements support for buttons connected
 	  to GPIO pins of various CPUs (and some other chips).
@@ -21,7 +28,9 @@ config KEYBOARD_GPIO
 config KEYBOARD_IMX_KEYPAD
 	bool "IMX Keypad"
 	depends on ARCH_IMX
+	select INPUT_MATRIXKMAP
 	select POLLER
+	select INPUT
 	help
 	  This driver implements support for buttons connected
 	  to the IMX keypad matrix.
@@ -51,6 +60,7 @@ config KEYBOARD_USB
 	depends on USB_HOST
 	depends on CONSOLE_FULL
 	select POLLER
+	select INPUT
 	help
 	  This driver implements support for usb keyboard.
 

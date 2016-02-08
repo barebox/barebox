@@ -26,7 +26,11 @@ struct poller_async {
 	void (*fn)(void *);
 	void *ctx;
 	uint64_t end;
+	int active;
 };
+
+int poller_async_register(struct poller_async *pa);
+int poller_async_unregister(struct poller_async *pa);
 
 int poller_call_async(struct poller_async *pa, uint64_t delay_ns,
 		void (*fn)(void *), void *ctx);

@@ -32,6 +32,7 @@ int poller_unregister(struct poller_struct *poller)
 	if (!poller->registered)
 		return -ENODEV;
 
+
 	list_del(&poller->list);
 	poller->registered = 0;
 
@@ -42,12 +43,14 @@ static void poller_async_callback(struct poller_struct *poller)
 {
 	struct poller_async *pa = container_of(poller, struct poller_async, poller);
 
+	if (!pa->active)
+		return;
+
 	if (get_time_ns() < pa->end)
 		return;
 
+	pa->active = 0;
 	pa->fn(pa->ctx);
-	pa->fn = NULL;
-	poller_unregister(&pa->poller);
 }
 
 /*
@@ -62,7 +65,9 @@ static void poller_async_callback(struct poller_struct *poller)
  */
 int poller_async_cancel(struct poller_async *pa)
 {
-	return poller_unregister(&pa->poller);
+	pa->active = 0;
+
+	return 0;
 }
 
 /*
@@ -80,11 +85,24 @@ int poller_call_async(struct poller_async *pa, uint64_t delay_ns,
 		void (*fn)(void *), void *ctx)
 {
 	pa->ctx = ctx;
-	pa->poller.func = poller_async_callback;
 	pa->end = get_time_ns() + delay_ns;
 	pa->fn = fn;
+	pa->active = 1;
+
+	return 0;
+}
+
+int poller_async_register(struct poller_async *pa)
+{
+	pa->poller.func = poller_async_callback;
+	pa->active = 0;
 
 	return poller_register(&pa->poller);
+}
+
+int poller_async_unregister(struct poller_async *pa)
+{
+	return poller_unregister(&pa->poller);
 }
 
 void poller_call(void)

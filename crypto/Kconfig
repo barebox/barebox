@@ -4,6 +4,7 @@ config CRC32
 	bool
 
 config CRC16
+	default y
 	bool
 
 config CRC7

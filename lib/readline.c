@@ -2,6 +2,8 @@
 #include <readkey.h>
 #include <init.h>
 #include <libbb.h>
+#include <poller.h>
+#include <ratp.h>
 #include <xfuncs.h>
 #include <complete.h>
 #include <linux/ctype.h>
@@ -198,6 +200,12 @@ int readline(const char *prompt, char *buf, int len)
 	puts (prompt);
 
 	while (1) {
+		while (!tstc()) {
+			poller_call();
+			if (IS_ENABLED(CONFIG_RATP))
+				ratp_run_command();
+		}
+
 		ichar = read_key();
 
 		if ((ichar == '\n') || (ichar == '\r')) {

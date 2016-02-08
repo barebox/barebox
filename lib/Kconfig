@@ -58,6 +58,14 @@ config LIBMTD
 config STMP_DEVICE
 	bool
 
+config RATP
+	select CRC16
+	bool
+	help
+	  Reliable Asynchronous Transfer Protocol (RATP) is a protocol for reliably
+	  transferring packets over serial links described in RFC916. This implementation
+	  is used for controlling barebox over serial ports.
+
 source lib/gui/Kconfig
 
 source lib/fonts/Kconfig

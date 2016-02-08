@@ -620,6 +620,16 @@ config PBL_CONSOLE
 	  must be running at the address it's linked at and bss must
 	  be cleared. On ARM that would be after setup_c().
 
+config CONSOLE_RATP
+	bool
+	select RATP
+	prompt "RATP console support"
+	help
+	  This option adds support for remote controlling barebox via serial
+	  port. The regular console is designed for human interaction whereas
+	  this option adds a machine readable interface for controlling barebox.
+	  Say yes here if you want to control barebox from a remote host.
+
 config PARTITION
 	bool
 	prompt "Enable Partitions"

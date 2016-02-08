@@ -20,6 +20,7 @@ struct hab_status {
 };
 
 static struct hab_status hab_status[] = {
+	{ 0x12, "Download code can't be executed, please check the HAB type" },
 	{ 0x17, "SCC unexpectedly not in secure state" },
 	{ 0x1b, "secureRAM self test failure" },
 	{ 0x1d, "secureRAM initialization failure" },
@@ -31,11 +32,14 @@ static struct hab_status hab_status[] = {
 	{ 0x33, "certificate parsing failed or the certificate contained an unsupported key" },
 	{ 0x35, "signature verification failed" },
 	{ 0x36, "hash verification failed" },
+	{ 0x39, "Failure not matching any other description" },
 	{ 0x3a, "CSF customer/product code does not match processor customer/product code" },
+	{ 0x47, "installation or comparison of SRKs failed" },
 	{ 0x4b, "CSF command sequence contains unsupported command identifier" },
 	{ 0x4d, "CSF length is unsupported" },
 	{ 0x4e, "absence of expected CSF header" },
 	{ 0x55, "error during assert verification" },
+	{ 0x56, "Download code can't be executed, please check the HAB type" },
 	{ 0x63, "DCD invalid" },
 	{ 0x66, "write operation to register failed" },
 	{ 0x67, "INT_BOOT fuse is blown but BOOT pins are set for external boot" },

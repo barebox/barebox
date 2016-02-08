@@ -114,13 +114,13 @@ static struct mtd_erase_region_info *mtd_find_erase_region(struct mtd_info *mtd,
 	return NULL;
 }
 
-static int mtd_erase_align(struct mtd_info *mtd, size_t *count, loff_t *offset)
+static int mtd_erase_align(struct mtd_info *mtd, loff_t *count, loff_t *offset)
 {
 	struct mtd_erase_region_info *e;
 	loff_t ofs;
 
 	if (mtd->numeraseregions == 0) {
-		ofs = *offset & ~(mtd->erasesize - 1);
+		ofs = *offset & ~(loff_t)(mtd->erasesize - 1);
 		*count += (*offset - ofs);
 		*count = ALIGN(*count, mtd->erasesize);
 		*offset = ofs;
@@ -144,7 +144,7 @@ static int mtd_erase_align(struct mtd_info *mtd, size_t *count, loff_t *offset)
 	return 0;
 }
 
-static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
+static int mtd_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
 	struct mtd_info *mtd = cdev->priv;
 	struct erase_info erase;

@@ -70,7 +70,7 @@ struct fs_driver_d {
 	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
 
 	int (*ioctl)(struct device_d *dev, FILE *f, int request, void *buf);
-	int (*erase)(struct device_d *dev, FILE *f, size_t count,
+	int (*erase)(struct device_d *dev, FILE *f, loff_t count,
 			loff_t offset);
 	int (*protect)(struct device_d *dev, FILE *f, size_t count,
 			loff_t offset, int prot);
@@ -145,7 +145,7 @@ int mount (const char *device, const char *fsname, const char *path,
 int umount(const char *pathname);
 
 /* not-so-standard functions */
-int erase(int fd, size_t count, loff_t offset);
+int erase(int fd, loff_t count, loff_t offset);
 int protect(int fd, size_t count, loff_t offset, int prot);
 int protect_file(const char *file, int prot);
 void *memmap(int fd, int flags);

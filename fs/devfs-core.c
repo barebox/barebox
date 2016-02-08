@@ -259,7 +259,7 @@ int cdev_ioctl(struct cdev *cdev, int request, void *buf)
 	return cdev->ops->ioctl(cdev, request, buf);
 }
 
-int cdev_erase(struct cdev *cdev, size_t count, loff_t offset)
+int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
 	if (!cdev->ops->erase)
 		return -ENOSYS;

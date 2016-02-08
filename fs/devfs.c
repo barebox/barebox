@@ -66,7 +66,7 @@ static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 	return ret - cdev->offset;
 }
 
-static int devfs_erase(struct device_d *_dev, FILE *f, size_t count, loff_t offset)
+static int devfs_erase(struct device_d *_dev, FILE *f, loff_t count, loff_t offset)
 {
 	struct cdev *cdev = f->priv;
 

@@ -22,14 +22,14 @@
 static void __print_resources(struct resource *res, int indent)
 {
 	struct resource *r;
+	resource_size_t size = resource_size(res);
 	int i;
 
 	for (i = 0; i < indent; i++)
 		printf("  ");
 
-	printf(PRINTF_CONVERSION_RESOURCE " - " PRINTF_CONVERSION_RESOURCE
-			" (size " PRINTF_CONVERSION_RESOURCE ") %s\n",
-			res->start, res->end, resource_size(res), res->name);
+	printf("%pa - %pa (size %pa) %s\n",
+			&res->start, &res->end, &size, res->name);
 
 	list_for_each_entry(r, &res->children, sibling)
 		__print_resources(r, indent + 1);

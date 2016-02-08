@@ -43,7 +43,7 @@ Variable nodes
 
 These are subnodes of a state node each describing a single
 variable. The node name may end with ``@<ADDRESS>``, but the suffix is
-sripped from the variable name.
+stripped from the variable name.
 
 State variables have a type. Currenty supported types are: ``uint8``,
 ``uint32``, ``enum32``, ``mac`` address or ``string``. Variable length

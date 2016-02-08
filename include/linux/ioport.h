@@ -26,12 +26,6 @@ struct resource {
 	struct list_head sibling;
 };
 
-#ifdef CONFIG_PHYS_ADDR_T_64BIT
-#define PRINTF_CONVERSION_RESOURCE	"0x%016llx"
-#else
-#define PRINTF_CONVERSION_RESOURCE	"0x%08x"
-#endif
-
 /*
  * IO resources have these defined flags.
  */

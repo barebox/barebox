@@ -354,10 +354,9 @@ static int uimage_sdram_flush(void *buf, unsigned int len)
 		uimage_resource = request_sdram_region("uimage",
 				start, size);
 		if (!uimage_resource) {
-			printf("unable to request SDRAM "
-					PRINTF_CONVERSION_RESOURCE "-"
-					PRINTF_CONVERSION_RESOURCE "\n",
-				start, start + size - 1);
+			resource_size_t prsize = start + size - 1;
+			printf("unable to request SDRAM %pa - %pa\n",
+				&start, &prsize);
 			return -ENOMEM;
 		}
 	}

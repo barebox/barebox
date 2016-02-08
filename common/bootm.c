@@ -246,7 +246,7 @@ done:
 		printf(", multifile image %s", data->initrd_part);
 	printf("\n");
 done1:
-	printf("initrd is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
+	printf("initrd is at %pa-%pa\n",
 		data->initrd_res->start,
 		data->initrd_res->end);
 
@@ -456,9 +456,9 @@ static int bootm_open_os_uimage(struct image_data *data)
 static void bootm_print_info(struct image_data *data)
 {
 	if (data->os_res)
-		printf("OS image is at " PRINTF_CONVERSION_RESOURCE "-" PRINTF_CONVERSION_RESOURCE "\n",
-				data->os_res->start,
-				data->os_res->end);
+		printf("OS image is at %pa-%pa\n",
+				&data->os_res->start,
+				&data->os_res->end);
 	else
 		printf("OS image not yet relocated\n");
 }

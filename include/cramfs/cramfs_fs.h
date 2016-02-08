@@ -1,7 +1,6 @@
 #ifndef __CRAMFS_H
 #define __CRAMFS_H
 
-#define CRAMFS_MAGIC		0x28cd3d45	/* some random number */
 #define CRAMFS_SIGNATURE	"Compressed ROMFS"
 
 /*

@@ -41,6 +41,8 @@ typedef unsigned int u32;
 typedef signed long long s64;
 typedef unsigned long long u64;
 
+typedef unsigned short umode_t;
+
 #include <asm-generic/bitsperlong.h>
 
 #endif /* __ASSEMBLY__ */

@@ -17,6 +17,7 @@
 #include <common.h>
 #include <usb/cdc.h>
 #include <linux/err.h>
+#include <linux/spinlock.h>
 #include <asm/byteorder.h>
 #include <usb/composite.h>
 

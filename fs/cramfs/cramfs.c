@@ -34,6 +34,7 @@
 
 #include <asm/byteorder.h>
 #include <linux/stat.h>
+#include <linux/magic.h>
 #include <cramfs/cramfs_fs.h>
 
 /* These two macros may change in future, to provide better st_ino

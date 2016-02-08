@@ -21,6 +21,7 @@
 #define __DENALI_H__
 
 #include <linux/mtd/nand.h>
+#include <linux/spinlock.h>
 
 #define DEVICE_RESET				0x0
 #define     DEVICE_RESET__BANK0				0x0001

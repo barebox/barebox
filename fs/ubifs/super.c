@@ -88,7 +88,7 @@ struct inode *iget_locked(struct super_block *sb, unsigned long ino)
 		inode->i_ino = ino;
 		inode->i_sb = sb;
 		list_add(&inode->i_sb_list, &sb->s_inodes);
-		inode->i_state = I_LOCK | I_NEW;
+		inode->i_state = I_SYNC | I_NEW;
 	}
 
 	return inode;
@@ -225,7 +225,7 @@ struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 	}
 
 	kfree(ino);
-	inode->i_state &= ~(I_LOCK | I_NEW);
+	inode->i_state &= ~(I_SYNC | I_NEW);
 	return inode;
 
 out_invalid:

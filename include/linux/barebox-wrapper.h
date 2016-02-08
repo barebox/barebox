@@ -35,39 +35,13 @@ typedef int     gfp_t;
 #define MODULE_LICENSE(x)
 #define MODULE_ALIAS(x)
 
-typedef int   spinlock_t;
-#define spin_lock_init(...)
-#define spin_lock(...)
-#define spin_unlock(...)
-#define spin_lock_irqsave(lock, flags) do { flags = 0; } while (0)
-#define spin_unlock_irqrestore(lock, flags) do { flags = flags; } while (0)
-
-#define mutex_init(...)
-#define mutex_lock(...)
-#define mutex_unlock(...)
-struct mutex { int i; };
-
-struct rw_semaphore { int i; };
-
 #define __user
 #define __init
 #define __exit
 
-#define init_rwsem(...)			do { } while (0)
-#define down_read(...)			do { } while (0)
-#define down_write(...)			do { } while (0)
-#define down_write_trylock(...)		1
-#define up_read(...)			do { } while (0)
-#define up_write(...)			do { } while (0)
 #define kthread_create(...)	__builtin_return_address(0)
 #define kthread_stop(...)	do { } while (0)
 #define wake_up_process(...)	do { } while (0)
-
-typedef int	wait_queue_head_t;
-
-#define cond_resched()			do { } while (0)
-
-#define init_waitqueue_head(...)	do { } while (0)
 
 typedef int irqreturn_t;
 #define IRQ_NONE 0

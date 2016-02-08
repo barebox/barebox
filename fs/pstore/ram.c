@@ -29,6 +29,7 @@
 #include <linux/types.h>
 #include <linux/string.h>
 #include <linux/log2.h>
+#include <linux/spinlock.h>
 #include <malloc.h>
 #include <printk.h>
 #include <stdio.h>

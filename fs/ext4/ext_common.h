@@ -33,8 +33,6 @@
 #define SECTOR_SIZE		0x200
 #define SECTOR_BITS		9
 
-/* Magic value used to identify an ext2 filesystem.  */
-#define	EXT2_MAGIC			0xEF53
 /* Amount of indirect blocks in an inode.  */
 #define INDIRECT_BLOCKS			12
 /* Maximum lenght of a pathname.  */

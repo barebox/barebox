@@ -32,6 +32,7 @@
 #include <malloc.h>
 #include <linux/stat.h>
 #include <linux/time.h>
+#include <linux/magic.h>
 #include <asm/byteorder.h>
 #include <dma.h>
 
@@ -499,7 +500,7 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		goto fail;
 
 	/* Make sure this is an ext2 filesystem. */
-	if (__le16_to_cpu(data->sblock.magic) != EXT2_MAGIC) {
+	if (__le16_to_cpu(data->sblock.magic) != EXT2_SUPER_MAGIC) {
 		ret = -EINVAL;
 		goto fail;
 	}

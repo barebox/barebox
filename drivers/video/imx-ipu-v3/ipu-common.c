@@ -19,6 +19,7 @@
 #include <clock.h>
 #include <driver.h>
 #include <init.h>
+#include <linux/mutex.h>
 #include <mach/generic.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx53-regs.h>

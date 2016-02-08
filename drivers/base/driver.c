@@ -101,6 +101,8 @@ int device_probe(struct device_d *dev)
 	}
 
 	list_del(&dev->active);
+	INIT_LIST_HEAD(&dev->active);
+
 	dev_err(dev, "probe failed: %s\n", strerror(-ret));
 
 	return ret;
@@ -258,6 +260,8 @@ static int device_probe_deferred(void)
 
 		list_for_each_entry_safe(dev, tmp, &deferred, active) {
 			list_del(&dev->active);
+			INIT_LIST_HEAD(&dev->active);
+
 			dev_dbg(dev, "re-probe device\n");
 			bus_for_each_driver(dev->bus, drv) {
 				if (match(drv, dev))

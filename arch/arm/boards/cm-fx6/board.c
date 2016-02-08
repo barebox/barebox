@@ -84,8 +84,16 @@ late_initcall(cm_fx6_eeprom_init);
 
 static int cm_fx6_devices_init(void)
 {
+	const char *hostname;
+
 	if (!of_machine_is_compatible("compulab,cm-fx6"))
 		return 0;
+
+	if (of_machine_is_compatible("compulab,utilite"))
+		hostname = "utilite";
+	else
+		hostname = "cm-fx6";
+	barebox_set_hostname(hostname);
 
 	if (IS_ENABLED(CONFIG_PHYLIB))
 		phy_register_fixup_for_uid(PHY_ID_AR8031, 0xffffffff, phy_fixup);

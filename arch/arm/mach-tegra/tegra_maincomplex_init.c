@@ -23,7 +23,7 @@
 #include <mach/tegra20-pmc.h>
 #include <mach/tegra20-car.h>
 
-void tegra_maincomplex_entry(void)
+void tegra_maincomplex_entry(char *fdt)
 {
 	uint32_t rambase, ramsize;
 	enum tegra_chiptype chiptype;
@@ -79,6 +79,5 @@ void tegra_maincomplex_entry(void)
 		unreachable();
 	}
 
-	barebox_arm_entry(rambase, ramsize,
-			  (void *)readl(TEGRA_PMC_BASE + PMC_SCRATCH(10)));
+	barebox_arm_entry(rambase, ramsize, fdt);
 }

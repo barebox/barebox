@@ -24,6 +24,7 @@
 #ifndef __TEGRA_LOWLEVEL_H
 #define __TEGRA_LOWLEVEL_H
 
+#include <asm/barebox-arm.h>
 #include <linux/compiler.h>
 #include <linux/sizes.h>
 #include <io.h>
@@ -244,18 +245,18 @@ void tegra_ll_delay_usec(int delay)
 }
 
 /* reset vector for the AVP, to be called from board reset vector */
-void tegra_avp_reset_vector(uint32_t boarddata);
+void tegra_avp_reset_vector(void);
 
 /* reset vector for the main CPU complex */
-void tegra_maincomplex_entry(void);
+void tegra_maincomplex_entry(char *fdt);
 
 static __always_inline
-void tegra_cpu_lowlevel_setup(void)
+void tegra_cpu_lowlevel_setup(char *fdt)
 {
 	uint32_t r;
 
 	if (tegra_cpu_is_maincomplex())
-		tegra_maincomplex_entry();
+		tegra_maincomplex_entry(fdt - get_runtime_offset());
 
 	/* set the cpu to SVC32 mode */
 	__asm__ __volatile__("mrs %0, cpsr":"=r"(r));

@@ -257,13 +257,10 @@ static void tegra_cluster_switch_hp(void)
 	writel(reg, TEGRA_FLOW_CTRL_BASE + FLOW_CLUSTER_CONTROL);
 }
 
-void tegra_avp_reset_vector(uint32_t boarddata)
+void tegra_avp_reset_vector(void)
 {
 	int num_cores;
 	unsigned int entry_address = 0;
-
-	/* put boarddata in scratch reg, for main CPU to fetch after startup */
-	writel(boarddata, TEGRA_PMC_BASE + PMC_SCRATCH(10));
 
 	/* we want to bring up the high performance CPU complex */
 	if (tegra_get_chiptype() >= TEGRA30)

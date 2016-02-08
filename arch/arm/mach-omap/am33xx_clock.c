@@ -15,6 +15,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <mach/am33xx-clock.h>
+#include <asm-generic/div64.h>
 
 #define PRCM_MOD_EN		0x2
 #define	PRCM_FORCE_WAKEUP	0x2
@@ -304,8 +305,13 @@ void am33xx_enable_ddr_clocks(void)
 /*
  * Configure the PLL/PRCM for necessary peripherals
  */
-void am33xx_pll_init(int mpupll_M, int osc, int ddrpll_M)
+void am33xx_pll_init(int mpupll_M, int ddrpll_M)
 {
+	int osc;
+
+	osc = am33xx_get_osc_clock();
+	osc /= 1000;
+
 	mpu_pll_config(mpupll_M, osc);
 	core_pll_config(osc);
 	per_pll_config(osc);
@@ -317,4 +323,31 @@ void am33xx_pll_init(int mpupll_M, int osc, int ddrpll_M)
 	power_domain_transition_enable();
 	/* Enable the required peripherals */
 	am33xx_enable_per_clocks();
+}
+
+/*
+ * Return the OSC clock value from SYSBOOT pins in kHz.
+ */
+int am33xx_get_osc_clock(void)
+{
+	int osc;
+	u32 sysboot;
+
+	sysboot = (readl(AM33XX_CTRL_STATUS) >> 22) & 3;
+	switch (sysboot) {
+	case 0:
+		osc = 19200;
+		break;
+	case 1:
+		osc = 24000;
+		break;
+	case 2:
+		osc = 25000;
+		break;
+	case 3:
+		osc = 26000;
+		break;
+	}
+
+	return osc;
 }

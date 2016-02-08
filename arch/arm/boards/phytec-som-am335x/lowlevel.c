@@ -32,7 +32,6 @@
 
 #include "ram-timings.h"
 
-#define CLK_M_OSC_MHZ	25
 #define DDR_IOCTRL	0x18B
 
 static const struct am33xx_cmd_control physom_cmd = {
@@ -67,11 +66,10 @@ static noinline void physom_board_init(int sdram, void *fdt)
 	writel(WDT_DISABLE_CODE1, AM33XX_WDT_REG(WSPR));
 	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
-
 	writel(WDT_DISABLE_CODE2, AM33XX_WDT_REG(WSPR));
 	while (readl(AM33XX_WDT_REG(WWPS)) != 0x0);
 
-	am33xx_pll_init(MPUPLL_M_600, CLK_M_OSC_MHZ, DDRPLL_M_400);
+	am33xx_pll_init(MPUPLL_M_600, DDRPLL_M_400);
 
 	am335x_sdram_init(DDR_IOCTRL, &physom_cmd,
 			&timing->regs,

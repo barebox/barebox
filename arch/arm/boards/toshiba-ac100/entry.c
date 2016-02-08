@@ -15,20 +15,13 @@
  */
 
 #include <common.h>
-#include <linux/sizes.h>
-#include <asm/barebox-arm.h>
-#include <asm/barebox-arm-head.h>
 #include <mach/lowlevel.h>
 
 extern char __dtb_tegra20_paz00_start[];
 
 ENTRY_FUNCTION(start_toshiba_ac100, r0, r1, r2)
 {
-	uint32_t fdt;
+	tegra_cpu_lowlevel_setup(__dtb_tegra20_paz00_start);
 
-	tegra_cpu_lowlevel_setup();
-
-	fdt = (uint32_t)__dtb_tegra20_paz00_start - get_runtime_offset();
-
-	tegra_avp_reset_vector(fdt);
+	tegra_avp_reset_vector();
 }

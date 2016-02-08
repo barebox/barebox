@@ -546,6 +546,63 @@ out:
 	return rc;
 }
 
+static int
+kwboot_check_image(const unsigned char *img, size_t size)
+{
+	size_t i;
+	size_t header_size, image_size;
+	unsigned char csum = 0;
+
+	if (size < 0x20) {
+		fprintf(stderr,
+			"Image too small to even contain a Main Header\n");
+		return 1;
+	}
+
+	switch (img[0x0]) {
+		case 0x5a: /* SPI/NOR */
+		case 0x69: /* UART0 */
+		case 0x78: /* SATA */
+		case 0x8b: /* NAND */
+		case 0x9c: /* PCIe */
+			break;
+		default:
+			fprintf(stderr,
+				"Unknown boot source: 0x%hhx\n", img[0x0]);
+			return 1;
+	}
+
+	if (img[0x8] != 1) {
+		fprintf(stderr, "Unknown version: 0x%hhx\n", img[0x8]);
+		return 1;
+	}
+
+	image_size = img[0x4] | (img[0x5] << 8) |
+		(img[0x6] << 16) | (img[0x7] << 24);
+
+	header_size = (img[0x9] << 16) | img[0xa] | (img[0xb] << 8);
+
+	if (header_size + image_size != size) {
+		fprintf(stderr, "Size mismatch (%zu + %zu != %zu)\n",
+			header_size, image_size, size);
+		return 1;
+	}
+
+	for (i = 0; i < header_size; ++i)
+		csum += img[i];
+
+	csum -= img[0x1f];
+
+	if (csum != img[0x1f]) {
+		fprintf(stderr,
+			"Checksum mismatch: specified: 0x%02hhx, calculated: 0x%02hhx\n",
+			img[0x1f], csum);
+		return 1;
+	}
+
+	return 0;
+}
+
 static void *
 kwboot_mmap_image(const char *path, size_t *size, int prot)
 {
@@ -608,7 +665,7 @@ int
 main(int argc, char **argv)
 {
 	const char *ttypath, *imgpath;
-	int rv, rc, tty, term;
+	int rv, rc, tty, term, force = 0;
 	void *bootmsg;
 	void *debugmsg;
 	void *img;
@@ -628,7 +685,7 @@ main(int argc, char **argv)
 	kwboot_verbose = isatty(STDOUT_FILENO);
 
 	do {
-		int c = getopt(argc, argv, "hb:dtB:D:");
+		int c = getopt(argc, argv, "b:dfhtB:D:");
 		if (c < 0)
 			break;
 
@@ -649,6 +706,10 @@ main(int argc, char **argv)
 
 		case 't':
 			term = 1;
+			break;
+
+		case 'f':
+			force = 1;
 			break;
 
 		case 'B':
@@ -682,6 +743,13 @@ main(int argc, char **argv)
 		img = kwboot_mmap_image(imgpath, &size, PROT_READ);
 		if (!img) {
 			perror(imgpath);
+			goto out;
+		}
+
+		rc = kwboot_check_image(img, size);
+		if (rc && !force) {
+			fprintf(stderr,
+				"Image check failed, restart with -f to ignore\n");
 			goto out;
 		}
 	}

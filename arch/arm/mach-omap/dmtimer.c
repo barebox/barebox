@@ -31,6 +31,7 @@
 #include <init.h>
 #include <io.h>
 #include <mach/am33xx-silicon.h>
+#include <mach/am33xx-clock.h>
 
 #include <stdio.h>
 
@@ -82,24 +83,9 @@ static struct clocksource dmtimer_cs = {
 static int dmtimer_init(void)
 {
 	u64 clk_speed;
-	int sysboot;
 
-	sysboot = (readl(AM33XX_CTRL_STATUS) >> 22) & 3;
-	switch (sysboot) {
-	case 0:
-		clk_speed = 19200000;
-		break;
-	case 1:
-		clk_speed = 24000000;
-		break;
-	case 2:
-		clk_speed = 25000000;
-		break;
-	case 3:
-		clk_speed = 26000000;
-		break;
-	}
-
+	clk_speed = am33xx_get_osc_clock();
+	clk_speed *= 1000;
 	dmtimer_cs.mult = clocksource_hz2mult(clk_speed, dmtimer_cs.shift);
 
 	/* Enable counter */

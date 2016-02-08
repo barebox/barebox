@@ -43,7 +43,7 @@ int mdiobus_detect(struct device_d *dev)
 		ret = phy_register_device(phydev);
 		if (ret)
 			dev_err(dev, "failed to register phy: %s\n", strerror(-ret));
-		dev_info(dev, "registered phy as /dev/%s\n", phydev->cdev.name);
+		dev_dbg(dev, "registered phy as /dev/%s\n", phydev->cdev.name);
 	}
 
 	return 0;
@@ -187,6 +187,25 @@ struct phy_device *mdiobus_scan(struct mii_bus *bus, int addr)
 }
 EXPORT_SYMBOL(mdiobus_scan);
 
+
+/**
+ *
+ * mdio_get_bus - get a MDIO bus from its busnum
+ *
+ * @param	busnum	the desired bus number
+ *
+ */
+struct mii_bus *mdiobus_get_bus(int busnum)
+{
+	struct mii_bus *mii;
+
+	for_each_mii_bus(mii)
+		if (mii->dev.id == busnum)
+			return mii;
+
+	return NULL;
+}
+
 /**
  * mdio_bus_match - determine if given PHY driver supports the given PHY device
  * @dev: target PHY device
@@ -314,7 +333,9 @@ static int mdio_bus_probe(struct device_d *_dev)
 	dev_add_param_int_ro(&dev->dev, "phy_addr", dev->addr, "%d");
 	dev_add_param_int_ro(&dev->dev, "phy_id", dev->phy_id, "0x%08x");
 
-	dev->cdev.name = asprintf("phy%d", _dev->id);
+	dev->cdev.name = xasprintf("mdio%d-phy%02x",
+				   dev->bus->dev.id,
+				   dev->addr);
 	dev->cdev.size = 64;
 	dev->cdev.ops = &phydev_ops;
 	dev->cdev.priv = dev;

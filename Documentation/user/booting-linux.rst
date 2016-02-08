@@ -203,7 +203,7 @@ compatible NFS URI string must be passed to the boot command:
 
 .. code-block:: sh
 
-  boot nfs://nfshost//path/
+  boot nfs://nfshost[:port]//path/
 
 Additionally to the options defined in the original spec barebox understands the
 ``linux-appendroot`` option. This is a boolean value and if set to ``true`` barebox

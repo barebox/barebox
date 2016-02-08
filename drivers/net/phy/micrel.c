@@ -25,17 +25,17 @@
 
 /* Operation Mode Strap Override */
 #define MII_KSZPHY_OMSO				0x16
-#define KSZPHY_OMSO_B_CAST_OFF			(1 << 9)
-#define KSZPHY_OMSO_RMII_OVERRIDE		(1 << 1)
-#define KSZPHY_OMSO_MII_OVERRIDE		(1 << 0)
+#define KSZPHY_OMSO_B_CAST_OFF			BIT(9)
+#define KSZPHY_OMSO_RMII_OVERRIDE		BIT(1)
+#define KSZPHY_OMSO_MII_OVERRIDE		BIT(0)
 
 /* general PHY control reg in vendor specific block. */
 #define	MII_KSZPHY_CTRL			0x1F
 /* bitmap of PHY register to set interrupt mode */
-#define KSZPHY_CTRL_INT_ACTIVE_HIGH		(1 << 9)
-#define KSZ9021_CTRL_INT_ACTIVE_HIGH		(1 << 14)
-#define KS8737_CTRL_INT_ACTIVE_HIGH		(1 << 14)
-#define KSZ8051_RMII_50MHZ_CLK			(1 << 7)
+#define KSZPHY_CTRL_INT_ACTIVE_HIGH		BIT(9)
+#define KSZ9021_CTRL_INT_ACTIVE_HIGH		BIT(14)
+#define KS8737_CTRL_INT_ACTIVE_HIGH		BIT(14)
+#define KSZ8051_RMII_50MHZ_CLK			BIT(7)
 
 /* Write/read to/from extended registers */
 #define MII_KSZPHY_EXTREG                       0x0b
@@ -91,8 +91,8 @@ static int ks8051_config_init(struct phy_device *phydev)
 }
 
 static int ksz9021_load_values_from_of(struct phy_device *phydev,
-				       struct device_node *of_node, u16 reg,
-				       const char *field[])
+				       const struct device_node *of_node,
+				       u16 reg, const char *field[])
 {
 	int val, regval, i;
 
@@ -113,8 +113,8 @@ static int ksz9021_load_values_from_of(struct phy_device *phydev,
 
 static int ksz9021_config_init(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
-	struct device_node *of_node = dev->device_node;
+	const struct device_d *dev = &phydev->dev;
+	const struct device_node *of_node = dev->device_node;
 	const char *clk_pad_skew_names[] = {
 		"txen-skew-ps", "txc-skew-ps",
 		"rxdv-skew-ps", "rxc-skew-ps"
@@ -149,15 +149,20 @@ static int ksz9021_config_init(struct phy_device *phydev)
 #define KSZ9031_PS_TO_REG		60
 
 /* Extended registers */
+/* MMD Address 0x0 */
+#define MII_KSZ9031RN_FLP_BURST_TX_LO	3
+#define MII_KSZ9031RN_FLP_BURST_TX_HI	4
+
+/* MMD Address 0x2 */
 #define MII_KSZ9031RN_CONTROL_PAD_SKEW	4
 #define MII_KSZ9031RN_RX_DATA_PAD_SKEW	5
 #define MII_KSZ9031RN_TX_DATA_PAD_SKEW	6
 #define MII_KSZ9031RN_CLK_PAD_SKEW	8
 
 static int ksz9031_of_load_skew_values(struct phy_device *phydev,
-					struct device_node *of_node,
+					const struct device_node *of_node,
 					u16 reg, size_t field_sz,
-					char *field[], u8 numfields)
+					const char *field[], u8 numfields)
 {
 	int val[4] = {-1, -2, -3, -4};
 	int matches = 0;
@@ -192,20 +197,29 @@ static int ksz9031_of_load_skew_values(struct phy_device *phydev,
 	return 0;
 }
 
+static int ksz9031_center_flp_timing(struct phy_device *phydev)
+{
+	/* Center KSZ9031RNX FLP timing at 16ms. */
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_FLP_BURST_TX_HI, 0, 0x0006);
+	phy_write_mmd_indirect(phydev, MII_KSZ9031RN_FLP_BURST_TX_LO, 0, 0x1a80);
+
+	return genphy_restart_aneg(phydev);
+}
+
 static int ksz9031_config_init(struct phy_device *phydev)
 {
-	struct device_d *dev = &phydev->dev;
-	struct device_node *of_node = dev->device_node;
-	char *clk_skews[2] = {"rxc-skew-ps", "txc-skew-ps"};
-	char *rx_data_skews[4] = {
+	const struct device_d *dev = &phydev->dev;
+	const struct device_node *of_node = dev->device_node;
+	static const char *clk_skews[2] = {"rxc-skew-ps", "txc-skew-ps"};
+	static const char *rx_data_skews[4] = {
 		"rxd0-skew-ps", "rxd1-skew-ps",
 		"rxd2-skew-ps", "rxd3-skew-ps"
 	};
-	char *tx_data_skews[4] = {
+	static const char *tx_data_skews[4] = {
 		"txd0-skew-ps", "txd1-skew-ps",
 		"txd2-skew-ps", "txd3-skew-ps"
 	};
-	char *control_skews[2] = {"txen-skew-ps", "rxdv-skew-ps"};
+	static const char *control_skews[2] = {"txen-skew-ps", "rxdv-skew-ps"};
 
 	if (!of_node && dev->parent->device_node)
 		of_node = dev->parent->device_node;
@@ -227,13 +241,14 @@ static int ksz9031_config_init(struct phy_device *phydev)
 				MII_KSZ9031RN_TX_DATA_PAD_SKEW, 4,
 				tx_data_skews, 4);
 	}
-	return 0;
+
+	return ksz9031_center_flp_timing(phydev);
 }
 
 #define KSZ8873MLL_GLOBAL_CONTROL_4	0x06
-#define KSZ8873MLL_GLOBAL_CONTROL_4_DUPLEX	(1 << 6)
-#define KSZ8873MLL_GLOBAL_CONTROL_4_SPEED	(1 << 4)
-int ksz8873mll_read_status(struct phy_device *phydev)
+#define KSZ8873MLL_GLOBAL_CONTROL_4_DUPLEX	BIT(6)
+#define KSZ8873MLL_GLOBAL_CONTROL_4_SPEED	BIT(4)
+static int ksz8873mll_read_status(struct phy_device *phydev)
 {
 	int regval;
 
@@ -254,6 +269,27 @@ int ksz8873mll_read_status(struct phy_device *phydev)
 
 	phydev->link = 1;
 	phydev->pause = phydev->asym_pause = 0;
+
+	return 0;
+}
+
+static int ksz9031_read_status(struct phy_device *phydev)
+{
+	int err;
+	int regval;
+
+	err = genphy_read_status(phydev);
+	if (err)
+		return err;
+
+	/* Make sure the PHY is not broken. Read idle error count,
+	 * and reset the PHY if it is maxed out.
+	 */
+	regval = phy_read(phydev, MII_STAT1000);
+	if ((regval & 0xff) == 0xff) {
+		phy_init_hw(phydev);
+		phydev->link = 0;
+	}
 
 	return 0;
 }
@@ -353,7 +389,7 @@ static struct phy_driver ksphy_driver[] = {
 	.features	= (PHY_GBIT_FEATURES | SUPPORTED_Pause),
 	.config_init	= ksz9031_config_init,
 	.config_aneg	= genphy_config_aneg,
-	.read_status	= genphy_read_status,
+	.read_status	= ksz9031_read_status,
 }, {
 	.phy_id		= PHY_ID_KSZ8873MLL,
 	.phy_id_mask	= 0x00fffff0,

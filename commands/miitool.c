@@ -115,8 +115,9 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 	for (i = 0; i < 32; i++)
 		mii_val[i] = mii->read(mii, phydev->addr, i);
 
-	printf("%s: %s%d: ", phydev->cdev.name,
-		mii->parent->name, mii->parent->id);
+	printf((mii->parent->id) < 0 ? "%s: %s:" : "%s: %s%d: ",
+	       phydev->cdev.name, mii->parent->name, mii->parent->id);
+
 
 	if (mii_val[MII_BMCR] == 0xffff || mii_val[MII_BMSR] == 0x0000) {
 		fprintf(stderr, "  No MII transceiver present!.\n");
@@ -233,70 +234,137 @@ static void mdiobus_show(struct device_d *dev, char *phydevname, int verbose)
 		struct phy_device *phydev;
 
 		phydev = mdiobus_scan(mii, i);
-		if (IS_ERR(phydev))
+		if (IS_ERR(phydev) || !phydev->registered)
 			continue;
-		if (phydev->registered) {
 
-			show_basic_mii(mii, phydev, verbose);
+		/*
+		 * If we are looking for a secific phy, called
+		 * 'phydevname', but current phydev is not it, skip to
+		 * the next iteration
+		 */
+		if (phydevname &&
+		    strcmp(phydev->cdev.name, phydevname))
+			continue;
 
-			if (phydevname &&
-				!strcmp(phydev->cdev.name, phydevname)) {
-				return;
-			}
-		}
+		show_basic_mii(mii, phydev, verbose);
 
+		/*
+		 * We were looking for a specific device and at this
+		 * point we already shown the info about it so end the
+		 * loop and exit
+		 */
+		if (phydevname)
+			break;
 	}
 
 	return;
 }
 
+enum miitool_operations {
+	MIITOOL_NOOP,
+	MIITOOL_SHOW,
+	MIITOOL_REGISTER,
+};
+
 static int do_miitool(int argc, char *argv[])
 {
-	char *phydevname;
+	char *phydevname = NULL;
+	char *regstr = NULL;
+	char *endp;
 	struct mii_bus *mii;
-	int opt;
-	int argc_min;
-	int verbose;
+	int opt, ret;
+	int verbose = 0;
+	struct phy_device *phydev;
+	enum miitool_operations action = MIITOOL_NOOP;
+	int addr, bus;
 
-	verbose = 0;
-	while ((opt = getopt(argc, argv, "v")) > 0) {
+	while ((opt = getopt(argc, argv, "vs:r:")) > 0) {
 		switch (opt) {
+		case 'a':
+			addr = simple_strtol(optarg, NULL, 0);
+			break;
+		case 'b':
+			bus = simple_strtoul(optarg, NULL, 0);
+			break;
+		case 's':
+			action = MIITOOL_SHOW;
+			phydevname = xstrdup(optarg);
+			break;
+		case 'r':
+			action = MIITOOL_REGISTER;
+			regstr = optarg;
+			break;
 		case 'v':
 			verbose++;
 			break;
 		default:
-			return COMMAND_ERROR_USAGE;
+			ret = COMMAND_ERROR_USAGE;
+			goto free_phydevname;
 		}
 	}
 
-	argc_min = optind + 1;
+	switch (action) {
+	case MIITOOL_REGISTER:
+		bus = simple_strtoul(regstr, &endp, 0);
+		if (*endp != ':') {
+			printf("No colon between bus and address\n");
+			return COMMAND_ERROR_USAGE;
+		}
+		endp++;
+		addr = simple_strtoul(endp, NULL, 0);
 
-	phydevname = NULL;
-	if (argc >= argc_min) {
-		phydevname = argv[optind];
+		if (addr >= PHY_MAX_ADDR)
+			printf("Address out of range (max %d)\n", PHY_MAX_ADDR - 1);
+
+		mii = mdiobus_get_bus(bus);
+		if (!mii) {
+			printf("Can't find MDIO bus #%d\n", bus);
+			ret = COMMAND_ERROR;
+			goto free_phydevname;
+		}
+
+		phydev = phy_device_create(mii, addr, -1);
+		ret = phy_register_device(phydev);
+		if (ret) {
+			printf("failed to register phy %s: %s\n",
+				dev_name(&phydev->dev), strerror(-ret));
+			goto free_phydevname;
+		} else {
+			printf("registered phy %s\n", dev_name(&phydev->dev));
+		}
+		break;
+	default:
+	case MIITOOL_SHOW:
+		for_each_mii_bus(mii) {
+			mdiobus_detect(&mii->dev);
+			mdiobus_show(&mii->dev, phydevname, verbose);
+		}
+		break;
 	}
 
-	for_each_mii_bus(mii) {
-		mdiobus_detect(&mii->dev);
-		mdiobus_show(&mii->dev, phydevname, verbose);
-	}
+	ret = COMMAND_SUCCESS;
 
-	return COMMAND_SUCCESS;
+free_phydevname:
+	free(phydevname);
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(miitool)
 BAREBOX_CMD_HELP_TEXT("This utility checks or sets the status of a network interface's")
-BAREBOX_CMD_HELP_TEXT("Media Independent Interface (MII) unit. Most fast ethernet")
+BAREBOX_CMD_HELP_TEXT("Media Independent Interface (MII) unit as well as allowing to")
+BAREBOX_CMD_HELP_TEXT("register dummy PHY devices for raw MDIO access. Most fast ethernet")
 BAREBOX_CMD_HELP_TEXT("adapters use an MII to autonegotiate link speed and duplex setting.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-v", "increase verbosity")
+BAREBOX_CMD_HELP_OPT("-s <devname>", "show PHY status (not providing PHY prints status of all)")
+BAREBOX_CMD_HELP_OPT("-r <busno>:<adr>", "register a PHY")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(miitool)
 	.cmd		= do_miitool,
 	BAREBOX_CMD_DESC("view media-independent interface status")
-	BAREBOX_CMD_OPTS("[-v] PHY")
+	BAREBOX_CMD_OPTS("[-vsr]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_miitool_help)
 BAREBOX_CMD_END

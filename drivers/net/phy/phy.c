@@ -147,8 +147,13 @@ int phy_scan_fixups(struct phy_device *phydev)
 
 	return 0;
 }
-
-static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
+/**
+ * phy_device_create - creates a struct phy_device.
+ * @bus: the target MII bus
+ * @addr: PHY address on the MII bus
+ * @phy_id: PHY ID.
+ */
+struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 {
 	struct phy_device *phydev;
 
@@ -168,8 +173,10 @@ static struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int p
 	phydev->bus = bus;
 	phydev->dev.bus = &mdio_bus_type;
 
-	strcpy(phydev->dev.name, "phy");
-	phydev->dev.id = DEVICE_ID_DYNAMIC;
+	sprintf(phydev->dev.name, "mdio%d-phy%02x",
+				   phydev->bus->dev.id,
+				   phydev->addr);
+	phydev->dev.id = DEVICE_ID_SINGLE;
 
 	return phydev;
 }

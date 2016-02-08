@@ -69,6 +69,10 @@ typedef enum {
  */
 #define MII_BUS_ID_SIZE	(20 - 3)
 
+/* Or MII_ADDR_C45 into regnum for read/write on mii_bus to enable the 21 bit
+   IEEE 802.3ae clause 45 addressing mode used by 10GIGE phy chips. */
+#define MII_ADDR_C45 (1<<30)
+
 #define PHYLIB_FORCE_10		(1 << 0)
 #define PHYLIB_FORCE_100	(1 << 1)
 #define PHYLIB_FORCE_LINK	(1 << 2)
@@ -109,6 +113,8 @@ int mdiobus_detect(struct device_d *dev);
 
 #define for_each_mii_bus(mii) \
 	list_for_each_entry(mii, &mii_bus_list, list)
+
+struct mii_bus *mdiobus_get_bus(int busnum);
 
 /**
  * mdiobus_read - Convenience function for reading a given MII mgmt register
@@ -265,6 +271,7 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr);
 int phy_init(void);
 int phy_init_hw(struct phy_device *phydev);
 
+struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id);
 int phy_register_device(struct phy_device* dev);
 void phy_unregister_device(struct phy_device *phydev);
 

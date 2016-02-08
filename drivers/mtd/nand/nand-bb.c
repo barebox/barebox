@@ -88,7 +88,7 @@ static ssize_t nand_bb_read(struct cdev *cdev, void *buf, size_t count,
 }
 
 /* Must be a multiple of the largest NAND page size */
-#define BB_WRITEBUF_SIZE	4096
+#define BB_WRITEBUF_SIZE	8192
 
 #ifdef CONFIG_MTD_WRITE
 static int nand_bb_write_buf(struct nand_bb *bb, size_t count)

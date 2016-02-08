@@ -222,7 +222,7 @@ KBUILD_IMAGE  := barebox.kwb barebox.kwbuart
 endif
 
 barebox.imximg: $(KBUILD_BINARY) FORCE
-	$(call if_changed,imx_image)
+	$(call if_changed,imx_image,$(CFG_$(@F)),)
 
 boarddir = $(srctree)/arch/arm/boards
 imxcfg-$(CONFIG_MACH_FREESCALE_MX53_SMD) += $(boarddir)/freescale-mx53-smd/flash-header.imxcfg

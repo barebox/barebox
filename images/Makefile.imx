@@ -8,11 +8,17 @@
 ifdef CONFIG_ARCH_IMX_XLOAD
 $(obj)/%.imximg: $(obj)/% FORCE
 	$(call cmd,check_file_size,$<,$(CONFIG_ARCH_IMX_UNUSED_IRAM_SIZE))
-	$(call if_changed,imx_image)
+	$(call if_changed,imx_image,$(CFG_$(@F)),)
 else
 $(obj)/%.imximg: $(obj)/% FORCE
-	$(call if_changed,imx_image)
+	$(call if_changed,imx_image,$(CFG_$(@F)),)
 endif
+
+$(obj)/%.simximg: $(obj)/% FORCE
+	$(call if_changed,imx_image,$(CFG_$(patsubst %.simximg,%.imximg,$(@F))),-s)
+
+$(obj)/%.usimximg: $(obj)/% FORCE
+	$(call if_changed,imx_image,$(CFG_$(patsubst %.usimximg,%.imximg,$(@F))),-s -u)
 
 quiet_cmd_imx_sram_img ?= IMX-SRAM-IMG    $@
       cmd_imx_sram_img ?= cat $(obj)/$(patsubst %.imx-sram-img,%.pblb,$(2)) > $@; \

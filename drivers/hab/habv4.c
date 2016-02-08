@@ -19,13 +19,14 @@
 #define pr_fmt(fmt)  "HABv4: " fmt
 
 #include <common.h>
-#include <habv4.h>
+#include <hab.h>
 #include <types.h>
 
 #include <mach/generic.h>
 
 #define HABV4_RVT_IMX28 0xffff8af8
-#define HABV4_RVT_IMX6 0x00000094
+#define HABV4_RVT_IMX6_OLD 0x00000094
+#define HABV4_RVT_IMX6_NEW 0x00000098
 
 enum hab_tag {
 	HAB_TAG_IVT = 0xd1,		/* Image Vector Table */
@@ -98,29 +99,6 @@ struct habv4_rvt {
 	enum hab_status (*report_status)(enum hab_config *config, enum hab_state *state);
 	void (*failsafe)(void);
 } __packed;
-
-static const struct habv4_rvt *__rvt;
-
-static inline const struct habv4_rvt *habv4_get_rvt(void)
-{
-	if (__rvt)
-		return __rvt;
-
-	if (cpu_is_mx28())
-		__rvt = (void *)HABV4_RVT_IMX28;
-	else if (cpu_is_mx6())
-		__rvt = (void *)HABV4_RVT_IMX6;
-
-	if (__rvt->header.tag != HAB_TAG_RVT) {
-		pr_err("ERROR - RVT not found!\n");
-		return NULL;
-	}
-
-	pr_info("Found RVT v%d.%d\n", __rvt->header.par >> 4,
-		__rvt->header.par & 0xf);
-
-	return __rvt;
-}
 
 static const char *habv4_get_status_str(enum hab_status status)
 {
@@ -197,9 +175,8 @@ static void habv4_display_event(uint8_t *data, uint32_t len)
 	printf("\n\n");
 }
 
-int habv4_get_status(void)
+static int habv4_get_status(const struct habv4_rvt *rvt)
 {
-	const struct habv4_rvt *rvt = habv4_get_rvt();
 	uint8_t data[256];
 	uint32_t len = sizeof(data);
 	uint32_t index = 0;
@@ -207,8 +184,10 @@ int habv4_get_status(void)
 	enum hab_config config = 0x0;
 	enum hab_state state = 0x0;
 
-	if (!rvt)
-		return -ENODEV;
+	if (rvt->header.tag != HAB_TAG_RVT) {
+		pr_err("ERROR - RVT not found!\n");
+		return -EINVAL;
+	}
 
 	status = rvt->report_status(&config, &state);
 	pr_info("Status: %s (0x%02x)\n", habv4_get_status_str(status), status);
@@ -234,4 +213,28 @@ int habv4_get_status(void)
 		pr_err("ERROR: Recompile with larger event data buffer (at least %d bytes)\n\n", len);
 
 	return -EPERM;
+}
+
+int imx6_hab_get_status(void)
+{
+	const struct habv4_rvt *rvt;
+
+	rvt = (void *)HABV4_RVT_IMX6_OLD;
+	if (rvt->header.tag == HAB_TAG_RVT)
+		return habv4_get_status(rvt);
+
+	rvt = (void *)HABV4_RVT_IMX6_NEW;
+	if (rvt->header.tag == HAB_TAG_RVT)
+		return habv4_get_status(rvt);
+
+	pr_err("ERROR - RVT not found!\n");
+
+	return -EINVAL;
+}
+
+int imx28_hab_get_status(void)
+{
+	const struct habv4_rvt *rvt = (void *)HABV4_RVT_IMX28;
+
+	return habv4_get_status(rvt);
 }

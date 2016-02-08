@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  *
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -26,45 +27,29 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <endian.h>
+#include <linux/kernel.h>
+#include <sys/file.h>
+
+#include "imx.h"
 
 #include <include/filetype.h>
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-#define offsetof(TYPE, MEMBER) __builtin_offsetof(TYPE, MEMBER)
-#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
-
 #define MAX_DCD 1024
-#define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
 #define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
 
-static uint32_t image_load_addr;
-static uint32_t image_dcd_offset;
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
-static int header_version;
-static int cpu_type;
 static int add_barebox_header;
-static int prepare_sign;
+static int create_usb_image;
+static char *prgname;
 
 /*
  * ============================================================================
  * i.MX flash header v1 handling. Found on i.MX35 and i.MX51
  * ============================================================================
  */
-struct imx_flash_header {
-	uint32_t app_code_jump_vector;
-	uint32_t app_code_barker;
-	uint32_t app_code_csf;
-	uint32_t dcd_ptr_ptr;
-	uint32_t super_root_key;
-	uint32_t dcd;
-	uint32_t app_dest;
-	uint32_t dcd_barker;
-	uint32_t dcd_block_len;
-} __attribute__((packed));
 
 #define FLASH_HEADER_OFFSET 0x400
-#define DCD_BARKER       0xb17219e9
 
 static uint32_t bb_header[] = {
 	0xea0003fe,	/* b 0x1000 */
@@ -89,11 +74,141 @@ static uint32_t bb_header[] = {
 	0x55555555,
 };
 
-static int add_header_v1(void *buf, int offset, uint32_t loadaddr, uint32_t imagesize)
+struct hab_rsa_public_key {
+	uint8_t rsa_exponent[4]; /* RSA public exponent */
+	uint32_t rsa_modulus; /* RSA modulus pointer */
+	uint16_t exponent_size; /* Exponent size in bytes */
+	uint16_t modulus_size; /* Modulus size in bytes*/
+	uint8_t init_flag; /* Indicates if key initialized */
+};
+
+#ifdef IMXIMAGE_SSL_SUPPORT
+#define PUBKEY_ALGO_LEN 2048
+
+#include <openssl/x509v3.h>
+#include <openssl/bn.h>
+#include <openssl/asn1.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
+#include <openssl/pem.h>
+#include <openssl/bio.h>
+
+static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len,
+	uint8_t **exponent, int *exponent_len)
+{
+	char buf[PUBKEY_ALGO_LEN];
+	int pubkey_algonid;
+	const char *sslbuf;
+	EVP_PKEY *pkey;
+	FILE *fp;
+	X509 *cert;
+	RSA *rsa_key;
+
+	fp = fopen(certfile, "r");
+	if (!fp) {
+		fprintf(stderr, "unable to open certfile: %s\n", certfile);
+		return -errno;
+	}
+
+	cert = PEM_read_X509(fp, NULL, NULL, NULL);
+	if (!cert) {
+		fprintf(stderr, "unable to parse certificate in: %s\n", certfile);
+		fclose(fp);
+		return -errno;
+	}
+
+	fclose(fp);
+
+	pubkey_algonid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
+	if (pubkey_algonid == NID_undef) {
+		fprintf(stderr, "unable to find specified public key algorithm name.\n");
+		return -EINVAL;
+	}
+
+	if (pubkey_algonid != NID_rsaEncryption)
+		return -EINVAL;
+
+	sslbuf = OBJ_nid2ln(pubkey_algonid);
+	strncpy(buf, sslbuf, PUBKEY_ALGO_LEN);
+
+	pkey = X509_get_pubkey(cert);
+	if (!pkey) {
+		fprintf(stderr, "unable to extract public key from certificate");
+		return -EINVAL;
+	}
+
+	rsa_key = pkey->pkey.rsa;
+	if (!rsa_key) {
+		fprintf(stderr, "unable to extract RSA public key");
+		return -EINVAL;
+	}
+
+	*modulus_len = BN_num_bytes(rsa_key->n);
+	*modulus = malloc(*modulus_len);
+	BN_bn2bin(rsa_key->n, *modulus);
+
+	*exponent_len = BN_num_bytes(rsa_key->e);
+	*exponent = malloc(*exponent_len);
+	BN_bn2bin(rsa_key->e, *exponent);
+
+	EVP_PKEY_free(pkey);
+	X509_free(cert);
+
+	return 0;
+}
+
+static int add_srk(void *buf, int offset, uint32_t loadaddr, const char *srkfile)
+{
+	struct imx_flash_header *hdr = buf + offset;
+	struct hab_rsa_public_key *key = buf + 0xc00;
+	uint8_t *exponent = NULL, *modulus = NULL, *modulus_dest;
+	int exponent_len = 0, modulus_len = 0;
+	int ret;
+
+	hdr->super_root_key = loadaddr + 0xc00;
+
+	key->init_flag = 1;
+	key->exponent_size = htole16(3);
+
+	ret = extract_key(srkfile, &modulus, &modulus_len, &exponent, &exponent_len);
+	if (ret)
+		return ret;
+
+	modulus_dest = (void *)(key + 1);
+
+	memcpy(modulus_dest, modulus, modulus_len);
+
+	key->modulus_size = htole16(modulus_len);
+	key->rsa_modulus = htole32(hdr->super_root_key + sizeof(*key));
+
+	if (exponent_len > 4)
+		return -EINVAL;
+
+	key->exponent_size = exponent_len;
+	memcpy(&key->rsa_exponent, exponent, key->exponent_size);
+
+	return 0;
+}
+#else
+static int add_srk(void *buf, int offset, uint32_t loadaddr, const char *srkfile)
+{
+	fprintf(stderr, "This version of imx-image is compiled without SSL support\n");
+
+	return -EINVAL;
+}
+#endif /* IMXIMAGE_SSL_SUPPORT */
+
+static int dcd_ptr_offset;
+static uint32_t dcd_ptr_content;
+
+static int add_header_v1(struct config_data *data, void *buf)
 {
 	struct imx_flash_header *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
 	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
+	int offset = data->image_dcd_offset;
+	uint32_t loadaddr = data->image_load_addr;
+	uint32_t imagesize = data->load_size;
 
 	if (add_barebox_header) {
 		memcpy(buf, bb_header, sizeof(bb_header));
@@ -108,16 +223,28 @@ static int add_header_v1(void *buf, int offset, uint32_t loadaddr, uint32_t imag
 	hdr->app_code_csf = 0x0;
 	hdr->dcd_ptr_ptr = loadaddr + offset + offsetof(struct imx_flash_header, dcd);
 	hdr->super_root_key = 0x0;
-	hdr->dcd = loadaddr + offset + offsetof(struct imx_flash_header, dcd_barker);
+	hdr->dcd =  loadaddr + offset + offsetof(struct imx_flash_header, dcd_barker);
+
 	hdr->app_dest = loadaddr;
 	hdr->dcd_barker = DCD_BARKER;
-	hdr->dcd_block_len = dcdsize;
+	if (create_usb_image) {
+		dcd_ptr_offset = offsetof(struct imx_flash_header, dcd_block_len) + offset;
+		hdr->dcd_block_len = 0;
+		dcd_ptr_content = dcdsize;
+	} else {
+		hdr->dcd_block_len = dcdsize;
+	}
 
 	buf += sizeof(struct imx_flash_header);
 
 	memcpy(buf, dcdtable, dcdsize);
 
 	buf += dcdsize;
+
+	if (data->csf) {
+		hdr->app_code_csf = loadaddr + imagesize;
+		imagesize += CSF_LEN;
+	}
 
 	*(uint32_t *)buf = imagesize;
 
@@ -144,45 +271,14 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width)
  * ============================================================================
  */
 
-struct imx_boot_data {
-	uint32_t start;
-	uint32_t size;
-	uint32_t plugin;
-} __attribute__((packed));
-
-#define TAG_IVT_HEADER	0xd1
-#define IVT_VERSION	0x40
-#define TAG_DCD_HEADER	0xd2
-#define DCD_VERSION	0x40
-#define TAG_WRITE	0xcc
-#define TAG_CHECK	0xcf
-
-struct imx_ivt_header {
-	uint8_t tag;
-	uint16_t length;
-	uint8_t version;
-} __attribute__((packed));
-
-struct imx_flash_header_v2 {
-	struct imx_ivt_header header;
-
-	uint32_t entry;
-	uint32_t reserved1;
-	uint32_t dcd_ptr;
-	uint32_t boot_data_ptr;
-	uint32_t self;
-	uint32_t csf;
-	uint32_t reserved2;
-
-	struct imx_boot_data boot_data;
-	struct imx_ivt_header dcd_header;
-} __attribute__((packed));
-
-static int add_header_v2(void *buf, int offset, uint32_t loadaddr, uint32_t imagesize)
+static int add_header_v2(struct config_data *data, void *buf)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
 	uint32_t *psize = buf + ARM_HEAD_SIZE_OFFSET;
+	int offset = data->image_dcd_offset;
+	uint32_t loadaddr = data->image_load_addr;
+	uint32_t imagesize = data->load_size;
 
 	if (add_barebox_header)
 		memcpy(buf, bb_header, sizeof(bb_header));
@@ -196,13 +292,18 @@ static int add_header_v2(void *buf, int offset, uint32_t loadaddr, uint32_t imag
 
 	hdr->entry		= loadaddr + HEADER_LEN;
 	hdr->dcd_ptr		= loadaddr + offset + offsetof(struct imx_flash_header_v2, dcd_header);
+	if (create_usb_image) {
+		dcd_ptr_content = hdr->dcd_ptr;
+		dcd_ptr_offset = offsetof(struct imx_flash_header_v2, dcd_ptr) + offset;
+		hdr->dcd_ptr = 0;
+	}
 	hdr->boot_data_ptr	= loadaddr + offset + offsetof(struct imx_flash_header_v2, boot_data);
 	hdr->self		= loadaddr + offset;
 
 	hdr->boot_data.start	= loadaddr;
 	hdr->boot_data.size	= imagesize;
 
-	if (prepare_sign) {
+	if (data->csf) {
 		hdr->csf = loadaddr + imagesize;
 		hdr->boot_data.size += CSF_LEN;
 	}
@@ -230,54 +331,9 @@ static void usage(const char *prgname)
 		"-b           add barebox header to image. If used, barebox recognizes\n"
 		"             the image as regular barebox image which can be used as\n"
 		"             second stage image\n"
-		"-p           prepare image for signing\n"
 		"-h           this help\n", prgname);
 	exit(1);
 }
-
-#define MAXARGS 5
-
-static int parse_line(char *line, char *argv[])
-{
-	int nargs = 0;
-
-	while (nargs < MAXARGS) {
-
-		/* skip any white space */
-		while ((*line == ' ') || (*line == '\t'))
-			++line;
-
-		if (*line == '\0')	/* end of line, no more args	*/
-			argv[nargs] = NULL;
-
-		if (*line == '\0') {	/* end of line, no more args	*/
-			argv[nargs] = NULL;
-			return nargs;
-		}
-
-		argv[nargs++] = line;	/* begin of argument string	*/
-
-		/* find end of string */
-		while (*line && (*line != ' ') && (*line != '\t'))
-			++line;
-
-		if (*line == '\0') {	/* end of line, no more args	*/
-			argv[nargs] = NULL;
-			return nargs;
-		}
-
-		*line++ = '\0';		/* terminate current arg	 */
-	}
-
-	printf("** Too many args (max. %d) **\n", MAXARGS);
-
-	return nargs;
-}
-
-struct command {
-	const char *name;
-	int (*parse)(int argc, char *argv[]);
-};
 
 static uint32_t last_write_cmd;
 static int last_cmd_len;
@@ -322,289 +378,6 @@ static int write_mem_v2(uint32_t addr, uint32_t val, int width)
 	dcdtable[curdcd++] = htobe32(val);
 
 	return 0;
-}
-
-static const char *check_cmds[] = {
-	"while_all_bits_clear",		/* while ((*address & mask) == 0); */
-	"while_all_bits_set"	,	/* while ((*address & mask) == mask); */
-	"while_any_bit_clear",		/* while ((*address & mask) != mask); */
-	"while_any_bit_set",		/* while ((*address & mask) != 0); */
-};
-
-static void do_cmd_check_usage(void)
-{
-	fprintf(stderr,
-			"usage: check <width> <cmd> <addr> <mask>\n"
-			"<width> access width in bytes [1|2|4]\n"
-			"with <cmd> one of:\n"
-			"while_all_bits_clear: while ((*addr & mask) == 0)\n"
-			"while_all_bits_set:   while ((*addr & mask) == mask)\n"
-			"while_any_bit_clear:  while ((*addr & mask) != mask)\n"
-			"while_any_bit_set:    while ((*addr & mask) != 0)\n");
-}
-
-static int do_cmd_check(int argc, char *argv[])
-{
-	uint32_t addr, mask, cmd;
-	int i, width;
-	const char *scmd;
-
-	if (argc < 5) {
-		do_cmd_check_usage();
-		return -EINVAL;
-	}
-
-	width = strtoul(argv[1], NULL, 0) >> 3;
-	scmd = argv[2];
-	addr = strtoul(argv[3], NULL, 0);
-	mask = strtoul(argv[4], NULL, 0);
-
-	switch (width) {
-	case 1:
-	case 2:
-	case 4:
-		break;
-	default:
-		fprintf(stderr, "illegal width %d\n", width);
-		return -EINVAL;
-	};
-
-	if (curdcd > MAX_DCD - 3) {
-		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
-		return -ENOMEM;
-	}
-
-	for (i = 0; i < ARRAY_SIZE(check_cmds); i++) {
-		if (!strcmp(scmd, check_cmds[i]))
-			break;
-	}
-
-	if (i == ARRAY_SIZE(check_cmds)) {
-		do_cmd_check_usage();
-		return -EINVAL;
-	}
-
-	cmd = (TAG_CHECK << 24) | (i << 3) | width | ((sizeof(uint32_t) * 3) << 8);
-
-	check_last_dcd(cmd);
-
-	dcdtable[curdcd++] = htobe32(cmd);
-	dcdtable[curdcd++] = htobe32(addr);
-	dcdtable[curdcd++] = htobe32(mask);
-
-	return 0;
-}
-
-static int do_cmd_write_mem(int argc, char *argv[])
-{
-	uint32_t addr, val, width;
-	char *end;
-
-	if (argc != 4) {
-		fprintf(stderr, "usage: wm [8|16|32] <addr> <val>\n");
-		return -EINVAL;
-	}
-
-	width = strtoul(argv[1], &end, 0);
-	if (*end != '\0') {
-		fprintf(stderr, "illegal width token \"%s\"\n", argv[1]);
-		return -EINVAL;
-	}
-
-	addr = strtoul(argv[2], &end, 0);
-	if (*end != '\0') {
-		fprintf(stderr, "illegal address token \"%s\"\n", argv[2]);
-		return -EINVAL;
-	}
-
-	val = strtoul(argv[3], &end, 0);
-	if (*end != '\0') {
-		fprintf(stderr, "illegal value token \"%s\"\n", argv[3]);
-		return -EINVAL;
-	}
-
-	width >>= 3;
-
-	switch (width) {
-	case 1:
-	case 2:
-	case 4:
-		break;
-	default:
-		fprintf(stderr, "illegal width %d\n", width);
-		return -EINVAL;
-	};
-
-	switch (header_version) {
-	case 1:
-		return write_mem_v1(addr, val, width);
-	case 2:
-		return write_mem_v2(addr, val, width);
-	default:
-		return -EINVAL;
-	}
-}
-
-static int do_loadaddr(int argc, char *argv[])
-{
-	if (argc < 2)
-		return -EINVAL;
-
-	image_load_addr = strtoul(argv[1], NULL, 0);
-
-	return 0;
-}
-
-static int do_dcd_offset(int argc, char *argv[])
-{
-	if (argc < 2)
-		return -EINVAL;
-
-	image_dcd_offset = strtoul(argv[1], NULL, 0);
-
-	return 0;
-}
-
-struct soc_type {
-	char *name;
-	int header_version;
-	int cpu_type;
-};
-
-static struct soc_type socs[] = {
-	{ .name = "imx25", .header_version = 1, .cpu_type = 25},
-	{ .name = "imx35", .header_version = 1, .cpu_type = 35 },
-	{ .name = "imx51", .header_version = 1, .cpu_type = 51 },
-	{ .name = "imx53", .header_version = 2, .cpu_type = 53 },
-	{ .name = "imx6", .header_version = 2, .cpu_type = 6 },
-};
-
-static int do_soc(int argc, char *argv[])
-{
-	char *soc;
-	int i;
-
-	if (argc < 2)
-		return -EINVAL;
-
-	soc = argv[1];
-
-	for (i = 0; i < ARRAY_SIZE(socs); i++) {
-		if (!strcmp(socs[i].name, soc)) {
-			header_version = socs[i].header_version;
-			cpu_type = socs[i].cpu_type;
-			return 0;
-		}
-	}
-
-	fprintf(stderr, "unkown SoC type \"%s\". Known SoCs are:\n", soc);
-	for (i = 0; i < ARRAY_SIZE(socs); i++)
-		fprintf(stderr, "%s ", socs[i].name);
-	fprintf(stderr, "\n");
-
-	return -EINVAL;
-}
-
-struct command cmds[] = {
-	{
-		.name = "wm",
-		.parse = do_cmd_write_mem,
-	}, {
-		.name = "check",
-		.parse = do_cmd_check,
-	}, {
-		.name = "loadaddr",
-		.parse = do_loadaddr,
-	}, {
-		.name = "dcdofs",
-		.parse = do_dcd_offset,
-	}, {
-		.name = "soc",
-		.parse = do_soc,
-	},
-};
-
-static char *readcmd(FILE *f)
-{
-	static char *buf;
-	char *str;
-	ssize_t ret;
-
-	if (!buf) {
-		buf = malloc(4096);
-		if (!buf)
-			return NULL;
-	}
-
-	str = buf;
-	*str = 0;
-
-	while (1) {
-		ret = fread(str, 1, 1, f);
-		if (!ret)
-			return strlen(buf) ? buf : NULL;
-
-		if (*str == '\n' || *str == ';') {
-			*str = 0;
-			return buf;
-		}
-
-		str++;
-	}
-}
-
-static int parse_config(const char *filename)
-{
-	FILE *f;
-	int lineno = 0;
-	char *line = NULL, *tmp;
-	char *argv[MAXARGS];
-	int nargs, i, ret = 0;
-
-	f = fopen(filename, "r");
-	if (!f) {
-		fprintf(stderr, "Error: %s - Can't open DCD file\n", filename);
-		exit(1);
-	}
-
-	while (1) {
-		line = readcmd(f);
-		if (!line)
-			break;
-
-		lineno++;
-
-		tmp = strchr(line, '#');
-		if (tmp)
-			*tmp = 0;
-
-		nargs = parse_line(line, argv);
-		if (!nargs)
-			continue;
-
-		ret = -ENOENT;
-
-		for (i = 0; i < ARRAY_SIZE(cmds); i++) {
-			if (!strcmp(cmds[i].name, argv[0])) {
-				ret = cmds[i].parse(nargs, argv);
-				if (ret) {
-					fprintf(stderr, "error in line %d: %s\n",
-							lineno, strerror(-ret));
-					goto cleanup;
-				}
-				break;
-			}
-		}
-
-		if (ret == -ENOENT) {
-			fprintf(stderr, "no such command: %s\n", argv[0]);
-			goto cleanup;
-		}
-	}
-
-cleanup:
-	fclose(f);
-	return ret;
 }
 
 static int xread(int fd, void *buf, int len)
@@ -659,21 +432,210 @@ static int write_dcd(const char *outfile)
 	return 0;
 }
 
+static int check(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask)
+{
+	if (curdcd > MAX_DCD - 3) {
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		return -ENOMEM;
+	}
+
+	check_last_dcd(cmd);
+
+	dcdtable[curdcd++] = htobe32(cmd);
+	dcdtable[curdcd++] = htobe32(addr);
+	dcdtable[curdcd++] = htobe32(mask);
+
+	return 0;
+}
+
+static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width)
+{
+	switch (data->header_version) {
+	case 1:
+		return write_mem_v1(addr, val, width);
+	case 2:
+		return write_mem_v2(addr, val, width);
+	default:
+		return -EINVAL;
+	}
+}
+
+/*
+ * This uses the Freescale Code Signing Tool (CST) to sign the image.
+ * The cst is expected to be executable as 'cst' or if exists, the content
+ * of the environment variable 'CST' is used.
+ */
+static int hab_sign(struct config_data *data)
+{
+	int fd, outfd, ret, lockfd;
+	char *csffile, *command;
+	struct stat s;
+	char *cst;
+	void *buf;
+
+	cst = getenv("CST");
+	if (!cst)
+		cst = "cst";
+
+	ret = asprintf(&csffile, "%s.csfbin", data->outfile);
+	if (ret < 0)
+		exit(1);
+
+	ret = stat(csffile, &s);
+	if (!ret) {
+		if (S_ISREG(s.st_mode)) {
+			ret = unlink(csffile);
+			if (ret) {
+				fprintf(stderr, "Cannot remove %s: %s\n",
+					csffile, strerror(errno));
+				return -errno;
+			}
+		} else {
+			fprintf(stderr, "%s exists and is no regular file\n",
+				csffile);
+			return -EINVAL;
+		}
+	}
+
+	ret = asprintf(&command, "%s -o %s", cst, csffile);
+	if (ret < 0)
+		return -ENOMEM;
+
+	/*
+	 * The cst uses "csfsig.bin" as temporary file. This of course breaks when it's
+	 * called multiple times as often happens with parallel builds. Until cst learns
+	 * how to properly create temporary files without races lock accesses to this
+	 * file.
+	 */
+	lockfd = open(prgname, O_RDONLY);
+	if (lockfd < 0) {
+		fprintf(stderr, "Cannot open csfsig.bin: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	ret = flock(lockfd, LOCK_EX);
+	if (ret) {
+		fprintf(stderr, "Cannot lock csfsig.bin: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	FILE *f = popen(command, "w");
+	if (!f) {
+		perror("popen");
+		return -errno;
+	}
+
+	fwrite(data->csf, 1, strlen(data->csf) + 1, f);
+
+	pclose(f);
+
+	flock(lockfd, LOCK_UN);
+	close(lockfd);
+
+	/*
+	 * the Freescale code signing tool doesn't fail if there
+	 * are errors in the command sequence file, it just doesn't
+	 * produce any output, so we have to check for existence of
+	 * the output file rather than checking the return value of
+	 * the cst call.
+	 */
+	fd = open(csffile, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "Failed to open %s: %s\n", csffile, strerror(errno));
+		fprintf(stderr, "%s failed\n", cst);
+		return -errno;
+	}
+
+	ret = fstat(fd, &s);
+	if (ret < 0) {
+		fprintf(stderr, "stat failed: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	buf = malloc(CSF_LEN);
+	if (!buf)
+		return -ENOMEM;
+
+	memset(buf, 0x5a, CSF_LEN);
+
+	if (s.st_size > CSF_LEN) {
+		fprintf(stderr, "CSF file size exceeds maximum CSF len of %d bytes\n",
+			CSF_LEN);
+	}
+
+	ret = xread(fd, buf, s.st_size);
+	if (ret < 0) {
+		fprintf(stderr, "read failed: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	outfd = open(data->outfile, O_WRONLY | O_APPEND);
+
+	ret = xwrite(outfd, buf, CSF_LEN);
+	if (ret < 0) {
+		fprintf(stderr, "write failed: %s\n", strerror(errno));
+		return -errno;
+	}
+
+	ret = close(outfd);
+	if (ret) {
+		perror("close");
+		exit(1);
+	}
+
+	return 0;
+}
+
+static void *read_file(const char *filename, size_t *size)
+{
+	int fd, ret;
+	void *buf;
+	struct stat s;
+
+	fd = open(filename, O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		exit(1);
+	}
+
+	ret = fstat(fd, &s);
+	if (ret)
+		return NULL;
+
+	*size = s.st_size;
+	buf = malloc(*size);
+	if (!buf)
+		exit(1);
+
+	xread(fd, buf, *size);
+
+	close(fd);
+
+	return buf;
+}
+
 int main(int argc, char *argv[])
 {
 	int opt, ret;
 	char *configfile = NULL;
 	char *imagename = NULL;
-	char *outfile = NULL;
 	void *buf;
-	size_t image_size = 0, load_size, insize;
+	size_t insize;
 	void *infile;
 	struct stat s;
-	int infd, outfd;
+	int outfd;
 	int dcd_only = 0;
 	int now = 0;
+	int sign_image = 0;
+	struct config_data data = {
+		.image_dcd_offset = 0xffffffff,
+		.write_mem = write_mem,
+		.check = check,
+	};
 
-	while ((opt = getopt(argc, argv, "c:hf:o:bdp")) != -1) {
+	prgname = argv[0];
+
+	while ((opt = getopt(argc, argv, "c:hf:o:bdus")) != -1) {
 		switch (opt) {
 		case 'c':
 			configfile = optarg;
@@ -682,7 +644,7 @@ int main(int argc, char *argv[])
 			imagename = optarg;
 			break;
 		case 'o':
-			outfile = optarg;
+			data.outfile = optarg;
 			break;
 		case 'b':
 			add_barebox_header = 1;
@@ -690,8 +652,11 @@ int main(int argc, char *argv[])
 		case 'd':
 			dcd_only = 1;
 			break;
-		case 'p':
-			prepare_sign = 1;
+		case 's':
+			sign_image = 1;
+			break;
+		case 'u':
+			create_usb_image = 1;
 			break;
 		case 'h':
 			usage(argv[0]);
@@ -710,7 +675,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (!outfile) {
+	if (!data.outfile) {
 		fprintf(stderr, "output file not given\n");
 		exit(1);
 	}
@@ -722,36 +687,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
-		image_size = s.st_size;
-	}
-
-	ret = parse_config(configfile);
-	if (ret)
-		exit(1);
-
-	buf = calloc(1, HEADER_LEN);
-	if (!buf)
-		exit(1);
-
-	if (!image_dcd_offset) {
-		fprintf(stderr, "no dcd offset given ('dcdofs'). Defaulting to 0x%08x\n",
-			FLASH_HEADER_OFFSET);
-		image_dcd_offset = FLASH_HEADER_OFFSET;
-	}
-
-	if (!header_version) {
-		fprintf(stderr, "no SoC given. (missing 'soc' in config)\n");
-		exit(1);
-	}
-
-	if (header_version == 2)
-		check_last_dcd(0);
-
-	if (dcd_only) {
-		ret = write_dcd(outfile);
-		if (ret)
-			exit(1);
-		exit (0);
+		data.image_size = s.st_size;
 	}
 
 	/*
@@ -762,43 +698,70 @@ int main(int argc, char *argv[])
 	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
 	 *   in ver funy ways when the image size is not 4 byte aligned
 	 */
-	load_size = roundup(image_size + HEADER_LEN, 0x1000);
+	data.load_size = roundup(data.image_size + HEADER_LEN, 0x1000);
 
-	if (cpu_type == 35)
-		load_size += HEADER_LEN;
+	ret = parse_config(&data, configfile);
+	if (ret)
+		exit(1);
 
-	switch (header_version) {
+	if (!sign_image)
+		data.csf = NULL;
+
+	if (create_usb_image && !data.csf) {
+		fprintf(stderr, "Warning: the -u option only has effect with signed images\n");
+		create_usb_image = 0;
+	}
+
+	buf = calloc(1, HEADER_LEN);
+	if (!buf)
+		exit(1);
+
+	if (data.image_dcd_offset == 0xffffffff) {
+		if (create_usb_image)
+			data.image_dcd_offset = 0x0;
+		else
+			data.image_dcd_offset = FLASH_HEADER_OFFSET;
+	}
+
+	if (!data.header_version) {
+		fprintf(stderr, "no SoC given. (missing 'soc' in config)\n");
+		exit(1);
+	}
+
+	if (data.header_version == 2)
+		check_last_dcd(0);
+
+	if (dcd_only) {
+		ret = write_dcd(data.outfile);
+		if (ret)
+			exit(1);
+		exit (0);
+	}
+
+	switch (data.header_version) {
 	case 1:
-		add_header_v1(buf, image_dcd_offset, image_load_addr, load_size);
+		add_header_v1(&data, buf);
+		if (data.srkfile) {
+			ret = add_srk(buf, data.image_dcd_offset, data.image_load_addr,
+				      data.srkfile);
+			if (ret)
+				exit(1);
+		}
 		break;
 	case 2:
-		add_header_v2(buf, image_dcd_offset, image_load_addr, load_size);
+		add_header_v2(&data, buf);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",
-				header_version);
+				data.header_version);
 		exit(1);
 	}
 
-	infd = open(imagename, O_RDONLY);
-	if (infd < 0) {
-		perror("open");
-		exit(1);
-	}
-
-	ret = fstat(infd, &s);
-	if (ret)
-		return ret;
-
-	insize = s.st_size;
-	infile = malloc(insize);
+	infile = read_file(imagename, &insize);
 	if (!infile)
 		exit(1);
 
-	xread(infd, infile, insize);
-	close(infd);
-
-	outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	outfd = open(data.outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {
 		perror("open");
 		exit(1);
@@ -810,7 +773,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (cpu_type == 35) {
+	if (data.cpu_type == 35) {
 		ret = xwrite(outfd, buf, HEADER_LEN);
 		if (ret < 0) {
 			perror("write");
@@ -826,7 +789,7 @@ int main(int argc, char *argv[])
 
 	/* pad until next 4k boundary */
 	now = 4096 - (insize % 4096);
-	if (prepare_sign && now) {
+	if (data.csf && now) {
 		memset(buf, 0x5a, now);
 
 		ret = xwrite(outfd, buf, now);
@@ -840,6 +803,35 @@ int main(int argc, char *argv[])
 	if (ret) {
 		perror("close");
 		exit(1);
+	}
+
+	if (data.csf) {
+		ret = hab_sign(&data);
+		if (ret)
+			exit(1);
+	}
+
+	if (create_usb_image) {
+		uint32_t *dcd;
+
+		infile = read_file(data.outfile, &insize);
+
+		dcd = infile + dcd_ptr_offset;
+		*dcd = dcd_ptr_content;
+
+		outfd = open(data.outfile, O_WRONLY | O_TRUNC);
+		if (outfd < 0) {
+			fprintf(stderr, "Cannot open %s: %s\n", data.outfile, strerror(errno));
+			exit(1);
+		}
+
+		ret = xwrite(outfd, infile, insize);
+		if (ret < 0) {
+			perror("write");
+			exit (1);
+		}
+
+		close(outfd);
 	}
 
 	exit(0);

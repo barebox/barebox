@@ -6,7 +6,7 @@ Booting Linux
 Introduction
 ------------
 
-The basic boot command in barebox is :ref:`command_bootm`. This command
+The lowlevel boot command in barebox is :ref:`command_bootm`. This command
 can be used directly, but there is also a :ref:`command_boot` command
 which offers additional features like a boot sequence which tries to
 boot different entries until one succeeds.
@@ -14,7 +14,7 @@ boot different entries until one succeeds.
 The bootm command
 -----------------
 
-The :ref:`command_bootm` command is the basic boot command. Depending on the
+The :ref:`command_bootm` command is the lowlevel boot command. Depending on the
 architecture the bootm command handles different image types. On ARM the
 following images are supported:
 

@@ -247,8 +247,8 @@ done:
 	printf("\n");
 done1:
 	printf("initrd is at %pa-%pa\n",
-		data->initrd_res->start,
-		data->initrd_res->end);
+		&data->initrd_res->start,
+		&data->initrd_res->end);
 
 	return 0;
 }

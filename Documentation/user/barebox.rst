@@ -186,7 +186,9 @@ with U-Boot's 'go' command::
   U-Boot: tftp $load_addr barebox.bin
   U-Boot: go $load_addr
 
-With barebox already running on your board, this can be used to chainload another barebox::
+With barebox already running on your board, this can be used to chainload
+another barebox. For instance, if you mounted a TFTP server to ``/mnt/tftp``
+(see :ref:`filesystems_tftp` for how to do that), chainload barebox with::
 
   bootm /mnt/tftp/barebox.bin
 

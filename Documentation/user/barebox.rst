@@ -113,9 +113,9 @@ with the most popular being ``menuconfig``::
 
   make menuconfig
 
-barebox uses the same (Kbuild) configuration system as Linux, so you can use
-all the kernel config targets you already know, e.g. ``make xconfig``,
-``make allyesconfig`` etc.
+barebox uses the same configuration and build system as Linux (Kconfig,
+Kbuild), so you can use all the kernel config targets you already know, e.g.
+``make xconfig``, ``make allyesconfig`` etc.
 
 Configuring and compiling "out-of-tree"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -52,9 +52,11 @@ int phy_update_status(struct phy_device *phydev)
 	int ret;
 	int oldspeed = phydev->speed, oldduplex = phydev->duplex;
 
-	ret = drv->read_status(phydev);
-	if (ret)
-		return ret;
+	if (drv) {
+		ret = drv->read_status(phydev);
+		if (ret)
+			return ret;
+	}
 
 	if (phydev->speed == oldspeed && phydev->duplex == oldduplex)
 		return 0;
@@ -173,10 +175,15 @@ struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id)
 	phydev->bus = bus;
 	phydev->dev.bus = &mdio_bus_type;
 
-	sprintf(phydev->dev.name, "mdio%d-phy%02x",
+	if (bus) {
+		sprintf(phydev->dev.name, "mdio%d-phy%02x",
 				   phydev->bus->dev.id,
 				   phydev->addr);
-	phydev->dev.id = DEVICE_ID_SINGLE;
+		phydev->dev.id = DEVICE_ID_SINGLE;
+	} else {
+		sprintf(phydev->dev.name, "fixed-phy");
+		phydev->dev.id = DEVICE_ID_DYNAMIC;
+	}
 
 	return phydev;
 }
@@ -245,7 +252,9 @@ static void phy_config_aneg(struct phy_device *phydev)
 	struct phy_driver *drv;
 
 	drv = to_phy_driver(phydev->dev.driver);
-	drv->config_aneg(phydev);
+
+	if (drv)
+		drv->config_aneg(phydev);
 }
 
 int phy_register_device(struct phy_device *phydev)
@@ -255,13 +264,15 @@ int phy_register_device(struct phy_device *phydev)
 	if (phydev->registered)
 		return -EBUSY;
 
-	phydev->dev.parent = &phydev->bus->dev;
+	if (!phydev->dev.parent)
+		phydev->dev.parent = &phydev->bus->dev;
 
 	ret = register_device(&phydev->dev);
 	if (ret)
 		return ret;
 
-	phydev->bus->phy_map[phydev->addr] = phydev;
+	if (phydev->bus)
+		phydev->bus->phy_map[phydev->addr] = phydev;
 
 	phydev->registered = 1;
 
@@ -289,6 +300,22 @@ void phy_unregister_device(struct phy_device *phydev)
 	phydev->registered = 0;
 }
 
+struct phy_device *of_phy_register_fixed_link(struct device_node *np, struct eth_device *edev)
+{
+	struct phy_device *phydev;
+
+	phydev = phy_device_create(NULL, 0, 0);
+
+	phydev->dev.parent = &edev->dev;
+	phydev->registered = 1;
+	phydev->speed = 1000;
+	phydev->duplex = 1;
+	phydev->pause = phydev->asym_pause = 0;
+	phydev->link = 1;
+
+	return phydev;
+}
+
 static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 {
 	struct device_d *dev;
@@ -305,6 +332,12 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 		phy_node = of_parse_phandle(edev->parent->device_node, "phy", 0);
 	if (!phy_node)
 		phy_node = of_parse_phandle(edev->parent->device_node, "phy-device", 0);
+	if (!phy_node) {
+		phy_node = of_get_child_by_name(edev->parent->device_node, "fixed-link");
+		if (phy_node)
+			return of_phy_register_fixed_link(phy_node, edev);
+	}
+
 	if (!phy_node)
 		return NULL;
 

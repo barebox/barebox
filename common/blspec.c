@@ -75,7 +75,7 @@ static struct blspec_entry *blspec_entry_open(struct blspec *blspec,
 
 	next = buf;
 
-	while (*next) {
+	while (next && *next) {
 		char *name, *val;
 
 		line = next;

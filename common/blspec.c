@@ -86,6 +86,9 @@ static struct blspec_entry *blspec_entry_open(struct blspec *blspec,
 			next++;
 		}
 
+		if (*line == '#')
+			continue;
+
 		name = line;
 		end = name;
 

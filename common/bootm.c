@@ -505,8 +505,8 @@ int bootm_boot(struct bootm_data *bootm_data)
 	data = xzalloc(sizeof(*data));
 
 	bootm_image_name_and_part(bootm_data->os_file, &data->os_file, &data->os_part);
-	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_part, &data->os_part);
-	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_part, &data->os_part);
+	bootm_image_name_and_part(bootm_data->oftree_file, &data->oftree_file, &data->oftree_part);
+	bootm_image_name_and_part(bootm_data->initrd_file, &data->initrd_file, &data->initrd_part);
 	data->verbose = bootm_data->verbose;
 	data->verify = bootm_data->verify;
 	data->force = bootm_data->force;

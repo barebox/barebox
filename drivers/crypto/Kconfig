@@ -1,0 +1,10 @@
+
+menuconfig CRYPTO_HW
+	bool "Hardware crypto devices"
+	help
+
+if CRYPTO_HW
+
+source drivers/crypto/caam/Kconfig
+
+endif

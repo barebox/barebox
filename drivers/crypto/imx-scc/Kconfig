@@ -1,0 +1,14 @@
+config CRYPTO_DEV_MXC_SCC
+	tristate "Support for Freescale Security Controller (SCC)"
+	depends on ARCH_IMX25 && OFTREE
+	select CRYPTO_BLKCIPHER
+	select CRYPTO_DES
+	help
+	  This option enables support for the Security Controller (SCC)
+	  found in Freescale i.MX25 chips.
+
+config CRYPTO_DEV_MXC_SCC_BLOB_GEN
+	tristate "Support for SCC blob gen"
+	depends on ARCH_IMX25
+	select BLOBGEN
+	select CRYPTO_DEV_MXC_SCC

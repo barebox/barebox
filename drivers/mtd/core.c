@@ -309,6 +309,9 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
 	int ret;
 
+	if (ofs < 0 || ofs >= mtd->size)
+		return -EINVAL;
+
 	if (mtd->block_markbad)
 		ret = mtd->block_markbad(mtd, ofs);
 	else

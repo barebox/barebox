@@ -90,8 +90,13 @@ static int do_nand(int argc, char *argv[])
 		}
 
 		ret = ioctl(fd, MEMSETBADBLOCK, &badblock);
-		if (ret)
-			perror("ioctl");
+		if (ret) {
+			if (ret == -EINVAL)
+				printf("Maybe offset %lld is out of range.\n",
+					badblock);
+			else
+				perror("ioctl");
+		}
 
 		close(fd);
 		return ret;

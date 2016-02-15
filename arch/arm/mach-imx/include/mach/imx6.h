@@ -61,6 +61,7 @@ static inline int imx6_cpu_type(void)
 		return cpu_mx6_is_##str();				\
 	}
 
+DEFINE_MX6_CPU_TYPE(mx6s, IMX6_CPUTYPE_IMX6S);
 DEFINE_MX6_CPU_TYPE(mx6dl, IMX6_CPUTYPE_IMX6DL);
 DEFINE_MX6_CPU_TYPE(mx6q, IMX6_CPUTYPE_IMX6Q);
 DEFINE_MX6_CPU_TYPE(mx6d, IMX6_CPUTYPE_IMX6D);

@@ -196,7 +196,7 @@ static const struct module_pin_mux board_can_pin_mux[] = {
 	{-1},
 };
 
-extern char __dtb_am335x_afi_gf_start[];
+extern char __dtb_z_am335x_afi_gf_start[];
 
 /**
  * @brief The basic entry point for board initialization.
@@ -211,7 +211,7 @@ static noinline int gf_sram_init(void)
 {
 	void *fdt;
 
-	fdt = __dtb_am335x_afi_gf_start;
+	fdt = __dtb_z_am335x_afi_gf_start;
 
 	/* WDT1 is already running when the bootloader gets control
 	 * Disable it to avoid "random" resets
@@ -258,7 +258,7 @@ ENTRY_FUNCTION(start_am33xx_afi_gf_sdram, r0, r1, r2)
 {
 	void *fdt;
 
-	fdt = __dtb_am335x_afi_gf_start - get_runtime_offset();
+	fdt = __dtb_z_am335x_afi_gf_start - get_runtime_offset();
 
 	putc_ll('>');
 

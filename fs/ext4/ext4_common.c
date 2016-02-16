@@ -127,7 +127,8 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 	return 0;
 }
 
-int ext4fs_get_indir_block(struct ext2fs_node *node, struct ext4fs_indir_block *indir, int blkno)
+static int ext4fs_get_indir_block(struct ext2fs_node *node,
+				struct ext4fs_indir_block *indir, int blkno)
 {
 	struct ext_filesystem *fs = node->data->fs;
 	int blksz;

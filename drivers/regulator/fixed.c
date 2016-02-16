@@ -69,6 +69,7 @@ static int regulator_fixed_probe(struct device_d *dev)
 		return -EINVAL;
 
 	fix = xzalloc(sizeof(*fix));
+	fix->gpio = -EINVAL;
 
 	if (of_get_property(dev->device_node, "gpio", NULL)) {
 		fix->gpio = of_get_named_gpio_flags(dev->device_node, "gpio", 0, &gpioflags);

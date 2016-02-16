@@ -31,6 +31,7 @@ enum {
 	PHYCORE_MT41J512M8125IT_2x512MB,
 	PHYCORE_IM8G16D3FBBG15EI_1024MB,
 	PHYCORE_R2_MT41K256M16TW107IT_512MB,
+	PHYCORE_R2_MT41K128M16JT_256MB,
 
 	PHYCARD_NT5CB128M16BP_256MB,
 };
@@ -210,6 +211,25 @@ struct am335x_sdram_timings physom_timings[] = {
 			.wr_dqs_slave_ratio0	= 0x38,
 			.fifo_we_slave_ratio0	= 0x92,
 			.wr_slave_ratio0	= 0x72,
+		},
+	},
+
+	/* 256MB R2 */
+	[PHYCORE_R2_MT41K128M16JT_256MB] = {
+		.regs = {
+			.emif_read_latency	= 0x7,
+			.emif_tim1		= 0x0AAAD4DB,
+			.emif_tim2		= 0x26437FDA,
+			.emif_tim3		= 0x501F83FF,
+			.sdram_config		= 0x61C052B2,
+			.zq_config		= 0x50074BE4,
+			.sdram_ref_ctrl		= 0x00000C30,
+		},
+		.data = {
+			.rd_slave_ratio0	= 0x36,
+			.wr_dqs_slave_ratio0	= 0x38,
+			.fifo_we_slave_ratio0	= 0x99,
+			.wr_slave_ratio0	= 0x73,
 		},
 	},
 };

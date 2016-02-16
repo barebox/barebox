@@ -151,7 +151,7 @@ barebox does not have USB OTG support. However, barebox supports some USB cores 
 both host and device mode. If these are specified for otg in the device tree
 (dr_mode = "otg";) barebox registers a OTG device which can be used to decide which
 mode shall be used. The device has a ``mode`` parameter which by default has the
-value ``otg``. setting this to ``host`` or ``device`` puts the device in the corresponding
+value ``otg``. setting this to ``host`` or ``peripheral`` puts the device in the corresponding
 mode. Once a specific mode has been selected it can't be changed later anymore.
 
 .. code-block:: sh

@@ -999,6 +999,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	return 0;
 
  out:
+	dev_err(&state->dev, "error fixing up device tree with boot state\n");
 	of_delete_node(new_node);
 	return ret;
 }

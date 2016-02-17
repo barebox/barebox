@@ -111,6 +111,20 @@ static struct bbu_handler *bbu_find_handler_by_device(const char *devicepath)
 	return NULL;
 }
 
+bool barebox_update_handler_exists(struct bbu_data *data)
+{
+	struct bbu_handler *handler;
+
+	handler = bbu_find_handler_by_device(data->devicefile);
+	if (handler)
+		return true;
+
+	if (!data->handler_name)
+		return false;
+
+	return !bbu_find_handler(data->handler_name);
+}
+
 /*
  * do a barebox update with data from *data
  */

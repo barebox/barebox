@@ -23,6 +23,7 @@
 #include <clock.h>
 #include <ioctl.h>
 #include <libbb.h>
+#include <bbu.h>
 #include <boot.h>
 #include <dma.h>
 #include <fs.h>
@@ -710,6 +711,36 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 
 		if (ret) {
 			fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
+			return;
+		}
+
+		goto out;
+	}
+
+	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && filetype_is_barebox_image(filetype)) {
+		struct bbu_data data = {
+			.devicefile = filename,
+			.imagefile = FASTBOOT_TMPFILE,
+			.flags = BBU_FLAG_YES,
+		};
+
+		if (!barebox_update_handler_exists(&data))
+			goto copy;
+
+		fastboot_tx_print(f_fb, "INFOThis is a barebox image...");
+
+		data.image = read_file(data.imagefile, &data.len);
+		if (!data.image) {
+			fastboot_tx_print(f_fb, "FAILreading barebox");
+			return;
+		}
+
+		ret = barebox_update(&data);
+
+		free(data.image);
+
+		if (ret) {
+			fastboot_tx_print(f_fb, "FAILupdate barebox: %s", strerror(-ret));
 			return;
 		}
 

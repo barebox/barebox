@@ -2,6 +2,7 @@
 #define __FILE_TYPE_H
 
 #include <linux/string.h>
+#include <linux/types.h>
 
 /*
  * List of file types we know
@@ -48,6 +49,7 @@ enum filetype file_name_detect_type(const char *filename);
 enum filetype cdev_detect_type(const char *name);
 enum filetype is_fat_or_mbr(const unsigned char *sector, unsigned long *bootsec);
 int is_fat_boot_sector(const void *_buf);
+bool filetype_is_barebox_image(enum filetype ft);
 
 #define ARM_HEAD_SIZE			0x30
 #define ARM_HEAD_MAGICWORD_OFFSET	0x20

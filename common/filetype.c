@@ -369,3 +369,16 @@ err_out:
 	cdev_close(cdev);
 	return type;
 }
+
+bool filetype_is_barebox_image(enum filetype ft)
+{
+	switch (ft) {
+	case filetype_arm_barebox:
+	case filetype_mips_barebox:
+	case filetype_ch_image:
+	case filetype_ch_image_be:
+		return true;
+	default:
+		return false;
+	}
+}

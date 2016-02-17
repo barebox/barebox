@@ -356,6 +356,7 @@ static int at25_probe(struct device_d *dev)
 
 	dev_dbg(dev, "%s probed\n", at25->cdev.name);
 	devfs_create(&at25->cdev);
+	of_parse_partitions(&at25->cdev, dev->device_node);
 	return 0;
 
 fail:

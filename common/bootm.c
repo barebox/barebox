@@ -288,6 +288,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 	if (ft != filetype_oftree) {
 		printf("%s is not an oftree but %s\n",
 			data->oftree_file, file_type_to_string(ft));
+		free(*fdt);
 		return -EINVAL;
 	}
 

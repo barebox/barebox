@@ -84,6 +84,7 @@ obj-$(CONFIG_CMD_LINUX_EXEC)	+= linux_exec.o
 obj-$(CONFIG_CMD_AUTOMOUNT)	+= automount.o
 obj-$(CONFIG_CMD_GLOBAL)	+= global.o
 obj-$(CONFIG_CMD_DMESG)		+= dmesg.o
+obj-$(CONFIG_CMD_BLOBGEN)	+= blobgen.o
 obj-$(CONFIG_CMD_BASENAME)	+= basename.o
 obj-$(CONFIG_CMD_HAB)		+= hab.o
 obj-$(CONFIG_CMD_DIRNAME)	+= dirname.o

@@ -1964,6 +1964,16 @@ config CMD_BAREBOX_UPDATE
 		  -y		autom. use 'yes' when asking confirmations
 		  -f LEVEL	set force level
 
+config CMD_BLOBGEN
+	bool
+	select BLOBGEN
+	prompt "blobgen"
+	help
+	  Provides the "blobgen" command. This command encrypts and decrypts
+	  plaintext to/from blobs. This is done with hardware crypto engines,
+	  so this command is only useful when you also enable a blobgen capable
+	  driver.
+
 config CMD_FIRMWARELOAD
 	bool
 	select FIRMWARE

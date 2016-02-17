@@ -29,7 +29,7 @@
 
 #include <common.h>
 
-unsigned long sys_mgr_init_table[] = {
+static unsigned long sys_mgr_init_table[] = {
 	0, /* EMACIO0 */
 	2, /* EMACIO1 */
 	2, /* EMACIO2 */

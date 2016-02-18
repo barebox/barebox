@@ -404,7 +404,7 @@ void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_request_mem_region_err_null);
 
-void __iomem *dev_request_mem_region(struct device_d *dev, int num)
+struct resource *dev_request_mem_resource(struct device_d *dev, int num)
 {
 	struct resource *res;
 
@@ -412,7 +412,14 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 
-	res = request_iomem_region(dev_name(dev), res->start, res->end);
+	return request_iomem_region(dev_name(dev), res->start, res->end);
+}
+
+void __iomem *dev_request_mem_region(struct device_d *dev, int num)
+{
+	struct resource *res;
+
+	res = dev_request_mem_resource(dev, num);
 	if (IS_ERR(res))
 		return ERR_CAST(res);
 

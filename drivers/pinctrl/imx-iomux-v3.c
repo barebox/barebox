@@ -171,12 +171,16 @@ static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 
 static int imx_iomux_v3_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int ret = 0;
 
 	if (iomuxv3_base)
 		return -EBUSY;
 
-	iomuxv3_base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	iomuxv3_base = IOMEM(iores->start);
 	iomuxv3_dev = dev;
 
 	if (IS_ENABLED(CONFIG_PINCTRL) && dev->device_node)

@@ -358,6 +358,7 @@ static int omap3_spi_probe_dt(struct device_d *dev, struct omap3_spi_master *oma
 
 static int omap3_spi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct spi_master *master;
 	struct omap3_spi_master *omap3_master;
 	struct omap_spi_drvdata *devtype;
@@ -399,7 +400,10 @@ static int omap3_spi_probe(struct device_d *dev)
 	master->setup = omap3_spi_setup;
 	master->transfer = omap3_spi_transfer;
 
-	omap3_master->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	omap3_master->base = IOMEM(iores->start);
 	omap3_master->regs = omap3_master->base;
 
 	omap3_master->regs += devtype->register_offset;

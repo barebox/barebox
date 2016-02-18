@@ -98,12 +98,16 @@ static struct pinctrl_ops pcs_ops = {
 
 static int pcs_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct pinctrl_single *pcs;
 	struct device_node *np = dev->device_node;
 	int ret = 0;
 
 	pcs = xzalloc(sizeof(*pcs));
-	pcs->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	pcs->base = IOMEM(iores->start);
 	pcs->pinctrl.dev = dev;
 	pcs->pinctrl.ops = &pcs_ops;
 

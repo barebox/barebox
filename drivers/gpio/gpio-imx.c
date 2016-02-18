@@ -132,6 +132,7 @@ static struct gpio_ops imx_gpio_ops = {
 
 static int imx_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_gpio_chip *imxgpio;
 	struct imx_gpio_regs *regs;
 	int ret;
@@ -141,7 +142,10 @@ static int imx_gpio_probe(struct device_d *dev)
 		return ret;
 
 	imxgpio = xzalloc(sizeof(*imxgpio));
-	imxgpio->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	imxgpio->base = IOMEM(iores->start);
 	imxgpio->chip.ops = &imx_gpio_ops;
 	if (dev->id < 0) {
 		imxgpio->chip.base = of_alias_get_id(dev->device_node, "gpio");

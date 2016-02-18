@@ -245,6 +245,7 @@ static struct fb_ops atmel_lcdc_ops = {
 
 int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 {
+	struct resource *iores;
 	struct atmel_lcdfb_info *sinfo;
 	struct atmel_lcdfb_platform_data *pdata = dev->platform_data;
 	int ret = 0;
@@ -257,9 +258,10 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 
 	sinfo = xzalloc(sizeof(*sinfo));
 	sinfo->pdata = pdata;
-	sinfo->mmio = dev_request_mem_region(dev, 0);
-	if (IS_ERR(sinfo->mmio))
-		return PTR_ERR(sinfo->mmio);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	sinfo->mmio = IOMEM(iores->start);
 
 	sinfo->dev_data = data;
 

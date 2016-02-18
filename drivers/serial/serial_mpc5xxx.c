@@ -145,12 +145,14 @@ static int mpc5xxx_serial_tstc (struct console_device *cdev)
 
 static int mpc5xxx_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct console_device *cdev;
 
 	cdev = xzalloc(sizeof(struct console_device));
-	dev->priv = dev_request_mem_region(dev, 0);
-	if (IS_ERR(dev->priv))
-		return PTR_ERR(dev->priv);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	dev->priv = IOMEM(iores->start);
 	cdev->dev = dev;
 	cdev->tstc = mpc5xxx_serial_tstc;
 	cdev->putc = mpc5xxx_serial_putc;

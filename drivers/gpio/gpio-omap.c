@@ -141,15 +141,17 @@ static struct gpio_ops omap_gpio_ops = {
 
 static int omap_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct omap_gpio_chip *omapgpio;
 	struct omap_gpio_drvdata *drvdata = NULL;
 
 	dev_get_drvdata(dev, (const void **)&drvdata);
 
 	omapgpio = xzalloc(sizeof(*omapgpio));
-	omapgpio->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(omapgpio->base))
-		return PTR_ERR(omapgpio->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	omapgpio->base = IOMEM(iores->start);
 
 	if (drvdata)
 		omapgpio->base += drvdata->regofs;

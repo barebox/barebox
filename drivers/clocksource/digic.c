@@ -40,15 +40,17 @@ static struct clocksource digic_cs = {
 
 static int digic_timer_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	/* use only one timer */
 	if (timer_base)
 		return -EBUSY;
 
-	timer_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(timer_base)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(timer_base);
+		return PTR_ERR(iores);
 	}
+	timer_base = IOMEM(iores->start);
 
 	clocks_calc_mult_shift(&digic_cs.mult, &digic_cs.shift,
 		DIGIC_TIMER_CLOCK, NSEC_PER_SEC, 1);

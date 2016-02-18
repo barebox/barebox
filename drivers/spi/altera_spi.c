@@ -206,6 +206,7 @@ static int altera_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 
 static int altera_spi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct spi_master *master;
 	struct altera_spi *altera_spi;
 	struct spi_altera_master *pdata = dev->platform_data;
@@ -221,9 +222,10 @@ static int altera_spi_probe(struct device_d *dev)
 	master->num_chipselect = pdata->num_chipselect;
 	master->bus_num = pdata->bus_num;
 
-	altera_spi->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(altera_spi->regs))
-		return PTR_ERR(altera_spi->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	altera_spi->regs = IOMEM(iores->start);
 
 	altera_spi->databits = pdata->databits;
 	altera_spi->speed = pdata->speed;

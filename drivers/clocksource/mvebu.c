@@ -56,12 +56,14 @@ static struct clocksource cs = {
 
 static int mvebu_timer_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct clk *clk;
 	u32 rate, div, val;
 
-	timer_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(timer_base))
-		return PTR_ERR(timer_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	timer_base = IOMEM(iores->start);
 
 	val = __raw_readl(timer_base + TIMER_CTRL_OFF);
 	val &= ~(TIMER0_25MHZ | TIMER0_DIV_MASK);

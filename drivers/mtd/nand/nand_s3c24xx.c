@@ -408,6 +408,7 @@ static int s3c24x0_nand_inithw(struct s3c24x0_nand_host *host)
 
 static int s3c24x0_nand_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct nand_chip *chip;
 	struct s3c24x0_nand_platform_data *pdata = dev->platform_data;
 	struct mtd_info *mtd;
@@ -420,7 +421,10 @@ static int s3c24x0_nand_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	host->dev = dev;
-	host->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->base = IOMEM(iores->start);
 
 	/* structures must be linked */
 	chip = &host->nand;

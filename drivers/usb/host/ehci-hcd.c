@@ -1334,6 +1334,7 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 
 static int ehci_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct ehci_data data = {};
 	struct ehci_platform_data *pdata = dev->platform_data;
 	struct device_node *dn = dev->device_node;
@@ -1350,12 +1351,17 @@ static int ehci_probe(struct device_d *dev)
 		 */
 		data.flags = EHCI_HAS_TT;
 
-	data.hccr = dev_request_mem_region(dev, 0);
-	if (IS_ERR(data.hccr))
-		return PTR_ERR(data.hccr);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	data.hccr = IOMEM(iores->start);
 
-	if (dev->num_resources > 1)
-		data.hcor = dev_request_mem_region(dev, 1);
+	if (dev->num_resources > 1) {
+		iores = dev_request_mem_resource(dev, 1);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		data.hcor = IOMEM(iores->start);
+	}
 	else
 		data.hcor = NULL;
 

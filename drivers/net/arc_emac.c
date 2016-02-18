@@ -391,6 +391,7 @@ static int arc_emac_mdio_write(struct mii_bus *bus, int phy_addr, int reg_num,
 
 static int arc_emac_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct arc_emac_priv *priv;
 	unsigned long clock_frequency;
@@ -406,9 +407,10 @@ static int arc_emac_probe(struct device_d *dev)
 	miibus = xzalloc(sizeof(struct mii_bus));
 
 	priv = edev->priv;
-	priv->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->regs))
-		return PTR_ERR(priv->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->regs = IOMEM(iores->start);
 	priv->bus = miibus;
 
 	priv->clk = clk_get(dev, "hclk");

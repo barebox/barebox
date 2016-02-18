@@ -410,6 +410,7 @@ static struct of_device_id at91_twi_dt_ids[] = {
 
 static int at91_twi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct at91_twi_dev *i2c_at91;
 	struct at91_twi_pdata *i2c_data;
 	int rc = 0;
@@ -425,7 +426,10 @@ static int at91_twi_probe(struct device_d *dev)
 
 	i2c_at91->pdata = i2c_data;
 
-	i2c_at91->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	i2c_at91->base = IOMEM(iores->start);
 	if (IS_ERR(i2c_at91->base)) {
 		dev_err(dev, "could not get memory region\n");
 		rc = PTR_ERR(i2c_at91->base);

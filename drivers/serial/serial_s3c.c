@@ -176,12 +176,16 @@ static void s3c_serial_flush(struct console_device *cdev)
 
 static int s3c_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct s3c_uart *priv;
 	struct console_device *cdev;
 
 	priv = xzalloc(sizeof(struct s3c_uart));
 	cdev = &priv->cdev;
-	priv->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->regs = IOMEM(iores->start);
 	dev->priv = priv;
 	cdev->dev = dev;
 	cdev->tstc = s3c_serial_tstc;

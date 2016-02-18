@@ -1070,6 +1070,7 @@ static struct i2c_bus_recovery_info omap_i2c_bus_recovery_info = {
 static int __init
 i2c_omap_probe(struct device_d *pdev)
 {
+	struct resource *iores;
 	struct omap_i2c_struct	*i2c_omap;
 	struct omap_i2c_driver_data *i2c_data;
 	int r;
@@ -1109,9 +1110,10 @@ i2c_omap_probe(struct device_d *pdev)
 		speed = 100;	/* Default speed */
 
 	i2c_omap->speed = speed;
-	i2c_omap->base = dev_request_mem_region(pdev, 0);
-	if (IS_ERR(i2c_omap->base))
-		return PTR_ERR(i2c_omap->base);
+	iores = dev_request_mem_resource(pdev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	i2c_omap->base = IOMEM(iores->start);
 
 	/*
 	 * Read the Rev hi bit-[15:14] ie scheme this is 1 indicates ver2.

@@ -142,6 +142,7 @@ static struct gpio_ops davinci_gpio_ops = {
 
 static int davinci_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *gpio_base;
 	int ret;
 	u32 val;
@@ -162,11 +163,12 @@ static int davinci_gpio_probe(struct device_d *dev)
 
 	chips = xzalloc((ngpio / 32 + 1) * sizeof(*chips));
 
-	gpio_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(gpio_base)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(gpio_base);
+		return PTR_ERR(iores);
 	}
+	gpio_base = IOMEM(iores->start);
 
 	for (i = 0, base = 0; base < ngpio; i++, base += 32) {
 		struct davinci_gpio_regs __iomem *regs;

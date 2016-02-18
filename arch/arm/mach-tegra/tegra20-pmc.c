@@ -202,11 +202,13 @@ static void tegra20_pmc_detect_reset_cause(void)
 
 static int tegra20_pmc_probe(struct device_d *dev)
 {
-	pmc_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(pmc_base)) {
+	struct resource *iores;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(pmc_base);
+		return PTR_ERR(iores);
 	}
+	pmc_base = IOMEM(iores->start);
 
 	tegra_powergate_init();
 

@@ -809,6 +809,7 @@ static void ks8851_eth_halt(struct eth_device *edev)
 
 static int ks8851_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct ks_net *ks;
 	u16 id;
@@ -823,13 +824,16 @@ static int ks8851_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	ks->hw_addr = dev_request_mem_region(dev, 0);
-	if (IS_ERR(ks->hw_addr))
-		return PTR_ERR(ks->hw_addr);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ks->hw_addr = IOMEM(iores->start);
 
-	ks->hw_addr_cmd = dev_request_mem_region(dev, 1);
-	if (IS_ERR(ks->hw_addr_cmd))
-		return PTR_ERR(ks->hw_addr_cmd);
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ks->hw_addr_cmd = IOMEM(iores->start);
+
 	ks->bus_width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 
 	edev->init = ks8851_init_dev;

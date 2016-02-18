@@ -107,13 +107,15 @@ static const char *spll_sel_clks[] = {
 
 static int imx21_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 	unsigned long lref = 32768;
 	unsigned long href = 26000000;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	writel(PCCR0_UART1_EN | PCCR0_UART2_EN | PCCR0_UART3_EN | PCCR0_UART4_EN |
 			PCCR0_CSPI1_EN | PCCR0_CSPI2_EN | PCCR0_SDHC1_EN |

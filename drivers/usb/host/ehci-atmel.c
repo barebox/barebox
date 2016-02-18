@@ -46,6 +46,7 @@ static void atmel_stop_clock(void)
 
 static int atmel_ehci_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct ehci_data data;
 
 	iclk = clk_get(dev, "ehci_clk");
@@ -67,7 +68,10 @@ static int atmel_ehci_probe(struct device_d *dev)
 
 	data.flags = 0;
 
-	data.hccr = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	data.hccr = IOMEM(iores->start);
 
 	ehci_register(dev, &data);
 

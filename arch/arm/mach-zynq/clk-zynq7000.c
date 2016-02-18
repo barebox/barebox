@@ -359,12 +359,14 @@ static struct clk *zynq_cpu_subclk(const char *name,
 
 static int zynq_clock_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *slcr_base;
 	unsigned long ps_clk_rate = 33333330;
 
-	slcr_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(slcr_base))
-		return PTR_ERR(slcr_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	slcr_base = IOMEM(iores->start);
 
 	clks[ps_clk]  = clk_fixed("ps_clk", ps_clk_rate);
 

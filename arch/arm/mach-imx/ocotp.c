@@ -371,6 +371,7 @@ static struct regmap_bus imx_ocotp_regmap_bus = {
 
 static int imx_ocotp_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 	struct ocotp_priv *priv;
 	int ret = 0;
@@ -380,9 +381,10 @@ static int imx_ocotp_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	imx_ocotp_init_dt(dev, base);
 

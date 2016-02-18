@@ -432,14 +432,16 @@ static struct of_device_id kirkwood_pinctrl_of_match[] = {
 
 static int kirkwood_pinctrl_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	const struct of_device_id *match =
 		of_match_node(kirkwood_pinctrl_of_match, dev->device_node);
 	struct mvebu_pinctrl_soc_info *soc =
 		(struct mvebu_pinctrl_soc_info *)match->data;
 
-	mpp_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(mpp_base))
-		return PTR_ERR(mpp_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	mpp_base = IOMEM(iores->start);
 
 	return mvebu_pinctrl_probe(dev, soc);
 }

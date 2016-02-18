@@ -179,12 +179,14 @@ static struct file_operations mxs_ocotp_ops = {
 
 static int mxs_ocotp_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int err;
 	struct ocotp_priv *priv = xzalloc(sizeof (*priv));
 
-	priv->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->base))
-		return PTR_ERR(priv->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->base = IOMEM(iores->start);
 
 	priv->clk = clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))

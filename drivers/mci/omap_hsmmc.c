@@ -584,6 +584,7 @@ static int omap_mmc_detect(struct device_d *dev)
 
 static int omap_mmc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct omap_hsmmc *hsmmc;
 	struct omap_hsmmc_platform_data *pdata;
 	struct omap_mmc_driver_data *drvdata;
@@ -604,9 +605,10 @@ static int omap_mmc_probe(struct device_d *dev)
 		MMC_CAP_MMC_HIGHSPEED | MMC_CAP_8_BIT_DATA;
 	hsmmc->mci.hw_dev = dev;
 
-	hsmmc->iobase = dev_request_mem_region(dev, 0);
-	if (IS_ERR(hsmmc->iobase))
-		return PTR_ERR(hsmmc->iobase);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	hsmmc->iobase = IOMEM(iores->start);
 	hsmmc->base = hsmmc->iobase + reg_ofs;
 
 	hsmmc->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;

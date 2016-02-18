@@ -1105,6 +1105,7 @@ static int mrvl_nand_scan(struct mtd_info *mtd)
 
 static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 {
+	struct resource *iores;
 	struct mrvl_nand_platform_data *pdata;
 	struct mrvl_nand_host *host;
 	struct nand_chip *chip = NULL;
@@ -1135,7 +1136,10 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 	chip->chip_delay	= CHIP_DELAY_TIMEOUT_US;
 
 	host->dev = dev;
-	host->mmio_base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->mmio_base = IOMEM(iores->start);
 	if (IS_ERR(host->mmio_base)) {
 		free(host);
 		return host->mmio_base;

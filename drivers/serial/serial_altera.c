@@ -78,13 +78,17 @@ static int altera_serial_getc(struct console_device *cdev)
 
 static int altera_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct console_device *cdev;
 	struct altera_serial_priv *priv;
 
 	priv = xzalloc(sizeof(*priv));
 	cdev = &priv->cdev;
 
-	priv->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->regs = IOMEM(iores->start);
 	cdev->dev = dev;
 	cdev->tstc = altera_serial_tstc;
 	cdev->putc = altera_serial_putc;

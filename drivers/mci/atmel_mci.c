@@ -533,6 +533,7 @@ static void atmci_get_cap(struct atmel_mci *host)
 
 static int atmci_probe(struct device_d *hw_dev)
 {
+	struct resource *iores;
 	struct atmel_mci *host;
 	struct atmel_mci_platform_data *pd = hw_dev->platform_data;
 	int ret;
@@ -572,9 +573,10 @@ static int atmci_probe(struct device_d *hw_dev)
 		host->mci.host_caps |= MMC_CAP_8_BIT_DATA;
 	host->slot_b = pd->slot_b;
 
-	host->regs = dev_request_mem_region(hw_dev, 0);
-	if (IS_ERR(host->regs))
-		return PTR_ERR(host->regs);
+	iores = dev_request_mem_resource(hw_dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->regs = IOMEM(iores->start);
 	host->hw_dev = hw_dev;
 	hw_dev->priv = host;
 	host->clk = clk_get(hw_dev, "mci_clk");

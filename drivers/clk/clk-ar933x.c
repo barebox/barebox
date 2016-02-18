@@ -137,11 +137,13 @@ static void ar933x_pll_init(void __iomem *base)
 
 static int ar933x_clk_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	ar933x_ref_clk_init(base);
 	ar933x_pll_init(base);

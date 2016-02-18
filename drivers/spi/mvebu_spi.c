@@ -332,6 +332,7 @@ static struct of_device_id mvebu_spi_dt_ids[] = {
 
 static int mvebu_spi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct spi_master *master;
 	struct mvebu_spi *priv;
 	const struct of_device_id *match;
@@ -342,11 +343,12 @@ static int mvebu_spi_probe(struct device_d *dev)
 		return -EINVAL;
 
 	priv = xzalloc(sizeof(*priv));
-	priv->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->base)) {
-		ret = PTR_ERR(priv->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto err_free;
 	}
+	priv->base = IOMEM(iores->start);
 	priv->set_baudrate = (void *)match->data;
 	priv->clk = clk_get(dev, NULL);
 	if (IS_ERR(priv->clk)) {

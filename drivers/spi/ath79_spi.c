@@ -233,6 +233,7 @@ static void ath79_spi_disable(struct ath79_spi *sp)
 
 static int ath79_spi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct spi_master *master;
 	struct ath79_spi *ath79_spi;
 
@@ -263,7 +264,10 @@ static int ath79_spi_probe(struct device_d *dev)
 		master->num_chipselect = num_cs;
 	}
 
-	ath79_spi->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ath79_spi->regs = IOMEM(iores->start);
 
 	/* enable gpio mode */
 	ath79_spi_enable(ath79_spi);

@@ -199,6 +199,7 @@ static struct of_device_id mvebu_corediv_clk_ids[] = {
 
 static int mvebu_corediv_clk_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *np = dev->device_node;
 	const struct of_device_id *match;
 	const struct clk_corediv_soc_desc *soc_desc;
@@ -212,9 +213,10 @@ static int mvebu_corediv_clk_probe(struct device_d *dev)
 		return -EINVAL;
 	soc_desc = (const struct clk_corediv_soc_desc *)match->data;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	parent = of_clk_get(np, 0);
 	if (IS_ERR(parent))

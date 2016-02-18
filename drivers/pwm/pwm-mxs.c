@@ -110,6 +110,7 @@ static struct pwm_ops mxs_pwm_ops = {
 
 static int mxs_pwm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *np = dev->device_node;
 	struct mxs_pwm *mxs;
 	int ret, i;
@@ -117,9 +118,10 @@ static int mxs_pwm_probe(struct device_d *dev)
 
 	mxs = xzalloc(sizeof(*mxs));
 
-	mxs->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(mxs->base))
-		return PTR_ERR(mxs->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	mxs->base = IOMEM(iores->start);
 
 	mxs->clk = clk_get(dev, NULL);
 	if (IS_ERR(mxs->clk))

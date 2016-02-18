@@ -189,13 +189,15 @@ static void __maybe_unused imx28_detect_reset_source(const struct imx28_wd *p)
 
 static int imx28_wd_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx28_wd *priv;
 	int rc;
 
 	priv = xzalloc(sizeof(struct imx28_wd));
-	priv->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->regs))
-		return PTR_ERR(priv->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->regs = IOMEM(iores->start);
 	priv->wd.set_timeout = imx28_watchdog_set_timeout;
 	priv->wd.dev = dev;
 

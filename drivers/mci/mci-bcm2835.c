@@ -480,6 +480,7 @@ static int bcm2835_mci_detect(struct device_d *dev)
 
 static int bcm2835_mci_probe(struct device_d *hw_dev)
 {
+	struct resource *iores;
 	struct bcm2835_mci_host *host;
 	static struct clk *clk;
 	int ret;
@@ -505,11 +506,12 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	host->mci.hw_dev = hw_dev;
 	host->hw_dev = hw_dev;
 	host->max_clock = clk_get_rate(clk);
-	host->regs = dev_request_mem_region(hw_dev, 0);
-	if (IS_ERR(host->regs)) {
+	iores = dev_request_mem_resource(hw_dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(host->hw_dev, "Failed request mem region, aborting...\n");
-		return PTR_ERR(host->regs);
+		return PTR_ERR(iores);
 	}
+	host->regs = IOMEM(iores->start);
 
 	host->mci.host_caps |= MMC_CAP_4_BIT_DATA | MMC_CAP_SD_HIGHSPEED |
 		MMC_CAP_MMC_HIGHSPEED;

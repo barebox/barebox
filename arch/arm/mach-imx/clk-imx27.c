@@ -156,11 +156,13 @@ static const char *clko_sel_clks[] = {
 
 static int imx27_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	writel(PCCR0_SDHC3_EN | PCCR0_SDHC2_EN | PCCR0_SDHC1_EN |
 			PCCR0_PWM_EN | PCCR0_KPP_EN | PCCR0_IIM_EN |

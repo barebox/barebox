@@ -133,15 +133,17 @@ static struct gpio_ops malta_i2c_gpio_ops = {
 
 static int malta_i2c_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *gpio_base;
 	struct malta_i2c_gpio *sc;
 	int ret;
 
-	gpio_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(gpio_base)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(gpio_base);
+		return PTR_ERR(iores);
 	}
+	gpio_base = IOMEM(iores->start);
 
 	sc = xzalloc(sizeof(*sc));
 	sc->base = gpio_base;

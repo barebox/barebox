@@ -374,12 +374,14 @@ static void socfpga_register_clocks(struct device_d *dev, struct device_node *no
 
 static int socfpga_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *regs;
 	struct device_node *clknode;
 
-	regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(regs))
-		return PTR_ERR(regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	regs = IOMEM(iores->start);
 
 	clk_mgr_base_addr = regs;
 

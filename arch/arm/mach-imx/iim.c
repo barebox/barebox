@@ -389,6 +389,7 @@ static inline void imx_iim_init_dt(struct device_d *dev, struct iim_priv *iim)
 
 static int imx_iim_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct iim_priv *iim;
 	int i, ret;
 	struct imx_iim_drvdata *drvdata = NULL;
@@ -414,9 +415,10 @@ static int imx_iim_probe(struct device_d *dev)
 
 	iim->fuse_supply = ERR_PTR(-ENODEV);
 
-	iim->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(iim->base))
-		return PTR_ERR(iim->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	iim->base = IOMEM(iores->start);
 
 	for (i = 0; i < IIM_NUM_BANKS; i++) {
 		ret = imx_iim_add_bank(iim, i);

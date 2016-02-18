@@ -870,6 +870,7 @@ static struct pinctrl_ops pinctrl_tegra30_ops = {
 
 static int pinctrl_tegra30_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct pinctrl_tegra30 *ctrl;
 	int i, ret;
 	u32 **regs;
@@ -884,11 +885,12 @@ static int pinctrl_tegra30_probe(struct device_d *dev)
 	 */
 	regs = (u32 **)&ctrl->regs;
 	for (i = 0; i <= 1; i++) {
-		regs[i] = dev_request_mem_region(dev, i);
-		if (IS_ERR(regs[i])) {
+		iores = dev_request_mem_resource(dev, i);
+		if (IS_ERR(iores)) {
 			dev_err(dev, "Could not get iomem region %d\n", i);
-			return PTR_ERR(regs[i]);
+			return PTR_ERR(iores);
 		}
+		regs[i] = IOMEM(iores->start);
 	}
 
 	dev_get_drvdata(dev, (const void **)&ctrl->drvdata);

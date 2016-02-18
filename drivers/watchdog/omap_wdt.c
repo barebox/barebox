@@ -154,6 +154,7 @@ static int omap_wdt_set_timeout(struct watchdog *wdog,
 
 static int omap_wdt_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct omap_wdt_dev *wdev;
 	int ret;
 
@@ -162,11 +163,12 @@ static int omap_wdt_probe(struct device_d *dev)
 	wdev->wdt_trgr_pattern	= 0x1234;
 
 	/* reserve static register mappings */
-	wdev->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(wdev->base)) {
-		ret =  PTR_ERR(wdev->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto error;
 	}
+	wdev->base = IOMEM(iores->start);
 
 	wdev->timeout = TIMER_MARGIN_DEFAULT;
 

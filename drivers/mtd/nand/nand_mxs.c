@@ -1274,6 +1274,7 @@ static void mxs_nand_probe_dt(struct device_d *dev, struct mxs_nand_info *nand_i
 
 static int mxs_nand_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct mxs_nand_info *nand_info;
 	struct nand_chip *nand;
 	struct mtd_info *mtd;
@@ -1293,13 +1294,15 @@ static int mxs_nand_probe(struct device_d *dev)
 	mxs_nand_probe_dt(dev, nand_info);
 
 	nand_info->type = type;
-	nand_info->io_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(nand_info->io_base))
-		return PTR_ERR(nand_info->io_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	nand_info->io_base = IOMEM(iores->start);
 
-	nand_info->bch_base = dev_request_mem_region(dev, 1);
-	if (IS_ERR(nand_info->bch_base))
-		return PTR_ERR(nand_info->bch_base);
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	nand_info->bch_base = IOMEM(iores->start);
 
 	nand_info->clk = clk_get(dev, NULL);
 	if (IS_ERR(nand_info->clk))

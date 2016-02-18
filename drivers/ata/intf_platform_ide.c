@@ -80,6 +80,7 @@ static void platform_ide_setup_port(void *reg_base, void *alt_base,
 
 static int platform_ide_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int rc;
 	struct ide_port_info *pdata = dev->platform_data;
 	struct ide_port *ide;
@@ -102,11 +103,17 @@ static int platform_ide_probe(struct device_d *dev)
 		return -EINVAL;
 	}
 
-	reg_base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	reg_base = IOMEM(iores->start);
 
 	if (!IS_ERR(reg_base)) {
 		mmio = 1;
-		alt_base = dev_request_mem_region(dev, 1);
+		iores = dev_request_mem_resource(dev, 1);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		alt_base = IOMEM(iores->start);
 		if (IS_ERR(alt_base))
 			alt_base = NULL;
 	} else {

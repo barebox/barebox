@@ -371,6 +371,7 @@ err:
 
 static int atmel_spi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int ret = 0;
 	int i;
 	struct spi_master *master;
@@ -399,7 +400,10 @@ static int atmel_spi_probe(struct device_d *dev)
 	master->transfer = atmel_spi_transfer;
 	master->num_chipselect = pdata->num_chipselect;
 	as->cs_pins = pdata->chipselect;
-	as->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	as->regs = IOMEM(iores->start);
 
 	for (i = 0; i < master->num_chipselect; i++) {
 		ret = gpio_request(as->cs_pins[i], dev_name(dev));

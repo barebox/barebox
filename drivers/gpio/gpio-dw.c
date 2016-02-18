@@ -164,14 +164,16 @@ static int dw_gpio_add_port(struct device_d *dev, struct device_node *node,
 
 static int dw_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct dw_gpio *gpio;
 	struct device_node *node;
 
 	gpio = xzalloc(sizeof(*gpio));
 
-	gpio->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(gpio->regs))
-		return PTR_ERR(gpio->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	gpio->regs = IOMEM(iores->start);
 
 	for_each_child_of_node(dev->device_node, node)
 		dw_gpio_add_port(dev, node, gpio);

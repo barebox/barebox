@@ -131,14 +131,16 @@ static int davinci_wdt_set_timeout(struct watchdog *wd, unsigned timeout)
 
 static int davinci_wdt_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int ret = 0;
 	struct davinci_wdt *davinci_wdt;
 
 	davinci_wdt = xzalloc(sizeof(*davinci_wdt));
 
-	davinci_wdt->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(davinci_wdt->base))
-		return PTR_ERR(davinci_wdt->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	davinci_wdt->base = IOMEM(iores->start);
 
 	davinci_wdt->clk = clk_get(dev, NULL);
 	if (WARN_ON(IS_ERR(davinci_wdt->clk)))

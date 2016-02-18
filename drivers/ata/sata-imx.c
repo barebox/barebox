@@ -84,6 +84,7 @@ static int imx_sata_init_1ms(struct imx_ahci *imx_ahci)
 
 static int imx_sata_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_ahci *imx_ahci;
 	struct imx_sata_data *data;
 	int ret;
@@ -100,9 +101,10 @@ static int imx_sata_probe(struct device_d *dev)
 		goto err_free;
 	}
 
-	imx_ahci->ahci.mmio_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(imx_ahci->ahci.mmio_base))
-		return PTR_ERR(imx_ahci->ahci.mmio_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	imx_ahci->ahci.mmio_base = IOMEM(iores->start);
 
 	data->init(imx_ahci);
 

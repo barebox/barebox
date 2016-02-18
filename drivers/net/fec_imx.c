@@ -647,6 +647,7 @@ static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 #endif
 static int fec_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct fec_platform_data *pdata = (struct fec_platform_data *)dev->platform_data;
 	struct eth_device *edev;
 	struct fec_priv *fec;
@@ -681,7 +682,10 @@ static int fec_probe(struct device_d *dev)
 
 	clk_enable(fec->clk);
 
-	fec->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	fec->regs = IOMEM(iores->start);
 
 	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
 	if (gpio_is_valid(phy_reset)) {

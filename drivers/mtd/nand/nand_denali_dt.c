@@ -36,6 +36,7 @@ struct denali_dt {
 
 static int denali_dt_probe(struct device_d *ofdev)
 {
+	struct resource *iores;
 	struct denali_dt *dt;
 	struct denali_nand_info *denali;
 	int ret;
@@ -51,12 +52,15 @@ static int denali_dt_probe(struct device_d *ofdev)
 	denali->platform = DT;
 	denali->dev = ofdev;
 
-	denali->flash_mem = dev_request_mem_region(ofdev, 0);
-	if (IS_ERR(denali->flash_mem))
-		return PTR_ERR(denali->flash_mem);
-	denali->flash_reg = dev_request_mem_region(ofdev, 1);
-	if (IS_ERR(denali->flash_reg))
-		return PTR_ERR(denali->flash_reg);
+	iores = dev_request_mem_resource(ofdev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	denali->flash_mem = IOMEM(iores->start);
+
+	iores = dev_request_mem_resource(ofdev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	denali->flash_reg = IOMEM(iores->start);
 
 	dt->clk = clk_get(ofdev, NULL);
 	if (IS_ERR(dt->clk)) {

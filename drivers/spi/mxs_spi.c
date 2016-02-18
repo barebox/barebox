@@ -250,6 +250,7 @@ static int mxs_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 
 static int mxs_spi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct spi_master *master;
 	struct mxs_spi *mxs;
 
@@ -264,9 +265,10 @@ static int mxs_spi_probe(struct device_d *dev)
 	master->num_chipselect = 3;
 	mxs->mode = SPI_CPOL | SPI_CPHA;
 
-	mxs->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(mxs->regs))
-		return PTR_ERR(mxs->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	mxs->regs = IOMEM(iores->start);
 
 	mxs->clk = clk_get(dev, NULL);
 	if (IS_ERR(mxs->clk))

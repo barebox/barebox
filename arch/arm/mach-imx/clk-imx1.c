@@ -87,11 +87,13 @@ int __init mx1_clocks_init(void __iomem *regs, unsigned long fref)
 
 static int imx1_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *regs;
 
-	regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(regs))
-		return PTR_ERR(regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	regs = IOMEM(iores->start);
 
 	mx1_clocks_init(regs, 32000);
 

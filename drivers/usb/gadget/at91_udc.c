@@ -1379,6 +1379,7 @@ static void at91_udc_gadget_poll(struct usb_gadget *gadget)
 
 static int __init at91udc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct at91_udc	*udc = &controller;
 	int		retval;
 
@@ -1422,7 +1423,10 @@ static int __init at91udc_probe(struct device_d *dev)
 		udc->ep[3].maxpacket = 64;
 	}
 
-	udc->udp_baseaddr = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	udc->udp_baseaddr = IOMEM(iores->start);
 	if (IS_ERR(udc->udp_baseaddr)) {
 		retval = PTR_ERR(udc->udp_baseaddr);
 		goto fail0a;

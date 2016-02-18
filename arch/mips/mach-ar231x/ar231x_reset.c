@@ -54,11 +54,13 @@ EXPORT_SYMBOL(ar231x_reset_bit);
 
 static int ar231x_reset_probe(struct device_d *dev)
 {
-	reset_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(reset_base)) {
+	struct resource *iores;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(reset_base);
+		return PTR_ERR(iores);
 	}
+	reset_base = IOMEM(iores->start);
 
 	return 0;
 }

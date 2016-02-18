@@ -140,6 +140,7 @@ static struct gpio_chip tegra_gpio_chip = {
 
 static int tegra_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int i, j, ret;
 
 	ret = dev_get_drvdata(dev, (const void **)&config);
@@ -148,11 +149,12 @@ static int tegra_gpio_probe(struct device_d *dev)
 		return ret;
 	}
 
-	gpio_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(gpio_base)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(gpio_base);
+		return PTR_ERR(iores);
 	}
+	gpio_base = IOMEM(iores->start);
 
 	for (i = 0; i < config->bank_count; i++) {
 		for (j = 0; j < 4; j++) {

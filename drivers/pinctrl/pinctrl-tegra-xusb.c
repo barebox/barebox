@@ -378,6 +378,7 @@ static struct pinctrl_ops pinctrl_tegra_xusb_ops = {
 
 static int pinctrl_tegra_xusb_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct tegra_xusb_padctl *padctl;
 	struct phy *phy;
 	int err;
@@ -389,11 +390,12 @@ static int pinctrl_tegra_xusb_probe(struct device_d *dev)
 
 	dev_get_drvdata(dev, (const void **)&padctl->soc);
 
-	padctl->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(padctl->regs)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "Could not get iomem region\n");
-		return PTR_ERR(padctl->regs);
+		return PTR_ERR(iores);
 	}
+	padctl->regs = IOMEM(iores->start);
 
 	padctl->rst = reset_control_get(dev, NULL);
 	if (IS_ERR(padctl->rst))

@@ -505,6 +505,7 @@ static struct imxfb_info fbi = {
 
 static int stmfb_probe(struct device_d *hw_dev)
 {
+	struct resource *iores;
 	struct imx_fb_platformdata *pdata = hw_dev->platform_data;
 	int ret;
 
@@ -513,7 +514,10 @@ static int stmfb_probe(struct device_d *hw_dev)
 
 	/* add runtime hardware info */
 	fbi.hw_dev = hw_dev;
-	fbi.base = dev_request_mem_region(hw_dev, 0);
+	iores = dev_request_mem_resource(hw_dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	fbi.base = IOMEM(iores->start);
 	fbi.clk = clk_get(hw_dev, NULL);
 	if (IS_ERR(fbi.clk))
 		return PTR_ERR(fbi.clk);

@@ -216,6 +216,7 @@ static int ci_register_otg_device(struct imx_chipidea *ci)
 
 static int imx_chipidea_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imxusb_platformdata *pdata = dev->platform_data;
 	int ret;
 	void __iomem *base;
@@ -245,9 +246,10 @@ static int imx_chipidea_probe(struct device_d *dev)
 	if (!IS_ERR(ci->vbus))
 		regulator_enable(ci->vbus);
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	ci->base = base;
 

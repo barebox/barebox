@@ -612,6 +612,7 @@ static void macb_init_rx_buffer_size(struct macb_device *bp, size_t size)
 
 static int macb_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct macb_device *macb;
 	u32 ncfgr;
@@ -649,9 +650,10 @@ static int macb_probe(struct device_d *dev)
 
 	macb->phy_flags = pdata->phy_flags;
 
-	macb->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(macb->regs))
-		return PTR_ERR(macb->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	macb->regs = IOMEM(iores->start);
 
 	/*
 	 * Do some basic initialization so that we at least can talk

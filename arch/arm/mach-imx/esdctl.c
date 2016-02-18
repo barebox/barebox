@@ -308,6 +308,7 @@ static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 
 static int imx_esdctl_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_esdctl_data *data;
 	int ret;
 	void *base;
@@ -316,9 +317,10 @@ static int imx_esdctl_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	if (imx_esdctl_disabled)
 		return 0;

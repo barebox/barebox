@@ -611,9 +611,9 @@ static int tegra_i2c_probe(struct device_d *dev)
 	int ret = 0;
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base) {
+	if (IS_ERR(base)) {
 		dev_err(dev, "could not get iomem region\n");
-		return -ENODEV;
+		return PTR_ERR(base);
 	}
 
 	div_clk = clk_get(dev, "div-clk");

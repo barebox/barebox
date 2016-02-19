@@ -553,8 +553,8 @@ static int imx_usbmisc_probe(struct device_d *dev)
 		return ret;
 
 	usbmisc_base = dev_request_mem_region(dev, 0);
-	if (!usbmisc_base)
-		return -ENOMEM;
+	if (IS_ERR(usbmisc_base))
+		return PTR_ERR(usbmisc_base);
 
 	imxusbmisc_data = devtype;
 

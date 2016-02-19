@@ -119,9 +119,9 @@ static int jz4740_rtc_probe(struct device_d *dev)
 	void __iomem *base;
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base) {
+	if (IS_ERR(base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(base);
 	}
 
 	rtc = xzalloc(sizeof(*rtc));

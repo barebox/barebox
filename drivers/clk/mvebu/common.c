@@ -58,8 +58,8 @@ int mvebu_coreclk_probe(struct device_d *dev)
 
 	/* Get SAR base address */
 	base = dev_request_mem_region(dev, 0);
-	if (!base)
-		return -EINVAL;
+	if (IS_ERR(base))
+		return PTR_ERR(base);
 
 	/* Allocate struct for TCLK, cpu clk, and core ratio clocks */
 	clk_data.clk_num = 2 + desc->num_ratios;

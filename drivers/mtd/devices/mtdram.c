@@ -71,8 +71,8 @@ static int mtdram_probe(struct device_d *dev)
 	}
 
 	base = dev_request_mem_region(dev, 0);
-	if (!base) {
-		ret = -EBUSY;
+	if (IS_ERR(base)) {
+		ret = PTR_ERR(base);
 		goto nobase;
 	}
 

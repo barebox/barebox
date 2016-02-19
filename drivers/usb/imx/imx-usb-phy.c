@@ -71,8 +71,8 @@ static int imx_usbphy_probe(struct device_d *dev)
 	imxphy = xzalloc(sizeof(*imxphy));
 
 	imxphy->base = dev_request_mem_region(dev, 0);
-	if (!imxphy->base) {
-		ret = -ENODEV;
+	if (IS_ERR(imxphy->base)) {
+		ret = PTR_ERR(imxphy->base);
 		goto err_free;
 	}
 

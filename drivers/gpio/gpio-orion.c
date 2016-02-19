@@ -97,9 +97,9 @@ static int orion_gpio_probe(struct device_d *dev)
 
 	gpio = xzalloc(sizeof(*gpio));
 	gpio->regs = dev_request_mem_region(dev, 0);
-	if (!gpio->regs) {
+	if (IS_ERR(gpio->regs)) {
 		free(gpio);
-		return -EINVAL;
+		return PTR_ERR(gpio->regs);
 	}
 	gpio->chip.dev = dev;
 	gpio->chip.ops = &orion_gpio_ops;

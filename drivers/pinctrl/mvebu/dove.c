@@ -707,9 +707,11 @@ static int dove_pinctrl_probe(struct device_d *dev)
 	clk_enable(clk);
 
 	mpp_base = dev_request_mem_region(dev, 0);
+	if (IS_ERR(mpp_base))
+		return PTR_ERR(mpp_base);
 	mpp4_base = dev_request_mem_region(dev, 1);
-	if (!mpp_base || !mpp4_base)
-		return -EBUSY;
+	if (IS_ERR(mpp4_base))
+		return PTR_ERR(mpp4_base);
 
 	/*
 	 * Dove PMU does not have a stable binding, yet.

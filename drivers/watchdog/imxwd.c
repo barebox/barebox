@@ -183,9 +183,9 @@ static int imx_wd_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(struct imx_wd));
 	priv->base = dev_request_mem_region(dev, 0);
-	if (!priv->base) {
+	if (IS_ERR(priv->base)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(priv->base);
 	}
 	priv->ops = ops;
 	priv->wd.set_timeout = imx_watchdog_set_timeout;

@@ -37,8 +37,8 @@ static int am335x_phy_probe(struct device_d *dev)
 		return -ENOMEM;
 
 	am_usbphy->base = dev_request_mem_region(dev, 0);
-	if (!am_usbphy->base) {
-		ret = -ENODEV;
+	if (IS_ERR(am_usbphy->base)) {
+		ret = PTR_ERR(am_usbphy->base);
 		goto err_free;
 	}
 

@@ -1168,9 +1168,9 @@ static int __init imxnd_probe(struct device_d *dev)
 		host->base = dev_request_mem_region(dev, 1);
 		host->main_area0 = host->base;
 
-		if (!host->regs_ip) {
+		if (IS_ERR(host->regs_ip)) {
 			dev_err(dev, "no second mem region\n");
-			err = -ENODEV;
+			err = PTR_ERR(host->regs_ip);
 			goto escan;
 		}
 

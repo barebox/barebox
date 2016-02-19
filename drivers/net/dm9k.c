@@ -809,14 +809,14 @@ static int dm9k_probe(struct device_d *dev)
 		goto err;
 
 	priv->iodata = dev_request_mem_region(dev, 1);
-	if (!priv->iodata) {
-		ret = -EBUSY;
+	if (IS_ERR(priv->iodata)) {
+		ret = PTR_ERR(priv->iodata);
 		goto err;
 	}
 
 	priv->iobase = dev_request_mem_region(dev, 0);
-	if (!priv->iobase) {
-		ret = -EBUSY;
+	if (IS_ERR(priv->iobase)) {
+		ret = PTR_ERR(priv->iobase);
 		goto err;
 	}
 

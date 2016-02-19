@@ -1453,8 +1453,8 @@ static int __init pxa_udc_probe(struct device_d *dev)
 	int gpio, ret;
 
 	udc->regs = dev_request_mem_region(dev, 0);
-	if (!udc->regs)
-		return -ENXIO;
+	if (IS_ERR(udc->regs))
+		return PTR_ERR(udc->regs);
 
 	udc->dev = dev;
 	udc->mach = dev->platform_data;

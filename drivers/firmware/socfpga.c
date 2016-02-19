@@ -408,14 +408,14 @@ static int fpgamgr_probe(struct device_d *dev)
 	fh = &mgr->fh;
 
 	mgr->regs = dev_request_mem_region(dev, 0);
-	if (!mgr->regs) {
-		ret = -EBUSY;
+	if (IS_ERR(mgr->regs)) {
+		ret = PTR_ERR(mgr->regs);
 		goto out;
 	}
 
 	mgr->regs_data = dev_request_mem_region(dev, 1);
-	if (!mgr->regs_data) {
-		ret = -EBUSY;
+	if (IS_ERR(mgr->regs_data)) {
+		ret = PTR_ERR(mgr->regs_data);
 		goto out;
 	}
 

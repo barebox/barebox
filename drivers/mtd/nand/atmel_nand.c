@@ -873,20 +873,20 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 		 cap, sector_size);
 
 	host->ecc = dev_request_mem_region(dev, 1);
-	if (host->ecc == NULL) {
+	if (IS_ERR(host->ecc)) {
 		dev_err(host->dev, "ioremap failed\n");
 		return -EIO;
 	}
 
 	host->pmerrloc_base = dev_request_mem_region(dev, 2);
-	if (!host->pmerrloc_base) {
+	if (IS_ERR(host->pmerrloc_base)) {
 		dev_err(host->dev,
 			"Can not get I/O resource for PMECC ERRLOC controller!\n");
-		return -EIO;
+		return PTR_ERR(host->pmerrloc_base);
 	}
 
 	host->pmecc_rom_base = dev_request_mem_region(dev, 3);
-	if (!host->pmecc_rom_base) {
+	if (IS_ERR(host->pmecc_rom_base)) {
 		/* Set pmecc_rom_base as the begin of gf table */
 		int size = sector_size == 512 ? 0x2000 : 0x4000;
 		pmecc_galois_table = xzalloc(2 * size * sizeof(uint16_t));
@@ -1249,7 +1249,7 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
 	struct nand_chip *nand_chip = &host->nand_chip;
 
 	host->ecc = dev_request_mem_region(dev, 1);
-	if (host->ecc == NULL) {
+	if (IS_ERR(host->ecc)) {
 		dev_err(host->dev, "ioremap failed\n");
 		return -EIO;
 	}

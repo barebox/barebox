@@ -426,9 +426,9 @@ static int at91_twi_probe(struct device_d *dev)
 	i2c_at91->pdata = i2c_data;
 
 	i2c_at91->base = dev_request_mem_region(dev, 0);
-	if (!i2c_at91->base) {
+	if (IS_ERR(i2c_at91->base)) {
 		dev_err(dev, "could not get memory region\n");
-		rc = -ENODEV;
+		rc = PTR_ERR(i2c_at91->base);
 		goto out_free;
 	}
 

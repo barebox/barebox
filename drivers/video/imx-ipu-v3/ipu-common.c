@@ -761,8 +761,8 @@ static int ipu_probe(struct device_d *dev)
 		return ret;
 
 	ipu_base = dev_request_mem_region(dev, 0);
-	if (!ipu_base)
-		return -EBUSY;
+	if (IS_ERR(ipu_base))
+		return PTR_ERR(ipu_base);
 
 	ipu = xzalloc(sizeof(*ipu));
 

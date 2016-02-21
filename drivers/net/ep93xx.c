@@ -589,14 +589,12 @@ static int ep93xx_phy_read(struct mii_bus *bus, int phy_addr, int phy_reg)
 	pr_debug("+ep93xx_phy_read\n");
 
 	/*
-	 * Save the current SelfCTL register value.  Set MAC to suppress
+	 * Save the current SelfCTL register value.  Set MAC to send
 	 * preamble bits.  Wait for any previous MII command to complete
 	 * before issuing the new command.
 	 */
 	self_ctl = readl(&regs->selfctl);
-#if defined(CONFIG_MII_SUPPRESS_PREAMBLE) /* TODO */
 	writel(self_ctl & ~(1 << 8), &regs->selfctl);
-#endif	/* defined(CONFIG_MII_SUPPRESS_PREAMBLE) */
 
 	while (readl(&regs->miists) & MIISTS_BUSY)
 		; /* noop */
@@ -632,14 +630,12 @@ static int ep93xx_phy_write(struct mii_bus *bus, int phy_addr,
 	pr_debug("+ep93xx_phy_write\n");
 
 	/*
-	 * Save the current SelfCTL register value.  Set MAC to suppress
+	 * Save the current SelfCTL register value.  Set MAC to send
 	 * preamble bits.  Wait for any previous MII command to complete
 	 * before issuing the new command.
 	 */
 	self_ctl = readl(&regs->selfctl);
-#if defined(CONFIG_MII_SUPPRESS_PREAMBLE) /* TODO */
 	writel(self_ctl & ~(1 << 8), &regs->selfctl);
-#endif	/* defined(CONFIG_MII_SUPPRESS_PREAMBLE) */
 
 	while (readl(&regs->miists) & MIISTS_BUSY)
 		; /* noop */

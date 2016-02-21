@@ -137,6 +137,8 @@ struct ep93xx_eth_priv {
 	struct tx_descriptor_queue	tx_dq;
 	struct tx_status_queue		tx_sq;
 
+	int				phy_addr;
+	phy_interface_t			interface;
 	struct mii_bus miibus;
 };
 

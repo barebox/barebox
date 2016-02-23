@@ -24,7 +24,7 @@ static void magicvar_print_one(struct magicvar_dyn *md, int verbose)
 	}
 }
 
-struct magicvar_dyn *magicvar_find(const char *name)
+static struct magicvar_dyn *magicvar_find(const char *name)
 {
 	struct magicvar_dyn *md;
 

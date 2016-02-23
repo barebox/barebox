@@ -110,9 +110,6 @@ The Fastboot gadget supports the following commands:
 - fastboot boot
 - fastboot reboot
 
-**NOTE** ``fastboot erase`` is not yet implemented. This means flashing MTD partitions
-does not yet work.
-
 ``fastboot flash`` additionally supports image types UBI and Barebox. For UBI
 Images and a MTD device as target, ubiformat is called. For a Barebox image
 with an available barebox update handler for the fastboot exported device, the

@@ -456,6 +456,38 @@ static int nand_block_checkbad(struct mtd_info *mtd, loff_t ofs, int getchip,
 	return chip->block_bad(mtd, ofs, getchip);
 }
 
+/**
+ * nand_default_block_markgood - [DEFAULT] mark a block good
+ * @mtd:	MTD device structure
+ * @ofs:	offset from device start
+ *
+ * This is the default implementation, which can be overridden by
+ * a hardware specific driver.
+*/
+static __maybe_unused  int nand_default_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	struct nand_chip *chip = mtd->priv;
+	int block, res, ret = 0;
+
+	/* Get block number */
+	block = (int)(ofs >> chip->bbt_erase_shift);
+	/* Mark block good in memory-based BBT */
+	if (chip->bbt)
+		chip->bbt[block >> 2] &= ~(0x01 << ((block & 0x03) << 1));
+
+	/* Update flash-based bad block table */
+	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt_options & NAND_BBT_USE_FLASH) {
+		res = nand_update_bbt(mtd, ofs);
+		if (!ret)
+			ret = res;
+	}
+
+	if (!ret)
+		mtd->ecc_stats.badblocks++;
+
+	return ret;
+}
+
 /* Wait for the ready pin, after a command. The timeout is caught later. */
 void nand_wait_ready(struct mtd_info *mtd)
 {
@@ -2775,6 +2807,30 @@ static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 }
 
 /**
+ * nand_block_markgood - [MTD Interface] Mark block at the given offset as bad
+ * @mtd: MTD device structure
+ * @ofs: offset relative to mtd start
+ */
+static int nand_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	struct nand_chip *chip = mtd->priv;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_MTD_WRITE))
+		return -ENOTSUPP;
+
+	ret = nand_block_isbad(mtd, ofs);
+	if (ret < 0)
+		return ret;
+
+	/* If it was good already, return success and do nothing */
+	if (!ret)
+		return 0;
+
+	return chip->block_markgood(mtd, ofs);
+}
+
+/**
  * nand_onfi_set_features- [REPLACEABLE] set features for ONFI nand
  * @mtd: MTD device structure
  * @chip: nand chip info structure
@@ -2844,6 +2900,8 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 #ifdef CONFIG_MTD_WRITE
 	if (!chip->block_markbad)
 		chip->block_markbad = nand_default_block_markbad;
+	if (!chip->block_markgood)
+		chip->block_markgood = nand_default_block_markgood;
 	if (!chip->write_buf)
 		chip->write_buf = busw ? nand_write_buf16 : nand_write_buf;
 #endif
@@ -3707,6 +3765,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 	mtd->unlock = NULL;
 	mtd->block_isbad = nand_block_isbad;
 	mtd->block_markbad = nand_block_markbad;
+	mtd->block_markgood = nand_block_markgood;
 	mtd->writebufsize = mtd->writesize;
 
 	/* propagate ecc info to mtd_info */

@@ -114,6 +114,21 @@ static int mtd_part_block_markbad(struct mtd_info *mtd, loff_t ofs)
 	return res;
 }
 
+static int mtd_part_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	int res;
+
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	if (ofs >= mtd->size)
+		return -EINVAL;
+	ofs += mtd->master_offset;
+	res = mtd->master->block_markgood(mtd->master, ofs);
+	if (!res)
+		mtd->ecc_stats.badblocks--;
+	return res;
+}
+
 struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 		uint64_t size, unsigned long flags, const char *name)
 {
@@ -168,6 +183,7 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 		part->lock = mtd_part_lock;
 		part->unlock = mtd_part_unlock;
 		part->block_markbad = mtd->block_markbad ? mtd_part_block_markbad : NULL;
+		part->block_markgood = mtd->block_markgood ? mtd_part_block_markgood : NULL;
 	}
 
 	if (mtd->write_oob)

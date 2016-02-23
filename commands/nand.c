@@ -32,6 +32,7 @@
 #define NAND_ADD	1
 #define NAND_DEL	2
 #define NAND_MARKBAD	3
+#define NAND_MARKGOOD	4
 
 static int do_nand(int argc, char *argv[])
 {
@@ -39,7 +40,7 @@ static int do_nand(int argc, char *argv[])
 	int command = 0;
 	loff_t badblock = 0;
 
-	while((opt = getopt(argc, argv, "adb:")) > 0) {
+	while((opt = getopt(argc, argv, "adb:g:")) > 0) {
 		if (command) {
 			printf("only one command may be given\n");
 			return 1;
@@ -55,11 +56,23 @@ static int do_nand(int argc, char *argv[])
 		case 'b':
 			command = NAND_MARKBAD;
 			badblock = strtoull_suffix(optarg, NULL, 0);
+			break;
+		case 'g':
+			command = NAND_MARKGOOD;
+			badblock = strtoull_suffix(optarg, NULL, 0);
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 
 	if (optind >= argc)
 		return COMMAND_ERROR_USAGE;
+
+	if (!command) {
+		printf("No action given\n");
+		return COMMAND_ERROR_USAGE;
+	}
 
 	if (command == NAND_ADD) {
 		while (optind < argc) {
@@ -77,11 +90,21 @@ static int do_nand(int argc, char *argv[])
 		}
 	}
 
-	if (command == NAND_MARKBAD) {
+	if (command == NAND_MARKBAD || command == NAND_MARKGOOD) {
 		int ret = 0, fd;
+		const char *str;
+		int ctl;
 
-		printf("marking block at 0x%08llx on %s as bad\n",
-				badblock, argv[optind]);
+		if (command == NAND_MARKBAD) {
+			str = "bad";
+			ctl = MEMSETBADBLOCK;
+		} else {
+			str = "good";
+			ctl = MEMSETGOODBLOCK;
+		}
+
+		printf("marking block at 0x%08llx on %s as %s\n",
+				badblock, argv[optind], str);
 
 		fd = open(argv[optind], O_RDWR);
 		if (fd < 0) {
@@ -89,7 +112,7 @@ static int do_nand(int argc, char *argv[])
 			return 1;
 		}
 
-		ret = ioctl(fd, MEMSETBADBLOCK, &badblock);
+		ret = ioctl(fd, ctl, &badblock);
 		if (ret) {
 			if (ret == -EINVAL)
 				printf("Maybe offset %lld is out of range.\n",
@@ -110,6 +133,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a",  "register a bad block aware device ontop of a normal NAND device")
 BAREBOX_CMD_HELP_OPT ("-d",  "deregister a bad block aware device")
 BAREBOX_CMD_HELP_OPT ("-b OFFS",  "mark block at OFFSet as bad")
+BAREBOX_CMD_HELP_OPT ("-g OFFS",  "mark block at OFFSet as good")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(nand)

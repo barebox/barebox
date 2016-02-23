@@ -506,6 +506,28 @@ static int concat_block_markbad(struct mtd_info *mtd, loff_t ofs)
 	return err;
 }
 
+static int concat_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	struct mtd_concat *concat = CONCAT(mtd);
+	int i, err = -EINVAL;
+
+	for (i = 0; i < concat->num_subdev; i++) {
+		struct mtd_info *subdev = concat->subdev[i];
+
+		if (ofs >= subdev->size) {
+			ofs -= subdev->size;
+			continue;
+		}
+
+		err = mtd_block_markgood(subdev, ofs);
+		if (!err)
+			mtd->ecc_stats.badblocks--;
+		break;
+	}
+
+	return err;
+}
+
 /*
  * This function constructs a virtual MTD device by concatenating
  * num_devs MTD devices. A pointer to the new device object is
@@ -565,6 +587,8 @@ struct mtd_info *mtd_concat_create(struct mtd_info *subdev[],	/* subdevices to c
 		concat->mtd.block_isbad = concat_block_isbad;
 	if (subdev[0]->block_markbad)
 		concat->mtd.block_markbad = concat_block_markbad;
+	if (subdev[0]->block_markgood)
+		concat->mtd.block_markgood = concat_block_markgood;
 
 	concat->mtd.ecc_stats.badblocks = subdev[0]->ecc_stats.badblocks;
 

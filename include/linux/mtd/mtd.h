@@ -189,6 +189,7 @@ struct mtd_info {
 	/* Bad block management functions */
 	int (*block_isbad) (struct mtd_info *mtd, loff_t ofs);
 	int (*block_markbad) (struct mtd_info *mtd, loff_t ofs);
+	int (*block_markgood) (struct mtd_info *mtd, loff_t ofs);
 
 	/* ECC status information */
 	struct mtd_ecc_stats ecc_stats;
@@ -308,6 +309,7 @@ int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
 int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs);
+int mtd_block_markgood(struct mtd_info *mtd, loff_t ofs);
 
 int mtd_all_ff(const void *buf, unsigned int len);
 

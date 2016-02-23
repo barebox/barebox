@@ -231,6 +231,10 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 		dev_dbg(cdev->dev, "MEMSETBADBLOCK: 0x%08llx\n", *offset);
 		ret = mtd_block_markbad(mtd, *offset);
 		break;
+	case MEMSETGOODBLOCK:
+		dev_dbg(cdev->dev, "MEMSETGOODBLOCK: 0x%08llx\n", *offset);
+		ret = mtd_block_markgood(mtd, *offset);
+		break;
 	case MEMERASE:
 		ret = mtd_op_erase(cdev, ei->length, ei->start + cdev->offset);
 		break;
@@ -314,6 +318,18 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 
 	if (mtd->block_markbad)
 		ret = mtd->block_markbad(mtd, ofs);
+	else
+		ret = -ENOSYS;
+
+	return ret;
+}
+
+int mtd_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	int ret;
+
+	if (mtd->block_markgood)
+		ret = mtd->block_markgood(mtd, ofs);
 	else
 		ret = -ENOSYS;
 

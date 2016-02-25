@@ -18,6 +18,7 @@
 #include <linux/bitmap.h>
 #include <input/keyboard.h>
 #include <dt-bindings/input/linux-event-codes.h>
+#include <readkey.h>
 
 static LIST_HEAD(input_consumers);
 
@@ -164,7 +165,10 @@ static void input_console_notify(struct input_notifier *in,
 	if (ic->modstate[4] || ic->modstate[5])
 		modstate |= 1 << 2;
 
-	if (modstate & (1 << 0))
+	if (modstate & (1 << 1)) {
+		ascii = keycode_bb_keys[ev->code];
+		ascii = ascii >= 'a' ? CTL_CH(ascii) : 0;
+	} else if (modstate & (1 << 0))
 		ascii = keycode_bb_shift_keys[ev->code];
 	else
 		ascii = keycode_bb_keys[ev->code];

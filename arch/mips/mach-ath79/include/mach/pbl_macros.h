@@ -223,4 +223,47 @@
 	.set	pop
 .endm
 
+.macro	hornet_1_1_war
+	.set push
+	.set noreorder
+
+/*
+ * WAR: Hornet 1.1 currently need a reset once we boot to let the resetb has
+ *      enough time to stable, so that trigger reset at 1st boot, system team
+ *      is investigaing the issue, will remove in short
+ */
+
+	li  t7, 0xbd000000
+	lw  t8, 0(t7)
+	li  t9, 0x12345678
+
+	/* if value of 0xbd000000 != 0x12345678, go to do_reset */
+	bne t8, t9, do_reset
+	 nop
+
+	li  t9, 0xffffffff
+	sw  t9, 0(t7)
+	b   normal_path
+	 nop
+
+do_reset:
+	/* put 0x12345678 into 0xbd000000 */
+	sw  t9, 0(t7)
+
+	/* reset register 0x1806001c */
+	li  t7, 0xb806001c
+	lw  t8, 0(t7)
+	/* bit24, fullchip reset */
+	li  t9, 0x1000000
+	or  t8, t8, t9
+	sw  t8, 0(t7)
+
+do_reset_loop:
+	b   do_reset_loop
+	 nop
+
+normal_path:
+	.set	pop
+.endm
+
 #endif /* __ASM_MACH_ATH79_PBL_MACROS_H */

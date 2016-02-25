@@ -326,6 +326,11 @@ int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 	int ret_code;
 	*retlen = 0;
 
+	if (from < 0 || from >= mtd->size || len > mtd->size - from)
+		return -EINVAL;
+	if (!len)
+		return 0;
+
 	/*
 	 * In the absence of an error, drivers return a non-negative integer
 	 * representing the maximum number of bitflips that were corrected on
@@ -344,11 +349,28 @@ int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
 {
 	*retlen = 0;
 
+	if (to < 0 || to >= mtd->size || len > mtd->size - to)
+		return -EINVAL;
+	if (!mtd->write || !(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	if (!len)
+		return 0;
+
 	return mtd->write(mtd, to, len, retlen, buf);
 }
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
+	if (instr->addr >= mtd->size || instr->len > mtd->size - instr->addr)
+		return -EINVAL;
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	instr->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
+	if (!instr->len) {
+		instr->state = MTD_ERASE_DONE;
+		mtd_erase_callback(instr);
+		return 0;
+	}
 	return mtd->erase(mtd, instr);
 }
 

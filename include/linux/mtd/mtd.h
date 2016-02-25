@@ -26,6 +26,8 @@
 #define MTD_ERASE_DONE          0x08
 #define MTD_ERASE_FAILED        0x10
 
+#define MTD_FAIL_ADDR_UNKNOWN -1LL
+
 /* If the erase fails, fail_addr might indicate exactly which block failed.  If
    fail_addr = 0xffffffff, the failure was not at the device level or was not
    specific to any particular block. */

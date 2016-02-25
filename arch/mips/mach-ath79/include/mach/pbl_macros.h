@@ -179,4 +179,48 @@
 			| AR933X_GPIO_FUNC_RSRV15, GPIO_FUNC
 .endm
 
+.macro	hornet_mips24k_cp0_setup
+	.set push
+	.set noreorder
+
+	/*
+	 * Clearing CP0 registers - This is generally required for the MIPS-24k
+	 * core used by Atheros.
+	 */
+	mtc0	zero, CP0_INDEX
+	mtc0	zero, CP0_ENTRYLO0
+	mtc0	zero, CP0_ENTRYLO1
+	mtc0	zero, CP0_CONTEXT
+	mtc0	zero, CP0_PAGEMASK
+	mtc0	zero, CP0_WIRED
+	mtc0	zero, CP0_INFO
+	mtc0	zero, CP0_COUNT
+	mtc0	zero, CP0_ENTRYHI
+	mtc0	zero, CP0_COMPARE
+
+	li	t0, ST0_CU0 | ST0_ERL
+	mtc0	t0, CP0_STATUS
+
+	mtc0	zero, CP0_CAUSE
+	mtc0	zero, CP0_EPC
+
+	li	t0, CONF_CM_UNCACHED
+	mtc0	t0, CP0_CONFIG
+
+	mtc0	zero, CP0_LLADDR
+	mtc0	zero, CP0_WATCHLO
+	mtc0	zero, CP0_WATCHHI
+	mtc0	zero, CP0_XCONTEXT
+	mtc0	zero, CP0_FRAMEMASK
+	mtc0	zero, CP0_DIAGNOSTIC
+	mtc0	zero, CP0_DEBUG
+	mtc0	zero, CP0_DEPC
+	mtc0	zero, CP0_PERFORMANCE
+	mtc0	zero, CP0_ECC
+	mtc0	zero, CP0_CACHEERR
+	mtc0	zero, CP0_TAGLO
+
+	.set	pop
+.endm
+
 #endif /* __ASM_MACH_ATH79_PBL_MACROS_H */

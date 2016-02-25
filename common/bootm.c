@@ -75,6 +75,13 @@ static const char * const bootm_verify_names[] = {
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };
 
+static int uimage_part_num(const char *partname)
+{
+	if (!partname)
+		return 0;
+	return simple_strtoul(partname, NULL, 0);
+}
+
 /*
  * bootm_load_os() - load OS to RAM
  *
@@ -109,7 +116,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 	if (data->os) {
 		int num;
 
-		num = simple_strtoul(data->os_part, NULL, 0);
+		num = uimage_part_num(data->os_part);
 
 		data->os_res = uimage_load_to_sdram(data->os,
 			num, load_address);
@@ -224,7 +231,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 			return ret;
 		}
 
-		num = simple_strtoul(data->initrd_part, NULL, 0);
+		num = uimage_part_num(data->initrd_part);
 
 		data->initrd_res = uimage_load_to_sdram(data->initrd,
 			num, load_address);
@@ -258,7 +265,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 {
 	enum filetype ft;
 	const char *oftree = data->oftree_file;
-	int num = simple_strtoul(data->oftree_part, NULL, 0);
+	int num = uimage_part_num(data->oftree_part);
 	struct uimage_handle *of_handle;
 	int release = 0;
 
@@ -407,8 +414,7 @@ int bootm_get_os_size(struct image_data *data)
 	int ret;
 
 	if (data->os)
-		return uimage_get_size(data->os,
-				       simple_strtoul(data->os_part, NULL, 0));
+		return uimage_get_size(data->os, uimage_part_num(data->os_part));
 	if (data->os_fit)
 		return data->os_fit->kernel_size;
 
@@ -574,7 +580,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 			data->os_file);
 	if (os_type == filetype_uimage &&
 			data->os->header.ih_type == IH_TYPE_MULTI)
-		printf(", multifile image %s", data->os_part);
+		printf(", multifile image %d", uimage_part_num(data->os_part));
 	printf("\n");
 
 	if (data->os_address == UIMAGE_SOME_ADDRESS)

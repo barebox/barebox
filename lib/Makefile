@@ -44,7 +44,6 @@ obj-$(CONFIG_BITREV)	+= bitrev.o
 obj-$(CONFIG_QSORT)	+= qsort.o
 obj-$(CONFIG_LIBSCAN)	+= libscan.o
 obj-$(CONFIG_LIBUBIGEN)	+= libubigen.o
-obj-$(CONFIG_LIBMTD)	+= libmtd.o
 obj-y			+= gui/
 obj-$(CONFIG_XYMODEM)	+= xymodem.o
 obj-y			+= unlink-recursive.o

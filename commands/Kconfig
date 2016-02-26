@@ -694,7 +694,6 @@ config CMD_UBI
 config CMD_UBIFORMAT
 	tristate
 	depends on MTD_UBI
-	select LIBMTD
 	select LIBSCAN
 	select LIBUBIGEN
 	prompt "ubiformat"

@@ -281,6 +281,7 @@ extern struct mtd_info *get_mtd_device_nm(const char *name);
 
 extern void put_mtd_device(struct mtd_info *mtd);
 
+const char *mtd_type_str(struct mtd_info *mtd);
 
 struct mtd_notifier {
 	void (*add)(struct mtd_info *mtd);

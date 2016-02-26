@@ -733,3 +733,25 @@ void mtdcore_add_hook(struct mtddev_hook *hook)
 {
 	list_add(&hook->hook, &mtd_register_hooks);
 }
+
+const char *mtd_type_str(struct mtd_info *mtd)
+{
+	switch (mtd->type) {
+	case MTD_ABSENT:
+		return "absent";
+	case MTD_RAM:
+		return "ram";
+	case MTD_ROM:
+		return "rom";
+	case MTD_NORFLASH:
+		return "nor";
+	case MTD_NANDFLASH:
+		return "nand";
+	case MTD_DATAFLASH:
+		return"dataflash";
+	case MTD_UBIVOLUME:
+		return "ubi";
+	default:
+		return "unknown";
+	}
+}

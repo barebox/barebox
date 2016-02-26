@@ -772,7 +772,7 @@ static int check_corruption(struct ubi_device *ubi, struct ubi_vid_hdr *vid_hdr,
 	if (err)
 		goto out_unlock;
 
-	if (ubi_check_pattern(ubi->peb_buf, 0xFF, ubi->leb_size))
+	if (mtd_buf_all_ff(ubi->peb_buf, ubi->leb_size))
 		goto out_unlock;
 
 	ubi_err("PEB %d contains corrupted VID header, and the data does not contain all 0xFF",

@@ -405,7 +405,7 @@ static int torture_peb(struct ubi_device *ubi, int pnum)
 		if (err)
 			goto out;
 
-		err = ubi_check_pattern(ubi->peb_buf, 0xFF, ubi->peb_size);
+		err = mtd_buf_all_ff(ubi->peb_buf, ubi->peb_size);
 		if (err == 0) {
 			ubi_err("erased PEB %d, but a non-0xFF byte found",
 				pnum);
@@ -424,7 +424,7 @@ static int torture_peb(struct ubi_device *ubi, int pnum)
 		if (err)
 			goto out;
 
-		err = ubi_check_pattern(ubi->peb_buf, patterns[i],
+		err = mtd_buf_check_pattern(ubi->peb_buf, patterns[i],
 					ubi->peb_size);
 		if (err == 0) {
 			ubi_err("pattern %x checking failed for PEB %d",
@@ -740,7 +740,7 @@ int ubi_io_read_ec_hdr(struct ubi_device *ubi, int pnum,
 		 * 0xFF. If yes, this physical eraseblock is assumed to be
 		 * empty.
 		 */
-		if (ubi_check_pattern(ec_hdr, 0xFF, UBI_EC_HDR_SIZE)) {
+		if (mtd_buf_all_ff(ec_hdr, UBI_EC_HDR_SIZE)) {
 			/* The physical eraseblock is supposedly empty */
 			if (verbose)
 				ubi_warn("no EC header found at PEB %d, only 0xFF bytes",
@@ -996,7 +996,7 @@ int ubi_io_read_vid_hdr(struct ubi_device *ubi, int pnum,
 		if (mtd_is_eccerr(read_err))
 			return UBI_IO_BAD_HDR_EBADMSG;
 
-		if (ubi_check_pattern(vid_hdr, 0xFF, UBI_VID_HDR_SIZE)) {
+		if (mtd_buf_all_ff(vid_hdr, UBI_VID_HDR_SIZE)) {
 			if (verbose)
 				ubi_warn("no VID header found at PEB %d, only 0xFF bytes",
 					 pnum);
@@ -1382,7 +1382,7 @@ int ubi_self_check_all_ff(struct ubi_device *ubi, int pnum, int offset, int len)
 		goto error;
 	}
 
-	err = ubi_check_pattern(buf, 0xFF, len);
+	err = mtd_buf_all_ff(buf, len);
 	if (err == 0) {
 		ubi_err("flash region at PEB %d:%d, length %d does not contain all 0xFF bytes",
 			pnum, offset, len);

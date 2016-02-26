@@ -92,6 +92,14 @@ static void get_kernel_addresses(unsigned long mem_start, size_t image_size,
 		if (verbose)
 			printf("no OS load address, defaulting to 0x%08lx\n",
 				*load_address);
+	} else if (*load_address <= mem_start + image_decomp_size) {
+		/*
+		 * If the user/image specified an address where the kernel needs
+		 * to relocate itself before decompression we need to extend the
+		 * spacing to allow this relocation to happen without
+		 * overwriting anything placed behind the kernel.
+		 */
+		*spacing += image_decomp_size;
 	}
 }
 

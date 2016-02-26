@@ -74,6 +74,25 @@ int mtd_buf_all_ff(const void *buf, unsigned int len)
 	return 1;
 }
 
+/**
+ * mtd_buf_check_pattern - check if buffer contains only a certain byte pattern.
+ * @buf: buffer to check
+ * @patt: the pattern to check
+ * @size: buffer size in bytes
+ *
+ * This function returns %1 in there are only @patt bytes in @buf, and %0 if
+ * something else was also found.
+ */
+int mtd_buf_check_pattern(const void *buf, uint8_t patt, int size)
+{
+	int i;
+
+	for (i = 0; i < size; i++)
+		if (((const uint8_t *)buf)[i] != patt)
+			return 0;
+	return 1;
+}
+
 static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
 			  loff_t offset, ulong flags)
 {

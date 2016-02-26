@@ -83,6 +83,7 @@
  */
 
 #include <linux/err.h>
+#include <mtd/mtd-peb.h>
 #include "ubi.h"
 
 static int self_check_not_bad(const struct ubi_device *ubi, int pnum);
@@ -1361,44 +1362,8 @@ out_free:
  */
 int ubi_self_check_all_ff(struct ubi_device *ubi, int pnum, int offset, int len)
 {
-	size_t read;
-	int err;
-	void *buf;
-	loff_t addr = (loff_t)pnum * ubi->peb_size + offset;
-
 	if (!ubi_dbg_chk_io(ubi))
 		return 0;
 
-	buf = kmalloc(len, GFP_KERNEL);
-	if (!buf) {
-		ubi_err("cannot allocate memory to check for 0xFFs");
-		return 0;
-	}
-
-	err = mtd_read(ubi->mtd, addr, len, &read, buf);
-	if (err && !mtd_is_bitflip(err)) {
-		ubi_err("error %d while reading %d bytes from PEB %d:%d, read %zd bytes",
-			err, len, pnum, offset, read);
-		goto error;
-	}
-
-	err = mtd_buf_all_ff(buf, len);
-	if (err == 0) {
-		ubi_err("flash region at PEB %d:%d, length %d does not contain all 0xFF bytes",
-			pnum, offset, len);
-		goto fail;
-	}
-
-	vfree(buf);
-	return 0;
-
-fail:
-	ubi_err("self-check failed for PEB %d", pnum);
-	ubi_msg("hex dump of the %d-%d region", offset, offset + len);
-	print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 1, buf, len, 1);
-	err = -EINVAL;
-error:
-	dump_stack();
-	vfree(buf);
-	return err;
+	return mtd_peb_check_all_ff(ubi->mtd, pnum, offset, len, 1);
 }

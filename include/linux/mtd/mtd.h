@@ -312,7 +312,7 @@ int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
 int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs);
 int mtd_block_markgood(struct mtd_info *mtd, loff_t ofs);
 
-int mtd_all_ff(const void *buf, unsigned int len);
+int mtd_buf_all_ff(const void *buf, unsigned int len);
 
 /*
  * Debugging macro and defines

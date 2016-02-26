@@ -2403,7 +2403,7 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
 			memset(chip->oob_poi, 0xff, mtd->oobsize);
 		}
 
-		if (oob || !mtd_all_ff(wbuf, mtd->writesize)) {
+		if (oob || !mtd_buf_all_ff(wbuf, mtd->writesize)) {
 			ret = chip->write_page(mtd, chip, column, bytes, wbuf,
 					oob_required, page, cached,
 					(ops->mode == MTD_OPS_RAW));

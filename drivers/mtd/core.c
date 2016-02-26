@@ -34,7 +34,15 @@
 
 static LIST_HEAD(mtd_register_hooks);
 
-int mtd_all_ff(const void *buf, unsigned int len)
+/**
+ * mtd_buf_all_ff - check if buffer contains only 0xff
+ * @buf: buffer to check
+ * @size: buffer size in bytes
+ *
+ * This function returns %1 if there are only 0xff bytes in @buf, and %0 if
+ * something else was also found.
+ */
+int mtd_buf_all_ff(const void *buf, unsigned int len)
 {
 	while ((unsigned long)buf & 0x3) {
 		if (*(const uint8_t *)buf != 0xff)

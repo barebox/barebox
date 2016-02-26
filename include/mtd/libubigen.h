@@ -170,13 +170,13 @@ int ubigen_write_volume(const struct ubigen_info *ui,
  * @ec1: erase counter value for @peb1
  * @ec2: erase counter value for @peb1
  * @vtbl: volume table
- * @fd: output file descriptor seeked to the proper position
+ * @mtd: The mtd device
  *
  * This function creates the UBI layout volume which contains 2 copies of the
  * volume table. Returns zero in case of success and %-1 in case of failure.
  */
 int ubigen_write_layout_vol(const struct ubigen_info *ui, int peb1, int peb2,
 			    long long ec1, long long ec2,
-			    struct ubi_vtbl_record *vtbl, int fd);
+			    struct ubi_vtbl_record *vtbl, struct mtd_info *mtd);
 
 #endif /* !__LIBUBIGEN_H__ */

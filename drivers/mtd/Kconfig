@@ -30,6 +30,15 @@ config MTD_CONCAT
 	  needs driver support, currently only the cfi-flash driver supports
 	  concatenating MTD devices.
 
+comment "MTD debug options"
+
+config MTD_PEB_DEBUG
+	bool "MTD PEB debug"
+	help
+	  When enabled the MTD PEB API will emulate bitflips. Random read
+	  operations will return that bits are flipped. The MTD PEB API
+	  is used by UBI and ubiformat
+
 source "drivers/mtd/devices/Kconfig"
 source "drivers/mtd/nor/Kconfig"
 source "drivers/mtd/nand/Kconfig"

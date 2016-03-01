@@ -90,6 +90,7 @@ config FS_SMHFS
 	  Barebox
 
 source fs/pstore/Kconfig
+source fs/squashfs/Kconfig
 
 config FS_RATP
 	bool

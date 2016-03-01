@@ -337,14 +337,14 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned block,
 	return block;
 }
 
-static int dbbt_data_create(struct mtd_info *mtd, void *buf, int block_last)
+static int dbbt_data_create(struct mtd_info *mtd, void *buf, int num_blocks)
 {
 	int n;
 	int n_bad_blocks = 0;
 	uint32_t *bb = buf + 0x8;
 	uint32_t *n_bad_blocksp = buf + 0x4;
 
-	for (n = 0; n <= block_last; n++) {
+	for (n = 0; n < num_blocks; n++) {
 		loff_t offset = n * mtd->erasesize;
 		if (mtd_block_isbad(mtd, offset)) {
 			n_bad_blocks++;

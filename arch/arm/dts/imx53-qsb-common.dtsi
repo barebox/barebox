@@ -19,6 +19,24 @@
 			device-path = &bareboxenv;
 		};
 	};
+
+	/*
+	 * The buttons are marked as active high in the upstream dts.
+	 * Remove these once fixed upstream.
+	 */
+	gpio-keys {
+		power {
+			gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
+		};
+
+		volume-up {
+			gpios = <&gpio2 14 GPIO_ACTIVE_LOW>;
+		};
+
+		volume-down {
+			gpios = <&gpio2 15 GPIO_ACTIVE_LOW>;
+		};
+	};
 };
 
 &esdhc1 {

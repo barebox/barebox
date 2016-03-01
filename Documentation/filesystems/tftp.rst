@@ -14,7 +14,7 @@ show an empty directory. Nevertheless, the files are there.
 
 Example::
 
-  mount -t tftp 192.168.23.4 /mnt/tftp
+  barebox:/ mount -t tftp 192.168.23.4 /mnt/tftp
 
 In addition to the TFTP filesystem implementation, barebox does also have a
 :ref:`tftp command <command_tftp>`.

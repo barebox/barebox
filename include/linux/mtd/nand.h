@@ -50,6 +50,7 @@ extern int nand_check_erased_ecc_chunk(void *data, int datalen,
 				       void *ecc, int ecclen,
 				       void *extraoob, int extraooblen,
 				       int bitflips_threshold);
+int nand_check_erased_buf(void *buf, int len, int bitflips_threshold);
 
 /* The maximum number of NAND chips in an array */
 #define NAND_MAX_CHIPS		8

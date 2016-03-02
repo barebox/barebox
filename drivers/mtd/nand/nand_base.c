@@ -957,7 +957,7 @@ EXPORT_SYMBOL(nand_lock);
  * bitflips_threshold, or -ERROR_CODE for bitflips in excess of the
  * threshold.
  */
-static int nand_check_erased_buf(void *buf, int len, int bitflips_threshold)
+int nand_check_erased_buf(void *buf, int len, int bitflips_threshold)
 {
 	const unsigned char *bitmap = buf;
 	int bitflips = 0;

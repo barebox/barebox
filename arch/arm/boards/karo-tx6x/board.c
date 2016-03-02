@@ -194,7 +194,7 @@ static int tx6x_devices_init(void)
 	    !of_machine_is_compatible("karo,imx6q-tx6q"))
 		return 0;
 
-	barebox_set_hostname("tx6u");
+	barebox_set_hostname("tx6");
 
 	eth_init();
 

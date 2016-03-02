@@ -288,6 +288,11 @@ CFG_start_imx6dl_tx6x_1g.pblx.imximg = $(board)/karo-tx6x/flash-header-tx6dl-1g.
 FILE_barebox-karo-imx6dl-tx6x-1g.img = start_imx6dl_tx6x_1g.pblx.imximg
 image-$(CONFIG_MACH_TX6X) += barebox-karo-imx6dl-tx6x-1g.img
 
+pblx-$(CONFIG_MACH_TX6X) += start_imx6q_tx6x_1g
+CFG_start_imx6q_tx6x_1g.pblx.imximg = $(board)/karo-tx6x/flash-header-tx6q-1g.imxcfg
+FILE_barebox-karo-imx6q-tx6x-1g.img = start_imx6q_tx6x_1g.pblx.imximg
+image-$(CONFIG_MACH_TX6X) += barebox-karo-imx6q-tx6x-1g.img
+
 pblx-$(CONFIG_MACH_UDOO) += start_imx6_udoo
 CFG_start_imx6_udoo.pblx.imximg = $(board)/udoo/flash-header-mx6-udoo.imxcfg
 FILE_barebox-udoo-imx6q.img = start_imx6_udoo.pblx.imximg

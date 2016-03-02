@@ -16,6 +16,8 @@
  * GNU General Public License for more details.
  */
 
+#define pr_fmt(fmt) "Karo-tx6: " fmt
+
 #include <common.h>
 #include <gpio.h>
 #include <init.h>

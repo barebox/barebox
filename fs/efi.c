@@ -527,7 +527,7 @@ int efi_fs_probe(struct efi_device *efidev)
 		BS->handle_protocol(efi_loaded_image->device_handle,
 				&efi_simple_file_system_protocol_guid, (void*)&volume);
 
-	if (efidev->protocol == volume)
+	if (efi_loaded_image && efidev->protocol == volume)
 		path = xstrdup("/boot");
 	else
 		path = asprintf("/efi%d", index);

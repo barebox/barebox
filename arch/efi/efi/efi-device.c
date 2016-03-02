@@ -168,8 +168,10 @@ static struct efi_device *efi_add_device(efi_handle_t *handle, efi_guid_t **guid
 
 	efiret = BS->open_protocol(handle, &efi_device_path_protocol_guid,
 			&devpath, NULL, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
-	if (EFI_ERROR(efiret))
+	if (EFI_ERROR(efiret)) {
+		free(guidarr);
 		return ERR_PTR(-EINVAL);
+	}
 
 	efidev = xzalloc(sizeof(*efidev));
 

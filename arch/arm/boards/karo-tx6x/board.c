@@ -183,8 +183,13 @@ static void eth_init(void)
 	writel(val, iomux + IOMUXC_GPR1);
 }
 
+#define IMX6_SRC_SBMR1   0x04
+
 static int tx6x_devices_init(void)
 {
+	void __iomem *src_base = IOMEM(MX6_SRC_BASE_ADDR);
+	uint32_t sbmr1;
+
 	if (!of_machine_is_compatible("karo,imx6dl-tx6dl") &&
 	    !of_machine_is_compatible("karo,imx6q-tx6q"))
 		return 0;
@@ -195,7 +200,26 @@ static int tx6x_devices_init(void)
 
 	setup_pmic_voltages();
 
-	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+	sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
+
+	/*
+	 * Check if this board is booted from eMMC or NAND to enable the
+	 * corresponding device. We can't use the regular bootsource
+	 * function here as it might return that we are in serial
+	 * downloader mode. Even if we are SBMR1[7] indicates whether
+	 * this board has eMMC or NAND.
+	 */
+	if (sbmr1 & (1 << 7)) {
+		imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
+		of_device_enable_and_register_by_name("environment-nand");
+		of_device_enable_and_register_by_name("gpmi-nand@00112000");
+	} else {
+		imx6_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc3.boot0",
+						       BBU_HANDLER_FLAG_DEFAULT);
+		of_device_enable_and_register_by_name("environment-emmc");
+		of_device_enable_and_register_by_name("usdhc@0219c000");
+	}
+
 
 	return 0;
 }

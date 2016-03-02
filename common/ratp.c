@@ -410,7 +410,7 @@ static int do_ratp_close(int argc, char *argv[])
 
 BAREBOX_CMD_START(ratp_close)
 	.cmd	= do_ratp_close,
-};
+BAREBOX_CMD_END
 
 int barebox_ratp_fs_call(struct ratp_bb_pkt *tx, struct ratp_bb_pkt **rx)
 {

@@ -187,7 +187,7 @@ static int bbu_std_file_handler(struct bbu_handler *handler,
 		oflags |= O_CREAT;
 	} else {
 		if (!S_ISREG(s.st_mode) && s.st_size < data->len) {
-			printf("Image (%lld) is too big for device (%d)\n",
+			printf("Image (%lld) is too big for device (%zd)\n",
 					s.st_size, data->len);
 		}
 	}

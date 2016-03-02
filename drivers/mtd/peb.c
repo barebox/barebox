@@ -535,3 +535,124 @@ out:
 
 	return err;
 }
+
+/**
+ * mtd_peb_create_bitflips - create bitflips on Nand pages
+ * @mtd: mtd device
+ * @pnum: Physical erase block number
+ * @offset: offset within erase block
+ * @len: The length of the area to create bitflips in
+ * @num_bitflips: The number of bitflips to create
+ * @random: If true, create bitflips at random offsets
+ * @info: If true, print information where bitflips are created
+ *
+ * This uses the mtd raw ops to create bitflips on a Nand page for
+ * testing purposes. If %random is false then the positions to flip are
+ * reproducible (thus, a second call with the same arguments reverts the
+ * bitflips).
+ *
+ * Return: 0 for success, otherwise a negative error code is returned
+ */
+int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
+				   int len, int num_bitflips, int random,
+				   int info)
+{
+	struct mtd_oob_ops ops;
+	int pages_per_block = mtd->erasesize / mtd->writesize;
+	int i;
+	int ret;
+	void *buf = NULL, *oobbuf = NULL;
+	int step;
+
+	if (offset < 0 || offset + len > mtd->erasesize)
+		return -EINVAL;
+	if (len <= 0)
+		return -EINVAL;
+	if (num_bitflips <= 0)
+		return -EINVAL;
+	if (mtd_peb_is_bad(mtd, pnum))
+		return -EINVAL;
+
+	buf = malloc(mtd->writesize * pages_per_block);
+	if (!buf) {
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	oobbuf = malloc(mtd->oobsize * pages_per_block);
+	if (!oobbuf) {
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	ops.mode = MTD_OPS_RAW;
+	ops.ooboffs = 0;
+	ops.len = mtd->writesize;
+	ops.ooblen = mtd->oobsize;
+
+	for (i = 0; i < pages_per_block; i++) {
+		loff_t offs = (loff_t)pnum * mtd->erasesize + i * mtd->writesize;
+
+		ops.datbuf = buf + i * mtd->writesize;
+		ops.oobbuf = oobbuf + i * mtd->oobsize;
+
+		ret = mtd_read_oob(mtd, offs, &ops);
+		if (ret) {
+			dev_err(&mtd->class_dev, "Cannot read raw data at 0x%08llx\n", offs);
+			goto err;
+		}
+	}
+
+	if (random)
+		step = random32() % num_bitflips;
+	else
+		step = len / num_bitflips;
+
+	for (i = 0; i < num_bitflips; i++) {
+		int offs;
+		int bit;
+		u8 *pos = buf;
+
+		if (random) {
+			offs = random32() % len;
+			bit = random32() % 8;
+		} else {
+			offs = i * len / num_bitflips;
+			bit = i % 8;
+		}
+
+		pos[offs] ^= 1 << bit;
+
+		if (info)
+			dev_info(&mtd->class_dev, "Flipping bit %d @ %d\n", bit, offs);
+	}
+
+	ret = mtd_peb_erase(mtd, pnum);
+	if (ret < 0) {
+		dev_err(&mtd->class_dev, "Cannot erase PEB %d\n", pnum);
+		goto err;
+	}
+
+	for (i = 0; i < pages_per_block; i++) {
+		loff_t offs = (loff_t)pnum * mtd->erasesize + i * mtd->writesize;
+
+		ops.datbuf = buf + i * mtd->writesize;
+		ops.oobbuf = oobbuf + i * mtd->oobsize;
+
+		ret = mtd_write_oob(mtd, offs, &ops);
+		if (ret) {
+			dev_err(&mtd->class_dev, "Cannot write page at 0x%08llx\n", offs);
+			goto err;
+		}
+	}
+
+	ret = 0;
+err:
+	if (ret)
+		dev_err(&mtd->class_dev, "Failed to create bitflips: %s\n", strerror(-ret));
+
+	free(buf);
+	free(oobbuf);
+
+	return ret;
+}

@@ -116,3 +116,4 @@ obj-$(CONFIG_CMD_DHCP)		+= dhcp.o
 obj-$(CONFIG_CMD_DHRYSTONE)	+= dhrystone.o
 obj-$(CONFIG_CMD_SPD_DECODE)	+= spd_decode.o
 obj-$(CONFIG_CMD_MMC_EXTCSD)	+= mmc_extcsd.o
+obj-$(CONFIG_CMD_NAND_BITFLIP)	+= nand-bitflip.o

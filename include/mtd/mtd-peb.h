@@ -17,5 +17,8 @@ int mtd_peb_check_all_ff(struct mtd_info *mtd, int pnum, int offset, int len,
 int mtd_peb_verify(struct mtd_info *mtd, const void *buf, int pnum,
 				int offset, int len);
 int mtd_num_pebs(struct mtd_info *mtd);
+int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
+				   int len, int num_bitflips, int random,
+				   int info);
 
 #endif /* __LINUX_MTD_MTDPEB_H */

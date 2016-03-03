@@ -461,10 +461,6 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	 */
 	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
 
-	ret = raw_write_page(mtd, fcb_raw_page, mtd->erasesize);
-	if (ret)
-		goto out;
-
 	dbbt->Checksum = 0;
 	dbbt->FingerPrint = 0x54424244;
 	dbbt->Version = 0x01000000;

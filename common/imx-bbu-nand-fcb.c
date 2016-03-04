@@ -33,6 +33,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/stat.h>
 #include <io.h>
+#include <mtd/mtd-peb.h>
 
 struct dbbt_block {
 	uint32_t Checksum;
@@ -300,6 +301,27 @@ static int imx_bbu_erase(struct mtd_info *mtd)
 	return 0;
 }
 
+static int mtd_peb_write_block(struct mtd_info *mtd, void *buf, int block, int len)
+{
+	int ret;
+	int retries = 0;
+
+	if (mtd_peb_is_bad(mtd, block))
+		return -EINVAL;
+again:
+	ret = mtd_peb_write(mtd, buf, block, 0, len);
+	if (!ret)
+		return 0;
+
+	if (ret == -EBADMSG) {
+		ret = mtd_peb_torture(mtd, block);
+		if (!ret && retries++ < 3)
+			goto again;
+	}
+
+	return ret;
+}
+
 /**
  * imx_bbu_firmware_max_blocks - get max number of blocks for firmware
  * @mtd: The mtd device
@@ -332,10 +354,8 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 				  size_t len)
 {
 	int ret;
-	size_t written;
 	int num_blocks = imx_bbu_firmware_max_blocks(mtd);
 	int block = imx_bbu_firmware_start_block(mtd, num);
-	uint64_t offset = block * mtd->erasesize;
 
 	pr_info("writing firmware %d to block %d (ofs 0x%08x)\n",
 			num, block, block * mtd->erasesize);
@@ -346,21 +366,27 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 		if (!num_blocks)
 			return -ENOSPC;
 
-		pr_debug("writing %p at 0x%08llx, left 0x%08x\n",
-				buf, offset, len);
+		pr_debug("writing %p peb %d, left 0x%08x\n",
+				buf, block, len);
 
-		if (mtd_block_isbad(mtd, offset)) {
-			pr_debug("write skip block @ 0x%08llx\n", offset);
-			offset += mtd->erasesize;
+		if (mtd_peb_is_bad(mtd, block)) {
+			pr_debug("skipping block %d\n", block);
+			num_blocks--;
 			block++;
 			continue;
 		}
 
-		ret = mtd_write(mtd, offset, now, &written, buf);
+		ret = mtd_peb_write_block(mtd, buf, block, now);
+
+		if (ret == -EIO) {
+			block++;
+			num_blocks--;
+			continue;
+		}
+
 		if (ret)
 			return ret;
 
-		offset += now;
 		len -= now;
 		buf += now;
 		block++;

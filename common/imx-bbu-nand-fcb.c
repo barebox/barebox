@@ -272,34 +272,6 @@ static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	return 0;
 }
 
-static int imx_bbu_erase(struct mtd_info *mtd)
-{
-	uint64_t offset = 0;
-	struct erase_info erase;
-	int ret;
-
-	while (offset < mtd->size) {
-		pr_debug("erasing at 0x%08llx\n", offset);
-		if (mtd_block_isbad(mtd, offset)) {
-			pr_debug("erase skip block @ 0x%08llx\n", offset);
-			offset += mtd->erasesize;
-			continue;
-		}
-
-		memset(&erase, 0, sizeof(erase));
-		erase.addr = offset;
-		erase.len = mtd->erasesize;
-
-		ret = mtd_erase(mtd, &erase);
-		if (ret)
-			return ret;
-
-		offset += mtd->erasesize;
-	}
-
-	return 0;
-}
-
 static int mtd_peb_write_block(struct mtd_info *mtd, void *buf, int block, int len)
 {
 	int ret;
@@ -352,12 +324,21 @@ static int imx_bbu_firmware_start_block(struct mtd_info *mtd, int num)
 static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 				  size_t len)
 {
-	int ret;
+	int ret, i;
 	int num_blocks = imx_bbu_firmware_max_blocks(mtd);
 	int block = imx_bbu_firmware_start_block(mtd, num);
 
 	pr_info("writing firmware %d to block %d (ofs 0x%08x)\n",
 			num, block, block * mtd->erasesize);
+
+	for (i = 0; i < num_blocks; i++) {
+		if (mtd_peb_is_bad(mtd, block + i))
+			continue;
+
+		ret = mtd_peb_erase(mtd, block + i);
+		if (ret && ret != -EIO)
+			return ret;
+	}
 
 	while (len > 0) {
 		int now = min(len, mtd->erasesize);
@@ -469,6 +450,10 @@ again:
 		dbbt->DBBTNumOfPages = 1;
 	if (cpu_is_mx28())
 		imx28_dbbt_create(dbbt, *n_bad_blocksp);
+
+	ret = mtd_peb_erase(mtd, block);
+	if (ret)
+		return ret;
 
 	ret = raw_write_page(mtd, fcb_raw_page, block * mtd->erasesize);
 	if (ret) {
@@ -626,10 +611,6 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 		return -ENOSPC;
 
 	ret = bbu_confirm(data);
-	if (ret)
-		goto out;
-
-	ret = imx_bbu_erase(mtd);
 	if (ret)
 		goto out;
 

@@ -18,6 +18,26 @@ static int mtd_part_read(struct mtd_info *mtd, loff_t from, size_t len,
 	return res;
 }
 
+static int mtd_part_read_oob(struct mtd_info *mtd, loff_t from,
+		struct mtd_oob_ops *ops)
+{
+	int res;
+
+	if (from >= mtd->size)
+		return -EINVAL;
+	if (ops->datbuf && from + ops->len > mtd->size)
+		return -EINVAL;
+
+	res = mtd->master->read_oob(mtd->master, from + mtd->master_offset, ops);
+	if (unlikely(res)) {
+		if (mtd_is_bitflip(res))
+			mtd->ecc_stats.corrected++;
+		if (mtd_is_eccerr(res))
+			mtd->ecc_stats.failed++;
+	}
+	return res;
+}
+
 static int mtd_part_write(struct mtd_info *mtd, loff_t to, size_t len,
                 size_t *retlen, const u_char *buf)
 {
@@ -188,6 +208,8 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 
 	if (mtd->write_oob)
 		part->write_oob = mtd_part_write_oob;
+	if (mtd->read_oob)
+		part->read_oob = mtd_part_read_oob;
 
 	part->block_isbad = mtd->block_isbad ? mtd_part_block_isbad : NULL;
 	part->size = size;

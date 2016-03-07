@@ -10,6 +10,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/mipsregs.h>
+#include <asm/cache.h>
 #include <asm/cacheops.h>
 #include <asm/cpu.h>
 #include <asm/cpu-info.h>
@@ -46,6 +47,29 @@ static inline void blast_##pfx##cache##_range(unsigned long start,	\
 
 __BUILD_BLAST_CACHE_RANGE(d, dcache, Hit_Writeback_Inv_D)
 __BUILD_BLAST_CACHE_RANGE(inv_d, dcache, Hit_Invalidate_D)
+
+void flush_cache_all(void)
+{
+	struct cpuinfo_mips *c = &current_cpu_data;
+	unsigned long lsize;
+	unsigned long addr;
+	unsigned long aend;
+	unsigned int icache_size, dcache_size;
+
+	dcache_size = c->dcache.waysize * c->dcache.ways;
+	lsize = c->dcache.linesz;
+	aend = (KSEG0 + dcache_size - 1) & ~(lsize - 1);
+	for (addr = KSEG0; addr <= aend; addr += lsize)
+		cache_op(Index_Writeback_Inv_D, addr);
+
+	icache_size = c->icache.waysize * c->icache.ways;
+	lsize = c->icache.linesz;
+	aend = (KSEG0 + icache_size - 1) & ~(lsize - 1);
+	for (addr = KSEG0; addr <= aend; addr += lsize)
+		cache_op(Index_Invalidate_I, addr);
+
+	/* secondatory cache skipped */
+}
 
 void dma_flush_range(unsigned long start, unsigned long end)
 {

@@ -46,6 +46,12 @@ skip_pll_ram_config:
 	debug_ll_ar9331_init
 	mips_nmon
 
+	/*
+	 * It is amazing but we have to enable MDIO on GPIO
+	 * to use GPIO26 for the "WPS" LED and GPIO27 for the "3G" LED.
+	 */
+	pbl_ar9331_mdio_gpio_enable
+
 	copy_to_link_location	pbl_start
 
 	.set	pop

@@ -179,6 +179,14 @@
 			| AR933X_GPIO_FUNC_RSRV15, GPIO_FUNC
 .endm
 
+#define RESET_REG_BOOTSTRAP	((KSEG1 | AR71XX_RESET_BASE) \
+					| AR933X_RESET_REG_BOOTSTRAP)
+
+.macro	pbl_ar9331_mdio_gpio_enable
+	/* Bit 18 enables MDC and MDIO function on GPIO26 and GPIO28 */
+	pbl_reg_set (1 << 18), RESET_REG_BOOTSTRAP
+.endm
+
 .macro	hornet_mips24k_cp0_setup
 	.set push
 	.set noreorder

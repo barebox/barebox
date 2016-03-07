@@ -91,7 +91,6 @@ static void probe_pcache(void)
 	}
 }
 
-#define CONFIG_M	(1 << 31)
 #define CONFIG2_SS_OFFSET	8
 #define CONFIG2_SL_OFFSET	4
 #define CONFIG2_SA_OFFSET	0
@@ -101,10 +100,10 @@ static void probe_scache(void)
 	unsigned int config2, config1, config = read_c0_config();
 	unsigned int ss, sl, sa;
 
-	if ((config & CONFIG_M) == 0)
+	if ((config & MIPS_CONF_M) == 0)
 		goto noscache;
 	config1 = read_c0_config1();
-	if ((config1 & CONFIG_M) == 0)
+	if ((config1 & MIPS_CONF_M) == 0)
 		goto noscache;
 	config2 = read_c0_config2();
 	ss = 0xf & (config2 >> CONFIG2_SS_OFFSET);

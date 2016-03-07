@@ -46,6 +46,12 @@ skip_pll_ram_config:
 	debug_ll_ar9331_init
 	mips_nmon
 
+	/*
+	 * It is amazing but we have to enable MDIO on GPIO
+	 * to use GPIO27 for LED1.
+	 */
+	pbl_ar9331_mdio_gpio_enable
+
 	copy_to_link_location	pbl_start
 
 	.set	pop

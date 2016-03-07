@@ -1,6 +1,7 @@
 /dts-v1/;
 
 #include "ar9331.dtsi"
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	model = "Black Swift";
@@ -13,9 +14,23 @@
 	aliases {
 		spiflash = &spiflash;
 	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		s1 {
+			label = "LED1";
+			gpios = <&gpio 27 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+	};
 };
 
 &serial0 {
+	status = "okay";
+};
+
+&gpio {
 	status = "okay";
 };
 

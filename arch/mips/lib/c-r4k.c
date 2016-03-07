@@ -10,9 +10,56 @@
 #include <common.h>
 #include <asm/io.h>
 #include <asm/mipsregs.h>
+#include <asm/cacheops.h>
 #include <asm/cpu.h>
 #include <asm/cpu-info.h>
 #include <asm/bitops.h>
+
+#define cache_op(op,addr)						\
+	__asm__ __volatile__(						\
+	"	.set	push					\n"	\
+	"	.set	noreorder				\n"	\
+	"	.set	mips3\n\t				\n"	\
+	"	cache	%0, %1					\n"	\
+	"	.set	pop					\n"	\
+	:								\
+	: "i" (op), "R" (*(unsigned char *)(addr)))
+
+#define __BUILD_BLAST_CACHE_RANGE(pfx, desc, hitop)			\
+static inline void blast_##pfx##cache##_range(unsigned long start,	\
+					      unsigned long end)	\
+{									\
+	unsigned long lsize = current_cpu_data.desc.linesz;		\
+	unsigned long addr = start & ~(lsize - 1);			\
+	unsigned long aend = (end - 1) & ~(lsize - 1);			\
+									\
+	if (current_cpu_data.desc.flags & MIPS_CACHE_NOT_PRESENT)	\
+		return;							\
+									\
+	while (1) {							\
+		cache_op(hitop, addr);					\
+		if (addr == aend)					\
+			break;						\
+		addr += lsize;						\
+	}								\
+}
+
+__BUILD_BLAST_CACHE_RANGE(d, dcache, Hit_Writeback_Inv_D)
+__BUILD_BLAST_CACHE_RANGE(inv_d, dcache, Hit_Invalidate_D)
+
+void dma_flush_range(unsigned long start, unsigned long end)
+{
+	blast_dcache_range(start, end);
+
+	/* secondatory cache skipped */
+}
+
+void dma_inv_range(unsigned long start, unsigned long end)
+{
+	blast_inv_dcache_range(start, end);
+
+	/* secondatory cache skipped */
+}
 
 void r4k_cache_init(void);
 

@@ -420,8 +420,10 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 	while (len > 0) {
 		int now = min(len, mtd->erasesize);
 
-		if (!num_blocks)
+		if (!num_blocks) {
+			pr_err("Out of good eraseblocks, cannot write firmware\n");
 			return -ENOSPC;
+		}
 
 		pr_debug("writing %p peb %d, left 0x%08x\n",
 				buf, block, len);

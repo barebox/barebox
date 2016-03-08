@@ -42,6 +42,7 @@
 #include <libbb.h>
 #include <libfile.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/ubi.h>
 #include <linux/kernel.h>
 #include <linux/stat.h>
 #include <linux/log2.h>
@@ -562,6 +563,7 @@ int do_ubiformat(int argc, char *argv[])
 	struct ubigen_info ui;
 	struct ubi_scan_info *si;
 	struct mtd_info_user mtd_user;
+	int ubi_num;
 
 	err = parse_opt(argc, argv);
 	if (err)
@@ -622,8 +624,15 @@ int do_ubiformat(int argc, char *argv[])
 		goto out_close;
 	}
 
-	/* Make sure this MTD device is not attached to UBI */
-	/* FIXME! Find a proper way to do this in barebox! */
+	ubi_num = ubi_num_get_by_mtd(mtd_user.mtd);
+	if (ubi_num >= 0) {
+		err = ubi_detach(ubi_num);
+		if (err) {
+			sys_errmsg("Cannot detach %d\n", err);
+			goto out_close;
+		}
+	}
+
 
 	eb_cnt = mtd_div_by_eb(mtd->size, mtd);
 
@@ -759,6 +768,17 @@ int do_ubiformat(int argc, char *argv[])
 	}
 
 	libscan_ubi_scan_free(si);
+
+	/* Reattach the ubi device in case it was attached in the beginning */
+	if (ubi_num >= 0) {
+		err = ubi_attach_mtd_dev(mtd_user.mtd, ubi_num, 0, 20);
+		if (err) {
+			pr_err("Failed to reattach ubi device to ubi number %d, %d\n",
+			       ubi_num, err);
+			return err;
+		}
+	}
+
 	return 0;
 
 out_free:

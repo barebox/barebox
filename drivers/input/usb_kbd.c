@@ -50,7 +50,6 @@ struct usb_kbd_pdata {
 	uint8_t		old[USB_KBD_BOOT_REPORT_SIZE];
 	struct poller_async	poller;
 	struct usb_device	*usbdev;
-	int		lock;
 	unsigned long	intpipe;
 	int		intpktsize;
 	int		intinterval;
@@ -98,16 +97,11 @@ static void usb_kbd_poll(void *arg)
 	struct usb_device *usbdev = data->usbdev;
 	int ret, i;
 
-	if (data->lock)
-		return;
-
-	data->lock = 1;
-
 	ret = data->do_poll(data);
 	if (ret == -EAGAIN)
 		goto exit;
 	if (ret < 0) {
-		/* exit and lock forever */
+		/* exit with noreturn */
 		dev_err(&usbdev->dev,
 			"usb_submit_int_msg() failed. Keyboard disconnect?\n");
 		return;
@@ -144,7 +138,6 @@ static void usb_kbd_poll(void *arg)
 	memcpy(data->old, data->new, USB_KBD_BOOT_REPORT_SIZE);
 
 exit:
-	data->lock = 0;
 	poller_call_async(&data->poller, data->intinterval * MSECOND, usb_kbd_poll, data);
 }
 

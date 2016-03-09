@@ -46,10 +46,8 @@
 struct usb_kbd_pdata;
 
 struct usb_kbd_pdata {
-	uint64_t	last_report;
 	uint8_t		*new;
 	uint8_t		old[USB_KBD_BOOT_REPORT_SIZE];
-	uint8_t		flags;
 	struct poller_struct	poller;
 	struct usb_device	*usbdev;
 	int		lock;
@@ -173,7 +171,6 @@ static int usb_kbd_probe(struct usb_device *usbdev,
 	data->new = dma_alloc(USB_KBD_BOOT_REPORT_SIZE);
 
 	data->usbdev = usbdev;
-	data->last_report = get_time_ns();
 
 	data->ep = &iface->ep_desc[0];
 	data->intpipe = usb_rcvintpipe(usbdev, data->ep->bEndpointAddress);

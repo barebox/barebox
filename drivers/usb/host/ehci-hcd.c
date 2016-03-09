@@ -1005,7 +1005,7 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 	struct usb_host *host = dev->host;
 	struct ehci_priv *ehci = to_ehci(host);
 	struct int_queue *result = NULL;
-	uint32_t i, toggle;
+	uint32_t i;
 	struct QH *list = ehci->periodic_queue;
 
 	/*
@@ -1057,8 +1057,6 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 	memset(result->first, 0, sizeof(struct QH) * queuesize);
 	memset(result->tds, 0, sizeof(struct qTD) * queuesize);
 
-	toggle = usb_gettoggle(dev, usb_pipeendpoint(pipe), usb_pipeout(pipe));
-
 	for (i = 0; i < queuesize; i++) {
 		struct QH *qh = result->first + i;
 		struct qTD *td = result->tds + i;
@@ -1073,7 +1071,6 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 		qh->qh_endpt1 =
 			cpu_to_hc32((0 << 28) | /* No NAK reload (ehci 4.9) */
 			(usb_maxpacket(dev, pipe) << 16) | /* MPS */
-			(1 << 14) |
 			QH_ENDPT1_EPS(ehci_encode_speed(dev->speed)) |
 			(usb_pipeendpoint(pipe) << 8) | /* Endpoint Number */
 			(usb_pipedevice(pipe) << 0));
@@ -1092,7 +1089,6 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 			"communication direction is '%s'\n",
 			usb_pipein(pipe) ? "in" : "out");
 		td->qt_token = cpu_to_hc32(
-			QT_TOKEN_DT(toggle) |
 			(elementsize << 16) |
 			((usb_pipein(pipe) ? 1 : 0) << 8) | /* IN/OUT token */
 			0x80); /* active */
@@ -1108,7 +1104,6 @@ static struct int_queue *ehci_create_int_queue(struct usb_device *dev,
 		    cpu_to_hc32((td->qt_buffer[0] + 0x4000) & ~0xfff);
 
 		*buf = buffer + i * elementsize;
-		toggle ^= 1;
 	}
 
 	if (ehci->periodic_schedules > 0) {
@@ -1144,8 +1139,7 @@ static void *ehci_poll_int_queue(struct usb_device *dev,
 {
 	struct QH *cur = queue->current;
 	struct qTD *cur_td;
-	uint32_t token, toggle;
-	unsigned long pipe = queue->pipe;
+	uint32_t token;
 
 	/* depleted queue */
 	if (cur == NULL) {
@@ -1161,9 +1155,6 @@ static void *ehci_poll_int_queue(struct usb_device *dev,
 			token);
 		return NULL;
 	}
-
-	toggle = QT_TOKEN_GET_DT(token);
-	usb_settoggle(dev, usb_pipeendpoint(pipe), usb_pipeout(pipe), toggle);
 
 	if (!(cur->qh_link & QH_LINK_TERMINATE))
 		queue->current++;

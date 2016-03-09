@@ -1183,7 +1183,6 @@ static int ehci_destroy_int_queue(struct usb_device *dev,
 	struct usb_host *host = dev->host;
 	struct ehci_priv *ehci = to_ehci(host);
 	struct QH *cur = ehci->periodic_queue;
-	uint64_t start;
 
 	if (disable_periodic(ehci) < 0) {
 		dev_err(&dev->dev,
@@ -1192,7 +1191,6 @@ static int ehci_destroy_int_queue(struct usb_device *dev,
 	}
 	ehci->periodic_schedules--;
 
-	start = get_time_ns();
 	while (!(cur->qh_link & cpu_to_hc32(QH_LINK_TERMINATE))) {
 		dev_dbg(&dev->dev,
 			"considering %p, with qh_link %x\n",
@@ -1205,12 +1203,6 @@ static int ehci_destroy_int_queue(struct usb_device *dev,
 			break;
 		}
 		cur = NEXT_QH(cur);
-		if (is_timeout_non_interruptible(start, 500 * MSECOND)) {
-			dev_err(&dev->dev,
-				"Timeout destroying interrupt endpoint queue\n");
-			result = -ETIMEDOUT;
-			goto out;
-		}
 	}
 
 	if (ehci->periodic_schedules > 0) {

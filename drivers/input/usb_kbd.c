@@ -196,7 +196,11 @@ static int usb_kbd_probe(struct usb_device *usbdev,
 	} else
 		dev_dbg(&usbdev->dev, "poll keyboard via int ep\n");
 
-	input_device_register(&data->input);
+	ret = input_device_register(&data->input);
+	if (ret) {
+		dev_err(&usbdev->dev, "can't register input\n");
+		return ret;
+	}
 
 	data->poller.func = usb_kbd_poll;
 

@@ -48,7 +48,7 @@ struct usb_kbd_pdata;
 struct usb_kbd_pdata {
 	uint8_t		*new;
 	uint8_t		old[USB_KBD_BOOT_REPORT_SIZE];
-	struct poller_struct	poller;
+	struct poller_async	poller;
 	struct usb_device	*usbdev;
 	int		lock;
 	unsigned long	intpipe;
@@ -92,10 +92,9 @@ static const unsigned char usb_kbd_keycode[256] = {
 	150,158,159,128,136,177,178,176,142,152,173,140
 };
 
-static void usb_kbd_poll(struct poller_struct *poller)
+static void usb_kbd_poll(void *arg)
 {
-	struct usb_kbd_pdata *data = container_of(poller,
-						  struct usb_kbd_pdata, poller);
+	struct usb_kbd_pdata *data = arg;
 	struct usb_device *usbdev = data->usbdev;
 	int ret, i;
 
@@ -146,6 +145,7 @@ static void usb_kbd_poll(struct poller_struct *poller)
 
 exit:
 	data->lock = 0;
+	poller_call_async(&data->poller, data->intinterval * MSECOND, usb_kbd_poll, data);
 }
 
 static int usb_kbd_probe(struct usb_device *usbdev,
@@ -201,16 +201,22 @@ static int usb_kbd_probe(struct usb_device *usbdev,
 		return ret;
 	}
 
-	data->poller.func = usb_kbd_poll;
+	ret = poller_async_register(&data->poller);
+	if (ret) {
+		dev_err(&usbdev->dev, "can't setup poller\n");
+		return ret;
+	}
 
-	return poller_register(&data->poller);
+	poller_call_async(&data->poller, data->intinterval * MSECOND, usb_kbd_poll, data);
+
+	return 0;
 }
 
 static void usb_kbd_disconnect(struct usb_device *usbdev)
 {
 	struct usb_kbd_pdata *data = usbdev->drv_data;
 
-	poller_unregister(&data->poller);
+	poller_async_unregister(&data->poller);
 	input_device_unregister(&data->input);
 	dma_free(data->new);
 	free(data);

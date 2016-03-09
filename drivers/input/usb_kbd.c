@@ -123,7 +123,6 @@ static void usb_kbd_poll(struct poller_struct *poller)
 		input_report_key_event(&data->input, usb_kbd_keycode[i + 224], (data->new[0] >> i) & 1);
 
 	for (i = 2; i < 8; i++) {
-
 		if (data->old[i] > 3 && memscan(data->new + 2, data->old[i], 6) == data->new + 8) {
 			if (usb_kbd_keycode[data->old[i]])
 				input_report_key_event(&data->input, usb_kbd_keycode[data->old[i]], 0);
@@ -143,7 +142,7 @@ static void usb_kbd_poll(struct poller_struct *poller)
 		}
 	}
 
-	memcpy(data->old, data->new, 8);
+	memcpy(data->old, data->new, USB_KBD_BOOT_REPORT_SIZE);
 
 exit:
 	data->lock = 0;

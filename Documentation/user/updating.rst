@@ -30,3 +30,11 @@ commands. The exact commands are board specific.
 
 **NOTE** barebox images can be enriched with metadata which can be used to check
 if a given image is suitable for updating barebox, see :ref:`imd`.
+
+Repairing existing boot images
+------------------------------
+
+Some SoCs allow to store multiple boot images on a device in order to
+improve robustness. When an update handler supports it the handler can
+repair and/or refresh an image from this redundant information. This is
+done with the '-r' option to :ref:`command_barebox_update`.

@@ -65,9 +65,13 @@ int bbu_confirm(struct bbu_data *data)
 	if (data->flags & BBU_FLAG_YES)
 		return 0;
 
-	printf("update barebox from %s using handler %s to %s (y/n)?\n",
+	if (data->imagefile)
+		printf("update barebox from %s using handler %s to %s (y/n)?\n",
 			data->imagefile, data->handler_name,
 			data->devicefile);
+	else
+		printf("Refresh barebox on %s using handler %s (y/n)?\n",
+			data->devicefile, data->handler_name);
 
 	key = read_key();
 
@@ -140,6 +144,12 @@ int barebox_update(struct bbu_data *data)
 
 	if (!handler)
 		return -ENODEV;
+
+	if (!data->image && !data->imagefile &&
+	    !(handler->flags & BBU_HANDLER_CAN_REFRESH)) {
+		pr_err("No Image file given\n");
+		return -EINVAL;
+	}
 
 	if (!data->handler_name)
 		data->handler_name = handler->name;

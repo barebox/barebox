@@ -144,6 +144,7 @@ int readlink(const char *path, char *buf, size_t bufsiz);
 int mount (const char *device, const char *fsname, const char *path,
 		const char *fsoptions);
 int umount(const char *pathname);
+int umount_by_cdev(struct cdev *cdev);
 
 /* not-so-standard functions */
 int erase(int fd, loff_t count, loff_t offset);

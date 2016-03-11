@@ -33,7 +33,7 @@
 			#clock-cells = <1>;
 		};
 
-		spi: spi@1f000000{
+		spi: spi@1f000000 {
 			#address-cells = <1>;
 			#size-cells = <0>;
 			compatible = "qca,ath79-spi";

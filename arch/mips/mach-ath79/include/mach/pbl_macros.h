@@ -179,4 +179,99 @@
 			| AR933X_GPIO_FUNC_RSRV15, GPIO_FUNC
 .endm
 
+#define RESET_REG_BOOTSTRAP	((KSEG1 | AR71XX_RESET_BASE) \
+					| AR933X_RESET_REG_BOOTSTRAP)
+
+.macro	pbl_ar9331_mdio_gpio_enable
+	/* Bit 18 enables MDC and MDIO function on GPIO26 and GPIO28 */
+	pbl_reg_set (1 << 18), RESET_REG_BOOTSTRAP
+.endm
+
+.macro	hornet_mips24k_cp0_setup
+	.set push
+	.set noreorder
+
+	/*
+	 * Clearing CP0 registers - This is generally required for the MIPS-24k
+	 * core used by Atheros.
+	 */
+	mtc0	zero, CP0_INDEX
+	mtc0	zero, CP0_ENTRYLO0
+	mtc0	zero, CP0_ENTRYLO1
+	mtc0	zero, CP0_CONTEXT
+	mtc0	zero, CP0_PAGEMASK
+	mtc0	zero, CP0_WIRED
+	mtc0	zero, CP0_INFO
+	mtc0	zero, CP0_COUNT
+	mtc0	zero, CP0_ENTRYHI
+	mtc0	zero, CP0_COMPARE
+
+	li	t0, ST0_CU0 | ST0_ERL
+	mtc0	t0, CP0_STATUS
+
+	mtc0	zero, CP0_CAUSE
+	mtc0	zero, CP0_EPC
+
+	li	t0, CONF_CM_UNCACHED
+	mtc0	t0, CP0_CONFIG
+
+	mtc0	zero, CP0_LLADDR
+	mtc0	zero, CP0_WATCHLO
+	mtc0	zero, CP0_WATCHHI
+	mtc0	zero, CP0_XCONTEXT
+	mtc0	zero, CP0_FRAMEMASK
+	mtc0	zero, CP0_DIAGNOSTIC
+	mtc0	zero, CP0_DEBUG
+	mtc0	zero, CP0_DEPC
+	mtc0	zero, CP0_PERFORMANCE
+	mtc0	zero, CP0_ECC
+	mtc0	zero, CP0_CACHEERR
+	mtc0	zero, CP0_TAGLO
+
+	.set	pop
+.endm
+
+.macro	hornet_1_1_war
+	.set push
+	.set noreorder
+
+/*
+ * WAR: Hornet 1.1 currently need a reset once we boot to let the resetb has
+ *      enough time to stable, so that trigger reset at 1st boot, system team
+ *      is investigaing the issue, will remove in short
+ */
+
+	li  t7, 0xbd000000
+	lw  t8, 0(t7)
+	li  t9, 0x12345678
+
+	/* if value of 0xbd000000 != 0x12345678, go to do_reset */
+	bne t8, t9, do_reset
+	 nop
+
+	li  t9, 0xffffffff
+	sw  t9, 0(t7)
+	b   normal_path
+	 nop
+
+do_reset:
+	/* put 0x12345678 into 0xbd000000 */
+	sw  t9, 0(t7)
+
+	/* reset register 0x1806001c */
+	li  t7, 0xb806001c
+	lw  t8, 0(t7)
+	/* bit24, fullchip reset */
+	li  t9, 0x1000000
+	or  t8, t8, t9
+	sw  t8, 0(t7)
+
+do_reset_loop:
+	b   do_reset_loop
+	 nop
+
+normal_path:
+	.set	pop
+.endm
+
 #endif /* __ASM_MACH_ATH79_PBL_MACROS_H */

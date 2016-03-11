@@ -18,6 +18,7 @@
 #include <asm/barebox-arm.h>
 #include <image-metadata.h>
 #include <mach/generic.h>
+#include <mach/esdctl.h>
 #include <linux/sizes.h>
 
 static inline void setup_uart(void)
@@ -35,7 +36,7 @@ static inline void setup_uart(void)
 	putc_ll('>');
 }
 
-extern char __dtb_imx6dl_tx6u_801x_start[];
+extern char __dtb_imx6dl_tx6u_start[];
 
 BAREBOX_IMD_TAG_STRING(tx6x_mx6_memsize_1G, IMD_TYPE_PARAMETER, "memsize=1024", 0);
 
@@ -52,7 +53,27 @@ ENTRY_FUNCTION(start_imx6dl_tx6x_1g, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx6dl_tx6u_801x_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_tx6u_start - get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
+}
+
+extern char __dtb_imx6q_tx6q_start[];
+
+ENTRY_FUNCTION(start_imx6q_tx6x_1g, r0, r1, r2)
+{
+	void *fdt;
+
+	imx6_cpu_lowlevel_init();
+
+	arm_setup_stack(0x00920000 - 8);
+
+	IMD_USED(tx6x_mx6_memsize_1G);
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart();
+
+	fdt = __dtb_imx6q_tx6q_start - get_runtime_offset();
+
+	imx6q_barebox_entry(fdt);
 }

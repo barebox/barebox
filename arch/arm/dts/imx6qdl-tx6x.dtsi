@@ -1,21 +1,32 @@
-#include <arm/imx6dl-tx6u-801x.dts>
-#include "imx6qdl.dtsi"
-
 / {
-	model = "Ka-Ro electronics TX6U-801x Module";
-	compatible = "karo,imx6dl-tx6dl", "fsl,imx6dl";
-
 	chosen {
 		linux,stdout-path = &uart1;
 
-		environment@0 {
+		environment-nand {
+			status = "disabled";
 			compatible = "barebox,environment";
 			device-path = &gpmi, "partname:barebox-environment";
 		};
+
+		environment-emmc {
+			status = "disabled";
+			compatible = "barebox,environment";
+			device-path = &usdhc4, "partname:boot1";
+		};
+	};
+
+	gpio-keys {
+		status = "disabled";
 	};
 };
 
+&fec {
+	phy-reset-duration = <22>;
+};
+
 &gpmi {
+	status = "disabled";
+
 	partition@0 {
 		label = "barebox";
 		reg = <0x0 0x400000>;
@@ -53,13 +64,31 @@
 				MX6QDL_PAD_GPIO_16__ENET_REF_CLK	0x4001b0b0
 			>;
 		};
-	};
-};
 
-&fec {
-	phy-reset-duration = <22>;
+		pinctrl_usdhc4: usdhc4grp {
+			fsl,pins = <
+				MX6QDL_PAD_SD4_CMD__SD4_CMD		0x070b1
+				MX6QDL_PAD_SD4_CLK__SD4_CLK		0x070b1
+				MX6QDL_PAD_SD4_DAT0__SD4_DATA0		0x070b1
+				MX6QDL_PAD_SD4_DAT1__SD4_DATA1		0x070b1
+				MX6QDL_PAD_SD4_DAT2__SD4_DATA2		0x070b1
+				MX6QDL_PAD_SD4_DAT3__SD4_DATA3		0x070b1
+				MX6QDL_PAD_NANDF_ALE__SD4_RESET		0x0b0b1
+			>;
+		};
+	};
 };
 
 &ocotp {
 	barebox,provide-mac-address = <&fec 0x620>;
+};
+
+&usdhc4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc4>;
+	bus-width = <4>;
+	non-removable;
+	no-1-8-v;
+	fsl,wp-controller;
+	status = "disabled";
 };

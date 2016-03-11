@@ -1,0 +1,12 @@
+/dts-v1/;
+
+#include <arm/imx6q.dtsi>
+#include <arm/imx6qdl-tx6.dtsi>
+#include "imx6q.dtsi"
+#include "imx6qdl-tx6x.dtsi"
+
+/ {
+	model = "Ka-Ro electronics TX6Q Module";
+	compatible = "karo,imx6q-tx6q", "fsl,imx6q";
+};
+

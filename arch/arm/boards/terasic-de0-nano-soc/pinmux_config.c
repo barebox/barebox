@@ -29,7 +29,7 @@
 
 #include <common.h>
 
-static unsigned long sys_mgr_init_table[] = {
+unsigned long sys_mgr_init_table[] = {
 	0, /* EMACIO0 */
 	2, /* EMACIO1 */
 	2, /* EMACIO2 */
@@ -69,12 +69,12 @@ static unsigned long sys_mgr_init_table[] = {
 	1, /* GENERALIO4 */
 	0, /* GENERALIO5 */
 	0, /* GENERALIO6 */
-	0, /* GENERALIO7 */
-	0, /* GENERALIO8 */
-	3, /* GENERALIO9 */
-	3, /* GENERALIO10 */
-	3, /* GENERALIO11 */
-	3, /* GENERALIO12 */
+	1, /* GENERALIO7 */
+	1, /* GENERALIO8 */
+	0, /* GENERALIO9 */
+	0, /* GENERALIO10 */
+	0, /* GENERALIO11 */
+	0, /* GENERALIO12 */
 	0, /* GENERALIO13 */
 	0, /* GENERALIO14 */
 	1, /* GENERALIO15 */
@@ -109,12 +109,12 @@ static unsigned long sys_mgr_init_table[] = {
 	2, /* MIXED1IO12 */
 	2, /* MIXED1IO13 */
 	0, /* MIXED1IO14 */
-	3, /* MIXED1IO15 */
-	3, /* MIXED1IO16 */
-	3, /* MIXED1IO17 */
-	3, /* MIXED1IO18 */
-	3, /* MIXED1IO19 */
-	3, /* MIXED1IO20 */
+	0, /* MIXED1IO15 */
+	0, /* MIXED1IO16 */
+	0, /* MIXED1IO17 */
+	0, /* MIXED1IO18 */
+	0, /* MIXED1IO19 */
+	0, /* MIXED1IO20 */
 	0, /* MIXED1IO21 */
 	0, /* MIXED2IO0 */
 	0, /* MIXED2IO1 */

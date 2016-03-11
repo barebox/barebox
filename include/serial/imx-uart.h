@@ -84,6 +84,7 @@
 #define	 UFCR_RFDIV2	  (0b100<<7)  /* Reference freq divider mask */
 #define	 UFCR_RFDIV1	  (0b101<<7)  /* Reference freq divider mask */
 #define	 UFCR_RFDIV7	  (0b110<<7)  /* Reference freq divider mask */
+#define  UFCR_DCEDTE	 (1<<6)   /* DCE/DTE mode select */
 #define  UFCR_TXTL_SHF   10      /* Transmitter trigger level shift */
 #define  USR1_PARITYERR  (1<<15) /* Parity error interrupt flag */
 #define  USR1_RTSS  	 (1<<14) /* RTS pin status */

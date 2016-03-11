@@ -55,6 +55,7 @@ static struct imx_serial_devtype_data imx21_data = {
 struct imx_serial_priv {
 	struct console_device cdev;
 	int baudrate;
+	int dte_mode;
 	struct notifier_block notify;
 	void __iomem *regs;
 	struct clk *clk;
@@ -93,9 +94,12 @@ static int imx_serial_init_port(struct console_device *cdev)
 	writel(0, regs + UBMR);
 	writel(0, regs + priv->devtype->uts);
 
-
 	/* Configure FIFOs */
-	writel(0xa81, regs + UFCR);
+	val = 0xa81;
+	if (priv->dte_mode)
+		val |= UFCR_DCEDTE;
+
+	writel(val, regs + UFCR);
 
 
 	if (priv->devtype->onems)
@@ -239,6 +243,9 @@ static int imx_serial_probe(struct device_d *dev)
 			cdev->devid = DEVICE_ID_SINGLE;
 		}
 	}
+
+	if (of_property_read_bool(dev->device_node, "fsl,dte-mode"))
+		priv->dte_mode = 1;
 
 	imx_serial_init_port(cdev);
 

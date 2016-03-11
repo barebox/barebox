@@ -441,8 +441,10 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 			continue;
 		}
 
-		if (ret)
+		if (ret) {
+			pr_err("Writing block %d failed with: %s\n", block, strerror(-ret));
 			return ret;
+		}
 
 		len -= now;
 		buf += now;

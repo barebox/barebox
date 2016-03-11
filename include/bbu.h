@@ -36,6 +36,8 @@ int bbu_confirm(struct bbu_data *);
 
 int barebox_update(struct bbu_data *);
 
+bool barebox_update_handler_exists(struct bbu_data *);
+
 void bbu_handlers_list(void);
 
 #ifdef CONFIG_BAREBOX_UPDATE

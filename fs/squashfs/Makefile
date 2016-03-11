@@ -1,0 +1,13 @@
+obj-y	+= squashfs.o
+obj-y	+= block.o
+obj-y	+= cache.o
+obj-y	+= decompressor.o
+obj-y	+= decompressor_single.o
+obj-y	+= file.o
+obj-y	+= file_cache.o
+obj-y	+= fragment.o
+obj-y	+= id.o
+obj-y	+= inode.o
+obj-y	+= namei.o
+obj-y	+= super.o
+obj-$(CONFIG_SQUASHFS_XZ) += xz_wrapper.o

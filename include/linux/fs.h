@@ -19,6 +19,26 @@
 #endif
 
 /*
+ * File types
+ *
+ * NOTE! These match bits 12..15 of stat.st_mode
+ * (ie "(i_mode >> 12) & 15").
+ */
+#define DT_UNKNOWN	0
+#define DT_FIFO		1
+#define DT_CHR		2
+#define DT_DIR		4
+#define DT_BLK		6
+#define DT_REG		8
+#define DT_LNK		10
+#define DT_SOCK		12
+#define DT_WHT		14
+
+struct dir_context {
+	loff_t pos;
+};
+
+/*
  * These are the fs-independent mount-flags: up to 32 flags are supported
  */
 #define MS_RDONLY	 1	/* Mount read-only */
@@ -74,6 +94,7 @@ struct inode {
 	struct timespec		i_mtime;
 	struct timespec		i_ctime;
 	unsigned int		i_blkbits;
+	blkcnt_t		i_blocks;
 	unsigned short          i_bytes;
 	umode_t			i_mode;
 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
@@ -194,6 +215,7 @@ struct file_system_type {
 
 struct file {
 	struct path		f_path;
+	struct inode		*f_inode;	/* cached value */
 #define f_dentry	f_path.dentry
 #define f_vfsmnt	f_path.mnt
 	const struct file_operations	*f_op;
@@ -360,5 +382,10 @@ struct file {
 
 #define I_DIRTY (I_DIRTY_SYNC | I_DIRTY_DATASYNC | I_DIRTY_PAGES)
 #define I_DIRTY_ALL (I_DIRTY | I_DIRTY_TIME)
+
+static inline loff_t i_size_read(const struct inode *inode)
+{
+	return inode->i_size;
+}
 
 #endif /* _LINUX_FS_H */

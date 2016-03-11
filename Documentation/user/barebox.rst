@@ -113,9 +113,9 @@ with the most popular being ``menuconfig``::
 
   make menuconfig
 
-barebox uses the same (Kbuild) configuration system as Linux, so you can use
-all the kernel config targets you already know, e.g. ``make xconfig``,
-``make allyesconfig`` etc.
+barebox uses the same configuration and build system as Linux (Kconfig,
+Kbuild), so you can use all the kernel config targets you already know, e.g.
+``make xconfig``, ``make allyesconfig`` etc.
 
 Configuring and compiling "out-of-tree"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -186,7 +186,9 @@ with U-Boot's 'go' command::
   U-Boot: tftp $load_addr barebox.bin
   U-Boot: go $load_addr
 
-With barebox already running on your board, this can be used to chainload another barebox::
+With barebox already running on your board, this can be used to chainload
+another barebox. For instance, if you mounted a TFTP server to ``/mnt/tftp``
+(see :ref:`filesystems_tftp` for how to do that), chainload barebox with::
 
   bootm /mnt/tftp/barebox.bin
 

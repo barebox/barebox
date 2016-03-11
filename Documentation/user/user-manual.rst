@@ -27,6 +27,7 @@ Contents:
    usb
    ubi
    booting-linux
+   remote-control
    system-setup
    reset-reason
    system-reset

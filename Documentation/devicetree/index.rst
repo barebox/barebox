@@ -11,3 +11,4 @@ Contents:
    bindings/barebox/*
    bindings/leds/*
    bindings/misc/*
+   bindings/mtd/*

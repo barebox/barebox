@@ -20,7 +20,7 @@ directory. Nevertheless, the files are there.
 
 Example::
 
-  mount -t smhfs /dev/null /mnt/smhfs
+  barebox:/ mount -t smhfs /dev/null /mnt/smhfs
 
 
 Host Side Setup

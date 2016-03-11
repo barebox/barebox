@@ -9,4 +9,4 @@ is ``ramfs``.
 
 Example::
 
-  mount none ramfs /somedir
+  barebox:/ mount none ramfs /somedir

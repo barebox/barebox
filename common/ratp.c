@@ -398,20 +398,6 @@ out:
 	ratp_console_unregister(ctx);
 }
 
-static int do_ratp_close(int argc, char *argv[])
-{
-	if (ratp_command_ctx && ratp_command_ctx->cdev)
-		ratp_console_unregister(ratp_command_ctx);
-	else
-		printf("ratp is not active\n");
-
-	return 0;
-}
-
-BAREBOX_CMD_START(ratp_close)
-	.cmd	= do_ratp_close,
-BAREBOX_CMD_END
-
 int barebox_ratp_fs_call(struct ratp_bb_pkt *tx, struct ratp_bb_pkt **rx)
 {
 	struct ratp_ctx *ctx = ratp_command_ctx;

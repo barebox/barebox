@@ -72,20 +72,6 @@ static inline int ubi_dbg_is_bgt_disabled(const struct ubi_device *ubi)
 	return ubi->dbg.disable_bgt;
 }
 
-/**
- * ubi_dbg_is_erase_failure - if its time to emulate an erase failure.
- * @ubi: UBI device description object
- *
- * Returns non-zero if an erase failure should be emulated, otherwise returns
- * zero.
- */
-static inline int ubi_dbg_is_erase_failure(const struct ubi_device *ubi)
-{
-	if (ubi->dbg.emulate_io_failures)
-		return !(random32() % 400);
-	return 0;
-}
-
 static inline int ubi_dbg_chk_io(const struct ubi_device *ubi)
 {
 	return ubi->dbg.chk_io;

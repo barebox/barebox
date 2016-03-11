@@ -400,7 +400,7 @@ static int imx_bbu_firmware_start_block(struct mtd_info *mtd, int num)
 static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 				  size_t len)
 {
-	int ret, i;
+	int ret, i, newbadblock = 0;
 	int num_blocks = imx_bbu_firmware_max_blocks(mtd);
 	int block = imx_bbu_firmware_start_block(mtd, num);
 
@@ -437,6 +437,7 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 		if (ret == -EIO) {
 			block++;
 			num_blocks--;
+			newbadblock = 1;
 			continue;
 		}
 
@@ -449,7 +450,7 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
 		num_blocks--;
 	}
 
-	return block;
+	return newbadblock;
 }
 
 static void *dbbt_data_create(struct mtd_info *mtd)

@@ -988,6 +988,7 @@ static int sdc_fb_register_overlay(struct ipu_fb_info *fbi, void *fb)
 
 static int imxfb_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct ipu_fb_info *fbi;
 	struct fb_info *info;
 	const struct imx_ipu_fb_platform_data *pdata = dev->platform_data;
@@ -1003,9 +1004,10 @@ static int imxfb_probe(struct device_d *dev)
 	if (IS_ERR(fbi->clk))
 		return PTR_ERR(fbi->clk);
 
-	fbi->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(fbi->regs))
-		return PTR_ERR(fbi->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	fbi->regs = IOMEM(iores->start);
 	fbi->dev = dev;
 	fbi->enable = pdata->enable;
 	fbi->disp_data_fmt = pdata->disp_data_fmt;

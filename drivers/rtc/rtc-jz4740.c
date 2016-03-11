@@ -113,16 +113,18 @@ static struct rtc_class_ops jz4740_rtc_ops = {
 
 static int jz4740_rtc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int ret;
 	struct jz4740_rtc *rtc;
 	uint32_t scratchpad;
 	void __iomem *base;
 
-	base = dev_request_mem_region(dev, 0);
-	if (!base) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(iores);
 	}
+	base = IOMEM(iores->start);
 
 	rtc = xzalloc(sizeof(*rtc));
 

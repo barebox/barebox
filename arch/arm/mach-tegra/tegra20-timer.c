@@ -45,17 +45,19 @@ static struct clocksource cs = {
 
 static int tegra20_timer_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	u32 reg;
 
 	/* use only one timer */
 	if (timer_base)
 		return -EBUSY;
 
-	timer_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(timer_base)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(timer_base);
+		return PTR_ERR(iores);
 	}
+	timer_base = IOMEM(iores->start);
 
 	/*
 	 * calibrate timer to run at 1MHz

@@ -723,6 +723,7 @@ static void s3c_info(struct device_d *hw_dev)
 
 static int s3c_mci_probe(struct device_d *hw_dev)
 {
+	struct resource *iores;
 	struct s3c_mci_host *s3c_host;
 	struct s3c_mci_platform_data *pd = hw_dev->platform_data;
 
@@ -741,9 +742,10 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 	}
 
 	hw_dev->priv = s3c_host;
-	s3c_host->base = dev_request_mem_region(hw_dev, 0);
-	if (IS_ERR(s3c_host->base))
-		return PTR_ERR(s3c_host->base);
+	iores = dev_request_mem_resource(hw_dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	s3c_host->base = IOMEM(iores->start);
 
 	s3c_host->host.hw_dev = hw_dev;
 

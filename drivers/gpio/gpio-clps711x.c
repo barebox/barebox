@@ -15,6 +15,7 @@
 
 static int clps711x_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int err, id = dev->id;
 	void __iomem *dat, *dir = NULL, *dir_inv = NULL;
 	struct bgpio_chip *bgc;
@@ -25,20 +26,23 @@ static int clps711x_gpio_probe(struct device_d *dev)
 	if (id < 0 || id > 4)
 		return -ENODEV;
 
-	dat = dev_request_mem_region(dev, 0);
-	if (IS_ERR(dat))
-		return PTR_ERR(dat);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	dat = IOMEM(iores->start);
 
 	switch (id) {
 	case 3:
-		dir_inv = dev_request_mem_region(dev, 1);
-		if (IS_ERR(dir_inv))
-			return PTR_ERR(dir_inv);
+		iores = dev_request_mem_resource(dev, 1);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		dir_inv = IOMEM(iores->start);
 		break;
 	default:
-		dir = dev_request_mem_region(dev, 1);
-		if (IS_ERR(dir))
-			return PTR_ERR(dir);
+		iores = dev_request_mem_resource(dev, 1);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		dir = IOMEM(iores->start);
 		break;
 	}
 

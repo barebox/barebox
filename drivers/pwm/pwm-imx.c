@@ -212,6 +212,7 @@ static struct of_device_id imx_pwm_dt_ids[] = {
 
 static int imx_pwm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	const struct imx_pwm_data *data;
 	struct imx_chip *imx;
 	int ret = 0;
@@ -226,9 +227,10 @@ static int imx_pwm_probe(struct device_d *dev)
 	if (IS_ERR(imx->clk_per))
 		return PTR_ERR(imx->clk_per);
 
-	imx->mmio_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(imx->mmio_base))
-		return PTR_ERR(imx->mmio_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	imx->mmio_base = IOMEM(iores->start);
 
 	imx->chip.ops = &imx_pwm_ops;
 	if (dev->device_node) {

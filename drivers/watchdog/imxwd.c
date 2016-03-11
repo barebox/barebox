@@ -173,6 +173,7 @@ static int imx21_wd_init(struct imx_wd *priv)
 
 static int imx_wd_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_wd *priv;
 	void *ops;
 	int ret;
@@ -182,11 +183,12 @@ static int imx_wd_probe(struct device_d *dev)
 		return ret;
 
 	priv = xzalloc(sizeof(struct imx_wd));
-	priv->base = dev_request_mem_region(dev, 0);
-	if (!priv->base) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(iores);
 	}
+	priv->base = IOMEM(iores->start);
 	priv->ops = ops;
 	priv->wd.set_timeout = imx_watchdog_set_timeout;
 	priv->wd.dev = dev;

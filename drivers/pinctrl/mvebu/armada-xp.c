@@ -370,13 +370,15 @@ static struct of_device_id armada_xp_pinctrl_of_match[] = {
 
 static int armada_xp_pinctrl_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	const struct of_device_id *match =
 		of_match_node(armada_xp_pinctrl_of_match, dev->device_node);
 	struct mvebu_pinctrl_soc_info *soc = &armada_xp_pinctrl_info;
 
-	mpp_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(mpp_base))
-		return PTR_ERR(mpp_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	mpp_base = IOMEM(iores->start);
 
 	soc->variant = (enum armada_xp_variant)match->data;
 

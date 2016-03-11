@@ -435,13 +435,17 @@ static int cs8900_check_id(struct cs8900_priv *priv)
 
 static int cs8900_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct cs8900_priv *priv;
 
 	debug("cs8900_init()\n");
 
 	priv = (struct cs8900_priv *)xmalloc(sizeof(*priv));
-	priv->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->regs = IOMEM(iores->start);
 	if (cs8900_check_id(priv)) {
 		free(priv);
 		return -1;

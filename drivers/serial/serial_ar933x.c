@@ -156,15 +156,17 @@ static int ar933x_serial_getc(struct console_device *cdev)
 
 static int ar933x_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct console_device *cdev;
 	struct ar933x_uart_priv	*priv;
 	u32 uart_cs;
 
 	cdev = xzalloc(sizeof(struct console_device));
 	priv = xzalloc(sizeof(struct ar933x_uart_priv));
-	priv->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->base))
-		return PTR_ERR(priv->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->base = IOMEM(iores->start);
 
 	dev->priv = priv;
 

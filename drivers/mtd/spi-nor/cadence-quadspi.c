@@ -1109,6 +1109,7 @@ static void cqspi_controller_init(struct cqspi_st *cqspi)
 
 static int cqspi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *np = dev->device_node;
 	struct cqspi_st *cqspi;
 	struct cadence_qspi_platform_data *pdata = dev->platform_data;
@@ -1142,14 +1143,20 @@ static int cqspi_probe(struct device_d *dev)
 
 	clk_enable(cqspi->qspi_clk);
 
-	cqspi->iobase = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	cqspi->iobase = IOMEM(iores->start);
 	if (IS_ERR(cqspi->iobase)) {
 		dev_err(dev, "dev_request_mem_region 0 failed\n");
 		ret = PTR_ERR(cqspi->iobase);
 		goto probe_failed;
 	}
 
-	cqspi->ahb_base = dev_request_mem_region(dev, 1);
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	cqspi->ahb_base = IOMEM(iores->start);
 	if (IS_ERR(cqspi->ahb_base)) {
 		dev_err(dev, "dev_request_mem_region 0 failed\n");
 		ret = PTR_ERR(cqspi->ahb_base);

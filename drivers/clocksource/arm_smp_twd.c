@@ -42,6 +42,7 @@ static struct clocksource smp_twd_clksrc = {
 
 static int smp_twd_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	u32 tick_rate;
 	u32 val;
 	int ret;
@@ -61,9 +62,10 @@ static int smp_twd_probe(struct device_d *dev)
 		return ret;
 	}
 
-	twd_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(twd_base))
-		return PTR_ERR(twd_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	twd_base = IOMEM(iores->start);
 
 	tick_rate = clk_get_rate(twd_clk);
 	if (tick_rate > SMP_TWD_MAX_FREQ) {

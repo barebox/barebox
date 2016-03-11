@@ -30,17 +30,19 @@ static int am335x_init(struct usb_phy *phy)
 
 static int am335x_phy_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int ret;
 
 	am_usbphy = xzalloc(sizeof(*am_usbphy));
 	if (!am_usbphy)
 		return -ENOMEM;
 
-	am_usbphy->base = dev_request_mem_region(dev, 0);
-	if (!am_usbphy->base) {
-		ret = -ENODEV;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto err_free;
 	}
+	am_usbphy->base = IOMEM(iores->start);
 
 	am_usbphy->phy_ctrl = am335x_get_phy_control(dev);
 	if (!am_usbphy->phy_ctrl)

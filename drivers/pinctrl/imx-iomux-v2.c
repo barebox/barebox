@@ -118,9 +118,11 @@ int imx_iomux_setup_multiple_pins(const unsigned int *pin_list, unsigned count)
 
 static int imx_iomux_probe(struct device_d *dev)
 {
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	struct resource *iores;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	return 0;
 }

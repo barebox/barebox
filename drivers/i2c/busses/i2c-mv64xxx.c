@@ -595,6 +595,7 @@ out:
 static int
 mv64xxx_i2c_probe(struct device_d *pd)
 {
+	struct resource *iores;
 	struct mv64xxx_i2c_data		*drv_data;
 	int	rc;
 
@@ -603,9 +604,10 @@ mv64xxx_i2c_probe(struct device_d *pd)
 
 	drv_data = xzalloc(sizeof(*drv_data));
 
-	drv_data->reg_base = dev_request_mem_region(pd, 0);
-	if (IS_ERR(drv_data->reg_base))
-		return PTR_ERR(drv_data->reg_base);
+	iores = dev_request_mem_resource(pd, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	drv_data->reg_base = IOMEM(iores->start);
 
 	drv_data->clk = clk_get(pd, NULL);
 	if (IS_ERR(drv_data->clk))

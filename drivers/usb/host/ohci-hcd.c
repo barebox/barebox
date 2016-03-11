@@ -1793,6 +1793,7 @@ static int ohci_init(struct usb_host *host)
 
 static int ohci_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct usb_host *host;
 	struct ohci *ohci;
 
@@ -1818,9 +1819,10 @@ static int ohci_probe(struct device_d *dev)
 
 	usb_register_host(host);
 
-	ohci->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(ohci->regs))
-		return PTR_ERR(ohci->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ohci->regs = IOMEM(iores->start);
 
 	return 0;
 }

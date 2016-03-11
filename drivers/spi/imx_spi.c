@@ -538,6 +538,7 @@ static int imx_spi_dt_probe(struct imx_spi *imx)
 
 static int imx_spi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct spi_master *master;
 	struct imx_spi *imx;
 	struct spi_imx_master *pdata = dev->platform_data;
@@ -574,7 +575,10 @@ static int imx_spi_probe(struct device_d *dev)
 	imx->chipselect = devdata->chipselect;
 	imx->xchg_single = devdata->xchg_single;
 	imx->do_transfer = devdata->do_transfer;
-	imx->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	imx->regs = IOMEM(iores->start);
 
 	if (devdata->init)
 		devdata->init(imx);

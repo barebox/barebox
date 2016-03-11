@@ -133,10 +133,14 @@ static int netx_serial_tstc(struct console_device *cdev)
 
 static int netx_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct console_device *cdev;
 
 	cdev = xzalloc(sizeof(struct console_device));
-	dev->priv = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	dev->priv = IOMEM(iores->start);
 	cdev->dev = dev;
 	cdev->tstc = netx_serial_tstc;
 	cdev->putc = netx_serial_putc;

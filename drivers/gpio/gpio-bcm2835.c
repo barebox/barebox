@@ -112,11 +112,15 @@ static struct gpio_ops bcm2835_gpio_ops = {
 
 static int bcm2835_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct bcm2835_gpio_chip *bcmgpio;
 	int ret;
 
 	bcmgpio = xzalloc(sizeof(*bcmgpio));
-	bcmgpio->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	bcmgpio->base = IOMEM(iores->start);
 	bcmgpio->chip.ops = &bcm2835_gpio_ops;
 	bcmgpio->chip.base = 0;
 	bcmgpio->chip.ngpio = 54;

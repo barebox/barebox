@@ -122,6 +122,7 @@ static struct gpio_ops digic_gpio_ops = {
 
 static int digic_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct digic_gpio_chip *chip;
 	struct resource *res;
 	resource_size_t rsize;
@@ -136,7 +137,10 @@ static int digic_gpio_probe(struct device_d *dev)
 	rsize = resource_size(res);
 	chip->gc.ngpio = rsize / sizeof(int32_t);
 
-	chip->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	chip->base = IOMEM(iores->start);
 	chip->gc.ops = &digic_gpio_ops;
 	chip->gc.base = 0;
 

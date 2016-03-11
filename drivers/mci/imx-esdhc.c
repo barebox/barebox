@@ -545,6 +545,7 @@ static int fsl_esdhc_detect(struct device_d *dev)
 
 static int fsl_esdhc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct fsl_esdhc_host *host;
 	struct mci_host *mci;
 	u32 caps;
@@ -560,9 +561,10 @@ static int fsl_esdhc_probe(struct device_d *dev)
 		return PTR_ERR(host->clk);
 
 	host->dev = dev;
-	host->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(host->regs))
-		return PTR_ERR(host->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->regs = IOMEM(iores->start);
 
 	/* First reset the eSDHC controller */
 	ret = esdhc_reset(host);

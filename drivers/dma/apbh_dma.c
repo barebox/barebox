@@ -588,6 +588,7 @@ int mxs_dma_go(int chan)
  */
 static int apbh_dma_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct apbh_dma *apbh;
 	struct mxs_dma_chan *pchan;
 	enum mxs_dma_id id;
@@ -598,9 +599,10 @@ static int apbh_dma_probe(struct device_d *dev)
 		return ret;
 
 	apbh_dma = apbh = xzalloc(sizeof(*apbh));
-	apbh->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(apbh->regs))
-		return PTR_ERR(apbh->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	apbh->regs = IOMEM(iores->start);
 
 	apbh->id = id;
 

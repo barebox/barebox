@@ -862,6 +862,7 @@ static int pmecc_build_galois_table(unsigned int mm, int16_t *index_of,
 static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 					 struct atmel_nand_host *host)
 {
+	struct resource *iores;
 	struct mtd_info *mtd = &host->mtd;
 	struct nand_chip *nand_chip = &host->nand_chip;
 	int cap, sector_size, err_no;
@@ -872,21 +873,28 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 	dev_info(host->dev, "Initialize PMECC params, cap: %d, sector: %d\n",
 		 cap, sector_size);
 
-	host->ecc = dev_request_mem_region(dev, 1);
-	if (host->ecc == NULL) {
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->ecc = IOMEM(iores->start);
+	if (IS_ERR(host->ecc)) {
 		dev_err(host->dev, "ioremap failed\n");
 		return -EIO;
 	}
 
-	host->pmerrloc_base = dev_request_mem_region(dev, 2);
-	if (!host->pmerrloc_base) {
+	iores = dev_request_mem_resource(dev, 2);
+	if (IS_ERR(iores)) {
 		dev_err(host->dev,
 			"Can not get I/O resource for PMECC ERRLOC controller!\n");
-		return -EIO;
+		return PTR_ERR(iores);
 	}
+	host->pmerrloc_base = IOMEM(iores->start);
 
-	host->pmecc_rom_base = dev_request_mem_region(dev, 3);
-	if (!host->pmecc_rom_base) {
+	iores = dev_request_mem_resource(dev, 3);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->pmecc_rom_base = IOMEM(iores->start);
+	if (IS_ERR(host->pmecc_rom_base)) {
 		/* Set pmecc_rom_base as the begin of gf table */
 		int size = sector_size == 512 ? 0x2000 : 0x4000;
 		pmecc_galois_table = xzalloc(2 * size * sizeof(uint16_t));
@@ -1245,11 +1253,15 @@ static int atmel_nand_of_init(struct atmel_nand_host *host, struct device_node *
 static int atmel_hw_nand_init_params(struct device_d *dev,
 					 struct atmel_nand_host *host)
 {
+	struct resource *iores;
 	struct mtd_info *mtd = &host->mtd;
 	struct nand_chip *nand_chip = &host->nand_chip;
 
-	host->ecc = dev_request_mem_region(dev, 1);
-	if (host->ecc == NULL) {
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->ecc = IOMEM(iores->start);
+	if (IS_ERR(host->ecc)) {
 		dev_err(host->dev, "ioremap failed\n");
 		return -EIO;
 	}
@@ -1297,6 +1309,7 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
  */
 static int __init atmel_nand_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct atmel_nand_data *pdata = NULL;
 	struct atmel_nand_host *host;
 	struct mtd_info *mtd;
@@ -1312,9 +1325,10 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	if (!pdata)
 		return -ENOMEM;
 
-	host->io_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(host->io_base))
-		return PTR_ERR(host->io_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->io_base = IOMEM(iores->start);
 
 	mtd = &host->mtd;
 	nand_chip = &host->nand_chip;

@@ -555,6 +555,7 @@ static int __init imx6_add_pcie_port(struct pcie_port *pp,
 
 static int __init imx6_pcie_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx6_pcie *imx6_pcie;
 	struct pcie_port *pp;
 	struct device_node *np = dev->device_node;
@@ -567,9 +568,10 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 	pp = &imx6_pcie->pp;
 	pp->dev = dev;
 
-	pp->dbi_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(pp->dbi_base))
-		return PTR_ERR(pp->dbi_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	pp->dbi_base = IOMEM(iores->start);
 
 	/* Fetch GPIOs */
 	imx6_pcie->reset_gpio = of_get_named_gpio(np, "reset-gpio", 0);

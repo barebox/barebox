@@ -1449,12 +1449,14 @@ static struct pxa_udc memory = {
 
 static int __init pxa_udc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct pxa_udc *udc = &memory;
 	int gpio, ret;
 
-	udc->regs = dev_request_mem_region(dev, 0);
-	if (!udc->regs)
-		return -ENXIO;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	udc->regs = IOMEM(iores->start);
 
 	udc->dev = dev;
 	udc->mach = dev->platform_data;

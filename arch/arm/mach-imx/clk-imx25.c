@@ -85,11 +85,13 @@ static const char *per_sel_clks[] = {
 
 static int imx25_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	writel((1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 8) | (1 << 9) |
 			(1 << 10) | (1 << 15) |	(1 << 19) | (1 << 21) | (1 << 22) |

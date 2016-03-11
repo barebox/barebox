@@ -1126,6 +1126,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 
 int cpsw_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct cpsw_platform_data *data = (struct cpsw_platform_data *)dev->platform_data;
 	struct cpsw_priv	*priv;
 	void __iomem		*regs;
@@ -1136,9 +1137,10 @@ int cpsw_probe(struct device_d *dev)
 
 	dev_dbg(dev, "* %s\n", __func__);
 
-	regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(regs))
-		return PTR_ERR(regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	regs = IOMEM(iores->start);
 
 	priv = xzalloc(sizeof(*priv));
 	priv->dev = dev;

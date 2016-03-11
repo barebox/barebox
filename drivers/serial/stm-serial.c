@@ -145,6 +145,7 @@ static int stm_serial_init_port(struct stm_priv *priv)
 
 static int stm_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct stm_priv *priv;
 	struct console_device *cdev;
 
@@ -160,9 +161,10 @@ static int stm_serial_probe(struct device_d *dev)
 	cdev->dev = dev;
 
 	dev->priv = priv;
-	priv->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->base))
-		return PTR_ERR(priv->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->base = IOMEM(iores->start);
 	priv->clk = clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return PTR_ERR(priv->clk);

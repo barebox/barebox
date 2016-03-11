@@ -203,8 +203,14 @@ void *dev_get_mem_region(struct device_d *dev, int num);
 
 /*
  * exlusively request register base 'num' for a device
+ * deprecated, use dev_request_mem_resource instead
  */
 void __iomem *dev_request_mem_region(struct device_d *dev, int num);
+
+/*
+ * exlusively request resource 'num' for a device
+ */
+struct resource *dev_request_mem_resource(struct device_d *dev, int num);
 
 /*
  * exlusively request register base 'num' for a device

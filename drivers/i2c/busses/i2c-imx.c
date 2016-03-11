@@ -584,6 +584,7 @@ static void i2c_fsl_init_recovery(struct fsl_i2c_struct *i2c_fsl, struct device_
 
 static int __init i2c_fsl_probe(struct device_d *pdev)
 {
+	struct resource *iores;
 	struct fsl_i2c_struct *i2c_fsl;
 	struct i2c_platform_data *pdata;
 	int ret;
@@ -604,11 +605,12 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	i2c_fsl->adapter.nr = pdev->id;
 	i2c_fsl->adapter.dev.parent = pdev;
 	i2c_fsl->adapter.dev.device_node = pdev->device_node;
-	i2c_fsl->base = dev_request_mem_region(pdev, 0);
-	if (IS_ERR(i2c_fsl->base)) {
-		ret = PTR_ERR(i2c_fsl->base);
+	iores = dev_request_mem_resource(pdev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto fail;
 	}
+	i2c_fsl->base = IOMEM(iores->start);
 
 	i2c_fsl_init_recovery(i2c_fsl, pdev);
 

@@ -90,14 +90,16 @@ static const char *ipg_per_sel[] = {
 
 static int imx35_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	u32 pdr0, consumer_sel, hsp_sel;
 	struct arm_ahb_div *aad;
 	unsigned char *hsp_div;
 	void __iomem *base;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	writel(0xffffffff, base + CCM_CGR0);
 	writel(0xffffffff, base + CCM_CGR1);

@@ -107,6 +107,7 @@ static const struct of_device_id ath79_gpio_of_match[] = {
 
 static int ath79_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *np = dev->device_node;
 	int err;
 
@@ -125,11 +126,12 @@ static int ath79_gpio_probe(struct device_d *dev)
 		return -EINVAL;
 	}
 
-	ath79_gpio_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(ath79_gpio_base)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(ath79_gpio_base);
+		return PTR_ERR(iores);
 	}
+	ath79_gpio_base = IOMEM(iores->start);
 
 	ath79_gpio_chip.dev = dev;
 	ath79_gpio_chip.ngpio = ath79_gpio_count;

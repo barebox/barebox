@@ -42,6 +42,7 @@ static struct clocksource bcm2835_stc = {
 
 static int bcm2835_cs_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	static struct clk *stc_clk;
 	u32 rate;
 	int ret;
@@ -61,9 +62,10 @@ static int bcm2835_cs_probe(struct device_d *dev)
 	}
 
 	rate = clk_get_rate(stc_clk);
-	stc_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(stc_base))
-		return PTR_ERR(stc_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	stc_base = IOMEM(iores->start);
 
 	clocks_calc_mult_shift(&bcm2835_stc.mult, &bcm2835_stc.shift, rate, NSEC_PER_SEC, 60);
 

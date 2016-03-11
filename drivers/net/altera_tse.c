@@ -492,6 +492,7 @@ static int tse_init_dev(struct eth_device *edev)
 
 static int tse_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct altera_tse_priv *priv;
 	struct mii_bus *miibus;
 	struct eth_device *edev;
@@ -516,9 +517,10 @@ static int tse_probe(struct device_d *dev)
 	edev->parent = dev;
 
 #ifdef CONFIG_TSE_USE_DEDICATED_DESC_MEM
-	tx_desc = dev_request_mem_region(dev, 3);
-	if (IS_ERR(tx_desc))
-		return PTR_ERR(tx_desc);
+	iores = dev_request_mem_resource(dev, 3);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	tx_desc = IOMEM(iores->start);
 	rx_desc = tx_desc + 2;
 #else
 	tx_desc = dma_alloc_coherent(sizeof(*tx_desc) * (3 + PKTBUFSRX), (dma_addr_t *)&dma_handle);
@@ -534,15 +536,19 @@ static int tse_probe(struct device_d *dev)
 	memset(rx_desc, 0, (sizeof *rx_desc) * (PKTBUFSRX + 1)); 
 	memset(tx_desc, 0, (sizeof *tx_desc) * 2);
 
-	priv->tse_regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->tse_regs))
-		return PTR_ERR(priv->tse_regs);
-	priv->sgdma_rx_regs = dev_request_mem_region(dev, 1);
-	if (IS_ERR(priv->sgdma_rx_regs))
-		return PTR_ERR(priv->sgdma_rx_regs);
-	priv->sgdma_tx_regs = dev_request_mem_region(dev, 2);
-	if (IS_ERR(priv->sgdma_tx_regs))
-		return PTR_ERR(priv->sgdma_tx_regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->tse_regs = IOMEM(iores->start);
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->sgdma_rx_regs = IOMEM(iores->start);
+
+	iores = dev_request_mem_resource(dev, 2);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->sgdma_tx_regs = IOMEM(iores->start);
 	priv->rx_desc = rx_desc;
 	priv->tx_desc = tx_desc;
 

@@ -90,15 +90,17 @@ static struct gpio_ops jz4740_gpio_ops = {
 
 static int jz4740_gpio_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 	struct jz4740_gpio_chip *jz4740_gpio;
 	int ret;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return PTR_ERR(base);
+		return PTR_ERR(iores);
 	}
+	base = IOMEM(iores->start);
 
 	jz4740_gpio = xzalloc(sizeof(*jz4740_gpio));
 	jz4740_gpio->base = base;

@@ -545,6 +545,7 @@ int imx_usbmisc_port_post_init(int port, unsigned flags)
 
 static int imx_usbmisc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_usb_misc_data *devtype;
 	int ret;
 
@@ -552,9 +553,10 @@ static int imx_usbmisc_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	usbmisc_base = dev_request_mem_region(dev, 0);
-	if (!usbmisc_base)
-		return -ENOMEM;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	usbmisc_base = IOMEM(iores->start);
 
 	imxusbmisc_data = devtype;
 

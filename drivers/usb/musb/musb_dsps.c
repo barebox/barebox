@@ -349,6 +349,7 @@ static int dsps_register_otg_device(struct dsps_glue *glue)
 
 static int dsps_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct musb_hdrc_platform_data *pdata;
 	struct musb_hdrc_config	*config;
 	struct device_node *dn = dev->device_node;
@@ -378,13 +379,15 @@ static int dsps_probe(struct device_d *dev)
 
 	pdata = &glue->pdata;
 
-	glue->musb.mregs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(glue->musb.mregs))
-		return PTR_ERR(glue->musb.mregs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	glue->musb.mregs = IOMEM(iores->start);
 
-	glue->musb.ctrl_base = dev_request_mem_region(dev, 1);
-	if (IS_ERR(glue->musb.ctrl_base))
-		return PTR_ERR(glue->musb.ctrl_base);
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	glue->musb.ctrl_base = IOMEM(iores->start);
 
 	glue->musb.controller = dev;
 

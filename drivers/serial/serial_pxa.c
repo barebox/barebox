@@ -161,12 +161,16 @@ static int pxa_serial_setbaudrate(struct console_device *cdev, int baudrate)
 
 static int pxa_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct console_device *cdev;
 	struct pxa_serial_priv *priv;
 
 	priv = xzalloc(sizeof(*priv));
 	cdev = &priv->cdev;
-	priv->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->regs = IOMEM(iores->start);
 
 	dev->priv = priv;
 	cdev->dev = dev;

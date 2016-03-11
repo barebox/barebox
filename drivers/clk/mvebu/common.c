@@ -42,6 +42,7 @@ static struct of_device_id mvebu_coreclk_ids[] = {
 
 int mvebu_coreclk_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *np = dev->device_node;
 	const struct of_device_id *match;
 	const struct coreclk_soc_desc *desc;
@@ -57,9 +58,10 @@ int mvebu_coreclk_probe(struct device_d *dev)
 	desc = (const struct coreclk_soc_desc *)match->data;
 
 	/* Get SAR base address */
-	base = dev_request_mem_region(dev, 0);
-	if (!base)
-		return -EINVAL;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	/* Allocate struct for TCLK, cpu clk, and core ratio clocks */
 	clk_data.clk_num = 2 + desc->num_ratios;
@@ -151,6 +153,7 @@ static struct of_device_id mvebu_clk_gating_ids[] = {
 
 int mvebu_clk_gating_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *np = dev->device_node;
 	const struct of_device_id *match;
 	const struct clk_gating_soc_desc *desc;
@@ -166,9 +169,10 @@ int mvebu_clk_gating_probe(struct device_d *dev)
 		return -EINVAL;
 	desc = (const struct clk_gating_soc_desc *)match->data;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	clk = of_clk_get(np, 0);
 	if (IS_ERR(clk))

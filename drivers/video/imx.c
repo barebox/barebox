@@ -539,6 +539,7 @@ static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 
 static int imxfb_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imxfb_info *fbi;
 	struct fb_info *info;
 	struct imx_fb_platform_data *pdata = dev->platform_data;
@@ -573,9 +574,10 @@ static int imxfb_probe(struct device_d *dev)
 		return PTR_ERR(fbi->ipg_clk);
 
 	fbi->mode = pdata->mode;
-	fbi->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(fbi->regs))
-		return PTR_ERR(fbi->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	fbi->regs = IOMEM(iores->start);
 
 	fbi->pcr = pdata->mode->pcr;
 	fbi->pwmr = pdata->pwmr;

@@ -422,6 +422,7 @@ static void tegra_sdmmc_parse_dt(struct tegra_sdmmc_host *host)
 
 static int tegra_sdmmc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct tegra_sdmmc_host *host;
 	struct mci_host *mci;
 	int ret;
@@ -437,11 +438,12 @@ static int tegra_sdmmc_probe(struct device_d *dev)
 	if (IS_ERR(host->reset))
 		return PTR_ERR(host->reset);
 
-	host->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(host->regs)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get iomem region\n");
-		return PTR_ERR(host->regs);
+		return PTR_ERR(iores);
 	}
+	host->regs = IOMEM(iores->start);
 
 	mci->hw_dev = dev;
 	mci->f_max = 48000000;

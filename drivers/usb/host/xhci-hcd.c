@@ -1509,9 +1509,13 @@ int xhci_register(struct device_d *dev, struct xhci_data *data)
 
 static int xhci_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct xhci_data data = {};
 
-	data.regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	data.regs = IOMEM(iores->start);
 
 	return xhci_register(dev, &data);
 }

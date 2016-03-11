@@ -130,12 +130,16 @@ static struct pwm_ops pxa_pwm_ops = {
 
 static int pxa_pwm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct pxa_pwm_chip *chip;
 
 	chip = xzalloc(sizeof(*chip));
 	chip->chip.devname = asprintf("pwm%d", dev->id);
 	chip->chip.ops = &pxa_pwm_ops;
-	chip->iobase = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	chip->iobase = IOMEM(iores->start);
 	chip->id = dev->id;
 	dev->priv = chip;
 

@@ -395,6 +395,7 @@ static int programmed_get(struct param_d *p, void *priv)
 
 static int fpgamgr_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct fpgamgr *mgr;
 	struct firmware_handler *fh;
 	const char *alias = of_alias_get(dev->device_node);
@@ -407,17 +408,19 @@ static int fpgamgr_probe(struct device_d *dev)
 	mgr = xzalloc(sizeof(*mgr));
 	fh = &mgr->fh;
 
-	mgr->regs = dev_request_mem_region(dev, 0);
-	if (!mgr->regs) {
-		ret = -EBUSY;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto out;
 	}
+	mgr->regs = IOMEM(iores->start);
 
-	mgr->regs_data = dev_request_mem_region(dev, 1);
-	if (!mgr->regs_data) {
-		ret = -EBUSY;
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto out;
 	}
+	mgr->regs_data = IOMEM(iores->start);
 
 	if (alias)
 		fh->id = xstrdup(alias);

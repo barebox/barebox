@@ -216,6 +216,7 @@ static int cadence_clocksource_clock_change(struct notifier_block *nb,
 
 static int cadence_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct console_device *cdev;
 	struct cadence_serial_priv *priv;
 	struct cadence_serial_devtype_data *devtype;
@@ -239,11 +240,12 @@ static int cadence_serial_probe(struct device_d *dev)
 	if (devtype->mode & CADENCE_MODE_CLK_REF_DIV)
 		clk_set_rate(priv->clk, clk_get_rate(priv->clk) / 8);
 
-	priv->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->regs)) {
-		ret = PTR_ERR(priv->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto err_free;
 	}
+	priv->regs = IOMEM(iores->start);
 
 	cdev->dev = dev;
 	cdev->tstc = cadence_serial_tstc;

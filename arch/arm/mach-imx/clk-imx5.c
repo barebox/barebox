@@ -304,11 +304,13 @@ int __init mx51_clocks_init(struct device_d *dev, void __iomem *regs)
 
 static int imx51_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *regs;
 
-	regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(regs))
-		return PTR_ERR(regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	regs = IOMEM(iores->start);
 
 	mx51_clocks_init(dev, regs);
 
@@ -392,9 +394,13 @@ int __init mx53_clocks_init(struct device_d *dev, void __iomem *regs)
 
 static int imx53_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *regs;
 
-	regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	regs = IOMEM(iores->start);
 
 	mx53_clocks_init(dev, regs);
 

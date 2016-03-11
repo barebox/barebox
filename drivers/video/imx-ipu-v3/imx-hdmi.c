@@ -1271,6 +1271,7 @@ static int dw_hdmi_ioctl(struct vpl *vpl, unsigned int port,
 
 static int dw_hdmi_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *np = dev->device_node;
 	struct dw_hdmi *hdmi;
 	int ret;
@@ -1293,9 +1294,10 @@ static int dw_hdmi_probe(struct device_d *dev)
 
 	hdmi->ddc_node = of_parse_phandle(np, "ddc-i2c-bus", 0);
 
-	hdmi->regs = dev_request_mem_region(dev, 0);
-	if (!hdmi->regs)
-		return -EBUSY;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	hdmi->regs = IOMEM(iores->start);
 
 	hdmi->isfr_clk = clk_get(hdmi->dev, "isfr");
 	if (IS_ERR(hdmi->isfr_clk)) {

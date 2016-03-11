@@ -1444,6 +1444,7 @@ static int smc91c111_init_dev(struct eth_device *edev)
 
 static int smc91c111_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct smc91c111_priv *priv;
 
@@ -1481,9 +1482,10 @@ static int smc91c111_probe(struct device_d *dev)
 	priv->miibus.write = smc91c111_phy_write;
 	priv->miibus.priv = priv;
 	priv->miibus.parent = dev;
-	priv->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->base))
-		return PTR_ERR(priv->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->base = IOMEM(iores->start);
 
 	smc91c111_reset(edev);
 

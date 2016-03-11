@@ -846,6 +846,7 @@ static int gpmc_set_buswidth(struct nand_chip *chip, int buswidth)
  */
 static int gpmc_nand_probe(struct device_d *pdev)
 {
+	struct resource *iores;
 	struct gpmc_nand_info *oinfo;
 	struct gpmc_nand_platform_data *pdata;
 	struct nand_chip *nand;
@@ -881,7 +882,10 @@ static int gpmc_nand_probe(struct device_d *pdev)
 	}
 	/* Setup register specific data */
 	oinfo->gpmc_cs = pdata->cs;
-	oinfo->gpmc_base = dev_request_mem_region(pdev, 0);
+	iores = dev_request_mem_resource(pdev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	oinfo->gpmc_base = IOMEM(iores->start);
 	cs_base = oinfo->gpmc_base + GPMC_CONFIG1_0 +
 		(pdata->cs * GPMC_CONFIG_CS_SIZE);
 	oinfo->gpmc_command = (void *)(cs_base + GPMC_CS_NAND_COMMAND);

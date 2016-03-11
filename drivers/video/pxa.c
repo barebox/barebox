@@ -487,6 +487,7 @@ static struct fb_ops pxafb_ops = {
 
 static int pxafb_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct pxafb_platform_data *pdata = dev->platform_data;
 	struct pxafb_info *fbi;
 	struct fb_info *info;
@@ -499,9 +500,10 @@ static int pxafb_probe(struct device_d *dev)
 	info = &fbi->info;
 
 	fbi->mode = pdata->mode;
-	fbi->regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(fbi->regs))
-		return PTR_ERR(fbi->regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	fbi->regs = IOMEM(iores->start);
 
 	fbi->dev = dev;
 	fbi->lcd_power = pdata->lcd_power;

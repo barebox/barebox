@@ -696,6 +696,7 @@ static struct of_device_id dove_pinctrl_of_match[] = {
 
 static int dove_pinctrl_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	const struct of_device_id *match =
 		of_match_node(dove_pinctrl_of_match, dev->device_node);
 	struct mvebu_pinctrl_soc_info *soc =
@@ -706,10 +707,15 @@ static int dove_pinctrl_probe(struct device_d *dev)
 	clk = clk_get(dev, NULL);
 	clk_enable(clk);
 
-	mpp_base = dev_request_mem_region(dev, 0);
-	mpp4_base = dev_request_mem_region(dev, 1);
-	if (!mpp_base || !mpp4_base)
-		return -EBUSY;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	mpp_base = IOMEM(iores->start);
+
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	mpp4_base = IOMEM(iores->start);
 
 	/*
 	 * Dove PMU does not have a stable binding, yet.

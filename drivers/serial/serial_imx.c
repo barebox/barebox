@@ -206,6 +206,7 @@ static int imx_clocksource_clock_change(struct notifier_block *nb,
 
 static int imx_serial_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct console_device *cdev;
 	struct imx_serial_priv *priv;
 	uint32_t val;
@@ -228,7 +229,10 @@ static int imx_serial_probe(struct device_d *dev)
 		goto err_free;
 	}
 
-	priv->regs = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->regs = IOMEM(iores->start);
 	cdev->dev = dev;
 	cdev->tstc = imx_serial_tstc;
 	cdev->putc = imx_serial_putc;

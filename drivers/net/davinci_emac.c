@@ -516,6 +516,7 @@ out:
 
 static int davinci_emac_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct davinci_emac_platform_data *pdata;
 	struct davinci_emac_priv *priv;
 	uint64_t start;
@@ -534,10 +535,25 @@ static int davinci_emac_probe(struct device_d *dev)
 
 	priv->dev = dev;
 
-	priv->adap_emac = dev_request_mem_region(dev, 0);
-	priv->adap_ewrap = dev_request_mem_region(dev, 1);
-	priv->adap_mdio = dev_request_mem_region(dev, 2);
-	priv->emac_desc_base = dev_request_mem_region(dev, 3);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->adap_emac = IOMEM(iores->start);
+
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->adap_ewrap = IOMEM(iores->start);
+
+	iores = dev_request_mem_resource(dev, 2);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->adap_mdio = IOMEM(iores->start);
+
+	iores = dev_request_mem_resource(dev, 3);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->emac_desc_base = IOMEM(iores->start);
 
 	/* EMAC descriptors */
 	priv->emac_rx_desc = priv->emac_desc_base + EMAC_RX_DESC_BASE;

@@ -65,16 +65,18 @@ static int imx_usbphy_enable(struct imx_usbphy *imxphy)
 
 static int imx_usbphy_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int ret;
 	struct imx_usbphy *imxphy;
 
 	imxphy = xzalloc(sizeof(*imxphy));
 
-	imxphy->base = dev_request_mem_region(dev, 0);
-	if (!imxphy->base) {
-		ret = -ENODEV;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto err_free;
 	}
+	imxphy->base = IOMEM(iores->start);
 
 	imxphy->clk = clk_get(dev, NULL);
 	if (IS_ERR(imxphy->clk)) {

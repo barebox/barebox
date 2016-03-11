@@ -130,6 +130,7 @@ static int weim_parse_dt(struct imx_weim *weim)
 
 static int weim_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_weim_devtype *devtype;
 	struct imx_weim *weim;
 	int ret;
@@ -144,11 +145,12 @@ static int weim_probe(struct device_d *dev)
 	weim->devtype = devtype;
 
 	/* get the resource */
-	weim->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(weim->base)) {
-		ret = PTR_ERR(weim->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto weim_err;
 	}
+	weim->base = IOMEM(iores->start);
 
 	/* parse the device node */
 	ret = weim_parse_dt(weim);

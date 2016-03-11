@@ -638,6 +638,7 @@ static int mpc5xxx_fec_recv(struct eth_device *dev)
 
 int mpc5xxx_fec_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct fec_platform_data *pdata = dev->platform_data;
 	struct eth_device *edev;
 	mpc5xxx_fec_priv *fec;
@@ -655,9 +656,10 @@ int mpc5xxx_fec_probe(struct device_d *dev)
 	edev->set_ethaddr = mpc5xxx_fec_set_ethaddr;
 	edev->parent = dev;
 
-	fec->eth = dev_request_mem_region(dev, 0);
-	if (IS_ERR(fec->eth))
-		return PTR_ERR(fec->eth);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	fec->eth = IOMEM(iores->start);
 	fec->tbdBase = (FEC_TBD *)FEC_BD_BASE;
 	fec->rbdBase = (FEC_RBD *)(FEC_BD_BASE + FEC_TBD_NUM * sizeof(FEC_TBD));
 

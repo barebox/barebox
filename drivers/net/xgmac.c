@@ -689,11 +689,15 @@ static int xgmac_set_ethaddr(struct eth_device *dev, const unsigned char *addr)
 
 static int hb_xgmac_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct xgmac_priv *priv;
 	void __iomem *base;
 
-	base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	/* check hardware version */
 	if (readl(base + XGMAC_VERSION) != 0x1012)

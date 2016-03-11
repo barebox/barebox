@@ -80,11 +80,13 @@ static const char *per_sel[] = {
 
 static int imx31_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 
-	base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(base))
-		return PTR_ERR(base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	writel(0xffffffff, base + CCM_CGR0);
 	writel(0xffffffff, base + CCM_CGR1);

@@ -335,9 +335,11 @@ static struct tegra_clk_init_table init_table[] = {
 
 static int tegra124_car_probe(struct device_d *dev)
 {
-	car_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(car_base))
-		return PTR_ERR(car_base);
+	struct resource *iores;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	car_base = IOMEM(iores->start);
 
 	tegra124_osc_clk_init();
 	tegra124_pll_init();

@@ -785,6 +785,7 @@ static int dm9000_parse_pdata(struct device_d *dev, struct dm9k *priv)
 
 static int dm9k_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	unsigned io_mode;
 	struct eth_device *edev;
 	struct dm9k *priv;
@@ -808,17 +809,19 @@ static int dm9k_probe(struct device_d *dev)
 	if (ret)
 		goto err;
 
-	priv->iodata = dev_request_mem_region(dev, 1);
-	if (!priv->iodata) {
-		ret = -EBUSY;
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto err;
 	}
+	priv->iodata = IOMEM(iores->start);
 
-	priv->iobase = dev_request_mem_region(dev, 0);
-	if (!priv->iobase) {
-		ret = -EBUSY;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto err;
 	}
+	priv->iobase = IOMEM(iores->start);
 
 	edev->init = dm9k_init_dev;
 	edev->open = dm9k_eth_open;

@@ -364,6 +364,7 @@ static void imx_keypad_inhibit(struct imx_keypad *keypad)
 
 static int __init imx_keypad_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct imx_keypad *keypad;
 	const struct matrix_keymap_data *keymap_data = dev->platform_data;
 	int i, ret, row, col;
@@ -371,9 +372,10 @@ static int __init imx_keypad_probe(struct device_d *dev)
 	keypad = xzalloc(sizeof(struct imx_keypad));
 
 	keypad->dev = dev;
-	keypad->mmio_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(keypad->mmio_base))
-		return PTR_ERR(keypad->mmio_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	keypad->mmio_base = IOMEM(iores->start);
 
 	ret = matrix_keypad_build_keymap(dev, keymap_data, MATRIX_ROW_SHIFT,
 				keypad->keycodes);

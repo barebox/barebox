@@ -49,6 +49,7 @@ static int ram_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retle
 
 static int mtdram_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base;
 	int device_id;
 	struct mtd_info *mtd;
@@ -70,11 +71,12 @@ static int mtdram_probe(struct device_d *dev)
 		mtd->name = "mtdram";
 	}
 
-	base = dev_request_mem_region(dev, 0);
-	if (!base) {
-		ret = -EBUSY;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto nobase;
 	}
+	base = IOMEM(iores->start);
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	size = (unsigned long) resource_size(res);

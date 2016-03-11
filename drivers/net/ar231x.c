@@ -363,6 +363,7 @@ static int ar231x_mdiibus_reset(struct mii_bus *bus)
 
 static int ar231x_eth_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct ar231x_eth_priv *priv;
 	struct eth_device *edev;
 	struct mii_bus *miibus;
@@ -384,20 +385,22 @@ static int ar231x_eth_probe(struct device_d *dev)
 	priv->mac = pdata->mac;
 	priv->reset_bit = pdata->reset_bit;
 
-	priv->eth_regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->eth_regs)) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "No eth_regs!!\n");
-		return PTR_ERR(priv->eth_regs);
+		return PTR_ERR(iores);
 	}
+	priv->eth_regs = IOMEM(iores->start);
 	/* we have 0x100000 for eth, part of it are dma regs.
 	 * So they are already requested */
 	priv->dma_regs = (void *)(priv->eth_regs + 0x1000);
 
-	priv->phy_regs = dev_request_mem_region(dev, 1);
-	if (IS_ERR(priv->phy_regs)) {
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "No phy_regs!!\n");
-		return PTR_ERR(priv->phy_regs);
+		return PTR_ERR(iores);
 	}
+	priv->phy_regs = IOMEM(iores->start);
 
 	priv->cfg = pdata;
 	edev->init = ar231x_eth_init;

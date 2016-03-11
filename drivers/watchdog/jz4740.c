@@ -67,14 +67,16 @@ static void __noreturn jz4740_reset_soc(struct restart_handler *rst)
 
 static int jz4740_wdt_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct jz4740_wdt_drvdata *priv;
 
 	priv = xzalloc(sizeof(struct jz4740_wdt_drvdata));
-	priv->base = dev_request_mem_region(dev, 0);
-	if (!priv->base) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get memory region\n");
-		return -ENODEV;
+		return PTR_ERR(iores);
 	}
+	priv->base = IOMEM(iores->start);
 
 	dev->priv = priv;
 

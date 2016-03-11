@@ -80,6 +80,7 @@ static void orion_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
 
 static int orion_nand_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct device_node *dev_node = dev->device_node;
 	struct orion_nand *priv;
 	struct mtd_info *mtd;
@@ -93,9 +94,10 @@ static int orion_nand_probe(struct device_d *dev)
 	mtd = &priv->mtd;
 	chip = &priv->chip;
 
-	io_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(io_base))
-		return PTR_ERR(io_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	io_base = IOMEM(iores->start);
 
 	if (!of_property_read_u32(dev_node, "cle", &val))
 		priv->cle = (u8)val;

@@ -358,13 +358,17 @@ static struct s3cfb_info fbi = {
 
 static int s3cfb_probe(struct device_d *hw_dev)
 {
+	struct resource *iores;
 	struct s3c_fb_platform_data *pdata = hw_dev->platform_data;
 	int ret;
 
 	if (! pdata)
 		return -ENODEV;
 
-	fbi.base = dev_request_mem_region(hw_dev, 0);
+	iores = dev_request_mem_resource(hw_dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	fbi.base = IOMEM(iores->start);
 	writel(0, fbi.base + LCDCON1);
 	writel(0, fbi.base + LCDCON5); /* FIXME not 0 for some displays */
 

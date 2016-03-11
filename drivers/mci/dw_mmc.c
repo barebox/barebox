@@ -675,6 +675,7 @@ static int dw_mmc_detect(struct device_d *dev)
 
 static int dw_mmc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct dwmci_host *host;
 	struct dw_mmc_platform_data *pdata = dev->platform_data;
 
@@ -692,9 +693,10 @@ static int dw_mmc_probe(struct device_d *dev)
 	clk_enable(host->clk_ciu);
 
 	host->dev = dev;
-	host->ioaddr = dev_request_mem_region(dev, 0);
-	if (IS_ERR(host->ioaddr))
-		return PTR_ERR(host->ioaddr);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->ioaddr = IOMEM(iores->start);
 
 	host->idmac = dma_alloc_coherent(sizeof(*host->idmac) * DW_MMC_NUM_IDMACS,
 					 DMA_ADDRESS_BROKEN);

@@ -334,14 +334,16 @@ static int pxamci_init(struct mci_host *mci, struct device_d *dev)
 
 static int pxamci_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct pxamci_host *host;
 	int gpio_power = -1;
 
 	clk_enable();
 	host = xzalloc(sizeof(*host));
-	host->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(host->base))
-		return PTR_ERR(host->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->base = IOMEM(iores->start);
 
 	host->mci.init = pxamci_init;
 	host->mci.send_cmd = pxamci_request;

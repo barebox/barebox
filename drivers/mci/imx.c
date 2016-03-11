@@ -492,6 +492,7 @@ static int mxcmci_init(struct mci_host *mci, struct device_d *dev)
 
 static int mxcmci_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct mxcmci_host *host;
 	unsigned long rate;
 
@@ -507,9 +508,10 @@ static int mxcmci_probe(struct device_d *dev)
 	host->mci.host_caps = MMC_CAP_4_BIT_DATA;
 	host->mci.hw_dev = dev;
 
-	host->base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(host->base))
-		return PTR_ERR(host->base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	host->base = IOMEM(iores->start);
 
 	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 

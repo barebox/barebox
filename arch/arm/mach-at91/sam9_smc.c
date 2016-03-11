@@ -173,6 +173,7 @@ void sama5_smc_configure(int id, int cs, struct sam9_smc_config *config)
 
 static int at91sam9_smc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	int id = dev->id;
 
 	if (id < 0) {
@@ -182,11 +183,12 @@ static int at91sam9_smc_probe(struct device_d *dev)
 		return -EIO;
 	}
 
-	smc_base_addr[id] = dev_request_mem_region(dev, 0);
-	if (IS_ERR(smc_base_addr[id])) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "Impossible to request smc.%d\n", id);
-		return PTR_ERR(smc_base_addr[id]);
+		return PTR_ERR(iores);
 	}
+	smc_base_addr[id] = IOMEM(iores->start);
 
 	return 0;
 }

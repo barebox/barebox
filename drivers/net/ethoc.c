@@ -534,6 +534,7 @@ static int ethoc_mdio_write(struct mii_bus *bus, int phy, int reg, u16 val)
 
 static int ethoc_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct ethoc *priv;
 
@@ -542,9 +543,10 @@ static int ethoc_probe(struct device_d *dev)
 	edev->priv = (struct ethoc *)(edev + 1);
 
 	priv = edev->priv;
-	priv->iobase = dev_request_mem_region(dev, 0);
-	if (IS_ERR(priv->iobase))
-		return PTR_ERR(priv->iobase);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->iobase = IOMEM(iores->start);
 
 	priv->miibus.read = ethoc_mdio_read;
 	priv->miibus.write = ethoc_mdio_write;

@@ -129,6 +129,7 @@ EXPORT_SYMBOL(am335x_get_phy_control);
 
 static int am335x_control_usb_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	/*struct resource	*res;*/
 	struct am335x_control_usb *ctrl_usb;
 	const struct phy_control *phy_ctrl;
@@ -146,13 +147,15 @@ static int am335x_control_usb_probe(struct device_d *dev)
 
 	ctrl_usb->dev = dev;
 
-	ctrl_usb->phy_reg = dev_request_mem_region(dev, 0);
-	if (IS_ERR(ctrl_usb->phy_reg))
-		return PTR_ERR(ctrl_usb->phy_reg);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ctrl_usb->phy_reg = IOMEM(iores->start);
 
-	ctrl_usb->wkup = dev_request_mem_region(dev, 1);
-	if (IS_ERR(ctrl_usb->wkup))
-		return PTR_ERR(ctrl_usb->wkup);
+	iores = dev_request_mem_resource(dev, 1);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ctrl_usb->wkup = IOMEM(iores->start);
 
 	spin_lock_init(&ctrl_usb->lock);
 	ctrl_usb->phy_ctrl = *phy_ctrl;

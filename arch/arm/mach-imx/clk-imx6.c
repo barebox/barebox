@@ -337,12 +337,14 @@ static void imx6_add_video_clks(void __iomem *anab, void __iomem *cb)
 
 static int imx6_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
 
 	anatop_base = (void *)MX6_ANATOP_BASE_ADDR;
-	ccm_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(ccm_base))
-		return PTR_ERR(ccm_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ccm_base = IOMEM(iores->start);
 
 	base = anatop_base;
 

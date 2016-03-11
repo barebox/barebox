@@ -494,6 +494,7 @@ static int smc911x_init_dev(struct eth_device *edev)
 
 static int smc911x_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct eth_device *edev;
 	struct smc911x_priv *priv;
 	uint32_t val;
@@ -506,7 +507,10 @@ static int smc911x_probe(struct device_d *dev)
 		is_32bit = 1;
 	else
 		is_32bit = is_32bit == IORESOURCE_MEM_32BIT;
-	priv->base = dev_request_mem_region(dev, 0);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	priv->base = IOMEM(iores->start);
 
 	if (pdata) {
 		priv->shift = pdata->shift;

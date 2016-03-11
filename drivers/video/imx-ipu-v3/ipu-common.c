@@ -751,6 +751,7 @@ err_register:
 
 static int ipu_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct ipu_soc *ipu;
 	void __iomem *ipu_base;
 	int i, ret;
@@ -760,9 +761,10 @@ static int ipu_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	ipu_base = dev_request_mem_region(dev, 0);
-	if (!ipu_base)
-		return -EBUSY;
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ipu_base = IOMEM(iores->start);
 
 	ipu = xzalloc(sizeof(*ipu));
 

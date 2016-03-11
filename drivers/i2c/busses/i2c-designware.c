@@ -472,6 +472,7 @@ static int i2c_dw_xfer(struct i2c_adapter *adapter,
 
 static int i2c_dw_probe(struct device_d *pdev)
 {
+	struct resource *iores;
 	struct dw_i2c_dev *dw;
 	struct i2c_platform_data *pdata;
 	int ret, bitrate;
@@ -494,11 +495,12 @@ static int i2c_dw_probe(struct device_d *pdev)
 	dw->adapter.dev.parent = pdev;
 	dw->adapter.dev.device_node = pdev->device_node;
 
-	dw->base = dev_request_mem_region(pdev, 0);
-	if (IS_ERR(dw->base)) {
-		ret = PTR_ERR(dw->base);
+	iores = dev_request_mem_resource(pdev, 0);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
 		goto fail;
 	}
+	dw->base = IOMEM(iores->start);
 
 	ic_comp_type_value = readl(dw->base + DW_IC_COMP_TYPE);
 	if (ic_comp_type_value != DW_IC_COMP_TYPE_VALUE) {

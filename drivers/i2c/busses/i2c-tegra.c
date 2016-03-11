@@ -605,16 +605,18 @@ static const struct tegra_i2c_hw_feature tegra114_i2c_hw = {
 
 static int tegra_i2c_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct tegra_i2c_dev *i2c_dev;
 	struct clk *div_clk, *fast_clk;
 	void __iomem *base;
 	int ret = 0;
 
-	base = dev_request_mem_region(dev, 0);
-	if (!base) {
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
 		dev_err(dev, "could not get iomem region\n");
-		return -ENODEV;
+		return PTR_ERR(iores);
 	}
+	base = IOMEM(iores->start);
 
 	div_clk = clk_get(dev, "div-clk");
 	if (IS_ERR(div_clk)) {

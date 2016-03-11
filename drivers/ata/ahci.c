@@ -659,15 +659,17 @@ int ahci_add_host(struct ahci_device *ahci)
 
 static int ahci_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct ahci_device *ahci;
 	void __iomem *regs;
 	int ret;
 
 	ahci = xzalloc(sizeof(*ahci));
 
-	regs = dev_request_mem_region(dev, 0);
-	if (IS_ERR(regs))
-		return PTR_ERR(regs);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	regs = IOMEM(iores->start);
 
 	ahci->dev = dev;
 	ahci->mmio_base = regs;

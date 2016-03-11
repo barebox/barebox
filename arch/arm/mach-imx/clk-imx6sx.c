@@ -118,15 +118,17 @@ static struct clk_div_table video_div_table[] = {
 
 static int imx6sx_ccm_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
 	struct device_node *ccm_node = dev->device_node;
 
 	clks[IMX6SX_CLK_DUMMY] = clk_fixed("dummy", 0);
 
 	anatop_base = (void *)MX6_ANATOP_BASE_ADDR;
-	ccm_base = dev_request_mem_region(dev, 0);
-	if (IS_ERR(ccm_base))
-		return PTR_ERR(ccm_base);
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	ccm_base = IOMEM(iores->start);
 
 	base = anatop_base;
 

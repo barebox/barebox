@@ -1105,6 +1105,7 @@ static int __init mxcnd_probe_dt(struct imx_nand_host *host)
 
 static int __init imxnd_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	struct nand_chip *this;
 	struct mtd_info *mtd;
 	struct imx_nand_host *host;
@@ -1146,7 +1147,10 @@ static int __init imxnd_probe(struct device_d *dev)
 	}
 
 	if (nfc_is_v21()) {
-		host->base = dev_request_mem_region(dev, 0);
+		iores = dev_request_mem_resource(dev, 0);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		host->base = IOMEM(iores->start);
 		host->main_area0 = host->base;
 		host->regs = host->base + 0x1e00;
 		host->spare0 = host->base + 0x1000;
@@ -1155,7 +1159,10 @@ static int __init imxnd_probe(struct device_d *dev)
 		oob_largepage = &nandv2_hw_eccoob_largepage;
 		oob_4kpage = &nandv2_hw_eccoob_4k; /* FIXME : to check */
 	} else if (nfc_is_v1()) {
-		host->base = dev_request_mem_region(dev, 0);
+		iores = dev_request_mem_resource(dev, 0);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		host->base = IOMEM(iores->start);
 		host->main_area0 = host->base;
 		host->regs = host->base + 0xe00;
 		host->spare0 = host->base + 0x800;
@@ -1164,13 +1171,20 @@ static int __init imxnd_probe(struct device_d *dev)
 		oob_largepage = &nandv1_hw_eccoob_largepage;
 		oob_4kpage = &nandv1_hw_eccoob_smallpage; /* FIXME : to check  */
 	} else if (nfc_is_v3_2()) {
-		host->regs_ip = dev_request_mem_region(dev, 0);
-		host->base = dev_request_mem_region(dev, 1);
+		iores = dev_request_mem_resource(dev, 0);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		host->regs_ip = IOMEM(iores->start);
+
+		iores = dev_request_mem_resource(dev, 1);
+		if (IS_ERR(iores))
+			return PTR_ERR(iores);
+		host->base = IOMEM(iores->start);
 		host->main_area0 = host->base;
 
-		if (!host->regs_ip) {
+		if (IS_ERR(host->regs_ip)) {
 			dev_err(dev, "no second mem region\n");
-			err = -ENODEV;
+			err = PTR_ERR(host->regs_ip);
 			goto escan;
 		}
 

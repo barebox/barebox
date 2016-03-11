@@ -79,7 +79,7 @@ static int add_mtdoob_device(struct mtd_info *mtd, const char *devname, void **p
 	mtdoob = xzalloc(sizeof(*mtdoob));
 	mtdoob->cdev.ops = &mtd_ops_oob;
 	mtdoob->cdev.size = mtd_div_by_wb(mtd->size, mtd) * mtd->oobsize;
-	mtdoob->cdev.name = asprintf("%s_oob%d", devname, mtd->class_dev.id);
+	mtdoob->cdev.name = asprintf("%s.oob", mtd->cdev.name);
 	mtdoob->cdev.priv = mtdoob;
 	mtdoob->cdev.dev = &mtd->class_dev;
 	mtdoob->mtd = mtd;

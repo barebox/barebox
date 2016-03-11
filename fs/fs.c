@@ -924,7 +924,7 @@ out:
 }
 EXPORT_SYMBOL(lseek);
 
-int erase(int fd, size_t count, loff_t offset)
+int erase(int fd, loff_t count, loff_t offset)
 {
 	struct fs_driver_d *fsdrv;
 	FILE *f;

@@ -337,14 +337,14 @@ static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned block,
 	return block;
 }
 
-static int dbbt_data_create(struct mtd_info *mtd, void *buf, int block_last)
+static int dbbt_data_create(struct mtd_info *mtd, void *buf, int num_blocks)
 {
 	int n;
 	int n_bad_blocks = 0;
 	uint32_t *bb = buf + 0x8;
 	uint32_t *n_bad_blocksp = buf + 0x4;
 
-	for (n = 0; n <= block_last; n++) {
+	for (n = 0; n < num_blocks; n++) {
 		loff_t offset = n * mtd->erasesize;
 		if (mtd_block_isbad(mtd, offset)) {
 			n_bad_blocks++;
@@ -460,10 +460,6 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	 * function nand_scan_bbt() is executed to build a new bad block table.
 	 */
 	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
-
-	ret = raw_write_page(mtd, fcb_raw_page, mtd->erasesize);
-	if (ret)
-		goto out;
 
 	dbbt->Checksum = 0;
 	dbbt->FingerPrint = 0x54424244;

@@ -67,14 +67,13 @@ int mtd_all_ff(const void *buf, unsigned int len)
 }
 
 static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
-			  loff_t _offset, ulong flags)
+			  loff_t offset, ulong flags)
 {
 	struct mtd_info *mtd = cdev->priv;
 	size_t retlen;
 	int ret;
-	unsigned long offset = _offset;
 
-	dev_dbg(cdev->dev, "read ofs: 0x%08lx count: 0x%08zx\n",
+	dev_dbg(cdev->dev, "read ofs: 0x%08llx count: 0x%08zx\n",
 			offset, count);
 
 	ret = mtd_read(mtd, offset, count, &retlen, buf);
@@ -115,13 +114,13 @@ static struct mtd_erase_region_info *mtd_find_erase_region(struct mtd_info *mtd,
 	return NULL;
 }
 
-static int mtd_erase_align(struct mtd_info *mtd, size_t *count, loff_t *offset)
+static int mtd_erase_align(struct mtd_info *mtd, loff_t *count, loff_t *offset)
 {
 	struct mtd_erase_region_info *e;
 	loff_t ofs;
 
 	if (mtd->numeraseregions == 0) {
-		ofs = *offset & ~(mtd->erasesize - 1);
+		ofs = *offset & ~(loff_t)(mtd->erasesize - 1);
 		*count += (*offset - ofs);
 		*count = ALIGN(*count, mtd->erasesize);
 		*offset = ofs;
@@ -145,11 +144,11 @@ static int mtd_erase_align(struct mtd_info *mtd, size_t *count, loff_t *offset)
 	return 0;
 }
 
-static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
+static int mtd_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
 	struct mtd_info *mtd = cdev->priv;
 	struct erase_info erase;
-	uint32_t addr;
+	loff_t addr;
 	int ret;
 
 	ret = mtd_erase_align(mtd, &count, &offset);
@@ -169,7 +168,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 	erase.len = mtd->erasesize;
 
 	while (count > 0) {
-		dev_dbg(cdev->dev, "erase %d %d\n", addr, erase.len);
+		dev_dbg(cdev->dev, "erase 0x%08llx len: 0x%08llx\n", addr, erase.len);
 
 		if (mtd->allow_erasebad || (mtd->master && mtd->master->allow_erasebad))
 			ret = 0;
@@ -179,7 +178,7 @@ static int mtd_op_erase(struct cdev *cdev, size_t count, loff_t offset)
 		erase.addr = addr;
 
 		if (ret > 0) {
-			printf("Skipping bad block at 0x%08x\n", addr);
+			printf("Skipping bad block at 0x%08llx\n", addr);
 		} else {
 			ret = mtd_erase(mtd, &erase);
 			if (ret)
@@ -310,6 +309,9 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
 	int ret;
 
+	if (ofs < 0 || ofs >= mtd->size)
+		return -EINVAL;
+
 	if (mtd->block_markbad)
 		ret = mtd->block_markbad(mtd, ofs);
 	else
@@ -323,6 +325,11 @@ int mtd_read(struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen,
 {
 	int ret_code;
 	*retlen = 0;
+
+	if (from < 0 || from >= mtd->size || len > mtd->size - from)
+		return -EINVAL;
+	if (!len)
+		return 0;
 
 	/*
 	 * In the absence of an error, drivers return a non-negative integer
@@ -342,11 +349,28 @@ int mtd_write(struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen,
 {
 	*retlen = 0;
 
+	if (to < 0 || to >= mtd->size || len > mtd->size - to)
+		return -EINVAL;
+	if (!mtd->write || !(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	if (!len)
+		return 0;
+
 	return mtd->write(mtd, to, len, retlen, buf);
 }
 
 int mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
 {
+	if (instr->addr >= mtd->size || instr->len > mtd->size - instr->addr)
+		return -EINVAL;
+	if (!(mtd->flags & MTD_WRITEABLE))
+		return -EROFS;
+	instr->fail_addr = MTD_FAIL_ADDR_UNKNOWN;
+	if (!instr->len) {
+		instr->state = MTD_ERASE_DONE;
+		mtd_erase_callback(instr);
+		return 0;
+	}
 	return mtd->erase(mtd, instr);
 }
 

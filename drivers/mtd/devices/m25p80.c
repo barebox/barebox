@@ -298,6 +298,8 @@ static __maybe_unused struct of_device_id m25p80_dt_ids[] = {
 	{
 		.compatible = "m25p80",
 	}, {
+		.compatible = "jedec,spi-nor",
+	}, {
 		/* sentinel */
 	}
 };

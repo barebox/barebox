@@ -46,13 +46,10 @@
 struct usb_kbd_pdata;
 
 struct usb_kbd_pdata {
-	uint64_t	last_report;
 	uint8_t		*new;
 	uint8_t		old[USB_KBD_BOOT_REPORT_SIZE];
-	uint8_t		flags;
-	struct poller_struct	poller;
+	struct poller_async	poller;
 	struct usb_device	*usbdev;
-	int		lock;
 	unsigned long	intpipe;
 	int		intpktsize;
 	int		intinterval;
@@ -94,23 +91,17 @@ static const unsigned char usb_kbd_keycode[256] = {
 	150,158,159,128,136,177,178,176,142,152,173,140
 };
 
-static void usb_kbd_poll(struct poller_struct *poller)
+static void usb_kbd_poll(void *arg)
 {
-	struct usb_kbd_pdata *data = container_of(poller,
-						  struct usb_kbd_pdata, poller);
+	struct usb_kbd_pdata *data = arg;
 	struct usb_device *usbdev = data->usbdev;
 	int ret, i;
-
-	if (data->lock)
-		return;
-
-	data->lock = 1;
 
 	ret = data->do_poll(data);
 	if (ret == -EAGAIN)
 		goto exit;
 	if (ret < 0) {
-		/* exit and lock forever */
+		/* exit with noreturn */
 		dev_err(&usbdev->dev,
 			"usb_submit_int_msg() failed. Keyboard disconnect?\n");
 		return;
@@ -125,7 +116,6 @@ static void usb_kbd_poll(struct poller_struct *poller)
 		input_report_key_event(&data->input, usb_kbd_keycode[i + 224], (data->new[0] >> i) & 1);
 
 	for (i = 2; i < 8; i++) {
-
 		if (data->old[i] > 3 && memscan(data->new + 2, data->old[i], 6) == data->new + 8) {
 			if (usb_kbd_keycode[data->old[i]])
 				input_report_key_event(&data->input, usb_kbd_keycode[data->old[i]], 0);
@@ -145,10 +135,10 @@ static void usb_kbd_poll(struct poller_struct *poller)
 		}
 	}
 
-	memcpy(data->old, data->new, 8);
+	memcpy(data->old, data->new, USB_KBD_BOOT_REPORT_SIZE);
 
 exit:
-	data->lock = 0;
+	poller_call_async(&data->poller, data->intinterval * MSECOND, usb_kbd_poll, data);
 }
 
 static int usb_kbd_probe(struct usb_device *usbdev,
@@ -173,7 +163,6 @@ static int usb_kbd_probe(struct usb_device *usbdev,
 	data->new = dma_alloc(USB_KBD_BOOT_REPORT_SIZE);
 
 	data->usbdev = usbdev;
-	data->last_report = get_time_ns();
 
 	data->ep = &iface->ep_desc[0];
 	data->intpipe = usb_rcvintpipe(usbdev, data->ep->bEndpointAddress);
@@ -199,18 +188,28 @@ static int usb_kbd_probe(struct usb_device *usbdev,
 	} else
 		dev_dbg(&usbdev->dev, "poll keyboard via int ep\n");
 
-	input_device_register(&data->input);
+	ret = input_device_register(&data->input);
+	if (ret) {
+		dev_err(&usbdev->dev, "can't register input\n");
+		return ret;
+	}
 
-	data->poller.func = usb_kbd_poll;
+	ret = poller_async_register(&data->poller);
+	if (ret) {
+		dev_err(&usbdev->dev, "can't setup poller\n");
+		return ret;
+	}
 
-	return poller_register(&data->poller);
+	poller_call_async(&data->poller, data->intinterval * MSECOND, usb_kbd_poll, data);
+
+	return 0;
 }
 
 static void usb_kbd_disconnect(struct usb_device *usbdev)
 {
 	struct usb_kbd_pdata *data = usbdev->drv_data;
 
-	poller_unregister(&data->poller);
+	poller_async_unregister(&data->poller);
 	input_device_unregister(&data->input);
 	dma_free(data->new);
 	free(data);

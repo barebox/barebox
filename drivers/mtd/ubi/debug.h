@@ -73,19 +73,6 @@ static inline int ubi_dbg_is_bgt_disabled(const struct ubi_device *ubi)
 }
 
 /**
- * ubi_dbg_is_bitflip - if it is time to emulate a bit-flip.
- * @ubi: UBI device description object
- *
- * Returns non-zero if a bit-flip should be emulated, otherwise returns zero.
- */
-static inline int ubi_dbg_is_bitflip(const struct ubi_device *ubi)
-{
-	if (ubi->dbg.emulate_bitflips)
-		return !(random32() % 200);
-	return 0;
-}
-
-/**
  * ubi_dbg_is_write_failure - if it is time to emulate a write failure.
  * @ubi: UBI device description object
  *

@@ -139,6 +139,42 @@ static int of_register_bootargs_fixup(void)
 }
 late_initcall(of_register_bootargs_fixup);
 
+struct of_fixup_status_data {
+	const char *path;
+	bool status;
+};
+
+static int of_fixup_status(struct device_node *root, void *context)
+{
+	const struct of_fixup_status_data *data = context;
+	struct device_node *node;
+
+	node = of_find_node_by_path_or_alias(root, data->path);
+	if (!node)
+		return -ENODEV;
+
+	if (data->status)
+		return of_device_enable(node);
+	else
+		return of_device_disable(node);
+}
+
+/**
+ * of_register_set_status_fixup - register fix up to set status of nodes
+ * Register a fixup to enable or disable a node in the devicet tree by
+ * passing the path or alias.
+ */
+int of_register_set_status_fixup(const char *path, bool status)
+{
+	struct of_fixup_status_data *data;
+
+	data = xzalloc(sizeof(*data));
+	data->path = path;
+	data->status = status;
+
+	return of_register_fixup(of_fixup_status, (void *)data);
+}
+
 struct of_fixup {
 	int (*fixup)(struct device_node *, void *);
 	void *context;

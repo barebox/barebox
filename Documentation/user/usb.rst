@@ -110,8 +110,10 @@ The Fastboot gadget supports the following commands:
 - fastboot boot
 - fastboot reboot
 
-**NOTE** ``fastboot erase`` is not yet implemented. This means flashing MTD partitions
-does not yet work.
+``fastboot flash`` additionally supports image types UBI and Barebox. For UBI
+Images and a MTD device as target, ubiformat is called. For a Barebox image
+with an available barebox update handler for the fastboot exported device, the
+barebox_update is called.
 
 The barebox Fastboot gadget supports the following non standard extensions:
 
@@ -125,6 +127,53 @@ The barebox Fastboot gadget supports the following non standard extensions:
   executes a shell command. Note the output can't be seen on the host, but the fastboot
   command returns successfully when the barebox command was successful and it fails when
   the barebox command fails.
+
+**Example booting kernel/devicetree/initrd with fastboot**
+
+In Barebox start the fastboot gadget:
+
+.. code-block:: sh
+
+  usbgadget -A /kernel(kernel)c,/initrd(initrd)c,/devicetree(devicetree)c
+
+On the host you can use this script to start a kernel with kernel, devicetree
+and initrd:
+
+.. code-block:: sh
+
+  #!/bin/bash
+
+  set -e
+  set -v
+
+  if [ "$#" -lt 3 ]
+  then
+          echo "USAGE: $0 <KERNEL> <DT> <INITRD> [<ARGS>]"
+          exit 0
+  fi
+
+  kernel=$1
+  dt=$2
+  initrd=$3
+
+  shift 3
+
+  fastboot -i 7531 flash kernel $kernel
+  fastboot -i 7531 flash devicetree $dt
+  fastboot -i 7531 flash initrd $initrd
+
+
+  fastboot -i 7531 oem exec 'global linux.bootargs.fa'$ct'=rdinit=/sbin/init'
+  if [ $# -gt 0 ]
+  then
+          ct=1
+          for i in $*
+          do
+                  fastboot -i 7531 oem exec 'global linux.bootargs.fa'$ct'='"\"$i\""
+                  ct=$(($ct + 1))
+          done
+  fi
+  timeout -k 5 3 fastboot -i 7531 oem exec -- bootm -o /devicetree -r /initrd /kernel
 
 USB Composite Multifunction Gadget
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

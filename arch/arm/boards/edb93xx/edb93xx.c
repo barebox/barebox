@@ -27,9 +27,15 @@
 #include <malloc.h>
 #include <generated/mach-types.h>
 #include <mach/ep93xx-regs.h>
+#include <net/ep93xx_eth.h>
 #include "edb93xx.h"
 
 #define DEVCFG_U1EN (1 << 18)
+
+static struct ep93xx_eth_platform_data ep93xx_eth_info = {
+        .xcv_type = PHY_INTERFACE_MODE_MII,
+        .phy_addr = 1,
+};
 
 static int ep93xx_mem_init(void)
 {
@@ -70,7 +76,7 @@ static int ep93xx_devices_init(void)
 	 * CS line 6, data width is 16 bit
 	 */
 	add_generic_device("ep93xx_eth", DEVICE_ID_DYNAMIC, NULL, 0, 0, IORESOURCE_MEM,
-			NULL);
+			&ep93xx_eth_info);
 
 	armlinux_set_architecture(MACH_TYPE);
 

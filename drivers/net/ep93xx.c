@@ -38,6 +38,7 @@
 #include <linux/types.h>
 #include <mach/ep93xx-regs.h>
 #include <linux/phy.h>
+#include <net/ep93xx_eth.h>
 #include "ep93xx.h"
 
 #define EP93XX_MAX_PKT_SIZE    1536
@@ -203,8 +204,8 @@ static int ep93xx_eth_open(struct eth_device *edev)
 
 	pr_debug("+ep93xx_eth_open\n");
 
-	ret = phy_device_connect(edev, &priv->miibus, 0, NULL,
-				 0, PHY_INTERFACE_MODE_NA);
+	ret = phy_device_connect(edev, &priv->miibus, priv->phy_addr, NULL,
+				 0, priv->interface);
 	if (ret)
 		return ret;
 
@@ -482,6 +483,7 @@ static int ep93xx_eth_set_ethaddr(struct eth_device *edev,
 
 static int ep93xx_eth_probe(struct device_d *dev)
 {
+	struct ep93xx_eth_platform_data *pdata = (struct ep93xx_eth_platform_data *)dev->platform_data;
 	struct eth_device *edev;
 	struct ep93xx_eth_priv *priv;
 	int ret = -1;
@@ -503,6 +505,14 @@ static int ep93xx_eth_probe(struct device_d *dev)
 	edev->get_ethaddr = ep93xx_eth_get_ethaddr;
 	edev->set_ethaddr = ep93xx_eth_set_ethaddr;
 	edev->parent = dev;
+
+	if (pdata) {
+		priv->interface = pdata->xcv_type;
+		priv->phy_addr = pdata->phy_addr;
+	} else {
+		priv->interface = PHY_INTERFACE_MODE_NA;
+		priv->phy_addr = 0;
+	}
 
 	priv->miibus.read = ep93xx_phy_read;
 	priv->miibus.write = ep93xx_phy_write;
@@ -589,14 +599,12 @@ static int ep93xx_phy_read(struct mii_bus *bus, int phy_addr, int phy_reg)
 	pr_debug("+ep93xx_phy_read\n");
 
 	/*
-	 * Save the current SelfCTL register value.  Set MAC to suppress
+	 * Save the current SelfCTL register value.  Set MAC to send
 	 * preamble bits.  Wait for any previous MII command to complete
 	 * before issuing the new command.
 	 */
 	self_ctl = readl(&regs->selfctl);
-#if defined(CONFIG_MII_SUPPRESS_PREAMBLE) /* TODO */
 	writel(self_ctl & ~(1 << 8), &regs->selfctl);
-#endif	/* defined(CONFIG_MII_SUPPRESS_PREAMBLE) */
 
 	while (readl(&regs->miists) & MIISTS_BUSY)
 		; /* noop */
@@ -632,14 +640,12 @@ static int ep93xx_phy_write(struct mii_bus *bus, int phy_addr,
 	pr_debug("+ep93xx_phy_write\n");
 
 	/*
-	 * Save the current SelfCTL register value.  Set MAC to suppress
+	 * Save the current SelfCTL register value.  Set MAC to send
 	 * preamble bits.  Wait for any previous MII command to complete
 	 * before issuing the new command.
 	 */
 	self_ctl = readl(&regs->selfctl);
-#if defined(CONFIG_MII_SUPPRESS_PREAMBLE) /* TODO */
 	writel(self_ctl & ~(1 << 8), &regs->selfctl);
-#endif	/* defined(CONFIG_MII_SUPPRESS_PREAMBLE) */
 
 	while (readl(&regs->miists) & MIISTS_BUSY)
 		; /* noop */

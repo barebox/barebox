@@ -74,11 +74,17 @@ static inline int ubi_dbg_is_bgt_disabled(const struct ubi_device *ubi)
 
 static inline int ubi_dbg_chk_io(const struct ubi_device *ubi)
 {
-	return ubi->dbg.chk_io;
+	if (IS_ENABLED(CONFIG_MTD_UBI_CHECK_IO))
+		return 1;
+	else
+		return 0;
 }
 
 static inline int ubi_dbg_chk_gen(const struct ubi_device *ubi)
 {
-	return ubi->dbg.chk_gen;
+	if (IS_ENABLED(CONFIG_MTD_UBI_GENERAL_EXTRA_CHECKS))
+		return 1;
+	else
+		return 0;
 }
 #endif /* !__UBI_DEBUG_H__ */

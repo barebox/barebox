@@ -77,4 +77,17 @@ config MTD_UBI_FASTMAP
 
 	   If in doubt, say "N".
 
+comment "UBI debugging options"
+
+config MTD_UBI_CHECK_IO
+	bool "Check IO operations"
+	help
+	  When enabled UBI will check if erased blocks are really erased and if areas
+	  written to are empty before writing.
+
+config MTD_UBI_GENERAL_EXTRA_CHECKS
+	bool "general extra checks"
+	help
+	  This enables some general extra checks in UBI
+
 endif # MTD_UBI

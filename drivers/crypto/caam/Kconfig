@@ -1,0 +1,34 @@
+config CRYPTO_DEV_FSL_CAAM
+	bool "Freescale CAAM-Multicore driver backend"
+	depends on ARCH_IMX6
+	help
+	  Enables the driver module for Freescale's Cryptographic Accelerator
+	  and Assurance Module (CAAM), also known as the SEC version 4 (SEC4).
+	  This module creates job ring devices, and configures h/w
+	  to operate as a DPAA component automatically, depending
+	  on h/w feature availability.
+
+config CRYPTO_DEV_FSL_CAAM_RINGSIZE
+	int "Job Ring size"
+	depends on CRYPTO_DEV_FSL_CAAM
+	range 2 9
+	default "9"
+	help
+	  Select size of Job Rings as a power of 2, within the
+	  range 2-9 (ring size 4-512).
+	  Examples:
+		2 => 4
+		3 => 8
+		4 => 16
+		5 => 32
+		6 => 64
+		7 => 128
+		8 => 256
+		9 => 512
+
+config CRYPTO_DEV_FSL_CAAM_RNG
+	bool "Register caam RNG device"
+	depends on CRYPTO_DEV_FSL_CAAM
+	default y
+	help
+	  Selecting this will register the SEC4 hardware rng.

@@ -73,20 +73,6 @@ static inline int ubi_dbg_is_bgt_disabled(const struct ubi_device *ubi)
 }
 
 /**
- * ubi_dbg_is_write_failure - if it is time to emulate a write failure.
- * @ubi: UBI device description object
- *
- * Returns non-zero if a write failure should be emulated, otherwise returns
- * zero.
- */
-static inline int ubi_dbg_is_write_failure(const struct ubi_device *ubi)
-{
-	if (ubi->dbg.emulate_io_failures)
-		return !(random32() % 500);
-	return 0;
-}
-
-/**
  * ubi_dbg_is_erase_failure - if its time to emulate an erase failure.
  * @ubi: UBI device description object
  *

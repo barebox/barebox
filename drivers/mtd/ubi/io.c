@@ -93,8 +93,6 @@ static int self_check_ec_hdr(const struct ubi_device *ubi, int pnum,
 static int self_check_peb_vid_hdr(const struct ubi_device *ubi, int pnum);
 static int self_check_vid_hdr(const struct ubi_device *ubi, int pnum,
 			      const struct ubi_vid_hdr *vid_hdr);
-static int self_check_write(struct ubi_device *ubi, const void *buf, int pnum,
-			    int offset, int len);
 
 /**
  * ubi_io_read - read data from a physical eraseblock.
@@ -150,8 +148,6 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
 		 int len)
 {
 	int err;
-	size_t written;
-	loff_t addr;
 
 	dbg_io("write %d bytes to PEB %d:%d", len, pnum, offset);
 
@@ -164,15 +160,6 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
 		ubi_err("read-only mode");
 		return -EROFS;
 	}
-
-	err = self_check_not_bad(ubi, pnum);
-	if (err)
-		return err;
-
-	/* The area we are writing to has to contain all 0xFF bytes */
-	err = ubi_self_check_all_ff(ubi, pnum, offset, len);
-	if (err)
-		return err;
 
 	if (offset >= ubi->leb_start) {
 		/*
@@ -187,39 +174,7 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
 			return err;
 	}
 
-	if (ubi_dbg_is_write_failure(ubi)) {
-		ubi_err("cannot write %d bytes to PEB %d:%d (emulated)",
-			len, pnum, offset);
-		dump_stack();
-		return -EIO;
-	}
-
-	addr = (loff_t)pnum * ubi->peb_size + offset;
-	err = mtd_write(ubi->mtd, addr, len, &written, buf);
-	if (err) {
-		ubi_err("error %d while writing %d bytes to PEB %d:%d, written %zd bytes",
-			err, len, pnum, offset, written);
-		dump_stack();
-		ubi_dump_flash(ubi, pnum, offset, len);
-	} else
-		ubi_assert(written == len);
-
-	if (!err) {
-		err = self_check_write(ubi, buf, pnum, offset, len);
-		if (err)
-			return err;
-
-		/*
-		 * Since we always write sequentially, the rest of the PEB has
-		 * to contain only 0xFF bytes.
-		 */
-		offset += len;
-		len = ubi->peb_size - offset;
-		if (len)
-			err = ubi_self_check_all_ff(ubi, pnum, offset, len);
-	}
-
-	return err;
+	return mtd_peb_write(ubi->mtd, buf, pnum, offset, len);
 }
 
 /**
@@ -1096,72 +1051,6 @@ static int self_check_peb_vid_hdr(const struct ubi_device *ubi, int pnum)
 
 exit:
 	ubi_free_vid_hdr(ubi, vid_hdr);
-	return err;
-}
-
-/**
- * self_check_write - make sure write succeeded.
- * @ubi: UBI device description object
- * @buf: buffer with data which were written
- * @pnum: physical eraseblock number the data were written to
- * @offset: offset within the physical eraseblock the data were written to
- * @len: how many bytes were written
- *
- * This functions reads data which were recently written and compares it with
- * the original data buffer - the data have to match. Returns zero if the data
- * match and a negative error code if not or in case of failure.
- */
-static int self_check_write(struct ubi_device *ubi, const void *buf, int pnum,
-			    int offset, int len)
-{
-	int err, i;
-	size_t read;
-	void *buf1;
-	loff_t addr = (loff_t)pnum * ubi->peb_size + offset;
-
-	if (!ubi_dbg_chk_io(ubi))
-		return 0;
-
-	buf1 = kmalloc(len, GFP_KERNEL);
-	if (!buf1) {
-		ubi_err("cannot allocate memory to check writes");
-		return 0;
-	}
-
-	err = mtd_read(ubi->mtd, addr, len, &read, buf1);
-	if (err && !mtd_is_bitflip(err))
-		goto out_free;
-
-	for (i = 0; i < len; i++) {
-		uint8_t c = ((uint8_t *)buf)[i];
-		uint8_t c1 = ((uint8_t *)buf1)[i];
-		int dump_len;
-
-		if (c == c1)
-			continue;
-
-		ubi_err("self-check failed for PEB %d:%d, len %d",
-			pnum, offset, len);
-		ubi_msg("data differ at position %d", i);
-		dump_len = max_t(int, 128, len - i);
-		ubi_msg("hex dump of the original buffer from %d to %d",
-			i, i + dump_len);
-		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 1,
-			       buf + i, dump_len, 1);
-		ubi_msg("hex dump of the read buffer from %d to %d",
-			i, i + dump_len);
-		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 1,
-			       buf1 + i, dump_len, 1);
-		dump_stack();
-		err = -EINVAL;
-		goto out_free;
-	}
-
-	vfree(buf1);
-	return 0;
-
-out_free:
-	vfree(buf1);
 	return err;
 }
 

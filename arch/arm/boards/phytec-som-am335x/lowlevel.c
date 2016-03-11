@@ -102,8 +102,8 @@ static noinline void physom_board_entry(unsigned long bootinfo, int sdram, void 
 #define PHYTEC_ENTRY_MLO(name, fdt_name, sdram)			\
 	ENTRY_FUNCTION(name, bootinfo, r1, r2)			\
 	{							\
-		extern char __dtb_##fdt_name##_start[];		\
-		void *fdt =__dtb_##fdt_name##_start -		\
+		extern char __dtb_z_##fdt_name##_start[];		\
+		void *fdt = __dtb_z_##fdt_name##_start -		\
 			get_runtime_offset();			\
 		physom_board_entry(bootinfo, sdram, fdt);	\
 	}
@@ -111,8 +111,8 @@ static noinline void physom_board_entry(unsigned long bootinfo, int sdram, void 
 #define PHYTEC_ENTRY(name, fdt_name)				\
 	ENTRY_FUNCTION(name, r0, r1, r2)			\
 	{							\
-		extern char __dtb_##fdt_name##_start[];		\
-		void *fdt =__dtb_##fdt_name##_start -		\
+		extern char __dtb_z_##fdt_name##_start[];		\
+		void *fdt = __dtb_z_##fdt_name##_start -		\
 			get_runtime_offset();			\
 		am335x_barebox_entry(fdt);			\
 	}
@@ -123,6 +123,8 @@ PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_256mb, am335x_phytec_phycore_s
 PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_512mb, am335x_phytec_phycore_som_mlo, PHYCORE_MT41J256M16HA15EIT_512MB);
 PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_2x512mb, am335x_phytec_phycore_som_mlo, PHYCORE_MT41J512M8125IT_2x512MB);
 PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_sram_1024mb, am335x_phytec_phycore_som_mlo, PHYCORE_IM8G16D3FBBG15EI_1024MB);
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_r2_sram_512mb, am335x_phytec_phycore_som_mlo, PHYCORE_R2_MT41K256M16TW107IT_512MB);
+PHYTEC_ENTRY_MLO(start_am33xx_phytec_phycore_r2_sram_256mb, am335x_phytec_phycore_som_mlo, PHYCORE_R2_MT41K128M16JT_256MB);
 PHYTEC_ENTRY(start_am33xx_phytec_phycore_sdram, am335x_phytec_phycore_som);
 PHYTEC_ENTRY(start_am33xx_phytec_phycore_no_spi_sdram, am335x_phytec_phycore_som_no_spi);
 PHYTEC_ENTRY(start_am33xx_phytec_phycore_no_eeprom_sdram, am335x_phytec_phycore_som_no_eeprom);

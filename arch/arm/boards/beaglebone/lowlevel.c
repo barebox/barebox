@@ -103,9 +103,9 @@ static const struct am33xx_emif_regs ddr3_regs = {
 	.sdram_ref_ctrl		= 0xC30,
 };
 
-extern char __dtb_am335x_boneblack_start[];
-extern char __dtb_am335x_bone_common_start[];
-extern char __dtb_am335x_bone_start[];
+extern char __dtb_z_am335x_boneblack_start[];
+extern char __dtb_z_am335x_bone_common_start[];
+extern char __dtb_z_am335x_bone_start[];
 
 /**
  * @brief The basic entry point for board initialization.
@@ -121,7 +121,7 @@ static noinline int beaglebone_sram_init(void)
 	uint32_t sdram_size;
 	void *fdt;
 
-	fdt = __dtb_am335x_bone_common_start;
+	fdt = __dtb_z_am335x_bone_common_start;
 
 	if (is_beaglebone_black())
 		sdram_size = SZ_512M;
@@ -176,10 +176,10 @@ ENTRY_FUNCTION(start_am33xx_beaglebone_sdram, r0, r1, r2)
 
 	if (is_beaglebone_black()) {
 		sdram_size = SZ_512M;
-		fdt = __dtb_am335x_boneblack_start;
+		fdt = __dtb_z_am335x_boneblack_start;
 	} else {
 		sdram_size = SZ_256M;
-		fdt = __dtb_am335x_bone_start;
+		fdt = __dtb_z_am335x_bone_start;
 	}
 
 	fdt -= get_runtime_offset();

@@ -297,3 +297,23 @@ int ubi_detach(int ubi_num)
 
 	return ubi_detach_mtd_dev(ubi_num, 1);
 }
+
+/**
+ * ubi_num_get_by_mtd - find the ubi number to the given mtd
+ * @mtd: the mtd device
+ *
+ * @return: positive or zero for a UBI number, negative error code otherwise
+ */
+int ubi_num_get_by_mtd(struct mtd_info *mtd)
+{
+	int i;
+	struct ubi_device *ubi;
+
+	for (i = 0; i < UBI_MAX_DEVICES; i++) {
+		ubi = ubi_devices[i];
+		if (ubi && mtd == ubi->mtd)
+			return ubi->ubi_num;
+	}
+
+	return -ENOENT;
+}

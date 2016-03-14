@@ -260,3 +260,23 @@ void ubi_cdev_remove(struct ubi_device *ubi)
 	devfs_remove(cdev);
 	kfree(cdev->name);
 }
+
+/**
+ * ubi_detach - detach an UBI device
+ * @ubi_num: The UBI device number
+ *
+ * @return: 0 for success, negative error code otherwise
+ */
+int ubi_detach(int ubi_num)
+{
+	struct ubi_device *ubi;
+
+	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES)
+		return -EINVAL;
+
+	ubi = ubi_devices[ubi_num];
+	if (!ubi)
+		return -ENOENT;
+
+	return ubi_detach_mtd_dev(ubi_num, 1);
+}

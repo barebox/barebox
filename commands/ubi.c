@@ -128,7 +128,7 @@ static int do_ubidetach(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	ubi_num = simple_strtoul(argv[1], NULL, 0);
-	ret = ubi_detach_mtd_dev(ubi_num, 1);
+	ret = ubi_detach(ubi_num);
 
 	if (ret)
 		printf("failed to detach: %s\n", strerror(-ret));

@@ -406,6 +406,6 @@ struct ubi_set_vol_prop_req {
 
 int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 		       int vid_hdr_offset, int max_beb_per1024);
-int ubi_detach_mtd_dev(int ubi_num, int anyway);
+int ubi_detach(int ubi_num);
 
 #endif /* __UBI_USER_H__ */

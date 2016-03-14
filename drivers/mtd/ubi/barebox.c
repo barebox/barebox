@@ -261,9 +261,24 @@ void ubi_cdev_remove(struct ubi_device *ubi)
 	kfree(cdev->name);
 }
 
+static void ubi_umount_volumes(struct ubi_device *ubi)
+{
+	int i;
+
+	for (i = 0; i < ubi->vtbl_slots; i++) {
+		struct ubi_volume *vol = ubi->volumes[i];
+		if (!vol)
+			continue;
+		umount_by_cdev(&vol->cdev);
+	}
+}
+
 /**
  * ubi_detach - detach an UBI device
  * @ubi_num: The UBI device number
+ *
+ * UBI volumes used by UBIFS will be unmounted before detaching the
+ * UBI device.
  *
  * @return: 0 for success, negative error code otherwise
  */
@@ -277,6 +292,8 @@ int ubi_detach(int ubi_num)
 	ubi = ubi_devices[ubi_num];
 	if (!ubi)
 		return -ENOENT;
+
+	ubi_umount_volumes(ubi);
 
 	return ubi_detach_mtd_dev(ubi_num, 1);
 }

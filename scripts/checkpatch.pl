@@ -2264,7 +2264,7 @@ sub process {
 ## 		}
 
 #need space before brace following if, while, etc
-		if (($line =~ /\(.*\)\{/ && $line !~ /\($Type\){/) ||
+		if (($line =~ /\(.*\)\{/ && $line !~ /\($Type\)\{/) ||
 		    $line =~ /do\{/) {
 			ERROR("space required before the open brace '{'\n" . $herecurr);
 		}

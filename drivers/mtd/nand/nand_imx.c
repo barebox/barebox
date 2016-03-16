@@ -521,8 +521,7 @@ static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd, u_char *dat,
 	struct imx_nand_host *host = nand_chip->priv;
 	u32 ecc_stat, err;
 	int no_subpages;
-	int ret = 0;
-	u8 ecc_bit_mask, err_limit;
+	u8 ecc_bit_mask, err_limit, max_bitflips = 0;
 
 	ecc_bit_mask = (host->eccsize == 4) ? 0x7 : 0xf;
 	err_limit = (host->eccsize == 4) ? 0x4 : 0x8;
@@ -536,19 +535,14 @@ static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd, u_char *dat,
 
 	do {
 		err = ecc_stat & ecc_bit_mask;
-		if (err > err_limit) {
-			printk(KERN_WARNING "UnCorrectable RS-ECC Error\n");
-			return -1;
-		} else {
-			ret += err;
-		}
+		if (err > err_limit)
+			return -EBADMSG;
 		ecc_stat >>= 4;
+		max_bitflips = max_t(unsigned int, max_bitflips, err);
+		mtd->ecc_stats.corrected += err;
 	} while (--no_subpages);
 
-	mtd->ecc_stats.corrected += ret;
-	pr_debug("%d Symbol Correctable RS-ECC Error\n", ret);
-
-	return ret;
+	return max_bitflips;
 }
 
 static int imx_nand_calculate_ecc(struct mtd_info *mtd, const u_char * dat,

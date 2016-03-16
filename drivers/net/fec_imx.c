@@ -685,8 +685,10 @@ static int fec_probe(struct device_d *dev)
 		goto put_clk;
 
 	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
+		goto disable_clk;
+	}
 	fec->regs = IOMEM(iores->start);
 
 	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
@@ -695,11 +697,11 @@ static int fec_probe(struct device_d *dev)
 
 		ret = gpio_request(phy_reset, "phy-reset");
 		if (ret)
-			goto disable_clk;
+			goto release_res;
 
 		ret = gpio_direction_output(phy_reset, 0);
 		if (ret)
-			goto disable_clk;
+			goto release_res;
 
 		mdelay(msec);
 		gpio_set_value(phy_reset, 1);
@@ -739,7 +741,7 @@ static int fec_probe(struct device_d *dev)
 	}
 
 	if (ret)
-		goto disable_clk;
+		goto release_res;
 
 	fec_init(edev);
 
@@ -759,6 +761,8 @@ static int fec_probe(struct device_d *dev)
 
 	return 0;
 
+release_res:
+	release_region(iores);
 disable_clk:
 	clk_disable(fec->clk);
 put_clk:

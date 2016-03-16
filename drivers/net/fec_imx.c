@@ -701,7 +701,7 @@ static int fec_probe(struct device_d *dev)
 
 		ret = gpio_direction_output(phy_reset, 0);
 		if (ret)
-			goto release_res;
+			goto free_gpio;
 
 		mdelay(msec);
 		gpio_set_value(phy_reset, 1);
@@ -741,7 +741,7 @@ static int fec_probe(struct device_d *dev)
 	}
 
 	if (ret)
-		goto release_res;
+		goto free_gpio;
 
 	fec_init(edev);
 
@@ -761,6 +761,9 @@ static int fec_probe(struct device_d *dev)
 
 	return 0;
 
+free_gpio:
+	if (gpio_is_valid(phy_reset))
+		gpio_free(phy_reset);
 release_res:
 	release_region(iores);
 disable_clk:

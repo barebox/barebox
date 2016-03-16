@@ -767,14 +767,16 @@ static int fec_probe(struct device_d *dev)
 
 	ret = mdiobus_register(&fec->miibus);
 	if (ret)
-		return ret;
+		goto free_receive_packets;
 
 	ret = eth_register(edev);
 	if (ret)
-		return ret;
+		goto unregister_mdio;
 
 	return 0;
 
+unregister_mdio:
+	mdiobus_unregister(&fec->miibus);
 free_receive_packets:
 	fec_free_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
 free_xbd:

@@ -140,6 +140,9 @@ static __maybe_unused struct of_device_id imx_gpt_dt_ids[] = {
 		.compatible = "fsl,imx1-gpt",
 		.data = &regs_imx1,
 	}, {
+		.compatible = "fsl,imx21-gpt",
+		.data = &regs_imx1,
+	}, {
 		.compatible = "fsl,imx31-gpt",
 		.data = &regs_imx31,
 	}, {

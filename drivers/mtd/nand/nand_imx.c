@@ -261,8 +261,6 @@ static void send_cmd_v3(struct imx_nand_host *host, uint16_t cmd)
 
 static void send_cmd_v1_v2(struct imx_nand_host *host, u16 cmd)
 {
-	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_cmd(host, 0x%x)\n", cmd);
-
 	writew(cmd, host->regs + NFC_V1_V2_FLASH_CMD);
 	writew(NFC_CMD, host->regs + NFC_V1_V2_CONFIG2);
 
@@ -301,8 +299,6 @@ static void send_addr_v3(struct imx_nand_host *host, uint16_t addr)
 
 static void send_addr_v1_v2(struct imx_nand_host *host, u16 addr)
 {
-	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_addr(host, 0x%x %d)\n", addr, islast);
-
 	writew(addr, host->regs + NFC_V1_V2_FLASH_ADDR);
 	writew(NFC_ADDR, host->regs + NFC_V1_V2_CONFIG2);
 
@@ -891,7 +887,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 
-	MTD_DEBUG(MTD_DEBUG_LEVEL3,
+	dev_dbg(host->dev,
 	      "imx_nand_command (cmd = 0x%x, col = 0x%x, page = 0x%x)\n",
 	      command, column, page_addr);
 

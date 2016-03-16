@@ -656,6 +656,7 @@ static int fec_probe(struct device_d *dev)
 	enum fec_type type;
 	int phy_reset;
 	u32 msec = 1;
+	u64 start;
 
 	ret = dev_get_drvdata(dev, (const void **)&type);
 	if (ret)
@@ -708,9 +709,13 @@ static int fec_probe(struct device_d *dev)
 	}
 
 	/* Reset chip. */
+	start = get_time_ns();
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);
 	while(readl(fec->regs + FEC_ECNTRL) & FEC_ECNTRL_RESET) {
-		udelay(10);
+		if (is_timeout(start, SECOND)) {
+			ret = -ETIMEDOUT;
+			goto free_gpio;
+		}
 	}
 
 	/*

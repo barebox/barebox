@@ -621,6 +621,12 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 	return 0;
 }
 
+static void fec_free_receive_packets(struct fec_priv *fec, int count, int size)
+{
+	void *p = phys_to_virt(fec->rbd_base[0].data_pointer);
+	dma_free_coherent(p, 0, size * count);
+}
+
 #ifdef CONFIG_OFDEVICE
 static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 {
@@ -722,8 +728,9 @@ static int fec_probe(struct device_d *dev)
 	 * reserve memory for both buffer descriptor chains at once
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
-	base = dma_alloc_coherent((2 + FEC_RBD_NUM) *
-			sizeof(struct buffer_descriptor), DMA_ADDRESS_BROKEN);
+#define FEC_XBD_SIZE ((2 + FEC_RBD_NUM) * sizeof(struct buffer_descriptor))
+
+	base = dma_alloc_coherent(FEC_XBD_SIZE, DMA_ADDRESS_BROKEN);
 	fec->rbd_base = base;
 	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
 	fec->tbd_base = base;
@@ -731,7 +738,9 @@ static int fec_probe(struct device_d *dev)
 	writel(virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
 	writel(virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
 
-	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
+	ret = fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
+	if (ret < 0)
+		goto free_xbd;
 
 	if (dev->device_node) {
 		ret = fec_probe_dt(dev, fec);
@@ -746,7 +755,7 @@ static int fec_probe(struct device_d *dev)
 	}
 
 	if (ret)
-		goto free_gpio;
+		goto free_receive_packets;
 
 	fec_init(edev);
 
@@ -766,6 +775,10 @@ static int fec_probe(struct device_d *dev)
 
 	return 0;
 
+free_receive_packets:
+	fec_free_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
+free_xbd:
+	dma_free_coherent(fec->rbd_base, 0, FEC_XBD_SIZE);
 free_gpio:
 	if (gpio_is_valid(phy_reset))
 		gpio_free(phy_reset);

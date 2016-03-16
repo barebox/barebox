@@ -123,7 +123,8 @@ int imx6_init(void)
 	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
 
 	rev = readl(MX6_ANATOP_BASE_ADDR + SI_REV);
-	switch (rev & 0xff) {
+
+	switch (rev & 0xfff) {
 	case 0x00:
 		mx6_silicon_revision = IMX_CHIP_REV_1_0;
 		break;
@@ -148,16 +149,26 @@ int imx6_init(void)
 		mx6_silicon_revision = IMX_CHIP_REV_1_5;
 		break;
 
+	case 0x100:
+		mx6_silicon_revision = IMX_CHIP_REV_2_0;
+		break;
+
 	default:
 		mx6_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 	}
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:
-		cputypestr = "i.MX6 Quad";
+		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
+			cputypestr = "i.MX6 Quad Plus";
+		else
+			cputypestr = "i.MX6 Quad";
 		break;
 	case IMX6_CPUTYPE_IMX6D:
-		cputypestr = "i.MX6 Dual";
+		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
+			cputypestr = "i.MX6 Dual Plus";
+		else
+			cputypestr = "i.MX6 Dual";
 		break;
 	case IMX6_CPUTYPE_IMX6DL:
 		cputypestr = "i.MX6 DualLite";

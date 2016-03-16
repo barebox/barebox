@@ -217,8 +217,10 @@ static int imx6_mmu_init(void)
 
 	/* configure the PREFETCH register */
 	val = readl(l2x0_base + L2X0_PREFETCH_CTRL);
-	val |= 0x70800000;
-
+	val |=  L2X0_DOUBLE_LINEFILL_EN |
+		L2X0_INSTRUCTION_PREFETCH_EN |
+		L2X0_DATA_PREFETCH_EN |
+		L2X0_INCR_DOUBLE_LINEFILL_EN;
 	/*
 	 * The L2 cache controller(PL310) version on the i.MX6D/Q is r3p1-50rel0
 	 * The L2 cache controller(PL310) version on the i.MX6DL/SOLO/SL is r3p2
@@ -229,7 +231,8 @@ static int imx6_mmu_init(void)
 	 * double linefill feature. This is the default behavior.
 	 */
 	if (cpu_is_mx6q())
-		val &= ~(1 << 30 | 1 << 23);
+		val &= ~(L2X0_DOUBLE_LINEFILL_EN |
+			 L2X0_INCR_DOUBLE_LINEFILL_EN);
 
 	writel(val, l2x0_base + L2X0_PREFETCH_CTRL);
 

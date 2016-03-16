@@ -77,3 +77,12 @@ static inline void enable_arm_errata_794072_war(void)
 		"mcr	p15, 0, r0, c15, c0, 1\n"
 	);
 }
+
+static inline void enable_arm_errata_845369_war(void)
+{
+	__asm__ __volatile__ (
+		"mrc	p15, 0, r0, c15, c0, 1\n"
+		"orr	r0, r0, #1 << 22\n"
+		"mcr	p15, 0, r0, c15, c0, 1\n"
+	);
+}

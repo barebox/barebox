@@ -6,8 +6,8 @@
  */
 /dts-v1/;
 
-#include "imx6dl.dtsi"
 #include <arm/imx6dl.dtsi>
+#include "imx6dl.dtsi"
 
 / {
 	model = "RIoTboard Solo";

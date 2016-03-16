@@ -65,6 +65,7 @@ const char *strerror(int errnum)
 	case	ENETUNREACH	: str = "Network is unreachable"; break;
 	case	ENETDOWN	: str = "Network is down"; break;
 	case	ETIMEDOUT	: str = "Connection timed out"; break;
+	case	EPROBE_DEFER	: str = "Requested probe deferral"; break;
 #if 0 /* These are probably not needed */
 	case	ENOTBLK		: str = "Block device required"; break;
 	case	EFBIG		: str = "File too large"; break;

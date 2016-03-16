@@ -100,6 +100,7 @@ struct imx_nand_host {
 	unsigned int		buf_start;
 	int			spare_len;
 	int			eccsize;
+	int			eccstatus_v1;
 
 	int			hw_ecc;
 	int			data_width;
@@ -335,12 +336,17 @@ static void send_page_v1_v2(struct imx_nand_host *host,
 {
 	int bufs, i;
 
+	host->eccstatus_v1 = 0;
+
 	if (nfc_is_v1() && host->pagesize_2k)
 		bufs = 4;
 	else
 		bufs = 1;
 
 	for (i = 0; i < bufs; i++) {
+		u16 status;
+		int errors;
+
 		/* NANDFC buffer 0 is used for page read/write */
 		writew(i, host->regs + NFC_V1_V2_BUF_ADDR);
 
@@ -348,6 +354,14 @@ static void send_page_v1_v2(struct imx_nand_host *host,
 
 		/* Wait for operation to complete */
 		wait_op_done(host);
+
+		status = readw(host->regs + NFC_V1_ECC_STATUS_RESULT);
+		errors = max(status & 0x3, status >> 2);
+
+		if (errors == 1 && host->eccstatus_v1 >= 0)
+			host->eccstatus_v1++;
+		if (errors == 2)
+			host->eccstatus_v1 = -EBADMSG;
 	}
 }
 
@@ -489,20 +503,15 @@ static int imx_nand_correct_data_v1(struct mtd_info *mtd, u_char * dat,
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 
-	/*
-	 * 1-Bit errors are automatically corrected in HW.  No need for
-	 * additional correction.  2-Bit errors cannot be corrected by
-	 * HW ECC, so we need to return failure
-	 */
-	u16 ecc_status = readw(host->regs + NFC_V1_ECC_STATUS_RESULT);
+	if (host->eccstatus_v1 < 0)
+		return host->eccstatus_v1;
 
-	if (((ecc_status & 0x3) == 2) || ((ecc_status >> 2) == 2)) {
-		MTD_DEBUG(MTD_DEBUG_LEVEL0,
-		      "MXC_NAND: HWECC uncorrectable 2-bit ECC error\n");
-		return -1;
-	}
+	mtd->ecc_stats.corrected += host->eccstatus_v1;
 
-	return 0;
+	if (host->eccstatus_v1 > 0)
+		return 1;
+	else
+		return 0;
 }
 
 static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd, u_char *dat,

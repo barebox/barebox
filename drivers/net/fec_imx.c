@@ -709,7 +709,7 @@ static int fec_probe(struct device_d *dev)
 
 	/* Reset chip. */
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);
-	while(readl(fec->regs + FEC_ECNTRL) & 1) {
+	while(readl(fec->regs + FEC_ECNTRL) & FEC_ECNTRL_RESET) {
 		udelay(10);
 	}
 

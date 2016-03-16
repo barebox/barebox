@@ -691,26 +691,6 @@ static void copy_spare(struct mtd_info *mtd, int bfrom)
  */
 static void imx_nand_select_chip(struct mtd_info *mtd, int chip)
 {
-#ifdef CONFIG_MTD_NAND_MXC_FORCE_CE
-	u16 tmp;
-
-	if (chip > 0) {
-		MTD_DEBUG(MTD_DEBUG_LEVEL0,
-		      "ERROR:  Illegal chip select (chip = %d)\n", chip);
-		return;
-	}
-
-	if (chip == -1) {
-		tmp = readw(host->regs + NFC_CONFIG1);
-		tmp &= ~NFC_CE;
-		writew(tmp, host->regs + NFC_CONFIG1);
-		return;
-	}
-
-	tmp = readw(host->regs + NFC_CONFIG1);
-	tmp |= NFC_CE;
-	writew(tmp, host->regs + NFC_CONFIG1);
-#endif
 }
 
 static void mxc_do_addr_cycle(struct mtd_info *mtd, int column, int page_addr)
@@ -1018,31 +998,6 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		break;
 	}
 }
-
-#ifdef CONFIG_MXC_NAND_LOW_LEVEL_ERASE
-static void imx_low_erase(struct mtd_info *mtd)
-{
-
-	struct nand_chip *this = mtd->priv;
-	unsigned int page_addr, addr;
-	u_char status;
-
-	MTD_DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : imx_low_erase:Erasing NAND\n");
-	for (addr = 0; addr < this->chipsize; addr += mtd->erasesize) {
-		page_addr = addr / mtd->writesize;
-		imx_nand_command(mtd, NAND_CMD_ERASE1, -1, page_addr);
-		imx_nand_command(mtd, NAND_CMD_ERASE2, -1, -1);
-		imx_nand_command(mtd, NAND_CMD_STATUS, -1, -1);
-		status = imx_nand_read_byte(mtd);
-		if (status & NAND_STATUS_FAIL) {
-			printk(KERN_ERR
-			       "ERASE FAILED(block = %d,status = 0x%x)\n",
-			       addr / mtd->erasesize, status);
-		}
-	}
-
-}
-#endif
 
 /*
  * The generic flash bbt decriptors overlap with our ecc

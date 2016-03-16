@@ -31,4 +31,5 @@ void imx6_cpu_lowlevel_init(void)
 	enable_arm_errata_751472_war();
 	enable_arm_errata_761320_war();
 	enable_arm_errata_794072_war();
+	enable_arm_errata_845369_war();
 }

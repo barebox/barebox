@@ -223,8 +223,11 @@ static int imx6_mmu_init(void)
 	val = readl(l2x0_base + L2X0_PREFETCH_CTRL);
 	val |=  L2X0_DOUBLE_LINEFILL_EN |
 		L2X0_INSTRUCTION_PREFETCH_EN |
-		L2X0_DATA_PREFETCH_EN |
-		L2X0_INCR_DOUBLE_LINEFILL_EN;
+		L2X0_DATA_PREFETCH_EN;
+	/*
+	 * set prefetch offset to 15
+	 */
+	val |= 15;
 	/*
 	 * The L2 cache controller(PL310) version on the i.MX6D/Q is r3p1-50rel0
 	 * The L2 cache controller(PL310) version on the i.MX6DL/SOLO/SL is r3p2
@@ -236,8 +239,7 @@ static int imx6_mmu_init(void)
 	 */
 	if (cache_part == L2X0_CACHE_ID_PART_L310 &&
 	    cache_rtl < L2X0_CACHE_ID_RTL_R3P2)
-		val &= ~(L2X0_DOUBLE_LINEFILL_EN |
-			 L2X0_INCR_DOUBLE_LINEFILL_EN);
+		val &= ~L2X0_DOUBLE_LINEFILL_EN;
 
 	writel(val, l2x0_base + L2X0_PREFETCH_CTRL);
 

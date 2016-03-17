@@ -1,14 +1,21 @@
 #ifndef __INCLUDE_LINUX_BAREBOX_WRAPPER_H
 #define __INCLUDE_LINUX_BAREBOX_WRAPPER_H
 
+#include <malloc.h>
 #include <xfuncs.h>
 
 #define kmalloc(len, mode)	malloc(len)
 #define kzalloc(len, mode)	xzalloc(len)
 #define vmalloc(len)		malloc(len)
-#define kfree(ptr)		free(ptr)
+static inline void kfree(const void *block)
+{
+	free((void *)block);
+}
 #define vzalloc(len)		kzalloc(len, 0)
-#define vfree(ptr)		free(ptr)
+static inline void vfree(const void *addr)
+{
+	free((void *)addr);
+}
 
 #define KERN_EMERG      ""   /* system is unusable                   */
 #define KERN_ALERT      ""   /* action must be taken immediately     */

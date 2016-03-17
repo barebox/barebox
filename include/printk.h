@@ -92,6 +92,16 @@ static inline int pr_print(int level, const char *format, ...)
 #define debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 #define pr_vdebug(fmt, arg...)	__pr_printk(8, pr_fmt(fmt), ##arg)
 
+#define printk_once(fmt, ...)					\
+({								\
+	static bool __print_once	;			\
+								\
+	if (!__print_once) {					\
+		__print_once = true;				\
+		printk(fmt, ##__VA_ARGS__);			\
+	}							\
+})
+
 struct log_entry {
 	struct list_head list;
 	char *msg;

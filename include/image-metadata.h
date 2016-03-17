@@ -84,6 +84,7 @@ struct imd_header *imd_get(void *buf, int size);
 const char *imd_string_data(struct imd_header *imd, int index);
 const char *imd_type_to_name(uint32_t type);
 char *imd_concat_strings(struct imd_header *imd);
+const char *imd_get_param(struct imd_header *imd, const char *name);
 
 extern int imd_command_verbose;
 int imd_command_setenv(const char *variable_name, const char *value);

@@ -255,6 +255,37 @@ char *imd_concat_strings(struct imd_header *imd)
 	return str;
 }
 
+/**
+ * imd_get_param - get a parameter
+ * @imd: The IMD entry
+ * @name: The name of the parameter.
+ *
+ * Parameters have the IMD type IMD_TYPE_PARAMETER and the form
+ * "key=value". This function iterates over the IMD entries and when
+ * it finds a parameter with name "key" it returns the value found.
+ *
+ * Return: A pointer to the value or NULL if the string is not found
+ */
+const char *imd_get_param(struct imd_header *imd, const char *name)
+{
+	struct imd_header *cur;
+	int namelen = strlen(name);
+
+	imd_for_each(imd, cur) {
+		char *data = (char *)(cur + 1);
+
+		if (cur->type != IMD_TYPE_PARAMETER)
+			continue;
+		if (strncmp(name, data, namelen))
+			continue;
+		if (data[namelen] != '=')
+			continue;
+		return data + namelen + 1;
+	}
+
+	return NULL;
+}
+
 int imd_command_verbose;
 
 int imd_command(int argc, char *argv[])

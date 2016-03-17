@@ -81,7 +81,17 @@ struct inode {
 	struct list_head	i_sb_list;
 	struct list_head	i_dentry;
 	unsigned long		i_ino;
-	unsigned int		i_nlink;
+	/*
+	 * Filesystems may only read i_nlink directly.  They shall use the
+	 * following functions for modification:
+	 *
+	 *    (set|clear|inc|drop)_nlink
+	 *    inode_(inc|dec)_link_count
+	 */
+	union {
+		const unsigned int i_nlink;
+		unsigned int __i_nlink;
+	};
 	uid_t			i_uid;
 	gid_t			i_gid;
 	dev_t			i_rdev;
@@ -170,7 +180,7 @@ struct super_block {
 
 	struct block_device	*s_bdev;
 	struct mtd_info		*s_mtd;
-	struct list_head	s_instances;
+	struct hlist_node	s_instances;
 
 	int			s_frozen;
 	wait_queue_head_t	s_wait_unfrozen;
@@ -200,6 +210,8 @@ struct super_block {
 	 * generic_show_options()
 	 */
 	char *s_options;
+
+	/* Number of inodes with nlink == 0 but still referenced */
 };
 
 struct file_system_type {
@@ -210,7 +222,7 @@ struct file_system_type {
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
 	struct file_system_type * next;
-	struct list_head fs_supers;
+	struct hlist_head fs_supers;
 };
 
 struct file {

@@ -20,7 +20,8 @@
 #define KERN_DEBUG      ""   /* debug-level messages                 */
 #define KERN_CONT       ""
 
-#define GFP_KERNEL	0
+#define GFP_KERNEL ((gfp_t) 0)
+#define GFP_NOFS ((gfp_t) 1)
 
 typedef int     gfp_t;
 

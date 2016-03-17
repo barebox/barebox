@@ -10,6 +10,7 @@
 #endif
 
 #define MODULE_NAME_LEN (64 - sizeof(unsigned long))
+#define THIS_MODULE	0
 
 #ifdef CONFIG_MODULES
 #include <asm/module.h>

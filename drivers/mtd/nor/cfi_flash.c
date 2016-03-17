@@ -956,6 +956,7 @@ static void cfi_init_mtd(struct flash_info *info)
 	mtd->erasesize = erasesize;
 
 	mtd->writesize = 1;
+	mtd->writebufsize = info->buffer_size;
 	mtd->subpage_sft = 0;
 	mtd->eraseregions = info->eraseregions;
 	mtd->numeraseregions = info->numeraseregions;

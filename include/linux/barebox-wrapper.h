@@ -6,7 +6,9 @@
 
 #define kmalloc(len, mode)	malloc(len)
 #define kzalloc(len, mode)	xzalloc(len)
+#define kcalloc(n, len, mode)	xzalloc(n * len)
 #define vmalloc(len)		malloc(len)
+#define __vmalloc(len, mode, pgsz)	malloc(len)
 static inline void kfree(const void *block)
 {
 	free((void *)block);

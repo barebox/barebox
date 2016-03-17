@@ -16,6 +16,7 @@ struct bbu_data {
 	const char *devicefile;
 	size_t len;
 	const char *handler_name;
+	struct imd_header *imd_data;
 };
 
 struct bbu_handler {

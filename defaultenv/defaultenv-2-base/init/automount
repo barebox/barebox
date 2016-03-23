@@ -10,11 +10,11 @@ fi
 mkdir -p /mnt/tftp
 automount /mnt/tftp 'ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp'
 
-# automount nfs server example
+# automount nfs server's nfsroot
 
-#nfshost=somehost
-#mkdir -p /mnt/${nfshost}
-#automount /mnt/$nfshost "ifup eth0 && mount -t nfs ${nfshost}:/tftpboot /mnt/${nfshost}"
+mkdir -p /mnt/nfs
+automount /mnt/nfs 'ifup eth0 && mount -t nfs ${eth0.serverip}:/home/${global.user}/nfsroot/${global.hostname} /mnt/nfs'
+
 
 # FAT on usb disk example
 

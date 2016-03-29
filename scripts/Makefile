@@ -45,12 +45,13 @@ targetprogs-$(CONFIG_IMD_TARGET) += bareboximd-target
 subdir-	+= basic kconfig setupmbr
 
 quiet_cmd_csingle	= CC      $@
-      cmd_csingle	= $(CC) -Wp,-MD,$(depfile) $(CFLAGS) -o $@ $<
+      cmd_csingle	= $(CC) -Wp,-MD,$(depfile) $(TARGETCFLAGS) $(CFLAGS) -o $@ $<
 
 __targetprogs	:= $(sort $(targetprogs-y) $(targetprogs-m))
 target-csingle	:= $(foreach m,$(__targetprogs),$(if $($(m)-objs),,$(m)))
 __targetprogs	:= $(addprefix $(obj)/,$(__targetprogs))
 target-csingle	:= $(addprefix $(obj)/,$(target-csingle))
+TARGETCFLAGS += -I$(srctree)/scripts/include/
 
 always		:= $(hostprogs-y) $(hostprogs-m) $(targetprogs-y)
 

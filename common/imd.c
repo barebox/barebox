@@ -112,17 +112,17 @@ static int imd_validate_tags(void *buf, int bufsize, int start_ofs)
 }
 
 /*
- * imd_search_validate - find valid metadata in a buffer
+ * imd_get - find valid metadata in a buffer
  * @buf		the buffer
  * @size	buffer size
- * @start	The returned pointer to the metadata
  *
  * This iterates over a buffer and searches for metadata. The metadata
  * is checked for consistency (length fields not exceeding buffer and
- * presence of end header) and returned in @start. The returned pointer
- * is only valid when 0 is returned. The returned data may be unaligned.
+ * presence of end header) and returned.
+ *
+ * Return: a pointer to the image metadata or a ERR_PTR
  */
-static int imd_search_validate(void *buf, int size, struct imd_header **start)
+struct imd_header *imd_get(void *buf, int size)
 {
 	int start_ofs = 0;
 	int i, ret;
@@ -138,13 +138,11 @@ static int imd_search_validate(void *buf, int size, struct imd_header **start)
 		debug("Start tag found at offset %d\n", i);
 
 		ret = imd_validate_tags(buf, size, i);
-		if (!ret) {
-			*start = buf + i;
-			return 0;
-		}
+		if (!ret)
+			return buf + i;
 	}
 
-	return -EINVAL;
+	return ERR_PTR(-EINVAL);
 }
 
 struct imd_type_names {
@@ -282,9 +280,9 @@ int imd_command(int argc, char *argv[])
 	if (ret && ret != -EFBIG)
 		return -errno;
 
-	ret = imd_search_validate(buf, size, &imd_start);
-	if (ret)
-		return ret;
+	imd_start = imd_get(buf, size);
+	if (IS_ERR(imd_start))
+		return PTR_ERR(imd_start);
 
 	if (type == IMD_TYPE_INVALID) {
 		imd_for_each(imd_start, imd) {

@@ -33,6 +33,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <linux/err.h>
 
 #include "../include/image-metadata.h"
 

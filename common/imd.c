@@ -193,7 +193,7 @@ static uint32_t imd_name_to_type(const char *name)
 	return IMD_TYPE_INVALID;
 }
 
-static char *imd_string_data(struct imd_header *imd, int index)
+static const char *imd_string_data(struct imd_header *imd, int index)
 {
 	int i, total = 0, l = 0;
 	int len = imd_read_length(imd);
@@ -306,10 +306,15 @@ int imd_command(int argc, char *argv[])
 		}
 
 		if (imd_is_string(type)) {
-			if (strno >= 0)
-				str = imd_string_data(imd, strno);
-			else
+			if (strno >= 0) {
+				const char *s = imd_string_data(imd, strno);
+				if (s)
+					str = strdup(s);
+				else
+					str = NULL;
+			} else {
 				str = imd_concat_strings(imd);
+			}
 
 			if (!str)
 				return -ENODATA;
@@ -319,8 +324,7 @@ int imd_command(int argc, char *argv[])
 			else
 				printf("%s\n", str);
 
-			if (strno < 0)
-				free(str);
+			free(str);
 		} else {
 			printf("tag 0x%08x present\n", type);
 		}

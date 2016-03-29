@@ -12,10 +12,10 @@ int zlib_inflate_blob(void *gunzip_buf, unsigned int sz,
 	int rc;
 
 	rc = -ENOMEM;
-	strm = kmalloc(sizeof(*strm), GFP_KERNEL);
+	strm = MALLOC(sizeof(*strm));
 	if (strm == NULL)
 		goto gunzip_nomem1;
-	strm->workspace = kmalloc(zlib_inflate_workspacesize(), GFP_KERNEL);
+	strm->workspace = MALLOC(zlib_inflate_workspacesize());
 	if (strm->workspace == NULL)
 		goto gunzip_nomem2;
 
@@ -39,9 +39,9 @@ int zlib_inflate_blob(void *gunzip_buf, unsigned int sz,
 	} else
 		rc = -EINVAL;
 
-	kfree(strm->workspace);
+	FREE(strm->workspace);
 gunzip_nomem2:
-	kfree(strm);
+	FREE(strm);
 gunzip_nomem1:
 	return rc; /* returns Z_OK (0) if successful */
 }

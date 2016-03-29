@@ -526,7 +526,7 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 
 XZ_EXTERN struct xz_dec_bcj *xz_dec_bcj_create(bool single_call)
 {
-	struct xz_dec_bcj *s = kmalloc(sizeof(*s), GFP_KERNEL);
+	struct xz_dec_bcj *s = MALLOC(sizeof(*s));
 	if (s != NULL)
 		s->single_call = single_call;
 

@@ -1108,7 +1108,7 @@ XZ_EXTERN enum xz_ret xz_dec_lzma2_run(struct xz_dec_lzma2 *s,
 XZ_EXTERN struct xz_dec_lzma2 *xz_dec_lzma2_create(enum xz_mode mode,
 						   uint32_t dict_max)
 {
-	struct xz_dec_lzma2 *s = kmalloc(sizeof(*s), GFP_KERNEL);
+	struct xz_dec_lzma2 *s = MALLOC(sizeof(*s));
 	if (s == NULL)
 		return NULL;
 
@@ -1116,9 +1116,9 @@ XZ_EXTERN struct xz_dec_lzma2 *xz_dec_lzma2_create(enum xz_mode mode,
 	s->dict.size_max = dict_max;
 
 	if (DEC_IS_PREALLOC(mode)) {
-		s->dict.buf = vmalloc(dict_max);
+		s->dict.buf = MALLOC(dict_max);
 		if (s->dict.buf == NULL) {
-			kfree(s);
+			FREE(s);
 			return NULL;
 		}
 	} else if (DEC_IS_DYNALLOC(mode)) {
@@ -1146,8 +1146,8 @@ XZ_EXTERN enum xz_ret xz_dec_lzma2_reset(struct xz_dec_lzma2 *s, uint8_t props)
 
 		if (DEC_IS_DYNALLOC(s->dict.mode)) {
 			if (s->dict.allocated < s->dict.size) {
-				vfree(s->dict.buf);
-				s->dict.buf = vmalloc(s->dict.size);
+				FREE(s->dict.buf);
+				s->dict.buf = MALLOC(s->dict.size);
 				if (s->dict.buf == NULL) {
 					s->dict.allocated = 0;
 					return XZ_MEM_ERROR;
@@ -1169,7 +1169,7 @@ XZ_EXTERN enum xz_ret xz_dec_lzma2_reset(struct xz_dec_lzma2 *s, uint8_t props)
 XZ_EXTERN void xz_dec_lzma2_end(struct xz_dec_lzma2 *s)
 {
 	if (DEC_IS_MULTI(s->dict.mode))
-		vfree(s->dict.buf);
+		FREE(s->dict.buf);
 
-	kfree(s);
+	FREE(s);
 }

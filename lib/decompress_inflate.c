@@ -13,6 +13,9 @@
 #else /* STATIC */
 /* initramfs et al: linked */
 
+#define MALLOC malloc
+#define FREE free
+
 #include <linux/zutil.h>
 #include <common.h>
 #include <malloc.h>
@@ -49,7 +52,7 @@ int  gunzip(unsigned char *buf, int len,
 	rc = -1;
 	if (flush) {
 		out_len = 0x8000; /* 32 K */
-		out_buf = malloc(out_len);
+		out_buf = MALLOC(out_len);
 	} else {
 		out_len = 0x7fffffff; /* no limit */
 	}
@@ -61,7 +64,7 @@ int  gunzip(unsigned char *buf, int len,
 	if (buf)
 		zbuf = buf;
 	else {
-		zbuf = malloc(GZIP_IOBUF_SIZE);
+		zbuf = MALLOC(GZIP_IOBUF_SIZE);
 		len = 0;
 	}
 	if (!zbuf) {
@@ -69,13 +72,13 @@ int  gunzip(unsigned char *buf, int len,
 		goto gunzip_nomem2;
 	}
 
-	strm = malloc(sizeof(*strm));
+	strm = MALLOC(sizeof(*strm));
 	if (strm == NULL) {
 		error("Out of memory while allocating z_stream");
 		goto gunzip_nomem3;
 	}
 
-	strm->workspace = malloc(flush ? zlib_inflate_workspacesize() :
+	strm->workspace = MALLOC(flush ? zlib_inflate_workspacesize() :
 				 sizeof(struct inflate_state));
 	if (strm->workspace == NULL) {
 		error("Out of memory while allocating workspace");
@@ -170,15 +173,15 @@ int  gunzip(unsigned char *buf, int len,
 		*pos = strm->next_in - zbuf+8;
 
 gunzip_5:
-	free(strm->workspace);
+	FREE(strm->workspace);
 gunzip_nomem4:
-	free(strm);
+	FREE(strm);
 gunzip_nomem3:
 	if (!buf)
-		free(zbuf);
+		FREE(zbuf);
 gunzip_nomem2:
 	if (flush)
-		free(out_buf);
+		FREE(out_buf);
 gunzip_nomem1:
 	return rc; /* returns Z_OK (0) if successful */
 }

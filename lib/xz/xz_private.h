@@ -39,6 +39,8 @@
 #		endif
 #		define memeq(a, b, size) (memcmp(a, b, size) == 0)
 #		define memzero(buf, size) memset(buf, 0, size)
+#		define FREE free
+#		define MALLOC malloc
 #	endif
 #	define get_le32(p) le32_to_cpup((const uint32_t *)(p))
 #else
@@ -150,7 +152,7 @@ XZ_EXTERN enum xz_ret xz_dec_bcj_run(struct xz_dec_bcj *s,
 				     struct xz_buf *b);
 
 /* Free the memory allocated for the BCJ filters. */
-#define xz_dec_bcj_end(s) kfree(s)
+#define xz_dec_bcj_end(s) FREE(s)
 #endif
 
 #endif

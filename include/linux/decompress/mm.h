@@ -30,7 +30,7 @@
 STATIC_RW_DATA unsigned long malloc_ptr;
 STATIC_RW_DATA int malloc_count;
 
-static void *malloc(int size)
+static __maybe_unused void *simple_malloc(int size)
 {
 	void *p;
 
@@ -51,15 +51,18 @@ static void *malloc(int size)
 	return p;
 }
 
-static void free(void *where)
+static __maybe_unused void simple_free(void *where)
 {
 	malloc_count--;
 	if (!malloc_count)
 		malloc_ptr = free_mem_ptr;
 }
 
-#define large_malloc(a) malloc(a)
-#define large_free(a) free(a)
+#define large_malloc(a) simple_malloc(a)
+#define large_free(a) simple_free(a)
+
+#define MALLOC simple_malloc
+#define FREE simple_free
 
 #define INIT
 

@@ -193,11 +193,14 @@ static uint32_t imd_name_to_type(const char *name)
 	return IMD_TYPE_INVALID;
 }
 
-static char *imd_string_data(struct imd_entry_string *imd_string, int index)
+static char *imd_string_data(struct imd_header *imd, int index)
 {
 	int i, total = 0, l = 0;
-	int len = imd_read_length(&imd_string->header);
-	char *p = imd_string->data;
+	int len = imd_read_length(imd);
+	char *p = (char *)(imd + 1);
+
+	if (!imd_is_string(imd->type))
+		return NULL;
 
 	for (i = 0; total < len; total += l, p += l) {
 		l = strlen(p) + 1;
@@ -208,16 +211,20 @@ static char *imd_string_data(struct imd_entry_string *imd_string, int index)
 	return NULL;
 }
 
-static char *imd_concat_strings(struct imd_entry_string *imd_string)
+static char *imd_concat_strings(struct imd_header *imd)
 {
-	int i, len = imd_read_length(&imd_string->header);
+	int i, len = imd_read_length(imd);
 	char *str;
+	char *data = (char *)(imd + 1);
+
+	if (!imd_is_string(imd->type))
+		return NULL;
 
 	str = malloc(len);
 	if (!str)
 		return NULL;
 
-	memcpy(str, imd_string->data, len);
+	memcpy(str, data, len);
 
 	for (i = 0; i < len - 1; i++)
 		if (str[i] == 0)
@@ -284,10 +291,7 @@ int imd_command(int argc, char *argv[])
 			uint32_t type = imd_read_type(imd);
 
 			if (imd_is_string(type)) {
-				struct imd_entry_string *imd_string =
-					(struct imd_entry_string *)imd;
-
-				str = imd_concat_strings(imd_string);
+				str = imd_concat_strings(imd);
 
 				printf("%s: %s\n", imd_type_to_name(type), str);
 			} else {
@@ -302,13 +306,10 @@ int imd_command(int argc, char *argv[])
 		}
 
 		if (imd_is_string(type)) {
-			struct imd_entry_string *imd_string =
-				(struct imd_entry_string *)imd;
-
 			if (strno >= 0)
-				str = imd_string_data(imd_string, strno);
+				str = imd_string_data(imd, strno);
 			else
-				str = imd_concat_strings(imd_string);
+				str = imd_concat_strings(imd);
 
 			if (!str)
 				return -ENODATA;

@@ -169,7 +169,13 @@ static struct imd_type_names imd_types[] = {
 	},
 };
 
-static const char *imd_type_to_name(uint32_t type)
+/**
+ * imd_type_to_name - convert a imd type to a name
+ * @type: The imd type
+ *
+ * This function returns a string representation of the imd type
+ */
+const char *imd_type_to_name(uint32_t type)
 {
 	int i;
 
@@ -191,7 +197,16 @@ static uint32_t imd_name_to_type(const char *name)
 	return IMD_TYPE_INVALID;
 }
 
-static const char *imd_string_data(struct imd_header *imd, int index)
+/**
+ * imd_string_data - get string data
+ * @imd: The IMD entry
+ * @index: The index of the string
+ *
+ * This function returns the string in @imd indexed by @index.
+ *
+ * Return: A pointer to the string or NULL if the string is not found
+ */
+const char *imd_string_data(struct imd_header *imd, int index)
 {
 	int i, total = 0, l = 0;
 	int len = imd_read_length(imd);
@@ -209,7 +224,16 @@ static const char *imd_string_data(struct imd_header *imd, int index)
 	return NULL;
 }
 
-static char *imd_concat_strings(struct imd_header *imd)
+/**
+ * imd_concat_strings - get string data
+ * @imd: The IMD entry
+ *
+ * This function returns the concatenated strings in @imd. The string
+ * returned is allocated with malloc() and the caller has to free() it.
+ *
+ * Return: A pointer to the string or NULL if the string is not found
+ */
+char *imd_concat_strings(struct imd_header *imd)
 {
 	int i, len = imd_read_length(imd);
 	char *str;

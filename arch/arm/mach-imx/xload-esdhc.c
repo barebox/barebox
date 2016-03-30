@@ -276,8 +276,12 @@ int imx6_esdhc_start_image(int instance)
 	pr_debug("Check ok, loading image\n");
 
 	ret = imx6_esdhc_load_image(instance, buf, len);
-	if (ret)
+	if (ret) {
+		pr_err("Loading image failed with %d\n", ret);
 		return ret;
+	}
+
+	pr_debug("Image loaded successfully\n");
 
 	bb = buf;
 

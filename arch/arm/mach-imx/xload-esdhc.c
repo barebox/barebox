@@ -260,6 +260,7 @@ int imx6_esdhc_start_image(int instance)
 	u32 *ivt = buf + SZ_1K;
 	int ret, len;
 	void __noreturn (*bb)(void);
+	unsigned int ofs;
 
 	len = imx_image_size();
 	len = ALIGN(len, SECTOR_SIZE);
@@ -283,7 +284,9 @@ int imx6_esdhc_start_image(int instance)
 
 	pr_debug("Image loaded successfully\n");
 
-	bb = buf;
+	ofs = *(ivt + 1) - *(ivt + 8);
+
+	bb = buf + ofs;
 
 	bb();
 }

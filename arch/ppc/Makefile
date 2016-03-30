@@ -29,6 +29,7 @@ CPPFLAGS += -DTEXT_BASE=$(TEXT_BASE)
 # Add cleanup flags
 ifndef CONFIG_MODULES
 CPPFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS_barebox += --gc-sections
 endif
 
 machdirs := $(patsubst %,arch/ppc/mach-%/,$(machine-y))

@@ -87,7 +87,7 @@ static int erase_and_write(loff_t ofs, unsigned char *data,
 	ret = erase(fd, er.length, er.start);
 	if (ret < 0) {
 		perror("\nerase");
-		printf("Could't not erase flash at 0x%08x length 0x%08x.\n",
+		printf("Could't not erase flash at 0x%08llx length 0x%08llx.\n",
 			   er.start, er.length);
 		return ret;
 	}

@@ -60,7 +60,7 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 		 * to the current address. Otherwise it may be a readonly location.
 		 * Copy and relocate to the start of the memory in this case.
 		 */
-		if (pc > membase && pc < membase + memsize)
+		if (pc > membase && pc - membase < memsize)
 			relocate_to_current_adr();
 		else
 			relocate_to_adr(membase);

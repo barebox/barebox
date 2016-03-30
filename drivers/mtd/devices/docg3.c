@@ -849,7 +849,7 @@ static int doc_erase(struct mtd_info *mtd, struct erase_info *info)
 	uint64_t len;
 	int block0, block1, page, ret, ofs = 0;
 
-	doc_dbg("doc_erase(from=%d, len=%d\n", info->addr, info->len);
+	doc_dbg("doc_erase(from=%lld, len=%lld\n", info->addr, info->len);
 	doc_set_device_id(docg3, docg3->device_id);
 
 	info->state = MTD_ERASE_PENDING;

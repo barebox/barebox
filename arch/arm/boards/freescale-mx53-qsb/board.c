@@ -32,7 +32,6 @@
 
 #include <generated/mach-types.h>
 
-#include <mach/imx-flash-header.h>
 #include <mach/imx53-regs.h>
 #include <mach/revision.h>
 #include <mach/generic.h>

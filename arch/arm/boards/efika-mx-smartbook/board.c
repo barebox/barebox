@@ -32,7 +32,6 @@
 
 #include <asm/armlinux.h>
 
-#include <mach/imx-flash-header.h>
 #include <mach/devices-imx51.h>
 #include <mach/imx51-regs.h>
 #include <mach/iomux-mx51.h>

@@ -42,7 +42,6 @@
 #include <mach/iomux-mx51.h>
 #include <mach/devices-imx51.h>
 #include <mach/revision.h>
-#include <mach/imx-flash-header.h>
 
 #define MX51_CCM_CACRR 0x10
 

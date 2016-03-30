@@ -39,27 +39,6 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_VARISCITE_MX6
 	default 0x4fc00000 if MACH_PHYTEC_SOM_IMX6
 
-config ARCH_IMX_INTERNAL_BOOT
-	bool "support internal boot mode"
-	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX51 || ARCH_IMX53 || ARCH_IMX6
-	depends on !HAVE_PBL_MULTI_IMAGES
-	help
-	  i.MX processors support two different boot modes. With the internal
-	  boot mode the boot medium contains a header describing the image to
-	  load. The header also contains a register/value table which can be
-	  used to setup SDRAM. The internal ROM code then initializes SDRAM
-	  using the register/value table, loads the whole barebox image to
-	  SDRAM and starts it. The internal boot mode is available on newer
-	  i.MX processors (i.MX25, i.MX35, i.MX51, i.MX53 and i.MX6), and
-	  supports booting from NOR, NAND, MMC/SD and serial ROMs.
-	  The external boot mode supports booting only from NAND and NOR. With
-	  NOR flash the image is just started in NOR flash. With NAND flash
-	  the NAND controller loads the first 2kbyte from NAND into the NAND
-	  controllers internal SRAM where it is then started. It's the
-	  responsibility of these 2kbyte to load the rest of the boot image.
-	  The external boot mode is supported on older i.MX processors (i.MX1,
-	  i.MX21, i.MX25, i.MX27, i.MX31, i.MX35).
-
 config ARCH_IMX_IMXIMAGE
 	bool
 	default y
@@ -86,37 +65,6 @@ config ARCH_IMX_UNUSED_IRAM_SIZE
        hex
        depends on ARCH_IMX_XLOAD
        default 0x16000 if ARCH_IMX51
-
-choice
-	depends on ARCH_IMX_INTERNAL_BOOT
-	prompt "Internal boot source"
-	default ARCH_IMX_INTERNAL_BOOT_NAND
-	help
-	  Determines the location of the header information for internal boot.
-	  0x100 for OneNAND
-	  0x400 for NAND, SD/MMC or Serial ROM
-	  0x1000 for NOR
-
-config ARCH_IMX_INTERNAL_BOOT_NAND
-	bool "NAND, SD/MMC, Serial ROM"
-
-config ARCH_IMX_INTERNAL_BOOT_NOR
-	bool "NOR"
-
-config ARCH_IMX_INTERNAL_BOOT_ONENAND
-	bool "OneNAND"
-
-config ARCH_IMX_INTERNAL_BOOT_SERIAL
-	bool "Serial (read help)"
-	help
-	  Normally the first instruction of the barebox image contains a jump
-	  to the real start of the image which means that you can start it by
-	  jumping to the load address. With serial boot images this is not
-	  possible because the first instruction is occupied by a magic for the
-	  ROM boot code. You can still start this image as a second stage loader,
-	  but you have to add 0x400 to the entry point.
-
-endchoice
 
 config ARCH_IMX_EXTERNAL_BOOT_NAND
 	bool

@@ -34,7 +34,6 @@
 #include <mach/imx-nand.h>
 #include <mach/iim.h>
 #include <mach/imx5.h>
-#include <mach/imx-flash-header.h>
 #include <mach/bbu.h>
 
 #include <asm/armlinux.h>

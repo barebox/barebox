@@ -251,7 +251,7 @@ int imx6_esdhc_load_image(int instance, void *buf, int len)
  * (This information is used to calculate the length of the image). The
  * image is started afterwards.
  *
- * Return: If successul, this function does not return. A negative error
+ * Return: If successful, this function does not return. A negative error
  * code is returned when this function fails.
  */
 int imx6_esdhc_start_image(int instance)

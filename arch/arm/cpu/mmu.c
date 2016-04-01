@@ -272,59 +272,149 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
  */
 #define ARM_VECTORS_SIZE	(sizeof(u32) * 8 * 2)
 
+#define ARM_HIGH_VECTORS	0xffff0000
+#define ARM_LOW_VECTORS		0x0
+
+/**
+ * create_vector_table - create a vector table at given address
+ * @adr - The address where the vector table should be created
+ *
+ * After executing this function the vector table is found at the
+ * virtual address @adr.
+ */
+static void create_vector_table(unsigned long adr)
+{
+	struct resource *vectors_sdram;
+	void *vectors;
+	u32 *exc;
+	int idx;
+
+	vectors_sdram = request_sdram_region("vector table", adr, SZ_4K);
+	if (vectors_sdram) {
+		/*
+		 * The vector table address is inside the SDRAM physical
+		 * address space. Use the existing identity mapping for
+		 * the vector table.
+		 */
+		pr_debug("Creating vector table, virt = phys = 0x%08lx\n", adr);
+		vectors = (void *)vectors_sdram->start;
+	} else {
+		/*
+		 * The vector table address is outside of SDRAM. Create
+		 * a secondary page table for the section and map
+		 * allocated memory to the vector address.
+		 */
+		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
+		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
+			 vectors, adr);
+		exc = arm_create_pte(adr);
+		idx = (adr & (SZ_1M - 1)) >> PAGE_SHIFT;
+		exc[idx] = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
+	}
+
+	arm_fixup_vectors();
+
+	memset(vectors, 0, PAGE_SIZE);
+	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);
+}
+
+/**
+ * set_vector_table - let CPU use the vector table at given address
+ * @adr - The address of the vector table
+ *
+ * Depending on the CPU the possibilities differ. ARMv7 and later allow
+ * to map the vector table to arbitrary addresses. Other CPUs only allow
+ * vectors at 0xffff0000 or at 0x0.
+ */
+static int set_vector_table(unsigned long adr)
+{
+	u32 cr;
+
+	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
+		pr_debug("Vectors are at 0x%08lx\n", adr);
+		set_vbar(adr);
+		return 0;
+	}
+
+	if (adr == ARM_HIGH_VECTORS) {
+		cr = get_cr();
+		cr |= CR_V;
+		set_cr(cr);
+		cr = get_cr();
+		if (cr & CR_V) {
+			pr_debug("Vectors are at 0x%08lx\n", adr);
+			return 0;
+		} else {
+			return -EINVAL;
+		}
+	}
+
+	if (adr == ARM_LOW_VECTORS) {
+		cr = get_cr();
+		cr &= ~CR_V;
+		set_cr(cr);
+		cr = get_cr();
+		if (cr & CR_V) {
+			return -EINVAL;
+		} else {
+			pr_debug("Vectors are at 0x%08lx\n", adr);
+			return 0;
+		}
+	}
+
+	return -EINVAL;
+}
+
+static void create_zero_page(void)
+{
+	struct resource *zero_sdram;
+	u32 *zero;
+
+	zero_sdram = request_sdram_region("zero page", 0x0, SZ_4K);
+	if (zero_sdram) {
+		/*
+		 * Here we would need to set the second level page table
+		 * entry to faulting. This is not yet implemented.
+		 */
+		pr_debug("zero page is in SDRAM area, currently not supported\n");
+	} else {
+		zero = arm_create_pte(0x0);
+		zero[0] = 0;
+		pr_debug("Created zero page\n");
+	}
+}
+
 /*
  * Map vectors and zero page
  */
 static void vectors_init(void)
 {
-	u32 *exc, *zero = NULL;
-	void *vectors;
-	u32 cr;
-
-	cr = get_cr();
-	cr |= CR_V;
-	set_cr(cr);
-	cr = get_cr();
-
-	if (cr & CR_V) {
-		/*
-		 * If we can use high vectors, create the second level
-		 * page table for the high vectors and zero page
-		 */
-		exc = arm_create_pte(0xfff00000);
-		zero = arm_create_pte(0x0);
-
-		/* Set the zero page to faulting */
-		zero[0] = 0;
-	} else {
-		/*
-		 * Otherwise map the vectors to the zero page. We have to
-		 * live without being able to catch NULL pointer dereferences
-		 */
-		exc = arm_create_pte(0x0);
-
-		if (cpu_architecture() >= CPU_ARCH_ARMv7) {
-			/*
-			 * ARMv7 CPUs allow to remap low vectors from
-			 * 0x0 to an arbitrary address using VBAR
-			 * register, so let's make sure we have it
-			 * pointing to the correct address
-			 */
-			set_vbar(0x0);
-		}
+	/*
+	 * First try to use the vectors where they actually are, works
+	 * on ARMv7 and later.
+	 */
+	if (!set_vector_table((unsigned long)__exceptions_start)) {
+		arm_fixup_vectors();
+		create_zero_page();
+		return;
 	}
 
-	arm_fixup_vectors();
+	/*
+	 * Next try high vectors at 0xffff0000.
+	 */
+	if (!set_vector_table(ARM_HIGH_VECTORS)) {
+		create_zero_page();
+		create_vector_table(ARM_HIGH_VECTORS);
+		return;
+	}
 
-	vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
-	memset(vectors, 0, PAGE_SIZE);
-	memcpy(vectors, __exceptions_start, __exceptions_stop - __exceptions_start);
-
-	if (cr & CR_V)
-		exc[256 - 16] = (u32)vectors | PTE_TYPE_SMALL |
-			pte_flags_cached;
-	else
-		exc[0] = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
+	/*
+	 * As a last resort use low vectors at 0x0. With this we can't
+	 * set the zero page to faulting and can't catch NULL pointer
+	 * exceptions.
+	 */
+	set_vector_table(ARM_LOW_VECTORS);
+	create_vector_table(ARM_LOW_VECTORS);
 }
 
 /*

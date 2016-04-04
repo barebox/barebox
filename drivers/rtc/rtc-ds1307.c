@@ -338,7 +338,7 @@ static int ds1307_probe(struct device_d *dev)
 		  ECLK bit set to 0
 		 */
 		if (ds1307->type == ds_1341) {
-			ds1307->regs[1] &= DS1341_BIT_ECLK;
+			ds1307->regs[1] &= ~DS1341_BIT_ECLK;
 			i2c_smbus_write_byte_data(client, DS1337_REG_STATUS,
 						  ds1307->regs[1]);
 		}

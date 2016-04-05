@@ -293,46 +293,6 @@ extern char image_base[];
 extern initcall_t __barebox_initcalls_start[], __barebox_early_initcalls_end[],
 		  __barebox_initcalls_end[];
 
-/*
- * We have a position independent binary generated with -fpic. This function
- * fixes the linker generated tables.
- */
-static void fixup_tables(void)
-{
-	initcall_t *initcall;
-	unsigned long offset = (unsigned long)image_base;
-	struct command *cmdtp;
-	struct magicvar *m;
-
-	for (initcall = __barebox_initcalls_start;
-			initcall < __barebox_initcalls_end; initcall++)
-		*initcall += offset;
-
-	for (cmdtp = &__barebox_cmd_start;
-			cmdtp != &__barebox_cmd_end;
-			cmdtp++) {
-		cmdtp->name += offset;
-		cmdtp->cmd += offset;
-		if (cmdtp->complete)
-			cmdtp->complete += offset;
-		if (cmdtp->desc)
-			cmdtp->desc += offset;
-		if (cmdtp->help)
-			cmdtp->help += offset;
-		if (cmdtp->opts)
-			cmdtp->opts += offset;
-		if (cmdtp->aliases)
-			cmdtp->aliases = (void *)cmdtp->aliases + offset;
-	}
-
-	for (m = &__barebox_magicvar_start;
-			m != &__barebox_magicvar_end;
-			m++) {
-		m->name += offset;
-		m->description += offset;
-	}
-}
-
 static int efi_init(void)
 {
 	char *env;
@@ -372,8 +332,6 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	if (!EFI_ERROR(efiret))
 		BS->handle_protocol(efi_loaded_image->device_handle,
 				&efi_device_path_protocol_guid, (void **)&efi_device_path);
-
-	fixup_tables();
 
 	mem = 0x3fffffff;
 	for (memsize = SZ_256M; memsize >= SZ_8M; memsize /= 2) {

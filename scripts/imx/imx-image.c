@@ -210,10 +210,8 @@ static int add_header_v1(struct config_data *data, void *buf)
 	uint32_t loadaddr = data->image_load_addr;
 	uint32_t imagesize = data->load_size;
 
-	if (add_barebox_header) {
+	if (add_barebox_header)
 		memcpy(buf, bb_header, sizeof(bb_header));
-		*psize = imagesize;
-	}
 
 	buf += offset;
 	hdr = buf;
@@ -245,6 +243,9 @@ static int add_header_v1(struct config_data *data, void *buf)
 		hdr->app_code_csf = loadaddr + imagesize;
 		imagesize += CSF_LEN;
 	}
+
+	if (add_barebox_header)
+		*psize = imagesize;
 
 	*(uint32_t *)buf = imagesize;
 

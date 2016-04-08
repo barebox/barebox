@@ -59,7 +59,7 @@ static int abracon_get_time(struct rtc_device *rtcdev, struct rtc_time *t)
 	t->tm_mon = bcd2bin(cp[5]);
 	t->tm_year = bcd2bin(cp[6]) + 100;
 
-	return 0;
+	return rtc_valid_tm(t);
 }
 
 static int abracon_set_time(struct rtc_device *rtcdev, struct rtc_time *t)

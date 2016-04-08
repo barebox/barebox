@@ -171,11 +171,11 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
  * MMDC - found on i.MX6
  */
 
-static inline unsigned long imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
+static inline u64 imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 {
 	u32 ctlval = readl(mmdcbase + MDCTL);
 	u32 mdmisc = readl(mmdcbase + MDMISC);
-	unsigned long size;
+	u64 size;
 	int rows, cols, width = 2, banks = 8;
 
 	if (cs == 0 && !(ctlval & MMDCx_MDCTL_SDE0))
@@ -201,7 +201,7 @@ static inline unsigned long imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 	if (mdmisc & MMDCx_MDMISC_DDR_4_BANKS)
 		banks = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
+	size = (u64)(1 << cols) * (1 << rows) * banks * width;
 
 	return size;
 }

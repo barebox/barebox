@@ -1,3 +1,14 @@
+/*
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; version 2.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ */
+
 #define pr_fmt(fmt) "xload-esdhc: " fmt
 
 #include <common.h>
@@ -240,7 +251,7 @@ int imx6_esdhc_load_image(int instance, void *buf, int len)
  * (This information is used to calculate the length of the image). The
  * image is started afterwards.
  *
- * Return: If successul, this function does not return. A negative error
+ * Return: If successful, this function does not return. A negative error
  * code is returned when this function fails.
  */
 int imx6_esdhc_start_image(int instance)
@@ -249,6 +260,7 @@ int imx6_esdhc_start_image(int instance)
 	u32 *ivt = buf + SZ_1K;
 	int ret, len;
 	void __noreturn (*bb)(void);
+	unsigned int ofs;
 
 	len = imx_image_size();
 	len = ALIGN(len, SECTOR_SIZE);
@@ -265,10 +277,16 @@ int imx6_esdhc_start_image(int instance)
 	pr_debug("Check ok, loading image\n");
 
 	ret = imx6_esdhc_load_image(instance, buf, len);
-	if (ret)
+	if (ret) {
+		pr_err("Loading image failed with %d\n", ret);
 		return ret;
+	}
 
-	bb = buf;
+	pr_debug("Image loaded successfully\n");
+
+	ofs = *(ivt + 1) - *(ivt + 8);
+
+	bb = buf + ofs;
 
 	bb();
 }

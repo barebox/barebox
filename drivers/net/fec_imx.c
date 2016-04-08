@@ -621,6 +621,12 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 	return 0;
 }
 
+static void fec_free_receive_packets(struct fec_priv *fec, int count, int size)
+{
+	void *p = phys_to_virt(fec->rbd_base[0].data_pointer);
+	dma_free_coherent(p, 0, size * count);
+}
+
 #ifdef CONFIG_OFDEVICE
 static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 {
@@ -656,6 +662,7 @@ static int fec_probe(struct device_d *dev)
 	enum fec_type type;
 	int phy_reset;
 	u32 msec = 1;
+	u64 start;
 
 	ret = dev_get_drvdata(dev, (const void **)&type);
 	if (ret)
@@ -680,11 +687,15 @@ static int fec_probe(struct device_d *dev)
 		goto err_free;
 	}
 
-	clk_enable(fec->clk);
+	ret = clk_enable(fec->clk);
+	if (ret < 0)
+		goto put_clk;
 
 	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
+	if (IS_ERR(iores)) {
+		ret = PTR_ERR(iores);
+		goto disable_clk;
+	}
 	fec->regs = IOMEM(iores->start);
 
 	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
@@ -693,28 +704,33 @@ static int fec_probe(struct device_d *dev)
 
 		ret = gpio_request(phy_reset, "phy-reset");
 		if (ret)
-			goto err_free;
+			goto release_res;
 
 		ret = gpio_direction_output(phy_reset, 0);
 		if (ret)
-			goto err_free;
+			goto free_gpio;
 
 		mdelay(msec);
 		gpio_set_value(phy_reset, 1);
 	}
 
 	/* Reset chip. */
+	start = get_time_ns();
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);
-	while(readl(fec->regs + FEC_ECNTRL) & 1) {
-		udelay(10);
+	while(readl(fec->regs + FEC_ECNTRL) & FEC_ECNTRL_RESET) {
+		if (is_timeout(start, SECOND)) {
+			ret = -ETIMEDOUT;
+			goto free_gpio;
+		}
 	}
 
 	/*
 	 * reserve memory for both buffer descriptor chains at once
 	 * Datasheet forces the startaddress of each chain is 16 byte aligned
 	 */
-	base = dma_alloc_coherent((2 + FEC_RBD_NUM) *
-			sizeof(struct buffer_descriptor), DMA_ADDRESS_BROKEN);
+#define FEC_XBD_SIZE ((2 + FEC_RBD_NUM) * sizeof(struct buffer_descriptor))
+
+	base = dma_alloc_coherent(FEC_XBD_SIZE, DMA_ADDRESS_BROKEN);
 	fec->rbd_base = base;
 	base += FEC_RBD_NUM * sizeof(struct buffer_descriptor);
 	fec->tbd_base = base;
@@ -722,7 +738,9 @@ static int fec_probe(struct device_d *dev)
 	writel(virt_to_phys(fec->tbd_base), fec->regs + FEC_ETDSR);
 	writel(virt_to_phys(fec->rbd_base), fec->regs + FEC_ERDSR);
 
-	fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
+	ret = fec_alloc_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
+	if (ret < 0)
+		goto free_xbd;
 
 	if (dev->device_node) {
 		ret = fec_probe_dt(dev, fec);
@@ -737,7 +755,7 @@ static int fec_probe(struct device_d *dev)
 	}
 
 	if (ret)
-		goto err_free;
+		goto free_receive_packets;
 
 	fec_init(edev);
 
@@ -749,14 +767,29 @@ static int fec_probe(struct device_d *dev)
 
 	ret = mdiobus_register(&fec->miibus);
 	if (ret)
-		return ret;
+		goto free_receive_packets;
 
 	ret = eth_register(edev);
 	if (ret)
-		return ret;
+		goto unregister_mdio;
 
 	return 0;
 
+unregister_mdio:
+	mdiobus_unregister(&fec->miibus);
+free_receive_packets:
+	fec_free_receive_packets(fec, FEC_RBD_NUM, FEC_MAX_PKT_SIZE);
+free_xbd:
+	dma_free_coherent(fec->rbd_base, 0, FEC_XBD_SIZE);
+free_gpio:
+	if (gpio_is_valid(phy_reset))
+		gpio_free(phy_reset);
+release_res:
+	release_region(iores);
+disable_clk:
+	clk_disable(fec->clk);
+put_clk:
+	clk_put(fec->clk);
 err_free:
 	free(fec);
 	return ret;

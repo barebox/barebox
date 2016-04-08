@@ -123,7 +123,8 @@ int imx6_init(void)
 	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
 
 	rev = readl(MX6_ANATOP_BASE_ADDR + SI_REV);
-	switch (rev & 0xff) {
+
+	switch (rev & 0xfff) {
 	case 0x00:
 		mx6_silicon_revision = IMX_CHIP_REV_1_0;
 		break;
@@ -148,16 +149,26 @@ int imx6_init(void)
 		mx6_silicon_revision = IMX_CHIP_REV_1_5;
 		break;
 
+	case 0x100:
+		mx6_silicon_revision = IMX_CHIP_REV_2_0;
+		break;
+
 	default:
 		mx6_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 	}
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:
-		cputypestr = "i.MX6 Quad";
+		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
+			cputypestr = "i.MX6 Quad Plus";
+		else
+			cputypestr = "i.MX6 Quad";
 		break;
 	case IMX6_CPUTYPE_IMX6D:
-		cputypestr = "i.MX6 Dual";
+		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
+			cputypestr = "i.MX6 Dual Plus";
+		else
+			cputypestr = "i.MX6 Dual";
 		break;
 	case IMX6_CPUTYPE_IMX6DL:
 		cputypestr = "i.MX6 DualLite";
@@ -199,15 +210,24 @@ int imx6_devices_init(void)
 static int imx6_mmu_init(void)
 {
 	void __iomem *l2x0_base = IOMEM(0x00a02000);
-	u32 val;
+	u32 val, cache_part, cache_rtl;
 
 	if (!cpu_is_mx6())
 		return 0;
 
+	val = readl(l2x0_base + L2X0_CACHE_ID);
+	cache_part = val & L2X0_CACHE_ID_PART_MASK;
+	cache_rtl  = val & L2X0_CACHE_ID_RTL_MASK;
+
 	/* configure the PREFETCH register */
 	val = readl(l2x0_base + L2X0_PREFETCH_CTRL);
-	val |= 0x70800000;
-
+	val |=  L2X0_DOUBLE_LINEFILL_EN |
+		L2X0_INSTRUCTION_PREFETCH_EN |
+		L2X0_DATA_PREFETCH_EN;
+	/*
+	 * set prefetch offset to 15
+	 */
+	val |= 15;
 	/*
 	 * The L2 cache controller(PL310) version on the i.MX6D/Q is r3p1-50rel0
 	 * The L2 cache controller(PL310) version on the i.MX6DL/SOLO/SL is r3p2
@@ -217,8 +237,9 @@ static int imx6_mmu_init(void)
 	 * Workaround: The only workaround to this erratum is to disable the
 	 * double linefill feature. This is the default behavior.
 	 */
-	if (cpu_is_mx6q())
-		val &= ~(1 << 30 | 1 << 23);
+	if (cache_part == L2X0_CACHE_ID_PART_L310 &&
+	    cache_rtl < L2X0_CACHE_ID_RTL_R3P2)
+		val &= ~L2X0_DOUBLE_LINEFILL_EN;
 
 	writel(val, l2x0_base + L2X0_PREFETCH_CTRL);
 

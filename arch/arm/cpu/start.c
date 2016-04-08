@@ -193,7 +193,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 		if (totalsize) {
 			unsigned long mem = arm_mem_boarddata(membase, endmem,
 							      totalsize);
-			pr_debug("found %s in boarddata, copying to 0x%lu\n",
+			pr_debug("found %s in boarddata, copying to 0x%08lx\n",
 				 name, mem);
 			barebox_boarddata = memcpy((void *)mem, boarddata,
 						   totalsize);

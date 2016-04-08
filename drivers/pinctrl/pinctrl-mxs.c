@@ -89,8 +89,8 @@ static int mxs_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node
 		writel(0x3 << shift, reg + STMP_OFFSET_REG_CLR);
 		writel(muxsel << shift, reg + STMP_OFFSET_REG_SET);
 
-		dev_dbg(iomux->pinctrl.dev, "pin %d, mux %d, ma: %d, vol: %d, pull: %d\n",
-				pinid, muxsel, ma, vol, pull);
+		dev_dbg(iomux->pinctrl.dev, "(val: 0x%x) pin %d, mux %d, ma: %d, vol: %d, pull: %d\n",
+				val, pinid, muxsel, ma, vol, pull);
 
 		/* drive */
 		reg = iomux->base + 0x300;

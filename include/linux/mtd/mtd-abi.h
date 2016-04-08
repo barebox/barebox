@@ -118,6 +118,7 @@ struct otp_info {
 #define ECCGETLAYOUT		_IOR('M', 17, struct nand_ecclayout)
 #define ECCGETSTATS		_IOR('M', 18, struct mtd_ecc_stats)
 #define MTDFILEMODE		_IO('M', 19)
+#define MEMSETGOODBLOCK		_IOW('M', 20, loff_t)
 
 /*
  * Obsolete legacy interface. Keep it in order not to break userspace

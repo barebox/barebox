@@ -26,26 +26,28 @@
 #include <linux/mtd/mtd.h>
 #include <linux/stat.h>
 #include <linux/mtd/mtd-abi.h>
-#include <mtd/libmtd.h>
+#include <mtd/mtd-peb.h>
 #include <mtd/libscan.h>
 #include <mtd/ubi-user.h>
 #include <mtd/utils.h>
 #include <mtd/ubi-media.h>
 #include <asm-generic/div64.h>
 
-int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **info,
+int libscan_ubi_scan(struct mtd_info *mtd, struct ubi_scan_info **info,
 	     int verbose)
 {
-	int eb, v = (verbose == 2), pr = (verbose == 1);
+	int eb, v = (verbose == 2), pr = (verbose == 1), eb_cnt;
 	struct ubi_scan_info *si;
 	unsigned long long sum = 0;
+
+	eb_cnt = mtd_div_by_eb(mtd->size, mtd);
 
 	si = calloc(1, sizeof(struct ubi_scan_info));
 	if (!si)
 		return sys_errmsg("cannot allocate %zd bytes of memory",
 				  sizeof(struct ubi_scan_info));
 
-	si->ec = calloc(mtd->eb_cnt, sizeof(uint32_t));
+	si->ec = calloc(eb_cnt, sizeof(uint32_t));
 	if (!si->ec) {
 		sys_errmsg("cannot allocate %zd bytes of memory",
 			   sizeof(struct ubi_scan_info));
@@ -54,8 +56,8 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 
 	si->vid_hdr_offs = si->data_offs = -1;
 
-	verbose(v, "start scanning eraseblocks 0-%d", mtd->eb_cnt);
-	for (eb = 0; eb < mtd->eb_cnt; eb++) {
+	verbose(v, "start scanning eraseblocks 0-%d", eb_cnt);
+	for (eb = 0; eb < eb_cnt; eb++) {
 		int ret;
 		uint32_t crc;
 		struct ubi_ec_hdr ech;
@@ -65,10 +67,10 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 			normsg_cont("scanning eraseblock %d", eb);
 		if (pr) {
 			printf("\r" PROGRAM_NAME ": scanning eraseblock %d -- %2u %% complete  ",
-			       eb, (eb + 1) * 100 / mtd->eb_cnt);
+			       eb, (eb + 1) * 100 / eb_cnt);
 		}
 
-		ret = mtd_is_bad(mtd, fd, eb);
+		ret = mtd_peb_is_bad(mtd, eb);
 		if (ret == -1)
 			goto out_ec;
 		if (ret) {
@@ -79,12 +81,12 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 			continue;
 		}
 
-		ret = libmtd_read(mtd, fd, eb, 0, &ech, sizeof(struct ubi_ec_hdr));
+		ret = mtd_peb_read(mtd, &ech, eb, 0, sizeof(struct ubi_ec_hdr));
 		if (ret < 0)
 			goto out_ec;
 
 		if (be32_to_cpu(ech.magic) != UBI_EC_HDR_MAGIC) {
-			if (mtd_all_ff(&ech, sizeof(struct ubi_ec_hdr))) {
+			if (mtd_buf_all_ff(&ech, sizeof(struct ubi_ec_hdr))) {
 				si->empty_cnt += 1;
 				si->ec[eb] = EB_EMPTY;
 				if (v)
@@ -121,14 +123,14 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 		if (si->vid_hdr_offs == -1) {
 			si->vid_hdr_offs = be32_to_cpu(ech.vid_hdr_offset);
 			si->data_offs = be32_to_cpu(ech.data_offset);
-			if (si->data_offs % mtd->min_io_size) {
+			if (si->data_offs % mtd->writesize) {
 				if (pr)
 					printf("\n");
 				if (v)
 					printf(": corrupted because of the below\n");
 				warnmsg("bad data offset %d at eraseblock %d (n"
 					"of multiple of min. I/O unit size %d)",
-					si->data_offs, eb, mtd->min_io_size);
+					si->data_offs, eb, mtd->writesize);
 				warnmsg("treat eraseblock %d as corrupted", eb);
 				si->corrupted_cnt += 1;
 				si->ec[eb] = EB_CORRUPTED;
@@ -174,7 +176,7 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 
 	if (si->ok_cnt != 0) {
 		/* Calculate mean erase counter */
-		for (eb = 0; eb < mtd->eb_cnt; eb++) {
+		for (eb = 0; eb < eb_cnt; eb++) {
 			if (si->ec[eb] > EC_MAX)
 				continue;
 			sum += si->ec[eb];
@@ -183,7 +185,7 @@ int libscan_ubi_scan(struct mtd_dev_info *mtd, int fd, struct ubi_scan_info **in
 		si->mean_ec = sum;
 	}
 
-	si->good_cnt = mtd->eb_cnt - si->bad_cnt;
+	si->good_cnt = eb_cnt - si->bad_cnt;
 	verbose(v, "finished, mean EC %lld, %d OK, %d corrupted, %d empty, %d "
 		"alien, bad %d", si->mean_ec, si->ok_cnt, si->corrupted_cnt,
 		si->empty_cnt, si->alien_cnt, si->bad_cnt);

@@ -694,7 +694,6 @@ config CMD_UBI
 config CMD_UBIFORMAT
 	tristate
 	depends on MTD_UBI
-	select LIBMTD
 	select LIBSCAN
 	select LIBUBIGEN
 	prompt "ubiformat"
@@ -1908,6 +1907,23 @@ config CMD_NANDTEST
 		  -i ITERATIONS	nNumber of iterations
 		  -o OFFS	start offset on flash
 		  -l LEN	length of flash to test
+
+config CMD_NAND_BITFLIP
+	tristate
+	depends on NAND
+	prompt "nand_bitflip"
+	help
+	  nand_bitflip - Create bitflips on Nand pages. This command is useful for testing
+	  purposes.
+
+	  Usage: nand_bitflip NANDDEV
+
+	  This command creates bitflips on Nand pages.
+	  Options:
+	          -b <block>      block to work on
+	          -o <offset>     offset in Nand
+	          -r      flip random bits
+	          -n <numbitflips>        Specify maximum number of bitflips to generate
 
 config CMD_POWEROFF
 	tristate

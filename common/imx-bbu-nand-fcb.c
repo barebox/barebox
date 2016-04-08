@@ -31,8 +31,11 @@
 #include <linux/mtd/mtd-abi.h>
 #include <linux/mtd/nand_mxs.h>
 #include <linux/mtd/mtd.h>
+#include <linux/mtd/nand.h>
 #include <linux/stat.h>
 #include <io.h>
+#include <mach/generic.h>
+#include <mtd/mtd-peb.h>
 
 struct dbbt_block {
 	uint32_t Checksum;
@@ -107,8 +110,6 @@ struct imx_nand_fcb_bbu_handler {
 
 	void (*fcb_create)(struct imx_nand_fcb_bbu_handler *imx_handler,
 		struct fcb_block *fcb, struct mtd_info *mtd);
-	void (*dbbt_create)(struct imx_nand_fcb_bbu_handler *imx_handler,
-		struct dbbt_block *dbbt, int num_bad_blocks);
 	enum filetype filetype;
 };
 
@@ -135,6 +136,22 @@ static void encode_hamming_13_8(void *_src, void *_ecc, size_t size)
 
 	for (i = 0; i < size; i++)
 		ecc[i] = calculate_parity_13_8(src[i]);
+}
+
+static int lookup_single_error_13_8(unsigned char syndrome)
+{
+	int i;
+	unsigned char syndrome_table[] = {
+		0x1c, 0x16, 0x13, 0x19,
+		0x1a, 0x07, 0x15, 0x0e,
+		0x01, 0x02, 0x04, 0x08,
+		0x10,
+	};
+
+	for (i = 0; i < 13; i ++)
+		if (syndrome_table[i] == syndrome)
+			return i;
+	return -1;
 }
 
 static uint32_t calc_chksum(void *buf, size_t size)
@@ -238,6 +255,66 @@ static ssize_t raw_write_page(struct mtd_info *mtd, void *buf, loff_t offset)
         return ret;
 }
 
+static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
+{
+	int i;
+	int bitflips = 0;
+	u8 parity, np, syndrome, bit_to_flip;
+	u8 *fcb, *ecc;
+	int ret;
+	void *rawpage;
+
+	*retfcb = NULL;
+
+	rawpage = xmalloc(mtd->writesize + mtd->oobsize);
+
+	ret = raw_read_page(mtd, rawpage, mtd->erasesize * num);
+	if (ret) {
+		pr_err("Cannot read block %d\n", num);
+		goto err;
+	}
+
+	fcb = rawpage + 12;
+	ecc = rawpage + 512 + 12;
+
+	for (i = 0; i < 512; i++) {
+		parity = ecc[i];
+		np = calculate_parity_13_8(fcb[i]);
+
+		syndrome = np ^ parity;
+		if (syndrome == 0)
+			continue;
+
+		if (!(hweight8(syndrome) & 1)) {
+			pr_err("Uncorrectable error at offset %d\n", i);
+			ret = -EIO;
+			goto err;
+		}
+
+		bit_to_flip = lookup_single_error_13_8(syndrome);
+		if (bit_to_flip < 0) {
+			pr_err("Uncorrectable error at offset %d\n", i);
+			ret = -EIO;
+			goto err;
+		}
+
+		bitflips++;
+
+		if (bit_to_flip > 7)
+			ecc[i] ^= 1 << (bit_to_flip - 8);
+		else
+			fcb[i] ^= 1 << bit_to_flip;
+	}
+
+	*retfcb = xmemdup(rawpage + 12, 512);
+
+	ret = 0;
+err:
+	free(rawpage);
+
+	return ret;
+}
+
 static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 		struct fcb_block *fcb, struct mtd_info *mtd)
 {
@@ -272,77 +349,123 @@ static int fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	return 0;
 }
 
-static int imx_bbu_erase(struct mtd_info *mtd)
+static int mtd_peb_write_block(struct mtd_info *mtd, void *buf, int block, int len)
 {
-	uint64_t offset = 0;
-	struct erase_info erase;
 	int ret;
+	int retries = 0;
 
-	while (offset < mtd->size) {
-		pr_debug("erasing at 0x%08llx\n", offset);
-		if (mtd_block_isbad(mtd, offset)) {
-			pr_debug("erase skip block @ 0x%08llx\n", offset);
-			offset += mtd->erasesize;
-			continue;
-		}
+	if (mtd_peb_is_bad(mtd, block))
+		return -EINVAL;
+again:
+	ret = mtd_peb_write(mtd, buf, block, 0, len);
+	if (!ret)
+		return 0;
 
-		memset(&erase, 0, sizeof(erase));
-		erase.addr = offset;
-		erase.len = mtd->erasesize;
-
-		ret = mtd_erase(mtd, &erase);
-		if (ret)
-			return ret;
-
-		offset += mtd->erasesize;
+	if (ret == -EBADMSG) {
+		ret = mtd_peb_torture(mtd, block);
+		if (!ret && retries++ < 3)
+			goto again;
 	}
 
-	return 0;
+	return ret;
 }
 
-static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned block,
-		unsigned num_blocks, void *buf, size_t len)
+/**
+ * imx_bbu_firmware_max_blocks - get max number of blocks for firmware
+ * @mtd: The mtd device
+ *
+ * We use 4 blocks for FCB/DBBT, the rest of the partition is
+ * divided into two equally sized firmware slots. This function
+ * returns the number of blocks available for one firmware slot.
+ * The actually usable size may be smaller due to bad blocks.
+ */
+static int imx_bbu_firmware_max_blocks(struct mtd_info *mtd)
 {
-	uint64_t offset = block * mtd->erasesize;
-	int ret;
-	size_t written;
+	return (mtd_div_by_eb(mtd->size, mtd) - 4) / 2;
+}
+
+/**
+ * imx_bbu_firmware_start_block - get start block for a firmware slot
+ * @mtd: The mtd device
+ * @num: The slot number (0 or 1)
+ *
+ * We use 4 blocks for FCB/DBBT, the rest of the partition is
+ * divided into two equally sized firmware slots. This function
+ * returns the start block for the given firmware slot.
+ */
+static int imx_bbu_firmware_start_block(struct mtd_info *mtd, int num)
+{
+	return 4 + num * imx_bbu_firmware_max_blocks(mtd);
+}
+
+static int imx_bbu_write_firmware(struct mtd_info *mtd, unsigned num, void *buf,
+				  size_t len)
+{
+	int ret, i, newbadblock = 0;
+	int num_blocks = imx_bbu_firmware_max_blocks(mtd);
+	int block = imx_bbu_firmware_start_block(mtd, num);
+
+	pr_info("writing firmware %d to block %d (ofs 0x%08x)\n",
+			num, block, block * mtd->erasesize);
+
+	for (i = 0; i < num_blocks; i++) {
+		if (mtd_peb_is_bad(mtd, block + i))
+			continue;
+
+		ret = mtd_peb_erase(mtd, block + i);
+		if (ret && ret != -EIO)
+			return ret;
+	}
 
 	while (len > 0) {
 		int now = min(len, mtd->erasesize);
 
-		if (!num_blocks)
+		if (!num_blocks) {
+			pr_err("Out of good eraseblocks, cannot write firmware\n");
 			return -ENOSPC;
+		}
 
-		pr_debug("writing %p at 0x%08llx, left 0x%08x\n",
-				buf, offset, len);
+		pr_debug("writing %p peb %d, left 0x%08x\n",
+				buf, block, len);
 
-		if (mtd_block_isbad(mtd, offset)) {
-			pr_debug("write skip block @ 0x%08llx\n", offset);
-			offset += mtd->erasesize;
+		if (mtd_peb_is_bad(mtd, block)) {
+			pr_debug("skipping block %d\n", block);
+			num_blocks--;
 			block++;
 			continue;
 		}
 
-		ret = mtd_write(mtd, offset, now, &written, buf);
-		if (ret)
-			return ret;
+		ret = mtd_peb_write_block(mtd, buf, block, now);
 
-		offset += now;
+		if (ret == -EIO) {
+			block++;
+			num_blocks--;
+			newbadblock = 1;
+			continue;
+		}
+
+		if (ret) {
+			pr_err("Writing block %d failed with: %s\n", block, strerror(-ret));
+			return ret;
+		}
+
 		len -= now;
 		buf += now;
 		block++;
 		num_blocks--;
 	}
 
-	return block;
+	return newbadblock;
 }
 
-static int dbbt_data_create(struct mtd_info *mtd, void *buf, int num_blocks)
+static void *dbbt_data_create(struct mtd_info *mtd)
 {
 	int n;
 	int n_bad_blocks = 0;
-	uint32_t *bb = buf + 0x8;
-	uint32_t *n_bad_blocksp = buf + 0x4;
+	void *dbbt = xzalloc(mtd->writesize);
+	uint32_t *bb = dbbt + 0x8;
+	uint32_t *n_bad_blocksp = dbbt + 0x4;
+	int num_blocks = mtd_div_by_eb(mtd->size, mtd);
 
 	for (n = 0; n < num_blocks; n++) {
 		loff_t offset = n * mtd->erasesize;
@@ -353,104 +476,289 @@ static int dbbt_data_create(struct mtd_info *mtd, void *buf, int num_blocks)
 		}
 	}
 
-	*n_bad_blocksp = n_bad_blocks;
-
-	return n_bad_blocks;
-}
-
-static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *data)
-{
-	struct imx_nand_fcb_bbu_handler *imx_handler =
-		container_of(handler, struct imx_nand_fcb_bbu_handler, handler);
-	struct cdev *bcb_cdev;
-	struct mtd_info *mtd;
-	int ret, block_fw1, block_fw2;
-	struct fcb_block *fcb;
-	struct dbbt_block *dbbt;
-	void *fcb_raw_page, *dbbt_page, *dbbt_data_page;
-	void *ecc;
-	int written;
-	void *fw;
-	unsigned fw_size, partition_size;
-	int i;
-	enum filetype filetype;
-	unsigned num_blocks_fcb_dbbt, num_blocks, num_blocks_fw;
-
-	filetype = file_detect_type(data->image, data->len);
-
-	if (filetype != imx_handler->filetype &&
-			!bbu_force(data, "Image is not of type %s but of type %s",
-				file_type_to_string(imx_handler->filetype),
-				file_type_to_string(filetype)))
-		return -EINVAL;
-
-	bcb_cdev = cdev_by_name(handler->devicefile);
-	if (!bcb_cdev) {
-		pr_err("%s: No FCB device!\n", __func__);
-		return -ENODEV;
+	if (!n_bad_blocks) {
+		free(dbbt);
+		return NULL;
 	}
 
-	mtd = bcb_cdev->mtd;
-	partition_size = mtd->size;
+	*n_bad_blocksp = n_bad_blocks;
+
+	return dbbt;
+}
+
+static void imx28_dbbt_create(struct dbbt_block *dbbt, int num_bad_blocks)
+{
+	uint32_t a = 0;
+	uint8_t *p = (void *)dbbt;
+	int i;
+
+	dbbt->numberBB = num_bad_blocks;
+
+	for (i = 4; i < 512; i++)
+		a += p[i];
+
+	a ^= 0xffffffff;
+
+	dbbt->Checksum = a;
+}
+
+/**
+ * imx_bbu_write_fcb - Write FCB and DBBT raw data to the device
+ * @mtd: The mtd Nand device
+ * @block: The block to write to
+ * @fcb_raw_page: The raw FCB data
+ * @dbbt_data_page: The DBBT data
+ *
+ * This function writes the FCB/DBBT data to the block given in @block
+ * to the Nand device. The FCB data has to be given in the raw flash
+ * layout, already with ecc data supplied.
+ *
+ * return: 0 on success or a negative error code otherwise.
+ */
+static int imx_bbu_write_fcb(struct mtd_info *mtd, int block, void *fcb_raw_page,
+			     void *dbbt_data_page)
+{
+	struct dbbt_block *dbbt;
+	int ret;
+	int retries = 0;
+	uint32_t *n_bad_blocksp = dbbt_data_page + 0x4;
+again:
+	dbbt = xzalloc(mtd->writesize);
+
+	dbbt->Checksum = 0;
+	dbbt->FingerPrint = 0x54424244;
+	dbbt->Version = 0x01000000;
+	if (dbbt_data_page)
+		dbbt->DBBTNumOfPages = 1;
+	if (cpu_is_mx28())
+		imx28_dbbt_create(dbbt, *n_bad_blocksp);
+
+	ret = mtd_peb_erase(mtd, block);
+	if (ret)
+		return ret;
+
+	ret = raw_write_page(mtd, fcb_raw_page, block * mtd->erasesize);
+	if (ret) {
+		pr_err("Writing FCB on block %d failed with %s\n",
+		       block, strerror(-ret));
+		goto out;
+	}
+
+	ret = mtd_peb_write(mtd, (void *)dbbt, block, mtd->writesize,
+			    mtd->writesize);
+	if (ret < 0) {
+		pr_err("Writing DBBT header on block %d failed with %s\n",
+		       block, strerror(-ret));
+		goto out;
+	}
+
+	if (dbbt_data_page) {
+		ret = mtd_peb_write(mtd, dbbt_data_page, block, mtd->writesize * 5,
+				    mtd->writesize);
+		if (ret < 0) {
+			pr_err("Writing DBBT on block %d failed with %s\n",
+			       block, strerror(-ret));
+			goto out;
+		}
+	}
+
+	ret = 0;
+out:
+	free(dbbt);
+
+	if (ret == -EBADMSG) {
+		ret = mtd_peb_torture(mtd, block);
+
+		if (!ret && retries++ < 3)
+			goto again;
+	}
+
+	return ret;
+}
+
+/**
+ * dbbt_block_is_bad - Check if according to the given DBBT a block is bad
+ * @dbbt: The DBBT data page
+ * @block: The block to test
+ *
+ * This function checks if a block is marked as bad in the given DBBT.
+ *
+ * return: true if the block is bad, false otherwise.
+ */
+static int dbbt_block_is_bad(void *_dbbt, int block)
+{
+	int i;
+	u32 *dbbt = _dbbt;
+	int num_bad_blocks;
+
+	if (!_dbbt)
+		return false;
+
+	dbbt++; /* reserved */
+
+	num_bad_blocks = *dbbt++;
+
+	for (i = 0; i < num_bad_blocks; i++) {
+		if (*dbbt == block)
+			return true;
+		dbbt++;
+	}
+
+	return false;
+}
+
+/**
+ * dbbt_check - Check if DBBT is readable and consistent to the mtd BBT
+ * @mtd: The mtd Nand device
+ * @dbbt: The page where the DBBT is found
+ *
+ * This function checks if the DBBT is readable and consistent to the mtd
+ * layers idea of bad blocks.
+ *
+ * return: 0 if the DBBT is readable and consistent to the mtd BBT, a
+ * negative error code otherwise.
+ */
+static int dbbt_check(struct mtd_info *mtd, int page)
+{
+	int ret, needs_cleanup = 0;
+	size_t r;
+	void *dbbt_header;
+	void *dbbt_entries = NULL;
+	struct dbbt_block *dbbt;
+	int num_blocks = mtd_div_by_eb(mtd->size, mtd);
+	int n;
+
+	dbbt_header = xmalloc(mtd->writesize);
+
+	ret = mtd_read(mtd, page * mtd->writesize, mtd->writesize, &r, dbbt_header);
+	if (ret == -EUCLEAN) {
+		pr_warn("page %d needs cleaning\n", page);
+		needs_cleanup = 1;
+	} else if (ret < 0) {
+		pr_err("Cannot read page %d: %s\n", page, strerror(-ret));
+		goto out;
+	}
+
+	dbbt = dbbt_header;
+
+	if (dbbt->FingerPrint != 0x54424244) {
+		pr_err("dbbt at page %d is readable but does not contain a valid DBBT\n",
+		       page);
+		ret = -EINVAL;
+		goto out;
+	}
+
+	if (dbbt->DBBTNumOfPages) {
+		dbbt_entries = xmalloc(mtd->writesize);
+
+		ret = mtd_read(mtd, (page + 4) * mtd->writesize, mtd->writesize, &r, dbbt_entries);
+		if (ret == -EUCLEAN) {
+			pr_warn("page %d needs cleaning\n", page);
+			needs_cleanup = 1;
+		} else if (ret < 0) {
+			pr_err("Cannot read page %d: %s\n", page, strerror(-ret));
+			free(dbbt_entries);
+			goto out;
+		}
+	} else {
+		dbbt_entries = NULL;
+	}
+
+	for (n = 0; n < num_blocks; n++) {
+		if (mtd_peb_is_bad(mtd, n) != dbbt_block_is_bad(dbbt_entries, n)) {
+			ret = -EINVAL;
+			goto out;
+		}
+	}
+
+	ret = 0;
+out:
+	free(dbbt_header);
+	free(dbbt_entries);
+
+	if (ret < 0)
+		return ret;
+	if (needs_cleanup)
+		return -EUCLEAN;
+	return 0;
+}
+
+/**
+ * fcb_dbbt_check - Check if a FCB/DBBT is valid
+ * @mtd: The mtd Nand device
+ * @num: The number of the FCB, corresponds to the eraseblock number
+ * @fcb: The FCB to check against
+ *
+ * This function checks if FCB/DBBT found on a device are valid. This
+ * means:
+ * - the FCB is readable on the device
+ * - the FCB is the same as the reference passed in @fcb
+ * - the DBBT is consistent to the mtd BBT
+ *
+ * return: 0 if the FCB/DBBT are valid, a negative error code otherwise
+ */
+static int fcb_dbbt_check(struct mtd_info *mtd, int num, struct fcb_block *fcb)
+{
+	int ret;
+	struct fcb_block *f;
+	int pages_per_block = mtd->erasesize / mtd->writesize;
+
+	ret = read_fcb(mtd, num, &f);
+	if (ret)
+		return ret;
+
+	if (memcmp(fcb, f, sizeof(*fcb))) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	ret = dbbt_check(mtd, num * pages_per_block + 1);
+	if (ret)
+		goto out;
+
+	ret = 0;
+
+out:
+	free(f);
+
+	return ret;
+}
+
+/**
+ * imx_bbu_write_fcbs_dbbts - Write FCBs/DBBTs to first four blocks
+ * @mtd: The mtd device to write the FCBs/DBBTs to
+ * @fcb: The FCB block to write
+ *
+ * This creates the FCBs/DBBTs and writes them to the first four blocks
+ * of the Nand device. The raw FCB data is created from the input FCB
+ * block, the DBBTs are created from the barebox mtd Nand Bad Block
+ * Table. The DBBTs are written in the second page same of each FCB block.
+ * Data will actually only be written if it differs from the data found
+ * on the device or if a return value of -EUCLEAN while reading
+ * indicates that a refresh is necessary.
+ *
+ * return: 0 for success or a negative error code otherwise.
+ */
+static int imx_bbu_write_fcbs_dbbts(struct mtd_info *mtd, struct fcb_block *fcb)
+{
+	void *dbbt = NULL;
+	int i, ret, valid = 0;
+	void *fcb_raw_page;
+
+	/*
+	 * The DBBT search start page is configurable in the FCB block.
+	 * This function writes the DBBTs in the pages directly behind
+	 * the FCBs, so everything else is invalid here.
+	 */
+	if (fcb->DBBTSearchAreaStartAddress != 1)
+		return -EINVAL;
 
 	fcb_raw_page = xzalloc(mtd->writesize + mtd->oobsize);
 
-	fcb = fcb_raw_page + 12;
-	ecc = fcb_raw_page + 512 + 12;
+	memcpy(fcb_raw_page + 12, fcb, sizeof(struct fcb_block));
+	encode_hamming_13_8(fcb_raw_page + 12, fcb_raw_page + 12 + 512, 512);
 
-	dbbt_page = xzalloc(mtd->writesize);
-	dbbt_data_page = xzalloc(mtd->writesize);
-	dbbt = dbbt_page;
-
-	/*
-	 * We have to write one additional page to make the ROM happy.
-	 * Maybe the PagesInFirmwarex fields are really the number of pages - 1.
-	 * kobs-ng has the same.
-	 */
-	fw_size = ALIGN(data->len + mtd->writesize, mtd->writesize);
-	fw = xzalloc(fw_size);
-	memcpy(fw, data->image, data->len);
-
-	num_blocks_fcb_dbbt = 4;
-	num_blocks = partition_size / mtd->erasesize;
-	num_blocks_fw = (num_blocks - num_blocks_fcb_dbbt) / 2;
-
-	block_fw1 = num_blocks_fcb_dbbt;
-	block_fw2 = num_blocks_fcb_dbbt + num_blocks_fw;
-
-	pr_info("writing first firmware to block %d (ofs 0x%08x)\n",
-			block_fw1, block_fw1 * mtd->erasesize);
-	pr_info("writing second firmware to block %d (ofs 0x%08x)\n",
-			block_fw2, block_fw2 * mtd->erasesize);
-	pr_info("maximum size per firmware: 0x%08x bytes\n",
-			num_blocks_fw * mtd->erasesize);
-
-	if (num_blocks_fw * mtd->erasesize < fw_size)
-		return -ENOSPC;
-
-	ret = bbu_confirm(data);
-	if (ret)
-		goto out;
-
-	ret = imx_bbu_erase(mtd);
-	if (ret)
-		goto out;
-
-	ret = imx_bbu_write_firmware(mtd, block_fw1, num_blocks_fw, fw, fw_size);
-	if (ret < 0)
-		goto out;
-
-	ret = imx_bbu_write_firmware(mtd, block_fw2, num_blocks_fw, fw, fw_size);
-	if (ret < 0)
-		goto out;
-
-	fcb->Firmware1_startingPage = block_fw1 * mtd->erasesize / mtd->writesize;
-	fcb->Firmware2_startingPage = block_fw2 * mtd->erasesize / mtd->writesize;
-	fcb->PagesInFirmware1 = ALIGN(data->len, mtd->writesize) / mtd->writesize;
-	fcb->PagesInFirmware2 = fcb->PagesInFirmware1;
-
-	fcb_create(imx_handler, fcb, mtd);
-	encode_hamming_13_8(fcb, ecc, 512);
+	dbbt = dbbt_data_create(mtd);
 
 	/*
 	 * Set the first and second byte of OOB data to 0xFF, not 0x00. These
@@ -461,43 +769,417 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	 */
 	memset(fcb_raw_page + mtd->writesize, 0xFF, 2);
 
-	dbbt->Checksum = 0;
-	dbbt->FingerPrint = 0x54424244;
-	dbbt->Version = 0x01000000;
+	for (i = 0; i < 4; i++) {
+		if (mtd_peb_is_bad(mtd, i))
+			continue;
 
-	ret = dbbt_data_create(mtd, dbbt_data_page, block_fw2 + num_blocks_fw);
+		if (!fcb_dbbt_check(mtd, i, fcb)) {
+			valid++;
+			pr_info("FCB/DBBT on block %d still valid\n", i);
+			continue;
+		}
+
+		pr_info("Writing FCB/DBBT on block %d\n", i);
+
+		ret = imx_bbu_write_fcb(mtd, i, fcb_raw_page, dbbt);
+		if (ret)
+			pr_err("Writing FCB/DBBT %d failed with: %s\n", i, strerror(-ret));
+		else
+			valid++;
+	}
+
+	free(fcb_raw_page);
+	free(dbbt);
+
+	if (!valid)
+		pr_err("No FCBs/DBBTs could be written. System won't boot from Nand\n");
+
+	return valid > 0 ? 0 : -EIO;
+}
+
+static int block_is_empty(struct mtd_info *mtd, int block)
+{
+	int rawsize = mtd->writesize + mtd->oobsize;
+	u8 *rawpage = xmalloc(rawsize);
+	int ret;
+	loff_t offset = (loff_t)block * mtd->erasesize;
+
+	ret = raw_read_page(mtd, rawpage, offset);
+	if (ret)
+		goto err;
+
+	ret = nand_check_erased_buf(rawpage, rawsize, 4 * 13);
+
+	if (ret == -EBADMSG)
+		ret = 0;
+	else if (ret >= 0)
+		ret = 1;
+
+err:
+	free(rawpage);
+	return ret;
+}
+
+static int read_firmware(struct mtd_info *mtd, int first_page, int num_pages,
+			 void **firmware)
+{
+	void *buf, *pos;
+	int pages_per_block = mtd->erasesize / mtd->writesize;
+	int now, size, block, ret, need_cleaning = 0;
+
+	pr_debug("%s: reading %d pages from page %d\n", __func__, num_pages, first_page);
+
+	buf = pos = malloc(num_pages * mtd->writesize);
+	if (!buf)
+		return -ENOMEM;
+
+	if (first_page % pages_per_block) {
+		pr_err("Firmware does not begin on eraseblock boundary\n");
+		ret = -EINVAL;
+		goto err;
+	}
+
+	block = first_page / pages_per_block;
+	size = num_pages * mtd->writesize;
+
+	while (size) {
+		if (block >= mtd_num_pebs(mtd)) {
+			ret = -EIO;
+			goto err;
+		}
+
+		if (mtd_peb_is_bad(mtd, block)) {
+			block++;
+			continue;
+		}
+
+		now = min_t(unsigned int , size, mtd->erasesize);
+
+		ret = mtd_peb_read(mtd, pos, block, 0, now);
+		if (ret == -EUCLEAN) {
+			pr_info("Block %d needs cleaning\n", block);
+			need_cleaning = 1;
+		} else if (ret < 0) {
+			pr_err("Reading PEB %d failed with %d\n", block, ret);
+			goto err;
+		}
+
+		if (mtd_buf_all_ff(pos, now)) {
+			/*
+			 * At this point we do not know if this is a
+			 * block that contains only 0xff or if it is
+			 * really empty. We test this by reading a raw
+			 * page and check if it's empty
+			 */
+			ret = block_is_empty(mtd, block);
+			if (ret < 0)
+				goto err;
+			if (ret) {
+				ret = -EINVAL;
+				goto err;
+			}
+		}
+
+		pos += now;
+		size -= now;
+		block++;
+	}
+
+	ret = 0;
+
+	*firmware = buf;
+
+	pr_info("Firmware @ page %d, size %d pages has crc32: 0x%08x\n",
+	       first_page, num_pages, crc32(0, buf, num_pages * mtd->writesize));
+
+err:
+	if (ret < 0) {
+		free(buf);
+		pr_warn("Firmware at page %d is not readable\n", first_page);
+		return ret;
+	}
+
+	if (need_cleaning) {
+		pr_warn("Firmware at page %d needs cleanup\n", first_page);
+		return -EUCLEAN;
+	}
+
+	return 0;
+}
+
+static void read_firmware_all(struct mtd_info *mtd, struct fcb_block *fcb, void **data, int *len,
+			     int *used_refresh, int *unused_refresh, int *used)
+{
+	void *primary = NULL, *secondary = NULL;
+	int pages_per_block = mtd->erasesize / mtd->writesize;
+	int fw0 = imx_bbu_firmware_start_block(mtd, 0) * pages_per_block;
+	int fw1 = imx_bbu_firmware_start_block(mtd, 1) * pages_per_block;
+	int first, ret, primary_refresh = 0, secondary_refresh = 0;
+
+	*used_refresh = 0;
+	*unused_refresh = 0;
+
+	if (fcb->Firmware1_startingPage == fw0 &&
+	    fcb->Firmware2_startingPage == fw1) {
+		first = 0;
+	} else if (fcb->Firmware1_startingPage == fw1 &&
+	    fcb->Firmware2_startingPage == fw0) {
+		first = 1;
+	} else {
+		pr_warn("FCB is not what we expect. Update will not be robust");
+		*used = 0;
+		return;
+	}
+
+	if (fcb->PagesInFirmware1 != fcb->PagesInFirmware2) {
+		pr_warn("FCB is not what we expect. Update will not be robust");
+		return;
+	}
+
+	*len = fcb->PagesInFirmware1 * mtd->writesize;
+
+	ret = read_firmware(mtd, fcb->Firmware1_startingPage, fcb->PagesInFirmware1, &primary);
+	if (ret > 0)
+		primary_refresh = 1;
+
+	ret = read_firmware(mtd, fcb->Firmware2_startingPage, fcb->PagesInFirmware2, &secondary);
+	if (ret > 0)
+		secondary_refresh = 1;
+
+	if (!primary && !secondary) {
+		*unused_refresh = 1;
+		*used_refresh = 1;
+		*used = 0;
+		*data = NULL;
+	} else if (primary && !secondary) {
+		*used_refresh = primary_refresh;
+		*unused_refresh = 1;
+		*used = first;
+		*data = primary;
+		return;
+	} else if (secondary && !primary) {
+		*used_refresh = secondary_refresh;
+		*unused_refresh = 1;
+		*used = !first;
+		*data = secondary;
+	} else {
+		if (memcmp(primary, secondary, fcb->PagesInFirmware1 * mtd->writesize))
+			*unused_refresh = 1;
+
+		*used_refresh = primary_refresh;
+		*used = first;
+		*data = primary;
+		free(secondary);
+	}
+
+	pr_info("Primary firmware is on pages %d-%d, %svalid, %s\n", fcb->Firmware1_startingPage,
+		fcb->Firmware1_startingPage + fcb->PagesInFirmware1, primary ? "" : "in",
+		primary_refresh ? "needs cleanup" : "clean");
+
+	pr_info("secondary firmware is on pages %d-%d, %svalid, %s\n", fcb->Firmware2_startingPage,
+		fcb->Firmware2_startingPage + fcb->PagesInFirmware2, secondary ? "" : "in",
+		secondary_refresh ? "needs cleanup" : "clean");
+
+	pr_info("ROM uses slot %d\n", *used);
+}
+
+static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *data)
+{
+	struct imx_nand_fcb_bbu_handler *imx_handler =
+		container_of(handler, struct imx_nand_fcb_bbu_handler, handler);
+	struct cdev *bcb_cdev;
+	struct mtd_info *mtd;
+	int ret, i;
+	struct fcb_block *fcb = NULL;
+	void *fw = NULL, *fw_orig = NULL;
+	unsigned fw_size, partition_size;
+	enum filetype filetype;
+	unsigned num_blocks_fw;
+	int pages_per_block;
+	int used = 0;
+	int fw_orig_len;
+	int used_refresh = 0, unused_refresh = 0;
+
+	if (data->image) {
+		filetype = file_detect_type(data->image, data->len);
+
+		if (filetype != imx_handler->filetype &&
+			!bbu_force(data, "Image is not of type %s but of type %s",
+				file_type_to_string(imx_handler->filetype),
+				file_type_to_string(filetype)))
+			return -EINVAL;
+	}
+
+	bcb_cdev = cdev_by_name(handler->devicefile);
+	if (!bcb_cdev) {
+		pr_err("%s: No FCB device!\n", __func__);
+		return -ENODEV;
+	}
+
+	mtd = bcb_cdev->mtd;
+	partition_size = mtd->size;
+	pages_per_block = mtd->erasesize / mtd->writesize;
+
+	for (i = 0; i < 4; i++) {
+		read_fcb(mtd, i, &fcb);
+		if (fcb)
+			break;
+	}
+
+	/*
+	 * This code uses the following layout in the Nand flash:
+	 *
+	 * fwmaxsize = (n_blocks - 4) / 2
+	 *
+	 * block
+	 *
+	 * 0              ----------------------
+	 *                | FCB/DBBT 0         |
+	 * 1              ----------------------
+	 *                | FCB/DBBT 1         |
+	 * 2              ----------------------
+	 *                | FCB/DBBT 2         |
+	 * 3              ----------------------
+	 *                | FCB/DBBT 3         |
+	 * 4              ----------------------
+	 *                | Firmware slot 0    |
+	 * 4 + fwmaxsize  ----------------------
+	 *                | Firmware slot 1    |
+	 *                ----------------------
+	 *
+	 * We want a robust update in which a power failure may occur
+	 * everytime without bricking the board, so here's the strategy:
+	 *
+	 * The FCBs contain pointers to the firmware slots in the
+	 * Firmware1_startingPage and Firmware2_startingPage fields. Note that
+	 * Firmware1_startingPage doesn't necessarily point to slot 0. We
+	 * exchange the pointers during update to atomically switch between the
+	 * old and the new firmware.
+	 *
+	 * - We read the first valid FCB and the firmware slots.
+	 * - We check which firmware slot is currently used by the ROM:
+	 *    - if no FCB is found or its layout differs from the above layout,
+	 *      continue without robust update
+	 *   - if only one firmware slot is readable, the ROM uses it
+	 *   - if both slots are readable, the ROM will use slot 0
+	 * - Step 1: erase/update the slot currently unused by the ROM
+	 * - Step 2: Update FCBs/DBBTs, thereby letting Firmware1_startingPage
+	 *           point to the slot we just updated. From this moment
+	 *           on the new firmware will be used and running a
+	 *           refresh/repair after a power failure after this
+	 *           step will complete the update.
+	 * - Step 3: erase/update the other firmwre slot
+	 * - Step 4: Eventually write FCBs/DBBTs again. This may become
+	 *           necessary when step 3 revealed new bad blocks.
+	 *
+	 * This robust update only works when the original FCBs on the device
+	 * uses the same layout as this code does. In other cases update will
+	 * also work, but it won't be robust against power failures.
+	 *
+	 * Refreshing the firmware which is needed when blocks become unreadable
+	 * due to read disturbance works the same way, only that the new firmware
+	 * is the same as the old firmware and that it will only be written when
+	 * reading from the device returns -EUCLEAN indicating that a block needs
+	 * to be rewritten.
+	 */
+	if (fcb)
+		read_firmware_all(mtd, fcb, &fw_orig, &fw_orig_len,
+				  &used_refresh, &unused_refresh, &used);
+
+	if (data->image) {
+		/*
+		 * We have to write one additional page to make the ROM happy.
+		 * Maybe the PagesInFirmwarex fields are really the number of pages - 1.
+		 * kobs-ng has the same.
+		 */
+		fw_size = ALIGN(data->len + mtd->writesize, mtd->writesize);
+		fw = xzalloc(fw_size);
+		memcpy(fw, data->image, data->len);
+		free(fw_orig);
+		used_refresh = 1;
+		unused_refresh = 1;
+
+		free(fcb);
+		fcb = xzalloc(sizeof(*fcb));
+		fcb->Firmware1_startingPage = imx_bbu_firmware_start_block(mtd, !used) * pages_per_block;
+		fcb->Firmware2_startingPage = imx_bbu_firmware_start_block(mtd, used) * pages_per_block;
+		fcb->PagesInFirmware1 = fw_size / mtd->writesize;
+		fcb->PagesInFirmware2 = fcb->PagesInFirmware1;
+
+		fcb_create(imx_handler, fcb, mtd);
+	} else {
+		if (!fcb) {
+			pr_err("No FCB found on device, cannot refresh\n");
+			ret = -EINVAL;
+			goto out;
+		}
+
+		if (!fw_orig) {
+			pr_err("No firmware found on device, cannot refresh\n");
+			ret = -EINVAL;
+			goto out;
+		}
+
+		fw = fw_orig;
+		fw_size = fw_orig_len;
+		pr_info("Refreshing existing firmware\n");
+	}
+
+	num_blocks_fw = imx_bbu_firmware_max_blocks(mtd);
+
+	if (num_blocks_fw * mtd->erasesize < fw_size) {
+		pr_err("Not enough space for update\n");
+		return -ENOSPC;
+	}
+
+	ret = bbu_confirm(data);
+	if (ret)
+		goto out;
+
+	/* Step 1: write firmware which is currently unused by the ROM */
+	if (unused_refresh) {
+		pr_info("%sing slot %d\n", data->image ? "updat" : "refresh", !used);
+		ret = imx_bbu_write_firmware(mtd, !used, fw, fw_size);
+		if (ret < 0)
+			goto out;
+	} else {
+		pr_info("firmware slot %d still ok, nothing to do\n", !used);
+	}
+
+	/*
+	 * Step 2: Write FCBs/DBBTs. This will use the firmware we have
+	 * just written as primary firmware. From now on the new
+	 * firmware will be booted.
+	 */
+	ret = imx_bbu_write_fcbs_dbbts(mtd, fcb);
 	if (ret < 0)
 		goto out;
 
-	if (ret > 0) {
-		dbbt->DBBTNumOfPages = 1;
-		if (imx_handler->dbbt_create)
-			imx_handler->dbbt_create(imx_handler, dbbt, ret);
+	/* Step 3: Write the secondary firmware */
+	if (used_refresh) {
+		pr_info("%sing slot %d\n", data->image ? "updat" : "refresh", used);
+		ret = imx_bbu_write_firmware(mtd, used, fw, fw_size);
+		if (ret < 0)
+			goto out;
+	} else {
+		pr_info("firmware slot %d still ok, nothing to do\n", used);
 	}
 
-	for (i = 0; i < 4; i++) {
-		ret = raw_write_page(mtd, fcb_raw_page, mtd->erasesize * i);
-		if (ret)
+	/*
+	 * Step 4: If writing the secondary firmware discovered new bad
+	 * blocks, write the FCBs/DBBTs again with updated bad block
+	 * information.
+	 */
+	if (ret > 0) {
+		pr_info("New bad blocks detected, writing FCBs/DBBTs again\n");
+		ret = imx_bbu_write_fcbs_dbbts(mtd, fcb);
+		if (ret < 0)
 			goto out;
-
-		ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize,
-				mtd->writesize, &written, dbbt_page);
-		if (ret)
-			goto out;
-
-		if (dbbt->DBBTNumOfPages > 0) {
-			ret = mtd_write(mtd, mtd->erasesize * i + mtd->writesize * 5,
-					mtd->writesize, &written, dbbt_data_page);
-			if (ret)
-				goto out;
-		}
 	}
 
 out:
-	free(dbbt_page);
-	free(dbbt_data_page);
-	free(fcb_raw_page);
 	free(fw);
+	free(fcb);
 
 	return ret;
 }
@@ -526,7 +1208,7 @@ int imx6_bbu_nand_register_handler(const char *name, unsigned long flags)
 	handler = &imx_handler->handler;
 	handler->devicefile = "nand0.barebox";
 	handler->name = name;
-	handler->flags = flags;
+	handler->flags = flags | BBU_HANDLER_CAN_REFRESH;
 	handler->handler = imx_bbu_nand_update;
 
 	ret = bbu_register_handler(handler);
@@ -589,23 +1271,6 @@ static void imx28_fcb_create(struct imx_nand_fcb_bbu_handler *imx_handler,
 	fcb->EraseThreshold = readl(bch_regs + BCH_MODE);
 }
 
-static void imx28_dbbt_create(struct imx_nand_fcb_bbu_handler *imx_handler,
-		struct dbbt_block *dbbt, int num_bad_blocks)
-{
-	uint32_t a = 0;
-	uint8_t *p = (void *)dbbt;
-	int i;
-
-	dbbt->numberBB = num_bad_blocks;
-
-	for (i = 4; i < 512; i++)
-		a += p[i];
-
-	a ^= 0xffffffff;
-
-	dbbt->Checksum = a;
-}
-
 int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
 {
 	struct imx_nand_fcb_bbu_handler *imx_handler;
@@ -614,14 +1279,13 @@ int imx28_bbu_nand_register_handler(const char *name, unsigned long flags)
 
 	imx_handler = xzalloc(sizeof(*imx_handler));
 	imx_handler->fcb_create = imx28_fcb_create;
-	imx_handler->dbbt_create = imx28_dbbt_create;
 
 	imx_handler->filetype = filetype_mxs_bootstream;
 
 	handler = &imx_handler->handler;
 	handler->devicefile = "nand0.barebox";
 	handler->name = name;
-	handler->flags = flags;
+	handler->flags = flags | BBU_HANDLER_CAN_REFRESH;
 	handler->handler = imx_bbu_nand_update;
 
 	ret = bbu_register_handler(handler);

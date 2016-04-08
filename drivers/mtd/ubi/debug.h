@@ -72,54 +72,19 @@ static inline int ubi_dbg_is_bgt_disabled(const struct ubi_device *ubi)
 	return ubi->dbg.disable_bgt;
 }
 
-/**
- * ubi_dbg_is_bitflip - if it is time to emulate a bit-flip.
- * @ubi: UBI device description object
- *
- * Returns non-zero if a bit-flip should be emulated, otherwise returns zero.
- */
-static inline int ubi_dbg_is_bitflip(const struct ubi_device *ubi)
-{
-	if (ubi->dbg.emulate_bitflips)
-		return !(random32() % 200);
-	return 0;
-}
-
-/**
- * ubi_dbg_is_write_failure - if it is time to emulate a write failure.
- * @ubi: UBI device description object
- *
- * Returns non-zero if a write failure should be emulated, otherwise returns
- * zero.
- */
-static inline int ubi_dbg_is_write_failure(const struct ubi_device *ubi)
-{
-	if (ubi->dbg.emulate_io_failures)
-		return !(random32() % 500);
-	return 0;
-}
-
-/**
- * ubi_dbg_is_erase_failure - if its time to emulate an erase failure.
- * @ubi: UBI device description object
- *
- * Returns non-zero if an erase failure should be emulated, otherwise returns
- * zero.
- */
-static inline int ubi_dbg_is_erase_failure(const struct ubi_device *ubi)
-{
-	if (ubi->dbg.emulate_io_failures)
-		return !(random32() % 400);
-	return 0;
-}
-
 static inline int ubi_dbg_chk_io(const struct ubi_device *ubi)
 {
-	return ubi->dbg.chk_io;
+	if (IS_ENABLED(CONFIG_MTD_UBI_CHECK_IO))
+		return 1;
+	else
+		return 0;
 }
 
 static inline int ubi_dbg_chk_gen(const struct ubi_device *ubi)
 {
-	return ubi->dbg.chk_gen;
+	if (IS_ENABLED(CONFIG_MTD_UBI_GENERAL_EXTRA_CHECKS))
+		return 1;
+	else
+		return 0;
 }
 #endif /* !__UBI_DEBUG_H__ */

@@ -192,6 +192,7 @@ static int partition_ioctl(struct cdev *cdev, int request, void *buf)
 
 	switch (request) {
 	case MEMSETBADBLOCK:
+	case MEMSETGOODBLOCK:
 	case MEMGETBADBLOCK:
 		offset = *_buf;
 		offset += cdev->offset;

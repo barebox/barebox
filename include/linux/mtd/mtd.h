@@ -189,6 +189,7 @@ struct mtd_info {
 	/* Bad block management functions */
 	int (*block_isbad) (struct mtd_info *mtd, loff_t ofs);
 	int (*block_markbad) (struct mtd_info *mtd, loff_t ofs);
+	int (*block_markgood) (struct mtd_info *mtd, loff_t ofs);
 
 	/* ECC status information */
 	struct mtd_ecc_stats ecc_stats;
@@ -280,6 +281,7 @@ extern struct mtd_info *get_mtd_device_nm(const char *name);
 
 extern void put_mtd_device(struct mtd_info *mtd);
 
+const char *mtd_type_str(struct mtd_info *mtd);
 
 struct mtd_notifier {
 	void (*add)(struct mtd_info *mtd);
@@ -308,8 +310,10 @@ int mtd_lock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_unlock(struct mtd_info *mtd, loff_t ofs, uint64_t len);
 int mtd_block_isbad(struct mtd_info *mtd, loff_t ofs);
 int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs);
+int mtd_block_markgood(struct mtd_info *mtd, loff_t ofs);
 
-int mtd_all_ff(const void *buf, unsigned int len);
+int mtd_buf_all_ff(const void *buf, unsigned int len);
+int mtd_buf_check_pattern(const void *buf, uint8_t patt, int size);
 
 /*
  * Debugging macro and defines

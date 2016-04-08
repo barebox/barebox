@@ -1421,11 +1421,6 @@ static int erase_worker(struct ubi_device *ubi, struct ubi_work *wl_wrk,
 		available_consumed = 1;
 	}
 
-	ubi_msg("mark PEB %d as bad", pnum);
-	err = ubi_io_mark_bad(ubi, pnum);
-	if (err)
-		goto out_ro;
-
 	if (ubi->beb_rsvd_pebs > 0) {
 		if (available_consumed) {
 			/*

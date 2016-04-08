@@ -50,6 +50,7 @@ extern int nand_check_erased_ecc_chunk(void *data, int datalen,
 				       void *ecc, int ecclen,
 				       void *extraoob, int extraooblen,
 				       int bitflips_threshold);
+int nand_check_erased_buf(void *buf, int len, int bitflips_threshold);
 
 /* The maximum number of NAND chips in an array */
 #define NAND_MAX_CHIPS		8
@@ -394,6 +395,7 @@ struct nand_buffers {
  * @select_chip:	[REPLACEABLE] select chip nr
  * @block_bad:		[REPLACEABLE] check, if the block is bad
  * @block_markbad:	[REPLACEABLE] mark the block bad
+ * @block_markgood:	[REPLACEABLE] mark the block good
  * @cmd_ctrl:		[BOARDSPECIFIC] hardwarespecific function for controlling
  *			ALE/CLE/nCE. Also used to write command and address
  * @init_size:		[BOARDSPECIFIC] hardwarespecific function for setting
@@ -479,6 +481,7 @@ struct nand_chip {
 	void (*select_chip)(struct mtd_info *mtd, int chip);
 	int (*block_bad)(struct mtd_info *mtd, loff_t ofs, int getchip);
 	int (*block_markbad)(struct mtd_info *mtd, loff_t ofs);
+	int (*block_markgood)(struct mtd_info *mtd, loff_t ofs);
 	void (*cmd_ctrl)(struct mtd_info *mtd, int dat, unsigned int ctrl);
 	int (*init_size)(struct mtd_info *mtd, struct nand_chip *this,
 			u8 *id_data);

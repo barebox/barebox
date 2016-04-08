@@ -34,6 +34,7 @@
 #include <mtd/utils.h>
 #include <mtd/ubi-media.h>
 #include <mtd/libubigen.h>
+#include <mtd/mtd-peb.h>
 
 void ubigen_info_init(struct ubigen_info *ui, int peb_size, int min_io_size,
 		      int subpage_size, int vid_hdr_offs, int ubi_ver,
@@ -247,13 +248,12 @@ out_free:
 
 int ubigen_write_layout_vol(const struct ubigen_info *ui, int peb1, int peb2,
 			    long long ec1, long long ec2,
-			    struct ubi_vtbl_record *vtbl, int fd)
+			    struct ubi_vtbl_record *vtbl, struct mtd_info *mtd)
 {
 	int ret;
 	struct ubigen_vol_info vi;
 	char *outbuf;
 	struct ubi_vid_hdr *vid_hdr;
-	off_t seek;
 
 	vi.bytes = ui->leb_size * UBI_LAYOUT_VOLUME_EBS;
 	vi.id = UBI_LAYOUT_VOLUME_ID;
@@ -277,29 +277,18 @@ int ubigen_write_layout_vol(const struct ubigen_info *ui, int peb1, int peb2,
 	memset(outbuf + ui->data_offs + ui->vtbl_size, 0xFF,
 	       ui->peb_size - ui->data_offs - ui->vtbl_size);
 
-	seek = (off_t) peb1 * ui->peb_size;
-	if (lseek(fd, seek, SEEK_SET) != seek) {
-		sys_errmsg("cannot seek output file");
-		goto out_free;
-	}
-
 	ubigen_init_ec_hdr(ui, (struct ubi_ec_hdr *)outbuf, ec1);
 	ubigen_init_vid_hdr(ui, &vi, vid_hdr, 0, NULL, 0);
-	ret = write(fd, outbuf, ui->peb_size);
-	if (ret != ui->peb_size) {
+	ret = mtd_peb_write(mtd, outbuf, peb1, 0, ui->peb_size);
+	if (ret < 0) {
 		sys_errmsg("cannot write %d bytes", ui->peb_size);
 		goto out_free;
 	}
 
-	seek = (off_t) peb2 * ui->peb_size;
-	if (lseek(fd, seek, SEEK_SET) != seek) {
-		sys_errmsg("cannot seek output file");
-		goto out_free;
-	}
 	ubigen_init_ec_hdr(ui, (struct ubi_ec_hdr *)outbuf, ec2);
 	ubigen_init_vid_hdr(ui, &vi, vid_hdr, 1, NULL, 0);
-	ret = write(fd, outbuf, ui->peb_size);
-	if (ret != ui->peb_size) {
+	ret = mtd_peb_write(mtd, outbuf, peb2, 0, ui->peb_size);
+	if (ret < 0) {
 		sys_errmsg("cannot write %d bytes", ui->peb_size);
 		goto out_free;
 	}

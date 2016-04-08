@@ -34,7 +34,15 @@
 
 static LIST_HEAD(mtd_register_hooks);
 
-int mtd_all_ff(const void *buf, unsigned int len)
+/**
+ * mtd_buf_all_ff - check if buffer contains only 0xff
+ * @buf: buffer to check
+ * @size: buffer size in bytes
+ *
+ * This function returns %1 if there are only 0xff bytes in @buf, and %0 if
+ * something else was also found.
+ */
+int mtd_buf_all_ff(const void *buf, unsigned int len)
 {
 	while ((unsigned long)buf & 0x3) {
 		if (*(const uint8_t *)buf != 0xff)
@@ -63,6 +71,25 @@ int mtd_all_ff(const void *buf, unsigned int len)
 		buf++;
 	}
 
+	return 1;
+}
+
+/**
+ * mtd_buf_check_pattern - check if buffer contains only a certain byte pattern.
+ * @buf: buffer to check
+ * @patt: the pattern to check
+ * @size: buffer size in bytes
+ *
+ * This function returns %1 in there are only @patt bytes in @buf, and %0 if
+ * something else was also found.
+ */
+int mtd_buf_check_pattern(const void *buf, uint8_t patt, int size)
+{
+	int i;
+
+	for (i = 0; i < size; i++)
+		if (((const uint8_t *)buf)[i] != patt)
+			return 0;
 	return 1;
 }
 
@@ -231,6 +258,10 @@ int mtd_ioctl(struct cdev *cdev, int request, void *buf)
 		dev_dbg(cdev->dev, "MEMSETBADBLOCK: 0x%08llx\n", *offset);
 		ret = mtd_block_markbad(mtd, *offset);
 		break;
+	case MEMSETGOODBLOCK:
+		dev_dbg(cdev->dev, "MEMSETGOODBLOCK: 0x%08llx\n", *offset);
+		ret = mtd_block_markgood(mtd, *offset);
+		break;
 	case MEMERASE:
 		ret = mtd_op_erase(cdev, ei->length, ei->start + cdev->offset);
 		break;
@@ -314,6 +345,18 @@ int mtd_block_markbad(struct mtd_info *mtd, loff_t ofs)
 
 	if (mtd->block_markbad)
 		ret = mtd->block_markbad(mtd, ofs);
+	else
+		ret = -ENOSYS;
+
+	return ret;
+}
+
+int mtd_block_markgood(struct mtd_info *mtd, loff_t ofs)
+{
+	int ret;
+
+	if (mtd->block_markgood)
+		ret = mtd->block_markgood(mtd, ofs);
 	else
 		ret = -ENOSYS;
 
@@ -716,4 +759,26 @@ int del_mtd_device (struct mtd_info *mtd)
 void mtdcore_add_hook(struct mtddev_hook *hook)
 {
 	list_add(&hook->hook, &mtd_register_hooks);
+}
+
+const char *mtd_type_str(struct mtd_info *mtd)
+{
+	switch (mtd->type) {
+	case MTD_ABSENT:
+		return "absent";
+	case MTD_RAM:
+		return "ram";
+	case MTD_ROM:
+		return "rom";
+	case MTD_NORFLASH:
+		return "nor";
+	case MTD_NANDFLASH:
+		return "nand";
+	case MTD_DATAFLASH:
+		return"dataflash";
+	case MTD_UBIVOLUME:
+		return "ubi";
+	default:
+		return "unknown";
+	}
 }

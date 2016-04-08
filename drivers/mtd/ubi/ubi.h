@@ -757,7 +757,6 @@ int ubi_calc_data_len(const struct ubi_device *ubi, const void *buf,
 int ubi_check_volume(struct ubi_device *ubi, int vol_id);
 void ubi_update_reserved(struct ubi_device *ubi);
 void ubi_calculate_reserved(struct ubi_device *ubi);
-int ubi_check_pattern(const void *buf, uint8_t patt, int size);
 
 /* eba.c */
 int ubi_eba_unmap_leb(struct ubi_device *ubi, struct ubi_volume *vol,
@@ -800,7 +799,6 @@ int ubi_io_write(struct ubi_device *ubi, const void *buf, int pnum, int offset,
 		 int len);
 int ubi_io_sync_erase(struct ubi_device *ubi, int pnum, int torture);
 int ubi_io_is_bad(const struct ubi_device *ubi, int pnum);
-int ubi_io_mark_bad(const struct ubi_device *ubi, int pnum);
 int ubi_io_read_ec_hdr(struct ubi_device *ubi, int pnum,
 		       struct ubi_ec_hdr *ec_hdr, int verbose);
 int ubi_io_write_ec_hdr(struct ubi_device *ubi, int pnum,

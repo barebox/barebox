@@ -100,6 +100,7 @@ struct imx_nand_host {
 	unsigned int		buf_start;
 	int			spare_len;
 	int			eccsize;
+	int			eccstatus_v1;
 
 	int			hw_ecc;
 	int			data_width;
@@ -113,6 +114,8 @@ struct imx_nand_host {
 	void			(*send_read_param)(struct imx_nand_host *);
 	uint16_t		(*get_dev_status)(struct imx_nand_host *);
 	int			(*check_int)(struct imx_nand_host *);
+	int			(*correct)(struct mtd_info *mtd);
+	void			(*enable_hwecc)(struct nand_chip *, bool enable);
 };
 
 /*
@@ -260,8 +263,6 @@ static void send_cmd_v3(struct imx_nand_host *host, uint16_t cmd)
 
 static void send_cmd_v1_v2(struct imx_nand_host *host, u16 cmd)
 {
-	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_cmd(host, 0x%x)\n", cmd);
-
 	writew(cmd, host->regs + NFC_V1_V2_FLASH_CMD);
 	writew(NFC_CMD, host->regs + NFC_V1_V2_CONFIG2);
 
@@ -300,8 +301,6 @@ static void send_addr_v3(struct imx_nand_host *host, uint16_t addr)
 
 static void send_addr_v1_v2(struct imx_nand_host *host, u16 addr)
 {
-	MTD_DEBUG(MTD_DEBUG_LEVEL3, "send_addr(host, 0x%x %d)\n", addr, islast);
-
 	writew(addr, host->regs + NFC_V1_V2_FLASH_ADDR);
 	writew(NFC_ADDR, host->regs + NFC_V1_V2_CONFIG2);
 
@@ -335,12 +334,17 @@ static void send_page_v1_v2(struct imx_nand_host *host,
 {
 	int bufs, i;
 
+	host->eccstatus_v1 = 0;
+
 	if (nfc_is_v1() && host->pagesize_2k)
 		bufs = 4;
 	else
 		bufs = 1;
 
 	for (i = 0; i < bufs; i++) {
+		u16 status;
+		int errors;
+
 		/* NANDFC buffer 0 is used for page read/write */
 		writew(i, host->regs + NFC_V1_V2_BUF_ADDR);
 
@@ -348,6 +352,14 @@ static void send_page_v1_v2(struct imx_nand_host *host,
 
 		/* Wait for operation to complete */
 		wait_op_done(host);
+
+		status = readw(host->regs + NFC_V1_ECC_STATUS_RESULT);
+		errors = max(status & 0x3, status >> 2);
+
+		if (errors == 1 && host->eccstatus_v1 >= 0)
+			host->eccstatus_v1++;
+		if (errors == 2)
+			host->eccstatus_v1 = -EBADMSG;
 	}
 }
 
@@ -475,45 +487,66 @@ static int imx_nand_dev_ready(struct mtd_info *mtd)
 	return 1;
 }
 
-static void imx_nand_enable_hwecc(struct mtd_info *mtd, int mode)
+static void imx_nand_enable_hwecc_v1_v2(struct nand_chip *chip, bool enable)
 {
-	/*
-	 * If HW ECC is enabled, we turn it on during init.  There is
-	 * no need to enable again here.
-	 */
+	struct imx_nand_host *host = chip->priv;
+	uint16_t config1;
+
+	if (chip->ecc.mode != NAND_ECC_HW)
+		return;
+
+	config1 = readw(host->regs + NFC_V1_V2_CONFIG1);
+
+	if (enable)
+		config1 |= NFC_V1_V2_CONFIG1_ECC_EN;
+	else
+		config1 &= ~NFC_V1_V2_CONFIG1_ECC_EN;
+
+	writew(config1, host->regs + NFC_V1_V2_CONFIG1);
+
 }
 
-static int imx_nand_correct_data_v1(struct mtd_info *mtd, u_char * dat,
-				 u_char * read_ecc, u_char * calc_ecc)
+static void imx_nand_enable_hwecc_v3(struct nand_chip *chip, bool enable)
+{
+	struct imx_nand_host *host = chip->priv;
+	uint32_t config2;
+
+	if (chip->ecc.mode != NAND_ECC_HW)
+		return;
+
+	config2 = readl(NFC_V3_CONFIG2);
+
+	if (enable)
+		config2 |= NFC_V3_CONFIG2_ECC_EN;
+	else
+		config2 &= ~NFC_V3_CONFIG2_ECC_EN;
+
+	writel(config2, NFC_V3_CONFIG2);
+}
+
+static int imx_nand_correct_data_v1(struct mtd_info *mtd)
 {
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 
-	/*
-	 * 1-Bit errors are automatically corrected in HW.  No need for
-	 * additional correction.  2-Bit errors cannot be corrected by
-	 * HW ECC, so we need to return failure
-	 */
-	u16 ecc_status = readw(host->regs + NFC_V1_ECC_STATUS_RESULT);
+	if (host->eccstatus_v1 < 0)
+		return host->eccstatus_v1;
 
-	if (((ecc_status & 0x3) == 2) || ((ecc_status >> 2) == 2)) {
-		MTD_DEBUG(MTD_DEBUG_LEVEL0,
-		      "MXC_NAND: HWECC uncorrectable 2-bit ECC error\n");
-		return -1;
-	}
+	mtd->ecc_stats.corrected += host->eccstatus_v1;
 
-	return 0;
+	if (host->eccstatus_v1 > 0)
+		return 1;
+	else
+		return 0;
 }
 
-static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd, u_char *dat,
-				u_char *read_ecc, u_char *calc_ecc)
+static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd)
 {
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 	u32 ecc_stat, err;
 	int no_subpages;
-	int ret = 0;
-	u8 ecc_bit_mask, err_limit;
+	u8 ecc_bit_mask, err_limit, max_bitflips = 0;
 
 	ecc_bit_mask = (host->eccsize == 4) ? 0x7 : 0xf;
 	err_limit = (host->eccsize == 4) ? 0x4 : 0x8;
@@ -527,19 +560,14 @@ static int imx_nand_correct_data_v2_v3(struct mtd_info *mtd, u_char *dat,
 
 	do {
 		err = ecc_stat & ecc_bit_mask;
-		if (err > err_limit) {
-			printk(KERN_WARNING "UnCorrectable RS-ECC Error\n");
-			return -1;
-		} else {
-			ret += err;
-		}
+		if (err > err_limit)
+			return -EBADMSG;
 		ecc_stat >>= 4;
+		max_bitflips = max_t(unsigned int, max_bitflips, err);
+		mtd->ecc_stats.corrected += err;
 	} while (--no_subpages);
 
-	mtd->ecc_stats.corrected += ret;
-	pr_debug("%d Symbol Correctable RS-ECC Error\n", ret);
-
-	return ret;
+	return max_bitflips;
 }
 
 static int imx_nand_calculate_ecc(struct mtd_info *mtd, const u_char * dat,
@@ -652,13 +680,13 @@ static void imx_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
 /*
  * Function to transfer data to/from spare area.
  */
-static void copy_spare(struct mtd_info *mtd, int bfrom)
+static void copy_spare(struct mtd_info *mtd, int bfrom, void *buf)
 {
 	struct nand_chip *this = mtd->priv;
 	struct imx_nand_host *host = this->priv;
 	u16 i, j;
 	u16 n = mtd->writesize >> 9;
-	u8 *d = host->data_buf + mtd->writesize;
+	u8 *d = buf;
 	u8 *s = host->spare0;
 	u16 t = host->spare_len;
 
@@ -688,26 +716,6 @@ static void copy_spare(struct mtd_info *mtd, int bfrom)
  */
 static void imx_nand_select_chip(struct mtd_info *mtd, int chip)
 {
-#ifdef CONFIG_MTD_NAND_MXC_FORCE_CE
-	u16 tmp;
-
-	if (chip > 0) {
-		MTD_DEBUG(MTD_DEBUG_LEVEL0,
-		      "ERROR:  Illegal chip select (chip = %d)\n", chip);
-		return;
-	}
-
-	if (chip == -1) {
-		tmp = readw(host->regs + NFC_CONFIG1);
-		tmp &= ~NFC_CE;
-		writew(tmp, host->regs + NFC_CONFIG1);
-		return;
-	}
-
-	tmp = readw(host->regs + NFC_CONFIG1);
-	tmp |= NFC_CE;
-	writew(tmp, host->regs + NFC_CONFIG1);
-#endif
 }
 
 static void mxc_do_addr_cycle(struct mtd_info *mtd, int column, int page_addr)
@@ -782,9 +790,6 @@ static void preset_v1_v2(struct mtd_info *mtd)
 	struct imx_nand_host *host = nand_chip->priv;
 	uint16_t config1 = 0;
 
-	if (nand_chip->ecc.mode == NAND_ECC_HW)
-		config1 |= NFC_V1_V2_CONFIG1_ECC_EN;
-
 	if (nfc_is_v21())
 		config1 |= NFC_V2_CONFIG1_FP_INT;
 
@@ -849,9 +854,6 @@ static void preset_v3(struct mtd_info *mtd)
 		NFC_V3_CONFIG2_ST_CMD(0x70) |
 		NFC_V3_CONFIG2_NUM_ADDR_PHASE0;
 
-	if (chip->ecc.mode == NAND_ECC_HW)
-		config2 |= NFC_V3_CONFIG2_ECC_EN;
-
 	addr_phases = fls(chip->pagemask) >> 3;
 
 	if (mtd->writesize == 2048) {
@@ -893,6 +895,68 @@ static void preset_v3(struct mtd_info *mtd)
 	writel(0, NFC_V3_DELAY_LINE);
 }
 
+static int imx_nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
+		uint32_t offset, int data_len, const uint8_t *buf,
+		int oob_required, int page, int cached, int raw)
+{
+	struct imx_nand_host *host = chip->priv;
+	int status;
+
+	host->enable_hwecc(chip, !raw);
+
+	chip->cmdfunc(mtd, NAND_CMD_SEQIN, 0x00, page);
+
+	memcpy32(host->main_area0, buf, mtd->writesize);
+	if (oob_required)
+		copy_spare(mtd, 0, chip->oob_poi);
+
+	host->send_page(host, NFC_INPUT);
+	chip->cmdfunc(mtd, NAND_CMD_PAGEPROG, -1, -1);
+	status = chip->waitfunc(mtd, chip);
+
+	if (status & NAND_STATUS_FAIL)
+		return -EIO;
+
+	return 0;
+}
+
+static void imx_nand_do_read_page(struct mtd_info *mtd,
+		struct nand_chip *chip, uint8_t *buf, int oob_required)
+{
+	struct imx_nand_host *host = chip->priv;
+
+	host->send_page(host, NFC_OUTPUT);
+
+	memcpy32(buf, host->main_area0, mtd->writesize);
+
+	if (oob_required)
+		copy_spare(mtd, 1, chip->oob_poi);
+}
+
+static int imx_nand_read_page(struct mtd_info *mtd,
+		struct nand_chip *chip, uint8_t *buf, int oob_required, int page)
+{
+	struct imx_nand_host *host = chip->priv;
+
+	host->enable_hwecc(chip, true);
+
+	imx_nand_do_read_page(mtd, chip, buf, oob_required);
+
+	return host->correct(mtd);
+}
+
+static int imx_nand_read_page_raw(struct mtd_info *mtd,
+		struct nand_chip *chip, uint8_t *buf, int oob_required, int page)
+{
+	struct imx_nand_host *host = chip->priv;
+
+	host->enable_hwecc(chip, false);
+
+	imx_nand_do_read_page(mtd, chip, buf, oob_required);
+
+	return 0;
+}
+
 /*
  * This function is used by the upper layer to write command to NAND Flash for
  * different operations to be carried out on NAND Flash
@@ -908,7 +972,7 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 
-	MTD_DEBUG(MTD_DEBUG_LEVEL3,
+	dev_dbg(host->dev,
 	      "imx_nand_command (cmd = 0x%x, col = 0x%x, page = 0x%x)\n",
 	      command, column, page_addr);
 
@@ -948,11 +1012,6 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		if (host->pagesize_2k)
 			/* send read confirm command */
 			host->send_cmd(host, NAND_CMD_READSTART);
-
-		host->send_page(host, NFC_OUTPUT);
-
-		memcpy32(host->data_buf, host->main_area0, mtd->writesize);
-		copy_spare(mtd, 1);
 		break;
 
 	case NAND_CMD_SEQIN:
@@ -987,9 +1046,6 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		break;
 
 	case NAND_CMD_PAGEPROG:
-		memcpy32(host->main_area0, host->data_buf, mtd->writesize);
-		copy_spare(mtd, 0);
-		host->send_page(host, NFC_INPUT);
 		host->send_cmd(host, command);
 		mxc_do_addr_cycle(mtd, column, page_addr);
 		break;
@@ -1015,31 +1071,6 @@ static void imx_nand_command(struct mtd_info *mtd, unsigned command,
 		break;
 	}
 }
-
-#ifdef CONFIG_MXC_NAND_LOW_LEVEL_ERASE
-static void imx_low_erase(struct mtd_info *mtd)
-{
-
-	struct nand_chip *this = mtd->priv;
-	unsigned int page_addr, addr;
-	u_char status;
-
-	MTD_DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : imx_low_erase:Erasing NAND\n");
-	for (addr = 0; addr < this->chipsize; addr += mtd->erasesize) {
-		page_addr = addr / mtd->writesize;
-		imx_nand_command(mtd, NAND_CMD_ERASE1, -1, page_addr);
-		imx_nand_command(mtd, NAND_CMD_ERASE2, -1, -1);
-		imx_nand_command(mtd, NAND_CMD_STATUS, -1, -1);
-		status = imx_nand_read_byte(mtd);
-		if (status & NAND_STATUS_FAIL) {
-			printk(KERN_ERR
-			       "ERASE FAILED(block = %d,status = 0x%x)\n",
-			       addr / mtd->erasesize, status);
-		}
-	}
-
-}
-#endif
 
 /*
  * The generic flash bbt decriptors overlap with our ecc
@@ -1225,16 +1256,22 @@ static int __init imxnd_probe(struct device_d *dev)
 	this->read_word = imx_nand_read_word;
 	this->write_buf = imx_nand_write_buf;
 	this->read_buf = imx_nand_read_buf;
+	this->write_page = imx_nand_write_page;
 
 	if (host->hw_ecc) {
 		this->ecc.calculate = imx_nand_calculate_ecc;
-		this->ecc.hwctl = imx_nand_enable_hwecc;
-		if (nfc_is_v1())
-			this->ecc.correct = imx_nand_correct_data_v1;
+		if (nfc_is_v3())
+			host->enable_hwecc = imx_nand_enable_hwecc_v3;
 		else
-			this->ecc.correct = imx_nand_correct_data_v2_v3;
+			host->enable_hwecc = imx_nand_enable_hwecc_v1_v2;
+		if (nfc_is_v1())
+			host->correct = imx_nand_correct_data_v1;
+		else
+			host->correct = imx_nand_correct_data_v2_v3;
 		this->ecc.mode = NAND_ECC_HW;
 		this->ecc.size = 512;
+		this->ecc.read_page_raw = imx_nand_read_page_raw;
+		this->ecc.read_page = imx_nand_read_page;
 	} else {
 		this->ecc.size = 512;
 		this->ecc.mode = NAND_ECC_SOFT;

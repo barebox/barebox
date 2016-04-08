@@ -26,7 +26,7 @@
  */
 char *size_human_readable(unsigned long long size)
 {
-	static char buf[20];
+	static char buf[30];
 	unsigned long m = 0, n;
 	unsigned long long f;
 	static const char names[] = {'E', 'P', 'T', 'G', 'M', 'K'};

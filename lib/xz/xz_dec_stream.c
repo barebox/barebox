@@ -769,7 +769,7 @@ XZ_EXTERN enum xz_ret xz_dec_run(struct xz_dec *s, struct xz_buf *b)
 
 XZ_EXTERN struct xz_dec *xz_dec_init(enum xz_mode mode, uint32_t dict_max)
 {
-	struct xz_dec *s = kmalloc(sizeof(*s), GFP_KERNEL);
+	struct xz_dec *s = MALLOC(sizeof(*s));
 	if (s == NULL)
 		return NULL;
 
@@ -793,7 +793,7 @@ error_lzma2:
 	xz_dec_bcj_end(s->bcj);
 error_bcj:
 #endif
-	kfree(s);
+	FREE(s);
 	return NULL;
 }
 
@@ -816,6 +816,6 @@ XZ_EXTERN void xz_dec_end(struct xz_dec *s)
 #ifdef XZ_DEC_BCJ
 		xz_dec_bcj_end(s->bcj);
 #endif
-		kfree(s);
+		FREE(s);
 	}
 }

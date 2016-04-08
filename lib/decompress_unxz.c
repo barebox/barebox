@@ -109,6 +109,8 @@
 #define XZ_EXTERN STATIC
 
 #ifndef XZ_PREBOOT
+#define FREE free
+#define MALLOC malloc
 #	include <malloc.h>
 #	include <linux/xz.h>
 #else
@@ -258,14 +260,14 @@ STATIC int decompress_unxz(unsigned char *in, int in_size,
 		b.out_size = (size_t)-1;
 	} else {
 		b.out_size = XZ_IOBUF_SIZE;
-		b.out = malloc(XZ_IOBUF_SIZE);
+		b.out = MALLOC(XZ_IOBUF_SIZE);
 		if (b.out == NULL)
 			goto error_alloc_out;
 	}
 
 	if (in == NULL) {
 		must_free_in = true;
-		in = malloc(XZ_IOBUF_SIZE);
+		in = MALLOC(XZ_IOBUF_SIZE);
 		if (in == NULL)
 			goto error_alloc_in;
 	}
@@ -316,10 +318,10 @@ STATIC int decompress_unxz(unsigned char *in, int in_size,
 		} while (ret == XZ_OK);
 
 		if (must_free_in)
-			free(in);
+			FREE(in);
 
 		if (flush != NULL)
-			free(b.out);
+			FREE(b.out);
 	}
 
 	if (in_used != NULL)
@@ -359,7 +361,7 @@ STATIC int decompress_unxz(unsigned char *in, int in_size,
 
 error_alloc_in:
 	if (flush != NULL)
-		free(b.out);
+		FREE(b.out);
 
 error_alloc_out:
 	xz_dec_end(s);

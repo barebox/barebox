@@ -42,8 +42,6 @@ static inline unsigned long copy_from_user(void *dest, const void *src,
 
 /* common */
 
-#define GFP_NOFS			1
-
 #define wake_up_process(...)	do { } while (0)
 
 #define BUS_ID_SIZE		20

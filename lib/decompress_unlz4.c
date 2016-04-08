@@ -15,6 +15,8 @@
 #else
 #include <linux/decompress/unlz4.h>
 #include <malloc.h>
+#define MALLOC malloc
+#define FREE free
 #endif
 #include <linux/types.h>
 #include <linux/lz4.h>
@@ -62,7 +64,7 @@ static inline int unlz4(u8 *input, int in_len,
 		error("NULL output pointer and no flush function provided");
 		goto exit_0;
 	} else {
-		outp = malloc(uncomp_chunksize);
+		outp = MALLOC(uncomp_chunksize);
 		if (!outp) {
 			error("Could not allocate output buffer");
 			goto exit_0;
@@ -78,7 +80,7 @@ static inline int unlz4(u8 *input, int in_len,
 		error("NULL input pointer and missing fill function");
 		goto exit_1;
 	} else {
-		inp = malloc(lz4_compressbound(uncomp_chunksize));
+		inp = MALLOC(lz4_compressbound(uncomp_chunksize));
 		if (!inp) {
 			error("Could not allocate input buffer");
 			goto exit_1;
@@ -171,10 +173,10 @@ static inline int unlz4(u8 *input, int in_len,
 	ret = 0;
 exit_2:
 	if (!input)
-		free(inp_start);
+		FREE(inp_start);
 exit_1:
 	if (!output)
-		free(outp);
+		FREE(outp);
 exit_0:
 	return ret;
 }

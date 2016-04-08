@@ -36,6 +36,8 @@
 #include "lzo/lzo1x_decompress_safe.c"
 #else
 #include <malloc.h>
+#define MALLOC malloc
+#define FREE free
 #endif
 
 #include <lzo.h>
@@ -126,7 +128,7 @@ int decompress_unlzo(u8 *input, int in_len,
 		error("NULL output pointer and no flush function provided");
 		goto exit;
 	} else {
-		out_buf = malloc(LZO_BLOCK_SIZE);
+		out_buf = MALLOC(LZO_BLOCK_SIZE);
 		if (!out_buf) {
 			error("Could not allocate output buffer");
 			goto exit;
@@ -142,7 +144,7 @@ int decompress_unlzo(u8 *input, int in_len,
 		error("NULL input pointer and missing fill function");
 		goto exit_1;
 	} else {
-		in_buf = malloc(lzo1x_worst_compress(LZO_BLOCK_SIZE));
+		in_buf = MALLOC(lzo1x_worst_compress(LZO_BLOCK_SIZE));
 		if (!in_buf) {
 			error("Could not allocate input buffer");
 			goto exit_1;
@@ -278,10 +280,10 @@ int decompress_unlzo(u8 *input, int in_len,
 	ret = 0;
 exit_2:
 	if (!input)
-		free(in_buf_save);
+		FREE(in_buf_save);
 exit_1:
 	if (!output)
-		free(out_buf);
+		FREE(out_buf);
 exit:
 	return ret;
 }

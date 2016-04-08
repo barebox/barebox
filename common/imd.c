@@ -112,17 +112,17 @@ static int imd_validate_tags(void *buf, int bufsize, int start_ofs)
 }
 
 /*
- * imd_search_validate - find valid metadata in a buffer
+ * imd_get - find valid metadata in a buffer
  * @buf		the buffer
  * @size	buffer size
- * @start	The returned pointer to the metadata
  *
  * This iterates over a buffer and searches for metadata. The metadata
  * is checked for consistency (length fields not exceeding buffer and
- * presence of end header) and returned in @start. The returned pointer
- * is only valid when 0 is returned. The returned data may be unaligned.
+ * presence of end header) and returned.
+ *
+ * Return: a pointer to the image metadata or a ERR_PTR
  */
-static int imd_search_validate(void *buf, int size, struct imd_header **start)
+struct imd_header *imd_get(void *buf, int size)
 {
 	int start_ofs = 0;
 	int i, ret;
@@ -138,13 +138,11 @@ static int imd_search_validate(void *buf, int size, struct imd_header **start)
 		debug("Start tag found at offset %d\n", i);
 
 		ret = imd_validate_tags(buf, size, i);
-		if (!ret) {
-			*start = buf + i;
-			return 0;
-		}
+		if (!ret)
+			return buf + i;
 	}
 
-	return -EINVAL;
+	return ERR_PTR(-EINVAL);
 }
 
 struct imd_type_names {
@@ -171,7 +169,13 @@ static struct imd_type_names imd_types[] = {
 	},
 };
 
-static const char *imd_type_to_name(uint32_t type)
+/**
+ * imd_type_to_name - convert a imd type to a name
+ * @type: The imd type
+ *
+ * This function returns a string representation of the imd type
+ */
+const char *imd_type_to_name(uint32_t type)
 {
 	int i;
 
@@ -193,11 +197,23 @@ static uint32_t imd_name_to_type(const char *name)
 	return IMD_TYPE_INVALID;
 }
 
-static char *imd_string_data(struct imd_entry_string *imd_string, int index)
+/**
+ * imd_string_data - get string data
+ * @imd: The IMD entry
+ * @index: The index of the string
+ *
+ * This function returns the string in @imd indexed by @index.
+ *
+ * Return: A pointer to the string or NULL if the string is not found
+ */
+const char *imd_string_data(struct imd_header *imd, int index)
 {
 	int i, total = 0, l = 0;
-	int len = imd_read_length(&imd_string->header);
-	char *p = imd_string->data;
+	int len = imd_read_length(imd);
+	char *p = (char *)(imd + 1);
+
+	if (!imd_is_string(imd->type))
+		return NULL;
 
 	for (i = 0; total < len; total += l, p += l) {
 		l = strlen(p) + 1;
@@ -208,22 +224,66 @@ static char *imd_string_data(struct imd_entry_string *imd_string, int index)
 	return NULL;
 }
 
-static char *imd_concat_strings(struct imd_entry_string *imd_string)
+/**
+ * imd_concat_strings - get string data
+ * @imd: The IMD entry
+ *
+ * This function returns the concatenated strings in @imd. The string
+ * returned is allocated with malloc() and the caller has to free() it.
+ *
+ * Return: A pointer to the string or NULL if the string is not found
+ */
+char *imd_concat_strings(struct imd_header *imd)
 {
-	int i, len = imd_read_length(&imd_string->header);
+	int i, len = imd_read_length(imd);
 	char *str;
+	char *data = (char *)(imd + 1);
+
+	if (!imd_is_string(imd->type))
+		return NULL;
 
 	str = malloc(len);
 	if (!str)
 		return NULL;
 
-	memcpy(str, imd_string->data, len);
+	memcpy(str, data, len);
 
 	for (i = 0; i < len - 1; i++)
 		if (str[i] == 0)
 			str[i] = ' ';
 
 	return str;
+}
+
+/**
+ * imd_get_param - get a parameter
+ * @imd: The IMD entry
+ * @name: The name of the parameter.
+ *
+ * Parameters have the IMD type IMD_TYPE_PARAMETER and the form
+ * "key=value". This function iterates over the IMD entries and when
+ * it finds a parameter with name "key" it returns the value found.
+ *
+ * Return: A pointer to the value or NULL if the string is not found
+ */
+const char *imd_get_param(struct imd_header *imd, const char *name)
+{
+	struct imd_header *cur;
+	int namelen = strlen(name);
+
+	imd_for_each(imd, cur) {
+		char *data = (char *)(cur + 1);
+
+		if (cur->type != IMD_TYPE_PARAMETER)
+			continue;
+		if (strncmp(name, data, namelen))
+			continue;
+		if (data[namelen] != '=')
+			continue;
+		return data + namelen + 1;
+	}
+
+	return NULL;
 }
 
 int imd_command_verbose;
@@ -275,19 +335,16 @@ int imd_command(int argc, char *argv[])
 	if (ret && ret != -EFBIG)
 		return -errno;
 
-	ret = imd_search_validate(buf, size, &imd_start);
-	if (ret)
-		return ret;
+	imd_start = imd_get(buf, size);
+	if (IS_ERR(imd_start))
+		return PTR_ERR(imd_start);
 
 	if (type == IMD_TYPE_INVALID) {
 		imd_for_each(imd_start, imd) {
 			uint32_t type = imd_read_type(imd);
 
 			if (imd_is_string(type)) {
-				struct imd_entry_string *imd_string =
-					(struct imd_entry_string *)imd;
-
-				str = imd_concat_strings(imd_string);
+				str = imd_concat_strings(imd);
 
 				printf("%s: %s\n", imd_type_to_name(type), str);
 			} else {
@@ -302,13 +359,15 @@ int imd_command(int argc, char *argv[])
 		}
 
 		if (imd_is_string(type)) {
-			struct imd_entry_string *imd_string =
-				(struct imd_entry_string *)imd;
-
-			if (strno >= 0)
-				str = imd_string_data(imd_string, strno);
-			else
-				str = imd_concat_strings(imd_string);
+			if (strno >= 0) {
+				const char *s = imd_string_data(imd, strno);
+				if (s)
+					str = strdup(s);
+				else
+					str = NULL;
+			} else {
+				str = imd_concat_strings(imd);
+			}
 
 			if (!str)
 				return -ENODATA;
@@ -318,8 +377,7 @@ int imd_command(int argc, char *argv[])
 			else
 				printf("%s\n", str);
 
-			if (strno < 0)
-				free(str);
+			free(str);
 		} else {
 			printf("tag 0x%08x present\n", type);
 		}

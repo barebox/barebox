@@ -260,3 +260,60 @@ void ubi_cdev_remove(struct ubi_device *ubi)
 	devfs_remove(cdev);
 	kfree(cdev->name);
 }
+
+static void ubi_umount_volumes(struct ubi_device *ubi)
+{
+	int i;
+
+	for (i = 0; i < ubi->vtbl_slots; i++) {
+		struct ubi_volume *vol = ubi->volumes[i];
+		if (!vol)
+			continue;
+		umount_by_cdev(&vol->cdev);
+	}
+}
+
+/**
+ * ubi_detach - detach an UBI device
+ * @ubi_num: The UBI device number
+ *
+ * UBI volumes used by UBIFS will be unmounted before detaching the
+ * UBI device.
+ *
+ * @return: 0 for success, negative error code otherwise
+ */
+int ubi_detach(int ubi_num)
+{
+	struct ubi_device *ubi;
+
+	if (ubi_num < 0 || ubi_num >= UBI_MAX_DEVICES)
+		return -EINVAL;
+
+	ubi = ubi_devices[ubi_num];
+	if (!ubi)
+		return -ENOENT;
+
+	ubi_umount_volumes(ubi);
+
+	return ubi_detach_mtd_dev(ubi_num, 1);
+}
+
+/**
+ * ubi_num_get_by_mtd - find the ubi number to the given mtd
+ * @mtd: the mtd device
+ *
+ * @return: positive or zero for a UBI number, negative error code otherwise
+ */
+int ubi_num_get_by_mtd(struct mtd_info *mtd)
+{
+	int i;
+	struct ubi_device *ubi;
+
+	for (i = 0; i < UBI_MAX_DEVICES; i++) {
+		ubi = ubi_devices[i];
+		if (ubi && mtd == ubi->mtd)
+			return ubi->ubi_num;
+	}
+
+	return -ENOENT;
+}

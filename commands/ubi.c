@@ -122,14 +122,36 @@ BAREBOX_CMD_END
 
 static int do_ubidetach(int argc, char *argv[])
 {
-	int ubi_num, ret;
+	int fd, ret;
+	struct mtd_info_user user;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	ubi_num = simple_strtoul(argv[1], NULL, 0);
-	ret = ubi_detach_mtd_dev(ubi_num, 1);
+	fd = open(argv[optind], O_RDWR);
+	if (fd < 0) {
+		int ubi_num = simple_strtoul(argv[1], NULL, 0);
+		ret = ubi_detach(ubi_num);
+		goto out;
+	}
 
+	ret = ioctl(fd, MEMGETINFO, &user);
+	if (!ret) {
+		int ubi_num = ubi_num_get_by_mtd(user.mtd);
+		if (ubi_num < 0) {
+			ret = ubi_num;
+			goto out;
+		}
+
+		ret = ubi_detach(ubi_num);
+		if (!ret)
+			goto out_close;
+	}
+
+out_close:
+	close(fd);
+
+out:
 	if (ret)
 		printf("failed to detach: %s\n", strerror(-ret));
 
@@ -139,7 +161,7 @@ static int do_ubidetach(int argc, char *argv[])
 BAREBOX_CMD_START(ubidetach)
 	.cmd		= do_ubidetach,
 	BAREBOX_CMD_DESC("detach an UBI device")
-	BAREBOX_CMD_OPTS("UBINUM")
+	BAREBOX_CMD_OPTS("mtd device/UBINUM")
 	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 BAREBOX_CMD_END
 

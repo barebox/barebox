@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <wchar.h>
 #include <efi.h>
+#include <libfile.h>
 #include <mach/efi.h>
 #include <mach/efi-device.h>
 

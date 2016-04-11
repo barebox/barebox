@@ -21,4 +21,7 @@ int compare_file(const char *f1, const char *f2);
 
 int open_and_lseek(const char *filename, int mode, loff_t pos);
 
+/* Create a directory and its parents */
+int make_directory(const char *pathname);
+
 #endif /* __LIBFILE_H */

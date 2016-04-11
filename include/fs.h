@@ -126,9 +126,6 @@ ssize_t pwrite(int fd, const void *buf, size_t count, loff_t offset);
 
 loff_t lseek(int fildes, loff_t offset, int whence);
 int mkdir (const char *pathname, mode_t mode);
-
-/* Create a directory and its parents */
-int make_directory(const char *pathname);
 int rmdir (const char *pathname);
 
 const char *getcwd(void);

@@ -20,6 +20,7 @@
 #include <fs.h>
 #include <errno.h>
 #include <getopt.h>
+#include <libfile.h>
 
 static int do_automount(int argc, char *argv[])
 {

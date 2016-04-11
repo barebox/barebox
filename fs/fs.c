@@ -34,6 +34,7 @@
 #include <environment.h>
 #include <libgen.h>
 #include <block.h>
+#include <libfile.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {

@@ -24,6 +24,7 @@
 #include <digest.h>
 #include <malloc.h>
 #include <xfuncs.h>
+#include <command.h>
 #include <magicvar.h>
 #include <clock.h>
 #include <init.h>

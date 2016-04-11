@@ -18,6 +18,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <fs.h>
 #include <driver.h>
 #include <errno.h>

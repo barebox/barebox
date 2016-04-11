@@ -17,6 +17,7 @@
 #define pr_fmt(fmt) "fastboot: " fmt
 
 #include <common.h>
+#include <command.h>
 #include <errno.h>
 #include <malloc.h>
 #include <fcntl.h>

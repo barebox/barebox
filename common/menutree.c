@@ -12,6 +12,7 @@
 #include <environment.h>
 #include <libbb.h>
 #include <common.h>
+#include <command.h>
 #include <glob.h>
 #include <menu.h>
 #include <fs.h>

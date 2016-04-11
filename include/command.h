@@ -71,6 +71,7 @@ extern struct command __barebox_cmd_end;
 struct command *find_cmd(const char *cmd);
 int execute_command(int argc, char **argv);
 void barebox_cmd_usage(struct command *cmdtp);
+int run_command(const char *cmd);
 
 #define COMMAND_SUCCESS		0
 #define COMMAND_ERROR		1

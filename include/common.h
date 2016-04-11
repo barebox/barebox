@@ -61,7 +61,6 @@ void __noreturn hang (void);
 
 char *size_human_readable(unsigned long long size);
 
-int run_command(const char *cmd);
 int	readline	(const char *prompt, char *buf, int len);
 
 /* common/memsize.c */

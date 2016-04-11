@@ -87,16 +87,6 @@ static inline void dump_stack(void)
 }
 #endif
 
-#define MEMAREA_SIZE_SPECIFIED 1
-
-struct memarea_info {
-	struct device_d *device;
-	unsigned long start;
-	unsigned long end;
-	unsigned long size;
-	unsigned long flags;
-};
-
 int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
 /* Just like simple_strtoul(), but this one honors a K/M/G suffix */

@@ -28,6 +28,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <fs.h>
+#include <libfile.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <linux/stat.h>

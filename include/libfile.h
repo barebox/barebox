@@ -19,4 +19,6 @@ int copy_recursive(const char *src, const char *dst);
 
 int compare_file(const char *f1, const char *f2);
 
+int open_and_lseek(const char *filename, int mode, loff_t pos);
+
 #endif /* __LIBFILE_H */

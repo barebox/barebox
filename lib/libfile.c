@@ -442,3 +442,35 @@ err_out1:
 	close(fd1);
 	return ret;
 }
+
+/**
+ * open_and_lseek - open file and lseek to position
+ * @filename:	The file to open
+ * @mode:	The file open mode
+ * @pos:	The position to lseek to
+ *
+ * Return: If successful this function returns a positive filedescriptor
+ *         number, otherwise a negative error code is returned
+ */
+int open_and_lseek(const char *filename, int mode, loff_t pos)
+{
+	int fd, ret;
+
+	fd = open(filename, mode | O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return fd;
+	}
+
+	if (!pos)
+		return fd;
+
+	ret = lseek(fd, pos, SEEK_SET);
+	if (ret == -1) {
+		perror("lseek");
+		close(fd);
+		return -errno;
+	}
+
+	return fd;
+}

@@ -29,6 +29,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <fs.h>
+#include <crc.h>
 #include <fcntl.h>
 #include <envfs.h>
 #include <xfuncs.h>

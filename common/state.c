@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <fs.h>
+#include <crc.h>
 #include <init.h>
 #include <ioctl.h>
 #include <libbb.h>

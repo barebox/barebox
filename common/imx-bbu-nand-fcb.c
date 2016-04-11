@@ -34,6 +34,7 @@
 #include <linux/mtd/nand.h>
 #include <linux/stat.h>
 #include <io.h>
+#include <crc.h>
 #include <mach/generic.h>
 #include <mtd/mtd-peb.h>
 

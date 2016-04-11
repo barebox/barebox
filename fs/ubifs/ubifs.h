@@ -34,6 +34,7 @@
 #else
 #include <common.h>
 #include <lzo.h>
+#include <crc.h>
 #include <linux/fs.h>
 #include <linux/sched.h>
 #include <linux/ctype.h>

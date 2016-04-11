@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <malloc.h>
 #include <init.h>
+#include <crc.h>
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <bpkfs.h>

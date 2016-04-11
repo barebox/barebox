@@ -21,6 +21,7 @@
 #include <image.h>
 #include <malloc.h>
 #include <errno.h>
+#include <crc.h>
 #include <libbb.h>
 #include <libfile.h>
 #include <uncompress.h>

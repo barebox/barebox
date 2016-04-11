@@ -20,6 +20,7 @@
 #include <common.h>
 #include <command.h>
 #include <fs.h>
+#include <crc.h>
 #include <getopt.h>
 #include <malloc.h>
 #include <libfile.h>

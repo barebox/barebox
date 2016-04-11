@@ -36,7 +36,7 @@ static void load_logo(int width, void *start, void *end)
 	char *filename;
 	size_t size = end - start;
 
-	filename = asprintf("/logo/barebox-logo-%d.png", width);
+	filename = basprintf("/logo/barebox-logo-%d.png", width);
 	write_file(filename, start, size);
 	free(filename);
 }

@@ -330,7 +330,7 @@ static void imx_iim_add_mac_param(struct iim_priv *iim, int macnum, int bank, in
 	iimmac->offset = offset;
 	iimmac->bank = iim->bank[bank];
 
-	name = asprintf("ethaddr%d", macnum);
+	name = basprintf("ethaddr%d", macnum);
 
 	dev_add_param_mac(&iim->dev, name, imx_iim_set_mac,
 			imx_iim_get_mac, iimmac->ethaddr, iimmac);

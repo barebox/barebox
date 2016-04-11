@@ -141,8 +141,8 @@ static int stmpe_probe(struct device_d *dev)
 	}
 
 	stmpe_dev = xzalloc(sizeof(struct stmpe));
-	stmpe_dev->cdev.name = asprintf(DRIVERNAME "%d",
-			cdev_find_free_index(DRIVERNAME));
+	stmpe_dev->cdev.name = basprintf(DRIVERNAME"%d",
+					   cdev_find_free_index(DRIVERNAME));
 	stmpe_dev->client = to_i2c_client(dev);
 	stmpe_dev->cdev.size = 191;		/* 191 known registers */
 	stmpe_dev->cdev.dev = dev;

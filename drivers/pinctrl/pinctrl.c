@@ -68,7 +68,7 @@ int of_pinctrl_select_state(struct device_node *np, const char *name)
 	/* For each defined state ID */
 	for (state = 0; ; state++) {
 		/* Retrieve the pinctrl-* property */
-		propname = asprintf("pinctrl-%d", state);
+		propname = basprintf("pinctrl-%d", state);
 		prop = of_find_property(np, propname, NULL);
 		free(propname);
 

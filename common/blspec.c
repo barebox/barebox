@@ -203,16 +203,18 @@ static char *parse_nfs_url(const char *url)
 	if (ip == 0)
 		goto out;
 
-	hostpath = asprintf("%s:%s", ip_to_string(ip), path);
+	hostpath = basprintf("%s:%s", ip_to_string(ip), path);
 
 	prevpath = nfs_find_mountpath(hostpath);
 
 	if (prevpath) {
 		mountpath = xstrdup(prevpath);
 	} else {
-		mountpath = asprintf("/mnt/nfs-%s-blspec-%08x", host, rand());
+		mountpath = basprintf("/mnt/nfs-%s-blspec-%08x", host,
+					rand());
 		if (port)
-			options = asprintf("mountport=%s,port=%s", port, port);
+			options = basprintf("mountport=%s,port=%s", port,
+					      port);
 
 		ret = make_directory(mountpath);
 		if (ret)
@@ -278,7 +280,7 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 	if (!strcmp(devicetree, "none"))
 		return true;
 
-	filename = asprintf("%s/%s", abspath, devicetree);
+	filename = basprintf("%s/%s", abspath, devicetree);
 
 	fdt = read_file(filename, &size);
 	if (!fdt) {
@@ -338,7 +340,7 @@ int blspec_scan_directory(struct blspec *blspec, const char *root)
 	entry_default = read_file_line("%s/default", root);
 	entry_once = read_file_line("%s/once", root);
 
-	abspath = asprintf("%s/%s", root, dirname);
+	abspath = basprintf("%s/%s", root, dirname);
 
 	dir = opendir(abspath);
 	if (!dir) {
@@ -356,7 +358,7 @@ int blspec_scan_directory(struct blspec *blspec, const char *root)
 		if (*d->d_name == '.')
 			continue;
 
-		configname = asprintf("%s/%s", abspath, d->d_name);
+		configname = basprintf("%s/%s", abspath, d->d_name);
 
 		dot = strrchr(configname, '.');
 		if (!dot) {
@@ -402,7 +404,7 @@ int blspec_scan_directory(struct blspec *blspec, const char *root)
 
 		found++;
 
-		name = asprintf("%s/%s", dirname, d->d_name);
+		name = basprintf("%s/%s", dirname, d->d_name);
 		if (entry_default && !strcmp(name, entry_default))
 			entry->boot_default = true;
 		if (entry_once && !strcmp(name, entry_once))
@@ -415,10 +417,10 @@ int blspec_scan_directory(struct blspec *blspec, const char *root)
 				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
 		}
 
-		entry->me.display = asprintf("%-20s %-20s  %s",
-				devname ? devname : "",
-				hwdevname ? hwdevname : "",
-				blspec_entry_var_get(entry, "title"));
+		entry->me.display = basprintf("%-20s %-20s  %s",
+						devname ? devname : "",
+						hwdevname ? hwdevname : "",
+						blspec_entry_var_get(entry, "title"));
 
 		free(devname);
 		free(hwdevname);
@@ -691,7 +693,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 	else
 		abspath = "";
 
-	data.os_file = asprintf("%s/%s", abspath, linuximage);
+	data.os_file = basprintf("%s/%s", abspath, linuximage);
 
 	if (devicetree) {
 		if (!strcmp(devicetree, "none")) {
@@ -699,13 +701,13 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 			if (node)
 				of_delete_node(node);
 		} else {
-			data.oftree_file = asprintf("%s/%s", abspath,
-					devicetree);
+			data.oftree_file = basprintf("%s/%s", abspath,
+						       devicetree);
 		}
 	}
 
 	if (initrd)
-		data.initrd_file = asprintf("%s/%s", abspath, initrd);
+		data.initrd_file = basprintf("%s/%s", abspath, initrd);
 
 	globalvar_add_simple("linux.bootargs.dyn.blspec", options);
 
@@ -717,7 +719,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 			entry->cdev ? dev_name(entry->cdev->dev) : "none");
 
 	if (entry->boot_once) {
-		char *s = asprintf("%s/once", abspath);
+		char *s = basprintf("%s/once", abspath);
 
 		ret = unlink(s);
 		if (ret)

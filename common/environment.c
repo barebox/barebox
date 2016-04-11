@@ -80,7 +80,7 @@ static int do_compare_file(const char *filename, const char *base)
 	char *cmp;
 	const char *relname = filename + strlen(base) + 1;
 
-	cmp = asprintf("%s/%s", TMPDIR, relname);
+	cmp = basprintf("%s/%s", TMPDIR, relname);
 	ret = compare_file(cmp, filename);
 
 	free(cmp);
@@ -193,7 +193,7 @@ static int file_remove_action(const char *filename, struct stat *statbuf,
 
 	filename += sizeof(TMPDIR) - 1;
 
-	envname = asprintf("%s/%s", data->base, filename);
+	envname = basprintf("%s/%s", data->base, filename);
 
 	ret = stat(envname, &s);
 	if (ret) {

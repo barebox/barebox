@@ -208,8 +208,8 @@ static void console_set_stdoutpath(struct console_device *cdev)
 	if (id < 0)
 		return;
 
-	str = asprintf("console=%s%d,%dn8", cdev->linux_console_name,
-			id, cdev->baudrate);
+	str = basprintf("console=%s%d,%dn8", cdev->linux_console_name, id,
+			  cdev->baudrate);
 
 	globalvar_add_simple("linux.bootargs.console", str);
 

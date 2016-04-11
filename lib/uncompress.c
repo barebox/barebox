@@ -125,7 +125,8 @@ int uncompress(unsigned char *inbuf, int len,
 		break;
 #endif
 	default:
-		err = asprintf("cannot handle filetype %s", file_type_to_string(ft));
+		err = basprintf("cannot handle filetype %s",
+				  file_type_to_string(ft));
 		error_fn(err);
 		free(err);
 		ret = -ENOSYS;

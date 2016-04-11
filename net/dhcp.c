@@ -83,7 +83,7 @@ static char dhcp_tftpname[256];
 
 static const char* dhcp_get_barebox_global(const char * var)
 {
-	char * var_global = asprintf("global.dhcp.%s", var);
+	char * var_global = basprintf("global.dhcp.%s", var);
 	const char *val;
 
 	if (!var_global)
@@ -96,7 +96,7 @@ static const char* dhcp_get_barebox_global(const char * var)
 
 static int dhcp_set_barebox_global(const char * var, char *val)
 {
-	char * var_global = asprintf("global.dhcp.%s", var);
+	char * var_global = basprintf("global.dhcp.%s", var);
 	int ret;
 
 	if (!var_global)
@@ -717,7 +717,7 @@ out:
 #ifdef CONFIG_GLOBALVAR
 static void dhcp_global_add(const char *var)
 {
-	char *var_global = asprintf("dhcp.%s", var);
+	char *var_global = basprintf("dhcp.%s", var);
 
 	if (!var_global)
 		return;

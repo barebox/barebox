@@ -173,8 +173,8 @@ static int digest_hmac_register(char *name, unsigned int pad_length)
 	dh->name = xstrdup(name);
 	dh->pad_length = pad_length;
 	dh->algo = hmac_algo;
-	dh->algo.base.name = asprintf("hmac(%s)", name);
-	dh->algo.base.driver_name = asprintf("hmac(%s)-generic", name);
+	dh->algo.base.name = basprintf("hmac(%s)", name);
+	dh->algo.base.driver_name = basprintf("hmac(%s)-generic", name);
 
 	return digest_algo_register(&dh->algo);
 }

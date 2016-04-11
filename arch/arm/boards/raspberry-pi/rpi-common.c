@@ -201,8 +201,8 @@ static void rpi_get_board_rev(void)
 	if (!rpi_board_rev)
 		goto unknown_rev;
 
-	name = asprintf("RaspberryPi %s %s", rpi_models[rpi_board_rev].name,
-			rpi_model_string);
+	name = basprintf("RaspberryPi %s %s",
+			   rpi_models[rpi_board_rev].name, rpi_model_string);
 	barebox_set_model(name);
 	free(name);
 
@@ -210,7 +210,7 @@ static void rpi_get_board_rev(void)
 
 unknown_rev:
 	rpi_board_rev = 0;
-	name = asprintf("RaspberryPi %s", rpi_model_string);
+	name = basprintf("RaspberryPi %s", rpi_model_string);
 	barebox_set_model(name);
 	free(name);
 }

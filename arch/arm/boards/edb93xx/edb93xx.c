@@ -123,7 +123,7 @@ static int edb93xx_console_init(void)
 	else
 		shortname = "unknown";
 
-	board = asprintf("Cirrus Logic %s", shortname);
+	board = basprintf("Cirrus Logic %s", shortname);
 	barebox_set_model(board);
 	free(board);
 	barebox_set_hostname(shortname);

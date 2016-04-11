@@ -506,8 +506,8 @@ static int mmc_change_freq(struct mci *mci)
 			char *name, *partname;
 			part_size = mci->ext_csd[EXT_CSD_BOOT_MULT] << 17;
 
-			partname = asprintf("boot%d", idx);
-			name = asprintf("%s.%s", mci->cdevname, partname);
+			partname = basprintf("boot%d", idx);
+			name = basprintf("%s.%s", mci->cdevname, partname);
 			mci_part_add(mci, part_size,
 					EXT_CSD_PART_CONFIG_ACC_BOOT0 + idx,
 					name, partname, idx, true,
@@ -1626,7 +1626,7 @@ static int mci_card_probe(struct mci *mci)
 		mci->cdevname = strdup(host->devname);
 	} else {
 		disknum = cdev_find_free_index("disk");
-		mci->cdevname = asprintf("disk%d", disknum);
+		mci->cdevname = basprintf("disk%d", disknum);
 	}
 
 	rc = mci_startup(mci);

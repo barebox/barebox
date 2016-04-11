@@ -1317,19 +1317,18 @@ static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
 	const char *ip;
 
 	ip = ip_to_string(npriv->server);
-	str = asprintf("root=/dev/nfs nfsroot=%s:%s%s%s",
-			ip, npriv->path, rootnfsopts[0] ? "," : "",
-			rootnfsopts);
+	str = basprintf("root=/dev/nfs nfsroot=%s:%s%s%s", ip, npriv->path,
+			  rootnfsopts[0] ? "," : "", rootnfsopts);
 
 	/* forward specific mount options on demand */
 	if (npriv->manual_nfs_port == 1) {
-		tmp = asprintf("%s,port=%hu", str, npriv->nfs_port);
+		tmp = basprintf("%s,port=%hu", str, npriv->nfs_port);
 		free(str);
 		str = tmp;
 	}
 
 	if (npriv->manual_mount_port == 1) {
-		tmp = asprintf("%s,mountport=%hu", str, npriv->mount_port);
+		tmp = basprintf("%s,mountport=%hu", str, npriv->mount_port);
 		free(str);
 		str = tmp;
 	}

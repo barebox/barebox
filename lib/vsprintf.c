@@ -646,12 +646,11 @@ int scnprintf(char *buf, size_t size, const char *fmt, ...)
 }
 EXPORT_SYMBOL(scnprintf);
 
-/* Simplified asprintf. */
-char *vasprintf(const char *fmt, va_list ap)
+int vasprintf(char **strp, const char *fmt, va_list ap)
 {
 	unsigned int len;
-	char *p;
 	va_list aq;
+	char *p;
 
 	va_copy(aq, ap);
 	len = vsnprintf(NULL, 0, fmt, aq);
@@ -659,23 +658,56 @@ char *vasprintf(const char *fmt, va_list ap)
 
 	p = malloc(len + 1);
 	if (!p)
-		return NULL;
+		return -1;
 
 	vsnprintf(p, len + 1, fmt, ap);
 
-	return p;
+	*strp = p;
+
+	return len;
 }
 EXPORT_SYMBOL(vasprintf);
 
-char *asprintf(const char *fmt, ...)
+char *bvasprintf(const char *fmt, va_list ap)
 {
-	va_list ap;
 	char *p;
+	int len;
 
-	va_start(ap, fmt);
-	p = vasprintf(fmt, ap);
-	va_end(ap);
+	len = vasprintf(&p, fmt, ap);
+	if (len < 0)
+		return NULL;
 
 	return p;
 }
+EXPORT_SYMBOL(bvasprintf);
+
+int asprintf(char **strp, const char *fmt, ...)
+{
+	va_list ap;
+	char *p;
+	int len;
+
+	va_start(ap, fmt);
+	len = vasprintf(&p, fmt, ap);
+	va_end(ap);
+
+	return len;
+}
 EXPORT_SYMBOL(asprintf);
+
+char *basprintf(const char *fmt, ...)
+{
+	va_list ap;
+	char *p;
+	int len;
+
+	va_start(ap, fmt);
+	len = vasprintf(&p, fmt, ap);
+	va_end(ap);
+
+	if (len < 0)
+		return NULL;
+
+	return p;
+}
+EXPORT_SYMBOL(basprintf);

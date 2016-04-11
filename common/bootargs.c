@@ -53,7 +53,8 @@ const char *linux_bootargs_get(void)
 
 	parts = globalvar_get_match("linux.mtdparts.", ";");
 	if (strlen(parts)) {
-		bootargs = asprintf("%s mtdparts=%s", linux_bootargs, parts);
+		bootargs = basprintf("%s mtdparts=%s", linux_bootargs,
+				       parts);
 		free(linux_bootargs);
 		free(parts);
 		linux_bootargs = bootargs;
@@ -61,7 +62,8 @@ const char *linux_bootargs_get(void)
 
 	parts = globalvar_get_match("linux.blkdevparts.", ";");
 	if (strlen(parts)) {
-		bootargs = asprintf("%s blkdevparts=%s", linux_bootargs, parts);
+		bootargs = basprintf("%s blkdevparts=%s", linux_bootargs,
+				       parts);
 		free(linux_bootargs);
 		free(parts);
 		linux_bootargs = bootargs;

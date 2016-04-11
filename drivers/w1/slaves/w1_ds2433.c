@@ -171,7 +171,7 @@ static int ds2433_cdev_create(struct w1_device *dev, int size, int id)
 	cdev->priv	= dev;
 	cdev->ops	= &ds2433_ops;
 	cdev->size	= size;
-	cdev->name	= asprintf("%s%d", dev->dev.driver->name, id);
+	cdev->name	= basprintf("%s%d", dev->dev.driver->name, id);
 	if (cdev->name == NULL)
 		return -ENOMEM;
 

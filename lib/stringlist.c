@@ -34,7 +34,7 @@ int string_list_add_asprintf(struct string_list *sl, const char *fmt, ...)
 
 	va_start(args, fmt);
 
-	new->str = vasprintf(fmt, args);
+	new->str = bvasprintf(fmt, args);
 
 	va_end(args);
 

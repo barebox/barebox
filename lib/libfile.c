@@ -91,7 +91,7 @@ char *read_file_line(const char *fmt, ...)
 	struct stat s;
 
 	va_start(args, fmt);
-	filename = vasprintf(fmt, args);
+	filename = bvasprintf(fmt, args);
 	va_end(args);
 
 	ret = stat(filename, &s);
@@ -359,8 +359,8 @@ int copy_recursive(const char *src, const char *dst)
 		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 			continue;
 
-		from = asprintf("%s/%s", src, d->d_name);
-		to = asprintf("%s/%s", dst, d->d_name);
+		from = basprintf("%s/%s", src, d->d_name);
+		to = basprintf("%s/%s", dst, d->d_name);
 		ret = copy_recursive(from, to);
 		if (ret)
 			break;

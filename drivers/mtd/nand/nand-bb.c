@@ -288,7 +288,7 @@ struct cdev *mtd_add_bb(struct mtd_info *mtd, const char *name)
 	if (name)
 		bb->cdev.name = xstrdup(name);
 	else
-		bb->cdev.name = asprintf("%s.bb", mtd->cdev.name);
+		bb->cdev.name = basprintf("%s.bb", mtd->cdev.name);
 
 	nand_bb_calc_size(bb);
 	bb->cdev.ops = &nand_bb_ops;

@@ -109,7 +109,7 @@ char *xvasprintf(const char *fmt, va_list ap)
 {
 	char *p;
 
-	p = vasprintf(fmt, ap);
+	p = bvasprintf(fmt, ap);
 	if (!p)
 		panic("ERROR: out of memory\n");
 	return p;

@@ -202,7 +202,7 @@ out:
 int firmwaremgr_load_file(struct firmware_mgr *mgr, const char *firmware)
 {
 	int ret;
-	char *name = asprintf("/dev/%s", mgr->handler->id);
+	char *name = basprintf("/dev/%s", mgr->handler->id);
 
 	ret = copy_file(firmware, name, 0);
 

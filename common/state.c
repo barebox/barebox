@@ -704,8 +704,8 @@ static int state_convert_node_variable(struct state *state,
 		*indexs = 0;
 
 	/* construct full name */
-	name = asprintf("%s%s%s",
-			parent_name, parent_name[0] ? "." : "", short_name);
+	name = basprintf("%s%s%s", parent_name, parent_name[0] ? "." : "",
+			   short_name);
 	free(short_name);
 
 	if ((conv == STATE_CONVERT_TO_NODE) ||

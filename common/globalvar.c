@@ -42,7 +42,7 @@ static int nv_save(const char *name, const char *val)
 	if (ret)
 		return ret;
 
-	fname = asprintf("/env/nv/%s", name);
+	fname = basprintf("/env/nv/%s", name);
 
 	fd = open(fname, O_CREAT | O_WRONLY | O_TRUNC);
 
@@ -135,7 +135,7 @@ int nvvar_remove(const char *name)
 	if (!p)
 		return -ENOENT;
 
-	fname = asprintf("/env/nv/%s", p->name);
+	fname = basprintf("/env/nv/%s", p->name);
 	unlink(fname);
 	free(fname);
 
@@ -217,7 +217,8 @@ char *globalvar_get_match(const char *match, const char *separator)
 		if (!strncmp(match, param->name, strlen(match))) {
 			const char *p = dev_get_param(&global_device, param->name);
 			if (val) {
-				char *new = asprintf("%s%s%s", val, separator, p);
+				char *new = basprintf("%s%s%s", val,
+							separator, p);
 				free(val);
 				val = new;
 			} else {

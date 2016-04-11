@@ -134,7 +134,7 @@ static int pxa_pwm_probe(struct device_d *dev)
 	struct pxa_pwm_chip *chip;
 
 	chip = xzalloc(sizeof(*chip));
-	chip->chip.devname = asprintf("pwm%d", dev->id);
+	chip->chip.devname = basprintf("pwm%d", dev->id);
 	chip->chip.ops = &pxa_pwm_ops;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

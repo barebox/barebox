@@ -153,7 +153,7 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 	struct regulator_internal *ri;
 	struct device_node *node;
 
-	propname = asprintf("%s-supply", supply);
+	propname = basprintf("%s-supply", supply);
 
 	/*
 	 * If the device does have a device node return the dummy regulator.

@@ -209,7 +209,7 @@ static int gpio_spi_probe(struct device_d *dev)
 		if (!gpio_is_valid(pdata->cs[n]))
 			continue;
 
-		cs_name = asprintf("spi-cs%d", n);
+		cs_name = basprintf("spi-cs%d", n);
 		ret = gpio_request_one(pdata->cs[n], GPIOF_DIR_OUT, cs_name);
 		if (ret)
 			return ret;

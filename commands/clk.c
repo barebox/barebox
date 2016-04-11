@@ -110,7 +110,7 @@ static int do_clk_get_rate(int argc, char *argv[])
 	if (variable_name) {
 		char *t;
 
-		t = asprintf("%lu", rate);
+		t = basprintf("%lu", rate);
 		setenv(variable_name, t);
 		free(t);
 	} else

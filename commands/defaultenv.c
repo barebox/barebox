@@ -60,8 +60,8 @@ static int do_defaultenv(int argc, char *argv[])
 	if (ret)
 		return ret;
 
-	from = asprintf("/.defaultenv/%s", restorepath);
-	to = asprintf("%s/%s", dirname, restorepath);
+	from = basprintf("/.defaultenv/%s", restorepath);
+	to = basprintf("%s/%s", dirname, restorepath);
 
 	printf("Restoring %s from default environment\n", restorepath);
 

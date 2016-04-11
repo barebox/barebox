@@ -1269,8 +1269,8 @@ void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev)
 
 	mtd = di.mtd;
 
-	str = asprintf("root=ubi0:%s ubi.mtd=%s rootfstype=ubifs",
-			vi.name, mtd->cdev.partname);
+	str = basprintf("root=ubi0:%s ubi.mtd=%s rootfstype=ubifs",
+			  vi.name, mtd->cdev.partname);
 
 	fsdev_set_linux_rootarg(fsdev, str);
 

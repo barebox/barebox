@@ -143,7 +143,7 @@ static int mxs_pwm_probe(struct device_d *dev)
 		struct mxs_pwm_chip *mxspwm = &mxs->pwm[i];
 
 		mxspwm->chip.ops = &mxs_pwm_ops;
-		mxspwm->chip.devname = asprintf("pwm%d", i);
+		mxspwm->chip.devname = basprintf("pwm%d", i);
 		mxspwm->chip.id = i;
 		mxspwm->mxs = mxs;
 

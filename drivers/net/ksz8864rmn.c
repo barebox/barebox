@@ -149,7 +149,7 @@ static int micrel_switch_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	priv->cdev.name = asprintf("switch%d", dev->id);
+	priv->cdev.name = basprintf("switch%d", dev->id);
 	priv->cdev.size = 256;
 	priv->cdev.ops = &micrel_switch_ops;
 	priv->cdev.priv = priv;

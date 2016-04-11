@@ -46,7 +46,7 @@ static int do_hash(char *algo, int argc, char *argv[])
 	}
 
 	if (key) {
-		char *tmp = asprintf("hmac(%s)", algo);
+		char *tmp = basprintf("hmac(%s)", algo);
 		d = digest_alloc(tmp);
 		free(tmp);
 		BUG_ON(!d);

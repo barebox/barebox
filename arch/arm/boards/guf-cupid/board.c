@@ -33,7 +33,7 @@
 #include <nand.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <fb.h>
 #include <asm/mmu.h>
 #include <mach/weim.h>

@@ -18,7 +18,7 @@
 #include <environment.h>
 #include <errno.h>
 #include <mci.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <linux/sizes.h>
 #include <io.h>
 #include <net.h>

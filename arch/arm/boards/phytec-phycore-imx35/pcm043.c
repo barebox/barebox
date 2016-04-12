@@ -34,7 +34,6 @@
 #include <nand.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
-#include <fec.h>
 #include <fb.h>
 #include <led.h>
 #include <bootsource.h>

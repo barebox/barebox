@@ -21,7 +21,7 @@
 #include <mach/imx27-regs.h>
 #include <asm/armlinux.h>
 #include <io.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <gpio.h>
 #include <mach/weim.h>
 #include <partition.h>

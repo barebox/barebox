@@ -20,7 +20,7 @@
 #include <net.h>
 #include <init.h>
 #include <driver.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <io.h>
 #include <clock.h>
 #include <xfuncs.h>

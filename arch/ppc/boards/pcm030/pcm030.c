@@ -26,7 +26,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <types.h>
 #include <partition.h>
 #include <memory.h>

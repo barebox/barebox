@@ -29,7 +29,8 @@
 #include <init.h>
 #include <of.h>
 #include <mach/bbu.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
+
 #include <globalvar.h>
 
 #include <linux/micrel_phy.h>

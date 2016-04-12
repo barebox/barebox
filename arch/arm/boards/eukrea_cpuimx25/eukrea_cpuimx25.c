@@ -36,7 +36,7 @@
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
 #include <mach/iim.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <nand.h>
 #include <mach/iomux-mx25.h>
 #include <i2c/i2c.h>

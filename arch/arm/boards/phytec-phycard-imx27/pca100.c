@@ -19,7 +19,6 @@
 #include <init.h>
 #include <environment.h>
 #include <mach/imx27-regs.h>
-#include <fec.h>
 #include <gpio.h>
 #include <linux/sizes.h>
 #include <asm/armlinux.h>

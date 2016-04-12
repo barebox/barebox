@@ -10,7 +10,7 @@
 #include <mach/mpc5xxx.h>
 #include <malloc.h>
 #include <net.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <init.h>
 #include <driver.h>
 #include <mach/sdma.h>

@@ -26,7 +26,6 @@
 #include <linux/sizes.h>
 #include <init.h>
 #include <gpio.h>
-#include <fec.h>
 #include <of.h>
 
 #include <linux/micrel_phy.h>

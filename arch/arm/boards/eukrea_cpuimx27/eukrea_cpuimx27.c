@@ -22,7 +22,6 @@
 #include <init.h>
 #include <environment.h>
 #include <mach/imx27-regs.h>
-#include <fec.h>
 #include <notifier.h>
 #include <gpio.h>
 #include <asm/armlinux.h>

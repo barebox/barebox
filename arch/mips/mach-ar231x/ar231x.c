@@ -16,7 +16,7 @@
 #include <common.h>
 #include <init.h>
 #include <io.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <mach/ar231x_platform.h>
 #include <mach/ar2312_regs.h>
 

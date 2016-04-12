@@ -2,7 +2,7 @@
 #include <platform_data/dw_mmc.h>
 #include <bootsource.h>
 #include <bootstrap.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <common.h>
 #include <malloc.h>
 #include <init.h>

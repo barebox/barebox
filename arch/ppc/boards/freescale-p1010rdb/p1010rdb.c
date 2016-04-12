@@ -17,7 +17,7 @@
 #include <common.h>
 #include <init.h>
 #include <driver.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <net.h>
 #include <types.h>
 #include <i2c/i2c.h>

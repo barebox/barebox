@@ -20,7 +20,6 @@
 #include <driver.h>
 #include <gpio.h>
 #include <io.h>
-#include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/omap4-silicon.h>

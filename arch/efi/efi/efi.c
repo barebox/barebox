@@ -26,7 +26,7 @@
 #include <init.h>
 #include <restart.h>
 #include <driver.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <io.h>
 #include <efi.h>
 #include <malloc.h>

@@ -44,7 +44,6 @@
 #include <errno.h>
 #include <init.h>
 #include <nand.h>
-#include <ns16550.h>
 #include <partition.h>
 #include <linux/sizes.h>
 #include <asm/armlinux.h>

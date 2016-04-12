@@ -38,7 +38,7 @@
 #include <mach/imx-pll.h>
 #include <mach/weim.h>
 #include <mach/imxfb.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <asm/mmu.h>
 #include <i2c/i2c.h>
 #include <mfd/lp3972.h>

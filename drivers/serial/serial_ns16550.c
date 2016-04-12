@@ -41,7 +41,7 @@
 #include <linux/clk.h>
 
 #include "serial_ns16550.h"
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 
 struct ns16550_priv {
 	struct console_device cdev;

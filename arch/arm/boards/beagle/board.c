@@ -23,7 +23,6 @@
 #include <io.h>
 #include <bbu.h>
 #include <filetype.h>
-#include <ns16550.h>
 #include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

@@ -24,4 +24,6 @@ int open_and_lseek(const char *filename, int mode, loff_t pos);
 /* Create a directory and its parents */
 int make_directory(const char *pathname);
 
+int unlink_recursive(const char *path, char **failedpath);
+
 #endif /* __LIBFILE_H */

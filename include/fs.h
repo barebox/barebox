@@ -179,8 +179,6 @@ void automount_remove(const char *_path);
 int automount_add(const char *path, const char *cmd);
 void automount_print(void);
 
-int unlink_recursive(const char *path, char **failedpath);
-
 int fsdev_open_cdev(struct fs_device_d *fsdev);
 const char *cdev_get_mount_path(struct cdev *cdev);
 const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);

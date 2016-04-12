@@ -26,6 +26,7 @@
 #include <envfs.h>
 #include <errno.h>
 #include <fs.h>
+#include <libfile.h>
 #include <malloc.h>
 #include <globalvar.h>
 

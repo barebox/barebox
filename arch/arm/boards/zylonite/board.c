@@ -25,7 +25,7 @@
 #include <init.h>
 #include <partition.h>
 #include <led.h>
-#include <net/smc91111.h>
+#include <platform_data/eth-smc91111.h>
 #include <platform_data/mtd-nand-mrvl.h>
 #include <pwm.h>
 #include <linux/clk.h>

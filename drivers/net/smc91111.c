@@ -67,7 +67,7 @@
 #include <io.h>
 #include <linux/phy.h>
 #include <linux/err.h>
-#include <net/smc91111.h>
+#include <platform_data/eth-smc91111.h>
 
 /*---------------------------------------------------------------
  .

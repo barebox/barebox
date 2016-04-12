@@ -38,7 +38,7 @@
 #include <linux/types.h>
 #include <mach/ep93xx-regs.h>
 #include <linux/phy.h>
-#include <net/ep93xx_eth.h>
+#include <platform_data/eth-ep93xx.h>
 #include "ep93xx.h"
 
 #define EP93XX_MAX_PKT_SIZE    1536

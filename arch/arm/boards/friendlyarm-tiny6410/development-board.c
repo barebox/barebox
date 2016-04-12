@@ -23,7 +23,7 @@
 #include <driver.h>
 #include <init.h>
 #include <gpio.h>
-#include <dm9000.h>
+#include <platform_data/eth-dm9000.h>
 #include <mach/devices-s3c64xx.h>
 #include <mach/s3c-generic.h>
 #include <mach/iomux.h>

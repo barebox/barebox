@@ -26,7 +26,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <fcntl.h>
-#include <dm9000.h>
+#include <platform_data/eth-dm9000.h>
 #include <led.h>
 #include <mach/iomux-mx1.h>
 #include <mach/devices-imx1.h>

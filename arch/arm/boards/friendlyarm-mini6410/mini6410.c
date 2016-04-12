@@ -14,7 +14,7 @@
 #include <common.h>
 #include <driver.h>
 #include <init.h>
-#include <dm9000.h>
+#include <platform_data/eth-dm9000.h>
 #include <gpio.h>
 #include <generated/mach-types.h>
 #include <asm/armlinux.h>

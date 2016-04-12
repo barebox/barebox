@@ -29,7 +29,7 @@
 #include <net.h>
 #include <io.h>
 #include <xfuncs.h>
-#include <dm9000.h>
+#include <platform_data/eth-dm9000.h>
 #include <errno.h>
 #include <linux/phy.h>
 

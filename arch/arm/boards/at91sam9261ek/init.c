@@ -34,7 +34,7 @@
 #include <mach/io.h>
 #include <mach/iomux.h>
 #include <mach/at91sam9_smc.h>
-#include <dm9000.h>
+#include <platform_data/eth-dm9000.h>
 #include <gpio_keys.h>
 #include <readkey.h>
 #include <led.h>

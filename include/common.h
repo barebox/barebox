@@ -102,17 +102,6 @@ extern int (*barebox_main)(void);
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
 
-int run_shell(void);
-
-#ifdef CONFIG_SHELL_HUSH
-char *shell_expand(char *str);
-#else
-static inline char *shell_expand(char *str)
-{
-	return strdup(str);
-}
-#endif
-
 #define ALIGN_DOWN(x, a)	((x) & ~((typeof(x))(a) - 1))
 
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)

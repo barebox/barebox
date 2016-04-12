@@ -255,9 +255,6 @@ void tegra_cpu_lowlevel_setup(char *fdt)
 {
 	uint32_t r;
 
-	if (tegra_cpu_is_maincomplex())
-		tegra_maincomplex_entry(fdt - get_runtime_offset());
-
 	/* set the cpu to SVC32 mode */
 	__asm__ __volatile__("mrs %0, cpsr":"=r"(r));
 	r &= ~0x1f;
@@ -265,6 +262,10 @@ void tegra_cpu_lowlevel_setup(char *fdt)
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 
 	arm_setup_stack(TEGRA_IRAM_BASE + SZ_256K - 8);
+
+	if (tegra_cpu_is_maincomplex())
+		tegra_maincomplex_entry(fdt - get_runtime_offset());
+
 	tegra_ll_delay_setup();
 }
 

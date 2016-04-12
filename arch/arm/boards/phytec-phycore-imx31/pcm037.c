@@ -31,7 +31,7 @@
 #include <asm/sections.h>
 #include <mach/weim.h>
 #include <io.h>
-#include <smc911x.h>
+#include <platform_data/eth-smc911x.h>
 #include <asm/mmu.h>
 #include <partition.h>
 #include <generated/mach-types.h>

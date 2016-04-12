@@ -49,7 +49,7 @@
 #include <asm/system.h>
 #include <linux/phy.h>
 #include <mach/emac_defs.h>
-#include <net/davinci_emac.h>
+#include <platform_data/eth-davinci-emac.h>
 #include "davinci_emac.h"
 
 struct davinci_emac_priv {

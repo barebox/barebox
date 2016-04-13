@@ -434,7 +434,7 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	}
 };
 
-static struct driver_d imx_serial_driver = {
+static struct driver_d imx_esdctl_driver = {
 	.name   = "imx-esdctl",
 	.probe  = imx_esdctl_probe,
 	.id_table = imx_esdctl_ids,
@@ -443,7 +443,7 @@ static struct driver_d imx_serial_driver = {
 
 static int imx_esdctl_init(void)
 {
-	return platform_driver_register(&imx_serial_driver);
+	return platform_driver_register(&imx_esdctl_driver);
 }
 
 mem_initcall(imx_esdctl_init);

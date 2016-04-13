@@ -221,6 +221,10 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 		if (!strcmp(socs[i].name, soc)) {
 			data->header_version = socs[i].header_version;
 			data->cpu_type = socs[i].cpu_type;
+
+			if (data->cpu_type == 35)
+				data->load_size += HEADER_LEN;
+
 			return 0;
 		}
 	}
@@ -229,9 +233,6 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 	for (i = 0; i < ARRAY_SIZE(socs); i++)
 		fprintf(stderr, "%s ", socs[i].name);
 	fprintf(stderr, "\n");
-
-	if (data->cpu_type == 35)
-		data->load_size += HEADER_LEN;
 
 	return -EINVAL;
 }

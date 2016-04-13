@@ -55,7 +55,7 @@ static int do_i2c_probe(int argc, char *argv[])
 	if (argc > 2)
 		startaddr = simple_strtol(argv[2], NULL, 0);
 	if (argc > 3)
-		startaddr = simple_strtol(argv[3], NULL, 0);
+		stopaddr = simple_strtol(argv[3], NULL, 0);
 
 
 	if (startaddr > stopaddr)

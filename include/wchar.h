@@ -2,8 +2,7 @@
 #define __WCHAR_H
 
 #include <linux/types.h>
-
-typedef u16 wchar_t;
+#include <linux/stddef.h>
 
 wchar_t *strdup_wchar(const wchar_t *src);
 

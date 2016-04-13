@@ -17,6 +17,8 @@ enum {
 #include <linux/types.h>
 #endif
 
+typedef unsigned short wchar_t;
+
 #undef offsetof
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 

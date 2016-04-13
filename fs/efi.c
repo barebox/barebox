@@ -32,6 +32,7 @@
 #include <efi.h>
 #include <mach/efi.h>
 #include <mach/efi-device.h>
+#include <linux/stddef.h>
 
 /* Open modes */
 #define EFI_FILE_MODE_READ      0x0000000000000001
@@ -91,8 +92,6 @@ struct efi_file_info {
 	uint64_t Attribute;
 	s16 FileName[1];
 };
-
-typedef unsigned short wchar_t;
 
 struct efifs_priv {
 	struct efi_file_handle *root_dir;

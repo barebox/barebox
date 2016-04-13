@@ -67,6 +67,7 @@
 #define _BZLIB_PRIVATE_H
 
 #include <malloc.h>
+#include <linux/stddef.h>
 
 #include "bzlib.h"
 
@@ -514,16 +515,6 @@ BZ2_hbCreateDecodeTables ( Int32*, Int32*, Int32*, UChar*,
 
 
 #endif
-
-
-/*-- BZ_NO_STDIO seems to make NULL disappear on some platforms. --*/
-
-#ifdef BZ_NO_STDIO
-#ifndef NULL
-#define NULL 0
-#endif
-#endif
-
 
 /*-------------------------------------------------------------*/
 /*--- end                                   bzlib_private.h ---*/

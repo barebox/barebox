@@ -25,10 +25,7 @@
 
 #include <linux/list.h>
 #include <linux/stringify.h>
-
-#ifndef NULL
-#define NULL	0
-#endif
+#include <linux/stddef.h>
 
 #ifndef	__ASSEMBLY__
 

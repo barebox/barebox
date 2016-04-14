@@ -41,7 +41,7 @@
 #define sys_errmsg errmsg
 
 #define warnmsg(fmt, ...) do {                                                \
-	fprintf(stderr, "%s: warning!: " fmt "\n", PROGRAM_NAME, ##__VA_ARGS__); \
+	eprintf("%s: warning!: " fmt "\n", PROGRAM_NAME, ##__VA_ARGS__); \
 } while(0)
 
 #endif /* INCLUDE_MTD_UTILS_H */

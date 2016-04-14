@@ -160,8 +160,8 @@ static int do_menu_add(struct cmd_menu *cm)
 free:
 	eprintf("Menu '%s' add fail", cm->menu);
 	if (ret == -EEXIST)
-		eputs(" already exist");
-	eputs("\n");
+		eprintf(" already exist");
+	eprintf("\n");
 
 	menu_free(m);
 

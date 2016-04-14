@@ -306,7 +306,7 @@ int imd_command(int argc, char *argv[])
 		case 't':
 			type = imd_name_to_type(optarg);
 			if (type == IMD_TYPE_INVALID) {
-				fprintf(stderr, "no such type: %s\n", optarg);
+				eprintf("no such type: %s\n", optarg);
 				return -ENOSYS;
 			}
 			break;
@@ -325,7 +325,7 @@ int imd_command(int argc, char *argv[])
 	}
 
 	if (optind == argc) {
-		fprintf(stderr, "No image given\n");
+		eprintf("No image given\n");
 		return -ENOSYS;
 	}
 

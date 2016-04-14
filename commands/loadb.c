@@ -183,8 +183,7 @@ static int os_data_save(void)
 				ret = write(ofd, write_buffer,
 						MAX_WRITE_BUFFER);
 				if (ret < 0) {
-					fprintf(stderr,
-						"write to device failed\n");
+					eprintf("write to device failed\n");
 					return ret;
 				}
 				write_idx = 0;
@@ -563,7 +562,7 @@ static ulong load_serial_bin(void)
 	/* Try to allocate the buffer we shall write to files */
 	write_buffer = malloc(MAX_WRITE_BUFFER);
 	if (write_buffer == NULL) {
-		fprintf(stderr, "could not allocate file i/o buffer\n");
+		eprintf("could not allocate file i/o buffer\n");
 		return -ENOMEM;
 	}
 
@@ -585,7 +584,7 @@ static ulong load_serial_bin(void)
 	if (write_idx > 0) {
 		i = write(ofd, write_buffer, write_idx);
 		if (i < 0) {
-			fprintf(stderr, "write to device failed\n");
+			eprintf("write to device failed\n");
 			size = i;
 			goto err_quit;
 		}

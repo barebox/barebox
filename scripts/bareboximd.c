@@ -37,6 +37,8 @@
 
 #include "../include/image-metadata.h"
 
+#define eprintf(args...) fprintf(stderr, ## args)
+
 static void debug(const char *fmt, ...)
 {
 	va_list ap;

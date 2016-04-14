@@ -99,49 +99,49 @@ static void boot_nand_barebox_action(struct menu *m, struct menu_entry *me)
 {
 	at91bootstrap_boot_nand(true);
 
-	getc();
+	getchar();
 }
 
 static void boot_nand_action(struct menu *m, struct menu_entry *me)
 {
 	at91bootstrap_boot_nand(false);
 
-	getc();
+	getchar();
 }
 
 static void boot_m25p80_barebox_action(struct menu *m, struct menu_entry *me)
 {
 	at91bootstrap_boot_nand(true);
 
-	getc();
+	getchar();
 }
 
 static void boot_m25p80_action(struct menu *m, struct menu_entry *me)
 {
 	at91bootstrap_boot_nand(false);
 
-	getc();
+	getchar();
 }
 
 static void boot_dataflash_barebox_action(struct menu *m, struct menu_entry *me)
 {
 	at91bootstrap_boot_dataflash(true);
 
-	getc();
+	getchar();
 }
 
 static void boot_dataflash_action(struct menu *m, struct menu_entry *me)
 {
 	at91bootstrap_boot_dataflash(false);
 
-	getc();
+	getchar();
 }
 
 static void boot_mmc_disk_action(struct menu *m, struct menu_entry *me)
 {
 	at91bootstrap_boot_mmc();
 
-	getc();
+	getchar();
 }
 
 static void boot_reset_action(struct menu *m, struct menu_entry *me)
@@ -234,7 +234,7 @@ static int at91_bootstrap(void)
 {
 	if (is_menu()) {
 		printf("press 'm' to start the menu\n");
-		if (tstc() && getc() == 'm')
+		if (tstc() && getchar() == 'm')
 			at91_bootstrap_menu();
 	}
 

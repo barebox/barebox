@@ -1867,14 +1867,14 @@ static int request_write_operation(void)
 	int c;
 
 	printf("This is a one time programmable field!\nDo you want to write? [y/N] ");
-	c = getc();
+	c = getchar();
 	/* default is N */
 	if (c == 0xD) {
 		printf("\n");
 		return 0;
 	}
 	printf("%c", c);
-	getc(); /* wait for carriage return */
+	getchar(); /* wait for carriage return */
 	printf("\n");
 	if (c == 'y' || c == 'Y')
 		return 1;

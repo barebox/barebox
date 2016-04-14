@@ -63,7 +63,7 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 
 	do {
 		if (tstc()) {
-			ch = getc();
+			ch = getchar();
 
 			switch (ch) {
 			case '\r':

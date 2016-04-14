@@ -28,7 +28,7 @@ int	tstc(void);
 
 /* stdout */
 void	console_putc(unsigned int ch, const char c);
-int	getc(void);
+int	getchar(void);
 int	console_puts(unsigned int ch, const char *s);
 void	console_flush(void);
 
@@ -44,7 +44,7 @@ static inline int console_puts(unsigned int ch, const char *str)
 	return 0;
 }
 
-static inline int getc(void)
+static inline int getchar(void)
 {
 	return -EINVAL;
 }

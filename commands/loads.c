@@ -59,7 +59,7 @@ static int do_load_serial(int argc, char *argv[])
 	 */
 	for (i=0; i<100; ++i) {
 		if (tstc()) {
-			(void) getc();
+			(void) getchar();
 		}
 		udelay(1000);
 	}
@@ -142,7 +142,7 @@ static int read_record(char *buf, ulong len)
 	--len;	/* always leave room for terminating '\0' byte */
 
 	for (p=buf; p < buf+len; ++p) {
-		c = getc();		/* read character		*/
+		c = getchar();		/* read character		*/
 		if (do_echo)
 			putchar(c);
 
@@ -180,7 +180,7 @@ static int do_save_serial(int argc, char *argv[])
 
 	printf ("## Ready for S-Record upload, press ENTER to proceed ...\n");
 	for (;;) {
-		if (getc() == '\r')
+		if (getchar() == '\r')
 			break;
 	}
 	if (save_serial(offset, size)) {

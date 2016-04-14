@@ -48,13 +48,13 @@ int tstc(void)
 }
 EXPORT_SYMBOL(tstc);
 
-int getc(void)
+int getchar(void)
 {
 	if (!console)
 		return -EINVAL;
 	return console->getc(console);
 }
-EXPORT_SYMBOL(getc);
+EXPORT_SYMBOL(getchar);
 
 void console_flush(void)
 {
@@ -67,7 +67,7 @@ EXPORT_SYMBOL(console_flush);
 /* test if ctrl-c was pressed */
 int ctrlc (void)
 {
-	if (tstc() && getc() == 3)
+	if (tstc() && getchar() == 3)
 		return 1;
 	return 0;
 }

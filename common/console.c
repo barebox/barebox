@@ -164,7 +164,7 @@ int console_set_baudrate(struct console_device *cdev, unsigned baudrate)
 	if (cdev->f_active) {
 		mdelay(50);
 		do {
-			c = getc();
+			c = getchar();
 		} while (c != '\r' && c != '\n');
 	}
 
@@ -345,7 +345,7 @@ static int tstc_raw(void)
 	return 0;
 }
 
-int getc(void)
+int getchar(void)
 {
 	unsigned char ch;
 	uint64_t start;
@@ -380,14 +380,14 @@ int getc(void)
 
 	return ch;
 }
-EXPORT_SYMBOL(getc);
+EXPORT_SYMBOL(getchar);
 
 int fgetc(int fd)
 {
 	char c;
 
 	if (!fd)
-		return getc();
+		return getchar();
 	return read(fd, &c, 1);
 }
 EXPORT_SYMBOL(fgetc);
@@ -476,7 +476,7 @@ int ctrlc (void)
 {
 	poller_call();
 
-	if (tstc() && getc() == 3)
+	if (tstc() && getchar() == 3)
 		return 1;
 	return 0;
 }

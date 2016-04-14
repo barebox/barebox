@@ -9,30 +9,30 @@
  */
 
 /* serial stuff */
-void	serial_printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+void serial_printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 
-int	sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
-int	snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
-int	scnprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
-int	vsprintf(char *buf, const char *fmt, va_list args);
+int sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
+int snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
+int scnprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
+int vsprintf(char *buf, const char *fmt, va_list args);
 char *basprintf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 int asprintf(char **strp, const char *fmt, ...)  __attribute__ ((format(__printf__, 2, 3)));
 char *bvasprintf(const char *fmt, va_list ap);
 int vasprintf(char **strp, const char *fmt, va_list ap);
-int	vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-int	vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
+int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 
 #ifndef CONFIG_CONSOLE_NONE
 /* stdin */
-int	tstc(void);
+int tstc(void);
 
 /* stdout */
-void	console_putc(unsigned int ch, const char c);
-int	getchar(void);
-int	console_puts(unsigned int ch, const char *s);
-void	console_flush(void);
+void console_putc(unsigned int ch, const char c);
+int getchar(void);
+int console_puts(unsigned int ch, const char *s);
+void console_flush(void);
 
-int	vprintf(const char *fmt, va_list args);
+int vprintf(const char *fmt, va_list args);
 #else
 static inline int tstc(void)
 {

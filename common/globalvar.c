@@ -51,7 +51,7 @@ static int nv_save(const char *name, const char *val)
 	if (fd < 0)
 		return fd;
 
-	fprintf(fd, "%s", val);
+	dprintf(fd, "%s", val);
 
 	close(fd);
 

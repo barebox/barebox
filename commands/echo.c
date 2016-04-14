@@ -27,7 +27,7 @@
 static int do_echo(int argc, char *argv[])
 {
 	int i, optind = 1;
-	int fd = stdout, opt, newline = 1;
+	int fd = STDOUT_FILENO, opt, newline = 1;
 	char *file = NULL;
 	int oflags = O_WRONLY | O_CREAT;
 	char str[CONFIG_CBSIZE];
@@ -81,17 +81,17 @@ exit_parse:
 
 	for (i = optind; i < argc; i++) {
 		if (i > optind)
-			fputc(fd, ' ');
+			dputc(fd, ' ');
 		if (process_escape) {
 			process_escape_sequence(argv[i], str, CONFIG_CBSIZE);
-			fputs(fd, str);
+			dputs(fd, str);
 		} else {
-			fputs(fd, argv[i]);
+			dputs(fd, argv[i]);
 		}
 	}
 
 	if (newline)
-		fputc(fd, '\n');
+		dputc(fd, '\n');
 
 	if (file)
 		close(fd);

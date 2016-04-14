@@ -382,16 +382,6 @@ int getchar(void)
 }
 EXPORT_SYMBOL(getchar);
 
-int fgetc(int fd)
-{
-	char c;
-
-	if (!fd)
-		return getchar();
-	return read(fd, &c, 1);
-}
-EXPORT_SYMBOL(fgetc);
-
 int tstc(void)
 {
 	return kfifo_len(console_input_fifo) || tstc_raw();

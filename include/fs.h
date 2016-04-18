@@ -147,6 +147,7 @@ int umount(const char *pathname);
 int umount_by_cdev(struct cdev *cdev);
 
 /* not-so-standard functions */
+#define ERASE_SIZE_ALL	((loff_t) - 1)
 int erase(int fd, loff_t count, loff_t offset);
 int protect(int fd, size_t count, loff_t offset, int prot);
 int protect_file(const char *file, int prot);

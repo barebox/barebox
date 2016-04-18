@@ -70,7 +70,7 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 		goto out;
 	}
 
-	ret = erase(dstfd, ~0, 0);
+	ret = erase(dstfd, ERASE_SIZE_ALL, 0);
 	if (ret < 0) {
 		printf("could not erase %s: %s", data->devicefile, errno_str());
 		goto out1;

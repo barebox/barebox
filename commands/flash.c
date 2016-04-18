@@ -32,7 +32,7 @@ static int do_flerase(int argc, char *argv[])
 	int fd;
 	char *filename = NULL;
 	struct stat s;
-	loff_t start = 0, size = ~0;
+	loff_t start = 0, size;
 	int ret = 0;
 
 	if (argc == 1)

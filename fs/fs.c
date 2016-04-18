@@ -935,8 +935,10 @@ int erase(int fd, loff_t count, loff_t offset)
 	f = &files[fd];
 	if (offset >= f->size)
 		return 0;
-	if (count > f->size - offset)
+	if (count == ERASE_SIZE_ALL || count > f->size - offset)
 		count = f->size - offset;
+	if (count < 0)
+		return -EINVAL;
 
 	fsdrv = f->fsdev->driver;
 	if (fsdrv->erase)

@@ -359,7 +359,7 @@ static int handle_dnload(struct usb_function *f, const struct usb_ctrlrequest *c
 				ret = -EINVAL;
 				goto err_out;
 			}
-			ret = erase(fd, ~0, 0);
+			ret = erase(fd, ERASE_SIZE_ALL, 0);
 			close(fd);
 			if (ret && ret != -ENOSYS) {
 				perror("erase");
@@ -479,7 +479,7 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 				goto out;
 			}
 
-			ret = erase(dfufd, ~0, 0);
+			ret = erase(dfufd, ERASE_SIZE_ALL, 0);
 			if (ret && ret != -ENOSYS) {
 				dfu->dfu_status = DFU_STATUS_errERASE;
 				perror("erase");

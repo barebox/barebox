@@ -784,7 +784,7 @@ static void cb_erase(struct usb_ep *ep, struct usb_request *req, const char *cmd
 	if (fd < 0)
 		fastboot_tx_print(f_fb, "FAIL%s", strerror(-fd));
 
-	ret = erase(fd, ~0, 0);
+	ret = erase(fd, ERASE_SIZE_ALL, 0);
 
 	close(fd);
 

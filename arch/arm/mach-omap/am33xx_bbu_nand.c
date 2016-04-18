@@ -40,7 +40,7 @@ static int write_image(const char *devfile, const void *image, size_t size)
 		return fd;
 	}
 
-	ret = erase(fd, ~0, 0);
+	ret = erase(fd, ERASE_SIZE_ALL, 0);
 	if (ret < 0) {
 		pr_err("could not erase %s: %s\n", devfile,
 			errno_str());

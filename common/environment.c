@@ -88,6 +88,7 @@ static int do_compare_file(const char *filename, const char *base)
 }
 
 #else
+#define ERASE_SIZE_ALL 0
 static inline int protect(int fd, size_t count, unsigned long offset, int prot)
 {
 	return 0;
@@ -329,7 +330,7 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 		goto out;
 	}
 
-	ret = erase(envfd, ~0, 0);
+	ret = erase(envfd, ERASE_SIZE_ALL, 0);
 
 	/* ENOSYS and EOPNOTSUPP aren't errors here, many devices don't need it */
 	if (ret && errno != ENOSYS && errno != EOPNOTSUPP) {

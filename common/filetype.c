@@ -291,8 +291,6 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (bufsize < 64)
 		return filetype_unknown;
 
-	if (buf8[0] == 'M' && buf8[1] == 'Z')
-		return filetype_exe;
 	if (le32_to_cpu(buf[5]) == 0x504d5453)
 		return filetype_mxs_bootstream;
 
@@ -300,6 +298,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_arm_barebox;
 	if (buf[9] == 0x016f2818 || buf[9] == 0x18286f01)
 		return filetype_arm_zimage;
+
+	if (buf8[0] == 'M' && buf8[1] == 'Z')
+		return filetype_exe;
 
 	if (bufsize < 512)
 		return filetype_unknown;

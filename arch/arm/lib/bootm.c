@@ -67,15 +67,23 @@ static int sdram_start_and_size(unsigned long *start, unsigned long *size)
 	return 0;
 }
 
-static void get_kernel_addresses(unsigned long mem_start, size_t image_size,
+static int get_kernel_addresses(size_t image_size,
 				 int verbose, unsigned long *load_address,
 				 unsigned long *spacing)
 {
+	unsigned long mem_start, mem_size;
+	int ret;
+	size_t image_decomp_size;
+
+	ret = sdram_start_and_size(&mem_start, &mem_size);
+	if (ret)
+		return ret;
+
 	/*
 	 * We don't know the exact decompressed size so just use a conservative
 	 * default of 4 times the size of the compressed image.
 	 */
-	size_t image_decomp_size = PAGE_ALIGN(image_size * 4);
+	image_decomp_size = PAGE_ALIGN(image_size * 4);
 
 	/*
 	 * By default put oftree/initrd close behind compressed kernel image to
@@ -101,6 +109,8 @@ static void get_kernel_addresses(unsigned long mem_start, size_t image_size,
 		 */
 		*spacing += image_decomp_size;
 	}
+
+	return 0;
 }
 
 static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int swap)
@@ -160,17 +170,15 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 
 static int do_bootm_linux(struct image_data *data)
 {
-	unsigned long load_address, mem_start, mem_size, mem_free, spacing;
+	unsigned long load_address, mem_free, spacing;
 	int ret;
-
-	ret = sdram_start_and_size(&mem_start, &mem_size);
-	if (ret)
-		return ret;
 
 	load_address = data->os_address;
 
-	get_kernel_addresses(mem_start, bootm_get_os_size(data),
+	ret = get_kernel_addresses(bootm_get_os_size(data),
 			     bootm_verbose(data), &load_address, &spacing);
+	if (ret)
+		return ret;
 
 	ret = bootm_load_os(data, load_address);
 	if (ret)
@@ -273,11 +281,7 @@ static int do_bootz_linux(struct image_data *data)
 	u32 end, start;
 	size_t image_size;
 	unsigned long load_address = data->os_address;
-	unsigned long mem_start, mem_size, mem_free, spacing;
-
-	ret = sdram_start_and_size(&mem_start, &mem_size);
-	if (ret)
-		return ret;
+	unsigned long mem_free, spacing;
 
 	fd = open(data->os_file, O_RDONLY);
 	if (fd < 0) {
@@ -315,8 +319,10 @@ static int do_bootz_linux(struct image_data *data)
 	image_size = end - start;
 	load_address = data->os_address;
 
-	get_kernel_addresses(mem_start, image_size, bootm_verbose(data),
+	ret = get_kernel_addresses(image_size, bootm_verbose(data),
 			     &load_address, &spacing);
+	if (ret)
+		return ret;
 
 	data->os_res = request_sdram_region("zimage", load_address, image_size);
 	if (!data->os_res) {

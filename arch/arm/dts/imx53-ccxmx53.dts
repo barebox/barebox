@@ -12,6 +12,7 @@
 
 /dts-v1/;
 #include "imx53-ccxmx53.dtsi"
+#include "imx53.dtsi"
 
 / {
 	model = "Digi ConnectCore ccxmx53";

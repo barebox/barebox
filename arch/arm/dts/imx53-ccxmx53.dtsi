@@ -27,7 +27,7 @@
 
 / {
 	memory {
-		reg = <0x70000000 0x40000000>;
+		reg = <0x0 0x0>;
 	};
 
 };
@@ -228,6 +228,7 @@
 	pinctrl-0 = <&pinctrl_nand>;
 	nand-bus-width = <8>;
 	nand-ecc-mode = "hw";
+	nand-on-flash-bbt;
 	status = "okay";
 
 	partition@0 {
@@ -247,7 +248,7 @@
 
 	partition@3 {
 		label = "rootfs";
-		reg = <0x500000 0x07B00000>;
+		reg = <0x500000 0x0>;
 	};
 };
 

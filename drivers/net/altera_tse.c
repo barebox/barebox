@@ -533,7 +533,7 @@ static int tse_probe(struct device_d *dev)
 	}
 #endif
 
-	memset(rx_desc, 0, (sizeof *rx_desc) * (PKTBUFSRX + 1)); 
+	memset(rx_desc, 0, (sizeof *rx_desc) * (PKTBUFSRX + 1));
 	memset(tx_desc, 0, (sizeof *tx_desc) * 2);
 
 	iores = dev_request_mem_resource(dev, 0);

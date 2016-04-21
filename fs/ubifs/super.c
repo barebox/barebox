@@ -2413,7 +2413,7 @@ retry:
 		goto retry;
 #endif
 	}
-		
+
 	err = set(s, data);
 	if (err) {
 #ifndef __BAREBOX__

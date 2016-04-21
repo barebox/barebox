@@ -306,7 +306,7 @@ static int cramfs_close(struct device_d *dev, FILE *file)
 
 	free(inodei->block_ptrs);
 	free(inodei);
-	
+
 	return 0;
 }
 

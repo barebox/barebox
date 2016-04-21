@@ -73,8 +73,8 @@ struct fb_videomode {
 struct fb_bitfield {
 	u32 offset;			/* beginning of bitfield	*/
 	u32 length;			/* length of bitfield		*/
-	u32 msb_right;			/* != 0 : Most significant bit is */ 
-					/* right */ 
+	u32 msb_right;			/* != 0 : Most significant bit is */
+					/* right */
 };
 
 struct fb_info;

@@ -1,7 +1,7 @@
 /*
  *
  * (C) Copyright 2007
- * Sascha Hauer, Pengutronix 
+ * Sascha Hauer, Pengutronix
  *
  * See file CREDITS for list of people who contributed to this
  * project.

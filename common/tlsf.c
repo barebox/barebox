@@ -151,7 +151,7 @@ static const size_t block_start_offset =
 ** the prev_phys_block field, and no larger than the number of addressable
 ** bits for FL_INDEX.
 */
-static const size_t block_size_min = 
+static const size_t block_size_min =
 	sizeof(block_header_t) - sizeof(block_header_t*);
 static const size_t block_size_max = tlsf_cast(size_t, 1) << FL_INDEX_MAX;
 
@@ -770,7 +770,7 @@ tlsf_pool tlsf_create(void* mem, size_t bytes)
 #if defined (TLSF_64BIT)
 	rv += (tlsf_fls_sizet(0x80000000) == 31) ? 0 : 0x100;
 	rv += (tlsf_fls_sizet(0x100000000) == 32) ? 0 : 0x200;
-	rv += (tlsf_fls_sizet(0xffffffffffffffff) == 63) ? 0 : 0x400; 
+	rv += (tlsf_fls_sizet(0xffffffffffffffff) == 63) ? 0 : 0x400;
 	if (rv)
 	{
 		printf("tlsf_create: %x ffs/fls tests failed!\n", rv);
@@ -785,7 +785,7 @@ tlsf_pool tlsf_create(void* mem, size_t bytes)
 		printf("tlsf_create: Pool size must be at least %d bytes.\n",
 			(unsigned int)(pool_overhead + block_size_min));
 #else
-		printf("tlsf_create: Pool size must be between %u and %u bytes.\n", 
+		printf("tlsf_create: Pool size must be between %u and %u bytes.\n",
 			(unsigned int)(pool_overhead + block_size_min),
 			(unsigned int)(pool_overhead + block_size_max));
 #endif

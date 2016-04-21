@@ -428,7 +428,7 @@ glob_t *pglob;
 	elems = pglob->gl_pathc + 2;
 	if (flags & GLOB_DOOFFS)
 		elems += pglob->gl_offs;
-	
+
 	pglob->gl_pathv = xrealloc(pglob->gl_pathv, elems * sizeof(char *));
 
 	if (flags & GLOB_DOOFFS)

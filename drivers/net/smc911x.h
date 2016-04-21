@@ -186,7 +186,7 @@
 #define	RX_DP_CTRL_RX_FFWD			0x80000000  /* R/W */
 #define	RX_DP_CTRL_FFWD_BUSY			0x80000000  /* RO */
 
-#define RX_FIFO_INF		0x7C 
+#define RX_FIFO_INF		0x7C
 #define	 RX_FIFO_INF_RXSUSED			0x00FF0000  /* RO */
 #define	 RX_FIFO_INF_RXDUSED			0x0000FFFF  /* RO */
 

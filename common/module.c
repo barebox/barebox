@@ -60,7 +60,7 @@ static const struct kernel_symbol *lookup_symbol(const char *name,
 	return NULL;
 }
 
-static unsigned long resolve_symbol(Elf32_Shdr *sechdrs, 
+static unsigned long resolve_symbol(Elf32_Shdr *sechdrs,
 				    const char *name)
 {
 	const struct kernel_symbol *ks;

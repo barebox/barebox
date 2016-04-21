@@ -292,11 +292,11 @@ static void initialize(void)
 {
 	IOWR_32DIRECT(PHY_MGR_MUX_SEL, 0, 0x3);
 
-	//USER memory clock is not stable we begin initialization 
+	//USER memory clock is not stable we begin initialization
 
 	IOWR_32DIRECT(PHY_MGR_RESET_MEM_STBL, 0, 0);
 
-	//USER calibration status all set to zero 
+	//USER calibration status all set to zero
 
 	IOWR_32DIRECT(PHY_MGR_CAL_STATUS, 0, 0);
 	IOWR_32DIRECT(PHY_MGR_CAL_DEBUG_INFO, 0, 0);
@@ -451,7 +451,7 @@ static void set_rank_and_odt_mask(uint32_t rank, uint32_t odt_mode)
 
 //USER Given a rank, select the set of shadow registers that is responsible for the
 //USER delays of such rank, so that subsequent SCC updates will go to those shadow
-//USER registers. 
+//USER registers.
 static void select_shadow_regs_for_update(uint32_t rank, uint32_t group,
 					  uint32_t update_scan_chains)
 {
@@ -494,7 +494,7 @@ static void scc_mgr_set_dqs_en_phase_all_ranks(uint32_t read_group, uint32_t pha
 
 	for (r = 0; r < RW_MGR_MEM_NUMBER_OF_RANKS; r += NUM_RANKS_PER_SHADOW_REG) {
 		//USER although the h/w doesn't support different phases per shadow register,
-		//USER for simplicity our scc manager modeling keeps different phase settings per 
+		//USER for simplicity our scc manager modeling keeps different phase settings per
 		//USER shadow reg, and it's important for us to keep them in sync to match h/w.
 		//USER for efficiency, the scan chain update should occur only once to sr0.
 		update_scan_chains = (r == 0) ? 1 : 0;
@@ -522,7 +522,7 @@ static void scc_mgr_set_dqdqs_output_phase_all_ranks(uint32_t write_group, uint3
 
 	for (r = 0; r < RW_MGR_MEM_NUMBER_OF_RANKS; r += NUM_RANKS_PER_SHADOW_REG) {
 		//USER although the h/w doesn't support different phases per shadow register,
-		//USER for simplicity our scc manager modeling keeps different phase settings per 
+		//USER for simplicity our scc manager modeling keeps different phase settings per
 		//USER shadow reg, and it's important for us to keep them in sync to match h/w.
 		//USER for efficiency, the scan chain update should occur only once to sr0.
 		update_scan_chains = (r == 0) ? 1 : 0;
@@ -749,7 +749,7 @@ static void scc_set_bypass_mode(uint32_t write_group, uint32_t mode)
 		DPRINT(1, "Done Setting HHP Extras");
 	}
 
-	//USER multicast to all DQ enables 
+	//USER multicast to all DQ enables
 	IOWR_32DIRECT(SCC_MGR_DQ_ENA, 0, 0xff);
 
 	IOWR_32DIRECT(SCC_MGR_DM_ENA, 0, 0xff);
@@ -802,7 +802,7 @@ static void scc_mgr_zero_group(uint32_t write_group, uint32_t test_begin, int32_
 		//USER multicast to all DQ enables
 		IOWR_32DIRECT(SCC_MGR_DQ_ENA, 0, 0xff);
 
-		//USER Zero all DM config settings 
+		//USER Zero all DM config settings
 		for (i = 0; i < RW_MGR_NUM_DM_PER_WRITE_GROUP; i++) {
 			if (!out_only) {
 				// Do we really need this?
@@ -815,7 +815,7 @@ static void scc_mgr_zero_group(uint32_t write_group, uint32_t test_begin, int32_
 		//USER multicast to all DM enables
 		IOWR_32DIRECT(SCC_MGR_DM_ENA, 0, 0xff);
 
-		//USER zero all DQS io settings 
+		//USER zero all DQS io settings
 		if (!out_only) {
 			scc_mgr_set_dqs_io_in_delay(write_group, 0);
 		}
@@ -827,33 +827,33 @@ static void scc_mgr_zero_group(uint32_t write_group, uint32_t test_begin, int32_
 		//USER multicast to all DQS IO enables (only 1)
 		IOWR_32DIRECT(SCC_MGR_DQS_IO_ENA, 0, 0);
 
-		//USER hit update to zero everything 
+		//USER hit update to zero everything
 		IOWR_32DIRECT(SCC_MGR_UPD, 0, 0);
 	}
 }
 
-//USER load up dqs config settings 
+//USER load up dqs config settings
 
 static void scc_mgr_load_dqs(uint32_t dqs)
 {
 	IOWR_32DIRECT(SCC_MGR_DQS_ENA, 0, dqs);
 }
 
-//USER load up dqs io config settings 
+//USER load up dqs io config settings
 
 static void scc_mgr_load_dqs_io(void)
 {
 	IOWR_32DIRECT(SCC_MGR_DQS_IO_ENA, 0, 0);
 }
 
-//USER load up dq config settings 
+//USER load up dq config settings
 
 static void scc_mgr_load_dq(uint32_t dq_in_group)
 {
 	IOWR_32DIRECT(SCC_MGR_DQ_ENA, 0, dq_in_group);
 }
 
-//USER load up dm config settings 
+//USER load up dm config settings
 
 static void scc_mgr_load_dm(uint32_t dm)
 {
@@ -934,20 +934,20 @@ static void scc_mgr_set_group_dqs_io_and_oct_out1_gradual(uint32_t write_group, 
 	}
 }
 
-//USER apply a delay to the entire output side: DQ, DM, DQS, OCT 
+//USER apply a delay to the entire output side: DQ, DM, DQS, OCT
 
 static void scc_mgr_apply_group_all_out_delay(uint32_t write_group, uint32_t group_bgn,
 					      uint32_t delay)
 {
-	//USER dq shift 
+	//USER dq shift
 
 	scc_mgr_apply_group_dq_out1_delay(write_group, group_bgn, delay);
 
-	//USER dm shift 
+	//USER dm shift
 
 	scc_mgr_apply_group_dm_out1_delay(write_group, delay);
 
-	//USER dqs and oct shift 
+	//USER dqs and oct shift
 
 	scc_mgr_apply_group_dqs_io_and_oct_out1(write_group, delay);
 }
@@ -968,14 +968,14 @@ static void scc_mgr_apply_group_all_out_delay_all_ranks(uint32_t write_group, ui
 	}
 }
 
-//USER apply a delay to the entire output side: DQ, DM, DQS, OCT 
+//USER apply a delay to the entire output side: DQ, DM, DQS, OCT
 
 static void scc_mgr_apply_group_all_out_delay_add(uint32_t write_group, uint32_t group_bgn,
 						  uint32_t delay)
 {
 	uint32_t i, p, new_delay;
 
-	//USER dq shift 
+	//USER dq shift
 
 	for (i = 0, p = group_bgn; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++, p++) {
 
@@ -994,7 +994,7 @@ static void scc_mgr_apply_group_all_out_delay_add(uint32_t write_group, uint32_t
 		scc_mgr_load_dq(i);
 	}
 
-	//USER dm shift 
+	//USER dm shift
 
 	for (i = 0; i < RW_MGR_NUM_DM_PER_WRITE_GROUP; i++) {
 		new_delay = READ_SCC_DM_IO_OUT2_DELAY(i);
@@ -1012,7 +1012,7 @@ static void scc_mgr_apply_group_all_out_delay_add(uint32_t write_group, uint32_t
 		scc_mgr_load_dm(i);
 	}
 
-	//USER dqs shift 
+	//USER dqs shift
 
 	new_delay = READ_SCC_DQS_IO_OUT2_DELAY();
 	new_delay += delay;
@@ -1029,7 +1029,7 @@ static void scc_mgr_apply_group_all_out_delay_add(uint32_t write_group, uint32_t
 	scc_mgr_set_dqs_out2_delay(write_group, new_delay);
 	scc_mgr_load_dqs_io();
 
-	//USER oct shift 
+	//USER oct shift
 
 	new_delay = READ_SCC_OCT_OUT2_DELAY(write_group);
 	new_delay += delay;
@@ -1200,7 +1200,7 @@ static void rw_mgr_mem_initialize(void)
 	//USER indicate that memory is stable
 	IOWR_32DIRECT(PHY_MGR_RESET_MEM_STBL, 0, 1);
 
-	//USER transition the RESET to high 
+	//USER transition the RESET to high
 	//USER Wait for 500us
 	//USER        num_cycles = (CTR2 + 1) * [(CTR1 + 1) * (2 * (CTR0 + 1) + 1) + 1] + 1
 	//USER Load counters
@@ -1215,12 +1215,12 @@ static void rw_mgr_mem_initialize(void)
 
 	IOWR_32DIRECT(RW_MGR_RUN_SINGLE_GROUP, 0, __RW_MGR_INIT_RESET_1_CKE_0);
 
-	//USER bring up clock enable 
+	//USER bring up clock enable
 
 	//USER tXRP < 250 ck cycles
 	delay_for_n_mem_clocks(250);
 
-	// USER initialize RDIMM buffer so MRS and RZQ Calibrate commands will be 
+	// USER initialize RDIMM buffer so MRS and RZQ Calibrate commands will be
 	// USER propagated to discrete memory devices
 	rw_mgr_rdimm_initialize();
 
@@ -1231,7 +1231,7 @@ static void rw_mgr_mem_initialize(void)
 			continue;
 		}
 
-		//USER set rank 
+		//USER set rank
 		set_rank_and_odt_mask(r, RW_MGR_ODT_MODE_OFF);
 
 		//USER Use Mirror-ed commands for odd ranks if address mirrorring is on
@@ -1288,11 +1288,11 @@ static void rw_mgr_mem_handoff(void)
 		//USER set rank
 		set_rank_and_odt_mask(r, RW_MGR_ODT_MODE_OFF);
 
-		//USER precharge all banks ... 
+		//USER precharge all banks ...
 
 		IOWR_32DIRECT(RW_MGR_RUN_SINGLE_GROUP, 0, __RW_MGR_PRECHARGE_ALL);
 
-		//USER load up MR settings specified by user 
+		//USER load up MR settings specified by user
 
 		//USER Use Mirror-ed commands for odd ranks if address mirrorring is on
 		if ((RW_MGR_MEM_ADDRESS_MIRRORING >> r) & 0x1) {
@@ -1397,7 +1397,7 @@ static uint32_t rw_mgr_mem_calibrate_read_test_patterns_all_ranks(uint32_t group
 		return 1;
 	} else {
 		// case:139851 - if guaranteed read fails, we can retry using different dqs enable phases.
-		// It is possible that with the initial phase, dqs enable is asserted/deasserted too close 
+		// It is possible that with the initial phase, dqs enable is asserted/deasserted too close
 		// to an dqs edge, truncating the read burst.
 		uint32_t p;
 		for (p = 0; p <= IO_DQS_EN_PHASE_MAX; p++) {
@@ -1411,7 +1411,7 @@ static uint32_t rw_mgr_mem_calibrate_read_test_patterns_all_ranks(uint32_t group
 	}
 }
 
-//USER load up the patterns we are going to use during a read test 
+//USER load up the patterns we are going to use during a read test
 static void rw_mgr_mem_calibrate_read_load_patterns(uint32_t rank_bgn, uint32_t all_ranks)
 {
 	uint32_t r;
@@ -1456,96 +1456,96 @@ static inline void rw_mgr_mem_calibrate_read_load_patterns_all_ranks(void)
 //void pe_checkout_pattern (void)
 //{
 //    // test RW manager
-//    
+//
 //    // do some reads to check load buffer
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_1, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_1, 0, __RW_MGR_READ_B2B_WAIT1);
 //
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_2, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_2, 0, __RW_MGR_READ_B2B_WAIT2);
-//              
+//
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_0, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_0, 0, __RW_MGR_READ_B2B);
-//      
+//
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_3, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_3, 0, __RW_MGR_READ_B2B);
-//      
+//
 //      // clear error word
 //      IOWR_32DIRECT (RW_MGR_RESET_READ_DATAPATH, 0, 0);
-//      
+//
 //      IOWR_32DIRECT (RW_MGR_RUN_SINGLE_GROUP, 0, __RW_MGR_READ_B2B);
-//      
+//
 //      uint32_t readdata;
-//      
+//
 //      // read error word
 //      readdata = IORD_32DIRECT(BASE_RW_MGR, 0);
-//      
+//
 //      // read DI buffer
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 0*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 1*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 2*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 3*4, 0);
-//      
+//
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_1, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_1, 0, __RW_MGR_READ_B2B_WAIT1);
 //
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_2, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_2, 0, __RW_MGR_READ_B2B_WAIT2);
-//              
+//
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_0, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_0, 0, __RW_MGR_READ_B2B);
-//      
+//
 //      IOWR_32DIRECT (RW_MGR_LOAD_CNTR_3, 0, 0x0);
 //      IOWR_32DIRECT (RW_MGR_LOAD_JUMP_ADD_3, 0, __RW_MGR_READ_B2B);
-//      
+//
 //      // clear error word
 //      IOWR_32DIRECT (RW_MGR_RESET_READ_DATAPATH, 0, 0);
-//      
+//
 //      // do read
 //      IOWR_32DIRECT (RW_MGR_LOOPBACK_MODE, 0, __RW_MGR_READ_B2B);
-//      
+//
 //      // read error word
 //      readdata = IORD_32DIRECT(BASE_RW_MGR, 0);
-//      
+//
 //      // error word should be 0x00
-//      
+//
 //      // read DI buffer
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 0*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 1*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 2*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 3*4, 0);
-//      
+//
 //      // clear error word
 //      IOWR_32DIRECT (RW_MGR_RESET_READ_DATAPATH, 0, 0);
-//      
-//      // do dm read   
+//
+//      // do dm read
 //      IOWR_32DIRECT (RW_MGR_LOOPBACK_MODE, 0, __RW_MGR_LFSR_WR_RD_DM_BANK_0_WL_1);
-//      
+//
 //      // read error word
 //      readdata = IORD_32DIRECT(BASE_RW_MGR, 0);
-//      
+//
 //      // error word should be ff
-//      
+//
 //      // read DI buffer
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 0*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 1*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 2*4, 0);
 //      readdata = IORD_32DIRECT(RW_MGR_DI_BASE + 3*4, 0);
-//      
+//
 //      // exit loopback mode
 //      IOWR_32DIRECT (BASE_RW_MGR, 0, __RW_MGR_IDLE_LOOP2);
-//      
+//
 //      // start of phy manager access
-//      
+//
 //      readdata = IORD_32DIRECT (PHY_MGR_MAX_RLAT_WIDTH, 0);
 //      readdata = IORD_32DIRECT (PHY_MGR_MAX_AFI_WLAT_WIDTH, 0);
 //      readdata = IORD_32DIRECT (PHY_MGR_MAX_AFI_RLAT_WIDTH, 0);
 //      readdata = IORD_32DIRECT (PHY_MGR_CALIB_SKIP_STEPS, 0);
-//      readdata = IORD_32DIRECT (PHY_MGR_CALIB_VFIFO_OFFSET, 0);       
+//      readdata = IORD_32DIRECT (PHY_MGR_CALIB_VFIFO_OFFSET, 0);
 //      readdata = IORD_32DIRECT (PHY_MGR_CALIB_LFIFO_OFFSET, 0);
-//      
+//
 //      // start of data manager test
-//      
+//
 //      readdata = IORD_32DIRECT (DATA_MGR_DRAM_CFG         , 0);
 //      readdata = IORD_32DIRECT (DATA_MGR_MEM_T_WL         , 0);
 //      readdata = IORD_32DIRECT (DATA_MGR_MEM_T_ADD    , 0);
@@ -1560,7 +1560,7 @@ static inline void rw_mgr_mem_calibrate_read_load_patterns_all_ranks(void)
 //      readdata = IORD_32DIRECT (DATA_MGR_CS_WIDTH         , 0);
 //      readdata = IORD_32DIRECT (DATA_MGR_ITF_WIDTH    , 0);
 //      readdata = IORD_32DIRECT (DATA_MGR_DVC_WIDTH    , 0);
-//      
+//
 //}
 
 //USER  try a read and see if it returns correct data back. has dummy reads inserted into the mix
@@ -1615,7 +1615,7 @@ static uint32_t rw_mgr_mem_calibrate_read_test(uint32_t rank_bgn, uint32_t group
 
 		tmp_bit_chk = 0;
 		for (vg = RW_MGR_MEM_VIRTUAL_GROUPS_PER_READ_DQS - 1;; vg--) {
-			//USER reset the fifos to get pointers to known state 
+			//USER reset the fifos to get pointers to known state
 
 			IOWR_32DIRECT(PHY_MGR_CMD_FIFO_RESET, 0, 0);
 			IOWR_32DIRECT(RW_MGR_RESET_READ_DATAPATH, 0, 0);
@@ -1664,7 +1664,7 @@ static inline uint32_t rw_mgr_mem_calibrate_read_test_all_ranks(uint32_t group, 
 
 static void rw_mgr_incr_vfifo(uint32_t grp, uint32_t * v)
 {
-	//USER fiddle with FIFO 
+	//USER fiddle with FIFO
 	if (HARD_PHY) {
 		IOWR_32DIRECT(PHY_MGR_CMD_INC_VFIFO_HARD_PHY, 0, grp);
 	} else if (QUARTER_RATE_MODE && !HARD_VFIFO) {
@@ -1718,11 +1718,11 @@ static void rw_mgr_decr_vfifo(uint32_t grp, uint32_t * v)
 	}
 }
 
-//USER find a good dqs enable to use 
+//USER find a good dqs enable to use
 
 #if NEWVERSION_DQSEN
 
-// Navid's version 
+// Navid's version
 
 static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 {
@@ -1823,7 +1823,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	}
 
 	if (i >= VFIFO_SIZE) {
-		//USER cannot find working solution 
+		//USER cannot find working solution
 		DPRINT(2, "find_dqs_en_phase: no vfifo/ptap/dtap");
 		return 0;
 	}
@@ -1831,13 +1831,13 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	work_end = work_bgn;
 
 	//USER  If d is 0 then the working window covers a phase tap and we can follow the old procedure
-	//USER  otherwise, we've found the beginning, and we need to increment the dtaps until we find the end 
+	//USER  otherwise, we've found the beginning, and we need to increment the dtaps until we find the end
 	if (d == 0) {
 		//USER ********************************************************************
 		//USER * step 3a: if we have room, back off by one and increment in dtaps *
 		COV(EN_PHASE_PTAP_OVERLAP);
 
-		//USER Special case code for backing up a phase 
+		//USER Special case code for backing up a phase
 		if (p == 0) {
 			p = IO_DQS_EN_PHASE_MAX;
 			rw_mgr_decr_vfifo(grp, &v);
@@ -1864,7 +1864,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 			}
 		}
 
-		//USER We have found a working dtap before the ptap found above 
+		//USER We have found a working dtap before the ptap found above
 		if (found_begin == 1) {
 			max_working_cnt++;
 		}
@@ -1915,14 +1915,14 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 		}
 
 		if (i >= VFIFO_SIZE + 1) {
-			//USER cannot see edge of failing read 
+			//USER cannot see edge of failing read
 			DPRINT(2, "find_dqs_en_phase: end: failed");
 			return 0;
 		}
 		//USER *********************************************************
 		//USER * step 5a:  back off one from last, increment in dtaps  *
 
-		//USER Special case code for backing up a phase 
+		//USER Special case code for backing up a phase
 		if (p == 0) {
 			p = IO_DQS_EN_PHASE_MAX;
 			rw_mgr_decr_vfifo(grp, &v);
@@ -1941,7 +1941,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	} else {
 
 		//USER ********************************************************************
-		//USER * step 3-5b:  Find the right edge of the window using delay taps   *             
+		//USER * step 3-5b:  Find the right edge of the window using delay taps   *
 		COV(EN_PHASE_PTAP_NO_OVERLAP);
 
 		DPRINT(2, "find_dqs_en_phase: begin found: vfifo=%lu ptap=%lu dtap=%lu begin=%lu",
@@ -1956,7 +1956,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 		//USER * The actual increment of dtaps is done outside of the if/else loop to share code
 
 		//USER Only here to counterbalance a subtract later on which is not needed if this branch
-		//USER  of the algorithm is taken 
+		//USER  of the algorithm is taken
 		max_working_cnt++;
 	}
 
@@ -1971,7 +1971,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 		}
 	}
 
-	//USER Go back to working dtap 
+	//USER Go back to working dtap
 	if (d != 0) {
 		work_end -= IO_DELAY_PER_DQS_EN_DCHAIN_TAP;
 	}
@@ -1984,9 +1984,9 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	BFM_GBL_SET(dqs_enable_right_edge[grp].ps, work_end);
 
 	if (work_end >= work_bgn) {
-		//USER we have a working range 
+		//USER we have a working range
 	} else {
-		//USER nil range 
+		//USER nil range
 		DPRINT(2, "find_dqs_en_phase: end-2: failed");
 		return 0;
 	}
@@ -1995,12 +1995,12 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 
 	// ***************************************************************
 	//USER * We need to calculate the number of dtaps that equal a ptap
-	//USER * To do that we'll back up a ptap and re-find the edge of the 
+	//USER * To do that we'll back up a ptap and re-find the edge of the
 	//USER * window using dtaps
 
 	DPRINT(2, "find_dqs_en_phase: calculate dtaps_per_ptap for tracking");
 
-	//USER Special case code for backing up a phase 
+	//USER Special case code for backing up a phase
 	if (p == 0) {
 		p = IO_DQS_EN_PHASE_MAX;
 		rw_mgr_decr_vfifo(grp, &v);
@@ -2033,7 +2033,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	}
 
 	if (found_passing_read) {
-		//USER Find a failing read 
+		//USER Find a failing read
 		DPRINT(2, "find_dqs_en_phase: find failing read");
 		for (d = d + 1; d <= IO_DQS_EN_DELAY_MAX; d++) {
 			DPRINT(2, "find_dqs_en_phase: testing read d=%lu", d);
@@ -2069,7 +2069,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	tmp_delay = 0;
 
 	DPRINT(2, "work_bgn=%ld work_end=%ld work_mid=%ld", work_bgn, work_end, work_mid);
-	//USER Get the middle delay to be less than a VFIFO delay 
+	//USER Get the middle delay to be less than a VFIFO delay
 	for (p = 0; p <= IO_DQS_EN_PHASE_MAX; p++, tmp_delay += IO_DELAY_PER_OPA_TAP) ;
 	DPRINT(2, "vfifo ptap delay %ld", tmp_delay);
 	while (work_mid > tmp_delay)
@@ -2113,7 +2113,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 }
 
 #if 0
-// Ryan's algorithm 
+// Ryan's algorithm
 
 static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 {
@@ -2201,20 +2201,20 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	}
 
 	if (i >= VFIFO_SIZE) {
-		//USER cannot find working solution 
+		//USER cannot find working solution
 		return 0;
 	}
 
 	min_working_p = p;
 
 	//USER  If d is 0 then the working window covers a phase tap and we can follow the old procedure
-	//USER  otherwise, we've found the beginning, and we need to increment the dtaps until we find the end 
+	//USER  otherwise, we've found the beginning, and we need to increment the dtaps until we find the end
 	if (d == 0) {
 		//USER ********************************************************************
 		//USER * step 3a: if we have room, back off by one and increment in dtaps *
 		min_working_d = 0;
 
-		//USER Special case code for backing up a phase 
+		//USER Special case code for backing up a phase
 		if (p == 0) {
 			p = IO_DQS_EN_PHASE_MAX;
 			rw_mgr_decr_vfifo(grp, &v);
@@ -2235,12 +2235,12 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 			}
 		}
 
-		//USER We have found a working dtap before the ptap found above 
+		//USER We have found a working dtap before the ptap found above
 		if (found_begin == 1) {
 			min_working_p = p;
 			max_working_cnt++;
 		}
-		//USER Restore VFIFO to old state before we decremented it 
+		//USER Restore VFIFO to old state before we decremented it
 		p = p + 1;
 		if (p > IO_DQS_EN_PHASE_MAX) {
 			p = 0;
@@ -2284,14 +2284,14 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 		}
 
 		if (i >= VFIFO_SIZE + 1) {
-			//USER cannot see edge of failing read 
+			//USER cannot see edge of failing read
 			return 0;
 		}
 		//USER *********************************************************
 		//USER * step 5a:  back off one from last, increment in dtaps  *
 		max_working_d = 0;
 
-		//USER Special case code for backing up a phase 
+		//USER Special case code for backing up a phase
 		if (p == 0) {
 			p = IO_DQS_EN_PHASE_MAX;
 			rw_mgr_decr_vfifo(grp, &v);
@@ -2311,7 +2311,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 			}
 		}
 
-		//USER Go back to working dtap 
+		//USER Go back to working dtap
 		if (d != 0) {
 			max_working_d = d - 1;
 		}
@@ -2319,7 +2319,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	} else {
 
 		//USER ********************************************************************
-		//USER * step 3-5b:  Find the right edge of the window using delay taps   *             
+		//USER * step 3-5b:  Find the right edge of the window using delay taps   *
 
 		max_working_p = min_working_p;
 		min_working_d = d;
@@ -2333,12 +2333,12 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 			}
 		}
 
-		//USER Go back to working dtap 
+		//USER Go back to working dtap
 		if (d != 0) {
 			max_working_d = d - 1;
 		}
 		//USER Only here to counterbalance a subtract later on which is not needed if this branch
-		//USER of the algorithm is taken 
+		//USER of the algorithm is taken
 		max_working_cnt++;
 	}
 
@@ -2346,11 +2346,11 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	//USER * step 6:  Find the centre of the window   *
 
 	//USER If the number of working phases is even we will step back a phase and find the
-	//USER  edge with a larger delay chain tap 
+	//USER  edge with a larger delay chain tap
 	if ((max_working_cnt & 1) == 0) {
 		p = min_working_p + (max_working_cnt - 1) / 2;
 
-		//USER Special case code for backing up a phase 
+		//USER Special case code for backing up a phase
 		if (max_working_p == 0) {
 			max_working_p = IO_DQS_EN_PHASE_MAX;
 			rw_mgr_decr_vfifo(grp, &v);
@@ -2378,7 +2378,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 			}
 		}
 
-		//USER Go back to working dtap 
+		//USER Go back to working dtap
 		if (d != 0) {
 			max_working_d = d - 1;
 		}
@@ -2395,7 +2395,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	scc_mgr_set_dqs_en_phase_all_ranks(grp, p);
 	scc_mgr_set_dqs_en_delay_all_ranks(grp, d);
 
-	//USER push vfifo until we can successfully calibrate 
+	//USER push vfifo until we can successfully calibrate
 
 	for (i = 0; i < VFIFO_SIZE; i++) {
 		if (rw_mgr_mem_calibrate_read_test_all_ranks(grp, 1, PASS_ONE_BIT, &bit_chk, 0)) {
@@ -2415,7 +2415,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 #endif
 
 #else
-// Val's original version 
+// Val's original version
 
 static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 {
@@ -2432,7 +2432,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 
 	fail_cnt = 0;
 
-	//USER first push vfifo until we get a failing read 
+	//USER first push vfifo until we get a failing read
 	v = 0;
 	for (i = 0; i < VFIFO_SIZE; i++) {
 		if (!rw_mgr_mem_calibrate_read_test_all_ranks(grp, 1, PASS_ONE_BIT, &bit_chk, 0)) {
@@ -2462,7 +2462,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 			rw_mgr_mem_calibrate_read_test_all_ranks(grp, NUM_READ_PB_TESTS,
 								 PASS_ONE_BIT, &bit_chk, 0);
 			if (bit_chk) {
-				//USER passing read 
+				//USER passing read
 
 				if (max_working_cnt == 0) {
 					min_working_d = d;
@@ -2471,7 +2471,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 				max_working_cnt++;
 			} else {
 				if (max_working_cnt > 0) {
-					//USER already have one working value 
+					//USER already have one working value
 					break;
 				}
 			}
@@ -2481,7 +2481,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 			//USER fiddle with FIFO
 			rw_mgr_incr_vfifo(grp, &v);
 		} else {
-			//USER found working solution! 
+			//USER found working solution!
 
 			d = min_working_d + (max_working_cnt - 1) / 2;
 
@@ -2494,16 +2494,16 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 	}
 
 	if (i >= VFIFO_SIZE + 1) {
-		//USER cannot find working solution or cannot see edge of failing read 
+		//USER cannot find working solution or cannot see edge of failing read
 
 		return 0;
 	}
-	//USER in the case the number of working steps is even, use 50ps taps to further center the window 
+	//USER in the case the number of working steps is even, use 50ps taps to further center the window
 
 	if ((max_working_cnt & 1) == 0) {
 		delay_per_ptap_mid = IO_DELAY_PER_OPA_TAP / 2;
 
-		//USER increment in 50ps taps until we reach the required amount 
+		//USER increment in 50ps taps until we reach the required amount
 
 		for (i = 0, j = 0; i <= IO_DQS_EN_DELAY_MAX && j < delay_per_ptap_mid;
 		     i++, j += IO_DELAY_PER_DQS_EN_DCHAIN_TAP) ;
@@ -2513,7 +2513,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase(uint32_t grp)
 
 	scc_mgr_set_dqs_en_phase_all_ranks(grp, d);
 
-	//USER push vfifo until we can successfully calibrate 
+	//USER push vfifo until we can successfully calibrate
 
 	for (i = 0; i < VFIFO_SIZE; i++) {
 		if (rw_mgr_mem_calibrate_read_test_all_ranks
@@ -2582,7 +2582,7 @@ static inline uint32_t rw_mgr_mem_calibrate_vfifo_find_dqs_en_phase_sweep_dq_in_
 	return found;
 }
 
-//USER per-bit deskew DQ and center 
+//USER per-bit deskew DQ and center
 
 #if NEWVERSION_RDDESKEW
 
@@ -2610,10 +2610,10 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 
 	select_curr_shadow_reg_using_rank(rank_bgn);
 
-	//USER per-bit deskew 
+	//USER per-bit deskew
 
-	//USER set the left and right edge of each bit to an illegal value 
-	//USER use (IO_IO_IN_DELAY_MAX + 1) as an illegal value 
+	//USER set the left and right edge of each bit to an illegal value
+	//USER use (IO_IO_IN_DELAY_MAX + 1) as an illegal value
 	sticky_bit_chk = 0;
 	for (i = 0; i < RW_MGR_MEM_DQ_PER_READ_DQS; i++) {
 		left_edge[i] = IO_IO_IN_DELAY_MAX + 1;
@@ -2654,7 +2654,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 					//USER Remember a passing test as the left_edge
 					left_edge[i] = d;
 				} else {
-					//USER If a left edge has not been seen yet, then a future passing test will mark this edge as the right edge 
+					//USER If a left edge has not been seen yet, then a future passing test will mark this edge as the right edge
 					if (left_edge[i] == IO_IO_IN_DELAY_MAX + 1) {
 						right_edge[i] = -(d + 1);
 					}
@@ -2667,7 +2667,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 		}
 	}
 
-	//USER Reset DQ delay chains to 0 
+	//USER Reset DQ delay chains to 0
 	scc_mgr_apply_group_dq_in_delay(write_group, test_bgn, 0);
 	sticky_bit_chk = 0;
 	for (i = RW_MGR_MEM_DQ_PER_READ_DQS - 1;; i--) {
@@ -2675,14 +2675,14 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 		DPRINT(2, "vfifo_center: left_edge[%lu]: %ld right_edge[%lu]: %ld", i, left_edge[i],
 		       i, right_edge[i]);
 
-		//USER Check for cases where we haven't found the left edge, which makes our assignment of the the 
-		//USER right edge invalid.  Reset it to the illegal value. 
+		//USER Check for cases where we haven't found the left edge, which makes our assignment of the the
+		//USER right edge invalid.  Reset it to the illegal value.
 		if ((left_edge[i] == IO_IO_IN_DELAY_MAX + 1)
 		    && (right_edge[i] != IO_IO_IN_DELAY_MAX + 1)) {
 			right_edge[i] = IO_IO_IN_DELAY_MAX + 1;
 			DPRINT(2, "vfifo_center: reset right_edge[%lu]: %ld", i, right_edge[i]);
 		}
-		//USER Reset sticky bit (except for bits where we have seen both the left and right edge) 
+		//USER Reset sticky bit (except for bits where we have seen both the left and right edge)
 		sticky_bit_chk = sticky_bit_chk << 1;
 		if ((left_edge[i] != IO_IO_IN_DELAY_MAX + 1)
 		    && (right_edge[i] != IO_IO_IN_DELAY_MAX + 1)) {
@@ -2694,7 +2694,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 		}
 	}
 
-	//USER Search for the right edge of the window for each bit 
+	//USER Search for the right edge of the window for each bit
 	for (d = 0; d <= IO_DQS_IN_DELAY_MAX - start_dqs; d++) {
 		scc_mgr_set_dqs_bus_in_delay(read_group, d + start_dqs);
 		if (IO_SHIFT_DQS_EN_WHEN_SHIFT_DQS) {
@@ -2708,7 +2708,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 
 		IOWR_32DIRECT(SCC_MGR_UPD, 0, 0);
 
-		//USER Stop searching when the read test doesn't pass AND when we've seen a passing read on every bit 
+		//USER Stop searching when the read test doesn't pass AND when we've seen a passing read on every bit
 		if (use_read_test) {
 			stop =
 			    !rw_mgr_mem_calibrate_read_test(rank_bgn, read_group, NUM_READ_PB_TESTS,
@@ -2734,11 +2734,11 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 		} else {
 			for (i = 0; i < RW_MGR_MEM_DQ_PER_READ_DQS; i++) {
 				if (bit_chk & 1) {
-					//USER Remember a passing test as the right_edge 
+					//USER Remember a passing test as the right_edge
 					right_edge[i] = d;
 				} else {
 					if (d != 0) {
-						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge 
+						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge
 						if (right_edge[i] == IO_IO_IN_DELAY_MAX + 1) {
 							left_edge[i] = -(d + 1);
 						}
@@ -2748,7 +2748,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 						    && left_edge[i] != IO_IO_IN_DELAY_MAX + 1) {
 							right_edge[i] = -1;
 						}
-						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge 
+						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge
 						else if (right_edge[i] == IO_IO_IN_DELAY_MAX + 1) {
 							left_edge[i] = -(d + 1);
 						}
@@ -2775,7 +2775,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 		if ((left_edge[i] == IO_IO_IN_DELAY_MAX + 1)
 		    || (right_edge[i] == IO_IO_IN_DELAY_MAX + 1)) {
 
-			//USER Restore delay chain settings before letting the loop in 
+			//USER Restore delay chain settings before letting the loop in
 			//USER rw_mgr_mem_calibrate_vfifo to retry different dqs/ck relationships
 			scc_mgr_set_dqs_bus_in_delay(read_group, start_dqs);
 			if (IO_SHIFT_DQS_EN_WHEN_SHIFT_DQS) {
@@ -2798,7 +2798,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 		}
 	}
 
-	//USER Find middle of window for each DQ bit 
+	//USER Find middle of window for each DQ bit
 	mid_min = left_edge[0] - right_edge[0];
 	min_index = 0;
 	for (i = 1; i < RW_MGR_MEM_DQ_PER_READ_DQS; i++) {
@@ -2841,13 +2841,13 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 	DPRINT(1, "vfifo_center: start_dqs=%ld start_dqs_en=%ld new_dqs=%ld mid_min=%ld",
 	       start_dqs, IO_SHIFT_DQS_EN_WHEN_SHIFT_DQS ? start_dqs_en : -1, new_dqs, mid_min);
 
-	//USER Initialize data for export structures 
+	//USER Initialize data for export structures
 	dqs_margin = IO_IO_IN_DELAY_MAX + 1;
 	dq_margin = IO_IO_IN_DELAY_MAX + 1;
 
-	//USER add delay to bring centre of all DQ windows to the same "level" 
+	//USER add delay to bring centre of all DQ windows to the same "level"
 	for (i = 0, p = test_bgn; i < RW_MGR_MEM_DQ_PER_READ_DQS; i++, p++) {
-		//USER Use values before divide by 2 to reduce round off error 
+		//USER Use values before divide by 2 to reduce round off error
 		shift_dq =
 		    (left_edge[i] - right_edge[i] -
 		     (left_edge[min_index] - right_edge[min_index])) / 2 + (orig_mid_min - mid_min);
@@ -2866,7 +2866,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 
 		DPRINT(2, "vfifo_center: margin[%lu]=[%ld,%ld]", i,
 		       left_edge[i] - shift_dq + (-mid_min), right_edge[i] + shift_dq - (-mid_min));
-		//USER To determine values for export structures 
+		//USER To determine values for export structures
 		if (left_edge[i] - shift_dq + (-mid_min) < dq_margin) {
 			dq_margin = left_edge[i] - shift_dq + (-mid_min);
 		}
@@ -2889,7 +2889,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t wr
 	scc_mgr_load_dqs(read_group);
 
 	if (update_fom) {
-		//USER Export values 
+		//USER Export values
 		gbl->fom_in +=
 		    (dq_margin +
 		     dqs_margin) / (RW_MGR_MEM_IF_READ_DQS_WIDTH / RW_MGR_MEM_IF_WRITE_DQS_WIDTH);
@@ -2940,7 +2940,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t gr
 		}
 	}
 
-	//USER determine minimum working value for DQ 
+	//USER determine minimum working value for DQ
 
 	dq_margin = IO_IO_IN_DELAY_MAX;
 
@@ -2950,7 +2950,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t gr
 		}
 	}
 
-	//USER add delay to bring all DQ windows to the same "level" 
+	//USER add delay to bring all DQ windows to the same "level"
 
 	for (i = 0, p = test_bgn; i < RW_MGR_MEM_DQ_PER_READ_DQS; i++, p++) {
 		if (max_working_dq[i] > dq_margin) {
@@ -2981,11 +2981,11 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t gr
 
 	scc_mgr_set_dqs_bus_in_delay(grp, start_dqs);
 
-	//USER margin on the DQS pin 
+	//USER margin on the DQS pin
 
 	dqs_margin = d - start_dqs - 1;
 
-	//USER find mid point, +1 so that we don't go crazy pushing DQ 
+	//USER find mid point, +1 so that we don't go crazy pushing DQ
 
 	mid = (dq_margin + dqs_margin + 1) / 2;
 
@@ -2993,7 +2993,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t gr
 //      TCLRPT_SET(debug_summary_report->fom_in, debug_summary_report->fom_in + (dq_margin + dqs_margin));
 //      TCLRPT_SET(debug_cal_report->cal_status_per_group[grp].fom_in, (dq_margin + dqs_margin));
 
-	//USER center DQS ... if the headroom is setup properly we shouldn't need to 
+	//USER center DQS ... if the headroom is setup properly we shouldn't need to
 
 	if (dqs_margin > mid) {
 		scc_mgr_set_dqs_bus_in_delay(grp, READ_SCC_DQS_IN_DELAY(grp) + dqs_margin - mid);
@@ -3011,7 +3011,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t gr
 
 	scc_mgr_load_dqs(grp);
 
-	//USER center DQ 
+	//USER center DQ
 
 	if (dq_margin > mid) {
 		for (i = 0, p = test_bgn; i < RW_MGR_MEM_DQ_PER_READ_DQS; i++, p++) {
@@ -3032,7 +3032,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_center(uint32_t rank_bgn, uint32_t gr
 #endif
 
 //USER calibrate the read valid prediction FIFO.
-//USER 
+//USER
 //USER  - read valid prediction will consist of finding a good DQS enable phase, DQS enable delay, DQS input phase, and DQS input delay.
 //USER  - we also do a per-bit deskew on the DQ lines.
 
@@ -3050,7 +3050,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo(uint32_t read_group, uint32_t test_bg
 	uint32_t failed_substage;
 	uint32_t dqs_in_dtaps, orig_start_dqs;
 
-	//USER update info for sims 
+	//USER update info for sims
 
 	reg_file_set_stage(CAL_STAGE_VFIFO);
 
@@ -3074,7 +3074,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo(uint32_t read_group, uint32_t test_bg
 		dtaps_per_ptap--;
 		tmp_delay = 0;
 	}
-	//USER update info for sims 
+	//USER update info for sims
 
 	reg_file_set_group(read_group);
 
@@ -3095,7 +3095,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo(uint32_t read_group, uint32_t test_bg
 		}
 
 		for (p = 0; p <= IO_DQDQS_OUT_PHASE_MAX && grp_calibrated == 0; p++) {
-			//USER set a particular dqdqs phase 
+			//USER set a particular dqdqs phase
 			if (DDRX) {
 				scc_mgr_set_dqdqs_output_phase_all_ranks(read_group, p);
 			}
@@ -3111,7 +3111,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo(uint32_t read_group, uint32_t test_bg
 			BFM_GBL_SET(gwrite_pos[read_group].p, p);
 			BFM_GBL_SET(gwrite_pos[read_group].d, d);
 
-			//USER Load up the patterns used by read calibration using current DQDQS phase 
+			//USER Load up the patterns used by read calibration using current DQDQS phase
 
 			rw_mgr_mem_calibrate_read_load_patterns_all_ranks();
 
@@ -3209,7 +3209,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo(uint32_t g, uint32_t test_bgn)
 	uint32_t grp_calibrated;
 	uint32_t failed_substage;
 
-	//USER update info for sims 
+	//USER update info for sims
 
 	reg_file_set_stage(CAL_STAGE_VFIFO);
 
@@ -3217,18 +3217,18 @@ static uint32_t rw_mgr_mem_calibrate_vfifo(uint32_t g, uint32_t test_bgn)
 
 	failed_substage = CAL_SUBSTAGE_GUARANTEED_READ;
 
-	//USER update info for sims 
+	//USER update info for sims
 
 	reg_file_set_group(g);
 
 	grp_calibrated = 0;
 
 	for (p = 0; p <= IO_DQDQS_OUT_PHASE_MAX && grp_calibrated == 0; p++) {
-		//USER set a particular dqdqs phase 
+		//USER set a particular dqdqs phase
 		if (DDRX) {
 			scc_mgr_set_dqdqs_output_phase_all_ranks(g, p);
 		}
-		//USER Load up the patterns used by read calibration using current DQDQS phase 
+		//USER Load up the patterns used by read calibration using current DQDQS phase
 
 		rw_mgr_mem_calibrate_read_load_patterns_all_ranks();
 		if (!(gbl->phy_debug_mode_flags & PHY_DEBUG_DISABLE_GUARANTEED_READ)) {
@@ -3280,7 +3280,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_end(uint32_t read_group, uint32_t tes
 	uint32_t grp_calibrated;
 	uint32_t write_group;
 
-	//USER update info for sims 
+	//USER update info for sims
 
 	reg_file_set_stage(CAL_STAGE_VFIFO_AFTER_WRITES);
 	reg_file_set_sub_stage(CAL_SUBSTAGE_VFIFO_CENTER);
@@ -3292,7 +3292,7 @@ static uint32_t rw_mgr_mem_calibrate_vfifo_end(uint32_t read_group, uint32_t tes
 		    read_group / (RW_MGR_MEM_IF_READ_DQS_WIDTH / RW_MGR_MEM_IF_WRITE_DQS_WIDTH);
 	}
 
-	//USER update info for sims 
+	//USER update info for sims
 	reg_file_set_group(read_group);
 
 	grp_calibrated = 1;
@@ -3330,7 +3330,7 @@ static uint32_t rw_mgr_mem_calibrate_lfifo(void)
 	uint32_t found_one;
 	t_btfld bit_chk;
 
-	//USER update info for sims 
+	//USER update info for sims
 
 	reg_file_set_stage(CAL_STAGE_LFIFO);
 	reg_file_set_sub_stage(CAL_SUBSTAGE_READ_LATENCY);
@@ -3358,12 +3358,12 @@ static uint32_t rw_mgr_mem_calibrate_lfifo(void)
 		gbl->curr_read_lat--;
 	} while (gbl->curr_read_lat > 0);
 
-	//USER reset the fifos to get pointers to known state 
+	//USER reset the fifos to get pointers to known state
 
 	IOWR_32DIRECT(PHY_MGR_CMD_FIFO_RESET, 0, 0);
 
 	if (found_one) {
-		//USER add a fudge factor to the read latency that was determined 
+		//USER add a fudge factor to the read latency that was determined
 		gbl->curr_read_lat += 2;
 		IOWR_32DIRECT(PHY_MGR_PHY_RLAT, 0, gbl->curr_read_lat);
 
@@ -3508,13 +3508,13 @@ static uint32_t rw_mgr_mem_calibrate_write_test(uint32_t rank_bgn, uint32_t writ
 
 			continue;
 		}
-		//USER set rank 
+		//USER set rank
 		set_rank_and_odt_mask(r, RW_MGR_ODT_MODE_READ_WRITE);
 
 		tmp_bit_chk = 0;
 		for (vg = RW_MGR_MEM_VIRTUAL_GROUPS_PER_WRITE_DQS - 1;; vg--) {
 
-			//USER reset the fifos to get pointers to known state 
+			//USER reset the fifos to get pointers to known state
 			IOWR_32DIRECT(PHY_MGR_CMD_FIFO_RESET, 0, 0);
 
 			tmp_bit_chk =
@@ -3584,24 +3584,24 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	reg_file_set_stage(CAL_STAGE_WLEVEL);
 	reg_file_set_sub_stage(CAL_SUBSTAGE_WORKING_DELAY);
 
-	//USER maximum phases for the sweep 
+	//USER maximum phases for the sweep
 
 	dtaps_per_ptap = IORD_32DIRECT(REG_FILE_DTAPS_PER_PTAP, 0);
 
-	//USER starting phases 
+	//USER starting phases
 
 	//USER update info for sims
 
 	reg_file_set_group(g);
 
-	//USER starting and end range where writes work 
+	//USER starting and end range where writes work
 
 	scc_mgr_spread_out2_delay_all_ranks(g, test_bgn);
 
 	work_bgn = 0;
 	work_end = 0;
 
-	//USER step 1: find first working phase, increment in ptaps, and then in dtaps if ptaps doesn't find a working phase 
+	//USER step 1: find first working phase, increment in ptaps, and then in dtaps if ptaps doesn't find a working phase
 	found_begin = 0;
 	tmp_delay = 0;
 	for (d = 0; d <= dtaps_per_ptap; d++, tmp_delay += IO_DELAY_PER_DCHAIN_TAP) {
@@ -3627,7 +3627,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	}
 
 	if (p > IO_DQDQS_OUT_PHASE_MAX + num_additional_fr_cycles * IO_DLL_CHAIN_LENGTH) {
-		//USER fail, cannot find first working phase 
+		//USER fail, cannot find first working phase
 
 		set_failing_group_stage(g, CAL_STAGE_WLEVEL, CAL_SUBSTAGE_WORKING_DELAY);
 
@@ -3639,12 +3639,12 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	reg_file_set_sub_stage(CAL_SUBSTAGE_LAST_WORKING_DELAY);
 
 	//USER If d is 0 then the working window covers a phase tap and we can follow the old procedure
-	//USER  otherwise, we've found the beginning, and we need to increment the dtaps until we find the end 
+	//USER  otherwise, we've found the beginning, and we need to increment the dtaps until we find the end
 	if (d == 0) {
 		COV(WLEVEL_PHASE_PTAP_OVERLAP);
 		work_end = work_bgn + IO_DELAY_PER_OPA_TAP;
 
-		//USER step 2: if we have room, back off by one and increment in dtaps 
+		//USER step 2: if we have room, back off by one and increment in dtaps
 
 		if (p > 0) {
 			int found = 0;
@@ -3693,7 +3693,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 			BFM_GBL_SET(dqs_wlevel_left_edge[g].ps, work_bgn);
 		}
 
-		//USER step 3: go forward from working phase to non working phase, increment in ptaps 
+		//USER step 3: go forward from working phase to non working phase, increment in ptaps
 
 		for (p = p + 1;
 		     p <= IO_DQDQS_OUT_PHASE_MAX + num_additional_fr_cycles * IO_DLL_CHAIN_LENGTH;
@@ -3707,7 +3707,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 			}
 		}
 
-		//USER step 4: back off one from last, increment in dtaps 
+		//USER step 4: back off one from last, increment in dtaps
 		//USER The actual increment is done outside the if/else statement since it is shared with other code
 
 		p = p - 1;
@@ -3743,9 +3743,9 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	work_end -= IO_DELAY_PER_DCHAIN_TAP;
 
 	if (work_end >= work_bgn) {
-		//USER we have a working range 
+		//USER we have a working range
 	} else {
-		//USER nil range 
+		//USER nil range
 
 		set_failing_group_stage(g, CAL_STAGE_WLEVEL, CAL_SUBSTAGE_LAST_WORKING_DELAY);
 
@@ -3757,7 +3757,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	BFM_GBL_SET(dqs_wlevel_right_edge[g].d, d - 1);
 	BFM_GBL_SET(dqs_wlevel_right_edge[g].ps, work_end);
 
-	//USER center 
+	//USER center
 
 	work_mid = (work_bgn + work_end) / 2;
 
@@ -3819,20 +3819,20 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	reg_file_set_stage(CAL_STAGE_WLEVEL);
 	reg_file_set_sub_stage(CAL_SUBSTAGE_WORKING_DELAY);
 
-	//USER maximum phases for the sweep 
+	//USER maximum phases for the sweep
 
-	//USER starting phases 
+	//USER starting phases
 
 	//USER update info for sims
 
 	reg_file_set_group(g);
 
-	//USER starting and end range where writes work 
+	//USER starting and end range where writes work
 
 	work_bgn = 0;
 	work_end = 0;
 
-	//USER step 1: find first working phase, increment in ptaps 
+	//USER step 1: find first working phase, increment in ptaps
 
 	for (p = 0; p <= IO_DQDQS_OUT_PHASE_MAX; p++, work_bgn += IO_DELAY_PER_OPA_TAP) {
 		scc_mgr_set_dqdqs_output_phase_all_ranks(g, p);
@@ -3843,7 +3843,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	}
 
 	if (p > IO_DQDQS_OUT_PHASE_MAX) {
-		//USER fail, cannot find first working phase 
+		//USER fail, cannot find first working phase
 
 		set_failing_group_stage(g, CAL_STAGE_WLEVEL, CAL_SUBSTAGE_WORKING_DELAY);
 
@@ -3854,7 +3854,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 
 	reg_file_set_sub_stage(CAL_SUBSTAGE_LAST_WORKING_DELAY);
 
-	//USER step 2: if we have room, back off by one and increment in dtaps 
+	//USER step 2: if we have room, back off by one and increment in dtaps
 
 	if (p > 0) {
 		scc_mgr_set_dqdqs_output_phase_all_ranks(g, p - 1);
@@ -3873,7 +3873,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 
 		scc_mgr_apply_group_all_out_delay_all_ranks(g, test_bgn, 0);
 	}
-	//USER step 3: go forward from working phase to non working phase, increment in ptaps 
+	//USER step 3: go forward from working phase to non working phase, increment in ptaps
 
 	for (p = p + 1; p <= IO_DQDQS_OUT_PHASE_MAX; p++, work_end += IO_DELAY_PER_OPA_TAP) {
 		scc_mgr_set_dqdqs_output_phase_all_ranks(g, p);
@@ -3883,7 +3883,7 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 		}
 	}
 
-	//USER step 4: back off one from last, increment in dtaps 
+	//USER step 4: back off one from last, increment in dtaps
 
 	scc_mgr_set_dqdqs_output_phase_all_ranks(g, p - 1);
 
@@ -3900,16 +3900,16 @@ static uint32_t rw_mgr_mem_calibrate_wlevel(uint32_t g, uint32_t test_bgn)
 	scc_mgr_apply_group_all_out_delay_all_ranks(g, test_bgn, 0);
 
 	if (work_end > work_bgn) {
-		//USER we have a working range 
+		//USER we have a working range
 	} else {
-		//USER nil range 
+		//USER nil range
 
 		set_failing_group_stage(g, CAL_STAGE_WLEVEL, CAL_SUBSTAGE_LAST_WORKING_DELAY);
 
 		return 0;
 	}
 
-	//USER center 
+	//USER center
 
 	work_mid = (work_bgn + work_end) / 2;
 
@@ -3963,9 +3963,9 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 
 	select_curr_shadow_reg_using_rank(rank_bgn);
 
-	//USER per-bit deskew 
+	//USER per-bit deskew
 
-	//USER set the left and right edge of each bit to an illegal value 
+	//USER set the left and right edge of each bit to an illegal value
 	//USER use (IO_IO_OUT1_DELAY_MAX + 1) as an illegal value
 	sticky_bit_chk = 0;
 	for (i = 0; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++) {
@@ -3979,7 +3979,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 
 		IOWR_32DIRECT(SCC_MGR_UPD, 0, 0);
 
-		//USER Stop searching when the read test doesn't pass AND when we've seen a passing read on every bit 
+		//USER Stop searching when the read test doesn't pass AND when we've seen a passing read on every bit
 		stop =
 		    !rw_mgr_mem_calibrate_write_test(rank_bgn, write_group, 0, PASS_ONE_BIT,
 						     &bit_chk, 0);
@@ -3998,7 +3998,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 					//USER Remember a passing test as the left_edge
 					left_edge[i] = d;
 				} else {
-					//USER If a left edge has not been seen yet, then a future passing test will mark this edge as the right edge 
+					//USER If a left edge has not been seen yet, then a future passing test will mark this edge as the right edge
 					if (left_edge[i] == IO_IO_OUT1_DELAY_MAX + 1) {
 						right_edge[i] = -(d + 1);
 					}
@@ -4011,7 +4011,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		}
 	}
 
-	//USER Reset DQ delay chains to 0 
+	//USER Reset DQ delay chains to 0
 	scc_mgr_apply_group_dq_out1_delay(write_group, test_bgn, 0);
 	sticky_bit_chk = 0;
 	for (i = RW_MGR_MEM_DQ_PER_WRITE_DQS - 1;; i--) {
@@ -4019,14 +4019,14 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		DPRINT(2, "write_center: left_edge[%lu]: %ld right_edge[%lu]: %ld", i, left_edge[i],
 		       i, right_edge[i]);
 
-		//USER Check for cases where we haven't found the left edge, which makes our assignment of the the 
-		//USER right edge invalid.  Reset it to the illegal value. 
+		//USER Check for cases where we haven't found the left edge, which makes our assignment of the the
+		//USER right edge invalid.  Reset it to the illegal value.
 		if ((left_edge[i] == IO_IO_OUT1_DELAY_MAX + 1)
 		    && (right_edge[i] != IO_IO_OUT1_DELAY_MAX + 1)) {
 			right_edge[i] = IO_IO_OUT1_DELAY_MAX + 1;
 			DPRINT(2, "write_center: reset right_edge[%lu]: %ld", i, right_edge[i]);
 		}
-		//USER Reset sticky bit (except for bits where we have seen the left edge) 
+		//USER Reset sticky bit (except for bits where we have seen the left edge)
 		sticky_bit_chk = sticky_bit_chk << 1;
 		if ((left_edge[i] != IO_IO_OUT1_DELAY_MAX + 1)) {
 			sticky_bit_chk = sticky_bit_chk | 1;
@@ -4037,7 +4037,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		}
 	}
 
-	//USER Search for the right edge of the window for each bit 
+	//USER Search for the right edge of the window for each bit
 	for (d = 0; d <= IO_IO_OUT1_DELAY_MAX - start_dqs; d++) {
 		scc_mgr_apply_group_dqs_io_and_oct_out1(write_group, d + start_dqs);
 
@@ -4045,7 +4045,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		if (QDRII) {
 			rw_mgr_mem_dll_lock_wait();
 		}
-		//USER Stop searching when the read test doesn't pass AND when we've seen a passing read on every bit 
+		//USER Stop searching when the read test doesn't pass AND when we've seen a passing read on every bit
 		stop =
 		    !rw_mgr_mem_calibrate_write_test(rank_bgn, write_group, 0, PASS_ONE_BIT,
 						     &bit_chk, 0);
@@ -4072,11 +4072,11 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		} else {
 			for (i = 0; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++) {
 				if (bit_chk & 1) {
-					//USER Remember a passing test as the right_edge 
+					//USER Remember a passing test as the right_edge
 					right_edge[i] = d;
 				} else {
 					if (d != 0) {
-						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge 
+						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge
 						if (right_edge[i] == IO_IO_OUT1_DELAY_MAX + 1) {
 							left_edge[i] = -(d + 1);
 						}
@@ -4086,7 +4086,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 						    && left_edge[i] != IO_IO_OUT1_DELAY_MAX + 1) {
 							right_edge[i] = -1;
 						}
-						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge 
+						//USER If a right edge has not been seen yet, then a future passing test will mark this edge as the left edge
 						else if (right_edge[i] == IO_IO_OUT1_DELAY_MAX + 1) {
 							left_edge[i] = -(d + 1);
 						}
@@ -4114,7 +4114,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		}
 	}
 
-	//USER Find middle of window for each DQ bit 
+	//USER Find middle of window for each DQ bit
 	mid_min = left_edge[0] - right_edge[0];
 	min_index = 0;
 	for (i = 1; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++) {
@@ -4142,13 +4142,13 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 	DPRINT(1, "write_center: start_dqs=%ld new_dqs=%ld mid_min=%ld", start_dqs, new_dqs,
 	       mid_min);
 
-	//USER Initialize data for export structures 
+	//USER Initialize data for export structures
 	dqs_margin = IO_IO_OUT1_DELAY_MAX + 1;
 	dq_margin = IO_IO_OUT1_DELAY_MAX + 1;
 
-	//USER add delay to bring centre of all DQ windows to the same "level" 
+	//USER add delay to bring centre of all DQ windows to the same "level"
 	for (i = 0, p = test_bgn; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++, p++) {
-		//USER Use values before divide by 2 to reduce round off error 
+		//USER Use values before divide by 2 to reduce round off error
 		shift_dq =
 		    (left_edge[i] - right_edge[i] -
 		     (left_edge[min_index] - right_edge[min_index])) / 2 + (orig_mid_min - mid_min);
@@ -4166,7 +4166,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 
 		DPRINT(2, "write_center: margin[%lu]=[%ld,%ld]", i,
 		       left_edge[i] - shift_dq + (-mid_min), right_edge[i] + shift_dq - (-mid_min));
-		//USER To determine values for export structures 
+		//USER To determine values for export structures
 		if (left_edge[i] - shift_dq + (-mid_min) < dq_margin) {
 			dq_margin = left_edge[i] - shift_dq + (-mid_min);
 		}
@@ -4175,7 +4175,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		}
 	}
 
-	//USER Move DQS 
+	//USER Move DQS
 	if (QDRII) {
 		scc_mgr_set_group_dqs_io_and_oct_out1_gradual(write_group, new_dqs);
 	} else {
@@ -4185,7 +4185,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 
 	DPRINT(2, "write_center: DM");
 
-	//USER set the left and right edge of each bit to an illegal value 
+	//USER set the left and right edge of each bit to an illegal value
 	//USER use (IO_IO_OUT1_DELAY_MAX + 1) as an illegal value
 	left_edge[0] = IO_IO_OUT1_DELAY_MAX + 1;
 	right_edge[0] = IO_IO_OUT1_DELAY_MAX + 1;
@@ -4204,7 +4204,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 			if (bgn_curr == IO_IO_OUT1_DELAY_MAX + 1) {
 				bgn_curr = -d;
 			}
-			//USER If current window is bigger than best seen. Set best seen to be current window 
+			//USER If current window is bigger than best seen. Set best seen to be current window
 			if ((end_curr - bgn_curr + 1) > win_best) {
 				win_best = end_curr - bgn_curr + 1;
 				bgn_best = bgn_curr;
@@ -4296,7 +4296,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 	DPRINT(2, "dm_calib: left=%ld right=%ld mid=%ld dm_margin=%ld",
 	       left_edge[0], right_edge[0], mid, dm_margin);
 
-	//USER Export values 
+	//USER Export values
 	gbl->fom_out += dq_margin + dqs_margin;
 
 	DPRINT(2, "write_center: dq_margin=%ld dqs_margin=%ld dm_margin=%ld", dq_margin, dqs_margin,
@@ -4321,7 +4321,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 	uint32_t start_dqs;
 	uint32_t stop;
 
-	//USER per-bit deskew 
+	//USER per-bit deskew
 
 	for (i = 0; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++) {
 		max_working_dq[i] = 0;
@@ -4347,7 +4347,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 
 	scc_mgr_apply_group_dq_out1_delay(write_group, test_bgn, 0);
 
-	//USER determine minimum of maximums 
+	//USER determine minimum of maximums
 
 	dq_margin = IO_IO_OUT1_DELAY_MAX;
 
@@ -4357,7 +4357,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		}
 	}
 
-	//USER add delay to center DQ windows 
+	//USER add delay to center DQ windows
 
 	for (i = 0, p = test_bgn; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++, p++) {
 		if (max_working_dq[i] > dq_margin) {
@@ -4393,7 +4393,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 
 	dqs_margin = d - start_dqs - 1;
 
-	//USER time to center, +1 so that we don't go crazy centering DQ 
+	//USER time to center, +1 so that we don't go crazy centering DQ
 
 	mid = (dq_margin + dqs_margin + 1) / 2;
 
@@ -4402,7 +4402,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 	scc_mgr_load_dqs_io();
 	scc_mgr_load_dqs_for_write_group(write_group);
 
-	//USER center dq 
+	//USER center dq
 
 	if (dq_margin > mid) {
 		for (i = 0, p = test_bgn; i < RW_MGR_MEM_DQ_PER_WRITE_DQS; i++, p++) {
@@ -4413,7 +4413,7 @@ static uint32_t rw_mgr_mem_calibrate_writes_center(uint32_t rank_bgn, uint32_t w
 		dqs_margin += dq_margin - mid;
 		dq_margin -= dq_margin - mid;
 	}
-	//USER do dm centering 
+	//USER do dm centering
 
 	if (!RLDRAMX) {
 		dm_margin = IO_IO_OUT1_DELAY_MAX;
@@ -4496,7 +4496,7 @@ static uint32_t rw_mgr_mem_calibrate_writes(uint32_t rank_bgn, uint32_t g, uint3
 	reg_file_set_stage(CAL_STAGE_WRITES);
 	reg_file_set_sub_stage(CAL_SUBSTAGE_WRITES_CENTER);
 
-	//USER starting phases 
+	//USER starting phases
 
 	//USER update info for sims
 
@@ -4510,7 +4510,7 @@ static uint32_t rw_mgr_mem_calibrate_writes(uint32_t rank_bgn, uint32_t g, uint3
 	return 1;
 }
 
-//USER precharge all banks and activate row 0 in bank "000..." and bank "111..." 
+//USER precharge all banks and activate row 0 in bank "000..." and bank "111..."
 static void mem_precharge_and_activate(void)
 {
 	uint32_t r;
@@ -4524,7 +4524,7 @@ static void mem_precharge_and_activate(void)
 		//USER set rank
 		set_rank_and_odt_mask(r, RW_MGR_ODT_MODE_OFF);
 
-		//USER precharge all banks ... 
+		//USER precharge all banks ...
 		IOWR_32DIRECT(RW_MGR_RUN_SINGLE_GROUP, 0, __RW_MGR_PRECHARGE_ALL);
 
 		IOWR_32DIRECT(RW_MGR_LOAD_CNTR_0, 0, 0x0F);
@@ -4533,7 +4533,7 @@ static void mem_precharge_and_activate(void)
 		IOWR_32DIRECT(RW_MGR_LOAD_CNTR_1, 0, 0x0F);
 		IOWR_32DIRECT(RW_MGR_LOAD_JUMP_ADD_1, 0, __RW_MGR_ACTIVATE_0_AND_1_WAIT2);
 
-		//USER activate rows 
+		//USER activate rows
 		IOWR_32DIRECT(RW_MGR_RUN_SINGLE_GROUP, 0, __RW_MGR_ACTIVATE_0_AND_1);
 	}
 }
@@ -4548,7 +4548,7 @@ static void mem_config(void)
 	uint32_t rw_wl_nop_cycles;
 	uint32_t max_latency;
 
-	//USER read in write and read latency 
+	//USER read in write and read latency
 
 	wlat = IORD_32DIRECT(MEM_T_WL_ADD, 0);
 	wlat += IORD_32DIRECT(DATA_MGR_MEM_T_ADD, 0);	/* WL for hard phy does not include additive latency */
@@ -4595,23 +4595,23 @@ static void mem_config(void)
 	//USER configure for a burst length of 8
 
 	if (QUARTER_RATE_MODE) {
-		//USER write latency 
+		//USER write latency
 		wlat = (wlat + 5) / 4 + 1;
 
 		//USER set a pretty high read latency initially
 		gbl->curr_read_lat = (rlat + 1) / 4 + 8;
 	} else if (HALF_RATE_MODE) {
-		//USER write latency 
+		//USER write latency
 		wlat = (wlat - 1) / 2 + 1;
 
-		//USER set a pretty high read latency initially 
+		//USER set a pretty high read latency initially
 		gbl->curr_read_lat = (rlat + 1) / 2 + 8;
 	} else {
-		//USER write latency 
+		//USER write latency
 		// Adjust Write Latency for Hard PHY
 		wlat = wlat + 1;
 
-		//USER set a pretty high read latency initially 
+		//USER set a pretty high read latency initially
 		gbl->curr_read_lat = rlat + 16;
 	}
 
@@ -4620,7 +4620,7 @@ static void mem_config(void)
 	}
 	IOWR_32DIRECT(PHY_MGR_PHY_RLAT, 0, gbl->curr_read_lat);
 
-	//USER advertise write latency 
+	//USER advertise write latency
 	gbl->curr_write_lat = wlat;
 	IOWR_32DIRECT(PHY_MGR_AFI_WLAT, 0, wlat - 2);
 
@@ -4636,7 +4636,7 @@ static void mem_skip_calibrate(void)
 	uint32_t vfifo_offset;
 	uint32_t i, j, r;
 
-	// Need to update every shadow register set used by the interface       
+	// Need to update every shadow register set used by the interface
 	for (r = 0; r < RW_MGR_MEM_NUMBER_OF_RANKS; r += NUM_RANKS_PER_SHADOW_REG) {
 
 		// Strictly speaking this should be called once per group to make
@@ -4653,7 +4653,7 @@ static void mem_skip_calibrate(void)
 			//
 			// Write data arrives to the I/O two cycles before write latency is reached (720 deg).
 			//   -> due to bit-slip in a/c bus
-			//   -> to allow board skew where dqs is longer than ck 
+			//   -> to allow board skew where dqs is longer than ck
 			//      -> how often can this happen!?
 			//      -> can claim back some ptaps for high freq support if we can relax this, but i digress...
 			//
@@ -4683,7 +4683,7 @@ static void mem_skip_calibrate(void)
 		IOWR_32DIRECT(SCC_MGR_UPD, 0, 0);
 	}
 
-	// Compensate for simulation model behaviour 
+	// Compensate for simulation model behaviour
 	for (i = 0; i < RW_MGR_MEM_IF_READ_DQS_WIDTH; i++) {
 		scc_mgr_set_dqs_bus_in_delay(i, 10);
 		scc_mgr_load_dqs(i);
@@ -4741,7 +4741,7 @@ static uint32_t mem_calibrate(void)
 	}
 
 	if (((DYNAMIC_CALIB_STEPS) & CALIB_SKIP_ALL) == CALIB_SKIP_ALL) {
-		//USER Set VFIFO and LFIFO to instant-on settings in skip calibration mode 
+		//USER Set VFIFO and LFIFO to instant-on settings in skip calibration mode
 
 		mem_skip_calibrate();
 	} else {
@@ -4781,7 +4781,7 @@ static uint32_t mem_calibrate(void)
 				     RW_MGR_MEM_IF_WRITE_DQS_WIDTH && group_failed == 0;
 				     read_group++, read_test_bgn += RW_MGR_MEM_DQ_PER_READ_DQS) {
 
-					//USER Calibrate the VFIFO 
+					//USER Calibrate the VFIFO
 					if (!((STATIC_CALIB_STEPS) & CALIB_SKIP_VFIFO)) {
 						if (!rw_mgr_mem_calibrate_vfifo
 						    (read_group, read_test_bgn)) {
@@ -4797,7 +4797,7 @@ static uint32_t mem_calibrate(void)
 					}
 				}
 
-				//USER level writes (or align DK with CK for RLDRAMX) 
+				//USER level writes (or align DK with CK for RLDRAMX)
 				if (group_failed == 0) {
 					if ((DDRX || RLDRAMII) && !(ARRIAV || CYCLONEV)) {
 						if (!((STATIC_CALIB_STEPS) & CALIB_SKIP_WLEVEL)) {
@@ -4815,7 +4815,7 @@ static uint32_t mem_calibrate(void)
 						}
 					}
 				}
-				//USER Calibrate the output side 
+				//USER Calibrate the output side
 				if (group_failed == 0) {
 					for (rank_bgn = 0, sr = 0;
 					     rank_bgn < RW_MGR_MEM_NUMBER_OF_RANKS;
@@ -4899,7 +4899,7 @@ static uint32_t mem_calibrate(void)
 			if (failing_groups != 0) {
 				return 0;
 			}
-			//USER Calibrate the LFIFO 
+			//USER Calibrate the LFIFO
 			if (!((STATIC_CALIB_STEPS) & CALIB_SKIP_LFIFO)) {
 				//USER If we're skipping groups as part of debug, don't calibrate LFIFO
 				if (param->skip_groups == 0) {
@@ -4952,7 +4952,7 @@ static uint32_t run_mem_calibrate(void)
 #endif
 	}
 
-	//USER Handoff 
+	//USER Handoff
 
 	//USER Don't return control of the PHY back to AFI when in debug mode
 	if ((gbl->phy_debug_mode_flags & PHY_DEBUG_IN_DEBUG_MODE) == 0) {
@@ -5045,7 +5045,7 @@ static void initialize_hps_phy(void)
 	// These may need to be included also:
 	// wrap_back_en (false)
 	// atpg_en (false)
-	// pipelineglobalenable (true) 
+	// pipelineglobalenable (true)
 
 	uint32_t reg;
 	// Tracking also gets configured here because it's in the same register
@@ -5148,7 +5148,7 @@ static int socfpga_mem_calibration(void)
 	// Set the calibration enabled by default
 	gbl->phy_debug_mode_flags |= PHY_DEBUG_ENABLE_CAL_RPT;
 	// Only enable margining by default if requested
-	// Only sweep all groups (regardless of fail state) by default if requested 
+	// Only sweep all groups (regardless of fail state) by default if requested
 	//Set enabled read test by default
 
 	// Initialize the register file

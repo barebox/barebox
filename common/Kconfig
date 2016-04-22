@@ -114,6 +114,13 @@ config BAREBOX_UPDATE_IMX_NAND_FCB
 	depends on NAND_MXS
 	default y
 
+config UBIFORMAT
+	bool
+	select LIBSCAN
+	select LIBUBIGEN
+	depends on MTD_UBI
+	default y
+
 menu "General Settings"
 
 config LOCALVERSION

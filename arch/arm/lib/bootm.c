@@ -575,7 +575,7 @@ static int armlinux_register_image_handler(void)
 		register_image_handler(&aimage_handler);
 		binfmt_register(&binfmt_aimage_hook);
 	}
-	if (IS_BUILTIN(CONFIG_CMD_BOOTM_FITIMAGE))
+	if (IS_BUILTIN(CONFIG_FITIMAGE))
 	        register_image_handler(&arm_fit_handler);
 	binfmt_register(&binfmt_arm_zimage_hook);
 	binfmt_register(&binfmt_barebox_hook);

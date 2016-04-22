@@ -60,8 +60,6 @@ static int parse_opt(int argc, char *argv[], struct ubiformat_args *args,
 {
 	srand(get_time_ns());
 	memset(args, 0, sizeof(*args));
-	args->ubi_ver = 1;
-	args->image_seq = rand();
 
 	while (1) {
 		int key;

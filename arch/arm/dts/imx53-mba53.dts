@@ -28,9 +28,9 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	partition@0 {
+	partition@e0000 {
 		label = "environment";
-		reg = <0x80000 0x80000>;
+		reg = <0xe0000 0x20000>;
 	};
 };
 

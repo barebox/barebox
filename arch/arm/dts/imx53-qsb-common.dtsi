@@ -43,9 +43,9 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	bareboxenv: partition@0 {
+	bareboxenv: partition@e0000 {
 		label = "barebox-environment";
-		reg = <0x80000 0x20000>;
+		reg = <0xe0000 0x20000>;
 	};
 };
 

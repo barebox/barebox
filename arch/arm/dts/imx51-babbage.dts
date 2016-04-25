@@ -27,9 +27,9 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	environment_esdhc1: partition@0 {
+	environment_esdhc1: partition@e0000 {
 		label = "barebox-environment";
-		reg = <0x80000 0x20000>;
+		reg = <0xe0000 0x20000>;
 	};
 };
 

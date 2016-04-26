@@ -769,7 +769,6 @@ config POLLER
 
 config STATE
 	bool "generic state infrastructure"
-	depends on OF_BAREBOX_DRIVERS
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER

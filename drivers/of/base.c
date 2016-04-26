@@ -30,6 +30,8 @@
 #include <linux/amba/bus.h>
 #include <linux/err.h>
 
+static struct device_node *root_node;
+
 /*
  * Iterate over all nodes of a tree. As a devicetree does not
  * have a dedicated list head, the start node (usually the root
@@ -38,6 +40,9 @@
 static inline struct device_node *of_next_node(struct device_node *node)
 {
 	struct device_node *next;
+
+	if (!node)
+		return root_node;
 
 	next = list_first_entry(&node->list, struct device_node, list);
 
@@ -67,8 +72,6 @@ struct alias_prop {
 };
 
 static LIST_HEAD(aliases_lookup);
-
-static struct device_node *root_node;
 
 static struct device_node *of_aliases;
 
@@ -277,12 +280,6 @@ struct device_node *of_find_node_by_phandle_from(phandle phandle,
 {
 	struct device_node *node;
 
-	if (!root)
-		root = root_node;
-
-	if (!root)
-		return NULL;
-
 	of_tree_for_each_node_from(node, root)
 		if (node->phandle == phandle)
 			return node;
@@ -309,15 +306,7 @@ EXPORT_SYMBOL(of_find_node_by_phandle);
 phandle of_get_tree_max_phandle(struct device_node *root)
 {
 	struct device_node *n;
-	phandle max;
-
-	if (!root)
-		root = root_node;
-
-	if (!root)
-		return 0;
-
-	max = root->phandle;
+	phandle max = 0;
 
 	of_tree_for_each_node_from(n, root) {
 		if (n->phandle > max)
@@ -430,9 +419,6 @@ struct device_node *of_find_node_by_name(struct device_node *from,
 {
 	struct device_node *np;
 
-	if (!from)
-		from = root_node;
-
 	of_tree_for_each_node_from(np, from)
 		if (np->name && !of_node_cmp(np->name, name))
 			return np;
@@ -457,9 +443,6 @@ struct device_node *of_find_node_by_type(struct device_node *from,
 	struct device_node *np;
 	const char *device_type;
 	int ret;
-
-	if (!from)
-		from = root_node;
 
 	of_tree_for_each_node_from(np, from) {
 		ret = of_property_read_string(np, "device_type", &device_type);
@@ -489,9 +472,6 @@ struct device_node *of_find_compatible_node(struct device_node *from,
 {
 	struct device_node *np;
 
-	if (!from)
-		from = root_node;
-
 	of_tree_for_each_node_from(np, from)
 		if (of_device_is_compatible(np, compatible))
 			return np;
@@ -515,9 +495,6 @@ struct device_node *of_find_node_with_property(struct device_node *from,
 	const char *prop_name)
 {
 	struct device_node *np;
-
-	if (!from)
-		from = root_node;
 
 	of_tree_for_each_node_from(np, from) {
 		struct property *pp = of_find_property(np, prop_name, NULL);
@@ -571,9 +548,6 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
 
 	if (match)
 		*match = NULL;
-
-	if (!from)
-		from = root_node;
 
 	of_tree_for_each_node_from(np, from) {
 		const struct of_device_id *m = of_match_node(matches, np);

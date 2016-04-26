@@ -1,8 +1,8 @@
-obj-y += address.o base.o fdt.o platform.o
+obj-y += address.o base.o fdt.o platform.o of_path.o
 obj-$(CONFIG_OFTREE_MEM_GENERIC) += mem_generic.o
 obj-$(CONFIG_OF_GPIO) += of_gpio.o
 obj-$(CONFIG_OF_PCI) += of_pci.o
 obj-y += partition.o
 obj-y += of_net.o
 obj-$(CONFIG_MTD) += of_mtd.o
-obj-$(CONFIG_OF_BAREBOX_DRIVERS) += barebox.o of_path.o
+obj-$(CONFIG_OF_BAREBOX_DRIVERS) += barebox.o

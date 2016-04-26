@@ -618,25 +618,8 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 static void imx6_pcie_remove(struct device_d *dev)
 {
 	struct imx6_pcie *imx6_pcie = dev->priv;
-	u32 val;
 
-	val = readl(imx6_pcie->pp.dbi_base + PCIE_PL_PFLR);
-	val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
-	val |= PCIE_PL_PFLR_FORCE_LINK;
-	data_abort_mask();
-	writel(val, imx6_pcie->pp.dbi_base + PCIE_PL_PFLR);
-	data_abort_unmask();
-
-	val = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
-	val &= ~IMX6Q_GPR12_PCIE_CTL_2;
-	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
-
-	val = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-	val |= IMX6Q_GPR1_PCIE_TEST_PD;
-	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-
-	val &= ~IMX6Q_GPR1_PCIE_REF_CLK_EN;
-	writel(val, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+	imx6_pcie_assert_core_reset(&imx6_pcie->pp);
 }
 
 static struct of_device_id imx6_pcie_of_match[] = {

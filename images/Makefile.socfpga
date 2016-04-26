@@ -2,7 +2,7 @@
 # barebox image generation Makefile for Altera socfpga
 #
 
-# %.socfpga - convert into socfpga image
+# %.socfpgaimg - convert into socfpga image
 # ----------------------------------------------------------------
 quiet_cmd_socfpga_image = SOCFPGA-IMG $@
       cmd_socfpga_image = scripts/socfpga_mkimage -b -o $@ $<

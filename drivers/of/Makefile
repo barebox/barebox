@@ -1,4 +1,4 @@
-obj-y += address.o base.o fdt.o platform.o
+obj-y += address.o base.o fdt.o platform.o device.o
 obj-$(CONFIG_OFTREE_MEM_GENERIC) += mem_generic.o
 obj-$(CONFIG_OF_GPIO) += of_gpio.o
 obj-$(CONFIG_OF_PCI) += of_pci.o

@@ -715,7 +715,7 @@ endmenu
 menu "Environment"
 
 config CMD_NV
-	select GLOBALVAR
+	depends on NVVAR
 	tristate
 	prompt "nv"
 	help

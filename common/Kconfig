@@ -161,6 +161,21 @@ config GLOBALVAR
 	  variables are used to control several aspects of the system behaviour.
 	  If unsure, say yes here.
 
+config NVVAR
+	bool "Non volatile global environment variables support"
+	default y if !SHELL_NONE
+	depends on GLOBALVAR
+	depends on ENV_HANDLING
+	help
+	  Non volatile environment variables begin with "nv.". They behave like
+	  global variables above, but their values are saved in the environment
+	  storage with 'saveenv' and thus are persistent over restarts. nv variables
+	  are coupled with global variables of the same name. Setting "nv.foo" results
+	  in "global.foo" changed also (but not the other way round: setting "global.foo"
+	  leaves "nv.foo" untouched). The idea is that nv variables can store defaults
+	  while global variables can be changed during runtime without changing the
+	  default.
+
 menu "memory layout"
 
 source "pbl/Kconfig"

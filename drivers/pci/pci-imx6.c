@@ -51,6 +51,11 @@ struct imx6_pcie {
 	void __iomem		*iomuxc_gpr;
 	enum imx6_pcie_variants variant;
 	void __iomem		*mem_base;
+	u32                     tx_deemph_gen1;
+	u32                     tx_deemph_gen2_3p5db;
+	u32                     tx_deemph_gen2_6db;
+	u32                     tx_swing_full;
+	u32                     tx_swing_low;
 };
 
 /* PCIe Root Complex registers (memory-mapped) */
@@ -370,21 +375,23 @@ static void imx6_pcie_init_phy(struct pcie_port *pp)
 
 	gpr8 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR8);
 	gpr8 &= ~IMX6Q_GPR8_TX_DEEMPH_GEN1;
+	gpr8 |= imx6_pcie->tx_deemph_gen1 << 0;
 	writel(gpr8, imx6_pcie->iomuxc_gpr + IOMUXC_GPR8);
 
 	gpr8 &= ~IMX6Q_GPR8_TX_DEEMPH_GEN2_3P5DB;
+	gpr8 |= imx6_pcie->tx_deemph_gen2_3p5db << 6;
 	writel(gpr8, imx6_pcie->iomuxc_gpr + IOMUXC_GPR8);
 
 	gpr8 &= ~IMX6Q_GPR8_TX_DEEMPH_GEN2_6DB;
-	gpr8 |= 20 << 12;
+	gpr8 |= imx6_pcie->tx_deemph_gen2_6db << 12;
 	writel(gpr8, imx6_pcie->iomuxc_gpr + IOMUXC_GPR8);
 
 	gpr8 &= ~IMX6Q_GPR8_TX_SWING_FULL;
-	gpr8 |= 127 << 18;
+	gpr8 |= imx6_pcie->tx_swing_full << 18;
 	writel(gpr8, imx6_pcie->iomuxc_gpr + IOMUXC_GPR8);
 
 	gpr8 &= ~IMX6Q_GPR8_TX_SWING_LOW;
-	gpr8 |= 127 << 25;
+	gpr8 |= imx6_pcie->tx_swing_low << 25;
 	writel(gpr8, imx6_pcie->iomuxc_gpr + IOMUXC_GPR8);
 }
 
@@ -619,6 +626,27 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 
 	/* Grab GPR config register range */
 	imx6_pcie->iomuxc_gpr = IOMEM(MX6_IOMUXC_BASE_ADDR);
+
+	/* Grab PCIe PHY Tx Settings */
+	if (of_property_read_u32(np, "fsl,tx-deemph-gen1",
+				 &imx6_pcie->tx_deemph_gen1))
+		imx6_pcie->tx_deemph_gen1 = 0;
+
+	if (of_property_read_u32(np, "fsl,tx-deemph-gen2-3p5db",
+				 &imx6_pcie->tx_deemph_gen2_3p5db))
+		imx6_pcie->tx_deemph_gen2_3p5db = 0;
+
+	if (of_property_read_u32(np, "fsl,tx-deemph-gen2-6db",
+				 &imx6_pcie->tx_deemph_gen2_6db))
+		imx6_pcie->tx_deemph_gen2_6db = 20;
+
+	if (of_property_read_u32(np, "fsl,tx-swing-full",
+				 &imx6_pcie->tx_swing_full))
+		imx6_pcie->tx_swing_full = 127;
+
+	if (of_property_read_u32(np, "fsl,tx-swing-low",
+				 &imx6_pcie->tx_swing_low))
+		imx6_pcie->tx_swing_low = 127;
 
 	ret = imx6_add_pcie_port(pp, dev);
 	if (ret < 0)

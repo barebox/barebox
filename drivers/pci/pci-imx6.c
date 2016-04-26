@@ -20,6 +20,7 @@
 #include <gpio.h>
 #include <asm/mmu.h>
 #include <of_gpio.h>
+#include <of_device.h>
 #include <linux/clk.h>
 #include <linux/kernel.h>
 #include <of_address.h>
@@ -36,6 +37,11 @@
 
 #define to_imx6_pcie(x)	container_of(x, struct imx6_pcie, pp)
 
+enum imx6_pcie_variants {
+	IMX6Q,
+	IMX6QP,
+};
+
 struct imx6_pcie {
 	int			reset_gpio;
 	struct clk		*pcie_bus;
@@ -43,6 +49,7 @@ struct imx6_pcie {
 	struct clk		*pcie;
 	struct pcie_port	pp;
 	void __iomem		*iomuxc_gpr;
+	enum imx6_pcie_variants variant;
 	void __iomem		*mem_base;
 };
 
@@ -219,39 +226,48 @@ static int imx6_pcie_assert_core_reset(struct pcie_port *pp)
 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pp);
 	u32 val, gpr1, gpr12;
 
-	/*
-	 * If the bootloader already enabled the link we need some special
-	 * handling to get the core back into a state where it is safe to
-	 * touch it for configuration.  As there is no dedicated reset signal
-	 * wired up for MX6QDL, we need to manually force LTSSM into "detect"
-	 * state before completely disabling LTSSM, which is a prerequisite
-	 * for core configuration.
-	 *
-	 * If both LTSSM_ENABLE and REF_SSP_ENABLE are active we have a strong
-	 * indication that the bootloader activated the link.
-	 */
-	gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-	gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+	switch (imx6_pcie->variant) {
+	case IMX6QP:
+		gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+		gpr1 |= IMX6Q_GPR1_PCIE_SW_RST;
+		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+		break;
+	case IMX6Q:
+		/*
+		 * If the bootloader already enabled the link we need some special
+		 * handling to get the core back into a state where it is safe to
+		 * touch it for configuration.  As there is no dedicated reset signal
+		 * wired up for MX6QDL, we need to manually force LTSSM into "detect"
+		 * state before completely disabling LTSSM, which is a prerequisite
+		 * for core configuration.
+		 *
+		 * If both LTSSM_ENABLE and REF_SSP_ENABLE are active we have a strong
+		 * indication that the bootloader activated the link.
+		 */
+		gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 
-	if ((gpr1 & IMX6Q_GPR1_PCIE_REF_CLK_EN) &&
-	    (gpr12 & IMX6Q_GPR12_PCIE_CTL_2)) {
-		val = readl(pp->dbi_base + PCIE_PL_PFLR);
-		val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
-		val |= PCIE_PL_PFLR_FORCE_LINK;
+		if ((gpr1 & IMX6Q_GPR1_PCIE_REF_CLK_EN) &&
+		    (gpr12 & IMX6Q_GPR12_PCIE_CTL_2)) {
+			val = readl(pp->dbi_base + PCIE_PL_PFLR);
+			val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
+			val |= PCIE_PL_PFLR_FORCE_LINK;
 
-		data_abort_mask();
-		writel(val, pp->dbi_base + PCIE_PL_PFLR);
-		data_abort_unmask();
+			data_abort_mask();
+			writel(val, pp->dbi_base + PCIE_PL_PFLR);
+			data_abort_unmask();
 
-		gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
-		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+			gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
+			writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+		}
+
+		gpr1 |= IMX6Q_GPR1_PCIE_TEST_PD;
+		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+
+		gpr1 &= ~IMX6Q_GPR1_PCIE_REF_CLK_EN;
+		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+		break;
 	}
-
-	gpr1 |= IMX6Q_GPR1_PCIE_TEST_PD;
-	writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-
-	gpr1 &= ~IMX6Q_GPR1_PCIE_REF_CLK_EN;
-	writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 
 	return 0;
 }
@@ -298,6 +314,22 @@ static int imx6_pcie_deassert_core_reset(struct pcie_port *pp)
 		mdelay(100);
 		gpio_set_value(imx6_pcie->reset_gpio, 1);
 	}
+
+	/*
+	 * Release the PCIe PHY reset here
+	 */
+	switch (imx6_pcie->variant) {
+	case IMX6QP:
+		gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+		gpr1 &= ~IMX6Q_GPR1_PCIE_SW_RST;
+		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+
+		udelay(200);
+		break;
+	case IMX6Q:		/* Nothing to do */
+		break;
+	}
+
 	return 0;
 
 err_pcie:
@@ -568,6 +600,9 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 	pp = &imx6_pcie->pp;
 	pp->dev = dev;
 
+	imx6_pcie->variant =
+		(enum imx6_pcie_variants)of_device_get_match_data(dev);
+
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -623,7 +658,8 @@ static void imx6_pcie_remove(struct device_d *dev)
 }
 
 static struct of_device_id imx6_pcie_of_match[] = {
-	{ .compatible = "fsl,imx6q-pcie", },
+	{ .compatible = "fsl,imx6q-pcie",  .data = (void *)IMX6Q,  },
+	{ .compatible = "fsl,imx6qp-pcie", .data = (void *)IMX6QP, },
 	{},
 };
 

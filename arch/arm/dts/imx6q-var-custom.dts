@@ -127,17 +127,17 @@
 		reg = <0x0 0x200000>;
 	};
 
-	partition@1 {
+	partition@200000 {
 		label = "barebox-environment";
 		reg = <0x200000 0x20000>;
 	};
 
-	partition@2 {
+	partition@220000 {
 		label = "kernel";
 		reg = <0x220000 0x600000>;
 	};
 
-	partition@3 {
+	partition@820000 {
 		label = "rootfs";
 		reg = <0x820000 0x18000000>;
 	};

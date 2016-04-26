@@ -32,7 +32,7 @@
 		reg = <0x0 0x400000>;
 	};
 
-	partition@1 {
+	partition@400000 {
 		label = "barebox-environment";
 		reg = <0x400000 0x100000>;
 	};

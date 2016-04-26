@@ -40,12 +40,12 @@
 			reg = <0x0 0xc0000>;
 		};
 
-		environment_nor0: partition@1 {
+		environment_nor0: partition@c0000 {
 			label = "bareboxenv";
 			reg = <0xc0000 0x8000>;
 		};
 
-		partition@2 {
+		partition@100000 {
 			label = "persistent";
 			reg = <0x100000 0xf00000>;
 		};

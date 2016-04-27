@@ -112,7 +112,7 @@ static int imx_sata_probe(struct device_d *dev)
 
 	imx_ahci->ahci.dev = dev;
 	dev->priv = &imx_ahci->ahci;
-	dev->info = ahci_info,
+	dev->info = ahci_info;
 
 	ret = ahci_add_host(&imx_ahci->ahci);
 	if (ret)

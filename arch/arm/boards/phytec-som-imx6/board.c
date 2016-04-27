@@ -162,7 +162,7 @@ static int physom_imx6_devices_init(void)
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
-		defaultenv_append_directory(defaultenv_physom_imx6_mira);
+		defaultenv_append_directory(defaultenv_physom_imx6_phycore);
 	}
 
 	return 0;

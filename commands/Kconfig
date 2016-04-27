@@ -348,7 +348,7 @@ config CMD_BOOTM
 	select UIMAGE
 	select UNCOMPRESS
 	select FILETYPE
-	select GLOBALVAR
+	depends on GLOBALVAR
 	prompt "bootm"
 	help
 	  Boot an application image
@@ -741,13 +741,12 @@ config CMD_EXPORT
 
 config CMD_DEFAULTENV
 	tristate
-	select ENV_HANDLING
 	prompt "defaultenv"
 	help
 	  restore environment from default environment
 
 config CMD_GLOBAL
-	select GLOBALVAR
+	depends on GLOBALVAR
 	tristate
 	prompt "global"
 	help

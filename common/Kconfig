@@ -78,9 +78,6 @@ config FITIMAGE_SIGNATURE
 config LOGBUF
 	bool
 
-config GLOBALVAR
-	bool
-
 config STDDEV
 	bool
 
@@ -158,6 +155,15 @@ config MEMINFO
 
 config ENVIRONMENT_VARIABLES
 	bool "environment variables support"
+
+config GLOBALVAR
+	bool "global environment variables support"
+	default y if !SHELL_NONE
+	help
+	  Global environment variables begin with "global.". Unlike normal
+	  shell variables they have the same values in all contexts. Global
+	  variables are used to control several aspects of the system behaviour.
+	  If unsure, say yes here.
 
 menu "memory layout"
 

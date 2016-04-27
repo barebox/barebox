@@ -21,6 +21,10 @@
 	compatible = "phytec,imx6dl-pcm058-emmc", "fsl,imx6dl";
 };
 
+&ecspi1 {
+	status = "okay";
+};
+
 &eeprom {
 	status = "okay";
 };
@@ -40,6 +44,10 @@
 			max-speed = <100>;
 		};
 	};
+};
+
+&flash {
+	status = "okay";
 };
 
 &usdhc1 {

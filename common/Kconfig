@@ -21,10 +21,6 @@ config HAS_KALLSYMS
 config HAS_MODULES
 	bool
 
-config ENV_HANDLING
-	select CRC32
-	bool
-
 config HAS_CACHE
 	bool
 	help
@@ -646,10 +642,20 @@ config PARTITION
 
 source common/partitions/Kconfig
 
+config ENV_HANDLING
+	select CRC32
+	bool "Support environment files storage"
+	default y if !SHELL_NONE
+	help
+	  Enabling this option will give you environment files which can be stored
+	  over reboots. The "saveenv" command will store all files under /env/ to
+	  the persistent environment, the "loadenv" command (also executed during
+	  startup) will bring them back. If unsure, say yes.
+
 config DEFAULT_ENVIRONMENT
 	bool
 	default y
-	select ENV_HANDLING
+	depends on ENV_HANDLING
 	prompt "Compile in default environment"
 	help
 	  Enabling this option will give you a default environment when

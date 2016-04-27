@@ -761,7 +761,7 @@ config CMD_GLOBAL
 
 config CMD_LOADENV
 	tristate
-	select ENV_HANDLING
+	depends on ENV_HANDLING
 	prompt "loadenv"
 	help
 	  Load environment from ENVFS
@@ -805,7 +805,7 @@ config CMD_MAGICVAR_HELP
 
 config CMD_SAVEENV
 	tristate
-	select ENV_HANDLING
+	depends on ENV_HANDLING
 	prompt "saveenv"
 	help
 	  Save environment to persistent storage

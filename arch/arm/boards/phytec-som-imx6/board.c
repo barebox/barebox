@@ -113,7 +113,8 @@ static int physom_imx6_devices_init(void)
 
 	} else if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")) {
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
 
 		barebox_set_hostname("phyCORE-i.MX6");
 		default_environment_path = "/chosen/environment-spinor";
@@ -159,7 +160,8 @@ static int physom_imx6_devices_init(void)
 	/* Overwrite file /env/init/automount */
 	if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
-		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")) {
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
 		defaultenv_append_directory(defaultenv_physom_imx6_mira);
 	}
 

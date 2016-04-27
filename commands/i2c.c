@@ -243,7 +243,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(i2c_read)
 	.cmd		= do_i2c_read,
 	BAREBOX_CMD_DESC("read from an i2c device")
-	BAREBOX_CMD_OPTS("[-bacrwv] DATA...")
+	BAREBOX_CMD_OPTS("[-bacrwv]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_i2c_read_help)
 BAREBOX_CMD_END

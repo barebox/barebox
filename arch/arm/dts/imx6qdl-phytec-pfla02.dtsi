@@ -85,6 +85,7 @@
 
 &fec {
 	phy-handle = <&ethphy>;
+	phy-reset-duration = <10>; /* in msecs */
 
 	mdio {
 		#address-cells = <1>;

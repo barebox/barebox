@@ -506,6 +506,9 @@ static int write_memory(unsigned addr, unsigned val, int width)
 	write_reg_command[4] = (unsigned char)(addr >> 8);
 	write_reg_command[5] = (unsigned char)(addr);
 
+	if (verbose > 1)
+		printf("write memory reg: 0x%08x val: 0x%08x width: %d\n", addr, val, width);
+
 	switch (width) {
 		case 1:
 			ds = 0x8;
@@ -683,7 +686,7 @@ static int write_dcd_table_ivt(struct imx_flash_header_v2 *hdr, unsigned char *f
 		unsigned s_length = (dcd[1] << 8) + dcd[2];
 		unsigned char *s_end = dcd + s_length;
 
-		printf("sub dcd length %x\n", s_length);
+		printf("command: 0x%02x sub dcd length: 0x%04x, flags: 0x%02x\n", dcd[0], s_length, dcd[3]);
 
 		if ((dcd[0] != 0xcc) || (dcd[3] != 0x04)) {
 			printf("Skipping unknown sub tag 0x%02x with len %04x\n", dcd[0], s_length);
@@ -1206,8 +1209,6 @@ cleanup:
 static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width,
 		     int set_bits, int clear_bits)
 {
-	printf("wr 0x%08x 0x%08x\n", addr, val);
-
 	return write_memory(addr, val, width);
 }
 

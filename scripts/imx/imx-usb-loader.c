@@ -1203,7 +1203,8 @@ cleanup:
 	return ret;
 }
 
-static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width)
+static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width,
+		     int set_bits, int clear_bits)
 {
 	printf("wr 0x%08x 0x%08x\n", addr, val);
 

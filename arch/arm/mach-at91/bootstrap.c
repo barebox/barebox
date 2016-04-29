@@ -78,7 +78,7 @@ static void at91bootstrap_boot_nand(bool is_barebox)
 	kernel_entry_func func = NULL;
 
 	printf("Boot %s from nand\n", name);
-	func = bootstrap_read_devfs("nand0", true, SZ_128K, SZ_256K, SZ_1M);
+	func = bootstrap_read_devfs("nand0", true, SZ_128K, SZ_256K, SZ_1M, NULL);
 	bootstrap_boot(func, is_barebox);
 	bootstrap_err("... failed\n");
 	free(func);

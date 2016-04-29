@@ -80,8 +80,8 @@ static unsigned int get_image_size(void *head)
 }
 #endif
 
-void* bootstrap_read_devfs(const char *devname, bool use_bb, int offset,
-			   int default_size, int max_size)
+void* bootstrap_read_devfs(char *devname, bool use_bb, int offset,
+			   int default_size, int max_size, size_t *bufsize)
 {
 	int ret;
 	int size = 0;
@@ -133,10 +133,13 @@ void* bootstrap_read_devfs(const char *devname, bool use_bb, int offset,
 	ret = cdev_read(cdev, to, size, 0, 0);
 	cdev_close(cdev);
 
-	if (ret != size)
+	if (ret != size) {
 		bootstrap_err("%s: failed to read from %s\n", devname, partname);
-	else
+	} else {
 		result = to;
+		if (bufsize)
+			*bufsize = size;
+	}
 
 free_memory:
 	free(header);

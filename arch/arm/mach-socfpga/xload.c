@@ -53,7 +53,7 @@ static __noreturn int socfpga_xload(void)
 		socfpga_cyclone5_qspi_init();
 		for (part = barebox_parts; part->nor_size; part++) {
 			buf = bootstrap_read_devfs("mtd0", false,
-					part->nor_offset, part->nor_size, SZ_1M);
+					part->nor_offset, part->nor_size, SZ_1M, NULL);
 			if (!buf) {
 				pr_info("failed to load barebox from QSPI NOR flash at offset %#x\n",
 					part->nor_offset);

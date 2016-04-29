@@ -48,6 +48,8 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 	return NULL;
 }
 
+static int bootm_appendroot;
+
 void bootm_data_init_defaults(struct bootm_data *data)
 {
 	data->initrd_address = UIMAGE_INVALID_ADDRESS;
@@ -58,6 +60,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	getenv_ul("global.bootm.initrd.loadaddr", &data->initrd_address);
 	data->initrd_file = getenv_nonempty("global.bootm.initrd");
 	data->verify = bootm_get_verify_mode();
+	data->appendroot = bootm_appendroot;
 }
 
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
@@ -576,6 +579,18 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 	}
 
+	if (bootm_data->appendroot) {
+		char *rootarg;
+
+		rootarg = path_get_linux_rootarg(data->os_file);
+		if (!IS_ERR(rootarg)) {
+			printf("Adding \"%s\" to Kernel commandline\n", rootarg);
+			globalvar_add_simple("linux.bootargs.bootm.appendroot",
+					     rootarg);
+			free(rootarg);
+		}
+	}
+
 	printf("\nLoading %s '%s'", file_type_to_string(os_type),
 			data->os_file);
 	if (os_type == filetype_uimage &&
@@ -621,6 +636,7 @@ err_out:
 	if (data->of_root_node && data->of_root_node != of_get_root_node())
 		of_delete_node(data->of_root_node);
 
+	globalvar_remove("linux.bootargs.bootm.appendroot");
 	free(data->os_file);
 	free(data->oftree_file);
 	free(data->initrd_file);
@@ -634,6 +650,7 @@ static int bootm_init(void)
 	globalvar_add_simple("bootm.image", NULL);
 	globalvar_add_simple("bootm.image.loadaddr", NULL);
 	globalvar_add_simple("bootm.oftree", NULL);
+	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
 	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);

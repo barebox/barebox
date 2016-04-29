@@ -37,7 +37,7 @@ static __noreturn int socfpga_xload(void)
 		socfpga_cyclone5_mmc_init();
 
 		for (part = barebox_parts; part->mmc_disk; part++) {
-			buf = bootstrap_read_disk(barebox_parts->mmc_disk, "fat");
+			buf = bootstrap_read_disk(barebox_parts->mmc_disk, "fat", NULL);
 			if (!buf) {
 				pr_info("failed to load barebox from MMC %s\n",
 					part->mmc_disk);

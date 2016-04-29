@@ -14,7 +14,7 @@
 #include <libfile.h>
 #include <bootstrap.h>
 
-void* bootstrap_read_disk(const char *dev, const char *fstype)
+void* bootstrap_read_disk(const char *dev, char *fstype, size_t *bufsize)
 {
 	int ret;
 	void *buf;
@@ -33,6 +33,9 @@ void* bootstrap_read_disk(const char *dev, const char *fstype)
 		umount(path);
 		return NULL;
 	}
+
+	if (bufsize)
+		*bufsize = len;
 
 	return buf;
 }

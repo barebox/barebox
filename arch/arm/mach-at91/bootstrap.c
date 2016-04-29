@@ -89,7 +89,7 @@ static void at91bootstrap_boot_mmc(void)
 	kernel_entry_func func = NULL;
 
 	printf("Boot from mmc\n");
-	func = bootstrap_read_disk("disk0.0", NULL);
+	func = bootstrap_read_disk("disk0.0", NULL, NULL);
 	bootstrap_boot(func, false);
 	bootstrap_err("... failed\n");
 	free(func);

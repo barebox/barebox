@@ -33,6 +33,16 @@ int globalvar_add(const char *name,
 	return 0;
 }
 
+void globalvar_remove(const char *name)
+{
+	struct param_d *param = get_param_by_name(&global_device, name);
+
+	if (!param)
+		return;
+
+	dev_remove_param(param);
+}
+
 static int nv_save(const char *name, const char *val)
 {
 	int fd, ret;

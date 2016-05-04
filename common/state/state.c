@@ -99,6 +99,7 @@ static int state_do_load(struct state *state, enum state_flags flags)
 		goto out;
 	}
 
+	state->init_from_defaults = 0;
 	state->dirty = 0;
 
 out:
@@ -179,9 +180,13 @@ static struct state *state_new(const char *name)
 	state->dirty = 1;
 	dev_add_param_bool(&state->dev, "dirty", state_set_deny, NULL, &state->dirty,
 			   NULL);
+
 	state->save_on_shutdown = 1;
 	dev_add_param_bool(&state->dev, "save_on_shutdown", NULL, NULL,
 			   &state->save_on_shutdown, NULL);
+
+	dev_add_param_bool(&state->dev, "init_from_defaults", state_set_deny, NULL,
+			   &state->init_from_defaults, NULL);
 
 	list_add_tail(&state->list, &state_list);
 
@@ -642,6 +647,8 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	if (ret) {
 		goto out_release_state;
 	}
+
+	state->init_from_defaults = 1;
 
 	ret = of_register_fixup(of_state_fixup, state);
 	if (ret) {

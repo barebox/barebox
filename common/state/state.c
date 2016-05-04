@@ -153,6 +153,11 @@ void state_backend_set_readonly(struct state *state)
 	state_storage_set_readonly(&state->storage);
 }
 
+static int state_set_deny(struct param_d *p, void *priv)
+{
+	return -EROFS;
+}
+
 static struct state *state_new(const char *name)
 {
 	struct state *state;
@@ -172,7 +177,7 @@ static struct state *state_new(const char *name)
 	}
 
 	state->dirty = 1;
-	dev_add_param_bool(&state->dev, "dirty", NULL, NULL, &state->dirty,
+	dev_add_param_bool(&state->dev, "dirty", state_set_deny, NULL, &state->dirty,
 			   NULL);
 	state->save_on_shutdown = 1;
 	dev_add_param_bool(&state->dev, "save_on_shutdown", NULL, NULL,

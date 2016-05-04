@@ -41,6 +41,8 @@
 
 #define IMX_SDHCI_WML		0x44
 #define IMX_SDHCI_MIXCTRL	0x48
+#define IMX_SDHCI_DLL_CTRL	0x60
+#define IMX_SDHCI_MIX_CTRL_FBCLK_SEL	(BIT(25))
 
 struct fsl_esdhc_host {
 	struct mci_host		mci;
@@ -516,10 +518,22 @@ static int esdhc_reset(struct fsl_esdhc_host *host)
 {
 	void __iomem *regs = host->regs;
 	uint64_t start;
+	int val;
 
 	/* reset the controller */
 	esdhc_write32(regs + SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			SYSCTL_RSTA);
+
+	/* extra register reset for i.MX6 Solo/DualLite */
+	if (cpu_is_mx6()) {
+		/* reset bit FBCLK_SEL */
+		val = esdhc_read32(regs + IMX_SDHCI_MIXCTRL);
+		val &= ~IMX_SDHCI_MIX_CTRL_FBCLK_SEL;
+		esdhc_write32(regs + IMX_SDHCI_MIXCTRL, val);
+
+		/* reset delay line settings in IMX_SDHCI_DLL_CTRL */
+		esdhc_write32(regs + IMX_SDHCI_DLL_CTRL, 0x0);
+	}
 
 	start = get_time_ns();
 	/* hardware clears the bit when it is done */

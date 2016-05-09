@@ -32,17 +32,17 @@
 		reg = <0x00000000 0x00080000>;
 	};
 
-	environment_nand: partition@1 {
+	environment_nand: partition@80000 {
 		label = "env";
 		reg = <0x00080000 0x00020000>;
 	};
 
-	partition@2 {
+	partition@a0000 {
 		label = "kernel";
 		reg = <0x000a0000 0x00400000>;
 	};
 
-	partition@3 {
+	partition@4a0000 {
 		label = "root";
 		reg = <0x004a0000 0>;
 	};
@@ -54,17 +54,17 @@
 		reg = <0x00000000 0x00080000>;
 	};
 
-	environment_nor: partition@1 {
+	environment_nor: partition@80000 {
 		label = "env";
 		reg = <0x00080000 0x00020000>;
 	};
 
-	partition@2 {
+	partition@a0000 {
 		label = "kernel";
 		reg = <0x000a0000 0x00400000>;
 	};
 
-	partition@3 {
+	partition@4a0000 {
 		label = "root";
 		reg = <0x004a0000 0>;
 	};

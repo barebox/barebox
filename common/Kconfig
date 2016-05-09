@@ -536,6 +536,18 @@ config BLSPEC
 	  on a device and it allows the Operating System to install / update
 	  kernels.
 
+config FLEXIBLE_BOOTARGS
+	bool
+	prompt "flexible Linux bootargs generation"
+	depends on GLOBALVAR
+	help
+	  Select this to get a more flexible bootargs generation. With this
+	  option the bootargs are concatenated together from global variables
+	  beginning with 'global.linux.bootargs.' and 'global.linux.mtdparts.'
+	  This allows for more flexible scripting since with it it's possible
+	  to replace parts of the bootargs string without reconstructing it
+	  completely.
+
 config IMD
 	bool "barebox metadata support"
 

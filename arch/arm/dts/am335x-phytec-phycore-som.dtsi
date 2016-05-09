@@ -174,22 +174,22 @@
 			reg = <0x0 0x20000>;
 		};
 
-		partition@1 {
+		partition@20000 {
 			label = "barebox";
 			reg = <0x20000 0x80000>;
 		};
 
-		partition@2 {
+		partition@a0000 {
 			label = "bareboxenv";
 			reg = <0xa0000 0x20000>;
 		};
 
-		partition@3 {
+		partition@c0000 {
 			label = "oftree";
 			reg = <0xc0000 0x20000>;
 		};
 
-		partition@4 {
+		partition@e0000 {
 			label = "kernel";
 			reg = <0xe0000 0x0>;
 		};
@@ -269,42 +269,42 @@
 			reg = <0x0 0x20000>;
 		};
 
-		partition@1 {
+		partition@20000 {
 			label = "xload_backup1";
 			reg = <0x20000 0x20000>;
 		};
 
-		partition@2 {
+		partition@40000 {
 			label = "xload_backup2";
 			reg = <0x40000 0x20000>;
 		};
 
-		partition@3 {
+		partition@60000 {
 			label = "xload_backup3";
 			reg = <0x60000 0x20000>;
 		};
 
-		partition@4 {
+		partition@80000 {
 			label = "barebox";
 			reg = <0x80000 0x80000>;
 		};
 
-		partition@5 {
+		partition@100000 {
 			label = "bareboxenv";
 			reg = <0x100000 0x40000>;
 		};
 
-		partition@6 {
+		partition@140000 {
 			label = "oftree";
 			reg = <0x140000 0x40000>;
 		};
 
-		partition@7 {
+		partition@180000 {
 			label = "kernel";
 			reg = <0x180000 0x800000>;
 		};
 
-		partition@8 {
+		partition@980000 {
 			label = "root";
 			/*
 			 * Size 0x0 extends partition to

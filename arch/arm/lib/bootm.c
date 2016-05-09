@@ -67,21 +67,30 @@ static int sdram_start_and_size(unsigned long *start, unsigned long *size)
 	return 0;
 }
 
-static void get_kernel_addresses(unsigned long mem_start, size_t image_size,
+static int get_kernel_addresses(size_t image_size,
 				 int verbose, unsigned long *load_address,
-				 unsigned long *spacing)
+				 unsigned long *mem_free)
 {
+	unsigned long mem_start, mem_size;
+	int ret;
+	size_t image_decomp_size;
+	unsigned long spacing;
+
+	ret = sdram_start_and_size(&mem_start, &mem_size);
+	if (ret)
+		return ret;
+
 	/*
 	 * We don't know the exact decompressed size so just use a conservative
 	 * default of 4 times the size of the compressed image.
 	 */
-	size_t image_decomp_size = PAGE_ALIGN(image_size * 4);
+	image_decomp_size = PAGE_ALIGN(image_size * 4);
 
 	/*
 	 * By default put oftree/initrd close behind compressed kernel image to
 	 * avoid placing it outside of the kernels lowmem region.
 	 */
-	*spacing = SZ_1M;
+	spacing = SZ_1M;
 
 	if (*load_address == UIMAGE_INVALID_ADDRESS) {
 		/*
@@ -99,8 +108,12 @@ static void get_kernel_addresses(unsigned long mem_start, size_t image_size,
 		 * spacing to allow this relocation to happen without
 		 * overwriting anything placed behind the kernel.
 		 */
-		*spacing += image_decomp_size;
+		spacing += image_decomp_size;
 	}
+
+	*mem_free = PAGE_ALIGN(*load_address + image_size + spacing);
+
+	return 0;
 }
 
 static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int swap)
@@ -160,23 +173,19 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 
 static int do_bootm_linux(struct image_data *data)
 {
-	unsigned long load_address, mem_start, mem_size, mem_free, spacing;
+	unsigned long load_address, mem_free;
 	int ret;
-
-	ret = sdram_start_and_size(&mem_start, &mem_size);
-	if (ret)
-		return ret;
 
 	load_address = data->os_address;
 
-	get_kernel_addresses(mem_start, bootm_get_os_size(data),
-			     bootm_verbose(data), &load_address, &spacing);
+	ret = get_kernel_addresses(bootm_get_os_size(data),
+			     bootm_verbose(data), &load_address, &mem_free);
+	if (ret)
+		return ret;
 
 	ret = bootm_load_os(data, load_address);
 	if (ret)
 		return ret;
-
-	mem_free = PAGE_ALIGN(data->os_res->end + spacing);
 
 	return __do_bootm_linux(data, mem_free, 0);
 }
@@ -273,11 +282,7 @@ static int do_bootz_linux(struct image_data *data)
 	u32 end, start;
 	size_t image_size;
 	unsigned long load_address = data->os_address;
-	unsigned long mem_start, mem_size, mem_free, spacing;
-
-	ret = sdram_start_and_size(&mem_start, &mem_size);
-	if (ret)
-		return ret;
+	unsigned long mem_free;
 
 	fd = open(data->os_file, O_RDONLY);
 	if (fd < 0) {
@@ -315,8 +320,10 @@ static int do_bootz_linux(struct image_data *data)
 	image_size = end - start;
 	load_address = data->os_address;
 
-	get_kernel_addresses(mem_start, image_size, bootm_verbose(data),
-			     &load_address, &spacing);
+	ret = get_kernel_addresses(image_size, bootm_verbose(data),
+			     &load_address, &mem_free);
+	if (ret)
+		return ret;
 
 	data->os_res = request_sdram_region("zimage", load_address, image_size);
 	if (!data->os_res) {
@@ -351,8 +358,6 @@ static int do_bootz_linux(struct image_data *data)
 		goto err_out;
 
 	close(fd);
-
-	mem_free = PAGE_ALIGN(data->os_res->end + spacing);
 
 	return __do_bootm_linux(data, mem_free, swap);
 
@@ -570,7 +575,7 @@ static int armlinux_register_image_handler(void)
 		register_image_handler(&aimage_handler);
 		binfmt_register(&binfmt_aimage_hook);
 	}
-	if (IS_BUILTIN(CONFIG_CMD_BOOTM_FITIMAGE))
+	if (IS_BUILTIN(CONFIG_FITIMAGE))
 	        register_image_handler(&arm_fit_handler);
 	binfmt_register(&binfmt_arm_zimage_hook);
 	binfmt_register(&binfmt_barebox_hook);

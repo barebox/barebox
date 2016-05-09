@@ -233,9 +233,9 @@
 		reg = <0x0 0x80000>;
 	};
 
-	environment_usdhc4: partition@1 {
+	environment_usdhc4: partition@e0000 {
 		label = "barebox-environment";
-		reg = <0x80000 0x80000>;
+		reg = <0xe0000 0x20000>;
 	};
 };
 

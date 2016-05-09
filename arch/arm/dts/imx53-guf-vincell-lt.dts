@@ -361,15 +361,15 @@
 
 	partition@0 {
 		label = "barebox";
-		reg = <0x0 0x80000>;
+		reg = <0x0 0xe0000>;
 	};
 
-	bareboxenv: partition@1 {
+	bareboxenv: partition@e0000 {
 		label = "barebox-environment";
-		reg = <0x80000 0x80000>;
+		reg = <0xe0000 0x20000>;
 	};
 
-	partition@2 {
+	partition@100000 {
 		label = "ubi";
 		reg = <0x100000 0x0>;
 	};

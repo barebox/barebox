@@ -37,15 +37,15 @@
 
 		partition@0 {
 			label = "barebox";
-			reg = <0x0 0xc0000>;
+			reg = <0x0 0xe0000>;
 		};
 
-		environment_nor0: partition@1 {
+		environment_nor0: partition@e0000 {
 			label = "bareboxenv";
-			reg = <0xc0000 0x8000>;
+			reg = <0xe0000 0x20000>;
 		};
 
-		partition@2 {
+		partition@100000 {
 			label = "persistent";
 			reg = <0x100000 0xf00000>;
 		};

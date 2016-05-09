@@ -15,20 +15,20 @@
 
 	partition@0 {
 		label = "barebox";
-		reg = <0x0 0x80000>;
+		reg = <0x0 0xe0000>;
 	};
 
-	partition@1 {
+	partition@e0000 {
 		label = "environment";
-		reg = <0x80000 0x80000>;
+		reg = <0xe0000 0x20000>;
 	};
 
-	partition@2 {
+	partition@100000 {
 		label = "kernel";
 		reg = <0x100000 0x400000>;
 	};
 
-	partition@3 {
+	partition@500000 {
 		label = "rootfs";
 		reg = <0x500000 0x07B00000>;
 	};

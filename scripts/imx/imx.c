@@ -130,7 +130,8 @@ static int do_cmd_check(struct config_data *data, int argc, char *argv[])
 	return data->check(data, cmd, addr, mask);
 }
 
-static int do_cmd_write_mem(struct config_data *data, int argc, char *argv[])
+static int write_mem(struct config_data *data, int argc, char *argv[],
+		     int set_bits, int clear_bits)
 {
 	uint32_t addr, val, width;
 	char *end;
@@ -170,7 +171,22 @@ static int do_cmd_write_mem(struct config_data *data, int argc, char *argv[])
 		return -EINVAL;
 	};
 
-	return data->write_mem(data, addr, val, width);
+	return data->write_mem(data, addr, val, width, set_bits, clear_bits);
+}
+
+static int do_cmd_write_mem(struct config_data *data, int argc, char *argv[])
+{
+	return write_mem(data, argc, argv, 0, 0);
+}
+
+static int do_cmd_set_bits(struct config_data *data, int argc, char *argv[])
+{
+	return write_mem(data, argc, argv, 1, 0);
+}
+
+static int do_cmd_clear_bits(struct config_data *data, int argc, char *argv[])
+{
+	return write_mem(data, argc, argv, 0, 1);
 }
 
 static int do_loadaddr(struct config_data *data, int argc, char *argv[])
@@ -337,6 +353,12 @@ struct command cmds[] = {
 	{
 		.name = "wm",
 		.parse = do_cmd_write_mem,
+	}, {
+		.name = "set_bits",
+		.parse = do_cmd_set_bits,
+	}, {
+		.name = "clear_bits",
+		.parse = do_cmd_clear_bits,
 	}, {
 		.name = "check",
 		.parse = do_cmd_check,

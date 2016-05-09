@@ -252,8 +252,13 @@ static int add_header_v1(struct config_data *data, void *buf)
 	return 0;
 }
 
-static int write_mem_v1(uint32_t addr, uint32_t val, int width)
+static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, int clear_bits)
 {
+	if (set_bits || clear_bits) {
+		fprintf(stderr, "This SoC does not support setting/clearing bits\n");
+		return -EINVAL;
+	}
+
 	if (curdcd > MAX_DCD - 3) {
 		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
 		return -ENOMEM;
@@ -362,11 +367,19 @@ static void check_last_dcd(uint32_t cmd)
 	}
 }
 
-static int write_mem_v2(uint32_t addr, uint32_t val, int width)
+static int write_mem_v2(uint32_t addr, uint32_t val, int width, int set_bits, int clear_bits)
 {
 	uint32_t cmd;
 
 	cmd = (TAG_WRITE << 24) | width;
+
+	if (set_bits && clear_bits)
+		return -EINVAL;
+
+	if (set_bits)
+		cmd |= 3 << 3;
+	if (clear_bits)
+		cmd |= 2 << 3;
 
 	if (curdcd > MAX_DCD - 3) {
 		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
@@ -449,13 +462,14 @@ static int check(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t
 	return 0;
 }
 
-static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width)
+static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width,
+		     int set_bits, int clear_bits)
 {
 	switch (data->header_version) {
 	case 1:
-		return write_mem_v1(addr, val, width);
+		return write_mem_v1(addr, val, width, set_bits, clear_bits);
 	case 2:
-		return write_mem_v2(addr, val, width);
+		return write_mem_v2(addr, val, width, set_bits, clear_bits);
 	default:
 		return -EINVAL;
 	}

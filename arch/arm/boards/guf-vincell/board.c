@@ -40,7 +40,8 @@ static void vincell_fec_reset(void)
 
 static int vincell_devices_init(void)
 {
-	if (!of_machine_is_compatible("guf,imx53-vincell"))
+	if (!of_machine_is_compatible("guf,imx53-vincell") &&
+	    !of_machine_is_compatible("guf,imx53-vincell-lt"))
 		return 0;
 
 	writel(0, MX53_M4IF_BASE_ADDR + 0xc);

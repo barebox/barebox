@@ -412,7 +412,7 @@ int do_status(void)
 
 #define V(a) (((a) >> 24) & 0xff), (((a) >> 16) & 0xff), (((a) >> 8) & 0xff), ((a) & 0xff)
 
-static int read_memory(unsigned addr, unsigned char *dest, unsigned cnt)
+static int read_memory(unsigned addr, void *dest, unsigned cnt)
 {
 	static unsigned char read_reg_command[] = {
 		1,
@@ -506,6 +506,9 @@ static int write_memory(unsigned addr, unsigned val, int width)
 	write_reg_command[4] = (unsigned char)(addr >> 8);
 	write_reg_command[5] = (unsigned char)(addr);
 
+	if (verbose > 1)
+		printf("write memory reg: 0x%08x val: 0x%08x width: %d\n", addr, val, width);
+
 	switch (width) {
 		case 1:
 			ds = 0x8;
@@ -554,6 +557,31 @@ static int write_memory(unsigned addr, unsigned val, int width)
 		printf("w4 in err=%i, last_trans=%i  %02x %02x %02x %02x\n",
 				err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3]);
 	return err;
+}
+
+static int modify_memory(unsigned addr, unsigned val, int width, int set_bits, int clear_bits)
+{
+	int err;
+
+	if (set_bits || clear_bits) {
+		uint32_t r;
+
+		err = read_memory(addr, &r, 4);
+		if (err < 0)
+			return err;
+
+		if (verbose > 1)
+			printf("reg 0x%08x val: 0x%08x %s0x%08x\n", addr, r,
+			       set_bits ? "|= " : "&= ~", val);
+
+		if (set_bits)
+			r |= val;
+		if (clear_bits)
+			r &= ~val;
+		val = r;
+	}
+
+	return write_memory(addr, val, 4);
 }
 
 static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char type)
@@ -682,15 +710,24 @@ static int write_dcd_table_ivt(struct imx_flash_header_v2 *hdr, unsigned char *f
 	while (dcd < dcd_end) {
 		unsigned s_length = (dcd[1] << 8) + dcd[2];
 		unsigned char *s_end = dcd + s_length;
+		int set_bits = 0, clear_bits = 0;
 
-		printf("sub dcd length %x\n", s_length);
+		printf("command: 0x%02x sub dcd length: 0x%04x, flags: 0x%02x\n", dcd[0], s_length, dcd[3]);
 
-		if ((dcd[0] != 0xcc) || (dcd[3] != 0x04)) {
+		if ((dcd[0] != 0xcc)) {
 			printf("Skipping unknown sub tag 0x%02x with len %04x\n", dcd[0], s_length);
 			usleep(50000);
 			dcd += s_length;
 			continue;
 		}
+
+		if (dcd[3] & PARAMETER_FLAG_MASK) {
+			if (dcd[3] & PARAMETER_FLAG_SET)
+				set_bits = 1;
+			else
+				clear_bits = 1;
+		}
+
 		dcd += 4;
 
 		if (s_end > dcd_end) {
@@ -703,9 +740,8 @@ static int write_dcd_table_ivt(struct imx_flash_header_v2 *hdr, unsigned char *f
 			unsigned val = (dcd[4] << 24) | (dcd[5] << 16) | (dcd[6] << 8) | dcd[7];
 
 			dcd += 8;
-			err = write_memory(addr, val, 4);
-			if (err < 0)
-				return err;
+
+			modify_memory(addr, val, 4, set_bits, clear_bits);
 		}
 	}
 	return err;
@@ -1203,11 +1239,10 @@ cleanup:
 	return ret;
 }
 
-static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width)
+static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width,
+		     int set_bits, int clear_bits)
 {
-	printf("wr 0x%08x 0x%08x\n", addr, val);
-
-	return write_memory(addr, val, width);
+	return modify_memory(addr, val, width, set_bits, clear_bits);
 }
 
 static int parse_initfile(const char *filename)

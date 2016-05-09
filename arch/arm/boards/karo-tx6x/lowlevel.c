@@ -77,3 +77,23 @@ ENTRY_FUNCTION(start_imx6q_tx6x_1g, r0, r1, r2)
 
 	imx6q_barebox_entry(fdt);
 }
+
+BAREBOX_IMD_TAG_STRING(tx6x_mx6_memsize_2G, IMD_TYPE_PARAMETER, "memsize=2048", 0);
+
+ENTRY_FUNCTION(start_imx6q_tx6x_2g, r0, r1, r2)
+{
+	void *fdt;
+
+	imx6_cpu_lowlevel_init();
+
+	arm_setup_stack(0x00920000 - 8);
+
+	IMD_USED(tx6x_mx6_memsize_2G);
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart();
+
+	fdt = __dtb_imx6q_tx6q_start - get_runtime_offset();
+
+	imx6q_barebox_entry(fdt);
+}

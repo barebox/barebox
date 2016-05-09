@@ -29,6 +29,8 @@
 #include <dma.h>
 #include <fs.h>
 #include <libfile.h>
+#include <ubiformat.h>
+#include <stdlib.h>
 #include <file-list.h>
 #include <progress.h>
 #include <environment.h>
@@ -688,9 +690,12 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 	}
 
 	if (filetype == filetype_ubi) {
-		char *cmd;
 		int fd;
 		struct mtd_info_user meminfo;
+		struct ubiformat_args args = {
+			.yes = 1,
+			.image = FASTBOOT_TMPFILE,
+		};
 
 		fd = open(filename, O_RDONLY);
 		if (fd < 0)
@@ -702,14 +707,14 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 		if (ret)
 			goto copy;
 
-		cmd = basprintf("ubiformat -y -f %s %s", FASTBOOT_TMPFILE,
-				  filename);
-
 		fastboot_tx_print(f_fb, "INFOThis is an UBI image...");
 
-		ret = run_command(cmd);
+		if (!IS_ENABLED(CONFIG_UBIFORMAT)) {
+			fastboot_tx_print(f_fb, "FAILubiformat is not available");
+			return;
+		}
 
-		free(cmd);
+		ret = ubiformat(meminfo.mtd, &args);
 
 		if (ret) {
 			fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
@@ -867,6 +872,11 @@ static void cb_oem_exec(struct usb_ep *ep, struct usb_request *req, const char *
 {
 	struct f_fastboot *f_fb = req->context;
 	int ret;
+
+	if (!IS_ENABLED(CONFIG_COMMAND)) {
+		fastboot_tx_print(f_fb, "FAILno command support available");
+		return;
+	}
 
 	ret = run_command(cmd);
 	if (ret < 0)

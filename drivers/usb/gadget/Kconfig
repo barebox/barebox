@@ -44,7 +44,6 @@ config USB_GADGET_SERIAL
 config USB_GADGET_FASTBOOT
 	bool
 	select BANNER
-	depends on COMMAND_SUPPORT
 	prompt "Android Fastboot support"
 
 endif

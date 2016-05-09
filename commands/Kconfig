@@ -680,9 +680,7 @@ config CMD_UBI
 
 config CMD_UBIFORMAT
 	tristate
-	depends on MTD_UBI
-	select LIBSCAN
-	select LIBUBIGEN
+	depends on UBIFORMAT
 	prompt "ubiformat"
 
 config CMD_UMOUNT

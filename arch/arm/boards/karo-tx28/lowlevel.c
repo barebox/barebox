@@ -47,7 +47,7 @@ static noinline void karo_tx28_init(void)
 
 	pr_debug("initializing SDRAM...\n");
 
-	mx28_mem_init();
+	mx28_mem_init(mx28_dram_vals_default);
 
 	pr_debug("DONE\n");
 }

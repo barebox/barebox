@@ -637,29 +637,6 @@ int blspec_scan_devicename(struct blspec *blspec, const char *devname)
 	return blspec_scan_device(blspec, dev);
 }
 
-static int blspec_append_root(struct blspec_entry *entry)
-{
-	const char *appendroot;
-	char *rootarg;
-
-	appendroot = blspec_entry_var_get(entry, "linux-appendroot");
-	if (!appendroot || strcmp(appendroot, "true"))
-		return 0;
-
-	rootarg = path_get_linux_rootarg(entry->rootpath);
-	if (IS_ERR(rootarg)) {
-		pr_err("Getting root argument for %s failed with: %s\n",
-				entry->rootpath, strerrorp(rootarg));
-		return PTR_ERR(rootarg);
-	}
-
-	globalvar_add_simple("linux.bootargs.dyn.blspec.appendroot", rootarg);
-
-	free(rootarg);
-
-	return 0;
-}
-
 /*
  * blspec_boot - boot an entry
  *
@@ -671,6 +648,7 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 {
 	int ret;
 	const char *abspath, *devicetree, *options, *initrd, *linuximage;
+	const char *appendroot;
 	struct bootm_data data = {
 		.initrd_address = UIMAGE_INVALID_ADDRESS,
 		.os_address = UIMAGE_SOME_ADDRESS,
@@ -709,9 +687,18 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 
 	globalvar_add_simple("linux.bootargs.dyn.blspec", options);
 
-	ret = blspec_append_root(entry);
-	if (ret)
-		goto err_out;
+	appendroot = blspec_entry_var_get(entry, "linux-appendroot");
+	if (appendroot) {
+		int val;
+
+		ret = strtobool(appendroot, &val);
+		if (ret) {
+			pr_err("Invalid value \"%s\" for appendroot option\n",
+			       appendroot);
+			goto err_out;
+		}
+		data.appendroot = val;
+	}
 
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
 			entry->cdev ? dev_name(entry->cdev->dev) : "none");

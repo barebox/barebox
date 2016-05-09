@@ -21,6 +21,11 @@ struct bootm_data {
 	enum bootm_verify verify;
 	bool force;
 	bool dryrun;
+	/*
+	 * appendroot - if true, try to add a suitable root= Kernel option to
+	 * mount the rootfs from the same device as the Kernel comes from.
+	 */
+	bool appendroot;
 	unsigned long initrd_address;
 	unsigned long os_address;
 	unsigned long os_entry;

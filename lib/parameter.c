@@ -27,6 +27,7 @@
 #include <net.h>
 #include <malloc.h>
 #include <driver.h>
+#include <string.h>
 #include <linux/err.h>
 
 struct param_d *get_param_by_name(struct device_d *dev, const char *name)
@@ -314,10 +315,13 @@ static int param_int_set(struct device_d *dev, struct param_d *p, const char *va
 	if (!val)
 		return -EINVAL;
 
-	*pi->value = simple_strtol(val, NULL, 0);
-
-	if (pi->flags & PARAM_INT_FLAG_BOOL)
-		*pi->value = !!*pi->value;
+	if (pi->flags & PARAM_INT_FLAG_BOOL) {
+		ret = strtobool(val, pi->value);
+		if (ret)
+			return ret;
+	} else {
+		*pi->value = simple_strtol(val, NULL, 0);
+	}
 
 	if (!pi->set)
 		return 0;

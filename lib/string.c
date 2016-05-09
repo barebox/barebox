@@ -739,3 +739,46 @@ void *memdup(const void *orig, size_t size)
 	return buf;
 }
 EXPORT_SYMBOL(memdup);
+
+/**
+ * strtobool - convert a string to a boolean value
+ * @str - The string
+ * @val - The boolean value returned.
+ *
+ * This function treats
+ * - any positive (nonzero) number as true
+ * - "0" as false
+ * - "true" (case insensitive) as true
+ * - "false" (case insensitive) as false
+ *
+ * Every other value results in an error and the @val is not
+ * modified. The caller is expected to initialize @val with the
+ * correct default before calling strtobool.
+ *
+ * Returns 0 for success or negative error code if the variable does
+ * not exist or contains something this function does not recognize
+ * as true or false.
+ */
+int strtobool(const char *str, int *val)
+{
+	if (!str || !*str)
+		return -EINVAL;
+
+	if (simple_strtoul(str, NULL, 0) > 0) {
+		*val = true;
+		return 0;
+	}
+
+	if (!strcmp(str, "0") || !strcasecmp(str, "false")) {
+		*val = false;
+		return 0;
+	}
+
+	if (!strcasecmp(str, "true")) {
+		*val = true;
+		return 0;
+	}
+
+	return -EINVAL;
+}
+EXPORT_SYMBOL(strtobool);

@@ -28,6 +28,7 @@
 #include <xfuncs.h>
 #include <errno.h>
 #include <init.h>
+#include <string.h>
 #include <environment.h>
 
 static struct env_context root = {
@@ -323,20 +324,25 @@ int getenv_uint(const char *var , unsigned int *val)
 }
 EXPORT_SYMBOL(getenv_uint);
 
+/**
+ * getenv_bool - get a boolean value from an environment variable
+ * @var - Variable name
+ * @val - The boolean value returned.
+ *
+ * This function treats
+ * - any positive (nonzero) number as true
+ * - "0" as false
+ * - "true" (case insensitive) as true
+ * - "false" (case insensitive) as false
+ *
+ * Returns 0 for success or negative error code if the variable does
+ * not exist or contains something this function does not recognize
+ * as true or false.
+ */
 int getenv_bool(const char *var, int *val)
 {
 	const char *valstr = getenv(var);
 
-	if (!valstr || !*valstr)
-		return -EINVAL;
-
-	if (!*valstr)
-		*val = false;
-	else if (*valstr == '0')
-		*val = false;
-	else
-		*val = true;
-
-	return 0;
+	return strtobool(valstr, val);
 }
 EXPORT_SYMBOL(getenv_bool);

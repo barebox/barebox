@@ -571,7 +571,15 @@ static int mxs_mci_probe(struct device_d *hw_dev)
 		host->f_min = pd->f_min;
 		host->f_max =  pd->f_max;
 	} else {
-		host->voltages = MMC_VDD_32_33 | MMC_VDD_33_34,	/* fixed to 3.3 V */
+		/* fixed to 3.3 V */
+		host->voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
+
+		if (hw_dev->device_node) {
+			const char *alias = of_alias_get(hw_dev->device_node);
+			if (alias)
+				host->devname = xstrdup(alias);
+		}
+
 		mci_of_parse(host);
 	}
 

@@ -327,6 +327,7 @@ int menu_show(struct menu *m)
 			}
 			break;
 		}
+		case 'k':
 		case BB_KEY_UP:
 			m->selected = list_entry(m->selected->list.prev, struct menu_entry,
 						 list);
@@ -336,6 +337,7 @@ int menu_show(struct menu *m)
 			}
 			repaint = 1;
 			break;
+		case 'j':
 		case BB_KEY_DOWN:
 			m->selected = list_entry(m->selected->list.next, struct menu_entry,
 						 list);
@@ -346,13 +348,14 @@ int menu_show(struct menu *m)
 			repaint = 1;
 			break;
 		case ' ':
-			if (m->selected->type != MENU_ENTRY_BOX)
+			if (m->selected->type == MENU_ENTRY_BOX) {
+				m->selected->box_state = !m->selected->box_state;
+				if (m->selected->action)
+					m->selected->action(m, m->selected);
+				repaint = 1;
 				break;
-			m->selected->box_state = !m->selected->box_state;
-			if (m->selected->action)
-				m->selected->action(m, m->selected);
-			repaint = 1;
-			break;
+			}
+			/* no break */
 		case BB_KEY_ENTER:
 			if (ch_previous == BB_KEY_RETURN)
 				break;

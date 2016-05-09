@@ -17,6 +17,7 @@ config SRAM
 
 config STATE_DRV
 	tristate "state driver"
+	depends on OFDEVICE
 	depends on STATE
 
 endmenu

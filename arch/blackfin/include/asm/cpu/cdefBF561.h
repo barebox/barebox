@@ -11,7 +11,7 @@
 #ifndef _CDEF_BF561_H
 #define _CDEF_BF561_H
 
-/* 
+/*
  * #if !defined(__ADSPBF561__)
  * #warning cdefBF561.h should only be included for BF561 chip.
  * #endif
@@ -299,7 +299,7 @@
 #define pPPI0_DELAY		(volatile unsigned short *)PPI0_DELAY
 #define pPPI0_FRAME		(volatile unsigned short *)PPI0_FRAME
 
-/* Parallel Peripheral Interface (PPI) 1 registers (0xFFC0 1300-0xFFC0 13FF)*/ 
+/* Parallel Peripheral Interface (PPI) 1 registers (0xFFC0 1300-0xFFC0 13FF)*/
 #define pPPI1_CONTROL		(volatile unsigned short *)PPI1_CONTROL
 #define pPPI1_STATUS		(volatile unsigned short *)PPI1_STATUS
 #define pPPI1_COUNT		(volatile unsigned short *)PPI1_COUNT

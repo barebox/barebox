@@ -100,6 +100,9 @@ int nvvar_add(const char *name, const char *value)
 	struct param_d *p, *gp;
 	int ret;
 
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return -ENOSYS;
+
 	gp = get_param_by_name(&nv_device, name);
 	if (gp) {
 		ret = dev_set_param(&global_device, name, value);
@@ -141,6 +144,9 @@ int nvvar_remove(const char *name)
 	struct param_d *p;
 	char *fname;
 
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return -ENOSYS;
+
 	p = get_param_by_name(&nv_device, name);
 	if (!p)
 		return -ENOENT;
@@ -162,6 +168,9 @@ int nvvar_load(void)
 	int ret;
 	DIR *dir;
 	struct dirent *d;
+
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return -ENOSYS;
 
 	dir = opendir("/env/nv");
 	if (!dir)
@@ -195,7 +204,7 @@ static void device_param_print(struct device_d *dev)
 		const char *p = dev_get_param(dev, param->name);
 		const char *nv = NULL;
 
-		if (dev != &nv_device)
+		if (IS_ENABLED(CONFIG_NVVAR) && dev != &nv_device)
 			nv = dev_get_param(&nv_device, param->name);
 
 		printf("%s%s: %s\n", nv ? "* " : "  ", param->name, p);
@@ -204,6 +213,9 @@ static void device_param_print(struct device_d *dev)
 
 void nvvar_print(void)
 {
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return;
+
 	device_param_print(&nv_device);
 }
 
@@ -275,7 +287,9 @@ int globalvar_add_simple(const char *name, const char *value)
 static int globalvar_init(void)
 {
 	register_device(&global_device);
-	register_device(&nv_device);
+
+	if (IS_ENABLED(CONFIG_NVVAR))
+		register_device(&nv_device);
 
 	globalvar_add_simple("version", UTS_RELEASE);
 

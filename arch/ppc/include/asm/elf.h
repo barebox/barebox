@@ -129,18 +129,18 @@ typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
 
 /* Altivec registers */
 /*
- * The entries with indexes 0-31 contain the corresponding vector registers. 
- * The entry with index 32 contains the vscr as the last word (offset 12) 
- * within the quadword.  This allows the vscr to be stored as either a 
- * quadword (since it must be copied via a vector register to/from storage) 
- * or as a word.  
+ * The entries with indexes 0-31 contain the corresponding vector registers.
+ * The entry with index 32 contains the vscr as the last word (offset 12)
+ * within the quadword.  This allows the vscr to be stored as either a
+ * quadword (since it must be copied via a vector register to/from storage)
+ * or as a word.
  *
- * 64-bit kernel notes: The entry at index 33 contains the vrsave as the first  
+ * 64-bit kernel notes: The entry at index 33 contains the vrsave as the first
  * word (offset 0) within the quadword.
  *
- * This definition of the VMX state is compatible with the current PPC32 
- * ptrace interface.  This allows signal handling and ptrace to use the same 
- * structures.  This also simplifies the implementation of a bi-arch 
+ * This definition of the VMX state is compatible with the current PPC32
+ * ptrace interface.  This allows signal handling and ptrace to use the same
+ * structures.  This also simplifies the implementation of a bi-arch
  * (combined (32- and 64-bit) gdb.
  *
  * Note that it's _not_ compatible with 32 bits ucontext which stuffs the
@@ -243,7 +243,7 @@ do {								\
  */
 # define elf_read_implies_exec(ex, exec_stk) (test_thread_flag(TIF_32BIT) ? \
 		(exec_stk != EXSTACK_DISABLE_X) : 0)
-#else 
+#else
 # define SET_PERSONALITY(ex, ibcs2) set_personality((ibcs2)?PER_SVR4:PER_LINUX)
 #endif /* __powerpc64__ */
 

@@ -251,7 +251,7 @@ struct phy_driver {
 
 	struct driver_d	 drv;
 };
-#define to_phy_driver(d) container_of(d, struct phy_driver, drv)
+#define to_phy_driver(d) ((d) ? container_of(d, struct phy_driver, drv) : NULL)
 
 #define PHY_ANY_ID "MATCH ANY PHY"
 #define PHY_ANY_UID 0xffffffff

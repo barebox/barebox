@@ -36,7 +36,7 @@
 // System Reset and Interrupt Controller registers for
 // core A (0xFFC0 0100-0xFFC0 01FF)
 #define SICA_SWRST              0xFFC00100	// Software Reset register
-#define SICA_SYSCR              0xFFC00104	// System Reset Configuration 
+#define SICA_SYSCR              0xFFC00104	// System Reset Configuration
 						// register
 #define SICA_RVECT              0xFFC00108	// SIC Reset Vector Address
 						// Register
@@ -146,22 +146,22 @@
 						// Register
 
 // Timer 0-7 registers (0xFFC0 0600-0xFFC0 06FF)
-#define TIMER0_CONFIG 		0xFFC00600	// Timer0 Configuration 
+#define TIMER0_CONFIG 		0xFFC00600	// Timer0 Configuration
 						// register
 #define TIMER0_COUNTER 		0xFFC00604	// Timer0 Counter register
 #define TIMER0_PERIOD 		0xFFC00608	// Timer0 Period register
 #define TIMER0_WIDTH 		0xFFC0060C	// Timer0 Width register
-#define TIMER1_CONFIG 		0xFFC00610	// Timer1 Configuration 
+#define TIMER1_CONFIG 		0xFFC00610	// Timer1 Configuration
 						// register
 #define TIMER1_COUNTER 		0xFFC00614	// Timer1 Counter register
 #define TIMER1_PERIOD 		0xFFC00618	// Timer1 Period register
 #define TIMER1_WIDTH 		0xFFC0061C	// Timer1 Width register
-#define TIMER2_CONFIG 		0xFFC00620	// Timer2 Configuration 
+#define TIMER2_CONFIG 		0xFFC00620	// Timer2 Configuration
 						// register
 #define TIMER2_COUNTER 		0xFFC00624	// Timer2 Counter register
 #define TIMER2_PERIOD 		0xFFC00628	// Timer2 Period register
 #define TIMER2_WIDTH 		0xFFC0062C	// Timer2 Width register
-#define TIMER3_CONFIG 		0xFFC00630	// Timer3 Configuration 
+#define TIMER3_CONFIG 		0xFFC00630	// Timer3 Configuration
 						// register
 #define TIMER3_COUNTER 		0xFFC00634	// Timer3 Counter register
 #define TIMER3_PERIOD 		0xFFC00638	// Timer3 Period register
@@ -171,17 +171,17 @@
 #define TIMER4_COUNTER 		0xFFC00644	// Timer4 Counter register
 #define TIMER4_PERIOD 		0xFFC00648	// Timer4 Period register
 #define TIMER4_WIDTH 		0xFFC0064C	// Timer4 Width register
-#define TIMER5_CONFIG 		0xFFC00650	// Timer5 Configuration 
+#define TIMER5_CONFIG 		0xFFC00650	// Timer5 Configuration
 						// register
 #define TIMER5_COUNTER 		0xFFC00654	// Timer5 Counter register
 #define TIMER5_PERIOD 		0xFFC00658	// Timer5 Period register
 #define TIMER5_WIDTH 		0xFFC0065C	// Timer5 Width register
-#define TIMER6_CONFIG 		0xFFC00660	// Timer6 Configuration 
+#define TIMER6_CONFIG 		0xFFC00660	// Timer6 Configuration
 						// register
 #define TIMER6_COUNTER 		0xFFC00664	// Timer6 Counter register
 #define TIMER6_PERIOD 		0xFFC00668	// Timer6 Period register
 #define TIMER6_WIDTH 		0xFFC0066C	// Timer6 Width register
-#define TIMER7_CONFIG 		0xFFC00670	// Timer7 Configuration 
+#define TIMER7_CONFIG 		0xFFC00670	// Timer7 Configuration
 						// register
 #define TIMER7_COUNTER 		0xFFC00674	// Timer7 Counter register
 #define TIMER7_PERIOD 		0xFFC00678	// Timer7 Period register
@@ -192,22 +192,22 @@
 #define TMRS8_STATUS 		0xFFC00688	// Timer Status register
 
 // Timer registers 8-11 (0xFFC0 1600-0xFFC0 16FF)
-#define TIMER8_CONFIG 		0xFFC01600	// Timer8 Configuration 
+#define TIMER8_CONFIG 		0xFFC01600	// Timer8 Configuration
 						// register
 #define TIMER8_COUNTER 		0xFFC01604	// Timer8 Counter register
 #define TIMER8_PERIOD 		0xFFC01608	// Timer8 Period register
 #define TIMER8_WIDTH 		0xFFC0160C	// Timer8 Width register
-#define TIMER9_CONFIG 		0xFFC01610	// Timer9 Configuration 
+#define TIMER9_CONFIG 		0xFFC01610	// Timer9 Configuration
 						// register
 #define TIMER9_COUNTER 		0xFFC01614	// Timer9 Counter register
 #define TIMER9_PERIOD 		0xFFC01618	// Timer9 Period register
 #define TIMER9_WIDTH 		0xFFC0161C	// Timer9 Width register
-#define TIMER10_CONFIG 		0xFFC01620	// Timer10 Configuration 
+#define TIMER10_CONFIG 		0xFFC01620	// Timer10 Configuration
 						// register
 #define TIMER10_COUNTER		0xFFC01624	// Timer10 Counter register
 #define TIMER10_PERIOD 		0xFFC01628	// Timer10 Period register
 #define TIMER10_WIDTH 		0xFFC0162C	// Timer10 Width register
-#define TIMER11_CONFIG 		0xFFC01630	// Timer11 Configuration 
+#define TIMER11_CONFIG 		0xFFC01630	// Timer11 Configuration
 						// register
 #define TIMER11_COUNTER		0xFFC01634	// Timer11 Counter register
 #define TIMER11_PERIOD 		0xFFC01638	// Timer11 Period register
@@ -240,9 +240,9 @@
 						// register
 #define FIO0_DIR 		0xFFC00730	// Flag Direction  register
 #define FIO0_POLAR 	        0xFFC00734	// Flag Polarity register
-#define FIO0_EDGE 	        0xFFC00738	// Flag Interrupt Sensitivity 
+#define FIO0_EDGE 	        0xFFC00738	// Flag Interrupt Sensitivity
 			        		// register
-#define FIO0_BOTH 	        0xFFC0073C	// Flag Set on Both Edges 
+#define FIO0_BOTH 	        0xFFC0073C	// Flag Set on Both Edges
 			        		// register
 #define FIO0_INEN 	        0xFFC00740	// Flag Input Enable register
 
@@ -269,9 +269,9 @@
 			        		// register
 #define FIO1_DIR 	       	0xFFC01530	// Flag Direction register
 #define FIO1_POLAR 	       	0xFFC01534	// Flag Polarity register
-#define FIO1_EDGE 	       	0xFFC01538	// Flag  Interrupt Sensitivity 
+#define FIO1_EDGE 	       	0xFFC01538	// Flag  Interrupt Sensitivity
 						// register
-#define FIO1_BOTH 	       	0xFFC0153C	// Flag Set on Both Edges 
+#define FIO1_BOTH 	       	0xFFC0153C	// Flag Set on Both Edges
 						// register
 #define FIO1_INEN 	       	0xFFC01540	// Flag Input Enable register
 
@@ -298,9 +298,9 @@
 			        		// register
 #define FIO2_DIR 	      	0xFFC01730	// Flag Direction register
 #define FIO2_POLAR 	       	0xFFC01734	// Flag Polarity register
-#define FIO2_EDGE 	       	0xFFC01738	// Flag Interrupt Sensitivity 
+#define FIO2_EDGE 	       	0xFFC01738	// Flag Interrupt Sensitivity
 						// register
-#define FIO2_BOTH 	       	0xFFC0173C	// Flag Set on Both Edges 
+#define FIO2_BOTH 	       	0xFFC0173C	// Flag Set on Both Edges
 						// register
 #define FIO2_INEN 	       	0xFFC01740	// Flag Input Enable register
 
@@ -386,8 +386,8 @@
 #define SPORT1_MRCS3            0xFFC0095C	// SPORT1 Multi-Channel
 			        		// Receive Select Register 3
 
-// Asynchronous Memory Controller - External Bus Interface Unit 
-#define EBIU_AMGCTL		0xFFC00A00	// Asynchronous Memory 
+// Asynchronous Memory Controller - External Bus Interface Unit
+#define EBIU_AMGCTL		0xFFC00A00	// Asynchronous Memory
 						// Global Control Register
 #define EBIU_AMBCTL0		0xFFC00A04	// Asynchronous Memory
 						// Bank Control Register 0
@@ -395,10 +395,10 @@
 						// Bank Control Register 1
 
 // SDRAM Controller External Bus Interface Unit (0xFFC00A00 - 0xFFC00AFF)
-#define EBIU_SDGCTL		0xFFC00A10	// SDRAM Global Control 
+#define EBIU_SDGCTL		0xFFC00A10	// SDRAM Global Control
 						// Register
 #define EBIU_SDBCTL		0xFFC00A14	// SDRAM Bank Control Register
-#define EBIU_SDRRC 		0xFFC00A18	// SDRAM Refresh Rate Control 
+#define EBIU_SDRRC 		0xFFC00A18	// SDRAM Refresh Rate Control
 						// Register
 #define EBIU_SDSTAT		0xFFC00A1C	// SDRAM Status Register
 
@@ -442,7 +442,7 @@
 						// Addr Increment
 #define DMA1_0_CURR_DESC_PTR	0xFFC01C20	// DMA1 Channel 0 Current
 						// Descriptor Pointer
-#define DMA1_0_CURR_ADDR	0xFFC01C24	// DMA1 Channel 0 Current 
+#define DMA1_0_CURR_ADDR	0xFFC01C24	// DMA1 Channel 0 Current
 						// Address Pointer
 #define DMA1_0_CURR_X_COUNT	0xFFC01C30	// DMA1 Channel 0 Current Inner
 						// Loop Count
@@ -710,7 +710,7 @@
 						// Loop Count
 #define DMA1_10_IRQ_STATUS	0xFFC01EA8	// DMA1 Channel 10 Interrupt
 						// /Status Register
-#define DMA1_10_PERIPHERAL_MAP	0xFFC01EAC	// DMA1 Channel 10 Peripheral 
+#define DMA1_10_PERIPHERAL_MAP	0xFFC01EAC	// DMA1 Channel 10 Peripheral
 						// Map Register
 
 #define DMA1_11_CONFIG		0xFFC01EC8	// DMA1 Channel 11 Configuration
@@ -736,7 +736,7 @@
 						// Loop Count
 #define DMA1_11_IRQ_STATUS	0xFFC01EE8	// DMA1 Channel 11 Interrupt
 						// /Status Register
-#define DMA1_11_PERIPHERAL_MAP	0xFFC01EEC	// DMA1 Channel 11 Peripheral 
+#define DMA1_11_PERIPHERAL_MAP	0xFFC01EEC	// DMA1 Channel 11 Peripheral
 						// Map Register
 
 // Memory DMA1 Controller registers (0xFFC0 1E80-0xFFC0 1FFF)
@@ -1134,7 +1134,7 @@
 						// Loop Count
 #define DMA2_10_IRQ_STATUS	0xFFC00EA8	// DMA2 Channel 10 Interrupt
 						// /Status Register
-#define DMA2_10_PERIPHERAL_MAP	0xFFC00EAC	// DMA2 Channel 10 Peripheral 
+#define DMA2_10_PERIPHERAL_MAP	0xFFC00EAC	// DMA2 Channel 10 Peripheral
 						// Map Register
 
 #define DMA2_11_CONFIG		0xFFC00EC8	// DMA2 Channel 11 Configuration
@@ -1160,7 +1160,7 @@
 						// Loop Count
 #define DMA2_11_IRQ_STATUS	0xFFC00EE8	// DMA2 Channel 11 Interrupt
 						// /Status Register
-#define DMA2_11_PERIPHERAL_MAP	0xFFC00EEC	// DMA2 Channel 11 Peripheral 
+#define DMA2_11_PERIPHERAL_MAP	0xFFC00EEC	// DMA2 Channel 11 Peripheral
 						// Map Register
 
 // Memory DMA2 Controller registers (0xFFC0 0E80-0xFFC0 0FFF)
@@ -1190,7 +1190,7 @@
 #define MDMA2_D0_IRQ_STATUS	0xFFC00F28	// MemDMA2 Stream 0 Dest
 						// Interrupt/Status Register
 #define MDMA2_D0_PERIPHERAL_MAP 0xFFC00F2C	// MemDMA2 Stream 0
-						// Destination Peripheral Map 
+						// Destination Peripheral Map
 						// register
 
 #define MDMA2_S0_CONFIG		0xFFC00F48	// MemDMA2 Stream 0 Source
@@ -1247,7 +1247,7 @@
 #define MDMA2_D1_IRQ_STATUS	0xFFC00FA8	// MemDMA2 Stream 1 Destination
 						// Interrupt/Status Reg
 #define MDMA2_D1_PERIPHERAL_MAP 0xFFC00FAC	// MemDMA2 Stream 1
-						// Destination Peripheral Map 
+						// Destination Peripheral Map
 						// register
 
 #define MDMA2_S1_CONFIG		0xFFC00FC8	// MemDMA2 Stream 1 Source
@@ -1280,7 +1280,7 @@
 // Internal Memory DMA Registers (0xFFC0_1800 - 0xFFC0_19FF)
 #define IMDMA_D0_CONFIG		0xFFC01808	// IMDMA Stream 0 Destination
 						// Configuration
-#define IMDMA_D0_NEXT_DESC_PTR	0xFFC01800	// IMDMA Stream 0 Destination 
+#define IMDMA_D0_NEXT_DESC_PTR	0xFFC01800	// IMDMA Stream 0 Destination
 						// Next Descriptor Ptr Reg
 #define IMDMA_D0_START_ADDR	0xFFC01804	// IMDMA Stream 0 Destination
 						// Start Address
@@ -1292,20 +1292,20 @@
 						// Inner-Loop Address-Increment
 #define IMDMA_D0_Y_MODIFY	0xFFC0181C	// IMDMA Stream 0 Dest
 						// Outer-Loop Address-Increment
-#define IMDMA_D0_CURR_DESC_PTR	0xFFC01820	// IMDMA Stream 0 Destination 
+#define IMDMA_D0_CURR_DESC_PTR	0xFFC01820	// IMDMA Stream 0 Destination
 						// Current Descriptor Ptr
 #define IMDMA_D0_CURR_ADDR	0xFFC01824	// IMDMA Stream 0 Destination
 						// Current Address
-#define IMDMA_D0_CURR_X_COUNT	0xFFC01830	// IMDMA Stream 0 Destination 
+#define IMDMA_D0_CURR_X_COUNT	0xFFC01830	// IMDMA Stream 0 Destination
 						// Current Inner-Loop Count
-#define IMDMA_D0_CURR_Y_COUNT	0xFFC01838	// IMDMA Stream 0 Destination 
+#define IMDMA_D0_CURR_Y_COUNT	0xFFC01838	// IMDMA Stream 0 Destination
 						// Current Outer-Loop Count
 #define IMDMA_D0_IRQ_STATUS	0xFFC01828	// IMDMA Stream 0 Destination
 						// Interrupt/Status
 
 #define IMDMA_S0_CONFIG		0xFFC01848	// IMDMA Stream 0 Source
 						// Configuration
-#define IMDMA_S0_NEXT_DESC_PTR	0xFFC01840	// IMDMA Stream 0 Source Next 
+#define IMDMA_S0_NEXT_DESC_PTR	0xFFC01840	// IMDMA Stream 0 Source Next
 						// Descriptor Ptr Reg
 #define IMDMA_S0_START_ADDR	0xFFC01844	// IMDMA Stream 0 Source Start
 						// Address
@@ -1330,7 +1330,7 @@
 
 #define IMDMA_D1_CONFIG		0xFFC01888	// IMDMA Stream 1 Destination
 						// Configuration
-#define IMDMA_D1_NEXT_DESC_PTR	0xFFC01880	// IMDMA Stream 1 Destination 
+#define IMDMA_D1_NEXT_DESC_PTR	0xFFC01880	// IMDMA Stream 1 Destination
 						// Next Descriptor Ptr Reg
 #define IMDMA_D1_START_ADDR	0xFFC01884	// IMDMA Stream 1 Destination
 						// Start Address
@@ -1342,20 +1342,20 @@
 						// Inner-Loop Address-Increment
 #define IMDMA_D1_Y_MODIFY	0xFFC0189C	// IMDMA Stream 1 Dest
 						// Outer-Loop Address-Increment
-#define IMDMA_D1_CURR_DESC_PTR	0xFFC018A0	// IMDMA Stream 1 Destination 
+#define IMDMA_D1_CURR_DESC_PTR	0xFFC018A0	// IMDMA Stream 1 Destination
 						// Current Descriptor Ptr
 #define IMDMA_D1_CURR_ADDR	0xFFC018A4	// IMDMA Stream 1 Destination
 						// Current Address
-#define IMDMA_D1_CURR_X_COUNT	0xFFC018B0	// IMDMA Stream 1 Destination 
+#define IMDMA_D1_CURR_X_COUNT	0xFFC018B0	// IMDMA Stream 1 Destination
 						// Current Inner-Loop Count
-#define IMDMA_D1_CURR_Y_COUNT	0xFFC018B8	// IMDMA Stream 1 Destination 
+#define IMDMA_D1_CURR_Y_COUNT	0xFFC018B8	// IMDMA Stream 1 Destination
 						// Current Outer-Loop Count
 #define IMDMA_D1_IRQ_STATUS	0xFFC018A8	// IMDMA Stream 1 Destination
 						// Interrupt/Status
 
 #define IMDMA_S1_CONFIG		0xFFC018C8	// IMDMA Stream 1 Source
 						// Configuration
-#define IMDMA_S1_NEXT_DESC_PTR	0xFFC018C0	// IMDMA Stream 1 Source Next 
+#define IMDMA_S1_NEXT_DESC_PTR	0xFFC018C0	// IMDMA Stream 1 Source Next
 						// Descriptor Ptr Reg
 #define IMDMA_S1_START_ADDR	0xFFC018C4	// IMDMA Stream 1 Source Start
 						// Address
@@ -1413,22 +1413,22 @@
 
 // *************  SYSTEM INTERRUPT CONTROLLER MASKS *****************
 
-// SICu_IARv Masks      
+// SICu_IARv Masks
 // u = A or B
 // v = 0 to 7
 // w = 0 or 1
 
 // Per_number = 0 to 63
-// IVG_number = 7 to 15  
+// IVG_number = 7 to 15
 // Peripheral #Per_number assigned IVG #IVG_number
-// Usage: 
+// Usage:
 //	r0.l = lo(Peripheral_IVG(62, 10));
 //	r0.h = hi(Peripheral_IVG(62, 10));
 #define Peripheral_IVG(Per_number, IVG_number)    \
 				( (IVG_number) -7) << ( ((Per_number)%8) *4)
 
 // SICx_IMASKw Masks
-// masks are 32 bit wide, so two writes reguired for "64 bit" wide registers 
+// masks are 32 bit wide, so two writes reguired for "64 bit" wide registers
 #define SIC_UNMASK_ALL         0x00000000	// Unmask all peripheral
 						// interrupts
 #define SIC_MASK_ALL           0xFFFFFFFF	// Mask all peripheral
@@ -1612,9 +1612,9 @@
 					// Relationship
 #define MFD			0x0000F000	// Multichannel Frame Delay
 
-//  *********  PARALLEL PERIPHERAL INTERFACE (PPI) MASKS ****************  
+//  *********  PARALLEL PERIPHERAL INTERFACE (PPI) MASKS ****************
 
-////  PPI_CONTROL Masks        
+////  PPI_CONTROL Masks
 #define PORT_EN			0x00000001	// PPI Port Enable
 #define PORT_DIR		0x00000002	// PPI Port Direction
 #define XFR_TYPE		0x0000000C	// PPI Transfer Type
@@ -1630,7 +1630,7 @@
 					// x=10-->x=16)
 #define POL			0x0000C000	// PPI Signal Polarities
 
-//// PPI_STATUS Masks                                         
+//// PPI_STATUS Masks
 #define FLD			0x00000400	// Field Indicator
 #define FT_ERR			0x00000800	// Frame Track Error
 #define OVR			0x00001000	// FIFO Overflow Error
@@ -1893,7 +1893,7 @@
 						// incoming Data
 #define PSSE			0x00000010	// Enable (=1) Slave-Select
 						// input for Master.
-#define EMISO			0x00000020	// Enable (=1) MISO pin as an 
+#define EMISO			0x00000020	// Enable (=1) MISO pin as an
 						// output.
 #define SIZE			0x00000100	// Word length (0 => 8 bits,
 						// 1 => 16 bits)
@@ -1917,25 +1917,25 @@
 						// disable (=0)
 
 //// SPI_FLG Masks
-#define FLS1			0x00000002	// Enables (=1) SPI_FLOUT1 as 
+#define FLS1			0x00000002	// Enables (=1) SPI_FLOUT1 as
 						// flag output for SPI
 						// Slave-select
-#define FLS2			0x00000004	// Enables (=1) SPI_FLOUT2 as 
+#define FLS2			0x00000004	// Enables (=1) SPI_FLOUT2 as
 						// flag output for SPI
 						// Slave-select
-#define FLS3			0x00000008	// Enables (=1) SPI_FLOUT3 as 
+#define FLS3			0x00000008	// Enables (=1) SPI_FLOUT3 as
 						// flag output for SPI
 						// Slave-select
-#define FLS4			0x00000010	// Enables (=1) SPI_FLOUT4 as 
+#define FLS4			0x00000010	// Enables (=1) SPI_FLOUT4 as
 						// flag output for SPI
 						// Slave-select
-#define FLS5			0x00000020	// Enables (=1) SPI_FLOUT5 as 
+#define FLS5			0x00000020	// Enables (=1) SPI_FLOUT5 as
 						// flag output for SPI
 						// Slave-select
-#define FLS6			0x00000040	// Enables (=1) SPI_FLOUT6 as 
+#define FLS6			0x00000040	// Enables (=1) SPI_FLOUT6 as
 						// flag output for SPI
 						// Slave-select
-#define FLS7			0x00000080	// Enables (=1) SPI_FLOUT7 as 
+#define FLS7			0x00000080	// Enables (=1) SPI_FLOUT7 as
 						// flag output for SPI
 						// Slave-select
 #define FLG1			0x00000200	// Activates (=0) SPI_FLOUT1
@@ -1961,25 +1961,25 @@
 						// Slave-select
 
 //// SPI_FLG Bit Positions
-#define FLS1_P			0x00000001	// Enables (=1) SPI_FLOUT1 as 
+#define FLS1_P			0x00000001	// Enables (=1) SPI_FLOUT1 as
 						// flag output for SPI
 						// Slave-select
-#define FLS2_P			0x00000002	// Enables (=1) SPI_FLOUT2 as 
+#define FLS2_P			0x00000002	// Enables (=1) SPI_FLOUT2 as
 						// flag output for SPI
 						// Slave-select
-#define FLS3_P			0x00000003	// Enables (=1) SPI_FLOUT3 as 
+#define FLS3_P			0x00000003	// Enables (=1) SPI_FLOUT3 as
 						// flag output for SPI
 						// Slave-select
-#define FLS4_P			0x00000004	// Enables (=1) SPI_FLOUT4 as 
+#define FLS4_P			0x00000004	// Enables (=1) SPI_FLOUT4 as
 						// flag output for SPI
 						// Slave-select
-#define FLS5_P			0x00000005	// Enables (=1) SPI_FLOUT5 as 
+#define FLS5_P			0x00000005	// Enables (=1) SPI_FLOUT5 as
 						// flag output for SPI
 						// Slave-select
-#define FLS6_P			0x00000006	// Enables (=1) SPI_FLOUT6 as 
+#define FLS6_P			0x00000006	// Enables (=1) SPI_FLOUT6 as
 						// flag output for SPI
 						// Slave-select
-#define FLS7_P			0x00000007	// Enables (=1) SPI_FLOUT7 as 
+#define FLS7_P			0x00000007	// Enables (=1) SPI_FLOUT7 as
 						// flag output for SPI
 						// Slave-select
 #define FLG1_P			0x00000009	// Activates (=0) SPI_FLOUT1
@@ -2012,8 +2012,8 @@
 						// device when some other
 						// device tries to become
 						// master
-#define TXE			0x00000004	// Set (=1) when transmission 
-						// occurs with no new data in 
+#define TXE			0x00000004	// Set (=1) when transmission
+						// occurs with no new data in
 						// SPI_TDBR
 #define TXS			0x00000008	// SPI_TDBR Data Buffer
 						// Status (0=Empty, 1=Full)
@@ -2031,7 +2031,7 @@
 #define AMCKEN			0x0001	// Enable CLKOUT
 #define AMBEN_B0		0x0002	// Enable Asynchronous Memory Bank 0
 					// only
-#define AMBEN_B0_B1		0x0004	// Enable Asynchronous Memory Banks 0 
+#define AMBEN_B0_B1		0x0004	// Enable Asynchronous Memory Banks 0
 					// & 1 only
 #define AMBEN_B0_B1_B2		0x0006	// Enable Asynchronous Memory Banks 0,
 					// 1, and 2
@@ -2128,35 +2128,35 @@
 						// 14 cycles
 #define B0RAT_15		0x00000F00	// Bank 0 Read Access Time =
 						// 15 cycles
-#define B0WAT_1			0x00001000	// Bank 0 Write Access Time = 
+#define B0WAT_1			0x00001000	// Bank 0 Write Access Time =
 						// 1 cycle
-#define B0WAT_2			0x00002000	// Bank 0 Write Access Time = 
+#define B0WAT_2			0x00002000	// Bank 0 Write Access Time =
 						// 2 cycles
-#define B0WAT_3			0x00003000	// Bank 0 Write Access Time = 
+#define B0WAT_3			0x00003000	// Bank 0 Write Access Time =
 						// 3 cycles
-#define B0WAT_4			0x00004000	// Bank 0 Write Access Time = 
+#define B0WAT_4			0x00004000	// Bank 0 Write Access Time =
 						// 4 cycles
-#define B0WAT_5			0x00005000	// Bank 0 Write Access Time = 
+#define B0WAT_5			0x00005000	// Bank 0 Write Access Time =
 						// 5 cycles
-#define B0WAT_6			0x00006000	// Bank 0 Write Access Time = 
+#define B0WAT_6			0x00006000	// Bank 0 Write Access Time =
 						// 6 cycles
-#define B0WAT_7			0x00007000	// Bank 0 Write Access Time = 
+#define B0WAT_7			0x00007000	// Bank 0 Write Access Time =
 						// 7 cycles
-#define B0WAT_8			0x00008000	// Bank 0 Write Access Time = 
+#define B0WAT_8			0x00008000	// Bank 0 Write Access Time =
 						// 8 cycles
-#define B0WAT_9			0x00009000	// Bank 0 Write Access Time = 
+#define B0WAT_9			0x00009000	// Bank 0 Write Access Time =
 						// 9 cycles
-#define B0WAT_10		0x0000A000	// Bank 0 Write Access Time = 
+#define B0WAT_10		0x0000A000	// Bank 0 Write Access Time =
 						// 10 cycles
-#define B0WAT_11		0x0000B000	// Bank 0 Write Access Time = 
+#define B0WAT_11		0x0000B000	// Bank 0 Write Access Time =
 						// 11 cycles
-#define B0WAT_12		0x0000C000	// Bank 0 Write Access Time = 
+#define B0WAT_12		0x0000C000	// Bank 0 Write Access Time =
 						// 12 cycles
-#define B0WAT_13		0x0000D000	// Bank 0 Write Access Time = 
+#define B0WAT_13		0x0000D000	// Bank 0 Write Access Time =
 						// 13 cycles
-#define B0WAT_14		0x0000E000	// Bank 0 Write Access Time = 
+#define B0WAT_14		0x0000E000	// Bank 0 Write Access Time =
 						// 14 cycles
-#define B0WAT_15		0x0000F000	// Bank 0 Write Access Time = 
+#define B0WAT_15		0x0000F000	// Bank 0 Write Access Time =
 						// 15 cycles
 #define B1RDYEN			0x00010000	// Bank 1 RDY enable,
 						// 0=disable, 1=enable
@@ -2175,29 +2175,29 @@
 #define B1TT_4			0x00000000	// Bank 1 Transition Time
 						// from Read to Write = 4
 						// cycles
-#define B1ST_1			0x00100000	// Bank 1 Setup Time from AOE 
+#define B1ST_1			0x00100000	// Bank 1 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 1 cycle
-#define B1ST_2			0x00200000	// Bank 1 Setup Time from AOE 
+#define B1ST_2			0x00200000	// Bank 1 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 2 cycles
-#define B1ST_3			0x00300000	// Bank 1 Setup Time from AOE 
+#define B1ST_3			0x00300000	// Bank 1 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 3 cycles
-#define B1ST_4			0x00000000	// Bank 1 Setup Time from AOE 
+#define B1ST_4			0x00000000	// Bank 1 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 4 cycles
-#define B1HT_1			0x00400000	// Bank 1 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B1HT_1			0x00400000	// Bank 1 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 1 cycle
-#define B1HT_2			0x00800000	// Bank 1 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B1HT_2			0x00800000	// Bank 1 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 2 cycles
-#define B1HT_3			0x00C00000	// Bank 1 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B1HT_3			0x00C00000	// Bank 1 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 3 cycles
-#define B1HT_0			0x00000000	// Bank 1 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B1HT_0			0x00000000	// Bank 1 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 0 cycles
 #define B1RAT_1			0x01000000	// Bank 1 Read Access Time =
 						// 1 cycle
@@ -2229,35 +2229,35 @@
 						// 14 cycles
 #define B1RAT_15		0x0F000000	// Bank 1 Read Access Time =
 						// 15 cycles
-#define B1WAT_1			0x10000000	// Bank 1 Write Access Time = 
+#define B1WAT_1			0x10000000	// Bank 1 Write Access Time =
 						// 1 cycle
-#define B1WAT_2			0x20000000	// Bank 1 Write Access Time = 
+#define B1WAT_2			0x20000000	// Bank 1 Write Access Time =
 						// 2 cycles
-#define B1WAT_3			0x30000000	// Bank 1 Write Access Time = 
+#define B1WAT_3			0x30000000	// Bank 1 Write Access Time =
 						// 3 cycles
-#define B1WAT_4			0x40000000	// Bank 1 Write Access Time = 
+#define B1WAT_4			0x40000000	// Bank 1 Write Access Time =
 						// 4 cycles
-#define B1WAT_5			0x50000000	// Bank 1 Write Access Time = 
+#define B1WAT_5			0x50000000	// Bank 1 Write Access Time =
 						// 5 cycles
-#define B1WAT_6			0x60000000	// Bank 1 Write Access Time = 
+#define B1WAT_6			0x60000000	// Bank 1 Write Access Time =
 						// 6 cycles
-#define B1WAT_7			0x70000000	// Bank 1 Write Access Time = 
+#define B1WAT_7			0x70000000	// Bank 1 Write Access Time =
 						// 7 cycles
-#define B1WAT_8			0x80000000	// Bank 1 Write Access Time = 
+#define B1WAT_8			0x80000000	// Bank 1 Write Access Time =
 						// 8 cycles
-#define B1WAT_9			0x90000000	// Bank 1 Write Access Time = 
+#define B1WAT_9			0x90000000	// Bank 1 Write Access Time =
 						// 9 cycles
-#define B1WAT_10		0xA0000000	// Bank 1 Write Access Time = 
+#define B1WAT_10		0xA0000000	// Bank 1 Write Access Time =
 						// 10 cycles
-#define B1WAT_11		0xB0000000	// Bank 1 Write Access Time = 
+#define B1WAT_11		0xB0000000	// Bank 1 Write Access Time =
 						// 11 cycles
-#define B1WAT_12		0xC0000000	// Bank 1 Write Access Time = 
+#define B1WAT_12		0xC0000000	// Bank 1 Write Access Time =
 						// 12 cycles
-#define B1WAT_13		0xD0000000	// Bank 1 Write Access Time = 
+#define B1WAT_13		0xD0000000	// Bank 1 Write Access Time =
 						// 13 cycles
-#define B1WAT_14		0xE0000000	// Bank 1 Write Access Time = 
+#define B1WAT_14		0xE0000000	// Bank 1 Write Access Time =
 						// 14 cycles
-#define B1WAT_15		0xF0000000	// Bank 1 Write Access Time = 
+#define B1WAT_15		0xF0000000	// Bank 1 Write Access Time =
 						// 15 cycles
 
 // AMBCTL1 Masks
@@ -2278,29 +2278,29 @@
 #define B2TT_4			0x00000000	// Bank 2 Transition Time
 						// from Read to Write = 4
 						// cycles
-#define B2ST_1			0x00000010	// Bank 2 Setup Time from AOE 
+#define B2ST_1			0x00000010	// Bank 2 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 1 cycle
-#define B2ST_2			0x00000020	// Bank 2 Setup Time from AOE 
+#define B2ST_2			0x00000020	// Bank 2 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 2 cycles
-#define B2ST_3			0x00000030	// Bank 2 Setup Time from AOE 
+#define B2ST_3			0x00000030	// Bank 2 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 3 cycles
-#define B2ST_4			0x00000000	// Bank 2 Setup Time from AOE 
+#define B2ST_4			0x00000000	// Bank 2 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 4 cycles
-#define B2HT_1			0x00000040	// Bank 2 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B2HT_1			0x00000040	// Bank 2 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 1 cycle
-#define B2HT_2			0x00000080	// Bank 2 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B2HT_2			0x00000080	// Bank 2 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 2 cycles
-#define B2HT_3			0x000000C0	// Bank 2 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B2HT_3			0x000000C0	// Bank 2 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 3 cycles
-#define B2HT_0			0x00000000	// Bank 2 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B2HT_0			0x00000000	// Bank 2 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 0 cycles
 #define B2RAT_1			0x00000100	// Bank 2 Read Access Time =
 						// 1 cycle
@@ -2332,35 +2332,35 @@
 						// 14 cycles
 #define B2RAT_15		0x00000F00	// Bank 2 Read Access Time =
 						// 15 cycles
-#define B2WAT_1			0x00001000	// Bank 2 Write Access Time = 
+#define B2WAT_1			0x00001000	// Bank 2 Write Access Time =
 						// 1 cycle
-#define B2WAT_2			0x00002000	// Bank 2 Write Access Time = 
+#define B2WAT_2			0x00002000	// Bank 2 Write Access Time =
 						// 2 cycles
-#define B2WAT_3			0x00003000	// Bank 2 Write Access Time = 
+#define B2WAT_3			0x00003000	// Bank 2 Write Access Time =
 						// 3 cycles
-#define B2WAT_4			0x00004000	// Bank 2 Write Access Time = 
+#define B2WAT_4			0x00004000	// Bank 2 Write Access Time =
 						// 4 cycles
-#define B2WAT_5			0x00005000	// Bank 2 Write Access Time = 
+#define B2WAT_5			0x00005000	// Bank 2 Write Access Time =
 						// 5 cycles
-#define B2WAT_6			0x00006000	// Bank 2 Write Access Time = 
+#define B2WAT_6			0x00006000	// Bank 2 Write Access Time =
 						// 6 cycles
-#define B2WAT_7			0x00007000	// Bank 2 Write Access Time = 
+#define B2WAT_7			0x00007000	// Bank 2 Write Access Time =
 						// 7 cycles
-#define B2WAT_8			0x00008000	// Bank 2 Write Access Time = 
+#define B2WAT_8			0x00008000	// Bank 2 Write Access Time =
 						// 8 cycles
-#define B2WAT_9			0x00009000	// Bank 2 Write Access Time = 
+#define B2WAT_9			0x00009000	// Bank 2 Write Access Time =
 						// 9 cycles
-#define B2WAT_10		0x0000A000	// Bank 2 Write Access Time = 
+#define B2WAT_10		0x0000A000	// Bank 2 Write Access Time =
 						// 10 cycles
-#define B2WAT_11		0x0000B000	// Bank 2 Write Access Time = 
+#define B2WAT_11		0x0000B000	// Bank 2 Write Access Time =
 						// 11 cycles
-#define B2WAT_12		0x0000C000	// Bank 2 Write Access Time = 
+#define B2WAT_12		0x0000C000	// Bank 2 Write Access Time =
 						// 12 cycles
-#define B2WAT_13		0x0000D000	// Bank 2 Write Access Time = 
+#define B2WAT_13		0x0000D000	// Bank 2 Write Access Time =
 						// 13 cycles
-#define B2WAT_14		0x0000E000	// Bank 2 Write Access Time = 
+#define B2WAT_14		0x0000E000	// Bank 2 Write Access Time =
 						// 14 cycles
-#define B2WAT_15		0x0000F000	// Bank 2 Write Access Time = 
+#define B2WAT_15		0x0000F000	// Bank 2 Write Access Time =
 						// 15 cycles
 #define B3RDYEN			0x00010000	// Bank 3 RDY enable,
 						// 0=disable, 1=enable
@@ -2379,29 +2379,29 @@
 #define B3TT_4			0x00000000	// Bank 3 Transition Time
 						// from Read to Write = 4
 						// cycles
-#define B3ST_1			0x00100000	// Bank 3 Setup Time from AOE 
+#define B3ST_1			0x00100000	// Bank 3 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 1 cycle
-#define B3ST_2			0x00200000	// Bank 3 Setup Time from AOE 
+#define B3ST_2			0x00200000	// Bank 3 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 2 cycles
-#define B3ST_3			0x00300000	// Bank 3 Setup Time from AOE 
+#define B3ST_3			0x00300000	// Bank 3 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 3 cycles
-#define B3ST_4			0x00000000	// Bank 3 Setup Time from AOE 
+#define B3ST_4			0x00000000	// Bank 3 Setup Time from AOE
 						// asserted to Read or Write
 						// asserted = 4 cycles
-#define B3HT_1			0x00400000	// Bank 3 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B3HT_1			0x00400000	// Bank 3 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 1 cycle
-#define B3HT_2			0x00800000	// Bank 3 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B3HT_2			0x00800000	// Bank 3 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 2 cycles
-#define B3HT_3			0x00C00000	// Bank 3 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B3HT_3			0x00C00000	// Bank 3 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 3 cycles
-#define B3HT_0			0x00000000	// Bank 3 Hold Time from Read 
-						// or Write deasserted to AOE 
+#define B3HT_0			0x00000000	// Bank 3 Hold Time from Read
+						// or Write deasserted to AOE
 						// deasserted = 0 cycles
 #define B3RAT_1			0x01000000	// Bank 3 Read Access Time =
 						// 1 cycle
@@ -2433,35 +2433,35 @@
 						// 14 cycles
 #define B3RAT_15		0x0F000000	// Bank 3 Read Access Time =
 						// 15 cycles
-#define B3WAT_1			0x10000000	// Bank 3 Write Access Time = 
+#define B3WAT_1			0x10000000	// Bank 3 Write Access Time =
 						// 1 cycle
-#define B3WAT_2			0x20000000	// Bank 3 Write Access Time = 
+#define B3WAT_2			0x20000000	// Bank 3 Write Access Time =
 						// 2 cycles
-#define B3WAT_3			0x30000000	// Bank 3 Write Access Time = 
+#define B3WAT_3			0x30000000	// Bank 3 Write Access Time =
 						// 3 cycles
-#define B3WAT_4			0x40000000	// Bank 3 Write Access Time = 
+#define B3WAT_4			0x40000000	// Bank 3 Write Access Time =
 						// 4 cycles
-#define B3WAT_5			0x50000000	// Bank 3 Write Access Time = 
+#define B3WAT_5			0x50000000	// Bank 3 Write Access Time =
 						// 5 cycles
-#define B3WAT_6			0x60000000	// Bank 3 Write Access Time = 
+#define B3WAT_6			0x60000000	// Bank 3 Write Access Time =
 						// 6 cycles
-#define B3WAT_7			0x70000000	// Bank 3 Write Access Time = 
+#define B3WAT_7			0x70000000	// Bank 3 Write Access Time =
 						// 7 cycles
-#define B3WAT_8			0x80000000	// Bank 3 Write Access Time = 
+#define B3WAT_8			0x80000000	// Bank 3 Write Access Time =
 						// 8 cycles
-#define B3WAT_9			0x90000000	// Bank 3 Write Access Time = 
+#define B3WAT_9			0x90000000	// Bank 3 Write Access Time =
 						// 9 cycles
-#define B3WAT_10		0xA0000000	// Bank 3 Write Access Time = 
+#define B3WAT_10		0xA0000000	// Bank 3 Write Access Time =
 						// 10 cycles
-#define B3WAT_11		0xB0000000	// Bank 3 Write Access Time = 
+#define B3WAT_11		0xB0000000	// Bank 3 Write Access Time =
 						// 11 cycles
-#define B3WAT_12		0xC0000000	// Bank 3 Write Access Time = 
+#define B3WAT_12		0xC0000000	// Bank 3 Write Access Time =
 						// 12 cycles
-#define B3WAT_13		0xD0000000	// Bank 3 Write Access Time = 
+#define B3WAT_13		0xD0000000	// Bank 3 Write Access Time =
 						// 13 cycles
-#define B3WAT_14		0xE0000000	// Bank 3 Write Access Time = 
+#define B3WAT_14		0xE0000000	// Bank 3 Write Access Time =
 						// 14 cycles
-#define B3WAT_15		0xF0000000	// Bank 3 Write Access Time = 
+#define B3WAT_15		0xF0000000	// Bank 3 Write Access Time =
 						// 15 cycles
 
 // **********************  SDRAM CONTROLLER MASKS  ***************************
@@ -2474,7 +2474,7 @@
 #define CL_3			0x0000000C	// SDRAM CAS latency = 3
 						// cycles
 #define PFE			0x00000010	// Enable SDRAM prefetch
-#define PFP			0x00000020	// Prefetch has priority over 
+#define PFP			0x00000020	// Prefetch has priority over
 						// AMC requests
 #define TRAS_1			0x00000040	// SDRAM tRAS = 1 cycle
 #define TRAS_2			0x00000080	// SDRAM tRAS = 2 cycles
@@ -2646,9 +2646,9 @@
 						// register
 #define FIO_DIR 		0xFFC00730	// Flag Direction  register
 #define FIO_POLAR 	        0xFFC00734	// Flag Polarity register
-#define FIO_EDGE 	        0xFFC00738	// Flag Interrupt Sensitivity 
+#define FIO_EDGE 	        0xFFC00738	// Flag Interrupt Sensitivity
 						// register
-#define FIO_BOTH 	        0xFFC0073C	// Flag Set on Both Edges 
+#define FIO_BOTH 	        0xFFC0073C	// Flag Set on Both Edges
 						// register
 #define FIO_INEN 	        0xFFC00740	// Flag Input Enable register
 
@@ -2662,12 +2662,12 @@
 // System Reset and Interrupt Controller registers for
 // core A (0xFFC0 0100-0xFFC0 01FF)
 #define SWRST			0xFFC00100	// Software Reset register
-#define SYSCR			0xFFC00104	// System Reset Configuration 
+#define SYSCR			0xFFC00104	// System Reset Configuration
 						// register
 #define RVECT			0xFFC00108	// SIC Reset Vector Address
 						// Register
 #define SIC_SWRST		0xFFC00100	// Software Reset register
-#define SIC_SYSCR		0xFFC00104	// System Reset Configuration 
+#define SIC_SYSCR		0xFFC00104	// System Reset Configuration
 						// register
 #define SIC_RVECT		0xFFC00108	// SIC Reset Vector Address
 			    			// Register
@@ -2851,7 +2851,7 @@
 						// Addr Increment
 #define DMA0_CURR_DESC_PTR	0xFFC01C20	// DMA1 Channel 0 Current
 						// Descriptor Pointer
-#define DMA0_CURR_ADDR		0xFFC01C24	// DMA1 Channel 0 Current 
+#define DMA0_CURR_ADDR		0xFFC01C24	// DMA1 Channel 0 Current
 						// Address Pointer
 #define DMA0_CURR_X_COUNT	0xFFC01C30	// DMA1 Channel 0 Current Inner
 						// Loop Count

@@ -139,7 +139,7 @@ static int mx23_evk_console_init(void)
 
 	add_generic_device("stm_serial", 0, NULL, IMX_DBGUART_BASE, 8192,
 			   IORESOURCE_MEM, NULL);
-	
+
 	return 0;
 }
 

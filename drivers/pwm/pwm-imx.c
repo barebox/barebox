@@ -236,9 +236,10 @@ static int imx_pwm_probe(struct device_d *dev)
 	if (dev->device_node) {
 		imx->chip.devname = of_alias_get(dev->device_node);
 		if (!imx->chip.devname)
-			imx->chip.devname = asprintf("pwm_%p", imx->mmio_base);
+			imx->chip.devname = basprintf("pwm_%p",
+							imx->mmio_base);
 	} else {
-		imx->chip.devname = asprintf("pwm%d", dev->id);
+		imx->chip.devname = basprintf("pwm%d", dev->id);
 	}
 
 	imx->config = data->config;

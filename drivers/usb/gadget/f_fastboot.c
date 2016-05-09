@@ -17,6 +17,7 @@
 #define pr_fmt(fmt) "fastboot: " fmt
 
 #include <common.h>
+#include <command.h>
 #include <errno.h>
 #include <malloc.h>
 #include <fcntl.h>
@@ -194,7 +195,7 @@ static void fb_setvar(struct fb_variable *var, const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	var->value = vasprintf(fmt, ap);
+	var->value = bvasprintf(fmt, ap);
 	va_end(ap);
 }
 
@@ -204,7 +205,7 @@ static struct fb_variable *fb_addvar(struct f_fastboot *f_fb, const char *fmt, .
 	va_list ap;
 
 	va_start(ap, fmt);
-	var->name = vasprintf(fmt, ap);
+	var->name = bvasprintf(fmt, ap);
 	va_end(ap);
 
 	list_add_tail(&var->list, &f_fb->variables);
@@ -701,7 +702,8 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 		if (ret)
 			goto copy;
 
-		cmd = asprintf("ubiformat -y -f %s %s", FASTBOOT_TMPFILE, filename);
+		cmd = basprintf("ubiformat -y -f %s %s", FASTBOOT_TMPFILE,
+				  filename);
 
 		fastboot_tx_print(f_fb, "INFOThis is an UBI image...");
 

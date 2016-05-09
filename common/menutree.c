@@ -12,9 +12,11 @@
 #include <environment.h>
 #include <libbb.h>
 #include <common.h>
+#include <command.h>
 #include <glob.h>
 #include <menu.h>
 #include <fs.h>
+#include <shell.h>
 #include <libfile.h>
 
 #include <linux/stat.h>
@@ -96,7 +98,7 @@ int menutree(const char *path, int toplevel)
 
 	menu = menu_alloc();
 
-	globpath = asprintf("%s/*", path);
+	globpath = basprintf("%s/*", path);
 	ret = glob(globpath, 0, NULL, &g);
 	free(globpath);
 	if (ret == GLOB_NOMATCH) {
@@ -147,7 +149,7 @@ int menutree(const char *path, int toplevel)
 
 		mt->me.type = MENU_ENTRY_NORMAL;
 
-		mt->action = asprintf("%s/action", g.gl_pathv[i]);
+		mt->action = basprintf("%s/action", g.gl_pathv[i]);
 
 		ret = stat(mt->action, &s);
 		if (ret) {

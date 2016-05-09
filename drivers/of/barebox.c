@@ -61,7 +61,7 @@ static int environment_check_mount(struct device_d *dev, char **devpath)
 	/* Set env to be in a file on the now mounted device */
 	dev_dbg(dev, "Loading default env from %s on device %s\n",
 		filepath, *devpath);
-	*devpath = asprintf("%s/%s", ENV_MNT_DIR, filepath);
+	*devpath = basprintf("%s/%s", ENV_MNT_DIR, filepath);
 	return 0;
 }
 

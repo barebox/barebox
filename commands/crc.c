@@ -20,6 +20,7 @@
 #include <common.h>
 #include <command.h>
 #include <fs.h>
+#include <crc.h>
 #include <getopt.h>
 #include <malloc.h>
 #include <libfile.h>
@@ -97,13 +98,13 @@ static int do_crc(int argc, char *argv[])
 			filename, (ulong)start, (ulong)start + total - 1, crc);
 
 	if (crcvarname) {
-		char *crcstr = asprintf("0x%lx", crc);
+		char *crcstr = basprintf("0x%lx", crc);
 		setenv(crcvarname, crcstr);
 		kfree(crcstr);
 	}
 
 	if (sizevarname) {
-		char *sizestr = asprintf("0x%lx", total);
+		char *sizestr = basprintf("0x%lx", total);
 		setenv(sizevarname, sizestr);
 		kfree(sizestr);
 	}

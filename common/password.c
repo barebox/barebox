@@ -24,6 +24,7 @@
 #include <digest.h>
 #include <malloc.h>
 #include <xfuncs.h>
+#include <command.h>
 #include <magicvar.h>
 #include <clock.h>
 #include <init.h>
@@ -62,7 +63,7 @@ int password(unsigned char *passwd, size_t length, int flags, int timeout)
 
 	do {
 		if (tstc()) {
-			ch = getc();
+			ch = getchar();
 
 			switch (ch) {
 			case '\r':

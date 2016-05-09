@@ -120,7 +120,7 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 
 
 	if (mii_val[MII_BMCR] == 0xffff || mii_val[MII_BMSR] == 0x0000) {
-		fprintf(stderr, "  No MII transceiver present!.\n");
+		eprintf("  No MII transceiver present!.\n");
 		return -1;
 	}
 

@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <malloc.h>
 #include <init.h>
+#include <crc.h>
 #include <linux/stat.h>
 #include <linux/err.h>
 #include <bpkfs.h>
@@ -102,7 +103,7 @@ static struct bpkfs_handle_hw *bpkfs_get_or_add_hw_id(
 
 	INIT_LIST_HEAD(&h->list_data);
 	h->hw_id = hw_id;
-	h->name = asprintf("hw_id_%x", hw_id);
+	h->name = basprintf("hw_id_%x", hw_id);
 	list_add_tail(&h->list_hw_id, &handle->list);
 
 	return h;
@@ -430,7 +431,7 @@ static int bpkfs_probe(struct device_d *dev)
 
 		if (!type) {
 			type = "unknown";
-			d->name = asprintf("%s_%08x", type, d->type);
+			d->name = basprintf("%s_%08x", type, d->type);
 		} else {
 			d->name = xstrdup(type);
 		}
@@ -463,7 +464,7 @@ static int bpkfs_probe(struct device_d *dev)
 		type = d->name;
 		d = xzalloc(sizeof(*d));
 		d->type = be32_to_cpu(data_header.type);
-		d->name = asprintf("%s.crc", type);
+		d->name = basprintf("%s.crc", type);
 		d->type |= (1 << 31);
 		d->size = 8;
 		sprintf(d->data, "%08x", be32_to_cpu(data_header.crc));

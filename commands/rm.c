@@ -19,6 +19,7 @@
 #include <common.h>
 #include <command.h>
 #include <fs.h>
+#include <libfile.h>
 #include <getopt.h>
 #include <errno.h>
 

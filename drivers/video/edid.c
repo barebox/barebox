@@ -469,7 +469,8 @@ static void calc_mode_timings(int xres, int yres, int refresh,
 	mode->yres = yres;
 	mode->refresh = refresh;
 	fb_get_mode(0, refresh, mode);
-	mode->name = asprintf("%dx%d@%d-calc", mode->xres, mode->yres, mode->refresh);
+	mode->name = basprintf("%dx%d@%d-calc", mode->xres, mode->yres,
+				 mode->refresh);
 	pr_debug("      %s\n", mode->name);
 }
 
@@ -602,7 +603,8 @@ const struct fb_videomode vesa_modes[] = {
 static void add_vesa_mode(struct fb_videomode *mode, int num)
 {
 	*mode = vesa_modes[num];
-	mode->name = asprintf("%dx%d@%d-vesa", mode->xres, mode->yres, mode->refresh);
+	mode->name = basprintf("%dx%d@%d-vesa", mode->xres, mode->yres,
+				 mode->refresh);
 	pr_debug("      %s\n", mode->name);
 }
 
@@ -748,7 +750,8 @@ static void get_detailed_timing(unsigned char *block,
 	pr_debug("%sHSync %sVSync\n", (HSYNC_POSITIVE) ? "+" : "-",
 	       (VSYNC_POSITIVE) ? "+" : "-");
 
-	mode->name = asprintf("%dx%d@%d", mode->xres, mode->yres, mode->refresh);
+	mode->name = basprintf("%dx%d@%d", mode->xres, mode->yres,
+				 mode->refresh);
 }
 
 /**

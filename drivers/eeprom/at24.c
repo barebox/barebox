@@ -429,7 +429,7 @@ static int at24_probe(struct device_d *dev)
 
 	at24->chip = chip;
 	at24->num_addresses = num_addresses;
-	at24->cdev.name = asprintf("eeprom%d", dev->id);
+	at24->cdev.name = basprintf("eeprom%d", dev->id);
 	at24->cdev.priv = at24;
 	at24->cdev.dev = dev;
 	at24->cdev.ops = &at24->fops;

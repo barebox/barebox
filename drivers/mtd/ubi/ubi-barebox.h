@@ -16,6 +16,7 @@
 
 #include <common.h>
 #include <malloc.h>
+#include <crc.h>
 #include <asm-generic/div64.h>
 #include <errno.h>
 #include <linux/err.h>
@@ -26,7 +27,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/ubi.h>
 
-#define crc32(seed, data, length)  crc32_no_comp(seed, (unsigned char const *)data, length)
+#define crc32(seed, data, length)  crc32_no_comp(seed, (unsigned char * const)data, length)
 
 /* configurable */
 #define CONFIG_MTD_UBI_WL_THRESHOLD	4096

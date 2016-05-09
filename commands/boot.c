@@ -156,7 +156,7 @@ static int bootscript_scan_path(struct blspec *blspec, const char *path)
 		return 1;
 	}
 
-	files = asprintf("%s/*", path);
+	files = basprintf("%s/*", path);
 
 	glob(files, 0, NULL, &globb);
 
@@ -208,7 +208,7 @@ static int bootentry_parse_one(struct blspec *blspec, const char *name)
 		char *path;
 
 		if (*name != '/')
-			path = asprintf("/env/boot/%s", name);
+			path = basprintf("/env/boot/%s", name);
 		else
 			path = xstrdup(name);
 
@@ -233,7 +233,7 @@ static struct blspec *bootentries_collect(char *entries[], int num_entries)
 	blspec = blspec_alloc();
 
 	if (IS_ENABLED(CONFIG_MENU))
-		blspec->menu->display = asprintf("boot");
+		blspec->menu->display = basprintf("boot");
 
 	if (!num_entries)
 		bootscript_scan_path(blspec, "/env/boot");

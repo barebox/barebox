@@ -161,7 +161,7 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 	ipuno = ((di >> 1) & 1) + 1;
 	dino = di & 0x1;
 
-	clkname = asprintf("ipu%d_di%d_sel", ipuno, dino);
+	clkname = basprintf("ipu%d_di%d_sel", ipuno, dino);
 	diclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(diclk)) {
@@ -169,7 +169,7 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 		return PTR_ERR(diclk);
 	}
 
-	clkname = asprintf("ldb_di%d_podf", imx_ldb_ch->chno);
+	clkname = basprintf("ldb_di%d_podf", imx_ldb_ch->chno);
 	ldbclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(ldbclk)) {
@@ -208,7 +208,7 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 
 	dino = di & 0x1;
 
-	clkname = asprintf("ipu_di%d_sel", dino);
+	clkname = basprintf("ipu_di%d_sel", dino);
 	diclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(diclk)) {
@@ -216,7 +216,7 @@ static int imx53_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 		return PTR_ERR(diclk);
 	}
 
-	clkname = asprintf("ldb_di%d_div", imx_ldb_ch->chno);
+	clkname = basprintf("ldb_di%d_div", imx_ldb_ch->chno);
 	ldbclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(ldbclk)) {

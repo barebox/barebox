@@ -306,7 +306,7 @@ static struct mvebu_pcie *mvebu_pcie_port_probe(struct device_d *dev,
 	reset_gpio = of_get_named_gpio_flags(np, "reset-gpios", 0, &flags);
 	if (gpio_is_valid(reset_gpio)) {
 		int reset_active_low = flags & OF_GPIO_ACTIVE_LOW;
-		char *reset_name = asprintf("pcie%d.%d-reset", port, lane);
+		char *reset_name = basprintf("pcie%d.%d-reset", port, lane);
 		u32 reset_udelay = 20000;
 
 		of_property_read_u32(np, "reset-delay-us", &reset_udelay);
@@ -326,7 +326,7 @@ static struct mvebu_pcie *mvebu_pcie_port_probe(struct device_d *dev,
 	pcie->port = port;
 	pcie->lane = lane;
 	pcie->lane_mask = lane_mask;
-	pcie->name = asprintf("pcie%d.%d", port, lane);
+	pcie->name = basprintf("pcie%d.%d", port, lane);
 	pcie->devfn = devfn;
 
 	pcie->base = of_iomap(np, 0);

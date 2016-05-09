@@ -80,9 +80,9 @@ static int dns_send(const char *name)
 	domain = getenv("net.domainname");
 
 	if (!strchr(name, '.') && domain && *domain)
-		fullname = asprintf(".%s.%s.", name, domain);
+		fullname = basprintf(".%s.%s.", name, domain);
 	else
-		fullname = asprintf(".%s.", name);
+		fullname = basprintf(".%s.", name);
 
 	/* replace dots in fullname with chunk len */
 	dotptr = fullname;

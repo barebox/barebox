@@ -58,10 +58,10 @@ static int do_tftpb(int argc, char *argv[])
 		dest = argv[optind];
 
 	if (tftp_push) {
-		dest = freep = asprintf("%s/%s", TFTP_MOUNT_PATH, dest);
+		dest = freep = basprintf("%s/%s", TFTP_MOUNT_PATH, dest);
 		flags = O_RDONLY;
 	} else {
-		source = freep = asprintf("%s/%s", TFTP_MOUNT_PATH, source);
+		source = freep = basprintf("%s/%s", TFTP_MOUNT_PATH, source);
 		flags = O_WRONLY | O_CREAT;
 	}
 

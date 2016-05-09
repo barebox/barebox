@@ -258,7 +258,7 @@ static int biosdisk_probe(struct device_d *dev)
 		rc = cdev_find_free_index("disk");
 		if (rc < 0)
 			pr_err("Cannot find a free number for the disk node\n");
-		m->blk.cdev.name = asprintf("disk%d", rc);
+		m->blk.cdev.name = basprintf("disk%d", rc);
 		m->blk.blockbits = SECTOR_SHIFT;
 
 		rc = blockdevice_register(&m->blk);

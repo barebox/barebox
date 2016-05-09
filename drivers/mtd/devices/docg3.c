@@ -1058,8 +1058,8 @@ static void __init doc_set_driver_info(int chip_id, struct mtd_info *mtd)
 
 	switch (chip_id) {
 	case DOC_CHIPID_G3:
-		mtd->name = asprintf("DiskOnChip G3 floor %d",
-				      docg3->device_id);
+		mtd->name = basprintf("DiskOnChip G3 floor %d",
+					docg3->device_id);
 		docg3->max_block = 2047;
 		break;
 	}

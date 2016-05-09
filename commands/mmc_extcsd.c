@@ -153,15 +153,16 @@ static int print_field_ge_v7(u8 *reg, int index)
 		tmp = get_field_val(DATA_SECTOR_SIZE, 0, 0x1);
 		if (tmp64 == 0xFFFFFFFF)
 			if (tmp)
-				str = "16 TB";
+				str = strdup("16 TB");
 			else
-				str = "2 TB";
+				str = strdup("2 TB");
 		else
 			if (tmp)
-				sprintf(str, "%llu B", tmp64 * 4096);
+				str = basprintf("%llu B", tmp64 * 4096);
 			else
-				sprintf(str, "%llu B", tmp64 * 512);
+				str = basprintf("%llu B", tmp64 * 512);
 		printf("\tMax_Pre_Loading_Data_Size: %s\n", str);
+		free(str);
 		return 1;
 
 	/*   EXT_CSD_PRE_LOADING_DATA_SIZE */
@@ -181,15 +182,16 @@ static int print_field_ge_v7(u8 *reg, int index)
 		tmp = get_field_val(DATA_SECTOR_SIZE, 0, 0x1);
 		if (tmp64 == 0xFFFFFFFF)
 			if (tmp)
-				str = "16 TB";
+				str = strdup("16 TB");
 			else
-				str = "2 TB";
+				str = strdup("2 TB");
 		else
 			if (tmp)
-				sprintf(str, "%llu B", tmp64 * 4096);
+				str = basprintf("%llu B", tmp64 * 4096);
 			else
-				sprintf(str, "%llu B", tmp64 * 512);
+				str = basprintf("%llu B", tmp64 * 512);
 		printf("\tPre_Loading_Data_Size: %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_FFU_STATUS:
@@ -319,12 +321,13 @@ static int print_field_ge_v7(u8 *reg, int index)
 		val = get_field_val(DEVICE_LIFE_TIME_EST_TYP_A, 0, 0xFF);
 		val = val * 10;
 		if (val == 0)
-			str = "not defined";
+			str = strdup("not defined");
 		else if (val == 0xB)
-			str = "maximum";
+			str = strdup("maximum");
 		else
-			sprintf(str, "%u%% - %u%%", (val - 10), val);
+			str = basprintf("%u%% - %u%%", (val - 10), val);
 		printf("\tDevice life time, type A (estimation): %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B:
@@ -332,12 +335,13 @@ static int print_field_ge_v7(u8 *reg, int index)
 		val = get_field_val(DEVICE_LIFE_TIME_EST_TYP_B, 0, 0xFF);
 		val = val * 10;
 		if (val == 0)
-			str = "not defined";
+			str = strdup("not defined");
 		else if (val == 0xB)
-			str = "maximum";
+			str = strdup("maximum");
 		else
-			sprintf(str, "%u%% - %u%%", (val - 10), val);
+			str = basprintf("%u%% - %u%%", (val - 10), val);
 		printf("\tDevice life time, type B (estimation): %s\n", str);
+		free(str);
 		return 1;
 
 	/*   EXT_CSD_NMBR_OF_FW_SCTRS_CRRCTLY_PRGRMD */
@@ -1687,11 +1691,12 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(SLEEP_NOTIFICATION_TIME, 0, 0xFF);
 		val = 100 << val;
 		if (val)
-			sprintf(str, "Sleep Notification timeout values: %u us",
-				val);
+			str = basprintf("Sleep Notification timeout values: %u us",
+				       val);
 		else
-			str = "Not defined";
+			str = strdup("Not defined");
 		printf("\t[7-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_S_A_TIMEOUT:
@@ -1699,10 +1704,11 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(S_A_TIMEOUT, 0, 0xFF);
 		val = 100 << val;
 		if (val)
-			sprintf(str, "Sleep/awake timeout values: %u ns", val);
+			str = basprintf("Sleep/awake timeout values: %u ns", val);
 		else
-			str = "Not defined";
+			str = strdup("Not defined");
 		printf("\t[7-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_PRODUCTION_ST8_AWARENSS_TIMEOUT:
@@ -1710,12 +1716,13 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(PRODUCTION_ST8_AWARENSS_TIMEOUT, 0, 0xFF);
 		val = 100 << val;
 		if (val)
-			sprintf(str,
+			str = basprintf(
 			"Production State Awareness timeout definition: %u us",
 				val);
 		else
-			str = "Not defined";
+			str = strdup("Not defined");
 		printf("\t[7-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_S_C_VCCQ:
@@ -1723,10 +1730,11 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(S_C_VCCQ, 0, 0xF);
 		val = 1 << val;
 		if (val)
-			sprintf(str, "S_C_VCCQ Sleep Current: %u uA", val);
+			str = basprintf("S_C_VCCQ Sleep Current: %u uA", val);
 		else
-			str = "Not defined";
+			str = strdup("Not defined");
 		printf("\t[3-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_S_C_VCC:
@@ -1734,20 +1742,22 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(S_C_VCC, 0, 0xFF);
 		val = 1 << val;
 		if (val)
-			sprintf(str, "S_C_VCC Sleep Current: %u uA", val);
+			str = basprintf("S_C_VCC Sleep Current: %u uA", val);
 		else
-			str = "Not defined";
+			str = strdup("Not defined");
 		printf("\t[3-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_HC_WP_GRP_SIZE:
 		print_field_caption(HC_WP_GRP_SIZE, R);
 		val = get_field_val(HC_WP_GRP_SIZE, 0, 0xFF);
 		if (val)
-			sprintf(str, "Write protect group size: %u", val);
+			str = basprintf("Write protect group size: %u", val);
 		else
-			str = "No support";
+			str = strdup("No support");
 		printf("\t[7-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_REL_WR_SEC_C:
@@ -1761,10 +1771,11 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(ERASE_TIMEOUT_MULT, 0, 0xFF);
 		val = val * 300;
 		if (val)
-			sprintf(str, "Erase timeout values: %u", val);
+			str = basprintf("Erase timeout values: %u", val);
 		else
-			str = "No support";
+			str = strdup("No support");
 		printf("\t[7-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_HC_ERASE_GRP_SIZE:
@@ -1772,10 +1783,11 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(HC_ERASE_GRP_SIZE, 0, 0xFF);
 		val = val * 524288;
 		if (val)
-			sprintf(str, "Erase-unit size: %u", val);
+			str = basprintf("Erase-unit size: %u", val);
 		else
-			str = "No support";
+			str = strdup("No support");
 		printf("\t[7-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_ACC_SIZE:
@@ -1783,10 +1795,11 @@ static int print_field(u8 *reg, int index)
 		val = get_field_val(ACC_SIZE, 0, 0xF);
 		val = val * 512;
 		if (val)
-			sprintf(str, "Superpage size: %u", val);
+			str = basprintf("Superpage size: %u", val);
 		else
-			str = "Not defined";
+			str = strdup("Not defined");
 		printf("\t[3-0] %s\n", str);
+		free(str);
 		return 1;
 
 	case EXT_CSD_BOOT_SIZE_MULT:
@@ -1867,14 +1880,14 @@ static int request_write_operation(void)
 	int c;
 
 	printf("This is a one time programmable field!\nDo you want to write? [y/N] ");
-	c = getc();
+	c = getchar();
 	/* default is N */
 	if (c == 0xD) {
 		printf("\n");
 		return 0;
 	}
 	printf("%c", c);
-	getc(); /* wait for carriage return */
+	getchar(); /* wait for carriage return */
 	printf("\n");
 	if (c == 'y' || c == 'Y')
 		return 1;

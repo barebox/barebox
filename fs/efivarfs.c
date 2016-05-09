@@ -154,7 +154,7 @@ static int efivars_create(struct device_d *dev, const char *pathname, mode_t mod
 
 
 	name8 = xstrdup_wchar_to_char(inode->name);
-	inode->full_name = asprintf("%s-%pUl", name8, &inode->vendor);
+	inode->full_name = basprintf("%s-%pUl", name8, &inode->vendor);
 	free(name8);
 
 	efiret = RT->set_variable(inode->name, &inode->vendor,
@@ -405,7 +405,7 @@ static int efivarfs_probe(struct device_d *dev)
 		inode->vendor = vendor;
 
 		name8 = xstrdup_wchar_to_char(inode->name);
-		inode->full_name = asprintf("%s-%pUl", name8, &vendor);
+		inode->full_name = basprintf("%s-%pUl", name8, &vendor);
 		free(name8);
 
 		list_add_tail(&inode->node, &priv->inodes);

@@ -33,7 +33,7 @@ static inline int w1_local_mac_address_register(int ethid, char * oui, char *w1_
 			addr[i] = oui[i];
 	}
 
-	tmp = asprintf("%s.id", w1_dev);
+	tmp = basprintf("%s.id", w1_dev);
 	if (!tmp)
 		return -ENOMEM;
 

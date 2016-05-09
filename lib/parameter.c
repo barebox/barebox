@@ -345,7 +345,7 @@ static const char *param_int_get(struct device_d *dev, struct param_d *p)
 	}
 
 	free(p->value);
-	p->value = asprintf(pi->format, *pi->value);
+	p->value = basprintf(pi->format, *pi->value);
 
 	return p->value;
 }
@@ -447,7 +447,7 @@ static const char *param_enum_get(struct device_d *dev, struct param_d *p)
 	free(p->value);
 
 	if (*pe->value >= pe->num_names)
-		p->value = asprintf("invalid:%d", *pe->value);
+		p->value = basprintf("invalid:%d", *pe->value);
 	else
 		p->value = strdup(pe->names[*pe->value]);
 
@@ -560,7 +560,7 @@ struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		return ERR_PTR(ret);
 	}
 
-	piro->param.value = asprintf(format, value);
+	piro->param.value = basprintf(format, value);
 
 	return &piro->param;
 }
@@ -586,7 +586,7 @@ struct param_d *dev_add_param_llint_ro(struct device_d *dev, const char *name,
 		return ERR_PTR(ret);
 	}
 
-	piro->param.value = asprintf(format, value);
+	piro->param.value = basprintf(format, value);
 
 	return &piro->param;
 }

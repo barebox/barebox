@@ -21,7 +21,6 @@
 #include <fs.h>
 #include <progress.h>
 #include <asm-generic/div64.h>
-#include <linux/stringify.h>
 
 #define HASHES_PER_LINE	65
 
@@ -58,7 +57,7 @@ void init_progression_bar(int max)
 	progress_max = max;
 	spin = 0;
 	if (progress_max && progress_max != FILESIZE_MAX)
-		printf("\t[%"__stringify(HASHES_PER_LINE)"s]\r\t[", "");
+		printf("\t[%*s]\r\t[", HASHES_PER_LINE, "");
 	else
 		printf("\t");
 }

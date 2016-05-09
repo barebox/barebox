@@ -30,6 +30,7 @@
  * @brief Main entry into the C part of barebox
  */
 #include <common.h>
+#include <shell.h>
 #include <init.h>
 #include <command.h>
 #include <malloc.h>

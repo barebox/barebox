@@ -12,6 +12,7 @@
 #include <common.h>
 #include <xfuncs.h>
 #include <fs.h>
+#include <crc.h>
 #include <fcntl.h>
 #include <malloc.h>
 #include <linux/ctype.h>

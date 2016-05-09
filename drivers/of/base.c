@@ -1702,7 +1702,8 @@ struct device_node *of_new_node(struct device_node *parent, const char *name)
 
 	if (parent) {
 		node->name = xstrdup(name);
-		node->full_name = asprintf("%s/%s", node->parent->full_name, name);
+		node->full_name = basprintf("%s/%s",
+					      node->parent->full_name, name);
 		list_add(&node->list, &parent->list);
 	} else {
 		node->name = xstrdup("");

@@ -278,7 +278,7 @@ EXPORT_SYMBOL(console_get_first_active);
 
 #endif /* !CONFIG_CONSOLE_NONE */
 
-int fprintf(int file, const char *fmt, ...)
+int dprintf(int file, const char *fmt, ...)
 {
 	va_list args;
 	char printbuffer[CFG_PBSIZE];
@@ -293,30 +293,30 @@ int fprintf(int file, const char *fmt, ...)
 	va_end(args);
 
 	/* Print the string */
-	return fputs(file, printbuffer);
+	return dputs(file, printbuffer);
 }
-EXPORT_SYMBOL(fprintf);
+EXPORT_SYMBOL(dprintf);
 
-int fputs(int fd, const char *s)
+int dputs(int fd, const char *s)
 {
 	if (fd == 1)
 		return puts(s);
 	else if (fd == 2)
-		return eputs(s);
+		return console_puts(CONSOLE_STDERR, s);
 	else
 		return write(fd, s, strlen(s));
 }
-EXPORT_SYMBOL(fputs);
+EXPORT_SYMBOL(dputs);
 
-int fputc(int fd, char c)
+int dputc(int fd, char c)
 {
 	if (fd == 1)
 		putchar(c);
 	else if (fd == 2)
-		eputc(c);
+		console_putc(CONSOLE_STDERR, c);
 	else
 		return write(fd, &c, 1);
 
 	return 0;
 }
-EXPORT_SYMBOL(fputc);
+EXPORT_SYMBOL(dputc);

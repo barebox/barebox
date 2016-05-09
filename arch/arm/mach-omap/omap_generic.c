@@ -130,7 +130,7 @@ static int omap_env_init(void)
 
 	device_detect_by_name(diskdev);
 
-	partname = asprintf("/dev/%s.0", diskdev);
+	partname = basprintf("/dev/%s.0", diskdev);
 
 	mkdir("/boot", 0666);
 	ret = mount(partname, "fat", "/boot", NULL);

@@ -470,10 +470,10 @@ static int mtd_partition_set(struct device_d *dev, struct param_d *p, const char
 static char *print_size(uint64_t s)
 {
 	if (!(s & ((1 << 20) - 1)))
-		return asprintf("%lldM", s >> 20);
+		return basprintf("%lldM", s >> 20);
 	if (!(s & ((1 << 10) - 1)))
-		return asprintf("%lldk", s >> 10);
-	return asprintf("0x%lld", s);
+		return basprintf("%lldk", s >> 10);
+	return basprintf("0x%lld", s);
 }
 
 static int print_part(char *buf, int bufsize, struct mtd_info *mtd, uint64_t last_ofs,
@@ -577,7 +577,8 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 
 	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
 		int na, ns, len = 0;
-		char *name = asprintf("partition@%0llx", partmtd->master_offset);
+		char *name = basprintf("partition@%0llx",
+					 partmtd->master_offset);
 		void *p;
 		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
 
@@ -675,7 +676,8 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	if (device_id == DEVICE_ID_SINGLE)
 		mtd->cdev.name = xstrdup(devname);
 	else
-		mtd->cdev.name = asprintf("%s%d", devname, mtd->class_dev.id);
+		mtd->cdev.name = basprintf("%s%d", devname,
+					     mtd->class_dev.id);
 
 	INIT_LIST_HEAD(&mtd->partitions);
 

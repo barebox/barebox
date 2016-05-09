@@ -262,7 +262,7 @@ int register_framebuffer(struct fb_info *info)
 		info->line_length = info->xres * (info->bits_per_pixel >> 3);
 
 	info->cdev.ops = &fb_ops;
-	info->cdev.name = asprintf("fb%d", id);
+	info->cdev.name = basprintf("fb%d", id);
 	info->cdev.size = info->line_length * info->yres;
 	info->cdev.dev = dev;
 	info->cdev.priv = info;

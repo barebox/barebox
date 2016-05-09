@@ -70,8 +70,8 @@ static int e9_devices_init(void)
 
 	armlinux_set_architecture(3980);
 
-	environment_path = asprintf("/chosen/environment-mmc%d",
-				bootsource_get_instance());
+	environment_path = basprintf("/chosen/environment-mmc%d",
+				       bootsource_get_instance());
 
 	ret = of_device_enable_path(environment_path);
 

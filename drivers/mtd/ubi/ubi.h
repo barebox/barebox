@@ -20,6 +20,7 @@
 
 #include <common.h>
 #include <malloc.h>
+#include <crc.h>
 #include <linux/types.h>
 #include <linux/list.h>
 #include <linux/rbtree.h>

@@ -17,6 +17,7 @@
 #include <uimagefs.h>
 #include <libbb.h>
 #include <rtc.h>
+#include <crc.h>
 #include <libfile.h>
 
 static bool uimagefs_is_data_file(struct uimagefs_handle_data *d)
@@ -249,7 +250,7 @@ static int uimagefs_add_name(struct uimagefs_handle *priv)
 static int uimagefs_add_hex(struct uimagefs_handle *priv, enum uimagefs_type type,
 			uint32_t data)
 {
-	char *val = asprintf("0x%x", data);
+	char *val = basprintf("0x%x", data);
 
 	return uimagefs_add_str(priv, type, val);
 }
@@ -265,7 +266,7 @@ static int __uimagefs_add_data(struct uimagefs_handle *priv, size_t offset,
 	if (i < 0)
 		d->name = xstrdup(name);
 	else
-		d->name = asprintf("%s%d", name, i);
+		d->name = basprintf("%s%d", name, i);
 
 	d->offset = offset;
 	d->size = size;
@@ -303,7 +304,7 @@ static int uimagefs_add_time(struct uimagefs_handle *priv)
 	char *val;
 
 	to_tm(header->ih_time, &tm);
-	val = asprintf("%4d-%02d-%02d  %2d:%02d:%02d UTC",
+	val = basprintf("%4d-%02d-%02d  %2d:%02d:%02d UTC",
 			tm.tm_year, tm.tm_mon, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
 
@@ -514,8 +515,8 @@ static int uimagefs_probe(struct device_d *dev)
 	dev_dbg(dev, "mount: %s\n", fsdev->backingstore);
 
 	if (IS_BUILTIN(CONFIG_FS_TFTP))
-		priv->tmp = asprintf("/.uImage_tmp_%08x",
-			crc32(0, fsdev->path, strlen(fsdev->path)));
+		priv->tmp = basprintf("/.uImage_tmp_%08x",
+					crc32(0, fsdev->path, strlen(fsdev->path)));
 
 	ret = __uimage_open(priv);
 	if (ret)

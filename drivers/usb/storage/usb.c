@@ -397,7 +397,7 @@ static int usb_stor_add_blkdev(struct us_data *us, struct device_d *dev,
 		pr_err("Cannot find a free number for the disk node\n");
 	pr_info("Using index %d for the new disk\n", result);
 
-	pblk_dev->blk.cdev.name = asprintf("disk%d", result);
+	pblk_dev->blk.cdev.name = basprintf("disk%d", result);
 	pblk_dev->blk.blockbits = SECTOR_SHIFT;
 
 	result = blockdevice_register(&pblk_dev->blk);

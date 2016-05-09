@@ -47,8 +47,7 @@ static int sram_probe(struct device_d *dev)
 
 	sram = xzalloc(sizeof(*sram));
 
-	sram->cdev.name = asprintf("sram%d",
-			cdev_find_free_index("sram"));
+	sram->cdev.name = basprintf("sram%d", cdev_find_free_index("sram"));
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(res))

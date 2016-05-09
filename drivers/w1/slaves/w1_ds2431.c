@@ -272,7 +272,7 @@ static int ds2431_probe(struct w1_device *dev)
 	cdev->priv	= dev;
 	cdev->ops	= &ds2431_ops;
 	cdev->size	= W1_F2D_EEPROM_SIZE;
-	cdev->name	= asprintf(DRIVERNAME"%d", ds2431_count++);
+	cdev->name	= basprintf(DRIVERNAME"%d", ds2431_count++);
 	if (cdev->name == NULL)
 		return -ENOMEM;
 

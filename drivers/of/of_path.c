@@ -75,7 +75,7 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 	    mtd_can_have_bb(cdev->mtd))
 		add_bb = true;
 
-	*outpath = asprintf("/dev/%s%s", cdev->name, add_bb ? ".bb" : "");
+	*outpath = basprintf("/dev/%s%s", cdev->name, add_bb ? ".bb" : "");
 
 	return 0;
 }

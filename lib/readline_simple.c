@@ -70,7 +70,7 @@ int readline (const char *prompt, char *line, int len)
 			show_activity(0);
 		}
 #endif
-		c = getc();
+		c = getchar();
 
 		/*
 		 * Special character handling

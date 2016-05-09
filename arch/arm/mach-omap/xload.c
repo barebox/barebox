@@ -115,7 +115,7 @@ static void *omap_xload_boot_mmc(void)
 
 	device_detect_by_name(diskdev);
 
-	partname = asprintf("%s.0", diskdev);
+	partname = basprintf("%s.0", diskdev);
 
 	ret = mount(partname, NULL, "/", NULL);
 
@@ -280,7 +280,7 @@ static void *am33xx_net_boot(void)
 		return NULL;
 	}
 
-	file = asprintf("%s/%s", TFTP_MOUNT, bootfile);
+	file = basprintf("%s/%s", TFTP_MOUNT, bootfile);
 
 	buf = read_file(file, &len);
 	if (!buf)

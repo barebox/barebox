@@ -367,7 +367,7 @@ static void getwinsize(void)
 
 	printf(ESC "7" ESC "[r" ESC "[999;999H" ESC "[6n");
 
-	while ((r = getc()) != 'R') {
+	while ((r = getchar()) != 'R') {
 		buf[i] = r;
 		i++;
 	}

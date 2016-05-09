@@ -9,28 +9,30 @@
  */
 
 /* serial stuff */
-void	serial_printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+void serial_printf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
 
-int	sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
-int	snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
-int	scnprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
-int	vsprintf(char *buf, const char *fmt, va_list args);
-char	*asprintf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
-char	*vasprintf(const char *fmt, va_list ap);
-int	vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
-int	vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
+int sprintf(char *buf, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
+int snprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
+int scnprintf(char *buf, size_t size, const char *fmt, ...) __attribute__ ((format(__printf__, 3, 4)));
+int vsprintf(char *buf, const char *fmt, va_list args);
+char *basprintf(const char *fmt, ...) __attribute__ ((format(__printf__, 1, 2)));
+int asprintf(char **strp, const char *fmt, ...)  __attribute__ ((format(__printf__, 2, 3)));
+char *bvasprintf(const char *fmt, va_list ap);
+int vasprintf(char **strp, const char *fmt, va_list ap);
+int vsnprintf(char *buf, size_t size, const char *fmt, va_list args);
+int vscnprintf(char *buf, size_t size, const char *fmt, va_list args);
 
 #ifndef CONFIG_CONSOLE_NONE
 /* stdin */
-int	tstc(void);
+int tstc(void);
 
 /* stdout */
-void	console_putc(unsigned int ch, const char c);
-int	getc(void);
-int	console_puts(unsigned int ch, const char *s);
-void	console_flush(void);
+void console_putc(unsigned int ch, const char c);
+int getchar(void);
+int console_puts(unsigned int ch, const char *s);
+void console_flush(void);
 
-int	vprintf(const char *fmt, va_list args);
+int vprintf(const char *fmt, va_list args);
 #else
 static inline int tstc(void)
 {
@@ -42,7 +44,7 @@ static inline int console_puts(unsigned int ch, const char *str)
 	return 0;
 }
 
-static inline int getc(void)
+static inline int getchar(void)
 {
 	return -EINVAL;
 }
@@ -87,23 +89,20 @@ static inline void putchar(char c)
 	console_putc(CONSOLE_STDOUT, c);
 }
 
-/* stderr */
-#define eputc(c)		console_putc(CONSOLE_STDERR, c)
-#define eputs(s)		console_puts(CONSOLE_STDERR, s)
-#define eprintf(fmt,args...)	fprintf(stderr,fmt ,##args)
-
 /*
  * FILE based functions
  */
 
-#define stdin		0
-#define stdout		1
-#define stderr		2
+/* stderr */
+#define eprintf(fmt,args...)	dprintf(STDERR_FILENO, fmt ,##args)
+
+#define STDIN_FILENO		0
+#define STDOUT_FILENO		1
+#define STDERR_FILENO		2
 #define MAX_FILES	128
 
-int	fprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
-int	fputs(int file, const char *s);
-int	fputc(int file, const char c);
-int	fgetc(int file);
+int dprintf(int file, const char *fmt, ...) __attribute__ ((format(__printf__, 2, 3)));
+int dputs(int file, const char *s);
+int dputc(int file, const char c);
 
 #endif /* __STDIO_H */

@@ -91,7 +91,7 @@ char *read_file_line(const char *fmt, ...)
 	struct stat s;
 
 	va_start(args, fmt);
-	filename = vasprintf(fmt, args);
+	filename = bvasprintf(fmt, args);
 	va_end(args);
 
 	ret = stat(filename, &s);
@@ -359,8 +359,8 @@ int copy_recursive(const char *src, const char *dst)
 		if (!strcmp(d->d_name, ".") || !strcmp(d->d_name, ".."))
 			continue;
 
-		from = asprintf("%s/%s", src, d->d_name);
-		to = asprintf("%s/%s", dst, d->d_name);
+		from = basprintf("%s/%s", src, d->d_name);
+		to = basprintf("%s/%s", dst, d->d_name);
 		ret = copy_recursive(from, to);
 		if (ret)
 			break;
@@ -441,4 +441,36 @@ err_out2:
 err_out1:
 	close(fd1);
 	return ret;
+}
+
+/**
+ * open_and_lseek - open file and lseek to position
+ * @filename:	The file to open
+ * @mode:	The file open mode
+ * @pos:	The position to lseek to
+ *
+ * Return: If successful this function returns a positive filedescriptor
+ *         number, otherwise a negative error code is returned
+ */
+int open_and_lseek(const char *filename, int mode, loff_t pos)
+{
+	int fd, ret;
+
+	fd = open(filename, mode | O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return fd;
+	}
+
+	if (!pos)
+		return fd;
+
+	ret = lseek(fd, pos, SEEK_SET);
+	if (ret == -1) {
+		perror("lseek");
+		close(fd);
+		return -errno;
+	}
+
+	return fd;
 }

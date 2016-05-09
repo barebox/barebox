@@ -176,7 +176,7 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 	priv->ubi = ubi;
 
 	cdev->ops = &ubi_volume_fops;
-	cdev->name = asprintf("%s.%s", ubi->cdev.name, vol->name);
+	cdev->name = basprintf("%s.%s", ubi->cdev.name, vol->name);
 	cdev->priv = priv;
 	cdev->size = vol->used_bytes;
 	cdev->dev = &vol->dev;
@@ -239,7 +239,7 @@ int ubi_cdev_add(struct ubi_device *ubi)
 	int ret;
 
 	cdev->ops = &ubi_fops;
-	cdev->name = asprintf("%s.ubi", ubi->mtd->cdev.name);
+	cdev->name = basprintf("%s.ubi", ubi->mtd->cdev.name);
 	cdev->priv = ubi;
 	cdev->size = 0;
 

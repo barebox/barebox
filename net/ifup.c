@@ -67,8 +67,8 @@ int ifup(const char *name, unsigned flags)
 	for (i = 0; i < ARRAY_SIZE(vars); i++)
 		setenv(vars[i], "");
 
-	cmd = asprintf("source /env/network/%s", name);
-	cmd_discover = asprintf("/env/network/%s-discover", name);
+	cmd = basprintf("source /env/network/%s", name);
+	cmd_discover = basprintf("/env/network/%s-discover", name);
 
 	ret = run_command(cmd);
 	if (ret) {

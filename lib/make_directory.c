@@ -3,6 +3,7 @@
 #include <errno.h>
 #ifdef __BAREBOX__
 #include <fs.h>
+#include <libfile.h>
 #include <malloc.h>
 #include <common.h>
 #define STATIC

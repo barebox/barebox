@@ -188,7 +188,7 @@ static int do_imx_nand_bbm(int argc, char *argv[])
 		int c;
 
 		printf("create flash bbt (y/n)?");
-		c = getc();
+		c = getchar();
 		if (c == 'y')
 			yes = 1;
 		printf("\n");

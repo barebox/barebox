@@ -41,29 +41,6 @@
 
 char *mem_rw_buf;
 
-int open_and_lseek(const char *filename, int mode, loff_t pos)
-{
-	int fd, ret;
-
-	fd = open(filename, mode | O_RDONLY);
-	if (fd < 0) {
-		perror("open");
-		return fd;
-	}
-
-	if (!pos)
-		return fd;
-
-	ret = lseek(fd, pos, SEEK_SET);
-	if (ret == -1) {
-		perror("lseek");
-		close(fd);
-		return -errno;
-	}
-
-	return fd;
-}
-
 /*
  * Common function for parsing options for the 'md', 'mw', 'memcpy', 'memcmp'
  * commands.

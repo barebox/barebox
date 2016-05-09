@@ -1763,7 +1763,7 @@ EXPORT_SYMBOL_GPL(usb_composite_setup_continue);
 
 static char *composite_default_mfr(struct usb_gadget *gadget)
 {
-	return asprintf("barebox %s", gadget->name);
+	return basprintf("barebox %s", gadget->name);
 }
 
 void usb_composite_overwrite_options(struct usb_composite_dev *cdev,

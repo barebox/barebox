@@ -58,7 +58,7 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	if (of_get_property(node, "read-only", &len))
 		flags = DEVFS_PARTITION_READONLY;
 
-	filename = asprintf("%s.%s", cdev->name, partname);
+	filename = basprintf("%s.%s", cdev->name, partname);
 
 	new = devfs_add_partition(cdev->name, offset, size, flags, filename);
 	if (IS_ERR(new))

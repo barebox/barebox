@@ -284,7 +284,7 @@ static int ipufb_probe(struct device_d *dev)
 	info = &fbi->info;
 
 	ipuid = of_alias_get_id(dev->parent->device_node, "ipu");
-	fbi->name = asprintf("ipu%d-di%d", ipuid + 1, pdata->di);
+	fbi->name = basprintf("ipu%d-di%d", ipuid + 1, pdata->di);
 	fbi->id = ipuid * 2 + pdata->di;
 	fbi->dino = pdata->di;
 

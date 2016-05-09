@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <crc.h>
 #include <i2c/i2c.h>
 #include <mach/immap_85xx.h>
 #include <mach/fsl_i2c.h>

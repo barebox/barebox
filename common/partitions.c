@@ -51,7 +51,7 @@ static int register_one_partition(struct block_device *blk,
 	uint64_t size = part->size * SECTOR_SIZE;
 	struct cdev *cdev;
 
-	partition_name = asprintf("%s.%d", blk->cdev.name, no);
+	partition_name = basprintf("%s.%d", blk->cdev.name, no);
 	if (!partition_name)
 		return -ENOMEM;
 	dev_dbg(blk->dev, "Registering partition %s on drive %s\n",

@@ -61,7 +61,6 @@ void __noreturn hang (void);
 
 char *size_human_readable(unsigned long long size);
 
-int run_command(const char *cmd);
 int	readline	(const char *prompt, char *buf, int len);
 
 /* common/memsize.c */
@@ -69,12 +68,6 @@ long	get_ram_size  (volatile long *, long);
 
 /* $(CPU)/cpu.c */
 void __noreturn poweroff(void);
-
-/* lib_generic/crc32.c */
-uint32_t crc32(uint32_t, const void*, unsigned int);
-uint32_t crc32_no_comp(uint32_t, const void*, unsigned int);
-int file_crc(char *filename, ulong start, ulong size, ulong *crc,
-		    ulong *total);
 
 /* common/console.c */
 int	ctrlc (void);
@@ -87,16 +80,6 @@ static inline void dump_stack(void)
 	printf("no stack data available\n");
 }
 #endif
-
-#define MEMAREA_SIZE_SPECIFIED 1
-
-struct memarea_info {
-	struct device_d *device;
-	unsigned long start;
-	unsigned long end;
-	unsigned long size;
-	unsigned long flags;
-};
 
 int parse_area_spec(const char *str, loff_t *start, loff_t *size);
 
@@ -112,17 +95,6 @@ extern int (*barebox_main)(void);
 
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
-
-int run_shell(void);
-
-#ifdef CONFIG_SHELL_HUSH
-char *shell_expand(char *str);
-#else
-static inline char *shell_expand(char *str)
-{
-	return strdup(str);
-}
-#endif
 
 #define ALIGN_DOWN(x, a)	((x) & ~((typeof(x))(a) - 1))
 
@@ -156,7 +128,6 @@ static inline void print_hex_dump(const char *level, const char *prefix_str,
 
 int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab);
-int open_and_lseek(const char *filename, int mode, loff_t pos);
 #define RW_BUF_SIZE	(unsigned)4096
 
 extern const char version_string[];

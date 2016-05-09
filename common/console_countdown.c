@@ -39,7 +39,7 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 
 	do {
 		if (tstc()) {
-			key = getc();
+			key = getchar();
 			if (flags & CONSOLE_COUNTDOWN_ANYKEY)
 				goto out;
 			if (flags & CONSOLE_COUNTDOWN_RETURN && key == '\n')

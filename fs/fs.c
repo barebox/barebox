@@ -18,6 +18,7 @@
  */
 
 #include <common.h>
+#include <command.h>
 #include <fs.h>
 #include <driver.h>
 #include <errno.h>
@@ -33,6 +34,7 @@
 #include <environment.h>
 #include <libgen.h>
 #include <block.h>
+#include <libfile.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {
@@ -1299,7 +1301,8 @@ int mount(const char *device, const char *fsname, const char *_path,
 	}
 
 	if (!fsdev->linux_rootarg && fsdev->cdev && fsdev->cdev->partuuid[0] != 0) {
-		char *str = asprintf("root=PARTUUID=%s", fsdev->cdev->partuuid);
+		char *str = basprintf("root=PARTUUID=%s",
+					fsdev->cdev->partuuid);
 
 		fsdev_set_linux_rootarg(fsdev, str);
 	}
@@ -1718,10 +1721,10 @@ const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions)
 	if (path)
 		return path;
 
-	newpath = asprintf("/mnt/%s", cdev->name);
+	newpath = basprintf("/mnt/%s", cdev->name);
 	make_directory(newpath);
 
-	devpath = asprintf("/dev/%s", cdev->name);
+	devpath = basprintf("/dev/%s", cdev->name);
 
 	ret = mount(devpath, NULL, newpath, fsoptions);
 

@@ -86,7 +86,9 @@
 #define GPMC_ECC_SIZE_CONFIG_ECCSIZE1(x)	((x) << 22)
 
 #define BCH8_MAX_ERROR	8	/* upto 8 bit correctable */
-#define BCH4_MAX_ERROR	4	/* upto 4 bit correctable */
+
+static const uint8_t bch8_vector[] = {0xf3, 0xdb, 0x14, 0x16, 0x8b, 0xd2,
+		0xbe, 0xcc, 0xac, 0x6b, 0xff, 0x99, 0x7b};
 
 int omap_gpmc_decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc);
 
@@ -239,9 +241,6 @@ static int __omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 	int ecc_size = 8;
 
 	switch (oinfo->ecc_mode) {
-	case OMAP_ECC_BCH4_CODE_HW:
-		ecc_size = 4;
-		/* fall through */
 	case OMAP_ECC_BCH8_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
 		for (i = 0; i < 4; i++) {
@@ -298,26 +297,26 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
-	int i, j, eccflag, count, totalcount, actual_eccsize;
+	int i, j, eccflag, totalcount, actual_eccsize;
+	const uint8_t *erased_ecc_vec;
 	unsigned int err_loc[8];
-	int select_4_8;
+	int bitflip_count;
+	int bch_max_err;
 
 	int eccsteps = oinfo->nand.ecc.steps;
 	int eccsize = oinfo->nand.ecc.bytes;
 
 	switch (oinfo->ecc_mode) {
-	case OMAP_ECC_BCH4_CODE_HW:
-		actual_eccsize = eccsize;
-		select_4_8 = 0;
-		break;
 	case OMAP_ECC_BCH8_CODE_HW:
 		eccsize /= eccsteps;
 		actual_eccsize = eccsize;
-		select_4_8 = 1;
+		erased_ecc_vec = bch8_vector;
+		bch_max_err = BCH8_MAX_ERROR;
 		break;
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
 		actual_eccsize = eccsize - 1;
-		select_4_8 = 1;
+		erased_ecc_vec = bch8_vector;
+		bch_max_err = BCH8_MAX_ERROR;
 		break;
 	default:
 		dev_err(oinfo->pdev, "invalid driver configuration\n");
@@ -327,37 +326,49 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 	totalcount = 0;
 
 	for (i = 0; i < eccsteps; i++) {
-		/* check if any ecc error */
+		bool is_error_reported = false;
+		bitflip_count = 0;
 		eccflag = 0;
+
+		/* check for any ecc error */
 		for (j = 0; (j < actual_eccsize) && (eccflag == 0); j++) {
-			if (calc_ecc[j] != 0)
+			if (calc_ecc[j] != 0) {
 				eccflag = 1;
+				break;
+			}
 		}
 
 		if (eccflag == 1) {
-			eccflag = 0;
-			for (j = 0; (j < actual_eccsize) &&
-					(eccflag == 0); j++)
-				if (read_ecc[j] != 0xFF)
-					eccflag = 1;
+			if (memcmp(calc_ecc, erased_ecc_vec, actual_eccsize) == 0) {
+				/*
+				 * calc_ecc[] matches pattern for ECC
+				 * (all 0xff) so this is definitely
+				 * an erased-page
+				 */
+			} else {
+				bitflip_count = nand_check_erased_ecc_chunk(
+						dat, oinfo->nand.ecc.size, read_ecc,
+						eccsize, NULL, 0, bch_max_err);
+				if (bitflip_count < 0)
+					is_error_reported = true;
+			}
 		}
 
-		count = 0;
-		if (eccflag == 1) {
-			count = omap_gpmc_decode_bch(select_4_8, calc_ecc, err_loc);
-			if (count < 0)
-				return count;
-			else
-				totalcount += count;
-		}
+		if (is_error_reported) {
+			bitflip_count = omap_gpmc_decode_bch(1,
+					calc_ecc, err_loc);
+			if (bitflip_count < 0)
+				return bitflip_count;
 
-		for (j = 0; j < count; j++) {
-			if (err_loc[j] < 4096)
-				dat[err_loc[j] >> 3] ^=
+			for (j = 0; j < bitflip_count; j++) {
+				if (err_loc[j] < 4096)
+					dat[err_loc[j] >> 3] ^=
 						1 << (err_loc[j] & 7);
-			/* else, not interested to correct ecc */
+				/* else, not interested to correct ecc */
+			}
 		}
 
+		totalcount += bitflip_count;
 		calc_ecc = calc_ecc + actual_eccsize;
 		read_ecc = read_ecc + eccsize;
 		dat += 512;
@@ -435,7 +446,6 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	switch (oinfo->ecc_mode) {
 	case OMAP_ECC_HAMMING_CODE_HW_ROMCODE:
 		return omap_correct_hamming(mtd, dat, read_ecc, calc_ecc);
-	case OMAP_ECC_BCH4_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
 		/*
@@ -463,17 +473,6 @@ static void omap_enable_hwecc(struct mtd_info *mtd, int mode)
 	int cs = 0;
 
 	switch (oinfo->ecc_mode) {
-	case OMAP_ECC_BCH4_CODE_HW:
-		if (mode == NAND_ECC_READ) {
-			eccsize1 = 0xD; eccsize0 = 0x48;
-			bch_mod = 0;
-			bch_wrapmode = 0x09;
-		} else {
-			eccsize1 = 0x20; eccsize0 = 0x00;
-			bch_mod = 0;
-			bch_wrapmode = 0x06;
-		}
-		break;
 	case OMAP_ECC_BCH8_CODE_HW:
 	case OMAP_ECC_BCH8_CODE_HW_ROMCODE:
 		if (mode == NAND_ECC_READ) {
@@ -763,17 +762,6 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		omap_oobinfo.oobfree->offset = offset + omap_oobinfo.eccbytes;
 		omap_oobinfo.oobfree->length = minfo->oobsize -
 					offset - omap_oobinfo.eccbytes;
-		break;
-	case OMAP_ECC_BCH4_CODE_HW:
-		oinfo->nand.ecc.bytes    = 7;
-		oinfo->nand.ecc.size     = 512;
-		oinfo->nand.ecc.strength = BCH4_MAX_ERROR;
-		omap_oobinfo.oobfree->offset = offset;
-		omap_oobinfo.oobfree->length = minfo->oobsize -
-					offset - omap_oobinfo.eccbytes;
-		offset = minfo->oobsize - oinfo->nand.ecc.bytes;
-		for (i = 0; i < oinfo->nand.ecc.bytes; i++)
-			omap_oobinfo.eccpos[i] = i + offset;
 		break;
 	case OMAP_ECC_BCH8_CODE_HW:
 		oinfo->nand.ecc.bytes    = 13 * 4;

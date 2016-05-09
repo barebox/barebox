@@ -169,7 +169,7 @@ typedef enum {
 
 /* Device supports subpage reads */
 /* Disabled in barebox for smaller binary sizes */
-#define NAND_SUBPAGE_READ	(__BAREBOX__ ? 0x0 : 0x00001000)
+#define NAND_SUBPAGE_READ	(0x00001000)
 
 /* Options valid for Samsung large page devices */
 #define NAND_SAMSUNG_LP_OPTIONS NAND_CACHEPRG

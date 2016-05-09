@@ -85,6 +85,7 @@
 
 &fec {
 	phy-handle = <&ethphy>;
+	phy-reset-duration = <10>; /* in msecs */
 
 	mdio {
 		#address-cells = <1>;
@@ -186,5 +187,17 @@
 	partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;
+	};
+};
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1>;
+	status = "okay";
+
+	eeprom: eeprom@50 {
+		compatible = "atmel,24c32";
+		pagesize = <32>;
+		reg = <0x50>;
 	};
 };

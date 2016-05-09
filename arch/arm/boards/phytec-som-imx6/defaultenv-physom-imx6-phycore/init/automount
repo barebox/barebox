@@ -12,3 +12,6 @@ automount /mnt/tftp 'ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp'
 
 mkdir -p /mnt/mmc
 automount -d /mnt/mmc 'mmc0.probe=1 && [ -e /dev/mmc0.0 ] && mount /dev/mmc0.0 /mnt/mmc'
+
+mkdir -p /mnt/emmc
+automount -d /mnt/emmc 'mmc3.probe=1 && [ -e /dev/mmc3.0 ] && mount /dev/mmc3.0 /mnt/emmc'

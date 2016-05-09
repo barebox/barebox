@@ -4,7 +4,6 @@
 #include <init.h>
 #include <io.h>
 #include <fs.h>
-#include <net/designware.h>
 #include <linux/clkdev.h>
 #include <linux/clk.h>
 #include <linux/stat.h>

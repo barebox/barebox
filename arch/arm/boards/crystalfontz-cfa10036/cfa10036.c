@@ -19,7 +19,6 @@
 #include <environment.h>
 #include <envfs.h>
 #include <errno.h>
-#include <fec.h>
 #include <gpio.h>
 #include <init.h>
 #include <mci.h>

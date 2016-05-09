@@ -27,7 +27,7 @@
 #include <io.h>
 #include <net.h>
 #include <of_net.h>
-#include <net/designware.h>
+#include <platform_data/eth-designware.h>
 #include <linux/phy.h>
 #include <linux/err.h>
 #include "designware.h"

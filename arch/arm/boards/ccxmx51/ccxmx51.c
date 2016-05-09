@@ -20,7 +20,7 @@
 #include <init.h>
 #include <environment.h>
 #include <mach/imx51-regs.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>

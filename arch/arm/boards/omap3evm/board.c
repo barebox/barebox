@@ -44,7 +44,6 @@
 #include <driver.h>
 #include <io.h>
 #include <linux/sizes.h>
-#include <ns16550.h>
 #include <asm/armlinux.h>
 #include <mach/omap3-silicon.h>
 #include <mach/omap3-mux.h>

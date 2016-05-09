@@ -18,7 +18,6 @@
 #include <init.h>
 #include <environment.h>
 #include <mach/imx6-regs.h>
-#include <fec.h>
 #include <gpio.h>
 #include <mach/bbu.h>
 #include <asm/armlinux.h>

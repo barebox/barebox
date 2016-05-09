@@ -18,7 +18,6 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <fec.h>
 #include <gpio.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

@@ -13,7 +13,6 @@
 #include <common.h>
 #include <clock.h>
 #include <init.h>
-#include <ns16550.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/omap4-silicon.h>

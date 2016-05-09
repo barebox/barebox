@@ -25,7 +25,7 @@
 #include <driver.h>
 #include <init.h>
 #include <asm/syslib.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <linux/err.h>
 
 static struct NS16550_plat serial_plat = {

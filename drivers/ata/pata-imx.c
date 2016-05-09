@@ -28,7 +28,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <ata_drive.h>
-#include <platform_ide.h>
+#include <platform_data/ide.h>
 #include <io.h>
 #include <of.h>
 #include <linux/err.h>

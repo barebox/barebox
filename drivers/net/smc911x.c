@@ -28,7 +28,7 @@
 #include <errno.h>
 #include <clock.h>
 #include <io.h>
-#include <smc911x.h>
+#include <platform_data/eth-smc911x.h>
 #include <linux/phy.h>
 
 #include "smc911x.h"

@@ -33,7 +33,7 @@
 #include <mach/udc_pxa2xx.h>
 #include <mach/mci_pxa2xx.h>
 
-#include <net/smc91111.h>
+#include <platform_data/eth-smc91111.h>
 #include <asm/armlinux.h>
 #include <asm/io.h>
 #include <asm/mmu.h>

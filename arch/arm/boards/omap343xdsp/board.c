@@ -20,7 +20,6 @@
 #include <init.h>
 #include <driver.h>
 #include <io.h>
-#include <ns16550.h>
 #include <asm/armlinux.h>
 #include <mach/omap3-silicon.h>
 #include <mach/omap3-devices.h>

@@ -17,7 +17,7 @@
 #include <common.h>
 #include <environment.h>
 #include <errno.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <gpio.h>
 #include <init.h>
 #include <mci.h>

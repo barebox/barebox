@@ -1,5 +1,5 @@
 #include <driver.h>
-#include <ns16550.h>
+#include <platform_data/serial-ns16550.h>
 #include <asm/armlinux.h>
 
 #include <mach/omap3-devices.h>

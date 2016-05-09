@@ -24,7 +24,7 @@
 #include <driver.h>
 #include <init.h>
 #include <linux/err.h>
-#include <platform_ide.h>
+#include <platform_data/ide.h>
 #include "envsector.h"
 
 static struct ide_port_info ide_plat = {

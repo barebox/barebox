@@ -15,7 +15,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <io.h>
-#include <platform_ide.h>
+#include <platform_data/ide.h>
 #include <linux/sizes.h>
 #include <mach/imx27-regs.h>
 #include <mach/iomux-mx27.h>

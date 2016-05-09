@@ -1,5 +1,5 @@
 
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <input/matrix_keypad.h>
 #include <i2c/i2c.h>
 #include <mach/spi.h>

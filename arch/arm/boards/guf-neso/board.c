@@ -18,7 +18,7 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <notifier.h>
 #include <partition.h>
 #include <gpio.h>

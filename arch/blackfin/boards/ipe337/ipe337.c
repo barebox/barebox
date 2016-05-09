@@ -4,7 +4,7 @@
 #include <asm/cpu/cdefBF561.h>
 #include <partition.h>
 #include <fs.h>
-#include <smc911x.h>
+#include <platform_data/eth-smc911x.h>
 
 struct smc911x_plat smcplat = {
 	.shift = 1,

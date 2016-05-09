@@ -8,7 +8,6 @@
 #include <net.h>
 #include <init.h>
 #include <environment.h>
-#include <fec.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <partition.h>

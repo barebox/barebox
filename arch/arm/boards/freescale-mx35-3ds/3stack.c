@@ -25,7 +25,7 @@
 #include <environment.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <fec.h>
+#include <platform_data/eth-fec.h>
 #include <fs.h>
 #include <init.h>
 #include <nand.h>

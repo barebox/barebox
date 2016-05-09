@@ -16,7 +16,6 @@
 
 #include <common.h>
 #include <init.h>
-#include <ns16550.h>
 #include <asm/memory.h>
 #include <mach/iomap.h>
 #include <mach/lowlevel.h>

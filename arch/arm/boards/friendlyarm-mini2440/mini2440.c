@@ -21,7 +21,7 @@
 #include <init.h>
 #include <generated/mach-types.h>
 #include <partition.h>
-#include <dm9000.h>
+#include <platform_data/eth-dm9000.h>
 #include <nand.h>
 #include <mci.h>
 #include <fb.h>

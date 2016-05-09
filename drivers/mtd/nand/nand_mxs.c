@@ -635,6 +635,33 @@ static uint8_t mxs_nand_read_byte(struct mtd_info *mtd)
 	return buf;
 }
 
+static void mxs_nand_config_bch(struct mtd_info *mtd, int readlen)
+{
+	struct nand_chip *nand = mtd->priv;
+	struct mxs_nand_info *nand_info = nand->priv;
+	int chunk_size;
+	void __iomem *bch_regs = nand_info->bch_base;
+
+	if (mxs_nand_is_imx6(nand_info))
+		chunk_size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE >> 2;
+	else
+		chunk_size = MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
+
+	writel((mxs_nand_ecc_chunk_cnt(readlen) - 1)
+			<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET |
+		MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET |
+		(mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1)
+			<< IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET |
+		chunk_size,
+		bch_regs + BCH_FLASH0LAYOUT0);
+
+	writel(readlen	<< BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET |
+		(mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1)
+			<< IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET |
+		chunk_size,
+		bch_regs + BCH_FLASH0LAYOUT1);
+}
+
 /*
  * Read a page from NAND.
  */
@@ -1104,7 +1131,6 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	struct nand_chip *nand = mtd->priv;
 	struct mxs_nand_info *nand_info = nand->priv;
 	void __iomem *bch_regs = nand_info->bch_base;
-	uint32_t layout0, layout1;
 	int ret;
 
 	/* Reset BCH. Don't use SFTRST on MX23 due to Errata #2847 */
@@ -1113,36 +1139,7 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 	if (ret)
 		return ret;
 
-	if (mxs_nand_is_imx6(nand_info)) {
-		layout0 = (mxs_nand_ecc_chunk_cnt(mtd->writesize) - 1)
-					<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET |
-			MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET |
-			(mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1)
-					<< IMX6_BCH_FLASHLAYOUT0_ECC0_OFFSET |
-			MXS_NAND_CHUNK_DATA_CHUNK_SIZE >> 2;
-
-		layout1 = (mtd->writesize + mtd->oobsize)
-					<< BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET |
-			(mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1)
-					<< IMX6_BCH_FLASHLAYOUT1_ECCN_OFFSET |
-			MXS_NAND_CHUNK_DATA_CHUNK_SIZE >> 2;
-	} else {
-		layout0 = (mxs_nand_ecc_chunk_cnt(mtd->writesize) - 1)
-					<< BCH_FLASHLAYOUT0_NBLOCKS_OFFSET |
-			MXS_NAND_METADATA_SIZE << BCH_FLASHLAYOUT0_META_SIZE_OFFSET |
-			(mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1)
-					<< BCH_FLASHLAYOUT0_ECC0_OFFSET |
-			MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
-
-		layout1 = (mtd->writesize + mtd->oobsize)
-					<< BCH_FLASHLAYOUT1_PAGE_SIZE_OFFSET |
-			(mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) >> 1)
-					<< BCH_FLASHLAYOUT1_ECCN_OFFSET |
-			MXS_NAND_CHUNK_DATA_CHUNK_SIZE;
-	}
-
-	writel(layout0, bch_regs + BCH_FLASH0LAYOUT0);
-	writel(layout1, bch_regs + BCH_FLASH0LAYOUT1);
+	mxs_nand_config_bch(mtd, mtd->writesize + mtd->oobsize);
 
 	/* Set *all* chip selects to use layout 0 */
 	writel(0, bch_regs + BCH_LAYOUTSELECT);

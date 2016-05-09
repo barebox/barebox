@@ -665,8 +665,9 @@ static void mxs_nand_config_bch(struct mtd_info *mtd, int readlen)
 /*
  * Read a page from NAND.
  */
-static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
-					uint8_t *buf, int oob_required, int page)
+static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
+					uint8_t *buf, int oob_required, int page,
+					int readlen)
 {
 	struct mxs_nand_info *nand_info = nand->priv;
 	struct mxs_dma_desc *d;
@@ -674,7 +675,17 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 	uint32_t corrected = 0, failed = 0;
 	uint8_t	*status;
 	unsigned int  max_bitflips = 0;
-	int i, ret;
+	int i, ret, readtotal, nchunks, eccstrength, ecc_parity_size;
+
+	eccstrength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);
+
+	readlen = roundup(readlen, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
+	nchunks = mxs_nand_ecc_chunk_cnt(readlen);
+	ecc_parity_size = 13 * eccstrength / 8;
+	readtotal = MXS_NAND_METADATA_SIZE +
+		(MXS_NAND_CHUNK_DATA_CHUNK_SIZE + ecc_parity_size) * nchunks;
+
+	mxs_nand_config_bch(mtd, readtotal);
 
 	/* Compile the DMA descriptor - wait for ready. */
 	d = mxs_nand_get_dma_desc(nand_info);
@@ -706,13 +717,13 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 		GPMI_CTRL0_WORD_LENGTH |
 		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
-		(mtd->writesize + mtd->oobsize);
+		readtotal;
 	d->cmd.pio_words[1] = 0;
 	d->cmd.pio_words[2] =
 		GPMI_ECCCTRL_ENABLE_ECC |
 		GPMI_ECCCTRL_ECC_CMD_DECODE |
 		GPMI_ECCCTRL_BUFFER_MASK_BCH_PAGE;
-	d->cmd.pio_words[3] = mtd->writesize + mtd->oobsize;
+	d->cmd.pio_words[3] = readtotal;
 	d->cmd.pio_words[4] = (dma_addr_t)nand_info->data_buf;
 	d->cmd.pio_words[5] = (dma_addr_t)nand_info->oob_buf;
 
@@ -732,7 +743,7 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 		GPMI_CTRL0_WORD_LENGTH |
 		(nand_info->cur_chip << GPMI_CTRL0_CS_OFFSET) |
 		GPMI_CTRL0_ADDRESS_NAND_DATA |
-		(mtd->writesize + mtd->oobsize);
+		readtotal;
 	d->cmd.pio_words[1] = 0;
 	d->cmd.pio_words[2] = 0;
 
@@ -764,11 +775,11 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 	/* Read DMA completed, now do the mark swapping. */
 	mxs_nand_swap_block_mark(mtd, nand_info->data_buf, nand_info->oob_buf);
 
-	memcpy(buf, nand_info->data_buf, mtd->writesize);
+	memcpy(buf, nand_info->data_buf, readlen);
 
 	/* Loop over status bytes, accumulating ECC status. */
 	status = nand_info->oob_buf + mxs_nand_aux_status_offset();
-	for (i = 0; i < mxs_nand_ecc_chunk_cnt(mtd->writesize); i++) {
+	for (i = 0; i < nchunks; i++) {
 		if (status[i] == 0x00)
 			continue;
 
@@ -843,7 +854,32 @@ static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
 rtn:
 	mxs_nand_return_dma_descs(nand_info);
 
+	mxs_nand_config_bch(mtd, mtd->writesize + mtd->oobsize);
+
 	return ret ? ret : max_bitflips;
+}
+
+static int mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand,
+					uint8_t *buf, int oob_required, int page)
+{
+	return __mxs_nand_ecc_read_page(mtd, nand, buf, oob_required, page,
+					mtd->writesize);
+}
+
+static int gpmi_ecc_read_subpage(struct mtd_info *mtd, struct nand_chip *chip,
+			uint32_t offs, uint32_t len, uint8_t *buf, int page)
+{
+	/*
+	 * For now always read from the beginning of a page. Allowing
+	 * offsets here makes __mxs_nand_ecc_read_page() more
+	 * complicated.
+	 */
+	if (offs) {
+		len += offs;
+		offs = 0;
+	}
+
+	return __mxs_nand_ecc_read_page(mtd, chip, buf, 0, page, len);
 }
 
 /*
@@ -1355,6 +1391,9 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand->ecc.bytes		= 9;
 	nand->ecc.size		= 512;
 	nand->ecc.strength	= 8;
+
+	nand->ecc.read_subpage = gpmi_ecc_read_subpage;
+	nand->options |= NAND_SUBPAGE_READ;
 
 	/* first scan to find the device and get the page size */
 	err = nand_scan_ident(mtd, 4, NULL);

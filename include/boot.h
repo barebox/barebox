@@ -11,6 +11,7 @@ enum bootm_verify {
 	BOOTM_VERIFY_NONE,
 	BOOTM_VERIFY_HASH,
 	BOOTM_VERIFY_SIGNATURE,
+	BOOTM_VERIFY_AVAILABLE,
 };
 
 struct bootm_data {

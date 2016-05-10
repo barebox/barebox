@@ -74,6 +74,7 @@ static const char * const bootm_verify_names[] = {
 #ifndef CONFIG_BOOTM_FORCE_SIGNED_IMAGES
 	[BOOTM_VERIFY_NONE] = "none",
 	[BOOTM_VERIFY_HASH] = "hash",
+	[BOOTM_VERIFY_AVAILABLE] = "available",
 #endif
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };

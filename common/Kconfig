@@ -627,6 +627,15 @@ config BOOTM_FITIMAGE_SIGNATURE
 	  Additionally the barebox device tree needs a /signature node with the
 	  public key with which the image has been signed.
 
+config BOOTM_FORCE_SIGNED_IMAGES
+	bool
+	prompt "Force booting of signed images"
+	depends on BOOTM_FITIMAGE_SIGNATURE
+	help
+	  With this option enabled only signed images can be booted, unsigned images
+	  are refused to boot. Effectively this means only FIT images can be booted
+	  since they are the only supported image type that support signing.
+
 config BLSPEC
 	depends on BLOCK
 	depends on FLEXIBLE_BOOTARGS

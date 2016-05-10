@@ -873,7 +873,7 @@ static void cb_oem_exec(struct usb_ep *ep, struct usb_request *req, const char *
 	struct f_fastboot *f_fb = req->context;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_COMMAND)) {
+	if (!IS_ENABLED(CONFIG_COMMAND_SUPPORT)) {
 		fastboot_tx_print(f_fb, "FAILno command support available");
 		return;
 	}

@@ -189,7 +189,7 @@ typedef struct image_header {
 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
 } image_header_t;
 
-#if defined(CONFIG_CMD_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
+#if defined(CONFIG_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
 const char *image_get_os_name(uint8_t os);
 const char *image_get_arch_name(uint8_t arch);
 const char *image_get_type_name(uint8_t type);

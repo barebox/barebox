@@ -50,7 +50,7 @@ void uimage_print_contents(struct uimage_handle *handle)
 			tm.tm_year, tm.tm_mon, tm.tm_mday,
 			tm.tm_hour, tm.tm_min, tm.tm_sec);
 #endif
-#if defined(CONFIG_CMD_BOOTM_SHOW_TYPE)
+#if defined(CONFIG_BOOTM_SHOW_TYPE)
 	printf("   OS:           %s\n", image_get_os_name(hdr->ih_os));
 	printf("   Architecture: %s\n", image_get_arch_name(hdr->ih_arch));
 	printf("   Type:         %s\n", image_get_type_name(hdr->ih_type));

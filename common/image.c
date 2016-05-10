@@ -31,7 +31,7 @@
 #include <time.h>
 #endif
 
-#if defined(CONFIG_CMD_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
+#if defined(CONFIG_BOOTM_SHOW_TYPE) || !defined(__BAREBOX__)
 typedef struct table_entry {
 	int	id;		/* as defined in image.h	*/
 	char	*sname;		/* short (input) name		*/

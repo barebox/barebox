@@ -142,7 +142,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 
 bool bootm_has_initrd(struct image_data *data)
 {
-	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return false;
 
 	if (data->os_fit && data->os_fit->initrd)
@@ -196,7 +196,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 	enum filetype type;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return -ENOSYS;
 
 	if (!bootm_has_initrd(data))
@@ -274,7 +274,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 
 	printf("Loading devicetree from '%s'@%d\n", oftree, num);
 
-	if (!IS_ENABLED(CONFIG_CMD_BOOTM_OFTREE_UIMAGE))
+	if (!IS_ENABLED(CONFIG_BOOTM_OFTREE_UIMAGE))
 		return -EINVAL;
 
 	if (!strcmp(data->os_file, oftree)) {
@@ -651,7 +651,7 @@ static int bootm_init(void)
 	globalvar_add_simple("bootm.image.loadaddr", NULL);
 	globalvar_add_simple("bootm.oftree", NULL);
 	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD)) {
+	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
 	}

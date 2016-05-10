@@ -485,8 +485,11 @@ static int fit_open_configuration(struct fit_handle *handle, const char *name)
 				return ret;
 		}
 
-		if (ret < 0)
+		if (ret < 0) {
+			pr_err("configuration '%s': %s does not have a signature\n",
+			       unit, desc);
 			return ret;
+		}
 	}
 
 	if (of_property_read_string(conf_node, "kernel", &unit) == 0) {

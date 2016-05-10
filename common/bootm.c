@@ -655,6 +655,10 @@ static int bootm_init(void)
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
 	}
+
+	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES))
+		bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
+
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
 				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
 

@@ -436,9 +436,12 @@ static int fit_open_image(struct fit_handle *handle, const char *unit, const voi
 			if (ret < 0)
 				return ret;
 		}
+
+		if (ret < 0) {
+			pr_err("image '%s': '%s' does not have hashes\n", unit, desc);
+			return ret;
+		}
 	}
-	if (ret < 0)
-		return ret;
 
 	*outdata = data;
 	*outsize = data_len;

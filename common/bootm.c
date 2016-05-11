@@ -21,6 +21,7 @@
 #include <globalvar.h>
 #include <init.h>
 #include <linux/stat.h>
+#include <magicvar.h>
 
 static LIST_HEAD(handler_list);
 
@@ -666,3 +667,12 @@ static int bootm_init(void)
 	return 0;
 }
 late_initcall(bootm_init);
+
+BAREBOX_MAGICVAR(bootargs, "Linux kernel parameters");
+BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
+BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
+BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
+BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
+BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
+BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
+BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");

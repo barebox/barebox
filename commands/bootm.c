@@ -37,7 +37,6 @@
 #include <rtc.h>
 #include <init.h>
 #include <of.h>
-#include <magicvar.h>
 #include <uncompress.h>
 #include <memory.h>
 #include <filetype.h>
@@ -158,15 +157,6 @@ BAREBOX_CMD_START(bootm)
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
-
-BAREBOX_MAGICVAR(bootargs, "Linux kernel parameters");
-BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
-BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
-BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
-BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
-BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
-BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
-BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");
 
 static struct binfmt_hook binfmt_uimage_hook = {
 	.type = filetype_uimage,

@@ -50,7 +50,7 @@ void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 	pr_debug("Setting reset source to %s with priority %d\n",
 			reset_src_names[reset_source], priority);
 }
-EXPORT_SYMBOL(reset_source_set);
+EXPORT_SYMBOL(reset_source_set_priority);
 
 static int reset_source_init(void)
 {

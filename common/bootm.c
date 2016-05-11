@@ -50,6 +50,7 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 }
 
 static int bootm_appendroot;
+static int bootm_verbosity;
 
 void bootm_data_init_defaults(struct bootm_data *data)
 {
@@ -62,6 +63,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->initrd_file = getenv_nonempty("global.bootm.initrd");
 	data->verify = bootm_get_verify_mode();
 	data->appendroot = bootm_appendroot;
+	data->verbose = bootm_verbosity;
 }
 
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
@@ -661,6 +663,8 @@ static int bootm_init(void)
 	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES))
 		bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
 
+	globalvar_add_simple_int("bootm.verbose", &bootm_verbosity, "%u");
+
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
 				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
 
@@ -675,4 +679,5 @@ BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default 
 BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
 BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
 BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
+BAREBOX_MAGICVAR_NAMED(global_bootm_verbose, global.bootm.verify, "bootm default verbosity level (0=quiet)");
 BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");

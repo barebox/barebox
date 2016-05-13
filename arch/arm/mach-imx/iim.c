@@ -122,6 +122,16 @@ int imx_iim_write_field(uint32_t field, unsigned value)
 	return regmap_write(imx_iim->bank[bank]->map, byte, value);
 }
 
+int imx_iim_permanent_write(int enable)
+{
+	if (!imx_iim)
+		return -ENODEV;
+
+	imx_iim->write_enable = enable;
+
+	return 0;
+}
+
 static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
 {
 	struct iim_priv *iim = bank->iim;

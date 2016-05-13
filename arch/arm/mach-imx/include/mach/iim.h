@@ -99,5 +99,6 @@ static inline int imx25_iim_register_fec_ethaddr(void)
 
 int imx_iim_read_field(uint32_t field, unsigned *value);
 int imx_iim_write_field(uint32_t field, unsigned value);
+int imx_iim_permanent_write(int enable);
 
 #endif /* __MACH_IMX_IIM_H */

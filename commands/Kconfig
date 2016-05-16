@@ -1807,6 +1807,14 @@ config CMD_HWCLOCK
 	help
 	  The hwclock command allows to query or set the hardware clock (RTC).
 
+config CMD_HWMON
+	bool
+	depends on AIODEV
+	prompt "hwmon command"
+	default y
+	help
+	  The hwmon command allows to query hardware sensors.
+
 config CMD_I2C
 	bool
 	depends on I2C

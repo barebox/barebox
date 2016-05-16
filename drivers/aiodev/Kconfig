@@ -1,0 +1,8 @@
+#
+# Misc strange devices
+#
+menuconfig AIODEV
+	bool "Analog I/O drivers"
+
+if AIODEV
+endif

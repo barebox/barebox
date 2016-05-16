@@ -21,13 +21,13 @@ void __iomem *syscon_base_lookup_by_phandle
 #else
 static inline void __iomem *syscon_base_lookup_by_pdevname(const char *s)
 {
-	return NULL;
+	return ERR_PTR(-ENOSYS);
 }
 
 static inline void __iomem *syscon_base_lookup_by_phandle
 	(struct device_node *np, const char *property)
 {
-	return NULL;
+	return ERR_PTR(-ENOSYS);
 }
 #endif
 

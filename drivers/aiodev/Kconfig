@@ -13,4 +13,10 @@ config IMX_THERMAL
          Support for Temperature Monitor (TEMPMON) found on Freescale
          i.MX SoCs.
 
+config LM75
+	tristate "LM75 driver"
+	depends on I2C
+	help
+	  Support for LM75 and similar devices
+
 endif

@@ -82,7 +82,7 @@ int libscan_ubi_scan(struct mtd_info *mtd, struct ubi_scan_info **info,
 		}
 
 		ret = mtd_peb_read(mtd, &ech, eb, 0, sizeof(struct ubi_ec_hdr));
-		if (ret < 0)
+		if (ret < 0 && !mtd_is_bitflip(ret))
 			goto out_ec;
 
 		if (be32_to_cpu(ech.magic) != UBI_EC_HDR_MAGIC) {

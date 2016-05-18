@@ -164,7 +164,7 @@ struct eth_device *eth_get_byname(const char *ethname)
 	struct eth_device *edev;
 
 	for_each_netdev(edev) {
-		if (!strcmp(ethname, dev_name(&edev->dev)))
+		if (!strcmp(ethname, eth_name(edev)))
 			return edev;
 	}
 	return NULL;
@@ -174,17 +174,15 @@ struct eth_device *eth_get_byname(const char *ethname)
 int eth_complete(struct string_list *sl, char *instr)
 {
 	struct eth_device *edev;
-	const char *devname;
 	int len;
 
 	len = strlen(instr);
 
 	for_each_netdev(edev) {
-		devname = dev_name(&edev->dev);
-		if (strncmp(instr, devname, len))
+		if (strncmp(instr, eth_name(edev), len))
 			continue;
 
-		string_list_add_asprintf(sl, "%s ", devname);
+		string_list_add_asprintf(sl, "%s ", eth_name(edev));
 	}
 	return COMPLETE_CONTINUE;
 }
@@ -378,6 +376,8 @@ int eth_register(struct eth_device *edev)
 	if (ret)
 		return ret;
 
+	edev->devname = xstrdup(dev_name(&edev->dev));
+
 	dev_add_param_ip(dev, "ipaddr", NULL, NULL, &edev->ipaddr, edev);
 	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);
 	dev_add_param_ip(dev, "gateway", NULL, NULL, &edev->gateway, edev);
@@ -423,6 +423,8 @@ void eth_unregister(struct eth_device *edev)
 
 	if (IS_ENABLED(CONFIG_OFDEVICE))
 		free(edev->nodepath);
+
+	free(edev->devname);
 
 	unregister_device(&edev->dev);
 	list_del(&edev->list);

@@ -927,13 +927,13 @@ static void read_firmware_all(struct mtd_info *mtd, struct fcb_block *fcb, void 
 	    fcb->Firmware2_startingPage == fw0) {
 		first = 1;
 	} else {
-		pr_warn("FCB is not what we expect. Update will not be robust");
+		pr_warn("FCB is not what we expect. Update will not be robust\n");
 		*used = 0;
 		return;
 	}
 
 	if (fcb->PagesInFirmware1 != fcb->PagesInFirmware2) {
-		pr_warn("FCB is not what we expect. Update will not be robust");
+		pr_warn("FCB is not what we expect. Update will not be robust\n");
 		return;
 	}
 

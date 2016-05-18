@@ -215,7 +215,7 @@ static int ehci_td_buffer(struct qTD *td, void *buf, size_t sz)
 
 static int
 ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
-		   int length, struct devrequest *req)
+		   int length, struct devrequest *req, int timeout_ms)
 {
 	struct usb_host *host = dev->host;
 	struct ehci_priv *ehci = to_ehci(host);
@@ -364,7 +364,7 @@ ehci_submit_async(struct usb_device *dev, unsigned long pipe, void *buffer,
 	}
 
 	/* Wait for TDs to be processed. */
-	timeout_val = usb_pipebulk(pipe) ? (SECOND << 2) : (SECOND >> 2);
+	timeout_val = timeout_ms * MSECOND;
 	start = get_time_ns();
 	vtd = td;
 	do {
@@ -893,7 +893,7 @@ submit_bulk_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 		dev_dbg(ehci->dev, "non-bulk pipe (type=%lu)", usb_pipetype(pipe));
 		return -1;
 	}
-	return ehci_submit_async(dev, pipe, buffer, length, NULL);
+	return ehci_submit_async(dev, pipe, buffer, length, NULL, timeout);
 }
 
 static int
@@ -913,7 +913,7 @@ submit_control_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 			dev->speed = USB_SPEED_HIGH;
 		return ehci_submit_root(dev, pipe, buffer, length, setup);
 	}
-	return ehci_submit_async(dev, pipe, buffer, length, setup);
+	return ehci_submit_async(dev, pipe, buffer, length, setup, timeout);
 }
 
 static int

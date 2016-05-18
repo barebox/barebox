@@ -228,7 +228,7 @@ static int eth_check_open(struct eth_device *edev)
 	if (edev->active)
 		return 0;
 
-	ret = edev->open(eth_current);
+	ret = edev->open(edev);
 	if (ret)
 		return ret;
 

@@ -104,17 +104,13 @@ static int platform_ide_probe(struct device_d *dev)
 	}
 
 	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	reg_base = IOMEM(iores->start);
-
-	if (!IS_ERR(reg_base)) {
+	if (!IS_ERR(iores)) {
+		reg_base = IOMEM(iores->start);
 		mmio = 1;
 		iores = dev_request_mem_resource(dev, 1);
-		if (IS_ERR(iores))
-			return PTR_ERR(iores);
-		alt_base = IOMEM(iores->start);
-		if (IS_ERR(alt_base))
+		if (!IS_ERR(iores))
+			alt_base = IOMEM(iores->start);
+		else
 			alt_base = NULL;
 	} else {
 		reg = dev_get_resource(dev, IORESOURCE_IO, 0);

@@ -106,6 +106,7 @@ struct ds1307 {
 static struct platform_device_id ds1307_id[] = {
 	{ "ds1307", ds_1307 },
 	{ "ds1337", ds_1337 },
+	{ "ds1308", ds_1338 }, /* Difference 1308 to 1338 irrelevant */
 	{ "ds1338", ds_1338 },
 	{ "ds1341", ds_1341 },
 	{ "pt7c4338", ds_1307 },

@@ -212,7 +212,7 @@ const char *imd_string_data(struct imd_header *imd, int index)
 	int len = imd_read_length(imd);
 	char *p = (char *)(imd + 1);
 
-	if (!imd_is_string(imd->type))
+	if (!imd_is_string(imd_read_type(imd)))
 		return NULL;
 
 	for (i = 0; total < len; total += l, p += l) {
@@ -239,7 +239,7 @@ char *imd_concat_strings(struct imd_header *imd)
 	char *str;
 	char *data = (char *)(imd + 1);
 
-	if (!imd_is_string(imd->type))
+	if (!imd_is_string(imd_read_type(imd)))
 		return NULL;
 
 	str = malloc(len);

@@ -271,7 +271,6 @@ static int imx_iim_fuse_blow(struct iim_bank *bank, unsigned offset, unsigned va
 
 	if (IS_ERR(iim->fuse_supply)) {
 		iim->fuse_supply = regulator_get(iim->dev.parent, "vdd-fuse");
-		dev_info(iim->dev.parent, "regul: %p\n", iim->fuse_supply);
 		if (IS_ERR(iim->fuse_supply))
 			return PTR_ERR(iim->fuse_supply);
 	}

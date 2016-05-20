@@ -12,6 +12,8 @@
 
 #define VALIDATION_WORD 0x31305341
 
+#define BRANCH_INST 0xea /* ARM opcode for "b" (unconditional branch) */
+
 #define MAX_IMAGE_SIZE (60 * 1024 - 4)
 
 static int add_barebox_header;
@@ -23,6 +25,7 @@ struct socfpga_header {
 	uint8_t program_length[2];
 	uint8_t spare[2];
 	uint8_t checksum[2];
+	uint8_t start_vector[4];
 };
 
 static uint32_t bb_header[] = {
@@ -45,7 +48,7 @@ static uint32_t bb_header[] = {
 	0x00000000,	/* socfpga header */
 	0x00000000,	/* socfpga header */
 	0x00000000,	/* socfpga header */
-	0xea00006b,	/* entry. b 0x200  */
+	0xea00006b,	/* entry. b 0x200 (offset may be adjusted) */
 };
 
 static int read_full(int fd, void *buf, size_t size)
@@ -140,19 +143,24 @@ uint32_t crc32(uint32_t crc, void *_buf, int length)
 	return crc;
 }
 
-static int add_socfpga_header(void *buf, int size)
+/* start_addr is where the socfpga header's start instruction should branch to.
+ * It should be relative to the start of buf */
+static int add_socfpga_header(void *buf, size_t size, unsigned start_addr)
 {
 	struct socfpga_header *header = buf + 0x40;
-	uint8_t *buf_header = buf + 0x40;
+	uint8_t *bufp;
 	uint32_t *crc;
 	unsigned checksum;
-	int length = size >> 2;
-	int i;
+	size_t length = size >> 2;
 
 	if (size & 0x3) {
 		fprintf(stderr, "%s: size must be multiple of 4\n", __func__);
 		return -EINVAL;
 	}
+
+	/* Calculate relative address of requested start_addr from the
+	 * start_vector's branch instuction PC (+8 bytes on arm).  */
+	start_addr = start_addr + (int)(buf - (void*)&header->start_vector[0]) - 8;
 
 	header->validation_word[0] = VALIDATION_WORD & 0xff;
 	header->validation_word[1] = (VALIDATION_WORD >> 8) & 0xff;
@@ -164,10 +172,15 @@ static int add_socfpga_header(void *buf, int size)
 	header->program_length[1] = (length >> 8) & 0xff;
 	header->spare[0] = 0;
 	header->spare[1] = 0;
+	header->start_vector[0] = (start_addr >> 2) & 0xff; /* instruction uses offset/4 */
+	header->start_vector[1] = (start_addr >> 10) & 0xff;
+	header->start_vector[2] = (start_addr >> 18) & 0xff;
+	header->start_vector[3] = BRANCH_INST;
 
+	/* Sum from beginning of header to start of checksum field */
 	checksum = 0;
-	for (i = 0; i < sizeof(*header) - 2; i++)
-		checksum += buf_header[i];
+	for (bufp = (uint8_t*)header; bufp < &header->checksum[0]; bufp++)
+		checksum += *bufp;
 
 	header->checksum[0] = checksum & 0xff;;
 	header->checksum[1] = (checksum >> 8) & 0xff;;
@@ -267,7 +280,7 @@ int main(int argc, char *argv[])
 		memcpy(buf, bb_header, sizeof(bb_header));
 	}
 
-	ret = add_socfpga_header(buf, s.st_size + 4 + addsize + pad);
+	ret = add_socfpga_header(buf, s.st_size + 4 + addsize + pad, addsize);
 	if (ret)
 		exit(1);
 

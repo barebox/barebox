@@ -42,11 +42,6 @@ static const char *tc_sel_clks[] = {
 	"timer_hf",
 };
 
-static __init void clps711x_clk_register(enum clps711x_clks id)
-{
-	clk_register_clkdev(clks[id].clk, clks[id].name, NULL);
-}
-
 static __init int clps711x_clk_init(void)
 {
 	unsigned int f_cpu, f_bus, f_uart, f_timer_hf, f_timer_lf, pll;
@@ -99,14 +94,8 @@ static __init int clps711x_clk_init(void)
 	clks[tc2].clk = clk_mux(clks[tc2].name, IOMEM(SYSCON1), 7, 1,
 				tc_sel_clks, ARRAY_SIZE(tc_sel_clks), 0);
 
-	clps711x_clk_register(dummy);
-	clps711x_clk_register(cpu);
-	clps711x_clk_register(bus);
-	clps711x_clk_register(uart);
-	clps711x_clk_register(timer_hf);
-	clps711x_clk_register(timer_lf);
-	clps711x_clk_register(tc1);
-	clps711x_clk_register(tc2);
+	for (tmp = 0; tmp < clk_max; tmp++)
+		clk_register_clkdev(clks[tmp].clk, clks[tmp].name, NULL);
 
 	return 0;
 }

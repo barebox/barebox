@@ -25,6 +25,7 @@
 #include <partition.h>
 #include <linux/sizes.h>
 #include <gpio.h>
+#include <mci.h>
 
 #include <generated/mach-types.h>
 
@@ -115,6 +116,7 @@ static struct esdhc_platform_data loco_sd1_data = {
 	.wp_gpio = LOCO_SD1_WP,
 	.cd_type = ESDHC_CD_GPIO,
 	.wp_type = ESDHC_WP_GPIO,
+	.caps    = MMC_CAP_4_BIT_DATA,
 };
 
 static struct esdhc_platform_data loco_sd3_data = {

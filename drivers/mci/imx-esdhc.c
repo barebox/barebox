@@ -596,13 +596,10 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	if (caps & ESDHC_HOSTCAPBLT_VS33)
 		mci->voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
 
-	if (pdata && pdata->caps)
+	if (pdata) {
 		mci->host_caps = pdata->caps;
-	else
-		mci->host_caps = MMC_CAP_4_BIT_DATA;
-
-	if (pdata && pdata->devname) {
-		mci->devname = pdata->devname;
+		if (pdata->devname)
+			mci->devname = pdata->devname;
 	} else if (dev->device_node) {
 		const char *alias = of_alias_get(dev->device_node);
 		if (alias)

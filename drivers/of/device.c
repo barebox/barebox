@@ -1,6 +1,6 @@
 #include <common.h>
 #include <of.h>
-
+#include <of_device.h>
 
 /**
  * of_match_device - Tell if a struct device matches an of_device_id list

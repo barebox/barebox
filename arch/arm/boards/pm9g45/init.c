@@ -100,7 +100,7 @@ static void pm9g45_add_device_mci(void) {}
 /*
  * USB OHCI Host port
  */
-#ifdef CONFIG_USB_OHCI_AT91
+#ifdef CONFIG_USB_OHCI_PLATFORM
 static struct at91_usbh_data  __initdata usbh_data = {
 	.ports		= 2,
 	.vbus_pin	= { AT91_PIN_PD0,  -EINVAL },

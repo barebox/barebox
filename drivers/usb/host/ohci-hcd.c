@@ -1817,14 +1817,15 @@ static int ohci_probe(struct device_d *dev)
 		return -ENOMEM;
 	memset(ohci->ohci_dev, 0, sizeof(*ohci->ohci_dev));
 
-	usb_register_host(host);
-
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	ohci->regs = IOMEM(iores->start);
 
-	return 0;
+	/* Put the USB host controller into reset */
+	writel(0, &ohci->regs->control);
+
+	return usb_register_host(host);
 }
 
 static struct driver_d ohci_driver = {

@@ -44,8 +44,6 @@ static void at91_stop_clock(void)
 
 static int at91_ohci_probe(struct device_d *dev)
 {
-	struct ohci_regs __iomem *regs = (struct ohci_regs __iomem *)dev->resource[0].start;
-
 	iclk = clk_get(NULL, "ohci_clk");
 	fclk = clk_get(NULL, "uhpck");
 
@@ -53,11 +51,6 @@ static int at91_ohci_probe(struct device_d *dev)
 	 * Start the USB clocks.
 	 */
 	at91_start_clock();
-
-	/*
-	 * The USB host controller must remain in reset.
-	 */
-	writel(0, &regs->control);
 
 	add_generic_device("ohci", DEVICE_ID_DYNAMIC, NULL, dev->resource[0].start,
 			   resource_size(&dev->resource[0]), IORESOURCE_MEM, NULL);

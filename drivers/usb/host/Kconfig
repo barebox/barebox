@@ -22,6 +22,9 @@ config USB_OHCI_AT91
 	depends on ARCH_AT91
 	bool "AT91 OHCI driver"
 
+config USB_OHCI_PLATFORM
+	bool "Platform OHCI driver"
+
 endif
 
 config USB_XHCI

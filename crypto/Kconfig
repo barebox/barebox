@@ -36,6 +36,10 @@ config SHA512
 config DIGEST_HMAC
 	bool
 
+config DIGEST_CRC32_GENERIC
+	bool "CRC32"
+	select CRC32
+
 config DIGEST_MD5_GENERIC
 	bool "MD5"
 	select MD5

@@ -18,7 +18,34 @@ struct ohci_platform_data {
 	int (*probe)(struct device_d *, struct resource *);
 };
 
+static int at91_ohci_probe(struct device_d *dev, struct resource *res)
+{
+	struct clk *iclk, *fclk;
+
+	iclk = clk_get(NULL, "ohci_clk");
+	if (IS_ERR(iclk))
+		return PTR_ERR(iclk);
+
+	fclk = clk_get(NULL, "uhpck");
+	if (IS_ERR(fclk))
+		return PTR_ERR(fclk);
+
+	/* Start the USB clocks */
+	clk_enable(iclk);
+	clk_enable(fclk);
+
+	return 0;
+}
+
+static struct ohci_platform_data at91_ohci_data = {
+	.probe	= at91_ohci_probe,
+};
+
 static struct platform_device_id ohci_platform_ids[] = {
+	{
+		.name		= "at91_ohci",
+		.driver_data	= (unsigned long)&at91_ohci_data,
+	},
 	{ }
 };
 

@@ -740,14 +740,17 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	bool
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
+	select COMMAND_SUPPORT
 	select CMD_GETOPT
 	select GLOB
 	select GLOB_SORT
+	select GLOBALVAR
 	select CMD_GLOBAL
 	select CMD_AUTOMOUNT
 	select CMD_BASENAME
 	select CMD_READLINK
 	select CMD_DIRNAME
+	select NVVAR
 	select CMD_NV
 	select FLEXIBLE_BOOTARGS
 	select CMD_BOOT

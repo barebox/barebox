@@ -153,6 +153,18 @@ static inline int nvvar_load(void)
 	return 0;
 }
 
+static inline void nvvar_print(void) {}
+
+static inline int nvvar_add(const char *name, const char *value)
+{
+	return 0;
+}
+
+static inline int nvvar_remove(const char *name)
+{
+	return 0;
+}
+
 #endif
 
 #endif /* __GLOBALVAR_H */

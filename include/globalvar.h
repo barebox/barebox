@@ -137,6 +137,10 @@ static inline int globalvar_add(const char *name,
 	return 0;
 }
 
+static inline void globalvar_remove(const char *name) {}
+
+static inline void globalvar_print(void) {}
+
 static inline char *globalvar_get_match(const char *match, const char *separator)
 {
 	return NULL;

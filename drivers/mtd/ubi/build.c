@@ -723,7 +723,6 @@ int ubi_detach_mtd_dev(int ubi_num, int anyway)
 	/* If we don't write a new fastmap at detach time we lose all
 	 * EC updates that have been made since the last written fastmap. */
 	ubi_update_fastmap(ubi);
-	ubi_free_fastmap(ubi);
 #endif
 
 	uif_close(ubi);

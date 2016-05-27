@@ -1247,20 +1247,6 @@ out:
 	return ret;
 }
 
-void ubi_free_fastmap(struct ubi_device *ubi)
-{
-	struct ubi_fastmap_layout *fm = ubi->fm;
-	int i;
-
-	if (!fm)
-		return;
-
-	for (i = 0; i < fm->used_blocks; i++)
-		kfree(fm->e[i]);
-
-	kfree(ubi->fm);
-}
-
 /**
  * erase_block - Manually erase a PEB.
  * @ubi: UBI device object

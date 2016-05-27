@@ -22,6 +22,7 @@
 #endif
 
 OUTPUT_ARCH("powerpc")
+ENTRY(_start_e500)
 
 PHDRS
 {

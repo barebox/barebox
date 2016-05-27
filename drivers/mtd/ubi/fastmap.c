@@ -329,7 +329,7 @@ static int process_pool_aeb(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	if (found)
 		av = tmp_av;
 	else {
-		ubi_err("orphaned volume in fastmap pool!");
+		ubi_err(ubi, "orphaned volume in fastmap pool!");
 		kfree(new_aeb);
 		return UBI_BAD_FASTMAP;
 	}
@@ -413,14 +413,14 @@ static int scan_pool(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		pnum = be32_to_cpu(pebs[i]);
 
 		if (ubi_io_is_bad(ubi, pnum)) {
-			ubi_err("bad PEB in fastmap pool!");
+			ubi_err(ubi, "bad PEB in fastmap pool!");
 			ret = UBI_BAD_FASTMAP;
 			goto out;
 		}
 
 		err = ubi_io_read_ec_hdr(ubi, pnum, ech, 0);
 		if (err && err != UBI_IO_BITFLIPS) {
-			ubi_err("unable to read EC header! PEB:%i err:%i",
+			ubi_err(ubi, "unable to read EC header! PEB:%i err:%i",
 				pnum, err);
 			ret = err > 0 ? UBI_BAD_FASTMAP : err;
 			goto out;
@@ -434,7 +434,7 @@ static int scan_pool(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		image_seq = be32_to_cpu(ech->image_seq);
 
 		if (image_seq && (image_seq != ubi->image_seq)) {
-			ubi_err("bad image seq: 0x%x, expected: 0x%x",
+			ubi_err(ubi, "bad image seq: 0x%x, expected: 0x%x",
 				be32_to_cpu(ech->image_seq), ubi->image_seq);
 			ret = UBI_BAD_FASTMAP;
 			goto out;
@@ -491,7 +491,7 @@ static int scan_pool(struct ubi_device *ubi, struct ubi_attach_info *ai,
 			}
 		} else {
 			/* We are paranoid and fall back to scanning mode */
-			ubi_err("fastmap pool PEBs contains damaged PEBs!");
+			ubi_err(ubi, "fastmap pool PEBs contains damaged PEBs!");
 			ret = err > 0 ? UBI_BAD_FASTMAP : err;
 			goto out;
 		}
@@ -578,7 +578,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 		goto fail_bad;
 
 	if (be32_to_cpu(fmhdr->magic) != UBI_FM_HDR_MAGIC) {
-		ubi_err("bad fastmap header magic: 0x%x, expected: 0x%x",
+		ubi_err(ubi, "bad fastmap header magic: 0x%x, expected: 0x%x",
 			be32_to_cpu(fmhdr->magic), UBI_FM_HDR_MAGIC);
 		goto fail_bad;
 	}
@@ -588,7 +588,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 	if (fm_pos >= fm_size)
 		goto fail_bad;
 	if (be32_to_cpu(fmpl1->magic) != UBI_FM_POOL_MAGIC) {
-		ubi_err("bad fastmap pool magic: 0x%x, expected: 0x%x",
+		ubi_err(ubi, "bad fastmap pool magic: 0x%x, expected: 0x%x",
 			be32_to_cpu(fmpl1->magic), UBI_FM_POOL_MAGIC);
 		goto fail_bad;
 	}
@@ -598,7 +598,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 	if (fm_pos >= fm_size)
 		goto fail_bad;
 	if (be32_to_cpu(fmpl2->magic) != UBI_FM_POOL_MAGIC) {
-		ubi_err("bad fastmap pool magic: 0x%x, expected: 0x%x",
+		ubi_err(ubi, "bad fastmap pool magic: 0x%x, expected: 0x%x",
 			be32_to_cpu(fmpl2->magic), UBI_FM_POOL_MAGIC);
 		goto fail_bad;
 	}
@@ -609,25 +609,26 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 	fm->max_wl_pool_size = be16_to_cpu(fmpl2->max_size);
 
 	if (pool_size > UBI_FM_MAX_POOL_SIZE || pool_size < 0) {
-		ubi_err("bad pool size: %i", pool_size);
+		ubi_err(ubi, "bad pool size: %i", pool_size);
 		goto fail_bad;
 	}
 
 	if (wl_pool_size > UBI_FM_MAX_POOL_SIZE || wl_pool_size < 0) {
-		ubi_err("bad WL pool size: %i", wl_pool_size);
+		ubi_err(ubi, "bad WL pool size: %i", wl_pool_size);
 		goto fail_bad;
 	}
 
 
 	if (fm->max_pool_size > UBI_FM_MAX_POOL_SIZE ||
 	    fm->max_pool_size < 0) {
-		ubi_err("bad maximal pool size: %i", fm->max_pool_size);
+		ubi_err(ubi, "bad maximal pool size: %i", fm->max_pool_size);
 		goto fail_bad;
 	}
 
 	if (fm->max_wl_pool_size > UBI_FM_MAX_POOL_SIZE ||
 	    fm->max_wl_pool_size < 0) {
-		ubi_err("bad maximal WL pool size: %i", fm->max_wl_pool_size);
+		ubi_err(ubi, "bad maximal WL pool size: %i",
+			fm->max_wl_pool_size);
 		goto fail_bad;
 	}
 
@@ -686,8 +687,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 			goto fail_bad;
 
 		if (be32_to_cpu(fmvhdr->magic) != UBI_FM_VHDR_MAGIC) {
-			ubi_err("bad fastmap vol header magic: 0x%x, " \
-				"expected: 0x%x",
+			ubi_err(ubi, "bad fastmap vol header magic: 0x%x, expected: 0x%x",
 				be32_to_cpu(fmvhdr->magic), UBI_FM_VHDR_MAGIC);
 			goto fail_bad;
 		}
@@ -712,8 +712,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 			goto fail_bad;
 
 		if (be32_to_cpu(fm_eba->magic) != UBI_FM_EBA_MAGIC) {
-			ubi_err("bad fastmap EBA header magic: 0x%x, " \
-				"expected: 0x%x",
+			ubi_err(ubi, "bad fastmap EBA header magic: 0x%x, expected: 0x%x",
 				be32_to_cpu(fm_eba->magic), UBI_FM_EBA_MAGIC);
 			goto fail_bad;
 		}
@@ -777,7 +776,7 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 			int err;
 
 			if (ubi_io_is_bad(ubi, tmp_aeb->pnum)) {
-				ubi_err("bad PEB in fastmap EBA orphan list");
+				ubi_err(ubi, "bad PEB in fastmap EBA orphan list");
 				ret = UBI_BAD_FASTMAP;
 				kfree(ech);
 				goto fail;
@@ -785,8 +784,8 @@ static int ubi_attach_fastmap(struct ubi_device *ubi,
 
 			err = ubi_io_read_ec_hdr(ubi, tmp_aeb->pnum, ech, 0);
 			if (err && err != UBI_IO_BITFLIPS) {
-				ubi_err("unable to read EC header! PEB:%i " \
-					"err:%i", tmp_aeb->pnum, err);
+				ubi_err(ubi, "unable to read EC header! PEB:%i err:%i",
+					tmp_aeb->pnum, err);
 				ret = err > 0 ? UBI_BAD_FASTMAP : err;
 				kfree(ech);
 
@@ -896,14 +895,14 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		fm->to_be_tortured[0] = 1;
 
 	if (be32_to_cpu(fmsb->magic) != UBI_FM_SB_MAGIC) {
-		ubi_err("bad super block magic: 0x%x, expected: 0x%x",
+		ubi_err(ubi, "bad super block magic: 0x%x, expected: 0x%x",
 			be32_to_cpu(fmsb->magic), UBI_FM_SB_MAGIC);
 		ret = UBI_BAD_FASTMAP;
 		goto free_fm_sb;
 	}
 
 	if (fmsb->version != UBI_FM_FMT_VERSION) {
-		ubi_err("bad fastmap version: %i, expected: %i",
+		ubi_err(ubi, "bad fastmap version: %i, expected: %i",
 			fmsb->version, UBI_FM_FMT_VERSION);
 		ret = UBI_BAD_FASTMAP;
 		goto free_fm_sb;
@@ -911,15 +910,16 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 
 	used_blocks = be32_to_cpu(fmsb->used_blocks);
 	if (used_blocks > UBI_FM_MAX_BLOCKS || used_blocks < 1) {
-		ubi_err("number of fastmap blocks is invalid: %i", used_blocks);
+		ubi_err(ubi, "number of fastmap blocks is invalid: %i",
+			used_blocks);
 		ret = UBI_BAD_FASTMAP;
 		goto free_fm_sb;
 	}
 
 	fm_size = ubi->leb_size * used_blocks;
 	if (fm_size != ubi->fm_size) {
-		ubi_err("bad fastmap size: %zi, expected: %zi", fm_size,
-			ubi->fm_size);
+		ubi_err(ubi, "bad fastmap size: %zi, expected: %zi",
+			fm_size, ubi->fm_size);
 		ret = UBI_BAD_FASTMAP;
 		goto free_fm_sb;
 	}
@@ -948,7 +948,7 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 
 		ret = ubi_io_read_ec_hdr(ubi, pnum, ech, 0);
 		if (ret && ret != UBI_IO_BITFLIPS) {
-			ubi_err("unable to read fastmap block# %i EC (PEB: %i)",
+			ubi_err(ubi, "unable to read fastmap block# %i EC (PEB: %i)",
 				i, pnum);
 			if (ret > 0)
 				ret = UBI_BAD_FASTMAP;
@@ -965,7 +965,7 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		 * we shouldn't fail if image_seq == 0.
 		 */
 		if (image_seq && (image_seq != ubi->image_seq)) {
-			ubi_err("wrong image seq:%d instead of %d",
+			ubi_err(ubi, "wrong image seq:%d instead of %d",
 				be32_to_cpu(ech->image_seq), ubi->image_seq);
 			ret = UBI_BAD_FASTMAP;
 			goto free_hdr;
@@ -973,15 +973,14 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 
 		ret = ubi_io_read_vid_hdr(ubi, pnum, vh, 0);
 		if (ret && ret != UBI_IO_BITFLIPS) {
-			ubi_err("unable to read fastmap block# %i (PEB: %i)",
+			ubi_err(ubi, "unable to read fastmap block# %i (PEB: %i)",
 				i, pnum);
 			goto free_hdr;
 		}
 
 		if (i == 0) {
 			if (be32_to_cpu(vh->vol_id) != UBI_FM_SB_VOLUME_ID) {
-				ubi_err("bad fastmap anchor vol_id: 0x%x," \
-					" expected: 0x%x",
+				ubi_err(ubi, "bad fastmap anchor vol_id: 0x%x, expected: 0x%x",
 					be32_to_cpu(vh->vol_id),
 					UBI_FM_SB_VOLUME_ID);
 				ret = UBI_BAD_FASTMAP;
@@ -989,8 +988,7 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 			}
 		} else {
 			if (be32_to_cpu(vh->vol_id) != UBI_FM_DATA_VOLUME_ID) {
-				ubi_err("bad fastmap data vol_id: 0x%x," \
-					" expected: 0x%x",
+				ubi_err(ubi, "bad fastmap data vol_id: 0x%x, expected: 0x%x",
 					be32_to_cpu(vh->vol_id),
 					UBI_FM_DATA_VOLUME_ID);
 				ret = UBI_BAD_FASTMAP;
@@ -1004,7 +1002,7 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		ret = ubi_io_read(ubi, ubi->fm_buf + (ubi->leb_size * i), pnum,
 				  ubi->leb_start, ubi->leb_size);
 		if (ret && ret != UBI_IO_BITFLIPS) {
-			ubi_err("unable to read fastmap block# %i (PEB: %i, " \
+			ubi_err(ubi, "unable to read fastmap block# %i (PEB: %i, "
 				"err: %i)", i, pnum, ret);
 			goto free_hdr;
 		}
@@ -1018,8 +1016,9 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	fmsb2->data_crc = 0;
 	crc = crc32(UBI_CRC32_INIT, ubi->fm_buf, fm_size);
 	if (crc != tmp_crc) {
-		ubi_err("fastmap data CRC is invalid");
-		ubi_err("CRC should be: 0x%x, calc: 0x%x", tmp_crc, crc);
+		ubi_err(ubi, "fastmap data CRC is invalid");
+		ubi_err(ubi, "CRC should be: 0x%x, calc: 0x%x",
+			tmp_crc, crc);
 		ret = UBI_BAD_FASTMAP;
 		goto free_hdr;
 	}
@@ -1055,16 +1054,17 @@ int ubi_scan_fastmap(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	ubi->fm = fm;
 	ubi->fm_pool.max_size = ubi->fm->max_pool_size;
 	ubi->fm_wl_pool.max_size = ubi->fm->max_wl_pool_size;
-	ubi_msg("attached by fastmap");
-	ubi_debug("fastmap pool size: %d", ubi->fm_pool.max_size);
-	ubi_debug("fastmap WL pool size: %d", ubi->fm_wl_pool.max_size);
+	ubi_msg(ubi, "attached by fastmap");
+	ubi_msg(ubi, "fastmap pool size: %d", ubi->fm_pool.max_size);
+	ubi_msg(ubi, "fastmap WL pool size: %d",
+		ubi->fm_wl_pool.max_size);
 	ubi->fm_disabled = 0;
 
 	ubi_free_vid_hdr(ubi, vh);
 	kfree(ech);
 out:
 	if (ret == UBI_BAD_FASTMAP)
-		ubi_err("Attach by fastmap failed, doing a full scan!");
+		ubi_err(ubi, "Attach by fastmap failed, doing a full scan!");
 	return ret;
 
 free_hdr:
@@ -1254,7 +1254,7 @@ static int ubi_write_fastmap(struct ubi_device *ubi,
 	dbg_bld("writing fastmap SB to PEB %i", new_fm->e[0]->pnum);
 	ret = ubi_io_write_vid_hdr(ubi, new_fm->e[0]->pnum, avhdr);
 	if (ret) {
-		ubi_err("unable to write vid_hdr to fastmap SB!");
+		ubi_err(ubi, "unable to write vid_hdr to fastmap SB!");
 		goto out_kfree;
 	}
 
@@ -1274,7 +1274,7 @@ static int ubi_write_fastmap(struct ubi_device *ubi,
 			new_fm->e[i]->pnum, be64_to_cpu(dvhdr->sqnum));
 		ret = ubi_io_write_vid_hdr(ubi, new_fm->e[i]->pnum, dvhdr);
 		if (ret) {
-			ubi_err("unable to write vid_hdr to PEB %i!",
+			ubi_err(ubi, "unable to write vid_hdr to PEB %i!",
 				new_fm->e[i]->pnum);
 			goto out_kfree;
 		}
@@ -1284,7 +1284,7 @@ static int ubi_write_fastmap(struct ubi_device *ubi,
 		ret = ubi_io_write(ubi, fm_raw + (i * ubi->leb_size),
 			new_fm->e[i]->pnum, ubi->leb_start, ubi->leb_size);
 		if (ret) {
-			ubi_err("unable to write fastmap to PEB %i!",
+			ubi_err(ubi, "unable to write fastmap to PEB %i!",
 				new_fm->e[i]->pnum);
 			goto out_kfree;
 		}
@@ -1436,7 +1436,7 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 	ubi->fm = NULL;
 
 	if (new_fm->used_blocks > UBI_FM_MAX_BLOCKS) {
-		ubi_err("fastmap too large");
+		ubi_err(ubi, "fastmap too large");
 		ret = -ENOSPC;
 		goto err;
 	}
@@ -1446,7 +1446,7 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 
 		if (!tmp_e && !old_fm) {
 			int j;
-			ubi_err("could not get any free erase block");
+			ubi_err(ubi, "could not get any free erase block");
 
 			for (j = 1; j < i; j++)
 				ubi_wl_put_fm_peb(ubi, new_fm->e[j], j, 0);
@@ -1462,7 +1462,7 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 					ubi_wl_put_fm_peb(ubi, new_fm->e[j],
 							  j, 0);
 
-				ubi_err("could not erase old fastmap PEB");
+				ubi_err(ubi, "could not erase old fastmap PEB");
 				goto err;
 			}
 
@@ -1486,7 +1486,7 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 			ret = erase_block(ubi, old_fm->e[0]->pnum);
 			if (ret < 0) {
 				int i;
-				ubi_err("could not erase old anchor PEB");
+				ubi_err(ubi, "could not erase old anchor PEB");
 
 				for (i = 1; i < new_fm->used_blocks; i++)
 					ubi_wl_put_fm_peb(ubi, new_fm->e[i],
@@ -1507,7 +1507,7 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 	} else {
 		if (!tmp_e) {
 			int i;
-			ubi_err("could not find any anchor PEB");
+			ubi_err(ubi, "could not find any anchor PEB");
 
 			for (i = 1; i < new_fm->used_blocks; i++)
 				ubi_wl_put_fm_peb(ubi, new_fm->e[i], i, 0);
@@ -1532,13 +1532,13 @@ out_unlock:
 err:
 	kfree(new_fm);
 
-	ubi_warn("Unable to write new fastmap, err=%i", ret);
+	ubi_warn(ubi, "Unable to write new fastmap, err=%i", ret);
 
 	ret = 0;
 	if (old_fm) {
 		ret = invalidate_fastmap(ubi, old_fm);
 		if (ret < 0)
-			ubi_err("Unable to invalidiate current fastmap!");
+			ubi_err(ubi, "Unable to invalidiate current fastmap!");
 		else if (ret)
 			ret = 0;
 	}

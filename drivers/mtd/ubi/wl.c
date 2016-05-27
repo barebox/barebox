@@ -816,7 +816,7 @@ static void schedule_ubi_work(struct ubi_device *ubi, struct ubi_work *wrk)
 }
 
 static int erase_worker(struct ubi_device *ubi, struct ubi_work *wl_wrk,
-			int cancel);
+			int shutdown);
 
 #ifdef CONFIG_MTD_UBI_FASTMAP
 /**
@@ -939,14 +939,15 @@ int ubi_wl_put_fm_peb(struct ubi_device *ubi, struct ubi_wl_entry *fm_e,
  * wear_leveling_worker - wear-leveling worker function.
  * @ubi: UBI device description object
  * @wrk: the work object
- * @cancel: non-zero if the worker has to free memory and exit
+ * @shutdown: non-zero if the worker has to free memory and exit
+ * because the WL-subsystem is shutting down
  *
  * This function copies a more worn out physical eraseblock to a less worn out
  * one. Returns zero in case of success and a negative error code in case of
  * failure.
  */
 static int wear_leveling_worker(struct ubi_device *ubi, struct ubi_work *wrk,
-				int cancel)
+				int shutdown)
 {
 	int err, scrubbing = 0, torture = 0, protect = 0, erroneous = 0;
 	int vol_id = -1, uninitialized_var(lnum);
@@ -957,7 +958,7 @@ static int wear_leveling_worker(struct ubi_device *ubi, struct ubi_work *wrk,
 	struct ubi_vid_hdr *vid_hdr;
 
 	kfree(wrk);
-	if (cancel)
+	if (shutdown)
 		return 0;
 
 	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
@@ -1333,7 +1334,8 @@ int ubi_ensure_anchor_pebs(struct ubi_device *ubi)
  * erase_worker - physical eraseblock erase worker function.
  * @ubi: UBI device description object
  * @wl_wrk: the work object
- * @cancel: non-zero if the worker has to free memory and exit
+ * @shutdown: non-zero if the worker has to free memory and exit
+ * because the WL sub-system is shutting down
  *
  * This function erases a physical eraseblock and perform torture testing if
  * needed. It also takes care about marking the physical eraseblock bad if
@@ -1341,7 +1343,7 @@ int ubi_ensure_anchor_pebs(struct ubi_device *ubi)
  * failure.
  */
 static int erase_worker(struct ubi_device *ubi, struct ubi_work *wl_wrk,
-			int cancel)
+			int shutdown)
 {
 	struct ubi_wl_entry *e = wl_wrk->e;
 	int pnum = e->pnum;
@@ -1349,7 +1351,7 @@ static int erase_worker(struct ubi_device *ubi, struct ubi_work *wl_wrk,
 	int lnum = wl_wrk->lnum;
 	int err, available_consumed = 0;
 
-	if (cancel) {
+	if (shutdown) {
 		dbg_wl("cancel erasure of PEB %d EC %d", pnum, e->ec);
 		kfree(wl_wrk);
 		kfree(e);
@@ -1667,10 +1669,10 @@ static void tree_destroy(struct rb_root *root)
 }
 
 /**
- * cancel_pending - cancel all pending works.
+ * shutdown_work - shutdown all pending works.
  * @ubi: UBI device description object
  */
-static void cancel_pending(struct ubi_device *ubi)
+static void shutdown_work(struct ubi_device *ubi)
 {
 	while (!list_empty(&ubi->works)) {
 		struct ubi_work *wrk;
@@ -1807,7 +1809,7 @@ int ubi_wl_init(struct ubi_device *ubi, struct ubi_attach_info *ai)
 	return 0;
 
 out_free:
-	cancel_pending(ubi);
+	shutdown_work(ubi);
 	tree_destroy(&ubi->used);
 	tree_destroy(&ubi->free);
 	tree_destroy(&ubi->scrub);
@@ -1839,7 +1841,7 @@ static void protection_queue_destroy(struct ubi_device *ubi)
 void ubi_wl_close(struct ubi_device *ubi)
 {
 	dbg_wl("close the WL sub-system");
-	cancel_pending(ubi);
+	shutdown_work(ubi);
 	protection_queue_destroy(ubi);
 	tree_destroy(&ubi->used);
 	tree_destroy(&ubi->erroneous);

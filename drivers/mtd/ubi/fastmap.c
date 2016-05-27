@@ -1433,18 +1433,6 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 		return -ENOMEM;
 
 	new_fm->used_blocks = ubi->fm_size / ubi->leb_size;
-
-	for (i = 0; i < new_fm->used_blocks; i++) {
-		new_fm->e[i] = kzalloc(sizeof(struct ubi_ainf_peb), GFP_KERNEL);
-		if (!new_fm->e[i]) {
-			while (i--)
-				kfree(new_fm->e[i]);
-
-			kfree(new_fm);
-			return -ENOMEM;
-		}
-	}
-
 	old_fm = ubi->fm;
 	ubi->fm = NULL;
 
@@ -1478,12 +1466,9 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 				ubi_err(ubi, "could not erase old fastmap PEB");
 				goto err;
 			}
-
-			new_fm->e[i]->pnum = old_fm->e[i]->pnum;
-			new_fm->e[i]->ec = old_fm->e[i]->ec;
+			new_fm->e[i] = old_fm->e[i];
 		} else {
-			new_fm->e[i]->pnum = tmp_e->pnum;
-			new_fm->e[i]->ec = tmp_e->ec;
+			new_fm->e[i] = tmp_e;
 
 			if (old_fm)
 				ubi_wl_put_fm_peb(ubi, old_fm->e[i], i,
@@ -1506,16 +1491,13 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 							  i, 0);
 				goto err;
 			}
-
-			new_fm->e[0]->pnum = old_fm->e[0]->pnum;
+			new_fm->e[0] = old_fm->e[0];
 			new_fm->e[0]->ec = ret;
 		} else {
 			/* we've got a new anchor PEB, return the old one */
 			ubi_wl_put_fm_peb(ubi, old_fm->e[0], 0,
 					  old_fm->to_be_tortured[0]);
-
-			new_fm->e[0]->pnum = tmp_e->pnum;
-			new_fm->e[0]->ec = tmp_e->ec;
+			new_fm->e[0] = tmp_e;
 		}
 	} else {
 		if (!tmp_e) {
@@ -1528,9 +1510,7 @@ int ubi_update_fastmap(struct ubi_device *ubi)
 			ret = -ENOSPC;
 			goto err;
 		}
-
-		new_fm->e[0]->pnum = tmp_e->pnum;
-		new_fm->e[0]->ec = tmp_e->ec;
+		new_fm->e[0] = tmp_e;
 	}
 
 	ret = ubi_write_fastmap(ubi, new_fm);

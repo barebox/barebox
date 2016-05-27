@@ -77,7 +77,7 @@ static void __noreturn mpc5xxx_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(mpc5xxx_restart_soc);
+	return restart_handler_register_fn(mpc5xxx_restart_soc);
 }
 coredevice_initcall(restart_register_feature);
 

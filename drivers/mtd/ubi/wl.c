@@ -194,6 +194,7 @@ static void wl_tree_add(struct ubi_wl_entry *e, struct rb_root *root)
 	rb_insert_color(&e->u.rb, root);
 }
 
+#ifndef CONFIG_MTD_UBI_FASTMAP
 /**
  * do_work - do one pending work.
  * @ubi: UBI device description object
@@ -254,6 +255,7 @@ static int produce_free_peb(struct ubi_device *ubi)
 
 	return 0;
 }
+#endif
 
 /**
  * in_wl_tree - check if wear-leveling entry is present in a WL RB-tree.
@@ -492,6 +494,7 @@ static struct ubi_wl_entry *wl_get_wle(struct ubi_device *ubi)
 	return e;
 }
 
+#ifndef CONFIG_MTD_UBI_FASTMAP
 /**
  * wl_get_peb - get a physical eraseblock.
  * @ubi: UBI device description object
@@ -525,6 +528,7 @@ retry:
 
 	return e->pnum;
 }
+#endif
 
 #ifdef CONFIG_MTD_UBI_FASTMAP
 /**
@@ -546,58 +550,60 @@ static void return_unused_pool_pebs(struct ubi_device *ubi,
 }
 
 /**
- * refill_wl_pool - refills all the fastmap pool used by the
- * WL sub-system.
- * @ubi: UBI device description object
- */
-static void refill_wl_pool(struct ubi_device *ubi)
-{
-	struct ubi_wl_entry *e;
-	struct ubi_fm_pool *pool = &ubi->fm_wl_pool;
-
-	return_unused_pool_pebs(ubi, pool);
-
-	for (pool->size = 0; pool->size < pool->max_size; pool->size++) {
-		if (!ubi->free.rb_node ||
-		   (ubi->free_count - ubi->beb_rsvd_pebs < 5))
-			break;
-
-		e = find_wl_entry(ubi, &ubi->free, WL_FREE_MAX_DIFF);
-		self_check_in_wl_tree(ubi, e, &ubi->free);
-		rb_erase(&e->u.rb, &ubi->free);
-		ubi->free_count--;
-
-		pool->pebs[pool->size] = e->pnum;
-	}
-	pool->used = 0;
-}
-
-/**
- * refill_wl_user_pool - refills all the fastmap pool used by ubi_wl_get_peb.
- * @ubi: UBI device description object
- */
-static void refill_wl_user_pool(struct ubi_device *ubi)
-{
-	struct ubi_fm_pool *pool = &ubi->fm_pool;
-
-	return_unused_pool_pebs(ubi, pool);
-
-	for (pool->size = 0; pool->size < pool->max_size; pool->size++) {
-		pool->pebs[pool->size] = wl_get_peb(ubi);
-		if (pool->pebs[pool->size] < 0)
-			break;
-	}
-	pool->used = 0;
-}
-
-/**
  * ubi_refill_pools - refills all fastmap PEB pools.
  * @ubi: UBI device description object
  */
 void ubi_refill_pools(struct ubi_device *ubi)
 {
-	refill_wl_pool(ubi);
-	refill_wl_user_pool(ubi);
+	struct ubi_fm_pool *wl_pool = &ubi->fm_wl_pool;
+	struct ubi_fm_pool *pool = &ubi->fm_pool;
+	struct ubi_wl_entry *e;
+	int enough;
+
+	return_unused_pool_pebs(ubi, wl_pool);
+	return_unused_pool_pebs(ubi, pool);
+
+	wl_pool->size = 0;
+	pool->size = 0;
+
+	for (;;) {
+		enough = 0;
+		if (pool->size < pool->max_size) {
+			if (!ubi->free.rb_node ||
+			   (ubi->free_count - ubi->beb_rsvd_pebs < 5))
+				break;
+
+			e = wl_get_wle(ubi);
+			if (!e)
+				break;
+
+			pool->pebs[pool->size] = e->pnum;
+			pool->size++;
+		} else
+			enough++;
+
+		if (wl_pool->size < wl_pool->max_size) {
+			if (!ubi->free.rb_node ||
+			   (ubi->free_count - ubi->beb_rsvd_pebs < 5))
+				break;
+
+			e = find_wl_entry(ubi, &ubi->free, WL_FREE_MAX_DIFF);
+			self_check_in_wl_tree(ubi, e, &ubi->free);
+			rb_erase(&e->u.rb, &ubi->free);
+			ubi->free_count--;
+
+			wl_pool->pebs[wl_pool->size] = e->pnum;
+			wl_pool->size++;
+		} else
+			enough++;
+
+		if (enough == 2)
+			break;
+	}
+
+	wl_pool->used = 0;
+	pool->used = 0;
+
 }
 
 /* ubi_wl_get_peb - works exaclty like __wl_get_peb but keeps track of
@@ -1792,9 +1798,15 @@ int ubi_wl_init(struct ubi_device *ubi, struct ubi_attach_info *ai)
 
 	dbg_wl("found %i PEBs", found_pebs);
 
-	if (ubi->fm)
+	if (ubi->fm) {
 		ubi_assert(ubi->good_peb_count == \
 			   found_pebs + ubi->fm->used_blocks);
+
+		for (i = 0; i < ubi->fm->used_blocks; i++) {
+			e = ubi->fm->e[i];
+			ubi->lookuptbl[e->pnum] = e;
+		}
+	}
 	else
 		ubi_assert(ubi->good_peb_count == found_pebs);
 

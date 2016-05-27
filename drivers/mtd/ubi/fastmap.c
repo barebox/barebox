@@ -329,6 +329,7 @@ static int process_pool_aeb(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		av = tmp_av;
 	else {
 		ubi_err("orphaned volume in fastmap pool!");
+		kfree(new_aeb);
 		return UBI_BAD_FASTMAP;
 	}
 

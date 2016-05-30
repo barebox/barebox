@@ -480,14 +480,21 @@ static int at24_probe(struct device_d *dev)
 		}
 	}
 
-	devfs_create(&at24->cdev);
+	err = devfs_create(&at24->cdev);
+	if (err)
+		goto err_devfs_create;
 
 	of_parse_partitions(&at24->cdev, dev->device_node);
 
 	return 0;
 
+err_devfs_create:
 err_clients:
-	gpio_free(at24->wp_gpio);
+	for (i = 1; i < num_addresses; i++)
+		kfree(at24->client[i]);
+
+	if (gpio_is_valid(at24->wp_gpio))
+		gpio_free(at24->wp_gpio);
 	kfree(at24->writebuf);
 	kfree(at24);
 err_out:

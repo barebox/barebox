@@ -818,6 +818,7 @@ config POLLER
 
 config STATE
 	bool "generic state infrastructure"
+	select CRC32
 	select ENVIRONMENT_VARIABLES
 	select OFTREE
 	select PARAMETER

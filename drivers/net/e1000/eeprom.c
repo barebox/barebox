@@ -563,10 +563,6 @@ int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
 
 	DEBUGFUNC();
 
-	/* If eeprom is not yet detected, do so now */
-	if (eeprom->word_size == 0)
-		e1000_init_eeprom_params(hw);
-
 	/* A check for invalid values:  offset too large, too many words,
 	 * and not enough words.
 	 */

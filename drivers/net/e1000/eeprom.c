@@ -260,6 +260,22 @@ static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
 	return E1000_SUCCESS;
 }
 
+static void e1000_eeprom_uses_spi(struct e1000_eeprom_info *eeprom,
+				  uint32_t eecd)
+{
+	eeprom->type = e1000_eeprom_spi;
+	eeprom->opcode_bits = 8;
+	eeprom->delay_usec = 1;
+	if (eecd & E1000_EECD_ADDR_BITS) {
+		eeprom->address_bits = 16;
+	} else {
+		eeprom->address_bits = 8;
+	}
+
+	eeprom->use_eerd = false;
+}
+
+
 /******************************************************************************
  * Sets up eeprom variables in the hw struct.  Must be called after mac_type
  * is configured.  Additionally, if this is ICH8, the flash controller GbE
@@ -312,13 +328,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_82547:
 	case e1000_82547_rev_2:
 		if (eecd & E1000_EECD_TYPE) {
-			eeprom->type = e1000_eeprom_spi;
-			eeprom->opcode_bits = 8;
-			eeprom->delay_usec = 1;
-			if (eecd & E1000_EECD_ADDR_BITS)
-				eeprom->address_bits = 16;
-			else
-				eeprom->address_bits = 8;
+			e1000_eeprom_uses_spi(eeprom, eecd);
 		} else {
 			eeprom->type = e1000_eeprom_microwire;
 			eeprom->opcode_bits = 3;
@@ -335,27 +345,13 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		break;
 	case e1000_82571:
 	case e1000_82572:
-		eeprom->type = e1000_eeprom_spi;
-		eeprom->opcode_bits = 8;
-		eeprom->delay_usec = 1;
-		if (eecd & E1000_EECD_ADDR_BITS)
-			eeprom->address_bits = 16;
-		else
-			eeprom->address_bits = 8;
-
-		eeprom->use_eerd = false;
+		e1000_eeprom_uses_spi(eeprom, eecd);
 		break;
 	case e1000_82573:
 	case e1000_82574:
-		eeprom->type = e1000_eeprom_spi;
-		eeprom->opcode_bits = 8;
-		eeprom->delay_usec = 1;
-		if (eecd & E1000_EECD_ADDR_BITS)
-			eeprom->address_bits = 16;
-		else
-			eeprom->address_bits = 8;
-
-		if (e1000_is_onboard_nvm_eeprom(hw) == false) {
+		if (e1000_is_onboard_nvm_eeprom(hw)) {
+			e1000_eeprom_uses_spi(eeprom, eecd);
+		} else {
 			eeprom->use_eerd = true;
 
 			eeprom->type = e1000_eeprom_flash;

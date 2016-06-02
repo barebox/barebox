@@ -18,8 +18,8 @@ static void e1000_raise_ee_clk(struct e1000_hw *hw, uint32_t *eecd)
 	 * wait 50 microseconds.
 	 */
 	*eecd = *eecd | E1000_EECD_SK;
-	E1000_WRITE_REG(hw, EECD, *eecd);
-	E1000_WRITE_FLUSH(hw);
+	e1000_write_reg(hw, E1000_EECD, *eecd);
+	e1000_write_flush(hw);
 	udelay(50);
 }
 
@@ -35,8 +35,8 @@ static void e1000_lower_ee_clk(struct e1000_hw *hw, uint32_t *eecd)
 	 * wait 50 microseconds.
 	 */
 	*eecd = *eecd & ~E1000_EECD_SK;
-	E1000_WRITE_REG(hw, EECD, *eecd);
-	E1000_WRITE_FLUSH(hw);
+	e1000_write_reg(hw, E1000_EECD, *eecd);
+	e1000_write_flush(hw);
 	udelay(50);
 }
 
@@ -57,7 +57,7 @@ static void e1000_shift_out_ee_bits(struct e1000_hw *hw, uint16_t data, uint16_t
 	 * In order to do this, "data" must be broken down into bits.
 	 */
 	mask = 0x01 << (count - 1);
-	eecd = E1000_READ_REG(hw, EECD);
+	eecd = e1000_read_reg(hw, E1000_EECD);
 	eecd &= ~(E1000_EECD_DO | E1000_EECD_DI);
 	do {
 		/* A "1" is shifted out to the EEPROM by setting bit "DI" to a "1",
@@ -70,8 +70,8 @@ static void e1000_shift_out_ee_bits(struct e1000_hw *hw, uint16_t data, uint16_t
 		if (data & mask)
 			eecd |= E1000_EECD_DI;
 
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 
 		udelay(50);
 
@@ -84,7 +84,7 @@ static void e1000_shift_out_ee_bits(struct e1000_hw *hw, uint16_t data, uint16_t
 
 	/* We leave the "DI" bit set to "0" when we leave this routine. */
 	eecd &= ~E1000_EECD_DI;
-	E1000_WRITE_REG(hw, EECD, eecd);
+	e1000_write_reg(hw, E1000_EECD, eecd);
 }
 
 /******************************************************************************
@@ -105,7 +105,7 @@ static uint16_t e1000_shift_in_ee_bits(struct e1000_hw *hw, uint16_t count)
 	 * "DI" bit should always be clear.
 	 */
 
-	eecd = E1000_READ_REG(hw, EECD);
+	eecd = e1000_read_reg(hw, E1000_EECD);
 
 	eecd &= ~(E1000_EECD_DO | E1000_EECD_DI);
 	data = 0;
@@ -114,7 +114,7 @@ static uint16_t e1000_shift_in_ee_bits(struct e1000_hw *hw, uint16_t count)
 		data = data << 1;
 		e1000_raise_ee_clk(hw, &eecd);
 
-		eecd = E1000_READ_REG(hw, EECD);
+		eecd = e1000_read_reg(hw, E1000_EECD);
 
 		eecd &= ~(E1000_EECD_DI);
 		if (eecd & E1000_EECD_DO)
@@ -136,40 +136,40 @@ static void e1000_standby_eeprom(struct e1000_hw *hw)
 	struct e1000_eeprom_info *eeprom = &hw->eeprom;
 	uint32_t eecd;
 
-	eecd = E1000_READ_REG(hw, EECD);
+	eecd = e1000_read_reg(hw, E1000_EECD);
 
 	if (eeprom->type == e1000_eeprom_microwire) {
 		eecd &= ~(E1000_EECD_CS | E1000_EECD_SK);
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(eeprom->delay_usec);
 
 		/* Clock high */
 		eecd |= E1000_EECD_SK;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(eeprom->delay_usec);
 
 		/* Select EEPROM */
 		eecd |= E1000_EECD_CS;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(eeprom->delay_usec);
 
 		/* Clock low */
 		eecd &= ~E1000_EECD_SK;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(eeprom->delay_usec);
 	} else if (eeprom->type == e1000_eeprom_spi) {
 		/* Toggle CS to flush commands */
 		eecd |= E1000_EECD_CS;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(eeprom->delay_usec);
 		eecd &= ~E1000_EECD_CS;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(eeprom->delay_usec);
 	}
 }
@@ -189,7 +189,7 @@ static bool e1000_is_onboard_nvm_eeprom(struct e1000_hw *hw)
 		return false;
 
 	if (hw->mac_type == e1000_82573 || hw->mac_type == e1000_82574) {
-		eecd = E1000_READ_REG(hw, EECD);
+		eecd = e1000_read_reg(hw, E1000_EECD);
 
 		/* Isolate bits 15 & 16 */
 		eecd = ((eecd >> 15) & 0x03);
@@ -218,23 +218,23 @@ static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
 
 	if (e1000_swfw_sync_acquire(hw, E1000_SWFW_EEP_SM))
 		return -E1000_ERR_SWFW_SYNC;
-	eecd = E1000_READ_REG(hw, EECD);
+	eecd = e1000_read_reg(hw, E1000_EECD);
 
 	/* Request EEPROM Access */
 	if (hw->mac_type > e1000_82544 && hw->mac_type != e1000_82573 &&
 			hw->mac_type != e1000_82574) {
 		eecd |= E1000_EECD_REQ;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		eecd = E1000_READ_REG(hw, EECD);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		eecd = e1000_read_reg(hw, E1000_EECD);
 		while ((!(eecd & E1000_EECD_GNT)) &&
 			(i < E1000_EEPROM_GRANT_ATTEMPTS)) {
 			i++;
 			udelay(5);
-			eecd = E1000_READ_REG(hw, EECD);
+			eecd = e1000_read_reg(hw, E1000_EECD);
 		}
 		if (!(eecd & E1000_EECD_GNT)) {
 			eecd &= ~E1000_EECD_REQ;
-			E1000_WRITE_REG(hw, EECD, eecd);
+			e1000_write_reg(hw, E1000_EECD, eecd);
 			dev_dbg(hw->dev, "Could not acquire EEPROM grant\n");
 			return -E1000_ERR_EEPROM;
 		}
@@ -245,15 +245,15 @@ static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
 	if (eeprom->type == e1000_eeprom_microwire) {
 		/* Clear SK and DI */
 		eecd &= ~(E1000_EECD_DI | E1000_EECD_SK);
-		E1000_WRITE_REG(hw, EECD, eecd);
+		e1000_write_reg(hw, E1000_EECD, eecd);
 
 		/* Set CS */
 		eecd |= E1000_EECD_CS;
-		E1000_WRITE_REG(hw, EECD, eecd);
+		e1000_write_reg(hw, E1000_EECD, eecd);
 	} else if (eeprom->type == e1000_eeprom_spi) {
 		/* Clear SK and CS */
 		eecd &= ~(E1000_EECD_CS | E1000_EECD_SK);
-		E1000_WRITE_REG(hw, EECD, eecd);
+		e1000_write_reg(hw, E1000_EECD, eecd);
 		udelay(1);
 	}
 
@@ -275,9 +275,9 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	uint16_t eeprom_size;
 
 	if (hw->mac_type == e1000_igb)
-		eecd = E1000_READ_REG(hw, I210_EECD);
+		eecd = e1000_read_reg(hw, E1000_I210_EECD);
 	else
-		eecd = E1000_READ_REG(hw, EECD);
+		eecd = e1000_read_reg(hw, E1000_EECD);
 
 	DEBUGFUNC();
 
@@ -379,7 +379,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		/* Ensure that the Autonomous FLASH update bit is cleared due to
 		 * Flash update issue on parts which use a FLASH for NVM. */
 			eecd &= ~E1000_EECD_AUPDEN;
-			E1000_WRITE_REG(hw, EECD, eecd);
+			e1000_write_reg(hw, E1000_EECD, eecd);
 		}
 		break;
 	case e1000_80003es2lan:
@@ -456,14 +456,14 @@ static int32_t e1000_poll_eerd_eewr_done(struct e1000_hw *hw, int eerd)
 	for (i = 0; i < attempts; i++) {
 		if (eerd == E1000_EEPROM_POLL_READ) {
 			if (hw->mac_type == e1000_igb)
-				reg = E1000_READ_REG(hw, I210_EERD);
+				reg = e1000_read_reg(hw, E1000_I210_EERD);
 			else
-				reg = E1000_READ_REG(hw, EERD);
+				reg = e1000_read_reg(hw, E1000_EERD);
 		} else {
 			if (hw->mac_type == e1000_igb)
-				reg = E1000_READ_REG(hw, I210_EEWR);
+				reg = e1000_read_reg(hw, E1000_I210_EEWR);
 			else
-				reg = E1000_READ_REG(hw, EEWR);
+				reg = e1000_read_reg(hw, E1000_EEWR);
 		}
 
 		if (reg & E1000_EEPROM_RW_REG_DONE) {
@@ -497,9 +497,9 @@ static int32_t e1000_read_eeprom_eerd(struct e1000_hw *hw,
 			E1000_EEPROM_RW_REG_START;
 
 		if (hw->mac_type == e1000_igb)
-			E1000_WRITE_REG(hw, I210_EERD, eerd);
+			e1000_write_reg(hw, E1000_I210_EERD, eerd);
 		else
-			E1000_WRITE_REG(hw, EERD, eerd);
+			e1000_write_reg(hw, E1000_EERD, eerd);
 
 		error = e1000_poll_eerd_eewr_done(hw, E1000_EEPROM_POLL_READ);
 
@@ -507,10 +507,10 @@ static int32_t e1000_read_eeprom_eerd(struct e1000_hw *hw,
 			break;
 
 		if (hw->mac_type == e1000_igb) {
-			data[i] = (E1000_READ_REG(hw, I210_EERD) >>
+			data[i] = (e1000_read_reg(hw, E1000_I210_EERD) >>
 				E1000_EEPROM_RW_REG_DATA);
 		} else {
-			data[i] = (E1000_READ_REG(hw, EERD) >>
+			data[i] = (e1000_read_reg(hw, E1000_EERD) >>
 				E1000_EEPROM_RW_REG_DATA);
 		}
 
@@ -525,13 +525,13 @@ static void e1000_release_eeprom(struct e1000_hw *hw)
 
 	DEBUGFUNC();
 
-	eecd = E1000_READ_REG(hw, EECD);
+	eecd = e1000_read_reg(hw, E1000_EECD);
 
 	if (hw->eeprom.type == e1000_eeprom_spi) {
 		eecd |= E1000_EECD_CS;  /* Pull CS high */
 		eecd &= ~E1000_EECD_SK; /* Lower SCK */
 
-		E1000_WRITE_REG(hw, EECD, eecd);
+		e1000_write_reg(hw, E1000_EECD, eecd);
 
 		udelay(hw->eeprom.delay_usec);
 	} else if (hw->eeprom.type == e1000_eeprom_microwire) {
@@ -540,25 +540,25 @@ static void e1000_release_eeprom(struct e1000_hw *hw)
 		/* CS on Microwire is active-high */
 		eecd &= ~(E1000_EECD_CS | E1000_EECD_DI);
 
-		E1000_WRITE_REG(hw, EECD, eecd);
+		e1000_write_reg(hw, E1000_EECD, eecd);
 
 		/* Rising edge of clock */
 		eecd |= E1000_EECD_SK;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(hw->eeprom.delay_usec);
 
 		/* Falling edge of clock */
 		eecd &= ~E1000_EECD_SK;
-		E1000_WRITE_REG(hw, EECD, eecd);
-		E1000_WRITE_FLUSH(hw);
+		e1000_write_reg(hw, E1000_EECD, eecd);
+		e1000_write_flush(hw);
 		udelay(hw->eeprom.delay_usec);
 	}
 
 	/* Stop requesting EEPROM access */
 	if (hw->mac_type > e1000_82544) {
 		eecd &= ~E1000_EECD_REQ;
-		E1000_WRITE_REG(hw, EECD, eecd);
+		e1000_write_reg(hw, E1000_EECD, eecd);
 	}
 }
 /******************************************************************************

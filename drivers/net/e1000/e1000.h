@@ -28,18 +28,6 @@
 #define DEBUGFUNC()		do { } while (0)
 #endif
 
-/* I/O wrapper functions */
-#define E1000_WRITE_REG(a, reg, value) \
-	writel((value), ((a)->hw_addr + E1000_##reg))
-#define E1000_READ_REG(a, reg) \
-	readl((a)->hw_addr + E1000_##reg)
-#define E1000_WRITE_REG_ARRAY(a, reg, offset, value) \
-	writel((value), ((a)->hw_addr + E1000_##reg + ((offset) << 2)))
-#define E1000_READ_REG_ARRAY(a, reg, offset) \
-	readl((a)->hw_addr + E1000_##reg + ((offset) << 2))
-#define E1000_WRITE_FLUSH(a) \
-	do { E1000_READ_REG(a, STATUS); } while (0)
-
 /* Enumerated types specific to the e1000 hardware */
 /* Media Access Controlers */
 typedef enum {
@@ -2127,6 +2115,16 @@ struct e1000_hw {
 	int tx_tail;
 	int rx_tail, rx_last;
 };
+
+void e1000_write_reg(struct e1000_hw *hw, uint32_t reg,
+		     uint32_t value);
+uint32_t e1000_read_reg(struct e1000_hw *hw, uint32_t reg);
+uint32_t e1000_read_reg_array(struct e1000_hw *hw,
+			      uint32_t base, uint32_t idx);
+void e1000_write_reg_array(struct e1000_hw *hw, uint32_t base,
+			   uint32_t idx, uint32_t value);
+
+void e1000_write_flush(struct e1000_hw *hw);
 
 int32_t e1000_init_eeprom_params(struct e1000_hw *hw);
 int e1000_validate_eeprom_checksum(struct e1000_hw *hw);

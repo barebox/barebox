@@ -374,9 +374,6 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_igb:
 		/* i210 has 4k of iNVM mapped as EEPROM */
 		eeprom->type = e1000_eeprom_invm;
-		eeprom->opcode_bits = 8;
-		eeprom->delay_usec = 1;
-		eeprom->address_bits = 16;
 		eeprom->use_eerd = true;
 		break;
 	default:

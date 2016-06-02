@@ -687,13 +687,20 @@ struct e1000_tx_desc {
 #define E1000_82542_FFMT     E1000_FFMT
 #define E1000_82542_FFVT     E1000_FFVT
 
+struct e1000_hw;
+
 struct e1000_eeprom_info {
 	e1000_eeprom_type type;
 	uint16_t word_size;
 	uint16_t opcode_bits;
 	uint16_t address_bits;
 	uint16_t delay_usec;
-	bool use_eerd;
+
+	int32_t (*acquire) (struct e1000_hw *hw);
+	void    (*release) (struct e1000_hw *hw);
+
+	int32_t (*read) (struct e1000_hw *hw, uint16_t offset,
+			 uint16_t words, uint16_t *data);
 };
 
 #define E1000_EEPROM_SWDPIN0   0x0001	/* SWDPIN 0 EEPROM Value */

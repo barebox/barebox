@@ -451,14 +451,10 @@ static int32_t e1000_poll_eerd_eewr_done(struct e1000_hw *hw, int eerd)
 	int32_t done = E1000_ERR_EEPROM;
 
 	for (i = 0; i < attempts; i++) {
-		if (eerd == E1000_EEPROM_POLL_READ) {
+		if (eerd == E1000_EEPROM_POLL_READ)
 			reg = e1000_read_reg(hw, E1000_EERD);
-		} else {
-			if (hw->mac_type == e1000_igb)
-				reg = e1000_read_reg(hw, E1000_I210_EEWR);
-			else
-				reg = e1000_read_reg(hw, E1000_EEWR);
-		}
+		else
+			reg = e1000_read_reg(hw, E1000_EEWR);
 
 		if (reg & E1000_EEPROM_RW_REG_DONE) {
 			done = E1000_SUCCESS;

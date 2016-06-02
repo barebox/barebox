@@ -389,6 +389,11 @@ struct e1000_tx_desc {
 #define E1000_MC_TBL_SIZE	   128	/* Multicast Filter Table (4096 bits) */
 #define E1000_VLAN_FILTER_TBL_SIZE 128	/* VLAN Filter Table (4096 bits) */
 
+#define E1000_MIGHT_BE_REMAPPED 0x80000000  /* Flag indicating that on
+					       some variants of the chip
+					       register offset might be
+					       different */
+
 /* Register Set. (82543, 82544)
  *
  * Registers are defined to be 32 bits and  should be accessed as 32 bit values.
@@ -429,17 +434,17 @@ struct e1000_tx_desc {
 #define E1000_LEDCTL   0x00E00	/* LED Control - RW */
 #define E1000_EXTCNF_CTRL  0x00F00  /* Extended Configuration Control */
 #define E1000_EXTCNF_SIZE  0x00F08  /* Extended Configuration Size */
-#define E1000_PHY_CTRL     0x00F10  /* PHY Control Register in CSR */
+#define E1000_PHY_CTRL     (E1000_MIGHT_BE_REMAPPED | 0x00F10)  /* PHY Control Register in CSR */
 #define E1000_I210_PHY_CTRL     0x00E14  /* PHY Control Register in CSR */
 #define FEXTNVM_SW_CONFIG  0x0001
 #define E1000_PBA      0x01000	/* Packet Buffer Allocation - RW */
 #define E1000_PBS      0x01008  /* Packet Buffer Size */
-#define E1000_EEMNGCTL 0x01010  /* MNG EEprom Control */
+#define E1000_EEMNGCTL (E1000_MIGHT_BE_REMAPPED | 0x01010)  /* MNG EEprom Control */
 #define E1000_I210_EEMNGCTL 0x12030  /* MNG EEprom Control */
 #define E1000_FLASH_UPDATES 1000
 #define E1000_EEARBC   0x01024  /* EEPROM Auto Read Bus Control */
 #define E1000_FLASHT   0x01028  /* FLASH Timer Register */
-#define E1000_EEWR     0x0102C  /* EEPROM Write Register - RW */
+#define E1000_EEWR     (E1000_MIGHT_BE_REMAPPED | 0x0102C)  /* EEPROM Write Register - RW */
 #define E1000_I210_EEWR     0x12018  /* EEPROM Write Register - RW */
 #define E1000_FLSWCTL  0x01030  /* FLASH control register */
 #define E1000_FLSWDATA 0x01034  /* FLASH data register */

@@ -1978,6 +1978,11 @@ struct e1000_eeprom_info {
 #define ICH_FLASH_LINEAR_ADDR_MASK 0x00FFFFFF
 
 #define E1000_SW_FW_SYNC 0x05B5C /* Software-Firmware Synchronization - RW */
+#define E1000_PCIEMISC	 0x05BB8
+#define E1000_PCIEMISC_DMA_IDLE		(1 << 9)
+#define E1000_PCIEMISC_RESERVED_MASK    (~(E1000_PCIEMISC_DMA_IDLE))
+#define E1000_PCIEMISC_RESERVED_PATTERN1 0x8A
+#define E1000_PCIEMISC_RESERVED_PATTERN2 (0x122 << 10)
 
 /* SPI EEPROM Status Register */
 #define EEPROM_STATUS_RDY_SPI  0x01
@@ -2092,6 +2097,29 @@ struct e1000_eeprom_info {
 							after IMS clear */
 
 
+
+#define E1000_INVM_TEST(n)		(0x122A0 + 4 * (n))
+#define E1000_INVM_DATA_(n)		(0x12120 + 4 * (n))
+#if 0
+#define E1000_INVM_DATA(n)		E1000_INVM_TEST(n)
+#else
+#define E1000_INVM_DATA(n)		E1000_INVM_DATA_(n)
+#endif
+
+#define E1000_INVM_LOCK(n)		(0x12220 + 4 * (n))
+#define E1000_INVM_LOCK_BIT		(1 << 0)
+
+#define E1000_INVM_PROTECT		0x12324
+#define E1000_INVM_PROTECT_CODE		(0xABACADA << 4)
+#define E1000_INVM_PROTECT_BUSY		(1 << 2)
+#define E1000_INVM_PROTECT_WRITE_ERROR	(1 << 1)
+#define E1000_INVM_PROTECT_ALLOW_WRITE	(1 << 0)
+
+#define E1000_INVM_DATA_MAX_N		63
+
+#define E1000_EEMNGCTL_CFG_DONE		(1 << 18)
+
+
 struct e1000_hw {
 	struct eth_device edev;
 
@@ -2106,6 +2134,13 @@ struct e1000_hw {
 	e1000_media_type media_type;
 	e1000_fc_type fc;
 	struct e1000_eeprom_info eeprom;
+
+	struct {
+		struct cdev cdev;
+		struct device_d dev;
+		int line;
+	} invm;
+
 	uint32_t phy_id;
 	uint32_t phy_revision;
 	uint32_t original_fc;

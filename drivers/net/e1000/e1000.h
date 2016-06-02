@@ -16,6 +16,8 @@
  * Structures, enums, and macros for the MAC
  */
 
+#include <io.h>
+
 #ifndef _E1000_HW_H_
 #define _E1000_HW_H_
 
@@ -2090,4 +2092,48 @@ struct e1000_eeprom_info {
 
 #define E1000_CTRL_EXT_INT_TIMER_CLR  0x20000000 /* Clear Interrupt timers
 							after IMS clear */
+
+
+struct e1000_hw {
+	struct eth_device edev;
+
+	struct pci_dev *pdev;
+	struct device_d *dev;
+
+	void __iomem *hw_addr;
+
+	e1000_mac_type mac_type;
+	e1000_phy_type phy_type;
+	uint32_t txd_cmd;
+	e1000_media_type media_type;
+	e1000_fc_type fc;
+	struct e1000_eeprom_info eeprom;
+	uint32_t phy_id;
+	uint32_t phy_revision;
+	uint32_t original_fc;
+	uint32_t autoneg_failed;
+	uint16_t autoneg_advertised;
+	uint16_t pci_cmd_word;
+	uint16_t device_id;
+	uint16_t vendor_id;
+	uint8_t revision_id;
+	struct mii_bus miibus;
+
+	struct e1000_tx_desc *tx_base;
+	struct e1000_rx_desc *rx_base;
+	unsigned char *packet;
+
+	int tx_tail;
+	int rx_tail, rx_last;
+};
+
+int32_t e1000_init_eeprom_params(struct e1000_hw *hw);
+int e1000_validate_eeprom_checksum(struct e1000_hw *hw);
+int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
+		uint16_t words,
+		uint16_t *data);
+
+int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask);
+
+
 #endif	/* _E1000_HW_H_ */

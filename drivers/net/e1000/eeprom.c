@@ -1,6 +1,8 @@
 #include <common.h>
 #include <init.h>
 #include <malloc.h>
+#include <linux/math64.h>
+#include <linux/sizes.h>
 
 #include "e1000.h"
 
@@ -406,9 +408,29 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		break;
 	case e1000_igb:
 		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
-			eeprom->type = e1000_eeprom_flash;
-			eeprom->word_size = 2048;
+			uint32_t fla;
 
+			fla  = e1000_read_reg(hw, E1000_FLA);
+			fla &= E1000_FLA_FL_SIZE_MASK;
+			fla >>= E1000_FLA_FL_SIZE_SHIFT;
+
+			switch (fla) {
+			case E1000_FLA_FL_SIZE_8MB:
+				eeprom->word_size = SZ_8M / 2;
+				break;
+			case E1000_FLA_FL_SIZE_4MB:
+				eeprom->word_size = SZ_4M / 2;
+				break;
+			case E1000_FLA_FL_SIZE_2MB:
+				eeprom->word_size = SZ_2M / 2;
+				break;
+			default:
+				eeprom->word_size = 2048;
+				dev_info(hw->dev, "Unprogrammed Flash detected, "
+					 "limiting access to first 4KB\n");
+			}
+
+			eeprom->type = e1000_eeprom_flash;
 			eeprom->acquire = e1000_acquire_eeprom_flash;
 			eeprom->release = e1000_release_eeprom_flash;
 		} else {
@@ -684,6 +706,259 @@ static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw)
 
 	return E1000_SUCCESS;
 }
+
+static int e1000_flash_mode_wait_for_idle(struct e1000_hw *hw)
+{
+	/* Strictly speaking we need to poll FLSWCTL.DONE only if we
+	 * are executing this code after a reset event, but it
+	 * shouldn't hurt to do this everytime, besided we need to
+	 * poll got FLSWCTL.GLDONE to make sure that back to back
+	 * calls to that function work correctly, since we finish
+	 * execution by polling only FLSWCTL.DONE */
+
+	const int ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+				       E1000_FLSWCTL_DONE | E1000_FLSWCTL_GLDONE,
+				       E1000_FLSWCTL_DONE | E1000_FLSWCTL_GLDONE,
+				       SECOND);
+	if (ret < 0)
+		dev_err(hw->dev,
+			"Timeout waiting for FLSWCTL.DONE to be set\n");
+	return ret;
+}
+
+static int e1000_flash_mode_check_command_valid(struct e1000_hw *hw)
+{
+	const uint32_t flswctl = e1000_read_reg(hw, E1000_FLSWCTL);
+	if (!(flswctl & E1000_FLSWCTL_CMDV)) {
+		dev_err(hw->dev, "FLSWCTL.CMDV was cleared");
+		return -EIO;
+	}
+
+	return E1000_SUCCESS;
+}
+
+static void e1000_flash_cmd(struct e1000_hw *hw,
+			    uint32_t cmd, uint32_t offset)
+{
+	uint32_t flswctl = e1000_read_reg(hw, E1000_FLSWCTL);
+	flswctl &= ~E1000_FLSWCTL_CMD_ADDR_MASK;
+	flswctl |= E1000_FLSWCTL_CMD(cmd) | E1000_FLSWCTL_ADDR(offset);
+	e1000_write_reg(hw, E1000_FLSWCTL, flswctl);
+}
+
+static int e1000_flash_mode_read_chunk(struct e1000_hw *hw, loff_t offset,
+				       size_t size, void *data)
+{
+	int ret;
+	size_t chunk, residue = size;
+	uint32_t flswdata;
+
+	DEBUGFUNC();
+
+	if (size > SZ_4K ||
+	    E1000_FLSWCTL_ADDR(offset) != offset)
+		return -EINVAL;
+
+	ret = e1000_flash_mode_wait_for_idle(hw);
+	if (ret < 0)
+		return ret;
+
+	e1000_write_reg(hw, E1000_FLSWCNT, size);
+	e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_READ, offset);
+
+	do {
+		ret = e1000_flash_mode_check_command_valid(hw);
+		if (ret < 0)
+			return -EIO;
+
+		chunk = min(sizeof(flswdata), residue);
+
+		ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+				     E1000_FLSWCTL_DONE, E1000_FLSWCTL_DONE,
+				     SECOND);
+		if (ret < 0) {
+			dev_err(hw->dev,
+				"Timeout waiting for FLSWCTL.DONE to be set\n");
+			return ret;
+		}
+
+		flswdata = e1000_read_reg(hw, E1000_FLSWDATA);
+		/*
+		 * Readl does le32_to_cpu, so we need to undo that
+		 */
+		flswdata = cpu_to_le32(flswdata);
+		memcpy(data, &flswdata, chunk);
+
+		data += chunk;
+		residue -= chunk;
+	} while (residue);
+
+	return E1000_SUCCESS;
+}
+
+static int e1000_flash_mode_write_chunk(struct e1000_hw *hw, loff_t offset,
+					size_t size, const void *data)
+{
+	int ret;
+	size_t chunk, residue = size;
+	uint32_t flswdata;
+
+	if (size > 256 ||
+	    E1000_FLSWCTL_ADDR(offset) != offset)
+		return -EINVAL;
+
+	ret = e1000_flash_mode_wait_for_idle(hw);
+	if (ret < 0)
+		return ret;
+
+
+	e1000_write_reg(hw, E1000_FLSWCNT, size);
+	e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_WRITE, offset);
+
+	do {
+		chunk = min(sizeof(flswdata), residue);
+		memcpy(&flswdata, data, chunk);
+		/*
+		 * writel does cpu_to_le32, so we do the inverse in
+		 * order to account for that
+		 */
+		flswdata = le32_to_cpu(flswdata);
+		e1000_write_reg(hw, E1000_FLSWDATA, flswdata);
+
+		ret = e1000_flash_mode_check_command_valid(hw);
+		if (ret < 0)
+			return -EIO;
+
+		ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+				     E1000_FLSWCTL_DONE, E1000_FLSWCTL_DONE,
+				     SECOND);
+		if (ret < 0) {
+			dev_err(hw->dev,
+				"Timeout waiting for FLSWCTL.DONE to be set\n");
+			return ret;
+		}
+
+		data += chunk;
+		residue -= chunk;
+
+	} while (residue);
+
+	return E1000_SUCCESS;
+}
+
+
+static int e1000_flash_mode_erase_chunk(struct e1000_hw *hw, loff_t offset,
+					size_t size)
+{
+	int ret;
+
+	ret = e1000_flash_mode_wait_for_idle(hw);
+	if (ret < 0)
+		return ret;
+
+	if (!size && !offset)
+		e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_ERASE_DEVICE, 0);
+	else
+		e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_ERASE_SECTOR, offset);
+
+	ret = e1000_flash_mode_check_command_valid(hw);
+	if (ret < 0)
+		return -EIO;
+
+	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+			     E1000_FLSWCTL_DONE | E1000_FLSWCTL_FLBUSY,
+			     E1000_FLSWCTL_DONE,
+			     SECOND);
+	if (ret < 0) {
+		dev_err(hw->dev,
+			"Timeout waiting for FLSWCTL.DONE to be set\n");
+		return ret;
+	}
+
+	return E1000_SUCCESS;
+}
+
+enum {
+	E1000_FLASH_MODE_OP_READ = 0,
+	E1000_FLASH_MODE_OP_WRITE = 1,
+	E1000_FLASH_MODE_OP_ERASE = 2,
+};
+
+
+static int e1000_flash_mode_io(struct e1000_hw *hw, int op, size_t granularity,
+			       loff_t offset, size_t size, void *data)
+{
+	int ret;
+	size_t residue = size;
+
+	do {
+		const size_t chunk = min(granularity, residue);
+
+		switch (op) {
+		case E1000_FLASH_MODE_OP_READ:
+			ret = e1000_flash_mode_read_chunk(hw, offset,
+							  chunk, data);
+			break;
+		case E1000_FLASH_MODE_OP_WRITE:
+			ret = e1000_flash_mode_write_chunk(hw, offset,
+							   chunk, data);
+			break;
+		case E1000_FLASH_MODE_OP_ERASE:
+			ret = e1000_flash_mode_erase_chunk(hw, offset,
+							   chunk);
+			break;
+		default:
+			return -ENOTSUPP;
+		}
+
+		if (ret < 0)
+			return ret;
+
+		offset += chunk;
+		residue -= chunk;
+		data += chunk;
+	} while (residue);
+
+	return E1000_SUCCESS;
+}
+
+
+static int e1000_flash_mode_read(struct e1000_hw *hw, loff_t offset,
+				 size_t size, void *data)
+{
+	return e1000_flash_mode_io(hw,
+				   E1000_FLASH_MODE_OP_READ, SZ_4K,
+				   offset, size, data);
+}
+
+static int e1000_flash_mode_write(struct e1000_hw *hw, loff_t offset,
+				  size_t size, const void *data)
+{
+	int ret;
+
+	ret = e1000_flash_mode_io(hw,
+				  E1000_FLASH_MODE_OP_WRITE, 256,
+				  offset, size, (void *)data);
+	if (ret < 0)
+		return ret;
+
+	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+			     E1000_FLSWCTL_FLBUSY,
+			     0,  SECOND);
+	if (ret < 0)
+		dev_err(hw->dev, "Timout while waiting for FLSWCTL.FLBUSY\n");
+
+	return ret;
+}
+
+static int e1000_flash_mode_erase(struct e1000_hw *hw, loff_t offset,
+				  size_t size)
+{
+	return e1000_flash_mode_io(hw,
+				   E1000_FLASH_MODE_OP_ERASE, SZ_4K,
+				   offset, size, NULL);
+}
+
 
 /******************************************************************************
  * Reads a 16 bit word from the EEPROM.
@@ -1037,6 +1312,90 @@ static struct file_operations e1000_invm_ops = {
 	.lseek	= dev_lseek_default,
 };
 
+static int e1000_mtd_read_or_write(bool read,
+				   struct mtd_info *mtd, loff_t off, size_t len,
+				   size_t *retlen, u_char *buf)
+{
+	int ret;
+	struct e1000_hw *hw = container_of(mtd, struct e1000_hw, mtd);
+
+	DEBUGFUNC();
+
+	if (e1000_acquire_eeprom(hw) == E1000_SUCCESS) {
+		if (read)
+			ret = e1000_flash_mode_read(hw, off,
+						    len, buf);
+		else
+			ret = e1000_flash_mode_write(hw, off,
+						     len, buf);
+		if (ret == E1000_SUCCESS)
+			*retlen = len;
+
+		e1000_release_eeprom(hw);
+	} else {
+		ret = -E1000_ERR_EEPROM;
+	}
+
+	return ret;
+
+}
+
+static int e1000_mtd_read(struct mtd_info *mtd, loff_t from, size_t len,
+				 size_t *retlen, u_char *buf)
+{
+	return e1000_mtd_read_or_write(true,
+				       mtd, from, len, retlen, buf);
+}
+
+static int e1000_mtd_write(struct mtd_info *mtd, loff_t to, size_t len,
+			   size_t *retlen, const u_char *buf)
+{
+	return e1000_mtd_read_or_write(false,
+				       mtd, to, len, retlen, (u_char *)buf);
+}
+
+static int e1000_mtd_erase(struct mtd_info *mtd, struct erase_info *instr)
+{
+	uint32_t rem;
+	struct e1000_hw *hw = container_of(mtd, struct e1000_hw, mtd);
+	int ret;
+
+	div_u64_rem(instr->len, mtd->erasesize, &rem);
+	if (rem)
+		return -EINVAL;
+
+	ret = e1000_acquire_eeprom(hw);
+	if (ret != E1000_SUCCESS)
+		goto fail;
+
+	/*
+	 * If mtd->size is 4096 it means we are dealing with
+	 * unprogrammed flash and we don't really know its size to
+	 * make an informed decision wheither to erase the whole chip or
+	 * just a number of its sectors
+	 */
+	if (mtd->size > SZ_4K &&
+	    instr->len == mtd->size)
+		ret = e1000_flash_mode_erase(hw, 0, 0);
+	else
+		ret = e1000_flash_mode_erase(hw,
+					     instr->addr, instr->len);
+
+	e1000_release_eeprom(hw);
+
+	if (ret < 0)
+		goto fail;
+
+	instr->state = MTD_ERASE_DONE;
+	mtd_erase_callback(instr);
+
+	return 0;
+
+fail:
+	instr->state = MTD_ERASE_FAILED;
+	return ret;
+}
+
 int e1000_register_eeprom(struct e1000_hw *hw)
 {
 	int ret = E1000_SUCCESS;
@@ -1079,7 +1438,32 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 			devfs_remove(&hw->invm.cdev);
 			break;
 		}
+		break;
+	case e1000_eeprom_flash:
+		if (hw->mac_type != e1000_igb)
+			break;
 
+		hw->mtd.parent = hw->dev;
+		hw->mtd.read = e1000_mtd_read;
+		hw->mtd.write = e1000_mtd_write;
+		hw->mtd.erase = e1000_mtd_erase;
+		hw->mtd.size = eeprom->word_size * 2;
+		hw->mtd.writesize = 1;
+		hw->mtd.subpage_sft = 0;
+
+		hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
+		hw->mtd.erasesize = SZ_4K;
+		hw->mtd.eraseregions[0].erasesize = SZ_4K;
+		hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
+		hw->mtd.numeraseregions = 1;
+
+		hw->mtd.flags = MTD_CAP_NORFLASH;
+		hw->mtd.type = MTD_NORFLASH;
+
+		ret = add_mtd_device(&hw->mtd, "e1000-nor",
+				     DEVICE_ID_DYNAMIC);
+		break;
+	default:
 		break;
 	}
 

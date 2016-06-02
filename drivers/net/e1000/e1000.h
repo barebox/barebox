@@ -18,6 +18,7 @@
 
 #include <io.h>
 #include <net.h>
+#include <linux/mtd/mtd.h>
 
 #ifndef _E1000_HW_H_
 #define _E1000_HW_H_
@@ -447,8 +448,11 @@ struct e1000_tx_desc {
 #define E1000_EEWR     (E1000_MIGHT_BE_REMAPPED | 0x0102C)  /* EEPROM Write Register - RW */
 #define E1000_I210_EEWR     0x12018  /* EEPROM Write Register - RW */
 #define E1000_FLSWCTL  0x01030  /* FLASH control register */
+#define E1000_I210_FLSWCTL 0x12048  /* FLASH control register */
 #define E1000_FLSWDATA 0x01034  /* FLASH data register */
+#define E1000_I210_FLSWDATA 0x1204C  /* FLASH data register */
 #define E1000_FLSWCNT  0x01038  /* FLASH Access Counter */
+#define E1000_I210_FLSWCNT  0x12050  /* FLASH Access Counter */
 #define E1000_FLOP     0x0103C  /* FLASH Opcode Register */
 #define E1000_ERT      0x02008  /* Early Rx Threshold - RW */
 #define E1000_FCRTL    0x02160	/* Flow Control Receive Threshold Low - RW */
@@ -691,7 +695,7 @@ struct e1000_hw;
 
 struct e1000_eeprom_info {
 	e1000_eeprom_type type;
-	uint16_t word_size;
+	size_t word_size;
 	uint16_t opcode_bits;
 	uint16_t address_bits;
 	uint16_t delay_usec;
@@ -805,6 +809,8 @@ struct e1000_eeprom_info {
 #define E1000_EECD_AUPDEN    0x00100000 /* Enable Autonomous FLASH update */
 #define E1000_EECD_SHADV     0x00200000 /* Shadow RAM Data Valid */
 #define E1000_EECD_SEC1VAL   0x00400000 /* Sector One Valid */
+#define E1000_EECD_I210_FLUPD (1 << 23)
+#define E1000_EECD_I210_FLUDONE (1 << 26)
 #define E1000_EECD_SECVAL_SHIFT      22
 #define E1000_STM_OPCODE     0xDB00
 #define E1000_HICR_FW_RESET  0xC0
@@ -2096,6 +2102,27 @@ struct e1000_eeprom_info {
 #define E1000_CTRL_EXT_INT_TIMER_CLR  0x20000000 /* Clear Interrupt timers
 							after IMS clear */
 
+#define E1000_FLA			0x1201C
+#define E1000_FLA_FL_SIZE_SHIFT		17
+#define E1000_FLA_FL_SIZE_MASK		(0b111 << E1000_FLA_FL_SIZE_SHIFT) /* EEprom Size */
+#define E1000_FLA_FL_SIZE_2MB		0b101
+#define E1000_FLA_FL_SIZE_4MB		0b110
+#define E1000_FLA_FL_SIZE_8MB		0b111
+
+
+#define E1000_FLSWCTL_ADDR(a)		((a) & 0x00FFFFFF)
+#define E1000_FLSWCTL_CMD_READ		0b0000
+#define E1000_FLSWCTL_CMD_WRITE		0b0001
+#define E1000_FLSWCTL_CMD_ERASE_SECTOR	0b0010
+#define E1000_FLSWCTL_CMD_ERASE_DEVICE	0b0011
+#define E1000_FLSWCTL_CMD(c)		((0b1111 & (c)) << 24)
+
+#define E1000_FLSWCTL_CMD_ADDR_MASK	0x0FFFFFFF
+
+#define E1000_FLSWCTL_CMDV		(1 << 28)
+#define E1000_FLSWCTL_FLBUSY		(1 << 29)
+#define E1000_FLSWCTL_DONE		(1 << 30)
+#define E1000_FLSWCTL_GLDONE		(1 << 31)
 
 
 #define E1000_INVM_TEST(n)		(0x122A0 + 4 * (n))
@@ -2141,6 +2168,8 @@ struct e1000_hw {
 		int line;
 	} invm;
 
+	struct mtd_info mtd;
+
 	uint32_t phy_id;
 	uint32_t phy_revision;
 	uint32_t original_fc;
@@ -2183,5 +2212,6 @@ int e1000_poll_reg(struct e1000_hw *hw, uint32_t reg,
 		   uint32_t mask, uint32_t value,
 		   uint64_t timeout);
 
+int e1000_register_eeprom(struct e1000_hw *hw);
 
 #endif	/* _E1000_HW_H_ */

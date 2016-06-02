@@ -3396,7 +3396,6 @@ static int e1000_poll(struct eth_device *edev)
 
 static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 {
-	void *nv_packet = (void *)txpacket;
 	struct e1000_hw *hw = edev->priv;
 	volatile struct e1000_tx_desc *txp;
 	uint64_t to;
@@ -3404,7 +3403,7 @@ static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 	txp = hw->tx_base + hw->tx_tail;
 	hw->tx_tail = (hw->tx_tail + 1) % 8;
 
-	txp->buffer_addr = cpu_to_le64(virt_to_bus(hw->pdev, nv_packet));
+	txp->buffer_addr = cpu_to_le64(virt_to_bus(hw->pdev, txpacket));
 	txp->lower.data = cpu_to_le32(hw->txd_cmd | length);
 	txp->upper.data = 0;
 

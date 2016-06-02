@@ -3558,8 +3558,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		return -EINVAL;
 	}
 
-	if ((e1000_read_reg(hw, E1000_EECD) & E1000_EECD_FLUPD) &&
-	    e1000_validate_eeprom_checksum(hw))
+	if (e1000_validate_eeprom_checksum(hw))
 		return -EINVAL;
 
 	e1000_get_ethaddr(edev, edev->ethaddr);

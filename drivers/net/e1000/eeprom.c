@@ -358,8 +358,13 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		eeprom->use_eerd = true;
 		break;
 	case e1000_igb:
-		/* i210 has 4k of iNVM mapped as EEPROM */
-		eeprom->type = e1000_eeprom_invm;
+		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
+			eeprom->type = e1000_eeprom_flash;
+			eeprom->word_size = 2048;
+		} else {
+			eeprom->type = e1000_eeprom_invm;
+		}
+
 		eeprom->use_eerd = true;
 		break;
 	default:
@@ -659,6 +664,15 @@ int e1000_validate_eeprom_checksum(struct e1000_hw *hw)
 	uint16_t buf[EEPROM_CHECKSUM_REG + 1];
 
 	DEBUGFUNC();
+
+	/*
+	  Only the following three 'types' of EEPROM can be expected
+	  to have correct EEPROM checksum
+	*/
+	if (hw->eeprom.type != e1000_eeprom_spi &&
+	    hw->eeprom.type != e1000_eeprom_microwire &&
+	    hw->eeprom.type != e1000_eeprom_flash)
+		return 0;
 
 	/* Read the EEPROM */
 	if (e1000_read_eeprom(hw, 0, EEPROM_CHECKSUM_REG + 1, buf) < 0) {

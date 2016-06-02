@@ -274,10 +274,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	int32_t ret_val = E1000_SUCCESS;
 	uint16_t eeprom_size;
 
-	if (hw->mac_type == e1000_igb)
-		eecd = e1000_read_reg(hw, E1000_I210_EECD);
-	else
-		eecd = e1000_read_reg(hw, E1000_EECD);
+	eecd = e1000_read_reg(hw, E1000_EECD);
 
 	DEBUGFUNC();
 
@@ -455,10 +452,7 @@ static int32_t e1000_poll_eerd_eewr_done(struct e1000_hw *hw, int eerd)
 
 	for (i = 0; i < attempts; i++) {
 		if (eerd == E1000_EEPROM_POLL_READ) {
-			if (hw->mac_type == e1000_igb)
-				reg = e1000_read_reg(hw, E1000_I210_EERD);
-			else
-				reg = e1000_read_reg(hw, E1000_EERD);
+			reg = e1000_read_reg(hw, E1000_EERD);
 		} else {
 			if (hw->mac_type == e1000_igb)
 				reg = e1000_read_reg(hw, E1000_I210_EEWR);
@@ -496,24 +490,15 @@ static int32_t e1000_read_eeprom_eerd(struct e1000_hw *hw,
 		eerd = ((offset+i) << E1000_EEPROM_RW_ADDR_SHIFT) +
 			E1000_EEPROM_RW_REG_START;
 
-		if (hw->mac_type == e1000_igb)
-			e1000_write_reg(hw, E1000_I210_EERD, eerd);
-		else
-			e1000_write_reg(hw, E1000_EERD, eerd);
+		e1000_write_reg(hw, E1000_EERD, eerd);
 
 		error = e1000_poll_eerd_eewr_done(hw, E1000_EEPROM_POLL_READ);
 
 		if (error)
 			break;
 
-		if (hw->mac_type == e1000_igb) {
-			data[i] = (e1000_read_reg(hw, E1000_I210_EERD) >>
-				E1000_EEPROM_RW_REG_DATA);
-		} else {
-			data[i] = (e1000_read_reg(hw, E1000_EERD) >>
-				E1000_EEPROM_RW_REG_DATA);
-		}
-
+		data[i] = (e1000_read_reg(hw, E1000_EERD) >>
+			   E1000_EEPROM_RW_REG_DATA);
 	}
 
 	return error;

@@ -275,6 +275,22 @@ static void e1000_eeprom_uses_spi(struct e1000_eeprom_info *eeprom,
 	eeprom->use_eerd = false;
 }
 
+static void e1000_eeprom_uses_microwire(struct e1000_eeprom_info *eeprom,
+					uint32_t eecd)
+{
+	eeprom->type = e1000_eeprom_microwire;
+	eeprom->opcode_bits = 3;
+	eeprom->delay_usec = 50;
+	if (eecd & E1000_EECD_SIZE) {
+		eeprom->word_size = 256;
+		eeprom->address_bits = 8;
+	} else {
+		eeprom->word_size = 64;
+		eeprom->address_bits = 6;
+	}
+	eeprom->use_eerd = false;
+}
+
 
 /******************************************************************************
  * Sets up eeprom variables in the hw struct.  Must be called after mac_type
@@ -299,49 +315,23 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_82542_rev2_1:
 	case e1000_82543:
 	case e1000_82544:
-		eeprom->type = e1000_eeprom_microwire;
-		eeprom->word_size = 64;
-		eeprom->opcode_bits = 3;
-		eeprom->address_bits = 6;
-		eeprom->delay_usec = 50;
-		eeprom->use_eerd = false;
+		e1000_eeprom_uses_microwire(eeprom, 0);
 	break;
 	case e1000_82540:
 	case e1000_82545:
 	case e1000_82545_rev_3:
 	case e1000_82546:
 	case e1000_82546_rev_3:
-		eeprom->type = e1000_eeprom_microwire;
-		eeprom->opcode_bits = 3;
-		eeprom->delay_usec = 50;
-		if (eecd & E1000_EECD_SIZE) {
-			eeprom->word_size = 256;
-			eeprom->address_bits = 8;
-		} else {
-			eeprom->word_size = 64;
-			eeprom->address_bits = 6;
-		}
-		eeprom->use_eerd = false;
+		e1000_eeprom_uses_microwire(eeprom, eecd);
 		break;
 	case e1000_82541:
 	case e1000_82541_rev_2:
 	case e1000_82547:
 	case e1000_82547_rev_2:
-		if (eecd & E1000_EECD_TYPE) {
+		if (eecd & E1000_EECD_TYPE)
 			e1000_eeprom_uses_spi(eeprom, eecd);
-		} else {
-			eeprom->type = e1000_eeprom_microwire;
-			eeprom->opcode_bits = 3;
-			eeprom->delay_usec = 50;
-			if (eecd & E1000_EECD_ADDR_BITS) {
-				eeprom->word_size = 256;
-				eeprom->address_bits = 8;
-			} else {
-				eeprom->word_size = 64;
-				eeprom->address_bits = 6;
-			}
-		}
-		eeprom->use_eerd = false;
+		else
+			e1000_eeprom_uses_microwire(eeprom, eecd);
 		break;
 	case e1000_82571:
 	case e1000_82572:

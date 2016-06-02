@@ -15,7 +15,8 @@ static int32_t e1000_read_eeprom_eerd(struct e1000_hw *hw, uint16_t offset,
 				      uint16_t words, uint16_t *data);
 static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw);
 static void e1000_release_eeprom(struct e1000_hw *hw);
-
+static int32_t e1000_acquire_eeprom_flash(struct e1000_hw *hw);
+static void e1000_release_eeprom_flash(struct e1000_hw *hw);
 
 
 /******************************************************************************
@@ -289,6 +290,11 @@ static int32_t e1000_acquire_eeprom_microwire(struct e1000_hw *hw)
 	return E1000_SUCCESS;
 }
 
+static int32_t e1000_acquire_eeprom_flash(struct e1000_hw *hw)
+{
+	return e1000_swfw_sync_acquire(hw, E1000_SWFW_EEP_SM);
+}
+
 static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
 {
 	if (hw->eeprom.acquire)
@@ -402,6 +408,9 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
 			eeprom->type = e1000_eeprom_flash;
 			eeprom->word_size = 2048;
+
+			eeprom->acquire = e1000_acquire_eeprom_flash;
+			eeprom->release = e1000_release_eeprom_flash;
 		} else {
 			eeprom->type = e1000_eeprom_invm;
 		}
@@ -618,6 +627,14 @@ static void e1000_release_eeprom_spi(struct e1000_hw *hw)
 	udelay(hw->eeprom.delay_usec);
 
 	e1000_release_eeprom_spi_microwire_epilogue(hw);
+}
+
+static void e1000_release_eeprom_flash(struct e1000_hw *hw)
+{
+	if (e1000_swfw_sync_release(hw, E1000_SWFW_EEP_SM) < 0)
+		dev_warn(hw->dev,
+			 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
+			 E1000_SWFW_EEP_SM);
 }
 
 static void e1000_release_eeprom(struct e1000_hw *hw)

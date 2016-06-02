@@ -3096,7 +3096,7 @@ static int32_t e1000_detect_gig_phy(struct e1000_hw *hw)
 		return -E1000_ERR_CONFIG;
 	}
 
-	if (!phy_type == e1000_phy_undefined) {
+	if (phy_type == e1000_phy_undefined) {
 		dev_dbg(hw->dev, "Invalid PHY ID 0x%X\n", hw->phy_id);
 		return -EINVAL;
 	}

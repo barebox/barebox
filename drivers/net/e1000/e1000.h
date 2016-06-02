@@ -693,7 +693,6 @@ struct e1000_eeprom_info {
 	uint16_t opcode_bits;
 	uint16_t address_bits;
 	uint16_t delay_usec;
-	uint16_t page_size;
 	bool use_eerd;
 };
 

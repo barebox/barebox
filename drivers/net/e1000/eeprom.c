@@ -315,13 +315,10 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 			eeprom->type = e1000_eeprom_spi;
 			eeprom->opcode_bits = 8;
 			eeprom->delay_usec = 1;
-			if (eecd & E1000_EECD_ADDR_BITS) {
-				eeprom->page_size = 32;
+			if (eecd & E1000_EECD_ADDR_BITS)
 				eeprom->address_bits = 16;
-			} else {
-				eeprom->page_size = 8;
+			else
 				eeprom->address_bits = 8;
-			}
 		} else {
 			eeprom->type = e1000_eeprom_microwire;
 			eeprom->opcode_bits = 3;
@@ -341,13 +338,11 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		eeprom->type = e1000_eeprom_spi;
 		eeprom->opcode_bits = 8;
 		eeprom->delay_usec = 1;
-		if (eecd & E1000_EECD_ADDR_BITS) {
-			eeprom->page_size = 32;
+		if (eecd & E1000_EECD_ADDR_BITS)
 			eeprom->address_bits = 16;
-		} else {
-			eeprom->page_size = 8;
+		else
 			eeprom->address_bits = 8;
-		}
+
 		eeprom->use_eerd = false;
 		break;
 	case e1000_82573:
@@ -355,13 +350,11 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		eeprom->type = e1000_eeprom_spi;
 		eeprom->opcode_bits = 8;
 		eeprom->delay_usec = 1;
-		if (eecd & E1000_EECD_ADDR_BITS) {
-			eeprom->page_size = 32;
+		if (eecd & E1000_EECD_ADDR_BITS)
 			eeprom->address_bits = 16;
-		} else {
-			eeprom->page_size = 8;
+		else
 			eeprom->address_bits = 8;
-		}
+
 		if (e1000_is_onboard_nvm_eeprom(hw) == false) {
 			eeprom->use_eerd = true;
 
@@ -378,13 +371,11 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		eeprom->type = e1000_eeprom_spi;
 		eeprom->opcode_bits = 8;
 		eeprom->delay_usec = 1;
-		if (eecd & E1000_EECD_ADDR_BITS) {
-			eeprom->page_size = 32;
+		if (eecd & E1000_EECD_ADDR_BITS)
 			eeprom->address_bits = 16;
-		} else {
-			eeprom->page_size = 8;
+		else
 			eeprom->address_bits = 8;
-		}
+
 		eeprom->use_eerd = true;
 		break;
 	case e1000_igb:
@@ -392,7 +383,6 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		eeprom->type = e1000_eeprom_invm;
 		eeprom->opcode_bits = 8;
 		eeprom->delay_usec = 1;
-		eeprom->page_size = 32;
 		eeprom->address_bits = 16;
 		eeprom->use_eerd = true;
 		break;

@@ -273,6 +273,21 @@ int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask)
 	return E1000_SUCCESS;
 }
 
+int32_t e1000_swfw_sync_release(struct e1000_hw *hw, uint16_t mask)
+{
+	uint32_t swfw_sync;
+
+	if (e1000_get_hw_eeprom_semaphore(hw))
+		return -E1000_ERR_SWFW_SYNC;
+
+	swfw_sync = e1000_read_reg(hw, E1000_SW_FW_SYNC);
+	swfw_sync &= ~mask;
+	e1000_write_reg(hw, E1000_SW_FW_SYNC, swfw_sync);
+
+	e1000_put_hw_eeprom_semaphore(hw);
+	return E1000_SUCCESS;
+}
+
 static bool e1000_is_second_port(struct e1000_hw *hw)
 {
 	switch (hw->mac_type) {
@@ -1347,6 +1362,11 @@ static int32_t e1000_write_kmrn_reg(struct e1000_hw *hw, uint32_t reg_addr, uint
 	e1000_write_reg(hw, E1000_KUMCTRLSTA, reg_val);
 	udelay(2);
 
+	if (e1000_swfw_sync_release(hw, swfw) < 0)
+		dev_warn(hw->dev,
+			 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
+			 swfw);
+
 	return E1000_SUCCESS;
 }
 
@@ -1373,6 +1393,11 @@ static int32_t e1000_read_kmrn_reg(struct e1000_hw *hw, uint32_t reg_addr, uint1
 	/* Read the data returned */
 	reg_val = e1000_read_reg(hw, E1000_KUMCTRLSTA);
 	*data = (uint16_t)reg_val;
+
+	if (e1000_swfw_sync_release(hw, swfw) < 0)
+		dev_warn(hw->dev,
+			 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
+			 swfw);
 
 	return E1000_SUCCESS;
 }
@@ -2803,6 +2828,11 @@ static int32_t e1000_phy_hw_reset(struct e1000_hw *hw)
 
 		if (hw->mac_type >= e1000_82571)
 			mdelay(10);
+
+		if (e1000_swfw_sync_release(hw, swfw) < 0)
+			dev_warn(hw->dev,
+				 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
+				 swfw);
 	} else {
 		/* Read the Extended Device Control Register, assert the PHY_RESET_DIR
 		 * bit to put the PHY into reset. Then, take it out of reset.

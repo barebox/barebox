@@ -17,6 +17,7 @@
  */
 
 #include <io.h>
+#include <net.h>
 
 #ifndef _E1000_HW_H_
 #define _E1000_HW_H_

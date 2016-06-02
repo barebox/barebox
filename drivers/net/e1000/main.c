@@ -31,7 +31,6 @@ tested on both gig copper and gig fiber boards
 
 #include <common.h>
 #include <init.h>
-#include <net.h>
 #include <malloc.h>
 #include <linux/pci.h>
 #include <dma.h>

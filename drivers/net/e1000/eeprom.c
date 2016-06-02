@@ -1,6 +1,5 @@
 #include <common.h>
 #include <init.h>
-#include <net.h>
 #include <malloc.h>
 
 #include "e1000.h"

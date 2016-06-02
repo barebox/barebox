@@ -2144,5 +2144,9 @@ int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
 int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask);
 int32_t e1000_swfw_sync_release(struct e1000_hw *hw, uint16_t mask);
 
+int e1000_poll_reg(struct e1000_hw *hw, uint32_t reg,
+		   uint32_t mask, uint32_t value,
+		   uint64_t timeout);
+
 
 #endif	/* _E1000_HW_H_ */

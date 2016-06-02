@@ -52,3 +52,19 @@ void e1000_write_flush(struct e1000_hw *hw)
 {
 	e1000_read_reg(hw, E1000_STATUS);
 }
+
+int e1000_poll_reg(struct e1000_hw *hw, uint32_t reg, uint32_t mask,
+		   uint32_t value, uint64_t timeout)
+{
+	const uint64_t start = get_time_ns();
+
+	do {
+		const uint32_t v = e1000_read_reg(hw, reg);
+
+		if ((v & mask) == value)
+			return 0;
+
+	} while (!is_timeout(start, timeout));
+
+	return -ETIMEDOUT;
+}

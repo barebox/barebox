@@ -695,7 +695,6 @@ struct e1000_eeprom_info {
 	uint16_t delay_usec;
 	uint16_t page_size;
 	bool use_eerd;
-	bool use_eewr;
 };
 
 #define E1000_EEPROM_SWDPIN0   0x0001	/* SWDPIN 0 EEPROM Value */

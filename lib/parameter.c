@@ -28,6 +28,7 @@
 #include <malloc.h>
 #include <driver.h>
 #include <string.h>
+#include <globalvar.h>
 #include <linux/err.h>
 
 struct param_d *get_param_by_name(struct device_d *dev, const char *name)
@@ -155,6 +156,8 @@ static int __dev_add_param(struct param_d *param, struct device_d *dev, const ch
 	param->flags = flags;
 	param->dev = dev;
 	list_add_sort(&param->list, &dev->parameters, compare);
+
+	dev_param_init_from_nv(dev, name);
 
 	return 0;
 }

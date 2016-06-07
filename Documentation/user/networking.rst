@@ -1,3 +1,5 @@
+.. _networking:
+
 Networking
 ==========
 
@@ -6,6 +8,49 @@ barebox has IPv4 networking support. Several protocols such as :ref:`DHCP
 
 Network configuration
 ---------------------
+
+Lowlevel network device configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Network devices are configured with a set of device specific variables:
+
++-------------------+--------------+----------------------------------------------------+
+| name              | type         |                                                    |
++===================+==============+====================================================+
+| <devname>.mode    | enum         | "dhcp": DHCP is used to get IP address and netmask |
+|                   |              | "static": Static IP setup described by variables   |
+|                   |              | below                                              |
+|                   |              | "disabled": Interface unused                       |
++-------------------+--------------+----------------------------------------------------+
+| <devname>.ipaddr  | ipv4 address | The IP address when using static configuration     |
++-------------------+--------------+----------------------------------------------------+
+| <devname>.netmask | ipv4 address | The netmask when using static configuration        |
++-------------------+--------------+----------------------------------------------------+
+| <devname>.gateway | ipv4 address | Alias for global.net.gateway. For                  |
+|                   |              | compatibility, do not use.                         |
++-------------------+--------------+----------------------------------------------------+
+| <devname>.serverip| ipv4 address | Alias for global.net.server. For                   |
+|                   |              | compatibility, do not use.                         |
++-------------------+--------------+----------------------------------------------------+
+| <devname>.ethaddr | MAC address  | The MAC address of this device                     |
++-------------------+--------------+----------------------------------------------------+
+
+Additionally there are some more variables that are not specific to a
+device:
+
++------------------------------+--------------+------------------------------------------------+
+| name                         | type         |                                                |
++==============================+==============+================================================+
+| global.net.gateway           | ipv4 host    | The network gateway used when a host is not in |
+|                              |              | any directly visible subnet. May be set        |
+|                              |              | automatically by DHCP.                         |
++------------------------------+--------------+------------------------------------------------+
+| global.net.server            | ipv4 host    | The default server address. If unspecified, may|
+|                              |              | be set by DHCP                                 |
++------------------------------+--------------+------------------------------------------------+
+| global.net.nameserver        | ipv4 address | The DNS server used for resolving host names.  |
+|                              |              | May be set by DHCP                             |
++------------------------------+--------------+------------------------------------------------+
 
 The first step for networking is configuring the network device. The network
 device is usually ``eth0``. The current configuration can be viewed with the
@@ -16,10 +61,9 @@ device is usually ``eth0``. The current configuration can be viewed with the
   barebox:/ devinfo eth0
   Parameters:
     ethaddr: 00:1c:49:01:03:4b
-    gateway: 192.168.23.1
     ipaddr: 192.168.23.197
     netmask: 255.255.0.0
-    serverip: 192.168.23.1
+    [...]
 
 The configuration can be changed on the command line with:
 
@@ -30,9 +74,56 @@ The configuration can be changed on the command line with:
 The :ref:`dhcp command <command_dhcp>` will change the settings based on the answer
 from the DHCP server.
 
-This low-level configuration of the network interface is often not necessary. Normally
-the network settings should be edited in ``/env/network/eth0``, then the network interface
-can be brought up using the :ref:`ifup command <command_ifup>`.
+To make the network device settings persistent across reboots there is a nonvolatile
+variable (nvvar) for each of the varariables above. The network device specific variables
+are:
+
+.. code-block:: sh
+
+  nv.dev.<devname>.mode
+  nv.dev.<devname>.ipaddr
+  nv.dev.<devname>.netmask
+  nv.dev.<devname>.ethaddr
+
+The others are:
+
+.. code-block:: sh
+
+  nv.net.gateway
+  nv.net.server
+  nv.net.nameserver
+
+A typical simple network setting is to use DHCP. Provided the network interface is eth0
+then this would configure the network device for DHCP:
+
+.. code-block:: sh
+
+  nv dev.eth0.mode=dhcp
+
+(In fact DHCP is the default, so the above is not necessary)
+
+A static setup would look like:
+
+.. code-block:: sh
+
+  nv dev.eth0.mode=static
+  nv dev.eth0.ipaddr=192.168.0.17
+  nv dev.eth0.netmask=255.255.0.0
+  nv net.server=192.168.0.1
+
+The settings can be activated with the :ref:`ifup command <command_ifup>`:
+
+.. code-block:: sh
+
+  ifup eth0
+
+or:
+
+.. code-block:: sh
+
+  ifup -a
+
+'ifup -a' will activate all ethernet interfaces, also the ones on USB.
 
 Network filesystems
 -------------------

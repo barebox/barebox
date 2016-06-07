@@ -232,43 +232,20 @@ Network boot
 With the following steps, barebox can start the kernel and root filesystem
 over the network, a standard development case.
 
-Configure network: edit ``/env/network/eth0``. For a standard DHCP setup
-the following is enough:
-
-.. code-block:: sh
-
-  #!/bin/sh
-
-  ip=dhcp
-  serverip=192.168.23.45
-
-The optional setting ``serverip`` specifies the IP address of your TFTP and NFS
-server, and is only necessary if it differs from the server IP offered by the
-DHCP server (i.e., the field ``siaddr`` in the DHCP ACK Reply).
-
-A static IP setup can look like this:
-
-.. code-block:: sh
-
-  #!/bin/sh
-
-  ip=static
-  ipaddr=192.168.2.10
-  netmask=255.255.0.0
-  gateway=192.168.2.1
-  serverip=192.168.2.1
+See :ref:`networking` for informations how to configure your network interfaces.
 
 Note that barebox will pass the same IP settings to the kernel, i.e. it passes
-``ip=$ipaddr:$serverip:$gateway:$netmask::eth0:`` for a static IP setup and
-``ip=dhcp`` for a dynamic DHCP setup.
+``ip=$ipaddr:$serverip:$gateway:$netmask::<linuxdevname>:`` for a static IP setup
+and ``ip=dhcp`` for a dynamic DHCP setup. ``<linuxdevname>`` is a configurable value.
+set ``nv.dev.<ethdev>.linuxdevname`` to the name the device has in Linux.
 
 By default, barebox uses the variables ``global.user`` and ``global.hostname``
 to retrieve its kernel image over TFTP, which makes it possible to use multiple
 boards for multiple users with one single server.
-You can adjust those variables in ``/env/config``::
+You can adjust those variables using nvvars with these commands::
 
-  global.user=sha
-  global.hostname=efikasb
+  nv user=sha
+  nv hostname=efikasb
 
 Copy the kernel (and devicetree if needed) to the root directory of your TFTP
 server, and name them accordingly; for example::
@@ -311,7 +288,8 @@ If the preconfigured paths or names are not suitable, they can be adjusted in
   fi
 
   nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
-  bootargs-ip
+  ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
+  
   global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
 
 ``boot net`` will then retrieve the kernel (and also the device tree and

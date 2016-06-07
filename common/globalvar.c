@@ -425,11 +425,14 @@ void globalvar_set_match(const char *match, const char *val)
  */
 int globalvar_add_simple(const char *name, const char *value)
 {
-	int ret;
+	struct param_d *param;
 
-	ret = globalvar_add(name, NULL, NULL, 0);
-	if (ret && ret != -EEXIST)
-		return ret;
+	param = dev_add_param(&global_device, name, NULL, NULL,
+			      PARAM_GLOBALVAR_UNQUALIFIED);
+	if (IS_ERR(param)) {
+		if (PTR_ERR(param) != -EEXIST)
+			return PTR_ERR(param);
+	}
 
 	if (!value)
 		return 0;
@@ -437,15 +440,47 @@ int globalvar_add_simple(const char *name, const char *value)
 	return dev_set_param(&global_device, name, value);
 }
 
+static int globalvar_remove_unqualified(const char *name)
+{
+	struct param_d *p;
+
+	p = get_param_by_name(&global_device, name);
+	if (!p)
+		return 0;
+
+	if (!(p->flags & PARAM_GLOBALVAR_UNQUALIFIED))
+		return -EEXIST;
+
+	dev_remove_param(p);
+
+	return 0;
+}
+
+static void globalvar_nv_sync(const char *name)
+{
+	const char *val;
+
+	val = dev_get_param(&nv_device, name);
+	if (val)
+		dev_set_param(&global_device, name, val);
+}
+
 int globalvar_add_simple_string(const char *name, char **value)
 {
 	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
 
 	p = dev_add_param_string(&global_device, name, NULL, NULL,
 		value, NULL);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);
+
+	globalvar_nv_sync(name);
 
 	return 0;
 }
@@ -454,6 +489,11 @@ int globalvar_add_simple_int(const char *name, int *value,
 			     const char *format)
 {
 	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
 
 	p = dev_add_param_int(&global_device, name, NULL, NULL,
 		value, format, NULL);
@@ -461,18 +501,27 @@ int globalvar_add_simple_int(const char *name, int *value,
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
+	globalvar_nv_sync(name);
+
 	return 0;
 }
 
 int globalvar_add_simple_bool(const char *name, int *value)
 {
 	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
 
 	p = dev_add_param_bool(&global_device, name, NULL, NULL,
 		value, NULL);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);
+
+	globalvar_nv_sync(name);
 
 	return 0;
 }
@@ -481,6 +530,11 @@ int globalvar_add_simple_enum(const char *name,	int *value,
 			      const char * const *names, int max)
 {
 	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
 
 	p = dev_add_param_enum(&global_device, name, NULL, NULL,
 		value, names, max, NULL);
@@ -488,18 +542,27 @@ int globalvar_add_simple_enum(const char *name,	int *value,
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
+	globalvar_nv_sync(name);
+
 	return 0;
 }
 
 int globalvar_add_simple_ip(const char *name, IPaddr_t *ip)
 {
 	struct param_d *p;
+	int ret;
+
+	ret = globalvar_remove_unqualified(name);
+	if (ret)
+		return ret;
 
 	p = dev_add_param_ip(&global_device, name, NULL, NULL,
 		ip, NULL);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);
+
+	globalvar_nv_sync(name);
 
 	return 0;
 }

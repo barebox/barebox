@@ -124,19 +124,10 @@ int nvvar_add(const char *name, const char *value)
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
-	if (value) {
-		ret = dev_set_param(&global_device, name, value);
-		if (ret)
-			return ret;
-	} else {
+	if (!value)
 		value = dev_get_param(&global_device, name);
-		if (!value)
-			value = "";
-	}
 
-	p->value = xstrdup(value);
-
-	return nv_save(p->name, value);
+	return nv_set(&nv_device, p, value);
 }
 
 int nvvar_remove(const char *name)

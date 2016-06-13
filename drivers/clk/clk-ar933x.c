@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2013 Lucas Stach <l.stach@pengutronix.de>
+ * Copyright (C) 2014 Antony Pavlov <antonynpavlov@gmail.com>
  *
- * Based on the Linux Tegra clock code
+ * Based on the Linux ath79 clock code
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,

@@ -561,7 +561,7 @@ int phy_wait_aneg_done(struct phy_device *phydev)
  */
 int genphy_restart_aneg(struct phy_device *phydev)
 {
-	int ctl;
+	int ctl, pdown;
 
 	ctl = phy_read(phydev, MII_BMCR);
 
@@ -574,12 +574,19 @@ int genphy_restart_aneg(struct phy_device *phydev)
 	ctl &= ~(BMCR_ISOLATE);
 
 	/* Clear powerdown bit which eventually is set on some phys */
+	pdown = ctl & BMCR_PDOWN;
 	ctl &= ~BMCR_PDOWN;
 
 	ctl = phy_write(phydev, MII_BMCR, ctl);
 
 	if (ctl < 0)
 		return ctl;
+
+	/* Micrel's ksz9031 (and perhaps others?): Changing the PDOWN bit
+	 * from '1' to '0' generates an internal reset. Must wait a minimum
+	 * of 1ms before read/write access to the PHY registers. */
+	if (pdown)
+		mdelay(1);
 
 	return 0;
 }

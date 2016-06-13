@@ -289,7 +289,7 @@ static void ath79_spi_remove(struct device_d *dev)
 
 static __maybe_unused struct of_device_id ath79_spi_dt_ids[] = {
 	{
-		.compatible = "qca,ath79-spi",
+		.compatible = "qca,ar7100-spi",
 	},
 	{
 		/* sentinel */

@@ -1,8 +1,13 @@
-#include <dt-bindings/clock/ar933x-clk.h>
+#include <dt-bindings/clock/ath79-clk.h>
 
 #include "skeleton.dtsi"
 
 / {
+	ref: ref {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+	};
+
 	soc {
 		#address-cells = <1>;
 		#size-cells = <1>;
@@ -13,7 +18,8 @@
 		serial0: serial@18020000 {
 			compatible = "qca,ar9330-uart";
 			reg = <0x18020000 0x14>;
-			clocks = <&ar9331_clk AR933X_CLK_UART>;
+			clocks = <&ref>;
+			clock-names = "uart";
 			status = "disabled";
 		};
 
@@ -27,9 +33,13 @@
 			status = "disabled";
 		};
 
-		ar9331_clk: clock {
-			compatible = "qca,ar933x-clk";
-			reg = <0x18050000 0x48>;
+		pll: pll-controller@18050000 {
+			compatible = "qca,ar9330-pll";
+			reg = <0x18050000 0x100>;
+
+			clocks = <&ref>;
+			clock-names = "ref";
+
 			#clock-cells = <1>;
 		};
 

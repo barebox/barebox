@@ -15,7 +15,7 @@
 		device_type = "soc";
 		ranges;
 
-		serial0: serial@18020000 {
+		uart: uart@18020000 {
 			compatible = "qca,ar9330-uart";
 			reg = <0x18020000 0x14>;
 			clocks = <&ref>;

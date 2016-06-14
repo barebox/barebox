@@ -16,6 +16,10 @@
  * Structures, enums, and macros for the MAC
  */
 
+#include <io.h>
+#include <net.h>
+#include <linux/mtd/mtd.h>
+
 #ifndef _E1000_HW_H_
 #define _E1000_HW_H_
 
@@ -24,18 +28,6 @@
 #else
 #define DEBUGFUNC()		do { } while (0)
 #endif
-
-/* I/O wrapper functions */
-#define E1000_WRITE_REG(a, reg, value) \
-	writel((value), ((a)->hw_addr + E1000_##reg))
-#define E1000_READ_REG(a, reg) \
-	readl((a)->hw_addr + E1000_##reg)
-#define E1000_WRITE_REG_ARRAY(a, reg, offset, value) \
-	writel((value), ((a)->hw_addr + E1000_##reg + ((offset) << 2)))
-#define E1000_READ_REG_ARRAY(a, reg, offset) \
-	readl((a)->hw_addr + E1000_##reg + ((offset) << 2))
-#define E1000_WRITE_FLUSH(a) \
-	do { E1000_READ_REG(a, STATUS); } while (0)
 
 /* Enumerated types specific to the e1000 hardware */
 /* Media Access Controlers */
@@ -398,6 +390,11 @@ struct e1000_tx_desc {
 #define E1000_MC_TBL_SIZE	   128	/* Multicast Filter Table (4096 bits) */
 #define E1000_VLAN_FILTER_TBL_SIZE 128	/* VLAN Filter Table (4096 bits) */
 
+#define E1000_MIGHT_BE_REMAPPED 0x80000000  /* Flag indicating that on
+					       some variants of the chip
+					       register offset might be
+					       different */
+
 /* Register Set. (82543, 82544)
  *
  * Registers are defined to be 32 bits and  should be accessed as 32 bit values.
@@ -413,9 +410,7 @@ struct e1000_tx_desc {
 #define E1000_CTRL     0x00000	/* Device Control - RW */
 #define E1000_STATUS   0x00008	/* Device Status - RO */
 #define E1000_EECD     0x00010	/* EEPROM/Flash Control - RW */
-#define E1000_I210_EECD     0x12010	/* EEPROM/Flash Control - RW */
 #define E1000_EERD     0x00014	/* EEPROM Read - RW */
-#define E1000_I210_EERD     0x12014	/* EEPROM Read - RW */
 #define E1000_CTRL_EXT 0x00018	/* Extended Device Control - RW */
 #define E1000_MDIC     0x00020	/* MDI Control - RW */
 #define E1000_FCAL     0x00028	/* Flow Control Address Low - RW */
@@ -440,21 +435,24 @@ struct e1000_tx_desc {
 #define E1000_LEDCTL   0x00E00	/* LED Control - RW */
 #define E1000_EXTCNF_CTRL  0x00F00  /* Extended Configuration Control */
 #define E1000_EXTCNF_SIZE  0x00F08  /* Extended Configuration Size */
-#define E1000_PHY_CTRL     0x00F10  /* PHY Control Register in CSR */
+#define E1000_PHY_CTRL     (E1000_MIGHT_BE_REMAPPED | 0x00F10)  /* PHY Control Register in CSR */
 #define E1000_I210_PHY_CTRL     0x00E14  /* PHY Control Register in CSR */
 #define FEXTNVM_SW_CONFIG  0x0001
 #define E1000_PBA      0x01000	/* Packet Buffer Allocation - RW */
 #define E1000_PBS      0x01008  /* Packet Buffer Size */
-#define E1000_EEMNGCTL 0x01010  /* MNG EEprom Control */
+#define E1000_EEMNGCTL (E1000_MIGHT_BE_REMAPPED | 0x01010)  /* MNG EEprom Control */
 #define E1000_I210_EEMNGCTL 0x12030  /* MNG EEprom Control */
 #define E1000_FLASH_UPDATES 1000
 #define E1000_EEARBC   0x01024  /* EEPROM Auto Read Bus Control */
 #define E1000_FLASHT   0x01028  /* FLASH Timer Register */
-#define E1000_EEWR     0x0102C  /* EEPROM Write Register - RW */
+#define E1000_EEWR     (E1000_MIGHT_BE_REMAPPED | 0x0102C)  /* EEPROM Write Register - RW */
 #define E1000_I210_EEWR     0x12018  /* EEPROM Write Register - RW */
 #define E1000_FLSWCTL  0x01030  /* FLASH control register */
+#define E1000_I210_FLSWCTL 0x12048  /* FLASH control register */
 #define E1000_FLSWDATA 0x01034  /* FLASH data register */
+#define E1000_I210_FLSWDATA 0x1204C  /* FLASH data register */
 #define E1000_FLSWCNT  0x01038  /* FLASH Access Counter */
+#define E1000_I210_FLSWCNT  0x12050  /* FLASH Access Counter */
 #define E1000_FLOP     0x0103C  /* FLASH Opcode Register */
 #define E1000_ERT      0x02008  /* Early Rx Threshold - RW */
 #define E1000_FCRTL    0x02160	/* Flow Control Receive Threshold Low - RW */
@@ -693,15 +691,20 @@ struct e1000_tx_desc {
 #define E1000_82542_FFMT     E1000_FFMT
 #define E1000_82542_FFVT     E1000_FFVT
 
+struct e1000_hw;
+
 struct e1000_eeprom_info {
 	e1000_eeprom_type type;
-	uint16_t word_size;
+	size_t word_size;
 	uint16_t opcode_bits;
 	uint16_t address_bits;
 	uint16_t delay_usec;
-	uint16_t page_size;
-	bool use_eerd;
-	bool use_eewr;
+
+	int32_t (*acquire) (struct e1000_hw *hw);
+	void    (*release) (struct e1000_hw *hw);
+
+	int32_t (*read) (struct e1000_hw *hw, uint16_t offset,
+			 uint16_t words, uint16_t *data);
 };
 
 #define E1000_EEPROM_SWDPIN0   0x0001	/* SWDPIN 0 EEPROM Value */
@@ -802,9 +805,12 @@ struct e1000_eeprom_info {
 #define E1000_EECD_SELSHAD   0x00020000 /* Select Shadow RAM */
 #define E1000_EECD_INITSRAM  0x00040000 /* Initialize Shadow RAM */
 #define E1000_EECD_FLUPD     0x00080000 /* Update FLASH */
+#define E1000_EECD_I210_FLASH_DETECTED	(1 << 19) /* FLASH detected */
 #define E1000_EECD_AUPDEN    0x00100000 /* Enable Autonomous FLASH update */
 #define E1000_EECD_SHADV     0x00200000 /* Shadow RAM Data Valid */
 #define E1000_EECD_SEC1VAL   0x00400000 /* Sector One Valid */
+#define E1000_EECD_I210_FLUPD (1 << 23)
+#define E1000_EECD_I210_FLUDONE (1 << 26)
 #define E1000_EECD_SECVAL_SHIFT      22
 #define E1000_STM_OPCODE     0xDB00
 #define E1000_HICR_FW_RESET  0xC0
@@ -1978,6 +1984,11 @@ struct e1000_eeprom_info {
 #define ICH_FLASH_LINEAR_ADDR_MASK 0x00FFFFFF
 
 #define E1000_SW_FW_SYNC 0x05B5C /* Software-Firmware Synchronization - RW */
+#define E1000_PCIEMISC	 0x05BB8
+#define E1000_PCIEMISC_DMA_IDLE		(1 << 9)
+#define E1000_PCIEMISC_RESERVED_MASK    (~(E1000_PCIEMISC_DMA_IDLE))
+#define E1000_PCIEMISC_RESERVED_PATTERN1 0x8A
+#define E1000_PCIEMISC_RESERVED_PATTERN2 (0x122 << 10)
 
 /* SPI EEPROM Status Register */
 #define EEPROM_STATUS_RDY_SPI  0x01
@@ -2090,4 +2101,117 @@ struct e1000_eeprom_info {
 
 #define E1000_CTRL_EXT_INT_TIMER_CLR  0x20000000 /* Clear Interrupt timers
 							after IMS clear */
+
+#define E1000_FLA			0x1201C
+#define E1000_FLA_FL_SIZE_SHIFT		17
+#define E1000_FLA_FL_SIZE_MASK		(0b111 << E1000_FLA_FL_SIZE_SHIFT) /* EEprom Size */
+#define E1000_FLA_FL_SIZE_2MB		0b101
+#define E1000_FLA_FL_SIZE_4MB		0b110
+#define E1000_FLA_FL_SIZE_8MB		0b111
+
+
+#define E1000_FLSWCTL_ADDR(a)		((a) & 0x00FFFFFF)
+#define E1000_FLSWCTL_CMD_READ		0b0000
+#define E1000_FLSWCTL_CMD_WRITE		0b0001
+#define E1000_FLSWCTL_CMD_ERASE_SECTOR	0b0010
+#define E1000_FLSWCTL_CMD_ERASE_DEVICE	0b0011
+#define E1000_FLSWCTL_CMD(c)		((0b1111 & (c)) << 24)
+
+#define E1000_FLSWCTL_CMD_ADDR_MASK	0x0FFFFFFF
+
+#define E1000_FLSWCTL_CMDV		(1 << 28)
+#define E1000_FLSWCTL_FLBUSY		(1 << 29)
+#define E1000_FLSWCTL_DONE		(1 << 30)
+#define E1000_FLSWCTL_GLDONE		(1 << 31)
+
+
+#define E1000_INVM_TEST(n)		(0x122A0 + 4 * (n))
+#define E1000_INVM_DATA_(n)		(0x12120 + 4 * (n))
+#if 0
+#define E1000_INVM_DATA(n)		E1000_INVM_TEST(n)
+#else
+#define E1000_INVM_DATA(n)		E1000_INVM_DATA_(n)
+#endif
+
+#define E1000_INVM_LOCK(n)		(0x12220 + 4 * (n))
+#define E1000_INVM_LOCK_BIT		(1 << 0)
+
+#define E1000_INVM_PROTECT		0x12324
+#define E1000_INVM_PROTECT_CODE		(0xABACADA << 4)
+#define E1000_INVM_PROTECT_BUSY		(1 << 2)
+#define E1000_INVM_PROTECT_WRITE_ERROR	(1 << 1)
+#define E1000_INVM_PROTECT_ALLOW_WRITE	(1 << 0)
+
+#define E1000_INVM_DATA_MAX_N		63
+
+#define E1000_EEMNGCTL_CFG_DONE		(1 << 18)
+
+
+struct e1000_hw {
+	struct eth_device edev;
+
+	struct pci_dev *pdev;
+	struct device_d *dev;
+
+	void __iomem *hw_addr;
+
+	e1000_mac_type mac_type;
+	e1000_phy_type phy_type;
+	uint32_t txd_cmd;
+	e1000_media_type media_type;
+	e1000_fc_type fc;
+	struct e1000_eeprom_info eeprom;
+
+	struct {
+		struct cdev cdev;
+		struct device_d dev;
+		int line;
+	} invm;
+
+	struct mtd_info mtd;
+
+	uint32_t phy_id;
+	uint32_t phy_revision;
+	uint32_t original_fc;
+	uint32_t autoneg_failed;
+	uint16_t autoneg_advertised;
+	uint16_t pci_cmd_word;
+	uint16_t device_id;
+	uint16_t vendor_id;
+	uint8_t revision_id;
+	struct mii_bus miibus;
+
+	struct e1000_tx_desc *tx_base;
+	struct e1000_rx_desc *rx_base;
+	unsigned char *packet;
+
+	int tx_tail;
+	int rx_tail, rx_last;
+};
+
+void e1000_write_reg(struct e1000_hw *hw, uint32_t reg,
+		     uint32_t value);
+uint32_t e1000_read_reg(struct e1000_hw *hw, uint32_t reg);
+uint32_t e1000_read_reg_array(struct e1000_hw *hw,
+			      uint32_t base, uint32_t idx);
+void e1000_write_reg_array(struct e1000_hw *hw, uint32_t base,
+			   uint32_t idx, uint32_t value);
+
+void e1000_write_flush(struct e1000_hw *hw);
+
+int32_t e1000_init_eeprom_params(struct e1000_hw *hw);
+int e1000_validate_eeprom_checksum(struct e1000_hw *hw);
+int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
+		uint16_t words,
+		uint16_t *data);
+
+int32_t e1000_swfw_sync_acquire(struct e1000_hw *hw, uint16_t mask);
+int32_t e1000_swfw_sync_release(struct e1000_hw *hw, uint16_t mask);
+
+int e1000_poll_reg(struct e1000_hw *hw, uint32_t reg,
+		   uint32_t mask, uint32_t value,
+		   uint64_t timeout);
+
+int e1000_register_eeprom(struct e1000_hw *hw);
+
 #endif	/* _E1000_HW_H_ */

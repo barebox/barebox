@@ -59,10 +59,13 @@ enum ds_type {
  * start at 7, and they differ a LOT. Only control and status matter for
  * basic RTC date and time functionality; be careful using them.
  */
-#define DS1307_REG_CONTROL	0x07		/* or ds1338 */
+#define DS1307_REG_CONTROL	0x07		/* or ds1338, 1308 */
 #	define DS1307_BIT_OUT		0x80
+#	define DS1308_BIT_ECLK		0x40
 #	define DS1338_BIT_OSF		0x20
 #	define DS1307_BIT_SQWE		0x10
+#	define DS1308_BIT_LOS		0x08
+#	define DS1308_BIT_BBCLK		0x04
 #	define DS1307_BIT_RS1		0x02
 #	define DS1307_BIT_RS0		0x01
 #define DS1337_REG_CONTROL	0x0e
@@ -106,6 +109,7 @@ struct ds1307 {
 static struct platform_device_id ds1307_id[] = {
 	{ "ds1307", ds_1307 },
 	{ "ds1337", ds_1337 },
+	{ "ds1308", ds_1338 }, /* Difference 1308 to 1338 irrelevant */
 	{ "ds1338", ds_1338 },
 	{ "ds1341", ds_1341 },
 	{ "pt7c4338", ds_1307 },
@@ -287,6 +291,7 @@ static int ds1307_probe(struct device_d *dev)
 	int			tmp;
 	unsigned char		*buf;
 	unsigned long driver_data;
+	const struct device_node *np = dev->device_node;
 
 	ds1307 = xzalloc(sizeof(struct ds1307));
 
@@ -374,6 +379,45 @@ read_rtc:
 		dev_dbg(&client->dev, "read error %d\n", tmp);
 		err = -EIO;
 		goto exit;
+	}
+
+	/* Configure clock using OF data if available */
+	if (IS_ENABLED(CONFIG_OFDEVICE) && np) {
+		u8 control = ds1307->regs[DS1307_REG_CONTROL];
+		u32 rate = 0;
+
+		if (of_property_read_bool(np, "ext-clock-input"))
+			control |= DS1308_BIT_ECLK;
+		else
+			control &= ~DS1308_BIT_ECLK;
+
+		if (of_property_read_bool(np, "ext-clock-output"))
+			control |= DS1307_BIT_SQWE;
+		else
+			control &= ~DS1307_BIT_SQWE;
+
+		if (of_property_read_bool(np, "ext-clock-bb"))
+			control |= DS1308_BIT_BBCLK;
+		else
+			control &= ~DS1308_BIT_BBCLK;
+
+		control &= ~(DS1307_BIT_RS1 | DS1307_BIT_RS0);
+		of_property_read_u32(np, "ext-clock-rate", &rate);
+		switch (rate) {
+			default:
+			case 1:     control |= 0; break;
+			case 50:    control |= 1; break;
+			case 60:    control |= 2; break;
+			case 4096:  control |= 1; break;
+			case 8192:  control |= 2; break;
+			case 32768: control |= 3; break;
+		}
+		dev_dbg(&client->dev, "control reg: 0x%02x\n", control);
+
+		if (ds1307->regs[DS1307_REG_CONTROL] != control) {
+			i2c_smbus_write_byte_data(client, DS1307_REG_CONTROL, control);
+			ds1307->regs[DS1307_REG_CONTROL]  = control;
+		}
 	}
 
 	/*

@@ -126,7 +126,7 @@ int squashfs_read_inode(struct inode *inode, long long ino)
 	struct squashfs_base_inode *sqshb_ino = &squashfs_ino.base;
 	int xattr_id = SQUASHFS_INVALID_XATTR;
 
-	TRACE("Entered squashfs_read_inode: %d\n", ino);
+	TRACE("Entered squashfs_read_inode: %lld\n", ino);
 
 	/*
 	 * Read inode base common to all inode types.

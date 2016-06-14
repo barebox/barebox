@@ -30,11 +30,16 @@
 #include <block.h>
 #include <regulator.h>
 
+/* These codes should be sorted numerically in order of newness.  If the last
+ * nybble is a zero, it will not be printed.  So 0x120 -> "1.2" and 0x123 ->
+ * "1.23", 0x1a0 -> "1.10", 0x1b0 and 0x111 -> "1.11" but sort differently.
+ * It's not possible to create "1.20".  */
+
 /* Firmware revisions for SD cards */
 #define SD_VERSION_SD		0x20000
-#define SD_VERSION_2		(SD_VERSION_SD | 0x200)
 #define SD_VERSION_1_0		(SD_VERSION_SD | 0x100)
 #define SD_VERSION_1_10		(SD_VERSION_SD | 0x1a0)
+#define SD_VERSION_2		(SD_VERSION_SD | 0x200)
 
 /* Firmware revisions for MMC cards */
 #define MMC_VERSION_MMC		0x10000

@@ -117,11 +117,12 @@ static int dos_get_disk_signature(struct param_d *p, void *_priv)
 }
 
 static void dos_extended_partition(struct block_device *blk, struct partition_desc *pd,
-		struct partition *partition)
+		struct partition *partition, uint32_t signature)
 {
 	uint8_t *buf = dma_alloc(SECTOR_SIZE);
 	uint32_t ebr_sector = partition->first_sec;
 	struct partition_entry *table = (struct partition_entry *)&buf[0x1be];
+	unsigned partno = 5;
 
 	while (pd->used_entries < ARRAY_SIZE(pd->parts)) {
 		int rc, i;
@@ -153,7 +154,11 @@ static void dos_extended_partition(struct block_device *blk, struct partition_de
 			get_unaligned_le32(&table[0].partition_start);
 		pd->parts[n].size = get_unaligned_le32(&table[0].partition_size);
 		pd->parts[n].dos_partition_type = table[0].type;
+		if (signature)
+			sprintf(pd->parts[n].partuuid, "%08x-%02u",
+				signature, partno);
 		pd->used_entries++;
+		partno++;
 
 		/* the second entry defines the start of the next ebr if != 0 */
 		if (get_unaligned_le32(&table[1].partition_start))
@@ -231,7 +236,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 	}
 
 	if (extended_partition)
-		dos_extended_partition(blk, pd, extended_partition);
+		dos_extended_partition(blk, pd, extended_partition, signature);
 
 	dsp = xzalloc(sizeof(*dsp));
 	dsp->blk = blk;

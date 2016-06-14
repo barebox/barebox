@@ -949,14 +949,18 @@ out:
 
 static char *mci_version_string(struct mci *mci)
 {
-	static char version[sizeof("x.xx")];
-	unsigned major, minor;
+	static char version[sizeof("xx.xxx")];
+	unsigned major, minor, micro;
+	int n;
 
 	major = (mci->version >> 8) & 0xf;
-	minor = mci->version & 0xff;
+	minor = (mci->version >> 4) & 0xf;
+	micro = mci->version & 0xf;
 
-	/* Shift off last digit of minor if it's 0 */
-	sprintf(version, "%u.%x", major, minor & 0xf ? minor : minor >> 4);
+	n = sprintf(version, "%u.%u", major, minor);
+	/* Omit zero micro versions */
+	if (micro)
+		sprintf(version + n, "%u", micro);
 
 	return version;
 }

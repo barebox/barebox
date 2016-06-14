@@ -357,7 +357,7 @@ static struct phy_driver ksphy_driver[] = {
 	.phy_id_mask	= MICREL_PHY_ID_MASK,
 	.drv.name	= "Micrel KSZ8081/91",
 	.features	= (PHY_BASIC_FEATURES | SUPPORTED_Pause),
-	.config_init	= kszphy_config_init,
+	.config_init	= ksz8021_config_init,
 	.config_aneg	= genphy_config_aneg,
 	.read_status	= genphy_read_status,
 }, {

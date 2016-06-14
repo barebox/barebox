@@ -1787,6 +1787,8 @@ const struct of_device_id of_default_bus_match_table[] = {
 	{
 		.compatible = "simple-bus",
 	}, {
+		.compatible = "simple-mfd",
+	}, {
 		/* sentinel */
 	}
 };

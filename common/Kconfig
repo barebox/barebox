@@ -40,10 +40,6 @@ config HAS_DMA
 config GENERIC_GPIO
 	bool
 
-config BOOTM
-	select UIMAGE
-	bool
-
 config BLOCK
 	bool
 
@@ -545,6 +541,100 @@ config TIMESTAMP
 	  (date and time) of an image is printed by image
 	  commands like bootm or iminfo. This option is
 	  automatically enabled when you select CFG_CMD_DATE .
+
+menuconfig BOOTM
+	select UIMAGE
+	default y if COMMAND_SUPPORT
+	bool "bootm support"
+
+config BOOTM_SHOW_TYPE
+	bool
+	depends on BOOTM
+	prompt "show image information"
+	help
+	  Displays some tags from the uImage:
+
+	  - OS type
+	  - architecture,
+	  - type
+	  - compression method.
+
+config BOOTM_VERBOSE
+	bool
+	prompt "verbose support"
+	depends on BOOTM
+	help
+	  Adds the verbose (-v switch) command line option.
+
+config BOOTM_INITRD
+	bool
+	prompt "initial RAM disk (initrd) support"
+	depends on BOOTM
+	help
+	  Adds support for initial RAM disk and this two command line options:
+
+	  -r INITRD  specify an initrd image
+	  -L ADDR    specify initrd load address
+
+config BOOTM_OFTREE
+	bool
+	depends on BOOTM
+	select OFTREE
+	prompt "device tree (oftree) support"
+	help
+	  Add support to pass a device tree (a.k.a Open Firmware Tree, oftree). Adds
+	  this command line option:
+
+	  -o DTS  specify device tree
+
+config BOOTM_OFTREE_UIMAGE
+	bool
+	prompt "support passing device tree (oftree) uImages"
+	depends on BOOTM_OFTREE
+	help
+	  Support using oftree uImages. Without this only raw oftree
+	  blobs can be used.
+
+config BOOTM_AIMAGE
+	bool
+	prompt "Android image support"
+	depends on BOOTM && ARM
+	help
+	  Support using Android Images.
+
+config BOOTM_FITIMAGE
+	bool
+	prompt "FIT image support"
+	select FITIMAGE
+	depends on BOOTM && ARM
+	help
+	  Support using Flattened Image Tree (FIT) Images. FIT is an image
+	  format introduced by U-Boot. A FIT image contains one or multiple
+	  kernels, device trees and initrds. The FIT image itself is a flattened
+	  device tree binary. Have a look at the u-boot source tree
+	  in the "doc/uImage.FIT" folder for more information:
+	  http://git.denx.de/?p=u-boot.git;a=tree;f=doc/uImage.FIT
+
+config BOOTM_FITIMAGE_SIGNATURE
+	bool
+	prompt "support verifying signed FIT images"
+	depends on BOOTM_FITIMAGE
+	select FITIMAGE_SIGNATURE
+	help
+	  Support verifying signed FIT images. This requires FIT images
+	  as described in:
+	  http://git.denx.de/?p=u-boot.git;a=blob;f=doc/uImage.FIT/signature.txt
+	  Additionally the barebox device tree needs a /signature node with the
+	  public key with which the image has been signed.
+
+config BOOTM_FORCE_SIGNED_IMAGES
+	bool
+	prompt "Force booting of signed images"
+	depends on BOOTM_FITIMAGE_SIGNATURE
+	help
+	  With this option enabled only signed images can be booted, unsigned images
+	  are refused to boot. Effectively this means only FIT images can be booted
+	  since they are the only supported image type that support signing.
 
 config BLSPEC
 	depends on BLOCK

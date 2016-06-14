@@ -21,6 +21,7 @@
 #include <globalvar.h>
 #include <init.h>
 #include <linux/stat.h>
+#include <magicvar.h>
 
 static LIST_HEAD(handler_list);
 
@@ -49,6 +50,7 @@ static struct image_handler *bootm_find_handler(enum filetype filetype,
 }
 
 static int bootm_appendroot;
+static int bootm_verbosity;
 
 void bootm_data_init_defaults(struct bootm_data *data)
 {
@@ -61,6 +63,7 @@ void bootm_data_init_defaults(struct bootm_data *data)
 	data->initrd_file = getenv_nonempty("global.bootm.initrd");
 	data->verify = bootm_get_verify_mode();
 	data->appendroot = bootm_appendroot;
+	data->verbose = bootm_verbosity;
 }
 
 static enum bootm_verify bootm_verify_mode = BOOTM_VERIFY_HASH;
@@ -74,6 +77,7 @@ static const char * const bootm_verify_names[] = {
 #ifndef CONFIG_BOOTM_FORCE_SIGNED_IMAGES
 	[BOOTM_VERIFY_NONE] = "none",
 	[BOOTM_VERIFY_HASH] = "hash",
+	[BOOTM_VERIFY_AVAILABLE] = "available",
 #endif
 	[BOOTM_VERIFY_SIGNATURE] = "signature",
 };
@@ -142,7 +146,7 @@ int bootm_load_os(struct image_data *data, unsigned long load_address)
 
 bool bootm_has_initrd(struct image_data *data)
 {
-	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return false;
 
 	if (data->os_fit && data->os_fit->initrd)
@@ -196,7 +200,7 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 	enum filetype type;
 	int ret;
 
-	if (!IS_ENABLED(CONFIG_CMD_BOOTM_INITRD))
+	if (!IS_ENABLED(CONFIG_BOOTM_INITRD))
 		return -ENOSYS;
 
 	if (!bootm_has_initrd(data))
@@ -274,7 +278,7 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 
 	printf("Loading devicetree from '%s'@%d\n", oftree, num);
 
-	if (!IS_ENABLED(CONFIG_CMD_BOOTM_OFTREE_UIMAGE))
+	if (!IS_ENABLED(CONFIG_BOOTM_OFTREE_UIMAGE))
 		return -EINVAL;
 
 	if (!strcmp(data->os_file, oftree)) {
@@ -651,13 +655,29 @@ static int bootm_init(void)
 	globalvar_add_simple("bootm.image.loadaddr", NULL);
 	globalvar_add_simple("bootm.oftree", NULL);
 	globalvar_add_simple_bool("bootm.appendroot", &bootm_appendroot);
-	if (IS_ENABLED(CONFIG_CMD_BOOTM_INITRD)) {
+	if (IS_ENABLED(CONFIG_BOOTM_INITRD)) {
 		globalvar_add_simple("bootm.initrd", NULL);
 		globalvar_add_simple("bootm.initrd.loadaddr", NULL);
 	}
+
+	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES))
+		bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
+
+	globalvar_add_simple_int("bootm.verbose", &bootm_verbosity, "%u");
+
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
 				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));
 
 	return 0;
 }
 late_initcall(bootm_init);
+
+BAREBOX_MAGICVAR(bootargs, "Linux kernel parameters");
+BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
+BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
+BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
+BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
+BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
+BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
+BAREBOX_MAGICVAR_NAMED(global_bootm_verbose, global.bootm.verify, "bootm default verbosity level (0=quiet)");
+BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");

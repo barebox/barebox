@@ -539,7 +539,7 @@ static struct image_handler aimage_handler = {
 	.filetype = filetype_aimage,
 };
 
-#ifdef CONFIG_CMD_BOOTM_AIMAGE
+#ifdef CONFIG_BOOTM_AIMAGE
 BAREBOX_MAGICVAR(aimage_noverwrite_bootargs, "Disable overwrite of the bootargs with the one present in aimage");
 BAREBOX_MAGICVAR(aimage_noverwrite_tags, "Disable overwrite of the tags addr with the one present in aimage");
 #endif
@@ -571,7 +571,7 @@ static int armlinux_register_image_handler(void)
 	register_image_handler(&uimage_handler);
 	register_image_handler(&rawimage_handler);
 	register_image_handler(&zimage_handler);
-	if (IS_BUILTIN(CONFIG_CMD_BOOTM_AIMAGE)) {
+	if (IS_BUILTIN(CONFIG_BOOTM_AIMAGE)) {
 		register_image_handler(&aimage_handler);
 		binfmt_register(&binfmt_aimage_hook);
 	}

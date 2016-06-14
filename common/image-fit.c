@@ -428,7 +428,10 @@ static int fit_open_image(struct fit_handle *handle, const char *unit, const voi
 	}
 
 	if (handle->verify > BOOTM_VERIFY_NONE) {
-		ret = -EINVAL;
+		if (handle->verify == BOOTM_VERIFY_AVAILABLE)
+			ret = 0;
+		else
+			ret = -EINVAL;
 		for_each_child_of_node(image, hash) {
 			if (handle->verbose)
 				of_print_nodes(hash, 0);
@@ -436,9 +439,12 @@ static int fit_open_image(struct fit_handle *handle, const char *unit, const voi
 			if (ret < 0)
 				return ret;
 		}
+
+		if (ret < 0) {
+			pr_err("image '%s': '%s' does not have hashes\n", unit, desc);
+			return ret;
+		}
 	}
-	if (ret < 0)
-		return ret;
 
 	*outdata = data;
 	*outsize = data_len;
@@ -446,9 +452,46 @@ static int fit_open_image(struct fit_handle *handle, const char *unit, const voi
 	return 0;
 }
 
+static int fit_config_verify_signature(struct fit_handle *handle, struct device_node *conf_node)
+{
+	struct device_node *sig_node;
+	int ret = -EINVAL;
+
+	if (!IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE))
+		return 0;
+
+	switch (handle->verify) {
+	case BOOTM_VERIFY_NONE:
+	case BOOTM_VERIFY_HASH:
+		return 0;
+	case BOOTM_VERIFY_SIGNATURE:
+		ret = -EINVAL;
+		break;
+	case BOOTM_VERIFY_AVAILABLE:
+		ret = 0;
+		break;
+	}
+
+	for_each_child_of_node(conf_node, sig_node) {
+		if (handle->verbose)
+			of_print_nodes(sig_node, 0);
+		ret = fit_verify_signature(sig_node, handle->fit);
+		if (ret < 0)
+			return ret;
+	}
+
+	if (ret < 0) {
+		pr_err("configuration '%s' does not have a signature\n",
+		       conf_node->full_name);
+		return ret;
+	}
+
+	return ret;
+}
+
 static int fit_open_configuration(struct fit_handle *handle, const char *name)
 {
-	struct device_node *conf_node = NULL, *sig_node;
+	struct device_node *conf_node = NULL;
 	const char *unit, *desc = "(no description)";
 	int ret;
 
@@ -471,20 +514,9 @@ static int fit_open_configuration(struct fit_handle *handle, const char *name)
 	of_property_read_string(conf_node, "description", &desc);
 	pr_info("configuration '%s': %s\n", unit, desc);
 
-	if (IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE) &&
-	    handle->verify == BOOTM_VERIFY_SIGNATURE) {
-		ret = -EINVAL;
-		for_each_child_of_node(conf_node, sig_node) {
-			if (handle->verbose)
-				of_print_nodes(sig_node, 0);
-			ret = fit_verify_signature(sig_node, handle->fit);
-			if (ret < 0)
-				return ret;
-		}
-
-		if (ret < 0)
-			return ret;
-	}
+	ret = fit_config_verify_signature(handle, conf_node);
+	if (ret)
+		return ret;
 
 	if (of_property_read_string(conf_node, "kernel", &unit) == 0) {
 		ret = fit_open_image(handle, unit, &handle->kernel, &handle->kernel_size);

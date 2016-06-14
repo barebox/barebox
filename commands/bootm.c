@@ -37,7 +37,6 @@
 #include <rtc.h>
 #include <init.h>
 #include <of.h>
-#include <magicvar.h>
 #include <uncompress.h>
 #include <memory.h>
 #include <filetype.h>
@@ -48,7 +47,7 @@
 
 #define BOOTM_OPTS_COMMON "sca:e:vo:fd"
 
-#ifdef CONFIG_CMD_BOOTM_INITRD
+#ifdef CONFIG_BOOTM_INITRD
 #define BOOTM_OPTS BOOTM_OPTS_COMMON "L:r:"
 #else
 #define BOOTM_OPTS BOOTM_OPTS_COMMON
@@ -71,7 +70,7 @@ static int do_bootm(int argc, char *argv[])
 		case 's':
 			data.verify = BOOTM_VERIFY_SIGNATURE;
 			break;
-#ifdef CONFIG_CMD_BOOTM_INITRD
+#ifdef CONFIG_BOOTM_INITRD
 		case 'L':
 			data.initrd_address = simple_strtoul(optarg, NULL, 0);
 			break;
@@ -126,7 +125,7 @@ BAREBOX_CMD_HELP_OPT ("-c\t",  "hash check image integrity")
 BAREBOX_CMD_HELP_OPT ("-s\t",  "check signature of image")
 BAREBOX_CMD_HELP_OPT ("-d\t",  "dry run: check data, but do not run")
 BAREBOX_CMD_HELP_OPT ("-f\t",  "load images even if type is undetectable")
-#ifdef CONFIG_CMD_BOOTM_INITRD
+#ifdef CONFIG_BOOTM_INITRD
 BAREBOX_CMD_HELP_OPT ("-r INITRD","specify an initrd image")
 BAREBOX_CMD_HELP_OPT ("-L ADDR\t","specify initrd load address")
 #endif
@@ -135,7 +134,7 @@ BAREBOX_CMD_HELP_OPT ("-e OFFS\t","entry point to the image relative to start (0
 #ifdef CONFIG_OFTREE
 BAREBOX_CMD_HELP_OPT ("-o DTB\t","specify open firmware device tree")
 #endif
-#ifdef CONFIG_CMD_BOOTM_VERBOSE
+#ifdef CONFIG_BOOTM_VERBOSE
 BAREBOX_CMD_HELP_OPT ("-v\t","verbose")
 #endif
 BAREBOX_CMD_HELP_END
@@ -144,29 +143,20 @@ BAREBOX_CMD_START(bootm)
 	.cmd		= do_bootm,
 	BAREBOX_CMD_DESC("boot an application image")
 	BAREBOX_CMD_OPTS("[-cdf"
-#ifdef CONFIG_CMD_BOOTM_INITRD
+#ifdef CONFIG_BOOTM_INITRD
 					  "rL"
 #endif
 					  "ae"
 #ifdef CONFIG_OFTREE
 					  "o"
 #endif
-#ifdef CONFIG_CMD_BOOTM_VERBOSE
+#ifdef CONFIG_BOOTM_VERBOSE
 					  "v"
 #endif
 					  "] IMAGE")
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_bootm_help)
 BAREBOX_CMD_END
-
-BAREBOX_MAGICVAR(bootargs, "Linux kernel parameters");
-BAREBOX_MAGICVAR_NAMED(global_bootm_image, global.bootm.image, "bootm default boot image");
-BAREBOX_MAGICVAR_NAMED(global_bootm_image_loadaddr, global.bootm.image.loadaddr, "bootm default boot image loadaddr");
-BAREBOX_MAGICVAR_NAMED(global_bootm_initrd, global.bootm.initrd, "bootm default initrd");
-BAREBOX_MAGICVAR_NAMED(global_bootm_initrd_loadaddr, global.bootm.initrd.loadaddr, "bootm default initrd loadaddr");
-BAREBOX_MAGICVAR_NAMED(global_bootm_oftree, global.bootm.oftree, "bootm default oftree");
-BAREBOX_MAGICVAR_NAMED(global_bootm_verify, global.bootm.verify, "bootm default verify level");
-BAREBOX_MAGICVAR_NAMED(global_bootm_appendroot, global.bootm.appendroot, "Add root= option to Kernel to mount rootfs from the device the Kernel comes from");
 
 static struct binfmt_hook binfmt_uimage_hook = {
 	.type = filetype_uimage,

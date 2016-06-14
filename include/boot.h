@@ -11,6 +11,7 @@ enum bootm_verify {
 	BOOTM_VERIFY_NONE,
 	BOOTM_VERIFY_HASH,
 	BOOTM_VERIFY_SIGNATURE,
+	BOOTM_VERIFY_AVAILABLE,
 };
 
 struct bootm_data {
@@ -97,7 +98,7 @@ struct image_handler {
 
 int register_image_handler(struct image_handler *handle);
 
-#ifdef CONFIG_CMD_BOOTM_VERBOSE
+#ifdef CONFIG_BOOTM_VERBOSE
 static inline int bootm_verbose(struct image_data *data)
 {
 	return data->verbose;

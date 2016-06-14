@@ -18,11 +18,11 @@ void mx28_power_init(int __has_battery, int __use_battery_input,
 		int __use_5v_input);
 void mxs_power_wait_pswitch(void);
 
-extern uint32_t mx28_dram_vals[];
+extern const uint32_t mx28_dram_vals_default[190];
 extern uint32_t mx23_dram_vals[];
 
 void mx23_mem_init(void);
-void mx28_mem_init(void);
+void mx28_mem_init(const uint32_t dram_vals[190]);
 void mxs_mem_setup_cpu_and_hbus(void);
 void mxs_mem_setup_vdda(void);
 void mxs_mem_init_clock(unsigned char divider);

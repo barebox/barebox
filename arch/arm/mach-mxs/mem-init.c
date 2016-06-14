@@ -87,7 +87,7 @@ int mxs_early_reset_block(struct mxs_register_32 *reg)
 	return 0;
 }
 
-uint32_t mx28_dram_vals[] = {
+const uint32_t mx28_dram_vals_default[190] = {
 /*
  * i.MX28 DDR2 at 200MHz
  */
@@ -158,12 +158,12 @@ uint32_t mx23_dram_vals[] = {
 	0x00010000
 };
 
-static void mx28_initialize_dram_values(void)
+static void mx28_initialize_dram_values(const uint32_t dram_vals[190])
 {
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(mx28_dram_vals); i++)
-		writel(mx28_dram_vals[i], IMX_SDRAMC_BASE + (4 * i));
+	for (i = 0; i < 190; i++)
+		writel(dram_vals[i], IMX_SDRAMC_BASE + (4 * i));
 }
 
 static void mx23_initialize_dram_values(void)
@@ -320,7 +320,7 @@ void mx23_mem_init(void)
 
 #define PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2	(0x3 << 16)
 
-void mx28_mem_init(void)
+void mx28_mem_init(const uint32_t dram_vals[190])
 {
 	mxs_early_delay(11000);
 
@@ -338,7 +338,7 @@ void mx28_mem_init(void)
 	/* Clear START bit from DRAM_CTL16 */
 	clrbits_le32(IMX_SDRAMC_BASE + 0x40, 1);
 
-	mx28_initialize_dram_values();
+	mx28_initialize_dram_values(dram_vals);
 
 	/* Clear SREFRESH bit from DRAM_CTL17 */
 	clrbits_le32(IMX_SDRAMC_BASE + 0x44, 1);

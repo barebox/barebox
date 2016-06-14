@@ -96,6 +96,9 @@ int ifup(const char *name, unsigned flags)
 		goto out;
 
 	ip = getenv("ip");
+	if (!ip)
+		ip = "";
+
 	if (!strcmp(ip, "dhcp")) {
 		ret = run_command("dhcp");
 		if (ret)

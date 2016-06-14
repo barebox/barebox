@@ -82,8 +82,13 @@ int libscan_ubi_scan(struct mtd_info *mtd, struct ubi_scan_info **info,
 		}
 
 		ret = mtd_peb_read(mtd, &ech, eb, 0, sizeof(struct ubi_ec_hdr));
-		if (ret < 0)
-			goto out_ec;
+		if (ret < 0 && !mtd_is_bitflip(ret)) {
+			si->corrupted_cnt += 1;
+			si->ec[eb] = EB_CORRUPTED;
+			if (v)
+				printf(": not readable\n");
+			continue;
+		}
 
 		if (be32_to_cpu(ech.magic) != UBI_EC_HDR_MAGIC) {
 			if (mtd_buf_all_ff(&ech, sizeof(struct ubi_ec_hdr))) {

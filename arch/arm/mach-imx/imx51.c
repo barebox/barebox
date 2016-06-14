@@ -83,25 +83,6 @@ int imx51_devices_init(void)
 	return 0;
 }
 
-/*
- * Saves the boot source media into the $bootsource environment variable
- *
- * This information is useful for barebox init scripts as we can then easily
- * use a kernel image stored on the same media that we launch barebox with
- * (for example).
- *
- * imx25 and imx35 can boot into barebox from several media such as
- * nand, nor, mmc/sd cards, serial roms. "mmc" is used to represent several
- * sources as its impossible to distinguish between them.
- *
- * Some sources such as serial roms can themselves have 3 different boot
- * possibilities (i2c1, i2c2 etc). It is assumed that any board will
- * only be using one of these at any one time.
- *
- * Note also that I suspect that the boot source pins are only sampled at
- * power up.
- */
-
 #define DP_MFN_800_DIT 60 /* PL Dither mode */
 
 /*

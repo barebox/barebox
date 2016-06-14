@@ -11,6 +11,8 @@
  */
 
 #include <arm/imx53-mba53.dts>
+#include "imx53-tqma53.dtsi"
+#include "imx53.dtsi"
 
 / {
 	chosen {

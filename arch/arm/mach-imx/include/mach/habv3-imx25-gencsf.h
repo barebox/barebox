@@ -11,7 +11,7 @@ super_root_key CONFIG_HABV3_SRK_PEM
 
 hab [Header]
 hab Version = 3.0
-hab Security Configuration = Engineering
+hab Security Configuration = Production
 hab Hash Algorithm = SHA256
 hab Engine = RTIC
 hab Certificate Format = WTLS

@@ -10,9 +10,6 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include "imx53.dtsi"
-#include <arm/imx53-tqma53.dtsi>
-
 / {
 	chosen {
 		environment-emmc {

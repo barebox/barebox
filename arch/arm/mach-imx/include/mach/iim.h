@@ -81,4 +81,24 @@ static inline int imx25_iim_register_fec_ethaddr(void)
 	return 0;
 }
 
+#define IIM_BANK_MASK_WIDTH	3
+#define IIM_BANK_MASK_SHIFT	0
+#define IIM_BANK(n)		(((n) & ((1 << IIM_BANK_MASK_WIDTH) - 1)) << IIM_BANK_MASK_SHIFT)
+
+#define IIM_BYTE_MASK_WIDTH	5
+#define IIM_BYTE_MASK_SHIFT	IIM_BANK_MASK_WIDTH
+#define IIM_BYTE(n)		((((n) >> 2) & ((1 << IIM_BYTE_MASK_WIDTH) - 1)) << IIM_BYTE_MASK_SHIFT)
+
+#define IIM_BIT_MASK_WIDTH	3
+#define IIM_BIT_MASK_SHIFT	(IIM_BYTE_MASK_SHIFT + IIM_BYTE_MASK_WIDTH)
+#define IIM_BIT(n)		(((n) & ((1 << IIM_BIT_MASK_WIDTH) - 1)) << IIM_BIT_MASK_SHIFT)
+
+#define IIM_WIDTH_MASK_WIDTH	3
+#define IIM_WIDTH_MASK_SHIFT	(IIM_BIT_MASK_SHIFT + IIM_BIT_MASK_WIDTH)
+#define IIM_WIDTH(n)		((((n) - 1) & ((1 << IIM_WIDTH_MASK_WIDTH) - 1)) << IIM_WIDTH_MASK_SHIFT)
+
+int imx_iim_read_field(uint32_t field, unsigned *value);
+int imx_iim_write_field(uint32_t field, unsigned value);
+int imx_iim_permanent_write(int enable);
+
 #endif /* __MACH_IMX_IIM_H */

@@ -34,6 +34,7 @@
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
 #include <mach/clock-imx51_53.h>
+#include <mach/imx25-fusemap.h>
 
 #define DRIVERNAME	"imx_iim"
 #define IIM_NUM_BANKS	8
@@ -64,6 +65,72 @@ struct imx_iim_drvdata {
 };
 
 static struct iim_priv *imx_iim;
+
+static void imx_iim_field_decode(uint32_t field, unsigned *bank, unsigned *byte,
+				 unsigned *bit, unsigned *mask)
+{
+	unsigned width;
+
+	*bank = (field >> IIM_BANK_MASK_SHIFT) & ((1 << IIM_BANK_MASK_WIDTH) - 1);
+	*byte = (field >> IIM_BYTE_MASK_SHIFT) & ((1 << IIM_BYTE_MASK_WIDTH) - 1);
+	*bit = (field >> IIM_BIT_MASK_SHIFT) & ((1 << IIM_BIT_MASK_WIDTH) - 1);
+	width = ((field >> IIM_WIDTH_MASK_SHIFT) & ((1 << IIM_WIDTH_MASK_WIDTH) - 1)) + 1;
+	*mask = (1 << width) - 1;
+}
+
+int imx_iim_read_field(uint32_t field, unsigned *value)
+{
+	unsigned bank, byte, bit, mask;
+	int ret;
+	unsigned v;
+
+	if (!imx_iim)
+		return -ENODEV;
+
+	imx_iim_field_decode(field, &bank, &byte, &bit, &mask);
+
+	dev_dbg(&imx_iim->dev, "read_field: 0x%08x bank %d byte %d bit %d width 0x%x\n",
+		field, bank, byte, bit, mask);
+
+	ret = regmap_read(imx_iim->bank[bank]->map, byte, &v);
+	if (ret < 0)
+		return ret;
+
+	v >>= bit;
+	v &= mask;
+
+	*value = v;
+
+	return 0;
+}
+
+int imx_iim_write_field(uint32_t field, unsigned value)
+{
+	unsigned bank, byte, bit, mask;
+
+	if (!imx_iim)
+		return -ENODEV;
+
+	imx_iim_field_decode(field, &bank, &byte, &bit, &mask);
+
+	value &= mask;
+	value <<= bit;
+
+	dev_dbg(&imx_iim->dev, "write_field: 0x%08x bank %d byte %d bit %d width 0x%x\n",
+	       field, bank, byte, bit, mask);
+
+	return regmap_write(imx_iim->bank[bank]->map, byte, value);
+}
+
+int imx_iim_permanent_write(int enable)
+{
+	if (!imx_iim)
+		return -ENODEV;
+
+	imx_iim->write_enable = enable;
+
+	return 0;
+}
 
 static int imx_iim_fuse_sense(struct iim_bank *bank, unsigned int row)
 {
@@ -204,7 +271,6 @@ static int imx_iim_fuse_blow(struct iim_bank *bank, unsigned offset, unsigned va
 
 	if (IS_ERR(iim->fuse_supply)) {
 		iim->fuse_supply = regulator_get(iim->dev.parent, "vdd-fuse");
-		dev_info(iim->dev.parent, "regul: %p\n", iim->fuse_supply);
 		if (IS_ERR(iim->fuse_supply))
 			return PTR_ERR(iim->fuse_supply);
 	}

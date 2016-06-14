@@ -132,8 +132,10 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 		u32 input_val = be32_to_cpu(*list++);
 		u32 conf_val = be32_to_cpu(*list++);
 
-		if (conf_val & IMX_PAD_SION)
+		if (conf_val & IMX_PAD_SION) {
 			mux_val |= IOMUXC_CONFIG_SION;
+			conf_val &= ~IMX_PAD_SION;
+		}
 
 		if (conf_val & IMX_DT_NO_PAD_CTL)
 			conf_reg = 0;

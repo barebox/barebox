@@ -38,7 +38,7 @@ static ssize_t ubi_volume_cdev_read(struct cdev *cdev, void *buf, size_t size,
 
 		err = ubi_eba_read_leb(ubi, vol, lnum, buf, off, len, 0);
 		if (err) {
-			ubi_err("read error: %s", strerror(-err));
+			ubi_err(ubi, "read error: %s", strerror(-err));
 			break;
 		}
 		off += len;
@@ -68,14 +68,14 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 	if (!priv->written) {
 		err = ubi_start_update(ubi, vol, vol->used_bytes);
 		if (err < 0) {
-			ubi_err("Cannot start volume update");
+			ubi_err(ubi, "Cannot start volume update");
 			return err;
 		}
 	}
 
 	err = ubi_more_update_data(ubi, vol, buf, size);
 	if (err < 0) {
-		ubi_err("Couldnt or partially wrote data");
+		ubi_err(ubi, "Couldnt or partially wrote data");
 		return err;
 	}
 
@@ -117,7 +117,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 			kfree(buf);
 
 			if (err < 0) {
-				ubi_err("Couldnt or partially wrote data");
+				ubi_err(ubi, "Couldnt or partially wrote data");
 				return err;
 			}
 		}
@@ -128,12 +128,12 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 
 		err = ubi_check_volume(ubi, vol->vol_id);
 		if (err < 0) {
-			ubi_err("ubi volume check failed: %s", strerror(err));
+			ubi_err(ubi, "ubi volume check failed: %s", strerror(err));
 			return err;
 		}
 
 		if (err) {
-			ubi_warn("volume %d on UBI device %d is corrupted",
+			ubi_warn(ubi, "volume %d on UBI device %d is corrupted",
 					vol->vol_id, ubi->ubi_num);
 			vol->corrupted = 1;
 		}
@@ -180,7 +180,7 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 	cdev->priv = priv;
 	cdev->size = vol->used_bytes;
 	cdev->dev = &vol->dev;
-	ubi_msg("registering %s as /dev/%s", vol->name, cdev->name);
+	ubi_msg(ubi, "registering %s as /dev/%s", vol->name, cdev->name);
 	ret = devfs_create(cdev);
 	if (ret) {
 		kfree(priv);
@@ -243,7 +243,7 @@ int ubi_cdev_add(struct ubi_device *ubi)
 	cdev->priv = ubi;
 	cdev->size = 0;
 
-	ubi_msg("registering /dev/%s", cdev->name);
+	ubi_msg(ubi, "registering /dev/%s", cdev->name);
 	ret = devfs_create(cdev);
 	if (ret)
 		kfree(cdev->name);
@@ -255,7 +255,7 @@ void ubi_cdev_remove(struct ubi_device *ubi)
 {
 	struct cdev *cdev = &ubi->cdev;
 
-	ubi_msg("removing %s", cdev->name);
+	ubi_msg(ubi, "removing %s", cdev->name);
 
 	devfs_remove(cdev);
 	kfree(cdev->name);

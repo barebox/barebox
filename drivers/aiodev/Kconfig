@@ -1,0 +1,22 @@
+#
+# Misc strange devices
+#
+menuconfig AIODEV
+	bool "Analog I/O drivers"
+
+if AIODEV
+
+config IMX_THERMAL
+       tristate "Temperature sensor driver for Freescale i.MX SoCs"
+       select MFD_SYSCON
+       help
+         Support for Temperature Monitor (TEMPMON) found on Freescale
+         i.MX SoCs.
+
+config LM75
+	tristate "LM75 driver"
+	depends on I2C
+	help
+	  Support for LM75 and similar devices
+
+endif

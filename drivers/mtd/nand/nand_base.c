@@ -1185,7 +1185,7 @@ static __maybe_unused int nand_read_page_swecc(struct mtd_info *mtd,
  */
 static __maybe_unused int nand_read_subpage(struct mtd_info *mtd,
 		struct nand_chip *chip, uint32_t data_offs, uint32_t readlen,
-		uint8_t *bufpoi)
+		uint8_t *bufpoi, int page)
 {
 	int start_step, end_step, num_steps;
 	uint32_t *eccpos = chip->ecc.layout->eccpos;
@@ -1540,7 +1540,7 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
 			else if (!aligned && NAND_HAS_SUBPAGE_READ(chip) &&
 				 !oob)
 				ret = chip->ecc.read_subpage(mtd, chip,
-							col, bytes, bufpoi);
+							col, bytes, bufpoi, page);
 			else
 				ret = chip->ecc.read_page(mtd, chip, bufpoi,
 							  oob_required, page);

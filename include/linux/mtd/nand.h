@@ -169,7 +169,7 @@ typedef enum {
 
 /* Device supports subpage reads */
 /* Disabled in barebox for smaller binary sizes */
-#define NAND_SUBPAGE_READ	(__BAREBOX__ ? 0x0 : 0x00001000)
+#define NAND_SUBPAGE_READ	(0x00001000)
 
 /* Options valid for Samsung large page devices */
 #define NAND_SAMSUNG_LP_OPTIONS NAND_CACHEPRG
@@ -352,7 +352,7 @@ struct nand_ecc_ctrl {
 	int (*read_page)(struct mtd_info *mtd, struct nand_chip *chip,
 			uint8_t *buf, int oob_required, int page);
 	int (*read_subpage)(struct mtd_info *mtd, struct nand_chip *chip,
-			uint32_t offs, uint32_t len, uint8_t *buf);
+			uint32_t offs, uint32_t len, uint8_t *buf, int page);
 	int (*write_subpage)(struct mtd_info *mtd, struct nand_chip *chip,
 			uint32_t offset, uint32_t data_len,
 			const uint8_t *data_buf, int oob_required);

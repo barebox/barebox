@@ -34,7 +34,6 @@
 #include "mmu-early.h"
 
 unsigned long arm_stack_top;
-static unsigned long arm_head_bottom;
 static unsigned long arm_barebox_size;
 static void *barebox_boarddata;
 static unsigned long barebox_boarddata_size;
@@ -162,7 +161,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	arm_stack_top = endmem;
 	arm_barebox_size = barebox_size;
-	arm_head_bottom = arm_mem_barebox_image(membase, endmem,
+	malloc_end = arm_mem_barebox_image(membase, endmem,
 						arm_barebox_size);
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
@@ -201,11 +200,9 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 			barebox_boarddata = memcpy((void *)mem, boarddata,
 						   totalsize);
 			barebox_boarddata_size = totalsize;
-			arm_head_bottom = mem;
+			malloc_end = mem;
 		}
 	}
-
-	malloc_end = arm_head_bottom;
 
 	/*
 	 * Maximum malloc space is the Kconfig value if given

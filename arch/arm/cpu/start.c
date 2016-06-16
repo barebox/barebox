@@ -73,6 +73,10 @@ void *barebox_arm_boot_dtb(void)
 	void *data;
 	int ret;
 	struct barebox_arm_boarddata_compressed_dtb *compressed_dtb;
+	static void *boot_dtb;
+
+	if (boot_dtb)
+		return boot_dtb;
 
 	if (barebox_boarddata && blob_is_fdt(barebox_boarddata)) {
 		pr_debug("%s: using barebox_boarddata\n", __func__);
@@ -101,9 +105,9 @@ void *barebox_arm_boot_dtb(void)
 		return NULL;
 	}
 
-	barebox_boarddata = dtb;
+	boot_dtb = dtb;
 
-	return barebox_boarddata;
+	return boot_dtb;
 }
 
 static inline unsigned long arm_mem_boarddata(unsigned long membase,

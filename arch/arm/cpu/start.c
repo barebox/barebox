@@ -37,6 +37,7 @@ unsigned long arm_stack_top;
 static unsigned long arm_head_bottom;
 static unsigned long arm_barebox_size;
 static void *barebox_boarddata;
+static unsigned long barebox_boarddata_size;
 
 static bool blob_is_fdt(const void *blob)
 {
@@ -130,11 +131,9 @@ EXPORT_SYMBOL_GPL(arm_mem_ramoops_get);
 
 static int barebox_memory_areas_init(void)
 {
-	unsigned long start = arm_head_bottom;
-	unsigned long size = arm_mem_barebox_image(0, arm_stack_top,
-						   arm_barebox_size) -
-			     arm_head_bottom;
-	request_sdram_region("board data", start, size);
+	if(barebox_boarddata)
+		request_sdram_region("board data", (unsigned long)barebox_boarddata,
+				     barebox_boarddata_size);
 
 	return 0;
 }
@@ -201,6 +200,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 				 name, mem);
 			barebox_boarddata = memcpy((void *)mem, boarddata,
 						   totalsize);
+			barebox_boarddata_size = totalsize;
 			arm_head_bottom = mem;
 		}
 	}

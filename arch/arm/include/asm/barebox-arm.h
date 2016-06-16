@@ -143,9 +143,13 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
 		endmem -= size;
 		endmem &= ~(SZ_1M - 1);
+		return endmem;
+	} else {
+		if (TEXT_BASE >= membase && TEXT_BASE < endmem)
+			return TEXT_BASE;
+		else
+			return endmem;
 	}
-
-	return endmem;
 }
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\

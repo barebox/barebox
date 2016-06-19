@@ -230,8 +230,6 @@ config BAREBOX_MAX_PBL_SIZE
 config BAREBOX_MAX_BARE_INIT_SIZE
 	prompt "Maximum bare_init size"
 	hex
-	range 0x0 BAREBOX_MAX_PBL_SIZE if LOAD_PBL_SRAM
-	default BAREBOX_MAX_PBL_SIZE if LOAD_PBL_SRAM
 	default 0xffffffff
 	help
 	  Define the maximum size of bare_init

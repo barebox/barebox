@@ -33,7 +33,6 @@
 #include <linux/math64.h>
 #include <linux/log2.h>
 #include <linux/clk.h>
-#include <mach/clock.h>
 #include <mach/imx6-anadig.h>
 #include <io.h>
 #include <aiodev.h>

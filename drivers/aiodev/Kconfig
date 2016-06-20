@@ -8,6 +8,7 @@ if AIODEV
 
 config IMX_THERMAL
        tristate "Temperature sensor driver for Freescale i.MX SoCs"
+       depends on ARCH_IMX6
        select MFD_SYSCON
        help
          Support for Temperature Monitor (TEMPMON) found on Freescale

@@ -1392,13 +1392,15 @@ static int mxs_nand_probe(struct device_d *dev)
 	nand->ecc.size		= 512;
 	nand->ecc.strength	= 8;
 
-	nand->ecc.read_subpage = gpmi_ecc_read_subpage;
-	nand->options |= NAND_SUBPAGE_READ;
-
 	/* first scan to find the device and get the page size */
 	err = nand_scan_ident(mtd, 4, NULL);
 	if (err)
 		goto err2;
+
+	if ((13 * mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize) % 8) == 0) {
+		nand->ecc.read_subpage = gpmi_ecc_read_subpage;
+		nand->options |= NAND_SUBPAGE_READ;
+	}
 
 	nand->options |= NAND_NO_SUBPAGE_WRITE;
 

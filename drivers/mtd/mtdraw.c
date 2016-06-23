@@ -281,7 +281,7 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 {
 	return 0;
 }
-static ssize_t mtdraw_erase(struct cdev *cdev, size_t count, loff_t offset)
+static ssize_t mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)
 {
 	return 0;
 }

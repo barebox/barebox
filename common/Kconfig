@@ -830,6 +830,7 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	bool
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
+	select BOOTM
 	select COMMAND_SUPPORT
 	select CMD_GETOPT
 	select GLOB

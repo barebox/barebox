@@ -1,1 +1,2 @@
 module.lds
+barebox_default_env*

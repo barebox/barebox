@@ -515,23 +515,16 @@ static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
 static int imx_spi_dt_probe(struct imx_spi *imx)
 {
 	struct device_node *node = imx->master.dev->device_node;
-	int ret, i;
-	u32 num_cs;
+	int i;
 
 	if (!node)
 		return -ENODEV;
 
-	ret = of_property_read_u32(node, "fsl,spi-num-chipselects", &num_cs);
-	if (ret)
-		return ret;
+	imx->master.num_chipselect = of_gpio_named_count(node, "cs-gpios");
+	imx->cs_array = xzalloc(sizeof(u32) * imx->master.num_chipselect);
 
-	imx->master.num_chipselect = num_cs;
-	imx->cs_array = xzalloc(sizeof(u32) * num_cs);
-
-	for (i = 0; i < num_cs; i++) {
-		int cs_gpio = of_get_named_gpio(node, "cs-gpios", i);
-		imx->cs_array[i] = cs_gpio;
-	}
+	for (i = 0; i < imx->master.num_chipselect; i++)
+		imx->cs_array[i] = of_get_named_gpio(node, "cs-gpios", i);
 
 	return 0;
 }

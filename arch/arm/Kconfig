@@ -313,6 +313,16 @@ config ARM_BOARD_APPEND_ATAG
 	  This option is purely to start some vendor provided kernels.
 	  ** DO NOT USE FOR YOUR OWN DESIGNS! **
 
+config ARM_BOARD_PREPEND_ATAG
+	bool "Prepend the board specific ATAGs"
+	depends on ARM_BOARD_APPEND_ATAG
+	help
+	  Choose this option if your kernel crops the passed ATAG list e.g. at
+	  ATAG_MEM, also cropping off the board specific ATAGs. This option
+	  will pass all board specific ATAGs in front of all other ATAGs.
+	  This option is purely to start some vendor provided kernels.
+	  ** DO NOT USE FOR YOUR OWN DESIGNS! **
+
 endmenu
 
 menu "ARM specific settings"

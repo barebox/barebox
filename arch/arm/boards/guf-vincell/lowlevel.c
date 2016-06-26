@@ -129,7 +129,7 @@ static noinline void imx53_guf_vincell_init(void *fdt)
 	u32 r;
 
 	imx5_cpu_lowlevel_init();
-	arm_setup_stack(0xf8020000 - 8);
+	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
 	writel(0x0088494c, ccm + MX5_CCM_CBCDR);
 	writel(0x02b12f0a, ccm + MX5_CCM_CSCMR2);

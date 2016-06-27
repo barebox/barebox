@@ -13,24 +13,41 @@
 
 static int do_ubimkvol(int argc, char *argv[])
 {
+	int opt;
 	struct ubi_mkvol_req req;
 	int fd, ret;
 	uint64_t size;
 
-	if (argc != 4)
+	req.vol_type = UBI_DYNAMIC_VOLUME;
+
+	while ((opt = getopt(argc, argv, "t:")) > 0) {
+		switch (opt) {
+		case 't':
+			if (!strcmp(optarg, "dynamic"))
+				req.vol_type = UBI_DYNAMIC_VOLUME;
+			else if (!strcmp(optarg, "static"))
+				req.vol_type = UBI_STATIC_VOLUME;
+			else
+				return COMMAND_ERROR_USAGE;
+			break;
+		default:
+			return COMMAND_ERROR_USAGE;
+		}
+	}
+
+	if (argc - optind != 3)
 		return COMMAND_ERROR_USAGE;
 
-	size = strtoull_suffix(argv[3], NULL, 0);
-	req.name_len = min_t(int, strlen(argv[2]), UBI_VOL_NAME_MAX);
-	strncpy(req.name, argv[2], req.name_len);
+	size = strtoull_suffix(argv[optind+2], NULL, 0);
+	req.name_len = min_t(int, strlen(argv[optind+1]), UBI_VOL_NAME_MAX);
+	strncpy(req.name, argv[optind+1], req.name_len);
 	req.name[req.name_len] = 0;
 
-	req.vol_type = UBI_DYNAMIC_VOLUME;
 	req.bytes = size;
 	req.vol_id = UBI_VOL_NUM_AUTO;
 	req.alignment = 1;
 
-	fd = open(argv[1], O_WRONLY);
+	fd = open(argv[optind], O_WRONLY);
 	if (fd < 0) {
 		perror("open");
 		return 1;
@@ -48,12 +65,13 @@ static int do_ubimkvol(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(ubimkvol)
 BAREBOX_CMD_HELP_TEXT("Create an UBI volume on UBIDEV with NAME and SIZE.")
 BAREBOX_CMD_HELP_TEXT("If SIZE is 0 all available space is used for the volume.")
+BAREBOX_CMD_HELP_OPT("-t <static|dynamic>",  "volume type, default is dynamic")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(ubimkvol)
 	.cmd		= do_ubimkvol,
 	BAREBOX_CMD_DESC("create an UBI volume")
-	BAREBOX_CMD_OPTS("UBIDEV NAME SIZE")
+	BAREBOX_CMD_OPTS("[-t] UBIDEV NAME SIZE")
 	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubimkvol_help)
 BAREBOX_CMD_END

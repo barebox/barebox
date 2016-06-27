@@ -65,7 +65,10 @@ static ssize_t ubi_volume_cdev_write(struct cdev* cdev, const void *buf,
 	struct ubi_device *ubi = priv->ubi;
 	int err;
 
-	if (!priv->written) {
+	if (!priv->written && !vol->updating) {
+		if (vol->vol_type == UBI_STATIC_VOLUME)
+			return -EROFS;
+
 		err = ubi_start_update(ubi, vol, vol->used_bytes);
 		if (err < 0) {
 			ubi_err(ubi, "Cannot start volume update");
@@ -104,7 +107,7 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 		int remaining = vol->usable_leb_size -
 				(priv->written % vol->usable_leb_size);
 
-		if (remaining) {
+		if (remaining && vol->vol_type == UBI_DYNAMIC_VOLUME) {
 			void *buf = kmalloc(remaining, GFP_KERNEL);
 
 			if (!buf)
@@ -121,6 +124,9 @@ static int ubi_volume_cdev_close(struct cdev *cdev)
 				return err;
 			}
 		}
+
+		if (vol->vol_type == UBI_STATIC_VOLUME)
+			cdev->size = priv->written;
 
 		err = ubi_finish_update(ubi, vol);
 		if (err)
@@ -156,12 +162,54 @@ static loff_t ubi_volume_cdev_lseek(struct cdev *cdev, loff_t ofs)
 	return ofs;
 }
 
+static int ubi_volume_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
+{
+	struct ubi_volume_cdev_priv *priv = cdev->priv;
+	struct ubi_device *ubi = priv->ubi;
+	struct ubi_volume *vol = priv->vol;
+	int err = 0;
+
+	switch (cmd) {
+	/* Volume update command */
+	case UBI_IOCVOLUP:
+	{
+		int64_t bytes, rsvd_bytes;
+
+		err = copy_from_user(&bytes, buf, sizeof(int64_t));
+		if (err) {
+			err = -EFAULT;
+			break;
+		}
+
+		rsvd_bytes = (long long)vol->reserved_pebs *
+				ubi->leb_size - vol->data_pad;
+
+		if (bytes < 0 || bytes > rsvd_bytes) {
+			err = -EINVAL;
+			break;
+		}
+
+		err = ubi_start_update(ubi, vol, bytes);
+		if (bytes == 0)
+			ubi_volume_notify(ubi, vol, UBI_VOLUME_UPDATED);
+
+		break;
+	}
+
+	default:
+		err = -ENOTTY;
+		break;
+	}
+	return err;
+}
+
 static struct file_operations ubi_volume_fops = {
 	.open	= ubi_volume_cdev_open,
 	.close	= ubi_volume_cdev_close,
 	.read   = ubi_volume_cdev_read,
 	.write  = ubi_volume_cdev_write,
 	.lseek	= ubi_volume_cdev_lseek,
+	.ioctl  = ubi_volume_cdev_ioctl,
 };
 
 int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
@@ -179,6 +227,10 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 	cdev->name = basprintf("%s.%s", ubi->cdev.name, vol->name);
 	cdev->priv = priv;
 	cdev->size = vol->used_bytes;
+
+	if (vol->vol_type == UBI_STATIC_VOLUME)
+		cdev->flags = DEVFS_IS_CHARACTER_DEV;
+
 	cdev->dev = &vol->dev;
 	ubi_msg(ubi, "registering %s as /dev/%s", vol->name, cdev->name);
 	ret = devfs_create(cdev);

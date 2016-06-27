@@ -729,26 +729,6 @@ static int dm9k_init_dev(struct eth_device *edev)
 	return 0;
 }
 
-static int dm9000_setup_buswidth(struct device_d *dev, struct dm9k *priv, uint32_t width)
-{
-	switch (width) {
-	case 1:
-		priv->buswidth = IORESOURCE_MEM_8BIT;
-		break;
-	case 2:
-		priv->buswidth = IORESOURCE_MEM_16BIT;
-		break;
-	case 4:
-		priv->buswidth = IORESOURCE_MEM_32BIT;
-		break;
-	default:
-		dev_err(dev, "Wrong io resource size\n");
-		return -EINVAL;
-	}
-
-	return 0;
-}
-
 static int dm9000_parse_dt(struct device_d *dev, struct dm9k *priv)
 {
 	struct device_node *np = dev->device_node;
@@ -768,19 +748,33 @@ static int dm9000_parse_dt(struct device_d *dev, struct dm9k *priv)
 		prop = 1;
 	}
 
-	return dm9000_setup_buswidth(dev, priv, prop);
+	switch (prop) {
+	case 1:
+		priv->buswidth = IORESOURCE_MEM_8BIT;
+		break;
+	case 2:
+		priv->buswidth = IORESOURCE_MEM_16BIT;
+		break;
+	case 4:
+		priv->buswidth = IORESOURCE_MEM_32BIT;
+		break;
+	default:
+		dev_err(dev, "Wrong io resource size\n");
+		return -EINVAL;
+	}
+
+	return 0;
 }
 
 static int dm9000_parse_pdata(struct device_d *dev, struct dm9k *priv)
 {
 	struct dm9000_platform_data *pdata = dev->platform_data;
-	uint32_t width;
 
 	priv->srom = pdata->srom;
 
-	width = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
+	priv->buswidth = dev->resource[0].flags & IORESOURCE_MEM_TYPE_MASK;
 
-	return dm9000_setup_buswidth(dev, priv, width);
+	return 0;
 }
 
 static int dm9k_probe(struct device_d *dev)

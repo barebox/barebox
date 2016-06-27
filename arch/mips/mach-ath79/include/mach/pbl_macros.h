@@ -274,4 +274,67 @@ normal_path:
 	.set	pop
 .endm
 
+.macro	pbl_ar9331_wmac_enable
+	.set push
+	.set noreorder
+
+	/* These three WLAN_RESET will avoid original issue */
+	li      t3, 0x03
+1:
+	li      t0, CKSEG1ADDR(AR71XX_RESET_BASE)
+	lw      t1, AR933X_RESET_REG_RESET_MODULE(t0)
+	ori     t1, t1, 0x0800
+	sw      t1, AR933X_RESET_REG_RESET_MODULE(t0)
+	nop
+	lw      t1, AR933X_RESET_REG_RESET_MODULE(t0)
+	li      t2, 0xfffff7ff
+	and     t1, t1, t2
+	sw      t1, AR933X_RESET_REG_RESET_MODULE(t0)
+	nop
+	addi    t3, t3, -1
+	bnez    t3, 1b
+	nop
+
+	li      t2, 0x20
+2:
+	beqz    t2, 1b
+	nop
+	addi    t2, t2, -1
+	lw      t5, AR933X_RESET_REG_BOOTSTRAP(t0)
+	andi    t1, t5, 0x10
+	bnez    t1, 2b
+	nop
+
+	li      t1, 0x02110E
+	sw      t1, AR933X_RESET_REG_BOOTSTRAP(t0)
+	nop
+
+	/* RTC Force Wake */
+	li      t0, CKSEG1ADDR(AR71XX_RTC_BASE)
+	li      t1, 0x03
+	sw      t1, AR933X_RTC_REG_FORCE_WAKE(t0)
+	nop
+	nop
+
+	/* RTC Reset */
+	li      t1, 0x00
+	sw      t1, AR933X_RTC_REG_RESET(t0)
+	nop
+	nop
+
+	li      t1, 0x01
+	sw      t1, AR933X_RTC_REG_RESET(t0)
+	nop
+	nop
+
+	/* Wait for RTC in on state */
+1:
+	lw      t1, AR933X_RTC_REG_STATUS(t0)
+	andi    t1, t1, 0x02
+	beqz    t1, 1b
+	nop
+
+	.set	pop
+.endm
+
 #endif /* __ASM_MACH_ATH79_PBL_MACROS_H */

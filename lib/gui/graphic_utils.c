@@ -336,3 +336,32 @@ void gu_screen_blit(struct screen *sc)
 	if (info->screen_base_shadow)
 		memcpy(info->screen_base, info->screen_base_shadow, sc->fbsize);
 }
+
+void gu_fill_rectangle(struct screen *sc,
+		       int x1, int y1, int x2, int y2,
+		       u8 r, u8 g, u8 b, u8 a)
+{
+	int y;
+	void *buf = gui_screen_render_buffer(sc);
+
+	x1 = max(0, x1);
+	y1 = max(0, y1);
+
+	x2 = (x2 < 0) ? sc->info->xres - 1 : x2;
+	y2 = (y2 < 0) ? sc->info->yres - 1 : y2;
+
+	if (x2 < x1)
+		swap(x1, x2);
+	if (y2 < y1)
+		swap(y1, y2);
+
+	for(y = y1; y <= y2; y++) {
+		int x;
+		unsigned char *pixel = buf + y * sc->info->line_length +
+			x1 * (sc->info->bits_per_pixel / 8);
+		for(x = x1; x <= x2; x++) {
+			gu_set_rgba_pixel(sc->info, pixel, r, g, b, a);
+			pixel += sc->info->bits_per_pixel / 8;
+		}
+	}
+}

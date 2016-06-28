@@ -28,4 +28,7 @@ void gu_invert_area(struct fb_info *info, void *buf, int startx, int starty, int
 void gu_screen_blit_area(struct screen *sc, int startx, int starty, int width,
 		int height);
 
+void gu_fill_rectangle(struct screen *sc,
+		       int x1, int y1, int x2, int y2,
+		       u8 r, u8 g, u8 b, u8 a);
 #endif /* __GRAPHIC_UTILS_H__ */

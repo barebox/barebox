@@ -380,6 +380,7 @@ static int at24_probe(struct device_d *dev)
 	int err;
 	unsigned i, num_addresses;
 	char *devname;
+	const char *alias;
 
 	if (dev->platform_data) {
 		chip = *(struct at24_platform_data *)dev->platform_data;
@@ -431,8 +432,10 @@ static int at24_probe(struct device_d *dev)
 	at24->chip = chip;
 	at24->num_addresses = num_addresses;
 
-	devname = of_alias_get(dev->device_node);
-	if (!devname) {
+	alias = of_alias_get(dev->device_node);
+	if (alias) {
+		devname = xstrdup(alias);
+	} else {
 		err = cdev_find_free_index("eeprom");
 		if (err < 0) {
 			dev_err(&client->dev, "no index found to name device\n");

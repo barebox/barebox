@@ -47,6 +47,8 @@ coredevice_initcall(physom_coredevice_init);
 static struct omap_barebox_part physom_barebox_part = {
 	.nand_offset = SZ_512K,
 	.nand_size = SZ_512K,
+	.nand_bkup_offset = SZ_1M,
+	.nand_bkup_size = SZ_512K,
 	.nor_offset = SZ_128K,
 	.nor_size = SZ_512K,
 };

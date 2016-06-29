@@ -24,6 +24,8 @@ struct omap_barebox_part *barebox_part;
 static struct omap_barebox_part default_part = {
 	.nand_offset = SZ_128K,
 	.nand_size = SZ_1M,
+	.nand_bkup_offset = 0,
+	.nand_bkup_size = 0,
 	.nor_offset = SZ_128K,
 	.nor_size = SZ_1M,
 };
@@ -99,11 +101,24 @@ static void *read_mtd_barebox(const char *partition)
 
 static void *omap_xload_boot_nand(struct omap_barebox_part *part)
 {
+	void *to;
+
 	devfs_add_partition("nand0", part->nand_offset, part->nand_size,
 					DEVFS_PARTITION_FIXED, "x");
 	dev_add_bb_dev("x", "bbx");
 
-	return read_mtd_barebox("bbx");
+	to = read_mtd_barebox("bbx");
+	if (to == NULL && part->nand_bkup_size != 0) {
+		printf("trying to load image from backup partition.\n");
+		devfs_add_partition("nand0", part->nand_bkup_offset,
+				part->nand_bkup_size,
+				DEVFS_PARTITION_FIXED, "x_bkup");
+		dev_add_bb_dev("x_bkup", "bbx_bkup");
+
+		to = read_mtd_barebox("bbx_bkup");
+	}
+
+	return to;
 }
 
 static void *omap_xload_boot_mmc(void)

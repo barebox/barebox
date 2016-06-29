@@ -62,6 +62,7 @@ static char *xloadslots[] = {
 
 static char *nandslots[] = {
 	"/dev/nand0.barebox.bb",
+	"/dev/nand0.barebox_backup.bb",
 };
 
 static int physom_devices_init(void)

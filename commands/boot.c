@@ -52,9 +52,12 @@ static int boot_script(char *path)
 		goto out;
 	}
 
-	data.verbose = verbose;
-	data.dryrun = dryrun;
 	bootm_data_init_defaults(&data);
+
+	if (verbose)
+		data.verbose = verbose;
+	if (dryrun)
+		data.dryrun = dryrun;
 
 	ret = bootm_boot(&data);
 	if (ret)

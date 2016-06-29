@@ -60,6 +60,10 @@ static char *xloadslots[] = {
 	"/dev/nand0.xload_backup3.bb"
 };
 
+static char *nandslots[] = {
+	"/dev/nand0.barebox.bb",
+};
+
 static int physom_devices_init(void)
 {
 	if (!of_machine_is_compatible("phytec,am335x-som"))
@@ -105,7 +109,8 @@ static int physom_devices_init(void)
 	am33xx_bbu_spi_nor_register_handler("spi", "/dev/m25p0.barebox");
 	am33xx_bbu_nand_xloadslots_register_handler("MLO.nand",
 		xloadslots, ARRAY_SIZE(xloadslots));
-	am33xx_bbu_nand_register_handler("nand", "/dev/nand0.barebox.bb");
+	am33xx_bbu_nand_slots_register_handler("nand", nandslots,
+				ARRAY_SIZE(nandslots));
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();

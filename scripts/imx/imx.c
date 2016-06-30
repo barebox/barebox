@@ -327,7 +327,7 @@ static int do_super_root_key(struct config_data *data, int argc, char *argv[])
 		return -EINVAL;
 	}
 
-	if (data->cpu_type != 35 && data->cpu_type != 25) {
+	if (data->header_version != 1) {
 		fprintf(stderr, "Warning: The super_root_key command is meaningless "
 			"on non HABv3 based SoCs\n");
 		return 0;

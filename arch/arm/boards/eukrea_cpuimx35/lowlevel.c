@@ -30,11 +30,6 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
 
-/* Assuming 24MHz input clock */
-#define MPCTL_PARAM_399     (IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
-#define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
-#define PPCTL_PARAM_300     (IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
-
 void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r, s;

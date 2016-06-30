@@ -40,11 +40,6 @@
 	ldr		r1,	=val;	\
 	strb		r1,	[r0];
 
-/* Assuming 24MHz input clock */
-#define MPCTL_PARAM_399	(IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
-#define MPCTL_PARAM_532	((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
-#define PPCTL_PARAM_300	(IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
-
 	.section ".text_bare_init","ax"
 
 ARM_PPMRR:		.word	0x40000015

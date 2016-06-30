@@ -289,11 +289,12 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 	/* configure clock-gates */
 	r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
-	r0 |= 0x00300000;
+	r0 |= 0x3 << MX35_CCM_CGR0_EPIT1_SHIFT;
 	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
 
 	r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
-	r0 |= 0x00000c03;
+	r0 |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
+	r0 |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT;
 	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 
 	/* Configure SDRAM */

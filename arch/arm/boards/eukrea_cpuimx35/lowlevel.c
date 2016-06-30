@@ -87,17 +87,18 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	writel(0x00001000, ccm_base + MX35_CCM_PDR0);
 
 	r = readl(ccm_base + MX35_CCM_CGR0);
-	r |= 0x00300000;
+	r |= 0x3 << MX35_CCM_CGR0_EPIT1_SHIFT;
 	writel(r, ccm_base + MX35_CCM_CGR0);
 
 	r = readl(ccm_base + MX35_CCM_CGR1);
-	r |= 0x00030C00;
-	r |= 0x00000003;
+	r |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
+	r |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT;
+	r |= 0x3 << MX35_CCM_CGR1_IOMUX_SHIFT;
 	writel(r, ccm_base + MX35_CCM_CGR1);
 
 	/* enable watchdog asap */
 	r = readl(ccm_base + MX35_CCM_CGR2);
-	r |= 0x03000000;
+	r |= 0x3 << MX35_CCM_CGR2_WDOG_SHIFT;
 	writel(r, ccm_base + MX35_CCM_CGR2);
 
 	r = readl(MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);

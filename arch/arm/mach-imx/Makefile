@@ -25,4 +25,4 @@ obj-pbl-y += esdctl.o boot.o
 obj-$(CONFIG_BAREBOX_UPDATE) += imx-bbu-internal.o
 obj-$(CONFIG_BAREBOX_UPDATE_IMX_EXTERNAL_NAND) += imx-bbu-external-nand.o
 lwl-y += cpu_init.o
-pbl-y += xload-spi.o xload-esdhc.o xload-common.o
+pbl-y += xload-spi.o xload-esdhc.o xload-common.o xload-imx-nand.o

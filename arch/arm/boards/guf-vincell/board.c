@@ -41,7 +41,7 @@ static int vincell_devices_init(void)
 	clk_set_rate(clk_lookup("nfc_podf"), 33333334);
 
 	imx53_bbu_internal_nand_register_handler("nand",
-		BBU_HANDLER_FLAG_DEFAULT, SZ_512K);
+		BBU_HANDLER_FLAG_DEFAULT, 0xe0000);
 
 	return 0;
 }

@@ -81,10 +81,15 @@ static int get_kernel_addresses(size_t image_size,
 		return ret;
 
 	/*
-	 * We don't know the exact decompressed size so just use a conservative
-	 * default of 4 times the size of the compressed image.
+	 * The kernel documentation "Documentation/arm/Booting" advises
+	 * to place the compressed image outside of the lowest 32 MiB to
+	 * avoid relocation. We should do this if we have at least 64 MiB
+	 * of ram. If we have less space, we assume a maximum
+	 * compression factor of 5.
 	 */
-	image_decomp_size = PAGE_ALIGN(image_size * 4);
+	image_decomp_size = PAGE_ALIGN(image_size * 5);
+	if (mem_size >= SZ_64M)
+		image_decomp_size = max(image_decomp_size, SZ_32M);
 
 	/*
 	 * By default put oftree/initrd close behind compressed kernel image to
@@ -112,6 +117,13 @@ static int get_kernel_addresses(size_t image_size,
 	}
 
 	*mem_free = PAGE_ALIGN(*load_address + image_size + spacing);
+
+	/*
+	 * Place oftree/initrd outside of the first 128 MiB, if we have space
+	 * for it. This avoids potential conflicts with the kernel decompressor.
+	 */
+	if (mem_size > SZ_256M)
+		*mem_free = max(*mem_free, mem_start + SZ_128M);
 
 	return 0;
 }

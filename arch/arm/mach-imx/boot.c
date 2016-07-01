@@ -217,6 +217,12 @@ void imx53_get_boot_source(enum bootsource *src, int *instance)
 	void __iomem *src_base = IOMEM(MX53_SRC_BASE_ADDR);
 	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR);
 
+	if (((cfg1 >> 24) & 0x3) == 0x3) {
+		*src = BOOTSOURCE_USB;
+		*instance = 0;
+		return;
+	}
+
 	switch ((cfg1 & 0xff) >> 4) {
 	case 2:
 		*src = BOOTSOURCE_HD;

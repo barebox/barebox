@@ -12,6 +12,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/cache.h>
+#include <mach/xload.h>
 
 #define IOMUX_PADCTL_DDRI_DDR (1 << 9)
 
@@ -133,6 +134,8 @@ static noinline void imx53_guf_vincell_init(int is_lt)
 	void __iomem *uart = IOMEM(MX53_UART2_BASE_ADDR);
 	void *fdt;
 	u32 r;
+	enum bootsource src;
+	int instance;
 
 	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
@@ -154,6 +157,12 @@ static noinline void imx53_guf_vincell_init(int is_lt)
 		disable_watchdog();
 		configure_dram_iomux();
 		imx_esdctlv4_init();
+
+		imx53_get_boot_source(&src, &instance);
+
+		if (src == BOOTSOURCE_NAND &&
+		    IS_ENABLED(CONFIG_MACH_GUF_VINCELL_XLOAD))
+			imx53_nand_start_image();
 	}
 
 	if (is_lt)

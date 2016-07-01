@@ -58,7 +58,7 @@ static void imx51_ipu_mipi_setup(void)
 int imx51_init(void)
 {
 	imx_set_silicon_revision("i.MX51", imx51_silicon_revision());
-	imx51_boot_save_loc((void *)MX51_SRC_BASE_ADDR);
+	imx51_boot_save_loc();
 	add_generic_device("imx51-esdctl", 0, NULL, MX51_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	imx51_ipu_mipi_setup();
 

@@ -20,7 +20,10 @@
 #include <io.h>
 #include <mach/generic.h>
 #include <mach/imx25-regs.h>
+#include <mach/imx27-regs.h>
 #include <mach/imx35-regs.h>
+#include <mach/imx51-regs.h>
+#include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 
 /* [CTRL][TYPE] */
@@ -75,8 +78,9 @@ static void imx25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
 	bootsource_set(src);
 }
 
-void imx25_boot_save_loc(void __iomem *ccm_base)
+void imx25_boot_save_loc(void)
 {
+	void __iomem *ccm_base = IOMEM(MX25_CCM_BASE_ADDR);
 	uint32_t val;
 
 	val = readl(ccm_base + MX25_CCM_RCSR);
@@ -84,8 +88,9 @@ void imx25_boot_save_loc(void __iomem *ccm_base)
 			       (val >> MX25_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
 }
 
-void imx35_boot_save_loc(void __iomem *ccm_base)
+void imx35_boot_save_loc(void)
 {
+	void __iomem *ccm_base = IOMEM(MX35_CCM_BASE_ADDR);
 	uint32_t val;
 
 	val = readl(ccm_base + MX35_CCM_RCSR);
@@ -104,8 +109,9 @@ void imx35_boot_save_loc(void __iomem *ccm_base)
 #define IMX27_GPCR_BOOT_32BIT_CS0		6
 #define IMX27_GPCR_BOOT_8BIT_NAND_512		7
 
-void imx27_boot_save_loc(void __iomem *sysctrl_base)
+void imx27_boot_save_loc(void)
 {
+	void __iomem *sysctrl_base = IOMEM(MX27_SYSCTRL_BASE_ADDR);
 	enum bootsource src;
 	uint32_t val;
 
@@ -136,8 +142,9 @@ void imx27_boot_save_loc(void __iomem *sysctrl_base)
 #define IMX51_SBMR_BT_MEM_CTL_SHIFT	0
 #define IMX51_SBMR_BMOD_SHIFT		14
 
-void imx51_boot_save_loc(void __iomem *src_base)
+void imx51_boot_save_loc(void)
 {
+	void __iomem *src_base = IOMEM(MX51_SRC_BASE_ADDR);
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t reg;
 	unsigned int ctrl, type;
@@ -167,8 +174,9 @@ void imx51_boot_save_loc(void __iomem *src_base)
 }
 
 #define IMX53_SRC_SBMR	0x4
-void imx53_boot_save_loc(void __iomem *src_base)
+void imx53_boot_save_loc(void)
 {
+	void __iomem *src_base = IOMEM(MX53_SRC_BASE_ADDR);
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	int instance;
 	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR);
@@ -278,7 +286,7 @@ internal_boot:
 	return;
 }
 
-void imx6_boot_save_loc(void __iomem *src_base)
+void imx6_boot_save_loc(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;

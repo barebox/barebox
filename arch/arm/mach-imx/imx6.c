@@ -120,7 +120,7 @@ int imx6_init(void)
 
 	imx6_init_lowlevel();
 
-	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
+	imx6_boot_save_loc();
 
 	rev = readl(MX6_ANATOP_BASE_ADDR + SI_REV);
 

@@ -12,7 +12,7 @@
  * Pass pointer to this structure as part of device_d -> platform_data
  */
 struct smc911x_plat {
-	int shift;
+	u32 shift;
 	unsigned int flags;
 	unsigned int phy_mask;	/* external PHY only: mask out PHYs,
 				   e.g. ~(1 << 5) to use PHY addr 5 */

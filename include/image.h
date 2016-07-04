@@ -84,11 +84,16 @@
 #define IH_ARCH_SANDBOX		19	/* Sandbox architecture (test only) */
 #define IH_ARCH_NDS32		20	/* ANDES Technology - NDS32  */
 #define IH_ARCH_OPENRISC	21	/* OpenRISC 1000  */
+#define IH_ARCH_ARM64		22	/* ARM64	*/
 
 #if defined(__PPC__)
 #define IH_ARCH IH_ARCH_PPC
 #elif defined(__ARM__)
+#ifdef CONFIG_CPU_64v8
+#define IH_ARCH IH_ARCH_ARM64
+#else
 #define IH_ARCH IH_ARCH_ARM
+#endif
 #elif defined(__I386__) || defined(__x86_64__) || defined(__i386__)
 #define IH_ARCH IH_ARCH_I386
 #elif defined(__mips__)

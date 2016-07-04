@@ -1,0 +1,8 @@
+#!/bin/sh
+
+autoboot_timeout=3
+
+bootargs="console=ttyAMA0,115200"
+
+# set a fancy prompt (if support is compiled in)
+PS1="\e[1;31m[barebox@\h]:\w\e[0m\n# "

@@ -33,7 +33,11 @@ static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
 
 static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
 {
+#if __LINUX_ARM_ARCH__ == 8
+	__asm__ ("rev %w0, %w1" : "=r" (x) : "r" (x));
+#else
 	__asm__ ("rev %0, %1" : "=r" (x) : "r" (x));
+#endif
 	return x;
 }
 #define __arch_swab32 __arch_swab32

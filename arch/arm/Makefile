@@ -291,13 +291,29 @@ MACH :=
 endif
 
 common-y += $(BOARD) arch/arm/boards/ $(MACH)
-common-y += arch/arm/lib/ arch/arm/cpu/
-common-y += arch/arm/crypto/
+common-y += arch/arm/cpu/
+common-y += arch/arm/lib/
+
+ifeq ($(CONFIG_CPU_V8), y)
+common-y += arch/arm/lib64/
+else
+common-y += arch/arm/lib32/ arch/arm/crypto/
+endif
 
 common-$(CONFIG_OFTREE) += arch/arm/dts/
 
-lds-y	:= arch/arm/lib/barebox.lds
+ifeq ($(CONFIG_CPU_V8), y)
+lds-y	:= arch/arm/lib64/barebox.lds
+else
+lds-y	:= arch/arm/lib32/barebox.lds
+endif
 
 common- += $(patsubst %,arch/arm/boards/%/,$(board-))
 
-CLEAN_FILES += include/generated/mach-types.h arch/arm/lib/barebox.lds barebox-flash-image
+CLEAN_FILES += include/generated/mach-types.h barebox-flash-image
+
+ifeq ($(CONFIG_CPU_V8), y)
+CLEAN_FILES += arch/arm/lib64/barebox.lds
+else
+CLEAN_FILES += arch/arm/lib32/barebox.lds
+endif

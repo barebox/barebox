@@ -177,6 +177,11 @@ static inline unsigned long ffz(unsigned long word)
 #include <asm-generic/bitops/ffs.h>
 #include <asm-generic/bitops/fls.h>
 #endif		/* __ARM__USE_GENERIC_FF */
+
+#if __LINUX_ARM_ARCH__ == 8
+#include <asm-generic/bitops/__fls.h>
+#endif
+
 #include <asm-generic/bitops/fls64.h>
 
 #include <asm-generic/bitops/hweight.h>

@@ -36,6 +36,7 @@ DEFINE_CPU_FNS(v4)
 DEFINE_CPU_FNS(v5)
 DEFINE_CPU_FNS(v6)
 DEFINE_CPU_FNS(v7)
+DEFINE_CPU_FNS(v8)
 
 void __dma_clean_range(unsigned long start, unsigned long end)
 {
@@ -101,6 +102,11 @@ int arm_set_cache_functions(void)
 		cache_fns = &cache_fns_armv7;
 		break;
 #endif
+#ifdef CONFIG_CPU_64v8
+	case CPU_ARCH_ARMv8:
+		cache_fns = &cache_fns_armv8;
+		break;
+#endif
 	default:
 		while(1);
 	}
@@ -138,6 +144,11 @@ void arm_early_mmu_cache_flush(void)
 		v7_mmu_cache_flush();
 		return;
 #endif
+#ifdef CONFIG_CPU_64v8
+	case CPU_ARCH_ARMv8:
+		v8_dcache_all();
+		return;
+#endif
 	}
 }
 
@@ -146,6 +157,7 @@ void v7_mmu_cache_invalidate(void);
 void arm_early_mmu_cache_invalidate(void)
 {
 	switch (arm_early_get_cpu_architecture()) {
+#if __LINUX_ARM_ARCH__ <= 7
 	case CPU_ARCH_ARMv4T:
 	case CPU_ARCH_ARMv5:
 	case CPU_ARCH_ARMv5T:
@@ -158,6 +170,13 @@ void arm_early_mmu_cache_invalidate(void)
 	case CPU_ARCH_ARMv7:
 		v7_mmu_cache_invalidate();
 		return;
+#endif
+#else
+#ifdef CONFIG_CPU_64v8
+	case CPU_ARCH_ARMv8:
+		v8_invalidate_icache_all();
+		return;
+#endif
 #endif
 	}
 }

@@ -89,7 +89,7 @@ static int get_kernel_addresses(size_t image_size,
 	 */
 	image_decomp_size = PAGE_ALIGN(image_size * 5);
 	if (mem_size >= SZ_64M)
-		image_decomp_size = max(image_decomp_size, SZ_32M);
+		image_decomp_size = max_t(size_t, image_decomp_size, SZ_32M);
 
 	/*
 	 * By default put oftree/initrd close behind compressed kernel image to

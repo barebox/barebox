@@ -684,11 +684,10 @@ EXPORT_SYMBOL(bvasprintf);
 int asprintf(char **strp, const char *fmt, ...)
 {
 	va_list ap;
-	char *p;
 	int len;
 
 	va_start(ap, fmt);
-	len = vasprintf(&p, fmt, ap);
+	len = vasprintf(strp, fmt, ap);
 	va_end(ap);
 
 	return len;

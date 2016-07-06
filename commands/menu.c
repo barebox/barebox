@@ -83,7 +83,7 @@ static int do_menu_entry_add(struct cmd_menu *cm)
 	else
 		me = menu_add_command_entry(m, cm->description, cm->command,
 					    cm->type);
-	if (!me)
+	if (IS_ERR(me))
 		return PTR_ERR(me);
 
 	me->box_state = cm->box_state > 0 ? 1 : 0;

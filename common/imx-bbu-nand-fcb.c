@@ -658,7 +658,6 @@ static int dbbt_check(struct mtd_info *mtd, int page)
 			needs_cleanup = 1;
 		} else if (ret < 0) {
 			pr_err("Cannot read page %d: %s\n", page, strerror(-ret));
-			free(dbbt_entries);
 			goto out;
 		}
 	} else {

@@ -28,7 +28,7 @@
  * Like write, but guarantees to write the full buffer out, else
  * it returns with an error.
  */
-int write_full(int fd, void *buf, size_t size)
+int write_full(int fd, const void *buf, size_t size)
 {
 	size_t insize = size;
 	int now;

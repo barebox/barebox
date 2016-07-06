@@ -36,7 +36,12 @@ Optional properties:
 
 * ``algo``: A HMAC algorithm used to detect manipulation of the data
   or header, sensible values follow this pattern ``hmac(<HASH>)``,
-  e.g. ``hmac(sha256)``.
+  e.g. ``hmac(sha256)``. Only used for ``raw``.
+* ``backend-stridesize``: Maximum size per copy of the data. Only important for
+  non-MTD devices
+* ``backend-storage-type``: Type of the storage. This has two options at the
+  moment. For MTD with erasing the correct type is ``circular``. For all other
+  devices and files, ``direct`` is the needed type.
 
 Variable nodes
 --------------

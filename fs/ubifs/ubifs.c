@@ -533,7 +533,7 @@ static unsigned long ubifs_findfile(struct super_block *sb, const char *filename
 			return 0;
 		inode = ubifs_iget(sb, inum);
 
-		if (!inode)
+		if (IS_ERR(inode))
 			return 0;
 		ui = ubifs_inode(inode);
 
@@ -1001,7 +1001,7 @@ static int ubifs_open(struct device_d *dev, FILE *file, const char *filename)
 		return -ENOENT;
 
 	inode = ubifs_iget(priv->sb, inum);
-	if (!inode)
+	if (IS_ERR(inode))
 		return -ENOENT;
 
 	uf = xzalloc(sizeof(*uf));
@@ -1126,7 +1126,7 @@ static DIR *ubifs_opendir(struct device_d *dev, const char *pathname)
 		return NULL;
 
 	inode = ubifs_iget(priv->sb, inum);
-	if (!inode)
+	if (IS_ERR(inode))
 		return NULL;
 
 	ubifs_iput(inode);
@@ -1206,7 +1206,7 @@ static int ubifs_stat(struct device_d *dev, const char *filename, struct stat *s
 		return -ENOENT;
 
 	inode = ubifs_iget(priv->sb, inum);
-	if (!inode)
+	if (IS_ERR(inode))
 		return -ENOENT;
 
 	s->st_size = inode->i_size;

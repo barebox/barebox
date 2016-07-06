@@ -1,6 +1,6 @@
 /dts-v1/;
 
-#include <arm/imx6q.dtsi>
+#include <arm/imx6dl.dtsi>
 #include <arm/imx6qdl-tx6.dtsi>
 #include "imx6qdl.dtsi"
 #include "imx6qdl-tx6x.dtsi"

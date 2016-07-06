@@ -70,17 +70,12 @@ static int nv_save(const char *name, const char *val)
 
 static int nv_set(struct device_d *dev, struct param_d *p, const char *val)
 {
-	struct param_d *gp;
 	int ret;
 
 	if (!val)
 		val = "";
 
-	gp = get_param_by_name(&global_device, p->name);
-	if (!gp)
-		return -EINVAL;
-
-	ret = gp->set(&global_device, gp, val);
+	ret = dev_set_param(&global_device, p->name, val);
 	if (ret)
 		return ret;
 

@@ -72,6 +72,8 @@ struct state_backend_storage {
 
 	const char *name;
 
+	uint32_t stridesize;
+
 	bool readonly;
 };
 

@@ -370,6 +370,13 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		}
 	}
 
+	if (state->backend.storage.stridesize) {
+		ret = of_property_write_u32(new_node, "backend-stridesize",
+				state->backend.storage.stridesize);
+		if (ret)
+			goto out;
+	}
+
 	/* address-cells + size-cells */
 	ret = of_property_write_u32(new_node, "#address-cells", 1);
 	if (ret)

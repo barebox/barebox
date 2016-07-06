@@ -477,6 +477,7 @@ int state_storage_init(struct state_backend_storage *storage,
 	INIT_LIST_HEAD(&storage->buckets);
 	storage->dev = dev;
 	storage->name = storagetype;
+	storage->stridesize = stridesize;
 
 	ret = mtd_get_meminfo(path, &meminfo);
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {

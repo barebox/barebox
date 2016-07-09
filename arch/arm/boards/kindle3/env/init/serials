@@ -1,0 +1,21 @@
+#!/bin/sh
+
+global board.serial16
+global board.revision16
+
+# 16-byte alphanumeric containing the serial number
+# SN is the first 16 bytes before the bootloader
+if test -b /dev/disk0.serial; then
+	if memcpy -s /dev/disk0.serial -d tmp_serial16 -b 0 0 16; then
+		readf tmp_serial16 global.board.serial16
+	fi
+fi
+[ -f tmp_serial16 ] && rm tmp_serial16
+
+# 16-byte alphanumeric containing the board revision
+if test -b /dev/disk0.imx_header; then
+	if memcpy -s /dev/disk0.imx_header -d tmp_revision16 -b 2032 0 16; then
+		readf tmp_revision16 global.board.revision16
+	fi
+fi
+[ -f tmp_revision16 ] && rm tmp_revision16

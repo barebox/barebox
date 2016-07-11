@@ -66,6 +66,24 @@ examples:
     model: myboard
   barebox@yourboard:/
 
+Non volatile device variables
+-----------------------------
+
+Non volatile device variables are used to make device parameters persistent. They
+are regular nv variables but are linked with other devices instead of the global
+device. Every nv variable in the form nv.dev.<devname>.<paramname> will be mirrored
+to the corresponding <devname>.<paramname> variable.
+
+This example changes the partitioning of the nand0 device:
+
+.. code-block:: sh
+  barebox@Phytec phyCARD-i.MX27:/ nv dev.nand0.partitions: 4M(barebox),1M(barebox-environment),-(root)
+  barebox@Phytec phyCARD-i.MX27:/ devinfo nand0
+    Parameters:
+    [...]
+    partitions: 4M(barebox),1M(barebox-environment),8M(kernel),1011M(root)
+    [...]
+
 .. _magicvars:
 
 Magic variables

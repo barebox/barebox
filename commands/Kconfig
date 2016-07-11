@@ -1417,6 +1417,15 @@ config CMD_SPLASH
 		  -b COLOR	background color in 0xttrrggbb
 		  -o		render offscreen
 
+config CMD_FBTEST
+	bool
+	depends on VIDEO
+	select 2D_PRIMITIVES
+	prompt "FB test"
+	help
+	  Framebuffer test command that allows to produce a number of
+	  test patterns on a screen.
+
 config CMD_READLINE
 	tristate
 	prompt "readline"

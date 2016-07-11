@@ -183,7 +183,6 @@ static void wl_entry_destroy(struct ubi_device *ubi, struct ubi_wl_entry *e)
 	kfree(e);
 }
 
-#ifndef CONFIG_MTD_UBI_FASTMAP
 /**
  * do_work - do one pending work.
  * @ubi: UBI device description object
@@ -221,7 +220,6 @@ static int do_work(struct ubi_device *ubi)
 
 	return err;
 }
-#endif
 
 /**
  * in_wl_tree - check if wear-leveling entry is present in a WL RB-tree.
@@ -523,8 +521,9 @@ static void __schedule_ubi_work(struct ubi_device *ubi, struct ubi_work *wrk)
 	list_add_tail(&wrk->list, &ubi->works);
 	ubi_assert(ubi->works_count >= 0);
 	ubi->works_count += 1;
-	if (ubi->thread_enabled && !ubi_dbg_is_bgt_disabled(ubi))
-		wake_up_process(ubi->bgt_thread);
+
+	/* No threading in barebox, so do work synchronously */
+	do_work(ubi);
 }
 
 /**

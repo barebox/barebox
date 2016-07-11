@@ -257,16 +257,7 @@ static int leb_write_trylock(struct ubi_device *ubi, int vol_id, int lnum)
 	le = ltree_add_entry(ubi, vol_id, lnum);
 	if (IS_ERR(le))
 		return PTR_ERR(le);
-
-	/* Contention, cancel */
-	le->users -= 1;
-	ubi_assert(le->users >= 0);
-	if (le->users == 0) {
-		rb_erase(&le->rb, &ubi->ltree);
-		kfree(le);
-	}
-
-	return 1;
+	return 0;
 }
 
 /**

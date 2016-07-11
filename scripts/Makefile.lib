@@ -39,10 +39,9 @@ endif
 obj-y		+= $(obj-pbl-y)
 pbl-y		+= $(obj-pbl-y)
 
-# for non dirs add pbl- prefix to the target
-# so we recompile the source with custom flags and custom quiet
-__pbl-y		:= $(notdir $(pbl-y))
-pbl-y		:= $(patsubst %.o,pbl-%.o,$(__pbl-y))
+# add pbl- prefix to the target
+pbl-y		:= $(shell echo $(pbl-y) | sed -e 's%\(\([^ \t]\+/\)*\)\([^ \t]*\.o\)%\2pbl-\3%g')
+
 # add subdir from $(obj-y) too so we do not need to have the dir define in
 # both $(obj-y) and $(pbl-y)
 __pbl-y		:= $(filter-out $(pbl-y), $(filter %/, $(obj-y)))

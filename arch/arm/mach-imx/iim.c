@@ -196,7 +196,7 @@ int imx_iim_read(unsigned int banknum, int offset, void *buf, int count)
 	if (!imx_iim)
 		return -ENODEV;
 
-	if (banknum > IIM_NUM_BANKS)
+	if (banknum >= IIM_NUM_BANKS)
 		return -EINVAL;
 
 	bank = iim->bank[banknum];

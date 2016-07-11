@@ -300,7 +300,8 @@ void phy_unregister_device(struct phy_device *phydev)
 	phydev->registered = 0;
 }
 
-struct phy_device *of_phy_register_fixed_link(struct device_node *np, struct eth_device *edev)
+static struct phy_device *of_phy_register_fixed_link(struct device_node *np,
+						struct eth_device *edev)
 {
 	struct phy_device *phydev;
 

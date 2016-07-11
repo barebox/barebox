@@ -38,7 +38,7 @@ struct smc911x_priv {
 	struct mii_bus miibus;
 	void __iomem *base;
 
-	int shift;
+	u32 shift;
 	int generation;
 	unsigned int flags;
 	unsigned int idrev;
@@ -516,6 +516,19 @@ static int smc911x_probe(struct device_d *dev)
 		priv->shift = pdata->shift;
 		priv->flags = pdata->flags;
 		priv->phy_mask = pdata->phy_mask;
+	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
+		ret = of_property_read_u32(dev->device_node, "reg-io-width", &val);
+		if (ret)
+			return ret;
+		is_32bit = (val == 4);
+
+		of_property_read_u32(dev->device_node, "reg-shift", &priv->shift);
+
+		if (of_property_read_bool(dev->device_node, "smsc,force-internal-phy"))
+			priv->flags |= SMC911X_FORCE_INTERNAL_PHY;
+
+		if (of_property_read_bool(dev->device_node, "smsc,force-external-phy"))
+			priv->flags |= SMC911X_FORCE_EXTERNAL_PHY;
 	}
 
 	if (is_32bit) {
@@ -562,7 +575,7 @@ static int smc911x_probe(struct device_d *dev)
 	if (val != 0x87654321) {
 		dev_err(dev, "no smc911x found on 0x%p (byte_test=0x%08x)\n",
 			priv->base, val);
-		if (((val >> 16) & 0xFFFF) == (val & 0xFFFF)) {
+		if ((((val >> 16) & 0xFFFF) == (val & 0xFFFF)) && is_32bit) {
 			/*
 			 * This may mean the chip is set
 			 * for 32 bit while the bus is reading 16 bit

@@ -34,9 +34,9 @@
 #include "mmu-early.h"
 
 unsigned long arm_stack_top;
-static unsigned long arm_head_bottom;
 static unsigned long arm_barebox_size;
 static void *barebox_boarddata;
+static unsigned long barebox_boarddata_size;
 
 static bool blob_is_fdt(const void *blob)
 {
@@ -73,6 +73,10 @@ void *barebox_arm_boot_dtb(void)
 	void *data;
 	int ret;
 	struct barebox_arm_boarddata_compressed_dtb *compressed_dtb;
+	static void *boot_dtb;
+
+	if (boot_dtb)
+		return boot_dtb;
 
 	if (barebox_boarddata && blob_is_fdt(barebox_boarddata)) {
 		pr_debug("%s: using barebox_boarddata\n", __func__);
@@ -101,9 +105,9 @@ void *barebox_arm_boot_dtb(void)
 		return NULL;
 	}
 
-	barebox_boarddata = dtb;
+	boot_dtb = dtb;
 
-	return barebox_boarddata;
+	return boot_dtb;
 }
 
 static inline unsigned long arm_mem_boarddata(unsigned long membase,
@@ -126,11 +130,9 @@ EXPORT_SYMBOL_GPL(arm_mem_ramoops_get);
 
 static int barebox_memory_areas_init(void)
 {
-	unsigned long start = arm_head_bottom;
-	unsigned long size = arm_mem_barebox_image(0, arm_stack_top,
-						   arm_barebox_size) -
-			     arm_head_bottom;
-	request_sdram_region("board data", start, size);
+	if(barebox_boarddata)
+		request_sdram_region("board data", (unsigned long)barebox_boarddata,
+				     barebox_boarddata_size);
 
 	return 0;
 }
@@ -159,7 +161,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	arm_stack_top = endmem;
 	arm_barebox_size = barebox_size;
-	arm_head_bottom = arm_mem_barebox_image(membase, endmem,
+	malloc_end = arm_mem_barebox_image(membase, endmem,
 						arm_barebox_size);
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
@@ -197,11 +199,10 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 				 name, mem);
 			barebox_boarddata = memcpy((void *)mem, boarddata,
 						   totalsize);
-			arm_head_bottom = mem;
+			barebox_boarddata_size = totalsize;
+			malloc_end = mem;
 		}
 	}
-
-	malloc_end = arm_head_bottom;
 
 	/*
 	 * Maximum malloc space is the Kconfig value if given

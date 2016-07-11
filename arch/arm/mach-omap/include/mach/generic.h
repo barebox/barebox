@@ -55,6 +55,8 @@ extern unsigned int __omap_cpu_type;
 struct omap_barebox_part {
 	unsigned int nand_offset;
 	unsigned int nand_size;
+	unsigned int nand_bkup_offset;
+	unsigned int nand_bkup_size;
 	unsigned int nor_offset;
 	unsigned int nor_size;
 };

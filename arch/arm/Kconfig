@@ -255,6 +255,10 @@ config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
 	select HAS_DEBUG_LL
 
+config ARCH_QEMU
+	bool "ARM QEMU boards"
+	select HAS_DEBUG_LL
+
 endchoice
 
 source arch/arm/cpu/Kconfig
@@ -280,6 +284,7 @@ source arch/arm/mach-vexpress/Kconfig
 source arch/arm/mach-tegra/Kconfig
 source arch/arm/mach-uemd/Kconfig
 source arch/arm/mach-zynq/Kconfig
+source arch/arm/mach-qemu/Kconfig
 
 config ARM_ASM_UNIFIED
 	bool
@@ -314,6 +319,29 @@ config ARM_BOARD_APPEND_ATAG
 	  ** DO NOT USE FOR YOUR OWN DESIGNS! **
 
 endmenu
+
+choice
+	prompt "Barebox code model"
+	help
+	  You should only select this option if you have a workload that
+	  actually benefits from 64-bit processing or if your machine has
+	  large memory. You will only be presented a single option in this
+	  menu if your system does not support both 32-bit and 64-bit modes.
+
+config 32BIT
+	bool "32-bit barebox"
+	depends on CPU_SUPPORTS_32BIT_KERNEL && SYS_SUPPORTS_32BIT_KERNEL
+	help
+	  Select this option if you want to build a 32-bit barebox.
+
+config 64BIT
+	bool "64-bit barebox"
+	depends on CPU_SUPPORTS_64BIT_KERNEL && SYS_SUPPORTS_64BIT_KERNEL
+	select ARCH_DMA_ADDR_T_64BIT
+	help
+	  Select this option if you want to build a 64-bit barebox.
+
+endchoice
 
 menu "ARM specific settings"
 

@@ -68,6 +68,7 @@ int icache_status(void)
 	return (get_cr () & CR_I) != 0;
 }
 
+#if __LINUX_ARM_ARCH__ <= 7
 /*
  * SoC like the ux500 have the l2x0 always enable
  * with or without MMU enable
@@ -86,6 +87,7 @@ void mmu_disable(void)
 	}
 	__mmu_cache_off();
 }
+#endif
 
 /**
  * Disable MMU and D-cache, flush caches
@@ -98,8 +100,12 @@ static void arch_shutdown(void)
 {
 	uint32_t r;
 
+#ifdef CONFIG_MMU
 	mmu_disable();
+#endif
 	flush_icache();
+
+#if __LINUX_ARM_ARCH__ <= 7
 	/*
 	 * barebox normally does not use interrupts, but some functionalities
 	 * (eg. OMAP4_USBBOOT) require them enabled. So be sure interrupts are
@@ -108,6 +114,7 @@ static void arch_shutdown(void)
 	__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
 	r |= PSR_I_BIT;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
+#endif
 }
 archshutdown_exitcall(arch_shutdown);
 

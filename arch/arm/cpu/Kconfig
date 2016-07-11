@@ -1,8 +1,14 @@
 comment "Processor Type"
 
+config PHYS_ADDR_T_64BIT
+	bool
+
 config CPU_32
 	bool
-	default y
+
+config CPU_64
+	bool
+	select PHYS_ADDR_T_64BIT
 
 # Select CPU types depending on the architecture selected. This selects
 # which CPUs we support in the kernel image, and the compiler instruction
@@ -69,6 +75,12 @@ config CPU_V7
 	bool
 	select CPU_32v7
 
+# ARMv8
+config CPU_V8
+	bool
+	select CPU_64v8
+	select CPU_SUPPORTS_64BIT_KERNEL
+
 config CPU_XSC3
         bool
         select CPU_32v4T
@@ -84,15 +96,23 @@ config CPU_XSCALE
 # This defines the compiler instruction set which depends on the machine type.
 config CPU_32v4T
 	bool
+	select CPU_32
 
 config CPU_32v5
 	bool
+	select CPU_32
 
 config CPU_32v6
 	bool
+	select CPU_32
 
 config CPU_32v7
 	bool
+	select CPU_32
+
+config CPU_64v8
+	bool
+	select CPU_64
 
 comment "processor features"
 
@@ -124,3 +144,14 @@ config CACHE_L2X0
 	bool "Enable L2x0 PrimeCell"
 	depends on MMU && ARCH_HAS_L2X0
 
+config SYS_SUPPORTS_32BIT_KERNEL
+	bool
+
+config SYS_SUPPORTS_64BIT_KERNEL
+	bool
+
+config CPU_SUPPORTS_32BIT_KERNEL
+	bool
+
+config CPU_SUPPORTS_64BIT_KERNEL
+	bool

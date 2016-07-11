@@ -1,7 +1,11 @@
 
 CPPFLAGS	+= -D__ARM__ -fno-strict-aliasing
 # Explicitly specifiy 32-bit ARM ISA since toolchain default can be -mthumb:
+ifeq ($(CONFIG_CPU_V8),y)
+CPPFLAGS	+=$(call cc-option,-maarch64,)
+else
 CPPFLAGS	+=$(call cc-option,-marm,)
+endif
 
 ifeq ($(CONFIG_CPU_BIG_ENDIAN),y)
 CPPFLAGS	+= -mbig-endian
@@ -17,13 +21,16 @@ endif
 # at least some of the code would be executed with MMU off, lets be
 # conservative and instruct the compiler not to generate any unaligned
 # accesses
+ifeq ($(CONFIG_CPU_V8),n)
 CFLAGS += -mno-unaligned-access
+endif
 
 
 # This selects which instruction set is used.
 # Note that GCC does not numerically define an architecture version
 # macro, but instead defines a whole series of macros which makes
 # testing for a specific architecture or later rather impossible.
+arch-$(CONFIG_CPU_64v8)		:= -D__LINUX_ARM_ARCH__=8 $(call cc-option,-march=armv8-a)
 arch-$(CONFIG_CPU_32v7)		:=-D__LINUX_ARM_ARCH__=7 $(call cc-option,-march=armv7-a,-march=armv5t -Wa$(comma)-march=armv7-a)
 arch-$(CONFIG_CPU_32v6)            :=-D__LINUX_ARM_ARCH__=6 $(call cc-option,-march=armv6,-march=armv5t -Wa$(comma)-march=armv6)
 arch-$(CONFIG_CPU_32v5)		:=-D__LINUX_ARM_ARCH__=5 $(call cc-option,-march=armv5te,-march=armv4t)
@@ -34,10 +41,14 @@ tune-$(CONFIG_CPU_ARM920T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_ARM926T)	:=-mtune=arm9tdmi
 tune-$(CONFIG_CPU_XSCALE)	:=$(call cc-option,-mtune=xscale,-mtune=strongarm110) -Wa,-mcpu=xscale
 
+ifeq ($(CONFIG_CPU_V8), y)
+CFLAGS_ABI	:=-mabi=lp64
+else
 ifeq ($(CONFIG_AEABI),y)
 CFLAGS_ABI	:=-mabi=aapcs-linux -mno-thumb-interwork
 else
 CFLAGS_ABI	:=$(call cc-option,-mapcs-32,-mabi=apcs-gnu) $(call cc-option,-mno-thumb-interwork,)
+endif
 endif
 
 ifeq ($(CONFIG_ARM_UNWIND),y)
@@ -51,8 +62,13 @@ CFLAGS_THUMB2	:=-mthumb $(AFLAGS_AUTOIT) $(AFLAGS_NOWARN)
 AFLAGS_THUMB2	:=$(CFLAGS_THUMB2) -Wa$(comma)-mthumb
 endif
 
+ifeq ($(CONFIG_CPU_V8), y)
+CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
+AFLAGS   += -include asm/unified.h
+else
 CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float $(CFLAGS_THUMB2)
 AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
+endif
 
 # Machine directory name.  This list is sorted alphanumerically
 # by CONFIG_* macro name.
@@ -78,6 +94,7 @@ machine-$(CONFIG_ARCH_VEXPRESS)		:= vexpress
 machine-$(CONFIG_ARCH_TEGRA)		:= tegra
 machine-$(CONFIG_ARCH_UEMD)		:= uemd
 machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
+machine-$(CONFIG_ARCH_QEMU)		:= qemu
 
 
 # Board directory name.  This list is sorted alphanumerically
@@ -275,13 +292,29 @@ MACH :=
 endif
 
 common-y += $(BOARD) arch/arm/boards/ $(MACH)
-common-y += arch/arm/lib/ arch/arm/cpu/
-common-y += arch/arm/crypto/
+common-y += arch/arm/cpu/
+common-y += arch/arm/lib/
+
+ifeq ($(CONFIG_CPU_V8), y)
+common-y += arch/arm/lib64/
+else
+common-y += arch/arm/lib32/ arch/arm/crypto/
+endif
 
 common-$(CONFIG_OFTREE) += arch/arm/dts/
 
-lds-y	:= arch/arm/lib/barebox.lds
+ifeq ($(CONFIG_CPU_V8), y)
+lds-y	:= arch/arm/lib64/barebox.lds
+else
+lds-y	:= arch/arm/lib32/barebox.lds
+endif
 
 common- += $(patsubst %,arch/arm/boards/%/,$(board-))
 
-CLEAN_FILES += include/generated/mach-types.h arch/arm/lib/barebox.lds barebox-flash-image
+CLEAN_FILES += include/generated/mach-types.h barebox-flash-image
+
+ifeq ($(CONFIG_CPU_V8), y)
+CLEAN_FILES += arch/arm/lib64/barebox.lds
+else
+CLEAN_FILES += arch/arm/lib32/barebox.lds
+endif

@@ -31,6 +31,7 @@ Contents:
    system-setup
    reset-reason
    system-reset
+   state
 
 * :ref:`search`
 * :ref:`genindex`

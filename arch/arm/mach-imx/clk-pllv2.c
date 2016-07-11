@@ -113,8 +113,9 @@ static unsigned long __clk_pllv2_recalc_rate(unsigned long parent_rate,
 	temp = (u64) ref_clk * mfn_abs;
 	do_div(temp, mfd + 1);
 	if (mfn < 0)
-		temp = -temp;
-	temp = (ref_clk * mfi) + temp;
+		temp = (ref_clk * mfi) - temp;
+	else
+		temp = (ref_clk * mfi) + temp;
 
 	return temp;
 }

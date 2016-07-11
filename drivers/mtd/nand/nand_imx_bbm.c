@@ -52,12 +52,20 @@
  * on the flash BBT.
  *
  */
-static int checkbad(struct mtd_info *mtd, loff_t ofs, void *__buf)
+static int checkbad(struct mtd_info *mtd, loff_t ofs)
 {
-	int ret, retlen;
-	uint8_t *buf = __buf;
+	int ret;
+	uint8_t buf[mtd->writesize + mtd->oobsize];
+	struct mtd_oob_ops ops;
 
-	ret = mtd->read(mtd, ofs, mtd->writesize, &retlen, buf);
+	ops.mode = MTD_OPS_RAW;
+	ops.ooboffs = 0;
+	ops.datbuf = buf;
+	ops.len = mtd->writesize;
+	ops.oobbuf = buf + mtd->writesize;
+	ops.ooblen = mtd->oobsize;
+
+	ret = mtd_read_oob(mtd, ofs, &ops);
 	if (ret < 0)
 		return ret;
 
@@ -72,7 +80,6 @@ static void *create_bbt(struct mtd_info *mtd)
 	struct nand_chip *chip = mtd->priv;
 	int len, i, numblocks, ret;
 	loff_t from = 0;
-	void *buf;
 	uint8_t *bbt;
 
 	if ((chip->bbt_td && chip->bbt_td->pages[0] != -1) ||
@@ -88,18 +95,12 @@ static void *create_bbt(struct mtd_info *mtd)
 	if (!bbt)
 		return ERR_PTR(-ENOMEM);
 
-	buf = malloc(mtd->writesize);
-	if (!buf) {
-		ret = -ENOMEM;
-		goto out2;
-	}
-
 	numblocks = mtd->size >> (chip->bbt_erase_shift - 1);
 
 	for (i = 0; i < numblocks;) {
-		ret = checkbad(mtd, from, buf);
+		ret = checkbad(mtd, from);
 		if (ret < 0)
-			goto out1;
+			goto out;
 
 		if (ret) {
 			bbt[i >> 3] |= 0x03 << (i & 0x6);
@@ -113,9 +114,7 @@ static void *create_bbt(struct mtd_info *mtd)
 
 	return bbt;
 
-out1:
-	free(buf);
-out2:
+out:
 	free(bbt);
 
 	return ERR_PTR(ret);

@@ -17,6 +17,7 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <io.h>
+#include <mach/imx53-regs.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
 #include <image-metadata.h>
@@ -36,7 +37,7 @@ ENTRY_FUNCTION(start_ccxmx53_512mb, r0, r1, r2)
 	void *fdt;
 
 	imx5_cpu_lowlevel_init();
-	arm_setup_stack(0xf8020000 - 8);
+	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
 	IMD_USED(ccxmx53_memsize_SZ_512M);
 
@@ -50,7 +51,7 @@ ENTRY_FUNCTION(start_ccxmx53_1gib, r0, r1, r2)
 	void *fdt;
 
 	imx5_cpu_lowlevel_init();
-	arm_setup_stack(0xf8020000 - 8);
+	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
 	IMD_USED(ccxmx53_memsize_SZ_1G);
 

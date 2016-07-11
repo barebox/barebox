@@ -232,10 +232,12 @@ static int eukrea_cpuimx35_core_init(void)
 {
 	u32 reg;
 
-	/* enable clock for I2C1, SDHC1, USB and FEC */
+	/* enable clock for I2C1, ESDHC1, USB and FEC */
+	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
+	reg |= 0x3 << MX35_CCM_CGR0_ESDHC1_SHIFT;
+	reg = writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
 	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 	reg |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
-	reg |= 0x3 << MX35_CCM_CGR1_SDHC1_SHIFT;
 	reg |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT,
 	reg = writel(reg, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 	reg = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR2);
@@ -317,9 +319,6 @@ static int eukrea_cpuimx35_core_init(void)
 }
 
 core_initcall(eukrea_cpuimx35_core_init);
-
-#define MPCTL_PARAM_399     (IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
-#define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
 
 static int do_cpufreq(int argc, char *argv[])
 {

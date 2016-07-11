@@ -23,14 +23,6 @@
 #define MX25_BOOTROM_HAB_MAGIC		0x3c95cac6
 #define MX25_DRYICE_GPR			0x3c
 
-void imx25_setup_weimcs(size_t cs, unsigned upper, unsigned lower,
-		unsigned additional)
-{
-	writel(upper, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x0);
-	writel(lower, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x4);
-	writel(additional, MX25_WEIM_BASE_ADDR + (cs * 0x10) + 0x8);
-}
-
 /* IIM fuse definitions */
 #define IIM_BANK0_BASE	(MX25_IIM_BASE_ADDR + 0x800)
 #define IIM_BANK1_BASE	(MX25_IIM_BASE_ADDR + 0xc00)

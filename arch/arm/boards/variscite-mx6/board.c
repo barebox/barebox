@@ -47,24 +47,19 @@
 static int setup_pmic_voltages(void)
 {
 	unsigned char value, rev_id = 0 ;
-	struct i2c_adapter *adapter = NULL;
+	struct i2c_adapter *adapter;
 	struct i2c_client client;
-	int addr = -1, bus = 0;
 
 	/* I2C2 bus (2-1 = 1 in barebox numbering) */
-	bus = 1;
-
-	/* PFUZE100 device address is 0x08 */
-	addr = 0x08;
-
-	adapter = i2c_get_adapter(bus);
+	adapter = i2c_get_adapter(1);
 	if (!adapter) {
-		pr_err("i2c bus %d not found\n", bus);
+		pr_err("i2c2 bus not found\n");
 		return -ENODEV;
 	}
 
 	client.adapter = adapter;
-	client.addr = addr;
+	/* PFUZE100 device address is 0x08 */
+	client.addr = 0x08;
 
 	/* Attempt to locate the PFUZE100 chip. */
 	if (i2c_read_reg(&client, 0x00, &value, 1) != 1) {

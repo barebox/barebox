@@ -30,11 +30,6 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
 
-/* Assuming 24MHz input clock */
-#define MPCTL_PARAM_399     (IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
-#define MPCTL_PARAM_532     ((1 << 31) | IMX_PLL_PD(0) | IMX_PLL_MFD(11) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
-#define PPCTL_PARAM_300     (IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
-
 #define SDRAM_MODE_BL_8	0x0003
 #define SDRAM_MODE_BSEQ	0x0000
 #define SDRAM_MODE_CL_3	0x0030
@@ -294,11 +289,12 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 
 	/* configure clock-gates */
 	r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
-	r0 |= 0x00300000;
+	r0 |= 0x3 << MX35_CCM_CGR0_EPIT1_SHIFT;
 	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_CGR0);
 
 	r0 = readl(MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
-	r0 |= 0x00000c03;
+	r0 |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
+	r0 |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT;
 	writel(r0, MX35_CCM_BASE_ADDR + MX35_CCM_CGR1);
 
 	/* Configure SDRAM */

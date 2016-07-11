@@ -1,7 +1,12 @@
 #ifndef __MACH_IMX53_REGS_H
 #define __MACH_IMX53_REGS_H
 
+#include <linux/sizes.h>
+
 #define MX53_IROM_BASE_ADDR	0x0
+
+#define MX53_IRAM_BASE_ADDR	0xF8000000
+#define MX53_IRAM_SIZE		SZ_128K
 
 #define MX53_SATA_BASE_ADDR	0x10000000
 

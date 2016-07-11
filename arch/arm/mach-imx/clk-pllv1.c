@@ -61,8 +61,9 @@ static unsigned long clk_pllv1_recalc_rate(struct clk *clk,
 
 	do_div(ll, mfd + 1);
 	if (mfn < 0)
-		ll = -ll;
-	ll = (freq * mfi) + ll;
+		ll = (freq * mfi) - ll;
+	else
+		ll = (freq * mfi) + ll;
 
 	return ll;
 }

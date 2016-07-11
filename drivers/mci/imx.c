@@ -519,9 +519,9 @@ static int mxcmci_probe(struct device_d *dev)
 	host->mci.f_min = rate >> 7;
 	host->mci.f_max = rate >> 1;
 
-	mci_register(&host->mci);
+	mci_of_parse(&host->mci);
 
-	return 0;
+	return mci_register(&host->mci);
 }
 
 static __maybe_unused struct of_device_id mxcmci_compatible[] = {

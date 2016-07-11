@@ -1,6 +1,7 @@
 /*
  *
  * (c) 2007 Pengutronix, Sascha Hauer <s.hauer@pengutronix.de>
+ * (c) 2016 Alexander Kurz <akurz@blala.de>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -30,17 +31,11 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/system.h>
 
-#define IMX35_CHIP_REVISION_2_1		0x11
-
-#define CCM_PDR0_399	0x00011000
-#define CCM_PDR0_532	0x00001000
-
 void __bare_init __naked barebox_arm_reset_vector(void)
 {
 	uint32_t r, s;
 	unsigned long ccm_base = MX35_CCM_BASE_ADDR;
-	unsigned long iomuxc_base = MX35_IOMUXC_BASE_ADDR;
-	unsigned long esdctl_base = MX35_ESDCTL_BASE_ADDR;
+	register uint32_t loops = 0x20000;
 
 	arm_cpu_lowlevel_init();
 
@@ -51,7 +46,7 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	r |= CR_U; /* unaligned accesses  */
 	r |= CR_FI; /* Low Int Latency     */
 
-	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 1":"=r"(s));
+	__asm__ __volatile__("mrc p15, 0, %0, c1, c0, 1" : "=r"(s));
 	s |= 0x7;
 	__asm__ __volatile__("mcr p15, 0, %0, c1, c0, 1" : : "r"(s));
 
@@ -90,21 +85,20 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	writel(MPCTL_PARAM_532, ccm_base + MX35_CCM_MPCTL);
 
 	writel(PPCTL_PARAM_300, ccm_base + MX35_CCM_PPCTL);
-
-	/* Check silicon revision and use 532MHz if >=2.1 */
-	r = readl(MX35_IIM_BASE_ADDR + 0x24);
-	if (r >= IMX35_CHIP_REVISION_2_1)
-		writel(CCM_PDR0_532, ccm_base + MX35_CCM_PDR0);
-	else
-		writel(CCM_PDR0_399, ccm_base + MX35_CCM_PDR0);
+	writel(0x00001000, ccm_base + MX35_CCM_PDR0);
 
 	r = readl(ccm_base + MX35_CCM_CGR0);
+	r |= 0x3 << MX35_CCM_CGR0_CSPI1_SHIFT;
 	r |= 0x3 << MX35_CCM_CGR0_EPIT1_SHIFT;
+	r |= 0x3 << MX35_CCM_CGR0_ESDHC1_SHIFT;
 	writel(r, ccm_base + MX35_CCM_CGR0);
 
 	r = readl(ccm_base + MX35_CCM_CGR1);
-	r |= 0x3 << MX35_CCM_CGR1_FEC_SHIFT;
+	r |= 0x3 << MX35_CCM_CGR1_IOMUX_SHIFT;
 	r |= 0x3 << MX35_CCM_CGR1_I2C1_SHIFT;
+	r |= 0x3 << MX35_CCM_CGR1_I2C2_SHIFT;
+	r |= 0x3 << MX35_CCM_CGR1_GPIO1_SHIFT;
+	r |= 0x3 << MX35_CCM_CGR1_GPIO2_SHIFT;
 	writel(r, ccm_base + MX35_CCM_CGR1);
 
 	r = readl(MX35_L2CC_BASE_ADDR + L2X0_AUX_CTRL);
@@ -116,78 +110,32 @@ void __bare_init __naked barebox_arm_reset_vector(void)
 	if (r > 0x80000000 && r < 0x90000000)
 		goto out;
 
-	/* Set DDR Type to SDRAM, drive strength workaround	*
-	 * 0x00000000	MDDR					*
-	 * 0x00000800	3,3V SDRAM				*/
+	/* Init Mobile DDR */
+	writel(0x0000000E, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
+	/* ESD_MISC: Enable DDR SDRAM */
+	writel(0x00000004, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
+	__asm__ volatile ("1:\n"
+			"subs %0, %1, #1\n"
+			"bne 1b" : "=r" (loops) : "0" (loops));
 
-	r = 0x00000800;
-	writel(r, iomuxc_base + 0x794);
-	writel(r, iomuxc_base + 0x798);
-	writel(r, iomuxc_base + 0x79c);
-	writel(r, iomuxc_base + 0x7a0);
-	writel(r, iomuxc_base + 0x7a4);
+	writel(0x0019672f, MX35_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
+	/* ESD_ESDCTL0 : select Prechare-All mode */
+	writel(0x93220000, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
+	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x400);
+	/* ESD_ESDCTL0: Auto Refresh command */
+	writel(0xA3220000, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
+	writeb(0xda, MX35_CSD0_BASE_ADDR);
+	writeb(0xda, MX35_CSD0_BASE_ADDR);
+	/* ESD_ESDCTL0: Load Mode Register */
+	writel(0xB3220000, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
+	writeb(0xda, MX35_CSD0_BASE_ADDR + 0x33);
+	writeb(0xff, MX35_CSD0_BASE_ADDR + 0x2000000);
+	/* ESD_ESDCTL0: enable Auto-Refresh */
+	writel(0x83228080, MX35_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
-	/* MDDR init, enable mDDR*/
-	writel(0x00000304, esdctl_base + IMX_ESDMISC); /* was 0x00000004 */
-
-	/* set timing paramters */
-	writel(0x0025541F, esdctl_base + IMX_ESDCFG0);
-	/* select Precharge-All mode */
-	writel(0x92220000, esdctl_base + IMX_ESDCTL0);
-	/* Precharge-All */
-	writel(0x12345678, MX35_CSD0_BASE_ADDR + 0x400);
-
-	/* select Load-Mode-Register mode */
-	writel(0xB8001000, esdctl_base + IMX_ESDCTL0);
-	/* Load reg EMR2 */
-	writeb(0xda, 0x84000000);
-	/* Load reg EMR3 */
-	writeb(0xda, 0x86000000);
-	/* Load reg EMR1 -- enable DLL */
-	writeb(0xda, 0x82000400);
-	/* Load reg MR -- reset DLL */
-	writeb(0xda, 0x80000333);
-
-	/* select Precharge-All mode */
-	writel(0x92220000, esdctl_base + IMX_ESDCTL0);
-	/* Precharge-All */
-	writel(0x12345678, MX35_CSD0_BASE_ADDR + 0x400);
-
-	/* select Manual-Refresh mode */
-	writel(0xA2220000, esdctl_base + IMX_ESDCTL0);
-	/* Manual-Refresh 2 times */
-	writel(0x87654321, MX35_CSD0_BASE_ADDR);
-	writel(0x87654321, MX35_CSD0_BASE_ADDR);
-
-	/* select Load-Mode-Register mode */
-	writel(0xB2220000, esdctl_base + IMX_ESDCTL0);
-	/* Load reg MR -- CL3, BL8, end DLL reset */
-	writeb(0xda, 0x80000233);
-	/* Load reg EMR1 -- OCD default */
-	writeb(0xda, 0x82000780);
-	/* Load reg EMR1 -- OCD exit */
-	writeb(0xda, 0x82000400);
-
-	/* select normal-operation mode
-	 * DSIZ32-bit, BL8, COL10-bit, ROW13-bit
-	 * disable PWT & PRCT
-	 * disable Auto-Refresh */
-	writel(0x82220080, esdctl_base + IMX_ESDCTL0);
-
-	/* enable Auto-Refresh */
-	writel(0x82228080, esdctl_base + IMX_ESDCTL0);
-	/* enable Auto-Refresh */
-	writel(0x00002000, esdctl_base + IMX_ESDCTL1);
-
-	if (IS_ENABLED(CONFIG_ARCH_IMX_EXTERNAL_BOOT_NAND)) {
-		/* Speed up NAND controller by adjusting the NFC divider */
-		r = readl(MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
-		r &= ~(0xf << 28);
-		r |= 0x1 << 28;
-		writel(r, MX35_CCM_BASE_ADDR + MX35_CCM_PDR4);
-
-		imx35_barebox_boot_nand_external(0);
-	}
+	writel(0x0000000c, MX35_ESDCTL_BASE_ADDR + IMX_ESDMISC);
+	writel(0xdeadbeef, MX35_CSD0_BASE_ADDR);
+	writel(0x00e78000, MX35_CSD0_BASE_ADDR + 0x1030);
 
 out:
 	imx35_barebox_entry(NULL);

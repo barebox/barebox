@@ -33,6 +33,7 @@ config ARCH_TEXT_BASE
 	default 0x17800000 if MACH_SABRESD
 	default 0x4fc00000 if MACH_REALQ7
 	default 0x4fc00000 if MACH_GK802
+	default 0x87f00000 if MACH_KINDLE3
 	default 0x2fc00000 if MACH_TQMA6X
 	default 0x4fc00000 if MACH_DFI_FS700_M60
 	default 0x4fc00000 if MACH_UDOO
@@ -452,6 +453,14 @@ config MACH_GUF_CUPID
 	help
 	  Say Y here if you are using the Garz+Fricke Neso board equipped
 	  with a Freescale i.MX35 Processor
+
+config MACH_KINDLE3
+	bool "Amazon Kindle3"
+	select ARCH_IMX35
+	select ARCH_HAS_L2X0
+	select HAVE_DEFAULT_ENVIRONMENT_NEW
+	help
+	  Say Y here if you are using the Amazon Model No. D00901 Kindle
 
 # ----------------------------------------------------------
 

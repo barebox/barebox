@@ -4,6 +4,7 @@
 #include <linux/compiler.h>
 #include <linux/types.h>
 #include <bootsource.h>
+#include <mach/imx_cpu_types.h>
 
 u64 imx_uid(void);
 
@@ -41,16 +42,6 @@ void imx6_cpu_lowlevel_init(void);
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
 /* range e.g. GPIO_1_5 is gpio 5 under linux */
 #define IMX_GPIO_NR(bank, nr)		(((bank) - 1) * 32 + (nr))
-
-#define IMX_CPU_IMX1	1
-#define IMX_CPU_IMX21	21
-#define IMX_CPU_IMX25	25
-#define IMX_CPU_IMX27	27
-#define IMX_CPU_IMX31	31
-#define IMX_CPU_IMX35	35
-#define IMX_CPU_IMX51	51
-#define IMX_CPU_IMX53	53
-#define IMX_CPU_IMX6	6
 
 extern unsigned int __imx_cpu_type;
 

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Fiveway device select key activates usbserial access for 60s
+echo
+if gpio_get_value 63; then
+	usbserial
+	global.autoboot_timeout=60
+fi

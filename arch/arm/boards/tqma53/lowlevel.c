@@ -5,6 +5,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 #include <mach/imx5.h>
+#include <mach/imx53-regs.h>
 #include <mach/generic.h>
 #include <image-metadata.h>
 
@@ -44,7 +45,7 @@ ENTRY_FUNCTION(start_imx53_mba53_512mib, r0, r1, r2)
 
 	imx5_cpu_lowlevel_init();
 
-	arm_setup_stack(0xf8020000 - 8);
+	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
 	IMD_USED(tqma53_memsize_512M);
 
@@ -63,7 +64,7 @@ ENTRY_FUNCTION(start_imx53_mba53_1gib, r0, r1, r2)
 
 	imx5_cpu_lowlevel_init();
 
-	arm_setup_stack(0xf8020000 - 8);
+	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
 	IMD_USED(tqma53_memsize_1G);
 

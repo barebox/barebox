@@ -35,9 +35,8 @@
 	strb		r1,	[r0];
 
 /* Assuming 24MHz input clock */
-#define MPCTL_PARAM_399     (IMX_PLL_PD(0) | IMX_PLL_MFD(15) | IMX_PLL_MFI(8) | IMX_PLL_MFN(5))
-#define MPCTL_PARAM_532     (IMX_PLL_PD(1) | IMX_PLL_MFD(0) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
-#define PPCTL_PARAM_300     (IMX_PLL_PD(0) | IMX_PLL_MFD(3) | IMX_PLL_MFI(6) | IMX_PLL_MFN(1))
+#define MPCTL_PARAM_532_MX25 \
+	(IMX_PLL_PD(1) | IMX_PLL_MFD(0) | IMX_PLL_MFI(11) | IMX_PLL_MFN(1))
 
 .section ".text_bare_init","ax"
 
@@ -46,7 +45,7 @@ L2CACHE_PARAM:          .word   0x00030024
 CCM_CCMR_W:             .word   0x003F4208
 CCM_PDR0_W:             .word   0x00801000
 MPCTL_PARAM_399_W:      .word   MPCTL_PARAM_399
-MPCTL_PARAM_532_W:      .word   MPCTL_PARAM_532
+MPCTL_PARAM_532_W:      .word   MPCTL_PARAM_532_MX25
 PPCTL_PARAM_W:    	.word   PPCTL_PARAM_300
 CCM_BASE_ADDR_W:        .word   MX25_CCM_BASE_ADDR
 

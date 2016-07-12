@@ -157,6 +157,12 @@ dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -I$(srctree)/dts/src/                                   \
 		 -undef -D__DTS__
 
+ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+ifneq ($(CONFIG_BOOTM_FITIMAGE_PUBKEY),"")
+dtc_cpp_flags += -DCONFIG_BOOTM_FITIMAGE_PUBKEY=\"$(CONFIG_BOOTM_FITIMAGE_PUBKEY)\"
+endif
+endif
+
 # Finds the multi-part object the current object will be linked into
 modname-multi = $(sort $(foreach m,$(multi-used),\
 		$(if $(filter $(subst $(obj)/,,$*.o), $($(m:.o=-objs)) $($(m:.o=-y))),$(m:.o=))))

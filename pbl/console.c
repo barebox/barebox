@@ -1,8 +1,13 @@
 #include <common.h>
 #include <debug_ll.h>
+#include <linux/err.h>
 
-static void (*__putc)(void *ctx, int c);
-static void *putc_ctx;
+/*
+ * Put these in the data section so that they survive the clearing of the
+ * BSS segment.
+ */
+static __attribute__ ((section(".data"))) void (*__putc)(void *ctx, int c);
+static __attribute__ ((section(".data"))) void *putc_ctx;
 
 /**
  * pbl_set_putc() - setup UART used for PBL console
@@ -20,10 +25,10 @@ void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx)
 
 void console_putc(unsigned int ch, char c)
 {
-	if (!__putc)
-		putc_ll(c);
-	else
+	if (__putc)
 		__putc(putc_ctx, c);
+	else
+		putc_ll(c);
 }
 
 int console_puts(unsigned int ch, const char *str)

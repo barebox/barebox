@@ -128,6 +128,13 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 	if (!node)
 		return -ENODEV;
 
+	ret = of_property_read_u32(node, "default-brightness-level",
+					   &value);
+	if (ret < 0)
+		return ret;
+
+	pwm_backlight->backlight.brightness_default = value;
+
 	/* determine the number of brightness levels */
 	prop = of_find_property(node, "brightness-levels", &length);
 	if (!prop)
@@ -153,14 +160,13 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 			if (pwm_backlight->levels[i] > pwm_backlight->scale)
 				pwm_backlight->scale = pwm_backlight->levels[i];
 
-		ret = of_property_read_u32(node, "default-brightness-level",
-					   &value);
-		if (ret < 0)
-			return ret;
-
-		pwm_backlight->backlight.brightness_default = value;
-		pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
+		if (pwm_backlight->scale == 0)
+			return -EINVAL;
+	} else {
+		/* We implicitly assume here a linear levels array { 0, 1, 2, ... 100 } */
+		pwm_backlight->scale = 100;
 	}
+	pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
 
 	pwm_backlight->enable_gpio = of_get_named_gpio_flags(node, "enable-gpios", 0, &flags);
 

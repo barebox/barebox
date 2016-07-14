@@ -379,11 +379,10 @@ int net_icmp_send(struct net_connection *con, int len)
 	return net_ip_send(con, sizeof(struct icmphdr) + len);
 }
 
-static int net_answer_arp(unsigned char *pkt, int len)
+static int net_answer_arp(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct arprequest *arp = (struct arprequest *)(pkt + ETHER_HDR_SIZE);
 	struct ethernet *et = (struct ethernet *)pkt;
-	struct eth_device *edev = eth_get_current();
 	unsigned char *packet;
 	int ret;
 
@@ -453,7 +452,7 @@ static int net_handle_arp(struct eth_device *edev, unsigned char *pkt, int len)
 
 	switch (ntohs(arp->ar_op)) {
 	case ARPOP_REQUEST:
-		return net_answer_arp(pkt, len);
+		return net_answer_arp(edev, pkt, len);
 	case ARPOP_REPLY:
 		arp_handler(arp);
 		return 1;

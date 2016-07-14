@@ -160,7 +160,7 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 			return ret;
 
 		pwm_backlight->backlight.brightness_default = value;
-		pwm_backlight->backlight.brightness_max--;
+		pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
 	}
 
 	pwm_backlight->enable_gpio = of_get_named_gpio_flags(node, "enable-gpios", 0, &flags);

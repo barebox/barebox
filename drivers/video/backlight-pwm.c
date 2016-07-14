@@ -150,7 +150,7 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 		if (ret < 0)
 			return ret;
 
-		for (i = 0; i <=  pwm_backlight->backlight.brightness_max; i++)
+		for (i = 0; i < pwm_backlight->backlight.brightness_max; i++)
 			if (pwm_backlight->levels[i] > pwm_backlight->scale)
 				pwm_backlight->scale = pwm_backlight->levels[i];
 

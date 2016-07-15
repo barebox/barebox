@@ -1239,8 +1239,8 @@ cleanup:
 	return ret;
 }
 
-static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width,
-		     int set_bits, int clear_bits)
+static int write_mem(const struct config_data *data, uint32_t addr,
+		     uint32_t val, int width, int set_bits, int clear_bits)
 {
 	return modify_memory(addr, val, width, set_bits, clear_bits);
 }

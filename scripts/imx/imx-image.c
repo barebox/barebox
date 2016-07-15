@@ -278,7 +278,7 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
  * ============================================================================
  */
 
-static int add_header_v2(struct config_data *data, void *buf)
+static int add_header_v2(const struct config_data *data, void *buf)
 {
 	struct imx_flash_header_v2 *hdr;
 	int dcdsize = curdcd * sizeof(uint32_t);
@@ -447,7 +447,8 @@ static int write_dcd(const char *outfile)
 	return 0;
 }
 
-static int check(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask)
+static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
+		 uint32_t mask)
 {
 	if (curdcd > MAX_DCD - 3) {
 		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
@@ -463,8 +464,8 @@ static int check(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t
 	return 0;
 }
 
-static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width,
-		     int set_bits, int clear_bits)
+static int write_mem(const struct config_data *data, uint32_t addr,
+		     uint32_t val, int width, int set_bits, int clear_bits)
 {
 	switch (data->header_version) {
 	case 1:

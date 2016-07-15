@@ -180,15 +180,26 @@ static int nv_set(struct device_d *dev, struct param_d *p, const char *val)
 	free(p->value);
 	p->value = xstrdup(val);
 
-	return nv_save(p->name, val);
+	return 0;
 }
 
-static const char *nv_get(struct device_d *dev, struct param_d *p)
+static const char *nv_param_get(struct device_d *dev, struct param_d *p)
 {
 	return p->value ? p->value : "";
 }
 
-int nvvar_add(const char *name, const char *value)
+static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	int ret;
+
+	ret = nv_set(dev, p, val);
+	if (ret)
+		return ret;
+
+	return nv_save(p->name, val);
+}
+
+static int __nvvar_add(const char *name, const char *value)
 {
 	struct param_d *p, *gp;
 	int ret;
@@ -226,7 +237,7 @@ int nvvar_add(const char *name, const char *value)
 			return ret;
 	}
 
-	p = dev_add_param(&nv_device, name, nv_set, nv_get, 0);
+	p = dev_add_param(&nv_device, name, nv_param_set, nv_param_get, 0);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
@@ -240,6 +251,17 @@ int nvvar_add(const char *name, const char *value)
 	}
 
 	return nv_set(&nv_device, p, value);
+}
+
+int nvvar_add(const char *name, const char *value)
+{
+	int ret;
+
+	ret = __nvvar_add(name, value);
+	if (ret)
+		return ret;
+
+	return nv_save(name, value);
 }
 
 int nvvar_remove(const char *name)
@@ -288,7 +310,7 @@ int nvvar_load(void)
 		pr_debug("%s: Setting \"%s\" to \"%s\"\n",
 				__func__, d->d_name, val);
 
-		ret = nvvar_add(d->d_name, val);
+		ret = __nvvar_add(d->d_name, val);
 		if (ret)
 			pr_err("failed to create nv variable %s: %s\n",
 					d->d_name, strerror(-ret));

@@ -738,6 +738,11 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 	struct fs_driver_d *fsdrv;
 	int ret;
 
+	if ((f->flags & O_ACCMODE) == O_WRONLY) {
+		ret = -EBADF;
+		goto out;
+	}
+
 	fsdrv = f->fsdev->driver;
 
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size)
@@ -747,7 +752,7 @@ static ssize_t __read(FILE *f, void *buf, size_t count)
 		return 0;
 
 	ret = fsdrv->read(&f->fsdev->dev, f, buf, count);
-
+out:
 	if (ret < 0)
 		errno = -ret;
 	return ret;
@@ -795,6 +800,11 @@ static ssize_t __write(FILE *f, const void *buf, size_t count)
 {
 	struct fs_driver_d *fsdrv;
 	int ret;
+
+	if (!(f->flags & O_ACCMODE)) {
+		ret = -EBADF;
+		goto out;
+	}
 
 	fsdrv = f->fsdev->driver;
 	if (f->size != FILE_SIZE_STREAM && f->pos + count > f->size) {

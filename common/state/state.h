@@ -100,6 +100,7 @@ struct state {
 
 	struct list_head variables; /* Sorted list of variables */
 	unsigned int dirty;
+	unsigned int save_on_shutdown;
 
 	struct state_backend backend;
 };

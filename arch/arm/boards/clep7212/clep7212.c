@@ -30,7 +30,7 @@ static int clps711x_devices_init(void)
 	clps711x_setup_memcfg(1, MEMCFG_WAITSTATE_6_1 | MEMCFG_BUS_WIDTH_8);
 	clps711x_setup_memcfg(2, MEMCFG_WAITSTATE_8_3 | MEMCFG_BUS_WIDTH_16 |
 			      MEMCFG_CLKENB);
-	clps711x_setup_memcfg(3, MEMCFG_WAITSTATE_6_1 | MEMCFG_BUS_WIDTH_32);
+	clps711x_setup_memcfg(3, MEMCFG_WAITSTATE_7_1 | MEMCFG_BUS_WIDTH_32);
 
 	cfi_io = map_io_sections(CS0_BASE, (void *)0x90000000, SZ_32M);
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, (unsigned long)cfi_io, SZ_32M,

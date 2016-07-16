@@ -1,4 +1,4 @@
 #!/bin/sh
 
-global.bootm.image="/dev/kernel"
+global.bootm.image="/dev/nor0.kernel"
 global.linux.bootargs.dyn.root="root=/dev/mtdblock3 ro"

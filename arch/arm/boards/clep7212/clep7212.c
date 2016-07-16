@@ -9,6 +9,7 @@
 
 #include <common.h>
 #include <driver.h>
+#include <envfs.h>
 #include <init.h>
 #include <partition.h>
 #include <io.h>
@@ -43,6 +44,8 @@ static int clps711x_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_CLEP7212);
 	armlinux_set_serial(((u64)serial_h << 32) | serial_l);
+
+	defaultenv_append_directory(defaultenv_clep7212);
 
 	return 0;
 }

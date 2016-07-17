@@ -1029,7 +1029,6 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	unsigned char *buf = NULL;
 	unsigned char *image;
 	unsigned char *verify_buffer = NULL;
-	unsigned char *p;
 	unsigned char tmp[64];
 	unsigned dladdr = 0;
 	unsigned max_length;
@@ -1102,7 +1101,6 @@ static int do_irom_download(struct usb_work *curr, int verify)
 
 	image = buf + skip;
 
-	p = image;
 	cnt -= skip;
 	fsize -= skip;
 
@@ -1120,7 +1118,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 			goto cleanup;
 		}
 
-		memcpy(verify_buffer, p, 64);
+		memcpy(verify_buffer, image, 64);
 
 		if ((type == FT_APP) && (usb_id->mach_id->mode != MODE_HID)) {
 			type = FT_LOAD_ONLY;

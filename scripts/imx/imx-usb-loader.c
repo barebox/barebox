@@ -669,13 +669,14 @@ static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char typ
 	return transfer_size;
 }
 
-static int write_dcd_table_ivt(struct imx_flash_header_v2 *hdr, unsigned char *file_start, unsigned cnt)
+static int write_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
+			       const unsigned char *file_start, unsigned cnt)
 {
 	unsigned char *dcd_end;
 	unsigned m_length;
 #define cvt_dest_to_src		(((unsigned char *)hdr) - hdr->self)
 	unsigned char* dcd;
-	unsigned char* file_end = file_start + cnt;
+	const unsigned char *file_end = file_start + cnt;
 	int err = 0;
 
 	if (!hdr->dcd_ptr) {
@@ -747,8 +748,8 @@ static int write_dcd_table_ivt(struct imx_flash_header_v2 *hdr, unsigned char *f
 	return err;
 }
 
-static int get_dcd_range_old(struct imx_flash_header *hdr,
-		unsigned char *file_start, unsigned cnt,
+static int get_dcd_range_old(const struct imx_flash_header *hdr,
+		const unsigned char *file_start, unsigned cnt,
 		unsigned char **pstart, unsigned char **pend)
 {
 	unsigned char *dcd_end;
@@ -756,7 +757,7 @@ static int get_dcd_range_old(struct imx_flash_header *hdr,
 #define cvt_dest_to_src_old		(((unsigned char *)&hdr->dcd) - hdr->dcd_ptr_ptr)
 	unsigned char* dcd;
 	unsigned val;
-	unsigned char* file_end = file_start + cnt;
+	const unsigned char *file_end = file_start + cnt;
 
 	if (!hdr->dcd) {
 		printf("No dcd table, barker=%x\n", hdr->app_code_barker);
@@ -794,7 +795,8 @@ static int get_dcd_range_old(struct imx_flash_header *hdr,
 	return 0;
 }
 
-static int write_dcd_table_old(struct imx_flash_header *hdr, unsigned char *file_start, unsigned cnt)
+static int write_dcd_table_old(const struct imx_flash_header *hdr,
+			       const unsigned char *file_start, unsigned cnt)
 {
 	unsigned val;
 	unsigned char *dcd_end;
@@ -877,10 +879,12 @@ err:
 	return ret;
 }
 
-static int is_header(unsigned char *p)
+static int is_header(const unsigned char *p)
 {
-	struct imx_flash_header *ohdr = (struct imx_flash_header *)p;
-	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
+	const struct imx_flash_header *ohdr =
+		(const struct imx_flash_header *)p;
+	const struct imx_flash_header_v2 *hdr =
+		(const struct imx_flash_header_v2 *)p;
 
 	switch (usb_id->mach_id->header_type) {
 	case HDR_MX51:
@@ -895,7 +899,8 @@ static int is_header(unsigned char *p)
 	return 0;
 }
 
-static int perform_dcd(unsigned char *p, unsigned char *file_start, unsigned cnt)
+static int perform_dcd(unsigned char *p, const unsigned char *file_start,
+		       unsigned cnt)
 {
 	struct imx_flash_header *ohdr = (struct imx_flash_header *)p;
 	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
@@ -938,11 +943,11 @@ static int clear_dcd_ptr(unsigned char *p, unsigned char *file_start, unsigned c
 	return 0;
 }
 
-static int get_dl_start(unsigned char *p, unsigned char *file_start,
+static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 		unsigned cnt, unsigned *dladdr, unsigned *max_length, unsigned *plugin,
 		unsigned *header_addr)
 {
-	unsigned char* file_end = file_start + cnt;
+	const unsigned char *file_end = file_start + cnt;
 	switch (usb_id->mach_id->header_type) {
 	case HDR_MX51:
 	{

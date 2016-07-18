@@ -123,7 +123,7 @@ static int syscon_probe(struct device_d *dev)
 		return PTR_ERR(res);
 	}
 
-	syscon->base = (void __iomem *)res->start;
+	syscon->base = IOMEM(res->start);
 	dev->priv = syscon;
 
 	dev_dbg(dev, "map 0x%x-0x%x registered\n", res->start, res->end);

@@ -116,8 +116,6 @@ static int syscon_probe(struct device_d *dev)
 	struct resource *res;
 
 	syscon = xzalloc(sizeof(struct syscon));
-	if (!syscon)
-		return -ENOMEM;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(res)) {

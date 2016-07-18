@@ -111,7 +111,7 @@ static int __init syscon_init(void)
 {
 	return platform_driver_register(&syscon_driver);
 }
-device_initcall(syscon_init);
+core_initcall(syscon_init);
 
 MODULE_AUTHOR("Dong Aisheng <dong.aisheng@linaro.org>");
 MODULE_DESCRIPTION("System Control driver");

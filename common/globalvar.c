@@ -304,12 +304,11 @@ int nvvar_remove(const char *name)
 		return -ENOENT;
 
 	fname = basprintf("/env/nv/%s", p->name);
+
+	dev_remove_param(p);
+
 	unlink(fname);
 	free(fname);
-
-	list_del(&p->list);
-	free(p->name);
-	free(p);
 
 	return 0;
 }

@@ -134,6 +134,8 @@ static int boot_entry(struct bootentry *be)
 {
 	int ret;
 
+	printf("booting %s\n", be->title);
+
 	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
 		ret = watchdog_set_timeout(boot_watchdog_timeout);
 		if (ret)
@@ -141,6 +143,9 @@ static int boot_entry(struct bootentry *be)
 	}
 
 	ret = be->boot(be, verbose, dryrun);
+
+	if (ret)
+		printf("booting %s failed: %s\n", be->title, strerror(-ret));
 
 	return ret;
 }
@@ -287,33 +292,10 @@ static int bootentry_parse_one(struct bootentries *bootentries, const char *name
 }
 
 /*
- * bootentries_collect - collect bootentries from an array of names
- */
-static struct bootentries *bootentries_collect(char *entries[], int num_entries)
-{
-	struct bootentries *bootentries;
-	int i;
-
-	bootentries = bootentries_alloc();
-
-	if (!num_entries)
-		bootscript_scan_path(bootentries, "/env/boot");
-
-	if (IS_ENABLED(CONFIG_BLSPEC) && !num_entries)
-		blspec_scan_devices(bootentries);
-
-	for (i = 0; i < num_entries; i++)
-		bootentry_parse_one(bootentries, entries[i]);
-
-	return bootentries;
-}
-
-/*
  * bootsources_menu - show a menu from an array of names
  */
-static void bootsources_menu(char *entries[], int num_entries)
+static void bootsources_menu(struct bootentries *bootentries)
 {
-	struct bootentries *bootentries = NULL;
 	struct bootentry *entry;
 	struct menu_entry *back_entry;
 
@@ -321,10 +303,6 @@ static void bootsources_menu(char *entries[], int num_entries)
 		printf("no menu support available\n");
 		return;
 	}
-
-	bootentries = bootentries_collect(entries, num_entries);
-	if (!bootentries)
-		return;
 
 	bootentries_for_each_entry(bootentries, entry) {
 		if (!entry->me.display)
@@ -345,77 +323,29 @@ static void bootsources_menu(char *entries[], int num_entries)
 	menu_show(bootentries->menu);
 
 	free(back_entry);
-
-	bootentries_free(bootentries);
 }
 
 /*
  * bootsources_list - list boot entries from an array of names
  */
-static void bootsources_list(char *entries[], int num_entries)
+static void bootsources_list(struct bootentries *bootentries)
 {
-	struct bootentries *bootentries;
 	struct bootentry *entry;
-
-	bootentries = bootentries_collect(entries, num_entries);
-	if (!bootentries)
-		return;
 
 	printf("%-20s\n", "title");
 	printf("%-20s\n", "------");
 
 	bootentries_for_each_entry(bootentries, entry)
 		printf("%-20s %s\n", entry->title, entry->description);
-
-	bootentries_free(bootentries);
-}
-
-/*
- * boot a script or a bootspec entry. 'name' can be:
- * - a filename under /env/boot/
- * - a full path to a boot script
- * - a device name
- * - a partition name under /dev/
- * - a full path to a directory which
- *   - contains boot scripts, or
- *   - contains a loader/entries/ directory containing bootspec entries
- *
- * Returns a negative error on failure, or 0 on a successful dryrun boot.
- */
-static int boot(const char *name)
-{
-	struct bootentries *bootentries;
-	struct bootentry *entry;
-	int ret;
-
-	bootentries = bootentries_alloc();
-	ret = bootentry_parse_one(bootentries, name);
-	if (ret < 0)
-		return ret;
-
-	if (!ret) {
-		printf("Nothing bootable found on %s\n", name);
-		return -ENOENT;
-	}
-
-	bootentries_for_each_entry(bootentries, entry) {
-		printf("booting %s\n", entry->title);
-		ret = boot_entry(entry);
-		if (!ret)
-			break;
-		printf("booting %s failed: %s\n", entry->title, strerror(-ret));
-	}
-
-	return ret;
 }
 
 static int do_boot(int argc, char *argv[])
 {
 	char *freep = NULL;
 	int opt, ret = 0, do_list = 0, do_menu = 0;
-	char **sources;
-	int num_sources;
 	int i;
+	struct bootentries *entries;
+	struct bootentry *entry;
 
 	verbose = 0;
 	dryrun = 0;
@@ -444,12 +374,14 @@ static int do_boot(int argc, char *argv[])
 		}
 	}
 
+	entries = bootentries_alloc();
+
 	if (optind < argc) {
-		num_sources = argc - optind;
-		sources = xmemdup(&argv[optind], sizeof(char *) * num_sources);
+		for (i = optind; i < argc; i++)
+			bootentry_parse_one(entries, argv[i]);
 	} else {
 		const char *def;
-		char *sep;
+		char *sep, *name;
 
 		def = getenv("global.boot.default");
 		if (!def)
@@ -457,49 +389,30 @@ static int do_boot(int argc, char *argv[])
 
 		sep = freep = xstrdup(def);
 
-		num_sources = 0;
+		while ((name = strsep(&sep, " ")) != NULL)
+			bootentry_parse_one(entries, name);
 
-		while (1) {
-			num_sources++;
-
-			sep = strchr(sep, ' ');
-			if (!sep)
-				break;
-			sep++;
-		}
-
-		sources = xmalloc(sizeof(char *) * num_sources);
-
-		sep = freep;
-
-		for (i = 0; i < num_sources; i++) {
-			sources[i] = sep;
-			sep = strchr(sep, ' ');
-			if (sep)
-				*sep = 0;
-			sep++;
-		}
+		free(freep);
 	}
 
 	if (do_list) {
-		bootsources_list(sources, num_sources);
+		bootsources_list(entries);
 		goto out;
 	}
 
 	if (do_menu) {
-		bootsources_menu(sources, num_sources);
+		bootsources_menu(entries);
 		goto out;
 	}
 
-	for (i = 0; i < num_sources; i++) {
-		ret = boot(sources[i]);
+	bootentries_for_each_entry(entries, entry) {
+		ret = boot_entry(entry);
 		if (!ret)
 			break;
 	}
 
 out:
-	free(sources);
-	free(freep);
+	bootentries_free(entries);
 
 	return ret;
 }

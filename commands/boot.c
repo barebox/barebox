@@ -202,9 +202,12 @@ static int bootentry_parse_one(struct blspec *blspec, const char *name)
 		ret = blspec_scan_devicename(blspec, name);
 		if (ret > 0)
 			found += ret;
-		ret = blspec_scan_directory(blspec, name);
-		if (ret > 0)
-			found += ret;
+
+		if (*name == '/') {
+			ret = blspec_scan_directory(blspec, name);
+			if (ret > 0)
+				found += ret;
+		}
 	}
 
 	if (!found) {

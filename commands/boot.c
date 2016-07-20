@@ -78,9 +78,10 @@ late_initcall(init_boot_watchdog_timeout);
 BAREBOX_MAGICVAR_NAMED(global_watchdog_timeout, global.boot.watchdog_timeout,
 		"Watchdog enable timeout in seconds before booting");
 
-static int boot_entry(struct blspec_entry *be)
+static int boot_entry(struct bootentry *be)
 {
 	int ret;
+	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
 
 	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
 		ret = watchdog_set_timeout(boot_watchdog_timeout);
@@ -88,8 +89,8 @@ static int boot_entry(struct blspec_entry *be)
 			pr_warn("Failed to enable watchdog: %s\n", strerror(-ret));
 	}
 
-	if (be->scriptpath) {
-		ret = boot_script(be->scriptpath);
+	if (entry->scriptpath) {
+		ret = boot_script(entry->scriptpath);
 	} else {
 		if (IS_ENABLED(CONFIG_BLSPEC))
 			ret = blspec_boot(be, verbose, dryrun);
@@ -102,7 +103,7 @@ static int boot_entry(struct blspec_entry *be)
 
 static void bootsource_action(struct menu *m, struct menu_entry *me)
 {
-	struct blspec_entry *be = container_of(me, struct blspec_entry, me);
+	struct bootentry *be = container_of(me, struct bootentry, me);
 	int ret;
 
 	ret = boot_entry(be);
@@ -127,9 +128,9 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 		return -EINVAL;
 
 	be = blspec_entry_alloc(bootentries);
-	be->me.type = MENU_ENTRY_NORMAL;
+	be->entry.me.type = MENU_ENTRY_NORMAL;
 	be->scriptpath = xstrdup(name);
-	be->me.display = xstrdup(basename(be->scriptpath));
+	be->entry.me.display = xstrdup(basename(be->scriptpath));
 
 	return 0;
 }
@@ -259,7 +260,7 @@ static struct bootentries *bootentries_collect(char *entries[], int num_entries)
 static void bootsources_menu(char *entries[], int num_entries)
 {
 	struct bootentries *bootentries = NULL;
-	struct blspec_entry *entry;
+	struct bootentry *entry;
 	struct menu_entry *back_entry;
 
 	if (!IS_ENABLED(CONFIG_MENU)) {
@@ -271,7 +272,7 @@ static void bootsources_menu(char *entries[], int num_entries)
 	if (!bootentries)
 		return;
 
-	blspec_for_each_entry(bootentries, entry) {
+	bootentries_for_each_entry(bootentries, entry) {
 		entry->me.action = bootsource_action;
 		menu_add_entry(bootentries->menu, &entry->me);
 	}
@@ -298,7 +299,7 @@ static void bootsources_menu(char *entries[], int num_entries)
 static void bootsources_list(char *entries[], int num_entries)
 {
 	struct bootentries *bootentries;
-	struct blspec_entry *entry;
+	struct bootentry *entry;
 
 	bootentries = bootentries_collect(entries, num_entries);
 	if (!bootentries)
@@ -307,9 +308,11 @@ static void bootsources_list(char *entries[], int num_entries)
 	printf("  %-20s %-20s  %s\n", "device", "hwdevice", "title");
 	printf("  %-20s %-20s  %s\n", "------", "--------", "-----");
 
-	blspec_for_each_entry(bootentries, entry) {
-		if (entry->scriptpath)
-			printf("%-40s   %s\n", basename(entry->scriptpath), entry->me.display);
+	bootentries_for_each_entry(bootentries, entry) {
+		struct blspec_entry *ble = container_of(entry, struct blspec_entry, entry);
+
+		if (ble->scriptpath)
+			printf("%-40s   %s\n", basename(ble->scriptpath), entry->me.display);
 		else
 			printf("%s\n", entry->me.display);
 	}
@@ -332,7 +335,7 @@ static void bootsources_list(char *entries[], int num_entries)
 static int boot(const char *name)
 {
 	struct bootentries *bootentries;
-	struct blspec_entry *entry;
+	struct bootentry *entry;
 	int ret;
 
 	bootentries = blspec_alloc();
@@ -345,7 +348,7 @@ static int boot(const char *name)
 		return -ENOENT;
 	}
 
-	blspec_for_each_entry(bootentries, entry) {
+	bootentries_for_each_entry(bootentries, entry) {
 		printf("booting %s\n", entry->me.display);
 		ret = boot_entry(entry);
 		if (!ret)

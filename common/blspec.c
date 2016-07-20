@@ -128,9 +128,11 @@ static struct blspec_entry *blspec_entry_open(struct bootentries *bootentries,
  */
 static int blspec_have_entry(struct bootentries *bootentries, const char *path)
 {
+	struct bootentry *be;
 	struct blspec_entry *e;
 
-	list_for_each_entry(e, &bootentries->entries, list) {
+	list_for_each_entry(be, &bootentries->entries, list) {
+		e = container_of(be, struct blspec_entry, entry);
 		if (e->configpath && !strcmp(e->configpath, path))
 			return 1;
 	}
@@ -407,7 +409,7 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));
 		}
 
-		entry->me.display = basprintf("%-20s %-20s  %s",
+		entry->entry.me.display = basprintf("%-20s %-20s  %s",
 						devname ? devname : "",
 						hwdevname ? hwdevname : "",
 						blspec_entry_var_get(entry, "title"));
@@ -415,7 +417,7 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 		free(devname);
 		free(hwdevname);
 
-		entry->me.type = MENU_ENTRY_NORMAL;
+		entry->entry.me.type = MENU_ENTRY_NORMAL;
 	}
 
 	ret = found;
@@ -634,8 +636,9 @@ int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
  * In case of an error the error code is returned. This function may
  * return 0 in case of a succesful dry run.
  */
-int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
+int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 {
+	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
 	int ret;
 	const char *abspath, *devicetree, *options, *initrd, *linuximage;
 	const char *appendroot;

@@ -25,7 +25,7 @@
 #include <ioctl.h>
 #include <libbb.h>
 #include <bbu.h>
-#include <boot.h>
+#include <bootm.h>
 #include <dma.h>
 #include <fs.h>
 #include <libfile.h>

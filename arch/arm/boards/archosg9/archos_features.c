@@ -9,8 +9,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-
-#include <boot.h>
+#include <common.h>
 #include <asm/setup.h>
 #include "archos_features.h"
 #include "feature_list.h"

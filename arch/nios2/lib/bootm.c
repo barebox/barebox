@@ -27,6 +27,7 @@
 #include <environment.h>
 #include <init.h>
 #include <boot.h>
+#include <bootm.h>
 #include <errno.h>
 #include <asm/cache.h>
 

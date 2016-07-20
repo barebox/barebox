@@ -23,7 +23,7 @@
 #include <libgen.h>
 #include <malloc.h>
 #include <clock.h>
-#include <boot.h>
+#include <bootm.h>
 #include <glob.h>
 #include <init.h>
 #include <menu.h>

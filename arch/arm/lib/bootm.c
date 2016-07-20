@@ -1,3 +1,4 @@
+#include <bootm.h>
 #include <boot.h>
 #include <common.h>
 #include <command.h>

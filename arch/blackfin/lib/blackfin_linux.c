@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <init.h>
 #include <boot.h>
+#include <bootm.h>
 
 #define CMD_LINE_ADDR 0xFF900000  /* L1 scratchpad */
 

@@ -24,7 +24,7 @@
 #include <libfile.h>
 #include <libbb.h>
 #include <init.h>
-#include <boot.h>
+#include <bootm.h>
 #include <net.h>
 #include <fs.h>
 #include <of.h>

@@ -1,4 +1,5 @@
 #include <boot.h>
+#include <bootm.h>
 #include <common.h>
 #include <libfile.h>
 #include <malloc.h>

@@ -9,6 +9,7 @@
 #include <asm/bitops.h>
 #include <asm/processor.h>
 #include <boot.h>
+#include <bootm.h>
 #include <errno.h>
 #include <restart.h>
 #include <fs.h>

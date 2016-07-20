@@ -20,7 +20,7 @@
 #define pr_fmt(fmt) "FIT: " fmt
 #include <common.h>
 #include <init.h>
-#include <boot.h>
+#include <bootm.h>
 #include <libfile.h>
 #include <fdt.h>
 #include <digest.h>

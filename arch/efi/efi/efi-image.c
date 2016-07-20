@@ -31,6 +31,7 @@
 #include <string.h>
 #include <linux/err.h>
 #include <boot.h>
+#include <bootm.h>
 #include <fs.h>
 #include <libfile.h>
 #include <binfmt.h>

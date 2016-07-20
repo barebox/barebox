@@ -15,7 +15,7 @@
 #include <common.h>
 #include <bootsource.h>
 #include <envfs.h>
-#include <boot.h>
+#include <bootm.h>
 #include <init.h>
 #include <io.h>
 #include <fs.h>

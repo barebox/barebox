@@ -31,8 +31,6 @@ int blspec_entry_save(struct blspec_entry *entry, const char *path);
 
 int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun);
 
-int blspec_boot_devicename(const char *devname, int verbose, int dryrun);
-
 int blspec_scan_devices(struct blspec *blspec);
 
 int blspec_scan_device(struct blspec *blspec, struct device_d *dev);

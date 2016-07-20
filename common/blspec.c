@@ -758,33 +758,3 @@ struct blspec_entry *blspec_entry_default(struct blspec *l)
 		return entry_default;
 	return entry_first;
 }
-
-/*
- * blspec_boot_devicename - scan hardware device for blspec entries and
- *                        start the best one.
- */
-int blspec_boot_devicename(const char *devname, int verbose, int dryrun)
-{
-	struct blspec *blspec;
-	struct blspec_entry *e;
-	int ret;
-
-	blspec = blspec_alloc();
-
-	ret = blspec_scan_devicename(blspec, devname);
-	if (ret)
-		return ret;
-
-	e = blspec_entry_default(blspec);
-	if (!e) {
-		printf("No bootspec entry found on %s\n", devname);
-		ret = -ENOENT;
-		goto out;
-	}
-
-	ret = blspec_boot(e, verbose, dryrun);
-out:
-	blspec_free(blspec);
-
-	return ret;
-}

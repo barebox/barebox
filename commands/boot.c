@@ -130,7 +130,8 @@ static int bootscript_create_entry(struct bootentries *bootentries, const char *
 	be = blspec_entry_alloc(bootentries);
 	be->entry.me.type = MENU_ENTRY_NORMAL;
 	be->scriptpath = xstrdup(name);
-	be->entry.me.display = xstrdup(basename(be->scriptpath));
+	be->entry.title = xstrdup(basename(be->scriptpath));
+	be->entry.description = basprintf("script: %s", name);
 
 	return 0;
 }
@@ -273,6 +274,8 @@ static void bootsources_menu(char *entries[], int num_entries)
 		return;
 
 	bootentries_for_each_entry(bootentries, entry) {
+		if (!entry->me.display)
+			entry->me.display = xstrdup(entry->title);
 		entry->me.action = bootsource_action;
 		menu_add_entry(bootentries->menu, &entry->me);
 	}
@@ -305,17 +308,11 @@ static void bootsources_list(char *entries[], int num_entries)
 	if (!bootentries)
 		return;
 
-	printf("  %-20s %-20s  %s\n", "device", "hwdevice", "title");
-	printf("  %-20s %-20s  %s\n", "------", "--------", "-----");
+	printf("%-20s\n", "title");
+	printf("%-20s\n", "------");
 
-	bootentries_for_each_entry(bootentries, entry) {
-		struct blspec_entry *ble = container_of(entry, struct blspec_entry, entry);
-
-		if (ble->scriptpath)
-			printf("%-40s   %s\n", basename(ble->scriptpath), entry->me.display);
-		else
-			printf("%s\n", entry->me.display);
-	}
+	bootentries_for_each_entry(bootentries, entry)
+		printf("%-20s %s\n", entry->title, entry->description);
 
 	blspec_free(bootentries);
 }
@@ -349,11 +346,11 @@ static int boot(const char *name)
 	}
 
 	bootentries_for_each_entry(bootentries, entry) {
-		printf("booting %s\n", entry->me.display);
+		printf("booting %s\n", entry->title);
 		ret = boot_entry(entry);
 		if (!ret)
 			break;
-		printf("booting %s failed: %s\n", entry->me.display, strerror(-ret));
+		printf("booting %s failed: %s\n", entry->title, strerror(-ret));
 	}
 
 	return ret;

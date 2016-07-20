@@ -12,6 +12,8 @@ struct bootentries {
 struct bootentry {
 	struct list_head list;
 	struct menu_entry me;
+	char *title;
+	char *description;
 };
 
 struct blspec_entry {
@@ -58,6 +60,8 @@ static inline void blspec_entry_free(struct blspec_entry *entry)
 	list_del(&entry->entry.list);
 	of_delete_node(entry->node);
 	free(entry->entry.me.display);
+	free(entry->entry.title);
+	free(entry->entry.description);
 	free(entry->scriptpath);
 	free(entry->configpath);
 	free(entry->rootpath);

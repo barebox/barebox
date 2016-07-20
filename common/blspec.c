@@ -55,6 +55,29 @@ const char *blspec_entry_var_get(struct blspec_entry *entry, const char *name)
 	return ret ? NULL : str;
 }
 
+static void blspec_entry_free(struct bootentry *be)
+{
+	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
+
+	of_delete_node(entry->node);
+	free(entry->configpath);
+	free(entry->rootpath);
+	free(entry);
+}
+
+static struct blspec_entry *blspec_entry_alloc(struct bootentries *bootentries)
+{
+	struct blspec_entry *entry;
+
+	entry = xzalloc(sizeof(*entry));
+
+	entry->node = of_new_node(NULL, NULL);
+	entry->entry.release = blspec_entry_free;
+	entry->entry.boot = blspec_boot;
+
+	return entry;
+}
+
 /*
  * blspec_entry_open - open an entry given a path
  */
@@ -397,7 +420,7 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 		entry->cdev = get_cdev_by_mountpath(root);
 
 		if (!entry_is_of_compatible(entry)) {
-			blspec_entry_free(entry);
+			blspec_entry_free(&entry->entry);
 			continue;
 		}
 
@@ -417,6 +440,9 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 		free(hwdevname);
 
 		entry->entry.me.type = MENU_ENTRY_NORMAL;
+		entry->entry.release = blspec_entry_free;
+
+		bootentries_add_entry(bootentries, &entry->entry);
 	}
 
 	ret = found;

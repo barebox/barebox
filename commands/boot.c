@@ -36,19 +36,69 @@ static int verbose;
 static int dryrun;
 static int timeout;
 
+int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry)
+{
+	list_add_tail(&entry->list, &entries->entries);
+
+	return 0;
+}
+
+static struct bootentries *bootentries_alloc(void)
+{
+	struct bootentries *bootentries;
+
+	bootentries = xzalloc(sizeof(*bootentries));
+	INIT_LIST_HEAD(&bootentries->entries);
+
+	if (IS_ENABLED(CONFIG_MENU))
+		bootentries->menu = menu_alloc();
+
+	return bootentries;
+}
+
+static void bootentries_free(struct bootentries *bootentries)
+{
+	struct bootentry *be, *tmp;
+
+	list_for_each_entry_safe(be, tmp, &bootentries->entries, list) {
+		list_del(&be->list);
+		free(be->title);
+		free(be->description);
+		free(be->me.display);
+		be->release(be);
+	}
+
+	if (bootentries->menu)
+		free(bootentries->menu->display);
+	free(bootentries->menu);
+	free(bootentries);
+}
+
+struct bootentry_script {
+	struct bootentry entry;
+	char *scriptpath;
+};
+
 /*
  * Start a single boot script. 'path' is a full path to a boot script.
  */
-static int boot_script(char *path)
+static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 {
+	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
 	int ret;
+
 	struct bootm_data data = {};
+
+	if (dryrun) {
+		printf("Would run %s\n", bs->scriptpath);
+		return 0;
+	}
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
 
-	ret = run_command(path);
+	ret = run_command(bs->scriptpath);
 	if (ret) {
-		printf("Running %s failed\n", path);
+		printf("Running %s failed\n", bs->scriptpath);
 		goto out;
 	}
 
@@ -61,7 +111,7 @@ static int boot_script(char *path)
 
 	ret = bootm_boot(&data);
 	if (ret)
-		pr_err("Booting %s failed: %s\n", basename(path), strerror(-ret));
+		pr_err("Booting %s failed: %s\n", basename(bs->scriptpath), strerror(-ret));
 out:
 	return ret;
 }
@@ -81,7 +131,6 @@ BAREBOX_MAGICVAR_NAMED(global_watchdog_timeout, global.boot.watchdog_timeout,
 static int boot_entry(struct bootentry *be)
 {
 	int ret;
-	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
 
 	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
 		ret = watchdog_set_timeout(boot_watchdog_timeout);
@@ -89,14 +138,7 @@ static int boot_entry(struct bootentry *be)
 			pr_warn("Failed to enable watchdog: %s\n", strerror(-ret));
 	}
 
-	if (entry->scriptpath) {
-		ret = boot_script(entry->scriptpath);
-	} else {
-		if (IS_ENABLED(CONFIG_BLSPEC))
-			ret = blspec_boot(be, verbose, dryrun);
-		else
-			ret = -ENOSYS;
-	}
+	ret = be->boot(be, verbose, dryrun);
 
 	return ret;
 }
@@ -115,23 +157,35 @@ static void bootsource_action(struct menu *m, struct menu_entry *me)
 	read_key();
 }
 
+static void bootscript_entry_release(struct bootentry *entry)
+{
+	struct bootentry_script *bs = container_of(entry, struct bootentry_script, entry);
+
+	free(bs->scriptpath);
+	free(bs->entry.me.display);
+	free(bs);
+}
+
 /*
  * bootscript_create_entry - create a boot entry from a script name
  */
 static int bootscript_create_entry(struct bootentries *bootentries, const char *name)
 {
-	struct blspec_entry *be;
+	struct bootentry_script *bs;
 	enum filetype type;
 
 	type = file_name_detect_type(name);
 	if (type != filetype_sh)
 		return -EINVAL;
 
-	be = blspec_entry_alloc(bootentries);
-	be->entry.me.type = MENU_ENTRY_NORMAL;
-	be->scriptpath = xstrdup(name);
-	be->entry.title = xstrdup(basename(be->scriptpath));
-	be->entry.description = basprintf("script: %s", name);
+	bs = xzalloc(sizeof(*bs));
+	bs->entry.me.type = MENU_ENTRY_NORMAL;
+	bs->entry.release = bootscript_entry_release;
+	bs->entry.boot = bootscript_boot;
+	bs->scriptpath = xstrdup(name);
+	bs->entry.title = xstrdup(basename(bs->scriptpath));
+	bs->entry.description = basprintf("script: %s", name);
+	bootentries_add_entry(bootentries, &bs->entry);
 
 	return 0;
 }
@@ -238,7 +292,7 @@ static struct bootentries *bootentries_collect(char *entries[], int num_entries)
 	struct bootentries *bootentries;
 	int i;
 
-	bootentries = blspec_alloc();
+	bootentries = bootentries_alloc();
 
 	if (IS_ENABLED(CONFIG_MENU))
 		bootentries->menu->display = basprintf("boot");
@@ -293,7 +347,7 @@ static void bootsources_menu(char *entries[], int num_entries)
 
 	free(back_entry);
 
-	blspec_free(bootentries);
+	bootentries_free(bootentries);
 }
 
 /*
@@ -314,7 +368,7 @@ static void bootsources_list(char *entries[], int num_entries)
 	bootentries_for_each_entry(bootentries, entry)
 		printf("%-20s %s\n", entry->title, entry->description);
 
-	blspec_free(bootentries);
+	bootentries_free(bootentries);
 }
 
 /*
@@ -335,7 +389,7 @@ static int boot(const char *name)
 	struct bootentry *entry;
 	int ret;
 
-	bootentries = blspec_alloc();
+	bootentries = bootentries_alloc();
 	ret = bootentry_parse_one(bootentries, name);
 	if (ret < 0)
 		return ret;

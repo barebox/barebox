@@ -43,6 +43,84 @@ int blspec_entry_var_set(struct blspec_entry *entry, const char *name,
 }
 
 /*
+ * blspec_boot - boot an entry
+ *
+ * This boots an entry. On success this function does not return.
+ * In case of an error the error code is returned. This function may
+ * return 0 in case of a succesful dry run.
+ */
+static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
+{
+	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
+	int ret;
+	const char *abspath, *devicetree, *options, *initrd, *linuximage;
+	const char *appendroot;
+	struct bootm_data data = {
+		.initrd_address = UIMAGE_INVALID_ADDRESS,
+		.os_address = UIMAGE_SOME_ADDRESS,
+		.verbose = verbose,
+		.dryrun = dryrun,
+	};
+
+	globalvar_set_match("linux.bootargs.dyn.", "");
+	globalvar_set_match("bootm.", "");
+
+	devicetree = blspec_entry_var_get(entry, "devicetree");
+	initrd = blspec_entry_var_get(entry, "initrd");
+	options = blspec_entry_var_get(entry, "options");
+	linuximage = blspec_entry_var_get(entry, "linux");
+
+	if (entry->rootpath)
+		abspath = entry->rootpath;
+	else
+		abspath = "";
+
+	data.os_file = basprintf("%s/%s", abspath, linuximage);
+
+	if (devicetree) {
+		if (!strcmp(devicetree, "none")) {
+			struct device_node *node = of_get_root_node();
+			if (node)
+				of_delete_node(node);
+		} else {
+			data.oftree_file = basprintf("%s/%s", abspath,
+						       devicetree);
+		}
+	}
+
+	if (initrd)
+		data.initrd_file = basprintf("%s/%s", abspath, initrd);
+
+	globalvar_add_simple("linux.bootargs.dyn.bootentries", options);
+
+	appendroot = blspec_entry_var_get(entry, "linux-appendroot");
+	if (appendroot) {
+		int val;
+
+		ret = strtobool(appendroot, &val);
+		if (ret) {
+			pr_err("Invalid value \"%s\" for appendroot option\n",
+			       appendroot);
+			goto err_out;
+		}
+		data.appendroot = val;
+	}
+
+	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
+			entry->cdev ? dev_name(entry->cdev->dev) : "none");
+
+	ret = bootm_boot(&data);
+	if (ret)
+		pr_err("Booting failed\n");
+err_out:
+	free((char *)data.oftree_file);
+	free((char *)data.initrd_file);
+	free((char *)data.os_file);
+
+	return ret;
+}
+
+/*
  * blspec_entry_var_get - get the value of a variable
  */
 const char *blspec_entry_var_get(struct blspec_entry *entry, const char *name)
@@ -652,82 +730,4 @@ int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 		return -ENODEV;
 
 	return blspec_scan_device(bootentries, dev);
-}
-
-/*
- * blspec_boot - boot an entry
- *
- * This boots an entry. On success this function does not return.
- * In case of an error the error code is returned. This function may
- * return 0 in case of a succesful dry run.
- */
-int blspec_boot(struct bootentry *be, int verbose, int dryrun)
-{
-	struct blspec_entry *entry = container_of(be, struct blspec_entry, entry);
-	int ret;
-	const char *abspath, *devicetree, *options, *initrd, *linuximage;
-	const char *appendroot;
-	struct bootm_data data = {
-		.initrd_address = UIMAGE_INVALID_ADDRESS,
-		.os_address = UIMAGE_SOME_ADDRESS,
-		.verbose = verbose,
-		.dryrun = dryrun,
-	};
-
-	globalvar_set_match("linux.bootargs.dyn.", "");
-	globalvar_set_match("bootm.", "");
-
-	devicetree = blspec_entry_var_get(entry, "devicetree");
-	initrd = blspec_entry_var_get(entry, "initrd");
-	options = blspec_entry_var_get(entry, "options");
-	linuximage = blspec_entry_var_get(entry, "linux");
-
-	if (entry->rootpath)
-		abspath = entry->rootpath;
-	else
-		abspath = "";
-
-	data.os_file = basprintf("%s/%s", abspath, linuximage);
-
-	if (devicetree) {
-		if (!strcmp(devicetree, "none")) {
-			struct device_node *node = of_get_root_node();
-			if (node)
-				of_delete_node(node);
-		} else {
-			data.oftree_file = basprintf("%s/%s", abspath,
-						       devicetree);
-		}
-	}
-
-	if (initrd)
-		data.initrd_file = basprintf("%s/%s", abspath, initrd);
-
-	globalvar_add_simple("linux.bootargs.dyn.bootentries", options);
-
-	appendroot = blspec_entry_var_get(entry, "linux-appendroot");
-	if (appendroot) {
-		int val;
-
-		ret = strtobool(appendroot, &val);
-		if (ret) {
-			pr_err("Invalid value \"%s\" for appendroot option\n",
-			       appendroot);
-			goto err_out;
-		}
-		data.appendroot = val;
-	}
-
-	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
-			entry->cdev ? dev_name(entry->cdev->dev) : "none");
-
-	ret = bootm_boot(&data);
-	if (ret)
-		pr_err("Booting failed\n");
-err_out:
-	free((char *)data.oftree_file);
-	free((char *)data.initrd_file);
-	free((char *)data.os_file);
-
-	return ret;
 }

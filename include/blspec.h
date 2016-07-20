@@ -4,7 +4,7 @@
 #include <linux/list.h>
 #include <menu.h>
 
-struct blspec {
+struct bootentries {
 	struct list_head entries;
 	struct menu *menu;
 };
@@ -27,16 +27,16 @@ const char *blspec_entry_var_get(struct blspec_entry *entry, const char *name);
 
 int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun);
 
-int blspec_scan_devices(struct blspec *blspec);
+int blspec_scan_devices(struct bootentries *bootentries);
 
-int blspec_scan_device(struct blspec *blspec, struct device_d *dev);
-int blspec_scan_devicename(struct blspec *blspec, const char *devname);
-int blspec_scan_directory(struct blspec *blspec, const char *root);
+int blspec_scan_device(struct bootentries *bootentries, struct device_d *dev);
+int blspec_scan_devicename(struct bootentries *bootentries, const char *devname);
+int blspec_scan_directory(struct bootentries *bootentries, const char *root);
 
 #define blspec_for_each_entry(blspec, entry) \
 	list_for_each_entry(entry, &blspec->entries, list)
 
-static inline struct blspec_entry *blspec_entry_alloc(struct blspec *blspec)
+static inline struct blspec_entry *blspec_entry_alloc(struct bootentries *bootentries)
 {
 	struct blspec_entry *entry;
 
@@ -44,7 +44,7 @@ static inline struct blspec_entry *blspec_entry_alloc(struct blspec *blspec)
 
 	entry->node = of_new_node(NULL, NULL);
 
-	list_add_tail(&entry->list, &blspec->entries);
+	list_add_tail(&entry->list, &bootentries->entries);
 
 	return entry;
 }
@@ -60,29 +60,29 @@ static inline void blspec_entry_free(struct blspec_entry *entry)
 	free(entry);
 }
 
-static inline struct blspec *blspec_alloc(void)
+static inline struct bootentries *blspec_alloc(void)
 {
-	struct blspec *blspec;
+	struct bootentries *bootentries;
 
-	blspec = xzalloc(sizeof(*blspec));
-	INIT_LIST_HEAD(&blspec->entries);
+	bootentries = xzalloc(sizeof(*bootentries));
+	INIT_LIST_HEAD(&bootentries->entries);
 
 	if (IS_ENABLED(CONFIG_MENU))
-		blspec->menu = menu_alloc();
+		bootentries->menu = menu_alloc();
 
-	return blspec;
+	return bootentries;
 }
 
-static inline void blspec_free(struct blspec *blspec)
+static inline void blspec_free(struct bootentries *bootentries)
 {
 	struct blspec_entry *entry, *tmp;
 
-	list_for_each_entry_safe(entry, tmp, &blspec->entries, list)
+	list_for_each_entry_safe(entry, tmp, &bootentries->entries, list)
 		blspec_entry_free(entry);
-	if (blspec->menu)
-		free(blspec->menu->display);
-	free(blspec->menu);
-	free(blspec);
+	if (bootentries->menu)
+		free(bootentries->menu->display);
+	free(bootentries->menu);
+	free(bootentries);
 }
 
 #endif /* __LOADER_H__ */

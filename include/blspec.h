@@ -25,8 +25,6 @@ int blspec_entry_var_set(struct blspec_entry *entry, const char *name,
 		const char *val);
 const char *blspec_entry_var_get(struct blspec_entry *entry, const char *name);
 
-int blspec_entry_save(struct blspec_entry *entry, const char *path);
-
 int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun);
 
 int blspec_scan_devices(struct blspec *blspec);

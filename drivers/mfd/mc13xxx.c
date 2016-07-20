@@ -330,7 +330,8 @@ static int __init mc13xxx_probe(struct device_d *dev)
 		mc_dev->spi = dev->type_data;
 		mc_dev->spi->mode = SPI_MODE_0 | SPI_CS_HIGH;
 		mc_dev->spi->bits_per_word = 32;
-		mc_dev->spi->max_speed_hz = 20000000;
+		mc_dev->spi->max_speed_hz = mc_dev->spi->max_speed_hz ?
+			mc_dev->spi->max_speed_hz : 20000000;
 		mc_dev->map = regmap_init(dev, &regmap_mc13xxx_spi_bus,
 			     mc_dev, &mc13xxx_regmap_spi_config);
 	}

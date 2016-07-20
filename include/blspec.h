@@ -15,8 +15,6 @@ struct blspec_entry {
 	struct cdev *cdev;
 	char *rootpath;
 	char *configpath;
-	bool boot_default;
-	bool boot_once;
 
 	struct menu_entry me;
 
@@ -88,14 +86,5 @@ static inline void blspec_free(struct blspec *blspec)
 	free(blspec->menu);
 	free(blspec);
 }
-
-#ifdef CONFIG_BLSPEC
-struct blspec_entry *blspec_entry_default(struct blspec *l);
-#else
-static inline struct blspec_entry *blspec_entry_default(struct blspec *l)
-{
-	return NULL;
-}
-#endif
 
 #endif /* __LOADER_H__ */

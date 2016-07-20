@@ -256,7 +256,7 @@ static struct blspec *bootentries_collect(char *entries[], int num_entries)
 static void bootsources_menu(char *entries[], int num_entries)
 {
 	struct blspec *blspec = NULL;
-	struct blspec_entry *entry, *entry_default;
+	struct blspec_entry *entry;
 	struct menu_entry *back_entry;
 
 	if (!IS_ENABLED(CONFIG_MENU)) {
@@ -268,13 +268,9 @@ static void bootsources_menu(char *entries[], int num_entries)
 	if (!blspec)
 		return;
 
-	entry_default = blspec_entry_default(blspec);
-
 	blspec_for_each_entry(blspec, entry) {
 		entry->me.action = bootsource_action;
 		menu_add_entry(blspec->menu, &entry->me);
-		if (entry == entry_default)
-			menu_set_selected_entry(blspec->menu, &entry->me);
 	}
 
 	back_entry = xzalloc(sizeof(*back_entry));
@@ -299,23 +295,16 @@ static void bootsources_menu(char *entries[], int num_entries)
 static void bootsources_list(char *entries[], int num_entries)
 {
 	struct blspec *blspec;
-	struct blspec_entry *entry, *entry_default;
+	struct blspec_entry *entry;
 
 	blspec = bootentries_collect(entries, num_entries);
 	if (!blspec)
 		return;
 
-	entry_default = blspec_entry_default(blspec);
-
-	printf("  %-20s %-20s  %s\n", "device", "hwdevice", "title");
-	printf("  %-20s %-20s  %s\n", "------", "--------", "-----");
+	printf("%-20s %-20s  %s\n", "device", "hwdevice", "title");
+	printf("%-20s %-20s  %s\n", "------", "--------", "-----");
 
 	blspec_for_each_entry(blspec, entry) {
-		if (entry == entry_default)
-			printf("* ");
-		else
-			printf("  ");
-
 		if (entry->scriptpath)
 			printf("%-40s   %s\n", basename(entry->scriptpath), entry->me.display);
 		else
@@ -340,7 +329,7 @@ static void bootsources_list(char *entries[], int num_entries)
 static int boot(const char *name)
 {
 	struct blspec *blspec;
-	struct blspec_entry *entry, *entry_default;
+	struct blspec_entry *entry;
 	int ret;
 
 	blspec = blspec_alloc();
@@ -353,19 +342,7 @@ static int boot(const char *name)
 		return -ENOENT;
 	}
 
-	entry_default = blspec_entry_default(blspec);
-	if (entry_default) {
-		ret = boot_entry(entry_default);
-		if (!ret)
-			return ret;
-		printf("booting %s failed: %s\n", entry_default->me.display,
-				strerror(-ret));
-	}
-
 	blspec_for_each_entry(blspec, entry) {
-		if (entry == entry_default)
-			continue;
-
 		printf("booting %s\n", entry->me.display);
 		ret = boot_entry(entry);
 		if (!ret)

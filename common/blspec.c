@@ -329,16 +329,13 @@ int blspec_scan_directory(struct blspec *blspec, const char *root)
 	char *abspath;
 	int ret, found = 0;
 	const char *dirname = "loader/entries";
-	char *entry_default = NULL, *entry_once = NULL, *name, *nfspath = NULL;
+	char *nfspath = NULL;
 
 	nfspath = parse_nfs_url(root);
 	if (!IS_ERR(nfspath))
 		root = nfspath;
 
 	pr_info("%s: %s %s\n", __func__, root, dirname);
-
-	entry_default = read_file_line("%s/default", root);
-	entry_once = read_file_line("%s/once", root);
 
 	abspath = basprintf("%s/%s", root, dirname);
 
@@ -404,13 +401,6 @@ int blspec_scan_directory(struct blspec *blspec, const char *root)
 
 		found++;
 
-		name = basprintf("%s/%s", dirname, d->d_name);
-		if (entry_default && !strcmp(name, entry_default))
-			entry->boot_default = true;
-		if (entry_once && !strcmp(name, entry_once))
-			entry->boot_once = true;
-		free(name);
-
 		if (entry->cdev) {
 			devname = xstrdup(dev_name(entry->cdev->dev));
 			if (entry->cdev->dev->parent)
@@ -435,8 +425,6 @@ err_out:
 	if (!IS_ERR(nfspath))
 		free(nfspath);
 	free(abspath);
-	free(entry_default);
-	free(entry_once);
 
 	return ret;
 }
@@ -705,18 +693,6 @@ int blspec_boot(struct blspec_entry *entry, int verbose, int dryrun)
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
 			entry->cdev ? dev_name(entry->cdev->dev) : "none");
 
-	if (entry->boot_once) {
-		char *s = basprintf("%s/once", abspath);
-
-		ret = unlink(s);
-		if (ret)
-			pr_err("unable to unlink 'once': %s\n", strerror(-ret));
-		else
-			pr_info("removed 'once'\n");
-
-		free(s);
-	}
-
 	ret = bootm_boot(&data);
 	if (ret)
 		pr_err("Booting failed\n");
@@ -726,35 +702,4 @@ err_out:
 	free((char *)data.os_file);
 
 	return ret;
-}
-
-/*
- * blspec_entry_default - find the entry to load.
- *
- * return in the order of precendence:
- * - The entry specified in the 'once' file
- * - The entry specified in the 'default' file
- * - The first entry
- */
-struct blspec_entry *blspec_entry_default(struct blspec *l)
-{
-	struct blspec_entry *entry_once = NULL;
-	struct blspec_entry *entry_default = NULL;
-	struct blspec_entry *entry_first = NULL;
-	struct blspec_entry *e;
-
-	list_for_each_entry(e, &l->entries, list) {
-		if (!entry_first)
-			entry_first = e;
-		if (e->boot_once)
-			entry_once = e;
-		if (e->boot_default)
-			entry_default = e;
-	}
-
-	if (entry_once)
-		return entry_once;
-	if (entry_default)
-		return entry_default;
-	return entry_first;
 }

@@ -50,8 +50,10 @@ static struct bootentries *bootentries_alloc(void)
 	bootentries = xzalloc(sizeof(*bootentries));
 	INIT_LIST_HEAD(&bootentries->entries);
 
-	if (IS_ENABLED(CONFIG_MENU))
+	if (IS_ENABLED(CONFIG_MENU)) {
 		bootentries->menu = menu_alloc();
+		bootentries->menu->display = basprintf("boot");
+	}
 
 	return bootentries;
 }
@@ -293,9 +295,6 @@ static struct bootentries *bootentries_collect(char *entries[], int num_entries)
 	int i;
 
 	bootentries = bootentries_alloc();
-
-	if (IS_ENABLED(CONFIG_MENU))
-		bootentries->menu->display = basprintf("boot");
 
 	if (!num_entries)
 		bootscript_scan_path(bootentries, "/env/boot");

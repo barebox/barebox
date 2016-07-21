@@ -64,7 +64,7 @@ static int ar8035_phy_fixup(struct phy_device *dev)
 
 static int riotboard_device_init(void)
 {
-	if (!of_machine_is_compatible("embest,riotboard"))
+	if (!of_machine_is_compatible("riot,imx6s-riotboard"))
 		return 0;
 
 	phy_register_fixup_for_uid(0x004dd072, 0xffffffef, ar8035_phy_fixup);

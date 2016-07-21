@@ -173,4 +173,7 @@ static inline void dev_param_init_from_nv(struct device_d *dev, const char *name
 
 #endif
 
+void nv_var_set_clean(void);
+int nvvar_save(void);
+
 #endif /* __GLOBALVAR_H */

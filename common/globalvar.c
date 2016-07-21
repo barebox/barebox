@@ -9,6 +9,9 @@
 #include <fcntl.h>
 #include <libfile.h>
 #include <generated/utsrelease.h>
+#include <envfs.h>
+
+static int nv_dirty;
 
 struct device_d global_device = {
 	.name = "global",
@@ -19,6 +22,11 @@ struct device_d nv_device = {
 	.name = "nv",
 	.id = DEVICE_ID_SINGLE,
 };
+
+void nv_var_set_clean(void)
+{
+	nv_dirty = 0;
+}
 
 int globalvar_add(const char *name,
 		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
@@ -43,16 +51,16 @@ void globalvar_remove(const char *name)
 	dev_remove_param(param);
 }
 
-static int nv_save(const char *name, const char *val)
+static int __nv_save(const char *prefix, const char *name, const char *val)
 {
 	int fd, ret;
 	char *fname;
 
-	ret = make_directory("/env/nv");
+	ret = make_directory(prefix);
 	if (ret)
 		return ret;
 
-	fname = basprintf("/env/nv/%s", name);
+	fname = basprintf("%s/%s", prefix, name);
 
 	fd = open(fname, O_CREAT | O_WRONLY | O_TRUNC);
 
@@ -64,6 +72,25 @@ static int nv_save(const char *name, const char *val)
 	dprintf(fd, "%s", val);
 
 	close(fd);
+
+	return 0;
+}
+
+static int nv_save(const char *name, const char *val)
+{
+	int ret;
+	static int once = 1;
+
+	ret = __nv_save("/env/nv", name, val);
+	if (ret)
+		return ret;
+
+	if (once) {
+		pr_info("nv variable modified, will save nv variables on shutdown\n");
+		once = 0;
+	}
+
+	nv_dirty = 1;
 
 	return 0;
 }
@@ -423,3 +450,51 @@ static int globalvar_init(void)
 pure_initcall(globalvar_init);
 
 BAREBOX_MAGICVAR_NAMED(global_version, global.version, "The barebox version");
+
+/**
+ * nvvar_save - save NV variables to persistent environment
+ *
+ * This saves the NV variables to the persisitent environment without saving
+ * the other files in the environment that might be changed.
+ */
+int nvvar_save(void)
+{
+	struct param_d *param;
+	const char *env = default_environment_path_get();
+	int ret;
+#define TMPDIR "/.env.tmp"
+	if (!nv_dirty || !env)
+		return 0;
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+		defaultenv_load(TMPDIR, 0);
+
+	envfs_load(env, TMPDIR, 0);
+
+	list_for_each_entry(param, &nv_device.parameters, list) {
+		ret = __nv_save(TMPDIR "/nv", param->name,
+				dev_get_param(&nv_device, param->name));
+		if (ret) {
+			pr_err("Cannot save NV var: %s\n", strerror(-ret));
+			goto out;
+		}
+	}
+
+	envfs_save(env, TMPDIR, 0);
+out:
+	unlink_recursive(TMPDIR, NULL);
+
+	if (!ret)
+		nv_dirty = 0;
+
+	return ret;
+}
+
+static void nv_exit(void)
+{
+	if (nv_dirty)
+		pr_info("nv variables modified, saving them\n");
+
+	nvvar_save();
+}
+predevshutdown_exitcall(nv_exit);

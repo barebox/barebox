@@ -64,6 +64,11 @@ int getopt(int argc, char *argv[], const char *optstring)
 	while(1) {
 		debug("optindex: %d nonopts: %d optind: %d\n", optindex, nonopts, optind);
 
+		if (optindex == 1 && argv[optind] && !strcmp(argv[optind], "--")) {
+			optind++;
+			return -1;
+		}
+
 		/* first put nonopts to the end */
 		while (optind + nonopts < argc && *argv[optind] != '-') {
 			int i;

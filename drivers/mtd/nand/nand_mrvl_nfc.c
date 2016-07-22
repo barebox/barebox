@@ -1138,16 +1138,16 @@ static struct mrvl_nand_host *alloc_nand_resource(struct device_d *dev)
 	host->dev = dev;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
-		return PTR_ERR(iores);
+		return ERR_CAST(iores);
 	host->mmio_base = IOMEM(iores->start);
 	if (IS_ERR(host->mmio_base)) {
 		free(host);
-		return host->mmio_base;
+		return ERR_CAST(host->mmio_base);
 	}
 	host->core_clk = clk_get(dev, NULL);
 	if (IS_ERR(host->core_clk)) {
 		free(host);
-		return (void *)host->core_clk;
+		return ERR_CAST(host->core_clk);
 	}
 	clk_enable(host->core_clk);
 

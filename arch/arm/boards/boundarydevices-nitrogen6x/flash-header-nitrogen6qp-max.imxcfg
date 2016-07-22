@@ -1,0 +1,10 @@
+soc imx6
+loadaddr 0x20000000
+dcdofs 0x400
+
+#include <mach/imx6-ddr-regs.h>
+#include <mach/imx6q-ddr-regs.h>
+#include <mach/imx6-ccm-regs.h>
+
+#include "ram-base.imxcfg"
+#include "1066mhz_4x512mx16-qp.imxcfg"

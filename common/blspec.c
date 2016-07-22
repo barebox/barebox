@@ -438,7 +438,7 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 	if (!IS_ERR(nfspath))
 		root = nfspath;
 
-	pr_info("%s: %s %s\n", __func__, root, dirname);
+	pr_debug("%s: %s %s\n", __func__, root, dirname);
 
 	abspath = basprintf("%s/%s", root, dirname);
 

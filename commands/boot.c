@@ -59,8 +59,11 @@ static int do_boot(int argc, char *argv[])
 	entries = bootentries_alloc();
 
 	if (optind < argc) {
-		for (i = optind; i < argc; i++)
-			bootentry_create_from_name(entries, argv[i]);
+		for (i = optind; i < argc; i++) {
+			ret = bootentry_create_from_name(entries, argv[i]);
+			if (ret <= 0)
+				printf("Nothing bootable found on '%s'\n", argv[i]);
+	       }
 	} else {
 		const char *def;
 		char *sep, *name;
@@ -71,8 +74,11 @@ static int do_boot(int argc, char *argv[])
 
 		sep = freep = xstrdup(def);
 
-		while ((name = strsep(&sep, " ")) != NULL)
-			bootentry_create_from_name(entries, name);
+		while ((name = strsep(&sep, " ")) != NULL) {
+			ret = bootentry_create_from_name(entries, name);
+			if (ret <= 0)
+				printf("Nothing bootable found on '%s'\n", name);
+		}
 
 		free(freep);
 	}

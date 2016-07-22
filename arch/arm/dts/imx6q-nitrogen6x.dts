@@ -11,16 +11,6 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-/dts-v1/;
-#include <arm/imx6q.dtsi>
+#include <arm/imx6q-nitrogen6x.dts>
 #include "imx6q.dtsi"
 #include "imx6qdl-nitrogen6x.dtsi"
-
-/ {
-	model = "Freescale i.MX6 Quad Nitrogen6x Board";
-	compatible = "fsl,imx6q-nitrogen6x", "fsl,imx6q";
-};
-
-&sata {
-	status = "okay";
-};

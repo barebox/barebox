@@ -10,6 +10,7 @@
 #include <libfile.h>
 #include <generated/utsrelease.h>
 #include <envfs.h>
+#include <fnmatch.h>
 
 static int nv_dirty;
 
@@ -293,22 +294,23 @@ int nvvar_add(const char *name, const char *value)
 
 int nvvar_remove(const char *name)
 {
-	struct param_d *p;
+	struct param_d *p, *tmp;
 	char *fname;
 
 	if (!IS_ENABLED(CONFIG_NVVAR))
 		return -ENOSYS;
 
-	p = get_param_by_name(&nv_device, name);
-	if (!p)
-		return -ENOENT;
+	list_for_each_entry_safe(p, tmp, &nv_device.parameters, list) {
+		if (fnmatch(name, p->name, 0))
+			continue;
 
-	fname = basprintf("/env/nv/%s", p->name);
+		fname = basprintf("/env/nv/%s", p->name);
 
-	dev_remove_param(p);
+		dev_remove_param(p);
 
-	unlink(fname);
-	free(fname);
+		unlink(fname);
+		free(fname);
+	}
 
 	return 0;
 }

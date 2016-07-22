@@ -169,6 +169,7 @@ config NVVAR
 	default y if !SHELL_NONE
 	depends on GLOBALVAR
 	depends on ENV_HANDLING
+	select FNMATCH
 	help
 	  Non volatile environment variables begin with "nv.". They behave like
 	  global variables above, but their values are saved in the environment

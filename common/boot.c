@@ -104,7 +104,7 @@ static int bootscript_boot(struct bootentry *entry, int verbose, int dryrun)
 
 	ret = bootm_boot(&data);
 	if (ret)
-		pr_err("Booting %s failed: %s\n", basename(bs->scriptpath), strerror(-ret));
+		pr_err("Booting '%s' failed: %s\n", basename(bs->scriptpath), strerror(-ret));
 out:
 	return ret;
 }
@@ -130,7 +130,7 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 {
 	int ret;
 
-	printf("booting %s\n", be->title);
+	printf("booting '%s'\n", be->title);
 
 	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
 		ret = watchdog_set_timeout(boot_watchdog_timeout);
@@ -141,7 +141,7 @@ int boot_entry(struct bootentry *be, int verbose, int dryrun)
 	ret = be->boot(be, verbose, dryrun);
 
 	if (ret)
-		printf("booting %s failed: %s\n", be->title, strerror(-ret));
+		printf("booting '%s' failed: %s\n", be->title, strerror(-ret));
 
 	return ret;
 }

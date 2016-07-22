@@ -279,8 +279,8 @@ config MACH_FREESCALE_IMX6SX_SABRESDB
 	select I2C
 	select I2C_IMX
 
-config MACH_NITROGEN6X
-	bool "BoundaryDevices Nitrogen6x"
+config MACH_NITROGEN6
+	bool "BoundaryDevices Nitrogen6 boards"
 	select ARCH_IMX6
 
 config MACH_SOLIDRUN_MICROSOM

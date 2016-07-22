@@ -471,7 +471,7 @@ int state_storage_init(struct state_backend_storage *storage,
 		       off_t offset, size_t max_size, uint32_t stridesize,
 		       const char *storagetype)
 {
-	int ret;
+	int ret = -ENODEV;
 	struct mtd_info_user meminfo;
 
 	INIT_LIST_HEAD(&storage->buckets);
@@ -479,7 +479,9 @@ int state_storage_init(struct state_backend_storage *storage,
 	storage->name = storagetype;
 	storage->stridesize = stridesize;
 
-	ret = mtd_get_meminfo(path, &meminfo);
+	if (IS_ENABLED(CONFIG_MTD))
+		ret = mtd_get_meminfo(path, &meminfo);
+
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {
 		bool non_circular = false;
 		if (!storagetype) {

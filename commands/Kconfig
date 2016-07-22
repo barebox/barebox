@@ -1421,6 +1421,7 @@ config CMD_FBTEST
 	bool
 	depends on VIDEO
 	select 2D_PRIMITIVES
+	select IMAGE_RENDERER
 	prompt "FB test"
 	help
 	  Framebuffer test command that allows to produce a number of

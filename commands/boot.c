@@ -77,6 +77,11 @@ static int do_boot(int argc, char *argv[])
 		free(freep);
 	}
 
+	if (list_empty(&entries->entries)) {
+		printf("Nothing bootable found\n");
+		return COMMAND_ERROR;
+	}
+
 	if (do_list) {
 		bootsources_list(entries);
 		goto out;

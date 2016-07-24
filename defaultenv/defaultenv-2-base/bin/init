@@ -32,6 +32,7 @@ magicvar -a global.allow_color "Allow color on the console (boolean)"
 timeout -s -a -v key 0
 autoboot="$?"
 
+echo -e -n "\e[?25h"
 if [ "${key}" = "q" ]; then
 	exit
 fi

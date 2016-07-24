@@ -22,10 +22,10 @@ if [ -f /env/bin/init_board ]; then
 	. /env/bin/init_board
 fi
 
+echo -e "\e[?25h"
 if [ -f /env/bin/boot_board ]; then
 	. /env/bin/boot_board
 elif [ -n $autoboot_timeout ]; then
-	echo
 	echo -n "Hit any key to stop autoboot: "
 	timeout -a $autoboot_timeout
 	if [ $? != 0 ]; then

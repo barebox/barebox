@@ -421,6 +421,7 @@ config MAXARGS
 
 config GLOB
 	bool
+	select FNMATCH
 	prompt "globbing support"
 	help
 	  If you want to use wildcards like * or ? say y here.

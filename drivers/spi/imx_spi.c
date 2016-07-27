@@ -206,7 +206,12 @@ static void cspi_0_7_chipselect(struct spi_device *spi, int is_active)
 	reg |= spi_imx_clkdiv_2(clk_get_rate(imx->clk), spi->max_speed_hz) <<
 		CSPI_0_7_CTRL_DR_SHIFT;
 
-	reg |= (spi->bits_per_word - 1) << CSPI_0_7_CTRL_BL_SHIFT;
+	if (cpu_is_mx31())
+		reg |= ((spi->bits_per_word - 1) & CSPI_0_4_CTRL_BL_MASK)
+			<< CSPI_0_4_CTRL_BL_SHIFT;
+	else
+		reg |= (spi->bits_per_word - 1) << CSPI_0_7_CTRL_BL_SHIFT;
+
 	reg |= CSPI_0_7_CTRL_SSCTL;
 
 	if (spi->mode & SPI_CPHA)
@@ -215,8 +220,12 @@ static void cspi_0_7_chipselect(struct spi_device *spi, int is_active)
 		reg |= CSPI_0_7_CTRL_POL;
 	if (spi->mode & SPI_CS_HIGH)
 		reg |= CSPI_0_7_CTRL_SSPOL;
-	if (gpio < 0)
-		reg |= (gpio + 32) << CSPI_0_7_CTRL_CS_SHIFT;
+	if (gpio < 0) {
+		if (cpu_is_mx31())
+			reg |= (gpio + 32) << CSPI_0_4_CTRL_CS_SHIFT;
+		else
+			reg |= (gpio + 32) << CSPI_0_7_CTRL_CS_SHIFT;
+	}
 
 	writel(reg, base + CSPI_0_7_CTRL);
 

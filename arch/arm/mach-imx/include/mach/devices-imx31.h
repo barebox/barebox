@@ -2,6 +2,21 @@
 #include <mach/imx31-regs.h>
 #include <mach/devices.h>
 
+static inline struct device_d *imx31_add_i2c0(void *pdata)
+{
+	return imx_add_i2c((void *)MX31_I2C1_BASE_ADDR, 0, pdata);
+}
+
+static inline struct device_d *imx31_add_i2c1(void *pdata)
+{
+	return imx_add_i2c((void *)MX31_I2C2_BASE_ADDR, 1, pdata);
+}
+
+static inline struct device_d *imx31_add_i2c2(void *pdata)
+{
+	return imx_add_i2c((void *)MX31_I2C3_BASE_ADDR, 2, pdata);
+}
+
 static inline struct device_d *imx31_add_spi0(struct spi_imx_master *pdata)
 {
 	return imx_add_spi_imx35((void *)MX31_CSPI1_BASE_ADDR, 0, pdata);

@@ -51,6 +51,7 @@ struct eth_device {
 	struct phy_device *phydev;
 
 	struct device_d dev;
+	char *devname;
 	struct device_d *parent;
 	char *nodepath;
 
@@ -64,6 +65,11 @@ struct eth_device {
 };
 
 #define dev_to_edev(d) container_of(d, struct eth_device, dev)
+
+static inline const char *eth_name(struct eth_device *edev)
+{
+	return edev->devname;
+}
 
 int eth_register(struct eth_device* dev);    /* Register network device		*/
 void eth_unregister(struct eth_device* dev); /* Unregister network device	*/
@@ -465,5 +471,9 @@ void led_trigger_network(enum led_trigger trigger);
 
 int ifup(const char *name, unsigned flags);
 int ifup_all(unsigned flags);
+
+extern struct list_head netdev_list;
+
+#define for_each_netdev(netdev) list_for_each_entry(netdev, &netdev_list, list)
 
 #endif /* __NET_H__ */

@@ -17,14 +17,67 @@
 #include <driver.h>
 #include <malloc.h>
 #include <xfuncs.h>
-
+#include <of_address.h>
 #include <linux/err.h>
 
 #include <mfd/syscon.h>
 
+static LIST_HEAD(syscon_list);
+
 struct syscon {
+	struct device_node *np;
 	void __iomem *base;
+	struct list_head list;
 };
+
+static struct syscon *of_syscon_register(struct device_node *np)
+{
+	int ret;
+	struct syscon *syscon;
+	struct resource res;
+
+	if (!of_device_is_compatible(np, "syscon"))
+		return ERR_PTR(-EINVAL);
+
+	syscon = xzalloc(sizeof(*syscon));
+
+	if (of_address_to_resource(np, 0, &res)) {
+		ret = -ENOMEM;
+		goto err_map;
+	}
+
+	syscon->base = IOMEM(res.start);
+	syscon->np   = np;
+
+	list_add_tail(&syscon->list, &syscon_list);
+
+	return syscon;
+
+err_map:
+	kfree(syscon);
+	return ERR_PTR(ret);
+}
+
+static void __iomem *syscon_node_to_base(struct device_node *np)
+{
+	struct syscon *entry, *syscon = NULL;
+
+	list_for_each_entry(entry, &syscon_list, list)
+		if (entry->np == np) {
+			syscon = entry;
+			break;
+		}
+
+	if (!syscon)
+		syscon = of_syscon_register(np);
+
+	if (IS_ERR(syscon))
+		return ERR_CAST(syscon);
+
+	return syscon->base;
+}
+EXPORT_SYMBOL_GPL(syscon_node_to_regmap);
+
 
 void __iomem *syscon_base_lookup_by_pdevname(const char *s)
 {
@@ -44,21 +97,17 @@ void __iomem *syscon_base_lookup_by_pdevname(const char *s)
 void __iomem *syscon_base_lookup_by_phandle(struct device_node *np,
 					    const char *property)
 {
-	struct device_node *node;
-	struct syscon *syscon;
-	struct device_d *dev;
+	struct device_node *syscon_np;
 
-	node = of_parse_phandle(np, property, 0);
-	if (!node)
+	if (property)
+		syscon_np = of_parse_phandle(np, property, 0);
+	else
+		syscon_np = np;
+
+	if (!syscon_np)
 		return ERR_PTR(-ENODEV);
 
-	dev = of_find_device_by_node(node);
-	if (!dev)
-		return ERR_PTR(-ENODEV);
-
-	syscon = dev->priv;
-
-	return syscon->base;
+	return syscon_node_to_base(syscon_np);
 }
 
 static int syscon_probe(struct device_d *dev)
@@ -67,8 +116,6 @@ static int syscon_probe(struct device_d *dev)
 	struct resource *res;
 
 	syscon = xzalloc(sizeof(struct syscon));
-	if (!syscon)
-		return -ENOMEM;
 
 	res = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(res)) {
@@ -76,7 +123,7 @@ static int syscon_probe(struct device_d *dev)
 		return PTR_ERR(res);
 	}
 
-	syscon->base = (void __iomem *)res->start;
+	syscon->base = IOMEM(res->start);
 	dev->priv = syscon;
 
 	dev_dbg(dev, "map 0x%x-0x%x registered\n", res->start, res->end);
@@ -89,16 +136,10 @@ static struct platform_device_id syscon_ids[] = {
 	{ }
 };
 
-static struct of_device_id of_syscon_match[] = {
-	{ .compatible = "syscon" },
-	{ },
-};
-
 static struct driver_d syscon_driver = {
 	.name		= "syscon",
 	.probe		= syscon_probe,
 	.id_table	= syscon_ids,
-	.of_compatible	= DRV_OF_COMPAT(of_syscon_match),
 };
 
 static int __init syscon_init(void)

@@ -52,6 +52,10 @@ struct da9063 {
 #define DA9063_WATCHDOG		0x01
 #define DA9063_SHUTDOWN		0x02
 
+struct da906x_device_data {
+	int	(*init)(struct da9063 *priv);
+};
+
 static int da906x_reg_update(struct da9063 *priv, unsigned int reg,
 			     uint8_t mask, uint8_t val)
 {
@@ -182,7 +186,12 @@ static void da9063_restart(struct restart_handler *rst)
 static int da9063_probe(struct device_d *dev)
 {
 	struct da9063 *priv = NULL;
+	struct da906x_device_data const *dev_data;
+	void const *dev_data_tmp;
 	int ret;
+
+	ret = dev_get_drvdata(dev, &dev_data_tmp);
+	dev_data = ret < 0 ? NULL : dev_data_tmp;
 
 	priv = xzalloc(sizeof(struct da9063));
 	priv->wd.priority = of_get_watchdog_priority(dev->device_node);
@@ -191,6 +200,12 @@ static int da9063_probe(struct device_d *dev)
 	priv->timeout = DA9063_INITIAL_TIMEOUT;
 	priv->client = to_i2c_client(dev);
 	priv->dev = dev;
+
+	if (dev_data && dev_data->init) {
+		ret = dev_data->init(priv);
+		if (ret < 0)
+			goto on_error;
+	}
 
 	ret = watchdog_register(&priv->wd);
 	if (ret)
@@ -213,7 +228,7 @@ on_error:
 }
 
 static struct platform_device_id da9063_id[] = {
-        { "da9063", },
+	{ "da9063", (uintptr_t)(NULL) },
 	{ }
 };
 

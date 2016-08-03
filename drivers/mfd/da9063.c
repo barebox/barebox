@@ -52,6 +52,43 @@ struct da9063 {
 #define DA9063_WATCHDOG		0x01
 #define DA9063_SHUTDOWN		0x02
 
+static int da906x_reg_update(struct da9063 *priv, unsigned int reg,
+			     uint8_t mask, uint8_t val)
+{
+	struct i2c_client *client;
+	uint8_t tmp;
+	int ret;
+
+	if (reg < 0x100)
+		client = priv->client;
+	else
+		/* this should/can not happen because function is usually
+		 * called with a static register number; warn about it
+		 * below */
+		client = NULL;
+
+	if (WARN_ON(!client))
+		return -EINVAL;
+
+	ret = i2c_read_reg(client, reg & 0xffu, &tmp, 1);
+	if (ret < 0) {
+		dev_warn(priv->dev, "failed to read reg %02x\n", reg);
+		return ret;
+	}
+
+	tmp &= ~mask;
+	tmp |= val;
+
+	ret = i2c_write_reg(client, reg & 0xffu, &tmp, 1);
+	if (ret < 0) {
+		dev_warn(priv->dev, "failed to write %02x into reg %02x\n",
+			 tmp, reg);
+		return ret;
+	}
+
+	return 0;
+}
+
 static int da9063_watchdog_ping(struct da9063 *priv)
 {
 	int ret;

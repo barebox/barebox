@@ -13,7 +13,7 @@ config MFD_DA9053
 
 config MFD_DA9063
 	depends on I2C
-	bool "DA9063 PMIC driver"
+	bool "DA9063/DA9062 PMIC driver"
 
 config MFD_LP3972
 	depends on I2C

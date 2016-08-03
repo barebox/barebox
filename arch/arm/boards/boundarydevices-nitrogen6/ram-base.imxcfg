@@ -60,8 +60,8 @@ wm 32 MX6_MMDC_P1_MPRDDQBY1DL	0x33333333
 wm 32 MX6_MMDC_P1_MPRDDQBY2DL	0x33333333
 wm 32 MX6_MMDC_P1_MPRDDQBY3DL	0x33333333
 
-/* MDMISC	mirroring	interleaved (row/bank/col) */
-wm 32 MX6_MMDC_P0_MDMISC		0x00081740
+/* MDMISC	mirroring-off	interleaved (row/bank/col) */
+wm 32 MX6_MMDC_P0_MDMISC		0x00001740
 
 /* MDSCR	con_req */
 wm 32 MX6_MMDC_P0_MDSCR			0x00008000

@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <libusb.h>
 #include <getopt.h>
+#include <arpa/inet.h>
 #include <linux/kernel.h>
 
 #include "imx.h"
@@ -67,13 +68,7 @@ struct mach_id {
 struct usb_work {
 	char filename[256];
 	unsigned char dcd;
-	unsigned char clear_dcd;
 	unsigned char plug;
-#define J_ADDR		1
-#define J_HEADER	2
-#define J_HEADER2	3
-	unsigned char jump_mode;
-	unsigned jump_addr;
 };
 
 struct usb_id {
@@ -153,6 +148,21 @@ struct mach_id imx_ids[] = {
 		.max_transfer = 64,
 	},
 };
+
+#define SDP_READ_REG		0x0101
+#define SDP_WRITE_REG		0x0202
+#define SDP_WRITE_FILE		0x0404
+#define SDP_ERROR_STATUS	0x0505
+#define SDP_JUMP_ADDRESS	0x0b0b
+
+struct sdp_command  {
+	uint16_t cmd;
+	uint32_t addr;
+	uint8_t format;
+	uint32_t cnt;
+	uint32_t data;
+	uint8_t rsvd;
+} __attribute__((packed));
 
 static struct mach_id *imx_device(unsigned short vid, unsigned short pid)
 {
@@ -264,6 +274,51 @@ static long get_file_size(FILE *xfile)
 	return size;
 }
 
+static int read_file(const char *name, unsigned char **buffer, unsigned *size)
+{
+	FILE *xfile;
+	unsigned fsize;
+	int cnt;
+	unsigned char *buf;
+	xfile = fopen(name, "rb");
+	if (!xfile) {
+		printf("error, can not open input file: %s\n", name);
+		return -5;
+	}
+
+	fsize = get_file_size(xfile);
+	if (fsize < 0x20) {
+		printf("error, file: %s is too small\n", name);
+		fclose(xfile);
+		return -2;
+	}
+
+	buf = malloc(fsize);
+	if (!buf) {
+		printf("error, out of memory\n");
+		fclose(xfile);
+		return -2;
+	}
+
+	cnt = fread(buf, 1 , fsize, xfile);
+	if (cnt < fsize) {
+		printf("error, cannot read %s\n", name);
+		fclose(xfile);
+		free(buf);
+		return -1;
+	}
+
+	if (size)
+		*size = fsize;
+
+	if (buffer)
+		*buffer = buf;
+	else
+		free(buf);
+
+	return 0;
+}
+
 /*
  * HID Class-Specific Requests values. See section 7.2 of the HID specifications
  */
@@ -368,16 +423,18 @@ int do_status(void)
 	unsigned char tmp[64];
 	int retry = 0;
 	int err;
-	const unsigned char status_command[] = {
-		5, 5, 0, 0, 0, 0,
-		0,
-		0, 0, 0, 0,
-		0, 0, 0, 0,
-		0
+	static const struct sdp_command status_command = {
+		.cmd = SDP_ERROR_STATUS,
+		.addr = 0,
+		.format = 0,
+		.cnt = 0,
+		.data = 0,
+		.rsvd = 0,
 	};
 
 	for (;;) {
-		err = transfer(1, (unsigned char*)status_command, 16, &last_trans);
+		err = transfer(1, (unsigned char *) &status_command, 16,
+			       &last_trans);
 
 		if (verbose > 2)
 			printf("report 1, wrote %i bytes, err=%i\n", last_trans, err);
@@ -410,18 +467,15 @@ int do_status(void)
 	return err;
 }
 
-#define V(a) (((a) >> 24) & 0xff), (((a) >> 16) & 0xff), (((a) >> 8) & 0xff), ((a) & 0xff)
-
 static int read_memory(unsigned addr, void *dest, unsigned cnt)
 {
-	static unsigned char read_reg_command[] = {
-		1,
-		1,
-		V(0),		/* address */
-		0x20,		/* format */
-		V(0x00000004),	/* data count */
-		V(0),		/* data */
-		0x00,		/* type */
+	static struct sdp_command read_reg_command = {
+		.cmd = SDP_READ_REG,
+		.addr = 0,
+		.format = 0x20,
+		.cnt = 0,
+		.data = 0,
+		.rsvd = 0,
 	};
 
 	int retry = 0;
@@ -429,18 +483,12 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 	int err;
 	int rem;
 	unsigned char tmp[64];
-	read_reg_command[2] = (unsigned char)(addr >> 24);
-	read_reg_command[3] = (unsigned char)(addr >> 16);
-	read_reg_command[4] = (unsigned char)(addr >> 8);
-	read_reg_command[5] = (unsigned char)(addr);
-
-	read_reg_command[7] = (unsigned char)(cnt >> 24);
-	read_reg_command[8] = (unsigned char)(cnt >> 16);
-	read_reg_command[9] = (unsigned char)(cnt >> 8);
-	read_reg_command[10] = (unsigned char)(cnt);
+	read_reg_command.addr = htonl(addr);
+	read_reg_command.cnt = htonl(cnt);
 
 	for (;;) {
-		err = transfer(1, read_reg_command, 16, &last_trans);
+		err = transfer(1, (unsigned char *) &read_reg_command, 16,
+			       &last_trans);
 		if (!err)
 			break;
 		printf("read_reg_command err=%i, last_trans=%i\n", err, last_trans);
@@ -491,47 +539,40 @@ static int write_memory(unsigned addr, unsigned val, int width)
 	int last_trans;
 	int err = 0;
 	unsigned char tmp[64];
-	unsigned char ds;
-	unsigned char write_reg_command[] = {
-		2,
-		2,
-		V(0),		/* address */
-		0x0,		/* format */
-		V(0x00000004),	/* data count */
-		V(0),		/* data */
-		0x00,		/* type */
+	static struct sdp_command write_reg_command = {
+		.cmd = SDP_WRITE_REG,
+		.addr = 0,
+		.format = 0,
+		.cnt = 0,
+		.data = 0,
+		.rsvd = 0,
 	};
-	write_reg_command[2] = (unsigned char)(addr >> 24);
-	write_reg_command[3] = (unsigned char)(addr >> 16);
-	write_reg_command[4] = (unsigned char)(addr >> 8);
-	write_reg_command[5] = (unsigned char)(addr);
+
+	write_reg_command.addr = htonl(addr);
+	write_reg_command.cnt = htonl(4);
 
 	if (verbose > 1)
 		printf("write memory reg: 0x%08x val: 0x%08x width: %d\n", addr, val, width);
 
 	switch (width) {
 		case 1:
-			ds = 0x8;
+			write_reg_command.format = 0x8;
 			break;
 		case 2:
-			ds = 0x10;
+			write_reg_command.format = 0x10;
 			break;
 		case 4:
-			ds = 0x20;
+			write_reg_command.format = 0x20;
 			break;
 		default:
 			return -1;
 	}
 
-	write_reg_command[6] = ds;
-
-	write_reg_command[11] = (unsigned char)(val >> 24);
-	write_reg_command[12] = (unsigned char)(val >> 16);
-	write_reg_command[13] = (unsigned char)(val >> 8);
-	write_reg_command[14] = (unsigned char)(val);
+	write_reg_command.data = htonl(val);
 
 	for (;;) {
-		err = transfer(1, write_reg_command, 16, &last_trans);
+		err = transfer(1, (unsigned char *) &write_reg_command, 16,
+			       &last_trans);
 		if (!err)
 			break;
 		printf("write_reg_command err=%i, last_trans=%i\n", err, last_trans);
@@ -586,15 +627,15 @@ static int modify_memory(unsigned addr, unsigned val, int width, int set_bits, i
 
 static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char type)
 {
-	static unsigned char dl_command[] = {
-		0x04,
-		0x04,
-		V(0),		/* address */
-		0x00,		/* format */
-		V(0x00000020),	/* data count */
-		V(0),		/* data */
-		0xaa,		/* type */
+	static struct sdp_command dl_command = {
+		.cmd = SDP_WRITE_FILE,
+		.addr = 0,
+		.format = 0,
+		.cnt = 0,
+		.data = 0,
+		.rsvd = 0,
 	};
+
 	int last_trans, err;
 	int retry = 0;
 	unsigned transfer_size = 0;
@@ -602,19 +643,13 @@ static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char typ
 	void *p;
 	int cnt;
 
-	dl_command[2] = (unsigned char)(dladdr >> 24);
-	dl_command[3] = (unsigned char)(dladdr >> 16);
-	dl_command[4] = (unsigned char)(dladdr >> 8);
-	dl_command[5] = (unsigned char)(dladdr);
-
-	dl_command[7] = (unsigned char)(len >> 24);
-	dl_command[8] = (unsigned char)(len >> 16);
-	dl_command[9] = (unsigned char)(len >> 8);
-	dl_command[10] = (unsigned char)(len);
-	dl_command[15] =  type;
+	dl_command.addr = htonl(dladdr);
+	dl_command.cnt = htonl(len);
+	dl_command.rsvd = type;
 
 	for (;;) {
-		err = transfer(1, dl_command, 16, &last_trans);
+		err = transfer(1, (unsigned char *) &dl_command, 16,
+			       &last_trans);
 		if (!err)
 			break;
 
@@ -669,13 +704,53 @@ static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char typ
 	return transfer_size;
 }
 
-static int write_dcd_table_ivt(struct imx_flash_header_v2 *hdr, unsigned char *file_start, unsigned cnt)
+static int sdp_jump_address(unsigned addr)
+{
+	unsigned char tmp[64];
+	static struct sdp_command jump_command = {
+		.cmd = SDP_JUMP_ADDRESS,
+		.addr = 0,
+		.format = 0,
+		.cnt = 0,
+		.data = 0,
+		.rsvd = 0,
+	};
+	int last_trans, err;
+	int retry = 0;
+
+	jump_command.addr = htonl(addr);
+
+	for (;;) {
+		err = transfer(1, (unsigned char *) &jump_command, 16,
+			       &last_trans);
+		if (!err)
+			break;
+
+		printf("jump_command err=%i, last_trans=%i\n", err, last_trans);
+
+		if (retry > 5)
+			return -4;
+
+		retry++;
+	}
+
+	memset(tmp, 0, sizeof(tmp));
+	err = transfer(3, tmp, sizeof(tmp), &last_trans);
+
+	if (err)
+		printf("j3 in err=%i, last_trans=%i  %02x %02x %02x %02x\n",
+			err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3]);
+	return 0;
+}
+
+static int write_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
+			       const unsigned char *file_start, unsigned cnt)
 {
 	unsigned char *dcd_end;
 	unsigned m_length;
 #define cvt_dest_to_src		(((unsigned char *)hdr) - hdr->self)
 	unsigned char* dcd;
-	unsigned char* file_end = file_start + cnt;
+	const unsigned char *file_end = file_start + cnt;
 	int err = 0;
 
 	if (!hdr->dcd_ptr) {
@@ -747,8 +822,8 @@ static int write_dcd_table_ivt(struct imx_flash_header_v2 *hdr, unsigned char *f
 	return err;
 }
 
-static int get_dcd_range_old(struct imx_flash_header *hdr,
-		unsigned char *file_start, unsigned cnt,
+static int get_dcd_range_old(const struct imx_flash_header *hdr,
+		const unsigned char *file_start, unsigned cnt,
 		unsigned char **pstart, unsigned char **pend)
 {
 	unsigned char *dcd_end;
@@ -756,7 +831,7 @@ static int get_dcd_range_old(struct imx_flash_header *hdr,
 #define cvt_dest_to_src_old		(((unsigned char *)&hdr->dcd) - hdr->dcd_ptr_ptr)
 	unsigned char* dcd;
 	unsigned val;
-	unsigned char* file_end = file_start + cnt;
+	const unsigned char *file_end = file_start + cnt;
 
 	if (!hdr->dcd) {
 		printf("No dcd table, barker=%x\n", hdr->app_code_barker);
@@ -794,7 +869,8 @@ static int get_dcd_range_old(struct imx_flash_header *hdr,
 	return 0;
 }
 
-static int write_dcd_table_old(struct imx_flash_header *hdr, unsigned char *file_start, unsigned cnt)
+static int write_dcd_table_old(const struct imx_flash_header *hdr,
+			       const unsigned char *file_start, unsigned cnt)
 {
 	unsigned val;
 	unsigned char *dcd_end;
@@ -877,10 +953,12 @@ err:
 	return ret;
 }
 
-static int is_header(unsigned char *p)
+static int is_header(const unsigned char *p)
 {
-	struct imx_flash_header *ohdr = (struct imx_flash_header *)p;
-	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
+	const struct imx_flash_header *ohdr =
+		(const struct imx_flash_header *)p;
+	const struct imx_flash_header_v2 *hdr =
+		(const struct imx_flash_header_v2 *)p;
 
 	switch (usb_id->mach_id->header_type) {
 	case HDR_MX51:
@@ -895,7 +973,8 @@ static int is_header(unsigned char *p)
 	return 0;
 }
 
-static int perform_dcd(unsigned char *p, unsigned char *file_start, unsigned cnt)
+static int perform_dcd(unsigned char *p, const unsigned char *file_start,
+		       unsigned cnt)
 {
 	struct imx_flash_header *ohdr = (struct imx_flash_header *)p;
 	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
@@ -920,29 +999,11 @@ static int perform_dcd(unsigned char *p, unsigned char *file_start, unsigned cnt
 	return ret;
 }
 
-static int clear_dcd_ptr(unsigned char *p, unsigned char *file_start, unsigned cnt)
-{
-	struct imx_flash_header *ohdr = (struct imx_flash_header *)p;
-	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
-
-	switch (usb_id->mach_id->header_type) {
-	case HDR_MX51:
-		printf("clear dcd_ptr=0x%08x\n", ohdr->dcd);
-		ohdr->dcd = 0;
-		break;
-	case HDR_MX53:
-		printf("clear dcd_ptr=0x%08x\n", hdr->dcd_ptr);
-		hdr->dcd_ptr = 0;
-		break;
-	}
-	return 0;
-}
-
-static int get_dl_start(unsigned char *p, unsigned char *file_start,
+static int get_dl_start(const unsigned char *p, const unsigned char *file_start,
 		unsigned cnt, unsigned *dladdr, unsigned *max_length, unsigned *plugin,
 		unsigned *header_addr)
 {
-	unsigned char* file_end = file_start + cnt;
+	const unsigned char *file_end = file_start + cnt;
 	switch (usb_id->mach_id->header_type) {
 	case HDR_MX51:
 	{
@@ -1012,18 +1073,6 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 				return ret;
 			}
 			curr->dcd = 0;
-			if ((!curr->jump_mode) && (!curr->plug)) {
-				printf("!!dcd done, nothing else requested\n");
-				return 0;
-			}
-		}
-
-		if (curr->clear_dcd) {
-			ret = clear_dcd_ptr(p, buf, cnt);
-			if (ret < 0) {
-				printf("!!clear_dcd returned %i\n", ret);
-				return ret;
-			}
 		}
 
 		if (*p_plugin && (!curr->plug) && (!header_cnt)) {
@@ -1047,69 +1096,32 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 
 static int do_irom_download(struct usb_work *curr, int verify)
 {
-	static unsigned char jump_command[] = {0x0b,0x0b, V(0),  0x00, V(0x00000000), V(0), 0x00};
-
 	int ret;
-	FILE* xfile;
 	unsigned char type;
-	unsigned fsize;
+	unsigned fsize = 0;
 	unsigned header_offset;
-	int cnt;
 	unsigned file_base;
-	int last_trans, err;
 	unsigned char *buf = NULL;
 	unsigned char *image;
 	unsigned char *verify_buffer = NULL;
-	unsigned char *p;
-	unsigned char tmp[64];
 	unsigned dladdr = 0;
 	unsigned max_length;
 	unsigned plugin = 0;
 	unsigned header_addr = 0;
-
 	unsigned skip = 0;
-	int retry = 0;
 
-	xfile = fopen(curr->filename, "rb" );
-	if (!xfile) {
-		printf("error, can not open input file: %s\n", curr->filename);
-		return -5;
-	}
-
-	fsize = get_file_size(xfile);
-	if (fsize < 0x20) {
-		printf("error, file: %s is too small\n", curr->filename);
-		ret = -2;
-		goto cleanup;
-	}
-
-	buf = malloc(fsize);
-	if (!buf) {
-		printf("error, out of memory\n");
-		ret = -2;
-		goto cleanup;
-	}
-
-	cnt = fread(buf, 1 , fsize, xfile);
-	if (cnt < fsize) {
-		printf("error, cannot read %s\n", curr->filename);
-		return -1;
-	}
+	ret = read_file(curr->filename, &buf, &fsize);
+	if (ret < 0)
+		return ret;
 
 	max_length = fsize;
 
-	ret = process_header(curr, buf, cnt,
+	ret = process_header(curr, buf, fsize,
 			&dladdr, &max_length, &plugin, &header_addr);
 	if (ret < 0)
 		goto cleanup;
 
 	header_offset = ret;
-
-	if ((!curr->jump_mode) && (!curr->plug)) {
-		/*  nothing else requested */
-		ret = 0;
-		goto cleanup;
-	}
 
 	if (plugin && (!curr->plug)) {
 		printf("Only plugin header found\n");
@@ -1125,9 +1137,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 
 	file_base = header_addr - header_offset;
 
-	type = (curr->plug || curr->jump_mode) ? FT_APP : FT_LOAD_ONLY;
-
-	if (usb_id->mach_id->mode == MODE_BULK && type == FT_APP) {
+	if (usb_id->mach_id->mode == MODE_BULK) {
 		/* No jump command, dladdr should point to header */
 		dladdr = header_addr;
 	}
@@ -1140,13 +1150,12 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	skip = dladdr - file_base;
 
 	image = buf + skip;
-
-	p = image;
-	cnt -= skip;
 	fsize -= skip;
 
 	if (fsize > max_length)
 		fsize = max_length;
+
+	type = FT_APP;
 
 	if (verify) {
 		verify_buffer = malloc(64);
@@ -1157,7 +1166,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 			goto cleanup;
 		}
 
-		memcpy(verify_buffer, p, 64);
+		memcpy(verify_buffer, image, 64);
 
 		if ((type == FT_APP) && (usb_id->mach_id->mode != MODE_HID)) {
 			type = FT_LOAD_ONLY;
@@ -1201,46 +1210,21 @@ static int do_irom_download(struct usb_work *curr, int verify)
 	if (usb_id->mach_id->mode == MODE_HID && type == FT_APP) {
 		printf("jumping to 0x%08x\n", header_addr);
 
-		jump_command[2] = (unsigned char)(header_addr >> 24);
-		jump_command[3] = (unsigned char)(header_addr >> 16);
-		jump_command[4] = (unsigned char)(header_addr >> 8);
-		jump_command[5] = (unsigned char)(header_addr);
-
-		/* Any command will initiate jump for mx51, jump address is ignored by mx51 */
-		retry = 0;
-
-		for (;;) {
-			err = transfer(1, jump_command, 16, &last_trans);
-			if (!err)
-				break;
-
-			printf("jump_command err=%i, last_trans=%i\n", err, last_trans);
-
-			if (retry > 5)
-				return -4;
-
-			retry++;
-		}
-
-		memset(tmp, 0, sizeof(tmp));
-		err = transfer(3, tmp, sizeof(tmp), &last_trans);
-
-		if (err)
-			printf("j3 in err=%i, last_trans=%i  %02x %02x %02x %02x\n",
-					err, last_trans, tmp[0], tmp[1], tmp[2], tmp[3]);
+		ret = sdp_jump_address(header_addr);
+		if (ret < 0)
+			return ret;
 	}
 
 	ret = 0;
 cleanup:
-	fclose(xfile);
 	free(verify_buffer);
 	free(buf);
 
 	return ret;
 }
 
-static int write_mem(struct config_data *data, uint32_t addr, uint32_t val, int width,
-		     int set_bits, int clear_bits)
+static int write_mem(const struct config_data *data, uint32_t addr,
+		     uint32_t val, int width, int set_bits, int clear_bits)
 {
 	return modify_memory(addr, val, width, set_bits, clear_bits);
 }
@@ -1309,7 +1293,6 @@ int main(int argc, char *argv[])
 
 	w.plug = 1;
 	w.dcd = 1;
-	w.jump_mode = J_HEADER;
 	strncpy(w.filename, argv[optind], sizeof(w.filename) - 1);
 
 	r = libusb_init(NULL);

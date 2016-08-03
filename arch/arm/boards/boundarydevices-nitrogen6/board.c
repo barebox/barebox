@@ -22,14 +22,18 @@
 
 static int nitrogen6x_devices_init(void)
 {
-	if (!of_machine_is_compatible("fsl,imx6dl-nitrogen6x") &&
-	    !of_machine_is_compatible("fsl,imx6q-nitrogen6x"))
+	if (!of_machine_is_compatible("boundary,imx6dl-nitrogen6x") &&
+	    !of_machine_is_compatible("boundary,imx6q-nitrogen6x") &&
+	    !of_machine_is_compatible("boundary,imx6qp-nitrogen6_max"))
 		return 0;
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 			BBU_HANDLER_FLAG_DEFAULT);
 
-	barebox_set_hostname("nitrogen6x");
+	if (of_machine_is_compatible("boundary,imx6qp-nitrogen6_max"))
+		barebox_set_hostname("nitrogen6max");
+	else
+		barebox_set_hostname("nitrogen6x");
 
 	return 0;
 }
@@ -54,8 +58,9 @@ static int ksz9021rn_phy_fixup(struct phy_device *dev)
 
 static int nitrogen6x_coredevices_init(void)
 {
-	if (!of_machine_is_compatible("fsl,imx6dl-nitrogen6x") &&
-	    !of_machine_is_compatible("fsl,imx6q-nitrogen6x"))
+	if (!of_machine_is_compatible("boundary,imx6dl-nitrogen6x") &&
+	    !of_machine_is_compatible("boundary,imx6q-nitrogen6x") &&
+	    !of_machine_is_compatible("boundary,imx6qp-nitrogen6_max"))
 		return 0;
 
 	phy_register_fixup_for_uid(PHY_ID_KSZ9021, MICREL_PHY_ID_MASK,

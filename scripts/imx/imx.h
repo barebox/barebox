@@ -65,9 +65,10 @@ struct config_data {
 	char *srkfile;
 	int header_version;
 	int cpu_type;
-	int (*check)(struct config_data *data, uint32_t cmd, uint32_t addr, uint32_t mask);
-	int (*write_mem)(struct config_data *data, uint32_t addr, uint32_t val, int width,
-			 int set_bits, int clear_bits);
+	int (*check)(const struct config_data *data, uint32_t cmd,
+		     uint32_t addr, uint32_t mask);
+	int (*write_mem)(const struct config_data *data, uint32_t addr,
+			 uint32_t val, int width, int set_bits, int clear_bits);
 	int csf_space;
 	char *csf;
 };

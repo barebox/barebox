@@ -404,7 +404,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 	priv->map_config.reg_stride = 4;
 	priv->map_config.max_register = data->num_regs - 1;
 
-	priv->map = regmap_init(&priv->dev, &imx_ocotp_regmap_bus, priv, &priv->map_config);
+	priv->map = regmap_init(dev, &imx_ocotp_regmap_bus, priv, &priv->map_config);
 	if (IS_ERR(priv->map))
 		return PTR_ERR(priv->map);
 

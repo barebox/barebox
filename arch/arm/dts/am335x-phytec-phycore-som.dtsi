@@ -300,22 +300,12 @@
 		};
 
 		partition@1C0000 {
-			label = "oftree";
-			reg = <0x1C0000 0x40000>;
-		};
-
-		partition@200000 {
-			label = "kernel";
-			reg = <0x200000 0x800000>;
-		};
-
-		partition@A00000 {
 			label = "root";
 			/*
 			 * Size 0x0 extends partition to
 			 * end of nand flash.
 			 */
-			reg = <0xA00000 0x0>;
+			reg = <0x1C0000 0x0>;
 		};
 	};
 };

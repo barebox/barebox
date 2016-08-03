@@ -268,25 +268,30 @@ CFG_start_hummingboard_microsom_i4.pblx.imximg = $(board)/solidrun-microsom/flas
 FILE_barebox-solidrun-hummingboard-microsom-i4.img = start_hummingboard_microsom_i4.pblx.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i4.img
 
-pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6q_nitrogen6x_1g
-CFG_start_imx6q_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6q-1g.imxcfg
+pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6q_nitrogen6x_1g
+CFG_start_imx6q_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6q-1g.imxcfg
 FILE_barebox-boundarydevices-imx6q-nitrogen6x-1g.img = start_imx6q_nitrogen6x_1g.pblx.imximg
-image-$(CONFIG_MACH_NITROGEN6X) += barebox-boundarydevices-imx6q-nitrogen6x-1g.img
+image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6q-nitrogen6x-1g.img
 
-pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6q_nitrogen6x_2g
-CFG_start_imx6q_nitrogen6x_2g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6q-2g.imxcfg
+pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6q_nitrogen6x_2g
+CFG_start_imx6q_nitrogen6x_2g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6q-2g.imxcfg
 FILE_barebox-boundarydevices-imx6q-nitrogen6x-2g.img = start_imx6q_nitrogen6x_2g.pblx.imximg
-image-$(CONFIG_MACH_NITROGEN6X) += barebox-boundarydevices-imx6q-nitrogen6x-2g.img
+image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6q-nitrogen6x-2g.img
 
-pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6dl_nitrogen6x_1g
-CFG_start_imx6dl_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6dl-1g.imxcfg
+pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6dl_nitrogen6x_1g
+CFG_start_imx6dl_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6dl-1g.imxcfg
 FILE_barebox-boundarydevices-imx6dl-nitrogen6x-1g.img = start_imx6dl_nitrogen6x_1g.pblx.imximg
-image-$(CONFIG_MACH_NITROGEN6X) += barebox-boundarydevices-imx6dl-nitrogen6x-1g.img
+image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6dl-nitrogen6x-1g.img
 
-pblx-$(CONFIG_MACH_NITROGEN6X) += start_imx6dl_nitrogen6x_2g
-CFG_start_imx6dl_nitrogen6x_2g.pblx.imximg = $(board)/boundarydevices-nitrogen6x/flash-header-nitrogen6dl-2g.imxcfg
+pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6dl_nitrogen6x_2g
+CFG_start_imx6dl_nitrogen6x_2g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6dl-2g.imxcfg
 FILE_barebox-boundarydevices-imx6dl-nitrogen6x-2g.img = start_imx6dl_nitrogen6x_2g.pblx.imximg
-image-$(CONFIG_MACH_NITROGEN6X) += barebox-boundarydevices-imx6dl-nitrogen6x-2g.img
+image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6dl-nitrogen6x-2g.img
+
+pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6qp_nitrogen6_max
+CFG_start_imx6qp_nitrogen6_max.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6qp-max.imxcfg
+FILE_barebox-boundarydevices-imx6qp-nitrogen6_max.img = start_imx6qp_nitrogen6_max.pblx.imximg
+image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6qp-nitrogen6_max.img
 
 pblx-$(CONFIG_MACH_TX6X) += start_imx6dl_tx6x_512m
 CFG_start_imx6dl_tx6x_512m.pblx.imximg = $(board)/karo-tx6x/flash-header-tx6dl-512m.imxcfg

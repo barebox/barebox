@@ -40,6 +40,12 @@
 
 #define CSPI_0_0_RESET_START		(1 << 0)
 
+#define CSPI_0_4_CTRL			0x08
+#define CSPI_0_4_CTRL_BL_SHIFT		8
+#define CSPI_0_4_CTRL_BL_MASK		0x1f
+#define CSPI_0_4_CTRL_DRCTL_SHIFT	20
+#define CSPI_0_4_CTRL_CS_SHIFT		24
+
 #define CSPI_0_7_RXDATA			0x00
 #define CSPI_0_7_TXDATA			0x04
 #define CSPI_0_7_CTRL			0x08
@@ -50,6 +56,7 @@
 #define CSPI_0_7_CTRL_PHA		(1 << 5)
 #define CSPI_0_7_CTRL_SSCTL		(1 << 6)
 #define CSPI_0_7_CTRL_SSPOL		(1 << 7)
+#define CSPI_0_7_CTRL_DRCTL_SHIFT	8
 #define CSPI_0_7_CTRL_CS_SHIFT		12
 #define CSPI_0_7_CTRL_DR_SHIFT		16
 #define CSPI_0_7_CTRL_BL_SHIFT		20

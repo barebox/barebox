@@ -12,7 +12,7 @@
  */
 
 #include <common.h>
-#include <boot.h>
+#include <bootm.h>
 #include <fs.h>
 #include <malloc.h>
 #include <memory.h>
@@ -20,6 +20,7 @@
 #include <image-fit.h>
 #include <globalvar.h>
 #include <init.h>
+#include <environment.h>
 #include <linux/stat.h>
 #include <magicvar.h>
 

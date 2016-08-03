@@ -19,7 +19,7 @@
 #define __IMAGE_FIT_H__
 
 #include <linux/types.h>
-#include <boot.h>
+#include <bootm.h>
 
 struct fit_handle {
 	void *fit;

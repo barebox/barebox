@@ -32,7 +32,7 @@
 #include <fcntl.h>
 #include <fs.h>
 #include <errno.h>
-#include <boot.h>
+#include <bootm.h>
 #include <of.h>
 #include <rtc.h>
 #include <init.h>

@@ -1,114 +1,9 @@
 #ifndef __BOOT_H
 #define __BOOT_H
 
-#include <image.h>
-#include <filetype.h>
 #include <of.h>
-#include <linux/list.h>
+#include <menu.h>
 #include <environment.h>
-
-enum bootm_verify {
-	BOOTM_VERIFY_NONE,
-	BOOTM_VERIFY_HASH,
-	BOOTM_VERIFY_SIGNATURE,
-	BOOTM_VERIFY_AVAILABLE,
-};
-
-struct bootm_data {
-	const char *os_file;
-	const char *initrd_file;
-	const char *oftree_file;
-	int verbose;
-	enum bootm_verify verify;
-	bool force;
-	bool dryrun;
-	/*
-	 * appendroot - if true, try to add a suitable root= Kernel option to
-	 * mount the rootfs from the same device as the Kernel comes from.
-	 */
-	bool appendroot;
-	unsigned long initrd_address;
-	unsigned long os_address;
-	unsigned long os_entry;
-};
-
-int bootm_boot(struct bootm_data *data);
-
-struct image_data {
-	/* simplest case. barebox has already loaded the os here */
-	struct resource *os_res;
-
-	/* if os is an uImage this will be provided */
-	struct uimage_handle *os;
-
-	/* if os is a FIT image this will be provided */
-	struct fit_handle *os_fit;
-
-	char *os_part;
-
-	/* otherwise only the filename will be provided */
-	char *os_file;
-
-	/*
-	 * The address the user wants to load the os image to.
-	 * May be UIMAGE_INVALID_ADDRESS to indicate that the
-	 * user has not specified any address. In this case the
-	 * handler may choose a suitable address
-	 */
-	unsigned long os_address;
-
-	/* entry point to the os. relative to the start of the image */
-	unsigned long os_entry;
-
-	/* if initrd is already loaded this resource will be !NULL */
-	struct resource *initrd_res;
-
-	/* if initrd is an uImage this will be provided */
-	struct uimage_handle *initrd;
-	char *initrd_part;
-
-	/* otherwise only the filename will be provided */
-	char *initrd_file;
-
-	unsigned long initrd_address;
-
-	char *oftree_file;
-	char *oftree_part;
-
-	struct device_node *of_root_node;
-	struct fdt_header *oftree;
-	struct resource *oftree_res;
-
-	enum bootm_verify verify;
-	int verbose;
-	int force;
-	int dryrun;
-};
-
-struct image_handler {
-	const char *name;
-
-	struct list_head list;
-
-	int ih_os;
-
-	enum filetype filetype;
-	int (*bootm)(struct image_data *data);
-};
-
-int register_image_handler(struct image_handler *handle);
-
-#ifdef CONFIG_BOOTM_VERBOSE
-static inline int bootm_verbose(struct image_data *data)
-{
-	return data->verbose;
-}
-#else
-static inline int bootm_verbose(struct image_data *data)
-{
-	return 0;
-}
-#endif
 
 #ifdef CONFIG_FLEXIBLE_BOOTARGS
 const char *linux_bootargs_get(void);
@@ -125,18 +20,32 @@ static inline int linux_bootargs_overwrite(const char *bootargs)
 }
 #endif
 
-void bootm_data_init_defaults(struct bootm_data *data);
+struct bootentries {
+	struct list_head entries;
+	struct menu *menu;
+};
 
-int bootm_load_os(struct image_data *data, unsigned long load_address);
+struct bootentry {
+	struct list_head list;
+	struct menu_entry me;
+	char *title;
+	char *description;
+	int (*boot)(struct bootentry *entry, int verbose, int dryrun);
+	void (*release)(struct bootentry *entry);
+};
 
-bool bootm_has_initrd(struct image_data *data);
-int bootm_load_initrd(struct image_data *data, unsigned long load_address);
+int bootentries_add_entry(struct bootentries *entries, struct bootentry *entry);
 
-int bootm_load_devicetree(struct image_data *data, unsigned long load_address);
-int bootm_get_os_size(struct image_data *data);
+#define bootentries_for_each_entry(bootentries, entry) \
+	list_for_each_entry(entry, &bootentries->entries, list)
 
-enum bootm_verify bootm_get_verify_mode(void);
-
-#define UIMAGE_SOME_ADDRESS (UIMAGE_INVALID_ADDRESS - 1)
+void boot_set_watchdog_timeout(unsigned int timeout);
+struct bootentries *bootentries_alloc(void);
+void bootentries_free(struct bootentries *bootentries);
+int bootentry_create_from_name(struct bootentries *bootentries,
+				      const char *name);
+void bootsources_menu(struct bootentries *bootentries, int timeout);
+void bootsources_list(struct bootentries *bootentries);
+int boot_entry(struct bootentry *be, int verbose, int dryrun);
 
 #endif /* __BOOT_H */

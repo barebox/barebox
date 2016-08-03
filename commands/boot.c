@@ -11,378 +11,23 @@
  *
  */
 
-#include <environment.h>
 #include <globalvar.h>
-#include <magicvar.h>
-#include <watchdog.h>
 #include <command.h>
-#include <readkey.h>
 #include <common.h>
 #include <getopt.h>
-#include <blspec.h>
-#include <libgen.h>
 #include <malloc.h>
-#include <clock.h>
 #include <boot.h>
-#include <glob.h>
-#include <init.h>
-#include <menu.h>
-#include <fs.h>
 #include <complete.h>
 
 #include <linux/stat.h>
-
-static int verbose;
-static int dryrun;
-static int timeout;
-
-/*
- * Start a single boot script. 'path' is a full path to a boot script.
- */
-static int boot_script(char *path)
-{
-	int ret;
-	struct bootm_data data = {};
-
-	globalvar_set_match("linux.bootargs.dyn.", "");
-
-	ret = run_command(path);
-	if (ret) {
-		printf("Running %s failed\n", path);
-		goto out;
-	}
-
-	bootm_data_init_defaults(&data);
-
-	if (verbose)
-		data.verbose = verbose;
-	if (dryrun)
-		data.dryrun = dryrun;
-
-	ret = bootm_boot(&data);
-	if (ret)
-		pr_err("Booting %s failed: %s\n", basename(path), strerror(-ret));
-out:
-	return ret;
-}
-
-static unsigned int boot_watchdog_timeout;
-
-static int init_boot_watchdog_timeout(void)
-{
-	return globalvar_add_simple_int("boot.watchdog_timeout",
-			&boot_watchdog_timeout, "%u");
-}
-late_initcall(init_boot_watchdog_timeout);
-
-BAREBOX_MAGICVAR_NAMED(global_watchdog_timeout, global.boot.watchdog_timeout,
-		"Watchdog enable timeout in seconds before booting");
-
-static int boot_entry(struct blspec_entry *be)
-{
-	int ret;
-
-	if (IS_ENABLED(CONFIG_WATCHDOG) && boot_watchdog_timeout) {
-		ret = watchdog_set_timeout(boot_watchdog_timeout);
-		if (ret)
-			pr_warn("Failed to enable watchdog: %s\n", strerror(-ret));
-	}
-
-	if (be->scriptpath) {
-		ret = boot_script(be->scriptpath);
-	} else {
-		if (IS_ENABLED(CONFIG_BLSPEC))
-			ret = blspec_boot(be, verbose, dryrun);
-		else
-			ret = -ENOSYS;
-	}
-
-	return ret;
-}
-
-static void bootsource_action(struct menu *m, struct menu_entry *me)
-{
-	struct blspec_entry *be = container_of(me, struct blspec_entry, me);
-	int ret;
-
-	ret = boot_entry(be);
-	if (ret)
-		printf("Booting failed with: %s\n", strerror(-ret));
-
-	printf("Press any key to continue\n");
-
-	read_key();
-}
-
-/*
- * bootscript_create_entry - create a boot entry from a script name
- */
-static int bootscript_create_entry(struct blspec *blspec, const char *name)
-{
-	struct blspec_entry *be;
-	enum filetype type;
-
-	type = file_name_detect_type(name);
-	if (type != filetype_sh)
-		return -EINVAL;
-
-	be = blspec_entry_alloc(blspec);
-	be->me.type = MENU_ENTRY_NORMAL;
-	be->scriptpath = xstrdup(name);
-	be->me.display = xstrdup(basename(be->scriptpath));
-
-	return 0;
-}
-
-/*
- * bootscript_scan_path - create boot entries from a path
- *
- * path can either be a full path to a bootscript or a full path to a diretory
- * containing bootscripts.
- */
-static int bootscript_scan_path(struct blspec *blspec, const char *path)
-{
-	struct stat s;
-	char *files;
-	int ret, i;
-	int found = 0;
-	glob_t globb;
-
-	ret = stat(path, &s);
-	if (ret)
-		return ret;
-
-	if (!S_ISDIR(s.st_mode)) {
-		ret = bootscript_create_entry(blspec, path);
-		if (ret)
-			return ret;
-		return 1;
-	}
-
-	files = basprintf("%s/*", path);
-
-	glob(files, 0, NULL, &globb);
-
-	for (i = 0; i < globb.gl_pathc; i++) {
-		char *bootscript_path = globb.gl_pathv[i];
-
-		if (*basename(bootscript_path) == '.')
-			continue;
-
-		bootscript_create_entry(blspec, bootscript_path);
-		found++;
-	}
-
-	globfree(&globb);
-	free(files);
-
-	ret = found;
-
-	return ret;
-}
-
-/*
- * bootentry_parse_one - create boot entries from a name
- *
- * name can be:
- * - a name of a boot script under /env/boot
- * - a full path of a boot script
- * - a device name
- * - a cdev name
- * - a full path of a directory containing bootloader spec entries
- * - a full path of a directory containing bootscripts
- *
- * Returns the number of entries found or a negative error code.
- */
-static int bootentry_parse_one(struct blspec *blspec, const char *name)
-{
-	int found = 0, ret;
-
-	if (IS_ENABLED(CONFIG_BLSPEC)) {
-		ret = blspec_scan_devicename(blspec, name);
-		if (ret > 0)
-			found += ret;
-		ret = blspec_scan_directory(blspec, name);
-		if (ret > 0)
-			found += ret;
-	}
-
-	if (!found) {
-		char *path;
-
-		if (*name != '/')
-			path = basprintf("/env/boot/%s", name);
-		else
-			path = xstrdup(name);
-
-		ret = bootscript_scan_path(blspec, path);
-		if (ret > 0)
-			found += ret;
-
-		free(path);
-	}
-
-	return found;
-}
-
-/*
- * bootentries_collect - collect bootentries from an array of names
- */
-static struct blspec *bootentries_collect(char *entries[], int num_entries)
-{
-	struct blspec *blspec;
-	int i;
-
-	blspec = blspec_alloc();
-
-	if (IS_ENABLED(CONFIG_MENU))
-		blspec->menu->display = basprintf("boot");
-
-	if (!num_entries)
-		bootscript_scan_path(blspec, "/env/boot");
-
-	if (IS_ENABLED(CONFIG_BLSPEC) && !num_entries)
-		blspec_scan_devices(blspec);
-
-	for (i = 0; i < num_entries; i++)
-		bootentry_parse_one(blspec, entries[i]);
-
-	return blspec;
-}
-
-/*
- * bootsources_menu - show a menu from an array of names
- */
-static void bootsources_menu(char *entries[], int num_entries)
-{
-	struct blspec *blspec = NULL;
-	struct blspec_entry *entry, *entry_default;
-	struct menu_entry *back_entry;
-
-	if (!IS_ENABLED(CONFIG_MENU)) {
-		printf("no menu support available\n");
-		return;
-	}
-
-	blspec = bootentries_collect(entries, num_entries);
-	if (!blspec)
-		return;
-
-	entry_default = blspec_entry_default(blspec);
-
-	blspec_for_each_entry(blspec, entry) {
-		entry->me.action = bootsource_action;
-		menu_add_entry(blspec->menu, &entry->me);
-		if (entry == entry_default)
-			menu_set_selected_entry(blspec->menu, &entry->me);
-	}
-
-	back_entry = xzalloc(sizeof(*back_entry));
-	back_entry->display = "back";
-	back_entry->type = MENU_ENTRY_NORMAL;
-	back_entry->non_re_ent = 1;
-	menu_add_entry(blspec->menu, back_entry);
-
-	if (timeout >= 0)
-		blspec->menu->auto_select = timeout;
-
-	menu_show(blspec->menu);
-
-	free(back_entry);
-
-	blspec_free(blspec);
-}
-
-/*
- * bootsources_list - list boot entries from an array of names
- */
-static void bootsources_list(char *entries[], int num_entries)
-{
-	struct blspec *blspec;
-	struct blspec_entry *entry, *entry_default;
-
-	blspec = bootentries_collect(entries, num_entries);
-	if (!blspec)
-		return;
-
-	entry_default = blspec_entry_default(blspec);
-
-	printf("  %-20s %-20s  %s\n", "device", "hwdevice", "title");
-	printf("  %-20s %-20s  %s\n", "------", "--------", "-----");
-
-	blspec_for_each_entry(blspec, entry) {
-		if (entry == entry_default)
-			printf("* ");
-		else
-			printf("  ");
-
-		if (entry->scriptpath)
-			printf("%-40s   %s\n", basename(entry->scriptpath), entry->me.display);
-		else
-			printf("%s\n", entry->me.display);
-	}
-
-	blspec_free(blspec);
-}
-
-/*
- * boot a script or a bootspec entry. 'name' can be:
- * - a filename under /env/boot/
- * - a full path to a boot script
- * - a device name
- * - a partition name under /dev/
- * - a full path to a directory which
- *   - contains boot scripts, or
- *   - contains a loader/entries/ directory containing bootspec entries
- *
- * Returns a negative error on failure, or 0 on a successful dryrun boot.
- */
-static int boot(const char *name)
-{
-	struct blspec *blspec;
-	struct blspec_entry *entry, *entry_default;
-	int ret;
-
-	blspec = blspec_alloc();
-	ret = bootentry_parse_one(blspec, name);
-	if (ret < 0)
-		return ret;
-
-	if (!ret) {
-		printf("Nothing bootable found on %s\n", name);
-		return -ENOENT;
-	}
-
-	entry_default = blspec_entry_default(blspec);
-	if (entry_default) {
-		ret = boot_entry(entry_default);
-		if (!ret)
-			return ret;
-		printf("booting %s failed: %s\n", entry_default->me.display,
-				strerror(-ret));
-	}
-
-	blspec_for_each_entry(blspec, entry) {
-		if (entry == entry_default)
-			continue;
-
-		printf("booting %s\n", entry->me.display);
-		ret = boot_entry(entry);
-		if (!ret)
-			break;
-		printf("booting %s failed: %s\n", entry->me.display, strerror(-ret));
-	}
-
-	return ret;
-}
 
 static int do_boot(int argc, char *argv[])
 {
 	char *freep = NULL;
 	int opt, ret = 0, do_list = 0, do_menu = 0;
-	char **sources;
-	int num_sources;
-	int i;
+	int i, dryrun = 0, verbose = 0, timeout = -1;
+	struct bootentries *entries;
+	struct bootentry *entry;
 
 	verbose = 0;
 	dryrun = 0;
@@ -406,17 +51,22 @@ static int do_boot(int argc, char *argv[])
 			timeout = simple_strtoul(optarg, NULL, 0);
 			break;
 		case 'w':
-			boot_watchdog_timeout = simple_strtoul(optarg, NULL, 0);
+			boot_set_watchdog_timeout(simple_strtoul(optarg, NULL, 0));
 			break;
 		}
 	}
 
+	entries = bootentries_alloc();
+
 	if (optind < argc) {
-		num_sources = argc - optind;
-		sources = xmemdup(&argv[optind], sizeof(char *) * num_sources);
+		for (i = optind; i < argc; i++) {
+			ret = bootentry_create_from_name(entries, argv[i]);
+			if (ret <= 0)
+				printf("Nothing bootable found on '%s'\n", argv[i]);
+	       }
 	} else {
 		const char *def;
-		char *sep;
+		char *sep, *name;
 
 		def = getenv("global.boot.default");
 		if (!def)
@@ -424,49 +74,38 @@ static int do_boot(int argc, char *argv[])
 
 		sep = freep = xstrdup(def);
 
-		num_sources = 0;
-
-		while (1) {
-			num_sources++;
-
-			sep = strchr(sep, ' ');
-			if (!sep)
-				break;
-			sep++;
+		while ((name = strsep(&sep, " ")) != NULL) {
+			ret = bootentry_create_from_name(entries, name);
+			if (ret <= 0)
+				printf("Nothing bootable found on '%s'\n", name);
 		}
 
-		sources = xmalloc(sizeof(char *) * num_sources);
+		free(freep);
+	}
 
-		sep = freep;
-
-		for (i = 0; i < num_sources; i++) {
-			sources[i] = sep;
-			sep = strchr(sep, ' ');
-			if (sep)
-				*sep = 0;
-			sep++;
-		}
+	if (list_empty(&entries->entries)) {
+		printf("Nothing bootable found\n");
+		return COMMAND_ERROR;
 	}
 
 	if (do_list) {
-		bootsources_list(sources, num_sources);
+		bootsources_list(entries);
 		goto out;
 	}
 
 	if (do_menu) {
-		bootsources_menu(sources, num_sources);
+		bootsources_menu(entries, timeout);
 		goto out;
 	}
 
-	for (i = 0; i < num_sources; i++) {
-		ret = boot(sources[i]);
+	bootentries_for_each_entry(entries, entry) {
+		ret = boot_entry(entry, verbose, dryrun);
 		if (!ret)
 			break;
 	}
 
 out:
-	free(sources);
-	free(freep);
+	bootentries_free(entries);
 
 	return ret;
 }
@@ -504,5 +143,3 @@ BAREBOX_CMD_START(boot)
 	BAREBOX_CMD_GROUP(CMD_GRP_BOOT)
 	BAREBOX_CMD_HELP(cmd_boot_help)
 BAREBOX_CMD_END
-
-BAREBOX_MAGICVAR_NAMED(global_boot_default, global.boot.default, "default boot order");

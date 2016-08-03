@@ -294,6 +294,7 @@ config CMD_BOOT_ORDER
 config CMD_BOOT
 	tristate
 	depends on BOOTM
+	select BOOT
 	prompt "boot"
 	help
 	  Select this for booting based on scripts. Unlike the bootm command which

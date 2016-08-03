@@ -309,8 +309,13 @@ static struct phy_device *of_phy_register_fixed_link(struct device_node *np,
 
 	phydev->dev.parent = &edev->dev;
 	phydev->registered = 1;
-	phydev->speed = 1000;
-	phydev->duplex = 1;
+	phydev->link = 1;
+
+	if (of_property_read_u32(np, "speed", &phydev->speed))
+		return NULL;
+	phydev->duplex = of_property_read_bool(np,"full-duplex");
+	phydev->pause = of_property_read_bool(np, "pause");
+	phydev->asym_pause = of_property_read_bool(np, "asym-pause");
 
 	return phydev;
 }

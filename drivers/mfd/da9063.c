@@ -111,7 +111,6 @@ static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	struct device_d *dev = priv->dev;
 	unsigned int scale = 0;
 	int ret;
-	u8 val;
 
 	if (timeout > 131)
 		return -EINVAL;
@@ -132,14 +131,8 @@ static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 		scale++; /* scale 0 disables the WD */
 	}
 
-	ret = i2c_read_reg(priv->client, DA9063_REG_CONTROL_D, &val, 1);
-	if (ret < 0)
-		return ret;
-
-	val &= ~DA9063_TWDSCALE_MASK;
-	val |= scale;
-
-	ret = i2c_write_reg(priv->client, DA9063_REG_CONTROL_D, &val, 1);
+	ret = da906x_reg_update(priv, DA9063_REG_CONTROL_D,
+				DA9063_TWDSCALE_MASK, scale);
 	if (ret < 0)
 		return ret;
 

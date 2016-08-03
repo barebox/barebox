@@ -39,6 +39,9 @@ config BCH
 config BITREV
 	bool
 
+config FNMATCH
+	bool
+
 config QSORT
 	bool
 

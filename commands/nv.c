@@ -26,19 +26,25 @@
 static int do_nv(int argc, char *argv[])
 {
 	int opt;
-	int do_remove = 0;
-	int ret;
+	int do_remove = 0, do_save = 0;
+	int ret, i;
 	char *value;
 
-	while ((opt = getopt(argc, argv, "r")) > 0) {
+	while ((opt = getopt(argc, argv, "rs")) > 0) {
 		switch (opt) {
 		case 'r':
 			do_remove = 1;
+			break;
+		case 's':
+			do_save = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
 	}
+
+	if (do_save)
+		return nvvar_save();
 
 	if (argc == optind) {
 		nvvar_print();
@@ -48,19 +54,21 @@ static int do_nv(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (argc != 1)
+	if (argc < 1)
 		return COMMAND_ERROR_USAGE;
 
-	value = strchr(argv[0], '=');
-	if (value) {
-		*value = 0;
-		value++;
-	}
+	for (i = 0; i < argc; i++) {
+		value = strchr(argv[0], '=');
+		if (value) {
+			*value = 0;
+			value++;
+		}
 
-	if (do_remove)
-		ret = nvvar_remove(argv[0]);
-	else
-		ret = nvvar_add(argv[0], value);
+		if (do_remove)
+			ret = nvvar_remove(argv[i]);
+		else
+			ret = nvvar_add(argv[i], value);
+	}
 
 	return ret;
 }
@@ -68,17 +76,18 @@ static int do_nv(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(nv)
 BAREBOX_CMD_HELP_TEXT("Add a new non volatile variable named VAR, optionally set to VALUE.")
 BAREBOX_CMD_HELP_TEXT("non volatile variables are persistent variables that overwrite the")
-BAREBOX_CMD_HELP_TEXT("global variables of the same name. Their value is saved with")
-BAREBOX_CMD_HELP_TEXT("'saveenv'.")
+BAREBOX_CMD_HELP_TEXT("global variables of the same name. Their value is saved implicitly with")
+BAREBOX_CMD_HELP_TEXT("'saveenv' or explicitly with 'nv -s'")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-r", "remove a non volatile variable")
+BAREBOX_CMD_HELP_OPT("-r", "remove non volatile variables")
+BAREBOX_CMD_HELP_OPT("-s", "Save NV variables")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(nv)
 	.cmd		= do_nv,
 	BAREBOX_CMD_DESC("create or set non volatile variables")
-	BAREBOX_CMD_OPTS("[-r] VAR[=VALUE]")
+	BAREBOX_CMD_OPTS("[-r] VAR[=VALUE] ...")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_nv_help)
 BAREBOX_CMD_END

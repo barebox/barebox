@@ -172,6 +172,7 @@ config NVVAR
 	default y if !SHELL_NONE
 	depends on GLOBALVAR
 	depends on ENV_HANDLING
+	select FNMATCH
 	help
 	  Non volatile environment variables begin with "nv.". They behave like
 	  global variables above, but their values are saved in the environment
@@ -424,6 +425,7 @@ config MAXARGS
 
 config GLOB
 	bool
+	select FNMATCH
 	prompt "globbing support"
 	help
 	  If you want to use wildcards like * or ? say y here.

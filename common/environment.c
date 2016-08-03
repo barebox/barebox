@@ -364,6 +364,10 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 
 	ret = 0;
 
+#ifdef CONFIG_NVVAR
+	if (!strcmp(filename, default_environment_path_get()))
+	    nv_var_set_clean();
+#endif
 out:
 	close(envfd);
 out1:

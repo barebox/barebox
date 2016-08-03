@@ -45,6 +45,8 @@ struct da9063 {
 /* bank1: control register I */
 #define DA9063_REG1_CONFIG_I	0x10e
 
+#define DA9062AA_DEVICE_ID	0x181
+
 /* DA9063_REG_FAULT_LOG (addr=0x05) */
 #define DA9063_TWD_ERROR	0x01
 #define DA9063_POR		0x02
@@ -196,6 +198,7 @@ static void da9063_restart(struct restart_handler *rst)
 static int da9062_device_init(struct da9063 *priv)
 {
 	int ret;
+	uint8_t id[4];
 
 	priv->client1 = i2c_new_dummy(priv->client->adapter,
 				      priv->client->addr + 1);
@@ -205,6 +208,16 @@ static int da9062_device_init(struct da9063 *priv)
 		 * details */
 		return -EINVAL;
 	}
+
+	ret = i2c_read_reg(priv->client1, DA9062AA_DEVICE_ID & 0xffu,
+			   id, sizeof id);
+	if (ret < 0) {
+		dev_warn(priv->dev, "failed to read ID: %d\n", ret);
+		return ret;
+	}
+
+	dev_info(priv->dev, "da9062 with id %02x.%02x.%02x.%02x detected\n",
+		 id[0], id[1], id[2], id[3]);
 
 	/* clear CONFIG_I[WATCHDOG_SD] */
 	ret = da906x_reg_update(priv, DA9063_REG1_CONFIG_I,

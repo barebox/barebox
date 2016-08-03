@@ -9,6 +9,7 @@
 
 #include <common.h>
 #include <driver.h>
+#include <envfs.h>
 #include <init.h>
 #include <partition.h>
 #include <io.h>
@@ -30,7 +31,7 @@ static int clps711x_devices_init(void)
 	clps711x_setup_memcfg(1, MEMCFG_WAITSTATE_6_1 | MEMCFG_BUS_WIDTH_8);
 	clps711x_setup_memcfg(2, MEMCFG_WAITSTATE_8_3 | MEMCFG_BUS_WIDTH_16 |
 			      MEMCFG_CLKENB);
-	clps711x_setup_memcfg(3, MEMCFG_WAITSTATE_6_1 | MEMCFG_BUS_WIDTH_32);
+	clps711x_setup_memcfg(3, MEMCFG_WAITSTATE_7_1 | MEMCFG_BUS_WIDTH_32);
 
 	cfi_io = map_io_sections(CS0_BASE, (void *)0x90000000, SZ_32M);
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, (unsigned long)cfi_io, SZ_32M,
@@ -43,6 +44,8 @@ static int clps711x_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_CLEP7212);
 	armlinux_set_serial(((u64)serial_h << 32) | serial_l);
+
+	defaultenv_append_directory(defaultenv_clep7212);
 
 	return 0;
 }

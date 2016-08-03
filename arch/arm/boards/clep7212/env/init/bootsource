@@ -1,9 +1,0 @@
-#!/bin/sh
-
-if [ -n "$nv.boot.default" ]; then
-	exit
-fi
-
-if [ -e /dev/nor0 ]; then
-	global.boot.default=nor
-fi

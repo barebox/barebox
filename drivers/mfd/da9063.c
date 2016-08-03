@@ -28,7 +28,12 @@ struct da9063 {
 	struct watchdog		wd;
 	struct i2c_client	*client;
 	struct device_d		*dev;
+	unsigned int		timeout;
 };
+
+/* forbidden/impossible value; timeout will be set to this value initially to
+ * detect ping vs. set_timeout() operations. */
+#define DA9063_INITIAL_TIMEOUT	(~0u)
 
 /* System Control and Event Registers */
 #define DA9063_REG_FAULT_LOG	0x05
@@ -44,7 +49,24 @@ struct da9063 {
 #define DA9063_TWDSCALE_MASK	0x07
 
 /* DA9063_REG_CONTROL_F (addr=0x13) */
+#define DA9063_WATCHDOG		0x01
 #define DA9063_SHUTDOWN		0x02
+
+static int da9063_watchdog_ping(struct da9063 *priv)
+{
+	int ret;
+	u8 val;
+
+	dev_dbg(priv->dev, "ping\n");
+
+	/* reset watchdog timer; register is self clearing */
+	val = DA9063_WATCHDOG;
+	ret = i2c_write_reg(priv->client, DA9063_REG_CONTROL_F, &val, 1);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
 
 static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 {
@@ -57,8 +79,14 @@ static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	if (timeout > 131)
 		return -EINVAL;
 
+	timeout *= 1000; /* convert to ms */
+
+	if (timeout == priv->timeout)
+		/* set_timeout called with previous parameter; just ping the
+		 * watchdog */
+		goto out;
+
 	if (timeout) {
-		timeout *= 1000; /* convert to ms */
 		scale = 0;
 		while (timeout > (2048 << scale) && scale <= 6)
 			scale++;
@@ -78,7 +106,10 @@ static int da9063_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	if (ret < 0)
 		return ret;
 
-	return 0;
+	priv->timeout = timeout;
+
+out:
+	return da9063_watchdog_ping(priv);
 }
 
 static void da9063_detect_reset_source(struct da9063 *priv)
@@ -127,6 +158,7 @@ static int da9063_probe(struct device_d *dev)
 	priv->wd.priority = of_get_watchdog_priority(dev->device_node);
 	priv->wd.set_timeout = da9063_watchdog_set_timeout;
 	priv->wd.hwdev = dev;
+	priv->timeout = DA9063_INITIAL_TIMEOUT;
 	priv->client = to_i2c_client(dev);
 	priv->dev = dev;
 

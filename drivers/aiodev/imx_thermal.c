@@ -132,8 +132,6 @@ static int imx_thermal_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	printf("node = %p\n", node);
-
 	ocotp = cdev_by_device_node(node);
 	if (!ocotp) {
 		dev_err(dev, "No OCOTP character device\n");

@@ -91,7 +91,7 @@ static inline int pr_print(int level, const char *format, ...)
 #define pr_debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 #define debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 #define pr_vdebug(fmt, arg...)	__pr_printk(8, pr_fmt(fmt), ##arg)
-#define pr_cont(fmt, arg...)	__pr_printk(0, pr_fmt(fmt), ##arg)
+#define pr_cont(fmt, arg...)	__pr_printk(0, fmt, ##arg)
 
 #define printk_once(fmt, ...)					\
 ({								\

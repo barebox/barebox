@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <fs.h>
 #include <crc.h>
+#include <init.h>
 #include <linux/err.h>
 #include <linux/list.h>
 
@@ -54,6 +55,9 @@ static struct state *state_new(const char *name)
 	state->dirty = 1;
 	dev_add_param_bool(&state->dev, "dirty", NULL, NULL, &state->dirty,
 			   NULL);
+	state->save_on_shutdown = 1;
+	dev_add_param_bool(&state->dev, "save_on_shutdown", NULL, NULL,
+			   &state->save_on_shutdown, NULL);
 
 	list_add_tail(&state->list, &state_list);
 
@@ -571,3 +575,14 @@ void state_info(void)
 			printf("(no backend)\n");
 	}
 }
+
+static void state_shutdown(void)
+{
+	struct state *state;
+
+	list_for_each_entry(state, &state_list, list) {
+		if (state->save_on_shutdown)
+			state_save(state);
+	}
+}
+predevshutdown_exitcall(state_shutdown);

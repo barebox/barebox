@@ -24,6 +24,8 @@ copy_source() {
 
 	unifdef -f ${sequencer_defines} $tgt -o $tgt
 
+	dos2unix $tgt
+
 	echo "	Fixing extern/static keywords..."
 	# Statify all global variables with missing static keyword
 	sed -i 's/^\(extern \|static \|\)\([^*#\/ 	][^(]* [^( ]*\((.*).*$\|=.*;.*$\)\)/static \2/g' $tgt

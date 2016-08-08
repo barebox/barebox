@@ -21,7 +21,7 @@ endif
 # at least some of the code would be executed with MMU off, lets be
 # conservative and instruct the compiler not to generate any unaligned
 # accesses
-ifeq ($(CONFIG_CPU_V8),n)
+ifneq ($(CONFIG_CPU_V8),y)
 CFLAGS += -mno-unaligned-access
 endif
 

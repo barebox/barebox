@@ -116,18 +116,27 @@ struct clk_periph {
 	const char *parent;
 	unsigned regofs;
 	unsigned int fixed_div;
+	void __iomem *div_reg;
+	unsigned int width;
+	unsigned int shift;
 };
 
 static unsigned long clk_periph_recalc_rate(struct clk *clk,
 		unsigned long parent_rate)
 {
 	struct clk_periph *periph = container_of(clk, struct clk_periph, clk);
-	u32 div;
+	u32 div, val;
 
-	if (periph->fixed_div)
+	if (periph->fixed_div) {
 		div = periph->fixed_div;
-	else
+	} else {
+		if (periph->div_reg) {
+			val = readl(periph->div_reg) >> periph->shift;
+			val &= div_mask(periph->width);
+			parent_rate /= (val + 1);
+		}
 		div = ((readl(clk_mgr_base_addr + periph->regofs) & 0x1ff) + 1);
+	}
 
 	return parent_rate / div;
 }
@@ -140,6 +149,7 @@ static struct clk *socfpga_periph_clk(struct device_node *node)
 {
 	struct clk_periph *periph;
 	int ret;
+	u32 div_reg[3];
 
 	periph = xzalloc(sizeof(*periph));
 
@@ -151,6 +161,15 @@ static struct clk *socfpga_periph_clk(struct device_node *node)
 	periph->clk.num_parents = 1;
 	periph->clk.name = xstrdup(node->name);
 	periph->clk.ops = &clk_periph_ops;
+
+	ret = of_property_read_u32_array(node, "div-reg", div_reg, 3);
+	if (!ret) {
+		periph->div_reg = clk_mgr_base_addr + div_reg[0];
+		periph->shift = div_reg[1];
+		periph->width = div_reg[2];
+	} else {
+		periph->div_reg = 0;
+	}
 
 	of_property_read_u32(node, "reg", &periph->regofs);
 	of_property_read_u32(node, "fixed-divider", &periph->fixed_div);

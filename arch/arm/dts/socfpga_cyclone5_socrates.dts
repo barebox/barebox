@@ -22,6 +22,10 @@
 	chosen {
 		stdout-path = &uart0;
 	};
+
+	aliases {
+		ethernet0 = &gmac1;
+	};
 };
 
 &qspi {

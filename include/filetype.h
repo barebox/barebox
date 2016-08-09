@@ -36,6 +36,7 @@ enum filetype {
 	filetype_exe,
 	filetype_xz_compressed,
 	filetype_mxs_bootstream,
+	filetype_socfpga_xload,
 	filetype_max,
 };
 

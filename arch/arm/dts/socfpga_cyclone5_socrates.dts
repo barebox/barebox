@@ -19,42 +19,8 @@
 #include "socfpga.dtsi"
 
 / {
-	model = "EBV SoCrates";
-	compatible = "ebv,socrates", "altr,socfpga";
-
 	chosen {
 		stdout-path = &uart0;
-	};
-
-	leds: gpio-leds {
-	};
-};
-
-&gpio0 {
-	status = "okay";
-};
-
-&gpio1 {
-	status = "okay";
-};
-
-&leds {
-	compatible = "gpio-leds";
-
-	led@0 {
-		label = "0";
-		gpios = <&porta 28 1>;
-		linux,default-trigger = "heartbeat";
-	};
-
-	led@1 {
-		label = "1";
-		gpios = <&portb 19 1>;
-	};
-
-	led@2 {
-		label = "2";
-		gpios = <&portb 25 1>;
 	};
 };
 

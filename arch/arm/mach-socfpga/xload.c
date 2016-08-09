@@ -20,13 +20,15 @@
 #include <mach/system-manager.h>
 #include <mach/socfpga-regs.h>
 
-
-static struct socfpga_barebox_part default_part = {
-	.nor_offset = SZ_256K,
-	.nor_size = SZ_1M,
-	.mmc_disk = "disk0.1",
+static struct socfpga_barebox_part default_parts[] = {
+	{
+		.nor_offset = SZ_256K,
+		.nor_size = SZ_1M,
+		.mmc_disk = "disk0.1",
+	},
+	{ /* sentinel */ }
 };
-const struct socfpga_barebox_part *barebox_part = &default_part;
+const struct socfpga_barebox_part *barebox_parts = &default_parts;
 
 enum socfpga_clks {
 	timer, mmc, qspi_clk, uart, clk_max
@@ -109,25 +111,49 @@ static void socfpga_timer_init(void)
 static __noreturn int socfpga_xload(void)
 {
 	enum bootsource bootsource = bootsource_get();
-	void *buf;
+	struct socfpga_barebox_part *part;
+	void *buf = NULL;
 
 	switch (bootsource) {
 	case BOOTSOURCE_MMC:
 		socfpga_mmc_init();
-		buf = bootstrap_read_disk(barebox_part->mmc_disk, "fat");
+
+		for (part = barebox_parts; part->mmc_disk; part++) {
+			buf = bootstrap_read_disk(barebox_parts->mmc_disk, "fat");
+			if (!buf) {
+				pr_info("failed to load barebox from MMC %s\n",
+					part->mmc_disk);
+				continue;
+			}
+		}
+		if (!buf) {
+			pr_err("failed to load barebox.bin from MMC\n");
+			hang();
+		}
 		break;
 	case BOOTSOURCE_SPI:
 		socfpga_qspi_init();
-		buf = bootstrap_read_devfs("mtd0", false, barebox_part->nor_offset,
-					barebox_part->nor_size, SZ_1M);
+
+		for (part = barebox_parts; part->nor_size; part++) {
+			buf = bootstrap_read_devfs("mtd0", false,
+					part->nor_offset, part->nor_size, SZ_1M);
+			if (!buf) {
+				pr_info("failed to load barebox from QSPI NOR flash at offset %#x\n",
+					part->nor_offset);
+				continue;
+			}
+
+			break;
+		}
+
+		if (!buf) {
+			pr_err("failed to load barebox from QSPI NOR flash\n");
+			hang();
+		}
+
 		break;
 	default:
 		pr_err("unknown bootsource %d\n", bootsource);
-		hang();
-	}
-
-	if (!buf) {
-		pr_err("failed to load barebox.bin\n");
 		hang();
 	}
 

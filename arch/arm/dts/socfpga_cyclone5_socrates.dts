@@ -45,5 +45,35 @@
 		cdns,tsd2d-ns = <50>;
 		cdns,tchsh-ns = <4>;
 		cdns,tslch-ns = <4>;
+
+		partition@0 {
+			label = "prebootloader0";
+			reg = <0x00000 0x10000>;
+		};
+
+		partition@1 {
+			label = "prebootloader1";
+			reg = <0x10000 0x10000>;
+		};
+
+		partition@2 {
+			label = "prebootloader2";
+			reg = <0x20000 0x10000>;
+		};
+
+		partition@3 {
+			label = "prebootloader3";
+			reg = <0x30000 0x10000>;
+		};
+
+		partition@4 {
+			label = "barebox";
+			reg = <0x40000 0x80000>;
+		};
+
+		partition@5 {
+			label = "data";
+			reg = <0xc0000 0x1f40000>;
+		};
 	};
 };

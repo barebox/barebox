@@ -77,6 +77,7 @@ to the corresponding <devname>.<paramname> variable.
 This example changes the partitioning of the nand0 device:
 
 .. code-block:: sh
+
   barebox@Phytec phyCARD-i.MX27:/ nv dev.nand0.partitions: 4M(barebox),1M(barebox-environment),-(root)
   barebox@Phytec phyCARD-i.MX27:/ devinfo nand0
     Parameters:

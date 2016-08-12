@@ -26,7 +26,9 @@ The ``lzma`` utility can be obtained in Debian/Ubuntu
 distro by installing lzma package
 (lzma from xz-utils package is unusable).
 
-The ``mktplinkfw`` utility can be obtained from openwrt, e.g.::
+The ``mktplinkfw`` utility can be obtained from openwrt, e.g.:
+
+.. code-block:: sh
 
   $ OWRTPREF=https://raw.githubusercontent.com/mirrors/openwrt/master
   $ curl -OL $OWRTPREF/tools/firmware-utils/src/mktplinkfw.c \
@@ -35,7 +37,9 @@ The ``mktplinkfw`` utility can be obtained from openwrt, e.g.::
   $ cc -o mktplinkfw mktplinkfw.c md5.c
 
 To convert your barebox.bin to U-Boot-loadable image (``6F01A8C0.img``)
-use this command sequence::
+use this command sequence:
+
+.. code-block:: sh
 
   $ lzma -c -k barebox-flash-image > barebox.lzma
   $ ./mktplinkfw -c -H 0x07200103 -W 1 -N TL-WR720N-v3 \
@@ -47,7 +51,9 @@ Put your ``6F01A8C0.img`` to tftp-server directory
 
 Connect your board to your tftp-server network via Ethernet.
 
-Next, setup network on MR3020 and run ``6F01A8C0.img``, e.g.::
+Next, setup network on MR3020 and run ``6F01A8C0.img``, e.g.:
+
+.. code-block:: console
 
   hornet> set ipaddr 192.168.0.2
   hornet> set serverip 192.168.0.1

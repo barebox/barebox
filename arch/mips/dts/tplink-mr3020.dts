@@ -1,73 +1,7 @@
-/dts-v1/;
-
-#include <dt-bindings/gpio/gpio.h>
-
-#include <mips/qca/ar9331.dtsi>
+#include <mips/qca/ar9331_tl_mr3020.dts>
 
 / {
-	model = "TP-Link TL-MR3020";
-	compatible = "tplink,tl-mr3020";
-
 	aliases {
 		spiflash = &spiflash;
-	};
-
-	memory@0 {
-		device_type = "memory";
-		reg = <0x00000000 0x2000000>;
-	};
-
-	leds {
-		compatible = "gpio-leds";
-
-		wlan {
-			label = "tp-link:green:wlan";
-			gpios = <&gpio 0 GPIO_ACTIVE_HIGH>;
-			default-state = "off";
-		};
-
-		lan {
-			label = "tp-link:green:lan";
-			gpios = <&gpio 17 GPIO_ACTIVE_LOW>;
-			default-state = "off";
-		};
-
-		wps {
-			label = "tp-link:green:wps";
-			gpios = <&gpio 26 GPIO_ACTIVE_LOW>;
-			default-state = "off";
-		};
-
-		led3g {
-			label = "tp-link:green:3g";
-			gpios = <&gpio 27 GPIO_ACTIVE_LOW>;
-			default-state = "off";
-		};
-	};
-};
-
-&ref {
-	clock-frequency = <25000000>;
-};
-
-&uart {
-	status = "okay";
-};
-
-&gpio {
-	status = "okay";
-};
-
-&spi {
-	num-chipselects = <1>;
-	status = "okay";
-
-	/* Spansion S25FL032PIF SPI flash */
-	spiflash: s25sl032p@0 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		compatible = "spansion,s25sl032p", "jedec,spi-nor";
-		spi-max-frequency = <104000000>;
-		reg = <0>;
 	};
 };

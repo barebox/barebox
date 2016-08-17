@@ -318,6 +318,7 @@ void bootsources_menu(struct bootentries *bootentries, int timeout)
 
 	menu_show(bootentries->menu);
 
+	menu_remove_entry(bootentries->menu, back_entry);
 	free(back_entry);
 }
 

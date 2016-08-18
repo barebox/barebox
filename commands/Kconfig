@@ -2058,7 +2058,7 @@ config CMD_OF_FIXUP_STATUS
 	help
 	  Register a fixup to enable or disable node
 
-	  Usage: of_fixup_node [-d] path
+	  Usage: of_fixup_status [-d] path
 
 	  Options:
 		  -d		disable node

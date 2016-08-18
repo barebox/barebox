@@ -43,10 +43,13 @@ EXPORT_SYMBOL(menu_get_menus);
 void menu_free(struct menu *m)
 {
 	struct menu_entry *me, *tmp;
+	int i;
 
 	if (!m)
 		return;
 	free(m->name);
+	for (i = 0; i < m->display_lines; i++)
+		free(m->display[i]);
 	free(m->display);
 	free(m->auto_display);
 
@@ -164,7 +167,7 @@ static void __print_entry(const char *str)
 static void print_menu_entry(struct menu *m, struct menu_entry *me,
 			     int selected)
 {
-	gotoXY(3, me->num + 1);
+	gotoXY(3, me->num + m->display_lines);
 
 	if (me->type == MENU_ENTRY_BOX) {
 		if (me->box_state)
@@ -232,14 +235,12 @@ EXPORT_SYMBOL(menu_set_auto_select);
 static void print_menu(struct menu *m)
 {
 	struct menu_entry *me;
+	int i;
 
 	clear();
-	gotoXY(2, 1);
-	if(m->display) {
-		__print_entry(m->display);
-	} else {
-		puts("Menu : ");
-		puts(m->name);
+	for (i = 0; i < m->display_lines; i++) {
+		gotoXY(2, 1 + i);
+		__print_entry(m->display[i]);
 	}
 
 	list_for_each_entry(me, &m->entries, list) {
@@ -269,7 +270,7 @@ int menu_show(struct menu *m)
 
 	countdown = m->auto_select;
 	if (m->auto_select >= 0) {
-		gotoXY(3, m->nb_entries + 2);
+		gotoXY(3, m->nb_entries + m->display_lines + 1);
 		if (!m->auto_display) {
 			printf("Auto Select in");
 		} else {
@@ -293,10 +294,10 @@ int menu_show(struct menu *m)
 		}
 	}
 
-	gotoXY(3, m->nb_entries + 2);
+	gotoXY(3, m->nb_entries + m->display_lines + 1);
 	printf("%*c", auto_display_len + 4, ' ');
 
-	gotoXY(3, m->selected->num + 1);
+	gotoXY(3, m->selected->num + m->display_lines);
 
 	do {
 		struct menu_entry *old_selected = m->selected;
@@ -517,3 +518,63 @@ err_free:
 	return ERR_PTR(ret);
 }
 EXPORT_SYMBOL(menu_add_command_entry);
+
+/*
+ * Add title to menu.
+ * Lines are separated by explicit char '\n' or by string "\n".
+ *
+ * @display: NULL or pointer to the string which will be freed in this function.
+ *	If NULL or zero length string is provided, default title will be added.
+ */
+void menu_add_title(struct menu *m, char *display)
+{
+	char *tmp, *src, *dst;
+	int lines = 1;
+	int i;
+
+	if (!display || !strlen(display)) {
+		free(display);
+		display = xasprintf("Menu : %s", m->name ? m->name : "");
+	}
+
+	src = dst = tmp = xstrdup(display);
+	/* Count lines and separate single string into multiple strings */
+	while (*src) {
+		if (*src == '\\') {
+			if (*(src + 1) == '\\') {
+				*dst++ = *src++;
+				*dst++ = *src++;
+				continue;
+			}
+			if (*(src + 1) == 'n') {
+				*dst = 0;
+				src += 2;
+				dst++;
+				lines++;
+				continue;
+			}
+		}
+		if (*src == '\n') {
+			*dst = 0;
+			src++;
+			dst++;
+			lines++;
+			continue;
+		}
+		*dst++ = *src++;
+	}
+	*dst = 0;
+
+	m->display = xzalloc(sizeof(*m->display) * lines);
+	m->display_lines = lines;
+
+	for (src = tmp, i = 0; i < lines; i++) {
+		m->display[i] = xstrdup(src);
+		/* Go to the next line */
+		src += strlen(src) + 1;
+	}
+
+	free(tmp);
+	free(display);
+}
+EXPORT_SYMBOL(menu_add_title);

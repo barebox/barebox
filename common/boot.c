@@ -43,7 +43,7 @@ struct bootentries *bootentries_alloc(void)
 
 	if (IS_ENABLED(CONFIG_MENU)) {
 		bootentries->menu = menu_alloc();
-		bootentries->menu->display = basprintf("boot");
+		menu_add_title(bootentries->menu, basprintf("boot"));
 	}
 
 	return bootentries;
@@ -61,8 +61,12 @@ void bootentries_free(struct bootentries *bootentries)
 		be->release(be);
 	}
 
-	if (bootentries->menu)
+	if (bootentries->menu) {
+		int i;
+		for (i = 0; i < bootentries->menu->display_lines; i++)
+			free(bootentries->menu->display[i]);
 		free(bootentries->menu->display);
+	}
 	free(bootentries->menu);
 	free(bootentries);
 }

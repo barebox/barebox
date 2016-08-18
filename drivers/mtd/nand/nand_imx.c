@@ -24,6 +24,7 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/clk.h>
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
 #include <io.h>
@@ -811,6 +812,32 @@ static void preset_v2(struct mtd_info *mtd)
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 	uint16_t config1 = 0;
+	int mode;
+
+	mode = onfi_get_async_timing_mode(nand_chip);
+	if (mode != ONFI_TIMING_MODE_UNKNOWN && !IS_ERR(host->clk)) {
+		const struct nand_sdr_timings *timings;
+
+		mode = fls(mode) - 1;
+		if (mode < 0)
+			mode = 0;
+
+		timings = onfi_async_timing_mode_to_sdr_timings(mode);
+		if (!IS_ERR(timings)) {
+			unsigned long rate;
+			int tRC_min_ns = timings->tRC_min / 1000;
+
+			rate = 1000000000 / tRC_min_ns;
+			if (tRC_min_ns < 30)
+				/* If tRC is smaller than 30ns we have to use EDO timing */
+				config1 |= NFC_V1_V2_CONFIG1_ONE_CYCLE;
+			else
+				/* Otherwise we have two clock cycles per access */
+				rate *= 2;
+
+			clk_set_rate(host->clk, rate);
+		}
+	}
 
 	config1 |= NFC_V2_CONFIG1_FP_INT;
 
@@ -1180,6 +1207,9 @@ static int __init imxnd_probe(struct device_d *dev)
 	}
 
 	host->data_buf = (uint8_t *)(host + 1);
+
+	/* No error check, not all SoCs provide a clk yet */
+	host->clk = clk_get(dev, NULL);
 
 	if (nfc_is_v1() || nfc_is_v21()) {
 		host->send_cmd = send_cmd_v1_v2;

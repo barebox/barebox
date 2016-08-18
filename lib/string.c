@@ -641,7 +641,7 @@ char *skip_spaces(const char *str)
 }
 
 /**
- * strim - Removes leading and trailing whitespace from @s.
+ * strim - Removes trailing whitespace from @s.
  * @s: The string to be stripped.
  *
  * Note that the first trailing whitespace is replaced with a %NUL-terminator

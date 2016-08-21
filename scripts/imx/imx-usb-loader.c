@@ -45,7 +45,6 @@
 #define FT_LOAD_ONLY	0x00
 
 int verbose;
-static int skip_image_dcd;
 static struct libusb_device_handle *usb_dev_handle;
 static struct usb_id *usb_id;
 
@@ -67,7 +66,7 @@ struct mach_id {
 
 struct usb_work {
 	char filename[256];
-	unsigned char dcd;
+	unsigned char do_dcd_once;
 	unsigned char plug;
 };
 
@@ -980,9 +979,6 @@ static int perform_dcd(unsigned char *p, const unsigned char *file_start,
 	struct imx_flash_header_v2 *hdr = (struct imx_flash_header_v2 *)p;
 	int ret = 0;
 
-	if (skip_image_dcd)
-		return 0;
-
 	switch (usb_id->mach_id->header_type) {
 	case HDR_MX51:
 		ret = write_dcd_table_old(ohdr, file_start, cnt);
@@ -1066,13 +1062,13 @@ static int process_header(struct usb_work *curr, unsigned char *buf, int cnt,
 			return ret;
 		}
 
-		if (curr->dcd) {
+		if (curr->do_dcd_once) {
 			ret = perform_dcd(p, buf, cnt);
 			if (ret < 0) {
 				printf("!!perform_dcd returned %i\n", ret);
 				return ret;
 			}
-			curr->dcd = 0;
+			curr->do_dcd_once = 0;
 		}
 
 		if (*p_plugin && (!curr->plug) && (!header_cnt)) {
@@ -1264,6 +1260,8 @@ int main(int argc, char *argv[])
 	int opt;
 	char *initfile = NULL;
 
+	w.do_dcd_once = 1;
+
 	while ((opt = getopt(argc, argv, "cvhi:s")) != -1) {
 		switch (opt) {
 		case 'c':
@@ -1278,7 +1276,7 @@ int main(int argc, char *argv[])
 			initfile = optarg;
 			break;
 		case 's':
-			skip_image_dcd = 1;
+			w.do_dcd_once = 0;
 			break;
 		default:
 			exit(1);
@@ -1292,7 +1290,6 @@ int main(int argc, char *argv[])
 	}
 
 	w.plug = 1;
-	w.dcd = 1;
 	strncpy(w.filename, argv[optind], sizeof(w.filename) - 1);
 
 	r = libusb_init(NULL);

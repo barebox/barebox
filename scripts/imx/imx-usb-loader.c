@@ -888,16 +888,11 @@ static int write_dcd_table_old(const struct imx_flash_header *hdr,
 
 		switch (type) {
 		case 1:
-			if (verbose > 1)
-				printf("type=%08x *0x%08x = 0x%08x\n", type, addr, val);
-			err = write_memory(addr, val, 1);
-			if (err < 0)
-				return err;
-			break;
+		case 2:
 		case 4:
 			if (verbose > 1)
 				printf("type=%08x *0x%08x = 0x%08x\n", type, addr, val);
-			err = write_memory(addr, val, 4);
+			err = write_memory(addr, val, type);
 			if (err < 0)
 				return err;
 			break;

@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <libusb.h>
 #include <getopt.h>
+#include <endian.h>
 #include <arpa/inet.h>
 #include <linux/kernel.h>
 
@@ -871,7 +872,6 @@ static int get_dcd_range_old(const struct imx_flash_header *hdr,
 static int write_dcd_table_old(const struct imx_flash_header *hdr,
 			       const unsigned char *file_start, unsigned cnt)
 {
-	unsigned val;
 	unsigned char *dcd_end;
 	unsigned char* dcd;
 	int err = get_dcd_range_old(hdr, file_start, cnt, &dcd, &dcd_end);
@@ -881,23 +881,26 @@ static int write_dcd_table_old(const struct imx_flash_header *hdr,
 	printf("writing DCD table...\n");
 
 	while (dcd < dcd_end) {
-		unsigned type = (dcd[0] << 0) | (dcd[1] << 8) | (dcd[2] << 16) | (dcd[3] << 24);
-		unsigned addr = (dcd[4] << 0) | (dcd[5] << 8) | (dcd[6] << 16) | (dcd[7] << 24);
-		val = (dcd[8] << 0) | (dcd[9] << 8) | (dcd[10] << 16) | (dcd[11] << 24);
-		dcd += 12;
+		struct imx_dcd_rec_v1 *rec = (struct imx_dcd_rec_v1 *) dcd;
+		unsigned type = le32toh(rec->type);
+		dcd += sizeof *rec;
 
 		switch (type) {
 		case 1:
 		case 2:
 		case 4:
 			if (verbose > 1)
-				printf("type=%08x *0x%08x = 0x%08x\n", type, addr, val);
-			err = write_memory(addr, val, type);
+				printf("type=%08x *0x%08x = 0x%08x\n", type,
+					le32toh(rec->addr),
+					le32toh(rec->val));
+			err = write_memory(le32toh(rec->addr),
+					   le32toh(rec->val), type);
 			if (err < 0)
 				return err;
 			break;
 		default:
-			printf("!!!unknown type=%08x *0x%08x = 0x%08x\n", type, addr, val);
+			printf("WARNING: unknown DCD type=%08x ignored\n",
+			       type);
 		}
 	}
 

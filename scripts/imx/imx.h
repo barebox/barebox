@@ -26,6 +26,12 @@ struct imx_boot_data {
 	uint32_t plugin;
 } __attribute__((packed));
 
+struct imx_dcd_rec_v1 {
+	uint32_t type;
+	uint32_t addr;
+	uint32_t val;
+} __attribute__((packed));
+
 #define TAG_IVT_HEADER	0xd1
 #define IVT_VERSION	0x40
 #define TAG_DCD_HEADER	0xd2

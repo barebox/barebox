@@ -450,6 +450,11 @@ static int write_dcd(const char *outfile)
 static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
 		 uint32_t mask)
 {
+	if (data->header_version != 2) {
+		fprintf(stderr, "DCD check command is not available or "
+				"not yet implemented for this SOC\n");
+		return -EINVAL;
+	}
 	if (curdcd > MAX_DCD - 3) {
 		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
 		return -ENOMEM;

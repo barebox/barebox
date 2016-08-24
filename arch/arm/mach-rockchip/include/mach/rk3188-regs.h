@@ -11,8 +11,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __MACH_ROCKCHIP_REGS_H
-#define __MACH_ROCKCHIP_REGS_H
+#ifndef __MACH_RK3188_REGS_H
+#define __MACH_RK3188_REGS_H
 
 #define RK_CRU_BASE		0x20000000
 #define RK_GRF_BASE		0x20008000
@@ -22,4 +22,10 @@
 
 #define RK_SOC_CON0_REMAP	(1 << 12)
 
-#endif /* __MACH_ROCKCHIP_REGS_H */
+/* UART */
+#define RK3188_UART0_BASE	0x10124000
+#define RK3188_UART1_BASE	0x10126000
+#define RK3188_UART2_BASE	0x20064000
+#define RK3188_UART3_BASE	0x20068000
+
+#endif /* __MACH_RK3188_REGS_H */

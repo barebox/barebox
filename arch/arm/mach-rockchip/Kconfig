@@ -1,14 +1,28 @@
-if ARCH_ROCKCHIP
+
+menu "Rockchip Features"
+	depends on ARCH_ROCKCHIP
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x68000000
+	default 0x68000000 if ARCH_RK3188
+	default 0x0 if ARCH_RK3288
+
+choice
+	prompt "Select Rockchip SoC"
+
+config ARCH_RK3188
+	bool "Rockchip RK3188 SoCs"
+
+config ARCH_RK3288
+	bool "Rockchip RK3288 SoCs"
+endchoice
 
 comment "select Rockchip boards:"
 
 config MACH_RADXA_ROCK
+	depends on ARCH_RK3188
 	select I2C
 	select MFD_ACT8846
 	bool "Radxa rock board"
 
-endif
+endmenu

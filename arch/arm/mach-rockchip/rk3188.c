@@ -15,7 +15,7 @@
 #include <common.h>
 #include <init.h>
 #include <restart.h>
-#include <mach/rockchip-regs.h>
+#include <mach/rk3188-regs.h>
 
 static void __noreturn rockchip_restart_soc(struct restart_handler *rst)
 {

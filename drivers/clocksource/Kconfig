@@ -49,3 +49,7 @@ config CLOCKSOURCE_ORION
 config CLOCKSOURCE_UEMD
 	bool
 	depends on ARCH_UEMD
+
+config CLOCKSOURCE_ROCKCHIP
+	bool
+	depends on ARCH_ROCKCHIP

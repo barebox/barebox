@@ -7,6 +7,10 @@ config ARCH_TEXT_BASE
 	default 0x68000000 if ARCH_RK3188
 	default 0x0 if ARCH_RK3288
 
+config RK_TIMER
+	hex
+	default 1
+
 choice
 	prompt "Select Rockchip SoC"
 
@@ -15,6 +19,7 @@ config ARCH_RK3188
 
 config ARCH_RK3288
 	bool "Rockchip RK3288 SoCs"
+	select CLOCKSOURCE_ROCKCHIP
 endchoice
 
 comment "select Rockchip boards:"

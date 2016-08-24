@@ -10,6 +10,7 @@
  */
 
 #include <environment.h>
+#include <bootchooser.h>
 #include <globalvar.h>
 #include <magicvar.h>
 #include <watchdog.h>
@@ -272,6 +273,12 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 			if (ret > 0)
 				found += ret;
 		}
+	}
+
+	if (IS_ENABLED(CONFIG_BOOTCHOOSER) && !strcmp(name, "bootchooser")) {
+		ret = bootchooser_create_bootentry(bootentries);
+		if (ret > 0)
+			found += ret;
 	}
 
 	if (!found) {

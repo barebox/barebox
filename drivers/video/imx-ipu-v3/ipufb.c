@@ -109,7 +109,7 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	int ret;
 	struct ipu_di_signal_cfg sig_cfg = {};
 	struct ipu_di_mode di_mode = {};
-	u32 bus_format;
+	u32 bus_format = 0;
 
 	dev_info(fbi->dev, "%s: mode->xres: %d\n", __func__,
 			mode->xres);
@@ -117,7 +117,11 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 			mode->yres);
 
 	vpl_ioctl(&fbi->vpl, 2 + fbi->dino, IMX_IPU_VPL_DI_MODE, &di_mode);
-	bus_format = di_mode.bus_format ?: fbi->bus_format;
+	vpl_ioctl(&fbi->vpl, 2 + fbi->dino, VPL_GET_BUS_FORMAT, &bus_format);
+	if (bus_format)
+		di_mode.di_clkflags = IPU_DI_CLKMODE_NON_FRACTIONAL;
+	else
+		bus_format = di_mode.bus_format ?: fbi->bus_format;
 
 	if (mode->sync & FB_SYNC_HOR_HIGH_ACT)
 		sig_cfg.Hsync_pol = 1;

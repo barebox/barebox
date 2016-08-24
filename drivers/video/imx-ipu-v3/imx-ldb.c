@@ -26,6 +26,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <init.h>
+#include <video/media-bus-format.h>
 #include <video/vpl.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <linux/clk.h>
@@ -75,7 +76,7 @@ struct imx_ldb_data {
 
 struct imx_ldb {
 	struct device_d *dev;
-	u32 interface_pix_fmt;
+	u32 bus_format;
 	int mode_valid;
 	struct imx_ldb_channel channel[2];
 	u32 ldb_ctrl;
@@ -273,8 +274,8 @@ static int imx_ldb_ioctl(struct vpl *vpl, unsigned int port,
 		mode = data;
 
 		mode->di_clkflags = IPU_DI_CLKMODE_EXT | IPU_DI_CLKMODE_SYNC;
-		mode->interface_pix_fmt = (imx_ldb_ch->datawidth == 24) ?
-			V4L2_PIX_FMT_RGB24 : V4L2_PIX_FMT_BGR666;
+		mode->bus_format = (imx_ldb_ch->datawidth == 24) ?
+			MEDIA_BUS_FMT_RGB888_1X24 : MEDIA_BUS_FMT_RGB666_1X18;
 
 		return 0;
 	case VPL_GET_VIDEOMODES:

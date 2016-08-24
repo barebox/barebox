@@ -22,6 +22,7 @@
 #include <asm-generic/div64.h>
 #include <linux/clk.h>
 #include <i2c/i2c.h>
+#include <video/media-bus-format.h>
 #include <video/vpl.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx53-regs.h>
@@ -1261,7 +1262,7 @@ static int dw_hdmi_ioctl(struct vpl *vpl, unsigned int port,
 		mode = data;
 
 		mode->di_clkflags = IPU_DI_CLKMODE_EXT | IPU_DI_CLKMODE_SYNC;
-		mode->interface_pix_fmt = V4L2_PIX_FMT_RGB24;
+		mode->bus_format = MEDIA_BUS_FMT_RGB888_1X24;
 
 		return 0;
 	}

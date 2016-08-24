@@ -23,6 +23,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm-generic/div64.h>
+#include <video/media-bus-format.h>
 
 #include "imx-ipu-v3.h"
 #include "ipuv3-plane.h"
@@ -56,7 +57,7 @@ struct ipufb_info {
 	void			(*enable)(int enable);
 
 	unsigned int		di_clkflags;
-	u32			interface_pix_fmt;
+	u32			bus_format;
 	struct ipu_dc		*dc;
 	struct ipu_di		*di;
 
@@ -108,7 +109,7 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	int ret;
 	struct ipu_di_signal_cfg sig_cfg = {};
 	struct ipu_di_mode di_mode = {};
-	u32 interface_pix_fmt;
+	u32 bus_format;
 
 	dev_info(fbi->dev, "%s: mode->xres: %d\n", __func__,
 			mode->xres);
@@ -116,8 +117,7 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 			mode->yres);
 
 	vpl_ioctl(&fbi->vpl, 2 + fbi->dino, IMX_IPU_VPL_DI_MODE, &di_mode);
-	interface_pix_fmt = di_mode.interface_pix_fmt ?
-		di_mode.interface_pix_fmt : fbi->interface_pix_fmt;
+	bus_format = di_mode.bus_format ?: fbi->bus_format;
 
 	if (mode->sync & FB_SYNC_HOR_HIGH_ACT)
 		sig_cfg.Hsync_pol = 1;
@@ -148,8 +148,8 @@ int ipu_crtc_mode_set(struct ipufb_info *fbi,
 	sig_cfg.hsync_pin = 2;
 	sig_cfg.vsync_pin = 3;
 
-	ret = ipu_dc_init_sync(fbi->dc, fbi->di, sig_cfg.interlaced,
-			interface_pix_fmt, mode->xres);
+	ret = ipu_dc_init_sync(fbi->dc, fbi->di, sig_cfg.interlaced, bus_format,
+			mode->xres);
 	if (ret) {
 		dev_err(fbi->dev,
 				"initializing display controller failed with %d\n",
@@ -318,14 +318,13 @@ static int ipufb_probe(struct device_d *dev)
 		ret = of_property_read_string(node, "interface-pix-fmt", &fmt);
 		if (!ret) {
 			if (!strcmp(fmt, "rgb24"))
-				fbi->interface_pix_fmt = V4L2_PIX_FMT_RGB24;
+				fbi->bus_format = MEDIA_BUS_FMT_RGB888_1X24;
 			else if (!strcmp(fmt, "rgb565"))
-				fbi->interface_pix_fmt = V4L2_PIX_FMT_RGB565;
+				fbi->bus_format = MEDIA_BUS_FMT_RGB565_1X16;
 			else if (!strcmp(fmt, "bgr666"))
-				fbi->interface_pix_fmt = V4L2_PIX_FMT_BGR666;
+				fbi->bus_format = MEDIA_BUS_FMT_RGB666_1X18;
 			else if (!strcmp(fmt, "lvds666"))
-				fbi->interface_pix_fmt =
-					v4l2_fourcc('L', 'V', 'D', '6');
+				fbi->bus_format = MEDIA_BUS_FMT_RGB666_1X24_CPADHI;
 		}
 
 		ret = vpl_ioctl(&fbi->vpl, 2 + fbi->dino, VPL_GET_VIDEOMODES, &info->modes);

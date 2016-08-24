@@ -116,7 +116,7 @@ struct ipu_di;
 struct ipu_dc *ipu_dc_get(struct ipu_soc *ipu, int channel);
 void ipu_dc_put(struct ipu_dc *dc);
 int ipu_dc_init_sync(struct ipu_dc *dc, struct ipu_di *di, bool interlaced,
-		u32 pixel_fmt, u32 width);
+		u32 bus_format, u32 width);
 void ipu_dc_enable_channel(struct ipu_dc *dc);
 void ipu_dc_disable_channel(struct ipu_dc *dc);
 
@@ -323,7 +323,7 @@ struct ipu_client_platformdata {
 
 struct ipu_di_mode {
 	u32 di_clkflags;
-	u32 interface_pix_fmt;
+	u32 bus_format;
 };
 
 #define IMX_IPU_VPL_DI_MODE	0x12660001

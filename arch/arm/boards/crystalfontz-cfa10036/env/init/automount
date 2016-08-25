@@ -1,9 +1,4 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	init-menu-add-entry "$0" "Automountpoints"
-	exit
-fi
-
 mkdir -p /mnt/disk0.2
 automount -d /mnt/disk0.2 '[ -e /dev/disk0.2 ] && mount /dev/disk0.2 /mnt/disk0.2'

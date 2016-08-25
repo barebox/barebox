@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-        init-menu-add-entry "$0" "Automountpoints"
-        exit
-fi
-
 # automount tftp server based on $eth0.serverip
 
 mkdir -p /mnt/tftp

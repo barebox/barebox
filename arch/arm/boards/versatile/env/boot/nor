@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "nor"
-	exit
-fi
-
 global.bootm.image="/dev/nor0.kernel"
 global.linux.bootargs.dyn.root="root=ubi0:root ubi.mtd=5 rootfstype=ubifs"
 

@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-        init-menu-add-entry "$0" "NOR partitions"
-        exit
-fi
-
 mtdparts="512k(nor0.bareboxlow),4M(nor0.kernel),512k(nor0.oftree),26M(nor0.root),512k(nor0.barebox),512k(nor0.bareboxenv)"
 kernelname="physmap-flash.0"
 

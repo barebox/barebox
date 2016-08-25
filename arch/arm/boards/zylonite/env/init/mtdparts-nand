@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-        init-menu-add-entry "$0" "NAND partitions"
-        exit
-fi
-
 mtdparts="128k@0(TIMH)ro,128k@128k(OBMI)ro,768k@256k(barebox),256k@1024k(barebox-env),12M@1280k(kernel),38016k@13568k(root)"
 kernelname="pxa3xx_nand-0"
 

@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	init-menu-add-entry "$0" "SPI NOR partitions"
-	exit
-fi
-
 mtdparts="32k(m25p0.at91bootstrap)ro,256k(m25p0.barebox),128k(m25p0.bareboxenv),128k(m25p0.bareboxenv2),128k(m25p0.oftree),-(m25p0.kernel)"
 kernelname="m25p0"
 

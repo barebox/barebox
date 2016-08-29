@@ -63,6 +63,7 @@
 		compatible = "simple-panel";
 		backlight = <&backlight>;
 		enable-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
+		enable-delay = <200>;
 
 		port {
 			panel_in: endpoint {

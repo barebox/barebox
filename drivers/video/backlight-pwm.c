@@ -156,6 +156,8 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 		if (ret < 0)
 			return ret;
 
+		pwm_backlight->backlight.brightness_max = length - 1;
+
 		for (i = 0; i < length; i++)
 			if (pwm_backlight->levels[i] > pwm_backlight->scale)
 				pwm_backlight->scale = pwm_backlight->levels[i];
@@ -165,8 +167,8 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 	} else {
 		/* We implicitly assume here a linear levels array { 0, 1, 2, ... 100 } */
 		pwm_backlight->scale = 100;
+		pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
 	}
-	pwm_backlight->backlight.brightness_max = pwm_backlight->scale;
 
 	pwm_backlight->enable_gpio = of_get_named_gpio_flags(node, "enable-gpios", 0, &flags);
 

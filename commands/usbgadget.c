@@ -96,7 +96,7 @@ BAREBOX_CMD_HELP_OPT ("-a",   "Create CDC ACM function")
 BAREBOX_CMD_HELP_OPT ("-s",   "Create Generic Serial function")
 BAREBOX_CMD_HELP_OPT ("-A <desc>",   "Create Android Fastboot function")
 BAREBOX_CMD_HELP_OPT ("-D <desc>",   "Create DFU function")
-BAREBOX_CMD_HELP_OPT ("-d",   "Disable the serial gadget")
+BAREBOX_CMD_HELP_OPT ("-d",   "Disable the currently running gadget")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(usbgadget)

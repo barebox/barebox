@@ -250,6 +250,7 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
  * - a cdev name
  * - a full path of a directory containing bootloader spec entries
  * - a full path of a directory containing bootscripts
+ * - a nfs:// path
  *
  * Returns the number of entries found or a negative error code.
  */
@@ -263,7 +264,7 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 		if (ret > 0)
 			found += ret;
 
-		if (*name == '/') {
+		if (*name == '/' || !strncmp(name, "nfs://", 6)) {
 			ret = blspec_scan_directory(bootentries, name);
 			if (ret > 0)
 				found += ret;

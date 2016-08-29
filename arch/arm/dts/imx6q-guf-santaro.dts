@@ -577,6 +577,16 @@
 	status = "okay";
 };
 
+&usbh1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbh1>;
+	status = "okay";
+};
+
+&usbotg {
+	status = "okay";
+};
+
 &usdhc2 {
 	/* SD card socket */
 	pinctrl-names = "default";

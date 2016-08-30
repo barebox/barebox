@@ -1,0 +1,7 @@
+#!/bin/sh
+
+mkdir -p /mnt/emmc
+automount -d /mnt/emmc 'mshc0.probe=1 && [ -e /dev/mshc0.0 ] && mount /dev/mshc0.0 /mnt/emmc'
+
+mkdir -p /mnt/sdmmc
+automount -d /mnt/sdmmc 'mshc1.probe=1 && [ -e /dev/mshc1.0 ] && mount /dev/mshc1.0 /mnt/sdmmc'

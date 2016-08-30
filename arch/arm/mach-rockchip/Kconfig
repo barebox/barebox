@@ -30,4 +30,11 @@ config MACH_RADXA_ROCK
 	select MFD_ACT8846
 	bool "Radxa rock board"
 
+config MACH_PHYTEC_SOM_RK3288
+	depends on ARCH_RK3288
+	select I2C
+	bool "RK3288 phyCORE SOM"
+	help
+	  Say Y here if you are using a RK3288 based Phytecs SOM
+
 endmenu

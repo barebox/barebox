@@ -471,7 +471,7 @@ config MENU
 	select PROCESS_ESCAPE_SEQUENCE
 	help
 	  a menu framework that allow us to create list menu to simplify
-	  barebox and make it more user-frendly
+	  barebox and make it more user-friendly
 
 config PASSWORD
 	bool

@@ -32,7 +32,7 @@ static int of_openrisc_init(void)
 		return 0;
 
 	root = of_unflatten_dtb(__dtb_start);
-	if (root) {
+	if (!IS_ERR(root)) {
 		pr_debug("using internal DTB\n");
 		of_set_root_node(root);
 		if (IS_ENABLED(CONFIG_OFDEVICE))

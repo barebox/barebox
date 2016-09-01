@@ -77,7 +77,7 @@ static int highbank_mem_init(void)
 	fdt = IOMEM(FIRMWARE_DTB_BASE);
 
 	root = of_unflatten_dtb(fdt);
-	if (!root) {
+	if (IS_ERR(root)) {
 		pr_warn("no dtb found at 0x1000 use default configuration\n");
 		fdt = NULL;
 		goto not_found;

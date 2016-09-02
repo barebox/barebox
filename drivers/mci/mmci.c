@@ -212,7 +212,7 @@ static u64 mmci_pio_read(struct mmci_host *host, char *buffer, unsigned int host
 	struct variant_data *variant = host->variant;
 
 	do {
-		int count = readl(base + MMCIFIFOCNT) << 2;
+		int count = host_remain - (readl(base + MMCIFIFOCNT) << 2);
 
 		if (count > host_remain)
 			count = host_remain;
@@ -264,7 +264,6 @@ static int read_bytes(struct mci_host *mci, char *dest, unsigned int blkcount, u
 	dev_dbg(host->hw_dev, "read_bytes: blkcount=%u blksize=%u\n", blkcount, blksize);
 
 	do {
-		mmci_writel(host, MMCIDATACTRL, mmci_readl(host, MMCIDATACTRL));
 		len = mmci_pio_read(host, dest, xfercount);
 		xfercount -= len;
 		dest += len;

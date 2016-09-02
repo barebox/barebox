@@ -743,7 +743,45 @@ static int sdp_jump_address(unsigned addr)
 	return 0;
 }
 
-static int write_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
+static int do_dcd_v2_cmd_write(const unsigned char *dcd)
+{
+	int set_bits = 0, clear_bits = 0;
+	int idx, bytes;
+	struct imx_dcd_v2_write *recs = (struct imx_dcd_v2_write *) dcd;
+	int num_rec = (ntohs(recs->length) - 4) /
+		      sizeof(struct imx_dcd_v2_write_rec);
+	printf("DCD write: sub dcd length: 0x%04x, flags: 0x%02x\n",
+		ntohs(recs->length), recs->param);
+
+	if (recs->param & PARAMETER_FLAG_MASK) {
+		if (recs->param & PARAMETER_FLAG_SET)
+			set_bits = 1;
+		else
+			clear_bits = 1;
+	}
+	bytes = recs->param & 7;
+	switch (bytes) {
+	case 1:
+	case 2:
+	case 4:
+		break;
+	default:
+		fprintf(stderr, "ERROR: bad DCD write width %i\n", bytes);
+		return -1;
+	}
+
+	for (idx = 0; idx < num_rec; idx++) {
+		const struct imx_dcd_v2_write_rec *record = &recs->data[idx];
+		int ret = modify_memory(ntohl(record->addr),
+				 ntohl(record->val), bytes,
+				 set_bits, clear_bits);
+		if (ret < 0)
+			return ret;
+	}
+	return 0;
+}
+
+static int process_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 			       const unsigned char *file_start, unsigned cnt)
 {
 	unsigned char *dcd_end;
@@ -751,7 +789,7 @@ static int write_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 #define cvt_dest_to_src		(((unsigned char *)hdr) - hdr->self)
 	unsigned char* dcd;
 	const unsigned char *file_end = file_start + cnt;
-	int err = 0;
+	struct imx_ivt_header *dcd_hdr;
 
 	if (!hdr->dcd_ptr) {
 		printf("No dcd table in this ivt\n");
@@ -761,65 +799,60 @@ static int write_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 	dcd = hdr->dcd_ptr + cvt_dest_to_src;
 
 	if ((dcd < file_start) || ((dcd + 4) > file_end)) {
-		printf("bad dcd_ptr %08x\n", hdr->dcd_ptr);
+		fprintf(stderr, "bad dcd_ptr %08x\n", hdr->dcd_ptr);
 		return -1;
 	}
 
-	m_length = (dcd[1] << 8) + dcd[2];
-
-	printf("main dcd length %x\n", m_length);
-
-	if ((dcd[0] != 0xd2) || (dcd[3] != 0x40)) {
-		printf("Unknown tag\n");
+	dcd_hdr = (struct imx_ivt_header *) dcd;
+	if ((dcd_hdr->tag != TAG_DCD_HEADER) ||
+	    (dcd_hdr->version != DCD_VERSION)) {
+		fprintf(stderr, "Error: Unknown DCD header tag\n");
 		return -1;
 	}
-
+	m_length = ntohs(dcd_hdr->length);
 	dcd_end = dcd + m_length;
-
 	if (dcd_end > file_end) {
-		printf("bad dcd length %08x\n", m_length);
+		fprintf(stderr, "Error: DCD length %08x exceeds EOF\n",
+			m_length);
 		return -1;
 	}
+	printf("main dcd length %x\n", m_length);
 	dcd += 4;
 
 	while (dcd < dcd_end) {
-		unsigned s_length = (dcd[1] << 8) + dcd[2];
-		unsigned char *s_end = dcd + s_length;
-		int set_bits = 0, clear_bits = 0;
-
-		printf("command: 0x%02x sub dcd length: 0x%04x, flags: 0x%02x\n", dcd[0], s_length, dcd[3]);
-
-		if ((dcd[0] != 0xcc)) {
-			printf("Skipping unknown sub tag 0x%02x with len %04x\n", dcd[0], s_length);
-			usleep(50000);
-			dcd += s_length;
-			continue;
-		}
-
-		if (dcd[3] & PARAMETER_FLAG_MASK) {
-			if (dcd[3] & PARAMETER_FLAG_SET)
-				set_bits = 1;
-			else
-				clear_bits = 1;
-		}
-
-		dcd += 4;
-
-		if (s_end > dcd_end) {
-			printf("error s_end(%p) > dcd_end(%p)\n", s_end, dcd_end);
+		int ret = 0;
+		struct imx_ivt_header *cmd_hdr = (struct imx_ivt_header *) dcd;
+		unsigned s_length = ntohs(cmd_hdr->length);
+		if (dcd +  s_length > file_end) {
+			fprintf(stderr, "Error: DCD length %08x exceeds EOF\n",
+				s_length);
 			return -1;
 		}
-
-		while (dcd < s_end) {
-			unsigned addr = (dcd[0] << 24) | (dcd[1] << 16) | (dcd[2] << 8) | dcd[3];
-			unsigned val = (dcd[4] << 24) | (dcd[5] << 16) | (dcd[6] << 8) | dcd[7];
-
-			dcd += 8;
-
-			modify_memory(addr, val, 4, set_bits, clear_bits);
+		switch (cmd_hdr->tag) {
+		case TAG_WRITE:
+			ret = do_dcd_v2_cmd_write(dcd);
+			break;
+		case TAG_CHECK:
+			fprintf(stderr, "DCD check not implemented yet\n");
+			usleep(50000);
+			break;
+		case TAG_UNLOCK:
+			fprintf(stderr, "DCD unlock not implemented yet\n");
+			usleep(50000);
+			break;
+		case TAG_NOP:
+			break;
+		default:
+			fprintf(stderr, "Skipping unknown DCD sub tag 0x%02x "
+				"with len %04x\n", cmd_hdr->tag, s_length);
+			usleep(50000);
+			break;
 		}
+		dcd += s_length;
+		if (ret < 0)
+			return ret;
 	}
-	return err;
+	return 0;
 }
 
 static int get_dcd_range_old(const struct imx_flash_header *hdr,
@@ -984,7 +1017,7 @@ static int perform_dcd(unsigned char *p, const unsigned char *file_start,
 
 		break;
 	case HDR_MX53:
-		ret = write_dcd_table_ivt(hdr, file_start, cnt);
+		ret = process_dcd_table_ivt(hdr, file_start, cnt);
 		hdr->dcd_ptr = 0;
 
 		break;

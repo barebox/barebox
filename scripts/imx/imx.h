@@ -36,10 +36,12 @@ struct imx_dcd_rec_v1 {
 #define IVT_VERSION	0x40
 #define TAG_DCD_HEADER	0xd2
 #define DCD_VERSION	0x40
+#define TAG_UNLOCK	0xb2
+#define TAG_NOP		0xc0
 #define TAG_WRITE	0xcc
+#define TAG_CHECK	0xcf
 #define PARAMETER_FLAG_MASK	(1 << 3)
 #define PARAMETER_FLAG_SET	(1 << 4)
-#define TAG_CHECK	0xcf
 
 struct imx_ivt_header {
 	uint8_t tag;
@@ -78,5 +80,18 @@ struct config_data {
 	int csf_space;
 	char *csf;
 };
+
+#define MAX_RECORDS_DCD_V2 1024
+struct imx_dcd_v2_write_rec {
+	uint32_t addr;
+	uint32_t val;
+} __attribute__((packed));
+
+struct imx_dcd_v2_write {
+	uint8_t tag;
+	uint16_t length;
+	uint8_t param;
+	struct imx_dcd_v2_write_rec data[MAX_RECORDS_DCD_V2];
+} __attribute__((packed));
 
 int parse_config(struct config_data *data, const char *filename);

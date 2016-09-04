@@ -380,7 +380,7 @@ static int write_mem_v2(uint32_t addr, uint32_t val, int width, int set_bits, in
 	if (set_bits)
 		cmd |= 3 << 3;
 	if (clear_bits)
-		cmd |= 2 << 3;
+		cmd |= 1 << 3;
 
 	if (curdcd > MAX_DCD - 3) {
 		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);

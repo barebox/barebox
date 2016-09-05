@@ -65,9 +65,10 @@ static int do_ubiupdatevol(int argc, char *argv[])
 			break;
 		}
 
-		ret = write(fd_vol, buf, count);
-		if (ret < 0) {
+		count = write(fd_vol, buf, count);
+		if (count < 0) {
 			perror("write");
+			ret = 1;
 			break;
 		}
 

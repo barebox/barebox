@@ -14,10 +14,9 @@
 
 static int do_ubiupdatevol(int argc, char *argv[])
 {
-	int fd_img, fd_vol, ret = 0;
+	int count, fd_img, fd_vol, ret = 0;
 	uint64_t size = 0;
 	struct stat st;
-	unsigned int count;
 	void *buf;
 
 	if (argc - optind < 2)

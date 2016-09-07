@@ -56,7 +56,9 @@ shall be provided to the host. For the possible ``flags`` see
 
 On the host side, the tool `dfu-util <http://dfu-util.gnumonks.org/>`_ can be used
 to update the partitions. It is available for most distributions and typically
-supports the following options::
+supports the following options:
+
+.. code-block:: none
 
   dfu-util -h
   Usage: dfu-util [options] ...

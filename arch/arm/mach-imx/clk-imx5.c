@@ -14,6 +14,7 @@
 #include <of.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
+#include <mach/imx50-regs.h>
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
 #include <dt-bindings/clock/imx5-clock.h>
@@ -68,6 +69,17 @@ static const char *standard_pll_sel[] = {
 	"lp_apm",
 };
 
+static const char *mx50_3bit_clk_sel[] = {
+	"pll1_sw",
+	"pll2_sw",
+	"pll3_sw",
+	"lp_apm",
+	"pfd0",
+	"pfd1",
+	"pfd4",
+	"osc",
+};
+
 static const char *lp_apm_sel[] = {
 	"osc",
 };
@@ -81,6 +93,13 @@ static const char *periph_apm_sel[] = {
 static const char *main_bus_sel[] = {
 	"pll2_sw",
 	"periph_apm",
+};
+
+static const char *mx50_periph_clk_sel[] = {
+	"pll1_sw",
+	"pll2_sw",
+	"pll3_sw",
+	"lp_apm",
 };
 
 static const char *per_lp_apm_sel[] = {
@@ -260,6 +279,73 @@ static void mx5_clocks_ipu_init(void __iomem *regs)
 	clks[IMX5_CLK_IPU_SEL]		= imx_clk_mux("ipu_sel", regs + CCM_CBCMR, 6, 2, ipu_sel, ARRAY_SIZE(ipu_sel));
 }
 
+int __init mx50_clocks_init(struct device_d *dev, void __iomem *regs)
+{
+	clks[IMX5_CLK_PLL1_SW] = imx_clk_pllv2("pll1_sw", "osc",
+					       (void *)MX50_PLL1_BASE_ADDR);
+	clks[IMX5_CLK_PLL2_SW] = imx_clk_pllv2("pll2_sw", "osc",
+					       (void *)MX50_PLL2_BASE_ADDR);
+	clks[IMX5_CLK_PLL3_SW] = imx_clk_pllv2("pll3_sw", "osc",
+					       (void *)MX50_PLL3_BASE_ADDR);
+
+	mx5_clocks_common_init(dev, regs);
+
+	clks[IMX5_CLK_LP_APM] = imx_clk_mux("lp_apm", regs + CCM_CCSR, 10, 1, lp_apm_sel, ARRAY_SIZE(lp_apm_sel));
+	clks[IMX5_CLK_MAIN_BUS] = imx_clk_mux("main_bus", regs + CCM_CBCDR, 25, 2, mx50_periph_clk_sel, ARRAY_SIZE(mx50_periph_clk_sel));
+	clks[IMX5_CLK_ESDHC_A_SEL] = imx_clk_mux("esdhc_a_sel", regs + CCM_CSCMR1, 21, 2, standard_pll_sel, ARRAY_SIZE(standard_pll_sel));
+	clks[IMX5_CLK_ESDHC_B_SEL] = imx_clk_mux("esdhc_b_sel", regs + CCM_CSCMR1, 16, 3, mx50_3bit_clk_sel, ARRAY_SIZE(mx50_3bit_clk_sel));
+	clks[IMX5_CLK_ESDHC_C_SEL] = imx_clk_mux("esdhc_c_sel", regs + CCM_CSCMR1, 20, 1, esdhc_c_sel, ARRAY_SIZE(esdhc_c_sel));
+	clks[IMX5_CLK_ESDHC_D_SEL] = imx_clk_mux("esdhc_d_sel", regs + CCM_CSCMR1, 19, 1, esdhc_d_sel, ARRAY_SIZE(esdhc_d_sel));
+	clkdev_add_physbase(clks[IMX5_CLK_UART_ROOT], MX50_UART1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_UART_ROOT], MX50_UART2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_UART_ROOT], MX50_UART3_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_I2C1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_I2C2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_I2C3_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_GPT1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_IPG], MX50_CSPI_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_ECSPI_PODF], MX50_ECSPI1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_ECSPI_PODF], MX50_ECSPI2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_IPG], MX50_FEC_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_A_PODF], MX50_ESDHC1_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_C_SEL], MX50_ESDHC2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_B_PODF], MX50_ESDHC3_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_ESDHC_D_SEL], MX50_ESDHC4_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_PWM1_BASE_ADDR, "per");
+	clkdev_add_physbase(clks[IMX5_CLK_PER_ROOT], MX50_PWM2_BASE_ADDR, "per");
+
+	return 0;
+}
+
+static int imx50_ccm_probe(struct device_d *dev)
+{
+	struct resource *iores;
+	void __iomem *regs;
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	regs = IOMEM(iores->start);
+
+	mx50_clocks_init(dev, regs);
+
+	return 0;
+}
+
+static __maybe_unused struct of_device_id imx50_ccm_dt_ids[] = {
+	{
+		.compatible = "fsl,imx50-ccm",
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct driver_d imx50_ccm_driver = {
+	.probe	= imx50_ccm_probe,
+	.name	= "imx50-ccm",
+	.of_compatible = DRV_OF_COMPAT(imx50_ccm_dt_ids),
+};
+
 static void mx51_clocks_ipu_init(void __iomem *regs)
 {
 	clks[IMX5_CLK_IPU_DI0_SEL]	= imx_clk_mux_p("ipu_di0_sel", regs + CCM_CSCMR2, 26, 3,
@@ -434,6 +520,8 @@ static struct driver_d imx53_ccm_driver = {
 
 static int imx5_ccm_init(void)
 {
+	if (IS_ENABLED(CONFIG_ARCH_IMX50))
+		platform_driver_register(&imx50_ccm_driver);
 	if (IS_ENABLED(CONFIG_ARCH_IMX51))
 		platform_driver_register(&imx51_ccm_driver);
 	if (IS_ENABLED(CONFIG_ARCH_IMX53))

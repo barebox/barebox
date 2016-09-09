@@ -1,6 +1,7 @@
 #ifndef __MACH_MX5_H
 #define __MACH_MX5_H
 
+void imx50_init_lowlevel(unsigned int cpufreq_mhz);
 void imx51_init_lowlevel(unsigned int cpufreq_mhz);
 void imx53_init_lowlevel(unsigned int cpufreq_mhz);
 void imx53_init_lowlevel_early(unsigned int cpufreq_mhz);

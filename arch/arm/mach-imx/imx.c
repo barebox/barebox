@@ -49,6 +49,8 @@ static int imx_soc_from_dt(void)
 		return IMX_CPU_IMX31;
 	if (of_machine_is_compatible("fsl,imx35"))
 		return IMX_CPU_IMX35;
+	if (of_machine_is_compatible("fsl,imx50"))
+		return IMX_CPU_IMX50;
 	if (of_machine_is_compatible("fsl,imx51"))
 		return IMX_CPU_IMX51;
 	if (of_machine_is_compatible("fsl,imx53"))
@@ -89,6 +91,8 @@ static int imx_init(void)
 		ret = imx31_init();
 	else if (cpu_is_mx35())
 		ret = imx35_init();
+	else if (cpu_is_mx50())
+		ret = imx50_init();
 	else if (cpu_is_mx51())
 		ret = imx51_init();
 	else if (cpu_is_mx53())
@@ -113,6 +117,8 @@ static int imx_init(void)
 		ret = imx31_devices_init();
 	else if (cpu_is_mx35())
 		ret = imx35_devices_init();
+	else if (cpu_is_mx50())
+		ret = imx50_devices_init();
 	else if (cpu_is_mx51())
 		ret = imx51_devices_init();
 	else if (cpu_is_mx53())

@@ -56,10 +56,15 @@ EXPORT_SYMBOL(xzalloc);
 
 char *xstrdup(const char *s)
 {
-	char *p = strdup(s);
+	char *p;
 
+	if (!s)
+		return NULL;
+
+	p = strdup(s);
 	if (!p)
 		panic("ERROR: out of memory\n");
+
 	return p;
 }
 EXPORT_SYMBOL(xstrdup);

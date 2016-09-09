@@ -274,7 +274,7 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 
 /*
  * ============================================================================
- * i.MX flash header v2 handling. Found on i.MX53 and i.MX6
+ * i.MX flash header v2 handling. Found on i.MX50, i.MX53 and i.MX6
  * ============================================================================
  */
 

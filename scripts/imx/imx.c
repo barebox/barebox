@@ -219,6 +219,7 @@ struct soc_type {
 static struct soc_type socs[] = {
 	{ .name = "imx25", .header_version = 1, .cpu_type = IMX_CPU_IMX25 },
 	{ .name = "imx35", .header_version = 1, .cpu_type = IMX_CPU_IMX35 },
+	{ .name = "imx50", .header_version = 2, .cpu_type = IMX_CPU_IMX50 },
 	{ .name = "imx51", .header_version = 1, .cpu_type = IMX_CPU_IMX51 },
 	{ .name = "imx53", .header_version = 2, .cpu_type = IMX_CPU_IMX53 },
 	{ .name = "imx6", .header_version = 2, .cpu_type = IMX_CPU_IMX6 },

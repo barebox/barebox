@@ -240,6 +240,9 @@ int nvvar_add(const char *name, const char *value)
 {
 	int ret;
 
+	if (!strncmp(name, "nv.", 3))
+		name += 3;
+
 	ret = __nvvar_add(name, value);
 	if (ret)
 		return ret;

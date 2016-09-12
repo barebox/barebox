@@ -24,6 +24,8 @@ int globalvar_add_simple_int(const char *name, int *value,
 int globalvar_add_simple_bool(const char *name, int *value);
 int globalvar_add_simple_enum(const char *name,	int *value,
 			      const char * const *names, int max);
+int globalvar_add_simple_bitmask(const char *name, unsigned long *value,
+				 const char * const *names, int max);
 int globalvar_add_simple_ip(const char *name, IPaddr_t *ip);
 
 int nvvar_load(void);
@@ -59,6 +61,14 @@ static inline int globalvar_add_simple_bool(const char *name,
 
 static inline int globalvar_add_simple_enum(const char *name,
 		int *value, const char * const *names, int max)
+{
+	return 0;
+}
+
+static inline int globalvar_add_simple_bitmask(const char *name,
+					       unsigned long *value,
+					       const char * const *names,
+					       int max)
 {
 	return 0;
 }

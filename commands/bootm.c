@@ -97,7 +97,7 @@ static int do_bootm(int argc, char *argv[])
 			data.dryrun = 1;
 			break;
 		default:
-			break;
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

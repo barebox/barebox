@@ -634,8 +634,7 @@ static int do_load_serial_bin(int argc, char *argv[])
 			console_dev_name = optarg;
 			break;
 		default:
-			perror(argv[0]);
-			return 1;
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

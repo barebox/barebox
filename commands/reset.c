@@ -34,6 +34,8 @@ static int cmd_reset(int argc, char *argv[])
 		case 'f':
 			shutdown_flag = 0;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

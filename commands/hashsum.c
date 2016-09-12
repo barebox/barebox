@@ -42,6 +42,8 @@ static int do_hash(char *algo, int argc, char *argv[])
 			key = optarg;
 			keylen = strlen(key);
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

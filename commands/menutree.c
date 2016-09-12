@@ -26,6 +26,8 @@ static int do_menutree(int argc, char *argv[])
 		case 'm':
 			path = optarg;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

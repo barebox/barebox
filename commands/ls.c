@@ -143,6 +143,8 @@ static int do_ls(int argc, char *argv[])
 		case 'l':
 			flags &= ~LS_COLUMN;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

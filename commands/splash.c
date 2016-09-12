@@ -41,6 +41,8 @@ static int do_splash(int argc, char *argv[])
 		case 'y':
 			s.y = simple_strtoul(optarg, NULL, 0);
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

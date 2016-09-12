@@ -137,6 +137,8 @@ static int do_fbtest(int argc, char *argv[])
 		case 'c':
 			color = simple_strtoul(optarg, NULL, 16);
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

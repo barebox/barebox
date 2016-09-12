@@ -53,6 +53,8 @@ static int do_boot(int argc, char *argv[])
 		case 'w':
 			boot_set_watchdog_timeout(simple_strtoul(optarg, NULL, 0));
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

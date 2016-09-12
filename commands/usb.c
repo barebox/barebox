@@ -123,6 +123,8 @@ static int do_usb(int argc, char *argv[])
 		case 's':
 			show = 1;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

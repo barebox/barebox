@@ -74,7 +74,7 @@ int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 			*swab = 1;
 			break;
 		default:
-			return -1;
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

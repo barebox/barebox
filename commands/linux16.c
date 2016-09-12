@@ -176,6 +176,8 @@ static int do_linux16(int argc, char *argv[])
 				}
 			}
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

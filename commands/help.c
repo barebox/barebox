@@ -98,6 +98,8 @@ static int do_help(int argc, char *argv[])
 		case 'a':
 			all = 1;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

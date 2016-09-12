@@ -67,8 +67,7 @@ static int do_loady(int argc, char *argv[])
 			cname = optarg;
 			break;
 		default:
-			perror(argv[0]);
-			return 1;
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

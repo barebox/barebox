@@ -123,6 +123,8 @@ static int do_hwclock(int argc, char *argv[])
 			ntp_to_hw = 1;
 			ntpserver = optarg;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

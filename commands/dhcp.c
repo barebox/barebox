@@ -45,6 +45,8 @@ static int do_dhcp(int argc, char *argv[])
 		case 'r':
 			retries = simple_strtoul(optarg, NULL, 10);
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

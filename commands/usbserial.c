@@ -44,6 +44,8 @@ static int do_usbserial(int argc, char *argv[])
 		case 'd':
 			usb_serial_unregister();
 			return 0;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

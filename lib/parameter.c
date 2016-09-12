@@ -505,6 +505,141 @@ struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 	return &pe->param;
 }
 
+struct param_bitmask {
+	struct param_d param;
+	unsigned long *value;
+	const char * const *names;
+	int num_names;
+	int (*set)(struct param_d *p, void *priv);
+	int (*get)(struct param_d *p, void *priv);
+};
+
+static inline struct param_bitmask *to_param_bitmask(struct param_d *p)
+{
+	return container_of(p, struct param_bitmask, param);
+}
+
+static int param_bitmask_set(struct device_d *dev, struct param_d *p, const char *val)
+{
+	struct param_bitmask *pb = to_param_bitmask(p);
+	void *value_save;
+	int i, ret;
+	char *freep, *dval, *str;
+
+	if (!val)
+		val = "";
+
+	freep = dval = xstrdup(val);
+	value_save = xmemdup(pb->value, BITS_TO_LONGS(pb->num_names) * sizeof(unsigned long));
+
+	while (1) {
+		str = strsep(&dval, " ");
+		if (!str || !*str)
+			break;
+
+		for (i = 0; i < pb->num_names; i++) {
+			if (pb->names[i] && !strcmp(str, pb->names[i])) {
+				set_bit(i, pb->value);
+				break;
+			}
+		}
+
+		if (i == pb->num_names) {
+			ret = -EINVAL;
+			goto out;
+		}
+	}
+
+	if (!pb->set) {
+		ret = 0;
+		goto out;
+	}
+
+	ret = pb->set(p, p->driver_priv);
+	if (ret)
+		memcpy(pb->value, value_save, BITS_TO_LONGS(pb->num_names) * sizeof(unsigned long));
+
+out:
+	free(value_save);
+	free(freep);
+	return ret;
+}
+
+static const char *param_bitmask_get(struct device_d *dev, struct param_d *p)
+{
+	struct param_bitmask *pb = to_param_bitmask(p);
+	int ret, bit;
+	char *pos;
+
+	if (pb->get) {
+		ret = pb->get(p, p->driver_priv);
+		if (ret)
+			return NULL;
+	}
+
+	pos = p->value;
+
+	for_each_set_bit(bit, pb->value, pb->num_names)
+		if (pb->names[bit])
+			pos += sprintf(pos, "%s ", pb->names[bit]);
+
+	return p->value;
+}
+
+static void param_bitmask_info(struct param_d *p)
+{
+	struct param_bitmask *pb = to_param_bitmask(p);
+	int i;
+
+	if (pb->num_names <= 1)
+		return;
+
+	printf(" (list: ");
+
+	for (i = 0; i < pb->num_names; i++) {
+		if (!pb->names[i] || !*pb->names[i])
+			continue;
+		printf("\"%s\"%s", pb->names[i],
+				i ==  pb->num_names - 1 ? ")" : ", ");
+	}
+}
+
+struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		unsigned long *value, const char * const *names, int max, void *priv)
+{
+	struct param_bitmask *pb;
+	struct param_d *p;
+	int ret, i, len = 0;
+
+	pb = xzalloc(sizeof(*pb));
+
+	pb->value = value;
+	pb->set = set;
+	pb->get = get;
+	pb->names = names;
+	pb->num_names = max;
+	p = &pb->param;
+	p->driver_priv = priv;
+
+	for (i = 0; i < pb->num_names; i++)
+		if (pb->names[i])
+			len += strlen(pb->names[i]) + 1;
+
+	p->value = xzalloc(len);
+
+	ret = __dev_add_param(p, dev, name, param_bitmask_set, param_bitmask_get, 0);
+	if (ret) {
+		free(pb);
+		return ERR_PTR(ret);
+	}
+
+	p->info = param_bitmask_info;
+
+	return &pb->param;
+}
+
 /**
  * dev_add_param_bool - add an boolean parameter to a device
  * @param dev	The device

@@ -53,6 +53,11 @@ struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 		int (*get)(struct param_d *p, void *priv),
 		int *value, const char * const *names, int max, void *priv);
 
+struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
+		int (*set)(struct param_d *p, void *priv),
+		int (*get)(struct param_d *p, void *priv),
+		unsigned long *value, const char * const *names, int max, void *priv);
+
 struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		int value, const char *format);
 

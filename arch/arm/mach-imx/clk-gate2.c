@@ -79,6 +79,8 @@ static int clk_gate2_is_enabled(struct clk *clk)
 }
 
 static struct clk_ops clk_gate2_ops = {
+	.set_rate = clk_parent_set_rate,
+	.round_rate = clk_parent_round_rate,
 	.enable = clk_gate2_enable,
 	.disable = clk_gate2_disable,
 	.is_enabled = clk_gate2_is_enabled,
@@ -96,6 +98,7 @@ struct clk *clk_gate2_alloc(const char *name, const char *parent,
 	g->clk.name = name;
 	g->clk.parent_names = &g->parent;
 	g->clk.num_parents = 1;
+	g->clk.flags = CLK_SET_RATE_PARENT;
 
 	return &g->clk;
 }

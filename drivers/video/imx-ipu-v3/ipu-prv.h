@@ -19,8 +19,6 @@ struct ipu_soc;
 
 #include "imx-ipu-v3.h"
 
-#define IPU_PIX_FMT_GBR24	v4l2_fourcc('G', 'B', 'R', '3')
-
 #define IPUV3_CHANNEL_CSI0			 0
 #define IPUV3_CHANNEL_CSI1			 1
 #define IPUV3_CHANNEL_CSI2			 2

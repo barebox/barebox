@@ -127,6 +127,14 @@ config DRIVER_VIDEO_MTL017
 	  The MTL017 is a parallel to lvds video encoder chip found on the
 	  Efika MX Smartbook.
 
+config DRIVER_VIDEO_TC358767
+	bool "TC358767A Display Port encoder"
+	select VIDEO_VPL
+	depends on I2C
+	depends on OFTREE
+	help
+	  The TC358767A is a DSI/DPI to eDP video encoder chip
+
 config DRIVER_VIDEO_SIMPLE_PANEL
 	bool "Simple panel support"
 	select VIDEO_VPL

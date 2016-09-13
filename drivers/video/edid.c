@@ -792,7 +792,6 @@ int edid_to_display_timings(struct display_timings *timings, unsigned char *edid
 
 	return 0;
 out:
-	free(timings);
 	free(mode);
 	return ret;
 }

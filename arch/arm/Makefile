@@ -314,9 +314,5 @@ endif
 common- += $(patsubst %,arch/arm/boards/%/,$(board-))
 
 CLEAN_FILES += include/generated/mach-types.h barebox-flash-image
-
-ifeq ($(CONFIG_CPU_V8), y)
 CLEAN_FILES += arch/arm/lib64/barebox.lds
-else
 CLEAN_FILES += arch/arm/lib32/barebox.lds
-endif

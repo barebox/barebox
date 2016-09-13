@@ -311,8 +311,6 @@ static struct phy_device *of_phy_register_fixed_link(struct device_node *np,
 	phydev->registered = 1;
 	phydev->speed = 1000;
 	phydev->duplex = 1;
-	phydev->pause = phydev->asym_pause = 0;
-	phydev->link = 1;
 
 	return phydev;
 }

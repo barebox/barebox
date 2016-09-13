@@ -2,6 +2,10 @@
 
 . /env/config
 
+if [ -f /env/bin/boot_board ]; then
+	. /env/bin/boot_board
+fi
+
 if [ x$kernel_loc = xnet ]; then
 	kernel_loc=tftp
 fi

@@ -35,6 +35,8 @@ static int do_saveenv(int argc, char *argv[])
 		case 'z':
 			envfs_flags |= ENVFS_FLAGS_FORCE_BUILT_IN;
 			break;
+		default:
+			return COMMAND_ERROR_USAGE;
 		}
 	}
 

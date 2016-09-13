@@ -171,6 +171,7 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clkdev_add_physbase(clks[ipg], MX25_CSPI3_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per3], MX25_ESDHC1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per4], MX25_ESDHC2_BASE_ADDR, NULL);
+	clkdev_add_physbase(clks[per8], MX25_NFC_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[lcdc_ipg_per], MX25_LCDC_BASE_ADDR, "per");
 	clkdev_add_physbase(clks[lcdc_ipg], MX25_LCDC_BASE_ADDR, "ipg");
 	clkdev_add_physbase(clks[lcdc_ahb], MX25_LCDC_BASE_ADDR, "ahb");

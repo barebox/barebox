@@ -63,6 +63,7 @@
 		compatible = "simple-panel";
 		backlight = <&backlight>;
 		enable-gpios = <&gpio5 21 GPIO_ACTIVE_HIGH>;
+		enable-delay = <200>;
 
 		port {
 			panel_in: endpoint {
@@ -573,6 +574,16 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart5>;
 	fsl,uart-has-rtscts;
+	status = "okay";
+};
+
+&usbh1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbh1>;
+	status = "okay";
+};
+
+&usbotg {
 	status = "okay";
 };
 

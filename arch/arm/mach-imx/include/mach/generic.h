@@ -11,6 +11,7 @@ u64 imx_uid(void);
 void imx25_boot_save_loc(void __iomem *ccm_base);
 void imx35_boot_save_loc(void __iomem *ccm_base);
 void imx27_boot_save_loc(void __iomem *sysctrl_base);
+void imx50_boot_save_loc(void __iomem *src_base);
 void imx51_boot_save_loc(void __iomem *src_base);
 void imx53_boot_save_loc(void __iomem *src_base);
 void imx6_boot_save_loc(void __iomem *src_base);
@@ -22,6 +23,7 @@ int imx25_init(void);
 int imx27_init(void);
 int imx31_init(void);
 int imx35_init(void);
+int imx50_init(void);
 int imx51_init(void);
 int imx53_init(void);
 int imx6_init(void);
@@ -32,6 +34,7 @@ int imx25_devices_init(void);
 int imx27_devices_init(void);
 int imx31_devices_init(void);
 int imx35_devices_init(void);
+int imx50_devices_init(void);
 int imx51_devices_init(void);
 int imx53_devices_init(void);
 int imx6_devices_init(void);
@@ -116,6 +119,19 @@ extern unsigned int __imx_cpu_type;
 #else
 # define cpu_is_mx35()		(0)
 #endif
+
+#ifdef CONFIG_ARCH_IMX50
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX50
+# endif
+# define cpu_is_mx50()		(imx_cpu_type == IMX_CPU_IMX50)
+#else
+# define cpu_is_mx50()		(0)
+#endif
+
 
 #ifdef CONFIG_ARCH_IMX51
 # ifdef imx_cpu_type

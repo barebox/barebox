@@ -274,7 +274,7 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 
 /*
  * ============================================================================
- * i.MX flash header v2 handling. Found on i.MX53 and i.MX6
+ * i.MX flash header v2 handling. Found on i.MX50, i.MX53 and i.MX6
  * ============================================================================
  */
 
@@ -450,6 +450,11 @@ static int write_dcd(const char *outfile)
 static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
 		 uint32_t mask)
 {
+	if (data->header_version != 2) {
+		fprintf(stderr, "DCD check command is not available or "
+				"not yet implemented for this SOC\n");
+		return -EINVAL;
+	}
 	if (curdcd > MAX_DCD - 3) {
 		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
 		return -ENOMEM;

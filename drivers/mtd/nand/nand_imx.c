@@ -24,6 +24,7 @@
 #include <init.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
+#include <linux/clk.h>
 #include <mach/generic.h>
 #include <mach/imx-nand.h>
 #include <io.h>
@@ -784,16 +785,63 @@ static int get_eccsize(struct mtd_info *mtd)
 		return 8;
 }
 
-static void preset_v1_v2(struct mtd_info *mtd)
+static void preset_v1(struct mtd_info *mtd)
 {
 	struct nand_chip *nand_chip = mtd->priv;
 	struct imx_nand_host *host = nand_chip->priv;
 	uint16_t config1 = 0;
 
-	if (nfc_is_v21())
-		config1 |= NFC_V2_CONFIG1_FP_INT;
+	host->eccsize = 1;
 
-	if (nfc_is_v21() && mtd->writesize) {
+	writew(config1, host->regs + NFC_V1_V2_CONFIG1);
+	/* preset operation */
+
+	/* Unlock the internal RAM Buffer */
+	writew(0x2, host->regs + NFC_V1_V2_CONFIG);
+
+	/* Blocks to be unlocked */
+	writew(0x0, host->regs + NFC_V1_UNLOCKSTART_BLKADDR);
+	writew(0x4000, host->regs + NFC_V1_UNLOCKEND_BLKADDR);
+
+	/* Unlock Block Command for given address range */
+	writew(0x4, host->regs + NFC_V1_V2_WRPROT);
+}
+
+static void preset_v2(struct mtd_info *mtd)
+{
+	struct nand_chip *nand_chip = mtd->priv;
+	struct imx_nand_host *host = nand_chip->priv;
+	uint16_t config1 = 0;
+	int mode;
+
+	mode = onfi_get_async_timing_mode(nand_chip);
+	if (mode != ONFI_TIMING_MODE_UNKNOWN && !IS_ERR(host->clk)) {
+		const struct nand_sdr_timings *timings;
+
+		mode = fls(mode) - 1;
+		if (mode < 0)
+			mode = 0;
+
+		timings = onfi_async_timing_mode_to_sdr_timings(mode);
+		if (!IS_ERR(timings)) {
+			unsigned long rate;
+			int tRC_min_ns = timings->tRC_min / 1000;
+
+			rate = 1000000000 / tRC_min_ns;
+			if (tRC_min_ns < 30)
+				/* If tRC is smaller than 30ns we have to use EDO timing */
+				config1 |= NFC_V1_V2_CONFIG1_ONE_CYCLE;
+			else
+				/* Otherwise we have two clock cycles per access */
+				rate *= 2;
+
+			clk_set_rate(host->clk, rate);
+		}
+	}
+
+	config1 |= NFC_V2_CONFIG1_FP_INT;
+
+	if (mtd->writesize) {
 		uint16_t pages_per_block = mtd->erasesize / mtd->writesize;
 
 		host->eccsize = get_eccsize(mtd);
@@ -812,14 +860,8 @@ static void preset_v1_v2(struct mtd_info *mtd)
 	writew(0x2, host->regs + NFC_V1_V2_CONFIG);
 
 	/* Blocks to be unlocked */
-	if (nfc_is_v21()) {
-		writew(0x0, host->regs + NFC_V21_UNLOCKSTART_BLKADDR);
-		writew(0xffff, host->regs + NFC_V21_UNLOCKEND_BLKADDR);
-	} else if (nfc_is_v1()) {
-		writew(0x0, host->regs + NFC_V1_UNLOCKSTART_BLKADDR);
-		writew(0x4000, host->regs + NFC_V1_UNLOCKEND_BLKADDR);
-	} else
-		BUG();
+	writew(0x0, host->regs + NFC_V21_UNLOCKSTART_BLKADDR);
+	writew(0xffff, host->regs + NFC_V21_UNLOCKEND_BLKADDR);
 
 	/* Unlock Block Command for given address range */
 	writew(0x4, host->regs + NFC_V1_V2_WRPROT);
@@ -1166,8 +1208,10 @@ static int __init imxnd_probe(struct device_d *dev)
 
 	host->data_buf = (uint8_t *)(host + 1);
 
+	/* No error check, not all SoCs provide a clk yet */
+	host->clk = clk_get(dev, NULL);
+
 	if (nfc_is_v1() || nfc_is_v21()) {
-		host->preset = preset_v1_v2;
 		host->send_cmd = send_cmd_v1_v2;
 		host->send_addr = send_addr_v1_v2;
 		host->send_page = send_page_v1_v2;
@@ -1189,6 +1233,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		oob_smallpage = &nandv2_hw_eccoob_smallpage;
 		oob_largepage = &nandv2_hw_eccoob_largepage;
 		oob_4kpage = &nandv2_hw_eccoob_4k; /* FIXME : to check */
+		host->preset = preset_v2;
 	} else if (nfc_is_v1()) {
 		iores = dev_request_mem_resource(dev, 0);
 		if (IS_ERR(iores))
@@ -1201,6 +1246,7 @@ static int __init imxnd_probe(struct device_d *dev)
 		oob_smallpage = &nandv1_hw_eccoob_smallpage;
 		oob_largepage = &nandv1_hw_eccoob_largepage;
 		oob_4kpage = &nandv1_hw_eccoob_smallpage; /* FIXME : to check  */
+		host->preset = preset_v1;
 	} else if (nfc_is_v3_2()) {
 		iores = dev_request_mem_resource(dev, 0);
 		if (IS_ERR(iores))

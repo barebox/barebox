@@ -150,13 +150,23 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 
 static int ci_register_role(struct imx_chipidea *ci)
 {
-	if (ci->role_registered)
+	int ret;
+
+	if (ci->role_registered != IMX_USB_MODE_OTG)
 		return -EBUSY;
 
 	if (ci->mode == IMX_USB_MODE_HOST) {
 		if (IS_ENABLED(CONFIG_USB_EHCI)) {
 			ci->role_registered = 1;
-			return ehci_register(ci->dev, &ci->data);
+			ret = regulator_enable(ci->vbus);
+			if (ret)
+				return ret;
+
+			ret = ehci_register(ci->dev, &ci->data);
+			if (!ret)
+				return 0;
+
+			regulator_disable(ci->vbus);
 		} else {
 			dev_err(ci->dev, "Host support not available\n");
 			return -ENODEV;
@@ -180,8 +190,12 @@ static int ci_set_mode(struct param_d *param, void *priv)
 {
 	struct imx_chipidea *ci = priv;
 
-	if (ci->role_registered)
-		return -EBUSY;
+	if (ci->role_registered != IMX_USB_MODE_OTG) {
+		if (ci->role_registered == ci->mode)
+			return 0;
+		else
+			return -EBUSY;
+	}
 
 	return ci_register_role(ci);
 }
@@ -225,6 +239,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 
 	ci = xzalloc(sizeof(*ci));
 	ci->dev = dev;
+	ci->role_registered = IMX_USB_MODE_OTG;
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
 		ret = imx_chipidea_probe_dt(ci);
@@ -242,9 +257,8 @@ static int imx_chipidea_probe(struct device_d *dev)
 	}
 
 	ci->vbus = regulator_get(dev, "vbus");
-
-	if (!IS_ERR(ci->vbus))
-		regulator_enable(ci->vbus);
+	if (IS_ERR(ci->vbus))
+		ci->vbus = NULL;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

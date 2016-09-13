@@ -1042,6 +1042,13 @@ config DEBUG_IMX35_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX35.
 
+config DEBUG_IMX50_UART
+	bool "i.MX50 Debug UART"
+	depends on ARCH_IMX50
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on i.MX50.
+
 config DEBUG_IMX51_UART
 	bool "i.MX51 Debug UART"
 	depends on ARCH_IMX51

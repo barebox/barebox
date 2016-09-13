@@ -102,6 +102,7 @@
 #define MX5_CCM_CCGR4		0x78
 #define MX5_CCM_CCGR5		0x7C
 #define MX5_CCM_CCGR6		0x80
+#define MX50_CCM_CCGR7		0x84
 #define MX53_CCM_CCGR7		0x84
 #define MX51_CCM_CMEOR		0x84
 

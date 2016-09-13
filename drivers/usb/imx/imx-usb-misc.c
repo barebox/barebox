@@ -447,6 +447,12 @@ static struct platform_device_id imx_usbmisc_ids[] = {
 		.driver_data = (unsigned long)&mx35_data,
 	},
 #endif
+#ifdef CONFIG_ARCH_IMX50
+	{
+		.name = "imx50-usb-misc",
+		.driver_data = (unsigned long)&mx5_data,
+	},
+#endif
 #ifdef CONFIG_ARCH_IMX51
 	{
 		.name = "imx51-usb-misc",

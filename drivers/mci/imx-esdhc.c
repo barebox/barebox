@@ -85,7 +85,7 @@ static u32 esdhc_xfertyp(struct mci_cmd *cmd, struct mci_data *data)
 		xfertyp |= COMMAND_RSPTYP_48_BUSY;
 	else if (cmd->resp_type & MMC_RSP_PRESENT)
 		xfertyp |= COMMAND_RSPTYP_48;
-	if ((cpu_is_mx51() || cpu_is_mx53()) &&
+	if ((cpu_is_mx50() || cpu_is_mx51() || cpu_is_mx53()) &&
 			cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION)
 		xfertyp |= SDHCI_CMD_ABORTCMD;
 
@@ -637,6 +637,8 @@ static int fsl_esdhc_probe(struct device_d *dev)
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{
 		.compatible = "fsl,imx25-esdhc",
+	}, {
+		.compatible = "fsl,imx50-esdhc",
 	}, {
 		.compatible = "fsl,imx51-esdhc",
 	}, {

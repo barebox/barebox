@@ -7,6 +7,7 @@
 #define IMX_CPU_IMX27	27
 #define IMX_CPU_IMX31	31
 #define IMX_CPU_IMX35	35
+#define IMX_CPU_IMX50	50
 #define IMX_CPU_IMX51	51
 #define IMX_CPU_IMX53	53
 #define IMX_CPU_IMX6	6

@@ -16,6 +16,7 @@ The Internal Boot Mode is supported on:
 
 * i.MX25
 * i.MX35
+* i.MX50
 * i.MX51
 * i.MX53
 * i.MX6

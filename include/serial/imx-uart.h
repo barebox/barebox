@@ -146,6 +146,11 @@ static inline void imx_uart_setup(void __iomem *uartbase,
 	writel(UCR1_UARTEN, uartbase + UCR1);
 }
 
+static inline void imx50_uart_setup(void __iomem *uartbase)
+{
+	imx_uart_setup(uartbase, 66666666);
+}
+
 static inline void imx51_uart_setup(void __iomem *uartbase)
 {
 	imx_uart_setup(uartbase, 54000000);

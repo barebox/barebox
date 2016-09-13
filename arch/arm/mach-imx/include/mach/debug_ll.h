@@ -10,6 +10,7 @@
 #include <mach/imx27-regs.h>
 #include <mach/imx31-regs.h>
 #include <mach/imx35-regs.h>
+#include <mach/imx50-regs.h>
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
@@ -33,6 +34,8 @@
 #define IMX_DEBUG_SOC MX31
 #elif defined CONFIG_DEBUG_IMX35_UART
 #define IMX_DEBUG_SOC MX35
+#elif defined CONFIG_DEBUG_IMX50_UART
+#define IMX_DEBUG_SOC MX50
 #elif defined CONFIG_DEBUG_IMX51_UART
 #define IMX_DEBUG_SOC MX51
 #elif defined CONFIG_DEBUG_IMX53_UART
@@ -42,6 +45,13 @@
 #else
 #error "unknown i.MX debug uart soc type"
 #endif
+
+static inline void imx50_uart_setup_ll(void)
+{
+	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC, CONFIG_DEBUG_IMX_UART_PORT));
+
+	imx50_uart_setup(base);
+}
 
 static inline void imx51_uart_setup_ll(void)
 {
@@ -76,6 +86,7 @@ static inline void PUTC_LL(int c)
 }
 #else
 
+static inline void imx50_uart_setup_ll(void) {}
 static inline void imx51_uart_setup_ll(void) {}
 static inline void imx53_uart_setup_ll(void) {}
 static inline void imx6_uart_setup_ll(void)  {}

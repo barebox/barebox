@@ -22,6 +22,7 @@
 #include <menu.h>
 #include <getopt.h>
 #include <errno.h>
+#include <libbb.h>
 #include <linux/err.h>
 
 typedef enum {
@@ -146,9 +147,7 @@ static int do_menu_add(struct cmd_menu *cm)
 	if (!m->name)
 		goto free;
 
-	m->display = strdup(cm->description);
-	if (!m->display)
-		goto free;
+	menu_add_title(m, strdup(cm->description));
 
 	ret = menu_add(m);
 
@@ -271,7 +270,23 @@ static int do_menu_list(struct cmd_menu *cm)
 	}
 
 	list_for_each_entry(m, &menus->list, list) {
-		printf("%s: %s\n", m->name, m->display? m->display : m->name);
+		printf("%s: ", m->name);
+		if (m->display_lines) {
+			static char outstr[256];
+			int i;
+
+			printf("\n");
+			for (i = 0; i < m->display_lines; i++)
+				/* Conform to menu rendering logic */
+				if (IS_ENABLED(CONFIG_SHELL_HUSH)) {
+					process_escape_sequence(m->display[i], outstr, 256);
+					printf("\t%s\n", outstr);
+				} else {
+					printf("\t%s\n", m->display[i]);
+				}
+		} else {
+			printf("%s\n", m->name);
+		}
 		if (is_entry(cm))
 			print_entries(m);
 	}

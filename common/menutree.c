@@ -19,6 +19,7 @@
 #include <shell.h>
 #include <libfile.h>
 
+#include <linux/ctype.h>
 #include <linux/stat.h>
 
 struct menutree {
@@ -95,6 +96,7 @@ int menutree(const char *path, int toplevel)
 	glob_t g;
 	int i;
 	char *globpath, *display;
+	size_t size;
 
 	menu = menu_alloc();
 
@@ -106,14 +108,17 @@ int menutree(const char *path, int toplevel)
 		goto out;
 	}
 
-	display = read_file_line("%s/title", path);
+	globpath = basprintf("%s/title", path);
+	display = read_file(globpath, &size);
+	free(globpath);
 	if (!display) {
 		eprintf("no title found in %s/title\n", path);
 		ret = -EINVAL;
 		goto out;
 	}
 
-	menu->display = shell_expand(display);
+	strim(display);
+	menu_add_title(menu, shell_expand(display));
 	free(display);
 
 	for (i = 0; i < g.gl_pathc; i++) {

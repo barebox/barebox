@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	init-menu-add-entry "$0" "NAND partitions"
-	exit
-fi
-
 mtdparts="0xC0000(nand0.bootstrap),256k(nand0.barebox)ro,128k(nand0.bareboxenv),3M(nand0.kernel),-(nand0.rootfs)"
 kernelname="atmel_nand"
 

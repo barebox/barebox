@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-        init-menu-add-entry "$0" "NOR partitions"
-        exit
-fi
-
 mtdparts="2048k@0(nor0.barebox)ro,256k(nor0.barebox-env),256k(nor0.barebox-logo),256k(nor0.barebox-logo2),5120k(nor0.kernel),-(nor0.root)"
 kernelname="application-flash"
 

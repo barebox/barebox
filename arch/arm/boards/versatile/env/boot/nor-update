@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = menu ]; then
-	boot-menu-add-entry "$0" "nor update"
-	exit
-fi
-
 global.bootm.image="/dev/nor0.update"
 
 dtb=/dev/nor0.dtb

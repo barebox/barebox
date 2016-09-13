@@ -753,6 +753,8 @@ static __maybe_unused struct of_device_id dw_mmc_compatible[] = {
 	}, {
 		.compatible = "rockchip,rk2928-dw-mshc",
 	}, {
+		.compatible = "rockchip,rk3288-dw-mshc",
+	}, {
 		/* sentinel */
 	}
 };

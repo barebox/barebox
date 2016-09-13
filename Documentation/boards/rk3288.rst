@@ -1,0 +1,57 @@
+Rockchip RK3288
+===============
+
+The RK3288 SoC has a two stage boot process. The booting is completed in two
+consecutive stages. The binary for the 1st stage is referred to as the
+Secondary Program Loader (SPL). The binary for the 2nd stage is simply referred to
+as barebox.
+SPL is a non-interactive loader and is only used to boot the 2nd stage loader.
+
+At this moment barebox can only be used as a 2nd stage bootloader.
+Starting barebox requires another bootloader which will do the very basic
+SDRAM initialization for us. We can use the u-boot for that.
+
+Building barebox
+----------------
+
+The RK3288 boards in barebox are covered by the ``rk3288_defconfig``.
+The resulting images will be placed under ``images/``:
+
+::
+  barebox-rk3288-phycore-som.img
+
+
+Starting and updating barebox
+-----------------------------
+
+SD/MMC
+^^^^^^
+
+For the first stage bootloader we will need an u-boot image. A detailed
+description on how to build and flash an RK3288 SPL image can be found in the
+u-boot source ``u-boot/doc/README.rockchip``.
+
+U-boot requires an image with a special header.
+
+  mkimage -A arm -T firmware -C none -O u-boot -a 0x02000000 -e 0 -n "barebox image" -d images/barebox-rk3288-phycore-som.img barebox.img
+
+To write an image that boots from an SD card (assumed to be /dev/sdc):
+
+  sudo dd if=u-boot/u-boot-spl-dtb.bin of=/dev/sdc seek=64 bs=512
+  sudo dd if=barebox.img of=/dev/sdc seek=256 bs=512
+
+This puts the Rockchip header and SPL image first and then places the barebox
+image at block 256 (i.e. 128KB from the start of the SD card). This
+corresponds with this setting in U-Boot:
+
+  #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR      256
+
+RK3288 Boards
+-------------
+
+.. toctree::
+  :glob:
+  :numbered:
+  :maxdepth: 1
+
+  rk3288/*

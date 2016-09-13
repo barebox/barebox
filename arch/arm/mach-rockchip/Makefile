@@ -1,1 +1,2 @@
-obj-y += core.o
+obj-$(CONFIG_ARCH_RK3188) += rk3188.o
+obj-$(CONFIG_ARCH_RK3288) += rk3288.o

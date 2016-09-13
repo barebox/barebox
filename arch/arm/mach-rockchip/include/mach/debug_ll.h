@@ -1,25 +1,31 @@
 #ifndef __MACH_DEBUG_LL_H__
 #define __MACH_DEBUG_LL_H__
 
+#include <common.h>
 #include <io.h>
+#include <mach/rk3188-regs.h>
+#include <mach/rk3288-regs.h>
 
-#if CONFIG_DEBUG_ROCKCHIP_UART_PORT == 0
-#define UART_BASE	0x10124000
+#ifdef CONFIG_ARCH_RK3188
+
+#define UART_CLOCK		100000000
+#define RK_DEBUG_SOC		RK3188
+#define serial_out(a, v)	writeb(v, a)
+#define serial_in(a)		readb(a)
+
+#elif defined CONFIG_ARCH_RK3288
+
+#define UART_CLOCK		24000000
+#define RK_DEBUG_SOC		RK3288
+#define serial_out(a, v)	writel(v, a)
+#define serial_in(a)		readl(a)
+
 #endif
-#if CONFIG_DEBUG_ROCKCHIP_UART_PORT == 1
-#define UART_BASE	0x10126000
-#endif
-#if CONFIG_DEBUG_ROCKCHIP_UART_PORT == 2
-#define UART_BASE	0x20064000
-#endif
-#if CONFIG_DEBUG_ROCKCHIP_UART_PORT == 3
-#define UART_BASE	0x20068000
-#endif
+
+#define __RK_UART_BASE(soc, num) soc##_UART##num##_BASE
+#define RK_UART_BASE(soc, num) __RK_UART_BASE(soc, num)
 
 #define LSR_THRE	0x20	/* Xmit holding register empty */
-#define LSR		(5 << 2)
-#define THR		(0 << 2)
-
 #define LCR_BKSE	0x80	/* Bank select enable */
 #define LSR		(5 << 2)
 #define THR		(0 << 2)
@@ -33,28 +39,35 @@
 
 static inline void INIT_LL(void)
 {
-	unsigned int clk = 100000000;
-	unsigned int divisor = clk / 16 / 115200;
+	void __iomem *base = IOMEM(RK_UART_BASE(RK_DEBUG_SOC,
+		CONFIG_DEBUG_ROCKCHIP_UART_PORT));
+	unsigned int divisor = DIV_ROUND_CLOSEST(UART_CLOCK,
+		16 * CONFIG_BAUDRATE);
 
-	writeb(0x00, UART_BASE + LCR);
-	writeb(0x00, UART_BASE + IER);
-	writeb(0x07, UART_BASE + MDR);
-	writeb(LCR_BKSE, UART_BASE + LCR);
-	writeb(divisor & 0xff, UART_BASE + DLL);
-	writeb(divisor >> 8, UART_BASE + DLM);
-	writeb(0x03, UART_BASE + LCR);
-	writeb(0x03, UART_BASE + MCR);
-	writeb(0x07, UART_BASE + FCR);
-	writeb(0x00, UART_BASE + MDR);
+	serial_out(base + LCR, 0x00);
+	serial_out(base + IER, 0x00);
+	serial_out(base + MDR, 0x07);
+	serial_out(base + LCR, LCR_BKSE);
+	serial_out(base + DLL, divisor & 0xff);
+	serial_out(base + DLM, divisor >> 8);
+	serial_out(base + LCR, 0x03);
+	serial_out(base + MCR, 0x03);
+	serial_out(base + FCR, 0x07);
+	serial_out(base + MDR, 0x00);
 }
 
 static inline void PUTC_LL(char c)
 {
+	void __iomem *base = IOMEM(RK_UART_BASE(RK_DEBUG_SOC,
+		CONFIG_DEBUG_ROCKCHIP_UART_PORT));
+
 	/* Wait until there is space in the FIFO */
-	while ((readb(UART_BASE + LSR) & LSR_THRE) == 0);
+	while ((serial_in(base + LSR) & LSR_THRE) == 0)
+		;
 	/* Send the character */
-	writeb(c, UART_BASE + THR);
+	serial_out(base + THR, c);
 	/* Wait to make sure it hits the line, in case we die too soon. */
-	while ((readb(UART_BASE + LSR) & LSR_THRE) == 0);
+	while ((serial_in(base + LSR) & LSR_THRE) == 0)
+		;
 }
 #endif

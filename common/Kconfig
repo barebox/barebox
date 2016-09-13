@@ -1093,11 +1093,11 @@ config DEBUG_AM33XX_UART
 	  on AM33XX.
 
 config DEBUG_ROCKCHIP_UART
-	bool "RK31xx Debug UART"
+	bool "RK3xxx Debug UART"
 	depends on ARCH_ROCKCHIP
 	help
 	  Say Y here if you want kernel low-level debugging support
-	  on RK31XX.
+	  on RK3XXX.
 
 endchoice
 
@@ -1132,7 +1132,7 @@ config DEBUG_OMAP_UART_PORT
 	  AM33XX: 0 - 2
 
 config DEBUG_ROCKCHIP_UART_PORT
-	int "RK31xx UART debug port" if DEBUG_ROCKCHIP_UART
+	int "RK3xxx UART debug port" if DEBUG_ROCKCHIP_UART
 	default 2
 	depends on ARCH_ROCKCHIP
 	help

@@ -16,7 +16,7 @@
 #include <io.h>
 #include <i2c/i2c.h>
 #include <i2c/i2c-gpio.h>
-#include <mach/rockchip-regs.h>
+#include <mach/rk3188-regs.h>
 #include <mfd/act8846.h>
 #include <asm/armlinux.h>
 

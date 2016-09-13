@@ -61,6 +61,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_xz_compressed] = { "XZ compressed", "xz" },
 	[filetype_exe] = { "MS-DOS executable", "exe" },
 	[filetype_mxs_bootstream] = { "Freescale MXS bootstream", "mxsbs" },
+	[filetype_socfpga_xload] = { "SoCFPGA prebootloader image", "socfpga-xload" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -293,6 +294,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (le32_to_cpu(buf[5]) == 0x504d5453)
 		return filetype_mxs_bootstream;
+
+	if (buf[16] == 0x31305341)
+		return filetype_socfpga_xload;
 
 	if (is_barebox_arm_head(_buf))
 		return filetype_arm_barebox;

@@ -29,6 +29,7 @@
 #include <asm/sections.h>
 #include <asm/pgtable.h>
 #include <asm/cache.h>
+#include <asm/unaligned.h>
 
 #include <debug_ll.h>
 
@@ -44,7 +45,7 @@ static int __attribute__((__used__))
 void __noreturn barebox_multi_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
-	uint32_t pg_len;
+	uint32_t pg_len, uncompressed_len;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	uint32_t endmem = membase + memsize;
 	unsigned long barebox_base;
@@ -72,10 +73,11 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 	 */
 	pg_start = image_end + 1;
 	pg_len = *(image_end);
+	uncompressed_len = get_unaligned((const u32 *)(pg_start + pg_len - 4));
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE))
 		barebox_base = arm_mem_barebox_image(membase, endmem,
-						     pg_len);
+						     uncompressed_len + MAX_BSS_SIZE);
 	else
 		barebox_base = TEXT_BASE;
 
@@ -92,8 +94,8 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 	free_mem_ptr = arm_mem_early_malloc(membase, endmem);
 	free_mem_end_ptr = arm_mem_early_malloc_end(membase, endmem);
 
-	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx\n",
-			pg_start, pg_len, barebox_base);
+	pr_debug("uncompressing barebox binary at 0x%p (size 0x%08x) to 0x%08lx (uncompressed size: 0x%08x)\n",
+			pg_start, pg_len, barebox_base, uncompressed_len);
 
 	pbl_barebox_uncompress((void*)barebox_base, pg_start, pg_len);
 

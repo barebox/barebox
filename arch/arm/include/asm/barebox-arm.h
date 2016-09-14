@@ -164,6 +164,13 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 		static void __naked noinline __##name			\
 			(uint32_t arg0, uint32_t arg1, uint32_t arg2)
 
-
+/*
+ * When using compressed images in conjunction with relocatable images
+ * the PBL code must pick a suitable place where to uncompress the barebox
+ * image. For doing this the PBL code must know the size of the final
+ * image including the BSS segment. The BSS size is unknown to the PBL
+ * code, so define a maximum BSS size here.
+ */
+#define MAX_BSS_SIZE SZ_1M
 
 #endif	/* _BAREBOX_ARM_H_ */

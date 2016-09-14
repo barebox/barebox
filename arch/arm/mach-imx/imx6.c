@@ -65,10 +65,10 @@ void imx6_init_lowlevel(void)
 	writel(0xffffffff, 0x020c407c);
 	writel(0xffffffff, 0x020c4080);
 
-	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
-	 * to make sure PFD is working right, otherwise, PFDs may
-	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
-	 * workaround in ROM code, as bus clock need it
+	/*
+	 * Due to a hardware bug (related to errata ERR006282) on i.MX6DQ we
+	 * need to gate/ungate all PFDs to make sure PFD is working right,
+	 * otherwise PFDs may not output clock after reset.
 	 */
 	if (is_imx6q || is_imx6d) {
 		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
@@ -77,7 +77,7 @@ void imx6_init_lowlevel(void)
 		       BM_ANADIG_PFD_480_PFD0_CLKGATE,
 		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
 		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
-		       (is_imx6q ? BM_ANADIG_PFD_528_PFD2_CLKGATE : 0) |
+		       BM_ANADIG_PFD_528_PFD2_CLKGATE |
 		       BM_ANADIG_PFD_528_PFD1_CLKGATE |
 		       BM_ANADIG_PFD_528_PFD0_CLKGATE,
 		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
@@ -88,7 +88,7 @@ void imx6_init_lowlevel(void)
 		       BM_ANADIG_PFD_480_PFD0_CLKGATE,
 		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
 		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
-		       (is_imx6q ? BM_ANADIG_PFD_528_PFD2_CLKGATE : 0) |
+		       BM_ANADIG_PFD_528_PFD2_CLKGATE |
 		       BM_ANADIG_PFD_528_PFD1_CLKGATE |
 		       BM_ANADIG_PFD_528_PFD0_CLKGATE,
 		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);

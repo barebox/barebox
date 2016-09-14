@@ -190,7 +190,6 @@ struct state_string {
 	char raw[];
 };
 
-int state_set_dirty(struct param_d *p, void *priv);
 int state_from_node(struct state *state, struct device_node *node, bool create);
 struct device_node *state_to_node(struct state *state,
 				  struct device_node *parent,

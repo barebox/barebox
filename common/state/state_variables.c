@@ -34,7 +34,7 @@
  * @param priv
  * @return
  */
-int state_set_dirty(struct param_d *p, void *priv)
+static int state_set_dirty(struct param_d *p, void *priv)
 {
 	struct state *state = priv;
 

@@ -36,6 +36,9 @@ int globalvar_add(const char *name,
 {
 	struct param_d *param;
 
+	if (!strncmp(name, "global.", 7))
+		name += 7;
+
 	param = dev_add_param(&global_device, name, set, get, flags);
 	if (IS_ERR(param))
 		return PTR_ERR(param);

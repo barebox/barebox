@@ -380,6 +380,14 @@ cmd_lz4 = (cat $(filter-out FORCE,$^) | \
 %.lz4: %
 	$(call if_changed,lz4)
 
+# comp_copy
+# ---------------------------------------------------------------------------
+# Wrapper which only copies a file, but compatible to the compression
+# functions above. Appends the size to the result file
+quiet_cmd_comp_copy ?= SHIPPED_S $@
+cmd_comp_copy ?= cat $(filter-out FORCE,$^) > $@; \
+                 $(call size_append, $(filter-out FORCE,$^)) >> $@
+
 quiet_cmd_disasm = DISASM  $@
 cmd_disasm = $(OBJDUMP) -d $< > $@
 

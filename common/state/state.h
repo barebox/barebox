@@ -138,6 +138,7 @@ struct variable_type {
 
 /* instance of a single variable */
 struct state_variable {
+	struct state *state;
 	enum state_variable_type type;
 	struct list_head list;
 	const char *name;
@@ -152,7 +153,6 @@ struct state_variable {
 struct state_uint32 {
 	struct state_variable var;
 	struct param_d *param;
-	struct state *state;
 	uint32_t value;
 	uint32_t value_default;
 };
@@ -185,7 +185,6 @@ struct state_mac {
 struct state_string {
 	struct state_variable var;
 	struct param_d *param;
-	struct state *state;
 	char *value;
 	const char *value_default;
 	char raw[];

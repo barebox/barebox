@@ -99,6 +99,10 @@ void imx6_setup_ipu_qos(void)
 	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
 	uint32_t val;
 
+	if (!cpu_mx6_is_mx6q() && !cpu_mx6_is_mx6d() &&
+	    !cpu_mx6_is_mx6dl() && cpu_mx6_is_mx6s())
+		return;
+
 	val = readl(iomux + IOMUXC_GPR4);
 	val |= IMX6Q_GPR4_VPU_WR_CACHE_SEL | IMX6Q_GPR4_VPU_RD_CACHE_SEL |
 		IMX6Q_GPR4_VPU_P_WR_CACHE_VAL | IMX6Q_GPR4_VPU_P_RD_CACHE_VAL_MASK |

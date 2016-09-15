@@ -191,6 +191,27 @@ static char *symbol_string(char *buf, char *end, void *ptr, int field_width, int
 }
 
 static noinline_for_stack
+char *ip4_addr_string(char *buf, char *end, const u8 *addr, int field_width,
+		      int precision, int flags, const char *fmt)
+{
+	char ip4_addr[sizeof("255.255.255.255")];
+	char *pos;
+	int i;
+
+	pos = ip4_addr;
+
+	for (i = 0; i < 4; i++) {
+		pos = number(pos, pos + 3, addr[i], 10, 0, 0, LEFT);
+		if (i < 3)
+			*pos++ = '.';
+	}
+
+	*pos = 0;
+
+	return string(buf, end, ip4_addr, field_width, precision, flags);
+}
+
+static noinline_for_stack
 char *uuid_string(char *buf, char *end, const u8 *addr, int field_width,
 		int precision, int flags, const char *fmt)
 {
@@ -267,6 +288,8 @@ char *address_val(char *buf, char *end, const void *addr,
  *
  * Right now we handle:
  *
+ * - 'I' [4] for IPv4 addresses printed in the usual way
+ *       IPv4 uses dot-separated decimal without leading 0's (1.2.3.4)
  * - 'S' For symbolic direct pointers
  * - 'U' For a 16 byte UUID/GUID, it prints the UUID/GUID in the form
  *       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -297,6 +320,12 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
 		break;
 	case 'a':
 		return address_val(buf, end, ptr, field_width, precision, flags, fmt);
+	case 'I':
+		switch (fmt[1]) {
+		case '4':
+                        return ip4_addr_string(buf, end, ptr, field_width, precision, flags, fmt);
+		}
+		break;
 	}
 	flags |= SMALL;
 	if (field_width == -1) {

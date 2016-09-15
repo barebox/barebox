@@ -31,10 +31,8 @@ void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
 	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
-	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
 	bool is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
 	bool is_imx6d = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
-	uint32_t val;
 
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -93,6 +91,13 @@ void imx6_init_lowlevel(void)
 		       BM_ANADIG_PFD_528_PFD0_CLKGATE,
 		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
 	}
+
+}
+
+void imx6_setup_ipu_qos(void)
+{
+	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
+	uint32_t val;
 
 	val = readl(iomux + IOMUXC_GPR4);
 	val |= IMX6Q_GPR4_VPU_WR_CACHE_SEL | IMX6Q_GPR4_VPU_RD_CACHE_SEL |
@@ -185,6 +190,8 @@ int imx6_init(void)
 	}
 
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
+
+	imx6_setup_ipu_qos();
 
 	return 0;
 }

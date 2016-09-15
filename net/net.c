@@ -78,9 +78,9 @@ IPaddr_t getenv_ip(const char *name)
 
 int setenv_ip(const char *name, IPaddr_t ip)
 {
-	const char *str;
+	char str[sizeof("255.255.255.255")];
 
-	str = ip_to_string(ip);
+	sprintf(str, "%pI4", &ip);
 
 	setenv(name, str);
 

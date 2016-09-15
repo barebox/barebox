@@ -306,7 +306,7 @@ static char *parse_nfs_url(const char *url)
 	if (ip == 0)
 		goto out;
 
-	hostpath = basprintf("%s:%s", ip_to_string(ip), path);
+	hostpath = basprintf("%pI4:%s", &ip, path);
 
 	prevpath = nfs_find_mountpath(hostpath);
 

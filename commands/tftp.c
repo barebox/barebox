@@ -36,6 +36,7 @@ static int do_tftpb(int argc, char *argv[])
 	int tftp_push = 0;
 	int ret;
 	IPaddr_t ip;
+	char ip4_str[sizeof("255.255.255.255")];
 
 	while ((opt = getopt(argc, argv, "p")) > 0) {
 		switch(opt) {
@@ -73,7 +74,8 @@ static int do_tftpb(int argc, char *argv[])
 		goto err_free;
 
 	ip = net_get_serverip();
-	ret = mount(ip_to_string(ip), "tftp", TFTP_MOUNT_PATH, NULL);
+	sprintf(ip4_str, "%pI4", &ip);
+	ret = mount(ip4_str, "tftp", TFTP_MOUNT_PATH, NULL);
 	if (ret)
 		goto err_rmdir;
 

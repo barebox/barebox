@@ -137,7 +137,7 @@ static int nc_set_active(struct console_device *cdev, unsigned flags)
 
 	net_udp_bind(priv->con, priv->port);
 
-	pr_info("netconsole initialized with %s:%d\n", ip_to_string(priv->ip), priv->port);
+	pr_info("netconsole initialized with %pI4:%d\n", &priv->ip, priv->port);
 
 	return 0;
 }

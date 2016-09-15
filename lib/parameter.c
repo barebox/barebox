@@ -642,7 +642,7 @@ static const char *param_ip_get(struct device_d *dev, struct param_d *p)
 	}
 
 	free(p->value);
-	p->value = xstrdup(ip_to_string(*pi->ip));
+	p->value = xasprintf("%pI4", pi->ip);
 
 	return p->value;
 }

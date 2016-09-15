@@ -97,6 +97,7 @@ void imx6_init_lowlevel(void)
 void imx6_setup_ipu_qos(void)
 {
 	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
+	void __iomem *fast2 = (void *)MX6_FAST2_BASE_ADDR;
 	uint32_t val;
 
 	if (!cpu_mx6_is_mx6q() && !cpu_mx6_is_mx6d() &&
@@ -119,6 +120,16 @@ void imx6_setup_ipu_qos(void)
 	val &= ~(IMX6Q_GPR7_IPU2_ID00_RD_QOS_MASK | IMX6Q_GPR7_IPU2_ID01_RD_QOS_MASK);
 	val |= (0xf << 16) | (0x7 << 20);
 	writel(val, iomux + IOMUXC_GPR7);
+
+	/*
+	 * On i.MX6 QP/DP the NoC regulator for the IPU ports needs to be in
+	 * bypass mode for the above settings to take effect.
+	 */
+	if ((cpu_mx6_is_mx6q() || cpu_mx6_is_mx6d()) &&
+	    imx_silicon_revision() >= IMX_CHIP_REV_2_0) {
+		writel(0x2, fast2 + 0xb048c);
+		writel(0x2, fast2 + 0xb050c);
+	}
 }
 
 int imx6_init(void)

@@ -307,8 +307,8 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		c = strrchr(of_path, '/');
 		if (!c)
 			return -ENODEV;
-		*c = '0';
-		parent = of_find_node_by_path(of_path);
+		*c = '\0';
+		parent = of_find_node_by_path_from(root, of_path);
 		if (!parent)
 			parent = root;
 

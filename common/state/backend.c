@@ -164,7 +164,7 @@ int state_backend_init(struct state_backend *backend, struct device_d *dev,
 	if (ret)
 		goto out_free_format;
 
-	backend->of_path = of_path;
+	backend->of_path = xstrdup(of_path);
 
 	return 0;
 
@@ -185,4 +185,5 @@ void state_backend_free(struct state_backend *backend)
 	state_storage_free(&backend->storage);
 	if (backend->format)
 		state_format_free(backend->format);
+	free(backend->of_path);
 }

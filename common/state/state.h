@@ -87,7 +87,7 @@ struct state_backend_storage {
 struct state_backend {
 	struct state_backend_format *format;
 	struct state_backend_storage storage;
-	const char *of_path;
+	char *of_path;
 };
 
 struct state {

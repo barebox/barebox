@@ -94,7 +94,7 @@ struct state {
 	struct list_head list; /* Entry to enqueue on list of states */
 
 	struct device_d dev;
-	struct device_node *root;
+	char *of_path;
 	const char *name;
 	uint32_t magic;
 

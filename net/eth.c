@@ -384,6 +384,8 @@ int eth_register(struct eth_device *edev)
 	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
 	dev_add_param_mac(dev, "ethaddr", eth_param_set_ethaddr, NULL,
 			edev->ethaddr, edev);
+	edev->bootarg = xstrdup("");
+	dev_add_param_string(dev, "linux.bootargs", NULL, NULL, &edev->bootarg, NULL);
 
 	if (edev->init)
 		edev->init(edev);

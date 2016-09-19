@@ -62,6 +62,7 @@ struct eth_device {
 	IPaddr_t netmask;
 	IPaddr_t gateway;
 	char ethaddr[6];
+	char *bootarg;
 };
 
 #define dev_to_edev(d) container_of(d, struct eth_device, dev)

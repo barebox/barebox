@@ -231,7 +231,7 @@ static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val
 
 static int __nvvar_add(const char *name, const char *value)
 {
-	struct param_d *p, *gp;
+	struct param_d *p;
 	int ret;
 	int devspace;
 	struct device_d *dev;
@@ -246,19 +246,12 @@ static int __nvvar_add(const char *name, const char *value)
 
 	devspace = ret;
 
-	gp = get_param_by_name(&nv_device, name);
-	if (gp) {
-		if (!devspace) {
-			ret = dev_set_param(&global_device, name, value);
-			if (ret)
-				return ret;
-		}
-
-		ret = dev_set_param(&nv_device, name, value);
-		if (ret)
-			return ret;
-
-		return 0;
+	/* Get param. If it doesn't exist yet, create it */
+	p = get_param_by_name(&nv_device, name);
+	if (!p) {
+		p = dev_add_param(&nv_device, name, nv_param_set, nv_param_get, 0);
+		if (IS_ERR(p))
+			return PTR_ERR(p);
 	}
 
 	if (!devspace) {
@@ -266,10 +259,6 @@ static int __nvvar_add(const char *name, const char *value)
 		if (ret && ret != -EEXIST)
 			return ret;
 	}
-
-	p = dev_add_param(&nv_device, name, nv_param_set, nv_param_get, 0);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
 
 	if (!value) {
 		if (devspace) {

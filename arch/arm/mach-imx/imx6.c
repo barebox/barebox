@@ -54,19 +54,10 @@ void imx6_init_lowlevel(void)
 	writel(0, aips2 + 0x4c);
 	writel(0, aips2 + 0x50);
 
-	/* enable all clocks */
-	writel(0xffffffff, 0x020c4068);
-	writel(0xffffffff, 0x020c406c);
-	writel(0xffffffff, 0x020c4070);
-	writel(0xffffffff, 0x020c4074);
-	writel(0xffffffff, 0x020c4078);
-	writel(0xffffffff, 0x020c407c);
-	writel(0xffffffff, 0x020c4080);
-
-	/*
-	 * Due to a hardware bug (related to errata ERR006282) on i.MX6DQ we
-	 * need to gate/ungate all PFDs to make sure PFD is working right,
-	 * otherwise PFDs may not output clock after reset.
+	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
+	 * to make sure PFD is working right, otherwise, PFDs may
+	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
+	 * workaround in ROM code, as bus clock need it
 	 */
 	if (is_imx6q || is_imx6d) {
 		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |

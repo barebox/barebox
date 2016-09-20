@@ -22,7 +22,9 @@ The informations can be extracted with the ``bareboximd`` tool which lives under
 ``scripts/`` in the barebox sourcecode. If enabled it is compiled for the compile
 host and also for the target architecture. barebox itself has the :ref:`command_imd`
 command to extract the informations. Here is an example output of the tool called
-without additional options::
+without additional options:
+
+.. code-block:: none
 
   # imd barebox-phytec-pbab01dl-1gib.img
   build: #890 Wed Jul 30 16:15:24 CEST 2014
@@ -31,7 +33,9 @@ without additional options::
   of_compatible: phytec,imx6x-pbab01 phytec,imx6dl-pfla02 fsl,imx6dl
   model: Phytec phyFLEX-i.MX6 Duallite Carrier-Board
 
-Single informations can be extracted with the ``-t <type>`` option::
+Single informations can be extracted with the ``-t <type>`` option:
+
+.. code-block:: none
 
   # imd barebox-phytec-pbab01dl-1gib.img -t release
   2014.07.0-00167-ge6632a9-dirty

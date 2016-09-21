@@ -3,4 +3,4 @@
 global.bootm.image="/dev/nand0.kernel.bb"
 global.linux.bootargs.dyn.root="root=/dev/mtdblock1 rootfstype=jffs2 rw init=/init rootdelay=1"
 # clean the mtdparts otherwise android does not boot
-global -r linux.mtdparts.
+global -r "linux.mtdparts.*"

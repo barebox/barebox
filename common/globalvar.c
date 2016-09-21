@@ -471,6 +471,7 @@ int nvvar_save(void)
 		defaultenv_load(TMPDIR, 0);
 
 	envfs_load(env, TMPDIR, 0);
+	unlink_recursive(TMPDIR "/nv", NULL);
 
 	list_for_each_entry(param, &nv_device.parameters, list) {
 		ret = __nv_save(TMPDIR "/nv", param->name,

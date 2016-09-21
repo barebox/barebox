@@ -44,12 +44,14 @@ int globalvar_add(const char *name,
 
 void globalvar_remove(const char *name)
 {
-	struct param_d *param = get_param_by_name(&global_device, name);
+	struct param_d *p, *tmp;
 
-	if (!param)
-		return;
+	list_for_each_entry_safe(p, tmp, &global_device.parameters, list) {
+		if (fnmatch(name, p->name, 0))
+			continue;
 
-	dev_remove_param(param);
+		dev_remove_param(p);
+	}
 }
 
 static int __nv_save(const char *prefix, const char *name, const char *val)

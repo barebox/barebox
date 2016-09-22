@@ -9,6 +9,7 @@
 #include <linux/kernel.h>
 #include <linux/stat.h>
 #include <linux/mtd/mtd-abi.h>
+#include <linux/mtd/ubi.h>
 #include <mtd/ubi-user.h>
 #include <mtd/ubi-media.h>
 
@@ -104,6 +105,7 @@ static int do_ubimkvol(int argc, char *argv[])
 	struct ubi_mkvol_req req;
 	int fd, ret;
 	uint64_t size;
+	uint32_t ubinum;
 
 	req.vol_type = UBI_DYNAMIC_VOLUME;
 
@@ -140,9 +142,14 @@ static int do_ubimkvol(int argc, char *argv[])
 		return 1;
 	}
 
-	ret = ioctl(fd, UBI_IOCMKVOL, &req);
-	if (ret)
-		printf("failed to create: %s\n", strerror(-ret));
+	ret = ioctl(fd, UBI_IOCGETUBINUM, &ubinum);
+	if (ret) {
+		printf("failed to get ubinum: %s\n", strerror(-ret));
+		goto err;
+	}
+
+	ret = ubi_api_create_volume(ubinum, &req);
+err:
 	close(fd);
 
 	return ret ? 1 : 0;
@@ -272,14 +279,12 @@ BAREBOX_CMD_END
 
 static int do_ubirmvol(int argc, char *argv[])
 {
-	struct ubi_mkvol_req req;
+	struct ubi_volume_desc *desc;
+	uint32_t ubinum;
 	int fd, ret;
 
 	if (argc != 3)
 		return COMMAND_ERROR_USAGE;
-
-	strncpy(req.name, argv[2], UBI_VOL_NAME_MAX);
-	req.name[UBI_VOL_NAME_MAX] = 0;
 
 	fd = open(argv[1], O_WRONLY);
 	if (fd < 0) {
@@ -287,9 +292,25 @@ static int do_ubirmvol(int argc, char *argv[])
 		return 1;
 	}
 
-	ret = ioctl(fd, UBI_IOCRMVOL, &req);
+	ret = ioctl(fd, UBI_IOCGETUBINUM, &ubinum);
+	if (ret) {
+		printf("failed to get ubinum: %s\n", strerror(-ret));
+		goto err;
+	}
+
+	desc = ubi_open_volume_nm(ubinum, argv[2], UBI_EXCLUSIVE);
+	if (IS_ERR(desc)) {
+		ret = PTR_ERR(desc);
+		printf("failed to open volume %s: %s\n", argv[2], strerror(-ret));
+		goto err;
+	}
+
+	ret = ubi_api_remove_volume(desc, 0);
 	if (ret)
-		printf("failed to delete: %s\n", strerror(-ret));
+		printf("failed to remove volume %s: %s\n", argv[2], strerror(-ret));
+
+	ubi_close_volume(desc);
+err:
 	close(fd);
 
 	return ret ? 1 : 0;

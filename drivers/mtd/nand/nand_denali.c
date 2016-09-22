@@ -25,6 +25,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <io.h>
+#include <clock.h>
 #include <of_mtd.h>
 #include <errno.h>
 #include <asm/io.h>
@@ -633,26 +634,32 @@ static uint32_t read_interrupt_status(struct denali_nand_info *denali)
 
 static uint32_t wait_for_irq(struct denali_nand_info *denali, uint32_t irq_mask)
 {
-	unsigned long comp_res = 1000;
 	uint32_t intr_status = 0;
+	uint64_t start;
 
-	do {
-		intr_status = read_interrupt_status(denali);
-		if (intr_status & irq_mask) {
-			/* our interrupt was detected */
-			break;
-		}
-		udelay(1);
-		comp_res--;
-	} while (comp_res != 0);
-
-	if (comp_res == 0) {
-		/* timeout */
-		intr_status = 0;
-		dev_dbg(denali->dev, "timeout occurred, status = 0x%x, mask = 0x%x\n",
-				intr_status, irq_mask);
+	if (!is_flash_bank_valid(denali->flash_bank)) {
+		dev_dbg(denali->dev, "No valid chip selected (%d)\n",
+			denali->flash_bank);
+		return 0;
 	}
-	return intr_status;
+
+	start = get_time_ns();
+
+	while (!is_timeout(start, 1000 * MSECOND)) {
+		intr_status = read_interrupt_status(denali);
+
+		if (intr_status != 0)
+			clear_interrupt(denali, intr_status);
+
+		if (intr_status & irq_mask)
+			return intr_status;
+	}
+
+	/* timeout */
+	dev_dbg(denali->dev, "timeout occurred, status = 0x%x, mask = 0x%x\n",
+		intr_status, irq_mask);
+
+	return 0;
 }
 
 /*

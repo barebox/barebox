@@ -282,23 +282,14 @@ int ubi_api_remove_volume(struct ubi_volume_desc *desc, int no_vtbl)
 
 static int ubi_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
 {
-	struct ubi_volume_desc *desc;
 	struct ubi_device *ubi = cdev->priv;
-	struct ubi_mkvol_req *req = buf;
 
 	switch (cmd) {
-	case UBI_IOCRMVOL:
-		desc = ubi_open_volume_nm(ubi->ubi_num, req->name,
-                                           UBI_EXCLUSIVE);
-		if (IS_ERR(desc))
-			return PTR_ERR(desc);
-		ubi_remove_volume(desc, 0);
-		ubi_close_volume(desc);
-		break;
-	case UBI_IOCMKVOL:
-		if (!req->bytes)
-			req->bytes = (__s64)ubi->avail_pebs * ubi->leb_size;
-		return ubi_create_volume(ubi, req);
+	/*
+	 * Only supported ioctl is a barebox specific one to get the ubi_num
+	 * from the file descriptor. The rest is implemented as function calls
+	 * directly.
+	 */
 	case UBI_IOCGETUBINUM:
 		*(u32 *)buf = ubi->ubi_num;
 		break;

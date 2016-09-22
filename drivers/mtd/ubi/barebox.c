@@ -299,6 +299,9 @@ static int ubi_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
 		if (!req->bytes)
 			req->bytes = (__s64)ubi->avail_pebs * ubi->leb_size;
 		return ubi_create_volume(ubi, req);
+	case UBI_IOCGETUBINUM:
+		*(u32 *)buf = ubi->ubi_num;
+		break;
 	};
 
 	return 0;

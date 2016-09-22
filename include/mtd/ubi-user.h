@@ -161,6 +161,8 @@
 /* Re-name volumes */
 #define UBI_IOCRNVOL _IOW(UBI_IOC_MAGIC, 3, struct ubi_rnvol_req)
 
+#define UBI_IOCGETUBINUM _IOR(UBI_IOC_MAGIC, 32, __u32)
+
 /* ioctl commands of the UBI control character device */
 
 #define UBI_CTRL_IOC_MAGIC 'o'

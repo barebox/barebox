@@ -257,6 +257,29 @@ void ubi_volume_cdev_remove(struct ubi_volume *vol)
 	kfree(priv);
 }
 
+int ubi_api_create_volume(int ubi_num, struct ubi_mkvol_req *req)
+{
+	struct ubi_device *ubi;
+	int ret;
+
+	ubi = ubi_get_device(ubi_num);
+	if (!ubi)
+		return -ENODEV;
+
+	if (!req->bytes)
+		req->bytes = (__s64)ubi->avail_pebs * ubi->leb_size;
+	ret = ubi_create_volume(ubi, req);
+
+	ubi_put_device(ubi);
+
+	return ret;
+}
+
+int ubi_api_remove_volume(struct ubi_volume_desc *desc, int no_vtbl)
+{
+	return ubi_remove_volume(desc, no_vtbl);
+}
+
 static int ubi_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
 {
 	struct ubi_volume_desc *desc;

@@ -25,6 +25,7 @@
 #include <driver.h>
 #include <environment.h>
 #include <fs.h>
+#include <envfs.h>
 #include <mach/imx35-regs.h>
 #include <asm/armlinux.h>
 #include <io.h>
@@ -127,6 +128,9 @@ static int cupid_devices_init(void)
 	imx35_add_mmc0(NULL);
 
 	armlinux_set_architecture(MACH_TYPE_GUF_CUPID);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_guf_cupid);
 
 	return 0;
 }

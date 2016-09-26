@@ -12,6 +12,7 @@
 #include <environment.h>
 #include <linux/sizes.h>
 #include <io.h>
+#include <envfs.h>
 #include <globalvar.h>
 #include <asm/mmu.h>
 
@@ -29,6 +30,9 @@ static int virt_env_init(void)
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self0");
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_qemu_virt64);
 
 	return 0;
 }

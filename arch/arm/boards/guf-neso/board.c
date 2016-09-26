@@ -23,6 +23,7 @@
 #include <partition.h>
 #include <gpio.h>
 #include <fs.h>
+#include <envfs.h>
 #include <fcntl.h>
 #include <nand.h>
 #include <command.h>
@@ -281,6 +282,9 @@ static int neso_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 
 	armlinux_set_architecture(MACH_TYPE_NESO);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_guf_neso);
 
 	return 0;
 }

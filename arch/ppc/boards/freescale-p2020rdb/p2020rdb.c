@@ -25,6 +25,7 @@
 #include <i2c/i2c.h>
 #include <partition.h>
 #include <memory.h>
+#include <envfs.h>
 #include <asm/cache.h>
 #include <asm/fsl_ddr_sdram.h>
 #include <asm/fsl_law.h>
@@ -94,6 +95,9 @@ static int devices_init(void)
 
 	fsl_eth_init(2, &gfar_info[0]);
 	fsl_eth_init(3, &gfar_info[1]);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_freescale_p2020rdb);
 
 	return 0;
 }

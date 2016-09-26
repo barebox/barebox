@@ -15,6 +15,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
+#include <envfs.h>
 #include <mach/hardware.h>
 #include <nand.h>
 #include <linux/sizes.h>
@@ -214,6 +215,9 @@ static int qil_a9260_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 	devfs_add_partition("nand0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 	dev_add_bb_dev("env_raw1", "env1");
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_qil_a926x);
 
 	return 0;
 }

@@ -27,6 +27,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
+#include <envfs.h>
 #include <mach/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
@@ -151,6 +152,9 @@ static int pm9261_devices_init(void)
 	devfs_add_partition("nor0", 0x40000, 0x10000, DEVFS_PARTITION_FIXED, "env0");
 
 	armlinux_set_architecture(MACH_TYPE_PM9261);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_pm9261);
 
 	return 0;
 }

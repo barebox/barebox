@@ -22,6 +22,7 @@
 #include <types.h>
 #include <i2c/i2c.h>
 #include <gpio.h>
+#include <envfs.h>
 #include <partition.h>
 #include <memory.h>
 #include <asm/cache.h>
@@ -120,6 +121,9 @@ static int p1010rdb_devices_init(void)
 	add_generic_device("i2c-fsl", 1, NULL, I2C2_BASE_ADDR, 0x100,
 			IORESOURCE_MEM, &i2cplat[1]);
 	board_eth_init();
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_freescale_p1010rdb);
 
 	return 0;
 }

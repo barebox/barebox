@@ -14,6 +14,7 @@
 #include <partition.h>
 #include <linux/sizes.h>
 #include <io.h>
+#include <envfs.h>
 #include <globalvar.h>
 #include <linux/amba/sp804.h>
 #include <mci.h>
@@ -108,6 +109,9 @@ static int vexpress_devices_init(void)
 
 	devfs_add_partition("nor0", 0x00000, 0x40000, DEVFS_PARTITION_FIXED, "self");
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_vexpress);
 
 	return 0;
 }

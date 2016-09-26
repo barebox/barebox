@@ -26,6 +26,7 @@
 #include <generated/mach-types.h>
 #include <partition.h>
 #include <fs.h>
+#include <envfs.h>
 #include <fcntl.h>
 #include <nand.h>
 #include <spi/spi.h>
@@ -121,6 +122,9 @@ static int eukrea_cpuimx51_devices_init(void)
 	gpio_direction_output(GPIO_LCD_BL, 0);
 
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX51SD);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_eukrea_cpuimx51);
 
 	return 0;
 }

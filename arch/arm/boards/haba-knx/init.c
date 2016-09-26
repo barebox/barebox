@@ -25,6 +25,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
+#include <envfs.h>
 #include <mach/hardware.h>
 #include <nand.h>
 #include <linux/sizes.h>
@@ -322,6 +323,9 @@ static int haba_knx_devices_init(void)
 	armlinux_set_architecture(MACH_TYPE_HABA_KNX_LITE);
 
 	devfs_create_partitions("nand0", haba_knx_nand0_partitions);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_haba_knx);
 
 	return 0;
 }

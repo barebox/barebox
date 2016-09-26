@@ -23,6 +23,7 @@
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <io.h>
+#include <envfs.h>
 
 #include <mach/hardware.h>
 #include <mach/board.h>
@@ -105,6 +106,9 @@ static int nhk8815_devices_init(void)
 	dev_add_bb_dev("self_raw", "self0");
 	devfs_add_partition("nand0", 0x7FE0000, 0x020000, DEVFS_PARTITION_FIXED, "env_raw");
 	dev_add_bb_dev("env_raw", "env0");
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_nhk8815);
 
 	return 0;
 }

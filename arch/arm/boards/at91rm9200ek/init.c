@@ -25,6 +25,7 @@
 #include <gpio.h>
 #include <fcntl.h>
 #include <io.h>
+#include <envfs.h>
 #include <linux/sizes.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
@@ -176,6 +177,9 @@ static int at91rm9200ek_devices_init(void)
 #endif
 
 	armlinux_set_architecture(MACH_TYPE_AT91RM9200EK);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_at91rm9200ek);
 
 	return 0;
 }

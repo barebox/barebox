@@ -30,6 +30,7 @@
 #include <init.h>
 #include <nand.h>
 #include <net.h>
+#include <envfs.h>
 #include <linux/sizes.h>
 #include <partition.h>
 #include <gpio.h>
@@ -207,6 +208,9 @@ static int f3s_devices_init(void)
 	imx35_add_fb(&ipu_fb_data);
 
 	armlinux_set_architecture(MACH_TYPE_MX35_3DS);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_freescale_mx35_3ds);
 
 	return 0;
 }

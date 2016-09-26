@@ -18,3 +18,4 @@
 
 lwl-y += lowlevel.o
 obj-y += board.o
+bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC) += defaultenv-guf-cupid

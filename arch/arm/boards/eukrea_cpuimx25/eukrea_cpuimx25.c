@@ -30,6 +30,7 @@
 #include <io.h>
 #include <asm/mmu.h>
 #include <led.h>
+#include <envfs.h>
 
 #include <partition.h>
 #include <generated/mach-types.h>
@@ -215,6 +216,9 @@ static int eukrea_cpuimx25_devices_init(void)
 	imx25_add_i2c0(NULL);
 
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX25SD);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_eukrea_cpuimx25);
 
 	return 0;
 }

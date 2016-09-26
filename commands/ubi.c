@@ -327,3 +327,80 @@ BAREBOX_CMD_START(ubirmvol)
 	BAREBOX_CMD_GROUP(CMD_GRP_PART)
 	BAREBOX_CMD_HELP(cmd_ubirmvol_help)
 BAREBOX_CMD_END
+
+static int get_vol_id(u32 ubi_num, const char *name)
+{
+	struct ubi_volume_desc *desc;
+	struct ubi_volume_info vi;
+
+	desc = ubi_open_volume_nm(ubi_num, name, UBI_READONLY);
+	if(IS_ERR(desc))
+		return PTR_ERR(desc);
+
+	ubi_get_volume_info(desc, &vi);
+	ubi_close_volume(desc);
+
+	return vi.vol_id;
+};
+
+static int do_ubirename(int argc, char *argv[])
+{
+	struct ubi_rnvol_req req;
+	u32 ubi_num;
+	int i, j, fd, ret;
+
+	if ((argc < 4) || (argc % 2))
+		return COMMAND_ERROR_USAGE;
+
+	req.count = (argc / 2) - 1;
+	if (req.count > UBI_MAX_RNVOL) {
+		printf("too many volume renames. (max: %u)\n", UBI_MAX_RNVOL);
+		return COMMAND_ERROR_USAGE;
+	}
+
+	fd = open(argv[1], O_WRONLY);
+	if (fd < 0) {
+		perror("unable to open the UBI device");
+		return 1;
+	}
+
+	ret = ioctl(fd, UBI_IOCGETUBINUM, &ubi_num);
+
+	close(fd);
+
+	if (ret) {
+		printf("failed to get ubi num for %s: %s\n", argv[1], strerror(-ret));
+		return 1;
+	}
+
+	for (i = 2, j = 0; i < argc; ++j, i += 2) {
+		req.ents[j].vol_id = get_vol_id(ubi_num, argv[i]);
+
+		if (req.ents[j].vol_id < 0) {
+			printf("Volume '%s' does not exist on %s\n", argv[i], argv[1]);
+			ret = -EINVAL;
+			goto err;
+		}
+
+		strncpy(req.ents[j].name, argv[i + 1], UBI_MAX_VOLUME_NAME);
+		req.ents[j].name_len = strlen(req.ents[j].name);
+	}
+
+	ret = ubi_api_rename_volumes(ubi_num, &req);
+	if (ret)
+		printf("failed to rename: %s", strerror(-ret));
+err:
+	return ret ? 1 : 0;
+};
+
+BAREBOX_CMD_HELP_START(ubirename)
+BAREBOX_CMD_HELP_TEXT("Rename UBI volume(s) from UBIDEV")
+BAREBOX_CMD_HELP_END
+
+BAREBOX_CMD_START(ubirename)
+	.cmd		= do_ubirename,
+	BAREBOX_CMD_DESC("rename UBI volume(s)")
+	BAREBOX_CMD_OPTS("UBIDEV OLD_NAME NEW_NAME [OLD_NAME NEW_NAME ...]")
+	BAREBOX_CMD_GROUP(CMD_GRP_PART)
+	BAREBOX_CMD_HELP(cmd_ubirename_help)
+BAREBOX_CMD_END

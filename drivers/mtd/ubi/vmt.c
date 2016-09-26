@@ -411,6 +411,9 @@ int ubi_rename_volumes(struct ubi_device *ubi, struct list_head *rename_list)
 
 			vol->name_len = re->new_name_len;
 			memcpy(vol->name, re->new_name, re->new_name_len + 1);
+			free(vol->cdev.name);
+			vol->cdev.name = basprintf("%s.%s", ubi->cdev.name, vol->name);
+			vol->cdev.size = vol->used_bytes;
 			ubi_volume_notify(ubi, vol, UBI_VOLUME_RENAMED);
 		}
 	}

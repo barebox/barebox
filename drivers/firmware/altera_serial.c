@@ -221,15 +221,13 @@ static int altera_spi_of(struct device_d *dev, struct fpga_spi *this)
 	int ret;
 
 	name = "nstat-gpios";
-	if (!of_get_property(n, name, NULL)) {
+	this->nstat_gpio = of_get_named_gpio(n, name, 0);
+	if (this->nstat_gpio == -ENOENT) {
 		dev_info(dev, "nstat-gpio is not specified, assuming it is not connected\n");
 		this->nstat_gpio = -1;
-	} else {
-		this->nstat_gpio = of_get_named_gpio(n, name, 0);
-		if (this->nstat_gpio < 0) {
-			ret = this->nstat_gpio;
-			goto out;
-		}
+	} else if (this->nstat_gpio < 0) {
+		ret = this->nstat_gpio;
+		goto out;
 	}
 
 	name = "confd-gpios";

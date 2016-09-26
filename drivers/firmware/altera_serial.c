@@ -35,9 +35,9 @@
  *
  *	fpga@0 {
  *		compatible = "altr,fpga-passive-serial";
- *		nstat-gpio = <&gpio4 18 0>;
- *		confd-gpio = <&gpio4 19 0>;
- *		nconfig-gpio = <&gpio4 20 0>;
+ *		nstat-gpios = <&gpio4 18 0>;
+ *		confd-gpios = <&gpio4 19 0>;
+ *		nconfig-gpios = <&gpio4 20 0>;
  *		spi-max-frequency = <10000000>;
  *		reg = <0>;
  *	};
@@ -220,7 +220,7 @@ static int altera_spi_of(struct device_d *dev, struct fpga_spi *this)
 	const char *name;
 	int ret;
 
-	name = "nstat-gpio";
+	name = "nstat-gpios";
 	if (!of_get_property(n, name, NULL)) {
 		dev_info(dev, "nstat-gpio is not specified, assuming it is not connected\n");
 		this->nstat_gpio = -1;
@@ -232,14 +232,14 @@ static int altera_spi_of(struct device_d *dev, struct fpga_spi *this)
 		}
 	}
 
-	name = "confd-gpio";
+	name = "confd-gpios";
 	this->confd_gpio = of_get_named_gpio(n, name, 0);
 	if (this->confd_gpio < 0) {
 		ret = this->confd_gpio;
 		goto out;
 	}
 
-	name = "nconfig-gpio";
+	name = "nconfig-gpios";
 	this->nconfig_gpio = of_get_named_gpio(n, name, 0);
 	if (this->nconfig_gpio < 0) {
 		ret = this->nconfig_gpio;
@@ -330,7 +330,7 @@ out:
 
 static struct of_device_id altera_spi_id_table[] = {
 	{
-		.compatible = "altr,passive-serial",
+		.compatible = "altr,fpga-passive-serial",
 	},
 };
 

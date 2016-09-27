@@ -348,7 +348,7 @@ out:
  * entry_is_of_compatible - check if a bootspec entry is compatible with
  *                          the current machine.
  *
- * returns true is the entry is compatible, false otherwise
+ * returns true if the entry is compatible, false otherwise
  */
 static bool entry_is_of_compatible(struct blspec_entry *entry)
 {

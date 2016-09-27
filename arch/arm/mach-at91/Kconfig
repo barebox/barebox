@@ -255,7 +255,6 @@ config MACH_USB_A9260
 
 config MACH_GE863
 	bool "Telit EVK-PRO3"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say y here if you are using Telit EVK-PRO3 with GE863-PRO3
 	  <http://www.telit.com>
@@ -494,13 +493,11 @@ choice
 
 config MACH_SAMA5D4EK
 	bool "Atmel SAMA5D4 Evaluation Kit"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Select this if you are using Atmel's SAMA5D4-EK Evaluation Kit.
 
 config MACH_SAMA5D4_XPLAINED
 	bool "Atmel SAMA5D4 XPLAINED ULTRA Evaluation Kit"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Select this if you are using Atmel's SAMA5D4_XPLAINED ULTRA Evaluation Kit.
 

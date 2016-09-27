@@ -5,7 +5,6 @@ choice
 
 config MACH_CLEP7212
 	bool "Cirrus Logic CLEP7212"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Boards based on the Cirrus Logic 7212/7312 CPU.
 

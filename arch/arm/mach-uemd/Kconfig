@@ -9,7 +9,6 @@ choice
 
 config MACH_MB7707
 	bool "MB7707"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 endchoice
 

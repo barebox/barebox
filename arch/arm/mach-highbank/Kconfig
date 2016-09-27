@@ -10,7 +10,6 @@ choice
 config MACH_HIGHBANK
 	bool "Calxeda Highbank"
 	select OFTREE
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 endchoice
 

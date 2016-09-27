@@ -52,7 +52,6 @@ config MACH_MINI2440
 	select S3C_PLL_INIT
 	select S3C_SDRAM_INIT
 	select HAS_DM9000
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using Mini 2440 dev board equipped
 	  with a Samsung S3C2440 Processor

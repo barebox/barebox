@@ -145,7 +145,6 @@ config ARCH_IMX6SX
 
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
 
 if IMX_MULTI_BOARDS
@@ -160,7 +159,6 @@ config MACH_TX25
 config MACH_PCA100
 	bool "phyCard-i.MX27"
 	select ARCH_IMX27
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_IMX_EXTERNAL_BOOT_NAND
 	help
 	  Say Y here if you are using Phytec's phyCard-i.MX27 (pca100) equipped
@@ -172,7 +170,6 @@ config MACH_PCM038
 	select SPI
 	select DRIVER_SPI_IMX
 	select MFD_MC13XXX
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_IMX_EXTERNAL_BOOT_NAND
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
@@ -266,7 +263,6 @@ config MACH_TX6X
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
 	select ARCH_IMX6
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_PBL_MULTI_IMAGES
 
 config MACH_SABRESD
@@ -398,7 +394,6 @@ config MACH_PCM037
 	bool "phyCORE-i.MX31"
 	select ARCH_IMX31
 	select USB_ULPI if USB
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_HAS_L2X0
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX31 (pcm037) equipped
@@ -408,7 +403,6 @@ config MACH_MX31MOBOARD
 	bool "mx31moboard-i.MX31"
 	select ARCH_IMX31
 	select USB_ULPI if USB
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select ARCH_HAS_L2X0
 	help
 	  Say Y here if you are using EPFL mx31moboard board equipped
@@ -441,7 +435,6 @@ config MACH_PCM043
 	bool "phyCORE-i.MX35"
 	select ARCH_IMX35
 	select ARCH_HAS_L2X0
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using Phytec's phyCORE-i.MX35 (pcm043) equipped
 	  with a Freescale i.MX35 Processor
@@ -458,7 +451,6 @@ config MACH_KINDLE3
 	bool "Amazon Kindle3"
 	select ARCH_IMX35
 	select ARCH_HAS_L2X0
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using the Amazon Model No. D00901 Kindle
 
@@ -509,7 +501,6 @@ config MACH_FREESCALE_MX53_SMD
 config MACH_TX53
 	bool "Ka-Ro TX53"
 	select ARCH_IMX53
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	help
 	  Say Y here if you are using the Ka-Ro tx53 board
 

@@ -3,7 +3,6 @@ config ARCH_EFI
 	default y
 	select HAS_DEBUG_LL
 	select HAS_KALLSYMS
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select EFI_GUID
 	select EFI_DEVICEPATH
 	select PRINTF_UUID

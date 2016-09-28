@@ -36,7 +36,7 @@ static unsigned char kwboot_msg_debug[] = {
 };
 
 #define KWBOOT_MSG_REQ_DELAY	1000 /* ms */
-#define KWBOOT_MSG_RSP_TIMEO	1000 /* ms */
+#define KWBOOT_MSG_RSP_TIMEO	1 /* ms */
 
 /*
  * Xmodem Transfers

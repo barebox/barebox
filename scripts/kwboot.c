@@ -600,7 +600,7 @@ out:
 }
 
 static int
-kwboot_check_image(const unsigned char *img, size_t size)
+kwboot_check_image(unsigned char *img, size_t size)
 {
 	size_t i;
 	size_t header_size, image_size;
@@ -613,12 +613,20 @@ kwboot_check_image(const unsigned char *img, size_t size)
 	}
 
 	switch (img[0x0]) {
-		case 0x5a: /* SPI/NOR */
 		case 0x69: /* UART0 */
+			break;
+
+		case 0x5a: /* SPI/NOR */
 		case 0x78: /* SATA */
 		case 0x8b: /* NAND */
 		case 0x9c: /* PCIe */
+			/* change boot source to UART and fix checksum */
+			img[0x1f] -= img[0x0];
+			img[0x1f] += 0x69;
+			img[0x0] = 0x69;
+
 			break;
+
 		default:
 			fprintf(stderr,
 				"Unknown boot source: 0x%hhx\n", img[0x0]);
@@ -674,7 +682,7 @@ kwboot_mmap_image(const char *path, size_t *size)
 	if (rc)
 		goto out;
 
-	img = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+	img = mmap(NULL, st.st_size, PROT_WRITE, MAP_PRIVATE, fd, 0);
 	if (img == MAP_FAILED) {
 		img = NULL;
 		goto out;

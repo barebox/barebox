@@ -173,6 +173,17 @@ static int davinci_emac_set_ethaddr(struct eth_device *edev, const unsigned char
 
 static int davinci_emac_init(struct eth_device *edev)
 {
+	struct davinci_emac_priv *priv = edev->priv;
+	uint32_t cnt;
+
+	/* Set DMA head and completion pointers to 0 */
+	for(cnt = 0; cnt < 8; cnt++) {
+		writel(0, (void *)priv->adap_emac + EMAC_TX0HDP + 4 * cnt);
+		writel(0, (void *)priv->adap_emac + EMAC_RX0HDP + 4 * cnt);
+		writel(0, (void *)priv->adap_emac + EMAC_TX0CP + 4 * cnt);
+		writel(0, (void *)priv->adap_emac + EMAC_RX0CP + 4 * cnt);
+	}
+
 	dev_dbg(&edev->dev, "* emac_init\n");
 	return 0;
 }

@@ -9,6 +9,7 @@
  *   2008. Chapter 24.2 "BootROM Firmware".
  */
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -285,12 +286,20 @@ kwboot_bootmsg(int tty, void *msg)
 		}
 
 		rc = kwboot_tty_recv(tty, &c, 1, KWBOOT_MSG_RSP_TIMEO);
+		while (!rc && c != NAK) {
+			if (c == '\\')
+				kwboot_printv("\\\\", c);
+			else if (isprint(c) || c == '\r' || c == '\n')
+				kwboot_printv("%c", c);
+			else
+				kwboot_printv("\\x%02hhx", c);
 
-		kwboot_spinner();
+			rc = kwboot_tty_recv(tty, &c, 1, KWBOOT_MSG_RSP_TIMEO);
+		}
 
 	} while (rc || c != NAK);
 
-	kwboot_printv("\n");
+	kwboot_printv("\nGot expected NAK\n");
 
 	return rc;
 }

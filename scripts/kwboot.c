@@ -657,9 +657,9 @@ kwboot_check_image(const unsigned char *img, size_t size)
 }
 
 static void *
-kwboot_mmap_image(const char *path, size_t *size, int prot)
+kwboot_mmap_image(const char *path, size_t *size)
 {
-	int rc, fd, flags;
+	int rc, fd;
 	struct stat st;
 	void *img;
 
@@ -674,9 +674,7 @@ kwboot_mmap_image(const char *path, size_t *size, int prot)
 	if (rc)
 		goto out;
 
-	flags = (prot & PROT_WRITE) ? MAP_PRIVATE : MAP_SHARED;
-
-	img = mmap(NULL, st.st_size, prot, flags, fd, 0);
+	img = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
 	if (img == MAP_FAILED) {
 		img = NULL;
 		goto out;
@@ -793,7 +791,7 @@ main(int argc, char **argv)
 	}
 
 	if (imgpath) {
-		img = kwboot_mmap_image(imgpath, &size, PROT_READ);
+		img = kwboot_mmap_image(imgpath, &size);
 		if (!img) {
 			perror(imgpath);
 			goto out;

@@ -273,11 +273,11 @@ kwboot_bootmsg(int tty, void *msg)
 	else
 		kwboot_printv("Sending boot message. Please reboot the target...");
 
-	do {
-		rc = tcflush(tty, TCIOFLUSH);
-		if (rc)
-			break;
+	rc = tcflush(tty, TCIOFLUSH);
+	if (rc)
+		return rc;
 
+	do {
 		rc = kwboot_tty_send(tty, msg, 8);
 		if (rc) {
 			usleep(KWBOOT_MSG_REQ_DELAY * 1000);
@@ -302,12 +302,12 @@ kwboot_debugmsg(int tty, void *msg)
 
 	kwboot_printv("Sending debug message. Please reboot the target...");
 
+	rc = tcflush(tty, TCIOFLUSH);
+	if (rc)
+		return rc;
+
 	do {
 		char buf[16];
-
-		rc = tcflush(tty, TCIOFLUSH);
-		if (rc)
-			break;
 
 		rc = kwboot_tty_send(tty, msg, 8);
 		if (rc) {

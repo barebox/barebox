@@ -268,7 +268,8 @@ static int imx6_fixup_cpus(struct device_node *root, void *context)
 
 static int imx6_fixup_cpus_register(void)
 {
-	if (!of_machine_is_compatible("fsl,imx6q") &&
+	if (!of_machine_is_compatible("fsl,imx6qp") &&
+	    !of_machine_is_compatible("fsl,imx6q")  &&
 	    !of_machine_is_compatible("fsl,imx6dl"))
 		return 0;
 

@@ -15,6 +15,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <linux/phy/phy.h>
+#include <usb/phy.h>
 
 static LIST_HEAD(phy_provider_list);
 static int phy_ida;
@@ -199,6 +200,17 @@ int phy_power_off(struct phy *phy)
 		regulator_disable(phy->pwr);
 
 	return 0;
+}
+
+struct usb_phy *phy_to_usbphy(struct phy *phy)
+{
+	if (!phy)
+		return NULL;
+
+	if (!phy->ops->to_usbphy)
+		return ERR_PTR(-EINVAL);
+
+	return phy->ops->to_usbphy(phy);
 }
 
 static struct phy_provider *of_phy_provider_lookup(struct device_node *node)

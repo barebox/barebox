@@ -33,6 +33,7 @@
 #define USBPHY_CTRL_CLKGATE		(1 << 30)
 #define USBPHY_CTRL_ENUTMILEVEL3	(1 << 15)
 #define USBPHY_CTRL_ENUTMILEVEL2	(1 << 14)
+#define USBPHY_CTRL_ENHOSTDISCONDETECT	(1 << 1)
 
 struct imx_usbphy {
 	struct usb_phy usb_phy;
@@ -63,6 +64,30 @@ static int imx_usbphy_phy_init(struct phy *phy)
 	/* set utmilvl2/3 */
 	writel(USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2,
 	       imxphy->base + USBPHY_CTRL + SET);
+
+	return 0;
+}
+
+static int imx_usbphy_notify_connect(struct usb_phy *phy,
+				     enum usb_device_speed speed)
+{
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+
+	if (speed == USB_SPEED_HIGH) {
+		writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
+		       imxphy->base + USBPHY_CTRL + SET);
+	}
+
+	return 0;
+}
+
+static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
+					enum usb_device_speed speed)
+{
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+
+	writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
+	       imxphy->base + USBPHY_CTRL + CLR);
 
 	return 0;
 }
@@ -112,6 +137,8 @@ static int imx_usbphy_probe(struct device_d *dev)
 	dev->priv = imxphy;
 
 	imxphy->usb_phy.dev = dev;
+	imxphy->usb_phy.notify_connect = imx_usbphy_notify_connect;
+	imxphy->usb_phy.notify_disconnect = imx_usbphy_notify_disconnect;
 	imxphy->phy = phy_create(dev, NULL, &imx_phy_ops, NULL);
 	if (IS_ERR(imxphy->phy)) {
 		ret = PTR_ERR(imxphy->phy);

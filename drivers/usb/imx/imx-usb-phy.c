@@ -19,6 +19,8 @@
 #include <errno.h>
 #include <driver.h>
 #include <malloc.h>
+#include <usb/phy.h>
+#include <linux/phy/phy.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 
@@ -33,12 +35,17 @@
 #define USBPHY_CTRL_ENUTMILEVEL2	(1 << 14)
 
 struct imx_usbphy {
+	struct usb_phy usb_phy;
+	struct phy *phy;
 	void __iomem *base;
 	struct clk *clk;
+	struct phy_provider *provider;
 };
 
-static int imx_usbphy_enable(struct imx_usbphy *imxphy)
+static int imx_usbphy_phy_init(struct phy *phy)
 {
+	struct imx_usbphy *imxphy = phy_get_drvdata(phy);
+
 	clk_enable(imxphy->clk);
 
 	/* reset usbphy */
@@ -59,6 +66,26 @@ static int imx_usbphy_enable(struct imx_usbphy *imxphy)
 
 	return 0;
 }
+
+static struct phy *imx_usbphy_xlate(struct device_d *dev,
+				    struct of_phandle_args *args)
+{
+	struct imx_usbphy *imxphy = dev->priv;
+
+	return imxphy->phy;
+}
+
+static struct usb_phy *imx_usbphy_to_usbphy(struct phy *phy)
+{
+	struct imx_usbphy *imxphy = phy_get_drvdata(phy);
+
+	return &imxphy->usb_phy;
+}
+
+static const struct phy_ops imx_phy_ops = {
+	.init = imx_usbphy_phy_init,
+	.to_usbphy = imx_usbphy_to_usbphy,
+};
 
 static int imx_usbphy_probe(struct device_d *dev)
 {
@@ -82,7 +109,22 @@ static int imx_usbphy_probe(struct device_d *dev)
 		goto err_clk;
 	}
 
-	imx_usbphy_enable(imxphy);
+	dev->priv = imxphy;
+
+	imxphy->usb_phy.dev = dev;
+	imxphy->phy = phy_create(dev, NULL, &imx_phy_ops, NULL);
+	if (IS_ERR(imxphy->phy)) {
+		ret = PTR_ERR(imxphy->phy);
+		goto err_clk;
+	}
+
+	phy_set_drvdata(imxphy->phy, imxphy);
+
+	imxphy->provider = of_phy_provider_register(dev, imx_usbphy_xlate);
+	if (IS_ERR(imxphy->provider)) {
+		ret = PTR_ERR(imxphy->provider);
+		goto err_clk;
+	}
 
 	dev_dbg(dev, "phy enabled\n");
 

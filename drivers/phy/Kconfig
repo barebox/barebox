@@ -2,9 +2,7 @@
 # PHY
 #
 
-menu "PHY Subsystem"
-
-config GENERIC_PHY
+menuconfig GENERIC_PHY
 	bool "PHY Core"
 	help
 	  Generic PHY support.
@@ -15,4 +13,13 @@ config GENERIC_PHY
 	  phy users can obtain reference to the PHY. All the users of this
 	  framework should select this config.
 
-endmenu
+if GENERIC_PHY
+
+config USB_NOP_XCEIV
+	bool "Generic USB nop phy"
+	help
+	  This driver is to be used by all the usb transceiver which are either
+	  built-in with usb ip or which are autonomous and doesn't require any
+	  phy programming such as ISP1x04 etc.
+
+endif

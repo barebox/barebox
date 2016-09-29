@@ -136,6 +136,8 @@ static inline void phy_set_bus_width(struct phy *phy, int bus_width)
 }
 struct phy *phy_get(struct device_d *dev, const char *string);
 struct phy *phy_optional_get(struct device_d *dev, const char *string);
+struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
+				  u8 index);
 void phy_put(struct phy *phy);
 struct phy *of_phy_get(struct device_node *np, const char *con_id);
 struct phy *of_phy_simple_xlate(struct device_d *dev,
@@ -194,6 +196,12 @@ static inline struct phy *phy_get(struct device_d *dev, const char *string)
 
 static inline struct phy *phy_optional_get(struct device_d *dev,
 					   const char *string)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline struct phy *of_phy_get_by_phandle(struct device_d *dev,
+						const char *phandle, u8 index)
 {
 	return ERR_PTR(-ENOSYS);
 }

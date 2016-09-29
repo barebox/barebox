@@ -39,8 +39,6 @@ struct imx_usbphy {
 
 static int imx_usbphy_enable(struct imx_usbphy *imxphy)
 {
-	u32 val;
-
 	clk_enable(imxphy->clk);
 
 	/* reset usbphy */
@@ -56,9 +54,8 @@ static int imx_usbphy_enable(struct imx_usbphy *imxphy)
 	writel(0xffffffff, imxphy->base + CLR);
 
 	/* set utmilvl2/3 */
-	val = readl(imxphy->base + USBPHY_CTRL);
-	val |= USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2;
-	writel(val, imxphy->base + USBPHY_CTRL + SET);
+	writel(USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2,
+	       imxphy->base + USBPHY_CTRL + SET);
 
 	return 0;
 }

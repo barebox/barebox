@@ -25,8 +25,6 @@
 #include <asm/mmu.h>
 #include <asm/cache-l2x0.h>
 
-#define SI_REV 0x260
-
 void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
@@ -126,47 +124,13 @@ void imx6_setup_ipu_qos(void)
 int imx6_init(void)
 {
 	const char *cputypestr;
-	u32 rev;
 	u32 mx6_silicon_revision;
 
 	imx6_init_lowlevel();
 
 	imx6_boot_save_loc();
 
-	rev = readl(MX6_ANATOP_BASE_ADDR + SI_REV);
-
-	switch (rev & 0xfff) {
-	case 0x00:
-		mx6_silicon_revision = IMX_CHIP_REV_1_0;
-		break;
-
-	case 0x01:
-		mx6_silicon_revision = IMX_CHIP_REV_1_1;
-		break;
-
-	case 0x02:
-		mx6_silicon_revision = IMX_CHIP_REV_1_2;
-		break;
-
-	case 0x03:
-		mx6_silicon_revision = IMX_CHIP_REV_1_3;
-		break;
-
-	case 0x04:
-		mx6_silicon_revision = IMX_CHIP_REV_1_4;
-		break;
-
-	case 0x05:
-		mx6_silicon_revision = IMX_CHIP_REV_1_5;
-		break;
-
-	case 0x100:
-		mx6_silicon_revision = IMX_CHIP_REV_2_0;
-		break;
-
-	default:
-		mx6_silicon_revision = IMX_CHIP_REV_UNKNOWN;
-	}
+	mx6_silicon_revision = imx6_cpu_revision();
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:

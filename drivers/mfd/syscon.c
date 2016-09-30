@@ -76,8 +76,6 @@ static void __iomem *syscon_node_to_base(struct device_node *np)
 
 	return syscon->base;
 }
-EXPORT_SYMBOL_GPL(syscon_node_to_regmap);
-
 
 void __iomem *syscon_base_lookup_by_pdevname(const char *s)
 {

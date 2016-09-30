@@ -16,8 +16,10 @@ obj-y += start.o entry.o
 
 ifeq ($(CONFIG_CPU_64v8), y)
 obj-y += setupc_64.o
+pbl-y += setupc_64.o
 else
 obj-y += setupc.o
+pbl-y += setupc.o
 endif
 
 #
@@ -48,7 +50,7 @@ obj-$(CONFIG_CPU_64v8) += cache-armv8.o
 AFLAGS_pbl-cache-armv8.o       :=-Wa,-march=armv8-a
 pbl-$(CONFIG_CPU_64v8) += cache-armv8.o
 
-pbl-y += setupc.o entry.o
+pbl-y += entry.o
 pbl-$(CONFIG_PBL_SINGLE_IMAGE) += start-pbl.o
 pbl-$(CONFIG_PBL_MULTI_IMAGES) += uncompress.o
 

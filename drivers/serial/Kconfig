@@ -2,7 +2,7 @@ menu "serial drivers"
 	depends on !CONSOLE_NONE
 
 config DRIVER_SERIAL_ARM_DCC
-	depends on ARM
+	depends on ARM && !CPU_V8
 	bool "ARM Debug Communications Channel (DCC) serial driver"
 
 config SERIAL_AMBA_PL011

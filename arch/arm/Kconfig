@@ -376,6 +376,7 @@ config ARM_UNWIND
 
 config ARM_SEMIHOSTING
 	bool "enable ARM semihosting support"
+	depends on !CPU_V8
 	help
 	  This option enables ARM semihosting support in barebox. ARM
 	  semihosting is a communication discipline that allows code

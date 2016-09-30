@@ -5,6 +5,8 @@ config PHYS_ADDR_T_64BIT
 
 config CPU_32
 	bool
+	select HAS_MODULES
+	select HAS_DMA
 
 config CPU_64
 	bool

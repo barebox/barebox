@@ -130,6 +130,7 @@ config DRIVER_VIDEO_MTL017
 config DRIVER_VIDEO_TC358767
 	bool "TC358767A Display Port encoder"
 	select VIDEO_VPL
+	depends on DRIVER_VIDEO_EDID
 	depends on I2C
 	depends on OFTREE
 	help

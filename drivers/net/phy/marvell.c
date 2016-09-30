@@ -198,7 +198,8 @@ static int m88e1121_config_init(struct phy_device *phydev)
 	if (ret < 0)
 		return ret;
 
-	phy_write(phydev, MII_MARVELL_PHY_PAGE, MII_MARVELL_PHY_DEFAULT_PAGE);
+	ret = phy_write(phydev, MII_MARVELL_PHY_PAGE,
+			MII_MARVELL_PHY_DEFAULT_PAGE);
 	if (ret < 0)
 		return ret;
 

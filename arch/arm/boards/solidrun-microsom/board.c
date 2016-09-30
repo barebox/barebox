@@ -93,10 +93,24 @@ static int hummingboard_device_init(void)
 }
 device_initcall(hummingboard_device_init);
 
+static int h100_device_init(void)
+{
+	if (!of_machine_is_compatible("auvidea,h100"))
+		return 0;
+
+	microsom_eth_init();
+
+	barebox_set_hostname("h100");
+
+	return 0;
+}
+device_initcall(h100_device_init);
+
 static int hummingboard_late_init(void)
 {
 	if (!of_machine_is_compatible("solidrun,hummingboard/dl") &&
-	    !of_machine_is_compatible("solidrun,hummingboard/q"))
+	    !of_machine_is_compatible("solidrun,hummingboard/q") &&
+	    !of_machine_is_compatible("auvidea,h100"))
 		return 0;
 
 	imx6_bbu_internal_mmc_register_handler("sdcard", "/dev/mmc1.barebox",

@@ -349,6 +349,48 @@ kwboot_xm_makeblock(struct kwboot_block *block, const void *data,
 	return n;
 }
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
+static int
+kwboot_xm_resync(int fd)
+{
+	/*
+	 * When the SoC has a different perception of where the package boundary
+	 * is, just resending the packet doesn't help. To resync send 0xff until
+	 * we get another NAK.
+	 * The BootROM code (of the Armada XP at least) doesn't interpret 0xff
+	 * as a start of a package and sends a NAK for each 0xff when waiting
+	 * for SOH, so it's possible to send >1 byte without the SoC starting a
+	 * new frame.
+	 * When there is no response after sizeof(struct kwboot_block) bytes,
+	 * there is another problem.
+	 */
+	int rc;
+	char buf[sizeof(struct kwboot_block)];
+	unsigned interval = 1;
+	unsigned len;
+	char *p = buf;
+
+	memset(buf, 0xff, sizeof(buf));
+
+	while (interval <= sizeof(buf)) {
+		len = min(interval, buf + sizeof(buf) - p);
+		rc = kwboot_tty_send(fd, p, len);
+		if (rc)
+			return rc;
+
+		kwboot_tty_recv(fd, p, len, KWBOOT_BLK_RSP_TIMEO);
+		if (*p != 0xff)
+			/* got at least one char, if it's a NAK we're synced. */
+			return (*p == NAK);
+
+		p += len;
+		interval *= 2;
+	}
+
+	return 0;
+}
+
 static int
 kwboot_xm_sendblock(int fd, struct kwboot_block *block)
 {
@@ -371,7 +413,9 @@ kwboot_xm_sendblock(int fd, struct kwboot_block *block)
 
 		} while (c != ACK && c != NAK && c != CAN);
 
-		if (c != ACK)
+		if (c == NAK && kwboot_xm_resync(fd))
+			kwboot_progress(-1, 'S');
+		else if (c != ACK)
 			kwboot_progress(-1, '+');
 
 	} while (c == NAK && retries-- > 0);

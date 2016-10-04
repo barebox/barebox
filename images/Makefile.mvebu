@@ -43,6 +43,14 @@ pblx-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += start_marvell_armada_xp_gp
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp.img
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp-2nd.img
 
+NETGEAR_RN2120_KWBOPTS = ${KWBOPTS} -i $(board)/netgear-rn2120/kwbimage.cfg
+OPTS_start_netgear_rn2120.pblx.kwbimg = $(NETGEAR_RN2120_KWBOPTS)
+FILE_barebox-netgear-rn2120.img	= start_netgear_rn2120.pblx.kwbimg
+FILE_barebox-netgear-rn2120-2nd.img = start_netgear_rn2120.pblx
+pblx-$(CONFIG_MACH_NETGEAR_RN2120) += start_netgear_rn2120
+image-$(CONFIG_MACH_NETGEAR_RN2120) += barebox-netgear-rn2120.img
+image-$(CONFIG_MACH_NETGEAR_RN2120) += barebox-netgear-rn2120-2nd.img
+
 PLATHOME_OPENBLOCKS_AX3_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-ax3/kwbimage.cfg
 OPTS_start_plathome_openblocks_ax3.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
 FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblx.kwbimg

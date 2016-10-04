@@ -17,6 +17,16 @@ menuconfig FS_SQUASHFS
 	  embedded systems where low overhead is needed.  Further information
 	  and tools are available from http://squashfs.sourceforge.net.
 
+config SQUASHFS_ZLIB
+	bool
+	depends on FS_SQUASHFS
+	depends on ZLIB
+	default y
+
+if !SQUASHFS_ZLIB
+	comment "ZLIB support disabled"
+endif
+
 config SQUASHFS_LZ4
 	bool
 	depends on FS_SQUASHFS

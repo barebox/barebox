@@ -353,6 +353,7 @@ static struct fs_driver_d squashfs_driver = {
 	.readdir	= squashfs_readdir,
 	.closedir	= squashfs_closedir,
 	.stat		= squashfs_stat,
+	.type		= filetype_squashfs,
 	.drv = {
 		.probe = squashfs_probe,
 		.remove = squashfs_remove,

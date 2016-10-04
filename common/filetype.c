@@ -40,6 +40,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_uimage] = { "U-Boot uImage", "u-boot" },
 	[filetype_ubi] = { "UBI image", "ubi" },
 	[filetype_jffs2] = { "JFFS2 image", "jffs2" },
+	[filetype_squashfs] = { "Squashfs image", "squashfs" },
 	[filetype_gzip] = { "GZIP compressed", "gzip" },
 	[filetype_bzip2] = { "BZIP2 compressed", "bzip2" },
 	[filetype_oftree] = { "open firmware Device Tree flattened Binary", "dtb" },
@@ -278,6 +279,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf8[0] == 0xfd && buf8[1] == 0x37 && buf8[2] == 0x7a &&
 			buf8[3] == 0x58 && buf8[4] == 0x5a && buf8[5] == 0x00)
 		return filetype_xz_compressed;
+	if (buf8[0] == 'h' && buf8[1] == 's' && buf8[2] == 'q' &&
+			buf8[3] == 's')
+		return filetype_squashfs;
 	if (buf[0] == be32_to_cpu(0xd00dfeed))
 		return filetype_oftree;
 	if (strncmp(buf8, "ANDROID!", 8) == 0)

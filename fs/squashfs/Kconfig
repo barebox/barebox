@@ -17,6 +17,16 @@ menuconfig FS_SQUASHFS
 	  embedded systems where low overhead is needed.  Further information
 	  and tools are available from http://squashfs.sourceforge.net.
 
+config SQUASHFS_LZO
+	bool
+	depends on FS_SQUASHFS
+	depends on LZO_DECOMPRESS
+	default y
+
+if !SQUASHFS_LZO
+	comment "LZO support disabled"
+endif
+
 config SQUASHFS_XZ
 	bool "Include support for XZ compressed file systems"
 	default y

@@ -362,7 +362,7 @@ static struct mvebu_mpp_mode mv88f6710_mpp_modes[] = {
 	   MPP_FUNCTION(0x5, "audio", "mclk"),
 	   MPP_FUNCTION(0x6, "uart0", "cts")),
 	MPP_MODE(63, "mpp63", armada_370_mpp_ctrl,
-	   MPP_FUNCTION(0x0, "gpo", NULL),
+	   MPP_FUNCTION(0x0, "gpio", NULL),
 	   MPP_FUNCTION(0x1, "spi0", "sck"),
 	   MPP_FUNCTION(0x2, "tclk", NULL)),
 	MPP_MODE(64, "mpp64", armada_370_mpp_ctrl,

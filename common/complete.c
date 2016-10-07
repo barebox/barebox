@@ -279,7 +279,7 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 	struct env_context *c;
 	char *instr_param;
 	int len;
-	char end = '=';
+	char end = '=', *pos, *dot;
 	char *begin = "";
 
 	if (!instr)
@@ -290,7 +290,6 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 		end = ' ';
 	}
 
-	instr_param = strchr(instr, '.');
 	len = strlen(instr);
 
 	c = get_current_context();
@@ -312,20 +311,21 @@ static int env_param_complete(struct string_list *sl, char *instr, int eval)
 		c = c->parent;
 	}
 
-	if (instr_param) {
+	pos = instr;
+	while ((dot = strchr(pos, '.'))) {
 		char *devname;
 
-		len = (instr_param - instr);
-
-		devname = xstrndup(instr, len);
+		devname = xstrndup(instr, dot - instr);
 
 		instr_param++;
 
 		dev = get_device_by_name(devname);
 		free(devname);
+
 		if (dev)
-			device_param_complete(dev, sl, instr_param, eval);
-		return 0;
+			device_param_complete(dev, sl, dot + 1, eval);
+
+		pos = dot + 1;
 	}
 
 	len = strlen(instr);

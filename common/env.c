@@ -135,25 +135,45 @@ static const char *getenv_raw(struct list_head *l, const char *name)
 	return NULL;
 }
 
-const char *getenv (const char *name)
+static const char *dev_getenv(const char *name)
+{
+	const char *pos, *val, *dot, *varname;
+	char *devname;
+	struct device_d *dev;
+
+	pos = name;
+
+	while (1) {
+		dot = strchr(pos, '.');
+		if (!dot)
+			break;
+
+		devname = xstrndup(name, dot - name);
+		varname = dot + 1;
+
+		dev = get_device_by_name(devname);
+
+		free(devname);
+
+		if (dev) {
+			val = dev_get_param(dev, varname);
+			if (val)
+				return val;
+		}
+
+		pos = dot + 1;
+	}
+
+	return NULL;
+}
+
+const char *getenv(const char *name)
 {
 	struct env_context *c;
 	const char *val;
 
-	if (strchr(name, '.')) {
-		const char *ret = NULL;
-		char *devstr = strdup(name);
-		char *par = strchr(devstr, '.');
-		struct device_d *dev;
-		*par = 0;
-		dev = get_device_by_name(devstr);
-		if (dev) {
-				par++;
-				ret = dev_get_param(dev, par);
-		}
-		free(devstr);
-		return ret;
-	}
+	if (strchr(name, '.'))
+		return dev_getenv(name);
 
 	c = context;
 

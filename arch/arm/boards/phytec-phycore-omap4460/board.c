@@ -20,6 +20,7 @@
 #include <driver.h>
 #include <gpio.h>
 #include <io.h>
+#include <envfs.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <mach/omap4-silicon.h>
@@ -306,6 +307,9 @@ static int pcm049_devices_init(void)
 
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_OMAP))
 		omap_add_display(&pcm049_fb_data);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_phytec_phycore_omap4460);
 
 	return 0;
 }

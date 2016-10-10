@@ -25,6 +25,7 @@
 #include <io.h>
 #include <partition.h>
 #include <fs.h>
+#include <envfs.h>
 #include <fcntl.h>
 #include <platform_data/eth-dm9000.h>
 #include <led.h>
@@ -78,6 +79,9 @@ static int scb9328_devices_init(void)
 	protect_file("/dev/env0", 1);
 
 	armlinux_set_architecture(MACH_TYPE_SCB9328);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_scb9328);
 
 	return 0;
 }

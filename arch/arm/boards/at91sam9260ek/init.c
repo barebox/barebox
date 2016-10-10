@@ -14,6 +14,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <envfs.h>
 #include <environment.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -260,6 +261,9 @@ static int at91sam9260ek_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 	devfs_add_partition("nand0", SZ_512K, SZ_128K, DEVFS_PARTITION_FIXED, "env_raw1");
 	dev_add_bb_dev("env_raw1", "env1");
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_at91sam9260ek);
 
 	return 0;
 }

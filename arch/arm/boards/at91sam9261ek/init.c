@@ -17,6 +17,7 @@
 #include <common.h>
 #include <net.h>
 #include <init.h>
+#include <envfs.h>
 #include <environment.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -395,6 +396,9 @@ static int at91sam9261ek_devices_init(void)
 		armlinux_set_architecture(MACH_TYPE_AT91SAM9G10EK);
 	else
 		armlinux_set_architecture(MACH_TYPE_AT91SAM9261EK);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_at91sam9261ek);
 
 	return 0;
 }

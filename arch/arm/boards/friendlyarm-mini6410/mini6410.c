@@ -16,6 +16,7 @@
 #include <init.h>
 #include <platform_data/eth-dm9000.h>
 #include <gpio.h>
+#include <envfs.h>
 #include <generated/mach-types.h>
 #include <asm/armlinux.h>
 #include <mach/s3c-iomap.h>
@@ -284,6 +285,9 @@ static int mini6410_devices_init(void)
 				IORESOURCE_MEM_16BIT, &dm9000_data);
 
 	armlinux_set_architecture(MACH_TYPE_MINI6410);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_friendlyarm_mini6410);
 
 	return 0;
 }

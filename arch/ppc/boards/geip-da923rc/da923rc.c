@@ -22,6 +22,7 @@
 #include <asm/io.h>
 #include <net.h>
 #include <gpio.h>
+#include <envfs.h>
 #include <platform_data/serial-ns16550.h>
 #include <partition.h>
 #include <environment.h>
@@ -95,6 +96,9 @@ static int da923rc_devices_init(void)
 			   IORESOURCE_MEM, &i2cplat[1]);
 
 	board_eth_init();
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_geip_da923rc);
 
 	return 0;
 }

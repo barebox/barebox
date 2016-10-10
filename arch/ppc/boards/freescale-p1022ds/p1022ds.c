@@ -23,6 +23,7 @@
 #include <i2c/i2c.h>
 #include <partition.h>
 #include <memory.h>
+#include <envfs.h>
 #include <asm/cache.h>
 #include <asm/fsl_ddr_sdram.h>
 #include <asm/fsl_law.h>
@@ -112,6 +113,9 @@ static int p1022ds_devices_init(void)
 			IORESOURCE_MEM, &i2cplat[1]);
 
 	board_eth_init();
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_freescale_p1022ds);
 
 	return 0;
 }

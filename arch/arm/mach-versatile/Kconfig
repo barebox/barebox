@@ -9,7 +9,6 @@ config MACH_VERSATILEPB
 	default y
 	select ARM_AMBA
 	select CLKDEV_LOOKUP
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 choice
 	prompt "ARM Board type"

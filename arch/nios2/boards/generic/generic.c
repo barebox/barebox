@@ -4,6 +4,7 @@
 #include <partition.h>
 #include <fs.h>
 #include <memory.h>
+#include <envfs.h>
 
 static int phy_address = 1;
 
@@ -51,6 +52,9 @@ static int generic_devices_init(void)
 	devfs_add_partition("nor0", 0x40000, 0x20000, DEVFS_PARTITION_FIXED, "env0");
 
 	protect_file("/dev/env0", 1);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_generic);
 
 	return 0;
 }

@@ -15,3 +15,4 @@
 #
 obj-y += pca-a-xl2.o
 lwl-y += mux.o lowlevel.o
+bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC) += defaultenv-phytec-phycard-omap4

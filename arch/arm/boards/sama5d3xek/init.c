@@ -24,6 +24,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
+#include <envfs.h>
 #include <mach/hardware.h>
 #include <nand.h>
 #include <linux/sizes.h>
@@ -462,6 +463,9 @@ static int at91sama5d3xek_devices_init(void)
 	ek_add_device_lcdc();
 
 	devfs_create_partitions("nand0", at91sama5d3xek_nand0_partitions);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_sama5d3xek);
 
 	return 0;
 }

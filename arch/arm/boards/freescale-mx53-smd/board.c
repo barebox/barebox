@@ -26,6 +26,7 @@
 #include <linux/sizes.h>
 #include <gpio.h>
 #include <mci.h>
+#include <envfs.h>
 
 #include <generated/mach-types.h>
 
@@ -134,6 +135,9 @@ static int smd_devices_init(void)
 	smd_fec_reset();
 
 	armlinux_set_architecture(MACH_TYPE_MX53_SMD);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_freescale_mx53_smd);
 
 	return 0;
 }

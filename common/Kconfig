@@ -826,11 +826,8 @@ config DEFAULT_COMPRESSION_NONE
 
 endchoice
 
-config HAVE_DEFAULT_ENVIRONMENT_NEW
-	bool
-
 config DEFAULT_ENVIRONMENT_GENERIC_NEW
-	bool
+	bool "Generic environment template"
 	depends on DEFAULT_ENVIRONMENT
 	depends on SHELL_HUSH
 	select BOOTM
@@ -850,7 +847,23 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select FLEXIBLE_BOOTARGS
 	select CMD_BOOT
 	select NET_CMD_IFUP if NET
-	prompt "Generic environment template"
+
+config DEFAULT_ENVIRONMENT_GENERIC
+	bool "Generic environment template (old version)"
+	depends on DEFAULT_ENVIRONMENT
+	depends on !DEFAULT_ENVIRONMENT_GENERIC_NEW
+	depends on SHELL_HUSH
+	select CMD_GETOPT
+	select CMD_CRC
+	select CMD_CRC_CMP
+	select CMD_GLOBAL
+	help
+	  With this option barebox will use the generic default
+	  environment found under defaultenv/ in the src tree.
+	  The Directory given with DEFAULT_ENVIRONMENT_PATH
+	  will be added to the default environment. This should
+	  at least contain a /env/config file.
+	  This will be able to overwrite the files from defaultenv.
 
 config DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU
 	bool
@@ -863,25 +876,6 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW_DFU
 	depends on DEFAULT_ENVIRONMENT_GENERIC_NEW
 	depends on USB_GADGET_DFU
 	default y
-
-config DEFAULT_ENVIRONMENT_GENERIC
-	bool
-	depends on !HAVE_DEFAULT_ENVIRONMENT_NEW
-	depends on DEFAULT_ENVIRONMENT
-	depends on SHELL_HUSH
-	select CMD_GETOPT
-	select CMD_CRC
-	select CMD_CRC_CMP
-	select CMD_AUTOMOUNT if HAVE_DEFAULT_ENVIRONMENT_NEW
-	select CMD_GLOBAL
-	prompt "Default environment generic"
-	help
-	  With this option barebox will use the generic default
-	  environment found under defaultenv/ in the src tree.
-	  The Directory given with DEFAULT_ENVIRONMENT_PATH
-	  will be added to the default environment. This should
-	  at least contain a /env/config file.
-	  This will be able to overwrite the files from defaultenv.
 
 config DEFAULT_ENVIRONMENT_PATH
 	string

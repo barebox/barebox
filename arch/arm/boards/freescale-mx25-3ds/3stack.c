@@ -27,6 +27,7 @@
 #include <asm/sections.h>
 #include <asm/barebox-arm.h>
 #include <io.h>
+#include <envfs.h>
 #include <partition.h>
 #include <generated/mach-types.h>
 #include <mach/imx-nand.h>
@@ -155,6 +156,9 @@ static int imx25_3ds_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_MX25_3DS);
 	armlinux_set_serial(imx_uid());
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_freescale_mx25_3ds);
 
 	return 0;
 }

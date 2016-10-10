@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <gpio.h>
 #include <io.h>
+#include <envfs.h>
 #include <mach/hardware.h>
 #include <nand.h>
 #include <linux/mtd/nand.h>
@@ -163,6 +164,9 @@ static int pm9g45_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 
 	armlinux_set_architecture(MACH_TYPE_PM9G45);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_pm9g45);
 
 	return 0;
 }

@@ -21,6 +21,7 @@
 #include <mci.h>
 #include <init.h>
 #include <gpio.h>
+#include <envfs.h>
 #include <environment.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
@@ -320,6 +321,9 @@ static int at91sam9m10g45ek_devices_init(void)
 
 	armlinux_set_architecture(MACH_TYPE_AT91SAM9M10G45EK);
 	ek_set_board_revision();
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_at91sam9m10g45ek);
 
 	return 0;
 }

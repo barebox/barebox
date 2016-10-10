@@ -9,7 +9,6 @@ choice
 
 config MACH_VIRT2REAL
 	bool "Virt2Real"
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 
 endchoice
 

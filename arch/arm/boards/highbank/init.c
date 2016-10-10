@@ -17,6 +17,7 @@
 #include <linux/sizes.h>
 #include <io.h>
 #include <of.h>
+#include <envfs.h>
 
 #define FIRMWARE_DTB_BASE	0x1000
 
@@ -125,6 +126,9 @@ static int highbank_devices_init(void)
 	}
 
 	devfs_add_partition("nvram", 0x00000, SZ_16K, DEVFS_PARTITION_FIXED, "env0");
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_highbank);
 
 	return 0;
 }

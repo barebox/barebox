@@ -34,6 +34,7 @@
 #include <net.h>
 #include <partition.h>
 #include <gpio.h>
+#include <envfs.h>
 
 #include <asm/armlinux.h>
 #include <io.h>
@@ -211,6 +212,9 @@ static int eukrea_cpuimx35_devices_init(void)
 			   IORESOURCE_MEM, &usb_pdata);
 #endif
 	armlinux_set_architecture(MACH_TYPE_EUKREA_CPUIMX35SD);
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_eukrea_cpuimx35);
 
 	return 0;
 }

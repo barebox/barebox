@@ -14,6 +14,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <io.h>
+#include <envfs.h>
 #include <mach/hardware.h>
 #include <nand.h>
 #include <linux/sizes.h>
@@ -320,6 +321,9 @@ static int animeo_ip_devices_init(void)
 	dev_add_bb_dev("env_raw", "env0");
 
 	animeo_ip_add_device_eth();
+
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT_GENERIC))
+		defaultenv_append_directory(defaultenv_animeo_ip);
 
 	return 0;
 }

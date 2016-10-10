@@ -1,6 +1,6 @@
 #!/bin/sh
 
-machine=mini6410
+machine=tiny6410
 eth0.serverip=a.b.c.d.e
 user=
 
@@ -24,13 +24,9 @@ rootfs_type=ubifs
 rootfsimage=root-${machine}.${rootfs_type}
 
 # The image type of the kernel. Can be uimage, zimage, raw, or raw_lzo
-kernelimage_type=zimage
 kernelimage=zImage-${machine}
-#kernelimage_type=uimage
 #kernelimage=uImage-$machine
-#kernelimage_type=raw
 #kernelimage=Image-$machine
-#kernelimage_type=raw_lzo
 #kernelimage=Image-$machine.lzo
 
 if [ -n $user ]; then
@@ -44,12 +40,12 @@ fi
 autoboot_timeout=3
 
 #
-# "mini6410" kernel parameter
+# "tiny6410" kernel parameter
 # 0 .. 9 = screen type
 # i = touchscreen with propritary FriendlyARM protocol
-# Note: can be "minit6410= " if nothing of these components are connected
+# Note: can be "tiny6410= " if nothing of these components are connected
 #
-bootargs="console=ttySAC0,115200 mini6410=0"
+bootargs="console=ttySAC0,115200 tiny6410=0"
 
 nand_device="nand"
 nand_parts="256k(barebox),128k(bareboxenv),1536k(kernel),-(root)"

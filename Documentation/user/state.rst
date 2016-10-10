@@ -1,3 +1,5 @@
+.. _state_framework:
+
 Barebox State Framework
 =======================
 

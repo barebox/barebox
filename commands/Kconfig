@@ -2097,6 +2097,11 @@ config CMD_STATE
 	depends on STATE
 	prompt "state"
 
+config CMD_BOOTCHOOSER
+	tristate
+	depends on BOOTCHOOSER
+	prompt "bootchooser"
+
 config CMD_DHRYSTONE
 	bool
 	prompt "dhrystone"

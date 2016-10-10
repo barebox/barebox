@@ -25,14 +25,14 @@
 
 static int do_global(int argc, char *argv[])
 {
-	int opt;
-	int do_set_match = 0;
+	int opt, i;
+	int do_remove = 0;
 	char *value;
 
 	while ((opt = getopt(argc, argv, "r")) > 0) {
 		switch (opt) {
 		case 'r':
-			do_set_match = 1;
+			do_remove = 1;
 			break;
 		}
 	}
@@ -45,37 +45,36 @@ static int do_global(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (argc != 1)
+	if (argc < 1)
 		return COMMAND_ERROR_USAGE;
 
-	value = strchr(argv[0], '=');
-	if (value) {
-		*value = 0;
-		value++;
+	for (i = 0; i < argc; i++) {
+		value = strchr(argv[i], '=');
+		if (value) {
+			*value = 0;
+			value++;
+		}
+
+		if (do_remove)
+			globalvar_remove(argv[i]);
+		else
+			globalvar_add_simple(argv[i], value);
 	}
 
-	if (do_set_match) {
-		if (!value)
-			value = "";
-
-		globalvar_set_match(argv[0], value);
-		return 0;
-	}
-
-	return globalvar_add_simple(argv[0], value);
+	return 0;
 }
 
 BAREBOX_CMD_HELP_START(global)
 BAREBOX_CMD_HELP_TEXT("Add a new global variable named VAR, optionally set to VALUE.")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-r", "set value of all global variables beginning with 'match'")
+BAREBOX_CMD_HELP_OPT("-r", "Remove globalvars")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(global)
 	.cmd		= do_global,
 	BAREBOX_CMD_DESC("create or set global variables")
-	BAREBOX_CMD_OPTS("[-r] VAR[=VALUE]")
+	BAREBOX_CMD_OPTS("[-r] VAR[=VALUE] ...")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_global_help)
 BAREBOX_CMD_END

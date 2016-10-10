@@ -936,6 +936,12 @@ config STATE_CRYPTO
 	  See Documentation/devicetree/bindings/barebox/barebox,state.rst
 	  for more information.
 
+config BOOTCHOOSER
+	bool "bootchooser infrastructure"
+	select ENVIRONMENT_VARIABLES
+	select OFTREE
+	select PARAMETER
+
 config RESET_SOURCE
 	bool "detect Reset cause"
 	depends on GLOBALVAR

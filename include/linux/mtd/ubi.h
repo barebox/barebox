@@ -218,6 +218,10 @@ int ubi_is_mapped(struct ubi_volume_desc *desc, int lnum);
 int ubi_sync(int ubi_num);
 int ubi_flush(int ubi_num, int vol_id, int lnum);
 
+int ubi_api_create_volume(int ubi_num, struct ubi_mkvol_req *req);
+int ubi_api_remove_volume(struct ubi_volume_desc *desc, int no_vtbl);
+int ubi_api_rename_volumes(int ubi_num, struct ubi_rnvol_req *req);
+
 /*
  * This function is the same as the 'ubi_leb_read()' function, but it does not
  * provide the checking capability.

@@ -184,6 +184,13 @@ config MACH_PHYTEC_SOM_AM335X
 	select ARCH_AM33XX
 	help
 	  Say Y here if you are using a am335x based Phytecs SOM
+
+config MACH_VSCOM_BALTOS
+	bool "VScom Baltos Devices"
+	select ARCH_AM33XX
+	help
+	  Say Y here if you are using a am335x based VScom Baltos devices
+
 endif
 
 choice

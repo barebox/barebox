@@ -135,6 +135,14 @@ pblx-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sram
 FILE_barebox-am33xx-beaglebone-mlo.img = start_am33xx_beaglebone_sram.pblx.mlo
 am33xx-mlo-$(CONFIG_MACH_BEAGLEBONE) += barebox-am33xx-beaglebone-mlo.img
 
+pblx-$(CONFIG_MACH_VSCOM_BALTOS) += start_am33xx_baltos_sdram
+FILE_barebox-am33xx-baltos.img = start_am33xx_baltos_sdram.pblx
+am33xx-barebox-$(CONFIG_MACH_VSCOM_BALTOS) += barebox-am33xx-baltos.img
+
+pblx-$(CONFIG_MACH_VSCOM_BALTOS) += start_am33xx_baltos_sram
+FILE_barebox-am33xx-baltos-mlo.img = start_am33xx_baltos_sram.pblx.mlo
+am33xx-mlo-$(CONFIG_MACH_VSCOM_BALTOS) += barebox-am33xx-baltos-mlo.img
+
 ifdef CONFIG_OMAP_BUILD_IFT
 image-y += $(am33xx-mlo-y)
 else

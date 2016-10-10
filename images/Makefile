@@ -85,7 +85,7 @@ suffix_$(CONFIG_IMAGE_COMPRESSION_GZIP) = gzip
 suffix_$(CONFIG_IMAGE_COMPRESSION_LZO)  = lzo
 suffix_$(CONFIG_IMAGE_COMPRESSION_LZ4)	= lz4
 suffix_$(CONFIG_IMAGE_COMPRESSION_XZKERN) = xzkern
-suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = shipped
+suffix_$(CONFIG_IMAGE_COMPRESSION_NONE) = comp_copy
 
 # barebox.z - compressed barebox binary
 # ----------------------------------------------------------------

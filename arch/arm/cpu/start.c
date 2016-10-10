@@ -143,8 +143,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 {
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
-	unsigned long barebox_size = barebox_image_size +
-		((unsigned long)&__bss_stop - (unsigned long)&__bss_start);
+	unsigned long barebox_size = barebox_image_size + MAX_BSS_SIZE;
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
 		unsigned long barebox_base = arm_mem_barebox_image(membase,

@@ -28,6 +28,7 @@
 #include <asm/sections.h>
 #include <asm/pgtable.h>
 #include <asm/cache.h>
+#include <asm/unaligned.h>
 
 #include "mmu-early.h"
 
@@ -49,7 +50,7 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	uint32_t offset;
-	uint32_t pg_start, pg_end, pg_len;
+	uint32_t pg_start, pg_end, pg_len, uncompressed_len;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
 	uint32_t endmem = membase + memsize;
 	unsigned long barebox_base;
@@ -63,9 +64,10 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 	pg_start = (uint32_t)&input_data - offset;
 	pg_end = (uint32_t)&input_data_end - offset;
 	pg_len = pg_end - pg_start;
+	uncompressed_len = get_unaligned((const u32 *)(pg_start + pg_len - 4));
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE))
-		barebox_base = arm_mem_barebox_image(membase, endmem, pg_len);
+		barebox_base = arm_mem_barebox_image(membase, endmem, uncompressed_len + MAX_BSS_SIZE);
 	else
 		barebox_base = TEXT_BASE;
 

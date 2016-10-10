@@ -1,0 +1,11 @@
+/*
+ * Barebox specific DT overlay for Netgear ReadyNAS 2120
+ */
+
+#include "arm/armada-xp-netgear-rn2120.dts"
+
+/ {
+	chosen {
+		stdout-path = "/soc/internal-regs/serial@12000";
+	};
+};

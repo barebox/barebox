@@ -55,6 +55,10 @@ config MACH_MARVELL_ARMADA_XP_GP
 	bool "Marvell Armada XP GP"
 	select ARCH_ARMADA_XP
 
+config MACH_NETGEAR_RN2120
+	bool "Netgear ReadyNAS 2120"
+	select ARCH_ARMADA_XP
+
 config MACH_PLATHOME_OPENBLOCKS_AX3
 	bool "PlatHome OpenBlocks AX3"
 	select ARCH_ARMADA_XP

@@ -78,7 +78,8 @@ static int mvebu_pinctrl_set_state(struct pinctrl_device *pdev,
 
 		set = mvebu_pinctrl_find_setting_by_name(pctl, mode, function);
 		if (!set) {
-			dev_err(pdev->dev, "unsupported function %s on pin %s",
+			dev_err(pdev->dev,
+				"unsupported function %s on pin %s\n",
 				function, group);
 			continue;
 		}

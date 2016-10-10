@@ -9,6 +9,7 @@
  *   2008. Chapter 24.2 "BootROM Firmware".
  */
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -35,7 +36,7 @@ static unsigned char kwboot_msg_debug[] = {
 };
 
 #define KWBOOT_MSG_REQ_DELAY	1000 /* ms */
-#define KWBOOT_MSG_RSP_TIMEO	1000 /* ms */
+#define KWBOOT_MSG_RSP_TIMEO	1 /* ms */
 
 /*
  * Xmodem Transfers
@@ -273,11 +274,11 @@ kwboot_bootmsg(int tty, void *msg)
 	else
 		kwboot_printv("Sending boot message. Please reboot the target...");
 
-	do {
-		rc = tcflush(tty, TCIOFLUSH);
-		if (rc)
-			break;
+	rc = tcflush(tty, TCIOFLUSH);
+	if (rc)
+		return rc;
 
+	do {
 		rc = kwboot_tty_send(tty, msg, 8);
 		if (rc) {
 			usleep(KWBOOT_MSG_REQ_DELAY * 1000);
@@ -285,12 +286,20 @@ kwboot_bootmsg(int tty, void *msg)
 		}
 
 		rc = kwboot_tty_recv(tty, &c, 1, KWBOOT_MSG_RSP_TIMEO);
+		while (!rc && c != NAK) {
+			if (c == '\\')
+				kwboot_printv("\\\\", c);
+			else if (isprint(c) || c == '\r' || c == '\n')
+				kwboot_printv("%c", c);
+			else
+				kwboot_printv("\\x%02hhx", c);
 
-		kwboot_spinner();
+			rc = kwboot_tty_recv(tty, &c, 1, KWBOOT_MSG_RSP_TIMEO);
+		}
 
 	} while (rc || c != NAK);
 
-	kwboot_printv("\n");
+	kwboot_printv("\nGot expected NAK\n");
 
 	return rc;
 }
@@ -302,12 +311,12 @@ kwboot_debugmsg(int tty, void *msg)
 
 	kwboot_printv("Sending debug message. Please reboot the target...");
 
+	rc = tcflush(tty, TCIOFLUSH);
+	if (rc)
+		return rc;
+
 	do {
 		char buf[16];
-
-		rc = tcflush(tty, TCIOFLUSH);
-		if (rc)
-			break;
 
 		rc = kwboot_tty_send(tty, msg, 8);
 		if (rc) {
@@ -349,6 +358,48 @@ kwboot_xm_makeblock(struct kwboot_block *block, const void *data,
 	return n;
 }
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
+static int
+kwboot_xm_resync(int fd)
+{
+	/*
+	 * When the SoC has a different perception of where the package boundary
+	 * is, just resending the packet doesn't help. To resync send 0xff until
+	 * we get another NAK.
+	 * The BootROM code (of the Armada XP at least) doesn't interpret 0xff
+	 * as a start of a package and sends a NAK for each 0xff when waiting
+	 * for SOH, so it's possible to send >1 byte without the SoC starting a
+	 * new frame.
+	 * When there is no response after sizeof(struct kwboot_block) bytes,
+	 * there is another problem.
+	 */
+	int rc;
+	char buf[sizeof(struct kwboot_block)];
+	unsigned interval = 1;
+	unsigned len;
+	char *p = buf;
+
+	memset(buf, 0xff, sizeof(buf));
+
+	while (interval <= sizeof(buf)) {
+		len = min(interval, buf + sizeof(buf) - p);
+		rc = kwboot_tty_send(fd, p, len);
+		if (rc)
+			return rc;
+
+		kwboot_tty_recv(fd, p, len, KWBOOT_BLK_RSP_TIMEO);
+		if (*p != 0xff)
+			/* got at least one char, if it's a NAK we're synced. */
+			return (*p == NAK);
+
+		p += len;
+		interval *= 2;
+	}
+
+	return 0;
+}
+
 static int
 kwboot_xm_sendblock(int fd, struct kwboot_block *block)
 {
@@ -371,7 +422,9 @@ kwboot_xm_sendblock(int fd, struct kwboot_block *block)
 
 		} while (c != ACK && c != NAK && c != CAN);
 
-		if (c != ACK)
+		if (c == NAK && kwboot_xm_resync(fd))
+			kwboot_progress(-1, 'S');
+		else if (c != ACK)
 			kwboot_progress(-1, '+');
 
 	} while (c == NAK && retries-- > 0);
@@ -547,7 +600,7 @@ out:
 }
 
 static int
-kwboot_check_image(const unsigned char *img, size_t size)
+kwboot_check_image(unsigned char *img, size_t size)
 {
 	size_t i;
 	size_t header_size, image_size;
@@ -560,12 +613,20 @@ kwboot_check_image(const unsigned char *img, size_t size)
 	}
 
 	switch (img[0x0]) {
-		case 0x5a: /* SPI/NOR */
 		case 0x69: /* UART0 */
+			break;
+
+		case 0x5a: /* SPI/NOR */
 		case 0x78: /* SATA */
 		case 0x8b: /* NAND */
 		case 0x9c: /* PCIe */
+			/* change boot source to UART and fix checksum */
+			img[0x1f] -= img[0x0];
+			img[0x1f] += 0x69;
+			img[0x0] = 0x69;
+
 			break;
+
 		default:
 			fprintf(stderr,
 				"Unknown boot source: 0x%hhx\n", img[0x0]);
@@ -604,9 +665,9 @@ kwboot_check_image(const unsigned char *img, size_t size)
 }
 
 static void *
-kwboot_mmap_image(const char *path, size_t *size, int prot)
+kwboot_mmap_image(const char *path, size_t *size)
 {
-	int rc, fd, flags;
+	int rc, fd;
 	struct stat st;
 	void *img;
 
@@ -621,9 +682,7 @@ kwboot_mmap_image(const char *path, size_t *size, int prot)
 	if (rc)
 		goto out;
 
-	flags = (prot & PROT_WRITE) ? MAP_PRIVATE : MAP_SHARED;
-
-	img = mmap(NULL, st.st_size, prot, flags, fd, 0);
+	img = mmap(NULL, st.st_size, PROT_WRITE, MAP_PRIVATE, fd, 0);
 	if (img == MAP_FAILED) {
 		img = NULL;
 		goto out;
@@ -740,7 +799,7 @@ main(int argc, char **argv)
 	}
 
 	if (imgpath) {
-		img = kwboot_mmap_image(imgpath, &size, PROT_READ);
+		img = kwboot_mmap_image(imgpath, &size);
 		if (!img) {
 			perror(imgpath);
 			goto out;

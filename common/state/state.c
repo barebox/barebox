@@ -202,15 +202,19 @@ struct device_node *state_to_node(struct state *state,
 				  enum state_convert conv)
 {
 	struct device_node *child;
-	struct device_node *root;
+	struct device_node *root, *state_root;
 	int ret;
 
-	root = of_new_node(parent, state->root->name);
+	state_root = of_find_node_by_path(state->of_path);
+	if (!state_root)
+		return ERR_PTR(-ENODEV);
+
+	root = of_new_node(parent, state_root->name);
 	ret = of_property_write_u32(root, "magic", state->magic);
 	if (ret)
 		goto out;
 
-	for_each_child_of_node(state->root, child) {
+	for_each_child_of_node(state_root, child) {
 		ret = state_convert_node_variable(state, child, root, "", conv);
 		if (ret)
 			goto out;
@@ -234,7 +238,7 @@ int state_from_node(struct state *state, struct device_node *node, bool create)
 
 	if (create) {
 		conv = STATE_CONVERT_FROM_NODE_CREATE;
-		state->root = node;
+		state->of_path = xstrdup(node->full_name);
 		state->magic = magic;
 	} else {
 		conv = STATE_CONVERT_FROM_NODE;
@@ -291,7 +295,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	int ret;
 	phandle phandle;
 
-	node = of_find_node_by_path_from(root, state->root->full_name);
+	node = of_find_node_by_path_from(root, state->of_path);
 	if (node) {
 		/* replace existing node - it will be deleted later */
 		parent = node->parent;
@@ -299,12 +303,12 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		char *of_path, *c;
 
 		/* look for parent, remove last '/' from path */
-		of_path = xstrdup(state->root->full_name);
+		of_path = xstrdup(state->of_path);
 		c = strrchr(of_path, '/');
 		if (!c)
 			return -ENODEV;
-		*c = '0';
-		parent = of_find_node_by_path(of_path);
+		*c = '\0';
+		parent = of_find_node_by_path_from(root, of_path);
 		if (!parent)
 			parent = root;
 
@@ -406,6 +410,7 @@ void state_release(struct state *state)
 	list_del(&state->list);
 	unregister_device(&state->dev);
 	state_backend_free(&state->backend);
+	free(state->of_path);
 	free(state);
 }
 
@@ -545,7 +550,7 @@ struct state *state_by_node(const struct device_node *node)
 	struct state *state;
 
 	list_for_each_entry(state, &state_list, list) {
-		if (state->root == node)
+		if (!strcmp(state->of_path, node->full_name))
 			return state;
 	}
 

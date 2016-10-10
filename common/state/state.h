@@ -87,14 +87,14 @@ struct state_backend_storage {
 struct state_backend {
 	struct state_backend_format *format;
 	struct state_backend_storage storage;
-	const char *of_path;
+	char *of_path;
 };
 
 struct state {
 	struct list_head list; /* Entry to enqueue on list of states */
 
 	struct device_d dev;
-	struct device_node *root;
+	char *of_path;
 	const char *name;
 	uint32_t magic;
 
@@ -138,6 +138,7 @@ struct variable_type {
 
 /* instance of a single variable */
 struct state_variable {
+	struct state *state;
 	enum state_variable_type type;
 	struct list_head list;
 	const char *name;
@@ -152,7 +153,6 @@ struct state_variable {
 struct state_uint32 {
 	struct state_variable var;
 	struct param_d *param;
-	struct state *state;
 	uint32_t value;
 	uint32_t value_default;
 };
@@ -185,13 +185,11 @@ struct state_mac {
 struct state_string {
 	struct state_variable var;
 	struct param_d *param;
-	struct state *state;
 	char *value;
 	const char *value_default;
 	char raw[];
 };
 
-int state_set_dirty(struct param_d *p, void *priv);
 int state_from_node(struct state *state, struct device_node *node, bool create);
 struct device_node *state_to_node(struct state *state,
 				  struct device_node *parent,

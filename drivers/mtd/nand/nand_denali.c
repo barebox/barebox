@@ -25,6 +25,7 @@
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 #include <io.h>
+#include <clock.h>
 #include <of_mtd.h>
 #include <errno.h>
 #include <asm/io.h>
@@ -173,9 +174,6 @@ static uint16_t denali_nand_reset(struct denali_nand_info *denali)
 {
 	int i;
 
-	dev_dbg(denali->dev, "%s, Line %d, Function: %s\n",
-		__FILE__, __LINE__, __func__);
-
 	for (i = 0; i < denali->max_banks; i++)
 		iowrite32(INTR_STATUS__RST_COMP | INTR_STATUS__TIME_OUT,
 		denali->flash_reg + INTR_STATUS(i));
@@ -225,9 +223,6 @@ static void nand_onfi_timing_set(struct denali_nand_info *denali,
 	uint16_t en_lo, en_hi;
 	uint16_t acc_clks;
 	uint16_t addr_2_data, re_2_we, re_2_re, we_2_re, cs_cnt;
-
-	dev_dbg(denali->dev, "%s, Line %d, Function: %s\n",
-		__FILE__, __LINE__, __func__);
 
 	en_lo = CEIL_DIV(Trp[mode], CLK_X);
 	en_hi = CEIL_DIV(Treh[mode], CLK_X);
@@ -491,9 +486,6 @@ static uint16_t denali_nand_timing_set(struct denali_nand_info *denali)
 	uint8_t maf_id, device_id;
 	int i;
 
-	dev_dbg(denali->dev, "%s, Line %d, Function: %s\n",
-			__FILE__, __LINE__, __func__);
-
 	/*
 	 * Use read id method to get device ID and other params.
 	 * For some NAND chips, controller can't report the correct
@@ -550,9 +542,6 @@ static uint16_t denali_nand_timing_set(struct denali_nand_info *denali)
 static void denali_set_intr_modes(struct denali_nand_info *denali,
 					uint16_t INT_ENABLE)
 {
-	dev_dbg(denali->dev, "%s, Line %d, Function: %s\n",
-		__FILE__, __LINE__, __func__);
-
 	if (INT_ENABLE)
 		iowrite32(1, denali->flash_reg + GLOBAL_INT_ENABLE);
 	else
@@ -633,26 +622,32 @@ static uint32_t read_interrupt_status(struct denali_nand_info *denali)
 
 static uint32_t wait_for_irq(struct denali_nand_info *denali, uint32_t irq_mask)
 {
-	unsigned long comp_res = 1000;
 	uint32_t intr_status = 0;
+	uint64_t start;
 
-	do {
-		intr_status = read_interrupt_status(denali);
-		if (intr_status & irq_mask) {
-			/* our interrupt was detected */
-			break;
-		}
-		udelay(1);
-		comp_res--;
-	} while (comp_res != 0);
-
-	if (comp_res == 0) {
-		/* timeout */
-		intr_status = 0;
-		dev_dbg(denali->dev, "timeout occurred, status = 0x%x, mask = 0x%x\n",
-				intr_status, irq_mask);
+	if (!is_flash_bank_valid(denali->flash_bank)) {
+		dev_dbg(denali->dev, "No valid chip selected (%d)\n",
+			denali->flash_bank);
+		return 0;
 	}
-	return intr_status;
+
+	start = get_time_ns();
+
+	while (!is_timeout(start, 1000 * MSECOND)) {
+		intr_status = read_interrupt_status(denali);
+
+		if (intr_status != 0)
+			clear_interrupt(denali, intr_status);
+
+		if (intr_status & irq_mask)
+			return intr_status;
+	}
+
+	/* timeout */
+	dev_dbg(denali->dev, "timeout occurred, status = 0x%x, mask = 0x%x\n",
+		intr_status, irq_mask);
+
+	return 0;
 }
 
 /*
@@ -1102,8 +1097,9 @@ static int denali_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 	size_t size = denali->mtd.writesize + denali->mtd.oobsize;
 
 	uint32_t irq_status;
-	uint32_t irq_mask = INTR_STATUS__ECC_TRANSACTION_DONE |
-			    INTR_STATUS__ECC_ERR;
+	uint32_t irq_mask = denali->have_hw_ecc_fixup ?
+		(INTR_STATUS__DMA_CMD_COMP) :
+		(INTR_STATUS__ECC_TRANSACTION_DONE | INTR_STATUS__ECC_ERR);
 	bool check_erased_page = false;
 
 	if (page != denali->page) {

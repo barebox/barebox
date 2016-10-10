@@ -100,7 +100,7 @@ static void imx27_init_max(void)
 int imx27_init(void)
 {
 	imx27_silicon_revision();
-	imx27_boot_save_loc((void *)MX27_SYSCTRL_BASE_ADDR);
+	imx27_boot_save_loc();
 	add_generic_device("imx27-esdctl", DEVICE_ID_SINGLE, NULL,
 			   MX27_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 

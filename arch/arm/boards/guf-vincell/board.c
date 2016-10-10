@@ -29,15 +29,6 @@
 #include <mach/bbu.h>
 #include <mach/imx5.h>
 
-#define LOCO_FEC_PHY_RST		IMX_GPIO_NR(7, 6)
-
-static void vincell_fec_reset(void)
-{
-	gpio_direction_output(LOCO_FEC_PHY_RST, 0);
-	mdelay(1);
-	gpio_set_value(LOCO_FEC_PHY_RST, 1);
-}
-
 static int vincell_devices_init(void)
 {
 	if (!of_machine_is_compatible("guf,imx53-vincell") &&
@@ -49,10 +40,8 @@ static int vincell_devices_init(void)
 	clk_set_rate(clk_lookup("emi_slow_podf"), 133333334);
 	clk_set_rate(clk_lookup("nfc_podf"), 33333334);
 
-	vincell_fec_reset();
-
 	imx53_bbu_internal_nand_register_handler("nand",
-		BBU_HANDLER_FLAG_DEFAULT, SZ_512K);
+		BBU_HANDLER_FLAG_DEFAULT, 0xe0000);
 
 	return 0;
 }

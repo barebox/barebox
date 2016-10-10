@@ -4,6 +4,7 @@
 #include <io.h>
 #include <mach/generic.h>
 #include <mach/imx6-regs.h>
+#include <mach/revision.h>
 
 void imx6_init_lowlevel(void);
 
@@ -46,6 +47,41 @@ static inline int imx6_cpu_type(void)
 		return 0;
 
 	return __imx6_cpu_type();
+}
+
+static inline int __imx6_cpu_revision(void)
+{
+
+	uint32_t rev;
+
+	rev = readl(MX6_ANATOP_BASE_ADDR + IMX6_ANATOP_SI_REV);
+
+	switch (rev & 0xfff) {
+	case 0x00:
+		return IMX_CHIP_REV_1_0;
+	case 0x01:
+		return IMX_CHIP_REV_1_1;
+	case 0x02:
+		return IMX_CHIP_REV_1_2;
+	case 0x03:
+		return IMX_CHIP_REV_1_3;
+	case 0x04:
+		return IMX_CHIP_REV_1_4;
+	case 0x05:
+		return IMX_CHIP_REV_1_5;
+	case 0x100:
+		return IMX_CHIP_REV_2_0;
+	}
+
+	return IMX_CHIP_REV_UNKNOWN;
+}
+
+static inline int imx6_cpu_revision(void)
+{
+	if (!cpu_is_mx6())
+		return 0;
+
+	return __imx6_cpu_revision();
 }
 
 #define DEFINE_MX6_CPU_TYPE(str, type)					\

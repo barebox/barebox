@@ -8,13 +8,17 @@
 
 u64 imx_uid(void);
 
-void imx25_boot_save_loc(void __iomem *ccm_base);
-void imx35_boot_save_loc(void __iomem *ccm_base);
-void imx27_boot_save_loc(void __iomem *sysctrl_base);
-void imx50_boot_save_loc(void __iomem *src_base);
-void imx51_boot_save_loc(void __iomem *src_base);
-void imx53_boot_save_loc(void __iomem *src_base);
-void imx6_boot_save_loc(void __iomem *src_base);
+void imx25_boot_save_loc(void);
+void imx35_boot_save_loc(void);
+void imx27_boot_save_loc(void);
+void imx51_boot_save_loc(void);
+void imx53_boot_save_loc(void);
+void imx6_boot_save_loc(void);
+
+void imx25_get_boot_source(enum bootsource *src, int *instance);
+void imx35_get_boot_source(enum bootsource *src, int *instance);
+void imx51_get_boot_source(enum bootsource *src, int *instance);
+void imx53_get_boot_source(enum bootsource *src, int *instance);
 void imx6_get_boot_source(enum bootsource *src, int *instance);
 
 int imx1_init(void);

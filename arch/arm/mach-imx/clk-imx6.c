@@ -495,10 +495,13 @@ static int imx6_ccm_probe(struct device_d *dev)
 	writel(0xf0ffffff, ccm_base + CCGR1); /* gate GPU3D, GPU2D */
 	writel(0xffffffff, ccm_base + CCGR2);
 	if (IS_ENABLED(CONFIG_DRIVER_VIDEO_IMX_IPUV3))
-		writel(0xffffffff, ccm_base + CCGR3); /* gate OpenVG */
+		writel(0x3fffffff, ccm_base + CCGR3); /* gate OpenVG */
 	else
-		writel(0x3fffffff, ccm_base + CCGR3); /* gate OpenVG, LDB, IPU1, IPU2 */
-	writel(0xffffffff, ccm_base + CCGR4);
+		writel(0x3fff0000, ccm_base + CCGR3); /* gate OpenVG, LDB, IPU1, IPU2 */
+	if (IS_ENABLED(CONFIG_PCI_IMX6))
+		writel(0xffffffff, ccm_base + CCGR4);
+	else
+		writel(0xfffffffc, ccm_base + CCGR4); /* gate PCIe */
 	writel(0xffffffff, ccm_base + CCGR5);
 	writel(0xffff3fff, ccm_base + CCGR6); /* gate VPU */
 	writel(0xffffffff, ccm_base + CCGR7);

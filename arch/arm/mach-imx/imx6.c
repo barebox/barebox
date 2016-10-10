@@ -25,16 +25,12 @@
 #include <asm/mmu.h>
 #include <asm/cache-l2x0.h>
 
-#define SI_REV 0x260
-
 void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
 	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
-	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
 	bool is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
 	bool is_imx6d = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
-	uint32_t val;
 
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -56,19 +52,10 @@ void imx6_init_lowlevel(void)
 	writel(0, aips2 + 0x4c);
 	writel(0, aips2 + 0x50);
 
-	/* enable all clocks */
-	writel(0xffffffff, 0x020c4068);
-	writel(0xffffffff, 0x020c406c);
-	writel(0xffffffff, 0x020c4070);
-	writel(0xffffffff, 0x020c4074);
-	writel(0xffffffff, 0x020c4078);
-	writel(0xffffffff, 0x020c407c);
-	writel(0xffffffff, 0x020c4080);
-
-	/*
-	 * Due to a hardware bug (related to errata ERR006282) on i.MX6DQ we
-	 * need to gate/ungate all PFDs to make sure PFD is working right,
-	 * otherwise PFDs may not output clock after reset.
+	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
+	 * to make sure PFD is working right, otherwise, PFDs may
+	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
+	 * workaround in ROM code, as bus clock need it
 	 */
 	if (is_imx6q || is_imx6d) {
 		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
@@ -94,6 +81,18 @@ void imx6_init_lowlevel(void)
 		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
 	}
 
+}
+
+void imx6_setup_ipu_qos(void)
+{
+	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
+	void __iomem *fast2 = (void *)MX6_FAST2_BASE_ADDR;
+	uint32_t val;
+
+	if (!cpu_mx6_is_mx6q() && !cpu_mx6_is_mx6d() &&
+	    !cpu_mx6_is_mx6dl() && cpu_mx6_is_mx6s())
+		return;
+
 	val = readl(iomux + IOMUXC_GPR4);
 	val |= IMX6Q_GPR4_VPU_WR_CACHE_SEL | IMX6Q_GPR4_VPU_RD_CACHE_SEL |
 		IMX6Q_GPR4_VPU_P_WR_CACHE_VAL | IMX6Q_GPR4_VPU_P_RD_CACHE_VAL_MASK |
@@ -110,52 +109,28 @@ void imx6_init_lowlevel(void)
 	val &= ~(IMX6Q_GPR7_IPU2_ID00_RD_QOS_MASK | IMX6Q_GPR7_IPU2_ID01_RD_QOS_MASK);
 	val |= (0xf << 16) | (0x7 << 20);
 	writel(val, iomux + IOMUXC_GPR7);
+
+	/*
+	 * On i.MX6 QP/DP the NoC regulator for the IPU ports needs to be in
+	 * bypass mode for the above settings to take effect.
+	 */
+	if ((cpu_mx6_is_mx6q() || cpu_mx6_is_mx6d()) &&
+	    imx_silicon_revision() >= IMX_CHIP_REV_2_0) {
+		writel(0x2, fast2 + 0xb048c);
+		writel(0x2, fast2 + 0xb050c);
+	}
 }
 
 int imx6_init(void)
 {
 	const char *cputypestr;
-	u32 rev;
 	u32 mx6_silicon_revision;
 
 	imx6_init_lowlevel();
 
-	imx6_boot_save_loc((void *)MX6_SRC_BASE_ADDR);
+	imx6_boot_save_loc();
 
-	rev = readl(MX6_ANATOP_BASE_ADDR + SI_REV);
-
-	switch (rev & 0xfff) {
-	case 0x00:
-		mx6_silicon_revision = IMX_CHIP_REV_1_0;
-		break;
-
-	case 0x01:
-		mx6_silicon_revision = IMX_CHIP_REV_1_1;
-		break;
-
-	case 0x02:
-		mx6_silicon_revision = IMX_CHIP_REV_1_2;
-		break;
-
-	case 0x03:
-		mx6_silicon_revision = IMX_CHIP_REV_1_3;
-		break;
-
-	case 0x04:
-		mx6_silicon_revision = IMX_CHIP_REV_1_4;
-		break;
-
-	case 0x05:
-		mx6_silicon_revision = IMX_CHIP_REV_1_5;
-		break;
-
-	case 0x100:
-		mx6_silicon_revision = IMX_CHIP_REV_2_0;
-		break;
-
-	default:
-		mx6_silicon_revision = IMX_CHIP_REV_UNKNOWN;
-	}
+	mx6_silicon_revision = imx6_cpu_revision();
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:
@@ -185,6 +160,8 @@ int imx6_init(void)
 	}
 
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
+
+	imx6_setup_ipu_qos();
 
 	return 0;
 }
@@ -291,7 +268,8 @@ static int imx6_fixup_cpus(struct device_node *root, void *context)
 
 static int imx6_fixup_cpus_register(void)
 {
-	if (!of_machine_is_compatible("fsl,imx6q") &&
+	if (!of_machine_is_compatible("fsl,imx6qp") &&
+	    !of_machine_is_compatible("fsl,imx6q")  &&
 	    !of_machine_is_compatible("fsl,imx6dl"))
 		return 0;
 

@@ -53,7 +53,7 @@ static int imx53_silicon_revision(void)
 int imx53_init(void)
 {
 	imx53_silicon_revision();
-	imx53_boot_save_loc((void *)MX53_SRC_BASE_ADDR);
+	imx53_boot_save_loc();
 	add_generic_device("imx53-esdctl", 0, NULL, MX53_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	return 0;

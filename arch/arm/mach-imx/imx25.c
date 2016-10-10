@@ -52,7 +52,7 @@ int imx25_init(void)
 {
 	int val;
 
-	imx25_boot_save_loc((void *)MX25_CCM_BASE_ADDR);
+	imx25_boot_save_loc();
 	add_generic_device("imx25-esdctl", 0, NULL, MX25_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 
 	/*

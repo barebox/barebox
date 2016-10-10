@@ -153,6 +153,7 @@ struct usb_host {
 	int busnum;
 	struct usb_device *root_dev;
 	int sem;
+	struct usb_phy *usbphy;
 };
 
 int usb_register_host(struct usb_host *);

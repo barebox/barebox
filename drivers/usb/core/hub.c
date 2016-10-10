@@ -22,6 +22,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <scsi.h>
+#include <usb/phy.h>
 #include <usb/usb.h>
 #include <usb/usb_defs.h>
 
@@ -189,6 +190,10 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 	if (dev->children[port] && !(portstatus & USB_PORT_STAT_CONNECTION)) {
 		dev_dbg(&dev->dev, "disconnect detected on port %d\n", port + 1);
 		usb_remove_device(dev->children[port]);
+
+		if (!dev->parent && dev->host->usbphy)
+			usb_phy_notify_disconnect(dev->host->usbphy, dev->speed);
+
 		return;
 	}
 
@@ -230,6 +235,9 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		usb_free_device(usb);
 		return;
 	}
+
+	if (!dev->parent && dev->host->usbphy)
+		usb_phy_notify_connect(dev->host->usbphy, usb->speed);
 
 	device_detect(&usb->dev);
 }

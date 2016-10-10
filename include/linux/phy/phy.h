@@ -33,6 +33,7 @@ struct phy_ops {
 	int	(*exit)(struct phy *phy);
 	int	(*power_on)(struct phy *phy);
 	int	(*power_off)(struct phy *phy);
+	struct usb_phy *(*to_usbphy)(struct phy *phy);
 };
 
 /**
@@ -136,6 +137,8 @@ static inline void phy_set_bus_width(struct phy *phy, int bus_width)
 }
 struct phy *phy_get(struct device_d *dev, const char *string);
 struct phy *phy_optional_get(struct device_d *dev, const char *string);
+struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
+				  u8 index);
 void phy_put(struct phy *phy);
 struct phy *of_phy_get(struct device_node *np, const char *con_id);
 struct phy *of_phy_simple_xlate(struct device_d *dev,
@@ -148,6 +151,7 @@ struct phy_provider *__of_phy_provider_register(struct device_d *dev,
 	struct phy * (*of_xlate)(struct device_d *dev,
 	struct of_phandle_args *args));
 void of_phy_provider_unregister(struct phy_provider *phy_provider);
+struct usb_phy *phy_to_usbphy(struct phy *phy);
 #else
 static inline int phy_init(struct phy *phy)
 {
@@ -198,6 +202,12 @@ static inline struct phy *phy_optional_get(struct device_d *dev,
 	return ERR_PTR(-ENOSYS);
 }
 
+static inline struct phy *of_phy_get_by_phandle(struct device_d *dev,
+						const char *phandle, u8 index)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
 static inline void phy_put(struct phy *phy)
 {
 }
@@ -235,6 +245,12 @@ static inline struct phy_provider *__of_phy_provider_register(
 static inline void of_phy_provider_unregister(struct phy_provider *phy_provider)
 {
 }
+
+static inline struct usb_phy *phy_to_usbphy(struct phy *phy)
+{
+	return NULL;
+}
+
 #endif
 
 #endif /* __DRIVERS_PHY_H */

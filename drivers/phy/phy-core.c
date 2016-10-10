@@ -15,6 +15,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <linux/phy/phy.h>
+#include <usb/phy.h>
 
 static LIST_HEAD(phy_provider_list);
 static int phy_ida;
@@ -201,6 +202,17 @@ int phy_power_off(struct phy *phy)
 	return 0;
 }
 
+struct usb_phy *phy_to_usbphy(struct phy *phy)
+{
+	if (!phy)
+		return NULL;
+
+	if (!phy->ops->to_usbphy)
+		return ERR_PTR(-EINVAL);
+
+	return phy->ops->to_usbphy(phy);
+}
+
 static struct phy_provider *of_phy_provider_lookup(struct device_node *node)
 {
 	struct phy_provider *phy_provider;
@@ -265,6 +277,42 @@ struct phy *of_phy_get(struct device_node *np, const char *con_id)
 		index = of_property_match_string(np, "phy-names", con_id);
 
 	return _of_phy_get(np, index);
+}
+
+/**
+ * of_phy_get_by_phandle() - lookup and obtain a reference to a phy.
+ * @dev: device that requests this phy
+ * @phandle - name of the property holding the phy phandle value
+ * @index - the index of the phy
+ *
+ * Returns the phy driver, after getting a refcount to it; or
+ * -ENODEV if there is no such phy. The caller is responsible for
+ * calling phy_put() to release that count.
+ */
+struct phy *of_phy_get_by_phandle(struct device_d *dev, const char *phandle,
+				  u8 index)
+{
+	struct device_node *np;
+	struct phy_provider *phy_provider;
+
+	if (!dev->device_node) {
+		dev_dbg(dev, "device does not have a device node entry\n");
+		return ERR_PTR(-EINVAL);
+	}
+
+	np = of_parse_phandle(dev->device_node, phandle, index);
+	if (!np) {
+		dev_dbg(dev, "failed to get %s phandle in %s node\n", phandle,
+			dev->device_node->full_name);
+		return ERR_PTR(-ENODEV);
+	}
+
+	phy_provider = of_phy_provider_lookup(np);
+	if (IS_ERR(phy_provider)) {
+		return ERR_PTR(-ENODEV);
+	}
+
+	return phy_provider->of_xlate(phy_provider->dev, NULL);
 }
 
 /**

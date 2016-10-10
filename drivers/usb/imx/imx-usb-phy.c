@@ -19,6 +19,8 @@
 #include <errno.h>
 #include <driver.h>
 #include <malloc.h>
+#include <usb/phy.h>
+#include <linux/phy/phy.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 
@@ -31,15 +33,19 @@
 #define USBPHY_CTRL_CLKGATE		(1 << 30)
 #define USBPHY_CTRL_ENUTMILEVEL3	(1 << 15)
 #define USBPHY_CTRL_ENUTMILEVEL2	(1 << 14)
+#define USBPHY_CTRL_ENHOSTDISCONDETECT	(1 << 1)
 
 struct imx_usbphy {
+	struct usb_phy usb_phy;
+	struct phy *phy;
 	void __iomem *base;
 	struct clk *clk;
+	struct phy_provider *provider;
 };
 
-static int imx_usbphy_enable(struct imx_usbphy *imxphy)
+static int imx_usbphy_phy_init(struct phy *phy)
 {
-	u32 val;
+	struct imx_usbphy *imxphy = phy_get_drvdata(phy);
 
 	clk_enable(imxphy->clk);
 
@@ -56,12 +62,55 @@ static int imx_usbphy_enable(struct imx_usbphy *imxphy)
 	writel(0xffffffff, imxphy->base + CLR);
 
 	/* set utmilvl2/3 */
-	val = readl(imxphy->base + USBPHY_CTRL);
-	val |= USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2;
-	writel(val, imxphy->base + USBPHY_CTRL + SET);
+	writel(USBPHY_CTRL_ENUTMILEVEL3 | USBPHY_CTRL_ENUTMILEVEL2,
+	       imxphy->base + USBPHY_CTRL + SET);
 
 	return 0;
 }
+
+static int imx_usbphy_notify_connect(struct usb_phy *phy,
+				     enum usb_device_speed speed)
+{
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+
+	if (speed == USB_SPEED_HIGH) {
+		writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
+		       imxphy->base + USBPHY_CTRL + SET);
+	}
+
+	return 0;
+}
+
+static int imx_usbphy_notify_disconnect(struct usb_phy *phy,
+					enum usb_device_speed speed)
+{
+	struct imx_usbphy *imxphy = container_of(phy, struct imx_usbphy, usb_phy);
+
+	writel(USBPHY_CTRL_ENHOSTDISCONDETECT,
+	       imxphy->base + USBPHY_CTRL + CLR);
+
+	return 0;
+}
+
+static struct phy *imx_usbphy_xlate(struct device_d *dev,
+				    struct of_phandle_args *args)
+{
+	struct imx_usbphy *imxphy = dev->priv;
+
+	return imxphy->phy;
+}
+
+static struct usb_phy *imx_usbphy_to_usbphy(struct phy *phy)
+{
+	struct imx_usbphy *imxphy = phy_get_drvdata(phy);
+
+	return &imxphy->usb_phy;
+}
+
+static const struct phy_ops imx_phy_ops = {
+	.init = imx_usbphy_phy_init,
+	.to_usbphy = imx_usbphy_to_usbphy,
+};
 
 static int imx_usbphy_probe(struct device_d *dev)
 {
@@ -85,7 +134,24 @@ static int imx_usbphy_probe(struct device_d *dev)
 		goto err_clk;
 	}
 
-	imx_usbphy_enable(imxphy);
+	dev->priv = imxphy;
+
+	imxphy->usb_phy.dev = dev;
+	imxphy->usb_phy.notify_connect = imx_usbphy_notify_connect;
+	imxphy->usb_phy.notify_disconnect = imx_usbphy_notify_disconnect;
+	imxphy->phy = phy_create(dev, NULL, &imx_phy_ops, NULL);
+	if (IS_ERR(imxphy->phy)) {
+		ret = PTR_ERR(imxphy->phy);
+		goto err_clk;
+	}
+
+	phy_set_drvdata(imxphy->phy, imxphy);
+
+	imxphy->provider = of_phy_provider_register(dev, imx_usbphy_xlate);
+	if (IS_ERR(imxphy->provider)) {
+		ret = PTR_ERR(imxphy->provider);
+		goto err_clk;
+	}
 
 	dev_dbg(dev, "phy enabled\n");
 

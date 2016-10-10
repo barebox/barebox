@@ -1297,6 +1297,7 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 
 	host->hw_dev = dev;
 	host->init = ehci_init;
+	host->usbphy = data->usbphy;
 	host->submit_int_msg = submit_int_msg;
 	host->submit_control_msg = submit_control_msg;
 	host->submit_bulk_msg = submit_bulk_msg;

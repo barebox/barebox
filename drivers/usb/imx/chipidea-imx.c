@@ -26,6 +26,7 @@
 #include <usb/ulpi.h>
 #include <usb/fsl_usb2.h>
 #include <linux/err.h>
+#include <linux/phy/phy.h>
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
@@ -40,6 +41,8 @@ struct imx_chipidea {
 	struct param_d *param_mode;
 	int role_registered;
 	struct regulator *vbus;
+	struct phy *phy;
+	struct usb_phy *usbphy;
 };
 
 static int imx_chipidea_port_init(void *drvdata)
@@ -260,6 +263,23 @@ static int imx_chipidea_probe(struct device_d *dev)
 	if (IS_ERR(ci->vbus))
 		ci->vbus = NULL;
 
+	if (of_property_read_bool(dev->device_node, "fsl,usbphy")) {
+		ci->phy = of_phy_get_by_phandle(dev, "fsl,usbphy", 0);
+		if (IS_ERR(ci->phy)) {
+			ret = PTR_ERR(ci->phy);
+			dev_err(dev, "Cannot get phy: %s\n", strerror(-ret));
+			return ret;
+		} else {
+			ci->usbphy = phy_to_usbphy(ci->phy);
+			if (IS_ERR(ci->usbphy))
+				return PTR_ERR(ci->usbphy);
+
+			ret = phy_init(ci->phy);
+			if (ret)
+				return ret;
+		}
+	}
+
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -270,6 +290,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci->data.init = imx_chipidea_port_init;
 	ci->data.post_init = imx_chipidea_port_post_init;
 	ci->data.drvdata = ci;
+	ci->data.usbphy = ci->usbphy;
 
 	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_HSIC)
 		imx_chipidea_port_init(ci);

@@ -62,6 +62,7 @@ struct eth_device {
 	IPaddr_t netmask;
 	IPaddr_t gateway;
 	char ethaddr[6];
+	char *bootarg;
 };
 
 #define dev_to_edev(d) container_of(d, struct eth_device, dev)
@@ -257,9 +258,6 @@ static inline int net_eth_to_udplen(char *pkt)
 int net_checksum_ok(unsigned char *, int);	/* Return true if cksum OK	*/
 uint16_t net_checksum(unsigned char *, int);	/* Calculate the checksum	*/
 
-/* Print an IP address on the console */
-void print_IPaddr (IPaddr_t);
-
 /*
  * The following functions are a bit ugly, but necessary to deal with
  * alignment restrictions on ARM.
@@ -307,9 +305,6 @@ static inline void net_copy_uint32(uint32_t *to, uint32_t *from)
 {
 	memcpy(to, from, sizeof(uint32_t));
 }
-
-/* Convert an IP address to a string */
-char *ip_to_string (IPaddr_t x);
 
 /* Convert a string to ip address */
 int string_to_ip(const char *s, IPaddr_t *ip);

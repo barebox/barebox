@@ -306,7 +306,7 @@ static char *parse_nfs_url(const char *url)
 	if (ip == 0)
 		goto out;
 
-	hostpath = basprintf("%s:%s", ip_to_string(ip), path);
+	hostpath = basprintf("%pI4:%s", &ip, path);
 
 	prevpath = nfs_find_mountpath(hostpath);
 
@@ -348,7 +348,7 @@ out:
  * entry_is_of_compatible - check if a bootspec entry is compatible with
  *                          the current machine.
  *
- * returns true is the entry is compatible, false otherwise
+ * returns true if the entry is compatible, false otherwise
  */
 static bool entry_is_of_compatible(struct blspec_entry *entry)
 {

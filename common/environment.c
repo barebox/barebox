@@ -382,7 +382,7 @@ EXPORT_SYMBOL(envfs_save);
 static int envfs_check_super(struct envfs_super *super, size_t *size)
 {
 	if (ENVFS_32(super->magic) != ENVFS_MAGIC) {
-		printf("envfs: wrong magic\n");
+		printf("envfs: no envfs (magic mismatch) - envfs newer written?\n");
 		return -EIO;
 	}
 

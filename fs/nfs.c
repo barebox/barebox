@@ -1314,10 +1314,9 @@ static char *rootnfsopts;
 static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
 {
 	char *str, *tmp;
-	const char *ip;
+	const char *bootargs;
 
-	ip = ip_to_string(npriv->server);
-	str = basprintf("root=/dev/nfs nfsroot=%s:%s%s%s", ip, npriv->path,
+	str = basprintf("root=/dev/nfs nfsroot=%pI4:%s%s%s", &npriv->server, npriv->path,
 			  rootnfsopts[0] ? "," : "", rootnfsopts);
 
 	/* forward specific mount options on demand */
@@ -1329,6 +1328,13 @@ static void nfs_set_rootarg(struct nfs_priv *npriv, struct fs_device_d *fsdev)
 
 	if (npriv->manual_mount_port == 1) {
 		tmp = basprintf("%s,mountport=%hu", str, npriv->mount_port);
+		free(str);
+		str = tmp;
+	}
+
+	bootargs = dev_get_param(&npriv->con->edev->dev, "linux.bootargs");
+	if (bootargs) {
+		tmp = basprintf("%s %s", str, bootargs);
 		free(str);
 		str = tmp;
 	}

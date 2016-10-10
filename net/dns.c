@@ -221,7 +221,7 @@ IPaddr_t resolv(const char *host)
 	if (string_to_ip(ns, &ip))
 		return 0;
 
-	debug("resolving host %s via nameserver %s\n", host, ip_to_string(ip));
+	debug("resolving host %s via nameserver %pI4\n", host, &ip);
 
 	dns_con = net_udp_new(ip, DNS_PORT, dns_handler, NULL);
 	if (IS_ERR(dns_con))
@@ -258,9 +258,7 @@ static int do_host(int argc, char *argv[])
 	if (!ip)
 		printf("unknown host %s\n", argv[1]);
 	else {
-		printf("%s is at ", argv[1]);
-		print_IPaddr(ip);
-		printf("\n");
+		printf("%s is at %pI4\n", argv[1], &ip);
 	}
 
 	return 0;

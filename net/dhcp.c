@@ -613,13 +613,13 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 		debug ("%s: State REQUESTING\n", __func__);
 
 		if (dhcp_message_type((u8 *)bp->bp_vend) == DHCP_ACK ) {
+			IPaddr_t ip;
 			if (net_read_uint32((uint32_t *)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
 				dhcp_options_process((u8 *)&bp->bp_vend[4], bp);
 			bootp_copy_net_params(bp); /* Store net params from reply */
 			dhcp_state = BOUND;
-			puts ("DHCP client bound to address ");
-			print_IPaddr(net_get_ip());
-			putchar('\n');
+			ip = net_get_ip();
+			printf("DHCP client bound to address %pI4\n", &ip);
 			return;
 		}
 		break;

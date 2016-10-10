@@ -231,8 +231,10 @@ static void *am33xx_net_boot(void)
 	int err;
 	int len;
 	struct dhcp_req_param dhcp_param;
-	const char *bootfile, *ip;
+	const char *bootfile;
+	IPaddr_t ip;
 	char *file;
+	char ip4_str[sizeof("255.255.255.255")];
 
 	am33xx_register_ethaddr(0, 0);
 
@@ -258,8 +260,9 @@ static void *am33xx_net_boot(void)
 	if (err)
 		return NULL;
 
-	ip = ip_to_string(net_get_serverip());
-	err = mount(ip, "tftp", TFTP_MOUNT, NULL);
+	ip = net_get_serverip();
+	sprintf(ip4_str, "%pI4", &ip);
+	err = mount(ip4_str, "tftp", TFTP_MOUNT, NULL);
 	if (err < 0) {
 		printf("Unable to mount.\n");
 		return NULL;

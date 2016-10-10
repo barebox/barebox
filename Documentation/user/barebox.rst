@@ -28,9 +28,11 @@ can be checked out as follows:
   Checking connectivity... done.
   Checking out files: 100% (5651/5651), done.
 
-After this, make sure to check out the appropriate branch. If you want to
-develop for barebox, it's best to check out the ``next`` branch rather than
-the ``master`` branch:
+By default, the master branch is checked out. If you want to develop for
+barebox, this is the right branch to send patches against.
+
+If you want to see which patches are already selected for the next release,
+you can look at the ``next`` branch:
 
 .. code-block:: sh
 

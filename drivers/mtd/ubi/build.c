@@ -668,7 +668,9 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	 * checks @ubi->thread_enabled. Otherwise we may fail to wake it up.
 	 */
 	ubi->thread_enabled = 1;
-	wake_up_process(ubi->bgt_thread);
+
+	/* No threading, call ubi_thread directly */
+	ubi_thread(ubi);
 
 	ubi_devices[ubi_num] = ubi;
 

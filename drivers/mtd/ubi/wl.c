@@ -523,7 +523,7 @@ static void __schedule_ubi_work(struct ubi_device *ubi, struct ubi_work *wrk)
 	ubi->works_count += 1;
 
 	/* No threading in barebox, so do work synchronously */
-	do_work(ubi);
+	ubi_thread(ubi);
 }
 
 /**
@@ -1326,6 +1326,29 @@ static void tree_destroy(struct ubi_device *ubi, struct rb_root *root)
 			wl_entry_destroy(ubi, e);
 		}
 	}
+}
+
+/**
+ * ubi_thread - UBI background thread.
+ * @ubi: UBI device description object
+ *
+ * for barebox this is no thread, instead it's called synchronously from
+ * __schedule_ubi_work(). This is the place that makes sure all pending
+ * work is done.
+ */
+int ubi_thread(struct ubi_device *ubi)
+{
+	while (!list_empty(&ubi->works)) {
+		if (!ubi->thread_enabled)
+			return 0;
+
+		if (ubi->ro_mode)
+			return 0;
+
+		do_work(ubi);
+	}
+
+	return 0;
 }
 
 /**

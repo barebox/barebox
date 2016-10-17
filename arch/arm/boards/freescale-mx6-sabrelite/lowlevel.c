@@ -53,9 +53,9 @@ static noinline void imx6dl_sabrelite_start(void)
 	imx6_uart_setup(uart);
 	pbl_set_putc(imx_uart_putc, uart);
 
-	pr_debug("Freescale i.MX6q SabreLite\n");
+	pr_debug("Freescale i.MX6dl SabreLite\n");
 
-	imx6q_barebox_entry(__dtb_imx6q_sabrelite_start);
+	imx6q_barebox_entry(__dtb_imx6dl_sabrelite_start);
 }
 
 ENTRY_FUNCTION(start_imx6dl_sabrelite, r0, r1, r2)

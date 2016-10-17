@@ -16,6 +16,12 @@ config WATCHDOG_DAVINCI
 	help
 	  Add support for watchdog on the TI Davinci SoC.
 
+config WATCHDOG_DW
+	bool "Synopsys DesignWare watchdog"
+	select RESET_CONTROLLER
+	help
+	  Add support for the Synopsys DesignWare watchdog timer.
+
 config WATCHDOG_MXS28
 	bool "i.MX28"
 	depends on ARCH_IMX28

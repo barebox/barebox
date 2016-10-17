@@ -49,3 +49,11 @@
 &f2s_sdram_ref_clk {
 	clock-frequency = <0>;
 };
+
+&watchdog0 {
+	resets = <&rst L4WD0_RESET>;
+};
+
+&watchdog1 {
+	resets = <&rst L4WD1_RESET>;
+};

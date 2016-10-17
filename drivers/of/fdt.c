@@ -525,7 +525,7 @@ void of_clean_reserve_map(void)
  * fdt_add_reserve_map - Add reserve map entries to a devicetree binary
  * @__fdt: The devicetree blob
  *
- * This adds the reservemap entries previously colllected in
+ * This adds the reservemap entries previously collected in
  * of_add_reserve_entry() to a devicetree binary blob. This also
  * adds the devicetree itself to the reserved list, so after calling
  * this function the tree should not be relocated anymore.

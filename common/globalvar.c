@@ -626,3 +626,31 @@ static void nv_exit(void)
 	nvvar_save();
 }
 predevshutdown_exitcall(nv_exit);
+
+static int nv_global_param_complete(struct device_d *dev, struct string_list *sl,
+				 char *instr, int eval)
+{
+	struct param_d *param;
+	int len;
+
+	len = strlen(instr);
+
+	list_for_each_entry(param, &dev->parameters, list) {
+		if (strncmp(instr, param->name, len))
+			continue;
+
+		string_list_add_asprintf(sl, "%s%c",
+			param->name,
+			eval ? ' ' : '=');
+	}
+
+	return 0;
+}
+
+int nv_global_complete(struct string_list *sl, char *instr)
+{
+	nv_global_param_complete(&global_device, sl, instr, 0);
+	nv_global_param_complete(&nv_device, sl, instr, 0);
+
+	return 0;
+}

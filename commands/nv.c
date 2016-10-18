@@ -22,6 +22,7 @@
 #include <globalvar.h>
 #include <environment.h>
 #include <getopt.h>
+#include <complete.h>
 
 static int do_nv(int argc, char *argv[])
 {
@@ -90,4 +91,5 @@ BAREBOX_CMD_START(nv)
 	BAREBOX_CMD_OPTS("[-r] VAR[=VALUE] ...")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_nv_help)
+	BAREBOX_CMD_COMPLETE(nv_global_complete)
 BAREBOX_CMD_END

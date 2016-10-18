@@ -18,6 +18,7 @@
 #include <common.h>
 #include <linux/mtd/nand.h>
 #include <linux/mtd/mtd.h>
+#include <mtd/mtd-peb.h>
 #include <mtd/ubi-user.h>
 #include <cmdlinepart.h>
 #include <filetype.h>
@@ -622,9 +623,11 @@ static int mtd_detect(struct device_d *dev)
 	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
 	int bufsize = 512;
 	void *buf;
-	int ret;
+	int ret = 0, i;
 	enum filetype filetype;
-	size_t retlen;
+	int npebs = mtd_div_by_eb(mtd->size, mtd);
+
+	npebs = max(npebs, 64);
 
 	/*
 	 * Do not try to attach an UBI device if this device has partitions
@@ -636,17 +639,27 @@ static int mtd_detect(struct device_d *dev)
 
 	buf = xmalloc(bufsize);
 
-	ret = mtd_read(mtd, 0, bufsize, &retlen, buf);
-	if (ret)
-		goto out;
+	for (i = 0; i < npebs; i++) {
+		if (mtd_peb_is_bad(mtd, i))
+			continue;
 
-	filetype = file_detect_type(buf, bufsize);
-	if (filetype == filetype_ubi) {
-		ret = ubi_attach_mtd_dev(mtd, UBI_DEV_NUM_AUTO, 0, 20);
-		if (ret == -EEXIST)
-			ret = 0;
+		ret = mtd_peb_read(mtd, buf, i, 0, 512);
+		if (ret)
+			continue;
+
+		if (mtd_buf_all_ff(buf, 512))
+			continue;
+
+		filetype = file_detect_type(buf, bufsize);
+		if (filetype == filetype_ubi) {
+			ret = ubi_attach_mtd_dev(mtd, UBI_DEV_NUM_AUTO, 0, 20);
+			if (ret == -EEXIST)
+				ret = 0;
+		}
+
+		break;
 	}
-out:
+
 	free(buf);
 
 	return ret;

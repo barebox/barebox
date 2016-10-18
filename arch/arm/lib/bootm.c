@@ -158,7 +158,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		initrd_start = data->initrd_res->start;
 		initrd_end = data->initrd_res->end;
 		initrd_size = resource_size(data->initrd_res);
-		free_mem = PAGE_ALIGN(initrd_end);
+		free_mem = PAGE_ALIGN(initrd_end + 1);
 	}
 
 	ret = bootm_load_devicetree(data, free_mem);

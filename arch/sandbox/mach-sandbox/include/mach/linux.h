@@ -30,7 +30,6 @@ struct linux_console_data {
 
 extern int sdl_xres;
 extern int sdl_yres;
-int sdl_init(void);
 void sdl_close(void);
 int sdl_open(int xres, int yres, int bpp, void* buf);
 void sdl_stop_timer(void);

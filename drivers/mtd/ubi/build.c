@@ -622,6 +622,11 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 		goto out_free;
 	}
 
+	ubi->thread_enabled = 1;
+
+	/* No threading, call ubi_thread directly */
+	ubi_thread(ubi);
+
 	if (ubi->autoresize_vol_id != -1) {
 		err = autoresize(ubi, ubi->autoresize_vol_id);
 		if (err)
@@ -662,15 +667,6 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	dev_add_param_int_ro(&ubi->dev, "mean_erase_counter", ubi->mean_ec, "%d");
 	dev_add_param_int_ro(&ubi->dev, "available_pebs", ubi->avail_pebs, "%d");
 	dev_add_param_int_ro(&ubi->dev, "reserved_pebs", ubi->rsvd_pebs, "%d");
-
-	/*
-	 * The below lock makes sure we do not race with 'ubi_thread()' which
-	 * checks @ubi->thread_enabled. Otherwise we may fail to wake it up.
-	 */
-	ubi->thread_enabled = 1;
-
-	/* No threading, call ubi_thread directly */
-	ubi_thread(ubi);
 
 	ubi_devices[ubi_num] = ubi;
 

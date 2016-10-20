@@ -466,9 +466,10 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 			of_path = partition_node->full_name;
 			ret = of_find_path_by_node(partition_node, &path, 0);
 		}
-		if (!path) {
-			pr_err("state failed to parse path to backend\n");
-			ret = -EINVAL;
+		if (ret) {
+			if (ret != -EPROBE_DEFER)
+				pr_err("state failed to parse path to backend: %s\n",
+				       strerror(-ret));
 			goto out_release_state;
 		}
 	}

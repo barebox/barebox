@@ -728,15 +728,15 @@ static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand
 	uint32_t corrected = 0, failed = 0;
 	uint8_t	*status;
 	unsigned int  max_bitflips = 0;
-	int i, ret, readtotal, nchunks, eccstrength, ecc_parity_size;
+	int i, ret, readtotal, nchunks, eccstrength;
 
 	eccstrength = mxs_nand_get_ecc_strength(mtd->writesize, mtd->oobsize);
 
 	readlen = roundup(readlen, MXS_NAND_CHUNK_DATA_CHUNK_SIZE);
 	nchunks = mxs_nand_ecc_chunk_cnt(readlen);
-	ecc_parity_size = 13 * eccstrength / 8;
-	readtotal = MXS_NAND_METADATA_SIZE +
-		(MXS_NAND_CHUNK_DATA_CHUNK_SIZE + ecc_parity_size) * nchunks;
+	readtotal =  MXS_NAND_METADATA_SIZE;
+	readtotal += MXS_NAND_CHUNK_DATA_CHUNK_SIZE * nchunks;
+	readtotal += DIV_ROUND_UP(13 * eccstrength * nchunks, 8);
 
 	mxs_nand_config_bch(mtd, readtotal);
 

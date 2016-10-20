@@ -61,6 +61,9 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 			return -ENODEV;
 	}
 
+	if (!dev->driver)
+		return -ENODEV;
+
 	device_detect(dev);
 
 	if (part)

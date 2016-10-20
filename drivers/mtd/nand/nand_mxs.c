@@ -2145,7 +2145,7 @@ static int mxs_nand_probe(struct device_d *dev)
 
 	if (mxs_nand_is_imx6(nand_info)) {
 		clk_disable(nand_info->clk);
-		clk_set_rate(nand_info->clk, 96000000);
+		clk_set_rate(nand_info->clk, 22000000);
 		clk_enable(nand_info->clk);
 		nand_info->dma_channel_base = 0;
 	} else {

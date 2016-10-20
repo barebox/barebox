@@ -16,7 +16,7 @@
  * both have 67 MPP pins (more GPIOs and address lines for the memory
  * bus mainly). The only difference between the mv78260 and the
  * mv78460 in terms of pin muxing is the addition of two functions on
- * pins 43 and 56 to access the VDD of the CPU2 and 3 (mv78260 has two
+ * pins 43 and 57 to access the VDD of the CPU2 and 3 (mv78260 has two
  * cores, mv78460 has four cores).
  */
 

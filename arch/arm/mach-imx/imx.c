@@ -63,6 +63,8 @@ static int imx_soc_from_dt(void)
 		return IMX_CPU_IMX6;
 	if (of_machine_is_compatible("fsl,imx6qp"))
 		return IMX_CPU_IMX6;
+	if (of_machine_is_compatible("fsl,imx6ul"))
+		return IMX_CPU_IMX6;
 
 	return 0;
 }

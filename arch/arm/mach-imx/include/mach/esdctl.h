@@ -136,6 +136,7 @@ void __noreturn imx35_barebox_entry(void *boarddata);
 void __noreturn imx51_barebox_entry(void *boarddata);
 void __noreturn imx53_barebox_entry(void *boarddata);
 void __noreturn imx6q_barebox_entry(void *boarddata);
+void __noreturn imx6ul_barebox_entry(void *boarddata);
 void imx_esdctl_disable(void);
 #endif
 

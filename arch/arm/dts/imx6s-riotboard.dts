@@ -29,7 +29,7 @@
 
 	partition@0 {
 		label = "barebox";
-		reg = <0x0 0x80000>;
+		reg = <0x0 0xe0000>;
 	};
 
 	environment_usdhc4: partition@e0000 {

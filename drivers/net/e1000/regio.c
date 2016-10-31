@@ -5,8 +5,6 @@
 static uint32_t e1000_true_offset(struct e1000_hw *hw, uint32_t reg)
 {
 	if (reg & E1000_MIGHT_BE_REMAPPED) {
-		reg &= ~E1000_MIGHT_BE_REMAPPED;
-
 		if (hw->mac_type == e1000_igb) {
 			switch (reg) {
 			case E1000_EEWR:
@@ -19,7 +17,8 @@ static uint32_t e1000_true_offset(struct e1000_hw *hw, uint32_t reg)
 				reg = E1000_I210_EEMNGCTL;
 				break;
 			}
-		};
+		}
+		reg &= ~E1000_MIGHT_BE_REMAPPED;
 	}
 
 	return reg;

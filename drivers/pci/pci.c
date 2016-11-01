@@ -179,6 +179,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 				pr_debug("BAR does not fit within bus IO res\n");
 				return;
 			}
+			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_io);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_io);
 			dev->resource[bar].flags = IORESOURCE_IO;
 			last_addr = last_io;
@@ -197,6 +198,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 				pr_debug("BAR does not fit within bus p-mem res\n");
 				return;
 			}
+			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_mem_pref);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem_pref);
 			dev->resource[bar].flags = IORESOURCE_MEM |
 			                           IORESOURCE_PREFETCH;
@@ -215,6 +217,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 				pr_debug("BAR does not fit within bus np-mem res\n");
 				return;
 			}
+			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_mem);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem);
 			dev->resource[bar].flags = IORESOURCE_MEM;
 			last_addr = last_mem;
@@ -286,18 +289,21 @@ static void postscan_setup_bridge(struct pci_dev *dev)
 
 	if (last_mem) {
 		last_mem = ALIGN(last_mem, SZ_1M);
+		pr_debug("bridge NP limit at 0x%08x\n", last_mem);
 		pci_write_config_word(dev, PCI_MEMORY_LIMIT,
 				      ((last_mem - 1) & 0xfff00000) >> 16);
 	}
 
 	if (last_mem_pref) {
 		last_mem_pref = ALIGN(last_mem_pref, SZ_1M);
+		pr_debug("bridge P limit at 0x%08x\n", last_mem_pref);
 		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT,
 				      ((last_mem_pref - 1) & 0xfff00000) >> 16);
 	}
 
 	if (last_io) {
 		last_io = ALIGN(last_io, SZ_4K);
+		pr_debug("bridge IO limit at 0x%08x\n", last_io);
 		pci_write_config_byte(dev, PCI_IO_LIMIT,
 				((last_io - 1) & 0x0000f000) >> 8);
 		pci_write_config_word(dev, PCI_IO_LIMIT_UPPER16,

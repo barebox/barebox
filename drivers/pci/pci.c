@@ -174,11 +174,12 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 				continue;
 			}
 			pr_debug("pbar%d: mask=%08x io %d bytes\n", bar, mask, size);
-			if (last_io + size >
+			if (ALIGN(last_io, size) + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_IO]->end) {
 				pr_debug("BAR does not fit within bus IO res\n");
 				return;
 			}
+			last_io = ALIGN(last_io, size);
 			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_io);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_io);
 			dev->resource[bar].flags = IORESOURCE_IO;
@@ -193,11 +194,12 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			}
 			pr_debug("pbar%d: mask=%08x P memory %d bytes\n",
 			    bar, mask, size);
-			if (last_mem_pref + size >
+			if (ALIGN(last_mem_pref, size) + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_MEM_PREF]->end) {
 				pr_debug("BAR does not fit within bus p-mem res\n");
 				return;
 			}
+			last_mem_pref = ALIGN(last_mem_pref, size);
 			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_mem_pref);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem_pref);
 			dev->resource[bar].flags = IORESOURCE_MEM |
@@ -212,11 +214,12 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			}
 			pr_debug("pbar%d: mask=%08x NP memory %d bytes\n",
 			    bar, mask, size);
-			if (last_mem + size >
+			if (ALIGN(last_mem, size) + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_MEM]->end) {
 				pr_debug("BAR does not fit within bus np-mem res\n");
 				return;
 			}
+			last_mem = ALIGN(last_mem, size);
 			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_mem);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem);
 			dev->resource[bar].flags = IORESOURCE_MEM;

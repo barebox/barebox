@@ -252,6 +252,7 @@ static void prescan_setup_bridge(struct pci_dev *dev)
 
 	if (last_mem) {
 		/* Set up memory and I/O filter limits, assume 32-bit I/O space */
+		last_mem = ALIGN(last_mem, SZ_1M);
 		pci_write_config_word(dev, PCI_MEMORY_BASE,
 				      (last_mem & 0xfff00000) >> 16);
 		cmdstat |= PCI_COMMAND_MEMORY;
@@ -259,6 +260,7 @@ static void prescan_setup_bridge(struct pci_dev *dev)
 
 	if (last_mem_pref) {
 		/* Set up memory and I/O filter limits, assume 32-bit I/O space */
+		last_mem_pref = ALIGN(last_mem_pref, SZ_1M);
 		pci_write_config_word(dev, PCI_PREF_MEMORY_BASE,
 				      (last_mem_pref & 0xfff00000) >> 16);
 		cmdstat |= PCI_COMMAND_MEMORY;
@@ -270,6 +272,7 @@ static void prescan_setup_bridge(struct pci_dev *dev)
 	}
 
 	if (last_io) {
+		last_io = ALIGN(last_io, SZ_4K);
 		pci_write_config_byte(dev, PCI_IO_BASE,
 				      (last_io & 0x0000f000) >> 8);
 		pci_write_config_word(dev, PCI_IO_BASE_UPPER16,

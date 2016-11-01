@@ -28,6 +28,20 @@ static struct pci_bus *pci_alloc_bus(void)
 	return b;
 }
 
+static void pci_bus_register_devices(struct pci_bus *bus)
+{
+	struct pci_dev *dev;
+	struct pci_bus *child_bus;
+
+	/* activate all devices on this bus */
+	list_for_each_entry(dev, &bus->devices, bus_list)
+		pci_register_device(dev);
+
+	/* walk down the hierarchy */
+	list_for_each_entry(child_bus, &bus->children, node)
+		pci_bus_register_devices(child_bus);
+}
+
 void register_pci_controller(struct pci_controller *hose)
 {
 	struct pci_bus *bus;
@@ -64,6 +78,7 @@ void register_pci_controller(struct pci_controller *hose)
 		last_io = 0;
 
 	pci_scan_bus(bus);
+	pci_bus_register_devices(bus);
 
 	list_add_tail(&bus->node, &pci_root_buses);
 
@@ -384,16 +399,8 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			dev->rom_address = (l == 0xffffffff) ? 0 : l;
 
 			setup_device(dev, 6);
-			/*
-			 * If this device is on the root bus, there is no bridge
-			 * to configure, so we can activate it right away.
-			 */
-			if (!bus->parent_bus)
-				pci_register_device(dev);
 			break;
 		case PCI_HEADER_TYPE_BRIDGE:
-			setup_device(dev, 2);
-
 			child_bus = pci_alloc_bus();
 			/* inherit parent properties */
 			child_bus->host = bus->host;
@@ -412,18 +419,12 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			list_add_tail(&child_bus->node, &bus->children);
 			dev->subordinate = child_bus;
 
-			/* activate bridge device */
-			pci_register_device(dev);
-
 			/* scan pci hierarchy behind bridge */
 			prescan_setup_bridge(dev);
 			pci_scan_bus(child_bus);
 			postscan_setup_bridge(dev);
 
-			/* finally active all devices behind the bridge */
-			list_for_each_entry(dev, &child_bus->devices, bus_list)
-				if (!dev->subordinate)
-					pci_register_device(dev);
+			setup_device(dev, 2);
 			break;
 		default:
 		bad:

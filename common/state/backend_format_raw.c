@@ -37,7 +37,7 @@ struct state_backend_format_raw {
 	struct device_d *dev;
 };
 
-struct backend_raw_header {
+struct __attribute__((__packed__)) backend_raw_header {
 	uint32_t magic;
 	uint16_t reserved;
 	uint16_t data_len;

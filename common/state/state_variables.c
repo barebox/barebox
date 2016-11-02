@@ -383,7 +383,7 @@ static int state_string_set(struct param_d *p, void *priv)
 	if (ret)
 		return ret;
 
-	return state_set_dirty(p, sv->state);
+	return state_set_dirty(p, sv);
 }
 
 static int state_string_get(struct param_d *p, void *priv)

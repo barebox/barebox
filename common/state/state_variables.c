@@ -441,9 +441,9 @@ static struct variable_type types[] = {
 	{
 		.type = STATE_TYPE_U8,
 		.type_name = "uint8",
-		 .export = state_uint32_export,
-		 .import = state_uint32_import,
-		 .create = state_uint8_create,
+		.export = state_uint32_export,
+		.import = state_uint32_import,
+		.create = state_uint8_create,
 	}, {
 		.type = STATE_TYPE_U32,
 		.type_name = "uint32",

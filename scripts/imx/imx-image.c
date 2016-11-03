@@ -482,6 +482,33 @@ static int write_mem(const struct config_data *data, uint32_t addr,
 	}
 }
 
+static int nop(const struct config_data *data)
+{
+	const struct imx_ivt_header nop_header = {
+		.tag = TAG_NOP,
+		.length = htobe16(4),
+		.version = 0,
+	};
+
+	switch (data->header_version) {
+	case 1:
+		fprintf(stderr, "DCD command NOP not implemented on DCD v1\n");
+		return -EINVAL;
+	case 2:
+		if (curdcd > MAX_DCD - 1) {
+			fprintf(stderr, "At maximum %d DCD entries allowed\n",
+				MAX_DCD);
+			return -ENOMEM;
+		}
+
+		check_last_dcd(*((uint32_t *) &nop_header));
+		dcdtable[curdcd++] = *((uint32_t *) &nop_header);
+		return 0;
+	default:
+		return -EINVAL;
+	}
+}
+
 /*
  * This uses the Freescale Code Signing Tool (CST) to sign the image.
  * The cst is expected to be executable as 'cst' or if exists, the content
@@ -653,6 +680,7 @@ int main(int argc, char *argv[])
 		.image_dcd_offset = 0xffffffff,
 		.write_mem = write_mem,
 		.check = check,
+		.nop = nop,
 	};
 
 	prgname = argv[0];

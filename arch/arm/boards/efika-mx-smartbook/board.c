@@ -74,9 +74,7 @@ static void efikamx_power_init(struct mc13xxx *mc)
 
 	/* Externally powered */
 	mc13xxx_reg_read(mc, MC13892_REG_CHARGE, &val);
-	val |= MC13782_CHARGE_ICHRG0 | MC13782_CHARGE_ICHRG1 |
-		MC13782_CHARGE_ICHRG2 | MC13782_CHARGE_ICHRG3 |
-		MC13782_CHARGE_CHGAUTOB;
+	val |= MC13782_CHARGE_ICHRG_FULL | MC13782_CHARGE_CHGAUTOB;
 	mc13xxx_reg_write(mc, MC13892_REG_CHARGE, val);
 
 	/* power up the system first */

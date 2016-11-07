@@ -128,7 +128,7 @@ static int mac_reset(struct eth_device *dev)
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
 	u64 start;
 
-	writel(DMAMAC_SRST, &dma_p->busmode);
+	writel(readl(&dma_p->busmode) | DMAMAC_SRST, &dma_p->busmode);
 
 	if (priv->interface != PHY_INTERFACE_MODE_RGMII)
 		writel(MII_PORTSELECT, &mac_p->conf);

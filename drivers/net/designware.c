@@ -129,7 +129,9 @@ static int mac_reset(struct eth_device *dev)
 	u64 start;
 
 	writel(DMAMAC_SRST, &dma_p->busmode);
-	writel(MII_PORTSELECT, &mac_p->conf);
+
+	if (priv->interface != PHY_INTERFACE_MODE_RGMII)
+		writel(MII_PORTSELECT, &mac_p->conf);
 
 	start = get_time_ns();
 	while (readl(&dma_p->busmode) & DMAMAC_SRST) {

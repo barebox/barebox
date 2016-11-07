@@ -89,8 +89,6 @@ int run_command(const char *cmd);
 
 #endif	/* __ASSEMBLY__ */
 
-#define Struct_Section  __attribute__ ((unused,section (".barebox_cmd")))
-
 #define BAREBOX_CMD_START(_name)							\
 extern const struct command __barebox_cmd_##_name;					\
 const struct command __barebox_cmd_##_name						\

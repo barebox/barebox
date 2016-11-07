@@ -248,8 +248,8 @@ static int dwc_ether_init(struct eth_device *dev)
 	dev->set_ethaddr(dev, priv->macaddr);
 
 	writel(FIXEDBURST | PRIORXTX_41 | BURST_16, &dma_p->busmode);
-	writel(FLUSHTXFIFO | readl(&dma_p->opmode), &dma_p->opmode);
-	writel(STOREFORWARD | TXSECONDFRAME, &dma_p->opmode);
+	writel(readl(&dma_p->opmode) | FLUSHTXFIFO | STOREFORWARD |
+	       TXSECONDFRAME, &dma_p->opmode);
 	writel(FRAMEBURSTENABLE | DISABLERXOWN, &mac_p->conf);
 	return 0;
 }

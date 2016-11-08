@@ -80,6 +80,13 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 		return -EINVAL;
 
 	for_each_child_of_node(node, n) {
+		if (of_device_is_compatible(n, "fixed-partitions")) {
+			node = n;
+			break;
+		}
+	}
+
+	for_each_child_of_node(node, n) {
 		of_parse_partition(cdev, n);
 	}
 

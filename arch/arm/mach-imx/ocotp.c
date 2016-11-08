@@ -510,6 +510,9 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 		.compatible = "fsl,imx6sl-ocotp",
 		.data = &imx6sl_ocotp_data,
 	}, {
+		.compatible = "fsl,imx6ul-ocotp",
+		.data = &imx6q_ocotp_data,
+	}, {
 		/* sentinel */
 	}
 };

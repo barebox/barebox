@@ -56,7 +56,12 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 
 	dev = of_find_device_by_node_path(node->full_name);
 	if (!dev) {
-		dev = of_find_device_by_node_path(node->parent->full_name);
+		struct device_node *devnode = node->parent;
+
+		if (of_device_is_compatible(devnode, "fixed-partitions"))
+			devnode = devnode->parent;
+
+		dev = of_find_device_by_node_path(devnode->full_name);
 		if (!dev)
 			return -ENODEV;
 	}

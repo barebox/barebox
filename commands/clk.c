@@ -25,6 +25,7 @@ BAREBOX_CMD_START(clk_enable)
 	BAREBOX_CMD_DESC("enable a clock")
 	BAREBOX_CMD_OPTS("CLK")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
+	BAREBOX_CMD_COMPLETE(clk_name_complete)
 BAREBOX_CMD_END
 
 static int do_clk_disable(int argc, char *argv[])
@@ -48,6 +49,7 @@ BAREBOX_CMD_START(clk_disable)
 	BAREBOX_CMD_DESC("disable a clock")
 	BAREBOX_CMD_OPTS("CLK")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
+	BAREBOX_CMD_COMPLETE(clk_name_complete)
 BAREBOX_CMD_END
 
 static int do_clk_set_rate(int argc, char *argv[])
@@ -77,6 +79,7 @@ BAREBOX_CMD_START(clk_set_rate)
 	BAREBOX_CMD_OPTS("CLK HZ")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_set_rate_help)
+	BAREBOX_CMD_COMPLETE(clk_name_complete)
 BAREBOX_CMD_END
 
 static int do_clk_get_rate(int argc, char *argv[])
@@ -130,6 +133,7 @@ BAREBOX_CMD_START(clk_get_rate)
 	BAREBOX_CMD_OPTS("[-s VARNAME] CLK")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_HELP(cmd_clk_get_rate_help)
+	BAREBOX_CMD_COMPLETE(clk_name_complete)
 BAREBOX_CMD_END
 
 static int do_clk_dump(int argc, char *argv[])
@@ -187,4 +191,5 @@ BAREBOX_CMD_START(clk_set_parent)
 	BAREBOX_CMD_DESC("set parent of a clock")
 	BAREBOX_CMD_OPTS("CLK PARENT")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
+	BAREBOX_CMD_COMPLETE(clk_name_complete)
 BAREBOX_CMD_END

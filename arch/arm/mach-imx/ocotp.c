@@ -516,6 +516,14 @@ static u32 imx6q_addr_to_offset(u32 addr)
 	return imx6sl_addr_to_offset(addr) + addendum;
 }
 
+static u32 vf610_addr_to_offset(u32 addr)
+{
+	if (addr == 0x04)
+		return 0x450;
+	else
+		return imx6q_addr_to_offset(addr);
+}
+
 static struct imx_ocotp_data imx6q_ocotp_data = {
 	.num_regs = 512,
 	.addr_to_offset = imx6q_addr_to_offset,
@@ -524,6 +532,11 @@ static struct imx_ocotp_data imx6q_ocotp_data = {
 static struct imx_ocotp_data imx6sl_ocotp_data = {
 	.num_regs = 256,
 	.addr_to_offset = imx6sl_addr_to_offset,
+};
+
+static struct imx_ocotp_data vf610_ocotp_data = {
+	.num_regs = 512,
+	.addr_to_offset = vf610_addr_to_offset,
 };
 
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
@@ -539,6 +552,9 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6ul-ocotp",
 		.data = &imx6q_ocotp_data,
+	}, {
+		.compatible = "fsl,vf610-ocotp",
+		.data = &vf610_ocotp_data,
 	}, {
 		/* sentinel */
 	}

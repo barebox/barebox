@@ -4,7 +4,8 @@ obj-$(CONFIG_COMMON_CLK) +=	\
 	clk-pllv3.o		\
 	clk-pfd.o		\
 	clk-gate2.o		\
-	clk-gate-exclusive.o
+	clk-gate-exclusive.o	\
+	clk.o
 
 obj-$(CONFIG_ARCH_IMX1)   += clk-imx1.o
 obj-$(CONFIG_ARCH_IMX25)  += clk-imx25.o

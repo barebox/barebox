@@ -77,4 +77,9 @@ config PINCTRL_TEGRA_XUSB
 
 source drivers/pinctrl/mvebu/Kconfig
 
+config PINCTRL_VF610
+	bool
+	default y if ARCH_VF610
+	help
+	  Pinmux controller found on Vybrid VF610 family of SoCs
 endif

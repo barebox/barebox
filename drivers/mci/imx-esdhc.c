@@ -627,7 +627,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	if (!host->socdata)
 		return -EINVAL;
 
-	host->clk = clk_get(dev, NULL);
+	host->clk = clk_get(dev, "per");
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
 

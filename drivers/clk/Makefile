@@ -9,3 +9,4 @@ obj-$(CONFIG_ARCH_ROCKCHIP)	+= rockchip/
 obj-$(CONFIG_ARCH_TEGRA)	+= tegra/
 obj-$(CONFIG_CLK_SOCFPGA)	+= socfpga.o
 obj-$(CONFIG_MACH_MIPS_ATH79)	+= clk-ar933x.o
+obj-$(CONFIG_ARCH_IMX)		+= imx/

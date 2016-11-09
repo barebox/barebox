@@ -36,6 +36,7 @@ struct clk_pllv3 {
 	void __iomem	*base;
 	bool		powerup_set;
 	u32		div_mask;
+	u32		div_shift;
 	const char	*parent;
 };
 
@@ -92,7 +93,7 @@ static unsigned long clk_pllv3_recalc_rate(struct clk *clk,
 					   unsigned long parent_rate)
 {
 	struct clk_pllv3 *pll = to_clk_pllv3(clk);
-	u32 div = readl(pll->base)  & pll->div_mask;
+	u32 div = (readl(pll->base) >> pll->div_shift) & pll->div_mask;
 
 	return (div == 1) ? parent_rate * 22 : parent_rate * 20;
 }
@@ -120,8 +121,8 @@ static int clk_pllv3_set_rate(struct clk *clk, unsigned long rate,
 		return -EINVAL;
 
 	val = readl(pll->base);
-	val &= ~pll->div_mask;
-	val |= div;
+	val &= ~(pll->div_mask << pll->div_shift);
+	val |= div << pll->div_shift;
 	writel(val, pll->base);
 
 	return 0;
@@ -292,6 +293,8 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	case IMX_PLLV3_SYS:
 		ops = &clk_pllv3_sys_ops;
 		break;
+	case IMX_PLLV3_USB_VF610:
+		pll->div_shift = 1;
 	case IMX_PLLV3_USB:
 		ops = &clk_pllv3_ops;
 		pll->powerup_set = true;

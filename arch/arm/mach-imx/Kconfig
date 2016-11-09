@@ -149,6 +149,16 @@ config ARCH_IMX6SX
 	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
 
+config ARCH_VF610
+	bool
+	select ARCH_HAS_L2X0
+	select ARCH_HAS_FEC_IMX
+	select CPU_V7
+	select PINCTRL
+	select OFTREE
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
 	select HAVE_PBL_MULTI_IMAGES

@@ -337,6 +337,10 @@ config MACH_CM_FX6
 	bool "CM FX6"
 	select ARCH_IMX6
 
+config MACH_VF610_TWR
+	bool "Freescale VF610 Tower Board"
+	select ARCH_VF610
+
 endif
 
 # ----------------------------------------------------------

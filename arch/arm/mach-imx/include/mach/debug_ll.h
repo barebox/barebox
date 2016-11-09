@@ -14,8 +14,10 @@
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
+#include <mach/vf610-regs.h>
 
 #include <serial/imx-uart.h>
+#include <serial/lpuart.h>
 
 #ifdef CONFIG_DEBUG_LL
 
@@ -42,6 +44,8 @@
 #define IMX_DEBUG_SOC MX53
 #elif defined CONFIG_DEBUG_IMX6Q_UART
 #define IMX_DEBUG_SOC MX6
+#elif defined CONFIG_DEBUG_VF610_UART
+#define IMX_DEBUG_SOC VF610
 #else
 #error "unknown i.MX debug uart soc type"
 #endif
@@ -74,6 +78,13 @@ static inline void imx6_uart_setup_ll(void)
 	imx6_uart_setup(base);
 }
 
+static inline void vf610_uart_setup_ll(void)
+{
+	void *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC, CONFIG_DEBUG_IMX_UART_PORT));
+
+	lpuart_setup(base, 66000000);
+}
+
 static inline void PUTC_LL(int c)
 {
 	void __iomem *base = IOMEM(IMX_UART_BASE(IMX_DEBUG_SOC,
@@ -82,14 +93,19 @@ static inline void PUTC_LL(int c)
 	if (!base)
 		return;
 
-	imx_uart_putc(base, c);
+	if (IS_ENABLED(CONFIG_DEBUG_VF610_UART))
+		lpuart_putc(base, c);
+	else
+		imx_uart_putc(base, c);
 }
+
 #else
 
 static inline void imx50_uart_setup_ll(void) {}
 static inline void imx51_uart_setup_ll(void) {}
 static inline void imx53_uart_setup_ll(void) {}
 static inline void imx6_uart_setup_ll(void)  {}
+static inline void vf610_uart_setup_ll(void) {}
 
 #endif /* CONFIG_DEBUG_LL */
 
@@ -113,6 +129,15 @@ static inline void imx51_ungate_all_peripherals(void)
 static inline void imx53_ungate_all_peripherals(void)
 {
 	imx_ungate_all_peripherals(IOMEM(MX53_CCM_BASE_ADDR));
+}
+
+static inline void vf610_ungate_all_peripherals(void)
+{
+	void __iomem *ccmbase = IOMEM(VF610_CCM_BASE_ADDR);
+	int i;
+
+	for (i = 0x40; i <= 0x6c; i += 4)
+		writel(0xffffffff, ccmbase + i);
 }
 
 #endif /* __MACH_DEBUG_LL_H__ */

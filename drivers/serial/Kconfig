@@ -137,4 +137,9 @@ config DRIVER_SERIAL_DIGIC
 	bool "Canon DIGIC serial driver"
 	depends on ARCH_DIGIC
 
+config DRIVER_SERIAL_LPUART
+	depends on ARCH_VF610
+	default y
+	bool "LPUART serial driver"
+
 endmenu

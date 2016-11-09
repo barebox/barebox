@@ -870,6 +870,9 @@ static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
 		.compatible = "fsl,imx6sx-fec",
 		.data = (void *)FEC_TYPE_IMX6,
 	}, {
+		.compatible = "fsl,mvf600-fec",
+		.data = (void *)FEC_TYPE_IMX6,
+	}, {
 		/* sentinel */
 	}
 };

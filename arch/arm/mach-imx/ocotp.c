@@ -67,7 +67,6 @@
 #define BF(value, field)		(((value) << field) & field##_MASK)
 
 /* Other definitions */
-#define FUSE_REGS_COUNT			(16 * 8)
 #define IMX6_OTP_DATA_ERROR_VAL		0xBADABADA
 #define DEF_RELAX			20
 #define MAC_OFFSET			(0x22 * 4)

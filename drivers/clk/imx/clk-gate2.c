@@ -26,6 +26,7 @@ struct clk_gate2 {
 	struct clk clk;
 	void __iomem *reg;
 	int shift;
+	u8 cgr_val;
 	const char *parent;
 #define CLK_GATE_INVERTED	(1 << 0)
 	unsigned flags;
@@ -43,7 +44,7 @@ static int clk_gate2_enable(struct clk *clk)
 	if (g->flags & CLK_GATE_INVERTED)
 		val &= ~(3 << g->shift);
 	else
-		val |= 3 << g->shift;
+		val |= g->cgr_val << g->shift;
 
 	writel(val, g->reg);
 
@@ -87,12 +88,13 @@ static struct clk_ops clk_gate2_ops = {
 };
 
 struct clk *clk_gate2_alloc(const char *name, const char *parent,
-		void __iomem *reg, u8 shift)
+			    void __iomem *reg, u8 shift, u8 cgr_val)
 {
 	struct clk_gate2 *g = xzalloc(sizeof(*g));
 
 	g->parent = parent;
 	g->reg = reg;
+	g->cgr_val = cgr_val;
 	g->shift = shift;
 	g->clk.ops = &clk_gate2_ops;
 	g->clk.name = name;
@@ -111,12 +113,12 @@ void clk_gate2_free(struct clk *clk)
 }
 
 struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,
-		u8 shift)
+		      u8 shift, u8 cgr_val)
 {
 	struct clk *g;
 	int ret;
 
-	g = clk_gate2_alloc(name , parent, reg, shift);
+	g = clk_gate2_alloc(name , parent, reg, shift, cgr_val);
 
 	ret = clk_register(g);
 	if (ret) {
@@ -133,7 +135,7 @@ struct clk *clk_gate2_inverted(const char *name, const char *parent,
 	struct clk *clk;
 	struct clk_gate2 *g;
 
-	clk = clk_gate2(name, parent, reg, shift);
+	clk = clk_gate2(name, parent, reg, shift, 0x3);
 	if (IS_ERR(clk))
 		return clk;
 

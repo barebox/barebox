@@ -129,6 +129,14 @@ enum fec_type {
 	FEC_TYPE_IMX6,
 };
 
+enum fec_clock {
+	FEC_CLK_IPG,
+	FEC_CLK_AHB,
+	FEC_CLK_PTP,
+
+	FEC_CLK_NUM
+};
+
 /**
  * @brief i.MX27-FEC private structure
  */
@@ -144,7 +152,7 @@ struct fec_priv {
 	u32 phy_flags;
 	struct mii_bus miibus;
 	void (*phy_init)(struct phy_device *dev);
-	struct clk *clk;
+	struct clk *clk[FEC_CLK_NUM];
 	enum fec_type type;
 };
 

@@ -128,8 +128,10 @@ static int mac_reset(struct eth_device *dev)
 	struct eth_dma_regs *dma_p = priv->dma_regs_p;
 	u64 start;
 
-	writel(DMAMAC_SRST, &dma_p->busmode);
-	writel(MII_PORTSELECT, &mac_p->conf);
+	writel(readl(&dma_p->busmode) | DMAMAC_SRST, &dma_p->busmode);
+
+	if (priv->interface != PHY_INTERFACE_MODE_RGMII)
+		writel(MII_PORTSELECT, &mac_p->conf);
 
 	start = get_time_ns();
 	while (readl(&dma_p->busmode) & DMAMAC_SRST) {
@@ -174,6 +176,7 @@ static void tx_descs_init(struct eth_device *dev)
 	desc_p->dmamac_next = &desc_table_p[0];
 
 	writel((ulong)&desc_table_p[0], &dma_p->txdesclistaddr);
+	priv->tx_currdescnum = 0;
 }
 
 static void rx_descs_init(struct eth_device *dev)
@@ -205,6 +208,7 @@ static void rx_descs_init(struct eth_device *dev)
 	desc_p->dmamac_next = &desc_table_p[0];
 
 	writel((ulong)&desc_table_p[0], &dma_p->rxdesclistaddr);
+	priv->rx_currdescnum = 0;
 }
 
 static void descs_init(struct eth_device *dev)
@@ -248,8 +252,8 @@ static int dwc_ether_init(struct eth_device *dev)
 	dev->set_ethaddr(dev, priv->macaddr);
 
 	writel(FIXEDBURST | PRIORXTX_41 | BURST_16, &dma_p->busmode);
-	writel(FLUSHTXFIFO | readl(&dma_p->opmode), &dma_p->opmode);
-	writel(STOREFORWARD | TXSECONDFRAME, &dma_p->opmode);
+	writel(readl(&dma_p->opmode) | FLUSHTXFIFO | STOREFORWARD |
+	       TXSECONDFRAME, &dma_p->opmode);
 	writel(FRAMEBURSTENABLE | DISABLERXOWN, &mac_p->conf);
 	return 0;
 }

@@ -51,8 +51,8 @@ variable. The node name may end with ``@<ADDRESS>``, but the suffix is
 stripped from the variable name.
 
 State variables have a type. Currenty supported types are: ``uint8``,
-``uint32``, ``enum32``, ``mac`` address or ``string``. Variable length
-strings are not planned.
+``uint32``, ``enum32``, ``mac`` address or ``string`` (fixed length string).
+Variable length strings are not planned.
 
 Required properties:
 

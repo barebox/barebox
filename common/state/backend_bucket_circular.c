@@ -47,7 +47,7 @@ struct state_backend_storage_bucket_circular {
 	struct device_d *dev;
 };
 
-struct state_backend_storage_bucket_circular_meta {
+struct __attribute__((__packed__)) state_backend_storage_bucket_circular_meta {
 	uint32_t magic;
 	uint32_t written_length;
 };

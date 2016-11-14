@@ -32,7 +32,7 @@ struct state_backend_storage_bucket_direct {
 	struct device_d *dev;
 };
 
-struct state_backend_storage_bucket_direct_meta {
+struct __attribute__((__packed__)) state_backend_storage_bucket_direct_meta {
 	uint32_t magic;
 	uint32_t written_length;
 };

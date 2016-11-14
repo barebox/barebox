@@ -466,9 +466,10 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 			of_path = partition_node->full_name;
 			ret = of_find_path_by_node(partition_node, &path, 0);
 		}
-		if (!path) {
-			pr_err("state failed to parse path to backend\n");
-			ret = -EINVAL;
+		if (ret) {
+			if (ret != -EPROBE_DEFER)
+				dev_err(&state->dev, "state failed to parse path to backend: %s\n",
+				       strerror(-ret));
 			goto out_release_state;
 		}
 	}
@@ -487,7 +488,7 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 				      &storage_type);
 	if (ret) {
 		storage_type = NULL;
-		pr_info("No backend-storage-type found, using default.\n");
+		dev_info(&state->dev, "No backend-storage-type found, using default.\n");
 	}
 
 	ret = state_backend_init(&state->backend, &state->dev, node,
@@ -511,10 +512,10 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 
 	ret = state_load(state);
 	if (ret) {
-		pr_warn("Failed to load persistent state, continuing with defaults, %d\n", ret);
+		dev_warn(&state->dev, "Failed to load persistent state, continuing with defaults, %d\n", ret);
 	}
 
-	pr_info("New state registered '%s'\n", alias);
+	dev_info(&state->dev, "New state registered '%s'\n", alias);
 
 	return state;
 

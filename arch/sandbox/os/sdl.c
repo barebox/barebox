@@ -23,11 +23,6 @@ static SDL_Surface *real_screen;
 static void *buffer = NULL;
 pthread_t th;
 
-int sdl_init(void)
-{
-	return SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE);
-}
-
 static void sdl_copy_buffer(SDL_Surface *screen)
 {
 	if (SDL_MUSTLOCK(screen)) {
@@ -84,7 +79,7 @@ int sdl_open(int xres, int yres, int bpp, void* buf)
 {
 	int flags = SDL_HWSURFACE | SDL_ASYNCBLIT | SDL_HWACCEL;
 
-	if (sdl_init() < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
 		printf("Could not initialize SDL: %s.\n", SDL_GetError());
 		return -1;
 	}

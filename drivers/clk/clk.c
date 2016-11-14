@@ -17,6 +17,8 @@
 #include <common.h>
 #include <errno.h>
 #include <malloc.h>
+#include <stringlist.h>
+#include <complete.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 
@@ -507,4 +509,24 @@ void clk_dump(int verbose)
 		if (IS_ERR_OR_NULL(parent))
 			dump_one(c, verbose, 0);
 	}
+}
+
+int clk_name_complete(struct string_list *sl, char *instr)
+{
+	struct clk *c;
+	int len;
+
+	if (!instr)
+		instr = "";
+
+	len = strlen(instr);
+
+	list_for_each_entry(c, &clks, list) {
+		if (strncmp(instr, c->name, len))
+			continue;
+
+		string_list_add_asprintf(sl, "%s ", c->name);
+	}
+
+	return COMPLETE_CONTINUE;
 }

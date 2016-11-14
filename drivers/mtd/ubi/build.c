@@ -492,13 +492,13 @@ static int autoresize(struct ubi_device *ubi, int vol_id)
  * @vid_hdr_offset: VID header offset
  * @max_beb_per1024: maximum expected number of bad PEB per 1024 PEBs
  *
- * This function attaches MTD device @mtd_dev to UBI and assign @ubi_num number
+ * This function attaches MTD device @mtd_dev to UBI and assigns @ubi_num number
  * to the newly created UBI device, unless @ubi_num is %UBI_DEV_NUM_AUTO, in
  * which case this function finds a vacant device number and assigns it
  * automatically. Returns the new UBI device number in case of success and a
  * negative error code in case of failure.
  *
- * Note, the invocations of this function has to be serialized by the
+ * Note, the invocation of this function has to be serialized by the
  * @ubi_devices_mutex.
  */
 int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
@@ -693,7 +693,7 @@ out_free:
  * UBI device is busy and cannot be destroyed, and %-EINVAL if it does not
  * exist.
  *
- * Note, the invocations of this function has to be serialized by the
+ * Note, the invocation of this function has to be serialized by the
  * @ubi_devices_mutex.
  */
 int ubi_detach_mtd_dev(int ubi_num, int anyway)

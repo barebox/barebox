@@ -58,7 +58,7 @@ fi
 compressed=$(stat $dtb.lzo -c "%s")
 uncompressed=$(stat $dtb -c "%s")
 
-echo ".section .dtb.rodata.${name}.z,\"a\""
+echo ".section .dtbz.rodata.${name},\"a\""
 echo ".balign STRUCT_ALIGNMENT"
 echo ".global __dtb_z_${name}_start"
 echo "__dtb_z_${name}_start:"

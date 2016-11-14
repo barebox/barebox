@@ -1631,7 +1631,7 @@ struct device_node *of_get_next_available_child(const struct device_node *node,
 EXPORT_SYMBOL(of_get_next_available_child);
 
 /**
- *	of_get_next_child - Iterate a node childs
+ *	of_get_next_child - Iterate a node children
  *	@node:  parent node
  *	@prev:  previous child of the parent node, or NULL to get first
  *

@@ -72,8 +72,12 @@ static int kszphy_config_init(struct phy_device *phydev)
 
 static int ksz8021_config_init(struct phy_device *phydev)
 {
-	const u16 val = KSZPHY_OMSO_B_CAST_OFF | KSZPHY_OMSO_RMII_OVERRIDE;
+	u16 val;
+
+	val = phy_read(phydev, MII_KSZPHY_OMSO);
+	val |= KSZPHY_OMSO_B_CAST_OFF;
 	phy_write(phydev, MII_KSZPHY_OMSO, val);
+
 	return 0;
 }
 

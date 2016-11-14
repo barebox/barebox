@@ -68,8 +68,8 @@ static int do_spi(int argc, char *argv[])
 		return -ENODEV;
 	}
 
-	if (spi.chip_select > spi.master->num_chipselect) {
-		printf("spi chip select (%d)> master num chipselect (%d)\n",
+	if (spi.chip_select >= spi.master->num_chipselect) {
+		printf("spi chip select (%d) >= master num chipselect (%d)\n",
 			spi.chip_select, spi.master->num_chipselect);
 		return -EINVAL;
 	}

@@ -362,4 +362,8 @@ static inline int of_clk_init(struct device_node *root,
 }
 #endif
 
+struct string_list;
+
+int clk_name_complete(struct string_list *sl, char *instr);
+
 #endif

@@ -4,6 +4,7 @@
 #include <param.h>
 #include <driver.h>
 #include <linux/err.h>
+#include <stringlist.h>
 
 extern struct device_d global_device;
 
@@ -123,5 +124,6 @@ static inline void dev_param_init_from_nv(struct device_d *dev, const char *name
 
 void nv_var_set_clean(void);
 int nvvar_save(void);
+int nv_global_complete(struct string_list *sl, char *instr);
 
 #endif /* __GLOBALVAR_H */

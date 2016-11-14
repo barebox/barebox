@@ -25,7 +25,6 @@
 #include <asm/mipsregs.h>
 #include <asm/addrspace.h>
 
-extern void start_barebox(void);
 extern void handle_reserved(void);
 
 void main_entry(void);

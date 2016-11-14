@@ -11,5 +11,6 @@
 #define IMX_CPU_IMX51	51
 #define IMX_CPU_IMX53	53
 #define IMX_CPU_IMX6	6
+#define IMX_CPU_VF610	610
 
 #endif /* __MACH_IMX_CPU_TYPES_H */

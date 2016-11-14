@@ -1071,6 +1071,13 @@ config DEBUG_IMX6Q_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on i.MX6Q.
 
+config DEBUG_VF610_UART
+	bool "VF610 Debug UART"
+	depends on ARCH_VF610
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on VF610.
+
 config DEBUG_OMAP3_UART
 	bool "OMAP3 Debug UART"
 	depends on ARCH_OMAP3
@@ -1111,7 +1118,8 @@ config DEBUG_IMX_UART_PORT
 						DEBUG_IMX51_UART || \
 						DEBUG_IMX53_UART || \
 						DEBUG_IMX6Q_UART || \
-						DEBUG_IMX6SL_UART
+						DEBUG_IMX6SL_UART || \
+						DEBUG_VF610_UART
 	default 1
 	depends on ARCH_IMX
 	help

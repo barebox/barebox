@@ -231,6 +231,7 @@ static struct soc_type socs[] = {
 	{ .name = "imx51", .header_version = 1, .cpu_type = IMX_CPU_IMX51 },
 	{ .name = "imx53", .header_version = 2, .cpu_type = IMX_CPU_IMX53 },
 	{ .name = "imx6", .header_version = 2, .cpu_type = IMX_CPU_IMX6 },
+	{ .name = "vf610", .header_version = 2, .cpu_type = IMX_CPU_VF610 },
 };
 
 static int do_soc(struct config_data *data, int argc, char *argv[])

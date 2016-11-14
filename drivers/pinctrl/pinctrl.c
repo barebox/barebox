@@ -24,6 +24,51 @@
 
 static LIST_HEAD(pinctrl_list);
 
+static struct pinctrl_device *pin_to_pinctrl(unsigned int pin)
+{
+	struct pinctrl_device *pinctrl;
+
+	list_for_each_entry(pinctrl, &pinctrl_list, list)
+		if (pin > pinctrl->base &&
+		    pin < pinctrl->base + pinctrl->npins)
+			return pinctrl;
+	return NULL;
+}
+
+static int pinctrl_gpio_direction(unsigned pin, bool input)
+{
+	struct pinctrl_device *pinctrl = pin_to_pinctrl(pin);
+
+	if (!pinctrl)
+		return -EINVAL;
+
+	BUG_ON(!pinctrl->ops->set_direction);
+
+	return pinctrl->ops->set_direction(pinctrl, pin, input);
+}
+
+int pinctrl_gpio_direction_input(unsigned int pin)
+{
+	return pinctrl_gpio_direction(pin, true);
+}
+
+int pinctrl_gpio_direction_output(unsigned int pin)
+{
+	return pinctrl_gpio_direction(pin, false);
+}
+
+int pinctrl_gpio_get_direction(unsigned pin)
+{
+	struct pinctrl_device *pinctrl = pin_to_pinctrl(pin);
+
+	if (!pinctrl)
+		return -EINVAL;
+
+	BUG_ON(!pinctrl->ops->get_direction);
+
+	return pinctrl->ops->get_direction(pinctrl, pin);
+}
+
 static struct pinctrl_device *find_pinctrl(struct device_node *node)
 {
 	struct pinctrl_device *pdev;

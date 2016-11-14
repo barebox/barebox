@@ -28,6 +28,7 @@
 #include <clock.h>
 #include <regmap.h>
 #include <linux/clk.h>
+#include <mach/ocotp.h>
 
 /*
  * a single MAC address reference has the form
@@ -86,6 +87,8 @@ struct ocotp_priv {
 	char ethaddr[6];
 	struct regmap_config map_config;
 };
+
+static struct ocotp_priv *imx_ocotp;
 
 static int imx6_ocotp_set_timing(struct ocotp_priv *priv)
 {
@@ -282,6 +285,66 @@ static int imx_ocotp_reg_write(void *ctx, unsigned int reg, unsigned int val)
 	return 0;
 }
 
+static void imx_ocotp_field_decode(uint32_t field, unsigned *word,
+				 unsigned *bit, unsigned *mask)
+{
+	unsigned width;
+
+	*word = ((field >> OCOTP_WORD_MASK_SHIFT) & ((1 << OCOTP_WORD_MASK_WIDTH) - 1)) * 4;
+	*bit = (field >> OCOTP_BIT_MASK_SHIFT) & ((1 << OCOTP_BIT_MASK_WIDTH) - 1);
+	width = ((field >> OCOTP_WIDTH_MASK_SHIFT) & ((1 << OCOTP_WIDTH_MASK_WIDTH) - 1)) + 1;
+	*mask = (1 << width) - 1;
+}
+
+int imx_ocotp_read_field(uint32_t field, unsigned *value)
+{
+	unsigned word, bit, mask, val;
+	int ret;
+
+	imx_ocotp_field_decode(field, &word, &bit, &mask);
+
+	ret = imx_ocotp_reg_read(imx_ocotp, word, &val);
+	if (ret)
+		return ret;
+
+	val >>= bit;
+	val &= mask;
+
+	dev_dbg(&imx_ocotp->dev, "%s: word: 0x%x bit: %d mask: 0x%x val: 0x%x\n",
+		__func__, word, bit, mask, val);
+
+	*value = val;
+
+	return 0;
+}
+
+int imx_ocotp_write_field(uint32_t field, unsigned value)
+{
+	unsigned word, bit, mask;
+	int ret;
+
+	imx_ocotp_field_decode(field, &word, &bit, &mask);
+
+	value &= mask;
+	value <<= bit;
+
+	ret = imx_ocotp_reg_write(imx_ocotp, word, value);
+	if (ret)
+		return ret;
+
+	dev_dbg(&imx_ocotp->dev, "%s: word: 0x%x bit: %d mask: 0x%x val: 0x%x\n",
+		__func__, word, bit, mask, value);
+
+	return 0;
+}
+
+int imx_ocotp_permanent_write(int enable)
+{
+	imx_ocotp->permanent_write_enable = enable;
+
+	return 0;
+}
+
 static uint32_t inc_offset(uint32_t offset)
 {
 	if ((offset & 0x3) == 0x3)
@@ -412,6 +475,8 @@ static int imx_ocotp_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
+	imx_ocotp = priv;
+
 	if (IS_ENABLED(CONFIG_IMX_OCOTP_WRITE)) {
 		dev_add_param_bool(&(priv->dev), "permanent_write_enable",
 				NULL, NULL, &priv->permanent_write_enable, NULL);
@@ -444,6 +509,9 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6sl-ocotp",
 		.data = &imx6sl_ocotp_data,
+	}, {
+		.compatible = "fsl,imx6ul-ocotp",
+		.data = &imx6q_ocotp_data,
 	}, {
 		/* sentinel */
 	}

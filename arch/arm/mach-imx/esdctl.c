@@ -377,6 +377,11 @@ static __maybe_unused struct imx_esdctl_data imx6q_data = {
 	.add_mem = imx6_mmdc_add_mem,
 };
 
+static __maybe_unused struct imx_esdctl_data imx6ul_data = {
+	.base0 = 0x80000000,
+	.add_mem = imx6_mmdc_add_mem,
+};
+
 static struct platform_device_id imx_esdctl_ids[] = {
 #ifdef CONFIG_ARCH_IMX1
 	{
@@ -427,6 +432,9 @@ static struct platform_device_id imx_esdctl_ids[] = {
 
 static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	{
+		.compatible = "fsl,imx6ul-mmdc",
+		.data = &imx6ul_data
+	}, {
 		.compatible = "fsl,imx6q-mmdc",
 		.data = &imx6q_data
 	}, {
@@ -588,4 +596,15 @@ void __noreturn imx6q_barebox_entry(void *boarddata)
 	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
 
 	barebox_arm_entry(0x10000000, size, boarddata);
+}
+
+void __noreturn imx6ul_barebox_entry(void *boarddata)
+{
+	u64 size_cs0 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 0);
+	u64 size_cs1 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 1);
+	u64 total    = size_cs0 + size_cs1;
+
+	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
+
+	barebox_arm_entry(0x80000000, size, boarddata);
 }

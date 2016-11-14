@@ -146,6 +146,15 @@ static inline void imx_uart_setup(void __iomem *uartbase,
 	writel(UCR1_UARTEN, uartbase + UCR1);
 }
 
+static inline void imx_uart_set_dte(void __iomem *uartbase)
+{
+	u32 ufcr;
+
+	ufcr = readl(uartbase + UFCR);
+	ufcr |= UFCR_DCEDTE;
+	writel(ufcr, uartbase + UFCR);
+}
+
 static inline void imx50_uart_setup(void __iomem *uartbase)
 {
 	imx_uart_setup(uartbase, 66666666);

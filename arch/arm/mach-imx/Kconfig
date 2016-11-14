@@ -149,6 +149,10 @@ config ARCH_IMX6SX
 	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
 
+config ARCH_IMX6UL
+	bool
+	select ARCH_IMX6
+
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
 	select HAVE_PBL_MULTI_IMAGES

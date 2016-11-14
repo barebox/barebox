@@ -11,3 +11,6 @@ obj-y	+= inode.o
 obj-y	+= namei.o
 obj-y	+= super.o
 obj-$(CONFIG_SQUASHFS_XZ) += xz_wrapper.o
+obj-$(CONFIG_SQUASHFS_LZO) += lzo_wrapper.o
+obj-$(CONFIG_SQUASHFS_LZ4) += lz4_wrapper.o
+obj-$(CONFIG_SQUASHFS_ZLIB) += zlib_wrapper.o

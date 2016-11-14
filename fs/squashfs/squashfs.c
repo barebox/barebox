@@ -9,11 +9,15 @@
 #include <linux/fs.h>
 #include <linux/stat.h>
 #include <linux/pagemap.h>
+#include <linux/mtd/ubi.h>
+#include <linux/mtd/mtd.h>
 
 #include "squashfs_fs.h"
 #include "squashfs_fs_sb.h"
 #include "squashfs_fs_i.h"
 #include "squashfs.h"
+
+struct ubi_volume_desc;
 
 char *squashfs_devread(struct squashfs_sb_info *fs, int byte_offset,
 		int byte_len)
@@ -108,6 +112,31 @@ static struct inode *squashfs_findfile(struct super_block *sb,
 	return NULL;
 }
 
+void squashfs_set_rootarg(struct squashfs_priv *priv, struct fs_device_d *fsdev)
+{
+	struct ubi_volume_desc *ubi_vol;
+	struct ubi_volume_info vi = {};
+	struct ubi_device_info di = {};
+	struct mtd_info *mtd;
+	char *str;
+
+	ubi_vol = ubi_open_volume_cdev(fsdev->cdev, UBI_READONLY);
+
+	if (IS_ERR(ubi_vol))
+		return;
+
+	ubi_get_volume_info(ubi_vol, &vi);
+	ubi_get_device_info(vi.ubi_num, &di);
+	mtd = di.mtd;
+
+	str = basprintf("root=/dev/ubiblock%d_%d ubi.mtd=%s ubi.block=%d,%d rootfstype=squashfs",
+			vi.ubi_num, vi.vol_id, mtd->cdev.partname, vi.ubi_num, vi.vol_id);
+
+	fsdev_set_linux_rootarg(fsdev, str);
+
+	free(str);
+}
+
 static int squashfs_probe(struct device_d *dev)
 {
 	struct fs_device_d *fsdev;
@@ -129,6 +158,8 @@ static int squashfs_probe(struct device_d *dev)
 		dev_err(dev, "no valid squashfs found\n");
 		goto err_out;
 	}
+
+	squashfs_set_rootarg(priv, fsdev);
 
 	return 0;
 
@@ -353,6 +384,7 @@ static struct fs_driver_d squashfs_driver = {
 	.readdir	= squashfs_readdir,
 	.closedir	= squashfs_closedir,
 	.stat		= squashfs_stat,
+	.type		= filetype_squashfs,
 	.drv = {
 		.probe = squashfs_probe,
 		.remove = squashfs_remove,

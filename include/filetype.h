@@ -16,6 +16,7 @@ enum filetype {
 	filetype_uimage,
 	filetype_ubi,
 	filetype_jffs2,
+	filetype_squashfs,
 	filetype_gzip,
 	filetype_bzip2,
 	filetype_oftree,

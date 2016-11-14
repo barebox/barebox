@@ -32,6 +32,7 @@ check <width> <cond> <addr> <mask>    Poll until condition becomes true.
                                       while_any_bit_set
 set_bits <width> <addr> <bits>        set <bits> in register <addr>
 clear_bits <width> <addr> <bits>      clear <bits> in register <addr>
+nop                                   do nothing
 
 the i.MX SoCs support a wide range of fancy things doing with the flash header.
 We limit ourselves to a very simple case, that is the flash header has a fixed

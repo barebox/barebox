@@ -131,6 +131,14 @@ static int do_cmd_check(struct config_data *data, int argc, char *argv[])
 	return data->check(data, cmd, addr, mask);
 }
 
+static int do_cmd_nop(struct config_data *data, int argc, char *argv[])
+{
+	if (!data->nop)
+		return -ENOSYS;
+
+	return data->nop(data);
+}
+
 static int write_mem(struct config_data *data, int argc, char *argv[],
 		     int set_bits, int clear_bits)
 {
@@ -364,6 +372,9 @@ struct command cmds[] = {
 	}, {
 		.name = "check",
 		.parse = do_cmd_check,
+	}, {
+		.name = "nop",
+		.parse = do_cmd_nop,
 	}, {
 		.name = "loadaddr",
 		.parse = do_loadaddr,

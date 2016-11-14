@@ -47,6 +47,7 @@ static struct omap_barebox_part baltos_barebox_part = {
 	.nand_size = 0x1e0000,
 };
 
+#ifndef CONFIG_OMAP_BUILD_IFT
 struct bsp_vs_hwparam {
 	uint32_t Magic;
 	uint32_t HwRev;
@@ -111,6 +112,7 @@ static int baltos_read_eeprom(void)
 	return 0;
 }
 environment_initcall(baltos_read_eeprom);
+#endif
 
 static int baltos_devices_init(void)
 {

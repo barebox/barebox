@@ -28,6 +28,20 @@ static struct pci_bus *pci_alloc_bus(void)
 	return b;
 }
 
+static void pci_bus_register_devices(struct pci_bus *bus)
+{
+	struct pci_dev *dev;
+	struct pci_bus *child_bus;
+
+	/* activate all devices on this bus */
+	list_for_each_entry(dev, &bus->devices, bus_list)
+		pci_register_device(dev);
+
+	/* walk down the hierarchy */
+	list_for_each_entry(child_bus, &bus->children, node)
+		pci_bus_register_devices(child_bus);
+}
+
 void register_pci_controller(struct pci_controller *hose)
 {
 	struct pci_bus *bus;
@@ -64,6 +78,7 @@ void register_pci_controller(struct pci_controller *hose)
 		last_io = 0;
 
 	pci_scan_bus(bus);
+	pci_bus_register_devices(bus);
 
 	list_add_tail(&bus->node, &pci_root_buses);
 
@@ -174,11 +189,13 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 				continue;
 			}
 			pr_debug("pbar%d: mask=%08x io %d bytes\n", bar, mask, size);
-			if (last_io + size >
+			if (ALIGN(last_io, size) + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_IO]->end) {
 				pr_debug("BAR does not fit within bus IO res\n");
 				return;
 			}
+			last_io = ALIGN(last_io, size);
+			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_io);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_io);
 			dev->resource[bar].flags = IORESOURCE_IO;
 			last_addr = last_io;
@@ -192,11 +209,13 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			}
 			pr_debug("pbar%d: mask=%08x P memory %d bytes\n",
 			    bar, mask, size);
-			if (last_mem_pref + size >
+			if (ALIGN(last_mem_pref, size) + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_MEM_PREF]->end) {
 				pr_debug("BAR does not fit within bus p-mem res\n");
 				return;
 			}
+			last_mem_pref = ALIGN(last_mem_pref, size);
+			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_mem_pref);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem_pref);
 			dev->resource[bar].flags = IORESOURCE_MEM |
 			                           IORESOURCE_PREFETCH;
@@ -210,11 +229,13 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			}
 			pr_debug("pbar%d: mask=%08x NP memory %d bytes\n",
 			    bar, mask, size);
-			if (last_mem + size >
+			if (ALIGN(last_mem, size) + size >
 			    dev->bus->resource[PCI_BUS_RESOURCE_MEM]->end) {
 				pr_debug("BAR does not fit within bus np-mem res\n");
 				return;
 			}
+			last_mem = ALIGN(last_mem, size);
+			pr_debug("pbar%d: allocated at 0x%08x\n", bar, last_mem);
 			pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, last_mem);
 			dev->resource[bar].flags = IORESOURCE_MEM;
 			last_addr = last_mem;
@@ -224,8 +245,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		dev->resource[bar].start = last_addr;
 		dev->resource[bar].end = last_addr + size - 1;
 
-		if ((mask & PCI_BASE_ADDRESS_MEM_TYPE_MASK) ==
-		    PCI_BASE_ADDRESS_MEM_TYPE_64) {
+		if ((mask & PCI_BASE_ADDRESS_MEM_TYPE_64)) {
 			dev->resource[bar].flags |= IORESOURCE_MEM_64;
 			pci_write_config_dword(dev,
 			       PCI_BASE_ADDRESS_1 + bar * 4, 0);
@@ -250,6 +270,7 @@ static void prescan_setup_bridge(struct pci_dev *dev)
 
 	if (last_mem) {
 		/* Set up memory and I/O filter limits, assume 32-bit I/O space */
+		last_mem = ALIGN(last_mem, SZ_1M);
 		pci_write_config_word(dev, PCI_MEMORY_BASE,
 				      (last_mem & 0xfff00000) >> 16);
 		cmdstat |= PCI_COMMAND_MEMORY;
@@ -257,6 +278,7 @@ static void prescan_setup_bridge(struct pci_dev *dev)
 
 	if (last_mem_pref) {
 		/* Set up memory and I/O filter limits, assume 32-bit I/O space */
+		last_mem_pref = ALIGN(last_mem_pref, SZ_1M);
 		pci_write_config_word(dev, PCI_PREF_MEMORY_BASE,
 				      (last_mem_pref & 0xfff00000) >> 16);
 		cmdstat |= PCI_COMMAND_MEMORY;
@@ -268,6 +290,7 @@ static void prescan_setup_bridge(struct pci_dev *dev)
 	}
 
 	if (last_io) {
+		last_io = ALIGN(last_io, SZ_4K);
 		pci_write_config_byte(dev, PCI_IO_BASE,
 				      (last_io & 0x0000f000) >> 8);
 		pci_write_config_word(dev, PCI_IO_BASE_UPPER16,
@@ -286,18 +309,21 @@ static void postscan_setup_bridge(struct pci_dev *dev)
 
 	if (last_mem) {
 		last_mem = ALIGN(last_mem, SZ_1M);
+		pr_debug("bridge NP limit at 0x%08x\n", last_mem);
 		pci_write_config_word(dev, PCI_MEMORY_LIMIT,
 				      ((last_mem - 1) & 0xfff00000) >> 16);
 	}
 
 	if (last_mem_pref) {
 		last_mem_pref = ALIGN(last_mem_pref, SZ_1M);
+		pr_debug("bridge P limit at 0x%08x\n", last_mem_pref);
 		pci_write_config_word(dev, PCI_PREF_MEMORY_LIMIT,
 				      ((last_mem_pref - 1) & 0xfff00000) >> 16);
 	}
 
 	if (last_io) {
 		last_io = ALIGN(last_io, SZ_4K);
+		pr_debug("bridge IO limit at 0x%08x\n", last_io);
 		pci_write_config_byte(dev, PCI_IO_LIMIT,
 				((last_io - 1) & 0x0000f000) >> 8);
 		pci_write_config_word(dev, PCI_IO_LIMIT_UPPER16,
@@ -373,16 +399,8 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			dev->rom_address = (l == 0xffffffff) ? 0 : l;
 
 			setup_device(dev, 6);
-			/*
-			 * If this device is on the root bus, there is no bridge
-			 * to configure, so we can activate it right away.
-			 */
-			if (!bus->parent_bus)
-				pci_register_device(dev);
 			break;
 		case PCI_HEADER_TYPE_BRIDGE:
-			setup_device(dev, 2);
-
 			child_bus = pci_alloc_bus();
 			/* inherit parent properties */
 			child_bus->host = bus->host;
@@ -401,18 +419,12 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 			list_add_tail(&child_bus->node, &bus->children);
 			dev->subordinate = child_bus;
 
-			/* activate bridge device */
-			pci_register_device(dev);
-
 			/* scan pci hierarchy behind bridge */
 			prescan_setup_bridge(dev);
 			pci_scan_bus(child_bus);
 			postscan_setup_bridge(dev);
 
-			/* finally active all devices behind the bridge */
-			list_for_each_entry(dev, &child_bus->devices, bus_list)
-				if (!dev->subordinate)
-					pci_register_device(dev);
+			setup_device(dev, 2);
 			break;
 		default:
 		bad:

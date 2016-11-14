@@ -361,7 +361,7 @@ static int mvebu_spi_probe(struct device_d *dev)
 	master->bus_num = dev->id;
 	master->setup = mvebu_spi_setup;
 	master->transfer = mvebu_spi_transfer;
-	master->num_chipselect = 1;
+	master->num_chipselect = 8;
 
 	ret = spi_register_master(master);
 	if (!ret)

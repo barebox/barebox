@@ -32,7 +32,7 @@ static void i2c_probe_range(struct i2c_adapter *adapter, int startaddr, int stop
 	client.adapter = adapter;
 
 	printf("probing i2c%d range 0x%02x-0x%02x: ", adapter->nr, startaddr, stopaddr);
-	for (addr = startaddr; addr <= stopaddr; addr++) {
+	for (addr = startaddr; addr <= stopaddr && !ctrlc(); addr++) {
 		client.addr = addr;
 		ret = i2c_write_reg(&client, 0x00, &reg, 0);
 		if (ret == 0)

@@ -45,6 +45,8 @@
 #include <i2c/i2c-algo-bit.h>
 #include <i2c/i2c-mux.h>
 #include <init.h>
+#include <gpio.h>
+#include <of_gpio.h>
 
 #define PCA954X_MAX_NCHANS 8
 
@@ -179,6 +181,7 @@ static int pca954x_probe(struct device_d *dev)
 	int num, force;
 	struct pca954x *data;
 	int ret = -ENODEV;
+	int gpio;
 
 	data = kzalloc(sizeof(struct pca954x), GFP_KERNEL);
 	if (!data) {
@@ -187,6 +190,10 @@ static int pca954x_probe(struct device_d *dev)
 	}
 
 	i2c_set_clientdata(client, data);
+
+	gpio = of_get_named_gpio(dev->device_node, "reset-gpios", 0);
+	if (gpio_is_valid(gpio))
+		gpio_direction_output(gpio, 1);
 
 	/* Read the mux register at addr to verify
 	 * that the mux is in fact present.

@@ -137,6 +137,33 @@ int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
 }
 
 /**
+ * regmap_write_bits - write bits of a register in a map
+ *
+ * @map:	The map
+ * @reg:	The register offset of the register
+ * @mask:	Mask indicating bits to be modified
+ *		(1 - modified, 0 - untouched)
+ * @val:	Bit value to be set
+ *
+ * Returns 0 for success or negative error code on failure
+ */
+int regmap_write_bits(struct regmap *map, unsigned int reg,
+		      unsigned int mask, unsigned int val)
+{
+	int ret;
+	unsigned int tmp, orig;
+
+	ret = regmap_read(map, reg, &orig);
+	if (ret != 0)
+		return ret;
+
+	tmp = orig & ~mask;
+	tmp |= val & mask;
+
+	return regmap_write(map, reg, tmp);
+}
+
+/**
  * regmap_bulk_read(): Read data from the device
  *
  * @map: Register map to read from

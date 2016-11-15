@@ -121,6 +121,14 @@ config GPIO_DESIGNWARE
 	help
 	  Say Y or M here to build support for the Synopsys DesignWare APB
 	  GPIO block.
+
+config GPIO_SX150X
+	bool "Semtec SX150x I/O ports"
+	depends on I2C
+	help
+	  Say Y here to build support for the Semtec Sx150x I2C GPIO
+	  expander chip.
+
 endmenu
 
 endif

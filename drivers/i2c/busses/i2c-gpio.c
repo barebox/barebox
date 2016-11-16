@@ -198,7 +198,7 @@ static int i2c_gpio_probe(struct device_d *dev)
 	adap->bus_recovery_info->set_scl = i2c_set_scl_gpio_value;
 	adap->bus_recovery_info->recover_bus = i2c_generic_scl_recovery;
 
-	adap->nr = dev->id;
+	adap->nr = -1;
 	ret = i2c_bit_add_numbered_bus(adap);
 	if (ret)
 		goto err_add_bus;

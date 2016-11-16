@@ -886,7 +886,7 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 		}
 
 		/* payload size must be multiple of 32b */
-		payloadsz = 4 * ((s.st_size + 3)/4);
+		payloadsz = ALIGN_SUP(s.st_size, 4);
 	}
 
 	/* The payload should be aligned on some reasonable

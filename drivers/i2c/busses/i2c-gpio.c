@@ -89,6 +89,7 @@ static int of_i2c_gpio_probe(struct device_node *np,
 			     struct i2c_gpio_platform_data *pdata)
 {
 	u32 reg;
+	int ret;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return -ENODEV;
@@ -96,14 +97,15 @@ static int of_i2c_gpio_probe(struct device_node *np,
 	if (of_gpio_count(np) < 2)
 		return -ENODEV;
 
-	pdata->sda_pin = of_get_gpio(np, 0);
-	pdata->scl_pin = of_get_gpio(np, 1);
+	ret = of_get_gpio(np, 0);
+	if (ret < 0)
+		return ret;
+	pdata->sda_pin = ret;
 
-	if (!gpio_is_valid(pdata->sda_pin) || !gpio_is_valid(pdata->scl_pin)) {
-		pr_err("%s: invalid GPIO pins, sda=%d/scl=%d\n",
-		       np->full_name, pdata->sda_pin, pdata->scl_pin);
-		return -ENODEV;
-	}
+	ret = of_get_gpio(np, 1);
+	if (ret < 0)
+		return ret;
+	pdata->scl_pin = ret;
 
 	of_property_read_u32(np, "i2c-gpio,delay-us", &pdata->udelay);
 

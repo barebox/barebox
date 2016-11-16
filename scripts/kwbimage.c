@@ -490,7 +490,7 @@ static int image_extract_binary_hdr_v1(const void *binary, const char *output,
 	}
 
 	ret = fwrite(binary + (nargs + 1) * sizeof(unsigned int),
-		     binsz - (nargs + 1) * sizeof(unsigned int), 1,
+		     binsz - (nargs + 2) * sizeof(unsigned int), 1,
 		     binaryout);
 	if (ret != 1) {
 		fprintf(stderr, "Could not write to output file %s\n",
@@ -869,8 +869,8 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 			return NULL;
 		}
 
-		headersz += s.st_size +
-			binarye->binary.nargs * sizeof(unsigned int);
+		headersz += ALIGN_SUP(s.st_size, 4) +
+			12 + binarye->binary.nargs * sizeof(unsigned int);
 		hasext = 1;
 	}
 
@@ -951,8 +951,8 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 		fstat(fileno(bin), &s);
 
 		binhdrsz = sizeof(struct opt_hdr_v1) +
-			(binarye->binary.nargs + 1) * sizeof(unsigned int) +
-			s.st_size;
+			(binarye->binary.nargs + 2) * sizeof(unsigned int) +
+			ALIGN_SUP(s.st_size, 4);
 		hdr->headersz_lsb = binhdrsz & 0xFFFF;
 		hdr->headersz_msb = (binhdrsz & 0xFFFF0000) >> 16;
 
@@ -976,7 +976,7 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 
 		fclose(bin);
 
-		cur += s.st_size;
+		cur += ALIGN_SUP(s.st_size, 4);
 
 		/*
 		 * For now, we don't support more than one binary

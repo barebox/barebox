@@ -48,7 +48,6 @@ struct i2c_algo_bit_data {
 	int timeout_ms;		/* in ms */
 };
 
-int i2c_bit_add_bus(struct i2c_adapter *);
 int i2c_bit_add_numbered_bus(struct i2c_adapter *);
 extern const struct i2c_algorithm i2c_bit_algo;
 

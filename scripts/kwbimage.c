@@ -523,7 +523,7 @@ static int image_extract_v1(void *fdimap, const char *output, FILE *focfg)
 	int opthdrid;
 
 	/*
-	 * Verify the checkum. We have to substract the checksum
+	 * Verify the checksum. We have to subtract the checksum
 	 * itself, because when the checksum is calculated, the
 	 * checksum field is 0.
 	 */

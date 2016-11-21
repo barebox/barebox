@@ -84,6 +84,34 @@ struct mach_id imx_ids[] = {
 		.mode = MODE_BULK,
 	}, {
 		.vid = 0x15a2,
+		.pid = 0x0030,
+		.name = "i.MX35",
+		.header_type = HDR_MX51,
+		.mode = MODE_BULK,
+		.max_transfer = 64,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x003a,
+		.name = "i.MX25",
+		.header_type = HDR_MX51,
+		.mode = MODE_BULK,
+		.max_transfer = 64,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x0041,
+		.name = "i.MX51",
+		.header_type = HDR_MX51,
+		.mode = MODE_BULK,
+		.max_transfer = 64,
+	}, {
+		.vid = 0x15a2,
+		.pid = 0x004e,
+		.name = "i.MX53",
+		.header_type = HDR_MX53,
+		.mode = MODE_BULK,
+		.max_transfer = 512,
+	}, {
+		.vid = 0x15a2,
 		.pid = 0x004f,
 		.name = "i.MX28",
 	}, {
@@ -121,34 +149,6 @@ struct mach_id imx_ids[] = {
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,
-	}, {
-		.vid = 0x15a2,
-		.pid = 0x0041,
-		.name = "i.MX51",
-		.header_type = HDR_MX51,
-		.mode = MODE_BULK,
-		.max_transfer = 64,
-	}, {
-		.vid = 0x15a2,
-		.pid = 0x004e,
-		.name = "i.MX53",
-		.header_type = HDR_MX53,
-		.mode = MODE_BULK,
-		.max_transfer = 512,
-	}, {
-		.vid = 0x15a2,
-		.pid = 0x0030,
-		.name = "i.MX35",
-		.header_type = HDR_MX51,
-		.mode = MODE_BULK,
-		.max_transfer = 64,
-	}, {
-		.vid = 0x15a2,
-		.pid = 0x003a,
-		.name = "i.MX25",
-		.header_type = HDR_MX51,
-		.mode = MODE_BULK,
-		.max_transfer = 64,
 	},
 };
 

@@ -69,13 +69,13 @@ static const enum bootsource locations[4][4] = {
  * Note also that I suspect that the boot source pins are only sampled at
  * power up.
  */
-static void imx25_35_boot_save_loc(unsigned int ctrl, unsigned int type)
+static enum bootsource imx25_35_boot_source(unsigned int ctrl, unsigned int type)
 {
 	enum bootsource src;
 
 	src = locations[ctrl][type];
 
-	bootsource_set(src);
+	return src;
 }
 
 void imx25_get_boot_source(enum bootsource *src, int *instance)
@@ -84,8 +84,8 @@ void imx25_get_boot_source(enum bootsource *src, int *instance)
 	uint32_t val;
 
 	val = readl(ccm_base + MX25_CCM_RCSR);
-	imx25_35_boot_save_loc((val >> MX25_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
-			       (val >> MX25_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
+	*src = imx25_35_boot_source((val >> MX25_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
+				    (val >> MX25_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
 }
 
 void imx25_boot_save_loc(void)
@@ -105,8 +105,8 @@ void imx35_get_boot_source(enum bootsource *src, int *instance)
 	uint32_t val;
 
 	val = readl(ccm_base + MX35_CCM_RCSR);
-	imx25_35_boot_save_loc((val >> MX35_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
-			       (val >> MX35_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
+	*src = imx25_35_boot_source((val >> MX35_CCM_RCSR_MEM_CTRL_SHIFT) & 0x3,
+				    (val >> MX35_CCM_RCSR_MEM_TYPE_SHIFT) & 0x3);
 }
 
 void imx35_boot_save_loc(void)

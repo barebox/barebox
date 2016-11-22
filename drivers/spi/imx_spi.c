@@ -348,6 +348,13 @@ static u32 imx_xchg_single(struct spi_device *spi, u32 tx_val)
 	return imx_spi_maybe_reverse_bits(spi, rx_val);
 }
 
+static void cspi_2_3_init(struct imx_spi *imx)
+{
+	void __iomem *base = imx->regs;
+
+	writel(0, base + CSPI_2_3_CTRL);
+}
+
 static void imx_spi_do_transfer(struct spi_device *spi)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
@@ -519,6 +526,7 @@ static __maybe_unused struct spi_imx_devtype_data spi_imx_devtype_data_2_3 = {
 	.chipselect = cspi_2_3_chipselect,
 	.do_transfer = cspi_2_3_do_transfer,
 	.xchg_single = cspi_2_3_xchg_single,
+	.init = cspi_2_3_init,
 };
 
 static int imx_spi_dt_probe(struct imx_spi *imx)

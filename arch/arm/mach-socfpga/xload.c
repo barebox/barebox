@@ -28,7 +28,7 @@ static struct socfpga_barebox_part default_parts[] = {
 	},
 	{ /* sentinel */ }
 };
-const struct socfpga_barebox_part *barebox_parts = &default_parts;
+const struct socfpga_barebox_part *barebox_parts = default_parts;
 
 enum socfpga_clks {
 	timer, mmc, qspi_clk, uart, clk_max

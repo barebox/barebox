@@ -526,18 +526,17 @@ EXPORT_SYMBOL(menu_add_command_entry);
  * @display: NULL or pointer to the string which will be freed in this function.
  *	If NULL or zero length string is provided, default title will be added.
  */
-void menu_add_title(struct menu *m, char *display)
+void menu_add_title(struct menu *m, const char *display)
 {
 	char *tmp, *src, *dst;
 	int lines = 1;
 	int i;
 
-	if (!display || !strlen(display)) {
-		free(display);
-		display = xasprintf("Menu : %s", m->name ? m->name : "");
-	}
+	if (!display || !strlen(display))
+		src = dst = tmp = xasprintf("Menu : %s", m->name ? m->name : "");
+	else
+		src = dst = tmp = xstrdup(display);
 
-	src = dst = tmp = xstrdup(display);
 	/* Count lines and separate single string into multiple strings */
 	while (*src) {
 		if (*src == '\\') {
@@ -575,6 +574,5 @@ void menu_add_title(struct menu *m, char *display)
 	}
 
 	free(tmp);
-	free(display);
 }
 EXPORT_SYMBOL(menu_add_title);

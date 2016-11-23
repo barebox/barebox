@@ -91,7 +91,7 @@ int menu_set_selected_entry(struct menu *m, struct menu_entry* me);
 int menu_set_selected(struct menu *m, int num);
 int menu_set_auto_select(struct menu *m, int delay);
 struct menu* menu_get_menus(void);
-void menu_add_title(struct menu *m, char *display);
+void menu_add_title(struct menu *m, const char *display);
 
 /*
  * menu entry functions

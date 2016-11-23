@@ -44,7 +44,7 @@ struct bootentries *bootentries_alloc(void)
 
 	if (IS_ENABLED(CONFIG_MENU)) {
 		bootentries->menu = menu_alloc();
-		menu_add_title(bootentries->menu, basprintf("boot"));
+		menu_add_title(bootentries->menu, "boot");
 	}
 
 	return bootentries;

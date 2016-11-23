@@ -43,9 +43,9 @@ void input_report_key_event(struct input_device *idev, unsigned int code, int va
 		return;
 
 	if (value)
-		set_bit(code, &idev->keys);
+		set_bit(code, idev->keys);
 	else
-		clear_bit(code, &idev->keys);
+		clear_bit(code, idev->keys);
 
 	event.code = code;
 	event.value = value;

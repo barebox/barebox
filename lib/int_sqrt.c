@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <int_sqrt.h>
 
 /**
  * int_sqrt - rough approximation to sqrt

@@ -252,7 +252,6 @@ retry:
 int mtd_peb_check_all_ff(struct mtd_info *mtd, int pnum, int offset, int len,
 			 int warn)
 {
-	size_t read;
 	int err;
 	void *buf;
 
@@ -263,8 +262,8 @@ int mtd_peb_check_all_ff(struct mtd_info *mtd, int pnum, int offset, int len,
 	err = mtd_peb_read(mtd, buf, pnum, offset, len);
 	if (err && !mtd_is_bitflip(err)) {
 		dev_err(&mtd->class_dev,
-			"error %d while reading %d bytes from PEB %d:%d, read %zd bytes\n",
-			err, len, pnum, offset, read);
+			"error %d while reading %d bytes from PEB %d:%d\n",
+			err, len, pnum, offset);
 		goto out;
 	}
 

@@ -379,7 +379,7 @@ void globalvar_set_match(const char *match, const char *val)
 	}
 }
 
-int globalvar_simple_set(struct device_d *dev, struct param_d *p, const char *val)
+static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct device_d *rdev;
 	const char *pname;

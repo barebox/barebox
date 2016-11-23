@@ -397,7 +397,7 @@ int mtd_peb_write(struct mtd_info *mtd, const void *buf, int pnum, int offset,
 	addr = (loff_t)pnum * mtd->erasesize + offset;
 	err = mtd_write(mtd, addr, len, &written, buf);
 	if (err) {
-		dev_err(&mtd->class_dev, "error %d while writing %d bytes to PEB %d:%d, written %zd bytes\n",
+		dev_err(&mtd->class_dev, "error %d while writing %d bytes to PEB %d:%d, written %zu bytes\n",
 			err, len, pnum, offset, written);
 	} else {
 		if (written != len)

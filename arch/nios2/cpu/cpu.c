@@ -33,7 +33,7 @@ static void __noreturn nios2_restart_soc(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(nios2_restart_soc);
+	return restart_handler_register_fn(nios2_restart_soc);
 }
 coredevice_initcall(restart_register_feature);
 

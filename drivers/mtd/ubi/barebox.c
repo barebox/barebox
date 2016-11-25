@@ -244,9 +244,6 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 	cdev->priv = priv;
 	cdev->size = vol->used_bytes;
 
-	if (vol->vol_type == UBI_STATIC_VOLUME)
-		cdev->flags = DEVFS_IS_CHARACTER_DEV;
-
 	cdev->dev = &vol->dev;
 	ubi_msg(ubi, "registering %s as /dev/%s", vol->name, cdev->name);
 	ret = devfs_create(cdev);

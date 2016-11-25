@@ -434,6 +434,7 @@ struct file_operations {
 	int (*erase)(struct cdev*, loff_t count, loff_t offset);
 	int (*protect)(struct cdev*, size_t count, loff_t offset, int prot);
 	int (*memmap)(struct cdev*, void **map, int flags);
+	int (*truncate)(struct cdev*, size_t size);
 };
 
 #define MAX_PARTUUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")

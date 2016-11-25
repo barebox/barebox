@@ -263,9 +263,10 @@ int copy_file(const char *src, const char *dst, int verbose)
 	int srcfd = 0, dstfd = 0;
 	int r, w;
 	int ret = 1, err1 = 0;
+	int mode;
 	void *buf;
 	int total = 0;
-	struct stat statbuf;
+	struct stat srcstat, dststat;
 
 	rw_buf = xmalloc(RW_BUF_SIZE);
 
@@ -275,17 +276,26 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
-	dstfd = open(dst, O_WRONLY | O_CREAT | O_TRUNC);
+	ret = stat(dst, &dststat);
+	if (ret)
+		goto out;
+
+	mode = O_WRONLY | O_CREAT;
+
+	if (S_ISREG(dststat.st_mode))
+		mode |= O_TRUNC;
+
+	dstfd = open(dst, mode);
 	if (dstfd < 0) {
 		printf("could not open %s: %s\n", dst, errno_str());
 		goto out;
 	}
 
 	if (verbose) {
-		if (stat(src, &statbuf) < 0)
-			statbuf.st_size = 0;
+		if (stat(src, &srcstat) < 0)
+			srcstat.st_size = 0;
 
-		init_progression_bar(statbuf.st_size);
+		init_progression_bar(srcstat.st_size);
 	}
 
 	while (1) {
@@ -310,7 +320,7 @@ int copy_file(const char *src, const char *dst, int verbose)
 		}
 
 		if (verbose) {
-			if (statbuf.st_size && statbuf.st_size != FILESIZE_MAX)
+			if (srcstat.st_size && srcstat.st_size != FILESIZE_MAX)
 				show_progress(total);
 			else
 				show_progress(total / 16384);

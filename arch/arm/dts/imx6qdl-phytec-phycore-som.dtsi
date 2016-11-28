@@ -9,7 +9,6 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include "imx6qdl.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 
 / {

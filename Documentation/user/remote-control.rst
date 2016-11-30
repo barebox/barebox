@@ -112,10 +112,10 @@ This is especially useful for flawy serial connections.
   barebox@Phytec phyFLEX-i.MX6 Quad Carrier-Board:/ ls
   .      ..     dev    env    mnt
 
-*NOTE** To terminate resulting Barebox console session press 'Ctrl-T'
+**NOTE** To terminate resulting Barebox console session press 'Ctrl-T'
 
 **NOTE** You can also send 'ping' request to the target without
- closing console session by pressint 'Ctrl-P'
+closing console session by pressint 'Ctrl-P'
 
 transferring files
 ------------------

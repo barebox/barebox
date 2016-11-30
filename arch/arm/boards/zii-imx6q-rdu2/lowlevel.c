@@ -39,10 +39,23 @@ static inline void setup_uart(void)
 }
 
 extern char __dtb_imx6q_zii_rdu2_start[];
+extern char __dtb_imx6qp_zii_rdu2_start[];
 
 ENTRY_FUNCTION(start_imx6q_zii_rdu2, r0, r1, r2)
 {
 	void *fdt = __dtb_imx6q_zii_rdu2_start;
+
+	imx6_cpu_lowlevel_init();
+
+	if (IS_ENABLED(CONFIG_DEBUG_LL))
+		setup_uart();
+
+	imx6q_barebox_entry(fdt - get_runtime_offset());
+}
+
+ENTRY_FUNCTION(start_imx6qp_zii_rdu2, r0, r1, r2)
+{
+	void *fdt = __dtb_imx6qp_zii_rdu2_start;
 
 	imx6_cpu_lowlevel_init();
 

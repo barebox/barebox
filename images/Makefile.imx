@@ -418,3 +418,8 @@ pblx-$(CONFIG_MACH_ZII_RDU2) += start_imx6q_zii_rdu2
 CFG_start_imx6q_zii_rdu2.pblx.imximg = $(board)/zii-imx6q-rdu2/flash-header-imx6q-rdu2.imxcfg
 FILE_barebox-zii-imx6q-rdu2.img = start_imx6q_zii_rdu2.pblx.imximg
 image-$(CONFIG_MACH_ZII_RDU2) += barebox-zii-imx6q-rdu2.img
+
+pblx-$(CONFIG_MACH_ZII_RDU2) += start_imx6qp_zii_rdu2
+CFG_start_imx6qp_zii_rdu2.pblx.imximg = $(board)/zii-imx6q-rdu2/flash-header-imx6qp-rdu2.imxcfg
+FILE_barebox-zii-imx6qp-rdu2.img = start_imx6qp_zii_rdu2.pblx.imximg
+image-$(CONFIG_MACH_ZII_RDU2) += barebox-zii-imx6qp-rdu2.img

@@ -351,6 +351,10 @@ config MACH_VF610_TWR
 	bool "Freescale VF610 Tower Board"
 	select ARCH_VF610
 
+config MACH_ZII_RDU2
+	bool "ZII i.MX6Q(+) RDU2"
+	select ARCH_IMX6
+
 endif
 
 # ----------------------------------------------------------

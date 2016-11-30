@@ -119,9 +119,9 @@
 	clock-frequency = <400000>;
 	status = "okay";
 
-	eeprom: 24c32@50 {
+	eeprom: eeprom@50 {
 		status = "disabled";
-		compatible = "st,24c32";
+		compatible = "24c32";
 		reg = <0x50>;
 	};
 };

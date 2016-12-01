@@ -164,7 +164,7 @@ output_message:
 
 	.section .boot_data
 
-notification_string:	.asciz "UBOOT2 "
+notification_string:	.asciz "BAREBOX "
 chs_string:	.asciz "CHS "
 jmp_string:	.asciz "JMP "
 

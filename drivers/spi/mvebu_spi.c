@@ -305,14 +305,14 @@ static int mvebu_spi_transfer(struct spi_device *spi, struct spi_message *msg)
 	list_for_each_entry(t, &msg->transfers, transfer_list) {
 		ret = mvebu_spi_do_transfer(spi, t);
 		if (ret)
-			break;
+			goto err_transfer;
 		msg->actual_length += t->len;
 	}
 
-	ret = mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, false);
-	if (ret)
-		return ret;
+	return mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, false);
 
+err_transfer:
+	mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, false);
 	return ret;
 }
 

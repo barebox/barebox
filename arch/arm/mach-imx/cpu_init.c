@@ -34,6 +34,11 @@ void imx6_cpu_lowlevel_init(void)
 	enable_arm_errata_845369_war();
 }
 
+void imx7_cpu_lowlevel_init(void)
+{
+	arm_cpu_lowlevel_init();
+}
+
 void vf610_cpu_lowlevel_init(void)
 {
 	arm_cpu_lowlevel_init();

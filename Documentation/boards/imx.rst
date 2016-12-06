@@ -20,6 +20,7 @@ The Internal Boot Mode is supported on:
 * i.MX51
 * i.MX53
 * i.MX6
+* i.MX7
 
 With the Internal Boot Mode, the images contain a header which describes
 where the binary shall be loaded and started. These headers also contain

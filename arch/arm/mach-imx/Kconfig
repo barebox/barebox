@@ -157,6 +157,10 @@ config ARCH_IMX6UL
 	bool
 	select ARCH_IMX6
 
+config ARCH_IMX7
+	bool
+	select CPU_V7
+
 config ARCH_VF610
 	bool
 	select ARCH_HAS_L2X0

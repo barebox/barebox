@@ -16,6 +16,12 @@ static inline struct clk *imx_clk_divider_np(const char *name, const char *paren
 	return clk_divider(name, parent, reg, shift, width, 0);
 }
 
+static inline struct clk *imx_clk_divider2(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width)
+{
+	return clk_divider(name, parent, reg, shift, width, 0);
+}
+
 static inline struct clk *imx_clk_divider_table(const char *name,
 		const char *parent, void __iomem *reg, u8 shift, u8 width,
 		const struct clk_div_table *table)
@@ -44,6 +50,12 @@ static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,
 	return clk_mux(name, reg, shift, width, parents, num_parents, 0);
 }
 
+static inline struct clk *imx_clk_mux2(const char *name, void __iomem *reg,
+		u8 shift, u8 width, const char **parents, u8 num_parents)
+{
+	return clk_mux(name, reg, shift, width, parents, num_parents, 0);
+}
+
 static inline struct clk *imx_clk_mux_p(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents)
 {
@@ -54,6 +66,12 @@ static inline struct clk *imx_clk_gate(const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
 {
 	return clk_gate(name, parent, reg, shift, CLK_SET_RATE_PARENT, 0);
+}
+
+static inline struct clk *imx_clk_gate_dis(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_gate_inverted(name, parent, reg, shift, CLK_SET_RATE_PARENT);
 }
 
 static inline struct clk *imx_clk_gate2(const char *name, const char *parent,
@@ -68,6 +86,17 @@ static inline struct clk *imx_clk_gate2_cgr(const char *name, const char *parent
 	return clk_gate2(name, parent, reg, shift, cgr_val);
 }
 
+static inline struct clk *imx_clk_gate3(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_gate(name, parent, reg, shift, CLK_SET_RATE_PARENT, 0);
+}
+
+static inline struct clk *imx_clk_gate4(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_gate2(name, parent, reg, shift, 0x3);
+}
 
 struct clk *imx_clk_pllv1(const char *name, const char *parent,
 		void __iomem *base);

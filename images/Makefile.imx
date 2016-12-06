@@ -409,6 +409,11 @@ CFG_start_imx6dl_eltec_hipercam.pblx.imximg = $(board)/eltec-hipercam/flash-head
 FILE_barebox-eltec-hipercam.img = start_imx6dl_eltec_hipercam.pblx.imximg
 image-$(CONFIG_MACH_ELTEC_HIPERCAM) += barebox-eltec-hipercam.img
 
+pblx-$(CONFIG_MACH_WARP7) += start_imx7s_element14_warp7
+CFG_start_imx7s_element14_warp7.pblx.imximg = $(board)/element14-warp7/flash-header-mx7-warp.imxcfg
+FILE_barebox-element14-imx7s-warp7.img = start_imx7s_element14_warp7.pblx.imximg
+image-$(CONFIG_MACH_WARP7) += barebox-element14-imx7s-warp7.img
+
 pblx-$(CONFIG_MACH_VF610_TWR) += start_vf610_twr
 CFG_start_vf610_twr.pblx.imximg = $(board)/freescale-vf610-twr/flash-header-vf610-twr.imxcfg
 FILE_barebox-vf610-twr.img = start_vf610_twr.pblx.imximg

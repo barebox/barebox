@@ -1,0 +1,62 @@
+/*
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+#include <arm/imx7s-warp.dts>
+#include "imx7s.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &bareboxenv;
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x20000000>;
+	};
+};
+
+&usdhc3 {
+	boot0-partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		barebox@0 {
+			label = "barebox";
+			reg = <0x0 0x300000>;
+		};
+
+		bareboxenv: bareboxenv@300000 {
+			label = "bareboxenv";
+			reg = <0x300000 0x0>;
+		};
+	};
+};
+
+/*
+/* The watchdog pinctrl is attached to the wrong iomux controller in
+ * the upstream dts file. This can be removed once we pull in the
+ * corresponding fix from the upstream dts files.
+ */
+&wdog1 {
+	pinctrl-0 = <&pinctrl_wdog_lpsr>;
+};
+
+&iomuxc_lpsr {
+	pinctrl_wdog_lpsr: wdoggrp {
+		fsl,pins = <
+			MX7D_PAD_GPIO1_IO00__WDOD1_WDOG_B       0x74
+		>;
+	};
+};

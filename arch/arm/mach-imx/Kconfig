@@ -39,6 +39,7 @@ config ARCH_TEXT_BASE
 	default 0x4fc00000 if MACH_UDOO
 	default 0x4fc00000 if MACH_VARISCITE_MX6
 	default 0x4fc00000 if MACH_PHYTEC_SOM_IMX6
+	default 0x9fc00000 if MACH_WARP7
 
 config ARCH_IMX_IMXIMAGE
 	bool
@@ -350,6 +351,10 @@ config MACH_GW_VENTANA
 config MACH_CM_FX6
 	bool "CM FX6"
 	select ARCH_IMX6
+
+config MACH_WARP7
+	bool "NXP i.MX7: element 14 WaRP7 Board"
+	select ARCH_IMX7
 
 config MACH_VF610_TWR
 	bool "Freescale VF610 Tower Board"

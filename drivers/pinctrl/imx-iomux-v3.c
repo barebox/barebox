@@ -24,14 +24,19 @@
 #include <pinctrl.h>
 #include <malloc.h>
 #include <mach/iomux-v3.h>
+#include <mach/generic.h>
 
 struct imx_iomux_v3 {
 	void __iomem *base;
 	struct pinctrl_device pinctrl;
+	unsigned int flags;
+};
+
+struct imx_iomux_v3_data {
+	unsigned int flags;
 };
 
 static void __iomem *iomuxv3_base;
-
 
 /*
  * configures a single pad in the iomuxer
@@ -111,7 +116,7 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 		if (conf_val & IMX_DT_NO_PAD_CTL)
 			conf_reg = 0;
 
-		iomux_v3_setup_pad(iomux->base, 0,
+		iomux_v3_setup_pad(iomux->base, iomux->flags,
 				   mux_reg, conf_reg, input_reg,
 				   mux_val, conf_val, input_val);
 	}
@@ -126,14 +131,18 @@ static struct pinctrl_ops imx_iomux_v3_ops = {
 static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 {
 	struct imx_iomux_v3 *iomux;
+	struct imx_iomux_v3_data *drvdata = NULL;
 	int ret;
 
+	dev_get_drvdata(dev, (const void **)&drvdata);
 	iomux = xzalloc(sizeof(*iomux));
 
 	iomux->base = base;
 
 	iomux->pinctrl.dev = dev;
 	iomux->pinctrl.ops = &imx_iomux_v3_ops;
+	if (drvdata)
+		iomux->flags = drvdata->flags;
 
 	ret = pinctrl_register(&iomux->pinctrl);
 	if (ret)
@@ -144,22 +153,32 @@ static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 
 static int imx_iomux_v3_probe(struct device_d *dev)
 {
+	void __iomem *base;
 	struct resource *iores;
 	int ret = 0;
-
-	if (iomuxv3_base)
-		return -EBUSY;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	iomuxv3_base = IOMEM(iores->start);
+	base = IOMEM(iores->start);
+
+	if (!iomuxv3_base)
+		/*
+		 * Uh, this works only for the older controllers, not for
+		 * i.MX7 which has two iomux controllers. i.MX7 based boards
+		 * should not use mxc_iomux_v3_setup_pad anyway.
+		 */
+		iomuxv3_base = base;
 
 	if (IS_ENABLED(CONFIG_PINCTRL) && dev->device_node)
-		ret = imx_pinctrl_dt(dev, iomuxv3_base);
+		ret = imx_pinctrl_dt(dev, base);
 
 	return ret;
 }
+
+static struct imx_iomux_v3_data imx_iomux_imx7_lpsr_data = {
+	.flags = ZERO_OFFSET_VALID,
+};
 
 static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	{
@@ -172,12 +191,17 @@ static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 		.compatible = "fsl,imx53-iomuxc",
 	}, {
 		.compatible = "fsl,imx6q-iomuxc",
-	},  {
+	}, {
 		.compatible = "fsl,imx6dl-iomuxc",
 	}, {
 		.compatible = "fsl,imx6sx-iomuxc",
 	}, {
 		.compatible = "fsl,imx6ul-iomuxc",
+	}, {
+		.compatible = "fsl,imx7d-iomuxc",
+	}, {
+		.compatible = "fsl,imx7d-iomuxc-lpsr",
+		.data = &imx_iomux_imx7_lpsr_data,
 	}, {
 		/* sentinel */
 	}

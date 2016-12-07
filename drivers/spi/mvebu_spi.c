@@ -317,16 +317,18 @@ static int mvebu_spi_transfer(struct spi_device *spi, struct spi_message *msg)
 }
 
 static struct of_device_id mvebu_spi_dt_ids[] = {
-	{ .compatible = "marvell,orion-spi",
-	  .data = &mvebu_spi_set_baudrate },
 #if defined(CONFIG_ARCH_ARMADA_370) || defined(CONFIG_ARCH_ARMADA_XP)
-	{ .compatible = "marvell,armada-370-xp-spi",
+	{ .compatible = "marvell,armada-370-spi",
+	  .data = &armada_370_xp_spi_set_baudrate },
+	{ .compatible = "marvell,armada-xp-spi",
 	  .data = &armada_370_xp_spi_set_baudrate },
 #endif
 #if defined(CONFIG_ARCH_DOVE)
 	{ .compatible = "marvell,dove-spi",
 	  .data = &dove_spi_set_baudrate },
 #endif
+	{ .compatible = "marvell,orion-spi",
+	  .data = &mvebu_spi_set_baudrate },
 	{ }
 };
 

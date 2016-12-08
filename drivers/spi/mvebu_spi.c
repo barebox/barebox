@@ -278,12 +278,12 @@ static int mvebu_spi_do_transfer(struct spi_device *spi,
 			return ret;
 		}
 
-		data = readl(priv->base + SPI_DATA_IN);
-
-		if (rxdata)
+		if (rxdata) {
+			data = readl(priv->base + SPI_DATA_IN);
 			*rxdata++ = (data & 0xff);
-		if (rxdata && priv->data16)
-			*rxdata++ = (data >> 8) & 0xff;
+			if (priv->data16)
+				*rxdata++ = (data >> 8) & 0xff;
+		}
 	}
 
 	return 0;

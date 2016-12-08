@@ -128,22 +128,21 @@ static int mvebu_spi_set_baudrate(struct mvebu_spi *p, u32 speed)
 #if defined(CONFIG_ARCH_ARMADA_370) || defined(CONFIG_ARCH_ARMADA_XP)
 static int armada_370_xp_spi_set_baudrate(struct mvebu_spi *p, u32 speed)
 {
-	u32 pscl, pdiv, val;
+	u32 pscl, pdiv = 0, val;
 
 	/* prescaler values: 1,2,3,...,15 */
 	pscl = DIV_ROUND_UP(clk_get_rate(p->clk), speed);
 
 	/* additional prescaler divider: 1, 2, 4, 8, 16, 32, 64, 128 */
-	pdiv = 0;
 	while (pscl > 15 && pdiv <= 7) {
 		pscl = DIV_ROUND_UP(pscl, 2);
 		pdiv++;
 	}
 
-	dev_dbg(p->master.dev, "%s: clk = %lu, speed = %u, pscl = %d, pdiv = %d\n",
+	dev_dbg(p->master.dev, "%s: clk = %lu, speed = %u, pscl = %u, pdiv = %u\n",
 		__func__, clk_get_rate(p->clk), speed, pscl, pdiv);
 
-	if (pscl > 15 || pdiv > 7)
+	if (pscl > 15)
 		return -EINVAL;
 
 	val = readl(p->base + SPI_IF_CONFIG) & ~(IF_CLK_PRESCALE_MASK);

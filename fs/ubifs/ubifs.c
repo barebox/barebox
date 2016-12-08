@@ -496,12 +496,9 @@ static unsigned long ubifs_findfile(struct super_block *sb, const char *filename
 	int ret;
 	char *next;
 	char fpath[128];
-	char symlinkpath[128];
 	char *name = fpath;
 	unsigned long root_inum = 1;
 	unsigned long inum;
-	int symlink_count = 0; /* Don't allow symlink recursion */
-	char link_name[64];
 
 	strcpy(fpath, filename);
 
@@ -536,32 +533,6 @@ static unsigned long ubifs_findfile(struct super_block *sb, const char *filename
 		if (IS_ERR(inode))
 			return 0;
 		ui = ubifs_inode(inode);
-
-		if ((inode->i_mode & S_IFMT) == S_IFLNK) {
-			char buf[128];
-
-			/* We have some sort of symlink recursion, bail out */
-			if (symlink_count++ > 8) {
-				printf("Symlink recursion, aborting\n");
-				return 0;
-			}
-			memcpy(link_name, ui->data, ui->data_len);
-			link_name[ui->data_len] = '\0';
-
-			if (link_name[0] == '/') {
-				/* Absolute path, redo everything without
-				 * the leading slash */
-				next = name = link_name + 1;
-				root_inum = 1;
-				continue;
-			}
-			/* Relative to cur dir */
-			sprintf(buf, "%s/%s",
-					link_name, next == NULL ? "" : next);
-			memcpy(symlinkpath, buf, sizeof(buf));
-			next = name = symlinkpath;
-			continue;
-		}
 
 		/*
 		 * Check if directory with this name exists

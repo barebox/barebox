@@ -264,13 +264,19 @@ static int mvebu_spi_do_transfer(struct spi_device *spi,
 
 	if (t->bits_per_word)
 		ret = mvebu_spi_set_transfer_size(priv, spi->bits_per_word);
-	if (ret)
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set transfer size (bpw = %u)\n",
+			(unsigned)spi->bits_per_word);
 		return ret;
+	}
 
 	if (t->speed_hz)
 		ret = priv->set_baudrate(priv, t->speed_hz);
-	if (ret)
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set baudrate to %u Hz\n",
+			(unsigned)t->speed_hz);
 		return ret;
+	}
 
 	inc = (priv->data16) ? 2 : 1;
 	for (n = 0; n < t->len; n += inc) {
@@ -314,8 +320,10 @@ static int mvebu_spi_transfer(struct spi_device *spi, struct spi_message *msg)
 	}
 
 	ret = mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, true);
-	if (ret)
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set chip select\n");
 		return ret;
+	}
 
 	msg->actual_length = 0;
 

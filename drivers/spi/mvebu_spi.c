@@ -31,8 +31,13 @@
 #define  IF_READ_READY		BIT(1)
 #define  IF_CS_ENABLE		BIT(0)
 #define SPI_IF_CONFIG		0x04
+
+#define  IF_RXLSBF		BIT(14)
+#define  IF_TXLSBF		BIT(13)
+
 #define  IF_CLK_DIV(x)		((x) << 11)
 #define  IF_CLK_DIV_MASK	(0x7 << 11)
+
 #define  IF_FAST_READ		BIT(10)
 #define  IF_ADDRESS_LEN_4BYTE	(3 << 8)
 #define  IF_ADDRESS_LEN_3BYTE	(2 << 8)
@@ -192,6 +197,8 @@ static int dove_spi_set_baudrate(struct mvebu_spi *p, u32 speed)
 
 static int mvebu_spi_set_mode(struct mvebu_spi *p, u8 mode)
 {
+	u32 val;
+
 	/*
 	 * From public datasheets of Orion SoCs, it is unclear
 	 * if the SPI controller supports setting CPOL/CPHA.
@@ -202,12 +209,19 @@ static int mvebu_spi_set_mode(struct mvebu_spi *p, u8 mode)
 	 * other mode than SPI_MODE0.
 	 */
 
-	if ((mode & (SPI_CPOL|SPI_CPHA)) == SPI_MODE_0)
-		return 0;
+	if ((mode & (SPI_CPOL|SPI_CPHA)) != SPI_MODE_0) {
+		pr_err("%s: unsupported SPI mode %02x\n", __func__, mode);
+		return -EINVAL;
+	}
 
-	pr_err("%s: unsupported SPI mode %02x\n", __func__, mode);
+	val = readl(p->base + SPI_IF_CONFIG);
+	if (mode & SPI_LSB_FIRST)
+		val |= IF_RXLSBF | IF_TXLSBF;
+	else
+		val &= ~(IF_RXLSBF | IF_TXLSBF);
+	writel(val, p->base + SPI_IF_CONFIG);
 
-	return -EINVAL;
+	return 0;
 }
 
 static int mvebu_spi_setup(struct spi_device *spi)
@@ -292,6 +306,12 @@ static int mvebu_spi_transfer(struct spi_device *spi, struct spi_message *msg)
 	struct spi_transfer *t;
 	int ret;
 	struct mvebu_spi *priv = priv_from_spi_device(spi);
+
+	ret = mvebu_spi_set_mode(priv, spi->mode);
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set mode (0x%x)\n", (unsigned)spi->mode);
+		return ret;
+	}
 
 	ret = mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, true);
 	if (ret)

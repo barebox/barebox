@@ -43,8 +43,8 @@
 #define  IF_TRANSFER_2BYTE	BIT(5)
 #define  IF_CLK_PRESCALE_POW2	BIT(4)
 #define  IF_CLK_PRESCALE(x)	((x) & 0x0f)
-#define  IF_CLK_PRE_PRESCALE(x)	(((((x) & 0xc) << 1) | ((x) & 0x1)) << 4)
-#define  IF_CLK_PRESCALE_MASK	(IF_CLK_PRESCALE(7) | IF_CLK_PRE_PRESCALE(7))
+#define  IF_CLK_PRE_PRESCALE(x)	(((((x) & 0x6) << 6) | ((x) & 0x1)) << 4)
+#define  IF_CLK_PRESCALE_MASK	(IF_CLK_PRESCALE(0xf) | IF_CLK_PRE_PRESCALE(7))
 #define SPI_DATA_OUT		0x08
 #define SPI_DATA_IN		0x0c
 #define SPI_INT_CAUSE		0x10

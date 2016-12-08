@@ -233,13 +233,11 @@ static int mvebu_spi_setup(struct spi_device *spi)
 
 static inline int mvebu_spi_wait_for_read_ready(struct mvebu_spi *p)
 {
-	int timeout = 100;
-	while ((readl(p->base + SPI_IF_CTRL) & IF_READ_READY) == 0 &&
-		timeout--)
-		udelay(1);
-	if (timeout < 0)
-		return -EIO;
-	return 0;
+	int ret;
+
+	ret = wait_on_timeout(100 * USECOND,
+			      readl(p->base + SPI_IF_CTRL) & IF_READ_READY);
+	return ret;
 }
 
 static int mvebu_spi_do_transfer(struct spi_device *spi,

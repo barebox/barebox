@@ -76,7 +76,7 @@ struct usb_id {
 	struct usb_work *work;
 };
 
-const struct mach_id imx_ids[] = {
+static const struct mach_id imx_ids[] = {
 	{
 		.vid = 0x066f,
 		.pid = 0x3780,

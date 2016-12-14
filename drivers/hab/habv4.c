@@ -27,6 +27,7 @@
 #define HABV4_RVT_IMX28 0xffff8af8
 #define HABV4_RVT_IMX6_OLD 0x00000094
 #define HABV4_RVT_IMX6_NEW 0x00000098
+#define HABV4_RVT_IMX6UL   0x00000100
 
 enum hab_tag {
 	HAB_TAG_IVT = 0xd1,		/* Image Vector Table */
@@ -224,6 +225,10 @@ int imx6_hab_get_status(void)
 		return habv4_get_status(rvt);
 
 	rvt = (void *)HABV4_RVT_IMX6_NEW;
+	if (rvt->header.tag == HAB_TAG_RVT)
+		return habv4_get_status(rvt);
+
+	rvt = (void *)HABV4_RVT_IMX6UL;
 	if (rvt->header.tag == HAB_TAG_RVT)
 		return habv4_get_status(rvt);
 

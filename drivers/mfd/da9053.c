@@ -297,9 +297,18 @@ static int da9053_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id da9053_dt_ids[] = {
+	{
+		.compatible = "dlg,da9052",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d da9053_driver = {
 	.name  = DRIVERNAME,
 	.probe = da9053_probe,
+	.of_compatible = DRV_OF_COMPAT(da9053_dt_ids),
 };
 
 static int da9053_init(void)

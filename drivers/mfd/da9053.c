@@ -240,6 +240,10 @@ static void da9053_detect_reset_source(struct da9053_priv *da9053)
 	priority = of_get_reset_source_priority(da9053->dev->device_node);
 
 	reset_source_set_priority(type, priority);
+
+	ret = da9053_reg_write(da9053, DA9053_FAULTLOG_REG, val);
+	if (ret < 0)
+		return;
 }
 
 static void __noreturn da9053_force_system_reset(struct restart_handler *rst)

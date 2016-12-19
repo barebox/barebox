@@ -94,10 +94,16 @@ static inline void arm_fixup_vectors(void)
 
 void *barebox_arm_boot_dtb(void);
 
+static inline unsigned long arm_mem_stack_top(unsigned long membase,
+					      unsigned long endmem)
+{
+	return endmem - SZ_64K;
+}
+
 static inline unsigned long arm_mem_stack(unsigned long membase,
 					  unsigned long endmem)
 {
-	return endmem - SZ_64K - STACK_SIZE;
+	return arm_mem_stack_top(membase, endmem) - STACK_SIZE;
 }
 
 static inline unsigned long arm_mem_ttb(unsigned long membase,

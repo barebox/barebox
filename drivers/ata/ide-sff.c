@@ -389,11 +389,10 @@ int ide_port_register(struct ide_port *ide)
 	ide->port.ops = &ide_ops;
 
 	ret = ata_port_register(&ide->port);
-	if (!ret)
-		ata_port_detect(&ide->port);
-
 	if (ret)
-		free(ide);
+		return ret;
 
-	return ret;
+	ata_port_detect(&ide->port);
+
+	return 0;
 }

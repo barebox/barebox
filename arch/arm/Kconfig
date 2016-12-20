@@ -3,7 +3,6 @@ config ARM
 	select HAS_KALLSYMS
 	select HAS_CACHE
 	select HAVE_CONFIGURABLE_TEXT_BASE
-	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	default y
 

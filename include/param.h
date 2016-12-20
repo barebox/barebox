@@ -132,6 +132,14 @@ static inline struct param_d *dev_add_param_enum(struct device_d *dev, const cha
 	return ERR_PTR(-ENOSYS);
 }
 
+static inline struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
+                int (*set)(struct param_d *p, void *priv),
+                int (*get)(struct param_d *p, void *priv),
+                unsigned long *value, const char * const *names, int max, void *priv)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
 static inline struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
 		int (*set)(struct param_d *p, void *priv),
 		int (*get)(struct param_d *p, void *priv),

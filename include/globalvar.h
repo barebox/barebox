@@ -116,6 +116,11 @@ static inline int nvvar_remove(const char *name)
 	return 0;
 }
 
+static inline int nvvar_save(void)
+{
+	return 0;
+}
+
 static inline void dev_param_init_from_nv(struct device_d *dev, const char *name)
 {
 }

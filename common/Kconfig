@@ -161,6 +161,7 @@ config ENVIRONMENT_VARIABLES
 config GLOBALVAR
 	bool "global environment variables support"
 	default y if !SHELL_NONE
+	select FNMATCH
 	help
 	  Global environment variables begin with "global.". Unlike normal
 	  shell variables they have the same values in all contexts. Global

@@ -120,6 +120,9 @@ void squashfs_set_rootarg(struct squashfs_priv *priv, struct fs_device_d *fsdev)
 	struct mtd_info *mtd;
 	char *str;
 
+	if (!IS_ENABLED(CONFIG_MTD_UBI))
+		return;
+
 	ubi_vol = ubi_open_volume_cdev(fsdev->cdev, UBI_READONLY);
 
 	if (IS_ERR(ubi_vol))

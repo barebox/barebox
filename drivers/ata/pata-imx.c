@@ -158,7 +158,6 @@ static int imx_pata_probe(struct device_d *dev)
 	struct clk *clk;
 	void __iomem *base;
 	int ret;
-	const char *devname = NULL;
 
 	ide = xzalloc(sizeof(*ide));
 	iores = dev_request_mem_resource(dev, 0);
@@ -182,14 +181,9 @@ static int imx_pata_probe(struct device_d *dev)
 
 	pata_imx_set_bus_timing(base, clk_get_rate(clk), 4);
 
-	if (IS_ENABLED(CONFIG_OFDEVICE)) {
-		devname = of_alias_get(dev->device_node);
-		if (devname)
-			devname = xstrdup(devname);
-	}
 
 	ide->port.dev = dev;
-	ide->port.devname = devname;
+	ide->port.devname = xstrdup(of_alias_get(dev->device_node));
 
 	dev->priv = ide;
 	dev->detect = pata_imx_detect;

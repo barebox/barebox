@@ -631,6 +631,8 @@ static int omap_mmc_probe(struct device_d *dev)
 			hsmmc->mci.devname = xstrdup(alias);
 	}
 
+	mci_of_parse(&hsmmc->mci);
+
 	dev->priv = hsmmc;
 	dev->detect = omap_mmc_detect,
 

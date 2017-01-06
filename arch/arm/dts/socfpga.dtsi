@@ -25,17 +25,6 @@
 			clock-names = "qspi_clk";
 			status = "disabled";
 		};
-
-		fpgamgr@ff706000 {
-			compatible = "altr,socfpga-fpga-mgr";
-			reg = <0xff706000 0x1000>,
-			      <0xffb90000 0x1000>;
-		};
-
-		system_mgr: sysmgr@ffd08000 {
-			compatible = "altr,sys-mgr", "syscon";
-			reg = <0xffd08000 0x4000>;
-		};
        };
 };
 &osc2 {

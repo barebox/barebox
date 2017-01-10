@@ -78,6 +78,7 @@ struct clk *imx_clk_pllv2(const char *name, const char *parent,
 enum imx_pllv3_type {
 	IMX_PLLV3_GENERIC,
 	IMX_PLLV3_SYS,
+	IMX_PLLV3_SYS_VF610,
 	IMX_PLLV3_USB,
 	IMX_PLLV3_USB_VF610,
 	IMX_PLLV3_AV,
@@ -88,6 +89,10 @@ enum imx_pllv3_type {
 struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 			  const char *parent, void __iomem *base,
 			  u32 div_mask);
+
+struct clk *imx_clk_pllv3_locked(enum imx_pllv3_type type, const char *name,
+				 const char *parent, void __iomem *base,
+				 u32 div_mask, void __iomem *lock_reg, u32 lock_mask);
 
 struct clk *imx_clk_pfd(const char *name, const char *parent,
 			void __iomem *reg, u8 idx);

@@ -223,4 +223,19 @@ enum {
 	VF610_PAD_DDR_ODT0__DDR_ODT_1	= IOMUX_PAD(0x02d8, 0x02d8, 0, __NA_, 0, VF610_DDR_PAD_CTRL),
 };
 
+#define PINCTRL_VF610_MUX_SHIFT 20
+
+
+static inline void vf610_setup_pad(void __iomem *iomux, iomux_v3_cfg_t pad)
+{
+	iomux_v3_setup_pad(iomux, SHARE_MUX_CONF_REG | ZERO_OFFSET_VALID,
+			   IOMUX_CTRL_OFS(pad),
+			   IOMUX_PAD_CTRL_OFS(pad),
+			   IOMUX_SEL_INPUT_OFS(pad),
+			   IOMUX_MODE(pad) << PINCTRL_VF610_MUX_SHIFT,
+			   IOMUX_PAD_CTRL(pad),
+			   IOMUX_SEL_INPUT(pad));
+}
+
+
 #endif	/* __IOMUX_VF610_H__ */

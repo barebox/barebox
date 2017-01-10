@@ -16,6 +16,8 @@
 #ifndef __MACH_IOMUX_V3_H__
 #define __MACH_IOMUX_V3_H__
 
+#include <io.h>
+
 /*
  *	build IOMUX_PAD structure
  *
@@ -103,6 +105,32 @@ typedef u64 iomux_v3_cfg_t;
 #define PAD_CTL_SRE_SLOW		(0 << 0)
 
 #define IOMUX_CONFIG_SION		(0x1 << 4)
+
+#define SHARE_MUX_CONF_REG		0x1
+#define ZERO_OFFSET_VALID		0x2
+
+static inline void iomux_v3_setup_pad(void __iomem *iomux, unsigned int flags,
+				      u32 mux_reg, u32 conf_reg, u32 input_reg,
+				      u32 mux_val, u32 conf_val, u32 input_val)
+{
+	const bool mux_ok   = !!mux_reg || (flags & ZERO_OFFSET_VALID);
+	const bool conf_ok  = !!conf_reg;
+	const bool input_ok = !!input_reg;
+
+	if (flags & SHARE_MUX_CONF_REG) {
+		mux_val |= conf_val;
+	} else {
+		if (conf_ok)
+			writel(conf_val, iomux + conf_reg);
+	}
+
+	if (mux_ok)
+		writel(mux_val, iomux + mux_reg);
+
+	if (input_ok)
+		writel(input_val, iomux + input_reg);
+}
+
 
 /*
  * setups a single pad in the iomuxer

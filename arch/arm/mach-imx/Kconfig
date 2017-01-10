@@ -166,6 +166,7 @@ config ARCH_VF610
 	select OFTREE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
+	select IMX_OCOTP	# Needed for clock adjustement
 
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"

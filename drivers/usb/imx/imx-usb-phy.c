@@ -168,6 +168,8 @@ static __maybe_unused struct of_device_id imx_usbphy_dt_ids[] = {
 	{
 		.compatible = "fsl,imx23-usbphy",
 	}, {
+		.compatible = "fsl,vf610-usbphy",
+	}, {
 		/* sentinel */
 	},
 };

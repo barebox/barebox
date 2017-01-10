@@ -29,13 +29,8 @@ ENTRY_FUNCTION(start_vf610_twr, r0, r1, r2)
 {
 	int i;
 	void *fdt;
-	void __iomem *mscm = IOMEM(VF610_MSCM_BASE_ADDR);
 
 	vf610_cpu_lowlevel_init();
-
-	for (i = 0; i < VF610_MSCM_IRSPRC_NUM; i++)
-		writew(VF610_MSCM_IRSPRC_CP0_EN,
-		       mscm + VF610_MSCM_IRSPRC(i));
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();

@@ -16,4 +16,4 @@ config USB_IMX_CHIPIDEA
 
 config USB_IMX_PHY
 	bool
-	default y if ARCH_IMX6 && GENERIC_PHY
+	default y if (ARCH_IMX6 || ARCH_VF610) && GENERIC_PHY

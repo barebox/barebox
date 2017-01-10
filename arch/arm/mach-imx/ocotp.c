@@ -610,4 +610,4 @@ static int imx_ocotp_init(void)
 
 	return 0;
 }
-coredevice_initcall(imx_ocotp_init);
+postcore_initcall(imx_ocotp_init);

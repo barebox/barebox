@@ -359,6 +359,13 @@ int imx_ocotp_permanent_write(int enable)
 	return 0;
 }
 
+bool imx_ocotp_sense_enable(bool enable)
+{
+	const bool old_value = imx_ocotp->sense_enable;
+	imx_ocotp->sense_enable = enable;
+	return old_value;
+}
+
 static uint32_t inc_offset(uint32_t offset)
 {
 	if ((offset & 0x3) == 0x3)

@@ -78,6 +78,14 @@ typedef u64 iomux_v3_cfg_t;
 		((iomux_v3_cfg_t)(_sel_input_ofs) << MUX_SEL_INPUT_OFS_SHIFT) | \
 		((iomux_v3_cfg_t)(_sel_input) << MUX_SEL_INPUT_SHIFT))
 
+#define IOMUX_PAD_FIELD(name, pad) 	(((pad) & name##_MASK) >> name##_SHIFT)
+#define IOMUX_CTRL_OFS(pad)		IOMUX_PAD_FIELD(MUX_CTRL_OFS, pad)
+#define IOMUX_MODE(pad)			IOMUX_PAD_FIELD(MUX_MODE, pad)
+#define IOMUX_SEL_INPUT_OFS(pad)	IOMUX_PAD_FIELD(MUX_SEL_INPUT_OFS, pad)
+#define IOMUX_SEL_INPUT(pad)		IOMUX_PAD_FIELD(MUX_SEL_INPUT, pad)
+#define IOMUX_PAD_CTRL_OFS(pad)		IOMUX_PAD_FIELD(MUX_PAD_CTRL_OFS, pad)
+#define IOMUX_PAD_CTRL(pad)		IOMUX_PAD_FIELD(MUX_PAD_CTRL, pad)
+
 #define NEW_PAD_CTRL(cfg, pad)	(((cfg) & ~MUX_PAD_CTRL_MASK) | MUX_PAD_CTRL(pad))
 /*
  * Use to set PAD control

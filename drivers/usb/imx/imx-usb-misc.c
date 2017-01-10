@@ -422,6 +422,28 @@ static __maybe_unused struct imx_usb_misc_data mx6_data = {
 	.post_init = mx6_post_init,
 };
 
+#define VF610_OVER_CUR_DIS		BIT(7)
+
+static __maybe_unused int vf610_initialize_usb_hw(void __iomem *base, int port,
+		unsigned int flags)
+{
+	u32 reg;
+
+	if (port >= 1)
+		return -EINVAL;
+
+	if (flags & MXC_EHCI_DISABLE_OVERCURRENT) {
+		reg = readl(base);
+		writel(reg | VF610_OVER_CUR_DIS, base);
+	}
+
+	return 0;
+}
+
+static __maybe_unused struct imx_usb_misc_data vf610_data = {
+	.init = vf610_initialize_usb_hw,
+};
+
 static struct platform_device_id imx_usbmisc_ids[] = {
 #ifdef CONFIG_ARCH_IMX25
 	{
@@ -517,6 +539,12 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-usbmisc",
 		.data = &mx6_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_VF610
+	{
+		.compatible = "fsl,vf610-usbmisc",
+		.data = &vf610_data,
 	},
 #endif
 	{

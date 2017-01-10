@@ -2,6 +2,7 @@
 #include <common.h>
 #include <linux/sizes.h>
 #include <mach/generic.h>
+#include <mach/iomux-mx6.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 
@@ -11,12 +12,8 @@ static inline void setup_uart(void)
 
 	imx6_ungate_all_peripherals();
 
-	writel(0x1b0b1, iomuxbase + 0x0650);
-	writel(3, iomuxbase + 0x0280);
-
-	writel(0x1b0b1, iomuxbase + 0x0654);
-	writel(3, iomuxbase + 0x0284);
-	writel(1, iomuxbase + 0x0920);
+	imx_setup_pad(iomuxbase, MX6Q_PAD_CSI0_DAT10__UART1_TXD);
+	imx_setup_pad(iomuxbase, MX6Q_PAD_CSI0_DAT11__UART1_RXD);
 
 	imx6_uart_setup_ll();
 

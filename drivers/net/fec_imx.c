@@ -51,7 +51,7 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	uint32_t phy;		/* convenient holder for the PHY */
 	uint64_t start;
 
-	writel(((clk_get_rate(fec->clk) >> 20) / 5) << 1,
+	writel(((clk_get_rate(fec->clk[FEC_CLK_IPG]) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
 	/*
 	 * reading from any PHY's register is done by properly
@@ -94,7 +94,7 @@ static int fec_miibus_write(struct mii_bus *bus, int phyAddr,
 	uint32_t phy;		/* convenient holder for the PHY */
 	uint64_t start;
 
-	writel(((clk_get_rate(fec->clk) >> 20) / 5) << 1,
+	writel(((clk_get_rate(fec->clk[FEC_CLK_IPG]) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
 
 	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
@@ -287,7 +287,7 @@ static int fec_init(struct eth_device *dev)
 	 * Set MII_SPEED = (1/(mii_speed * 2)) * System Clock
 	 * and do not drop the Preamble.
 	 */
-	writel(((clk_get_rate(fec->clk) >> 20) / 5) << 1,
+	writel(((clk_get_rate(fec->clk[FEC_CLK_IPG]) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
 
 	if (fec->interface == PHY_INTERFACE_MODE_RMII) {
@@ -651,6 +651,59 @@ static int fec_probe_dt(struct device_d *dev, struct fec_priv *fec)
 	return -ENODEV;
 }
 #endif
+
+static int fec_clk_enable(struct fec_priv *fec)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(fec->clk); i++) {
+		const int err = clk_enable(fec->clk[i]);
+		if (err < 0)
+			return err;
+	}
+
+	return 0;
+}
+
+static void fec_clk_disable(struct fec_priv *fec)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(fec->clk); i++) {
+		if (!IS_ERR_OR_NULL(fec->clk[i]))
+			clk_disable(fec->clk[i]);
+	}
+}
+
+static void fec_clk_put(struct fec_priv *fec)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(fec->clk); i++) {
+		if (!IS_ERR_OR_NULL(fec->clk[i]))
+			clk_put(fec->clk[i]);
+	}
+}
+
+static int fec_clk_get(struct fec_priv *fec)
+{
+	int i, err = 0;
+	static const char *clk_names[ARRAY_SIZE(fec->clk)] = {
+		"ipg", "ahb", "ptp"
+	};
+
+	for (i = 0; i < ARRAY_SIZE(fec->clk); i++) {
+		fec->clk[i] = clk_get(fec->edev.parent, clk_names[i]);
+		if (IS_ERR(fec->clk[i])) {
+			err = PTR_ERR(fec->clk[i]);
+			fec_clk_put(fec);
+			break;
+		}
+	}
+
+	return err;
+}
+
 static int fec_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -681,13 +734,11 @@ static int fec_probe(struct device_d *dev)
 	edev->set_ethaddr = fec_set_hwaddr;
 	edev->parent = dev;
 
-	fec->clk = clk_get(dev, NULL);
-	if (IS_ERR(fec->clk)) {
-		ret = PTR_ERR(fec->clk);
+	ret = fec_clk_get(fec);
+	if (ret < 0)
 		goto err_free;
-	}
 
-	ret = clk_enable(fec->clk);
+	ret = fec_clk_enable(fec);
 	if (ret < 0)
 		goto put_clk;
 
@@ -787,9 +838,9 @@ free_gpio:
 release_res:
 	release_region(iores);
 disable_clk:
-	clk_disable(fec->clk);
+	fec_clk_disable(fec);
 put_clk:
-	clk_put(fec->clk);
+	fec_clk_put(fec);
 err_free:
 	free(fec);
 	return ret;
@@ -817,6 +868,9 @@ static __maybe_unused struct of_device_id imx_fec_dt_ids[] = {
 		.data = (void *)FEC_TYPE_IMX6,
 	}, {
 		.compatible = "fsl,imx6sx-fec",
+		.data = (void *)FEC_TYPE_IMX6,
+	}, {
+		.compatible = "fsl,mvf600-fec",
 		.data = (void *)FEC_TYPE_IMX6,
 	}, {
 		/* sentinel */

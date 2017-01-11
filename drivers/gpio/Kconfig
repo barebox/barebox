@@ -49,6 +49,9 @@ config GPIO_GENERIC_PLATFORM
 config GPIO_IMX
 	def_bool ARCH_IMX
 
+config GPIO_VF610
+	def_bool ARCH_VF610
+
 config GPIO_MXS
 	def_bool ARCH_MXS
 

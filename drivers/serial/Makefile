@@ -20,3 +20,4 @@ obj-$(CONFIG_DRIVER_SERIAL_AUART)		+= serial_auart.o
 obj-$(CONFIG_DRIVER_SERIAL_CADENCE)		+= serial_cadence.o
 obj-$(CONFIG_DRIVER_SERIAL_EFI_STDIO)		+= efi-stdio.o
 obj-$(CONFIG_DRIVER_SERIAL_DIGIC)		+= serial_digic.o
+obj-$(CONFIG_DRIVER_SERIAL_LPUART)		+= serial_lpuart.o

@@ -12,3 +12,7 @@
 &usbdev0 {
 	status = "disabled";
 };
+
+&enet_ext {
+	clock-output-names = "enet_ext";
+};

@@ -67,7 +67,6 @@
 #define BF(value, field)		(((value) << field) & field##_MASK)
 
 /* Other definitions */
-#define FUSE_REGS_COUNT			(16 * 8)
 #define IMX6_OTP_DATA_ERROR_VAL		0xBADABADA
 #define DEF_RELAX			20
 #define MAC_OFFSET			(0x22 * 4)
@@ -75,6 +74,7 @@
 
 struct imx_ocotp_data {
 	int num_regs;
+	u32 (*addr_to_offset)(u32 addr);
 };
 
 struct ocotp_priv {
@@ -86,6 +86,7 @@ struct ocotp_priv {
 	int sense_enable;
 	char ethaddr[6];
 	struct regmap_config map_config;
+	const struct imx_ocotp_data *data;
 };
 
 static struct ocotp_priv *imx_ocotp;
@@ -196,7 +197,8 @@ static int imx_ocotp_reg_read(void *ctx, unsigned int reg, unsigned int *val)
 		if (ret)
 			return ret;
 	} else {
-		*(u32 *)val = readl(priv->base + 0x400 + index * 0x10);
+		*(u32 *)val = readl(priv->base +
+				    priv->data->addr_to_offset(index));
 	}
 
 	return 0;
@@ -276,7 +278,8 @@ static int imx_ocotp_reg_write(void *ctx, unsigned int reg, unsigned int val)
 		if (ret < 0)
 			return ret;
 	} else {
-		writel(val, priv->base + 0x400 + index * 0x10);
+		writel(val, priv->base +
+		       priv->data->addr_to_offset(index));
 	}
 
 	if (priv->permanent_write_enable)
@@ -438,7 +441,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 	void __iomem *base;
 	struct ocotp_priv *priv;
 	int ret = 0;
-	struct imx_ocotp_data *data;
+	const struct imx_ocotp_data *data;
 
 	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
@@ -453,6 +456,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(*priv));
 
+	priv->data      = data;
 	priv->base	= base;
 	priv->clk	= clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
@@ -491,12 +495,48 @@ static int imx_ocotp_probe(struct device_d *dev)
 	return 0;
 }
 
+static u32 imx6sl_addr_to_offset(u32 addr)
+{
+	return 0x400 + addr * 0x10;
+}
+
+static u32 imx6q_addr_to_offset(u32 addr)
+{
+	u32 addendum = 0;
+
+	if (addr > 0x2F) {
+		/*
+		 * If we are reading past Bank 5, take into account a
+		 * 0x100 bytes wide gap between Bank 5 and Bank 6
+		 */
+		addendum += 0x100;
+	}
+
+
+	return imx6sl_addr_to_offset(addr) + addendum;
+}
+
+static u32 vf610_addr_to_offset(u32 addr)
+{
+	if (addr == 0x04)
+		return 0x450;
+	else
+		return imx6q_addr_to_offset(addr);
+}
+
 static struct imx_ocotp_data imx6q_ocotp_data = {
 	.num_regs = 512,
+	.addr_to_offset = imx6q_addr_to_offset,
 };
 
 static struct imx_ocotp_data imx6sl_ocotp_data = {
 	.num_regs = 256,
+	.addr_to_offset = imx6sl_addr_to_offset,
+};
+
+static struct imx_ocotp_data vf610_ocotp_data = {
+	.num_regs = 512,
+	.addr_to_offset = vf610_addr_to_offset,
 };
 
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
@@ -512,6 +552,9 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6ul-ocotp",
 		.data = &imx6q_ocotp_data,
+	}, {
+		.compatible = "fsl,vf610-ocotp",
+		.data = &vf610_ocotp_data,
 	}, {
 		/* sentinel */
 	}

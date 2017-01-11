@@ -237,7 +237,7 @@ static int m88e1318s_config_init(struct phy_device *phydev)
 	return m88e1121_config_init(phydev);
 }
 
-static struct phy_driver marvell_phys[] = {
+static struct phy_driver marvell_drivers[] = {
 	{
 		.phy_id		= MARVELL_PHY_ID_88E1121R,
 		.phy_id_mask	= MARVELL_PHY_ID_MASK,
@@ -278,6 +278,7 @@ static struct phy_driver marvell_phys[] = {
 
 static int __init marvell_phy_init(void)
 {
-	return phy_drivers_register(marvell_phys, ARRAY_SIZE(marvell_phys));
+	return phy_drivers_register(marvell_drivers,
+				    ARRAY_SIZE(marvell_drivers));
 }
 fs_initcall(marvell_phy_init);

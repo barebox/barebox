@@ -32,7 +32,7 @@
 #define MII_M1011_PHY_STATUS_LINK	BIT(10)
 
 #define MII_88E1121_PHY_MSCR_PAGE	2
-#define MII_88E1121_PHY_MSCR		0x15
+#define MII_88E1121_PHY_MSCR_REG	21
 #define MII_88E1121_PHY_MSCR_TX_DELAY	BIT(4)
 #define MII_88E1121_PHY_MSCR_RX_DELAY	BIT(5)
 #define MII_88E1121_PHY_MSCR_DELAY_MASK	\
@@ -186,7 +186,7 @@ static int m88e1121_config_init(struct phy_device *phydev)
 		return ret;
 
 	/* Setup RGMII TX/RX delay */
-	reg = phy_read(phydev, MII_88E1121_PHY_MSCR) &
+	reg = phy_read(phydev, MII_88E1121_PHY_MSCR_REG) &
 		~MII_88E1121_PHY_MSCR_DELAY_MASK;
 	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID ||
 	    phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID)
@@ -194,7 +194,7 @@ static int m88e1121_config_init(struct phy_device *phydev)
 	if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID ||
 	    phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID)
 		reg |= MII_88E1121_PHY_MSCR_TX_DELAY;
-	ret = phy_write(phydev, MII_88E1121_PHY_MSCR, reg);
+	ret = phy_write(phydev, MII_88E1121_PHY_MSCR_REG, reg);
 	if (ret < 0)
 		return ret;
 

@@ -28,9 +28,11 @@ hostprogs-$(CONFIG_ARCH_MXS_USBLOADER)  += mxs-usb-loader
 HOSTCFLAGS_omap3-usb-loader.o = `pkg-config --cflags libusb-1.0`
 HOSTLOADLIBES_omap3-usb-loader  = `pkg-config --libs libusb-1.0`
 hostprogs-$(CONFIG_OMAP3_USB_LOADER)  += omap3-usb-loader
+HOSTCFLAGS_omap4_usbboot.o = `pkg-config --cflags libusb-1.0`
+HOSTLOADLIBES_omap4_usbboot = -lpthread `pkg-config --libs libusb-1.0`
+hostprogs-$(CONFIG_OMAP4_USBBOOT) += omap4_usbboot
 
 subdir-y			+= mod
-subdir-$(CONFIG_OMAP4_USBBOOT)	+= omap4_usbboot
 subdir-$(CONFIG_ARCH_IMX)	+= imx
 subdir-$(CONFIG_X86)		+= setupmbr
 subdir-$(CONFIG_DTC)		+= dtc

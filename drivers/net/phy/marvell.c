@@ -133,6 +133,80 @@ static int marvell_read_status(struct phy_device *phydev)
 	return 0;
 }
 
+static inline bool phy_interface_is_rgmii(struct phy_device *phydev)
+{
+	return phydev->interface >= PHY_INTERFACE_MODE_RGMII &&
+		phydev->interface <= PHY_INTERFACE_MODE_RGMII_TXID;
+};
+
+static int m88e1121_config_aneg(struct phy_device *phydev)
+{
+	int err, oldpage, mscr;
+
+	oldpage = phy_read(phydev, MII_MARVELL_PHY_PAGE);
+
+	err = phy_write(phydev, MII_MARVELL_PHY_PAGE,
+			MII_88E1121_PHY_MSCR_PAGE);
+	if (err < 0)
+		return err;
+
+	if (phy_interface_is_rgmii(phydev)) {
+
+		mscr = phy_read(phydev, MII_88E1121_PHY_MSCR_REG) &
+			MII_88E1121_PHY_MSCR_DELAY_MASK;
+
+		if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID)
+			mscr |= (MII_88E1121_PHY_MSCR_RX_DELAY |
+				 MII_88E1121_PHY_MSCR_TX_DELAY);
+		else if (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID)
+			mscr |= MII_88E1121_PHY_MSCR_RX_DELAY;
+		else if (phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID)
+			mscr |= MII_88E1121_PHY_MSCR_TX_DELAY;
+
+		err = phy_write(phydev, MII_88E1121_PHY_MSCR_REG, mscr);
+		if (err < 0)
+			return err;
+	}
+
+	phy_write(phydev, MII_MARVELL_PHY_PAGE, oldpage);
+
+	err = phy_write(phydev, MII_BMCR, BMCR_RESET);
+	if (err < 0)
+		return err;
+
+	err = phy_write(phydev, MII_M1011_PHY_SCR,
+			MII_M1011_PHY_SCR_AUTO_CROSS);
+	if (err < 0)
+		return err;
+
+	return genphy_config_aneg(phydev);
+}
+
+static int m88e1318_config_aneg(struct phy_device *phydev)
+{
+	int err, oldpage, mscr;
+
+	oldpage = phy_read(phydev, MII_MARVELL_PHY_PAGE);
+
+	err = phy_write(phydev, MII_MARVELL_PHY_PAGE,
+			MII_88E1121_PHY_MSCR_PAGE);
+	if (err < 0)
+		return err;
+
+	mscr = phy_read(phydev, MII_88E1318S_PHY_MSCR1_REG);
+	mscr |= MII_88E1318S_PHY_MSCR1_PAD_ODD;
+
+	err = phy_write(phydev, MII_88E1318S_PHY_MSCR1_REG, mscr);
+	if (err < 0)
+		return err;
+
+	err = phy_write(phydev, MII_MARVELL_PHY_PAGE, oldpage);
+	if (err < 0)
+		return err;
+
+	return m88e1121_config_aneg(phydev);
+}
+
 static int m88e1540_config_init(struct phy_device *phydev)
 {
 	u16 reg;
@@ -244,7 +318,7 @@ static struct phy_driver marvell_drivers[] = {
 		.drv.name = "Marvell 88E1121R",
 		.features = PHY_GBIT_FEATURES,
 		.config_init = &m88e1121_config_init,
-		.config_aneg = &genphy_config_aneg,
+		.config_aneg = &m88e1121_config_aneg,
 		.read_status = &marvell_read_status,
 	},
 	{
@@ -253,7 +327,7 @@ static struct phy_driver marvell_drivers[] = {
 		.drv.name = "Marvell 88E1318S",
 		.features = PHY_GBIT_FEATURES,
 		.config_init = &m88e1318s_config_init,
-		.config_aneg = &genphy_config_aneg,
+		.config_aneg = &m88e1318_config_aneg,
 		.read_status = &marvell_read_status,
 	},
 	{

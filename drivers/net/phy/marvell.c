@@ -19,6 +19,9 @@
 #define MII_M1011_PHY_SCR		0x10
 #define MII_M1011_PHY_SCR_AUTO_CROSS	0x0060
 
+#define MII_88E1121_PHY_LED_CTRL	16
+#define MII_88E1121_PHY_LED_PAGE	3
+
 #define MII_M1011_PHY_STATUS		0x11
 #define MII_M1011_PHY_STATUS_1000	BIT(15)
 #define MII_M1011_PHY_STATUS_100	BIT(14)
@@ -37,9 +40,6 @@
 
 #define MII_88E1318S_PHY_MSCR1_REG	16
 #define MII_88E1318S_PHY_MSCR1_PAD_ODD	BIT(6)
-
-#define MII_88E1540_LED_PAGE		0x3
-#define MII_88E1540_LED_CONTROL		0x10
 
 #define MII_88E1540_QSGMII_PAGE		0x4
 #define MII_88E1540_QSGMII_CONTROL	0x0
@@ -157,8 +157,8 @@ static int m88e1540_config_init(struct phy_device *phydev)
 	 * Link:     On
 	 * No Link:  Off
 	 */
-	phy_write(phydev, MII_MARVELL_PHY_PAGE, MII_88E1540_LED_PAGE);
-	phy_write(phydev, MII_88E1540_LED_CONTROL, 0x1111);
+	phy_write(phydev, MII_MARVELL_PHY_PAGE, MII_88E1121_PHY_LED_PAGE);
+	phy_write(phydev, MII_88E1121_PHY_LED_CTRL, 0x1111);
 
 	/* Power-up the PHY. When going from power down to normal operation,
 	 * software reset and auto-negotiation restart are also performed.

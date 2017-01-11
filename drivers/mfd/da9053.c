@@ -240,6 +240,10 @@ static void da9053_detect_reset_source(struct da9053_priv *da9053)
 	priority = of_get_reset_source_priority(da9053->dev->device_node);
 
 	reset_source_set_priority(type, priority);
+
+	ret = da9053_reg_write(da9053, DA9053_FAULTLOG_REG, val);
+	if (ret < 0)
+		return;
 }
 
 static void __noreturn da9053_force_system_reset(struct restart_handler *rst)
@@ -293,9 +297,18 @@ static int da9053_probe(struct device_d *dev)
 	return 0;
 }
 
+static __maybe_unused struct of_device_id da9053_dt_ids[] = {
+	{
+		.compatible = "dlg,da9052",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d da9053_driver = {
 	.name  = DRIVERNAME,
 	.probe = da9053_probe,
+	.of_compatible = DRV_OF_COMPAT(da9053_dt_ids),
 };
 
 static int da9053_init(void)

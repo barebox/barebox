@@ -152,7 +152,7 @@
 	};
 
 	pmic: dialog@48 { /* DA9053-3HHA1 PMIC */
-		compatible = "dialog,da9053-aa", "dialog,da9052";
+		compatible = "dlg,da9053-aa", "dlg,da9052";
 		reg = <0x48>;
 		interrupt-parent = <&gpio7>;
 		interrupts = <12 IRQ_TYPE_LEVEL_LOW>;

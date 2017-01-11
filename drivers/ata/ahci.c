@@ -207,7 +207,6 @@ static int ahci_read_id(struct ata_port *ata, void *buf)
 {
 	struct ahci_port *ahci = container_of(ata, struct ahci_port, ata);
 	u8 fis[20];
-	int ret;
 
 	memset(fis, 0, sizeof(fis));
 
@@ -216,11 +215,7 @@ static int ahci_read_id(struct ata_port *ata, void *buf)
 	fis[1] = 1 << 7;		/* Command FIS. */
 	fis[2] = ATA_CMD_ID_ATA;	/* Command byte. */
 
-	ret = ahci_io(ahci, fis, sizeof(fis), buf, NULL, SECTOR_SIZE);
-	if (ret)
-		return ret;
-
-	return ret;
+	return ahci_io(ahci, fis, sizeof(fis), buf, NULL, SECTOR_SIZE);
 }
 
 static int ahci_rw(struct ata_port *ata, void *rbuf, const void *wbuf,

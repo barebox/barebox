@@ -179,7 +179,7 @@ static const struct platform_device_id m25p_ids[] = {
 	{"en25f32"},    {"en25p32"},    {"en25q32b"},   {"en25p64"},
 	{"en25q64"},    {"en25qh128"},  {"en25qh256"},
 	{"f25l32pa"},
-	{"mr25h256"},   {"mr25h10"},
+	{"mr25h256"},   {"mr25h10"},    {"mr25h40"},
 	{"gd25q32"},    {"gd25q64"},
 	{"160s33b"},    {"320s33b"},    {"640s33b"},
 	{"mx25l2005a"}, {"mx25l4005a"}, {"mx25l8005"},  {"mx25l1606e"},

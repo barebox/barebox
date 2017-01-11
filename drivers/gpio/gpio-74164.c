@@ -92,6 +92,7 @@ static struct gpio_ops gpio_74164_ops = {
 
 static struct platform_device_id gpio_74164_ids[] = {
 	{ "74hc164" },
+	{ "74lvc594" },
 	{ "74hc595" },
 	{ }
 };

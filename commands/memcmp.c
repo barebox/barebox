@@ -130,8 +130,8 @@ out:
 }
 
 BAREBOX_CMD_HELP_START(memcmp)
-BAREBOX_CMD_HELP_TEXT("Compare memory regions specified with ADDR and ADDR2")
-BAREBOX_CMD_HELP_TEXT("of size COUNT bytes. If source is a file COUNT can")
+BAREBOX_CMD_HELP_TEXT("Compare memory regions specified with ADDR1 and ADDR2")
+BAREBOX_CMD_HELP_TEXT("of size COUNT bytes. If source is a file, COUNT can")
 BAREBOX_CMD_HELP_TEXT("be left unspecified, in which case the whole file is")
 BAREBOX_CMD_HELP_TEXT("compared.")
 BAREBOX_CMD_HELP_TEXT("")

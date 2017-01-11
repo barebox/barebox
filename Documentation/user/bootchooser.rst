@@ -67,7 +67,7 @@ Additionally the remaining_attempts counter can be reset manually using the
 :ref:`command_bootchooser` command. This allows for custom conditions under which
 a system is marked as good.
 In case only the booted system itself knows when it is in a good state, the
-barebox-state tool from the dt-utils_ package can used to reset the remaining_attempts
+barebox-state tool from the dt-utils_ package can be used to reset the remaining_attempts
 counter from the currently running system.
 
 .. _dt-utils: http://git.pengutronix.de/?p=tools/dt-utils.git;a=summary
@@ -79,8 +79,8 @@ Additionally to the target options described above, bootchooser has some general
 options not specific to any target.
 
 ``global.bootchooser.disable_on_zero_attempts``
-  Boolean flag. if 1, bootchooser disables a target (sets priority to 0) whenever the
-  remaining attempts counter reaches 0.
+  Boolean flag. If set to 1, bootchooser disables a target (sets priority to 0) whenever
+  the remaining attempts counter reaches 0.
 ``global.bootchooser.default_attempts``
   The default number of attempts that a target shall be tried starting, used when not
   overwritten with the target specific variable of the same name.
@@ -89,25 +89,28 @@ options not specific to any target.
   of the same name.
 ``global.bootchooser.reset_attempts``
   A space separated list of events that cause bootchooser to reset the
-  remaining_attempts counters of each target that has a non zero priority. possible values:
-  * empty:  counters will never be reset``
+  remaining_attempts counters of each target that has a non zero priority. Possible values:
+
+  * empty: counters will never be reset``
   * power-on: counters will be reset after power-on-reset
   * all-zero: counters will be reset when all targets have zero remaining attempts
 ``global.bootchooser.reset_priorities``
   A space separated list of events that cause bootchooser to reset the priorities of
   all targets. Possible values:
+
   * empty: priorities will never be reset
   * all-zero: priorities will be reset when all targets have zero priority
 ``global.bootchooser.retry``
-  If 1, bootchooser retries booting until one succeeds or no more valid targets exist.
+  If set to 1, bootchooser retries booting until one succeeds or no more valid targets
+  exist.
 ``global.bootchooser.state_prefix``
-  Variable prefix when bootchooser used with state framework as backend for storing runtime
-  data, see below.
+  Variable prefix when bootchooser is used with the state framework as backend for storing
+  runtime data, see below.
 ``global.bootchooser.targets``
   Space separated list of targets that are used. For each entry in the list a corresponding
-  set of ``global.bootchooser.<name>``. variables must exist.
+  set of ``global.bootchooser.<targetname>.<variablename>`` variables must exist.
 ``global.bootchooser.last_chosen``
-  bootchooser sets this to the target that was chosen on last boot (index)
+  bootchooser sets this to the target that was chosen on last boot (index).
 
 Using the State Framework as Backend for Runtime Variable Data
 --------------------------------------------------------------
@@ -178,7 +181,7 @@ Settings
 - ``global.bootchooser.disable_on_zero_attempts=0``
 - ``global.bootchooser.retry=1``
 - ``global.boot.default="bootchooser recovery"``
-- Userspace marks as good
+- Userspace marks as good.
 
 Deployment
 ^^^^^^^^^^
@@ -208,21 +211,22 @@ Settings
 - ``global.bootchooser.disable_on_zero_attempts=0``
 - ``global.bootchooser.retry=1``
 - ``global.boot.default="bootchooser recovery"``
-- Userspace marks as good
+- Userspace marks as good.
 
 Deployment
 ^^^^^^^^^^
 
-#. barebox or flash robot fills all slots with valid systems
+#. barebox or flash robot fills all slots with valid systems.
 #. barebox or flash robot marks slots as good or state contains non zero
-   defaults for the remaining_attempts / priorities
+   defaults for the remaining_attempts/priorities.
 
 Recovery
 ^^^^^^^^
 done by 'recovery' boot target which is booted after the bootchooser falls through due to
 the lack of bootable targets. This target can be:
-- A system that will be booted as recovery
-- A barebox script that will be started
+
+- A system that will be booted as recovery.
+- A barebox script that will be started.
 
 Scenario 3
 ##########
@@ -238,21 +242,22 @@ Settings
 - ``global.bootchooser.disable_on_zero_attempts=1``
 - ``global.bootchooser.retry=1``
 - ``global.boot.default="bootchooser recovery"``
-- Userspace marks as good
+- Userspace marks as good.
 
 Deployment
 ^^^^^^^^^^
 
-- barebox or flash robot fills all slots with valid systems
-- barebox or flash robot marks slots as good
+#. barebox or flash robot fills all slots with valid systems.
+#. barebox or flash robot marks slots as good.
 
 Recovery
 ^^^^^^^^
 
 Done by 'recovery' boot target which is booted after the bootchooser falls through
 due to the lack of bootable targets. This target can be:
-- A system that will be booted as recovery
-- A barebox script that will be started
+
+- A system that will be booted as recovery.
+- A barebox script that will be started.
 
 Updating systems
 ----------------
@@ -262,11 +267,11 @@ update is done under a running Linux system which can be one of the regular boot
 slots or a dedicated recovery system. For the regular slots updating is done like:
 
 - Set the priority of the inactive slot to 0.
-- Update the inactive slot
-- Set priority of the inactive slot to a higher value than the active slot
-- Set remaining_attempts of the inactive slot to nonzero
-- Reboot
-- If necessary update the now inactive, not yet updated slot the same way
+- Update the inactive slot.
+- Set priority of the inactive slot to a higher value than the active slot.
+- Set remaining_attempts of the inactive slot to nonzero.
+- Reboot.
+- If necessary update the now inactive, not yet updated slot the same way.
 
 One way of updating systems is using RAUC_ which integrates well with the bootchooser
 in barebox.

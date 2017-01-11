@@ -43,6 +43,37 @@
 	.set	pop
 	.endm
 
+/*
+ * output a 32-bit value in hex
+ */
+.macro debug_ll_outhexw
+#ifdef CONFIG_DEBUG_LL
+	.set	push
+	.set	reorder
+
+	move	t6, a0
+	li	t5, 32
+
+202:
+	addi	t5, t5, -4
+	srlv	a0, t6, t5
+
+	/* output one hex digit */
+	andi	a0, a0, 15
+	blt	a0, 10, 203f
+
+	addi	a0, a0, ('a' - '9' - 1)
+
+203:
+	addi	a0, a0, '0'
+
+	debug_ll_outc_a0
+
+	bgtz	t5, 202b
+
+	.set	pop
+#endif /* CONFIG_DEBUG_LL */
+.endm
 
 	.macro	mips_nmon
 	.set	push

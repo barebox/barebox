@@ -7,7 +7,7 @@ KALLSYMS += --symbol-prefix=_
 archprepare: maketools
 
 	@$(kecho) "  SYMLINK include/nios_sopc.h -> arch/nios2/boards/$(board-y)/nios_sopc.h"
-	@ln -fsn ../arch/nios2/boards/$(board-y)/nios_sopc.h include/nios_sopc.h
+	@ln -fsn $(src)/arch/nios2/boards/$(board-y)/nios_sopc.h $(obj)/include/nios_sopc.h
 
 PHONY += maketools
 

@@ -147,7 +147,7 @@ static int do_menu_add(struct cmd_menu *cm)
 	if (!m->name)
 		goto free;
 
-	menu_add_title(m, strdup(cm->description));
+	menu_add_title(m, cm->description);
 
 	ret = menu_add(m);
 

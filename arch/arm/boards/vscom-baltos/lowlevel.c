@@ -126,6 +126,12 @@ ENTRY_FUNCTION(start_am33xx_baltos_sdram, r0, r1, r2)
 {
 	void *fdt;
 
+	/*
+	 * Prolong global reset duration to the max. value (0xff)
+	 * and leave power domain reset to its default value (0x10).
+	 */
+	__raw_writel(0x000010ff, AM33XX_PRM_RSTTIME);
+
 	fdt = __dtb_am335x_baltos_minimal_start;
 
 	fdt -= get_runtime_offset();

@@ -271,7 +271,7 @@ static struct device_d *of_amba_device_create(struct device_node *np)
 	/* Allow the HW Peripheral ID to be overridden */
 	of_property_read_u32(np, "arm,primecell-periphid", &dev->periphid);
 
-	debug("register device 0x%08x\n", dev->dev.resource[0].start);
+	debug("register device %pa\n", &dev->dev.resource[0].start);
 
 	ret = amba_device_add(dev);
 	if (ret)

@@ -155,7 +155,8 @@ void at91_bootstrap_menu(void)
 	struct menu_entry *me;
 
 	m = menu_alloc();
-	m->display = m->name = "boot";
+	m->name = "boot";
+	menu_add_title(m, m->name);
 
 	menu_add(m);
 

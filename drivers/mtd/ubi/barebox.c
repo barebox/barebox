@@ -162,6 +162,21 @@ static loff_t ubi_volume_cdev_lseek(struct cdev *cdev, loff_t ofs)
 	return ofs;
 }
 
+static int ubi_volume_cdev_truncate(struct cdev *cdev, size_t size)
+{
+	struct ubi_volume_cdev_priv *priv = cdev->priv;
+	struct ubi_device *ubi = priv->ubi;
+	struct ubi_volume *vol = priv->vol;
+	uint64_t rsvd_bytes;
+
+	rsvd_bytes = (long long)vol->reserved_pebs *
+			ubi->leb_size - vol->data_pad;
+	if (size > rsvd_bytes)
+		return -ENOSPC;
+
+	return 0;
+}
+
 static int ubi_volume_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
 {
 	struct ubi_volume_cdev_priv *priv = cdev->priv;
@@ -210,6 +225,7 @@ static struct file_operations ubi_volume_fops = {
 	.write  = ubi_volume_cdev_write,
 	.lseek	= ubi_volume_cdev_lseek,
 	.ioctl  = ubi_volume_cdev_ioctl,
+	.truncate = ubi_volume_cdev_truncate,
 };
 
 int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
@@ -227,9 +243,6 @@ int ubi_volume_cdev_add(struct ubi_device *ubi, struct ubi_volume *vol)
 	cdev->name = basprintf("%s.%s", ubi->cdev.name, vol->name);
 	cdev->priv = priv;
 	cdev->size = vol->used_bytes;
-
-	if (vol->vol_type == UBI_STATIC_VOLUME)
-		cdev->flags = DEVFS_IS_CHARACTER_DEV;
 
 	cdev->dev = &vol->dev;
 	ubi_msg(ubi, "registering %s as /dev/%s", vol->name, cdev->name);

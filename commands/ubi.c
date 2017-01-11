@@ -42,7 +42,7 @@ static int do_ubiupdatevol(int argc, char *argv[])
 		return 1;
 	}
 
-	fd_vol = open(argv[optind], O_WRONLY);
+	fd_vol = open(argv[optind], O_WRONLY | O_TRUNC);
 	if (fd_vol < 0) {
 		perror("open volume");
 		ret = 1;

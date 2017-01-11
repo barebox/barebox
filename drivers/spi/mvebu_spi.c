@@ -31,8 +31,13 @@
 #define  IF_READ_READY		BIT(1)
 #define  IF_CS_ENABLE		BIT(0)
 #define SPI_IF_CONFIG		0x04
+
+#define  IF_RXLSBF		BIT(14)
+#define  IF_TXLSBF		BIT(13)
+
 #define  IF_CLK_DIV(x)		((x) << 11)
 #define  IF_CLK_DIV_MASK	(0x7 << 11)
+
 #define  IF_FAST_READ		BIT(10)
 #define  IF_ADDRESS_LEN_4BYTE	(3 << 8)
 #define  IF_ADDRESS_LEN_3BYTE	(2 << 8)
@@ -43,8 +48,8 @@
 #define  IF_TRANSFER_2BYTE	BIT(5)
 #define  IF_CLK_PRESCALE_POW2	BIT(4)
 #define  IF_CLK_PRESCALE(x)	((x) & 0x0f)
-#define  IF_CLK_PRE_PRESCALE(x)	(((((x) & 0xc) << 1) | ((x) & 0x1)) << 4)
-#define  IF_CLK_PRESCALE_MASK	(IF_CLK_PRESCALE(7) | IF_CLK_PRE_PRESCALE(7))
+#define  IF_CLK_PRE_PRESCALE(x)	(((((x) & 0x6) << 6) | ((x) & 0x1)) << 4)
+#define  IF_CLK_PRESCALE_MASK	(IF_CLK_PRESCALE(0xf) | IF_CLK_PRE_PRESCALE(7))
 #define SPI_DATA_OUT		0x08
 #define SPI_DATA_IN		0x0c
 #define SPI_INT_CAUSE		0x10
@@ -128,22 +133,21 @@ static int mvebu_spi_set_baudrate(struct mvebu_spi *p, u32 speed)
 #if defined(CONFIG_ARCH_ARMADA_370) || defined(CONFIG_ARCH_ARMADA_XP)
 static int armada_370_xp_spi_set_baudrate(struct mvebu_spi *p, u32 speed)
 {
-	u32 pscl, pdiv, rate, val;
+	u32 pscl, pdiv = 0, val;
 
 	/* prescaler values: 1,2,3,...,15 */
 	pscl = DIV_ROUND_UP(clk_get_rate(p->clk), speed);
 
 	/* additional prescaler divider: 1, 2, 4, 8, 16, 32, 64, 128 */
-	pdiv = 0; rate = pscl;
-	while (rate > 15 && pdiv <= 7) {
-		rate /= 2;
+	while (pscl > 15 && pdiv <= 7) {
+		pscl = DIV_ROUND_UP(pscl, 2);
 		pdiv++;
 	}
 
-	dev_dbg(p->master.dev, "%s: clk = %lu, speed = %u, pscl = %d, pdiv = %d\n",
+	dev_dbg(p->master.dev, "%s: clk = %lu, speed = %u, pscl = %u, pdiv = %u\n",
 		__func__, clk_get_rate(p->clk), speed, pscl, pdiv);
 
-	if (rate > 15 || pdiv > 7)
+	if (pscl > 15)
 		return -EINVAL;
 
 	val = readl(p->base + SPI_IF_CONFIG) & ~(IF_CLK_PRESCALE_MASK);
@@ -193,6 +197,8 @@ static int dove_spi_set_baudrate(struct mvebu_spi *p, u32 speed)
 
 static int mvebu_spi_set_mode(struct mvebu_spi *p, u8 mode)
 {
+	u32 val;
+
 	/*
 	 * From public datasheets of Orion SoCs, it is unclear
 	 * if the SPI controller supports setting CPOL/CPHA.
@@ -203,12 +209,19 @@ static int mvebu_spi_set_mode(struct mvebu_spi *p, u8 mode)
 	 * other mode than SPI_MODE0.
 	 */
 
-	if ((mode & (SPI_CPOL|SPI_CPHA)) == SPI_MODE_0)
-		return 0;
+	if ((mode & (SPI_CPOL|SPI_CPHA)) != SPI_MODE_0) {
+		pr_err("%s: unsupported SPI mode %02x\n", __func__, mode);
+		return -EINVAL;
+	}
 
-	pr_err("%s: unsupported SPI mode %02x\n", __func__, mode);
+	val = readl(p->base + SPI_IF_CONFIG);
+	if (mode & SPI_LSB_FIRST)
+		val |= IF_RXLSBF | IF_TXLSBF;
+	else
+		val &= ~(IF_RXLSBF | IF_TXLSBF);
+	writel(val, p->base + SPI_IF_CONFIG);
 
-	return -EINVAL;
+	return 0;
 }
 
 static int mvebu_spi_setup(struct spi_device *spi)
@@ -234,13 +247,11 @@ static int mvebu_spi_setup(struct spi_device *spi)
 
 static inline int mvebu_spi_wait_for_read_ready(struct mvebu_spi *p)
 {
-	int timeout = 100;
-	while ((readl(p->base + SPI_IF_CTRL) & IF_READ_READY) == 0 &&
-		timeout--)
-		udelay(1);
-	if (timeout < 0)
-		return -EIO;
-	return 0;
+	int ret;
+
+	ret = wait_on_timeout(100 * USECOND,
+			      readl(p->base + SPI_IF_CTRL) & IF_READ_READY);
+	return ret;
 }
 
 static int mvebu_spi_do_transfer(struct spi_device *spi,
@@ -253,13 +264,19 @@ static int mvebu_spi_do_transfer(struct spi_device *spi,
 
 	if (t->bits_per_word)
 		ret = mvebu_spi_set_transfer_size(priv, spi->bits_per_word);
-	if (ret)
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set transfer size (bpw = %u)\n",
+			(unsigned)spi->bits_per_word);
 		return ret;
+	}
 
 	if (t->speed_hz)
 		ret = priv->set_baudrate(priv, t->speed_hz);
-	if (ret)
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set baudrate to %u Hz\n",
+			(unsigned)t->speed_hz);
 		return ret;
+	}
 
 	inc = (priv->data16) ? 2 : 1;
 	for (n = 0; n < t->len; n += inc) {
@@ -279,12 +296,12 @@ static int mvebu_spi_do_transfer(struct spi_device *spi,
 			return ret;
 		}
 
-		data = readl(priv->base + SPI_DATA_IN);
-
-		if (rxdata)
+		if (rxdata) {
+			data = readl(priv->base + SPI_DATA_IN);
 			*rxdata++ = (data & 0xff);
-		if (rxdata && priv->data16)
-			*rxdata++ = (data >> 8) & 0xff;
+			if (priv->data16)
+				*rxdata++ = (data >> 8) & 0xff;
+		}
 	}
 
 	return 0;
@@ -296,23 +313,31 @@ static int mvebu_spi_transfer(struct spi_device *spi, struct spi_message *msg)
 	int ret;
 	struct mvebu_spi *priv = priv_from_spi_device(spi);
 
-	ret = mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, true);
-	if (ret)
+	ret = mvebu_spi_set_mode(priv, spi->mode);
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set mode (0x%x)\n", (unsigned)spi->mode);
 		return ret;
+	}
+
+	ret = mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, true);
+	if (ret) {
+		dev_err(&spi->dev, "Failed to set chip select\n");
+		return ret;
+	}
 
 	msg->actual_length = 0;
 
 	list_for_each_entry(t, &msg->transfers, transfer_list) {
 		ret = mvebu_spi_do_transfer(spi, t);
 		if (ret)
-			break;
+			goto err_transfer;
 		msg->actual_length += t->len;
 	}
 
-	ret = mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, false);
-	if (ret)
-		return ret;
+	return mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, false);
 
+err_transfer:
+	mvebu_spi_set_cs(priv, spi->chip_select, spi->mode, false);
 	return ret;
 }
 

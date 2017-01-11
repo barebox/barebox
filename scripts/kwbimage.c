@@ -347,6 +347,7 @@ static void usage(const char *prog)
 	printf("   -h: this help text\n");
 	printf(" Options specific to image creation:\n");
 	printf("   -p: path to payload image. Overrides the PAYLOAD line from kwbimage.cfg\n");
+	printf("   -b: path to binary image. Overrides the BINARY line from kwbimage.cfg\n");
 	printf("   -m: boot media. Overrides the BOOT_FROM line from kwbimage.cfg\n");
 	printf("   -d: load address. Overrides the DEST_ADDR line from kwbimage.cfg\n");
 	printf("   -e: exec address. Overrides the EXEC_ADDR line from kwbimage.cfg\n");
@@ -490,7 +491,7 @@ static int image_extract_binary_hdr_v1(const void *binary, const char *output,
 	}
 
 	ret = fwrite(binary + (nargs + 1) * sizeof(unsigned int),
-		     binsz - (nargs + 1) * sizeof(unsigned int), 1,
+		     binsz - (nargs + 2) * sizeof(unsigned int), 1,
 		     binaryout);
 	if (ret != 1) {
 		fprintf(stderr, "Could not write to output file %s\n",
@@ -523,7 +524,7 @@ static int image_extract_v1(void *fdimap, const char *output, FILE *focfg)
 	int opthdrid;
 
 	/*
-	 * Verify the checkum. We have to substract the checksum
+	 * Verify the checksum. We have to subtract the checksum
 	 * itself, because when the checksum is calculated, the
 	 * checksum field is 0.
 	 */
@@ -869,8 +870,8 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 			return NULL;
 		}
 
-		headersz += s.st_size +
-			binarye->binary.nargs * sizeof(unsigned int);
+		headersz += ALIGN_SUP(s.st_size, 4) +
+			12 + binarye->binary.nargs * sizeof(unsigned int);
 		hasext = 1;
 	}
 
@@ -886,7 +887,7 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 		}
 
 		/* payload size must be multiple of 32b */
-		payloadsz = 4 * ((s.st_size + 3)/4);
+		payloadsz = ALIGN_SUP(s.st_size, 4);
 	}
 
 	/* The payload should be aligned on some reasonable
@@ -951,8 +952,8 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 		fstat(fileno(bin), &s);
 
 		binhdrsz = sizeof(struct opt_hdr_v1) +
-			(binarye->binary.nargs + 1) * sizeof(unsigned int) +
-			s.st_size;
+			(binarye->binary.nargs + 2) * sizeof(unsigned int) +
+			ALIGN_SUP(s.st_size, 4);
 		hdr->headersz_lsb = binhdrsz & 0xFFFF;
 		hdr->headersz_msb = (binhdrsz & 0xFFFF0000) >> 16;
 
@@ -976,7 +977,7 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 
 		fclose(bin);
 
-		cur += s.st_size;
+		cur += ALIGN_SUP(s.st_size, 4);
 
 		/*
 		 * For now, we don't support more than one binary
@@ -1186,6 +1187,30 @@ static int image_override_payload(struct image_cfg_element *image_cfg,
 	return 0;
 }
 
+static int image_override_binary(struct image_cfg_element *image_cfg,
+				 int *cfgn, char *binary)
+{
+	struct image_cfg_element *e;
+	int cfgi = *cfgn;
+
+	if (!binary)
+		return 0;
+
+	e = image_find_option(image_cfg, *cfgn, IMAGE_CFG_BINARY);
+	if (e) {
+		e->binary.file = binary;
+		return 0;
+	}
+
+	image_cfg[cfgi].type = IMAGE_CFG_BINARY;
+	image_cfg[cfgi].binary.file = binary;
+	image_cfg[cfgi].binary.nargs = 0;
+	cfgi++;
+
+	*cfgn = cfgi;
+	return 0;
+}
+
 static int image_override_bootmedia(struct image_cfg_element *image_cfg,
 				    int *cfgn, const char *bootmedia)
 {
@@ -1332,9 +1357,9 @@ static void image_dump_config(struct image_cfg_element *image_cfg,
 }
 
 static int image_create(const char *input, const char *output,
-			const char *payload, const char *bootmedia,
-			uint32_t dstaddr, uint32_t execaddr,
-			int verbose)
+			const char *payload, char *binary,
+			const char *bootmedia, uint32_t dstaddr,
+			uint32_t execaddr, int verbose)
 {
 	struct image_cfg_element *image_cfg;
 	FILE *outputimg;
@@ -1361,6 +1386,7 @@ static int image_create(const char *input, const char *output,
 	}
 
 	image_override_payload(image_cfg, &cfgn, payload);
+	image_override_binary(image_cfg, &cfgn, binary);
 	image_override_bootmedia(image_cfg, &cfgn, bootmedia);
 	image_override_dstaddr(image_cfg, &cfgn, dstaddr);
 	image_override_execaddr(image_cfg, &cfgn, execaddr);
@@ -1433,9 +1459,10 @@ int main(int argc, char *argv[])
 	int action = -1, opt, verbose = 0;
 	const char *input = NULL, *output = NULL,
 		*payload = NULL, *bootmedia = NULL;
+	char *binary = NULL;
 	uint32_t execaddr = ADDR_INVALID, dstaddr = ADDR_INVALID;
 
-	while ((opt = getopt(argc, argv, "hxci:o:p:m:e:d:v")) != -1) {
+	while ((opt = getopt(argc, argv, "hxci:o:p:b:m:e:d:v")) != -1) {
 		switch (opt) {
 		case 'x':
 			action = ACTION_EXTRACT;
@@ -1451,6 +1478,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'p':
 			payload = optarg;
+			break;
+		case 'b':
+			binary = optarg;
 			break;
 		case 'm':
 			bootmedia = optarg;
@@ -1502,7 +1532,7 @@ int main(int argc, char *argv[])
 	case ACTION_EXTRACT:
 		return image_extract(input, output);
 	case ACTION_CREATE:
-		return image_create(input, output, payload,
+		return image_create(input, output, payload, binary,
 				    bootmedia, dstaddr, execaddr,
 				    verbose);
 	case ACTION_HELP:

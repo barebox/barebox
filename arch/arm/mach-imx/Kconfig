@@ -80,6 +80,10 @@ config BAREBOX_UPDATE_IMX_EXTERNAL_NAND
 	depends on MTD_WRITE
 	default y
 
+config RESET_IMX_SRC
+	def_bool y
+	depends on ARCH_IMX6 || ARCH_IMX50 || ARCH_IMX51 || ARCH_IMX53
+
 comment "Freescale i.MX System-on-Chip"
 
 config ARCH_IMX1
@@ -258,6 +262,7 @@ config MACH_FREESCALE_MX53_VMX53
 config MACH_PHYTEC_SOM_IMX6
         bool "Phytec phyCARD-i.MX6 and phyFLEX-i.MX6"
         select ARCH_IMX6
+	select ARCH_IMX6UL
 
 config MACH_DFI_FS700_M60
 	bool "DFI i.MX6 FS700 M60 Q7 Board"

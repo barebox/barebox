@@ -167,6 +167,46 @@ static uint32_t calc_chksum(void *buf, size_t size)
 	return ~chksum;
 }
 
+struct fcb_block *read_fcb_hamming_13_8(void *rawpage)
+{
+	int i;
+	int bitflips = 0, bit_to_flip;
+	u8 parity, np, syndrome;
+	u8 *fcb, *ecc;
+
+	fcb = rawpage + 12;
+	ecc = rawpage + 512 + 12;
+
+	for (i = 0; i < 512; i++) {
+		parity = ecc[i];
+		np = calculate_parity_13_8(fcb[i]);
+
+		syndrome = np ^ parity;
+		if (syndrome == 0)
+			continue;
+
+		if (!(hweight8(syndrome) & 1)) {
+			pr_err("Uncorrectable error at offset %d\n", i);
+			return ERR_PTR(-EIO);
+		}
+
+		bit_to_flip = lookup_single_error_13_8(syndrome);
+		if (bit_to_flip < 0) {
+			pr_err("Uncorrectable error at offset %d\n", i);
+			return ERR_PTR(-EIO);
+		}
+
+		bitflips++;
+
+		if (bit_to_flip > 7)
+			ecc[i] ^= 1 << (bit_to_flip - 8);
+		else
+			fcb[i] ^= 1 << bit_to_flip;
+	}
+
+	return xmemdup(rawpage + 12, 512);
+}
+
 static __maybe_unused void dump_fcb(void *buf)
 {
 	struct fcb_block *fcb = buf;
@@ -258,11 +298,8 @@ static ssize_t raw_write_page(struct mtd_info *mtd, void *buf, loff_t offset)
 
 static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
 {
-	int i;
-	int bitflips = 0, bit_to_flip;
-	u8 parity, np, syndrome;
-	u8 *fcb, *ecc;
 	int ret;
+	struct fcb_block *fcb;
 	void *rawpage;
 
 	*retfcb = NULL;
@@ -275,40 +312,14 @@ static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
 		goto err;
 	}
 
-	fcb = rawpage + 12;
-	ecc = rawpage + 512 + 12;
-
-	for (i = 0; i < 512; i++) {
-		parity = ecc[i];
-		np = calculate_parity_13_8(fcb[i]);
-
-		syndrome = np ^ parity;
-		if (syndrome == 0)
-			continue;
-
-		if (!(hweight8(syndrome) & 1)) {
-			pr_err("Uncorrectable error at offset %d\n", i);
-			ret = -EIO;
-			goto err;
-		}
-
-		bit_to_flip = lookup_single_error_13_8(syndrome);
-		if (bit_to_flip < 0) {
-			pr_err("Uncorrectable error at offset %d\n", i);
-			ret = -EIO;
-			goto err;
-		}
-
-		bitflips++;
-
-		if (bit_to_flip > 7)
-			ecc[i] ^= 1 << (bit_to_flip - 8);
-		else
-			fcb[i] ^= 1 << bit_to_flip;
+	fcb = read_fcb_hamming_13_8(rawpage);
+	if (IS_ERR(fcb)) {
+		pr_err("Cannot read fcb\n");
+		ret = PTR_ERR(fcb);
+		goto err;
 	}
 
-	*retfcb = xmemdup(rawpage + 12, 512);
-
+	*retfcb = fcb;
 	ret = 0;
 err:
 	free(rawpage);

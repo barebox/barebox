@@ -16,4 +16,8 @@ config DRIVER_VIDEO_IMX_IPUV3_HDMI
 	depends on DRIVER_VIDEO_EDID
 	select OFDEVICE
 
+config DRIVER_VIDEO_IMX_IPUV3_PARALLEL
+	bool "IPUv3 parallel display support"
+	select OFDEVICE
+
 endif

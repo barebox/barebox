@@ -28,21 +28,12 @@
 	status = "okay";
 };
 
+&ethphy {
+	max-speed = <1000>;
+};
+
 &fec {
 	status = "okay";
-	phy-handle = <&ethphy>;
-	phy-mode = "rgmii";
-	phy-reset-gpios = <&gpio1 14 1>;
-
-	mdio {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		ethphy: ethernet-phy@3 {
-			reg = <3>;
-			max-speed = <1000>;
-		};
-	};
 };
 
 &flash {

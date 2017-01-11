@@ -281,6 +281,8 @@ unsigned int pwm_get_duty_cycle(struct pwm_device *pwm)
  */
 int pwm_enable(struct pwm_device *pwm)
 {
+	pwm->p_enable = 1;
+
 	if (!test_and_set_bit(FLAG_ENABLED, &pwm->flags))
 		return pwm->chip->ops->enable(pwm->chip);
 
@@ -293,6 +295,8 @@ EXPORT_SYMBOL_GPL(pwm_enable);
  */
 void pwm_disable(struct pwm_device *pwm)
 {
+	pwm->p_enable = 0;
+
 	if (test_and_clear_bit(FLAG_ENABLED, &pwm->flags))
 		pwm->chip->ops->disable(pwm->chip);
 }

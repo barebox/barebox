@@ -9,7 +9,7 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include "imx6qdl.dtsi"
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	chosen {
@@ -76,7 +76,21 @@
 &fec {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_enet>;
+	phy-handle = <&ethphy>;
+	phy-mode = "rgmii";
+	phy-reset-gpios = <&gpio1 14 GPIO_ACTIVE_LOW>;
 	status = "disabled";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy: ethernet-phy@3 {
+			reg = <3>;
+			txc-skew-ps = <1680>;
+			rxc-skew-ps = <1860>;
+		};
+	};
 };
 
 &gpmi {
@@ -119,9 +133,9 @@
 	clock-frequency = <400000>;
 	status = "okay";
 
-	eeprom: 24c32@50 {
+	eeprom: eeprom@50 {
 		status = "disabled";
-		compatible = "st,24c32";
+		compatible = "24c32";
 		reg = <0x50>;
 	};
 };

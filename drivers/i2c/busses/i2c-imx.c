@@ -673,6 +673,7 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 		ret = PTR_ERR(i2c_fsl->clk);
 		goto fail;
 	}
+	clk_enable(i2c_fsl->clk);
 #endif
 
 	i2c_fsl->hwdata = of_device_get_match_data(pdev);

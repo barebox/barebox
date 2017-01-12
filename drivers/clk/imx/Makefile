@@ -5,6 +5,7 @@ obj-$(CONFIG_COMMON_CLK) +=	\
 	clk-pfd.o		\
 	clk-gate2.o		\
 	clk-gate-exclusive.o	\
+	clk-cpu.o		\
 	clk.o
 
 obj-$(CONFIG_ARCH_IMX1)   += clk-imx1.o

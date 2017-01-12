@@ -125,5 +125,8 @@ struct clk *imx_clk_gate_exclusive(const char *name, const char *parent,
 
 void imx_check_clocks(struct clk *clks[], unsigned int count);
 
+struct clk *imx_clk_cpu(const char *name, const char *parent_name,
+		struct clk *div, struct clk *mux, struct clk *pll,
+		struct clk *step);
 
 #endif /* __IMX_CLK_H */

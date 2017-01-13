@@ -791,6 +791,9 @@ static int imx7_ccm_probe(struct device_d *dev)
 	clks[IMX7D_EIM_ROOT_CLK] = imx_clk_gate4("eim_root_clk", "eim_post_div", base + 0x4160, 0);
 	clks[IMX7D_NAND_ROOT_CLK] = imx_clk_gate4("nand_root_clk", "nand_post_div", base + 0x4140, 0);
 	clks[IMX7D_QSPI_ROOT_CLK] = imx_clk_gate4("qspi_root_clk", "qspi_post_div", base + 0x4150, 0);
+	clks[IMX7D_USB_CTRL_CLK] = imx_clk_gate4("usb_ctrl_clk", "osc", base + 0x4680, 0);
+	clks[IMX7D_USB_PHY1_CLK] = imx_clk_gate4("usbphy1_clk", "osc", base + 0x46a0, 0);
+	clks[IMX7D_USB_PHY2_CLK] = imx_clk_gate4("usbphy2_clk", "osc", base + 0x46b0, 0);
 	clks[IMX7D_USDHC1_ROOT_CLK] = imx_clk_gate4("usdhc1_root_clk", "usdhc1_post_div", base + 0x46c0, 0);
 	clks[IMX7D_USDHC2_ROOT_CLK] = imx_clk_gate4("usdhc2_root_clk", "usdhc2_post_div", base + 0x46d0, 0);
 	clks[IMX7D_USDHC3_ROOT_CLK] = imx_clk_gate4("usdhc3_root_clk", "usdhc3_post_div", base + 0x46e0, 0);

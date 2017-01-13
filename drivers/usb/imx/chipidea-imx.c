@@ -27,6 +27,7 @@
 #include <usb/fsl_usb2.h>
 #include <linux/err.h>
 #include <linux/phy/phy.h>
+#include <linux/clk.h>
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
@@ -44,6 +45,7 @@ struct imx_chipidea {
 	struct regulator *vbus;
 	struct phy *phy;
 	struct usb_phy *usbphy;
+	struct clk *clk;
 };
 
 static int imx_chipidea_port_init(void *drvdata)
@@ -267,6 +269,17 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci->vbus = regulator_get(dev, "vbus");
 	if (IS_ERR(ci->vbus))
 		ci->vbus = NULL;
+
+	/*
+	 * Some devices have more than one clock, in this case they are enabled
+	 * by default in the clock driver. At least enable the main clock for
+	 * devices which have only one.
+	 */
+	ci->clk = clk_get(dev, NULL);
+	if (IS_ERR(ci->clk))
+		return PTR_ERR(ci->clk);
+
+	clk_enable(ci->clk);
 
 	if (of_property_read_bool(dev->device_node, "fsl,usbphy")) {
 		ci->phy = of_phy_get_by_phandle(dev, "fsl,usbphy", 0);

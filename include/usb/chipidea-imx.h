@@ -48,7 +48,7 @@ struct imxusb_platformdata {
 	enum imx_usb_mode mode;
 };
 
-int imx_usbmisc_port_init(int port, unsigned flags);
-int imx_usbmisc_port_post_init(int port, unsigned flags);
+int imx_usbmisc_port_init(struct device_d *dev, int port, unsigned flags);
+int imx_usbmisc_port_post_init(struct device_d *dev, int port, unsigned flags);
 
 #endif /* __USB_CHIPIDEA_IMX_H */

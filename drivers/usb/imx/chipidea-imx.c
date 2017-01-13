@@ -37,6 +37,7 @@ struct imx_chipidea {
 	unsigned long flags;
 	uint32_t mode;
 	int portno;
+	struct device_d *usbmisc;
 	enum usb_phy_interface phymode;
 	struct param_d *param_mode;
 	int role_registered;
@@ -67,7 +68,7 @@ static int imx_chipidea_port_init(void *drvdata)
 			return ret;
 	}
 
-	ret = imx_usbmisc_port_init(ci->portno, ci->flags);
+	ret = imx_usbmisc_port_init(ci->usbmisc, ci->portno, ci->flags);
 	if (ret)
 		dev_err(ci->dev, "misc init failed: %s\n", strerror(-ret));
 
@@ -79,7 +80,7 @@ static int imx_chipidea_port_post_init(void *drvdata)
 	struct imx_chipidea *ci = drvdata;
 	int ret;
 
-	ret = imx_usbmisc_port_post_init(ci->portno, ci->flags);
+	ret = imx_usbmisc_port_post_init(ci->usbmisc, ci->portno, ci->flags);
 	if (ret)
 		dev_err(ci->dev, "post misc init failed: %s\n", strerror(-ret));
 
@@ -93,6 +94,10 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 
 	if (of_parse_phandle_with_args(ci->dev->device_node, "fsl,usbmisc",
 					"#index-cells", 0, &out_args))
+		return -ENODEV;
+
+	ci->usbmisc = of_find_device_by_node(out_args.np);
+	if (!ci->usbmisc)
 		return -ENODEV;
 
 	ci->portno = out_args.args[0];

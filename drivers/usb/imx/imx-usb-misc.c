@@ -43,6 +43,11 @@ struct imx_usb_misc_data {
 	int (*post_init)(void __iomem *base, int port, unsigned int flags);
 };
 
+struct imx_usb_misc_priv {
+	struct imx_usb_misc_data *data;
+	void __iomem *base;
+};
+
 static __maybe_unused int mx25_initialize_usb_hw(void __iomem *base, int port, unsigned int flags)
 {
 	unsigned int v;
@@ -552,35 +557,37 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 	},
 };
 
-static struct imx_usb_misc_data *imxusbmisc_data;
-static void __iomem *usbmisc_base;
-
-int imx_usbmisc_port_init(int port, unsigned flags)
+int imx_usbmisc_port_init(struct device_d *dev, int port, unsigned flags)
 {
-	if (!imxusbmisc_data)
+	struct imx_usb_misc_priv *usbmisc = dev->priv;
+
+	if (!usbmisc)
 		return -ENODEV;
 
-	if (!imxusbmisc_data->init)
+	if (!usbmisc->data->init)
 		return 0;
 
-	return imxusbmisc_data->init(usbmisc_base, port, flags);
+	return usbmisc->data->init(usbmisc->base, port, flags);
 }
 
-int imx_usbmisc_port_post_init(int port, unsigned flags)
+int imx_usbmisc_port_post_init(struct device_d *dev, int port, unsigned flags)
 {
-	if (!imxusbmisc_data)
+	struct imx_usb_misc_priv *usbmisc = dev->priv;
+
+	if (!usbmisc)
 		return -ENODEV;
 
-	if (!imxusbmisc_data->post_init)
+	if (!usbmisc->data->post_init)
 		return 0;
 
-	return imxusbmisc_data->post_init(usbmisc_base, port, flags);
+	return usbmisc->data->post_init(usbmisc->base, port, flags);
 }
 
 static int imx_usbmisc_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct imx_usb_misc_data *devtype;
+	struct imx_usb_misc_priv *usbmisc = dev->priv;
 	int ret;
 
 	ret = dev_get_drvdata(dev, (const void **)&devtype);
@@ -590,9 +597,10 @@ static int imx_usbmisc_probe(struct device_d *dev)
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	usbmisc_base = IOMEM(iores->start);
 
-	imxusbmisc_data = devtype;
+	usbmisc = xzalloc(sizeof(*usbmisc));
+	usbmisc->base = IOMEM(iores->start);
+	usbmisc->data = devtype;
 
 	return 0;
 }

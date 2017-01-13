@@ -353,6 +353,7 @@ static __maybe_unused struct imx_usb_misc_data mx5_data = {
 
 #define MX6_USB_CTRL(n)			((n) * 4)
 #define MX6_USB_CTRL_OVER_CUR_DIS	(1 << 7)
+#define MX6_USB_CTRL_OVER_CUR_ACT_HIGH	(1 << 8)
 
 static void mx6_hsic_pullup(unsigned long reg, int on)
 {
@@ -427,6 +428,46 @@ static __maybe_unused struct imx_usb_misc_data mx6_data = {
 	.post_init = mx6_post_init,
 };
 
+#define MX7D_USBNC_USB_CTRL2		0x4
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_MASK	0x3
+#define MX7D_USB_VBUS_WAKEUP_SOURCE(v)		(v << 0)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_VBUS	MX7D_USB_VBUS_WAKEUP_SOURCE(0)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_AVALID	MX7D_USB_VBUS_WAKEUP_SOURCE(1)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_BVALID	MX7D_USB_VBUS_WAKEUP_SOURCE(2)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_SESS_END	MX7D_USB_VBUS_WAKEUP_SOURCE(3)
+
+static int usbmisc_imx7d_init(void __iomem *base, int port,
+		unsigned int flags)
+{
+	u32 reg;
+
+	if (port >= 1)
+		return -EINVAL;
+
+	reg = readl(base);
+	if (flags & MXC_EHCI_DISABLE_OVERCURRENT) {
+		reg |= MX6_USB_CTRL_OVER_CUR_DIS;
+	} else {
+		reg &= ~MX6_USB_CTRL_OVER_CUR_DIS;
+		if (flags & MXC_EHCI_OC_PIN_ACTIVE_LOW)
+			reg &= ~MX6_USB_CTRL_OVER_CUR_ACT_HIGH;
+		else
+			reg |= MX6_USB_CTRL_OVER_CUR_ACT_HIGH;
+	}
+	writel(reg, base);
+
+	reg = readl(base + MX7D_USBNC_USB_CTRL2);
+	reg &= ~MX7D_USB_VBUS_WAKEUP_SOURCE_MASK;
+	writel(reg | MX7D_USB_VBUS_WAKEUP_SOURCE_BVALID,
+		 base + MX7D_USBNC_USB_CTRL2);
+
+	return 0;
+}
+
+static __maybe_unused struct imx_usb_misc_data mx7_data = {
+	.init = usbmisc_imx7d_init,
+};
+
 #define VF610_OVER_CUR_DIS		BIT(7)
 
 static __maybe_unused int vf610_initialize_usb_hw(void __iomem *base, int port,
@@ -498,6 +539,12 @@ static struct platform_device_id imx_usbmisc_ids[] = {
 		.driver_data = (unsigned long)&mx6_data,
 	},
 #endif
+#ifdef CONFIG_ARCH_IMX7
+	{
+		.name = "imx7d-usb-misc",
+		.driver_data = (unsigned long)&mx7_data,
+	},
+#endif
 	{
                 /* sentinel */
 	},
@@ -544,6 +591,12 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 	{
 		.compatible = "fsl,imx6q-usbmisc",
 		.data = &mx6_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX7
+	{
+		.compatible = "fsl,imx7d-usbmisc",
+		.data = &mx7_data,
 	},
 #endif
 #ifdef CONFIG_ARCH_VF610

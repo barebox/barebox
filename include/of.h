@@ -665,9 +665,11 @@ static inline struct device_node *of_find_matching_node(
 {
 	return of_find_matching_node_and_match(from, matches, NULL);
 }
-#define for_each_matching_node(dn, matches) \
-	for (dn = of_find_matching_node(NULL, matches); dn; \
+#define for_each_matching_node_from(dn, root, matches) \
+	for (dn = of_find_matching_node(root, matches); dn; \
 	     dn = of_find_matching_node(dn, matches))
+#define for_each_matching_node(dn, matches) \
+	for_each_matching_node_from(dn, NULL, matches)
 #define for_each_matching_node_and_match(dn, matches, match) \
 	for (dn = of_find_matching_node_and_match(NULL, matches, match); \
 	     dn; dn = of_find_matching_node_and_match(dn, matches, match))

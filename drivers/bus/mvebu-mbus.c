@@ -754,7 +754,7 @@ static int mvebu_mbus_of_fixup(struct device_node *root, void *context)
 {
 	struct device_node *np;
 
-	for_each_matching_node(np, mvebu_mbus_dt_ids) {
+	for_each_matching_node_from(np, root, mvebu_mbus_dt_ids) {
 		struct property *p;
 		int n, pa, na, ns, lenp, size;
 		u32 *ranges;

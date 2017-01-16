@@ -19,6 +19,7 @@ config USB_GADGET_DRIVER_AT91
 	bool
 	prompt "at91 gadget driver"
 	depends on ARCH_AT91
+	depends on !ARCH_SAMA5D4
 	default y
 	select USB_GADGET_DUALSPEED
 

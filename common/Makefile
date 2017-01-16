@@ -86,6 +86,7 @@ endif
 # dependencies on generated files need to be listed explicitly
 $(obj)/version.o: include/generated/compile.h
 $(obj)/imd-barebox.o: include/generated/compile.h
+$(obj)/pbl-imd-barebox.o: include/generated/compile.h
 
 # compile.h changes depending on hostname, generation number, etc,
 # so we regenerate it always.

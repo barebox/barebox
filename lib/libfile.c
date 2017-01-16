@@ -276,13 +276,14 @@ int copy_file(const char *src, const char *dst, int verbose)
 		goto out;
 	}
 
-	ret = stat(dst, &dststat);
-	if (ret)
-		goto out;
-
 	mode = O_WRONLY | O_CREAT;
 
-	if (S_ISREG(dststat.st_mode))
+	ret = stat(dst, &dststat);
+	if (ret && ret != -ENOENT)
+		goto out;
+
+	/* Set O_TRUNC only if file exist and is a regular file */
+	if (!ret && S_ISREG(dststat.st_mode))
 		mode |= O_TRUNC;
 
 	dstfd = open(dst, mode);

@@ -36,6 +36,7 @@ struct imx_wd {
 	struct device_d *dev;
 	const struct imx_wd_ops *ops;
 	struct restart_handler restart;
+	bool ext_reset;
 };
 
 #define to_imx_wd(h) container_of(h, struct imx_wd, wd)
@@ -51,6 +52,7 @@ struct imx_wd {
 #define IMX21_WDOG_WSTR	0x04 /* Watchdog Status Register  */
 #define IMX21_WDOG_WMCR	0x08 /* Misc Register */
 #define IMX21_WDOG_WCR_WDE	(1 << 2)
+#define IMX21_WDOG_WCR_WDT	(1 << 3)
 #define IMX21_WDOG_WCR_SRS	(1 << 4)
 #define IMX21_WDOG_WCR_WDA	(1 << 5)
 
@@ -109,6 +111,9 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 	val = ((timeout * 2 - 1) << 8) | IMX21_WDOG_WCR_SRS |
 		IMX21_WDOG_WCR_WDA;
 
+	if (priv->ext_reset)
+		val |= IMX21_WDOG_WCR_WDT;
+
 	writew(IMX21_WDOG_WCR_WDE | val, priv->base + IMX21_WDOG_WCR);
 
 	/* Write Service Sequence */
@@ -120,9 +125,13 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 
 static void imx21_soc_reset(struct imx_wd *priv)
 {
-	u16 val;
+	u16 val = 0;
 
-	val = IMX21_WDOG_WCR_SRS | IMX21_WDOG_WCR_WDA;
+	/* Use internal reset or external - not both */
+	if (priv->ext_reset)
+		val |= IMX21_WDOG_WCR_SRS; /* do not assert int reset */
+	else
+		val |= IMX21_WDOG_WCR_WDA; /* do not assert ext-reset */
 
 	writew(val, priv->base + IMX21_WDOG_WCR);
 }
@@ -201,6 +210,9 @@ static int imx_wd_probe(struct device_d *dev)
 	priv->wd.set_timeout = imx_watchdog_set_timeout;
 	priv->wd.dev = dev;
 	priv->dev = dev;
+
+	priv->ext_reset = of_property_read_bool(dev->device_node,
+						"fsl,ext-reset-output");
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_IMX)) {
 		ret = watchdog_register(&priv->wd);

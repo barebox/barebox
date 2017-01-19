@@ -27,7 +27,6 @@ extern char __dtb_vf610_twr_start[];
 
 ENTRY_FUNCTION(start_vf610_twr, r0, r1, r2)
 {
-	int i;
 	void *fdt;
 
 	vf610_cpu_lowlevel_init();

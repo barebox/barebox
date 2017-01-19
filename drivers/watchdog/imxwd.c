@@ -25,7 +25,8 @@
 struct imx_wd;
 
 struct imx_wd_ops {
-	int (*set_timeout)(struct imx_wd *, int);
+	int (*set_timeout)(struct imx_wd *, unsigned);
+	void (*soc_reset)(struct imx_wd *);
 	int (*init)(struct imx_wd *);
 };
 
@@ -62,7 +63,7 @@ struct imx_wd {
 /* valid for i.MX27, i.MX31, always '0' on i.MX25, i.MX35, i.MX51 */
 #define WSTR_COLDSTART	(1 << 4)
 
-static int imx1_watchdog_set_timeout(struct imx_wd *priv, int timeout)
+static int imx1_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 {
 	u16 val;
 
@@ -76,10 +77,7 @@ static int imx1_watchdog_set_timeout(struct imx_wd *priv, int timeout)
 		return 0;
 	}
 
-	if (timeout > 0)
-		val = (timeout * 2 - 1) << 8;
-	else
-		val = 0;
+	val = (timeout * 2 - 1) << 8;
 
 	writew(val, priv->base + IMX1_WDOG_WCR);
 	writew(IMX1_WDOG_WCR_WDE | val, priv->base + IMX1_WDOG_WCR);
@@ -91,25 +89,26 @@ static int imx1_watchdog_set_timeout(struct imx_wd *priv, int timeout)
 	return 0;
 }
 
-static int imx21_watchdog_set_timeout(struct imx_wd *priv, int timeout)
+static void imx1_soc_reset(struct imx_wd *priv)
+{
+	writew(IMX1_WDOG_WCR_WDE, priv->base + IMX1_WDOG_WCR);
+}
+
+static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 {
 	u16 val;
 
 	dev_dbg(priv->dev, "%s: %d\n", __func__, timeout);
 
-	if (timeout < -1 || timeout > 128)
+	if (timeout > 128)
 		return -EINVAL;
 
 	if (timeout == 0) /* bit 2 (WDE) cannot be set to 0 again */
 		return -ENOSYS;
 
-	if (timeout > 0)
-		val = ((timeout * 2 - 1) << 8) | IMX21_WDOG_WCR_SRS |
-			IMX21_WDOG_WCR_WDA;
-	else
-		val = 0;
+	val = ((timeout * 2 - 1) << 8) | IMX21_WDOG_WCR_SRS |
+		IMX21_WDOG_WCR_WDA;
 
-	writew(val, priv->base + IMX21_WDOG_WCR);
 	writew(IMX21_WDOG_WCR_WDE | val, priv->base + IMX21_WDOG_WCR);
 
 	/* Write Service Sequence */
@@ -117,6 +116,15 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, int timeout)
 	writew(0xaaaa, priv->base + IMX21_WDOG_WSR);
 
 	return 0;
+}
+
+static void imx21_soc_reset(struct imx_wd *priv)
+{
+	u16 val;
+
+	val = IMX21_WDOG_WCR_SRS | IMX21_WDOG_WCR_WDA;
+
+	writew(val, priv->base + IMX21_WDOG_WCR);
 }
 
 static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
@@ -130,7 +138,7 @@ static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst)
 {
 	struct imx_wd *priv = container_of(rst, struct imx_wd, restart);
 
-	priv->ops->set_timeout(priv, -1);
+	priv->ops->soc_reset(priv);
 
 	mdelay(1000);
 
@@ -227,11 +235,13 @@ on_error:
 
 static const struct imx_wd_ops imx21_wd_ops = {
 	.set_timeout = imx21_watchdog_set_timeout,
+	.soc_reset = imx21_soc_reset,
 	.init = imx21_wd_init,
 };
 
 static const struct imx_wd_ops imx1_wd_ops = {
 	.set_timeout = imx1_watchdog_set_timeout,
+	.soc_reset = imx1_soc_reset,
 };
 
 static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {

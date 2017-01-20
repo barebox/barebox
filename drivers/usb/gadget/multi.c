@@ -234,6 +234,11 @@ static struct usb_composite_driver multi_driver = {
 
 int usb_multi_register(struct f_multi_opts *opts)
 {
+	if (gadget_multi_opts) {
+		pr_err("USB multi gadget already registered\n");
+		return -EBUSY;
+	}
+
 	gadget_multi_opts = opts;
 
 	return usb_composite_probe(&multi_driver);

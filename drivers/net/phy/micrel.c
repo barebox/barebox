@@ -293,6 +293,7 @@ static int ksz9031_read_status(struct phy_device *phydev)
 	if ((regval & 0xff) == 0xff) {
 		phy_init_hw(phydev);
 		phydev->link = 0;
+		phy_wait_aneg_done(phydev);
 	}
 
 	return 0;

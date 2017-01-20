@@ -246,8 +246,22 @@ int usb_multi_register(struct f_multi_opts *opts)
 
 void usb_multi_unregister(void)
 {
-	if (gadget_multi_opts)
-		usb_composite_unregister(&multi_driver);
+	if (!gadget_multi_opts)
+		return;
+
+	usb_composite_unregister(&multi_driver);
+	if (gadget_multi_opts->release)
+		gadget_multi_opts->release(gadget_multi_opts);
 
 	gadget_multi_opts = NULL;
+}
+
+void usb_multi_opts_release(struct f_multi_opts *opts)
+{
+	if (opts->fastboot_opts.files)
+		file_list_free(opts->fastboot_opts.files);
+	if (opts->dfu_opts.files)
+		file_list_free(opts->dfu_opts.files);
+
+	free(opts);
 }

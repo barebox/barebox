@@ -185,7 +185,7 @@ static void print_menu_entry(struct menu *m, struct menu_entry *me,
 	__print_entry(me->display);
 
 	if (selected)
-		puts("\e[m");
+		puts("\e[0m");
 }
 
 int menu_set_selected_entry(struct menu *m, struct menu_entry* me)

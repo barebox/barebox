@@ -99,9 +99,10 @@ static struct efi_ctrlkey ctrlkeys[] = {
 	{ 0x05, BB_KEY_HOME },
 	{ 0x06, BB_KEY_END },
 	{ 0x07, BB_KEY_INSERT },
-	{ 0x08, BB_KEY_DEL },
+	{ 0x08, BB_KEY_DEL7 },
 	{ 0x09, BB_KEY_PAGEUP },
 	{ 0x0a, BB_KEY_PAGEDOWN },
+	{ 0x17, 27 /* escape key */ },
 };
 
 static int efi_read_key(struct efi_console_priv *priv, bool wait)

@@ -145,6 +145,7 @@ static int efi_execute_image(const char *file)
 		loaded_image->load_options = xstrdup_char_to_wchar(options);
 		loaded_image->load_options_size =
 			(strlen(options) + 1) * sizeof(wchar_t);
+		shutdown_barebox();
 	}
 
 	efiret = BS->start_image(handle, NULL, NULL);
@@ -255,6 +256,7 @@ static int do_bootm_efi(struct image_data *data)
 	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
 			      get_time_ns()/1000);
 
+	shutdown_barebox();
 	linux_efi_handover(handle, boot_header);
 
 	return 0;

@@ -48,4 +48,10 @@ extern void unwind_backtrace(struct pt_regs *regs);
 
 #endif	/* !__ASSEMBLY__ */
 
+#ifdef CONFIG_ARM_UNWIND
+#define UNWIND(code...)		code
+#else
+#define UNWIND(code...)
+#endif
+
 #endif	/* __ASM_UNWIND_H */

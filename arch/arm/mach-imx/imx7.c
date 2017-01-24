@@ -79,12 +79,26 @@ static int imx7_timer_init(void)
 	return 0;
 }
 
+#define CSU_NUM_REGS               64
+#define CSU_INIT_SEC_LEVEL0        0x00FF00FF
+
+static void imx7_init_csu(void)
+{
+	void __iomem *csu = IOMEM(MX7_CSU_BASE_ADDR);
+	int i = 0;
+
+	for (i = 0; i < CSU_NUM_REGS; i++)
+		writel(CSU_INIT_SEC_LEVEL0, csu + i * 4);
+}
+
 int imx7_init(void)
 {
 	const char *cputypestr;
 	u32 imx7_silicon_revision;
 
 	imx7_init_lowlevel();
+
+	imx7_init_csu();
 
 	imx7_timer_init();
 

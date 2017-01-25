@@ -161,6 +161,8 @@ config ARCH_IMX6UL
 config ARCH_IMX7
 	bool
 	select CPU_V7
+	select OFTREE
+	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_VF610
 	bool

@@ -476,6 +476,18 @@ static inline void ehci_powerup_fixup(struct ehci_priv *ehci)
 }
 #endif
 
+static void pass_to_companion(struct ehci_priv *ehci, int port)
+{
+	uint32_t *status_reg = (uint32_t *)&ehci->hcor->or_portsc[port - 1];
+	uint32_t reg = ehci_readl(status_reg);
+
+	reg &= ~EHCI_PS_CLEAR;
+	dev_dbg(ehci->dev, "port %d --> companion\n",
+	      port - 1);
+	reg |= EHCI_PS_PO;
+	ehci_writel(status_reg, reg);
+}
+
 static int
 ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		 int length, struct devrequest *req)
@@ -508,6 +520,10 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 			return -1;
 		}
 		status_reg = (uint32_t *)&ehci->hcor->or_portsc[port - 1];
+		if (ehci_readl(status_reg) & EHCI_PS_PO) {
+			dev_dbg(ehci->dev, "Port %d is owned by companion controller\n", port);
+			return -1;
+		}
 		break;
 	default:
 		status_reg = NULL;
@@ -654,11 +670,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 			if ((reg & (EHCI_PS_PE | EHCI_PS_CS)) == EHCI_PS_CS &&
 			    !ehci_is_TDI() &&
 			    EHCI_PS_IS_LOWSPEED(reg)) {
-				/* Low speed device, give up ownership. */
-				dev_dbg(ehci->dev, "port %d low speed --> companion\n",
-				      port - 1);
-				reg |= EHCI_PS_PO;
-				ehci_writel(status_reg, reg);
+				pass_to_companion(ehci, port);
 				break;
 			} else {
 				int ret;
@@ -689,7 +701,10 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 				else
 					dev_err(ehci->dev, "port(%d) reset error\n",
 						port - 1);
-
+				mdelay(200);
+				reg = ehci_readl(status_reg);
+				if (!(reg & EHCI_PS_PE))
+					pass_to_companion(ehci, port);
 			}
 			break;
 		default:

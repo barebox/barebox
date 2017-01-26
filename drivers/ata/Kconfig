@@ -42,6 +42,11 @@ config DISK_AHCI_IMX
 	depends on DISK_AHCI
 	bool "i.MX AHCI support"
 
+config DISK_SATA_MV
+	depends on ARCH_MVEBU
+	select DISK_IDE_SFF
+	bool "Marvell SATA support"
+
 comment "interface types"
 
 config DISK_INTF_PLATFORM_IDE

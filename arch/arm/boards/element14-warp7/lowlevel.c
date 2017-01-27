@@ -12,7 +12,7 @@ extern char __dtb_imx7s_warp_start[];
 
 static noinline void warp7_start(void)
 {
-	void __iomem *iomuxbase = IOMEM(MX7_IOMUX_BASE_ADDR);
+	void __iomem *iomuxbase = IOMEM(MX7_IOMUXC_BASE_ADDR);
 	void __iomem *uart = IOMEM(MX7_UART1_BASE_ADDR);
 	void __iomem *ccmbase = IOMEM(MX7_CCM_BASE_ADDR);
 	void *fdt;

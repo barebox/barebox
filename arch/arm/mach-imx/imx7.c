@@ -62,7 +62,7 @@ void imx7_init_lowlevel(void)
 
 static int imx7_timer_init(void)
 {
-	void __iomem *sctr = IOMEM(MX7_SCTR_BASE_ADDR);
+	void __iomem *sctr = IOMEM(MX7_SYSCNT_CTRL_BASE_ADDR);
 	unsigned long val, freq;
 
 	freq = 8000000;

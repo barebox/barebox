@@ -148,6 +148,10 @@ config ARCH_IMX6
 	select COMMON_CLK_OF_PROVIDER
 	select HW_HAS_PCI
 
+config ARCH_IMX6SL
+	bool
+	select ARCH_IMX6
+
 config ARCH_IMX6SX
 	bool
 	select ARCH_IMX6

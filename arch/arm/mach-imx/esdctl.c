@@ -432,6 +432,9 @@ static struct platform_device_id imx_esdctl_ids[] = {
 
 static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	{
+		.compatible = "fsl,imx6sl-mmdc",
+		.data = &imx6ul_data
+	}, {
 		.compatible = "fsl,imx6ul-mmdc",
 		.data = &imx6ul_data
 	}, {

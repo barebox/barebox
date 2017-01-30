@@ -198,6 +198,8 @@ static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6ul-iomuxc",
 	}, {
+		.compatible = "fsl,imx6sl-iomuxc",
+	}, {
 		.compatible = "fsl,imx7d-iomuxc",
 	}, {
 		.compatible = "fsl,imx7d-iomuxc-lpsr",

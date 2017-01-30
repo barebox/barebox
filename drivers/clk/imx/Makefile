@@ -19,6 +19,7 @@ obj-$(CONFIG_ARCH_IMX51)  += clk-imx5.o
 obj-$(CONFIG_ARCH_IMX53)  += clk-imx5.o
 obj-$(CONFIG_ARCH_IMX6)   += clk-imx6.o
 obj-$(CONFIG_ARCH_IMX6SX) += clk-imx6sx.o
+obj-$(CONFIG_ARCH_IMX6SL) += clk-imx6sl.o
 obj-$(CONFIG_ARCH_IMX6UL) += clk-imx6ul.o
 obj-$(CONFIG_ARCH_IMX7) += clk-imx7.o
 obj-$(CONFIG_ARCH_VF610)  += clk-vf610.o

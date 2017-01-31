@@ -410,6 +410,37 @@ static void make_crc_table(void)
 	crc_table_valid = 1;
 }
 
+/*
+ * OpenSSL 1.1.0 and newer compatibility functions:
+ * https://wiki.openssl.org/index.php/1.1_API_Changes
+ */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+static void *OPENSSL_zalloc(size_t num)
+{
+	void *ret = OPENSSL_malloc(num);
+
+	if (ret != NULL)
+		memset(ret, 0, num);
+	return ret;
+}
+
+EVP_MD_CTX *EVP_MD_CTX_new(void)
+{
+	return OPENSSL_zalloc(sizeof(EVP_MD_CTX));
+}
+
+void EVP_MD_CTX_free(EVP_MD_CTX *ctx)
+{
+	EVP_MD_CTX_cleanup(ctx);
+	OPENSSL_free(ctx);
+}
+
+int EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *ctx)
+{
+	return EVP_CIPHER_CTX_cleanup(ctx);
+}
+#endif
+
 uint32_t pbl_crc32(uint32_t in_crc, const char *buf, uint32_t len)
 {
 	uint32_t crc32_val;
@@ -2291,37 +2322,6 @@ static int sb_verify_image_end(struct sb_image_ctx *ictx,
 
 	return ret;
 }
-
-/*
- * OpenSSL 1.1.0 and newer compatibility functions:
- * https://wiki.openssl.org/index.php/1.1_API_Changes
- */
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-static void *OPENSSL_zalloc(size_t num)
-{
-	void *ret = OPENSSL_malloc(num);
-
-	if (ret != NULL)
-		memset(ret, 0, num);
-	return ret;
-}
-
-EVP_MD_CTX *EVP_MD_CTX_new(void)
-{
-	return OPENSSL_zalloc(sizeof(EVP_MD_CTX));
-}
-
-void EVP_MD_CTX_free(EVP_MD_CTX *ctx)
-{
-	EVP_MD_CTX_cleanup(ctx);
-	OPENSSL_free(ctx);
-}
-
-int EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *ctx)
-{
-	return EVP_CIPHER_CTX_cleanup(ctx);
-}
-#endif
 
 static int sb_build_tree_from_img(struct sb_image_ctx *ictx)
 {

@@ -2,7 +2,7 @@
 #define __IMX_CLK_H
 
 struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,
-		      u8 shift, u8 cgr_val);
+		      u8 shift, u8 cgr_val, unsigned long flags);
 
 static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width)
@@ -77,13 +77,13 @@ static inline struct clk *imx_clk_gate_dis(const char *name, const char *parent,
 static inline struct clk *imx_clk_gate2(const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
 {
-	return clk_gate2(name, parent, reg, shift, 0x3);
+	return clk_gate2(name, parent, reg, shift, 0x3, 0);
 }
 
 static inline struct clk *imx_clk_gate2_cgr(const char *name, const char *parent,
 					    void __iomem *reg, u8 shift, u8 cgr_val)
 {
-	return clk_gate2(name, parent, reg, shift, cgr_val);
+	return clk_gate2(name, parent, reg, shift, cgr_val, 0);
 }
 
 static inline struct clk *imx_clk_gate3(const char *name, const char *parent,
@@ -95,7 +95,7 @@ static inline struct clk *imx_clk_gate3(const char *name, const char *parent,
 static inline struct clk *imx_clk_gate4(const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
 {
-	return clk_gate2(name, parent, reg, shift, 0x3);
+	return clk_gate2(name, parent, reg, shift, 0x3, 0);
 }
 
 struct clk *imx_clk_pllv1(const char *name, const char *parent,

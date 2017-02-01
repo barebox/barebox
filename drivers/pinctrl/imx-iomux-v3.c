@@ -177,7 +177,7 @@ static int imx_iomux_v3_probe(struct device_d *dev)
 }
 
 static struct imx_iomux_v3_data imx_iomux_imx7_lpsr_data = {
-	.flags = ZERO_OFFSET_VALID,
+	.flags = ZERO_OFFSET_VALID | IMX7_PINMUX_LPSR,
 };
 
 static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {

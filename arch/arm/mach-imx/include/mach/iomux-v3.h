@@ -116,6 +116,7 @@ typedef u64 iomux_v3_cfg_t;
 
 #define SHARE_MUX_CONF_REG		0x1
 #define ZERO_OFFSET_VALID		0x2
+#define IMX7_PINMUX_LPSR		0x4
 
 static inline void iomux_v3_setup_pad(void __iomem *iomux, unsigned int flags,
 				      u32 mux_reg, u32 conf_reg, u32 input_reg,
@@ -124,6 +125,13 @@ static inline void iomux_v3_setup_pad(void __iomem *iomux, unsigned int flags,
 	const bool mux_ok   = !!mux_reg || (flags & ZERO_OFFSET_VALID);
 	const bool conf_ok  = !!conf_reg;
 	const bool input_ok = !!input_reg;
+
+	/*
+	 * The sel_input registers for the LPSR controller pins are in the regular pinmux
+	 * controller, so bend the register offset over to the other controller.
+	 */
+	if (flags & IMX7_PINMUX_LPSR)
+		input_reg += 0x70000;
 
 	if (flags & SHARE_MUX_CONF_REG) {
 		mux_val |= conf_val;

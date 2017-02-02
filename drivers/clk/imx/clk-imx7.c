@@ -383,11 +383,12 @@ static struct clk ** const uart_clks[] __initconst = {
 	NULL
 };
 
+static int imx7_clk_initialized;
+
 static int imx7_ccm_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	void __iomem *base, *anatop_base, *ccm_base;
-	int i;
 
 	anatop_base = IOMEM(MX7_ANATOP_BASE_ADDR);
 	iores = dev_request_mem_resource(dev, 0);
@@ -417,13 +418,6 @@ static int imx7_ccm_probe(struct device_d *dev)
 	clks[IMX7D_PLL_ENET_MAIN_BYPASS] = imx_clk_mux_p("pll_enet_main_bypass", base + 0xe0, 16, 1, pll_enet_bypass_sel, ARRAY_SIZE(pll_enet_bypass_sel));
 	clks[IMX7D_PLL_AUDIO_MAIN_BYPASS] = imx_clk_mux_p("pll_audio_main_bypass", base + 0xf0, 16, 1, pll_audio_bypass_sel, ARRAY_SIZE(pll_audio_bypass_sel));
 	clks[IMX7D_PLL_VIDEO_MAIN_BYPASS] = imx_clk_mux_p("pll_video_main_bypass", base + 0x130, 16, 1, pll_video_bypass_sel, ARRAY_SIZE(pll_video_bypass_sel));
-
-	clk_set_parent(clks[IMX7D_PLL_ARM_MAIN_BYPASS], clks[IMX7D_PLL_ARM_MAIN]);
-	clk_set_parent(clks[IMX7D_PLL_DRAM_MAIN_BYPASS], clks[IMX7D_PLL_DRAM_MAIN]);
-	clk_set_parent(clks[IMX7D_PLL_SYS_MAIN_BYPASS], clks[IMX7D_PLL_SYS_MAIN]);
-	clk_set_parent(clks[IMX7D_PLL_ENET_MAIN_BYPASS], clks[IMX7D_PLL_ENET_MAIN]);
-	clk_set_parent(clks[IMX7D_PLL_AUDIO_MAIN_BYPASS], clks[IMX7D_PLL_AUDIO_MAIN]);
-	clk_set_parent(clks[IMX7D_PLL_VIDEO_MAIN_BYPASS], clks[IMX7D_PLL_VIDEO_MAIN]);
 
 	clks[IMX7D_PLL_ARM_MAIN_CLK] = imx_clk_gate("pll_arm_main_clk", "pll_arm_main_bypass", base + 0x60, 13);
 	clks[IMX7D_PLL_DRAM_MAIN_CLK] = imx_clk_gate("pll_dram_main_clk", "pll_dram_main_bypass", base + 0x70, 13);
@@ -848,8 +842,28 @@ static int imx7_ccm_probe(struct device_d *dev)
 	clk_data.clk_num = ARRAY_SIZE(clks);
 	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
 
+	imx7_clk_initialized = 1;
+
+	return 0;
+}
+
+static int imx7_clk_setup(void)
+{
+	int i;
+
+	if (!imx7_clk_initialized)
+		return 0;
+
+	clks[IMX7D_OSC_24M_CLK] = clk_lookup("osc");
+
 	for (i = 0; i < ARRAY_SIZE(clks_init_on); i++)
 		clk_enable(clks[clks_init_on[i]]);
+
+	clk_set_parent(clks[IMX7D_PLL_ARM_MAIN_BYPASS], clks[IMX7D_PLL_ARM_MAIN]);
+	clk_set_parent(clks[IMX7D_PLL_DRAM_MAIN_BYPASS], clks[IMX7D_PLL_DRAM_MAIN]);
+	clk_set_parent(clks[IMX7D_PLL_SYS_MAIN_BYPASS], clks[IMX7D_PLL_SYS_MAIN]);
+	clk_set_parent(clks[IMX7D_PLL_AUDIO_MAIN_BYPASS], clks[IMX7D_PLL_AUDIO_MAIN]);
+	clk_set_parent(clks[IMX7D_PLL_VIDEO_MAIN_BYPASS], clks[IMX7D_PLL_VIDEO_MAIN]);
 
 	/* use old gpt clk setting, gpt1 root clk must be twice as gpt counter freq */
 	clk_set_parent(clks[IMX7D_GPT1_ROOT_SRC], clks[IMX7D_OSC_24M_CLK]);
@@ -859,6 +873,7 @@ static int imx7_ccm_probe(struct device_d *dev)
 
 	return 0;
 }
+postcore_initcall(imx7_clk_setup);
 
 static __maybe_unused struct of_device_id imx7_ccm_dt_ids[] = {
 	{

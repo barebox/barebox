@@ -844,6 +844,17 @@ static int imx7_clk_setup(void)
 	/* set uart module clock's parent clock source that must be great then 80MHz */
 	clk_set_parent(clks[IMX7D_UART1_ROOT_SRC], clks[IMX7D_OSC_24M_CLK]);
 
+	clk_set_parent(clks[IMX7D_ENET1_REF_ROOT_SRC], clks[IMX7D_PLL_ENET_MAIN_125M_CLK]);
+	clk_set_parent(clks[IMX7D_ENET1_TIME_ROOT_SRC], clks[IMX7D_PLL_ENET_MAIN_100M_CLK]);
+	clk_set_parent(clks[IMX7D_ENET2_REF_ROOT_SRC], clks[IMX7D_PLL_ENET_MAIN_125M_CLK]);
+	clk_set_parent(clks[IMX7D_ENET2_TIME_ROOT_SRC], clks[IMX7D_PLL_ENET_MAIN_100M_CLK]);
+
+	clk_set_rate(clks[IMX7D_PLL_SYS_PFD4_CLK], 392000000);
+	clk_set_parent(clks[IMX7D_ENET_AXI_ROOT_SRC], clks[IMX7D_PLL_SYS_PFD4_CLK]);
+	clk_set_rate(clks[IMX7D_ENET_AXI_ROOT_CLK], 197000000);
+	clk_set_rate(clks[IMX7D_ENET1_TIME_ROOT_CLK], 25000000);
+	clk_set_rate(clks[IMX7D_ENET2_TIME_ROOT_CLK], 25000000);
+
 	return 0;
 }
 postcore_initcall(imx7_clk_setup);

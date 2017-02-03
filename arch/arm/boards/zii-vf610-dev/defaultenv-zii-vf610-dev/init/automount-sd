@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ x${global.hostname} = xdev-rev-b -o x${global.hostname} = xdev-rev-c ];
+then
+    global sd=0
+else
+    global sd=1
+fi
+
+mkdir -p /mnt/sd
+automount /mnt/sd 'mci${global.sd}.probe=1 && mount /dev/disk${global.sd}.0 /mnt/sd'
+
+exit 0

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+global.bootm.image=/mnt/sd/zImage
+global.bootm.oftree=/mnt/sd/${global.bootm.oftree}

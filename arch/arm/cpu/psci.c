@@ -22,6 +22,17 @@
 #include <magicvar.h>
 
 #ifdef CONFIG_ARM_PSCI_DEBUG
+
+/*
+ * PSCI debugging functions. Board code can specify a putc() function
+ * which is used for debugging output. Beware that this function is
+ * called while the kernel is running. This means the kernel could have
+ * turned off clocks, configured other baudrates and other stuff that
+ * might confuse the putc function. So it can well be that the debugging
+ * code itself is the problem when somethings not working. You have been
+ * warned.
+ */
+
 static void (*__putc)(void *ctx, int c);
 static void *putc_ctx;
 
@@ -219,6 +230,8 @@ int psci_cpu_entry_c(void)
 
 	if (bootm_arm_security_state() == ARM_STATE_HYP)
 		armv7_switch_to_hyp();
+
+	psci_printf("core #%d enter function 0x%p\n", cpu, entry);
 
 	entry(context_id);
 

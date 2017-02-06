@@ -92,6 +92,81 @@ static void imx7_init_csu(void)
 		writel(CSU_INIT_SEC_LEVEL0, csu + i * 4);
 }
 
+#define GPC_CPU_PGC_SW_PDN_REQ	0xfc
+#define GPC_CPU_PGC_SW_PUP_REQ	0xf0
+#define GPC_PGC_C1		0x840
+#define GPC_PGC(n)		(0x800 + (n) * 0x40)
+
+#define BM_CPU_PGC_SW_PDN_PUP_REQ_CORE1_A7	0x2
+
+#define PGC_CTRL		0x0
+
+/* below is for i.MX7D */
+#define SRC_GPR1_MX7D		0x074
+#define SRC_A7RCR1		0x008
+
+static void imx_gpcv2_set_core_power(int core, bool pdn)
+{
+	void __iomem *gpc = IOMEM(MX7_GPC_BASE_ADDR);
+	void __iomem *pgc = gpc + GPC_PGC(core);
+
+	u32 reg = pdn ? GPC_CPU_PGC_SW_PUP_REQ : GPC_CPU_PGC_SW_PDN_REQ;
+	u32 val;
+
+	writel(1, pgc + PGC_CTRL);
+
+	val = readl(gpc + reg);
+	val |= 1 << core;
+	writel(val, gpc + reg);
+
+	while (readl(gpc + reg) & (1 << core));
+
+	writel(0, pgc + PGC_CTRL);
+}
+
+static int imx7_cpu_on(u32 cpu_id)
+{
+	void __iomem *src = IOMEM(MX7_SRC_BASE_ADDR);
+	u32 val;
+
+	writel(psci_cpu_entry, src + cpu_id * 8 + SRC_GPR1_MX7D);
+	imx_gpcv2_set_core_power(cpu_id, true);
+
+	val = readl(src + SRC_A7RCR1);
+	val |= 1 << cpu_id;
+	writel(val, src + SRC_A7RCR1);
+
+	return 0;
+}
+
+static int imx7_cpu_off(void)
+{
+	void __iomem *src = IOMEM(MX7_SRC_BASE_ADDR);
+	u32 val;
+	int cpu_id = psci_get_cpu_id();
+
+	val = readl(src + SRC_A7RCR1);
+	val &= ~(1 << cpu_id);
+	writel(val, src + SRC_A7RCR1);
+
+	/*
+	 * FIXME: This reads nice and symmetrically to cpu_on above,
+	 * but of course this will never be reached as we have just
+	 * put the CPU we are currently running on into reset.
+	 */
+
+	imx_gpcv2_set_core_power(cpu_id, false);
+
+	while (1);
+
+	return 0;
+}
+
+static struct psci_ops imx7_psci_ops = {
+	.cpu_on = imx7_cpu_on,
+	.cpu_off = imx7_cpu_off,
+};
+
 int imx7_init(void)
 {
 	const char *cputypestr;
@@ -106,6 +181,8 @@ int imx7_init(void)
 	imx7_boot_save_loc();
 
 	imx7_silicon_revision = imx7_cpu_revision();
+
+	psci_set_ops(&imx7_psci_ops);
 
 	switch (imx7_cpu_type()) {
 	case IMX7_CPUTYPE_IMX7D:

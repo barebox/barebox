@@ -3,6 +3,7 @@
 
 #include <asm/memory.h>
 #include <asm/setup.h>
+#include <asm/secure.h>
 
 #if defined CONFIG_ARM_LINUX
 void armlinux_set_bootparams(void *params);
@@ -38,6 +39,7 @@ static inline void armlinux_set_atag_appender(struct tag *(*func)(struct tag *))
 struct image_data;
 
 void start_linux(void *adr, int swap, unsigned long initrd_address,
-		unsigned long initrd_size, void *oftree);
+		 unsigned long initrd_size, void *oftree,
+		 enum arm_security_state);
 
 #endif /* __ARCH_ARMLINUX_H */

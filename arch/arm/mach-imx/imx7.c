@@ -15,6 +15,7 @@
 #include <common.h>
 #include <io.h>
 #include <linux/sizes.h>
+#include <asm/psci.h>
 #include <mach/imx7.h>
 #include <mach/generic.h>
 #include <mach/revision.h>

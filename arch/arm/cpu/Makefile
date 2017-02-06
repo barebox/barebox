@@ -34,7 +34,9 @@ ifeq ($(CONFIG_MMU),)
 obj-y += no-mmu.o
 endif
 
+obj-$(CONFIG_ARM_PSCI) += psci.o
 obj-$(CONFIG_ARM_SECURE_MONITOR) += smccc-call.o
+obj-$(CONFIG_ARM_SECURE_MONITOR) += sm.o sm_as.o
 
 obj-$(CONFIG_CPU_32v4T) += cache-armv4.o
 pbl-$(CONFIG_CPU_32v4T) += cache-armv4.o

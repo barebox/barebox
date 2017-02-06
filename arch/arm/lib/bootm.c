@@ -18,6 +18,7 @@
 #include <magicvar.h>
 #include <binfmt.h>
 #include <restart.h>
+#include <globalvar.h>
 
 #include <asm/byteorder.h>
 #include <asm/setup.h>
@@ -133,6 +134,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
+	enum arm_security_state state = bootm_arm_security_state();
 	int ret;
 
 	kernel = data->os_res->start + data->os_entry;
@@ -174,10 +176,20 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		printf("...\n");
 	}
 
+	if (IS_ENABLED(CONFIG_ARM_SECURE_MONITOR)) {
+		if (file_detect_type((void *)data->os_res->start, 0x100) ==
+		    filetype_arm_barebox)
+			state = ARM_STATE_SECURE;
+
+		printf("Starting kernel in %s mode\n",
+		       bootm_arm_security_state_name(state));
+	}
+
 	if (data->dryrun)
 		return 0;
 
-	start_linux((void *)kernel, swap, initrd_start, initrd_size, data->oftree);
+	start_linux((void *)kernel, swap, initrd_start, initrd_size, data->oftree,
+		    state);
 
 	restart_machine();
 

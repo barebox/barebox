@@ -30,6 +30,7 @@ SECTIONS
 #else
 	. = TEXT_BASE;
 #endif
+	.image_start : { *(.__image_start) }
 
 #ifndef CONFIG_PBL_IMAGE
 	PRE_IMAGE
@@ -116,6 +117,7 @@ SECTIONS
 	}
 
 	_edata = .;
+	.image_end : { *(.__image_end) }
 
 	. = ALIGN(4);
 	__bss_start = .;

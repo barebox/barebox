@@ -78,3 +78,6 @@ int __pure cpu_architecture(void)
 	return __cpu_architecture;
 }
 #endif
+
+char __image_start[0] __attribute__((section(".__image_start")));
+char __image_end[0] __attribute__((section(".__image_end")));

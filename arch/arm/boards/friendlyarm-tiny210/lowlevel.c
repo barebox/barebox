@@ -97,7 +97,7 @@ void __bare_init barebox_arm_reset_vector(void)
 	debug_led(1, 1);
 
 	if (! load_stage2((void*)(ld_var(_text) - 16),
-				ld_var(_barebox_image_size) + 16)) {
+				barebox_image_size + 16)) {
 		debug_led(3, 1);
 		while (1) { } /* hang */
 	}

@@ -179,4 +179,6 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
  */
 #define MAX_BSS_SIZE SZ_1M
 
+#define barebox_image_size (__image_end - __image_start)
+
 #endif	/* _BAREBOX_ARM_H_ */

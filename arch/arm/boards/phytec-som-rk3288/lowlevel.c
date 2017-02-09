@@ -30,14 +30,13 @@ ENTRY_FUNCTION(start_rk3288_phycore_som, r0, r1, r2)
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 		struct rk3288_grf * const grf = (void *)RK3288_GRF_BASE;
-		rk_clrsetreg(&grf->gpio4c_iomux,
-			GPIO4C1_MASK << GPIO4C1_SHIFT |
-			GPIO4C0_MASK << GPIO4C0_SHIFT,
-			GPIO4C1_UART0BT_SOUT << GPIO4C1_SHIFT |
-			GPIO4C0_UART0BT_SIN << GPIO4C0_SHIFT);
+		rk_clrsetreg(&grf->gpio7ch_iomux,
+			     GPIO7C7_MASK << GPIO7C7_SHIFT |
+			     GPIO7C6_MASK << GPIO7C6_SHIFT,
+			     GPIO7C7_UART2DBG_SOUT << GPIO7C7_SHIFT |
+			     GPIO7C6_UART2DBG_SIN << GPIO7C6_SHIFT);
 		INIT_LL();
 	}
-
 	fdt = __dtb_rk3288_phycore_som_start - get_runtime_offset();
 
 	barebox_arm_entry(0x0, SZ_1G, fdt);

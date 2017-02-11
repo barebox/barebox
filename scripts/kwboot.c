@@ -264,10 +264,11 @@ out:
 }
 
 static int
-kwboot_bootmsg(int tty, void *msg)
+kwboot_bootmsg(int tty, void *msg, unsigned num_nacks)
 {
 	int rc;
 	char c;
+	unsigned saw_nacks = 0;
 
 	if (msg == NULL)
 		kwboot_printv("Please reboot the target into UART boot mode...");
@@ -295,11 +296,13 @@ kwboot_bootmsg(int tty, void *msg)
 				kwboot_printv("\\x%02hhx", c);
 
 			rc = kwboot_tty_recv(tty, &c, 1, KWBOOT_MSG_RSP_TIMEO);
+
+			saw_nacks = 0;
 		}
 
-	} while (rc || c != NAK);
+	} while (rc || c != NAK || (++saw_nacks < num_nacks));
 
-	kwboot_printv("\nGot expected NAK\n");
+	kwboot_printv("\nGot expected NAKs\n");
 
 	return rc;
 }
@@ -736,6 +739,7 @@ main(int argc, char **argv)
 	void *bootmsg;
 	void *debugmsg;
 	void *img;
+	unsigned num_nacks = 1;
 	size_t size;
 	speed_t speed;
 
@@ -752,7 +756,7 @@ main(int argc, char **argv)
 	kwboot_verbose = isatty(STDOUT_FILENO);
 
 	do {
-		int c = getopt(argc, argv, "b:dfhtB:D:");
+		int c = getopt(argc, argv, "b:dfhtn:B:D:");
 		if (c < 0)
 			break;
 
@@ -777,6 +781,10 @@ main(int argc, char **argv)
 
 		case 'f':
 			force = 1;
+			break;
+
+		case 'n':
+			num_nacks = atoi(optarg);
 			break;
 
 		case 'B':
@@ -828,7 +836,7 @@ main(int argc, char **argv)
 			goto out;
 		}
 	} else {
-		rc = kwboot_bootmsg(tty, bootmsg);
+		rc = kwboot_bootmsg(tty, bootmsg, num_nacks);
 		if (rc) {
 			perror("bootmsg");
 			goto out;

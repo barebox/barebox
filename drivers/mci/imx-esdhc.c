@@ -600,6 +600,9 @@ static int fsl_esdhc_detect(struct device_d *dev)
 	return mci_detect_card(&host->mci);
 }
 
+static struct esdhc_soc_data esdhc_imx25_data;
+static struct esdhc_soc_data esdhc_imx53_data;
+
 static int fsl_esdhc_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -613,9 +616,16 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host = xzalloc(sizeof(*host));
 	mci = &host->mci;
 
-	host->socdata = of_device_get_match_data(dev);
-	if (!host->socdata)
-		return -EINVAL;
+	if (IS_ENABLED(CONFIG_OFDEVICE)) {
+		host->socdata = of_device_get_match_data(dev);
+		if (!host->socdata)
+			return -EINVAL;
+	} else {
+		if (cpu_is_mx50() || cpu_is_mx51() || cpu_is_mx53())
+			host->socdata = &esdhc_imx53_data;
+		else
+			host->socdata = &esdhc_imx25_data;
+	}
 
 	host->clk = clk_get(dev, "per");
 	if (IS_ERR(host->clk))
@@ -693,16 +703,6 @@ static struct esdhc_soc_data esdhc_imx25_data = {
 	.flags = ESDHC_FLAG_ENGCM07207,
 };
 
-static struct esdhc_soc_data esdhc_imx50_data = {
-	.flags = ESDHC_FLAG_MULTIBLK_NO_INT,
-	/* .flags = 0, */
-};
-
-static struct esdhc_soc_data esdhc_imx51_data = {
-	.flags = ESDHC_FLAG_MULTIBLK_NO_INT,
-	/* .flags = 0, */
-};
-
 static struct esdhc_soc_data esdhc_imx53_data = {
 	.flags = ESDHC_FLAG_MULTIBLK_NO_INT,
 };
@@ -724,8 +724,8 @@ static struct esdhc_soc_data usdhc_imx6sx_data = {
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ .compatible = "fsl,imx25-esdhc",  .data = &esdhc_imx25_data  },
-	{ .compatible = "fsl,imx50-esdhc",  .data = &esdhc_imx50_data  },
-	{ .compatible = "fsl,imx51-esdhc",  .data = &esdhc_imx51_data  },
+	{ .compatible = "fsl,imx50-esdhc",  .data = &esdhc_imx53_data  },
+	{ .compatible = "fsl,imx51-esdhc",  .data = &esdhc_imx53_data  },
 	{ .compatible = "fsl,imx53-esdhc",  .data = &esdhc_imx53_data  },
 	{ .compatible = "fsl,imx6q-usdhc",  .data = &usdhc_imx6q_data  },
 	{ .compatible = "fsl,imx6sl-usdhc", .data = &usdhc_imx6sl_data },

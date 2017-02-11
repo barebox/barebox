@@ -603,7 +603,7 @@ static int
 kwboot_check_image(unsigned char *img, size_t size)
 {
 	size_t i;
-	size_t header_size, image_size;
+	size_t header_size, image_size, image_offset;
 	unsigned char csum = 0;
 
 	if (size < 0x20) {
@@ -640,12 +640,20 @@ kwboot_check_image(unsigned char *img, size_t size)
 
 	image_size = img[0x4] | (img[0x5] << 8) |
 		(img[0x6] << 16) | (img[0x7] << 24);
+	image_offset = img[0xc] | (img[0xd] << 8) |
+		(img[0xe] << 16) | (img[0xf] << 24);
 
 	header_size = (img[0x9] << 16) | img[0xa] | (img[0xb] << 8);
 
-	if (header_size + image_size != size) {
-		fprintf(stderr, "Size mismatch (%zu + %zu != %zu)\n",
-			header_size, image_size, size);
+	if (header_size > image_offset) {
+		fprintf(stderr, "Header (%zu) expands over image start (%zu)\n",
+			header_size, image_offset);
+		return 1;
+	}
+
+	if (image_offset + image_size != size) {
+		fprintf(stderr, "Image doesn't end at file end (%zu + %zu != %zu)\n",
+			image_offset, image_size, size);
 		return 1;
 	}
 

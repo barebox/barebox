@@ -153,6 +153,8 @@ static struct fsl_i2c_clk_pair vf610_i2c_clk_div[] = {
 	{ 3840, 0x3F }, { 4096, 0x7B }, { 5120, 0x7D }, { 6144, 0x7E },
 };
 
+static const struct fsl_i2c_hwdata imx21_i2c_hwdata;
+
 struct fsl_i2c_hwdata {
 	unsigned		regshift;
 	struct fsl_i2c_clk_pair	*clk_div;
@@ -676,10 +678,14 @@ static int __init i2c_fsl_probe(struct device_d *pdev)
 	clk_enable(i2c_fsl->clk);
 #endif
 
-	i2c_fsl->hwdata = of_device_get_match_data(pdev);
-	if (!i2c_fsl->hwdata) {
-		ret = -EINVAL;
-		goto fail;
+	if (IS_ENABLED(CONFIG_OFDEVICE)) {
+		i2c_fsl->hwdata = of_device_get_match_data(pdev);
+		if (!i2c_fsl->hwdata) {
+			ret = -EINVAL;
+			goto fail;
+		}
+	} else {
+		i2c_fsl->hwdata = &imx21_i2c_hwdata;
 	}
 
 	/* Setup i2c_fsl driver structure */

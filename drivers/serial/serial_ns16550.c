@@ -287,12 +287,31 @@ static int ns16550_tstc(struct console_device *cdev)
 static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 {
 	struct device_node *np = dev->device_node;
+	u32 width;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
 
 	of_property_read_u32(np, "clock-frequency", &priv->plat.clock);
 	of_property_read_u32(np, "reg-shift", &priv->plat.shift);
+	if (!of_property_read_u32(np, "reg-io-width", &width))
+		switch (width) {
+		case 1:
+			priv->read_reg = ns16550_read_reg_mmio_8;
+			priv->write_reg = ns16550_write_reg_mmio_8;
+			break;
+		case 2:
+			priv->read_reg = ns16550_read_reg_mmio_16;
+			priv->write_reg = ns16550_write_reg_mmio_16;
+			break;
+		case 4:
+			priv->read_reg = ns16550_read_reg_mmio_32;
+			priv->write_reg = ns16550_write_reg_mmio_32;
+			break;
+		default:
+			dev_err(dev, "unsupported reg-io-width (%d)\n",
+				width);
+		}
 }
 
 static struct ns16550_drvdata ns16450_drvdata = {

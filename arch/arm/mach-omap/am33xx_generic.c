@@ -341,6 +341,9 @@ void am33xx_config_sdram(const struct am33xx_emif_regs *regs)
 	writel(regs->emif_tim3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3));
 	writel(regs->emif_tim3, AM33XX_EMIF4_0_REG(SDRAM_TIM_3_SHADOW));
 
+	if (regs->ocp_config)
+		writel(regs->ocp_config, AM33XX_EMIF4_0_REG(OCP_CONFIG));
+
 	if (regs->zq_config) {
 		/*
 		 * A value of 0x2800 for the REF CTRL will give us

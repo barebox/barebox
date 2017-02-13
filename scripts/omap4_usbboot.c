@@ -8,6 +8,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
+ * Inspired by: https://github.com/simu/usbboot-omap4.git
  */
 
 #include <stdio.h>
@@ -18,10 +20,9 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <libusb.h>
 #include <pthread.h>
 #include <termios.h>
-
-#include "usb.h"
 
 #define USBBOOT_FS_MAGIC     0x5562464D
 #define USBBOOT_FS_CMD_OPEN  0x46530000
@@ -42,6 +43,20 @@
 #define host_print(fmt, arg...)	printf(HFORMAT fmt TFORMAT, \
 					HOST_FORMAT, ##arg, TARGET_FORMAT)
 
+int usb_write(void *h, void const *data, int len)
+{
+	int actual;
+	return libusb_bulk_transfer(h, 0x01, (void *)data, len, &actual, 5000) ?
+		0 : actual;
+}
+
+int usb_read(void *h, void *data, int len)
+{
+	int actual;
+	return libusb_bulk_transfer(h, 0x81, data, len, &actual, 5000) ?
+		0 : actual;
+}
+
 void panic(struct termios *t_restore)
 {
 	tcsetattr(STDIN_FILENO, TCSANOW, t_restore);
@@ -50,7 +65,7 @@ void panic(struct termios *t_restore)
 }
 
 struct thread_vars {
-	struct usb_handle *usb;
+	struct libusb_device_handle *usb;
 	pthread_mutex_t usb_mutex;
 	struct termios t_restore;
 };
@@ -73,7 +88,7 @@ void *listenerTask(void *argument)
 	return NULL;
 }
 
-int read_asic_id(struct usb_handle *usb)
+int read_asic_id(struct libusb_device_handle *usb)
 {
 #define LINEWIDTH 16
 	const uint32_t msg_getid = 0xF0030003;
@@ -174,7 +189,7 @@ struct file_data {
 	void *data;
 };
 
-int process_file(struct usb_handle *usb, const char *rootfs,
+int process_file(struct libusb_device_handle *usb, const char *rootfs,
 	struct file_data *fd_vector, struct termios *t_restore)
 {
 	uint32_t i, j, pos, size;
@@ -324,8 +339,8 @@ open_ok:
 	return ret;
 }
 
-int usb_boot(
-	struct usb_handle *usb, void *data, unsigned sz, const char *rootfs)
+int usb_boot(struct libusb_device_handle *usb,
+	void *data, unsigned sz, const char *rootfs)
 {
 	const uint32_t msg_boot  = 0xF0030002;
 	uint32_t msg_size = sz;
@@ -373,19 +388,9 @@ int usb_boot(
 		printf("%c", i);
 		fflush(stdout);
 	}
-	usb_close(usb);
 	pthread_mutex_destroy(&vars.usb_mutex);
 	tcsetattr(STDIN_FILENO, TCSANOW, &vars.t_restore);
 	printf(HFORMAT, HOST_FORMAT);
-	return 0;
-}
-
-int match_omap4_bootloader(struct usb_ifc_info *ifc)
-{
-	if (ifc->dev_vendor != 0x0451)
-		return -1;
-	if ((ifc->dev_product != 0xD010) && (ifc->dev_product != 0xD00F))
-		return -1;
 	return 0;
 }
 
@@ -395,8 +400,9 @@ int main(int argc, char **argv)
 	unsigned sz;
 	struct stat s;
 	int fd;
-	struct usb_handle *usb;
-	int once;
+	int ret;
+	struct libusb_context       *ctx = NULL;
+	struct libusb_device_handle *usb = NULL;
 
 	if (argc != 3) {
 		printf("usage: %s <xloader> <rootfs>\n", argv[0]);
@@ -416,16 +422,34 @@ int main(int argc, char **argv)
 	sz = s.st_size;
 	close(fd);
 	argv++;
+	if (libusb_init(&ctx)) {
+		printf("cannot initialize libusb\n");
+		return -1;
+	}
 	printf(HFORMAT, HOST_FORMAT);
-	for (once = 1;;) {
-		usb = usb_open(match_omap4_bootloader);
-		if (usb)
-			return usb_boot(usb, data, sz, argv[0]);
-		if (once) {
-			once = 0;
-			printf("waiting for OMAP44xx device...\n");
+	printf("waiting for OMAP44xx device...\n");
+	while (1) {
+		if (!usb)
+			usb = libusb_open_device_with_vid_pid(
+				ctx, 0x0451, 0xD010);
+		if (!usb)
+			usb = libusb_open_device_with_vid_pid(
+				ctx, 0x0451, 0xD00F);
+		if (usb) {
+			libusb_detach_kernel_driver(usb, 0);
+			ret = libusb_set_configuration(usb, 1);
+			if (ret)
+				break;
+			ret = libusb_claim_interface(usb, 0);
+			if (ret)
+				break;
+			ret = usb_boot(usb, data, sz, argv[0]);
+			break;
 		}
 		usleep(250000);
 	}
-	return -1;
+	libusb_release_interface(usb, 0);
+	libusb_close(usb);
+	libusb_exit(ctx);
+	return ret;
 }

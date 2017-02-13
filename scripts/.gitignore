@@ -25,3 +25,4 @@ mk-am35xx-spi-image
 mxsimage
 mxsboot
 mxs-usb-loader
+omap4_usbboot

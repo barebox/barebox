@@ -149,6 +149,7 @@ config OMAP_SERIALBOOT
 	select XYMODEM
 	select FS_RAMFS
 	depends on ARCH_AM33XX && SHELL_NONE
+	depends on !CONSOLE_NONE
 	help
 	  Say Y here if you want to load the 2nd stage barebox.bin with
 	  xmodem after booting from serial line.

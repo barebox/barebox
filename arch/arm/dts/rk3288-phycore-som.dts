@@ -44,7 +44,7 @@
 	};
 
 	chosen {
-		stdout-path = &uart0;
+		stdout-path = &uart2;
 
 		environment-emmc {
 			compatible = "barebox,environment";

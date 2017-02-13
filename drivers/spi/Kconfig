@@ -54,6 +54,14 @@ config DRIVER_SPI_OMAP3
 	bool "OMAP3 McSPI Master driver"
 	depends on ARCH_OMAP3 || ARCH_AM33XX
 
+config DRIVER_SPI_DSPI
+	tristate "Freescale DSPI SPI Master driver"
+	depends on ARCH_VF610
+	default y
+	help
+	  This enables support for the Freescale DSPI controller in master
+	  mode. VF610 platform uses the controller.
+
 endif
 
 endmenu

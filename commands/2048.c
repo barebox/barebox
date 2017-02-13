@@ -53,7 +53,7 @@ static void getColor(uint16_t value, char *color, size_t length)
 static void drawBoard(uint16_t board[SIZE][SIZE])
 {
 	int8_t x,y;
-	char color[40], reset[] = "\033[m";
+	char color[40], reset[] = "\033[0m";
 	printf("\033[H");
 
 	printf("2048.c %17d pts\n\n",score);

@@ -130,11 +130,15 @@ static int efi_execute_image(const char *file)
 	efi_status_t efiret;
 	struct linux_kernel_header *image_header;
 	const char *options;
+	bool is_driver;
 	int ret;
 
 	ret = efi_load_image(file, &loaded_image, &handle);
 	if (ret)
 		return ret;
+
+	is_driver = (loaded_image->image_code_type == EFI_BOOT_SERVICES_CODE) ||
+		(loaded_image->image_code_type == EFI_RUNTIME_SERVICES_CODE);
 
 	image_header = (struct linux_kernel_header *)loaded_image->image_base;
 	if (image_header->boot_flag == 0xAA55 &&
@@ -145,13 +149,15 @@ static int efi_execute_image(const char *file)
 		loaded_image->load_options = xstrdup_char_to_wchar(options);
 		loaded_image->load_options_size =
 			(strlen(options) + 1) * sizeof(wchar_t);
+		shutdown_barebox();
 	}
 
 	efiret = BS->start_image(handle, NULL, NULL);
 	if (EFI_ERROR(efiret))
 		pr_err("failed to StartImage: %s\n", efi_strerror(efiret));
 
-	BS->unload_image(handle);
+	if (!is_driver)
+		BS->unload_image(handle);
 
 	efi_connect_all();
 	efi_register_devices();
@@ -255,6 +261,7 @@ static int do_bootm_efi(struct image_data *data)
 	efi_set_variable_usec("LoaderTimeExecUSec", &efi_systemd_vendor_guid,
 			      get_time_ns()/1000);
 
+	shutdown_barebox();
 	linux_efi_handover(handle, boot_header);
 
 	return 0;

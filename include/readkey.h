@@ -26,8 +26,8 @@
 
 #define ANSI_CLEAR_SCREEN "\e[2J\e[;H"
 
-#define printf_reverse(fmt,args...)	printf("\e[7m" fmt "\e[m",##args)
-#define puts_reverse(fmt)		puts("\e[7m" fmt "\e[m")
+#define printf_reverse(fmt,args...)	printf("\e[7m" fmt "\e[0m",##args)
+#define puts_reverse(fmt)		puts("\e[7m" fmt "\e[0m")
 #define gotoXY(row, col)		printf("\e[%d;%dH", col, row)
 #define clear()				puts("\e[2J")
 

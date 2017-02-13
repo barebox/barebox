@@ -51,8 +51,8 @@ static const struct esc_cmds esccmds[] = {
 
 int read_key(void)
 {
-	char c;
-	char esc[5];
+	unsigned char c;
+	unsigned char esc[5];
 	c = getchar();
 
 	if (c == 27) {

@@ -74,16 +74,16 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 
 int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 {
-	struct device_node *n;
+	struct device_node *n, *subnode;
 
 	if (!node)
 		return -EINVAL;
 
-	for_each_child_of_node(node, n) {
-		if (of_device_is_compatible(n, "fixed-partitions")) {
-			node = n;
-			break;
-		}
+	subnode = of_get_child_by_name(node, "partitions");
+	if (subnode) {
+		if (!of_device_is_compatible(subnode, "fixed-partitions"))
+			return -EINVAL;
+		node = subnode;
 	}
 
 	for_each_child_of_node(node, n) {

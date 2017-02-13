@@ -40,7 +40,8 @@
 #include <asm/system.h>
 
 void start_linux(void *adr, int swap, unsigned long initrd_address,
-		unsigned long initrd_size, void *oftree)
+		 unsigned long initrd_size, void *oftree,
+		 enum arm_security_state bootm_secure_state)
 {
 	void (*kernel)(void *dtb) = adr;
 

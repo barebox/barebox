@@ -14,12 +14,14 @@ void imx27_boot_save_loc(void);
 void imx51_boot_save_loc(void);
 void imx53_boot_save_loc(void);
 void imx6_boot_save_loc(void);
+void imx7_boot_save_loc(void);
 
 void imx25_get_boot_source(enum bootsource *src, int *instance);
 void imx35_get_boot_source(enum bootsource *src, int *instance);
 void imx51_get_boot_source(enum bootsource *src, int *instance);
 void imx53_get_boot_source(enum bootsource *src, int *instance);
 void imx6_get_boot_source(enum bootsource *src, int *instance);
+void imx7_get_boot_source(enum bootsource *src, int *instance);
 
 int imx1_init(void);
 int imx21_init(void);
@@ -31,6 +33,7 @@ int imx50_init(void);
 int imx51_init(void);
 int imx53_init(void);
 int imx6_init(void);
+int imx7_init(void);
 
 int imx1_devices_init(void);
 int imx21_devices_init(void);
@@ -45,6 +48,7 @@ int imx6_devices_init(void);
 
 void imx5_cpu_lowlevel_init(void);
 void imx6_cpu_lowlevel_init(void);
+void imx7_cpu_lowlevel_init(void);
 void vf610_cpu_lowlevel_init(void);
 
 /* There's a off-by-one betweem the gpio bank number and the gpiochip */
@@ -172,6 +176,18 @@ extern unsigned int __imx_cpu_type;
 # define cpu_is_mx6()		(imx_cpu_type == IMX_CPU_IMX6)
 #else
 # define cpu_is_mx6()		(0)
+#endif
+
+#ifdef CONFIG_ARCH_IMX7
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX7
+# endif
+# define cpu_is_mx7()		(imx_cpu_type == IMX_CPU_IMX7)
+#else
+# define cpu_is_mx7()		(0)
 #endif
 
 #ifdef CONFIG_ARCH_VF610

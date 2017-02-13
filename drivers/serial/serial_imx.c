@@ -228,6 +228,7 @@ static int imx_serial_probe(struct device_d *dev)
 		ret = PTR_ERR(priv->clk);
 		goto err_free;
 	}
+	clk_enable(priv->clk);
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
@@ -288,6 +289,9 @@ static __maybe_unused struct of_device_id imx_serial_dt_ids[] = {
 		.data = &imx21_data,
 	}, {
 		.compatible = "fsl,imx6ul-uart",
+		.data = &imx21_data,
+	},  {
+		.compatible = "fsl,imx7d-uart",
 		.data = &imx21_data,
 	}, {
 		/* sentinel */

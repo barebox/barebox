@@ -25,6 +25,7 @@
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
+#include <mach/imx7-regs.h>
 
 /* [CTRL][TYPE] */
 static const enum bootsource locations[4][4] = {
@@ -342,6 +343,75 @@ void imx6_boot_save_loc(void)
 	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 
 	imx6_get_boot_source(&src, &instance);
+
+	bootsource_set(src);
+	bootsource_set_instance(instance);
+}
+
+#define IMX7_SRC_SBMR1	0x58
+#define IMX7_SRC_SBMR2	0x70
+
+void imx7_get_boot_source(enum bootsource *src, int *instance)
+{
+	void __iomem *src_base = IOMEM(MX7_SRC_BASE_ADDR);
+	uint32_t sbmr1 = readl(src_base + IMX7_SRC_SBMR1);
+	uint32_t sbmr2 = readl(src_base + IMX7_SRC_SBMR2);
+	int boot_mode;
+
+	/* BMOD[1:0] */
+	boot_mode = (sbmr2 >> 24) & 0x3;
+
+	switch (boot_mode) {
+	case 0: /* Fuses, fall through */
+	case 2: /* internal boot */
+		goto internal_boot;
+	case 1: /* Serial Downloader */
+		*src = BOOTSOURCE_SERIAL;
+		break;
+	case 3: /* reserved */
+		break;
+	};
+
+	return;
+
+internal_boot:
+
+	switch ((sbmr1 >> 12) & 0xf) {
+	case 1:
+	case 2:
+		*src = BOOTSOURCE_MMC;
+		*instance = (sbmr1 >> 10 & 0x3);
+		break;
+	case 3:
+		*src = BOOTSOURCE_NAND;
+		break;
+	case 4:
+		*src = BOOTSOURCE_SPI_NOR,
+		*instance = (sbmr1 >> 9 & 0x7);
+		break;
+	case 6:
+		*src = BOOTSOURCE_SPI; /* Really: qspi */
+		break;
+	case 5:
+		*src = BOOTSOURCE_NOR;
+		break;
+	default:
+		break;
+	}
+
+	/* BOOT_CFG1[7:0] */
+	if (sbmr1 & (1 << 7))
+		*src = BOOTSOURCE_NAND;
+
+	return;
+}
+
+void imx7_boot_save_loc(void)
+{
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	imx7_get_boot_source(&src, &instance);
 
 	bootsource_set(src);
 	bootsource_set_instance(instance);

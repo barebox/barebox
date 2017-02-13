@@ -63,14 +63,27 @@ enum mx31_clks {
 	mstick1_gate, mstick2_gate, csi_gate, rtc_gate, wdog_gate, pwm_gate,
 	sim_gate, ect_gate, usb_gate, kpp_gate, ipu_gate, uart3_gate,
 	uart4_gate, uart5_gate, owire_gate, ssi2_gate, cspi1_gate, cspi2_gate,
-	gacc_gate, emi_gate, rtic_gate, firi_gate, clk_max
+	gacc_gate, emi_gate, rtic_gate, firi_gate, fpm, pll_ref, mpll_byp,
+	clk_max
 };
 
 static struct clk *clks[clk_max];
 
+static const char *pll_ref_sel[] = {
+	"dummy",
+	"fpm",
+	"ckih",
+	"dummy",
+};
+
+static const char *mpll_byp_sel[] = {
+	"mpll",
+	"pll_ref",
+};
+
 static const char *mcu_main_sel[] = {
 	"spll",
-	"mpll",
+	"mpll_byp",
 };
 
 static const char *per_sel[] = {
@@ -94,9 +107,14 @@ static int imx31_ccm_probe(struct device_d *dev)
 
 	clks[ckih] = clk_fixed("ckih", 26000000);
 	clks[ckil] = clk_fixed("ckil", 32768);
-	clks[mpll] = imx_clk_pllv1("mpll", "ckih", base + CCM_MPCTL);
-	clks[spll] = imx_clk_pllv1("spll", "ckih", base + CCM_SRPCTL);
-	clks[upll] = imx_clk_pllv1("upll", "ckih", base + CCM_UPCTL);
+	clks[fpm] = imx_clk_fixed_factor("fpm", "ckil", 1024, 1);
+	clks[pll_ref] = imx_clk_mux("pll_ref", base + CCM_CCMR, 1, 2,
+		pll_ref_sel,  ARRAY_SIZE(pll_ref_sel));
+	clks[mpll] = imx_clk_pllv1("mpll", "pll_ref", base + CCM_MPCTL);
+	clks[spll] = imx_clk_pllv1("spll", "pll_ref", base + CCM_SRPCTL);
+	clks[upll] = imx_clk_pllv1("upll", "pll_ref", base + CCM_UPCTL);
+	clks[mpll_byp] = imx_clk_mux("mpll_byp", base + CCM_CCMR, 7, 1,
+			mpll_byp_sel, ARRAY_SIZE(mpll_byp_sel));
 	clks[mcu_main] = imx_clk_mux("mcu_main", base + CCM_PMCR0, 31, 1,
 			mcu_main_sel, ARRAY_SIZE(mcu_main_sel));
 	clks[hsp] = imx_clk_divider("hsp", "mcu_main", base + CCM_PDR0, 11, 3);

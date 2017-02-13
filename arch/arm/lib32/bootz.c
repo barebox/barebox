@@ -112,7 +112,7 @@ static int do_bootz(int argc, char *argv[])
 	oftree = of_get_fixed_tree(NULL);
 #endif
 
-	start_linux(zimage, swap, 0, 0, oftree);
+	start_linux(zimage, swap, 0, 0, oftree, ARM_STATE_SECURE);
 
 	return 0;
 

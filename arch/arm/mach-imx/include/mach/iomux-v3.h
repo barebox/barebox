@@ -16,6 +16,8 @@
 #ifndef __MACH_IOMUX_V3_H__
 #define __MACH_IOMUX_V3_H__
 
+#include <io.h>
+
 /*
  *	build IOMUX_PAD structure
  *
@@ -76,6 +78,14 @@ typedef u64 iomux_v3_cfg_t;
 		((iomux_v3_cfg_t)(_sel_input_ofs) << MUX_SEL_INPUT_OFS_SHIFT) | \
 		((iomux_v3_cfg_t)(_sel_input) << MUX_SEL_INPUT_SHIFT))
 
+#define IOMUX_PAD_FIELD(name, pad) 	(((pad) & name##_MASK) >> name##_SHIFT)
+#define IOMUX_CTRL_OFS(pad)		IOMUX_PAD_FIELD(MUX_CTRL_OFS, pad)
+#define IOMUX_MODE(pad)			IOMUX_PAD_FIELD(MUX_MODE, pad)
+#define IOMUX_SEL_INPUT_OFS(pad)	IOMUX_PAD_FIELD(MUX_SEL_INPUT_OFS, pad)
+#define IOMUX_SEL_INPUT(pad)		IOMUX_PAD_FIELD(MUX_SEL_INPUT, pad)
+#define IOMUX_PAD_CTRL_OFS(pad)		IOMUX_PAD_FIELD(MUX_PAD_CTRL_OFS, pad)
+#define IOMUX_PAD_CTRL(pad)		IOMUX_PAD_FIELD(MUX_PAD_CTRL, pad)
+
 #define NEW_PAD_CTRL(cfg, pad)	(((cfg) & ~MUX_PAD_CTRL_MASK) | MUX_PAD_CTRL(pad))
 /*
  * Use to set PAD control
@@ -103,6 +113,57 @@ typedef u64 iomux_v3_cfg_t;
 #define PAD_CTL_SRE_SLOW		(0 << 0)
 
 #define IOMUX_CONFIG_SION		(0x1 << 4)
+
+#define SHARE_MUX_CONF_REG		0x1
+#define ZERO_OFFSET_VALID		0x2
+#define IMX7_PINMUX_LPSR		0x4
+
+static inline void iomux_v3_setup_pad(void __iomem *iomux, unsigned int flags,
+				      u32 mux_reg, u32 conf_reg, u32 input_reg,
+				      u32 mux_val, u32 conf_val, u32 input_val)
+{
+	const bool mux_ok   = !!mux_reg || (flags & ZERO_OFFSET_VALID);
+	const bool conf_ok  = !!conf_reg;
+	const bool input_ok = !!input_reg;
+
+	/*
+	 * The sel_input registers for the LPSR controller pins are in the regular pinmux
+	 * controller, so bend the register offset over to the other controller.
+	 */
+	if (flags & IMX7_PINMUX_LPSR)
+		input_reg += 0x70000;
+
+	if (flags & SHARE_MUX_CONF_REG) {
+		mux_val |= conf_val;
+	} else {
+		if (conf_ok)
+			writel(conf_val, iomux + conf_reg);
+	}
+
+	if (mux_ok)
+		writel(mux_val, iomux + mux_reg);
+
+	if (input_ok)
+		writel(input_val, iomux + input_reg);
+}
+
+static inline void imx_setup_pad(void __iomem *iomux, iomux_v3_cfg_t pad)
+{
+	uint32_t pad_ctrl;
+
+	pad_ctrl = IOMUX_PAD_CTRL(pad);
+	pad_ctrl = (pad_ctrl & NO_PAD_CTRL) ? 0 : pad_ctrl,
+
+	iomux_v3_setup_pad(iomux, 0,
+			   IOMUX_CTRL_OFS(pad),
+			   IOMUX_PAD_CTRL_OFS(pad),
+			   IOMUX_SEL_INPUT_OFS(pad),
+			   IOMUX_MODE(pad),
+			   pad_ctrl,
+			   IOMUX_SEL_INPUT(pad));
+}
+
+
 
 /*
  * setups a single pad in the iomuxer

@@ -141,6 +141,7 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 {
 	struct clk *parent;
 	unsigned long parent_rate = 0;
+	int ret;
 
 	if (!clk)
 		return 0;
@@ -148,14 +149,26 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
+	if (!clk->ops->set_rate)
+		return -ENOSYS;
+
 	parent = clk_get_parent(clk);
-	if (parent)
+	if (parent) {
 		parent_rate = clk_get_rate(parent);
 
-	if (clk->ops->set_rate)
-		return clk->ops->set_rate(clk, rate, parent_rate);
+		if (clk->flags & CLK_OPS_PARENT_ENABLE) {
+			ret = clk_enable(parent);
+			if (ret)
+				return ret;
+		}
+	}
 
-	return -ENOSYS;
+	ret = clk->ops->set_rate(clk, rate, parent_rate);
+
+	if (parent && clk->flags & CLK_OPS_PARENT_ENABLE)
+		clk_disable(parent);
+
+	return ret;
 }
 
 struct clk *clk_lookup(const char *name)
@@ -173,14 +186,15 @@ struct clk *clk_lookup(const char *name)
 	return ERR_PTR(-ENODEV);
 }
 
-int clk_set_parent(struct clk *clk, struct clk *parent)
+int clk_set_parent(struct clk *clk, struct clk *newparent)
 {
-	int i;
+	int i, ret;
+	struct clk *curparent = clk_get_parent(clk);
 
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
-	if (IS_ERR(parent))
-		return PTR_ERR(parent);
+	if (IS_ERR(newparent))
+		return PTR_ERR(newparent);
 
 	if (!clk->num_parents)
 		return -EINVAL;
@@ -192,14 +206,32 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
 			clk->parents[i] = clk_lookup(clk->parent_names[i]);
 
 		if (!IS_ERR_OR_NULL(clk->parents[i]))
-			if (clk->parents[i] == parent)
+			if (clk->parents[i] == newparent)
 				break;
 	}
 
 	if (i == clk->num_parents)
 		return -EINVAL;
 
-	return clk->ops->set_parent(clk, i);
+	if (clk->enable_count)
+		clk_enable(newparent);
+
+	if (clk->flags & CLK_OPS_PARENT_ENABLE) {
+		clk_enable(curparent);
+		clk_enable(newparent);
+	}
+
+	ret = clk->ops->set_parent(clk, i);
+
+	if (clk->flags & CLK_OPS_PARENT_ENABLE) {
+		clk_disable(curparent);
+		clk_disable(newparent);
+	}
+
+	if (clk->enable_count)
+		clk_disable(curparent);
+
+	return ret;
 }
 
 struct clk *clk_get_parent(struct clk *clk)

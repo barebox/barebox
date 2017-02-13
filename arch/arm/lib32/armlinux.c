@@ -38,6 +38,7 @@
 #include <asm/barebox-arm.h>
 #include <asm/armlinux.h>
 #include <asm/system.h>
+#include <asm/secure.h>
 
 static struct tag *params;
 static void *armlinux_bootparams = NULL;
@@ -258,11 +259,19 @@ static void setup_tags(unsigned long initrd_address,
 }
 
 void start_linux(void *adr, int swap, unsigned long initrd_address,
-		unsigned long initrd_size, void *oftree)
+		 unsigned long initrd_size, void *oftree,
+		 enum arm_security_state state)
 {
 	void (*kernel)(int zero, int arch, void *params) = adr;
 	void *params = NULL;
 	int architecture;
+	int ret;
+
+	if (IS_ENABLED(CONFIG_ARM_SECURE_MONITOR) && state > ARM_STATE_SECURE) {
+		ret = armv7_secure_monitor_install();
+		if (ret)
+			pr_err("Failed to install secure monitor\n");
+	}
 
 	if (oftree) {
 		pr_debug("booting kernel with devicetree\n");
@@ -274,6 +283,10 @@ void start_linux(void *adr, int swap, unsigned long initrd_address,
 	architecture = armlinux_get_architecture();
 
 	shutdown_barebox();
+
+	if (IS_ENABLED(CONFIG_ARM_SECURE_MONITOR) && state == ARM_STATE_HYP)
+		armv7_switch_to_hyp();
+
 	if (swap) {
 		u32 reg;
 		__asm__ __volatile__("mrc p15, 0, %0, c1, c0" : "=r" (reg));

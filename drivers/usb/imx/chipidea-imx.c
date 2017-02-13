@@ -27,6 +27,7 @@
 #include <usb/fsl_usb2.h>
 #include <linux/err.h>
 #include <linux/phy/phy.h>
+#include <linux/clk.h>
 
 #define MXC_EHCI_PORTSC_MASK ((0xf << 28) | (1 << 25))
 
@@ -37,12 +38,14 @@ struct imx_chipidea {
 	unsigned long flags;
 	uint32_t mode;
 	int portno;
+	struct device_d *usbmisc;
 	enum usb_phy_interface phymode;
 	struct param_d *param_mode;
 	int role_registered;
 	struct regulator *vbus;
 	struct phy *phy;
 	struct usb_phy *usbphy;
+	struct clk *clk;
 };
 
 static int imx_chipidea_port_init(void *drvdata)
@@ -67,7 +70,7 @@ static int imx_chipidea_port_init(void *drvdata)
 			return ret;
 	}
 
-	ret = imx_usbmisc_port_init(ci->portno, ci->flags);
+	ret = imx_usbmisc_port_init(ci->usbmisc, ci->portno, ci->flags);
 	if (ret)
 		dev_err(ci->dev, "misc init failed: %s\n", strerror(-ret));
 
@@ -79,7 +82,7 @@ static int imx_chipidea_port_post_init(void *drvdata)
 	struct imx_chipidea *ci = drvdata;
 	int ret;
 
-	ret = imx_usbmisc_port_post_init(ci->portno, ci->flags);
+	ret = imx_usbmisc_port_post_init(ci->usbmisc, ci->portno, ci->flags);
 	if (ret)
 		dev_err(ci->dev, "post misc init failed: %s\n", strerror(-ret));
 
@@ -93,6 +96,10 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 
 	if (of_parse_phandle_with_args(ci->dev->device_node, "fsl,usbmisc",
 					"#index-cells", 0, &out_args))
+		return -ENODEV;
+
+	ci->usbmisc = of_find_device_by_node(out_args.np);
+	if (!ci->usbmisc)
 		return -ENODEV;
 
 	ci->portno = out_args.args[0];
@@ -262,6 +269,17 @@ static int imx_chipidea_probe(struct device_d *dev)
 	ci->vbus = regulator_get(dev, "vbus");
 	if (IS_ERR(ci->vbus))
 		ci->vbus = NULL;
+
+	/*
+	 * Some devices have more than one clock, in this case they are enabled
+	 * by default in the clock driver. At least enable the main clock for
+	 * devices which have only one.
+	 */
+	ci->clk = clk_get(dev, NULL);
+	if (IS_ERR(ci->clk))
+		return PTR_ERR(ci->clk);
+
+	clk_enable(ci->clk);
 
 	if (of_property_read_bool(dev->device_node, "fsl,usbphy")) {
 		ci->phy = of_phy_get_by_phandle(dev, "fsl,usbphy", 0);

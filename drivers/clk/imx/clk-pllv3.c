@@ -26,10 +26,13 @@
 #define PLL_NUM_OFFSET		0x10
 #define PLL_DENOM_OFFSET	0x20
 
+#define SYS_VF610_PLL_OFFSET	0x10
+
 #define BM_PLL_POWER		(0x1 << 12)
 #define BM_PLL_ENABLE		(0x1 << 13)
 #define BM_PLL_BYPASS		(0x1 << 16)
 #define BM_PLL_LOCK		(0x1 << 31)
+#define IMX7_ENET_PLL_POWER	(0x1 << 5)
 
 struct clk_pllv3 {
 	struct clk	clk;
@@ -38,6 +41,10 @@ struct clk_pllv3 {
 	u32		div_mask;
 	u32		div_shift;
 	const char	*parent;
+	void __iomem	*lock_reg;
+	u32		lock_mask;
+	u32		ref_clock;
+	u32		power_bit;
 };
 
 #define to_clk_pllv3(_clk) container_of(_clk, struct clk_pllv3, clk)
@@ -51,9 +58,9 @@ static int clk_pllv3_enable(struct clk *clk)
 	val = readl(pll->base);
 	val &= ~BM_PLL_BYPASS;
 	if (pll->powerup_set)
-		val |= BM_PLL_POWER;
+		val |= pll->power_bit;
 	else
-		val &= ~BM_PLL_POWER;
+		val &= ~pll->power_bit;
 	writel(val, pll->base);
 
 	/* Wait for PLL to lock */
@@ -83,9 +90,9 @@ static void clk_pllv3_disable(struct clk *clk)
 
 	val |= BM_PLL_BYPASS;
 	if (pll->powerup_set)
-		val &= ~BM_PLL_POWER;
+		val &= ~pll->power_bit;
 	else
-		val |= BM_PLL_POWER;
+		val |= pll->power_bit;
 	writel(val, pll->base);
 }
 
@@ -265,7 +272,9 @@ static const struct clk_ops clk_pllv3_av_ops = {
 static unsigned long clk_pllv3_enet_recalc_rate(struct clk *clk,
 						unsigned long parent_rate)
 {
-	return 500000000;
+	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+
+	return pll->ref_clock;
 }
 
 static const struct clk_ops clk_pllv3_enet_ops = {
@@ -279,6 +288,88 @@ static const struct clk_ops clk_pllv3_mlb_ops = {
 	.disable	= clk_pllv3_disable,
 };
 
+static unsigned long clk_pllv3_sys_vf610_recalc_rate(struct clk *clk,
+						     unsigned long parent_rate)
+{
+	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+
+	u32 mfn = readl(pll->base + SYS_VF610_PLL_OFFSET + PLL_NUM_OFFSET);
+	u32 mfd = readl(pll->base + SYS_VF610_PLL_OFFSET + PLL_DENOM_OFFSET);
+	u32 div = (readl(pll->base) & pll->div_mask) ? 22 : 20;
+
+	return (parent_rate * div) + ((parent_rate / mfd) * mfn);
+}
+
+static long clk_pllv3_sys_vf610_round_rate(struct clk *clk, unsigned long rate,
+					   unsigned long *prate)
+{
+	unsigned long parent_rate = *prate;
+	unsigned long min_rate = parent_rate * 20;
+	unsigned long max_rate = 528000000;
+	u32 mfn, mfd = 1000000;
+	u64 temp64;
+
+	if (rate >= max_rate)
+		return max_rate;
+	else if (rate < min_rate)
+		rate = min_rate;
+
+	temp64 = (u64) (rate - 20 * parent_rate);
+	temp64 *= mfd;
+	do_div(temp64, parent_rate);
+	mfn = temp64;
+
+	return parent_rate * 20 + parent_rate / mfd * mfn;
+}
+
+static int clk_pllv3_sys_vf610_set_rate(struct clk *clk, unsigned long rate,
+					unsigned long parent_rate)
+{
+	struct clk_pllv3 *pll = to_clk_pllv3(clk);
+	unsigned long min_rate = parent_rate * 20;
+	unsigned long max_rate = 528000000;
+	u32 val;
+	u32 mfn, mfd = 1000000;
+	u64 temp64;
+
+	if (rate < min_rate || rate > max_rate)
+		return -EINVAL;
+
+	val = readl(pll->base);
+
+	if (rate == max_rate) {
+		writel(0, pll->base + SYS_VF610_PLL_OFFSET + PLL_NUM_OFFSET);
+		val |= pll->div_mask;
+		writel(val, pll->base);
+
+		return 0;
+	} else {
+		val &= ~pll->div_mask;
+	}
+
+	temp64 = (u64) (rate - 20 * parent_rate);
+	temp64 *= mfd;
+	do_div(temp64, parent_rate);
+	mfn = temp64;
+
+	writel(val, pll->base);
+	writel(mfn, pll->base + SYS_VF610_PLL_OFFSET + PLL_NUM_OFFSET);
+	writel(mfd, pll->base + SYS_VF610_PLL_OFFSET + PLL_DENOM_OFFSET);
+
+	while (!(readl(pll->lock_reg) & pll->lock_mask))
+		;
+
+	return 0;
+}
+
+static const struct clk_ops clk_pllv3_sys_vf610_ops = {
+	.enable		= clk_pllv3_enable,
+	.disable	= clk_pllv3_disable,
+	.recalc_rate	= clk_pllv3_sys_vf610_recalc_rate,
+	.round_rate	= clk_pllv3_sys_vf610_round_rate,
+	.set_rate	= clk_pllv3_sys_vf610_set_rate,
+};
+
 struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 			  const char *parent, void __iomem *base,
 			  u32 div_mask)
@@ -289,7 +380,12 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 
 	pll = xzalloc(sizeof(*pll));
 
+	pll->power_bit = BM_PLL_POWER;
+
 	switch (type) {
+	case IMX_PLLV3_SYS_VF610:
+		ops = &clk_pllv3_sys_vf610_ops;
+		break;
 	case IMX_PLLV3_SYS:
 		ops = &clk_pllv3_sys_ops;
 		break;
@@ -302,7 +398,13 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	case IMX_PLLV3_AV:
 		ops = &clk_pllv3_av_ops;
 		break;
+	case IMX_PLLV3_ENET_IMX7:
+		pll->power_bit = IMX7_ENET_PLL_POWER;
+		pll->ref_clock = 1000000000;
+		ops = &clk_pllv3_enet_ops;
+		break;
 	case IMX_PLLV3_ENET:
+		pll->ref_clock = 500000000;
 		ops = &clk_pllv3_enet_ops;
 		break;
 	case IMX_PLLV3_MLB:
@@ -326,4 +428,23 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	}
 
 	return &pll->clk;
+}
+
+struct clk *imx_clk_pllv3_locked(enum imx_pllv3_type type, const char *name,
+				 const char *parent, void __iomem *base,
+				 u32 div_mask, void __iomem *lock_reg, u32 lock_mask)
+{
+	struct clk *clk;
+	struct clk_pllv3 *pll;
+
+	clk = imx_clk_pllv3(type, name, parent, base, div_mask);
+	if (IS_ERR(clk))
+		return clk;
+
+	pll = to_clk_pllv3(clk);
+
+	pll->lock_reg  = lock_reg;
+	pll->lock_mask = lock_mask;
+
+	return clk;
 }

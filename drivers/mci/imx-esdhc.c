@@ -218,13 +218,10 @@ static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
 	u32 wml_value;
 
 	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
-		if (!(data->flags & MMC_DATA_READ)) {
-			if ((esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL) == 0)
-				goto err_locked;
+		if (!(data->flags & MMC_DATA_READ))
 			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->src);
-		} else {
+		else
 			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
-		}
 	} else {
 		wml_value = data->blocksize/4;
 
@@ -237,8 +234,6 @@ static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
 		} else {
 			if (wml_value > 0x80)
 				wml_value = 0x80;
-			if ((esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_WPSPL) == 0)
-				goto err_locked;
 
 			esdhc_clrsetbits32(regs + IMX_SDHCI_WML, WML_WR_WML_MASK,
 						wml_value << 16);
@@ -249,11 +244,6 @@ static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
 	esdhc_write32(regs + SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | data->blocksize);
 
 	return 0;
-
-err_locked:
-	dev_err(host->dev, "Can not write to locked card.\n\n");
-
-	return -ETIMEDOUT;
 }
 
 static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
@@ -630,6 +620,14 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->clk = clk_get(dev, "per");
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
+	clk_enable(host->clk);
+
+	ret = clk_enable(host->clk);
+	if (ret) {
+		dev_err(dev, "Failed to enable clock: %s\n",
+			strerror(ret));
+		return ret;
+	}
 
 	host->dev = dev;
 	iores = dev_request_mem_resource(dev, 0);

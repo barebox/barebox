@@ -436,6 +436,7 @@ static void mci_part_add(struct mci *mci, uint64_t size,
 	part->blk.num_blocks = mci_calc_blk_cnt(size, part->blk.blockbits);
 	part->area_type = area_type;
 	part->part_cfg = part_cfg;
+	part->idx = idx;
 
 	if (area_type == MMC_BLK_DATA_AREA_MAIN)
 		part->blk.cdev.device_node = mci->host->hw_dev->device_node;
@@ -1573,6 +1574,59 @@ static const char *mci_boot_names[] = {
 	"user",
 };
 
+static int mci_register_partition(struct mci_part *part)
+{
+	struct mci *mci = part->mci;
+	struct mci_host *host = mci->host;
+	const char *partnodename = NULL;
+	struct device_node *np;
+	int rc;
+
+	/*
+	 * An MMC/SD card acts like an ordinary disk.
+	 * So, re-use the disk driver to gain access to this media
+	 */
+	part->blk.dev = &mci->dev;
+	part->blk.ops = &mci_ops;
+
+	rc = blockdevice_register(&part->blk);
+	if (rc != 0) {
+		dev_err(&mci->dev, "Failed to register MCI/SD blockdevice\n");
+		return rc;
+	}
+	dev_info(&mci->dev, "registered %s\n", part->blk.cdev.name);
+
+	np = host->hw_dev->device_node;
+
+	/* create partitions on demand */
+	switch (part->area_type) {
+	case MMC_BLK_DATA_AREA_BOOT:
+		if (part->idx == 0)
+			partnodename = "boot0-partitions";
+		else
+			partnodename = "boot1-partitions";
+
+		np = of_get_child_by_name(host->hw_dev->device_node,
+					  partnodename);
+		break;
+	case MMC_BLK_DATA_AREA_MAIN:
+		break;
+	default:
+		return 0;
+	}
+
+	rc = parse_partition_table(&part->blk);
+	if (rc != 0) {
+		dev_warn(&mci->dev, "No partition table found\n");
+		rc = 0; /* it's not a failure */
+	}
+
+	if (np)
+		of_parse_partitions(&part->blk.cdev, np);
+
+	return 0;
+}
+
 /**
  * Probe an MCI card at the given host interface
  * @param mci MCI device instance
@@ -1647,29 +1701,7 @@ static int mci_card_probe(struct mci *mci)
 	for (i = 0; i < mci->nr_parts; i++) {
 		struct mci_part *part = &mci->part[i];
 
-		/*
-		 * An MMC/SD card acts like an ordinary disk.
-		 * So, re-use the disk driver to gain access to this media
-		 */
-		part->blk.dev = &mci->dev;
-		part->blk.ops = &mci_ops;
-
-		rc = blockdevice_register(&part->blk);
-		if (rc != 0) {
-			dev_err(&mci->dev, "Failed to register MCI/SD blockdevice\n");
-			goto on_error;
-		}
-		dev_info(&mci->dev, "registered %s\n", part->blk.cdev.name);
-
-		/* create partitions on demand */
-		if (part->area_type == MMC_BLK_DATA_AREA_MAIN) {
-			rc = parse_partition_table(&part->blk);
-			if (rc != 0) {
-				dev_warn(&mci->dev, "No partition table found\n");
-				rc = 0; /* it's not a failure */
-			}
-			of_parse_partitions(&part->blk.cdev, host->hw_dev->device_node);
-		}
+		rc = mci_register_partition(part);
 
 		if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
 				part->area_type == MMC_BLK_DATA_AREA_BOOT &&

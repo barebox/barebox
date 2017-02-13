@@ -24,9 +24,10 @@
 #include <malloc.h>
 #include <gpio.h>
 
+#include <mach/iomux-vf610.h>
+
 enum {
 	PINCTRL_VF610_MUX_LINE_SIZE = 20,
-	PINCTRL_VF610_MUX_SHIFT = 20,
 
 	PINCTRL_VF610_IBE = 1 << 0,
 	PINCTRL_VF610_OBE = 1 << 1,
@@ -60,17 +61,17 @@ static int pinctrl_vf610_set_state(struct pinctrl_device *pdev,
 	npins = size / PINCTRL_VF610_MUX_LINE_SIZE;
 
 	for (i = 0; i < npins; i++) {
+		iomux_v3_cfg_t pad;
 		u32 mux_reg   = be32_to_cpu(*list++);
 		u32 input_reg = be32_to_cpu(*list++);
 		u32 mux_val   = be32_to_cpu(*list++);
 		u32 input_val = be32_to_cpu(*list++);
 		u32 conf_val  = be32_to_cpu(*list++);
 
-		writel(mux_val << PINCTRL_VF610_MUX_SHIFT | conf_val,
-		       iomux->base + mux_reg);
+		pad = IOMUX_PAD(mux_reg, mux_reg, mux_val,
+				input_reg, input_val, conf_val);
 
-		if (input_reg)
-			writel(input_val, iomux->base + input_reg);
+		vf610_setup_pad(iomux->base, pad);
 	}
 
 	return 0;

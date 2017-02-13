@@ -9,7 +9,9 @@
 void imx6_init_lowlevel(void);
 
 #define IMX6_ANATOP_SI_REV 0x260
+#define IMX6SL_ANATOP_SI_REV 0x280
 
+#define IMX6_CPUTYPE_IMX6SL	0x160
 #define IMX6_CPUTYPE_IMX6S	0x161
 #define IMX6_CPUTYPE_IMX6DL	0x261
 #define IMX6_CPUTYPE_IMX6SX	0x462
@@ -36,6 +38,16 @@ static inline int __imx6_cpu_type(void)
 
 	val = readl(MX6_ANATOP_BASE_ADDR + IMX6_ANATOP_SI_REV);
 	val = (val >> 16) & 0xff;
+	/* non-MX6-standard SI_REV reg offset for MX6SL */
+	if (IS_ENABLED(CONFIG_ARCH_IMX6SL) &&
+	    val < (IMX6_CPUTYPE_IMX6S & 0xff)) {
+		uint32_t tmp;
+		tmp = readl(MX6_ANATOP_BASE_ADDR + IMX6SL_ANATOP_SI_REV);
+		tmp = (tmp >> 16) & 0xff;
+		if ((IMX6_CPUTYPE_IMX6SL & 0xff) == tmp)
+			/* intentionally skip scu_get_core_count() for MX6SL */
+			return IMX6_CPUTYPE_IMX6SL;
+	}
 
 	val |= scu_get_core_count() << 8;
 
@@ -50,12 +62,37 @@ static inline int imx6_cpu_type(void)
 	return __imx6_cpu_type();
 }
 
+#define DEFINE_MX6_CPU_TYPE(str, type)					\
+	static inline int cpu_mx6_is_##str(void)			\
+	{								\
+		return __imx6_cpu_type() == type;			\
+	}								\
+									\
+	static inline int cpu_is_##str(void)				\
+	{								\
+		if (!cpu_is_mx6())					\
+			return 0;					\
+		return cpu_mx6_is_##str();				\
+	}
+
+DEFINE_MX6_CPU_TYPE(mx6s, IMX6_CPUTYPE_IMX6S);
+DEFINE_MX6_CPU_TYPE(mx6dl, IMX6_CPUTYPE_IMX6DL);
+DEFINE_MX6_CPU_TYPE(mx6q, IMX6_CPUTYPE_IMX6Q);
+DEFINE_MX6_CPU_TYPE(mx6d, IMX6_CPUTYPE_IMX6D);
+DEFINE_MX6_CPU_TYPE(mx6sx, IMX6_CPUTYPE_IMX6SX);
+DEFINE_MX6_CPU_TYPE(mx6sl, IMX6_CPUTYPE_IMX6SL);
+DEFINE_MX6_CPU_TYPE(mx6ul, IMX6_CPUTYPE_IMX6UL);
+
 static inline int __imx6_cpu_revision(void)
 {
 
 	uint32_t rev;
+	uint32_t si_rev_offset = IMX6_ANATOP_SI_REV;
 
-	rev = readl(MX6_ANATOP_BASE_ADDR + IMX6_ANATOP_SI_REV);
+	if (IS_ENABLED(CONFIG_ARCH_IMX6SL) && cpu_mx6_is_mx6sl())
+		si_rev_offset = IMX6SL_ANATOP_SI_REV;
+
+	rev = readl(MX6_ANATOP_BASE_ADDR + si_rev_offset);
 
 	switch (rev & 0xfff) {
 	case 0x00:
@@ -84,25 +121,5 @@ static inline int imx6_cpu_revision(void)
 
 	return __imx6_cpu_revision();
 }
-
-#define DEFINE_MX6_CPU_TYPE(str, type)					\
-	static inline int cpu_mx6_is_##str(void)			\
-	{								\
-		return __imx6_cpu_type() == type;			\
-	}								\
-									\
-	static inline int cpu_is_##str(void)				\
-	{								\
-		if (!cpu_is_mx6())					\
-			return 0;					\
-		return cpu_mx6_is_##str();				\
-	}
-
-DEFINE_MX6_CPU_TYPE(mx6s, IMX6_CPUTYPE_IMX6S);
-DEFINE_MX6_CPU_TYPE(mx6dl, IMX6_CPUTYPE_IMX6DL);
-DEFINE_MX6_CPU_TYPE(mx6q, IMX6_CPUTYPE_IMX6Q);
-DEFINE_MX6_CPU_TYPE(mx6d, IMX6_CPUTYPE_IMX6D);
-DEFINE_MX6_CPU_TYPE(mx6sx, IMX6_CPUTYPE_IMX6SX);
-DEFINE_MX6_CPU_TYPE(mx6ul, IMX6_CPUTYPE_IMX6UL);
 
 #endif /* __MACH_IMX6_H */

@@ -24,53 +24,29 @@
 #include <pinctrl.h>
 #include <malloc.h>
 #include <mach/iomux-v3.h>
+#include <mach/generic.h>
 
 struct imx_iomux_v3 {
 	void __iomem *base;
 	struct pinctrl_device pinctrl;
+	unsigned int flags;
+};
+
+struct imx_iomux_v3_data {
+	unsigned int flags;
 };
 
 static void __iomem *iomuxv3_base;
-static struct device_d *iomuxv3_dev;
-
-static void imx_iomuxv3_setup_single(void __iomem *base, struct device_d *dev,
-		u32 mux_reg, u32 conf_reg, u32 input_reg,
-		u32 mux_val, u32 conf_val, u32 input_val)
-{
-	dev_dbg(dev,
-		"mux: 0x%08x -> 0x%04x, conf: 0x%08x -> 0x%04x input: 0x%08x -> 0x%04x\n",
-		mux_val, mux_reg, conf_val, conf_reg, input_val, input_reg);
-
-	if (mux_reg)
-		writel(mux_val, base + mux_reg);
-	if (conf_reg)
-		writel(conf_val, base + conf_reg);
-	if (input_reg)
-		writel(input_val, base + input_reg);
-}
 
 /*
  * configures a single pad in the iomuxer
  */
 int mxc_iomux_v3_setup_pad(iomux_v3_cfg_t pad)
 {
-	u32 mux_reg = (pad & MUX_CTRL_OFS_MASK) >> MUX_CTRL_OFS_SHIFT;
-	u32 mux_val = (pad & MUX_MODE_MASK) >> MUX_MODE_SHIFT;
-	u32 input_reg = (pad & MUX_SEL_INPUT_OFS_MASK) >> MUX_SEL_INPUT_OFS_SHIFT;
-	u32 input_val = (pad & MUX_SEL_INPUT_MASK) >> MUX_SEL_INPUT_SHIFT;
-	u32 conf_reg = (pad & MUX_PAD_CTRL_OFS_MASK) >> MUX_PAD_CTRL_OFS_SHIFT;
-	u32 conf_val = (pad & MUX_PAD_CTRL_MASK) >> MUX_PAD_CTRL_SHIFT;
-
 	if (!iomuxv3_base)
 		return -EINVAL;
 
-	if (conf_val & NO_PAD_CTRL)
-		conf_reg = 0;
-
-	imx_iomuxv3_setup_single(iomuxv3_base, iomuxv3_dev,
-			mux_reg, conf_reg, input_reg,
-			mux_val, conf_val, input_val);
-
+	imx_setup_pad(iomuxv3_base, pad);
 	return 0;
 }
 EXPORT_SYMBOL(mxc_iomux_v3_setup_pad);
@@ -140,9 +116,9 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 		if (conf_val & IMX_DT_NO_PAD_CTL)
 			conf_reg = 0;
 
-		imx_iomuxv3_setup_single(iomux->base, iomux->pinctrl.dev,
-				mux_reg, conf_reg, input_reg,
-				mux_val, conf_val, input_val);
+		iomux_v3_setup_pad(iomux->base, iomux->flags,
+				   mux_reg, conf_reg, input_reg,
+				   mux_val, conf_val, input_val);
 	}
 
 	return 0;
@@ -155,14 +131,18 @@ static struct pinctrl_ops imx_iomux_v3_ops = {
 static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 {
 	struct imx_iomux_v3 *iomux;
+	struct imx_iomux_v3_data *drvdata = NULL;
 	int ret;
 
+	dev_get_drvdata(dev, (const void **)&drvdata);
 	iomux = xzalloc(sizeof(*iomux));
 
 	iomux->base = base;
 
 	iomux->pinctrl.dev = dev;
 	iomux->pinctrl.ops = &imx_iomux_v3_ops;
+	if (drvdata)
+		iomux->flags = drvdata->flags;
 
 	ret = pinctrl_register(&iomux->pinctrl);
 	if (ret)
@@ -173,23 +153,32 @@ static int imx_pinctrl_dt(struct device_d *dev, void __iomem *base)
 
 static int imx_iomux_v3_probe(struct device_d *dev)
 {
+	void __iomem *base;
 	struct resource *iores;
 	int ret = 0;
-
-	if (iomuxv3_base)
-		return -EBUSY;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	iomuxv3_base = IOMEM(iores->start);
-	iomuxv3_dev = dev;
+	base = IOMEM(iores->start);
+
+	if (!iomuxv3_base)
+		/*
+		 * Uh, this works only for the older controllers, not for
+		 * i.MX7 which has two iomux controllers. i.MX7 based boards
+		 * should not use mxc_iomux_v3_setup_pad anyway.
+		 */
+		iomuxv3_base = base;
 
 	if (IS_ENABLED(CONFIG_PINCTRL) && dev->device_node)
-		ret = imx_pinctrl_dt(dev, iomuxv3_base);
+		ret = imx_pinctrl_dt(dev, base);
 
 	return ret;
 }
+
+static struct imx_iomux_v3_data imx_iomux_imx7_lpsr_data = {
+	.flags = ZERO_OFFSET_VALID | IMX7_PINMUX_LPSR,
+};
 
 static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	{
@@ -202,12 +191,19 @@ static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 		.compatible = "fsl,imx53-iomuxc",
 	}, {
 		.compatible = "fsl,imx6q-iomuxc",
-	},  {
+	}, {
 		.compatible = "fsl,imx6dl-iomuxc",
 	}, {
 		.compatible = "fsl,imx6sx-iomuxc",
 	}, {
 		.compatible = "fsl,imx6ul-iomuxc",
+	}, {
+		.compatible = "fsl,imx6sl-iomuxc",
+	}, {
+		.compatible = "fsl,imx7d-iomuxc",
+	}, {
+		.compatible = "fsl,imx7d-iomuxc-lpsr",
+		.data = &imx_iomux_imx7_lpsr_data,
 	}, {
 		/* sentinel */
 	}

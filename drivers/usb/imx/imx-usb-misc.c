@@ -43,6 +43,11 @@ struct imx_usb_misc_data {
 	int (*post_init)(void __iomem *base, int port, unsigned int flags);
 };
 
+struct imx_usb_misc_priv {
+	struct imx_usb_misc_data *data;
+	void __iomem *base;
+};
+
 static __maybe_unused int mx25_initialize_usb_hw(void __iomem *base, int port, unsigned int flags)
 {
 	unsigned int v;
@@ -348,6 +353,7 @@ static __maybe_unused struct imx_usb_misc_data mx5_data = {
 
 #define MX6_USB_CTRL(n)			((n) * 4)
 #define MX6_USB_CTRL_OVER_CUR_DIS	(1 << 7)
+#define MX6_USB_CTRL_OVER_CUR_ACT_HIGH	(1 << 8)
 
 static void mx6_hsic_pullup(unsigned long reg, int on)
 {
@@ -422,6 +428,68 @@ static __maybe_unused struct imx_usb_misc_data mx6_data = {
 	.post_init = mx6_post_init,
 };
 
+#define MX7D_USBNC_USB_CTRL2		0x4
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_MASK	0x3
+#define MX7D_USB_VBUS_WAKEUP_SOURCE(v)		(v << 0)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_VBUS	MX7D_USB_VBUS_WAKEUP_SOURCE(0)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_AVALID	MX7D_USB_VBUS_WAKEUP_SOURCE(1)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_BVALID	MX7D_USB_VBUS_WAKEUP_SOURCE(2)
+#define MX7D_USB_VBUS_WAKEUP_SOURCE_SESS_END	MX7D_USB_VBUS_WAKEUP_SOURCE(3)
+
+static int usbmisc_imx7d_init(void __iomem *base, int port,
+		unsigned int flags)
+{
+	u32 reg;
+
+	if (port >= 1)
+		return -EINVAL;
+
+	reg = readl(base);
+	if (flags & MXC_EHCI_DISABLE_OVERCURRENT) {
+		reg |= MX6_USB_CTRL_OVER_CUR_DIS;
+	} else {
+		reg &= ~MX6_USB_CTRL_OVER_CUR_DIS;
+		if (flags & MXC_EHCI_OC_PIN_ACTIVE_LOW)
+			reg &= ~MX6_USB_CTRL_OVER_CUR_ACT_HIGH;
+		else
+			reg |= MX6_USB_CTRL_OVER_CUR_ACT_HIGH;
+	}
+	writel(reg, base);
+
+	reg = readl(base + MX7D_USBNC_USB_CTRL2);
+	reg &= ~MX7D_USB_VBUS_WAKEUP_SOURCE_MASK;
+	writel(reg | MX7D_USB_VBUS_WAKEUP_SOURCE_BVALID,
+		 base + MX7D_USBNC_USB_CTRL2);
+
+	return 0;
+}
+
+static __maybe_unused struct imx_usb_misc_data mx7_data = {
+	.init = usbmisc_imx7d_init,
+};
+
+#define VF610_OVER_CUR_DIS		BIT(7)
+
+static __maybe_unused int vf610_initialize_usb_hw(void __iomem *base, int port,
+		unsigned int flags)
+{
+	u32 reg;
+
+	if (port >= 1)
+		return -EINVAL;
+
+	if (flags & MXC_EHCI_DISABLE_OVERCURRENT) {
+		reg = readl(base);
+		writel(reg | VF610_OVER_CUR_DIS, base);
+	}
+
+	return 0;
+}
+
+static __maybe_unused struct imx_usb_misc_data vf610_data = {
+	.init = vf610_initialize_usb_hw,
+};
+
 static struct platform_device_id imx_usbmisc_ids[] = {
 #ifdef CONFIG_ARCH_IMX25
 	{
@@ -469,6 +537,12 @@ static struct platform_device_id imx_usbmisc_ids[] = {
 	{
 		.name = "imx6-usb-misc",
 		.driver_data = (unsigned long)&mx6_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_IMX7
+	{
+		.name = "imx7d-usb-misc",
+		.driver_data = (unsigned long)&mx7_data,
 	},
 #endif
 	{
@@ -519,40 +593,54 @@ static __maybe_unused struct of_device_id imx_usbmisc_dt_ids[] = {
 		.data = &mx6_data,
 	},
 #endif
+#ifdef CONFIG_ARCH_IMX7
+	{
+		.compatible = "fsl,imx7d-usbmisc",
+		.data = &mx7_data,
+	},
+#endif
+#ifdef CONFIG_ARCH_VF610
+	{
+		.compatible = "fsl,vf610-usbmisc",
+		.data = &vf610_data,
+	},
+#endif
 	{
 		/* sentinel */
 	},
 };
 
-static struct imx_usb_misc_data *imxusbmisc_data;
-static void __iomem *usbmisc_base;
-
-int imx_usbmisc_port_init(int port, unsigned flags)
+int imx_usbmisc_port_init(struct device_d *dev, int port, unsigned flags)
 {
-	if (!imxusbmisc_data)
+	struct imx_usb_misc_priv *usbmisc = dev->priv;
+
+	if (!usbmisc)
 		return -ENODEV;
 
-	if (!imxusbmisc_data->init)
+	if (!usbmisc->data->init)
 		return 0;
 
-	return imxusbmisc_data->init(usbmisc_base, port, flags);
+	return usbmisc->data->init(usbmisc->base, port, flags);
 }
 
-int imx_usbmisc_port_post_init(int port, unsigned flags)
+int imx_usbmisc_port_post_init(struct device_d *dev, int port, unsigned flags)
 {
-	if (!imxusbmisc_data)
+	struct imx_usb_misc_priv *usbmisc = dev->priv;
+
+	if (!usbmisc)
 		return -ENODEV;
 
-	if (!imxusbmisc_data->post_init)
+	if (!usbmisc->data->post_init)
 		return 0;
 
-	return imxusbmisc_data->post_init(usbmisc_base, port, flags);
+	return usbmisc->data->post_init(usbmisc->base, port, flags);
 }
 
 static int imx_usbmisc_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct imx_usb_misc_data *devtype;
+	struct imx_usb_misc_priv *usbmisc = dev->priv;
 	int ret;
 
 	ret = dev_get_drvdata(dev, (const void **)&devtype);
@@ -562,9 +650,10 @@ static int imx_usbmisc_probe(struct device_d *dev)
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	usbmisc_base = IOMEM(iores->start);
 
-	imxusbmisc_data = devtype;
+	usbmisc = xzalloc(sizeof(*usbmisc));
+	usbmisc->base = IOMEM(iores->start);
+	usbmisc->data = devtype;
 
 	return 0;
 }

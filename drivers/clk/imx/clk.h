@@ -2,7 +2,7 @@
 #define __IMX_CLK_H
 
 struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,
-		      u8 shift, u8 cgr_val);
+		      u8 shift, u8 cgr_val, unsigned long flags);
 
 static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width)
@@ -14,6 +14,12 @@ static inline struct clk *imx_clk_divider_np(const char *name, const char *paren
 		void __iomem *reg, u8 shift, u8 width)
 {
 	return clk_divider(name, parent, reg, shift, width, 0);
+}
+
+static inline struct clk *imx_clk_divider2(const char *name, const char *parent,
+		void __iomem *reg, u8 shift, u8 width)
+{
+	return clk_divider(name, parent, reg, shift, width, CLK_OPS_PARENT_ENABLE);
 }
 
 static inline struct clk *imx_clk_divider_table(const char *name,
@@ -44,6 +50,12 @@ static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,
 	return clk_mux(name, reg, shift, width, parents, num_parents, 0);
 }
 
+static inline struct clk *imx_clk_mux2(const char *name, void __iomem *reg,
+		u8 shift, u8 width, const char **parents, u8 num_parents)
+{
+	return clk_mux(name, reg, shift, width, parents, num_parents, CLK_OPS_PARENT_ENABLE);
+}
+
 static inline struct clk *imx_clk_mux_p(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents)
 {
@@ -56,18 +68,41 @@ static inline struct clk *imx_clk_gate(const char *name, const char *parent,
 	return clk_gate(name, parent, reg, shift, CLK_SET_RATE_PARENT, 0);
 }
 
+static inline struct clk *imx_clk_gate_dis(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_gate_inverted(name, parent, reg, shift, CLK_SET_RATE_PARENT);
+}
+
 static inline struct clk *imx_clk_gate2(const char *name, const char *parent,
 		void __iomem *reg, u8 shift)
 {
-	return clk_gate2(name, parent, reg, shift, 0x3);
+	return clk_gate2(name, parent, reg, shift, 0x3, 0);
 }
 
 static inline struct clk *imx_clk_gate2_cgr(const char *name, const char *parent,
 					    void __iomem *reg, u8 shift, u8 cgr_val)
 {
-	return clk_gate2(name, parent, reg, shift, cgr_val);
+	return clk_gate2(name, parent, reg, shift, cgr_val, 0);
 }
 
+static inline struct clk *imx_clk_gate3(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_gate(name, parent, reg, shift, CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE, 0);
+}
+
+static inline struct clk *imx_clk_gate4(const char *name, const char *parent,
+		void __iomem *reg, u8 shift)
+{
+	return clk_gate2(name, parent, reg, shift, 0x3, CLK_OPS_PARENT_ENABLE);
+}
+
+static inline struct clk *imx_clk_gate_shared(const char *name, const char *parent,
+					      const char *shared)
+{
+	return clk_gate_shared(name, parent, shared, CLK_SET_RATE_PARENT);
+}
 
 struct clk *imx_clk_pllv1(const char *name, const char *parent,
 		void __iomem *base);
@@ -78,16 +113,22 @@ struct clk *imx_clk_pllv2(const char *name, const char *parent,
 enum imx_pllv3_type {
 	IMX_PLLV3_GENERIC,
 	IMX_PLLV3_SYS,
+	IMX_PLLV3_SYS_VF610,
 	IMX_PLLV3_USB,
 	IMX_PLLV3_USB_VF610,
 	IMX_PLLV3_AV,
 	IMX_PLLV3_ENET,
+	IMX_PLLV3_ENET_IMX7,
 	IMX_PLLV3_MLB,
 };
 
 struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 			  const char *parent, void __iomem *base,
 			  u32 div_mask);
+
+struct clk *imx_clk_pllv3_locked(enum imx_pllv3_type type, const char *name,
+				 const char *parent, void __iomem *base,
+				 u32 div_mask, void __iomem *lock_reg, u32 lock_mask);
 
 struct clk *imx_clk_pfd(const char *name, const char *parent,
 			void __iomem *reg, u8 idx);
@@ -119,5 +160,8 @@ struct clk *imx_clk_gate_exclusive(const char *name, const char *parent,
 
 void imx_check_clocks(struct clk *clks[], unsigned int count);
 
+struct clk *imx_clk_cpu(const char *name, const char *parent_name,
+		struct clk *div, struct clk *mux, struct clk *pll,
+		struct clk *step);
 
 #endif /* __IMX_CLK_H */

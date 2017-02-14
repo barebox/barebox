@@ -309,7 +309,6 @@ config MACH_TX6X
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
 	select ARCH_IMX6
-	select HAVE_PBL_MULTI_IMAGES
 
 config MACH_SABRESD
 	bool "Freescale i.MX6 SabreSD"

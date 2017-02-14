@@ -25,29 +25,6 @@
 #include <mach/armada-370-xp-regs.h>
 #include <mach/socid.h>
 
-static inline void armada_370_xp_memory_find(unsigned long *phys_base,
-					     unsigned long *phys_size)
-{
-	int cs;
-
-	*phys_base = ~0;
-	*phys_size = 0;
-
-	for (cs = 0; cs < 4; cs++) {
-		u32 base = readl(ARMADA_370_XP_SDRAM_BASE + DDR_BASE_CSn(cs));
-		u32 ctrl = readl(ARMADA_370_XP_SDRAM_BASE + DDR_SIZE_CSn(cs));
-
-		/* Skip non-enabled CS */
-		if ((ctrl & DDR_SIZE_ENABLED) != DDR_SIZE_ENABLED)
-			continue;
-
-		base &= DDR_BASE_CS_LOW_MASK;
-		if (base < *phys_base)
-			*phys_base = base;
-		*phys_size += (ctrl | ~DDR_SIZE_MASK) + 1;
-	}
-}
-
 static const struct of_device_id armada_370_xp_pcie_of_ids[] = {
 	{ .compatible = "marvell,armada-xp-pcie", },
 	{ .compatible = "marvell,armada-370-pcie", },
@@ -120,7 +97,6 @@ static int armada_xp_init_soc(struct device_node *root)
 
 static int armada_370_xp_init_soc(struct device_node *root, void *context)
 {
-	unsigned long phys_base, phys_size;
 	u32 reg;
 
 	if (!of_machine_is_compatible("marvell,armada-370-xp"))
@@ -136,9 +112,6 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 	reg &= ~MBUS_ERR_PROP_EN;
 	writel(reg, ARMADA_370_XP_FABRIC_CTRL);
 
-	armada_370_xp_memory_find(&phys_base, &phys_size);
-
-	mvebu_set_memory(phys_base, phys_size);
 	mvebu_mbus_init();
 
 	armada_xp_soc_id_fixup();

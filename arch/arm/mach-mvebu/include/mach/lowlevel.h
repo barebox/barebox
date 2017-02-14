@@ -19,5 +19,8 @@
 #define __MACH_LOWLEVEL_H__
 
 void mvebu_barebox_entry(void *boarddata);
+void dove_barebox_entry(void *boarddata);
+void kirkwood_barebox_entry(void *boarddata);
+void armada_370_xp_barebox_entry(void *boarddata);
 
 #endif

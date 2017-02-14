@@ -31,5 +31,5 @@ ENTRY_FUNCTION(start_globalscale_mirabox, r0, r1, r2)
 	fdt = __dtb_armada_370_mirabox_bb_start -
 		get_runtime_offset();
 
-	mvebu_barebox_entry(fdt);
+	armada_370_xp_barebox_entry(fdt);
 }

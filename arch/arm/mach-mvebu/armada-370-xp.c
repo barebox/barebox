@@ -54,31 +54,24 @@ static const struct of_device_id armada_370_xp_pcie_of_ids[] = {
 	{ },
 };
 
-static int armada_370_xp_soc_id_fixup(void)
+/*
+ * Marvell Armada XP MV78230-A0 incorrectly identifies itself as
+ * MV78460. Check for DEVID_MV78460 but if there are only 2 CPUs
+ * present in Coherency Fabric, fixup PCIe PRODUCT_ID.
+ */
+static int armada_xp_soc_id_fixup(void)
 {
 	struct device_node *np, *cnp;
 	void __iomem *base;
-	u32 reg, ctrl, mask;
+	u32 reg, ctrl;
 	u32 socid, numcpus;
 
 	socid = readl(ARMADA_370_XP_CPU_SOC_ID) & CPU_SOC_ID_DEVICE_MASK;
 	numcpus = 1 + (readl(ARMADA_370_XP_FABRIC_CONF) & FABRIC_NUM_CPUS_MASK);
 
-	switch (socid) {
-	/*
-	 * Marvell Armada XP MV78230-A0 incorrectly identifies itself as
-	 * MV78460. Check for DEVID_MV78460 but if there are only 2 CPUs
-	 * present in Coherency Fabric, fixup PCIe PRODUCT_ID.
-	 */
-	case DEVID_MV78460:
-		if (numcpus != 2)
-			return 0;
-		socid = DEVID_MV78230;
-		mask = PCIE0_EN | PCIE1_EN | PCIE0_QUADX1_EN;
-		break;
-	default:
+	if (socid != DEVID_MV78460 || numcpus != 2)
+		/* not affected */
 		return 0;
-	}
 
 	np = of_find_matching_node(NULL, armada_370_xp_pcie_of_ids);
 	if (!np)
@@ -86,7 +79,7 @@ static int armada_370_xp_soc_id_fixup(void)
 
 	/* Enable all individual x1 ports */
 	ctrl = readl(ARMADA_370_XP_SOC_CTRL);
-	writel(ctrl | mask, ARMADA_370_XP_SOC_CTRL);
+	writel(ctrl | PCIE0_EN | PCIE1_EN | PCIE0_QUADX1_EN, ARMADA_370_XP_SOC_CTRL);
 
 	for_each_child_of_node(np, cnp) {
 		base = of_iomap(cnp, 0);
@@ -95,7 +88,7 @@ static int armada_370_xp_soc_id_fixup(void)
 
 		/* Fixup PCIe port DEVICE_ID */
 		reg = readl(base + PCIE_VEN_DEV_ID);
-		reg = (socid << 16) | (reg & 0xffff);
+		reg = (DEVID_MV78230 << 16) | (reg & 0xffff);
 		writel(reg, base + PCIE_VEN_DEV_ID);
 	}
 
@@ -148,7 +141,7 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 	mvebu_set_memory(phys_base, phys_size);
 	mvebu_mbus_init();
 
-	armada_370_xp_soc_id_fixup();
+	armada_xp_soc_id_fixup();
 
 	if (of_machine_is_compatible("marvell,armadaxp"))
 		armada_xp_init_soc(root);

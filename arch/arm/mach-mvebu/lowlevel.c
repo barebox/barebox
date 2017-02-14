@@ -23,12 +23,6 @@
 #include <mach/common.h>
 #include <mach/lowlevel.h>
 
-void __naked barebox_arm_reset_vector(void)
-{
-	arm_cpu_lowlevel_init();
-	mvebu_barebox_entry(NULL);
-}
-
 /*
  * All MVEBU SoCs start with internal registers at 0xd0000000.
  * To get more contiguous address space and as Linux expects them

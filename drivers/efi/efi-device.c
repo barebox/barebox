@@ -341,9 +341,32 @@ struct bus_type efi_bus = {
 	.remove = efi_bus_remove,
 };
 
+static void efi_businfo(struct device_d *dev)
+{
+	int i;
+
+	printf("Tables:\n");
+	for (i = 0; i < efi_sys_table->nr_tables; i++) {
+		efi_config_table_t *t = &efi_sys_table->tables[i];
+
+		printf("  %d: %pUl: %s\n", i, &t->guid,
+					efi_guid_string(&t->guid));
+	}
+}
+
 static int efi_init_devices(void)
 {
+	char *fw_vendor = NULL;
+
 	bus_register(&efi_bus);
+
+	fw_vendor = strdup_wchar_to_char((const wchar_t *)efi_sys_table->fw_vendor);
+	dev_add_param_fixed(efi_bus.dev, "fw_vendor", fw_vendor);
+	free(fw_vendor);
+
+	dev_add_param_int_ro(efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
+
+	efi_bus.dev->info = efi_businfo;
 
 	efi_register_devices();
 

@@ -488,6 +488,11 @@ extern efi_guid_t efi_block_io_protocol_guid;
 extern efi_guid_t efi_barebox_vendor_guid;
 extern efi_guid_t efi_systemd_vendor_guid;
 
+typedef struct {
+	efi_guid_t guid;
+	unsigned long table;
+} efi_config_table_t;
+
 #define EFI_SYSTEM_TABLE_SIGNATURE ((u64)0x5453595320494249ULL)
 
 #define EFI_2_30_SYSTEM_TABLE_REVISION  ((2 << 16) | (30))
@@ -510,7 +515,7 @@ typedef struct {
 	efi_runtime_services_t *runtime;
 	efi_boot_services_t *boottime;
 	unsigned long nr_tables;
-	unsigned long tables;
+	efi_config_table_t *tables;
 } efi_system_table_t;
 
 typedef struct {

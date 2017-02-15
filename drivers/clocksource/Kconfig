@@ -34,6 +34,10 @@ config CLOCKSOURCE_DUMMY_RATE
 	  The option CONFIG_CLOCKSOURCE_DUMMY_RATE is used to adjust this clocksource.
 	  The bigger rate valuest makes clocksource "faster".
 
+config CLOCKSOURCE_EFI
+	bool
+	depends on ARCH_EFI
+
 config CLOCKSOURCE_MVEBU
 	bool
 	depends on ARCH_MVEBU

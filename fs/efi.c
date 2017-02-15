@@ -31,8 +31,8 @@
 #include <wchar.h>
 #include <efi.h>
 #include <libfile.h>
-#include <mach/efi.h>
-#include <mach/efi-device.h>
+#include <efi/efi.h>
+#include <efi/efi-device.h>
 #include <linux/stddef.h>
 
 /* Open modes */

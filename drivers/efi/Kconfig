@@ -1,0 +1,2 @@
+config EFI_BOOTUP
+	bool

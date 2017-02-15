@@ -36,8 +36,8 @@
 #include <libfile.h>
 #include <binfmt.h>
 #include <wchar.h>
-#include <mach/efi.h>
-#include <mach/efi-device.h>
+#include <efi/efi.h>
+#include <efi/efi-device.h>
 
 struct linux_kernel_header {
 	/* first sector of the image */

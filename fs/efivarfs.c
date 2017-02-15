@@ -31,8 +31,8 @@
 #include <wchar.h>
 #include <linux/err.h>
 #include <linux/ctype.h>
-#include <mach/efi.h>
-#include <mach/efi-device.h>
+#include <efi/efi.h>
+#include <efi/efi-device.h>
 
 struct efivarfs_inode {
 	s16 *name;

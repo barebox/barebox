@@ -1,6 +1,6 @@
 #include <common.h>
 #include <efi.h>
-#include <mach/efi.h>
+#include <efi/efi.h>
 #include <clock.h>
 
 #ifdef __x86_64__

@@ -38,8 +38,8 @@
 #include <wchar.h>
 #include <envfs.h>
 #include <efi.h>
-#include <mach/efi.h>
-#include <mach/efi-device.h>
+#include <efi/efi.h>
+#include <efi/efi-device.h>
 
 efi_runtime_services_t *RT;
 efi_boot_services_t *BS;

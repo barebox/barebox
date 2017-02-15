@@ -1,5 +1,6 @@
 menu "Drivers"
 
+source "drivers/efi/Kconfig"
 source "drivers/of/Kconfig"
 source "drivers/aiodev/Kconfig"
 source "drivers/amba/Kconfig"

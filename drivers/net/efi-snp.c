@@ -23,8 +23,8 @@
 #include <net.h>
 #include <init.h>
 #include <efi.h>
-#include <mach/efi.h>
-#include <mach/efi-device.h>
+#include <efi/efi.h>
+#include <efi/efi-device.h>
 
 struct efi_network_statistics {
 	uint64_t RxTotalFrames;

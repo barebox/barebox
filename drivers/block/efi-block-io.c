@@ -12,8 +12,8 @@
 #include <efi.h>
 #include <block.h>
 #include <disks.h>
-#include <mach/efi.h>
-#include <mach/efi-device.h>
+#include <efi/efi.h>
+#include <efi/efi-device.h>
 
 #define EFI_BLOCK_IO_PROTOCOL_REVISION2 0x00020001
 #define EFI_BLOCK_IO_PROTOCOL_REVISION3 ((2<<16) | (31))

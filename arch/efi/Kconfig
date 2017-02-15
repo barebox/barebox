@@ -4,6 +4,7 @@ config ARCH_EFI
 	select HAS_DEBUG_LL
 	select HAS_KALLSYMS
 	select EFI_GUID
+	select EFI_BOOTUP
 	select EFI_DEVICEPATH
 	select PRINTF_UUID
 	select GENERIC_FIND_NEXT_BIT

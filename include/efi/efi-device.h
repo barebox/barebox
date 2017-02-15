@@ -1,5 +1,5 @@
-#ifndef __MACH_EFI_DEVICE_H
-#define __MACH_EFI_DEVICE_H
+#ifndef __EFI_EFI_DEVICE_H
+#define __EFI_EFI_DEVICE_H
 
 struct efi_device {
 	struct device_d dev;
@@ -42,4 +42,4 @@ static inline int efi_driver_register(struct efi_driver *efidrv)
 int efi_connect_all(void);
 void efi_register_devices(void);
 
-#endif /* __MACH_EFI_DEVICE_H */
+#endif /* __EFI_EFI_DEVICE_H */

@@ -27,8 +27,8 @@
 #include <wchar.h>
 #include <init.h>
 #include <efi.h>
-#include <mach/efi.h>
-#include <mach/efi-device.h>
+#include <efi/efi.h>
+#include <efi/efi-device.h>
 #include <linux/err.h>
 
 int efi_locate_handle(enum efi_locate_search_type search_type,

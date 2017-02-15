@@ -40,4 +40,4 @@ barebox.efi: $(KBUILD_BINARY) FORCE
 
 KBUILD_IMAGE := barebox.efi
 
-common-y += arch/efi/efi/ arch/efi/lib/
+common-y += arch/efi/lib/

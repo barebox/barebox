@@ -119,7 +119,7 @@ struct efi_boot {
 	void *binary;
 };
 
-struct efi_boot *efi_get_boot(int num)
+static struct efi_boot *efi_get_boot(int num)
 {
 	struct efi_boot *boot = xzalloc(sizeof(*boot));
 	void *buf, *ptr;

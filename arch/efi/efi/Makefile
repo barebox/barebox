@@ -1,2 +1,5 @@
-obj-y += efi.o clocksource.o efi-block-io.o efi-device.o efi-image.o
+obj-y += clocksource.o
+obj-y += efi.o
+obj-y += efi-device.o
+obj-y += efi-image.o
 bbenv-y += env-efi

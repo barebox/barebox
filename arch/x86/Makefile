@@ -40,6 +40,7 @@ endif
 common-y += $(BOARD) $(MACH)
 common-y += arch/x86/lib/
 common-y += arch/x86/boot/
+common-$(CONFIG_X86_BIOS_BRINGUP) += arch/x86/bios/
 
 # arch/x86/cpu/
 

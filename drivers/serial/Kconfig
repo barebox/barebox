@@ -46,7 +46,7 @@ config DRIVER_SERIAL_LINUX_CONSOLE
 	bool "linux console driver"
 
 config DRIVER_SERIAL_EFI_STDIO
-	depends on ARCH_EFI
+	depends on EFI_BOOTUP
 	bool "EFI stdio driver"
 
 config DRIVER_SERIAL_MPC5XXX

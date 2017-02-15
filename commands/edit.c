@@ -396,7 +396,7 @@ static int do_edit(int argc, char *argv[])
 	 * down when we write to the right bottom screen position. Reduce the number
 	 * of rows by one to work around this.
 	 */
-	if (IS_ENABLED(CONFIG_ARCH_EFI))
+	if (IS_ENABLED(CONFIG_EFI_BOOTUP))
 		screenheight = 24;
 	else
 		screenheight = 25;

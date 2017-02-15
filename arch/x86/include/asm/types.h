@@ -1,21 +1,29 @@
-/*
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- *
- */
-
-#ifndef __ASM_X86_TYPES_H
-#define __ASM_X86_TYPES_H
+#ifndef __ASM_I386_TYPES_H
+#define __ASM_I386_TYPES_H
 
 #ifndef __ASSEMBLY__
+
+#ifdef __x86_64__
+/*
+ * This is used in dlmalloc. On X86_64 we need it to be
+ * 64 bit
+ */
+#define INTERNAL_SIZE_T unsigned long
+
+/*
+ * This is a Kconfig variable in the Kernel, but we want to detect
+ * this during compile time, so we set it here.
+ */
+#define CONFIG_PHYS_ADDR_T_64BIT
+
+#endif
+
+typedef unsigned short umode_t;
+
+/*
+ * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
+ * header files exported to user space
+ */
 
 typedef __signed__ char __s8;
 typedef unsigned char __u8;
@@ -26,8 +34,15 @@ typedef unsigned short __u16;
 typedef __signed__ int __s32;
 typedef unsigned int __u32;
 
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
 typedef __signed__ long long __s64;
 typedef unsigned long long __u64;
+#endif
+
+/*
+ * These aren't exported outside the kernel to avoid name space clashes
+ */
+#ifdef __KERNEL__
 
 typedef signed char s8;
 typedef unsigned char u8;
@@ -41,10 +56,10 @@ typedef unsigned int u32;
 typedef signed long long s64;
 typedef unsigned long long u64;
 
-typedef unsigned short umode_t;
+#include <asm/bitsperlong.h>
 
-#include <asm-generic/bitsperlong.h>
+#endif /* __KERNEL__ */
 
-#endif /* __ASSEMBLY__ */
+#endif
 
-#endif /* __ASM_X86_TYPES_H */
+#endif

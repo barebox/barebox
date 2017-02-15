@@ -12,44 +12,6 @@
 
 #include <asm/byteorder.h>
 
-#define	IO_SPACE_LIMIT	0xffff
-
-static inline void outb(unsigned char value, int port)
-{
-	asm volatile("outb %b0, %w1" : : "a"(value), "Nd"(port));
-}
-
-static inline void outw(unsigned short value, int port)
-{
-	asm volatile("outw %w0, %w1" : : "a"(value), "Nd"(port));
-}
-
-static inline void outl(unsigned long value, int port)
-{
-	asm volatile("outl %0, %w1" : : "a"(value), "Nd"(port));
-}
-
-static inline unsigned char inb(int port)
-{
-	unsigned char value;
-	asm volatile("inb %w1, %b0" : "=a"(value) : "Nd"(port));
-	return value;
-}
-
-static inline unsigned short inw(int port)
-{
-	unsigned short value;
-	asm volatile("inw %w1, %w0" : "=a"(value) : "Nd"(port));
-	return value;
-}
-
-static inline unsigned long inl(int port)
-{
-	unsigned long value;
-	asm volatile("inl %w1, %0" : "=a"(value) : "Nd"(port));
-	return value;
-}
-
 #define build_mmio_read(name, size, type, reg, barrier) \
  static inline type name(const volatile void *addr) \
  { type ret; asm volatile("mov" size " %1,%0":reg (ret) \
@@ -67,6 +29,39 @@ build_mmio_read(readl, "l", unsigned int, "=r", :"memory")
 build_mmio_write(writeb, "b", unsigned char, "q", :"memory")
 build_mmio_write(writew, "w", unsigned short, "r", :"memory")
 build_mmio_write(writel, "l", unsigned int, "r", :"memory")
+
+#define BUILDIO(bwl, bw, type)						\
+static inline void out##bwl(unsigned type value, int port)		\
+{									\
+	asm volatile("out" #bwl " %" #bw "0, %w1"			\
+		     : : "a"(value), "Nd"(port));			\
+}									\
+									\
+static inline unsigned type in##bwl(int port)				\
+{									\
+	unsigned type value;						\
+	asm volatile("in" #bwl " %w1, %" #bw "0"			\
+		     : "=a"(value) : "Nd"(port));			\
+	return value;							\
+}									\
+									\
+static inline void outs##bwl(int port, const void *addr, unsigned long count) \
+{									\
+	asm volatile("rep; outs" #bwl					\
+		     : "+S"(addr), "+c"(count) : "d"(port));		\
+}									\
+									\
+static inline void ins##bwl(int port, void *addr, unsigned long count)	\
+{									\
+	asm volatile("rep; ins" #bwl					\
+		     : "+D"(addr), "+c"(count) : "d"(port));		\
+}
+
+BUILDIO(b, b, char)
+BUILDIO(w, w, short)
+BUILDIO(l, , int)
+
+#define  IO_SPACE_LIMIT  0xffff
 
 /* do a tiny io delay */
 static inline void io_delay(void)

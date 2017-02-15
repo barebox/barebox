@@ -370,7 +370,7 @@ config CMD_BOOTZ
 
 config CMD_LINUX16
 	tristate
-	depends on X86
+	depends on X86 && !X86_EFI
 	default y if X86
 	prompt "linux16"
 	help

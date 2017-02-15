@@ -14,7 +14,7 @@
 #include <linux/string.h>
 #include <linux/types.h>
 
-#ifdef CONFIG_ARCH_EFI
+#ifdef CONFIG_EFI_BOOTUP
 #define EFIAPI __attribute__((ms_abi))
 #else
 #define EFIAPI

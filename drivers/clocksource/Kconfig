@@ -36,7 +36,7 @@ config CLOCKSOURCE_DUMMY_RATE
 
 config CLOCKSOURCE_EFI
 	bool
-	depends on ARCH_EFI
+	depends on EFI_BOOTUP
 
 config CLOCKSOURCE_MVEBU
 	bool

@@ -34,6 +34,21 @@ ENTRY_FUNCTION(start_netgear_rn2120, r0, r1, r2)
 	writel((1 << 10) | readl((void *)0xd0018140), (void *)0xd0018140);
 	writel(~(1 << 10) & readl((void *)0xd0018144), (void *)0xd0018144);
 
+	/*
+	 * The vendor binary that initializes RAM doesn't program the SDRAM
+	 * Address Decoding registers to match the actual available RAM. But as
+	 * barebox later determines the RAM size from these, fix them up here.
+	 */
+
+	/* Win 1 Base Address Register: base=0x40000000 */
+	writel(0x40000000, (void *)0xd0020188);
+	/* Win 1 Control Register: size=0x4000000, wincs=1, en=1*/
+	writel(0x3fffffe5, (void *)0xd002018c);
+
+	/* Win 0 Base Address Register is already 0, base=0x00000000 */
+	/* Win 0 Control Register: size=0x4000000, wincs=0, en=1 */
+	writel(0x3fffffe1, (void *)0xd0020184);
+
 	fdt = __dtb_armada_xp_rn2120_bb_start -
 		get_runtime_offset();
 

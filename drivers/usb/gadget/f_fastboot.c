@@ -597,6 +597,7 @@ static void rx_handler_dl_image(struct usb_ep *ep, struct usb_request *req)
 	if (f_fb->download_bytes >= f_fb->download_size) {
 		req->complete = rx_handler_command;
 		req->length = EP_BUFFER_SIZE;
+		close(f_fb->download_fd);
 
 		fastboot_tx_print(f_fb, "INFODownloading %d bytes finished",
 				f_fb->download_bytes);

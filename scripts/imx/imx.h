@@ -95,4 +95,20 @@ struct imx_dcd_v2_write {
 	struct imx_dcd_v2_write_rec data[MAX_RECORDS_DCD_V2];
 } __attribute__((packed));
 
+struct imx_dcd_v2_check {
+	uint8_t tag;
+	uint16_t length;
+	uint8_t param;
+	uint32_t addr;
+	uint32_t mask;
+	uint32_t count;
+} __attribute__((packed));
+
+enum imx_dcd_v2_check_cond {
+	check_all_bits_clear = 0,
+	check_all_bits_set = 1,
+	check_any_bit_clear = 2,
+	check_any_bit_set = 3,
+} __attribute__((packed));
+
 int parse_config(struct config_data *data, const char *filename);

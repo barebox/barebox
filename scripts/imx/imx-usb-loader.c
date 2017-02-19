@@ -798,6 +798,98 @@ static int do_dcd_v2_cmd_write(const unsigned char *dcd)
 	return 0;
 }
 
+static int do_dcd_v2_cmd_check(const unsigned char *dcd)
+{
+	uint32_t mask;
+	uint32_t poll_count = 0;
+	int bytes;
+	enum imx_dcd_v2_check_cond cond;
+	struct imx_dcd_v2_check *check = (struct imx_dcd_v2_check *) dcd;
+	switch (ntohs(check->length)) {
+	case 12:
+		/* poll indefinitely */
+		poll_count = 0xffffffff;
+		break;
+	case 16:
+		poll_count = ntohl(check->count);
+		if (poll_count == 0)
+			/* this command behaves as for NOP */
+			return 0;
+		break;
+	default:
+		fprintf(stderr, "Error: invalid DCD check length\n");
+		return -1;
+	}
+
+	switch (check->param & 7) {
+	case 1:
+	case 2:
+	case 4:
+		bytes = check->param & 7;
+		break;
+	default:
+		fprintf(stderr, "Error: invalid DCD check size\n");
+		return -1;
+	}
+
+	switch ((check->param & 0xf8) >> 3) {
+	case check_all_bits_clear:
+	case check_all_bits_set:
+	case check_any_bit_clear:
+	case check_any_bit_set:
+		cond = (check->param & 0xf8) >> 3;
+		break;
+	default:
+		fprintf(stderr, "Error: invalid DCD check condition\n");
+		return -1;
+	}
+
+	mask = ntohl(check->mask);
+
+	fprintf(stderr, "DCD check condition %i on address 0x%x\n",
+		cond, ntohl(check->addr));
+	/* Reduce the poll count to some arbitrary practical limit.
+	   Polling via SRP commands will be much slower compared to
+	   polling when DCD is interpreted by the SOC microcode.
+	*/
+	if (poll_count > 1000)
+		poll_count = 1000;
+
+	while (poll_count > 0) {
+		uint32_t data = 0;
+		int ret = read_memory(ntohl(check->addr), &data, bytes);
+		if (ret < 0)
+			return ret;
+
+		data &= mask;
+
+		switch (cond) {
+		case check_all_bits_clear:
+			if (data != 0)
+				return 0;
+			break;
+		case check_all_bits_set:
+			if (data != mask)
+				return 0;
+			break;
+		case check_any_bit_clear:
+			if (data == mask)
+				return 0;
+			break;
+		case check_any_bit_set:
+			if (data == 0)
+				return 0;
+			break;
+		}
+		poll_count--;
+	}
+
+	fprintf(stderr, "Error: timeout waiting for DCD check condition %i "
+		"on address 0x%08x to match 0x%08x\n", cond,
+		ntohl(check->addr), ntohl(check->mask));
+	return -1;
+}
+
 static int process_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 			       const unsigned char *file_start, unsigned cnt)
 {
@@ -850,8 +942,7 @@ static int process_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 			ret = do_dcd_v2_cmd_write(dcd);
 			break;
 		case TAG_CHECK:
-			fprintf(stderr, "DCD check not implemented yet\n");
-			usleep(50000);
+			ret = do_dcd_v2_cmd_check(dcd);
 			break;
 		case TAG_UNLOCK:
 			fprintf(stderr, "DCD unlock not implemented yet\n");

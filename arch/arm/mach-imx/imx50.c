@@ -50,7 +50,7 @@ static int imx50_silicon_revision(void)
 int imx50_init(void)
 {
 	imx50_silicon_revision();
-	imx53_boot_save_loc((void *)MX50_SRC_BASE_ADDR);
+	imx53_boot_save_loc();
 
 	return 0;
 }

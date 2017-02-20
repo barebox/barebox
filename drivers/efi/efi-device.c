@@ -357,13 +357,22 @@ static void efi_businfo(struct device_d *dev)
 static int efi_init_devices(void)
 {
 	char *fw_vendor = NULL;
+	u16 sys_major = efi_sys_table->hdr.revision >> 16;
+	u16 sys_minor = efi_sys_table->hdr.revision & 0xffff;
+
+	fw_vendor = strdup_wchar_to_char((const wchar_t *)efi_sys_table->fw_vendor);
+
+	pr_info("EFI v%u.%.02u by %s v%u\n",
+		sys_major, sys_minor,
+		fw_vendor, efi_sys_table->fw_revision);
 
 	bus_register(&efi_bus);
 
-	fw_vendor = strdup_wchar_to_char((const wchar_t *)efi_sys_table->fw_vendor);
 	dev_add_param_fixed(efi_bus.dev, "fw_vendor", fw_vendor);
 	free(fw_vendor);
 
+	dev_add_param_int_ro(efi_bus.dev, "major", sys_major, "%u");
+	dev_add_param_int_ro(efi_bus.dev, "minor", sys_minor, "%u");
 	dev_add_param_int_ro(efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
 
 	efi_bus.dev->info = efi_businfo;

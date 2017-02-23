@@ -277,8 +277,6 @@ struct screen *fb_open(const char * fbdev)
 	if (fd < 0)
 		return ERR_PTR(fd);
 
-	info = xzalloc(sizeof(*info));
-
 	ret = ioctl(fd, FBIOGET_SCREENINFO, &info);
 	if (ret) {
 		goto failed_screeninfo;
@@ -291,7 +289,6 @@ struct screen *fb_open(const char * fbdev)
 	}
 
 	sc->fd = fd;
-	sc->info = info;
 
 	return sc;
 

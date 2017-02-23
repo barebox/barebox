@@ -414,26 +414,6 @@ mv64xxx_i2c_do_action(struct mv64xxx_i2c_data *drv_data)
 	}
 }
 
-static void mv64xxx_i2c_intr(struct mv64xxx_i2c_data *drv_data)
-{
-	u32 status;
-	uint64_t start;
-
-	start = get_time_ns();
-
-	while (mv64xxx_read(drv_data, drv_data->reg_offsets.control) &
-						REG_CONTROL_IFLG) {
-		status = mv64xxx_read(drv_data, drv_data->reg_offsets.status);
-		mv64xxx_i2c_fsm(drv_data, status);
-		mv64xxx_i2c_do_action(drv_data);
-
-		if (is_timeout_non_interruptible(start, 3 * SECOND)) {
-			drv_data->rc = -EIO;
-			break;
-		}
-	}
-}
-
 /*
  *****************************************************************************
  *
@@ -444,8 +424,15 @@ static void mv64xxx_i2c_intr(struct mv64xxx_i2c_data *drv_data)
 static void
 mv64xxx_i2c_wait_for_completion(struct mv64xxx_i2c_data *drv_data)
 {
+	u32 status;
 	do {
-		mv64xxx_i2c_intr(drv_data);
+		if (mv64xxx_read(drv_data, drv_data->reg_offsets.control) &
+							REG_CONTROL_IFLG) {
+			status = mv64xxx_read(drv_data,
+					      drv_data->reg_offsets.status);
+			mv64xxx_i2c_fsm(drv_data, status);
+			mv64xxx_i2c_do_action(drv_data);
+		}
 		if (drv_data->rc) {
 			drv_data->state = STATE_IDLE;
 			dev_err(&drv_data->adapter.dev, "I2C bus error\n");

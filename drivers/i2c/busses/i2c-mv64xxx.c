@@ -270,6 +270,7 @@ mv64xxx_i2c_fsm(struct mv64xxx_i2c_data *drv_data, u32 status)
 		}
 		/* FALLTHRU */
 	case STATUS_MAST_RD_DATA_ACK: /* 0x50 */
+		udelay(2);
 		if (status != STATUS_MAST_RD_DATA_ACK)
 			drv_data->action = ACTION_CONTINUE;
 		else {
@@ -280,6 +281,7 @@ mv64xxx_i2c_fsm(struct mv64xxx_i2c_data *drv_data, u32 status)
 
 		if (drv_data->bytes_left == 1)
 			drv_data->cntl_bits &= ~REG_CONTROL_ACK;
+			udelay(2);
 		break;
 
 	case STATUS_MAST_RD_DATA_NO_ACK: /* 0x58 */
@@ -318,6 +320,8 @@ static void mv64xxx_i2c_send_start(struct mv64xxx_i2c_data *drv_data)
 	mv64xxx_i2c_prepare_for_io(drv_data, drv_data->msgs);
 	mv64xxx_write(drv_data, drv_data->cntl_bits | REG_CONTROL_START,
 		drv_data->reg_offsets.control);
+
+	udelay(2);
 }
 
 static void
@@ -333,7 +337,7 @@ mv64xxx_i2c_do_action(struct mv64xxx_i2c_data *drv_data)
 		mv64xxx_i2c_send_start(drv_data);
 
 		if (drv_data->errata_delay)
-			udelay(5);
+			udelay(3);
 
 		/*
 		 * We're never at the start of the message here, and by this
@@ -349,6 +353,7 @@ mv64xxx_i2c_do_action(struct mv64xxx_i2c_data *drv_data)
 		break;
 
 	case ACTION_SEND_ADDR_1:
+		udelay(2);
 		mv64xxx_write(drv_data, drv_data->addr1,
 			drv_data->reg_offsets.data);
 		mv64xxx_write(drv_data, drv_data->cntl_bits,
@@ -360,9 +365,11 @@ mv64xxx_i2c_do_action(struct mv64xxx_i2c_data *drv_data)
 			drv_data->reg_offsets.data);
 		mv64xxx_write(drv_data, drv_data->cntl_bits,
 			drv_data->reg_offsets.control);
+		udelay(2);
 		break;
 
 	case ACTION_SEND_DATA:
+		udelay(2);
 		mv64xxx_write(drv_data, drv_data->msg->buf[drv_data->byte_posn++],
 			drv_data->reg_offsets.data);
 		mv64xxx_write(drv_data, drv_data->cntl_bits,
@@ -383,8 +390,9 @@ mv64xxx_i2c_do_action(struct mv64xxx_i2c_data *drv_data)
 		mv64xxx_write(drv_data, drv_data->cntl_bits | REG_CONTROL_STOP,
 			drv_data->reg_offsets.control);
 		drv_data->block = false;
+		udelay(2);
 		if (drv_data->errata_delay)
-			udelay(5);
+			udelay(3);
 
 		break;
 

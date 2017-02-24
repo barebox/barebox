@@ -180,14 +180,14 @@ mem_initcall(mvebu_meminit);
  * safely later on, as the remap register itself is within the
  * internal registers.
  */
-#define MVEBU_BOOTUP_INT_REG_BASE	0xd0000000
 #define MVEBU_BRIDGE_REG_BASE		0x20000
 #define DEVICE_INTERNAL_BASE_ADDR	(MVEBU_BRIDGE_REG_BASE + 0x80)
 
 static void mvebu_remap_registers(void)
 {
-	writel(MVEBU_REMAP_INT_REG_BASE,
-	       IOMEM(MVEBU_BOOTUP_INT_REG_BASE) + DEVICE_INTERNAL_BASE_ADDR);
+	void __iomem *base = mvebu_get_initial_int_reg_base();
+
+	writel(MVEBU_REMAP_INT_REG_BASE, base + DEVICE_INTERNAL_BASE_ADDR);
 }
 
 void __naked __noreturn dove_barebox_entry(void *boarddata)

@@ -52,7 +52,7 @@ static void __noreturn dove_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int dove_init_soc(struct device_node *root, void *context)
+static int dove_init_soc(void)
 {
 	if (!of_machine_is_compatible("marvell,dove"))
 		return 0;
@@ -67,13 +67,4 @@ static int dove_init_soc(struct device_node *root, void *context)
 
 	return 0;
 }
-
-static int dove_register_soc_fixup(void)
-{
-	mvebu_mbus_add_range("marvell,dove", 0xf0, 0x01,
-			     MVEBU_REMAP_INT_REG_BASE);
-	mvebu_mbus_add_range("marvell,dove", 0xf0, 0x02,
-			     DOVE_REMAP_MC_REGS);
-	return of_register_fixup(dove_init_soc, NULL);
-}
-pure_initcall(dove_register_soc_fixup);
+postcore_initcall(dove_init_soc);

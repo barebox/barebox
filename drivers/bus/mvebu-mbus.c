@@ -811,12 +811,21 @@ static int mvebu_mbus_of_fixup(struct device_node *root, void *context)
 	return 0;
 }
 
+#define DOVE_REMAP_MC_REGS      0xf1800000
+
 static int mvebu_mbus_fixup_register(void)
 {
 	if (IS_ENABLED(CONFIG_ARCH_ARMADA_370) ||
 	    IS_ENABLED(CONFIG_ARCH_ARMADA_XP))
 		mvebu_mbus_add_range("marvell,armada-370-xp", 0xf0, 0x01,
 				     MVEBU_REMAP_INT_REG_BASE);
+
+	if (IS_ENABLED(CONFIG_ARCH_DOVE)) {
+		mvebu_mbus_add_range("marvell,dove", 0xf0, 0x01,
+				     MVEBU_REMAP_INT_REG_BASE);
+		mvebu_mbus_add_range("marvell,dove", 0xf0, 0x02,
+				     DOVE_REMAP_MC_REGS);
+	}
 
 	return of_register_fixup(mvebu_mbus_of_fixup, NULL);
 }

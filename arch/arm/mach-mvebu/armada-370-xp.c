@@ -83,19 +83,7 @@ static void __noreturn armada_370_xp_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int armada_xp_init_soc(struct device_node *root)
-{
-	u32 reg;
-
-	/* Enable GBE0, GBE1, LCD and NFC PUP */
-	reg = readl(ARMADA_XP_PUP_ENABLE);
-	reg |= GE0_PUP_EN | GE1_PUP_EN | LCD_PUP_EN | NAND_PUP_EN | SPI_PUP_EN;
-	writel(reg, ARMADA_XP_PUP_ENABLE);
-
-	return 0;
-}
-
-static int armada_370_xp_init_soc(struct device_node *root, void *context)
+static int armada_370_xp_init_soc(void)
 {
 	u32 reg;
 
@@ -116,16 +104,13 @@ static int armada_370_xp_init_soc(struct device_node *root, void *context)
 
 	armada_xp_soc_id_fixup();
 
-	if (of_machine_is_compatible("marvell,armadaxp"))
-		armada_xp_init_soc(root);
+	if (of_machine_is_compatible("marvell,armadaxp")) {
+		/* Enable GBE0, GBE1, LCD and NFC PUP */
+		reg = readl(ARMADA_XP_PUP_ENABLE);
+		reg |= GE0_PUP_EN | GE1_PUP_EN | LCD_PUP_EN | NAND_PUP_EN | SPI_PUP_EN;
+		writel(reg, ARMADA_XP_PUP_ENABLE);
+	}
 
 	return 0;
 }
-
-static int armada_370_xp_register_soc_fixup(void)
-{
-	mvebu_mbus_add_range("marvell,armada-370-xp", 0xf0, 0x01,
-			     MVEBU_REMAP_INT_REG_BASE);
-	return of_register_fixup(armada_370_xp_init_soc, NULL);
-}
-pure_initcall(armada_370_xp_register_soc_fixup);
+postcore_initcall(armada_370_xp_init_soc);

@@ -827,6 +827,10 @@ static int mvebu_mbus_fixup_register(void)
 				     DOVE_REMAP_MC_REGS);
 	}
 
+	if (IS_ENABLED(CONFIG_ARCH_KIRKWOOD))
+		mvebu_mbus_add_range("marvell,kirkwood", 0xf0, 0x01,
+				     MVEBU_REMAP_INT_REG_BASE);
+
 	return of_register_fixup(mvebu_mbus_of_fixup, NULL);
 }
 pure_initcall(mvebu_mbus_fixup_register);

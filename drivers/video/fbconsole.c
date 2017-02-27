@@ -264,10 +264,13 @@ static void fbc_parse_csi(struct fbc_priv *priv)
 		return;
 	case 'H':
 		video_invertchar(priv, priv->x, priv->y);
+
 		pos = simple_strtoul(priv->csi, &end, 10);
-		priv->y = pos ? pos - 1 : 0;
+		priv->y = clamp(pos - 1, 0, (int) priv->rows);
+
 		pos = simple_strtoul(end + 1, NULL, 10);
-		priv->x = pos ? pos - 1 : 0;
+		priv->x = clamp(pos - 1, 0, (int) priv->cols);
+
 		video_invertchar(priv, priv->x, priv->y);
 	case 'K':
 		pos = simple_strtoul(priv->csi, &end, 10);

@@ -12,6 +12,10 @@ config FRAMEBUFFER_CONSOLE
 	select FONTS
 	prompt "framebuffer console support"
 
+config DRIVER_VIDEO_FB_SSD1307
+	bool "Solomon SSD1307 framebuffer support"
+	depends on I2C && GPIOLIB
+
 config VIDEO_VPL
 	depends on OFTREE
 	bool

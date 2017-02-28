@@ -61,6 +61,9 @@ struct console_device {
 	unsigned int baudrate_param;
 
 	const char *linux_console_name;
+
+	struct cdev devfs;
+	struct file_operations fops;
 };
 
 int console_register(struct console_device *cdev);

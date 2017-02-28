@@ -272,6 +272,40 @@ static int __console_puts(struct console_device *cdev, const char *s)
 	return n;
 }
 
+static int fops_open(struct cdev *cdev, unsigned long flags)
+{
+	struct console_device *priv = cdev->priv;
+
+	return console_open(priv);
+}
+
+static int fops_close(struct cdev *dev)
+{
+	struct console_device *priv = dev->priv;
+
+	return console_close(priv);
+}
+
+static int fops_flush(struct cdev *dev)
+{
+	struct console_device *priv = dev->priv;
+
+	if (priv->flush)
+		priv->flush(priv);
+
+	return 0;
+}
+
+static int fops_write(struct cdev* dev, const void* buf, size_t count,
+		      loff_t offset, ulong flags)
+{
+	struct console_device *priv = dev->priv;
+
+	priv->puts(priv, buf);
+
+	return 0;
+}
+
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = &newcdev->class_dev;
@@ -325,6 +359,25 @@ int console_register(struct console_device *newcdev)
 	if (activate)
 		console_set_active(newcdev, CONSOLE_STDIN |
 				CONSOLE_STDOUT | CONSOLE_STDERR);
+
+	/* expose console as device in fs */
+	newcdev->devfs.name = basprintf("%s%d", newcdev->class_dev.name,
+					newcdev->class_dev.id);
+	newcdev->devfs.priv = newcdev;
+	newcdev->devfs.dev = dev;
+	newcdev->devfs.ops = &newcdev->fops;
+	newcdev->devfs.flags = DEVFS_IS_CHARACTER_DEV;
+	newcdev->fops.open = fops_open;
+	newcdev->fops.close = fops_close;
+	newcdev->fops.flush = fops_flush;
+	newcdev->fops.write = fops_write;
+
+	ret = devfs_create(&newcdev->devfs);
+
+	if (ret) {
+		pr_err("device creation failed with %s\n", strerror(-ret));
+		return ret;
+	}
 
 	return 0;
 }

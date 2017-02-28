@@ -413,20 +413,12 @@ static int setup_font(struct fbc_priv *priv)
 	return 0;
 }
 
-static int fbc_set_active(struct console_device *cdev, unsigned flags)
+static int fbc_open(struct console_device *cdev)
 {
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
 	struct fb_info *fb = priv->fb;
 	int ret;
-
-	if (priv->active) {
-		fb_close(priv->sc);
-		priv->active = false;
-	}
-
-	if (!(flags & (CONSOLE_STDOUT | CONSOLE_STDERR)))
-		return 0;
 
 	ret = setup_font(priv);
 	if (ret)
@@ -446,6 +438,21 @@ static int fbc_set_active(struct console_device *cdev, unsigned flags)
 	priv->active = true;
 
 	return 0;
+}
+
+static int fbc_close(struct console_device *cdev)
+{
+	struct fbc_priv *priv = container_of(cdev,
+					struct fbc_priv, cdev);
+
+	if (priv->active) {
+		fb_close(priv->sc);
+		priv->active = false;
+
+		return 0;
+	}
+
+	return -EINVAL;
 }
 
 static int set_font(struct param_d *p, void *vpriv)
@@ -482,7 +489,8 @@ int register_fbconsole(struct fb_info *fb)
 	cdev->getc = fbc_getc;
 	cdev->devname = "fbconsole";
 	cdev->devid = DEVICE_ID_DYNAMIC;
-	cdev->set_active = fbc_set_active;
+	cdev->open = fbc_open;
+	cdev->close = fbc_close;
 
 	ret = console_register(cdev);
 	if (ret) {

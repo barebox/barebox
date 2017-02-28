@@ -59,6 +59,39 @@ static struct kfifo __console_output_fifo;
 static struct kfifo *console_input_fifo = &__console_input_fifo;
 static struct kfifo *console_output_fifo = &__console_output_fifo;
 
+int console_open(struct console_device *cdev)
+{
+	int ret;
+
+	if (cdev->open && !cdev->open_count) {
+		ret = cdev->open(cdev);
+		if (ret)
+			return ret;
+	}
+
+	cdev->open_count++;
+
+	return 0;
+}
+
+int console_close(struct console_device *cdev)
+{
+	int ret;
+
+	if (!cdev->open_count)
+		return -EBADFD;
+
+	cdev->open_count--;
+
+	if (cdev->close && !cdev->open_count) {
+		ret = cdev->close(cdev);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 int console_set_active(struct console_device *cdev, unsigned flag)
 {
 	int ret, i;
@@ -71,8 +104,15 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 	if (!flag && cdev->f_active && cdev->flush)
 		cdev->flush(cdev);
 
-	if (cdev->set_active) {
-		ret = cdev->set_active(cdev, flag);
+	if (flag == cdev->f_active)
+		return 0;
+
+	if (!flag) {
+		ret = console_close(cdev);
+		if (ret)
+			return ret;
+	} else {
+		ret = console_open(cdev);
 		if (ret)
 			return ret;
 	}
@@ -263,6 +303,8 @@ int console_register(struct console_device *newcdev)
 
 	if (newcdev->putc && !newcdev->puts)
 		newcdev->puts = __console_puts;
+
+	newcdev->open_count = 0;
 
 	dev_add_param(dev, "active", console_active_set, console_active_get, 0);
 

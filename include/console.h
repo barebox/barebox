@@ -44,7 +44,8 @@ struct console_device {
 	int (*setbrg)(struct console_device *cdev, int baudrate);
 	void (*flush)(struct console_device *cdev);
 	int (*set_mode)(struct console_device *cdev, enum console_mode mode);
-	int (*set_active)(struct console_device *cdev, unsigned active);
+	int (*open)(struct console_device *cdev);
+	int (*close)(struct console_device *cdev);
 
 	char *devname;
 	int devid;
@@ -53,6 +54,8 @@ struct console_device {
 
 	unsigned char f_active;
 	char active[4];
+
+	unsigned int open_count;
 
 	unsigned int baudrate;
 	unsigned int baudrate_param;
@@ -75,6 +78,8 @@ extern int barebox_loglevel;
 
 struct console_device *console_get_first_active(void);
 
+int console_open(struct console_device *cdev);
+int console_close(struct console_device *cdev);
 int console_set_active(struct console_device *cdev, unsigned active);
 unsigned console_get_active(struct console_device *cdev);
 int console_set_baudrate(struct console_device *cdev, unsigned baudrate);

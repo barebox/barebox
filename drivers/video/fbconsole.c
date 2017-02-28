@@ -335,6 +335,7 @@ static void fbc_putc(struct console_device *cdev, char c)
 {
 	struct fbc_priv *priv = container_of(cdev,
 					struct fbc_priv, cdev);
+	struct fb_info *fb = priv->fb;
 
 	if (priv->in_console)
 		return;
@@ -393,6 +394,8 @@ static void fbc_putc(struct console_device *cdev, char c)
 
 	}
 	priv->in_console = 0;
+
+	fb_flush(fb);
 }
 
 static int setup_font(struct fbc_priv *priv)

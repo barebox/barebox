@@ -37,5 +37,10 @@ static void inline bcm2835_register_mbox(void)
 	add_generic_device("bcm2835_mbox", 0, NULL, BCM2835_MBOX_BASE, 0x40,
 			   IORESOURCE_MEM, NULL);
 }
+static void inline bcm2835_register_wd(void)
+{
+	add_generic_device("bcm2835_wd", 0, NULL, BCM2835_PM_BASE, 0x28,
+			   IORESOURCE_MEM, NULL);
+}
 
 #endif

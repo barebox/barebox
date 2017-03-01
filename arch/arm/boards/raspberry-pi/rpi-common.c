@@ -326,6 +326,7 @@ static int rpi_env_init(void)
 static int rpi_devices_init(void)
 {
 	rpi_model_init();
+	bcm2835_register_wd();
 	bcm2835_register_mci();
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);

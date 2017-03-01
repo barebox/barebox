@@ -18,7 +18,6 @@
 
 #include <common.h>
 #include <init.h>
-#include <restart.h>
 
 #include <linux/clk.h>
 #include <linux/clkdev.h>
@@ -29,7 +28,6 @@
 #include <linux/sizes.h>
 
 #include <mach/platform.h>
-#include <mach/wd.h>
 #include <mach/core.h>
 #include <linux/amba/bus.h>
 
@@ -64,25 +62,10 @@ void bcm2835_add_device_sdram(u32 size)
 
 	arm_add_mem_device("ram0", BCM2835_SDRAM_BASE, size);
 }
-#define RESET_TIMEOUT 10
-
-static void __noreturn bcm2835_restart_soc(struct restart_handler *rst)
-{
-	uint32_t rstc;
-
-	rstc = readl(PM_RSTC);
-	rstc &= ~PM_RSTC_WRCFG_SET;
-	rstc |= PM_RSTC_WRCFG_FULL_RESET;
-	writel(PM_PASSWORD | RESET_TIMEOUT, PM_WDOG);
-	writel(PM_PASSWORD | rstc, PM_RSTC);
-
-	hang();
-}
 
 static int bcm2835_dev_init(void)
 {
 	add_generic_device("bcm2835-gpio", 0, NULL, BCM2835_GPIO_BASE, 0xB0, IORESOURCE_MEM, NULL);
-	restart_handler_register_fn(bcm2835_restart_soc);
 	return 0;
 }
 coredevice_initcall(bcm2835_dev_init);

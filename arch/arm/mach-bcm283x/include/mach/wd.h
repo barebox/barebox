@@ -21,9 +21,9 @@
 /*
  * Watchdog
  */
-#define PM_RSTC		(BCM2835_PM_BASE+0x1c)
-#define PM_RSTS		(BCM2835_PM_BASE+0x20)
-#define PM_WDOG		(BCM2835_PM_BASE+0x24)
+#define PM_RSTC		0x1c
+#define PM_RSTS		0x20
+#define PM_WDOG		0x24
 
 #define PM_WDOG_RESET				0000000000
 #define PM_PASSWORD				0x5a000000

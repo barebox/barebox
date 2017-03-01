@@ -27,6 +27,7 @@ config ARCH_BCM283X
 	select CLOCKSOURCE_BCM283X
 	select ARM_AMBA
 	select HAS_DEBUG_LL
+	select RELOCATABLE
 
 menu "System Type"
 

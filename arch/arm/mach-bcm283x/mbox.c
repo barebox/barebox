@@ -6,20 +6,21 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#include <asm/io.h>
-#include <common.h>
 #include <clock.h>
+#include <common.h>
 #include <dma.h>
+#include <init.h>
+#include <io.h>
 
 #include <mach/mbox.h>
 
 #define TIMEOUT (MSECOND * 1000)
 
+static void __iomem *mbox_base;
+
 static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 					u32 *recv)
 {
-	struct bcm2835_mbox_regs __iomem *regs =
-		(struct bcm2835_mbox_regs *)BCM2835_MBOX_PHYSADDR;
 	uint64_t starttime = get_time_ns();
 	u32 send = virt_to_phys(buffer);
 	u32 val;
@@ -31,19 +32,19 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 
 	/* Drain any stale responses */
 	for (;;) {
-		val = readl(&regs->status);
+		val = readl(mbox_base + MAIL0_STA);
 		if (val & BCM2835_MBOX_STATUS_RD_EMPTY)
 			break;
 		if (is_timeout(starttime, TIMEOUT)) {
 			printf("mbox: Timeout draining stale responses\n");
 			return -ETIMEDOUT;
 		}
-		val = readl(&regs->read);
+		val = readl(mbox_base + MAIL0_RD);
 	}
 
 	/* Wait for space to send */
 	for (;;) {
-		val = readl(&regs->status);
+		val = readl(mbox_base + MAIL0_STA);
 		if (!(val & BCM2835_MBOX_STATUS_WR_FULL))
 			break;
 		if (is_timeout(starttime, TIMEOUT)) {
@@ -57,11 +58,11 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 	debug("mbox: TX raw: 0x%08x\n", val);
 	dma_sync_single_for_device((unsigned long)send, buffer->buf_size,
 				   DMA_BIDIRECTIONAL);
-	writel(val, &regs->write);
+	writel(val, mbox_base + MAIL1_WRT);
 
 	/* Wait for the response */
 	for (;;) {
-		val = readl(&regs->status);
+		val = readl(mbox_base + MAIL0_STA);
 		if (!(val & BCM2835_MBOX_STATUS_RD_EMPTY))
 			break;
 		if (is_timeout(starttime, TIMEOUT)) {
@@ -71,7 +72,7 @@ static int bcm2835_mbox_call_raw(u32 chan, struct bcm2835_mbox_hdr *buffer,
 	}
 
 	/* Read the response */
-	val = readl(&regs->read);
+	val = readl(mbox_base + MAIL0_RD);
 	debug("mbox: RX raw: 0x%08x\n", val);
 	dma_sync_single_for_cpu((unsigned long)send, buffer->buf_size,
 				DMA_BIDIRECTIONAL);
@@ -152,3 +153,37 @@ int bcm2835_mbox_call_prop(u32 chan, struct bcm2835_mbox_hdr *buffer)
 
 	return 0;
 }
+
+static int bcm2835_mbox_probe(struct device_d *dev)
+{
+	struct resource *iores;
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores)) {
+		dev_err(dev, "could not get memory region\n");
+		return PTR_ERR(iores);
+	}
+	mbox_base = IOMEM(iores->start);
+
+	return 0;
+}
+
+static __maybe_unused struct of_device_id bcm2835_mbox_dt_ids[] = {
+	{
+		.compatible = "brcm,bcm2835-mbox",
+	}, {
+		/* sentinel */
+	},
+};
+
+static struct driver_d bcm2835_mbox_driver = {
+	.name		= "bcm2835_mbox",
+	.of_compatible	= DRV_OF_COMPAT(bcm2835_mbox_dt_ids),
+	.probe		= bcm2835_mbox_probe,
+};
+
+static int __init bcm2835_mbox_init(void)
+{
+	return platform_driver_register(&bcm2835_mbox_driver);
+}
+core_initcall(bcm2835_mbox_init);

@@ -41,6 +41,7 @@
 #define BCM2835_ST_BASE		(BCM2835_PERI_BASE + 0x3000)	/* System Timer */
 #define BCM2835_DMA_BASE	(BCM2835_PERI_BASE + 0x7000)	/* DMA controller */
 #define BCM2835_ARM_BASE	(BCM2835_PERI_BASE + 0xB000)	/* BCM2708 ARM control block */
+#define BCM2835_MBOX_BASE	(BCM2835_ARM_BASE + 0x880)	/* BCM2835 mailbox */
 #define BCM2835_PM_BASE		(BCM2835_PERI_BASE + 0x100000)	/* Power Management, Reset controller and Watchdog registers */
 #define BCM2835_GPIO_BASE	(BCM2835_PERI_BASE + 0x200000)	/* GPIO */
 #define BCM2835_UART0_BASE	(BCM2835_PERI_BASE + 0x201000)	/* Uart 0 */

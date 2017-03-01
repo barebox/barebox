@@ -280,6 +280,8 @@ mem_initcall(rpi_mem_init);
 
 static int rpi_postcore_init(void)
 {
+	bcm2835_register_mbox();
+
 	rpi_get_board_rev();
 	barebox_set_hostname("rpi");
 

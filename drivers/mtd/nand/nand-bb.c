@@ -99,7 +99,7 @@ static int nand_bb_write_buf(struct nand_bb *bb, size_t count)
 	loff_t cur_ofs = bb->offset & ~(BB_WRITEBUF_SIZE - 1);
 
 	while (count) {
-		loff_t max = bb->mtd->size - bb->offset;
+		loff_t max = bb->mtd->size - cur_ofs;
 
 		if (max <= 0)
 			return -ENOSPC;

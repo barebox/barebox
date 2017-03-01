@@ -278,7 +278,7 @@ static int rpi_mem_init(void)
 }
 mem_initcall(rpi_mem_init);
 
-static int rpi_console_init(void)
+static int rpi_postcore_init(void)
 {
 	rpi_get_board_rev();
 	barebox_set_hostname("rpi");
@@ -286,7 +286,7 @@ static int rpi_console_init(void)
 	bcm2835_register_uart();
 	return 0;
 }
-console_initcall(rpi_console_init);
+postcore_initcall(rpi_postcore_init);
 
 static int rpi_clock_init(void)
 {

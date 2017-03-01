@@ -44,24 +44,33 @@ static int bcm2835_cs_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	static struct clk *stc_clk;
-	u32 rate;
+	u32 rate = 0;
 	int ret;
 
-	stc_clk = clk_get(dev, NULL);
-	if (IS_ERR(stc_clk)) {
-		ret = PTR_ERR(stc_clk);
-		dev_err(dev, "clock not found: %d\n", ret);
-		return ret;
+	/* try to read rate from DT property first */
+	if (IS_ENABLED(CONFIG_OFTREE))
+		of_property_read_u32(dev->device_node, "clock-frequency",
+				     &rate);
+
+	/* if rate is still empty, try to get rate from clk */
+	if (!rate) {
+		stc_clk = clk_get(dev, NULL);
+		if (IS_ERR(stc_clk)) {
+			ret = PTR_ERR(stc_clk);
+			dev_err(dev, "clock not found: %d\n", ret);
+			return ret;
+		}
+
+		ret = clk_enable(stc_clk);
+		if (ret) {
+			dev_err(dev, "clock failed to enable: %d\n", ret);
+			clk_put(stc_clk);
+			return ret;
+		}
+
+		rate = clk_get_rate(stc_clk);
 	}
 
-	ret = clk_enable(stc_clk);
-	if (ret) {
-		dev_err(dev, "clock failed to enable: %d\n", ret);
-		clk_put(stc_clk);
-		return ret;
-	}
-
-	rate = clk_get_rate(stc_clk);
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

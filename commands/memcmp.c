@@ -91,13 +91,13 @@ static int do_memcmp(int argc, char *argv[])
 
 		now = min((loff_t)RW_BUF_SIZE, count);
 
-		r1 = read(sourcefd, mem_rw_buf,  now);
+		r1 = read_full(sourcefd, mem_rw_buf, now);
 		if (r1 < 0) {
 			perror("read");
 			goto out;
 		}
 
-		r2 = read(destfd, rw_buf1, now);
+		r2 = read_full(destfd, rw_buf1, now);
 		if (r2 < 0) {
 			perror("read");
 			goto out;

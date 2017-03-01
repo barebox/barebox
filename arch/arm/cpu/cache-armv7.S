@@ -68,6 +68,7 @@ ENTRY(v7_mmu_cache_flush)
 ENDPROC(v7_mmu_cache_flush)
 
 ENTRY(__v7_mmu_cache_flush_invalidate)
+		mcr	p15, 0, r12, c7, c10, 5	@ DMB
 		mrc	p15, 0, r12, c0, c1, 5	@ read ID_MMFR1
 		tst	r12, #0xf << 16		@ hierarchical cache (ARMv7)
 		mov	r12, #0

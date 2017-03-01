@@ -165,6 +165,14 @@ static int do_cpuinfo(int argc, char *argv[])
 	} else
 		cpu_arch = CPU_ARCH_UNKNOWN;
 
+	/*
+	 * Special case for ARMv6 (K/Z) (has v7 compatible MMU, but is v6
+	 * otherwise). The below check just matches all ARMv6, as done in the
+	 * Linux kernel.
+	 */
+	if ((mainid & 0x7f000) == 0x7b000)
+		cpu_arch = CPU_ARCH_ARMv6;
+
 	switch (cpu_arch) {
 	case CPU_ARCH_ARMv3:
 		architecture = "v3";

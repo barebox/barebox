@@ -188,6 +188,14 @@ static inline int arm_early_get_cpu_architecture(void)
 		cpu_arch = CPU_ARCH_UNKNOWN;
 #endif
 
+	/*
+	 * Special case for ARMv6 (K/Z) (has v7 compatible MMU, but is v6
+	 * otherwise). The below check just matches all ARMv6, as done in the
+	 * Linux kernel.
+	 */
+	if ((read_cpuid_id() & 0x7f000) == 0x7b000)
+		cpu_arch = CPU_ARCH_ARMv6;
+
 	return cpu_arch;
 }
 

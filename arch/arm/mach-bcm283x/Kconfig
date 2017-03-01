@@ -7,20 +7,19 @@ config ARCH_TEXT_BASE
 config MACH_RPI_COMMON
 	bool
 
-choice
-	prompt "Broadcom Board type"
+menu "select Broadcom BCM283X boards to be built"
 
 config MACH_RPI
 	bool "RaspberryPi (BCM2835/ARM1176JZF-S)"
-	depends on ARCH_BCM2835
+	select CPU_V6
 	select MACH_RPI_COMMON
 
 config MACH_RPI2
 	bool "RaspberryPi 2 (BCM2836/CORTEX-A7)"
-	depends on ARCH_BCM2836
+	select CPU_V7
 	select MACH_RPI_COMMON
 
-endchoice
+endmenu
 
 config MACH_RPI_DEBUG_UART_BASE
 	hex

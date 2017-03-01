@@ -18,29 +18,11 @@
 
 #include <mach/platform.h>
 
-void bcm2835_register_uart(void);
 void bcm2835_add_device_sdram(u32 size);
-
-static void inline bcm2835_register_mci(void)
-{
-	add_generic_device("bcm2835_mci", 0, NULL, BCM2835_EMMC_BASE, 0xFC,
-			   IORESOURCE_MEM, NULL);
-}
 
 static void inline bcm2835_register_fb(void)
 {
 	add_generic_device("bcm2835_fb", 0, NULL, 0, 0, 0, NULL);
-}
-
-static void inline bcm2835_register_mbox(void)
-{
-	add_generic_device("bcm2835_mbox", 0, NULL, BCM2835_MBOX_BASE, 0x40,
-			   IORESOURCE_MEM, NULL);
-}
-static void inline bcm2835_register_wd(void)
-{
-	add_generic_device("bcm2835_wd", 0, NULL, BCM2835_PM_BASE, 0x28,
-			   IORESOURCE_MEM, NULL);
 }
 
 #endif

@@ -1,0 +1,11 @@
+#
+# barebox image generation Makefile for BCM283x images
+#
+
+pblx-$(CONFIG_MACH_RPI) += start_raspberry_pi1
+FILE_barebox-raspberry-pi-1.img = start_raspberry_pi1.pblx
+image-$(CONFIG_MACH_RPI) += barebox-raspberry-pi-1.img
+
+pblx-$(CONFIG_MACH_RPI2) += start_raspberry_pi2
+FILE_barebox-raspberry-pi-2.img = start_raspberry_pi2.pblx
+image-$(CONFIG_MACH_RPI2) += barebox-raspberry-pi-2.img

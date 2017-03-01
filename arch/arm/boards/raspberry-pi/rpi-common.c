@@ -73,10 +73,9 @@ static int rpi_get_arm_mem(u32 *size)
 	return 0;
 }
 
-static int rpi_register_clkdev(u32 clock_id, const char *name)
+static struct clk *rpi_register_firmare_clock(u32 clock_id, const char *name)
 {
 	BCM2835_MBOX_STACK_ALIGN(struct msg_get_clock_rate, msg);
-	struct clk *clk;
 	int ret;
 
 	BCM2835_MBOX_INIT_HDR(msg);
@@ -85,16 +84,9 @@ static int rpi_register_clkdev(u32 clock_id, const char *name)
 
 	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
 	if (ret)
-		return ret;
+		return ERR_PTR(ret);
 
-	clk = clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	if (!clk_register_clkdev(clk, NULL, name))
-		return -ENODEV;
-
-	return 0;
+	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
 void rpi_set_usbethaddr(void)
@@ -280,19 +272,25 @@ mem_initcall(rpi_mem_init);
 
 static int rpi_postcore_init(void)
 {
-	bcm2835_register_mbox();
-
 	rpi_get_board_rev();
 	barebox_set_hostname("rpi");
 
-	bcm2835_register_uart();
 	return 0;
 }
 postcore_initcall(rpi_postcore_init);
 
 static int rpi_clock_init(void)
 {
-	rpi_register_clkdev(BCM2835_MBOX_CLOCK_ID_EMMC, "bcm2835_mci0");
+	struct clk *clk;
+
+	clk = rpi_register_firmare_clock(BCM2835_MBOX_CLOCK_ID_EMMC,
+					 "bcm2835_mci0");
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	clk_register_clkdev(clk, NULL, "20300000.sdhci");
+	clk_register_clkdev(clk, NULL, "3f300000.sdhci");
+
 	return 0;
 }
 postconsole_initcall(rpi_clock_init);
@@ -326,8 +324,6 @@ static int rpi_env_init(void)
 static int rpi_devices_init(void)
 {
 	rpi_model_init();
-	bcm2835_register_wd();
-	bcm2835_register_mci();
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();

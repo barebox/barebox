@@ -568,13 +568,11 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 
 	while (insize) {
 		now = kfifo_get(priv->fifo, buf, insize);
+		outsize += now;
+		buf += now;
+		insize -= now;
 		if (priv->state == STATE_DONE)
-			return outsize + now;
-		if (now) {
-			outsize += now;
-			buf += now;
-			insize -= now;
-		}
+			return outsize;
 
 		if (TFTP_FIFO_SIZE - kfifo_len(priv->fifo) >= priv->blocksize)
 			tftp_send(priv);

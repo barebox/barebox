@@ -213,6 +213,17 @@ EXPORT_SYMBOL(mdelay_non_interruptible);
 
 int init_clock(struct clocksource *cs)
 {
+	if (current_clock && cs->priority <= current_clock->priority)
+		return 0;
+
+	if (cs->init) {
+		int ret;
+
+		ret = cs->init(cs);
+		if (ret)
+			return ret;
+	}
+
 	current_clock = cs;
 	time_beginning = get_time_ns();
 

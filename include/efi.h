@@ -171,6 +171,12 @@ struct efi_open_protocol_information_entry {
 	u32 open_count;
 };
 
+typedef enum {
+	EFI_TIMER_CANCEL = 0,
+	EFI_TIMER_PERIODIC = 1,
+	EFI_TIMER_RELATIVE = 2
+} efi_timer_delay_t;
+
 /*
  * EFI Boot Services table
  */
@@ -199,7 +205,7 @@ typedef struct {
 	efi_status_t(EFIAPI *create_event)(u32 type , unsigned long tpl,
 			void (*fn) (void *event, void *ctx),
 			void *ctx, void **event);
-	void *set_timer;
+	efi_status_t(EFIAPI *set_timer)(void *event, efi_timer_delay_t type, uint64_t time);
 	efi_status_t(EFIAPI *wait_for_event)(unsigned long number_of_events, void *event,
 			unsigned long *index);
 	void *signal_event;

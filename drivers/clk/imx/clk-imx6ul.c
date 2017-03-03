@@ -392,7 +392,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	for (i = 0; i < ARRAY_SIZE(clks_init_on); i++)
 		clk_enable(clks[clks_init_on[i]]);
 
-	if (IS_ENABLED(CONFIG_USB_MXS_PHY)) {
+	if (IS_ENABLED(CONFIG_USB_IMX_PHY)) {
 		clk_enable(clks[IMX6UL_CLK_USBPHY1_GATE]);
 		clk_enable(clks[IMX6UL_CLK_USBPHY2_GATE]);
 	}

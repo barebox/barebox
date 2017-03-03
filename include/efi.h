@@ -185,12 +185,25 @@ typedef struct {
 				       unsigned long *, u32 *);
 	efi_status_t (EFIAPI *allocate_pool)(int, unsigned long, void **);
 	efi_status_t (EFIAPI *free_pool)(void *);
-	void *create_event;
+#define EFI_EVT_TIMER				0x80000000
+#define EFI_EVT_RUNTIME				0x40000000
+#define EFI_EVT_NOTIFY_WAIT			0x00000100
+#define EFI_EVT_NOTIFY_SIGNAL			0x00000200
+#define EFI_EVT_SIGNAL_EXIT_BOOT_SERVICES	0x00000201
+#define EFI_EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE	0x60000202
+
+#define EFI_TPL_APPLICATION	4
+#define EFI_TPL_CALLBACK	8
+#define EFI_TPL_NOTIFY		16
+#define EFI_TPL_HIGH_LEVEL	31
+	efi_status_t(EFIAPI *create_event)(u32 type , unsigned long tpl,
+			void (*fn) (void *event, void *ctx),
+			void *ctx, void **event);
 	void *set_timer;
 	efi_status_t(EFIAPI *wait_for_event)(unsigned long number_of_events, void *event,
 			unsigned long *index);
 	void *signal_event;
-	void *close_event;
+	efi_status_t(EFIAPI *close_event)(void *event);
 	void *check_event;
 	void *install_protocol_interface;
 	void *reinstall_protocol_interface;

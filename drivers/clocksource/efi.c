@@ -1,4 +1,5 @@
 #include <common.h>
+#include <init.h>
 #include <efi.h>
 #include <efi/efi.h>
 #include <clock.h>
@@ -48,7 +49,7 @@ static struct clocksource cs = {
 	.shift  = 0,
 };
 
-int efi_clocksource_init(void)
+static int efi_clocksource_init(void)
 {
 	cs.mult = clocksource_hz2mult(1000 * 1000, cs.shift);
 
@@ -56,3 +57,5 @@ int efi_clocksource_init(void)
 
 	return init_clock(&cs);
 }
+/* for efi the time must be init at core initcall level */
+core_initcall(efi_clocksource_init);

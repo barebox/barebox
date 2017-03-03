@@ -12,8 +12,6 @@ extern efi_loaded_image_t *efi_loaded_image;
 
 int efi_errno(efi_status_t err);
 
-int efi_clocksource_init(void);
-
 void *efi_get_variable(char *name, efi_guid_t *vendor, int *var_size);
 
 static inline void *efi_get_global_var(char *name, int *var_size)

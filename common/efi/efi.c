@@ -348,7 +348,6 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 		      efi_strerror(efiret));
 	mem_malloc_init((void *)mem, (void *)mem + memsize);
 
-	efi_clocksource_init();
 	start_barebox();
 
 	return EFI_SUCCESS;

@@ -314,7 +314,6 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	efi_physical_addr_t mem;
 	size_t memsize;
 	efi_status_t efiret;
-	char *uuid;
 
 #ifdef DEBUG
 	sys_table->con_out->output_string(sys_table->con_out, L"barebox\n");
@@ -350,6 +349,15 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	mem_malloc_init((void *)mem, (void *)mem + memsize);
 
 	efi_clocksource_init();
+	start_barebox();
+
+	return EFI_SUCCESS;
+}
+
+static int efi_postcore_init(void)
+{
+	char *uuid;
+
 	efi_set_variable_usec("LoaderTimeInitUSec", &efi_systemd_vendor_guid,
 			      get_time_ns()/1000);
 
@@ -366,10 +374,9 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 		free(uuid16);
 	}
 
-	start_barebox();
-
-	return EFI_SUCCESS;
+	return 0;
 }
+postcore_initcall(efi_postcore_init);
 
 static int do_efiexit(int argc, char *argv[])
 {

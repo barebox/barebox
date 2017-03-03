@@ -353,6 +353,14 @@ efi_status_t efi_main(efi_handle_t image, efi_system_table_t *sys_table)
 	return EFI_SUCCESS;
 }
 
+static int efi_core_init(void)
+{
+	struct device_d *dev = device_alloc("efi-cs", DEVICE_ID_SINGLE);
+
+	return platform_device_register(dev);
+}
+core_initcall(efi_core_init);
+
 static int efi_postcore_init(void)
 {
 	char *uuid;

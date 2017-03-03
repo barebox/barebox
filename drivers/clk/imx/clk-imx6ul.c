@@ -91,6 +91,7 @@ static int imx6_ccm_probe(struct device_d *dev)
 	int i;
 	struct device_node *ccm_node = dev->device_node;
 
+	anatop_base = IOMEM(MX6_ANATOP_BASE_ADDR);
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -99,8 +100,6 @@ static int imx6_ccm_probe(struct device_d *dev)
 	base = anatop_base;
 
 	clks[IMX6UL_CLK_DUMMY] = clk_fixed("dummy", 0);
-
-	base = IOMEM(MX6_ANATOP_BASE_ADDR);
 
 	clks[IMX6UL_PLL1_BYPASS_SRC] = imx_clk_mux("pll1_bypass_src", base + 0x00, 14, 1, pll_bypass_src_sels, ARRAY_SIZE(pll_bypass_src_sels));
 	clks[IMX6UL_PLL2_BYPASS_SRC] = imx_clk_mux("pll2_bypass_src", base + 0x30, 14, 1, pll_bypass_src_sels, ARRAY_SIZE(pll_bypass_src_sels));

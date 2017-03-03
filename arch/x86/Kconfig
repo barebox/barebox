@@ -77,7 +77,7 @@ choice
 		select EFI_GUID
 		select EFI_DEVICEPATH
 		select PRINTF_UUID
-		select CLOCKSOURCE_EFI
+		select CLOCKSOURCE_EFI_X86
 
 	config X86_BIOS_BRINGUP
 		bool "16 bit BIOS"

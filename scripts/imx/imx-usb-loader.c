@@ -250,6 +250,8 @@ static int device_location_equal(libusb_device *device, const char *location)
 	/* walked the full path, all elements match */
 	if (path_step == path_len)
 		result = 1;
+	else
+		fprintf(stderr, " excluded by device path option\n");
 
 done:
 	free(loc);

@@ -354,11 +354,41 @@ static void efi_businfo(struct device_d *dev)
 	}
 }
 
+static int efi_is_secure_boot(void)
+{
+	uint8_t *val;
+	int ret = 0;
+
+	val = efi_get_variable("SecureBoot", &efi_global_variable_guid, NULL);
+	if (!IS_ERR(val)) {
+		ret = *val;
+		free(val);
+	}
+
+	return ret != 1;
+}
+
+static int efi_is_setup_mode(void)
+{
+	uint8_t *val;
+	int ret = 0;
+
+	val = efi_get_variable("SetupMode", &efi_global_variable_guid, NULL);
+	if (!IS_ERR(val)) {
+		ret = *val;
+		free(val);
+	}
+
+	return ret != 1;
+}
+
 static int efi_init_devices(void)
 {
 	char *fw_vendor = NULL;
 	u16 sys_major = efi_sys_table->hdr.revision >> 16;
 	u16 sys_minor = efi_sys_table->hdr.revision & 0xffff;
+	int secure_boot = efi_is_secure_boot();
+	int setup_mode = efi_is_setup_mode();
 
 	fw_vendor = strdup_wchar_to_char((const wchar_t *)efi_sys_table->fw_vendor);
 
@@ -374,6 +404,9 @@ static int efi_init_devices(void)
 	dev_add_param_int_ro(efi_bus.dev, "major", sys_major, "%u");
 	dev_add_param_int_ro(efi_bus.dev, "minor", sys_minor, "%u");
 	dev_add_param_int_ro(efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
+	dev_add_param_int_ro(efi_bus.dev, "secure_boot", secure_boot, "%d");
+	dev_add_param_int_ro(efi_bus.dev, "secure_mode",
+			     secure_boot & setup_mode, "%u");
 
 	efi_bus.dev->info = efi_businfo;
 

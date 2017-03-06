@@ -648,7 +648,9 @@ static struct platform_device_id apbh_ids[] = {
         }, {
 		.name = "imx28-dma-apbh",
 		.driver_data = (unsigned long)IMX28_DMA,
-        },
+        }, {
+		/* sentinel */
+	}
 };
 
 static __maybe_unused struct of_device_id apbh_dt_ids[] = {

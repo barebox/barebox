@@ -24,6 +24,10 @@ config DRIVER_VIDEO_ATMEL_HLCD
 	bool "Atmel HLCDC framebuffer driver"
 	depends on ARCH_AT91
 
+config DRIVER_VIDEO_EFI_GOP
+	bool "EFI Graphics Output Protocol (GOP)"
+	depends on EFI_BOOTUP
+
 config DRIVER_VIDEO_IMX
 	bool "i.MX framebuffer driver"
 	depends on ARCH_IMX1 || ARCH_IMX21 || ARCH_IMX25 || ARCH_IMX27

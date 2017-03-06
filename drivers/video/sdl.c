@@ -53,7 +53,7 @@ static int sdlfb_probe(struct device_d *dev)
 	fb->yres = fb->mode->yres;
 
 	fb->priv = fb;
-	fb->fbops = &sdlfb_ops,
+	fb->fbops = &sdlfb_ops;
 
 	fb->dev.parent = dev;
 	fb->screen_base = xzalloc(fb->xres * fb->yres *

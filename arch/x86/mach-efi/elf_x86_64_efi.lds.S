@@ -80,6 +80,7 @@ SECTIONS
 		*(.rela.data*)
 		*(.rela.barebox*)
 		*(.rela.initcall*)
+		*(.rela.exitcall*)
 		*(.rela.got)
 		*(.rela.stab)
 	}

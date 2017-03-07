@@ -85,7 +85,7 @@ quiet_cmd_efi_image = EFI-IMG $@
       cmd_efi_image = $(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic \
 		      -j .dynsym -j .rel -j .rela -j .reloc -j __barebox_initcalls \
 		      -j __barebox_exitcalls -j __barebox_cmd -j .barebox_magicvar \
-		      -j .bbenv.* --target=$(TARGET) $< $@
+		      -j .bbenv.* -j .bblogo.* --target=$(TARGET) $< $@
 
 KBUILD_BINARY := barebox
 

@@ -69,6 +69,9 @@ struct mach_id {
 #define HDR_MX53	2
 	unsigned char header_type;
 	unsigned short max_transfer;
+#define DEV_IMX		0
+#define DEV_MXS		1
+	unsigned char dev_type;
 };
 
 struct usb_work {
@@ -87,7 +90,9 @@ static const struct mach_id imx_ids[] = {
 		.vid = 0x066f,
 		.pid = 0x3780,
 		.name = "i.MX23",
-		.mode = MODE_BULK,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
+		.dev_type = DEV_MXS,
 	}, {
 		.vid = 0x15a2,
 		.pid = 0x0030,
@@ -120,6 +125,8 @@ static const struct mach_id imx_ids[] = {
 		.vid = 0x15a2,
 		.pid = 0x004f,
 		.name = "i.MX28",
+		.max_transfer = 1024,
+		.dev_type = DEV_MXS,
 	}, {
 		.vid = 0x15a2,
 		.pid = 0x0052,
@@ -185,6 +192,17 @@ struct sdp_command  {
 	uint32_t cnt;
 	uint32_t data;
 	uint8_t rsvd;
+} __attribute__((packed));
+
+#define MXS_CMD_FW_DOWNLOAD    0x02
+struct mxs_command {
+	uint32_t sign;		/* Signature */
+	uint32_t tag;		/* Tag */
+	uint32_t size;		/* Payload size */
+	uint8_t flags;		/* Flags (host to device) */
+	uint8_t rsvd[2];	/* Reserved */
+	uint8_t cmd;		/* Firmware download */
+	uint32_t dw_size;	/* Download size */
 } __attribute__((packed));
 
 static const struct mach_id *imx_device(unsigned short vid, unsigned short pid)
@@ -1441,6 +1459,66 @@ static int write_mem(const struct config_data *data, uint32_t addr,
 	return modify_memory(addr, val, width, set_bits, clear_bits);
 }
 
+/* MXS section */
+static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
+{
+	static struct mxs_command dl_command;
+	int last_trans, err;
+	void *p;
+	int cnt;
+
+	dl_command.sign = htonl(0x424c5443); /* Signature: BLTC */
+	dl_command.tag = htonl(0x1);
+	dl_command.size = htonl(size);
+	dl_command.flags = 0;
+	dl_command.rsvd[0] = 0;
+	dl_command.rsvd[1] = 0;
+	dl_command.cmd = MXS_CMD_FW_DOWNLOAD;
+	dl_command.dw_size = htonl(size);
+
+	err = transfer(1, (unsigned char *) &dl_command, 20, &last_trans);
+	if (err) {
+		printf("transfer error at init step: err=%i, last_trans=%i\n",
+		       err, last_trans);
+		return err;
+	}
+
+	p = data;
+	cnt = size;
+
+	while (1) {
+		int now = get_min(cnt, usb_id->mach_id->max_transfer);
+
+		if (!now)
+			break;
+
+		err = transfer(2, p, now, &now);
+		if (err) {
+			printf("dl_command err=%i, last_trans=%i\n", err, now);
+			return err;
+		}
+
+		p += now;
+		cnt -= now;
+	}
+
+	return err;
+}
+
+static int mxs_work(struct usb_work *curr)
+{
+	unsigned fsize = 0;
+	unsigned char *buf = NULL;
+	int ret;
+
+	ret = read_file(curr->filename, &buf, &fsize);
+	if (ret < 0)
+		return ret;
+
+	return mxs_load_file(usb_dev_handle, buf, fsize);
+}
+/* end of mxs section */
+
 static int parse_initfile(const char *filename)
 {
 	struct config_data data = {
@@ -1549,6 +1627,11 @@ int main(int argc, char *argv[])
 	}
 
 	usb_id->mach_id = mach;
+
+	if (mach->dev_type == DEV_MXS) {
+		ret = mxs_work(&w);
+		goto out;
+	}
 
 	err = do_status();
 	if (err) {

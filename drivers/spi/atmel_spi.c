@@ -172,6 +172,8 @@ static int atmel_spi_setup(struct spi_device *spi)
 	struct spi_master	*master = spi->master;
 	struct atmel_spi	*as = to_atmel_spi(master);
 
+	int			npcs_pin;
+	unsigned		active = spi->mode & SPI_CS_HIGH;
 	u32			scbr, csr;
 	unsigned int		bits = spi->bits_per_word;
 	unsigned long		bus_hz;
@@ -182,6 +184,8 @@ static int atmel_spi_setup(struct spi_device *spi)
 				spi->chip_select, spi->master->num_chipselect);
 		return -EINVAL;
 	}
+
+	npcs_pin = as->cs_pins[spi->chip_select];
 
 	if (bits < 8 || bits > 16) {
 		dev_dbg(&spi->dev,
@@ -235,7 +239,7 @@ static int atmel_spi_setup(struct spi_device *spi)
 	csr |= SPI_BF(DLYBS, 0);
 	csr |= SPI_BF(DLYBCT, 0);
 
-	/* gpio_direction_output(npcs_pin, !(spi->mode & SPI_CS_HIGH)); */
+	gpio_direction_output(npcs_pin, !active);
 	dev_dbg(master->dev,
 		"setup: %lu Hz bpw %u mode 0x%x -> csr%d %08x\n",
 		bus_hz / scbr, bits, spi->mode, spi->chip_select, csr);

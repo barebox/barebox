@@ -414,8 +414,10 @@ static int at91_pinctrl_set_conf(struct at91_pinctrl *info, unsigned int pin_num
 {
 	unsigned int mask;
 	void __iomem *pio;
+	struct at91_gpio_chip *at91_gpio;
 
-	pio = pin_to_controller(pin_num);
+	at91_gpio = pin_to_controller(pin_num);
+	pio  = at91_gpio->regbase;
 	mask = pin_to_mask(pin_num);
 
 	if (conf & PULL_UP && conf & PULL_DOWN)

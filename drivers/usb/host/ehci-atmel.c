@@ -32,10 +32,20 @@
 /* interface and function clocks; sometimes also an AHB clock */
 static struct clk *iclk, *fclk;
 
-static void atmel_start_clock(void)
+static int atmel_start_clock(void)
 {
-	clk_enable(iclk);
-	clk_enable(fclk);
+	int ret;
+	ret = clk_enable(iclk);
+	if (ret < 0) {
+		pr_err("Error enabling interface clock\n");
+		return ret;
+	}
+
+	ret = clk_enable(fclk);
+	if (ret < 0)
+		pr_err("Error enabling function clock\n");
+
+	return ret;
 }
 
 static void atmel_stop_clock(void)
@@ -46,6 +56,7 @@ static void atmel_stop_clock(void)
 
 static int atmel_ehci_probe(struct device_d *dev)
 {
+	int ret;
 	struct resource *iores;
 	struct ehci_data data;
 
@@ -64,7 +75,9 @@ static int atmel_ehci_probe(struct device_d *dev)
 	/*
 	 * Start the USB clocks.
 	 */
-	atmel_start_clock();
+	ret = atmel_start_clock();
+	if (ret < 0)
+		return ret;
 
 	data.flags = 0;
 

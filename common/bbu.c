@@ -113,6 +113,15 @@ static struct bbu_handler *bbu_find_handler_by_device(const char *devicepath)
 		if (!strcmp(handler->devicefile, devicepath))
 			return handler;
 
+	if (strncmp(devicepath, "/dev/", 5))
+		return NULL;
+
+	devicepath += 5;
+
+	list_for_each_entry(handler, &bbu_image_handlers, list)
+		if (!strcmp(handler->devicefile, devicepath))
+			return handler;
+
 	return NULL;
 }
 

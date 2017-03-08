@@ -89,7 +89,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 	if (ret < 0)
 		return ret;
 
-	data.flags = 0;
+	memset(&data, 0, sizeof(data));
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))

@@ -34,10 +34,23 @@ struct ohci_at91_priv {
 	struct ohci_regs __iomem *regs;
 };
 
-static void at91_start_clock(struct ohci_at91_priv *ohci_at91)
+static int at91_start_clock(struct ohci_at91_priv *ohci_at91)
 {
-	clk_enable(ohci_at91->iclk);
-	clk_enable(ohci_at91->fclk);
+	int ret;
+
+	ret = clk_enable(ohci_at91->iclk);
+	if (ret < 0) {
+		dev_err(ohci_at91->dev, "Failed to enable 'iclk'\n");
+		return ret;
+	}
+
+	ret = clk_enable(ohci_at91->fclk);
+	if (ret < 0) {
+		dev_err(ohci_at91->dev, "Failed to enable 'fclk'\n");
+		return ret;
+	}
+
+	return 0;
 }
 
 static void at91_stop_clock(struct ohci_at91_priv *ohci_at91)
@@ -48,6 +61,7 @@ static void at91_stop_clock(struct ohci_at91_priv *ohci_at91)
 
 static int at91_ohci_probe(struct device_d *dev)
 {
+	int ret;
 	struct resource *io;
 	struct ohci_at91_priv *ohci_at91 = xzalloc(sizeof(*ohci_at91));
 
@@ -76,7 +90,9 @@ static int at91_ohci_probe(struct device_d *dev)
 	/*
 	 * Start the USB clocks.
 	 */
-	at91_start_clock(ohci_at91);
+	ret = at91_start_clock(ohci_at91);
+	if (ret < 0)
+		return ret;
 
 	/*
 	 * The USB host controller must remain in reset.

@@ -47,7 +47,16 @@ static int at91_ohci_probe(struct device_d *dev)
 	struct ohci_regs __iomem *regs = (struct ohci_regs __iomem *)dev->resource[0].start;
 
 	iclk = clk_get(NULL, "ohci_clk");
+	if (IS_ERR(iclk)) {
+		dev_err(dev, "Failed to get 'ohci_clk'\n");
+		return PTR_ERR(iclk);
+	}
+
 	fclk = clk_get(NULL, "uhpck");
+	if (IS_ERR(fclk)) {
+		dev_err(dev, "Failed to get 'uhpck'\n");
+		return PTR_ERR(fclk);
+	}
 
 	/*
 	 * Start the USB clocks.

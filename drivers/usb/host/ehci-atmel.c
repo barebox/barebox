@@ -96,9 +96,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	data.hccr = IOMEM(iores->start);
 
-	ehci_register(dev, &data);
-
-	return 0;
+	return ehci_register(dev, &data);
 }
 
 static void atmel_ehci_remove(struct device_d *dev)

@@ -15,20 +15,17 @@ config HAVE_AT91_LOWLEVEL_INIT
 config AT91SAM9_SMC
 	bool
 
-config AT91SAM9_TIMER
-	bool
-
 config SOC_AT91SAM9
 	bool
 	select CPU_ARM926T
 	select AT91SAM9_SMC
-	select AT91SAM9_TIMER
+	select CLOCKSOURCE_ATMEL_PIT
 
 config SOC_SAMA5
 	bool
 	select CPU_V7
 	select AT91SAM9_SMC
-	select AT91SAM9_TIMER
+	select CLOCKSOURCE_ATMEL_PIT
 
 config ARCH_TEXT_BASE
 	hex

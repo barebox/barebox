@@ -19,7 +19,6 @@ obj-$(CONFIG_AT91SAM9_RESET) += at91sam9_reset.o
 obj-$(CONFIG_AT91SAM9G45_RESET) += at91sam9g45_reset.o
 
 obj-$(CONFIG_AT91SAM9_SMC) += sam9_smc.o
-obj-$(CONFIG_AT91SAM9_TIMER) += at91sam926x_time.o
 
 # CPU-specific support
 obj-$(CONFIG_ARCH_AT91RM9200)	+= at91rm9200.o at91rm9200_time.o at91rm9200_devices.o

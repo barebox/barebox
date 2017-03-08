@@ -40,11 +40,16 @@
 
 #include "atmel_spi.h"
 
+struct atmel_spi_caps {
+	bool	is_spi2;
+};
+
 struct atmel_spi {
 	struct spi_master	master;
 	void __iomem		*regs;
 	struct clk		*clk;
 	int			*cs_pins;
+	struct atmel_spi_caps	caps;
 };
 
 #define to_atmel_spi(p)		container_of(p, struct atmel_spi, master)
@@ -62,9 +67,9 @@ struct atmel_spi {
  * register, but I haven't checked that it exists on all chips, and
  * this is cheaper anyway.
  */
-static inline bool atmel_spi_is_v2(void)
+static inline bool atmel_spi_is_v2(struct atmel_spi *as)
 {
-	return !cpu_is_at91rm9200();
+	return as->caps.is_spi2;
 }
 
 /*
@@ -104,7 +109,7 @@ static void cs_activate(struct atmel_spi *as, struct spi_device *spi)
 
 	csr = (u32)spi->controller_data;
 
-	if (atmel_spi_is_v2()) {
+	if (atmel_spi_is_v2(as)) {
 		/*
 		 * Always use CSR0. This ensures that the clock
 		 * switches to the correct idle polarity before we
@@ -163,8 +168,9 @@ static void cs_deactivate(struct atmel_spi *as, struct spi_device *spi)
 			npcs_pin, active ? " (low)" : "",
 			mr);
 
-	if (atmel_spi_is_v2() || npcs_pin != AT91_PIN_PA3)
+	if (atmel_spi_is_v2(as) || npcs_pin != AT91_PIN_PA3) {
 		gpio_set_value(npcs_pin, !active);
+	}
 }
 
 static int atmel_spi_setup(struct spi_device *spi)
@@ -199,7 +205,7 @@ static int atmel_spi_setup(struct spi_device *spi)
 			spi->max_speed_hz);
 
 	bus_hz = clk_get_rate(as->clk);
-	if (!atmel_spi_is_v2())
+	if (!atmel_spi_is_v2(as))
 		bus_hz /= 2;
 
 	if (spi->max_speed_hz) {
@@ -248,7 +254,7 @@ static int atmel_spi_setup(struct spi_device *spi)
 
 	cs_deactivate(as, spi);
 
-	if (!atmel_spi_is_v2())
+	if (!atmel_spi_is_v2(as))
 		spi_writel(as, CSR0 + 4 * spi->chip_select, csr);
 
 	return 0;
@@ -373,6 +379,21 @@ err:
 	return ret;
 }
 
+static inline unsigned int atmel_get_version(struct atmel_spi *as)
+{
+	return spi_readl(as, VERSION) & 0x00000fff;
+}
+
+static void atmel_get_caps(struct atmel_spi *as)
+{
+	unsigned int version;
+
+	version = atmel_get_version(as);
+	dev_info(as->master.dev, "version: 0x%x\n", version);
+
+	as->caps.is_spi2 = version > 0x121;
+}
+
 static int atmel_spi_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -408,6 +429,8 @@ static int atmel_spi_probe(struct device_d *dev)
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	as->regs = IOMEM(iores->start);
+
+	atmel_get_caps(as);
 
 	for (i = 0; i < master->num_chipselect; i++) {
 		ret = gpio_request(as->cs_pins[i], dev_name(dev));

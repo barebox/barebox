@@ -462,6 +462,8 @@ static int at91_pinctrl_set_state(struct pinctrl_device *pdev, struct device_nod
 		mux = be32_to_cpu(*list++);
 		conf = be32_to_cpu(*list++);
 
+		pin_num += bank_num * MAX_NB_GPIO_PER_BANK;
+
 		ret = at91_mux_pin(pin_num, mux, conf & PULL_UP);
 		if (ret) {
 			dev_err(pdev->dev, "failed to mux pin %d\n", pin_num);

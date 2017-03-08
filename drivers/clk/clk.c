@@ -346,7 +346,7 @@ int clk_parent_set_rate(struct clk *clk, unsigned long rate,
 	return clk_set_rate(clk_get_parent(clk), rate);
 }
 
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+#if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 /**
  * struct of_clk_provider - Clock provider registration structure
  * @link: Entry in global list of clock providers

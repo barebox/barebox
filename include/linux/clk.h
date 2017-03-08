@@ -329,7 +329,7 @@ const struct of_device_id __clk_of_table_##name				\
 __attribute__ ((unused,section (".__clk_of_table"))) \
 	= { .compatible = compat, .data = fn }
 
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+#if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 int of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *args,
 						   void *data),

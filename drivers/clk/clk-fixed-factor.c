@@ -93,7 +93,7 @@ struct clk *clk_fixed_factor(const char *name,
 	return &f->clk;
 }
 
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+#if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 /**
  * of_fixed_factor_clk_setup() - Setup function for simple fixed factor clock
  */

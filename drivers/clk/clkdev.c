@@ -24,7 +24,7 @@
 
 static LIST_HEAD(clocks);
 
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+#if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 struct clk *of_clk_get(struct device_node *np, int index)
 {
 	struct of_phandle_args clkspec;

@@ -167,7 +167,7 @@ static int ci_register_role(struct imx_chipidea *ci)
 
 	if (ci->mode == IMX_USB_MODE_HOST) {
 		if (IS_ENABLED(CONFIG_USB_EHCI)) {
-			ci->role_registered = 1;
+			ci->role_registered = IMX_USB_MODE_HOST;
 			ret = regulator_enable(ci->vbus);
 			if (ret)
 				return ret;
@@ -185,7 +185,7 @@ static int ci_register_role(struct imx_chipidea *ci)
 
 	if (ci->mode == IMX_USB_MODE_DEVICE) {
 		if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC)) {
-			ci->role_registered = 1;
+			ci->role_registered = IMX_USB_MODE_DEVICE;
 			return ci_udc_register(ci->dev, ci->base);
 		} else {
 			dev_err(ci->dev, "USB device support not available\n");

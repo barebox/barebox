@@ -640,7 +640,7 @@ static int imx_usbmisc_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct imx_usb_misc_data *devtype;
-	struct imx_usb_misc_priv *usbmisc = dev->priv;
+	struct imx_usb_misc_priv *usbmisc;
 	int ret;
 
 	ret = dev_get_drvdata(dev, (const void **)&devtype);
@@ -654,6 +654,8 @@ static int imx_usbmisc_probe(struct device_d *dev)
 	usbmisc = xzalloc(sizeof(*usbmisc));
 	usbmisc->base = IOMEM(iores->start);
 	usbmisc->data = devtype;
+
+	dev->priv = usbmisc;
 
 	return 0;
 }

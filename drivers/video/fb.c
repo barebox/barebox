@@ -96,7 +96,8 @@ int fb_enable(struct fb_info *info)
 	if (ret)
 		return ret;
 
-	info->fbops->fb_enable(info);
+	if (info->fbops->fb_enable)
+		info->fbops->fb_enable(info);
 
 	info->enabled = true;
 
@@ -108,7 +109,8 @@ int fb_disable(struct fb_info *info)
 	if (!info->enabled)
 		return 0;
 
-	info->fbops->fb_disable(info);
+	if (info->fbops->fb_disable)
+		info->fbops->fb_disable(info);
 
 	fb_release_shadowfb(info);
 

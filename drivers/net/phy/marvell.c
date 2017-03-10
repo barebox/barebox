@@ -31,6 +31,22 @@
 #define MII_M1011_PHY_STATUS_RESOLVED	BIT(11)
 #define MII_M1011_PHY_STATUS_LINK	BIT(10)
 
+#define MII_M1111_PHY_LED_CONTROL	0x18
+#define MII_M1111_PHY_LED_DIRECT	0x4100
+#define MII_M1111_PHY_LED_COMBINE	0x411c
+#define MII_M1111_PHY_EXT_CR		0x14
+#define MII_M1111_RX_DELAY		0x80
+#define MII_M1111_TX_DELAY		0x2
+#define MII_M1111_PHY_EXT_SR		0x1b
+
+#define MII_M1111_HWCFG_MODE_MASK		0xf
+#define MII_M1111_HWCFG_MODE_COPPER_RGMII	0xb
+#define MII_M1111_HWCFG_MODE_FIBER_RGMII	0x3
+#define MII_M1111_HWCFG_MODE_SGMII_NO_CLK	0x4
+#define MII_M1111_HWCFG_MODE_COPPER_RTBI	0x9
+#define MII_M1111_HWCFG_FIBER_COPPER_AUTO	0x8000
+#define MII_M1111_HWCFG_FIBER_COPPER_RES	0x2000
+
 #define MII_M1111_COPPER		0
 #define MII_M1111_FIBER			1
 
@@ -402,6 +418,107 @@ static int m88e1540_config_init(struct phy_device *phydev)
 	return marvell_config_init(phydev);
 }
 
+static int m88e1111_config_init(struct phy_device *phydev)
+{
+	int err;
+	int temp;
+
+	if ((phydev->interface == PHY_INTERFACE_MODE_RGMII) ||
+	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID) ||
+	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID) ||
+	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID)) {
+
+		temp = phy_read(phydev, MII_M1111_PHY_EXT_CR);
+		if (temp < 0)
+			return temp;
+
+		if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID) {
+			temp |= (MII_M1111_RX_DELAY | MII_M1111_TX_DELAY);
+		} else if (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID) {
+			temp &= ~MII_M1111_TX_DELAY;
+			temp |= MII_M1111_RX_DELAY;
+		} else if (phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID) {
+			temp &= ~MII_M1111_RX_DELAY;
+			temp |= MII_M1111_TX_DELAY;
+		}
+
+		err = phy_write(phydev, MII_M1111_PHY_EXT_CR, temp);
+		if (err < 0)
+			return err;
+
+		temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
+		if (temp < 0)
+			return temp;
+
+		temp &= ~(MII_M1111_HWCFG_MODE_MASK);
+
+		if (temp & MII_M1111_HWCFG_FIBER_COPPER_RES)
+			temp |= MII_M1111_HWCFG_MODE_FIBER_RGMII;
+		else
+			temp |= MII_M1111_HWCFG_MODE_COPPER_RGMII;
+
+		err = phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
+		if (err < 0)
+			return err;
+	}
+
+	if (phydev->interface == PHY_INTERFACE_MODE_SGMII) {
+		temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
+		if (temp < 0)
+			return temp;
+
+		temp &= ~(MII_M1111_HWCFG_MODE_MASK);
+		temp |= MII_M1111_HWCFG_MODE_SGMII_NO_CLK;
+		temp |= MII_M1111_HWCFG_FIBER_COPPER_AUTO;
+
+		err = phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
+		if (err < 0)
+			return err;
+	}
+
+	if (phydev->interface == PHY_INTERFACE_MODE_RTBI) {
+		temp = phy_read(phydev, MII_M1111_PHY_EXT_CR);
+		if (temp < 0)
+			return temp;
+		temp |= (MII_M1111_RX_DELAY | MII_M1111_TX_DELAY);
+		err = phy_write(phydev, MII_M1111_PHY_EXT_CR, temp);
+		if (err < 0)
+			return err;
+
+		temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
+		if (temp < 0)
+			return temp;
+		temp &= ~(MII_M1111_HWCFG_MODE_MASK | MII_M1111_HWCFG_FIBER_COPPER_RES);
+		temp |= 0x7 | MII_M1111_HWCFG_FIBER_COPPER_AUTO;
+		err = phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
+		if (err < 0)
+			return err;
+
+		/* soft reset */
+		err = phy_write(phydev, MII_BMCR, BMCR_RESET);
+		if (err < 0)
+			return err;
+		do
+			temp = phy_read(phydev, MII_BMCR);
+		while (temp & BMCR_RESET);
+
+		temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
+		if (temp < 0)
+			return temp;
+		temp &= ~(MII_M1111_HWCFG_MODE_MASK | MII_M1111_HWCFG_FIBER_COPPER_RES);
+		temp |= MII_M1111_HWCFG_MODE_COPPER_RTBI | MII_M1111_HWCFG_FIBER_COPPER_AUTO;
+		err = phy_write(phydev, MII_M1111_PHY_EXT_SR, temp);
+		if (err < 0)
+			return err;
+	}
+
+	err = marvell_of_reg_init(phydev);
+	if (err < 0)
+		return err;
+
+	return phy_write(phydev, MII_BMCR, BMCR_RESET);
+}
+
 static int m88e1121_config_init(struct phy_device *phydev)
 {
 	u16 reg;
@@ -501,6 +618,15 @@ static int m88e1510_config_init(struct phy_device *phydev)
 }
 
 static struct phy_driver marvell_drivers[] = {
+	{
+		.phy_id = MARVELL_PHY_ID_88E1111,
+		.phy_id_mask = MARVELL_PHY_ID_MASK,
+		.drv.name = "Marvell 88E1111",
+		.features = PHY_GBIT_FEATURES,
+		.config_init = &m88e1111_config_init,
+		.config_aneg = &genphy_config_aneg,
+		.read_status = &marvell_read_status,
+	},
 	{
 		.phy_id = MARVELL_PHY_ID_88E1121R,
 		.phy_id_mask = MARVELL_PHY_ID_MASK,

@@ -36,6 +36,7 @@
 #include <environment.h>
 #include <globalvar.h>
 #include <restart.h>
+#include <console_countdown.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>
 #include <usb/fastboot.h>
@@ -814,6 +815,8 @@ static void fb_run_command(struct usb_ep *ep, struct usb_request *req, const cha
 	void (*func_cb)(struct usb_ep *ep, struct usb_request *req, const char *cmd) = NULL;
 	struct f_fastboot *f_fb = req->context;
 	int i;
+
+	console_countdown_abort();
 
 	for (i = 0; i < num_commands; i++) {
 		if (!strcmp_l1(cmds[i].cmd, cmd)) {

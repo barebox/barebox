@@ -41,6 +41,7 @@
 #include <linux/err.h>
 #include <mach/bbu.h>
 #include <libfile.h>
+#include <gpio.h>
 
 static struct omap_barebox_part baltos_barebox_part = {
 	.nand_offset = SZ_512K,
@@ -108,6 +109,17 @@ static int baltos_read_eeprom(void)
 
 	sprintf(var_buf, "%d", hw_param.SystemId);
 	globalvar_add_simple("board.id", var_buf);
+
+	/* enable mPCIe slot */
+	gpio_direction_output(100, 1);
+
+	/* configure output signals of the external GPIO controller */
+	if (hw_param.SystemId == 210 || hw_param.SystemId == 211) {
+		gpio_direction_output(132, 0);
+		gpio_direction_output(133, 0);
+		gpio_direction_output(134, 0);
+		gpio_direction_output(135, 0);
+	}
 
 	return 0;
 }

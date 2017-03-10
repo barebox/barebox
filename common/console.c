@@ -296,7 +296,7 @@ static int fops_flush(struct cdev *dev)
 	return 0;
 }
 
-static int fops_write(struct cdev* dev, const void* buf, size_t count,
+static ssize_t fops_write(struct cdev* dev, const void* buf, size_t count,
 		      loff_t offset, ulong flags)
 {
 	struct console_device *priv = dev->priv;

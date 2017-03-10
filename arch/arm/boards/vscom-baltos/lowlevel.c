@@ -77,7 +77,7 @@ extern char __dtb_am335x_baltos_minimal_start[];
  *
  * @return void
  */
-static noinline int baltos_sram_init(void)
+static noinline void baltos_sram_init(void)
 {
 	uint32_t sdram_size;
 	void *fdt;

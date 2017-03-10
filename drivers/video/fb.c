@@ -12,23 +12,25 @@ static int fb_ioctl(struct cdev* cdev, int req, void *data)
 {
 	struct fb_info *info = cdev->priv;
 	struct fb_info **fb;
+	int ret;
 
 	switch (req) {
 	case FBIOGET_SCREENINFO:
 		fb = data;
 		*fb = info;
+		ret = 0;
 		break;
 	case FBIO_ENABLE:
-		info->fbops->fb_enable(info);
+		ret = fb_enable(info);
 		break;
 	case FBIO_DISABLE:
-		info->fbops->fb_disable(info);
+		ret = fb_disable(info);
 		break;
 	default:
 		return -ENOSYS;
 	}
 
-	return 0;
+	return ret;
 }
 
 static int fb_close(struct cdev *cdev)

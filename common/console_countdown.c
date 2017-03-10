@@ -35,7 +35,7 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 	countdown = timeout_s;
 
 	if (!(flags & CONSOLE_COUNTDOWN_SILENT))
-		printf("%2d", countdown--);
+		printf("%4d", countdown--);
 
 	do {
 		if (tstc()) {
@@ -50,7 +50,7 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 		}
 		if (!(flags & CONSOLE_COUNTDOWN_SILENT) &&
 		    is_timeout(second, SECOND)) {
-			printf("\b\b%2d", countdown--);
+			printf("\b\b\b\b%4d", countdown--);
 			second += SECOND;
 		}
 	} while (!is_timeout(start, timeout_s * SECOND));

@@ -101,7 +101,8 @@ static efi_handle_t *efi_find_parent(efi_handle_t *handle)
 	struct efi_open_protocol_information_entry *entry_buffer;
 	unsigned long entry_count;
 
-	ret = efi_locate_handle(all_handles, NULL, NULL, &handle_count, &handles);
+	ret = efi_locate_handle(by_protocol, &efi_device_path_protocol_guid,
+			NULL, &handle_count, &handles);
 	if (ret)
 		return NULL;
 
@@ -243,7 +244,8 @@ void efi_register_devices(void)
 	struct efi_device **efidevs;
 	int registered;
 
-	ret = efi_locate_handle(all_handles, NULL, NULL, &handle_count, &handles);
+	ret = efi_locate_handle(by_protocol, &efi_device_path_protocol_guid,
+			NULL, &handle_count, &handles);
 	if (ret)
 		return;
 

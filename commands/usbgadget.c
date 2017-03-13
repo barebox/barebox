@@ -31,10 +31,10 @@
 
 static int do_usbgadget(int argc, char *argv[])
 {
-	int opt;
+	int opt, ret;
 	int acm = 1, create_serial = 0;
 	char *fastboot_opts = NULL, *dfu_opts = NULL;
-	struct f_multi_opts opts = {};
+	struct f_multi_opts *opts;
 
 	while ((opt = getopt(argc, argv, "asdA:D:")) > 0) {
 		switch (opt) {
@@ -73,19 +73,26 @@ static int do_usbgadget(int argc, char *argv[])
 		return -EINVAL;
 	}
 
+	opts = xzalloc(sizeof(*opts));
+	opts->release = usb_multi_opts_release;
+
 	if (fastboot_opts) {
-		opts.fastboot_opts.files = file_list_parse(fastboot_opts);
+		opts->fastboot_opts.files = file_list_parse(fastboot_opts);
 	}
 
 	if (dfu_opts) {
-		opts.dfu_opts.files = file_list_parse(dfu_opts);
+		opts->dfu_opts.files = file_list_parse(dfu_opts);
 	}
 
 	if (create_serial) {
-		opts.create_acm = acm;
+		opts->create_acm = acm;
 	}
 
-	return usb_multi_register(&opts);
+	ret = usb_multi_register(opts);
+	if (ret)
+		usb_multi_opts_release(opts);
+
+	return ret;
 }
 
 BAREBOX_CMD_HELP_START(usbgadget)

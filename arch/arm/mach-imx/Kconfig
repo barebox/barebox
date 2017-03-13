@@ -309,7 +309,6 @@ config MACH_TX6X
 config MACH_SABRELITE
 	bool "Freescale i.MX6 Sabre Lite"
 	select ARCH_IMX6
-	select HAVE_PBL_MULTI_IMAGES
 
 config MACH_SABRESD
 	bool "Freescale i.MX6 SabreSD"
@@ -656,13 +655,6 @@ endif
 endmenu
 
 menu "i.MX specific settings"
-
-config ARCH_IMX_USBLOADER
-	bool "compile imx-usb-loader"
-	help
-	  imx-usb-loader is a tool to upload and start imximages to an i.MX SoC
-	  in ROM boot mode. It requires libusb, so make sure you have the libusb
-	  devel package installed on your machine.
 
 config IMX_IIM
 	tristate "IIM fusebox device"

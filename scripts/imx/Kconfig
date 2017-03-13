@@ -1,0 +1,7 @@
+config ARCH_IMX_USBLOADER
+	depends on ARCH_MXS || ARCH_IMX
+	bool "compile imx-usb-loader"
+	help
+	  imx-usb-loader is a tool to upload and start imximages to an i.MX SoC
+	  in ROM boot mode. It requires libusb, so make sure you have the libusb
+	  devel package installed on your machine.

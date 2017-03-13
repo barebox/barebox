@@ -62,6 +62,7 @@ struct iim_priv {
 
 struct imx_iim_drvdata {
 	void (*supply)(int enable);
+	char nregs[8];
 };
 
 static struct iim_priv *imx_iim;
@@ -314,7 +315,7 @@ static struct regmap_bus imx_iim_regmap_bus = {
 	.reg_read = imx_iim_reg_read,
 };
 
-static int imx_iim_add_bank(struct iim_priv *iim, int num)
+static int imx_iim_add_bank(struct iim_priv *iim, int num, int nregs)
 {
 	struct iim_bank *bank;
 	char *name;
@@ -331,7 +332,7 @@ static int imx_iim_add_bank(struct iim_priv *iim, int num)
 	bank->map_config.reg_bits = 8,
 	bank->map_config.val_bits = 8,
 	bank->map_config.reg_stride = 1,
-	bank->map_config.max_register = 31,
+	bank->map_config.max_register = (nregs - 1),
 	bank->map_config.name = xasprintf("bank%d", num);
 
 	bank->map = regmap_init(&iim->dev, &imx_iim_regmap_bus, bank, &bank->map_config);
@@ -459,6 +460,7 @@ static int imx_iim_probe(struct device_d *dev)
 	struct iim_priv *iim;
 	int i, ret;
 	struct imx_iim_drvdata *drvdata = NULL;
+	char *nregs = NULL;
 
 	if (imx_iim)
 		return -EBUSY;
@@ -486,8 +488,16 @@ static int imx_iim_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	iim->base = IOMEM(iores->start);
 
+	if (drvdata && drvdata->nregs[0])
+		nregs = drvdata->nregs;
+
 	for (i = 0; i < IIM_NUM_BANKS; i++) {
-		ret = imx_iim_add_bank(iim, i);
+		int n = nregs ? nregs[i] : 32;
+
+		if (!n)
+			continue;
+
+		ret = imx_iim_add_bank(iim, i, n);
 		if (ret)
 			return ret;
 	}
@@ -529,14 +539,21 @@ static void imx53_iim_supply(int enable)
 }
 
 static struct imx_iim_drvdata imx27_drvdata = {
+	.nregs = { 32, 32 },
+};
+
+static struct imx_iim_drvdata imx25_imx31_imx35_drvdata = {
+	.nregs = { 32, 32, 32 },
 };
 
 static struct imx_iim_drvdata imx51_drvdata = {
 	.supply = imx51_iim_supply,
+	.nregs = { 32, 32, 32, 32 },
 };
 
 static struct imx_iim_drvdata imx53_drvdata = {
 	.supply = imx53_iim_supply,
+	.nregs = { 32, 32, 32, 32, 16 },
 };
 
 static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
@@ -547,8 +564,17 @@ static __maybe_unused struct of_device_id imx_iim_dt_ids[] = {
 		.compatible = "fsl,imx51-iim",
 		.data = &imx51_drvdata,
 	}, {
+		.compatible = "fsl,imx35-iim",
+		.data = &imx25_imx31_imx35_drvdata,
+	}, {
+		.compatible = "fsl,imx31-iim",
+		.data = &imx25_imx31_imx35_drvdata,
+	}, {
 		.compatible = "fsl,imx27-iim",
 		.data = &imx27_drvdata,
+	}, {
+		.compatible = "fsl,imx25-iim",
+		.data = &imx25_imx31_imx35_drvdata,
 	}, {
 		/* sentinel */
 	}

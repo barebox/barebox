@@ -45,6 +45,12 @@
 #define FT_DCD	0xee
 #define FT_LOAD_ONLY	0x00
 
+/*
+ * comment from libusb:
+ * As per the USB 3.0 specs, the current maximum limit for the depth is 7.
+ */
+#define MAX_USB_PORTS	7
+
 int verbose;
 static struct libusb_device_handle *usb_dev_handle;
 static struct usb_id *usb_id;
@@ -63,6 +69,9 @@ struct mach_id {
 #define HDR_MX53	2
 	unsigned char header_type;
 	unsigned short max_transfer;
+#define DEV_IMX		0
+#define DEV_MXS		1
+	unsigned char dev_type;
 };
 
 struct usb_work {
@@ -81,7 +90,9 @@ static const struct mach_id imx_ids[] = {
 		.vid = 0x066f,
 		.pid = 0x3780,
 		.name = "i.MX23",
-		.mode = MODE_BULK,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
+		.dev_type = DEV_MXS,
 	}, {
 		.vid = 0x15a2,
 		.pid = 0x0030,
@@ -114,6 +125,8 @@ static const struct mach_id imx_ids[] = {
 		.vid = 0x15a2,
 		.pid = 0x004f,
 		.name = "i.MX28",
+		.max_transfer = 1024,
+		.dev_type = DEV_MXS,
 	}, {
 		.vid = 0x15a2,
 		.pid = 0x0052,
@@ -181,6 +194,17 @@ struct sdp_command  {
 	uint8_t rsvd;
 } __attribute__((packed));
 
+#define MXS_CMD_FW_DOWNLOAD    0x02
+struct mxs_command {
+	uint32_t sign;		/* Signature */
+	uint32_t tag;		/* Tag */
+	uint32_t size;		/* Payload size */
+	uint8_t flags;		/* Flags (host to device) */
+	uint8_t rsvd[2];	/* Reserved */
+	uint8_t cmd;		/* Firmware download */
+	uint32_t dw_size;	/* Download size */
+} __attribute__((packed));
+
 static const struct mach_id *imx_device(unsigned short vid, unsigned short pid)
 {
 	int i;
@@ -197,9 +221,66 @@ static const struct mach_id *imx_device(unsigned short vid, unsigned short pid)
 	return NULL;
 }
 
-static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **pp_id)
+static int device_location_equal(libusb_device *device, const char *location)
+{
+	uint8_t port_path[MAX_USB_PORTS];
+	uint8_t dev_bus;
+	int path_step, path_len;
+	int result = 0;
+	char *ptr, *loc;
+
+	/* strtok need non const char */
+	loc = strdup(location);
+
+	path_len = libusb_get_port_numbers(device, port_path, MAX_USB_PORTS);
+	if (path_len == LIBUSB_ERROR_OVERFLOW) {
+		fprintf(stderr, "cannot determine path to usb device! (more than %i ports in path)\n",
+			MAX_USB_PORTS);
+		goto done;
+	}
+
+	ptr = strtok(loc, "-");
+	if (ptr == NULL) {
+		printf("no '-' in path\n");
+		goto done;
+	}
+
+	dev_bus = libusb_get_bus_number(device);
+	/* check bus mismatch */
+	if (atoi(ptr) != dev_bus)
+		goto done;
+
+	path_step = 0;
+	while (path_step < MAX_USB_PORTS) {
+		ptr = strtok(NULL, ".");
+
+		/* no more tokens in path */
+		if (ptr == NULL)
+			break;
+
+		/* path mismatch at some step */
+		if (path_step < path_len && atoi(ptr) != port_path[path_step])
+			break;
+
+		path_step++;
+	};
+
+	/* walked the full path, all elements match */
+	if (path_step == path_len)
+		result = 1;
+	else
+		fprintf(stderr, " excluded by device path option\n");
+
+done:
+	free(loc);
+	return result;
+}
+
+static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **pp_id,
+		const char *location)
 {
 	int i = 0;
+	int err;
 	const struct mach_id *p;
 
 	for (;;) {
@@ -217,10 +298,24 @@ static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **
 		}
 
 		p = imx_device(desc.idVendor, desc.idProduct);
-		if (p) {
-			*pp_id = p;
-			return dev;
+		if (!p)
+			continue;
+
+		err = libusb_open(dev, &usb_dev_handle);
+		if (err) {
+			fprintf(stderr, "Could not open device vid=0x%x pid=0x%x err=%d\n",
+				p->vid, p->pid, err);
+			continue;
 		}
+
+		if (location && !device_location_equal(dev, location)) {
+			libusb_close(usb_dev_handle);
+			usb_dev_handle = NULL;
+			continue;
+		}
+
+		*pp_id = p;
+		return dev;
 	}
 	*pp_id = NULL;
 
@@ -798,6 +893,98 @@ static int do_dcd_v2_cmd_write(const unsigned char *dcd)
 	return 0;
 }
 
+static int do_dcd_v2_cmd_check(const unsigned char *dcd)
+{
+	uint32_t mask;
+	uint32_t poll_count = 0;
+	int bytes;
+	enum imx_dcd_v2_check_cond cond;
+	struct imx_dcd_v2_check *check = (struct imx_dcd_v2_check *) dcd;
+	switch (ntohs(check->length)) {
+	case 12:
+		/* poll indefinitely */
+		poll_count = 0xffffffff;
+		break;
+	case 16:
+		poll_count = ntohl(check->count);
+		if (poll_count == 0)
+			/* this command behaves as for NOP */
+			return 0;
+		break;
+	default:
+		fprintf(stderr, "Error: invalid DCD check length\n");
+		return -1;
+	}
+
+	switch (check->param & 7) {
+	case 1:
+	case 2:
+	case 4:
+		bytes = check->param & 7;
+		break;
+	default:
+		fprintf(stderr, "Error: invalid DCD check size\n");
+		return -1;
+	}
+
+	switch ((check->param & 0xf8) >> 3) {
+	case check_all_bits_clear:
+	case check_all_bits_set:
+	case check_any_bit_clear:
+	case check_any_bit_set:
+		cond = (check->param & 0xf8) >> 3;
+		break;
+	default:
+		fprintf(stderr, "Error: invalid DCD check condition\n");
+		return -1;
+	}
+
+	mask = ntohl(check->mask);
+
+	fprintf(stderr, "DCD check condition %i on address 0x%x\n",
+		cond, ntohl(check->addr));
+	/* Reduce the poll count to some arbitrary practical limit.
+	   Polling via SRP commands will be much slower compared to
+	   polling when DCD is interpreted by the SOC microcode.
+	*/
+	if (poll_count > 1000)
+		poll_count = 1000;
+
+	while (poll_count > 0) {
+		uint32_t data = 0;
+		int ret = read_memory(ntohl(check->addr), &data, bytes);
+		if (ret < 0)
+			return ret;
+
+		data &= mask;
+
+		switch (cond) {
+		case check_all_bits_clear:
+			if (data != 0)
+				return 0;
+			break;
+		case check_all_bits_set:
+			if (data != mask)
+				return 0;
+			break;
+		case check_any_bit_clear:
+			if (data == mask)
+				return 0;
+			break;
+		case check_any_bit_set:
+			if (data == 0)
+				return 0;
+			break;
+		}
+		poll_count--;
+	}
+
+	fprintf(stderr, "Error: timeout waiting for DCD check condition %i "
+		"on address 0x%08x to match 0x%08x\n", cond,
+		ntohl(check->addr), ntohl(check->mask));
+	return -1;
+}
+
 static int process_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 			       const unsigned char *file_start, unsigned cnt)
 {
@@ -850,8 +1037,7 @@ static int process_dcd_table_ivt(const struct imx_flash_header_v2 *hdr,
 			ret = do_dcd_v2_cmd_write(dcd);
 			break;
 		case TAG_CHECK:
-			fprintf(stderr, "DCD check not implemented yet\n");
-			usleep(50000);
+			ret = do_dcd_v2_cmd_check(dcd);
 			break;
 		case TAG_UNLOCK:
 			fprintf(stderr, "DCD unlock not implemented yet\n");
@@ -1273,6 +1459,66 @@ static int write_mem(const struct config_data *data, uint32_t addr,
 	return modify_memory(addr, val, width, set_bits, clear_bits);
 }
 
+/* MXS section */
+static int mxs_load_file(libusb_device_handle *dev, uint8_t *data, int size)
+{
+	static struct mxs_command dl_command;
+	int last_trans, err;
+	void *p;
+	int cnt;
+
+	dl_command.sign = htonl(0x424c5443); /* Signature: BLTC */
+	dl_command.tag = htonl(0x1);
+	dl_command.size = htonl(size);
+	dl_command.flags = 0;
+	dl_command.rsvd[0] = 0;
+	dl_command.rsvd[1] = 0;
+	dl_command.cmd = MXS_CMD_FW_DOWNLOAD;
+	dl_command.dw_size = htonl(size);
+
+	err = transfer(1, (unsigned char *) &dl_command, 20, &last_trans);
+	if (err) {
+		printf("transfer error at init step: err=%i, last_trans=%i\n",
+		       err, last_trans);
+		return err;
+	}
+
+	p = data;
+	cnt = size;
+
+	while (1) {
+		int now = get_min(cnt, usb_id->mach_id->max_transfer);
+
+		if (!now)
+			break;
+
+		err = transfer(2, p, now, &now);
+		if (err) {
+			printf("dl_command err=%i, last_trans=%i\n", err, now);
+			return err;
+		}
+
+		p += now;
+		cnt -= now;
+	}
+
+	return err;
+}
+
+static int mxs_work(struct usb_work *curr)
+{
+	unsigned fsize = 0;
+	unsigned char *buf = NULL;
+	int ret;
+
+	ret = read_file(curr->filename, &buf, &fsize);
+	if (ret < 0)
+		return ret;
+
+	return mxs_load_file(usb_dev_handle, buf, fsize);
+}
+/* end of mxs section */
+
 static int parse_initfile(const char *filename)
 {
 	struct config_data data = {
@@ -1287,6 +1533,7 @@ static void usage(const char *prgname)
 	fprintf(stderr, "usage: %s [OPTIONS] [FILENAME]\n\n"
 		"-c           check correctness of flashed image\n"
 		"-i <cfgfile> Specify custom SoC initialization file\n"
+		"-p <devpath> Specify device path: <bus>-<port>[.<port>]...\n"
 		"-s           skip DCD included in image\n"
 		"-v           verbose (give multiple times to increase)\n"
 		"-h           this help\n", prgname);
@@ -1307,10 +1554,11 @@ int main(int argc, char *argv[])
 	struct usb_work w = {};
 	int opt;
 	char *initfile = NULL;
+	char *devpath = NULL;
 
 	w.do_dcd_once = 1;
 
-	while ((opt = getopt(argc, argv, "cvhi:s")) != -1) {
+	while ((opt = getopt(argc, argv, "cvhi:p:s")) != -1) {
 		switch (opt) {
 		case 'c':
 			verify = 1;
@@ -1322,6 +1570,9 @@ int main(int argc, char *argv[])
 			usage(argv[0]);
 		case 'i':
 			initfile = optarg;
+			break;
+		case 'p':
+			devpath = optarg;
 			break;
 		case 's':
 			w.do_dcd_once = 0;
@@ -1350,16 +1601,9 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	dev = find_imx_dev(devs, &mach);
+	dev = find_imx_dev(devs, &mach, devpath);
 	if (!dev) {
 		fprintf(stderr, "no supported device found\n");
-		goto out;
-	}
-
-	err = libusb_open(dev, &usb_dev_handle);
-	if (err) {
-		fprintf(stderr, "Could not open device vid=0x%x pid=0x%x err=%d\n",
-				mach->vid, mach->pid, err);
 		goto out;
 	}
 
@@ -1383,6 +1627,11 @@ int main(int argc, char *argv[])
 	}
 
 	usb_id->mach_id = mach;
+
+	if (mach->dev_type == DEV_MXS) {
+		ret = mxs_work(&w);
+		goto out;
+	}
 
 	err = do_status();
 	if (err) {

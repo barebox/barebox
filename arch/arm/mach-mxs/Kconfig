@@ -143,11 +143,4 @@ endif
 
 endmenu
 
-config ARCH_MXS_USBLOADER
-	bool "compile mxs-usb-loader"
-	help
-	  mxs-usb-loader is a tool to upload and start mxs bootstream images to an
-	  i.MX SoC in ROM boot mode. It requires libusb, so make sure you have the libusb
-	  devel package installed on your machine.
-
 endif

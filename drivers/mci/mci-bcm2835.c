@@ -543,9 +543,18 @@ static int bcm2835_mci_probe(struct device_d *hw_dev)
 	return mci_register(&host->mci);
 }
 
+static __maybe_unused struct of_device_id bcm2835_mci_compatible[] = {
+	{
+		.compatible = "brcm,bcm2835-sdhci",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d bcm2835_mci_driver = {
 	.name = "bcm2835_mci",
 	.probe = bcm2835_mci_probe,
+	.of_compatible = DRV_OF_COMPAT(bcm2835_mci_compatible),
 };
 
 static int bcm2835_mci_add(void)

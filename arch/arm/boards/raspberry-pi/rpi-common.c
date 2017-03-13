@@ -73,10 +73,9 @@ static int rpi_get_arm_mem(u32 *size)
 	return 0;
 }
 
-static int rpi_register_clkdev(u32 clock_id, const char *name)
+static struct clk *rpi_register_firmare_clock(u32 clock_id, const char *name)
 {
 	BCM2835_MBOX_STACK_ALIGN(struct msg_get_clock_rate, msg);
-	struct clk *clk;
 	int ret;
 
 	BCM2835_MBOX_INIT_HDR(msg);
@@ -85,16 +84,9 @@ static int rpi_register_clkdev(u32 clock_id, const char *name)
 
 	ret = bcm2835_mbox_call_prop(BCM2835_MBOX_PROP_CHAN, &msg->hdr);
 	if (ret)
-		return ret;
+		return ERR_PTR(ret);
 
-	clk = clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
-	if (IS_ERR(clk))
-		return PTR_ERR(clk);
-
-	if (!clk_register_clkdev(clk, NULL, name))
-		return -ENODEV;
-
-	return 0;
+	return clk_fixed(name, msg->get_clock_rate.body.resp.rate_hz);
 }
 
 void rpi_set_usbethaddr(void)
@@ -146,6 +138,13 @@ void rpi_add_led(void)
 		led_set_trigger(LED_TRIGGER_HEARTBEAT, &l->led);
 }
 
+void rpi_b_init(void)
+{
+	rpi_leds[0].gpio = 16;
+	rpi_leds[0].active_low = 1;
+	rpi_set_usbethaddr();
+}
+
 void rpi_b_plus_init(void)
 {
 	rpi_leds[0].gpio = 47;
@@ -153,12 +152,39 @@ void rpi_b_plus_init(void)
 	rpi_set_usbethaddr();
 }
 
+/* See comments in mbox.h for data source */
+const struct rpi_model rpi_models_old_scheme[] = {
+	RPI_MODEL(0, "Unknown model", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_2, "Model B (no P5)", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C0_3, "Model B (no P5)", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_4, "Model B", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_5, "Model B", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_I2C1_6, "Model B", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_A_7, "Model A", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_A_8, "Model A", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_A_9, "Model A", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_d, "Model B rev2", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_e, "Model B rev2", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_f, "Model B rev2", rpi_b_init),
+	RPI_MODEL(BCM2835_BOARD_REV_B_PLUS, "Model B+", rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_CM, "Compute Module", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS, "Model A+", NULL),
+};
+
+const struct rpi_model rpi_models_new_scheme[] = {
+	RPI_MODEL(0, "Unknown model", NULL),
+	RPI_MODEL(BCM2836_BOARD_REV_2_B, "2 Model B", rpi_b_plus_init),
+};
+
 static int rpi_board_rev = 0;
+const struct rpi_model *model;
 
 static void rpi_get_board_rev(void)
 {
 	int ret;
 	char *name;
+	const struct rpi_model *rpi_models;
+	size_t rpi_models_size;
 
 	BCM2835_MBOX_STACK_ALIGN(struct msg_get_board_rev, msg);
 	BCM2835_MBOX_INIT_HDR(msg);
@@ -183,10 +209,17 @@ static void rpi_get_board_rev(void)
 	 * http://www.raspberrypi.org/forums/viewtopic.php?f=31&t=20594
 	 */
 	rpi_board_rev = msg->get_board_rev.body.resp.rev;
-	if (rpi_board_rev & 0x800000)
+	if (rpi_board_rev & 0x800000) {
 		rpi_board_rev = (rpi_board_rev >> 4) & 0xff;
-	else
+		rpi_models = rpi_models_new_scheme;
+		rpi_models_size = ARRAY_SIZE(rpi_models_new_scheme);
+
+	} else {
 		rpi_board_rev &= 0xff;
+		rpi_models = rpi_models_old_scheme;
+		rpi_models_size = ARRAY_SIZE(rpi_models_old_scheme);
+	}
+
 	if (rpi_board_rev >= rpi_models_size) {
 		printf("RPI: Board rev %u outside known range\n",
 		       rpi_board_rev);
@@ -201,8 +234,8 @@ static void rpi_get_board_rev(void)
 	if (!rpi_board_rev)
 		goto unknown_rev;
 
-	name = basprintf("RaspberryPi %s %s",
-			   rpi_models[rpi_board_rev].name, rpi_model_string);
+	model = &rpi_models[rpi_board_rev];
+	name = basprintf("RaspberryPi %s", model->name);
 	barebox_set_model(name);
 	free(name);
 
@@ -210,17 +243,15 @@ static void rpi_get_board_rev(void)
 
 unknown_rev:
 	rpi_board_rev = 0;
-	name = basprintf("RaspberryPi %s", rpi_model_string);
-	barebox_set_model(name);
-	free(name);
+	barebox_set_model("RaspberryPi (unknown rev)");
 }
 
 static void rpi_model_init(void)
 {
-	if (!rpi_models[rpi_board_rev].init)
+	if (!model->init)
 		return;
 
-	rpi_models[rpi_board_rev].init();
+	model->init();
 	rpi_add_led();
 }
 
@@ -239,19 +270,27 @@ static int rpi_mem_init(void)
 }
 mem_initcall(rpi_mem_init);
 
-static int rpi_console_init(void)
+static int rpi_postcore_init(void)
 {
 	rpi_get_board_rev();
 	barebox_set_hostname("rpi");
 
-	bcm2835_register_uart();
 	return 0;
 }
-console_initcall(rpi_console_init);
+postcore_initcall(rpi_postcore_init);
 
 static int rpi_clock_init(void)
 {
-	rpi_register_clkdev(BCM2835_MBOX_CLOCK_ID_EMMC, "bcm2835_mci0");
+	struct clk *clk;
+
+	clk = rpi_register_firmare_clock(BCM2835_MBOX_CLOCK_ID_EMMC,
+					 "bcm2835_mci0");
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	clk_register_clkdev(clk, NULL, "20300000.sdhci");
+	clk_register_clkdev(clk, NULL, "3f300000.sdhci");
+
 	return 0;
 }
 postconsole_initcall(rpi_clock_init);
@@ -285,7 +324,6 @@ static int rpi_env_init(void)
 static int rpi_devices_init(void)
 {
 	rpi_model_init();
-	bcm2835_register_mci();
 	bcm2835_register_fb();
 	armlinux_set_architecture(MACH_TYPE_BCM2708);
 	rpi_env_init();

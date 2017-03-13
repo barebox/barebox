@@ -28,31 +28,7 @@
  * This file is manually generated.
  */
 
-#ifdef CONFIG_ARCH_BCM2835
-#define BCM2835_PERI_BASE	0x20000000
-#define BCM2835_CACHELINE_SIZE	32
-#elif defined CONFIG_ARCH_BCM2836
-#define BCM2835_PERI_BASE	0x3f000000
 #define BCM2835_CACHELINE_SIZE	64
-#else
-#error "no CONFIG_ARCH_BCM283X defined"
-#endif
-
-#define BCM2835_ST_BASE		(BCM2835_PERI_BASE + 0x3000)	/* System Timer */
-#define BCM2835_DMA_BASE	(BCM2835_PERI_BASE + 0x7000)	/* DMA controller */
-#define BCM2835_ARM_BASE	(BCM2835_PERI_BASE + 0xB000)	/* BCM2708 ARM control block */
-#define BCM2835_PM_BASE		(BCM2835_PERI_BASE + 0x100000)	/* Power Management, Reset controller and Watchdog registers */
-#define BCM2835_GPIO_BASE	(BCM2835_PERI_BASE + 0x200000)	/* GPIO */
-#define BCM2835_UART0_BASE	(BCM2835_PERI_BASE + 0x201000)	/* Uart 0 */
-#define BCM2835_MMCI0_BASE	(BCM2835_PERI_BASE + 0x202000)	/* MMC interface */
-#define BCM2835_SPI0_BASE	(BCM2835_PERI_BASE + 0x204000)	/* SPI0 */
-#define BCM2835_BSC0_BASE	(BCM2835_PERI_BASE + 0x205000)	/* BSC0 I2C/TWI */
-#define BCM2835_UART1_BASE	(BCM2835_PERI_BASE + 0x215000)	/* Uart 1 */
-#define BCM2835_EMMC_BASE	(BCM2835_PERI_BASE + 0x300000)	/* eMMC interface */
-#define BCM2835_SMI_BASE	(BCM2835_PERI_BASE + 0x600000)	/* SMI */
-#define BCM2835_BSC1_BASE	(BCM2835_PERI_BASE + 0x804000)	/* BSC1 I2C/TWI */
-#define BCM2835_USB_BASE	(BCM2835_PERI_BASE + 0x980000)	/* DTC_OTG USB controller */
-#define BCM2835_MCORE_BASE	(BCM2835_PERI_BASE + 0x0000)	/* Fake frame buffer device (actually the multicore sync block*/
 
 #endif
 

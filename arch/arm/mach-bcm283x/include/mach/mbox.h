@@ -41,16 +41,15 @@
  */
 
 /* Raw mailbox HW */
+#define ARM_0_MAIL0	0x00
+#define ARM_0_MAIL1	0x20
 
-#define BCM2835_MBOX_PHYSADDR		(BCM2835_ARM_BASE + 0x880)
-
-struct bcm2835_mbox_regs {
-	u32 read;
-	u32 rsvd0[5];
-	u32 status;
-	u32 config;
-	u32 write;
-};
+#define MAIL0_RD	(ARM_0_MAIL0 + 0x00)
+#define MAIL0_POL	(ARM_0_MAIL0 + 0x10)
+#define MAIL0_STA	(ARM_0_MAIL0 + 0x18)
+#define MAIL0_CNF	(ARM_0_MAIL0 + 0x1C)
+#define MAIL1_WRT	(ARM_0_MAIL1 + 0x00)
+#define MAIL1_STA	(ARM_0_MAIL1 + 0x18)
 
 #define BCM2835_MBOX_STATUS_WR_FULL	0x80000000
 #define BCM2835_MBOX_STATUS_RD_EMPTY	0x40000000

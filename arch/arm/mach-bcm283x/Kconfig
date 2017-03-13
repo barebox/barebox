@@ -2,24 +2,43 @@ if ARCH_BCM283X
 
 config ARCH_TEXT_BASE
 	hex
-	default 0x04000000
+	default 0x0
 
 config MACH_RPI_COMMON
 	bool
 
-choice
-	prompt "Broadcom Board type"
+menu "select Broadcom BCM283X boards to be built"
 
 config MACH_RPI
 	bool "RaspberryPi (BCM2835/ARM1176JZF-S)"
-	depends on ARCH_BCM2835
+	select CPU_V6
 	select MACH_RPI_COMMON
 
 config MACH_RPI2
 	bool "RaspberryPi 2 (BCM2836/CORTEX-A7)"
-	depends on ARCH_BCM2836
+	select CPU_V7
 	select MACH_RPI_COMMON
 
+endmenu
+
+config MACH_RPI_DEBUG_UART_BASE
+	hex
+	default 0x20201000 if MACH_RPI_DEBUG_UART_RPI
+	default 0x3f201000 if MACH_RPI_DEBUG_UART_RPI2
+
+if DEBUG_LL
+
+choice
+	prompt "Lowlevel debug UART"
+
+config MACH_RPI_DEBUG_UART_RPI
+	bool "use RaspberryPi 1 compatible base"
+
+config MACH_RPI_DEBUG_UART_RPI2
+	bool "use RaspberryPi 2 and 3 compatible base"
+
 endchoice
+
+endif
 
 endif

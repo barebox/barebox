@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <io.h>
+#include <poweroff.h>
 #include <restart.h>
 #include <init.h>
 
@@ -20,15 +21,7 @@ static void __noreturn highbank_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int restart_register_feature(void)
-{
-	restart_handler_register_fn(highbank_restart_soc);
-
-	return 0;
-}
-coredevice_initcall(restart_register_feature);
-
-void __noreturn poweroff()
+void __noreturn highbank_poweroff(struct poweroff_handler *handler)
 {
 	shutdown_barebox();
 
@@ -37,3 +30,12 @@ void __noreturn poweroff()
 
 	while(1);
 }
+
+static int highbank_init(void)
+{
+	restart_handler_register_fn(highbank_restart_soc);
+	poweroff_handler_register_fn(highbank_poweroff);
+
+	return 0;
+}
+coredevice_initcall(highbank_init);

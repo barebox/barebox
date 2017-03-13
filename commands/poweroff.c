@@ -19,10 +19,11 @@
 
 #include <common.h>
 #include <command.h>
+#include <poweroff.h>
 
 static int cmd_poweroff(int argc, char *argv[])
 {
-	poweroff();
+	poweroff_machine();
 
 	/* Not reached */
 	return 1;

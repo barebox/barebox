@@ -59,6 +59,39 @@ static struct kfifo __console_output_fifo;
 static struct kfifo *console_input_fifo = &__console_input_fifo;
 static struct kfifo *console_output_fifo = &__console_output_fifo;
 
+int console_open(struct console_device *cdev)
+{
+	int ret;
+
+	if (cdev->open && !cdev->open_count) {
+		ret = cdev->open(cdev);
+		if (ret)
+			return ret;
+	}
+
+	cdev->open_count++;
+
+	return 0;
+}
+
+int console_close(struct console_device *cdev)
+{
+	int ret;
+
+	if (!cdev->open_count)
+		return -EBADFD;
+
+	cdev->open_count--;
+
+	if (cdev->close && !cdev->open_count) {
+		ret = cdev->close(cdev);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 int console_set_active(struct console_device *cdev, unsigned flag)
 {
 	int ret, i;
@@ -71,8 +104,15 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 	if (!flag && cdev->f_active && cdev->flush)
 		cdev->flush(cdev);
 
-	if (cdev->set_active) {
-		ret = cdev->set_active(cdev, flag);
+	if (flag == cdev->f_active)
+		return 0;
+
+	if (!flag) {
+		ret = console_close(cdev);
+		if (ret)
+			return ret;
+	} else {
+		ret = console_open(cdev);
 		if (ret)
 			return ret;
 	}
@@ -232,6 +272,40 @@ static int __console_puts(struct console_device *cdev, const char *s)
 	return n;
 }
 
+static int fops_open(struct cdev *cdev, unsigned long flags)
+{
+	struct console_device *priv = cdev->priv;
+
+	return console_open(priv);
+}
+
+static int fops_close(struct cdev *dev)
+{
+	struct console_device *priv = dev->priv;
+
+	return console_close(priv);
+}
+
+static int fops_flush(struct cdev *dev)
+{
+	struct console_device *priv = dev->priv;
+
+	if (priv->flush)
+		priv->flush(priv);
+
+	return 0;
+}
+
+static int fops_write(struct cdev* dev, const void* buf, size_t count,
+		      loff_t offset, ulong flags)
+{
+	struct console_device *priv = dev->priv;
+
+	priv->puts(priv, buf);
+
+	return 0;
+}
+
 int console_register(struct console_device *newcdev)
 {
 	struct device_d *dev = &newcdev->class_dev;
@@ -264,6 +338,8 @@ int console_register(struct console_device *newcdev)
 	if (newcdev->putc && !newcdev->puts)
 		newcdev->puts = __console_puts;
 
+	newcdev->open_count = 0;
+
 	dev_add_param(dev, "active", console_active_set, console_active_get, 0);
 
 	if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_FIRST)) {
@@ -283,6 +359,25 @@ int console_register(struct console_device *newcdev)
 	if (activate)
 		console_set_active(newcdev, CONSOLE_STDIN |
 				CONSOLE_STDOUT | CONSOLE_STDERR);
+
+	/* expose console as device in fs */
+	newcdev->devfs.name = basprintf("%s%d", newcdev->class_dev.name,
+					newcdev->class_dev.id);
+	newcdev->devfs.priv = newcdev;
+	newcdev->devfs.dev = dev;
+	newcdev->devfs.ops = &newcdev->fops;
+	newcdev->devfs.flags = DEVFS_IS_CHARACTER_DEV;
+	newcdev->fops.open = fops_open;
+	newcdev->fops.close = fops_close;
+	newcdev->fops.flush = fops_flush;
+	newcdev->fops.write = fops_write;
+
+	ret = devfs_create(&newcdev->devfs);
+
+	if (ret) {
+		pr_err("device creation failed with %s\n", strerror(-ret));
+		return ret;
+	}
 
 	return 0;
 }

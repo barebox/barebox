@@ -169,6 +169,7 @@ static int do_fbtest(int argc, char *argv[])
 			pattern = patterns[i++ % ARRAY_SIZE(patterns)].func;
 			pattern(sc, color);
 			gu_screen_blit(sc);
+			fb_flush(sc->info);
 
 			start = get_time_ns();
 			while (!is_timeout(start, 2 * SECOND))

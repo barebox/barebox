@@ -12,23 +12,49 @@ static int fb_ioctl(struct cdev* cdev, int req, void *data)
 {
 	struct fb_info *info = cdev->priv;
 	struct fb_info **fb;
+	int ret;
 
 	switch (req) {
 	case FBIOGET_SCREENINFO:
 		fb = data;
 		*fb = info;
+		ret = 0;
 		break;
 	case FBIO_ENABLE:
-		info->fbops->fb_enable(info);
+		ret = fb_enable(info);
 		break;
 	case FBIO_DISABLE:
-		info->fbops->fb_disable(info);
+		ret = fb_disable(info);
 		break;
 	default:
 		return -ENOSYS;
 	}
 
+	return ret;
+}
+
+static int fb_close(struct cdev *cdev)
+{
+	struct fb_info *info = cdev->priv;
+
+	if (info->fbops->fb_flush)
+		info->fbops->fb_flush(info);
 	return 0;
+}
+
+static int fb_op_flush(struct cdev *cdev)
+{
+	struct fb_info *info = cdev->priv;
+
+	if (info->fbops->fb_flush)
+		info->fbops->fb_flush(info);
+	return 0;
+}
+
+void fb_flush(struct fb_info *info)
+{
+	if (info->fbops->fb_flush)
+		info->fbops->fb_flush(info);
 }
 
 static void fb_release_shadowfb(struct fb_info *info)
@@ -70,7 +96,8 @@ int fb_enable(struct fb_info *info)
 	if (ret)
 		return ret;
 
-	info->fbops->fb_enable(info);
+	if (info->fbops->fb_enable)
+		info->fbops->fb_enable(info);
 
 	info->enabled = true;
 
@@ -82,7 +109,8 @@ int fb_disable(struct fb_info *info)
 	if (!info->enabled)
 		return 0;
 
-	info->fbops->fb_disable(info);
+	if (info->fbops->fb_disable)
+		info->fbops->fb_disable(info);
 
 	fb_release_shadowfb(info);
 
@@ -199,6 +227,8 @@ static struct file_operations fb_ops = {
 	.memmap	= generic_memmap_rw,
 	.lseek	= dev_lseek_default,
 	.ioctl	= fb_ioctl,
+	.close  = fb_close,
+	.flush  = fb_op_flush,
 };
 
 static void fb_print_mode(struct fb_videomode *mode)

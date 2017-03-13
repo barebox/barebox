@@ -86,6 +86,7 @@ struct fb_ops {
 	void (*fb_enable)(struct fb_info *info);
 	void (*fb_disable)(struct fb_info *info);
 	int (*fb_activate_var)(struct fb_info *info);
+	void (*fb_flush)(struct fb_info *info);
 };
 
 /*
@@ -152,6 +153,7 @@ int register_framebuffer(struct fb_info *info);
 
 int fb_enable(struct fb_info *info);
 int fb_disable(struct fb_info *info);
+void fb_flush(struct fb_info *info);
 
 #define FBIOGET_SCREENINFO	_IOR('F', 1, loff_t)
 #define	FBIO_ENABLE		_IO('F', 2)

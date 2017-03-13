@@ -13,6 +13,9 @@ static void __illuminate(struct fb_info *info,
 {
 	void *pixel;
 
+	if (x < 0 || y < 0 || x >= info->xres || y >= info->yres)
+		return;
+
 	pixel  = fb_get_screen_base(info);
 	pixel += y * info->line_length + x * (info->bits_per_pixel >> 3);
 

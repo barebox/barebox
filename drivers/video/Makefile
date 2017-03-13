@@ -21,5 +21,5 @@ obj-$(CONFIG_DRIVER_VIDEO_OMAP) += omap.o
 obj-$(CONFIG_DRIVER_VIDEO_BCM283X) += bcm2835.o
 obj-$(CONFIG_DRIVER_VIDEO_SIMPLEFB) += simplefb.o
 obj-$(CONFIG_DRIVER_VIDEO_IMX_IPUV3) += imx-ipu-v3/
-
 obj-$(CONFIG_DRIVER_VIDEO_EFI_GOP) += efi_gop.o
+obj-$(CONFIG_DRIVER_VIDEO_FB_SSD1307) += ssd1307fb.o

@@ -105,18 +105,10 @@ static void nc_putc(struct console_device *cdev, char c)
 	priv->busy = 0;
 }
 
-static int nc_set_active(struct console_device *cdev, unsigned flags)
+static int nc_open(struct console_device *cdev)
 {
 	struct nc_priv *priv = container_of(cdev,
 					struct nc_priv, cdev);
-
-	if (priv->con) {
-		net_unregister(priv->con);
-		priv->con = NULL;
-	}
-
-	if (!flags)
-		return 0;
 
 	if (!priv->port) {
 		pr_err("port not set\n");
@@ -142,6 +134,20 @@ static int nc_set_active(struct console_device *cdev, unsigned flags)
 	return 0;
 }
 
+static int nc_close(struct console_device *cdev)
+{
+	struct nc_priv *priv = container_of(cdev,
+					struct nc_priv, cdev);
+
+	if (priv->con) {
+		net_unregister(priv->con);
+		priv->con = NULL;
+		return 0;
+	}
+
+	return -EINVAL;
+}
+
 static int netconsole_init(void)
 {
 	struct nc_priv *priv;
@@ -155,7 +161,8 @@ static int netconsole_init(void)
 	cdev->getc = nc_getc;
 	cdev->devname = "netconsole";
 	cdev->devid = DEVICE_ID_SINGLE;
-	cdev->set_active = nc_set_active;
+	cdev->open = nc_open;
+	cdev->close = nc_close;
 
 	g_priv = priv;
 

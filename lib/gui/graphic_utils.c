@@ -132,6 +132,7 @@ void gu_set_pixel(struct fb_info *info, void *adr, u32 px)
 {
 	switch (info->bits_per_pixel) {
 	case 8:
+		*(u8 *)adr = px & 0xff;
 		break;
 	case 16:
 		*(u16 *)adr = px & 0xffff;
@@ -276,8 +277,6 @@ struct screen *fb_open(const char * fbdev)
 	if (fd < 0)
 		return ERR_PTR(fd);
 
-	info = xzalloc(sizeof(*info));
-
 	ret = ioctl(fd, FBIOGET_SCREENINFO, &info);
 	if (ret) {
 		goto failed_screeninfo;
@@ -290,7 +289,6 @@ struct screen *fb_open(const char * fbdev)
 	}
 
 	sc->fd = fd;
-	sc->info = info;
 
 	return sc;
 

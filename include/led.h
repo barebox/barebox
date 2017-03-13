@@ -49,6 +49,7 @@ enum led_trigger {
 	LED_TRIGGER_NET_TXRX,
 	LED_TRIGGER_DEFAULT_ON,
 	LED_TRIGGER_MAX,
+	LED_TRIGGER_INVALID = LED_TRIGGER_MAX,
 };
 
 enum trigger_type {
@@ -59,6 +60,7 @@ enum trigger_type {
 
 #ifdef CONFIG_LED_TRIGGERS
 int led_set_trigger(enum led_trigger trigger, struct led *led);
+void led_trigger_disable(struct led *led);
 void led_trigger(enum led_trigger trigger, enum trigger_type);
 #else
 static inline int led_set_trigger(enum led_trigger trigger, struct led *led)
@@ -71,7 +73,9 @@ static inline void led_trigger(enum led_trigger trigger, enum trigger_type type)
 }
 #endif
 
-int led_get_trigger(enum led_trigger trigger);
+void led_triggers_show_info(void);
+const char *trigger_name(enum led_trigger trigger);
+enum led_trigger trigger_by_name(const char *name);
 
 void led_of_parse_trigger(struct led *led, struct device_node *np);
 

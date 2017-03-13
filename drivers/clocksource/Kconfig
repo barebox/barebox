@@ -53,3 +53,7 @@ config CLOCKSOURCE_UEMD
 config CLOCKSOURCE_ROCKCHIP
 	bool
 	depends on ARCH_ROCKCHIP
+
+config CLOCKSOURCE_ATMEL_PIT
+       bool
+       depends on SOC_AT91SAM9 || SOC_SAMA5

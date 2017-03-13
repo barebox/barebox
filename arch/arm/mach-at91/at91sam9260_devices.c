@@ -261,16 +261,16 @@ void __init at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata
 
 resource_size_t __init at91_configure_dbgu(void)
 {
-	at91_set_A_periph(AT91_PIN_PB14, 0);		/* DRXD */
-	at91_set_A_periph(AT91_PIN_PB15, 1);		/* DTXD */
+	at91_set_A_periph(AT91_PIN_PB14, 1);		/* DRXD */
+	at91_set_A_periph(AT91_PIN_PB15, 0);		/* DTXD */
 
 	return AT91_BASE_SYS + AT91_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PB4, 1);		/* TXD0 */
-	at91_set_A_periph(AT91_PIN_PB5, 0);		/* RXD0 */
+	at91_set_A_periph(AT91_PIN_PB4, 0);		/* TXD0 */
+	at91_set_A_periph(AT91_PIN_PB5, 1);		/* RXD0 */
 
 	if (pins & ATMEL_UART_RTS)
 		at91_set_A_periph(AT91_PIN_PB26, 0);	/* RTS0 */
@@ -290,8 +290,8 @@ resource_size_t __init at91_configure_usart0(unsigned pins)
 
 resource_size_t __init at91_configure_usart1(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PB6, 1);		/* TXD1 */
-	at91_set_A_periph(AT91_PIN_PB7, 0);		/* RXD1 */
+	at91_set_A_periph(AT91_PIN_PB6, 0);		/* TXD1 */
+	at91_set_A_periph(AT91_PIN_PB7, 1);		/* RXD1 */
 
 	if (pins & ATMEL_UART_RTS)
 		at91_set_A_periph(AT91_PIN_PB28, 0);	/* RTS1 */
@@ -303,8 +303,8 @@ resource_size_t __init at91_configure_usart1(unsigned pins)
 
 resource_size_t __init at91_configure_usart2(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PB8, 1);		/* TXD2 */
-	at91_set_A_periph(AT91_PIN_PB9, 0);		/* RXD2 */
+	at91_set_A_periph(AT91_PIN_PB8, 0);		/* TXD2 */
+	at91_set_A_periph(AT91_PIN_PB9, 1);		/* RXD2 */
 
 	if (pins & ATMEL_UART_RTS)
 		at91_set_A_periph(AT91_PIN_PA4, 0);	/* RTS2 */
@@ -316,8 +316,8 @@ resource_size_t __init at91_configure_usart2(unsigned pins)
 
 resource_size_t __init at91_configure_usart3(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PB10, 1);		/* TXD3 */
-	at91_set_A_periph(AT91_PIN_PB11, 0);		/* RXD3 */
+	at91_set_A_periph(AT91_PIN_PB10, 0);		/* TXD3 */
+	at91_set_A_periph(AT91_PIN_PB11, 1);		/* RXD3 */
 
 	if (pins & ATMEL_UART_RTS)
 		at91_set_B_periph(AT91_PIN_PC8, 0);	/* RTS3 */
@@ -329,16 +329,16 @@ resource_size_t __init at91_configure_usart3(unsigned pins)
 
 resource_size_t __init at91_configure_usart4(unsigned pins)
 {
-	at91_set_B_periph(AT91_PIN_PA31, 1);		/* TXD4 */
-	at91_set_B_periph(AT91_PIN_PA30, 0);		/* RXD4 */
+	at91_set_B_periph(AT91_PIN_PA31, 0);		/* TXD4 */
+	at91_set_B_periph(AT91_PIN_PA30, 1);		/* RXD4 */
 
 	return AT91SAM9260_BASE_US4;
 }
 
 resource_size_t __init at91_configure_usart5(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PB12, 1);		/* TXD5 */
-	at91_set_A_periph(AT91_PIN_PB13, 0);		/* RXD5 */
+	at91_set_A_periph(AT91_PIN_PB12, 0);		/* TXD5 */
+	at91_set_A_periph(AT91_PIN_PB13, 1);		/* RXD5 */
 
 	return AT91SAM9260_BASE_US5;
 }

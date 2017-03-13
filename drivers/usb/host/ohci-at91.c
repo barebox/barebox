@@ -27,57 +27,97 @@
 
 #include "ohci.h"
 
-/* interface and function clocks; sometimes also an AHB clock */
-static struct clk *iclk, *fclk;
+struct ohci_at91_priv {
+	struct device_d *dev;
+	struct clk *iclk;
+	struct clk *fclk;
+	struct ohci_regs __iomem *regs;
+};
 
-static void at91_start_clock(void)
+static int at91_start_clock(struct ohci_at91_priv *ohci_at91)
 {
-	clk_enable(iclk);
-	clk_enable(fclk);
+	int ret;
+
+	ret = clk_enable(ohci_at91->iclk);
+	if (ret < 0) {
+		dev_err(ohci_at91->dev, "Failed to enable 'iclk'\n");
+		return ret;
+	}
+
+	ret = clk_enable(ohci_at91->fclk);
+	if (ret < 0) {
+		dev_err(ohci_at91->dev, "Failed to enable 'fclk'\n");
+		return ret;
+	}
+
+	return 0;
 }
 
-static void at91_stop_clock(void)
+static void at91_stop_clock(struct ohci_at91_priv *ohci_at91)
 {
-	clk_disable(fclk);
-	clk_disable(iclk);
+	clk_disable(ohci_at91->fclk);
+	clk_disable(ohci_at91->iclk);
 }
 
 static int at91_ohci_probe(struct device_d *dev)
 {
-	struct ohci_regs __iomem *regs = (struct ohci_regs __iomem *)dev->resource[0].start;
+	int ret;
+	struct resource *io;
+	struct ohci_at91_priv *ohci_at91 = xzalloc(sizeof(*ohci_at91));
 
-	iclk = clk_get(NULL, "ohci_clk");
-	fclk = clk_get(NULL, "uhpck");
+	dev->priv = ohci_at91;
+	ohci_at91->dev = dev;
+
+	io = dev_get_resource(dev, IORESOURCE_MEM, 0);
+	if (IS_ERR(io)) {
+		dev_err(dev, "Failed to get IORESOURCE_MEM\n");
+		return PTR_ERR(io);
+	}
+	ohci_at91->regs = IOMEM(io->start);
+
+	ohci_at91->iclk = clk_get(NULL, "ohci_clk");
+	if (IS_ERR(ohci_at91->iclk)) {
+		dev_err(dev, "Failed to get 'ohci_clk'\n");
+		return PTR_ERR(ohci_at91->iclk);
+	}
+
+	ohci_at91->fclk = clk_get(NULL, "uhpck");
+	if (IS_ERR(ohci_at91->fclk)) {
+		dev_err(dev, "Failed to get 'uhpck'\n");
+		return PTR_ERR(ohci_at91->fclk);
+	}
 
 	/*
 	 * Start the USB clocks.
 	 */
-	at91_start_clock();
+	ret = at91_start_clock(ohci_at91);
+	if (ret < 0)
+		return ret;
 
 	/*
 	 * The USB host controller must remain in reset.
 	 */
-	writel(0, &regs->control);
+	writel(0, &ohci_at91->regs->control);
 
-	add_generic_device("ohci", DEVICE_ID_DYNAMIC, NULL, dev->resource[0].start,
-			   resource_size(&dev->resource[0]), IORESOURCE_MEM, NULL);
+	add_generic_device("ohci", DEVICE_ID_DYNAMIC, NULL, io->start,
+			   resource_size(io), IORESOURCE_MEM, NULL);
 
 	return 0;
 }
 
 static void at91_ohci_remove(struct device_d *dev)
 {
-	struct ohci_regs __iomem *regs = (struct ohci_regs __iomem *)dev->resource[0].start;
+	struct ohci_at91_priv *ohci_at91 = dev->priv;
 
 	/*
 	 * Put the USB host controller into reset.
 	 */
-	writel(0, &regs->control);
+	writel(0, &ohci_at91->regs->control);
 
 	/*
 	 * Stop the USB clocks.
 	 */
-	at91_stop_clock();
+	at91_stop_clock(ohci_at91);
 }
 
 static struct driver_d at91_ohci_driver = {

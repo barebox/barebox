@@ -430,24 +430,24 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data) {}
 #if defined(CONFIG_DRIVER_SERIAL_ATMEL)
 resource_size_t __init at91_configure_dbgu(void)
 {
-	at91_set_A_periph(AT91_PIN_PB25, 1);		/* TXD1 */
-	at91_set_A_periph(AT91_PIN_PB24, 0);		/* RXD1 */
+	at91_set_A_periph(AT91_PIN_PB25, 0);		/* DTXD */
+	at91_set_A_periph(AT91_PIN_PB24, 1);		/* DRXD */
 
 	return SAMA5D4_BASE_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PD13, 1);		/* TXD1 */
-	at91_set_A_periph(AT91_PIN_PD12, 0);		/* RXD1 */
+	at91_set_A_periph(AT91_PIN_PD13, 0);		/* TXD0 */
+	at91_set_A_periph(AT91_PIN_PD12, 1);		/* RXD0 */
 
 	return SAMA5D4_BASE_USART0;
 }
 
 resource_size_t __init at91_configure_usart1(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PD17, 1);		/* TXD1 */
-	at91_set_A_periph(AT91_PIN_PD16, 0);		/* RXD1 */
+	at91_set_A_periph(AT91_PIN_PD17, 0);		/* TXD1 */
+	at91_set_A_periph(AT91_PIN_PD16, 1);		/* RXD1 */
 
 	return SAMA5D4_BASE_USART1;
 }
@@ -455,40 +455,40 @@ resource_size_t __init at91_configure_usart1(unsigned pins)
 
 resource_size_t __init at91_configure_usart2(unsigned pins)
 {
-	at91_set_B_periph(AT91_PIN_PB5, 1);		/* TXD1 */
-	at91_set_B_periph(AT91_PIN_PB4, 0);		/* RXD1 */
+	at91_set_B_periph(AT91_PIN_PB5, 0);		/* TXD2 */
+	at91_set_B_periph(AT91_PIN_PB4, 1);		/* RXD2 */
 
 	return SAMA5D4_BASE_USART2;
 }
 
 resource_size_t __init at91_configure_usart3(unsigned pins)
 {
-	at91_set_B_periph(AT91_PIN_PE17, 1);		/* TXD1 */
-	at91_set_B_periph(AT91_PIN_PE16, 0);		/* RXD1 */
+	at91_set_B_periph(AT91_PIN_PE17, 0);		/* TXD3 */
+	at91_set_B_periph(AT91_PIN_PE16, 1);		/* RXD3 */
 
 	return SAMA5D4_BASE_USART3;
 }
 
 resource_size_t __init at91_configure_usart4(unsigned pins)
 {
-	at91_set_B_periph(AT91_PIN_PE27, 1);		/* TXD1 */
-	at91_set_B_periph(AT91_PIN_PE26, 0);		/* RXD1 */
+	at91_set_B_periph(AT91_PIN_PE27, 0);		/* TXD4 */
+	at91_set_B_periph(AT91_PIN_PE26, 1);		/* RXD4 */
 
 	return SAMA5D4_BASE_USART4;
 }
 
 resource_size_t __init at91_configure_usart5(unsigned pins)
 {
-	at91_set_B_periph(AT91_PIN_PE30, 1);		/* TXD1 */
-	at91_set_B_periph(AT91_PIN_PE29, 0);		/* RXD1 */
+	at91_set_B_periph(AT91_PIN_PE30, 0);		/* UTXD0 */
+	at91_set_B_periph(AT91_PIN_PE29, 1);		/* URXD0 */
 
 	return SAMA5D4_BASE_UART0;
 }
 
 resource_size_t __init at91_configure_usart6(unsigned pins)
 {
-	at91_set_C_periph(AT91_PIN_PC26, 1);		/* TXD1 */
-	at91_set_C_periph(AT91_PIN_PC25, 0);		/* RXD1 */
+	at91_set_C_periph(AT91_PIN_PC26, 0);		/* UTXD1 */
+	at91_set_C_periph(AT91_PIN_PC25, 1);		/* URXD1 */
 
 	return SAMA5D4_BASE_UART1;
 }

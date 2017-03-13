@@ -403,6 +403,11 @@ static int atmel_serial_init_port(struct console_device *cdev)
 		return -ENOENT;
 
 	uart->clk = clk_get(dev, "usart");
+	if (IS_ERR(uart->clk)) {
+		dev_err(dev, "Failed to get 'usart' clock\n");
+		return PTR_ERR(uart->clk);
+	}
+
 	clk_enable(uart->clk);
 	uart->uartclk = clk_get_rate(uart->clk);
 

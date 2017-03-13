@@ -329,7 +329,7 @@ const struct of_device_id __clk_of_table_##name				\
 __attribute__ ((unused,section (".__clk_of_table"))) \
 	= { .compatible = compat, .data = fn }
 
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+#if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 int of_clk_add_provider(struct device_node *np,
 			struct clk *(*clk_src_get)(struct of_phandle_args *args,
 						   void *data),
@@ -348,7 +348,10 @@ struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data);
 struct clk *of_clk_get(struct device_node *np, int index);
 struct clk *of_clk_get_by_name(struct device_node *np, const char *name);
 struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec);
+unsigned int of_clk_get_parent_count(struct device_node *np);
 char *of_clk_get_parent_name(struct device_node *np, unsigned int index);
+int of_clk_parent_fill(struct device_node *np, const char **parents,
+		       unsigned int size);
 int of_clk_init(struct device_node *root, const struct of_device_id *matches);
 #else
 static inline struct clk *of_clk_get(struct device_node *np, int index)

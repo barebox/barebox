@@ -250,16 +250,16 @@ void __init at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata
 
 resource_size_t __init at91_configure_dbgu(void)
 {
-	at91_set_A_periph(AT91_PIN_PA30, 0);		/* DRXD */
-	at91_set_A_periph(AT91_PIN_PA31, 1);		/* DTXD */
+	at91_set_A_periph(AT91_PIN_PA30, 1);		/* DRXD */
+	at91_set_A_periph(AT91_PIN_PA31, 0);		/* DTXD */
 
 	return AT91_BASE_SYS + AT91_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PA17, 1);		/* TXD0 */
-	at91_set_A_periph(AT91_PIN_PA18, 0);		/* RXD0 */
+	at91_set_A_periph(AT91_PIN_PA17, 0);		/* TXD0 */
+	at91_set_A_periph(AT91_PIN_PA18, 1);		/* RXD0 */
 
 	if (pins & ATMEL_UART_CTS)
 		at91_set_A_periph(AT91_PIN_PA20, 0);	/* CTS0 */
@@ -277,8 +277,8 @@ resource_size_t __init at91_configure_usart0(unsigned pins)
 
 resource_size_t __init at91_configure_usart1(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PB20, 1);		/* TXD1 */
-	at91_set_A_periph(AT91_PIN_PB21, 0);		/* RXD1 */
+	at91_set_A_periph(AT91_PIN_PB20, 0);		/* TXD1 */
+	at91_set_A_periph(AT91_PIN_PB21, 1);		/* RXD1 */
 
 	if (pins & ATMEL_UART_RI)
 		at91_set_A_periph(AT91_PIN_PB18, 0);	/* RI1 */
@@ -298,8 +298,8 @@ resource_size_t __init at91_configure_usart1(unsigned pins)
 
 resource_size_t __init at91_configure_usart2(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PA22, 0);		/* RXD2 */
-	at91_set_A_periph(AT91_PIN_PA23, 1);		/* TXD2 */
+	at91_set_A_periph(AT91_PIN_PA22, 1);		/* RXD2 */
+	at91_set_A_periph(AT91_PIN_PA23, 0);		/* TXD2 */
 
 	if (pins & ATMEL_UART_CTS)
 		at91_set_B_periph(AT91_PIN_PA30, 0);	/* CTS2 */
@@ -311,8 +311,8 @@ resource_size_t __init at91_configure_usart2(unsigned pins)
 
 resource_size_t __init at91_configure_usart3(unsigned pins)
 {
-	at91_set_B_periph(AT91_PIN_PA5, 1);		/* TXD3 */
-	at91_set_B_periph(AT91_PIN_PA6, 0);		/* RXD3 */
+	at91_set_B_periph(AT91_PIN_PA5, 0);		/* TXD3 */
+	at91_set_B_periph(AT91_PIN_PA6, 1);		/* RXD3 */
 
 	if (pins & ATMEL_UART_CTS)
 		at91_set_B_periph(AT91_PIN_PB1, 0);	/* CTS3 */

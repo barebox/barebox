@@ -346,7 +346,7 @@ int clk_parent_set_rate(struct clk *clk, unsigned long rate,
 	return clk_set_rate(clk_get_parent(clk), rate);
 }
 
-#if defined(CONFIG_OFTREE) && defined(CONFIG_COMMON_CLK_OF_PROVIDER)
+#if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 /**
  * struct of_clk_provider - Clock provider registration structure
  * @link: Entry in global list of clock providers
@@ -452,6 +452,24 @@ struct clk *of_clk_get_from_provider(struct of_phandle_args *clkspec)
 	return clk;
 }
 
+/**
+ * of_clk_get_parent_count() - Count the number of clocks a device node has
+ * @np: device node to count
+ *
+ * Returns: The number of clocks that are possible parents of this node
+ */
+unsigned int of_clk_get_parent_count(struct device_node *np)
+{
+	int count;
+
+	count = of_count_phandle_with_args(np, "clocks", "#clock-cells");
+	if (count < 0)
+		return 0;
+
+	return count;
+}
+EXPORT_SYMBOL_GPL(of_clk_get_parent_count);
+
 char *of_clk_get_parent_name(struct device_node *np, unsigned int index)
 {
 	struct of_phandle_args clkspec;
@@ -471,6 +489,27 @@ char *of_clk_get_parent_name(struct device_node *np, unsigned int index)
 	return xstrdup(clk_name);
 }
 EXPORT_SYMBOL_GPL(of_clk_get_parent_name);
+
+/**
+ * of_clk_parent_fill() - Fill @parents with names of @np's parents and return
+ * number of parents
+ * @np: Device node pointer associated with clock provider
+ * @parents: pointer to char array that hold the parents' names
+ * @size: size of the @parents array
+ *
+ * Return: number of parents for the clock node.
+ */
+int of_clk_parent_fill(struct device_node *np, const char **parents,
+		       unsigned int size)
+{
+	unsigned int i = 0;
+
+	while (i < size && (parents[i] = of_clk_get_parent_name(np, i)) != NULL)
+		i++;
+
+	return i;
+}
+EXPORT_SYMBOL_GPL(of_clk_parent_fill);
 
 struct clock_provider {
 	of_clk_init_cb_t clk_init_cb;

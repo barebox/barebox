@@ -472,21 +472,20 @@ EXPORT_SYMBOL(of_get_cpu_node);
 int of_device_is_compatible(const struct device_node *device,
 		const char *compat)
 {
+	struct property *prop;
 	const char *cp;
-	int cplen, l;
+	int index = 0, score = 0;
 
-	cp = of_get_property(device, "compatible", &cplen);
-	if (cp == NULL)
-		return 0;
-	while (cplen > 0) {
-		if (of_compat_cmp(cp, compat, strlen(compat)) == 0)
-			return 1;
-		l = strlen(cp) + 1;
-		cp += l;
-		cplen -= l;
+	prop = of_find_property(device, "compatible", NULL);
+	for (cp = of_prop_next_string(prop, NULL); cp;
+	     cp = of_prop_next_string(prop, cp), index++) {
+		if (of_compat_cmp(cp, compat, strlen(compat)) == 0) {
+			score = INT_MAX/2 - (index << 2);
+			break;
+		}
 	}
 
-	return 0;
+	return score;
 }
 EXPORT_SYMBOL(of_device_is_compatible);
 
@@ -602,16 +601,22 @@ EXPORT_SYMBOL(of_find_node_with_property);
 const struct of_device_id *of_match_node(const struct of_device_id *matches,
 					 const struct device_node *node)
 {
+	const struct of_device_id *best_match = NULL;
+	int score, best_score = 0;
+
 	if (!matches || !node)
 		return NULL;
 
-	while (matches->compatible) {
-		if (of_device_is_compatible(node, matches->compatible) == 1)
-			return matches;
-		matches++;
+	for (; matches->compatible; matches++) {
+		score = of_device_is_compatible(node, matches->compatible);
+
+		if (score > best_score) {
+			best_match = matches;
+			best_score = score;
+		}
 	}
 
-	return NULL;
+	return best_match;
 }
 
 /**

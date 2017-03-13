@@ -28,6 +28,34 @@ struct syscon {
 	struct device_node *np;
 	void __iomem *base;
 	struct list_head list;
+	struct regmap *regmap;
+};
+
+static int syscon_reg_write(void *context, unsigned int reg,
+			    unsigned int val)
+{
+	struct syscon *syscon = context;
+	writel(val, syscon->base + reg);
+	return 0;
+}
+
+static int syscon_reg_read(void *context, unsigned int reg,
+			   unsigned int *val)
+{
+	struct syscon *syscon = context;
+	*val = readl(syscon->base + reg);
+	return 0;
+}
+
+static const struct regmap_bus syscon_regmap_bus = {
+	.reg_write = syscon_reg_write,
+	.reg_read  = syscon_reg_read,
+};
+
+static const struct regmap_config syscon_regmap_config = {
+	.reg_bits = 32,
+	.val_bits = 32,
+	.reg_stride = 4,
 };
 
 static struct syscon *of_syscon_register(struct device_node *np)
@@ -51,6 +79,10 @@ static struct syscon *of_syscon_register(struct device_node *np)
 
 	list_add_tail(&syscon->list, &syscon_list);
 
+	syscon->regmap = regmap_init(NULL,
+				     &syscon_regmap_bus,
+				     syscon,
+				     &syscon_regmap_config);
 	return syscon;
 
 err_map:
@@ -58,7 +90,7 @@ err_map:
 	return ERR_PTR(ret);
 }
 
-static void __iomem *syscon_node_to_base(struct device_node *np)
+static struct syscon *node_to_syscon(struct device_node *np)
 {
 	struct syscon *entry, *syscon = NULL;
 
@@ -70,6 +102,16 @@ static void __iomem *syscon_node_to_base(struct device_node *np)
 
 	if (!syscon)
 		syscon = of_syscon_register(np);
+
+	if (IS_ERR(syscon))
+		return ERR_CAST(syscon);
+
+	return syscon;
+}
+
+static void __iomem *syscon_node_to_base(struct device_node *np)
+{
+	struct syscon *syscon = node_to_syscon(np);
 
 	if (IS_ERR(syscon))
 		return ERR_CAST(syscon);
@@ -106,6 +148,16 @@ void __iomem *syscon_base_lookup_by_phandle(struct device_node *np,
 		return ERR_PTR(-ENODEV);
 
 	return syscon_node_to_base(syscon_np);
+}
+
+struct regmap *syscon_node_to_regmap(struct device_node *np)
+{
+	struct syscon *syscon = node_to_syscon(np);
+
+	if (IS_ERR(syscon))
+		return ERR_CAST(syscon);
+
+	return syscon->regmap;
 }
 
 static int syscon_probe(struct device_d *dev)

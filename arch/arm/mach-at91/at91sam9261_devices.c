@@ -265,16 +265,16 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data) {}
 
 resource_size_t __init at91_configure_dbgu(void)
 {
-	at91_set_A_periph(AT91_PIN_PA9, 0);		/* DRXD */
-	at91_set_A_periph(AT91_PIN_PA10, 1);		/* DTXD */
+	at91_set_A_periph(AT91_PIN_PA9, 1);		/* DRXD */
+	at91_set_A_periph(AT91_PIN_PA10, 0);		/* DTXD */
 
 	return AT91_BASE_SYS + AT91_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PC8, 1);		/* TXD0 */
-	at91_set_A_periph(AT91_PIN_PC9, 0);		/* RXD0 */
+	at91_set_A_periph(AT91_PIN_PC8, 0);		/* TXD0 */
+	at91_set_A_periph(AT91_PIN_PC9, 1);		/* RXD0 */
 
 	if (pins & ATMEL_UART_RTS)
 		at91_set_A_periph(AT91_PIN_PC10, 0);	/* RTS0 */
@@ -286,8 +286,8 @@ resource_size_t __init at91_configure_usart0(unsigned pins)
 
 resource_size_t __init at91_configure_usart1(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PC12, 1);		/* TXD1 */
-	at91_set_A_periph(AT91_PIN_PC13, 0);		/* RXD1 */
+	at91_set_A_periph(AT91_PIN_PC12, 0);		/* TXD1 */
+	at91_set_A_periph(AT91_PIN_PC13, 1);		/* RXD1 */
 
 	if (pins & ATMEL_UART_RTS)
 		at91_set_B_periph(AT91_PIN_PA12, 0);	/* RTS1 */
@@ -299,8 +299,8 @@ resource_size_t __init at91_configure_usart1(unsigned pins)
 
 resource_size_t __init at91_configure_usart2(unsigned pins)
 {
-	at91_set_A_periph(AT91_PIN_PC15, 0);		/* RXD2 */
-	at91_set_A_periph(AT91_PIN_PC14, 1);		/* TXD2 */
+	at91_set_A_periph(AT91_PIN_PC15, 1);		/* RXD2 */
+	at91_set_A_periph(AT91_PIN_PC14, 0);		/* TXD2 */
 
 	if (pins & ATMEL_UART_RTS)
 		at91_set_B_periph(AT91_PIN_PA15, 0);	/* RTS2*/

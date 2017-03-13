@@ -414,8 +414,10 @@ static int at91_pinctrl_set_conf(struct at91_pinctrl *info, unsigned int pin_num
 {
 	unsigned int mask;
 	void __iomem *pio;
+	struct at91_gpio_chip *at91_gpio;
 
-	pio = pin_to_controller(pin_num);
+	at91_gpio = pin_to_controller(pin_num);
+	pio  = at91_gpio->regbase;
 	mask = pin_to_mask(pin_num);
 
 	if (conf & PULL_UP && conf & PULL_DOWN)
@@ -459,6 +461,8 @@ static int at91_pinctrl_set_state(struct pinctrl_device *pdev, struct device_nod
 		pin_num = be32_to_cpu(*list++);
 		mux = be32_to_cpu(*list++);
 		conf = be32_to_cpu(*list++);
+
+		pin_num += bank_num * MAX_NB_GPIO_PER_BANK;
 
 		ret = at91_mux_pin(pin_num, mux, conf & PULL_UP);
 		if (ret) {
@@ -564,6 +568,21 @@ static int at91_gpio_direction_output(struct gpio_chip *chip, unsigned offset,
 	return 0;
 }
 
+static int at91_gpio_get_direction(struct gpio_chip *chip, unsigned offset)
+{
+	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
+	void __iomem *pio = at91_gpio->regbase;
+	unsigned mask = 1 << offset;
+	u32 osr;
+
+	if (mask & __raw_readl(pio + PIO_PSR)) {
+		osr = __raw_readl(pio + PIO_OSR);
+		return !(osr & mask);
+	} else {
+		return -EBUSY;
+	}
+}
+
 static int at91_gpio_direction_input(struct gpio_chip *chip, unsigned offset)
 {
 	struct at91_gpio_chip *at91_gpio = to_at91_gpio_chip(chip);
@@ -599,6 +618,7 @@ static struct gpio_ops at91_gpio_ops = {
 	.free = at91_gpio_free,
 	.direction_input = at91_gpio_direction_input,
 	.direction_output = at91_gpio_direction_output,
+	.get_direction = at91_gpio_get_direction,
 	.get = at91_gpio_get,
 	.set = at91_gpio_set,
 };

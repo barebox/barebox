@@ -29,34 +29,55 @@
 
 #include "ehci.h"
 
-/* interface and function clocks; sometimes also an AHB clock */
-static struct clk *iclk, *fclk;
+struct atmel_ehci_priv {
+	struct device_d *dev;
+	struct clk *iclk;
+	struct clk *uclk;
+};
 
-static void atmel_start_clock(void)
+static int atmel_start_clock(struct atmel_ehci_priv *atehci)
 {
-	clk_enable(iclk);
-	clk_enable(fclk);
+	int ret;
+	ret = clk_enable(atehci->iclk);
+	if (ret < 0) {
+		dev_err(atehci->dev,
+			"Error enabling interface clock\n");
+		return ret;
+	}
+
+	ret = clk_enable(atehci->uclk);
+	if (ret < 0)
+		dev_err(atehci->dev,
+			"Error enabling function clock\n");
+
+	return ret;
 }
 
-static void atmel_stop_clock(void)
+static void atmel_stop_clock(struct atmel_ehci_priv *atehci)
 {
-	clk_disable(fclk);
-	clk_disable(iclk);
+	clk_disable(atehci->iclk);
+	clk_disable(atehci->uclk);
 }
 
 static int atmel_ehci_probe(struct device_d *dev)
 {
+	int ret;
 	struct resource *iores;
 	struct ehci_data data;
+	struct atmel_ehci_priv *atehci;
 
-	iclk = clk_get(dev, "ehci_clk");
-	if (IS_ERR(iclk)) {
+	atehci = xzalloc(sizeof(*atehci));
+	atehci->dev = dev;
+	dev->priv = atehci;
+
+	atehci->iclk = clk_get(dev, "ehci_clk");
+	if (IS_ERR(atehci->iclk)) {
 		dev_err(dev, "Error getting interface clock\n");
 		return -ENOENT;
 	}
 
-	fclk = clk_get(dev, "uhpck");
-	if (IS_ERR(fclk)) {
+	atehci->uclk = clk_get(dev, "uhpck");
+	if (IS_ERR(atehci->iclk)) {
 		dev_err(dev, "Error getting function clock\n");
 		return -ENOENT;
 	}
@@ -64,18 +85,18 @@ static int atmel_ehci_probe(struct device_d *dev)
 	/*
 	 * Start the USB clocks.
 	 */
-	atmel_start_clock();
+	ret = atmel_start_clock(atehci);
+	if (ret < 0)
+		return ret;
 
-	data.flags = 0;
+	memset(&data, 0, sizeof(data));
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	data.hccr = IOMEM(iores->start);
 
-	ehci_register(dev, &data);
-
-	return 0;
+	return ehci_register(dev, &data);
 }
 
 static void atmel_ehci_remove(struct device_d *dev)
@@ -83,7 +104,7 @@ static void atmel_ehci_remove(struct device_d *dev)
 	/*
 	 * Stop the USB clocks.
 	 */
-	atmel_stop_clock();
+	atmel_stop_clock(dev->priv);
 }
 
 static struct driver_d atmel_ehci_driver = {

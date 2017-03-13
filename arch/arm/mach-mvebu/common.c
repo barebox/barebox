@@ -23,6 +23,31 @@
 #include <linux/clk.h>
 #include <mach/common.h>
 #include <mach/socid.h>
+#include <asm/barebox-arm.h>
+#include <asm/memory.h>
+
+/*
+ * The different SoC headers containing register definitions (mach/dove-regs.h,
+ * mach/kirkwood-regs.h and mach/armada-370-xp-regs.h) are pairwise
+ * incompatible. So some defines are reproduced here instead of just #included.
+ */
+
+#define DOVE_SDRAM_BASE			IOMEM(0xf1800000)
+#define DOVE_SDRAM_MAPn(n)		(0x100 + ((n) * 0x10))
+#define DOVE_SDRAM_MAP_VALID		BIT(0)
+#define DOVE_SDRAM_LENGTH_SHIFT		16
+#define DOVE_SDRAM_LENGTH_MASK		(0x00f << DOVE_SDRAM_LENGTH_SHIFT)
+
+#define KIRKWOOD_SDRAM_BASE		(IOMEM(MVEBU_REMAP_INT_REG_BASE) + 0x00000)
+#define KIRKWOOD_DDR_BASE_CSn(n)	(0x1500 + ((n) * 0x8))
+#define KIRKWOOD_DDR_SIZE_CSn(n)	(0x1504 + ((n) * 0x8))
+#define KIRKWOOD_DDR_SIZE_ENABLED	BIT(0)
+#define KIRKWOOD_DDR_SIZE_MASK		0xff000000
+
+#define ARMADA_370_XP_SDRAM_BASE	(IOMEM(MVEBU_REMAP_INT_REG_BASE) + 0x20000)
+#define ARMADA_370_XP_DDR_SIZE_CSn(n)	(0x184 + ((n) * 0x8))
+#define ARMADA_370_XP_DDR_SIZE_ENABLED	BIT(0)
+#define ARMADA_370_XP_DDR_SIZE_MASK	0xff000000
 
 /*
  * Marvell MVEBU SoC id and revision can be read from any PCIe
@@ -78,48 +103,110 @@ static int mvebu_soc_id_init(void)
 }
 postcore_initcall(mvebu_soc_id_init);
 
-/*
- * Memory size is set up by BootROM and can be read from SoC's ram controller
- * registers. Fixup provided DTs to reflect accessible amount of directly
- * attached RAM. Removable RAM, e.g. SODIMM, should be added by a per-board
- * fixup.
- */
-int mvebu_set_memory(u64 phys_base, u64 phys_size)
+static unsigned long dove_memory_find(void)
 {
-	struct device_node *np, *root;
-	__be32 reg[4];
-	int na, ns;
+	int n;
+	unsigned long mem_size = 0;
 
-	root = of_get_root_node();
-	if (!root)
-		return -EINVAL;
+	for (n = 0; n < 2; n++) {
+		uint32_t map = readl(DOVE_SDRAM_BASE + DOVE_SDRAM_MAPn(n));
+		uint32_t size;
 
-	np = of_find_node_by_path("/memory");
-	if (!np)
-		np = of_create_node(root, "/memory");
-	if (!np)
-		return -EINVAL;
+		/* skip disabled areas */
+		if ((map & DOVE_SDRAM_MAP_VALID) != DOVE_SDRAM_MAP_VALID)
+			continue;
 
-	na = of_n_addr_cells(np);
-	ns = of_n_size_cells(np);
-
-	if (na == 2) {
-		reg[0] = cpu_to_be32(phys_base >> 32);
-		reg[1] = cpu_to_be32(phys_base & 0xffffffff);
-	} else {
-		reg[0] = cpu_to_be32(phys_base & 0xffffffff);
+		/* real size is encoded as ld(2^(16+length)) */
+		size = (map & DOVE_SDRAM_LENGTH_MASK) >> DOVE_SDRAM_LENGTH_SHIFT;
+		mem_size += 1 << (16 + size);
 	}
 
-	if (ns == 2) {
-		reg[2] = cpu_to_be32(phys_size >> 32);
-		reg[3] = cpu_to_be32(phys_size & 0xffffffff);
-	} else {
-		reg[1] = cpu_to_be32(phys_size & 0xffffffff);
+	return mem_size;
+}
+
+static unsigned long kirkwood_memory_find(void)
+{
+	int cs;
+	unsigned long mem_size = 0;
+
+	for (cs = 0; cs < 4; cs++) {
+		u32 ctrl = readl(KIRKWOOD_SDRAM_BASE +
+				 KIRKWOOD_DDR_SIZE_CSn(cs));
+
+		/* Skip non-enabled CS */
+		if ((ctrl & KIRKWOOD_DDR_SIZE_ENABLED) !=
+		    KIRKWOOD_DDR_SIZE_ENABLED)
+			continue;
+
+		mem_size += (ctrl | ~KIRKWOOD_DDR_SIZE_MASK) + 1;
 	}
 
-	if (of_set_property(np, "device_type", "memory", sizeof("memory"), 1) ||
-	    of_set_property(np, "reg", reg, sizeof(u32) * (na + ns), 1))
-		pr_err("Unable to fixup memory node\n");
+	return mem_size;
+}
+
+static unsigned long armada_370_xp_memory_find(void)
+{
+	int cs;
+	unsigned long mem_size = 0;
+
+	for (cs = 0; cs < 4; cs++) {
+		u32 ctrl = readl(ARMADA_370_XP_SDRAM_BASE + ARMADA_370_XP_DDR_SIZE_CSn(cs));
+
+		/* Skip non-enabled CS */
+		if ((ctrl & ARMADA_370_XP_DDR_SIZE_ENABLED) != ARMADA_370_XP_DDR_SIZE_ENABLED)
+			continue;
+
+		mem_size += (ctrl | ~ARMADA_370_XP_DDR_SIZE_MASK) + 1;
+	}
+
+	return mem_size;
+}
+
+static int mvebu_meminit(void)
+{
+	if (of_machine_is_compatible("marvell,armada-370-xp"))
+		arm_add_mem_device("ram0", 0, armada_370_xp_memory_find());
 
 	return 0;
+}
+mem_initcall(mvebu_meminit);
+
+/*
+ * All MVEBU SoCs start with internal registers at 0xd0000000.
+ * To get more contiguous address space and as Linux expects them
+ * there, we remap them early to 0xf1000000.
+ *
+ * There no way to determine internal registers base address
+ * safely later on, as the remap register itself is within the
+ * internal registers.
+ */
+#define MVEBU_BRIDGE_REG_BASE		0x20000
+#define DEVICE_INTERNAL_BASE_ADDR	(MVEBU_BRIDGE_REG_BASE + 0x80)
+
+static void mvebu_remap_registers(void)
+{
+	void __iomem *base = mvebu_get_initial_int_reg_base();
+
+	writel(MVEBU_REMAP_INT_REG_BASE, base + DEVICE_INTERNAL_BASE_ADDR);
+}
+
+void __naked __noreturn dove_barebox_entry(void *boarddata)
+{
+	mvebu_remap_registers();
+
+	barebox_arm_entry(0, dove_memory_find(), boarddata);
+}
+
+void __naked __noreturn kirkwood_barebox_entry(void *boarddata)
+{
+	mvebu_remap_registers();
+
+	barebox_arm_entry(0, kirkwood_memory_find(), boarddata);
+}
+
+void __naked __noreturn armada_370_xp_barebox_entry(void *boarddata)
+{
+	mvebu_remap_registers();
+
+	barebox_arm_entry(0, armada_370_xp_memory_find(), boarddata);
 }

@@ -21,29 +21,6 @@
 #include <linux/mbus.h>
 #include <mach/kirkwood-regs.h>
 
-static inline void kirkwood_memory_find(unsigned long *phys_base,
-					unsigned long *phys_size)
-{
-	int cs;
-
-	*phys_base = ~0;
-	*phys_size = 0;
-
-	for (cs = 0; cs < 4; cs++) {
-		u32 base = readl(KIRKWOOD_SDRAM_BASE + DDR_BASE_CSn(cs));
-		u32 ctrl = readl(KIRKWOOD_SDRAM_BASE + DDR_SIZE_CSn(cs));
-
-		/* Skip non-enabled CS */
-		if ((ctrl & DDR_SIZE_ENABLED) != DDR_SIZE_ENABLED)
-			continue;
-
-		base &= DDR_BASE_CS_LOW_MASK;
-		if (base < *phys_base)
-			*phys_base = base;
-		*phys_size += (ctrl | ~DDR_SIZE_MASK) + 1;
-	}
-}
-
 static void __noreturn kirkwood_restart_soc(struct restart_handler *rst)
 {
 	writel(SOFT_RESET_OUT_EN, KIRKWOOD_BRIDGE_BASE + BRIDGE_RSTOUT_MASK);
@@ -52,10 +29,8 @@ static void __noreturn kirkwood_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int kirkwood_init_soc(struct device_node *root, void *context)
+static int kirkwood_init_soc(void)
 {
-	unsigned long phys_base, phys_size;
-
 	if (!of_machine_is_compatible("marvell,kirkwood"))
 		return 0;
 
@@ -64,18 +39,8 @@ static int kirkwood_init_soc(struct device_node *root, void *context)
 	barebox_set_model("Marvell Kirkwood");
 	barebox_set_hostname("kirkwood");
 
-	kirkwood_memory_find(&phys_base, &phys_size);
-
-	mvebu_set_memory(phys_base, phys_size);
 	mvebu_mbus_init();
 
 	return 0;
 }
-
-static int kirkwood_register_soc_fixup(void)
-{
-	mvebu_mbus_add_range("marvell,kirkwood", 0xf0, 0x01,
-			     MVEBU_REMAP_INT_REG_BASE);
-	return of_register_fixup(kirkwood_init_soc, NULL);
-}
-pure_initcall(kirkwood_register_soc_fixup);
+postcore_initcall(kirkwood_init_soc);

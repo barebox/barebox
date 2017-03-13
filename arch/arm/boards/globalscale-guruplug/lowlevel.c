@@ -31,5 +31,5 @@ ENTRY_FUNCTION(start_globalscale_guruplug, r0, r1, r2)
 	fdt = __dtb_kirkwood_guruplug_server_plus_bb_start -
 		get_runtime_offset();
 
-	mvebu_barebox_entry(fdt);
+	kirkwood_barebox_entry(fdt);
 }

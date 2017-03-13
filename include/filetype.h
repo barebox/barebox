@@ -38,6 +38,7 @@ enum filetype {
 	filetype_xz_compressed,
 	filetype_mxs_bootstream,
 	filetype_socfpga_xload,
+	filetype_kwbimage_v1,
 	filetype_max,
 };
 

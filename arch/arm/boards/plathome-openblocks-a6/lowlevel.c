@@ -28,5 +28,5 @@ ENTRY_FUNCTION(start_plathome_openblocks_a6, r0, r1, r2)
 	fdt = __dtb_kirkwood_openblocks_a6_bb_start -
 		get_runtime_offset();
 
-	mvebu_barebox_entry(fdt);
+	kirkwood_barebox_entry(fdt);
 }

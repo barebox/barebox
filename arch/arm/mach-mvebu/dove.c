@@ -43,32 +43,6 @@ static inline void dove_remap_mc_regs(void)
 	writel(val, mcboot + SDRAM_REGS_BASE_DECODE);
 }
 
-static inline void dove_memory_find(unsigned long *phys_base,
-				    unsigned long *phys_size)
-{
-	int n;
-
-	*phys_base = ~0;
-	*phys_size = 0;
-
-	for (n = 0; n < 2; n++) {
-		uint32_t map = readl(DOVE_SDRAM_BASE + SDRAM_MAPn(n));
-		uint32_t base, size;
-
-		/* skip disabled areas */
-		if ((map & SDRAM_MAP_VALID) != SDRAM_MAP_VALID)
-			continue;
-
-		base = map & SDRAM_START_MASK;
-		if (base < *phys_base)
-			*phys_base = base;
-
-		/* real size is encoded as ld(2^(16+length)) */
-		size = (map & SDRAM_LENGTH_MASK) >> SDRAM_LENGTH_SHIFT;
-		*phys_size += 1 << (16 + size);
-	}
-}
-
 static void __noreturn dove_restart_soc(struct restart_handler *rst)
 {
 	/* enable and assert RSTOUTn */
@@ -78,10 +52,8 @@ static void __noreturn dove_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
-static int dove_init_soc(struct device_node *root, void *context)
+static int dove_init_soc(void)
 {
-	unsigned long phys_base, phys_size;
-
 	if (!of_machine_is_compatible("marvell,dove"))
 		return 0;
 
@@ -91,20 +63,8 @@ static int dove_init_soc(struct device_node *root, void *context)
 	barebox_set_hostname("dove");
 
 	dove_remap_mc_regs();
-	dove_memory_find(&phys_base, &phys_size);
-
-	mvebu_set_memory(phys_base, phys_size);
 	mvebu_mbus_init();
 
 	return 0;
 }
-
-static int dove_register_soc_fixup(void)
-{
-	mvebu_mbus_add_range("marvell,dove", 0xf0, 0x01,
-			     MVEBU_REMAP_INT_REG_BASE);
-	mvebu_mbus_add_range("marvell,dove", 0xf0, 0x02,
-			     DOVE_REMAP_MC_REGS);
-	return of_register_fixup(dove_init_soc, NULL);
-}
-pure_initcall(dove_register_soc_fixup);
+postcore_initcall(dove_init_soc);

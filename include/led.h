@@ -12,6 +12,13 @@ struct led {
 	char *name;
 	int num;
 	struct list_head list;
+
+	int blink;
+	int flash;
+	unsigned int *blink_states;
+	int blink_nr_states;
+	int blink_next_state;
+	uint64_t blink_next_event;
 };
 
 struct led *led_by_number(int no);
@@ -25,6 +32,10 @@ static inline int led_get_number(struct led *led)
 
 int led_set_num(int num, unsigned int value);
 int led_set(struct led *led, unsigned int value);
+int led_blink(struct led *led, unsigned int on_ms, unsigned int off_ms);
+int led_blink_pattern(struct led *led, const unsigned int *pattern,
+		      unsigned int pattern_len);
+int led_flash(struct led *led, unsigned int duration_ms);
 int led_register(struct led *led);
 void led_unregister(struct led *led);
 void led_unregister(struct led *led);

@@ -32,7 +32,7 @@ static int do_timeout(int argc, char *argv[])
 	char str[2] = { };
 	const char *varname = NULL;
 
-	while((opt = getopt(argc, argv, "crsav:")) > 0) {
+	while ((opt = getopt(argc, argv, "crsav:e")) > 0) {
 		switch(opt) {
 		case 'r':
 			flags |= CONSOLE_COUNTDOWN_RETURN;
@@ -45,6 +45,9 @@ static int do_timeout(int argc, char *argv[])
 			break;
 		case 's':
 			flags |= CONSOLE_COUNTDOWN_SILENT;
+			break;
+		case 'e':
+			flags |= CONSOLE_COUNTDOWN_EXTERN;
 			break;
 		case 'v':
 			varname = optarg;
@@ -73,6 +76,7 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-a", "interrupt on any key")
 BAREBOX_CMD_HELP_OPT("-c", "interrupt on Ctrl-C")
 BAREBOX_CMD_HELP_OPT("-r", "interrupt on RETURN")
+BAREBOX_CMD_HELP_OPT("-e", "interrupt on external commands (i.e. fastboot")
 BAREBOX_CMD_HELP_OPT("-s", "silent mode")
 BAREBOX_CMD_HELP_OPT("-v <VARIABLE>", "export pressed key to environment")
 BAREBOX_CMD_HELP_END
@@ -80,7 +84,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(timeout)
 	.cmd		= do_timeout,
 	BAREBOX_CMD_DESC("wait for a specified timeout")
-	BAREBOX_CMD_OPTS("[-acrsv] SECONDS")
+	BAREBOX_CMD_OPTS("[-acrsev] SECONDS")
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_timeout_help)
 BAREBOX_CMD_END

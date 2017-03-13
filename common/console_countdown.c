@@ -23,6 +23,13 @@
 #include <console_countdown.h>
 #include <stdio.h>
 
+static bool console_countdown_timeout_abort;
+
+void console_countdown_abort(void)
+{
+	console_countdown_timeout_abort = true;
+}
+
 int console_countdown(int timeout_s, unsigned flags, char *out_key)
 {
 	uint64_t start, second;
@@ -35,7 +42,7 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 	countdown = timeout_s;
 
 	if (!(flags & CONSOLE_COUNTDOWN_SILENT))
-		printf("%2d", countdown--);
+		printf("%4d", countdown--);
 
 	do {
 		if (tstc()) {
@@ -48,12 +55,19 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 				goto out;
 			key = 0;
 		}
+		if ((flags & CONSOLE_COUNTDOWN_EXTERN) &&
+		    console_countdown_timeout_abort)
+			goto out;
 		if (!(flags & CONSOLE_COUNTDOWN_SILENT) &&
 		    is_timeout(second, SECOND)) {
-			printf("\b\b%2d", countdown--);
+			printf("\b\b\b\b%4d", countdown--);
 			second += SECOND;
 		}
 	} while (!is_timeout(start, timeout_s * SECOND));
+
+	if ((flags & CONSOLE_COUNTDOWN_EXTERN) &&
+	    console_countdown_timeout_abort)
+		goto out;
 
 	ret = 0;
 
@@ -62,6 +76,7 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 		printf("\n");
 	if (key && out_key)
 		*out_key = key;
+	console_countdown_timeout_abort = false;
 
 	return ret;
 }

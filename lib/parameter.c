@@ -692,7 +692,7 @@ struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 
 	piro = xzalloc(sizeof(*piro));
 
-	ret = __dev_add_param(&piro->param, dev, name, NULL, NULL, 0);
+	ret = __dev_add_param(&piro->param, dev, name, NULL, NULL, PARAM_FLAG_RO);
 	if (ret) {
 		free(piro);
 		return ERR_PTR(ret);
@@ -718,7 +718,7 @@ struct param_d *dev_add_param_llint_ro(struct device_d *dev, const char *name,
 
 	piro = xzalloc(sizeof(*piro));
 
-	ret = __dev_add_param(&piro->param, dev, name, NULL, NULL, 0);
+	ret = __dev_add_param(&piro->param, dev, name, NULL, NULL, PARAM_FLAG_RO);
 	if (ret) {
 		free(piro);
 		return ERR_PTR(ret);

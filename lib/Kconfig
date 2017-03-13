@@ -21,6 +21,30 @@ config LZ4_DECOMPRESS
 config XZ_DECOMPRESS
 	bool "include xz uncompression support"
 	select UNCOMPRESS
+	select XZ_DEC_X86
+	select XZ_DEC_POWERPC
+	select XZ_DEC_IA64
+	select XZ_DEC_ARM
+	select XZ_DEC_ARMTHUMB
+	select XZ_DEC_SPARC
+
+config XZ_DEC_X86
+        bool
+
+config XZ_DEC_POWERPC
+        bool
+
+config XZ_DEC_IA64
+        bool
+
+config XZ_DEC_ARM
+        bool
+
+config XZ_DEC_ARMTHUMB
+        bool
+
+config XZ_DEC_SPARC
+        bool
 
 config REED_SOLOMON
 	bool

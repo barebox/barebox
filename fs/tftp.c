@@ -568,13 +568,11 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 
 	while (insize) {
 		now = kfifo_get(priv->fifo, buf, insize);
+		outsize += now;
+		buf += now;
+		insize -= now;
 		if (priv->state == STATE_DONE)
-			return outsize + now;
-		if (now) {
-			outsize += now;
-			buf += now;
-			insize -= now;
-		}
+			return outsize;
 
 		if (TFTP_FIFO_SIZE - kfifo_len(priv->fifo) >= priv->blocksize)
 			tftp_send(priv);
@@ -591,7 +589,32 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 
 static loff_t tftp_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
-	/* not implemented in tftp protocol */
+	/* We cannot seek backwards without reloading or caching the file */
+	if (pos >= f->pos) {
+		loff_t ret;
+		char *buf = xmalloc(1024);
+
+		while (pos > f->pos) {
+			size_t len = min_t(size_t, 1024, pos - f->pos);
+
+			ret = tftp_read(dev, f, buf, len);
+
+			if (!ret)
+				/* EOF, so the desired pos is invalid. */
+				ret = -EINVAL;
+			if (ret < 0)
+				goto out_free;
+
+			f->pos += ret;
+		}
+
+		ret = pos;
+
+out_free:
+		free(buf);
+		return ret;
+	}
+
 	return -ENOSYS;
 }
 

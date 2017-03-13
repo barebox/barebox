@@ -48,33 +48,11 @@
 
 struct led_trigger_struct {
 	struct led *led;
-	uint64_t flash_start;
-	int flash;
+	struct list_head list;
+	enum led_trigger trigger;
 };
 
 static struct led_trigger_struct triggers[LED_TRIGGER_MAX];
-
-static void trigger_func(struct poller_struct *poller)
-{
-	int i;
-
-	for (i = 0; i < LED_TRIGGER_MAX; i++) {
-		if (triggers[i].led &&
-		    triggers[i].flash &&
-		    is_timeout(triggers[i].flash_start, 200 * MSECOND)) {
-			led_set(triggers[i].led, 0);
-			triggers[i].flash = 0;
-		}
-	}
-
-	if (triggers[LED_TRIGGER_HEARTBEAT].led &&
-			is_timeout(triggers[LED_TRIGGER_HEARTBEAT].flash_start, SECOND))
-		led_trigger(LED_TRIGGER_HEARTBEAT, TRIGGER_FLASH);
-}
-
-static struct poller_struct trigger_poller = {
-	.func = trigger_func,
-};
 
 /**
  * led_trigger - triggers a trigger
@@ -91,11 +69,7 @@ void led_trigger(enum led_trigger trigger, enum trigger_type type)
 		return;
 
 	if (type == TRIGGER_FLASH) {
-		if (is_timeout(triggers[trigger].flash_start, 400 * MSECOND)) {
-			led_set(triggers[trigger].led, triggers[trigger].led->max_value);
-			triggers[trigger].flash_start = get_time_ns();
-			triggers[trigger].flash = 1;
-		}
+		led_flash(triggers[trigger].led, 200);
 		return;
 	}
 
@@ -129,6 +103,8 @@ int led_set_trigger(enum led_trigger trigger, struct led *led)
 
 	if (led && trigger == LED_TRIGGER_DEFAULT_ON)
 		led_set(triggers[trigger].led, triggers[trigger].led->max_value);
+	if (led && trigger == LED_TRIGGER_HEARTBEAT)
+		led_blink(led, 200, 1000);
 
 	return 0;
 }
@@ -147,9 +123,3 @@ int led_get_trigger(enum led_trigger trigger)
 		return -ENODEV;
 	return led_get_number(triggers[trigger].led);
 }
-
-static int trigger_init(void)
-{
-	return poller_register(&trigger_poller);
-}
-late_initcall(trigger_init);

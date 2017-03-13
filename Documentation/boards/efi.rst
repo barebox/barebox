@@ -25,7 +25,7 @@ Use the following to build barebox for EFI:
 
 .. code-block:: sh
 
-  export ARCH=efi
+  export ARCH=x86
   make efi_defconfig
   make
 

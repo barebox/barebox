@@ -36,9 +36,32 @@ static uint64_t time_ns;
  */
 uint64_t time_beginning;
 
+static uint64_t dummy_read(void)
+{
+	static uint64_t dummy_counter;
+
+	dummy_counter += CONFIG_CLOCKSOURCE_DUMMY_RATE;
+
+	return dummy_counter;
+}
+
+static struct clocksource dummy_cs = {
+	.shift = 0,
+	.mult = 1,
+	.read = dummy_read,
+	.mask = CLOCKSOURCE_MASK(64),
+	.priority = -1,
+};
+
+static int dummy_csrc_init(void)
+{
+	return init_clock(&dummy_cs);
+}
+pure_initcall(dummy_csrc_init);
+
 static int dummy_csrc_warn(void)
 {
-	if (!current_clock) {
+	if (current_clock == &dummy_cs) {
 		pr_warn("Warning: Using dummy clocksource\n");
 	}
 
@@ -54,14 +77,6 @@ uint64_t get_time_ns(void)
 	struct clocksource *cs = current_clock;
 	uint64_t cycle_now, cycle_delta;
 	uint64_t ns_offset;
-
-	if (!cs) {
-		static uint64_t dummy_counter;
-
-		dummy_counter += CONFIG_CLOCKSOURCE_DUMMY_RATE;
-
-		return dummy_counter;
-	}
 
 	/* read clocksource: */
 	cycle_now = cs->read() & cs->mask;
@@ -213,6 +228,17 @@ EXPORT_SYMBOL(mdelay_non_interruptible);
 
 int init_clock(struct clocksource *cs)
 {
+	if (current_clock && cs->priority <= current_clock->priority)
+		return 0;
+
+	if (cs->init) {
+		int ret;
+
+		ret = cs->init(cs);
+		if (ret)
+			return ret;
+	}
+
 	current_clock = cs;
 	time_beginning = get_time_ns();
 

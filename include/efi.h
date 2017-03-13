@@ -14,7 +14,7 @@
 #include <linux/string.h>
 #include <linux/types.h>
 
-#ifdef CONFIG_ARCH_EFI
+#ifdef CONFIG_EFI_BOOTUP
 #define EFIAPI __attribute__((ms_abi))
 #else
 #define EFIAPI
@@ -171,6 +171,12 @@ struct efi_open_protocol_information_entry {
 	u32 open_count;
 };
 
+typedef enum {
+	EFI_TIMER_CANCEL = 0,
+	EFI_TIMER_PERIODIC = 1,
+	EFI_TIMER_RELATIVE = 2
+} efi_timer_delay_t;
+
 /*
  * EFI Boot Services table
  */
@@ -185,12 +191,25 @@ typedef struct {
 				       unsigned long *, u32 *);
 	efi_status_t (EFIAPI *allocate_pool)(int, unsigned long, void **);
 	efi_status_t (EFIAPI *free_pool)(void *);
-	void *create_event;
-	void *set_timer;
+#define EFI_EVT_TIMER				0x80000000
+#define EFI_EVT_RUNTIME				0x40000000
+#define EFI_EVT_NOTIFY_WAIT			0x00000100
+#define EFI_EVT_NOTIFY_SIGNAL			0x00000200
+#define EFI_EVT_SIGNAL_EXIT_BOOT_SERVICES	0x00000201
+#define EFI_EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE	0x60000202
+
+#define EFI_TPL_APPLICATION	4
+#define EFI_TPL_CALLBACK	8
+#define EFI_TPL_NOTIFY		16
+#define EFI_TPL_HIGH_LEVEL	31
+	efi_status_t(EFIAPI *create_event)(u32 type , unsigned long tpl,
+			void (*fn) (void *event, void *ctx),
+			void *ctx, void **event);
+	efi_status_t(EFIAPI *set_timer)(void *event, efi_timer_delay_t type, uint64_t time);
 	efi_status_t(EFIAPI *wait_for_event)(unsigned long number_of_events, void *event,
 			unsigned long *index);
 	void *signal_event;
-	void *close_event;
+	efi_status_t(EFIAPI *close_event)(void *event);
 	void *check_event;
 	void *install_protocol_interface;
 	void *reinstall_protocol_interface;
@@ -469,6 +488,9 @@ extern efi_runtime_services_t *RT;
 #define EFI_VLANCONFIGDXE_INF_GUID \
 	EFI_GUID(0xe4f61863, 0xfe2c, 0x4b56, 0xa8, 0xf4, 0x08, 0x51, 0x9b, 0xc4, 0x39, 0xdf)
 
+#define EFI_TIMESTAMP_PROTOCOL_GUID \
+	EFI_GUID(0xafbfde41, 0x2e6e, 0x4262, 0xba, 0x65, 0x62, 0xb9, 0x23, 0x6e, 0x54, 0x95)
+
 /* barebox specific GUIDs */
 #define EFI_BAREBOX_VENDOR_GUID \
 	EFI_GUID(0x5b91f69c, 0x8b88, 0x4a2b, 0x92, 0x69, 0x5f, 0x1d, 0x80, 0x2b, 0x51, 0x75)
@@ -476,6 +498,14 @@ extern efi_runtime_services_t *RT;
 /* for systemd */
 #define EFI_SYSTEMD_VENDOR_GUID \
 	EFI_GUID(0x4a67b082, 0x0a4c, 0x41cf, 0xb6, 0xc7, 0x44, 0x0b, 0x29, 0xbb, 0x8c, 0x4f)
+
+/* for TPM 1.2 */
+#define EFI_TCG_PROTOCOL_GUID \
+	EFI_GUID(0xf541796d, 0xa62e, 0x4954, 0xa7, 0x75, 0x95, 0x84, 0xf6, 0x1b, 0x9c, 0xdd)
+
+/* for TPM 2.0 */
+#define EFI_TCG2_PROTOCOL_GUID \
+	EFI_GUID(0x607f766c, 0x7455, 0x42be, 0x93, 0x0b, 0xe4, 0xd7, 0x6d, 0xb2, 0x72, 0x0f)
 
 extern efi_guid_t efi_file_info_id;
 extern efi_guid_t efi_simple_file_system_protocol_guid;
@@ -487,6 +517,11 @@ extern efi_guid_t efi_global_variable_guid;
 extern efi_guid_t efi_block_io_protocol_guid;
 extern efi_guid_t efi_barebox_vendor_guid;
 extern efi_guid_t efi_systemd_vendor_guid;
+
+typedef struct {
+	efi_guid_t guid;
+	unsigned long table;
+} efi_config_table_t;
 
 #define EFI_SYSTEM_TABLE_SIGNATURE ((u64)0x5453595320494249ULL)
 
@@ -510,7 +545,7 @@ typedef struct {
 	efi_runtime_services_t *runtime;
 	efi_boot_services_t *boottime;
 	unsigned long nr_tables;
-	unsigned long tables;
+	efi_config_table_t *tables;
 } efi_system_table_t;
 
 typedef struct {

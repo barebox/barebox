@@ -12,7 +12,8 @@ struct clocksource {
 	uint64_t	(*read)(void);
 	uint64_t	cycle_last;
 	uint64_t	mask;
-
+	int		priority;
+	int		(*init)(struct clocksource*);
 };
 
 static inline uint32_t cyc2ns(struct clocksource *cs, uint64_t cycles)

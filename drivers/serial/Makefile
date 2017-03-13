@@ -1,6 +1,7 @@
 obj-$(CONFIG_DRIVER_SERIAL_ARM_DCC)		+= arm_dcc.o
 obj-$(CONFIG_SERIAL_AMBA_PL011)			+= amba-pl011.o
 obj-$(CONFIG_DRIVER_SERIAL_AR933X)		+= serial_ar933x.o
+obj-$(CONFIG_DRIVER_SERIAL_EFI)			+= serial_efi.o
 obj-$(CONFIG_DRIVER_SERIAL_IMX)			+= serial_imx.o
 obj-$(CONFIG_DRIVER_SERIAL_STM378X)		+= stm-serial.o
 obj-$(CONFIG_DRIVER_SERIAL_ATMEL)		+= atmel.o

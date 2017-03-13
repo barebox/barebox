@@ -202,7 +202,7 @@ config DRIVER_NET_TAP
 
 config DRIVER_NET_EFI_SNP
 	bool "EFI SNP ethernet driver"
-	depends on ARCH_EFI
+	depends on EFI_BOOTUP
 
 config DRIVER_NET_TSE
 	depends on NIOS2

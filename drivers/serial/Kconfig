@@ -21,6 +21,10 @@ config DRIVER_SERIAL_AR933X
 	  If you have an Atheros AR933X SOC based board and want to use the
 	  built-in UART of the SoC, say Y to this option.
 
+config DRIVER_SERIAL_EFI
+	bool "EFI serial"
+	depends on EFI_BOOTUP
+
 config DRIVER_SERIAL_IMX
 	depends on ARCH_IMX
 	default y
@@ -46,7 +50,7 @@ config DRIVER_SERIAL_LINUX_CONSOLE
 	bool "linux console driver"
 
 config DRIVER_SERIAL_EFI_STDIO
-	depends on ARCH_EFI
+	depends on EFI_BOOTUP
 	bool "EFI stdio driver"
 
 config DRIVER_SERIAL_MPC5XXX

@@ -42,7 +42,7 @@ config FS_NFS
 	prompt "nfs support"
 
 config FS_EFI
-	depends on ARCH_EFI
+	depends on EFI_BOOTUP
 	bool
 	prompt "EFI filesystem support"
 	help
@@ -50,7 +50,7 @@ config FS_EFI
 	  by the EFI Firmware via the EFI Simple File System Protocol.
 
 config FS_EFIVARFS
-	depends on ARCH_EFI
+	depends on EFI_BOOTUP
 	bool
 	prompt "EFI variable filesystem support (efivarfs)"
 	help

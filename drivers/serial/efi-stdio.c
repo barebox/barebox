@@ -25,7 +25,7 @@
 #include <efi.h>
 #include <readkey.h>
 #include <linux/ctype.h>
-#include <mach/efi.h>
+#include <efi/efi.h>
 
 #define EFI_SHIFT_STATE_VALID           0x80000000
 #define EFI_RIGHT_CONTROL_PRESSED       0x00000004

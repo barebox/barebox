@@ -610,7 +610,7 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 	for (i = 0; i < num_bitflips; i++) {
 		int offs;
 		int bit;
-		u8 *pos = buf;
+		u8 *pos = buf + offset;
 
 		if (random) {
 			offs = random32() % len;

@@ -565,6 +565,8 @@ int mtd_peb_create_bitflips(struct mtd_info *mtd, int pnum, int offset,
 
 	if (offset < 0 || offset + len > mtd->erasesize)
 		return -EINVAL;
+	if (offset % mtd->writesize)
+		return -EINVAL;
 	if (len <= 0)
 		return -EINVAL;
 	if (num_bitflips <= 0)

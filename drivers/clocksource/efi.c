@@ -71,6 +71,10 @@ static int efi_cs_init(struct clocksource *cs)
 		uint64_t nb_100ns;
 
 		freq = ticks_freq_x86();
+		if (freq == 0) {
+			BS->close_event(efi_cs_evt);
+			return -ENODEV;
+		}
 		nb_100ns = 10 * 1000 * 1000 / freq;
 		pr_warn("EFI Event timer too slow freq = %llu Hz\n", freq);
 		efiret = BS->set_timer(efi_cs_evt, EFI_TIMER_PERIODIC, nb_100ns);

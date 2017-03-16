@@ -48,6 +48,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/phy.h>
+#include <of_net.h>
 
 #include "macb.h"
 
@@ -615,14 +616,8 @@ static int macb_probe(struct device_d *dev)
 	struct resource *iores;
 	struct eth_device *edev;
 	struct macb_device *macb;
+	const char *pclk_name;
 	u32 ncfgr;
-	struct macb_platform_data *pdata;
-
-	if (!dev->platform_data) {
-		dev_err(dev, "macb: no platform_data\n");
-		return -ENODEV;
-	}
-	pdata = dev->platform_data;
 
 	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct macb_device));
 	edev->priv = (struct macb_device *)(edev + 1);
@@ -633,22 +628,49 @@ static int macb_probe(struct device_d *dev)
 	edev->open = macb_open;
 	edev->send = macb_send;
 	edev->halt = macb_halt;
-	edev->get_ethaddr = pdata->get_ethaddr ? pdata->get_ethaddr : macb_get_ethaddr;
+	edev->get_ethaddr = macb_get_ethaddr;
 	edev->set_ethaddr = macb_set_ethaddr;
 	edev->parent = dev;
 
 	macb->miibus.read = macb_phy_read;
 	macb->miibus.write = macb_phy_write;
-	macb->phy_addr = pdata->phy_addr;
 	macb->miibus.priv = macb;
 	macb->miibus.parent = dev;
 
-	if (pdata->phy_interface == PHY_INTERFACE_MODE_NA)
-		macb->interface = PHY_INTERFACE_MODE_MII;
-	else
-		macb->interface = pdata->phy_interface;
+	if (dev->platform_data) {
+		struct macb_platform_data *pdata = dev->platform_data;
 
-	macb->phy_flags = pdata->phy_flags;
+		if (pdata->phy_interface == PHY_INTERFACE_MODE_NA)
+			macb->interface = PHY_INTERFACE_MODE_MII;
+		else
+			macb->interface = pdata->phy_interface;
+
+		if (pdata->get_ethaddr)
+			edev->get_ethaddr = pdata->get_ethaddr;
+
+		macb->phy_addr = pdata->phy_addr;
+		macb->phy_flags = pdata->phy_flags;
+		pclk_name = "macb_clk";
+	} else if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
+		int ret;
+		struct device_node *mdiobus;
+
+		ret = of_get_phy_mode(dev->device_node);
+		if (ret < 0)
+			macb->interface = PHY_INTERFACE_MODE_MII;
+		else
+			macb->interface = ret;
+
+		mdiobus = of_get_child_by_name(dev->device_node, "mdio");
+		if (mdiobus)
+			macb->miibus.dev.device_node = mdiobus;
+
+		macb->phy_addr = -1;
+		pclk_name = NULL;
+	} else {
+		dev_err(dev, "macb: no platform_data\n");
+		return -ENODEV;
+	}
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
@@ -698,8 +720,14 @@ static int macb_probe(struct device_d *dev)
 	return 0;
 }
 
+static const struct of_device_id macb_dt_ids[] = {
+	{ .compatible = "cdns,at91sam9260-macb",},
+	{ /* sentinel */ }
+};
+
 static struct driver_d macb_driver = {
 	.name  = "macb",
 	.probe = macb_probe,
+	.of_compatible = DRV_OF_COMPAT(macb_dt_ids),
 };
 device_platform_driver(macb_driver);

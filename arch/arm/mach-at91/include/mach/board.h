@@ -32,11 +32,13 @@
 
 void at91_set_main_clock(unsigned long rate);
 
+#define AT91_MAX_USBH_PORTS	3
+
  /* USB Host */
 struct at91_usbh_data {
 	u8		ports;		/* number of ports on root hub */
-	int		vbus_pin[2];	/* port power-control pin */
-	u8	vbus_pin_active_low[2];	/* vbus polarity */
+	int		vbus_pin[AT91_MAX_USBH_PORTS];	/* port power-control pin */
+	u8	vbus_pin_active_low[AT91_MAX_USBH_PORTS];	/* vbus polarity */
 };
 extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
 extern void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data);

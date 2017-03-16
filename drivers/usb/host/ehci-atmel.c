@@ -65,6 +65,9 @@ static int atmel_ehci_probe(struct device_d *dev)
 	struct resource *iores;
 	struct ehci_data data;
 	struct atmel_ehci_priv *atehci;
+	const char *uclk_name;
+
+	uclk_name = (dev->device_node) ? "usb_clk" : "uhpck";
 
 	atehci = xzalloc(sizeof(*atehci));
 	atehci->dev = dev;
@@ -76,7 +79,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 		return -ENOENT;
 	}
 
-	atehci->uclk = clk_get(dev, "uhpck");
+	atehci->uclk = clk_get(dev, uclk_name);
 	if (IS_ERR(atehci->iclk)) {
 		dev_err(dev, "Error getting function clock\n");
 		return -ENOENT;
@@ -107,9 +110,15 @@ static void atmel_ehci_remove(struct device_d *dev)
 	atmel_stop_clock(dev->priv);
 }
 
+static const struct of_device_id atmel_ehci_dt_ids[] = {
+	{ .compatible = "atmel,at91sam9g45-ehci" },
+	{ /* sentinel */ }
+};
+
 static struct driver_d atmel_ehci_driver = {
 	.name = "atmel-ehci",
 	.probe = atmel_ehci_probe,
 	.remove = atmel_ehci_remove,
+	.of_compatible = DRV_OF_COMPAT(atmel_ehci_dt_ids),
 };
 device_platform_driver(atmel_ehci_driver);

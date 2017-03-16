@@ -9,6 +9,26 @@ config HAVE_AT91_DBGU1
 config HAVE_AT91_DBGU2
 	bool
 
+config HAVE_AT91_UTMI
+	bool
+
+config HAVE_AT91_USB_CLK
+	bool
+
+config COMMON_CLK_AT91
+	bool
+	select COMMON_CLK
+	select MFD_SYSCON
+
+config HAVE_AT91_SMD
+	bool
+
+config HAVE_AT91_H32MX
+	bool
+
+config HAVE_AT91_GENERATED_CLK
+	bool
+
 config HAVE_AT91_LOWLEVEL_INIT
 	bool
 

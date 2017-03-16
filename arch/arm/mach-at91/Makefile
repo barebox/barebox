@@ -1,4 +1,9 @@
-obj-y += setup.o clock.o irq_fixup.o
+obj-y += setup.o irq_fixup.o
+
+ifeq ($(CONFIG_COMMON_CLK_OF_PROVIDER),)
+obj-y += clock.o
+endif
+
 obj-$(CONFIG_CMD_AT91_BOOT_TEST) += boot_test_cmd.o
 
 obj-$(CONFIG_AT91_BOOTSTRAP) += bootstrap.o

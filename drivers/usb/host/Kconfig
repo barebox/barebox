@@ -10,19 +10,16 @@ config USB_EHCI_OMAP
 config USB_EHCI_ATMEL
 	depends on ARCH_AT91
 	depends on USB_EHCI
+	select USB_OHCI_AT91
 	bool "Atmel EHCI driver"
 
 config USB_OHCI
 	bool "OHCI driver"
 	depends on !MMU
 
-if USB_OHCI
-
 config USB_OHCI_AT91
 	depends on ARCH_AT91
 	bool "AT91 OHCI driver"
-
-endif
 
 config USB_XHCI
 	bool "xHCI driver"

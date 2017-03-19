@@ -1,8 +1,8 @@
 / {
 	aliases {
-		mmc0 = "/sdhci@0,700b0000/";
-		mmc1 = "/sdhci@0,700b0200/";
-		mmc2 = "/sdhci@0,700b0400/";
-		mmc3 = "/sdhci@0,700b0600/";
+		mmc0 = "/sdhci@700b0000/";
+		mmc1 = "/sdhci@700b0200/";
+		mmc2 = "/sdhci@700b0400/";
+		mmc3 = "/sdhci@700b0600/";
 	};
 };

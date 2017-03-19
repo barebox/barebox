@@ -12,6 +12,6 @@
 	};
 
 	/* eMMC */
-	emmc: sdhci@0,700b0600 {
+	emmc: sdhci@700b0600 {
 	};
 };

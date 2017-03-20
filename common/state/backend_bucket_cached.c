@@ -52,12 +52,12 @@ static int state_backend_bucket_cache_fill(
 	int ret;
 
 	ret = cache->raw->read(cache->raw, &cache->data, &cache->data_len);
-	if (ret == -EUCLEAN)
+	if (ret == -EUCLEAN) {
 		cache->force_write = true;
-	else if (ret)
-		return ret;
+		ret = 0;
+	}
 
-	return 0;
+	return ret;
 }
 
 static int state_backend_bucket_cache_read(struct state_backend_storage_bucket *bucket,

@@ -83,19 +83,19 @@ static int ext4fs_blockgroup(struct ext2_data *data, int group,
 	long int blkno;
 	unsigned int blkoff, desc_per_blk;
 	struct ext_filesystem *fs = data->fs;
+	int desc_size = fs->gdsize;
 
-	desc_per_blk = EXT2_BLOCK_SIZE(data) / sizeof(struct ext2_block_group);
+	desc_per_blk = EXT2_BLOCK_SIZE(data) / desc_size;
 
 	blkno = le32_to_cpu(data->sblock.first_data_block) + 1 +
 			group / desc_per_blk;
-	blkoff = (group % desc_per_blk) * sizeof(struct ext2_block_group);
+	blkoff = (group % desc_per_blk) * desc_size;
 
 	dev_dbg(fs->dev, "read %d group descriptor (blkno %ld blkoff %u)\n",
 	      group, blkno, blkoff);
 
 	return ext4fs_devread(fs, blkno << LOG2_EXT2_BLOCK_SIZE(data),
-			      blkoff, sizeof(struct ext2_block_group),
-			      (char *)blkgrp);
+				blkoff, desc_size, (char *)blkgrp);
 }
 
 int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)

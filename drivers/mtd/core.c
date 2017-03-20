@@ -105,11 +105,10 @@ static ssize_t mtd_op_read(struct cdev *cdev, void* buf, size_t count,
 			offset, count);
 
 	ret = mtd_read(mtd, offset, count, &retlen, buf);
-	if (ret < 0)
+	if (ret < 0 && ret != -EUCLEAN)
 		return ret;
-	if (mtd->ecc_strength == 0)
-		return retlen;	/* device lacks ecc */
-	return ret >= mtd->bitflip_threshold ? -EUCLEAN : retlen;
+
+	return retlen;
 }
 
 #define NOTALIGNED(x) (x & (mtd->writesize - 1)) != 0

@@ -44,6 +44,7 @@ config DISK_AHCI_IMX
 
 config DISK_SATA_MV
 	depends on ARCH_MVEBU
+	select DISK_ATA
 	select DISK_IDE_SFF
 	bool "Marvell SATA support"
 

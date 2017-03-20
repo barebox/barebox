@@ -54,7 +54,7 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 	int blockcnt;
 	int log2blocksize = LOG2_EXT2_BLOCK_SIZE(node->data);
 	int blocksize = 1 << (log2blocksize + DISK_SECTOR_BITS);
-	unsigned int filesize = __le32_to_cpu(node->inode.size);
+	unsigned int filesize = le32_to_cpu(node->inode.size);
 	int previous_block_number = -1;
 	int delayed_start = 0;
 	int delayed_extent = 0;

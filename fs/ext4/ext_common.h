@@ -59,13 +59,13 @@
 #define EXT2_BLOCK_SIZE(data)	   (1 << LOG2_BLOCK_SIZE(data))
 
 /* Log2 size of ext2 block in 512 blocks.  */
-#define LOG2_EXT2_BLOCK_SIZE(data) (__le32_to_cpu \
+#define LOG2_EXT2_BLOCK_SIZE(data) (le32_to_cpu \
 				(data->sblock.log2_block_size) + 1)
 
 /* Log2 size of ext2 block in bytes.  */
-#define LOG2_BLOCK_SIZE(data)	   (__le32_to_cpu \
+#define LOG2_BLOCK_SIZE(data)	   (le32_to_cpu \
 		(data->sblock.log2_block_size) + 10)
-#define INODE_SIZE_FILESYSTEM(data)	(__le32_to_cpu \
+#define INODE_SIZE_FILESYSTEM(data)	(le32_to_cpu \
 			(data->sblock.inode_size))
 
 #define EXT2_FT_DIR	2

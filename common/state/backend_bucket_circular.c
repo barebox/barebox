@@ -390,7 +390,7 @@ static int state_backend_bucket_circular_init(
 
 		ret = state_mtd_peb_read(circ, buf, sub_offset,
 					 circ->writesize);
-		if (ret)
+		if (ret && ret != -EUCLEAN)
 			return ret;
 
 		ret = mtd_buf_all_ff(buf, circ->writesize);

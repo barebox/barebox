@@ -9,7 +9,7 @@
 #include <gui/image_renderer.h>
 #include <asm/unaligned.h>
 
-struct image *bmp_open(char *inbuf, int insize)
+static struct image *bmp_open(char *inbuf, int insize)
 {
 	struct image *img = calloc(1, sizeof(struct image));
 	struct bmp_image *bmp = (struct bmp_image*)inbuf;
@@ -30,7 +30,7 @@ struct image *bmp_open(char *inbuf, int insize)
 	return img;
 }
 
-void bmp_close(struct image *img)
+static void bmp_close(struct image *img)
 {
 	free(img->data);
 }

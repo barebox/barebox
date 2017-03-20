@@ -254,6 +254,8 @@ static int fit_verify_signature(struct device_node *sig_node, void *fit)
 	}
 	if (strcmp(algo_name, "sha1,rsa2048") == 0) {
 		algo = HASH_ALGO_SHA1;
+	} else if (strcmp(algo_name, "sha256,rsa2048") == 0) {
+		algo = HASH_ALGO_SHA256;
 	} else if (strcmp(algo_name, "sha256,rsa4096") == 0) {
 		algo = HASH_ALGO_SHA256;
 	} else	{

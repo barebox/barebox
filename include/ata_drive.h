@@ -37,8 +37,10 @@
 
 #define ATA_CMD_ID_ATA		0xEC
 #define ATA_CMD_READ		0x20
+#define ATA_CMD_PIO_READ_EXT	0x24
 #define ATA_CMD_READ_EXT	0x25
 #define ATA_CMD_WRITE		0x30
+#define ATA_CMD_PIO_WRITE_EXT	0x34
 #define ATA_CMD_WRITE_EXT	0x35
 
 /* drive's status flags */
@@ -140,6 +142,7 @@ struct ata_port {
 	void *drvdata;
 	struct block_device blk;
 	uint16_t *id;
+	int lba48;
 	int initialized;
 	int probe;
 };

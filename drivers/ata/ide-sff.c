@@ -136,17 +136,33 @@ static int ata_wait_ready(struct ide_port *ide, unsigned timeout)
  * @param io Register file
  * @param drive 0 master drive, 1 slave drive
  * @param num Sector number
- *
- * @todo LBA48 support
  */
-static int ata_set_lba_sector(struct ide_port *ide, unsigned drive, uint64_t num)
+static int ata_set_lba_sector(struct ata_port *port, unsigned drive,
+				uint64_t num)
 {
-	if (num > 0x0FFFFFFF || drive > 1)
+	struct ide_port *ide = to_ata_drive_access(port);
+
+	if (drive > 1)
 		return -EINVAL;
 
-	ata_wr_byte(ide, 0xA0 | LBA_FLAG | drive << 4 | num >> 24,
-		    ide->io.device_addr);
-	ata_wr_byte(ide, 0x00, ide->io.error_addr);
+	if (port->lba48) {
+		if (num > (1ULL << 48) - 1)
+			return -EINVAL;
+
+		ata_wr_byte(ide, LBA_FLAG | drive << 4, ide->io.device_addr);
+
+		ata_wr_byte(ide, 0x00, ide->io.nsect_addr);
+		ata_wr_byte(ide, num >> 24, ide->io.lbal_addr);
+		ata_wr_byte(ide, num >> 32, ide->io.lbam_addr);
+		ata_wr_byte(ide, num >> 40, ide->io.lbah_addr);
+	} else {
+		if (num > (1ULL << 28) - 1)
+			return -EINVAL;
+
+		ata_wr_byte(ide, 0xA0 | LBA_FLAG | drive << 4 | num >> 24,
+			    ide->io.device_addr);
+	}
+
 	ata_wr_byte(ide, 0x01, ide->io.nsect_addr);
 	ata_wr_byte(ide, num, ide->io.lbal_addr);	/* 0 ... 7 */
 	ata_wr_byte(ide, num >> 8, ide->io.lbam_addr); /* 8 ... 15 */
@@ -316,10 +332,18 @@ static int ide_read(struct ata_port *port, void *buffer, unsigned int block,
 	struct ide_port *ide = to_ata_drive_access(port);
 
 	while (num_blocks) {
-		rc = ata_set_lba_sector(ide, DISK_MASTER, sector);
+		uint8_t cmd;
+
+		rc = ata_set_lba_sector(port, DISK_MASTER, sector);
 		if (rc != 0)
 			return rc;
-		rc = ata_wr_cmd(ide, ATA_CMD_READ);
+
+		if (port->lba48)
+			cmd = ATA_CMD_PIO_READ_EXT;
+		else
+			cmd = ATA_CMD_READ;
+
+		rc = ata_wr_cmd(ide, cmd);
 		if (rc != 0)
 			return rc;
 		rc = ata_wait_ready(ide, MAX_TIMEOUT);
@@ -355,10 +379,18 @@ static int __maybe_unused ide_write(struct ata_port *port,
 	struct ide_port *ide = to_ata_drive_access(port);
 
 	while (num_blocks) {
-		rc = ata_set_lba_sector(ide, DISK_MASTER, sector);
+		uint8_t cmd;
+
+		rc = ata_set_lba_sector(port, DISK_MASTER, sector);
 		if (rc != 0)
 			return rc;
-		rc = ata_wr_cmd(ide, ATA_CMD_WRITE);
+
+		if (port->lba48)
+			cmd = ATA_CMD_PIO_WRITE_EXT;
+		else
+			cmd = ATA_CMD_WRITE;
+
+		rc = ata_wr_cmd(ide, cmd);
 		if (rc != 0)
 			return rc;
 		rc = ata_wait_ready(ide, MAX_TIMEOUT);

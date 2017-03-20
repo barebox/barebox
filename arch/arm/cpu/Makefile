@@ -36,7 +36,9 @@ endif
 
 obj-$(CONFIG_ARM_PSCI) += psci.o
 obj-$(CONFIG_ARM_SECURE_MONITOR) += smccc-call.o
+AFLAGS_smccc-call.o	:=-Wa,-march=armv7-a
 obj-$(CONFIG_ARM_SECURE_MONITOR) += sm.o sm_as.o
+AFLAGS_sm_as.o		:=-Wa,-march=armv7-a
 
 obj-$(CONFIG_CPU_32v4T) += cache-armv4.o
 pbl-$(CONFIG_CPU_32v4T) += cache-armv4.o

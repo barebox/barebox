@@ -32,7 +32,7 @@ struct image_renderer {
 
 #ifdef CONFIG_IMAGE_RENDERER
 int image_renderer_register(struct image_renderer *ir);
-void image_render_unregister(struct image_renderer *ir);
+void image_renderer_unregister(struct image_renderer *ir);
 
 int image_renderer_image(struct screen *sc, struct surface *s, struct image *img);
 

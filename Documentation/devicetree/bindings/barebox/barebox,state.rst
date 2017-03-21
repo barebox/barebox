@@ -29,7 +29,8 @@ Required properties:
 
 * ``compatible``: should be ``barebox,state``;
 * ``magic``: A 32bit number used as a magic to identify the state
-* ``backend``: describes where the data for this state is stored
+* ``backend``: contains a phandle to the device/partition which holds the
+  actual state data.
 * ``backend-type``: should be ``raw`` or ``dtb``.
 
 Optional properties:
@@ -77,19 +78,31 @@ Example::
   	magic = <0x27031977>;
   	compatible = "barebox,state";
   	backend-type = "raw";
-  	backend = &eeprom, "partname:state";
+  	backend = &state_part;
 
   	foo {
-		reg = <0x00 0x4>;
-		type = "uint32";
+  		reg = <0x00 0x4>;
+  		type = "uint32";
   		default = <0x0>;
   	};
 
   	bar {
-		reg = <0x10 0x4>;
-		type = "enum32";
+  		reg = <0x10 0x4>;
+  		type = "enum32";
   		names = "baz", "qux";
-		default = <1>;
+  		default = <1>;
+  	};
+  };
+
+  &nand_flash {
+  	partitions {
+  		compatible = "fixed-partitions";
+  		#address-cells = <1>;
+  		#size-cells = <1>;
+  		state_part: state@10000 {
+  			label = "state";
+  			reg = <0x10000 0x10000>;
+  		};
   	};
   };
 

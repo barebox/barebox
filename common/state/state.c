@@ -452,19 +452,16 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	}
 
 	if (!path) {
-		/* guess if of_path is a path, not a phandle */
-		if (of_path[0] == '/' && len > 1) {
-			ret = of_find_path(node, "backend", &path, 0);
-		} else {
-			struct device_node *partition_node;
+		struct device_node *partition_node;
 
-			partition_node = of_parse_phandle(node, "backend", 0);
-			if (!partition_node)
-				goto out_release_state;
-
-			of_path = partition_node->full_name;
-			ret = of_find_path_by_node(partition_node, &path, 0);
+		partition_node = of_parse_phandle(node, "backend", 0);
+		if (!partition_node) {
+			dev_err(&state->dev, "Cannot resolve \"backend\" phandle\n");
+			goto out_release_state;
 		}
+
+		of_path = partition_node->full_name;
+		ret = of_find_path_by_node(partition_node, &path, 0);
 		if (ret) {
 			if (ret != -EPROBE_DEFER)
 				dev_err(&state->dev, "state failed to parse path to backend: %s\n",

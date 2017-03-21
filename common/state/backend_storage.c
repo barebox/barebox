@@ -249,7 +249,7 @@ const int desired_copies = 3;
  * @param storage Storage object
  * @param meminfo Info about the mtd device
  * @param path Path to the device
- * @param non_circular Use non-circular mode to write data that is compatible with the old on-flash format
+ * @param circular If false, use non-circular mode to write data that is compatible with the old on-flash format
  * @param dev_offset Offset to start at in the device.
  * @param max_size Maximum size to use for data. May be 0 for infinite.
  * @return 0 on success, -errno otherwise
@@ -262,7 +262,7 @@ const int desired_copies = 3;
  */
 static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 					  struct mtd_info_user *meminfo,
-					  const char *path, bool non_circular,
+					  const char *path, bool circular,
 					  off_t dev_offset, size_t max_size)
 {
 	struct state_backend_storage_bucket *bucket;
@@ -285,7 +285,7 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 		unsigned int eraseblock = offset / meminfo->erasesize;
 		bool lazy_init = true;
 
-		if (non_circular)
+		if (!circular)
 			writesize = meminfo->erasesize;
 
 		ret = state_backend_bucket_circular_create(storage->dev, path,
@@ -483,16 +483,16 @@ int state_storage_init(struct state_backend_storage *storage,
 		ret = mtd_get_meminfo(path, &meminfo);
 
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {
-		bool non_circular = false;
+		bool circular = true;
 		if (!storagetype) {
-			non_circular = true;
+			circular = false;
 		} else if (strcmp(storagetype, "circular")) {
 			dev_warn(storage->dev, "Unknown storagetype '%s', falling back to old format circular storage type.\n",
 				 storagetype);
-			non_circular = true;
+			circular = false;
 		}
 		return state_storage_mtd_buckets_init(storage, &meminfo, path,
-						      non_circular, offset,
+						      circular, offset,
 						      max_size);
 	} else {
 		return state_storage_file_buckets_init(storage, path, offset,

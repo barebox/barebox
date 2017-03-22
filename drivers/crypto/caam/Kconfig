@@ -29,6 +29,7 @@ config CRYPTO_DEV_FSL_CAAM_RINGSIZE
 config CRYPTO_DEV_FSL_CAAM_RNG
 	bool "Register caam RNG device"
 	depends on CRYPTO_DEV_FSL_CAAM
+	depends on HWRNG
 	default y
 	help
 	  Selecting this will register the SEC4 hardware rng.

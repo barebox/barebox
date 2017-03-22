@@ -90,6 +90,15 @@ config RATP
 	  transferring packets over serial links described in RFC916. This implementation
 	  is used for controlling barebox over serial ports.
 
+config ALLOW_PRNG_FALLBACK
+	bool "Allow fallback to PRNG if HWRNG not available."
+	help
+	  WARNING: it is not secure!!
+
+	  get_crypto_bytes() users like cmd_password relay on HWRNG. If HWRNG is not
+	  available and this option is disabled, cmd_password will fail.
+	  Enable it on your own risk.
+
 source lib/gui/Kconfig
 
 source lib/fonts/Kconfig

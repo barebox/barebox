@@ -31,19 +31,18 @@ int state_save(struct state *state)
 	uint8_t *buf;
 	ssize_t len;
 	int ret;
-	struct state_backend *backend = &state->backend;
 
 	if (!state->dirty)
 		return 0;
 
-	ret = backend->format->pack(backend->format, state, &buf, &len);
+	ret = state->format->pack(state->format, state, &buf, &len);
 	if (ret) {
 		dev_err(&state->dev, "Failed to pack state with backend format %s, %d\n",
-			backend->format->name, ret);
+			state->format->name, ret);
 		return ret;
 	}
 
-	ret = state_storage_write(&backend->storage, buf, len);
+	ret = state_storage_write(&state->storage, buf, len);
 	if (ret) {
 		dev_err(&state->dev, "Failed to write packed state, %d\n", ret);
 		goto out;
@@ -71,20 +70,19 @@ int state_load(struct state *state)
 	uint8_t *buf;
 	ssize_t len;
 	int ret;
-	struct state_backend *backend = &state->backend;
 
-	ret = state_storage_read(&backend->storage, backend->format,
+	ret = state_storage_read(&state->storage, state->format,
 				 state->magic, &buf, &len);
 	if (ret) {
 		dev_err(&state->dev, "Failed to read state with format %s, %d\n",
-			backend->format->name, ret);
+			state->format->name, ret);
 		return ret;
 	}
 
-	ret = backend->format->unpack(backend->format, state, buf, len);
+	ret = state->format->unpack(state->format, state, buf, len);
 	if (ret) {
 		dev_err(&state->dev, "Failed to unpack read data with format %s although verified, %d\n",
-			backend->format->name, ret);
+			state->format->name, ret);
 		goto out;
 	}
 
@@ -95,17 +93,17 @@ out:
 	return ret;
 }
 
-static int state_format_init(struct state_backend *backend,
+static int state_format_init(struct state *state,
 			     struct device_d *dev, const char *backend_format,
 			     struct device_node *node, const char *state_name)
 {
 	int ret;
 
 	if (!strcmp(backend_format, "raw")) {
-		ret = backend_format_raw_create(&backend->format, node,
+		ret = backend_format_raw_create(&state->format, node,
 						state_name, dev);
 	} else if (!strcmp(backend_format, "dtb")) {
-		ret = backend_format_dtb_create(&backend->format, dev);
+		ret = backend_format_dtb_create(&state->format, dev);
 	} else {
 		dev_err(dev, "Invalid backend format %s\n",
 			backend_format);
@@ -143,7 +141,7 @@ static void state_format_free(struct state_backend_format *format)
  * autoselect some backwardscompatible backend options
  * @return 0 on success, -errno otherwise
  */
-int state_backend_init(struct state_backend *backend, struct device_d *dev,
+int state_backend_init(struct state *state, struct device_d *dev,
 		       struct device_node *node, const char *backend_format,
 		       const char *storage_path, const char *state_name, const
 		       char *of_path, off_t offset, size_t max_size,
@@ -151,35 +149,35 @@ int state_backend_init(struct state_backend *backend, struct device_d *dev,
 {
 	int ret;
 
-	ret = state_format_init(backend, dev, backend_format, node, state_name);
+	ret = state_format_init(state, dev, backend_format, node, state_name);
 	if (ret)
 		return ret;
 
-	ret = state_storage_init(&backend->storage, dev, storage_path, offset,
+	ret = state_storage_init(&state->storage, dev, storage_path, offset,
 				 max_size, stridesize, storagetype);
 	if (ret)
 		goto out_free_format;
 
-	backend->of_path = xstrdup(of_path);
+	state->of_backend_path = xstrdup(of_path);
 
 	return 0;
 
 out_free_format:
-	state_format_free(backend->format);
-	backend->format = NULL;
+	state_format_free(state->format);
+	state->format = NULL;
 
 	return ret;
 }
 
-void state_backend_set_readonly(struct state_backend *backend)
+void state_backend_set_readonly(struct state *state)
 {
-	state_storage_set_readonly(&backend->storage);
+	state_storage_set_readonly(&state->storage);
 }
 
-void state_backend_free(struct state_backend *backend)
+void state_backend_free(struct state *state)
 {
-	state_storage_free(&backend->storage);
-	if (backend->format)
-		state_format_free(backend->format);
-	free(backend->of_path);
+	state_storage_free(&state->storage);
+	if (state->format)
+		state_format_free(state->format);
+	free(state->of_path);
 }

@@ -328,21 +328,21 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	}
 
 	/* backend-type */
-	if (!state->backend.format) {
+	if (!state->format) {
 		ret = -ENODEV;
 		goto out;
 	}
 
 	p = of_new_property(new_node, "backend-type",
-			    state->backend.format->name,
-			    strlen(state->backend.format->name) + 1);
+			    state->format->name,
+			    strlen(state->format->name) + 1);
 	if (!p) {
 		ret = -ENOMEM;
 		goto out;
 	}
 
 	/* backend phandle */
-	backend_node = of_find_node_by_path_from(root, state->backend.of_path);
+	backend_node = of_find_node_by_path_from(root, state->of_backend_path);
 	if (!backend_node) {
 		ret = -ENODEV;
 		goto out;
@@ -353,9 +353,9 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	if (ret)
 		goto out;
 
-	if (!strcmp("raw", state->backend.format->name)) {
+	if (!strcmp("raw", state->format->name)) {
 		struct digest *digest =
-		    state_backend_format_raw_get_digest(state->backend.format);
+		    state_backend_format_raw_get_digest(state->format);
 		if (digest) {
 			p = of_new_property(new_node, "algo",
 					    digest_name(digest),
@@ -367,19 +367,19 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		}
 	}
 
-	if (state->backend.storage.name) {
+	if (state->storage.name) {
 		p = of_new_property(new_node, "backend-storage-type",
-				    state->backend.storage.name,
-				    strlen(state->backend.storage.name) + 1);
+				    state->storage.name,
+				    strlen(state->storage.name) + 1);
 		if (!p) {
 			ret = -ENOMEM;
 			goto out;
 		}
 	}
 
-	if (state->backend.storage.stridesize) {
+	if (state->storage.stridesize) {
 		ret = of_property_write_u32(new_node, "backend-stridesize",
-				state->backend.storage.stridesize);
+				state->storage.stridesize);
 		if (ret)
 			goto out;
 	}
@@ -408,7 +408,7 @@ void state_release(struct state *state)
 	of_unregister_fixup(of_state_fixup, state);
 	list_del(&state->list);
 	unregister_device(&state->dev);
-	state_backend_free(&state->backend);
+	state_backend_free(state);
 	free(state->of_path);
 	free(state);
 }
@@ -487,14 +487,14 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		dev_info(&state->dev, "No backend-storage-type found, using default.\n");
 	}
 
-	ret = state_backend_init(&state->backend, &state->dev, node,
+	ret = state_backend_init(state, &state->dev, node,
 				 backend_type, path, alias, of_path, offset,
 				 max_size, stridesize, storage_type);
 	if (ret)
 		goto out_release_state;
 
 	if (readonly)
-		state_backend_set_readonly(&state->backend);
+		state_backend_set_readonly(state);
 
 	ret = state_from_node(state, node, 1);
 	if (ret) {
@@ -569,10 +569,10 @@ void state_info(void)
 
 	list_for_each_entry(state, &state_list, list) {
 		printf("%-20s ", state->name);
-		if (state->backend.format)
+		if (state->format)
 			printf("(backend: %s, path: %s)\n",
-			       state->backend.format->name,
-			       state->backend.of_path);
+			       state->format->name,
+			       state->of_backend_path);
 		else
 			printf("(no backend)\n");
 	}

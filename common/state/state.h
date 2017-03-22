@@ -75,19 +75,6 @@ struct state_backend_storage {
 	bool readonly;
 };
 
-/**
- * state_backend - State Backend object
- *
- * @format Backend format object
- * @storage Backend storage object
- * @of_path Path to the DT node
- */
-struct state_backend {
-	struct state_backend_format *format;
-	struct state_backend_storage storage;
-	char *of_path;
-};
-
 struct state {
 	struct list_head list; /* Entry to enqueue on list of states */
 
@@ -100,7 +87,9 @@ struct state {
 	unsigned int dirty;
 	unsigned int save_on_shutdown;
 
-	struct state_backend backend;
+	struct state_backend_format *format;
+	struct state_backend_storage storage;
+	char *of_backend_path;
 };
 
 enum state_convert {
@@ -216,13 +205,13 @@ int state_backend_bucket_cached_create(struct device_d *dev,
 struct state_variable *state_find_var(struct state *state, const char *name);
 struct digest *state_backend_format_raw_get_digest(struct state_backend_format
 						   *format);
-int state_backend_init(struct state_backend *backend, struct device_d *dev,
+int state_backend_init(struct state *state, struct device_d *dev,
 		       struct device_node *node, const char *backend_format,
 		       const char *storage_path, const char *state_name, const
 		       char *of_path, off_t offset, size_t max_size,
 		       uint32_t stridesize, const char *storagetype);
-void state_backend_set_readonly(struct state_backend *backend);
-void state_backend_free(struct state_backend *backend);
+void state_backend_set_readonly(struct state *state);
+void state_backend_free(struct state *state);
 void state_storage_free(struct state_backend_storage *storage);
 int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
 				       struct state_backend_storage_bucket **bucket,

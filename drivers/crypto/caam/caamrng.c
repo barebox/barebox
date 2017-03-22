@@ -55,7 +55,7 @@
 
 /* Buffer, its dma address and lock */
 struct buf_data {
-	u8 buf[RN_BUF_SIZE];
+	u8 *buf;
 	dma_addr_t addr;
 	u32 hw_desc[DESC_JOB_O_LEN];
 #define BUF_NOT_EMPTY 0
@@ -217,6 +217,8 @@ static int caam_init_buf(struct caam_rng_ctx *ctx, int buf_id)
 {
 	struct buf_data *bd = &ctx->bufs[buf_id];
 	int err;
+
+	bd->buf = dma_alloc(RN_BUF_SIZE);
 
 	err = rng_create_job_desc(ctx, buf_id);
 	if (err)

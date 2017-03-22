@@ -456,8 +456,7 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 					 struct state_backend_storage_bucket **bucket,
 					 unsigned int eraseblock,
 					 ssize_t writesize,
-					 struct mtd_info_user *mtd_uinfo,
-					 bool lazy_init)
+					 struct mtd_info_user *mtd_uinfo)
 {
 	struct state_backend_storage_bucket_circular *circ;
 	int ret;
@@ -493,13 +492,9 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 	circ->bucket.free = state_backend_bucket_circular_free;
 	*bucket = &circ->bucket;
 
-	if (!lazy_init) {
-		ret = state_backend_bucket_circular_init(*bucket);
-		if (ret)
-			goto out_free;
-	} else {
-		circ->bucket.init = state_backend_bucket_circular_init;
-	}
+	ret = state_backend_bucket_circular_init(*bucket);
+	if (ret)
+		goto out_free;
 
 	return 0;
 

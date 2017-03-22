@@ -20,14 +20,12 @@ struct mtd_info_user;
  * @bucket_list A list element struct to attach this bucket to a list
  */
 struct state_backend_storage_bucket {
-	int (*init) (struct state_backend_storage_bucket * bucket);
 	int (*write) (struct state_backend_storage_bucket * bucket,
 		      const uint8_t * buf, ssize_t len);
 	int (*read) (struct state_backend_storage_bucket * bucket,
 		     uint8_t ** buf, ssize_t * len_hint);
 	void (*free) (struct state_backend_storage_bucket * bucket);
 
-	bool initialized;
 	struct list_head bucket_list;
 };
 
@@ -196,8 +194,7 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 					 struct state_backend_storage_bucket **bucket,
 					 unsigned int eraseblock,
 					 ssize_t writesize,
-					 struct mtd_info_user *mtd_uinfo,
-					 bool lazy_init);
+					 struct mtd_info_user *mtd_uinfo);
 int state_backend_bucket_cached_create(struct device_d *dev,
 				       struct state_backend_storage_bucket *raw,
 				       struct state_backend_storage_bucket **out);

@@ -110,19 +110,6 @@ static int state_backend_bucket_cache_write(struct state_backend_storage_bucket 
 	return 0;
 }
 
-static int state_backend_bucket_cache_init(
-		struct state_backend_storage_bucket *bucket)
-{
-	struct state_backend_storage_bucket_cache *cache =
-			get_bucket_cache(bucket);
-
-	if (cache->raw->init) {
-		return cache->raw->init(cache->raw);
-	}
-
-	return 0;
-}
-
 static void state_backend_bucket_cache_free(
 		struct state_backend_storage_bucket *bucket)
 {
@@ -147,7 +134,6 @@ int state_backend_bucket_cached_create(struct device_d *dev,
 	cache->bucket.free = state_backend_bucket_cache_free;
 	cache->bucket.read = state_backend_bucket_cache_read;
 	cache->bucket.write = state_backend_bucket_cache_write;
-	cache->bucket.init = state_backend_bucket_cache_init;
 
 	*out = &cache->bucket;
 

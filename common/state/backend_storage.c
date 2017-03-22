@@ -27,23 +27,6 @@
 
 const unsigned int min_copies_written = 1;
 
-static int bucket_lazy_init(struct state_backend_storage_bucket *bucket)
-{
-	int ret;
-
-	if (bucket->initialized)
-		return 0;
-
-	if (bucket->init) {
-		ret = bucket->init(bucket);
-		if (ret)
-			return ret;
-	}
-	bucket->initialized = true;
-
-	return 0;
-}
-
 /**
  * state_storage_write - Writes the given data to the storage
  * @param storage Storage object
@@ -69,13 +52,6 @@ int state_storage_write(struct state_backend_storage *storage,
 		return 0;
 
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
-		ret = bucket_lazy_init(bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to init bucket/write state backend bucket, %d\n",
-				 ret);
-			continue;
-		}
-
 		ret = bucket->write(bucket, buf, len);
 		if (ret) {
 			dev_warn(storage->dev, "Failed to write state backend bucket, %d\n",
@@ -136,12 +112,6 @@ int state_storage_read(struct state_backend_storage *storage,
 
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
 		*len = 0;
-		ret = bucket_lazy_init(bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to init bucket/read state backend bucket, %d\n",
-				 ret);
-			continue;
-		}
 
 		ret = bucket->read(bucket, buf, len);
 		if (ret) {
@@ -287,14 +257,12 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 	for (offset = dev_offset; offset < end; offset += meminfo->erasesize) {
 		int ret;
 		unsigned int eraseblock = offset / meminfo->erasesize;
-		bool lazy_init = true;
 
 		ret = state_backend_bucket_circular_create(storage->dev, path,
 							   &bucket,
 							   eraseblock,
 							   writesize,
-							   meminfo,
-							   lazy_init);
+							   meminfo);
 		if (ret) {
 			dev_warn(storage->dev, "Failed to create bucket at '%s' eraseblock %u\n",
 				 path, eraseblock);

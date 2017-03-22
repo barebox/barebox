@@ -2115,6 +2115,12 @@ config CMD_SPD_DECODE
 	help
 	  decode spd eeprom
 
+config CMD_SEED
+	tristate
+	prompt "seed"
+	help
+	  Seed the pseudo random number generator (PRNG)
+
 # end Miscellaneous commands
 endmenu
 

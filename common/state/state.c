@@ -602,7 +602,7 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	if (ret)
 		goto out_release_state;
 
-	ret = state_storage_init(&state->storage, &state->dev, path, offset,
+	ret = state_storage_init(state, path, offset,
 				 max_size, stridesize, storage_type);
 	if (ret)
 		goto out_release_state;

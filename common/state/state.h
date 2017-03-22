@@ -186,8 +186,7 @@ int backend_format_raw_create(struct state_backend_format **format,
 			      struct device_d *dev);
 int backend_format_dtb_create(struct state_backend_format **format,
 			      struct device_d *dev);
-int state_storage_init(struct state_backend_storage *storage,
-		       struct device_d *dev, const char *path,
+int state_storage_init(struct state *state, const char *path,
 		       off_t offset, size_t max_size, uint32_t stridesize,
 		       const char *storagetype);
 void state_storage_set_readonly(struct state_backend_storage *storage);

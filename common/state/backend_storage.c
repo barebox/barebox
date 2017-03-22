@@ -454,7 +454,6 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
 
 /**
  * state_storage_init - Init backend storage
- * @param storage Storage object
  * @param path Path to the backend storage file
  * @param dev_offset Offset in the device to start writing at.
  * @param max_size Maximum size of the data. May be 0 for infinite.
@@ -465,16 +464,16 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
  *
  * Depending on the filetype, we create mtd buckets or normal file buckets.
  */
-int state_storage_init(struct state_backend_storage *storage,
-		       struct device_d *dev, const char *path,
+int state_storage_init(struct state *state, const char *path,
 		       off_t offset, size_t max_size, uint32_t stridesize,
 		       const char *storagetype)
 {
+	struct state_backend_storage *storage = &state->storage;
 	int ret = -ENODEV;
 	struct mtd_info_user meminfo;
 
 	INIT_LIST_HEAD(&storage->buckets);
-	storage->dev = dev;
+	storage->dev = &state->dev;
 	storage->name = storagetype;
 	storage->stridesize = stridesize;
 

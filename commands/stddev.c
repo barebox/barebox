@@ -17,6 +17,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <stdlib.h>
 
 static ssize_t zero_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
 {
@@ -100,3 +101,31 @@ static int null_init(void)
 }
 
 device_initcall(null_init);
+
+static ssize_t prng_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
+{
+	get_random_bytes(buf, count);
+	return count;
+}
+
+static struct file_operations prngops = {
+	.read  = prng_read,
+	.lseek = dev_lseek_default,
+};
+
+static int prng_init(void)
+{
+	struct cdev *cdev;
+
+	cdev = xzalloc(sizeof (*cdev));
+
+	cdev->name = "prng";
+	cdev->flags = DEVFS_IS_CHARACTER_DEV;
+	cdev->ops = &prngops;
+
+	devfs_create(cdev);
+
+	return 0;
+}
+
+device_initcall(prng_init);

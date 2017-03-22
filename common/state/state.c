@@ -106,25 +106,24 @@ out:
 	return ret;
 }
 
-static int state_format_init(struct state *state,
-			     struct device_d *dev, const char *backend_format,
+static int state_format_init(struct state *state, const char *backend_format,
 			     struct device_node *node, const char *state_name)
 {
 	int ret;
 
 	if (!backend_format || !strcmp(backend_format, "raw")) {
 		ret = backend_format_raw_create(&state->format, node,
-						state_name, dev);
+						state_name, &state->dev);
 	} else if (!strcmp(backend_format, "dtb")) {
-		ret = backend_format_dtb_create(&state->format, dev);
+		ret = backend_format_dtb_create(&state->format, &state->dev);
 	} else {
-		dev_err(dev, "Invalid backend format %s\n",
+		dev_err(&state->dev, "Invalid backend format %s\n",
 			backend_format);
 		return -EINVAL;
 	}
 
 	if (ret && ret != -EPROBE_DEFER)
-		dev_err(dev, "Failed to initialize format %s, %d\n",
+		dev_err(&state->dev, "Failed to initialize format %s, %d\n",
 			backend_format, ret);
 
 	return ret;
@@ -599,7 +598,7 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		dev_info(&state->dev, "No backend-storage-type found, using default.\n");
 	}
 
-	ret = state_format_init(state, &state->dev, backend_type, node, alias);
+	ret = state_format_init(state, backend_type, node, alias);
 	if (ret)
 		goto out_release_state;
 

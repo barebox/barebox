@@ -132,67 +132,16 @@ static int state_format_init(struct state *state,
 
 static void state_format_free(struct state_backend_format *format)
 {
+	if (!format)
+		return;
+
 	if (format->free)
 		format->free(format);
-}
-
-/**
- * state_backend_init - Initiates the backend storage and format using the
- * passed arguments
- * @param backend state backend
- * @param dev Device pointer used for prints
- * @param node the DT device node corresponding to the state
- * @param backend_format a string describing the format. Valid values are 'raw'
- * and 'dtb' currently
- * @param storage_path Path to the backend storage file/device/partition/...
- * @param state_name Name of the state
- * @param of_path Path in the devicetree
- * @param stridesize stridesize in case we have a medium without eraseblocks.
- * stridesize describes how far apart copies of the same data should be stored.
- * For blockdevices it makes sense to align them on blocksize.
- * @param storagetype Type of the storage backend. This may be NULL where we
- * autoselect some backwardscompatible backend options
- * @return 0 on success, -errno otherwise
- */
-static int state_backend_init(struct state *state, struct device_d *dev,
-		       struct device_node *node, const char *backend_format,
-		       const char *storage_path, const char *state_name, const
-		       char *of_path, off_t offset, size_t max_size,
-		       uint32_t stridesize, const char *storagetype)
-{
-	int ret;
-
-	ret = state_format_init(state, dev, backend_format, node, state_name);
-	if (ret)
-		return ret;
-
-	ret = state_storage_init(&state->storage, dev, storage_path, offset,
-				 max_size, stridesize, storagetype);
-	if (ret)
-		goto out_free_format;
-
-	state->of_backend_path = xstrdup(of_path);
-
-	return 0;
-
-out_free_format:
-	state_format_free(state->format);
-	state->format = NULL;
-
-	return ret;
 }
 
 void state_backend_set_readonly(struct state *state)
 {
 	state_storage_set_readonly(&state->storage);
-}
-
-void state_backend_free(struct state *state)
-{
-	state_storage_free(&state->storage);
-	if (state->format)
-		state_format_free(state->format);
-	free(state->of_path);
 }
 
 static struct state *state_new(const char *name)
@@ -569,7 +518,9 @@ void state_release(struct state *state)
 	of_unregister_fixup(of_state_fixup, state);
 	list_del(&state->list);
 	unregister_device(&state->dev);
-	state_backend_free(state);
+	state_storage_free(&state->storage);
+	state_format_free(state->format);
+	free(state->of_backend_path);
 	free(state->of_path);
 	free(state);
 }
@@ -648,11 +599,16 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		dev_info(&state->dev, "No backend-storage-type found, using default.\n");
 	}
 
-	ret = state_backend_init(state, &state->dev, node,
-				 backend_type, path, alias, of_path, offset,
+	ret = state_format_init(state, &state->dev, backend_type, node, alias);
+	if (ret)
+		goto out_release_state;
+
+	ret = state_storage_init(&state->storage, &state->dev, path, offset,
 				 max_size, stridesize, storage_type);
 	if (ret)
 		goto out_release_state;
+
+	state->of_backend_path = xstrdup(of_path);
 
 	if (readonly)
 		state_backend_set_readonly(state);

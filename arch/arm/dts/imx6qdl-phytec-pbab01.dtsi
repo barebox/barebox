@@ -14,3 +14,7 @@
 &uart1 {
 	status = "okay";
 };
+
+#ifdef USE_STATE_EXAMPLE
+#include "state-example.dtsi"
+#endif

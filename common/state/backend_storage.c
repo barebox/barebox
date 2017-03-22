@@ -268,6 +268,7 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 	ssize_t end = dev_offset + max_size;
 	int nr_copies = 0;
 	off_t offset;
+	ssize_t writesize;
 
 	if (!end || end > meminfo->size)
 		end = meminfo->size;
@@ -278,14 +279,15 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 		return -EINVAL;
 	}
 
+	if (circular)
+		writesize = meminfo->writesize;
+	else
+		writesize = meminfo->erasesize;
+
 	for (offset = dev_offset; offset < end; offset += meminfo->erasesize) {
 		int ret;
-		ssize_t writesize = meminfo->writesize;
 		unsigned int eraseblock = offset / meminfo->erasesize;
 		bool lazy_init = true;
-
-		if (!circular)
-			writesize = meminfo->erasesize;
 
 		ret = state_backend_bucket_circular_create(storage->dev, path,
 							   &bucket,

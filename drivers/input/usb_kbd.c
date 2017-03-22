@@ -58,6 +58,14 @@ struct usb_kbd_pdata {
 	struct input_device input;
 };
 
+static void usb_kbd_release_all_keys(struct usb_kbd_pdata *data)
+{
+	int i;
+
+	for (i = 0; i <= KEY_MAX; i++)
+		input_report_key_event(&data->input, i, 0);
+}
+
 static int usb_kbd_int_poll(struct usb_kbd_pdata *data)
 {
 	return usb_submit_int_msg(data->usbdev, data->intpipe, data->new,
@@ -98,6 +106,8 @@ static void usb_kbd_poll(void *arg)
 	int ret, i;
 
 	ret = data->do_poll(data);
+	if (ret < 0)
+		usb_kbd_release_all_keys(data);
 	if (ret == -EAGAIN)
 		goto exit;
 	if (ret < 0) {
@@ -209,6 +219,7 @@ static void usb_kbd_disconnect(struct usb_device *usbdev)
 {
 	struct usb_kbd_pdata *data = usbdev->drv_data;
 
+	usb_kbd_release_all_keys(data);
 	poller_async_unregister(&data->poller);
 	input_device_unregister(&data->input);
 	dma_free(data->new);

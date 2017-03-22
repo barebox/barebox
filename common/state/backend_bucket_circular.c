@@ -379,26 +379,24 @@ static int state_backend_bucket_circular_init(
 	int sub_offset;
 	uint32_t written_length = 0;
 	uint8_t *buf;
+	int ret;
 
-	buf = xmalloc(circ->writesize);
+	buf = xmalloc(circ->max_size);
 	if (!buf)
 		return -ENOMEM;
 
+	ret = state_mtd_peb_read(circ, buf, 0, circ->max_size);
+	if (ret && ret != -EUCLEAN)
+		return ret;
+
 	for (sub_offset = circ->max_size - circ->writesize; sub_offset >= 0;
 	     sub_offset -= circ->writesize) {
-		int ret;
-
-		ret = state_mtd_peb_read(circ, buf, sub_offset,
-					 circ->writesize);
-		if (ret && ret != -EUCLEAN)
-			return ret;
-
-		ret = mtd_buf_all_ff(buf, circ->writesize);
+		ret = mtd_buf_all_ff(buf + sub_offset, circ->writesize);
 		if (!ret) {
 			struct state_backend_storage_bucket_circular_meta *meta;
 
 			meta = (struct state_backend_storage_bucket_circular_meta *)
-					(buf + circ->writesize - sizeof(*meta));
+					(buf + sub_offset + circ->writesize - sizeof(*meta));
 
 			if (meta->magic != circular_magic)
 				written_length = 0;

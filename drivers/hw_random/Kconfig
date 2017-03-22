@@ -1,0 +1,6 @@
+menuconfig HWRNG
+	bool "HWRNG Support"
+	help
+	  Support for HWRNG(Hardware Random Number Generator) devices.
+
+	  If unsure, say no.

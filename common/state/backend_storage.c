@@ -25,6 +25,28 @@
 
 #include "state.h"
 
+/*
+ * The state framework stores data in so called buckets. A bucket is
+ * exactly one copy of the state we want to store. On flash type media
+ * a bucket corresponds to a single eraseblock. On media which do not
+ * need an erase operation a bucket corresponds to a storage area of
+ * @stridesize bytes.
+ *
+ * For redundancy and to make sure that we have valid data on the storage
+ * device at any time the state framework stores multiple buckets. The strategy
+ * is as follows:
+ *
+ * When loading the state from the storage we iterate over the buckets. We
+ * take the first one we find which has valid crcs. The next step is to
+ * restore consistency between the different buckets. This means rewriting
+ * a bucket when it signalled it needs refresh (i.e. returned -EUCLEAN)
+ * or when contains data different from the bucket we use.
+ *
+ * When the state backend initialized successfully we already restored
+ * consistency which means all buckets contain the same data. This means
+ * when storing a new state we can just write all buckets in order.
+ */
+
 const unsigned int min_copies_written = 1;
 
 /**

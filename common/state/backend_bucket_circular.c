@@ -25,7 +25,21 @@
 
 #include "state.h"
 
-
+/*
+ * The circular backend bucket code. The circular backend bucket is intended
+ * for mtd devices which need an erase operation.
+ *
+ * Erasing blocks is an operation that should be avoided. On NOR flashes erasing
+ * blocks is very time consuming and on NAND flashes each block only has a limited
+ * number of erase cycles allowed. For this reason we continuously write more data
+ * into each eraseblock and only erase it when no more free space is available.
+ * Don't confuse these multiple writes into a single eraseblock with buckets. A bucket
+ * is the whole eraseblock, we just happen to reuse the same bucket for storing
+ * new data.
+ *
+ * If your device is a mtd device, but does not have eraseblocks, like MRAMs, then
+ * the direct bucket is used instead.
+ */
 struct state_backend_storage_bucket_circular {
 	struct state_backend_storage_bucket bucket;
 

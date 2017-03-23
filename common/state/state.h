@@ -26,6 +26,9 @@ struct state_backend_storage_bucket {
 		     void ** buf, ssize_t * len_hint);
 	void (*free) (struct state_backend_storage_bucket * bucket);
 
+	int num;
+	off_t offset;
+
 	struct list_head bucket_list;
 
 	void *buf;

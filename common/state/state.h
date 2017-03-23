@@ -66,6 +66,9 @@ struct state_backend_format {
  * state_backend_storage - Storage backend of the state.
  *
  * @buckets List of storage buckets that are available
+ * @stridesize The distance between copies
+ * @offset Offset in the backend device where the data starts
+ * @max_size The maximum size of the data we can use
  */
 struct state_backend_storage {
 	struct list_head buckets;
@@ -76,6 +79,9 @@ struct state_backend_storage {
 	const char *name;
 
 	uint32_t stridesize;
+	off_t offset;
+	size_t max_size;
+	char *path;
 
 	bool readonly;
 };

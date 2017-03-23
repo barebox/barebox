@@ -17,8 +17,32 @@
 	i2c-gpio-0 {
 		status = "okay";
 	};
+
+	ahb {
+		apb {
+			pinctrl@fffff400 {
+				spi {
+					pinctrl_board_spi: spi-board {
+						atmel,pins = <AT91_PIOA 14 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
+					};
+				};
+			};
+		};
+	};
+};
+
+&spi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_spi0>, <&pinctrl_board_spi>;
 };
 
 &i2c0 {
+	status = "disabled";
+};
+
+/*
+ * This one conflicts with SPI NOR on the SoM
+ */
+&mmc1 {
 	status = "disabled";
 };

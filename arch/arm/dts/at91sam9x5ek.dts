@@ -1,0 +1,9 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/at91.h>
+
+#include <arm/at91sam9x5.dtsi>
+#include <arm/at91sam9x5_lcd.dtsi>
+#include <arm/at91sam9x5dm.dtsi>
+#include <arm/at91sam9x5ek.dtsi>

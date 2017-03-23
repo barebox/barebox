@@ -1930,6 +1930,11 @@ config CMD_WD_DEFAULT_TIMOUT
 	  'wd' is done without a timeout value (which means the watchdog gets
 	  enabled and re-triggered with the default timeout value).
 
+config CMD_HAB
+	bool
+	depends on HAB
+	prompt "High Assurance boot (hab)"
+
 # end Hardware manipulation commands
 endmenu
 

@@ -27,6 +27,10 @@ struct state_backend_storage_bucket {
 	void (*free) (struct state_backend_storage_bucket * bucket);
 
 	struct list_head bucket_list;
+
+	void *buf;
+	ssize_t len;
+	bool needs_refresh;
 };
 
 /**
@@ -208,9 +212,6 @@ int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
 				       off_t offset, ssize_t max_size);
 int state_storage_write(struct state_backend_storage *storage,
 			const void * buf, ssize_t len);
-int state_storage_restore_consistency(struct state_backend_storage
-				      *storage, const void * buf,
-				      ssize_t len);
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
 		       uint32_t magic, void **buf, ssize_t *len);

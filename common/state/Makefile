@@ -5,4 +5,3 @@ obj-y += backend_format_raw.o
 obj-y += backend_storage.o
 obj-y += backend_bucket_direct.o
 obj-$(CONFIG_MTD) += backend_bucket_circular.o
-obj-y += backend_bucket_cached.o

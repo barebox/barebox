@@ -69,22 +69,29 @@ int state_storage_write(struct state_backend_storage *storage,
 	return -EIO;
 }
 
-/**
- * state_storage_restore_consistency - Restore consistency on all storage backends
- * @param storage Storage object
- * @param buf Buffer with valid data that should be on all buckets after this operation
- * @param len Length of the buffer
- * @return 0 on success, -errno otherwise
- *
- * This function brings valid data onto all buckets we have to ensure that all
- * data copies are in sync. In the current implementation we just write the data
- * to all buckets. Bucket implementations that need to keep the number of writes
- * low, can read their own copy first and compare it.
- */
-int state_storage_restore_consistency(struct state_backend_storage *storage,
-				      const void * buf, ssize_t len)
+static int bucket_refresh(struct state_backend_storage *storage,
+			  struct state_backend_storage_bucket *bucket, void *buf, ssize_t len)
 {
-	return state_storage_write(storage, buf, len);
+	int ret;
+
+	if (bucket->needs_refresh)
+		goto refresh;
+
+	if (bucket->len != len)
+		goto refresh;
+
+	if (memcmp(bucket->buf, buf, len))
+		goto refresh;
+
+	return 0;
+
+refresh:
+	ret = bucket->write(bucket, buf, len);
+
+	if (ret)
+		dev_warn(storage->dev, "Failed to restore bucket\n");
+
+	return ret;
 }
 
 /**
@@ -94,7 +101,6 @@ int state_storage_restore_consistency(struct state_backend_storage *storage,
  * @param magic state magic value
  * @param buf The newly allocated data area will be stored in this pointer
  * @param len The resulting length of the buffer
- * @param len_hint Hint of how big the data may be.
  * @return 0 on success, -errno otherwise. buf and len will be set to valid
  * values on success.
  *
@@ -107,12 +113,18 @@ int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
 		       uint32_t magic, void **buf, ssize_t *len)
 {
-	struct state_backend_storage_bucket *bucket;
+	struct state_backend_storage_bucket *bucket, *bucket_used = NULL;
 	int ret;
 
+	/*
+	 * Iterate over all buckets. The first valid one we find is the
+	 * one we want to use.
+	 */
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
-		ret = bucket->read(bucket, buf, len);
-		if (ret) {
+		ret = bucket->read(bucket, &bucket->buf, &bucket->len);
+		if (ret == -EUCLEAN) {
+			bucket->needs_refresh = 1;
+		} else if (ret) {
 			dev_warn(storage->dev, "Failed to read from state backend bucket, trying next, %d\n",
 				 ret);
 			continue;
@@ -122,22 +134,46 @@ int state_storage_read(struct state_backend_storage *storage,
 		 * Verify the buffer crcs. The buffer length is passed in the len argument,
 		 * .verify overwrites it with the length actually used.
 		 */
-		ret = format->verify(format, magic, *buf, len);
-		if (!ret) {
-			goto found;
-		}
-		free(*buf);
-		dev_warn(storage->dev, "Failed to verify read copy, trying next bucket, %d\n",
-			 ret);
+		ret = format->verify(format, magic, bucket->buf, &bucket->len);
+		if (!ret && !bucket_used)
+			bucket_used = bucket;
+
+		if (ret)
+			dev_warn(storage->dev, "Failed to verify read copy, trying next bucket, %d\n",
+				 ret);
 	}
 
-	dev_err(storage->dev, "Failed to find any valid state copy in any bucket\n");
+	if (!bucket_used) {
+		dev_err(storage->dev, "Failed to find any valid state copy in any bucket\n");
 
-	return -ENOENT;
+		return -ENOENT;
+	}
 
-found:
-	/* A failed restore consistency is not a failure of reading the state */
-	state_storage_restore_consistency(storage, *buf, *len);
+	/*
+	 * Restore/refresh all buckets except the one we currently use (in case
+	 * it's the only usable bucket at the moment)
+	 */
+	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
+		if (bucket == bucket_used)
+			continue;
+
+		ret = bucket_refresh(storage, bucket, bucket_used->buf, bucket_used->len);
+
+		/* Free buffer from the unused buckets */
+		free(bucket->buf);
+		bucket->buf = NULL;
+	}
+
+	/*
+	 * Restore/refresh the bucket we currently use
+	 */
+	ret = bucket_refresh(storage, bucket_used, bucket_used->buf, bucket_used->len);
+
+	*buf = bucket_used->buf;
+	*len = bucket_used->len;
+
+	/* buffer from the used bucket is passed to the caller, do not free */
+	bucket_used->buf = NULL;
 
 	return 0;
 }
@@ -218,13 +254,6 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 			continue;
 		}
 
-		ret = state_backend_bucket_cached_create(storage->dev, bucket,
-							 &bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to setup cache bucket, continuing without cache, %d\n",
-				 ret);
-		}
-
 		list_add_tail(&bucket->bucket_list, &storage->buckets);
 		++nr_copies;
 		if (nr_copies >= desired_copies)
@@ -282,13 +311,6 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
 			dev_warn(storage->dev, "Failed to create direct bucket at '%s' offset %ld\n",
 				 path, offset);
 			continue;
-		}
-
-		ret = state_backend_bucket_cached_create(storage->dev, bucket,
-							 &bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to setup cache bucket, continuing without cache, %d\n",
-				 ret);
 		}
 
 		list_add_tail(&bucket->bucket_list, &storage->buckets);

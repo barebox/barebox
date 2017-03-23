@@ -156,7 +156,6 @@ int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
 	fd = open(path, O_RDWR);
 	if (fd < 0) {
 		dev_err(dev, "Failed to open file '%s', %d\n", path, -errno);
-		close(fd);
 		return -errno;
 	}
 

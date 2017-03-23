@@ -234,8 +234,7 @@ int state_storage_restore_consistency(struct state_backend_storage
 				      ssize_t len);
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, uint8_t **buf, ssize_t *len,
-		       ssize_t len_hint);
+		       uint32_t magic, uint8_t **buf, ssize_t *len);
 
 static inline struct state_uint32 *to_state_uint32(struct state_variable *s)
 {

@@ -70,12 +70,11 @@ int state_load(struct state *state)
 {
 	uint8_t *buf;
 	ssize_t len;
-	ssize_t len_hint = 0;
 	int ret;
 	struct state_backend *backend = &state->backend;
 
 	ret = state_storage_read(&backend->storage, backend->format,
-				 state->magic, &buf, &len, len_hint);
+				 state->magic, &buf, &len);
 	if (ret) {
 		dev_err(&state->dev, "Failed to read state with format %s, %d\n",
 			backend->format->name, ret);

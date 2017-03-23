@@ -129,14 +129,13 @@ int state_storage_restore_consistency(struct state_backend_storage *storage,
  */
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, uint8_t ** buf, ssize_t * len,
-		       ssize_t len_hint)
+		       uint32_t magic, uint8_t ** buf, ssize_t * len)
 {
 	struct state_backend_storage_bucket *bucket;
 	int ret;
 
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
-		*len = len_hint;
+		*len = 0;
 		ret = bucket_lazy_init(bucket);
 		if (ret) {
 			dev_warn(storage->dev, "Failed to init bucket/read state backend bucket, %d\n",

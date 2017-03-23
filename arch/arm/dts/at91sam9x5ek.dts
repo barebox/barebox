@@ -7,3 +7,13 @@
 #include <arm/at91sam9x5_lcd.dtsi>
 #include <arm/at91sam9x5dm.dtsi>
 #include <arm/at91sam9x5ek.dtsi>
+
+/ {
+	i2c-gpio-0 {
+		status = "okay";
+	};
+};
+
+&i2c0 {
+	status = "disabled";
+};

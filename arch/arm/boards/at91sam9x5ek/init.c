@@ -187,26 +187,6 @@ static void ek_add_device_mci(void)
 	at91_add_device_mci(0, &mci0_data);
 }
 
-struct qt1070_platform_data qt1070_pdata = {
-	.irq_pin	= AT91_PIN_PA7,
-};
-
-static struct i2c_board_info i2c_devices[] = {
-	{
-		.platform_data = &qt1070_pdata,
-		I2C_BOARD_INFO("qt1070", 0x1b),
-	}, {
-		I2C_BOARD_INFO("24c512", 0x51)
-	},
-};
-
-static void ek_add_device_i2c(void)
-{
-	at91_set_gpio_input(qt1070_pdata.irq_pin, 0);
-	at91_set_deglitch(qt1070_pdata.irq_pin, 1);
-	at91_add_device_i2c(0, i2c_devices, ARRAY_SIZE(i2c_devices));
-}
-
 static const struct spi_board_info ek_cm_cogent_spi_devices[] = {
 	{
 		.name		= "mtd_dataflash",
@@ -277,7 +257,6 @@ static int at91sam9x5ek_devices_init(void)
 	ek_add_device_spi();
 	ek_add_device_mci();
 	ek_add_device_usb();
-	ek_add_device_i2c();
 	ek_add_device_lcdc();
 
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);

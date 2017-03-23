@@ -103,7 +103,7 @@ static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
 	int ret;
 	struct state_backend_storage_bucket_direct_meta meta;
 
-	if (direct->max_size && len > direct->max_size)
+	if (direct->max_size && len > direct->max_size - sizeof(meta))
 		return -E2BIG;
 
 	ret = lseek(direct->fd, direct->offset, SEEK_SET);

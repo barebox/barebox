@@ -40,6 +40,7 @@ config SOC_AT91SAM9
 	select CPU_ARM926T
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
+	select PINCTRL
 
 config SOC_SAMA5
 	bool

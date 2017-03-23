@@ -9,6 +9,11 @@
 #include <arm/at91sam9x5ek.dtsi>
 
 / {
+	aliases {
+		mmc0 = &mmc0;
+		mmc1 = &mmc1;
+	};
+
 	i2c-gpio-0 {
 		status = "okay";
 	};

@@ -168,25 +168,6 @@ static void ek_add_device_lcdc(void)
 static void ek_add_device_lcdc(void) {}
 #endif
 
-/*
- * MCI (SD/MMC)
- */
-/* mci0 detect_pin is revision dependent */
-static struct atmel_mci_platform_data mci0_data = {
-	.bus_width	= 4,
-	.detect_pin	= AT91_PIN_PD15,
-	.wp_pin		= -EINVAL,
-};
-
-static void ek_add_device_mci(void)
-{
-	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
-		mci0_data.detect_pin = -EINVAL;
-
-	/* MMC0 */
-	at91_add_device_mci(0, &mci0_data);
-}
-
 static const struct spi_board_info ek_cm_cogent_spi_devices[] = {
 	{
 		.name		= "mtd_dataflash",
@@ -255,7 +236,6 @@ static int at91sam9x5ek_devices_init(void)
 	ek_add_device_nand();
 	ek_add_device_eth();
 	ek_add_device_spi();
-	ek_add_device_mci();
 	ek_add_device_usb();
 	ek_add_device_lcdc();
 

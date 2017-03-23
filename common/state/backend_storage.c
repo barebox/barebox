@@ -242,11 +242,8 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 							   eraseblock,
 							   writesize,
 							   meminfo);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to create bucket at '%s' eraseblock %u\n",
-				 storage->path, eraseblock);
+		if (ret)
 			continue;
-		}
 
 		bucket->offset = offset;
 		bucket->num = nr_copies;

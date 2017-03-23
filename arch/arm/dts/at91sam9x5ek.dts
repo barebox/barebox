@@ -4,6 +4,7 @@
 #include <dt-bindings/pinctrl/at91.h>
 
 #include <arm/at91sam9x5.dtsi>
+#include <arm/at91sam9x5_macb0.dtsi>
 #include <arm/at91sam9x5_lcd.dtsi>
 #include <arm/at91sam9x5dm.dtsi>
 #include <arm/at91sam9x5ek.dtsi>
@@ -61,3 +62,9 @@
 &mmc1 {
 	status = "disabled";
 };
+
+&macb0 {
+	status = "okay";
+	phy-mode = "rmii";
+};
+

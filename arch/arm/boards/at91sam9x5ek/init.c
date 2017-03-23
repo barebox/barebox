@@ -106,18 +106,17 @@ static void ek_add_device_nand(void)
 	at91_add_device_nand(&nand_pdata);
 }
 
-static struct macb_platform_data macb_pdata = {
-	.phy_interface = PHY_INTERFACE_MODE_RMII,
-	.phy_addr = 0,
-};
-
-static void ek_add_device_eth(void)
+static int ek_register_mac_address(void)
 {
-	if (w1_local_mac_address_register(0, "tml", "w1-2d-0"))
-		w1_local_mac_address_register(0, "tml", "w1-23-0");
+	int ret;
 
-	at91_add_device_eth(0, &macb_pdata);
+	ret = w1_local_mac_address_register(0, "tml", "w1-2d-0");
+	if (!ret)
+		return ret;
+
+	return w1_local_mac_address_register(0, "tml", "w1-23-0");
 }
+late_initcall(ek_register_mac_address);
 
 #if defined(CONFIG_DRIVER_VIDEO_ATMEL_HLCD)
 /*
@@ -165,7 +164,6 @@ static void ek_add_device_lcdc(void) {}
 static int at91sam9x5ek_devices_init(void)
 {
 	ek_add_device_nand();
-	ek_add_device_eth();
 	ek_add_device_lcdc();
 
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);

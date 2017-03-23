@@ -87,6 +87,11 @@ static struct sam9_smc_config cm_nand_smc_config = {
 
 static void ek_add_device_nand(void)
 {
+	add_generic_device("at91sam9-smc",
+			   DEVICE_ID_SINGLE, NULL,
+			   AT91SAM9X5_BASE_SMC, 0x200,
+			   IORESOURCE_MEM, NULL);
+
 	/* setup bus-width (8 or 16) */
 	if (nand_pdata.bus_width_16)
 		cm_nand_smc_config.mode |= AT91_SMC_DBW_16;
@@ -333,15 +338,6 @@ static int at91sam9x5ek_console_init(void)
 	barebox_set_model("Atmel at91sam9x5-ek");
 	barebox_set_hostname("at91sam9x5-ek");
 
-	at91_register_uart(0, 0);
-	at91_register_uart(1, 0);
 	return 0;
 }
 console_initcall(at91sam9x5ek_console_init);
-
-static int at91sam9x5ek_main_clock(void)
-{
-	at91_set_main_clock(12000000);
-	return 0;
-}
-pure_initcall(at91sam9x5ek_main_clock);

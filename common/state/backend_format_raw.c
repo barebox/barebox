@@ -55,13 +55,14 @@ static inline struct state_backend_format_raw *get_format_raw(
 
 static int backend_format_raw_verify(struct state_backend_format *format,
 				     uint32_t magic, const uint8_t * buf,
-				     ssize_t len)
+				     ssize_t *lenp)
 {
 	uint32_t crc;
 	struct backend_raw_header *header;
 	int d_len = 0;
 	int ret;
 	const uint8_t *data;
+	ssize_t len = *lenp;
 	struct state_backend_format_raw *backend_raw = get_format_raw(format);
 	ssize_t complete_len;
 
@@ -104,6 +105,8 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 			crc, header->data_crc);
 		return -EINVAL;
 	}
+
+	*lenp = header->data_len + sizeof(*header);
 
 	if (backend_raw->digest) {
 		struct digest *d = backend_raw->digest;

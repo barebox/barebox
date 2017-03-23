@@ -46,7 +46,7 @@ struct state_backend_storage_bucket {
  */
 struct state_backend_format {
 	int (*verify) (struct state_backend_format * format, uint32_t magic,
-		       const uint8_t * buf, ssize_t len);
+		       const uint8_t * buf, ssize_t *lenp);
 	int (*pack) (struct state_backend_format * format, struct state * state,
 		     uint8_t ** buf, ssize_t * len);
 	int (*unpack) (struct state_backend_format * format,

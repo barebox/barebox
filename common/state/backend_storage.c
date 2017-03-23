@@ -111,15 +111,18 @@ int state_storage_read(struct state_backend_storage *storage,
 	int ret;
 
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
-		*len = 0;
-
 		ret = bucket->read(bucket, buf, len);
 		if (ret) {
 			dev_warn(storage->dev, "Failed to read from state backend bucket, trying next, %d\n",
 				 ret);
 			continue;
 		}
-		ret = format->verify(format, magic, *buf, *len);
+
+		/*
+		 * Verify the buffer crcs. The buffer length is passed in the len argument,
+		 * .verify overwrites it with the length actually used.
+		 */
+		ret = format->verify(format, magic, *buf, len);
 		if (!ret) {
 			goto found;
 		}

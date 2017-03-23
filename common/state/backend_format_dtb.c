@@ -40,12 +40,13 @@ static inline struct state_backend_format_dtb *get_format_dtb(struct
 
 static int state_backend_format_dtb_verify(struct state_backend_format *format,
 					   uint32_t magic, const uint8_t * buf,
-					   ssize_t len)
+					   ssize_t *lenp)
 {
 	struct state_backend_format_dtb *fdtb = get_format_dtb(format);
 	struct device_node *root;
 	struct fdt_header *fdt = (struct fdt_header *)buf;
 	size_t dtb_len = fdt32_to_cpu(fdt->totalsize);
+	size_t len = *lenp;
 
 	if (dtb_len > len) {
 		dev_err(fdtb->dev, "Error, stored DTB length (%d) longer than read buffer (%d)\n",
@@ -67,6 +68,8 @@ static int state_backend_format_dtb_verify(struct state_backend_format *format,
 
 	fdtb->root = root;
 
+	*lenp = be32_to_cpu(fdt->totalsize);
+
 	return 0;
 }
 
@@ -78,7 +81,7 @@ static int state_backend_format_dtb_unpack(struct state_backend_format *format,
 	int ret;
 
 	if (!fdtb->root) {
-		state_backend_format_dtb_verify(format, 0, buf, len);
+		state_backend_format_dtb_verify(format, 0, buf, &len);
 	}
 
 	ret = state_from_node(state, fdtb->root, 0);

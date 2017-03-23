@@ -227,7 +227,7 @@ static int state_mtd_peb_erase(struct state_backend_storage_bucket_circular *cir
 
 static int state_backend_bucket_circular_read(struct state_backend_storage_bucket *bucket,
 					      uint8_t ** buf_out,
-					      ssize_t * len_hint)
+					      ssize_t * len_out)
 {
 	struct state_backend_storage_bucket_circular *circ =
 	    get_bucket_circular(bucket);
@@ -282,7 +282,7 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 	}
 
 	*buf_out = buf;
-	*len_hint = read_len - sizeof(struct state_backend_storage_bucket_circular_meta);
+	*len_out = read_len - sizeof(struct state_backend_storage_bucket_circular_meta);
 
 	return ret;
 }

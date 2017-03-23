@@ -47,7 +47,7 @@ static inline struct state_backend_storage_bucket_direct
 
 static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 					    *bucket, uint8_t ** buf_out,
-					    ssize_t * len_hint)
+					    ssize_t * len_out)
 {
 	struct state_backend_storage_bucket_direct *direct =
 	    get_bucket_direct(bucket);
@@ -69,18 +69,13 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	if (meta.magic == direct_magic) {
 		read_len = meta.written_length;
 	} else {
-		if (*len_hint)
-			read_len = *len_hint;
-		else
-			read_len = direct->max_size;
+		read_len = direct->max_size;
 		ret = lseek(direct->fd, direct->offset, SEEK_SET);
 		if (ret < 0) {
 			dev_err(direct->dev, "Failed to seek file, %d\n", ret);
 			return ret;
 		}
 	}
-	if (direct->max_size)
-		read_len = min(read_len, direct->max_size);
 
 	buf = xmalloc(read_len);
 	if (!buf)
@@ -94,7 +89,7 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	}
 
 	*buf_out = buf;
-	*len_hint = read_len;
+	*len_out = read_len;
 
 	return 0;
 }

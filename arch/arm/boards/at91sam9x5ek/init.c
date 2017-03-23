@@ -286,14 +286,6 @@ static void __init ek_add_led(void)
 	led_set_trigger(LED_TRIGGER_HEARTBEAT, &leds[1].led);
 }
 
-static int at91sam9x5ek_mem_init(void)
-{
-	at91_add_device_sdram(0);
-
-	return 0;
-}
-mem_initcall(at91sam9x5ek_mem_init);
-
 static void ek_add_device_w1(void)
 {
 	at91_set_gpio_input(w1_pdata.pin, 0);

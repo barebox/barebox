@@ -162,29 +162,10 @@ static void ek_add_device_lcdc(void)
 static void ek_add_device_lcdc(void) {}
 #endif
 
-#if defined(CONFIG_USB_OHCI) || defined(CONFIG_USB_EHCI)
-/*
- * USB HS Host port (common to OHCI & EHCI)
- */
-static struct at91_usbh_data ek_usbh_hs_data = {
-	.ports			= 2,
-	.vbus_pin		= {AT91_PIN_PD19, AT91_PIN_PD20},
-};
-
-static void ek_add_device_usb(void)
-{
-	at91_add_device_usbh_ohci(&ek_usbh_hs_data);
-	at91_add_device_usbh_ehci(&ek_usbh_hs_data);
-}
-#else
-static void ek_add_device_usb(void) {}
-#endif
-
 static int at91sam9x5ek_devices_init(void)
 {
 	ek_add_device_nand();
 	ek_add_device_eth();
-	ek_add_device_usb();
 	ek_add_device_lcdc();
 
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);

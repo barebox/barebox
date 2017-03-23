@@ -41,7 +41,7 @@ static LIST_HEAD(state_list);
  */
 int state_save(struct state *state)
 {
-	uint8_t *buf;
+	void *buf;
 	ssize_t len;
 	int ret;
 
@@ -80,7 +80,7 @@ out:
  */
 int state_load(struct state *state)
 {
-	uint8_t *buf;
+	void *buf;
 	ssize_t len;
 	int ret;
 

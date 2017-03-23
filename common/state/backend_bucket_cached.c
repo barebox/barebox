@@ -20,7 +20,7 @@ struct state_backend_storage_bucket_cache {
 
 	struct state_backend_storage_bucket *raw;
 
-	u8 *data;
+	void *data;
 	ssize_t data_len;
 	bool force_write;
 
@@ -61,7 +61,7 @@ static int state_backend_bucket_cache_fill(
 }
 
 static int state_backend_bucket_cache_read(struct state_backend_storage_bucket *bucket,
-					   uint8_t ** buf_out,
+					   void ** buf_out,
 					   ssize_t * len_hint)
 {
 	struct state_backend_storage_bucket_cache *cache =
@@ -85,7 +85,7 @@ static int state_backend_bucket_cache_read(struct state_backend_storage_bucket *
 }
 
 static int state_backend_bucket_cache_write(struct state_backend_storage_bucket *bucket,
-					    const uint8_t * buf, ssize_t len)
+					    const void * buf, ssize_t len)
 {
 	struct state_backend_storage_bucket_cache *cache =
 			get_bucket_cache(bucket);

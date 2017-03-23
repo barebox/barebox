@@ -42,7 +42,7 @@ const unsigned int min_copies_written = 1;
  * error.
  */
 int state_storage_write(struct state_backend_storage *storage,
-		        const uint8_t * buf, ssize_t len)
+		        const void * buf, ssize_t len)
 {
 	struct state_backend_storage_bucket *bucket;
 	int ret;
@@ -82,7 +82,7 @@ int state_storage_write(struct state_backend_storage *storage,
  * low, can read their own copy first and compare it.
  */
 int state_storage_restore_consistency(struct state_backend_storage *storage,
-				      const uint8_t * buf, ssize_t len)
+				      const void * buf, ssize_t len)
 {
 	return state_storage_write(storage, buf, len);
 }
@@ -105,7 +105,7 @@ int state_storage_restore_consistency(struct state_backend_storage *storage,
  */
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, uint8_t ** buf, ssize_t * len)
+		       uint32_t magic, void **buf, ssize_t *len)
 {
 	struct state_backend_storage_bucket *bucket;
 	int ret;

@@ -21,9 +21,9 @@ struct mtd_info_user;
  */
 struct state_backend_storage_bucket {
 	int (*write) (struct state_backend_storage_bucket * bucket,
-		      const uint8_t * buf, ssize_t len);
+		      const void * buf, ssize_t len);
 	int (*read) (struct state_backend_storage_bucket * bucket,
-		     uint8_t ** buf, ssize_t * len_hint);
+		     void ** buf, ssize_t * len_hint);
 	void (*free) (struct state_backend_storage_bucket * bucket);
 
 	struct list_head bucket_list;
@@ -46,11 +46,11 @@ struct state_backend_storage_bucket {
  */
 struct state_backend_format {
 	int (*verify) (struct state_backend_format * format, uint32_t magic,
-		       const uint8_t * buf, ssize_t *lenp);
+		       const void * buf, ssize_t *lenp);
 	int (*pack) (struct state_backend_format * format, struct state * state,
-		     uint8_t ** buf, ssize_t * len);
+		     void ** buf, ssize_t * len);
 	int (*unpack) (struct state_backend_format * format,
-		       struct state * state, const uint8_t * buf, ssize_t len);
+		       struct state * state, const void * buf, ssize_t len);
 	void (*free) (struct state_backend_format * format);
 	const char *name;
 };
@@ -207,13 +207,13 @@ int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
 				       struct state_backend_storage_bucket **bucket,
 				       off_t offset, ssize_t max_size);
 int state_storage_write(struct state_backend_storage *storage,
-			const uint8_t * buf, ssize_t len);
+			const void * buf, ssize_t len);
 int state_storage_restore_consistency(struct state_backend_storage
-				      *storage, const uint8_t * buf,
+				      *storage, const void * buf,
 				      ssize_t len);
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, uint8_t **buf, ssize_t *len);
+		       uint32_t magic, void **buf, ssize_t *len);
 
 static inline struct state_uint32 *to_state_uint32(struct state_variable *s)
 {

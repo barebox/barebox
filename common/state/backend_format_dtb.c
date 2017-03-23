@@ -39,7 +39,7 @@ static inline struct state_backend_format_dtb *get_format_dtb(struct
 }
 
 static int state_backend_format_dtb_verify(struct state_backend_format *format,
-					   uint32_t magic, const uint8_t * buf,
+					   uint32_t magic, const void * buf,
 					   ssize_t *lenp)
 {
 	struct state_backend_format_dtb *fdtb = get_format_dtb(format);
@@ -75,7 +75,7 @@ static int state_backend_format_dtb_verify(struct state_backend_format *format,
 
 static int state_backend_format_dtb_unpack(struct state_backend_format *format,
 					   struct state *state,
-					   const uint8_t * buf, ssize_t len)
+					   const void * buf, ssize_t len)
 {
 	struct state_backend_format_dtb *fdtb = get_format_dtb(format);
 	int ret;
@@ -92,7 +92,7 @@ static int state_backend_format_dtb_unpack(struct state_backend_format *format,
 }
 
 static int state_backend_format_dtb_pack(struct state_backend_format *format,
-					 struct state *state, uint8_t ** buf,
+					 struct state *state, void ** buf,
 					 ssize_t * len)
 {
 	struct state_backend_format_dtb *fdtb = get_format_dtb(format);

@@ -65,7 +65,7 @@ static inline struct state_backend_storage_bucket_circular
 
 #ifdef __BAREBOX__
 static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ,
-			      char *buf, int offset, int len)
+			      void *buf, int offset, int len)
 {
 	int ret;
 
@@ -102,7 +102,7 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 }
 
 static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *circ,
-			       const char *buf, int offset, int len)
+			       const void *buf, int offset, int len)
 {
 	int ret;
 
@@ -133,7 +133,7 @@ static int state_mtd_peb_erase(struct state_backend_storage_bucket_circular *cir
 }
 #else
 static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ,
-			      char *buf, int suboffset, int len)
+			      void *buf, int suboffset, int len)
 {
 	int ret;
 	off_t offset = suboffset;
@@ -185,7 +185,7 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 }
 
 static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *circ,
-			       const char *buf, int suboffset, int len)
+			       const void *buf, int suboffset, int len)
 {
 	int ret;
 	off_t offset = suboffset;
@@ -226,14 +226,14 @@ static int state_mtd_peb_erase(struct state_backend_storage_bucket_circular *cir
 #endif
 
 static int state_backend_bucket_circular_read(struct state_backend_storage_bucket *bucket,
-					      uint8_t ** buf_out,
+					      void ** buf_out,
 					      ssize_t * len_out)
 {
 	struct state_backend_storage_bucket_circular *circ =
 	    get_bucket_circular(bucket);
 	ssize_t read_len;
 	off_t offset;
-	uint8_t *buf;
+	void *buf;
 	int ret;
 
 	/* Storage is empty */
@@ -288,7 +288,7 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 }
 
 static int state_backend_bucket_circular_write(struct state_backend_storage_bucket *bucket,
-					       const uint8_t * buf,
+					       const void * buf,
 					       ssize_t len)
 {
 	struct state_backend_storage_bucket_circular *circ =
@@ -297,7 +297,7 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	struct state_backend_storage_bucket_circular_meta *meta;
 	uint32_t written_length = ALIGN(len + sizeof(*meta), circ->writesize);
 	int ret;
-	uint8_t *write_buf;
+	void *write_buf;
 
 	if (written_length > circ->max_size) {
 		dev_err(circ->dev, "Error, state data too big to be written, to write: %zd, writesize: %zd, length: %zd, available: %zd\n",

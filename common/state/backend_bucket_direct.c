@@ -46,14 +46,14 @@ static inline struct state_backend_storage_bucket_direct
 }
 
 static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
-					    *bucket, uint8_t ** buf_out,
+					    *bucket, void ** buf_out,
 					    ssize_t * len_out)
 {
 	struct state_backend_storage_bucket_direct *direct =
 	    get_bucket_direct(bucket);
 	struct state_backend_storage_bucket_direct_meta meta;
 	ssize_t read_len;
-	uint8_t *buf;
+	void *buf;
 	int ret;
 
 	ret = lseek(direct->fd, direct->offset, SEEK_SET);
@@ -95,7 +95,7 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 }
 
 static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
-					     *bucket, const uint8_t * buf,
+					     *bucket, const void * buf,
 					     ssize_t len)
 {
 	struct state_backend_storage_bucket_direct *direct =

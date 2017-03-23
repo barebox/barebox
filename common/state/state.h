@@ -53,8 +53,6 @@ struct state_backend_format {
 		     uint8_t ** buf, ssize_t * len);
 	int (*unpack) (struct state_backend_format * format,
 		       struct state * state, const uint8_t * buf, ssize_t len);
-	ssize_t(*get_packed_len) (struct state_backend_format * format,
-				   struct state * state);
 	void (*free) (struct state_backend_format * format);
 	const char *name;
 };

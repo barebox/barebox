@@ -74,9 +74,6 @@ int state_load(struct state *state)
 	int ret;
 	struct state_backend *backend = &state->backend;
 
-	if (backend->format->get_packed_len)
-		len_hint = backend->format->get_packed_len(backend->format,
-							   state);
 	ret = state_storage_read(&backend->storage, backend->format,
 				 state->magic, &buf, &len, len_hint);
 	if (ret) {

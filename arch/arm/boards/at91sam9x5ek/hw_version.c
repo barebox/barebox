@@ -15,6 +15,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <libbb.h>
@@ -250,7 +251,7 @@ static int cm_cogent_fixup(struct device_node *root, void *unused)
 	return 0;
 }
 
-void at91sam9x5ek_devices_detect_hw(void)
+static int at91sam9x5ek_devices_detect_hw(void)
 {
 	at91sam9x5ek_devices_detect_one("/dev/ds24310");
 	at91sam9x5ek_devices_detect_one("/dev/ds24311");
@@ -262,4 +263,7 @@ void at91sam9x5ek_devices_detect_hw(void)
 
 	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT))
 		of_register_fixup(cm_cogent_fixup, NULL);
+
+	return 0;
 }
+late_initcall(at91sam9x5ek_devices_detect_hw);

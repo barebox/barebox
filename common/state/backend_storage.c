@@ -376,13 +376,15 @@ int state_storage_init(struct state *state, const char *path,
 		ret = mtd_get_meminfo(path, &meminfo);
 
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {
-		bool circular = true;
-		if (!storagetype) {
+		bool circular;
+		if (!storagetype || !strcmp(storagetype, "circular")) {
+			circular = true;
+		} else if (!strcmp(storagetype, "noncircular")) {
+			dev_warn(storage->dev, "using old format circular storage type.\n");
 			circular = false;
-		} else if (strcmp(storagetype, "circular")) {
-			dev_warn(storage->dev, "Unknown storagetype '%s', falling back to old format circular storage type.\n",
-				 storagetype);
-			circular = false;
+		} else {
+			dev_warn(storage->dev, "unknown storage type '%s'\n", storagetype);
+			return -EINVAL;
 		}
 		return state_storage_mtd_buckets_init(storage, &meminfo, circular);
 	} else {

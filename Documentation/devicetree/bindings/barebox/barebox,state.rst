@@ -40,9 +40,9 @@ Optional properties:
   e.g. ``hmac(sha256)``. Only used for ``raw``.
 * ``backend-stridesize``: Maximum size per copy of the data. Only important for
   non-MTD devices
-* ``backend-storage-type``: Type of the storage. This has two options at the
-  moment. For MTD with erasing the correct type is ``circular``. For all other
-  devices and files, ``direct`` is the needed type.
+* ``backend-storage-type``: Normally the correct storage type is detected auto-
+  matically. The circular backend supports the option ``noncircular`` to fall
+  back to an old storage format.
 
 Variable nodes
 --------------

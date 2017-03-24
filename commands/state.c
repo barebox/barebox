@@ -21,20 +21,23 @@ static int do_state(int argc, char *argv[])
 {
 	int opt, ret = 0;
 	struct state *state = NULL;
-	int do_save = 0;
+	int do_save = 0, do_load = 0;
 	const char *statename = "state";
 
-	while ((opt = getopt(argc, argv, "s")) > 0) {
+	while ((opt = getopt(argc, argv, "sl")) > 0) {
 		switch (opt) {
 		case 's':
 			do_save = 1;
+			break;
+		case 'l':
+			do_load = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
 	}
 
-	if (!do_save) {
+	if (!do_save && !do_load) {
 		state_info();
 		return 0;
 	}
@@ -48,7 +51,9 @@ static int do_state(int argc, char *argv[])
 		return -ENOENT;
 	}
 
-	if (do_save)
+	if (do_load)
+		ret = state_load(state);
+	else if (do_save)
 		ret = state_save(state);
 
 	return ret;

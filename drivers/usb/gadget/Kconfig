@@ -30,6 +30,17 @@ config USB_GADGET_DRIVER_PXA27X
 	default y
 	select USB_GADGET_DUALSPEED
 
+config USB_GADGET_AUTOSTART
+	bool
+	default y
+	select ENVIRONMENT_VARIABLES
+	select FILE_LIST
+	prompt "Automatically start usbgadget on boot"
+	help
+	  Enabling this option allows to automatically start a fastboot
+	  gadget during boot. This behaviour is controlled with the
+	  global.usbgadget.fastboot_function variable.
+
 comment "USB Gadget drivers"
 
 config USB_GADGET_DFU

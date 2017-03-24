@@ -45,7 +45,7 @@ struct mdio_gpio_info {
 	int mdc_active_low, mdio_active_low, mdo_active_low;
 };
 
-struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
+static struct mdio_gpio_info *mdio_gpio_of_get_info(struct device_d *dev)
 {
 	int ret;
 	enum of_gpio_flags flags;

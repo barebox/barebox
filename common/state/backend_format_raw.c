@@ -35,6 +35,10 @@ struct state_backend_format_raw {
 
 	/* For outputs */
 	struct device_d *dev;
+
+	char *secret_name;
+	int needs_secret;
+	char *algo;
 };
 
 struct __attribute__((__packed__)) backend_raw_header {
@@ -51,6 +55,43 @@ static inline struct state_backend_format_raw *get_format_raw(
 		struct state_backend_format *format)
 {
 	return container_of(format, struct state_backend_format_raw, format);
+}
+
+static int backend_raw_digest_init(struct state_backend_format_raw *raw)
+{
+	const unsigned char *key;
+	int key_len;
+	int ret;
+
+	if (!raw->digest) {
+		raw->digest = digest_alloc(raw->algo);
+		if (!raw->digest) {
+			dev_err(raw->dev, "algo %s not found\n",
+				raw->algo);
+			return -ENODEV;
+		}
+		raw->digest_length = digest_length(raw->digest);
+	}
+
+	ret = keystore_get_secret(raw->secret_name, &key, &key_len);
+	if (ret) {
+		dev_err(raw->dev, "Could not get secret '%s'\n",
+			raw->secret_name);
+		return ret;
+	}
+
+	ret = digest_set_key(raw->digest, key, key_len);
+	if (ret)
+		return ret;
+
+	ret = digest_init(raw->digest);
+	if (ret) {
+		dev_err(raw->dev, "Failed to initialize digest: %s\n",
+			strerror(-ret));
+		return ret;
+	}
+
+	return 0;
 }
 
 static int backend_format_raw_verify(struct state_backend_format *format,
@@ -86,7 +127,11 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 		return -EINVAL;
 	}
 
-	if (backend_raw->digest) {
+	if (backend_raw->algo) {
+		ret = backend_raw_digest_init(backend_raw);
+		if (ret)
+			return ret;
+
 		d_len = digest_length(backend_raw->digest);
 	}
 
@@ -108,26 +153,18 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 
 	*lenp = header->data_len + sizeof(*header);
 
-	if (backend_raw->digest) {
-		struct digest *d = backend_raw->digest;
+	if (backend_raw->algo) {
 		const void *hmac = data + header->data_len;
 
-		ret = digest_init(d);
-		if (ret) {
-			dev_err(backend_raw->dev, "Failed to initialize digest, %d\n",
-				ret);
-			return ret;
-		}
-
 		/* hmac over header and data */
-		ret = digest_update(d, buf, sizeof(*header) + header->data_len);
+		ret = digest_update(backend_raw->digest, buf, sizeof(*header) + header->data_len);
 		if (ret) {
 			dev_err(backend_raw->dev, "Failed to update digest, %d\n",
 				ret);
 			return ret;
 		}
 
-		ret = digest_verify(d, hmac);
+		ret = digest_verify(backend_raw->digest, hmac);
 		if (ret < 0) {
 			dev_err(backend_raw->dev, "Failed to verify data, hmac, %d\n",
 				ret);
@@ -195,25 +232,20 @@ static int backend_format_raw_pack(struct state_backend_format *format,
 	header->header_crc = crc32(0, header,
 				   sizeof(*header) - sizeof(uint32_t));
 
-	if (backend_raw->digest) {
-		struct digest *d = backend_raw->digest;
-
-		ret = digest_init(d);
-		if (ret) {
-			dev_err(backend_raw->dev, "Failed to initialize digest for packing, %d\n",
-				ret);
-			goto out_free;
-		}
+	if (backend_raw->algo) {
+		ret = backend_raw_digest_init(backend_raw);
+		if (ret)
+			return ret;
 
 		/* hmac over header and data */
-		ret = digest_update(d, buf, sizeof(*header) + size_data);
+		ret = digest_update(backend_raw->digest, buf, sizeof(*header) + size_data);
 		if (ret) {
 			dev_err(backend_raw->dev, "Failed to update digest for packing, %d\n",
 				ret);
 			goto out_free;
 		}
 
-		ret = digest_final(d, hmac);
+		ret = digest_final(backend_raw->digest, hmac);
 		if (ret < 0) {
 			dev_err(backend_raw->dev, "Failed to finish digest for packing, %d\n",
 				ret);
@@ -243,11 +275,9 @@ static int backend_format_raw_init_digest(struct state_backend_format_raw *raw,
 					  struct device_node *root,
 					  const char *secret_name)
 {
-	struct digest *digest;
 	struct property *p;
 	const char *algo;
-	const unsigned char *key;
-	int key_len, ret;
+	int ret;
 
 	p = of_find_property(root, "algo", NULL);
 	if (!p)			/* does not exist */
@@ -263,30 +293,7 @@ static int backend_format_raw_init_digest(struct state_backend_format_raw *raw,
 		return -EINVAL;
 	}
 
-	ret = keystore_get_secret(secret_name, &key, &key_len);
-	if (ret == -ENOENT) {	/* -ENOENT == does not exist */
-		dev_info(raw->dev, "Could not get secret '%s' - probe deferred\n",
-			 secret_name);
-		return -EPROBE_DEFER;
-	} else if (ret) {
-		return ret;
-	}
-
-	digest = digest_alloc(algo);
-	if (!digest) {
-		dev_info(raw->dev, "algo %s not found - probe deferred\n",
-			 algo);
-		return -EPROBE_DEFER;
-	}
-
-	ret = digest_set_key(digest, key, key_len);
-	if (ret) {
-		digest_free(digest);
-		return ret;
-	}
-
-	raw->digest = digest;
-	raw->digest_length = digest_length(digest);
+	raw->algo = xstrdup(algo);
 
 	return 0;
 }
@@ -304,15 +311,14 @@ int backend_format_raw_create(struct state_backend_format **format,
 
 	raw->dev = dev;
 	ret = backend_format_raw_init_digest(raw, node, secret_name);
-	if (ret == -EPROBE_DEFER) {
-		return ret;
-	} else if (ret) {
+	if (ret) {
 		dev_err(raw->dev, "Failed initializing digest for raw format, %d\n",
 			ret);
 		free(raw);
 		return ret;
 	}
 
+	raw->secret_name = xstrdup(secret_name);
 	raw->format.pack = backend_format_raw_pack;
 	raw->format.unpack = backend_format_raw_unpack;
 	raw->format.verify = backend_format_raw_verify;

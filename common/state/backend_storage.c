@@ -226,11 +226,9 @@ const int desired_copies = 3;
  * @param circular If false, use non-circular mode to write data that is compatible with the old on-flash format
  * @return 0 on success, -errno otherwise
  *
- * Starting from offset 0 this function tries to create circular buckets on
- * different offsets in the device. Different copies of the data are located in
- * different eraseblocks.
- * For MTD devices we use circular buckets to minimize the number of erases.
- * Circular buckets write new data always in the next free space.
+ * This function iterates over the eraseblocks and creates one bucket on
+ * each eraseblock until we have the number of desired buckets. Bad blocks
+ * will be skipped and the next block will be used.
  */
 static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 					  struct mtd_info_user *meminfo, bool circular)

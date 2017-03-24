@@ -47,7 +47,7 @@
  * when storing a new state we can just write all buckets in order.
  */
 
-static const unsigned int min_copies_written = 1;
+static const unsigned int min_buckets_written = 1;
 
 /**
  * state_storage_write - Writes the given data to the storage
@@ -60,7 +60,7 @@ static const unsigned int min_copies_written = 1;
  * operation on all of them. Writes are always in the same sequence. This
  * ensures, that reading in the same sequence will always return the latest
  * written valid data first.
- * We try to at least write min_copies_written. If this fails we return with an
+ * We try to at least write min_buckets_written. If this fails we return with an
  * error.
  */
 int state_storage_write(struct state_backend_storage *storage,
@@ -68,7 +68,7 @@ int state_storage_write(struct state_backend_storage *storage,
 {
 	struct state_backend_storage_bucket *bucket;
 	int ret;
-	int copies_written = 0;
+	int buckets_written = 0;
 
 	if (storage->readonly)
 		return 0;
@@ -79,15 +79,15 @@ int state_storage_write(struct state_backend_storage *storage,
 			dev_warn(storage->dev, "Failed to write state backend bucket, %d\n",
 				 ret);
 		} else {
-			++copies_written;
+			++buckets_written;
 		}
 	}
 
-	if (copies_written >= min_copies_written)
+	if (buckets_written >= min_buckets_written)
 		return 0;
 
 	dev_err(storage->dev, "Failed to write state to at least %d buckets. Successfully written to %d buckets\n",
-		min_copies_written, copies_written);
+		min_buckets_written, buckets_written);
 	return -EIO;
 }
 

@@ -289,8 +289,8 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
  * @param storage Storage object
  * @return 0 on success, -errno otherwise
  *
- * For blockdevices and other regular files we create direct buckets beginning
- * at offset 0. Direct buckets are simple and write data always to offset 0.
+ * direct buckets are simpler than circular buckets and can be used on blockdevices
+ * and mtd devices that don't need erase (MRAM). Also used for EEPROMs.
  */
 static int state_storage_file_buckets_init(struct state_backend_storage *storage)
 {

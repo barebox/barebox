@@ -475,6 +475,9 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 	struct state_backend_storage_bucket_circular *circ;
 	int ret;
 
+	if (writesize < 8)
+		writesize = 8;
+
 	circ = xzalloc(sizeof(*circ));
 	circ->eraseblock = eraseblock;
 	circ->writesize = writesize;

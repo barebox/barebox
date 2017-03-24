@@ -387,7 +387,7 @@ static void fb_timings_vfreq(struct __fb_timings *timings)
  * REQUIRES:
  * A valid info->monspecs, otherwise 'safe numbers' will be used.
  */
-int fb_get_mode(int flags, u32 val, struct fb_videomode *var)
+static int fb_get_mode(int flags, u32 val, struct fb_videomode *var)
 {
 	struct __fb_timings *timings;
 	u32 interlace = 1, dscan = 1;

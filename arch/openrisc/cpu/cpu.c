@@ -41,6 +41,6 @@ static void __noreturn openrisc_restart_cpu(struct restart_handler *rst)
 
 static int restart_register_feature(void)
 {
-	restart_handler_register_fn(openrisc_restart_cpu, NULL, RESET_SCOPE_CPU);
+	return restart_handler_register_fn(openrisc_restart_cpu);
 }
 coredevice_initcall(restart_register_feature);

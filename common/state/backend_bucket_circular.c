@@ -61,6 +61,11 @@ struct state_backend_storage_bucket_circular {
 	struct device_d *dev;
 };
 
+/*
+ * The metadata will be written directly before writesize aligned offsets.
+ * When searching backwards through the pages it allows us to find the
+ * beginning of the data.
+ */
 struct __attribute__((__packed__)) state_backend_storage_bucket_circular_meta {
 	uint32_t magic;
 	uint32_t written_length;

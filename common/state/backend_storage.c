@@ -47,7 +47,7 @@
  * when storing a new state we can just write all buckets in order.
  */
 
-const unsigned int min_copies_written = 1;
+static const unsigned int min_copies_written = 1;
 
 /**
  * state_storage_write - Writes the given data to the storage

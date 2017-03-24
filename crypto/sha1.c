@@ -303,4 +303,4 @@ static int sha1_digest_register(void)
 {
 	return digest_algo_register(&m);
 }
-device_initcall(sha1_digest_register);
+coredevice_initcall(sha1_digest_register);

@@ -196,4 +196,4 @@ static int digest_hmac_initcall(void)
 
 	return 0;
 }
-crypto_initcall(digest_hmac_initcall);
+coredevice_initcall(digest_hmac_initcall);

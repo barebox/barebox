@@ -375,7 +375,7 @@ int console_register(struct console_device *newcdev)
 	ret = devfs_create(&newcdev->devfs);
 
 	if (ret) {
-		pr_err("device creation failed with %s\n", strerror(-ret));
+		pr_err("devfs entry creation failed: %s\n", strerror(-ret));
 		return ret;
 	}
 
@@ -387,6 +387,8 @@ int console_unregister(struct console_device *cdev)
 {
 	struct device_d *dev = &cdev->class_dev;
 	int status;
+
+	devfs_remove(&cdev->devfs);
 
 	list_del(&cdev->list);
 	if (list_empty(&console_list))

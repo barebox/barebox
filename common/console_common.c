@@ -246,7 +246,7 @@ struct console_device *console_get_by_name(const char *name)
 	struct console_device *cdev;
 
 	for_each_console(cdev) {
-		if (!strcmp(cdev->devname, name))
+		if (cdev->devname && !strcmp(cdev->devname, name))
 			return cdev;
 	}
 

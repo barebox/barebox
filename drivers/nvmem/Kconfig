@@ -1,0 +1,8 @@
+menuconfig NVMEM
+	bool "NVMEM Support"
+	help
+	  Support for NVMEM(Non Volatile Memory) devices like EEPROM, EFUSES...
+
+	  This framework is designed to provide a generic interface to NVMEM
+
+	  If unsure, say no.

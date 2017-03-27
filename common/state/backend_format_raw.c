@@ -96,7 +96,7 @@ static int backend_raw_digest_init(struct state_backend_format_raw *raw)
 
 static int backend_format_raw_verify(struct state_backend_format *format,
 				     uint32_t magic, const void * buf,
-				     ssize_t *lenp)
+				     ssize_t *lenp, enum state_flags flags)
 {
 	uint32_t crc;
 	struct backend_raw_header *header;
@@ -127,7 +127,7 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 		return -EINVAL;
 	}
 
-	if (backend_raw->algo) {
+	if (backend_raw->algo && !(flags & STATE_FLAG_NO_AUTHENTIFICATION)) {
 		ret = backend_raw_digest_init(backend_raw);
 		if (ret)
 			return ret;
@@ -153,7 +153,7 @@ static int backend_format_raw_verify(struct state_backend_format *format,
 
 	*lenp = header->data_len + sizeof(*header);
 
-	if (backend_raw->algo) {
+	if (backend_raw->algo && !(flags & STATE_FLAG_NO_AUTHENTIFICATION)) {
 		const void *hmac = data + header->data_len;
 
 		/* hmac over header and data */

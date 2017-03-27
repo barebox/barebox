@@ -40,7 +40,7 @@ static inline struct state_backend_format_dtb *get_format_dtb(struct
 
 static int state_backend_format_dtb_verify(struct state_backend_format *format,
 					   uint32_t magic, const void * buf,
-					   ssize_t *lenp)
+					   ssize_t *lenp, enum state_flags flags)
 {
 	struct state_backend_format_dtb *fdtb = get_format_dtb(format);
 	struct device_node *root;
@@ -81,7 +81,7 @@ static int state_backend_format_dtb_unpack(struct state_backend_format *format,
 	int ret;
 
 	if (!fdtb->root) {
-		state_backend_format_dtb_verify(format, 0, buf, &len);
+		state_backend_format_dtb_verify(format, 0, buf, &len, 0);
 	}
 
 	ret = state_from_node(state, fdtb->root, 0);

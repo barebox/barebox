@@ -127,6 +127,7 @@ refresh:
  * @param magic state magic value
  * @param buf The newly allocated data area will be stored in this pointer
  * @param len The resulting length of the buffer
+ * @param flags flags controlling how to load state
  * @return 0 on success, -errno otherwise. buf and len will be set to valid
  * values on success.
  *
@@ -137,7 +138,8 @@ refresh:
  */
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, void **buf, ssize_t *len)
+		       uint32_t magic, void **buf, ssize_t *len,
+		       enum state_flags flags)
 {
 	struct state_backend_storage_bucket *bucket, *bucket_used = NULL;
 	int ret;
@@ -157,7 +159,7 @@ int state_storage_read(struct state_backend_storage *storage,
 		 * Verify the buffer crcs. The buffer length is passed in the len argument,
 		 * .verify overwrites it with the length actually used.
 		 */
-		ret = format->verify(format, magic, bucket->buf, &bucket->len);
+		ret = format->verify(format, magic, bucket->buf, &bucket->len, flags);
 		if (!ret && !bucket_used)
 			bucket_used = bucket;
 	}

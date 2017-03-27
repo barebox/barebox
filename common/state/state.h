@@ -5,6 +5,10 @@
 struct state;
 struct mtd_info_user;
 
+enum state_flags {
+	STATE_FLAG_NO_AUTHENTIFICATION = (1 << 0),
+};
+
 /**
  * state_backend_storage_bucket - This class describes a single backend storage
  * object copy
@@ -53,7 +57,7 @@ struct state_backend_storage_bucket {
  */
 struct state_backend_format {
 	int (*verify) (struct state_backend_format * format, uint32_t magic,
-		       const void * buf, ssize_t *lenp);
+		       const void * buf, ssize_t *lenp, enum state_flags flags);
 	int (*pack) (struct state_backend_format * format, struct state * state,
 		     void ** buf, ssize_t * len);
 	int (*unpack) (struct state_backend_format * format,
@@ -223,7 +227,8 @@ int state_storage_write(struct state_backend_storage *storage,
 			const void * buf, ssize_t len);
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, void **buf, ssize_t *len);
+		       uint32_t magic, void **buf, ssize_t *len,
+		       enum state_flags flags);
 
 static inline struct state_uint32 *to_state_uint32(struct state_variable *s)
 {

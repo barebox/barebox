@@ -78,14 +78,14 @@ out:
  * we read is checked for integrity by the formatter. After that we unpack the
  * data into our state.
  */
-int state_load(struct state *state)
+static int state_do_load(struct state *state, enum state_flags flags)
 {
 	void *buf;
 	ssize_t len;
 	int ret;
 
 	ret = state_storage_read(&state->storage, state->format,
-				 state->magic, &buf, &len);
+				 state->magic, &buf, &len, flags);
 	if (ret) {
 		dev_err(&state->dev, "Failed to read state with format %s, %d\n",
 			state->format->name, ret);
@@ -104,6 +104,16 @@ int state_load(struct state *state)
 out:
 	free(buf);
 	return ret;
+}
+
+int state_load(struct state *state)
+{
+	return state_do_load(state, 0);
+}
+
+int state_load_no_auth(struct state *state)
+{
+	return state_do_load(state, STATE_FLAG_NO_AUTHENTIFICATION);
 }
 
 static int state_format_init(struct state *state, const char *backend_format,

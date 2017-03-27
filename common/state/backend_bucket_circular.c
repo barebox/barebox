@@ -323,7 +323,7 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 		circ->write_area = 0;
 	}
 	/*
-	 * If the write area is at the beginning of the page, erase it and write
+	 * If the write area is at the beginning of the eraseblock, erase it and write
 	 * at offset 0. As we only erase right before writing there are no
 	 * conditions where we regularly erase a block multiple times without
 	 * writing.

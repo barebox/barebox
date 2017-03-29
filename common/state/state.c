@@ -632,11 +632,6 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		goto out_release_state;
 	}
 
-	ret = state_load(state);
-	if (ret) {
-		dev_warn(&state->dev, "Failed to load persistent state, continuing with defaults, %d\n", ret);
-	}
-
 	dev_info(&state->dev, "New state registered '%s'\n", alias);
 
 	return state;

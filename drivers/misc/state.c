@@ -26,6 +26,7 @@ static int state_probe(struct device_d *dev)
 	struct device_node *np = dev->device_node;
 	struct state *state;
 	bool readonly = false;
+	int ret;
 
 	state = state_new_from_node(np, NULL, 0, 0, readonly);
 	if (IS_ERR(state)) {
@@ -34,6 +35,11 @@ static int state_probe(struct device_d *dev)
 			ret = -EPROBE_DEFER;
 		return ret;
 	}
+
+	ret = state_load(state);
+	if (ret)
+		dev_warn(dev, "Failed to load persistent state, continuing with defaults, %d\n",
+			 ret);
 
 	return 0;
 }

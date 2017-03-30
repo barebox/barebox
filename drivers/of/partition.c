@@ -131,13 +131,20 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 	struct cdev *cdev = ctx, *partcdev;
 	struct device_node *np, *part, *partnode;
 	int ret;
-	int n_cells;
+	int n_cells, n_parts = 0;
 
 	if (of_partition_binding == MTD_OF_BINDING_DONTTOUCH)
 		return 0;
 
 	if (!cdev->device_node)
 		return -EINVAL;
+
+	list_for_each_entry(partcdev, &cdev->partitions, partition_entry) {
+		n_parts++;
+	}
+
+	if (!n_parts)
+		return 0;
 
 	if (cdev->size >= 0x100000000)
 		n_cells = 2;

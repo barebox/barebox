@@ -40,10 +40,11 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	char *filename;
 	struct cdev *new;
 	const __be32 *reg;
-	unsigned long offset, size;
+	u64 offset, size;
 	const char *name;
 	int len;
 	unsigned long flags = 0;
+	int na, ns;
 
 	if (!node)
 		return NULL;
@@ -52,8 +53,16 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 	if (!reg)
 		return NULL;
 
-	offset = be32_to_cpu(reg[0]);
-	size = be32_to_cpu(reg[1]);
+	na = of_n_addr_cells(node);
+	ns = of_n_size_cells(node);
+
+	if (len < (na + ns) * sizeof(__be32)) {
+		pr_err("reg property too small in %s\n", node->full_name);
+		return NULL;
+	}
+
+	offset = of_read_number(reg, na);
+	size = of_read_number(reg + na, ns);
 
 	partname = of_get_property(node, "label", &len);
 	if (!partname)
@@ -63,7 +72,7 @@ struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 
 	name = (char *)partname;
 
-	debug("add partition: %s.%s 0x%08lx 0x%08lx\n", cdev->name, partname, offset, size);
+	debug("add partition: %s.%s 0x%08llx 0x%08llx\n", cdev->name, partname, offset, size);
 
 	if (of_get_property(node, "read-only", &len))
 		flags = DEVFS_PARTITION_READONLY;

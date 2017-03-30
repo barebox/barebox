@@ -225,6 +225,8 @@ struct mtd_info *mtd_add_partition(struct mtd_info *mtd, off_t offset,
 	if (ret)
 		goto err;
 
+	part->cdev.master = &part->master->cdev;
+
 	return part;
 err:
 	free(part->cdev.partname);

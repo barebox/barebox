@@ -104,7 +104,7 @@ struct state {
 
 	struct state_backend_format *format;
 	struct state_backend_storage storage;
-	char *of_backend_path;
+	char *backend_path;
 };
 
 enum state_convert {

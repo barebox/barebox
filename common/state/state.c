@@ -461,7 +461,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	}
 
 	/* backend phandle */
-	backend_node = of_find_node_by_path_from(root, state->of_backend_path);
+	backend_node = of_find_node_by_devpath(root, state->backend_path);
 	if (!backend_node) {
 		ret = -ENODEV;
 		goto out;
@@ -529,7 +529,7 @@ void state_release(struct state *state)
 	unregister_device(&state->dev);
 	state_storage_free(&state->storage);
 	state_format_free(state->format);
-	free(state->of_backend_path);
+	free(state->backend_path);
 	free(state->of_path);
 	free(state);
 }
@@ -591,6 +591,8 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		}
 	}
 
+	state->backend_path = xstrdup(path);
+
 	ret = of_property_read_string(node, "backend-type", &backend_type);
 	if (ret) {
 		goto out_release_state;
@@ -616,8 +618,6 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 				 max_size, stridesize, storage_type);
 	if (ret)
 		goto out_release_state;
-
-	state->of_backend_path = xstrdup(of_path);
 
 	if (readonly)
 		state_backend_set_readonly(state);
@@ -693,7 +693,7 @@ void state_info(void)
 		if (state->format)
 			printf("(backend: %s, path: %s)\n",
 			       state->format->name,
-			       state->of_backend_path);
+			       state->backend_path);
 		else
 			printf("(no backend)\n");
 	}

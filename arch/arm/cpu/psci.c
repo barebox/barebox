@@ -204,13 +204,11 @@ static int of_psci_fixup(struct device_node *root, void *unused)
 	if (!psci)
 		return -EINVAL;
 
-	ret = of_set_property(psci, "compatible", "arm,psci-1.0",
-			strlen("arm,psci-1.0") + 1, 1);
+	ret = of_property_write_string(psci, "compatible", "arm,psci-1.0");
 	if (ret)
 		return ret;
 
-	ret = of_set_property(psci, "method", "smc",
-			strlen("smc") + 1, 1);
+	ret = of_property_write_string(psci, "method", "smc");
 	if (ret)
 		return ret;
 

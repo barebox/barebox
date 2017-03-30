@@ -133,8 +133,7 @@ static int of_hostfile_fixup(struct device_node *root, void *ctx)
 
 	node = of_new_node(root, hf->devname);
 
-	ret = of_set_property(node, "compatible", hostfile_dt_ids->compatible,
-			      strlen(hostfile_dt_ids->compatible) + 1, 1);
+	ret = of_property_write_string(node, "compatible", hostfile_dt_ids->compatible);
 	if (ret)
 		return ret;
 
@@ -146,8 +145,7 @@ static int of_hostfile_fixup(struct device_node *root, void *ctx)
 	if (ret)
 		return ret;
 
-	ret = of_set_property(node, "barebox,filename", hf->filename,
-			      strlen(hf->filename) + 1, 1);
+	ret = of_property_write_string(node, "barebox,filename", hf->filename);
 
 	return ret;
 }

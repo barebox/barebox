@@ -89,9 +89,6 @@ static const struct simplefb_mode *simplefb_find_mode(const struct fb_info *fbi)
 static int simplefb_create_node(struct device_node *root,
 				const struct fb_info *fbi, const char *format)
 {
-	const char *compat = "simple-framebuffer";
-	const char *disabled = "disabled";
-	const char *okay = "okay";
 	struct device_node *node;
 	u32 cells[2];
 	int ret;
@@ -100,12 +97,11 @@ static int simplefb_create_node(struct device_node *root,
 	if (!node)
 		return -ENOMEM;
 
-	ret = of_set_property(node, "status", disabled,
-				strlen(disabled) + 1, 1);
+	ret = of_property_write_string(node, "status", "disabled");
 	if (ret < 0)
 		return ret;
 
-	ret = of_set_property(node, "compatible", compat, strlen(compat) + 1, 1);
+	ret = of_property_write_string(node, "compatible", "simple-framebuffer");
 	if (ret)
 		return ret;
 
@@ -130,14 +126,14 @@ static int simplefb_create_node(struct device_node *root,
 	if (ret < 0)
 		return ret;
 
-	ret = of_set_property(node, "format", format, strlen(format) + 1, 1);
+	ret = of_property_write_string(node, "format", format);
 	if (ret < 0)
 		return ret;
 
 	of_add_reserve_entry((u32)fbi->screen_base,
 			(u32)fbi->screen_base + fbi->screen_size);
 
-	return of_set_property(node, "status", okay, strlen(okay) + 1, 1);
+	return of_property_write_string(node, "status", "okay");
 }
 
 static int simplefb_of_fixup(struct device_node *root, void *ctx)

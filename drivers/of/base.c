@@ -2115,7 +2115,7 @@ int of_device_enable_path(const char *path)
  */
 int of_device_disable(struct device_node *node)
 {
-	return of_set_property(node, "status", "disabled", sizeof("disabled"), 1);
+	return of_property_write_string(node, "status", "disabled");
 }
 
 /**

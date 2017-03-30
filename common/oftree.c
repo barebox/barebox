@@ -128,7 +128,7 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 		return -ENOMEM;
 
 
-	err = of_set_property(node, "bootargs", str, strlen(str) + 1, 1);
+	err = of_property_write_string(node, "bootargs", str);
 
 	return err;
 }

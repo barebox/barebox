@@ -104,6 +104,113 @@ int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flag
 }
 
 /**
+ * of_find_node_by_devpath - translate a device path to a device tree node
+ *
+ * @root: The device tree root. Can be NULL, in this case the internal tree is used
+ * @path: The path to look the node up for. Can be "/dev/cdevname" or "cdevname" directly.
+ *
+ * This is the counterpart of of_find_path_by_node(). Given a path this function tries
+ * to find the corresponding node in the given device tree.
+ *
+ * We first have to find the hardware device in the tree we are passed and then find
+ * a partition matching offset/size in this tree. This is necessary because the
+ * passed tree may use another partition binding (legacy vs. fixed-partitions). Also
+ * the node names may differ (some device trees have partition@<num> instead of
+ * partition@<offset>.
+ */
+struct device_node *of_find_node_by_devpath(struct device_node *root, const char *path)
+{
+	struct cdev *cdev;
+	bool is_partition = false;
+	struct device_node *np, *partnode, *rnp;
+	loff_t part_offset = 0, part_size = 0;
+
+	pr_debug("%s: looking for path %s\n", __func__, path);
+
+	if (!strncmp(path, "/dev/", 5))
+		path += 5;
+
+	cdev = cdev_by_name(path);
+	if (!cdev) {
+		pr_debug("%s: cdev %s not found\n", __func__, path);
+		return NULL;
+	}
+
+	/*
+	 * Look for the device node of the master device (the one of_parse_partitions() has
+	 * been called with
+	 */
+	if (cdev->master) {
+		is_partition = true;
+		part_offset = cdev->offset;
+		part_size = cdev->size;
+		pr_debug("%s path %s: is a partition with offset 0x%08llx, size 0x%08llx\n",
+			 __func__, path, part_offset, part_size);
+		np = cdev->master->device_node;
+	} else {
+		np = cdev->device_node;
+	}
+
+	/*
+	 * Now find the device node of the master device in the device tree we have
+	 * been passed.
+	 */
+	rnp = of_find_node_by_path_from(root, np->full_name);
+	if (!rnp) {
+		pr_debug("%s path %s: %s not found in passed tree\n", __func__, path,
+			np->full_name);
+		return NULL;
+	}
+
+	if (!is_partition) {
+		pr_debug("%s path %s: returning full device node %s\n", __func__, path,
+			rnp->full_name);
+		return rnp;
+	}
+
+	/*
+	 * Look for a partition with matching offset/size in the device node of
+	 * the tree we have been passed.
+	 */
+	partnode = of_get_child_by_name(rnp, "partitions");
+	if (!partnode) {
+		pr_debug("%s path %s: using legacy partition binding\n", __func__, path);
+		partnode = rnp;
+	}
+
+	for_each_child_of_node(partnode, np) {
+		const __be32 *reg;
+		int na, ns, len;
+		loff_t offset, size;
+
+		reg = of_get_property(np, "reg", &len);
+		if (!reg)
+			return NULL;
+
+		na = of_n_addr_cells(np);
+		ns = of_n_size_cells(np);
+
+		if (len < (na + ns) * sizeof(__be32)) {
+			pr_err("reg property too small in %s\n", np->full_name);
+			continue;
+		}
+
+		offset = of_read_number(reg, na);
+		size = of_read_number(reg + na, ns);
+
+		if (part_offset == offset && part_size == size) {
+			pr_debug("%s path %s: found matching partition in %s\n", __func__, path,
+				np->full_name);
+			return np;
+		}
+	}
+
+	pr_debug("%s path %s: no matching node found\n", __func__, path);
+
+	return NULL;
+}
+
+/**
  * of_find_path - translate a path description in the devicetree to a barebox
  *                path
  *

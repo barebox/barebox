@@ -98,6 +98,8 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 	if (!node)
 		return -EINVAL;
 
+	cdev->device_node = node;
+
 	subnode = of_get_child_by_name(node, "partitions");
 	if (subnode) {
 		if (!of_device_is_compatible(subnode, "fixed-partitions"))
@@ -124,28 +126,28 @@ static void delete_subnodes(struct device_node *np)
 	}
 }
 
-static int of_mtd_fixup(struct device_node *root, void *ctx)
+static int of_partition_fixup(struct device_node *root, void *ctx)
 {
-	struct cdev *cdev = ctx;
-	struct mtd_info *mtd, *partmtd;
+	struct cdev *cdev = ctx, *partcdev;
 	struct device_node *np, *part, *partnode;
 	int ret;
 	int n_cells;
 
-	mtd = container_of(cdev, struct mtd_info, cdev);
-
 	if (of_partition_binding == MTD_OF_BINDING_DONTTOUCH)
 		return 0;
 
-	if (mtd->size >= 0x100000000)
+	if (!cdev->device_node)
+		return -EINVAL;
+
+	if (cdev->size >= 0x100000000)
 		n_cells = 2;
 	else
 		n_cells = 1;
 
-	np = of_find_node_by_path_from(root, mtd->of_path);
+	np = of_find_node_by_path_from(root, cdev->device_node->full_name);
 	if (!np) {
-		dev_err(&mtd->class_dev, "Cannot find nodepath %s, cannot fixup\n",
-				mtd->of_path);
+		dev_err(cdev->dev, "Cannot find nodepath %s, cannot fixup\n",
+				cdev->device_node->full_name);
 		return -EINVAL;
 	}
 
@@ -180,13 +182,20 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 	if (ret)
 		return ret;
 
-	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
+	list_for_each_entry(partcdev, &cdev->partitions, partition_entry) {
 		int na, ns, len = 0;
 		char *name = basprintf("partition@%0llx",
-					 partmtd->master_offset);
+					 partcdev->offset);
 		void *p;
 		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
+		loff_t partoffset;
 
+		if (partcdev->mtd)
+			partoffset = partcdev->mtd->master_offset;
+		else
+			partoffset = partcdev->offset;
+
+		name = basprintf("partition@%0llx", partoffset);
 		if (!name)
 			return -ENOMEM;
 
@@ -195,24 +204,24 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 		if (!part)
 			return -ENOMEM;
 
-		p = of_new_property(part, "label", partmtd->cdev.partname,
-                                strlen(partmtd->cdev.partname) + 1);
+		p = of_new_property(part, "label", partcdev->partname,
+                                strlen(partcdev->partname) + 1);
 		if (!p)
 			return -ENOMEM;
 
 		na = of_n_addr_cells(part);
 		ns = of_n_size_cells(part);
 
-		of_write_number(tmp + len, partmtd->master_offset, na);
+		of_write_number(tmp + len, partoffset, na);
 		len += na * 4;
-		of_write_number(tmp + len, partmtd->size, ns);
+		of_write_number(tmp + len, partcdev->size, ns);
 		len += ns * 4;
 
 		ret = of_set_property(part, "reg", tmp, len, 1);
 		if (ret)
 			return ret;
 
-		if (partmtd->cdev.flags & DEVFS_PARTITION_READONLY) {
+		if (partcdev->flags & DEVFS_PARTITION_READONLY) {
 			ret = of_set_property(part, "read-only", NULL, 0, 1);
 			if (ret)
 				return ret;
@@ -224,7 +233,7 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 
 int of_partitions_register_fixup(struct cdev *cdev)
 {
-	return of_register_fixup(of_mtd_fixup, cdev);
+	return of_register_fixup(of_partition_fixup, cdev);
 }
 
 static const char *of_binding_names[] = {

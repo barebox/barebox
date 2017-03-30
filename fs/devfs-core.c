@@ -277,6 +277,7 @@ int devfs_create(struct cdev *new)
 		return -EEXIST;
 
 	INIT_LIST_HEAD(&new->links);
+	INIT_LIST_HEAD(&new->partitions);
 
 	list_add_tail(&new->list, &cdev_list);
 	if (new->dev) {
@@ -326,6 +327,9 @@ int devfs_remove(struct cdev *cdev)
 	list_for_each_entry_safe(c, tmp, &cdev->links, link_entry)
 		devfs_remove(c);
 
+	if (cdev->flags & DEVFS_IS_PARTITION)
+		list_del(&cdev->partition_entry);
+
 	if (cdev->link)
 		free(cdev);
 
@@ -374,6 +378,8 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 				partinfo->flags, partinfo->name);
 		if (IS_ERR(mtd))
 			return (void *)mtd;
+
+		list_add_tail(&mtd->cdev.partition_entry, &cdev->partitions);
 		return &mtd->cdev;
 	}
 
@@ -389,6 +395,8 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 
 	new->dev = cdev->dev;
 	new->flags = partinfo->flags | DEVFS_IS_PARTITION;
+
+	list_add_tail(&new->partition_entry, &cdev->partitions);
 
 	devfs_create(new);
 

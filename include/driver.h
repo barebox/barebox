@@ -459,6 +459,7 @@ struct cdev {
 	u8 dos_partition_type;
 	struct cdev *link;
 	struct list_head link_entry, links;
+	struct list_head partition_entry, partitions;
 };
 
 int devfs_create(struct cdev *);

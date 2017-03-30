@@ -205,6 +205,8 @@ extern int of_property_write_u32_array(struct device_node *np,
 extern int of_property_write_u64_array(struct device_node *np,
 				const char *propname, const u64 *values,
 				size_t sz);
+extern int of_property_write_string(struct device_node *np, const char *propname,
+				    const char *value);
 
 extern struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name,
@@ -462,6 +464,12 @@ static inline int of_property_write_u32_array(struct device_node *np,
 
 static inline int of_property_write_u64_array(struct device_node *np,
 			const char *propname, const u64 *values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_write_string(struct device_node *np, const char *propname,
+				    const char *value)
 {
 	return -ENOSYS;
 }

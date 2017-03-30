@@ -140,6 +140,8 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 		return -EINVAL;
 
 	list_for_each_entry(partcdev, &cdev->partitions, partition_entry) {
+		if (partcdev->flags & DEVFS_PARTITION_FROM_TABLE)
+			continue;
 		n_parts++;
 	}
 
@@ -191,11 +193,13 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 
 	list_for_each_entry(partcdev, &cdev->partitions, partition_entry) {
 		int na, ns, len = 0;
-		char *name = basprintf("partition@%0llx",
-					 partcdev->offset);
+		char *name;
 		void *p;
 		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
 		loff_t partoffset;
+
+		if (partcdev->flags & DEVFS_PARTITION_FROM_TABLE)
+			continue;
 
 		if (partcdev->mtd)
 			partoffset = partcdev->mtd->master_offset;

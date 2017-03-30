@@ -92,3 +92,72 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 
 	return 0;
 }
+
+static int of_mtd_fixup(struct device_node *root, void *ctx)
+{
+	struct cdev *cdev = ctx;
+	struct mtd_info *mtd, *partmtd;
+	struct device_node *np, *part, *tmp;
+	int ret;
+
+	mtd = container_of(cdev, struct mtd_info, cdev);
+
+	np = of_find_node_by_path_from(root, mtd->of_path);
+	if (!np) {
+		dev_err(&mtd->class_dev, "Cannot find nodepath %s, cannot fixup\n",
+				mtd->of_path);
+		return -EINVAL;
+	}
+
+	for_each_child_of_node_safe(np, tmp, part) {
+		if (of_get_property(part, "compatible", NULL))
+			continue;
+		of_delete_node(part);
+	}
+
+	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
+		int na, ns, len = 0;
+		char *name = basprintf("partition@%0llx",
+					 partmtd->master_offset);
+		void *p;
+		u8 tmp[16 * 16]; /* Up to 64-bit address + 64-bit size */
+
+		if (!name)
+			return -ENOMEM;
+
+		part = of_new_node(np, name);
+		free(name);
+		if (!part)
+			return -ENOMEM;
+
+		p = of_new_property(part, "label", partmtd->cdev.partname,
+                                strlen(partmtd->cdev.partname) + 1);
+		if (!p)
+			return -ENOMEM;
+
+		na = of_n_addr_cells(part);
+		ns = of_n_size_cells(part);
+
+		of_write_number(tmp + len, partmtd->master_offset, na);
+		len += na * 4;
+		of_write_number(tmp + len, partmtd->size, ns);
+		len += ns * 4;
+
+		ret = of_set_property(part, "reg", tmp, len, 1);
+		if (ret)
+			return ret;
+
+		if (partmtd->cdev.flags & DEVFS_PARTITION_READONLY) {
+			ret = of_set_property(part, "read-only", NULL, 0, 1);
+			if (ret)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
+int of_partitions_register_fixup(struct cdev *cdev)
+{
+	return of_register_fixup(of_mtd_fixup, cdev);
+}

@@ -23,6 +23,16 @@
 #include <linux/mtd/mtd.h>
 #include <linux/err.h>
 #include <nand.h>
+#include <init.h>
+#include <globalvar.h>
+
+static unsigned int of_partition_binding;
+
+enum of_binding_name {
+	MTD_OF_BINDING_NEW,
+	MTD_OF_BINDING_LEGACY,
+	MTD_OF_BINDING_DONTTOUCH,
+};
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node)
 {
@@ -93,14 +103,35 @@ int of_parse_partitions(struct cdev *cdev, struct device_node *node)
 	return 0;
 }
 
+static void delete_subnodes(struct device_node *np)
+{
+	struct device_node *part, *tmp;
+
+	for_each_child_of_node_safe(np, tmp, part) {
+		if (of_get_property(part, "compatible", NULL))
+			continue;
+
+		of_delete_node(part);
+	}
+}
+
 static int of_mtd_fixup(struct device_node *root, void *ctx)
 {
 	struct cdev *cdev = ctx;
 	struct mtd_info *mtd, *partmtd;
-	struct device_node *np, *part, *tmp;
+	struct device_node *np, *part, *partnode;
 	int ret;
+	int n_cells;
 
 	mtd = container_of(cdev, struct mtd_info, cdev);
+
+	if (of_partition_binding == MTD_OF_BINDING_DONTTOUCH)
+		return 0;
+
+	if (mtd->size >= 0x100000000)
+		n_cells = 2;
+	else
+		n_cells = 1;
 
 	np = of_find_node_by_path_from(root, mtd->of_path);
 	if (!np) {
@@ -109,11 +140,36 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 		return -EINVAL;
 	}
 
-	for_each_child_of_node_safe(np, tmp, part) {
-		if (of_get_property(part, "compatible", NULL))
-			continue;
-		of_delete_node(part);
+	partnode = of_get_child_by_name(np, "partitions");
+	if (partnode) {
+		if (of_partition_binding == MTD_OF_BINDING_LEGACY) {
+			of_delete_node(partnode);
+			partnode = np;
+		}
+		delete_subnodes(partnode);
+	} else {
+		delete_subnodes(np);
+
+		if (of_partition_binding == MTD_OF_BINDING_LEGACY)
+			partnode = np;
+		else
+			partnode = of_new_node(np, "partitions");
 	}
+
+	if (of_partition_binding == MTD_OF_BINDING_NEW) {
+		ret = of_property_write_string(partnode, "compatible",
+					       "fixed-partitions");
+		if (ret)
+			return ret;
+	}
+
+	of_property_write_u32(partnode, "#size-cells", n_cells);
+	if (ret)
+		return ret;
+
+	of_property_write_u32(partnode, "#addres-cells", n_cells);
+	if (ret)
+		return ret;
 
 	list_for_each_entry(partmtd, &mtd->partitions, partitions_entry) {
 		int na, ns, len = 0;
@@ -125,7 +181,7 @@ static int of_mtd_fixup(struct device_node *root, void *ctx)
 		if (!name)
 			return -ENOMEM;
 
-		part = of_new_node(np, name);
+		part = of_new_node(partnode, name);
 		free(name);
 		if (!part)
 			return -ENOMEM;
@@ -161,3 +217,17 @@ int of_partitions_register_fixup(struct cdev *cdev)
 {
 	return of_register_fixup(of_mtd_fixup, cdev);
 }
+
+static const char *of_binding_names[] = {
+	"new", "legacy", "donttouch"
+};
+
+static int of_partition_init(void)
+{
+	dev_add_param_enum(&global_device, "of_partition_binding", NULL, NULL,
+			   &of_partition_binding, of_binding_names,
+			   ARRAY_SIZE(of_binding_names), NULL);
+
+	return 0;
+}
+device_initcall(of_partition_init);

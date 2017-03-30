@@ -60,7 +60,7 @@ static int mvebu_timer_probe(struct device_d *dev)
 	struct clk *clk;
 	u32 rate, div, val;
 
-	iores = dev_request_mem_resource(dev, 0);
+	iores = dev_get_resource(dev, IORESOURCE_MEM, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
 	timer_base = IOMEM(iores->start);

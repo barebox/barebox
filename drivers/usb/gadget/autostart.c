@@ -14,6 +14,7 @@
 #include <common.h>
 #include <command.h>
 #include <errno.h>
+#include <environment.h>
 #include <malloc.h>
 #include <getopt.h>
 #include <fs.h>
@@ -34,6 +35,8 @@ static int usbgadget_autostart(void)
 
 	if (!autostart)
 		return 0;
+
+	setenv("otg.mode", "peripheral");
 
 	if (fastboot_function)
 		opts.fastboot_opts.files = file_list_parse(fastboot_function);

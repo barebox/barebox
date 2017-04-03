@@ -321,7 +321,10 @@ static void device_param_print(struct device_d *dev)
 		if (IS_ENABLED(CONFIG_NVVAR) && dev != &nv_device)
 			nv = dev_get_param(&nv_device, param->name);
 
-		printf("%s%s: %s\n", nv ? "* " : "  ", param->name, p);
+		printf("%s%s: %s", nv ? "* " : "  ", param->name, p);
+		if (param->info)
+			param->info(param);
+		printf("\n");
 	}
 }
 

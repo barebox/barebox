@@ -18,7 +18,7 @@
 #include <common.h>
 #include <io.h>
 #include <mach/generic.h>
-#include <mach/freeze-controller.h>
+#include <mach/cyclone5-freeze-controller.h>
 
 #define SYSMGR_FRZCTRL_LOOP_PARAM       (1000)
 #define SYSMGR_FRZCTRL_DELAY_LOOP_PARAM (10)

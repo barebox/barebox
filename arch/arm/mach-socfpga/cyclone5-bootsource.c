@@ -16,17 +16,17 @@
 #include <environment.h>
 #include <init.h>
 #include <io.h>
-#include <mach/socfpga-regs.h>
-#include <mach/system-manager.h>
+#include <mach/cyclone5-system-manager.h>
+#include <mach/cyclone5-regs.h>
 
-#define SYSMGR_BOOTINFO	0x14
+#define CYCLONE5_SYSMGR_BOOTINFO	0x14
 
-static int socfpga_boot_save_loc(void)
+static int cyclone5_boot_save_loc(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t val;
 
-	val = readl(CYCLONE5_SYSMGR_ADDRESS + SYSMGR_BOOTINFO);
+	val = readl(CYCLONE5_SYSMGR_ADDRESS + CYCLONE5_SYSMGR_BOOTINFO);
 
 	switch (val & 0x7) {
 	case 0:
@@ -54,4 +54,4 @@ static int socfpga_boot_save_loc(void)
 
 	return 0;
 }
-core_initcall(socfpga_boot_save_loc);
+core_initcall(cyclone5_boot_save_loc);

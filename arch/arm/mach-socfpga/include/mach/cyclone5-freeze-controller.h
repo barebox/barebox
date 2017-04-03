@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _FREEZE_CONTROLLER_H_
-#define _FREEZE_CONTROLLER_H_
+#ifndef _CYCLONE5_FREEZE_CONTROLLER_H_
+#define _CYCLONE5_FREEZE_CONTROLLER_H_
 
-#include <mach/socfpga-regs.h>
+#include <mach/cyclone5-regs.h>
 
 #define SYSMGR_FRZCTRL_ADDRESS		0x40
 #define SYSMGR_FRZCTRL_VIOCTRL_ADDRESS	0x40

@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <mach/sdram.h>
+#include <mach/cyclone5-sdram.h>
 
 #define MGR_SELECT_MASK   0xf8000
 

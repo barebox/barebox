@@ -1,5 +1,5 @@
 
-#include <mach/clock-manager.h>
+#include <mach/cyclone5-clock-manager.h>
 
 static struct socfpga_cm_config cm_default_cfg = {
 	/* main group */

@@ -8,7 +8,7 @@
 #include <linux/sizes.h>
 #include <fcntl.h>
 #include <fs.h>
-#include <mach/socfpga-regs.h>
+#include <mach/cyclone5-regs.h>
 
 static int phy_fixup(struct phy_device *dev)
 {

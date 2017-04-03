@@ -46,7 +46,7 @@ copy_source() {
 
 	echo "	Fixing include pathes..."
 	# Fix include pathes
-	sed -i 's/#include <iocsr_config_cyclone5.h>/#include <mach\/scan-manager.h>/g' $tgt
+	sed -i 's/#include <iocsr_config_cyclone5.h>/#include <mach\/cyclone5-scan-manager.h>/g' $tgt
 	sed -i 's/#include <pinmux_config.h>/#include <common.h>/g' $tgt
 	sed -i 's/#include "sequencer_auto.h"//g' $tgt
 	sed -i 's/#include "sequencer_defines.h"//g' $tgt

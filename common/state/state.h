@@ -114,20 +114,10 @@ enum state_convert {
 	STATE_CONVERT_FIXUP,
 };
 
-enum state_variable_type {
-	STATE_TYPE_INVALID = 0,
-	STATE_TYPE_ENUM,
-	STATE_TYPE_U8,
-	STATE_TYPE_U32,
-	STATE_TYPE_MAC,
-	STATE_TYPE_STRING,
-};
-
 struct state_variable;
 
 /* A variable type (uint32, enum32) */
 struct variable_type {
-	enum state_variable_type type;
 	const char *type_name;
 	struct list_head list;
 	int (*export) (struct state_variable *, struct device_node *,
@@ -141,7 +131,6 @@ struct variable_type {
 /* instance of a single variable */
 struct state_variable {
 	struct state *state;
-	enum state_variable_type type;
 	struct list_head list;
 	const char *name;
 	unsigned int start;

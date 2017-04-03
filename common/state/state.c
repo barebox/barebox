@@ -271,7 +271,6 @@ static int state_convert_node_variable(struct state *state,
 
 		sv->name = name;
 		sv->start = start_size[0];
-		sv->type = vtype->type;
 		state_add_var(state, sv);
 	} else {
 		sv = state_find_var(state, name);

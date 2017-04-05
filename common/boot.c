@@ -244,6 +244,25 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 	return ret;
 }
 
+static LIST_HEAD(bootentry_providers);
+
+struct bootentry_provider {
+	int (*fn)(struct bootentries *bootentries, const char *name);
+	struct list_head list;
+};
+
+int bootentry_register_provider(int (*fn)(struct bootentries *bootentries, const char *name))
+{
+	struct bootentry_provider *p;
+
+	p = xzalloc(sizeof(*p));
+	p->fn = fn;
+
+	list_add_tail(&p->list, &bootentry_providers);
+
+	return 0;
+}
+
 /*
  * bootentry_create_from_name - create boot entries from a name
  *
@@ -261,6 +280,7 @@ static int bootscript_scan_path(struct bootentries *bootentries, const char *pat
 int bootentry_create_from_name(struct bootentries *bootentries,
 				      const char *name)
 {
+	struct bootentry_provider *p;
 	int found = 0, ret;
 
 	if (IS_ENABLED(CONFIG_BLSPEC)) {
@@ -273,6 +293,12 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 			if (ret > 0)
 				found += ret;
 		}
+	}
+
+	list_for_each_entry(p, &bootentry_providers, list) {
+		ret = p->fn(bootentries, name);
+		if (ret > 0)
+			found += ret;
 	}
 
 	if (IS_ENABLED(CONFIG_BOOTCHOOSER) && !strcmp(name, "bootchooser")) {

@@ -732,3 +732,27 @@ int blspec_scan_devicename(struct bootentries *bootentries, const char *devname)
 
 	return blspec_scan_device(bootentries, dev);
 }
+
+static int blspec_bootentry_provider(struct bootentries *bootentries,
+				     const char *name)
+{
+	int ret, found = 0;
+
+	ret = blspec_scan_devicename(bootentries, name);
+	if (ret > 0)
+		found += ret;
+
+	if (*name == '/' || !strncmp(name, "nfs://", 6)) {
+		ret = blspec_scan_directory(bootentries, name);
+		if (ret > 0)
+			found += ret;
+	}
+
+	return found;
+}
+
+static int blspec_init(void)
+{
+	return bootentry_register_provider(blspec_bootentry_provider);
+}
+device_initcall(blspec_init);

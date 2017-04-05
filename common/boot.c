@@ -283,18 +283,6 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 	struct bootentry_provider *p;
 	int found = 0, ret;
 
-	if (IS_ENABLED(CONFIG_BLSPEC)) {
-		ret = blspec_scan_devicename(bootentries, name);
-		if (ret > 0)
-			found += ret;
-
-		if (*name == '/' || !strncmp(name, "nfs://", 6)) {
-			ret = blspec_scan_directory(bootentries, name);
-			if (ret > 0)
-				found += ret;
-		}
-	}
-
 	list_for_each_entry(p, &bootentry_providers, list) {
 		ret = p->fn(bootentries, name);
 		if (ret > 0)

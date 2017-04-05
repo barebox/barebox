@@ -827,14 +827,9 @@ out:
 	return ret;
 }
 
-static int bootchooser_boot(struct bootentry *entry, int verbose, int dryrun)
+int bootchooser_boot(struct bootchooser *bc)
 {
-	struct bootchooser *bc = container_of(entry, struct bootchooser,
-						       entry);
 	int ret, tryagain;
-
-	bc->verbose = verbose;
-	bc->dryrun = dryrun;
 
 	do {
 		ret = bootchooser_boot_one(bc, &tryagain);
@@ -844,6 +839,16 @@ static int bootchooser_boot(struct bootentry *entry, int verbose, int dryrun)
 	} while (tryagain);
 
 	return ret;
+}
+
+static int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun)
+{
+	struct bootchooser *bc = container_of(entry, struct bootchooser,
+						       entry);
+	bc->verbose = verbose;
+	bc->dryrun = dryrun;
+
+	return bootchooser_boot(bc);
 }
 
 static void bootchooser_release(struct bootentry *entry)
@@ -874,7 +879,7 @@ static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 	if (IS_ERR(bc))
 		return PTR_ERR(bc);
 
-	bc->entry.boot = bootchooser_boot;
+	bc->entry.boot = bootchooser_entry_boot;
 	bc->entry.release = bootchooser_release;
 	bc->entry.title = xstrdup("bootchooser");
 	bc->entry.description = xstrdup("bootchooser");

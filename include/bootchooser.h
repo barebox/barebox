@@ -19,8 +19,6 @@ struct bootchooser_target *bootchooser_target_by_name(struct bootchooser *bootch
 						      const char *name);
 void bootchooser_target_force_boot(struct bootchooser_target *target);
 
-int bootchooser_create_bootentry(struct bootentries *entries);
-
 int bootchooser_target_set_attempts(struct bootchooser_target *target, int attempts);
 int bootchooser_target_set_priority(struct bootchooser_target *target, int priority);
 

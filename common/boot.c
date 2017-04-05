@@ -289,12 +289,6 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 			found += ret;
 	}
 
-	if (IS_ENABLED(CONFIG_BOOTCHOOSER) && !strcmp(name, "bootchooser")) {
-		ret = bootchooser_create_bootentry(bootentries);
-		if (ret > 0)
-			found += ret;
-	}
-
 	if (!found) {
 		char *path;
 

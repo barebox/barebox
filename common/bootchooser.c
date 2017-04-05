@@ -863,10 +863,14 @@ static void bootchooser_release(struct bootentry *entry)
  *
  * Return: The number of entries added to the list
  */
-int bootchooser_create_bootentry(struct bootentries *entries)
+static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 {
-	struct bootchooser *bc = bootchooser_get();
+	struct bootchooser *bc;
 
+	if (strcmp(name, "bootchooser"))
+		return 0;
+
+	bc = bootchooser_get();
 	if (IS_ERR(bc))
 		return PTR_ERR(bc);
 
@@ -904,6 +908,9 @@ static int bootchooser_init(void)
 				  reset_attempts_names, ARRAY_SIZE(reset_attempts_names));
 	globalvar_add_simple_bitmask("bootchooser.reset_priorities", &reset_priorities,
 				  reset_priorities_names, ARRAY_SIZE(reset_priorities_names));
+
+	bootentry_register_provider(bootchooser_add_entry);
+
 	return 0;
 }
 device_initcall(bootchooser_init);

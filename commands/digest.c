@@ -36,12 +36,16 @@ int __do_digest(struct digest *d, unsigned char *sig,
 	while (*argv) {
 		char *filename = "/dev/mem";
 		loff_t start = 0, size = ~0;
+		int show_area = 1;
 
 		/* arguments are either file, file+area or area */
 		if (parse_area_spec(*argv, &start, &size)) {
 			filename = *argv;
-			if (argv[1] && !parse_area_spec(argv[1], &start, &size))
+			show_area = 0;
+			if (argv[1] && !parse_area_spec(argv[1], &start, &size)) {
 				argv++;
+				show_area = 1;
+			}
 		}
 
 		ret = digest_file_window(d, filename,
@@ -53,8 +57,12 @@ int __do_digest(struct digest *d, unsigned char *sig,
 				for (i = 0; i < digest_length(d); i++)
 					printf("%02x", hash[i]);
 
-				printf("  %s\t0x%08llx ... 0x%08llx\n",
-					filename, start, start + size);
+				printf("  %s", filename);
+				if (show_area)
+					printf("\t0x%08llx ... 0x%08llx",
+						start, start + size);
+
+				puts("\n");
 			}
 		}
 

@@ -233,10 +233,16 @@ static int __nvvar_add(const char *name, const char *value)
 	if (ret && ret != -EEXIST)
 		return ret;
 
-	if (!value)
-		value = dev_get_param(&global_device, name);
+	if (value)
+		return nv_set(&nv_device, p, value);
 
-	return nv_set(&nv_device, p, value);
+	value = dev_get_param(&global_device, name);
+	if (value) {
+		free(p->value);
+		p->value = xstrdup(value);
+	}
+
+	return 0;
 }
 
 int nvvar_add(const char *name, const char *value)

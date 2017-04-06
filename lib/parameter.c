@@ -31,6 +31,24 @@
 #include <globalvar.h>
 #include <linux/err.h>
 
+static const char *param_type_string[] = {
+	[PARAM_TYPE_STRING] = "string",
+	[PARAM_TYPE_INT32] = "int32",
+	[PARAM_TYPE_UINT32] = "uint32",
+	[PARAM_TYPE_INT64] = "int64",
+	[PARAM_TYPE_UINT64] = "uint64",
+	[PARAM_TYPE_BOOL] = "bool",
+	[PARAM_TYPE_ENUM] = "enum",
+	[PARAM_TYPE_BITMASK] = "bitmask",
+	[PARAM_TYPE_IPV4] = "ipv4",
+	[PARAM_TYPE_MAC] = "MAC",
+};
+
+const char *get_param_type(struct param_d *param)
+{
+	return param_type_string[param->type];
+}
+
 struct param_d *get_param_by_name(struct device_d *dev, const char *name)
 {
 	struct param_d *p;
@@ -284,6 +302,7 @@ struct param_d *dev_add_param_string(struct device_d *dev, const char *name,
 	ps->get = get;
 	p = &ps->param;
 	p->driver_priv = priv;
+	p->type = PARAM_TYPE_STRING;
 
 	ret = __dev_add_param(p, dev, name, param_string_set, param_string_get, 0);
 	if (ret) {
@@ -384,6 +403,7 @@ struct param_d *dev_add_param_int(struct device_d *dev, const char *name,
 	pi->get = get;
 	p = &pi->param;
 	p->driver_priv = priv;
+	p->type = PARAM_TYPE_INT32;
 
 	ret = __dev_add_param(p, dev, name, param_int_set, param_int_get, 0);
 	if (ret) {
@@ -465,7 +485,7 @@ static void param_enum_info(struct param_d *p)
 	if (pe->num_names <= 1)
 		return;
 
-	printf(" (");
+	printf(" (values: ");
 
 	for (i = 0; i < pe->num_names; i++) {
 		if (!pe->names[i] || !*pe->names[i])
@@ -493,6 +513,7 @@ struct param_d *dev_add_param_enum(struct device_d *dev, const char *name,
 	pe->num_names = num_names;
 	p = &pe->param;
 	p->driver_priv = priv;
+	p->type = PARAM_TYPE_ENUM;
 
 	ret = __dev_add_param(p, dev, name, param_enum_set, param_enum_get, 0);
 	if (ret) {
@@ -622,6 +643,7 @@ struct param_d *dev_add_param_bitmask(struct device_d *dev, const char *name,
 	pb->num_names = max;
 	p = &pb->param;
 	p->driver_priv = priv;
+	p->type = PARAM_TYPE_BITMASK;
 
 	for (i = 0; i < pb->num_names; i++)
 		if (pb->names[i])
@@ -666,6 +688,8 @@ struct param_d *dev_add_param_bool(struct device_d *dev, const char *name,
 	if (IS_ERR(p))
 		return p;
 
+	p->type = PARAM_TYPE_BOOL;
+
 	pi = to_param_int(p);
 	pi->flags |= PARAM_INT_FLAG_BOOL;
 
@@ -698,6 +722,7 @@ struct param_d *dev_add_param_int_ro(struct device_d *dev, const char *name,
 		return ERR_PTR(ret);
 	}
 
+	piro->param.type = PARAM_TYPE_INT32;
 	piro->param.value = basprintf(format, value);
 
 	return &piro->param;
@@ -724,6 +749,7 @@ struct param_d *dev_add_param_llint_ro(struct device_d *dev, const char *name,
 		return ERR_PTR(ret);
 	}
 
+	piro->param.type = PARAM_TYPE_INT64;
 	piro->param.value = basprintf(format, value);
 
 	return &piro->param;
@@ -795,6 +821,7 @@ struct param_d *dev_add_param_ip(struct device_d *dev, const char *name,
 	pi->set = set;
 	pi->get = get;
 	pi->param.driver_priv = priv;
+	pi->param.type = PARAM_TYPE_IPV4;
 
 	ret = __dev_add_param(&pi->param, dev, name,
 			param_ip_set, param_ip_get, 0);
@@ -882,6 +909,7 @@ struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
 	pm->get = get;
 	pm->param.driver_priv = priv;
 	pm->param.value = pm->mac_str;
+	pm->param.type = PARAM_TYPE_MAC;
 
 	ret = __dev_add_param(&pm->param, dev, name,
 			param_mac_set, param_mac_get, 0);

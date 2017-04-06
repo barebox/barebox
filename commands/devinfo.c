@@ -103,7 +103,8 @@ static int do_devinfo(int argc, char *argv[])
 				printf("Parameters:\n");
 				first = false;
 			}
-			printf("  %s: %s", param->name, dev_get_param(dev, param->name));
+			printf("  %s: %s (type: %s)", param->name, dev_get_param(dev, param->name),
+			       get_param_type(param));
 			if (param->info) {
 				param->info(param);
 			}

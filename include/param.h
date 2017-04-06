@@ -10,6 +10,19 @@
 struct device_d;
 typedef uint32_t          IPaddr_t;
 
+enum param_type {
+	PARAM_TYPE_STRING = 0,
+	PARAM_TYPE_INT32,
+	PARAM_TYPE_UINT32,
+	PARAM_TYPE_INT64,
+	PARAM_TYPE_UINT64,
+	PARAM_TYPE_BOOL,
+	PARAM_TYPE_ENUM,
+	PARAM_TYPE_BITMASK,
+	PARAM_TYPE_IPV4,
+	PARAM_TYPE_MAC,
+};
+
 struct param_d {
 	const char* (*get)(struct device_d *, struct param_d *param);
 	int (*set)(struct device_d *, struct param_d *param, const char *val);
@@ -20,9 +33,11 @@ struct param_d {
 	struct device_d *dev;
 	void *driver_priv;
 	struct list_head list;
+	enum param_type type;
 };
 
 #ifdef CONFIG_PARAMETER
+const char *get_param_type(struct param_d *param);
 const char *dev_get_param(struct device_d *dev, const char *name);
 int dev_set_param(struct device_d *dev, const char *name, const char *val);
 struct param_d *get_param_by_name(struct device_d *dev, const char *name);

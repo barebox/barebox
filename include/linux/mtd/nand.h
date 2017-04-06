@@ -540,6 +540,7 @@ struct nand_chip {
 	struct nand_bbt_descr *badblock_pattern;
 
 	void *priv;
+	unsigned int bbt_type;
 };
 
 /*

@@ -3853,25 +3853,40 @@ static int mtd_set_erasebad(struct param_d *param, void *priv)
 	return 0;
 }
 
-static const char *mtd_get_bbt_type(struct device_d *dev, struct param_d *p)
+enum bbt_type {
+	BBT_TYPE_NONE = 0,
+	BBT_TYPE_FLASHBASED,
+	BBT_TYPE_MEMORYBASED,
+};
+
+static const char *bbt_type_strings[] = {
+	[BBT_TYPE_NONE] = "none",
+	[BBT_TYPE_FLASHBASED] = "flashbased",
+	[BBT_TYPE_MEMORYBASED] = "memorybased",
+};
+
+static int mtd_get_bbt_type(struct param_d *p, void *priv)
 {
-	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	struct mtd_info *mtd = priv;
 	struct nand_chip *chip = mtd->priv;
-	const char *str;
+	enum bbt_type type;
 
 	if (!chip->bbt)
-		str = "none";
+		type = BBT_TYPE_NONE;
 	else if ((chip->bbt_td && chip->bbt_td->pages[0] != -1) ||
 				(chip->bbt_md && chip->bbt_md->pages[0] != -1))
-		str = "flashbased";
+		type = BBT_TYPE_FLASHBASED;
 	else
-		str = "memorybased";
+		type = BBT_TYPE_MEMORYBASED;
 
-	return str;
+	chip->bbt_type = type;
+
+	return 0;
 }
 
 int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 {
+	struct nand_chip *chip = mtd->priv;
 	int ret;
 
 	ret = add_mtd_device(mtd, devname, DEVICE_ID_DYNAMIC);
@@ -3882,7 +3897,10 @@ int add_mtd_nand_device(struct mtd_info *mtd, char *devname)
 		dev_add_param_bool(&mtd->class_dev, "erasebad", mtd_set_erasebad,
 			NULL, &mtd->p_allow_erasebad, mtd);
 
-	dev_add_param(&mtd->class_dev, "bbt", NULL, mtd_get_bbt_type, 0);
+	dev_add_param_enum(&mtd->class_dev, "bbt", NULL, mtd_get_bbt_type,
+			   &chip->bbt_type, bbt_type_strings,
+			   ARRAY_SIZE(bbt_type_strings),
+			   mtd);
 
 	return ret;
 }

@@ -123,7 +123,7 @@ void boot_set_watchdog_timeout(unsigned int timeout)
 
 static int init_boot_watchdog_timeout(void)
 {
-	return globalvar_add_simple_int("boot.watchdog_timeout",
+	return globalvar_add_simple_uint32("boot.watchdog_timeout",
 			&boot_watchdog_timeout, "%u");
 }
 late_initcall(init_boot_watchdog_timeout);

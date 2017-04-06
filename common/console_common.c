@@ -148,10 +148,10 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 static int loglevel_init(void)
 {
 	if (IS_ENABLED(CONFIG_LOGBUF))
-		globalvar_add_simple_int("log_max_messages",
-				&barebox_log_max_messages, "%d");
+		globalvar_add_simple_uint32("log_max_messages",
+				&barebox_log_max_messages, "%u");
 
-	return globalvar_add_simple_int("loglevel", &barebox_loglevel, "%d");
+	return globalvar_add_simple_uint32("loglevel", &barebox_loglevel, "%u");
 }
 device_initcall(loglevel_init);
 

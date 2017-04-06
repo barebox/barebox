@@ -76,11 +76,11 @@ static int mtd_peb_emulate_erase_failure(void)
 #ifdef CONFIG_MTD_PEB_DEBUG
 static int mtd_peb_debug_init(void)
 {
-	globalvar_add_simple_int("mtd_peb.mtd_peb_emulate_bitflip",
+	globalvar_add_simple_uint32("mtd_peb.mtd_peb_emulate_bitflip",
 				 &__mtd_peb_emulate_bitflip, "%u");
-	globalvar_add_simple_int("mtd_peb.mtd_peb_emulate_write_failure",
+	globalvar_add_simple_uint32("mtd_peb.mtd_peb_emulate_write_failure",
 				 &__mtd_peb_emulate_write_failure, "%u");
-	globalvar_add_simple_int("mtd_peb.mtd_peb_emulate_erase_failures",
+	globalvar_add_simple_uint32("mtd_peb.mtd_peb_emulate_erase_failures",
 				 &__mtd_peb_emulate_erase_failures, "%u");
 	globalvar_add_simple_bool("mtd_peb.mtd_peb_chk_io",
 				 &__mtd_peb_chk_io);

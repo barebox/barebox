@@ -87,7 +87,7 @@ static int beaglebone_devices_init(void)
 
 	defaultenv_append_directory(defaultenv_beaglebone);
 
-	globalvar_add_simple("board.variant", black ? "boneblack" : "bone");
+	globalvar_add_simple_string_fixed("board.variant", black ? "boneblack" : "bone");
 
 	printf("detected 'BeagleBone %s'\n", black ? "Black" : "White");
 

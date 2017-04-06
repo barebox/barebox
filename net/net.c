@@ -573,6 +573,9 @@ static struct device_d net_device = {
 	.id = DEVICE_ID_SINGLE,
 };
 
+static char *net_nameserver;
+static char *net_domainname;
+
 static int net_init(void)
 {
 	int i;
@@ -581,8 +584,12 @@ static int net_init(void)
 		NetRxPackets[i] = net_alloc_packet();
 
 	register_device(&net_device);
-	dev_add_param(&net_device, "nameserver", NULL, NULL, 0);
-	dev_add_param(&net_device, "domainname", NULL, NULL, 0);
+	net_nameserver = xstrdup("");
+	dev_add_param_string(&net_device, "nameserver", NULL, NULL,
+			     &net_nameserver, NULL);
+	net_domainname = xstrdup("");
+	dev_add_param_string(&net_device, "domainname", NULL, NULL,
+			     &net_domainname, NULL);
 
 	return 0;
 }

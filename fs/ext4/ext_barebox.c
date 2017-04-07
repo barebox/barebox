@@ -56,7 +56,7 @@ static int ext_open(struct device_d *dev, FILE *file, const char *filename)
 	if (ret)
 		return ret;
 
-	file->size = __le32_to_cpu(inode->inode.size);
+	file->size = le32_to_cpu(inode->inode.size);
 	file->priv = inode;
 
 	return 0;
@@ -129,7 +129,7 @@ static struct dirent *ext_readdir(struct device_d *dev, DIR *dir)
 	int ret;
 	char *filename;
 
-	if (ext4_dir->fpos >= __le32_to_cpu(diro->inode.size))
+	if (ext4_dir->fpos >= le32_to_cpu(diro->inode.size))
 		return NULL;
 
 	ret = ext4fs_read_file(diro, ext4_dir->fpos, sizeof(struct ext2_dirent),
@@ -151,7 +151,7 @@ static struct dirent *ext_readdir(struct device_d *dev, DIR *dir)
 
 	filename[dirent.namelen] = '\0';
 
-	ext4_dir->fpos += __le16_to_cpu(dirent.direntlen);
+	ext4_dir->fpos += le16_to_cpu(dirent.direntlen);
 
 	strcpy(dir->d.d_name, filename);
 
@@ -186,8 +186,8 @@ static int ext_stat(struct device_d *dev, const char *filename, struct stat *s)
 	if (ret)
 		return ret;
 
-	s->st_size = __le32_to_cpu(node->inode.size);
-	s->st_mode = __le16_to_cpu(node->inode.mode);
+	s->st_size = le32_to_cpu(node->inode.size);
+	s->st_mode = le16_to_cpu(node->inode.mode);
 
 	ext4fs_free_node(node, &fs->data->diropen);
 

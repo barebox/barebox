@@ -28,6 +28,7 @@
 #define EXT4_EXT_MAGIC			0xf30a
 #define EXT4_FEATURE_RO_COMPAT_GDT_CSUM	0x0010
 #define EXT4_FEATURE_INCOMPAT_EXTENTS	0x0040
+#define EXT4_FEATURE_INCOMPAT_64BIT	0x0080
 #define EXT4_INDIRECT_BLOCKS		12
 
 #define EXT4_BG_INODE_UNINIT		0x0001
@@ -81,6 +82,8 @@ struct ext_filesystem {
 	uint32_t inodesz;
 	/* Sectors per Block */
 	uint32_t sect_perblk;
+	/* Group Descriptor size */
+	uint16_t gdsize;
 	/* Group Descriptor Block Number */
 	uint32_t gdtable_blkno;
 	/* Total block groups of partition */

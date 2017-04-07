@@ -83,19 +83,19 @@ static int ext4fs_blockgroup(struct ext2_data *data, int group,
 	long int blkno;
 	unsigned int blkoff, desc_per_blk;
 	struct ext_filesystem *fs = data->fs;
+	int desc_size = fs->gdsize;
 
-	desc_per_blk = EXT2_BLOCK_SIZE(data) / sizeof(struct ext2_block_group);
+	desc_per_blk = EXT2_BLOCK_SIZE(data) / desc_size;
 
-	blkno = __le32_to_cpu(data->sblock.first_data_block) + 1 +
+	blkno = le32_to_cpu(data->sblock.first_data_block) + 1 +
 			group / desc_per_blk;
-	blkoff = (group % desc_per_blk) * sizeof(struct ext2_block_group);
+	blkoff = (group % desc_per_blk) * desc_size;
 
 	dev_dbg(fs->dev, "read %d group descriptor (blkno %ld blkoff %u)\n",
 	      group, blkno, blkoff);
 
 	return ext4fs_devread(fs, blkno << LOG2_EXT2_BLOCK_SIZE(data),
-			      blkoff, sizeof(struct ext2_block_group),
-			      (char *)blkgrp);
+				blkoff, desc_size, (char *)blkgrp);
 }
 
 int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
@@ -109,14 +109,14 @@ int ext4fs_read_inode(struct ext2_data *data, int ino, struct ext2_inode *inode)
 
 	/* It is easier to calculate if the first inode is 0. */
 	ino--;
-	ret = ext4fs_blockgroup(data, ino / __le32_to_cpu
+	ret = ext4fs_blockgroup(data, ino / le32_to_cpu
 				   (sblock->inodes_per_group), &blkgrp);
 	if (ret)
 		return ret;
 
 	inodes_per_block = EXT2_BLOCK_SIZE(data) / fs->inodesz;
-	blkno = __le32_to_cpu(blkgrp.inode_table_id) +
-	    (ino % __le32_to_cpu(sblock->inodes_per_group)) / inodes_per_block;
+	blkno = le32_to_cpu(blkgrp.inode_table_id) +
+	    (ino % le32_to_cpu(sblock->inodes_per_group)) / inodes_per_block;
 	blkoff = (ino % inodes_per_block) * fs->inodesz;
 	/* Read the inode. */
 	ret = ext4fs_devread(fs, blkno << LOG2_EXT2_BLOCK_SIZE(data), blkoff,
@@ -212,14 +212,14 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 
 	if (fileblock < INDIRECT_BLOCKS) {
 		/* Direct blocks. */
-		blknr = __le32_to_cpu(inode->b.blocks.dir_blocks[fileblock]);
+		blknr = le32_to_cpu(inode->b.blocks.dir_blocks[fileblock]);
 	} else if (fileblock < (INDIRECT_BLOCKS + (blksz / 4))) {
 		/* Indirect. */
 		ret = ext4fs_get_indir_block(node, &data->indir1,
-				__le32_to_cpu(inode->b.blocks.indir_block) << log2_blksz);
+				le32_to_cpu(inode->b.blocks.indir_block) << log2_blksz);
 		if (ret)
 			return ret;
-		blknr = __le32_to_cpu(data->indir1.data[fileblock - INDIRECT_BLOCKS]);
+		blknr = le32_to_cpu(data->indir1.data[fileblock - INDIRECT_BLOCKS]);
 	} else if (fileblock < (INDIRECT_BLOCKS + (blksz / 4 *
 					(blksz / 4 + 1)))) {
 		/* Double indirect. */
@@ -227,16 +227,16 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		long int rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4);
 
 		ret = ext4fs_get_indir_block(node, &data->indir1,
-				__le32_to_cpu(inode->b.blocks.double_indir_block) << log2_blksz);
+				le32_to_cpu(inode->b.blocks.double_indir_block) << log2_blksz);
 		if (ret)
 			return ret;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
-				__le32_to_cpu(data->indir1.data[rblock / perblock]) << log2_blksz);
+				le32_to_cpu(data->indir1.data[rblock / perblock]) << log2_blksz);
 		if (ret)
 			return ret;
 
-		blknr = __le32_to_cpu(data->indir2.data[rblock % perblock]);
+		blknr = le32_to_cpu(data->indir2.data[rblock % perblock]);
 	} else {
 		/* Triple indirect. */
 		rblock = fileblock - (INDIRECT_BLOCKS + blksz / 4 +
@@ -245,21 +245,21 @@ long int read_allocated_block(struct ext2fs_node *node, int fileblock)
 		perblock_parent = ((blksz / 4) * (blksz / 4));
 
 		ret = ext4fs_get_indir_block(node, &data->indir1,
-				__le32_to_cpu(inode->b.blocks.triple_indir_block) << log2_blksz);
+				le32_to_cpu(inode->b.blocks.triple_indir_block) << log2_blksz);
 		if (ret)
 			return ret;
 
 		ret = ext4fs_get_indir_block(node, &data->indir2,
-				__le32_to_cpu(data->indir1.data[rblock / perblock_parent]) << log2_blksz);
+				le32_to_cpu(data->indir1.data[rblock / perblock_parent]) << log2_blksz);
 		if (ret)
 			return ret;
 
 		ret = ext4fs_get_indir_block(node, &data->indir3,
-				__le32_to_cpu(data->indir2.data[rblock / perblock_child]) << log2_blksz);
+				le32_to_cpu(data->indir2.data[rblock / perblock_child]) << log2_blksz);
 		if (ret)
 			return ret;
 
-		blknr = __le32_to_cpu(data->indir3.data[rblock % perblock_child]);
+		blknr = le32_to_cpu(data->indir3.data[rblock % perblock_child]);
 	}
 
 	return blknr;
@@ -282,7 +282,7 @@ int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
 			return ret;
 	}
 	/* Search the file.  */
-	while (fpos < __le32_to_cpu(diro->inode.size)) {
+	while (fpos < le32_to_cpu(diro->inode.size)) {
 		struct ext2_dirent dirent;
 
 		status = ext4fs_read_file(diro, fpos,
@@ -308,7 +308,7 @@ int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
 				return -ENOMEM;
 
 			fdiro->data = diro->data;
-			fdiro->ino = __le32_to_cpu(dirent.inode);
+			fdiro->ino = le32_to_cpu(dirent.inode);
 
 			filename[dirent.namelen] = '\0';
 
@@ -323,7 +323,7 @@ int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
 					type = FILETYPE_REG;
 			} else {
 				ret = ext4fs_read_inode(diro->data,
-							   __le32_to_cpu
+							   le32_to_cpu
 							   (dirent.inode),
 							   &fdiro->inode);
 				if (ret) {
@@ -332,15 +332,15 @@ int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
 				}
 				fdiro->inode_read = 1;
 
-				if ((__le16_to_cpu(fdiro->inode.mode) &
+				if ((le16_to_cpu(fdiro->inode.mode) &
 				     FILETYPE_INO_MASK) ==
 				    FILETYPE_INO_DIRECTORY) {
 					type = FILETYPE_DIRECTORY;
-				} else if ((__le16_to_cpu(fdiro->inode.mode)
+				} else if ((le16_to_cpu(fdiro->inode.mode)
 					    & FILETYPE_INO_MASK) ==
 					   FILETYPE_INO_SYMLINK) {
 					type = FILETYPE_SYMLINK;
-				} else if ((__le16_to_cpu(fdiro->inode.mode)
+				} else if ((le16_to_cpu(fdiro->inode.mode)
 					    & FILETYPE_INO_MASK) ==
 					   FILETYPE_INO_REG) {
 					type = FILETYPE_REG;
@@ -357,7 +357,7 @@ int ext4fs_iterate_dir(struct ext2fs_node *dir, char *name,
 
 			free(fdiro);
 		}
-		fpos += __le16_to_cpu(dirent.direntlen);
+		fpos += le16_to_cpu(dirent.direntlen);
 	}
 	return -ENOENT;
 }
@@ -373,16 +373,16 @@ char *ext4fs_read_symlink(struct ext2fs_node *node)
 		if (ret)
 			return NULL;
 	}
-	symlink = zalloc(__le32_to_cpu(diro->inode.size) + 1);
+	symlink = zalloc(le32_to_cpu(diro->inode.size) + 1);
 	if (!symlink)
 		return 0;
 
-	if (__le32_to_cpu(diro->inode.size) < sizeof(diro->inode.b.symlink)) {
+	if (le32_to_cpu(diro->inode.size) < sizeof(diro->inode.b.symlink)) {
 		strncpy(symlink, diro->inode.b.symlink,
-			 __le32_to_cpu(diro->inode.size));
+			 le32_to_cpu(diro->inode.size));
 	} else {
 		status = ext4fs_read_file(diro, 0,
-					   __le32_to_cpu(diro->inode.size),
+					   le32_to_cpu(diro->inode.size),
 					   symlink);
 		if (status == 0) {
 			free(symlink);
@@ -390,7 +390,7 @@ char *ext4fs_read_symlink(struct ext2fs_node *node)
 		}
 	}
 
-	symlink[__le32_to_cpu(diro->inode.size)] = '\0';
+	symlink[le32_to_cpu(diro->inode.size)] = '\0';
 
 	return symlink;
 }
@@ -501,18 +501,29 @@ int ext4fs_mount(struct ext_filesystem *fs)
 		goto fail;
 
 	/* Make sure this is an ext2 filesystem. */
-	if (__le16_to_cpu(data->sblock.magic) != EXT2_SUPER_MAGIC) {
+	if (le16_to_cpu(data->sblock.magic) != EXT2_SUPER_MAGIC) {
 		ret = -EINVAL;
 		goto fail;
 	}
 
-	if (__le32_to_cpu(data->sblock.revision_level == 0))
+	if (le32_to_cpu(data->sblock.revision_level) == 0) {
 		fs->inodesz = 128;
-	else
-		fs->inodesz = __le16_to_cpu(data->sblock.inode_size);
+		fs->gdsize = 32;
+	} else {
+		debug("EXT4 features COMPAT: %08x INCOMPAT: %08x RO_COMPAT: %08x\n",
+		      le32_to_cpu(data->sblock.feature_compatibility),
+		      le32_to_cpu(data->sblock.feature_incompat),
+		      le32_to_cpu(data->sblock.feature_ro_compat));
 
-	dev_info(fs->dev, "EXT2 rev %d, inode_size %d\n",
-	       __le32_to_cpu(data->sblock.revision_level), fs->inodesz);
+		fs->inodesz = le16_to_cpu(data->sblock.inode_size);
+		fs->gdsize = le32_to_cpu(data->sblock.feature_incompat) &
+			EXT4_FEATURE_INCOMPAT_64BIT ?
+			le16_to_cpu(data->sblock.descriptor_size) : 32;
+	}
+
+	dev_info(fs->dev, "EXT2 rev %d, inode_size %d, descriptor size %d\n",
+	      le32_to_cpu(data->sblock.revision_level),
+	      fs->inodesz, fs->gdsize);
 
 	data->diropen.data = data;
 	data->diropen.ino = 2;

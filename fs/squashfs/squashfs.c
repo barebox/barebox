@@ -112,7 +112,8 @@ static struct inode *squashfs_findfile(struct super_block *sb,
 	return NULL;
 }
 
-void squashfs_set_rootarg(struct squashfs_priv *priv, struct fs_device_d *fsdev)
+static void squashfs_set_rootarg(struct squashfs_priv *priv,
+					struct fs_device_d *fsdev)
 {
 	struct ubi_volume_desc *ubi_vol;
 	struct ubi_volume_info vi = {};

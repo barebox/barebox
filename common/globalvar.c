@@ -404,7 +404,7 @@ int globalvar_add_simple(const char *name, const char *value)
 	struct param_d *param;
 
 	param = dev_add_param(&global_device, name, globalvar_simple_set, NULL,
-			      PARAM_GLOBALVAR_UNQUALIFIED);
+			      0);
 	if (IS_ERR(param)) {
 		if (PTR_ERR(param) != -EEXIST)
 			return PTR_ERR(param);
@@ -418,30 +418,9 @@ int globalvar_add_simple(const char *name, const char *value)
 	return 0;
 }
 
-static int globalvar_remove_unqualified(const char *name)
-{
-	struct param_d *p;
-
-	p = get_param_by_name(&global_device, name);
-	if (!p)
-		return 0;
-
-	if (!(p->flags & PARAM_GLOBALVAR_UNQUALIFIED))
-		return -EEXIST;
-
-	dev_remove_param(p);
-
-	return 0;
-}
-
 int globalvar_add_simple_string(const char *name, char **value)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_string(&global_device, name, NULL, NULL,
 		value, NULL);
@@ -458,11 +437,6 @@ int globalvar_add_simple_int(const char *name, int *value,
 			     const char *format)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_int(&global_device, name, NULL, NULL,
 		value, format, NULL);
@@ -478,11 +452,6 @@ int globalvar_add_simple_int(const char *name, int *value,
 int globalvar_add_simple_bool(const char *name, int *value)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_bool(&global_device, name, NULL, NULL,
 		value, NULL);
@@ -499,11 +468,6 @@ int globalvar_add_simple_enum(const char *name,	int *value,
 			      const char * const *names, int max)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_enum(&global_device, name, NULL, NULL,
 		value, names, max, NULL);
@@ -533,11 +497,6 @@ int globalvar_add_simple_bitmask(const char *name, unsigned long *value,
 int globalvar_add_simple_ip(const char *name, IPaddr_t *ip)
 {
 	struct param_d *p;
-	int ret;
-
-	ret = globalvar_remove_unqualified(name);
-	if (ret)
-		return ret;
 
 	p = dev_add_param_ip(&global_device, name, NULL, NULL,
 		ip, NULL);

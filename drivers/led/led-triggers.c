@@ -48,33 +48,11 @@
 
 struct led_trigger_struct {
 	struct led *led;
-	uint64_t flash_start;
-	int flash;
+	struct list_head list;
+	enum led_trigger trigger;
 };
 
-static struct led_trigger_struct triggers[LED_TRIGGER_MAX];
-
-static void trigger_func(struct poller_struct *poller)
-{
-	int i;
-
-	for (i = 0; i < LED_TRIGGER_MAX; i++) {
-		if (triggers[i].led &&
-		    triggers[i].flash &&
-		    is_timeout(triggers[i].flash_start, 200 * MSECOND)) {
-			led_set(triggers[i].led, 0);
-			triggers[i].flash = 0;
-		}
-	}
-
-	if (triggers[LED_TRIGGER_HEARTBEAT].led &&
-			is_timeout(triggers[LED_TRIGGER_HEARTBEAT].flash_start, SECOND))
-		led_trigger(LED_TRIGGER_HEARTBEAT, TRIGGER_FLASH);
-}
-
-static struct poller_struct trigger_poller = {
-	.func = trigger_func,
-};
+static LIST_HEAD(led_triggers);
 
 /**
  * led_trigger - triggers a trigger
@@ -85,21 +63,53 @@ static struct poller_struct trigger_poller = {
  */
 void led_trigger(enum led_trigger trigger, enum trigger_type type)
 {
+	struct led_trigger_struct *led_trigger;
+
 	if (trigger >= LED_TRIGGER_MAX)
 		return;
-	if (!triggers[trigger].led)
-		return;
 
-	if (type == TRIGGER_FLASH) {
-		if (is_timeout(triggers[trigger].flash_start, 400 * MSECOND)) {
-			led_set(triggers[trigger].led, triggers[trigger].led->max_value);
-			triggers[trigger].flash_start = get_time_ns();
-			triggers[trigger].flash = 1;
+	list_for_each_entry(led_trigger, &led_triggers, list) {
+		if (led_trigger->trigger != trigger)
+			continue;
+
+		switch (type) {
+		case TRIGGER_FLASH:
+			led_flash(led_trigger->led, 200);
+			break;
+		case TRIGGER_ENABLE:
+			led_set(led_trigger->led, led_trigger->led->max_value);
+			break;
+		case TRIGGER_DISABLE:
+			led_set(led_trigger->led, 0);
+			break;
 		}
-		return;
 	}
+}
 
-	led_set(triggers[trigger].led, type == TRIGGER_ENABLE ? triggers[trigger].led->max_value : 0);
+static struct led_trigger_struct *led_find_trigger(struct led *led)
+{
+	struct led_trigger_struct *led_trigger;
+
+	list_for_each_entry(led_trigger, &led_triggers, list)
+		if (led_trigger->led == led)
+			return led_trigger;
+
+	return NULL;
+}
+
+void led_trigger_disable(struct led *led)
+{
+	struct led_trigger_struct *led_trigger;
+
+	led_trigger = led_find_trigger(led);
+	if (!led_trigger)
+		return;
+
+	list_del(&led_trigger->list);
+
+	led_set(led, 0);
+
+	free(led_trigger);
 }
 
 /**
@@ -112,44 +122,73 @@ void led_trigger(enum led_trigger trigger, enum trigger_type type)
  */
 int led_set_trigger(enum led_trigger trigger, struct led *led)
 {
-	int i;
+	struct led_trigger_struct *led_trigger;
 
 	if (trigger >= LED_TRIGGER_MAX)
 		return -EINVAL;
 
-	if (led)
-		for (i = 0; i < LED_TRIGGER_MAX; i++)
-			if (triggers[i].led == led)
-				return -EBUSY;
+	led_trigger_disable(led);
 
-	if (triggers[trigger].led && !led)
-		led_set(triggers[trigger].led, 0);
+	led_trigger = xzalloc(sizeof(*led_trigger));
 
-	triggers[trigger].led = led;
+	led_trigger->led = led;
+	led_trigger->trigger = trigger;
+	list_add_tail(&led_trigger->list, &led_triggers);
 
-	if (led && trigger == LED_TRIGGER_DEFAULT_ON)
-		led_set(triggers[trigger].led, triggers[trigger].led->max_value);
+	if (trigger == LED_TRIGGER_DEFAULT_ON)
+		led_set(led, led->max_value);
+	if (trigger == LED_TRIGGER_HEARTBEAT)
+		led_blink(led, 200, 1000);
 
 	return 0;
 }
 
-/**
- * led_get_trigger - get the LED for a trigger
- * @param trigger	The trigger to set a LED for
- *
- * return the LED number of a trigger.
- */
-int led_get_trigger(enum led_trigger trigger)
+static char *trigger_names[] = {
+	[LED_TRIGGER_PANIC] = "panic",
+	[LED_TRIGGER_HEARTBEAT] = "heartbeat",
+	[LED_TRIGGER_NET_RX] = "net-rx",
+	[LED_TRIGGER_NET_TX] = "net-tx",
+	[LED_TRIGGER_NET_TXRX] = "net",
+	[LED_TRIGGER_DEFAULT_ON] = "default-on",
+};
+
+const char *trigger_name(enum led_trigger trigger)
 {
-	if (trigger >= LED_TRIGGER_MAX)
-		return -EINVAL;
-	if (!triggers[trigger].led)
-		return -ENODEV;
-	return led_get_number(triggers[trigger].led);
+	return trigger_names[trigger];
 }
 
-static int trigger_init(void)
+enum led_trigger trigger_by_name(const char *name)
 {
-	return poller_register(&trigger_poller);
+	int i;
+
+	for (i = 0; i < LED_TRIGGER_MAX; i++)
+		if (!strcmp(name, trigger_names[i]))
+			return i;
+
+	return LED_TRIGGER_MAX;
 }
-late_initcall(trigger_init);
+
+/**
+ * led_triggers_show_info - Show information about all registered
+ * triggers
+ */
+void led_triggers_show_info(void)
+{
+	struct led_trigger_struct *led_trigger;
+	int i;
+
+	for (i = 0; i < LED_TRIGGER_MAX; i++) {
+		printf("%s", trigger_name(i));
+
+		list_for_each_entry(led_trigger, &led_triggers, list) {
+			struct led *led = led_trigger->led;
+
+			if (led_trigger->trigger != i)
+				continue;
+
+			printf("\n  LED %d (%s)", led->num, led->name);
+		}
+
+		printf("\n");
+	}
+}

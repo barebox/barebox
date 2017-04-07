@@ -23,6 +23,7 @@
 #include <linux/list.h>
 #include <errno.h>
 #include <led.h>
+#include <init.h>
 #include <poller.h>
 #include <clock.h>
 #include <linux/ctype.h>
@@ -101,7 +102,7 @@ struct led *led_by_name_or_number(const char *str)
  * @param led	the led
  * @param value	the value of the LED (0 is disabled)
  */
-int led_set(struct led *led, unsigned int value)
+static int __led_set(struct led *led, unsigned int value)
 {
 	if (value > led->max_value)
 		value = led->max_value;
@@ -113,6 +114,104 @@ int led_set(struct led *led, unsigned int value)
 
 	return 0;
 }
+
+int led_set(struct led *led, unsigned int value)
+{
+	led->blink = 0;
+	led->flash = 0;
+	return __led_set(led, value);
+}
+
+static void led_blink_func(struct poller_struct *poller)
+{
+	struct led *led;
+
+	list_for_each_entry(led, &leds, list) {
+		bool on;
+
+		if (!led->blink && !led->flash)
+			continue;
+
+		if (led->blink_next_event > get_time_ns()) {
+			continue;
+		}
+
+		on = !(led->blink_next_state % 2);
+
+		led->blink_next_event = get_time_ns() +
+			(led->blink_states[led->blink_next_state] * MSECOND);
+		led->blink_next_state = (led->blink_next_state + 1) %
+					led->blink_nr_states;
+
+		if (led->flash && !on)
+			led->flash = 0;
+
+		__led_set(led, on);
+	}
+}
+
+/**
+ * led_blink_pattern - Blink a led with flexible timings.
+ * @led LED used
+ * @pattern Array of millisecond intervals describing the on and off periods of
+ * the pattern. At the end of the array/pattern it is repeated. The array
+ * starts with an on-period. In general every array item with even index
+ * describes an on-period, every item with odd index an off-period.
+ * @pattern_len Length of the pattern array.
+ *
+ * Returns 0 on success.
+ *
+ * Example:
+ * 	pattern = {500, 1000};
+ * 	This will enable the LED for 500ms and disable it for 1000ms after
+ * 	that. This is repeated forever.
+ */
+int led_blink_pattern(struct led *led, const unsigned int *pattern,
+		      unsigned int pattern_len)
+{
+	free(led->blink_states);
+	led->blink_states = xmemdup(pattern,
+				    pattern_len * sizeof(*led->blink_states));
+	led->blink_nr_states = pattern_len;
+	led->blink_next_state = 0;
+	led->blink_next_event = get_time_ns();
+	led->blink = 1;
+	led->flash = 0;
+
+	return 0;
+}
+
+int led_blink(struct led *led, unsigned int on_ms, unsigned int off_ms)
+{
+	unsigned int pattern[] = {on_ms, off_ms};
+
+	return led_blink_pattern(led, pattern, 2);
+}
+
+int led_flash(struct led *led, unsigned int duration_ms)
+{
+	unsigned int pattern[] = {duration_ms, 0};
+	int ret;
+
+	ret = led_blink_pattern(led, pattern, 2);
+	if (ret)
+		return ret;
+
+	led->flash = 1;
+	led->blink = 0;
+
+	return 0;
+}
+
+static struct poller_struct led_poller = {
+	.func = led_blink_func,
+};
+
+static int led_blink_init(void)
+{
+	return poller_register(&led_poller);
+}
+late_initcall(led_blink_init);
 
 /**
  * led_set_num - set the value of a LED

@@ -328,7 +328,7 @@ int console_register(struct console_device *newcdev)
 		if (ret)
 			return ret;
 		newcdev->baudrate_param = newcdev->baudrate = CONFIG_BAUDRATE;
-		dev_add_param_int(dev, "baudrate", console_baudrate_set,
+		dev_add_param_uint32(dev, "baudrate", console_baudrate_set,
 			NULL, &newcdev->baudrate_param, "%u", newcdev);
 	}
 

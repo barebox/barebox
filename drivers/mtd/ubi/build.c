@@ -656,17 +656,17 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	ubi_msg(ubi, "available PEBs: %d, total reserved PEBs: %d, PEBs reserved for bad PEB handling: %d",
 		ubi->avail_pebs, ubi->rsvd_pebs, ubi->beb_rsvd_pebs);
 
-	dev_add_param_int_ro(&ubi->dev, "peb_size", ubi->peb_size, "%d");
-	dev_add_param_int_ro(&ubi->dev, "leb_size", ubi->leb_size, "%d");
-	dev_add_param_int_ro(&ubi->dev, "vid_header_offset", ubi->vid_hdr_offset, "%d");
-	dev_add_param_int_ro(&ubi->dev, "min_io_size", ubi->min_io_size, "%d");
-	dev_add_param_int_ro(&ubi->dev, "sub_page_size", ubi->hdrs_min_io_size, "%d");
-	dev_add_param_int_ro(&ubi->dev, "good_peb_count", ubi->good_peb_count, "%d");
-	dev_add_param_int_ro(&ubi->dev, "bad_peb_count", ubi->bad_peb_count, "%d");
-	dev_add_param_int_ro(&ubi->dev, "max_erase_counter", ubi->max_ec, "%d");
-	dev_add_param_int_ro(&ubi->dev, "mean_erase_counter", ubi->mean_ec, "%d");
-	dev_add_param_int_ro(&ubi->dev, "available_pebs", ubi->avail_pebs, "%d");
-	dev_add_param_int_ro(&ubi->dev, "reserved_pebs", ubi->rsvd_pebs, "%d");
+	dev_add_param_uint32_ro(&ubi->dev, "peb_size", &ubi->peb_size, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "leb_size", &ubi->leb_size, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "vid_header_offset", &ubi->vid_hdr_offset, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "min_io_size", &ubi->min_io_size, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "sub_page_size", &ubi->hdrs_min_io_size, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "good_peb_count", &ubi->good_peb_count, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "bad_peb_count", &ubi->bad_peb_count, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "max_erase_counter", &ubi->max_ec, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "mean_erase_counter", &ubi->mean_ec, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "available_pebs", &ubi->avail_pebs, "%u");
+	dev_add_param_uint32_ro(&ubi->dev, "reserved_pebs", &ubi->rsvd_pebs, "%u");
 
 	ubi_devices[ubi_num] = ubi;
 

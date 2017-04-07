@@ -187,9 +187,9 @@ int usb_add_gadget_udc_release(struct device_d *parent, struct usb_gadget *gadge
 	if (ret)
 		goto err2;
 
-	dev_add_param_int(&gadget->dev, "product", NULL, NULL,
+	dev_add_param_uint32(&gadget->dev, "product", NULL, NULL,
 			&gadget->product_id, "0x%04x", NULL);
-	dev_add_param_int(&gadget->dev, "vendor", NULL, NULL,
+	dev_add_param_uint32(&gadget->dev, "vendor", NULL, NULL,
 			&gadget->vendor_id, "0x%04x", NULL);
 	gadget->manufacturer = xstrdup("barebox");
 	dev_add_param_string(&gadget->dev, "manufacturer", NULL, NULL,

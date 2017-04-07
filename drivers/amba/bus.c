@@ -155,7 +155,7 @@ int amba_device_add(struct amba_device *dev)
 	if (ret)
 		goto err_release;
 
-	dev_add_param_int_ro(&dev->dev, "periphid", dev->periphid, "0x%08x");
+	dev_add_param_uint32_fixed(&dev->dev, "periphid", dev->periphid, "0x%08x");
 
 	return ret;
  err_release:

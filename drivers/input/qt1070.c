@@ -238,8 +238,8 @@ static int qt1070_probe(struct device_d *dev)
 		goto err;
 	}
 
-	dev_add_param_int_ro(dev, "fw_version", fw_version, "0x%x");
-	dev_add_param_int_ro(dev, "chip_ip", chip_id, "0x%x");
+	dev_add_param_uint32_fixed(dev, "fw_version", fw_version, "0x%x");
+	dev_add_param_uint32_fixed(dev, "chip_ip", chip_id, "0x%x");
 
 	memcpy(data->code, default_code, sizeof(int) * ARRAY_SIZE(default_code));
 

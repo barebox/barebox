@@ -637,10 +637,10 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	mtd->cdev.mtd = mtd;
 
 	if (IS_ENABLED(CONFIG_PARAMETER)) {
-		dev_add_param_llint_ro(&mtd->class_dev, "size", mtd->size, "%llu");
-		dev_add_param_int_ro(&mtd->class_dev, "erasesize", mtd->erasesize, "%u");
-		dev_add_param_int_ro(&mtd->class_dev, "writesize", mtd->writesize, "%u");
-		dev_add_param_int_ro(&mtd->class_dev, "oobsize", mtd->oobsize, "%u");
+		dev_add_param_uint64_ro(&mtd->class_dev, "size", &mtd->size, "%llu");
+		dev_add_param_uint32_ro(&mtd->class_dev, "erasesize", &mtd->erasesize, "%u");
+		dev_add_param_uint32_ro(&mtd->class_dev, "writesize", &mtd->writesize, "%u");
+		dev_add_param_uint32_ro(&mtd->class_dev, "oobsize", &mtd->oobsize, "%u");
 	}
 
 	ret = devfs_create(&mtd->cdev);

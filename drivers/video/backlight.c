@@ -70,7 +70,7 @@ int backlight_register(struct backlight_device *bl)
 	if (ret)
 		return ret;
 
-	dev_add_param_int(&bl->dev, "brightness", backlight_brightness_set,
+	dev_add_param_uint32(&bl->dev, "brightness", backlight_brightness_set,
 			NULL, &bl->brightness, "%d", bl);
 
 	list_add_tail(&bl->list, &backlights);

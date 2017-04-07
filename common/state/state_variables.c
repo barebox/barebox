@@ -108,7 +108,7 @@ static struct state_variable *state_uint8_create(struct state *state,
 
 	su32 = xzalloc(sizeof(*su32));
 
-	param = dev_add_param_int(&state->dev, name, state_uint8_set,
+	param = dev_add_param_uint32(&state->dev, name, state_uint8_set,
 				  NULL, &su32->value, "%u", &su32->var);
 	if (IS_ERR(param)) {
 		free(su32);
@@ -136,7 +136,7 @@ static struct state_variable *state_uint32_create(struct state *state,
 
 	su32 = xzalloc(sizeof(*su32));
 
-	param = dev_add_param_int(&state->dev, name, state_set_dirty,
+	param = dev_add_param_uint32(&state->dev, name, state_set_dirty,
 				  NULL, &su32->value, "%u", &su32->var);
 	if (IS_ERR(param)) {
 		free(su32);

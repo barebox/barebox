@@ -333,10 +333,8 @@ static int ipufb_probe(struct device_d *dev)
 		}
 
 		ret = vpl_ioctl(&fbi->vpl, 2 + fbi->dino, VPL_GET_VIDEOMODES, &info->modes);
-		if (ret) {
-			dev_err(fbi->dev, "failed to get modes: %s\n", strerror(-ret));
-			return ret;
-		}
+		if (ret)
+			dev_dbg(fbi->dev, "failed to get modes: %s\n", strerror(-ret));
 
 		ret = register_framebuffer(info);
 		if (ret < 0) {

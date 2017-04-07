@@ -69,6 +69,10 @@ static int do_nand_bitflip(int argc, char *argv[])
 
 	block += mtd_div_by_eb(offset, meminfo.mtd);
 	offset = mtd_mod_by_eb(offset, meminfo.mtd);
+	if ((int)offset % meminfo.mtd->writesize) {
+		printf("offset has to be pagesize aligned\n");
+		return 1;
+	}
 
 	if (!check) {
 		ret = mtd_peb_create_bitflips(meminfo.mtd, block, offset, meminfo.writesize,

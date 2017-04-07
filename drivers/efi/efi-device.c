@@ -101,7 +101,8 @@ static efi_handle_t *efi_find_parent(efi_handle_t *handle)
 	struct efi_open_protocol_information_entry *entry_buffer;
 	unsigned long entry_count;
 
-	ret = efi_locate_handle(all_handles, NULL, NULL, &handle_count, &handles);
+	ret = efi_locate_handle(by_protocol, &efi_device_path_protocol_guid,
+			NULL, &handle_count, &handles);
 	if (ret)
 		return NULL;
 
@@ -183,8 +184,6 @@ static struct efi_device *efi_add_device(efi_handle_t *handle, efi_guid_t **guid
 	efidev->dev.info = efi_devinfo;
 	efidev->devpath = devpath;
 
-	BS->handle_protocol(handle, &guidarr[0], &efidev->protocol);
-
 	sprintf(efidev->dev.name, "handle-%p", handle);
 
 	efidev->parent_handle = efi_find_parent(efidev->handle);
@@ -245,7 +244,8 @@ void efi_register_devices(void)
 	struct efi_device **efidevs;
 	int registered;
 
-	ret = efi_locate_handle(all_handles, NULL, NULL, &handle_count, &handles);
+	ret = efi_locate_handle(by_protocol, &efi_device_path_protocol_guid,
+			NULL, &handle_count, &handles);
 	if (ret)
 		return;
 
@@ -310,8 +310,11 @@ static int efi_bus_match(struct device_d *dev, struct driver_d *drv)
 	int i;
 
 	for (i = 0; i < efidev->num_guids; i++) {
-		if (!memcmp(&efidrv->guid, &efidev->guids[i], sizeof(efi_guid_t)))
+		if (!memcmp(&efidrv->guid, &efidev->guids[i], sizeof(efi_guid_t))) {
+			BS->handle_protocol(efidev->handle, &efidev->guids[i],
+					&efidev->protocol);
 			return 0;
+		}
 	}
 
 	return 1;

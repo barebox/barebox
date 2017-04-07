@@ -29,22 +29,6 @@ void nv_var_set_clean(void)
 	nv_dirty = 0;
 }
 
-int globalvar_add(const char *name,
-		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
-		const char *(*get)(struct device_d *, struct param_d *p),
-		unsigned long flags)
-{
-	struct param_d *param;
-
-	if (!strncmp(name, "global.", 7))
-		name += 7;
-
-	param = dev_add_param(&global_device, name, set, get, flags);
-	if (IS_ERR(param))
-		return PTR_ERR(param);
-	return 0;
-}
-
 void globalvar_remove(const char *name)
 {
 	struct param_d *p, *tmp;

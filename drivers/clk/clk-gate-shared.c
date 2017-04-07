@@ -69,8 +69,8 @@ static struct clk_ops clk_gate_shared_ops = {
 	.is_enabled = clk_gate_shared_is_enabled,
 };
 
-struct clk *clk_gate_shared_alloc(const char *name, const char *parent, const char *companion,
-			   unsigned flags)
+static struct clk *clk_gate_shared_alloc(const char *name, const char *parent,
+				const char *companion, unsigned flags)
 {
 	struct clk_gate_shared *g = xzalloc(sizeof(*g));
 
@@ -86,7 +86,7 @@ struct clk *clk_gate_shared_alloc(const char *name, const char *parent, const ch
 	return &g->clk;
 }
 
-void clk_gate_shared_free(struct clk *clk)
+static void clk_gate_shared_free(struct clk *clk)
 {
 	struct clk_gate_shared *g = to_clk_gate_shared(clk);
 

@@ -29,6 +29,7 @@
 #include <clock.h>
 #include <xfuncs.h>
 #include <gpio.h>
+#include <of_gpio.h>
 #include <io.h>
 #include <spi/spi.h>
 #include <mach/io.h>
@@ -400,10 +401,11 @@ static int atmel_spi_probe(struct device_d *dev)
 	int ret = 0;
 	int i;
 	struct spi_master *master;
+	struct device_node *node = dev->device_node;
 	struct atmel_spi *as;
 	struct at91_spi_platform_data *pdata = dev->platform_data;
 
-	if (!pdata) {
+	if (!IS_ENABLED(CONFIG_OFDEVICE) && !pdata) {
 		dev_err(dev, "missing platform data\n");
 		return -EINVAL;
 	}
@@ -414,6 +416,23 @@ static int atmel_spi_probe(struct device_d *dev)
 	master->dev = dev;
 	master->bus_num = dev->id;
 
+	if (pdata) {
+		master->num_chipselect = pdata->num_chipselect;
+		as->cs_pins = pdata->chipselect;
+	} else {
+		master->num_chipselect = of_gpio_named_count(node, "cs-gpios");
+		as->cs_pins = xzalloc(sizeof(u32) * master->num_chipselect);
+
+		for (i = 0; i < master->num_chipselect; i++) {
+			as->cs_pins[i] = of_get_named_gpio(node, "cs-gpios", i);
+
+			if (!gpio_is_valid(as->cs_pins[i]))
+			    break;
+		}
+
+		master->num_chipselect = i;
+	}
+
 	as->clk = clk_get(dev, "spi_clk");
 	if (IS_ERR(as->clk)) {
 		dev_err(dev, "no spi_clk\n");
@@ -423,8 +442,6 @@ static int atmel_spi_probe(struct device_d *dev)
 
 	master->setup = atmel_spi_setup;
 	master->transfer = atmel_spi_transfer;
-	master->num_chipselect = pdata->num_chipselect;
-	as->cs_pins = pdata->chipselect;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
@@ -465,8 +482,14 @@ out_free:
 	return ret;
 }
 
+const static __maybe_unused const struct of_device_id atmel_spi_dt_ids[] = {
+	{ .compatible = "atmel,at91rm9200-spi" },
+	{ /* sentinel */ }
+};
+
 static struct driver_d atmel_spi_driver = {
 	.name  = "atmel_spi",
 	.probe = atmel_spi_probe,
+	.of_compatible = DRV_OF_COMPAT(atmel_spi_dt_ids),
 };
 device_platform_driver(atmel_spi_driver);

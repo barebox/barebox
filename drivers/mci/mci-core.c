@@ -1843,19 +1843,17 @@ err_free:
 	return ret;
 }
 
-void mci_of_parse(struct mci_host *host)
+void mci_of_parse_node(struct mci_host *host,
+		       struct device_node *np)
 {
-	struct device_node *np;
 	u32 bus_width;
 	u32 dsr_val;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
 
-	if (!host->hw_dev || !host->hw_dev->device_node)
+	if (!host->hw_dev || !np)
 		return;
-
-	np = host->hw_dev->device_node;
 
 	/* "bus-width" is translated to MMC_CAP_*_BIT_DATA flags */
 	if (of_property_read_u32(np, "bus-width", &bus_width) < 0) {
@@ -1895,6 +1893,11 @@ void mci_of_parse(struct mci_host *host)
 	}
 
 	host->non_removable = of_property_read_bool(np, "non-removable");
+}
+
+void mci_of_parse(struct mci_host *host)
+{
+	return mci_of_parse_node(host, host->hw_dev->device_node);
 }
 
 struct mci *mci_get_device_by_name(const char *name)

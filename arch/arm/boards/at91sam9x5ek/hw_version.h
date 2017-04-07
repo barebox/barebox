@@ -29,6 +29,5 @@ enum vendor_id {
 bool at91sam9x5ek_cm_is_vendor(enum vendor_id vid);
 bool at91sam9x5ek_ek_is_vendor(enum vendor_id vid);
 bool at91sam9x5ek_dm_is_vendor(enum vendor_id vid);
-void at91sam9x5ek_devices_detect_hw(void);
 
 #endif /* __HW_REVISION_H__ */

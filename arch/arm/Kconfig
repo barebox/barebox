@@ -43,9 +43,9 @@ config ARCH_AT91
 	select GPIOLIB
 	select CLKDEV_LOOKUP
 	select HAS_DEBUG_LL
-	select HAVE_MACH_ARM_HEAD
 	select HAVE_CLK
 	select PINCTRL_AT91
+	select COMMON_CLK_AT91 if COMMON_CLK_OF_PROVIDER
 
 
 config ARCH_BCM283X

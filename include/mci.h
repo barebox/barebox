@@ -480,6 +480,7 @@ struct mci {
 
 int mci_register(struct mci_host*);
 void mci_of_parse(struct mci_host *host);
+void mci_of_parse_node(struct mci_host *host, struct device_node *np);
 int mci_detect_card(struct mci_host *);
 int mci_send_ext_csd(struct mci *mci, char *ext_csd);
 int mci_switch(struct mci *mci, unsigned set, unsigned index,

@@ -9,6 +9,26 @@ config HAVE_AT91_DBGU1
 config HAVE_AT91_DBGU2
 	bool
 
+config HAVE_AT91_UTMI
+	bool
+
+config HAVE_AT91_USB_CLK
+	bool
+
+config COMMON_CLK_AT91
+	bool
+	select COMMON_CLK
+	select MFD_SYSCON
+
+config HAVE_AT91_SMD
+	bool
+
+config HAVE_AT91_H32MX
+	bool
+
+config HAVE_AT91_GENERATED_CLK
+	bool
+
 config HAVE_AT91_LOWLEVEL_INIT
 	bool
 
@@ -20,6 +40,7 @@ config SOC_AT91SAM9
 	select CPU_ARM926T
 	select AT91SAM9_SMC
 	select CLOCKSOURCE_ATMEL_PIT
+	select PINCTRL
 
 config SOC_SAMA5
 	bool
@@ -106,6 +127,10 @@ config SOC_AT91SAM9X5
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
 	select AT91SAM9G45_RESET
+	select HAVE_AT91_SMD
+	select HAVE_AT91_USB_CLK
+	select HAVE_AT91_UTMI
+	select COMMON_CLK_OF_PROVIDER
 	help
 	  Select this if you are using one of Atmel's AT91SAM9x5 family SoC.
 	  This means that your SAM9 name finishes with a '5' (except if it is
@@ -140,26 +165,32 @@ config ARCH_AT91SAM9261
 config ARCH_AT91SAM9263
 	bool "AT91SAM9263"
 	select SOC_AT91SAM9263
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9G10
 	bool "AT91SAM9G10"
 	select SOC_AT91SAM9261
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9G20
 	bool "AT91SAM9G20"
 	select SOC_AT91SAM9260
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9G45
 	bool "AT91SAM9G45 or AT91SAM9M10"
 	select SOC_AT91SAM9G45
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_AT91SAM9X5
 	bool "AT91SAM9X5"
 	select SOC_AT91SAM9X5
+	select OFDEVICE
 
 config ARCH_AT91SAM9N12
 	bool "AT91SAM9N12"
 	select SOC_AT91SAM9N12
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_SAMA5D3
 	bool "SAMA5D3x"
@@ -167,6 +198,7 @@ config ARCH_SAMA5D3
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select AT91SAM9G45_RESET
+	select HAVE_MACH_ARM_HEAD
 
 config ARCH_SAMA5D4
 	bool "SAMA5D4"
@@ -174,6 +206,7 @@ config ARCH_SAMA5D4
 	select HAVE_AT91_DBGU2
 	select HAS_MACB
 	select AT91SAM9G45_RESET
+	select HAVE_MACH_ARM_HEAD
 
 endchoice
 
@@ -429,23 +462,6 @@ endif
 
 # ----------------------------------------------------------
 
-if ARCH_AT91SAM9X5
-
-choice
-	prompt "AT91SAM9x5 Series Board Type"
-
-config MACH_AT91SAM9X5EK
-	bool "Atmel AT91SAM9x5 Series Evaluation Kit"
-	help
-	  Select this if you re using Atmel's AT91SAM9x5-EK Evaluation Kit.
-	  Supported chips are sam9g15, sam9g25, sam9x25, sam9g35 and sam9x35.
-
-endchoice
-
-endif
-
-# ----------------------------------------------------------
-
 if ARCH_AT91SAM9N12
 
 choice
@@ -503,6 +519,22 @@ endchoice
 endif
 
 # ----------------------------------------------------------
+
+
+config AT91_MULTI_BOARDS
+	bool "Allow multiple boards to be selected"
+	select HAVE_PBL_MULTI_IMAGES
+
+if AT91_MULTI_BOARDS
+
+config MACH_AT91SAM9X5EK
+	bool "Atmel AT91SAM9x5 Series Evaluation Kit"
+	depends on ARCH_AT91SAM9X5
+	help
+	  Select this if you re using Atmel's AT91SAM9x5-EK Evaluation Kit.
+	  Supported chips are sam9g15, sam9g25, sam9x25, sam9g35 and sam9x35.
+
+endif
 
 comment "AT91 Board Options"
 

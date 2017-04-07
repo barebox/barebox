@@ -1,0 +1,70 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/at91.h>
+
+#include <arm/at91sam9x5.dtsi>
+#include <arm/at91sam9x5_macb0.dtsi>
+#include <arm/at91sam9x5_lcd.dtsi>
+#include <arm/at91sam9x5dm.dtsi>
+#include <arm/at91sam9x5ek.dtsi>
+
+/ {
+	aliases {
+		mmc0 = &mmc0;
+		mmc1 = &mmc1;
+	};
+
+	i2c-gpio-0 {
+		status = "okay";
+	};
+
+	ahb {
+		apb {
+			pinctrl@fffff400 {
+				spi {
+					pinctrl_board_spi: spi-board {
+						atmel,pins = <AT91_PIOA 14 AT91_PERIPH_GPIO AT91_PINCTRL_NONE>;
+					};
+				};
+			};
+		};
+	};
+
+	leds {
+		/*
+		 * PB18 has a resource conflict since it is both used
+                 * as a heartbeat LED and 1-wire bus in the kernel
+                 * device tree. Because 1-wire EEPROMs contains
+                 * importatnt revision information we move heartbeat
+                 * to PD21 and remove the original pb18 node
+		 */
+		/delete-node/ pb18;
+
+		pd21 {
+			linux,default-trigger = "heartbeat";
+		};
+	};
+};
+
+&spi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_spi0>, <&pinctrl_board_spi>;
+};
+
+&i2c0 {
+	status = "disabled";
+};
+
+/*
+ * This one conflicts with SPI NOR on the SoM
+ */
+&mmc1 {
+	status = "disabled";
+};
+
+&macb0 {
+	status = "okay";
+	phy-mode = "rmii";
+};
+

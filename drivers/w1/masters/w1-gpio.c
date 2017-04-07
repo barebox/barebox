@@ -16,6 +16,7 @@
 #include <driver.h>
 #include <linux/w1-gpio.h>
 #include <gpio.h>
+#include <of_gpio.h>
 
 #include "../w1.h"
 
@@ -43,11 +44,57 @@ static u8 w1_gpio_read_bit(struct w1_bus *bus)
 	return gpio_get_value(pdata->pin) ? 1 : 0;
 }
 
+static int w1_gpio_probe_dt(struct device_d *dev)
+{
+	struct w1_gpio_platform_data *pdata;
+	struct device_node *np = dev->device_node;
+	int gpio;
+
+	if (dev->platform_data)
+		return 0;
+
+	pdata = xzalloc(sizeof(*pdata));
+
+	if (of_get_property(np, "linux,open-drain", NULL))
+		pdata->is_open_drain = 1;
+
+	gpio = of_get_gpio(np, 0);
+	if (!gpio_is_valid(gpio)) {
+		if (gpio != -EPROBE_DEFER)
+			dev_err(dev,
+				"Failed to parse gpio property for data pin (%d)\n",
+				gpio);
+
+		goto free_pdata;
+	}
+	pdata->pin = gpio;
+
+	gpio = of_get_gpio(np, 1);
+	if (gpio == -EPROBE_DEFER)
+		goto free_pdata;
+
+	/* ignore other errors as the pullup gpio is optional */
+	pdata->ext_pullup_enable_pin = gpio;
+
+	dev->platform_data = pdata;
+	return 0;
+
+free_pdata:
+	free(pdata);
+	return gpio;
+}
+
 static int __init w1_gpio_probe(struct device_d *dev)
 {
 	struct w1_bus *master;
 	struct w1_gpio_platform_data *pdata;
 	int err;
+
+	if (IS_ENABLED(CONFIG_OFDEVICE)) {
+		err = w1_gpio_probe_dt(dev);
+		if (err < 0)
+			return err;
+	}
 
 	pdata = dev->platform_data;
 
@@ -104,8 +151,14 @@ static int __init w1_gpio_probe(struct device_d *dev)
 	return err;
 }
 
+static __maybe_unused const struct of_device_id w1_gpio_dt_ids[] = {
+	{ .compatible = "w1-gpio" },
+	{}
+};
+
 static struct driver_d w1_gpio_driver = {
 	.name	= "w1-gpio",
 	.probe	= w1_gpio_probe,
+	.of_compatible = DRV_OF_COMPAT(w1_gpio_dt_ids),
 };
 device_platform_driver(w1_gpio_driver);

@@ -85,7 +85,6 @@ static void __init soc_detect(u32 dbgu_base)
 
 	case ARCH_ID_AT91SAM9X5:
 		at91_soc_initdata.type = AT91_SOC_SAM9X5;
-		at91_boot_soc = at91sam9x5_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9N12:
@@ -283,6 +282,9 @@ static int at91_detect(void)
 		at91_get_soc_type(&at91_soc_initdata));
 	pr_info("AT91: Detected soc subtype: %s\n",
 		at91_get_soc_subtype(&at91_soc_initdata));
+
+	if (IS_ENABLED(CONFIG_COMMON_CLK_OF_PROVIDER))
+		return 0;
 
 	if (!at91_soc_is_enabled())
 		panic("AT91: Soc not enabled");

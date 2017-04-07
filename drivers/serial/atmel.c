@@ -446,8 +446,15 @@ static int atmel_serial_probe(struct device_d *dev)
 	return 0;
 }
 
+static const struct of_device_id __maybe_unused atmel_serial_dt_ids[] = {
+	{ .compatible = "atmel,at91rm9200-usart" },
+	{ .compatible = "atmel,at91sam9260-usart" },
+	{ /* sentinel */ }
+};
+
 static struct driver_d atmel_serial_driver = {
         .name  = "atmel_usart",
         .probe = atmel_serial_probe,
+	.of_compatible = DRV_OF_COMPAT(atmel_serial_dt_ids),
 };
 console_platform_driver(atmel_serial_driver);

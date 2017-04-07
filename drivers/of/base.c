@@ -1217,6 +1217,28 @@ int of_property_write_u64_array(struct device_node *np,
 }
 
 /**
+ * of_property_write_string - Write a string to a property. If
+ * the property does not exist, it will be created and appended to the given
+ * device node.
+ *
+ * @np:		device node to which the property value is to be written.
+ * @propname:	name of the property to be written.
+ * value:	pointer to the string to write
+ *
+ * Search for a property in a device node and write a string to
+ * it. If the property does not exist, it will be created and appended to
+ * the device node. Returns 0 on success, -ENOMEM if the property or array
+ * of elements cannot be created.
+ */
+int of_property_write_string(struct device_node *np,
+			     const char *propname, const char *value)
+{
+	size_t len = strlen(value);
+
+	return of_set_property(np, propname, value, len + 1, 1);
+}
+
+/**
  * of_parse_phandle_from - Resolve a phandle property to a device_node pointer from
  * a given root node
  * @np: Pointer to device node holding phandle property
@@ -2093,7 +2115,7 @@ int of_device_enable_path(const char *path)
  */
 int of_device_disable(struct device_node *node)
 {
-	return of_set_property(node, "status", "disabled", sizeof("disabled"), 1);
+	return of_property_write_string(node, "status", "disabled");
 }
 
 /**

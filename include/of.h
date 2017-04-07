@@ -205,6 +205,8 @@ extern int of_property_write_u32_array(struct device_node *np,
 extern int of_property_write_u64_array(struct device_node *np,
 				const char *propname, const u64 *values,
 				size_t sz);
+extern int of_property_write_string(struct device_node *np, const char *propname,
+				    const char *value);
 
 extern struct device_node *of_parse_phandle(const struct device_node *np,
 					    const char *phandle_name,
@@ -238,6 +240,7 @@ extern struct device_d *of_device_enable_and_register_by_name(const char *name);
 
 struct cdev *of_parse_partition(struct cdev *cdev, struct device_node *node);
 int of_parse_partitions(struct cdev *cdev, struct device_node *node);
+int of_partitions_register_fixup(struct cdev *cdev);
 int of_device_is_stdout_path(struct device_d *dev);
 const char *of_get_model(void);
 void *of_flatten_dtb(struct device_node *node);
@@ -248,6 +251,7 @@ struct device_d *of_find_device_by_node_path(const char *path);
 #define OF_FIND_PATH_FLAGS_BB 1		/* return .bb device if available */
 int of_find_path(struct device_node *node, const char *propname, char **outpath, unsigned flags);
 int of_find_path_by_node(struct device_node *node, char **outpath, unsigned flags);
+struct device_node *of_find_node_by_devpath(struct device_node *root, const char *path);
 int of_register_fixup(int (*fixup)(struct device_node *, void *), void *context);
 int of_unregister_fixup(int (*fixup)(struct device_node *, void *), void *context);
 int of_register_set_status_fixup(const char *node, bool status);
@@ -260,6 +264,11 @@ static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
 {
 	return -EINVAL;
+}
+
+static inline int of_partitions_register_fixup(struct cdev *cdev)
+{
+	return -ENOSYS;
 }
 
 static inline int of_device_is_stdout_path(struct device_d *dev)
@@ -462,6 +471,12 @@ static inline int of_property_write_u32_array(struct device_node *np,
 
 static inline int of_property_write_u64_array(struct device_node *np,
 			const char *propname, const u64 *values, size_t sz)
+{
+	return -ENOSYS;
+}
+
+static inline int of_property_write_string(struct device_node *np, const char *propname,
+				    const char *value)
 {
 	return -ENOSYS;
 }

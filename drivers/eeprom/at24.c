@@ -500,6 +500,7 @@ static int at24_probe(struct device_d *dev)
 		goto err_devfs_create;
 
 	of_parse_partitions(&at24->cdev, dev->device_node);
+	of_partitions_register_fixup(&at24->cdev);
 
 	return 0;
 

@@ -37,7 +37,7 @@ int devfs_partition_complete(struct string_list *sl, char *instr)
 	len = strlen(instr);
 
 	list_for_each_entry(cdev, &cdev_list, list) {
-		if (cdev->flags & DEVFS_IS_PARTITION &&
+		if (cdev->master &&
 		    !strncmp(instr, cdev->name, len)) {
 			string_list_add_asprintf(sl, "%s ", cdev->name);
 		}
@@ -184,76 +184,8 @@ int cdev_flush(struct cdev *cdev)
 	return cdev->ops->flush(cdev);
 }
 
-static int partition_ioctl(struct cdev *cdev, int request, void *buf)
-{
-	int ret = 0;
-	loff_t offset, *_buf = buf;
-	struct mtd_info_user *user = buf;
-
-	switch (request) {
-	case MEMSETBADBLOCK:
-	case MEMSETGOODBLOCK:
-	case MEMGETBADBLOCK:
-		offset = *_buf;
-		offset += cdev->offset;
-		ret = cdev->ops->ioctl(cdev, request, &offset);
-		break;
-	case MEMGETINFO:
-		if (cdev->mtd) {
-			user->type	= cdev->mtd->type;
-			user->flags	= cdev->mtd->flags;
-			user->size	= cdev->mtd->size;
-			user->erasesize	= cdev->mtd->erasesize;
-			user->writesize	= cdev->mtd->writesize;
-			user->oobsize	= cdev->mtd->oobsize;
-			user->subpagesize = cdev->mtd->writesize >> cdev->mtd->subpage_sft;
-			user->mtd	= cdev->mtd;
-			/* The below fields are obsolete */
-			user->ecctype	= -1;
-			user->eccsize	= 0;
-			break;
-		}
-		if (!cdev->ops->ioctl) {
-			ret = -EINVAL;
-			break;
-		}
-		ret = cdev->ops->ioctl(cdev, request, buf);
-		break;
-#if (defined(CONFIG_NAND_ECC_HW) || defined(CONFIG_NAND_ECC_SOFT))
-	case ECCGETSTATS:
-#endif
-	case MEMERASE:
-		if (!cdev->ops->ioctl) {
-			ret = -EINVAL;
-			break;
-		}
-		ret = cdev->ops->ioctl(cdev, request, buf);
-		break;
-#ifdef CONFIG_PARTITION
-	case MEMGETREGIONINFO:
-		if (cdev->mtd) {
-			struct region_info_user *reg = buf;
-			int erasesize_shift = ffs(cdev->mtd->erasesize) - 1;
-
-			reg->offset = cdev->offset;
-			reg->erasesize = cdev->mtd->erasesize;
-			reg->numblocks = cdev->size >> erasesize_shift;
-			reg->regionindex = cdev->mtd->index;
-		}
-	break;
-#endif
-	default:
-		ret = -EINVAL;
-	}
-
-	return ret;
-}
-
 int cdev_ioctl(struct cdev *cdev, int request, void *buf)
 {
-	if (cdev->flags & DEVFS_IS_PARTITION)
-		return partition_ioctl(cdev, request, buf);
-
 	if (!cdev->ops->ioctl)
 		return -EINVAL;
 
@@ -277,6 +209,7 @@ int devfs_create(struct cdev *new)
 		return -EEXIST;
 
 	INIT_LIST_HEAD(&new->links);
+	INIT_LIST_HEAD(&new->partitions);
 
 	list_add_tail(&new->list, &cdev_list);
 	if (new->dev) {
@@ -326,6 +259,9 @@ int devfs_remove(struct cdev *cdev)
 	list_for_each_entry_safe(c, tmp, &cdev->links, link_entry)
 		devfs_remove(c);
 
+	if (cdev->master)
+		list_del(&cdev->partition_entry);
+
 	if (cdev->link)
 		free(cdev);
 
@@ -374,6 +310,8 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 				partinfo->flags, partinfo->name);
 		if (IS_ERR(mtd))
 			return (void *)mtd;
+
+		list_add_tail(&mtd->cdev.partition_entry, &cdev->partitions);
 		return &mtd->cdev;
 	}
 
@@ -388,7 +326,9 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 	new->offset = cdev->offset + offset;
 
 	new->dev = cdev->dev;
-	new->flags = partinfo->flags | DEVFS_IS_PARTITION;
+	new->master = cdev;
+
+	list_add_tail(&new->partition_entry, &cdev->partitions);
 
 	devfs_create(new);
 
@@ -428,7 +368,7 @@ int devfs_del_partition(const char *name)
 		return ret;
 	}
 
-	if (!(cdev->flags & DEVFS_IS_PARTITION))
+	if (!cdev->master)
 		return -EINVAL;
 	if (cdev->flags & DEVFS_PARTITION_FIXED)
 		return -EPERM;

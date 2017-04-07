@@ -37,14 +37,12 @@ static int hb_fixup(struct device_node *root, void *unused)
 
 	if (!(reg & HB_PWRDOM_STAT_SATA)) {
 		for_each_compatible_node_from(node, root, NULL, "calxeda,hb-ahci")
-			of_set_property(node, "status", "disabled",
-					sizeof("disabled"), 1);
+			of_property_write_string(node, "status", "disabled");
 	}
 
 	if (!(reg & HB_PWRDOM_STAT_EMMC)) {
 		for_each_compatible_node_from(node, root, NULL, "calxeda,hb-sdhci")
-			of_set_property(node, "status", "disabled",
-					sizeof("disabled"), 1);
+			of_property_write_string(node, "status", "disabled");
 	}
 
 	if ((opp_table[0] >> 16) != HB_OPP_VERSION)

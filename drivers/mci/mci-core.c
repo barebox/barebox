@@ -1621,8 +1621,10 @@ static int mci_register_partition(struct mci_part *part)
 		rc = 0; /* it's not a failure */
 	}
 
-	if (np)
+	if (np) {
 		of_parse_partitions(&part->blk.cdev, np);
+		of_partitions_register_fixup(&part->blk.cdev);
+	}
 
 	return 0;
 }

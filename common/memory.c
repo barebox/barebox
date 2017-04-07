@@ -185,7 +185,7 @@ static int of_memory_fixup(struct device_node *node, void *unused)
 	if (!memnode)
 		return -ENOMEM;
 
-	err = of_set_property(memnode, "device_type", "memory", sizeof("memory"), 1);
+	err = of_property_write_string(memnode, "device_type", "memory");
 	if (err)
 		return err;
 

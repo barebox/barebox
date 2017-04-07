@@ -19,6 +19,7 @@
 #include <clock.h>
 #include <common.h>
 #include <init.h>
+#include <poweroff.h>
 #include <gpio.h>
 #include <poller.h>
 
@@ -45,7 +46,7 @@ static void try_poweroff(void)
 
 	gpio_set_value(GPIO115_LED_nKeyboard, 0);
 	mdelay(2000);
-	poweroff();
+	poweroff_machine();
 }
 
 static void gpio0_poller_fn(struct poller_struct *poller)

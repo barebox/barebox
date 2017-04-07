@@ -254,6 +254,8 @@ static int fit_verify_signature(struct device_node *sig_node, void *fit)
 	}
 	if (strcmp(algo_name, "sha1,rsa2048") == 0) {
 		algo = HASH_ALGO_SHA1;
+	} else if (strcmp(algo_name, "sha256,rsa2048") == 0) {
+		algo = HASH_ALGO_SHA256;
 	} else if (strcmp(algo_name, "sha256,rsa4096") == 0) {
 		algo = HASH_ALGO_SHA256;
 	} else	{
@@ -489,6 +491,38 @@ static int fit_config_verify_signature(struct fit_handle *handle, struct device_
 	return ret;
 }
 
+static int fit_find_compatible_unit(struct device_node *conf_node,
+				    const char **unit)
+{
+	struct device_node *child = NULL;
+	struct device_node *barebox_root;
+	const char *machine;
+	int ret;
+
+	barebox_root = of_get_root_node();
+	if (!barebox_root)
+		goto default_unit;
+
+	ret = of_property_read_string(barebox_root, "compatible", &machine);
+	if (ret)
+		return -ENOENT;
+
+	for_each_child_of_node(conf_node, child) {
+		if (of_device_is_compatible(child, machine)) {
+			*unit = child->name;
+			pr_info("matching unit '%s' found\n", *unit);
+			return 0;
+		}
+	}
+
+default_unit:
+	pr_info("No match found. Trying default.\n");
+	if (of_property_read_string(conf_node, "default", unit) == 0)
+		return 0;
+
+	return -ENOENT;
+}
+
 static int fit_open_configuration(struct fit_handle *handle, const char *name)
 {
 	struct device_node *conf_node = NULL;
@@ -501,8 +535,12 @@ static int fit_open_configuration(struct fit_handle *handle, const char *name)
 
 	if (name) {
 		unit = name;
-	} else if (of_property_read_string(conf_node, "default", &unit)) {
-		unit = "conf@1";
+	} else {
+		ret = fit_find_compatible_unit(conf_node, &unit);
+		if (ret) {
+			pr_info("Couldn't get a valid configuration. Aborting.\n");
+			return ret;
+		}
 	}
 
 	conf_node = of_get_child_by_name(conf_node, unit);

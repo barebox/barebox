@@ -13,13 +13,13 @@ int bootchooser_put(struct bootchooser *bootchooser);
 
 void bootchooser_info(struct bootchooser *bootchooser);
 
+int bootchooser_boot(struct bootchooser *bc);
+
 struct bootchooser_target *bootchooser_get_last_chosen(struct bootchooser *bootchooser);
 const char *bootchooser_target_name(struct bootchooser_target *target);
 struct bootchooser_target *bootchooser_target_by_name(struct bootchooser *bootchooser,
 						      const char *name);
 void bootchooser_target_force_boot(struct bootchooser_target *target);
-
-int bootchooser_create_bootentry(struct bootentries *entries);
 
 int bootchooser_target_set_attempts(struct bootchooser_target *target, int attempts);
 int bootchooser_target_set_priority(struct bootchooser_target *target, int priority);

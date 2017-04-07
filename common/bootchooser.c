@@ -827,14 +827,9 @@ out:
 	return ret;
 }
 
-static int bootchooser_boot(struct bootentry *entry, int verbose, int dryrun)
+int bootchooser_boot(struct bootchooser *bc)
 {
-	struct bootchooser *bc = container_of(entry, struct bootchooser,
-						       entry);
 	int ret, tryagain;
-
-	bc->verbose = verbose;
-	bc->dryrun = dryrun;
 
 	do {
 		ret = bootchooser_boot_one(bc, &tryagain);
@@ -844,6 +839,16 @@ static int bootchooser_boot(struct bootentry *entry, int verbose, int dryrun)
 	} while (tryagain);
 
 	return ret;
+}
+
+static int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun)
+{
+	struct bootchooser *bc = container_of(entry, struct bootchooser,
+						       entry);
+	bc->verbose = verbose;
+	bc->dryrun = dryrun;
+
+	return bootchooser_boot(bc);
 }
 
 static void bootchooser_release(struct bootentry *entry)
@@ -863,14 +868,18 @@ static void bootchooser_release(struct bootentry *entry)
  *
  * Return: The number of entries added to the list
  */
-int bootchooser_create_bootentry(struct bootentries *entries)
+static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 {
-	struct bootchooser *bc = bootchooser_get();
+	struct bootchooser *bc;
 
+	if (strcmp(name, "bootchooser"))
+		return 0;
+
+	bc = bootchooser_get();
 	if (IS_ERR(bc))
 		return PTR_ERR(bc);
 
-	bc->entry.boot = bootchooser_boot;
+	bc->entry.boot = bootchooser_entry_boot;
 	bc->entry.release = bootchooser_release;
 	bc->entry.title = xstrdup("bootchooser");
 	bc->entry.description = xstrdup("bootchooser");
@@ -904,6 +913,9 @@ static int bootchooser_init(void)
 				  reset_attempts_names, ARRAY_SIZE(reset_attempts_names));
 	globalvar_add_simple_bitmask("bootchooser.reset_priorities", &reset_priorities,
 				  reset_priorities_names, ARRAY_SIZE(reset_priorities_names));
+
+	bootentry_register_provider(bootchooser_add_entry);
+
 	return 0;
 }
 device_initcall(bootchooser_init);

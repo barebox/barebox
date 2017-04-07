@@ -22,6 +22,8 @@
 
 #include <common.h>
 #include <io.h>
+#include <init.h>
+#include <poweroff.h>
 #include <mach/jz4750d_regs.h>
 
 static void __noreturn jz4750d_halt(void)
@@ -37,7 +39,7 @@ static void __noreturn jz4750d_halt(void)
 	unreachable();
 }
 
-void __noreturn poweroff()
+static void __noreturn jz4750_poweroff(struct poweroff_handler *handler)
 {
 	u32 ctrl;
 
@@ -50,4 +52,11 @@ void __noreturn poweroff()
 	writel(RTC_HCR_PD, (u32 *)RTC_HCR);
 	jz4750d_halt();
 }
-EXPORT_SYMBOL(poweroff);
+
+static int jz4750_init(void)
+{
+	poweroff_handler_register_fn(jz4750_poweroff);
+
+	return 0;
+}
+coredevice_initcall(jz4750_init);

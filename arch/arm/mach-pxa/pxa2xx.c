@@ -14,6 +14,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <poweroff.h>
 #include <reset_source.h>
 #include <mach/hardware.h>
 #include <mach/pxa-regs.h>
@@ -46,9 +47,7 @@ void pxa_clear_reset_source(void)
 	RCSR = RCSR_GPR | RCSR_SMR | RCSR_WDR | RCSR_HWR;
 }
 
-device_initcall(pxa_detect_reset_source);
-
-void __noreturn poweroff(void)
+static void __noreturn pxa2xx_poweroff(struct poweroff_handler *handler)
 {
 	shutdown_barebox();
 
@@ -57,3 +56,13 @@ void __noreturn poweroff(void)
 	pxa_suspend(PWRMODE_DEEPSLEEP);
 	unreachable();
 }
+
+static int pxa2xx_init(void)
+{
+	poweroff_handler_register_fn(pxa2xx_poweroff);
+
+	pxa_detect_reset_source();
+
+	return 0;
+}
+device_initcall(pxa2xx_init);

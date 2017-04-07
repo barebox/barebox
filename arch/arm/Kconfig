@@ -93,7 +93,6 @@ config ARCH_EP93XX
 config ARCH_HIGHBANK
 	bool "Calxeda Highbank"
 	select HAS_DEBUG_LL
-	select HAS_POWEROFF
 	select ARCH_HAS_L2X0
 	select CPU_V7
 	select ARM_AMBA
@@ -117,7 +116,6 @@ config ARCH_MVEBU
 	select CLKDEV_LOOKUP
 	select GPIOLIB
 	select HAS_DEBUG_LL
-	select HAVE_DEFAULT_ENVIRONMENT_NEW
 	select HAVE_MACH_ARM_HEAD
 	select HAVE_PBL_MULTI_IMAGES
 	select HW_HAS_PCI
@@ -154,7 +152,6 @@ config ARCH_OMAP
 config ARCH_PXA
 	bool "Intel/Marvell PXA based"
 	select GENERIC_GPIO
-	select HAS_POWEROFF
 
 config ARCH_ROCKCHIP
 	bool "Rockchip RX3xxx"

@@ -237,6 +237,9 @@ static int ata_port_init(struct ata_port *port)
 #ifdef DEBUG
 	ata_dump_id(port->id);
 #endif
+
+	port->lba48 = ata_id_has_lba48(port->id);
+
 	if (port->devname) {
 		port->blk.cdev.name = xstrdup(port->devname);
 	} else {

@@ -46,4 +46,10 @@ config WATCHDOG_OMAP
 	help
 	  Add support for watchdog on the TI OMAP SoC.
 
+config WATCHDOG_ORION
+	bool "Watchdog for Armada XP"
+	depends on ARCH_ARMADA_XP
+	help
+	  Add support for watchdog on the Marvall Armada XP
+
 endif

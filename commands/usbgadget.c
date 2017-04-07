@@ -20,6 +20,7 @@
  */
 #include <common.h>
 #include <command.h>
+#include <environment.h>
 #include <errno.h>
 #include <malloc.h>
 #include <getopt.h>
@@ -32,11 +33,11 @@
 static int do_usbgadget(int argc, char *argv[])
 {
 	int opt, ret;
-	int acm = 1, create_serial = 0;
-	char *fastboot_opts = NULL, *dfu_opts = NULL;
+	int acm = 1, create_serial = 0, fastboot_set = 0;
+	const char *fastboot_opts = NULL, *dfu_opts = NULL;
 	struct f_multi_opts *opts;
 
-	while ((opt = getopt(argc, argv, "asdA:D:")) > 0) {
+	while ((opt = getopt(argc, argv, "asdA::D:")) > 0) {
 		switch (opt) {
 		case 'a':
 			acm = 1;
@@ -51,6 +52,7 @@ static int do_usbgadget(int argc, char *argv[])
 			break;
 		case 'A':
 			fastboot_opts = optarg;
+			fastboot_set = 1;
 			break;
 		case 'd':
 			usb_multi_unregister();
@@ -59,6 +61,9 @@ static int do_usbgadget(int argc, char *argv[])
 			return -EINVAL;
 		}
 	}
+
+	if (fastboot_set && !fastboot_opts)
+		fastboot_opts = getenv("global.usbgadget.fastboot_function");
 
 	if (!dfu_opts && !fastboot_opts && !create_serial)
 		return COMMAND_ERROR_USAGE;

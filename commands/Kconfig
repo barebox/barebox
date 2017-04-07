@@ -6,10 +6,6 @@ config COMMAND_SUPPORT
 	depends on !SHELL_NONE
 	default y
 
-config HAS_POWEROFF
-	bool
-	default n
-
 if COMMAND_SUPPORT
 
 config COMPILE_HASH
@@ -1848,7 +1844,6 @@ config CMD_NAND_BITFLIP
 
 config CMD_POWEROFF
 	tristate
-	depends on HAS_POWEROFF
 	prompt "poweroff"
 	help
 	  Turn the power off.

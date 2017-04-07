@@ -1,0 +1,18 @@
+menuconfig NVMEM
+	bool "NVMEM Support"
+	help
+	  Support for NVMEM(Non Volatile Memory) devices like EEPROM, EFUSES...
+
+	  This framework is designed to provide a generic interface to NVMEM
+
+	  If unsure, say no.
+
+if NVMEM
+
+config NVMEM_SNVS_LPGPR
+	tristate "Freescale SNVS LPGPR support"
+	select MFD_SYSCON
+	help
+	  If you say yes here you get NVMEM support for the Freescale SNVS
+	  Low Power Generic Purpose Register (LPGPR).
+endif

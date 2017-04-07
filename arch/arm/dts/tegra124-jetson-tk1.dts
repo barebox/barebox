@@ -3,7 +3,7 @@
 
 / {
 	chosen {
-		stdout-path = "/serial@0,70006300/";
+		stdout-path = &uartd;
 
 		environment@0 {
 			compatible = "barebox,environment";
@@ -12,6 +12,6 @@
 	};
 
 	/* eMMC */
-	emmc: sdhci@0,700b0600 {
+	emmc: sdhci@700b0600 {
 	};
 };

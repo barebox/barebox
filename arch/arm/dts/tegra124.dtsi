@@ -1,8 +1,42 @@
+#include <dt-bindings/pinctrl/pinctrl-tegra-xusb.h>
+
 / {
 	aliases {
-		mmc0 = "/sdhci@0,700b0000/";
-		mmc1 = "/sdhci@0,700b0200/";
-		mmc2 = "/sdhci@0,700b0400/";
-		mmc3 = "/sdhci@0,700b0600/";
+		mmc0 = "/sdhci@700b0000/";
+		mmc1 = "/sdhci@700b0200/";
+		mmc2 = "/sdhci@700b0400/";
+		mmc3 = "/sdhci@700b0600/";
+	};
+
+	pcie-controller@01003000 {
+		phys = <&padctl TEGRA_XUSB_PADCTL_PCIE>;
+		phy-names = "pcie";
+	};
+
+	padctl@7009f000 {
+		pinctrl-0 = <&padctl_default>;
+		pinctrl-names = "default";
+		#phy-cells = <1>;
+
+		padctl_default: pinmux {
+			usb3 {
+				nvidia,lanes = "pcie-0", "pcie-1";
+				nvidia,function = "usb3";
+				nvidia,iddq = <0>;
+			};
+
+			pcie {
+				nvidia,lanes = "pcie-2", "pcie-3",
+				               "pcie-4";
+				nvidia,function = "pcie";
+				nvidia,iddq = <0>;
+			};
+
+			sata {
+				nvidia,lanes = "sata-0";
+				nvidia,function = "sata";
+				nvidia,iddq = <0>;
+			};
+		};
 	};
 };

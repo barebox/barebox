@@ -46,14 +46,14 @@ static inline struct state_backend_storage_bucket_direct
 }
 
 static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
-					    *bucket, uint8_t ** buf_out,
-					    ssize_t * len_hint)
+					    *bucket, void ** buf_out,
+					    ssize_t * len_out)
 {
 	struct state_backend_storage_bucket_direct *direct =
 	    get_bucket_direct(bucket);
 	struct state_backend_storage_bucket_direct_meta meta;
 	ssize_t read_len;
-	uint8_t *buf;
+	void *buf;
 	int ret;
 
 	ret = lseek(direct->fd, direct->offset, SEEK_SET);
@@ -69,18 +69,13 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	if (meta.magic == direct_magic) {
 		read_len = meta.written_length;
 	} else {
-		if (*len_hint)
-			read_len = *len_hint;
-		else
-			read_len = direct->max_size;
+		read_len = direct->max_size;
 		ret = lseek(direct->fd, direct->offset, SEEK_SET);
 		if (ret < 0) {
 			dev_err(direct->dev, "Failed to seek file, %d\n", ret);
 			return ret;
 		}
 	}
-	if (direct->max_size)
-		read_len = min(read_len, direct->max_size);
 
 	buf = xmalloc(read_len);
 	if (!buf)
@@ -94,13 +89,13 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	}
 
 	*buf_out = buf;
-	*len_hint = read_len;
+	*len_out = read_len;
 
 	return 0;
 }
 
 static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
-					     *bucket, const uint8_t * buf,
+					     *bucket, const void * buf,
 					     ssize_t len)
 {
 	struct state_backend_storage_bucket_direct *direct =
@@ -108,7 +103,7 @@ static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
 	int ret;
 	struct state_backend_storage_bucket_direct_meta meta;
 
-	if (direct->max_size && len > direct->max_size)
+	if (len > direct->max_size - sizeof(meta))
 		return -E2BIG;
 
 	ret = lseek(direct->fd, direct->offset, SEEK_SET);
@@ -161,7 +156,6 @@ int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
 	fd = open(path, O_RDWR);
 	if (fd < 0) {
 		dev_err(dev, "Failed to open file '%s', %d\n", path, -errno);
-		close(fd);
 		return -errno;
 	}
 

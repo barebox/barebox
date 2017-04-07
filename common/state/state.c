@@ -34,6 +34,125 @@
 /* list of all registered state instances */
 static LIST_HEAD(state_list);
 
+/**
+ * Save the state
+ * @param state
+ * @return
+ */
+int state_save(struct state *state)
+{
+	void *buf;
+	ssize_t len;
+	int ret;
+
+	if (!state->dirty)
+		return 0;
+
+	ret = state->format->pack(state->format, state, &buf, &len);
+	if (ret) {
+		dev_err(&state->dev, "Failed to pack state with backend format %s, %d\n",
+			state->format->name, ret);
+		return ret;
+	}
+
+	ret = state_storage_write(&state->storage, buf, len);
+	if (ret) {
+		dev_err(&state->dev, "Failed to write packed state, %d\n", ret);
+		goto out;
+	}
+
+	state->dirty = 0;
+
+out:
+	free(buf);
+	return ret;
+}
+
+/**
+ * state_load - Loads a state from the backend
+ * @param state The state that should be updated to contain the loaded data
+ * @return 0 on success, -errno on failure. If no state is loaded the previous
+ * values remain in the state.
+ *
+ * This function uses the registered storage backend to read data. All data that
+ * we read is checked for integrity by the formatter. After that we unpack the
+ * data into our state.
+ */
+static int state_do_load(struct state *state, enum state_flags flags)
+{
+	void *buf;
+	ssize_t len;
+	int ret;
+
+	ret = state_storage_read(&state->storage, state->format,
+				 state->magic, &buf, &len, flags);
+	if (ret) {
+		dev_err(&state->dev, "Failed to read state with format %s, %d\n",
+			state->format->name, ret);
+		return ret;
+	}
+
+	ret = state->format->unpack(state->format, state, buf, len);
+	if (ret) {
+		dev_err(&state->dev, "Failed to unpack read data with format %s although verified, %d\n",
+			state->format->name, ret);
+		goto out;
+	}
+
+	state->dirty = 0;
+
+out:
+	free(buf);
+	return ret;
+}
+
+int state_load(struct state *state)
+{
+	return state_do_load(state, 0);
+}
+
+int state_load_no_auth(struct state *state)
+{
+	return state_do_load(state, STATE_FLAG_NO_AUTHENTIFICATION);
+}
+
+static int state_format_init(struct state *state, const char *backend_format,
+			     struct device_node *node, const char *state_name)
+{
+	int ret;
+
+	if (!backend_format || !strcmp(backend_format, "raw")) {
+		ret = backend_format_raw_create(&state->format, node,
+						state_name, &state->dev);
+	} else if (!strcmp(backend_format, "dtb")) {
+		ret = backend_format_dtb_create(&state->format, &state->dev);
+	} else {
+		dev_err(&state->dev, "Invalid backend format %s\n",
+			backend_format);
+		return -EINVAL;
+	}
+
+	if (ret && ret != -EPROBE_DEFER)
+		dev_err(&state->dev, "Failed to initialize format %s, %d\n",
+			backend_format, ret);
+
+	return ret;
+}
+
+static void state_format_free(struct state_backend_format *format)
+{
+	if (!format)
+		return;
+
+	if (format->free)
+		format->free(format);
+}
+
+void state_backend_set_readonly(struct state *state)
+{
+	state_storage_set_readonly(&state->storage);
+}
+
 static struct state *state_new(const char *name)
 {
 	struct state *state;
@@ -152,7 +271,6 @@ static int state_convert_node_variable(struct state *state,
 
 		sv->name = name;
 		sv->start = start_size[0];
-		sv->type = vtype->type;
 		state_add_var(state, sv);
 	} else {
 		sv = state_find_var(state, name);
@@ -328,21 +446,21 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	}
 
 	/* backend-type */
-	if (!state->backend.format) {
+	if (!state->format) {
 		ret = -ENODEV;
 		goto out;
 	}
 
 	p = of_new_property(new_node, "backend-type",
-			    state->backend.format->name,
-			    strlen(state->backend.format->name) + 1);
+			    state->format->name,
+			    strlen(state->format->name) + 1);
 	if (!p) {
 		ret = -ENOMEM;
 		goto out;
 	}
 
 	/* backend phandle */
-	backend_node = of_find_node_by_path_from(root, state->backend.of_path);
+	backend_node = of_find_node_by_devpath(root, state->backend_path);
 	if (!backend_node) {
 		ret = -ENODEV;
 		goto out;
@@ -353,9 +471,9 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	if (ret)
 		goto out;
 
-	if (!strcmp("raw", state->backend.format->name)) {
+	if (!strcmp("raw", state->format->name)) {
 		struct digest *digest =
-		    state_backend_format_raw_get_digest(state->backend.format);
+		    state_backend_format_raw_get_digest(state->format);
 		if (digest) {
 			p = of_new_property(new_node, "algo",
 					    digest_name(digest),
@@ -367,19 +485,19 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		}
 	}
 
-	if (state->backend.storage.name) {
+	if (state->storage.name) {
 		p = of_new_property(new_node, "backend-storage-type",
-				    state->backend.storage.name,
-				    strlen(state->backend.storage.name) + 1);
+				    state->storage.name,
+				    strlen(state->storage.name) + 1);
 		if (!p) {
 			ret = -ENOMEM;
 			goto out;
 		}
 	}
 
-	if (state->backend.storage.stridesize) {
+	if (state->storage.stridesize) {
 		ret = of_property_write_u32(new_node, "backend-stridesize",
-				state->backend.storage.stridesize);
+				state->storage.stridesize);
 		if (ret)
 			goto out;
 	}
@@ -408,7 +526,9 @@ void state_release(struct state *state)
 	of_unregister_fixup(of_state_fixup, state);
 	list_del(&state->list);
 	unregister_device(&state->dev);
-	state_backend_free(&state->backend);
+	state_storage_free(&state->storage);
+	state_format_free(state->format);
+	free(state->backend_path);
 	free(state->of_path);
 	free(state);
 }
@@ -452,19 +572,16 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	}
 
 	if (!path) {
-		/* guess if of_path is a path, not a phandle */
-		if (of_path[0] == '/' && len > 1) {
-			ret = of_find_path(node, "backend", &path, 0);
-		} else {
-			struct device_node *partition_node;
+		struct device_node *partition_node;
 
-			partition_node = of_parse_phandle(node, "backend", 0);
-			if (!partition_node)
-				goto out_release_state;
-
-			of_path = partition_node->full_name;
-			ret = of_find_path_by_node(partition_node, &path, 0);
+		partition_node = of_parse_phandle(node, "backend", 0);
+		if (!partition_node) {
+			dev_err(&state->dev, "Cannot resolve \"backend\" phandle\n");
+			goto out_release_state;
 		}
+
+		of_path = partition_node->full_name;
+		ret = of_find_path_by_node(partition_node, &path, 0);
 		if (ret) {
 			if (ret != -EPROBE_DEFER)
 				dev_err(&state->dev, "state failed to parse path to backend: %s\n",
@@ -472,6 +589,8 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 			goto out_release_state;
 		}
 	}
+
+	state->backend_path = xstrdup(path);
 
 	ret = of_property_read_string(node, "backend-type", &backend_type);
 	if (ret) {
@@ -490,14 +609,17 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		dev_info(&state->dev, "No backend-storage-type found, using default.\n");
 	}
 
-	ret = state_backend_init(&state->backend, &state->dev, node,
-				 backend_type, path, alias, of_path, offset,
+	ret = state_format_init(state, backend_type, node, alias);
+	if (ret)
+		goto out_release_state;
+
+	ret = state_storage_init(state, path, offset,
 				 max_size, stridesize, storage_type);
 	if (ret)
 		goto out_release_state;
 
 	if (readonly)
-		state_backend_set_readonly(&state->backend);
+		state_backend_set_readonly(state);
 
 	ret = state_from_node(state, node, 1);
 	if (ret) {
@@ -507,11 +629,6 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	ret = of_register_fixup(of_state_fixup, state);
 	if (ret) {
 		goto out_release_state;
-	}
-
-	ret = state_load(state);
-	if (ret) {
-		dev_warn(&state->dev, "Failed to load persistent state, continuing with defaults, %d\n", ret);
 	}
 
 	dev_info(&state->dev, "New state registered '%s'\n", alias);
@@ -572,10 +689,10 @@ void state_info(void)
 
 	list_for_each_entry(state, &state_list, list) {
 		printf("%-20s ", state->name);
-		if (state->backend.format)
+		if (state->format)
 			printf("(backend: %s, path: %s)\n",
-			       state->backend.format->name,
-			       state->backend.of_path);
+			       state->format->name,
+			       state->backend_path);
 		else
 			printf("(no backend)\n");
 	}

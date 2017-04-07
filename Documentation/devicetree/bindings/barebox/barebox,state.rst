@@ -29,7 +29,8 @@ Required properties:
 
 * ``compatible``: should be ``barebox,state``;
 * ``magic``: A 32bit number used as a magic to identify the state
-* ``backend``: describes where the data for this state is stored
+* ``backend``: contains a phandle to the device/partition which holds the
+  actual state data.
 * ``backend-type``: should be ``raw`` or ``dtb``.
 
 Optional properties:
@@ -39,9 +40,9 @@ Optional properties:
   e.g. ``hmac(sha256)``. Only used for ``raw``.
 * ``backend-stridesize``: Maximum size per copy of the data. Only important for
   non-MTD devices
-* ``backend-storage-type``: Type of the storage. This has two options at the
-  moment. For MTD with erasing the correct type is ``circular``. For all other
-  devices and files, ``direct`` is the needed type.
+* ``backend-storage-type``: Normally the correct storage type is detected auto-
+  matically. The circular backend supports the option ``noncircular`` to fall
+  back to an old storage format.
 
 Variable nodes
 --------------
@@ -77,19 +78,31 @@ Example::
   	magic = <0x27031977>;
   	compatible = "barebox,state";
   	backend-type = "raw";
-  	backend = &eeprom, "partname:state";
+  	backend = &state_part;
 
   	foo {
-		reg = <0x00 0x4>;
-		type = "uint32";
+  		reg = <0x00 0x4>;
+  		type = "uint32";
   		default = <0x0>;
   	};
 
   	bar {
-		reg = <0x10 0x4>;
-		type = "enum32";
+  		reg = <0x10 0x4>;
+  		type = "enum32";
   		names = "baz", "qux";
-		default = <1>;
+  		default = <1>;
+  	};
+  };
+
+  &nand_flash {
+  	partitions {
+  		compatible = "fixed-partitions";
+  		#address-cells = <1>;
+  		#size-cells = <1>;
+  		state_part: state@10000 {
+  			label = "state";
+  			reg = <0x10000 0x10000>;
+  		};
   	};
   };
 

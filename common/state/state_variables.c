@@ -439,31 +439,26 @@ static struct state_variable *state_string_create(struct state *state,
 
 static struct variable_type types[] = {
 	{
-		.type = STATE_TYPE_U8,
 		.type_name = "uint8",
 		.export = state_uint32_export,
 		.import = state_uint32_import,
 		.create = state_uint8_create,
 	}, {
-		.type = STATE_TYPE_U32,
 		.type_name = "uint32",
 		.export = state_uint32_export,
 		.import = state_uint32_import,
 		.create = state_uint32_create,
 	}, {
-		.type = STATE_TYPE_ENUM,
 		.type_name = "enum32",
 		.export = state_enum32_export,
 		.import = state_enum32_import,
 		.create = state_enum32_create,
 	}, {
-		.type = STATE_TYPE_MAC,
 		.type_name = "mac",
 		.export = state_mac_export,
 		.import = state_mac_import,
 		.create = state_mac_create,
 	}, {
-		.type = STATE_TYPE_STRING,
 		.type_name = "string",
 		.export = state_string_export,
 		.import = state_string_import,

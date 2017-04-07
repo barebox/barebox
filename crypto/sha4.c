@@ -292,4 +292,4 @@ static int sha512_digest_register(void)
 
 	return digest_algo_register(&m512);
 }
-device_initcall(sha512_digest_register);
+coredevice_initcall(sha512_digest_register);

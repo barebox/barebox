@@ -16,8 +16,8 @@ static LIST_HEAD(keystore_list);
 
 struct keystore_key {
 	struct list_head list;
-	const char *name;
-	const u8 *secret;
+	char *name;
+	u8 *secret;
 	int secret_len;
 };
 
@@ -29,6 +29,17 @@ static int keystore_compare(struct list_head *a, struct list_head *b)
 	return strcmp(na, nb);
 }
 
+static struct keystore_key *get_key(const char *name)
+{
+	struct keystore_key *key;
+
+	for_each_key(key)
+		if (!strcmp(name, key->name))
+			return key;
+
+	return NULL;
+};
+
 /**
  * @param[in] name Name of the secret to get
  * @param[out] secret Double pointer to memory representing the secret, do _not_ free() after use
@@ -38,19 +49,17 @@ int keystore_get_secret(const char *name, const u8 **secret, int *secret_len)
 {
 	struct keystore_key *key;
 
-	for_each_key(key) {
-		if (!strcmp(name, key->name)) {
-			if (!secret || !secret_len)
-				return 0;
+	if (!secret || !secret_len)
+		return 0;
 
-			*secret = key->secret;
-			*secret_len = key->secret_len;
+	key = get_key(name);
+	if (!key)
+		return -ENOENT;
 
-			return 0;
-		}
-	}
+	*secret = key->secret;
+	*secret_len = key->secret_len;
 
-	return -ENOENT;
+	return 0;
 }
 
 /**
@@ -61,11 +70,10 @@ int keystore_get_secret(const char *name, const u8 **secret, int *secret_len)
 int keystore_set_secret(const char *name, const u8 *secret, int secret_len)
 {
 	struct keystore_key *key;
-	int ret;
 
 	/* check if key is already in store */
-	ret = keystore_get_secret(name, NULL, NULL);
-	if (!ret)
+	key = get_key(name);
+	if (key)
 		return -EBUSY;
 
 	key = xzalloc(sizeof(*key));
@@ -77,4 +85,19 @@ int keystore_set_secret(const char *name, const u8 *secret, int secret_len)
 	list_add_sort(&key->list, &keystore_list, keystore_compare);
 
 	return 0;
+}
+
+void keystore_forget_secret(const char *name)
+{
+	struct keystore_key *key;
+
+	key = get_key(name);
+	if (!key)
+		return;
+
+	list_del(&key->list);
+
+	free(key->name);
+	free(key->secret);
+	free(key);
 }

@@ -1967,6 +1967,12 @@ config CMD_FIRMWARELOAD
 	  Provides the "firmwareload" command which deals with devices which need
 	  firmware to work. It is also used to upload firmware to FPGA devices.
 
+config CMD_KEYSTORE
+	depends on CRYPTO_KEYSTORE
+	bool
+	prompt "keystore"
+	help
+	  keystore provides access to the barebox keystore.
 
 config CMD_LINUX_EXEC
 	bool "linux exec"

@@ -372,4 +372,4 @@ static int sha256_digest_register(void)
 
 	return digest_algo_register(&m256);
 }
-device_initcall(sha256_digest_register);
+coredevice_initcall(sha256_digest_register);

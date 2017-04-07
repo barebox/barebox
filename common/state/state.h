@@ -5,6 +5,10 @@
 struct state;
 struct mtd_info_user;
 
+enum state_flags {
+	STATE_FLAG_NO_AUTHENTIFICATION = (1 << 0),
+};
+
 /**
  * state_backend_storage_bucket - This class describes a single backend storage
  * object copy
@@ -20,15 +24,20 @@ struct mtd_info_user;
  * @bucket_list A list element struct to attach this bucket to a list
  */
 struct state_backend_storage_bucket {
-	int (*init) (struct state_backend_storage_bucket * bucket);
 	int (*write) (struct state_backend_storage_bucket * bucket,
-		      const uint8_t * buf, ssize_t len);
+		      const void * buf, ssize_t len);
 	int (*read) (struct state_backend_storage_bucket * bucket,
-		     uint8_t ** buf, ssize_t * len_hint);
+		     void ** buf, ssize_t * len_hint);
 	void (*free) (struct state_backend_storage_bucket * bucket);
 
-	bool initialized;
+	int num;
+	off_t offset;
+
 	struct list_head bucket_list;
+
+	void *buf;
+	ssize_t len;
+	bool needs_refresh;
 };
 
 /**
@@ -48,13 +57,11 @@ struct state_backend_storage_bucket {
  */
 struct state_backend_format {
 	int (*verify) (struct state_backend_format * format, uint32_t magic,
-		       const uint8_t * buf, ssize_t len);
+		       const void * buf, ssize_t *lenp, enum state_flags flags);
 	int (*pack) (struct state_backend_format * format, struct state * state,
-		     uint8_t ** buf, ssize_t * len);
+		     void ** buf, ssize_t * len);
 	int (*unpack) (struct state_backend_format * format,
-		       struct state * state, const uint8_t * buf, ssize_t len);
-	ssize_t(*get_packed_len) (struct state_backend_format * format,
-				   struct state * state);
+		       struct state * state, const void * buf, ssize_t len);
 	void (*free) (struct state_backend_format * format);
 	const char *name;
 };
@@ -63,6 +70,9 @@ struct state_backend_format {
  * state_backend_storage - Storage backend of the state.
  *
  * @buckets List of storage buckets that are available
+ * @stridesize The distance between copies
+ * @offset Offset in the backend device where the data starts
+ * @max_size The maximum size of the data we can use
  */
 struct state_backend_storage {
 	struct list_head buckets;
@@ -73,21 +83,11 @@ struct state_backend_storage {
 	const char *name;
 
 	uint32_t stridesize;
+	off_t offset;
+	size_t max_size;
+	char *path;
 
 	bool readonly;
-};
-
-/**
- * state_backend - State Backend object
- *
- * @format Backend format object
- * @storage Backend storage object
- * @of_path Path to the DT node
- */
-struct state_backend {
-	struct state_backend_format *format;
-	struct state_backend_storage storage;
-	char *of_path;
 };
 
 struct state {
@@ -102,7 +102,9 @@ struct state {
 	unsigned int dirty;
 	unsigned int save_on_shutdown;
 
-	struct state_backend backend;
+	struct state_backend_format *format;
+	struct state_backend_storage storage;
+	char *backend_path;
 };
 
 enum state_convert {
@@ -112,20 +114,10 @@ enum state_convert {
 	STATE_CONVERT_FIXUP,
 };
 
-enum state_variable_type {
-	STATE_TYPE_INVALID = 0,
-	STATE_TYPE_ENUM,
-	STATE_TYPE_U8,
-	STATE_TYPE_U32,
-	STATE_TYPE_MAC,
-	STATE_TYPE_STRING,
-};
-
 struct state_variable;
 
 /* A variable type (uint32, enum32) */
 struct variable_type {
-	enum state_variable_type type;
 	const char *type_name;
 	struct list_head list;
 	int (*export) (struct state_variable *, struct device_node *,
@@ -139,7 +131,6 @@ struct variable_type {
 /* instance of a single variable */
 struct state_variable {
 	struct state *state;
-	enum state_variable_type type;
 	struct list_head list;
 	const char *name;
 	unsigned int start;
@@ -199,8 +190,7 @@ int backend_format_raw_create(struct state_backend_format **format,
 			      struct device_d *dev);
 int backend_format_dtb_create(struct state_backend_format **format,
 			      struct device_d *dev);
-int state_storage_init(struct state_backend_storage *storage,
-		       struct device_d *dev, const char *path,
+int state_storage_init(struct state *state, const char *path,
 		       off_t offset, size_t max_size, uint32_t stridesize,
 		       const char *storagetype);
 void state_storage_set_readonly(struct state_backend_storage *storage);
@@ -210,34 +200,24 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 					 struct state_backend_storage_bucket **bucket,
 					 unsigned int eraseblock,
 					 ssize_t writesize,
-					 struct mtd_info_user *mtd_uinfo,
-					 bool lazy_init);
+					 struct mtd_info_user *mtd_uinfo);
 int state_backend_bucket_cached_create(struct device_d *dev,
 				       struct state_backend_storage_bucket *raw,
 				       struct state_backend_storage_bucket **out);
 struct state_variable *state_find_var(struct state *state, const char *name);
 struct digest *state_backend_format_raw_get_digest(struct state_backend_format
 						   *format);
-int state_backend_init(struct state_backend *backend, struct device_d *dev,
-		       struct device_node *node, const char *backend_format,
-		       const char *storage_path, const char *state_name, const
-		       char *of_path, off_t offset, size_t max_size,
-		       uint32_t stridesize, const char *storagetype);
-void state_backend_set_readonly(struct state_backend *backend);
-void state_backend_free(struct state_backend *backend);
+void state_backend_set_readonly(struct state *state);
 void state_storage_free(struct state_backend_storage *storage);
 int state_backend_bucket_direct_create(struct device_d *dev, const char *path,
 				       struct state_backend_storage_bucket **bucket,
 				       off_t offset, ssize_t max_size);
 int state_storage_write(struct state_backend_storage *storage,
-			const uint8_t * buf, ssize_t len);
-int state_storage_restore_consistency(struct state_backend_storage
-				      *storage, const uint8_t * buf,
-				      ssize_t len);
+			const void * buf, ssize_t len);
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, uint8_t **buf, ssize_t *len,
-		       ssize_t len_hint);
+		       uint32_t magic, void **buf, ssize_t *len,
+		       enum state_flags flags);
 
 static inline struct state_uint32 *to_state_uint32(struct state_variable *s)
 {

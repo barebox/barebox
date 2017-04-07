@@ -12,6 +12,7 @@
 #ifdef CONFIG_CRYPTO_KEYSTORE
 int keystore_get_secret(const char *name, const u8 **secret, int *secret_len);
 int keystore_set_secret(const char *name, const u8 *secret, int secret_len);
+void keystore_forget_secret(const char *name);
 #else
 static inline int keystore_get_secret(const char *name, const u8 **secret, int *secret_len)
 {
@@ -20,6 +21,9 @@ static inline int keystore_get_secret(const char *name, const u8 **secret, int *
 static inline int keystore_set_secret(const char *name, const u8 *secret, int secret_len)
 {
 	return 0;
+}
+static inline void keystore_forget_secret(const char *name)
+{
 }
 #endif
 

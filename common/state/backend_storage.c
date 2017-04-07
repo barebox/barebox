@@ -25,24 +25,29 @@
 
 #include "state.h"
 
-const unsigned int min_copies_written = 1;
+/*
+ * The state framework stores data in so called buckets. A bucket is
+ * exactly one copy of the state we want to store. On flash type media
+ * a bucket corresponds to a single eraseblock. On media which do not
+ * need an erase operation a bucket corresponds to a storage area of
+ * @stridesize bytes.
+ *
+ * For redundancy and to make sure that we have valid data on the storage
+ * device at any time the state framework stores multiple buckets. The strategy
+ * is as follows:
+ *
+ * When loading the state from the storage we iterate over the buckets. We
+ * take the first one we find which has valid crcs. The next step is to
+ * restore consistency between the different buckets. This means rewriting
+ * a bucket when it signalled it needs refresh (i.e. returned -EUCLEAN)
+ * or when contains data different from the bucket we use.
+ *
+ * When the state backend initialized successfully we already restored
+ * consistency which means all buckets contain the same data. This means
+ * when storing a new state we can just write all buckets in order.
+ */
 
-static int bucket_lazy_init(struct state_backend_storage_bucket *bucket)
-{
-	int ret;
-
-	if (bucket->initialized)
-		return 0;
-
-	if (bucket->init) {
-		ret = bucket->init(bucket);
-		if (ret)
-			return ret;
-	}
-	bucket->initialized = true;
-
-	return 0;
-}
+static const unsigned int min_buckets_written = 1;
 
 /**
  * state_storage_write - Writes the given data to the storage
@@ -55,60 +60,64 @@ static int bucket_lazy_init(struct state_backend_storage_bucket *bucket)
  * operation on all of them. Writes are always in the same sequence. This
  * ensures, that reading in the same sequence will always return the latest
  * written valid data first.
- * We try to at least write min_copies_written. If this fails we return with an
+ * We try to at least write min_buckets_written. If this fails we return with an
  * error.
  */
 int state_storage_write(struct state_backend_storage *storage,
-		        const uint8_t * buf, ssize_t len)
+		        const void * buf, ssize_t len)
 {
 	struct state_backend_storage_bucket *bucket;
 	int ret;
-	int copies_written = 0;
+	int buckets_written = 0;
 
 	if (storage->readonly)
 		return 0;
 
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
-		ret = bucket_lazy_init(bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to init bucket/write state backend bucket, %d\n",
-				 ret);
-			continue;
-		}
-
 		ret = bucket->write(bucket, buf, len);
 		if (ret) {
 			dev_warn(storage->dev, "Failed to write state backend bucket, %d\n",
 				 ret);
 		} else {
-			++copies_written;
+			++buckets_written;
 		}
 	}
 
-	if (copies_written >= min_copies_written)
+	if (buckets_written >= min_buckets_written)
 		return 0;
 
 	dev_err(storage->dev, "Failed to write state to at least %d buckets. Successfully written to %d buckets\n",
-		min_copies_written, copies_written);
+		min_buckets_written, buckets_written);
 	return -EIO;
 }
 
-/**
- * state_storage_restore_consistency - Restore consistency on all storage backends
- * @param storage Storage object
- * @param buf Buffer with valid data that should be on all buckets after this operation
- * @param len Length of the buffer
- * @return 0 on success, -errno otherwise
- *
- * This function brings valid data onto all buckets we have to ensure that all
- * data copies are in sync. In the current implementation we just write the data
- * to all buckets. Bucket implementations that need to keep the number of writes
- * low, can read their own copy first and compare it.
- */
-int state_storage_restore_consistency(struct state_backend_storage *storage,
-				      const uint8_t * buf, ssize_t len)
+static int bucket_refresh(struct state_backend_storage *storage,
+			  struct state_backend_storage_bucket *bucket, void *buf, ssize_t len)
 {
-	return state_storage_write(storage, buf, len);
+	int ret;
+
+	if (bucket->needs_refresh)
+		goto refresh;
+
+	if (bucket->len != len)
+		goto refresh;
+
+	if (memcmp(bucket->buf, buf, len))
+		goto refresh;
+
+	return 0;
+
+refresh:
+	ret = bucket->write(bucket, buf, len);
+
+	if (ret)
+		dev_warn(storage->dev, "Failed to restore bucket %d@0x%08lx\n",
+			 bucket->num, bucket->offset);
+	else
+		dev_info(storage->dev, "restored bucket %d@0x%08lx\n",
+			 bucket->num, bucket->offset);
+
+	return ret;
 }
 
 /**
@@ -118,7 +127,7 @@ int state_storage_restore_consistency(struct state_backend_storage *storage,
  * @param magic state magic value
  * @param buf The newly allocated data area will be stored in this pointer
  * @param len The resulting length of the buffer
- * @param len_hint Hint of how big the data may be.
+ * @param flags flags controlling how to load state
  * @return 0 on success, -errno otherwise. buf and len will be set to valid
  * values on success.
  *
@@ -129,43 +138,65 @@ int state_storage_restore_consistency(struct state_backend_storage *storage,
  */
 int state_storage_read(struct state_backend_storage *storage,
 		       struct state_backend_format *format,
-		       uint32_t magic, uint8_t ** buf, ssize_t * len,
-		       ssize_t len_hint)
+		       uint32_t magic, void **buf, ssize_t *len,
+		       enum state_flags flags)
 {
-	struct state_backend_storage_bucket *bucket;
+	struct state_backend_storage_bucket *bucket, *bucket_used = NULL;
 	int ret;
 
+	/*
+	 * Iterate over all buckets. The first valid one we find is the
+	 * one we want to use.
+	 */
 	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
-		*len = len_hint;
-		ret = bucket_lazy_init(bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to init bucket/read state backend bucket, %d\n",
-				 ret);
+		ret = bucket->read(bucket, &bucket->buf, &bucket->len);
+		if (ret == -EUCLEAN)
+			bucket->needs_refresh = 1;
+		else if (ret)
 			continue;
-		}
 
-		ret = bucket->read(bucket, buf, len);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to read from state backend bucket, trying next, %d\n",
-				 ret);
-			continue;
-		}
-		ret = format->verify(format, magic, *buf, *len);
-		if (!ret) {
-			goto found;
-		}
-		free(*buf);
-		dev_warn(storage->dev, "Failed to verify read copy, trying next bucket, %d\n",
-			 ret);
+		/*
+		 * Verify the buffer crcs. The buffer length is passed in the len argument,
+		 * .verify overwrites it with the length actually used.
+		 */
+		ret = format->verify(format, magic, bucket->buf, &bucket->len, flags);
+		if (!ret && !bucket_used)
+			bucket_used = bucket;
 	}
 
-	dev_err(storage->dev, "Failed to find any valid state copy in any bucket\n");
+	if (!bucket_used) {
+		dev_err(storage->dev, "Failed to find any valid state copy in any bucket\n");
 
-	return -ENOENT;
+		return -ENOENT;
+	}
 
-found:
-	/* A failed restore consistency is not a failure of reading the state */
-	state_storage_restore_consistency(storage, *buf, *len);
+	dev_info(storage->dev, "Using bucket %d@0x%08lx\n", bucket_used->num, bucket_used->offset);
+
+	/*
+	 * Restore/refresh all buckets except the one we currently use (in case
+	 * it's the only usable bucket at the moment)
+	 */
+	list_for_each_entry(bucket, &storage->buckets, bucket_list) {
+		if (bucket == bucket_used)
+			continue;
+
+		ret = bucket_refresh(storage, bucket, bucket_used->buf, bucket_used->len);
+
+		/* Free buffer from the unused buckets */
+		free(bucket->buf);
+		bucket->buf = NULL;
+	}
+
+	/*
+	 * Restore/refresh the bucket we currently use
+	 */
+	ret = bucket_refresh(storage, bucket_used, bucket_used->buf, bucket_used->len);
+
+	*buf = bucket_used->buf;
+	*len = bucket_used->len;
+
+	/* buffer from the used bucket is passed to the caller, do not free */
+	bucket_used->buf = NULL;
 
 	return 0;
 }
@@ -187,267 +218,127 @@ static int mtd_get_meminfo(const char *path, struct mtd_info_user *meminfo)
 	return ret;
 }
 
-#ifdef __BAREBOX__
-#define STAT_GIVES_SIZE(s) (S_ISREG(s.st_mode) || S_ISCHR(s.st_mode))
-#define BLKGET_GIVES_SIZE(s) 0
-#else
-#define STAT_GIVES_SIZE(s) (S_ISREG(s.st_mode))
-#define BLKGET_GIVES_SIZE(s) (S_ISBLK(s.st_mode))
-#endif
-#ifndef BLKGETSIZE64
-#define BLKGETSIZE64 -1
-#endif
-
-static int state_backend_storage_get_size(const char *path, size_t * out_size)
-{
-	struct mtd_info_user meminfo;
-	struct stat s;
-	int ret;
-
-	ret = stat(path, &s);
-	if (ret)
-		return -errno;
-
-	/*
-	 * under Linux, stat() gives the size only on regular files
-	 * under barebox, it works on char dev, too
-	 */
-	if (STAT_GIVES_SIZE(s)) {
-		*out_size = s.st_size;
-		return 0;
-	}
-
-	/* this works under Linux on block devs */
-	if (BLKGET_GIVES_SIZE(s)) {
-		int fd;
-
-		fd = open(path, O_RDONLY);
-		if (fd < 0)
-			return -errno;
-
-		ret = ioctl(fd, BLKGETSIZE64, out_size);
-		close(fd);
-		if (!ret)
-			return 0;
-	}
-
-	/* try mtd next */
-	ret = mtd_get_meminfo(path, &meminfo);
-	if (!ret) {
-		*out_size = meminfo.size;
-		return 0;
-	}
-
-	return ret;
-}
-
-/* Number of copies that should be allocated */
-const int desired_copies = 3;
+/* Number of buckets that should be used */
+static const int desired_buckets = 3;
 
 /**
  * state_storage_mtd_buckets_init - Creates storage buckets for mtd devices
  * @param storage Storage object
  * @param meminfo Info about the mtd device
- * @param path Path to the device
- * @param non_circular Use non-circular mode to write data that is compatible with the old on-flash format
- * @param dev_offset Offset to start at in the device.
- * @param max_size Maximum size to use for data. May be 0 for infinite.
+ * @param circular If false, use non-circular mode to write data that is compatible with the old on-flash format
  * @return 0 on success, -errno otherwise
  *
- * Starting from offset 0 this function tries to create circular buckets on
- * different offsets in the device. Different copies of the data are located in
- * different eraseblocks.
- * For MTD devices we use circular buckets to minimize the number of erases.
- * Circular buckets write new data always in the next free space.
+ * This function iterates over the eraseblocks and creates one bucket on
+ * each eraseblock until we have the number of desired buckets. Bad blocks
+ * will be skipped and the next block will be used.
  */
 static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
-					  struct mtd_info_user *meminfo,
-					  const char *path, bool non_circular,
-					  off_t dev_offset, size_t max_size)
+					  struct mtd_info_user *meminfo, bool circular)
 {
 	struct state_backend_storage_bucket *bucket;
-	ssize_t end = dev_offset + max_size;
-	int nr_copies = 0;
+	ssize_t end = storage->offset + storage->max_size;
+	int n_buckets = 0;
 	off_t offset;
+	ssize_t writesize;
 
 	if (!end || end > meminfo->size)
 		end = meminfo->size;
 
-	if (!IS_ALIGNED(dev_offset, meminfo->erasesize)) {
+	if (!IS_ALIGNED(storage->offset, meminfo->erasesize)) {
 		dev_err(storage->dev, "Offset within the device is not aligned to eraseblocks. Offset is %ld, erasesize %zu\n",
-			dev_offset, meminfo->erasesize);
+			storage->offset, meminfo->erasesize);
 		return -EINVAL;
 	}
 
-	for (offset = dev_offset; offset < end; offset += meminfo->erasesize) {
+	if (circular)
+		writesize = meminfo->writesize;
+	else
+		writesize = meminfo->erasesize;
+
+	for (offset = storage->offset; offset < end; offset += meminfo->erasesize) {
 		int ret;
-		ssize_t writesize = meminfo->writesize;
 		unsigned int eraseblock = offset / meminfo->erasesize;
-		bool lazy_init = true;
 
-		if (non_circular)
-			writesize = meminfo->erasesize;
-
-		ret = state_backend_bucket_circular_create(storage->dev, path,
+		ret = state_backend_bucket_circular_create(storage->dev, storage->path,
 							   &bucket,
 							   eraseblock,
 							   writesize,
-							   meminfo,
-							   lazy_init);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to create bucket at '%s' eraseblock %u\n",
-				 path, eraseblock);
+							   meminfo);
+		if (ret)
 			continue;
-		}
 
-		ret = state_backend_bucket_cached_create(storage->dev, bucket,
-							 &bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to setup cache bucket, continuing without cache, %d\n",
-				 ret);
-		}
+		bucket->offset = offset;
+		bucket->num = n_buckets;
 
 		list_add_tail(&bucket->bucket_list, &storage->buckets);
-		++nr_copies;
-		if (nr_copies >= desired_copies)
+		++n_buckets;
+		if (n_buckets >= desired_buckets)
 			return 0;
 	}
 
-	if (!nr_copies) {
+	if (!n_buckets) {
 		dev_err(storage->dev, "Failed to initialize any state storage bucket\n");
 		return -EIO;
 	}
 
 	dev_warn(storage->dev, "Failed to initialize desired amount of buckets, only %d of %d succeeded\n",
-		 nr_copies, desired_copies);
+		 n_buckets, desired_buckets);
 	return 0;
-}
-
-static int state_storage_file_create(struct device_d *dev, const char *path,
-				     size_t fd_size)
-{
-	int fd;
-	uint8_t *buf;
-	int ret;
-
-	fd = open(path, O_RDWR | O_CREAT, 0600);
-	if (fd < 0) {
-		dev_err(dev, "Failed to open/create file '%s', %d\n", path,
-			-errno);
-		return -errno;
-	}
-
-	buf = xzalloc(fd_size);
-	if (!buf) {
-		ret = -ENOMEM;
-		goto out_close;
-	}
-
-	ret = write_full(fd, buf, fd_size);
-	if (ret < 0) {
-		dev_err(dev, "Failed to initialize empty file '%s', %d\n", path,
-			ret);
-		goto out_free;
-	}
-	ret = 0;
-
-out_free:
-	free(buf);
-out_close:
-	close(fd);
-	return ret;
 }
 
 /**
  * state_storage_file_buckets_init - Create buckets for a conventional file descriptor
  * @param storage Storage object
- * @param path Path to file/device
- * @param dev_offset Offset in the device to start writing at.
- * @param max_size Maximum size of the data. May be 0 for infinite.
- * @param stridesize How far apart the different data copies are placed. If
- * stridesize is 0, only one copy can be created.
  * @return 0 on success, -errno otherwise
  *
- * For blockdevices and other regular files we create direct buckets beginning
- * at offset 0. Direct buckets are simple and write data always to offset 0.
+ * direct buckets are simpler than circular buckets and can be used on blockdevices
+ * and mtd devices that don't need erase (MRAM). Also used for EEPROMs.
  */
-static int state_storage_file_buckets_init(struct state_backend_storage *storage,
-					   const char *path, off_t dev_offset,
-					   size_t max_size, uint32_t stridesize)
+static int state_storage_file_buckets_init(struct state_backend_storage *storage)
 {
 	struct state_backend_storage_bucket *bucket;
-	size_t fd_size = 0;
-	int ret;
+	int ret, n;
 	off_t offset;
-	int nr_copies = 0;
-
-	ret = state_backend_storage_get_size(path, &fd_size);
-	if (ret) {
-		if (ret != -ENOENT) {
-			dev_err(storage->dev, "Failed to get the filesize of '%s', %d\n",
-				path, ret);
-			return ret;
-		}
-		if (!stridesize) {
-			dev_err(storage->dev, "File '%s' does not exist and no information about the needed size. Please specify stridesize\n",
-				path);
-			return ret;
-		}
-
-		if (max_size)
-			fd_size = min(dev_offset + stridesize * desired_copies,
-				      dev_offset + max_size);
-		else
-			fd_size = dev_offset + stridesize * desired_copies;
-		dev_info(storage->dev, "File '%s' does not exist, creating file of size %zd\n",
-			 path, fd_size);
-		ret = state_storage_file_create(storage->dev, path, fd_size);
-		if (ret) {
-			dev_info(storage->dev, "Failed to create file '%s', %d\n",
-				 path, ret);
-			return ret;
-		}
-	} else if (max_size) {
-		fd_size = min(fd_size, (size_t)dev_offset + max_size);
-	}
+	int n_buckets = 0;
+	uint32_t stridesize = storage->stridesize;
+	size_t max_size = storage->max_size;
 
 	if (!stridesize) {
-		dev_warn(storage->dev, "WARNING, no stridesize given although we use a direct file write. Starting in degraded mode\n");
-		stridesize = fd_size;
+		dev_err(storage->dev, "stridesize unspecified\n");
+		return -EINVAL;
 	}
 
-	for (offset = dev_offset; offset < fd_size; offset += stridesize) {
-		size_t maxsize = min((size_t)stridesize,
-				     (size_t)(fd_size - offset));
+	if (max_size && max_size < desired_buckets * stridesize) {
+		dev_err(storage->dev, "device is too small to hold %d copies\n", desired_buckets);
+		return -EINVAL;
+	}
 
-		ret = state_backend_bucket_direct_create(storage->dev, path,
+	for (n = 0; n < desired_buckets; n++) {
+		offset = storage->offset + n * stridesize;
+		ret = state_backend_bucket_direct_create(storage->dev, storage->path,
 							 &bucket, offset,
-							 maxsize);
+							 stridesize);
 		if (ret) {
 			dev_warn(storage->dev, "Failed to create direct bucket at '%s' offset %ld\n",
-				 path, offset);
+				 storage->path, offset);
 			continue;
 		}
 
-		ret = state_backend_bucket_cached_create(storage->dev, bucket,
-							 &bucket);
-		if (ret) {
-			dev_warn(storage->dev, "Failed to setup cache bucket, continuing without cache, %d\n",
-				 ret);
-		}
+		bucket->offset = offset;
+		bucket->num = n_buckets;
 
 		list_add_tail(&bucket->bucket_list, &storage->buckets);
-		++nr_copies;
-		if (nr_copies >= desired_copies)
-			return 0;
+		++n_buckets;
 	}
 
-	if (!nr_copies) {
+	if (!n_buckets) {
 		dev_err(storage->dev, "Failed to initialize any state direct storage bucket\n");
 		return -EIO;
 	}
-	dev_warn(storage->dev, "Failed to initialize desired amount of direct buckets, only %d of %d succeeded\n",
-		 nr_copies, desired_copies);
+
+	if (n_buckets < desired_buckets)
+		dev_warn(storage->dev, "Failed to initialize desired amount of direct buckets, only %d of %d succeeded\n",
+			n_buckets, desired_buckets);
 
 	return 0;
 }
@@ -455,7 +346,6 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
 
 /**
  * state_storage_init - Init backend storage
- * @param storage Storage object
  * @param path Path to the backend storage file
  * @param dev_offset Offset in the device to start writing at.
  * @param max_size Maximum size of the data. May be 0 for infinite.
@@ -466,37 +356,39 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
  *
  * Depending on the filetype, we create mtd buckets or normal file buckets.
  */
-int state_storage_init(struct state_backend_storage *storage,
-		       struct device_d *dev, const char *path,
+int state_storage_init(struct state *state, const char *path,
 		       off_t offset, size_t max_size, uint32_t stridesize,
 		       const char *storagetype)
 {
+	struct state_backend_storage *storage = &state->storage;
 	int ret = -ENODEV;
 	struct mtd_info_user meminfo;
 
 	INIT_LIST_HEAD(&storage->buckets);
-	storage->dev = dev;
+	storage->dev = &state->dev;
 	storage->name = storagetype;
 	storage->stridesize = stridesize;
+	storage->offset = offset;
+	storage->max_size = max_size;
+	storage->path = xstrdup(path);
 
 	if (IS_ENABLED(CONFIG_MTD))
 		ret = mtd_get_meminfo(path, &meminfo);
 
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {
-		bool non_circular = false;
-		if (!storagetype) {
-			non_circular = true;
-		} else if (strcmp(storagetype, "circular")) {
-			dev_warn(storage->dev, "Unknown storagetype '%s', falling back to old format circular storage type.\n",
-				 storagetype);
-			non_circular = true;
+		bool circular;
+		if (!storagetype || !strcmp(storagetype, "circular")) {
+			circular = true;
+		} else if (!strcmp(storagetype, "noncircular")) {
+			dev_warn(storage->dev, "using old format circular storage type.\n");
+			circular = false;
+		} else {
+			dev_warn(storage->dev, "unknown storage type '%s'\n", storagetype);
+			return -EINVAL;
 		}
-		return state_storage_mtd_buckets_init(storage, &meminfo, path,
-						      non_circular, offset,
-						      max_size);
+		return state_storage_mtd_buckets_init(storage, &meminfo, circular);
 	} else {
-		return state_storage_file_buckets_init(storage, path, offset,
-						       max_size, stridesize);
+		return state_storage_file_buckets_init(storage);
 	}
 
 	dev_err(storage->dev, "storage init done\n");
@@ -524,4 +416,6 @@ void state_storage_free(struct state_backend_storage *storage)
 		list_del(&bucket->bucket_list);
 		bucket->free(bucket);
 	}
+
+	free(storage->path);
 }

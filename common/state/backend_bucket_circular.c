@@ -25,7 +25,21 @@
 
 #include "state.h"
 
-
+/*
+ * The circular backend bucket code. The circular backend bucket is intended
+ * for mtd devices which need an erase operation.
+ *
+ * Erasing blocks is an operation that should be avoided. On NOR flashes erasing
+ * blocks is very time consuming and on NAND flashes each block only has a limited
+ * number of erase cycles allowed. For this reason we continuously write more data
+ * into each eraseblock and only erase it when no more free space is available.
+ * Don't confuse these multiple writes into a single eraseblock with buckets. A bucket
+ * is the whole eraseblock, we just happen to reuse the same bucket for storing
+ * new data.
+ *
+ * If your device is a mtd device, but does not have eraseblocks, like MRAMs, then
+ * the direct bucket is used instead.
+ */
 struct state_backend_storage_bucket_circular {
 	struct state_backend_storage_bucket bucket;
 
@@ -47,6 +61,11 @@ struct state_backend_storage_bucket_circular {
 	struct device_d *dev;
 };
 
+/*
+ * The metadata will be written directly before writesize aligned offsets.
+ * When searching backwards through the pages it allows us to find the
+ * beginning of the data.
+ */
 struct __attribute__((__packed__)) state_backend_storage_bucket_circular_meta {
 	uint32_t magic;
 	uint32_t written_length;
@@ -65,7 +84,7 @@ static inline struct state_backend_storage_bucket_circular
 
 #ifdef __BAREBOX__
 static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ,
-			      char *buf, int offset, int len)
+			      void *buf, int offset, int len)
 {
 	int ret;
 
@@ -102,7 +121,7 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 }
 
 static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *circ,
-			       const char *buf, int offset, int len)
+			       const void *buf, int offset, int len)
 {
 	int ret;
 
@@ -133,7 +152,7 @@ static int state_mtd_peb_erase(struct state_backend_storage_bucket_circular *cir
 }
 #else
 static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ,
-			      char *buf, int suboffset, int len)
+			      void *buf, int suboffset, int len)
 {
 	int ret;
 	off_t offset = suboffset;
@@ -152,40 +171,19 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 	dev_dbg(circ->dev, "Read state from %ld length %zd\n", offset,
 		len);
 
-	ret = ioctl(circ->fd, ECCGETSTATS, &stat1);
-	if (ret)
-		nostats = true;
 
 	ret = read_full(circ->fd, buf, len);
 	if (ret < 0) {
 		dev_err(circ->dev, "Failed to read circular storage len %zd, %d\n",
 			len, ret);
 		free(buf);
-		return ret;
-	}
-
-	if (nostats)
-		return 0;
-
-	ret = ioctl(circ->fd, ECCGETSTATS, &stat2);
-	if (ret)
-		return 0;
-
-	if (stat2.failed - stat1.failed > 0) {
-		ret = -EUCLEAN;
-		dev_dbg(circ->dev, "PEB %u has ECC error, forcing rewrite\n",
-			circ->eraseblock);
-	} else if (stat2.corrected - stat1.corrected > 0) {
-		ret = -EUCLEAN;
-		dev_dbg(circ->dev, "PEB %u is unclean, forcing rewrite\n",
-			circ->eraseblock);
 	}
 
 	return ret;
 }
 
 static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *circ,
-			       const char *buf, int suboffset, int len)
+			       const void *buf, int suboffset, int len)
 {
 	int ret;
 	off_t offset = suboffset;
@@ -226,14 +224,14 @@ static int state_mtd_peb_erase(struct state_backend_storage_bucket_circular *cir
 #endif
 
 static int state_backend_bucket_circular_read(struct state_backend_storage_bucket *bucket,
-					      uint8_t ** buf_out,
-					      ssize_t * len_hint)
+					      void ** buf_out,
+					      ssize_t * len_out)
 {
 	struct state_backend_storage_bucket_circular *circ =
 	    get_bucket_circular(bucket);
 	ssize_t read_len;
 	off_t offset;
-	uint8_t *buf;
+	void *buf;
 	int ret;
 
 	/* Storage is empty */
@@ -282,13 +280,13 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 	}
 
 	*buf_out = buf;
-	*len_hint = read_len - sizeof(struct state_backend_storage_bucket_circular_meta);
+	*len_out = read_len - sizeof(struct state_backend_storage_bucket_circular_meta);
 
 	return ret;
 }
 
 static int state_backend_bucket_circular_write(struct state_backend_storage_bucket *bucket,
-					       const uint8_t * buf,
+					       const void * buf,
 					       ssize_t len)
 {
 	struct state_backend_storage_bucket_circular *circ =
@@ -297,7 +295,7 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	struct state_backend_storage_bucket_circular_meta *meta;
 	uint32_t written_length = ALIGN(len + sizeof(*meta), circ->writesize);
 	int ret;
-	uint8_t *write_buf;
+	void *write_buf;
 
 	if (written_length > circ->max_size) {
 		dev_err(circ->dev, "Error, state data too big to be written, to write: %zd, writesize: %zd, length: %zd, available: %zd\n",
@@ -379,26 +377,24 @@ static int state_backend_bucket_circular_init(
 	int sub_offset;
 	uint32_t written_length = 0;
 	uint8_t *buf;
+	int ret;
 
-	buf = xmalloc(circ->writesize);
+	buf = xmalloc(circ->max_size);
 	if (!buf)
 		return -ENOMEM;
 
+	ret = state_mtd_peb_read(circ, buf, 0, circ->max_size);
+	if (ret && ret != -EUCLEAN)
+		return ret;
+
 	for (sub_offset = circ->max_size - circ->writesize; sub_offset >= 0;
 	     sub_offset -= circ->writesize) {
-		int ret;
-
-		ret = state_mtd_peb_read(circ, buf, sub_offset,
-					 circ->writesize);
-		if (ret && ret != -EUCLEAN)
-			return ret;
-
-		ret = mtd_buf_all_ff(buf, circ->writesize);
+		ret = mtd_buf_all_ff(buf + sub_offset, circ->writesize);
 		if (!ret) {
 			struct state_backend_storage_bucket_circular_meta *meta;
 
 			meta = (struct state_backend_storage_bucket_circular_meta *)
-					(buf + circ->writesize - sizeof(*meta));
+					(buf + sub_offset + circ->writesize - sizeof(*meta));
 
 			if (meta->magic != circular_magic)
 				written_length = 0;
@@ -458,11 +454,13 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 					 struct state_backend_storage_bucket **bucket,
 					 unsigned int eraseblock,
 					 ssize_t writesize,
-					 struct mtd_info_user *mtd_uinfo,
-					 bool lazy_init)
+					 struct mtd_info_user *mtd_uinfo)
 {
 	struct state_backend_storage_bucket_circular *circ;
 	int ret;
+
+	if (writesize < 8)
+		writesize = 8;
 
 	circ = xzalloc(sizeof(*circ));
 	circ->eraseblock = eraseblock;
@@ -495,13 +493,9 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 	circ->bucket.free = state_backend_bucket_circular_free;
 	*bucket = &circ->bucket;
 
-	if (!lazy_init) {
-		ret = state_backend_bucket_circular_init(*bucket);
-		if (ret)
-			goto out_free;
-	} else {
-		circ->bucket.init = state_backend_bucket_circular_init;
-	}
+	ret = state_backend_bucket_circular_init(*bucket);
+	if (ret)
+		goto out_free;
 
 	return 0;
 

@@ -35,6 +35,7 @@
 #include <driver.h>
 #include <init.h>
 #include <linux/spinlock.h>
+#include <linux/hw_random.h>
 
 #include "regs.h"
 #include "intern.h"
@@ -54,7 +55,7 @@
 
 /* Buffer, its dma address and lock */
 struct buf_data {
-	u8 buf[RN_BUF_SIZE];
+	u8 *buf;
 	dma_addr_t addr;
 	u32 hw_desc[DESC_JOB_O_LEN];
 #define BUF_NOT_EMPTY 0
@@ -71,7 +72,7 @@ struct caam_rng_ctx {
 	unsigned int cur_buf_idx;
 	int current_buf;
 	struct buf_data bufs[2];
-	struct cdev cdev;
+	struct hwrng rng;
 };
 
 static struct caam_rng_ctx *rng_ctx;
@@ -116,8 +117,9 @@ static inline int submit_job(struct caam_rng_ctx *ctx, int to_current)
 	return err;
 }
 
-static int caam_read(struct caam_rng_ctx *ctx, void *data, size_t max, bool wait)
+static int caam_read(struct hwrng *rng, void *data, size_t max, bool wait)
 {
+	struct caam_rng_ctx *ctx = container_of(rng, struct caam_rng_ctx, rng);
 	struct buf_data *bd = &ctx->bufs[ctx->current_buf];
 	int next_buf_idx, copied_idx;
 	int err;
@@ -162,7 +164,7 @@ static int caam_read(struct caam_rng_ctx *ctx, void *data, size_t max, bool wait
 	dev_dbg(ctx->jrdev, "switched to buffer %d\n", ctx->current_buf);
 
 	/* since there already is some data read, don't wait */
-	return copied_idx + caam_read(ctx, data + copied_idx,
+	return copied_idx + caam_read(rng, data + copied_idx,
 				      max - copied_idx, false);
 }
 
@@ -216,6 +218,8 @@ static int caam_init_buf(struct caam_rng_ctx *ctx, int buf_id)
 	struct buf_data *bd = &ctx->bufs[buf_id];
 	int err;
 
+	bd->buf = dma_alloc(RN_BUF_SIZE);
+
 	err = rng_create_job_desc(ctx, buf_id);
 	if (err)
 		return err;
@@ -248,29 +252,6 @@ static int caam_init_rng(struct caam_rng_ctx *ctx, struct device_d *jrdev)
 	return 0;
 }
 
-static ssize_t random_read(struct cdev *cdev, void *buf, size_t count,
-			   loff_t offset, ulong flags)
-{
-	struct caam_rng_ctx *ctx = container_of(cdev, struct caam_rng_ctx, cdev);
-
-	return caam_read(ctx, buf, count, true);
-}
-
-static struct file_operations randomops = {
-	.read  = random_read,
-	.lseek = dev_lseek_default,
-};
-
-static int caam_init_devrandom(struct caam_rng_ctx *ctx, struct device_d *dev)
-{
-	ctx->cdev.name = "hwrng";
-	ctx->cdev.flags = DEVFS_IS_CHARACTER_DEV;
-	ctx->cdev.ops = &randomops;
-	ctx->cdev.dev = dev;
-
-	return devfs_create(&ctx->cdev);
-}
-
 int caam_rng_probe(struct device_d *dev, struct device_d *jrdev)
 {
 	int err;
@@ -281,9 +262,14 @@ int caam_rng_probe(struct device_d *dev, struct device_d *jrdev)
 	if (err)
 		return err;
 
-	err = caam_init_devrandom(rng_ctx, dev);
-	if (err)
+	rng_ctx->rng.name = dev->name;
+	rng_ctx->rng.read = caam_read;
+
+	err = hwrng_register(dev, &rng_ctx->rng);
+	if (err) {
+		dev_err(dev, "rng-caam registering failed (%d)\n", err);
 		return err;
+	}
 
 	dev_info(dev, "registering rng-caam\n");
 

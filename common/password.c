@@ -365,7 +365,11 @@ int set_env_passwd(unsigned char* passwd, size_t length)
 		char *salt = passwd_sum;
 		int keylen = PBKDF2_LENGTH - PBKDF2_SALT_LEN;
 
-		get_random_bytes(passwd_sum, PBKDF2_SALT_LEN);
+		ret = get_crypto_bytes(passwd_sum, PBKDF2_SALT_LEN);
+		if (ret) {
+			pr_err("Can't get random numbers\n");
+			return ret;
+		}
 
 		ret = pkcs5_pbkdf2_hmac_sha1(passwd, length, salt,
 				PBKDF2_SALT_LEN, PBKDF2_COUNT, keylen, key);

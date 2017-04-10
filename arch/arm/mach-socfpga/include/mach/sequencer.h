@@ -369,7 +369,7 @@ static const uint32_t ac_rom_init[];
 
 /* parameter variable holder */
 
-typedef struct param_type {
+typedef struct sequencer_param_type {
 	t_btfld dm_correct_mask;
 	t_btfld read_correct_mask;
 	t_btfld read_correct_mask_vg;

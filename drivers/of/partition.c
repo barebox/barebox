@@ -253,9 +253,11 @@ static const char *of_binding_names[] = {
 
 static int of_partition_init(void)
 {
-	dev_add_param_enum(&global_device, "of_partition_binding", NULL, NULL,
-			   &of_partition_binding, of_binding_names,
-			   ARRAY_SIZE(of_binding_names), NULL);
+	if (IS_ENABLED(CONFIG_GLOBALVAR))
+		dev_add_param_enum(&global_device, "of_partition_binding",
+				   NULL, NULL,
+				   &of_partition_binding, of_binding_names,
+				   ARRAY_SIZE(of_binding_names), NULL);
 
 	return 0;
 }

@@ -118,13 +118,13 @@ static void spi_of_register_slaves(struct spi_master *master)
 		chip.name = xstrdup(n->name);
 		chip.bus_num = master->bus_num;
 		/* Mode (clock phase/polarity/etc.) */
-		if (of_find_property(n, "spi-cpha", NULL))
+		if (of_property_read_bool(n, "spi-cpha"))
 			chip.mode |= SPI_CPHA;
-		if (of_find_property(n, "spi-cpol", NULL))
+		if (of_property_read_bool(n, "spi-cpol"))
 			chip.mode |= SPI_CPOL;
-		if (of_find_property(n, "spi-cs-high", NULL))
+		if (of_property_read_bool(n, "spi-cs-high"))
 			chip.mode |= SPI_CS_HIGH;
-		if (of_find_property(n, "spi-3wire", NULL))
+		if (of_property_read_bool(n, "spi-3wire"))
 			chip.mode |= SPI_3WIRE;
 		of_property_read_u32(n, "spi-max-frequency",
 				&chip.max_speed_hz);

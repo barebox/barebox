@@ -737,7 +737,7 @@ static int dm9000_parse_dt(struct device_d *dev, struct dm9k *priv)
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !np)
 		return -ENODEV;
 
-	if (of_find_property(np, "davicom,no-eeprom", NULL)) {
+	if (of_property_read_bool(np, "davicom,no-eeprom")) {
 		priv->srom = 0;
 	} else {
 		priv->srom = 1;

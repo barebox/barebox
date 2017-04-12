@@ -1753,7 +1753,6 @@ void *calloc(size_t n, size_t elem_size)
 
 /* Utility to update current_mallinfo for malloc_stats and mallinfo() */
 
-#ifdef CONFIG_CMD_MEMINFO
 static void malloc_update_mallinfo(void)
 {
 	int i;
@@ -1820,8 +1819,6 @@ void malloc_stats(void)
 		 (unsigned int) max_n_mmaps);
 #endif
 }
-
-#endif /* CONFIG_CMD_MEMINFO */
 
 /*
 

@@ -18,18 +18,30 @@
  * GNU General Public License for more details.
  *
  */
+#define pr_fmt(fmt) "xfuncs: " fmt
 
 #include <common.h>
 #include <malloc.h>
 #include <module.h>
 #include <wchar.h>
 
+static void __noreturn enomem_panic(size_t size)
+{
+	pr_emerg("out of memory\n");
+	if (size)
+		pr_emerg("Unable to allocate %d bytes\n", size);
+
+	malloc_stats();
+
+	panic("out of memory");
+}
+
 void *xmalloc(size_t size)
 {
 	void *p = NULL;
 
 	if (!(p = malloc(size)))
-		panic("ERROR: out of memory\n");
+		enomem_panic(size);
 
 	return p;
 }
@@ -40,7 +52,7 @@ void *xrealloc(void *ptr, size_t size)
 	void *p = NULL;
 
 	if (!(p = realloc(ptr, size)))
-		panic("ERROR: out of memory\n");
+		enomem_panic(size);
 
 	return p;
 }
@@ -63,7 +75,7 @@ char *xstrdup(const char *s)
 
 	p = strdup(s);
 	if (!p)
-		panic("ERROR: out of memory\n");
+		enomem_panic(strlen(s) + 1);
 
 	return p;
 }
@@ -95,7 +107,8 @@ void* xmemalign(size_t alignment, size_t bytes)
 {
 	void *p = memalign(alignment, bytes);
 	if (!p)
-		panic("ERROR: out of memory\n");
+		enomem_panic(bytes);
+
 	return p;
 }
 EXPORT_SYMBOL(xmemalign);
@@ -116,7 +129,7 @@ char *xvasprintf(const char *fmt, va_list ap)
 
 	p = bvasprintf(fmt, ap);
 	if (!p)
-		panic("ERROR: out of memory\n");
+		enomem_panic(0);
 	return p;
 }
 EXPORT_SYMBOL(xvasprintf);
@@ -139,7 +152,8 @@ wchar_t *xstrdup_wchar(const wchar_t *s)
 	wchar_t *p = strdup_wchar(s);
 
 	if (!p)
-		panic("ERROR: out of memory\n");
+		enomem_panic((wcslen(s) + 1) * sizeof(wchar_t));
+
 	return p;
 }
 EXPORT_SYMBOL(xstrdup_wchar);
@@ -149,7 +163,8 @@ wchar_t *xstrdup_char_to_wchar(const char *s)
 	wchar_t *p = strdup_char_to_wchar(s);
 
 	if (!p)
-		panic("ERROR: out of memory\n");
+		enomem_panic((strlen(s) + 1) * sizeof(wchar_t));
+
 	return p;
 }
 EXPORT_SYMBOL(xstrdup_char_to_wchar);
@@ -159,7 +174,8 @@ char *xstrdup_wchar_to_char(const wchar_t *s)
 	char *p = strdup_wchar_to_char(s);
 
 	if (!p)
-		panic("ERROR: out of memory\n");
+		enomem_panic((wcslen(s) + 1) * sizeof(wchar_t));
+
 	return p;
 }
 EXPORT_SYMBOL(xstrdup_wchar_to_char);

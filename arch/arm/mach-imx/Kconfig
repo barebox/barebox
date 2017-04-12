@@ -711,6 +711,7 @@ config HAB
 config HABV4
 	tristate "HABv4 support"
 	select HAB
+	select IMX_OCOTP
 	depends on ARCH_IMX6
 	help
 	  High Assurance Boot, as found on i.MX28/i.MX6.
@@ -752,6 +753,7 @@ endif
 config HABV3
 	tristate "HABv3 support"
 	select HAB
+	select IMX_IIM
 	select ARCH_IMX_IMXIMAGE_SSL_SUPPORT
 	depends on ARCH_IMX25
 	help

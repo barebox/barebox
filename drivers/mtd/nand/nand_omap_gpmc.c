@@ -303,7 +303,8 @@ static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
 	int bitflip_count;
 	int bch_max_err;
 
-	int eccsteps = oinfo->nand.ecc.steps;
+	int eccsteps = (nand->ecc.mode == NAND_ECC_HW) &&
+			(nand->ecc.size == 2048) ? 4 : 1;
 	int eccsize = oinfo->nand.ecc.bytes;
 
 	switch (oinfo->ecc_mode) {

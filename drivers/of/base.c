@@ -1802,12 +1802,7 @@ struct property *of_new_property(struct device_node *node, const char *name,
 	struct property *prop;
 
 	prop = xzalloc(sizeof(*prop));
-	prop->name = strdup(name);
-	if (!prop->name) {
-		free(prop);
-		return NULL;
-	}
-
+	prop->name = xstrdup(name);
 	prop->length = len;
 	prop->value = xzalloc(len);
 

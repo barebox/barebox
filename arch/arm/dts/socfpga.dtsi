@@ -10,22 +10,6 @@
 	aliases {
 		mmc0 = &mmc;
 	};
-
-	soc {
-		qspi: spi@ff705000 {
-			compatible = "cdns,qspi-nor";
-			#address-cells = <1>;
-			#size-cells = <0>;
-			reg = <0xff705000 0x1000>,
-			      <0xffa00000 0x1000>;
-			interrupts = <0 151 4>;
-			ext-decoder = <0>;  /* external decoder */
-			fifo-depth = <128>;
-			clocks = <&qspi_clk>;
-			clock-names = "qspi_clk";
-			status = "disabled";
-		};
-       };
 };
 &osc2 {
 	clock-frequency = <0>;

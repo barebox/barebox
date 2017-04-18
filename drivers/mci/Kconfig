@@ -66,6 +66,13 @@ config MCI_BCM283X
 	bool "MCI support for BCM283X"
 	depends on ARCH_BCM283X
 
+config MCI_DOVE
+	bool "Marvell Dove SDHCI"
+	depends on ARCH_DOVE
+	help
+	  Enable this entry to add support to read and write SD cards on a
+	  Marvell Dove SoC based system.
+
 config MCI_IMX
 	bool "i.MX"
 	depends on ARCH_IMX27 || ARCH_IMX31

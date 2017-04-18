@@ -1,6 +1,7 @@
 obj-$(CONFIG_MCI)		+= mci-core.o
 obj-$(CONFIG_MCI_ATMEL)		+= atmel_mci.o
 obj-$(CONFIG_MCI_BCM283X)	+= mci-bcm2835.o
+obj-$(CONFIG_MCI_DOVE)		+= dove-sdhci.o
 obj-$(CONFIG_MCI_IMX)		+= imx.o
 obj-$(CONFIG_MCI_IMX_ESDHC)	+= imx-esdhc.o
 obj-$(CONFIG_MCI_MXS)		+= mxs.o

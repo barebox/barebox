@@ -37,6 +37,29 @@ char *basename (char *path)
 }
 EXPORT_SYMBOL(basename);
 
+/*
+ * There are two different versions of basename(): The GNU version implemented
+ * above and the POSIX version. The GNU version never modifies its argument and
+ * returns the empty string when path has a trailing slash, and in particular
+ * also when it is "/".
+ */
+char *posix_basename(char *path)
+{
+	char *fname;
+
+	fname = path + strlen(path) - 1;
+
+	while (*fname == '/') {
+		if (fname == path)
+			return path;
+		*fname = '\0';
+		fname--;
+	}
+
+	return basename(path);
+}
+EXPORT_SYMBOL(posix_basename);
+
 char *dirname (char *path)
 {
 	char *fname;

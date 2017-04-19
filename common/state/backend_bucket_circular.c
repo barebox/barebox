@@ -385,7 +385,7 @@ static int state_backend_bucket_circular_init(
 
 	ret = state_mtd_peb_read(circ, buf, 0, circ->max_size);
 	if (ret && ret != -EUCLEAN)
-		return ret;
+		goto out;
 
 	for (sub_offset = circ->max_size - circ->writesize; sub_offset >= 0;
 	     sub_offset -= circ->writesize) {
@@ -408,9 +408,11 @@ static int state_backend_bucket_circular_init(
 	circ->write_area = sub_offset + circ->writesize;
 	circ->last_written_length = written_length;
 
+	ret = 0;
+out:
 	free(buf);
 
-	return 0;
+	return ret;
 }
 
 static void state_backend_bucket_circular_free(struct

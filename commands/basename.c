@@ -27,7 +27,7 @@ static int do_basename(int argc, char *argv[])
 	if (argc != 3)
 		return COMMAND_ERROR_USAGE;
 
-	setenv(argv[2], basename(argv[1]));
+	setenv(argv[2], posix_basename(argv[1]));
 
 	return 0;
 }

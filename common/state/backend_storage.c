@@ -110,12 +110,14 @@ static int bucket_refresh(struct state_backend_storage *storage,
 refresh:
 	ret = bucket->write(bucket, buf, len);
 
-	if (ret)
+	if (ret) {
 		dev_warn(storage->dev, "Failed to restore bucket %d@0x%08lx\n",
 			 bucket->num, bucket->offset);
-	else
+	} else {
 		dev_info(storage->dev, "restored bucket %d@0x%08lx\n",
 			 bucket->num, bucket->offset);
+		bucket->needs_refresh = 0;
+	}
 
 	return ret;
 }

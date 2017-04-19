@@ -2,6 +2,6 @@
 # barebox image generation Makefile for AT91 images
 #
 
-pblx-$(MACH_AT91SAM9X5EK) += start_at91sam9x5ek
+pblx-$(CONFIG_MACH_AT91SAM9X5EK) += start_at91sam9x5ek
 FILE_barebox-at91sam9x5ek.img = start_at91sam9x5ek.pblx
-image-$(MACH_AT91SAM9X5EK) += barebox-at91sam9x5ek.img
+image-$(CONFIG_MACH_AT91SAM9X5EK) += barebox-at91sam9x5ek.img

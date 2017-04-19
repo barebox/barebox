@@ -577,6 +577,7 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		partition_node = of_parse_phandle(node, "backend", 0);
 		if (!partition_node) {
 			dev_err(&state->dev, "Cannot resolve \"backend\" phandle\n");
+			ret = -EINVAL;
 			goto out_release_state;
 		}
 

@@ -139,6 +139,9 @@ void l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
 	cache_id = readl(l2x0_base + L2X0_CACHE_ID);
 	aux = readl(l2x0_base + L2X0_AUX_CTRL);
 
+	aux &= aux_mask;
+	aux |= aux_val;
+
 	/* Determine the number of ways */
 	switch (cache_id & L2X0_CACHE_ID_PART_MASK) {
 	case L2X0_CACHE_ID_PART_L310:
@@ -169,10 +172,6 @@ void l2x0_init(void __iomem *base, __u32 aux_val, __u32 aux_mask)
 	if (!(readl(l2x0_base + L2X0_CTRL) & 1)) {
 
 		/* l2x0 controller is disabled */
-
-		aux = readl(l2x0_base + L2X0_AUX_CTRL);
-		aux &= aux_mask;
-		aux |= aux_val;
 		writel(aux, l2x0_base + L2X0_AUX_CTRL);
 
 		l2x0_inv_all();

@@ -120,8 +120,6 @@ static int state_backend_format_dtb_pack(struct state_backend_format *format,
 		of_delete_node(fdtb->root);
 	fdtb->root = root;
 
-	free(fdt);
-
 	return 0;
 }
 

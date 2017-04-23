@@ -49,6 +49,22 @@ pblx-$(CONFIG_MACH_PCM038) += start_phytec_phycore_imx27
 FILE_barebox-phytec-phycore-imx27.img = start_phytec_phycore_imx27.pblx
 image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img
 
+# ----------------------- i.MX50 based boards ---------------------------
+pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01100
+CFG_start_imx50_kindle_d01100.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
+FILE_barebox-kindle-d01100.img = start_imx50_kindle_d01100.pblx.imximg
+imx-barebox-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-d01100.img
+
+pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01200
+CFG_start_imx50_kindle_d01200.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
+FILE_barebox-kindle-d01200.img = start_imx50_kindle_d01200.pblx.imximg
+imx-barebox-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-d01200.img
+
+pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_ey21
+CFG_start_imx50_kindle_ey21.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr2.imxcfg
+FILE_barebox-kindle-ey21.img = start_imx50_kindle_ey21.pblx.imximg
+imx-barebox-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-ey21.img
+
 # ----------------------- i.MX51 based boards ---------------------------
 pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg

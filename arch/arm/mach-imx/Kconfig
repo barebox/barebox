@@ -212,6 +212,20 @@ config MACH_PCM038
 	  Say Y here if you are using Phytec's phyCORE-i.MX27 (pcm038) equipped
 	  with a Freescale i.MX27 Processor
 
+config MACH_KINDLE_MX50
+	bool "i.MX50 based Amazon Kindle 4 and 5"
+	select ARCH_IMX50
+	select SPI
+	select DRIVER_SPI_IMX
+	select I2C
+	select I2C_IMX
+	select MFD_MC13XXX
+	select ARM_BOARD_APPEND_ATAG
+	help
+	  Say Y here if you are using the fourth or fifth generation Amazon
+	  Kindle Model No. D01100 (Kindle Wi-Fi), D01200 (Kindle Touch) or
+	  EY21 (Kindle Paperwhite).
+
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
 	select ARCH_IMX51

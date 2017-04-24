@@ -57,19 +57,6 @@ int readline (const char *prompt, char *line, int len)
 	col = plen;
 
 	for (;;) {
-#ifdef CONFIG_BOOT_RETRY_TIME
-		while (!tstc()) {	/* while no incoming data */
-			if (retry_time >= 0 && get_ticks() > endtime)
-				return (-2);	/* timed out */
-		}
-#endif
-
-#ifdef CONFIG_SHOW_ACTIVITY
-		while (!tstc()) {
-			extern void show_activity(int arg);
-			show_activity(0);
-		}
-#endif
 		c = getchar();
 
 		/*

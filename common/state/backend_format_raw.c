@@ -211,6 +211,12 @@ static int backend_format_raw_pack(struct state_backend_format *format,
 	unsigned int size_data;
 	int ret;
 
+	if (backend_raw->algo) {
+		ret = backend_raw_digest_init(backend_raw);
+		if (ret)
+			return ret;
+	}
+
 	sv = list_last_entry(&state->variables, struct state_variable, list);
 	size_data = sv->start + sv->size;
 	size_full = size_data + sizeof(*header) + backend_raw->digest_length;
@@ -233,10 +239,6 @@ static int backend_format_raw_pack(struct state_backend_format *format,
 				   sizeof(*header) - sizeof(uint32_t));
 
 	if (backend_raw->algo) {
-		ret = backend_raw_digest_init(backend_raw);
-		if (ret)
-			return ret;
-
 		/* hmac over header and data */
 		ret = digest_update(backend_raw->digest, buf, sizeof(*header) + size_data);
 		if (ret) {

@@ -454,6 +454,10 @@ static int at24_probe(struct device_d *dev)
 	at24->cdev.size = chip.byte_len;
 
 	writable = !(chip.flags & AT24_FLAG_READONLY);
+
+	if (of_get_property(dev->device_node, "read-only", NULL))
+		writable = 0;
+
 	if (writable) {
 		unsigned write_max = chip.page_size;
 

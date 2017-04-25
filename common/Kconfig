@@ -643,6 +643,9 @@ config BOOTM_FORCE_SIGNED_IMAGES
 config BLSPEC
 	depends on BLOCK
 	depends on FLEXIBLE_BOOTARGS
+	depends on !SHELL_NONE
+	select BOOT
+	select BOOTM
 	select OFTREE
 	bool
 	prompt "Support bootloader spec"

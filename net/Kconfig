@@ -20,6 +20,7 @@ config NET_RESOLV
 
 config NET_IFUP
 	default y
+	depends on !SHELL_NONE
 	bool
 
 config NET_DHCP

@@ -209,9 +209,9 @@ static struct imx_hab_ops *imx_get_hab_ops(void)
 	if (ops)
 		return ops;
 
-	if (cpu_is_mx25() || cpu_is_mx35())
+	if (IS_ENABLED(CONFIG_HABV3) && (cpu_is_mx25() || cpu_is_mx35()))
 		tmp = &imx_hab_ops_iim;
-	else if (cpu_is_mx6())
+	else if (IS_ENABLED(CONFIG_HABV4) && cpu_is_mx6())
 		tmp = &imx_hab_ops_ocotp;
 	else
 		return NULL;

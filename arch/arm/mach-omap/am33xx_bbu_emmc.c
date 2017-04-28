@@ -39,7 +39,7 @@ static int emmc_mlo_handler(struct bbu_handler *handler, struct bbu_data *data)
 	if (ret != 0)
 		return ret;
 
-	fd = open(handler->devicefile, O_WRONLY);
+	fd = open(handler->devicefile, O_RDWR);
 	if (fd < 0) {
 		pr_err("could not open %s: %s\n", handler->devicefile,
 			errno_str());

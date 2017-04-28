@@ -53,6 +53,17 @@ static inline void INIT_LL(void)
 	writel(FCRVAL, UART_BASE + FCR);
 }
 
+#ifdef CONFIG_ARCH_SOCFPGA_ARRIA10
+static inline void PUTC_LL(char c)
+{
+	/* Wait until there is space in the FIFO */
+	while ((readl(UART_BASE + LSR) & LSR_THRE) == 0);
+	/* Send the character */
+	writel(c, UART_BASE + THR);
+	/* Wait to make sure it hits the line, in case we die too soon. */
+	while ((readl(UART_BASE + LSR) & LSR_THRE) == 0);
+}
+#else
 static inline void PUTC_LL(char c)
 {
 	/* Wait until there is space in the FIFO */
@@ -62,6 +73,7 @@ static inline void PUTC_LL(char c)
 	/* Wait to make sure it hits the line, in case we die too soon. */
 	while ((readb(UART_BASE + LSR) & LSR_THRE) == 0);
 }
+#endif
 
 #else
 static inline unsigned int ns16550_calc_divisor(unsigned int clk,

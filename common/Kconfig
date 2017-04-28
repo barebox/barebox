@@ -1122,6 +1122,14 @@ config DEBUG_ROCKCHIP_UART
 	  Say Y here if you want kernel low-level debugging support
 	  on RK3XXX.
 
+config DEBUG_SOCFPGA_UART0
+	bool "Use SOCFPGA UART0 for low-level debug"
+	depends on ARCH_SOCFPGA
+	help
+	  Say Y here if you want kernel low-level debugging support
+	  on SOCFPGA(Cyclone 5 and Arria 5) based platforms.
+
+
 endchoice
 
 config DEBUG_IMX_UART_PORT
@@ -1163,6 +1171,18 @@ config DEBUG_ROCKCHIP_UART_PORT
 	help
 	  Choose UART port on which kernel low-level debug messages
 	  should be output.
+
+config DEBUG_SOCFPGA_UART_PHYS_ADDR
+	hex "Physical base address of debug UART" if DEBUG_LL
+	default 0xffc02000 if DEBUG_SOCFPGA_UART0
+	depends on ARCH_SOCFPGA
+
+config DEBUG_SOCFPGA_UART_CLOCK
+	int "SoCFPGA UART debug clock" if DEBUG_LL
+	default 100000000
+	depends on ARCH_SOCFPGA
+	help
+	  Choose UART root clock.
 
 config DEBUG_INITCALLS
 	bool "Trace initcalls"

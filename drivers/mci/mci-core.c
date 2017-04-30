@@ -984,7 +984,7 @@ static int mci_startup_sd(struct mci *mci)
 		mci_setup_cmd(&cmd, SD_CMD_APP_SET_BUS_WIDTH, 2, MMC_RSP_R1);
 		err = mci_send_cmd(mci, &cmd, NULL);
 		if (err) {
-			dev_dbg(&mci->dev, "Changing SD bus width failed: %d\n", err);
+			dev_warn(&mci->dev, "Changing SD bus width failed: %d\n", err);
 			/* TODO continue with 1 bit? */
 			return err;
 		}
@@ -1041,8 +1041,11 @@ static int mci_startup_mmc(struct mci *mci)
 		err = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL,
 				 EXT_CSD_BUS_WIDTH,
 				 ext_csd_bits[idx]);
-		if (err)
+		if (err) {
+			if (idx == 0)
+				dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", err);
 			continue;
+		}
 
 		mci_set_bus_width(mci, bus_widths[idx]);
 
@@ -1051,7 +1054,7 @@ static int mci_startup_mmc(struct mci *mci)
 			break;
 	}
 
-	return 0;
+	return err;
 }
 
 /**
@@ -1693,7 +1696,7 @@ static int mci_card_probe(struct mci *mci)
 
 	rc = mci_startup(mci);
 	if (rc) {
-		dev_dbg(&mci->dev, "Card's startup fails with %d\n", rc);
+		dev_warn(&mci->dev, "Card's startup fails with %d\n", rc);
 		goto on_error;
 	}
 

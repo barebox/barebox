@@ -492,10 +492,6 @@ static int rtl8139_eth_send(struct eth_device *edev, void *packet,
 	return 0;
 }
 
-static const u16 rtl8139_intr_mask =
-		PCIErr | PCSTimeout | RxUnderrun | RxOverflow | RxFIFOOver |
-		TxErr | TxOK | RxErr | RxOK;
-
 static int rtl8139_eth_rx(struct eth_device *edev)
 {
 	struct rtl8139_priv *priv = edev->priv;

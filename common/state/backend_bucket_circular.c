@@ -72,7 +72,6 @@ struct __attribute__((__packed__)) state_backend_storage_bucket_circular_meta {
 };
 
 static const uint32_t circular_magic = 0x14fa2d02;
-static const uint8_t free_pattern = 0xff;
 
 static inline struct state_backend_storage_bucket_circular
     *get_bucket_circular(struct state_backend_storage_bucket *bucket)

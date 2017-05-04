@@ -416,6 +416,15 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	if (node) {
 		/* replace existing node - it will be deleted later */
 		parent = node->parent;
+
+		/*
+		 * barebox replaces the state node in the device tree it starts the
+		 * kernel with, so a state node that already exists in the device tree
+		 * will be overwritten. Warn about this so people do not wonder why
+		 * changes in the kernels state node do not have any effect.
+		 */
+		if (root != of_get_root_node())
+			dev_warn(&state->dev, "Warning: Kernel devicetree contains state node, replacing it\n");
 	} else {
 		char *of_path, *c;
 

@@ -407,7 +407,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 {
 	struct state *state = ctx;
 	const char *compatible = "barebox,state";
-	struct device_node *new_node, *node, *parent, *backend_node;
+	struct device_node *new_node, *node, *parent, *backend_node, *aliases;
 	struct property *p;
 	int ret;
 	phandle phandle;
@@ -517,6 +517,17 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 		goto out;
 
 	ret = of_property_write_u32(new_node, "#size-cells", 1);
+	if (ret)
+		goto out;
+
+	aliases = of_create_node(root, "/aliases");
+	if (!aliases) {
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	ret = of_set_property(aliases, state->name, new_node->full_name,
+			      strlen(new_node->full_name) + 1, 1);
 	if (ret)
 		goto out;
 

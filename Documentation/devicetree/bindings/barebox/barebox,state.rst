@@ -74,7 +74,7 @@ Optional properties:
 
 Example::
 
-  state: state@0 {
+  state: state {
   	magic = <0x27031977>;
   	compatible = "barebox,state";
   	backend-type = "raw";

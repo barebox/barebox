@@ -567,8 +567,10 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	uint32_t stridesize;
 
 	alias = of_alias_get(node);
-	if (!alias)
-		alias = node->name;
+	if (!alias) {
+		pr_err("State node %s does not have an alias in the /aliases/ node\n", node->full_name);
+		return ERR_PTR(-EINVAL);
+	}
 
 	state = state_new(alias);
 	if (IS_ERR(state))

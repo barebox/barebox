@@ -152,7 +152,7 @@ static int physom_imx6_devices_init(void)
 		phyflex_err006282_workaround();
 
 		pfla02_module_revision = get_module_rev();
-		globalvar_add_simple_int("board.revision", &pfla02_module_revision, "%u");
+		globalvar_add_simple_uint32_fixed("board.revision", pfla02_module_revision, "%u");
 		pr_info("Module Revision: %u\n", pfla02_module_revision);
 
 		barebox_set_hostname("phyFLEX-i.MX6");

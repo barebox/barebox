@@ -99,12 +99,12 @@ int pwmchip_add(struct pwm_chip *chip, struct device_d *dev)
 
 	list_add_tail(&pwm->node, &pwm_list);
 
-	p = dev_add_param_int(&pwm->dev, "duty_ns", set_duty_period_ns,
+	p = dev_add_param_uint32(&pwm->dev, "duty_ns", set_duty_period_ns,
 			NULL, &pwm->chip->duty_ns, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
-	p = dev_add_param_int(&pwm->dev, "period_ns", set_duty_period_ns,
+	p = dev_add_param_uint32(&pwm->dev, "period_ns", set_duty_period_ns,
 			NULL, &pwm->chip->period_ns, "%u", pwm);
 	if (IS_ERR(p))
 		return PTR_ERR(p);

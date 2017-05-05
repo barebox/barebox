@@ -251,7 +251,7 @@ static void dos_partition(void *buf, struct block_device *blk,
 	 * signature and pp is a zero-filled hex representation of the 1-based
 	 * partition number.
 	 */
-	dev_add_param_int(blk->dev, "nt_signature",
+	dev_add_param_uint32(blk->dev, "nt_signature",
 			dos_set_disk_signature, dos_get_disk_signature,
 			&dsp->signature, "%08x", dsp);
 }

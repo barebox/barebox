@@ -530,7 +530,7 @@ static int imxfb_register_overlay(struct imxfb_info *fbi, void *fb)
 		return ret;
 	}
 
-	dev_add_param_int(&overlay->dev, "alpha", imxfb_alpha_set,
+	dev_add_param_uint32(&overlay->dev, "alpha", imxfb_alpha_set,
 			NULL, &fbi->alpha, "%u", overlay);
 
 	return 0;

@@ -53,7 +53,7 @@ struct console_device {
 	struct list_head list;
 
 	unsigned char f_active;
-	char active[4];
+	char *active_string;
 
 	unsigned int open_count;
 

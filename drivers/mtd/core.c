@@ -449,13 +449,13 @@ static struct file_operations mtd_ops = {
 	.lseek  = dev_lseek_default,
 };
 
-static int mtd_partition_set(struct device_d *dev, struct param_d *p, const char *val)
+static int mtd_partition_set(struct param_d *p, void *priv)
 {
-	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	struct mtd_info *mtd = priv;
 	struct mtd_info *mtdpart, *tmp;
 	int ret;
 
-	if (!val)
+	if (!mtd->partition_string)
 		return -EINVAL;
 
 	list_for_each_entry_safe(mtdpart, tmp, &mtd->partitions, partitions_entry) {
@@ -464,7 +464,7 @@ static int mtd_partition_set(struct device_d *dev, struct param_d *p, const char
 			return ret;
 	}
 
-	return cmdlinepart_do_parse(mtd->cdev.name, val, mtd->size, CMDLINEPART_ADD_DEVNAME);
+	return cmdlinepart_do_parse(mtd->cdev.name, mtd->partition_string, mtd->size, CMDLINEPART_ADD_DEVNAME);
 }
 
 static char *print_size(uint64_t s)
@@ -530,18 +530,18 @@ static int print_parts(char *buf, int bufsize, struct mtd_info *mtd)
 	return ret;
 }
 
-static const char *mtd_partition_get(struct device_d *dev, struct param_d *p)
+static int mtd_partition_get(struct param_d *p, void *priv)
 {
-	struct mtd_info *mtd = container_of(dev, struct mtd_info, class_dev);
+	struct mtd_info *mtd = priv;
 	int len = 0;
 
-	free(p->value);
+	free(mtd->partition_string);
 
 	len = print_parts(NULL, 0, mtd);
-	p->value = xzalloc(len + 1);
-	print_parts(p->value, len + 1, mtd);
+	mtd->partition_string = xzalloc(len + 1);
+	print_parts(mtd->partition_string, len + 1, mtd);
 
-	return p->value;
+	return 0;
 }
 
 static int mtd_part_compare(struct list_head *a, struct list_head *b)
@@ -637,10 +637,10 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 	mtd->cdev.mtd = mtd;
 
 	if (IS_ENABLED(CONFIG_PARAMETER)) {
-		dev_add_param_llint_ro(&mtd->class_dev, "size", mtd->size, "%llu");
-		dev_add_param_int_ro(&mtd->class_dev, "erasesize", mtd->erasesize, "%u");
-		dev_add_param_int_ro(&mtd->class_dev, "writesize", mtd->writesize, "%u");
-		dev_add_param_int_ro(&mtd->class_dev, "oobsize", mtd->oobsize, "%u");
+		dev_add_param_uint64_ro(&mtd->class_dev, "size", &mtd->size, "%llu");
+		dev_add_param_uint32_ro(&mtd->class_dev, "erasesize", &mtd->erasesize, "%u");
+		dev_add_param_uint32_ro(&mtd->class_dev, "writesize", &mtd->writesize, "%u");
+		dev_add_param_uint32_ro(&mtd->class_dev, "oobsize", &mtd->oobsize, "%u");
 	}
 
 	ret = devfs_create(&mtd->cdev);
@@ -667,7 +667,7 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 		mtd->cdev_bb = mtd_add_bb(mtd, NULL);
 
 	if (mtd->parent && !mtd->master) {
-		dev_add_param(&mtd->class_dev, "partitions", mtd_partition_set, mtd_partition_get, 0);
+		dev_add_param_string(&mtd->class_dev, "partitions", mtd_partition_set, mtd_partition_get, &mtd->partition_string, mtd);
 		of_parse_partitions(&mtd->cdev, mtd->parent->device_node);
 		if (IS_ENABLED(CONFIG_OFDEVICE) && mtd->parent->device_node) {
 			mtd->of_path = xstrdup(mtd->parent->device_node->full_name);

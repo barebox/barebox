@@ -94,7 +94,7 @@ int console_close(struct console_device *cdev)
 
 int console_set_active(struct console_device *cdev, unsigned flag)
 {
-	int ret, i;
+	int ret;
 
 	if (!cdev->getc)
 		flag &= ~CONSOLE_STDIN;
@@ -119,18 +119,6 @@ int console_set_active(struct console_device *cdev, unsigned flag)
 
 	cdev->f_active = flag;
 
-	if (IS_ENABLED(CONFIG_PARAMETER)) {
-		i = 0;
-
-		if (flag & CONSOLE_STDIN)
-			cdev->active[i++] = 'i';
-		if (flag & CONSOLE_STDOUT)
-			cdev->active[i++] = 'o';
-		if (flag & CONSOLE_STDERR)
-			cdev->active[i++] = 'e';
-		cdev->active[i] = 0;
-	}
-
 	if (initialized < CONSOLE_INIT_FULL) {
 		char ch;
 		initialized = CONSOLE_INIT_FULL;
@@ -150,30 +138,39 @@ unsigned console_get_active(struct console_device *cdev)
 	return cdev->f_active;
 }
 
-static int console_active_set(struct device_d *dev, struct param_d *param,
-		const char *val)
+static int console_active_set(struct param_d *param, void *priv)
 {
-	struct console_device *cdev = to_console_dev(dev);
+	struct console_device *cdev = priv;
 	unsigned int flag = 0;
+	int ret;
 
-	if (val) {
-		if (strchr(val, 'i'))
+	if (cdev->active_string) {
+		if (strchr(cdev->active_string, 'i'))
 			flag |= CONSOLE_STDIN;
-		if (strchr(val, 'o'))
+		if (strchr(cdev->active_string, 'o'))
 			flag |= CONSOLE_STDOUT;
-		if (strchr(val, 'e'))
+		if (strchr(cdev->active_string, 'e'))
 			flag |= CONSOLE_STDERR;
 	}
 
-	return console_set_active(cdev, flag);
+	ret = console_set_active(cdev, flag);
+	if (ret)
+		return ret;
+
+	return 0;
 }
 
-static const char *console_active_get(struct device_d *dev,
-		struct param_d *param)
+static int console_active_get(struct param_d *param, void *priv)
 {
-	struct console_device *cdev = to_console_dev(dev);
+	struct console_device *cdev = priv;
+	unsigned int flag = cdev->f_active;
 
-	return cdev->active;
+	free(cdev->active_string);
+	cdev->active_string = basprintf("%s%s%s",
+					flag & CONSOLE_STDIN ? "i" : "",
+					flag & CONSOLE_STDOUT ? "o" : "",
+					flag & CONSOLE_STDERR ? "e" : "");
+	return 0;
 }
 
 int console_set_baudrate(struct console_device *cdev, unsigned baudrate)
@@ -331,7 +328,7 @@ int console_register(struct console_device *newcdev)
 		if (ret)
 			return ret;
 		newcdev->baudrate_param = newcdev->baudrate = CONFIG_BAUDRATE;
-		dev_add_param_int(dev, "baudrate", console_baudrate_set,
+		dev_add_param_uint32(dev, "baudrate", console_baudrate_set,
 			NULL, &newcdev->baudrate_param, "%u", newcdev);
 	}
 
@@ -340,7 +337,8 @@ int console_register(struct console_device *newcdev)
 
 	newcdev->open_count = 0;
 
-	dev_add_param(dev, "active", console_active_set, console_active_get, 0);
+	dev_add_param_string(dev, "active", console_active_set, console_active_get,
+			     &newcdev->active_string, newcdev);
 
 	if (IS_ENABLED(CONFIG_CONSOLE_ACTIVATE_FIRST)) {
 		if (list_empty(&console_list))

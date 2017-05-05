@@ -404,12 +404,12 @@ static int efi_init_devices(void)
 	dev_add_param_fixed(efi_bus.dev, "fw_vendor", fw_vendor);
 	free(fw_vendor);
 
-	dev_add_param_int_ro(efi_bus.dev, "major", sys_major, "%u");
-	dev_add_param_int_ro(efi_bus.dev, "minor", sys_minor, "%u");
-	dev_add_param_int_ro(efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
-	dev_add_param_int_ro(efi_bus.dev, "secure_boot", secure_boot, "%d");
-	dev_add_param_int_ro(efi_bus.dev, "secure_mode",
-			     secure_boot & setup_mode, "%u");
+	dev_add_param_uint32_fixed(efi_bus.dev, "major", sys_major, "%u");
+	dev_add_param_uint32_fixed(efi_bus.dev, "minor", sys_minor, "%u");
+	dev_add_param_uint32_fixed(efi_bus.dev, "fw_revision", efi_sys_table->fw_revision, "%u");
+	dev_add_param_bool_fixed(efi_bus.dev, "secure_boot", secure_boot);
+	dev_add_param_bool_fixed(efi_bus.dev, "secure_mode",
+				 secure_boot & setup_mode);
 
 	efi_bus.dev->info = efi_businfo;
 

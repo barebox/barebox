@@ -907,8 +907,8 @@ static int bootchooser_init(void)
 	globalvar_add_simple_bool("bootchooser.retry", &retry);
 	globalvar_add_simple_string("bootchooser.targets", &available_targets);
 	globalvar_add_simple_string("bootchooser.state_prefix", &state_prefix);
-	globalvar_add_simple_int("bootchooser.default_attempts", &global_default_attempts, "%u");
-	globalvar_add_simple_int("bootchooser.default_priority", &global_default_priority, "%u");
+	globalvar_add_simple_uint32("bootchooser.default_attempts", &global_default_attempts, "%u");
+	globalvar_add_simple_uint32("bootchooser.default_priority", &global_default_priority, "%u");
 	globalvar_add_simple_bitmask("bootchooser.reset_attempts", &reset_attempts,
 				  reset_attempts_names, ARRAY_SIZE(reset_attempts_names));
 	globalvar_add_simple_bitmask("bootchooser.reset_priorities", &reset_priorities,

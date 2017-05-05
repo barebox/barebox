@@ -447,19 +447,19 @@ int usb_new_device(struct usb_device *dev)
 		goto err_out;
 	}
 
-	dev_add_param_int_ro(&dev->dev, "iManufacturer",
-			dev->descriptor->iManufacturer, "%d");
-	dev_add_param_int_ro(&dev->dev, "iProduct",
-			dev->descriptor->iProduct, "%d");
-	dev_add_param_int_ro(&dev->dev, "iSerialNumber",
-			dev->descriptor->iSerialNumber, "%d");
+	dev_add_param_uint32_fixed(&dev->dev, "iManufacturer",
+			dev->descriptor->iManufacturer, "%u");
+	dev_add_param_uint32_fixed(&dev->dev, "iProduct",
+			dev->descriptor->iProduct, "%u");
+	dev_add_param_uint32_fixed(&dev->dev, "iSerialNumber",
+			dev->descriptor->iSerialNumber, "%u");
 	dev_add_param_fixed(&dev->dev, "iSerialNumber", str);
 	dev_add_param_fixed(&dev->dev, "Manufacturer", dev->mf);
 	dev_add_param_fixed(&dev->dev, "Product", dev->prod);
 	dev_add_param_fixed(&dev->dev, "SerialNumber", dev->serial);
-	dev_add_param_int_ro(&dev->dev, "idVendor",
+	dev_add_param_uint32_fixed(&dev->dev, "idVendor",
 			dev->descriptor->idVendor, "%04x");
-	dev_add_param_int_ro(&dev->dev, "idProduct",
+	dev_add_param_uint32_fixed(&dev->dev, "idProduct",
 			dev->descriptor->idProduct, "%04x");
 	list_add_tail(&dev->list, &usb_device_list);
 	dev_count++;

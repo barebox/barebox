@@ -20,7 +20,6 @@
 #include <asm/pbl_macros.h>
 
 	.set noreorder
-	.text
 	.section ".text_bare_init"
 	.align 4
 

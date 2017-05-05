@@ -662,6 +662,14 @@ static int fec_clk_enable(struct fec_priv *fec)
 			return err;
 	}
 
+	for (i = 0; i < ARRAY_SIZE(fec->opt_clk); i++) {
+		if (!IS_ERR_OR_NULL(fec->opt_clk[i])) {
+			const int err = clk_enable(fec->opt_clk[i]);
+			if (err < 0)
+				return err;
+		}
+	}
+
 	return 0;
 }
 
@@ -673,6 +681,12 @@ static void fec_clk_disable(struct fec_priv *fec)
 		if (!IS_ERR_OR_NULL(fec->clk[i]))
 			clk_disable(fec->clk[i]);
 	}
+
+	for (i = 0; i < ARRAY_SIZE(fec->opt_clk); i++) {
+		if (!IS_ERR_OR_NULL(fec->opt_clk[i])) {
+			clk_disable(fec->opt_clk[i]);
+		}
+	}
 }
 
 static void fec_clk_put(struct fec_priv *fec)
@@ -683,6 +697,11 @@ static void fec_clk_put(struct fec_priv *fec)
 		if (!IS_ERR_OR_NULL(fec->clk[i]))
 			clk_put(fec->clk[i]);
 	}
+
+	for (i = 0; i < ARRAY_SIZE(fec->opt_clk); i++) {
+		if (!IS_ERR_OR_NULL(fec->opt_clk[i]))
+			clk_put(fec->opt_clk[i]);
+	}
 }
 
 static int fec_clk_get(struct fec_priv *fec)
@@ -691,6 +710,9 @@ static int fec_clk_get(struct fec_priv *fec)
 	static const char *clk_names[ARRAY_SIZE(fec->clk)] = {
 		"ipg", "ahb", "ptp"
 	};
+	static const char *opt_clk_names[ARRAY_SIZE(fec->opt_clk)] = {
+		"enet_clk_ref", "enet_out",
+	};
 
 	for (i = 0; i < ARRAY_SIZE(fec->clk); i++) {
 		fec->clk[i] = clk_get(fec->edev.parent, clk_names[i]);
@@ -698,6 +720,13 @@ static int fec_clk_get(struct fec_priv *fec)
 			err = PTR_ERR(fec->clk[i]);
 			fec_clk_put(fec);
 			break;
+		}
+	}
+
+	for (i = 0; i < ARRAY_SIZE(fec->opt_clk); i++) {
+		fec->opt_clk[i] = clk_get(fec->edev.parent, opt_clk_names[i]);
+		if (IS_ERR(fec->opt_clk[i])) {
+			fec->opt_clk[i] = NULL;
 		}
 	}
 

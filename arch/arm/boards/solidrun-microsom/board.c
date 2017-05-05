@@ -78,7 +78,9 @@ static void microsom_eth_init(void)
 static int hummingboard_device_init(void)
 {
 	if (!of_machine_is_compatible("solidrun,hummingboard/dl") &&
-	    !of_machine_is_compatible("solidrun,hummingboard/q"))
+	    !of_machine_is_compatible("solidrun,hummingboard/q") &&
+	    !of_machine_is_compatible("solidrun,hummingboard2/dl") &&
+	    !of_machine_is_compatible("solidrun,hummingboard2/q"))
 		return 0;
 
 	microsom_eth_init();
@@ -108,13 +110,26 @@ device_initcall(h100_device_init);
 
 static int hummingboard_late_init(void)
 {
+	bool emmc_present = false;
+
 	if (!of_machine_is_compatible("solidrun,hummingboard/dl") &&
 	    !of_machine_is_compatible("solidrun,hummingboard/q") &&
+	    !of_machine_is_compatible("solidrun,hummingboard2/dl") &&
+	    !of_machine_is_compatible("solidrun,hummingboard2/q") &&
 	    !of_machine_is_compatible("auvidea,h100"))
 		return 0;
 
+	if (of_machine_is_compatible("solidrun,hummingboard2/dl") ||
+	    of_machine_is_compatible("solidrun,hummingboard2/q"))
+		emmc_present = true;
+
 	imx6_bbu_internal_mmc_register_handler("sdcard", "/dev/mmc1.barebox",
-		BBU_HANDLER_FLAG_DEFAULT);
+		emmc_present ? 0 : BBU_HANDLER_FLAG_DEFAULT);
+
+	if (emmc_present) {
+		imx6_bbu_internal_mmc_register_handler("emmc",
+			"/dev/mmc2.barebox", BBU_HANDLER_FLAG_DEFAULT);
+	}
 
 	return 0;
 }

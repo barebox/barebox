@@ -49,6 +49,22 @@ pblx-$(CONFIG_MACH_PCM038) += start_phytec_phycore_imx27
 FILE_barebox-phytec-phycore-imx27.img = start_phytec_phycore_imx27.pblx
 image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img
 
+# ----------------------- i.MX50 based boards ---------------------------
+pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01100
+CFG_start_imx50_kindle_d01100.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
+FILE_barebox-kindle-d01100.img = start_imx50_kindle_d01100.pblx.imximg
+imx-barebox-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-d01100.img
+
+pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01200
+CFG_start_imx50_kindle_d01200.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
+FILE_barebox-kindle-d01200.img = start_imx50_kindle_d01200.pblx.imximg
+imx-barebox-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-d01200.img
+
+pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_ey21
+CFG_start_imx50_kindle_ey21.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr2.imxcfg
+FILE_barebox-kindle-ey21.img = start_imx50_kindle_ey21.pblx.imximg
+imx-barebox-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-ey21.img
+
 # ----------------------- i.MX51 based boards ---------------------------
 pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg
@@ -249,15 +265,15 @@ CFG_start_imx6sx_sabresdb.pblx.imximg = $(board)/freescale-mx6sx-sabresdb/flash-
 FILE_barebox-freescale-imx6sx-sabresdb.img = start_imx6sx_sabresdb.pblx.imximg
 image-$(CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB) += barebox-freescale-imx6sx-sabresdb.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i1
-CFG_start_hummingboard_microsom_i1.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i1.imxcfg
-FILE_barebox-solidrun-hummingboard-microsom-i1.img = start_hummingboard_microsom_i1.pblx.imximg
-image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i1.img
-
 pblx-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += start_imx6_wandboard
 CFG_start_imx6_wandboard.imx-sram-img = $(board)/technexion-wandboard/flash-header-technexion-wandboard.imxcfg
 FILE_barebox-imx6-wandboard.img = start_imx6_wandboard.imx-sram-img
 image-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += barebox-imx6-wandboard.img
+
+pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i1
+CFG_start_hummingboard_microsom_i1.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i1.imxcfg
+FILE_barebox-solidrun-hummingboard-microsom-i1.img = start_hummingboard_microsom_i1.pblx.imximg
+image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i1.img
 
 pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i2
 CFG_start_hummingboard_microsom_i2.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2.imxcfg
@@ -273,6 +289,26 @@ pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i4
 CFG_start_hummingboard_microsom_i4.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i4.imxcfg
 FILE_barebox-solidrun-hummingboard-microsom-i4.img = start_hummingboard_microsom_i4.pblx.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i4.img
+
+pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i1
+CFG_start_hummingboard2_microsom_i1.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i1.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i1.img = start_hummingboard2_microsom_i1.pblx.imximg
+image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i1.img
+
+pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i2
+CFG_start_hummingboard2_microsom_i2.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i2.img = start_hummingboard2_microsom_i2.pblx.imximg
+image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i2.img
+
+pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i2ex
+CFG_start_hummingboard2_microsom_i2ex.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i2eX.img = start_hummingboard2_microsom_i2ex.pblx.imximg
+image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i2eX.img
+
+pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i4
+CFG_start_hummingboard2_microsom_i4.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i4.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i4.img = start_hummingboard2_microsom_i4.pblx.imximg
+image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i4.img
 
 pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_h100_microsom_i2ex
 CFG_start_h100_microsom_i2ex.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg

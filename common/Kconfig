@@ -101,6 +101,7 @@ config BAREBOX_UPDATE_IMX_NAND_FCB
 	depends on BAREBOX_UPDATE
 	depends on MTD_WRITE
 	depends on NAND_MXS
+	select BCH if ARCH_IMX6
 	default y
 
 config UBIFORMAT

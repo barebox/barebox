@@ -1,0 +1,15 @@
+#!/bin/sh
+# Boot the Amazon factory-shipped kernel uimage stored on
+# the eMMC at CONFIG_MMC_BOOTFLASH_ADDR 0x41000
+
+# Purge the OF tree to enable passing of ATAGs
+oftree -f
+
+# The same machine type introduced with freescale ENGR00124359
+armlinux_architecture=2955
+
+armlinux_system_serial="$global.board.ocotp_serial"
+
+global linux.bootargs.dyn.root="root=/dev/mmcblk0p1 rootwait ro"
+
+bootm -c /dev/disk0.kernel

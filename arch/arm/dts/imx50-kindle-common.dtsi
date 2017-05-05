@@ -1,0 +1,322 @@
+/*
+ * Copyright 2017 Alexander Kurz <akurz@blala.de>
+ * Copyright 2013 Greg Ungerer <gerg@uclinux.org>
+ * Copyright 2011 Freescale Semiconductor, Inc.
+ * Copyright 2011 Linaro Ltd.
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+#include "imx50.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	/* this is a dummy fixed-voltage "regulator", mainly to satisfy
+	* the esdhc implementation requiring vmmc-supply and vqmmc-supply
+	*/
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_3p3v: regulator@0 {
+			compatible = "regulator-fixed";
+			reg = <0>;
+			regulator-name = "3P3V";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-always-on;
+		};
+	};
+};
+
+&iomuxc {
+	imx50-kindle {
+		pinctrl_uart1: uart1grp {
+			fsl,pins = <
+				MX50_PAD_UART1_TXD__UART1_TXD_MUX	0xe4
+				MX50_PAD_UART1_RXD__UART1_RXD_MUX	0xe4
+			>;
+		};
+
+		pinctrl_ecspi2: ecspi2grp {
+			fsl,pins = <
+				MX50_PAD_ECSPI2_SCLK__ECSPI2_SCLK	0x84
+				MX50_PAD_ECSPI2_MOSI__ECSPI2_MOSI	0x84
+				MX50_PAD_ECSPI2_MISO__ECSPI2_MISO	0x84
+				MX50_PAD_ECSPI2_SS0__GPIO4_19		0x84
+			>;
+		};
+
+		pinctrl_cspi: cspigrp {
+			fsl,pins = <
+				MX50_PAD_CSPI_SCLK__CSPI_SCLK		0xc4
+				MX50_PAD_CSPI_MISO__CSPI_MISO		0xc4
+				MX50_PAD_CSPI_MOSI__CSPI_MOSI		0xc4
+				MX50_PAD_CSPI_SS0__GPIO4_11		0xe4
+			>;
+		};
+
+		pinctrl_pmic: pmicgrp {
+			fsl,pins = <
+				MX50_PAD_UART1_CTS__GPIO6_8		0x84
+				MX50_PAD_EPDC_PWRCTRL0__GPIO3_29	0x84
+			>;
+		};
+
+		pinctrl_esdhc3: esdhc3grp {
+			fsl,pins = <
+				MX50_PAD_SD3_CMD__ESDHC3_CMD		0xd4
+				MX50_PAD_SD3_CLK__ESDHC3_CLK		0x00
+				MX50_PAD_SD3_D0__ESDHC3_DAT0		0xd4
+				MX50_PAD_SD3_D1__ESDHC3_DAT1		0xd4
+				MX50_PAD_SD3_D2__ESDHC3_DAT2		0xd4
+				MX50_PAD_SD3_D3__ESDHC3_DAT3		0xd4
+				MX50_PAD_SD3_D4__ESDHC3_DAT4		0xd4
+				MX50_PAD_SD3_D5__ESDHC3_DAT5		0xd4
+				MX50_PAD_SD3_D6__ESDHC3_DAT6		0xd4
+				MX50_PAD_SD3_D7__ESDHC3_DAT7		0xd4
+			>;
+		};
+
+		pinctrl_esdhc2: esdhc2grp {
+			fsl,pins = <
+				MX50_PAD_SD2_CMD__ESDHC2_CMD		0x84
+				MX50_PAD_SD2_CLK__ESDHC2_CLK		0x84
+				MX50_PAD_SD2_D0__ESDHC2_DAT0		0x84
+				MX50_PAD_SD2_D1__ESDHC2_DAT1		0x84
+				MX50_PAD_SD2_D2__ESDHC2_DAT2		0x84
+				MX50_PAD_SD2_D3__ESDHC2_DAT3		0x84
+
+				MX50_PAD_EIM_DA5__GPIO1_5		0xe4 /* wake-on-lan */
+				MX50_PAD_SD3_WP__GPIO5_28		0x84 /* power */
+				MX50_PAD_DISP_RS__GPIO2_17		0xe4 /* ? */
+			>;
+		};
+
+		pinctrl_i2c1: i2c1grp {
+			fsl,pins = <
+				MX50_PAD_I2C1_SCL__I2C1_SCL	0x4000002c
+				MX50_PAD_I2C1_SDA__I2C1_SDA	0x4000002c
+			>;
+		};
+
+		pinctrl_i2c2: i2c2grp {
+			fsl,pins = <
+				MX50_PAD_I2C2_SCL__I2C2_SCL	0x4000002c
+				MX50_PAD_I2C2_SDA__I2C2_SDA	0x4000002c
+			>;
+		};
+
+		pinctrl_i2c3: i2c3grp {
+			fsl,pins = <
+				MX50_PAD_I2C3_SCL__I2C3_SCL	0x4000002c
+				MX50_PAD_I2C3_SDA__I2C3_SDA	0x4000002c
+			>;
+		};
+
+		pinctrl_charger_detect: chargerdetectgrp {
+			fsl,pins = <
+				MX50_PAD_OWIRE__GPIO6_26		0x84
+			>;
+		};
+	};
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	status = "okay";
+};
+
+&esdhc3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_esdhc3>;
+	non-removable;
+	vmmc-supply = <&reg_3p3v>;
+	vqmmc-supply = <&reg_3p3v>;
+	status = "okay";
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		kernel: kernel@0x41000 {
+			label = "kernel";
+			reg = <0x41000 0xe00000>;
+		};
+
+		diags_kernel: diags_kernel@0xe41000 {
+			label = "diags_kernel";
+			reg = <0xe41000 0xe00000>;
+		};
+	};
+
+	boot0-partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		imx_header: imx_header@0x400 {
+			label = "imx_header";
+			reg = <0x400 0x800>;
+		};
+
+		self: self@0x1000 {
+			label = "self";
+			reg = <0x1000 0x3e000>;
+		};
+
+		userdata: userdata@0x3f000 {
+			label = "userdata";
+			reg = <0x3f000 0x1400>;
+		};
+	};
+};
+
+&ecspi2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi2>;
+	fsl,spi-num-chipselects = <1>;
+	cs-gpios = <&gpio4 19 0>;
+	status = "okay";
+
+	flash: m25p80@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <1000000>;
+		reg = <0>;
+	};
+};
+
+&cspi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_cspi>;
+	fsl,spi-num-chipselects = <1>;
+	cs-gpios = <&gpio4 11 0>;
+	status = "okay";
+
+	pmic: mc13892@0 {
+		compatible = "fsl,mc13892";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pmic>;
+		spi-max-frequency = <1000000>;
+		spi-cs-high;
+		reg = <0>;
+		interrupt-parent = <&gpio6>;
+		interrupts = <8 IRQ_TYPE_LEVEL_HIGH>;
+		fsl,mc13xxx-uses-rtc;
+
+		regulators {
+			sw1_reg: sw1 {
+				regulator-min-microvolt = <600000>;
+				regulator-max-microvolt = <1375000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			sw2_reg: sw2 {
+				regulator-min-microvolt = <900000>;
+				regulator-max-microvolt = <1850000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			sw3_reg: sw3 {
+				regulator-min-microvolt = <900000>;
+				regulator-max-microvolt = <1850000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			sw4_reg: sw4 {
+				regulator-min-microvolt = <1100000>;
+				regulator-max-microvolt = <1850000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			vdig_reg: vdig {
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <1200000>;
+				regulator-boot-on;
+			};
+
+			vpll_reg: vpll {
+				regulator-min-microvolt = <1050000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			vusb2_reg: vusb2 {
+				regulator-min-microvolt = <2400000>;
+				regulator-max-microvolt = <2775000>;
+				regulator-boot-on;
+				regulator-always-on;
+			};
+
+			vvideo_reg: vvideo {
+				regulator-min-microvolt = <2775000>;
+				regulator-max-microvolt = <2775000>;
+			};
+
+			vaudio_reg: vaudio {
+				regulator-min-microvolt = <2300000>;
+				regulator-max-microvolt = <3000000>;
+			};
+
+			vsd_reg: vsd {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3150000>;
+			};
+
+			vcam_reg: vcam {
+				regulator-min-microvolt = <2500000>;
+				regulator-max-microvolt = <3000000>;
+			};
+
+			vgen1_reg: vgen1 {
+				regulator-min-microvolt = <3000000>;
+				regulator-max-microvolt = <3000000>;
+			};
+
+			vgen2_reg: vgen2 {
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <3150000>;
+				regulator-always-on;
+			};
+
+			vgen3_reg: vgen3 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+			};
+		};
+
+		leds {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			led-control = <0 0xff8 0 0>;
+			ledg {
+				reg = <2>;
+				label = "pmic_ledsg";
+				linux,default-trigger = "heartbeat";
+			};
+		};
+	};
+};
+
+&usbotg {
+	phy_type = "utmi";
+	dr_mode = "peripheral";
+	status = "okay";
+};

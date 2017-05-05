@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if test "$global.model" = "Amazon Kindle D01100"; then
+	if gpio_get_value 18; then; else
+		usbserial
+		global.autoboot_timeout=60
+	fi
+fi
+
+if test "$global.model" = "Amazon Kindle D01200"; then
+	sleep 5
+	if gpio_get_value 0; then
+		usbserial
+		global.autoboot_timeout=60
+	fi
+fi
+
+if test "$global.model" = "Amazon Kindle EY21"; then
+	usbserial
+	global.autoboot_timeout=10
+fi

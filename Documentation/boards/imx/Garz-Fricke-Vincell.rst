@@ -7,7 +7,7 @@ This CPU card is based on a Freescale i.MX53 CPU. The card is shipped with:
   * 512MiB synchronous dynamic RAM
   * microSD slot
 
-see http://www.garz-fricke.com/vincell-lt-core_de.html for more information
+see http://www.garz-fricke.com/en/products/embedded-systems/single-board-computer/ia-0086r/ for more information
 
 
 Bootstrapping barebox

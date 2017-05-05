@@ -1,0 +1,71 @@
+/*
+ * Copyright 2017 Alexander Kurz <akurz@blala.de>
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+/dts-v1/;
+#include "imx50-kindle-common.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+/ {
+	model = "Amazon Kindle D01100";
+	compatible = "fsl,imx50";
+
+	chosen {
+		linux,stdout-path = &uart1;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x70000000 0x10000000>;
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	imx50-kindle-d01100 {
+                pinctrl_hog: hoggrp {
+                        fsl,pins = <
+				MX50_PAD_EIM_EB1__GPIO1_20		0xc0
+				MX50_PAD_EIM_EB0__GPIO1_19		0xc0
+				MX50_PAD_EIM_CS2__GPIO1_16		0xc0
+				MX50_PAD_EIM_CS1__GPIO1_17		0xc0
+				MX50_PAD_EIM_CS0__GPIO1_18		0xc0
+				MX50_PAD_SSI_RXC__GPIO6_5		0x84
+			>;
+		};
+	};
+};
+
+&i2c2 {
+	clock-frequency = <50000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+
+	max14656@35 {
+		compatible = "maxim,max14656";
+		reg = <0x35>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_charger_detect>;
+		interrupt-parent = <&gpio6>;
+		interrupts = <26 IRQ_TYPE_LEVEL_HIGH>;
+        };
+
+	smart-battery@55 {
+		compatible = "ti,bq27210";
+		reg = <0x55>;
+		ti,i2c-retry-count = <2>;
+		ti,poll-retry-count = <10>;
+	};
+};

@@ -27,7 +27,6 @@ SECTIONS
 	. = ALIGN(4);
 	.text      :
 	{
-		_start = .;
 		*(.text_entry*)
 		_stext = .;
 		_text = .;

@@ -655,12 +655,6 @@
 					mask = <0x60>;
 					status = "disabled";
 				};
-
-				snvs_lpgpr: snvs-lpgpr {
-					compatible = "fsl,imx6sl-snvs-lpgpr";
-					regmap = <&snvs>;
-					offset = <0x68>;
-				};
 			};
 
 			epit1: epit@020d0000 {

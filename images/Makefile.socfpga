@@ -4,8 +4,11 @@
 
 # %.socfpgaimg - convert into socfpga image
 # ----------------------------------------------------------------
+SOCFPGA_IMAGE_ARGS-$(CONFIG_ARCH_SOCFPGA_ARRIA10) += -v1
+SOCFPGA_IMAGE_ARGS-$(CONFIG_ARCH_SOCFPGA_CYCLONE5) += -v0
+
 quiet_cmd_socfpga_image = SOCFPGA-IMG $@
-      cmd_socfpga_image = scripts/socfpga_mkimage -o $@ $<
+      cmd_socfpga_image = scripts/socfpga_mkimage -o $@ $(SOCFPGA_IMAGE_ARGS-y) $<
 
 $(obj)/%.socfpgaimg: $(obj)/% FORCE
 	$(call if_changed,socfpga_image)
@@ -26,6 +29,10 @@ socfpga-xload-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += barebox-socfpga-de0
 pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += start_socfpga_de0_nano_soc
 FILE_barebox-socfpga-de0_nano_soc.img = start_socfpga_de0_nano_soc.pblx
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += barebox-socfpga-de0_nano_soc.img
+
+pblx-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles
+FILE_barebox-socfpga-achilles.img = start_socfpga_achilles.pblx.socfpgaimg
+socfpga-barebox-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += barebox-socfpga-achilles.img
 
 pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += start_socfpga_sockit_xload
 FILE_barebox-socfpga-sockit-xload.img = start_socfpga_sockit_xload.pblx.socfpgaimg

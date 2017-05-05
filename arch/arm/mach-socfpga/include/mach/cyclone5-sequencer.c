@@ -26,11 +26,9 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "sequencer_defines.h"
-
 #include "system.h"
 #include "sdram_io.h"
-#include "sequencer.h"
+#include "cyclone5-sequencer.h"
 #include "tclrpt.h"
 
 /******************************************************************************
@@ -57,7 +55,7 @@ asm(".global __alt_stack_pointer");
 asm("__alt_stack_pointer = " STRINGIFY(STACK_POINTER));
 #endif
 
-#include <mach/sdram.h>
+#include <mach/cyclone5-sdram.h>
 
 #define NEWVERSION_RDDESKEW 1
 #define NEWVERSION_WRDESKEW 1

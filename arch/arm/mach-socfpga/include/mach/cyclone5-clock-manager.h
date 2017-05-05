@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef	_CLOCK_MANAGER_H_
-#define	_CLOCK_MANAGER_H_
+#ifndef	_CLOCK_MANAGER_CYCLONE5_H_
+#define	_CLOCK_MANAGER_CYCLONE5_H_
 
 struct socfpga_cm_config {
 	/* main group */
@@ -197,4 +197,4 @@ void socfpga_cm_basic_init(const struct socfpga_cm_config *cfg);
 	CLKMGR_MAINPLLGRP_VCO_EN_SET(0)| \
 	CLKMGR_MAINPLLGRP_VCO_BGPWRDN_SET(0))
 
-#endif /* _CLOCK_MANAGER_H_ */
+#endif

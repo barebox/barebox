@@ -12,6 +12,7 @@
  */
 
 #include <common.h>
+#include <debug_ll.h>
 #include <init.h>
 #include <driver.h>
 #include <linux/clk.h>
@@ -19,6 +20,8 @@
 #include <malloc.h>
 #include <linux/clkdev.h>
 #include <linux/err.h>
+
+#include "clk.h"
 
 /* Clock Manager offsets */
 #define CLKMGR_CTRL	0x0
@@ -52,7 +55,7 @@
 #define div_mask(width)	((1 << (width)) - 1)
 #define streq(a, b) (strcmp((a), (b)) == 0)
 
-static void __iomem *clk_mgr_base_addr;
+void __iomem *clk_mgr_base_addr;
 
 struct clk_pll {
 	struct clk clk;
@@ -385,6 +388,12 @@ static void socfpga_register_clocks(struct device_d *dev, struct device_node *no
 		clk = socfpga_periph_clk(node);
 	else if (of_device_is_compatible(node, "altr,socfpga-gate-clk"))
 		clk = socfpga_gate_clk(node);
+	else if (of_device_is_compatible(node, "altr,socfpga-a10-pll-clock"))
+		clk = socfpga_a10_pll_init(node);
+	else if (of_device_is_compatible(node, "altr,socfpga-a10-perip-clk"))
+		clk = socfpga_a10_periph_init(node);
+	else if (of_device_is_compatible(node, "altr,socfpga-a10-gate-clk"))
+		clk = socfpga_a10_gate_init(node);
 	else
 		return;
 

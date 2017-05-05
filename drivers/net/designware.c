@@ -520,6 +520,9 @@ static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
 		.compatible = "snps,dwmac-3.70a",
 		.data = &dwmac_370a_drvdata,
 	}, {
+		.compatible = "snps,dwmac-3.72a",
+		.data = &dwmac_370a_drvdata,
+	}, {
 		/* sentinel */
 	}
 };

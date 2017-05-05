@@ -18,7 +18,7 @@
 #include <common.h>
 #include <io.h>
 #include <mach/nic301.h>
-#include <mach/socfpga-regs.h>
+#include <mach/cyclone5-regs.h>
 
 /*
  * Convert all slave from secure to non secure

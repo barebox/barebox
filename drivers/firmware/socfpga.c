@@ -34,10 +34,10 @@
 #include <fcntl.h>
 #include <init.h>
 #include <io.h>
-#include <mach/system-manager.h>
-#include <mach/reset-manager.h>
-#include <mach/socfpga-regs.h>
-#include <mach/sdram.h>
+#include <mach/cyclone5-system-manager.h>
+#include <mach/cyclone5-reset-manager.h>
+#include <mach/cyclone5-regs.h>
+#include <mach/cyclone5-sdram.h>
 
 #define FPGAMGRREGS_STAT			0x0
 #define FPGAMGRREGS_CTRL			0x4

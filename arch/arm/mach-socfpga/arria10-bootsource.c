@@ -13,22 +13,18 @@
 
 #include <common.h>
 #include <bootsource.h>
-#include <environment.h>
 #include <init.h>
 #include <io.h>
-#include <mach/socfpga-regs.h>
-#include <mach/system-manager.h>
+#include <mach/arria10-system-manager.h>
 
-#define SYSMGR_BOOTINFO	0x14
-
-static int socfpga_boot_save_loc(void)
+static int arria10_boot_save_loc(void)
 {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t val;
 
-	val = readl(CYCLONE5_SYSMGR_ADDRESS + SYSMGR_BOOTINFO);
+	val = readl(ARRIA10_SYSMGR_BOOTINFO);
 
-	switch (val & 0x7) {
+	switch ((val & 0x7000) >> 12) {
 	case 0:
 		/* reserved */
 		break;
@@ -54,4 +50,4 @@ static int socfpga_boot_save_loc(void)
 
 	return 0;
 }
-core_initcall(socfpga_boot_save_loc);
+core_initcall(arria10_boot_save_loc);

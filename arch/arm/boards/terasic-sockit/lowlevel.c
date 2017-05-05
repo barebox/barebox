@@ -7,13 +7,13 @@
 #include <debug_ll.h>
 #include <asm/cache.h>
 #include "sdram_config.h"
-#include <mach/sdram_config.h>
+#include <mach/cyclone5-sdram-config.h>
 #include "pinmux_config.c"
 #include "pll_config.h"
 #include <mach/pll_config.h>
 #include "sequencer_defines.h"
 #include "sequencer_auto.h"
-#include <mach/sequencer.c>
+#include <mach/cyclone5-sequencer.c>
 #include "sequencer_auto_inst_init.c"
 #include "sequencer_auto_ac_init.c"
 #include "iocsr_config_cyclone5.c"

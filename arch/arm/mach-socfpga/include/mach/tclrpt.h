@@ -28,7 +28,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "sequencer.h"
+#include "cyclone5-sequencer.h"
 
 #define TCLRPT_SET(item, value)
 

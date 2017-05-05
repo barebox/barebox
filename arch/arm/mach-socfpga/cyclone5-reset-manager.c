@@ -19,8 +19,8 @@
 #include <io.h>
 #include <init.h>
 #include <restart.h>
-#include <mach/socfpga-regs.h>
-#include <mach/reset-manager.h>
+#include <mach/cyclone5-regs.h>
+#include <mach/cyclone5-reset-manager.h>
 
 /* Disable the watchdog (toggle reset to watchdog) */
 void watchdog_disable(void)

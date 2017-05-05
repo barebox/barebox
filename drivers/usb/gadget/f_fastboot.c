@@ -758,6 +758,9 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 
 copy:
 	ret = copy_file(FASTBOOT_TMPFILE, filename, 1);
+
+	unlink(FASTBOOT_TMPFILE);
+
 	if (ret) {
 		fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
 		return;

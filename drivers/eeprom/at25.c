@@ -290,7 +290,7 @@ static int at25_np_to_chip(struct device_d *dev,
 				val);
 			return -ENODEV;
 		}
-		if (of_find_property(np, "read-only", NULL))
+		if (of_property_read_bool(np, "read-only"))
 			chip->flags |= EE_READONLY;
 	}
 	return 0;

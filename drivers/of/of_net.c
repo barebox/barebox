@@ -77,19 +77,15 @@ EXPORT_SYMBOL_GPL(of_get_phy_mode);
 */
 const void *of_get_mac_address(struct device_node *np)
 {
-	struct property *pp;
+	const void *p;
+	int len, i;
+	const char *str[] = { "mac-address", "local-mac-address", "address" };
 
-	pp = of_find_property(np, "mac-address", NULL);
-	if (pp && (pp->length == 6) && is_valid_ether_addr(pp->value))
-		return pp->value;
-
-	pp = of_find_property(np, "local-mac-address", NULL);
-	if (pp && (pp->length == 6) && is_valid_ether_addr(pp->value))
-		return pp->value;
-
-	pp = of_find_property(np, "address", NULL);
-	if (pp && (pp->length == 6) && is_valid_ether_addr(pp->value))
-		return pp->value;
+	for (i = 0; i < ARRAY_SIZE(str); i++) {
+		p = of_get_property(np, str[i], &len);
+		if (p && (len == 6) && is_valid_ether_addr(p))
+			return p;
+	}
 
 	return NULL;
 }

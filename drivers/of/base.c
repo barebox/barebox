@@ -1090,18 +1090,13 @@ int of_property_write_u8_array(struct device_node *np,
 			       size_t sz)
 {
 	struct property *prop = of_find_property(np, propname, NULL);
-	u8 *val;
 
 	if (prop)
 		of_delete_property(prop);
 
-	prop = of_new_property(np, propname, NULL, sizeof(*val) * sz);
+	prop = of_new_property(np, propname, values, sizeof(*values) * sz);
 	if (!prop)
 		return -ENOMEM;
-
-	val = prop->value;
-	while (sz--)
-		*val++ = *values++;
 
 	return 0;
 }
@@ -1807,12 +1802,7 @@ struct property *of_new_property(struct device_node *node, const char *name,
 	struct property *prop;
 
 	prop = xzalloc(sizeof(*prop));
-	prop->name = strdup(name);
-	if (!prop->name) {
-		free(prop);
-		return NULL;
-	}
-
+	prop->name = xstrdup(name);
 	prop->length = len;
 	prop->value = xzalloc(len);
 

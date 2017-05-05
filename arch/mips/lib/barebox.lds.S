@@ -50,9 +50,6 @@ SECTIONS
 
 	.barebox_imd : { BAREBOX_IMD }
 
-	. = ALIGN(4);
-	.got : { *(.got*) }
-
 	. = .;
 	__barebox_cmd_start = .;
 	.barebox_cmd : { BAREBOX_CMDS }

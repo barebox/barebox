@@ -407,7 +407,7 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 {
 	struct state *state = ctx;
 	const char *compatible = "barebox,state";
-	struct device_node *new_node, *node, *parent, *backend_node;
+	struct device_node *new_node, *node, *parent, *backend_node, *aliases;
 	struct property *p;
 	int ret;
 	phandle phandle;
@@ -416,6 +416,15 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	if (node) {
 		/* replace existing node - it will be deleted later */
 		parent = node->parent;
+
+		/*
+		 * barebox replaces the state node in the device tree it starts the
+		 * kernel with, so a state node that already exists in the device tree
+		 * will be overwritten. Warn about this so people do not wonder why
+		 * changes in the kernels state node do not have any effect.
+		 */
+		if (root != of_get_root_node())
+			dev_warn(&state->dev, "Warning: Kernel devicetree contains state node, replacing it\n");
 	} else {
 		char *of_path, *c;
 
@@ -511,6 +520,17 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	if (ret)
 		goto out;
 
+	aliases = of_create_node(root, "/aliases");
+	if (!aliases) {
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	ret = of_set_property(aliases, state->name, new_node->full_name,
+			      strlen(new_node->full_name) + 1, 1);
+	if (ret)
+		goto out;
+
 	/* delete existing node */
 	if (node)
 		of_delete_node(node);
@@ -558,8 +578,10 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	uint32_t stridesize;
 
 	alias = of_alias_get(node);
-	if (!alias)
-		alias = node->name;
+	if (!alias) {
+		pr_err("State node %s does not have an alias in the /aliases/ node\n", node->full_name);
+		return ERR_PTR(-EINVAL);
+	}
 
 	state = state_new(alias);
 	if (IS_ERR(state))

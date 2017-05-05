@@ -32,6 +32,8 @@ Required properties:
 * ``backend``: contains a phandle to the device/partition which holds the
   actual state data.
 * ``backend-type``: should be ``raw`` or ``dtb``.
+* additionally a state node must have an alias in the /aliases/ node pointing
+  to it.
 
 Optional properties:
 
@@ -74,7 +76,11 @@ Optional properties:
 
 Example::
 
-  state: state@0 {
+  /aliases {
+  	state = &state;
+  };
+
+  state: state {
   	magic = <0x27031977>;
   	compatible = "barebox,state";
   	backend-type = "raw";

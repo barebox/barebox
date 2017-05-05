@@ -112,6 +112,7 @@ static int physom_devices_init(void)
 		xloadslots, ARRAY_SIZE(xloadslots));
 	am33xx_bbu_nand_slots_register_handler("nand", nandslots,
 				ARRAY_SIZE(nandslots));
+	am33xx_bbu_emmc_mlo_register_handler("MLO.emmc", "/dev/mmc1");
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();

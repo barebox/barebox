@@ -27,7 +27,6 @@
 #include <clock.h>
 #include <poller.h>
 
-static struct clocksource *current_clock;
 static uint64_t time_ns;
 
 /*
@@ -53,11 +52,7 @@ static struct clocksource dummy_cs = {
 	.priority = -1,
 };
 
-static int dummy_csrc_init(void)
-{
-	return init_clock(&dummy_cs);
-}
-pure_initcall(dummy_csrc_init);
+static struct clocksource *current_clock = &dummy_cs;
 
 static int dummy_csrc_warn(void)
 {

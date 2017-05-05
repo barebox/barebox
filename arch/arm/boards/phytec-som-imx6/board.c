@@ -31,7 +31,6 @@
 #include <mach/bbu.h>
 #include <platform_data/eth-fec.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
-#include <linux/clk.h>
 #include <linux/micrel_phy.h>
 
 #include <globalvar.h>
@@ -97,31 +96,13 @@ int ksz8081_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int imx6ul_setup_fec(void)
+static void imx6ul_setup_fec(void)
 {
 	void __iomem *gprbase = IOMEM(MX6_IOMUXC_BASE_ADDR) + 0x4000;
 	uint32_t val;
-	struct clk *clk;
 
 	phy_register_fixup_for_uid(PHY_ID_KSZ8081, MICREL_PHY_ID_MASK,
 			ksz8081_phy_fixup);
-
-	clk = clk_lookup("enet_ptp");
-	if (IS_ERR(clk))
-		goto err;
-
-	clk_enable(clk);
-
-	clk = clk_lookup("enet_ref");
-	if (IS_ERR(clk))
-		goto err;
-	clk_enable(clk);
-
-	clk = clk_lookup("enet_ref_125m");
-	if (IS_ERR(clk))
-		goto err;
-
-	clk_enable(clk);
 
 	val = readl(gprbase + IOMUXC_GPR1);
 	/* Use 50M anatop loopback REF_CLK1 for ENET1, clear gpr1[13], set gpr1[17]*/
@@ -131,12 +112,6 @@ static int imx6ul_setup_fec(void)
 	val &= ~(1 << 14);
 	val |= (1 << 18);
 	writel(val, gprbase + IOMUXC_GPR1);
-
-	return 0;
-err:
-	pr_err("Setting up DFEC\n");
-
-	return -EIO;
 }
 
 static int physom_imx6_devices_init(void)

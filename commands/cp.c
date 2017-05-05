@@ -76,7 +76,8 @@ static int do_cp(int argc, char *argv[])
 
 	for (i = optind; i < argc - 1; i++) {
 		char *dst;
-		dst = concat_path_file(argv[argc - 1], basename(argv[i]));
+
+		dst = concat_path_file(argv[argc - 1], posix_basename(argv[i]));
 
 		if (recursive)
 			ret = copy_recursive(argv[i], dst);

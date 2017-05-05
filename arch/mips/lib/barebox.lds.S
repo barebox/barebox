@@ -27,9 +27,9 @@ SECTIONS
 	. = ALIGN(4);
 	.text      :
 	{
-		*(.text_entry*)
 		_stext = .;
 		_text = .;
+		*(.text_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
 		__bare_init_end = .;

@@ -58,7 +58,7 @@ struct cqspi_st {
 	unsigned int	irq_mask;
 	int		current_cs;
 	unsigned int	master_ref_clk_hz;
-	unsigned int	ext_decoder;
+	unsigned int	is_decoded_cs;
 	unsigned int	fifo_depth;
 	struct cqspi_flash_pdata f_pdata[CQSPI_MAX_CHIPSELECT];
 	bool no_reconfig;
@@ -903,7 +903,7 @@ static void cqspi_switch_cs(struct cqspi_st *cqspi, unsigned int cs)
 	writel(reg, reg_base + CQSPI_REG_SIZE);
 
 	/* configure the chip select */
-	cqspi_chipselect(cqspi, cs, cqspi->ext_decoder);
+	cqspi_chipselect(cqspi, cs, cqspi->is_decoded_cs);
 
 	cqspi_controller_enable(cqspi);
 }
@@ -1020,12 +1020,9 @@ static int cqspi_parse_dt(struct cqspi_st *cqspi)
 	struct device_node *np = cqspi->dev->device_node;
 	struct device_d *dev = cqspi->dev;
 
-	if (of_property_read_u32(np, "ext-decoder", &cqspi->ext_decoder)) {
-		dev_err(dev, "couldn't determine ext-decoder\n");
-		return -ENXIO;
-	}
+	cqspi->is_decoded_cs = of_property_read_bool(np, "cdns,is-decoded-cs");
 
-	if (of_property_read_u32(np, "fifo-depth", &cqspi->fifo_depth)) {
+	if (of_property_read_u32(np, "cdns,fifo-depth", &cqspi->fifo_depth)) {
 		dev_err(dev, "couldn't determine fifo-depth\n");
 		return -ENXIO;
 	}
@@ -1123,7 +1120,7 @@ static int cqspi_probe(struct device_d *dev)
 	dev->priv = cqspi;
 
 	if (pdata) {
-		cqspi->ext_decoder = pdata->ext_decoder;
+		cqspi->is_decoded_cs = pdata->is_decoded_cs;
 		cqspi->fifo_depth = pdata->fifo_depth;
 	} else {
 		ret = cqspi_parse_dt(cqspi);
@@ -1133,7 +1130,7 @@ static int cqspi_probe(struct device_d *dev)
 		}
 	}
 
-	cqspi->qspi_clk = clk_get(dev, "qspi_clk");
+	cqspi->qspi_clk = clk_get(dev, NULL);
 	if (IS_ERR(cqspi->qspi_clk)) {
 		dev_err(dev, "cannot get qspi clk\n");
 		ret = PTR_ERR(cqspi->qspi_clk);

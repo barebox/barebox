@@ -216,3 +216,24 @@ mode. Once a specific mode has been selected it can't be changed later anymore.
   musb-hdrc: setup fifo_mode 4
   musb-hdrc: 28/31 max ep, 16384/16384 memory
   barebox:/
+
+USB Gadget autostart Support
+----------------------------
+
+Barebox can be configured to start usbgadget automatically by using global variables,
+instead of creating boot script. This can be useful if autostart policy should be
+chosen at boot time from other driver or script.
+To get usbgadget autostart support barebox has to be compiled with
+CONFIG_USB_GADGET_AUTOSTART enabled.
+
+USB Gadget autostart Options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``global.usbgadget.autostart``
+  Boolean flag. If set to 1, usbgadget will be started automatically on boot and
+  enable USB OTG mode. (Default 0).
+``global.usbgadget.acm``
+  Boolean flag. If set to 1, CDC ACM function will be created.
+  See :ref:`command_usbgadget` -a. (Default 0).
+``global.usbgadget.fastboot_function``
+  Function description for fastboot. See :ref:`command_usbgadget` -A [desc].

@@ -422,10 +422,10 @@ int globalvar_add_simple(const char *name, const char *value)
 			return PTR_ERR(param);
 	}
 
+	globalvar_nv_sync(name);
+
 	if (value)
 		dev_set_param(&global_device, name, value);
-
-	globalvar_nv_sync(name);
 
 	return 0;
 }

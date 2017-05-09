@@ -332,6 +332,8 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 
 	devfs_create(new);
 
+	cdev_create_default_automount(new);
+
 	return new;
 }
 

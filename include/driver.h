@@ -490,6 +490,14 @@ struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 		loff_t size, unsigned int flags, const char *name);
 int devfs_del_partition(const char *name);
 
+#ifdef CONFIG_FS_AUTOMOUNT
+void cdev_create_default_automount(struct cdev *cdev);
+#else
+static inline void cdev_create_default_automount(struct cdev *cdev)
+{
+}
+#endif
+
 #define DEVFS_PARTITION_APPEND		0
 
 /**

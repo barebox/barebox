@@ -374,6 +374,8 @@ int blockdevice_register(struct block_device *blk)
 
 	list_add_tail(&blk->list, &block_device_list);
 
+	cdev_create_default_automount(&blk->cdev);
+
 	return 0;
 }
 

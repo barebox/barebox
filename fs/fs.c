@@ -328,6 +328,20 @@ int automount_add(const char *path, const char *cmd)
 }
 EXPORT_SYMBOL(automount_add);
 
+void cdev_create_default_automount(struct cdev *cdev)
+{
+	char *path, *cmd;
+
+	path = basprintf("/mnt/%s", cdev->name);
+	cmd = basprintf("mount %s", cdev->name);
+
+	make_directory(path);
+	automount_add(path, cmd);
+
+	free(cmd);
+	free(path);
+}
+
 void automount_print(void)
 {
 	struct automount *am;

@@ -48,7 +48,7 @@ static int do_readlink(int argc, char *argv[])
 		goto err;
 
 	if (canonicalize) {
-		char *buf = normalise_link(argv[optind], realname);
+		char *buf = canonicalize_path(realname);
 
 		if (!buf)
 			goto err;

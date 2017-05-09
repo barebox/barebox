@@ -33,6 +33,7 @@ Contents:
    reset-reason
    system-reset
    state
+   random
 
 * :ref:`search`
 * :ref:`genindex`

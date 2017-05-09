@@ -84,7 +84,7 @@ Example::
   	magic = <0x27031977>;
   	compatible = "barebox,state";
   	backend-type = "raw";
-  	backend = &state_part;
+  	backend = <&state_part>;
 
   	foo {
   		reg = <0x00 0x4>;

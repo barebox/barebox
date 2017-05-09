@@ -32,7 +32,6 @@ config ARCH_MPC5200
 config MPC5xxx
 	bool
 	depends on MACH_PHYCORE_MPC5200B_TINY
-	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	default y
 
 menu "Board specific settings"

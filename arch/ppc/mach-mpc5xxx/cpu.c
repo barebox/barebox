@@ -33,6 +33,8 @@
 #include <of.h>
 #include <restart.h>
 #include <mach/clock.h>
+#include <asm-generic/memory_layout.h>
+#include <memory.h>
 
 int checkcpu (void)
 {
@@ -59,6 +61,22 @@ int checkcpu (void)
 }
 
 /* ------------------------------------------------------------------------- */
+
+static int mpc5xxx_reserve_region(void)
+{
+	struct resource *r;
+
+	/* keep this in sync with the assembler routines setting up the stack */
+	r = request_sdram_region("stack", _text_base - STACK_SIZE, STACK_SIZE);
+	if (r == NULL) {
+		pr_err("Failed to request stack region at: 0x%08lx/0x%08lx\n",
+			_text_base - STACK_SIZE, _text_base - 1);
+		return -EBUSY;
+	}
+
+	return 0;
+}
+coredevice_initcall(mpc5xxx_reserve_region);
 
 static void __noreturn mpc5xxx_restart_soc(struct restart_handler *rst)
 {

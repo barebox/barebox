@@ -1910,6 +1910,8 @@ int of_probe(void)
 		barebox_set_model(of_model);
 
 	memory = of_find_node_by_path("/memory");
+	if (!memory)
+		memory = of_find_node_by_type(root_node, "memory");
 	if (memory)
 		of_add_memory(memory, false);
 

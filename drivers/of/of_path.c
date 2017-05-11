@@ -142,7 +142,10 @@ struct device_node *of_find_node_by_devpath(struct device_node *root, const char
 	 */
 	if (cdev->master) {
 		is_partition = true;
-		part_offset = cdev->offset;
+		if (cdev->mtd)
+			part_offset = cdev->mtd->master_offset;
+		else
+			part_offset = cdev->offset;
 		part_size = cdev->size;
 		pr_debug("%s path %s: is a partition with offset 0x%08llx, size 0x%08llx\n",
 			 __func__, path, part_offset, part_size);

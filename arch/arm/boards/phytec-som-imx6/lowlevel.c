@@ -54,7 +54,8 @@ static void __noreturn start_imx6_phytec_common(uint32_t size,
 	int cpu_type = __imx6_cpu_type();
 	void *fdt;
 
-	if (cpu_type == IMX6_CPUTYPE_IMX6UL) {
+	if (cpu_type == IMX6_CPUTYPE_IMX6UL
+	    || cpu_type == IMX6_CPUTYPE_IMX6ULL) {
 		arm_cpu_lowlevel_init();
 		/* OCRAM Free Area is 0x00907000 to 0x00918000 (68KB) */
 		arm_setup_stack(0x00910000 - 8);
@@ -69,7 +70,8 @@ static void __noreturn start_imx6_phytec_common(uint32_t size,
 
 	fdt = fdt_blob_fixed_offset - get_runtime_offset();
 
-	if (cpu_type == IMX6_CPUTYPE_IMX6UL)
+	if (cpu_type == IMX6_CPUTYPE_IMX6UL
+	    || cpu_type == IMX6_CPUTYPE_IMX6ULL)
 		barebox_arm_entry(0x80000000, size, fdt);
 	else
 		barebox_arm_entry(0x10000000, size, fdt);
@@ -111,3 +113,4 @@ PHYTEC_ENTRY(start_phytec_phycore_imx6q_som_emmc_1gib, imx6q_phytec_phycore_som_
 PHYTEC_ENTRY(start_phytec_phycore_imx6q_som_emmc_2gib, imx6q_phytec_phycore_som_emmc, SZ_2G, true);
 
 PHYTEC_ENTRY(start_phytec_phycore_imx6ul_som_512mb, imx6ul_phytec_phycore_som, SZ_512M, false);
+PHYTEC_ENTRY(start_phytec_phycore_imx6ull_som_256mb, imx6ull_phytec_phycore_som, SZ_256M, false);

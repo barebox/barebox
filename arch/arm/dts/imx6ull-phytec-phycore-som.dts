@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016 PHYTEC Messtechnik GmbH
- * Author: Christian Hemp <c.hemp@phytec.de>
+ * Copyright (C) 2017 PHYTEC Messtechnik GmbH
+ * Author: Stefan Riedmueller <s.riedmueller@phytec.de>
  *
  * The code contained herein is licensed under the GNU General Public
  * License. You may obtain a copy of the GNU General Public License
@@ -12,12 +12,12 @@
 
 /dts-v1/;
 
-#include <arm/imx6ul.dtsi>
+#include <arm/imx6ull.dtsi>
 #include "imx6ul-phytec-phycore-som.dtsi"
 
 / {
-	model = "Phytec phyCORE-i.MX6 Ultra Lite SOM";
-	compatible = "phytec,imx6ul-pcl063", "fsl,imx6ul";
+	model = "Phytec phyCORE-i.MX6 ULL SOM";
+	compatible = "phytec,imx6ul-pcl063", "fsl,imx6ull";
 };
 
 &fec1 {

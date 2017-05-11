@@ -53,7 +53,7 @@ void socfpga_cyclone5_mmc_init(void)
 
 #if defined(CONFIG_SPI_CADENCE_QUADSPI)
 static struct cadence_qspi_platform_data qspi_pdata = {
-	.ext_decoder = 0,
+	.is_decoded_cs = 0,
 	.fifo_depth = 128,
 };
 

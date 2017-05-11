@@ -120,8 +120,17 @@ static void kindle_rev_init(void)
 	free(buf);
 }
 
+static int is_mx50_kindle(void)
+{
+	return of_machine_is_compatible("amazon,kindle-d01100") ||
+		of_machine_is_compatible("amazon,kindle-d01200");
+}
+
 static int kindle_mx50_late_init(void)
 {
+	if (!is_mx50_kindle())
+		return 0;
+
 	armlinux_set_revision(0x50000 | imx_silicon_revision());
 	/* Compatibility ATAGs for original kernel */
 	armlinux_set_atag_appender(kindle_mx50_append_atags);
@@ -134,6 +143,9 @@ late_initcall(kindle_mx50_late_init);
 
 static int kindle_mx50_mem_init(void)
 {
+	if (!is_mx50_kindle())
+		return 0;
+
 	arm_add_mem_device("ram0", MX50_CSD0_BASE_ADDR, SZ_256M);
 	return 0;
 }
@@ -142,6 +154,10 @@ mem_initcall(kindle_mx50_mem_init);
 static int kindle_mx50_devices_init(void)
 {
 	struct device_d *dev;
+
+	if (!is_mx50_kindle())
+		return 0;
+
 	/* Probe the eMMC to allow reading the board serial and revision */
 	dev = get_device_by_name("mci0");
 	if (dev)
@@ -155,6 +171,9 @@ device_initcall(kindle_mx50_devices_init);
 
 static int kindle_mx50_postcore_init(void)
 {
+	if (!is_mx50_kindle())
+		return 0;
+
 	imx50_init_lowlevel(800);
 
 	return 0;

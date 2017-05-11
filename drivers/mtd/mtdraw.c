@@ -92,11 +92,6 @@ static unsigned int mtdraw_offset_to_block(struct mtd_info *mtd, loff_t offset)
 	return ofs64;
 }
 
-static loff_t mtdraw_raw_to_mtd_offset(struct mtd_info *mtd, loff_t offset)
-{
-	return (loff_t)mtdraw_offset_to_block(mtd, offset) * mtd->writesize;
-}
-
 static ssize_t mtdraw_read_unaligned(struct mtd_info *mtd, void *dst,
 				     size_t count, int skip, ulong offset)
 {
@@ -159,6 +154,11 @@ static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
 }
 
 #ifdef CONFIG_MTD_WRITE
+static loff_t mtdraw_raw_to_mtd_offset(struct mtd_info *mtd, loff_t offset)
+{
+	return (loff_t)mtdraw_offset_to_block(mtd, offset) * mtd->writesize;
+}
+
 static ssize_t mtdraw_blkwrite(struct mtd_info *mtd, const void *buf,
 			       ulong offset)
 {

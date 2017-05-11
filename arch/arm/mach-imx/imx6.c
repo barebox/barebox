@@ -160,6 +160,9 @@ int imx6_init(void)
 	case IMX6_CPUTYPE_IMX6UL:
 		cputypestr = "i.MX6 UltraLite";
 		break;
+	case IMX6_CPUTYPE_IMX6ULL:
+		cputypestr = "i.MX6 ULL";
+		break;
 	default:
 		cputypestr = "unknown i.MX6";
 		break;

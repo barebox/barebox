@@ -569,12 +569,12 @@ int unlink(const char *pathname)
 {
 	struct fs_device_d *fsdev;
 	struct fs_driver_d *fsdrv;
-	char *p = canonicalize_path(pathname);
+	char *p = canonicalize_dir(pathname);
 	char *freep = p;
 	int ret;
 	struct stat s;
 
-	ret = lstat(pathname, &s);
+	ret = lstat(p, &s);
 	if (ret)
 		goto out;
 

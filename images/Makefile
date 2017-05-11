@@ -53,6 +53,9 @@ extra-y += $(pbl-lds)
 $(pbl-lds): $(obj)/../arch/$(ARCH)/lib/pbl.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
+# Avoid 'Not enough room for program headers' error on binutils 2.28 onwards.
+LDFLAGS += $(call ld-option, --no-dynamic-linker)
+
 quiet_cmd_elf__ ?= LD      $@
       cmd_elf__ ?= $(LD) $(LDFLAGS) --gc-sections -pie			\
 		-e $(2) -Map $@.map $(LDFLAGS_$(@F)) -o $@		\

@@ -306,6 +306,9 @@ AFLAGS          := -D__ASSEMBLY__
 
 LDFLAGS_barebox	:= -Map barebox.map
 
+# Avoid 'Not enough room for program headers' error on binutils 2.28 onwards.
+LDFLAGS_barebox += $(call ld-option, --no-dynamic-linker)
+
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)
 KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)

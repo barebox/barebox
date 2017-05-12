@@ -113,12 +113,15 @@ const char *omap_get_bootmmc_devname(void)
 }
 
 #if defined(CONFIG_ENV_HANDLING)
-#define ENV_PATH "/boot/barebox.env"
+static char *envpath = "/mnt/mmc0.0/barebox.env";
+
 static int omap_env_init(void)
 {
-	char *partname;
-	const char *diskdev;
 	int ret;
+	const char *diskdev;
+	char *partname;
+	struct cdev *cdev;
+	const char *rootpath;
 
 	if (bootsource_get() != BOOTSOURCE_MMC)
 		return 0;
@@ -129,18 +132,29 @@ static int omap_env_init(void)
 		diskdev = "disk0";
 
 	device_detect_by_name(diskdev);
-
-	partname = basprintf("/dev/%s.0", diskdev);
-
-	mkdir("/boot", 0666);
-	ret = mount(partname, "fat", "/boot", NULL);
-	if (ret) {
-		pr_err("Failed to load environment: mount %s failed (%d)\n", partname, ret);
+	partname = basprintf("%s.0", diskdev);
+	cdev = cdev_by_name(partname);
+	if (cdev == NULL) {
+		pr_err("Failed to get device %s\n", partname);
 		goto out;
 	}
 
-	pr_debug("Loading default env from %s on device %s\n", ENV_PATH, partname);
-	default_environment_path_set(ENV_PATH);
+	rootpath = cdev_mount_default(cdev, NULL);
+	if (IS_ERR(rootpath)) {
+		pr_err("Failed to load environment: mount %s failed (%d)\n",
+						cdev->name, IS_ERR(rootpath));
+		goto out;
+	}
+	ret = symlink(rootpath, "/boot");
+	if (ret < 0)
+		pr_warn("Failed to create symlink from %s to %s\n", rootpath
+								, "/boot");
+
+	envpath = basprintf("%s/barebox.env", rootpath);
+
+	pr_debug("Loading default env from %s on device %s\n", envpath,
+								partname);
+	default_environment_path_set(envpath);
 
 out:
 	free(partname);

@@ -17,7 +17,7 @@
 
 / {
 	model = "Amazon Kindle EY21";
-	compatible = "fsl,imx50";
+	compatible = "amazon,kindle-ey21", "fsl,imx50";
 
 	memory {
 		device_type = "memory";

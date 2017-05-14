@@ -123,7 +123,8 @@ static void kindle_rev_init(void)
 static int is_mx50_kindle(void)
 {
 	return of_machine_is_compatible("amazon,kindle-d01100") ||
-		of_machine_is_compatible("amazon,kindle-d01200");
+		of_machine_is_compatible("amazon,kindle-d01200") ||
+		of_machine_is_compatible("amazon,kindle-ey21");
 }
 
 static int kindle_mx50_late_init(void)

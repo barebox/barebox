@@ -19,6 +19,10 @@
 	model = "Amazon Kindle EY21";
 	compatible = "amazon,kindle-ey21", "fsl,imx50";
 
+	chosen {
+		linux,stdout-path = &uart1;
+	};
+
 	memory {
 		device_type = "memory";
 		reg = <0x70000000 0x10000000>;
@@ -27,9 +31,12 @@
 
 &iomuxc {
 	imx50-kindle-ey21 {
-		pinctrl_gpiokey: gpiokeygrp {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_hog>;
+
+		pinctrl_hog: hoggrp {
 			fsl,pins = <
-				MX50_PAD_EIM_EB1__GPIO1_20		0x40
+				MX50_PAD_SD2_WP__GPIO5_16	0xe4 /* hall */
 			>;
 		};
 	};
@@ -48,7 +55,7 @@
 		pinctrl-0 = <&pinctrl_charger_detect>;
 		interrupt-parent = <&gpio6>;
 		interrupts = <26 IRQ_TYPE_LEVEL_HIGH>;
-        };
+	};
 
 	smart-battery@55 {
 		compatible = "ti,bq27210";

@@ -34,8 +34,8 @@
 	pinctrl-0 = <&pinctrl_hog>;
 
 	imx50-kindle-d01100 {
-                pinctrl_hog: hoggrp {
-                        fsl,pins = <
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
 				MX50_PAD_EIM_EB1__GPIO1_20		0xc0
 				MX50_PAD_EIM_EB0__GPIO1_19		0xc0
 				MX50_PAD_EIM_CS2__GPIO1_16		0xc0
@@ -60,7 +60,7 @@
 		pinctrl-0 = <&pinctrl_charger_detect>;
 		interrupt-parent = <&gpio6>;
 		interrupts = <26 IRQ_TYPE_LEVEL_HIGH>;
-        };
+	};
 
 	smart-battery@55 {
 		compatible = "ti,bq27210";

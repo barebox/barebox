@@ -124,7 +124,7 @@
 
 		pinctrl_charger_detect: chargerdetectgrp {
 			fsl,pins = <
-				MX50_PAD_OWIRE__GPIO6_26		0x84
+				MX50_PAD_OWIRE__GPIO6_26		0xe4
 			>;
 		};
 	};

@@ -68,7 +68,7 @@
 		pinctrl-0 = <&pinctrl_charger_detect>;
 		interrupt-parent = <&gpio6>;
 		interrupts = <26 IRQ_TYPE_LEVEL_HIGH>;
-        };
+	};
 
 	smart-battery@55 {
 		compatible = "ti,bq27210";

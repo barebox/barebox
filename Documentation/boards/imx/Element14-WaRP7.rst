@@ -20,7 +20,7 @@ vendor modified u-boot imximage.
 Barebox can be used as a drop-in replacement for the shipped bootloader.
 
 The WaRP7 IO Board has a double DIP switch where switch number two defines the
-boot source of the i.MX7 SoC:
+boot source of the i.MX7 SoC::
 
   +-----+
   |     |
@@ -31,7 +31,7 @@ boot source of the i.MX7 SoC:
   | 1 2 |
   +-----+
 
-Bootsource is the internal eMMC:
+Bootsource is the internal eMMC::
 
   +-----+
   |     |
@@ -42,7 +42,7 @@ Bootsource is the internal eMMC:
   | 1 2 |
   +-----+
 
-Bootsource is the USB:
+Bootsource is the USB::
 
   +-----+
   |     |

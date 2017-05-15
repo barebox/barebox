@@ -1,5 +1,5 @@
-Freescale i.MXs
-===============
+Freescale MXS
+=============
 
 Freescale i.MXs or MXS are a SoC family which consists of the i.MX23
 and the i.MX28. These are quite different from the regular i.MX SoCs
@@ -118,8 +118,8 @@ Booting second stage
 The second stage images can be started with the barebox :ref:`command_bootm` command or
 just jumped into using the :ref:`command_go` command.
 
-i.MXs boards
-------------
+MXS boards
+----------
 
 Not all supported boards have a description here.
 

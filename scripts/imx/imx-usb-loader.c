@@ -1404,7 +1404,7 @@ static int do_irom_download(struct usb_work *curr, int verify)
 		}
 	}
 
-	printf("loading binary file(%s) to %08x, skip=0x%x, fsize=%u type=%d...\n",
+	printf("loading binary file(%s) to 0x%08x, skip=0x%x, fsize=%u type=%d...\n",
 			curr->filename, dladdr, skip, fsize, type);
 
 	ret = load_file(image, fsize, dladdr, type);

@@ -139,7 +139,7 @@ BAREBOX_CMD_HELP_OPT ("-a", "output help on all commands")
 BAREBOX_CMD_HELP_OPT ("-v", "verbose")
 BAREBOX_CMD_HELP_END
 
-static const char *help_aliases[] = { "?", NULL};
+static const char * const help_aliases[] = { "?", NULL};
 
 BAREBOX_CMD_START(help)
 	.cmd		= do_help,

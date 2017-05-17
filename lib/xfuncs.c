@@ -29,7 +29,7 @@ static void __noreturn enomem_panic(size_t size)
 {
 	pr_emerg("out of memory\n");
 	if (size)
-		pr_emerg("Unable to allocate %d bytes\n", size);
+		pr_emerg("Unable to allocate %zu bytes\n", size);
 
 	malloc_stats();
 

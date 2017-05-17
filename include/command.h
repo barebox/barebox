@@ -40,7 +40,7 @@ struct string_list;
  */
 struct command {
 	const char	*name;		/* Command Name			*/
-	const char	**aliases;
+	const char	* const *aliases;
 					/* Implementation function	*/
 	int		(*cmd)(int, char *[]);
 	int		(*complete)(struct string_list *sl, char *instr);

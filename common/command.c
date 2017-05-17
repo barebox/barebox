@@ -104,7 +104,7 @@ int register_command(struct command *cmd)
 	list_add_sort(&cmd->list, &command_list, compare);
 
 	if (cmd->aliases) {
-		char **aliases = (char**)cmd->aliases;
+		const char * const *aliases = cmd->aliases;
 		while(*aliases) {
 			struct command *c = xzalloc(sizeof(struct command));
 

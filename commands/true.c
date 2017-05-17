@@ -26,7 +26,7 @@ static int do_true(int argc, char *argv[])
 	return 0;
 }
 
-static const char *true_aliases[] = { ":", NULL};
+static const char * const true_aliases[] = { ":", NULL};
 
 BAREBOX_CMD_START(true)
 	.aliases	= true_aliases,

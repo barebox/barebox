@@ -160,7 +160,7 @@
 #define EXT_CSD_POWER_OFF_NOTIFICATION		34	/* R/W */
 #define EXT_CSD_PACKED_FAILURE_INDEX		35	/* RO */
 #define EXT_CSD_PACKED_COMMAND_STATUS		36	/* RO */
-#define EXT_CSD_CONTEXT_CONF			37	/* R/W, 15 bytes */
+#define EXT_CSD_CONTEXT_CONF(index)		(37 + (index) - 1) /* R/W, 15 bytes */
 #define EXT_CSD_EXT_PARTITIONS_ATTRIBUTE	52	/* R/W, 2 bytes */
 #define EXT_CSD_EXCEPTION_EVENTS_STATUS		54	/* RO, 2 bytes */
 #define EXT_CSD_EXCEPTION_EVENTS_CTRL		56	/* R/W, 2 bytes */
@@ -176,7 +176,10 @@
 #define EXT_CSD_SEC_BAD_BLK_MGMNT		134	/* R/W */
 #define EXT_CSD_ENH_START_ADDR			136	/* R/W, 4 bytes */
 #define EXT_CSD_ENH_SIZE_MULT			140	/* R/W, 3 bytes */
-#define EXT_CSD_GP_SIZE_MULT			143	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT0			143	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT1			146	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT2			149	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT3			152	/* R/W */
 #define EXT_CSD_PARTITION_SETTING_COMPLETED	155	/* R/W */
 #define EXT_CSD_PARTITIONS_ATTRIBUTE		156	/* R/W */
 #define EXT_CSD_MAX_ENH_SIZE_MULT		157	/* RO, 3 bytes */

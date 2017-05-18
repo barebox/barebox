@@ -469,7 +469,7 @@ static int mmc_change_freq(struct mci *mci)
 		return err;
 	}
 
-	cardtype = mci->ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_MASK;
+	cardtype = mci->ext_csd[EXT_CSD_DEVICE_TYPE] & EXT_CSD_CARD_TYPE_MASK;
 
 	err = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
 
@@ -499,13 +499,13 @@ static int mmc_change_freq(struct mci *mci)
 		mci->card_caps |= MMC_CAP_MMC_HIGHSPEED;
 
 	if (IS_ENABLED(CONFIG_MCI_MMC_BOOT_PARTITIONS) &&
-			mci->ext_csd[EXT_CSD_REV] >= 3 && mci->ext_csd[EXT_CSD_BOOT_MULT]) {
+			mci->ext_csd[EXT_CSD_REV] >= 3 && mci->ext_csd[EXT_CSD_BOOT_SIZE_MULT]) {
 		int idx;
 		unsigned int part_size;
 
 		for (idx = 0; idx < MMC_NUM_BOOT_PARTITION; idx++) {
 			char *name, *partname;
-			part_size = mci->ext_csd[EXT_CSD_BOOT_MULT] << 17;
+			part_size = mci->ext_csd[EXT_CSD_BOOT_SIZE_MULT] << 17;
 
 			partname = basprintf("boot%d", idx);
 			name = basprintf("%s.%s", mci->cdevname, partname);
@@ -515,7 +515,7 @@ static int mmc_change_freq(struct mci *mci)
 					MMC_BLK_DATA_AREA_BOOT);
 		}
 
-		mci->ext_csd_part_config = mci->ext_csd[EXT_CSD_PART_CONFIG];
+		mci->ext_csd_part_config = mci->ext_csd[EXT_CSD_PARTITION_CONFIG];
 		mci->bootpart = (mci->ext_csd_part_config >> 3) & 0x7;
 	}
 
@@ -863,10 +863,10 @@ static void mci_extract_card_capacity_from_csd(struct mci *mci)
 			csize = UNSTUFF_BITS(mci->csd, 48, 22);
 			mci->capacity = (1 + csize) << 10;
 		} else {
-			mci->capacity = mci->ext_csd[EXT_CSD_SEC_CNT] << 0 |
-				mci->ext_csd[EXT_CSD_SEC_CNT + 1] << 8 |
-				mci->ext_csd[EXT_CSD_SEC_CNT + 2] << 16 |
-				mci->ext_csd[EXT_CSD_SEC_CNT + 3] << 24;
+			mci->capacity = mci->ext_csd[EXT_CSD_SEC_COUNT] << 0 |
+				mci->ext_csd[EXT_CSD_SEC_COUNT + 1] << 8 |
+				mci->ext_csd[EXT_CSD_SEC_COUNT + 2] << 16 |
+				mci->ext_csd[EXT_CSD_SEC_COUNT + 3] << 24;
 		}
 	} else {
 		cmult = UNSTUFF_BITS(mci->csd, 47, 3);
@@ -907,16 +907,16 @@ static int mmc_compare_ext_csds(struct mci *mci, unsigned bus_width)
 	if (bus_width == MMC_BUS_WIDTH_1)
 		goto out;
 	/* only compare read only fields */
-	err = (mci->ext_csd[EXT_CSD_PARTITION_SUPPORT] ==
-			bw_ext_csd[EXT_CSD_PARTITION_SUPPORT]) &&
+	err = (mci->ext_csd[EXT_CSD_PARTITIONING_SUPPORT] ==
+			bw_ext_csd[EXT_CSD_PARTITIONING_SUPPORT]) &&
 		(mci->ext_csd[EXT_CSD_ERASED_MEM_CONT] ==
 			bw_ext_csd[EXT_CSD_ERASED_MEM_CONT]) &&
 		(mci->ext_csd[EXT_CSD_REV] ==
 			bw_ext_csd[EXT_CSD_REV]) &&
-		(mci->ext_csd[EXT_CSD_STRUCTURE] ==
-			bw_ext_csd[EXT_CSD_STRUCTURE]) &&
-		(mci->ext_csd[EXT_CSD_CARD_TYPE] ==
-			bw_ext_csd[EXT_CSD_CARD_TYPE]) &&
+		(mci->ext_csd[EXT_CSD_CSD_STRUCTURE] ==
+			bw_ext_csd[EXT_CSD_CSD_STRUCTURE]) &&
+		(mci->ext_csd[EXT_CSD_DEVICE_TYPE] ==
+			bw_ext_csd[EXT_CSD_DEVICE_TYPE]) &&
 		(mci->ext_csd[EXT_CSD_S_A_TIMEOUT] ==
 			bw_ext_csd[EXT_CSD_S_A_TIMEOUT]) &&
 		(mci->ext_csd[EXT_CSD_HC_WP_GRP_SIZE] ==
@@ -933,14 +933,14 @@ static int mmc_compare_ext_csds(struct mci *mci, unsigned bus_width)
 			bw_ext_csd[EXT_CSD_SEC_FEATURE_SUPPORT]) &&
 		(mci->ext_csd[EXT_CSD_TRIM_MULT] ==
 			bw_ext_csd[EXT_CSD_TRIM_MULT]) &&
-		(mci->ext_csd[EXT_CSD_SEC_CNT + 0] ==
-			bw_ext_csd[EXT_CSD_SEC_CNT + 0]) &&
-		(mci->ext_csd[EXT_CSD_SEC_CNT + 1] ==
-			bw_ext_csd[EXT_CSD_SEC_CNT + 1]) &&
-		(mci->ext_csd[EXT_CSD_SEC_CNT + 2] ==
-			bw_ext_csd[EXT_CSD_SEC_CNT + 2]) &&
-		(mci->ext_csd[EXT_CSD_SEC_CNT + 3] ==
-			bw_ext_csd[EXT_CSD_SEC_CNT + 3]) ?
+		(mci->ext_csd[EXT_CSD_SEC_COUNT + 0] ==
+			bw_ext_csd[EXT_CSD_SEC_COUNT + 0]) &&
+		(mci->ext_csd[EXT_CSD_SEC_COUNT + 1] ==
+			bw_ext_csd[EXT_CSD_SEC_COUNT + 1]) &&
+		(mci->ext_csd[EXT_CSD_SEC_COUNT + 2] ==
+			bw_ext_csd[EXT_CSD_SEC_COUNT + 2]) &&
+		(mci->ext_csd[EXT_CSD_SEC_COUNT + 3] ==
+			bw_ext_csd[EXT_CSD_SEC_COUNT + 3]) ?
 				0 : -EINVAL;
 
 out:
@@ -1248,7 +1248,7 @@ static int mci_blk_part_switch(struct mci_part *part)
 		part_config |= part->part_cfg;
 
 		ret = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL,
-				EXT_CSD_PART_CONFIG, part_config);
+				EXT_CSD_PARTITION_CONFIG, part_config);
 		if (ret)
 			return ret;
 
@@ -1563,7 +1563,7 @@ static int mci_set_boot(struct param_d *param, void *priv)
 	mci->ext_csd_part_config |= mci->bootpart << 3;
 
 	return mci_switch(mci, EXT_CSD_CMD_SET_NORMAL,
-			EXT_CSD_PART_CONFIG, mci->ext_csd_part_config);
+			EXT_CSD_PARTITION_CONFIG, mci->ext_csd_part_config);
 }
 
 static const char *mci_boot_names[] = {

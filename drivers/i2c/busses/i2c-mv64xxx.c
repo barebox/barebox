@@ -281,7 +281,7 @@ mv64xxx_i2c_fsm(struct mv64xxx_i2c_data *drv_data, u32 status)
 
 		if (drv_data->bytes_left == 1)
 			drv_data->cntl_bits &= ~REG_CONTROL_ACK;
-			udelay(2);
+		udelay(2);
 		break;
 
 	case STATUS_MAST_RD_DATA_NO_ACK: /* 0x58 */

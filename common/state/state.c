@@ -571,7 +571,7 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	struct state *state;
 	int ret = 0;
 	const char *backend_type;
-	const char *storage_type;
+	const char *storage_type = NULL;
 	const char *alias;
 	uint32_t stridesize;
 
@@ -616,12 +616,7 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		stridesize = 0;
 	}
 
-	ret = of_property_read_string(node, "backend-storage-type",
-				      &storage_type);
-	if (ret) {
-		storage_type = NULL;
-		dev_info(&state->dev, "No backend-storage-type found, using default.\n");
-	}
+	of_property_read_string(node, "backend-storage-type", &storage_type);
 
 	ret = state_format_init(state, backend_type, node, alias);
 	if (ret)

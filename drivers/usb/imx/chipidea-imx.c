@@ -276,10 +276,8 @@ static int imx_chipidea_probe(struct device_d *dev)
 	 * devices which have only one.
 	 */
 	ci->clk = clk_get(dev, NULL);
-	if (IS_ERR(ci->clk))
-		return PTR_ERR(ci->clk);
-
-	clk_enable(ci->clk);
+	if (!IS_ERR(ci->clk))
+		clk_enable(ci->clk);
 
 	if (of_property_read_bool(dev->device_node, "fsl,usbphy")) {
 		ci->phy = of_phy_get_by_phandle(dev, "fsl,usbphy", 0);

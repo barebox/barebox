@@ -56,3 +56,5 @@
  */
 int gsc_i2c_read(struct i2c_client *client, u32 addr, u8 *buf, u16 count);
 int gsc_i2c_write(struct i2c_client *client, u32 addr, const u8 *buf, u16 count);
+
+char gsc_get_rev(struct i2c_client *client);

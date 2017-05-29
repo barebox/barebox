@@ -65,3 +65,17 @@ int gsc_i2c_write(struct i2c_client *client, u32 addr, const u8 *buf, u16 count)
 
 	return ret;
 }
+
+char gsc_get_rev(struct i2c_client *client)
+{
+	int i;
+	u8 model[16];
+
+	gsc_i2c_read(client, 0x30, model, 16);
+	for (i = sizeof(model) - 1; i > 0; i--) {
+		if (model[i] >= 'A')
+			return model[i];
+	}
+
+	return 'A';
+}

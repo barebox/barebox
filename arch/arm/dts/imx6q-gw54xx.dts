@@ -22,3 +22,11 @@
 &sata {
 	status = "okay";
 };
+
+&wdog1 {
+	status = "okay";
+};
+
+&wdog2 {
+	status = "disabled";
+};

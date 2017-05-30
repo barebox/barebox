@@ -440,7 +440,7 @@ struct file_operations {
 #define MAX_PARTUUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")
 
 struct cdev {
-	struct file_operations *ops;
+	const struct file_operations *ops;
 	void *priv;
 	struct device_d *dev;
 	struct device_node *device_node;

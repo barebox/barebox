@@ -53,9 +53,9 @@ configuring bbremote
 ^^^^^^^^^^^^^^^^^^^^
 
 bbremote needs the port and possibly the baudrate to access the remote
-barebox. The port can be configured with the ``--baudrate`` option or
-with the ``BBREMOTE_PORT`` environment variable. The port can either be
-the device special file if it's a local port or if it's a remote port a
+barebox. The port can be configured with the ``--port`` option or with
+the ``BBREMOTE_PORT`` environment variable. The port can either be the
+device special file if it's a local port or if it's a remote port a
 string of the form: ``rfc2217://host:port``. The baudrate can be given
 with the ``--baudrate`` option or the ``BBREMOTE_BAUDRATE`` environment
 variable. For the rest of this document it is assumed that ``bbremote``
@@ -131,4 +131,3 @@ This can be mounted on barebox using the regular mount command using
   bbremote --export=somedir console
   mkdir -p /ratpfs; mount -t ratpfs none /ratpfs
   ls /ratpfs
-

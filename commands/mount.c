@@ -29,7 +29,7 @@ static int do_mount(int argc, char *argv[])
 	int opt, verbose = 0;
 	struct driver_d *drv;
 	const char *type = NULL;
-	const char *mountpoint, *dev;
+	const char *mountpoint, *devstr;
 	const char *fsoptions = NULL;
 
 	while ((opt = getopt(argc, argv, "ao:t:v")) > 0) {
@@ -70,11 +70,11 @@ static int do_mount(int argc, char *argv[])
 		return 0;
 	}
 
+	devstr = argv[optind];
+
 	if (argc == optind + 1) {
 		struct cdev *cdev;
-		const char *path, *devstr;
-
-		devstr = argv[optind];
+		const char *path;
 
 		if (!strncmp(devstr, "/dev/", 5))
 			devstr += 5;
@@ -97,8 +97,6 @@ static int do_mount(int argc, char *argv[])
 	if (argc < optind + 2)
 		return COMMAND_ERROR_USAGE;
 
-	dev = argv[optind];
-
 	if (argc == optind + 3) {
 		/*
 		 * Old behaviour: mount <dev> <type> <mountpoint>
@@ -109,7 +107,7 @@ static int do_mount(int argc, char *argv[])
 		mountpoint = argv[optind + 1];
 	}
 
-	return mount(dev, type, mountpoint, fsoptions);
+	return mount(devstr, type, mountpoint, fsoptions);
 }
 
 BAREBOX_CMD_HELP_START(mount)

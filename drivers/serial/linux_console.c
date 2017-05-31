@@ -73,6 +73,9 @@ static int linux_console_probe(struct device_d *dev)
 
 	console_register(cdev);
 
+	pr_info("%s: registered as %s%d\n", dev->name, cdev->class_dev.name,
+		cdev->class_dev.id);
+
 	return 0;
 }
 

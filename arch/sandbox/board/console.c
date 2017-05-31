@@ -22,7 +22,7 @@
 #include <mach/linux.h>
 #include <xfuncs.h>
 
-int barebox_register_console(char *name, int stdinfd, int stdoutfd)
+int barebox_register_console(int stdinfd, int stdoutfd)
 {
 	struct device_d *dev;
 	struct linux_console_data *data;
@@ -32,9 +32,8 @@ int barebox_register_console(char *name, int stdinfd, int stdoutfd)
 	data = (struct linux_console_data *)(dev + 1);
 
 	dev->platform_data = data;
-	strcpy(dev->name, name);
-
 	strcpy(dev->name, "console");
+	dev->id = DEVICE_ID_DYNAMIC;
 
 	data->stdoutfd = stdoutfd;
 	data->stdinfd  = stdinfd;

@@ -366,7 +366,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			barebox_register_console("cout", -1, fd);
+			barebox_register_console(-1, fd);
 			break;
 		case 'I':
 			fd = open(optarg, O_RDWR);
@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-			barebox_register_console("cin", fd, -1);
+			barebox_register_console(fd, -1);
 			break;
 		case 'x':
 			sdl_xres = strtoul(optarg, NULL, 0);
@@ -426,7 +426,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	barebox_register_console("console", fileno(stdin), fileno(stdout));
+	barebox_register_console(fileno(stdin), fileno(stdout));
 
 	rawmode();
 	start_barebox();

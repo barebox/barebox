@@ -92,6 +92,7 @@ struct fs_device_d {
 	struct fs_driver_d *driver;
 
 	struct cdev *cdev;
+	bool loop;
 	char *path;
 	struct device_d *parent_device;
 	struct list_head list;

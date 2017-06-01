@@ -36,6 +36,8 @@
 #include <block.h>
 #include <libfile.h>
 
+#include "parseopt.h"
+
 char *mkmodestr(unsigned long mode, char *str)
 {
 	static const char *l = "xwr";
@@ -1210,6 +1212,9 @@ static void fs_remove(struct device_d *dev)
 	if (fsdev->cdev)
 		cdev_close(fsdev->cdev);
 
+	if (fsdev->loop)
+		cdev_remove_loop(fsdev->cdev);
+
 	free(fsdev->backingstore);
 	free(fsdev);
 }
@@ -1236,13 +1241,18 @@ int register_fs_driver(struct fs_driver_d *fsdrv)
 }
 EXPORT_SYMBOL(register_fs_driver);
 
-static const char *detect_fs(const char *filename)
+static const char *detect_fs(const char *filename, const char *fsoptions)
 {
 	enum filetype type;
 	struct driver_d *drv;
 	struct fs_driver_d *fdrv;
+	bool loop;
 
-	type = cdev_detect_type(filename);
+	parseopt_b(fsoptions, "loop", &loop);
+	if (loop)
+		type = file_name_detect_type(filename);
+	else
+		type = cdev_detect_type(filename);
 
 	if (type == filetype_unknown)
 		return NULL;
@@ -1259,7 +1269,11 @@ static const char *detect_fs(const char *filename)
 
 int fsdev_open_cdev(struct fs_device_d *fsdev)
 {
-	fsdev->cdev = cdev_open(fsdev->backingstore, O_RDWR);
+	parseopt_b(fsdev->options, "loop", &fsdev->loop);
+	if (fsdev->loop)
+		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR);
+	else
+		fsdev->cdev = cdev_open(fsdev->backingstore, O_RDWR);
 	if (!fsdev->cdev)
 		return -EINVAL;
 
@@ -1306,7 +1320,7 @@ int mount(const char *device, const char *fsname, const char *_path,
 	}
 
 	if (!fsname)
-		fsname = detect_fs(device);
+		fsname = detect_fs(device, fsoptions);
 
 	if (!fsname)
 		return -ENOENT;

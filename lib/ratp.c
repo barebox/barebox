@@ -1658,14 +1658,14 @@ int ratp_establish(struct ratp *ratp, bool active, int timeout_ms)
 	}
 
 out:
+	ri->in_ratp--;
+
 	if (ret) {
 		free(ri->recvbuf);
 		free(ri->sendbuf);
 		free(ri);
 		ratp->internal = NULL;
 	}
-
-	ri->in_ratp--;
 
 	return ret;
 }

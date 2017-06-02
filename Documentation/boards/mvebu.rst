@@ -36,7 +36,10 @@ Booting from UART
 -----------------
 
 The mvebu SoCs support booting from UART. For this there is a tool available in
-barebox called kwboot.
+barebox called ``kwboot``. Quite some mvebu boards are reset once more when
+they already started to read the first block of the image to boot. If you want
+to boot such a board, use the parameter ``-n 15`` for ``kwboot``. (The number
+might have to be adapted per board.)
 
 mvebu boards
 ------------

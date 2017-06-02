@@ -28,8 +28,9 @@ initialisation that could be taken.
 Booting second stage
 --------------------
 
-This is currently not possible because barebox assumes the registers are mapped
-at 0xd0000000 as is the case when the boot ROM gives control to the bootloader.
+Since ``v2017.04.0`` barebox can boot a barebox image even if the register
+window is moved. This is implemented by writing the actual window position
+into the image where it is then picked up by the second stage bootloader.
 
 Booting from UART
 -----------------

@@ -96,24 +96,6 @@ int ksz8081_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static void imx6ul_setup_fec(void)
-{
-	void __iomem *gprbase = IOMEM(MX6_IOMUXC_BASE_ADDR) + 0x4000;
-	uint32_t val;
-
-	phy_register_fixup_for_uid(PHY_ID_KSZ8081, MICREL_PHY_ID_MASK,
-			ksz8081_phy_fixup);
-
-	val = readl(gprbase + IOMUXC_GPR1);
-	/* Use 50M anatop loopback REF_CLK1 for ENET1, clear gpr1[13], set gpr1[17]*/
-	val &= ~(1 << 13);
-	val |= (1 << 17);
-	/* Use 50M anatop loopback REF_CLK1 for ENET2, clear gpr1[14], set gpr1[18]*/
-	val &= ~(1 << 14);
-	val |= (1 << 18);
-	writel(val, gprbase + IOMUXC_GPR1);
-}
-
 static int physom_imx6_devices_init(void)
 {
 	int ret;
@@ -153,7 +135,10 @@ static int physom_imx6_devices_init(void)
 		barebox_set_hostname("phyCORE-i.MX6UL");
 		default_environment_path = "/chosen/environment-nand";
 		default_envdev = "NAND flash";
-		imx6ul_setup_fec();
+
+		phy_register_fixup_for_uid(PHY_ID_KSZ8081, MICREL_PHY_ID_MASK,
+				ksz8081_phy_fixup);
+
 	} else
 		return 0;
 

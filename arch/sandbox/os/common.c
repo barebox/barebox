@@ -312,26 +312,28 @@ static int add_dtb(const char *file)
 static void print_usage(const char*);
 
 static struct option long_options[] = {
-	{"help",   0, 0, 'h'},
-	{"malloc", 1, 0, 'm'},
-	{"image",  1, 0, 'i'},
-	{"env",    1, 0, 'e'},
-	{"dtb",    1, 0, 'd'},
-	{"stdout", 1, 0, 'O'},
-	{"stdin",  1, 0, 'I'},
-	{"xres",  1, 0, 'x'},
-	{"yres",  1, 0, 'y'},
+	{"help",     0, 0, 'h'},
+	{"malloc",   1, 0, 'm'},
+	{"image",    1, 0, 'i'},
+	{"env",      1, 0, 'e'},
+	{"dtb",      1, 0, 'd'},
+	{"stdout",   1, 0, 'O'},
+	{"stdin",    1, 0, 'I'},
+	{"stdinout", 1, 0, 'B'},
+	{"xres",     1, 0, 'x'},
+	{"yres",     1, 0, 'y'},
 	{0, 0, 0, 0},
 };
 
-static const char optstring[] = "hm:i:e:d:O:I:x:y:";
+static const char optstring[] = "hm:i:e:d:O:I:B:x:y:";
 
 int main(int argc, char *argv[])
 {
 	void *ram;
-	int opt, ret, fd;
+	int opt, ret, fd, fd2;
 	int malloc_size = CONFIG_MALLOC_SIZE;
 	int fdno = 0, envno = 0, option_index = 0;
+	char *aux;
 
 	while (1) {
 		option_index = 0;
@@ -421,6 +423,31 @@ int main(int argc, char *argv[])
 
 			barebox_register_console(fd, -1);
 			break;
+		case 'B':
+			aux = strchr(optarg, ',');
+			if (!aux) {
+				printf("-B, --stdinout requires two file paths given\n");
+				exit(1);
+			}
+
+			/* open stdout file */
+			fd = open(aux + 1, O_WRONLY);
+			if (fd < 0) {
+				perror("open stdout");
+				exit(1);
+			}
+
+			/* open stdin file */
+			aux = strndup(optarg, aux - optarg);
+			fd2 = open(aux, O_RDWR);
+			if (fd2 < 0) {
+				perror("open stdin");
+				exit(1);
+			}
+			free(aux);
+
+			barebox_register_console(fd2, fd);
+			break;
 		default:
 			break;
 		}
@@ -463,6 +490,10 @@ static void print_usage(const char *prgname)
 "                       <file> can be a regular file or a FIFO.\n"
 "  -I, --stdin=<file>   Register a file as a console capable of doing stdin.\n"
 "                       <file> can be a regular file or a FIFO.\n"
+"  -B, --stdinout=<filein>,<fileout>\n"
+"                       Register a bidirectional console capable of doing both\n"
+"                       stdin and stdout. <filein> and <fileout> can be regular\n"
+"                       files or FIFOs.\n"
 "  -x, --xres=<res>     SDL width.\n"
 "  -y, --yres=<res>     SDL height.\n",
 	prgname

@@ -443,6 +443,9 @@ int barebox_ratp(struct console_device *cdev)
 	struct ratp_ctx *ctx;
 	struct ratp *ratp;
 
+	if (!cdev->getc || !cdev->putc)
+		return -EINVAL;
+
 	if (ratp_command_ctx) {
 		ctx = ratp_command_ctx;
 	} else {

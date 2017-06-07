@@ -743,7 +743,7 @@ static int fec_probe(struct device_d *dev)
 	int ret;
 	enum fec_type type;
 	int phy_reset;
-	u32 msec = 1;
+	u32 msec = 1, phy_post_delay = 0;
 	u64 start;
 
 	ret = dev_get_drvdata(dev, (const void **)&type);
@@ -781,6 +781,11 @@ static int fec_probe(struct device_d *dev)
 	phy_reset = of_get_named_gpio(dev->device_node, "phy-reset-gpios", 0);
 	if (gpio_is_valid(phy_reset)) {
 		of_property_read_u32(dev->device_node, "phy-reset-duration", &msec);
+		of_property_read_u32(dev->device_node, "phy-reset-post-delay",
+				     &phy_post_delay);
+		/* valid reset duration should be less than 1s */
+		if (phy_post_delay > 1000)
+			goto release_res;
 
 		ret = gpio_request(phy_reset, "phy-reset");
 		if (ret)
@@ -792,6 +797,9 @@ static int fec_probe(struct device_d *dev)
 
 		mdelay(msec);
 		gpio_set_value(phy_reset, 1);
+
+		if (phy_post_delay)
+			mdelay(phy_post_delay);
 	}
 
 	/* Reset chip. */

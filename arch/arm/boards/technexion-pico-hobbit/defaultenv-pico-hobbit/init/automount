@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# automount tftp server based on $eth1.serverip
+
+mkdir -p /mnt/tftp
+automount /mnt/tftp 'ifup eth1 && mount -t tftp $eth1.serverip /mnt/tftp'
+
+# automount nfs server's nfsroot
+
+mkdir -p /mnt/nfs
+automount /mnt/nfs 'ifup eth1 && mount -t nfs ${eth1.serverip}:/home/${global.user}/nfsroot/${global.hostname} /mnt/nfs'

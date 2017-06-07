@@ -343,6 +343,12 @@ config MACH_SOLIDRUN_MICROSOM
 	bool "SolidRun MicroSOM based devices"
 	select ARCH_IMX6
 
+config MACH_TECHNEXION_PICO_HOBBIT
+	bool "Technexion Pico Hobbit"
+	select ARCH_IMX6
+	select ARCH_IMX6UL
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_TECHNEXION_WANDBOARD
 	bool "Technexion Wandboard"
 	select ARCH_IMX6

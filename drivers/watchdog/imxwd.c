@@ -114,6 +114,12 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 	if (priv->ext_reset)
 		val |= IMX21_WDOG_WCR_WDT;
 
+	/*
+	 * set time and some write once bits first prior enabling the
+	 * watchdog according to the datasheet
+	 */
+	writew(val, priv->base + IMX21_WDOG_WCR);
+
 	writew(IMX21_WDOG_WCR_WDE | val, priv->base + IMX21_WDOG_WCR);
 
 	/* Write Service Sequence */

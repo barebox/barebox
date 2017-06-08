@@ -276,7 +276,6 @@ static unsigned long wandboard_dram_init(void)
 
 	__udelay(100);
 
-	mmdc_do_write_level_calibration();
 	mmdc_do_dqs_calibration();
 #ifdef DEBUG
 	mmdc_print_calibration_results();

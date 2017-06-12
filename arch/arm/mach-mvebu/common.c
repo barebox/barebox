@@ -47,7 +47,7 @@
 #define ARMADA_370_XP_SDRAM_BASE	(IOMEM(MVEBU_REMAP_INT_REG_BASE) + 0x20000)
 #define ARMADA_370_XP_DDR_SIZE_CSn(n)	(0x184 + ((n) * 0x8))
 #define ARMADA_370_XP_DDR_SIZE_ENABLED	BIT(0)
-#define ARMADA_370_XP_DDR_SIZE_MASK	0xff000000
+#define ARMADA_370_XP_DDR_SIZE_MASK	0xffff0000
 
 /*
  * Marvell MVEBU SoC id and revision can be read from any PCIe

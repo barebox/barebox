@@ -134,6 +134,10 @@ static void imx21_soc_reset(struct imx_wd *priv)
 		val |= IMX21_WDOG_WCR_WDA; /* do not assert ext-reset */
 
 	writew(val, priv->base + IMX21_WDOG_WCR);
+
+	/* Two additional writes due to errata ERR004346 */
+	writew(val, priv->base + IMX21_WDOG_WCR);
+	writew(val, priv->base + IMX21_WDOG_WCR);
 }
 
 static int imx_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)

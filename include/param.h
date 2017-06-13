@@ -6,6 +6,7 @@
 #include <linux/list.h>
 
 #define PARAM_FLAG_RO	(1 << 0)
+#define PARAM_GLOBALVAR_UNQUALIFIED	(1 << 1)
 
 struct device_d;
 typedef uint32_t          IPaddr_t;

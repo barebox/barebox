@@ -181,7 +181,7 @@ struct clk *clk_get(struct device_d *dev, const char *con_id)
 
 	if (dev) {
 		clk = of_clk_get_by_name(dev->device_node, con_id);
-		if (!IS_ERR(clk))
+		if (!IS_ERR(clk) || PTR_ERR(clk) != -ENODEV)
 			return clk;
 	}
 

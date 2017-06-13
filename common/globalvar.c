@@ -99,9 +99,6 @@ void dev_param_init_from_nv(struct device_d *dev, const char *name)
 	const char *val;
 	int ret = 0;
 
-	if (!IS_ENABLED(CONFIG_NVVAR))
-		return;
-
 	if (dev == &nv_device)
 		return;
 	if (dev == &global_device)
@@ -398,9 +395,6 @@ static void globalvar_nv_sync(const char *name)
 {
 	const char *val;
 
-	if (!IS_ENABLED(CONFIG_NVVAR))
-		return;
-
 	val = dev_get_param(&nv_device, name);
 	if (val)
 		dev_set_param(&global_device, name, val);
@@ -548,8 +542,6 @@ int nvvar_save(void)
 	const char *env = default_environment_path_get();
 	int ret;
 #define TMPDIR "/.env.tmp"
-	if (!IS_ENABLED(CONFIG_NVVAR))
-		return -ENOSYS;
 	if (!nv_dirty || !env)
 		return 0;
 
@@ -610,9 +602,7 @@ static int nv_global_param_complete(struct device_d *dev, struct string_list *sl
 int nv_global_complete(struct string_list *sl, char *instr)
 {
 	nv_global_param_complete(&global_device, sl, instr, 0);
-
-	if (IS_ENABLED(CONFIG_NVVAR))
-		nv_global_param_complete(&nv_device, sl, instr, 0);
+	nv_global_param_complete(&nv_device, sl, instr, 0);
 
 	return 0;
 }

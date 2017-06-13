@@ -64,7 +64,7 @@ static int baltos_read_eeprom(void)
 {
 	struct bsp_vs_hwparam hw_param;
 	size_t size;
-	char *buf;
+	char *buf, var_buf[32];
 	int rc;
 	unsigned char mac_addr[6];
 
@@ -107,7 +107,8 @@ static int baltos_read_eeprom(void)
 		hw_param.SystemId = 0;
 	}
 
-	globalvar_add_simple_uint32_fixed("board.id", hw_param.SystemId, "%u");
+	sprintf(var_buf, "%d", hw_param.SystemId);
+	globalvar_add_simple("board.id", var_buf);
 
 	/* enable mPCIe slot */
 	gpio_direction_output(100, 1);
@@ -130,7 +131,7 @@ static int baltos_devices_init(void)
 	if (!of_machine_is_compatible("vscom,onrisc"))
 		return 0;
 
-	globalvar_add_simple_string_fixed("board.variant", "baltos");
+	globalvar_add_simple("board.variant", "baltos");
 
 	if (bootsource_get() == BOOTSOURCE_MMC)
 		omap_set_bootmmc_devname("mmc0");

@@ -668,7 +668,7 @@ static int bootm_init(void)
 	if (IS_ENABLED(CONFIG_BOOTM_FORCE_SIGNED_IMAGES))
 		bootm_verify_mode = BOOTM_VERIFY_SIGNATURE;
 
-	globalvar_add_simple_uint32("bootm.verbose", &bootm_verbosity, "%u");
+	globalvar_add_simple_int("bootm.verbose", &bootm_verbosity, "%u");
 
 	globalvar_add_simple_enum("bootm.verify", (unsigned int *)&bootm_verify_mode,
 				  bootm_verify_names, ARRAY_SIZE(bootm_verify_names));

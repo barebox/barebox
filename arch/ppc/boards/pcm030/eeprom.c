@@ -53,7 +53,7 @@ static void pcm030_read_factory_data(const struct pcm030_eeprom *buf)
 			continue;
 		board = xstrndup(&buf->product[u], l);
 		u += l + 1;
-		globalvar_add_simple_string_fixed("model.type", board);
+		globalvar_add_simple("model.type", board);
 		free(board);
 	}
 
@@ -62,7 +62,7 @@ static void pcm030_read_factory_data(const struct pcm030_eeprom *buf)
 			continue;
 		serial = xstrndup(&buf->product[u], l);
 		u += l + 1;
-		globalvar_add_simple_string_fixed("model.serial", serial);
+		globalvar_add_simple("model.serial", serial);
 		free(serial);
 	}
 

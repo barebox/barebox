@@ -424,7 +424,7 @@ int globalvar_add_simple(const char *name, const char *value)
 	return 0;
 }
 
-int __globalvar_add_simple_string(const char *name, char **value)
+int globalvar_add_simple_string(const char *name, char **value)
 {
 	struct param_d *p;
 
@@ -439,14 +439,28 @@ int __globalvar_add_simple_string(const char *name, char **value)
 	return 0;
 }
 
-int __globalvar_add_simple_int(const char *name, void *value,
-				      enum param_type type,
-				      const char *format)
+int globalvar_add_simple_int(const char *name, int *value,
+			     const char *format)
 {
 	struct param_d *p;
 
-	p = __dev_add_param_int(&global_device, name, NULL, NULL,
-		value, type, format, NULL);
+	p = dev_add_param_int(&global_device, name, NULL, NULL,
+		value, format, NULL);
+
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	globalvar_nv_sync(name);
+
+	return 0;
+}
+
+int globalvar_add_simple_bool(const char *name, int *value)
+{
+	struct param_d *p;
+
+	p = dev_add_param_bool(&global_device, name, NULL, NULL,
+		value, NULL);
 
 	if (IS_ERR(p))
 		return PTR_ERR(p);
@@ -508,7 +522,7 @@ static int globalvar_init(void)
 	if (IS_ENABLED(CONFIG_NVVAR))
 		register_device(&nv_device);
 
-	globalvar_add_simple_string_fixed("version", UTS_RELEASE);
+	globalvar_add_simple("version", UTS_RELEASE);
 
 	return 0;
 }

@@ -54,7 +54,7 @@ EXPORT_SYMBOL(reset_source_set_priority);
 
 static int reset_source_init(void)
 {
-	globalvar_add_simple_enum_ro("system.reset", (unsigned int *)&reset_source,
+	globalvar_add_simple_enum("system.reset", (unsigned int *)&reset_source,
 			reset_src_names, ARRAY_SIZE(reset_src_names));
 
 	return 0;

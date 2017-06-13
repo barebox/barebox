@@ -19,7 +19,7 @@ struct device_d global_device = {
 	.id = DEVICE_ID_SINGLE,
 };
 
-static struct device_d nv_device = {
+struct device_d nv_device = {
 	.name = "nv",
 	.id = DEVICE_ID_SINGLE,
 };

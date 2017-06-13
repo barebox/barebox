@@ -342,7 +342,7 @@ static struct mvebu_pcie *mvebu_pcie_port_probe(struct device_d *dev,
 	if (mvebu_mbus_add_window_remap_by_id(mem_target, mem_attr,
 			      (resource_size_t)pcie->membase, resource_size(&pcie->mem),
 			      (u32)pcie->mem.start)) {
-		dev_err(dev, "PCIe%d.%d unable to add mbus window for mem at %08x+%08x",
+		dev_err(dev, "PCIe%d.%d unable to add mbus window for mem at %08x+%08x\n",
 			port, lane, (u32)pcie->mem.start, resource_size(&pcie->mem));
 
 		free(pcie);

@@ -370,7 +370,7 @@ void globalvar_set_match(const char *match, const char *val)
 	}
 }
 
-static int globalvar_simple_set(struct param_d *p, const char *val)
+static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct device_d *rdev;
 	const char *pname = NULL;
@@ -388,7 +388,7 @@ static int globalvar_simple_set(struct param_d *p, const char *val)
 	}
 
 	/* Pass to the generic function we have overwritten */
-	return dev_param_set_generic(p, val);
+	return dev_param_set_generic(dev, p, val);
 }
 
 static void globalvar_nv_sync(const char *name)

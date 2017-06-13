@@ -24,8 +24,8 @@ enum param_type {
 };
 
 struct param_d {
-	const char* (*get)(struct param_d *param);
-	int (*set)(struct param_d *param, const char *val);
+	const char* (*get)(struct device_d *, struct param_d *param);
+	int (*set)(struct device_d *, struct param_d *param, const char *val);
 	void (*info)(struct param_d *param);
 	unsigned int flags;
 	char *name;
@@ -43,8 +43,8 @@ int dev_set_param(struct device_d *dev, const char *name, const char *val);
 struct param_d *get_param_by_name(struct device_d *dev, const char *name);
 
 struct param_d *dev_add_param(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, const char *val),
-		const char *(*get)(struct param_d *p),
+		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
+		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags);
 
 struct param_d *dev_add_param_string(struct device_d *dev, const char *name,
@@ -83,7 +83,8 @@ void dev_remove_param(struct param_d *p);
 
 void dev_remove_parameters(struct device_d *dev);
 
-int dev_param_set_generic(struct param_d *p, const char *val);
+int dev_param_set_generic(struct device_d *dev, struct param_d *p,
+		const char *val);
 
 #else
 static inline const char *dev_get_param(struct device_d *dev, const char *name)

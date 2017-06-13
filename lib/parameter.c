@@ -76,7 +76,7 @@ const char *dev_get_param(struct device_d *dev, const char *name)
 		return NULL;
 	}
 
-	return param->get(param);
+	return param->get(dev, param);
 }
 
 /**
@@ -107,7 +107,7 @@ int dev_set_param(struct device_d *dev, const char *name, const char *val)
 		return -EACCES;
 	}
 
-	ret = param->set(param, val);
+	ret = param->set(dev, param, val);
 	if (ret)
 		errno = -ret;
 
@@ -125,7 +125,7 @@ int dev_set_param(struct device_d *dev, const char *name, const char *val)
  * used during deregistration of the parameter to free the alloctated
  * memory.
  */
-int dev_param_set_generic(struct param_d *p,
+int dev_param_set_generic(struct device_d *dev, struct param_d *p,
 		const char *val)
 {
 	free(p->value);
@@ -137,7 +137,7 @@ int dev_param_set_generic(struct param_d *p,
 	return p->value ? 0 : -ENOMEM;
 }
 
-static const char *param_get_generic(struct param_d *p)
+static const char *param_get_generic(struct device_d *dev, struct param_d *p)
 {
 	return p->value ? p->value : "";
 }
@@ -151,8 +151,8 @@ static int compare(struct list_head *a, struct list_head *b)
 }
 
 static int __dev_add_param(struct param_d *param, struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, const char *val),
-		const char *(*get)(struct param_d *p),
+		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
+		const char *(*get)(struct device_d *dev, struct param_d *p),
 		unsigned long flags)
 {
 	if (get_param_by_name(dev, name))
@@ -194,8 +194,8 @@ static int __dev_add_param(struct param_d *param, struct device_d *dev, const ch
  * not use static arrays when using the generic functions.
  */
 struct param_d *dev_add_param(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, const char *val),
-		const char *(*get)(struct param_d *param),
+		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
+		const char *(*get)(struct device_d *dev, struct param_d *param),
 		unsigned long flags)
 {
 	struct param_d *param;
@@ -248,7 +248,7 @@ static inline struct param_string *to_param_string(struct param_d *p)
 	return container_of(p, struct param_string, param);
 }
 
-static int param_string_set(struct param_d *p, const char *val)
+static int param_string_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct param_string *ps = to_param_string(p);
 	int ret;
@@ -273,7 +273,7 @@ static int param_string_set(struct param_d *p, const char *val)
 	return ret;
 }
 
-static const char *param_string_get(struct param_d *p)
+static const char *param_string_get(struct device_d *dev, struct param_d *p)
 {
 	struct param_string *ps = to_param_string(p);
 	int ret;
@@ -327,7 +327,7 @@ static inline struct param_int *to_param_int(struct param_d *p)
 	return container_of(p, struct param_int, param);
 }
 
-static int param_int_set(struct param_d *p, const char *val)
+static int param_int_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct param_int *pi = to_param_int(p);
 	u8 value_save[pi->dsize];
@@ -368,7 +368,7 @@ static int param_int_set(struct param_d *p, const char *val)
 	return ret;
 }
 
-static const char *param_int_get(struct param_d *p)
+static const char *param_int_get(struct device_d *dev, struct param_d *p)
 {
 	struct param_int *pi = to_param_int(p);
 	int ret;
@@ -487,7 +487,7 @@ static inline struct param_enum *to_param_enum(struct param_d *p)
 	return container_of(p, struct param_enum, param);
 }
 
-static int param_enum_set(struct param_d *p, const char *val)
+static int param_enum_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct param_enum *pe = to_param_enum(p);
 	int value_save = *pe->value;
@@ -515,7 +515,7 @@ static int param_enum_set(struct param_d *p, const char *val)
 	return ret;
 }
 
-static const char *param_enum_get(struct param_d *p)
+static const char *param_enum_get(struct device_d *dev, struct param_d *p)
 {
 	struct param_enum *pe = to_param_enum(p);
 	int ret;
@@ -599,7 +599,7 @@ static inline struct param_bitmask *to_param_bitmask(struct param_d *p)
 	return container_of(p, struct param_bitmask, param);
 }
 
-static int param_bitmask_set(struct param_d *p, const char *val)
+static int param_bitmask_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct param_bitmask *pb = to_param_bitmask(p);
 	void *value_save;
@@ -645,7 +645,7 @@ out:
 	return ret;
 }
 
-static const char *param_bitmask_get(struct param_d *p)
+static const char *param_bitmask_get(struct device_d *dev, struct param_d *p)
 {
 	struct param_bitmask *pb = to_param_bitmask(p);
 	int ret, bit;
@@ -734,7 +734,7 @@ static inline struct param_ip *to_param_ip(struct param_d *p)
 	return container_of(p, struct param_ip, param);
 }
 
-static int param_ip_set(struct param_d *p, const char *val)
+static int param_ip_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct param_ip *pi = to_param_ip(p);
 	IPaddr_t ip_save = *pi->ip;
@@ -757,7 +757,7 @@ static int param_ip_set(struct param_d *p, const char *val)
 	return ret;
 }
 
-static const char *param_ip_get(struct param_d *p)
+static const char *param_ip_get(struct device_d *dev, struct param_d *p)
 {
 	struct param_ip *pi = to_param_ip(p);
 	int ret;
@@ -816,7 +816,7 @@ static inline struct param_mac *to_param_mac(struct param_d *p)
 	return container_of(p, struct param_mac, param);
 }
 
-static int param_mac_set(struct param_d *p, const char *val)
+static int param_mac_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct param_mac *pm = to_param_mac(p);
 	char mac_save[6];
@@ -845,7 +845,7 @@ out:
 	return ret;
 }
 
-static const char *param_mac_get(struct param_d *p)
+static const char *param_mac_get(struct device_d *dev, struct param_d *p)
 {
 	struct param_mac *pm = to_param_mac(p);
 	int ret;
@@ -894,7 +894,7 @@ struct param_d *dev_add_param_mac(struct device_d *dev, const char *name,
  */
 void dev_remove_param(struct param_d *p)
 {
-	p->set(p, NULL);
+	p->set(p->dev, p, NULL);
 	list_del(&p->list);
 	free(p->name);
 	free(p);
@@ -910,7 +910,7 @@ void dev_remove_parameters(struct device_d *dev)
 	struct param_d *p, *n;
 
 	list_for_each_entry_safe(p, n, &dev->parameters, list) {
-		p->set(p, NULL);
+		p->set(dev, p, NULL);
 		list_del(&p->list);
 		free(p->name);
 		free(p);

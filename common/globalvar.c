@@ -163,7 +163,7 @@ static int nvvar_device_dispatch(const char *name, struct device_d **dev,
 	return 1;
 }
 
-static int nv_set(struct param_d *p, const char *val)
+static int nv_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct param_d *g;
 	int ret;
@@ -184,16 +184,16 @@ static int nv_set(struct param_d *p, const char *val)
 	return 0;
 }
 
-static const char *nv_param_get(struct param_d *p)
+static const char *nv_param_get(struct device_d *dev, struct param_d *p)
 {
 	return p->value ? p->value : "";
 }
 
-static int nv_param_set(struct param_d *p, const char *val)
+static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	int ret;
 
-	ret = nv_set(p, val);
+	ret = nv_set(dev, p, val);
 	if (ret)
 		return ret;
 
@@ -216,7 +216,7 @@ static int __nvvar_add(const char *name, const char *value)
 	}
 
 	if (value)
-		return nv_set(p, value);
+		return nv_set(&nv_device, p, value);
 
 	value = dev_get_param(&global_device, name);
 	if (value) {
@@ -370,7 +370,7 @@ void globalvar_set_match(const char *match, const char *val)
 	}
 }
 
-static int globalvar_simple_set(struct param_d *p, const char *val)
+static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const char *val)
 {
 	struct device_d *rdev;
 	const char *pname = NULL;
@@ -388,7 +388,7 @@ static int globalvar_simple_set(struct param_d *p, const char *val)
 	}
 
 	/* Pass to the generic function we have overwritten */
-	return dev_param_set_generic(p, val);
+	return dev_param_set_generic(dev, p, val);
 }
 
 static void globalvar_nv_sync(const char *name)

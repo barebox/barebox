@@ -165,18 +165,14 @@ static int nvvar_device_dispatch(const char *name, struct device_d **dev,
 
 static int nv_set(struct device_d *dev, struct param_d *p, const char *val)
 {
-	struct param_d *g;
 	int ret;
 
 	if (!val)
 		val = "";
 
-	g = get_param_by_name(&global_device, p->name);
-	if (g) {
-		ret = dev_set_param(&global_device, p->name, val);
-		if (ret)
-			return ret;
-	}
+	ret = dev_set_param(&global_device, p->name, val);
+	if (ret)
+		return ret;
 
 	free(p->value);
 	p->value = xstrdup(val);
@@ -203,6 +199,7 @@ static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val
 static int __nvvar_add(const char *name, const char *value)
 {
 	struct param_d *p;
+	int ret;
 
 	if (!IS_ENABLED(CONFIG_NVVAR))
 		return -ENOSYS;
@@ -214,6 +211,11 @@ static int __nvvar_add(const char *name, const char *value)
 		if (IS_ERR(p))
 			return PTR_ERR(p);
 	}
+
+	/* Create corresponding globalvar if it doesn't exist yet */
+	ret = globalvar_add_simple(name, value);
+	if (ret && ret != -EEXIST)
+		return ret;
 
 	if (value)
 		return nv_set(&nv_device, p, value);
@@ -391,15 +393,6 @@ static int globalvar_simple_set(struct device_d *dev, struct param_d *p, const c
 	return dev_param_set_generic(dev, p, val);
 }
 
-static void globalvar_nv_sync(const char *name)
-{
-	const char *val;
-
-	val = dev_get_param(&nv_device, name);
-	if (val)
-		dev_set_param(&global_device, name, val);
-}
-
 /*
  * globalvar_add_simple
  *
@@ -416,12 +409,10 @@ int globalvar_add_simple(const char *name, const char *value)
 			return PTR_ERR(param);
 	}
 
-	if (value)
-		dev_set_param(&global_device, name, value);
+	if (!value)
+		return 0;
 
-	globalvar_nv_sync(name);
-
-	return 0;
+	return dev_set_param(&global_device, name, value);
 }
 
 static int globalvar_remove_unqualified(const char *name)
@@ -438,6 +429,15 @@ static int globalvar_remove_unqualified(const char *name)
 	dev_remove_param(p);
 
 	return 0;
+}
+
+static void globalvar_nv_sync(const char *name)
+{
+	const char *val;
+
+	val = dev_get_param(&nv_device, name);
+	if (val)
+		dev_set_param(&global_device, name, val);
 }
 
 int globalvar_add_simple_string(const char *name, char **value)

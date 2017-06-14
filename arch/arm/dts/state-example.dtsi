@@ -1,0 +1,128 @@
+/*
+ * This code is released using a dual license strategy: BSD/GPL
+ * You can choose the licence that better fits your requirements.
+ *
+ * Released under the terms of 3-clause BSD License
+ * Released under the terms of GNU General Public License Version 2.0
+ *
+ */
+
+/*
+ * This contains an example how to use the state framework. This file
+ * can be directly included by imx6qdl-phytec-pbab01.dtsi, other boards
+ * need adjustments. Note that this example may use the partitions in
+ * other ways than intended by phytec, so before using this see below
+ * if it will overwrite some precious data.
+ */
+
+#define STATE_VARS \
+	#address-cells = <1>;				\
+	#size-cells = <1>;				\
+	mac {						\
+		reg = <0x0 0x6>;			\
+		type = "mac";				\
+	};						\
+							\
+	number {					\
+		reg = <0x8 0x4>;			\
+		type = "uint32";			\
+	};						\
+							\
+	name {						\
+		reg = <0xc 0x10>;			\
+		type = "string";			\
+	};						\
+							\
+	fruit {						\
+		reg = <0x1c 0x4>;			\
+		type = "enum32";			\
+		names = "apple", "pear", "banana";	\
+	}
+
+/ {
+	aliases {
+		state_nor = &state_nor;
+		state_nand = &state_nand;
+		state_sd = &state_sd;
+		state_eeprom = &state_eeprom;
+	};
+
+	state_nor: state_nor {
+		magic = <0x512890a0>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&backend_state_nor>;
+		backend-storage-type = "circular";
+
+		STATE_VARS;
+	};
+
+	state_nand: state_nand {
+		magic = <0xab67421f>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&backend_state_nand>;
+		backend-storage-type = "circular";
+
+		STATE_VARS;
+	};
+
+	state_sd: state_sd {
+		magic = <0xef784236>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&backend_state_usdhc>;
+		backend-stridesize = <1024>;
+
+		STATE_VARS;
+	};
+
+	state_eeprom: state_eeprom {
+		magic = <0x344682db>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&backend_state_eeprom>;
+		backend-stridesize = <64>;
+
+		STATE_VARS;
+	};
+
+};
+
+&ecspi3 {
+	flash@0 {
+		backend_state_nor: partition@120000 {
+		};
+	};
+};
+
+&gpmi {
+	backend_state_nand: partition@500000 {
+	};
+};
+
+&i2c1 {
+	eeprom@50 {
+		partitions {
+			compatible = "fixed-partitions";
+			#size-cells = <1>;
+			#address-cells = <1>;
+			backend_state_eeprom: state@400 {
+				reg = <0x400 0x400>;
+				label = "state-eeprom";
+			};
+		};
+	};
+};
+
+&usdhc2 {
+	partitions {
+		compatible = "fixed-partitions";
+		#size-cells = <1>;
+		#address-cells = <1>;
+		backend_state_usdhc: state@0x80000 {
+			reg = <0x80000 0x80000>;
+			label = "state-sd";
+		};
+	};
+};

@@ -570,10 +570,8 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 {
 	struct state *state;
 	int ret = 0;
-	int len;
 	const char *backend_type;
-	const char *storage_type;
-	const char *of_path;
+	const char *storage_type = NULL;
 	const char *alias;
 	uint32_t stridesize;
 
@@ -587,12 +585,6 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 	if (IS_ERR(state))
 		return state;
 
-	of_path = of_get_property(node, "backend", &len);
-	if (!of_path) {
-		ret = -ENODEV;
-		goto out_release_state;
-	}
-
 	if (!path) {
 		struct device_node *partition_node;
 
@@ -603,7 +595,6 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 			goto out_release_state;
 		}
 
-		of_path = partition_node->full_name;
 		ret = of_find_path_by_node(partition_node, &path, 0);
 		if (ret) {
 			if (ret != -EPROBE_DEFER)
@@ -625,12 +616,7 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 		stridesize = 0;
 	}
 
-	ret = of_property_read_string(node, "backend-storage-type",
-				      &storage_type);
-	if (ret) {
-		storage_type = NULL;
-		dev_info(&state->dev, "No backend-storage-type found, using default.\n");
-	}
+	of_property_read_string(node, "backend-storage-type", &storage_type);
 
 	ret = state_format_init(state, backend_type, node, alias);
 	if (ret)

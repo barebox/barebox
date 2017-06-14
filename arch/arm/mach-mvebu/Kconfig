@@ -17,6 +17,11 @@ config ARCH_ARMADA_XP
 	select CPU_V7
 	select CLOCKSOURCE_MVEBU
 
+config ARCH_ARMADA_38X
+	bool
+	select CPU_V7
+	select CLOCKSOURCE_MVEBU
+
 config ARCH_DOVE
 	bool
 	select CPU_V7

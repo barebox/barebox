@@ -63,7 +63,8 @@ static int ar8031_phy_fixup(struct phy_device *dev)
 
 static int wandboard_device_init(void)
 {
-	if (!of_machine_is_compatible("wand,imx6dl-wandboard"))
+	if (!of_machine_is_compatible("wand,imx6dl-wandboard") &&
+	    !of_machine_is_compatible("wand,imx6q-wandboard"))
 		return 0;
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK, ar8031_phy_fixup);

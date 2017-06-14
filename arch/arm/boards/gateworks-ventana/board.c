@@ -24,6 +24,19 @@
 
 #include "gsc.h"
 
+static int gw54xx_wdog_of_fixup(struct device_node *root, void *context)
+{
+	struct device_node *np;
+
+	/* switch to the watchdog with internal reset capabilities */
+	np = of_find_node_by_name(root, "wdog@020c0000");
+	of_device_disable(np);
+	np = of_find_node_by_name(root, "wdog@020bc000");
+	of_device_enable(np);
+
+	return 0;
+}
+
 static int gw54xx_devices_init(void)
 {
 	struct i2c_client client;
@@ -59,6 +72,10 @@ static int gw54xx_devices_init(void)
 		gsc_i2c_read(&client, 0x06, mac, 6);
 		of_eth_register_ethaddr(dnode, mac);
 	}
+
+	/* boards before rev E don't have the external watchdog signal */
+	if (gsc_get_rev(&client) < 'E')
+		of_register_fixup(gw54xx_wdog_of_fixup, NULL);
 
 	imx6_bbu_nand_register_handler("nand", BBU_HANDLER_FLAG_DEFAULT);
 

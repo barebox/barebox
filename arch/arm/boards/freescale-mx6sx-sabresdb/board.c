@@ -22,7 +22,6 @@
 #include <io.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <generated/mach-types.h>
-#include <linux/clk.h>
 #include <i2c/i2c.h>
 
 #include <asm/armlinux.h>
@@ -181,34 +180,16 @@ int ar8031_phy_fixup(struct phy_device *phydev)
 #define PHY_ID_AR8031	0x004dd074
 #define AR_PHY_ID_MASK	0xffffffff
 
-static int imx6sx_sdb_setup_fec(void)
+static void imx6sx_sdb_setup_fec(void)
 {
 	void __iomem *gprbase = (void *)MX6_IOMUXC_BASE_ADDR + 0x4000;
 	uint32_t val;
-	struct clk *clk;
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,
 			ar8031_phy_fixup);
 
 	/* Active high for ncp692 */
 	gpio_direction_output(IMX_GPIO_NR(4, 16), 1);
-
-	clk = clk_lookup("enet_ptp_25m");
-	if (IS_ERR(clk))
-		goto err;
-
-	clk_enable(clk);
-
-	clk = clk_lookup("enet_ref");
-	if (IS_ERR(clk))
-		goto err;
-	clk_enable(clk);
-
-	clk = clk_lookup("enet2_ref_125m");
-	if (IS_ERR(clk))
-		goto err;
-
-	clk_enable(clk);
 
 	val = readl(gprbase + IOMUXC_GPR1);
 	/* Use 125M anatop loopback REF_CLK1 for ENET1, clear gpr1[13], gpr1[17]*/
@@ -226,12 +207,6 @@ static int imx6sx_sdb_setup_fec(void)
 	gpio_direction_output(IMX_GPIO_NR(2, 7), 0);
 	udelay(500);
 	gpio_set_value(IMX_GPIO_NR(2, 7), 1);
-
-	return 0;
-err:
-	pr_err("Setting up DFEC\n");
-
-	return -EIO;
 }
 
 static int imx6sx_sdb_coredevices_init(void)

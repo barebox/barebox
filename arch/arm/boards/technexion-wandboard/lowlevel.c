@@ -276,7 +276,6 @@ static unsigned long wandboard_dram_init(void)
 
 	__udelay(100);
 
-	mmdc_do_write_level_calibration();
 	mmdc_do_dqs_calibration();
 #ifdef DEBUG
 	mmdc_print_calibration_results();
@@ -286,11 +285,25 @@ static unsigned long wandboard_dram_init(void)
 
 static void setup_uart(void)
 {
+	int cpu_type = __imx6_cpu_type();
 	void __iomem *iomuxbase = (void *)MX6_IOMUXC_BASE_ADDR;
 
-	/* mux the uart */
-	writel(0x00000003, iomuxbase + 0x4c);
-	writel(0x00000000, iomuxbase + 0x8fc);
+	/* mux UART1 TX on PAD_CSI0_DATA10 */
+	switch (cpu_type) {
+	case IMX6_CPUTYPE_IMX6S:
+	case IMX6_CPUTYPE_IMX6DL:
+		writel(0x00000003, iomuxbase + 0x4c);
+		writel(0x0001b0b1, iomuxbase + 0x360);
+		writel(0x00000000, iomuxbase + 0x8fc);
+		break;
+	case IMX6_CPUTYPE_IMX6Q:
+		writel(0x00000003, iomuxbase + 0x280);
+		writel(0x0001b0b1, iomuxbase + 0x650);
+		writel(0x00000001, iomuxbase + 0x920);
+		break;
+	default:
+		return;
+	}
 
 	imx6_ungate_all_peripherals();
 	imx6_uart_setup((void *)MX6_UART1_BASE_ADDR);

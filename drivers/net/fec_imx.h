@@ -137,6 +137,13 @@ enum fec_clock {
 	FEC_CLK_NUM
 };
 
+enum fec_opt_clock {
+	FEC_OPT_CLK_REF,
+	FEC_OPT_CLK_OUT,
+
+	FEC_OPT_CLK_NUM
+};
+
 /**
  * @brief i.MX27-FEC private structure
  */
@@ -153,6 +160,7 @@ struct fec_priv {
 	struct mii_bus miibus;
 	void (*phy_init)(struct phy_device *dev);
 	struct clk *clk[FEC_CLK_NUM];
+	struct clk *opt_clk[FEC_OPT_CLK_NUM];
 	enum fec_type type;
 };
 

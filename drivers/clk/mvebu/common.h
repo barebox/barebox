@@ -49,6 +49,14 @@ static const u32 armada_xp_coreclks;
 static const u32 armada_xp_gating_desc;
 #endif
 
+#ifdef CONFIG_ARCH_ARMADA_38X
+extern const struct coreclk_soc_desc armada_38x_coreclks;
+extern const struct clk_gating_soc_desc armada_38x_gating_desc[];
+#else
+static const u32 armada_38x_coreclks;
+static const u32 armada_38x_gating_desc;
+#endif
+
 #ifdef CONFIG_ARCH_DOVE
 extern const struct coreclk_soc_desc dove_coreclks;
 extern const struct clk_gating_soc_desc dove_gating_desc[];

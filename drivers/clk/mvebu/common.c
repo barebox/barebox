@@ -29,6 +29,8 @@ static struct clk_onecell_data clk_data;
 static struct of_device_id mvebu_coreclk_ids[] = {
 	{ .compatible = "marvell,armada-370-core-clock",
 	  .data = &armada_370_coreclks },
+	{ .compatible = "marvell,armada-380-core-clock",
+	  .data = &armada_38x_coreclks },
 	{ .compatible = "marvell,armada-xp-core-clock",
 	  .data = &armada_xp_coreclks },
 	{ .compatible = "marvell,dove-core-clock",
@@ -144,6 +146,8 @@ static struct of_device_id mvebu_clk_gating_ids[] = {
 	  .data = &armada_370_gating_desc },
 	{ .compatible = "marvell,armada-xp-gating-clock",
 	  .data = &armada_xp_gating_desc },
+	{ .compatible = "marvell,armada-380-gating-clock",
+	  .data = &armada_38x_gating_desc },
 	{ .compatible = "marvell,dove-gating-clock",
 	  .data = &dove_gating_desc },
 	{ .compatible = "marvell,kirkwood-gating-clock",

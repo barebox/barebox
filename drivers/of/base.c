@@ -2001,6 +2001,8 @@ int of_device_is_stdout_path(struct device_d *dev)
 {
 	struct device_node *dn;
 	const char *name;
+	const char *p;
+	char *q;
 
 	if (!dev->device_node)
 		return 0;
@@ -2012,7 +2014,16 @@ int of_device_is_stdout_path(struct device_d *dev)
 	if (!name)
 		return 0;
 
-	dn = of_find_node_by_path(name);
+	/* This could make use of strchrnul if it were available */
+	p = strchr(name, ':');
+	if (!p)
+		p = name + strlen(name);
+
+	q = xstrndup(name, p - name);
+
+	dn = of_find_node_by_path_or_alias(NULL, q);
+
+	free(q);
 
 	return dn == dev->device_node;
 }

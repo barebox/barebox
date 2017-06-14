@@ -3,4 +3,5 @@
 mount /dev/mmc1.0
 
 global.bootm.image=/mnt/mmc1.0/zImage
+global.bootm.oftree=/mnt/mmc1.0/imx6q-embedsky-e9.dtb
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait"

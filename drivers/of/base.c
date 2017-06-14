@@ -2002,6 +2002,9 @@ int of_device_is_stdout_path(struct device_d *dev)
 	struct device_node *dn;
 	const char *name;
 
+	if (!dev->device_node)
+		return 0;
+
 	name = of_get_property(of_chosen, "stdout-path", NULL);
 	if (!name)
 		name = of_get_property(of_chosen, "linux,stdout-path", NULL);
@@ -2010,13 +2013,8 @@ int of_device_is_stdout_path(struct device_d *dev)
 		return 0;
 
 	dn = of_find_node_by_path(name);
-	if (!dn)
-		return 0;
 
-	if (dn == dev->device_node)
-		return 1;
-
-	return 0;
+	return dn == dev->device_node;
 }
 
 /**

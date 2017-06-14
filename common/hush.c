@@ -1974,7 +1974,7 @@ static int do_source(int argc, char *argv[])
 	return ret;
 }
 
-static const char *source_aliases[] = { ".", NULL};
+static const char * const source_aliases[] = { ".", NULL};
 
 BAREBOX_CMD_HELP_START(source)
 BAREBOX_CMD_HELP_TEXT("Read and execute commands from FILE in the current shell environment.")

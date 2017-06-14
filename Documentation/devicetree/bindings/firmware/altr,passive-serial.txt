@@ -6,7 +6,8 @@ passive serial mode. This is used to upload the firmware and
 to start the FPGA.
 
 Required properties:
-- compatible: shall be "altr,fpga-passive-serial"
+- compatible: shall be "altr,fpga-passive-serial" or
+  "altr,fpga-arria10-passive-serial" for Arria 10
 - reg: SPI chip select
 - nstat-gpios: Specify GPIO for controlling the nstat pin
 - confd-gpios: Specify GPIO for controlling the confd pin

@@ -229,10 +229,10 @@ time.
 Network boot
 ------------
 
-With the following steps barebox can start the Kernel and root filesystem
-over network, a standard development case.
+With the following steps, barebox can start the kernel and root filesystem
+over the network, a standard development case.
 
-Configure network: edit ``/env/network/eth0``. For a standard dhcp setup
+Configure network: edit ``/env/network/eth0``. For a standard DHCP setup
 the following is enough:
 
 .. code-block:: sh
@@ -242,8 +242,11 @@ the following is enough:
   ip=dhcp
   serverip=192.168.23.45
 
-serverip is only necessary if it differs from the serverip offered from the dhcp server.
-A static ip setup can look like this:
+The optional setting ``serverip`` specifies the IP address of your TFTP and NFS
+server, and is only necessary if it differs from the server IP offered by the
+DHCP server (i.e., the field ``siaddr`` in the DHCP ACK Reply).
+
+A static IP setup can look like this:
 
 .. code-block:: sh
 
@@ -255,27 +258,43 @@ A static ip setup can look like this:
   gateway=192.168.2.1
   serverip=192.168.2.1
 
-Note that barebox will pass the same ip settings to the kernel, i.e. it passes
-``ip=$ipaddr:$serverip:$gateway:$netmask::eth0:`` for a static ip setup and
-``ip=dhcp`` for a dynamic dhcp setup.
+Note that barebox will pass the same IP settings to the kernel, i.e. it passes
+``ip=$ipaddr:$serverip:$gateway:$netmask::eth0:`` for a static IP setup and
+``ip=dhcp`` for a dynamic DHCP setup.
 
-Adjust ``global.user`` and maybe ``global.hostname`` in ``/env/config``::
+By default, barebox uses the variables ``global.user`` and ``global.hostname``
+to retrieve its kernel image over TFTP, which makes it possible to use multiple
+boards for multiple users with one single server.
+You can adjust those variables in ``/env/config``::
 
   global.user=sha
   global.hostname=efikasb
 
-Copy the kernel (and devicetree if needed) to the base dir of the TFTP server::
+Copy the kernel (and devicetree if needed) to the root directory of your TFTP
+server, and name them accordingly; for example::
 
   cp zImage /tftpboot/sha-linux-efikasb
   cp myboard.dtb /tftpboot/sha-oftree-efikasb
 
-barebox will pass ``nfsroot=/home/${global.user}/nfsroot/${global.hostname}``
-This may be a link to another location on the NFS server. Make sure that the
-link target is exported from the server.
+(In this example, the directory ``/tftpboot`` represents the root directory of
+the TFTP server.
+That directory depends on the configuration of your TFTP server, some servers
+may also use ``/srv/tftp`` instead.)
 
-``boot net`` will then start the Kernel.
+barebox will pass ``nfsroot=/home/${global.user}/nfsroot/${global.hostname}`` to
+the kernel.
+This causes the kernel to mount its root filesystem from a NFS server, which is
+detected through the DHCP reply.
+To choose a different server, simply prepend its IP address to the mount path,
+e.g. ``nfsroot=192.168.23.5:/home/...``.
+In any case, make sure that the specified mountpoint is exported by your NFS
+server.
 
-If the paths or names are not suitable they can be adjusted in
+For more information about booting with ``nfsroot``, see
+`Documentation/filesystems/nfs/nfsroot.txt <https://github.com/torvalds/linux/blob/master/Documentation/filesystems/nfs/nfsroot.txt>`__
+in the Linux kernel documentation.
+
+If the preconfigured paths or names are not suitable, they can be adjusted in
 ``/env/boot/net``:
 
 .. code-block:: sh
@@ -294,3 +313,6 @@ If the paths or names are not suitable they can be adjusted in
   nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
   bootargs-ip
   global.linux.bootargs.dyn.root="root=/dev/nfs nfsroot=$nfsroot,v3,tcp"
+
+``boot net`` will then retrieve the kernel (and also the device tree and
+initramfs, if used) over TFTP and boot it.

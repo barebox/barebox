@@ -448,3 +448,9 @@ quiet_cmd_cboot_bct = BCT     $@
 
 $(obj)/%.bct: $(obj)/%.bct.cfg
 	$(call cmd,cboot_bct)
+
+quiet_cmd_b64dec = B64DEC  $@
+      cmd_b64dec = base64 -d $< > $@
+
+%: %.base64
+	$(call cmd,b64dec)

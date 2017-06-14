@@ -20,11 +20,14 @@
 #include <complete.h>
 #include <driver.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <malloc.h>
 #include <ioctl.h>
 #include <nand.h>
 #include <linux/err.h>
+#include <linux/fs.h>
 #include <linux/mtd/mtd.h>
+#include <unistd.h>
 
 LIST_HEAD(cdev_list);
 
@@ -332,6 +335,8 @@ static struct cdev *__devfs_add_partition(struct cdev *cdev,
 
 	devfs_create(new);
 
+	cdev_create_default_automount(new);
+
 	return new;
 }
 
@@ -406,4 +411,91 @@ int devfs_create_partitions(const char *devname,
 	}
 
 	return 0;
+}
+
+struct loop_priv {
+	int fd;
+};
+
+static ssize_t loop_read(struct cdev *cdev, void *buf, size_t count,
+		loff_t offset, ulong flags)
+{
+	struct loop_priv *priv = cdev->priv;
+	loff_t ofs;
+
+	ofs = lseek(priv->fd, offset, SEEK_SET);
+	if (ofs < 0)
+		return ofs;
+
+	return read(priv->fd, buf, count);
+}
+
+static ssize_t loop_write(struct cdev *cdev, const void *buf, size_t count,
+		loff_t offset, ulong flags)
+{
+	struct loop_priv *priv = cdev->priv;
+	loff_t ofs;
+
+	ofs = lseek(priv->fd, offset, SEEK_SET);
+	if (ofs < 0)
+		return ofs;
+
+	return write(priv->fd, buf, count);
+}
+
+static const struct file_operations loop_ops = {
+	.read = loop_read,
+	.write = loop_write,
+	.memmap = generic_memmap_rw,
+	.lseek = dev_lseek_default,
+};
+
+struct cdev *cdev_create_loop(const char *path, ulong flags)
+{
+	struct cdev *new;
+	struct loop_priv *priv;
+	static int loopno;
+	loff_t ofs;
+
+	priv = xzalloc(sizeof(*priv));
+
+	priv->fd = open(path, flags);
+	if (priv->fd < 0) {
+		free(priv);
+		return NULL;
+	}
+
+	new = xzalloc(sizeof(*new));
+
+	new->ops = &loop_ops;
+	new->name = basprintf("loop%u", loopno++);
+	new->priv = priv;
+
+	ofs = lseek(priv->fd, 0, SEEK_END);
+	if (ofs < 0) {
+		free(new);
+		free(priv);
+		return NULL;
+	}
+	lseek(priv->fd, 0, SEEK_SET);
+
+	new->size = ofs;
+	new->offset = 0;
+	new->dev = NULL;
+	new->flags = 0;
+
+	devfs_create(new);
+
+	return new;
+}
+
+void cdev_remove_loop(struct cdev *cdev)
+{
+	struct loop_priv *priv = cdev->priv;
+
+	devfs_remove(cdev);
+	close(priv->fd);
+	free(priv);
+	free(cdev->name);
+	free(cdev);
 }

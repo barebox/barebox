@@ -440,7 +440,7 @@ struct file_operations {
 #define MAX_PARTUUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")
 
 struct cdev {
-	struct file_operations *ops;
+	const struct file_operations *ops;
 	void *priv;
 	struct device_d *dev;
 	struct device_node *device_node;
@@ -473,6 +473,8 @@ struct cdev *lcdev_by_name(const char *filename);
 struct cdev *cdev_readlink(struct cdev *cdev);
 struct cdev *cdev_by_device_node(struct device_node *node);
 struct cdev *cdev_open(const char *name, unsigned long flags);
+struct cdev *cdev_create_loop(const char *path, ulong flags);
+void cdev_remove_loop(struct cdev *cdev);
 int cdev_do_open(struct cdev *, unsigned long flags);
 void cdev_close(struct cdev *cdev);
 int cdev_flush(struct cdev *cdev);
@@ -489,6 +491,14 @@ int cdev_erase(struct cdev *cdev, loff_t count, loff_t offset);
 struct cdev *devfs_add_partition(const char *devname, loff_t offset,
 		loff_t size, unsigned int flags, const char *name);
 int devfs_del_partition(const char *name);
+
+#ifdef CONFIG_FS_AUTOMOUNT
+void cdev_create_default_automount(struct cdev *cdev);
+#else
+static inline void cdev_create_default_automount(struct cdev *cdev)
+{
+}
+#endif
 
 #define DEVFS_PARTITION_APPEND		0
 

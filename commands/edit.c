@@ -559,7 +559,7 @@ out:
 	return ret;
 }
 
-static const char *edit_aliases[] = { "sedit", NULL};
+static const char * const edit_aliases[] = { "sedit", NULL};
 
 BAREBOX_CMD_HELP_START(edit)
 BAREBOX_CMD_HELP_TEXT("Use cursor keys, Ctrl-C to exit and Ctrl-D to exit-with-save.")

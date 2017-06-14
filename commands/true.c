@@ -26,7 +26,10 @@ static int do_true(int argc, char *argv[])
 	return 0;
 }
 
+static const char * const true_aliases[] = { ":", NULL};
+
 BAREBOX_CMD_START(true)
+	.aliases	= true_aliases,
 	.cmd		= do_true,
 	BAREBOX_CMD_DESC("do nothing, successfully")
 	BAREBOX_CMD_GROUP(CMD_GRP_SCRIPT)

@@ -2,6 +2,32 @@
 
 #include "parseopt.h"
 
+void parseopt_b(const char *options, const char *opt, bool *val)
+{
+	const char *start;
+	size_t optlen = strlen(opt);
+
+again:
+	start = strstr(options, opt);
+
+	if (!start) {
+		*val = false;
+		return;
+	}
+
+	if (start > options && start[-1] != ',') {
+		options = start;
+		goto again;
+	}
+
+	if (start[optlen] != ',' && start[optlen] != '\0') {
+		options = start;
+		goto again;
+	}
+
+	*val = true;
+}
+
 void parseopt_hu(const char *options, const char *opt, unsigned short *val)
 {
 	const char *start;

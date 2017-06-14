@@ -20,13 +20,6 @@ static const unsigned char rtc_days_in_month[] = {
 	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-static const unsigned short rtc_ydays[2][13] = {
-	/* Normal years */
-	{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
-	/* Leap years */
-	{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
-};
-
 #define LEAPS_THRU_END_OF(y) ((y)/4 - (y)/100 + (y)/400)
 
 /*

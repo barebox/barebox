@@ -224,7 +224,7 @@ out:
 	return expr;
 }
 
-static const char *test_aliases[] = { "[", NULL};
+static const char * const test_aliases[] = { "[", NULL};
 
 BAREBOX_CMD_HELP_START(test)
 BAREBOX_CMD_HELP_TEXT("Options:")

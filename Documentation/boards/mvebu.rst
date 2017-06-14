@@ -28,14 +28,18 @@ initialisation that could be taken.
 Booting second stage
 --------------------
 
-This is currently not possible because barebox assumes the registers are mapped
-at 0xd0000000 as is the case when the boot ROM gives control to the bootloader.
+Since ``v2017.04.0`` barebox can boot a barebox image even if the register
+window is moved. This is implemented by writing the actual window position
+into the image where it is then picked up by the second stage bootloader.
 
 Booting from UART
 -----------------
 
 The mvebu SoCs support booting from UART. For this there is a tool available in
-barebox called kwboot.
+barebox called ``kwboot``. Quite some mvebu boards are reset once more when
+they already started to read the first block of the image to boot. If you want
+to boot such a board, use the parameter ``-n 15`` for ``kwboot``. (The number
+might have to be adapted per board.)
 
 mvebu boards
 ------------

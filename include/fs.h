@@ -128,7 +128,8 @@ char *mkmodestr(unsigned long mode, char *str);
  * of "..", "." and double slashes. The returned string must be freed wit free().
  */
 char *normalise_path(const char *path);
-char *normalise_link(const char *pathname, const char* symlink);
+
+char *canonicalize_path(const char *pathname);
 
 char *get_mounted_path(const char *path);
 

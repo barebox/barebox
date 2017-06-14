@@ -83,61 +83,6 @@ static int init_fs(void)
 
 postcore_initcall(init_fs);
 
-char *normalise_link(const char *pathname, const char *symlink)
-{
-	const char *buf = symlink;
-	char *path_free, *path;
-	char *absolute_path;
-	int point = 0;
-	int dir = 1;
-	int len;
-
-	if (symlink[0] == '/')
-		return strdup(symlink);
-
-	while (*buf == '.' || *buf == '/') {
-		if (*buf == '.') {
-			point++;
-		} else if (*buf == '/') {
-			point = 0;
-			dir++;
-		}
-		if (point > 2) {
-			buf -= 2;
-			break;
-		}
-		buf++;
-	}
-
-	path = path_free = strdup(pathname);
-	if (!path)
-		return NULL;
-
-	while(dir) {
-		path = dirname(path);
-		dir--;
-	}
-
-	len = strlen(buf) + strlen(path) + 1;
-	if (buf[0] != '/')
-		len++;
-
-	absolute_path = calloc(sizeof(char), len);
-
-	if (!absolute_path)
-		goto out;
-
-	strcat(absolute_path, path);
-	if (buf[0] != '/')
-		strcat(absolute_path, "/");
-	strcat(absolute_path, buf);
-
-out:
-	free(path_free);
-
-	return absolute_path;
-}
-
 char *normalise_path(const char *pathname)
 {
 	char *path = xzalloc(strlen(pathname) + strlen(cwd) + 2);
@@ -196,6 +141,137 @@ char *normalise_path(const char *pathname)
 	return path;
 }
 EXPORT_SYMBOL(normalise_path);
+
+static int __lstat(const char *filename, struct stat *s);
+
+static char *__canonicalize_path(const char *_pathname, int level)
+{
+	char *path, *freep;
+	char *outpath;
+	int ret;
+	struct stat s;
+
+	if (level > 10)
+		return ERR_PTR(-ELOOP);
+
+	path = freep = xstrdup(_pathname);
+
+	if (*path == '/')
+		outpath = xstrdup("/");
+	else
+		outpath = __canonicalize_path(cwd, level + 1);
+
+	while (1) {
+		char *p = strsep(&path, "/");
+		char *tmp;
+		char link[PATH_MAX] = {};
+
+		if (!p)
+			break;
+		if (p[0] == '\0')
+			continue;
+		if (!strcmp(p, "."))
+			continue;
+		if (!strcmp(p, "..")) {
+			tmp = xstrdup(dirname(outpath));
+			free(outpath);
+			outpath = tmp;
+			continue;
+		}
+
+		tmp = basprintf("%s/%s", outpath, p);
+		free(outpath);
+		outpath = tmp;
+
+		ret = __lstat(outpath, &s);
+		if (ret)
+			goto out;
+
+		if (!S_ISLNK(s.st_mode))
+			continue;
+
+		ret = readlink(outpath, link, PATH_MAX - 1);
+		if (ret < 0)
+			goto out;
+
+		if (link[0] == '/') {
+			free(outpath);
+			outpath = __canonicalize_path(link, level + 1);
+		} else {
+			tmp = basprintf("%s/%s", dirname(outpath), link);
+			free(outpath);
+			outpath = __canonicalize_path(tmp, level + 1);
+			free(tmp);
+		}
+
+		if (IS_ERR(outpath))
+			goto out;
+	}
+out:
+	free(freep);
+
+	return outpath;
+}
+
+/*
+ * canonicalize_path - resolve links in path
+ * @pathname: The input path
+ *
+ * This function resolves all links in @pathname and returns
+ * a path without links in it.
+ *
+ * Return: Path with links resolved. Allocated, must be freed after use.
+ */
+char *canonicalize_path(const char *pathname)
+{
+	char *r, *p = __canonicalize_path(pathname, 0);
+
+	if (IS_ERR(p))
+		return ERR_CAST(p);
+
+	r = normalise_path(p);
+	free(p);
+
+	return r;
+}
+
+/*
+ * canonicalize_dir - resolve links in path
+ * @pathname: The input path
+ *
+ * This function resolves all links except the last one. Needed to give
+ * access to the link itself.
+ *
+ * Return: Path with links resolved. Allocated, must be freed after use.
+ */
+char *canonicalize_dir(const char *pathname)
+{
+	char *f, *d, *r, *ret, *p;
+	char *freep1, *freep2;
+
+	freep1 = xstrdup(pathname);
+	freep2 = xstrdup(pathname);
+	f = basename(freep1);
+	d = dirname(freep2);
+
+	p = __canonicalize_path(d, 0);
+	if (IS_ERR(p)) {
+		ret = ERR_CAST(p);
+		goto out;
+	}
+
+	r = basprintf("%s/%s", p, f);
+
+	ret = normalise_path(r);
+
+	free(r);
+	free(p);
+out:
+	free(freep1);
+	free(freep2);
+
+	return ret;
+}
 
 LIST_HEAD(fs_device_list);
 static struct fs_device_d *fs_dev_root;
@@ -435,57 +511,6 @@ static int dir_is_empty(const char *pathname)
 	return ret;
 }
 
-#define S_UB_IS_EMPTY		(1 << 31)
-#define S_UB_EXISTS		(1 << 30)
-#define S_UB_DOES_NOT_EXIST	(1 << 29)
-
-/*
- * Helper function to check the prerequisites of a path given
- * to fs functions. Besides the flags above S_IFREG and S_IFDIR
- * can be passed in.
- */
-static int path_check_prereq(const char *path, unsigned int flags)
-{
-	struct stat s;
-	unsigned int m;
-	int ret = 0;
-
-	if (lstat(path, &s)) {
-		if (flags & S_UB_DOES_NOT_EXIST)
-			goto out;
-		ret = -ENOENT;
-		goto out;
-	}
-
-	if (flags & S_UB_DOES_NOT_EXIST) {
-		ret = -EEXIST;
-		goto out;
-	}
-
-	if (flags == S_UB_EXISTS)
-		goto out;
-
-	m = s.st_mode;
-
-	if (S_ISDIR(m)) {
-		if (flags & S_IFREG) {
-			ret = -EISDIR;
-			goto out;
-		}
-		if ((flags & S_UB_IS_EMPTY) && !dir_is_empty(path)) {
-			ret = -ENOTEMPTY;
-			goto out;
-		}
-	}
-	if ((flags & S_IFDIR) && S_ISREG(m)) {
-		ret = -ENOTDIR;
-		goto out;
-	}
-
-out:
-	return ret;
-}
-
 static int parent_check_directory(const char *path)
 {
 	struct stat s;
@@ -515,11 +540,16 @@ int chdir(const char *pathname)
 {
 	char *p = normalise_path(pathname);
 	int ret;
+	struct stat s;
 
-
-	ret = path_check_prereq(p, S_IFDIR);
+	ret = stat(p, &s);
 	if (ret)
 		goto out;
+
+	if (!S_ISDIR(s.st_mode)) {
+		ret = -ENOTDIR;
+		goto out;
+	}
 
 	automount_mount(p, 0);
 
@@ -539,13 +569,17 @@ int unlink(const char *pathname)
 {
 	struct fs_device_d *fsdev;
 	struct fs_driver_d *fsdrv;
-	char *p = normalise_path(pathname);
+	char *p = canonicalize_dir(pathname);
 	char *freep = p;
 	int ret;
+	struct stat s;
 
-	ret = path_check_prereq(pathname, S_IFREG);
-	if (ret) {
-		ret = -EINVAL;
+	ret = lstat(p, &s);
+	if (ret)
+		goto out;
+
+	if (S_ISDIR(s.st_mode)) {
+		ret = -EISDIR;
 		goto out;
 	}
 
@@ -572,42 +606,6 @@ out:
 }
 EXPORT_SYMBOL(unlink);
 
-static char *realfile(const char *pathname, struct stat *s)
-{
-	char *path = normalise_path(pathname);
-	int ret;
-
-	ret = lstat(path, s);
-	if (ret)
-		goto out;
-
-	if (S_ISLNK(s->st_mode)) {
-		char tmp[PATH_MAX];
-		char *new_path;
-
-		memset(tmp, 0, PATH_MAX);
-
-		ret = readlink(path, tmp, PATH_MAX - 1);
-		if (ret < 0)
-			goto out;
-
-		new_path = normalise_link(path, tmp);
-		free(path);
-		if (!new_path)
-			return ERR_PTR(-ENOMEM);
-		path = new_path;
-
-		ret = lstat(path, s);
-	}
-
-	if (!ret)
-		return path;
-
-out:
-	free(path);
-	return ERR_PTR(ret);
-}
-
 int open(const char *pathname, int flags, ...)
 {
 	struct fs_device_d *fsdev;
@@ -619,12 +617,13 @@ int open(const char *pathname, int flags, ...)
 	char *freep;
 	int ret;
 
-	path = realfile(pathname, &s);
-
+	path = canonicalize_path(pathname);
 	if (IS_ERR(path)) {
-		exist_err = PTR_ERR(path);
-		path = normalise_path(pathname);
+		ret = PTR_ERR(path);
+		goto out2;
 	}
+
+	exist_err = stat(path, &s);
 
 	freep = path;
 
@@ -699,6 +698,7 @@ out:
 	put_file(f);
 out1:
 	free(freep);
+out2:
 	if (ret)
 		errno = -ret;
 	return ret;
@@ -1068,13 +1068,19 @@ int readlink(const char *pathname, char *buf, size_t bufsiz)
 {
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
-	char *p = normalise_path(pathname);
+	char *p = canonicalize_dir(pathname);
 	char *freep = p;
 	int ret;
+	struct stat s;
 
-	ret = path_check_prereq(pathname, S_IFLNK);
+	ret = lstat(pathname, &s);
 	if (ret)
 		goto out;
+
+	if (!S_ISLNK(s.st_mode)) {
+		ret = -EINVAL;
+		goto out;
+	}
 
 	fsdev = get_fs_device_and_root_path(&p);
 	if (!fsdev) {
@@ -1106,23 +1112,14 @@ int symlink(const char *pathname, const char *newpath)
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
 	char *p;
-	char *freep = normalise_path(pathname);
 	int ret;
 	struct stat s;
 
-	if (!freep)
-		return -ENOMEM;
-
-	if (!stat(freep, &s) && S_ISDIR(s.st_mode)) {
-		ret = -ENOSYS;
+	p = canonicalize_path(newpath);
+	if (IS_ERR(p)) {
+		ret = PTR_ERR(p);
 		goto out;
 	}
-
-	free(freep);
-	freep = p = normalise_path(newpath);
-
-	if (!p)
-		return -ENOMEM;
 
 	ret = lstat(p, &s);
 	if (!ret) {
@@ -1144,7 +1141,7 @@ int symlink(const char *pathname, const char *newpath)
 	}
 
 out:
-	free(freep);
+	free(p);
 	if (ret)
 		errno = -ret;
 
@@ -1274,15 +1271,21 @@ int mount(const char *device, const char *fsname, const char *_path,
 			device, path, fsname, fsoptions);
 
 	if (fs_dev_root) {
+		struct stat s;
+
 		fsdev = get_fsdevice_by_path(path);
 		if (fsdev != fs_dev_root) {
 			printf("sorry, no nested mounts\n");
 			ret = -EBUSY;
 			goto err_free_path;
 		}
-		ret = path_check_prereq(path, S_IFDIR);
+		ret = lstat(path, &s);
 		if (ret)
 			goto err_free_path;
+		if (!S_ISDIR(s.st_mode)) {
+			ret = -ENOTDIR;
+			goto err_free_path;
+		}
 	} else {
 		/* no mtab, so we only allow to mount on '/' */
 		if (*path != '/' || *(path + 1)) {
@@ -1417,13 +1420,19 @@ DIR *opendir(const char *pathname)
 	DIR *dir = NULL;
 	struct fs_device_d *fsdev;
 	struct fs_driver_d *fsdrv;
-	char *p = normalise_path(pathname);
+	char *p = canonicalize_path(pathname);
 	char *freep = p;
 	int ret;
+	struct stat s;
 
-	ret = path_check_prereq(pathname, S_IFDIR);
+	ret = stat(pathname, &s);
 	if (ret)
 		goto out;
+
+	if (!S_ISDIR(s.st_mode)) {
+		ret = -ENOTDIR;
+		goto out;
+	}
 
 	fsdev = get_fs_device_and_root_path(&p);
 	if (!fsdev) {
@@ -1491,18 +1500,21 @@ EXPORT_SYMBOL(closedir);
 
 int stat(const char *filename, struct stat *s)
 {
-	char *f;
+	char *path = canonicalize_path(filename);
+	int ret;
 
-	f = realfile(filename, s);
-	if (IS_ERR(f))
-		return PTR_ERR(f);
+	if (IS_ERR(path))
+		return PTR_ERR(path);
 
-	free(f);
-	return 0;
+	ret = lstat(path, s);
+
+	free(path);
+
+	return ret;
 }
 EXPORT_SYMBOL(stat);
 
-int lstat(const char *filename, struct stat *s)
+static int __lstat(const char *filename, struct stat *s)
 {
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
@@ -1539,6 +1551,21 @@ out:
 
 	return ret;
 }
+
+int lstat(const char *filename, struct stat *s)
+{
+	char *f = canonicalize_dir(filename);
+	int ret;
+
+	if (IS_ERR(f))
+		return PTR_ERR(f);
+
+	ret = __lstat(f, s);
+
+	free(f);
+
+	return ret;
+}
 EXPORT_SYMBOL(lstat);
 
 int fstat(int fd, struct stat *s)
@@ -1564,14 +1591,17 @@ int mkdir (const char *pathname, mode_t mode)
 	char *p = normalise_path(pathname);
 	char *freep = p;
 	int ret;
+	struct stat s;
 
 	ret = parent_check_directory(p);
 	if (ret)
 		goto out;
 
-	ret = path_check_prereq(pathname, S_UB_DOES_NOT_EXIST);
-	if (ret)
+	ret = stat(pathname, &s);
+	if (!ret) {
+		ret = -EEXIST;
 		goto out;
+	}
 
 	fsdev = get_fs_device_and_root_path(&p);
 	if (!fsdev) {
@@ -1601,16 +1631,20 @@ int rmdir (const char *pathname)
 	char *p = normalise_path(pathname);
 	char *freep = p;
 	int ret;
+	struct stat s;
 
-	ret = path_check_prereq(pathname, S_IFLNK);
-	if (!ret) {
+	ret = lstat(pathname, &s);
+	if (ret)
+		goto out;
+	if (!S_ISDIR(s.st_mode)) {
 		ret = -ENOTDIR;
 		goto out;
 	}
 
-	ret = path_check_prereq(pathname, S_IFDIR | S_UB_IS_EMPTY);
-	if (ret)
+	if (!dir_is_empty(pathname)) {
+		ret = -ENOTEMPTY;
 		goto out;
+	}
 
 	fsdev = get_fs_device_and_root_path(&p);
 	if (!fsdev) {

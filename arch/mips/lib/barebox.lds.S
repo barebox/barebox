@@ -27,10 +27,9 @@ SECTIONS
 	. = ALIGN(4);
 	.text      :
 	{
-		_start = .;
-		*(.text_entry*)
 		_stext = .;
 		_text = .;
+		*(.text_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
 		__bare_init_end = .;
@@ -50,9 +49,6 @@ SECTIONS
 	.data : { *(.data*) }
 
 	.barebox_imd : { BAREBOX_IMD }
-
-	. = ALIGN(4);
-	.got : { *(.got*) }
 
 	. = .;
 	__barebox_cmd_start = .;

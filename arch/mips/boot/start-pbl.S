@@ -25,7 +25,6 @@
 #include <board/board_pbl_start.h>
 
 	.set noreorder
-	.text
 	.section ".text_head_entry"
 	.align 4
 

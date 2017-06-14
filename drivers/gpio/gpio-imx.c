@@ -93,7 +93,7 @@ static int imx_gpio_direction_output(struct gpio_chip *chip, unsigned gpio, int 
 	void __iomem *base = imxgpio->base;
 	u32 val;
 
-	gpio_set_value(gpio + chip->base, value);
+	imx_gpio_set_value(chip, gpio, value);
 
 	val = readl(base + imxgpio->regs->gdir);
 	val |= 1 << gpio;

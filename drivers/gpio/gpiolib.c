@@ -5,6 +5,7 @@
 #include <command.h>
 #include <complete.h>
 #include <gpio.h>
+#include <of_gpio.h>
 #include <errno.h>
 #include <malloc.h>
 
@@ -13,6 +14,7 @@ static LIST_HEAD(chip_list);
 struct gpio_info {
 	struct gpio_chip *chip;
 	bool requested;
+	bool active_low;
 	char *label;
 };
 
@@ -45,6 +47,15 @@ static struct gpio_info *gpio_to_desc(unsigned gpio)
 	return NULL;
 }
 
+static int gpio_adjust_value(struct gpio_info *gi,
+			     int value)
+{
+	if (value < 0)
+		return value;
+
+	return !!value ^ gi->active_low;
+}
+
 int gpio_request(unsigned gpio, const char *label)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
@@ -69,6 +80,7 @@ int gpio_request(unsigned gpio, const char *label)
 	}
 
 	gi->requested = true;
+	gi->active_low = false;
 	gi->label = xstrdup(label);
 
 done:
@@ -93,6 +105,7 @@ void gpio_free(unsigned gpio)
 		gi->chip->ops->free(gi->chip, gpio - gi->chip->base);
 
 	gi->requested = false;
+	gi->active_low = false;
 	free(gi->label);
 	gi->label = NULL;
 }
@@ -111,11 +124,20 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 	if (err)
 		return err;
 
-	if (flags & GPIOF_DIR_IN)
+	if (flags & GPIOF_ACTIVE_LOW) {
+		struct gpio_info *gi = gpio_to_desc(gpio);
+		gi->active_low = true;
+	}
+
+	if (flags & GPIOF_DIR_IN) {
 		err = gpio_direction_input(gpio);
-	else
+	} else if (flags & GPIOF_LOGICAL) {
+		err = gpio_direction_active(gpio,
+					    !!(flags & GPIOF_INIT_ACTIVE));
+	} else {
 		err = gpio_direction_output(gpio,
-				(flags & GPIOF_INIT_HIGH) ? 1 : 0);
+					    !!(flags & GPIOF_INIT_HIGH));
+	}
 
 	if (err)
 		goto free_gpio;
@@ -178,6 +200,13 @@ void gpio_set_value(unsigned gpio, int value)
 }
 EXPORT_SYMBOL(gpio_set_value);
 
+void gpio_set_active(unsigned gpio, bool value)
+{
+	struct gpio_info *gi = gpio_to_desc(gpio);
+	gpio_set_value(gpio, gpio_adjust_value(gi, value));
+}
+EXPORT_SYMBOL(gpio_set_active);
+
 int gpio_get_value(unsigned gpio)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
@@ -195,6 +224,13 @@ int gpio_get_value(unsigned gpio)
 	return gi->chip->ops->get(gi->chip, gpio - gi->chip->base);
 }
 EXPORT_SYMBOL(gpio_get_value);
+
+int gpio_is_active(unsigned gpio)
+{
+	struct gpio_info *gi = gpio_to_desc(gpio);
+	return gpio_adjust_value(gi, gpio_get_value(gpio));
+}
+EXPORT_SYMBOL(gpio_is_active);
 
 int gpio_direction_output(unsigned gpio, int value)
 {
@@ -214,6 +250,13 @@ int gpio_direction_output(unsigned gpio, int value)
 					       value);
 }
 EXPORT_SYMBOL(gpio_direction_output);
+
+int gpio_direction_active(unsigned gpio, bool value)
+{
+	struct gpio_info *gi = gpio_to_desc(gpio);
+	return gpio_direction_output(gpio, gpio_adjust_value(gi, value));
+}
+EXPORT_SYMBOL(gpio_direction_active);
 
 int gpio_direction_input(unsigned gpio)
 {
@@ -262,6 +305,99 @@ static int gpiochip_find_base(int start, int ngpio)
 	return base;
 }
 
+static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
+		       unsigned int idx)
+{
+	struct device_node *chip_np = chip->dev->device_node;
+	unsigned long flags = 0;
+	u32 gpio_cells, gpio_num, gpio_flags;
+	int ret, gpio;
+	const char *name = NULL;
+
+	ret = of_property_read_u32(chip_np, "#gpio-cells", &gpio_cells);
+	if (ret)
+		return ret;
+
+	/*
+	 * Support for GPIOs that don't have #gpio-cells set to 2 is
+	 * not implemented
+	 */
+	if (WARN_ON(gpio_cells != 2))
+		return -ENOTSUPP;
+
+	ret = of_property_read_u32_index(np, "gpios", idx * gpio_cells,
+					 &gpio_num);
+	if (ret)
+		return ret;
+
+	ret = of_property_read_u32_index(np, "gpios", idx * gpio_cells + 1,
+					 &gpio_flags);
+	if (ret)
+		return ret;
+
+	if (gpio_flags & OF_GPIO_ACTIVE_LOW)
+		flags |= GPIOF_ACTIVE_LOW;
+
+	gpio = gpio_get_num(chip->dev, gpio_num);
+	if (ret == -EPROBE_DEFER)
+		return ret;
+
+	if (ret < 0) {
+		dev_err(chip->dev, "unable to get gpio %u\n", gpio_num);
+		return ret;
+	}
+
+
+	/*
+	 * Note that, in order to be compatible with Linux, the code
+	 * below interprets 'output-high' as to mean 'output-active'.
+	 * That is, when processed for active-low GPIO, it will result
+	 * in output being asserted logically 'active', but physically
+	 * 'low'.
+	 *
+	 * Conversely it means that specifying 'output-low' for
+	 * 'active-low' GPIO would result in 'high' level observed on
+	 * the corresponding pin
+	 *
+	 */
+	if (of_property_read_bool(np, "input"))
+		flags |= GPIOF_DIR_IN;
+	else if (of_property_read_bool(np, "output-low"))
+		flags |= GPIOF_OUT_INIT_INACTIVE;
+	else if (of_property_read_bool(np, "output-high"))
+		flags |= GPIOF_OUT_INIT_ACTIVE;
+	else
+		return -EINVAL;
+
+	of_property_read_string(np, "line-name", &name);
+
+	return gpio_request_one(gpio, flags, name);
+}
+
+static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
+{
+	struct device_node *np;
+	int ret, i;
+
+	for_each_available_child_of_node(chip->dev->device_node, np) {
+		if (!of_property_read_bool(np, "gpio-hog"))
+			continue;
+
+		for (ret = 0, i = 0;
+		     !ret;
+		     ret = of_hog_gpio(np, chip, i), i++)
+			;
+		/*
+		 * We ignore -EOVERFLOW because it serves us as an
+		 * indicator that there's no more GPIOs to handle.
+		 */
+		if (ret < 0 && ret != -EOVERFLOW)
+			return ret;
+	}
+
+	return 0;
+}
+
 int gpiochip_add(struct gpio_chip *chip)
 {
 	int base, i;
@@ -280,7 +416,7 @@ int gpiochip_add(struct gpio_chip *chip)
 	for (i = chip->base; i < chip->base + chip->ngpio; i++)
 		gpio_desc[i].chip = chip;
 
-	return 0;
+	return of_gpiochip_scan_hogs(chip);
 }
 
 void gpiochip_remove(struct gpio_chip *chip)
@@ -334,7 +470,7 @@ static int do_gpiolib(int argc, char *argv[])
 		printf("  GPIO %*d: %*s %*s %*s  %s\n", 4, i,
 			3, (dir < 0) ? "unk" : ((dir == GPIOF_DIR_IN) ? "in" : "out"),
 			3, (val < 0) ? "unk" : ((val == 0) ? "lo" : "hi"),
-			9, gi->requested ? "true" : "false",
+		        12, gi->requested ? (gi->active_low ? "active low" : "true") : "false",
 			(gi->requested && gi->label) ? gi->label : "");
 	}
 

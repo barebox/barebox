@@ -69,6 +69,16 @@ config MACH_PLATHOME_OPENBLOCKS_AX3
 	select ARCH_ARMADA_XP
 
 #
+# Armada 38x SoC boards
+#
+
+comment "Armada 38x based boards"
+
+config MACH_TURRIS_OMNIA
+	bool "Turris Omnia"
+	select ARCH_ARMADA_38X
+
+#
 # Dove 88AP510 SoC boards
 #
 

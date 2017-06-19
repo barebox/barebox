@@ -41,8 +41,6 @@ struct clk_pllv3 {
 	u32		div_mask;
 	u32		div_shift;
 	const char	*parent;
-	void __iomem	*lock_reg;
-	u32		lock_mask;
 	u32		ref_clock;
 	u32		power_bit;
 };
@@ -354,9 +352,6 @@ static int clk_pllv3_sys_vf610_set_rate(struct clk *clk, unsigned long rate,
 	writel(mfn, pll->base + SYS_VF610_PLL_OFFSET + PLL_NUM_OFFSET);
 	writel(mfd, pll->base + SYS_VF610_PLL_OFFSET + PLL_DENOM_OFFSET);
 
-	while (!(readl(pll->lock_reg) & pll->lock_mask))
-		;
-
 	return 0;
 }
 
@@ -426,23 +421,4 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	}
 
 	return &pll->clk;
-}
-
-struct clk *imx_clk_pllv3_locked(enum imx_pllv3_type type, const char *name,
-				 const char *parent, void __iomem *base,
-				 u32 div_mask, void __iomem *lock_reg, u32 lock_mask)
-{
-	struct clk *clk;
-	struct clk_pllv3 *pll;
-
-	clk = imx_clk_pllv3(type, name, parent, base, div_mask);
-	if (IS_ERR(clk))
-		return clk;
-
-	pll = to_clk_pllv3(clk);
-
-	pll->lock_reg  = lock_reg;
-	pll->lock_mask = lock_mask;
-
-	return clk;
 }

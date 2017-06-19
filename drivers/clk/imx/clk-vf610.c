@@ -181,8 +181,8 @@ static void __init vf610_clocks_init(struct device_node *ccm_node)
 		CCSR_PLL1_PFDn_EN(4);
 	writel(ccsr, CCM_CCSR);
 
-	clk[VF610_CLK_SLOW_CLK_SEL] = imx_clk_mux("slow_clk_sel", CCM_CCSR, 4, 1, slow_sels, ARRAY_SIZE(slow_sels));
-	clk[VF610_CLK_FASK_CLK_SEL] = imx_clk_mux("fast_clk_sel", CCM_CCSR, 5, 1, fast_sels, ARRAY_SIZE(fast_sels));
+	clk[VF610_CLK_SLOW_CLK_SEL] = imx_clk_mux2("slow_clk_sel", CCM_CCSR, 4, 1, slow_sels, ARRAY_SIZE(slow_sels));
+	clk[VF610_CLK_FASK_CLK_SEL] = imx_clk_mux2("fast_clk_sel", CCM_CCSR, 5, 1, fast_sels, ARRAY_SIZE(fast_sels));
 
 	clk[VF610_CLK_PLL1_BYPASS_SRC] = imx_clk_mux("pll1_bypass_src", PLL1_CTRL, 14, 1, pll_bypass_src_sels, ARRAY_SIZE(pll_bypass_src_sels));
 	clk[VF610_CLK_PLL2_BYPASS_SRC] = imx_clk_mux("pll2_bypass_src", PLL2_CTRL, 14, 1, pll_bypass_src_sels, ARRAY_SIZE(pll_bypass_src_sels));
@@ -243,10 +243,10 @@ static void __init vf610_clocks_init(struct device_node *ccm_node)
 	clk[VF610_CLK_PLL3_PFD3] = imx_clk_pfd("pll3_pfd3", "pll3_usb_otg", PFD_PLL3_BASE, 2);
 	clk[VF610_CLK_PLL3_PFD4] = imx_clk_pfd("pll3_pfd4", "pll3_usb_otg", PFD_PLL3_BASE, 3);
 
-	clk[VF610_CLK_PLL1_PFD_SEL] = imx_clk_mux("pll1_pfd_sel", CCM_CCSR, 16, 3, pll1_sels, 5);
-	clk[VF610_CLK_PLL2_PFD_SEL] = imx_clk_mux("pll2_pfd_sel", CCM_CCSR, 19, 3, pll2_sels, 5);
-	clk[VF610_CLK_SYS_SEL] = imx_clk_mux("sys_sel", CCM_CCSR, 0, 3, sys_sels, ARRAY_SIZE(sys_sels));
-	clk[VF610_CLK_DDR_SEL] = imx_clk_mux("ddr_sel", CCM_CCSR, 6, 1, ddr_sels, ARRAY_SIZE(ddr_sels));
+	clk[VF610_CLK_PLL1_PFD_SEL] = imx_clk_mux2("pll1_pfd_sel", CCM_CCSR, 16, 3, pll1_sels, 5);
+	clk[VF610_CLK_PLL2_PFD_SEL] = imx_clk_mux2("pll2_pfd_sel", CCM_CCSR, 19, 3, pll2_sels, 5);
+	clk[VF610_CLK_SYS_SEL] = imx_clk_mux2("sys_sel", CCM_CCSR, 0, 3, sys_sels, ARRAY_SIZE(sys_sels));
+	clk[VF610_CLK_DDR_SEL] = imx_clk_mux2("ddr_sel", CCM_CCSR, 6, 1, ddr_sels, ARRAY_SIZE(ddr_sels));
 	clk[VF610_CLK_SYS_BUS] = imx_clk_divider("sys_bus", "sys_sel", CCM_CACRR, 0, 3);
 	clk[VF610_CLK_PLATFORM_BUS] = imx_clk_divider("platform_bus", "sys_bus", CCM_CACRR, 3, 3);
 	clk[VF610_CLK_IPG_BUS] = imx_clk_divider("ipg_bus", "platform_bus", CCM_CACRR, 11, 2);

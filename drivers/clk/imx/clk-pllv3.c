@@ -56,7 +56,6 @@ static int clk_pllv3_enable(struct clk *clk)
 	int timeout = 10000;
 
 	val = readl(pll->base);
-	val &= ~BM_PLL_BYPASS;
 	if (pll->powerup_set)
 		val |= pll->power_bit;
 	else
@@ -88,7 +87,6 @@ static void clk_pllv3_disable(struct clk *clk)
 	val &= ~BM_PLL_ENABLE;
 	writel(val, pll->base);
 
-	val |= BM_PLL_BYPASS;
 	if (pll->powerup_set)
 		val &= ~pll->power_bit;
 	else

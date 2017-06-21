@@ -619,21 +619,25 @@ static void ratp_behaviour_b(struct ratp_internal *ri, void *pkt)
 	if (hdr->control & RATP_CONTROL_SYN) {
 		uint8_t control;
 
+		ri->sn_received = ratp_sn(hdr);
+
 		if (hdr->control & RATP_CONTROL_ACK) {
 			control = ratp_set_sn(ratp_an(hdr)) |
 				ratp_set_an(!ratp_sn(hdr)) |
 				RATP_CONTROL_ACK;
+			ratp_send_hdr(ri, control);
+			ratp_state_change(ri, RATP_STATE_ESTABLISHED);
 		} else {
+			struct ratp_header synack = {};
+
 			control = ratp_set_an(!ratp_sn(hdr)) |
 				RATP_CONTROL_SYN |
 				RATP_CONTROL_ACK;
 
+			ratp_create_packet(ri, &synack, control, 255);
+			ratp_send_pkt(ri, &synack, sizeof(synack));
+			ratp_state_change(ri, RATP_STATE_SYN_RECEIVED);
 		}
-
-		ri->sn_received = ratp_sn(hdr);
-
-		ratp_send_hdr(ri, control);
-		ratp_state_change(ri, RATP_STATE_ESTABLISHED);
 	}
 }
 

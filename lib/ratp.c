@@ -384,6 +384,7 @@ static int ratp_send_next_data(struct ratp_internal *ri)
 	uint16_t crc;
 	uint8_t control;
 	struct ratp_header *hdr;
+	uint8_t *data;
 	int pktlen;
 	struct ratp_message *msg;
 	int len;
@@ -409,19 +410,19 @@ static int ratp_send_next_data(struct ratp_internal *ri)
 		RATP_CONTROL_ACK;
 
 	hdr = msg->buf;
+	data = (uint8_t *)(hdr + 1);
 
 	if (msg->eor)
 		control |= RATP_CONTROL_EOR;
 
+	pktlen = sizeof(struct ratp_header);
 	if (len > 1) {
-		void *data = hdr + 1;
-		pktlen = sizeof(*hdr) + len + 2;
+		pktlen += len + 2;
 		crc = cyg_crc16(data, len);
 		put_unaligned_be16(crc, data + len);
-	} else {
-		pktlen = sizeof(struct ratp_header);
+	} else if (len == 1) {
 		control |= RATP_CONTROL_SO;
-		len = 0;
+		len = *data;
 	}
 
 	ratp_create_packet(ri, hdr, control, len);

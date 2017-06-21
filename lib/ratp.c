@@ -731,8 +731,15 @@ static int ratp_behaviour_c2(struct ratp_internal *ri, void *pkt)
 		return 1;
 
 	if (hdr->control & RATP_CONTROL_SYN) {
+		uint8_t control;
+
 		ri->status = -ECONNRESET;
 		pr_debug("Error: Connection reset\n");
+
+		control = RATP_CONTROL_RST | RATP_CONTROL_ACK |
+			ratp_set_sn(ratp_an(hdr)) | ratp_set_an(!ratp_sn(hdr));
+		ratp_send_hdr(ri, control);
+
 		ratp_state_change(ri, RATP_STATE_CLOSED);
 		return 1;
 	}

@@ -139,8 +139,10 @@ static bool ratp_an(struct ratp_header *hdr)
 	return hdr->control & RATP_CONTROL_AN ? 1 : 0;
 }
 
-#define ratp_set_sn(sn) (((sn) % 2) ? RATP_CONTROL_SN : 0)
-#define ratp_set_an(an) (((an) % 2) ? RATP_CONTROL_AN : 0)
+#define ratp_set_sn(sn) (sn ? RATP_CONTROL_SN : 0)
+#define ratp_set_an(an) (an ? RATP_CONTROL_AN : 0)
+#define ratp_set_next_sn(sn) (((sn + 1) % 2) ? RATP_CONTROL_SN : 0)
+#define ratp_set_next_an(an) (((an + 1) % 2) ? RATP_CONTROL_AN : 0)
 
 static inline int ratp_header_ok(struct ratp_internal *ri, struct ratp_header *h)
 {
@@ -368,7 +370,7 @@ static int ratp_send_ack(struct ratp_internal *ri, struct ratp_header *hdr)
 	int ret;
 
 	control = ratp_set_sn(ratp_an(hdr)) |
-		ratp_set_an(ratp_sn(hdr) + 1) |
+		ratp_set_next_an(ratp_sn(hdr)) |
 		RATP_CONTROL_ACK;
 
 	ret = ratp_send_hdr(ri, control);
@@ -404,8 +406,8 @@ static int ratp_send_next_data(struct ratp_internal *ri)
 
 	len = msg->len;
 
-	control = ratp_set_sn(ri->sn_sent + 1) |
-		ratp_set_an(ri->sn_received + 1) |
+	control = ratp_set_next_sn(ri->sn_sent) |
+		ratp_set_next_an(ri->sn_received) |
 		RATP_CONTROL_ACK;
 
 	hdr = msg->buf;
@@ -630,7 +632,7 @@ static void ratp_behaviour_b(struct ratp_internal *ri, void *pkt)
 		} else {
 			struct ratp_header synack = {};
 
-			control = ratp_set_an(!ratp_sn(hdr)) |
+			control = ratp_set_next_an(ratp_sn(hdr)) |
 				RATP_CONTROL_SYN |
 				RATP_CONTROL_ACK;
 
@@ -734,7 +736,7 @@ static int ratp_behaviour_c2(struct ratp_internal *ri, void *pkt)
 		pr_debug("Error: Connection reset\n");
 
 		control = RATP_CONTROL_RST | RATP_CONTROL_ACK |
-			ratp_set_sn(ratp_an(hdr)) | ratp_set_an(!ratp_sn(hdr));
+			ratp_set_sn(ratp_an(hdr)) | ratp_set_next_an(ratp_sn(hdr));
 		ratp_send_hdr(ri, control);
 
 		ratp_state_change(ri, RATP_STATE_CLOSED);
@@ -1035,7 +1037,7 @@ static int ratp_behaviour_g(struct ratp_internal *ri, void *pkt)
 	if (hdr->control & RATP_CONTROL_ACK)
 		control |= ratp_set_sn(ratp_an(hdr));
 	else
-		control |= ratp_set_an(ratp_sn(hdr) + 1) | RATP_CONTROL_ACK;
+		control |= ratp_set_next_an(ratp_sn(hdr)) | RATP_CONTROL_ACK;
 
 	ratp_send_hdr(ri, control);
 
@@ -1099,7 +1101,7 @@ static int ratp_behaviour_h2(struct ratp_internal *ri, void *pkt)
 	ri->status = -ENETDOWN;
 
 	control = ratp_set_sn(ratp_an(hdr)) |
-		ratp_set_an(ratp_sn(hdr) + 1) |
+		ratp_set_next_an(ratp_sn(hdr)) |
 		RATP_CONTROL_FIN |
 		RATP_CONTROL_ACK;
 
@@ -1165,7 +1167,7 @@ static int ratp_behaviour_h3(struct ratp_internal *ri, void *pkt)
 
 	if (ratp_has_data(hdr)) {
 		control = ratp_set_sn(ratp_an(hdr)) |
-			ratp_set_an(ratp_sn(hdr) + 1) |
+			ratp_set_next_an(ratp_sn(hdr)) |
 			RATP_CONTROL_RST |
 			RATP_CONTROL_ACK;
 		ratp_send_hdr(ri, control);
@@ -1176,7 +1178,7 @@ static int ratp_behaviour_h3(struct ratp_internal *ri, void *pkt)
 	}
 
 	control = ratp_set_sn(ratp_an(hdr)) |
-		ratp_set_an(ratp_sn(hdr) + 1) |
+		ratp_set_next_an(ratp_sn(hdr)) |
 		RATP_CONTROL_ACK;
 
 	expected = ratp_an_expected(ri, hdr);
@@ -1278,7 +1280,7 @@ static int ratp_behaviour_h6(struct ratp_internal *ri, void *pkt)
 	if (!(hdr->control & RATP_CONTROL_FIN))
 		return 1;
 
-	control = ratp_set_sn(ratp_an(hdr) + 1) | RATP_CONTROL_ACK;
+	control = ratp_set_next_sn(ratp_an(hdr)) | RATP_CONTROL_ACK;
 
 	ratp_send_hdr(ri, control);
 
@@ -1695,8 +1697,8 @@ void ratp_close(struct ratp *ratp)
 
 		ratp_state_change(ri, RATP_STATE_FIN_WAIT);
 
-		control = ratp_set_sn(!ri->sn_sent) |
-			ratp_set_an(ri->sn_received + 1) |
+		control = ratp_set_next_sn(ri->sn_sent) |
+			ratp_set_next_an(ri->sn_received) |
 			RATP_CONTROL_FIN | RATP_CONTROL_ACK;
 
 		ratp_create_packet(ri, &fin, control, 0);

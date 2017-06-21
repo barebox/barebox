@@ -1330,7 +1330,6 @@ static int msg_recv(struct ratp_internal *ri, void *pkt)
 static int ratp_behaviour_i1(struct ratp_internal *ri, void *pkt)
 {
 	struct ratp_header *hdr = pkt;
-	uint8_t control = 0;
 
 	if (!ratp_has_data (hdr))
 		return 1;
@@ -1341,15 +1340,10 @@ static int ratp_behaviour_i1(struct ratp_internal *ri, void *pkt)
 
 	msg_recv(ri, pkt);
 
-	if (list_empty(&ri->sendmsg) || ri->sendmsg_current) {
-		control = ratp_set_sn(!ri->sn_sent) |
-			ratp_set_an(ri->sn_received + 1) |
-			RATP_CONTROL_ACK;
-
-		ratp_send_hdr(ri, control);
-	} else {
+	if (list_empty(&ri->sendmsg) || ri->sendmsg_current)
+		ratp_send_ack(ri, hdr);
+	else
 		ratp_send_next_data(ri);
-	}
 
 	return 0;
 }

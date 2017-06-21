@@ -364,13 +364,12 @@ static bool ratp_sn_expected(struct ratp_internal *ri, struct ratp_header *hdr)
 
 static int ratp_send_ack(struct ratp_internal *ri, struct ratp_header *hdr)
 {
-	uint8_t control = RATP_CONTROL_ACK;
+	uint8_t control;
 	int ret;
 
-	if (hdr->control & RATP_CONTROL_SN)
-		control |= RATP_CONTROL_AN;
-	else
-		control |= 0;
+	control = ratp_set_sn(ratp_an(hdr)) |
+		ratp_set_an(ratp_sn(hdr) + 1) |
+		RATP_CONTROL_ACK;
 
 	ret = ratp_send_hdr(ri, control);
 	if (ret)

@@ -359,7 +359,7 @@ static bool ratp_an_expected(struct ratp_internal *ri, struct ratp_header *hdr)
 
 static bool ratp_sn_expected(struct ratp_internal *ri, struct ratp_header *hdr)
 {
-	return ratp_sn(hdr) != ri->sn_received;
+	return ratp_sn(hdr) == (ri->sn_received + 1) % 2;
 }
 
 static int ratp_send_ack(struct ratp_internal *ri, struct ratp_header *hdr)

@@ -28,11 +28,17 @@ config FONT_CUSTOM_16X
 	help
 	  This font is useful for Chinese and other non ascii chars.
 
+config FONT_6x8
+	bool "6x8 font"
+	help
+	  This font is useful for small displays (OLED).
+
 config FONT_AUTOSELECT
 	def_bool y
-	depends on !FONT_MINI_8x8
+	depends on !FONT_8x8
 	depends on !FONT_MINI_4x6
 	depends on !FONT_7x14
+	depends on !FONT_6x8
 	select FONT_8x16
 
 endif # FONTS

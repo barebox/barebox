@@ -724,7 +724,7 @@ class RatpConnection(object):
         deadline = monotonic() + timeout
         logging.info("CLOSE")
         if self._state == RatpState.established:
-            fin = RatpPacket(flags='FA')  # FIXME: only F?
+            fin = RatpPacket(flags='FA')
             fin.c_sn = (self._s_sn + 1) % 2
             fin.c_an = (self._r_sn + 1) % 2
             self._write(fin)

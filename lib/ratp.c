@@ -1033,6 +1033,9 @@ static int ratp_behaviour_g(struct ratp_internal *ri, void *pkt)
 
 	pr_debug("%s\n", __func__);
 
+	if (hdr->control & RATP_CONTROL_RST)
+		return 0;
+
 	control = RATP_CONTROL_RST;
 
 	if (hdr->control & RATP_CONTROL_ACK)

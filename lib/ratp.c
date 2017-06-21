@@ -1038,7 +1038,7 @@ static int ratp_behaviour_g(struct ratp_internal *ri, void *pkt)
 	if (hdr->control & RATP_CONTROL_ACK)
 		control |= ratp_set_sn(ratp_an(hdr));
 	else
-		control = ratp_set_an(ratp_sn(hdr) + 1) | RATP_CONTROL_ACK;
+		control |= ratp_set_an(ratp_sn(hdr) + 1) | RATP_CONTROL_ACK;
 
 	ratp_send_hdr(ri, control);
 

@@ -165,7 +165,7 @@ static bool ratp_has_data(struct ratp_header *hdr)
 {
 	if (hdr->control & RATP_CONTROL_SO)
 		return 1;
-	if (hdr->data_length)
+	if (!(hdr->control & (RATP_CONTROL_SYN | RATP_CONTROL_RST | RATP_CONTROL_FIN)) && hdr->data_length)
 		return 1;
 	return 0;
 }
@@ -1338,7 +1338,7 @@ static int ratp_behaviour_i1(struct ratp_internal *ri, void *pkt)
 	struct ratp_header *hdr = pkt;
 	uint8_t control = 0;
 
-	if (!hdr->data_length && !(hdr->control & RATP_CONTROL_SO))
+	if (!ratp_has_data (hdr))
 		return 1;
 
 	pr_vdebug("%s **received** %d\n", __func__, hdr->data_length);

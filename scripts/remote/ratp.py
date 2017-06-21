@@ -525,7 +525,7 @@ class RatpConnection(object):
             # Our fin was lost, rely on retransmission
             return False
 
-        if r.length or r.c_so:
+        if (r.length and not r.c_syn and not r.c_rst and not r.c_fin) or r.c_so:
             self._retrans = None
             s = RatpPacket(flags='RA')
             s.c_sn = r.c_an
@@ -596,7 +596,7 @@ class RatpConnection(object):
         if r.c_so:
             self._r_sn = r.c_sn
             self._rx_buf.append(chr(r.length))
-        elif r.length:
+        elif r.length and not r.c_syn and not r.c_rst and not r.c_fin:
             self._r_sn = r.c_sn
             self._rx_buf.append(r.payload)
         else:

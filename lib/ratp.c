@@ -721,9 +721,6 @@ static int ratp_behaviour_c2(struct ratp_internal *ri, void *pkt)
 
 	pr_debug("%s\n", __func__);
 
-	if (!ratp_has_data(hdr))
-		return 0;
-
 	if (ratp_sn_expected(ri, hdr))
 		return 0;
 
@@ -744,9 +741,6 @@ static int ratp_behaviour_c2(struct ratp_internal *ri, void *pkt)
 		ratp_state_change(ri, RATP_STATE_CLOSED);
 		return 1;
 	}
-
-	if (!ratp_has_data(hdr))
-		return 1;
 
 	pr_debug("Sending ack for duplicate message\n");
 	ret = ratp_send_ack(ri, hdr);

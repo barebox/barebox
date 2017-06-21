@@ -339,9 +339,6 @@ class RatpConnection(object):
     def _c2(self, r):
         logging.info("C2")
 
-        if r.length == 0 and r.c_so == 0:
-            return True
-
         if r.c_sn != self._r_sn:
             return True
 
@@ -358,14 +355,11 @@ class RatpConnection(object):
             self._state = RatpState.closed
             return False
 
-        # FIXME: only ack duplicate data packages?
-        # This is not documented in RFC 916
-        if r.length or r.c_so:
-            logging.info("C2: duplicate data packet, dropping")
-            s = RatpPacket(flags='A')
-            s.c_sn = r.c_an
-            s.c_an = (r.c_sn + 1) % 2
-            self._write(s)
+        logging.info("C2: duplicate packet")
+        s = RatpPacket(flags='A')
+        s.c_sn = r.c_an
+        s.c_an = (r.c_sn + 1) % 2
+        self._write(s)
 
         return False
 

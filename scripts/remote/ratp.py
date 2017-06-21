@@ -489,12 +489,8 @@ class RatpConnection(object):
 
     def _h1(self, r):
         logging.info("H1")
-
-        # FIXME: initial data?
         self._state = RatpState.established
-        self._r_sn = r.c_sn
-
-        return False
+        return self._common_i1(r)
 
     def _h2(self, r):
         logging.info("H2")
@@ -584,9 +580,7 @@ class RatpConnection(object):
         self._time_wait_deadline = monotonic() + self._get_rto()
         return False
 
-    def _i1(self, r):
-        logging.info("I1")
-
+    def _common_i1(self, r):
         if r.c_so:
             self._r_sn = r.c_sn
             self._rx_buf.append(chr(r.length))
@@ -607,6 +601,10 @@ class RatpConnection(object):
         s.c_an = (r.c_sn + 1) % 2
         self._write(s)
         return False
+
+    def _i1(self, r):
+        logging.info("I1")
+        return self._common_i1(r)
 
     def _machine(self, pkt):
         logging.info("State: %r", self._state)

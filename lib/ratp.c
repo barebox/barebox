@@ -1042,6 +1042,8 @@ static int ratp_behaviour_g(struct ratp_internal *ri, void *pkt)
 	return 0;
 }
 
+static int ratp_behaviour_i1(struct ratp_internal *ri, void *pkt);
+
 /*
  * Our SYN has been acknowledged.  At this point we are
  * technically in the ESTABLISHED state.  Send any initial data
@@ -1062,7 +1064,11 @@ static int ratp_behaviour_h1(struct ratp_internal *ri, void *pkt)
 
 	ratp_state_change(ri, RATP_STATE_ESTABLISHED);
 
-	return 0;
+	/* If the input message has data (i.e. it is not just an ACK
+	 * without data) then we need to send back an ACK ourselves,
+	 * or even data if we have it pending. This is the same
+	 * procedure done in i1, so just run it. */
+	return ratp_behaviour_i1 (ri, pkt);
 }
 
 /*

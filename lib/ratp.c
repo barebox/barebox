@@ -382,7 +382,7 @@ static int ratp_send_ack(struct ratp_internal *ri, struct ratp_header *hdr)
 static int ratp_send_next_data(struct ratp_internal *ri)
 {
 	uint16_t crc;
-	uint8_t control = RATP_CONTROL_ACK;
+	uint8_t control;
 	struct ratp_header *hdr;
 	int pktlen;
 	struct ratp_message *msg;
@@ -594,7 +594,7 @@ static void ratp_behaviour_b(struct ratp_internal *ri, void *pkt)
 
 	if ((hdr->control & RATP_CONTROL_ACK) && !ratp_an_expected(ri, hdr)) {
 		if (!(hdr->control & RATP_CONTROL_RST)) {
-			uint8_t control = RATP_CONTROL_RST;
+			uint8_t control;
 
 			control = RATP_CONTROL_RST |
 				ratp_set_sn(ratp_an(hdr));

@@ -622,11 +622,11 @@ static void ratp_behaviour_b(struct ratp_internal *ri, void *pkt)
 		ri->sn_received = ratp_sn(hdr);
 
 		if (hdr->control & RATP_CONTROL_ACK) {
-			control = ratp_set_sn(ratp_an(hdr)) |
-				ratp_set_an(!ratp_sn(hdr)) |
-				RATP_CONTROL_ACK;
-			ratp_send_hdr(ri, control);
 			ratp_state_change(ri, RATP_STATE_ESTABLISHED);
+			if (list_empty(&ri->sendmsg) || ri->sendmsg_current)
+				ratp_send_ack(ri, hdr);
+			else
+				ratp_send_next_data(ri);
 		} else {
 			struct ratp_header synack = {};
 

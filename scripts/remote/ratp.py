@@ -721,7 +721,7 @@ class RatpConnection(object):
     def close(self, timeout=1.0):
         deadline = monotonic() + timeout
         logging.info("CLOSE")
-        if self._state == RatpState.established:
+        if self._state == RatpState.established or self._state == RatpState.syn_received:
             fin = RatpPacket(flags='FA')
             fin.c_sn = (self._s_sn + 1) % 2
             fin.c_an = (self._r_sn + 1) % 2

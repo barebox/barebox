@@ -1689,7 +1689,7 @@ void ratp_close(struct ratp *ratp)
 	if (!ri)
 		return;
 
-	if (ri->state == RATP_STATE_ESTABLISHED) {
+	if (ri->state == RATP_STATE_ESTABLISHED || ri->state == RATP_STATE_SYN_RECEIVED) {
 		uint64_t start;
 		u8 control;
 

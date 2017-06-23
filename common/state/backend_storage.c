@@ -368,7 +368,6 @@ int state_storage_init(struct state *state, const char *path,
 
 	INIT_LIST_HEAD(&storage->buckets);
 	storage->dev = &state->dev;
-	storage->name = storagetype;
 	storage->stridesize = stridesize;
 	storage->offset = offset;
 	storage->max_size = max_size;
@@ -380,8 +379,10 @@ int state_storage_init(struct state *state, const char *path,
 	if (!ret && !(meminfo.flags & MTD_NO_ERASE)) {
 		bool circular;
 		if (!storagetype || !strcmp(storagetype, "circular")) {
+			storage->name = "circular";
 			circular = true;
 		} else if (!strcmp(storagetype, "noncircular")) {
+			storage->name = "noncircular";
 			dev_warn(storage->dev, "using old format circular storage type.\n");
 			circular = false;
 		} else {

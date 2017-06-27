@@ -141,8 +141,8 @@ static int omap_env_init(void)
 
 	rootpath = cdev_mount_default(cdev, NULL);
 	if (IS_ERR(rootpath)) {
-		pr_err("Failed to load environment: mount %s failed (%d)\n",
-						cdev->name, IS_ERR(rootpath));
+		pr_err("Failed to load environment: mount %s failed (%ld)\n",
+						cdev->name, PTR_ERR(rootpath));
 		goto out;
 	}
 	ret = symlink(rootpath, "/boot");

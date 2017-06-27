@@ -449,6 +449,9 @@ static int at91_pinctrl_set_state(struct pinctrl_device *pdev, struct device_nod
 	info = to_at91_pinctrl(pdev);
 
 	list = of_get_property(np, "atmel,pins", &size);
+	if (!list)
+		return -EINVAL;
+
 	size /= sizeof(*list);
 
 	if (!size || size % 4) {

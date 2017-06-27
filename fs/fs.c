@@ -246,7 +246,7 @@ char *canonicalize_path(const char *pathname)
  *
  * Return: Path with links resolved. Allocated, must be freed after use.
  */
-char *canonicalize_dir(const char *pathname)
+static char *canonicalize_dir(const char *pathname)
 {
 	char *f, *d, *r, *ret, *p;
 	char *freep1, *freep2;

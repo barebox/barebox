@@ -1,0 +1,1 @@
+rootwait ro fsck.repair=yes

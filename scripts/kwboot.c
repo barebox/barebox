@@ -716,7 +716,7 @@ static void
 kwboot_usage(FILE *stream, char *progname)
 {
 	fprintf(stream,
-		"Usage: %s [-d | -b <image> | -D <image> ] [ -t ] [-B <baud> ] <TTY>\n",
+		"Usage: %s [-d | -b <image> [ -n <naks> ] | -D <image> ] [ -t ] [-B <baud> ] <TTY>\n",
 		progname);
 	fprintf(stream, "\n");
 	fprintf(stream,
@@ -724,6 +724,8 @@ kwboot_usage(FILE *stream, char *progname)
 	fprintf(stream,
 		"  -D <image>: boot <image> without preamble (Dove)\n");
 	fprintf(stream, "  -d: enter debug mode\n");
+	fprintf(stream,
+		"  -n <naks>: wait for <naks> NAK before uploading image (default: 1)\n");
 	fprintf(stream, "\n");
 	fprintf(stream, "  -t: mini terminal\n");
 	fprintf(stream, "\n");

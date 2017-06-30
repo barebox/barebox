@@ -1,0 +1,7 @@
+#include "arm/armada-385-turris-omnia.dts"
+
+/ {
+	chosen {
+		stdout-path = "/soc/internal-regs/serial@12000";
+	};
+};

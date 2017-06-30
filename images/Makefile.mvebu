@@ -51,6 +51,14 @@ pblx-$(CONFIG_MACH_NETGEAR_RN2120) += start_netgear_rn2120
 image-$(CONFIG_MACH_NETGEAR_RN2120) += barebox-netgear-rn2120.img
 image-$(CONFIG_MACH_NETGEAR_RN2120) += barebox-netgear-rn2120-2nd.img
 
+# ----------------------- Armada 38x based boards ---------------------------
+TURRIS_OMNIA_KWBOPTS = ${KWBOPTS} -i $(board)/turris-omnia/kwbimage.cfg
+OPTS_start_turris_omnia.pblx.kwbimg = $(TURRIS_OMNIA_KWBOPTS)
+FILE_barebox-turris-omnia.img = start_turris_omnia.pblx.kwbimg
+FILE_barebox-turris-omnia-2nd.img = start_turris_omnia.pblx
+pblx-$(CONFIG_MACH_TURRIS_OMNIA) += start_turris_omnia
+image-$(CONFIG_MACH_TURRIS_OMNIA) += barebox-turris-omnia.img
+
 PLATHOME_OPENBLOCKS_AX3_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-ax3/kwbimage.cfg
 OPTS_start_plathome_openblocks_ax3.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
 FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblx.kwbimg

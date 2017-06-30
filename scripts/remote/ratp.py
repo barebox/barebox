@@ -339,9 +339,6 @@ class RatpConnection(object):
     def _c2(self, r):
         logging.info("C2")
 
-        if r.length == 0 and r.c_so == 0:
-            return True
-
         if r.c_sn != self._r_sn:
             return True
 
@@ -358,14 +355,11 @@ class RatpConnection(object):
             self._state = RatpState.closed
             return False
 
-        # FIXME: only ack duplicate data packages?
-        # This is not documented in RFC 916
-        if r.length or r.c_so:
-            logging.info("C2: duplicate data packet, dropping")
-            s = RatpPacket(flags='A')
-            s.c_sn = r.c_an
-            s.c_an = (r.c_sn + 1) % 2
-            self._write(s)
+        logging.info("C2: duplicate packet")
+        s = RatpPacket(flags='A')
+        s.c_sn = r.c_an
+        s.c_an = (r.c_sn + 1) % 2
+        self._write(s)
 
         return False
 
@@ -495,12 +489,8 @@ class RatpConnection(object):
 
     def _h1(self, r):
         logging.info("H1")
-
-        # FIXME: initial data?
         self._state = RatpState.established
-        self._r_sn = r.c_sn
-
-        return False
+        return self._common_i1(r)
 
     def _h2(self, r):
         logging.info("H2")
@@ -525,7 +515,7 @@ class RatpConnection(object):
             # Our fin was lost, rely on retransmission
             return False
 
-        if r.length or r.c_so:
+        if (r.length and not r.c_syn and not r.c_rst and not r.c_fin) or r.c_so:
             self._retrans = None
             s = RatpPacket(flags='RA')
             s.c_sn = r.c_an
@@ -590,13 +580,11 @@ class RatpConnection(object):
         self._time_wait_deadline = monotonic() + self._get_rto()
         return False
 
-    def _i1(self, r):
-        logging.info("I1")
-
+    def _common_i1(self, r):
         if r.c_so:
             self._r_sn = r.c_sn
             self._rx_buf.append(chr(r.length))
-        elif r.length:
+        elif r.length and not r.c_syn and not r.c_rst and not r.c_fin:
             self._r_sn = r.c_sn
             self._rx_buf.append(r.payload)
         else:
@@ -613,6 +601,10 @@ class RatpConnection(object):
         s.c_an = (r.c_sn + 1) % 2
         self._write(s)
         return False
+
+    def _i1(self, r):
+        logging.info("I1")
+        return self._common_i1(r)
 
     def _machine(self, pkt):
         logging.info("State: %r", self._state)
@@ -729,8 +721,8 @@ class RatpConnection(object):
     def close(self, timeout=1.0):
         deadline = monotonic() + timeout
         logging.info("CLOSE")
-        if self._state == RatpState.established:
-            fin = RatpPacket(flags='FA')  # FIXME: only F?
+        if self._state == RatpState.established or self._state == RatpState.syn_received:
+            fin = RatpPacket(flags='FA')
             fin.c_sn = (self._s_sn + 1) % 2
             fin.c_an = (self._r_sn + 1) % 2
             self._write(fin)

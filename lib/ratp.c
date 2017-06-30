@@ -139,8 +139,10 @@ static bool ratp_an(struct ratp_header *hdr)
 	return hdr->control & RATP_CONTROL_AN ? 1 : 0;
 }
 
-#define ratp_set_sn(sn) (((sn) % 2) ? RATP_CONTROL_SN : 0)
-#define ratp_set_an(an) (((an) % 2) ? RATP_CONTROL_AN : 0)
+#define ratp_set_sn(sn) (sn ? RATP_CONTROL_SN : 0)
+#define ratp_set_an(an) (an ? RATP_CONTROL_AN : 0)
+#define ratp_set_next_sn(sn) (((sn + 1) % 2) ? RATP_CONTROL_SN : 0)
+#define ratp_set_next_an(an) (((an + 1) % 2) ? RATP_CONTROL_AN : 0)
 
 static inline int ratp_header_ok(struct ratp_internal *ri, struct ratp_header *h)
 {
@@ -165,7 +167,7 @@ static bool ratp_has_data(struct ratp_header *hdr)
 {
 	if (hdr->control & RATP_CONTROL_SO)
 		return 1;
-	if (hdr->data_length)
+	if (!(hdr->control & (RATP_CONTROL_SYN | RATP_CONTROL_RST | RATP_CONTROL_FIN)) && hdr->data_length)
 		return 1;
 	return 0;
 }
@@ -359,18 +361,17 @@ static bool ratp_an_expected(struct ratp_internal *ri, struct ratp_header *hdr)
 
 static bool ratp_sn_expected(struct ratp_internal *ri, struct ratp_header *hdr)
 {
-	return ratp_sn(hdr) != ri->sn_received;
+	return ratp_sn(hdr) == (ri->sn_received + 1) % 2;
 }
 
 static int ratp_send_ack(struct ratp_internal *ri, struct ratp_header *hdr)
 {
-	uint8_t control = RATP_CONTROL_ACK;
+	uint8_t control;
 	int ret;
 
-	if (hdr->control & RATP_CONTROL_SN)
-		control |= RATP_CONTROL_AN;
-	else
-		control |= 0;
+	control = ratp_set_sn(ratp_an(hdr)) |
+		ratp_set_next_an(ratp_sn(hdr)) |
+		RATP_CONTROL_ACK;
 
 	ret = ratp_send_hdr(ri, control);
 	if (ret)
@@ -382,8 +383,9 @@ static int ratp_send_ack(struct ratp_internal *ri, struct ratp_header *hdr)
 static int ratp_send_next_data(struct ratp_internal *ri)
 {
 	uint16_t crc;
-	uint8_t control = RATP_CONTROL_ACK;
+	uint8_t control;
 	struct ratp_header *hdr;
+	uint8_t *data;
 	int pktlen;
 	struct ratp_message *msg;
 	int len;
@@ -404,24 +406,24 @@ static int ratp_send_next_data(struct ratp_internal *ri)
 
 	len = msg->len;
 
-	control = ratp_set_sn(ri->sn_sent + 1) |
-		ratp_set_an(ri->sn_received + 1) |
+	control = ratp_set_next_sn(ri->sn_sent) |
+		ratp_set_next_an(ri->sn_received) |
 		RATP_CONTROL_ACK;
 
 	hdr = msg->buf;
+	data = (uint8_t *)(hdr + 1);
 
 	if (msg->eor)
 		control |= RATP_CONTROL_EOR;
 
+	pktlen = sizeof(struct ratp_header);
 	if (len > 1) {
-		void *data = hdr + 1;
-		pktlen = sizeof(*hdr) + len + 2;
+		pktlen += len + 2;
 		crc = cyg_crc16(data, len);
 		put_unaligned_be16(crc, data + len);
-	} else {
-		pktlen = sizeof(struct ratp_header);
+	} else if (len == 1) {
 		control |= RATP_CONTROL_SO;
-		len = 0;
+		len = *data;
 	}
 
 	ratp_create_packet(ri, hdr, control, len);
@@ -594,7 +596,7 @@ static void ratp_behaviour_b(struct ratp_internal *ri, void *pkt)
 
 	if ((hdr->control & RATP_CONTROL_ACK) && !ratp_an_expected(ri, hdr)) {
 		if (!(hdr->control & RATP_CONTROL_RST)) {
-			uint8_t control = RATP_CONTROL_RST;
+			uint8_t control;
 
 			control = RATP_CONTROL_RST |
 				ratp_set_sn(ratp_an(hdr));
@@ -619,21 +621,25 @@ static void ratp_behaviour_b(struct ratp_internal *ri, void *pkt)
 	if (hdr->control & RATP_CONTROL_SYN) {
 		uint8_t control;
 
+		ri->sn_received = ratp_sn(hdr);
+
 		if (hdr->control & RATP_CONTROL_ACK) {
-			control = ratp_set_sn(ratp_an(hdr)) |
-				ratp_set_an(!ratp_sn(hdr)) |
-				RATP_CONTROL_ACK;
+			ratp_state_change(ri, RATP_STATE_ESTABLISHED);
+			if (list_empty(&ri->sendmsg) || ri->sendmsg_current)
+				ratp_send_ack(ri, hdr);
+			else
+				ratp_send_next_data(ri);
 		} else {
-			control = ratp_set_an(!ratp_sn(hdr)) |
+			struct ratp_header synack = {};
+
+			control = ratp_set_next_an(ratp_sn(hdr)) |
 				RATP_CONTROL_SYN |
 				RATP_CONTROL_ACK;
 
+			ratp_create_packet(ri, &synack, control, 255);
+			ratp_send_pkt(ri, &synack, sizeof(synack));
+			ratp_state_change(ri, RATP_STATE_SYN_RECEIVED);
 		}
-
-		ri->sn_received = ratp_sn(hdr);
-
-		ratp_send_hdr(ri, control);
-		ratp_state_change(ri, RATP_STATE_ESTABLISHED);
 	}
 }
 
@@ -716,9 +722,6 @@ static int ratp_behaviour_c2(struct ratp_internal *ri, void *pkt)
 
 	pr_debug("%s\n", __func__);
 
-	if (!ratp_has_data(hdr))
-		return 0;
-
 	if (ratp_sn_expected(ri, hdr))
 		return 0;
 
@@ -727,14 +730,18 @@ static int ratp_behaviour_c2(struct ratp_internal *ri, void *pkt)
 		return 1;
 
 	if (hdr->control & RATP_CONTROL_SYN) {
+		uint8_t control;
+
 		ri->status = -ECONNRESET;
 		pr_debug("Error: Connection reset\n");
+
+		control = RATP_CONTROL_RST | RATP_CONTROL_ACK |
+			ratp_set_sn(ratp_an(hdr)) | ratp_set_next_an(ratp_sn(hdr));
+		ratp_send_hdr(ri, control);
+
 		ratp_state_change(ri, RATP_STATE_CLOSED);
 		return 1;
 	}
-
-	if (!ratp_has_data(hdr))
-		return 1;
 
 	pr_debug("Sending ack for duplicate message\n");
 	ret = ratp_send_ack(ri, hdr);
@@ -1022,17 +1029,22 @@ static int ratp_behaviour_g(struct ratp_internal *ri, void *pkt)
 
 	pr_debug("%s\n", __func__);
 
+	if (hdr->control & RATP_CONTROL_RST)
+		return 0;
+
 	control = RATP_CONTROL_RST;
 
 	if (hdr->control & RATP_CONTROL_ACK)
 		control |= ratp_set_sn(ratp_an(hdr));
 	else
-		control = ratp_set_an(ratp_sn(hdr) + 1) | RATP_CONTROL_ACK;
+		control |= ratp_set_next_an(ratp_sn(hdr)) | RATP_CONTROL_ACK;
 
 	ratp_send_hdr(ri, control);
 
 	return 0;
 }
+
+static int ratp_behaviour_i1(struct ratp_internal *ri, void *pkt);
 
 /*
  * Our SYN has been acknowledged.  At this point we are
@@ -1054,7 +1066,11 @@ static int ratp_behaviour_h1(struct ratp_internal *ri, void *pkt)
 
 	ratp_state_change(ri, RATP_STATE_ESTABLISHED);
 
-	return 0;
+	/* If the input message has data (i.e. it is not just an ACK
+	 * without data) then we need to send back an ACK ourselves,
+	 * or even data if we have it pending. This is the same
+	 * procedure done in i1, so just run it. */
+	return ratp_behaviour_i1 (ri, pkt);
 }
 
 /*
@@ -1085,7 +1101,7 @@ static int ratp_behaviour_h2(struct ratp_internal *ri, void *pkt)
 	ri->status = -ENETDOWN;
 
 	control = ratp_set_sn(ratp_an(hdr)) |
-		ratp_set_an(ratp_sn(hdr) + 1) |
+		ratp_set_next_an(ratp_sn(hdr)) |
 		RATP_CONTROL_FIN |
 		RATP_CONTROL_ACK;
 
@@ -1151,7 +1167,7 @@ static int ratp_behaviour_h3(struct ratp_internal *ri, void *pkt)
 
 	if (ratp_has_data(hdr)) {
 		control = ratp_set_sn(ratp_an(hdr)) |
-			ratp_set_an(ratp_sn(hdr) + 1) |
+			ratp_set_next_an(ratp_sn(hdr)) |
 			RATP_CONTROL_RST |
 			RATP_CONTROL_ACK;
 		ratp_send_hdr(ri, control);
@@ -1162,7 +1178,7 @@ static int ratp_behaviour_h3(struct ratp_internal *ri, void *pkt)
 	}
 
 	control = ratp_set_sn(ratp_an(hdr)) |
-		ratp_set_an(ratp_sn(hdr) + 1) |
+		ratp_set_next_an(ratp_sn(hdr)) |
 		RATP_CONTROL_ACK;
 
 	expected = ratp_an_expected(ri, hdr);
@@ -1264,7 +1280,7 @@ static int ratp_behaviour_h6(struct ratp_internal *ri, void *pkt)
 	if (!(hdr->control & RATP_CONTROL_FIN))
 		return 1;
 
-	control = ratp_set_sn(ratp_an(hdr) + 1) | RATP_CONTROL_ACK;
+	control = ratp_set_next_sn(ratp_an(hdr)) | RATP_CONTROL_ACK;
 
 	ratp_send_hdr(ri, control);
 
@@ -1322,9 +1338,8 @@ static int msg_recv(struct ratp_internal *ri, void *pkt)
 static int ratp_behaviour_i1(struct ratp_internal *ri, void *pkt)
 {
 	struct ratp_header *hdr = pkt;
-	uint8_t control = 0;
 
-	if (!hdr->data_length && !(hdr->control & RATP_CONTROL_SO))
+	if (!ratp_has_data (hdr))
 		return 1;
 
 	pr_vdebug("%s **received** %d\n", __func__, hdr->data_length);
@@ -1333,15 +1348,10 @@ static int ratp_behaviour_i1(struct ratp_internal *ri, void *pkt)
 
 	msg_recv(ri, pkt);
 
-	if (list_empty(&ri->sendmsg) || ri->sendmsg_current) {
-		control = ratp_set_sn(!ri->sn_sent) |
-			ratp_set_an(ri->sn_received + 1) |
-			RATP_CONTROL_ACK;
-
-		ratp_send_hdr(ri, control);
-	} else {
+	if (list_empty(&ri->sendmsg) || ri->sendmsg_current)
+		ratp_send_ack(ri, hdr);
+	else
 		ratp_send_next_data(ri);
-	}
 
 	return 0;
 }
@@ -1679,7 +1689,7 @@ void ratp_close(struct ratp *ratp)
 	if (!ri)
 		return;
 
-	if (ri->state == RATP_STATE_ESTABLISHED) {
+	if (ri->state == RATP_STATE_ESTABLISHED || ri->state == RATP_STATE_SYN_RECEIVED) {
 		uint64_t start;
 		u8 control;
 
@@ -1687,8 +1697,8 @@ void ratp_close(struct ratp *ratp)
 
 		ratp_state_change(ri, RATP_STATE_FIN_WAIT);
 
-		control = ratp_set_sn(!ri->sn_sent) |
-			ratp_set_an(ri->sn_received + 1) |
+		control = ratp_set_next_sn(ri->sn_sent) |
+			ratp_set_next_an(ri->sn_received) |
 			RATP_CONTROL_FIN | RATP_CONTROL_ACK;
 
 		ratp_create_packet(ri, &fin, control, 0);

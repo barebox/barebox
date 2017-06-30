@@ -445,6 +445,7 @@ static int ns16550_probe(struct device_d *dev)
 		priv->clk = clk_get(dev, NULL);
 		if (IS_ERR(priv->clk)) {
 			ret = PTR_ERR(priv->clk);
+			dev_err(dev, "failed to get clk (%d)\n", ret);
 			goto err;
 		}
 		clk_enable(priv->clk);

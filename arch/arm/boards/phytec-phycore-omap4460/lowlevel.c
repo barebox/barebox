@@ -96,19 +96,19 @@ static void noinline pcm049_init_lowlevel(void)
 
 	set_muxconf_regs();
 
-#ifdef CONFIG_1024MB_DDR2RAM
-	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
-	writel(EMIF_SDRAM_CONFIG, OMAP44XX_EMIF1_BASE +
-			EMIF_LPDDR2_MODE_REG_CONFIG);
-	density = (readl(OMAP44XX_EMIF1_BASE + EMIF_LPDDR2_MODE_REG_DATA) &
-			LPDDR2_DENSITY_MASK) >> LPDDR2_DENSITY_SHIFT;
-	if (density == LPDDR2_2G)
-		omap4_ddr_init(&ddr_regs_mt42L128M64_25_400_mhz, &core);
-	else if (density == LPDDR2_4G)
-		omap4_ddr_init(&ddr_regs_mt42L128M64D2LL_25_400_mhz, &core);
-#else
-	omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
-#endif
+	if (IS_ENABLED(CONFIG_1024MB_DDR2RAM)) {
+		omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
+		writel(EMIF_SDRAM_CONFIG, OMAP44XX_EMIF1_BASE +
+		       EMIF_LPDDR2_MODE_REG_CONFIG);
+		density = (readl(OMAP44XX_EMIF1_BASE + EMIF_LPDDR2_MODE_REG_DATA) &
+			   LPDDR2_DENSITY_MASK) >> LPDDR2_DENSITY_SHIFT;
+		if (density == LPDDR2_2G)
+			omap4_ddr_init(&ddr_regs_mt42L128M64_25_400_mhz, &core);
+		else if (density == LPDDR2_4G)
+			omap4_ddr_init(&ddr_regs_mt42L128M64D2LL_25_400_mhz, &core);
+	} else {
+		omap4_ddr_init(&ddr_regs_mt42L64M64_25_400_mhz, &core);
+	}
 
 	/* Set VCORE1 = 1.3 V, VCORE2 = VCORE3 = 1.21V */
 	if (rev < OMAP4460_ES1_0)

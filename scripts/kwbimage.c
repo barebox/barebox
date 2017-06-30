@@ -967,7 +967,11 @@ static void *image_create_v1(struct image_cfg_element *image_cfg,
 
 		cur += (binarye->binary.nargs + 1) * sizeof(unsigned int);
 
-		ret = fread(cur, s.st_size, 1, bin);
+		if (s.st_size)
+			ret = fread(cur, s.st_size, 1, bin);
+		else
+			ret = 1;
+
 		if (ret != 1) {
 			fprintf(stderr,
 				"Could not read binary image %s\n",

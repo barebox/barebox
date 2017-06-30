@@ -4,12 +4,20 @@ if [ -n "$nv.boot.default" ]; then
 	exit
 fi
 
-if [ $bootsource = mmc ]; then
-	global.boot.default="mmc nand spi net"
+if [ -e /dev/mmc1.0 ]; then
+	nvmem="emmc"
+else
+	nvmem="nand"
+fi
+
+if [ $bootsource = mmc -a $bootsource_instance = 1 ]; then
+	global.boot.default="emmc mmc spi net"
+elif [ $bootsource = mmc -a $bootsource_instance = 0 ]; then
+	global.boot.default="mmc $nvmem spi net"
 elif [ $bootsource = nand ]; then
 	global.boot.default="nand spi mmc net"
 elif [ $bootsource = spi ]; then
-	global.boot.default="spi nand mmc net"
+	global.boot.default="spi $nvmem mmc net"
 elif [ $bootsource = net ]; then
-	global.boot.default="net nand spi mmc"
+	global.boot.default="net $nvmem spi mmc"
 fi

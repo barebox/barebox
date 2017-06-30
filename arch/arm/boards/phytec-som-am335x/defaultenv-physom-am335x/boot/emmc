@@ -1,0 +1,5 @@
+#!/bin/sh
+
+global.bootm.image=/mnt/mmc1.0/linuximage
+global.bootm.oftree=/mnt/mmc1.0/oftree
+global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 rootflags='data=journal'"

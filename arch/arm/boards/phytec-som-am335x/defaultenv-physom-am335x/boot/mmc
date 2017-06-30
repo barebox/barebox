@@ -1,6 +1,5 @@
 #!/bin/sh
 
-global.bootm.image=/boot/linuximage
-global.bootm.oftree=/boot/oftree
-
-global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rw rootwait"
+global.bootm.image=/mnt/mmc0.0/linuximage
+global.bootm.oftree=/mnt/mmc0.0/oftree
+global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootflags='data=journal'"

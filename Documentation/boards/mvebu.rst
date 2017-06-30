@@ -37,9 +37,15 @@ Booting from UART
 
 The mvebu SoCs support booting from UART. For this there is a tool available in
 barebox called ``kwboot``. Quite some mvebu boards are reset once more when
-they already started to read the first block of the image to boot. If you want
-to boot such a board, use the parameter ``-n 15`` for ``kwboot``. (The number
-might have to be adapted per board.)
+they already started to read the first block of the image to boot which
+obviously results in a failure to boot this image. If you want to boot such a
+board, use the parameter ``-n 15`` for ``kwboot`` to delay uploading the image
+and try to hit the right (i.e. second) window harder.
+(The number might have to be adapted per board. The semantic is that the magic
+string is sent until the 15th NAK is seen and only then the image is sent.) A
+typical commandline is:
+
+  kwboot -b barebox.img -n 15 -B 115200 -t /dev/ttyUSB
 
 mvebu boards
 ------------

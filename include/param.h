@@ -104,8 +104,8 @@ static inline struct param_d *get_param_by_name(struct device_d *dev,
 }
 
 static inline struct param_d *dev_add_param(struct device_d *dev, const char *name,
-		int (*set)(struct param_d *p, const char *val),
-		const char *(*get)(struct param_d *p),
+		int (*set)(struct device_d *dev, struct param_d *p, const char *val),
+		const char *(*get)(struct device_d *, struct param_d *p),
 		unsigned long flags)
 {
 	return ERR_PTR(-ENOSYS);

@@ -379,6 +379,9 @@ static int of_gpiochip_scan_hogs(struct gpio_chip *chip)
 	struct device_node *np;
 	int ret, i;
 
+	if (!IS_ENABLED(CONFIG_OFDEVICE) || !chip->dev->device_node)
+		return 0;
+
 	for_each_available_child_of_node(chip->dev->device_node, np) {
 		if (!of_property_read_bool(np, "gpio-hog"))
 			continue;

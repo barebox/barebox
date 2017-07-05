@@ -35,6 +35,7 @@
 #include <asm-generic/div64.h>
 
 #define DP_LINK_BW_SET			0x100
+#define DP_ENHANCED_FRAME_EN		(1 << 7)
 #define DP_TRAINING_PATTERN_SET		0x102
 #define TRAINING_LANE0_SET		0x103
 
@@ -892,7 +893,7 @@ static int tc_main_link_setup(struct tc_data *tc)
 	bool ready;
 	u32 value;
 	int ret;
-	u8 tmp[8];
+	u8 tmp[16];
 
 	/* display mode should be set at this point */
 	if (!tc->mode)
@@ -993,21 +994,22 @@ static int tc_main_link_setup(struct tc_data *tc)
 	/* LANE_COUNT_SET */
 	tmp[1] = tc->link.lanes;
 	if (tc->link.enhanced)
-		tmp[1] |= (1 << 7);
-	ret = tc_aux_write(tc, DP_LINK_BW_SET, tmp, 2);
-	if (ret)
-		goto err_dpcd_write;
+		tmp[1] |= DP_ENHANCED_FRAME_EN;
 
-	/* TRAINING_LANE0_SET .. TRAINING_LANE3_SET */
-	tmp[0] = 0x00;
-	tmp[1] = 0x00;
+	/* TRAINING_PATTERN_SET */
 	tmp[2] = 0x00;
+	/* TRAINING_LANE0_SET .. TRAINING_LANE3_SET */
 	tmp[3] = 0x00;
+	tmp[4] = 0x00;
+	tmp[5] = 0x00;
+	tmp[6] = 0x00;
 	/* DOWNSPREAD_CTRL */
-	tmp[4] = tc->link.spread ? DP_SPREAD_AMP_0_5 : 0x00;
+	tmp[7] = tc->link.spread ? DP_SPREAD_AMP_0_5 : 0x00;
 	/* MAIN_LINK_CHANNEL_CODING_SET */
-	tmp[5] = tc->link.coding8b10b ? DP_SET_ANSI_8B10B : 0x00;
-	ret = tc_aux_write(tc, TRAINING_LANE0_SET, tmp, 6);
+	tmp[8] = tc->link.coding8b10b ? DP_SET_ANSI_8B10B : 0x00;
+
+	/* DP_LINK_BW_SET .. MAIN_LINK_CHANNEL_CODING_SET */
+	ret = tc_aux_write(tc, DP_LINK_BW_SET, tmp, 9);
 	if (ret)
 		goto err_dpcd_write;
 

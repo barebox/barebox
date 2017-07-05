@@ -388,7 +388,7 @@ static int tc_aux_write(struct tc_data *tc, int reg, char *data, int size)
 		i++;
 		if (((i % 4) == 0) ||
 		    (i == size)) {
-			tc_write(DP0_AUXWDATA(i >> 2), tmp);
+			tc_write(DP0_AUXWDATA((i - 1) >> 2), tmp);
 			tmp = 0;
 		}
 	}
@@ -476,7 +476,7 @@ static int tc_aux_i2c_write(struct tc_data *tc, struct i2c_msg *msg)
 		i++;
 		if (((i % 4) == 0) ||
 		    (i == msg->len)) {
-			tc_write(DP0_AUXWDATA(i >> 2), tmp);
+			tc_write(DP0_AUXWDATA((i - 1) >> 2), tmp);
 			tmp = 0;
 		}
 	}

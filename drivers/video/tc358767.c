@@ -1108,13 +1108,16 @@ static int tc_read_edid(struct tc_data *tc)
 	unsigned char start = 0;
 	unsigned char segment = 0;
 
-	struct i2c_msg msgs[] = {
+	struct i2c_msg msg_segment[] = {
 		{
 			.addr	= DDC_SEGMENT_ADDR,
 			.flags	= 0,
 			.len	= 1,
 			.buf	= &segment,
-		}, {
+		}
+	};
+	struct i2c_msg msgs[] = {
+		{
 			.addr	= DDC_ADDR,
 			.flags	= 0,
 			.len	= 1,
@@ -1126,13 +1129,21 @@ static int tc_read_edid(struct tc_data *tc)
 	};
 	tc->edid = xmalloc(EDID_LENGTH);
 
+	/*
+	 * Some displays supports E-EDID some not
+	 * Just reset segment address to 0x0
+	 * This transfer can fail on non E-DCC displays
+	 * Ignore error
+	 */
+	i2c_transfer(&tc->adapter, msg_segment, 1);
+
 	do {
 		block = min(DDC_BLOCK_READ, EDID_LENGTH - i);
 
-		msgs[2].buf = tc->edid + i;
-		msgs[2].len = block;
+		msgs[1].buf = tc->edid + i;
+		msgs[1].len = block;
 
-		ret = i2c_transfer(&tc->adapter, msgs, 3);
+		ret = i2c_transfer(&tc->adapter, msgs, 2);
 		if (ret < 0)
 			goto err;
 

@@ -418,9 +418,6 @@ static int tc_aux_i2c_read(struct tc_data *tc, struct i2c_msg *msg)
 	int ret;
 	u32 tmp;
 
-	if (msg->flags & I2C_M_DATA_ONLY)
-		return -EINVAL;
-
 	ret = tc_aux_wait_busy(tc, 100);
 	if (ret)
 		goto err;
@@ -458,14 +455,6 @@ static int tc_aux_i2c_write(struct tc_data *tc, struct i2c_msg *msg)
 	int i = 0;
 	int ret;
 	u32 tmp = 0;
-
-	if (msg->flags & I2C_M_DATA_ONLY)
-		return -EINVAL;
-
-	if (msg->len > 16) {
-		dev_err(tc->dev, "this bus support max 16 bytes per transfer\n");
-		return -EINVAL;
-	}
 
 	ret = tc_aux_wait_busy(tc, 100);
 	if (ret)
@@ -512,6 +501,8 @@ static int tc_aux_i2c_xfer(struct i2c_adapter *adapter,
 			dev_err(tc->dev, "this bus support max 16 bytes per transfer\n");
 			return -EINVAL;
 		}
+		if (msgs[i].flags & I2C_M_DATA_ONLY)
+			return -EINVAL;
 	}
 
 	/* read/write data */

@@ -725,6 +725,7 @@ err_dpcd_inval:
 static int tc_set_video_mode(struct tc_data *tc, struct fb_videomode *mode)
 {
 	int ret;
+	u32 reg;
 	int htotal;
 	int vtotal;
 	int vid_sync_dly;
@@ -785,8 +786,12 @@ static int tc_set_video_mode(struct tc_data *tc, struct fb_videomode *mode)
 
 	tc_write(DP0_SYNCVAL, (mode->vsync_len << 16) | (mode->hsync_len << 0));
 
-	tc_write(DPIPXLFMT, VS_POL_ACTIVE_LOW | HS_POL_ACTIVE_LOW |
-		 DE_POL_ACTIVE_HIGH | SUB_CFG_TYPE_CONFIG1 | DPI_BPP_RGB888);
+	reg = DE_POL_ACTIVE_HIGH | SUB_CFG_TYPE_CONFIG1 | DPI_BPP_RGB888;
+	if (!(mode->sync & FB_SYNC_VERT_HIGH_ACT))
+		reg |= VS_POL_ACTIVE_LOW;
+	if (!(mode->sync & FB_SYNC_HOR_HIGH_ACT))
+		reg |= HS_POL_ACTIVE_LOW;
+	tc_write(DPIPXLFMT, reg);
 
 	/*
 	 * Recommended maximum number of symbols transferred in a transfer unit:
@@ -1300,10 +1305,6 @@ static int tc_get_videomodes(struct tc_data *tc, struct display_timings *timings
 		dev_err(tc->dev, "No supported modes found\n");
 		return ret;
 	}
-
-	/* hsync, vsync active low */
-	timings->modes->sync &= ~(FB_SYNC_HOR_HIGH_ACT |
-				  FB_SYNC_VERT_HIGH_ACT);
 
 	return ret;
 }

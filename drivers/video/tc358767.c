@@ -674,13 +674,25 @@ static int tc_get_display_props(struct tc_data *tc)
 	ret = tc_aux_read(tc, 0x000, tmp, 8);
 	if (ret)
 		goto err_dpcd_read;
-	/* check rev 1.0 or 1.1 */
-	if ((tmp[1] != 0x06) && (tmp[1] != 0x0a))
-		goto err_dpcd_inval;
 
 	tc->assr = !(tc->rev & 0x02);
+
+	/* check DPCD rev */
+	if (tmp[0] < 0x10) {
+		dev_err(tc->dev, "Too low DPCD revision 0x%02x\n", tmp[0]);
+		goto err_dpcd_inval;
+	}
+	if ((tmp[0] != 0x10) && (tmp[0] != 0x11))
+		dev_warn(tc->dev, "Unknown DPCD revision 0x%02x\n", tmp[0]);
 	tc->link.rev = tmp[0];
-	tc->link.rate = tmp[1];
+
+	/* check rate */
+	if ((tmp[1] == 0x06) || (tmp[1] == 0x0a)) {
+		tc->link.rate = tmp[1];
+	} else {
+		dev_warn(tc->dev, "Unknown link rate 0x%02x, falling to 2.7Gbps\n", tmp[1]);
+		tc->link.rate = 0x0a;
+	}
 	tc->link.lanes = tmp[2] & 0x0f;
 	if (tc->link.lanes > 2) {
 		dev_dbg(tc->dev, "Display supports %d lanes, host only 2 max. "

@@ -1199,6 +1199,82 @@ err:
 	return ret;
 }
 
+static int tc_filter_videomodes(struct tc_data *tc, struct display_timings *timings)
+{
+	int i;
+	int num_modes = 0;
+	struct fb_videomode *mode, *valid_modes;
+
+	valid_modes = xzalloc(timings->num_modes * sizeof(struct fb_videomode));
+
+	/* first filter modes with too high pclock */
+	for (i = 0; i < timings->num_modes; i++) {
+		mode = &timings->modes[i];
+
+		/* minimum Pixel Clock Period for DPI is 6.5 nS = 6500 pS */
+		if (mode->pixclock < 6500) {
+			dev_dbg(tc->dev, "%dx%d@%d (%d KHz, flags 0x%08x, sync 0x%08x) skipped\n",
+				mode->xres, mode->yres, mode->refresh,
+				(int)PICOS2KHZ(mode->pixclock), mode->display_flags,
+				mode->sync);
+			/* remove from list */
+			mode->xres = mode->yres = 0;
+		}
+	}
+
+	/* then sort from hi to low */
+	do {
+		int index = -1;
+
+		/* find higest resolution */
+		for (i = 0; i < timings->num_modes; i++) {
+			mode = &timings->modes[i];
+			if (!(mode->xres && mode->yres))
+				continue;
+			if (index == -1) {
+				index = i;
+			} else {
+				/* compare square */
+				if (timings->modes[index].xres * timings->modes[index].yres <
+				    mode->xres * mode->yres)
+					index = i;
+			}
+		}
+
+		/* nothing left */
+		if (index == -1)
+			break;
+
+		/* copy to output list */
+		mode = &timings->modes[index];
+		memcpy(&valid_modes[num_modes], mode, sizeof(struct fb_videomode));
+		mode->xres = mode->yres = 0;
+		num_modes++;
+	} while (1);
+
+	free(timings->modes);
+	timings->modes = NULL;
+
+	if (!num_modes) {
+		free(valid_modes);
+		return -EINVAL;
+	}
+
+	timings->num_modes = num_modes;
+	timings->modes = valid_modes;
+
+	dev_dbg(tc->dev, "Valid modes (%d):\n", num_modes);
+	for (i = 0; i < timings->num_modes; i++) {
+		mode = &timings->modes[i];
+		dev_dbg(tc->dev, "%dx%d@%d (%d KHz, flags 0x%08x, sync 0x%08x)\n",
+			mode->xres, mode->yres, mode->refresh,
+			(int)PICOS2KHZ(mode->pixclock), mode->display_flags,
+			mode->sync);
+	}
+
+	return 0;
+}
+
 static int tc_get_videomodes(struct tc_data *tc, struct display_timings *timings)
 {
 	int ret;
@@ -1215,6 +1291,13 @@ static int tc_get_videomodes(struct tc_data *tc, struct display_timings *timings
 	ret = edid_to_display_timings(timings, tc->edid);
 	if (ret < 0) {
 		dev_err(tc->dev, "Failed to parse EDID: %d\n", ret);
+		return ret;
+	}
+
+	/* filter out unsupported due to high pixelxlock */
+	ret = tc_filter_videomodes(tc, timings);
+	if (ret < 0) {
+		dev_err(tc->dev, "No supported modes found\n");
 		return ret;
 	}
 

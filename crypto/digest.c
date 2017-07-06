@@ -272,6 +272,9 @@ int digest_file_window(struct digest *d, const char *filename,
 			goto out_free;
 		size -= now;
 		len += now;
+
+		if (!flags)
+			buf += now;
 	}
 
 	if (sig)

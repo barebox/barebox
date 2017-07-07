@@ -6,11 +6,6 @@ void gpio_set_value(unsigned gpio, int value);
 int gpio_get_value(unsigned gpio);
 int gpio_direction_output(unsigned gpio, int value);
 int gpio_direction_input(unsigned gpio);
-
-void gpio_set_active(unsigned gpio, bool state);
-int gpio_is_active(unsigned gpio);
-int gpio_direction_active(unsigned gpio, bool state);
-
 #else
 static inline void gpio_set_value(unsigned gpio, int value)
 {
@@ -27,7 +22,13 @@ static inline int gpio_direction_input(unsigned gpio)
 {
 	return -EINVAL;
 }
+#endif
 
+#ifdef CONFIG_GPIOLIB
+void gpio_set_active(unsigned gpio, bool state);
+int gpio_is_active(unsigned gpio);
+int gpio_direction_active(unsigned gpio, bool state);
+#else
 static inline void gpio_set_active(unsigned gpio, int value)
 {
 }

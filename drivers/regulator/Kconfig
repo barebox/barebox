@@ -19,5 +19,6 @@ config REGULATOR_BCM283X
 config REGULATOR_PFUZE
 	bool "Freescale PFUZE100/200/3000 regulator driver"
 	depends on I2C
+	depends on ARCH_IMX6
 
 endif

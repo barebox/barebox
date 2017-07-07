@@ -42,3 +42,10 @@
 	barebox,provide-mac-address = <&fec 0x620>;
 };
 
+&clks {
+	fsl,pmic-stby-poweroff;
+};
+
+&pmic {
+	fsl,pmic-stby-poweroff;
+};

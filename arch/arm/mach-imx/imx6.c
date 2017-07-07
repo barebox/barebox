@@ -25,6 +25,19 @@
 #include <asm/mmu.h>
 #include <asm/cache-l2x0.h>
 
+#include <poweroff.h>
+#include <mach/imx6-regs.h>
+#include <io.h>
+
+#define CLPCR				0x54
+#define BP_CLPCR_LPM(mode)		((mode) & 0x3)
+#define BM_CLPCR_LPM			(0x3 << 0)
+#define BM_CLPCR_SBYOS			(0x1 << 6)
+#define BM_CLPCR_VSTBY			(0x1 << 8)
+#define BP_CLPCR_STBY_COUNT		9
+#define BM_CLPCR_COSC_PWRDOWN		(0x1 << 11)
+#define BM_CLPCR_BYP_MMDC_CH1_LPM_HS	(0x1 << 21)
+
 void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
@@ -296,3 +309,39 @@ static int imx6_fixup_cpus_register(void)
 	return of_register_fixup(imx6_fixup_cpus, NULL);
 }
 device_initcall(imx6_fixup_cpus_register);
+
+void __noreturn imx6_pm_stby_poweroff(void)
+{
+	void *ccm_base = IOMEM(MX6_CCM_BASE_ADDR);
+	void *gpc_base = IOMEM(MX6_GPC_BASE_ADDR);
+	u32 val;
+
+	/*
+	 * All this is done to get the PMIC_STBY_REQ line high which will
+	 * cause the PMIC to turn off the i.MX6.
+	 */
+
+	/*
+	 * First mask all interrupts in the GPC. This is necessary for
+	 * unknown reasons
+	 */
+	writel(0xffffffff, gpc_base + 0x8);
+	writel(0xffffffff, gpc_base + 0xc);
+	writel(0xffffffff, gpc_base + 0x10);
+	writel(0xffffffff, gpc_base + 0x14);
+
+	val = readl(ccm_base + CLPCR);
+
+	val &= ~BM_CLPCR_LPM;
+	val |= BP_CLPCR_LPM(2);
+	val |= 0x3 << BP_CLPCR_STBY_COUNT;
+	val |= BM_CLPCR_VSTBY;
+	val |= BM_CLPCR_SBYOS;
+	val |= BM_CLPCR_BYP_MMDC_CH1_LPM_HS;
+
+	writel(val, ccm_base + CLPCR);
+
+	asm("wfi");
+
+	while(1);
+}

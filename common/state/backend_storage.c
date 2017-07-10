@@ -247,7 +247,7 @@ static int state_storage_mtd_buckets_init(struct state_backend_storage *storage,
 		end = meminfo->size;
 
 	if (!IS_ALIGNED(storage->offset, meminfo->erasesize)) {
-		dev_err(storage->dev, "Offset within the device is not aligned to eraseblocks. Offset is %ld, erasesize %zu\n",
+		dev_err(storage->dev, "Offset within the device is not aligned to eraseblocks. Offset is %ld, erasesize %u\n",
 			storage->offset, meminfo->erasesize);
 		return -EINVAL;
 	}

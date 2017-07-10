@@ -49,7 +49,7 @@ static int state_backend_format_dtb_verify(struct state_backend_format *format,
 	size_t len = *lenp;
 
 	if (dtb_len > len) {
-		dev_err(fdtb->dev, "Error, stored DTB length (%d) longer than read buffer (%d)\n",
+		dev_err(fdtb->dev, "Error, stored DTB length (%zd) longer than read buffer (%zd)\n",
 			dtb_len, len);
 		return -EINVAL;
 	}

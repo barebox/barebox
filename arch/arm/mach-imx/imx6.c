@@ -38,7 +38,7 @@
 #define BM_CLPCR_COSC_PWRDOWN		(0x1 << 11)
 #define BM_CLPCR_BYP_MMDC_CH1_LPM_HS	(0x1 << 21)
 
-void imx6_init_lowlevel(void)
+static void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
 	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
@@ -96,7 +96,7 @@ void imx6_init_lowlevel(void)
 
 }
 
-void imx6_setup_ipu_qos(void)
+static void imx6_setup_ipu_qos(void)
 {
 	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
 	void __iomem *fast2 = (void *)MX6_FAST2_BASE_ADDR;
@@ -134,7 +134,7 @@ void imx6_setup_ipu_qos(void)
 	}
 }
 
-void imx6ul_enet_clk_init(void)
+static void imx6ul_enet_clk_init(void)
 {
 	void __iomem *gprbase = IOMEM(MX6_IOMUXC_BASE_ADDR) + 0x4000;
 	uint32_t val;

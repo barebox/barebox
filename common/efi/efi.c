@@ -42,6 +42,7 @@
 #include <efi/efi-device.h>
 #include <libfile.h>
 #include <state.h>
+#include <bbu.h>
 
 efi_runtime_services_t *RT;
 efi_boot_services_t *BS;
@@ -381,6 +382,9 @@ static int efi_postcore_init(void)
 		free(uuid);
 		free(uuid16);
 	}
+
+	bbu_register_std_file_update("fat", 0,	"/boot/EFI/BOOT/BOOTx64.EFI",
+				     filetype_exe);
 
 	return 0;
 }

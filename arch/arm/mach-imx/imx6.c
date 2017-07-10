@@ -139,6 +139,9 @@ void imx6ul_enet_clk_init(void)
 	void __iomem *gprbase = IOMEM(MX6_IOMUXC_BASE_ADDR) + 0x4000;
 	uint32_t val;
 
+	if (!cpu_mx6_is_mx6ul() && !cpu_mx6_is_mx6ull())
+		return;
+
 	val = readl(gprbase + IOMUXC_GPR1);
 	val |= (0x3 << 17);
 	writel(val, gprbase + IOMUXC_GPR1);
@@ -182,7 +185,6 @@ int imx6_init(void)
 		break;
 	case IMX6_CPUTYPE_IMX6UL:
 		cputypestr = "i.MX6 UltraLite";
-		imx6ul_enet_clk_init();
 		break;
 	case IMX6_CPUTYPE_IMX6ULL:
 		cputypestr = "i.MX6 ULL";
@@ -195,6 +197,7 @@ int imx6_init(void)
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
 
 	imx6_setup_ipu_qos();
+	imx6ul_enet_clk_init();
 
 	return 0;
 }

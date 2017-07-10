@@ -1,3 +1,2 @@
-obj-y += board.o flash-header-variscite.dcd.o
-extra-y += flash-header-variscite.dcd.S flash-header-variscite.dcd
+obj-y += board.o
 lwl-y += lowlevel.o

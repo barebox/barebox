@@ -1,3 +1,2 @@
-obj-y += board.o flash-header-imx53-loco.dcd.o
-extra-y += flash-header-imx53-loco.dcd.S flash-header-imx53-loco.dcd
+obj-y += board.o
 lwl-y += lowlevel.o

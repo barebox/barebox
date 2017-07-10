@@ -1,3 +1,2 @@
-obj-y += board.o flash-header-embest-riotboard.dcd.o
-extra-y += flash-header-embest-riotboard.dcd.S flash-header-embest-riotboard.dcd
+obj-y += board.o
 lwl-y += lowlevel.o

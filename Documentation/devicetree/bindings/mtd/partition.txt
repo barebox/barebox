@@ -1,0 +1,21 @@
+Representing flash partitions in devicetree
+
+In addition to the upstream binding, another property is added:
+
+Optional properties:
+- partuuid : The partition UUID for this partition.
+
+
+Examples:
+
+flash@0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		state_part: state {
+			partuuid = "16367da7-c518-499f-9aad-e1f366692365";
+		};
+	};
+};

@@ -370,6 +370,7 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	struct clk_pllv3 *pll;
 	const struct clk_ops *ops;
 	int ret;
+	u32 val;
 
 	pll = xzalloc(sizeof(*pll));
 
@@ -413,6 +414,10 @@ struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 	pll->clk.name = name;
 	pll->clk.parent_names = &pll->parent;
 	pll->clk.num_parents = 1;
+
+	val = readl(pll->base);
+	val &= ~BM_PLL_BYPASS;
+	writel(val, pll->base);
 
 	ret = clk_register(&pll->clk);
 	if (ret) {

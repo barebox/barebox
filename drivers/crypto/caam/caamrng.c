@@ -203,8 +203,6 @@ static inline int rng_create_job_desc(struct caam_rng_ctx *ctx, int buf_id)
 	init_job_desc_shared(desc, ctx->sh_desc_dma, sh_len, HDR_SHARE_DEFER |
 			     HDR_REVERSE);
 
-	bd->addr = (dma_addr_t)bd->buf;
-
 	append_seq_out_ptr_intlen(desc, bd->addr, RN_BUF_SIZE, 0);
 #ifdef DEBUG
 	print_hex_dump(KERN_ERR, "rng job desc@: ", DUMP_PREFIX_OFFSET, 16, 4,
@@ -218,7 +216,7 @@ static int caam_init_buf(struct caam_rng_ctx *ctx, int buf_id)
 	struct buf_data *bd = &ctx->bufs[buf_id];
 	int err;
 
-	bd->buf = dma_alloc(RN_BUF_SIZE);
+	bd->buf = dma_alloc_coherent(RN_BUF_SIZE, &bd->addr);
 
 	err = rng_create_job_desc(ctx, buf_id);
 	if (err)

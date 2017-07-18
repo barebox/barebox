@@ -14,6 +14,7 @@
  */
 
 #include <common.h>
+#include <envfs.h>
 #include <gpio.h>
 #include <init.h>
 #include <mach/bbu.h>
@@ -144,6 +145,8 @@ static int rdu2_devices_init(void)
 						   BBU_HANDLER_FLAG_DEFAULT);
 
 	imx6_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc3", 0);
+
+	defaultenv_append_directory(defaultenv_rdu2);
 
 	return 0;
 }

@@ -279,7 +279,10 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 	}
 
 	*buf_out = buf;
-	*len_out = read_len - sizeof(struct state_backend_storage_bucket_circular_meta);
+	/* When reading old state there is no circular bucket metadata */
+	if (circ->last_written_length)
+		read_len -= sizeof(struct state_backend_storage_bucket_circular_meta);
+	*len_out = read_len;
 
 	return ret;
 }

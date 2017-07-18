@@ -246,7 +246,7 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 		read_len = min(circ->write_area, (off_t)(circ->max_size -
 			       sizeof(struct state_backend_storage_bucket_circular_meta)));
 		circ->write_area = 0;
-		dev_dbg(circ->dev, "Detected old on-storage format\n");
+		dev_info(circ->dev, "Detected old on-storage format\n");
 	} else if (circ->last_written_length > circ->write_area
 		   || !IS_ALIGNED(circ->last_written_length, circ->writesize)) {
 		circ->write_area = 0;

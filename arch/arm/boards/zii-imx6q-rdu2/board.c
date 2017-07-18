@@ -122,11 +122,6 @@ static const struct gpio rdu2_front_panel_usb_gpios[] = {
 		.label = "usb-mode1",
 	},
 	{
-		.gpio = IMX_GPIO_NR(3, 22),
-		.flags = GPIOF_OUT_INIT_LOW,
-		.label = "usb-pwr-ctrl-enn",
-	},
-	{
 		.gpio = IMX_GPIO_NR(3, 23),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "usb-mode2",

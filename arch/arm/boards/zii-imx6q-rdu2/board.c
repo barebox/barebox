@@ -14,26 +14,10 @@
  */
 
 #include <common.h>
-#include <init.h>
-#include <environment.h>
-#include <mach/imx6-regs.h>
 #include <gpio.h>
-#include <asm/armlinux.h>
-#include <generated/mach-types.h>
-#include <partition.h>
-#include <linux/phy.h>
-#include <asm/io.h>
-#include <asm/mmu.h>
-#include <mach/generic.h>
-#include <linux/sizes.h>
-#include <net.h>
-#include <mach/imx6.h>
-#include <mach/devices-imx6.h>
-#include <mach/iomux-mx6.h>
-#include <spi/spi.h>
-#include <mach/spi.h>
-#include <mach/usb.h>
+#include <init.h>
 #include <mach/bbu.h>
+#include <mach/imx6.h>
 
 #define RDU2_DAC1_RESET	IMX_GPIO_NR(1, 0)
 #define RDU2_DAC2_RESET	IMX_GPIO_NR(1, 2)

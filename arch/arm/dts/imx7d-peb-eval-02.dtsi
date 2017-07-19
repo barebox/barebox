@@ -1,0 +1,130 @@
+/*
+ * Copyright (C) 2015 PHYTEC America, LLC
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/ {
+	phytec_leds: leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_leds_eval>;
+		status = "disabled";
+
+		led@0 {
+			label = "eval_led_1";
+			gpios = <&gpio2 8 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "gpio";
+			default-state = "on";
+		};
+
+		led@1 {
+			label = "eval_led_2";
+			gpios = <&gpio4 4 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "gpio";
+			default-state = "on";
+		};
+
+		led@2 {
+			label = "eval_led_3";
+			gpios = <&gpio2 15 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "gpio";
+			default-state = "on";
+		};
+	};
+
+	phytec_buttons: gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_btns_eval>;
+		status = "disabled";
+
+		userbtn@0 {
+			label = "eval_button_1";
+			gpios = <&gpio2 9 GPIO_ACTIVE_HIGH>;
+			linux,code = <0x100>;	/* BTN_MISC */
+		};
+		userbtn@1 {
+			label = "eval_button_2";
+			gpios = <&gpio4 5 GPIO_ACTIVE_HIGH>;
+			linux,code = <0x100>;   /* BTN_MISC */
+		};
+
+		userbtn@2 {
+			label = "eval_button_3";
+			gpios = <&gpio5 2 GPIO_ACTIVE_HIGH>;
+			linux,code = <0x100>;	/* BTN_MISC */
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl_i2c4: i2c4grp {
+		fsl,pins = <
+			MX7D_PAD_I2C4_SCL__I2C4_SCL		0x4000007f
+			MX7D_PAD_I2C4_SDA__I2C4_SDA		0x4000007f
+		>;
+	};
+
+	pinctrl_leds_eval: leds_evalgrp {
+		fsl,pins = <
+			MX7D_PAD_EPDC_DATA08__GPIO2_IO8		0x79	/* Labeled UART6_RX on schematic */
+			MX7D_PAD_UART3_RX_DATA__GPIO4_IO4	0x79
+			MX7D_PAD_EPDC_DATA15__GPIO2_IO15	0x79	/* Labeled EXP_CONN_MUX5 on schematic */
+		>;
+	};
+
+	pinctrl_btns_eval: btns_evalgrp {
+		fsl,pins = <
+			MX7D_PAD_EPDC_DATA09__GPIO2_IO9		0x79	/* Labeled UART6_TX on schematic */
+			MX7D_PAD_UART3_TX_DATA__GPIO4_IO5	0x79
+			MX7D_PAD_SD1_RESET_B__GPIO5_IO2		0x79	/* Labeled EXP_CONN_MUX3 on schematic */
+		>;
+	};
+
+	pinctrl_uart1: uart1grp {
+		fsl,pins = <
+			MX7D_PAD_UART1_RX_DATA__UART1_DCE_RX	0x79
+			MX7D_PAD_UART1_TX_DATA__UART1_DCE_TX	0x79
+		>;
+	};
+
+	pinctrl_uart2: uart2grp {
+		fsl,pins = <
+			MX7D_PAD_UART2_RX_DATA__UART2_DCE_RX	0x79
+			MX7D_PAD_UART2_TX_DATA__UART2_DCE_TX	0x79
+		>;
+	};
+};
+
+&i2c4 {
+	clock-frequency = <400000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c4>;
+	status = "disabled";
+
+	i2c4_eeprom: eeprom@56 {
+		compatible = "onnn,24c32";
+		reg = <0x56>;
+		pagesize = <32>;
+		status = "disabled";
+	};
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	assigned-clocks = <&clks IMX7D_UART1_ROOT_SRC>;
+	assigned-clock-parents = <&clks IMX7D_PLL_SYS_MAIN_240M_CLK>;
+	status = "disabled";
+};
+
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	assigned-clocks = <&clks IMX7D_UART2_ROOT_SRC>;
+	assigned-clock-parents = <&clks IMX7D_PLL_SYS_MAIN_240M_CLK>;
+	status = "disabled";
+};

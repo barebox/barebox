@@ -666,7 +666,7 @@ static int macb_probe(struct device_d *dev)
 			macb->miibus.dev.device_node = mdiobus;
 
 		macb->phy_addr = -1;
-		pclk_name = NULL;
+		pclk_name = "pclk";
 	} else {
 		dev_err(dev, "macb: no platform_data\n");
 		return -ENODEV;
@@ -681,7 +681,7 @@ static int macb_probe(struct device_d *dev)
 	 * Do some basic initialization so that we at least can talk
 	 * to the PHY
 	 */
-	macb->pclk = clk_get(dev, "macb_clk");
+	macb->pclk = clk_get(dev, pclk_name);
 	if (IS_ERR(macb->pclk)) {
 		dev_err(dev, "no macb_clk\n");
 		return PTR_ERR(macb->pclk);

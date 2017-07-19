@@ -474,7 +474,6 @@ static int atmci_request(struct mci_host *mci, struct mci_cmd *cmd, struct mci_d
 static void atmci_info(struct device_d *mci_dev)
 {
 	struct atmel_mci *host = mci_dev->priv;
-	struct atmel_mci_platform_data *pd = host->hw_dev->platform_data;
 
 	printf("  Bus data width: %d bit\n", host->mci.bus_width);
 
@@ -490,7 +489,7 @@ static void atmci_info(struct device_d *mci_dev)
 		printf("- %u Hz upper limit", host->mci.f_max);
 
 	printf("\n  Card detection support: %s\n",
-		gpio_is_valid(pd->detect_pin) ? "yes" : "no");
+		gpio_is_valid(host->detect_pin) ? "yes" : "no");
 
 }
 /*

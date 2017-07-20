@@ -23,6 +23,8 @@ struct atmel_lcdfb_info {
 	unsigned int		smem_len;
 	unsigned int		lcdcon2;
 	unsigned int		dmacon;
+	unsigned int		lcd_wiring_mode;
+	bool			have_intensity_bit;
 	struct clk		*bus_clk;
 	struct clk		*lcdc_clk;
 

@@ -69,7 +69,6 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 {
 	struct device_d *dev = &info->dev;
 	struct atmel_lcdfb_info *sinfo = info->priv;
-	struct atmel_lcdfb_platform_data *pdata = sinfo->pdata;
 	struct fb_videomode *mode = info->mode;
 	unsigned long clk_value_khz;
 
@@ -126,11 +125,11 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 		break;
 	case 16:
 		/* Older SOCs use IBGR:555 rather than BGR:565. */
-		if (pdata->have_intensity_bit)
+		if (sinfo->have_intensity_bit)
 			info->green.length = 5;
 		else
 			info->green.length = 6;
-		if (pdata->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
+		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
 			/* RGB:5X5 mode */
 			info->red.offset = info->green.length + 5;
 			info->blue.offset = 0;
@@ -147,7 +146,7 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 		info->transp.length = 8;
 		/* fall through */
 	case 24:
-		if (pdata->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
+		if (sinfo->lcd_wiring_mode == ATMEL_LCDC_WIRING_RGB) {
 			/* RGB:888 mode */
 			info->red.offset = 16;
 			info->blue.offset = 0;
@@ -261,6 +260,8 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 	sinfo->guard_time = pdata->guard_time;
 	sinfo->lcdcon2 = pdata->default_lcdcon2;
 	sinfo->dmacon = pdata->default_dmacon;
+	sinfo->lcd_wiring_mode = pdata->lcd_wiring_mode;
+	sinfo->have_intensity_bit = pdata->have_intensity_bit;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

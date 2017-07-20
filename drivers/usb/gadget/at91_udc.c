@@ -21,7 +21,7 @@
 #include <clock.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>
-#include <gpio.h>
+#include <of_gpio.h>
 
 #include <linux/list.h>
 #include <linux/clk.h>
@@ -1375,6 +1375,22 @@ static void at91_udc_gadget_poll(struct usb_gadget *gadget)
 		at91_udc_irq(udc);
 }
 
+static void __init at91udc_of_init(struct at91_udc *udc, struct device_node *np)
+{
+	enum of_gpio_flags flags;
+	struct at91_udc_data *board;
+
+	board = &udc->board;
+
+	board->vbus_pin = of_get_named_gpio_flags(np, "atmel,vbus-gpio", 0,
+						&flags);
+	board->vbus_active_low = (flags & OF_GPIO_ACTIVE_LOW) ? 1 : 0;
+
+	board->pullup_pin = of_get_named_gpio_flags(np, "atmel,pullup-gpio", 0,
+						  &flags);
+	board->pullup_active_low = (flags & OF_GPIO_ACTIVE_LOW) ? 1 : 0;
+}
+
 /*-------------------------------------------------------------------------*/
 
 static int __init at91udc_probe(struct device_d *dev)
@@ -1382,17 +1398,28 @@ static int __init at91udc_probe(struct device_d *dev)
 	struct resource *iores;
 	struct at91_udc	*udc = &controller;
 	int		retval;
-
-	if (!dev->platform_data) {
-		/* small (so we copy it) but critical! */
-		DBG(udc, "missing platform_data\n");
-		return -ENODEV;
-	}
+	const char *iclk_name;
+	const char *fclk_name;
 
 	/* init software state */
 	udc->dev = dev;
-	udc->board = *(struct at91_udc_data *) dev->platform_data;
 	udc->enabled = 0;
+
+	if (dev->platform_data) {
+		/* small (so we copy it) */
+		udc->board = *(struct at91_udc_data *)dev->platform_data;
+		iclk_name = "udc_clk";
+		fclk_name = "udpck";
+	} else {
+		if (!IS_ENABLED(CONFIG_OFDEVICE) || !dev->device_node) {
+			dev_err(dev, "no DT and no platform_data\n");
+			return -ENODEV;
+		}
+
+		at91udc_of_init(udc, dev->device_node);
+		iclk_name = "pclk";
+		fclk_name = "hclk";
+	}
 
 	/* rm9200 needs manual D+ pullup; off by default */
 	if (cpu_is_at91rm9200()) {
@@ -1435,8 +1462,8 @@ static int __init at91udc_probe(struct device_d *dev)
 	udc_reinit(udc);
 
 	/* get interface and function clocks */
-	udc->iclk = clk_get(dev, "udc_clk");
-	udc->fclk = clk_get(dev, "udpck");
+	udc->iclk = clk_get(dev, iclk_name);
+	udc->fclk = clk_get(dev, fclk_name);
 	if (IS_ERR(udc->iclk) || IS_ERR(udc->fclk)) {
 		DBG(udc, "clocks missing\n");
 		retval = -ENODEV;
@@ -1491,10 +1518,17 @@ fail0:
 	DBG(udc, "%s probe failed, %d\n", driver_name, retval);
 	return retval;
 }
-
+static const struct of_device_id at91_udc_dt_ids[] = {
+	{ .compatible = "atmel,at91rm9200-udc" },
+	{ .compatible = "atmel,at91sam9260-udc" },
+	{ .compatible = "atmel,at91sam9261-udc" },
+	{ .compatible = "atmel,at91sam9263-udc" },
+	{ /* sentinel */ }
+};
 
 static struct driver_d at91_udc_driver = {
 	.name	= driver_name,
 	.probe	= at91udc_probe,
+	.of_compatible = DRV_OF_COMPAT(at91_udc_dt_ids),
 };
 device_platform_driver(at91_udc_driver);

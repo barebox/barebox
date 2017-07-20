@@ -243,8 +243,20 @@ static int atmel_lcdc_probe(struct device_d *dev)
 	return atmel_lcdc_register(dev, &atmel_lcdfb_data);
 }
 
+static __maybe_unused struct of_device_id atmel_lcdfb_compatible[] = {
+	{ .compatible = "atmel,at91sam9261-lcdc", },
+	{ .compatible = "atmel,at91sam9263-lcdc", },
+	{ .compatible = "atmel,at91sam9g10-lcdc", },
+	{ .compatible = "atmel,at91sam9g45-lcdc", },
+	{ .compatible = "atmel,at91sam9g45es-lcdc", },
+	{ .compatible = "atmel,at91sam9rl-lcdc", },
+	{ .compatible = "atmel,at32ap-lcdc", },
+	{ /* sentinel */ }
+};
+
 static struct driver_d atmel_lcdc_driver = {
 	.name	= "atmel_lcdfb",
 	.probe	= atmel_lcdc_probe,
+	.of_compatible = DRV_OF_COMPAT(atmel_lcdfb_compatible),
 };
 device_platform_driver(atmel_lcdc_driver);

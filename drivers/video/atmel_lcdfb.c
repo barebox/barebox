@@ -81,9 +81,7 @@ static void atmel_lcdfb_stop(struct atmel_lcdfb_info *sinfo, u32 flags)
 
 static void atmel_lcdfb_start(struct atmel_lcdfb_info *sinfo)
 {
-	struct atmel_lcdfb_platform_data *pdata = sinfo->pdata;
-
-	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, pdata->default_dmacon);
+	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, sinfo->dmacon);
 	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON,
 		(sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET)
 		| ATMEL_LCDC_PWR);
@@ -123,7 +121,6 @@ static void atmel_lcdfb_limit_screeninfo(struct fb_videomode *mode)
 static void atmel_lcdfb_setup_core(struct fb_info *info)
 {
 	struct atmel_lcdfb_info *sinfo = info->priv;
-	struct atmel_lcdfb_platform_data *pdata = sinfo->pdata;
 	struct fb_videomode *mode = info->mode;
 	unsigned long clk_value_khz;
 	unsigned long pix_factor = 2;
@@ -159,7 +156,7 @@ static void atmel_lcdfb_setup_core(struct fb_info *info)
 	}
 
 	/* Initialize control register 2 */
-	value = pdata->default_lcdcon2;
+	value = sinfo->lcdcon2;
 
 	if (!(mode->sync & FB_SYNC_HOR_HIGH_ACT))
 		value |= ATMEL_LCDC_INVLINE_INVERTED;

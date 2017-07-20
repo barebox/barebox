@@ -259,6 +259,8 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 	sinfo = xzalloc(sizeof(*sinfo));
 	sinfo->pdata = pdata;
 	sinfo->guard_time = pdata->guard_time;
+	sinfo->lcdcon2 = pdata->default_lcdcon2;
+	sinfo->dmacon = pdata->default_dmacon;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

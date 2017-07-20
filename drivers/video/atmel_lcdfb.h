@@ -21,6 +21,8 @@ struct atmel_lcdfb_info {
 
 	unsigned int		guard_time;
 	unsigned int		smem_len;
+	unsigned int		lcdcon2;
+	unsigned int		dmacon;
 	struct clk		*bus_clk;
 	struct clk		*lcdc_clk;
 

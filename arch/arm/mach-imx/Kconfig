@@ -734,6 +734,7 @@ config HABV4
 	select HAB
 	select IMX_OCOTP
 	depends on ARCH_IMX6
+	depends on OFDEVICE
 	help
 	  High Assurance Boot, as found on i.MX28/i.MX6.
 

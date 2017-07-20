@@ -19,6 +19,7 @@
  */
 
 #include <common.h>
+#include <gpio.h>
 #include <dma.h>
 #include <io.h>
 #include <linux/err.h>
@@ -39,13 +40,17 @@ static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
 	clk_disable(sinfo->lcdc_clk);
 }
 
-static void atmel_lcdc_power_controller(struct fb_info *fb_info, int i)
+static void atmel_lcdc_power_controller(struct fb_info *fb_info, int on)
 {
 	struct atmel_lcdfb_info *sinfo = fb_info->priv;
-	struct atmel_lcdfb_platform_data *pdata = sinfo->pdata;
 
-	if (pdata->atmel_lcdfb_power_control)
-		pdata->atmel_lcdfb_power_control(1);
+	if (sinfo->gpio_power_control < 0)
+		return;
+
+	if (sinfo->gpio_power_control_active_low)
+		gpio_set_value(sinfo->gpio_power_control, !on);
+	else
+		gpio_set_value(sinfo->gpio_power_control, on);
 }
 
 /**
@@ -242,12 +247,44 @@ static struct fb_ops atmel_lcdc_ops = {
 	.fb_disable = atmel_lcdc_disable_controller,
 };
 
+static int power_control_init(struct device_d *dev,
+			      struct atmel_lcdfb_info *sinfo,
+			      int gpio,
+			      bool active_low)
+{
+	int ret;
+	const char *name = "lcdc_power";
+
+	sinfo->gpio_power_control = gpio;
+	sinfo->gpio_power_control_active_low = active_low;
+
+	/* If no GPIO specified then stop */
+	if (!gpio_is_valid(gpio))
+		return 0;
+
+	ret = gpio_request(gpio, name);
+	if (ret) {
+		dev_err(dev, "%s: can not request gpio %d (%d)\n",
+			name, gpio, ret);
+		return ret;
+	}
+	ret = gpio_direction_output(gpio, 1);
+	if (ret) {
+		dev_err(dev, "%s: can not configure gpio %d as output (%d)\n",
+			name, gpio, ret);
+		return ret;
+	}
+
+	return ret;
+}
+
 int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 {
 	struct resource *iores;
 	struct atmel_lcdfb_info *sinfo;
 	struct atmel_lcdfb_platform_data *pdata = dev->platform_data;
 	int ret = 0;
+	int gpio;
 	struct fb_info *info;
 
 	if (!pdata) {
@@ -256,7 +293,19 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 	}
 
 	sinfo = xzalloc(sizeof(*sinfo));
-	sinfo->pdata = pdata;
+
+	/* If gpio == 0 (default in pdata) then we assume no power control */
+	gpio = pdata->gpio_power_control;
+	if (gpio == 0)
+		gpio = -1;
+
+	ret = power_control_init(dev,
+				 sinfo,
+				 gpio,
+				 pdata->gpio_power_control_active_low);
+	if (ret)
+		goto err;
+
 	sinfo->guard_time = pdata->guard_time;
 	sinfo->lcdcon2 = pdata->default_lcdcon2;
 	sinfo->dmacon = pdata->default_dmacon;

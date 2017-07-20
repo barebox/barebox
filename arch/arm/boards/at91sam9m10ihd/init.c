@@ -177,22 +177,6 @@ static int at91sam9m10g45ek_mem_init(void)
 mem_initcall(at91sam9m10g45ek_mem_init);
 
 #if defined(CONFIG_DRIVER_VIDEO_ATMEL)
-static int ek_gpio_request_output(int gpio, const char *name)
-{
-	int ret;
-
-	ret = gpio_request(gpio, name);
-	if (ret) {
-		pr_err("%s: can not request gpio %d (%d)\n", name, gpio, ret);
-		return ret;
-	}
-
-	ret = gpio_direction_output(gpio, 1);
-	if (ret)
-		pr_err("%s: can not configure gpio %d as output (%d)\n", name, gpio, ret);
-	return ret;
-}
-
 static struct fb_videomode at91fb_default_monspecs[] = {
 	{
 		.name		= "MULTEK",
@@ -213,11 +197,6 @@ static struct fb_videomode at91fb_default_monspecs[] = {
 					| ATMEL_LCDC_DISTYPE_TFT \
 					| ATMEL_LCDC_CLKMOD_ALWAYSACTIVE)
 
-static void at91_lcdc_power_control(int on)
-{
-	gpio_set_value(AT91_PIN_PE6, on);
-}
-
 /* Driver datas */
 static struct atmel_lcdfb_platform_data ek_lcdc_data = {
 	.lcdcon_is_backlight		= true,
@@ -226,16 +205,13 @@ static struct atmel_lcdfb_platform_data ek_lcdc_data = {
 	.default_lcdcon2		= AT91SAM9G45_DEFAULT_LCDCON2,
 	.guard_time			= 9,
 	.lcd_wiring_mode		= ATMEL_LCDC_WIRING_RGB,
-	.atmel_lcdfb_power_control	= at91_lcdc_power_control,
+	.gpio_power_control		= AT91_PIN_PE6,
 	.mode_list			= at91fb_default_monspecs,
 	.num_modes			= ARRAY_SIZE(at91fb_default_monspecs),
 };
 
 static void ek_add_device_lcd(void)
 {
-	if (ek_gpio_request_output(AT91_PIN_PE6, "lcdc_power"))
-		return;
-
 	at91_add_device_lcdc(&ek_lcdc_data);
 }
 #else

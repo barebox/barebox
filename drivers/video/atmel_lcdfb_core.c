@@ -278,31 +278,23 @@ static int power_control_init(struct device_d *dev,
 	return ret;
 }
 
-int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
+static int lcdfb_pdata_init(struct device_d *dev, struct atmel_lcdfb_info *sinfo)
 {
-	struct resource *iores;
-	struct atmel_lcdfb_info *sinfo;
-	struct atmel_lcdfb_platform_data *pdata = dev->platform_data;
-	int ret = 0;
-	int gpio;
+	struct atmel_lcdfb_platform_data *pdata;
 	struct fb_info *info;
+	bool active_low;
+	int gpio;
+	int ret;
 
-	if (!pdata) {
-		dev_err(dev, "missing platform_data\n");
-		return -EINVAL;
-	}
-
-	sinfo = xzalloc(sizeof(*sinfo));
+	pdata = dev->platform_data;
 
 	/* If gpio == 0 (default in pdata) then we assume no power control */
 	gpio = pdata->gpio_power_control;
 	if (gpio == 0)
 		gpio = -1;
 
-	ret = power_control_init(dev,
-				 sinfo,
-				 gpio,
-				 pdata->gpio_power_control_active_low);
+	active_low = pdata->gpio_power_control_active_low;
+	ret = power_control_init(dev, sinfo, gpio, active_low);
 	if (ret)
 		goto err;
 
@@ -311,23 +303,48 @@ int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
 	sinfo->dmacon = pdata->default_dmacon;
 	sinfo->lcd_wiring_mode = pdata->lcd_wiring_mode;
 	sinfo->have_intensity_bit = pdata->have_intensity_bit;
-	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	sinfo->mmio = IOMEM(iores->start);
 
-	sinfo->dev_data = data;
-
-	/* just init */
 	info = &sinfo->info;
-	info->priv = sinfo;
-	info->fbops = &atmel_lcdc_ops;
 	info->modes.modes = pdata->mode_list;
 	info->modes.num_modes = pdata->num_modes;
 	info->mode = &info->modes.modes[0];
 	info->xres = info->mode->xres;
 	info->yres = info->mode->yres;
 	info->bits_per_pixel = pdata->default_bpp;
+
+err:
+	return ret;
+}
+
+int atmel_lcdc_register(struct device_d *dev, struct atmel_lcdfb_devdata *data)
+{
+	struct resource *iores;
+	struct atmel_lcdfb_info *sinfo;
+	struct fb_info *info;
+	int ret = 0;
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+
+	sinfo = xzalloc(sizeof(*sinfo));
+	sinfo->dev_data = data;
+	sinfo->mmio = IOMEM(iores->start);
+
+	info = &sinfo->info;
+	info->priv = sinfo;
+	info->fbops = &atmel_lcdc_ops;
+
+	if (dev->platform_data) {
+		ret = lcdfb_pdata_init(dev, sinfo);
+		if (ret) {
+			dev_err(dev, "failed to init lcdfb from pdata\n");
+			goto err;
+		}
+	} else {
+		dev_err(dev, "missing platform_data\n");
+		return -EINVAL;
+	}
 
 	/* Enable LCDC Clocks */
 	sinfo->bus_clk = clk_get(dev, "hck1");

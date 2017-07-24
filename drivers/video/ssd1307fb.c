@@ -24,6 +24,7 @@
 #include <of_device.h>
 #include <gpio.h>
 #include <of_gpio.h>
+#include <regulator.h>
 
 #define SSD1307FB_DATA                          0x40
 #define SSD1307FB_COMMAND                       0x80
@@ -70,6 +71,7 @@ struct ssd1307fb_par {
 	u32 prechargep1;
 	u32 prechargep2;
 	int reset;
+	struct regulator *vbat;
 	u32 seg_remap;
 	u32 vcomh;
 	u32 width;
@@ -422,6 +424,12 @@ static int ssd1307fb_probe(struct device_d *dev)
 		goto fb_alloc_error;
 	}
 
+	par->vbat = regulator_get(&client->dev, "vbat-supply");
+	if (IS_ERR(par->vbat)) {
+		dev_info(&client->dev, "Will not use VBAT");
+		par->vbat = NULL;
+	}
+
 	ret = of_property_read_u32(node, "solomon,width", &par->width);
 	if (ret) {
 		dev_err(&client->dev,
@@ -505,11 +513,26 @@ static int ssd1307fb_probe(struct device_d *dev)
 		goto reset_oled_error;
 	}
 
+	if (par->vbat) {
+		ret = regulator_disable(par->vbat);
+		if (ret < 0)
+			goto reset_oled_error;
+	}
+
 	i2c_set_clientdata(client, info);
 
 	/* Reset the screen */
 	gpio_set_value(par->reset, 0);
 	udelay(4);
+
+	if (par->vbat) {
+		ret = regulator_enable(par->vbat);
+		if (ret < 0)
+			goto reset_oled_error;
+	}
+
+	mdelay(100);
+
 	gpio_set_value(par->reset, 1);
 	udelay(4);
 
@@ -548,6 +571,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 panel_init_error:
 reset_oled_error:
 fb_alloc_error:
+	regulator_disable(par->vbat);
 	free(info);
 	return ret;
 }

@@ -106,6 +106,10 @@ static inline void cpu_probe_mips(struct cpuinfo_mips *c)
 		c->cputype = CPU_24K;
 		__cpu_name = "MIPS 24Kc";
 		break;
+	case PRID_IMP_74K:
+		c->cputype = CPU_74K;
+		__cpu_name = "MIPS 74Kc";
+		break;
 	}
 }
 

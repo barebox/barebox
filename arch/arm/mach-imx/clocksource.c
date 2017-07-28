@@ -121,6 +121,10 @@ static int imx_gpt_probe(struct device_d *dev)
 		dev_err(dev, "failed to get clock\n");
 	} else {
 		rate = clk_get_rate(clk_gpt);
+		if (!rate) {
+			dev_err(dev, "clock reports rate == 0\n");
+			return -EIO;
+		}
 	}
 
 	writel(0, timer_base + GPT_TPRER);

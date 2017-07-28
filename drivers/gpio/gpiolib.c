@@ -120,24 +120,31 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 {
 	int err;
 
+	/*
+	 * Not all of the flags below are mulit-bit, but, for the sake
+	 * of consistency, the code is written as if all of them were.
+	 */
+	const bool active_low  = (flags & GPIOF_ACTIVE_LOW) == GPIOF_ACTIVE_LOW;
+	const bool dir_in      = (flags & GPIOF_DIR_IN) == GPIOF_DIR_IN;
+	const bool logical     = (flags & GPIOF_LOGICAL) == GPIOF_LOGICAL;
+	const bool init_active = (flags & GPIOF_INIT_ACTIVE) == GPIOF_INIT_ACTIVE;
+	const bool init_high   = (flags & GPIOF_INIT_HIGH) == GPIOF_INIT_HIGH;
+
 	err = gpio_request(gpio, label);
 	if (err)
 		return err;
 
-	if (flags & GPIOF_ACTIVE_LOW) {
+	if (active_low) {
 		struct gpio_info *gi = gpio_to_desc(gpio);
 		gi->active_low = true;
 	}
 
-	if (flags & GPIOF_DIR_IN) {
+	if (dir_in)
 		err = gpio_direction_input(gpio);
-	} else if (flags & GPIOF_LOGICAL) {
-		err = gpio_direction_active(gpio,
-					    !!(flags & GPIOF_INIT_ACTIVE));
-	} else {
-		err = gpio_direction_output(gpio,
-					    !!(flags & GPIOF_INIT_HIGH));
-	}
+	else if (logical)
+		err = gpio_direction_active(gpio, init_active);
+	else
+		err = gpio_direction_output(gpio, init_high);
 
 	if (err)
 		goto free_gpio;

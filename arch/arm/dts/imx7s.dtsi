@@ -1,4 +1,0 @@
-&gpt1 {
-	clocks = <&clks IMX7D_GPT1_ROOT_CLK>,
-		 <&clks IMX7D_GPT1_ROOT_CLK>;
-};

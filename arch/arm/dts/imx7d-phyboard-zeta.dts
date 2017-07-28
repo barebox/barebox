@@ -11,8 +11,6 @@
 #include "imx7d-pba-c-09.dtsi"
 #include "imx7d-peb-eval-02.dtsi"
 
-#include "imx7s.dtsi"
-
 / {
 	chosen {
 		stdout-path = &uart5;

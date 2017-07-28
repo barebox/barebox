@@ -489,3 +489,8 @@ pblx-$(CONFIG_MACH_ZII_VF610_DEV) += start_zii_vf610_dev
 CFG_start_zii_vf610_dev.pblx.imximg = $(board)/zii-vf610-dev/flash-header-zii-vf610-dev.imxcfg
 FILE_barebox-zii-vf610-dev.img = start_zii_vf610_dev.pblx.imximg
 image-$(CONFIG_MACH_ZII_VF610_DEV) += barebox-zii-vf610-dev.img
+
+pblx-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += start_imx7d_sabresd
+CFG_start_imx7d_sabresd.pblx.imximg = $(board)/freescale-mx7-sabresd/flash-header-mx7-sabresd.imxcfg
+FILE_barebox-freescale-mx7-sabresd.img = start_imx7d_sabresd.pblx.imximg
+image-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += barebox-freescale-mx7-sabresd.img

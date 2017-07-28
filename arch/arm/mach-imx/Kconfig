@@ -400,6 +400,18 @@ config MACH_PHYTEC_PHYCORE_IMX7
 	bool "Phytec phyCORE i.MX7"
 	select ARCH_IMX7
 
+config MACH_FREESCALE_MX7_SABRESD
+	bool "NXP i.MX7 SabreSD Board"
+	select ARCH_IMX7
+	# Nedded to de-assert reset on Ethernet PHY
+	select DRIVER_SPI_GPIO if DRIVER_NET_FEC_IMX
+	select GPIO_74164 if DRIVER_NET_FEC_IMX
+	help
+	  Support for NXP i.MX7 SabreSD board - one of the official
+	  i.MX7 evaluation boards from NXP.
+
+	  https://goo.gl/6EKGdk
+
 endif
 
 # ----------------------------------------------------------

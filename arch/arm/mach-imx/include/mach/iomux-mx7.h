@@ -1306,4 +1306,23 @@ enum {
 	MX7D_PAD_ENET1_COL__CSU_INT_DEB                          = IOMUX_PAD(0x04D8, 0x0268, 7, 0x0000, 0, 0),
 };
 
+static inline void mx7_setup_pad(void __iomem *iomux, iomux_v3_cfg_t pad)
+{
+	unsigned int flags = 0;
+	uint32_t mode = IOMUX_MODE(pad);
+
+	if (mode & IOMUX_CONFIG_LPSR) {
+		mode &= ~IOMUX_CONFIG_LPSR;
+		flags = ZERO_OFFSET_VALID | IMX7_PINMUX_LPSR;
+	}
+
+	iomux_v3_setup_pad(iomux, flags,
+			   IOMUX_CTRL_OFS(pad),
+			   IOMUX_PAD_CTRL_OFS(pad),
+			   IOMUX_SEL_INPUT_OFS(pad),
+			   mode,
+			   IOMUX_PAD_CTRL(pad),
+			   IOMUX_SEL_INPUT(pad));
+}
+
 #endif

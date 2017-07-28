@@ -118,7 +118,7 @@ static int imx_gpt_probe(struct device_d *dev)
 	clk_gpt = clk_get(dev, "per");
 	if (IS_ERR(clk_gpt)) {
 		rate = 20000000;
-		dev_err(dev, "failed to get clock\n");
+		dev_err(dev, "failed to get clock, assume %lu Hz\n", rate);
 	} else {
 		rate = clk_get_rate(clk_gpt);
 		if (!rate) {

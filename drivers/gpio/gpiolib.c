@@ -119,6 +119,7 @@ void gpio_free(unsigned gpio)
 int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 {
 	int err;
+	struct gpio_info *gi = gpio_to_desc(gpio);
 
 	/*
 	 * Not all of the flags below are mulit-bit, but, for the sake
@@ -134,10 +135,7 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 	if (err)
 		return err;
 
-	if (active_low) {
-		struct gpio_info *gi = gpio_to_desc(gpio);
-		gi->active_low = true;
-	}
+	gi->active_low = active_low;
 
 	if (dir_in)
 		err = gpio_direction_input(gpio);
@@ -147,12 +145,8 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 		err = gpio_direction_output(gpio, init_high);
 
 	if (err)
-		goto free_gpio;
+		gpio_free(gpio);
 
-	return 0;
-
- free_gpio:
-	gpio_free(gpio);
 	return err;
 }
 EXPORT_SYMBOL_GPL(gpio_request_one);

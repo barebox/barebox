@@ -115,7 +115,7 @@ static int imx_gpt_probe(struct device_d *dev)
 	for (i = 0; i < 100; i++)
 		writel(0, timer_base + GPT_TCTL); /* We have no udelay by now */
 
-	clk_gpt = clk_get(dev, NULL);
+	clk_gpt = clk_get(dev, "per");
 	if (IS_ERR(clk_gpt)) {
 		rate = 20000000;
 		dev_err(dev, "failed to get clock\n");

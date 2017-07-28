@@ -168,6 +168,7 @@ config ARCH_IMX7
 	select PINCTRL_IMX_IOMUX_V3
 	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
+	select ARCH_HAS_FEC_IMX
 
 config ARCH_VF610
 	bool

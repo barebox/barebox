@@ -9,3 +9,8 @@
 	};
 };
 
+&snvs {
+	snvs_lpgpr: snvs-lpgpr {
+		compatible = "fsl,imx6q-snvs-lpgpr";
+	};
+};

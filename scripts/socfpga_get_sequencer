@@ -41,13 +41,17 @@ copy_source() {
 	sed -i 's/alt_8/int8_t/g' $tgt
 	sed -i 's/#include "alt_types.h"//g' $tgt
 
-	echo "	Fixing include pathes..."
+	echo "	Fixing include paths..."
 	# Fix include pathes
-	sed -i 's/#include <sdram.h>/#include <mach\/sdram.h>/g' $tgt
+	sed -i 's/#include <sdram.h>/#include <mach\/cyclone5-sdram.h>/g' $tgt
 	sed -i 's/#include "sequencer_auto.h"//g' $tgt
+	sed -i 's/#include "sequencer.h"/#include "cyclone5-sequencer.h"/g' $tgt
 
 	echo "	Automated readability fixup..."
 	indent -npro -kr -i8 -ts8 -sob -l100 -ss -ncs -cp1 -il0 $tgt
+
+	echo "  Whitespace cleanup..."
+	sed -i 's/[ \t]\+$//' $tgt
 
 	echo "  Running coccinelle cleanups..."
 	spatch -sp_file scripts/coccinelle/misc/altera_sequencer.cocci -in_place arch/arm/mach-socfpga/include/mach
@@ -61,19 +65,10 @@ copy_source() {
 	sed -i 's/^static void rw_mgr_decr_vfifo_auto(uint32_t grp);$//g' $tgt
 }
 
-copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.c arch/arm/mach-socfpga/include/mach/sequencer.c
-sed -i 's/static int sdram_calibration(void)/static int socfpga_mem_calibration(void)/g' arch/arm/mach-socfpga/include/mach/sequencer.c
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.c arch/arm/mach-socfpga/include/mach/cyclone5-sequencer.c
+sed -i 's/static int sdram_calibration(void)/static int socfpga_mem_calibration(void)/g' arch/arm/mach-socfpga/include/mach/cyclone5-sequencer.c
 
-cat <<'EOF' > arch/arm/mach-socfpga/include/mach/sequencer_defines.h
-#define TINIT_CNTR1_VAL 32
-#define TINIT_CNTR2_VAL 32
-#define TINIT_CNTR0_VAL 99
-#define TRESET_CNTR1_VAL 99
-#define TRESET_CNTR2_VAL 10
-#define TRESET_CNTR0_VAL 99
-EOF
-
-copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.h arch/arm/mach-socfpga/include/mach/sequencer.h
+copy_source ${ubootsrc}/board/altera/socfpga/sdram/sequencer.h arch/arm/mach-socfpga/include/mach/cyclone5-sequencer.h
 copy_source ${ubootsrc}/board/altera/socfpga/sdram/tclrpt.h arch/arm/mach-socfpga/include/mach/tclrpt.h
 copy_source ${ubootsrc}/board/altera/socfpga/sdram/sdram_io.h arch/arm/mach-socfpga/include/mach/sdram_io.h
 cat <<'EOF' >> arch/arm/mach-socfpga/include/mach/sdram_io.h
@@ -84,8 +79,6 @@ cat <<'EOF' >> arch/arm/mach-socfpga/include/mach/sdram_io.h
 	#define HPS_SDR_BASE 0xffc20000
 EOF
 copy_source ${ubootsrc}/board/altera/socfpga/sdram/system.h arch/arm/mach-socfpga/include/mach/system.h
-
-#unifdef -f ${sequencer_defines} ${ubootsrc}/board/altera/socfpga/sdram/tclrpt.c -o arch/arm/mach-socfpga/include/mach/tclrpt.c
 
 echo "DONE"
 

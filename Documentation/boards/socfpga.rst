@@ -124,12 +124,19 @@ where `<SPL_GENERATED_DIR>` is the directory where the bsp-editor generated the 
 `<ISW_HANDOFF>` is the directory where Quartus generated the handoff files, and
 `<BOARD_DIRECTORY>` is your board directory under `arch/arm/boards`.
 
-The following files are generic and belong into the
-`arch/arm/mach-socfpga` directory tree:
+
+Integrating new SDRAM driver
+----------------------------
+
+This step must only be executed if the SDRAM driver needs updates. It is not necessary
+for adding a new board to barebox.
+
+The following files are generic and belong into the `arch/arm/mach-socfpga` directory
+tree:
 
 * sdram_io.h
-* sequencer.c
-* sequencer.h
+* sequencer.c as cyclone5-sequencer.c
+* sequencer.h as cyclone5-sequencer.h
 * sequencer_defines.h
 * system.h
 * tclrpt.h

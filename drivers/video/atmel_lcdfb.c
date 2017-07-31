@@ -85,7 +85,7 @@ static void atmel_lcdfb_start(struct atmel_lcdfb_info *sinfo)
 
 	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, pdata->default_dmacon);
 	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON,
-		(pdata->guard_time << ATMEL_LCDC_GUARDT_OFFSET)
+		(sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET)
 		| ATMEL_LCDC_PWR);
 }
 

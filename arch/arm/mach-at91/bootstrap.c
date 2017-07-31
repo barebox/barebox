@@ -149,7 +149,7 @@ static void boot_reset_action(struct menu *m, struct menu_entry *me)
 	restart_machine();
 }
 
-void at91_bootstrap_menu(void)
+static void at91_bootstrap_menu(void)
 {
 	struct menu *m;
 	struct menu_entry *me;

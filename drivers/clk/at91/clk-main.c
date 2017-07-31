@@ -391,6 +391,7 @@ at91_clk_register_rm9200_main(struct regmap *regmap,
 
 	clkmain = xzalloc(sizeof(*clkmain));
 
+	clkmain->parent = parent_name;
 	clkmain->clk.name = name;
 	clkmain->clk.ops = &rm9200_main_ops;
 	clkmain->clk.parent_names = &clkmain->parent;

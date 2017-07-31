@@ -538,7 +538,7 @@ static int at91_pinctrl_init(void)
 {
 	return platform_driver_register(&at91_pinctrl_driver);
 }
-coredevice_initcall(at91_pinctrl_init);
+postcore_initcall(at91_pinctrl_init);
 
 static int at91_gpio_get(struct gpio_chip *chip, unsigned offset)
 {
@@ -718,4 +718,4 @@ static int at91_gpio_init(void)
 {
 	return platform_driver_register(&at91_gpio_driver);
 }
-coredevice_initcall(at91_gpio_init);
+postcore_initcall(at91_gpio_init);

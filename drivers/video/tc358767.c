@@ -35,7 +35,9 @@
 #include <asm-generic/div64.h>
 
 #define DP_LINK_BW_SET			0x100
+#define DP_ENHANCED_FRAME_EN		(1 << 7)
 #define DP_TRAINING_PATTERN_SET		0x102
+#define TRAINING_LANE0_SET		0x103
 
 #define DP_DOWNSPREAD_CTRL		0x107
 #define DP_SPREAD_AMP_0_5		(1 << 4)
@@ -121,7 +123,7 @@
 #define DP0_ACTIVEVAL		0x0650
 #define DP0_SYNCVAL		0x0654
 #define DP0_MISC		0x0658
-#define TU_SIZE_RECOMMENDED		(0x3f << 16) /* LSCLK cycles per TU */
+#define TU_SIZE_RECOMMENDED		(63) /* LSCLK cycles per TU */
 #define BPC_6				(0 << 5)
 #define BPC_8				(1 << 5)
 
@@ -388,7 +390,7 @@ static int tc_aux_write(struct tc_data *tc, int reg, char *data, int size)
 		i++;
 		if (((i % 4) == 0) ||
 		    (i == size)) {
-			tc_write(DP0_AUXWDATA(i >> 2), tmp);
+			tc_write(DP0_AUXWDATA((i - 1) >> 2), tmp);
 			tmp = 0;
 		}
 	}
@@ -416,9 +418,6 @@ static int tc_aux_i2c_read(struct tc_data *tc, struct i2c_msg *msg)
 	int i = 0;
 	int ret;
 	u32 tmp;
-
-	if (msg->flags & I2C_M_DATA_ONLY)
-		return -EINVAL;
 
 	ret = tc_aux_wait_busy(tc, 100);
 	if (ret)
@@ -458,14 +457,6 @@ static int tc_aux_i2c_write(struct tc_data *tc, struct i2c_msg *msg)
 	int ret;
 	u32 tmp = 0;
 
-	if (msg->flags & I2C_M_DATA_ONLY)
-		return -EINVAL;
-
-	if (msg->len > 16) {
-		dev_err(tc->dev, "this bus support max 16 bytes per transfer\n");
-		return -EINVAL;
-	}
-
 	ret = tc_aux_wait_busy(tc, 100);
 	if (ret)
 		goto err;
@@ -476,7 +467,7 @@ static int tc_aux_i2c_write(struct tc_data *tc, struct i2c_msg *msg)
 		i++;
 		if (((i % 4) == 0) ||
 		    (i == msg->len)) {
-			tc_write(DP0_AUXWDATA(i >> 2), tmp);
+			tc_write(DP0_AUXWDATA((i - 1) >> 2), tmp);
 			tmp = 0;
 		}
 	}
@@ -511,6 +502,8 @@ static int tc_aux_i2c_xfer(struct i2c_adapter *adapter,
 			dev_err(tc->dev, "this bus support max 16 bytes per transfer\n");
 			return -EINVAL;
 		}
+		if (msgs[i].flags & I2C_M_DATA_ONLY)
+			return -EINVAL;
 	}
 
 	/* read/write data */
@@ -673,14 +666,32 @@ static int tc_get_display_props(struct tc_data *tc)
 	ret = tc_aux_read(tc, 0x000, tmp, 8);
 	if (ret)
 		goto err_dpcd_read;
-	/* check rev 1.0 or 1.1 */
-	if ((tmp[1] != 0x06) && (tmp[1] != 0x0a))
-		goto err_dpcd_inval;
 
 	tc->assr = !(tc->rev & 0x02);
+
+	/* check DPCD rev */
+	if (tmp[0] < 0x10) {
+		dev_err(tc->dev, "Too low DPCD revision 0x%02x\n", tmp[0]);
+		goto err_dpcd_inval;
+	}
+	if ((tmp[0] != 0x10) && (tmp[0] != 0x11))
+		dev_warn(tc->dev, "Unknown DPCD revision 0x%02x\n", tmp[0]);
 	tc->link.rev = tmp[0];
-	tc->link.rate = tmp[1];
+
+	/* check rate */
+	if ((tmp[1] == 0x06) || (tmp[1] == 0x0a)) {
+		tc->link.rate = tmp[1];
+	} else {
+		dev_warn(tc->dev, "Unknown link rate 0x%02x, falling to 2.7Gbps\n", tmp[1]);
+		tc->link.rate = 0x0a;
+	}
 	tc->link.lanes = tmp[2] & 0x0f;
+	if (tc->link.lanes > 2) {
+		dev_dbg(tc->dev, "Display supports %d lanes, host only 2 max. "
+			"Tryin 2-lane mode.\n",
+			tc->link.lanes);
+		tc->link.lanes = 2;
+	}
 	tc->link.enhanced = !!(tmp[2] & 0x80);
 	tc->link.spread = tmp[3] & 0x01;
 	tc->link.coding8b10b = tmp[6] & 0x01;
@@ -714,10 +725,11 @@ err_dpcd_inval:
 static int tc_set_video_mode(struct tc_data *tc, struct fb_videomode *mode)
 {
 	int ret;
+	u32 reg;
 	int htotal;
 	int vtotal;
 	int vid_sync_dly;
-	int max_tu_symbol;
+	int max_tu_symbol = TU_SIZE_RECOMMENDED - 1;
 
 	htotal = mode->hsync_len + mode->left_margin + mode->xres +
 		mode->right_margin;
@@ -731,14 +743,18 @@ static int tc_set_video_mode(struct tc_data *tc, struct fb_videomode *mode)
 		mode->upper_margin, mode->lower_margin, mode->vsync_len);
 	dev_dbg(tc->dev, "total: %dx%d\n", htotal, vtotal);
 
-
-	/* LCD Ctl Frame Size */
-	tc_write(VPCTRL0, (0x40 << 20) /* VSDELAY */ |
+	/*
+	 * Datasheet is not clear of vsdelay in case of DPI
+	 * assume we do not need any delay when DPI is a source of
+	 * sync signals
+	 */
+	tc_write(VPCTRL0, (0 << 20) /* VSDELAY */ |
 		 OPXLFMT_RGB888 | FRMSYNC_DISABLED | MSF_DISABLED);
-	tc_write(HTIM01, (mode->left_margin << 16) |		/* H back porch */
-			 (mode->hsync_len << 0));		/* Hsync */
-	tc_write(HTIM02, (mode->right_margin << 16) |		/* H front porch */
-			 (mode->xres << 0));			/* width */
+	/* LCD Ctl Frame Size */
+	tc_write(HTIM01, (ALIGN(mode->left_margin, 2) << 16) |	/* H back porch */
+			 (ALIGN(mode->hsync_len, 2) << 0));	/* Hsync */
+	tc_write(HTIM02, (ALIGN(mode->right_margin, 2) << 16) |	/* H front porch */
+			 (ALIGN(mode->xres, 2) << 0));		/* width */
 	tc_write(VTIM01, (mode->upper_margin << 16) |		/* V back porch */
 			 (mode->vsync_len << 0));		/* Vsync */
 	tc_write(VTIM02, (mode->lower_margin << 16) |		/* V front porch */
@@ -757,7 +773,7 @@ static int tc_set_video_mode(struct tc_data *tc, struct fb_videomode *mode)
 	/* DP Main Stream Attributes */
 	vid_sync_dly = mode->hsync_len + mode->left_margin + mode->xres;
 	tc_write(DP0_VIDSYNCDELAY,
-		 (0x003e << 16) |	/* thresh_dly */
+		 (max_tu_symbol << 16) |	/* thresh_dly */
 		 (vid_sync_dly << 0));
 
 	tc_write(DP0_TOTALVAL, (vtotal << 16) | (htotal));
@@ -770,8 +786,12 @@ static int tc_set_video_mode(struct tc_data *tc, struct fb_videomode *mode)
 
 	tc_write(DP0_SYNCVAL, (mode->vsync_len << 16) | (mode->hsync_len << 0));
 
-	tc_write(DPIPXLFMT, VS_POL_ACTIVE_LOW | HS_POL_ACTIVE_LOW |
-		 DE_POL_ACTIVE_HIGH | SUB_CFG_TYPE_CONFIG1 | DPI_BPP_RGB888);
+	reg = DE_POL_ACTIVE_HIGH | SUB_CFG_TYPE_CONFIG1 | DPI_BPP_RGB888;
+	if (!(mode->sync & FB_SYNC_VERT_HIGH_ACT))
+		reg |= VS_POL_ACTIVE_LOW;
+	if (!(mode->sync & FB_SYNC_HOR_HIGH_ACT))
+		reg |= HS_POL_ACTIVE_LOW;
+	tc_write(DPIPXLFMT, reg);
 
 	/*
 	 * Recommended maximum number of symbols transferred in a transfer unit:
@@ -779,8 +799,7 @@ static int tc_set_video_mode(struct tc_data *tc, struct fb_videomode *mode)
 	 *              (output active video bandwidth in bytes))
 	 * Must be less than tu_size.
 	 */
-	max_tu_symbol = TU_SIZE_RECOMMENDED - 1;
-	tc_write(DP0_MISC, (max_tu_symbol << 23) | TU_SIZE_RECOMMENDED | BPC_8);
+	tc_write(DP0_MISC, (max_tu_symbol << 23) | (TU_SIZE_RECOMMENDED << 16) | BPC_8);
 
 	return 0;
 err:
@@ -879,7 +898,7 @@ static int tc_main_link_setup(struct tc_data *tc)
 	bool ready;
 	u32 value;
 	int ret;
-	u8 tmp[8];
+	u8 tmp[16];
 
 	/* display mode should be set at this point */
 	if (!tc->mode)
@@ -980,18 +999,35 @@ static int tc_main_link_setup(struct tc_data *tc)
 	/* LANE_COUNT_SET */
 	tmp[1] = tc->link.lanes;
 	if (tc->link.enhanced)
-		tmp[1] |= (1 << 7);
-	ret = tc_aux_write(tc, DP_LINK_BW_SET, tmp, 2);
+		tmp[1] |= DP_ENHANCED_FRAME_EN;
+
+	/* TRAINING_PATTERN_SET */
+	tmp[2] = 0x00;
+	/* TRAINING_LANE0_SET .. TRAINING_LANE3_SET */
+	tmp[3] = 0x00;
+	tmp[4] = 0x00;
+	tmp[5] = 0x00;
+	tmp[6] = 0x00;
+	/* DOWNSPREAD_CTRL */
+	tmp[7] = tc->link.spread ? DP_SPREAD_AMP_0_5 : 0x00;
+	/* MAIN_LINK_CHANNEL_CODING_SET */
+	tmp[8] = tc->link.coding8b10b ? DP_SET_ANSI_8B10B : 0x00;
+
+	/* DP_LINK_BW_SET .. MAIN_LINK_CHANNEL_CODING_SET */
+	ret = tc_aux_write(tc, DP_LINK_BW_SET, tmp, 9);
 	if (ret)
 		goto err_dpcd_write;
 
-	/* DOWNSPREAD_CTRL */
-	tmp[0] = tc->link.spread ? DP_SPREAD_AMP_0_5 : 0x00;
-	/* MAIN_LINK_CHANNEL_CODING_SET */
-	tmp[1] = tc->link.coding8b10b ? DP_SET_ANSI_8B10B : 0x00;
-	ret = tc_aux_write(tc, DP_DOWNSPREAD_CTRL, tmp, 2);
+	/* check lanes */
+	ret =  tc_aux_read(tc, DP_LINK_BW_SET, tmp, 2);
 	if (ret)
-		goto err_dpcd_write;
+		goto err_dpcd_read;
+
+	if ((tmp[1] & 0x0f) != tc->link.lanes) {
+		dev_err(dev, "Failed to set lanes = %d on display side\n",
+			tc->link.lanes);
+		goto err;
+	}
 
 	ret = tc_link_training(tc, DP_TRAINING_PATTERN_1);
 	if (ret)
@@ -1019,8 +1055,11 @@ static int tc_main_link_setup(struct tc_data *tc)
 		ret = tc_aux_read(tc, 0x200, tmp, 7);
 		if (ret)
 			goto err_dpcd_read;
-		ready = (tmp[2] == ((DP_CHANNEL_EQ_BITS << 4) | /* Lane1 */
-				     DP_CHANNEL_EQ_BITS));      /* Lane0 */
+		if (tc->link.lanes == 1)
+			ready = (tmp[2] == DP_CHANNEL_EQ_BITS);         /* Lane0 */
+		else
+			ready = (tmp[2] == ((DP_CHANNEL_EQ_BITS << 4) | /* Lane1 */
+					     DP_CHANNEL_EQ_BITS));      /* Lane0 */
 		aligned = tmp[4] & DP_INTERLANE_ALIGN_DONE;
 	} while ((--timeout) && !(ready && aligned));
 
@@ -1108,13 +1147,16 @@ static int tc_read_edid(struct tc_data *tc)
 	unsigned char start = 0;
 	unsigned char segment = 0;
 
-	struct i2c_msg msgs[] = {
+	struct i2c_msg msg_segment[] = {
 		{
 			.addr	= DDC_SEGMENT_ADDR,
 			.flags	= 0,
 			.len	= 1,
 			.buf	= &segment,
-		}, {
+		}
+	};
+	struct i2c_msg msgs[] = {
+		{
 			.addr	= DDC_ADDR,
 			.flags	= 0,
 			.len	= 1,
@@ -1126,13 +1168,21 @@ static int tc_read_edid(struct tc_data *tc)
 	};
 	tc->edid = xmalloc(EDID_LENGTH);
 
+	/*
+	 * Some displays supports E-EDID some not
+	 * Just reset segment address to 0x0
+	 * This transfer can fail on non E-DCC displays
+	 * Ignore error
+	 */
+	i2c_transfer(&tc->adapter, msg_segment, 1);
+
 	do {
 		block = min(DDC_BLOCK_READ, EDID_LENGTH - i);
 
-		msgs[2].buf = tc->edid + i;
-		msgs[2].len = block;
+		msgs[1].buf = tc->edid + i;
+		msgs[1].len = block;
 
-		ret = i2c_transfer(&tc->adapter, msgs, 3);
+		ret = i2c_transfer(&tc->adapter, msgs, 2);
 		if (ret < 0)
 			goto err;
 
@@ -1154,6 +1204,82 @@ err:
 	return ret;
 }
 
+static int tc_filter_videomodes(struct tc_data *tc, struct display_timings *timings)
+{
+	int i;
+	int num_modes = 0;
+	struct fb_videomode *mode, *valid_modes;
+
+	valid_modes = xzalloc(timings->num_modes * sizeof(struct fb_videomode));
+
+	/* first filter modes with too high pclock */
+	for (i = 0; i < timings->num_modes; i++) {
+		mode = &timings->modes[i];
+
+		/* minimum Pixel Clock Period for DPI is 6.5 nS = 6500 pS */
+		if (mode->pixclock < 6500) {
+			dev_dbg(tc->dev, "%dx%d@%d (%d KHz, flags 0x%08x, sync 0x%08x) skipped\n",
+				mode->xres, mode->yres, mode->refresh,
+				(int)PICOS2KHZ(mode->pixclock), mode->display_flags,
+				mode->sync);
+			/* remove from list */
+			mode->xres = mode->yres = 0;
+		}
+	}
+
+	/* then sort from hi to low */
+	do {
+		int index = -1;
+
+		/* find higest resolution */
+		for (i = 0; i < timings->num_modes; i++) {
+			mode = &timings->modes[i];
+			if (!(mode->xres && mode->yres))
+				continue;
+			if (index == -1) {
+				index = i;
+			} else {
+				/* compare square */
+				if (timings->modes[index].xres * timings->modes[index].yres <
+				    mode->xres * mode->yres)
+					index = i;
+			}
+		}
+
+		/* nothing left */
+		if (index == -1)
+			break;
+
+		/* copy to output list */
+		mode = &timings->modes[index];
+		memcpy(&valid_modes[num_modes], mode, sizeof(struct fb_videomode));
+		mode->xres = mode->yres = 0;
+		num_modes++;
+	} while (1);
+
+	free(timings->modes);
+	timings->modes = NULL;
+
+	if (!num_modes) {
+		free(valid_modes);
+		return -EINVAL;
+	}
+
+	timings->num_modes = num_modes;
+	timings->modes = valid_modes;
+
+	dev_dbg(tc->dev, "Valid modes (%d):\n", num_modes);
+	for (i = 0; i < timings->num_modes; i++) {
+		mode = &timings->modes[i];
+		dev_dbg(tc->dev, "%dx%d@%d (%d KHz, flags 0x%08x, sync 0x%08x)\n",
+			mode->xres, mode->yres, mode->refresh,
+			(int)PICOS2KHZ(mode->pixclock), mode->display_flags,
+			mode->sync);
+	}
+
+	return 0;
+}
+
 static int tc_get_videomodes(struct tc_data *tc, struct display_timings *timings)
 {
 	int ret;
@@ -1173,9 +1299,12 @@ static int tc_get_videomodes(struct tc_data *tc, struct display_timings *timings
 		return ret;
 	}
 
-	/* hsync, vsync active low */
-	timings->modes->sync &= ~(FB_SYNC_HOR_HIGH_ACT |
-				  FB_SYNC_VERT_HIGH_ACT);
+	/* filter out unsupported due to high pixelxlock */
+	ret = tc_filter_videomodes(tc, timings);
+	if (ret < 0) {
+		dev_err(tc->dev, "No supported modes found\n");
+		return ret;
+	}
 
 	return ret;
 }

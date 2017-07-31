@@ -393,8 +393,6 @@ int state_storage_init(struct state *state, const char *path,
 	} else {
 		return state_storage_file_buckets_init(storage);
 	}
-
-	dev_err(storage->dev, "storage init done\n");
 }
 
 void state_storage_set_readonly(struct state_backend_storage *storage)

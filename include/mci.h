@@ -54,6 +54,8 @@
 #define MMC_VERSION_4_3		(MMC_VERSION_MMC | 0x430)
 #define MMC_VERSION_4_41	(MMC_VERSION_MMC | 0x441)
 #define MMC_VERSION_4_5		(MMC_VERSION_MMC | 0x450)
+#define MMC_VERSION_5_0		(MMC_VERSION_MMC | 0x500)
+#define MMC_VERSION_5_1		(MMC_VERSION_MMC | 0x510)
 
 #define MMC_CAP_SPI			(1 << 0)
 #define MMC_CAP_4_BIT_DATA		(1 << 1)
@@ -144,53 +146,6 @@
  * EXT_CSD fields
  */
 
-#define EXT_CSD_FLUSH_CACHE		32      /* W */
-#define EXT_CSD_CACHE_CTRL		33      /* R/W */
-#define EXT_CSD_POWER_OFF_NOTIFICATION	34	/* R/W */
-#define EXT_CSD_GP_SIZE_MULT		143	/* R/W */
-#define EXT_CSD_PARTITION_ATTRIBUTE	156	/* R/W */
-#define EXT_CSD_PARTITION_SUPPORT	160	/* RO */
-#define EXT_CSD_HPI_MGMT		161	/* R/W */
-#define EXT_CSD_RST_N_FUNCTION		162	/* R/W */
-#define EXT_CSD_SANITIZE_START		165     /* W */
-#define EXT_CSD_WR_REL_PARAM		166	/* RO */
-#define EXT_CSD_BOOT_WP			173	/* R/W */
-#define EXT_CSD_ERASE_GROUP_DEF		175	/* R/W */
-#define EXT_CSD_PART_CONFIG		179	/* R/W */
-#define EXT_CSD_ERASED_MEM_CONT		181	/* RO */
-#define EXT_CSD_BUS_WIDTH		183	/* R/W */
-#define EXT_CSD_HS_TIMING		185	/* R/W */
-#define EXT_CSD_POWER_CLASS		187	/* R/W */
-#define EXT_CSD_REV			192	/* RO */
-#define EXT_CSD_STRUCTURE		194	/* RO */
-#define EXT_CSD_CARD_TYPE		196	/* RO */
-#define EXT_CSD_OUT_OF_INTERRUPT_TIME	198	/* RO */
-#define EXT_CSD_PART_SWITCH_TIME        199     /* RO */
-#define EXT_CSD_PWR_CL_52_195		200	/* RO */
-#define EXT_CSD_PWR_CL_26_195		201	/* RO */
-#define EXT_CSD_PWR_CL_52_360		202	/* RO */
-#define EXT_CSD_PWR_CL_26_360		203	/* RO */
-#define EXT_CSD_SEC_CNT			212	/* RO, 4 bytes */
-#define EXT_CSD_S_A_TIMEOUT		217	/* RO */
-#define EXT_CSD_REL_WR_SEC_C		222	/* RO */
-#define EXT_CSD_HC_WP_GRP_SIZE		221	/* RO */
-#define EXT_CSD_ERASE_TIMEOUT_MULT	223	/* RO */
-#define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
-#define EXT_CSD_BOOT_MULT		226	/* RO */
-#define EXT_CSD_SEC_TRIM_MULT		229	/* RO */
-#define EXT_CSD_SEC_ERASE_MULT		230	/* RO */
-#define EXT_CSD_SEC_FEATURE_SUPPORT	231	/* RO */
-#define EXT_CSD_TRIM_MULT		232	/* RO */
-#define EXT_CSD_PWR_CL_200_195		236	/* RO */
-#define EXT_CSD_PWR_CL_200_360		237	/* RO */
-#define EXT_CSD_PWR_CL_DDR_52_195	238	/* RO */
-#define EXT_CSD_PWR_CL_DDR_52_360	239	/* RO */
-#define EXT_CSD_POWER_OFF_LONG_TIME	247	/* RO */
-#define EXT_CSD_GENERIC_CMD6_TIME	248	/* RO */
-#define EXT_CSD_CACHE_SIZE		249	/* RO, 4 bytes */
-#define EXT_CSD_HPI_FEATURES		503	/* RO */
-
-/* Added with the 5.1 standard */
 #define EXT_CSD_CMDQ_MODE_EN			15	/* RO */
 #define EXT_CSD_SECURE_REMOVAL_TYPE		16	/* R/W */
 #define EXT_CSD_PRODUCT_ST8_AWARENSS_ENABLEMENT	17	/* R/W */
@@ -200,9 +155,12 @@
 #define EXT_CSD_MODE_OPERATION_CODES		29	/* W */
 #define EXT_CSD_MODE_CONFIG			30	/* R/W */
 #define EXT_CSD_BARRIER_CTRL			31	/* R/W */
+#define EXT_CSD_FLUSH_CACHE			32      /* W */
+#define EXT_CSD_CACHE_CTRL			33      /* R/W */
+#define EXT_CSD_POWER_OFF_NOTIFICATION		34	/* R/W */
 #define EXT_CSD_PACKED_FAILURE_INDEX		35	/* RO */
 #define EXT_CSD_PACKED_COMMAND_STATUS		36	/* RO */
-#define EXT_CSD_CONTEXT_CONF			37	/* R/W, 15 bytes */
+#define EXT_CSD_CONTEXT_CONF(index)		(37 + (index) - 1) /* R/W, 15 bytes */
 #define EXT_CSD_EXT_PARTITIONS_ATTRIBUTE	52	/* R/W, 2 bytes */
 #define EXT_CSD_EXCEPTION_EVENTS_STATUS		54	/* RO, 2 bytes */
 #define EXT_CSD_EXCEPTION_EVENTS_CTRL		56	/* R/W, 2 bytes */
@@ -218,28 +176,47 @@
 #define EXT_CSD_SEC_BAD_BLK_MGMNT		134	/* R/W */
 #define EXT_CSD_ENH_START_ADDR			136	/* R/W, 4 bytes */
 #define EXT_CSD_ENH_SIZE_MULT			140	/* R/W, 3 bytes */
+#define EXT_CSD_GP_SIZE_MULT0			143	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT1			146	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT2			149	/* R/W */
+#define EXT_CSD_GP_SIZE_MULT3			152	/* R/W */
 #define EXT_CSD_PARTITION_SETTING_COMPLETED	155	/* R/W */
 #define EXT_CSD_PARTITIONS_ATTRIBUTE		156	/* R/W */
 #define EXT_CSD_MAX_ENH_SIZE_MULT		157	/* RO, 3 bytes */
 #define EXT_CSD_PARTITIONING_SUPPORT		160	/* RO */
+#define EXT_CSD_HPI_MGMT			161	/* R/W */
+#define EXT_CSD_RST_N_FUNCTION			162	/* R/W */
 #define EXT_CSD_BKOPS_EN			163	/* R/W */
 #define EXT_CSD_BKOPS_START			164	/* WO */
+#define EXT_CSD_SANITIZE_START			165     /* W */
+#define EXT_CSD_WR_REL_PARAM			166	/* RO */
 #define EXT_CSD_WR_REL_SET			167	/* R/W */
 #define EXT_CSD_RPMB_SIZE_MULT			168	/* RO */
 #define EXT_CSD_FW_CONFIG			169	/* R/W */
 #define EXT_CSD_USER_WP				171	/* R/W */
+#define EXT_CSD_BOOT_WP				173	/* R/W */
 #define EXT_CSD_BOOT_WP_STATUS			174	/* RO */
+#define EXT_CSD_ERASE_GROUP_DEF			175	/* R/W */
 #define EXT_CSD_BOOT_BUS_CONDITIONS		177	/* R/W */
 #define EXT_CSD_BOOT_CONFIG_PROT		178	/* R/W */
 #define EXT_CSD_PARTITION_CONFIG		179	/* R/W */
+#define EXT_CSD_ERASED_MEM_CONT			181	/* RO */
+#define EXT_CSD_BUS_WIDTH			183	/* R/W */
 #define EXT_CSD_STROBE_SUPPORT			184	/* RO */
+#define EXT_CSD_HS_TIMING			185	/* R/W */
+#define EXT_CSD_POWER_CLASS			187	/* R/W */
 #define EXT_CSD_CMD_SET_REV			189	/* R/W */
 #define EXT_CSD_CMD_SET				191	/* R/W */
+#define EXT_CSD_REV				192	/* RO */
 #define EXT_CSD_CSD_STRUCTURE			194	/* RO */
 #define EXT_CSD_DEVICE_TYPE			196	/* RO */
 #define EXT_CSD_DRIVER_STRENGTH			197	/* RO */
-#define EXT_CSD_PART_SWITCH_TIME		199	/* RO */
+#define EXT_CSD_OUT_OF_INTERRUPT_TIME		198	/* RO */
 #define EXT_CSD_PARTITION_SWITCH_TIME		199	/* RO */
+#define EXT_CSD_PWR_CL_52_195			200	/* RO */
+#define EXT_CSD_PWR_CL_26_195			201	/* RO */
+#define EXT_CSD_PWR_CL_52_360			202	/* RO */
+#define EXT_CSD_PWR_CL_26_360			203	/* RO */
 #define EXT_CSD_MIN_PERF_R_4_26			205	/* RO */
 #define EXT_CSD_MIN_PERF_W_4_26			206	/* RO */
 #define EXT_CSD_MIN_PERF_R_8_26_4_52		207	/* RO */
@@ -249,18 +226,34 @@
 #define EXT_CSD_SECURE_WP_INFO			211	/* RO */
 #define EXT_CSD_SEC_COUNT			212	/* RO, 4 bytes */
 #define EXT_CSD_SLEEP_NOTIFICATION_TIME		216	/* RO */
+#define EXT_CSD_S_A_TIMEOUT			217	/* RO */
 #define EXT_CSD_PRODUCTION_ST8_AWARENSS_TIMEOUT	218	/* RO */
 #define EXT_CSD_S_C_VCCQ			219	/* RO */
 #define EXT_CSD_S_C_VCC				220	/* RO */
+#define EXT_CSD_HC_WP_GRP_SIZE			221	/* RO */
+#define EXT_CSD_REL_WR_SEC_C			222	/* RO */
+#define EXT_CSD_ERASE_TIMEOUT_MULT		223	/* RO */
+#define EXT_CSD_HC_ERASE_GRP_SIZE		224	/* RO */
 #define EXT_CSD_ACC_SIZE			225	/* RO */
 #define EXT_CSD_BOOT_SIZE_MULT			226	/* RO */
 #define EXT_CSD_BOOT_INFO			228	/* RO */
+#define EXT_CSD_SEC_TRIM_MULT			229	/* RO */
+#define EXT_CSD_SEC_ERASE_MULT			230	/* RO */
+#define EXT_CSD_SEC_FEATURE_SUPPORT		231	/* RO */
+#define EXT_CSD_TRIM_MULT			232	/* RO */
 #define EXT_CSD_MIN_PERF_DDR_R_8_52		234	/* RO */
 #define EXT_CSD_MIN_PERF_DDR_W_8_52		235	/* RO */
+#define EXT_CSD_PWR_CL_200_195			236	/* RO */
+#define EXT_CSD_PWR_CL_200_360			237	/* RO */
+#define EXT_CSD_PWR_CL_DDR_52_195		238	/* RO */
+#define EXT_CSD_PWR_CL_DDR_52_360		239	/* RO */
 #define EXT_CSD_CACHE_FLUSH_POLICY		240	/* RO */
 #define EXT_CSD_INI_TIMEOUT_AP			241	/* RO */
 #define EXT_CSD_CORRECTLY_PRG_SECTORS_NUM	242	/* RO, 4 bytes */
 #define EXT_CSD_BKOPS_STATUS			246	/* RO */
+#define EXT_CSD_POWER_OFF_LONG_TIME		247	/* RO */
+#define EXT_CSD_GENERIC_CMD6_TIME		248	/* RO */
+#define EXT_CSD_CACHE_SIZE			249	/* RO, 4 bytes */
 #define EXT_CSD_FIRMWARE_VERSION		254	/* RO, 8 bytes */
 #define EXT_CSD_DEVICE_VERSION			262	/* RO, 2 bytes */
 #define EXT_CSD_OPTIMAL_TRIM_UNIT_SIZE		264	/* RO */
@@ -286,6 +279,7 @@
 #define EXT_CSD_MAX_PACKED_WRITES		500	/* RO */
 #define EXT_CSD_MAX_PACKED_READS		501	/* RO */
 #define EXT_CSD_BKOPS_SUPPORT			502	/* RO */
+#define EXT_CSD_HPI_FEATURES			503	/* RO */
 #define EXT_CSD_S_CMD_SET			504	/* RO */
 #define EXT_CSD_EXT_SECURITY_ERR		505	/* RO */
 

@@ -256,6 +256,7 @@ choice
 
 config MACH_ANIMEO_IP
 	bool "Somfy Animeo IP"
+	depends on !CONSOLE_NONE
 
 config MACH_AT91SAM9260EK
 	bool "Atmel AT91SAM9260-EK"

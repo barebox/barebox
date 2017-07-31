@@ -51,6 +51,7 @@
 
 #define PRID_IMP_24K		0x9300
 #define PRID_IMP_24KE		0x9600
+#define PRID_IMP_74K		0x9700
 
 /*
  * These are the PRID's for when 23:16 == PRID_COMP_BROADCOM
@@ -105,6 +106,7 @@ enum cpu_type_enum {
 	 * MIPS32 class processors
 	 */
 	CPU_24K,
+	CPU_74K,
 	CPU_BMIPS3300,
 	CPU_JZRISC,
 	CPU_LOONGSON1,

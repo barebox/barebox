@@ -222,6 +222,7 @@ config MACH_KINDLE_MX50
 	select I2C_IMX
 	select MFD_MC13XXX
 	select ARM_BOARD_APPEND_ATAG
+	select ARM_LINUX
 	help
 	  Say Y here if you are using the fourth or fifth generation Amazon
 	  Kindle Model No. D01100 (Kindle Wi-Fi), D01200 (Kindle Touch) or
@@ -750,6 +751,7 @@ config HABV4
 	select HAB
 	select IMX_OCOTP
 	depends on ARCH_IMX6
+	depends on OFDEVICE
 	help
 	  High Assurance Boot, as found on i.MX28/i.MX6.
 

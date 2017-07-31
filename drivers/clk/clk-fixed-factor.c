@@ -56,7 +56,6 @@ static int clk_factor_set_rate(struct clk *clk, unsigned long rate,
 	struct clk_fixed_factor *fix = container_of(clk, struct clk_fixed_factor, clk);
 
 	if (clk->flags & CLK_SET_RATE_PARENT) {
-		printk("%s: %ld -> parent %ld\n", __func__, rate, rate * fix->div / fix->mult);
 		return clk_set_rate(clk_get_parent(clk), rate * fix->div / fix->mult);
 	}
 

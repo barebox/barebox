@@ -114,6 +114,7 @@ static int imx_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, struct fb_videomo
 		int di)
 {
 	struct imx_ldb *ldb = imx_ldb_ch->ldb;
+	int dual = ldb->ldb_ctrl & LDB_SPLIT_MODE_EN;
 
 	ldb->soc_data->prepare(imx_ldb_ch, di, PICOS2KHZ(mode->pixclock) * 1000UL);
 
@@ -135,6 +136,10 @@ static int imx_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, struct fb_videomo
 	if (imx_ldb_ch == &ldb->channel[0]) {
 		ldb->ldb_ctrl &= ~LDB_CH0_MODE_EN_MASK;
 		ldb->ldb_ctrl |= LDB_CH0_MODE_EN_TO_DI0;
+		if (dual) {
+			ldb->ldb_ctrl &= ~LDB_CH1_MODE_EN_MASK;
+			ldb->ldb_ctrl |= LDB_CH1_MODE_EN_TO_DI0;
+		}
 	}
 
 	if (imx_ldb_ch == &ldb->channel[1]) {
@@ -147,20 +152,11 @@ static int imx_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, struct fb_videomo
 	return 0;
 }
 
-static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
-			     unsigned long pixclk)
+static int imx6q_set_clock(struct imx_ldb *ldb, int ipuno, int dino, int chno, unsigned long pixclk)
 {
 	struct clk *diclk, *ldbclk;
-	struct imx_ldb *ldb = imx_ldb_ch->ldb;
-	int ret, ipuno, dino;
 	char *clkname;
-	void __iomem *gpr3 = (void *)MX6_IOMUXC_BASE_ADDR + 0xc;
-	uint32_t val;
-	int shift;
-	int dual = ldb->ldb_ctrl & LDB_SPLIT_MODE_EN;
-
-	ipuno = ((di >> 1) & 1) + 1;
-	dino = di & 0x1;
+	int ret;
 
 	clkname = basprintf("ipu%d_di%d_sel", ipuno, dino);
 	diclk = clk_lookup(clkname);
@@ -170,7 +166,7 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 		return PTR_ERR(diclk);
 	}
 
-	clkname = basprintf("ldb_di%d_podf", imx_ldb_ch->chno);
+	clkname = basprintf("ldb_di%d_podf", chno);
 	ldbclk = clk_lookup(clkname);
 	free(clkname);
 	if (IS_ERR(ldbclk)) {
@@ -184,10 +180,34 @@ static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
 		return ret;
 	}
 
+	clk_set_rate(clk_get_parent(ldbclk), pixclk);
+	clk_set_rate(ldbclk, pixclk);
+
+	return 0;
+}
+static int imx6q_ldb_prepare(struct imx_ldb_channel *imx_ldb_ch, int di,
+			     unsigned long pixclk)
+{
+	struct imx_ldb *ldb = imx_ldb_ch->ldb;
+	int ipuno, dino;
+
+	void __iomem *gpr3 = (void *)MX6_IOMUXC_BASE_ADDR + 0xc;
+	uint32_t val;
+	int shift;
+	int dual = ldb->ldb_ctrl & LDB_SPLIT_MODE_EN;
+
+	ipuno = ((di >> 1) & 1) + 1;
+	dino = di & 0x1;
+
 	if (!dual)
 		pixclk *= 2;
 
-	clk_set_rate(clk_get_parent(ldbclk), pixclk);
+	if (dual) {
+		imx6q_set_clock(ldb, ipuno, dino, 0, pixclk);
+		imx6q_set_clock(ldb, ipuno, dino, 1, pixclk);
+	} else {
+		imx6q_set_clock(ldb, ipuno, dino, imx_ldb_ch->chno, pixclk);
+	}
 
 	val = readl(gpr3);
 	shift = (imx_ldb_ch->chno == 0) ? 6 : 8;

@@ -25,7 +25,20 @@
 #include <asm/mmu.h>
 #include <asm/cache-l2x0.h>
 
-void imx6_init_lowlevel(void)
+#include <poweroff.h>
+#include <mach/imx6-regs.h>
+#include <io.h>
+
+#define CLPCR				0x54
+#define BP_CLPCR_LPM(mode)		((mode) & 0x3)
+#define BM_CLPCR_LPM			(0x3 << 0)
+#define BM_CLPCR_SBYOS			(0x1 << 6)
+#define BM_CLPCR_VSTBY			(0x1 << 8)
+#define BP_CLPCR_STBY_COUNT		9
+#define BM_CLPCR_COSC_PWRDOWN		(0x1 << 11)
+#define BM_CLPCR_BYP_MMDC_CH1_LPM_HS	(0x1 << 21)
+
+static void imx6_init_lowlevel(void)
 {
 	void __iomem *aips1 = (void *)MX6_AIPS1_ON_BASE_ADDR;
 	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
@@ -83,7 +96,7 @@ void imx6_init_lowlevel(void)
 
 }
 
-void imx6_setup_ipu_qos(void)
+static void imx6_setup_ipu_qos(void)
 {
 	void __iomem *iomux = (void *)MX6_IOMUXC_BASE_ADDR;
 	void __iomem *fast2 = (void *)MX6_FAST2_BASE_ADDR;
@@ -121,10 +134,13 @@ void imx6_setup_ipu_qos(void)
 	}
 }
 
-void imx6ul_enet_clk_init(void)
+static void imx6ul_enet_clk_init(void)
 {
 	void __iomem *gprbase = IOMEM(MX6_IOMUXC_BASE_ADDR) + 0x4000;
 	uint32_t val;
+
+	if (!cpu_mx6_is_mx6ul() && !cpu_mx6_is_mx6ull())
+		return;
 
 	val = readl(gprbase + IOMUXC_GPR1);
 	val |= (0x3 << 17);
@@ -169,7 +185,6 @@ int imx6_init(void)
 		break;
 	case IMX6_CPUTYPE_IMX6UL:
 		cputypestr = "i.MX6 UltraLite";
-		imx6ul_enet_clk_init();
 		break;
 	case IMX6_CPUTYPE_IMX6ULL:
 		cputypestr = "i.MX6 ULL";
@@ -182,6 +197,7 @@ int imx6_init(void)
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
 
 	imx6_setup_ipu_qos();
+	imx6ul_enet_clk_init();
 
 	return 0;
 }
@@ -296,3 +312,39 @@ static int imx6_fixup_cpus_register(void)
 	return of_register_fixup(imx6_fixup_cpus, NULL);
 }
 device_initcall(imx6_fixup_cpus_register);
+
+void __noreturn imx6_pm_stby_poweroff(void)
+{
+	void *ccm_base = IOMEM(MX6_CCM_BASE_ADDR);
+	void *gpc_base = IOMEM(MX6_GPC_BASE_ADDR);
+	u32 val;
+
+	/*
+	 * All this is done to get the PMIC_STBY_REQ line high which will
+	 * cause the PMIC to turn off the i.MX6.
+	 */
+
+	/*
+	 * First mask all interrupts in the GPC. This is necessary for
+	 * unknown reasons
+	 */
+	writel(0xffffffff, gpc_base + 0x8);
+	writel(0xffffffff, gpc_base + 0xc);
+	writel(0xffffffff, gpc_base + 0x10);
+	writel(0xffffffff, gpc_base + 0x14);
+
+	val = readl(ccm_base + CLPCR);
+
+	val &= ~BM_CLPCR_LPM;
+	val |= BP_CLPCR_LPM(2);
+	val |= 0x3 << BP_CLPCR_STBY_COUNT;
+	val |= BM_CLPCR_VSTBY;
+	val |= BM_CLPCR_SBYOS;
+	val |= BM_CLPCR_BYP_MMDC_CH1_LPM_HS;
+
+	writel(val, ccm_base + CLPCR);
+
+	asm("wfi");
+
+	while(1);
+}

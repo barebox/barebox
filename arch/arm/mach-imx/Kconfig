@@ -168,6 +168,7 @@ config ARCH_IMX7
 	select PINCTRL_IMX_IOMUX_V3
 	select OFTREE
 	select COMMON_CLK_OF_PROVIDER
+	select ARCH_HAS_FEC_IMX
 
 config ARCH_VF610
 	bool
@@ -394,6 +395,22 @@ config MACH_ZII_VF610_DEV
 	bool "Zodiac VF610 Dev Family"
 	select ARCH_VF610
 	select CLKDEV_LOOKUP
+
+config MACH_PHYTEC_PHYCORE_IMX7
+	bool "Phytec phyCORE i.MX7"
+	select ARCH_IMX7
+
+config MACH_FREESCALE_MX7_SABRESD
+	bool "NXP i.MX7 SabreSD Board"
+	select ARCH_IMX7
+	# Nedded to de-assert reset on Ethernet PHY
+	select DRIVER_SPI_GPIO if DRIVER_NET_FEC_IMX
+	select GPIO_74164 if DRIVER_NET_FEC_IMX
+	help
+	  Support for NXP i.MX7 SabreSD board - one of the official
+	  i.MX7 evaluation boards from NXP.
+
+	  https://goo.gl/6EKGdk
 
 endif
 

@@ -113,6 +113,7 @@ typedef u64 iomux_v3_cfg_t;
 #define PAD_CTL_SRE_SLOW		(0 << 0)
 
 #define IOMUX_CONFIG_SION		(0x1 << 4)
+#define IOMUX_CONFIG_LPSR               BIT(5)
 
 #define SHARE_MUX_CONF_REG		0x1
 #define ZERO_OFFSET_VALID		0x2

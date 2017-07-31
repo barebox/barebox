@@ -14,26 +14,11 @@
  */
 
 #include <common.h>
-#include <init.h>
-#include <environment.h>
-#include <mach/imx6-regs.h>
+#include <envfs.h>
 #include <gpio.h>
-#include <asm/armlinux.h>
-#include <generated/mach-types.h>
-#include <partition.h>
-#include <linux/phy.h>
-#include <asm/io.h>
-#include <asm/mmu.h>
-#include <mach/generic.h>
-#include <linux/sizes.h>
-#include <net.h>
-#include <mach/imx6.h>
-#include <mach/devices-imx6.h>
-#include <mach/iomux-mx6.h>
-#include <spi/spi.h>
-#include <mach/spi.h>
-#include <mach/usb.h>
+#include <init.h>
 #include <mach/bbu.h>
+#include <mach/imx6.h>
 
 #define RDU2_DAC1_RESET	IMX_GPIO_NR(1, 0)
 #define RDU2_DAC2_RESET	IMX_GPIO_NR(1, 2)
@@ -122,11 +107,6 @@ static const struct gpio rdu2_front_panel_usb_gpios[] = {
 		.label = "usb-mode1",
 	},
 	{
-		.gpio = IMX_GPIO_NR(3, 22),
-		.flags = GPIOF_OUT_INIT_LOW,
-		.label = "usb-pwr-ctrl-enn",
-	},
-	{
 		.gpio = IMX_GPIO_NR(3, 23),
 		.flags = GPIOF_OUT_INIT_HIGH,
 		.label = "usb-mode2",
@@ -165,6 +145,8 @@ static int rdu2_devices_init(void)
 						   BBU_HANDLER_FLAG_DEFAULT);
 
 	imx6_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc3", 0);
+
+	defaultenv_append_directory(defaultenv_rdu2);
 
 	return 0;
 }

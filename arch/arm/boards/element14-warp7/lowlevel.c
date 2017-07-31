@@ -17,10 +17,16 @@ static noinline void warp7_start(void)
 	void __iomem *ccmbase = IOMEM(MX7_CCM_BASE_ADDR);
 	void *fdt;
 
+	/* CCM_CCGR148_CLR, uart1 */
 	writel(0x3, ccmbase + 0x4000 + 16 * 148 + 0x8);
+	/* CCM_TARGET_ROOT95 = UART1_CLK_ROOT */
 	writel(0x10000000, ccmbase + 0x8000 + 128 * 95);
+	/* CCM_CCGR148_SET, uart1 */
 	writel(0x3, ccmbase + 0x4000 + 16 * 148 + 0x4);
+
+	/* MX7D_PAD_UART1_RX_DATA__UART1_DCE_RX without daisy chaining */
 	writel(0x0, iomuxbase + 0x128);
+	/* MX7D_PAD_UART1_TX_DATA__UART1_DCE_TX */
 	writel(0x0, iomuxbase + 0x12c);
 
 	imx7_uart_setup(uart);

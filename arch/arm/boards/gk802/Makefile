@@ -1,3 +1,2 @@
-obj-y += board.o flash-header.dcd.o
-extra-y += flash-header.dcd.S flash-header.dcd
+obj-y += board.o
 lwl-y += lowlevel.o

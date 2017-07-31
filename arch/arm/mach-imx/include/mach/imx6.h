@@ -6,7 +6,7 @@
 #include <mach/imx6-regs.h>
 #include <mach/revision.h>
 
-void imx6_init_lowlevel(void);
+void __noreturn imx6_pm_stby_poweroff(void);
 
 #define IMX6_ANATOP_SI_REV 0x260
 #define IMX6SL_ANATOP_SI_REV 0x280

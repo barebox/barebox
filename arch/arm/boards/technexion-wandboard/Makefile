@@ -1,3 +1,2 @@
-obj-y += board.o flash-header-technexion-wandboard.dcd.o
-extra-y += flash-header-technexion-wandboard.dcd.S flash-header-technexion-wandboard.dcd
+obj-y += board.o
 lwl-y += lowlevel.o

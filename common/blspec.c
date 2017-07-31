@@ -361,6 +361,14 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 	const char *compat;
 	char *filename;
 
+	/* If the entry doesn't specifiy a devicetree we are compatible */
+	devicetree = blspec_entry_var_get(entry, "devicetree");
+	if (!devicetree)
+		return true;
+
+	if (!strcmp(devicetree, "none"))
+		return true;
+
 	/* If we don't have a root node every entry is compatible */
 	barebox_root = of_get_root_node();
 	if (!barebox_root)
@@ -374,14 +382,6 @@ static bool entry_is_of_compatible(struct blspec_entry *entry)
 		abspath = entry->rootpath;
 	else
 		abspath = "";
-
-	/* If the entry doesn't specifiy a devicetree we are compatible */
-	devicetree = blspec_entry_var_get(entry, "devicetree");
-	if (!devicetree)
-		return true;
-
-	if (!strcmp(devicetree, "none"))
-		return true;
 
 	filename = basprintf("%s/%s", abspath, devicetree);
 

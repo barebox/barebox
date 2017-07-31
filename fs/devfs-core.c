@@ -95,6 +95,20 @@ struct cdev *cdev_by_device_node(struct device_node *node)
 	return NULL;
 }
 
+struct cdev *cdev_by_partuuid(const char *partuuid)
+{
+	struct cdev *cdev;
+
+	if (!partuuid)
+		return NULL;
+
+	list_for_each_entry(cdev, &cdev_list, list) {
+		if (!strcmp(cdev->partuuid, partuuid))
+			return cdev;
+	}
+	return NULL;
+}
+
 /**
  * device_find_partition - find a partition belonging to a physical device
  *

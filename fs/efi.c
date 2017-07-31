@@ -407,9 +407,7 @@ static int efifs_stat(struct device_d *dev, const char *filename, struct stat *s
 
 	efiret = priv->root_dir->open(priv->root_dir, &entry, efi_path, EFI_FILE_MODE_READ, 0ULL);
 	if (EFI_ERROR(efiret)) {
-		pr_err("%s: unable to Open %s: %s\n", __func__, filename,
-				efi_strerror(efiret));
-		ret = -efi_errno(efiret);
+		ret = -ENOENT;
 		goto out_free;
 	}
 

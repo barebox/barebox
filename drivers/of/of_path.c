@@ -56,10 +56,25 @@ static int __of_find_path(struct device_node *node, const char *part, char **out
 
 	dev = of_find_device_by_node_path(node->full_name);
 	if (!dev) {
+		int ret;
+		const char *uuid;
 		struct device_node *devnode = node->parent;
 
-		if (of_device_is_compatible(devnode, "fixed-partitions"))
+		if (of_device_is_compatible(devnode, "fixed-partitions")) {
 			devnode = devnode->parent;
+
+			/* when partuuid is specified short-circuit the search for the cdev */
+			ret = of_property_read_string(node, "partuuid", &uuid);
+			if (!ret) {
+				cdev = cdev_by_partuuid(uuid);
+				if (!cdev)
+					return -ENODEV;
+
+				*outpath = basprintf("/dev/%s", cdev->name);
+
+				return 0;
+			}
+		}
 
 		dev = of_find_device_by_node_path(devnode->full_name);
 		if (!dev)

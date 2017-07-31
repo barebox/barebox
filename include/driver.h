@@ -472,6 +472,7 @@ struct cdev *cdev_by_name(const char *filename);
 struct cdev *lcdev_by_name(const char *filename);
 struct cdev *cdev_readlink(struct cdev *cdev);
 struct cdev *cdev_by_device_node(struct device_node *node);
+struct cdev *cdev_by_partuuid(const char *partuuid);
 struct cdev *cdev_open(const char *name, unsigned long flags);
 struct cdev *cdev_create_loop(const char *path, ulong flags);
 void cdev_remove_loop(struct cdev *cdev);

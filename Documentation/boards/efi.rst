@@ -42,6 +42,10 @@ architectures. Switching to USB boot in the BIOS should then be enough to
 start barebox via USB. Some BIOSes allow to specify a path to a binary to
 be executed, others have a "start UEFI shell" entry which executes
 EFI/Shellx64.efi on the :term:`ESP`. This can be a barebox binary aswell.
+To use the :ref:`state_framework`, the describing devicetree file ``state.dtb``
+has to be put into the ``EFI/barebox/`` directory.
+Supported backends for EFI are raw partitions that can be discovered via a
+partition UUID.
 
 Running EFI barebox on qemu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

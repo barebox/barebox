@@ -40,6 +40,9 @@
 #include <efi.h>
 #include <efi/efi.h>
 #include <efi/efi-device.h>
+#include <libfile.h>
+#include <state.h>
+#include <bbu.h>
 
 efi_runtime_services_t *RT;
 efi_boot_services_t *BS;
@@ -266,8 +269,7 @@ static int efi_console_init(void)
 
 	add_generic_device("efi-stdio", DEVICE_ID_SINGLE, NULL, 0 , 0, 0, NULL);
 
-	if (IS_ENABLED(CONFIG_ARCH_EFI_REGISTER_COM1))
-		add_ns16550_device(0, 0x3f8, 0x10, IORESOURCE_IO | IORESOURCE_MEM_8BIT,
+	add_ns16550_device(0, 0x3f8, 0x10, IORESOURCE_IO | IORESOURCE_MEM_8BIT,
 				&ns16550_plat);
 
 	return 0;
@@ -381,9 +383,69 @@ static int efi_postcore_init(void)
 		free(uuid16);
 	}
 
+	bbu_register_std_file_update("fat", 0,	"/boot/EFI/BOOT/BOOTx64.EFI",
+				     filetype_exe);
+
 	return 0;
 }
 postcore_initcall(efi_postcore_init);
+
+static int efi_late_init(void)
+{
+	char *state_desc;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_STATE))
+		return 0;
+
+	state_desc = xasprintf("/boot/EFI/barebox/state.dtb");
+
+	if (state_desc) {
+		void *fdt;
+		size_t size;
+		struct device_node *root = NULL;
+		struct device_node *np = NULL;
+		struct state *state;
+
+		fdt = read_file(state_desc, &size);
+		if (!fdt) {
+			pr_err("unable to read %s: %s\n", state_desc,
+			       strerror(errno));
+			return -errno;
+		}
+
+		if (file_detect_type(fdt, size) != filetype_oftree) {
+			pr_err("%s is not an oftree file.\n", state_desc);
+			free(fdt);
+			return -EINVAL;
+		}
+
+		root = of_unflatten_dtb(fdt);
+
+		free(fdt);
+
+		if (IS_ERR(root))
+			return PTR_ERR(root);
+
+		of_set_root_node(root);
+
+		np = of_find_node_by_alias(root, "state");
+
+		state = state_new_from_node(np, NULL, 0, 0, false);
+		if (IS_ERR(state))
+			return PTR_ERR(state);
+
+		ret = state_load(state);
+		if (ret)
+			pr_warn("Failed to load persistent state, continuing with defaults, %d\n",
+				ret);
+
+		return 0;
+	}
+
+	return 0;
+}
+late_initcall(efi_late_init);
 
 static int do_efiexit(int argc, char *argv[])
 {

@@ -113,7 +113,7 @@ static int do_loady(int argc, char *argv[])
 BAREBOX_CMD_HELP_START(loady)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-g", "use Y-Modem/G (use on lossless tty such as USB)")
-BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate")
+BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate)")
 BAREBOX_CMD_HELP_OPT("-t NAME", "console name to use (default: current)")
 BAREBOX_CMD_HELP_END
 
@@ -221,7 +221,7 @@ BAREBOX_CMD_HELP_START(loadx)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-f FILE", "download to FILE (default image.bin")
 BAREBOX_CMD_HELP_OPT("-o OFFS", "destination file OFFSet (default 0)")
-BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate")
+BAREBOX_CMD_HELP_OPT("-b BAUD", "baudrate for download (default: console baudrate)")
 BAREBOX_CMD_HELP_OPT("-t NAME", "console name to use (default: current)")
 BAREBOX_CMD_HELP_END
 

@@ -32,6 +32,9 @@
 #include <linux/err.h>
 #include <clock.h>
 
+/* time to wait for STAT_RR getting set */
+#define IMX_SPI_RR_TIMEOUT	10000 /* ns */
+
 struct imx_spi {
 	struct spi_master	master;
 	int			*cs_array;
@@ -89,6 +92,7 @@ static unsigned int imx_spi_maybe_reverse_bits(struct spi_device *spi, unsigned 
 static int cspi_0_0_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 {
 	void __iomem *base = imx->regs;
+	int ret;
 
 	unsigned int cfg_reg = readl(base + CSPI_0_0_CTRL);
 
@@ -98,7 +102,12 @@ static int cspi_0_0_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 
 	writel(cfg_reg, base + CSPI_0_0_CTRL);
 
-	while (!(readl(base + CSPI_0_0_INT) & CSPI_0_0_STAT_RR));
+	ret = wait_on_timeout(IMX_SPI_RR_TIMEOUT,
+			      readl(base + CSPI_0_0_INT) & CSPI_0_0_STAT_RR);
+	if (ret) {
+		dev_err(imx->master.dev, "Timeout waiting for received data\n");
+		return ret;
+	}
 
 	*rxdata = readl(base + CSPI_0_0_RXDATA);
 
@@ -157,6 +166,7 @@ static void cspi_0_0_init(struct imx_spi *imx)
 static int cspi_0_7_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 {
 	void __iomem *base = imx->regs;
+	int ret;
 
 	unsigned int cfg_reg = readl(base + CSPI_0_7_CTRL);
 
@@ -166,8 +176,12 @@ static int cspi_0_7_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 
 	writel(cfg_reg, base + CSPI_0_7_CTRL);
 
-	while (!(readl(base + CSPI_0_7_STAT) & CSPI_0_7_STAT_RR))
-		;
+	ret = wait_on_timeout(IMX_SPI_RR_TIMEOUT,
+			      readl(base + CSPI_0_7_STAT) & CSPI_0_7_STAT_RR);
+	if (ret) {
+		dev_err(imx->master.dev, "Timeout waiting for received data\n");
+		return ret;
+	}
 
 	*rxdata = readl(base + CSPI_0_7_RXDATA);
 	return 0;
@@ -248,10 +262,16 @@ static void cspi_0_7_init(struct imx_spi *imx)
 static int cspi_2_3_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 {
 	void __iomem *base = imx->regs;
+	int ret;
 
 	writel(txdata, base + CSPI_2_3_TXDATA);
 
-	while (!(readl(base + CSPI_2_3_STAT) & CSPI_2_3_STAT_RR));
+	ret = wait_on_timeout(IMX_SPI_RR_TIMEOUT,
+			      readl(base + CSPI_2_3_STAT) & CSPI_2_3_STAT_RR);
+	if (ret) {
+		dev_err(imx->master.dev, "Timeout waiting for received data\n");
+		return ret;
+	}
 
 	*rxdata = readl(base + CSPI_2_3_RXDATA);
 

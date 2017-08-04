@@ -762,10 +762,6 @@ int main(int argc, char *argv[])
 		create_usb_image = 0;
 	}
 
-	buf = calloc(1, HEADER_LEN);
-	if (!buf)
-		exit(1);
-
 	if (data.image_dcd_offset == 0xffffffff) {
 		if (create_usb_image)
 			data.image_dcd_offset = 0x0;
@@ -790,6 +786,10 @@ int main(int argc, char *argv[])
 
 	switch (data.header_version) {
 	case 1:
+		buf = calloc(1, HEADER_LEN);
+		if (!buf)
+			exit(1);
+
 		add_header_v1(&data, buf);
 		if (data.srkfile) {
 			ret = add_srk(buf, data.image_dcd_offset, data.image_load_addr,
@@ -799,6 +799,10 @@ int main(int argc, char *argv[])
 		}
 		break;
 	case 2:
+		buf = calloc(1, data.image_dcd_offset + sizeof(struct imx_flash_header_v2) + MAX_DCD * sizeof(u32));
+		if (!buf)
+			exit(1);
+
 		add_header_v2(&data, buf);
 		break;
 	default:

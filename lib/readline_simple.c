@@ -58,6 +58,8 @@ int readline (const char *prompt, char *line, int len)
 
 	for (;;) {
 		c = getchar();
+		if (c < 0)
+			return (-1);
 
 		/*
 		 * Special character handling

@@ -77,7 +77,7 @@ static inline int is_barebox_arm_head(const char *head)
 #ifdef CONFIG_MIPS
 static inline int is_barebox_mips_head(const char *head)
 {
-	return !strcmp(head + MIPS_HEAD_MAGICWORD_OFFSET, "barebox");
+	return !strncmp(head + MIPS_HEAD_MAGICWORD_OFFSET, "barebox", 7);
 }
 #else
 static inline int is_barebox_mips_head(const char *head)

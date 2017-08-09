@@ -26,11 +26,11 @@
 
 	mips_barebox_10h
 
-	pbl_ar9331_wmac_enable
-
 	hornet_mips24k_cp0_setup
 
 	pbl_blt 0xbf000000 skip_pll_ram_config t8
+
+	pbl_ar9331_wmac_enable
 
 	hornet_1_1_war
 

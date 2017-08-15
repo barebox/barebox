@@ -12,3 +12,4 @@ Contents:
    bindings/leds/*
    bindings/misc/*
    bindings/mtd/*
+   bindings/rtc/*

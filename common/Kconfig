@@ -937,6 +937,14 @@ config STATE_CRYPTO
 	  See Documentation/devicetree/bindings/barebox/barebox,state.rst
 	  for more information.
 
+config STATE_BACKWARD_COMPATIBLE
+	bool "backward compatible 'direct storage backend'"
+	depends on STATE
+	help
+	  With this option enabled the 'direct' storage backend keeps backward
+	  compatibility with older revisions of the state framework. Newer
+	  revisions expect an additional 'meta header' and fail otherwise.
+
 config BOOTCHOOSER
 	bool "bootchooser infrastructure"
 	depends on !SHELL_NONE

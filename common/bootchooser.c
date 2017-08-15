@@ -376,9 +376,9 @@ struct bootchooser *bootchooser_get(void)
 			bc->state_prefix = xstrdup(state_prefix);
 			bc->state = state_by_name(state_devname);
 			if (!bc->state) {
-				free(state_devname);
 				pr_err("Cannot get state '%s'\n",
 				       state_devname);
+				free(state_devname);
 				ret = -ENODEV;
 				goto err;
 			}

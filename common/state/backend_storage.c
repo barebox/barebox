@@ -146,6 +146,7 @@ int state_storage_read(struct state_backend_storage *storage,
 	struct state_backend_storage_bucket *bucket, *bucket_used = NULL;
 	int ret;
 
+	dev_dbg(storage->dev, "Checking redundant buckets...\n");
 	/*
 	 * Iterate over all buckets. The first valid one we find is the
 	 * one we want to use.
@@ -164,7 +165,11 @@ int state_storage_read(struct state_backend_storage *storage,
 		ret = format->verify(format, magic, bucket->buf, &bucket->len, flags);
 		if (!ret && !bucket_used)
 			bucket_used = bucket;
+		if (ret)
+			dev_info(storage->dev, "Ignoring broken bucket %d@0x%08lx...\n", bucket->num, bucket->offset);
 	}
+
+	dev_dbg(storage->dev, "Checking redundant buckets finished.\n");
 
 	if (!bucket_used) {
 		dev_err(storage->dev, "Failed to find any valid state copy in any bucket\n");
@@ -386,7 +391,7 @@ int state_storage_init(struct state *state, const char *path,
 			dev_warn(storage->dev, "using old format circular storage type.\n");
 			circular = false;
 		} else {
-			dev_warn(storage->dev, "unknown storage type '%s'\n", storagetype);
+			dev_dbg(storage->dev, "unknown storage type '%s'\n", storagetype);
 			return -EINVAL;
 		}
 		return state_storage_mtd_buckets_init(storage, &meminfo, circular);

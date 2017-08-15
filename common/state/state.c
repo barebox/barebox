@@ -608,11 +608,13 @@ struct state *state_new_from_node(struct device_node *node, char *path,
 
 	ret = of_property_read_string(node, "backend-type", &backend_type);
 	if (ret) {
+		dev_dbg(&state->dev, "Missing 'backend-type' property\n");
 		goto out_release_state;
 	}
 
 	ret = of_property_read_u32(node, "backend-stridesize", &stridesize);
 	if (ret) {
+		dev_dbg(&state->dev, "'backend-stridesize' property undefined, trying to continue without\n");
 		stridesize = 0;
 	}
 

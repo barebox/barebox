@@ -367,12 +367,10 @@ struct bootchooser *bootchooser_get(void)
 			char *state_devname;
 
 			delim = strchr(state_prefix, '.');
-			if (!delim) {
-				pr_err("state_prefix '%s' has invalid format\n",
-				       state_prefix);
-				goto err;
-			}
-			state_devname = xstrndup(state_prefix, delim - state_prefix);
+			if (delim)
+				state_devname = xstrndup(state_prefix, delim - state_prefix);
+			else
+				state_devname = xstrdup(state_prefix);
 			bc->state_prefix = xstrdup(state_prefix);
 			bc->state = state_by_name(state_devname);
 			if (!bc->state) {

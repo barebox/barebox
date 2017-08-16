@@ -240,6 +240,7 @@ static int state_convert_node_variable(struct state *state,
 
 	vtype = state_find_type_by_name(type_name);
 	if (!vtype) {
+		dev_dbg(&state->dev, "Error: invalid variable type '%s'\n", type_name);
 		ret = -ENOENT;
 		goto out_free;
 	}

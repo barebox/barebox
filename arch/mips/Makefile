@@ -80,6 +80,7 @@ board-$(CONFIG_BOARD_NETGEAR_WG102)	:= netgear-wg102
 
 machine-$(CONFIG_MACH_MIPS_ATH79)	:= ath79
 board-$(CONFIG_BOARD_TPLINK_MR3020)	:= tplink-mr3020
+board-$(CONFIG_BOARD_TPLINK_WDR4300)	:= tplink-wdr4300
 board-$(CONFIG_BOARD_BLACK_SWIFT)	:= black-swift
 
 machine-$(CONFIG_MACH_MIPS_BCM47XX)	:= bcm47xx

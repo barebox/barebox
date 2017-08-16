@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2013, 2015 Antony Pavlov <antonynpavlov@gmail.com>
- * Copyright (C) 2013 Oleksij Rempel <linux@rempel-privat.de>
+ * Copyright (C) 2017 Oleksij Rempel <o.rempel@pengutronix.de>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -16,8 +15,10 @@
  *
  */
 
+#include <mach/debug_ll_ar9344.h>
 #include <asm/pbl_macros.h>
 #include <mach/pbl_macros.h>
+#include <mach/pbl_ll_init_ar9344_1.1.h>
 #include <asm/pbl_nmon.h>
 
 	.macro	board_pbl_start
@@ -26,33 +27,34 @@
 
 	mips_barebox_10h
 
-	pbl_blt 0xbf000000 skip_pll_ram_config t8
+	debug_ll_ar9344_init
+
+	debug_ll_outc '1'
 
 	hornet_mips24k_cp0_setup
+	debug_ll_outc '2'
 
-	pbl_ar9331_wmac_enable
+	/* test if we are in the SRAM */
+	pbl_blt 0xbd000000 1f t8
+	debug_ll_outc '3'
+	b skip_flash_test
+	nop
+1:
+	/* test if we are in the flash */
+	pbl_blt 0xbf000000 skip_pll_ram_config t8
+	debug_ll_outc '4'
+skip_flash_test:
 
-	hornet_1_1_war
+	pbl_ar9344_v11_pll_config
+	debug_ll_outc '5'
 
-	pbl_ar9331_pll
-	pbl_ar9331_ddr1_config
-
-	/* Initialize caches... */
-	mips_cache_reset
-
-	/* ... and enable them */
-	dcache_enable
+	pbl_ar9344_v11_ddr2_config
 
 skip_pll_ram_config:
-	pbl_ar9331_uart_enable
-	debug_ll_ar9331_init
-	mips_nmon
+	debug_ll_outc '6'
+	debug_ll_outnl
 
-	/*
-	 * It is amazing but we have to enable MDIO on GPIO
-	 * to use GPIO26 for the "WPS" LED and GPIO27 for the "3G" LED.
-	 */
-	pbl_ar9331_mdio_gpio_enable
+	mips_nmon
 
 	copy_to_link_location	pbl_start
 

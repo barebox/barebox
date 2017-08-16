@@ -1,8 +1,5 @@
 /*
- * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
- *
- * This file is part of barebox.
- * See file CREDITS for list of people who contributed to this project.
+ * Copyright (c) 2017 Oleksij Rempel <linux@rempel-privat.de>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2
@@ -12,16 +9,20 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
 
-#ifndef __MACH_ATH79_DEBUG_LL__
-#define __MACH_ATH79_DEBUG_LL__
+#include <common.h>
+#include <bbu.h>
+#include <init.h>
 
-#if defined(CONFIG_SOC_QCA_AR9331)
-#include <mach/debug_ll_ar9331.h>
-#elif defined(CONFIG_SOC_QCA_AR9344)
-#include <mach/debug_ll_ar9344.h>
-#endif
+static int ath79_init_bbu(void)
+{
+	bbu_register_std_file_update("barebox", BBU_HANDLER_FLAG_DEFAULT,
+				     "/dev/spiflash.barebox",
+				     filetype_mips_barebox);
 
-#endif /* __MACH_AR9344_DEBUG_LL_H__ */
+	return 0;
+}
+postcore_initcall(ath79_init_bbu);
+
+

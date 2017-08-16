@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
+ * Copyright (C) 2017 Oleksij Rempel <o.rempel@pengutronix.de>
+ * Copyright (C) 2014 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * This file is part of barebox.
  * See file CREDITS for list of people who contributed to this project.
@@ -15,13 +16,13 @@
  *
  */
 
-#ifndef __MACH_ATH79_DEBUG_LL__
-#define __MACH_ATH79_DEBUG_LL__
+#include <common.h>
+#include <init.h>
 
-#if defined(CONFIG_SOC_QCA_AR9331)
-#include <mach/debug_ll_ar9331.h>
-#elif defined(CONFIG_SOC_QCA_AR9344)
-#include <mach/debug_ll_ar9344.h>
-#endif
+static int model_hostname_init(void)
+{
+	barebox_set_hostname("wdr4300");
 
-#endif /* __MACH_AR9344_DEBUG_LL_H__ */
+	return 0;
+}
+postcore_initcall(model_hostname_init);

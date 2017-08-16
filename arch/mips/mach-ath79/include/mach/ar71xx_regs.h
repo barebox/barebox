@@ -37,6 +37,15 @@
 #define AR933X_UART_BASE	(AR71XX_APB_BASE + 0x00020000)
 #define AR933X_UART_SIZE	0x14
 
+#define AR934X_UART0_BASE	(AR71XX_APB_BASE + 0x00020000)
+#define AR934X_UART0_SIZE	0x18
+#define AR934X_UART0_SHIFT	2
+
+/* WASP BootStrap Register */
+#define WASP_BOOTSTRAP_REG		(AR71XX_RESET_BASE + 0xb0)
+#define WASP_REF_CLK_25			(1 << 4) /* 0 - 25MHz	1 - 40 MHz */
+#define WASP_RAM_TYPE(a)		((a) & 0x3)
+
 /*
  * RTC block
  */

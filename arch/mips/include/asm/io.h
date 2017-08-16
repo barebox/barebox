@@ -12,10 +12,35 @@
 
 #include <linux/compiler.h>
 #include <asm/types.h>
+#include <asm/addrspace.h>
 #include <asm/byteorder.h>
 
 void dma_flush_range(unsigned long, unsigned long);
 void dma_inv_range(unsigned long, unsigned long);
+
+/*
+ *     virt_to_phys - map virtual addresses to physical
+ *     @address: address to remap
+ *
+ *     The returned physical address is the physical (CPU) mapping for
+ *     the memory address given.
+ */
+static inline unsigned long virt_to_phys(const void *address)
+{
+	return (unsigned long)CPHYSADDR(address);
+}
+
+/*
+ *     phys_to_virt - map physical address to virtual
+ *     @address: address to remap
+ *
+ *     The returned virtual address is a current CPU mapping for
+ *     the memory address given.
+ */
+static inline void *phys_to_virt(unsigned long address)
+{
+	return (void *)CKSEG0ADDR(address);
+}
 
 #define	IO_SPACE_LIMIT	0
 

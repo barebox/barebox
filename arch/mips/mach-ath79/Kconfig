@@ -4,17 +4,32 @@ config ARCH_TEXT_BASE
 	hex
 	default 0xa0800000
 
+config SOC_QCA_AR9331
+	bool
+
+config SOC_QCA_AR9344
+	bool
+
 choice
 	prompt "Board type"
 
 config BOARD_TPLINK_MR3020
 	bool "TP-LINK MR3020"
+	select SOC_QCA_AR9331
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
+	select HAS_NMON
+
+config BOARD_TPLINK_WDR4300
+	bool "TP-LINK WDR4300"
+	select SOC_QCA_AR9344
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
 
 config BOARD_BLACK_SWIFT
 	bool "Black Swift"
+	select SOC_QCA_AR9331
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON

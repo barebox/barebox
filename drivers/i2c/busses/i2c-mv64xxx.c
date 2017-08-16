@@ -37,6 +37,8 @@
 #define	REG_CONTROL_TWSIEN			0x00000040
 #define	REG_CONTROL_INTEN			0x00000080
 
+#define MV46XXX_I2C_TIMEOUT			(100 * MSECOND) /* transfer timeout */
+
 /* Ctlr status values */
 #define	STATUS_MAST_START			0x08
 #define	STATUS_MAST_REPEAT_START		0x10
@@ -421,10 +423,11 @@ mv64xxx_i2c_do_action(struct mv64xxx_i2c_data *drv_data)
  *
  *****************************************************************************
  */
-static void
+static int
 mv64xxx_i2c_wait_for_completion(struct mv64xxx_i2c_data *drv_data)
 {
 	u32 status;
+	uint64_t start = get_time_ns();
 	do {
 		if (mv64xxx_read(drv_data, drv_data->reg_offsets.control) &
 							REG_CONTROL_IFLG) {
@@ -432,6 +435,11 @@ mv64xxx_i2c_wait_for_completion(struct mv64xxx_i2c_data *drv_data)
 					      drv_data->reg_offsets.status);
 			mv64xxx_i2c_fsm(drv_data, status);
 			mv64xxx_i2c_do_action(drv_data);
+		} else {
+			if (is_timeout(start, MV46XXX_I2C_TIMEOUT)) {
+				dev_warn(&drv_data->adapter.dev, "timeout waiting for bus ready\n");
+				return -ETIMEDOUT;
+			}
 		}
 		if (drv_data->rc) {
 			drv_data->state = STATE_IDLE;
@@ -440,6 +448,8 @@ mv64xxx_i2c_wait_for_completion(struct mv64xxx_i2c_data *drv_data)
 			drv_data->block = false;
 		}
 	} while (drv_data->block);
+
+	return 0;
 }
 
 /*
@@ -453,7 +463,7 @@ static int
 mv64xxx_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
 {
 	struct mv64xxx_i2c_data *drv_data = container_of(adap, struct mv64xxx_i2c_data, adapter);
-	int ret = num;
+	int ret;
 
 	BUG_ON(drv_data->msgs != NULL);
 
@@ -463,15 +473,15 @@ mv64xxx_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
 	drv_data->send_stop = (num == 1);
 	drv_data->block = true;
 	mv64xxx_i2c_send_start(drv_data);
-	mv64xxx_i2c_wait_for_completion(drv_data);
+	ret = mv64xxx_i2c_wait_for_completion(drv_data);
 
-	if (drv_data->rc < 0)
+	if (!ret && drv_data->rc < 0)
 		ret = drv_data->rc;
 
 	drv_data->num_msgs = 0;
 	drv_data->msgs = NULL;
 
-	return ret;
+	return (ret < 0) ? ret : num;
 }
 
 /*

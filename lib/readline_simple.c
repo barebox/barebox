@@ -35,11 +35,8 @@ static char * delete_char (char *buffer, char *p, int *colp, int *np, int plen)
 
 /*
  * Prompt for input and read a line.
- * If  CONFIG_BOOT_RETRY_TIME is defined and retry_time >= 0,
- * time out when time goes past endtime (timebase time in ticks).
  * Return:	number of read characters
  *		-1 if break
- *		-2 if timed out
  */
 int readline (const char *prompt, char *line, int len)
 {
@@ -58,6 +55,8 @@ int readline (const char *prompt, char *line, int len)
 
 	for (;;) {
 		c = getchar();
+		if (c < 0)
+			return (-1);
 
 		/*
 		 * Special character handling

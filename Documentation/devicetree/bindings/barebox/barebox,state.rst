@@ -48,8 +48,10 @@ Optional Properties
 ###################
 
 * ``backend-stridesize``: stride counted in bytes. See note below.
-* ``backend-storage-type``: Defines the backend storage type to ``direct`` or
-  ``circular``. Defaults to ``circular`` for media which requires erase cycles.
+* ``backend-storage-type``: Defines the backend storage type to ``direct``,
+  ``circular`` or ``noncircular``. If the backend memory needs to be erased
+  prior a write it defaults to the ``circular`` storage backend type, for backend
+  memories like RAMs or EEPROMs it defaults to the ``direct`` storage backend type.
 * ``algo``: A HMAC algorithm used to detect manipulation of the data
   or header, sensible values follow this pattern ``hmac(<HASH>)``,
   e.g. ``hmac(sha256)``. Only available for the ``backend-type`` ``raw``.

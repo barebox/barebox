@@ -357,11 +357,12 @@ static int state_storage_file_buckets_init(struct state_backend_storage *storage
  * @param dev_offset Offset in the device to start writing at.
  * @param max_size Maximum size of the data. May be 0 for infinite.
  * @param stridesize Distance between two copies of the data. Not relevant for MTD
- * @param storagetype Type of the storage backend. This may be NULL where we
- * autoselect some backwardscompatible backend options
+ * @param storagetype Type of the storage backend. May be NULL for autoselection.
  * @return 0 on success, -errno otherwise
  *
- * Depending on the filetype, we create mtd buckets or normal file buckets.
+ * If the backend memory needs to be erased prior a write, the @b storagetype
+ * defaults to 'circular' storage backend type, for backend memories like RAMs
+ * or EEPROMs @b storagetype defaults to the 'direct' storage backend type.
  */
 int state_storage_init(struct state *state, const char *path,
 		       off_t offset, size_t max_size, uint32_t stridesize,
@@ -373,6 +374,7 @@ int state_storage_init(struct state *state, const char *path,
 
 	INIT_LIST_HEAD(&storage->buckets);
 	storage->dev = &state->dev;
+	storage->name = storagetype;
 	storage->stridesize = stridesize;
 	storage->offset = offset;
 	storage->max_size = max_size;
@@ -387,7 +389,6 @@ int state_storage_init(struct state *state, const char *path,
 			storage->name = "circular";
 			circular = true;
 		} else if (!strcmp(storagetype, "noncircular")) {
-			storage->name = "noncircular";
 			dev_warn(storage->dev, "using old format circular storage type.\n");
 			circular = false;
 		} else {

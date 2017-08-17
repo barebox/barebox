@@ -214,7 +214,7 @@ static int mtd_get_meminfo(const char *path, struct mtd_info_user *meminfo)
 
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
-		pr_err("Failed to open '%s', %d\n", path, ret);
+		pr_err("Failed to open '%s', %d\n", path, fd);
 		return fd;
 	}
 

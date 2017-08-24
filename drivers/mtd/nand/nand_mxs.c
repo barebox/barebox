@@ -459,7 +459,7 @@ static void mxs_nand_cmd_ctrl(struct mtd_info *mtd, int data, unsigned int ctrl)
 	/* Execute the DMA chain. */
 	ret = mxs_dma_go(channel);
 	if (ret)
-		printf("MXS NAND: Error sending command\n");
+		printf("MXS NAND: Error sending command (%d)\n", ret);
 
 	mxs_nand_return_dma_descs(nand_info);
 
@@ -815,7 +815,7 @@ static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand
 	/* Execute the DMA chain. */
 	ret = mxs_dma_go(channel);
 	if (ret) {
-		printf("MXS NAND: DMA read error\n");
+		printf("MXS NAND: DMA read error (ecc)\n");
 		goto rtn;
 	}
 

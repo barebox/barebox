@@ -2030,19 +2030,23 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 
 	nand->select_chip(mtd, 0);
 
-	/* [1] send SET FEATURE commond to NAND */
-	feature[0] = mode;
+	if (le16_to_cpu(nand->onfi_params.opt_cmd)
+	      & ONFI_OPT_CMD_SET_GET_FEATURES) {
 
-	ret = nand->onfi_set_features(mtd, nand,
-				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
-	if (ret)
-		goto err_out;
+		/* [1] send SET FEATURE commond to NAND */
+		feature[0] = mode;
 
-	/* [2] send GET FEATURE command to double-check the timing mode */
-	ret = nand->onfi_get_features(mtd, nand,
+		ret = nand->onfi_set_features(mtd, nand,
 				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
-	if (ret || feature[0] != mode)
-		goto err_out;
+		if (ret)
+			goto err_out;
+
+		/* [2] send GET FEATURE command to double-check the timing mode */
+		ret = nand->onfi_get_features(mtd, nand,
+				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
+		if (ret || feature[0] != mode)
+			goto err_out;
+	}
 
 	nand->select_chip(mtd, -1);
 

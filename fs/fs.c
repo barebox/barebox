@@ -158,8 +158,8 @@ static char *__canonicalize_path(const char *_pathname, int level)
 
 	path = freep = xstrdup(_pathname);
 
-	if (*path == '/')
-		outpath = xstrdup("/");
+	if (*path == '/' || !strcmp(cwd, "/"))
+		outpath = xstrdup("");
 	else
 		outpath = __canonicalize_path(cwd, level + 1);
 
@@ -211,6 +211,11 @@ static char *__canonicalize_path(const char *_pathname, int level)
 	}
 out:
 	free(freep);
+
+	if (!*outpath) {
+		free(outpath);
+		outpath = xstrdup("/");
+	}
 
 	return outpath;
 }

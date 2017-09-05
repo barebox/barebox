@@ -405,6 +405,11 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 		goto out;
 	}
 
+	if (!bus) {
+		ret = -ENODEV;
+		goto out;
+	}
+
 	if (addr >= 0) {
 		phy = mdiobus_scan(bus, addr);
 		if (IS_ERR(phy)) {

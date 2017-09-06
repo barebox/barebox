@@ -1,3 +1,5 @@
+.. _barebox_on_uefi:
+
 barebox on (U)EFI
 =================
 

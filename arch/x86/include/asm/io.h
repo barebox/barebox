@@ -61,6 +61,19 @@ BUILDIO(b, b, char)
 BUILDIO(w, w, short)
 BUILDIO(l, , int)
 
+#define outb	outb
+#define outw	outw
+#define outl	outb
+#define inb	inb
+#define inw	inw
+#define inl	inl
+#define outsb	outsb
+#define outsw	outsw
+#define outsl	outsb
+#define insb	insb
+#define insw	insw
+#define insl	insl
+
 #define  IO_SPACE_LIMIT  0xffff
 
 /* do a tiny io delay */
@@ -68,5 +81,7 @@ static inline void io_delay(void)
 {
 	inb(0x80);
 }
+
+#include <asm-generic/io.h>
 
 #endif	/* __ASM_X86_IO_H */

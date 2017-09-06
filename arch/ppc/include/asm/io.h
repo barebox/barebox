@@ -244,4 +244,6 @@ void		ppcDcbi(unsigned long value);
 void		ppcSync(void);
 void		ppcDcbz(unsigned long value);
 
+#include <asm-generic/io.h>
+
 #endif

@@ -558,4 +558,4 @@ static struct efi_driver efi_fs_driver = {
         .probe = efi_fs_probe,
 	.guid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID,
 };
-device_efi_driver(efi_fs_driver);
+fs_efi_driver(efi_fs_driver);

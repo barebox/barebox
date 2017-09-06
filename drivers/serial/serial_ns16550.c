@@ -94,6 +94,16 @@ static void ns16550_write_reg_mmio_32(struct ns16550_priv *priv, uint8_t val, un
 	writel(val, priv->mmiobase + offset);
 }
 
+static uint8_t ns16550_read_reg_mmio_32be(struct ns16550_priv *priv, unsigned offset)
+{
+	return ioread32be(priv->mmiobase + offset);
+}
+
+static void ns16550_write_reg_mmio_32be(struct ns16550_priv *priv, uint8_t val, unsigned offset)
+{
+	iowrite32be(val, priv->mmiobase + offset);
+}
+
 static uint8_t ns16550_read_reg_ioport_8(struct ns16550_priv *priv, unsigned offset)
 {
 	return inb(priv->iobase + offset);
@@ -305,8 +315,13 @@ static void ns16550_probe_dt(struct device_d *dev, struct ns16550_priv *priv)
 			priv->write_reg = ns16550_write_reg_mmio_16;
 			break;
 		case 4:
-			priv->read_reg = ns16550_read_reg_mmio_32;
-			priv->write_reg = ns16550_write_reg_mmio_32;
+			if (of_device_is_big_endian(np)) {
+				priv->read_reg = ns16550_read_reg_mmio_32be;
+				priv->write_reg = ns16550_write_reg_mmio_32be;
+			} else {
+				priv->read_reg = ns16550_read_reg_mmio_32;
+				priv->write_reg = ns16550_write_reg_mmio_32;
+			}
 			break;
 		default:
 			dev_err(dev, "unsupported reg-io-width (%d)\n",

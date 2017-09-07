@@ -308,7 +308,7 @@ static void __iomem *bgpio_map(struct device_d *dev, const char *name,
 			       resource_size_t sane_sz, int *err)
 {
 	struct resource *r;
-	void __iomem *ret;
+	struct resource *ret;
 
 	*err = 0;
 
@@ -327,7 +327,7 @@ static void __iomem *bgpio_map(struct device_d *dev, const char *name,
 		return NULL;
 	}
 
-	return ret;
+	return IOMEM(ret->start);
 }
 
 static int bgpio_dev_probe(struct device_d *dev)

@@ -410,9 +410,18 @@ static struct platform_device_id bgpio_id_table[] = {
 	{ }
 };
 
+static struct of_device_id __maybe_unused bgpio_of_match[] = {
+	{
+		.compatible = "wd,mbl-gpio",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d bgpio_driver = {
 	.name		= "basic-mmio-gpio",
 	.id_table	= bgpio_id_table,
+	.of_compatible	= DRV_OF_COMPAT(bgpio_of_match),
 	.probe		= bgpio_dev_probe,
 	.remove		= bgpio_dev_remove,
 };

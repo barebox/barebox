@@ -323,7 +323,7 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return NULL;
 
-	if (!edev->parent->device_node)
+	if (!edev->parent || !edev->parent->device_node)
 		return NULL;
 
 	phy_node = of_parse_phandle(edev->parent->device_node, "phy-handle", 0);
@@ -402,6 +402,11 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	if (phy) {
 		ret = phy_device_attach(phy, edev, adjust_link, flags, interface);
 
+		goto out;
+	}
+
+	if (!bus) {
+		ret = -ENODEV;
 		goto out;
 	}
 

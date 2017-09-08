@@ -33,6 +33,8 @@ static inline struct efi_driver *to_efi_driver(struct driver_d *drv)
 #define device_efi_driver(drv)	\
 	register_driver_macro(device, efi, drv)
 
+#define fs_efi_driver(drv)	\
+	register_driver_macro(fs, efi, drv)
 static inline int efi_driver_register(struct efi_driver *efidrv)
 {
 	efidrv->driver.bus = &efi_bus;

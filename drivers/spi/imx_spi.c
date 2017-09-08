@@ -32,14 +32,17 @@
 #include <linux/err.h>
 #include <clock.h>
 
+/* time to wait for STAT_RR getting set */
+#define IMX_SPI_RR_TIMEOUT	10000 /* ns */
+
 struct imx_spi {
 	struct spi_master	master;
 	int			*cs_array;
 	void __iomem		*regs;
 	struct clk		*clk;
 
-	unsigned int		(*xchg_single)(struct imx_spi *imx, u32 data);
-	void			(*do_transfer)(struct spi_device *spi);
+	int			(*xchg_single)(struct imx_spi *imx, u32 txdata, u32 *rxdata);
+	int			(*do_transfer)(struct spi_device *spi);
 	void			(*chipselect)(struct spi_device *spi, int active);
 
 	const void *tx_buf;
@@ -49,8 +52,8 @@ struct imx_spi {
 };
 
 struct spi_imx_devtype_data {
-	unsigned int		(*xchg_single)(struct imx_spi *imx, u32 data);
-	void			(*do_transfer)(struct spi_device *spi);
+	int			(*xchg_single)(struct imx_spi *imx, u32 txdata, u32 *rxdata);
+	int			(*do_transfer)(struct spi_device *spi);
 	void			(*chipselect)(struct spi_device *spi, int active);
 	void			(*init)(struct imx_spi *imx);
 };
@@ -86,21 +89,29 @@ static unsigned int imx_spi_maybe_reverse_bits(struct spi_device *spi, unsigned 
 	return result;
 }
 
-static unsigned int cspi_0_0_xchg_single(struct imx_spi *imx, unsigned int data)
+static int cspi_0_0_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 {
 	void __iomem *base = imx->regs;
+	int ret;
 
 	unsigned int cfg_reg = readl(base + CSPI_0_0_CTRL);
 
-	writel(data, base + CSPI_0_0_TXDATA);
+	writel(txdata, base + CSPI_0_0_TXDATA);
 
 	cfg_reg |= CSPI_0_0_CTRL_XCH;
 
 	writel(cfg_reg, base + CSPI_0_0_CTRL);
 
-	while (!(readl(base + CSPI_0_0_INT) & CSPI_0_0_STAT_RR));
+	ret = wait_on_timeout(IMX_SPI_RR_TIMEOUT,
+			      readl(base + CSPI_0_0_INT) & CSPI_0_0_STAT_RR);
+	if (ret) {
+		dev_err(imx->master.dev, "Timeout waiting for received data\n");
+		return ret;
+	}
 
-	return readl(base + CSPI_0_0_RXDATA);
+	*rxdata = readl(base + CSPI_0_0_RXDATA);
+
+	return 0;
 }
 
 static void cspi_0_0_chipselect(struct spi_device *spi, int is_active)
@@ -152,22 +163,28 @@ static void cspi_0_0_init(struct imx_spi *imx)
 	} while (readl(base + CSPI_0_0_RESET) & CSPI_0_0_RESET_START);
 }
 
-static unsigned int cspi_0_7_xchg_single(struct imx_spi *imx, unsigned int data)
+static int cspi_0_7_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 {
 	void __iomem *base = imx->regs;
+	int ret;
 
 	unsigned int cfg_reg = readl(base + CSPI_0_7_CTRL);
 
-	writel(data, base + CSPI_0_7_TXDATA);
+	writel(txdata, base + CSPI_0_7_TXDATA);
 
 	cfg_reg |= CSPI_0_7_CTRL_XCH;
 
 	writel(cfg_reg, base + CSPI_0_7_CTRL);
 
-	while (!(readl(base + CSPI_0_7_STAT) & CSPI_0_7_STAT_RR))
-		;
+	ret = wait_on_timeout(IMX_SPI_RR_TIMEOUT,
+			      readl(base + CSPI_0_7_STAT) & CSPI_0_7_STAT_RR);
+	if (ret) {
+		dev_err(imx->master.dev, "Timeout waiting for received data\n");
+		return ret;
+	}
 
-	return readl(base + CSPI_0_7_RXDATA);
+	*rxdata = readl(base + CSPI_0_7_RXDATA);
+	return 0;
 }
 
 /* MX1, MX31, MX35, MX51 CSPI */
@@ -242,15 +259,23 @@ static void cspi_0_7_init(struct imx_spi *imx)
 		readl(base + CSPI_0_7_RXDATA);
 }
 
-static unsigned int cspi_2_3_xchg_single(struct imx_spi *imx, unsigned int data)
+static int cspi_2_3_xchg_single(struct imx_spi *imx, u32 txdata, u32 *rxdata)
 {
 	void __iomem *base = imx->regs;
+	int ret;
 
-	writel(data, base + CSPI_2_3_TXDATA);
+	writel(txdata, base + CSPI_2_3_TXDATA);
 
-	while (!(readl(base + CSPI_2_3_STAT) & CSPI_2_3_STAT_RR));
+	ret = wait_on_timeout(IMX_SPI_RR_TIMEOUT,
+			      readl(base + CSPI_2_3_STAT) & CSPI_2_3_STAT_RR);
+	if (ret) {
+		dev_err(imx->master.dev, "Timeout waiting for received data\n");
+		return ret;
+	}
 
-	return readl(base + CSPI_2_3_RXDATA);
+	*rxdata = readl(base + CSPI_2_3_RXDATA);
+
+	return 0;
 }
 
 static unsigned int cspi_2_3_clkdiv(unsigned int fin, unsigned int fspi)
@@ -336,16 +361,20 @@ static void cspi_2_3_chipselect(struct spi_device *spi, int is_active)
 		gpio_set_value(gpio, gpio_cs);
 }
 
-static u32 imx_xchg_single(struct spi_device *spi, u32 tx_val)
+static int imx_xchg_single(struct spi_device *spi, u32 tx_val, u32* rx_val)
 {
-	u32 rx_val;
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
-
+	u32 local_rx_val;
+	int ret;
 
 	tx_val = imx_spi_maybe_reverse_bits(spi, tx_val);
-	rx_val = imx->xchg_single(imx, tx_val);
+	ret = imx->xchg_single(imx, tx_val, &local_rx_val);
+	if (ret)
+		return ret;
 
-	return imx_spi_maybe_reverse_bits(spi, rx_val);
+	*rx_val = imx_spi_maybe_reverse_bits(spi, local_rx_val);
+
+	return 0;
 }
 
 static void cspi_2_3_init(struct imx_spi *imx)
@@ -355,18 +384,21 @@ static void cspi_2_3_init(struct imx_spi *imx)
 	writel(0, base + CSPI_2_3_CTRL);
 }
 
-static void imx_spi_do_transfer(struct spi_device *spi)
+static int imx_spi_do_transfer(struct spi_device *spi)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
 	unsigned i;
+	u32 rx_val;
+	int ret;
 
 	if (imx->bits_per_word <= 8) {
 		const u8	*tx_buf = imx->tx_buf;
 		u8		*rx_buf = imx->rx_buf;
-		u8		rx_val;
 
 		for (i = 0; i < imx->xfer_len; i++) {
-			rx_val = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0);
+			ret = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0, &rx_val);
+			if (ret)
+				return ret;
 
 			if (rx_buf)
 				rx_buf[i] = rx_val;
@@ -374,10 +406,11 @@ static void imx_spi_do_transfer(struct spi_device *spi)
 	} else if (imx->bits_per_word <= 16) {
 		const u16	*tx_buf = imx->tx_buf;
 		u16		*rx_buf = imx->rx_buf;
-		u16		rx_val;
 
 		for (i = 0; i < imx->xfer_len >> 1; i++) {
-			rx_val = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0);
+			ret = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0, &rx_val);
+			if (ret)
+				return ret;
 
 			if (rx_buf)
 				rx_buf[i] = rx_val;
@@ -385,15 +418,18 @@ static void imx_spi_do_transfer(struct spi_device *spi)
 	} else if (imx->bits_per_word <= 32) {
 		const u32	*tx_buf = imx->tx_buf;
 		u32		*rx_buf = imx->rx_buf;
-		u32		rx_val;
 
 		for (i = 0; i < imx->xfer_len >> 2; i++) {
-			rx_val = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0);
+			ret = imx_xchg_single(spi, tx_buf ? tx_buf[i] : 0, &rx_val);
+			if (ret)
+				return ret;
 
 			if (rx_buf)
 				rx_buf[i] = rx_val;
 		}
 	}
+
+	return 0;
 }
 
 static int cspi_2_3_xchg_burst(struct spi_device *spi)
@@ -448,7 +484,7 @@ static int cspi_2_3_xchg_burst(struct spi_device *spi)
 	return now;
 }
 
-static void cspi_2_3_do_transfer(struct spi_device *spi)
+static int cspi_2_3_do_transfer(struct spi_device *spi)
 {
 	struct imx_spi *imx = container_of(spi->master, struct imx_spi, master);
 	u32 ctrl;
@@ -457,14 +493,14 @@ static void cspi_2_3_do_transfer(struct spi_device *spi)
 		while (cspi_2_3_xchg_burst(spi) > 0);
 
 	if (!imx->xfer_len)
-		return;
+		return 0;
 
 	ctrl = readl(imx->regs + CSPI_2_3_CTRL);
 	ctrl &= ~(0xfff << CSPI_2_3_CTRL_BL_OFFSET);
 	ctrl |= (spi->bits_per_word - 1) << CSPI_2_3_CTRL_BL_OFFSET;
 	writel(ctrl, imx->regs + CSPI_2_3_CTRL);
 
-	imx_spi_do_transfer(spi);
+	return imx_spi_do_transfer(spi);
 }
 
 static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
@@ -473,6 +509,7 @@ static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 	struct spi_transfer *t;
 	unsigned int cs_change;
 	const int nsecs = 50;
+	int ret;
 
 	imx->chipselect(spi, 1);
 
@@ -494,7 +531,9 @@ static int imx_spi_transfer(struct spi_device *spi, struct spi_message *mesg)
 		imx->rx_buf = t->rx_buf;
 		imx->xfer_len = t->len;
 		imx->bits_per_word = spi->bits_per_word;
-		imx->do_transfer(spi);
+		ret = imx->do_transfer(spi);
+		if (ret)
+			return ret;
 
 		mesg->actual_length += t->len;
 

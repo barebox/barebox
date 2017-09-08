@@ -83,6 +83,48 @@ static void __noreturn armada_370_xp_restart_soc(struct restart_handler *rst)
 	hang();
 }
 
+#define MVEBU_AXP_USB_BASE		(MVEBU_REMAP_INT_REG_BASE + 0x50000)
+#define MV_USB_PHY_BASE			(MVEBU_AXP_USB_BASE + 0x800)
+#define MV_USB_PHY_PLL_REG(reg)		(MV_USB_PHY_BASE | (((reg) & 0xF) << 2))
+#define MV_USB_X3_BASE(addr)		(MVEBU_AXP_USB_BASE | BIT(11) | \
+					 (((addr) & 0xF) << 6))
+#define MV_USB_X3_PHY_CHANNEL(dev, reg) (MV_USB_X3_BASE((dev) + 1) |	\
+					 (((reg) & 0xF) << 2))
+
+static void setup_usb_phys(void)
+{
+	int dev;
+
+	/*
+	 * USB PLL init
+	 */
+
+	/* Setup PLL frequency */
+	/* USB REF frequency = 25 MHz */
+	clrsetbits_le32(MV_USB_PHY_PLL_REG(1), 0x3ff, 0x605);
+
+	/* Power up PLL and PHY channel */
+	setbits_le32(MV_USB_PHY_PLL_REG(2), BIT(9));
+ 
+	/* Assert VCOCAL_START */
+	setbits_le32(MV_USB_PHY_PLL_REG(1), BIT(21));
+ 
+	mdelay(1);
+ 
+	/*
+	 * USB PHY init (change from defaults) specific for 40nm (78X30 78X60)
+	 */
+
+	for (dev = 0; dev < 3; dev++) {
+		setbits_le32(MV_USB_X3_PHY_CHANNEL(dev, 3), BIT(15));
+
+		/* Assert REG_RCAL_START in channel REG 1 */
+		setbits_le32(MV_USB_X3_PHY_CHANNEL(dev, 1), BIT(12));
+		udelay(40);
+		clrbits_le32(MV_USB_X3_PHY_CHANNEL(dev, 1), BIT(12));
+	}
+}
+
 static int armada_370_xp_init_soc(void)
 {
 	u32 reg;
@@ -109,6 +151,9 @@ static int armada_370_xp_init_soc(void)
 		reg = readl(ARMADA_XP_PUP_ENABLE);
 		reg |= GE0_PUP_EN | GE1_PUP_EN | LCD_PUP_EN | NAND_PUP_EN | SPI_PUP_EN;
 		writel(reg, ARMADA_XP_PUP_ENABLE);
+
+		/* Configure USB PLL and PHYs on AXP */
+		setup_usb_phys();
 	}
 
 	return 0;

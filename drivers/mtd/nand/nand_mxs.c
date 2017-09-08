@@ -459,7 +459,7 @@ static void mxs_nand_cmd_ctrl(struct mtd_info *mtd, int data, unsigned int ctrl)
 	/* Execute the DMA chain. */
 	ret = mxs_dma_go(channel);
 	if (ret)
-		printf("MXS NAND: Error sending command\n");
+		printf("MXS NAND: Error sending command (%d)\n", ret);
 
 	mxs_nand_return_dma_descs(nand_info);
 
@@ -815,7 +815,7 @@ static int __mxs_nand_ecc_read_page(struct mtd_info *mtd, struct nand_chip *nand
 	/* Execute the DMA chain. */
 	ret = mxs_dma_go(channel);
 	if (ret) {
-		printf("MXS NAND: DMA read error\n");
+		printf("MXS NAND: DMA read error (ecc)\n");
 		goto rtn;
 	}
 
@@ -2030,19 +2030,23 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 
 	nand->select_chip(mtd, 0);
 
-	/* [1] send SET FEATURE commond to NAND */
-	feature[0] = mode;
+	if (le16_to_cpu(nand->onfi_params.opt_cmd)
+	      & ONFI_OPT_CMD_SET_GET_FEATURES) {
 
-	ret = nand->onfi_set_features(mtd, nand,
-				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
-	if (ret)
-		goto err_out;
+		/* [1] send SET FEATURE commond to NAND */
+		feature[0] = mode;
 
-	/* [2] send GET FEATURE command to double-check the timing mode */
-	ret = nand->onfi_get_features(mtd, nand,
+		ret = nand->onfi_set_features(mtd, nand,
 				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
-	if (ret || feature[0] != mode)
-		goto err_out;
+		if (ret)
+			goto err_out;
+
+		/* [2] send GET FEATURE command to double-check the timing mode */
+		ret = nand->onfi_get_features(mtd, nand,
+				ONFI_FEATURE_ADDR_TIMING_MODE, feature);
+		if (ret || feature[0] != mode)
+			goto err_out;
+	}
 
 	nand->select_chip(mtd, -1);
 

@@ -1,9 +1,9 @@
 #ifndef __ASM_ARM_IO_H
 #define __ASM_ARM_IO_H
 
-#include <asm-generic/io.h>
-
 #define	IO_SPACE_LIMIT	0
+
+#include <asm-generic/io.h>
 
 /*
  * String version of IO memory access ops:

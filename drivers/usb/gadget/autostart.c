@@ -31,19 +31,28 @@ static char *fastboot_function;
 
 static int usbgadget_autostart(void)
 {
-	struct f_multi_opts opts = {};
+	struct f_multi_opts *opts;
+	int ret;
 
 	if (!autostart)
 		return 0;
 
 	setenv("otg.mode", "peripheral");
 
+	opts = xzalloc(sizeof(*opts));
+	opts->release = usb_multi_opts_release;
+
 	if (fastboot_function)
-		opts.fastboot_opts.files = file_list_parse(fastboot_function);
+		opts->fastboot_opts.files = file_list_parse(fastboot_function);
 
-	opts.create_acm = acm;
+	opts->create_acm = acm;
 
-	return usb_multi_register(&opts);
+
+	ret = usb_multi_register(opts);
+	if (ret)
+		usb_multi_opts_release(opts);
+
+	return ret;
 }
 postenvironment_initcall(usbgadget_autostart);
 

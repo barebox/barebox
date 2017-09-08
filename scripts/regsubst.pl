@@ -71,7 +71,7 @@ Then you can process the file with B<regsubst.pl>:
 If the result looks ok, you can replace the file:
 
  $ scripts/regsubst.pl -I arch/arm/mach-imx/include flash-header-myboard.imxcfg > u
- $ mov u flash-header-myboard.imxcfg
+ $ mv u flash-header-myboard.imxcfg
 
 =cut
 

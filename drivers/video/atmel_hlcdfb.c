@@ -178,7 +178,6 @@ static u32 atmel_hlcdfb_get_rgbmode(struct fb_info *info)
 static void atmel_hlcdfb_setup_core_base(struct fb_info *info)
 {
 	struct atmel_lcdfb_info *sinfo = info->priv;
-	struct atmel_lcdfb_platform_data *pdata = sinfo->pdata;
 	struct fb_videomode *mode = info->mode;
 	unsigned long value;
 	unsigned long clk_value_khz;
@@ -205,8 +204,8 @@ static void atmel_hlcdfb_setup_core_base(struct fb_info *info)
 	lcdc_writel(sinfo, ATMEL_LCDC_LCDCFG0, value);
 
 	/* Initialize control register 5 */
-	/* In 9x5, the default_lcdcon2 will use for LCDCFG5 */
-	value = pdata->default_lcdcon2;
+	/* In 9x5, the lcdcon2 will use for LCDCFG5 */
+	value = sinfo->lcdcon2;
 	value |= (sinfo->guard_time << LCDC_LCDCFG5_GUARDTIME_OFFSET)
 		| LCDC_LCDCFG5_DISPDLY
 		| LCDC_LCDCFG5_VSPDLYS;

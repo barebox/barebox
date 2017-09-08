@@ -21,10 +21,16 @@ struct atmel_lcdfb_info {
 
 	unsigned int		guard_time;
 	unsigned int		smem_len;
+	unsigned int		lcdcon2;
+	unsigned int		dmacon;
+	unsigned int		lcd_wiring_mode;
+	bool			have_intensity_bit;
+
+	int			gpio_power_control;
+	bool			gpio_power_control_active_low;
 	struct clk		*bus_clk;
 	struct clk		*lcdc_clk;
 
-	struct atmel_lcdfb_platform_data *pdata;
 	struct atmel_lcdfb_devdata *dev_data;
 	void			*dma_desc;
 };

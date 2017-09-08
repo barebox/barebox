@@ -81,9 +81,7 @@ static void atmel_lcdfb_stop(struct atmel_lcdfb_info *sinfo, u32 flags)
 
 static void atmel_lcdfb_start(struct atmel_lcdfb_info *sinfo)
 {
-	struct atmel_lcdfb_platform_data *pdata = sinfo->pdata;
-
-	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, pdata->default_dmacon);
+	lcdc_writel(sinfo, ATMEL_LCDC_DMACON, sinfo->dmacon);
 	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON,
 		(sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET)
 		| ATMEL_LCDC_PWR);
@@ -123,7 +121,6 @@ static void atmel_lcdfb_limit_screeninfo(struct fb_videomode *mode)
 static void atmel_lcdfb_setup_core(struct fb_info *info)
 {
 	struct atmel_lcdfb_info *sinfo = info->priv;
-	struct atmel_lcdfb_platform_data *pdata = sinfo->pdata;
 	struct fb_videomode *mode = info->mode;
 	unsigned long clk_value_khz;
 	unsigned long pix_factor = 2;
@@ -159,7 +156,7 @@ static void atmel_lcdfb_setup_core(struct fb_info *info)
 	}
 
 	/* Initialize control register 2 */
-	value = pdata->default_lcdcon2;
+	value = sinfo->lcdcon2;
 
 	if (!(mode->sync & FB_SYNC_HOR_HIGH_ACT))
 		value |= ATMEL_LCDC_INVLINE_INVERTED;
@@ -246,8 +243,20 @@ static int atmel_lcdc_probe(struct device_d *dev)
 	return atmel_lcdc_register(dev, &atmel_lcdfb_data);
 }
 
+static __maybe_unused struct of_device_id atmel_lcdfb_compatible[] = {
+	{ .compatible = "atmel,at91sam9261-lcdc", },
+	{ .compatible = "atmel,at91sam9263-lcdc", },
+	{ .compatible = "atmel,at91sam9g10-lcdc", },
+	{ .compatible = "atmel,at91sam9g45-lcdc", },
+	{ .compatible = "atmel,at91sam9g45es-lcdc", },
+	{ .compatible = "atmel,at91sam9rl-lcdc", },
+	{ .compatible = "atmel,at32ap-lcdc", },
+	{ /* sentinel */ }
+};
+
 static struct driver_d atmel_lcdc_driver = {
 	.name	= "atmel_lcdfb",
 	.probe	= atmel_lcdc_probe,
+	.of_compatible = DRV_OF_COMPAT(atmel_lcdfb_compatible),
 };
 device_platform_driver(atmel_lcdc_driver);

@@ -158,22 +158,6 @@ static void ek_add_device_udc(void) {}
  * LCD Controller
  */
 #if defined(CONFIG_DRIVER_VIDEO_ATMEL)
-static int ek_gpio_request_output(int gpio, const char *name)
-{
-	int ret;
-
-	ret = gpio_request(gpio, name);
-	if (ret) {
-		pr_err("%s: can not request gpio %d (%d)\n", name, gpio, ret);
-		return ret;
-	}
-
-	ret = gpio_direction_output(gpio, 1);
-	if (ret)
-		pr_err("%s: can not configure gpio %d as output (%d)\n", name, gpio, ret);
-	return ret;
-}
-
 /* TFT */
 static struct fb_videomode at91_tft_vga_modes[] = {
 	{
@@ -195,35 +179,20 @@ static struct fb_videomode at91_tft_vga_modes[] = {
 					| ATMEL_LCDC_DISTYPE_TFT    \
 					| ATMEL_LCDC_CLKMOD_ALWAYSACTIVE)
 
-static void at91_lcdc_tft_power_control(int on)
-{
-	if (on)
-		gpio_set_value(AT91_PIN_PA12, 0);	/* power up */
-	else
-		gpio_set_value(AT91_PIN_PA12, 1);	/* power down */
-}
-
 static struct atmel_lcdfb_platform_data ek_lcdc_data = {
 	.lcdcon_is_backlight		= true,
 	.default_bpp			= 16,
 	.default_dmacon			= ATMEL_LCDC_DMAEN,
 	.default_lcdcon2		= AT91SAM9261_DEFAULT_TFT_LCDCON2,
 	.guard_time			= 1,
-	.atmel_lcdfb_power_control	= at91_lcdc_tft_power_control,
+	.gpio_power_control		= AT91_PIN_PA12,
+	.gpio_power_control_active_low	= true,
 	.mode_list			= at91_tft_vga_modes,
 	.num_modes			= ARRAY_SIZE(at91_tft_vga_modes),
 };
 
-static int at91_lcdc_gpio(void)
-{
-	return ek_gpio_request_output(AT91_PIN_PA12, "lcdc_tft_power");
-}
-
 static void ek_add_device_lcdc(void)
 {
-	if (at91_lcdc_gpio())
-		return;
-
 	if (machine_is_at91sam9g10ek())
 		ek_lcdc_data.lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB;
 

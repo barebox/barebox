@@ -44,7 +44,8 @@ struct atmel_lcdfb_platform_data {
 	u8			lcd_wiring_mode;
 	unsigned int		default_lcdcon2;
 	unsigned int		default_dmacon;
-	void (*atmel_lcdfb_power_control)(int on);
+	int			gpio_power_control;
+	bool			gpio_power_control_active_low;
 	struct fb_videomode	*mode_list;
 	unsigned		num_modes;
 

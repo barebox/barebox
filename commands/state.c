@@ -72,12 +72,14 @@ BAREBOX_CMD_HELP_TEXT("Usage: state [OPTIONS] [STATENAME]")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("options:")
 BAREBOX_CMD_HELP_OPT ("-s", "save state")
+BAREBOX_CMD_HELP_OPT ("-l", "load state")
+BAREBOX_CMD_HELP_OPT ("-n", "no authentication")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(state)
 	.cmd		= do_state,
-	BAREBOX_CMD_DESC("save state information")
-	BAREBOX_CMD_OPTS("[-s] [STATENAME]")
+	BAREBOX_CMD_DESC("load or save state information")
+	BAREBOX_CMD_OPTS("[-sln] [STATENAME]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_state_help)
 BAREBOX_CMD_END

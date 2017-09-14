@@ -8,6 +8,11 @@ if PHYLIB
 
 comment "MII PHY device drivers"
 
+config AR8327N_PHY
+	bool "Driver for QCA AR8327N PHYs"
+	---help---
+	  Currently supports the AR8327N PHY.
+
 config AT803X_PHY
 	bool "Driver for Atheros AT803X PHYs"
 	---help---

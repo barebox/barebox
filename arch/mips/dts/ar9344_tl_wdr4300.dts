@@ -11,6 +11,7 @@
 
 	aliases {
 		serial0 = &uart0;
+		spiflash = &spiflash;
 	};
 
 	memory@0 {

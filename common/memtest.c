@@ -90,7 +90,7 @@ int mem_test_request_regions(struct list_head *list)
 		 *
 		 * Between used regions. Start from second entry.
 		 */
-		list_for_each_entry_from(r, &bank->res->children, sibling) {
+		list_for_each_entry_continue(r, &bank->res->children, sibling) {
 			start = PAGE_ALIGN(r_prev->end + 1);
 			end = r->start - 1;
 			r_prev = r;

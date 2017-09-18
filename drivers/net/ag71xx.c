@@ -578,6 +578,7 @@ static int ag71xx_probe(struct device_d *dev)
 	priv = xzalloc(sizeof(struct ag71xx));
 	edev = &priv->netdev;
 	miibus = &priv->miibus;
+	dev->priv = edev;
 	edev->priv = priv;
 
 	edev->init = ag71xx_ether_init;
@@ -659,6 +660,13 @@ static int ag71xx_probe(struct device_d *dev)
 	return 0;
 }
 
+static void ag71xx_remove(struct device_d *dev)
+{
+	struct eth_device *edev = dev->priv;
+
+	ag71xx_ether_halt(edev);
+}
+
 static __maybe_unused struct of_device_id ag71xx_dt_ids[] = {
 	{ .compatible = "qca,ar9331-ge0", .data = &ag71xx_cfg_ar9331_ge0, },
 	{ .compatible = "qca,ar9344-gmac0", .data = &ag71xx_cfg_ar9344_gmac0, },
@@ -668,6 +676,7 @@ static __maybe_unused struct of_device_id ag71xx_dt_ids[] = {
 static struct driver_d ag71xx_driver = {
 	.name	= "ag71xx-gmac",
 	.probe		= ag71xx_probe,
+	.remove		= ag71xx_remove,
 	.of_compatible = DRV_OF_COMPAT(ag71xx_dt_ids),
 };
 device_platform_driver(ag71xx_driver);

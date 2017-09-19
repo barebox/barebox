@@ -173,6 +173,7 @@ static int bootm_open_initrd_uimage(struct image_data *data)
 			if (ret) {
 				printf("Checking data crc failed with %s\n",
 					strerror(-ret));
+				return ret;
 			}
 		}
 		uimage_print_contents(data->initrd);

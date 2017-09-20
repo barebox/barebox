@@ -1682,10 +1682,13 @@ static int mci_card_probe(struct mci *mci)
 	}
 
 	/* Check if this card can handle the "SD Card Physical Layer Specification 2.0" */
-	rc = sd_send_if_cond(mci);
-	rc = sd_send_op_cond(mci);
-	if (rc && rc == -ETIMEDOUT) {
-		/* If the command timed out, we check for an MMC card */
+	if (!host->no_sd) {
+		rc = sd_send_if_cond(mci);
+		rc = sd_send_op_cond(mci);
+	}
+	if (host->no_sd || rc == -ETIMEDOUT) {
+		/* If SD card initialization was skipped or if it timed out,
+		 * we check for an MMC card */
 		dev_dbg(&mci->dev, "Card seems to be a MultiMediaCard\n");
 		rc = mmc_send_op_cond(mci);
 	}
@@ -1904,6 +1907,7 @@ void mci_of_parse_node(struct mci_host *host,
 	}
 
 	host->non_removable = of_property_read_bool(np, "non-removable");
+	host->no_sd = of_property_read_bool(np, "no-sd");
 }
 
 void mci_of_parse(struct mci_host *host)

@@ -403,6 +403,7 @@ struct mci_host {
 	unsigned dsr_val;	/**< optional dsr value */
 	int use_dsr;		/**< optional dsr usage flag */
 	bool non_removable;	/**< device is non removable */
+	bool no_sd;		/**< do not send SD commands during initialization */
 	struct regulator *supply;
 
 	/** init the host interface */

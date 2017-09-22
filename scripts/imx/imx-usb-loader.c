@@ -635,7 +635,7 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 			break;
 		}
 		if ((last_trans > rem) || (last_trans > 64)) {
-			if ((last_trans == 64) && (cnt == rem)) {
+			if ((last_trans == 64) && (rem < 64)) {
 				/* Last transfer is expected to be too large for HID */
 			} else {
 				printf("err: %02x %02x %02x %02x cnt=%u rem=%d last_trans=%i\n",

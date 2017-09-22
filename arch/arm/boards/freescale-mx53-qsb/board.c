@@ -64,15 +64,6 @@ static void set_board_rev(int rev)
 	loco_system_rev =  (loco_system_rev & ~(0xF << 8)) | (rev & 0xF) << 8;
 }
 
-#define LOCO_FEC_PHY_RST		IMX_GPIO_NR(7, 6)
-
-static void loco_fec_reset(void)
-{
-	gpio_direction_output(LOCO_FEC_PHY_RST, 0);
-	mdelay(1);
-	gpio_set_value(LOCO_FEC_PHY_RST, 1);
-}
-
 #define MX53_LOCO_USB_PWREN		IMX_GPIO_NR(7, 8)
 
 static int loco_late_init(void)
@@ -147,8 +138,6 @@ static int loco_late_init(void)
 	/* USB PWR enable */
 	gpio_direction_output(MX53_LOCO_USB_PWREN, 0);
 	gpio_set_value(MX53_LOCO_USB_PWREN, 1);
-
-	loco_fec_reset();
 
 	set_silicon_rev(imx_silicon_revision());
 

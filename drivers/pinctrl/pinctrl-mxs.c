@@ -52,7 +52,7 @@ static int mxs_pinctrl_set_state(struct pinctrl_device *pdev, struct device_node
 		return -EINVAL;
 
 	if (!size || size % 4) {
-		dev_err(iomux->pinctrl.dev, "Invalid fsl,pins property in %s\n",
+		dev_err(iomux->pinctrl.dev, "Invalid fsl,pinmux-ids property in %s\n",
 				np->full_name);
 		return -EINVAL;
 	}

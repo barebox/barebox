@@ -106,8 +106,6 @@ static int vf610_gpio_probe(struct device_d *dev)
 	const __be32 *gpio_ranges;
 
 	port = xzalloc(sizeof(*port));
-	if (!port)
-		return -ENOMEM;
 
 	gpio_ranges = of_get_property(dev->device_node, "gpio-ranges", &size);
 	if (!gpio_ranges) {

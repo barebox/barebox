@@ -140,10 +140,6 @@ static int am335x_control_usb_probe(struct device_d *dev)
 		return ret;
 
 	ctrl_usb = xzalloc(sizeof(*ctrl_usb));
-	if (!ctrl_usb) {
-		dev_err(dev, "unable to alloc memory for control usb\n");
-		return -ENOMEM;
-	}
 
 	ctrl_usb->dev = dev;
 

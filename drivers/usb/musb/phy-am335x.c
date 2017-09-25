@@ -34,8 +34,6 @@ static int am335x_phy_probe(struct device_d *dev)
 	int ret;
 
 	am_usbphy = xzalloc(sizeof(*am_usbphy));
-	if (!am_usbphy)
-		return -ENOMEM;
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores)) {

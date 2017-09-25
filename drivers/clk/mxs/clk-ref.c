@@ -144,8 +144,6 @@ struct clk *mxs_clk_ref(const char *name, const char *parent_name,
 	int ret;
 
 	ref = xzalloc(sizeof(*ref));
-	if (!ref)
-		return ERR_PTR(-ENOMEM);
 
 	ref->parent = parent_name;
 	ref->clk.name = name;

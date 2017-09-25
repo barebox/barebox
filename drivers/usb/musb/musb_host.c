@@ -1717,8 +1717,6 @@ int musb_host_alloc(struct musb *musb)
 {
 	/* usbcore sets dev->driver_data to hcd, and sometimes uses that... */
 	musb->hcd = xzalloc(sizeof(struct usb_hcd));
-	if (!musb->hcd)
-		return -EINVAL;
 
 	musb->hcd->hcd_priv = musb;
 

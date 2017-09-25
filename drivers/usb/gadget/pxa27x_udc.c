@@ -218,8 +218,6 @@ static struct usb_request *pxa_ep_alloc_request(struct usb_ep *_ep)
 	struct pxa27x_request *req;
 
 	req = xzalloc(sizeof *req);
-	if (!req)
-		return NULL;
 
 	INIT_LIST_HEAD(&req->queue);
 	req->in_use = 0;

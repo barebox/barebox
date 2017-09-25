@@ -580,8 +580,6 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 	int ret;
 
 	imx6_pcie = xzalloc(sizeof(*imx6_pcie));
-	if (!imx6_pcie)
-		return -ENOMEM;
 
 	pp = &imx6_pcie->pp;
 	pp->dev = dev;

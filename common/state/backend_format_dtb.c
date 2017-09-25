@@ -136,8 +136,6 @@ int backend_format_dtb_create(struct state_backend_format **format,
 	struct state_backend_format_dtb *dtb;
 
 	dtb = xzalloc(sizeof(*dtb));
-	if (!dtb)
-		return -ENOMEM;
 
 	dtb->dev = dev;
 	dtb->format.pack = state_backend_format_dtb_pack;

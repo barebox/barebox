@@ -1352,8 +1352,6 @@ static int tc_probe(struct device_d *dev)
 	int ret;
 
 	tc = xzalloc(sizeof(struct tc_data));
-	if (!tc)
-		return -ENOMEM;
 
 	tc->client = client;
 	tc->dev = dev;

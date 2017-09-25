@@ -73,8 +73,6 @@ static struct file_priv *omap4_usbbootfs_do_open(
 		return ERR_PTR(-ENOSYS);
 
 	priv = xzalloc(sizeof(*priv));
-	if (!priv)
-		return ERR_PTR(-ENOMEM);
 
 	data = OMAP4_USBBOOT_FS_MAGIC	; omap4_usbboot_write(&data, 4);
 	data = OMAP4_USBBOOT_FS_CMD_OPEN; omap4_usbboot_write(&data, 4);

@@ -898,8 +898,6 @@ static int __init atmel_pmecc_nand_init_params(struct device_d *dev,
 		/* Set pmecc_rom_base as the begin of gf table */
 		int size = sector_size == 512 ? 0x2000 : 0x4000;
 		pmecc_galois_table = xzalloc(2 * size * sizeof(uint16_t));
-		if (!pmecc_galois_table)
-			return -ENOMEM;
 		host->pmecc_rom_base = pmecc_galois_table;
 		ret = pmecc_build_galois_table((sector_size == 512) ?
 						PMECC_GF_DIMENSION_13 :

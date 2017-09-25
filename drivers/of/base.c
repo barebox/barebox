@@ -194,8 +194,6 @@ void of_alias_scan(void)
 
 		/* Allocate an alias_prop with enough space for the stem */
 		ap = xzalloc(sizeof(*ap) + len + 1);
-		if (!ap)
-			continue;
 		ap->alias = start;
 		of_alias_add(ap, np, id, start, len);
 	}

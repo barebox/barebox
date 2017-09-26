@@ -63,7 +63,7 @@ void relocate_to_current_adr(void)
 	memset(dynsym, 0, (unsigned long)dynend - (unsigned long)dynsym);
 
 	arm_early_mmu_cache_flush();
-	flush_icache();
+	icache_invalidate();
 }
 
 #ifdef ARM_MULTIARCH

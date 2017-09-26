@@ -103,7 +103,7 @@ static void arch_shutdown(void)
 #ifdef CONFIG_MMU
 	mmu_disable();
 #endif
-	flush_icache();
+	icache_invalidate();
 
 #if __LINUX_ARM_ARCH__ <= 7
 	/*

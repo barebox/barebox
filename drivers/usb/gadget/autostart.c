@@ -55,6 +55,10 @@ static int usbgadget_autostart(void)
 
 	opts->create_acm = acm;
 
+	if (!opts->fastboot_opts.files && !opts->create_acm) {
+		pr_warn("No functions to register\n");
+		return 0;
+	}
 
 	ret = usb_multi_register(opts);
 	if (ret)

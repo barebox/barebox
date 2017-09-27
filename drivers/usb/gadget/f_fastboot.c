@@ -679,17 +679,14 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 
 	fastboot_tx_print(f_fb, "INFOCopying file to %s...", cmd);
 
-	file_list_for_each_entry(f_fb->files, fentry) {
-		if (!strcmp(cmd, fentry->name)) {
-			filename = fentry->filename;
-			break;
-		}
-	}
+	fentry = file_list_entry_by_name(f_fb->files, cmd);
 
-	if (!filename) {
+	if (!fentry) {
 		fastboot_tx_print(f_fb, "FAILNo such partition: %s", cmd);
 		return;
 	}
+
+	filename = fentry->filename;
 
 	if (filetype == filetype_ubi) {
 		int fd;

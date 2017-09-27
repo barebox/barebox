@@ -14,6 +14,7 @@
 
 #include <asm/barebox-arm-head.h>
 #include <asm/errata.h>
+#include <linux/types.h>
 
 void imx5_cpu_lowlevel_init(void)
 {
@@ -32,6 +33,12 @@ void imx6_cpu_lowlevel_init(void)
 	enable_arm_errata_761320_war();
 	enable_arm_errata_794072_war();
 	enable_arm_errata_845369_war();
+}
+
+void imx6ul_cpu_lowlevel_init(void)
+{
+	cortex_a7_lowlevel_init();
+	arm_cpu_lowlevel_init();
 }
 
 void imx7_cpu_lowlevel_init(void)

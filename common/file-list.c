@@ -122,7 +122,7 @@ struct file_list *file_list_parse(const char *str)
 
 	return files;
 out:
-	free(files);
+	file_list_free(files);
 
 	return ERR_PTR(ret);
 }

@@ -9,6 +9,8 @@
  * General Public License for more details.
  */
 
+#define pr_fmt(fmt)	"file_list: " fmt
+
 #include <common.h>
 #include <malloc.h>
 #include <fs.h>
@@ -91,6 +93,7 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 				flags |= FILE_LIST_FLAG_CREATE;
 				break;
 			default:
+				pr_err("Unknown flag '%c'\n", *partstr);
 				return -EINVAL;
 			}
 			break;
@@ -100,8 +103,10 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 		partstr++;
 	}
 
-	if (state != PARSE_FLAGS)
+	if (state != PARSE_FLAGS) {
+		pr_err("Missing ')'\n");
 		return -EINVAL;
+	}
 
 	if (*partstr == ',')
 		partstr++;
@@ -121,9 +126,9 @@ struct file_list *file_list_parse(const char *str)
 	INIT_LIST_HEAD(&files->list);
 
 	while (*str) {
-		if (file_list_parse_one(files, str, &endptr)) {
-			printf("parse error\n");
-			ret = -EINVAL;
+		ret = file_list_parse_one(files, str, &endptr);
+		if (ret) {
+			pr_err("parse error\n");
 			goto out;
 		}
 		str = endptr;

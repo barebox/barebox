@@ -8,6 +8,18 @@
 #define PARSE_NAME	1
 #define PARSE_FLAGS	2
 
+struct file_list_entry *file_list_entry_by_name(struct file_list *files, const char *name)
+{
+	struct file_list_entry *entry;
+
+	file_list_for_each_entry(files, entry) {
+		if (!strcmp(entry->name, name))
+			return entry;
+	}
+
+	return NULL;
+}
+
 int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
 			unsigned long flags)
 {

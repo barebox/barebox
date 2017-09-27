@@ -283,6 +283,21 @@ out:
 	return ret;
 }
 
+static int fastboot_add_bbu_variables(struct bbu_handler *handler, void *ctx)
+{
+	struct f_fastboot *f_fb = ctx;
+	char *name;
+	int ret;
+
+	name = basprintf("bbu-%s", handler->name);
+
+	ret = file_list_add_entry(f_fb->files, name, handler->devicefile, 0);
+
+	free(name);
+
+	return ret;
+}
+
 static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 {
 	struct usb_composite_dev *cdev = c->cdev;
@@ -301,6 +316,9 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	fb_setvar(var, "0.4");
 	var = fb_addvar(f_fb, "bootloader-version");
 	fb_setvar(var, release_string);
+
+	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && opts->export_bbu)
+		bbu_handlers_iterate(fastboot_add_bbu_variables, f_fb);
 
 	file_list_for_each_entry(f_fb->files, fentry) {
 		ret = fastboot_add_partition_variables(f_fb, fentry);

@@ -128,6 +128,7 @@ static int multi_bind_fastboot(struct usb_composite_dev *cdev)
 
 	opts = container_of(fi_fastboot, struct f_fastboot_opts, func_inst);
 	opts->files = gadget_multi_opts->fastboot_opts.files;
+	opts->export_bbu = gadget_multi_opts->fastboot_opts.export_bbu;
 
 	f_fastboot = usb_get_function(fi_fastboot);
 	if (IS_ERR(f_fastboot)) {

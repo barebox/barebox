@@ -83,10 +83,14 @@ static int do_usbgadget(int argc, char *argv[])
 
 	if (fastboot_opts) {
 		opts->fastboot_opts.files = file_list_parse(fastboot_opts);
+		if (IS_ERR(opts->fastboot_opts.files))
+			goto err_parse;
 	}
 
 	if (dfu_opts) {
 		opts->dfu_opts.files = file_list_parse(dfu_opts);
+		if (IS_ERR(opts->dfu_opts.files))
+			goto err_parse;
 	}
 
 	if (create_serial) {
@@ -98,6 +102,13 @@ static int do_usbgadget(int argc, char *argv[])
 		usb_multi_opts_release(opts);
 
 	return ret;
+
+err_parse:
+	printf("Cannot parse file list \"%s\": %s\n", fastboot_opts, strerrorp(opts->fastboot_opts.files));
+
+	free(opts);
+
+	return 1;
 }
 
 BAREBOX_CMD_HELP_START(usbgadget)

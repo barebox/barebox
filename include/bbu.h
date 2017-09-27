@@ -42,6 +42,8 @@ bool barebox_update_handler_exists(struct bbu_data *);
 
 void bbu_handlers_list(void);
 
+int bbu_handlers_iterate(int (*fn)(struct bbu_handler *, void *), void *);
+
 #ifdef CONFIG_BAREBOX_UPDATE
 
 int bbu_register_handler(struct bbu_handler *);

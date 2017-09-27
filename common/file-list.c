@@ -23,7 +23,13 @@ struct file_list_entry *file_list_entry_by_name(struct file_list *files, const c
 int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
 			unsigned long flags)
 {
-	struct file_list_entry *entry = xzalloc(sizeof(*entry));
+	struct file_list_entry *entry;
+
+	entry = file_list_entry_by_name(files, name);
+	if (entry)
+		return -EEXIST;
+
+	entry = xzalloc(sizeof(*entry));
 
 	entry->name = xstrdup(name);
 	entry->filename = xstrdup(filename);

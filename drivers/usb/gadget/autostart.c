@@ -30,6 +30,7 @@
 static int autostart;
 static int acm;
 static char *fastboot_function;
+static int fastboot_bbu;
 
 static int usbgadget_autostart(void)
 {
@@ -49,6 +50,8 @@ static int usbgadget_autostart(void)
 			       strerrorp(opts->fastboot_opts.files));
 			opts->fastboot_opts.files = NULL;
 		}
+
+		opts->fastboot_opts.export_bbu = fastboot_bbu;
 	}
 
 	opts->create_acm = acm;
@@ -75,6 +78,7 @@ static int usbgadget_globalvars_init(void)
 	globalvar_add_simple_bool("usbgadget.acm", &acm);
 	globalvar_add_simple_string("usbgadget.fastboot_function",
 				    &fastboot_function);
+	globalvar_add_simple_bool("usbgadget.fastboot_bbu", &fastboot_bbu);
 
 	return 0;
 }
@@ -89,3 +93,6 @@ BAREBOX_MAGICVAR_NAMED(global_usbgadget_acm,
 BAREBOX_MAGICVAR_NAMED(global_usbgadget_fastboot_function,
 		       global.usbgadget.fastboot_function,
 		       "usbgadget: Create Android Fastboot function");
+BAREBOX_MAGICVAR_NAMED(global_usbgadget_fastboot_bbu,
+		       global.usbgadget.fastboot_bbu,
+		       "usbgadget: export barebox update handlers via fastboot");

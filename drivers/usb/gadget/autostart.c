@@ -11,6 +11,8 @@
  * GNU General Public License for more details.
  *
  */
+#define pr_fmt(fmt) "usbgadget autostart: " fmt
+
 #include <common.h>
 #include <command.h>
 #include <errno.h>
@@ -42,8 +44,14 @@ static int usbgadget_autostart(void)
 	opts = xzalloc(sizeof(*opts));
 	opts->release = usb_multi_opts_release;
 
-	if (fastboot_function)
+	if (fastboot_function) {
 		opts->fastboot_opts.files = file_list_parse(fastboot_function);
+		if (IS_ERR(opts->fastboot_opts.files)) {
+			pr_err("Parsing file list \"%s\" failed: %s\n", fastboot_function,
+			       strerrorp(opts->fastboot_opts.files));
+			opts->fastboot_opts.files = NULL;
+		}
+	}
 
 	opts->create_acm = acm;
 

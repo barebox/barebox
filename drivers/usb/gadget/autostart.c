@@ -39,8 +39,6 @@ static int usbgadget_autostart(void)
 	if (!autostart)
 		return 0;
 
-	setenv("otg.mode", "peripheral");
-
 	opts = xzalloc(sizeof(*opts));
 	opts->release = usb_multi_opts_release;
 
@@ -59,6 +57,8 @@ static int usbgadget_autostart(void)
 		pr_warn("No functions to register\n");
 		return 0;
 	}
+
+	setenv("otg.mode", "peripheral");
 
 	ret = usb_multi_register(opts);
 	if (ret)

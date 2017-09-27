@@ -8,12 +8,26 @@
 #define PARSE_NAME	1
 #define PARSE_FLAGS	2
 
+int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
+			unsigned long flags)
+{
+	struct file_list_entry *entry = xzalloc(sizeof(*entry));
+
+	entry->name = xstrdup(name);
+	entry->filename = xstrdup(filename);
+	entry->flags = flags;
+
+	list_add_tail(&entry->list, &files->list);
+
+	return 0;
+}
+
 static int file_list_parse_one(struct file_list *files, const char *partstr, const char **endstr)
 {
 	int i = 0, state = PARSE_DEVICE;
 	char filename[PATH_MAX];
 	char name[PATH_MAX];
-	struct file_list_entry *entry = xzalloc(sizeof(*entry));
+	unsigned long flags = 0;
 
 	memset(filename, 0, sizeof(filename));
 	memset(name, 0, sizeof(name));
@@ -39,13 +53,13 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 		case PARSE_FLAGS:
 			switch (*partstr) {
 			case 's':
-				entry->flags |= FILE_LIST_FLAG_SAFE;
+				flags |= FILE_LIST_FLAG_SAFE;
 				break;
 			case 'r':
-				entry->flags |= FILE_LIST_FLAG_READBACK;
+				flags |= FILE_LIST_FLAG_READBACK;
 				break;
 			case 'c':
-				entry->flags |= FILE_LIST_FLAG_CREATE;
+				flags |= FILE_LIST_FLAG_CREATE;
 				break;
 			default:
 				return -EINVAL;
@@ -60,15 +74,11 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 	if (state != PARSE_FLAGS)
 		return -EINVAL;
 
-	entry->name = xstrdup(name);
-	entry->filename = xstrdup(filename);
 	if (*partstr == ',')
 		partstr++;
 	*endstr = partstr;
 
-	list_add_tail(&entry->list, &files->list);
-
-	return 0;
+	return file_list_add_entry(files, name, filename, flags);
 }
 
 struct file_list *file_list_parse(const char *str)

@@ -20,6 +20,9 @@ struct file_list {
 struct file_list *file_list_parse(const char *str);
 void file_list_free(struct file_list *);
 
+int file_list_add_entry(struct file_list *files, const char *name, const char *filename,
+			unsigned long flags);
+
 #define file_list_for_each_entry(files, entry) \
 	list_for_each_entry(entry, &files->list, list)
 

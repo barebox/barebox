@@ -580,6 +580,7 @@ static int ag71xx_probe(struct device_d *dev)
 	miibus = &priv->miibus;
 	dev->priv = edev;
 	edev->priv = priv;
+	edev->parent = dev;
 
 	edev->init = ag71xx_ether_init;
 	edev->open = ag71xx_ether_open;
@@ -597,6 +598,7 @@ static int ag71xx_probe(struct device_d *dev)
 	miibus->read = ag71xx_ether_mii_read;
 	miibus->write = ag71xx_ether_mii_write;
 	miibus->priv = priv;
+	miibus->parent = dev;
 
 	/* enable switch core */
 	rd = ar7240_reg_rd(AR71XX_PLL_BASE + AR933X_ETHSW_CLOCK_CONTROL_REG);

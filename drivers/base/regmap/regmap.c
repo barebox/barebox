@@ -137,6 +137,35 @@ int regmap_read(struct regmap *map, unsigned int reg, unsigned int *val)
 }
 
 /**
+ * regmap_update_bits() - Perform a read/modify/write cycle on a register
+ *
+ * @map: Register map to update
+ * @reg: Register to update
+ * @mask: Bitmask to change
+ * @val: New value for bitmask
+ *
+ * Returns zero for success, a negative number on error.
+ */
+int regmap_update_bits(struct regmap *map, unsigned int reg,
+		       unsigned int mask, unsigned int val)
+{
+	int ret;
+	unsigned int tmp, orig;
+
+	ret = regmap_read(map, reg, &orig);
+	if (ret != 0)
+		return ret;
+
+	tmp = orig & ~mask;
+	tmp |= val & mask;
+
+	if (tmp != orig)
+		ret = regmap_write(map, reg, tmp);
+
+	return ret;
+}
+
+/**
  * regmap_write_bits - write bits of a register in a map
  *
  * @map:	The map

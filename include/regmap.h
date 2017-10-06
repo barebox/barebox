@@ -62,6 +62,7 @@ int regmap_get_reg_stride(struct regmap *map);
 
 int regmap_write_bits(struct regmap *map, unsigned int reg,
 		      unsigned int mask, unsigned int val);
-
+int regmap_update_bits(struct regmap *map, unsigned int reg,
+		       unsigned int mask, unsigned int val);
 
 #endif /* __REGMAP_H */

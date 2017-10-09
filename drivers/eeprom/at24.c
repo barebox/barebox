@@ -352,7 +352,7 @@ static ssize_t at24_cdev_write(struct cdev *cdev, const void *buf, size_t count,
 	return at24_write(at24, buf, off, count);
 }
 
-static ssize_t at24_cdev_protect(struct cdev *cdev, size_t count, loff_t offset,
+static int at24_cdev_protect(struct cdev *cdev, size_t count, loff_t offset,
 		int prot)
 {
 	struct at24_data *at24 = cdev->priv;

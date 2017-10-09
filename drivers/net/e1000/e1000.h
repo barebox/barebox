@@ -447,11 +447,11 @@ struct e1000_tx_desc {
 #define E1000_FLASHT   0x01028  /* FLASH Timer Register */
 #define E1000_EEWR     (E1000_MIGHT_BE_REMAPPED | 0x0102C)  /* EEPROM Write Register - RW */
 #define E1000_I210_EEWR     0x12018  /* EEPROM Write Register - RW */
-#define E1000_FLSWCTL  0x01030  /* FLASH control register */
+#define E1000_FLSWCTL  (E1000_MIGHT_BE_REMAPPED | 0x01030)  /* FLASH control register */
 #define E1000_I210_FLSWCTL 0x12048  /* FLASH control register */
-#define E1000_FLSWDATA 0x01034  /* FLASH data register */
+#define E1000_FLSWDATA (E1000_MIGHT_BE_REMAPPED | 0x01034)  /* FLASH data register */
 #define E1000_I210_FLSWDATA 0x1204C  /* FLASH data register */
-#define E1000_FLSWCNT  0x01038  /* FLASH Access Counter */
+#define E1000_FLSWCNT  (E1000_MIGHT_BE_REMAPPED | 0x01038)  /* FLASH Access Counter */
 #define E1000_I210_FLSWCNT  0x12050  /* FLASH Access Counter */
 #define E1000_FLOP     0x0103C  /* FLASH Opcode Register */
 #define E1000_ERT      0x02008  /* Early Rx Threshold - RW */

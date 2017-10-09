@@ -701,17 +701,8 @@ static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw)
 
 static int e1000_flash_mode_wait_for_idle(struct e1000_hw *hw)
 {
-	/* Strictly speaking we need to poll FLSWCTL.DONE only if we
-	 * are executing this code after a reset event, but it
-	 * shouldn't hurt to do this everytime, besided we need to
-	 * poll got FLSWCTL.GLDONE to make sure that back to back
-	 * calls to that function work correctly, since we finish
-	 * execution by polling only FLSWCTL.DONE */
-
-	const int ret = e1000_poll_reg(hw, E1000_FLSWCTL,
-				       E1000_FLSWCTL_DONE | E1000_FLSWCTL_GLDONE,
-				       E1000_FLSWCTL_DONE | E1000_FLSWCTL_GLDONE,
-				       SECOND);
+	const int ret = e1000_poll_reg(hw, E1000_FLSWCTL, E1000_FLSWCTL_DONE,
+				       E1000_FLSWCTL_DONE, SECOND);
 	if (ret < 0)
 		dev_err(hw->dev,
 			"Timeout waiting for FLSWCTL.DONE to be set\n");

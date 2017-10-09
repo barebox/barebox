@@ -414,17 +414,9 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 			fla &= E1000_FLA_FL_SIZE_MASK;
 			fla >>= E1000_FLA_FL_SIZE_SHIFT;
 
-			switch (fla) {
-			case E1000_FLA_FL_SIZE_8MB:
-				eeprom->word_size = SZ_8M / 2;
-				break;
-			case E1000_FLA_FL_SIZE_4MB:
-				eeprom->word_size = SZ_4M / 2;
-				break;
-			case E1000_FLA_FL_SIZE_2MB:
-				eeprom->word_size = SZ_2M / 2;
-				break;
-			default:
+			if (fla) {
+				eeprom->word_size = (SZ_64K << fla) / 2;
+			} else {
 				eeprom->word_size = 2048;
 				dev_info(hw->dev, "Unprogrammed Flash detected, "
 					 "limiting access to first 4KB\n");

@@ -2105,9 +2105,6 @@ struct e1000_eeprom_info {
 #define E1000_FLA			0x1201C
 #define E1000_FLA_FL_SIZE_SHIFT		17
 #define E1000_FLA_FL_SIZE_MASK		(0b111 << E1000_FLA_FL_SIZE_SHIFT) /* EEprom Size */
-#define E1000_FLA_FL_SIZE_2MB		0b101
-#define E1000_FLA_FL_SIZE_4MB		0b110
-#define E1000_FLA_FL_SIZE_8MB		0b111
 
 
 #define E1000_FLSWCTL_ADDR(a)		((a) & 0x00FFFFFF)

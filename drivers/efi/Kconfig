@@ -1,2 +1,4 @@
 config EFI_BOOTUP
 	bool
+	select BLOCK
+	select PARTITION_DISK

@@ -9,6 +9,15 @@
 #include <linux/gcd.h>
 #include <int_sqrt.h>
 
+static void fbtest_pattern_solid(struct screen *sc, u32 color)
+{
+	const u8 r = (color >> 16) & 0xff;
+	const u8 g = (color >>  8) & 0xff;
+	const u8 b = (color >>  0) & 0xff;
+
+	gu_fill_rectangle(sc, 0, 0, -1, -1, r, g, b, 0xff);
+}
+
 static void fbtest_pattern_bars(struct screen *sc, u32 unused)
 {
 	int i;
@@ -122,6 +131,7 @@ static int do_fbtest(int argc, char *argv[])
 		const char *name;
 		void (*func) (struct screen *sc, u32 color);
 	} patterns[] = {
+		{ "solid",    fbtest_pattern_solid    },
 		{ "geometry", fbtest_pattern_geometry },
 		{ "bars",     fbtest_pattern_bars     }
 	};
@@ -191,8 +201,8 @@ BAREBOX_CMD_HELP_TEXT("This command displays a test pattern on a screen")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-d <fbdev>\t",    "framebuffer device (default /dev/fb0)")
-BAREBOX_CMD_HELP_OPT ("-c color\t", "color")
-BAREBOX_CMD_HELP_OPT ("-p pattern\t", "pattern name (geometry, bars)")
+BAREBOX_CMD_HELP_OPT ("-c color\t", "color, in hex RRGGBB format")
+BAREBOX_CMD_HELP_OPT ("-p pattern\t", "pattern name (solid, geometry, bars)")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(fbtest)

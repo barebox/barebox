@@ -45,3 +45,32 @@ static int vexpress_core_init(void)
 	return 0;
 }
 postcore_initcall(vexpress_core_init);
+
+static int of_fixup_virtio_mmio(struct device_node *root, void *unused)
+{
+	struct device_node *barebox_root, *np, *parent;
+
+	barebox_root = of_get_root_node();
+	if (root == barebox_root)
+		return 0;
+
+	for_each_compatible_node_from(np, barebox_root, NULL, "virtio,mmio") {
+		if (of_get_parent(np) == barebox_root)
+			parent = root;
+		else
+			parent = of_find_node_by_path_from(root,
+							   of_get_parent(np)->full_name);
+		if (!parent)
+			return -EINVAL;
+
+		of_copy_node(parent, np);
+	}
+
+	return 0;
+}
+
+static int of_register_virtio_mmio_fixup(void)
+{
+	return of_register_fixup(of_fixup_virtio_mmio, NULL);
+}
+late_initcall(of_register_virtio_mmio_fixup);

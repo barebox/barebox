@@ -532,9 +532,37 @@ static void mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	udelay(CLK_CHANGE_DELAY);
 }
 
+static int mmci_of_parse(struct device_node *np,
+			 struct mmci_platform_data *plat)
+{
+	if (!IS_ENABLED(CONFIG_OFDEVICE))
+		return 0;
+
+	if (of_get_property(np, "st,sig-dir-dat0", NULL))
+		plat->sigdir |= MCI_ST_DATA0DIREN;
+	if (of_get_property(np, "st,sig-dir-dat2", NULL))
+		plat->sigdir |= MCI_ST_DATA2DIREN;
+	if (of_get_property(np, "st,sig-dir-dat31", NULL))
+		plat->sigdir |= MCI_ST_DATA31DIREN;
+	if (of_get_property(np, "st,sig-dir-dat74", NULL))
+		plat->sigdir |= MCI_ST_DATA74DIREN;
+	if (of_get_property(np, "st,sig-dir-cmd", NULL))
+		plat->sigdir |= MCI_ST_CMDDIREN;
+	if (of_get_property(np, "st,sig-pin-fbclk", NULL))
+		plat->sigdir |= MCI_ST_FBCLKEN;
+
+	if (of_get_property(np, "mmc-cap-mmc-highspeed", NULL))
+		plat->capabilities |= MMC_CAP_MMC_HIGHSPEED;
+	if (of_get_property(np, "mmc-cap-sd-highspeed", NULL))
+		plat->capabilities |= MMC_CAP_SD_HIGHSPEED;
+
+	return 0;
+}
+
 static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 {
 	struct device_d *hw_dev = &dev->dev;
+	struct device_node *np = hw_dev->device_node;
 	struct mmci_platform_data *plat = hw_dev->platform_data;
 	struct variant_data *variant = id->data;
 	u32 sdi_u32;
@@ -542,10 +570,15 @@ static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 	struct clk *clk;
 	int ret;
 
-	if (!plat) {
-		dev_err(hw_dev, "missing platform data\n");
+	if (!plat && !np) {
+		dev_err(hw_dev, "missing platform data or DT node\n");
 		return -EINVAL;
 	}
+
+	if (!plat)
+		plat = xzalloc(sizeof(*plat));
+
+	mmci_of_parse(np, plat);
 
 	host = xzalloc(sizeof(*host));
 
@@ -625,7 +658,7 @@ static int mmci_probe(struct amba_device *dev, const struct amba_id *id)
 	host->mci.max_req_size = (1 << variant->datalength_bits) - 1;
 
 	host->mci.host_caps = plat->capabilities;
-	host->mci.voltages = plat->ocr_mask;
+	host->mci.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | plat->ocr_mask;
 
 	mci_register(&host->mci);
 

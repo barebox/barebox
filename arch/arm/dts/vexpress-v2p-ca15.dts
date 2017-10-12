@@ -1,0 +1,27 @@
+#include <arm/vexpress-v2p-ca15_a7.dts>
+
+/ {
+	barebox_environment {
+		compatible = "barebox,environment";
+		device-path = &barebox_env;
+	};
+
+	smb@8000000 {
+		motherboard {
+			flash@0,00000000 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				partition@0 {
+					label = "barebox";
+					reg = <0x0 0x80000>;
+				};
+
+				barebox_env: partition@80000 {
+					label = "barebox-environment";
+					reg = <0x80000 0x80000>;
+				};
+			};
+		};
+	};
+};

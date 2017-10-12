@@ -1,0 +1,11 @@
+#
+# barebox image generation Makefile for VExpress images
+#
+
+pblx-$(CONFIG_MACH_VEXPRESS) += start_vexpress_ca9
+FILE_barebox-vexpress-ca9.img = start_vexpress_ca9.pblx
+image-$(CONFIG_MACH_VEXPRESS) += barebox-vexpress-ca9.img
+
+pblx-$(CONFIG_MACH_VEXPRESS) += start_vexpress_ca15
+FILE_barebox-vexpress-ca15.img = start_vexpress_ca15.pblx
+image-$(CONFIG_MACH_VEXPRESS) += barebox-vexpress-ca15.img

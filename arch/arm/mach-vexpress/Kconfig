@@ -10,6 +10,9 @@ choice
 config MACH_VEXPRESS
 	bool "ARM Vexpress"
 	select RELOCATABLE
+	select HAVE_PBL_MULTI_IMAGES
+	select OFTREE
+	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
 
 endchoice

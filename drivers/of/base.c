@@ -1938,8 +1938,8 @@ int of_probe(void)
 	if (memory)
 		of_add_memory(memory, false);
 
-	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 	of_clk_init(root_node, NULL);
+	of_platform_populate(root_node, of_default_bus_match_table, NULL);
 
 	return 0;
 }

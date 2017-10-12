@@ -10,6 +10,7 @@ choice
 config MACH_VEXPRESS
 	bool "ARM Vexpress"
 	select RELOCATABLE
+	select COMMON_CLK_OF_PROVIDER
 
 endchoice
 

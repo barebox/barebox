@@ -1988,6 +1988,22 @@ out:
 	return dn;
 }
 
+struct device_node *of_copy_node(struct device_node *parent, const struct device_node *other)
+{
+	struct device_node *np, *child;
+	struct property *pp;
+
+	np = of_new_node(parent, other->name);
+
+	list_for_each_entry(pp, &other->properties, list)
+		of_new_property(np, pp->name, pp->value, pp->length);
+
+	for_each_child_of_node(other, child)
+		of_copy_node(np, child);
+
+	return np;
+}
+
 void of_delete_node(struct device_node *node)
 {
 	struct device_node *n, *nt;

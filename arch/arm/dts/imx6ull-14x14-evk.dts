@@ -1,0 +1,29 @@
+#include <arm/imx6ull-14x14-evk.dts>
+
+/{
+	chosen {
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &environment_usdhc2;
+		};
+	};
+};
+
+&usdhc2 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		label = "barebox";
+		reg = <0x0 0xc0000>;
+	};
+
+	environment_usdhc2: partition@c0000 {
+		label = "barebox-environment";
+		reg = <0xc0000 0x40000>;
+	};
+};
+
+&ocotp {
+	barebox,provide-mac-address = <&fec1 0x620 &fec2 0x632>;
+};

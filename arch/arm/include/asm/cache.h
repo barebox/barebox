@@ -6,7 +6,7 @@ extern void v8_invalidate_icache_all(void);
 extern void v8_dcache_all(void);
 #endif
 
-static inline void flush_icache(void)
+static inline void icache_invalidate(void)
 {
 #if __LINUX_ARM_ARCH__ <= 7
 	asm volatile("mcr p15, 0, %0, c7, c5, 0" : : "r" (0));

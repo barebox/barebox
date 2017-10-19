@@ -414,6 +414,10 @@ config MACH_FREESCALE_MX7_SABRESD
 
 	  https://goo.gl/6EKGdk
 
+config MACH_NXP_IMX6ULL_EVK
+	bool "NXP i.MX6ull EVK Board"
+	select ARCH_IMX6UL
+
 endif
 
 # ----------------------------------------------------------

@@ -9,7 +9,7 @@ ENTRY(v7_mmu_cache_on)
 		mrc	p15, 0, r11, c0, c1, 4	@ read ID_MMFR0
 		tst	r11, #0xf		@ VMSA
 		mov	r0, #0
-		mcr	p15, 0, r0, c7, c10, 4	@ drain write buffer
+		dsb				@ drain write buffer
 		tst	r11, #0xf		@ VMSA
 		mcrne	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
 #endif
@@ -24,11 +24,11 @@ ENTRY(v7_mmu_cache_on)
 		movne	r1, #-1
 		mcrne	p15, 0, r1, c3, c0, 0	@ load domain access control
 #endif
-		mcr	p15, 0, r0, c7, c5, 4	@ ISB
+		isb
 		mcr	p15, 0, r0, c1, c0, 0	@ load control register
 		mrc	p15, 0, r0, c1, c0, 0	@ and read it back
 		mov	r0, #0
-		mcr	p15, 0, r0, c7, c5, 4	@ ISB
+		isb
 		ldmfd	sp!, {r11, pc}
 ENDPROC(v7_mmu_cache_on)
 
@@ -51,8 +51,8 @@ ENTRY(v7_mmu_cache_off)
 		mcr	p15, 0, r0, c8, c7, 0	@ invalidate whole TLB
 #endif
 		mcr	p15, 0, r0, c7, c5, 6	@ invalidate BTC
-		mcr	p15, 0, r0, c7, c10, 4	@ DSB
-		mcr	p15, 0, r0, c7, c5, 4	@ ISB
+		dsb
+		isb
 		ldmfd	sp!, {r4-r12, pc}
 ENDPROC(v7_mmu_cache_off)
 
@@ -68,7 +68,7 @@ ENTRY(v7_mmu_cache_flush)
 ENDPROC(v7_mmu_cache_flush)
 
 ENTRY(__v7_mmu_cache_flush_invalidate)
-		mcr	p15, 0, r12, c7, c10, 5	@ DMB
+		dmb
 		mrc	p15, 0, r12, c0, c1, 5	@ read ID_MMFR1
 		tst	r12, #0xf << 16		@ hierarchical cache (ARMv7)
 		mov	r12, #0
@@ -78,7 +78,7 @@ ENTRY(__v7_mmu_cache_flush_invalidate)
 hierarchical:
 		stmfd	sp!, {r4-r11}
 		mov	r8, r0
-		mcr	p15, 0, r12, c7, c10, 5	@ DMB
+		dmb
 		mrc	p15, 1, r0, c0, c0, 1	@ read clidr
 		ands	r3, r0, #0x7000000	@ extract loc from clidr
 		mov	r3, r3, lsr #23		@ left align loc bit field
@@ -91,7 +91,7 @@ loop1:
 		cmp	r1, #2			@ see what cache we have at this level
 		blt	skip			@ skip if no cache, or just i-cache
 		mcr	p15, 2, r12, c0, c0, 0	@ select current cache level in cssr
-		mcr	p15, 0, r12, c7, c5, 4	@ isb to sych the new cssr&csidr
+		isb				@ isb to sych the new cssr&csidr
 		mrc	p15, 1, r1, c0, c0, 0	@ read the new csidr
 		and	r2, r1, #7		@ extract the length of the cache lines
 		add	r2, r2, #4		@ add 4 (line length offset)
@@ -126,10 +126,10 @@ finished:
 		mov	r12, #0			@ switch back to cache level 0
 		mcr	p15, 2, r12, c0, c0, 0	@ select current cache level in cssr
 iflush:
-		mcr	p15, 0, r12, c7, c10, 4	@ DSB
+		dsb
 		mcr	p15, 0, r12, c7, c5, 0	@ invalidate I+BTB
-		mcr	p15, 0, r12, c7, c10, 4	@ DSB
-		mcr	p15, 0, r12, c7, c5, 4	@ ISB
+		dsb
+		isb
 		mov	pc, lr
 ENDPROC(__v7_mmu_cache_flush_invalidate)
 

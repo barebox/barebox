@@ -171,6 +171,13 @@ static const struct mach_id imx_ids[] = {
 		.max_transfer = 1024,
 	}, {
 		.vid = 0x15a2,
+		.pid = 0x0080,
+		.name = "i.MX6ull",
+		.header_type = HDR_MX53,
+		.mode = MODE_HID,
+		.max_transfer = 1024,
+	}, {
+		.vid = 0x15a2,
 		.pid = 0x0076,
 		.name = "i.MX7S",
 		.header_type = HDR_MX53,
@@ -628,7 +635,7 @@ static int read_memory(unsigned addr, void *dest, unsigned cnt)
 			break;
 		}
 		if ((last_trans > rem) || (last_trans > 64)) {
-			if ((last_trans == 64) && (cnt == rem)) {
+			if ((last_trans == 64) && (rem < 64)) {
 				/* Last transfer is expected to be too large for HID */
 			} else {
 				printf("err: %02x %02x %02x %02x cnt=%u rem=%d last_trans=%i\n",

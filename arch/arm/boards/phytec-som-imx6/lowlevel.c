@@ -56,7 +56,7 @@ static void __noreturn start_imx6_phytec_common(uint32_t size,
 
 	if (cpu_type == IMX6_CPUTYPE_IMX6UL
 	    || cpu_type == IMX6_CPUTYPE_IMX6ULL) {
-		arm_cpu_lowlevel_init();
+		imx6ul_cpu_lowlevel_init();
 		/* OCRAM Free Area is 0x00907000 to 0x00918000 (68KB) */
 		arm_setup_stack(0x00910000 - 8);
 	} else {

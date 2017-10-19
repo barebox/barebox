@@ -58,3 +58,10 @@ ENTRY(arm_cpu_lowlevel_init)
 
 	mov	pc, r2
 ENDPROC(arm_cpu_lowlevel_init)
+
+ENTRY(cortex_a7_lowlevel_init)
+	mrc	p15, 0, r12, c1, c0, 1
+	orr	r12, r12, #(1 << 6)	/* Enable SMP for cortex-a7 to make caches work */
+	mcr	p15, 0, r12, c1, c0, 1
+	mov	pc, lr
+ENDPROC(cortex_a7_lowlevel_init)

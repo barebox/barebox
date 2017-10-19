@@ -6,6 +6,7 @@
 #ifndef __ASSEMBLY__
 
 void arm_cpu_lowlevel_init(void);
+void cortex_a7_lowlevel_init(void);
 
 /*
  * 32 bytes at this offset is reserved in the barebox head for board/SoC

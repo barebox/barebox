@@ -33,11 +33,11 @@
 static int do_usbgadget(int argc, char *argv[])
 {
 	int opt, ret;
-	int acm = 1, create_serial = 0, fastboot_set = 0;
+	int acm = 1, create_serial = 0, fastboot_set = 0, fastboot_export_bbu = 0;
 	const char *fastboot_opts = NULL, *dfu_opts = NULL;
 	struct f_multi_opts *opts;
 
-	while ((opt = getopt(argc, argv, "asdA::D:")) > 0) {
+	while ((opt = getopt(argc, argv, "asdA::D:b")) > 0) {
 		switch (opt) {
 		case 'a':
 			acm = 1;
@@ -53,6 +53,9 @@ static int do_usbgadget(int argc, char *argv[])
 		case 'A':
 			fastboot_opts = optarg;
 			fastboot_set = 1;
+			break;
+		case 'b':
+			fastboot_export_bbu = 1;
 			break;
 		case 'd':
 			usb_multi_unregister();
@@ -83,10 +86,15 @@ static int do_usbgadget(int argc, char *argv[])
 
 	if (fastboot_opts) {
 		opts->fastboot_opts.files = file_list_parse(fastboot_opts);
+		if (IS_ERR(opts->fastboot_opts.files))
+			goto err_parse;
+		opts->fastboot_opts.export_bbu = fastboot_export_bbu;
 	}
 
 	if (dfu_opts) {
 		opts->dfu_opts.files = file_list_parse(dfu_opts);
+		if (IS_ERR(opts->dfu_opts.files))
+			goto err_parse;
 	}
 
 	if (create_serial) {
@@ -98,6 +106,13 @@ static int do_usbgadget(int argc, char *argv[])
 		usb_multi_opts_release(opts);
 
 	return ret;
+
+err_parse:
+	printf("Cannot parse file list \"%s\": %s\n", fastboot_opts, strerrorp(opts->fastboot_opts.files));
+
+	free(opts);
+
+	return 1;
 }
 
 BAREBOX_CMD_HELP_START(usbgadget)
@@ -108,6 +123,7 @@ BAREBOX_CMD_HELP_OPT ("-a",   "Create CDC ACM function")
 BAREBOX_CMD_HELP_OPT ("-s",   "Create Generic Serial function")
 BAREBOX_CMD_HELP_OPT ("-A [desc]",	"Create Android Fastboot function. If 'desc' is not provided,")
 BAREBOX_CMD_HELP_OPT ("",		"trying to use 'global.usbgadget.fastboot_function' variable.")
+BAREBOX_CMD_HELP_OPT ("-b",    "include registered barebox update handlers (fastboot specific)")
 BAREBOX_CMD_HELP_OPT ("-D <desc>",   "Create DFU function")
 BAREBOX_CMD_HELP_OPT ("-d",   "Disable the currently running gadget")
 BAREBOX_CMD_HELP_END

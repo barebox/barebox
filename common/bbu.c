@@ -30,6 +30,21 @@
 
 static LIST_HEAD(bbu_image_handlers);
 
+int bbu_handlers_iterate(int (*fn)(struct bbu_handler *, void *), void *ctx)
+{
+	struct bbu_handler *handler;
+
+	list_for_each_entry(handler, &bbu_image_handlers, list) {
+		int ret;
+
+		ret = fn(handler, ctx);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
+}
+
 int bbu_force(struct bbu_data *data, const char *fmt, ...)
 {
 	va_list args;

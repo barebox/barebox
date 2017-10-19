@@ -128,6 +128,7 @@ static int multi_bind_fastboot(struct usb_composite_dev *cdev)
 
 	opts = container_of(fi_fastboot, struct f_fastboot_opts, func_inst);
 	opts->files = gadget_multi_opts->fastboot_opts.files;
+	opts->export_bbu = gadget_multi_opts->fastboot_opts.export_bbu;
 
 	f_fastboot = usb_get_function(fi_fastboot);
 	if (IS_ERR(f_fastboot)) {
@@ -234,6 +235,8 @@ static struct usb_composite_driver multi_driver = {
 
 int usb_multi_register(struct f_multi_opts *opts)
 {
+	int ret;
+
 	if (gadget_multi_opts) {
 		pr_err("USB multi gadget already registered\n");
 		return -EBUSY;
@@ -241,7 +244,13 @@ int usb_multi_register(struct f_multi_opts *opts)
 
 	gadget_multi_opts = opts;
 
-	return usb_composite_probe(&multi_driver);
+	ret = usb_composite_probe(&multi_driver);
+	if (ret) {
+		usb_composite_unregister(&multi_driver);
+		gadget_multi_opts = NULL;
+	}
+
+	return ret;
 }
 
 void usb_multi_unregister(void)

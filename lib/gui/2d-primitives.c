@@ -61,7 +61,7 @@ static void draw_simple_line(struct screen *sc,
 		swap(y1, y2);
 	}
 
-	for (x = x1; x < x2 - 1; x++) {
+	for (x = x1; x <= x2; x++) {
 		if (!dash ||
 		    (++pixel % (2 * dash)) < dash)
 			illuminate(sc->info,
@@ -137,7 +137,7 @@ void gu_draw_line(struct screen *sc,
 	j   = y1;
 	eps = dy - dx;
 
-	for (i = x1; i <= x2 - 1; i++) {
+	for (i = x1; i <= x2; i++) {
 		if (!dash ||
 		    (++pixel % (2 * dash)) > dash) {
 			illuminate(sc->info,

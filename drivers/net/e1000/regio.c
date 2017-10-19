@@ -16,6 +16,15 @@ static uint32_t e1000_true_offset(struct e1000_hw *hw, uint32_t reg)
 			case E1000_EEMNGCTL:
 				reg = E1000_I210_EEMNGCTL;
 				break;
+			case E1000_FLSWCTL:
+				reg = E1000_I210_FLSWCTL;
+				break;
+			case E1000_FLSWCNT:
+				reg = E1000_I210_FLSWCNT;
+				break;
+			case E1000_FLSWDATA:
+				reg = E1000_I210_FLSWDATA;
+				break;
 			}
 		}
 		reg &= ~E1000_MIGHT_BE_REMAPPED;

@@ -414,17 +414,9 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 			fla &= E1000_FLA_FL_SIZE_MASK;
 			fla >>= E1000_FLA_FL_SIZE_SHIFT;
 
-			switch (fla) {
-			case E1000_FLA_FL_SIZE_8MB:
-				eeprom->word_size = SZ_8M / 2;
-				break;
-			case E1000_FLA_FL_SIZE_4MB:
-				eeprom->word_size = SZ_4M / 2;
-				break;
-			case E1000_FLA_FL_SIZE_2MB:
-				eeprom->word_size = SZ_2M / 2;
-				break;
-			default:
+			if (fla) {
+				eeprom->word_size = (SZ_64K << fla) / 2;
+			} else {
 				eeprom->word_size = 2048;
 				dev_info(hw->dev, "Unprogrammed Flash detected, "
 					 "limiting access to first 4KB\n");
@@ -709,17 +701,8 @@ static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw)
 
 static int e1000_flash_mode_wait_for_idle(struct e1000_hw *hw)
 {
-	/* Strictly speaking we need to poll FLSWCTL.DONE only if we
-	 * are executing this code after a reset event, but it
-	 * shouldn't hurt to do this everytime, besided we need to
-	 * poll got FLSWCTL.GLDONE to make sure that back to back
-	 * calls to that function work correctly, since we finish
-	 * execution by polling only FLSWCTL.DONE */
-
-	const int ret = e1000_poll_reg(hw, E1000_FLSWCTL,
-				       E1000_FLSWCTL_DONE | E1000_FLSWCTL_GLDONE,
-				       E1000_FLSWCTL_DONE | E1000_FLSWCTL_GLDONE,
-				       SECOND);
+	const int ret = e1000_poll_reg(hw, E1000_FLSWCTL, E1000_FLSWCTL_DONE,
+				       E1000_FLSWCTL_DONE, SECOND);
 	if (ret < 0)
 		dev_err(hw->dev,
 			"Timeout waiting for FLSWCTL.DONE to be set\n");

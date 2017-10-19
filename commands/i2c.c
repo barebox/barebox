@@ -129,7 +129,7 @@ static int do_i2c_write(int argc, char *argv[])
 
 	buf = xmalloc(count);
 	for (i = 0; i < count; i++)
-		*(buf + i) = (char) simple_strtol(argv[optind+i], NULL, 16);
+		*(buf + i) = (char) simple_strtol(argv[optind+i], NULL, 0);
 
 	ret = i2c_write_reg(&client, reg | wide, buf, count);
 	if (ret != count) {

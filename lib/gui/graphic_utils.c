@@ -285,15 +285,13 @@ struct screen *fb_open(const char * fbdev)
 	sc = fb_create_screen(info);
 	if (IS_ERR(sc)) {
 		ret = PTR_ERR(sc);
-		goto failed_create;
+		goto failed_screeninfo;
 	}
 
 	sc->fd = fd;
 
 	return sc;
 
-failed_create:
-	free(sc);
 failed_screeninfo:
 	close(fd);
 

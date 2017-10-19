@@ -204,6 +204,13 @@ config DRIVER_NET_EFI_SNP
 	bool "EFI SNP ethernet driver"
 	depends on EFI_BOOTUP
 
+config DRIVER_NET_AG71XX
+	bool "Atheros AG71xx ethernet driver"
+	depends on MACH_MIPS_ATH79
+	select PHYLIB
+	help
+	  This option enables support for Atheros AG71XX ethernet chip.
+
 config DRIVER_NET_TSE
 	depends on NIOS2
 	bool "Altera TSE ethernet driver"

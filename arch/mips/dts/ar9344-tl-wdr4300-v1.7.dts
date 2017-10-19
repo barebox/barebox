@@ -6,11 +6,12 @@
 #include "ar9344.dtsi"
 
 / {
-	model = "TP-Link WDR4300";
-	compatible = "tplink,tl-wdr4300";
+	model = "TP-Link WDR4300 v1.7";
+	compatible = "tplink,tl-wdr4300", "tplink,tl-wdr4300-v1.7";
 
 	aliases {
 		serial0 = &uart0;
+		spiflash = &spiflash;
 	};
 
 	memory@0 {
@@ -52,7 +53,6 @@
 		partition@0 {
 			label = "barebox";
 			reg = <0 0x80000>;
-			read-only;
 		};
 
 		partition@80000 {
@@ -60,4 +60,8 @@
 			reg = <0x80000 0x10000>;
 		};
 	};
+};
+
+&mac0 {
+	status = "okay";
 };

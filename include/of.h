@@ -144,6 +144,8 @@ extern struct device_node *of_new_node(struct device_node *parent,
 				const char *name);
 extern struct device_node *of_create_node(struct device_node *root,
 					const char *path);
+extern struct device_node *of_copy_node(struct device_node *parent,
+				const struct device_node *other);
 extern void of_delete_node(struct device_node *node);
 
 extern int of_machine_is_compatible(const char *compat);

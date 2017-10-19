@@ -35,8 +35,8 @@ static int sp804_probe(struct amba_device *dev, const struct amba_id *id)
 	int ret;
 
 	if (sp804_base) {
-		dev_err(&dev->dev, "single instance driver\n");
-		return -EBUSY;
+		dev_dbg(&dev->dev, "skipping secondary instance\n");
+		return 0;
 	}
 
 	sp804_clk = clk_get(&dev->dev, NULL);

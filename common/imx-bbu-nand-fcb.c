@@ -1126,7 +1126,7 @@ static void read_firmware_all(struct mtd_info *mtd, struct fcb_block *fcb, void 
 		fcb->Firmware1_startingPage + fcb->PagesInFirmware1, primary ? "" : "in",
 		primary_refresh ? "needs cleanup" : "clean");
 
-	pr_info("secondary firmware is on pages %d-%d, %svalid, %s\n", fcb->Firmware2_startingPage,
+	pr_info("Secondary firmware is on pages %d-%d, %svalid, %s\n", fcb->Firmware2_startingPage,
 		fcb->Firmware2_startingPage + fcb->PagesInFirmware2, secondary ? "" : "in",
 		secondary_refresh ? "needs cleanup" : "clean");
 

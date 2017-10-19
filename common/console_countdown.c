@@ -47,12 +47,14 @@ int console_countdown(int timeout_s, unsigned flags, char *out_key)
 	do {
 		if (tstc()) {
 			key = getchar();
-			if (flags & CONSOLE_COUNTDOWN_ANYKEY)
-				goto out;
-			if (flags & CONSOLE_COUNTDOWN_RETURN && key == '\n')
-				goto out;
-			if (flags & CONSOLE_COUNTDOWN_CTRLC && key == 3)
-				goto out;
+			if (key >= 0) {
+				if (flags & CONSOLE_COUNTDOWN_ANYKEY)
+					goto out;
+				if (flags & CONSOLE_COUNTDOWN_RETURN && key == '\n')
+					goto out;
+				if (flags & CONSOLE_COUNTDOWN_CTRLC && key == 3)
+					goto out;
+			}
 			key = 0;
 		}
 		if ((flags & CONSOLE_COUNTDOWN_EXTERN) &&

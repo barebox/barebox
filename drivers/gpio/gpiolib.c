@@ -204,6 +204,10 @@ EXPORT_SYMBOL(gpio_set_value);
 void gpio_set_active(unsigned gpio, bool value)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	if (!gi)
+		return;
+
 	gpio_set_value(gpio, gpio_adjust_value(gi, value));
 }
 EXPORT_SYMBOL(gpio_set_active);
@@ -229,6 +233,10 @@ EXPORT_SYMBOL(gpio_get_value);
 int gpio_is_active(unsigned gpio)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	if (!gi)
+		return -ENODEV;
+
 	return gpio_adjust_value(gi, gpio_get_value(gpio));
 }
 EXPORT_SYMBOL(gpio_is_active);
@@ -255,6 +263,10 @@ EXPORT_SYMBOL(gpio_direction_output);
 int gpio_direction_active(unsigned gpio, bool value)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
+
+	if (!gi)
+		return -ENODEV;
+
 	return gpio_direction_output(gpio, gpio_adjust_value(gi, value));
 }
 EXPORT_SYMBOL(gpio_direction_active);

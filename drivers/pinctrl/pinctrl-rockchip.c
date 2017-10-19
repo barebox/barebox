@@ -412,8 +412,6 @@ static int rockchip_pinctrl_probe(struct device_d *dev)
 	int ret;
 
 	info = xzalloc(sizeof(struct rockchip_pinctrl));
-	if (!info)
-		return -ENOMEM;
 
 	ctrl = rockchip_pinctrl_get_soc_data(info, dev);
 	if (!ctrl) {

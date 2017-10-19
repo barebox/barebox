@@ -373,8 +373,6 @@ static int bgpio_dev_probe(struct device_d *dev)
 	dev_get_drvdata(dev, (const void **)&flags);
 
 	bgc = xzalloc(sizeof(struct bgpio_chip));
-	if (!bgc)
-		return -ENOMEM;
 
 	err = bgpio_init(bgc, dev, sz, dat, set, clr, dirout, dirin, flags);
 	if (err)

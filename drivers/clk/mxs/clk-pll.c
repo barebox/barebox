@@ -96,8 +96,6 @@ struct clk *mxs_clk_pll(const char *name, const char *parent_name,
 	int ret;
 
 	pll = xzalloc(sizeof(*pll));
-	if (!pll)
-		return ERR_PTR(-ENOMEM);
 
 	pll->parent = parent_name;
 	pll->clk.name = name;

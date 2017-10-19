@@ -1717,7 +1717,7 @@ void ratp_close(struct ratp *ratp)
 	free(ri);
 	ratp->internal = NULL;
 
-	pr_info("Closed\n");
+	pr_debug("Closed\n");
 }
 
 /**

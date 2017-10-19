@@ -64,8 +64,6 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
 	}
 
 	private = xzalloc(sizeof(*private) + size);
-	if (!private)
-		return -ENOMEM;
 	private->type = type;
 	private->id = id;
 	private->count = count;

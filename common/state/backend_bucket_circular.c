@@ -310,8 +310,6 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	 * random changes
 	 */
 	write_buf = xzalloc(written_length);
-	if (!write_buf)
-		return -ENOMEM;
 
 	memcpy(write_buf, buf, len);
 	meta = (struct state_backend_storage_bucket_circular_meta *)

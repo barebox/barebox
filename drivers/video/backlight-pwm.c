@@ -147,8 +147,6 @@ static int pwm_backlight_parse_dt(struct device_d *dev,
 		size_t size = sizeof(*pwm_backlight->levels) * length;
 
 		pwm_backlight->levels = xzalloc(size);
-		if (!pwm_backlight->levels)
-			return -ENOMEM;
 
 		ret = of_property_read_u32_array(node, "brightness-levels",
 						 pwm_backlight->levels,

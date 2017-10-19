@@ -483,9 +483,6 @@ static int gfar_probe(struct device_d *dev)
 
 	priv = xzalloc(sizeof(struct gfar_private));
 
-	if (NULL == priv)
-		return -ENODEV;
-
 	edev = &priv->edev;
 
 	priv->mdiobus_tbi = gfar_info->mdiobus_tbi;

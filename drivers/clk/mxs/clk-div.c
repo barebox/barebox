@@ -86,8 +86,6 @@ struct clk *mxs_clk_div(const char *name, const char *parent_name,
 	int ret;
 
 	div = xzalloc(sizeof(*div));
-	if (!div)
-		return ERR_PTR(-ENOMEM);
 
 	div->parent = parent_name;
 	div->divider.clk.name = name;

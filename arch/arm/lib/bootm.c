@@ -250,8 +250,10 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 
 	header = &__header;
 	ret = read(fd, header, sizeof(*header));
-	if (ret < sizeof(*header))
+	if (ret < 0)
 		return ret;
+	if (ret < sizeof(*header))
+		return -ENXIO;
 
 	if (file_detect_type(header, sizeof(*header)) != filetype_oftree)
 		return -ENXIO;

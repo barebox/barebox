@@ -29,6 +29,7 @@
 #include <linux/mtd/mtd-abi.h>
 #include <linux/stat.h>
 #include <ioctl.h>
+#include <environment.h>
 #include <mach/bbu.h>
 
 #define FLASH_HEADER_OFFSET_MMC		0x400
@@ -369,6 +370,59 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	return ret;
 }
 
+static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
+					      struct bbu_data *data)
+{
+	struct imx_internal_bbu_handler *imx_handler =
+		container_of(handler, struct imx_internal_bbu_handler, handler);
+	int ret;
+	uint32_t *barker;
+	char *bootpartvar;
+	const char *bootpart;
+	char *devicefile;
+
+	barker = data->image + imx_handler->flash_header_offset;
+
+	if (*barker != IVT_BARKER) {
+		printf("Board does not provide DCD data and this image is no imximage\n");
+		return -EINVAL;
+	}
+
+	ret = asprintf(&bootpartvar, "%s.boot", data->devicefile);
+	if (ret < 0)
+		return ret;
+
+	bootpart = getenv(bootpartvar);
+
+	if (!strcmp(bootpart, "boot0")) {
+		bootpart = "boot1";
+	} else {
+		bootpart = "boot0";
+	}
+
+	ret = asprintf(&devicefile, "/dev/%s.%s", data->devicefile, bootpart);
+	if (ret < 0)
+		goto free_bootpartvar;
+
+	ret = imx_bbu_check_prereq(devicefile, data);
+	if (ret)
+		goto free_devicefile;
+
+	ret = imx_bbu_write_device(imx_handler, devicefile, data, data->image, data->len);
+
+	if (!ret)
+		/* on success switch boot source */
+		ret = setenv(bootpartvar, bootpart);
+
+free_devicefile:
+	free(devicefile);
+
+free_bootpartvar:
+	free(bootpartvar);
+
+	return ret;
+}
+
 static int imx_bbu_external_update(struct bbu_handler *handler, struct bbu_data *data)
 {
 	struct imx_internal_bbu_handler *imx_handler =
@@ -494,6 +548,28 @@ int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 
 	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
+
+	return __register_handler(imx_handler);
+}
+
+/*
+ * Register a handler that writes to the non-active boot partition of an mmc
+ * medium and on success activates the written-to partition. So the machine can
+ * still boot even after a failed try to write a boot image.
+ *
+ * Pass "devicefile" without partition name and /dev/ prefix. e.g. just "mmc2".
+ * Note that no further partitioning of the boot partition is supported up to
+ * now.
+ */
+int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefile,
+					       unsigned long flags)
+{
+	struct imx_internal_bbu_handler *imx_handler;
+
+	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+
+	imx_handler->handler.handler = imx_bbu_internal_v2_mmcboot_update;
 
 	return __register_handler(imx_handler);
 }

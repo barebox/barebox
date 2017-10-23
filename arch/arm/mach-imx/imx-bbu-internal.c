@@ -49,29 +49,30 @@ struct imx_internal_bbu_handler {
  * DOS partition table on the device
  */
 static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
-		struct bbu_data *data, void *buf, int image_len)
+		const char *devicefile, struct bbu_data *data,
+		void *buf, int image_len)
 {
 	int fd, ret;
 
-	fd = open(data->devicefile, O_RDWR | O_CREAT);
+	fd = open(devicefile, O_RDWR | O_CREAT);
 	if (fd < 0)
 		return fd;
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
 		debug("%s: unprotecting %s from 0 to 0x%08x\n", __func__,
-				data->devicefile, image_len);
+				devicefile, image_len);
 		ret = protect(fd, image_len, 0, 0);
 		if (ret && ret != -ENOSYS) {
-			printf("unprotecting %s failed with %s\n", data->devicefile,
+			printf("unprotecting %s failed with %s\n", devicefile,
 					strerror(-ret));
 			goto err_close;
 		}
 
 		debug("%s: erasing %s from 0 to 0x%08x\n", __func__,
-				data->devicefile, image_len);
+				devicefile, image_len);
 		ret = erase(fd, image_len, 0);
 		if (ret) {
-			printf("erasing %s failed with %s\n", data->devicefile,
+			printf("erasing %s failed with %s\n", devicefile,
 					strerror(-ret));
 			goto err_close;
 		}
@@ -102,10 +103,10 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
 		debug("%s: protecting %s from 0 to 0x%08x\n", __func__,
-				data->devicefile, image_len);
+				devicefile, image_len);
 		ret = protect(fd, image_len, 0, 1);
 		if (ret && ret != -ENOSYS) {
-			printf("protecting %s failed with %s\n", data->devicefile,
+			printf("protecting %s failed with %s\n", devicefile,
 					strerror(-ret));
 		}
 	}
@@ -118,7 +119,7 @@ err_close:
 	return ret;
 }
 
-static int imx_bbu_check_prereq(struct bbu_data *data)
+static int imx_bbu_check_prereq(const char *devicefile, struct bbu_data *data)
 {
 	int ret;
 
@@ -131,8 +132,8 @@ static int imx_bbu_check_prereq(struct bbu_data *data)
 	if (ret)
 		return ret;
 
-	if (!strncmp(data->devicefile, "/dev/", 5))
-		device_detect_by_name(data->devicefile + 5);
+	if (!strncmp(devicefile, "/dev/", 5))
+		device_detect_by_name(devicefile + 5);
 
 	return 0;
 }
@@ -150,13 +151,13 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
 
-	ret = imx_bbu_check_prereq(data);
+	ret = imx_bbu_check_prereq(data->devicefile, data);
 	if (ret)
 		return ret;
 
 	printf("updating to %s\n", data->devicefile);
 
-	ret = imx_bbu_write_device(imx_handler, data, data->image, data->len);
+	ret = imx_bbu_write_device(imx_handler, data->devicefile, data, data->image, data->len);
 
 	return ret;
 }
@@ -348,7 +349,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	int ret;
 	uint32_t *barker;
 
-	ret = imx_bbu_check_prereq(data);
+	ret = imx_bbu_check_prereq(data->devicefile, data);
 	if (ret)
 		return ret;
 
@@ -362,7 +363,8 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND)
 		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data);
 	else
-		ret = imx_bbu_write_device(imx_handler, data, data->image, data->len);
+		ret = imx_bbu_write_device(imx_handler, data->devicefile, data,
+					   data->image, data->len);
 
 	return ret;
 }
@@ -373,11 +375,12 @@ static int imx_bbu_external_update(struct bbu_handler *handler, struct bbu_data 
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
 
-	ret = imx_bbu_check_prereq(data);
+	ret = imx_bbu_check_prereq(data->devicefile, data);
 	if (ret)
 		return ret;
 
-	return imx_bbu_write_device(imx_handler, data, data->image, data->len);
+	return imx_bbu_write_device(imx_handler, data->devicefile, data,
+				    data->image, data->len);
 }
 
 static struct imx_internal_bbu_handler *__init_handler(const char *name, char *devicefile,

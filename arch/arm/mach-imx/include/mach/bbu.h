@@ -24,6 +24,9 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags);
 
+int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefile,
+		unsigned long flags);
+
 int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 		unsigned long flags);
 
@@ -58,6 +61,13 @@ static inline int imx53_bbu_internal_nand_register_handler(const char *name,
 
 static inline int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int imx6_bbu_internal_mmcboot_register_handler(const char *name,
+							     char *devicefile,
+							     unsigned long flags)
 {
 	return -ENOSYS;
 }

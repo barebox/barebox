@@ -25,6 +25,7 @@
 #include <magicvar.h>
 #include <init.h>
 #include <restart.h>
+#include <poweroff.h>
 #include <driver.h>
 #include <platform_data/serial-ns16550.h>
 #include <io.h>
@@ -283,9 +284,18 @@ static void __noreturn efi_restart_system(struct restart_handler *rst)
 	hang();
 }
 
+static void __noreturn efi_poweroff_system(struct poweroff_handler *handler)
+{
+	shutdown_barebox();
+	RT->reset_system(EFI_RESET_SHUTDOWN, EFI_SUCCESS, 0, NULL);
+
+	hang();
+}
+
 static int restart_register_feature(void)
 {
 	restart_handler_register_fn(efi_restart_system);
+	poweroff_handler_register_fn(efi_poweroff_system);
 
 	return 0;
 }

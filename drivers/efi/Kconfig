@@ -1,4 +1,5 @@
 config EFI_BOOTUP
 	bool
+	select HAS_POWEROFF
 	select BLOCK
 	select PARTITION_DISK

@@ -44,12 +44,13 @@ static int do_nv(int argc, char *argv[])
 		}
 	}
 
-	if (do_save)
-		return nvvar_save();
-
-	if (argc == optind) {
+	if (argc == 1) {
 		nvvar_print();
 		return 0;
+	}
+
+	if (do_save) {
+		return nvvar_save();
 	}
 
 	argc -= optind;

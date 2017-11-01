@@ -28,7 +28,7 @@ static int do_nv(int argc, char *argv[])
 {
 	int opt;
 	int do_remove = 0, do_save = 0;
-	int ret, i;
+	int failed = 0, i;
 	char *value;
 
 	while ((opt = getopt(argc, argv, "rs")) > 0) {
@@ -62,19 +62,29 @@ static int do_nv(int argc, char *argv[])
 	}
 
 	for (i = 0; i < argc; i++) {
+		int ret;
 		value = strchr(argv[0], '=');
 		if (value) {
 			*value = 0;
 			value++;
 		}
 
-		if (do_remove)
+		if (do_remove) {
 			ret = nvvar_remove(argv[i]);
-		else
+			if (ret) {
+				printf("Failed removing %s: %s\n", argv[i], strerror(-ret));
+				failed = 1;
+			}
+		} else {
 			ret = nvvar_add(argv[i], value);
+			if (ret) {
+				printf("Failed adding %s: %s\n", argv[i], strerror(-ret));
+				failed = 1;
+			}
+		}
 	}
 
-	return ret;
+	return failed;
 }
 
 BAREBOX_CMD_HELP_START(nv)

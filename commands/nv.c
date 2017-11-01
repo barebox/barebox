@@ -55,8 +55,10 @@ static int do_nv(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 1)
+	if (argc < 1) {
+		printf("Invalid usage: Missing argument");
 		return COMMAND_ERROR_USAGE;
+	}
 
 	for (i = 0; i < argc; i++) {
 		value = strchr(argv[0], '=');

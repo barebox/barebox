@@ -164,6 +164,20 @@
 		pagesize = <32>;
 		reg = <0x52>;
 	};
+
+	/* The following i2c nodes are for the autoenable */
+	i2c_tmp102: temp@4b {
+		compatible = "ti,tmp102";
+		reg = <0x4b>;
+		status = "disabled";
+	};
+
+	i2c_rtc: rtc@68 {
+		compatible = "rv4162";
+		reg = <0x68>;
+		status = "disabled";
+	};
+
 };
 
 &mmc1 {

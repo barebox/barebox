@@ -262,6 +262,8 @@ struct device_node *of_find_node_by_alias(struct device_node *root,
 		const char *alias);
 struct device_node *of_find_node_by_path_or_alias(struct device_node *root,
 		const char *str);
+int of_autoenable_device_by_path(char *path);
+int of_autoenable_i2c_by_component(char *path);
 #else
 static inline int of_parse_partitions(struct cdev *cdev,
 					  struct device_node *node)
@@ -664,6 +666,18 @@ static inline struct device_node *of_find_node_by_path_or_alias(
 {
 	return NULL;
 }
+
+static inline int of_autoenable_i2c_by_path(char *path)
+{
+	return -ENODEV;
+}
+
+static inline int of_autoenable_i2c_by_component(char *path)
+{
+	return -ENODEV;
+}
+
+
 #endif
 
 #define for_each_node_by_name(dn, name) \

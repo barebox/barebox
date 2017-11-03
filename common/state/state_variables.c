@@ -450,26 +450,31 @@ static struct state_variable *state_string_create(struct state *state,
 static struct variable_type types[] = {
 	{
 		.type_name = "uint8",
+		.type = STATE_VARIABLE_TYPE_UINT8,
 		.export = state_uint32_export,
 		.import = state_uint32_import,
 		.create = state_uint8_create,
 	}, {
 		.type_name = "uint32",
+		.type = STATE_VARIABLE_TYPE_UINT32,
 		.export = state_uint32_export,
 		.import = state_uint32_import,
 		.create = state_uint32_create,
 	}, {
 		.type_name = "enum32",
+		.type = STATE_VARIABLE_TYPE_ENUM32,
 		.export = state_enum32_export,
 		.import = state_enum32_import,
 		.create = state_enum32_create,
 	}, {
 		.type_name = "mac",
+		.type = STATE_VARIABLE_TYPE_MAC,
 		.export = state_mac_export,
 		.import = state_mac_import,
 		.create = state_mac_create,
 	}, {
 		.type_name = "string",
+		.type = STATE_VARIABLE_TYPE_STRING,
 		.export = state_string_export,
 		.import = state_string_import,
 		.create = state_string_create,
@@ -482,6 +487,19 @@ struct variable_type *state_find_type_by_name(const char *name)
 
 	for (i = 0; i < ARRAY_SIZE(types); i++) {
 		if (!strcmp(name, types[i].type_name)) {
+			return &types[i];
+		}
+	}
+
+	return NULL;
+}
+
+struct variable_type *state_find_type(const enum state_variable_type type)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(types); i++) {
+		if (type == types[i].type) {
 			return &types[i];
 		}
 	}

@@ -693,6 +693,27 @@ int state_get_name(const struct state *state, char const **name)
 	return 0;
 }
 
+int state_read_mac(struct state *state, const char *name, u8 *buf)
+{
+	struct state_variable *svar;
+	struct state_mac *mac;
+
+	if (!state || !name || !buf)
+		return -EINVAL;
+
+	svar = state_find_var(state, name);
+	if (IS_ERR(svar))
+		return PTR_ERR(svar);
+
+	if (svar->type->type != STATE_VARIABLE_TYPE_MAC)
+		return -EINVAL;
+
+	mac = to_state_mac(svar);
+	memcpy(buf, mac->value, 6);
+
+	return 0;
+}
+
 void state_info(void)
 {
 	struct state *state;

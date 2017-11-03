@@ -23,4 +23,6 @@ int state_load(struct state *state);
 int state_save(struct state *state);
 void state_info(void);
 
+int state_read_mac(struct state *state, const char *name, u8 *buf);
+
 #endif /* __STATE_H */

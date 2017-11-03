@@ -9,6 +9,7 @@
 
 #include "am33xx.dtsi"
 #include "am335x-phytec-phycore-som.dtsi"
+#include "am335x-phytec-state.dtsi"
 
 / {
 	model = "Phytec phyCORE AM335x";

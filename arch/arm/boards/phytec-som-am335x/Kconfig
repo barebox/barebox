@@ -1,0 +1,13 @@
+
+if MACH_PHYTEC_SOM_AM335X
+
+config PHYTEC_SOM_AM335X_OF_AUTOENABLE
+	bool
+	prompt "Autoenable of components"
+	help
+	  Say Y to unlock an API for automatically enable either hardware
+	  components with existing device drivers or i2c clients. All functions
+	  take a device tree path to find the hardware and will fix up the node
+	  status in the kernel device tree, if it's accessible.
+
+endif

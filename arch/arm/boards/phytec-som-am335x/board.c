@@ -135,6 +135,19 @@ static int physom_devices_init(void)
 			}
 	}
 
+	if (IS_ENABLED(PHYTEC_SOM_AM335X_OF_AUTOENABLE)) {
+		/* Enable NAND */
+		of_autoenable_device_by_path("/ocp/gpmc@50000000");
+		/* Enable eMMC */
+		of_autoenable_device_by_path("/ocp/mmc@481d8000");
+		/* Enable SPI NOR */
+		of_autoenable_device_by_path("/ocp/spi@48030000/m25p80@0");
+
+		of_autoenable_i2c_by_component("/ocp/i2c@44e0b000/temp@4b");
+		of_autoenable_i2c_by_component("/ocp/i2c@44e0b000/eeprom@52");
+		of_autoenable_i2c_by_component("/ocp/i2c@44e0b000/rtc@68");
+	}
+
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();
 

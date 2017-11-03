@@ -192,6 +192,8 @@ config MACH_VSCOM_BALTOS
 
 endif
 
+source arch/arm/boards/phytec-som-am335x/Kconfig
+
 choice
 	prompt "Select OMAP board"
 	depends on !OMAP_MULTI_BOARDS

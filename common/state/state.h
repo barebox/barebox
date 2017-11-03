@@ -123,15 +123,17 @@ struct variable_type {
 	int (*export) (struct state_variable *, struct device_node *,
 		       enum state_convert);
 	int (*import) (struct state_variable *, struct device_node *);
-	struct state_variable *(*create) (struct state * state,
-					  const char *name,
-					  struct device_node *);
+	struct state_variable *(*create) (struct state *,
+					  const char *,
+					  struct device_node *,
+					  const struct variable_type *);
 };
 
 /* instance of a single variable */
 struct state_variable {
 	struct state *state;
 	struct list_head list;
+	const struct variable_type *type;
 	const char *name;
 	unsigned int start;
 	unsigned int size;

@@ -374,9 +374,9 @@ again:
 	/*
 	 * Hack around tftp fs. We need lseek for uImage support, but
 	 * this cannot be implemented in tftp fs, so we detect this
-	 * by doing a test lseek and copy the file to ram if it fails
+	 * and copy the file to ram if it fails
 	 */
-	if (IS_BUILTIN(CONFIG_FS_TFTP) && lseek(fd, 0, SEEK_SET)) {
+	if (IS_BUILTIN(CONFIG_FS_TFTP) && !can_lseek_backward(fd)) {
 		close(fd);
 		ret = copy_file(priv->filename, priv->tmp, 0);
 		if (ret)

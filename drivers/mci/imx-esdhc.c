@@ -454,7 +454,7 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 			SYSCTL_CLOCK_MASK, clk);
 
 	wait_on_timeout(10 * MSECOND,
-			!(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_SDSTB));
+			esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_SDSTB);
 
 	clk = SYSCTL_PEREN | SYSCTL_CKEN;
 

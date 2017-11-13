@@ -130,6 +130,18 @@ static void efi_bio_print_info(struct efi_bio_priv *priv)
 			media->optimal_transfer_length_granularity);
 }
 
+static int is_bio_usbdev(struct efi_device *efidev)
+{
+	int i;
+
+	for (i = 0; i < efidev->num_guids; i++) {
+		if (!efi_guidcmp(efidev->guids[i], EFI_USB_IO_PROTOCOL_GUID))
+			return 1;
+	}
+
+	return 0;
+}
+
 int efi_bio_probe(struct efi_device *efidev)
 {
 	int ret;
@@ -147,7 +159,10 @@ int efi_bio_probe(struct efi_device *efidev)
 	efi_bio_print_info(priv);
 	priv->dev = &efidev->dev;
 
-	priv->blk.cdev.name = xasprintf("disk%d", cdev_find_free_index("disk"));
+	if (is_bio_usbdev(efidev))
+		priv->blk.cdev.name = xasprintf("usbdisk%d", cdev_find_free_index("usbdisk"));
+	else
+		priv->blk.cdev.name = xasprintf("disk%d", cdev_find_free_index("disk"));
 	priv->blk.blockbits = ffs(media->block_size) - 1;
 	priv->blk.num_blocks = media->last_block + 1;
 	priv->blk.ops = &efi_bio_ops;

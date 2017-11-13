@@ -84,7 +84,7 @@ static int do_spi(int argc, char *argv[])
 	rx_buf = xmalloc(read);
 
 	for (i = 0; i < count; i++)
-		tx_buf[i] = (u8) simple_strtol(argv[optind + i], NULL, 16);
+		tx_buf[i] = (u8) simple_strtol(argv[optind + i], NULL, 0);
 
 	ret = spi_write_then_read(&spi, tx_buf, count, rx_buf, read);
 	if (ret)

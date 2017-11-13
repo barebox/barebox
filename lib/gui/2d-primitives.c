@@ -72,7 +72,7 @@ static void draw_simple_line(struct screen *sc,
 }
 
 /**
- * gl_draw_line - draw a 2D dashed line between (x1, y1) and (x2,y2)
+ * gu_draw_line - draw a 2D dashed line between (x1, y1) and (x2,y2)
  *
  * @sc: screen to draw on
  * @x1, @y1: first point defining the line
@@ -80,7 +80,7 @@ static void draw_simple_line(struct screen *sc,
  * @r, @g, @b, @a: line's color
  * @dash: dash length (0 denotes solid line)
  *
- * gl_draw_line() implements integer version of Bresenham's algoritm
+ * gu_draw_line() implements integer version of Bresenham's algoritm
  * as can be found here:
  *
  * http://www.idav.ucdavis.edu/education/GraphicsNotes/Bresenhams-Algorithm.pdf
@@ -158,7 +158,7 @@ void gu_draw_line(struct screen *sc,
 }
 
 /**
- * gl_draw_circle - draw a 2D circle with center at (x0, y0)
+ * gu_draw_circle - draw a 2D circle with center at (x0, y0)
  *
  * @sc: screen to draw on
  * @x0, @y0: coordinates of circle's center

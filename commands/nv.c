@@ -28,7 +28,7 @@ static int do_nv(int argc, char *argv[])
 {
 	int opt;
 	int do_remove = 0, do_save = 0;
-	int ret, i;
+	int failed = 0, i;
 	char *value;
 
 	while ((opt = getopt(argc, argv, "rs")) > 0) {
@@ -44,50 +44,63 @@ static int do_nv(int argc, char *argv[])
 		}
 	}
 
-	if (do_save)
-		return nvvar_save();
-
-	if (argc == optind) {
+	if (argc == 1) {
 		nvvar_print();
 		return 0;
+	}
+
+	if (do_save) {
+		return nvvar_save();
 	}
 
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 1)
+	if (argc < 1) {
+		printf("Invalid usage: Missing argument");
 		return COMMAND_ERROR_USAGE;
+	}
 
 	for (i = 0; i < argc; i++) {
+		int ret;
 		value = strchr(argv[0], '=');
 		if (value) {
 			*value = 0;
 			value++;
 		}
 
-		if (do_remove)
+		if (do_remove) {
 			ret = nvvar_remove(argv[i]);
-		else
+			if (ret) {
+				printf("Failed removing %s: %s\n", argv[i], strerror(-ret));
+				failed = 1;
+			}
+		} else {
 			ret = nvvar_add(argv[i], value);
+			if (ret) {
+				printf("Failed adding %s: %s\n", argv[i], strerror(-ret));
+				failed = 1;
+			}
+		}
 	}
 
-	return ret;
+	return failed;
 }
 
 BAREBOX_CMD_HELP_START(nv)
-BAREBOX_CMD_HELP_TEXT("Add a new non volatile variable named VAR, optionally set to VALUE.")
-BAREBOX_CMD_HELP_TEXT("non volatile variables are persistent variables that overwrite the")
-BAREBOX_CMD_HELP_TEXT("global variables of the same name. Their value is saved implicitly with")
-BAREBOX_CMD_HELP_TEXT("'saveenv' or explicitly with 'nv -s'")
+BAREBOX_CMD_HELP_TEXT("Add a new non volatile (NV) variable named VAR, optionally set to VALUE.")
+BAREBOX_CMD_HELP_TEXT("NV variables are persistent variables that overwrite the global variables")
+BAREBOX_CMD_HELP_TEXT("of the same name.")
+BAREBOX_CMD_HELP_TEXT("Their value is saved implicitly with 'saveenv' or explicitly with 'nv -s'")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
-BAREBOX_CMD_HELP_OPT("-r", "remove non volatile variables")
-BAREBOX_CMD_HELP_OPT("-s", "Save NV variables")
+BAREBOX_CMD_HELP_OPT("-r VAR1 ...", "remove NV variable(s)")
+BAREBOX_CMD_HELP_OPT("-s\t", "save NV variables")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(nv)
 	.cmd		= do_nv,
-	BAREBOX_CMD_DESC("create or set non volatile variables")
+	BAREBOX_CMD_DESC("create, set or remove non volatile (NV) variables")
 	BAREBOX_CMD_OPTS("[-r] VAR[=VALUE] ...")
 	BAREBOX_CMD_GROUP(CMD_GRP_ENV)
 	BAREBOX_CMD_HELP(cmd_nv_help)

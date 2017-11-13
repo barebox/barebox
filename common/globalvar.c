@@ -261,9 +261,11 @@ int nvvar_remove(const char *name)
 
 		unlink(fname);
 		free(fname);
+
+		return 0;
 	}
 
-	return 0;
+	return -ENOENT;
 }
 
 int nvvar_load(void)

@@ -105,7 +105,7 @@ static int tqma6x_env_init(void)
 
 	imx6_bbu_internal_spi_i2c_register_handler("spiflash", "/dev/m25p0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT);
-	imx6_bbu_internal_mmc_register_handler("emmc", "/dev/mmc2.boot0", 0);
+	imx6_bbu_internal_mmcboot_register_handler("emmc", "mmc2", 0);
 
 	device_detect_by_name("mmc2");
 

@@ -155,6 +155,10 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 				"disable-over-current", NULL))
 		ci->flags |= MXC_EHCI_DISABLE_OVERCURRENT;
 
+	else if (!of_find_property(ci->dev->device_node,
+				   "over-current-active-high", NULL))
+		ci->flags |= MXC_EHCI_OC_PIN_ACTIVE_LOW;
+
 	return 0;
 }
 

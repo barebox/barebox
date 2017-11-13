@@ -21,10 +21,12 @@
 #include <bootsource.h>
 #include <common.h>
 #include <nand.h>
+#include <net.h>
 #include <init.h>
 #include <io.h>
 #include <linux/sizes.h>
 #include <envfs.h>
+#include <state.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>
 #include <linux/phy.h>
@@ -65,8 +67,16 @@ static char *nandslots[] = {
 	"/dev/nand0.barebox_backup.bb",
 };
 
+#define ETH_COUNT 2
+static const char *eth_names[ETH_COUNT] = {"mac0", "mac1"};
+
 static int physom_devices_init(void)
 {
+	struct state *state;
+	u8 mac[6];
+	int state_ret;
+	int state_i;
+
 	if (!of_machine_is_compatible("phytec,am335x-som"))
 		return 0;
 
@@ -113,6 +123,30 @@ static int physom_devices_init(void)
 	am33xx_bbu_nand_slots_register_handler("nand", nandslots,
 				ARRAY_SIZE(nandslots));
 	am33xx_bbu_emmc_mlo_register_handler("MLO.emmc", "/dev/mmc1");
+
+	if (IS_ENABLED(CONFIG_STATE)) {
+		state = state_by_name("am335x_phytec_mac_state");
+		if (state)
+			for (state_i = 0; state_i < 2; state_i++) {
+				state_ret = state_read_mac(state,
+						      eth_names[state_i], &mac[0]);
+				if (state_ret == 6)
+					eth_register_ethaddr(state_i, mac);
+			}
+	}
+
+	if (IS_ENABLED(PHYTEC_SOM_AM335X_OF_AUTOENABLE)) {
+		/* Enable NAND */
+		of_autoenable_device_by_path("/ocp/gpmc@50000000");
+		/* Enable eMMC */
+		of_autoenable_device_by_path("/ocp/mmc@481d8000");
+		/* Enable SPI NOR */
+		of_autoenable_device_by_path("/ocp/spi@48030000/m25p80@0");
+
+		of_autoenable_i2c_by_component("/ocp/i2c@44e0b000/temp@4b");
+		of_autoenable_i2c_by_component("/ocp/i2c@44e0b000/eeprom@52");
+		of_autoenable_i2c_by_component("/ocp/i2c@44e0b000/rtc@68");
+	}
 
 	if (IS_ENABLED(CONFIG_SHELL_NONE))
 		return am33xx_of_register_bootdevice();

@@ -9,6 +9,14 @@ enum state_flags {
 	STATE_FLAG_NO_AUTHENTIFICATION = (1 << 0),
 };
 
+enum state_variable_type {
+	STATE_VARIABLE_TYPE_UINT8,
+	STATE_VARIABLE_TYPE_UINT32,
+	STATE_VARIABLE_TYPE_ENUM32,
+	STATE_VARIABLE_TYPE_MAC,
+	STATE_VARIABLE_TYPE_STRING
+};
+
 /**
  * state_backend_storage_bucket - This class describes a single backend storage
  * object copy
@@ -119,19 +127,22 @@ struct state_variable;
 /* A variable type (uint32, enum32) */
 struct variable_type {
 	const char *type_name;
+	enum state_variable_type type;
 	struct list_head list;
 	int (*export) (struct state_variable *, struct device_node *,
 		       enum state_convert);
 	int (*import) (struct state_variable *, struct device_node *);
-	struct state_variable *(*create) (struct state * state,
-					  const char *name,
-					  struct device_node *);
+	struct state_variable *(*create) (struct state *,
+					  const char *,
+					  struct device_node *,
+					  const struct variable_type *);
 };
 
 /* instance of a single variable */
 struct state_variable {
 	struct state *state;
 	struct list_head list;
+	const struct variable_type *type;
 	const char *name;
 	unsigned int start;
 	unsigned int size;

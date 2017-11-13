@@ -11,6 +11,7 @@
 #include <getopt.h>
 #include <init.h>
 #include <boot.h>
+#include <i2c/i2c.h>
 
 #define MAX_LEVEL	32		/* how deeply nested we will go */
 
@@ -259,4 +260,92 @@ struct fdt_header *of_get_fixed_tree(struct device_node *node)
 		return NULL;
 
 	return fdt;
+}
+
+/**
+ * of_autoenable_device_by_path() - Autoenable a device by a device tree path
+ * @param path Device tree path up from the root to the device
+ * @return 0 on success, -enodev on failure. If no device found in the device
+ * tree.
+ *
+ * This function will search for a device and will enable it in the kernel
+ * device tree, if it exists and is loaded.
+ */
+int of_autoenable_device_by_path(char *path)
+{
+	struct device_node *node;
+	int ret;
+
+	node = of_find_node_by_name(NULL, path);
+	if (!node)
+		node = of_find_node_by_path(path);
+
+	if (!node)
+		return -ENODEV;
+
+	if (!of_device_is_available(node))
+			return -ENODEV;
+
+	ret = of_register_set_status_fixup(path, 1);
+	if (!ret)
+		printf("autoenabled %s\n", node->name);
+	return ret;
+}
+
+/**
+ * of_autoenable_i2c_by_component - Autoenable a i2c client by a device tree path
+ * @param path Device tree path up from the root to the i2c client
+ * @return 0 on success, -enodev on failure. If no i2c client found in the i2c
+ * device tree.
+ *
+ * This function will search for a i2c client, tries to write to the client and
+ * will enable it in the kernel device tree, if it exists and is accessible.
+ */
+int of_autoenable_i2c_by_component(char *path)
+{
+	struct device_node *node;
+	struct i2c_adapter *i2c_adapter;
+	struct i2c_msg msg;
+	char data[1] = {0x0};
+	int ret;
+	uint32_t addr;
+
+	if (!IS_ENABLED(CONFIG_I2C))
+		return -ENODEV;
+
+	node = of_find_node_by_name(NULL, path);
+	if (!node)
+		node = of_find_node_by_path(path);
+	if (!node)
+		return -ENODEV;
+	if (!node->parent)
+		return -ENODEV;
+
+	ret = of_property_read_u32(node, "reg", &addr);
+	if (ret)
+		return -ENODEV;
+
+	i2c_adapter = of_find_i2c_adapter_by_node(node->parent);
+	if (!i2c_adapter)
+		return -ENODEV;
+
+	msg.buf = data;
+	msg.addr = addr;
+	msg.len = 1;
+
+	/* Try to communicate with the i2c client */
+	ret = i2c_transfer(i2c_adapter, &msg, 1);
+	if (ret == -EREMOTEIO)
+		return -ENODEV;
+	if (ret < 1) {
+		printf("failed to autoenable i2c device on address 0x%x with %i\n",
+								addr, ret);
+		return ret;
+	}
+
+	ret = of_register_set_status_fixup(path, 1);
+	if (!ret)
+		printf("autoenabled i2c device %s\n", node->name);
+
+	return ret;
 }

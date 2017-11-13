@@ -101,7 +101,8 @@ static int state_uint8_set(struct param_d *p, void *priv)
 
 static struct state_variable *state_uint8_create(struct state *state,
 						 const char *name,
-						 struct device_node *node)
+						 struct device_node *node,
+					      const struct variable_type *vtype)
 {
 	struct state_uint32 *su32;
 	struct param_d *param;
@@ -116,6 +117,7 @@ static struct state_variable *state_uint8_create(struct state *state,
 	}
 
 	su32->param = param;
+	su32->var.type = vtype;
 	su32->var.size = sizeof(uint8_t);
 #ifdef __LITTLE_ENDIAN
 	su32->var.raw = &su32->value;
@@ -129,7 +131,8 @@ static struct state_variable *state_uint8_create(struct state *state,
 
 static struct state_variable *state_uint32_create(struct state *state,
 						  const char *name,
-						  struct device_node *node)
+						  struct device_node *node,
+					      const struct variable_type *vtype)
 {
 	struct state_uint32 *su32;
 	struct param_d *param;
@@ -144,6 +147,7 @@ static struct state_variable *state_uint32_create(struct state *state,
 	}
 
 	su32->param = param;
+	su32->var.type = vtype;
 	su32->var.size = sizeof(uint32_t);
 	su32->var.raw = &su32->value;
 	su32->var.state = state;
@@ -218,7 +222,8 @@ static int state_enum32_import(struct state_variable *sv,
 
 static struct state_variable *state_enum32_create(struct state *state,
 						  const char *name,
-						  struct device_node *node)
+						  struct device_node *node,
+					      const struct variable_type *vtype)
 {
 	struct state_enum32 *enum32;
 	int ret, i, num_names;
@@ -234,6 +239,7 @@ static struct state_variable *state_enum32_create(struct state *state,
 
 	enum32->names = xzalloc(sizeof(char *) * num_names);
 	enum32->num_names = num_names;
+	enum32->var.type = vtype;
 	enum32->var.size = sizeof(uint32_t);
 	enum32->var.raw = &enum32->value;
 	enum32->var.state = state;
@@ -300,13 +306,15 @@ static int state_mac_import(struct state_variable *sv, struct device_node *node)
 
 static struct state_variable *state_mac_create(struct state *state,
 					       const char *name,
-					       struct device_node *node)
+					       struct device_node *node,
+					      const struct variable_type *vtype)
 {
 	struct state_mac *mac;
 	int ret;
 
 	mac = xzalloc(sizeof(*mac));
 
+	mac->var.type = vtype;
 	mac->var.size = ARRAY_SIZE(mac->value);
 	mac->var.raw = mac->value;
 	mac->var.state = state;
@@ -402,7 +410,8 @@ static int state_string_get(struct param_d *p, void *priv)
 
 static struct state_variable *state_string_create(struct state *state,
 						  const char *name,
-						  struct device_node *node)
+						  struct device_node *node,
+					      const struct variable_type *vtype)
 {
 	struct state_string *string;
 	uint32_t start_size[2];
@@ -420,6 +429,7 @@ static struct state_variable *state_string_create(struct state *state,
 		return ERR_PTR(-EILSEQ);
 
 	string = xzalloc(sizeof(*string) + start_size[1]);
+	string->var.type = vtype;
 	string->var.size = start_size[1];
 	string->var.raw = &string->raw;
 	string->var.state = state;
@@ -440,26 +450,31 @@ static struct state_variable *state_string_create(struct state *state,
 static struct variable_type types[] = {
 	{
 		.type_name = "uint8",
+		.type = STATE_VARIABLE_TYPE_UINT8,
 		.export = state_uint32_export,
 		.import = state_uint32_import,
 		.create = state_uint8_create,
 	}, {
 		.type_name = "uint32",
+		.type = STATE_VARIABLE_TYPE_UINT32,
 		.export = state_uint32_export,
 		.import = state_uint32_import,
 		.create = state_uint32_create,
 	}, {
 		.type_name = "enum32",
+		.type = STATE_VARIABLE_TYPE_ENUM32,
 		.export = state_enum32_export,
 		.import = state_enum32_import,
 		.create = state_enum32_create,
 	}, {
 		.type_name = "mac",
+		.type = STATE_VARIABLE_TYPE_MAC,
 		.export = state_mac_export,
 		.import = state_mac_import,
 		.create = state_mac_create,
 	}, {
 		.type_name = "string",
+		.type = STATE_VARIABLE_TYPE_STRING,
 		.export = state_string_export,
 		.import = state_string_import,
 		.create = state_string_create,
@@ -472,6 +487,19 @@ struct variable_type *state_find_type_by_name(const char *name)
 
 	for (i = 0; i < ARRAY_SIZE(types); i++) {
 		if (!strcmp(name, types[i].type_name)) {
+			return &types[i];
+		}
+	}
+
+	return NULL;
+}
+
+struct variable_type *state_find_type(const enum state_variable_type type)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(types); i++) {
+		if (type == types[i].type) {
 			return &types[i];
 		}
 	}

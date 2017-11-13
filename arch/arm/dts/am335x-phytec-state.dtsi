@@ -1,0 +1,52 @@
+/*
+ * Copyright (C) 2017 PHYTEC Messtechnik GmbH,
+ * Author: Daniel Schultz <d.schultz@phytec.de>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/ {
+	aliases {
+		am335x_phytec_mac_state = &am335x_phytec_mac_state;
+	};
+
+	am335x_phytec_mac_state: am335x_phytec_mac_state {
+		magic = <0x3f45620e>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&backend_state_eeprom>;
+		backend-stridesize = <40>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+		mac0 {
+			reg = <0x0 0x6>;
+			type = "mac";
+		};
+		mac1 {
+			reg = <0x6 0x6>;
+			type = "mac";
+		};
+
+	};
+};
+
+&eeprom {
+	status = "okay";
+	partitions {
+		compatible = "fixed-partitions";
+		#size-cells = <1>;
+		#address-cells = <1>;
+		backend_state_eeprom: state@0 {
+			reg = <0x000 0x120>;
+			label = "state-eeprom";
+		};
+	};
+};

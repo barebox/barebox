@@ -246,7 +246,7 @@ static int state_convert_node_variable(struct state *state,
 	}
 
 	if (conv == STATE_CONVERT_FROM_NODE_CREATE) {
-		sv = vtype->create(state, name, node);
+		sv = vtype->create(state, name, node, vtype);
 		if (IS_ERR(sv)) {
 			ret = PTR_ERR(sv);
 			dev_err(&state->dev, "failed to create %s: %s\n", name,
@@ -689,6 +689,27 @@ struct state *state_by_node(const struct device_node *node)
 int state_get_name(const struct state *state, char const **name)
 {
 	*name = xstrdup(state->name);
+
+	return 0;
+}
+
+int state_read_mac(struct state *state, const char *name, u8 *buf)
+{
+	struct state_variable *svar;
+	struct state_mac *mac;
+
+	if (!state || !name || !buf)
+		return -EINVAL;
+
+	svar = state_find_var(state, name);
+	if (IS_ERR(svar))
+		return PTR_ERR(svar);
+
+	if (svar->type->type != STATE_VARIABLE_TYPE_MAC)
+		return -EINVAL;
+
+	mac = to_state_mac(svar);
+	memcpy(buf, mac->value, 6);
 
 	return 0;
 }

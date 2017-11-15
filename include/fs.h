@@ -117,7 +117,7 @@ static inline int can_lseek_backward(int fd)
 	if (ret < 0)
 		return 0;
 
-	return ret;
+	return 1;
 }
 
 #define drv_to_fs_driver(d) container_of(d, struct fs_driver_d, drv)

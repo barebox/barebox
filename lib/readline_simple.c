@@ -100,7 +100,7 @@ int readline (const char *prompt, char *line, int len)
 			/*
 			 * Must be a normal character then
 			 */
-			if (n < CONFIG_CBSIZE-2) {
+			if (n < len-2) {
 				if (c == '\t') {	/* expand TABs		*/
 					puts (tab_seq+(col&07));
 					col += 8 - (col&07);

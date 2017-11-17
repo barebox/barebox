@@ -14,7 +14,7 @@ esac
 
 v=$1
 
-set -ex
+set -e
 
 # Use the date of Linus' originally tagged commit for the merge. This might
 # differ from what the commit that the rewritten tag points to, since the

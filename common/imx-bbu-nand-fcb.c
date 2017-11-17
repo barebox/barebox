@@ -38,8 +38,20 @@
 #include <io.h>
 #include <crc.h>
 #include <mach/generic.h>
-#include <mach/imx6.h>
 #include <mtd/mtd-peb.h>
+
+#ifdef CONFIG_ARCH_IMX6
+#include <mach/imx6.h>
+static inline int fcb_is_bch_encoded(void)
+{
+       return cpu_is_mx6ul() || cpu_is_mx6ull();
+}
+#else
+static inline int fcb_is_bch_encoded(void)
+{
+       return 0;
+}
+#endif
 
 struct dbbt_block {
 	uint32_t Checksum;
@@ -441,7 +453,7 @@ static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
 		goto err;
 	}
 
-	if (cpu_is_mx6ul() || cpu_is_mx6ull())
+	if (fcb_is_bch_encoded())
 		fcb = read_fcb_bch(rawpage, 40);
 	else
 		fcb = read_fcb_hamming_13_8(rawpage);
@@ -899,7 +911,7 @@ static int imx_bbu_write_fcbs_dbbts(struct mtd_info *mtd, struct fcb_block *fcb)
 
 	fcb_raw_page = xzalloc(mtd->writesize + mtd->oobsize);
 
-	if (cpu_is_mx6ul() || cpu_is_mx6ull()) {
+	if (fcb_is_bch_encoded()) {
 		/* 40 bit BCH, for i.MX6UL(L) */
 		encode_bch_ecc(fcb_raw_page + 32, fcb, 40);
 	} else {

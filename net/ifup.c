@@ -26,6 +26,30 @@
 #include <fs.h>
 #include <linux/stat.h>
 
+static int eth_discover(const char *name)
+{
+	char *cmd_discover;
+	struct stat s;
+	int ret;
+
+	cmd_discover = basprintf("/env/network/%s-discover", name);
+
+	ret = stat(cmd_discover, &s);
+	if (ret)
+		goto out;
+
+	ret = run_command(cmd_discover);
+	if (ret) {
+		pr_err("Running '%s' failed with %d\n", cmd_discover, ret);
+		goto out;
+	}
+
+out:
+	free(cmd_discover);
+
+	return ret;
+}
+
 static char *vars[] = {
 	"ipaddr",
 	"netmask",
@@ -48,9 +72,8 @@ static int eth_set_param(struct device_d *dev, const char *param)
 int ifup(const char *name, unsigned flags)
 {
 	int ret;
-	char *cmd, *cmd_discover;
+	char *cmd;
 	const char *ip;
-	struct stat s;
 	int i;
 	struct device_d *dev;
 	struct eth_device *edev = eth_get_byname(name);
@@ -66,7 +89,6 @@ int ifup(const char *name, unsigned flags)
 		setenv(vars[i], "");
 
 	cmd = basprintf("source /env/network/%s", name);
-	cmd_discover = basprintf("/env/network/%s-discover", name);
 
 	ret = run_command(cmd);
 	if (ret) {
@@ -74,14 +96,7 @@ int ifup(const char *name, unsigned flags)
 		goto out;
 	}
 
-	ret = stat(cmd_discover, &s);
-	if (!ret) {
-		ret = run_command(cmd_discover);
-		if (ret) {
-			pr_err("Running '%s' failed with %d\n", cmd, ret);
-			goto out;
-		}
-	}
+	eth_discover(name);
 
 	dev = get_device_by_name(name);
 	if (!dev) {
@@ -142,7 +157,6 @@ int ifup(const char *name, unsigned flags)
 out:
 	env_pop_context();
 	free(cmd);
-	free(cmd_discover);
 
 	return ret;
 }

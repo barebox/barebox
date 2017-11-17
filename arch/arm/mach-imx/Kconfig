@@ -301,6 +301,8 @@ config MACH_DFI_FS700_M60
 config MACH_GUF_SANTARO
 	bool "Garz+Fricke Santaro Board"
 	select ARCH_IMX6
+	select I2C
+	select I2C_IMX
 
 config MACH_REALQ7
 	bool "DataModul i.MX6Q Real Qseven Board"

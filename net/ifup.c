@@ -113,6 +113,7 @@ int ifup(const char *name, unsigned flags)
 	} else if (!strcmp(ip, "static")) {
 		char *bootarg;
 		IPaddr_t serverip;
+		IPaddr_t gateway;
 
 		for (i = 0; i < ARRAY_SIZE(vars); i++) {
 			ret = eth_set_param(dev, vars[i]);
@@ -121,11 +122,12 @@ int ifup(const char *name, unsigned flags)
 		}
 
 		serverip = net_get_serverip();
+		gateway = net_get_gateway();
 
 		bootarg = basprintf("ip=%pI4:%pI4:%pI4:%pI4:::",
 				&edev->ipaddr,
 				&serverip,
-				&edev->gateway,
+				&gateway,
 				&edev->netmask);
 		dev_set_param(dev, "linux.bootargs", bootarg);
 		free(bootarg);

@@ -59,7 +59,6 @@ struct eth_device {
 
 	IPaddr_t ipaddr;
 	IPaddr_t netmask;
-	IPaddr_t gateway;
 	char ethaddr[6];
 	char *bootarg;
 };
@@ -224,6 +223,7 @@ void net_set_nameserver(IPaddr_t ip);
 void net_set_domainname(const char *name);
 IPaddr_t net_get_ip(void);
 IPaddr_t net_get_serverip(void);
+IPaddr_t net_get_gateway(void);
 IPaddr_t net_get_nameserver(void);
 const char *net_get_domainname(void);
 

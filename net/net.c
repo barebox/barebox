@@ -45,6 +45,7 @@ unsigned char *NetRxPackets[PKTBUFSRX]; /* Receive packets		*/
 static unsigned int net_ip_id;
 
 IPaddr_t net_serverip;
+IPaddr_t net_gateway;
 static IPaddr_t net_nameserver;
 static char *net_domainname;
 
@@ -184,10 +185,10 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	memset(arp->ar_data + 10, 0, 6);	/* dest ET addr = 0     */
 
 	if ((dest & edev->netmask) != (edev->ipaddr & edev->netmask)) {
-		if (!edev->gateway)
+		if (!net_gateway)
 			arp_wait_ip = dest;
 		else
-			arp_wait_ip = edev->gateway;
+			arp_wait_ip = net_gateway;
 	} else {
 		arp_wait_ip = dest;
 	}
@@ -284,9 +285,12 @@ void net_set_netmask(IPaddr_t nm)
 
 void net_set_gateway(IPaddr_t gw)
 {
-	struct eth_device *edev = eth_get_current();
+	net_gateway = gw;
+}
 
-	edev->gateway = gw;
+IPaddr_t net_get_gateway(void)
+{
+	return net_gateway;
 }
 
 static LIST_HEAD(connection_list);
@@ -614,6 +618,7 @@ static int net_init(void)
 	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
 	globalvar_add_simple_string("net.domainname", &net_domainname);
 	globalvar_add_simple_ip("net.server", &net_serverip);
+	globalvar_add_simple_ip("net.gateway", &net_gateway);
 
 	return 0;
 }

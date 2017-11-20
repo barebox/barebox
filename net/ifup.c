@@ -101,12 +101,15 @@ int ifup(const char *name, unsigned flags)
 
 	if (!strcmp(ip, "dhcp")) {
 		IPaddr_t serverip;
+		char *dhcp_cmd;
 
 		serverip = getenv_ip("serverip");
 		if (serverip)
 			net_set_serverip_empty(serverip);
 
-		ret = run_command("dhcp");
+		dhcp_cmd = basprintf("dhcp %s", name);
+		ret = run_command(dhcp_cmd);
+		free(dhcp_cmd);
 		if (ret)
 			goto out;
 		dev_set_param(dev, "linux.bootargs", "ip=dhcp");

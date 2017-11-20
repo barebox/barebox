@@ -20,6 +20,8 @@ struct dhcp_req_param {
 	char *client_uuid;
 };
 
-int dhcp(int retries, struct dhcp_req_param *param);
+struct eth_device;
+
+int dhcp(struct eth_device *edev, int retries, struct dhcp_req_param *param);
 
 #endif

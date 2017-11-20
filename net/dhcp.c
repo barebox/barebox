@@ -79,6 +79,7 @@ static dhcp_state_t dhcp_state;
 static uint32_t dhcp_leasetime;
 static IPaddr_t net_dhcp_server_ip;
 static uint64_t dhcp_start;
+static struct eth_device *dhcp_edev;
 static char dhcp_tftpname[256];
 
 static const char* dhcp_get_barebox_global(const char * var)
@@ -126,7 +127,7 @@ static void netmask_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen
 	IPaddr_t ip;
 
 	ip = net_read_ip(popt);
-	net_set_netmask(ip);
+	net_set_netmask(dhcp_edev, ip);
 }
 
 static void gateway_handle(struct dhcp_opt *opt, unsigned char *popt, int optlen)
@@ -369,7 +370,7 @@ static void bootp_copy_net_params(struct bootp *bp)
 	IPaddr_t tmp_ip;
 
 	tmp_ip = net_read_ip(&bp->bp_yiaddr);
-	net_set_ip(tmp_ip);
+	net_set_ip(dhcp_edev, tmp_ip);
 
 	tmp_ip = net_read_ip(&bp->bp_siaddr);
 	if (tmp_ip != 0)
@@ -618,7 +619,7 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 				dhcp_options_process((u8 *)&bp->bp_vend[4], bp);
 			bootp_copy_net_params(bp); /* Store net params from reply */
 			dhcp_state = BOUND;
-			ip = net_get_ip();
+			ip = net_get_ip(dhcp_edev);
 			printf("DHCP client bound to address %pI4\n", &ip);
 			return;
 		}
@@ -646,11 +647,13 @@ static void dhcp_reset_env(void)
 	}
 }
 
-int dhcp(int retries, struct dhcp_req_param *param)
+int dhcp(struct eth_device *edev, int retries, struct dhcp_req_param *param)
 {
 	int ret = 0;
 
 	dhcp_reset_env();
+
+	dhcp_edev = edev;
 
 	dhcp_set_param_data(DHCP_HOSTNAME, param->hostname);
 	dhcp_set_param_data(DHCP_VENDOR_ID, param->vendor_id);
@@ -661,7 +664,7 @@ int dhcp(int retries, struct dhcp_req_param *param)
 	if (!retries)
 		retries = DHCP_DEFAULT_RETRY;
 
-	dhcp_con = net_udp_new(IP_BROADCAST, PORT_BOOTPS, dhcp_handler, NULL);
+	dhcp_con = net_udp_eth_new(edev, IP_BROADCAST, PORT_BOOTPS, dhcp_handler, NULL);
 	if (IS_ERR(dhcp_con)) {
 		ret = PTR_ERR(dhcp_con);
 		goto out;
@@ -671,7 +674,7 @@ int dhcp(int retries, struct dhcp_req_param *param)
 	if (ret)
 		goto out1;
 
-	net_set_ip(0);
+	net_set_ip(dhcp_edev, 0);
 
 	dhcp_start = get_time_ns();
 	ret = bootp_request(); /* Basically same as BOOTP */

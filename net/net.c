@@ -261,24 +261,18 @@ void net_set_serverip_empty(IPaddr_t ip)
 	net_set_serverip(ip);
 }
 
-void net_set_ip(IPaddr_t ip)
+void net_set_ip(struct eth_device *edev, IPaddr_t ip)
 {
-	struct eth_device *edev = eth_get_current();
-
 	edev->ipaddr = ip;
 }
 
-IPaddr_t net_get_ip(void)
+IPaddr_t net_get_ip(struct eth_device *edev)
 {
-	struct eth_device *edev = eth_get_current();
-
 	return edev->ipaddr;
 }
 
-void net_set_netmask(IPaddr_t nm)
+void net_set_netmask(struct eth_device *edev, IPaddr_t nm)
 {
-	struct eth_device *edev = eth_get_current();
-
 	edev->netmask = nm;
 }
 

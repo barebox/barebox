@@ -446,6 +446,10 @@ static inline char *net_alloc_packet(void)
 struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
 		rx_handler_f *handler, void *ctx);
 
+struct net_connection *net_udp_eth_new(struct eth_device *edev, IPaddr_t dest,
+                                       uint16_t dport, rx_handler_f *handler,
+                                       void *ctx);
+
 struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
 		void *ctx);
 

@@ -144,9 +144,8 @@ static void arp_handler(struct arprequest *arp)
 	}
 }
 
-static int arp_request(IPaddr_t dest, unsigned char *ether)
+static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *ether)
 {
-	struct eth_device *edev = eth_get_current();
 	char *pkt;
 	struct arprequest *arp;
 	uint64_t arp_start;
@@ -295,15 +294,17 @@ IPaddr_t net_get_gateway(void)
 
 static LIST_HEAD(connection_list);
 
-static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
-		void *ctx)
+static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
+				      rx_handler_f *handler, void *ctx)
 {
-	struct eth_device *edev = eth_get_current();
 	struct net_connection *con;
 	int ret;
 
-	if (!edev)
-		return ERR_PTR(-ENETDOWN);
+	if (!edev) {
+		edev = eth_get_current();
+		if (!edev)
+			return ERR_PTR(-ENETDOWN);
+	}
 
 	if (!is_valid_ether_addr(edev->ethaddr)) {
 		char str[sizeof("xx:xx:xx:xx:xx:xx")];
@@ -332,7 +333,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 	if (dest == IP_BROADCAST) {
 		memset(con->et->et_dest, 0xff, 6);
 	} else {
-		ret = arp_request(dest, con->et->et_dest);
+		ret = arp_request(edev, dest, con->et->et_dest);
 		if (ret)
 			goto out;
 	}
@@ -356,10 +357,11 @@ out:
 	return ERR_PTR(ret);
 }
 
-struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
-		rx_handler_f *handler, void *ctx)
+struct net_connection *net_udp_eth_new(struct eth_device *edev, IPaddr_t dest,
+				       uint16_t dport, rx_handler_f *handler,
+				       void *ctx)
 {
-	struct net_connection *con = net_new(dest, handler, ctx);
+	struct net_connection *con = net_new(edev, dest, handler, ctx);
 
 	if (IS_ERR(con))
 		return con;
@@ -372,10 +374,16 @@ struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
 	return con;
 }
 
+struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
+		rx_handler_f *handler, void *ctx)
+{
+	return net_udp_eth_new(NULL, dest, dport, handler, ctx);
+}
+
 struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
 		void *ctx)
 {
-	struct net_connection *con = net_new(dest, handler, ctx);
+	struct net_connection *con = net_new(NULL, dest, handler, ctx);
 
 	if (IS_ERR(con))
 		return con;

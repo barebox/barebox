@@ -248,7 +248,7 @@ static void *am33xx_net_boot(void)
 		return NULL;
 	}
 
-	err = dhcp(edev, 20, &dhcp_param);
+	err = dhcp(edev, &dhcp_param);
 	if (err) {
 		printf("dhcp failed\n");
 		return NULL;

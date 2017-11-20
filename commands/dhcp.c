@@ -20,13 +20,9 @@
 static int do_dhcp(int argc, char *argv[])
 {
 	int ret, opt;
-	int retries = DHCP_DEFAULT_RETRY;
-	struct dhcp_req_param dhcp_param;
+	struct dhcp_req_param dhcp_param = {};
 	struct eth_device *edev;
 	const char *edevname;
-
-	memset(&dhcp_param, 0, sizeof(struct dhcp_req_param));
-	getenv_uint("global.dhcp.retries", &retries);
 
 	while ((opt = getopt(argc, argv, "H:v:c:u:U:r:")) > 0) {
 		switch (opt) {
@@ -46,7 +42,7 @@ static int do_dhcp(int argc, char *argv[])
 			dhcp_param.user_class = optarg;
 			break;
 		case 'r':
-			retries = simple_strtoul(optarg, NULL, 10);
+			dhcp_param.retries = simple_strtoul(optarg, NULL, 10);
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -64,12 +60,7 @@ static int do_dhcp(int argc, char *argv[])
 		return 1;
 	}
 
-	if (!retries) {
-		printf("retries is set to zero, set it to %d\n", DHCP_DEFAULT_RETRY);
-		retries = DHCP_DEFAULT_RETRY;
-	}
-
-	ret = dhcp(edev, retries, &dhcp_param);
+	ret = dhcp(edev, &dhcp_param);
 
 	return ret;
 }

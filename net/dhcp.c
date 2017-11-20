@@ -447,14 +447,13 @@ static int bootp_request(void)
 	struct bootp *bp;
 	int ext_len;
 	int ret;
-	unsigned char *payload = net_udp_get_payload(dhcp_con);
 	const char *bfile;
 
 	dhcp_state = INIT;
 
 	debug("BOOTP broadcast\n");
 
-	bp = (struct bootp *)payload;
+	bp = net_udp_get_payload(dhcp_con);;
 	bp->bp_op = OP_BOOTREQUEST;
 	bp->bp_htype = HWT_ETHER;
 	bp->bp_hlen = HWL_ETHER;
@@ -471,7 +470,7 @@ static int bootp_request(void)
 		safe_strncpy (bp->bp_file, bfile, sizeof(bp->bp_file));
 
 	/* Request additional information from the BOOTP/DHCP server */
-	ext_len = dhcp_extended((u8 *)bp->bp_vend, DHCP_DISCOVER, 0, 0);
+	ext_len = dhcp_extended(bp->bp_vend, DHCP_DISCOVER, 0, 0);
 
 	Bootp_id = (uint32_t)get_time_ns();
 	net_copy_uint32(&bp->bp_id, &Bootp_id);
@@ -483,7 +482,7 @@ static int bootp_request(void)
 	return ret;
 }
 
-static void dhcp_options_handle(unsigned char option, unsigned char *popt,
+static void dhcp_options_handle(unsigned char option, void *popt,
 			       int optlen, struct bootp *bp)
 {
 	int i;
@@ -537,11 +536,10 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	struct bootp *bp;
 	int extlen;
 	IPaddr_t OfferedIP;
-	unsigned char *payload = net_udp_get_payload(dhcp_con);
 
 	debug("%s: Sending DHCPREQUEST\n", __func__);
 
-	bp = (struct bootp *)payload;
+	bp = net_udp_get_payload(dhcp_con);
 	bp->bp_op = OP_BOOTREQUEST;
 	bp->bp_htype = HWT_ETHER;
 	bp->bp_hlen = HWL_ETHER;
@@ -566,7 +564,7 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	 * Copy options from OFFER packet if present
 	 */
 	net_copy_ip(&OfferedIP, &bp_offer->bp_yiaddr);
-	extlen = dhcp_extended((u8 *)bp->bp_vend, DHCP_REQUEST, net_dhcp_server_ip,
+	extlen = dhcp_extended(bp->bp_vend, DHCP_REQUEST, net_dhcp_server_ip,
 				OfferedIP);
 
 	debug("Transmitting DHCPREQUEST packet\n");
@@ -601,7 +599,7 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 		debug ("%s: state SELECTING, bp_file: \"%s\"\n", __func__, bp->bp_file);
 		dhcp_state = REQUESTING;
 
-		if (net_read_uint32((uint32_t *)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
+		if (net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
 			dhcp_options_process((u8 *)&bp->bp_vend[4], bp);
 
 		bootp_copy_net_params(bp); /* Store net params from reply */
@@ -615,8 +613,8 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 
 		if (dhcp_message_type((u8 *)bp->bp_vend) == DHCP_ACK ) {
 			IPaddr_t ip;
-			if (net_read_uint32((uint32_t *)&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
-				dhcp_options_process((u8 *)&bp->bp_vend[4], bp);
+			if (net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
+				dhcp_options_process(&bp->bp_vend[4], bp);
 			bootp_copy_net_params(bp); /* Store net params from reply */
 			dhcp_state = BOUND;
 			ip = net_get_ip(dhcp_edev);

@@ -220,8 +220,12 @@ void net_set_ip(IPaddr_t ip);
 void net_set_serverip(IPaddr_t ip);
 void net_set_netmask(IPaddr_t ip);
 void net_set_gateway(IPaddr_t ip);
+void net_set_nameserver(IPaddr_t ip);
+void net_set_domainname(const char *name);
 IPaddr_t net_get_ip(void);
 IPaddr_t net_get_serverip(void);
+IPaddr_t net_get_nameserver(void);
+const char *net_get_domainname(void);
 
 /* Do the work */
 void net_poll(void);

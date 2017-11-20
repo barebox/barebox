@@ -47,6 +47,30 @@ static unsigned int net_ip_id;
 static IPaddr_t net_nameserver;
 static char *net_domainname;
 
+void net_set_nameserver(IPaddr_t nameserver)
+{
+	net_nameserver = nameserver;
+}
+
+IPaddr_t net_get_nameserver(void)
+{
+	return net_nameserver;
+}
+
+void net_set_domainname(const char *name)
+{
+	free(net_domainname);
+	if (name)
+		net_domainname = xstrdup(name);
+	else
+		net_domainname = xstrdup("");
+};
+
+const char *net_get_domainname(void)
+{
+	return net_domainname;
+}
+
 int net_checksum_ok(unsigned char *ptr, int len)
 {
 	return net_checksum(ptr, len) == 0xffff;

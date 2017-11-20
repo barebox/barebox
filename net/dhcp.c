@@ -389,7 +389,7 @@ static void bootp_copy_net_params(struct bootp *bp)
 /*
  * Initialize BOOTP extension fields in the request.
  */
-static int dhcp_extended (u8 *e, int message_type, IPaddr_t ServerID,
+static int dhcp_extended(u8 *e, int message_type, IPaddr_t ServerID,
 			  IPaddr_t RequestedIP)
 {
 	struct dhcp_opt *opt;
@@ -410,7 +410,6 @@ static int dhcp_extended (u8 *e, int message_type, IPaddr_t ServerID,
 	*e++ = 2;
 	*e++ = (576 - 312 + OPT_SIZE) >> 8;
 	*e++ = (576 - 312 + OPT_SIZE) & 0xff;
-
 
 	e += dhcp_set_ip_options(50, e, RequestedIP);
 	e += dhcp_set_ip_options(54, e, ServerID);
@@ -467,7 +466,7 @@ static int bootp_request(void)
 
 	bfile = getenv("bootfile");
 	if (bfile)
-		safe_strncpy (bp->bp_file, bfile, sizeof(bp->bp_file));
+		safe_strncpy(bp->bp_file, bfile, sizeof(bp->bp_file));
 
 	/* Request additional information from the BOOTP/DHCP server */
 	ext_len = dhcp_extended(bp->bp_vend, DHCP_DISCOVER, 0, 0);
@@ -523,8 +522,8 @@ static int dhcp_message_type(unsigned char *popt)
 		return -1;
 
 	popt += 4;
-	while ( *popt != 0xff ) {
-		if ( *popt == 53 )	/* DHCP Message Type */
+	while (*popt != 0xff) {
+		if (*popt == 53)	/* DHCP Message Type */
 			return *(popt + 2);
 		popt += *(popt + 1) + 2;	/* Scan through all options */
 	}
@@ -596,7 +595,7 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 		 * If filename is in format we recognize, assume it is a valid
 		 * OFFER from a server we want.
 		 */
-		debug ("%s: state SELECTING, bp_file: \"%s\"\n", __func__, bp->bp_file);
+		debug("%s: state SELECTING, bp_file: \"%s\"\n", __func__, bp->bp_file);
 		dhcp_state = REQUESTING;
 
 		if (net_read_uint32(&bp->bp_vend[0]) == htonl(BOOTP_VENDOR_MAGIC))
@@ -609,7 +608,7 @@ static void dhcp_handler(void *ctx, char *packet, unsigned int len)
 
 		break;
 	case REQUESTING:
-		debug ("%s: State REQUESTING\n", __func__);
+		debug("%s: State REQUESTING\n", __func__);
 
 		if (dhcp_message_type((u8 *)bp->bp_vend) == DHCP_ACK ) {
 			IPaddr_t ip;

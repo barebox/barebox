@@ -413,8 +413,6 @@ static inline int is_valid_ether_addr(const u8 *addr)
 
 typedef void rx_handler_f(void *ctx, char *packet, unsigned int len);
 
-void eth_set_current(struct eth_device *eth);
-struct eth_device *eth_get_current(void);
 struct eth_device *eth_get_byname(const char *name);
 
 /**

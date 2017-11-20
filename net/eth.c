@@ -28,7 +28,6 @@
 #include <errno.h>
 #include <malloc.h>
 
-static struct eth_device *eth_current;
 static uint64_t last_link_check;
 
 LIST_HEAD(netdev_list);
@@ -147,16 +146,6 @@ void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr)
 	addr->node = node;
 	memcpy(addr->ethaddr, ethaddr, 6);
 	list_add_tail(&addr->list, &ethaddr_list);
-}
-
-void eth_set_current(struct eth_device *eth)
-{
-	eth_current = eth;
-}
-
-struct eth_device * eth_get_current(void)
-{
-	return eth_current;
 }
 
 struct eth_device *eth_get_byname(const char *ethname)
@@ -412,17 +401,11 @@ int eth_register(struct eth_device *edev)
 			edev->parent->device_node)
 		edev->nodepath = xstrdup(edev->parent->device_node->full_name);
 
-	if (!eth_current)
-		eth_current = edev;
-
 	return 0;
 }
 
 void eth_unregister(struct eth_device *edev)
 {
-	if (edev == eth_current)
-		eth_current = NULL;
-
 	if (edev->active)
 		edev->halt(edev);
 

@@ -22,6 +22,7 @@
 #include <command.h>
 #include <common.h>
 #include <getopt.h>
+#include <dhcp.h>
 #include <net.h>
 #include <fs.h>
 #include <linux/stat.h>
@@ -114,15 +115,12 @@ int ifup(const char *name, unsigned flags)
 
 	if (!strcmp(ip, "dhcp")) {
 		IPaddr_t serverip;
-		char *dhcp_cmd;
 
 		serverip = getenv_ip("serverip");
 		if (serverip)
 			net_set_serverip_empty(serverip);
 
-		dhcp_cmd = basprintf("dhcp %s", name);
-		ret = run_command(dhcp_cmd);
-		free(dhcp_cmd);
+		ret = dhcp(edev, NULL);
 		if (ret)
 			goto out;
 		dev_set_param(dev, "linux.bootargs", "ip=dhcp");

@@ -100,10 +100,13 @@ int ifup(const char *name, unsigned flags)
 		ip = "";
 
 	if (!strcmp(ip, "dhcp")) {
+		IPaddr_t serverip;
+
+		serverip = getenv_ip("serverip");
+		if (serverip)
+			net_set_serverip_empty(serverip);
+
 		ret = run_command("dhcp");
-		if (ret)
-			goto out;
-		ret = eth_set_param(dev, "serverip");
 		if (ret)
 			goto out;
 		dev_set_param(dev, "linux.bootargs", "ip=dhcp");

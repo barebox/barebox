@@ -253,6 +253,14 @@ void net_set_serverip(IPaddr_t ip)
 	net_serverip = ip;
 }
 
+void net_set_serverip_empty(IPaddr_t ip)
+{
+	if (net_serverip)
+		return;
+
+	net_set_serverip(ip);
+}
+
 void net_set_ip(IPaddr_t ip)
 {
 	struct eth_device *edev = eth_get_current();

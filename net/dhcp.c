@@ -373,7 +373,7 @@ static void bootp_copy_net_params(struct bootp *bp)
 
 	tmp_ip = net_read_ip(&bp->bp_siaddr);
 	if (tmp_ip != 0)
-		net_set_serverip(tmp_ip);
+		net_set_serverip_empty(tmp_ip);
 
 	if (strlen(bp->bp_file) > 0) {
 		if (IS_ENABLED(CONFIG_ENVIRONMENT_VARIABLES))
@@ -702,7 +702,7 @@ int dhcp(int retries, struct dhcp_req_param *param)
 	if (dhcp_tftpname[0] != 0) {
 		IPaddr_t tftpserver = resolv(dhcp_tftpname);
 		if (tftpserver)
-			net_set_serverip(tftpserver);
+			net_set_serverip_empty(tftpserver);
 	}
 
 out1:

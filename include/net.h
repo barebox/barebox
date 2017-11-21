@@ -217,6 +217,7 @@ extern unsigned char *NetRxPackets[PKTBUFSRX];/* Receive packets		*/
 
 void net_set_ip(IPaddr_t ip);
 void net_set_serverip(IPaddr_t ip);
+void net_set_serverip_empty(IPaddr_t ip);
 void net_set_netmask(IPaddr_t ip);
 void net_set_gateway(IPaddr_t ip);
 void net_set_nameserver(IPaddr_t ip);

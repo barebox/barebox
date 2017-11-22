@@ -10,6 +10,12 @@ menuconfig WATCHDOG
 
 if WATCHDOG
 
+config WATCHDOG_AR9344
+	bool "QCA AR9344"
+	depends on SOC_QCA_AR9344 || SOC_QCA_AR9331
+	help
+	  Add support for watchdog on the QCA AR9344 SoC.
+
 config WATCHDOG_DAVINCI
 	bool "TI Davinci"
 	depends on ARCH_DAVINCI

@@ -493,13 +493,11 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 					 "limiting access to first 4KB\n");
 			}
 
-			eeprom->type = e1000_eeprom_flash;
 			eeprom->acquire = e1000_acquire_eeprom_flash;
 			eeprom->release = e1000_release_eeprom_flash;
-		} else {
-			eeprom->type = e1000_eeprom_invm;
 		}
 
+		eeprom->type = e1000_eeprom_flash;
 		eeprom->read = e1000_read_eeprom_eerd;
 		break;
 
@@ -507,8 +505,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		break;
 	}
 
-	if (eeprom->type == e1000_eeprom_spi ||
-	    eeprom->type == e1000_eeprom_invm) {
+	if (eeprom->type == e1000_eeprom_spi) {
 		/* eeprom_size will be an enum [0..8] that maps
 		 * to eeprom sizes 128B to
 		 * 32KB (incremented by powers of 2).
@@ -1385,75 +1382,87 @@ fail:
 	return ret;
 }
 
-int e1000_register_eeprom(struct e1000_hw *hw)
+int e1000_register_invm(struct e1000_hw *hw)
 {
-	int ret = E1000_SUCCESS;
+	int ret;
 	u16 word;
 	struct param_d *p;
 
+	ret = e1000_read_eeprom(hw, 0x0a, 1, &word);
+	if (ret < 0)
+		return ret;
+
+	if (word & (1 << 15))
+		dev_warn(hw->dev, "iNVM lockout mechanism is active\n");
+
+	hw->invm.cdev.dev = hw->dev;
+	hw->invm.cdev.ops = &e1000_invm_ops;
+	hw->invm.cdev.priv = hw;
+	hw->invm.cdev.name = xasprintf("e1000-invm%d", hw->dev->id);
+	hw->invm.cdev.size = 32 * E1000_INVM_DATA_MAX_N;
+
+	ret = devfs_create(&hw->invm.cdev);
+	if (ret < 0)
+		return ret;
+
+	strcpy(hw->invm.dev.name, "invm");
+	hw->invm.dev.parent = hw->dev;
+	ret = register_device(&hw->invm.dev);
+	if (ret < 0) {
+		devfs_remove(&hw->invm.cdev);
+		return ret;
+	}
+
+	p = dev_add_param_int(&hw->invm.dev, "lock", e1000_invm_set_lock,
+			      NULL, &hw->invm.line, "%u", hw);
+	if (IS_ERR(p)) {
+		unregister_device(&hw->invm.dev);
+		devfs_remove(&hw->invm.cdev);
+		ret = PTR_ERR(p);
+	}
+
+	return ret;
+}
+
+/*
+ * This function has a wrong name for historic reasons, it doesn't add an
+ * eeprom, but the flash (if available) that is used to simulate the eeprom.
+ * Also a device that represents the invm is registered here (if available).
+ */
+int e1000_register_eeprom(struct e1000_hw *hw)
+{
+	int ret = E1000_SUCCESS;
+
 	struct e1000_eeprom_info *eeprom = &hw->eeprom;
 
-	switch (eeprom->type) {
-	case e1000_eeprom_invm:
-		ret = e1000_read_eeprom(hw, 0x0A, 1, &word);
-		if (ret < 0)
-			return ret;
+	if (hw->mac_type == e1000_igb) {
+		uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
 
-		if (word & (1 << 15))
-			dev_warn(hw->dev, "iNVM lockout mechanism is active\n");
+		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
+			hw->mtd.parent = hw->dev;
+			hw->mtd.read = e1000_mtd_read;
+			hw->mtd.write = e1000_mtd_write;
+			hw->mtd.erase = e1000_mtd_erase;
+			hw->mtd.size = eeprom->word_size * 2;
+			hw->mtd.writesize = 1;
+			hw->mtd.subpage_sft = 0;
 
-		hw->invm.cdev.dev = hw->dev;
-		hw->invm.cdev.ops = &e1000_invm_ops;
-		hw->invm.cdev.priv = hw;
-		hw->invm.cdev.name = xasprintf("e1000-invm%d", hw->dev->id);
-		hw->invm.cdev.size = 32 * E1000_INVM_DATA_MAX_N;
+			hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
+			hw->mtd.erasesize = SZ_4K;
+			hw->mtd.eraseregions[0].erasesize = SZ_4K;
+			hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
+			hw->mtd.numeraseregions = 1;
 
-		ret = devfs_create(&hw->invm.cdev);
-		if (ret < 0)
-			break;
+			hw->mtd.flags = MTD_CAP_NORFLASH;
+			hw->mtd.type = MTD_NORFLASH;
 
-		strcpy(hw->invm.dev.name, "invm");
-		hw->invm.dev.parent = hw->dev;
-		ret = register_device(&hw->invm.dev);
-		if (ret < 0) {
-			devfs_remove(&hw->invm.cdev);
-			break;
+			ret = add_mtd_device(&hw->mtd, "e1000-nor",
+					     DEVICE_ID_DYNAMIC);
+			if (ret)
+				return ret;
 		}
 
-		p = dev_add_param_int(&hw->invm.dev, "lock", e1000_invm_set_lock,
-				      NULL, &hw->invm.line, "%u", hw);
-		if (IS_ERR(p)) {
-			unregister_device(&hw->invm.dev);
-			devfs_remove(&hw->invm.cdev);
-			break;
-		}
-		break;
-	case e1000_eeprom_flash:
-		if (hw->mac_type != e1000_igb)
-			break;
-
-		hw->mtd.parent = hw->dev;
-		hw->mtd.read = e1000_mtd_read;
-		hw->mtd.write = e1000_mtd_write;
-		hw->mtd.erase = e1000_mtd_erase;
-		hw->mtd.size = eeprom->word_size * 2;
-		hw->mtd.writesize = 1;
-		hw->mtd.subpage_sft = 0;
-
-		hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
-		hw->mtd.erasesize = SZ_4K;
-		hw->mtd.eraseregions[0].erasesize = SZ_4K;
-		hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
-		hw->mtd.numeraseregions = 1;
-
-		hw->mtd.flags = MTD_CAP_NORFLASH;
-		hw->mtd.type = MTD_NORFLASH;
-
-		ret = add_mtd_device(&hw->mtd, "e1000-nor",
-				     DEVICE_ID_DYNAMIC);
-		break;
-	default:
-		break;
+		ret = e1000_register_invm(hw);
 	}
 
 	return ret;

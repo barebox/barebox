@@ -65,13 +65,9 @@ typedef enum {
 } e1000_media_type;
 
 typedef enum {
-	e1000_eeprom_uninitialized = 0,
 	e1000_eeprom_spi,
 	e1000_eeprom_microwire,
-	e1000_eeprom_flash,
-	e1000_eeprom_ich8,
-	e1000_eeprom_none, /* No NVM support */
-	e1000_eeprom_invm,
+	e1000_eeprom_flash, /* access via EERD */
 	e1000_num_eeprom_types
 } e1000_eeprom_type;
 

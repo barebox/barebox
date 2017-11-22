@@ -142,7 +142,7 @@ static int32_t e1000_set_phy_mode(struct e1000_hw *hw)
  ***************************************************************************/
 static int32_t e1000_get_software_semaphore(struct e1000_hw *hw)
 {
-	int32_t timeout = hw->eeprom.word_size + 1;
+	int32_t timeout = 2049;
 	uint32_t swsm;
 
 	DEBUGFUNC();
@@ -214,7 +214,7 @@ static int32_t e1000_get_hw_eeprom_semaphore(struct e1000_hw *hw)
 	}
 
 	/* Get the FW semaphore. */
-	timeout = hw->eeprom.word_size + 1;
+	timeout = 2049;
 	while (timeout) {
 		swsm = e1000_read_reg(hw, E1000_SWSM);
 		swsm |= E1000_SWSM_SWESMBI;

@@ -2161,6 +2161,8 @@ struct e1000_hw {
 		int line;
 	} invm;
 
+	struct cdev eepromcdev;
+
 	struct mtd_info mtd;
 
 	uint32_t phy_id;

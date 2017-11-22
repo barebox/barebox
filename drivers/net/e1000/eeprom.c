@@ -1298,6 +1298,31 @@ static struct file_operations e1000_invm_ops = {
 	.lseek	= dev_lseek_default,
 };
 
+static ssize_t e1000_eeprom_cdev_read(struct cdev *cdev, void *buf,
+				      size_t count, loff_t offset, unsigned long flags)
+{
+	struct e1000_hw *hw = container_of(cdev, struct e1000_hw, eepromcdev);
+	int32_t ret;
+
+	/*
+	 * The eeprom interface works on 16 bit words which gives a nice excuse
+	 * for being lazy and not implementing unaligned reads.
+	 */
+	if (offset & 1 || count == 1)
+		return -EIO;
+
+	ret = e1000_read_eeprom(hw, offset / 2, count / 2, buf);
+	if (ret)
+		return -EIO;
+	else
+		return (count / 2) * 2;
+};
+
+static struct file_operations e1000_eeprom_ops = {
+	.read = e1000_eeprom_cdev_read,
+	.lseek = dev_lseek_default,
+};
+
 static int e1000_mtd_read_or_write(bool read,
 				   struct mtd_info *mtd, loff_t off, size_t len,
 				   size_t *retlen, u_char *buf)
@@ -1438,6 +1463,15 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 	if (hw->mac_type == e1000_igb) {
 		uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
 
+		hw->eepromcdev.dev = hw->dev;
+		hw->eepromcdev.ops = &e1000_eeprom_ops;
+		hw->eepromcdev.name = xasprintf("e1000-eeprom%d", hw->dev->id);
+		hw->eepromcdev.size = 0x1000;
+
+		ret = devfs_create(&hw->eepromcdev);
+		if (ret < 0)
+			return ret;
+
 		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
 			hw->mtd.parent = hw->dev;
 			hw->mtd.read = e1000_mtd_read;
@@ -1458,11 +1492,18 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 
 			ret = add_mtd_device(&hw->mtd, "e1000-nor",
 					     DEVICE_ID_DYNAMIC);
-			if (ret)
+			if (ret) {
+				devfs_remove(&hw->eepromcdev);
 				return ret;
+			}
 		}
 
 		ret = e1000_register_invm(hw);
+		if (ret < 0) {
+			if (eecd & E1000_EECD_I210_FLASH_DETECTED)
+				del_mtd_device(&hw->mtd);
+			devfs_remove(&hw->eepromcdev);
+		}
 	}
 
 	return ret;

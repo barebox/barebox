@@ -6,18 +6,14 @@
 
 #include "e1000.h"
 
-static void e1000_release_eeprom_spi(struct e1000_hw *hw);
 static int32_t e1000_read_eeprom_spi(struct e1000_hw *hw, uint16_t offset,
 				     uint16_t words, uint16_t *data);
-static void e1000_release_eeprom_microwire(struct e1000_hw *hw);
 static int32_t e1000_read_eeprom_microwire(struct e1000_hw *hw, uint16_t offset,
 					   uint16_t words, uint16_t *data);
 
 static int32_t e1000_read_eeprom_eerd(struct e1000_hw *hw, uint16_t offset,
 				      uint16_t words, uint16_t *data);
 static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw);
-static void e1000_release_eeprom(struct e1000_hw *hw);
-static int32_t e1000_acquire_eeprom_flash(struct e1000_hw *hw);
 static void e1000_release_eeprom_flash(struct e1000_hw *hw);
 
 
@@ -252,6 +248,19 @@ e1000_acquire_eeprom_spi_microwire_prologue(struct e1000_hw *hw)
 	return E1000_SUCCESS;
 }
 
+static void
+e1000_release_eeprom_spi_microwire_epilogue(struct e1000_hw *hw)
+{
+	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+
+	/* Stop requesting EEPROM access */
+	if (hw->mac_type > e1000_82544) {
+		eecd &= ~E1000_EECD_REQ;
+		e1000_write_reg(hw, E1000_EECD, eecd);
+	}
+}
+
+
 static int32_t e1000_acquire_eeprom_spi(struct e1000_hw *hw)
 {
 	int32_t ret;
@@ -269,6 +278,19 @@ static int32_t e1000_acquire_eeprom_spi(struct e1000_hw *hw)
 	udelay(1);
 
 	return E1000_SUCCESS;
+}
+
+static void e1000_release_eeprom_spi(struct e1000_hw *hw)
+{
+	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+
+	eecd |= E1000_EECD_CS;  /* Pull CS high */
+	eecd &= ~E1000_EECD_SK; /* Lower SCK */
+
+	e1000_write_reg(hw, E1000_EECD, eecd);
+	udelay(hw->eeprom.delay_usec);
+
+	e1000_release_eeprom_spi_microwire_epilogue(hw);
 }
 
 static int32_t e1000_acquire_eeprom_microwire(struct e1000_hw *hw)
@@ -292,9 +314,44 @@ static int32_t e1000_acquire_eeprom_microwire(struct e1000_hw *hw)
 	return E1000_SUCCESS;
 }
 
+static void e1000_release_eeprom_microwire(struct e1000_hw *hw)
+{
+	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+
+	/* cleanup eeprom */
+
+	/* CS on Microwire is active-high */
+	eecd &= ~(E1000_EECD_CS | E1000_EECD_DI);
+
+	e1000_write_reg(hw, E1000_EECD, eecd);
+
+	/* Rising edge of clock */
+	eecd |= E1000_EECD_SK;
+	e1000_write_reg(hw, E1000_EECD, eecd);
+	e1000_write_flush(hw);
+	udelay(hw->eeprom.delay_usec);
+
+	/* Falling edge of clock */
+	eecd &= ~E1000_EECD_SK;
+	e1000_write_reg(hw, E1000_EECD, eecd);
+	e1000_write_flush(hw);
+	udelay(hw->eeprom.delay_usec);
+
+
+	e1000_release_eeprom_spi_microwire_epilogue(hw);
+}
+
 static int32_t e1000_acquire_eeprom_flash(struct e1000_hw *hw)
 {
 	return e1000_swfw_sync_acquire(hw, E1000_SWFW_EEP_SM);
+}
+
+static void e1000_release_eeprom_flash(struct e1000_hw *hw)
+{
+	if (e1000_swfw_sync_release(hw, E1000_SWFW_EEP_SM) < 0)
+		dev_warn(hw->dev,
+			 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
+			 E1000_SWFW_EEP_SM);
 }
 
 static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
@@ -303,6 +360,12 @@ static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
 		return hw->eeprom.acquire(hw);
 	else
 		return E1000_SUCCESS;
+}
+
+static void e1000_release_eeprom(struct e1000_hw *hw)
+{
+	if (hw->eeprom.release)
+		hw->eeprom.release(hw);
 }
 
 static void e1000_eeprom_uses_spi(struct e1000_eeprom_info *eeprom,
@@ -598,72 +661,6 @@ static int32_t e1000_read_eeprom_microwire(struct e1000_hw *hw,
 	}
 
 	return E1000_SUCCESS;
-}
-
-static void
-e1000_release_eeprom_spi_microwire_epilogue(struct e1000_hw *hw)
-{
-	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
-
-	/* Stop requesting EEPROM access */
-	if (hw->mac_type > e1000_82544) {
-		eecd &= ~E1000_EECD_REQ;
-		e1000_write_reg(hw, E1000_EECD, eecd);
-	}
-}
-
-static void e1000_release_eeprom_microwire(struct e1000_hw *hw)
-{
-	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
-
-	/* cleanup eeprom */
-
-	/* CS on Microwire is active-high */
-	eecd &= ~(E1000_EECD_CS | E1000_EECD_DI);
-
-	e1000_write_reg(hw, E1000_EECD, eecd);
-
-	/* Rising edge of clock */
-	eecd |= E1000_EECD_SK;
-	e1000_write_reg(hw, E1000_EECD, eecd);
-	e1000_write_flush(hw);
-	udelay(hw->eeprom.delay_usec);
-
-	/* Falling edge of clock */
-	eecd &= ~E1000_EECD_SK;
-	e1000_write_reg(hw, E1000_EECD, eecd);
-	e1000_write_flush(hw);
-	udelay(hw->eeprom.delay_usec);
-
-
-	e1000_release_eeprom_spi_microwire_epilogue(hw);
-}
-
-static void e1000_release_eeprom_spi(struct e1000_hw *hw)
-{
-	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
-
-	eecd |= E1000_EECD_CS;  /* Pull CS high */
-	eecd &= ~E1000_EECD_SK; /* Lower SCK */
-
-	e1000_write_reg(hw, E1000_EECD, eecd);
-	udelay(hw->eeprom.delay_usec);
-
-	e1000_release_eeprom_spi_microwire_epilogue(hw);
-}
-
-static void e1000_release_eeprom_flash(struct e1000_hw *hw)
-{
-	if (e1000_swfw_sync_release(hw, E1000_SWFW_EEP_SM) < 0)
-		dev_warn(hw->dev,
-			 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
-			 E1000_SWFW_EEP_SM);
-}
-
-static void e1000_release_eeprom(struct e1000_hw *hw)
-{
-	if (hw->eeprom.release)
-		hw->eeprom.release(hw);
 }
 
 /******************************************************************************

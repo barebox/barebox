@@ -480,15 +480,10 @@ CFG_start_vf610_twr.pblx.imximg = $(board)/freescale-vf610-twr/flash-header-vf61
 FILE_barebox-vf610-twr.img = start_vf610_twr.pblx.imximg
 image-$(CONFIG_MACH_VF610_TWR) += barebox-vf610-twr.img
 
-pblx-$(CONFIG_MACH_ZII_RDU2) += start_imx6q_zii_rdu2
-CFG_start_imx6q_zii_rdu2.pblx.imximg = $(board)/zii-imx6q-rdu2/flash-header-imx6q-rdu2.imxcfg
-FILE_barebox-zii-imx6q-rdu2.img = start_imx6q_zii_rdu2.pblx.imximg
-image-$(CONFIG_MACH_ZII_RDU2) += barebox-zii-imx6q-rdu2.img
-
-pblx-$(CONFIG_MACH_ZII_RDU2) += start_imx6qp_zii_rdu2
-CFG_start_imx6qp_zii_rdu2.pblx.imximg = $(board)/zii-imx6q-rdu2/flash-header-imx6qp-rdu2.imxcfg
-FILE_barebox-zii-imx6qp-rdu2.img = start_imx6qp_zii_rdu2.pblx.imximg
-image-$(CONFIG_MACH_ZII_RDU2) += barebox-zii-imx6qp-rdu2.img
+pblx-$(CONFIG_MACH_ZII_RDU2) += start_imx6_zii_rdu2
+CFG_start_imx6_zii_rdu2.imx-sram-img = $(board)/zii-imx6q-rdu2/flash-header-rdu2.imxcfg
+FILE_barebox-zii-imx6-rdu2.img = start_imx6_zii_rdu2.imx-sram-img
+image-$(CONFIG_MACH_ZII_RDU2) += barebox-zii-imx6-rdu2.img
 
 pblx-$(CONFIG_MACH_ZII_VF610_DEV) += start_zii_vf610_dev
 CFG_start_zii_vf610_dev.pblx.imximg = $(board)/zii-vf610-dev/flash-header-zii-vf610-dev.imxcfg

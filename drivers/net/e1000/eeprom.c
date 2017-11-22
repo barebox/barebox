@@ -1399,7 +1399,7 @@ int e1000_register_invm(struct e1000_hw *hw)
 	hw->invm.cdev.ops = &e1000_invm_ops;
 	hw->invm.cdev.priv = hw;
 	hw->invm.cdev.name = xasprintf("e1000-invm%d", hw->dev->id);
-	hw->invm.cdev.size = 32 * E1000_INVM_DATA_MAX_N;
+	hw->invm.cdev.size = 4 * (E1000_INVM_DATA_MAX_N + 1);
 
 	ret = devfs_create(&hw->invm.cdev);
 	if (ret < 0)

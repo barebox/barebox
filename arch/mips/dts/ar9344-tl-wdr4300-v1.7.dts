@@ -38,6 +38,10 @@
 	clock-frequency = <40000000>;
 };
 
+&wdt0 {
+	status = "okay";
+};
+
 &spi {
 	num-chipselects = <1>;
 	status = "okay";

@@ -142,8 +142,8 @@ static int32_t e1000_set_phy_mode(struct e1000_hw *hw)
  ***************************************************************************/
 static int32_t e1000_get_software_semaphore(struct e1000_hw *hw)
 {
-	 int32_t timeout = hw->eeprom.word_size + 1;
-	 uint32_t swsm;
+	int32_t timeout = hw->eeprom.word_size + 1;
+	uint32_t swsm;
 
 	DEBUGFUNC();
 

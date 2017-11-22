@@ -366,7 +366,8 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_82543:
 	case e1000_82544:
 		e1000_eeprom_uses_microwire(eeprom, 0);
-	break;
+		break;
+
 	case e1000_82540:
 	case e1000_82545:
 	case e1000_82545_rev_3:
@@ -374,6 +375,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_82546_rev_3:
 		e1000_eeprom_uses_microwire(eeprom, eecd);
 		break;
+
 	case e1000_82541:
 	case e1000_82541_rev_2:
 	case e1000_82547:
@@ -383,10 +385,12 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		else
 			e1000_eeprom_uses_microwire(eeprom, eecd);
 		break;
+
 	case e1000_82571:
 	case e1000_82572:
 		e1000_eeprom_uses_spi(eeprom, eecd);
 		break;
+
 	case e1000_82573:
 	case e1000_82574:
 		if (e1000_is_onboard_nvm_eeprom(hw)) {
@@ -396,16 +400,20 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 			eeprom->type = e1000_eeprom_flash;
 			eeprom->word_size = 2048;
 
-		/* Ensure that the Autonomous FLASH update bit is cleared due to
-		 * Flash update issue on parts which use a FLASH for NVM. */
+			/*
+			 * Ensure that the Autonomous FLASH update bit is cleared due to
+			 * Flash update issue on parts which use a FLASH for NVM.
+			 */
 			eecd &= ~E1000_EECD_AUPDEN;
 			e1000_write_reg(hw, E1000_EECD, eecd);
 		}
 		break;
+
 	case e1000_80003es2lan:
 		eeprom->type = e1000_eeprom_spi;
 		eeprom->read = e1000_read_eeprom_eerd;
 		break;
+
 	case e1000_igb:
 		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
 			uint32_t fla;
@@ -431,6 +439,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 
 		eeprom->read = e1000_read_eeprom_eerd;
 		break;
+
 	default:
 		break;
 	}

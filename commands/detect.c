@@ -54,9 +54,7 @@ static int do_detect(int argc, char *argv[])
 	}
 
 	if (option_all) {
-		for_each_device(dev)
-			device_detect(dev);
-
+		device_detect_all();
 		return 0;
 	}
 

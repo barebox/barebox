@@ -61,6 +61,12 @@ struct eth_device {
 	IPaddr_t netmask;
 	char ethaddr[6];
 	char *bootarg;
+
+	bool ifup;
+#define ETH_MODE_DHCP 0
+#define ETH_MODE_STATIC 1
+#define ETH_MODE_DISABLED 2
+	unsigned int global_mode;
 };
 
 #define dev_to_edev(d) container_of(d, struct eth_device, dev)
@@ -473,6 +479,7 @@ void led_trigger_network(enum led_trigger trigger);
 
 #define IFUP_FLAG_FORCE		(1 << 0)
 
+int ifup_edev(struct eth_device *edev, unsigned flags);
 int ifup(const char *name, unsigned flags);
 int ifup_all(unsigned flags);
 

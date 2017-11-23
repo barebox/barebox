@@ -21,12 +21,18 @@
 #include <command.h>
 #include <complete.h>
 #include <driver.h>
+#include <unistd.h>
 #include <init.h>
+#include <dhcp.h>
 #include <net.h>
 #include <of.h>
 #include <linux/phy.h>
 #include <errno.h>
 #include <malloc.h>
+#include <globalvar.h>
+#include <environment.h>
+#include <linux/ctype.h>
+#include <linux/stat.h>
 
 static uint64_t last_link_check;
 
@@ -340,6 +346,12 @@ late_initcall(eth_register_of_fixup);
 extern IPaddr_t net_serverip;
 extern IPaddr_t net_gateway;
 
+static const char * const eth_mode_names[] = {
+	[ETH_MODE_DHCP] = "dhcp",
+	[ETH_MODE_STATIC] = "static",
+	[ETH_MODE_DISABLED] = "disabled",
+};
+
 int eth_register(struct eth_device *edev)
 {
 	struct device_d *dev = &edev->dev;
@@ -378,6 +390,9 @@ int eth_register(struct eth_device *edev)
 			edev->ethaddr, edev);
 	edev->bootarg = xstrdup("");
 	dev_add_param_string(dev, "linux.bootargs", NULL, NULL, &edev->bootarg, NULL);
+	dev_add_param_enum(dev, "mode", NULL, NULL, &edev->global_mode,
+				  eth_mode_names, ARRAY_SIZE(eth_mode_names),
+				  NULL);
 
 	if (edev->init)
 		edev->init(edev);

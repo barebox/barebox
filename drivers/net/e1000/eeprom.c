@@ -708,7 +708,7 @@ static int e1000_flash_mode_wait_for_idle(struct e1000_hw *hw)
 				       E1000_FLSWCTL_DONE, SECOND);
 	if (ret < 0)
 		dev_err(hw->dev,
-			"Timeout waiting for FLSWCTL.DONE to be set\n");
+			"Timeout waiting for FLSWCTL.DONE to be set (wait)\n");
 	return ret;
 }
 
@@ -764,7 +764,7 @@ static int e1000_flash_mode_read_chunk(struct e1000_hw *hw, loff_t offset,
 				     SECOND);
 		if (ret < 0) {
 			dev_err(hw->dev,
-				"Timeout waiting for FLSWCTL.DONE to be set\n");
+				"Timeout waiting for FLSWCTL.DONE to be set (read)\n");
 			return ret;
 		}
 
@@ -820,7 +820,7 @@ static int e1000_flash_mode_write_chunk(struct e1000_hw *hw, loff_t offset,
 				     SECOND);
 		if (ret < 0) {
 			dev_err(hw->dev,
-				"Timeout waiting for FLSWCTL.DONE to be set\n");
+				"Timeout waiting for FLSWCTL.DONE to be set (write)\n");
 			return ret;
 		}
 
@@ -857,7 +857,7 @@ static int e1000_flash_mode_erase_chunk(struct e1000_hw *hw, loff_t offset,
 			     SECOND);
 	if (ret < 0) {
 		dev_err(hw->dev,
-			"Timeout waiting for FLSWCTL.DONE to be set\n");
+			"Timeout waiting for FLSWCTL.DONE to be set (erase)\n");
 		return ret;
 	}
 

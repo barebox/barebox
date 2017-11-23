@@ -961,6 +961,9 @@ int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
 
 	DEBUGFUNC();
 
+	if (!e1000_eeprom_valid(hw))
+		return -EINVAL;
+
 	/* A check for invalid values:  offset too large, too many words,
 	 * and not enough words.
 	 */
@@ -1413,12 +1416,14 @@ int e1000_register_invm(struct e1000_hw *hw)
 	u16 word;
 	struct param_d *p;
 
-	ret = e1000_read_eeprom(hw, 0x0a, 1, &word);
-	if (ret < 0)
-		return ret;
+	if (e1000_eeprom_valid(hw)) {
+		ret = e1000_read_eeprom(hw, 0x0a, 1, &word);
+		if (ret < 0)
+			return ret;
 
-	if (word & (1 << 15))
-		dev_warn(hw->dev, "iNVM lockout mechanism is active\n");
+		if (word & (1 << 15))
+			dev_warn(hw->dev, "iNVM lockout mechanism is active\n");
+	}
 
 	hw->invm.cdev.dev = hw->dev;
 	hw->invm.cdev.ops = &e1000_invm_ops;
@@ -1447,6 +1452,27 @@ int e1000_register_invm(struct e1000_hw *hw)
 	}
 
 	return ret;
+}
+
+int e1000_eeprom_valid(struct e1000_hw *hw)
+{
+	uint32_t eecd;
+
+	if (hw->mac_type != e1000_igb)
+		return 1;
+
+	/*
+	 * if AUTO_RD or EE_PRES are not set in EECD, the shadow RAM is invalid
+	 * (and in practise seems to contain the contents of iNVM).
+	 */
+	eecd = e1000_read_reg(hw, E1000_EECD);
+	if (!(eecd & E1000_EECD_AUTO_RD))
+		return 0;
+
+	if (!(eecd & E1000_EECD_EE_PRES))
+		return 0;
+
+	return 1;
 }
 
 /*

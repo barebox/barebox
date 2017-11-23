@@ -645,10 +645,39 @@ static int nv_global_param_complete(struct device_d *dev, struct string_list *sl
 	return 0;
 }
 
-int nv_global_complete(struct string_list *sl, char *instr)
+int nv_complete(struct string_list *sl, char *instr)
+{
+	struct device_d *dev;
+	struct param_d *param;
+	char *str;
+	int len;
+
+	nv_global_param_complete(&global_device, sl, instr, 0);
+
+	len = strlen(instr);
+
+	if (strncmp(instr, "dev.", min_t(int, len, 4)))
+		return 0;
+
+	for_each_device(dev) {
+		if (dev == &global_device || dev == &nv_device)
+			continue;
+
+		list_for_each_entry(param, &dev->parameters, list) {
+			str = basprintf("dev.%s.%s=", dev_name(dev), param->name);
+			if (strncmp(instr, str, len))
+				free(str);
+			else
+				string_list_add(sl, str);
+		}
+	}
+
+	return 0;
+}
+
+int global_complete(struct string_list *sl, char *instr)
 {
 	nv_global_param_complete(&global_device, sl, instr, 0);
-	nv_global_param_complete(&nv_device, sl, instr, 0);
 
 	return 0;
 }

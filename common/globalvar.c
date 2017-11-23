@@ -459,6 +459,9 @@ int globalvar_add_simple_string(const char *name, char **value)
 
 	globalvar_nv_sync(name);
 
+	if (!*value)
+		*value = xstrdup("");
+
 	return 0;
 }
 

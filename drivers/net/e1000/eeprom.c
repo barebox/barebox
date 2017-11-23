@@ -1472,6 +1472,24 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 		if (ret < 0)
 			return ret;
 
+		if (eecd & E1000_EECD_AUTO_RD) {
+			if (eecd & E1000_EECD_EE_PRES) {
+				if (eecd & E1000_EECD_FLASH_IN_USE)
+					dev_info(hw->dev, "Hardware programmed from flash\n");
+				else
+					dev_info(hw->dev, "Hardware programmed from iNVM\n");
+			} else {
+				dev_warn(hw->dev, "Shadow RAM invalid\n");
+			}
+		} else {
+			/*
+			 * I never saw this case in practise and I'm unsure how
+			 * to handle that. Maybe just wait until the hardware is
+			 * up enough that this bit is set?
+			 */
+			dev_err(hw->dev, "Flash Auto-Read not done\n");
+		}
+
 		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
 			hw->mtd.parent = hw->dev;
 			hw->mtd.read = e1000_mtd_read;

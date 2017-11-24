@@ -1,7 +1,7 @@
 MTD SPI driver for ST M25Pxx (and similar) serial flash chips
 =============================================================
 
-Additionally to the Linux bindings in ``dts/Bindings/mtd/m25p80.txt``
+Additionally to the Linux bindings in ``dts/Bindings/mtd/jedec,spi-nor.txt``
 the barebox driver has the following optional properties:
 
 - use-large-blocks : Use large blocks rather than the 4K blocks some devices

@@ -199,6 +199,8 @@ static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val
 static int __nvvar_add(const char *name, const char *value)
 {
 	struct param_d *p;
+	struct device_d *dev = NULL;
+	const char *pname;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_NVVAR))
@@ -220,7 +222,12 @@ static int __nvvar_add(const char *name, const char *value)
 	if (value)
 		return nv_set(&nv_device, p, value);
 
-	value = dev_get_param(&global_device, name);
+	ret = nvvar_device_dispatch(name, &dev, &pname);
+	if (ret > 0)
+		value = dev_get_param(dev, pname);
+	else
+		value = dev_get_param(&global_device, name);
+
 	if (value) {
 		free(p->value);
 		p->value = xstrdup(value);

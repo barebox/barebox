@@ -498,7 +498,7 @@ int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 }
 
 /*
- * Register a i.MX53 internal boot update handler for i2c/spi
+ * Register a i.MX6 internal boot update handler for i2c/spi
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
  * keep a partition table. We have to erase the device beforehand though.
  */

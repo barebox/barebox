@@ -3,6 +3,7 @@
 #include <malloc.h>
 #include <linux/math64.h>
 #include <linux/sizes.h>
+#include <linux/mtd/spi-nor.h>
 
 #include "e1000.h"
 
@@ -1410,6 +1411,73 @@ fail:
 	return ret;
 }
 
+static int e1000_mtd_sr_rmw(struct mtd_info *mtd, u8 mask, u8 val)
+{
+	struct e1000_hw *hw = container_of(mtd, struct e1000_hw, mtd);
+	uint32_t flswdata;
+	int ret;
+
+	ret = e1000_flash_mode_wait_for_idle(hw);
+	if (ret < 0)
+		return ret;
+
+	e1000_write_reg(hw, E1000_FLSWCNT, 1);
+	e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_RDSR, 0);
+
+	ret = e1000_flash_mode_check_command_valid(hw);
+	if (ret < 0)
+		return -EIO;
+
+	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+			     E1000_FLSWCTL_DONE, E1000_FLSWCTL_DONE,
+			     SECOND);
+	if (ret < 0) {
+		dev_err(hw->dev,
+			"Timeout waiting for FLSWCTL.DONE to be set (RDSR)\n");
+		return ret;
+	}
+
+	flswdata = e1000_read_reg(hw, E1000_FLSWDATA);
+
+	flswdata = (flswdata & ~mask) | val;
+
+	e1000_write_reg(hw, E1000_FLSWCNT, 1);
+	e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_WRSR, 0);
+
+	ret = e1000_flash_mode_check_command_valid(hw);
+	if (ret < 0)
+		return -EIO;
+
+	e1000_write_reg(hw, E1000_FLSWDATA, flswdata);
+
+	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+			     E1000_FLSWCTL_DONE, E1000_FLSWCTL_DONE,
+			     SECOND);
+	if (ret < 0) {
+		dev_err(hw->dev,
+			"Timeout waiting for FLSWCTL.DONE to be set (WRSR)\n");
+	}
+
+	return ret;
+}
+
+/*
+ * The available spi nor devices are very different in how the block protection
+ * bits affect which sectors to be protected. So take the simple approach and
+ * only use BP[012] = b000 (unprotected) and BP[012] = b111 (protected).
+ */
+#define SR_BPALL (SR_BP0 | SR_BP1 | SR_BP2)
+
+static int e1000_mtd_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
+{
+	return e1000_mtd_sr_rmw(mtd, SR_BPALL, SR_BPALL);
+}
+
+static int e1000_mtd_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
+{
+	return e1000_mtd_sr_rmw(mtd, SR_BPALL, 0x0);
+}
+
 int e1000_register_invm(struct e1000_hw *hw)
 {
 	int ret;
@@ -1521,6 +1589,8 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 			hw->mtd.read = e1000_mtd_read;
 			hw->mtd.write = e1000_mtd_write;
 			hw->mtd.erase = e1000_mtd_erase;
+			hw->mtd.lock = e1000_mtd_lock;
+			hw->mtd.unlock = e1000_mtd_unlock;
 			hw->mtd.size = eeprom->word_size * 2;
 			hw->mtd.writesize = 1;
 			hw->mtd.subpage_sft = 0;

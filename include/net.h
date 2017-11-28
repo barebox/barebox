@@ -61,6 +61,7 @@ struct eth_device {
 	IPaddr_t netmask;
 	char ethaddr[6];
 	char *bootarg;
+	char *linuxdevname;
 
 	bool ifup;
 #define ETH_MODE_DHCP 0

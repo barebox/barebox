@@ -72,11 +72,12 @@ static int source_env_network(struct eth_device *edev)
 		"serverip",
 		"ethaddr",
 		"ip",
+		"linuxdevname",
 	};
 	IPaddr_t ipaddr, netmask, gateway, serverip;
 	unsigned char ethaddr[6];
 	char *file, *cmd;
-	const char *ethaddrstr, *modestr;
+	const char *ethaddrstr, *modestr, *linuxdevname;
 	int ret, mode, ethaddr_valid = 0, i;
 	struct stat s;
 
@@ -107,6 +108,7 @@ static int source_env_network(struct eth_device *edev)
 	netmask = getenv_ip("netmask");
 	gateway = getenv_ip("gateway");
 	serverip = getenv_ip("serverip");
+	linuxdevname = getenv("linuxdevname");
 	ethaddrstr = getenv("ethaddr");
 	if (ethaddrstr && *ethaddrstr) {
 		ret = string_to_ethaddr(ethaddrstr, ethaddr);
@@ -149,6 +151,11 @@ static int source_env_network(struct eth_device *edev)
 			net_set_serverip(serverip);
 	}
 
+	if (linuxdevname) {
+		free(edev->linuxdevname);
+		edev->linuxdevname = xstrdup(linuxdevname);
+	}
+
 	ret = 0;
 
 out:
@@ -169,11 +176,12 @@ static void set_linux_bootarg(struct eth_device *edev)
 		serverip = net_get_serverip();
 		gateway = net_get_gateway();
 
-		bootarg = basprintf("ip=%pI4:%pI4:%pI4:%pI4:::",
+		bootarg = basprintf("ip=%pI4:%pI4:%pI4:%pI4::%s:",
 				&edev->ipaddr,
 				&serverip,
 				&gateway,
-				&edev->netmask);
+				&edev->netmask,
+				edev->linuxdevname ? edev->linuxdevname : "");
 		dev_set_param(&edev->dev, "linux.bootargs", bootarg);
 		free(bootarg);
 	} else if (edev->global_mode == ETH_MODE_DHCP) {

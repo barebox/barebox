@@ -390,6 +390,8 @@ int eth_register(struct eth_device *edev)
 			edev->ethaddr, edev);
 	edev->bootarg = xstrdup("");
 	dev_add_param_string(dev, "linux.bootargs", NULL, NULL, &edev->bootarg, NULL);
+	edev->linuxdevname = xstrdup("");
+	dev_add_param_string(dev, "linux.devname", NULL, NULL, &edev->linuxdevname, NULL);
 	dev_add_param_enum(dev, "mode", NULL, NULL, &edev->global_mode,
 				  eth_mode_names, ARRAY_SIZE(eth_mode_names),
 				  NULL);

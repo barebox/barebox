@@ -717,7 +717,7 @@ static int e1000_flash_mode_check_command_valid(struct e1000_hw *hw)
 {
 	const uint32_t flswctl = e1000_read_reg(hw, E1000_FLSWCTL);
 	if (!(flswctl & E1000_FLSWCTL_CMDV)) {
-		dev_err(hw->dev, "FLSWCTL.CMDV was cleared");
+		dev_err(hw->dev, "FLSWCTL.CMDV was cleared\n");
 		return -EIO;
 	}
 

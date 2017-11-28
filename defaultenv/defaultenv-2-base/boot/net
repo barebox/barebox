@@ -10,7 +10,8 @@ if [ -f "${oftree}" ]; then
 fi
 
 nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
-bootargs-ip
+
+ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
 
 initramfs="${path}/${global.user}-initramfs-${global.hostname}"
 if [ -f "${initramfs}" ]; then

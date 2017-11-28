@@ -1200,6 +1200,16 @@ config CMD_TFTP
 	  Options:
 		  -p	push to TFTP server
 
+config CMD_IP_ROUTE_GET
+	tristate
+	prompt "ip-route-get"
+	default y
+	help
+	  The ip-route-get command is used to retrieve the network interface
+	  which is used to reach the specified IP address. Information can
+	  be shown on the command line or alternatively a variable is set to
+	  the result.
+
 # end Network commands
 endmenu
 

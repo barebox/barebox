@@ -377,7 +377,7 @@
 			reg = <0>;
 
 			mtl017_in: endpoint {
-				remote-endpoint = <&ipu_di1_disp1>;
+				remote-endpoint = <&ipu_di1_disp2>;
 			};
 		};
 

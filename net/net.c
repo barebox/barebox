@@ -276,7 +276,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 	}
 
 	/* If we don't have an ip only broadcast is allowed */
-	if (!edev->ipaddr && dest != 0xffffffff)
+	if (!edev->ipaddr && dest != IP_BROADCAST)
 		return ERR_PTR(-ENETDOWN);
 
 	con = xzalloc(sizeof(*con));
@@ -291,7 +291,7 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 	con->icmp = (struct icmphdr *)(con->packet + ETHER_HDR_SIZE + sizeof(struct iphdr));
 	con->handler = handler;
 
-	if (dest == 0xffffffff) {
+	if (dest == IP_BROADCAST) {
 		memset(con->et->et_dest, 0xff, 6);
 	} else {
 		ret = arp_request(dest, con->et->et_dest);
@@ -525,7 +525,7 @@ static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 		goto bad;
 
 	tmp = net_read_ip(&ip->daddr);
-	if (edev->ipaddr && tmp != edev->ipaddr && tmp != 0xffffffff)
+	if (edev->ipaddr && tmp != edev->ipaddr && tmp != IP_BROADCAST)
 		return 0;
 
 	switch (ip->protocol) {

@@ -114,6 +114,8 @@ struct ethernet {
 #define IPPROTO_ICMP	 1	/* Internet Control Message Protocol	*/
 #define IPPROTO_UDP	17	/* User Datagram Protocol		*/
 
+#define IP_BROADCAST    0xffffffff /* Broadcast IP aka 255.255.255.255 */
+
 /*
  *	Internet Protocol (IP) header.
  */

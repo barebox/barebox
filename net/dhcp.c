@@ -661,7 +661,7 @@ int dhcp(int retries, struct dhcp_req_param *param)
 	if (!retries)
 		retries = DHCP_DEFAULT_RETRY;
 
-	dhcp_con = net_udp_new(0xffffffff, PORT_BOOTPS, dhcp_handler, NULL);
+	dhcp_con = net_udp_new(IP_BROADCAST, PORT_BOOTPS, dhcp_handler, NULL);
 	if (IS_ERR(dhcp_con)) {
 		ret = PTR_ERR(dhcp_con);
 		goto out;

@@ -137,6 +137,7 @@ const char *barebox_get_model(void);
 void barebox_set_model(const char *);
 const char *barebox_get_hostname(void);
 void barebox_set_hostname(const char *);
+void barebox_set_hostname_no_overwrite(const char *);
 
 #if defined(CONFIG_MIPS)
 #include <asm/addrspace.h>

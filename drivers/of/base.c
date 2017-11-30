@@ -2360,3 +2360,35 @@ int of_graph_port_is_available(struct device_node *node)
 	return available;
 }
 EXPORT_SYMBOL(of_graph_port_is_available);
+
+/**
+ * of_get_machine_compatible - get first compatible string from the root node.
+ *
+ * Returns the string or NULL.
+ */
+const char *of_get_machine_compatible(void)
+{
+	struct property *prop;
+	const char *name, *p;
+
+	if (!root_node)
+		return NULL;
+
+	prop = of_find_property(root_node, "compatible", NULL);
+	name = of_prop_next_string(prop, NULL);
+
+	p = strchr(name, ',');
+	return p ? p + 1 : name;
+}
+EXPORT_SYMBOL(of_get_machine_compatible);
+
+static int of_init_hostname(void)
+{
+	const char *name;
+
+	name = of_get_machine_compatible();
+	barebox_set_hostname_no_overwrite(name ?: "barebox");
+
+	return 0;
+}
+late_initcall(of_init_hostname);

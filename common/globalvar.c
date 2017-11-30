@@ -247,6 +247,7 @@ int nvvar_remove(const char *name)
 {
 	struct param_d *p, *tmp;
 	char *fname;
+	int ret = -ENOENT;
 
 	if (!IS_ENABLED(CONFIG_NVVAR))
 		return -ENOSYS;
@@ -262,10 +263,10 @@ int nvvar_remove(const char *name)
 		unlink(fname);
 		free(fname);
 
-		return 0;
+		ret = 0;
 	}
 
-	return -ENOENT;
+	return ret;
 }
 
 int nvvar_load(void)

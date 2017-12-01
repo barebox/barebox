@@ -52,7 +52,6 @@ AM335x Boards
 
 .. toctree::
   :glob:
-  :numbered:
   :maxdepth: 1
 
   am335x/*

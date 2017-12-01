@@ -5,7 +5,6 @@ Contents:
 
 .. toctree::
    :glob:
-   :numbered:
    :maxdepth: 1
 
    bindings/barebox/*

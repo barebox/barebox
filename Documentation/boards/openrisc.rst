@@ -12,7 +12,9 @@ Compile or1ksim emulator::
  $ ./configure
  $ make
 
-Create minimal or1ksim.cfg file::
+Create minimal or1ksim.cfg file:
+
+.. code-block:: none
 
  section cpu
    ver = 0x12

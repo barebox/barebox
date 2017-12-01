@@ -12,7 +12,9 @@ Optional properties:
   can be multiple entries in the form <&phandle regofs> to assign a MAC
   address to an Ethernet device.
 
-Example::
+Example:
+
+.. code-block:: none
 
   ocotp1: ocotp@021bc000 {
   	compatible = "fsl,imx6q-ocotp";

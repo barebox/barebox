@@ -12,7 +12,9 @@ Optional properties:
   can be multiple entries in the form <&phandle bankno fuseofs> to assign a MAC
   address to an Ethernet device.
 
-Example::
+Example:
+
+.. code-block:: none
 
   iim: iim@83f98000 {
   	compatible = "fsl,imx51-iim", "fsl,imx27-iim";

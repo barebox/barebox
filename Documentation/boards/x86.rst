@@ -47,9 +47,10 @@ Keep Sectors free
 
 Build the barebox image and check its size. At least this amount of
 sectors must be kept free after the MBR prior the first partition. Do this
-simple calulation::
+simple calulation:
 
-	sectors = (\<size of barebox image\> + 511) / 512
+.. code-block:: none
+  sectors = (\<size of barebox image\> + 511) / 512
 
 To be able to store the runtime configuration, further free sectors are
 required. Its up to you and your requirements, how large this persistant
@@ -60,8 +61,9 @@ For this example we are reserving 300 sectors for the barebox image and
 additionaly 32 sectors for the persistant storage. So, the first partition on
 the boot media must start at sector 333 or later.
 
-Run the  fdisk tool to setup such a partition table::
+Run the  fdisk tool to setup such a partition table:
 
+.. code-block:: none
 
   [jb@host]~> fdisk /dev/sda
   Command (m for help): p
@@ -74,7 +76,7 @@ Run the  fdisk tool to setup such a partition table::
 
 Change the used units to  sectors for easier handling.
 
-::
+.. code-block:: none
 
   Command (m for help): u
   Changing display/entry units to sectors
@@ -87,7 +89,9 @@ Change the used units to  sectors for easier handling.
   
   Device Boot      Start         End      Blocks   Id  System
 
-Now its possible to create the first partition with the required offset::
+Now its possible to create the first partition with the required offset:
+
+.. code-block:: none
 
   Command (m for help): n
   Command action
@@ -128,7 +132,9 @@ The barebox image gets stored on the boot media like this::
                 storage               main image              partition
 
 If the  -s option is omitted, the "persistant storage" part simply does
-not exist::
+not exist:
+
+.. code-block:: none
 
   sector 0   1                              333
          |---|--------------- ~~~ ------------|--------------

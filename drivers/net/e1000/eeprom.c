@@ -1568,10 +1568,14 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 
 		if (eecd & E1000_EECD_AUTO_RD) {
 			if (eecd & E1000_EECD_EE_PRES) {
-				if (eecd & E1000_EECD_FLASH_IN_USE)
-					dev_info(hw->dev, "Hardware programmed from flash\n");
-				else
+				if (eecd & E1000_EECD_FLASH_IN_USE) {
+					uint32_t fla = e1000_read_reg(hw, E1000_FLA);
+					dev_info(hw->dev,
+						 "Hardware programmed from flash (%ssecure)\n",
+						 fla & E1000_FLA_LOCKED ? "" : "un");
+				} else {
 					dev_info(hw->dev, "Hardware programmed from iNVM\n");
+				}
 			} else {
 				dev_warn(hw->dev, "Shadow RAM invalid\n");
 			}

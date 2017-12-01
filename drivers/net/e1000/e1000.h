@@ -2101,6 +2101,7 @@ struct e1000_eeprom_info {
 							after IMS clear */
 
 #define E1000_FLA			0x1201C
+#define E1000_FLA_LOCKED		(1 << 6)
 #define E1000_FLA_FL_SIZE_SHIFT		17
 #define E1000_FLA_FL_SIZE_MASK		(0b111 << E1000_FLA_FL_SIZE_SHIFT) /* EEprom Size */
 

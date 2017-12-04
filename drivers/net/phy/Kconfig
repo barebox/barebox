@@ -66,6 +66,14 @@ config MDIO_GPIO
 	---help---
 	  Supports GPIO lib-based MDIO busses.
 
+config MDIO_BUS_MUX
+	bool
+	help
+	  This module provides a driver framework for MDIO bus
+	  multiplexers which connect one of several child MDIO busses
+	  to a parent bus.  Switching between child busses is done by
+	  device specific drivers.
+
 endif
 
 endmenu

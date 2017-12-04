@@ -10,3 +10,5 @@ obj-$(CONFIG_SMSC_PHY)		+= smsc.o
 obj-$(CONFIG_MDIO_MVEBU)	+= mdio-mvebu.o
 obj-$(CONFIG_MDIO_BITBANG)	+= mdio-bitbang.o
 obj-$(CONFIG_MDIO_GPIO)		+= mdio-gpio.o
+obj-$(CONFIG_MDIO_BUS_MUX)	+= mdio-mux.o
+

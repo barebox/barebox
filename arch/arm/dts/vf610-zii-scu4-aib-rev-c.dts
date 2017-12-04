@@ -44,6 +44,8 @@
 
 /dts-v1/;
 
+#include <arm/vf610-zii-dev.dtsi>
+
 #include "vf610-zii-dev.dtsi"
 
 / {

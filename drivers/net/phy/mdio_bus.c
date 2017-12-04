@@ -32,6 +32,9 @@ int mdiobus_detect(struct device_d *dev)
 	struct mii_bus *mii = to_mii_bus(dev);
 	int i, ret;
 
+	if (mii->is_multiplexed)
+		return 0;
+
 	for (i = 0; i < PHY_MAX_ADDR; i++) {
 		struct phy_device *phydev;
 

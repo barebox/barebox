@@ -100,6 +100,8 @@ struct mii_bus {
 	u32 phy_mask;
 
 	struct list_head list;
+
+	bool is_multiplexed;
 };
 #define to_mii_bus(d) container_of(d, struct mii_bus, dev)
 

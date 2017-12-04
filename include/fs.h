@@ -10,6 +10,7 @@
 #include <driver.h>
 #include <filetype.h>
 #include <linux/fs.h>
+#include <linux/string.h>
 
 #define PATH_MAX       1024        /* include/linux/limits.h */
 
@@ -170,5 +171,13 @@ void mount_all(void);
 
 void fsdev_set_linux_rootarg(struct fs_device_d *fsdev, const char *str);
 char *path_get_linux_rootarg(const char *path);
+
+static inline const char *devpath_to_name(const char *devpath)
+{
+	if (devpath && !strncmp(devpath, "/dev/", 5))
+		return devpath + 5;
+
+	return devpath;
+}
 
 #endif /* __FS_H */

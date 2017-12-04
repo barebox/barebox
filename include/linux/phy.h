@@ -116,6 +116,8 @@ int mdiobus_detect(struct device_d *dev);
 
 struct mii_bus *mdiobus_get_bus(int busnum);
 
+struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np);
+
 /**
  * mdiobus_read - Convenience function for reading a given MII mgmt register
  * @bus: the mii_bus struct

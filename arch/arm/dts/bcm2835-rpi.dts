@@ -9,3 +9,11 @@
 		reg = <0x0 0x0>;
 	};
 };
+
+&sdhci {
+	status = "okay";
+};
+
+&sdhost {
+	status = "disabled";
+};

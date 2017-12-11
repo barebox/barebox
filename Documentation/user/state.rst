@@ -39,8 +39,8 @@ Backends (e.g. Supported Memory Types)
 
 Some non-volatile memory is need for storing a *state* variable set:
 
-- all kinds of NOR flash memories
-- all kinds of NAND flash memories
+- Disk like devices: SD, (e)MMC, ATA
+- all kinds of NAND and NOR flash memories (mtd)
 - MRAM
 - EEPROM
 - all kind of SRAMs (backup battery assumed)
@@ -523,6 +523,48 @@ content, its backend-type and *state* variable layout.
 		backend-type = "raw";
 		backend = <&backend_state_nand>;
 		backend-storage-type = "circular";
+
+		variable {
+			reg = <0x0 0x1>;
+			type ="uint8";
+			default = <0x1>;
+		};
+	};
+
+SD/eMMC and ATA
+###############
+
+The following devicetree node entry defines some kind of SD/eMMC memory and
+a partition at a specific offset inside it to be used as the backend for the
+*state* variable set. Note that currently there is no support for on-disk
+partition tables. Instead, a ofpart partition description must be used. You
+have to make sure that this partition does not conflict with any other partition
+in the partition table.
+
+.. code-block:: text
+
+	backend_state_sd: part@100000 {
+		label = "state";
+		reg = <0x100000 0x20000>;
+	};
+
+With this 'backend' definition its possible to define the *state* variable set
+content, its backend-type and *state* variable layout.
+
+.. code-block:: text
+
+	aliases {
+		state = &state_sd;
+	};
+
+	state_sd: state_memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "barebox,state";
+		magic = <0xab67421f>;
+		backend-type = "raw";
+		backend = <&backend_state_sd>;
+		backend-stridesize = <0x40>;
 
 		variable {
 			reg = <0x0 0x1>;

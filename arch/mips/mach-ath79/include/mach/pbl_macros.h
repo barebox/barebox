@@ -368,4 +368,39 @@ normal_path:
 	.set	pop
 .endm
 
+	.macro	ar9331_pbl_generic_start
+	.set	push
+	.set	noreorder
+
+	mips_barebox_10h
+
+	pbl_blt 0xbf000000 skip_pll_ram_config t8
+
+	hornet_mips24k_cp0_setup
+
+	pbl_ar9331_wmac_enable
+
+	hornet_1_1_war
+
+	pbl_ar9331_pll
+	pbl_ar9331_ram_generic_config
+
+skip_pll_ram_config:
+	/* Initialize caches... */
+	mips_cache_reset
+
+	/* ... and enable them */
+	dcache_enable
+
+	pbl_ar9331_uart_enable
+	debug_ll_ar9331_init
+	mips_nmon
+
+	pbl_ar9331_mdio_gpio_enable
+
+	copy_to_link_location	pbl_start
+
+	.set	pop
+	.endm
+
 #endif /* __ASM_MACH_ATH79_PBL_MACROS_H */

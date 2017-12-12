@@ -13,6 +13,14 @@ config SOC_QCA_AR9344
 choice
 	prompt "Board type"
 
+config BOARC_DPTECHNICS_DPT_MODULE
+	bool "DPTechnics DPT-Module"
+	select SOC_QCA_AR9331
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
+	select HAS_NMON
+	select HAS_NO_BOARD_HL_CODE
+
 config BOARD_TPLINK_MR3020
 	bool "TP-LINK MR3020"
 	select SOC_QCA_AR9331

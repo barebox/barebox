@@ -124,7 +124,11 @@ else
 MACH  :=
 endif
 
-common-y += $(BOARD) $(MACH)
+ifndef CONFIG_HAS_NO_BOARD_HL_CODE
+common-y += $(BOARD)
+endif
+
+common-y += $(MACH)
 common-y += arch/mips/lib/
 common-y += arch/mips/boot/
 

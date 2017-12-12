@@ -22,6 +22,9 @@ config GENERIC_LINKER_SCRIPT
 	bool
 	default y
 
+config HAS_NO_BOARD_HL_CODE
+	bool
+
 menu "Machine selection"
 
 config BUILTIN_DTB

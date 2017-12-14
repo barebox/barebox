@@ -32,8 +32,11 @@
 #include <linux/err.h>
 #include <clock.h>
 
-/* time to wait for STAT_RR getting set */
-#define IMX_SPI_RR_TIMEOUT	10000 /* ns */
+/*
+ * time to wait for STAT_RR getting set, should allow the transfer
+ * of 24 bits at spi-max-frequency of 100kHz
+ */
+#define IMX_SPI_RR_TIMEOUT	250000 /* ns */
 
 struct imx_spi {
 	struct spi_master	master;

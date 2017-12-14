@@ -455,7 +455,6 @@ static int bootm_open_os_uimage(struct image_data *data)
 		if (ret) {
 			printf("Checking data crc failed with %s\n",
 					strerror(-ret));
-			uimage_close(data->os);
 			return ret;
 		}
 	}

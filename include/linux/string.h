@@ -80,6 +80,9 @@ extern __kernel_size_t strnlen(const char *,__kernel_size_t);
 #ifndef __HAVE_ARCH_STRDUP
 extern char * strdup(const char *);
 #endif
+#ifndef __HAVE_ARCH_STRNDUP
+extern char *strndup(const char *, size_t);
+#endif
 #ifndef __HAVE_ARCH_STRSWAB
 extern char * strswab(const char *);
 #endif

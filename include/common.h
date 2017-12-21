@@ -93,8 +93,6 @@ extern int (*barebox_main)(void);
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
 
-#define ALIGN_DOWN(x, a)	((x) & ~((typeof(x))(a) - 1))
-
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
 /*

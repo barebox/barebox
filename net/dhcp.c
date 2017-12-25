@@ -45,7 +45,7 @@ struct bootp {
 	char		bp_sname[64];	/* Server host name			*/
 	char		bp_file[128];	/* Boot file name			*/
 	char		bp_vend[0];	/* Vendor information			*/
-};
+} __packed;
 
 /* DHCP States */
 typedef enum {

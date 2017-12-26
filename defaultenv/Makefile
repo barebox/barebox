@@ -14,7 +14,7 @@ quiet_cmd_env_default = ENV     $@
 cmd_env_default = ($(srctree)/scripts/genenv $(srctree) $(objtree) $@ $(CONFIG_DEFAULT_ENVIRONMENT_PATH))
 
 $(obj)/barebox_default_env: FORCE
-	$(call cmd,env_default)
+	$(call if_changed,env_default)
 
 quiet_cmd_env_h = ENVH    $@
 cmd_env_h = cat $< | (cd $(obj) && $(objtree)/scripts/bin2c "__aligned(4) default_environment") > $@; \
@@ -27,4 +27,4 @@ quiet_cmd_env_zero = ENVZ    $@
 cmd_env_zero = ($(objtree)/scripts/bareboxenv -z $(CONFIG_DEFAULT_ENVIRONMENT_PATH) $@)
 
 $(obj)/barebox_zero_env: FORCE
-	$(call cmd,env_zero)
+	$(call if_changed,env_zero)

@@ -292,7 +292,7 @@ quiet_cmd_env = ENV     $@
 cmd_env=$(srctree)/scripts/genenv $(srctree) $(objtree) $@ $<
 
 %.bbenv$(DEFAULT_COMPRESSION_SUFFIX): % FORCE
-	$(call cmd,env)
+	$(call if_changed,env)
 
 # Bzip2
 # ---------------------------------------------------------------------------

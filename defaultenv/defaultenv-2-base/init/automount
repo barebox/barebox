@@ -3,12 +3,12 @@
 # automount tftp server based on $eth0.serverip
 
 mkdir -p /mnt/tftp
-automount /mnt/tftp 'ifup eth0 && mount -t tftp $eth0.serverip /mnt/tftp'
+automount /mnt/tftp 'ifup -a && mount -t tftp $global.net.server /mnt/tftp'
 
 # automount nfs server's nfsroot
 
 mkdir -p /mnt/nfs
-automount /mnt/nfs 'ifup eth0 && mount -t nfs ${eth0.serverip}:/home/${global.user}/nfsroot/${global.hostname} /mnt/nfs'
+automount /mnt/nfs 'ifup -a && mount -t nfs ${global.net.server}:/home/${global.user}/nfsroot/${global.hostname} /mnt/nfs'
 
 
 # FAT on usb disk example

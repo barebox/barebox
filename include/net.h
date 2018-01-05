@@ -58,11 +58,16 @@ struct eth_device {
 	struct list_head list;
 
 	IPaddr_t ipaddr;
-	IPaddr_t serverip;
 	IPaddr_t netmask;
-	IPaddr_t gateway;
 	char ethaddr[6];
 	char *bootarg;
+	char *linuxdevname;
+
+	bool ifup;
+#define ETH_MODE_DHCP 0
+#define ETH_MODE_STATIC 1
+#define ETH_MODE_DISABLED 2
+	unsigned int global_mode;
 };
 
 #define dev_to_edev(d) container_of(d, struct eth_device, dev)
@@ -113,6 +118,8 @@ struct ethernet {
 
 #define IPPROTO_ICMP	 1	/* Internet Control Message Protocol	*/
 #define IPPROTO_UDP	17	/* User Datagram Protocol		*/
+
+#define IP_BROADCAST    0xffffffff /* Broadcast IP aka 255.255.255.255 */
 
 /*
  *	Internet Protocol (IP) header.
@@ -214,12 +221,19 @@ struct icmphdr {
 
 extern unsigned char *NetRxPackets[PKTBUFSRX];/* Receive packets		*/
 
-void net_set_ip(IPaddr_t ip);
+void net_set_ip(struct eth_device *edev, IPaddr_t ip);
 void net_set_serverip(IPaddr_t ip);
-void net_set_netmask(IPaddr_t ip);
+void net_set_serverip_empty(IPaddr_t ip);
+void net_set_netmask(struct eth_device *edev, IPaddr_t ip);
 void net_set_gateway(IPaddr_t ip);
-IPaddr_t net_get_ip(void);
+void net_set_nameserver(IPaddr_t ip);
+void net_set_domainname(const char *name);
+IPaddr_t net_get_ip(struct eth_device *edev);
 IPaddr_t net_get_serverip(void);
+IPaddr_t net_get_gateway(void);
+IPaddr_t net_get_nameserver(void);
+const char *net_get_domainname(void);
+struct eth_device *net_route(IPaddr_t ip);
 
 /* Do the work */
 void net_poll(void);
@@ -406,8 +420,6 @@ static inline int is_valid_ether_addr(const u8 *addr)
 
 typedef void rx_handler_f(void *ctx, char *packet, unsigned int len);
 
-void eth_set_current(struct eth_device *eth);
-struct eth_device *eth_get_current(void);
 struct eth_device *eth_get_byname(const char *name);
 
 /**
@@ -440,6 +452,10 @@ static inline char *net_alloc_packet(void)
 struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
 		rx_handler_f *handler, void *ctx);
 
+struct net_connection *net_udp_eth_new(struct eth_device *edev, IPaddr_t dest,
+                                       uint16_t dport, rx_handler_f *handler,
+                                       void *ctx);
+
 struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
 		void *ctx);
 
@@ -464,6 +480,7 @@ void led_trigger_network(enum led_trigger trigger);
 
 #define IFUP_FLAG_FORCE		(1 << 0)
 
+int ifup_edev(struct eth_device *edev, unsigned flags);
 int ifup(const char *name, unsigned flags);
 int ifup_all(unsigned flags);
 

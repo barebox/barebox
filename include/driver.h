@@ -134,6 +134,7 @@ int device_probe(struct device_d *dev);
 /* detect devices attached to this device (cards, disks,...) */
 int device_detect(struct device_d *dev);
 int device_detect_by_name(const char *devname);
+void device_detect_all(void);
 
 /* Unregister a device. This function can fail, e.g. when the device
  * has children.

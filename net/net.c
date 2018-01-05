@@ -23,6 +23,9 @@
  * GNU General Public License for more details.
  *
  */
+
+#define pr_fmt(fmt) "net: " fmt
+
 #include <common.h>
 #include <clock.h>
 #include <command.h>
@@ -33,11 +36,42 @@
 #include <errno.h>
 #include <malloc.h>
 #include <init.h>
+#include <globalvar.h>
+#include <magicvar.h>
 #include <linux/ctype.h>
 #include <linux/err.h>
 
 unsigned char *NetRxPackets[PKTBUFSRX]; /* Receive packets		*/
 static unsigned int net_ip_id;
+
+IPaddr_t net_serverip;
+IPaddr_t net_gateway;
+static IPaddr_t net_nameserver;
+static char *net_domainname;
+
+void net_set_nameserver(IPaddr_t nameserver)
+{
+	net_nameserver = nameserver;
+}
+
+IPaddr_t net_get_nameserver(void)
+{
+	return net_nameserver;
+}
+
+void net_set_domainname(const char *name)
+{
+	free(net_domainname);
+	if (name)
+		net_domainname = xstrdup(name);
+	else
+		net_domainname = xstrdup("");
+};
+
+const char *net_get_domainname(void)
+{
+	return net_domainname;
+}
 
 int net_checksum_ok(unsigned char *ptr, int len)
 {
@@ -110,9 +144,29 @@ static void arp_handler(struct arprequest *arp)
 	}
 }
 
-static int arp_request(IPaddr_t dest, unsigned char *ether)
+struct eth_device *net_route(IPaddr_t dest)
 {
-	struct eth_device *edev = eth_get_current();
+	struct eth_device *edev;
+
+	for_each_netdev(edev) {
+		if (!edev->ipaddr)
+			continue;
+
+		if ((dest & edev->netmask) == (edev->ipaddr & edev->netmask)) {
+			pr_debug("Route: Using %s (ip=%pI4, nm=%pI4) to reach %pI4\n",
+			      dev_name(&edev->dev), &edev->ipaddr, &edev->netmask,
+				       &dest);
+			return edev;
+		}
+	}
+
+	pr_debug("Route: No device found for %pI4\n", &dest);
+
+	return NULL;
+}
+
+static int arp_request(struct eth_device *edev, IPaddr_t dest, unsigned char *ether)
+{
 	char *pkt;
 	struct arprequest *arp;
 	uint64_t arp_start;
@@ -120,6 +174,9 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	struct ethernet *et;
 	unsigned retries = 0;
 	int ret;
+
+	if (!edev)
+		return -EHOSTUNREACH;
 
 	if (!arp_packet) {
 		arp_packet = net_alloc_packet();
@@ -132,7 +189,7 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 
 	arp_wait_ip = dest;
 
-	pr_debug("ARP broadcast\n");
+	pr_debug("send ARP broadcast for %pI4\n", &dest);
 
 	memset(et->et_dest, 0xff, 6);
 	memcpy(et->et_src, edev->ethaddr, 6);
@@ -151,10 +208,10 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 	memset(arp->ar_data + 10, 0, 6);	/* dest ET addr = 0     */
 
 	if ((dest & edev->netmask) != (edev->ipaddr & edev->netmask)) {
-		if (!edev->gateway)
+		if (!net_gateway)
 			arp_wait_ip = dest;
 		else
-			arp_wait_ip = edev->gateway;
+			arp_wait_ip = net_gateway;
 	} else {
 		arp_wait_ip = dest;
 	}
@@ -187,10 +244,9 @@ static int arp_request(IPaddr_t dest, unsigned char *ether)
 		net_poll();
 	}
 
-	pr_debug("Got ARP REPLY, set server/gtwy eth addr (%02x:%02x:%02x:%02x:%02x:%02x)\n",
-		ether[0], ether[1],
-		ether[2], ether[3],
-		ether[4], ether[5]);
+	pr_debug("Got ARP REPLY for %pI4: %02x:%02x:%02x:%02x:%02x:%02x\n",
+		 &dest, ether[0], ether[1], ether[2], ether[3], ether[4],
+		 ether[5]);
 	return 0;
 }
 
@@ -213,68 +269,73 @@ static uint16_t net_udp_new_localport(void)
 
 IPaddr_t net_get_serverip(void)
 {
-	struct eth_device *edev = eth_get_current();
-
-	return edev->serverip;
+	return net_serverip;
 }
 
 void net_set_serverip(IPaddr_t ip)
 {
-	struct eth_device *edev = eth_get_current();
-
-	edev->serverip = ip;
+	net_serverip = ip;
 }
 
-void net_set_ip(IPaddr_t ip)
+void net_set_serverip_empty(IPaddr_t ip)
 {
-	struct eth_device *edev = eth_get_current();
+	if (net_serverip)
+		return;
 
+	net_set_serverip(ip);
+}
+
+void net_set_ip(struct eth_device *edev, IPaddr_t ip)
+{
 	edev->ipaddr = ip;
 }
 
-IPaddr_t net_get_ip(void)
+IPaddr_t net_get_ip(struct eth_device *edev)
 {
-	struct eth_device *edev = eth_get_current();
-
 	return edev->ipaddr;
 }
 
-void net_set_netmask(IPaddr_t nm)
+void net_set_netmask(struct eth_device *edev, IPaddr_t nm)
 {
-	struct eth_device *edev = eth_get_current();
-
 	edev->netmask = nm;
 }
 
 void net_set_gateway(IPaddr_t gw)
 {
-	struct eth_device *edev = eth_get_current();
+	net_gateway = gw;
+}
 
-	edev->gateway = gw;
+IPaddr_t net_get_gateway(void)
+{
+	return net_gateway;
 }
 
 static LIST_HEAD(connection_list);
 
-static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
-		void *ctx)
+static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
+				      rx_handler_f *handler, void *ctx)
 {
-	struct eth_device *edev = eth_get_current();
 	struct net_connection *con;
 	int ret;
 
-	if (!edev)
-		return ERR_PTR(-ENETDOWN);
+	if (!edev) {
+		edev = net_route(dest);
+		if (!edev && net_gateway)
+			edev = net_route(net_gateway);
+		if (!edev)
+			return ERR_PTR(-EHOSTUNREACH);
+	}
 
 	if (!is_valid_ether_addr(edev->ethaddr)) {
 		char str[sizeof("xx:xx:xx:xx:xx:xx")];
 		random_ether_addr(edev->ethaddr);
 		ethaddr_to_string(edev->ethaddr, str);
-		printf("warning: No MAC address set. Using random address %s\n", str);
+		pr_warn("warning: No MAC address set. Using random address %s\n", str);
 		eth_set_ethaddr(edev, edev->ethaddr);
 	}
 
 	/* If we don't have an ip only broadcast is allowed */
-	if (!edev->ipaddr && dest != 0xffffffff)
+	if (!edev->ipaddr && dest != IP_BROADCAST)
 		return ERR_PTR(-ENETDOWN);
 
 	con = xzalloc(sizeof(*con));
@@ -289,10 +350,10 @@ static struct net_connection *net_new(IPaddr_t dest, rx_handler_f *handler,
 	con->icmp = (struct icmphdr *)(con->packet + ETHER_HDR_SIZE + sizeof(struct iphdr));
 	con->handler = handler;
 
-	if (dest == 0xffffffff) {
+	if (dest == IP_BROADCAST) {
 		memset(con->et->et_dest, 0xff, 6);
 	} else {
-		ret = arp_request(dest, con->et->et_dest);
+		ret = arp_request(edev, dest, con->et->et_dest);
 		if (ret)
 			goto out;
 	}
@@ -316,10 +377,11 @@ out:
 	return ERR_PTR(ret);
 }
 
-struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
-		rx_handler_f *handler, void *ctx)
+struct net_connection *net_udp_eth_new(struct eth_device *edev, IPaddr_t dest,
+				       uint16_t dport, rx_handler_f *handler,
+				       void *ctx)
 {
-	struct net_connection *con = net_new(dest, handler, ctx);
+	struct net_connection *con = net_new(edev, dest, handler, ctx);
 
 	if (IS_ERR(con))
 		return con;
@@ -332,10 +394,16 @@ struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
 	return con;
 }
 
+struct net_connection *net_udp_new(IPaddr_t dest, uint16_t dport,
+		rx_handler_f *handler, void *ctx)
+{
+	return net_udp_eth_new(NULL, dest, dport, handler, ctx);
+}
+
 struct net_connection *net_icmp_new(IPaddr_t dest, rx_handler_f *handler,
 		void *ctx)
 {
-	struct net_connection *con = net_new(dest, handler, ctx);
+	struct net_connection *con = net_new(NULL, dest, handler, ctx);
 
 	if (IS_ERR(con))
 		return con;
@@ -386,7 +454,7 @@ static int net_answer_arp(struct eth_device *edev, unsigned char *pkt, int len)
 	unsigned char *packet;
 	int ret;
 
-	debug("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	memcpy (et->et_dest, et->et_src, 6);
 	memcpy (et->et_src, edev->ethaddr, 6);
@@ -423,7 +491,7 @@ static int net_handle_arp(struct eth_device *edev, unsigned char *pkt, int len)
 {
 	struct arprequest *arp;
 
-	debug("%s: got arp\n", __func__);
+	pr_debug("%s: got arp\n", __func__);
 
 	/*
 	 * We have to deal with two types of ARP packets:
@@ -490,7 +558,7 @@ static int net_handle_icmp(unsigned char *pkt, int len)
 {
 	struct net_connection *con;
 
-	debug("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	list_for_each_entry(con, &connection_list, list) {
 		if (con->proto == IPPROTO_ICMP) {
@@ -506,11 +574,11 @@ static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 	struct iphdr *ip = (struct iphdr *)(pkt + ETHER_HDR_SIZE);
 	IPaddr_t tmp;
 
-	debug("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	if (len < sizeof(struct ethernet) + sizeof(struct iphdr) ||
 		len < ETHER_HDR_SIZE + ntohs(ip->tot_len)) {
-		debug("%s: bad len\n", __func__);
+		pr_debug("%s: bad len\n", __func__);
 		goto bad;
 	}
 
@@ -523,7 +591,7 @@ static int net_handle_ip(struct eth_device *edev, unsigned char *pkt, int len)
 		goto bad;
 
 	tmp = net_read_ip(&ip->daddr);
-	if (edev->ipaddr && tmp != edev->ipaddr && tmp != 0xffffffff)
+	if (edev->ipaddr && tmp != edev->ipaddr && tmp != IP_BROADCAST)
 		return 0;
 
 	switch (ip->protocol) {
@@ -560,21 +628,13 @@ int net_receive(struct eth_device *edev, unsigned char *pkt, int len)
 		ret = net_handle_ip(edev, pkt, len);
 		break;
 	default:
-		debug("%s: got unknown protocol type: %d\n", __func__, et_protlen);
+		pr_debug("%s: got unknown protocol type: %d\n", __func__, et_protlen);
 		ret = 1;
 		break;
 	}
 out:
 	return ret;
 }
-
-static struct device_d net_device = {
-	.name = "net",
-	.id = DEVICE_ID_SINGLE,
-};
-
-static char *net_nameserver;
-static char *net_domainname;
 
 static int net_init(void)
 {
@@ -583,15 +643,16 @@ static int net_init(void)
 	for (i = 0; i < PKTBUFSRX; i++)
 		NetRxPackets[i] = net_alloc_packet();
 
-	register_device(&net_device);
-	net_nameserver = xstrdup("");
-	dev_add_param_string(&net_device, "nameserver", NULL, NULL,
-			     &net_nameserver, NULL);
-	net_domainname = xstrdup("");
-	dev_add_param_string(&net_device, "domainname", NULL, NULL,
-			     &net_domainname, NULL);
+	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
+	globalvar_add_simple_string("net.domainname", &net_domainname);
+	globalvar_add_simple_ip("net.server", &net_serverip);
+	globalvar_add_simple_ip("net.gateway", &net_gateway);
 
 	return 0;
 }
 
 postcore_initcall(net_init);
+
+BAREBOX_MAGICVAR_NAMED(global_net_nameserver, global.net.nameserver, "The DNS server used for resolving host names");
+BAREBOX_MAGICVAR_NAMED(global_net_domainname, global.net.domainname, "Domain name used for DNS requests");
+BAREBOX_MAGICVAR_NAMED(global_net_server, global.net.server, "Standard server used for NFS/TFTP");

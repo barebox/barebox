@@ -56,8 +56,6 @@ static int pico_hobbit_device_init(void)
 
 	barebox_set_hostname("pico-hobbit");
 
-	defaultenv_append_directory(defaultenv_pico_hobbit);
-
 	return 0;
 }
 device_initcall(pico_hobbit_device_init);

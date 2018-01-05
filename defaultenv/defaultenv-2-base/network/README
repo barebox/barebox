@@ -1,0 +1,3 @@
+Network configuration is now done with nvvars, see
+Documentation/user/networking.rst. Files in this directory are not needed
+anymore.

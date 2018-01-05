@@ -18,8 +18,30 @@ struct dhcp_req_param {
 	char *client_id;
 	char *user_class;
 	char *client_uuid;
+	int retries;
 };
 
-int dhcp(int retries, struct dhcp_req_param *param);
+struct dhcp_result {
+	IPaddr_t ip;
+	IPaddr_t netmask;
+	IPaddr_t gateway;
+	IPaddr_t nameserver;
+	IPaddr_t serverip;
+	char *hostname;
+	char *domainname;
+	char *rootpath;
+	char *devicetree;
+	char *bootfile;
+	char *tftp_server_name;
+	uint32_t leasetime;
+};
+
+struct eth_device;
+
+int dhcp_request(struct eth_device *edev, const struct dhcp_req_param *param,
+		 struct dhcp_result **res);
+int dhcp_set_result(struct eth_device *edev, struct dhcp_result *res);
+void dhcp_result_free(struct dhcp_result *res);
+int dhcp(struct eth_device *edev, const struct dhcp_req_param *param);
 
 #endif

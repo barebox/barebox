@@ -26,9 +26,8 @@
 static int do_detect(int argc, char *argv[])
 {
 	struct device_d *dev;
-	int opt, i, ret;
+	int opt, i, ret, err;
 	int option_list = 0;
-	int option_error = 0;
 	int option_all = 0;
 
 	while ((opt = getopt(argc, argv, "ela")) > 0) {
@@ -37,7 +36,6 @@ static int do_detect(int argc, char *argv[])
 			option_list = 1;
 			break;
 		case 'e':
-			option_error = 1;
 			break;
 		case 'a':
 			option_all = 1;
@@ -56,37 +54,34 @@ static int do_detect(int argc, char *argv[])
 	}
 
 	if (option_all) {
-		for_each_device(dev) {
-			ret = device_detect(dev);
-			if (ret && ret != -ENOSYS && option_error)
-				return ret;
-		}
+		device_detect_all();
 		return 0;
 	}
 
 	if (argc == optind)
 		return COMMAND_ERROR_USAGE;
 
+	err = 0;
+
 	for (i = optind; i < argc; i++) {
 		ret = device_detect_by_name(argv[i]);
-		if (ret && option_error)
-			return ret;
+		if (!err && ret)
+			err = ret;
 	}
 
-	return 0;
+	return err;
 }
 
 BAREBOX_CMD_HELP_START(detect)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-l",  "list detectable devices")
-BAREBOX_CMD_HELP_OPT ("-e",  "bail out if one device fails to detect")
 BAREBOX_CMD_HELP_OPT ("-a",  "detect all devices")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(detect)
 	.cmd		= do_detect,
 	BAREBOX_CMD_DESC("detect devices")
-	BAREBOX_CMD_OPTS("[-lea] [devices]")
+	BAREBOX_CMD_OPTS("[-la] [devices]")
 	BAREBOX_CMD_GROUP(CMD_GRP_HWMANIP)
 	BAREBOX_CMD_COMPLETE(device_complete)
 	BAREBOX_CMD_HELP(cmd_detect_help)

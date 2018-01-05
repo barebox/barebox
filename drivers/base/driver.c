@@ -140,6 +140,14 @@ int device_detect_by_name(const char *__devname)
 	return ret;
 }
 
+void device_detect_all(void)
+{
+	struct device_d *dev;
+
+	for_each_device(dev)
+		device_detect(dev);
+}
+
 static int match(struct driver_d *drv, struct device_d *dev)
 {
 	int ret;

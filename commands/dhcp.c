@@ -15,15 +15,14 @@
 #include <environment.h>
 #include <getopt.h>
 #include <dhcp.h>
+#include <net.h>
 
 static int do_dhcp(int argc, char *argv[])
 {
 	int ret, opt;
-	int retries = DHCP_DEFAULT_RETRY;
-	struct dhcp_req_param dhcp_param;
-
-	memset(&dhcp_param, 0, sizeof(struct dhcp_req_param));
-	getenv_uint("global.dhcp.retries", &retries);
+	struct dhcp_req_param dhcp_param = {};
+	struct eth_device *edev;
+	const char *edevname;
 
 	while ((opt = getopt(argc, argv, "H:v:c:u:U:r:")) > 0) {
 		switch (opt) {
@@ -43,19 +42,25 @@ static int do_dhcp(int argc, char *argv[])
 			dhcp_param.user_class = optarg;
 			break;
 		case 'r':
-			retries = simple_strtoul(optarg, NULL, 10);
+			dhcp_param.retries = simple_strtoul(optarg, NULL, 10);
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
 	}
 
-	if (!retries) {
-		printf("retries is set to zero, set it to %d\n", DHCP_DEFAULT_RETRY);
-		retries = DHCP_DEFAULT_RETRY;
+	if (optind == argc)
+		edevname = "eth0";
+	else
+		edevname = argv[optind];
+
+	edev = eth_get_byname(edevname);
+	if (!edev) {
+		printf("No such network device: %s\n", edevname);
+		return 1;
 	}
 
-	ret = dhcp(retries, &dhcp_param);
+	ret = dhcp(edev, &dhcp_param);
 
 	return ret;
 }
@@ -73,8 +78,8 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(dhcp)
 	.cmd		= do_dhcp,
 	BAREBOX_CMD_DESC("DHCP client to obtain IP or boot params")
-	BAREBOX_CMD_OPTS("[-HvcuUr]")
+	BAREBOX_CMD_OPTS("[-HvcuUr] [device]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_dhcp_help)
-	BAREBOX_CMD_COMPLETE(empty_complete)
+	BAREBOX_CMD_COMPLETE(eth_complete)
 BAREBOX_CMD_END

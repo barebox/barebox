@@ -235,12 +235,20 @@ static void *am33xx_net_boot(void)
 	IPaddr_t ip;
 	char *file;
 	char ip4_str[sizeof("255.255.255.255")];
+	struct eth_device *edev;
 
 	am33xx_register_ethaddr(0, 0);
 
 	memset(&dhcp_param, 0, sizeof(struct dhcp_req_param));
 	dhcp_param.vendor_id = "am335x barebox-mlo";
-	err = dhcp(20, &dhcp_param);
+
+	edev = eth_get_byname("eth0");
+	if (!edev) {
+		printf("eth0 not found\n");
+		return NULL;
+	}
+
+	err = dhcp(edev, &dhcp_param);
 	if (err) {
 		printf("dhcp failed\n");
 		return NULL;

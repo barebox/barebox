@@ -21,14 +21,19 @@
 #include <command.h>
 #include <complete.h>
 #include <driver.h>
+#include <unistd.h>
 #include <init.h>
+#include <dhcp.h>
 #include <net.h>
 #include <of.h>
 #include <linux/phy.h>
 #include <errno.h>
 #include <malloc.h>
+#include <globalvar.h>
+#include <environment.h>
+#include <linux/ctype.h>
+#include <linux/stat.h>
 
-static struct eth_device *eth_current;
 static uint64_t last_link_check;
 
 LIST_HEAD(netdev_list);
@@ -147,16 +152,6 @@ void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr)
 	addr->node = node;
 	memcpy(addr->ethaddr, ethaddr, 6);
 	list_add_tail(&addr->list, &ethaddr_list);
-}
-
-void eth_set_current(struct eth_device *eth)
-{
-	eth_current = eth;
-}
-
-struct eth_device * eth_get_current(void)
-{
-	return eth_current;
 }
 
 struct eth_device *eth_get_byname(const char *ethname)
@@ -348,6 +343,15 @@ static int eth_register_of_fixup(void)
 late_initcall(eth_register_of_fixup);
 #endif
 
+extern IPaddr_t net_serverip;
+extern IPaddr_t net_gateway;
+
+static const char * const eth_mode_names[] = {
+	[ETH_MODE_DHCP] = "dhcp",
+	[ETH_MODE_STATIC] = "static",
+	[ETH_MODE_DISABLED] = "disabled",
+};
+
 int eth_register(struct eth_device *edev)
 {
 	struct device_d *dev = &edev->dev;
@@ -379,13 +383,18 @@ int eth_register(struct eth_device *edev)
 	edev->devname = xstrdup(dev_name(&edev->dev));
 
 	dev_add_param_ip(dev, "ipaddr", NULL, NULL, &edev->ipaddr, edev);
-	dev_add_param_ip(dev, "serverip", NULL, NULL, &edev->serverip, edev);
-	dev_add_param_ip(dev, "gateway", NULL, NULL, &edev->gateway, edev);
+	dev_add_param_ip(dev, "serverip", NULL, NULL, &net_serverip, edev);
+	dev_add_param_ip(dev, "gateway", NULL, NULL, &net_gateway, edev);
 	dev_add_param_ip(dev, "netmask", NULL, NULL, &edev->netmask, edev);
 	dev_add_param_mac(dev, "ethaddr", eth_param_set_ethaddr, NULL,
 			edev->ethaddr, edev);
 	edev->bootarg = xstrdup("");
 	dev_add_param_string(dev, "linux.bootargs", NULL, NULL, &edev->bootarg, NULL);
+	edev->linuxdevname = xstrdup("");
+	dev_add_param_string(dev, "linux.devname", NULL, NULL, &edev->linuxdevname, NULL);
+	dev_add_param_enum(dev, "mode", NULL, NULL, &edev->global_mode,
+				  eth_mode_names, ARRAY_SIZE(eth_mode_names),
+				  NULL);
 
 	if (edev->init)
 		edev->init(edev);
@@ -409,17 +418,11 @@ int eth_register(struct eth_device *edev)
 			edev->parent->device_node)
 		edev->nodepath = xstrdup(edev->parent->device_node->full_name);
 
-	if (!eth_current)
-		eth_current = edev;
-
 	return 0;
 }
 
 void eth_unregister(struct eth_device *edev)
 {
-	if (edev == eth_current)
-		eth_current = NULL;
-
 	if (edev->active)
 		edev->halt(edev);
 

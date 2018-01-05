@@ -65,13 +65,9 @@ typedef enum {
 } e1000_media_type;
 
 typedef enum {
-	e1000_eeprom_uninitialized = 0,
 	e1000_eeprom_spi,
 	e1000_eeprom_microwire,
-	e1000_eeprom_flash,
-	e1000_eeprom_ich8,
-	e1000_eeprom_none, /* No NVM support */
-	e1000_eeprom_invm,
+	e1000_eeprom_flash, /* access via EERD */
 	e1000_num_eeprom_types
 } e1000_eeprom_type;
 
@@ -798,6 +794,8 @@ struct e1000_eeprom_info {
 #ifndef E1000_EEPROM_GRANT_ATTEMPTS
 #define E1000_EEPROM_GRANT_ATTEMPTS 1000 /* EEPROM # attempts to gain grant */
 #endif
+#define E1000_EECD_FLASH_IN_USE     0x00000100  /* Flash is present with a valid signature */
+#define E1000_EECD_EE_PRES          0x00000100
 #define E1000_EECD_AUTO_RD          0x00000200  /* EEPROM Auto Read done */
 #define E1000_EECD_SIZE_EX_MASK     0x00007800  /* EEprom Size */
 #define E1000_EECD_SIZE_EX_SHIFT    11
@@ -2103,6 +2101,7 @@ struct e1000_eeprom_info {
 							after IMS clear */
 
 #define E1000_FLA			0x1201C
+#define E1000_FLA_LOCKED		(1 << 6)
 #define E1000_FLA_FL_SIZE_SHIFT		17
 #define E1000_FLA_FL_SIZE_MASK		(0b111 << E1000_FLA_FL_SIZE_SHIFT) /* EEprom Size */
 
@@ -2112,6 +2111,8 @@ struct e1000_eeprom_info {
 #define E1000_FLSWCTL_CMD_WRITE		0b0001
 #define E1000_FLSWCTL_CMD_ERASE_SECTOR	0b0010
 #define E1000_FLSWCTL_CMD_ERASE_DEVICE	0b0011
+#define E1000_FLSWCTL_CMD_RDSR		0b0100
+#define E1000_FLSWCTL_CMD_WRSR		0b0101
 #define E1000_FLSWCTL_CMD(c)		((0b1111 & (c)) << 24)
 
 #define E1000_FLSWCTL_CMD_ADDR_MASK	0x0FFFFFFF
@@ -2165,6 +2166,8 @@ struct e1000_hw {
 		int line;
 	} invm;
 
+	struct cdev eepromcdev;
+
 	struct mtd_info mtd;
 
 	uint32_t phy_id;
@@ -2197,6 +2200,7 @@ void e1000_write_reg_array(struct e1000_hw *hw, uint32_t base,
 void e1000_write_flush(struct e1000_hw *hw);
 
 int32_t e1000_init_eeprom_params(struct e1000_hw *hw);
+int e1000_eeprom_valid(struct e1000_hw *hw);
 int e1000_validate_eeprom_checksum(struct e1000_hw *hw);
 int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
 		uint16_t words,

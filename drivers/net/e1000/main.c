@@ -142,8 +142,8 @@ static int32_t e1000_set_phy_mode(struct e1000_hw *hw)
  ***************************************************************************/
 static int32_t e1000_get_software_semaphore(struct e1000_hw *hw)
 {
-	 int32_t timeout = hw->eeprom.word_size + 1;
-	 uint32_t swsm;
+	int32_t timeout = 2049;
+	uint32_t swsm;
 
 	DEBUGFUNC();
 
@@ -214,7 +214,7 @@ static int32_t e1000_get_hw_eeprom_semaphore(struct e1000_hw *hw)
 	}
 
 	/* Get the FW semaphore. */
-	timeout = hw->eeprom.word_size + 1;
+	timeout = 2049;
 	while (timeout) {
 		swsm = e1000_read_reg(hw, E1000_SWSM);
 		swsm |= E1000_SWSM_SWESMBI;
@@ -3597,8 +3597,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		}
 	}
 
-	if (e1000_validate_eeprom_checksum(hw))
-		return -EINVAL;
+	if (!e1000_eeprom_valid(hw) || e1000_validate_eeprom_checksum(hw))
+		return 0;
 
 	e1000_get_ethaddr(edev, edev->ethaddr);
 

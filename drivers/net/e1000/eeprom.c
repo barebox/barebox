@@ -3,21 +3,18 @@
 #include <malloc.h>
 #include <linux/math64.h>
 #include <linux/sizes.h>
+#include <linux/mtd/spi-nor.h>
 
 #include "e1000.h"
 
-static void e1000_release_eeprom_spi(struct e1000_hw *hw);
 static int32_t e1000_read_eeprom_spi(struct e1000_hw *hw, uint16_t offset,
 				     uint16_t words, uint16_t *data);
-static void e1000_release_eeprom_microwire(struct e1000_hw *hw);
 static int32_t e1000_read_eeprom_microwire(struct e1000_hw *hw, uint16_t offset,
 					   uint16_t words, uint16_t *data);
 
 static int32_t e1000_read_eeprom_eerd(struct e1000_hw *hw, uint16_t offset,
 				      uint16_t words, uint16_t *data);
 static int32_t e1000_spi_eeprom_ready(struct e1000_hw *hw);
-static void e1000_release_eeprom(struct e1000_hw *hw);
-static int32_t e1000_acquire_eeprom_flash(struct e1000_hw *hw);
 static void e1000_release_eeprom_flash(struct e1000_hw *hw);
 
 
@@ -252,6 +249,19 @@ e1000_acquire_eeprom_spi_microwire_prologue(struct e1000_hw *hw)
 	return E1000_SUCCESS;
 }
 
+static void
+e1000_release_eeprom_spi_microwire_epilogue(struct e1000_hw *hw)
+{
+	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+
+	/* Stop requesting EEPROM access */
+	if (hw->mac_type > e1000_82544) {
+		eecd &= ~E1000_EECD_REQ;
+		e1000_write_reg(hw, E1000_EECD, eecd);
+	}
+}
+
+
 static int32_t e1000_acquire_eeprom_spi(struct e1000_hw *hw)
 {
 	int32_t ret;
@@ -269,6 +279,19 @@ static int32_t e1000_acquire_eeprom_spi(struct e1000_hw *hw)
 	udelay(1);
 
 	return E1000_SUCCESS;
+}
+
+static void e1000_release_eeprom_spi(struct e1000_hw *hw)
+{
+	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+
+	eecd |= E1000_EECD_CS;  /* Pull CS high */
+	eecd &= ~E1000_EECD_SK; /* Lower SCK */
+
+	e1000_write_reg(hw, E1000_EECD, eecd);
+	udelay(hw->eeprom.delay_usec);
+
+	e1000_release_eeprom_spi_microwire_epilogue(hw);
 }
 
 static int32_t e1000_acquire_eeprom_microwire(struct e1000_hw *hw)
@@ -292,9 +315,44 @@ static int32_t e1000_acquire_eeprom_microwire(struct e1000_hw *hw)
 	return E1000_SUCCESS;
 }
 
+static void e1000_release_eeprom_microwire(struct e1000_hw *hw)
+{
+	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+
+	/* cleanup eeprom */
+
+	/* CS on Microwire is active-high */
+	eecd &= ~(E1000_EECD_CS | E1000_EECD_DI);
+
+	e1000_write_reg(hw, E1000_EECD, eecd);
+
+	/* Rising edge of clock */
+	eecd |= E1000_EECD_SK;
+	e1000_write_reg(hw, E1000_EECD, eecd);
+	e1000_write_flush(hw);
+	udelay(hw->eeprom.delay_usec);
+
+	/* Falling edge of clock */
+	eecd &= ~E1000_EECD_SK;
+	e1000_write_reg(hw, E1000_EECD, eecd);
+	e1000_write_flush(hw);
+	udelay(hw->eeprom.delay_usec);
+
+
+	e1000_release_eeprom_spi_microwire_epilogue(hw);
+}
+
 static int32_t e1000_acquire_eeprom_flash(struct e1000_hw *hw)
 {
 	return e1000_swfw_sync_acquire(hw, E1000_SWFW_EEP_SM);
+}
+
+static void e1000_release_eeprom_flash(struct e1000_hw *hw)
+{
+	if (e1000_swfw_sync_release(hw, E1000_SWFW_EEP_SM) < 0)
+		dev_warn(hw->dev,
+			 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
+			 E1000_SWFW_EEP_SM);
 }
 
 static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
@@ -303,6 +361,12 @@ static int32_t e1000_acquire_eeprom(struct e1000_hw *hw)
 		return hw->eeprom.acquire(hw);
 	else
 		return E1000_SUCCESS;
+}
+
+static void e1000_release_eeprom(struct e1000_hw *hw)
+{
+	if (hw->eeprom.release)
+		hw->eeprom.release(hw);
 }
 
 static void e1000_eeprom_uses_spi(struct e1000_eeprom_info *eeprom,
@@ -366,7 +430,8 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_82543:
 	case e1000_82544:
 		e1000_eeprom_uses_microwire(eeprom, 0);
-	break;
+		break;
+
 	case e1000_82540:
 	case e1000_82545:
 	case e1000_82545_rev_3:
@@ -374,6 +439,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 	case e1000_82546_rev_3:
 		e1000_eeprom_uses_microwire(eeprom, eecd);
 		break;
+
 	case e1000_82541:
 	case e1000_82541_rev_2:
 	case e1000_82547:
@@ -383,10 +449,12 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 		else
 			e1000_eeprom_uses_microwire(eeprom, eecd);
 		break;
+
 	case e1000_82571:
 	case e1000_82572:
 		e1000_eeprom_uses_spi(eeprom, eecd);
 		break;
+
 	case e1000_82573:
 	case e1000_82574:
 		if (e1000_is_onboard_nvm_eeprom(hw)) {
@@ -396,16 +464,20 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 			eeprom->type = e1000_eeprom_flash;
 			eeprom->word_size = 2048;
 
-		/* Ensure that the Autonomous FLASH update bit is cleared due to
-		 * Flash update issue on parts which use a FLASH for NVM. */
+			/*
+			 * Ensure that the Autonomous FLASH update bit is cleared due to
+			 * Flash update issue on parts which use a FLASH for NVM.
+			 */
 			eecd &= ~E1000_EECD_AUPDEN;
 			e1000_write_reg(hw, E1000_EECD, eecd);
 		}
 		break;
+
 	case e1000_80003es2lan:
 		eeprom->type = e1000_eeprom_spi;
 		eeprom->read = e1000_read_eeprom_eerd;
 		break;
+
 	case e1000_igb:
 		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
 			uint32_t fla;
@@ -422,21 +494,19 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 					 "limiting access to first 4KB\n");
 			}
 
-			eeprom->type = e1000_eeprom_flash;
 			eeprom->acquire = e1000_acquire_eeprom_flash;
 			eeprom->release = e1000_release_eeprom_flash;
-		} else {
-			eeprom->type = e1000_eeprom_invm;
 		}
 
+		eeprom->type = e1000_eeprom_flash;
 		eeprom->read = e1000_read_eeprom_eerd;
 		break;
+
 	default:
 		break;
 	}
 
-	if (eeprom->type == e1000_eeprom_spi ||
-	    eeprom->type == e1000_eeprom_invm) {
+	if (eeprom->type == e1000_eeprom_spi) {
 		/* eeprom_size will be an enum [0..8] that maps
 		 * to eeprom sizes 128B to
 		 * 32KB (incremented by powers of 2).
@@ -591,72 +661,6 @@ static int32_t e1000_read_eeprom_microwire(struct e1000_hw *hw,
 	return E1000_SUCCESS;
 }
 
-static void
-e1000_release_eeprom_spi_microwire_epilogue(struct e1000_hw *hw)
-{
-	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
-
-	/* Stop requesting EEPROM access */
-	if (hw->mac_type > e1000_82544) {
-		eecd &= ~E1000_EECD_REQ;
-		e1000_write_reg(hw, E1000_EECD, eecd);
-	}
-}
-
-static void e1000_release_eeprom_microwire(struct e1000_hw *hw)
-{
-	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
-
-	/* cleanup eeprom */
-
-	/* CS on Microwire is active-high */
-	eecd &= ~(E1000_EECD_CS | E1000_EECD_DI);
-
-	e1000_write_reg(hw, E1000_EECD, eecd);
-
-	/* Rising edge of clock */
-	eecd |= E1000_EECD_SK;
-	e1000_write_reg(hw, E1000_EECD, eecd);
-	e1000_write_flush(hw);
-	udelay(hw->eeprom.delay_usec);
-
-	/* Falling edge of clock */
-	eecd &= ~E1000_EECD_SK;
-	e1000_write_reg(hw, E1000_EECD, eecd);
-	e1000_write_flush(hw);
-	udelay(hw->eeprom.delay_usec);
-
-
-	e1000_release_eeprom_spi_microwire_epilogue(hw);
-}
-
-static void e1000_release_eeprom_spi(struct e1000_hw *hw)
-{
-	uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
-
-	eecd |= E1000_EECD_CS;  /* Pull CS high */
-	eecd &= ~E1000_EECD_SK; /* Lower SCK */
-
-	e1000_write_reg(hw, E1000_EECD, eecd);
-	udelay(hw->eeprom.delay_usec);
-
-	e1000_release_eeprom_spi_microwire_epilogue(hw);
-}
-
-static void e1000_release_eeprom_flash(struct e1000_hw *hw)
-{
-	if (e1000_swfw_sync_release(hw, E1000_SWFW_EEP_SM) < 0)
-		dev_warn(hw->dev,
-			 "Timeout while releasing SWFW_SYNC bits (0x%08x)\n",
-			 E1000_SWFW_EEP_SM);
-}
-
-static void e1000_release_eeprom(struct e1000_hw *hw)
-{
-	if (hw->eeprom.release)
-		hw->eeprom.release(hw);
-}
-
 /******************************************************************************
  * Reads a 16 bit word from the EEPROM.
  *
@@ -705,7 +709,7 @@ static int e1000_flash_mode_wait_for_idle(struct e1000_hw *hw)
 				       E1000_FLSWCTL_DONE, SECOND);
 	if (ret < 0)
 		dev_err(hw->dev,
-			"Timeout waiting for FLSWCTL.DONE to be set\n");
+			"Timeout waiting for FLSWCTL.DONE to be set (wait)\n");
 	return ret;
 }
 
@@ -713,7 +717,7 @@ static int e1000_flash_mode_check_command_valid(struct e1000_hw *hw)
 {
 	const uint32_t flswctl = e1000_read_reg(hw, E1000_FLSWCTL);
 	if (!(flswctl & E1000_FLSWCTL_CMDV)) {
-		dev_err(hw->dev, "FLSWCTL.CMDV was cleared");
+		dev_err(hw->dev, "FLSWCTL.CMDV was cleared\n");
 		return -EIO;
 	}
 
@@ -761,7 +765,7 @@ static int e1000_flash_mode_read_chunk(struct e1000_hw *hw, loff_t offset,
 				     SECOND);
 		if (ret < 0) {
 			dev_err(hw->dev,
-				"Timeout waiting for FLSWCTL.DONE to be set\n");
+				"Timeout waiting for FLSWCTL.DONE to be set (read)\n");
 			return ret;
 		}
 
@@ -817,7 +821,7 @@ static int e1000_flash_mode_write_chunk(struct e1000_hw *hw, loff_t offset,
 				     SECOND);
 		if (ret < 0) {
 			dev_err(hw->dev,
-				"Timeout waiting for FLSWCTL.DONE to be set\n");
+				"Timeout waiting for FLSWCTL.DONE to be set (write)\n");
 			return ret;
 		}
 
@@ -851,10 +855,10 @@ static int e1000_flash_mode_erase_chunk(struct e1000_hw *hw, loff_t offset,
 	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
 			     E1000_FLSWCTL_DONE | E1000_FLSWCTL_FLBUSY,
 			     E1000_FLSWCTL_DONE,
-			     SECOND);
+			     10 * SECOND);
 	if (ret < 0) {
 		dev_err(hw->dev,
-			"Timeout waiting for FLSWCTL.DONE to be set\n");
+			"Timeout waiting for FLSWCTL.DONE to be set (erase)\n");
 		return ret;
 	}
 
@@ -957,6 +961,9 @@ int32_t e1000_read_eeprom(struct e1000_hw *hw, uint16_t offset,
 	int32_t ret;
 
 	DEBUGFUNC();
+
+	if (!e1000_eeprom_valid(hw))
+		return -EINVAL;
 
 	/* A check for invalid values:  offset too large, too many words,
 	 * and not enough words.
@@ -1295,6 +1302,31 @@ static struct file_operations e1000_invm_ops = {
 	.lseek	= dev_lseek_default,
 };
 
+static ssize_t e1000_eeprom_cdev_read(struct cdev *cdev, void *buf,
+				      size_t count, loff_t offset, unsigned long flags)
+{
+	struct e1000_hw *hw = container_of(cdev, struct e1000_hw, eepromcdev);
+	int32_t ret;
+
+	/*
+	 * The eeprom interface works on 16 bit words which gives a nice excuse
+	 * for being lazy and not implementing unaligned reads.
+	 */
+	if (offset & 1 || count == 1)
+		return -EIO;
+
+	ret = e1000_read_eeprom(hw, offset / 2, count / 2, buf);
+	if (ret)
+		return -EIO;
+	else
+		return (count / 2) * 2;
+};
+
+static struct file_operations e1000_eeprom_ops = {
+	.read = e1000_eeprom_cdev_read,
+	.lseek = dev_lseek_default,
+};
+
 static int e1000_mtd_read_or_write(bool read,
 				   struct mtd_info *mtd, loff_t off, size_t len,
 				   size_t *retlen, u_char *buf)
@@ -1379,75 +1411,217 @@ fail:
 	return ret;
 }
 
-int e1000_register_eeprom(struct e1000_hw *hw)
+static int e1000_mtd_sr_rmw(struct mtd_info *mtd, u8 mask, u8 val)
 {
-	int ret = E1000_SUCCESS;
+	struct e1000_hw *hw = container_of(mtd, struct e1000_hw, mtd);
+	uint32_t flswdata;
+	int ret;
+
+	ret = e1000_flash_mode_wait_for_idle(hw);
+	if (ret < 0)
+		return ret;
+
+	e1000_write_reg(hw, E1000_FLSWCNT, 1);
+	e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_RDSR, 0);
+
+	ret = e1000_flash_mode_check_command_valid(hw);
+	if (ret < 0)
+		return -EIO;
+
+	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+			     E1000_FLSWCTL_DONE, E1000_FLSWCTL_DONE,
+			     SECOND);
+	if (ret < 0) {
+		dev_err(hw->dev,
+			"Timeout waiting for FLSWCTL.DONE to be set (RDSR)\n");
+		return ret;
+	}
+
+	flswdata = e1000_read_reg(hw, E1000_FLSWDATA);
+
+	flswdata = (flswdata & ~mask) | val;
+
+	e1000_write_reg(hw, E1000_FLSWCNT, 1);
+	e1000_flash_cmd(hw, E1000_FLSWCTL_CMD_WRSR, 0);
+
+	ret = e1000_flash_mode_check_command_valid(hw);
+	if (ret < 0)
+		return -EIO;
+
+	e1000_write_reg(hw, E1000_FLSWDATA, flswdata);
+
+	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
+			     E1000_FLSWCTL_DONE, E1000_FLSWCTL_DONE,
+			     SECOND);
+	if (ret < 0) {
+		dev_err(hw->dev,
+			"Timeout waiting for FLSWCTL.DONE to be set (WRSR)\n");
+	}
+
+	return ret;
+}
+
+/*
+ * The available spi nor devices are very different in how the block protection
+ * bits affect which sectors to be protected. So take the simple approach and
+ * only use BP[012] = b000 (unprotected) and BP[012] = b111 (protected).
+ */
+#define SR_BPALL (SR_BP0 | SR_BP1 | SR_BP2)
+
+static int e1000_mtd_lock(struct mtd_info *mtd, loff_t ofs, size_t len)
+{
+	return e1000_mtd_sr_rmw(mtd, SR_BPALL, SR_BPALL);
+}
+
+static int e1000_mtd_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
+{
+	return e1000_mtd_sr_rmw(mtd, SR_BPALL, 0x0);
+}
+
+int e1000_register_invm(struct e1000_hw *hw)
+{
+	int ret;
 	u16 word;
 	struct param_d *p;
 
-	struct e1000_eeprom_info *eeprom = &hw->eeprom;
-
-	switch (eeprom->type) {
-	case e1000_eeprom_invm:
-		ret = e1000_read_eeprom(hw, 0x0A, 1, &word);
+	if (e1000_eeprom_valid(hw)) {
+		ret = e1000_read_eeprom(hw, 0x0a, 1, &word);
 		if (ret < 0)
 			return ret;
 
 		if (word & (1 << 15))
 			dev_warn(hw->dev, "iNVM lockout mechanism is active\n");
+	}
 
-		hw->invm.cdev.dev = hw->dev;
-		hw->invm.cdev.ops = &e1000_invm_ops;
-		hw->invm.cdev.priv = hw;
-		hw->invm.cdev.name = xasprintf("e1000-invm%d", hw->dev->id);
-		hw->invm.cdev.size = 32 * E1000_INVM_DATA_MAX_N;
+	hw->invm.cdev.dev = hw->dev;
+	hw->invm.cdev.ops = &e1000_invm_ops;
+	hw->invm.cdev.priv = hw;
+	hw->invm.cdev.name = xasprintf("e1000-invm%d", hw->dev->id);
+	hw->invm.cdev.size = 4 * (E1000_INVM_DATA_MAX_N + 1);
 
-		ret = devfs_create(&hw->invm.cdev);
+	ret = devfs_create(&hw->invm.cdev);
+	if (ret < 0)
+		return ret;
+
+	strcpy(hw->invm.dev.name, "invm");
+	hw->invm.dev.parent = hw->dev;
+	ret = register_device(&hw->invm.dev);
+	if (ret < 0) {
+		devfs_remove(&hw->invm.cdev);
+		return ret;
+	}
+
+	p = dev_add_param_int(&hw->invm.dev, "lock", e1000_invm_set_lock,
+			      NULL, &hw->invm.line, "%u", hw);
+	if (IS_ERR(p)) {
+		unregister_device(&hw->invm.dev);
+		devfs_remove(&hw->invm.cdev);
+		ret = PTR_ERR(p);
+	}
+
+	return ret;
+}
+
+int e1000_eeprom_valid(struct e1000_hw *hw)
+{
+	uint32_t eecd;
+
+	if (hw->mac_type != e1000_igb)
+		return 1;
+
+	/*
+	 * if AUTO_RD or EE_PRES are not set in EECD, the shadow RAM is invalid
+	 * (and in practise seems to contain the contents of iNVM).
+	 */
+	eecd = e1000_read_reg(hw, E1000_EECD);
+	if (!(eecd & E1000_EECD_AUTO_RD))
+		return 0;
+
+	if (!(eecd & E1000_EECD_EE_PRES))
+		return 0;
+
+	return 1;
+}
+
+/*
+ * This function has a wrong name for historic reasons, it doesn't add an
+ * eeprom, but the flash (if available) that is used to simulate the eeprom.
+ * Also a device that represents the invm is registered here (if available).
+ */
+int e1000_register_eeprom(struct e1000_hw *hw)
+{
+	int ret = E1000_SUCCESS;
+
+	struct e1000_eeprom_info *eeprom = &hw->eeprom;
+
+	if (hw->mac_type == e1000_igb) {
+		uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+
+		hw->eepromcdev.dev = hw->dev;
+		hw->eepromcdev.ops = &e1000_eeprom_ops;
+		hw->eepromcdev.name = xasprintf("e1000-eeprom%d", hw->dev->id);
+		hw->eepromcdev.size = 0x1000;
+
+		ret = devfs_create(&hw->eepromcdev);
 		if (ret < 0)
-			break;
+			return ret;
 
-		strcpy(hw->invm.dev.name, "invm");
-		hw->invm.dev.parent = hw->dev;
-		ret = register_device(&hw->invm.dev);
+		if (eecd & E1000_EECD_AUTO_RD) {
+			if (eecd & E1000_EECD_EE_PRES) {
+				if (eecd & E1000_EECD_FLASH_IN_USE) {
+					uint32_t fla = e1000_read_reg(hw, E1000_FLA);
+					dev_info(hw->dev,
+						 "Hardware programmed from flash (%ssecure)\n",
+						 fla & E1000_FLA_LOCKED ? "" : "un");
+				} else {
+					dev_info(hw->dev, "Hardware programmed from iNVM\n");
+				}
+			} else {
+				dev_warn(hw->dev, "Shadow RAM invalid\n");
+			}
+		} else {
+			/*
+			 * I never saw this case in practise and I'm unsure how
+			 * to handle that. Maybe just wait until the hardware is
+			 * up enough that this bit is set?
+			 */
+			dev_err(hw->dev, "Flash Auto-Read not done\n");
+		}
+
+		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
+			hw->mtd.parent = hw->dev;
+			hw->mtd.read = e1000_mtd_read;
+			hw->mtd.write = e1000_mtd_write;
+			hw->mtd.erase = e1000_mtd_erase;
+			hw->mtd.lock = e1000_mtd_lock;
+			hw->mtd.unlock = e1000_mtd_unlock;
+			hw->mtd.size = eeprom->word_size * 2;
+			hw->mtd.writesize = 1;
+			hw->mtd.subpage_sft = 0;
+
+			hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
+			hw->mtd.erasesize = SZ_4K;
+			hw->mtd.eraseregions[0].erasesize = SZ_4K;
+			hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
+			hw->mtd.numeraseregions = 1;
+
+			hw->mtd.flags = MTD_CAP_NORFLASH;
+			hw->mtd.type = MTD_NORFLASH;
+
+			ret = add_mtd_device(&hw->mtd, "e1000-nor",
+					     DEVICE_ID_DYNAMIC);
+			if (ret) {
+				devfs_remove(&hw->eepromcdev);
+				return ret;
+			}
+		}
+
+		ret = e1000_register_invm(hw);
 		if (ret < 0) {
-			devfs_remove(&hw->invm.cdev);
-			break;
+			if (eecd & E1000_EECD_I210_FLASH_DETECTED)
+				del_mtd_device(&hw->mtd);
+			devfs_remove(&hw->eepromcdev);
 		}
-
-		p = dev_add_param_int(&hw->invm.dev, "lock", e1000_invm_set_lock,
-				      NULL, &hw->invm.line, "%u", hw);
-		if (IS_ERR(p)) {
-			unregister_device(&hw->invm.dev);
-			devfs_remove(&hw->invm.cdev);
-			break;
-		}
-		break;
-	case e1000_eeprom_flash:
-		if (hw->mac_type != e1000_igb)
-			break;
-
-		hw->mtd.parent = hw->dev;
-		hw->mtd.read = e1000_mtd_read;
-		hw->mtd.write = e1000_mtd_write;
-		hw->mtd.erase = e1000_mtd_erase;
-		hw->mtd.size = eeprom->word_size * 2;
-		hw->mtd.writesize = 1;
-		hw->mtd.subpage_sft = 0;
-
-		hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
-		hw->mtd.erasesize = SZ_4K;
-		hw->mtd.eraseregions[0].erasesize = SZ_4K;
-		hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
-		hw->mtd.numeraseregions = 1;
-
-		hw->mtd.flags = MTD_CAP_NORFLASH;
-		hw->mtd.type = MTD_NORFLASH;
-
-		ret = add_mtd_device(&hw->mtd, "e1000-nor",
-				     DEVICE_ID_DYNAMIC);
-		break;
-	default:
-		break;
 	}
 
 	return ret;

@@ -64,7 +64,7 @@ static int zii_vf610_cfu1_spu3_expose_signals(void)
 	static const struct gpio signals[] = {
 		{
 			.gpio  = 107,
-			.flags  = GPIOF_OUT_INIT_LOW,
+			.flags  = GPIOF_OUT_INIT_HIGH,
 			.label = "soc_sw_rstn",
 		},
 		{

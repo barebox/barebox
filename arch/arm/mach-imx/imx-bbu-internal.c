@@ -464,7 +464,7 @@ static int __register_handler(struct imx_internal_bbu_handler *imx_handler)
 }
 
 /*
- * Register a i.MX51 internal boot update handler for MMC/SD
+ * Register an i.MX51 internal boot update handler for MMC/SD
  */
 int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags)
@@ -481,7 +481,7 @@ int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 }
 
 /*
- * Register a i.MX53 internal boot update handler for MMC/SD
+ * Register an i.MX53 internal boot update handler for MMC/SD
  */
 int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags)
@@ -498,7 +498,7 @@ int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 }
 
 /*
- * Register a i.MX53 internal boot update handler for i2c/spi
+ * Register an i.MX6 internal boot update handler for i2c/spi
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
  * keep a partition table. We have to erase the device beforehand though.
  */
@@ -517,7 +517,7 @@ int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefi
 }
 
 /*
- * Register a i.MX53 internal boot update handler for NAND
+ * Register an i.MX53 internal boot update handler for NAND
  */
 int imx53_bbu_internal_nand_register_handler(const char *name,
 		unsigned long flags, int partition_size)
@@ -536,7 +536,7 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 }
 
 /*
- * Register a i.MX6 internal boot update handler for MMC/SD
+ * Register an i.MX6 internal boot update handler for MMC/SD
  */
 int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags)
@@ -575,7 +575,7 @@ int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefil
 }
 
 /*
- * Register a i.MX53 internal boot update handler for i2c/spi
+ * Register an i.MX53 internal boot update handler for i2c/spi
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
  * keep a partition table. We have to erase the device beforehand though.
  */

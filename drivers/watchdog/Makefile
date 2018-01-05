@@ -1,4 +1,5 @@
 obj-$(CONFIG_WATCHDOG) += wd_core.o
+obj-$(CONFIG_WATCHDOG_AR9344) += ar9344_wdt.o
 obj-$(CONFIG_WATCHDOG_DAVINCI) += davinci_wdt.o
 obj-$(CONFIG_WATCHDOG_OMAP) += omap_wdt.o
 obj-$(CONFIG_WATCHDOG_MXS28) += im28wd.o

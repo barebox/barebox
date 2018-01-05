@@ -133,8 +133,7 @@ static int imx_bbu_check_prereq(const char *devicefile, struct bbu_data *data)
 	if (ret)
 		return ret;
 
-	if (!strncmp(devicefile, "/dev/", 5))
-		device_detect_by_name(devicefile + 5);
+	device_detect_by_name(devpath_to_name(devicefile));
 
 	return 0;
 }

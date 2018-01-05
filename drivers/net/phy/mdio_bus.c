@@ -32,6 +32,9 @@ int mdiobus_detect(struct device_d *dev)
 	struct mii_bus *mii = to_mii_bus(dev);
 	int i, ret;
 
+	if (mii->is_multiplexed)
+		return 0;
+
 	for (i = 0; i < PHY_MAX_ADDR; i++) {
 		struct phy_device *phydev;
 
@@ -205,6 +208,33 @@ struct mii_bus *mdiobus_get_bus(int busnum)
 
 	return NULL;
 }
+
+/**
+ * of_mdio_find_bus - Given an mii_bus node, find the mii_bus.
+ * @mdio_bus_np: Pointer to the mii_bus.
+ *
+ * Returns a reference to the mii_bus, or NULL if none found.
+ *
+ * Because the association of a device_node and mii_bus is made via
+ * mdiobus_register(), the mii_bus cannot be found before it is
+ * registered with mdiobus_register().
+ *
+ */
+struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np)
+{
+	struct mii_bus *mii;
+
+	if (!mdio_bus_np)
+		return NULL;
+
+	for_each_mii_bus(mii)
+		if (mii->dev.device_node == mdio_bus_np)
+			return mii;
+
+	return NULL;
+}
+EXPORT_SYMBOL(of_mdio_find_bus);
+
 
 /**
  * mdio_bus_match - determine if given PHY driver supports the given PHY device

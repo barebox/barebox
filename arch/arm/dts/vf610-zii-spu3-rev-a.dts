@@ -43,8 +43,10 @@
  */
 
 /dts-v1/;
-#include "vf610-zii-dev.dtsi"
 
+#include <arm/vf610-zii-dev.dtsi>
+
+#include "vf610-zii-dev.dtsi"
 
 / {
 	model = "ZII VF610 SPU3 Switch Management Board";

@@ -100,6 +100,8 @@ struct mii_bus {
 	u32 phy_mask;
 
 	struct list_head list;
+
+	bool is_multiplexed;
 };
 #define to_mii_bus(d) container_of(d, struct mii_bus, dev)
 
@@ -115,6 +117,8 @@ int mdiobus_detect(struct device_d *dev);
 	list_for_each_entry(mii, &mii_bus_list, list)
 
 struct mii_bus *mdiobus_get_bus(int busnum);
+
+struct mii_bus *of_mdio_find_bus(struct device_node *mdio_bus_np);
 
 /**
  * mdiobus_read - Convenience function for reading a given MII mgmt register

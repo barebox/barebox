@@ -225,7 +225,8 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 	return 0;
 }
 
-static void mdiobus_show(struct device_d *dev, char *phydevname, int verbose)
+static void mdiobus_show(struct device_d *dev, const char *phydevname,
+			 int verbose)
 {
 	struct mii_bus *mii = to_mii_bus(dev);
 	int i;
@@ -337,7 +338,9 @@ static int do_miitool(int argc, char *argv[])
 	case MIITOOL_SHOW:
 		for_each_mii_bus(mii) {
 			mdiobus_detect(&mii->dev);
-			mdiobus_show(&mii->dev, phydevname, verbose);
+			mdiobus_show(&mii->dev,
+				     devpath_to_name(phydevname),
+				     verbose);
 		}
 		break;
 	}
@@ -357,7 +360,7 @@ BAREBOX_CMD_HELP_TEXT("adapters use an MII to autonegotiate link speed and duple
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-v", "increase verbosity")
-BAREBOX_CMD_HELP_OPT("-s <devname>", "show PHY status (not providing PHY prints status of all)")
+BAREBOX_CMD_HELP_OPT("-s <devpath/devname>", "show PHY status (not providing PHY prints status of all)")
 BAREBOX_CMD_HELP_OPT("-r <busno>:<adr>", "register a PHY")
 BAREBOX_CMD_HELP_END
 

@@ -172,15 +172,46 @@
 	.set	pop
 .endm
 
+#define RESET_REG_BOOTSTRAP	((KSEG1 | AR71XX_RESET_BASE) \
+					| AR933X_RESET_REG_BOOTSTRAP)
+
+.macro	pbl_ar9331_ram_generic_config
+	.set	push
+	.set	noreorder
+
+	li	t5,	RESET_REG_BOOTSTRAP
+	/* Documentation and source code of existing boot loaders disagree at
+	 * this place. Doc says: MEM_TYPE[13:12]:
+	 * - 00 = SDRAM
+	 * - 01 = DDR1
+	 * - 10 = DDR2
+	 * The source code of most loaders do not care about BIT(12). So we do
+	 * the same.
+	 */
+	li	t6,	AR933X_BOOTSTRAP_MEM_TYPE
+	lw	t7,	0(t5);
+	and	t6,	t7,	t6
+	beq	zero,	t6,	pbl_ar9331_ram_generic_ddr1
+	nop
+
+pbl_ar9331_ram_generic_ddr2:
+	pbl_ar9331_ddr2_config
+	b	pbl_ar9331_ram_generic_config
+	nop
+
+pbl_ar9331_ram_generic_ddr1:
+	pbl_ar9331_ddr1_config
+
+pbl_ar9331_ram_generic_config:
+	.set	pop
+.endm
+
 #define GPIO_FUNC	((KSEG1 | AR71XX_GPIO_BASE) | AR71XX_GPIO_REG_FUNC)
 
 .macro	pbl_ar9331_uart_enable
 	pbl_reg_set AR933X_GPIO_FUNC_UART_EN \
 			| AR933X_GPIO_FUNC_RSRV15, GPIO_FUNC
 .endm
-
-#define RESET_REG_BOOTSTRAP	((KSEG1 | AR71XX_RESET_BASE) \
-					| AR933X_RESET_REG_BOOTSTRAP)
 
 .macro	pbl_ar9331_mdio_gpio_enable
 	/* Bit 18 enables MDC and MDIO function on GPIO26 and GPIO28 */
@@ -336,5 +367,40 @@ normal_path:
 
 	.set	pop
 .endm
+
+	.macro	ar9331_pbl_generic_start
+	.set	push
+	.set	noreorder
+
+	mips_barebox_10h
+
+	pbl_blt 0xbf000000 skip_pll_ram_config t8
+
+	hornet_mips24k_cp0_setup
+
+	pbl_ar9331_wmac_enable
+
+	hornet_1_1_war
+
+	pbl_ar9331_pll
+	pbl_ar9331_ram_generic_config
+
+skip_pll_ram_config:
+	/* Initialize caches... */
+	mips_cache_reset
+
+	/* ... and enable them */
+	dcache_enable
+
+	pbl_ar9331_uart_enable
+	debug_ll_ar9331_init
+	mips_nmon
+
+	pbl_ar9331_mdio_gpio_enable
+
+	copy_to_link_location	pbl_start
+
+	.set	pop
+	.endm
 
 #endif /* __ASM_MACH_ATH79_PBL_MACROS_H */

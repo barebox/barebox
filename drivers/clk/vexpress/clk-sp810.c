@@ -44,10 +44,7 @@ struct clk_sp810 {
 
 static int clk_sp810_timerclken_get_parent(struct clk *hw)
 {
-	struct clk_sp810_timerclken *timerclken = to_clk_sp810_timerclken(hw);
-	u32 val = readl(timerclken->sp810->base + SCCTRL);
-
-	return !!(val & (1 << SCCTRL_TIMERENnSEL_SHIFT(timerclken->channel)));
+	return 1;
 }
 
 static int clk_sp810_timerclken_set_parent(struct clk *hw, u8 index)
@@ -57,6 +54,9 @@ static int clk_sp810_timerclken_set_parent(struct clk *hw, u8 index)
 	u32 val, shift = SCCTRL_TIMERENnSEL_SHIFT(timerclken->channel);
 
 	if (WARN_ON(index > 1))
+		return -EINVAL;
+
+	if (index == 0)
 		return -EINVAL;
 
 	val = readl(sp810->base + SCCTRL);
@@ -92,7 +92,6 @@ static void clk_sp810_of_setup(struct device_node *node)
 	char name[12];
 	static int instance;
 	int i;
-	bool deprecated;
 
 	if (!sp810)
 		return;
@@ -106,8 +105,6 @@ static void clk_sp810_of_setup(struct device_node *node)
 	sp810->node = node;
 	sp810->base = of_iomap(node, 0);
 
-	deprecated = !of_find_property(node, "assigned-clock-parents", NULL);
-
 	for (i = 0; i < ARRAY_SIZE(sp810->timerclken); i++) {
 		snprintf(name, sizeof(name), "sp810_%d_%d", instance, i);
 
@@ -119,13 +116,10 @@ static void clk_sp810_of_setup(struct device_node *node)
 		sp810->timerclken[i].hw.ops = &clk_sp810_timerclken_ops;
 
 		/*
-		 * If DT isn't setting the parent, force it to be
-		 * the 1 MHz clock without going through the framework.
-		 * We do this before clk_register() so that it can determine
-		 * the parent and setup the tree properly.
+		 * Always set parent to 1MHz clock to match QEMU emulation
+		 * and satisfy requirements on real HW.
 		 */
-		if (deprecated)
-			clk_sp810_timerclken_set_parent(&sp810->timerclken[i].hw, 1);
+		clk_sp810_timerclken_set_parent(&sp810->timerclken[i].hw, 1);
 
 		clk_register(&sp810->timerclken[i].hw);
 	}

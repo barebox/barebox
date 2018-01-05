@@ -199,6 +199,8 @@ static int nv_param_set(struct device_d *dev, struct param_d *p, const char *val
 static int __nvvar_add(const char *name, const char *value)
 {
 	struct param_d *p;
+	struct device_d *dev = NULL;
+	const char *pname;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_NVVAR))
@@ -220,7 +222,12 @@ static int __nvvar_add(const char *name, const char *value)
 	if (value)
 		return nv_set(&nv_device, p, value);
 
-	value = dev_get_param(&global_device, name);
+	ret = nvvar_device_dispatch(name, &dev, &pname);
+	if (ret > 0)
+		value = dev_get_param(dev, pname);
+	else
+		value = dev_get_param(&global_device, name);
+
 	if (value) {
 		free(p->value);
 		p->value = xstrdup(value);
@@ -460,6 +467,9 @@ int globalvar_add_simple_string(const char *name, char **value)
 
 	globalvar_nv_sync(name);
 
+	if (!*value)
+		*value = xstrdup("");
+
 	return 0;
 }
 
@@ -643,10 +653,39 @@ static int nv_global_param_complete(struct device_d *dev, struct string_list *sl
 	return 0;
 }
 
-int nv_global_complete(struct string_list *sl, char *instr)
+int nv_complete(struct string_list *sl, char *instr)
+{
+	struct device_d *dev;
+	struct param_d *param;
+	char *str;
+	int len;
+
+	nv_global_param_complete(&global_device, sl, instr, 0);
+
+	len = strlen(instr);
+
+	if (strncmp(instr, "dev.", min_t(int, len, 4)))
+		return 0;
+
+	for_each_device(dev) {
+		if (dev == &global_device || dev == &nv_device)
+			continue;
+
+		list_for_each_entry(param, &dev->parameters, list) {
+			str = basprintf("dev.%s.%s=", dev_name(dev), param->name);
+			if (strncmp(instr, str, len))
+				free(str);
+			else
+				string_list_add(sl, str);
+		}
+	}
+
+	return 0;
+}
+
+int global_complete(struct string_list *sl, char *instr)
 {
 	nv_global_param_complete(&global_device, sl, instr, 0);
-	nv_global_param_complete(&nv_device, sl, instr, 0);
 
 	return 0;
 }

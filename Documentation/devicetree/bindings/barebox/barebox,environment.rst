@@ -26,7 +26,9 @@ The file-path is the name of a file located in a FAT filesystem on the
 device named in device-path.  This filesystem will be mounted and the
 environment loaded from the file's location in the directory tree.
 
-Example::
+Example:
+
+.. code-block:: none
 
   environment@0 {
   	compatible = "barebox,environment";

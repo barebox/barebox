@@ -11,7 +11,9 @@ pstore is a filesystem to store kernel log or kernel panic messages. These
 messages are stored by the kernel in a specified RAM area which is never
 overwritten by any user. This data can be accessed after a reboot through
 /pstore in Barebox or the kernel. The pstore filesystem is automatically mounted
-at boot::
+at boot:
+
+.. code-block:: none
 
 	none on / type ramfs
 	none on /dev type devfs
@@ -20,21 +22,23 @@ at boot::
 pstore may add additional warnings during boot due to wrong ECCs (no data
 written)::
 
-	persistent_ram: found existing invalid buffer, size 791282217, start 1116786789
-	persistent_ram: uncorrectable error in header
-	persistent_ram: found existing invalid buffer, size 791282281, start 1133564005
-	persistent_ram: uncorrectable error in header
-	persistent_ram: found existing invalid buffer, size 791347753, start 1133564005
-	persistent_ram: uncorrectable error in header
-	persistent_ram: found existing invalid buffer, size 791347753, start 1133572197
-	persistent_ram: uncorrectable error in header
-	persistent_ram: found existing invalid buffer, size 774505001, start 1133564005
-	persistent_ram: uncorrectable error in header
-	persistent_ram: found existing invalid buffer, size 791282281, start 1133564005
-	persistent_ram: uncorrectable error in header
-	persistent_ram: found existing invalid buffer, size 791282217, start 1133564005
-	pstore: Registered ramoops as persistent store backend
-	ramoops: attached 0x200000@0x1fdf4000, ecc: 16/0
+.. code-block:: none
+
+  persistent_ram: found existing invalid buffer, size 791282217, start 1116786789
+  persistent_ram: uncorrectable error in header
+  persistent_ram: found existing invalid buffer, size 791282281, start 1133564005
+  persistent_ram: uncorrectable error in header
+  persistent_ram: found existing invalid buffer, size 791347753, start 1133564005
+  persistent_ram: uncorrectable error in header
+  persistent_ram: found existing invalid buffer, size 791347753, start 1133572197
+  persistent_ram: uncorrectable error in header
+  persistent_ram: found existing invalid buffer, size 774505001, start 1133564005
+  persistent_ram: uncorrectable error in header
+  persistent_ram: found existing invalid buffer, size 791282281, start 1133564005
+  persistent_ram: uncorrectable error in header
+  persistent_ram: found existing invalid buffer, size 791282217, start 1133564005
+  pstore: Registered ramoops as persistent store backend
+  ramoops: attached 0x200000@0x1fdf4000, ecc: 16/0
 
 To use pstore/RAMOOPS both Barebox and Kernel have to be compiled with pstore
 and RAM backend support. The kernel receives the parameters describing the
@@ -44,7 +48,9 @@ RAMOOPS parameters for the Kernel are stored in the variable
 global.linux.bootargs.ramoops.
 
 To see where the RAMOOPS area is located, you can execute iomem in Barebox. The
-RAMOOPS area is listed as 'persistent ram'::
+RAMOOPS area is listed as 'persistent ram':
+
+.. code-block:: none
 
   0x10000000 - 0x1fffffff (size 0x10000000) ram0
     0x17e7c0c0 - 0x1fcf817f (size 0x07e7c0c0) malloc space

@@ -30,7 +30,9 @@ same file exists in a later overlay, it will overwrite the preceding one.
 Note that not all of the above directories will necessarily be
 included in your default environment, it depends on your barebox
 configuration settings. You can see the configuration variables
-and their respective included directories in ``defaultenv/Makefile``::
+and their respective included directories in ``defaultenv/Makefile``:
+
+.. code-block:: make
 
   bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW) += defaultenv-2-base
   bbenv-$(CONFIG_DEFAULT_ENVIRONMENT_GENERIC_NEW_MENU) += defaultenv-2-menu

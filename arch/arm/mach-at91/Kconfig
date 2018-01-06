@@ -269,7 +269,6 @@ choice
 
 config MACH_ANIMEO_IP
 	bool "Somfy Animeo IP"
-	select AT91SAM9260_LWL
 	depends on !CONSOLE_NONE
 
 config MACH_AT91SAM9260EK

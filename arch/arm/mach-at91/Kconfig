@@ -47,8 +47,6 @@ config AT91SAM9260_LWL
 	bool
 config AT91SAM9263_LWL
 	bool
-config AT91RM9200_LWL
-	bool
 
 config AT91SAM9_SMC
 	bool
@@ -251,7 +249,6 @@ choice
 config MACH_AT91RM9200EK
 	bool "Atmel AT91RM9200-EK Evaluation Kit"
 	select HAVE_AT91_DATAFLASH_CARD
-	select AT91RM9200_LWL
 	help
 	  Select this if you are using Atmel's AT91RM9200-EK Evaluation Kit.
 	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3507>

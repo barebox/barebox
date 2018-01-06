@@ -299,7 +299,6 @@ config MACH_USB_A9260
 
 config MACH_GE863
 	bool "Telit EVK-PRO3"
-	select AT91SAM9260_LWL
 	help
 	  Say y here if you are using Telit EVK-PRO3 with GE863-PRO3
 	  <http://www.telit.com>

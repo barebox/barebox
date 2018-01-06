@@ -45,8 +45,6 @@ config AT91SAM926X_LWL
 # as implemented in the *lowlevel_init.c files
 config AT91SAM9260_LWL
 	bool
-config AT91SAM9261_LWL
-	bool
 config AT91SAM9263_LWL
 	bool
 config AT91SAM9G45_LWL

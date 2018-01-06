@@ -14,6 +14,7 @@
 #include <mach/at91sam9_sdramc.h>
 #include <mach/at91sam9_matrix.h>
 #include <mach/at91_lowlevel_init.h>
+#include <mach/at91sam9263_matrix.h>
 
 #define MASTER_CLOCK		180
 

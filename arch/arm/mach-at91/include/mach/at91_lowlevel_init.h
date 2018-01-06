@@ -35,7 +35,7 @@ struct at91sam926x_lowlevel_cfg {
 	u32 rstc_rmr;
 };
 
-#ifdef CONFIG_HAVE_AT91_LOWLEVEL_INIT
+#ifdef CONFIG_AT91SAM926X_LWL
 void at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_cfg *cfg);
 void at91sam926x_lowlevel_init(struct at91sam926x_lowlevel_cfg *cfg);
 #else

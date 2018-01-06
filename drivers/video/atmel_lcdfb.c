@@ -23,7 +23,6 @@
 #include <init.h>
 #include <mach/hardware.h>
 #include <mach/io.h>
-#include <mach/cpu.h>
 #include <errno.h>
 #include <linux/clk.h>
 
@@ -34,12 +33,12 @@
 #define ATMEL_LCDC_DMA_BURST_LEN	8	/* words */
 #define ATMEL_LCDC_FIFO_SIZE		512	/* words */
 
-static unsigned long compute_hozval(unsigned long xres, unsigned long lcdcon2)
+static unsigned long compute_hozval(struct atmel_lcdfb_info *sinfo,
+				    unsigned long xres, unsigned long lcdcon2)
 {
 	unsigned long value;
 
-	if (!(cpu_is_at91sam9261() || cpu_is_at91sam9g10()
-		|| cpu_is_at32ap7000()))
+	if (!sinfo->have_hozval)
 		return xres;
 
 	value = xres;
@@ -133,7 +132,7 @@ static void atmel_lcdfb_setup_core(struct fb_info *info)
 	lcdc_writel(sinfo, ATMEL_LCDC_DMAFRMCFG, value);
 
 	/* Set pixel clock */
-	if (cpu_is_at91sam9g45() && !cpu_is_at91sam9g45es())
+	if (sinfo->have_alt_pixclock)
 		pix_factor = 1;
 
 	clk_value_khz = clk_get_rate(sinfo->lcdc_clk) / 1000;
@@ -191,7 +190,7 @@ static void atmel_lcdfb_setup_core(struct fb_info *info)
 	lcdc_writel(sinfo, ATMEL_LCDC_TIM2, value);
 
 	/* Horizontal value (aka line size) */
-	hozval_linesz = compute_hozval(mode->xres,
+	hozval_linesz = compute_hozval(sinfo, mode->xres,
 					lcdc_readl(sinfo, ATMEL_LCDC_LCDCON2));
 
 	/* Display size */
@@ -243,14 +242,39 @@ static int atmel_lcdc_probe(struct device_d *dev)
 	return atmel_lcdc_register(dev, &atmel_lcdfb_data);
 }
 
+static struct atmel_lcdfb_config at91sam9261_config = {
+	.have_hozval		= true,
+	.have_intensity_bit	= true,
+};
+
+static struct atmel_lcdfb_config at91sam9263_config = {
+	.have_intensity_bit	= true,
+};
+
+static struct atmel_lcdfb_config at91sam9g10_config = {
+	.have_hozval		= true,
+};
+
+static struct atmel_lcdfb_config at91sam9g45_config = {
+	.have_alt_pixclock	= true,
+};
+
+static struct atmel_lcdfb_config at91sam9rl_config = {
+	.have_intensity_bit	= true,
+};
+
+static struct atmel_lcdfb_config at32ap_config = {
+	.have_hozval		= true,
+};
+
 static __maybe_unused struct of_device_id atmel_lcdfb_compatible[] = {
-	{ .compatible = "atmel,at91sam9261-lcdc", },
-	{ .compatible = "atmel,at91sam9263-lcdc", },
-	{ .compatible = "atmel,at91sam9g10-lcdc", },
-	{ .compatible = "atmel,at91sam9g45-lcdc", },
+	{ .compatible = "atmel,at91sam9261-lcdc",	.data = &at91sam9261_config, },
+	{ .compatible = "atmel,at91sam9263-lcdc",	.data = &at91sam9263_config, },
+	{ .compatible = "atmel,at91sam9g10-lcdc",	.data = &at91sam9g10_config, },
+	{ .compatible = "atmel,at91sam9g45-lcdc",	.data = &at91sam9g45_config, },
 	{ .compatible = "atmel,at91sam9g45es-lcdc", },
-	{ .compatible = "atmel,at91sam9rl-lcdc", },
-	{ .compatible = "atmel,at32ap-lcdc", },
+	{ .compatible = "atmel,at91sam9rl-lcdc",	.data = &at91sam9rl_config, },
+	{ .compatible = "atmel,at32ap-lcdc",		.data = &at32ap_config, },
 	{ /* sentinel */ }
 };
 

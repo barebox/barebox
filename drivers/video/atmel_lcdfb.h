@@ -4,6 +4,12 @@
 
 struct atmel_lcdfb_info;
 
+struct atmel_lcdfb_config {
+	bool have_alt_pixclock;
+	bool have_hozval;
+	bool have_intensity_bit;
+};
+
 struct atmel_lcdfb_devdata {
 	void (*start)(struct atmel_lcdfb_info *sinfo);
 	void (*stop)(struct atmel_lcdfb_info *sinfo, u32 flags);
@@ -24,7 +30,9 @@ struct atmel_lcdfb_info {
 	unsigned int		lcdcon2;
 	unsigned int		dmacon;
 	unsigned int		lcd_wiring_mode;
+	bool			have_alt_pixclock;
 	bool			have_intensity_bit;
+	bool			have_hozval;
 
 	int			gpio_power_control;
 	bool			gpio_power_control_active_low;

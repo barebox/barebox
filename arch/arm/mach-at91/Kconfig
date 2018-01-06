@@ -53,10 +53,6 @@ config AT91SAM9N12_LWL
 	bool
 config AT91RM9200_LWL
 	bool
-config SAMA5D3_LWL
-	bool
-config SAMA5D4_LWL
-	bool
 
 config AT91SAM9_SMC
 	bool
@@ -518,13 +514,11 @@ choice
 
 config MACH_SAMA5D3XEK
 	bool "Atmel SAMA5D3X Evaluation Kit"
-	select SAMA5D3_LWL
 	help
 	  Select this if you are using Atmel's SAMA5D3X-EK Evaluation Kit.
 
 config MACH_SAMA5D3_XPLAINED
 	bool "Atmel SAMA5D3_XPLAINED Evaluation Kit"
-	select SAMA5D3_LWL
 	help
 	  Select this if you are using Atmel's SAMA5D3_XPLAINED Evaluation Kit.
 
@@ -541,13 +535,11 @@ choice
 
 config MACH_SAMA5D4EK
 	bool "Atmel SAMA5D4 Evaluation Kit"
-	select SAMA5D4_LWL
 	help
 	  Select this if you are using Atmel's SAMA5D4-EK Evaluation Kit.
 
 config MACH_SAMA5D4_XPLAINED
 	bool "Atmel SAMA5D4 XPLAINED ULTRA Evaluation Kit"
-	select SAMA5D4_LWL
 	help
 	  Select this if you are using Atmel's SAMA5D4_XPLAINED ULTRA Evaluation Kit.
 

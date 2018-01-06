@@ -37,17 +37,6 @@ config HAVE_AT91_BOOTSTRAP
 config AT91SAM926X_BOARD_INIT
 	bool
 
-# Select if board uses the common at91sam926x_lowlevel_init
-config AT91SAM926X_LWL
-	bool
-
-# Select if board uses barebox reset vector from mach-at91
-# as implemented in the *lowlevel_init.c files
-config AT91SAM9260_LWL
-	bool
-config AT91SAM9263_LWL
-	bool
-
 config AT91SAM9_SMC
 	bool
 

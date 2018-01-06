@@ -345,8 +345,7 @@ config MACH_PM9261
 	bool "Ronetix PM9261"
 	select HAS_DM9000
 	select HAVE_AT91_BOOTSTRAP
-	select AT91SAM9261_LWL
-	select AT91SAM926X_LWL
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Say y here if you are using the Ronetix PM9261 Board
 

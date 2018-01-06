@@ -405,11 +405,6 @@ config MACH_AT91SAM9263EK
 	help
 	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
 
-config MACH_MMCCPU
-	bool "Bucyrus MMC-CPU"
-	help
-	  Say y here if you are using the Bucyrus MMC-CPU
-
 config MACH_PM9263
 	bool "Ronetix PM9263"
 	select HAVE_AT91_LOWLEVEL_INIT

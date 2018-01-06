@@ -276,7 +276,6 @@ config MACH_ANIMEO_IP
 
 config MACH_AT91SAM9260EK
 	bool "Atmel AT91SAM9260-EK"
-	select AT91SAM9260_LWL
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	help
 	  Say y here if you are using Atmel's AT91SAM9260-EK Evaluation board
@@ -371,7 +370,6 @@ choice
 config MACH_AT91SAM9G20EK
 	bool "Atmel AT91SAM9G20-EK Evaluation Kit"
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
-	select AT91SAM9260_LWL
 	help
 	  Select this if you are using Atmel's AT91SAM9G20-EK Evaluation Kit
 	  that embeds only one SD/MMC slot.

@@ -444,8 +444,7 @@ config MACH_AT91SAM9263EK
 config MACH_PM9263
 	bool "Ronetix PM9263"
 	select HAVE_AT91_BOOTSTRAP
-	select AT91SAM9263_LWL
-	select AT91SAM926X_LWL
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Say y here if you are using the Ronetix PM9263 Board
 

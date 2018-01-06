@@ -442,9 +442,7 @@ config MACH_AT91SAM9263EK
 	bool "Atmel AT91SAM9263-EK"
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
 	select HAVE_AT91_BOOTSTRAP
-	select AT91SAM9263_LWL
-	select AT91SAM926X_LWL
-
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
 

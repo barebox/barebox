@@ -64,6 +64,7 @@ Several **flags** are supported, each denoted by a single character:
 * ``s`` Safe mode. The file is downloaded completely before it is written (DFU specific)
 * ``r`` Readback. The partition is allowed to be read back (DFU specific)
 * ``c`` The file shall be created if it doesn't exist. Needed when a regular file is exported.
+* ``u`` The partition is a MTD device and shall be flashed with a UBI image.
 
 Example:
 

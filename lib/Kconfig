@@ -79,6 +79,9 @@ config LIBSCAN
 config LIBUBIGEN
 	bool
 
+config IMAGE_SPARSE
+	bool
+
 config STMP_DEVICE
 	bool
 

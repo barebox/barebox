@@ -109,6 +109,8 @@ static inline int __imx6_cpu_revision(void)
 		return IMX_CHIP_REV_1_4;
 	case 0x05:
 		return IMX_CHIP_REV_1_5;
+	case 0x06:
+		return IMX_CHIP_REV_1_6;
 	case 0x100:
 		return IMX_CHIP_REV_2_0;
 	}

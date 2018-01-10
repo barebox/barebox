@@ -161,43 +161,8 @@ static int socfpga_detect_sdram(void)
 	return 0;
 }
 
-/* Some initialization for the EMAC */
-static void socfpga_init_emac(void)
-{
-	uint32_t rst, val;
-
-	/* No need for this without network support, e.g. xloader build */
-	if (!IS_ENABLED(CONFIG_NET))
-		return;
-
-	/* According to Cyclone V datasheet, 17-60 "EMAC HPS Interface
-	 * Initialization", changing PHYSEL should be done with EMAC in reset
-	 * via permodrst.  */
-
-	/* Everything, except L4WD0/1, is out of reset via socfpga_lowlevel_init() */
-	rst = readl(CYCLONE5_RSTMGR_ADDRESS + RESET_MGR_PER_MOD_RESET_OFS);
-	rst |= RSTMGR_PERMODRST_EMAC0 | RSTMGR_PERMODRST_EMAC1;
-	writel(rst, CYCLONE5_RSTMGR_ADDRESS + RESET_MGR_PER_MOD_RESET_OFS);
-
-	/* Set emac0/1 PHY interface select to RGMII.  We could read phy-mode
-	 * from the device tree, if it was desired to support interfaces other
-	 * than RGMII. */
-	val = readl(CONFIG_SYSMGR_EMAC_CTRL);
-	val &= ~(SYSMGR_EMACGRP_CTRL_PHYSEL_MASK << SYSMGR_EMACGRP_CTRL_PHYSEL0_LSB);
-	val &= ~(SYSMGR_EMACGRP_CTRL_PHYSEL_MASK << SYSMGR_EMACGRP_CTRL_PHYSEL1_LSB);
-	val |= SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII << SYSMGR_EMACGRP_CTRL_PHYSEL0_LSB;
-	val |= SYSMGR_EMACGRP_CTRL_PHYSEL_ENUM_RGMII << SYSMGR_EMACGRP_CTRL_PHYSEL1_LSB;
-	writel(val, CONFIG_SYSMGR_EMAC_CTRL);
-
-	/* Take emac0 and emac1 out of reset */
-	rst &= ~(RSTMGR_PERMODRST_EMAC0 | RSTMGR_PERMODRST_EMAC1);
-	writel(rst, CYCLONE5_RSTMGR_ADDRESS + RESET_MGR_PER_MOD_RESET_OFS);
-}
-
 static int socfpga_init(void)
 {
-	socfpga_init_emac();
-
 	writel(SYSMGR_SDMMC_CTRL_DRVSEL(3) | SYSMGR_SDMMC_CTRL_SMPLSEL(0),
 		SYSMGR_SDMMCGRP_CTRL_REG);
 

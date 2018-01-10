@@ -624,6 +624,13 @@ static int imx_spi_probe(struct device_d *dev)
 		goto err_free;
 	}
 
+	ret = clk_enable(imx->clk);
+	if (ret) {
+		dev_err(dev, "Failed to enable clock: %s\n",
+			strerror(ret));
+		return ret;
+	}
+
 	imx->chipselect = devdata->chipselect;
 	imx->xchg_single = devdata->xchg_single;
 	imx->do_transfer = devdata->do_transfer;

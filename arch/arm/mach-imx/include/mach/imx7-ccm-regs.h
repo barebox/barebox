@@ -6,6 +6,7 @@
 #define CCM_CCGRn_CLR(n)	(0x4008 + 16 * (n))
 
 #define CCM_CCGR_UART1		148
+#define CCM_CCGR_UART2		149
 
 #define CCM_CCGR_SETTINGn(n, s)  ((s) << ((n) * 4))
 #define CCM_CCGR_SETTINGn_NOT_NEEDED(n)		CCM_CCGR_SETTINGn(n, 0b00)
@@ -28,5 +29,7 @@
 #define UART1_CLK_ROOT		CLOCK_ROOT_INDEX(0xaf80)
 #define UART1_CLK_ROOT__OSC_24M CCM_TARGET_ROOTn_MUX(0b000)
 
+#define UART2_CLK_ROOT		CLOCK_ROOT_INDEX(0xb000)
+#define UART2_CLK_ROOT__OSC_24M CCM_TARGET_ROOTn_MUX(0b000)
 
 #endif

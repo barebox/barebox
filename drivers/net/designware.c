@@ -434,7 +434,11 @@ struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
 	if (ret)
 		return ERR_PTR(ret);
 
-	priv->enh_desc = drvdata->enh_desc;
+	if (drvdata && drvdata->enh_desc)
+		priv->enh_desc = drvdata->enh_desc;
+	else
+		dev_warn(dev, "No drvdata specified\n");
+
 
 	if (pdata) {
 		priv->phy_addr = pdata->phy_addr;

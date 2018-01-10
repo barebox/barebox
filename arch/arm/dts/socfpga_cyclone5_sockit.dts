@@ -24,5 +24,11 @@
 
 	chosen {
 		stdout-path = &uart0;
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &mmc, "partname:1";
+			file-path = "barebox.env";
+		};
 	};
 };

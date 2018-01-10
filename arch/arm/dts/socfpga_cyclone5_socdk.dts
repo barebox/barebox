@@ -21,6 +21,14 @@
 / {
 	model = "Altera SOCFPGA Cyclone V SoC Development Kit";
 	compatible = "altr,socdk", "altr,socfpga-cyclone5", "altr,socfpga";
+
+	chosen {
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &mmc, "partname:1";
+			file-path = "barebox.env";
+		};
+	};
 };
 
 &qspi {

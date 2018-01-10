@@ -630,7 +630,6 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	host->clk = clk_get(dev, "per");
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
-	clk_enable(host->clk);
 
 	ret = clk_enable(host->clk);
 	if (ret) {

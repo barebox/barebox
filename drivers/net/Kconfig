@@ -79,6 +79,13 @@ config DRIVER_NET_DESIGNWARE_GENERIC
 	  This option enables support for the Synopsys
 	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on SoCFPGA.
 
+config DRIVER_NET_DESIGNWARE_SOCFPGA
+	bool "Designware Universal MAC ethernet driver for SoCFPGA platforms"
+	depends on ARCH_SOCFPGA
+	help
+	  This option enables support for the Synopsys
+	  Designware Core Univesal MAC 10M/100M/1G ethernet IP on SoCFPGA.
+
 endif
 
 config DRIVER_NET_DM9K

@@ -65,4 +65,7 @@ void socfpga_sysmgr_pinmux_init(unsigned long *sys_mgr_init_table, int num);
 #define SYSMGR_EMACGRP_CTRL_PHYSEL1_LSB 2
 #define SYSMGR_EMACGRP_CTRL_PHYSEL_MASK 0x00000003
 
+#define SYSMGR_FPGAGRP_MODULE  0x00000028
+#define SYSMGR_FPGAGRP_MODULE_EMAC 0x00000004
+
 #endif /* _SYSTEM_MANAGER_H_ */

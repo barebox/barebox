@@ -38,7 +38,7 @@ config DRIVER_SPI_IMX_0_7
 
 config DRIVER_SPI_IMX_2_3
 	bool
-	depends on ARCH_IMX50 || ARCH_IMX51 || ARCH_IMX53 || ARCH_IMX6
+	depends on ARCH_IMX50 || ARCH_IMX51 || ARCH_IMX53 || ARCH_IMX6 || ARCH_IMX7
 	default y
 
 config DRIVER_SPI_MXS

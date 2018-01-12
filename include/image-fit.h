@@ -29,6 +29,7 @@ struct fit_handle {
 	enum bootm_verify verify;
 
 	struct device_node *root;
+	struct device_node *conf_node;
 
 	const void *kernel;
 	unsigned long kernel_size;
@@ -38,8 +39,13 @@ struct fit_handle {
 	unsigned long initrd_size;
 };
 
-struct fit_handle *fit_open(const char *filename, const char *config, bool verbose,
+struct fit_handle *fit_open(const char *filename, bool verbose,
 			    enum bootm_verify verify);
+int fit_open_configuration(struct fit_handle *handle, const char *name);
+int fit_has_image(struct fit_handle *handle, const char *name);
+int fit_open_image(struct fit_handle *handle, const char *name,
+		   const void **outdata, unsigned long *outsize);
+
 void fit_close(struct fit_handle *handle);
 
 #endif	/* __IMAGE_FIT_H__ */

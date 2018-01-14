@@ -36,8 +36,7 @@
 #include <linux/sizes.h>
 #include <byteorder.h>
 #include <globalvar.h>
-
-#include "parseopt.h"
+#include <parseopt.h>
 
 #define SUNRPC_PORT     111
 

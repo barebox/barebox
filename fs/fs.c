@@ -35,8 +35,7 @@
 #include <libgen.h>
 #include <block.h>
 #include <libfile.h>
-
-#include "parseopt.h"
+#include <parseopt.h>
 
 char *mkmodestr(unsigned long mode, char *str)
 {

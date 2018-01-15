@@ -1,4 +1,4 @@
-obj-y += setup.o irq_fixup.o
+obj-y += setup.o
 
 ifeq ($(CONFIG_COMMON_CLK_OF_PROVIDER),)
 obj-y += clock.o

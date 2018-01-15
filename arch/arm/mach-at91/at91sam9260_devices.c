@@ -19,6 +19,7 @@
 #include <mach/at91_pmc.h>
 #include <mach/at91sam9260_matrix.h>
 #include <mach/at91sam9_sdramc.h>
+#include <mach/at91_rtt.h>
 #include <mach/iomux.h>
 #include <mach/io.h>
 #include <mach/cpu.h>

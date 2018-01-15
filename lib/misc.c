@@ -96,6 +96,9 @@ int parse_area_spec(const char *str, loff_t *start, loff_t *size)
 
 	if (*str == '-') {
 		/* beginning and end given */
+		if (!isdigit(*(str + 1)))
+			return -1;
+
 		end = strtoull_suffix(str + 1, NULL, 0);
 		if (end < _start) {
 			printf("end < start\n");
@@ -107,6 +110,9 @@ int parse_area_spec(const char *str, loff_t *start, loff_t *size)
 
 	if (*str == '+') {
 		/* beginning and size given */
+		if (!isdigit(*(str + 1)))
+			return -1;
+
 		*size = strtoull_suffix(str + 1, NULL, 0);
 		goto success;
 	}

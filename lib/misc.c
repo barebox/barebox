@@ -79,38 +79,42 @@ EXPORT_SYMBOL(strtoul_suffix);
 int parse_area_spec(const char *str, loff_t *start, loff_t *size)
 {
 	char *endp;
-	loff_t end;
+	loff_t end, _start;
 
 	if (!isdigit(*str))
 		return -1;
 
-	*start = strtoull_suffix(str, &endp, 0);
+	_start = strtoull_suffix(str, &endp, 0);
 
 	str = endp;
 
 	if (!*str) {
 		/* beginning given, but no size, assume maximum size */
 		*size = ~0;
-		return 0;
+		goto success;
 	}
 
 	if (*str == '-') {
 		/* beginning and end given */
 		end = strtoull_suffix(str + 1, NULL, 0);
-		if (end < *start) {
+		if (end < _start) {
 			printf("end < start\n");
 			return -1;
 		}
-		*size = end - *start + 1;
-		return 0;
+		*size = end - _start + 1;
+		goto success;
 	}
 
 	if (*str == '+') {
 		/* beginning and size given */
 		*size = strtoull_suffix(str + 1, NULL, 0);
-		return 0;
+		goto success;
 	}
 
 	return -1;
+
+success:
+	*start = _start;
+	return 0;
 }
 EXPORT_SYMBOL(parse_area_spec);

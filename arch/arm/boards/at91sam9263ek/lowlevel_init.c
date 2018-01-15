@@ -99,7 +99,7 @@ static void __bare_init at91sam9263ek_board_config(struct at91sam926x_board_cfg 
 		AT91_RSTC_RSTTYP_WATCHDOG;
 }
 
-static void __bare_init at91sam9263ek_init(void)
+static void __bare_init at91sam9263ek_init(void *fdt)
 {
 	struct at91sam926x_board_cfg cfg;
 
@@ -112,14 +112,23 @@ static void __bare_init at91sam9263ek_init(void)
 	at91sam926x_board_init(&cfg);
 
 	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc),
-	                  NULL);
+			  fdt);
 }
 
-void __naked __bare_init barebox_arm_reset_vector(void)
+extern char __dtb_at91sam9263ek_start[];
+
+ENTRY_FUNCTION(start_at91sam9263ek, r0, r1, r2)
 {
+	void *fdt;
+
 	arm_cpu_lowlevel_init();
 
 	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE - 16);
 
-	at91sam9263ek_init();
+	if (IS_ENABLED(CONFIG_MACH_AT91SAM9263EK_DT))
+		fdt = __dtb_at91sam9263ek_start - get_runtime_offset();
+	else
+		fdt = NULL;
+
+	at91sam9263ek_init(fdt);
 }

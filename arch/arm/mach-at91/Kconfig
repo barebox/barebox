@@ -20,6 +20,13 @@ config COMMON_CLK_AT91
 	select COMMON_CLK
 	select MFD_SYSCON
 
+config MACH_AT91SAM9263EK_DT
+	def_bool y
+	depends on MACH_AT91SAM9263EK && OFDEVICE
+	help
+	  Enabled for at91sam9263ek - evaluation kit.
+	  But only if we need the device tree (bootstrap do not use DT)
+
 config HAVE_AT91_SMD
 	bool
 
@@ -228,6 +235,8 @@ config SUPPORT_CALAO_DAB_MMX
 config SUPPORT_CALAO_MOB_TNY_MD2
 	bool
 
+if !AT91_MULTI_BOARDS
+
 # ----------------------------------------------------------
 
 if ARCH_AT91RM9200
@@ -399,14 +408,6 @@ if ARCH_AT91SAM9263
 choice
 	prompt "AT91SAM9263 Board Type"
 
-config MACH_AT91SAM9263EK
-	bool "Atmel AT91SAM9263-EK"
-	select HAVE_NAND_ATMEL_BUSWIDTH_16
-	select HAVE_AT91_BOOTSTRAP
-	select AT91SAM926X_BOARD_INIT
-	help
-	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
-
 config MACH_PM9263
 	bool "Ronetix PM9263"
 	select HAVE_AT91_BOOTSTRAP
@@ -519,6 +520,7 @@ config MACH_SAMA5D4_XPLAINED
 endchoice
 
 endif
+endif
 
 # ----------------------------------------------------------
 
@@ -528,6 +530,18 @@ config AT91_MULTI_BOARDS
 	select HAVE_PBL_MULTI_IMAGES
 
 if AT91_MULTI_BOARDS
+
+config MACH_AT91SAM9263EK
+	bool "Atmel AT91SAM9263-EK"
+	depends on ARCH_AT91SAM9263
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	select HAVE_AT91_USB_CLK
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
+	help
+	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
 
 config MACH_AT91SAM9X5EK
 	bool "Atmel AT91SAM9x5 Series Evaluation Kit"

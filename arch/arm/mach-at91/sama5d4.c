@@ -16,7 +16,6 @@
 #include <mach/cpu.h>
 #include <linux/clk.h>
 
-#include "soc.h"
 #include "generic.h"
 #include "clock.h"
 
@@ -299,6 +298,9 @@ static void sama5d4_initialize(void)
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, SAMA5D4_BASE_HSMC + 0x600, 0xa0);
 }
 
-AT91_SOC_START(sama5d4)
-	.init = sama5d4_initialize,
-AT91_SOC_END
+static int sama5d4_setup(void)
+{
+	at91_boot_soc = sama5d4_initialize;
+	return 0;
+}
+pure_initcall(sama5d4_setup);

@@ -584,6 +584,7 @@ struct fit_handle *fit_open(const char *filename, const char *config, bool verbo
 {
 	struct fit_handle *handle = NULL;
 	const char *desc = "(no description)";
+	struct device_node *root;
 	int ret;
 
 	handle = xzalloc(sizeof(struct fit_handle));
@@ -596,12 +597,13 @@ struct fit_handle *fit_open(const char *filename, const char *config, bool verbo
 		goto err;
 	}
 
-	handle->root = of_unflatten_dtb(handle->fit);
-	if (IS_ERR(handle->root)) {
-		ret = PTR_ERR(handle->root);
+	root = of_unflatten_dtb(handle->fit);
+	if (IS_ERR(root)) {
+		ret = PTR_ERR(root);
 		goto err;
 	}
 
+	handle->root = root;
 	handle->verify = verify;
 
 	of_property_read_string(handle->root, "description", &desc);

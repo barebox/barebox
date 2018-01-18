@@ -107,7 +107,8 @@ static int blspec_boot(struct bootentry *be, int verbose, int dryrun)
 	}
 
 	pr_info("booting %s from %s\n", blspec_entry_var_get(entry, "title"),
-			entry->cdev ? dev_name(entry->cdev->dev) : "none");
+			(entry->cdev && entry->cdev->dev) ?
+			dev_name(entry->cdev->dev) : "none");
 
 	ret = bootm_boot(&data);
 	if (ret)
@@ -505,7 +506,7 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 
 		found++;
 
-		if (entry->cdev) {
+		if (entry->cdev && entry->cdev->dev) {
 			devname = xstrdup(dev_name(entry->cdev->dev));
 			if (entry->cdev->dev->parent)
 				hwdevname = xstrdup(dev_name(entry->cdev->dev->parent));

@@ -64,7 +64,7 @@ Optional Properties
 
 The ``backend-stridesize`` is still optional but required whenever the
 underlaying backend doesn't provide an information how to pad an instance of a
-*state* variable set. This is valid for all underlaying backends which supports
+*state* variable set. This is valid for all underlaying backends which support
 writes on a byte-by-byte manner or don't have eraseblocks (EEPROM, SRAM and NOR
 type flash backends).
 The ``backend-stridesize`` value is used by the ``direct`` backend storage type

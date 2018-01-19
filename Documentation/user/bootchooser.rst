@@ -353,7 +353,7 @@ node. It then looks like:
 It could makes sense to store the result of the last *bootchooser* operation
 in the *state* variable set as well. In order to do so, add a node with the name
 ``last_chosen`` to the *state* variable set. *bootchooser* will use it if present.
-The *state' variable set definition then looks like:
+The *state* variable set definition then looks like:
 
 .. code-block:: text
 

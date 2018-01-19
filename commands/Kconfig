@@ -234,7 +234,7 @@ config CMD_VERSION
 	depends on BANNER
 	prompt "version"
 	help
-	  Pring barebox version. Example:
+	  Print barebox version. Example:
 
 	  barebox 2014.05.0-00142-gb289373 #177 Mon May 12 20:35:55 CEST 2014
 

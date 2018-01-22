@@ -20,6 +20,7 @@
 #include <malloc.h>
 #include <libfile.h>
 #include <progress.h>
+#include <stdlib.h>
 #include <linux/stat.h>
 
 /*
@@ -484,4 +485,30 @@ int open_and_lseek(const char *filename, int mode, loff_t pos)
 	}
 
 	return fd;
+}
+
+/**
+ * make_temp - create a name for a temporary file
+ * @template:	The filename prefix
+ *
+ * This function creates a name for a temporary file. @template is used as a
+ * template for the name which gets appended a 8-digit hexadecimal number to
+ * create a unique filename.
+ *
+ * Return: This function returns a filename which can be used as a temporary
+ *         file lateron. The returned filename must be freed by the caller.
+ */
+char *make_temp(const char *template)
+{
+	char *name = NULL;
+	struct stat s;
+	int ret;
+
+	do {
+		free(name);
+		name = basprintf("/tmp/%s-%08x", template, random32());
+		ret = stat(name, &s);
+	} while (!ret);
+
+	return name;
 }

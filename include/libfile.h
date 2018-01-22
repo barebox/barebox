@@ -26,4 +26,6 @@ int make_directory(const char *pathname);
 
 int unlink_recursive(const char *path, char **failedpath);
 
+char *make_temp(const char *template);
+
 #endif /* __LIBFILE_H */

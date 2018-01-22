@@ -17,3 +17,6 @@ obj-y = common.o tap.o
 
 CFLAGS_sdl.o = $(shell pkg-config sdl --cflags)
 obj-$(CONFIG_DRIVER_VIDEO_SDL) += sdl.o
+
+CFLAGS_ftdi.o = $(shell pkg-config libftdi1 --cflags)
+obj-$(CONFIG_GPIO_LIBFTDI1) += ftdi.o

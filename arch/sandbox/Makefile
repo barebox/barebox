@@ -41,9 +41,13 @@ ifeq ($(CONFIG_DRIVER_VIDEO_SDL),y)
 SDL_LIBS := $(shell pkg-config sdl --libs)
 endif
 
+ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
+FTDI1_LIBS := $(shell pkg-config libftdi1 --libs)
+endif
+
 cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 	-Wl,--start-group $(barebox-common) -Wl,--end-group \
-	-lrt -lpthread $(SDL_LIBS)
+	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS)
 
 common-y += $(BOARD) arch/sandbox/os/
 

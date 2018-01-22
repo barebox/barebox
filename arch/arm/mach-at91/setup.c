@@ -14,10 +14,10 @@
 #include <mach/cpu.h>
 #include <mach/at91_dbgu.h>
 
-#include "soc.h"
 #include "generic.h"
 
-struct at91_init_soc __initdata at91_boot_soc;
+/* function called by at91_detect() - if assigned */
+void __initdata (*at91_boot_soc)(void);
 
 struct at91_socinfo at91_soc_initdata;
 EXPORT_SYMBOL(at91_soc_initdata);
@@ -48,39 +48,32 @@ static void __init soc_detect(u32 dbgu_base)
 		at91_soc_initdata.type = AT91_SOC_RM9200;
 		if (at91_soc_initdata.subtype == AT91_SOC_SUBTYPE_NONE)
 			at91_soc_initdata.subtype = AT91_SOC_RM9200_BGA;
-		at91_boot_soc = at91rm9200_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9260:
 		at91_soc_initdata.type = AT91_SOC_SAM9260;
-		at91_boot_soc = at91sam9260_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9261:
 		at91_soc_initdata.type = AT91_SOC_SAM9261;
-		at91_boot_soc = at91sam9261_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9263:
 		at91_soc_initdata.type = AT91_SOC_SAM9263;
-		at91_boot_soc = at91sam9263_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9G20:
 		at91_soc_initdata.type = AT91_SOC_SAM9G20;
-		at91_boot_soc = at91sam9260_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9G45:
 		at91_soc_initdata.type = AT91_SOC_SAM9G45;
 		if (cidr == ARCH_ID_AT91SAM9G45ES)
 			at91_soc_initdata.subtype = AT91_SOC_SAM9G45ES;
-		at91_boot_soc = at91sam9g45_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9RL64:
 		at91_soc_initdata.type = AT91_SOC_SAM9RL;
-		at91_boot_soc = at91sam9rl_soc;
 		break;
 
 	case ARCH_ID_AT91SAM9X5:
@@ -89,17 +82,14 @@ static void __init soc_detect(u32 dbgu_base)
 
 	case ARCH_ID_AT91SAM9N12:
 		at91_soc_initdata.type = AT91_SOC_SAM9N12;
-		at91_boot_soc = at91sam9n12_soc;
 		break;
 
 	case ARCH_ID_SAMA5:
 		if (at91_soc_initdata.exid & ARCH_EXID_SAMA5D3) {
 			at91_soc_initdata.type = AT91_SOC_SAMA5D3;
-			at91_boot_soc = at91sama5d3_soc;
 		} else {
 			if (at91_soc_initdata.exid & ARCH_EXID_SAMA5D4) {
 				at91_soc_initdata.type = AT91_SOC_SAMA5D4;
-				at91_boot_soc = at91sama5d4_soc;
 			}
 		}
 		break;
@@ -108,13 +98,11 @@ static void __init soc_detect(u32 dbgu_base)
 	/* at91sam9g10 */
 	if ((socid & ~AT91_CIDR_EXT) == ARCH_ID_AT91SAM9G10) {
 		at91_soc_initdata.type = AT91_SOC_SAM9G10;
-		at91_boot_soc = at91sam9261_soc;
 	}
 	/* at91sam9xe */
 	else if ((cidr & AT91_CIDR_ARCH) == ARCH_FAMILY_AT91SAM9XE) {
 		at91_soc_initdata.type = AT91_SOC_SAM9260;
 		at91_soc_initdata.subtype = AT91_SOC_SAM9XE;
-		at91_boot_soc = at91sam9260_soc;
 	}
 
 	if (!at91_soc_is_detected())
@@ -283,17 +271,11 @@ static int at91_detect(void)
 	pr_info("AT91: Detected soc subtype: %s\n",
 		at91_get_soc_subtype(&at91_soc_initdata));
 
-	if (IS_ENABLED(CONFIG_COMMON_CLK_OF_PROVIDER))
-		return 0;
-
-	if (!at91_soc_is_enabled())
-		panic("AT91: Soc not enabled");
-
 	/* Init clock subsystem */
 	at91_clock_init();
 
-	if (at91_boot_soc.init)
-		at91_boot_soc.init();
+	if (at91_boot_soc != NULL)
+		at91_boot_soc();
 
 	return 0;
 }

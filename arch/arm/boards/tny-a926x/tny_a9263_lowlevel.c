@@ -1,30 +1,24 @@
 /*
- * Copyright (C) 2009-2011 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+ * Copyright (C) 2009-2013 Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
  *
  * Under GPLv2
  */
 
 #include <common.h>
 #include <init.h>
-#include <mach/hardware.h>
-#include <mach/at91_rstc.h>
-#include <mach/at91_wdt.h>
-#include <mach/at91_pmc.h>
-#include <mach/at91sam9_smc.h>
-#include <mach/at91sam9_sdramc.h>
-#include <mach/at91sam9_matrix.h>
-#include <mach/at91_lowlevel_init.h>
+
+#include <asm/barebox-arm-head.h>
+#include <asm/barebox-arm.h>
+
+#include <mach/at91sam926x_board_init.h>
+#include <mach/at91sam9263_matrix.h>
 
 #define MASTER_CLOCK		180
 
-#if MASTER_CLOCK == 200
-#define MASTER_PLL_MUL		100
-#else
 #define MASTER_PLL_MUL		90
-#endif
 #define MASTER_PLL_DIV		6
 
-void __bare_init at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_cfg *cfg)
+static void __bare_init tny_a9263_board_config(struct at91sam926x_board_cfg *cfg)
 {
 	/* Disable Watchdog */
 	cfg->wdt_mr =
@@ -82,6 +76,7 @@ void __bare_init at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_c
 	/* SDRAMC_CR - Configuration register*/
 	cfg->sdrc_cr =
 		AT91_SDRAMC_NR_13 |
+		AT91_SDRAMC_NC_9 |
 		AT91_SDRAMC_NB_4 |
 		AT91_SDRAMC_CAS_2 |
 		AT91_SDRAMC_DBW_32 |
@@ -91,11 +86,6 @@ void __bare_init at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_c
 		(2 << 20) |		/* Row to Column Delay */
 		(5 << 24) |		/* Active to Precharge Delay */
 		(8 << 28);		/* Exit Self Refresh to Active Delay */
-
-	if (IS_ENABLED(CONFIG_AT91_HAVE_SRAM_128M))
-		cfg->sdrc_cr |= AT91_SDRAMC_NC_10;
-	else
-		cfg->sdrc_cr |= AT91_SDRAMC_NC_9;
 
 	/* Memory Device Register -> SDRAM */
 	cfg->sdrc_mdr = AT91_SDRAMC_MD_SDRAM;
@@ -108,4 +98,31 @@ void __bare_init at91sam926x_lowlevel_board_config(struct at91sam926x_lowlevel_c
 		AT91_RSTC_PROCRST |
 		AT91_RSTC_RSTTYP_WAKEUP |
 		AT91_RSTC_RSTTYP_WATCHDOG;
+}
+
+static void __bare_init tny_a9263_init(void)
+{
+	struct at91sam926x_board_cfg cfg;
+
+	cfg.pio = IOMEM(AT91SAM9263_BASE_PIOD);
+	cfg.sdramc = IOMEM(AT91SAM9263_BASE_SDRAMC0);
+	cfg.ebi_pio_is_peripha = true;
+	cfg.matrix_csa = AT91_MATRIX_EBI0CSA;
+
+        tny_a9263_board_config(&cfg);
+
+	at91sam926x_board_init(&cfg);
+
+	barebox_arm_entry(AT91_CHIPSELECT_1,
+			  at91_get_sdram_size(IOMEM(AT91SAM9263_BASE_SDRAMC0)),
+	                  NULL);
+}
+
+void __naked __bare_init barebox_arm_reset_vector(void)
+{
+	arm_cpu_lowlevel_init();
+
+	arm_setup_stack(AT91SAM9263_SRAM0_BASE + AT91SAM9263_SRAM0_SIZE - 16);
+
+	tny_a9263_init();
 }

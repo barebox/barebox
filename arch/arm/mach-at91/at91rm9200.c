@@ -4,7 +4,6 @@
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 
-#include "soc.h"
 #include "clock.h"
 #include "generic.h"
 
@@ -235,6 +234,9 @@ static void __init at91rm9200_initialize(void)
 	at91_add_rm9200_gpio(3, AT91RM9200_BASE_PIOD);
 }
 
-AT91_SOC_START(rm9200)
-	.init = at91rm9200_initialize,
-AT91_SOC_END
+static int at91rm9200_setup(void)
+{
+	at91_boot_soc = at91rm9200_initialize;
+	return 0;
+}
+pure_initcall(at91rm9200_setup);

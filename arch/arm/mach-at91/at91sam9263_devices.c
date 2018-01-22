@@ -18,6 +18,7 @@
 #include <mach/at91_pmc.h>
 #include <mach/at91sam9263_matrix.h>
 #include <mach/at91sam9_sdramc.h>
+#include <mach/at91_rtt.h>
 #include <mach/board.h>
 #include <mach/iomux.h>
 #include <mach/io.h>

@@ -6,7 +6,6 @@
 #include <mach/io.h>
 #include <mach/cpu.h>
 
-#include "soc.h"
 #include "generic.h"
 #include "clock.h"
 
@@ -220,6 +219,9 @@ static void at91sam9n12_initialize(void)
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9N12_BASE_SMC, 0x200);
 }
 
-AT91_SOC_START(sam9n12)
-	.init = at91sam9n12_initialize,
-AT91_SOC_END
+static int at91sam9n12_setup(void)
+{
+	at91_boot_soc = at91sam9n12_initialize;
+	return 0;
+}
+pure_initcall(at91sam9n12_setup);

@@ -27,6 +27,8 @@
 #include <linux/clk.h>
 #include <malloc.h>
 
+#include <mach/cpu.h>
+
 #include "atmel_lcdfb.h"
 
 static void atmel_lcdfb_start_clock(struct atmel_lcdfb_info *sinfo)
@@ -130,7 +132,7 @@ static int atmel_lcdfb_check_var(struct fb_info *info)
 			= info->bits_per_pixel;
 		break;
 	case 16:
-		/* Older SOCs use IBGR:555 rather than BGR:565. */
+		/* Older SOCs use BGR:555 rather than BGR:565. */
 		if (sinfo->have_intensity_bit)
 			info->green.length = 5;
 		else
@@ -280,9 +282,7 @@ static int power_control_init(struct device_d *dev,
 }
 
 /*
- * Syntax: atmel,lcd-wiring-mode: lcd wiring mode "RGB", "BRG", "IRGB", "IBRG"
- * The optional "I" indicates that green has an intensity bit as used by some
- * older displays
+ * Syntax: atmel,lcd-wiring-mode: lcd wiring mode "RGB", "BGR"
  */
 static int of_get_wiring_mode(struct device_node *np,
 			      struct atmel_lcdfb_info *sinfo)
@@ -294,22 +294,13 @@ static int of_get_wiring_mode(struct device_node *np,
 	if (ret < 0) {
 		/* Not present, use defaults */
 		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_BGR;
-		sinfo->have_intensity_bit = false;
 		return 0;
 	}
 
 	if (!strcasecmp(mode, "BGR")) {
 		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_BGR;
-		sinfo->have_intensity_bit = false;
 	} else if (!strcasecmp(mode, "RGB")) {
 		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB;
-		sinfo->have_intensity_bit = false;
-	} else if (!strcasecmp(mode, "IBGR")) {
-		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_BGR;
-		sinfo->have_intensity_bit = true;
-	} else if (!strcasecmp(mode, "IRGB")) {
-		sinfo->lcd_wiring_mode = ATMEL_LCDC_WIRING_RGB;
-		sinfo->have_intensity_bit = true;
 	} else {
 		return -ENODEV;
 	}
@@ -338,7 +329,16 @@ static int lcdfb_of_init(struct device_d *dev, struct atmel_lcdfb_info *sinfo)
 	struct fb_info *info = &sinfo->info;
 	struct display_timings *modes;
 	struct device_node *display;
+	struct atmel_lcdfb_config *config;
 	int ret;
+
+	/* Driver data - optional */
+	ret = dev_get_drvdata(dev, (const void **)&config);
+	if (!ret) {
+		sinfo->have_hozval = config->have_hozval;
+		sinfo->have_intensity_bit = config->have_intensity_bit;
+		sinfo->have_alt_pixclock = config->have_alt_pixclock;
+	}
 
 	/* Required properties */
 	display = of_parse_phandle(dev->device_node, "display", 0);
@@ -415,7 +415,13 @@ static int lcdfb_pdata_init(struct device_d *dev, struct atmel_lcdfb_info *sinfo
 	sinfo->lcdcon2 = pdata->default_lcdcon2;
 	sinfo->dmacon = pdata->default_dmacon;
 	sinfo->lcd_wiring_mode = pdata->lcd_wiring_mode;
+
+	sinfo->have_alt_pixclock = cpu_is_at91sam9g45() &&
+				   !cpu_is_at91sam9g45es();
 	sinfo->have_intensity_bit = pdata->have_intensity_bit;
+	sinfo->have_hozval = cpu_is_at91sam9261() ||
+			     cpu_is_at91sam9g10() ||
+			     cpu_is_at32ap7000();
 
 	info = &sinfo->info;
 	info->modes.modes = pdata->mode_list;

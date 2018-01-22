@@ -4,19 +4,17 @@
  * Under GPLv2
  */
 
-#define __LOWLEVEL_INIT__
-
 #include <common.h>
-#include <asm/system.h>
-#include <asm/barebox-arm.h>
+#include <init.h>
+
 #include <asm/barebox-arm-head.h>
-#include <mach/hardware.h>
-#include <mach/at91rm9200.h>
+#include <asm/barebox-arm.h>
+
 #include <mach/at91rm9200_mc.h>
+#include <mach/at91rm9200.h>
 #include <mach/at91_pio.h>
 #include <mach/at91_pmc.h>
-#include <mach/io.h>
-#include <init.h>
+#include <mach/hardware.h>
 
 void static inline access_sdram(void)
 {

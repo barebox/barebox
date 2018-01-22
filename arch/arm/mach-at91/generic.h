@@ -8,8 +8,15 @@
  * published by the Free Software Foundation.
  */
 
- /* Clocks */
+/* function called by setup to perform late init */
+extern void (*at91_boot_soc)(void);
+
+/* Clocks */
+#ifdef CONFIG_COMMON_CLK_OF_PROVIDER
+static inline int __init at91_clock_init(void) { return 0; }
+#else
 extern int __init at91_clock_init(void);
+#endif
 
 static inline struct device_d *at91_add_rm9200_gpio(int id, resource_size_t start)
 {
@@ -35,5 +42,3 @@ static inline struct device_d *at91_add_sam9_smc(int id, resource_size_t start,
 	return add_generic_device("at91sam9-smc", id, NULL, start, size,
 				  IORESOURCE_MEM, NULL);
 }
-
-void at91_rtt_irq_fixup(void *base);

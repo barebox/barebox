@@ -1,0 +1,48 @@
+#include <arm/at91sam9263ek.dts>
+/ {
+	chosen {
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &nand_controller, "partname:bareboxenv";
+		};
+	};
+
+	ahb {
+		apb {
+			mmc1: mmc@fff84000 {
+				pinctrl-0 = <
+					&pinctrl_board_mmc1
+					&pinctrl_mmc1_clk
+					&pinctrl_mmc1_slot0_cmd_dat0
+					&pinctrl_mmc1_slot0_dat1_3>;
+					cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
+					status = "okay";
+					slot@0 {
+						reg = <0>;
+						bus-width = <4>;
+						cd-gpios = <&pioE 18 GPIO_ACTIVE_HIGH>;
+						wp-gpios = <&pioE 19 GPIO_ACTIVE_HIGH>;
+					};
+			};
+		};
+	};
+
+
+	pinctrl@fffff200 {
+		pinctrl_board_mmc1: mmc1-board {
+			atmel,pins =
+				<AT91_PIOE 18 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH	/* PE18 gpio CD pin pull up and deglitch */
+				 AT91_PIOE 19 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP>;		/* PE19 gpio WP pin pull up */
+		};
+	};
+};
+
+&pioB {
+	/* Enable the 50MHz oscillator for Ethernet PHY */
+	phy_50mhz {
+		gpio-hog;
+		gpios = <27 GPIO_ACTIVE_LOW>;
+		output-high;
+		line-name = "PHY 50 MHz oscillator";
+	};
+};

@@ -4,7 +4,6 @@
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 
-#include "soc.h"
 #include "generic.h"
 #include "clock.h"
 
@@ -236,6 +235,9 @@ static void at91sam9260_initialize(void)
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9260_BASE_SMC, 0x200);
 }
 
-AT91_SOC_START(sam9260)
-	.init = at91sam9260_initialize,
-AT91_SOC_END
+static int at91sam9260_setup(void)
+{
+	at91_boot_soc = at91sam9260_initialize;
+	return 0;
+}
+pure_initcall(at91sam9260_setup);

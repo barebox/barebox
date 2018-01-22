@@ -20,6 +20,13 @@ config COMMON_CLK_AT91
 	select COMMON_CLK
 	select MFD_SYSCON
 
+config MACH_AT91SAM9263EK_DT
+	def_bool y
+	depends on MACH_AT91SAM9263EK && OFDEVICE
+	help
+	  Enabled for at91sam9263ek - evaluation kit.
+	  But only if we need the device tree (bootstrap do not use DT)
+
 config HAVE_AT91_SMD
 	bool
 
@@ -29,7 +36,12 @@ config HAVE_AT91_H32MX
 config HAVE_AT91_GENERATED_CLK
 	bool
 
-config HAVE_AT91_LOWLEVEL_INIT
+# Select if board support bootstrap
+config HAVE_AT91_BOOTSTRAP
+	bool
+
+# Select if board uses the common at91sam926x_board_init
+config AT91SAM926X_BOARD_INIT
 	bool
 
 config AT91SAM9_SMC
@@ -71,9 +83,6 @@ config AT91SAM9G45_RESET
 config HAVE_AT91_LOAD_BAREBOX_SRAM
 	bool
 
-config AT91SAM9_LOWLEVEL_INIT
-	bool
-
 comment "Atmel AT91 System-on-Chip"
 
 config SOC_AT91RM9200
@@ -88,7 +97,6 @@ config SOC_AT91SAM9260
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
 	select AT91SAM9_RESET
-	select AT91SAM9_LOWLEVEL_INIT
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
 	  or AT91SAM9G20 SoC.
@@ -98,7 +106,6 @@ config SOC_AT91SAM9261
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select AT91SAM9_RESET
-	select AT91SAM9_LOWLEVEL_INIT
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
@@ -108,7 +115,6 @@ config SOC_AT91SAM9263
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
 	select AT91SAM9_RESET
-	select AT91SAM9_LOWLEVEL_INIT
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
 
 config SOC_AT91SAM9G45
@@ -229,6 +235,8 @@ config SUPPORT_CALAO_DAB_MMX
 config SUPPORT_CALAO_MOB_TNY_MD2
 	bool
 
+if !AT91_MULTI_BOARDS
+
 # ----------------------------------------------------------
 
 if ARCH_AT91RM9200
@@ -306,7 +314,8 @@ config MACH_AT91SAM9261EK
 	select HAS_DM9000
 	select HAVE_AT91_DATAFLASH_CARD
 	select HAVE_NAND_ATMEL_BUSWIDTH_16
-	select HAVE_AT91_LOWLEVEL_INIT
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Select this if you are using Atmel's AT91SAM9261-EK Evaluation Kit.
 	  <http://www.atmel.com/dyn/products/tools_card.asp?tool_id=3820>
@@ -314,7 +323,8 @@ config MACH_AT91SAM9261EK
 config MACH_PM9261
 	bool "Ronetix PM9261"
 	select HAS_DM9000
-	select HAVE_AT91_LOWLEVEL_INIT
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Say y here if you are using the Ronetix PM9261 Board
 
@@ -398,34 +408,26 @@ if ARCH_AT91SAM9263
 choice
 	prompt "AT91SAM9263 Board Type"
 
-config MACH_AT91SAM9263EK
-	bool "Atmel AT91SAM9263-EK"
-	select HAVE_AT91_LOWLEVEL_INIT
-	select HAVE_NAND_ATMEL_BUSWIDTH_16
-	help
-	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
-
-config MACH_MMCCPU
-	bool "Bucyrus MMC-CPU"
-	help
-	  Say y here if you are using the Bucyrus MMC-CPU
-
 config MACH_PM9263
 	bool "Ronetix PM9263"
-	select HAVE_AT91_LOWLEVEL_INIT
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Say y here if you are using the Ronetix PM9263 Board
 
 config MACH_TNY_A9263
 	bool "CALAO TNY-A9263"
 	select SUPPORT_CALAO_MOB_TNY_MD2
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Select this if you are using a Calao Systems TNY-A9263.
 	  <http://www.calao-systems.com>
 
 config MACH_USB_A9263
 	bool "CALAO USB-A9263"
-	select HAVE_AT91_LOWLEVEL_INIT
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
 	help
 	  Select this if you are using a Calao Systems USB-A9263.
 	  <http://www.calao-systems.com>
@@ -518,6 +520,7 @@ config MACH_SAMA5D4_XPLAINED
 endchoice
 
 endif
+endif
 
 # ----------------------------------------------------------
 
@@ -527,6 +530,18 @@ config AT91_MULTI_BOARDS
 	select HAVE_PBL_MULTI_IMAGES
 
 if AT91_MULTI_BOARDS
+
+config MACH_AT91SAM9263EK
+	bool "Atmel AT91SAM9263-EK"
+	depends on ARCH_AT91SAM9263
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	select HAVE_AT91_USB_CLK
+	select HAVE_NAND_ATMEL_BUSWIDTH_16
+	select HAVE_AT91_BOOTSTRAP
+	select AT91SAM926X_BOARD_INIT
+	help
+	  Say y here if you are using Atmel's AT91SAM9263-EK Evaluation board
 
 config MACH_AT91SAM9X5EK
 	bool "Atmel AT91SAM9x5 Series Evaluation Kit"
@@ -596,7 +611,7 @@ config CALAO_MB_QIL_A9260
 
 config AT91_BOOTSTRAP
 	bool "at91 bootstrap"
-	depends on HAVE_AT91_LOWLEVEL_INIT
+	depends on HAVE_AT91_BOOTSTRAP
 	select BOOTSTRAP
 
 config AT91_LOAD_BAREBOX_SRAM

@@ -54,6 +54,7 @@ static int mount_root(void)
 {
 	mount("none", "ramfs", "/", NULL);
 	mkdir("/dev", 0);
+	mkdir("/tmp", 0);
 	mount("none", "devfs", "/dev", NULL);
 
 	if (IS_ENABLED(CONFIG_FS_EFIVARFS)) {

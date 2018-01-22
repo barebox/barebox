@@ -121,6 +121,16 @@ static inline int can_lseek_backward(int fd)
 	return 1;
 }
 
+bool __is_tftp_fs(const char *path);
+
+static inline bool is_tftp_fs(const char *path)
+{
+	if (!IS_ENABLED(CONFIG_FS_TFTP))
+		return false;
+
+	return __is_tftp_fs(path);
+}
+
 #define drv_to_fs_driver(d) container_of(d, struct fs_driver_d, drv)
 
 int flush(int fd);

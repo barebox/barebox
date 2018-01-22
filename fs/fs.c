@@ -1906,3 +1906,25 @@ char *path_get_linux_rootarg(const char *path)
 
 	return xstrdup(str);
 }
+
+/**
+ * __is_tftp_fs() - return true when path is mounted on TFTP
+ * @path: The path
+ *
+ * Do not use directly, use is_tftp_fs instead.
+ *
+ * Return: true when @path is on TFTP, false otherwise
+ */
+bool __is_tftp_fs(const char *path)
+{
+	struct fs_device_d *fsdev;
+
+	fsdev = get_fsdevice_by_path(path);
+	if (!fsdev)
+		return false;
+
+	if (strcmp(fsdev->driver->drv.name, "tftp"))
+		return false;
+
+	return true;
+}

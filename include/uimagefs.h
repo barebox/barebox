@@ -45,7 +45,7 @@ struct uimagefs_handle {
 	struct image_header header;
 	int nb_data_entries;
 	char *filename;
-	char *tmp;
+	char *copy;
 
 	struct list_head list;
 };

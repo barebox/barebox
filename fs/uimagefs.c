@@ -196,7 +196,6 @@ static void uimagefs_remove(struct device_d *dev)
 {
 	struct uimagefs_handle *priv = dev->priv;
 	struct uimagefs_handle_data *d, *tmp;
-	struct stat s;
 
 	list_for_each_entry_safe(d, tmp, &priv->list, list) {
 		free(d->name);
@@ -204,10 +203,11 @@ static void uimagefs_remove(struct device_d *dev)
 		free(d);
 	}
 
-	if (IS_BUILTIN(CONFIG_FS_TFTP) && !stat(priv->tmp, &s))
-		unlink(priv->tmp);
+	if (priv->copy) {
+		unlink(priv->copy);
+		free(priv->copy);
+	}
 
-	free(priv->tmp);
 	free(priv);
 }
 
@@ -363,26 +363,19 @@ static int __uimage_open(struct uimagefs_handle *priv)
 	int ret;
 	size_t offset = 0;
 	size_t data_offset = 0;
+	const char *filename = priv->filename;
 
-again:
-	fd = open(priv->filename, O_RDONLY);
+	if (is_tftp_fs(filename)) {
+		ret = cache_file(filename, &priv->copy);
+		if (ret)
+			return ret;
+		filename = priv->copy;
+	}
+
+	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
 		printf("could not open: %s\n", errno_str());
 		return fd;
-	}
-
-	/*
-	 * Hack around tftp fs. We need lseek for uImage support, but
-	 * this cannot be implemented in tftp fs, so we detect this
-	 * and copy the file to ram if it fails
-	 */
-	if (IS_BUILTIN(CONFIG_FS_TFTP) && !can_lseek_backward(fd)) {
-		close(fd);
-		ret = copy_file(priv->filename, priv->tmp, 0);
-		if (ret)
-			return ret;
-		priv->filename = priv->tmp;
-		goto again;
 	}
 
 	header = &priv->header;
@@ -513,10 +506,6 @@ static int uimagefs_probe(struct device_d *dev)
 
 	priv->filename = fsdev->backingstore;
 	dev_dbg(dev, "mount: %s\n", fsdev->backingstore);
-
-	if (IS_BUILTIN(CONFIG_FS_TFTP))
-		priv->tmp = basprintf("/.uImage_tmp_%08x",
-					crc32(0, fsdev->path, strlen(fsdev->path)));
 
 	ret = __uimage_open(priv);
 	if (ret)

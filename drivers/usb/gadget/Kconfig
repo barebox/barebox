@@ -57,6 +57,7 @@ config USB_GADGET_FASTBOOT
 	bool
 	select BANNER
 	select FILE_LIST
+	select IMAGE_SPARSE
 	prompt "Android Fastboot support"
 
 endif

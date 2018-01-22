@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <envfs.h>
 #include <disks.h>
+#include <image-sparse.h>
 
 struct filetype_str {
 	const char *name;	/* human readable filetype */
@@ -64,6 +65,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_mxs_bootstream] = { "Freescale MXS bootstream", "mxsbs" },
 	[filetype_socfpga_xload] = { "SoCFPGA prebootloader image", "socfpga-xload" },
 	[filetype_kwbimage_v1] = { "MVEBU kwbimage (v1)", "kwb" },
+	[filetype_android_sparse] = { "Android sparse image", "sparse" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -300,6 +302,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	    buf8[0x1c] == 0 && buf8[0x1d] == 0 &&
 	    (buf8[0x1e] == 0 || buf8[0x1e] == 1))
 		return filetype_kwbimage_v1;
+
+	if (is_sparse_image(_buf))
+		return filetype_android_sparse;
 
 	if (bufsize < 64)
 		return filetype_unknown;

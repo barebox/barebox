@@ -92,6 +92,9 @@ static int file_list_parse_one(struct file_list *files, const char *partstr, con
 			case 'c':
 				flags |= FILE_LIST_FLAG_CREATE;
 				break;
+			case 'u':
+				flags |= FILE_LIST_FLAG_UBI;
+				break;
 			default:
 				pr_err("Unknown flag '%c'\n", *partstr);
 				return -EINVAL;

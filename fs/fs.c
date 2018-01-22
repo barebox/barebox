@@ -742,6 +742,28 @@ int creat(const char *pathname, mode_t mode)
 }
 EXPORT_SYMBOL(creat);
 
+int ftruncate(int fd, loff_t length)
+{
+	struct fs_driver_d *fsdrv;
+	FILE *f;
+	int ret;
+
+	if (check_fd(fd))
+		return -errno;
+
+	f = &files[fd];
+
+	fsdrv = f->fsdev->driver;
+
+	ret = fsdrv->truncate(&f->fsdev->dev, f, length);
+	if (ret)
+		return ret;
+
+	f->size = length;
+
+	return 0;
+}
+
 int ioctl(int fd, int request, void *buf)
 {
 	struct fs_driver_d *fsdrv;

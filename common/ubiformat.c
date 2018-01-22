@@ -679,3 +679,64 @@ out_close:
 	return err;
 }
 
+int ubiformat_write(struct mtd_info *mtd, const void *buf, size_t count,
+		    loff_t offset)
+{
+	int writesize = mtd->writesize >> mtd->subpage_sft;
+	size_t retlen;
+	int ret;
+
+	if (offset & (mtd->writesize - 1))
+		return -EINVAL;
+
+	if (count & (mtd->writesize - 1))
+		return -EINVAL;
+
+	while (count) {
+		size_t now;
+
+		now = ALIGN(offset, mtd->erasesize) - offset;
+		if (now > count)
+			now = count;
+
+		if (!now) {
+			const struct ubi_ec_hdr *ec = buf;
+			const struct ubi_vid_hdr *vid;
+
+			if (be32_to_cpu(ec->magic) != UBI_EC_HDR_MAGIC) {
+				pr_err("bad UBI magic %#08x, should be %#08x",
+					be32_to_cpu(ec->magic), UBI_EC_HDR_MAGIC);
+				return -EINVAL;
+			}
+
+			/* skip ec header */
+			offset += writesize;
+			buf += writesize;
+			count -= writesize;
+
+			if (!count)
+				break;
+
+			vid = buf;
+			if (be32_to_cpu(vid->magic) != UBI_VID_HDR_MAGIC) {
+				pr_err("bad UBI magic %#08x, should be %#08x",
+				       be32_to_cpu(vid->magic), UBI_VID_HDR_MAGIC);
+				return -EINVAL;
+			}
+
+			continue;
+		}
+
+		ret = mtd_write(mtd, offset, now, &retlen, buf);
+		if (ret < 0)
+			return ret;
+		if (retlen != now)
+			return -EIO;
+
+		buf += now;
+		count -= now;
+		offset += now;
+	}
+
+	return 0;
+}

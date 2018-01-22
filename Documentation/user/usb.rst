@@ -35,6 +35,43 @@ command, they show up as ``/dev/diskx`` and can be used like any other device.
 USB device support
 ------------------
 
+barebox supports several different USB gadget drivers:
+
+- Device Firmware Upgrade (DFU)
+- Android Fastboot
+- serial gadget
+
+The recommended way to use USB gadget is with the :ref:`command_usbgadget` command.
+While there are individual commands for :ref:`command_dfu` and :ref:`command_usbserial`,
+the :ref:`command_usbgadget` commands supports registering composite gadgets.
+
+Partition description
+^^^^^^^^^^^^^^^^^^^^^
+
+The USB gadget commands for Android Fastboot and DFU take a partition description
+which describes which barebox partitions are exported via USB. The partition
+description is referred to as ``<desc>`` in the command help texts. It has
+the general form ``partition(name)flags,partition(name)flags,...``.
+
+The **partition** field is the partition as accessible in barebox. This can be a
+path in ``/dev/``, but could also be a regular file.
+
+The **name** field is the name under which the partition shall be exported. This
+is the name under which the partition can be found with the host tool.
+
+Several **flags** are supported, each denoted by a single character:
+
+* ``s`` Safe mode. The file is downloaded completely before it is written (DFU specific)
+* ``r`` Readback. The partition is allowed to be read back (DFU specific)
+* ``c`` The file shall be created if it doesn't exist. Needed when a regular file is exported.
+* ``u`` The partition is a MTD device and shall be flashed with a UBI image.
+
+Example:
+
+.. code-block:: sh
+
+  /dev/nand0.barebox.bb(barebox)sr,/kernel(kernel)rc
+
 DFU
 ^^^
 
@@ -43,16 +80,8 @@ Implementers Forum. It provides a vendor-independent way to update the firmware 
 devices. The current specification is version 1.1 and can be downloaded here:
 http://www.usb.org/developers/devclass_docs/DFU_1.1.pdf
 
-On the barebox side, the update is handled with the :ref:`command_dfu` command.
-It is passed a list of partitions to provide to the host. The partition list
-has the form ``<file>(<name>)<flags>``.  ``file`` is the path to the device or
-regular file which shall be updated. ``name`` is the name under which the partition
-shall be provided to the host. For the possible ``flags`` see
-:ref:`command_dfu`. A typical ``dfu`` command could look like this:
-
-.. code-block:: sh
-
-  dfu "/dev/nand0.barebox.bb(barebox)sr,/dev/nand0.kernel.bb(kernel)r,/dev/nand0.root.bb(root)r"
+On the barebox side, the update is handled with the :ref:`command_usbgadget` or the
+:ref:`command_dfu` command.
 
 On the host side, the tool `dfu-util <http://dfu-util.gnumonks.org/>`_ can be used
 to update the partitions. It is available for most distributions and typically

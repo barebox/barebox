@@ -39,6 +39,7 @@ enum filetype {
 	filetype_mxs_bootstream,
 	filetype_socfpga_xload,
 	filetype_kwbimage_v1,
+	filetype_android_sparse,
 	filetype_max,
 };
 

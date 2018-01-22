@@ -20,5 +20,6 @@ int symlink(const char *pathname, const char *newpath);
 int readlink(const char *path, char *buf, size_t bufsiz);
 int chdir(const char *pathname);
 const char *getcwd(void);
+int ftruncate(int fd, loff_t length);
 
 #endif /* __UNISTD_H */

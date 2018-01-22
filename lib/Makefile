@@ -32,6 +32,7 @@ obj-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
 obj-y			+= glob.o
 obj-y			+= notifier.o
 obj-y			+= random.o
+obj-$(CONFIG_IMAGE_SPARSE) += image-sparse.o
 obj-y			+= lzo/
 obj-$(CONFIG_LZ4_DECOMPRESS) += lz4/
 obj-y			+= show_progress.o

@@ -101,26 +101,6 @@ struct fs_device_d {
 	char *linux_rootarg;
 };
 
-/*
- * Some filesystems i.e. tftpfs only support lseek into one direction.
- * To detect this limited functionality we add this extra function.
- * Additionaly we also return 0 if we even can not seek forward.
- */
-static inline int can_lseek_backward(int fd)
-{
-	int ret;
-
-	ret = lseek(fd, 1, SEEK_SET);
-	if (ret < 0)
-		return 0;
-
-	ret = lseek(fd, 0, SEEK_SET);
-	if (ret < 0)
-		return 0;
-
-	return 1;
-}
-
 bool __is_tftp_fs(const char *path);
 
 static inline bool is_tftp_fs(const char *path)

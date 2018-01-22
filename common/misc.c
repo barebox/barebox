@@ -187,6 +187,13 @@ const char *barebox_get_hostname(void)
 }
 EXPORT_SYMBOL(barebox_get_hostname);
 
+void barebox_set_hostname_no_overwrite(const char *__hostname)
+{
+	if (!barebox_get_hostname())
+		barebox_set_hostname(__hostname);
+}
+EXPORT_SYMBOL(barebox_set_hostname_no_overwrite);
+
 BAREBOX_MAGICVAR_NAMED(global_hostname, global.hostname,
 		"shortname of the board. Also used as hostname for DHCP requests");
 

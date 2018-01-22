@@ -2357,7 +2357,7 @@ static void write_field(struct mci *mci, u8 *reg, u16 index, u8 value,
 		break;
 	}
 
-	mci_switch(mci, 0, index, value);
+	mci_switch(mci, index, value);
 
 out:
 	return;

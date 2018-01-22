@@ -39,6 +39,7 @@ int libscan_ubi_scan(struct mtd_info *mtd, struct ubi_scan_info **info,
 	int eb, v = (verbose == 2), pr = (verbose == 1), eb_cnt;
 	struct ubi_scan_info *si;
 	unsigned long long sum = 0;
+	uint64_t lastprint = 0;
 
 	eb_cnt = mtd_div_by_eb(mtd->size, mtd);
 
@@ -66,8 +67,12 @@ int libscan_ubi_scan(struct mtd_info *mtd, struct ubi_scan_info **info,
 		if (v)
 			normsg_cont("scanning eraseblock %d", eb);
 		if (pr) {
-			printf("\r" PROGRAM_NAME ": scanning eraseblock %d -- %2u %% complete  ",
-			       eb, (eb + 1) * 100 / eb_cnt);
+			if (is_timeout(lastprint, 300 * MSECOND) ||
+			    eb == eb_cnt - 1) {
+				printf("\r" PROGRAM_NAME ": scanning eraseblock %d -- %2u %% complete  ",
+					eb, (eb + 1) * 100 / eb_cnt);
+				lastprint = get_time_ns();
+			}
 		}
 
 		ret = mtd_peb_is_bad(mtd, eb);

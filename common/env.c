@@ -223,34 +223,50 @@ static int setenv_raw(struct list_head *l, const char *name, const char *value)
 	return 0;
 }
 
+static int dev_setenv(const char *name, const char *val)
+{
+	const char *pos, *dot, *varname;
+	char *devname;
+	struct device_d *dev;
+
+	pos = name;
+
+	while (1) {
+		dot = strchr(pos, '.');
+		if (!dot)
+			break;
+
+		devname = xstrndup(name, dot - name);
+		varname = dot + 1;
+
+		dev = get_device_by_name(devname);
+
+		free(devname);
+
+		if (dev) {
+			if (get_param_by_name(dev, varname))
+				return dev_set_param(dev, varname, val);
+		}
+
+		pos = dot + 1;
+	}
+
+	return -ENODEV;
+}
+
 int setenv(const char *_name, const char *value)
 {
 	char *name = strdup(_name);
-	char *par;
 	int ret = 0;
 	struct list_head *list;
 
 	if (value && !*value)
 		value = NULL;
 
-
-	if ((par = strchr(name, '.'))) {
-		struct device_d *dev;
-
-		*par++ = 0;
-		dev = get_device_by_name(name);
-		if (dev) {
-			ret = dev_set_param(dev, par, value);
-			if (ret)
-				eprintf("%s: set parameter %s: %s\n",
-						dev_name(dev), par, strerror(-ret));
-		} else {
-			ret = -ENODEV;
-			eprintf("set parameter: no such device %s\n", name);
-		}
-
-		errno = -ret;
-
+	if (strchr(name, '.')) {
+		ret = dev_setenv(name, value);
+		if (ret)
+			eprintf("Cannot set parameter: %s\n", strerror(-ret));
 		goto out;
 	}
 

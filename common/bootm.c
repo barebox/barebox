@@ -568,7 +568,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	if (IS_ENABLED(CONFIG_FITIMAGE) && os_type == filetype_oftree) {
 		struct fit_handle *fit;
 
-		fit = fit_open(data->os_file, data->os_part, data->verbose, data->verify);
+		fit = fit_open(data->os_file, data->verbose, data->verify);
 		if (IS_ERR(fit)) {
 			printf("Loading FIT image %s failed with: %s\n", data->os_file,
 			       strerrorp(fit));
@@ -577,6 +577,13 @@ int bootm_boot(struct bootm_data *bootm_data)
 		}
 
 		data->os_fit = fit;
+
+		ret = fit_open_configuration(data->os_fit, data->os_part);
+		if (ret) {
+			printf("Cannot open FIT image configuration '%s'\n",
+			       data->os_part ? data->os_part : "default");
+			goto err_out;
+		}
 	}
 
 	if (os_type == filetype_uimage) {

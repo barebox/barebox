@@ -397,14 +397,37 @@ err_digest_free:
 	return ret;
 }
 
-static int fit_open_image(struct fit_handle *handle, const char *unit, const void **outdata,
-	unsigned long *outsize)
+int fit_has_image(struct fit_handle *handle, const char *name)
+{
+	const char *unit;
+	struct device_node *conf_node = handle->conf_node;
+
+	if (!conf_node)
+		return -EINVAL;
+
+	if (of_property_read_string(conf_node, name, &unit))
+		return 0;
+
+	return 1;
+}
+
+int fit_open_image(struct fit_handle *handle, const char *name,
+		   const void **outdata, unsigned long *outsize)
 {
 	struct device_node *image = NULL, *hash;
-	const char *type = NULL, *desc= "(no description)";
+	const char *unit, *type = NULL, *desc= "(no description)";
 	const void *data;
 	int data_len;
 	int ret = 0;
+	struct device_node *conf_node = handle->conf_node;
+
+	if (!conf_node)
+		return -EINVAL;
+
+	if (of_property_read_string(conf_node, name, &unit)) {
+		pr_err("No image named '%s'\n", name);
+		return -ENOENT;
+	}
 
 	image = of_get_child_by_name(handle->root, "images");
 	if (!image)
@@ -523,7 +546,7 @@ default_unit:
 	return -ENOENT;
 }
 
-static int fit_open_configuration(struct fit_handle *handle, const char *name)
+int fit_open_configuration(struct fit_handle *handle, const char *name)
 {
 	struct device_node *conf_node = NULL;
 	const char *unit, *desc = "(no description)";
@@ -556,22 +579,25 @@ static int fit_open_configuration(struct fit_handle *handle, const char *name)
 	if (ret)
 		return ret;
 
-	if (of_property_read_string(conf_node, "kernel", &unit) == 0) {
-		ret = fit_open_image(handle, unit, &handle->kernel, &handle->kernel_size);
-		if (ret)
-			return ret;
-	} else {
-		return -ENOENT;
-	}
+	handle->conf_node = conf_node;
 
-	if (of_property_read_string(conf_node, "fdt", &unit) == 0) {
-		ret = fit_open_image(handle, unit, &handle->oftree, &handle->oftree_size);
+	if (fit_has_image(handle, "kernel")) {
+		ret = fit_open_image(handle, "kernel", &handle->kernel,
+				     &handle->kernel_size);
 		if (ret)
 			return ret;
 	}
 
-	if (of_property_read_string(conf_node, "ramdisk", &unit) == 0) {
-		ret = fit_open_image(handle, unit, &handle->initrd, &handle->initrd_size);
+	if (fit_has_image(handle, "ramdisk")) {
+		ret = fit_open_image(handle, "ramdisk", &handle->initrd,
+				     &handle->initrd_size);
+		if (ret)
+			return ret;
+	}
+
+	if (fit_has_image(handle, "fdt")) {
+		ret = fit_open_image(handle, "fdt", &handle->oftree,
+				     &handle->oftree_size);
 		if (ret)
 			return ret;
 	}
@@ -579,7 +605,7 @@ static int fit_open_configuration(struct fit_handle *handle, const char *name)
 	return 0;
 }
 
-struct fit_handle *fit_open(const char *filename, const char *config, bool verbose,
+struct fit_handle *fit_open(const char *filename, bool verbose,
 			    enum bootm_verify verify)
 {
 	struct fit_handle *handle = NULL;
@@ -609,10 +635,6 @@ struct fit_handle *fit_open(const char *filename, const char *config, bool verbo
 	of_property_read_string(handle->root, "description", &desc);
 	pr_info("'%s': %s\n", filename, desc);
 
-	ret = fit_open_configuration(handle, config);
-	if (ret)
-		goto err;
-
 	return handle;
  err:
 	if (handle->root)
@@ -636,10 +658,23 @@ void fit_close(struct fit_handle *handle)
 static int do_bootm_sandbox_fit(struct image_data *data)
 {
 	struct fit_handle *handle;
-	handle = fit_open(data->os_file, data->os_part, data->verbose);
-	if (handle)
-		fit_close(handle);
-	return 0;
+	int ret;
+	void *kernel;
+	unsigned long kernel_size;
+
+	handle = fit_open(data->os_file, data->verbose);
+	if (IS_ERR(handle))
+		return PTR_ERR(handle);
+
+	ret = fit_open_configuration(handle, data->os_part);
+	if (ret)
+		goto out;
+
+	ret = 0;
+out:
+	fit_close(handle);
+
+	return ret;
 }
 
 static struct image_handler sandbox_fit_handler = {

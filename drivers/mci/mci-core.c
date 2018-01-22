@@ -396,8 +396,7 @@ int mci_send_ext_csd(struct mci *mci, char *ext_csd)
  * @param value FIXME
  * @return Transaction status (0 on success)
  */
-int mci_switch(struct mci *mci, unsigned set, unsigned index,
-			unsigned value)
+int mci_switch(struct mci *mci, unsigned index, unsigned value)
 {
 	struct mci_cmd cmd;
 
@@ -471,7 +470,7 @@ static int mmc_change_freq(struct mci *mci)
 
 	cardtype = mci->ext_csd[EXT_CSD_DEVICE_TYPE] & EXT_CSD_CARD_TYPE_MASK;
 
-	err = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING, 1);
+	err = mci_switch(mci, EXT_CSD_HS_TIMING, 1);
 
 	if (err) {
 		dev_dbg(&mci->dev, "MMC frequency changing failed: %d\n", err);
@@ -1044,9 +1043,7 @@ static int mci_startup_mmc(struct mci *mci)
 		 * 4bit transfer mode. On success set the corresponding
 		 * bus width on the host.
 		 */
-		err = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL,
-				 EXT_CSD_BUS_WIDTH,
-				 ext_csd_bits[idx]);
+		err = mci_switch(mci, EXT_CSD_BUS_WIDTH, ext_csd_bits[idx]);
 		if (err) {
 			if (idx == 0)
 				dev_warn(&mci->dev, "Changing MMC bus width failed: %d\n", err);
@@ -1253,8 +1250,7 @@ static int mci_blk_part_switch(struct mci_part *part)
 		part_config &= ~EXT_CSD_PART_CONFIG_ACC_MASK;
 		part_config |= part->part_cfg;
 
-		ret = mci_switch(mci, EXT_CSD_CMD_SET_NORMAL,
-				EXT_CSD_PARTITION_CONFIG, part_config);
+		ret = mci_switch(mci, EXT_CSD_PARTITION_CONFIG, part_config);
 		if (ret)
 			return ret;
 
@@ -1568,8 +1564,8 @@ static int mci_set_boot(struct param_d *param, void *priv)
 	mci->ext_csd_part_config &= ~(7 << 3);
 	mci->ext_csd_part_config |= mci->bootpart << 3;
 
-	return mci_switch(mci, EXT_CSD_CMD_SET_NORMAL,
-			EXT_CSD_PARTITION_CONFIG, mci->ext_csd_part_config);
+	return mci_switch(mci,
+			  EXT_CSD_PARTITION_CONFIG, mci->ext_csd_part_config);
 }
 
 static const char *mci_boot_names[] = {

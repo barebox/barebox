@@ -190,6 +190,7 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 	int fd, img_ebs, eb, written_ebs = 0, ret = -1, eb_cnt;
 	off_t st_size;
 	char *buf = NULL;
+	uint64_t lastprint = 0;
 
 	eb_cnt = mtd_num_pebs(mtd);
 
@@ -229,8 +230,12 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 		long long ec;
 
 		if (!args->quiet && !args->verbose) {
-			printf("\rubiformat: flashing eraseblock %d -- %2u %% complete  ",
-			       eb, (eb + 1) * 100 / eb_cnt);
+			if (is_timeout(lastprint, 300 * MSECOND) ||
+			    eb == eb_cnt - 1) {
+				printf("\rubiformat: flashing eraseblock %d -- %2u %% complete  ",
+					eb, (eb + 1) * 100 / eb_cnt);
+				lastprint = get_time_ns();
+			}
 		}
 
 		if (si->ec[eb] == EB_BAD)
@@ -325,6 +330,7 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 	struct ubi_vtbl_record *vtbl;
 	int eb1 = -1, eb2 = -1;
 	long long ec1 = -1, ec2 = -1;
+	uint64_t lastprint = 0;
 
 	eb_cnt = mtd_num_pebs(mtd);
 
@@ -340,8 +346,12 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 		long long ec;
 
 		if (!args->quiet && !args->verbose) {
-			printf("\rubiformat: formatting eraseblock %d -- %2u %% complete  ",
-			       eb, (eb + 1 - start_eb) * 100 / (eb_cnt - start_eb));
+			if (is_timeout(lastprint, 300 * MSECOND) ||
+			    eb == eb_cnt - 1) {
+				printf("\rubiformat: formatting eraseblock %d -- %2u %% complete  ",
+					eb, (eb + 1 - start_eb) * 100 / (eb_cnt - start_eb));
+				lastprint = get_time_ns();
+			}
 		}
 
 		if (si->ec[eb] == EB_BAD)

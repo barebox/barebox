@@ -93,8 +93,6 @@ extern int (*barebox_main)(void);
 void __noreturn start_barebox(void);
 void shutdown_barebox(void);
 
-#define ALIGN_DOWN(x, a)	((x) & ~((typeof(x))(a) - 1))
-
 #define ARRAY_AND_SIZE(x)	(x), ARRAY_SIZE(x)
 
 /*
@@ -139,6 +137,7 @@ const char *barebox_get_model(void);
 void barebox_set_model(const char *);
 const char *barebox_get_hostname(void);
 void barebox_set_hostname(const char *);
+void barebox_set_hostname_no_overwrite(const char *);
 
 #if defined(CONFIG_MIPS)
 #include <asm/addrspace.h>

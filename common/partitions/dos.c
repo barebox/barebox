@@ -21,6 +21,22 @@
 
 #include "parser.h"
 
+
+enum {
+/* These three have identical behaviour; use the second one if DOS FDISK gets
+   confused about extended/logical partitions starting past cylinder 1023. */
+	DOS_EXTENDED_PARTITION = 5,
+	LINUX_EXTENDED_PARTITION = 0x85,
+	WIN98_EXTENDED_PARTITION = 0x0f,
+};
+
+static inline int is_extended_partition(struct partition *p)
+{
+	return (p->dos_partition_type == DOS_EXTENDED_PARTITION ||
+	        p->dos_partition_type == WIN98_EXTENDED_PARTITION ||
+		p->dos_partition_type == LINUX_EXTENDED_PARTITION);
+}
+
 /**
  * Guess the size of the disk, based on the partition table entries
  * @param dev device to create partitions for
@@ -212,13 +228,8 @@ static void dos_partition(void *buf, struct block_device *blk,
 				sprintf(pd->parts[n].partuuid, "%08x-%02d",
 						signature, i + 1);
 			pd->used_entries++;
-			/*
-			 * Partitions of type 0x05 and 0x0f (and some more)
-			 * contain extended partitions. Only check for type 0x0f
-			 * here as this is the easiest to parse and common
-			 * enough.
-			 */
-			if (pentry.dos_partition_type == 0x0f) {
+
+			if (is_extended_partition(&pentry)) {
 				if (!extended_partition)
 					extended_partition = &pd->parts[n];
 				else

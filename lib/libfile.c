@@ -496,7 +496,7 @@ int open_and_lseek(const char *filename, int mode, loff_t pos)
  * create a unique filename.
  *
  * Return: This function returns a filename which can be used as a temporary
- *         file lateron. The returned filename must be freed by the caller.
+ *         file later on. The returned filename must be freed by the caller.
  */
 char *make_temp(const char *template)
 {
@@ -511,4 +511,32 @@ char *make_temp(const char *template)
 	} while (!ret);
 
 	return name;
+}
+
+/**
+ * cache_file - Cache a file in /tmp
+ * @path:	The file to cache
+ * @newpath:	The return path where the file is copied to
+ *
+ * This function copies a given file to /tmp and returns its name in @newpath.
+ * @newpath is dynamically allocated and must be freed by the caller.
+ *
+ * Return: 0 for success, negative error code otherwise.
+ */
+int cache_file(const char *path, char **newpath)
+{
+	char *npath;
+	int ret;
+
+	npath = make_temp("filecache");
+
+	ret = copy_file(path, npath, 0);
+	if (ret) {
+		free(npath);
+		return ret;
+	}
+
+	*newpath = npath;
+
+	return 0;
 }

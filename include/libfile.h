@@ -28,4 +28,6 @@ int unlink_recursive(const char *path, char **failedpath);
 
 char *make_temp(const char *template);
 
+int cache_file(const char *path, char **newpath);
+
 #endif /* __LIBFILE_H */

@@ -32,36 +32,6 @@
 #include <linux/err.h>
 #include "designware.h"
 
-struct dw_eth_dev {
-	struct eth_device netdev;
-	struct mii_bus miibus;
-
-	void (*fix_mac_speed)(int speed);
-	u8 macaddr[6];
-	u32 tx_currdescnum;
-	u32 rx_currdescnum;
-
-	struct dmamacdescr *tx_mac_descrtable;
-	struct dmamacdescr *rx_mac_descrtable;
-
-	u8 *txbuffs;
-	u8 *rxbuffs;
-
-	struct eth_mac_regs *mac_regs_p;
-	struct eth_dma_regs *dma_regs_p;
-	int phy_addr;
-	phy_interface_t interface;
-	int enh_desc;
-};
-
-struct dw_eth_drvdata {
-	bool enh_desc;
-};
-
-static struct dw_eth_drvdata dwmac_370a_drvdata = {
-	.enh_desc = 1,
-};
-
 /* Speed specific definitions */
 #define SPEED_10M		1
 #define SPEED_100M		2
@@ -447,7 +417,7 @@ static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
 	return 0;
 }
 
-static int dwc_ether_probe(struct device_d *dev)
+struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct dw_eth_dev *priv;
@@ -462,9 +432,13 @@ static int dwc_ether_probe(struct device_d *dev)
 
 	ret = dev_get_drvdata(dev, (const void **)&drvdata);
 	if (ret)
-		return ret;
+		return ERR_PTR(ret);
 
-	priv->enh_desc = drvdata->enh_desc;
+	if (drvdata && drvdata->enh_desc)
+		priv->enh_desc = drvdata->enh_desc;
+	else
+		dev_warn(dev, "No drvdata specified\n");
+
 
 	if (pdata) {
 		priv->phy_addr = pdata->phy_addr;
@@ -473,12 +447,12 @@ static int dwc_ether_probe(struct device_d *dev)
 	} else {
 		ret = dwc_probe_dt(dev, priv);
 		if (ret)
-			return ret;
+			return ERR_PTR(ret);
 	}
 
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
-		return PTR_ERR(iores);
+		return ERR_CAST(iores);
 	base = IOMEM(iores->start);
 
 	priv->mac_regs_p = base;
@@ -512,24 +486,6 @@ static int dwc_ether_probe(struct device_d *dev)
 
 	mdiobus_register(miibus);
 	eth_register(edev);
-	return 0;
+
+	return priv;
 }
-
-static __maybe_unused struct of_device_id dwc_ether_compatible[] = {
-	{
-		.compatible = "snps,dwmac-3.70a",
-		.data = &dwmac_370a_drvdata,
-	}, {
-		.compatible = "snps,dwmac-3.72a",
-		.data = &dwmac_370a_drvdata,
-	}, {
-		/* sentinel */
-	}
-};
-
-static struct driver_d dwc_ether_driver = {
-	.name = "designware_eth",
-	.probe = dwc_ether_probe,
-	.of_compatible = DRV_OF_COMPAT(dwc_ether_compatible),
-};
-device_platform_driver(dwc_ether_driver);

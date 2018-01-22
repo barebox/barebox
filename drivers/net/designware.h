@@ -20,6 +20,39 @@
 #ifndef __DESIGNWARE_ETH_H
 #define __DESIGNWARE_ETH_H
 
+struct eth_device;
+struct mii_bus;
+
+struct dw_eth_dev {
+	struct eth_device netdev;
+	struct mii_bus miibus;
+
+	void (*fix_mac_speed)(int speed);
+	u8 macaddr[6];
+	u32 tx_currdescnum;
+	u32 rx_currdescnum;
+
+	struct dmamacdescr *tx_mac_descrtable;
+	struct dmamacdescr *rx_mac_descrtable;
+
+	u8 *txbuffs;
+	u8 *rxbuffs;
+
+	struct eth_mac_regs *mac_regs_p;
+	struct eth_dma_regs *dma_regs_p;
+	int phy_addr;
+	phy_interface_t interface;
+	int enh_desc;
+
+	struct reset_control	*rst;
+};
+
+struct dw_eth_drvdata {
+	bool enh_desc;
+};
+
+struct dw_eth_dev *dwc_drv_probe(struct device_d *dev);
+
 #define CONFIG_TX_DESCR_NUM	16
 #define CONFIG_RX_DESCR_NUM	16
 #define CONFIG_ETH_BUFSIZE	2048

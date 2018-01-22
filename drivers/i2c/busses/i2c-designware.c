@@ -32,6 +32,7 @@
 #include <xfuncs.h>
 #include <linux/clk.h>
 #include <linux/err.h>
+#include <linux/math64.h>
 
 #include <io.h>
 #include <i2c/i2c.h>
@@ -75,6 +76,7 @@
 #define DW_IC_TX_TL			0x3c
 #define DW_IC_CLR_INTR			0x40
 #define DW_IC_CLR_TX_ABRT		0x54
+#define DW_IC_SDA_HOLD			0x7c
 
 #define DW_IC_ENABLE			0x6c
 #define DW_IC_ENABLE_ENABLE		(1 << 0)
@@ -90,6 +92,8 @@
 #define DW_IC_ENABLE_STATUS		0x9c
 #define DW_IC_ENABLE_STATUS_IC_EN	(1 << 0)
 
+#define DW_IC_COMP_VERSION		0xf8
+#define DW_IC_SDA_HOLD_MIN_VERS		0x3131312A
 #define DW_IC_COMP_TYPE			0xfc
 #define DW_IC_COMP_TYPE_VALUE		0x44570140
 
@@ -99,10 +103,15 @@
 #define DW_TIMEOUT_TX			(2 * MSECOND)
 #define DW_TIMEOUT_RX			(2 * MSECOND)
 
+#define DW_IC_SDA_HOLD_RX_SHIFT		16
+#define DW_IC_SDA_HOLD_RX_MASK		GENMASK(23, DW_IC_SDA_HOLD_RX_SHIFT)
+
+
 struct dw_i2c_dev {
 	void __iomem *base;
 	struct clk *clk;
 	struct i2c_adapter adapter;
+	u32 sda_hold_time;
 };
 
 static inline struct dw_i2c_dev *to_dw_i2c_dev(struct i2c_adapter *a)
@@ -202,6 +211,7 @@ i2c_dw_scl_lcnt(uint32_t ic_clk, uint32_t tLOW, uint32_t tf, int offset)
 static void i2c_dw_setup_timings(struct dw_i2c_dev *dw)
 {
 	uint32_t hcnt, lcnt;
+	u32 reg;
 
 	const uint32_t sda_falling_time = 300; /* ns */
 	const uint32_t scl_falling_time = 300; /* ns */
@@ -234,6 +244,36 @@ static void i2c_dw_setup_timings(struct dw_i2c_dev *dw)
 
 	writel(hcnt, dw->base + DW_IC_FS_SCL_HCNT);
 	writel(lcnt, dw->base + DW_IC_FS_SCL_LCNT);
+
+	/* Configure SDA Hold Time if required */
+	reg = readl(dw->base + DW_IC_COMP_VERSION);
+	if (reg >= DW_IC_SDA_HOLD_MIN_VERS) {
+		u32 ht;
+		int ret;
+
+		ret = of_property_read_u32(dw->adapter.dev.device_node,
+					   "i2c-sda-hold-time-ns", &ht);
+		if (ret) {
+			/* Keep previous hold time setting if no one set it */
+			dw->sda_hold_time = readl(dw->base + DW_IC_SDA_HOLD);
+		} else if (ht) {
+			dw->sda_hold_time = div_u64((u64)input_clock_khz * ht + 500000,
+						    1000000);
+		}
+
+		/*
+		 * Workaround for avoiding TX arbitration lost in case I2C
+		 * slave pulls SDA down "too quickly" after falling egde of
+		 * SCL by enabling non-zero SDA RX hold. Specification says it
+		 * extends incoming SDA low to high transition while SCL is
+		 * high but it apprears to help also above issue.
+		 */
+		if (!(dw->sda_hold_time & DW_IC_SDA_HOLD_RX_MASK))
+			dw->sda_hold_time |= 1 << DW_IC_SDA_HOLD_RX_SHIFT;
+
+		dev_dbg(&dw->adapter.dev, "adjust SDA hold time.\n");
+		writel(dw->sda_hold_time, dw->base + DW_IC_SDA_HOLD);
+	}
 }
 
 static int i2c_dw_wait_for_bits(struct dw_i2c_dev *dw, uint32_t offset,

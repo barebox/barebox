@@ -246,6 +246,7 @@ struct resource *file_to_sdram(const char *filename, unsigned long adr);
 struct uimage_handle {
 	struct image_header header;
 	char *name;
+	char *copy;
 	struct uimage_handle_data ihd[MAX_MULTI_IMAGE_COUNT];
 	int nb_data_entries;
 	size_t data_offset;

@@ -319,6 +319,8 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 {
 	struct device_d *dev;
 	struct device_node *phy_node;
+	struct mii_bus *bus;
+	int addr;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return NULL;
@@ -339,6 +341,16 @@ static struct phy_device *of_mdio_find_phy(struct eth_device *edev)
 
 	if (!phy_node)
 		return NULL;
+
+	if (!of_property_read_u32(phy_node, "reg", &addr)) {
+		for_each_mii_bus(bus) {
+			if (bus->parent->device_node == phy_node->parent) {
+				struct phy_device *phy = mdiobus_scan(bus, addr);
+				if (!IS_ERR(phy))
+					return phy;
+			}
+		}
+	}
 
 	bus_for_each_device(&mdio_bus_type, dev) {
 		if (dev->device_node == phy_node)

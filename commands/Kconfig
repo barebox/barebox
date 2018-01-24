@@ -1722,7 +1722,7 @@ config CMD_GPIO
 
 	  gpio_direction_output - set direction of a GPIO pin to output
 
-	  Usage: gpio_direction_output GPIO
+	  Usage: gpio_direction_output GPIO VALUE
 
 
 	  gpio_get_value - return value of a GPIO pin

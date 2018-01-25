@@ -202,6 +202,8 @@ again:
 	return handle;
 err_out:
 	close(fd);
+
+	free(handle->name);
 	free(handle);
 	if (IS_BUILTIN(CONFIG_FS_TFTP) && !stat(uimage_tmp, &s))
 		unlink(uimage_tmp);

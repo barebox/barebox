@@ -1392,6 +1392,8 @@ int mount(const char *device, const char *fsname, const char *_path,
 		fsdev_set_linux_rootarg(fsdev, str);
 	}
 
+	free(path);
+
 	return 0;
 
 err_no_driver:

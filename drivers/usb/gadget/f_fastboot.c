@@ -75,6 +75,9 @@ struct f_fastboot {
 	struct usb_ep *in_ep, *out_ep;
 	struct usb_request *in_req, *out_req;
 	struct file_list *files;
+	int (*cmd_exec)(struct f_fastboot *, const char *cmd);
+	int (*cmd_flash)(struct f_fastboot *, struct file_list_entry *entry,
+			 const char *filename, const void *buf, size_t len);
 	int download_fd;
 	void *buf;
 
@@ -327,6 +330,8 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	struct fb_variable *var;
 
 	f_fb->files = opts->files;
+	f_fb->cmd_exec = opts->cmd_exec;
+	f_fb->cmd_flash = opts->cmd_flash;
 
 	var = fb_addvar(f_fb, "version");
 	fb_setvar(var, "0.4");
@@ -932,6 +937,13 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 		goto out;
 	}
 
+	if (f_fb->cmd_flash) {
+		ret = f_fb->cmd_flash(f_fb, fentry, sourcefile, f_fb->buf,
+				      f_fb->download_size);
+		if (ret != FASTBOOT_CMD_FALLTHROUGH)
+			goto out;
+	}
+
 	filename = fentry->filename;
 
 	if (filetype == filetype_android_sparse) {
@@ -1197,15 +1209,22 @@ static void rx_handler_command(struct usb_ep *ep, struct usb_request *req)
 {
 	char *cmdbuf = req->buf;
 	struct f_fastboot *f_fb = req->context;
+	int ret;
 
 	if (req->status != 0)
 		return;
 
 	*(cmdbuf + req->actual) = 0;
 
+	if (f_fb->cmd_exec) {
+		ret = f_fb->cmd_exec(f_fb, cmdbuf);
+		if (ret != FASTBOOT_CMD_FALLTHROUGH)
+			goto done;
+	}
+
 	fb_run_command(f_fb, cmdbuf, cmd_dispatch_info,
 				ARRAY_SIZE(cmd_dispatch_info));
-
+done:
 	*cmdbuf = '\0';
 	req->actual = 0;
 	memset(req->buf, 0, EP_BUFFER_SIZE);

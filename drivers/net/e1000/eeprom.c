@@ -1525,20 +1525,18 @@ int e1000_register_invm(struct e1000_hw *hw)
 
 int e1000_eeprom_valid(struct e1000_hw *hw)
 {
-	uint32_t eecd;
+	uint32_t valid_mask = E1000_EECD_FLASH_IN_USE |
+			      E1000_EECD_AUTO_RD | E1000_EECD_EE_PRES;
 
 	if (hw->mac_type != e1000_igb)
 		return 1;
 
 	/*
-	 * if AUTO_RD or EE_PRES are not set in EECD, the shadow RAM is invalid
-	 * (and in practise seems to contain the contents of iNVM).
+	 * If there is no flash in use or AUTO_RD or EE_PRES are not set in
+	 * EECD, the shadow RAM is invalid (and in practise seems to contain
+	 * the contents of iNVM).
 	 */
-	eecd = e1000_read_reg(hw, E1000_EECD);
-	if (!(eecd & E1000_EECD_AUTO_RD))
-		return 0;
-
-	if (!(eecd & E1000_EECD_EE_PRES))
+	if ((e1000_read_reg(hw, E1000_EECD) & valid_mask) != valid_mask)
 		return 0;
 
 	return 1;

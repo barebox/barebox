@@ -2174,6 +2174,69 @@ int of_device_disable_path(const char *path)
 }
 
 /**
+ * of_get_reproducible_name() - get a reproducible name of a node
+ * @node: The node to get a name from
+ *
+ * This function constructs a reproducible name for a node. This name can be
+ * used to find the same node in another device tree. The name is constructed
+ * from different patterns which are appended to each other.
+ * - If a node has no "reg" property, the name of the node is used in angle
+ *   brackets, prepended with the result of the parent node
+ * - If the parent node has a "ranges" property then the address in MMIO space
+ *   is used in square brackets
+ * - If a node has a "reg" property, but is not translatable in MMIO space then
+ *   the start address is used in curly brackets, prepended with the result of
+ *   the parent node.
+ *
+ * Returns a dynamically allocated string containing the name
+ */
+char *of_get_reproducible_name(struct device_node *node)
+{
+	const __be32 *reg;
+	u64 addr;
+	u64 offset;
+	int na;
+	char *str, *res;
+
+	if (!node)
+		return 0;
+
+	reg = of_get_property(node, "reg", NULL);
+        if (!reg) {
+		str = of_get_reproducible_name(node->parent);
+		res = basprintf("%s<%s>", str, node->name);
+		free(str);
+		return res;
+	}
+
+	if (node->parent && of_get_property(node->parent, "ranges", NULL)) {
+		addr = of_translate_address(node, reg);
+		return basprintf("[0x%llx]", addr);
+	}
+
+	na = of_n_addr_cells(node);
+
+	offset = of_read_number(reg, na);
+
+	str = of_get_reproducible_name(node->parent);
+	res = basprintf("%s{%llx}", str, offset);
+	free(str);
+
+	return res;
+}
+
+struct device_node *of_find_node_by_reproducible_name(struct device_node *from,
+						      const char *name)
+{
+	struct device_node *np;
+
+	of_tree_for_each_node_from(np, from)
+		if (!of_node_cmp(of_get_reproducible_name(np), name))
+			return np;
+	return NULL;
+}
+
+/**
  * of_graph_parse_endpoint() - parse common endpoint node properties
  * @node: pointer to endpoint device_node
  * @endpoint: pointer to the OF endpoint data structure

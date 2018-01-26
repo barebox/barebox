@@ -1556,15 +1556,6 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 
 	eecd = e1000_read_reg(hw, E1000_EECD);
 
-	hw->eepromcdev.dev = hw->dev;
-	hw->eepromcdev.ops = &e1000_eeprom_ops;
-	hw->eepromcdev.name = xasprintf("e1000-eeprom%d", hw->dev->id);
-	hw->eepromcdev.size = 0x1000;
-
-	ret = devfs_create(&hw->eepromcdev);
-	if (ret < 0)
-		return ret;
-
 	if (eecd & E1000_EECD_AUTO_RD) {
 		if (eecd & E1000_EECD_EE_PRES) {
 			if (eecd & E1000_EECD_FLASH_IN_USE) {
@@ -1585,6 +1576,18 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 		 * up enough that this bit is set?
 		 */
 		dev_err(hw->dev, "Flash Auto-Read not done\n");
+	}
+
+	if (e1000_eeprom_valid(hw)) {
+		hw->eepromcdev.dev = hw->dev;
+		hw->eepromcdev.ops = &e1000_eeprom_ops;
+		hw->eepromcdev.name = xasprintf("e1000-eeprom%d",
+						hw->dev->id);
+		hw->eepromcdev.size = 0x1000;
+
+		ret = devfs_create(&hw->eepromcdev);
+		if (ret < 0)
+			return ret;
 	}
 
 	if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
@@ -1609,18 +1612,22 @@ int e1000_register_eeprom(struct e1000_hw *hw)
 
 		ret = add_mtd_device(&hw->mtd, "e1000-nor",
 				     DEVICE_ID_DYNAMIC);
-		if (ret) {
-			devfs_remove(&hw->eepromcdev);
-			return ret;
-		}
+		if (ret)
+			goto out_eeprom;
 	}
 
 	ret = e1000_register_invm(hw);
-	if (ret < 0) {
-		if (eecd & E1000_EECD_I210_FLASH_DETECTED)
-			del_mtd_device(&hw->mtd);
+	if (ret < 0)
+		goto out_mtd;
+
+	return E1000_SUCCESS;
+
+out_mtd:
+	if (eecd & E1000_EECD_I210_FLASH_DETECTED)
+		del_mtd_device(&hw->mtd);
+out_eeprom:
+	if (e1000_eeprom_valid(hw))
 		devfs_remove(&hw->eepromcdev);
-	}
 
 	return ret;
 }

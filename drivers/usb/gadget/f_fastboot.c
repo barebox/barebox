@@ -71,7 +71,7 @@ struct fb_variable {
 struct f_fastboot {
 	struct usb_function func;
 
-	/* IN/OUT EP's and correspoinding requests */
+	/* IN/OUT EP's and corresponding requests */
 	struct usb_ep *in_ep, *out_ep;
 	struct usb_request *in_req, *out_req;
 	struct file_list *files;

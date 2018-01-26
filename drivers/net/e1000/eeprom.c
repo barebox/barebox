@@ -1551,78 +1551,79 @@ int e1000_eeprom_valid(struct e1000_hw *hw)
  */
 int e1000_register_eeprom(struct e1000_hw *hw)
 {
-	int ret = E1000_SUCCESS;
-
 	struct e1000_eeprom_info *eeprom = &hw->eeprom;
+	uint32_t eecd;
+	int ret;
 
-	if (hw->mac_type == e1000_igb) {
-		uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+	if (hw->mac_type != e1000_igb)
+		return E1000_SUCCESS;
 
-		hw->eepromcdev.dev = hw->dev;
-		hw->eepromcdev.ops = &e1000_eeprom_ops;
-		hw->eepromcdev.name = xasprintf("e1000-eeprom%d", hw->dev->id);
-		hw->eepromcdev.size = 0x1000;
+	eecd = e1000_read_reg(hw, E1000_EECD);
 
-		ret = devfs_create(&hw->eepromcdev);
-		if (ret < 0)
-			return ret;
+	hw->eepromcdev.dev = hw->dev;
+	hw->eepromcdev.ops = &e1000_eeprom_ops;
+	hw->eepromcdev.name = xasprintf("e1000-eeprom%d", hw->dev->id);
+	hw->eepromcdev.size = 0x1000;
 
-		if (eecd & E1000_EECD_AUTO_RD) {
-			if (eecd & E1000_EECD_EE_PRES) {
-				if (eecd & E1000_EECD_FLASH_IN_USE) {
-					uint32_t fla = e1000_read_reg(hw, E1000_FLA);
-					dev_info(hw->dev,
-						 "Hardware programmed from flash (%ssecure)\n",
-						 fla & E1000_FLA_LOCKED ? "" : "un");
-				} else {
-					dev_info(hw->dev, "Hardware programmed from iNVM\n");
-				}
+	ret = devfs_create(&hw->eepromcdev);
+	if (ret < 0)
+		return ret;
+
+	if (eecd & E1000_EECD_AUTO_RD) {
+		if (eecd & E1000_EECD_EE_PRES) {
+			if (eecd & E1000_EECD_FLASH_IN_USE) {
+				uint32_t fla = e1000_read_reg(hw, E1000_FLA);
+				dev_info(hw->dev,
+					 "Hardware programmed from flash (%ssecure)\n",
+					 fla & E1000_FLA_LOCKED ? "" : "un");
 			} else {
-				dev_warn(hw->dev, "Shadow RAM invalid\n");
+				dev_info(hw->dev, "Hardware programmed from iNVM\n");
 			}
 		} else {
-			/*
-			 * I never saw this case in practise and I'm unsure how
-			 * to handle that. Maybe just wait until the hardware is
-			 * up enough that this bit is set?
-			 */
-			dev_err(hw->dev, "Flash Auto-Read not done\n");
+			dev_warn(hw->dev, "Shadow RAM invalid\n");
 		}
+	} else {
+		/*
+		 * I never saw this case in practise and I'm unsure how
+		 * to handle that. Maybe just wait until the hardware is
+		 * up enough that this bit is set?
+		 */
+		dev_err(hw->dev, "Flash Auto-Read not done\n");
+	}
 
-		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
-			hw->mtd.parent = hw->dev;
-			hw->mtd.read = e1000_mtd_read;
-			hw->mtd.write = e1000_mtd_write;
-			hw->mtd.erase = e1000_mtd_erase;
-			hw->mtd.lock = e1000_mtd_lock;
-			hw->mtd.unlock = e1000_mtd_unlock;
-			hw->mtd.size = eeprom->word_size * 2;
-			hw->mtd.writesize = 1;
-			hw->mtd.subpage_sft = 0;
+	if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
+		hw->mtd.parent = hw->dev;
+		hw->mtd.read = e1000_mtd_read;
+		hw->mtd.write = e1000_mtd_write;
+		hw->mtd.erase = e1000_mtd_erase;
+		hw->mtd.lock = e1000_mtd_lock;
+		hw->mtd.unlock = e1000_mtd_unlock;
+		hw->mtd.size = eeprom->word_size * 2;
+		hw->mtd.writesize = 1;
+		hw->mtd.subpage_sft = 0;
 
-			hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
-			hw->mtd.erasesize = SZ_4K;
-			hw->mtd.eraseregions[0].erasesize = SZ_4K;
-			hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
-			hw->mtd.numeraseregions = 1;
+		hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
+		hw->mtd.erasesize = SZ_4K;
+		hw->mtd.eraseregions[0].erasesize = SZ_4K;
+		hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
+		hw->mtd.numeraseregions = 1;
 
-			hw->mtd.flags = MTD_CAP_NORFLASH;
-			hw->mtd.type = MTD_NORFLASH;
+		hw->mtd.flags = MTD_CAP_NORFLASH;
+		hw->mtd.type = MTD_NORFLASH;
 
-			ret = add_mtd_device(&hw->mtd, "e1000-nor",
-					     DEVICE_ID_DYNAMIC);
-			if (ret) {
-				devfs_remove(&hw->eepromcdev);
-				return ret;
-			}
-		}
-
-		ret = e1000_register_invm(hw);
-		if (ret < 0) {
-			if (eecd & E1000_EECD_I210_FLASH_DETECTED)
-				del_mtd_device(&hw->mtd);
+		ret = add_mtd_device(&hw->mtd, "e1000-nor",
+				     DEVICE_ID_DYNAMIC);
+		if (ret) {
 			devfs_remove(&hw->eepromcdev);
+			return ret;
 		}
+	}
+
+	ret = e1000_register_invm(hw);
+	if (ret < 0) {
+		if (eecd & E1000_EECD_I210_FLASH_DETECTED)
+			del_mtd_device(&hw->mtd);
+		devfs_remove(&hw->eepromcdev);
 	}
 
 	return ret;

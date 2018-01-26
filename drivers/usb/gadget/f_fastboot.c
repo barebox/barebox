@@ -1017,24 +1017,25 @@ struct cmd_dispatch_info {
 	void (*cb)(struct f_fastboot *f_fb, const char *opt);
 };
 
-static void fb_run_command(struct f_fastboot *f_fb, const char *cmd,
+static void fb_run_command(struct f_fastboot *f_fb, const char *cmdbuf,
 		const struct cmd_dispatch_info *cmds, int num_commands)
 {
-	void (*func_cb)(struct f_fastboot *f_fb, const char *cmd) = NULL;
+	const struct cmd_dispatch_info *cmd;
 	int i;
 
 	console_countdown_abort();
 
 	for (i = 0; i < num_commands; i++) {
-		if (!strcmp_l1(cmds[i].cmd, cmd)) {
-			func_cb = cmds[i].cb;
-			cmd += strlen(cmds[i].cmd);
-			func_cb(f_fb, cmd);
+		cmd = &cmds[i];
+
+		if (!strcmp_l1(cmd->cmd, cmdbuf)) {
+			cmd->cb(f_fb, cmdbuf + strlen(cmd->cmd));
+
 			return;
 		}
 	}
 
-	fastboot_tx_print(f_fb, "FAILunknown command %s", cmd);
+	fastboot_tx_print(f_fb, "FAILunknown command %s", cmdbuf);
 }
 
 static void cb_oem_getenv(struct f_fastboot *f_fb, const char *cmd)

@@ -130,6 +130,7 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 {
 	struct cdev *cdev = ctx, *partcdev;
 	struct device_node *np, *part, *partnode;
+	char *name;
 	int ret;
 	int n_cells, n_parts = 0;
 
@@ -153,7 +154,9 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 	else
 		n_cells = 1;
 
-	np = of_find_node_by_path_from(root, cdev->device_node->full_name);
+	name = of_get_reproducible_name(cdev->device_node);
+	np = of_find_node_by_reproducible_name(root, name);
+	free(name);
 	if (!np) {
 		dev_err(cdev->dev, "Cannot find nodepath %s, cannot fixup\n",
 				cdev->device_node->full_name);

@@ -1006,12 +1006,10 @@ int e1000_validate_eeprom_checksum(struct e1000_hw *hw)
 	DEBUGFUNC();
 
 	/*
-	  Only the following three 'types' of EEPROM can be expected
-	  to have correct EEPROM checksum
-	*/
-	if (hw->eeprom.type != e1000_eeprom_spi &&
-	    hw->eeprom.type != e1000_eeprom_microwire &&
-	    hw->eeprom.type != e1000_eeprom_flash)
+	 * If the EEPROM device content isn't valid there is no point in
+	 * checking the signature.
+	 */
+	if (!e1000_eeprom_valid(hw))
 		return 0;
 
 	/* Read the EEPROM */

@@ -204,7 +204,7 @@ static int ratp_bb_send_getenv_return(struct ratp_ctx *ctx, const char *val)
 }
 
 static char *ratp_command;
-static struct ratp_ctx *ratp_command_ctx;
+static struct ratp_ctx *ratp_ctx;
 
 static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 {
@@ -220,7 +220,7 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 			return 0;
 
 		ratp_command = xmemdup_add_zero(&rbb->data, dlen);
-		ratp_command_ctx = ctx;
+		ratp_ctx = ctx;
 		pr_debug("got command: %s\n", ratp_command);
 
 		break;
@@ -337,7 +337,7 @@ void ratp_run_command(void)
 	free(ratp_command);
 	ratp_command = NULL;
 
-	ratp_bb_send_command_return(ratp_command_ctx, ret);
+	ratp_bb_send_command_return(ratp_ctx, ret);
 }
 
 static const char *ratpfs_mount_path;
@@ -400,7 +400,7 @@ out:
 
 int barebox_ratp_fs_call(struct ratp_bb_pkt *tx, struct ratp_bb_pkt **rx)
 {
-	struct ratp_ctx *ctx = ratp_command_ctx;
+	struct ratp_ctx *ctx = ratp_ctx;
 	struct ratp_bb *rbb;
 	int len;
 	u64 start;
@@ -446,11 +446,11 @@ int barebox_ratp(struct console_device *cdev)
 	if (!cdev->getc || !cdev->putc)
 		return -EINVAL;
 
-	if (ratp_command_ctx) {
-		ctx = ratp_command_ctx;
+	if (ratp_ctx) {
+		ctx = ratp_ctx;
 	} else {
 		ctx = xzalloc(sizeof(*ctx));
-		ratp_command_ctx = ctx;
+		ratp_ctx = ctx;
 		ctx->ratp.send = console_send;
 		ctx->ratp.recv = console_recv;
 		ctx->console_recv_fifo = kfifo_alloc(512);
@@ -494,7 +494,7 @@ out:
 
 static void barebox_ratp_close(void)
 {
-	if (ratp_command_ctx && ratp_command_ctx->cdev)
-		ratp_console_unregister(ratp_command_ctx);
+	if (ratp_ctx && ratp_ctx->cdev)
+		ratp_console_unregister(ratp_ctx);
 }
 predevshutdown_exitcall(barebox_ratp_close);

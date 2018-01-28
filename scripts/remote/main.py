@@ -139,15 +139,15 @@ parser_run.set_defaults(func=handle_run)
 parser_ping = subparsers.add_parser('ping', help="test connection")
 parser_ping.set_defaults(func=handle_ping)
 
-parser_ping = subparsers.add_parser('getenv', help="get a barebox environment variable")
-parser_ping.add_argument('arg', nargs='+', help="variable name")
-parser_ping.set_defaults(func=handle_getenv)
+parser_getenv = subparsers.add_parser('getenv', help="get a barebox environment variable")
+parser_getenv.add_argument('arg', nargs='+', help="variable name")
+parser_getenv.set_defaults(func=handle_getenv)
 
-parser_run = subparsers.add_parser('listen', help="listen for an incoming connection")
-parser_run.set_defaults(func=handle_listen)
+parser_listen = subparsers.add_parser('listen', help="listen for an incoming connection")
+parser_listen.set_defaults(func=handle_listen)
 
-parser_run = subparsers.add_parser('console', help="connect to the console")
-parser_run.set_defaults(func=handle_console)
+parser_console = subparsers.add_parser('console', help="connect to the console")
+parser_console.set_defaults(func=handle_console)
 
 args = parser.parse_args()
 logging.basicConfig(level=VERBOSITY[args.verbose],

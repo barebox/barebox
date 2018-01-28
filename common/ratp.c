@@ -323,7 +323,7 @@ static int ratp_console_register(struct ratp_ctx *ctx)
 	return 0;
 }
 
-void ratp_run_command(void)
+void barebox_ratp_command_run(void)
 {
 	int ret;
 

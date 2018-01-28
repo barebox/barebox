@@ -2,8 +2,6 @@
 #define __RATP_BB_H
 
 struct ratp_bb_pkt {
-	struct list_head list;
-
 	unsigned int len;
 	uint8_t data[];
 };

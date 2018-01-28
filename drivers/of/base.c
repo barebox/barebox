@@ -2376,6 +2376,8 @@ const char *of_get_machine_compatible(void)
 
 	prop = of_find_property(root_node, "compatible", NULL);
 	name = of_prop_next_string(prop, NULL);
+	if (!name)
+		return NULL;
 
 	p = strchr(name, ',');
 	return p ? p + 1 : name;

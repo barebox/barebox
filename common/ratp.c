@@ -54,14 +54,8 @@ struct ratp_bb_command_return {
 struct ratp_ctx {
 	struct console_device *cdev;
 	struct ratp ratp;
-	int ratp_status;
 	struct console_device ratp_console;
 	int have_synch;
-	int in_ratp_console;
-
-	u8 sendbuf[256];
-	u8 sendbuf_len;
-
 	int old_active;
 
 	struct kfifo *console_recv_fifo;

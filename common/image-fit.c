@@ -444,6 +444,52 @@ err_digest_free:
 	return ret;
 }
 
+static int fit_image_verify_signature(struct fit_handle *handle,
+				      struct device_node *image,
+				      const void *data, int data_len)
+{
+	struct digest *digest;
+	struct device_node *sig_node;
+	enum hash_algo algo = 0;
+	void *hash;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE))
+		return 0;
+
+	switch (handle->verify) {
+	case BOOTM_VERIFY_NONE:
+		return 0;
+	case BOOTM_VERIFY_AVAILABLE:
+		ret = 0;
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
+	sig_node = of_get_child_by_name(image, "signature@1");
+	if (!sig_node) {
+		pr_err("Image %s has no signature\n", image->full_name);
+		return ret;
+	}
+
+	digest = fit_alloc_digest(sig_node, &algo);
+	if (IS_ERR(digest))
+		return PTR_ERR(digest);
+
+	digest_update(digest, data, data_len);
+	hash = xzalloc(digest_length(digest));
+	digest_final(digest, hash);
+
+	ret = fit_check_rsa_signature(sig_node, algo, hash);
+
+	free(hash);
+
+	digest_free(digest);
+
+	return ret;
+}
+
 int fit_has_image(struct fit_handle *handle, void *configuration,
 		  const char *name)
 {
@@ -459,6 +505,23 @@ int fit_has_image(struct fit_handle *handle, void *configuration,
 	return 1;
 }
 
+/**
+ * fit_open_image - Open an image in a FIT image
+ * @handle: The FIT image handle
+ * @name: The name of the image to open
+ * @outdata: The returned image
+ * @outsize: Size of the returned image
+ *
+ * Open an image in a FIT image. The returned image is freed during fit_close().
+ * @configuration holds the cookie returned from fit_open_configuration() if
+ * the image is opened as part of a configuration, or NULL if the image is
+ * opened without a configuration. If @configuration is NULL then the RSA
+ * signature of the image is checked if desired, if @configuration is non NULL,
+ * then only the hash is checked (because opening the configuration already
+ * checks the RSA signature of all involved nodes).
+ *
+ * Return: 0 for success, negative error code otherwise
+ */
 int fit_open_image(struct fit_handle *handle, void *configuration,
 		   const char *name, const void **outdata,
 		   unsigned long *outsize)
@@ -470,12 +533,13 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 	int ret = 0;
 	struct device_node *conf_node = configuration;
 
-	if (!conf_node)
-		return -EINVAL;
-
-	if (of_property_read_string(conf_node, name, &unit)) {
-		pr_err("No image named '%s'\n", name);
-		return -ENOENT;
+	if (conf_node) {
+		if (of_property_read_string(conf_node, name, &unit)) {
+			pr_err("No image named '%s'\n", name);
+			return -ENOENT;
+		}
+	} else {
+		unit = name;
 	}
 
 	image = of_get_child_by_name(handle->images, unit);
@@ -497,7 +561,11 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		return -EINVAL;
 	}
 
-	ret = fit_verify_hash(handle, image, data, data_len);
+	if (conf_node)
+		ret = fit_verify_hash(handle, image, data, data_len);
+	else
+		ret = fit_image_verify_signature(handle, image, data, data_len);
+
 	if (ret < 0)
 		return ret;
 

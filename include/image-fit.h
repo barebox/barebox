@@ -29,6 +29,8 @@ struct fit_handle {
 	enum bootm_verify verify;
 
 	struct device_node *root;
+	struct device_node *images;
+	struct device_node *configurations;
 };
 
 struct fit_handle *fit_open(const char *filename, bool verbose,

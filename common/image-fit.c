@@ -416,7 +416,7 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		   const char *name, const void **outdata,
 		   unsigned long *outsize)
 {
-	struct device_node *image = NULL, *hash;
+	struct device_node *image, *hash;
 	const char *unit, *type = NULL, *desc= "(no description)";
 	const void *data;
 	int data_len;
@@ -431,11 +431,7 @@ int fit_open_image(struct fit_handle *handle, void *configuration,
 		return -ENOENT;
 	}
 
-	image = of_get_child_by_name(handle->root, "images");
-	if (!image)
-		return -ENOENT;
-
-	image = of_get_child_by_name(image, unit);
+	image = of_get_child_by_name(handle->images, unit);
 	if (!image)
 		return -ENOENT;
 
@@ -561,11 +557,10 @@ default_unit:
  */
 void *fit_open_configuration(struct fit_handle *handle, const char *name)
 {
-	struct device_node *conf_node = NULL;
+	struct device_node *conf_node = handle->configurations;
 	const char *unit, *desc = "(no description)";
 	int ret;
 
-	conf_node = of_get_child_by_name(handle->root, "configurations");
 	if (!conf_node)
 		return ERR_PTR(-ENOENT);
 
@@ -621,6 +616,15 @@ struct fit_handle *fit_open(const char *filename, bool verbose,
 
 	handle->root = root;
 	handle->verify = verify;
+
+	handle->images = of_get_child_by_name(handle->root, "images");
+	if (!handle->images) {
+		ret = -ENOENT;
+		goto err;
+	}
+
+	handle->configurations = of_get_child_by_name(handle->root,
+						      "configurations");
 
 	of_property_read_string(handle->root, "description", &desc);
 	pr_info("'%s': %s\n", filename, desc);

@@ -30,13 +30,6 @@ struct fit_handle {
 
 	struct device_node *root;
 	struct device_node *conf_node;
-
-	const void *kernel;
-	unsigned long kernel_size;
-	const void *oftree;
-	unsigned long oftree_size;
-	const void *initrd;
-	unsigned long initrd_size;
 };
 
 struct fit_handle *fit_open(const char *filename, bool verbose,

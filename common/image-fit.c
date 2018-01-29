@@ -581,27 +581,6 @@ int fit_open_configuration(struct fit_handle *handle, const char *name)
 
 	handle->conf_node = conf_node;
 
-	if (fit_has_image(handle, "kernel")) {
-		ret = fit_open_image(handle, "kernel", &handle->kernel,
-				     &handle->kernel_size);
-		if (ret)
-			return ret;
-	}
-
-	if (fit_has_image(handle, "ramdisk")) {
-		ret = fit_open_image(handle, "ramdisk", &handle->initrd,
-				     &handle->initrd_size);
-		if (ret)
-			return ret;
-	}
-
-	if (fit_has_image(handle, "fdt")) {
-		ret = fit_open_image(handle, "fdt", &handle->oftree,
-				     &handle->oftree_size);
-		if (ret)
-			return ret;
-	}
-
 	return 0;
 }
 

@@ -29,15 +29,16 @@ struct fit_handle {
 	enum bootm_verify verify;
 
 	struct device_node *root;
-	struct device_node *conf_node;
 };
 
 struct fit_handle *fit_open(const char *filename, bool verbose,
 			    enum bootm_verify verify);
-int fit_open_configuration(struct fit_handle *handle, const char *name);
-int fit_has_image(struct fit_handle *handle, const char *name);
-int fit_open_image(struct fit_handle *handle, const char *name,
-		   const void **outdata, unsigned long *outsize);
+void *fit_open_configuration(struct fit_handle *handle, const char *name);
+int fit_has_image(struct fit_handle *handle, void *configuration,
+		  const char *name);
+int fit_open_image(struct fit_handle *handle, void *configuration,
+		   const char *name, const void **outdata,
+		   unsigned long *outsize);
 
 void fit_close(struct fit_handle *handle);
 

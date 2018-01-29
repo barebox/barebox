@@ -152,7 +152,7 @@ bool bootm_has_initrd(struct image_data *data)
 		return false;
 
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, "ramdisk"))
+	    fit_has_image(data->os_fit, data->fit_config, "ramdisk"))
 		return true;
 
 	if (data->initrd_file)
@@ -214,12 +214,12 @@ int bootm_load_initrd(struct image_data *data, unsigned long load_address)
 		return 0;
 
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, "ramdisk")) {
+	    fit_has_image(data->os_fit, data->fit_config, "ramdisk")) {
 		const void *initrd;
 		unsigned long initrd_size;
 
-		ret = fit_open_image(data->os_fit, "ramdisk", &initrd,
-				     &initrd_size);
+		ret = fit_open_image(data->os_fit, data->fit_config, "ramdisk",
+				     &initrd, &initrd_size);
 
 		data->initrd_res = request_sdram_region("initrd",
 				load_address,
@@ -344,11 +344,12 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 		return 0;
 
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
-	    fit_has_image(data->os_fit, "fdt")) {
+	    fit_has_image(data->os_fit, data->fit_config, "fdt")) {
 		const void *of_tree;
 		unsigned long of_size;
 
-		ret = fit_open_image(data->os_fit, "fdt", &of_tree, &of_size);
+		ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
+				     &of_tree, &of_size);
 		if (ret)
 			return ret;
 
@@ -591,17 +592,19 @@ int bootm_boot(struct bootm_data *bootm_data)
 
 		data->os_fit = fit;
 
-		ret = fit_open_configuration(data->os_fit, data->os_part);
-		if (ret) {
+		data->fit_config = fit_open_configuration(data->os_fit,
+							  data->os_part);
+		if (IS_ERR(data->fit_config)) {
 			printf("Cannot open FIT image configuration '%s'\n",
 			       data->os_part ? data->os_part : "default");
+			ret = PTR_ERR(data->fit_config);
 			goto err_out;
 		}
 
-		ret = fit_open_image(data->os_fit, "kernel", &data->fit_kernel,
-				     &data->fit_kernel_size);
+		ret = fit_open_image(data->os_fit, data->fit_config, "kernel",
+				     &data->fit_kernel, &data->fit_kernel_size);
 		if (ret)
-			goto err_out;;
+			goto err_out;
 	}
 
 	if (os_type == filetype_uimage) {

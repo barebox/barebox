@@ -397,10 +397,11 @@ err_digest_free:
 	return ret;
 }
 
-int fit_has_image(struct fit_handle *handle, const char *name)
+int fit_has_image(struct fit_handle *handle, void *configuration,
+		  const char *name)
 {
 	const char *unit;
-	struct device_node *conf_node = handle->conf_node;
+	struct device_node *conf_node = configuration;
 
 	if (!conf_node)
 		return -EINVAL;
@@ -411,15 +412,16 @@ int fit_has_image(struct fit_handle *handle, const char *name)
 	return 1;
 }
 
-int fit_open_image(struct fit_handle *handle, const char *name,
-		   const void **outdata, unsigned long *outsize)
+int fit_open_image(struct fit_handle *handle, void *configuration,
+		   const char *name, const void **outdata,
+		   unsigned long *outsize)
 {
 	struct device_node *image = NULL, *hash;
 	const char *unit, *type = NULL, *desc= "(no description)";
 	const void *data;
 	int data_len;
 	int ret = 0;
-	struct device_node *conf_node = handle->conf_node;
+	struct device_node *conf_node = configuration;
 
 	if (!conf_node)
 		return -EINVAL;
@@ -546,7 +548,18 @@ default_unit:
 	return -ENOENT;
 }
 
-int fit_open_configuration(struct fit_handle *handle, const char *name)
+/**
+ * fit_open_configuration - open a FIT configuration
+ * @handle: The FIT image handle
+ * @name: The name of the configuration
+ *
+ * This opens a FIT configuration and eventually checks the signature
+ * depending on the verify mode the FIT image is opened with.
+ *
+ * Return: If successful a pointer to a valid configuration node,
+ *         otherwise a ERR_PTR()
+ */
+void *fit_open_configuration(struct fit_handle *handle, const char *name)
 {
 	struct device_node *conf_node = NULL;
 	const char *unit, *desc = "(no description)";
@@ -554,7 +567,7 @@ int fit_open_configuration(struct fit_handle *handle, const char *name)
 
 	conf_node = of_get_child_by_name(handle->root, "configurations");
 	if (!conf_node)
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 
 	if (name) {
 		unit = name;
@@ -562,14 +575,14 @@ int fit_open_configuration(struct fit_handle *handle, const char *name)
 		ret = fit_find_compatible_unit(conf_node, &unit);
 		if (ret) {
 			pr_info("Couldn't get a valid configuration. Aborting.\n");
-			return ret;
+			return ERR_PTR(ret);
 		}
 	}
 
 	conf_node = of_get_child_by_name(conf_node, unit);
 	if (!conf_node) {
 		pr_err("configuration '%s' not found\n", unit);
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 	}
 
 	of_property_read_string(conf_node, "description", &desc);
@@ -577,11 +590,9 @@ int fit_open_configuration(struct fit_handle *handle, const char *name)
 
 	ret = fit_config_verify_signature(handle, conf_node);
 	if (ret)
-		return ret;
+		return ERR_PTR(ret);
 
-	handle->conf_node = conf_node;
-
-	return 0;
+	return conf_node;
 }
 
 struct fit_handle *fit_open(const char *filename, bool verbose,

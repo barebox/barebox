@@ -75,6 +75,7 @@ struct image_data {
 
 	const void *fit_kernel;
 	unsigned long fit_kernel_size;
+	void *fit_config;
 
 	struct device_node *of_root_node;
 	struct fdt_header *oftree;

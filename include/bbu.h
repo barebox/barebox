@@ -11,7 +11,7 @@ struct bbu_data {
 #define BBU_FLAG_YES	(1 << 1)
 	unsigned long flags;
 	int force;
-	void *image;
+	const void *image;
 	const char *imagefile;
 	const char *devicefile;
 	size_t len;

@@ -935,6 +935,7 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 	}
 
 	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && filetype_is_barebox_image(filetype)) {
+		void *image;
 		struct bbu_data data = {
 			.devicefile = filename,
 			.imagefile = FASTBOOT_TMPFILE,
@@ -946,15 +947,17 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 
 		fastboot_tx_print(f_fb, "INFOThis is a barebox image...");
 
-		data.image = read_file(data.imagefile, &data.len);
-		if (!data.image) {
+		image = read_file(data.imagefile, &data.len);
+		if (!image) {
 			fastboot_tx_print(f_fb, "FAILreading barebox");
 			return;
 		}
 
+		data.image = image;
+
 		ret = barebox_update(&data);
 
-		free(data.image);
+		free(image);
 
 		if (ret) {
 			fastboot_tx_print(f_fb, "FAILupdate barebox: %s", strerror(-ret));

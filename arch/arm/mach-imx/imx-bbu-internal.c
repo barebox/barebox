@@ -54,6 +54,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		void *buf, int image_len)
 {
 	int fd, ret;
+	int written = 0;
 
 	fd = open(devicefile, O_RDWR | O_CREAT);
 	if (fd < 0)
@@ -90,15 +91,25 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 			goto err_close;
 		}
 
-		memcpy(buf + 0x1b8, mbr + 0x1b8, 0x48);
-		free(mbr);
+		memcpy(mbr, buf, 0x1b8);
 
 		ret = lseek(fd, 0, SEEK_SET);
-		if (ret)
+		if (ret) {
+			free(mbr);
 			goto err_close;
+		}
+
+		ret = write(fd, mbr, 512);
+
+		free(mbr);
+
+		if (ret < 0)
+			goto err_close;
+
+		written = 512;
 	}
 
-	ret = write(fd, buf, image_len);
+	ret = write(fd, buf + written, image_len - written);
 	if (ret < 0)
 		goto err_close;
 

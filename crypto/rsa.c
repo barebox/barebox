@@ -341,27 +341,27 @@ int rsa_verify(const struct rsa_public_key *key, const uint8_t *sig,
 
 	PS_end = T_offset - 1;
 	if (buf[PS_end] != 0x00) {
-		pr_err(" = -EBADMSG [EM[T-1] == %02u]", buf[PS_end]);
+		pr_err(" = -EBADMSG [EM[T-1] == %02u]\n", buf[PS_end]);
 		ret = -EBADMSG;
 		goto out_free_digest;
 	}
 
 	for (i = 2; i < PS_end; i++) {
 		if (buf[i] != 0xff) {
-			pr_err(" = -EBADMSG [EM[PS%x] == %02u]", i - 2, buf[i]);
+			pr_err(" = -EBADMSG [EM[PS%x] == %02u]\n", i - 2, buf[i]);
 			ret = -EBADMSG;
 			goto out_free_digest;
 		}
 	}
 
 	if (memcmp(asn1_template, buf + T_offset, asn1_size) != 0) {
-		pr_err(" = -EBADMSG [EM[T] ASN.1 mismatch]");
+		pr_err(" = -EBADMSG [EM[T] ASN.1 mismatch]\n");
 		ret = -EBADMSG;
 		goto out_free_digest;
 	}
 
 	if (memcmp(hash, buf + T_offset + asn1_size, digest_length(d)) != 0) {
-		pr_err(" = -EKEYREJECTED [EM[T] hash mismatch]");
+		pr_err(" = -EKEYREJECTED [EM[T] hash mismatch]\n");
 		ret = -EKEYREJECTED;
 		goto out_free_digest;
 	}

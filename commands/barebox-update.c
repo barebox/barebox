@@ -28,6 +28,7 @@ static int do_barebox_update(int argc, char *argv[])
 {
 	int opt, ret, repair = 0;
 	struct bbu_data data = {};
+	void *image = NULL;
 
 	while ((opt = getopt(argc, argv, "t:yf:ld:r")) > 0) {
 		switch (opt) {
@@ -59,9 +60,10 @@ static int do_barebox_update(int argc, char *argv[])
 	if (argc - optind > 0) {
 		data.imagefile = argv[optind];
 
-		data.image = read_file(data.imagefile, &data.len);
-		if (!data.image)
+		image = read_file(data.imagefile, &data.len);
+		if (!image)
 			return -errno;
+		data.image = image;
 	} else {
 		if (!repair)
 			return COMMAND_ERROR_USAGE;
@@ -69,7 +71,7 @@ static int do_barebox_update(int argc, char *argv[])
 
 	ret = barebox_update(&data);
 
-	free(data.image);
+	free(image);
 
 	return ret;
 }

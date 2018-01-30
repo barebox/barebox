@@ -117,7 +117,7 @@ static int of_unflatten_reservemap(struct device_node *root,
  * Parse a flat device tree binary blob and return a pointer to the
  * unflattened tree.
  */
-struct device_node *of_unflatten_dtb(const void *infdt)
+struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops)
 {
 	const void *nodep;	/* property node pointer */
 	uint32_t tag;		/* tag */
@@ -221,7 +221,11 @@ struct device_node *of_unflatten_dtb(const void *infdt)
 				goto err;
 			}
 
-			p = of_new_property(node, name, nodep, len);
+			if (constprops)
+				p = of_new_property_const(node, name, nodep, len);
+			else
+				p = of_new_property(node, name, nodep, len);
+
 			if (!strcmp(name, "phandle") && len == 4)
 				node->phandle = be32_to_cpup(p->value);
 
@@ -253,6 +257,34 @@ err:
 	of_delete_node(root);
 
 	return ERR_PTR(ret);
+}
+
+/**
+ * of_unflatten_dtb - unflatten a dtb binary blob
+ * @infdt - the fdt blob to unflatten
+ *
+ * Parse a flat device tree binary blob and return a pointer to the unflattened
+ * tree. The tree must be freed after use with of_delete_node().
+ */
+struct device_node *of_unflatten_dtb(const void *infdt)
+{
+	return __of_unflatten_dtb(infdt, false);
+}
+
+/**
+ * of_unflatten_dtb_const - unflatten a dtb binary blob
+ * @infdt - the fdt blob to unflatten
+ *
+ * Parse a flat device tree binary blob and return a pointer to the unflattened
+ * tree. The tree must be freed after use with of_delete_node(). Unlike the
+ * above version this function uses the property data directly from the input
+ * flattened tree instead of copying the data, thus @infdt must be valid for the
+ * whole lifetime of the returned tree. This is normally not what you want, so
+ * use of_unflatten_dtb() instead.
+ */
+struct device_node *of_unflatten_dtb_const(const void *infdt)
+{
+	return __of_unflatten_dtb(infdt, true);
 }
 
 struct fdt {

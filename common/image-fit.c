@@ -74,11 +74,11 @@ static int of_read_string_list(struct device_node *np, const char *name, struct 
 	return prop ? 0 : -EINVAL;
 }
 
-static int fit_digest(void *fit, struct digest *digest,
+static int fit_digest(const void *fit, struct digest *digest,
 		      struct string_list *inc_nodes, struct string_list *exc_props,
 		      uint32_t hashed_strings_start, uint32_t hashed_strings_size)
 {
-	struct fdt_header *fdt = fit;
+	const struct fdt_header *fdt = fit;
 	uint32_t dt_struct;
 	void *dt_strings;
 	struct fdt_header f = {};
@@ -313,7 +313,7 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 /*
  * The consistency of the FTD structure was already checked by of_unflatten_dtb()
  */
-static int fit_verify_signature(struct device_node *sig_node, void *fit)
+static int fit_verify_signature(struct device_node *sig_node, const void *fit)
 {
 	uint32_t hashed_strings_start, hashed_strings_size;
 	struct string_list inc_nodes, exc_props;
@@ -690,61 +690,110 @@ void *fit_open_configuration(struct fit_handle *handle, const char *name)
 	return conf_node;
 }
 
-struct fit_handle *fit_open(const char *filename, bool verbose,
-			    enum bootm_verify verify)
+static int fit_do_open(struct fit_handle *handle)
 {
-	struct fit_handle *handle = NULL;
 	const char *desc = "(no description)";
 	struct device_node *root;
-	int ret;
-
-	handle = xzalloc(sizeof(struct fit_handle));
-
-	handle->verbose = verbose;
-
-	ret = read_file_2(filename, &handle->size, &handle->fit, FILESIZE_MAX);
-	if (ret) {
-		pr_err("unable to read %s: %s\n", filename, strerror(-ret));
-		goto err;
-	}
 
 	root = of_unflatten_dtb(handle->fit);
-	if (IS_ERR(root)) {
-		ret = PTR_ERR(root);
-		goto err;
-	}
+	if (IS_ERR(root))
+		return PTR_ERR(root);
 
 	handle->root = root;
-	handle->verify = verify;
 
 	handle->images = of_get_child_by_name(handle->root, "images");
-	if (!handle->images) {
-		ret = -ENOENT;
-		goto err;
-	}
+	if (!handle->images)
+		return -ENOENT;
 
 	handle->configurations = of_get_child_by_name(handle->root,
 						      "configurations");
 
 	of_property_read_string(handle->root, "description", &desc);
-	pr_info("'%s': %s\n", filename, desc);
+	pr_info("Opened FIT image: %s\n", desc);
+
+	return 0;
+}
+
+/**
+ * fit_open_buf - open a FIT image from a buffer
+ * @buf:	The buffer containing the FIT image
+ * @size:	Size of the FIT image
+ * @verbose:	If true, be more verbose
+ * @verify:	The verify mode
+ *
+ * This opens a FIT image found in buf. The returned handle is used as
+ * context for the other FIT functions.
+ *
+ * Return: A handle to a FIT image or a ERR_PTR
+ */
+struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
+				enum bootm_verify verify)
+{
+	struct fit_handle *handle;
+	int ret;
+
+	handle = xzalloc(sizeof(struct fit_handle));
+
+	handle->verbose = verbose;
+	handle->fit = buf;
+	handle->size = size;
+	handle->verify = verify;
+
+	ret = fit_do_open(handle);
+	if (ret) {
+		fit_close(handle);
+		return ERR_PTR(ret);
+	}
 
 	return handle;
- err:
-	if (handle->root)
-		of_delete_node(handle->root);
-	free(handle->fit);
-	free(handle);
+}
 
-	return ERR_PTR(ret);
+/**
+ * fit_open - open a FIT image
+ * @filename:	The filename of the FIT image
+ * @verbose:	If true, be more verbose
+ * @verify:	The verify mode
+ *
+ * This opens a FIT image found in @filename. The returned handle is used as
+ * context for the other FIT functions.
+ *
+ * Return: A handle to a FIT image or a ERR_PTR
+ */
+struct fit_handle *fit_open(const char *filename, bool verbose,
+			    enum bootm_verify verify)
+{
+	struct fit_handle *handle;
+	int ret;
+
+	handle = xzalloc(sizeof(struct fit_handle));
+
+	handle->verbose = verbose;
+	handle->verify = verify;
+
+	ret = read_file_2(filename, &handle->size, &handle->fit_alloc,
+			  FILESIZE_MAX);
+	if (ret) {
+		pr_err("unable to read %s: %s\n", filename, strerror(-ret));
+		return ERR_PTR(ret);
+	}
+
+	handle->fit = handle->fit_alloc;
+
+	ret = fit_do_open(handle);
+	if (ret) {
+		fit_close(handle);
+		return ERR_PTR(ret);
+	}
+
+	return handle;
 }
 
 void fit_close(struct fit_handle *handle)
 {
 	if (handle->root)
 		of_delete_node(handle->root);
-	if (handle->fit)
-		free(handle->fit);
+
+	free(handle->fit_alloc);
 	free(handle);
 }
 

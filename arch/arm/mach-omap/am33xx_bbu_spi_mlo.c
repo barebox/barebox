@@ -32,8 +32,8 @@ static int spi_nor_mlo_handler(struct bbu_handler *handler,
 	int ret = 0;
 	uint32_t readbuf;
 	int size = data->len;
-	void *image = data->image;
-	uint32_t *header;
+	const void *image = data->image;
+	const uint32_t *header;
 	int swap = 0;
 	struct stat s;
 

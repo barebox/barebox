@@ -22,6 +22,7 @@
  */
 
 #include <common.h>
+#include <init.h>
 #include "designware.h"
 
 static struct dw_eth_drvdata dwmac_370a_drvdata = {

@@ -20,8 +20,7 @@
 #ifndef __DESIGNWARE_ETH_H
 #define __DESIGNWARE_ETH_H
 
-struct eth_device;
-struct mii_bus;
+#include <net.h>
 
 struct dw_eth_dev {
 	struct eth_device netdev;

@@ -76,10 +76,20 @@ struct f_fastboot {
 	struct usb_request *in_req, *out_req;
 	struct file_list *files;
 	int download_fd;
+	void *buf;
+
 	size_t download_bytes;
 	size_t download_size;
 	struct list_head variables;
 };
+
+static inline bool fastboot_download_to_buf(struct f_fastboot *f_fb)
+{
+	if (IS_ENABLED(CONFIG_USB_GADGET_FASTBOOT_BUF))
+		return true;
+	else
+		return false;
+}
 
 static inline struct f_fastboot *func_to_fastboot(struct usb_function *f)
 {
@@ -605,10 +615,14 @@ static void rx_handler_dl_image(struct usb_ep *ep, struct usb_request *req)
 		return;
 	}
 
-	ret = write(f_fb->download_fd, buffer, req->actual);
-	if (ret < 0) {
-		fastboot_tx_print(f_fb, "FAIL%s", strerror(-ret));
-		return;
+	if (fastboot_download_to_buf(f_fb)) {
+		memcpy(f_fb->buf + f_fb->download_bytes, buffer, req->actual);
+	} else {
+		ret = write(f_fb->download_fd, buffer, req->actual);
+		if (ret < 0) {
+			fastboot_tx_print(f_fb, "FAIL%s", strerror(-ret));
+			return;
+		}
 	}
 
 	f_fb->download_bytes += req->actual;
@@ -646,10 +660,19 @@ static void cb_download(struct f_fastboot *f_fb, const char *cmd)
 
 	init_progression_bar(f_fb->download_size);
 
-	f_fb->download_fd = open(FASTBOOT_TMPFILE, O_WRONLY | O_CREAT | O_TRUNC);
-	if (f_fb->download_fd < 0) {
-		fastboot_tx_print(f_fb, "FAILInternal Error");
-		return;
+	if (fastboot_download_to_buf(f_fb)) {
+		free(f_fb->buf);
+		f_fb->buf = malloc(f_fb->download_size);
+		if (!f_fb->buf) {
+			fastboot_tx_print(f_fb, "FAILnot enough memory");
+			return;
+		}
+	} else {
+		f_fb->download_fd = open(FASTBOOT_TMPFILE, O_WRONLY | O_CREAT | O_TRUNC);
+		if (f_fb->download_fd < 0) {
+			fastboot_tx_print(f_fb, "FAILInternal Error");
+			return;
+		}
 	}
 
 	if (!f_fb->download_size) {
@@ -711,11 +734,13 @@ static struct mtd_info *get_mtd(struct f_fastboot *f_fb, const char *filename)
 }
 
 static int do_ubiformat(struct f_fastboot *f_fb, struct mtd_info *mtd,
-			const char *file)
+			const char *file, const void *buf, size_t len)
 {
 	struct ubiformat_args args = {
 		.yes = 1,
 		.image = file,
+		.image_buf = buf,
+		.image_size = len,
 	};
 
 	if (!file)
@@ -850,7 +875,7 @@ static int fastboot_handle_sparse(struct f_fastboot *f_fb,
 			}
 
 			if (pos == 0) {
-				ret = do_ubiformat(f_fb, mtd, NULL);
+				ret = do_ubiformat(f_fb, mtd, NULL, NULL, 0);
 				if (ret)
 					goto out;
 			}
@@ -886,8 +911,16 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 {
 	struct file_list_entry *fentry;
 	int ret;
-	const char *filename = NULL;
-	enum filetype filetype = file_name_detect_type(FASTBOOT_TMPFILE);
+	const char *filename = NULL, *sourcefile;
+	enum filetype filetype;
+
+	if (fastboot_download_to_buf(f_fb)) {
+		sourcefile = NULL;
+		filetype = file_detect_type(f_fb->buf, f_fb->download_bytes);
+	} else {
+		sourcefile = FASTBOOT_TMPFILE;
+		filetype = file_name_detect_type(FASTBOOT_TMPFILE);
+	}
 
 	fastboot_tx_print(f_fb, "INFOCopying file to %s...", cmd);
 
@@ -908,6 +941,11 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 			goto out;
 		}
 
+		if (fastboot_download_to_buf(f_fb)) {
+			fastboot_tx_print(f_fb, "FAILsparse image not supported");
+			goto out;
+		}
+
 		ret = fastboot_handle_sparse(f_fb, fentry);
 		if (ret)
 			fastboot_tx_print(f_fb, "FAILwriting sparse image: %s",
@@ -925,17 +963,19 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 
 		mtd = get_mtd(f_fb, fentry->filename);
 
-		ret = do_ubiformat(f_fb, mtd, FASTBOOT_TMPFILE);
-		if (ret)
+		ret = do_ubiformat(f_fb, mtd, sourcefile, f_fb->buf,
+				   f_fb->download_size);
+		if (ret) {
 			fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
+			goto out;
+		}
+
 		goto out;
 	}
 
 	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && filetype_is_barebox_image(filetype)) {
-		void *image;
 		struct bbu_data data = {
 			.devicefile = filename,
-			.imagefile = FASTBOOT_TMPFILE,
 			.flags = BBU_FLAG_YES,
 		};
 
@@ -944,18 +984,21 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 
 		fastboot_tx_print(f_fb, "INFOThis is a barebox image...");
 
-		ret = read_file_2(data.imagefile, &data.len, &image,
-				  f_fb->download_size);
-		if (ret) {
-			fastboot_tx_print(f_fb, "FAILreading barebox");
-			goto out;
+		if (fastboot_download_to_buf(f_fb)) {
+			data.len = f_fb->download_size;
+		} else {
+			ret = read_file_2(data.imagefile, &data.len, &f_fb->buf,
+					f_fb->download_size);
+			if (ret) {
+				fastboot_tx_print(f_fb, "FAILreading barebox");
+				goto out;
+			}
 		}
 
-		data.image = image;
+		data.image = f_fb->buf;
+		data.imagefile = sourcefile;
 
 		ret = barebox_update(&data);
-
-		free(image);
 
 		if (ret)
 			fastboot_tx_print(f_fb, "FAILupdate barebox: %s", strerror(-ret));
@@ -964,7 +1007,10 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 	}
 
 copy:
-	ret = copy_file(FASTBOOT_TMPFILE, filename, 1);
+	if (fastboot_download_to_buf(f_fb))
+		ret = write_file(filename, f_fb->buf, f_fb->download_size);
+	else
+		ret = copy_file(FASTBOOT_TMPFILE, filename, 1);
 
 	if (ret)
 		fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
@@ -973,7 +1019,11 @@ out:
 	if (!ret)
 		fastboot_tx_print(f_fb, "OKAY");
 
-	unlink(FASTBOOT_TMPFILE);
+	free(f_fb->buf);
+	f_fb->buf = NULL;
+
+	if (!fastboot_download_to_buf(f_fb))
+		unlink(FASTBOOT_TMPFILE);
 }
 
 static void cb_erase(struct f_fastboot *f_fb, const char *cmd)

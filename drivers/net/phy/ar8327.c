@@ -83,7 +83,7 @@ static u32 ar8327n_reg_read(struct phy_device *phydev, u32 reg_addr)
 	reg_word_addr++;
 	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
 	phy_reg = (u8) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
-	reg_val = (u32) mdiobus_read(phydev->bus, phy_addr, phy_reg);
+	tmp_val = (u32) mdiobus_read(phydev->bus, phy_addr, phy_reg);
 	reg_val |= (tmp_val << 16);
 
 	return reg_val;

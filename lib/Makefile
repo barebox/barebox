@@ -36,6 +36,7 @@ obj-y			+= random.o
 obj-$(CONFIG_IMAGE_SPARSE) += image-sparse.o
 obj-y			+= lzo/
 obj-$(CONFIG_LZ4_DECOMPRESS) += lz4/
+obj-$(CONFIG_ZSTD_DECOMPRESS) += zstd/
 obj-y			+= show_progress.o
 obj-$(CONFIG_LZO_DECOMPRESS)		+= decompress_unlzo.o
 obj-$(CONFIG_LZ4_DECOMPRESS) += decompress_unlz4.o

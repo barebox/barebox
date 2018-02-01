@@ -1279,11 +1279,13 @@ static const char *detect_fs(const char *filename, const char *fsoptions)
 	enum filetype type;
 	struct driver_d *drv;
 	struct fs_driver_d *fdrv;
-	bool loop;
+	bool loop = false;
+	unsigned long long offset = 0;
 
 	parseopt_b(fsoptions, "loop", &loop);
+	parseopt_llu_suffix(fsoptions, "offset", &offset);
 	if (loop)
-		type = file_name_detect_type(filename);
+		type = file_name_detect_type_offset(filename, offset);
 	else
 		type = cdev_detect_type(filename);
 
@@ -1302,9 +1304,13 @@ static const char *detect_fs(const char *filename, const char *fsoptions)
 
 int fsdev_open_cdev(struct fs_device_d *fsdev)
 {
+	unsigned long long offset = 0;
+
 	parseopt_b(fsdev->options, "loop", &fsdev->loop);
+	parseopt_llu_suffix(fsdev->options, "offset", &offset);
 	if (fsdev->loop)
-		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR);
+		fsdev->cdev = cdev_create_loop(fsdev->backingstore, O_RDWR,
+					       offset);
 	else
 		fsdev->cdev = cdev_open(fsdev->backingstore, O_RDWR);
 	if (!fsdev->cdev)

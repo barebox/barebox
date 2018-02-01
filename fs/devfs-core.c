@@ -464,7 +464,7 @@ static const struct file_operations loop_ops = {
 	.lseek = dev_lseek_default,
 };
 
-struct cdev *cdev_create_loop(const char *path, ulong flags)
+struct cdev *cdev_create_loop(const char *path, ulong flags, loff_t offset)
 {
 	struct cdev *new;
 	struct loop_priv *priv;
@@ -486,15 +486,15 @@ struct cdev *cdev_create_loop(const char *path, ulong flags)
 	new->priv = priv;
 
 	ofs = lseek(priv->fd, 0, SEEK_END);
-	if (ofs < 0) {
+	if (ofs < 0 || ofs <= offset) {
 		free(new);
 		free(priv);
 		return NULL;
 	}
-	lseek(priv->fd, 0, SEEK_SET);
+	lseek(priv->fd, offset, SEEK_SET);
 
 	new->size = ofs;
-	new->offset = 0;
+	new->offset = offset;
 	new->dev = NULL;
 	new->flags = 0;
 

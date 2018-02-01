@@ -6,6 +6,9 @@ config UNCOMPRESS
 	bool
 	select FILETYPE
 
+config XXHASH
+	bool
+
 config ZLIB
 	bool "include gzip uncompression support"
 	select UNCOMPRESS

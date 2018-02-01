@@ -122,3 +122,33 @@ again:
 
 	*val = xstrndup(parsed, endp - parsed);
 }
+
+void parseopt_llu_suffix(const char *options, const char *opt,
+			 unsigned long long *val)
+{
+	const char *start;
+	size_t optlen = strlen(opt);
+	unsigned long long v;
+	char *endp;
+
+again:
+	start = strstr(options, opt);
+
+	if (!start)
+		return;
+
+	if (start > options && start[-1] != ',') {
+		options = start;
+		goto again;
+	}
+
+	if (start[optlen] != '=') {
+		options = start;
+		goto again;
+	}
+
+	v = strtoull_suffix(start + optlen + 1, &endp, 0);
+
+	if (*endp == ',' || *endp == '\0')
+		*val = v;
+}

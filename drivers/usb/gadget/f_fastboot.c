@@ -947,8 +947,9 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 
 		fastboot_tx_print(f_fb, "INFOThis is a barebox image...");
 
-		image = read_file(data.imagefile, &data.len);
-		if (!image) {
+		ret = read_file_2(data.imagefile, &data.len, &image,
+				  f_fb->download_size);
+		if (ret) {
 			fastboot_tx_print(f_fb, "FAILreading barebox");
 			return;
 		}

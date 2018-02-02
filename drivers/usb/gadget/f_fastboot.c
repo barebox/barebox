@@ -895,7 +895,8 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 
 	if (!fentry) {
 		fastboot_tx_print(f_fb, "FAILNo such partition: %s", cmd);
-		return;
+		ret = -ENOENT;
+		goto out;
 	}
 
 	filename = fentry->filename;
@@ -903,22 +904,21 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 	if (filetype == filetype_android_sparse) {
 		if (!IS_ENABLED(USB_GADGET_FASTBOOT_SPARSE)) {
 			fastboot_tx_print(f_fb, "FAILsparse image not supported");
-			return;
+			ret = -EOPNOTSUPP;
+			goto out;
 		}
 
 		ret = fastboot_handle_sparse(f_fb, fentry);
-		if (ret) {
+		if (ret)
 			fastboot_tx_print(f_fb, "FAILwriting sparse image: %s",
 					  strerror(-ret));
-			return;
-		}
 
 		goto out;
 	}
 
 	ret = check_ubi(f_fb, fentry, filetype);
 	if (ret < 0)
-		return;
+		goto out;
 
 	if (ret > 0) {
 		struct mtd_info *mtd;
@@ -926,11 +926,8 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 		mtd = get_mtd(f_fb, fentry->filename);
 
 		ret = do_ubiformat(f_fb, mtd, FASTBOOT_TMPFILE);
-		if (ret) {
+		if (ret)
 			fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
-			return;
-		}
-
 		goto out;
 	}
 
@@ -951,7 +948,7 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 				  f_fb->download_size);
 		if (ret) {
 			fastboot_tx_print(f_fb, "FAILreading barebox");
-			return;
+			goto out;
 		}
 
 		data.image = image;
@@ -960,10 +957,8 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 
 		free(image);
 
-		if (ret) {
+		if (ret)
 			fastboot_tx_print(f_fb, "FAILupdate barebox: %s", strerror(-ret));
-			return;
-		}
 
 		goto out;
 	}
@@ -971,15 +966,14 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 copy:
 	ret = copy_file(FASTBOOT_TMPFILE, filename, 1);
 
-	unlink(FASTBOOT_TMPFILE);
-
-	if (ret) {
+	if (ret)
 		fastboot_tx_print(f_fb, "FAILwrite partition: %s", strerror(-ret));
-		return;
-	}
 
 out:
-	fastboot_tx_print(f_fb, "OKAY");
+	if (!ret)
+		fastboot_tx_print(f_fb, "OKAY");
+
+	unlink(FASTBOOT_TMPFILE);
 }
 
 static void cb_erase(struct f_fastboot *f_fb, const char *cmd)

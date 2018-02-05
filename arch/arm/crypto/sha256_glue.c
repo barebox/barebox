@@ -189,7 +189,7 @@ static int sha224_digest_register(void)
 {
 	return digest_algo_register(&sha224);
 }
-device_initcall(sha224_digest_register);
+coredevice_initcall(sha224_digest_register);
 
 static struct digest_algo sha256 = {
 	.base = {
@@ -212,4 +212,4 @@ static int sha256_digest_register(void)
 {
 	return digest_algo_register(&sha256);
 }
-device_initcall(sha256_digest_register);
+coredevice_initcall(sha256_digest_register);

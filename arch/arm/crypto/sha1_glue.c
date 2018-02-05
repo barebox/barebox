@@ -135,4 +135,4 @@ static int sha1_mod_init(void)
 {
 	return digest_algo_register(&m);
 }
-device_initcall(sha1_mod_init);
+coredevice_initcall(sha1_mod_init);

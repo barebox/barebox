@@ -113,7 +113,7 @@ typedef uint32_t __u32;
 	(void) (&_min1 == &_min2);              \
 	_min1 < _min2 ? _min1 : _min2; })
 
-inline void *xmalloc(size_t size)
+static inline void *xmalloc(size_t size)
 {
 	void *p = NULL;
 
@@ -125,7 +125,7 @@ inline void *xmalloc(size_t size)
 	return p;
 }
 
-inline void *xzalloc(size_t size)
+static inline void *xzalloc(size_t size)
 {
 	void *p = xmalloc(size);
 	memset(p, 0, size);

@@ -1,1 +1,1 @@
-obj-y += core.o mbox.o wd.o
+obj-y += core.o mbox.o

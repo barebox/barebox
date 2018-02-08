@@ -266,7 +266,7 @@ int setenv(const char *_name, const char *value)
 	if (strchr(name, '.')) {
 		ret = dev_setenv(name, value);
 		if (ret)
-			eprintf("Cannot set parameter: %s\n", strerror(-ret));
+			eprintf("Cannot set parameter %s: %s\n", name, strerror(-ret));
 		goto out;
 	}
 

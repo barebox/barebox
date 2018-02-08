@@ -117,6 +117,7 @@ int i2c_master_send(struct i2c_client *client, const char *buf, int count)
 	int ret;
 
 	msg.addr = client->addr;
+	msg.flags = 0;
 	msg.len = count;
 	msg.buf = (char *)buf;
 

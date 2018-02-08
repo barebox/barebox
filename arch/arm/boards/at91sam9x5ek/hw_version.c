@@ -253,6 +253,9 @@ static int cm_cogent_fixup(struct device_node *root, void *unused)
 
 static int at91sam9x5ek_devices_detect_hw(void)
 {
+	if (!of_machine_is_compatible("atmel,at91sam9x5ek"))
+		return 0;
+
 	at91sam9x5ek_devices_detect_one("/dev/ds24310");
 	at91sam9x5ek_devices_detect_one("/dev/ds24311");
 	at91sam9x5ek_devices_detect_one("/dev/ds24330");

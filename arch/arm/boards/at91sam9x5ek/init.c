@@ -66,6 +66,10 @@ static struct sam9_smc_config cm_nand_smc_config = {
 static int ek_add_device_smc(void)
 {
 	unsigned long csa;
+
+	if (!of_machine_is_compatible("atmel,at91sam9x5ek"))
+		return 0;
+
 	csa = at91_sys_read(AT91_MATRIX_EBICSA);
 
 	/* Enable CS3 */
@@ -104,6 +108,9 @@ fs_initcall(ek_add_device_smc);
 static int ek_register_mac_address(void)
 {
 	int ret;
+
+	if (!of_machine_is_compatible("atmel,at91sam9x5ek"))
+		return 0;
 
 	ret = w1_local_mac_address_register(0, "tml", "w1-2d-0");
 	if (!ret)
@@ -158,6 +165,9 @@ static void ek_add_device_lcdc(void) {}
 
 static int at91sam9x5ek_devices_init(void)
 {
+	if (!of_machine_is_compatible("atmel,at91sam9x5ek"))
+		return 0;
+
 	ek_add_device_lcdc();
 
 	armlinux_set_architecture(CONFIG_MACH_AT91SAM9X5EK);
@@ -171,6 +181,9 @@ device_initcall(at91sam9x5ek_devices_init);
 
 static int at91sam9x5ek_console_init(void)
 {
+	if (!of_machine_is_compatible("atmel,at91sam9x5ek"))
+		return 0;
+
 	barebox_set_model("Atmel at91sam9x5-ek");
 	barebox_set_hostname("at91sam9x5-ek");
 

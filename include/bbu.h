@@ -11,12 +11,12 @@ struct bbu_data {
 #define BBU_FLAG_YES	(1 << 1)
 	unsigned long flags;
 	int force;
-	void *image;
+	const void *image;
 	const char *imagefile;
 	const char *devicefile;
 	size_t len;
 	const char *handler_name;
-	struct imd_header *imd_data;
+	const struct imd_header *imd_data;
 };
 
 struct bbu_handler {

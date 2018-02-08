@@ -230,7 +230,7 @@ EXPORT_SYMBOL(read_file);
  *
  * Return: 0 for success or negative error value
  */
-int write_file(const char *filename, void *buf, size_t size)
+int write_file(const char *filename, const void *buf, size_t size)
 {
 	int fd, ret;
 

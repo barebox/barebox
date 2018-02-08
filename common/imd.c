@@ -35,7 +35,7 @@ int imd_command_setenv(const char *variable_name, const char *value)
  * imd_next - return a pointer to the next metadata field.
  * @imd		The current metadata field
  */
-struct imd_header *imd_next(struct imd_header *imd)
+const struct imd_header *imd_next(const struct imd_header *imd)
 {
 	int length;
 
@@ -43,10 +43,11 @@ struct imd_header *imd_next(struct imd_header *imd)
 	length = ALIGN(length, 4);
 	length += 8;
 
-	return (void *)imd + length;
+	return (const void *)imd + length;
 }
 
-struct imd_header *imd_find_type(struct imd_header *imd, uint32_t type)
+const struct imd_header *imd_find_type(const struct imd_header *imd,
+				       uint32_t type)
 {
 	imd_for_each(imd, imd)
 		if (imd_read_type(imd) == type)
@@ -55,10 +56,10 @@ struct imd_header *imd_find_type(struct imd_header *imd, uint32_t type)
 	return NULL;
 }
 
-static int imd_next_validate(void *buf, int bufsize, int start_ofs)
+static int imd_next_validate(const void *buf, int bufsize, int start_ofs)
 {
 	int length, size;
-	struct imd_header *imd = buf + start_ofs;
+	const struct imd_header *imd = buf + start_ofs;
 
 	size = bufsize - start_ofs;
 
@@ -82,10 +83,10 @@ static int imd_next_validate(void *buf, int bufsize, int start_ofs)
 	return length;
 }
 
-static int imd_validate_tags(void *buf, int bufsize, int start_ofs)
+static int imd_validate_tags(const void *buf, int bufsize, int start_ofs)
 {
 	int ret;
-	struct imd_header *imd = buf + start_ofs;
+	const struct imd_header *imd = buf + start_ofs;
 
 	while (1) {
 		uint32_t type;
@@ -122,7 +123,7 @@ static int imd_validate_tags(void *buf, int bufsize, int start_ofs)
  *
  * Return: a pointer to the image metadata or a ERR_PTR
  */
-struct imd_header *imd_get(void *buf, int size)
+const struct imd_header *imd_get(const void *buf, int size)
 {
 	int start_ofs = 0;
 	int i, ret;
@@ -206,7 +207,7 @@ static uint32_t imd_name_to_type(const char *name)
  *
  * Return: A pointer to the string or NULL if the string is not found
  */
-const char *imd_string_data(struct imd_header *imd, int index)
+const char *imd_string_data(const struct imd_header *imd, int index)
 {
 	int i, total = 0, l = 0;
 	int len = imd_read_length(imd);
@@ -233,7 +234,7 @@ const char *imd_string_data(struct imd_header *imd, int index)
  *
  * Return: A pointer to the string or NULL if the string is not found
  */
-char *imd_concat_strings(struct imd_header *imd)
+char *imd_concat_strings(const struct imd_header *imd)
 {
 	int i, len = imd_read_length(imd);
 	char *str;
@@ -266,9 +267,9 @@ char *imd_concat_strings(struct imd_header *imd)
  *
  * Return: A pointer to the value or NULL if the string is not found
  */
-const char *imd_get_param(struct imd_header *imd, const char *name)
+const char *imd_get_param(const struct imd_header *imd, const char *name)
 {
-	struct imd_header *cur;
+	const struct imd_header *cur;
 	int namelen = strlen(name);
 
 	imd_for_each(imd, cur) {
@@ -294,7 +295,7 @@ int imd_command(int argc, char *argv[])
 	void *buf;
 	size_t size;
 	uint32_t type = IMD_TYPE_INVALID;
-	struct imd_header *imd_start, *imd;
+	const struct imd_header *imd_start, *imd;
 	const char *filename;
 	const char *variable_name = NULL;
 	char *str;

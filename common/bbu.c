@@ -159,7 +159,7 @@ static int bbu_check_of_compat(struct bbu_data *data)
 	struct device_node *root_node;
 	const char *machine, *str;
 	int ret;
-	struct imd_header *of_compat;
+	const struct imd_header *of_compat;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE) || !IS_ENABLED(CONFIG_IMD))
 		return 0;
@@ -191,7 +191,7 @@ static int bbu_check_of_compat(struct bbu_data *data)
 
 static int bbu_check_metadata(struct bbu_data *data)
 {
-	struct imd_header *imd;
+	const struct imd_header *imd;
 	int ret;
 	char *str;
 

@@ -51,9 +51,10 @@ struct imx_internal_bbu_handler {
  */
 static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		const char *devicefile, struct bbu_data *data,
-		void *buf, int image_len)
+		const void *buf, int image_len)
 {
 	int fd, ret;
+	int written = 0;
 
 	fd = open(devicefile, O_RDWR | O_CREAT);
 	if (fd < 0)
@@ -90,15 +91,25 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 			goto err_close;
 		}
 
-		memcpy(buf + 0x1b8, mbr + 0x1b8, 0x48);
-		free(mbr);
+		memcpy(mbr, buf, 0x1b8);
 
 		ret = lseek(fd, 0, SEEK_SET);
-		if (ret)
+		if (ret) {
+			free(mbr);
 			goto err_close;
+		}
+
+		ret = write(fd, mbr, 512);
+
+		free(mbr);
+
+		if (ret < 0)
+			goto err_close;
+
+		written = 512;
 	}
 
-	ret = write(fd, buf, image_len);
+	ret = write(fd, buf + written, image_len - written);
 	if (ret < 0)
 		goto err_close;
 
@@ -347,7 +358,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
-	uint32_t *barker;
+	const uint32_t *barker;
 
 	ret = imx_bbu_check_prereq(data->devicefile, data);
 	if (ret)
@@ -375,7 +386,7 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
-	uint32_t *barker;
+	const uint32_t *barker;
 	char *bootpartvar;
 	const char *bootpart;
 	char *devicefile;

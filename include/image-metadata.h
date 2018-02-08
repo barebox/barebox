@@ -56,35 +56,36 @@ static inline int imd_type_valid(uint32_t type)
 	return (type & 0xffff0000) == 0x640c0000;
 }
 
-struct imd_header *imd_next(struct imd_header *imd);
+const struct imd_header *imd_next(const struct imd_header *imd);
 
 #define imd_for_each(start, imd) \
 	for (imd = imd_next(start); imd_read_type(imd) != IMD_TYPE_END; imd = imd_next(imd))
 
-static inline uint32_t imd_read_le32(void *_ptr)
+static inline uint32_t imd_read_le32(const void *_ptr)
 {
-	uint8_t *ptr = _ptr;
+	const uint8_t *ptr = _ptr;
 
 	return ptr[0] | (ptr[1] << 8) | (ptr[2] << 16) | (ptr[3] << 24);
 }
 
-static inline uint32_t imd_read_type(struct imd_header *imd)
+static inline uint32_t imd_read_type(const struct imd_header *imd)
 {
 	return imd_read_le32(&imd->type);
 }
 
-static inline uint32_t imd_read_length(struct imd_header *imd)
+static inline uint32_t imd_read_length(const struct imd_header *imd)
 {
 	return imd_read_le32(&imd->datalength);
 }
 
-struct imd_header *imd_find_type(struct imd_header *imd, uint32_t type);
+const struct imd_header *imd_find_type(const struct imd_header *imd,
+				       uint32_t type);
 
-struct imd_header *imd_get(void *buf, int size);
-const char *imd_string_data(struct imd_header *imd, int index);
+const struct imd_header *imd_get(const void *buf, int size);
+const char *imd_string_data(const struct imd_header *imd, int index);
 const char *imd_type_to_name(uint32_t type);
-char *imd_concat_strings(struct imd_header *imd);
-const char *imd_get_param(struct imd_header *imd, const char *name);
+char *imd_concat_strings(const struct imd_header *imd);
+const char *imd_get_param(const struct imd_header *imd, const char *name);
 
 extern int imd_command_verbose;
 int imd_command_setenv(const char *variable_name, const char *value);

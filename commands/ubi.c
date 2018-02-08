@@ -82,7 +82,7 @@ error:
 	close(fd_vol);
 error_img:
 	close(fd_img);
-	return ret;
+	return ret ? 1 : 0;
 }
 
 

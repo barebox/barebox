@@ -107,7 +107,9 @@ struct state {
 	uint32_t magic;
 
 	struct list_head variables; /* Sorted list of variables */
+
 	unsigned int dirty;
+	unsigned int init_from_defaults;
 	unsigned int save_on_shutdown;
 
 	struct state_backend_format *format;

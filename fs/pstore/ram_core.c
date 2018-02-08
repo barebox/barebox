@@ -219,7 +219,7 @@ static int persistent_ram_init_ecc(struct persistent_ram_zone *prz,
 		pr_info("error in header, %d\n", numerr);
 		prz->corrected_bytes += numerr;
 	} else if (numerr < 0) {
-		pr_info("uncorrectable error in header\n");
+		pr_debug("No valid data in block, assuming it is empty\n");
 		prz->bad_blocks++;
 	}
 

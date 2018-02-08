@@ -66,6 +66,9 @@ static int mount_root(void)
 		mount("none", "pstore", "/pstore", NULL);
 	}
 
+	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
+		defaultenv_load("/env", 0);
+
 	return 0;
 }
 fs_initcall(mount_root);
@@ -77,9 +80,6 @@ static int load_environment(void)
 	const char *default_environment_path;
 
 	default_environment_path = default_environment_path_get();
-
-	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
-		defaultenv_load("/env", 0);
 
 	envfs_load(default_environment_path, "/env", 0);
 	nvvar_load();

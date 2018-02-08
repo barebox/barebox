@@ -21,6 +21,7 @@
 #include <asm/unaligned.h>
 #include <fcntl.h>
 #include <fs.h>
+#include <libfile.h>
 #include <malloc.h>
 #include <errno.h>
 #include <envfs.h>
@@ -343,13 +344,13 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	return filetype_unknown;
 }
 
-enum filetype file_name_detect_type(const char *filename)
+enum filetype file_name_detect_type_offset(const char *filename, loff_t pos)
 {
 	int fd, ret;
 	void *buf;
 	enum filetype type = filetype_unknown;
 
-	fd = open(filename, O_RDONLY);
+	fd = open_and_lseek(filename, O_RDONLY, pos);
 	if (fd < 0)
 		return fd;
 
@@ -366,6 +367,11 @@ err_out:
 	free(buf);
 
 	return type;
+}
+
+enum filetype file_name_detect_type(const char *filename)
+{
+	return file_name_detect_type_offset(filename, 0);
 }
 
 enum filetype cdev_detect_type(const char *name)

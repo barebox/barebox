@@ -56,18 +56,20 @@ const char *linux_bootargs_get(void)
 		bootargs = basprintf("%s mtdparts=%s", linux_bootargs,
 				       parts);
 		free(linux_bootargs);
-		free(parts);
 		linux_bootargs = bootargs;
 	}
+
+	free(parts);
 
 	parts = globalvar_get_match("linux.blkdevparts.", ";");
 	if (strlen(parts)) {
 		bootargs = basprintf("%s blkdevparts=%s", linux_bootargs,
 				       parts);
 		free(linux_bootargs);
-		free(parts);
 		linux_bootargs = bootargs;
 	}
+
+	free(parts);
 
 	return linux_bootargs;
 }

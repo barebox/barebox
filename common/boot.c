@@ -289,7 +289,7 @@ int bootentry_create_from_name(struct bootentries *bootentries,
 			found += ret;
 	}
 
-	if (!found) {
+	if (IS_ENABLED(CONFIG_COMMAND_SUPPORT) && !found) {
 		char *path;
 
 		if (*name != '/')

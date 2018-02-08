@@ -947,7 +947,6 @@ config STATE_BACKWARD_COMPATIBLE
 
 config BOOTCHOOSER
 	bool "bootchooser infrastructure"
-	depends on !SHELL_NONE
 	select BOOT
 	select BOOTM
 	select ENVIRONMENT_VARIABLES

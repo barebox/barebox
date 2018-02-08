@@ -99,8 +99,7 @@ static int pinctrl_config_one(struct device_node *np)
 int of_pinctrl_select_state(struct device_node *np, const char *name)
 {
 	int state, ret;
-	char *propname;
-	struct property *prop;
+	char propname[sizeof("pinctrl-4294967295")];
 	const __be32 *list;
 	int size, config;
 	phandle phandle;
@@ -113,18 +112,13 @@ int of_pinctrl_select_state(struct device_node *np, const char *name)
 	/* For each defined state ID */
 	for (state = 0; ; state++) {
 		/* Retrieve the pinctrl-* property */
-		propname = basprintf("pinctrl-%d", state);
-		prop = of_find_property(np, propname, NULL);
-		free(propname);
-
-		if (!prop) {
+		sprintf(propname, "pinctrl-%d", state);
+		list = of_get_property(np, propname, &size);
+		if (!list) {
 			ret = -ENODEV;
 			break;
 		}
 
-		size = prop->length;
-
-		list = prop->value;
 		size /= sizeof(*list);
 
 		/* Determine whether pinctrl-names property names the state */
@@ -137,7 +131,7 @@ int of_pinctrl_select_state(struct device_node *np, const char *name)
 		 */
 		if (ret < 0) {
 			/* strlen("pinctrl-") == 8 */
-			statename = prop->name + 8;
+			statename = &propname[8];
 		}
 
 		if (strcmp(name, statename))
@@ -151,7 +145,7 @@ int of_pinctrl_select_state(struct device_node *np, const char *name)
 			np_config = of_find_node_by_phandle(phandle);
 			if (!np_config) {
 				pr_err("prop %s %s index %i invalid phandle\n",
-					np->full_name, prop->name, config);
+					np->full_name, propname, config);
 				ret = -EINVAL;
 				goto err;
 			}

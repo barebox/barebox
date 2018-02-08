@@ -278,6 +278,7 @@ static int do_of_property(int argc, char *argv[])
 
 		if (pp) {
 			free(pp->value);
+			pp->value_const = NULL;
 
 			/* limit property data to the actual size */
 			if (len) {

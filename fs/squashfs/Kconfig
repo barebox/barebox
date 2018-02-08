@@ -57,3 +57,12 @@ if !SQUASHFS_XZ
 	comment "XZ support disabled"
 endif
 
+config SQUASHFS_ZSTD
+	bool
+	depends on FS_SQUASHFS
+	depends on ZSTD_DECOMPRESS
+	default y
+
+if !SQUASHFS_ZSTD
+	comment "ZSTD support disabled"
+endif

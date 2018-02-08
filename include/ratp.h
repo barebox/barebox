@@ -17,6 +17,4 @@ int ratp_poll(struct ratp *ratp);
 bool ratp_closed(struct ratp *ratp);
 bool ratp_busy(struct ratp *ratp);
 
-void ratp_run_command(void);
-
 #endif /* __RATP_H */

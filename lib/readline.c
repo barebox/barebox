@@ -3,7 +3,7 @@
 #include <init.h>
 #include <libbb.h>
 #include <poller.h>
-#include <ratp.h>
+#include <ratp_bb.h>
 #include <xfuncs.h>
 #include <complete.h>
 #include <linux/ctype.h>
@@ -203,7 +203,7 @@ int readline(const char *prompt, char *buf, int len)
 		while (!tstc()) {
 			poller_call();
 			if (IS_ENABLED(CONFIG_RATP))
-				ratp_run_command();
+				barebox_ratp_command_run();
 		}
 
 		ichar = read_key();

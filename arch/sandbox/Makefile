@@ -21,7 +21,9 @@ CFLAGS += -Dmalloc=barebox_malloc -Dcalloc=barebox_calloc \
 		-Dfputs=barebox_fputs -Dsetenv=barebox_setenv \
 		-Dgetenv=barebox_getenv -Dprintf=barebox_printf \
 		-Dglob=barebox_glob -Dglobfree=barebox_globfree \
-		-Dioctl=barebox_ioctl -Dfstat=barebox_fstat
+		-Dioctl=barebox_ioctl -Dfstat=barebox_fstat \
+		-Dopendir=barebox_opendir -Dreaddir=barebox_readdir \
+		-Dclosedir=barebox_closedir
 
 machdirs := $(patsubst %,arch/sandbox/mach-%/,$(machine-y))
 
@@ -39,9 +41,13 @@ ifeq ($(CONFIG_DRIVER_VIDEO_SDL),y)
 SDL_LIBS := $(shell pkg-config sdl --libs)
 endif
 
+ifeq ($(CONFIG_GPIO_LIBFTDI1),y)
+FTDI1_LIBS := $(shell pkg-config libftdi1 --libs)
+endif
+
 cmd_barebox__ = $(CC) -o $@ -Wl,-T,$(barebox-lds) \
 	-Wl,--start-group $(barebox-common) -Wl,--end-group \
-	-lrt -lpthread $(SDL_LIBS)
+	-lrt -lpthread $(SDL_LIBS) $(FTDI1_LIBS)
 
 common-y += $(BOARD) arch/sandbox/os/
 

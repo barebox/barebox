@@ -38,4 +38,16 @@ void sdl_get_bitfield_rgba(struct fb_bitfield *r, struct fb_bitfield *g,
 			    struct fb_bitfield *b, struct fb_bitfield *a);
 void sdl_setpixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
+struct ft2232_bitbang;
+struct ft2232_bitbang *barebox_libftdi1_open(int vendor_id, int device_id,
+						const char *serial);
+void barebox_libftdi1_gpio_direction(struct ft2232_bitbang *ftbb,
+						unsigned off, unsigned dir);
+int barebox_libftdi1_gpio_get_value(struct ft2232_bitbang *ftbb,
+						unsigned off);
+void barebox_libftdi1_gpio_set_value(struct ft2232_bitbang *ftbb,
+						unsigned off, unsigned val);
+int barebox_libftdi1_update(struct ft2232_bitbang *ftbb);
+void barebox_libftdi1_close(void);
+
 #endif /* __ASM_ARCH_LINUX_H */

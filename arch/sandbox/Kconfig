@@ -1,6 +1,7 @@
 config SANDBOX
 	bool
 	select OFTREE
+	select GPIOLIB
 	default y
 
 config ARCH_TEXT_BASE

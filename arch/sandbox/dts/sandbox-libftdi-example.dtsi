@@ -1,0 +1,74 @@
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	gpio0: gpio@0 {
+		compatible = "barebox,libftdi1-gpio";
+		usb,id_vendor = <0x0403>;
+		usb,id_product = <0x6010>;
+
+		/*
+		 * The serial number can be used to select
+		 * a specific device in case more than
+		 * one is connected to the host.
+		 */
+		/* usb,i_serial_number = "20180120"; */
+
+		/* use ACBUS[7:0] */
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		status = "okay";
+	};
+
+	spi0: spi0 {
+		compatible = "spi-gpio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		gpio-sck  = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		gpio-mosi = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+		gpio-miso = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+		cs-gpios  = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+
+		num-chipselects = <1>;
+
+		m25p128@0 {
+			compatible = "m25p128", "jedec,spi-nor";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0>;
+			spi-max-frequency = <1000000>;
+		};
+	};
+
+	i2c0: i2c0 {
+		compatible = "i2c-gpio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		gpios = <&gpio0 4 GPIO_ACTIVE_HIGH /* sda */
+			&gpio0 5 GPIO_ACTIVE_HIGH /* scl */
+			>;
+		i2c-gpio,scl-output-only;
+
+		eeprom: at24@50 {
+			compatible = "atmel,24c32";
+			reg = <0x50>;
+		};
+
+		rtc: ds1307@68 {
+			compatible = "dallas,ds1307";
+			reg = <0x68>;
+		};
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		heartbeat-led {
+			label = "heartbeat";
+			gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+			linux,default-trigger = "heartbeat";
+		};
+	};
+};

@@ -22,29 +22,28 @@
 #include <bootm.h>
 
 struct fit_handle {
-	void *fit;
+	const void *fit;
+	void *fit_alloc;
 	size_t size;
 
 	bool verbose;
 	enum bootm_verify verify;
 
 	struct device_node *root;
-	struct device_node *conf_node;
-
-	const void *kernel;
-	unsigned long kernel_size;
-	const void *oftree;
-	unsigned long oftree_size;
-	const void *initrd;
-	unsigned long initrd_size;
+	struct device_node *images;
+	struct device_node *configurations;
 };
 
 struct fit_handle *fit_open(const char *filename, bool verbose,
 			    enum bootm_verify verify);
-int fit_open_configuration(struct fit_handle *handle, const char *name);
-int fit_has_image(struct fit_handle *handle, const char *name);
-int fit_open_image(struct fit_handle *handle, const char *name,
-		   const void **outdata, unsigned long *outsize);
+struct fit_handle *fit_open_buf(const void *buf, size_t len, bool verbose,
+				enum bootm_verify verify);
+void *fit_open_configuration(struct fit_handle *handle, const char *name);
+int fit_has_image(struct fit_handle *handle, void *configuration,
+		  const char *name);
+int fit_open_image(struct fit_handle *handle, void *configuration,
+		   const char *name, const void **outdata,
+		   unsigned long *outsize);
 
 void fit_close(struct fit_handle *handle);
 

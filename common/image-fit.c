@@ -74,11 +74,11 @@ static int of_read_string_list(struct device_node *np, const char *name, struct 
 	return prop ? 0 : -EINVAL;
 }
 
-static int fit_digest(void *fit, struct digest *digest,
+static int fit_digest(const void *fit, struct digest *digest,
 		      struct string_list *inc_nodes, struct string_list *exc_props,
 		      uint32_t hashed_strings_start, uint32_t hashed_strings_size)
 {
-	struct fdt_header *fdt = fit;
+	const struct fdt_header *fdt = fit;
 	uint32_t dt_struct;
 	void *dt_strings;
 	struct fdt_header f = {};
@@ -230,28 +230,18 @@ static int fit_digest(void *fit, struct digest *digest,
 	return 0;
 }
 
-/*
- * The consistency of the FTD structure was already checked by of_unflatten_dtb()
- */
-static int fit_verify_signature(struct device_node *sig_node, void *fit)
+static struct digest *fit_alloc_digest(struct device_node *sig_node,
+				       enum hash_algo *algo_out)
 {
-	uint32_t hashed_strings_start, hashed_strings_size;
-	struct string_list inc_nodes, exc_props;
-	struct rsa_public_key key = {};
 	struct digest *digest;
-	int sig_len;
-	const char *algo_name, *key_name, *sig_value;
-	char *key_path;
-	struct device_node *key_node;
 	enum hash_algo algo;
-	void *hash;
-	int ret;
+	const char *algo_name;
 
 	if (of_property_read_string(sig_node, "algo", &algo_name)) {
-		pr_err("algo not found\n");
-		ret = -EINVAL;
-		goto out;
+		pr_err("algo property not found\n");
+		return ERR_PTR(-EINVAL);
 	}
+
 	if (strcmp(algo_name, "sha1,rsa2048") == 0) {
 		algo = HASH_ALGO_SHA1;
 	} else if (strcmp(algo_name, "sha256,rsa2048") == 0) {
@@ -260,53 +250,87 @@ static int fit_verify_signature(struct device_node *sig_node, void *fit)
 		algo = HASH_ALGO_SHA256;
 	} else	{
 		pr_err("unknown algo %s\n", algo_name);
-		ret = -EINVAL;
-		goto out;
+		return ERR_PTR(-EINVAL);
 	}
+
 	digest = digest_alloc_by_algo(algo);
 	if (!digest) {
 		pr_err("unsupported algo %s\n", algo_name);
-		ret = -EINVAL;
-		goto out;
+		return ERR_PTR(-EINVAL);
 	}
+
+	digest_init(digest);
+
+	*algo_out = algo;
+
+	return digest;
+}
+
+static int fit_check_rsa_signature(struct device_node *sig_node,
+				   enum hash_algo algo, void *hash)
+{
+	struct rsa_public_key key = {};
+	const char *key_name;
+	char *key_path;
+	struct device_node *key_node;
+	int sig_len;
+	const char *sig_value;
+	int ret;
 
 	sig_value = of_get_property(sig_node, "value", &sig_len);
 	if (!sig_value) {
 		pr_err("signature value not found in %s\n", sig_node->full_name);
-		ret = -EINVAL;
-		goto out_free_digest;
+		return -EINVAL;
 	}
 
 	if (of_property_read_string(sig_node, "key-name-hint", &key_name)) {
 		pr_err("key name not found in %s\n", sig_node->full_name);
-		ret = -EINVAL;
-		goto out_free_digest;
+		return -EINVAL;
 	}
 	key_path = xasprintf("/signature/key-%s", key_name);
 	key_node = of_find_node_by_path(key_path);
 	free(key_path);
 	if (!key_node) {
 		pr_info("failed to find key node\n");
-		ret = -ENOENT;
-		goto out_free_digest;
+		return -ENOENT;
 	}
 
 	ret = rsa_of_read_key(key_node, &key);
 	if (ret) {
 		pr_info("failed to read key in %s\n", key_node->full_name);
-		ret = -ENOENT;
-		goto out_free_digest;
+		return -ENOENT;
 	}
 
-	if (of_property_read_u32_index(sig_node, "hashed-strings", 0, &hashed_strings_start)) {
+	ret = rsa_verify(&key, sig_value, sig_len, hash, algo);
+	if (ret)
+		pr_err("image signature BAD\n");
+	else
+		pr_info("image signature OK\n");
+
+	return ret;
+}
+
+/*
+ * The consistency of the FTD structure was already checked by of_unflatten_dtb()
+ */
+static int fit_verify_signature(struct device_node *sig_node, const void *fit)
+{
+	uint32_t hashed_strings_start, hashed_strings_size;
+	struct string_list inc_nodes, exc_props;
+	struct digest *digest;
+	void *hash;
+	enum hash_algo algo = 0;
+	int ret;
+
+	if (of_property_read_u32_index(sig_node, "hashed-strings", 0,
+	    &hashed_strings_start)) {
 		pr_err("hashed-strings start not found in %s\n", sig_node->full_name);
-		ret = -EINVAL;
-		goto out_free_digest;
+		return -EINVAL;
 	}
-	if (of_property_read_u32_index(sig_node, "hashed-strings", 1, &hashed_strings_size)) {
+	if (of_property_read_u32_index(sig_node, "hashed-strings", 1,
+	    &hashed_strings_size)) {
 		pr_err("hashed-strings size not found in %s\n", sig_node->full_name);
-		ret = -EINVAL;
-		goto out_free_digest;
+		return -EINVAL;
 	}
 
 	string_list_init(&inc_nodes);
@@ -320,37 +344,60 @@ static int fit_verify_signature(struct device_node *sig_node, void *fit)
 
 	string_list_add(&exc_props, "data");
 
-	digest_init(digest);
-	ret = fit_digest(fit, digest, &inc_nodes, &exc_props, hashed_strings_start, hashed_strings_size);
+	digest = fit_alloc_digest(sig_node, &algo);
+	if (IS_ERR(digest)) {
+		ret = PTR_ERR(digest);
+		goto out_sl;
+	}
+
+	ret = fit_digest(fit, digest, &inc_nodes, &exc_props, hashed_strings_start,
+			 hashed_strings_size);
 	hash = xzalloc(digest_length(digest));
 	digest_final(digest, hash);
 
-	ret = rsa_verify(&key, sig_value, sig_len, hash, algo);
-	if (ret) {
-		pr_info("image signature BAD\n");
-		ret = -EBADMSG;
-	} else {
-		pr_info("image signature OK\n");
-		ret = 0;
-	}
+	ret = fit_check_rsa_signature(sig_node, algo, hash);
+	if (ret)
+		goto out_free_hash;
 
+	ret = 0;
+
+ out_free_hash:
 	free(hash);
+	digest_free(digest);
  out_sl:
 	string_list_free(&inc_nodes);
 	string_list_free(&exc_props);
- out_free_digest:
-	digest_free(digest);
- out:
+ 
 	return ret;
 }
 
-static int fit_verify_hash(struct device_node *hash, const void *data, int data_len)
+static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
+			   const void *data, int data_len)
 {
 	struct digest *d;
 	const char *algo;
 	const char *value_read;
 	char *value_calc;
 	int hash_len, ret;
+	struct device_node *hash;
+
+	switch (handle->verify) {
+	case BOOTM_VERIFY_NONE:
+		return 0;
+	case BOOTM_VERIFY_AVAILABLE:
+		ret = 0;
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
+	hash = of_get_child_by_name(image, "hash@1");
+	if (!hash) {
+		if (ret)
+			pr_err("image %s does not have hashes\n",
+			       image->full_name);
+		return ret;
+	}
 
 	value_read = of_get_property(hash, "value", &hash_len);
 	if (!value_read) {
@@ -397,10 +444,57 @@ err_digest_free:
 	return ret;
 }
 
-int fit_has_image(struct fit_handle *handle, const char *name)
+static int fit_image_verify_signature(struct fit_handle *handle,
+				      struct device_node *image,
+				      const void *data, int data_len)
+{
+	struct digest *digest;
+	struct device_node *sig_node;
+	enum hash_algo algo = 0;
+	void *hash;
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_FITIMAGE_SIGNATURE))
+		return 0;
+
+	switch (handle->verify) {
+	case BOOTM_VERIFY_NONE:
+		return 0;
+	case BOOTM_VERIFY_AVAILABLE:
+		ret = 0;
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
+	sig_node = of_get_child_by_name(image, "signature@1");
+	if (!sig_node) {
+		pr_err("Image %s has no signature\n", image->full_name);
+		return ret;
+	}
+
+	digest = fit_alloc_digest(sig_node, &algo);
+	if (IS_ERR(digest))
+		return PTR_ERR(digest);
+
+	digest_update(digest, data, data_len);
+	hash = xzalloc(digest_length(digest));
+	digest_final(digest, hash);
+
+	ret = fit_check_rsa_signature(sig_node, algo, hash);
+
+	free(hash);
+
+	digest_free(digest);
+
+	return ret;
+}
+
+int fit_has_image(struct fit_handle *handle, void *configuration,
+		  const char *name)
 {
 	const char *unit;
-	struct device_node *conf_node = handle->conf_node;
+	struct device_node *conf_node = configuration;
 
 	if (!conf_node)
 		return -EINVAL;
@@ -411,29 +505,44 @@ int fit_has_image(struct fit_handle *handle, const char *name)
 	return 1;
 }
 
-int fit_open_image(struct fit_handle *handle, const char *name,
-		   const void **outdata, unsigned long *outsize)
+/**
+ * fit_open_image - Open an image in a FIT image
+ * @handle: The FIT image handle
+ * @name: The name of the image to open
+ * @outdata: The returned image
+ * @outsize: Size of the returned image
+ *
+ * Open an image in a FIT image. The returned image is freed during fit_close().
+ * @configuration holds the cookie returned from fit_open_configuration() if
+ * the image is opened as part of a configuration, or NULL if the image is
+ * opened without a configuration. If @configuration is NULL then the RSA
+ * signature of the image is checked if desired, if @configuration is non NULL,
+ * then only the hash is checked (because opening the configuration already
+ * checks the RSA signature of all involved nodes).
+ *
+ * Return: 0 for success, negative error code otherwise
+ */
+int fit_open_image(struct fit_handle *handle, void *configuration,
+		   const char *name, const void **outdata,
+		   unsigned long *outsize)
 {
-	struct device_node *image = NULL, *hash;
+	struct device_node *image;
 	const char *unit, *type = NULL, *desc= "(no description)";
 	const void *data;
 	int data_len;
 	int ret = 0;
-	struct device_node *conf_node = handle->conf_node;
+	struct device_node *conf_node = configuration;
 
-	if (!conf_node)
-		return -EINVAL;
-
-	if (of_property_read_string(conf_node, name, &unit)) {
-		pr_err("No image named '%s'\n", name);
-		return -ENOENT;
+	if (conf_node) {
+		if (of_property_read_string(conf_node, name, &unit)) {
+			pr_err("No image named '%s'\n", name);
+			return -ENOENT;
+		}
+	} else {
+		unit = name;
 	}
 
-	image = of_get_child_by_name(handle->root, "images");
-	if (!image)
-		return -ENOENT;
-
-	image = of_get_child_by_name(image, unit);
+	image = of_get_child_by_name(handle->images, unit);
 	if (!image)
 		return -ENOENT;
 
@@ -452,24 +561,13 @@ int fit_open_image(struct fit_handle *handle, const char *name,
 		return -EINVAL;
 	}
 
-	if (handle->verify > BOOTM_VERIFY_NONE) {
-		if (handle->verify == BOOTM_VERIFY_AVAILABLE)
-			ret = 0;
-		else
-			ret = -EINVAL;
-		for_each_child_of_node(image, hash) {
-			if (handle->verbose)
-				of_print_nodes(hash, 0);
-			ret = fit_verify_hash(hash, data, data_len);
-			if (ret < 0)
-				return ret;
-		}
+	if (conf_node)
+		ret = fit_verify_hash(handle, image, data, data_len);
+	else
+		ret = fit_image_verify_signature(handle, image, data, data_len);
 
-		if (ret < 0) {
-			pr_err("image '%s': '%s' does not have hashes\n", unit, desc);
-			return ret;
-		}
-	}
+	if (ret < 0)
+		return ret;
 
 	*outdata = data;
 	*outsize = data_len;
@@ -546,15 +644,25 @@ default_unit:
 	return -ENOENT;
 }
 
-int fit_open_configuration(struct fit_handle *handle, const char *name)
+/**
+ * fit_open_configuration - open a FIT configuration
+ * @handle: The FIT image handle
+ * @name: The name of the configuration
+ *
+ * This opens a FIT configuration and eventually checks the signature
+ * depending on the verify mode the FIT image is opened with.
+ *
+ * Return: If successful a pointer to a valid configuration node,
+ *         otherwise a ERR_PTR()
+ */
+void *fit_open_configuration(struct fit_handle *handle, const char *name)
 {
-	struct device_node *conf_node = NULL;
+	struct device_node *conf_node = handle->configurations;
 	const char *unit, *desc = "(no description)";
 	int ret;
 
-	conf_node = of_get_child_by_name(handle->root, "configurations");
 	if (!conf_node)
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 
 	if (name) {
 		unit = name;
@@ -562,14 +670,14 @@ int fit_open_configuration(struct fit_handle *handle, const char *name)
 		ret = fit_find_compatible_unit(conf_node, &unit);
 		if (ret) {
 			pr_info("Couldn't get a valid configuration. Aborting.\n");
-			return ret;
+			return ERR_PTR(ret);
 		}
 	}
 
 	conf_node = of_get_child_by_name(conf_node, unit);
 	if (!conf_node) {
 		pr_err("configuration '%s' not found\n", unit);
-		return -ENOENT;
+		return ERR_PTR(-ENOENT);
 	}
 
 	of_property_read_string(conf_node, "description", &desc);
@@ -577,80 +685,115 @@ int fit_open_configuration(struct fit_handle *handle, const char *name)
 
 	ret = fit_config_verify_signature(handle, conf_node);
 	if (ret)
-		return ret;
+		return ERR_PTR(ret);
 
-	handle->conf_node = conf_node;
+	return conf_node;
+}
 
-	if (fit_has_image(handle, "kernel")) {
-		ret = fit_open_image(handle, "kernel", &handle->kernel,
-				     &handle->kernel_size);
-		if (ret)
-			return ret;
-	}
+static int fit_do_open(struct fit_handle *handle)
+{
+	const char *desc = "(no description)";
+	struct device_node *root;
 
-	if (fit_has_image(handle, "ramdisk")) {
-		ret = fit_open_image(handle, "ramdisk", &handle->initrd,
-				     &handle->initrd_size);
-		if (ret)
-			return ret;
-	}
+	root = of_unflatten_dtb(handle->fit);
+	if (IS_ERR(root))
+		return PTR_ERR(root);
 
-	if (fit_has_image(handle, "fdt")) {
-		ret = fit_open_image(handle, "fdt", &handle->oftree,
-				     &handle->oftree_size);
-		if (ret)
-			return ret;
-	}
+	handle->root = root;
+
+	handle->images = of_get_child_by_name(handle->root, "images");
+	if (!handle->images)
+		return -ENOENT;
+
+	handle->configurations = of_get_child_by_name(handle->root,
+						      "configurations");
+
+	of_property_read_string(handle->root, "description", &desc);
+	pr_info("Opened FIT image: %s\n", desc);
 
 	return 0;
 }
 
-struct fit_handle *fit_open(const char *filename, bool verbose,
-			    enum bootm_verify verify)
+/**
+ * fit_open_buf - open a FIT image from a buffer
+ * @buf:	The buffer containing the FIT image
+ * @size:	Size of the FIT image
+ * @verbose:	If true, be more verbose
+ * @verify:	The verify mode
+ *
+ * This opens a FIT image found in buf. The returned handle is used as
+ * context for the other FIT functions.
+ *
+ * Return: A handle to a FIT image or a ERR_PTR
+ */
+struct fit_handle *fit_open_buf(const void *buf, size_t size, bool verbose,
+				enum bootm_verify verify)
 {
-	struct fit_handle *handle = NULL;
-	const char *desc = "(no description)";
-	struct device_node *root;
+	struct fit_handle *handle;
 	int ret;
 
 	handle = xzalloc(sizeof(struct fit_handle));
 
 	handle->verbose = verbose;
-
-	ret = read_file_2(filename, &handle->size, &handle->fit, FILESIZE_MAX);
-	if (ret) {
-		pr_err("unable to read %s: %s\n", filename, strerror(-ret));
-		goto err;
-	}
-
-	root = of_unflatten_dtb(handle->fit);
-	if (IS_ERR(root)) {
-		ret = PTR_ERR(root);
-		goto err;
-	}
-
-	handle->root = root;
+	handle->fit = buf;
+	handle->size = size;
 	handle->verify = verify;
 
-	of_property_read_string(handle->root, "description", &desc);
-	pr_info("'%s': %s\n", filename, desc);
+	ret = fit_do_open(handle);
+	if (ret) {
+		fit_close(handle);
+		return ERR_PTR(ret);
+	}
 
 	return handle;
- err:
-	if (handle->root)
-		of_delete_node(handle->root);
-	free(handle->fit);
-	free(handle);
+}
 
-	return ERR_PTR(ret);
+/**
+ * fit_open - open a FIT image
+ * @filename:	The filename of the FIT image
+ * @verbose:	If true, be more verbose
+ * @verify:	The verify mode
+ *
+ * This opens a FIT image found in @filename. The returned handle is used as
+ * context for the other FIT functions.
+ *
+ * Return: A handle to a FIT image or a ERR_PTR
+ */
+struct fit_handle *fit_open(const char *filename, bool verbose,
+			    enum bootm_verify verify)
+{
+	struct fit_handle *handle;
+	int ret;
+
+	handle = xzalloc(sizeof(struct fit_handle));
+
+	handle->verbose = verbose;
+	handle->verify = verify;
+
+	ret = read_file_2(filename, &handle->size, &handle->fit_alloc,
+			  FILESIZE_MAX);
+	if (ret) {
+		pr_err("unable to read %s: %s\n", filename, strerror(-ret));
+		return ERR_PTR(ret);
+	}
+
+	handle->fit = handle->fit_alloc;
+
+	ret = fit_do_open(handle);
+	if (ret) {
+		fit_close(handle);
+		return ERR_PTR(ret);
+	}
+
+	return handle;
 }
 
 void fit_close(struct fit_handle *handle)
 {
 	if (handle->root)
 		of_delete_node(handle->root);
-	if (handle->fit)
-		free(handle->fit);
+
+	free(handle->fit_alloc);
 	free(handle);
 }
 

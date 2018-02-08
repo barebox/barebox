@@ -794,7 +794,7 @@ struct e1000_eeprom_info {
 #ifndef E1000_EEPROM_GRANT_ATTEMPTS
 #define E1000_EEPROM_GRANT_ATTEMPTS 1000 /* EEPROM # attempts to gain grant */
 #endif
-#define E1000_EECD_FLASH_IN_USE     0x00000100  /* Flash is present with a valid signature */
+#define E1000_EECD_FLASH_IN_USE     0x00000040  /* Flash is present with a valid signature */
 #define E1000_EECD_EE_PRES          0x00000100
 #define E1000_EECD_AUTO_RD          0x00000200  /* EEPROM Auto Read done */
 #define E1000_EECD_SIZE_EX_MASK     0x00007800  /* EEprom Size */

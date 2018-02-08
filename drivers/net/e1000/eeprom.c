@@ -1006,12 +1006,10 @@ int e1000_validate_eeprom_checksum(struct e1000_hw *hw)
 	DEBUGFUNC();
 
 	/*
-	  Only the following three 'types' of EEPROM can be expected
-	  to have correct EEPROM checksum
-	*/
-	if (hw->eeprom.type != e1000_eeprom_spi &&
-	    hw->eeprom.type != e1000_eeprom_microwire &&
-	    hw->eeprom.type != e1000_eeprom_flash)
+	 * If the EEPROM device content isn't valid there is no point in
+	 * checking the signature.
+	 */
+	if (!e1000_eeprom_valid(hw))
 		return 0;
 
 	/* Read the EEPROM */
@@ -1525,20 +1523,18 @@ int e1000_register_invm(struct e1000_hw *hw)
 
 int e1000_eeprom_valid(struct e1000_hw *hw)
 {
-	uint32_t eecd;
+	uint32_t valid_mask = E1000_EECD_FLASH_IN_USE |
+			      E1000_EECD_AUTO_RD | E1000_EECD_EE_PRES;
 
 	if (hw->mac_type != e1000_igb)
 		return 1;
 
 	/*
-	 * if AUTO_RD or EE_PRES are not set in EECD, the shadow RAM is invalid
-	 * (and in practise seems to contain the contents of iNVM).
+	 * If there is no flash in use or AUTO_RD or EE_PRES are not set in
+	 * EECD, the shadow RAM is invalid (and in practise seems to contain
+	 * the contents of iNVM).
 	 */
-	eecd = e1000_read_reg(hw, E1000_EECD);
-	if (!(eecd & E1000_EECD_AUTO_RD))
-		return 0;
-
-	if (!(eecd & E1000_EECD_EE_PRES))
+	if ((e1000_read_reg(hw, E1000_EECD) & valid_mask) != valid_mask)
 		return 0;
 
 	return 1;
@@ -1551,79 +1547,87 @@ int e1000_eeprom_valid(struct e1000_hw *hw)
  */
 int e1000_register_eeprom(struct e1000_hw *hw)
 {
-	int ret = E1000_SUCCESS;
-
 	struct e1000_eeprom_info *eeprom = &hw->eeprom;
+	uint32_t eecd;
+	int ret;
 
-	if (hw->mac_type == e1000_igb) {
-		uint32_t eecd = e1000_read_reg(hw, E1000_EECD);
+	if (hw->mac_type != e1000_igb)
+		return E1000_SUCCESS;
 
+	eecd = e1000_read_reg(hw, E1000_EECD);
+
+	if (eecd & E1000_EECD_AUTO_RD) {
+		if (eecd & E1000_EECD_EE_PRES) {
+			if (eecd & E1000_EECD_FLASH_IN_USE) {
+				uint32_t fla = e1000_read_reg(hw, E1000_FLA);
+				dev_info(hw->dev,
+					 "Hardware programmed from flash (%ssecure)\n",
+					 fla & E1000_FLA_LOCKED ? "" : "un");
+			} else {
+				dev_info(hw->dev, "Hardware programmed from iNVM\n");
+			}
+		} else {
+			dev_warn(hw->dev, "Shadow RAM invalid\n");
+		}
+	} else {
+		/*
+		 * I never saw this case in practise and I'm unsure how
+		 * to handle that. Maybe just wait until the hardware is
+		 * up enough that this bit is set?
+		 */
+		dev_err(hw->dev, "Flash Auto-Read not done\n");
+	}
+
+	if (e1000_eeprom_valid(hw)) {
 		hw->eepromcdev.dev = hw->dev;
 		hw->eepromcdev.ops = &e1000_eeprom_ops;
-		hw->eepromcdev.name = xasprintf("e1000-eeprom%d", hw->dev->id);
+		hw->eepromcdev.name = xasprintf("e1000-eeprom%d",
+						hw->dev->id);
 		hw->eepromcdev.size = 0x1000;
 
 		ret = devfs_create(&hw->eepromcdev);
 		if (ret < 0)
 			return ret;
-
-		if (eecd & E1000_EECD_AUTO_RD) {
-			if (eecd & E1000_EECD_EE_PRES) {
-				if (eecd & E1000_EECD_FLASH_IN_USE) {
-					uint32_t fla = e1000_read_reg(hw, E1000_FLA);
-					dev_info(hw->dev,
-						 "Hardware programmed from flash (%ssecure)\n",
-						 fla & E1000_FLA_LOCKED ? "" : "un");
-				} else {
-					dev_info(hw->dev, "Hardware programmed from iNVM\n");
-				}
-			} else {
-				dev_warn(hw->dev, "Shadow RAM invalid\n");
-			}
-		} else {
-			/*
-			 * I never saw this case in practise and I'm unsure how
-			 * to handle that. Maybe just wait until the hardware is
-			 * up enough that this bit is set?
-			 */
-			dev_err(hw->dev, "Flash Auto-Read not done\n");
-		}
-
-		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
-			hw->mtd.parent = hw->dev;
-			hw->mtd.read = e1000_mtd_read;
-			hw->mtd.write = e1000_mtd_write;
-			hw->mtd.erase = e1000_mtd_erase;
-			hw->mtd.lock = e1000_mtd_lock;
-			hw->mtd.unlock = e1000_mtd_unlock;
-			hw->mtd.size = eeprom->word_size * 2;
-			hw->mtd.writesize = 1;
-			hw->mtd.subpage_sft = 0;
-
-			hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
-			hw->mtd.erasesize = SZ_4K;
-			hw->mtd.eraseregions[0].erasesize = SZ_4K;
-			hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
-			hw->mtd.numeraseregions = 1;
-
-			hw->mtd.flags = MTD_CAP_NORFLASH;
-			hw->mtd.type = MTD_NORFLASH;
-
-			ret = add_mtd_device(&hw->mtd, "e1000-nor",
-					     DEVICE_ID_DYNAMIC);
-			if (ret) {
-				devfs_remove(&hw->eepromcdev);
-				return ret;
-			}
-		}
-
-		ret = e1000_register_invm(hw);
-		if (ret < 0) {
-			if (eecd & E1000_EECD_I210_FLASH_DETECTED)
-				del_mtd_device(&hw->mtd);
-			devfs_remove(&hw->eepromcdev);
-		}
 	}
+
+	if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
+		hw->mtd.parent = hw->dev;
+		hw->mtd.read = e1000_mtd_read;
+		hw->mtd.write = e1000_mtd_write;
+		hw->mtd.erase = e1000_mtd_erase;
+		hw->mtd.lock = e1000_mtd_lock;
+		hw->mtd.unlock = e1000_mtd_unlock;
+		hw->mtd.size = eeprom->word_size * 2;
+		hw->mtd.writesize = 1;
+		hw->mtd.subpage_sft = 0;
+
+		hw->mtd.eraseregions = xzalloc(sizeof(struct mtd_erase_region_info));
+		hw->mtd.erasesize = SZ_4K;
+		hw->mtd.eraseregions[0].erasesize = SZ_4K;
+		hw->mtd.eraseregions[0].numblocks = hw->mtd.size / SZ_4K;
+		hw->mtd.numeraseregions = 1;
+
+		hw->mtd.flags = MTD_CAP_NORFLASH;
+		hw->mtd.type = MTD_NORFLASH;
+
+		ret = add_mtd_device(&hw->mtd, "e1000-nor",
+				     DEVICE_ID_DYNAMIC);
+		if (ret)
+			goto out_eeprom;
+	}
+
+	ret = e1000_register_invm(hw);
+	if (ret < 0)
+		goto out_mtd;
+
+	return E1000_SUCCESS;
+
+out_mtd:
+	if (eecd & E1000_EECD_I210_FLASH_DETECTED)
+		del_mtd_device(&hw->mtd);
+out_eeprom:
+	if (e1000_eeprom_valid(hw))
+		devfs_remove(&hw->eepromcdev);
 
 	return ret;
 }

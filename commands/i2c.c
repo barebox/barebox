@@ -115,7 +115,7 @@ static int do_i2c_write(int argc, char *argv[])
 
 	count = argc - optind;
 
-	if ((addr < 0) || (reg < 0) || (count == 0) || (addr > 0x7F))
+	if ((addr < 0) || (count == 0) || (addr > 0x7F))
 		return COMMAND_ERROR_USAGE;
 
 	adapter = i2c_get_adapter(bus);
@@ -131,7 +131,11 @@ static int do_i2c_write(int argc, char *argv[])
 	for (i = 0; i < count; i++)
 		*(buf + i) = (char) simple_strtol(argv[optind+i], NULL, 0);
 
-	ret = i2c_write_reg(&client, reg | wide, buf, count);
+	if (reg > 0) {
+		ret = i2c_write_reg(&client, reg | wide, buf, count);
+	} else {
+		ret = i2c_master_send(&client, buf, count);
+	}
 	if (ret != count) {
 		if (verbose)
 			printf("write aborted, count(%i) != writestatus(%i)\n",

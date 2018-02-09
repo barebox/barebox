@@ -57,7 +57,15 @@ config USB_GADGET_FASTBOOT
 	bool
 	select BANNER
 	select FILE_LIST
-	select IMAGE_SPARSE
 	prompt "Android Fastboot support"
+
+config USB_GADGET_FASTBOOT_SPARSE
+	bool
+	select IMAGE_SPARSE
+	prompt "Enable Fastboot sparse image support"
+	help
+	  Sparse images are a way for the fastboot protocol to write
+	  images that are bigger than the available memory. If unsure,
+	  say yes here.
 
 endif

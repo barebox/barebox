@@ -322,8 +322,10 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 	fb_setvar(var, "0.4");
 	var = fb_addvar(f_fb, "bootloader-version");
 	fb_setvar(var, release_string);
-	var = fb_addvar(f_fb, "max-download-size");
-	fb_setvar(var, "%u", fastboot_max_download_size);
+	if (IS_ENABLED(USB_GADGET_FASTBOOT_SPARSE)) {
+		var = fb_addvar(f_fb, "max-download-size");
+		fb_setvar(var, "%u", fastboot_max_download_size);
+	}
 
 	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && opts->export_bbu)
 		bbu_handlers_iterate(fastboot_add_bbu_variables, f_fb);
@@ -906,6 +908,11 @@ static void cb_flash(struct usb_ep *ep, struct usb_request *req, const char *cmd
 	filename = fentry->filename;
 
 	if (filetype == filetype_android_sparse) {
+		if (!IS_ENABLED(USB_GADGET_FASTBOOT_SPARSE)) {
+			fastboot_tx_print(f_fb, "FAILsparse image not supported");
+			return;
+		}
+
 		ret = fastboot_handle_sparse(f_fb, fentry);
 		if (ret) {
 			fastboot_tx_print(f_fb, "FAILwriting sparse image: %s",
@@ -1172,7 +1179,8 @@ static void rx_handler_command(struct usb_ep *ep, struct usb_request *req)
 
 static int fastboot_globalvars_init(void)
 {
-	globalvar_add_simple_int("usbgadget.fastboot_max_download_size",
+	if (IS_ENABLED(USB_GADGET_FASTBOOT_SPARSE))
+		globalvar_add_simple_int("usbgadget.fastboot_max_download_size",
 				 &fastboot_max_download_size, "%u");
 
 	return 0;

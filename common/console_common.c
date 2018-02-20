@@ -145,15 +145,28 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 	return ret;
 }
 
-static int loglevel_init(void)
+#ifdef CONFIG_CONSOLE_ALLOW_COLOR
+static unsigned int __console_allow_color = 1;
+#else
+static unsigned int __console_allow_color = 0;
+#endif
+
+bool console_allow_color(void)
+{
+	return __console_allow_color;
+}
+
+static int console_common_init(void)
 {
 	if (IS_ENABLED(CONFIG_LOGBUF))
 		globalvar_add_simple_int("log_max_messages",
 				&barebox_log_max_messages, "%d");
 
+	globalvar_add_simple_bool("allow_color", &__console_allow_color);
+
 	return globalvar_add_simple_int("loglevel", &barebox_loglevel, "%d");
 }
-device_initcall(loglevel_init);
+device_initcall(console_common_init);
 
 void log_print(unsigned flags)
 {

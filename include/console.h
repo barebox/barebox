@@ -94,4 +94,6 @@ void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx);
 static inline void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx) {}
 #endif
 
+bool console_allow_color(void);
+
 #endif

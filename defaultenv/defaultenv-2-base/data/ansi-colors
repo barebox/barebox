@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ ${global.allow_color} != "true" ]; then
+if [ ${global.allow_color} != "1" ]; then
 	exit
 fi
 

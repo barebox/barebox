@@ -751,6 +751,14 @@ config CONSOLE_ACTIVATE_NONE
 
 endchoice
 
+config CONSOLE_ALLOW_COLOR
+	prompt "Allow colored console output during boot"
+	bool
+	help
+	  If enabled, colored output is allowed during boot. This is the
+	  compile time default for colored console output. After boot it
+	  can be controlled using global.allow_color.
+
 config PBL_CONSOLE
 	depends on PBL_IMAGE
 	depends on !CONSOLE_NONE

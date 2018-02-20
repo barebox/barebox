@@ -10,8 +10,7 @@ int state_backend_dtb_file(struct state *state, const char *of_path,
 int state_backend_raw_file(struct state *state, const char *of_path,
 		const char *path, off_t offset, size_t size);
 
-struct state *state_new_from_node(struct device_node *node, char *path,
-				  off_t offset, size_t max_size, bool readonly);
+struct state *state_new_from_node(struct device_node *node, bool readonly);
 void state_release(struct state *state);
 
 struct state *state_by_name(const char *name);

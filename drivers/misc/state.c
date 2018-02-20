@@ -28,7 +28,7 @@ static int state_probe(struct device_d *dev)
 	bool readonly = false;
 	int ret;
 
-	state = state_new_from_node(np, NULL, 0, 0, readonly);
+	state = state_new_from_node(np, readonly);
 	if (IS_ERR(state)) {
 		int ret = PTR_ERR(state);
 		if (ret == -ENODEV)

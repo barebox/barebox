@@ -441,7 +441,7 @@ static int efi_late_init(void)
 
 		np = of_find_node_by_alias(root, "state");
 
-		state = state_new_from_node(np, NULL, 0, 0, false);
+		state = state_new_from_node(np, false);
 		if (IS_ERR(state))
 			return PTR_ERR(state);
 

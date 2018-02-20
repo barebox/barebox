@@ -480,7 +480,8 @@ static int of_state_fixup(struct device_node *root, void *ctx)
 	}
 
 	/* backend phandle */
-	backend_node = of_find_node_by_devpath(root, state->backend_path);
+	backend_node = of_find_node_by_reproducible_name(root,
+						state->backend_reproducible_name);
 	if (!backend_node) {
 		ret = -ENODEV;
 		goto out;
@@ -560,6 +561,7 @@ void state_release(struct state *state)
 	state_storage_free(&state->storage);
 	state_format_free(state->format);
 	free(state->backend_path);
+	free(state->backend_reproducible_name);
 	free(state->of_path);
 	free(state);
 }
@@ -604,6 +606,8 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 			       strerror(-ret));
 		goto out_release_state;
 	}
+
+	state->backend_reproducible_name = of_get_reproducible_name(partition_node);
 
 	ret = of_property_read_string(node, "backend-type", &backend_type);
 	if (ret) {

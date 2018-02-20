@@ -115,6 +115,7 @@ struct state {
 	struct state_backend_format *format;
 	struct state_backend_storage storage;
 	char *backend_path;
+	char *backend_reproducible_name;
 };
 
 enum state_convert {

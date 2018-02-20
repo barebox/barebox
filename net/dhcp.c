@@ -76,7 +76,6 @@ typedef enum {
 
 static uint32_t Bootp_id;
 static dhcp_state_t dhcp_state;
-static IPaddr_t net_dhcp_server_ip;
 static uint64_t dhcp_start;
 static struct eth_device *dhcp_edev;
 struct dhcp_req_param dhcp_param;
@@ -350,7 +349,6 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 {
 	struct bootp *bp;
 	int extlen;
-	IPaddr_t OfferedIP;
 
 	debug("%s: Sending DHCPREQUEST\n", __func__);
 
@@ -378,9 +376,8 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	/*
 	 * Copy options from OFFER packet if present
 	 */
-	net_copy_ip(&OfferedIP, &bp_offer->bp_yiaddr);
-	extlen = dhcp_extended(bp->bp_vend, DHCP_REQUEST, net_dhcp_server_ip,
-				OfferedIP);
+	extlen = dhcp_extended(bp->bp_vend, DHCP_REQUEST, dhcp_result->serverip,
+				dhcp_result->ip);
 
 	debug("Transmitting DHCPREQUEST packet\n");
 	net_udp_send(dhcp_con, sizeof(*bp) + extlen);

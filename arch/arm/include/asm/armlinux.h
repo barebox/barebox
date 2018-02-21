@@ -5,7 +5,7 @@
 #include <asm/setup.h>
 #include <asm/secure.h>
 
-#if defined CONFIG_ARM_LINUX
+#if defined CONFIG_ARM_LINUX && defined CONFIG_CPU_32
 void armlinux_set_bootparams(void *params);
 void armlinux_set_architecture(int architecture);
 void armlinux_set_revision(unsigned int);

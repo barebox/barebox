@@ -39,6 +39,28 @@
 			status = "disabled";
 		};
 	};
+
+	reg_usbh1_vbus: regulator-usbh1 {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbh1_vbus>;
+		regulator-name = "usbh1_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio2 18 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	reg_usbotg_vbus: regulator-usbotg {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbotg_vbus>;
+		regulator-name = "usbotg_vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
 };
 
 &ecspi1 {
@@ -209,6 +231,24 @@
 			>;
 		};
 
+		pinctrl_usbh1_vbus: usbh1vbusgrp {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_A20__GPIO2_IO18	0xb0b1
+				>;
+		};
+
+		pinctrl_usbotg: usbotggrp {
+			fsl,pins = <
+				MX6QDL_PAD_GPIO_1__USB_OTG_ID	0x17059
+				>;
+		};
+
+		pinctrl_usbotg_vbus: usbotgvbusgrp {
+			fsl,pins = <
+				MX6QDL_PAD_EIM_A19__GPIO2_IO19	0xb0b1
+				>;
+		};
+
 		pinctrl_usdhc1: usdhc1grp {
 			fsl,pins = <
 				MX6QDL_PAD_SD1_CMD__SD1_CMD		0x170f9
@@ -246,6 +286,20 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart2>;
 	status = "okay";
+};
+
+&usbh1 {
+	vbus-supply = <&reg_usbh1_vbus>;
+	disable-over-current;
+	status = "disabled";
+};
+
+&usbotg {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbotg>;
+	vbus-supply = <&reg_usbotg_vbus>;
+	disable-over-current;
+	status = "disabled";
 };
 
 &usdhc1 {

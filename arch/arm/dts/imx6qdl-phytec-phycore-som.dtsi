@@ -32,6 +32,12 @@
 			device-path = &gpmi, "partname:barebox-environment";
 			status = "disabled";
 		};
+
+		environment-spinor {
+			compatible = "barebox,environment";
+			device-path = &flash, "partname:barebox-environment";
+			status = "disabled";
+		};
 	};
 };
 

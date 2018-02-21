@@ -191,9 +191,9 @@ void imx_esdctlv4_start_ddr3_sdram(int cs)
 		ESDCTL_V4_DDR3_REG_MR0 | val_cs1;
 
 	if (cs)
-		val = ESDCTL_V4_ESDSCR_DLL_RST1;
+		val |= ESDCTL_V4_ESDSCR_DLL_RST1;
 	else
-		val = ESDCTL_V4_ESDSCR_DLL_RST0;
+		val |= ESDCTL_V4_ESDSCR_DLL_RST0;
 
 	writel(val, base + ESDCTL_V4_ESDSCR);
 

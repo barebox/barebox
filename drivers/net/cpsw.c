@@ -1089,11 +1089,13 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 
 		if (i < priv->num_slaves && !strncmp(child->name, "slave", 5)) {
 			struct cpsw_slave *slave = &priv->slaves[i];
-			uint32_t phy_id[2];
+			uint32_t phy_id[2] = {-1, -1};
 
-			ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
-			if (ret)
-				return ret;
+			if (!of_find_node_by_name(child, "fixed-link")) {
+				ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
+				if (ret)
+					return ret;
+			}
 
 			slave->dev.device_node = child;
 			slave->phy_id = phy_id[1];

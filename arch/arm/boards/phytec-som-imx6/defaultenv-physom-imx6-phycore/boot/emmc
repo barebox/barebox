@@ -1,0 +1,5 @@
+#!/bin/sh
+
+global.bootm.image="/mnt/emmc/zImage"
+global.bootm.oftree="/mnt/emmc/oftree"
+global.linux.bootargs.dyn.root="root=/dev/mmcblk1p2 rootwait rw"

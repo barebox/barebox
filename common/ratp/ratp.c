@@ -132,17 +132,6 @@ static int console_send(struct ratp *r, void *pkt, int len)
 	return 0;
 }
 
-static void *xmemdup_add_zero(const void *buf, int len)
-{
-	void *ret;
-
-	ret = xzalloc(len + 1);
-	*(uint8_t *)(ret + len) = 0;
-	memcpy(ret, buf, len);
-
-	return ret;
-}
-
 static void ratp_queue_console_tx(struct ratp_ctx *ctx)
 {
 	u8 buf[255];
@@ -220,7 +209,7 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 		if (!IS_ENABLED(CONFIG_CONSOLE_RATP) || ratp_command)
 			return 0;
 
-		ratp_command = xmemdup_add_zero(&rbb->data, dlen);
+		ratp_command = xstrndup((const char *)rbb->data, dlen);
 		ratp_ctx = ctx;
 		pr_debug("got command: %s\n", ratp_command);
 

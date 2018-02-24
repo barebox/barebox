@@ -57,6 +57,10 @@ SECTIONS
 	.barebox_cmd : { BAREBOX_CMDS } > ram
 	__barebox_cmd_end = .;
 
+	__barebox_ratp_cmd_start = .;
+	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS } > ram
+	__barebox_ratp_cmd_end = .;
+
 	__barebox_magicvar_start = .;
 	.barebox_magicvar : { BAREBOX_MAGICVARS } > ram
 	__barebox_magicvar_end = .;

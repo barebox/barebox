@@ -31,21 +31,10 @@
 #include <ratp_bb.h>
 #include <fs.h>
 
-#define BB_RATP_TYPE_COMMAND		1
-#define BB_RATP_TYPE_COMMAND_RETURN	2
-#define BB_RATP_TYPE_CONSOLEMSG		3
-#define BB_RATP_TYPE_PING		4
-#define BB_RATP_TYPE_PONG		5
-#define BB_RATP_TYPE_GETENV		6
-#define BB_RATP_TYPE_GETENV_RETURN	7
-#define BB_RATP_TYPE_FS			8
-#define BB_RATP_TYPE_FS_RETURN		9
+LIST_HEAD(ratp_command_list);
+EXPORT_SYMBOL(ratp_command_list);
 
-struct ratp_bb {
-	uint16_t type;
-	uint16_t flags;
-	uint8_t data[];
-};
+#define for_each_ratp_command(cmd) list_for_each_entry(cmd, &ratp_command_list, list)
 
 struct ratp_bb_command_return {
 	uint32_t errno;
@@ -65,6 +54,51 @@ struct ratp_ctx {
 
 	struct poller_struct poller;
 };
+
+static int compare_ratp_command(struct list_head *a, struct list_head *b)
+{
+	int id_a = list_entry(a, struct ratp_command, list)->request_id;
+	int id_b = list_entry(b, struct ratp_command, list)->request_id;
+
+	return (id_a - id_b);
+}
+
+int register_ratp_command(struct ratp_command *cmd)
+{
+	debug("register ratp command: request %hu, response %hu\n",
+	      cmd->request_id, cmd->response_id);
+	list_add_sort(&cmd->list, &ratp_command_list, compare_ratp_command);
+	return 0;
+}
+EXPORT_SYMBOL(register_ratp_command);
+
+struct ratp_command *find_ratp_request(uint16_t request_id)
+{
+	struct ratp_command *cmdtp;
+
+	for_each_ratp_command(cmdtp)
+		if (request_id == cmdtp->request_id)
+			return cmdtp;
+
+	return NULL;	/* not found */
+}
+
+extern struct ratp_command __barebox_ratp_cmd_start;
+extern struct ratp_command __barebox_ratp_cmd_end;
+
+static int init_ratp_command_list(void)
+{
+	struct ratp_command *cmdtp;
+
+	for (cmdtp = &__barebox_ratp_cmd_start;
+			cmdtp != &__barebox_ratp_cmd_end;
+			cmdtp++)
+		register_ratp_command(cmdtp);
+
+	return 0;
+}
+
+late_initcall(init_ratp_command_list);
 
 static int console_recv(struct ratp *r, uint8_t *data)
 {
@@ -207,8 +241,24 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 	int dlen = len - sizeof(struct ratp_bb);
 	char *varname;
 	int ret = 0;
+	uint16_t type = be16_to_cpu(rbb->type);
+	struct ratp_command *cmd;
 
-	switch (be16_to_cpu(rbb->type)) {
+	/* See if there's a command registered to this type */
+	cmd = find_ratp_request(type);
+	if (cmd) {
+		struct ratp_bb *rsp = NULL;
+		int rsp_len = 0;
+
+		ret = cmd->cmd(rbb, len, &rsp, &rsp_len);
+		if (!ret)
+			ret = ratp_send(&ctx->ratp, rsp, rsp_len);
+
+		free(rsp);
+		return ret;
+	}
+
+	switch (type) {
 	case BB_RATP_TYPE_COMMAND:
 		if (ratp_command)
 			return 0;

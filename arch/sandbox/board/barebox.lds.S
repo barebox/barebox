@@ -21,6 +21,11 @@ SECTIONS
 	__barebox_cmd_start = .;
 	__barebox_cmd : { BAREBOX_CMDS }
 	__barebox_cmd_end = .;
+
+	. = ALIGN(64);
+	__barebox_ratp_cmd_start = .;
+	__barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
+	__barebox_ratp_cmd_end = .;
 }
 
 INSERT BEFORE .rodata;

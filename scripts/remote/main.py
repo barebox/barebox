@@ -98,6 +98,13 @@ def handle_mw(args):
     return res
 
 
+def handle_reset(args):
+    ctrl = get_controller(args)
+    ctrl.reset(args.force)
+    ctrl.close()
+    return 0
+
+
 def handle_listen(args):
     port = serial.serial_for_url(args.port, args.baudrate)
     conn = SerialRatpConnection(port)
@@ -180,6 +187,12 @@ parser_mw.add_argument('path', help="path")
 parser_mw.add_argument('address', type=auto_int, help="address")
 parser_mw.add_argument('data', help="data")
 parser_mw.set_defaults(func=handle_mw)
+
+parser_reset = subparsers.add_parser('reset', help="run reset command")
+parser_reset_force = parser_reset.add_mutually_exclusive_group(required=False)
+parser_reset_force.add_argument('--force', dest='force', action='store_true')
+parser_reset_force.add_argument('--no-force', dest='force', action='store_false')
+parser_reset.set_defaults(func=handle_reset,force=False)
 
 parser_listen = subparsers.add_parser('listen', help="listen for an incoming connection")
 parser_listen.set_defaults(func=handle_listen)

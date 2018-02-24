@@ -46,9 +46,6 @@ def unpack(data):
     elif p_type == BBType.fs_return:
         logging.debug("received: fs_return")
         return BBPacketFSReturn(raw=data)
-    elif p_type == BBType.md:
-        logging.debug("received: md")
-        return BBPacketMd(raw=data)
     elif p_type == BBType.md_return:
         logging.debug("received: md_return")
         return BBPacketMdReturn(raw=data)
@@ -58,6 +55,9 @@ def unpack(data):
     elif p_type == BBType.mw_return:
         logging.debug("received: mw_return")
         return BBPacketMwReturn(raw=data)
+    elif p_type == BBType.reset:
+        logging.debug("received: reset")
+        return BBPacketReset(raw=data)
     else:
         logging.debug("received: UNKNOWN")
         return BBPacket(raw=data)
@@ -135,6 +135,9 @@ class Controller(Thread):
         r = self._expect(BBPacketMwReturn)
         logging.info("Mw return: %r", r)
         return (r.exit_code,r.written)
+
+    def reset(self, force):
+        self._send(BBPacketReset(force=force))
 
     def close(self):
         self.conn.close()

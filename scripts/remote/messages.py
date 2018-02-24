@@ -21,6 +21,7 @@ class BBType(object):
     md_return = 11
     mw = 12
     mw_return = 13
+    reset = 14
 
 
 class BBPacket(object):
@@ -241,3 +242,18 @@ class BBPacketMwReturn(BBPacket):
     def _pack_payload(self):
         # header size is always 4 bytes (HH) and we have 8 bytes of fixed data (HLH), so buffer offset is 14
         return struct.pack("!HLH", 12, self.exit_code, self.written)
+
+
+class BBPacketReset(BBPacket):
+    def __init__(self, raw=None, force=None):
+        self.force = force
+        super(BBPacketReset, self).__init__(BBType.reset, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketReset(force=%c)" % (self.force)
+
+    def _unpack_payload(self, payload):
+        self.force = struct.unpack("?", payload[:1])
+
+    def _pack_payload(self):
+        return struct.pack("?", self.force)

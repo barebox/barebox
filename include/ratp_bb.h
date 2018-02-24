@@ -16,6 +16,7 @@
 #define BB_RATP_TYPE_MD_RETURN		11
 #define BB_RATP_TYPE_MW			12
 #define BB_RATP_TYPE_MW_RETURN		13
+#define BB_RATP_TYPE_RESET		14
 
 struct ratp_bb {
 	uint16_t type;

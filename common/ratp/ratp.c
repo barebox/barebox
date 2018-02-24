@@ -189,25 +189,6 @@ static int ratp_bb_send_command_return(struct ratp_ctx *ctx, uint32_t errno)
 	return ret;
 }
 
-static int ratp_bb_send_pong(struct ratp_ctx *ctx)
-{
-	void *buf;
-	struct ratp_bb *rbb;
-	int len = sizeof(*rbb);
-	int ret;
-
-	buf = xzalloc(len);
-	rbb = buf;
-
-	rbb->type = cpu_to_be16(BB_RATP_TYPE_PONG);
-
-	ret = ratp_send(&ctx->ratp, buf, len);
-
-	free(buf);
-
-	return ret;
-}
-
 static int ratp_bb_send_getenv_return(struct ratp_ctx *ctx, const char *val)
 {
 	void *buf;
@@ -270,7 +251,6 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 		break;
 
 	case BB_RATP_TYPE_COMMAND_RETURN:
-	case BB_RATP_TYPE_PONG:
 		break;
 
 	case BB_RATP_TYPE_CONSOLEMSG:
@@ -278,10 +258,6 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 			return 0;
 
 		kfifo_put(ctx->console_recv_fifo, rbb->data, dlen);
-		break;
-
-	case BB_RATP_TYPE_PING:
-		ret = ratp_bb_send_pong(ctx);
 		break;
 
 	case BB_RATP_TYPE_GETENV:

@@ -1,0 +1,14 @@
+
+config CONSOLE_RATP
+	bool
+	select RATP
+	select CRC16
+	select POLLER
+	depends on CONSOLE_FULL
+	prompt "RATP console support"
+	help
+	  This option adds support for remote controlling barebox via serial
+	  port. The regular console is designed for human interaction whereas
+	  this option adds a machine readable interface for controlling barebox.
+	  Say yes here if you want to control barebox from a remote host.
+

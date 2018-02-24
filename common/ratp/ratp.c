@@ -189,29 +189,6 @@ static int ratp_bb_send_command_return(struct ratp_ctx *ctx, uint32_t errno)
 	return ret;
 }
 
-static int ratp_bb_send_getenv_return(struct ratp_ctx *ctx, const char *val)
-{
-	void *buf;
-	struct ratp_bb *rbb;
-	int len, ret;
-
-	if (!val)
-	    val = "";
-
-	len = sizeof(*rbb) + strlen(val);
-	buf = xzalloc(len);
-	rbb = buf;
-	strcpy(rbb->data, val);
-
-	rbb->type = cpu_to_be16(BB_RATP_TYPE_GETENV_RETURN);
-
-	ret = ratp_send(&ctx->ratp, buf, len);
-
-	free(buf);
-
-	return ret;
-}
-
 static char *ratp_command;
 static struct ratp_ctx *ratp_ctx;
 
@@ -220,7 +197,6 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 	const struct ratp_bb *rbb = buf;
 	struct ratp_bb_pkt *pkt;
 	int dlen = len - sizeof(struct ratp_bb);
-	char *varname;
 	int ret = 0;
 	uint16_t type = be16_to_cpu(rbb->type);
 	struct ratp_command *cmd;
@@ -258,12 +234,6 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 			return 0;
 
 		kfifo_put(ctx->console_recv_fifo, rbb->data, dlen);
-		break;
-
-	case BB_RATP_TYPE_GETENV:
-		varname = xmemdup_add_zero(&rbb->data, dlen);
-
-		ret = ratp_bb_send_getenv_return(ctx, getenv(varname));
 		break;
 
 	case BB_RATP_TYPE_FS_RETURN:

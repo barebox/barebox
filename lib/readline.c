@@ -202,7 +202,7 @@ int readline(const char *prompt, char *buf, int len)
 	while (1) {
 		while (!tstc()) {
 			poller_call();
-			if (IS_ENABLED(CONFIG_RATP))
+			if (IS_ENABLED(CONFIG_CONSOLE_RATP))
 				barebox_ratp_command_run();
 		}
 

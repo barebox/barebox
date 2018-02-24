@@ -260,7 +260,7 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 
 	switch (type) {
 	case BB_RATP_TYPE_COMMAND:
-		if (ratp_command)
+		if (!IS_ENABLED(CONFIG_CONSOLE_RATP) || ratp_command)
 			return 0;
 
 		ratp_command = xmemdup_add_zero(&rbb->data, dlen);
@@ -274,6 +274,8 @@ static int ratp_bb_dispatch(struct ratp_ctx *ctx, const void *buf, int len)
 		break;
 
 	case BB_RATP_TYPE_CONSOLEMSG:
+		if (!IS_ENABLED(CONFIG_CONSOLE_RATP))
+			return 0;
 
 		kfifo_put(ctx->console_recv_fifo, rbb->data, dlen);
 		break;
@@ -420,7 +422,8 @@ static void ratp_poller(struct poller_struct *poller)
 	size_t len;
 	void *buf;
 
-	ratp_queue_console_tx(ctx);
+	if (IS_ENABLED(CONFIG_CONSOLE_RATP))
+		ratp_queue_console_tx(ctx);
 
 	ret = ratp_poll(&ctx->ratp);
 	if (ret == -EINTR)

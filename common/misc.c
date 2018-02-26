@@ -141,20 +141,15 @@ static char *model;
  */
 void barebox_set_model(const char *__model)
 {
-	if (IS_ENABLED(CONFIG_GLOBALVAR)) {
-		globalvar_add_simple("model", __model);
-	} else {
-		free(model);
-		model = xstrdup(__model);
-	}
+	globalvar_add_simple_string("model", &model);
+
+	free(model);
+	model = xstrdup(__model);
 }
 EXPORT_SYMBOL(barebox_set_model);
 
 const char *barebox_get_model(void)
 {
-	if (IS_ENABLED(CONFIG_GLOBALVAR))
-		return getenv("global.model");
-
 	return model;
 }
 EXPORT_SYMBOL(barebox_get_model);
@@ -170,19 +165,14 @@ static char *hostname;
  */
 void barebox_set_hostname(const char *__hostname)
 {
-	if (IS_ENABLED(CONFIG_GLOBALVAR)) {
-		globalvar_add_simple("hostname", __hostname);
-	} else {
-		free(hostname);
-		hostname = xstrdup(__hostname);
-	}
+	globalvar_add_simple_string("hostname", &hostname);
+
+	free(hostname);
+	hostname = xstrdup(__hostname);
 }
 
 const char *barebox_get_hostname(void)
 {
-	if (IS_ENABLED(CONFIG_GLOBALVAR))
-		return getenv("global.hostname");
-
 	return hostname;
 }
 EXPORT_SYMBOL(barebox_get_hostname);

@@ -12,6 +12,12 @@
 			device-path = &spiflash, "partname:barebox-environment";
 		};
 	};
+
+	leds {
+		system {
+			barebox,default-trigger = "heartbeat";
+		};
+	};
 };
 
 &spiflash {

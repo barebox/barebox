@@ -13,7 +13,7 @@ config SOC_QCA_AR9344
 choice
 	prompt "Board type"
 
-config BOARC_8DEVICES_LIMA
+config BOARD_8DEVICES_LIMA
 	bool "8devices LIMA"
 	select SOC_QCA_QCA4531
 	select HAVE_PBL_IMAGE
@@ -21,7 +21,7 @@ config BOARC_8DEVICES_LIMA
 	select HAS_NMON
 	select HAS_NO_BOARD_HL_CODE
 
-config BOARC_DPTECHNICS_DPT_MODULE
+config BOARD_DPTECHNICS_DPT_MODULE
 	bool "DPTechnics DPT-Module"
 	select SOC_QCA_AR9331
 	select HAVE_PBL_IMAGE

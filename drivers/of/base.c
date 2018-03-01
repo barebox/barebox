@@ -129,7 +129,7 @@ struct property *of_find_property(const struct device_node *np,
 }
 EXPORT_SYMBOL(of_find_property);
 
-const void *of_property_get_value(struct property *pp)
+static const void *of_property_get_value(struct property *pp)
 {
 	return pp->value ? pp->value : pp->value_const;
 }

@@ -58,4 +58,10 @@ config WATCHDOG_ORION
 	help
 	  Add support for watchdog on the Marvall Armada XP
 
+config WATCHDOG_BCM2835
+	bool "Watchdog for BCM283x SoCs"
+	depends on ARCH_BCM283X
+	help
+	  Add support for watchdog on the Broadcom BCM283X SoCs.
+
 endif

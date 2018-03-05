@@ -4,3 +4,14 @@ menuconfig HWRNG
 	  Support for HWRNG(Hardware Random Number Generator) devices.
 
 	  If unsure, say no.
+
+if HWRNG
+
+config HWRNG_MXC_RNGC
+	tristate "Freescale i.MX RNGC Random Number Generator"
+	depends on ARCH_IMX25 || ARCH_IMX35 || ARCH_IMX53
+	help
+	  This driver provides kernel-side support for the Random Number
+	  Generator hardware found on some Freescale i.MX processors.
+
+endif

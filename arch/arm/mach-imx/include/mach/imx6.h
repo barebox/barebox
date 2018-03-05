@@ -87,35 +87,19 @@ DEFINE_MX6_CPU_TYPE(mx6ull, IMX6_CPUTYPE_IMX6ULL);
 
 static inline int __imx6_cpu_revision(void)
 {
-
 	uint32_t rev;
 	uint32_t si_rev_offset = IMX6_ANATOP_SI_REV;
+	u8 major_part, minor_part;
 
 	if (IS_ENABLED(CONFIG_ARCH_IMX6SL) && cpu_mx6_is_mx6sl())
 		si_rev_offset = IMX6SL_ANATOP_SI_REV;
 
 	rev = readl(MX6_ANATOP_BASE_ADDR + si_rev_offset);
 
-	switch (rev & 0xfff) {
-	case 0x00:
-		return IMX_CHIP_REV_1_0;
-	case 0x01:
-		return IMX_CHIP_REV_1_1;
-	case 0x02:
-		return IMX_CHIP_REV_1_2;
-	case 0x03:
-		return IMX_CHIP_REV_1_3;
-	case 0x04:
-		return IMX_CHIP_REV_1_4;
-	case 0x05:
-		return IMX_CHIP_REV_1_5;
-	case 0x06:
-		return IMX_CHIP_REV_1_6;
-	case 0x100:
-		return IMX_CHIP_REV_2_0;
-	}
+	major_part = (rev >> 8) & 0xf;
+	minor_part = rev & 0xf;
 
-	return IMX_CHIP_REV_UNKNOWN;
+	return ((major_part + 1) << 4) | minor_part;
 }
 
 static inline int imx6_cpu_revision(void)

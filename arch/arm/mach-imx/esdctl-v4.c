@@ -191,9 +191,9 @@ void imx_esdctlv4_start_ddr3_sdram(int cs)
 		ESDCTL_V4_DDR3_REG_MR0 | val_cs1;
 
 	if (cs)
-		val = ESDCTL_V4_ESDSCR_DLL_RST1;
+		val |= ESDCTL_V4_ESDSCR_DLL_RST1;
 	else
-		val = ESDCTL_V4_ESDSCR_DLL_RST0;
+		val |= ESDCTL_V4_ESDSCR_DLL_RST0;
 
 	writel(val, base + ESDCTL_V4_ESDSCR);
 
@@ -610,7 +610,7 @@ void imx_esdctlv4_init(void)
 	 * ok, last possibility is 16b bus on low data-lines, check that
 	 * (i.MX25 also suports 16b on high data-lines, but i.MX53 doesn't)
 	 */
-	if (readl(MX53_CSD0_BASE_ADDR) << 16 == SDRAM_COMPARE_CONST1 << 16) {
+	if ((readl(MX53_CSD0_BASE_ADDR) & 0xffff) == (SDRAM_COMPARE_CONST1 & 0xffff)) {
 		esdctl0 |= ESDCTL_V4_ESDCTLx_DSIZ_16B_LOW;
 		mask >>= 16;
 		goto sdram_bussize_found;

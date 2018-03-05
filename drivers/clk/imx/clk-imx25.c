@@ -103,8 +103,8 @@ static int imx25_ccm_probe(struct device_d *dev)
 			(1 << 26) | (1 << 31),
 			base + CCM_CGCR1);
 
-	writel((1 << 0) | (1 << 1) | (1 << 2) | (1 << 10) | (1 << 13) | (1 << 14) |
-			(1 << 15) | (1 << 16) | (1 << 17) | (1 << 18),
+	writel((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 5) | (1 << 10) |
+	       (1 << 13) | (1 << 14) | (1 << 15) | (1 << 16) | (1 << 17) | (1 << 18),
 			base + CCM_CGCR2);
 
 	clks[dummy] = clk_fixed("dummy", 0);
@@ -152,6 +152,7 @@ static int imx25_ccm_probe(struct device_d *dev)
 	clks[lcdc_ahb] = imx_clk_gate("lcdc_ahb", "ahb", base + CCM_CGCR0, 24);
 	clks[lcdc_ipg] = imx_clk_gate("lcdc_ipg", "ipg", base + CCM_CGCR1, 29);
 	clks[lcdc_ipg_per] = imx_clk_gate("lcdc_ipg_per", "per7", base + CCM_CGCR0, 7);
+	clks[rngb_ipg] = imx_clk_gate("rngb_ipg", "ipg", base + CCM_CGCR2, 3);
 
 	clkdev_add_physbase(clks[per15], MX25_UART1_BASE_ADDR, NULL);
 	clkdev_add_physbase(clks[per15], MX25_UART2_BASE_ADDR, NULL);

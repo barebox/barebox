@@ -67,14 +67,16 @@ int imx25_init(void)
 	 * To still be able to use the GPR for its intended purpose, copy the
 	 * saved SRAM value back manually.
 	 */
-	val = readl(MX25_IRAM_BASE_ADDR + 0x1734);
 
 	/*
-	 * When there is a different value in SRAM than the magic value
-	 * it must be a value saved to the GPR.
+	 * When the value in the GPR matches the value the ROM has written there then
+	 * we have to copy back the value from the SRAM back to the GPR.
 	 */
-	if (val != MX25_BOOTROM_HAB_MAGIC)
+	val = readl(MX25_DRYICE_BASE_ADDR + MX25_DRYICE_GPR);
+	if (val == MX25_BOOTROM_HAB_MAGIC) {
+		val = readl(MX25_IRAM_BASE_ADDR + 0x1734);
 		writel(val, MX25_DRYICE_BASE_ADDR + MX25_DRYICE_GPR);
+	}
 
 	return 0;
 }

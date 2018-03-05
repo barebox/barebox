@@ -40,8 +40,7 @@
  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
-#include <arm/imx6qdl-microsom.dtsi>
-#include <arm/imx6qdl-microsom-ar8035.dtsi>
+#include <arm/imx6qdl-sr-som.dtsi>
 
 / {
 	chosen {

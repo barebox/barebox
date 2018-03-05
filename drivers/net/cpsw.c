@@ -761,11 +761,6 @@ static int cpsw_open(struct eth_device *edev)
 
 	dev_dbg(&slave->dev, "* %s\n", __func__);
 
-	ret = phy_device_connect(edev, &priv->miibus, slave->phy_id,
-				 cpsw_adjust_link, 0, slave->phy_if);
-	if (ret)
-		return ret;
-
 	/* soft reset the controller and initialize priv */
 	soft_reset(priv, &priv->regs->soft_reset);
 
@@ -913,16 +908,11 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	struct eth_device	*edev = &slave->edev;
 	struct device_d		*dev = &slave->dev;
 	int ret;
-	struct phy_device *phy;
 
-	phy = mdiobus_scan(&priv->miibus, priv->slaves[slave_num].phy_id);
-	if (IS_ERR(phy)) {
-		ret = PTR_ERR(phy);
-		goto err_out;
-	}
+	edev->parent = dev;
 
-	phy->dev.device_node = priv->slaves[slave_num].dev.device_node;
-	ret = phy_register_device(phy);
+	ret = phy_device_connect(edev, &priv->miibus, slave->phy_id,
+				 cpsw_adjust_link, 0, slave->phy_if);
 	if (ret)
 		goto err_out;
 
@@ -948,7 +938,6 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	edev->recv	= cpsw_recv;
 	edev->get_ethaddr = cpsw_get_hwaddr;
 	edev->set_ethaddr = cpsw_set_hwaddr;
-	edev->parent	= dev;
 
 	ret = eth_register(edev);
 	if (ret)
@@ -957,7 +946,7 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	return 0;
 
 err_register_dev:
-	phy_unregister_device(phy);
+	phy_unregister_device(edev->phydev);
 err_register_edev:
 	unregister_device(dev);
 err_out:
@@ -1100,11 +1089,13 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 
 		if (i < priv->num_slaves && !strncmp(child->name, "slave", 5)) {
 			struct cpsw_slave *slave = &priv->slaves[i];
-			uint32_t phy_id[2];
+			uint32_t phy_id[2] = {-1, -1};
 
-			ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
-			if (ret)
-				return ret;
+			if (!of_find_node_by_name(child, "fixed-link")) {
+				ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
+				if (ret)
+					return ret;
+			}
 
 			slave->dev.device_node = child;
 			slave->phy_id = phy_id[1];

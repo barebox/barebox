@@ -157,6 +157,12 @@ dtc_cpp_flags  = -Wp,-MD,$(depfile).pre -nostdinc                        \
 		 -I$(srctree)/dts/src/                                   \
 		 -undef -D__DTS__
 
+ifdef CONFIG_BOOTM_FITIMAGE_PUBKEY
+ifneq ($(CONFIG_BOOTM_FITIMAGE_PUBKEY),"")
+dtc_cpp_flags += -DCONFIG_BOOTM_FITIMAGE_PUBKEY=\"$(CONFIG_BOOTM_FITIMAGE_PUBKEY)\"
+endif
+endif
+
 # Finds the multi-part object the current object will be linked into
 modname-multi = $(sort $(foreach m,$(multi-used),\
 		$(if $(filter $(subst $(obj)/,,$*.o), $($(m:.o=-objs)) $($(m:.o=-y))),$(m:.o=))))
@@ -420,7 +426,13 @@ cmd_imximage_S_dcd=						\
 
 imxcfg_cpp_flags  = -Wp,-MD,$(depfile) -nostdinc -x assembler-with-cpp \
       -I $(srctree)/include -I $(srctree)/arch/arm/mach-imx/include \
-      -include include/generated/autoconf.h
+      -include include/generated/autoconf.h \
+      -DCONFIG_HABV3_SRK_PEM=\"$(CONFIG_HABV3_SRK_PEM)\" \
+      -DCONFIG_HABV3_CSF_CRT_DER=\"$(CONFIG_HABV3_CSF_CRT_DER)\" \
+      -DCONFIG_HABV3_IMG_CRT_DER=\"$(CONFIG_HABV3_IMG_CRT_DER)\" \
+      -DCONFIG_HABV4_TABLE_BIN=\"$(CONFIG_HABV4_TABLE_BIN)\" \
+      -DCONFIG_HABV4_CSF_CRT_PEM=\"$(CONFIG_HABV4_CSF_CRT_PEM)\" \
+      -DCONFIG_HABV4_IMG_CRT_PEM=\"$(CONFIG_HABV4_IMG_CRT_PEM)\"
 
 dcd-tmp = $(subst $(comma),_,$(dot-target).dcd.tmp)
 

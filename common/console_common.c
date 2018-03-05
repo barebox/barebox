@@ -33,6 +33,15 @@
 
 #ifndef CONFIG_CONSOLE_NONE
 
+static const char *colored_log_level[] = {
+	[MSG_EMERG] = "\033[31mEMERG:\033[0m ",		/* red */
+	[MSG_ALERT] = "\033[31mALERT:\033[0m ",		/* red */
+	[MSG_CRIT] = "\033[31mCRITICAL:\033[0m ",	/* red */
+	[MSG_ERR] = "\033[31mERROR:\033[0m ",		/* red */
+	[MSG_WARNING] = "\033[33mWARNING:\033[0m ",	/* yellow */
+	[MSG_NOTICE] = "\033[34mNOTICE:\033[0m ",	/* blue */
+};
+
 int barebox_loglevel = CONFIG_DEFAULT_LOGLEVEL;
 
 LIST_HEAD(barebox_logbuf);
@@ -102,6 +111,18 @@ nolog:
 	puts(str);
 }
 
+static void print_colored_log_level(const int level)
+{
+	if (!console_allow_color())
+		return;
+	if (level >= ARRAY_SIZE(colored_log_level))
+		return;
+	if (!colored_log_level[level])
+		return;
+
+	pr_puts(level, colored_log_level[level]);
+}
+
 int pr_print(int level, const char *fmt, ...)
 {
 	va_list args;
@@ -110,6 +131,8 @@ int pr_print(int level, const char *fmt, ...)
 
 	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
 		return 0;
+
+	print_colored_log_level(level);
 
 	va_start(args, fmt);
 	i = vsprintf(printbuffer, fmt, args);
@@ -129,6 +152,8 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 	if (!IS_ENABLED(CONFIG_LOGBUF) && level > barebox_loglevel)
 		return 0;
 
+	print_colored_log_level(level);
+
 	if (dev->driver && dev->driver->name)
 		ret += sprintf(printbuffer, "%s ", dev->driver->name);
 
@@ -145,15 +170,28 @@ int dev_printf(int level, const struct device_d *dev, const char *format, ...)
 	return ret;
 }
 
-static int loglevel_init(void)
+#ifdef CONFIG_CONSOLE_ALLOW_COLOR
+static unsigned int __console_allow_color = 1;
+#else
+static unsigned int __console_allow_color = 0;
+#endif
+
+bool console_allow_color(void)
+{
+	return __console_allow_color;
+}
+
+static int console_common_init(void)
 {
 	if (IS_ENABLED(CONFIG_LOGBUF))
 		globalvar_add_simple_int("log_max_messages",
 				&barebox_log_max_messages, "%d");
 
+	globalvar_add_simple_bool("allow_color", &__console_allow_color);
+
 	return globalvar_add_simple_int("loglevel", &barebox_loglevel, "%d");
 }
-device_initcall(loglevel_init);
+device_initcall(console_common_init);
 
 void log_print(unsigned flags)
 {

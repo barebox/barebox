@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ ${global.allow_color} = "true" ]; then
+if [ ${global.allow_color} = "1" ]; then
         export PS1="\e[1;32mbarebox@\e[1;36m\h:\w\e[0m "
 else
         export PS1="barebox@\h:\w "

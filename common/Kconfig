@@ -632,6 +632,13 @@ config BOOTM_FITIMAGE_SIGNATURE
 	  Additionally the barebox device tree needs a /signature node with the
 	  public key with which the image has been signed.
 
+config BOOTM_FITIMAGE_PUBKEY
+	string "Path to dtsi containing pubkey"
+	default "../fit/pubkey.dtsi"
+	depends on BOOTM_FITIMAGE_SIGNATURE
+	help
+	  Set Path to a dts snippet which holds the public keys for FIT images.
+
 config BOOTM_FORCE_SIGNED_IMAGES
 	bool
 	prompt "Force booting of signed images"
@@ -743,6 +750,14 @@ config CONSOLE_ACTIVATE_NONE
 	  barebox, you just won't see anything.
 
 endchoice
+
+config CONSOLE_ALLOW_COLOR
+	prompt "Allow colored console output during boot"
+	bool
+	help
+	  If enabled, colored output is allowed during boot. This is the
+	  compile time default for colored console output. After boot it
+	  can be controlled using global.allow_color.
 
 config PBL_CONSOLE
 	depends on PBL_IMAGE

@@ -117,7 +117,7 @@ static int of_unflatten_reservemap(struct device_node *root,
  * Parse a flat device tree binary blob and return a pointer to the
  * unflattened tree.
  */
-struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops)
+static struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops)
 {
 	const void *nodep;	/* property node pointer */
 	uint32_t tag;		/* tag */

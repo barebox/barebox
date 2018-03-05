@@ -1,0 +1,71 @@
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+
+#include "qca4531.dtsi"
+
+/ {
+	model = "8devices LIMA";
+	compatible = "8devices,lima";
+
+	aliases {
+		serial0 = &uart0;
+		spiflash = &spiflash;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x8000000>;
+	};
+
+	chosen {
+		stdout-path = &uart0;
+
+		environment@0 {
+			compatible = "barebox,environment";
+			device-path = &spiflash, "partname:barebox-environment";
+		};
+	};
+};
+
+&ref {
+	clock-frequency = <25000000>;
+};
+
+&uart0 {
+	status = "okay";
+	clock-frequency = <25000000>;
+};
+
+&wdt0 {
+	status = "okay";
+};
+
+&spi {
+	num-chipselects = <1>;
+	status = "okay";
+
+	/* Winbond W25Q64CV SPI flash */
+	spiflash: w25q64cv@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor", "winbond,w25q64cv";
+		spi-max-frequency = <104000000>;
+		reg = <0>;
+
+		partition@0 {
+			label = "barebox";
+			reg = <0 0x80000>;
+		};
+
+		partition@80000 {
+			label = "barebox-environment";
+			reg = <0x80000 0x10000>;
+		};
+	};
+};
+
+&mac0 {
+	status = "okay";
+};

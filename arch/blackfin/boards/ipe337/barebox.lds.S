@@ -68,6 +68,10 @@ SECTIONS
 	.barebox_cmd : { BAREBOX_CMDS }
 	___barebox_cmd_end = .;
 
+	___barebox_ratp_cmd_start = .;
+	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
+	___barebox_ratp_cmd_end = .;
+
 	___barebox_magicvar_start = .;
 	.barebox_magicvar : { BAREBOX_MAGICVARS }
 	___barebox_magicvar_end = .;
@@ -91,4 +95,3 @@ SECTIONS
 	___bss_stop = .;
 	_end = .;
 }
-

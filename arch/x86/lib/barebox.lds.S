@@ -171,6 +171,13 @@ SECTIONS
 		. = ALIGN(4);
 	} > barebox
 
+	.barebox_ratp_cmd : AT ( LOADADDR(.got) + SIZEOF (.got) ) {
+		__barebox_ratp_cmd_start = .;
+		BAREBOX_RATP_CMDS
+		__barebox_ratp_cmd_end = .;
+		. = ALIGN(4);
+	} > barebox
+
 	.barebox_magicvars : AT ( LOADADDR(.barebox_cmd) + SIZEOF (.barebox_cmd) ) {
 		__barebox_magicvar_start = .;
 		BAREBOX_MAGICVARS

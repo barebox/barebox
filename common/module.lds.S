@@ -35,6 +35,8 @@ SECTIONS
 	.got : { *(.got) }
 
 	.barebox_cmd : { BAREBOX_CMDS }
+	.barebox_ratp_cmd : { BAREBOX_RATP_CMDS }
+
 	. = ALIGN(4);
 	.bss : { *(.bss) }
 }

@@ -95,7 +95,7 @@ config STMP_DEVICE
 
 config RATP
 	select CRC16
-	bool
+	bool "RATP protocol support"
 	help
 	  Reliable Asynchronous Transfer Protocol (RATP) is a protocol for reliably
 	  transferring packets over serial links described in RFC916. This implementation

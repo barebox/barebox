@@ -18,6 +18,13 @@ Additionally files can be transferred from/to barebox and a regular
 console offers interactive access to barebox on flawy serial
 connections.
 
+In addition to the bbremote tool provided with barebox, other third
+party tools exist that use the same RATP based protocol to communicate
+with the barebox instance, e.g. the libratp-barebox C library and the
+ratp-barebox-cli tool:
+
+  https://github.com/aleksander0m/libratp-barebox
+
 Enabling remote control support
 -------------------------------
 

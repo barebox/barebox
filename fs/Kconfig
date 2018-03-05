@@ -94,7 +94,7 @@ source fs/squashfs/Kconfig
 
 config FS_RATP
 	bool
-	depends on CONSOLE_RATP
+	depends on RATP
 	prompt "RATP filesystem support"
 	help
 	  This enables support for transferring files over RATP. A host can

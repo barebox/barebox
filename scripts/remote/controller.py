@@ -46,6 +46,18 @@ def unpack(data):
     elif p_type == BBType.fs_return:
         logging.debug("received: fs_return")
         return BBPacketFSReturn(raw=data)
+    elif p_type == BBType.md_return:
+        logging.debug("received: md_return")
+        return BBPacketMdReturn(raw=data)
+    elif p_type == BBType.mw:
+        logging.debug("received: mw")
+        return BBPacketMw(raw=data)
+    elif p_type == BBType.mw_return:
+        logging.debug("received: mw_return")
+        return BBPacketMwReturn(raw=data)
+    elif p_type == BBType.reset:
+        logging.debug("received: reset")
+        return BBPacketReset(raw=data)
     else:
         logging.debug("received: UNKNOWN")
         return BBPacket(raw=data)
@@ -111,6 +123,21 @@ class Controller(Thread):
         self._send(BBPacketGetenv(varname=varname))
         r = self._expect(BBPacketGetenvReturn)
         return r.text
+
+    def md(self, path, addr, size):
+        self._send(BBPacketMd(path=path, addr=addr, size=size))
+        r = self._expect(BBPacketMdReturn)
+        logging.info("Md return: %r", r)
+        return (r.exit_code,r.data)
+
+    def mw(self, path, addr, data):
+        self._send(BBPacketMw(path=path, addr=addr, data=data))
+        r = self._expect(BBPacketMwReturn)
+        logging.info("Mw return: %r", r)
+        return (r.exit_code,r.written)
+
+    def reset(self, force):
+        self._send(BBPacketReset(force=force))
 
     def close(self):
         self.conn.close()

@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, print_function
 import sys
 import os
 import argparse
+import binascii
 import logging
 from Queue import Queue
 from .ratp import RatpError
@@ -76,6 +77,34 @@ def handle_getenv(args):
     return res
 
 
+def handle_md(args):
+    ctrl = get_controller(args)
+    (res,data) = ctrl.md(args.path, args.address, args.size)
+    if res == 0:
+        print(binascii.hexlify(data))
+    ctrl.close()
+    return res
+
+
+def handle_mw(args):
+    ctrl = get_controller(args)
+    data=args.data
+    if ((len(data) % 2) != 0):
+        data="0"+data
+    (res,written) = ctrl.mw(args.path, args.address, binascii.unhexlify(data))
+    if res == 0:
+        print("%i bytes written" % written)
+    ctrl.close()
+    return res
+
+
+def handle_reset(args):
+    ctrl = get_controller(args)
+    ctrl.reset(args.force)
+    ctrl.close()
+    return 0
+
+
 def handle_listen(args):
     port = serial.serial_for_url(args.port, args.baudrate)
     conn = SerialRatpConnection(port)
@@ -118,6 +147,10 @@ def handle_console(args):
             ctrl.conn.total_retransmits,
             ctrl.conn.total_crc_errors))
 
+# Support base 10 or base 16 numbers automatically
+def auto_int(x):
+    return int(x, 0)
+
 VERBOSITY = {
     0: logging.WARN,
     1: logging.INFO,
@@ -142,6 +175,24 @@ parser_ping.set_defaults(func=handle_ping)
 parser_getenv = subparsers.add_parser('getenv', help="get a barebox environment variable")
 parser_getenv.add_argument('arg', nargs='+', help="variable name")
 parser_getenv.set_defaults(func=handle_getenv)
+
+parser_md = subparsers.add_parser('md', help="run md command")
+parser_md.add_argument('path', help="path")
+parser_md.add_argument('address', type=auto_int, help="address")
+parser_md.add_argument('size', type=auto_int, help="size")
+parser_md.set_defaults(func=handle_md)
+
+parser_mw = subparsers.add_parser('mw', help="run mw command")
+parser_mw.add_argument('path', help="path")
+parser_mw.add_argument('address', type=auto_int, help="address")
+parser_mw.add_argument('data', help="data")
+parser_mw.set_defaults(func=handle_mw)
+
+parser_reset = subparsers.add_parser('reset', help="run reset command")
+parser_reset_force = parser_reset.add_mutually_exclusive_group(required=False)
+parser_reset_force.add_argument('--force', dest='force', action='store_true')
+parser_reset_force.add_argument('--no-force', dest='force', action='store_false')
+parser_reset.set_defaults(func=handle_reset,force=False)
 
 parser_listen = subparsers.add_parser('listen', help="listen for an incoming connection")
 parser_listen.set_defaults(func=handle_listen)

@@ -5,6 +5,8 @@
 #include <file-list.h>
 #include <usb/composite.h>
 
+struct f_fastboot;
+
 /**
  * struct f_fastboot_opts - options to configure the fastboot gadget
  * @func_inst:	The USB function instance to register on
@@ -15,6 +17,21 @@ struct f_fastboot_opts {
 	struct usb_function_instance func_inst;
 	struct file_list *files;
 	bool export_bbu;
+	int (*cmd_exec)(struct f_fastboot *, const char *cmd);
+	int (*cmd_flash)(struct f_fastboot *, struct file_list_entry *entry,
+			 const char *filename, const void *buf, size_t len);
 };
+
+/*
+ * Return codes for the exec_cmd callback above:
+ *
+ * FASTBOOT_CMD_FALLTHROUGH - Not handled by the external command dispatcher,
+ *                            handle it with internal dispatcher
+ * Other than these negative error codes mean errors handling the command and
+ * zero means the command has been successfully handled.
+ */
+#define FASTBOOT_CMD_FALLTHROUGH	1
+
+int fastboot_tx_print(struct f_fastboot *f_fb, const char *fmt, ...);
 
 #endif /* _USB_FASTBOOT_H */

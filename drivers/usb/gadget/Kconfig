@@ -57,7 +57,27 @@ config USB_GADGET_FASTBOOT
 	bool
 	select BANNER
 	select FILE_LIST
-	select IMAGE_SPARSE
 	prompt "Android Fastboot support"
 
+config USB_GADGET_FASTBOOT_SPARSE
+	bool
+	select IMAGE_SPARSE
+	prompt "Enable Fastboot sparse image support"
+	help
+	  Sparse images are a way for the fastboot protocol to write
+	  images that are bigger than the available memory. If unsure,
+	  say yes here.
+
+config USB_GADGET_FASTBOOT_BUF
+	bool
+	depends on USB_GADGET_FASTBOOT
+	prompt "Download files to temporary buffer instead of file"
+	help
+	  With this option enabled the fastboot code will download files to a
+	  temporary buffer instead of a temporary file. Normally you want to
+	  use a file as this also works when your memory is fragmented. However,
+	  in some special cases, when the file consumer also better copes with
+	  a buffer, then using a buffer might be better.
+
+	  Say no here unless you know what you are doing.
 endif

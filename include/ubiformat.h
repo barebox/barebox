@@ -15,7 +15,14 @@ struct ubiformat_args {
 	int ubi_ver;
 	uint32_t image_seq;
 	long long ec;
+
+	/*
+	 * Either set image if you have a file or set image_buf / image_size
+	 * if you have a buffer.
+	 */
 	const char *image;
+	const void *image_buf;
+	loff_t image_size;
 };
 
 int ubiformat(struct mtd_info *mtd, struct ubiformat_args *args);

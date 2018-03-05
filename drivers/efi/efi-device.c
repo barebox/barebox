@@ -17,6 +17,7 @@
  *
  */
 
+#include <bootsource.h>
 #include <command.h>
 #include <common.h>
 #include <driver.h>
@@ -385,6 +386,51 @@ static int efi_is_setup_mode(void)
 	return ret != 1;
 }
 
+static int is_bio_usbdev(struct efi_device *efidev)
+{
+	int i;
+
+	for (i = 0; i < efidev->num_guids; i++) {
+		if (!efi_guidcmp(efidev->guids[i], EFI_USB_IO_PROTOCOL_GUID))
+			return 1;
+	}
+
+	return 0;
+}
+
+static void efi_set_bootsource(void)
+{
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	efi_handle_t *efi_parent;
+	struct efi_device *bootdev;
+
+	if (!efi_loaded_image->parent_handle)
+		goto out;
+
+	efi_parent = efi_find_parent(efi_loaded_image->device_handle);
+
+	if (!efi_parent)
+		goto out;
+
+	bootdev = efi_find_device(efi_parent);
+
+	if (!bootdev)
+		goto out;
+
+	if (is_bio_usbdev(bootdev)) {
+		src = BOOTSOURCE_USB;
+	} else {
+		src = BOOTSOURCE_HD;
+	}
+
+out:
+
+	bootsource_set(src);
+	bootsource_set_instance(instance);
+}
+
 static int efi_init_devices(void)
 {
 	char *fw_vendor = NULL;
@@ -414,6 +460,8 @@ static int efi_init_devices(void)
 	efi_bus.dev->info = efi_businfo;
 
 	efi_register_devices();
+
+	efi_set_bootsource();
 
 	return 0;
 }

@@ -70,8 +70,8 @@
 	cs-gpios = <&gpio3 19 0>;
 	status = "disabled";
 
-	flash: m25p80@0 {
-		compatible = "m25p80";
+	flash: flash@0 {
+		compatible = "jedec,spi-nor";
 		spi-max-frequency = <20000000>;
 		reg = <0>;
 		status = "disabled";

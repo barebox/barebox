@@ -3,7 +3,8 @@
 
 #ifdef CONFIG_CPU_64v8
 extern void v8_invalidate_icache_all(void);
-extern void v8_dcache_all(void);
+void v8_flush_dcache_all(void);
+void v8_invalidate_dcache_all(void);
 #endif
 
 static inline void icache_invalidate(void)

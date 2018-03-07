@@ -146,7 +146,7 @@ void arm_early_mmu_cache_flush(void)
 #endif
 #ifdef CONFIG_CPU_64v8
 	case CPU_ARCH_ARMv8:
-		v8_dcache_all();
+		v8_flush_dcache_all();
 		return;
 #endif
 	}

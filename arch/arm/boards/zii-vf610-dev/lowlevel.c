@@ -133,5 +133,5 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 		break;
 	}
 
-	barebox_arm_entry(0x80000000, SZ_512M, fdt - get_runtime_offset());
+	barebox_arm_entry(0x80000000, SZ_512M, fdt + get_runtime_offset());
 }

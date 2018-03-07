@@ -264,7 +264,7 @@ void tegra_cpu_lowlevel_setup(char *fdt)
 	arm_setup_stack(TEGRA_IRAM_BASE + SZ_256K - 8);
 
 	if (tegra_cpu_is_maincomplex())
-		tegra_maincomplex_entry(fdt - get_runtime_offset());
+		tegra_maincomplex_entry(fdt + get_runtime_offset());
 
 	tegra_ll_delay_setup();
 }

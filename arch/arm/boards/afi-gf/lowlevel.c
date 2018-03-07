@@ -258,7 +258,7 @@ ENTRY_FUNCTION(start_am33xx_afi_gf_sdram, r0, r1, r2)
 {
 	void *fdt;
 
-	fdt = __dtb_z_am335x_afi_gf_start - get_runtime_offset();
+	fdt = __dtb_z_am335x_afi_gf_start + get_runtime_offset();
 
 	putc_ll('>');
 

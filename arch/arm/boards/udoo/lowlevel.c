@@ -12,7 +12,7 @@ ENTRY_FUNCTION(start_imx6_udoo, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	fdt = __dtb_imx6q_udoo_start - get_runtime_offset();
+	fdt = __dtb_imx6q_udoo_start + get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }

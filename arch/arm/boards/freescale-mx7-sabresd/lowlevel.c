@@ -40,7 +40,7 @@ ENTRY_FUNCTION(start_imx7d_sabresd, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx7d_sdb_start - get_runtime_offset();
+	fdt = __dtb_imx7d_sdb_start + get_runtime_offset();
 
 	barebox_arm_entry(0x80000000, SZ_1G, fdt);
 }

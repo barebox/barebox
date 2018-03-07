@@ -147,7 +147,7 @@ ENTRY_FUNCTION(start_imx6_realq7, r0, r1, r2)
 
 	arm_setup_stack(0x00940000 - 8);
 
-	fdt = __dtb_imx6q_dmo_edmqmx6_start - get_runtime_offset();
+	fdt = __dtb_imx6q_dmo_edmqmx6_start + get_runtime_offset();
 
 	if (get_pc() < 0x10000000) {
 		sdram_init();

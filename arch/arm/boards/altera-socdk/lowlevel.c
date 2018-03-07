@@ -26,7 +26,7 @@ ENTRY_FUNCTION(start_socfpga_socdk, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = __dtb_socfpga_cyclone5_socdk_start - get_runtime_offset();
+	fdt = __dtb_socfpga_cyclone5_socdk_start + get_runtime_offset();
 
 	barebox_arm_entry(0x0, SZ_1G, fdt);
 }

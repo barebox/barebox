@@ -26,7 +26,7 @@ ENTRY_FUNCTION(start_turris_omnia, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = __dtb_armada_385_turris_omnia_bb_start -
+	fdt = __dtb_armada_385_turris_omnia_bb_start +
 		get_runtime_offset();
 
 	armada_370_xp_barebox_entry(fdt);

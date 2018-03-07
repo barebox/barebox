@@ -35,7 +35,7 @@ static noinline void warp7_start(void)
 
 	pr_debug("Element14 i.MX7 Warp\n");
 
-	fdt = __dtb_imx7s_warp_start - get_runtime_offset();
+	fdt = __dtb_imx7s_warp_start + get_runtime_offset();
 
 	barebox_arm_entry(0x80000000, SZ_512M, fdt);
 }

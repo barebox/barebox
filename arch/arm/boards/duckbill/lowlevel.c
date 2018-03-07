@@ -20,7 +20,7 @@ ENTRY_FUNCTION(start_barebox_duckbill, r0, r1, r2)
 
 	pr_debug("here we are!\n");
 
-	fdt = __dtb_imx28_duckbill_start - get_runtime_offset();
+	fdt = __dtb_imx28_duckbill_start + get_runtime_offset();
 
 	barebox_arm_entry(IMX_MEMORY_BASE, SZ_128M, fdt);
 }

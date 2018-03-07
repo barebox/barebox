@@ -61,8 +61,8 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
 
-	pg_start = (uint32_t)&input_data - offset;
-	pg_end = (uint32_t)&input_data_end - offset;
+	pg_start = (uint32_t)&input_data + offset;
+	pg_end = (uint32_t)&input_data_end + offset;
 	pg_len = pg_end - pg_start;
 	uncompressed_len = get_unaligned((const u32 *)(pg_start + pg_len - 4));
 

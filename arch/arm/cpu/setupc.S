@@ -15,7 +15,7 @@ ENTRY(setup_c)
 	push	{r4, r5}
 	mov	r5, lr
 	bl	get_runtime_offset
-	subs	r4, r0, #0
+	adds	r4, r0, #0
 	beq	1f			/* skip memcpy if already at correct address */
 	ldr	r0,=_text
 	ldr	r2,=__bss_start
@@ -58,7 +58,7 @@ ENTRY(relocate_to_adr)
 	ld_var	_text, r0, r4
 	mov	r8, r0
 
-	sub	r1, r0, r5		/* r1: from address */
+	add	r1, r0, r5		/* r1: from address */
 
 	cmp	r1, r6			/* already at correct address? */
 	beq	1f			/* yes, skip copy to new address */
@@ -68,8 +68,9 @@ ENTRY(relocate_to_adr)
 	sub	r2, r2, r0		/* r2: size */
 	mov	r0, r6			/* r0: target */
 
-	add	r7, r7, r0		/* adjust return address */
-	sub	r7, r7, r1		/* lr += offset */
+	/* adjust return address */
+	sub	r7, r7, r1		/* sub address where we are actually running */
+	add	r7, r7, r0		/* add address where we are going to run */
 
 	bl	memcpy			/* copy binary */
 

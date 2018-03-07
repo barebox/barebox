@@ -41,7 +41,7 @@ ENTRY_FUNCTION(start_ccxmx53_512mb, r0, r1, r2)
 
 	IMD_USED(ccxmx53_memsize_SZ_512M);
 
-	fdt = __dtb_imx53_ccxmx53_start - get_runtime_offset();
+	fdt = __dtb_imx53_ccxmx53_start + get_runtime_offset();
 
 	imx53_barebox_entry(fdt);
 }
@@ -55,7 +55,7 @@ ENTRY_FUNCTION(start_ccxmx53_1gib, r0, r1, r2)
 
 	IMD_USED(ccxmx53_memsize_SZ_1G);
 
-	fdt = __dtb_imx53_ccxmx53_start - get_runtime_offset();
+	fdt = __dtb_imx53_ccxmx53_start + get_runtime_offset();
 
 	imx53_barebox_entry(fdt);
 }

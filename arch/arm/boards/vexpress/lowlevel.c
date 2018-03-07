@@ -14,7 +14,7 @@
 
 static inline void start_vexpress_common(void *internal_dt)
 {
-	void *fdt = internal_dt - get_runtime_offset();
+	void *fdt = internal_dt + get_runtime_offset();
 	unsigned long membase, memsize = SZ_512M;
 
 	arm_cpu_lowlevel_init();

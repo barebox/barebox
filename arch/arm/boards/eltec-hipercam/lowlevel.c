@@ -44,7 +44,7 @@ ENTRY_FUNCTION(start_imx6dl_eltec_hipercam, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx6dl_eltec_hipercam_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_eltec_hipercam_start + get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_256M, fdt);
 }

@@ -33,7 +33,7 @@ static noinline void achilles_entry(void)
 
 	puts_ll("SDRAM setup done\n");
 
-	fdt = __dtb_socfpga_arria10_achilles_start - get_runtime_offset();
+	fdt = __dtb_socfpga_arria10_achilles_start + get_runtime_offset();
 
 	barebox_arm_entry(0x0, SZ_2G + SZ_1G, fdt);
 }

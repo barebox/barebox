@@ -55,7 +55,7 @@ static void __noreturn start_imx6_pico_hobbit_common(uint32_t size,
 	writew(0x0, 0x020c0008);
 	writew(0x0, 0x021e4008);
 
-	fdt = fdt_blob_fixed_offset - get_runtime_offset();
+	fdt = fdt_blob_fixed_offset + get_runtime_offset();
 
 	imx6ul_barebox_entry(fdt);
 }

@@ -51,7 +51,7 @@ ENTRY_FUNCTION(start_imx53_mba53_512mib, r0, r1, r2)
 
 	imx53_init_lowlevel_early(800);
 
-	fdt = __dtb_imx53_mba53_start - get_runtime_offset();
+	fdt = __dtb_imx53_mba53_start + get_runtime_offset();
 
 	start_imx53_tqma53_common(fdt);
 }
@@ -70,7 +70,7 @@ ENTRY_FUNCTION(start_imx53_mba53_1gib, r0, r1, r2)
 
 	imx53_init_lowlevel_early(800);
 
-	fdt = __dtb_imx53_mba53_start - get_runtime_offset();
+	fdt = __dtb_imx53_mba53_start + get_runtime_offset();
 
 	start_imx53_tqma53_common(fdt);
 }

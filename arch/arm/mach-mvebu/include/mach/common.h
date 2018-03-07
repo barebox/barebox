@@ -30,7 +30,7 @@ uint32_t get_runtime_offset(void);
 static inline void __iomem *mvebu_get_initial_int_reg_base(void)
 {
 #ifdef __PBL__
-	u32 base = __get_unaligned_le32(_text - get_runtime_offset() + 0x30);
+	u32 base = __get_unaligned_le32(_text + get_runtime_offset() + 0x30);
 	return (void __force __iomem *)base;
 #else
 	return (void __force __iomem *)MVEBU_REMAP_INT_REG_BASE;

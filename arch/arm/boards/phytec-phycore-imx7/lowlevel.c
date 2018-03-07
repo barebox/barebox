@@ -29,7 +29,7 @@ static noinline void phytec_phycore_imx7_start(void)
 
 	pr_debug("Phytec phyCORE i.MX7\n");
 
-	fdt = __dtb_imx7d_phyboard_zeta_start - get_runtime_offset();
+	fdt = __dtb_imx7d_phyboard_zeta_start + get_runtime_offset();
 
 	barebox_arm_entry(0x80000000, SZ_512M, fdt);
 }

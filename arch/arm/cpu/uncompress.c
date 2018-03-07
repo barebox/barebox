@@ -53,7 +53,7 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 	void *pg_start;
 	unsigned long pc = get_pc();
 
-	image_end = (void *)ld_var(__image_end) - get_runtime_offset();
+	image_end = (void *)ld_var(__image_end) + get_runtime_offset();
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE)) {
 		/*

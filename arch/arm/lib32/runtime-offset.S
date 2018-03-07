@@ -10,8 +10,8 @@
 ENTRY(get_runtime_offset)
 1:	adr r0, 1b
 	ldr r1, linkadr
-	subs r0, r1, r0
-THUMB(	subs r0, r0, #1)
+	subs r0, r0, r1
+THUMB(	adds r0, r0, #1)
 	mov pc, lr
 
 linkadr:

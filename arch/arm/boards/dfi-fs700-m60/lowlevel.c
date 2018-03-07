@@ -115,7 +115,7 @@ ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q_nanya, r0, r1, r2)
 
 	early_uart_init_6q();
 
-	fdt = __dtb_imx6q_dfi_fs700_m60_6q_start - get_runtime_offset();
+	fdt = __dtb_imx6q_dfi_fs700_m60_6q_start + get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, memsize_1G_2G(), fdt);
 }
@@ -134,7 +134,7 @@ ENTRY_FUNCTION(start_imx6q_dfi_fs700_m60_6q_micron, r0, r1, r2)
 
 	early_uart_init_6q();
 
-	fdt = __dtb_imx6q_dfi_fs700_m60_6q_start - get_runtime_offset();
+	fdt = __dtb_imx6q_dfi_fs700_m60_6q_start + get_runtime_offset();
 
 	*(uint32_t *)0x10000000 = SZ_1G;
 
@@ -157,7 +157,7 @@ ENTRY_FUNCTION(start_imx6dl_dfi_fs700_m60_6s, r0, r1, r2)
 
 	early_uart_init_6s();
 
-	fdt = __dtb_imx6dl_dfi_fs700_m60_6s_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_dfi_fs700_m60_6s_start + get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, memsize_512M_1G(), fdt);
 }

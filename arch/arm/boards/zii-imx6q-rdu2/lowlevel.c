@@ -308,9 +308,9 @@ ENTRY_FUNCTION(start_imx6_zii_rdu2, r0, r1, r2)
 		rdu2_sram_setup();
 
 	if (__imx6_cpu_revision() == IMX_CHIP_REV_2_0)
-		imx6q_barebox_entry(__dtb_imx6qp_zii_rdu2_start -
+		imx6q_barebox_entry(__dtb_imx6qp_zii_rdu2_start +
 				    get_runtime_offset());
 	else
-		imx6q_barebox_entry(__dtb_imx6q_zii_rdu2_start -
+		imx6q_barebox_entry(__dtb_imx6q_zii_rdu2_start +
 				    get_runtime_offset());
 }

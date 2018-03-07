@@ -51,7 +51,7 @@ ENTRY_FUNCTION(start_netgear_rn2120, r0, r1, r2)
 	/* Win 0 Control Register: size=0x4000000, wincs=0, en=1 */
 	writel(0x3fffffe1, base + 0x20184);
 
-	fdt = __dtb_armada_xp_rn2120_bb_start -
+	fdt = __dtb_armada_xp_rn2120_bb_start +
 		get_runtime_offset();
 
 	armada_370_xp_barebox_entry(fdt);

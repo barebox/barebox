@@ -25,7 +25,7 @@
 #define MVEBU_REMAP_INT_REG_BASE	0xf1000000
 
 /* #including <asm/barebox-arm.h> yields a circle, so we need a forward decl */
-uint32_t get_runtime_offset(void);
+unsigned long get_runtime_offset(void);
 
 static inline void __iomem *mvebu_get_initial_int_reg_base(void)
 {

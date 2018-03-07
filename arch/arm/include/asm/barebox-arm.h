@@ -42,7 +42,7 @@ int	dram_init (void);
 extern char __exceptions_start[], __exceptions_stop[];
 
 void board_init_lowlevel(void);
-uint32_t get_runtime_offset(void);
+unsigned long get_runtime_offset(void);
 
 void setup_c(void);
 void relocate_to_current_adr(void);

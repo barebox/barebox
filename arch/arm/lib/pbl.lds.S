@@ -25,8 +25,13 @@
 #define BASE	(TEXT_BASE - SZ_2M)
 #endif
 
+#ifdef CONFIG_CPU_32
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
+#else
+OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
+OUTPUT_ARCH(aarch64)
+#endif
 SECTIONS
 {
 	. = BASE;
@@ -62,7 +67,11 @@ SECTIONS
 	.data : { *(.data*) }
 
 	.rel_dyn_start : { *(.__rel_dyn_start) }
+#ifdef CONFIG_CPU_32
 	.rel.dyn : { *(.rel*) }
+#else
+	.rela.dyn : { *(.rela*) }
+#endif
 	.rel_dyn_end : { *(.__rel_dyn_end) }
 
 	.__dynsym_start :  { *(.__dynsym_start) }

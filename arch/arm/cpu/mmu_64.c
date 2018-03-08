@@ -196,10 +196,9 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 	}
 }
 
-static void create_sections(uint64_t virt, uint64_t phys, uint64_t size_m, uint64_t flags)
+static void create_sections(uint64_t virt, uint64_t phys, uint64_t size, uint64_t flags)
 {
-
-	map_region(virt, phys, size_m, flags);
+	map_region(virt, phys, size, flags);
 	tlb_invalidate();
 }
 

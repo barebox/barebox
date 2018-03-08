@@ -123,10 +123,8 @@ static uint64_t *get_level_table(uint64_t *pte)
 {
 	uint64_t *table = (uint64_t *)(*pte & XLAT_ADDR_MASK);
 
-	if (pte_type(pte) != PTE_TYPE_TABLE) {
-		table = create_table();
-		set_table(pte, table);
-	}
+	if (pte_type(pte) != PTE_TYPE_TABLE)
+		BUG();
 
 	return table;
 }
@@ -152,6 +150,36 @@ static __maybe_unused uint64_t *find_pte(uint64_t addr)
 	}
 
 	return pte;
+}
+
+#define MAX_PTE_ENTRIES 512
+
+/* Splits a block PTE into table with subpages spanning the old block */
+static void split_block(uint64_t *pte, int level)
+{
+	uint64_t old_pte = *pte;
+	uint64_t *new_table;
+	uint64_t i = 0;
+	int levelshift;
+
+	if ((*pte & PTE_TYPE_MASK) == PTE_TYPE_TABLE)
+		return;
+
+	/* level describes the parent level, we need the child ones */
+	levelshift = level2shift(level + 1);
+
+	new_table = create_table();
+
+	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
+		new_table[i] = old_pte | (i << levelshift);
+
+		/* Level 3 block PTEs have the table type */
+		if ((level + 1) == 3)
+			new_table[i] |= PTE_TYPE_TABLE;
+	}
+
+	/* Set the new table into effect */
+	set_table(pte, new_table);
 }
 
 static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t attr)
@@ -191,7 +219,8 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 				phys += block_size;
 				size -= block_size;
 				break;
-
+			} else {
+				split_block(pte, level);
 			}
 
 			table = get_level_table(pte);

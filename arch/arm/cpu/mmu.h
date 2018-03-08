@@ -3,13 +3,6 @@
 
 #ifdef CONFIG_CPU_64v8
 
-#define TCR_FLAGS		(TCR_TG0_4K | \
-		TCR_SHARED_OUTER | \
-		TCR_SHARED_INNER | \
-		TCR_IRGN_WBWA | \
-		TCR_ORGN_WBWA | \
-		TCR_T0SZ(BITS_PER_VA))
-
 #ifndef __ASSEMBLY__
 
 static inline void set_ttbr_tcr_mair(int el, uint64_t table, uint64_t tcr, uint64_t attr)

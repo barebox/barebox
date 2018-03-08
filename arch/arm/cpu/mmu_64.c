@@ -54,6 +54,27 @@ static void arm_mmu_not_initialized_error(void)
 	panic("MMU not initialized\n");
 }
 
+static uint64_t calc_tcr(int el)
+{
+	u64 ips, va_bits;
+	u64 tcr;
+
+	ips = 2;
+	va_bits = BITS_PER_VA;
+
+	if (el == 1)
+		tcr = (ips << 32) | TCR_EPD1_DISABLE;
+	else if (el == 2)
+		tcr = (ips << 16);
+	else
+		tcr = (ips << 16);
+
+	/* PTWs cacheable, inner/outer WBWA and inner shareable */
+	tcr |= TCR_TG0_4K | TCR_SHARED_INNER | TCR_ORGN_WBWA | TCR_IRGN_WBWA;
+	tcr |= TCR_T0SZ(va_bits);
+
+	return tcr;
+}
 
 /*
  * Do it the simple way for now and invalidate the entire
@@ -254,6 +275,7 @@ static void mmu_enable(void)
 static int mmu_init(void)
 {
 	struct memory_bank *bank;
+	unsigned int el;
 
 	if (list_empty(&memory_banks))
 		/*
@@ -281,8 +303,8 @@ static int mmu_init(void)
 
 		memset(ttb, 0, GRANULE_SIZE);
 
-		set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS,
-				  MEMORY_ATTRIBUTES);
+		el = current_el();
+		set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
 	}
 
 	pr_debug("ttb: 0x%p\n", ttb);
@@ -323,11 +345,14 @@ void mmu_disable(void)
 
 void mmu_early_enable(uint64_t membase, uint64_t memsize, uint64_t _ttb)
 {
+	int el;
+
 	ttb = (uint64_t *)_ttb;
 
 	memset(ttb, 0, GRANULE_SIZE);
 
-	set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, MEMORY_ATTRIBUTES);
+	el = current_el();
+	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
 
 	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
 

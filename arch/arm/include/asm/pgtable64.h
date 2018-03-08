@@ -21,7 +21,7 @@
 #define UNUSED_DESC                0x6EbAAD0BBADbA6E0
 
 #define VA_START                   0x0
-#define BITS_PER_VA                33
+#define BITS_PER_VA                39
 
 /* Granule size of 4KB is being used */
 #define GRANULE_SIZE_SHIFT         12
@@ -116,6 +116,7 @@
 #define TCR_EL1_IPS_BITS	(UL(3) << 32)	/* 42 bits physical address */
 #define TCR_EL2_IPS_BITS	(3 << 16)	/* 42 bits physical address */
 #define TCR_EL3_IPS_BITS	(3 << 16)	/* 42 bits physical address */
+#define TCR_EPD1_DISABLE	(1 << 23)
 
 #define TCR_EL1_RSVD		(1 << 31)
 #define TCR_EL2_RSVD		(1 << 31 | 1 << 23)

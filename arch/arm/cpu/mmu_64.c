@@ -326,9 +326,6 @@ void mmu_disable(void)
 {
 	unsigned int cr;
 
-	if (!ttb)
-		arm_mmu_not_initialized_error();
-
 	cr = get_cr();
 	cr &= ~(CR_M | CR_C);
 

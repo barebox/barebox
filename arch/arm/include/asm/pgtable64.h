@@ -47,51 +47,28 @@
 
 #define GRANULE_MASK	GRANULE_SIZE
 
+/* Hardware page table definitions */
+#define PTE_TYPE_MASK           (3 << 0)
+#define PTE_TYPE_FAULT          (0 << 0)
+#define PTE_TYPE_TABLE          (3 << 0)
+#define PTE_TYPE_PAGE           (3 << 0)
+#define PTE_TYPE_BLOCK          (1 << 0)
 
-/*
- * Level 2 descriptor (PMD).
- */
-#define PMD_TYPE_MASK		(3 << 0)
-#define PMD_TYPE_FAULT		(0 << 0)
-#define PMD_TYPE_TABLE		(3 << 0)
-#define PMD_TYPE_SECT		(1 << 0)
-#define PMD_TABLE_BIT		(1 << 1)
+#define PTE_TABLE_PXN           (1UL << 59)
+#define PTE_TABLE_XN            (1UL << 60)
+#define PTE_TABLE_AP            (1UL << 61)
+#define PTE_TABLE_NS            (1UL << 63)
 
-/*
- * Section
- */
-#define PMD_SECT_VALID		(1 << 0)
-#define PMD_SECT_USER		(1 << 6)		/* AP[1] */
-#define PMD_SECT_RDONLY		(1 << 7)		/* AP[2] */
-#define PMD_SECT_S		(3 << 8)
-#define PMD_SECT_AF		(1 << 10)
-#define PMD_SECT_NG		(1 << 11)
-#define PMD_SECT_CONT		(1 << 52)
-#define PMD_SECT_PXN		(1 << 53)
-#define PMD_SECT_UXN		(1 << 54)
-
-/*
- * AttrIndx[2:0] encoding (mapping attributes defined in the MAIR* registers).
- */
-#define PMD_ATTRINDX(t)		((t) << 2)
-#define PMD_ATTRINDX_MASK	(7 << 2)
-
-/*
- * Level 3 descriptor (PTE).
- */
-#define PTE_TYPE_MASK		(3 << 0)
-#define PTE_TYPE_FAULT		(0 << 0)
-#define PTE_TYPE_PAGE		(3 << 0)
-#define PTE_TABLE_BIT		(1 << 1)
-#define PTE_USER		(1 << 6)		/* AP[1] */
-#define PTE_RDONLY		(1 << 7)		/* AP[2] */
-#define PTE_SHARED		(3 << 8)		/* SH[1:0], inner shareable */
-#define PTE_AF			(1 << 10)	/* Access Flag */
-#define PTE_NG			(1 << 11)	/* nG */
-#define PTE_DBM			(1 << 51)	/* Dirty Bit Management */
-#define PTE_CONT		(1 << 52)	/* Contiguous range */
-#define PTE_PXN			(1 << 53)	/* Privileged XN */
-#define PTE_UXN			(1 << 54)	/* User XN */
+/* Block */
+#define PTE_BLOCK_MEMTYPE(x)    ((x) << 2)
+#define PTE_BLOCK_NS            (1 << 5)
+#define PTE_BLOCK_NON_SHARE     (0 << 8)
+#define PTE_BLOCK_OUTER_SHARE   (2 << 8)
+#define PTE_BLOCK_INNER_SHARE   (3 << 8)
+#define PTE_BLOCK_AF            (1 << 10)
+#define PTE_BLOCK_NG            (1 << 11)
+#define PTE_BLOCK_PXN           (UL(1) << 53)
+#define PTE_BLOCK_UXN           (UL(1) << 54)
 
 /*
  * AttrIndx[2:0] encoding (mapping attributes defined in the MAIR* registers).

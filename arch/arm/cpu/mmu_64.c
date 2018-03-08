@@ -34,8 +34,12 @@
 
 #include "mmu.h"
 
-#define CACHED_MEM      (PMD_ATTRINDX(MT_NORMAL) | PMD_SECT_S | PMD_SECT_AF | PMD_TYPE_SECT)
-#define UNCACHED_MEM    (PMD_ATTRINDX(MT_DEVICE_nGnRnE) | PMD_SECT_AF)
+#define CACHED_MEM      (PTE_BLOCK_MEMTYPE(MT_NORMAL) | \
+			 PTE_BLOCK_OUTER_SHARE | \
+			 PTE_BLOCK_AF)
+#define UNCACHED_MEM    (PTE_BLOCK_MEMTYPE(MT_DEVICE_nGnRnE) | \
+			 PTE_BLOCK_OUTER_SHARE | \
+			 PTE_BLOCK_AF)
 
 static uint64_t *ttb;
 
@@ -94,14 +98,14 @@ static uint64_t level2mask(int level)
 
 static int pte_type(uint64_t *pte)
 {
-	return *pte & PMD_TYPE_MASK;
+	return *pte & PTE_TYPE_MASK;
 }
 
 static void set_table(uint64_t *pt, uint64_t *table_addr)
 {
 	uint64_t val;
 
-	val = PMD_TYPE_TABLE | (uint64_t)table_addr;
+	val = PTE_TYPE_TABLE | (uint64_t)table_addr;
 	*pt = val;
 }
 
@@ -119,7 +123,7 @@ static uint64_t *get_level_table(uint64_t *pte)
 {
 	uint64_t *table = (uint64_t *)(*pte & XLAT_ADDR_MASK);
 
-	if (pte_type(pte) != PMD_TYPE_TABLE) {
+	if (pte_type(pte) != PTE_TYPE_TABLE) {
 		table = create_table();
 		set_table(pte, table);
 	}
@@ -141,7 +145,7 @@ static __maybe_unused uint64_t *find_pte(uint64_t addr)
 		idx = (addr & level2mask(i)) >> block_shift;
 		pte += idx;
 
-		if ((pte_type(pte) != PMD_TYPE_TABLE) || (block_shift <= GRANULE_SIZE_SHIFT))
+		if ((pte_type(pte) != PTE_TYPE_TABLE) || (block_shift <= GRANULE_SIZE_SHIFT))
 			break;
 		else
 			pte = (uint64_t *)(*pte & XLAT_ADDR_MASK);
@@ -165,21 +169,21 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 
 	addr = virt;
 
-	attr &= ~(PMD_TYPE_SECT);
+	attr &= ~PTE_TYPE_MASK;
 
 	while (size) {
 		table = ttb;
 		for (level = 1; level < 4; level++) {
 			block_shift = level2shift(level);
 			idx = (addr & level2mask(level)) >> block_shift;
-			block_size = (1 << block_shift);
+			block_size = (1ULL << block_shift);
 
 			pte = table + idx;
 
 			if (level == 3)
 				attr |= PTE_TYPE_PAGE;
 			else
-				attr |= PMD_TYPE_SECT;
+				attr |= PTE_TYPE_BLOCK;
 
 			if (size >= block_size && IS_ALIGNED(addr, block_size)) {
 				*pte = phys | attr;

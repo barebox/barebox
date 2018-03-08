@@ -38,7 +38,6 @@
 #define UNCACHED_MEM    (PMD_ATTRINDX(MT_NORMAL_NC) | PMD_SECT_S | PMD_SECT_AF | PMD_TYPE_SECT)
 
 static uint64_t *ttb;
-static int free_idx;
 
 static void arm_mmu_not_initialized_error(void)
 {
@@ -108,12 +107,10 @@ static void set_table(uint64_t *pt, uint64_t *table_addr)
 
 static uint64_t *create_table(void)
 {
-	uint64_t *new_table = ttb + free_idx * GRANULE_SIZE;
+	uint64_t *new_table = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
 
 	/* Mark all entries as invalid */
 	memset(new_table, 0, GRANULE_SIZE);
-
-	free_idx++;
 
 	return new_table;
 }
@@ -253,8 +250,7 @@ static int mmu_init(void)
 			pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
 				ttb);
 	} else {
-		ttb = memalign(GRANULE_SIZE, SZ_16K);
-		free_idx = 1;
+		ttb = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
 
 		memset(ttb, 0, GRANULE_SIZE);
 
@@ -312,7 +308,6 @@ void mmu_early_enable(uint64_t membase, uint64_t memsize, uint64_t _ttb)
 	ttb = (uint64_t *)_ttb;
 
 	memset(ttb, 0, GRANULE_SIZE);
-	free_idx = 1;
 
 	set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, UNCACHED_MEM);
 

@@ -115,7 +115,7 @@ extern int _find_next_bit_be(const unsigned long *p, int size, int offset);
 
 #endif		/* __ARMEB__ */
 
-#if defined(__LINUX_ARM_ARCH__) && (__LINUX_ARM_ARCH__ >= 5)
+#if defined (CONFIG_CPU_32) && defined(__LINUX_ARM_ARCH__) && (__LINUX_ARM_ARCH__ >= 5)
 static inline int constant_fls(int x)
 {
 	int r = 32;

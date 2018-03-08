@@ -258,8 +258,8 @@ static int mmu_init(void)
 
 	pr_debug("ttb: 0x%p\n", ttb);
 
-	/* create a flat mapping using 1MiB sections */
-	create_sections(0, 0, GRANULE_SIZE, UNCACHED_MEM);
+	/* create a flat mapping */
+	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
 
 	/* Map sdram cached. */
 	for_each_memory_bank(bank)
@@ -310,7 +310,7 @@ void mmu_early_enable(uint64_t membase, uint64_t memsize, uint64_t _ttb)
 
 	set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, UNCACHED_MEM);
 
-	create_sections(0, 0, 4096, UNCACHED_MEM);
+	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
 
 	create_sections(membase, membase, memsize, CACHED_MEM);
 

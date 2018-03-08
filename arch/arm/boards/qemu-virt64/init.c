@@ -66,11 +66,6 @@ postcore_initcall(virt_core_init);
 #ifdef CONFIG_MMU
 static int virt_mmu_enable(void)
 {
-	/* Mapping all periph and flash range */
-	arch_remap_range((void *)0x00000000, 0x40000000,
-			 PMD_ATTRINDX(MT_DEVICE_nGnRnE) | PMD_SECT_AF |
-			 PMD_TYPE_SECT);
-
 	mmu_enable();
 
 	return 0;

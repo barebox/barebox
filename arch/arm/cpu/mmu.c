@@ -511,6 +511,19 @@ static int mmu_init(void)
 }
 mmu_initcall(mmu_init);
 
+/*
+ * Clean and invalide caches, disable MMU
+ */
+void mmu_disable(void)
+{
+	__mmu_cache_flush();
+	if (outer_cache.disable) {
+		outer_cache.flush_all();
+		outer_cache.disable();
+	}
+	__mmu_cache_off();
+}
+
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
 	void *ret;

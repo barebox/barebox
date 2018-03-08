@@ -68,26 +68,11 @@ int icache_status(void)
 	return (get_cr () & CR_I) != 0;
 }
 
-#if __LINUX_ARM_ARCH__ <= 7
 /*
  * SoC like the ux500 have the l2x0 always enable
  * with or without MMU enable
  */
 struct outer_cache_fns outer_cache;
-
-/*
- * Clean and invalide caches, disable MMU
- */
-void mmu_disable(void)
-{
-	__mmu_cache_flush();
-	if (outer_cache.disable) {
-		outer_cache.flush_all();
-		outer_cache.disable();
-	}
-	__mmu_cache_off();
-}
-#endif
 
 static void disable_interrupts(void)
 {

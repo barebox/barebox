@@ -202,16 +202,6 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size, uint64_
 	tlb_invalidate();
 }
 
-void *map_io_sections(unsigned long phys, void *_start, size_t size)
-{
-
-	map_region((uint64_t)_start, phys, (uint64_t)size, UNCACHED_MEM);
-
-	tlb_invalidate();
-	return _start;
-}
-
-
 int arch_remap_range(void *_start, size_t size, unsigned flags)
 {
 	map_region((uint64_t)_start, (uint64_t)_start, (uint64_t)size, flags);

@@ -330,7 +330,7 @@ void mmu_disable(void)
 		arm_mmu_not_initialized_error();
 
 	cr = get_cr();
-	cr &= ~(CR_M | CR_C | CR_I);
+	cr &= ~(CR_M | CR_C);
 
 	tlb_invalidate();
 

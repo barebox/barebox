@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
+#include <asm/pgtable64.h>
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm/cache.h>
@@ -32,6 +33,9 @@
 #include <asm/system_info.h>
 
 #include "mmu.h"
+
+#define CACHED_MEM      (PMD_ATTRINDX(MT_NORMAL) | PMD_SECT_S | PMD_SECT_AF | PMD_TYPE_SECT)
+#define UNCACHED_MEM    (PMD_ATTRINDX(MT_NORMAL_NC) | PMD_SECT_S | PMD_SECT_AF | PMD_TYPE_SECT)
 
 static uint64_t *ttb;
 static int free_idx;

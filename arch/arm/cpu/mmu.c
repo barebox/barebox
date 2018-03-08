@@ -27,10 +27,14 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm/cache.h>
+#include <asm/pgtable.h>
 #include <memory.h>
 #include <asm/system_info.h>
 
 #include "mmu.h"
+
+#define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
+#define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
 static unsigned long *ttb;
 

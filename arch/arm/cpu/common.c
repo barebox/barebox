@@ -23,7 +23,6 @@
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
-#include <asm/pgtable.h>
 #include <asm/cache.h>
 
 /*

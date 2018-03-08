@@ -5,6 +5,7 @@
 #include <asm/memory.h>
 #include <asm/system.h>
 #include <asm/cache.h>
+#include <asm/pgtable.h>
 
 #include "mmu.h"
 

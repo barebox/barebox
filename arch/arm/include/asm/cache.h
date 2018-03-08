@@ -5,6 +5,8 @@
 extern void v8_invalidate_icache_all(void);
 void v8_flush_dcache_all(void);
 void v8_invalidate_dcache_all(void);
+void v8_flush_dcache_range(unsigned long start, unsigned long end);
+void v8_inv_dcache_range(unsigned long start, unsigned long end);
 #endif
 
 static inline void icache_invalidate(void)

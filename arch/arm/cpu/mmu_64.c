@@ -365,3 +365,58 @@ void *phys_to_virt(unsigned long phys)
 {
 	return (void *)phys;
 }
+
+void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+{
+	void *ret;
+
+	size = PAGE_ALIGN(size);
+	ret = xmemalign(PAGE_SIZE, size);
+	if (dma_handle)
+		*dma_handle = (dma_addr_t)ret;
+
+	map_region((unsigned long)ret, (unsigned long)ret, size, UNCACHED_MEM);
+	tlb_invalidate();
+
+	return ret;
+}
+
+void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
+{
+	size = PAGE_ALIGN(size);
+
+	map_region((unsigned long)mem, (unsigned long)mem, size, CACHED_MEM);
+
+	free(mem);
+}
+
+void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
+                             enum dma_data_direction dir)
+{
+	if (dir != DMA_TO_DEVICE)
+		v8_inv_dcache_range(address, address + size - 1);
+}
+
+void dma_sync_single_for_device(dma_addr_t address, size_t size,
+                                enum dma_data_direction dir)
+{
+	if (dir == DMA_FROM_DEVICE)
+		v8_inv_dcache_range(address, address + size - 1);
+	v8_flush_dcache_range(address, address + size - 1);
+}
+
+dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
+			  enum dma_data_direction dir)
+{
+	unsigned long addr = (unsigned long)ptr;
+
+	dma_sync_single_for_device(addr, size, dir);
+
+	return addr;
+}
+
+void dma_unmap_single(struct device_d *dev, dma_addr_t addr, size_t size,
+		      enum dma_data_direction dir)
+{
+	dma_sync_single_for_cpu(addr, size, dir);
+}

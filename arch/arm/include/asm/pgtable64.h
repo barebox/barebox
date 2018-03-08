@@ -109,6 +109,13 @@
 #define MT_NORMAL		4
 #define MT_NORMAL_WT		5
 
+#define MEMORY_ATTRIBUTES ((0x00 << (MT_DEVICE_nGnRnE * 8))	| \
+			  (0x04 << (MT_DEVICE_nGnRE * 8)) 	| \
+			  (0x0c << (MT_DEVICE_GRE * 8)) 	| \
+			  (0x44 << (MT_NORMAL_NC * 8))		| \
+			  (UL(0xff) << (MT_NORMAL * 8))		| \
+			  (UL(0xbb) << (MT_NORMAL_WT * 8)))
+
 /*
  * TCR flags.
  */

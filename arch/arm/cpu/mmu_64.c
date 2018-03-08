@@ -243,7 +243,8 @@ static int mmu_init(void)
 
 		memset(ttb, 0, GRANULE_SIZE);
 
-		set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, UNCACHED_MEM);
+		set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS,
+				  MEMORY_ATTRIBUTES);
 	}
 
 	pr_debug("ttb: 0x%p\n", ttb);
@@ -298,7 +299,7 @@ void mmu_early_enable(uint64_t membase, uint64_t memsize, uint64_t _ttb)
 
 	memset(ttb, 0, GRANULE_SIZE);
 
-	set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, UNCACHED_MEM);
+	set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, MEMORY_ATTRIBUTES);
 
 	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
 

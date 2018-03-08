@@ -210,6 +210,12 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 	return 0;
 }
 
+static void mmu_enable(void)
+{
+	isb();
+	set_cr(get_cr() | CR_M | CR_C | CR_I);
+}
+
 /*
  * Prepare MMU for usage enable it.
  */
@@ -256,21 +262,11 @@ static int mmu_init(void)
 	for_each_memory_bank(bank)
 		create_sections(bank->start, bank->start, bank->size, CACHED_MEM);
 
+	mmu_enable();
+
 	return 0;
 }
 mmu_initcall(mmu_init);
-
-void mmu_enable(void)
-{
-	if (!ttb)
-		arm_mmu_not_initialized_error();
-
-	if (!(get_cr() & CR_M)) {
-
-		isb();
-		set_cr(get_cr() | CR_M | CR_C | CR_I);
-	}
-}
 
 void mmu_disable(void)
 {

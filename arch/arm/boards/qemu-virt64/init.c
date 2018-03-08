@@ -62,13 +62,3 @@ static int virt_core_init(void)
 	return 0;
 }
 postcore_initcall(virt_core_init);
-
-#ifdef CONFIG_MMU
-static int virt_mmu_enable(void)
-{
-	mmu_enable();
-
-	return 0;
-}
-postmmu_initcall(virt_mmu_enable);
-#endif

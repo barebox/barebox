@@ -329,12 +329,9 @@ void mmu_disable(void)
 	cr = get_cr();
 	cr &= ~(CR_M | CR_C);
 
-	tlb_invalidate();
-
-	dsb();
-	isb();
-
 	set_cr(cr);
+	v8_flush_dcache_all();
+	tlb_invalidate();
 
 	dsb();
 	isb();

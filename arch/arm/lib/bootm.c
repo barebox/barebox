@@ -522,7 +522,7 @@ static int do_bootm_aimage(struct image_data *data)
 		linux_bootargs_overwrite(header->cmdline);
 
 	if (!getenv("aimage_noverwrite_tags"))
-		armlinux_set_bootparams((void*)header->tags_addr);
+		armlinux_set_bootparams((void *)(unsigned long)header->tags_addr);
 
 	cmp = &header->second_stage;
 	if (cmp->size) {

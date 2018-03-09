@@ -24,7 +24,7 @@
  * be fine.
  */
 
-void __naked __noreturn barebox_arm_entry(unsigned long membase,
+void NAKED __noreturn barebox_arm_entry(unsigned long membase,
 					  unsigned long memsize, void *boarddata)
 {
 	arm_setup_stack(arm_mem_stack_top(membase, membase + memsize) - 16);

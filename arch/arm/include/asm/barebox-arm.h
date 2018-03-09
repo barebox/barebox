@@ -161,13 +161,13 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
 	static void __##name(uint32_t, uint32_t, uint32_t);		\
 									\
-	void __naked __section(.text_head_entry_##name)	name		\
+	void NAKED __section(.text_head_entry_##name)	name		\
 				(uint32_t r0, uint32_t r1, uint32_t r2)	\
 		{							\
 			__barebox_arm_head();				\
 			__##name(r0, r1, r2);				\
 		}							\
-		static void __naked noinline __##name			\
+		static void NAKED noinline __##name			\
 			(uint32_t arg0, uint32_t arg1, uint32_t arg2)
 
 /*
@@ -180,5 +180,18 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 #define MAX_BSS_SIZE SZ_1M
 
 #define barebox_image_size (__image_end - __image_start)
+
+#ifdef CONFIG_CPU_32
+#define NAKED __naked
+#else
+/*
+ * There is no naked support for aarch64, so do not rely on it.
+ * This basically means we must have a stack configured when a
+ * function with the naked attribute is entered. On nowadays hardware
+ * the ROM should have some basic stack already. If not, set one
+ * up before jumping into the barebox entry functions.
+ */
+#define NAKED
+#endif
 
 #endif	/* _BAREBOX_ARM_H_ */

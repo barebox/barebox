@@ -229,7 +229,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 #ifndef CONFIG_PBL_IMAGE
 
-void __naked __section(.text_entry) start(void)
+void NAKED __section(.text_entry) start(void)
 {
 	barebox_arm_head();
 }
@@ -239,7 +239,7 @@ void __naked __section(.text_entry) start(void)
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.
  */
-void __naked __section(.text_entry) start(unsigned long membase,
+void NAKED __section(.text_entry) start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	barebox_non_pbl_start(membase, memsize, boarddata);

@@ -34,10 +34,10 @@ SECTIONS
 	PRE_IMAGE
 
 	. = ALIGN(4);
+	._text : { *(._text) }
 	.text      :
 	{
 		_stext = .;
-		_text = .;
 		*(.text_head_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
@@ -61,22 +61,18 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
-	.rel.dyn : {
-		__rel_dyn_start = .;
-		*(.rel*)
-		__rel_dyn_end = .;
-	}
+	.rel_dyn_start : { *(.__rel_dyn_start) }
+	.rel.dyn : { *(.rel*) }
+	.rel_dyn_end : { *(.__rel_dyn_end) }
 
-	.dynsym : {
-		__dynsym_start = .;
-		*(.dynsym)
-		__dynsym_end = .;
-	}
+	.__dynsym_start :  { *(.__dynsym_start) }
+	.dynsym : { *(.dynsym) }
+	.__dynsym_end : { *(.__dynsym_end) }
 
 	. = ALIGN(4);
-	__bss_start = .;
+	.__bss_start :  { *(.__bss_start) }
 	.bss : { *(.bss*) }
-	__bss_stop = .;
+	.__bss_stop :  { *(.__bss_stop) }
 	_end = .;
 
 	. = ALIGN(4);

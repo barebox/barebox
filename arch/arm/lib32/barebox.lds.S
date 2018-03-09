@@ -37,10 +37,11 @@ SECTIONS
 	PRE_IMAGE
 #endif
 	. = ALIGN(4);
+
+	._text : { *(._text) }
 	.text      :
 	{
 		_stext = .;
-		_text = .;
 		*(.text_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
@@ -109,25 +110,21 @@ SECTIONS
 
 	.dtb : { BAREBOX_DTB() }
 
-	.rel.dyn : {
-		__rel_dyn_start = .;
-		*(.rel*)
-		__rel_dyn_end = .;
-	}
+	.rel_dyn_start : { *(.__rel_dyn_start) }
+	.rel.dyn : { *(.rel*) }
+	.rel_dyn_end : { *(.__rel_dyn_end) }
 
-	.dynsym : {
-		__dynsym_start = .;
-		*(.dynsym)
-		__dynsym_end = .;
-	}
+	.__dynsym_start :  { *(.__dynsym_start) }
+	.dynsym : { *(.dynsym) }
+	.__dynsym_end : { *(.__dynsym_end) }
 
 	_edata = .;
 	.image_end : { *(.__image_end) }
 
 	. = ALIGN(4);
-	__bss_start = .;
+	.__bss_start :  { *(.__bss_start) }
 	.bss : { *(.bss*) }
-	__bss_stop = .;
+	.__bss_stop :  { *(.__bss_stop) }
 
 #ifdef CONFIG_ARM_SECURE_MONITOR
 	. = ALIGN(16);

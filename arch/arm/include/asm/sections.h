@@ -4,6 +4,11 @@
 #ifndef __ASSEMBLY__
 #include <asm-generic/sections.h>
 
+extern char __rel_dyn_start[];
+extern char __rel_dyn_end[];
+extern char __dynsym_start[];
+extern char __dynsym_end[];
+
 /*
  * Access a linker supplied variable. Use this if your code might not be running
  * at the address it is linked at.

@@ -46,4 +46,4 @@ pbl-y += entry.o
 pbl-$(CONFIG_PBL_SINGLE_IMAGE) += start-pbl.o
 pbl-$(CONFIG_PBL_MULTI_IMAGES) += uncompress.o
 
-obj-pbl-y += common.o cache.o
+obj-pbl-y += common.o cache.o sections.o

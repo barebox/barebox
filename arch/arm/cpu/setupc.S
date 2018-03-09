@@ -55,17 +55,16 @@ ENTRY(relocate_to_adr)
 
 	mov	r5, r0
 
-	ld_var	_text, r0, r4
-	mov	r8, r0
+	ldr	r8, =_text
 
-	add	r1, r0, r5		/* r1: from address */
+	add	r1, r8, r5		/* r1: from address */
 
 	cmp	r1, r6			/* already at correct address? */
 	beq	1f			/* yes, skip copy to new address */
 
-	ld_var	__bss_start, r2, r4
+	ldr	r2, =__bss_start
 
-	sub	r2, r2, r0		/* r2: size */
+	sub	r2, r2, r8		/* r2: size */
 	mov	r0, r6			/* r0: target */
 
 	/* adjust return address */

@@ -36,11 +36,11 @@ void relocate_to_current_adr(void)
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
 
-	dstart = (void *)(ld_var(__rel_dyn_start) + offset);
-	dend = (void *)(ld_var(__rel_dyn_end) + offset);
+	dstart = (void *)__rel_dyn_start + offset;
+	dend = (void *)__rel_dyn_end + offset;
 
-	dynsym = (void *)(ld_var(__dynsym_start) + offset);
-	dynend = (void *)(ld_var(__dynsym_end) + offset);
+	dynsym = (void *)__dynsym_start + offset;
+	dynend = (void *)__dynsym_end + offset;
 
 	while (dstart < dend) {
 		uint32_t *fixup = (uint32_t *)(*dstart + offset);
@@ -77,6 +77,3 @@ int __pure cpu_architecture(void)
 	return __cpu_architecture;
 }
 #endif
-
-char __image_start[0] __attribute__((section(".__image_start")));
-char __image_end[0] __attribute__((section(".__image_end")));

@@ -89,23 +89,11 @@ void mmu_disable(void)
 }
 #endif
 
-/**
- * Disable MMU and D-cache, flush caches
- * @return 0 (always)
- *
- * This function is called by shutdown_barebox to get a clean
- * memory/cache state.
- */
-static void arch_shutdown(void)
+static void disable_interrupts(void)
 {
+#if __LINUX_ARM_ARCH__ <= 7
 	uint32_t r;
 
-#ifdef CONFIG_MMU
-	mmu_disable();
-#endif
-	icache_invalidate();
-
-#if __LINUX_ARM_ARCH__ <= 7
 	/*
 	 * barebox normally does not use interrupts, but some functionalities
 	 * (eg. OMAP4_USBBOOT) require them enabled. So be sure interrupts are
@@ -115,6 +103,24 @@ static void arch_shutdown(void)
 	r |= PSR_I_BIT;
 	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 #endif
+}
+
+/**
+ * Disable MMU and D-cache, flush caches
+ * @return 0 (always)
+ *
+ * This function is called by shutdown_barebox to get a clean
+ * memory/cache state.
+ */
+static void arch_shutdown(void)
+{
+
+#ifdef CONFIG_MMU
+	mmu_disable();
+#endif
+	icache_invalidate();
+
+	disable_interrupts();
 }
 archshutdown_exitcall(arch_shutdown);
 

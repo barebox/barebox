@@ -130,7 +130,7 @@ static uint64_t *get_level_table(uint64_t *pte)
 	return table;
 }
 
-static uint64_t *find_pte(uint64_t addr)
+static __maybe_unused uint64_t *find_pte(uint64_t addr)
 {
 	uint64_t *pte;
 	uint64_t block_shift;

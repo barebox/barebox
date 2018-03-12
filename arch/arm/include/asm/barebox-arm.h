@@ -32,16 +32,8 @@
 #include <linux/compiler.h>
 #include <asm/barebox-arm-head.h>
 
-/* cpu/.../cpu.c */
-int	cleanup_before_linux(void);
-
-/* arch/<arch>board(s)/.../... */
-int	board_init(void);
-int	dram_init (void);
-
 extern char __exceptions_start[], __exceptions_stop[];
 
-void board_init_lowlevel(void);
 unsigned long get_runtime_offset(void);
 
 /* global_variable_offset() - Access global variables when not running at link address

@@ -156,23 +156,7 @@ static inline int constant_fls(int x)
 #define __ffs(x) (ffs(x) - 1)
 #define ffz(x) __ffs(~(x))
 #else		/* ! __ARM__USE_GENERIC_FF */
-/*
- * ffz = Find First Zero in word. Undefined if no zero exists,
- * so code should check against ~0UL first..
- */
-static inline unsigned long ffz(unsigned long word)
-{
-	int k;
-
-	word = ~word;
-	k = 31;
-	if (word & 0x0000ffff) { k -= 16; word <<= 16; }
-	if (word & 0x00ff0000) { k -= 8;  word <<= 8;  }
-	if (word & 0x0f000000) { k -= 4;  word <<= 4;  }
-	if (word & 0x30000000) { k -= 2;  word <<= 2;  }
-	if (word & 0x40000000) { k -= 1; }
-	return k;
-}
+#include <asm-generic/bitops/ffz.h>
 #include <asm-generic/bitops/__ffs.h>
 #include <asm-generic/bitops/ffs.h>
 #include <asm-generic/bitops/fls.h>

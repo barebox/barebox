@@ -30,6 +30,7 @@
 #include <asm/pgtable.h>
 #include <memory.h>
 #include <asm/system_info.h>
+#include <asm/sections.h>
 
 #include "mmu.h"
 

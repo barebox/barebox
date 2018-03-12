@@ -32,8 +32,6 @@
 #include <linux/compiler.h>
 #include <asm/barebox-arm-head.h>
 
-extern char __exceptions_start[], __exceptions_stop[];
-
 unsigned long get_runtime_offset(void);
 
 /* global_variable_offset() - Access global variables when not running at link address

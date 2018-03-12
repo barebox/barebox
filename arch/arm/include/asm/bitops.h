@@ -162,9 +162,7 @@ static inline int constant_fls(int x)
 #include <asm-generic/bitops/fls.h>
 #endif		/* __ARM__USE_GENERIC_FF */
 
-#if __LINUX_ARM_ARCH__ == 8
 #include <asm-generic/bitops/__fls.h>
-#endif
 
 #include <asm-generic/bitops/fls64.h>
 

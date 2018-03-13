@@ -23,8 +23,8 @@ static LIST_HEAD(watchdog_list);
 
 static const char *watchdog_name(struct watchdog *wd)
 {
-	if (wd->dev)
-		return dev_name(wd->dev);
+	if (wd->hwdev)
+		return dev_name(wd->hwdev);
 	if (wd->name)
 		return wd->name;
 

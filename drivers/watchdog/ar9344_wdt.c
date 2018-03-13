@@ -95,7 +95,7 @@ static int ar9344_wdt_probe(struct device_d *dev)
 
 	priv->base = IOMEM(iores->start);
 	priv->wd.set_timeout = ar9344_watchdog_set_timeout;
-	priv->wd.dev = dev;
+	priv->wd.hwdev = dev;
 	priv->dev = dev;
 
 	dev->priv = priv;

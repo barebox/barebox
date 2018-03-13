@@ -149,7 +149,7 @@ static int davinci_wdt_probe(struct device_d *dev)
 	clk_enable(davinci_wdt->clk);
 
 	davinci_wdt->wd.set_timeout = davinci_wdt_set_timeout;
-	davinci_wdt->wd.dev = dev;
+	davinci_wdt->wd.hwdev = dev;
 
 	ret = watchdog_register(&davinci_wdt->wd);
 	if (ret < 0)

@@ -73,7 +73,7 @@ static int dw_wdt_stop(struct watchdog *wdd)
 	struct dw_wdt *dw_wdt = to_dw_wdt(wdd);
 
 	if (IS_ERR(dw_wdt->rst)) {
-		dev_warn(dw_wdt->wdd.dev, "No reset line. Will not stop.\n");
+		dev_warn(dw_wdt->wdd.hwdev, "No reset line. Will not stop.\n");
 		return PTR_ERR(dw_wdt->rst);
 	}
 
@@ -157,7 +157,7 @@ static int dw_wdt_drv_probe(struct device_d *dev)
 
 	wdd = &dw_wdt->wdd;
 	wdd->name = "dw_wdt";
-	wdd->dev = dev;
+	wdd->hwdev = dev;
 	wdd->set_timeout = dw_wdt_set_timeout;
 
 	ret = watchdog_register(wdd);

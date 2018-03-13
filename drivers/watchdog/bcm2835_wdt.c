@@ -101,7 +101,7 @@ static int bcm2835_wd_probe(struct device_d *dev)
 	}
 	priv->base = IOMEM(iores->start);
 	priv->wd.set_timeout = bcm2835_wd_set_timeout;
-	priv->wd.dev = dev;
+	priv->wd.hwdev = dev;
 	priv->dev = dev;
 
 	if (IS_ENABLED(CONFIG_WATCHDOG_BCM2835)) {

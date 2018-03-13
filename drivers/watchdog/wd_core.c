@@ -59,8 +59,14 @@ int watchdog_register(struct watchdog *wd)
 	if (!wd->priority)
 		wd->priority = WATCHDOG_DEFAULT_PRIORITY;
 
-	dev_add_param_uint32_ro(&wd->dev, "timeout_max",
+	/* set some default sane value */
+	if (!wd->timeout_max)
+		wd->timeout_max = 60 * 60 * 24;
+
+	p = dev_add_param_uint32_ro(&wd->dev, "timeout_max",
 			&wd->timeout_max, "%u");
+	if (IS_ERR(p))
+		return PTR_ERR(p);
 
 	list_add_tail(&wd->list, &watchdog_list);
 

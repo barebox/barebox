@@ -19,6 +19,7 @@ struct watchdog {
 	struct device_d *hwdev;
 	struct device_d dev;
 	unsigned int priority;
+	unsigned int timeout_max;
 	struct list_head list;
 };
 

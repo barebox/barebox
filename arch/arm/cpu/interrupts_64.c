@@ -22,6 +22,7 @@
 #include <asm/ptrace.h>
 #include <asm/unwind.h>
 #include <init.h>
+#include <asm/system.h>
 
 /**
  * Display current register set content
@@ -114,3 +115,21 @@ int data_abort_unmask(void)
 
 	return arm_data_abort_occurred != 0;
 }
+
+extern unsigned long vectors;
+
+static int aarch64_init_vectors(void)
+{
+        unsigned int el;
+
+        el = current_el();
+        if (el == 1)
+                asm volatile("msr vbar_el1, %0" : : "r" (&vectors) : "cc");
+        else if (el == 2)
+                asm volatile("msr vbar_el2, %0" : : "r" (&vectors) : "cc");
+        else
+                asm volatile("msr vbar_el3, %0" : : "r" (&vectors) : "cc");
+
+	return 0;
+}
+pure_initcall(aarch64_init_vectors);

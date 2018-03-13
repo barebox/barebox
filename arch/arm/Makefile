@@ -23,6 +23,8 @@ endif
 # accesses
 ifneq ($(CONFIG_CPU_V8),y)
 CFLAGS += -mno-unaligned-access
+else
+CFLAGS += -mstrict-align
 endif
 
 

@@ -31,6 +31,16 @@ static const char *watchdog_name(struct watchdog *wd)
 	return "unknown";
 }
 
+static int watchdog_set_cur(struct param_d *param, void *priv)
+{
+	struct watchdog *wd = priv;
+
+	if (wd->timeout_cur > wd->timeout_max)
+		return -EINVAL;
+
+	return 0;
+}
+
 static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
 {
 	wd->dev.parent = wd->hwdev;
@@ -63,8 +73,16 @@ int watchdog_register(struct watchdog *wd)
 	if (!wd->timeout_max)
 		wd->timeout_max = 60 * 60 * 24;
 
+	if (!wd->timeout_cur || wd->timeout_cur > wd->timeout_max)
+		wd->timeout_cur = wd->timeout_max;
+
 	p = dev_add_param_uint32_ro(&wd->dev, "timeout_max",
 			&wd->timeout_max, "%u");
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	p = dev_add_param_uint32(&wd->dev, "timeout_cur", watchdog_set_cur, NULL,
+			&wd->timeout_cur, "%u", wd);
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 

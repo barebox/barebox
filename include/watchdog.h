@@ -20,6 +20,7 @@ struct watchdog {
 	struct device_d dev;
 	unsigned int priority;
 	unsigned int timeout_max;
+	unsigned int timeout_cur;
 	struct list_head list;
 };
 

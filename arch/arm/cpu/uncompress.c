@@ -45,7 +45,7 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 {
 	uint32_t pg_len, uncompressed_len;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
-	uint32_t endmem = membase + memsize;
+	unsigned long endmem = membase + memsize;
 	unsigned long barebox_base;
 	uint32_t *image_end;
 	void *pg_start;

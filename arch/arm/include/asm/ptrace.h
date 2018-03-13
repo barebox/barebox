@@ -10,6 +10,23 @@
 #ifndef __ASM_ARM_PTRACE_H
 #define __ASM_ARM_PTRACE_H
 
+#ifdef CONFIG_CPU_64
+
+#ifndef __ASSEMBLY__
+
+/*
+ * This struct defines the way the registers are stored
+ * on the stack during an exception.
+ */
+struct pt_regs {
+	unsigned long elr;
+	unsigned long regs[31];
+};
+
+#endif  /* __ASSEMBLY__ */
+
+#else   /* CONFIG_CPU_64 */
+
 #define PTRACE_GETREGS		12
 #define PTRACE_SETREGS		13
 #define PTRACE_GETFPREGS	14
@@ -140,5 +157,7 @@ extern void show_regs(struct pt_regs *);
 #endif
 
 #endif /* __ASSEMBLY__ */
+
+#endif /* CONFIG_CPU_64 */
 
 #endif

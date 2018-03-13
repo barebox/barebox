@@ -30,6 +30,14 @@
  */
 void show_regs(struct pt_regs *regs)
 {
+	int i;
+
+	printf("elr: %016lx lr : %016lx\n", regs->elr, regs->regs[30]);
+
+	for (i = 0; i < 29; i += 2)
+		printf("x%-2d: %016lx x%-2d: %016lx\n",
+			i, regs->regs[i], i + 1, regs->regs[i + 1]);
+	printf("\n");
 }
 
 static void __noreturn do_exception(struct pt_regs *pt_regs)

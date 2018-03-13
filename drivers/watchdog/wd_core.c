@@ -31,8 +31,31 @@ static const char *watchdog_name(struct watchdog *wd)
 	return "unknown";
 }
 
+static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
+{
+	wd->dev.parent = wd->hwdev;
+	wd->dev.id = id;
+	strncpy(wd->dev.name, name, MAX_DRIVER_NAME);
+
+	return register_device(&wd->dev);
+}
+
 int watchdog_register(struct watchdog *wd)
 {
+	struct param_d *p;
+	const char *alias;
+	int ret = 0;
+
+	alias = of_alias_get(wd->hwdev->device_node);
+	if (alias)
+		ret = watchdog_register_dev(wd, alias, DEVICE_ID_SINGLE);
+
+	if (!alias || ret)
+		ret = watchdog_register_dev(wd, "wdog", DEVICE_ID_DYNAMIC);
+
+	if (ret)
+		return ret;
+
 	if (!wd->priority)
 		wd->priority = WATCHDOG_DEFAULT_PRIORITY;
 
@@ -47,6 +70,7 @@ EXPORT_SYMBOL(watchdog_register);
 
 int watchdog_deregister(struct watchdog *wd)
 {
+	unregister_device(&wd->dev);
 	list_del(&wd->list);
 
 	return 0;

@@ -1,6 +1,6 @@
 obj-y += cpu.o
 
-obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions$(S64).o
+obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions$(S64).o interrupts$(S64).o
 obj-$(CONFIG_MMU) += mmu$(S64).o
 lwl-y += lowlevel$(S64).o
 
@@ -8,7 +8,6 @@ ifeq ($(CONFIG_CPU_32), y)
 obj-pbl-$(CONFIG_MMU) += mmu-early.o
 endif
 
-obj-$(CONFIG_ARM_EXCEPTIONS) += interrupts.o
 obj-y += start.o entry.o
 
 obj-pbl-y += setupc$(S64).o

@@ -26,9 +26,8 @@
 #include <abort.h>
 #include <asm/ptrace.h>
 #include <asm/unwind.h>
+#include <init.h>
 
-
-#if __LINUX_ARM_ARCH__ <= 7
 /**
  * Display current register set content
  * @param[in] regs Guess what
@@ -72,13 +71,10 @@ void show_regs (struct pt_regs *regs)
 	unwind_backtrace(regs);
 #endif
 }
-#endif
 
 static void __noreturn do_exception(struct pt_regs *pt_regs)
 {
-#if __LINUX_ARM_ARCH__ <= 7
 	show_regs(pt_regs);
-#endif
 
 	panic("");
 }
@@ -126,8 +122,6 @@ void do_prefetch_abort (struct pt_regs *pt_regs)
  */
 void do_data_abort (struct pt_regs *pt_regs)
 {
-
-#if __LINUX_ARM_ARCH__ <= 7
 	u32 far;
 
 	asm volatile ("mrc     p15, 0, %0, c6, c0, 0" : "=r" (far) : : "cc");
@@ -135,7 +129,6 @@ void do_data_abort (struct pt_regs *pt_regs)
 	printf("unable to handle %s at address 0x%08x\n",
 			far < PAGE_SIZE ? "NULL pointer dereference" :
 			"paging request", far);
-#endif
 
 	do_exception(pt_regs);
 }
@@ -163,45 +156,6 @@ void do_irq (struct pt_regs *pt_regs)
 	printf ("interrupt request\n");
 	do_exception(pt_regs);
 }
-
-#ifdef CONFIG_CPU_64v8
-void do_bad_sync(struct pt_regs *pt_regs)
-{
-	printf("bad sync\n");
-	do_exception(pt_regs);
-}
-
-void do_bad_irq(struct pt_regs *pt_regs)
-{
-	printf("bad irq\n");
-	do_exception(pt_regs);
-}
-
-void do_bad_fiq(struct pt_regs *pt_regs)
-{
-	printf("bad fiq\n");
-	do_exception(pt_regs);
-}
-
-void do_bad_error(struct pt_regs *pt_regs)
-{
-	printf("bad error\n");
-	do_exception(pt_regs);
-}
-
-void do_sync(struct pt_regs *pt_regs)
-{
-	printf("sync exception\n");
-	do_exception(pt_regs);
-}
-
-
-void do_error(struct pt_regs *pt_regs)
-{
-	printf("error exception\n");
-	do_exception(pt_regs);
-}
-#endif
 
 extern volatile int arm_ignore_data_abort;
 extern volatile int arm_data_abort_occurred;

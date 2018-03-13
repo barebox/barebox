@@ -44,6 +44,20 @@ extern char __exceptions_start[], __exceptions_stop[];
 void board_init_lowlevel(void);
 unsigned long get_runtime_offset(void);
 
+/* global_variable_offset() - Access global variables when not running at link address
+ *
+ * Get the offset of global variables when not running at the address we are
+ * linked at. ARM uses absolute addresses, so we must add the runtime offset
+ * whereas aarch64 uses PC relative addresses, so nothing must be done here.
+ */
+static inline unsigned long global_variable_offset(void)
+{
+	if (IS_ENABLED(CONFIG_CPU_32))
+		return get_runtime_offset();
+	else
+		return 0;
+}
+
 void setup_c(void);
 void relocate_to_current_adr(void);
 void relocate_to_adr(unsigned long target);

@@ -31,10 +31,10 @@ static inline void dma_free(void *mem)
 #endif
 
 /* streaming DMA - implement the below calls to support HAS_DMA */
-void dma_sync_single_for_cpu(unsigned long address, size_t size,
+void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir);
 
-void dma_sync_single_for_device(unsigned long address, size_t size,
+void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir);
 
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle);

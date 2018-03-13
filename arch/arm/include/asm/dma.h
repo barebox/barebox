@@ -34,12 +34,12 @@ static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
 	free(mem);
 }
 
-static inline void dma_sync_single_for_cpu(unsigned long address, size_t size,
+static inline void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 					   enum dma_data_direction dir)
 {
 }
 
-static inline void dma_sync_single_for_device(unsigned long address, size_t size,
+static inline void dma_sync_single_for_device(dma_addr_t address, size_t size,
 					      enum dma_data_direction dir)
 {
 }

@@ -575,7 +575,7 @@ void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 	free(mem);
 }
 
-void dma_sync_single_for_cpu(unsigned long address, size_t size,
+void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
 	if (dir != DMA_TO_DEVICE) {
@@ -585,7 +585,7 @@ void dma_sync_single_for_cpu(unsigned long address, size_t size,
 	}
 }
 
-void dma_sync_single_for_device(unsigned long address, size_t size,
+void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir)
 {
 	if (dir == DMA_FROM_DEVICE) {

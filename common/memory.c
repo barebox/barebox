@@ -171,6 +171,57 @@ int release_sdram_region(struct resource *res)
 	return release_region(res);
 }
 
+void memory_bank_find_space(struct memory_bank *bank, resource_size_t *retstart,
+			   resource_size_t *retend)
+{
+	resource_size_t freeptr, size, maxfree = 0;
+	struct resource *last, *child;
+
+	if (list_empty(&bank->res->children)) {
+		/* No children - return the whole bank */
+		*retstart = bank->res->start;
+		*retend = bank->res->end;
+		return;
+	}
+
+	freeptr = bank->res->start;
+
+	list_for_each_entry(child, &bank->res->children, sibling) {
+		/* Check gaps between child resources */
+		size = child->start - freeptr;
+		if (size > maxfree) {
+			*retstart = freeptr;
+			*retend = child->start - 1;
+			maxfree = size;
+		}
+		freeptr = child->start + resource_size(child);
+	}
+
+	last = list_last_entry(&bank->res->children, struct resource, sibling);
+
+	/* Check gap between last child and end of memory bank */
+	freeptr = last->start + resource_size(last);
+	size = bank->res->start + resource_size(bank->res) - freeptr;
+
+	if (size > maxfree) {
+		*retstart = freeptr;
+		*retend = bank->res->end;
+	}
+}
+
+int memory_bank_first_find_space(resource_size_t *retstart,
+				 resource_size_t *retend)
+{
+	struct memory_bank *bank;
+
+	for_each_memory_bank(bank) {
+		memory_bank_find_space(bank, retstart, retend);
+		return 0;
+	}
+
+	return -ENOENT;
+}
+
 #ifdef CONFIG_OFTREE
 
 static int of_memory_fixup(struct device_node *node, void *unused)

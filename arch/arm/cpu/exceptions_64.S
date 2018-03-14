@@ -7,6 +7,7 @@
 
 #include <config.h>
 #include <asm/ptrace.h>
+#include <asm/assembler64.h>
 #include <linux/linkage.h>
 
 /*
@@ -31,14 +32,7 @@
 	stp	x3, x4, [sp, #-16]!
 	stp	x1, x2, [sp, #-16]!
 
-	/* Could be running at EL3/EL2/EL1 */
-	mrs	x11, CurrentEL
-	cmp	x11, #0xC		/* Check EL3 state */
-	b.eq	1f
-	cmp	x11, #0x8		/* Check EL2 state */
-	b.eq	2f
-	cmp	x11, #0x4		/* Check EL1 state */
-	b.eq	3f
+	switch_el x11, 3f, 2f, 1f
 3:	mrs	x1, esr_el3
 	mrs	x2, elr_el3
 	b	0f

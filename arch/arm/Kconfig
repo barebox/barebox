@@ -286,6 +286,7 @@ config ARM_ASM_UNIFIED
 
 config AEABI
 	bool "Use the ARM EABI to compile barebox"
+	depends on !CPU_V8
 	help
 	  This option allows for barebox to be compiled using the latest
 	  ARM ABI (aka EABI).
@@ -308,7 +309,7 @@ config THUMB2_BAREBOX
 
 config ARM_BOARD_APPEND_ATAG
 	bool "Let board specific code to add ATAGs to be passed to the kernel"
-	depends on ARM_LINUX
+	depends on ARM_LINUX && !CPU_V8
 	help
 	  This option is purely to start some vendor provided kernels.
 	  ** DO NOT USE FOR YOUR OWN DESIGNS! **

@@ -143,8 +143,18 @@ void do_bad_error(struct pt_regs *pt_regs)
 	do_exception(pt_regs);
 }
 
+extern volatile int arm_ignore_data_abort;
+extern volatile int arm_data_abort_occurred;
+
 void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 {
+	if ((esr >> ESR_ELx_EC_SHIFT) == ESR_ELx_EC_DABT_CUR &&
+			arm_ignore_data_abort) {
+		arm_data_abort_occurred = 1;
+		pt_regs->elr += 4;
+		return;
+	}
+
 	printf("%s exception at 0x%016lx\n", esr_get_class_string(esr), far);
 	do_exception(pt_regs);
 }
@@ -155,9 +165,6 @@ void do_error(struct pt_regs *pt_regs)
 	printf("error exception\n");
 	do_exception(pt_regs);
 }
-
-extern volatile int arm_ignore_data_abort;
-extern volatile int arm_data_abort_occurred;
 
 void data_abort_mask(void)
 {

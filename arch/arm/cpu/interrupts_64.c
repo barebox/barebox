@@ -44,7 +44,9 @@ static void __noreturn do_exception(struct pt_regs *pt_regs)
 {
 	show_regs(pt_regs);
 
-	panic("");
+	unwind_backtrace(pt_regs);
+
+	panic("panic: unhandled exception");
 }
 
 /**

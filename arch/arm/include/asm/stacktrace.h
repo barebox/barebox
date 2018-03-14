@@ -4,7 +4,9 @@
 struct stackframe {
 	unsigned long fp;
 	unsigned long sp;
+#ifdef CONFIG_CPU_32
 	unsigned long lr;
+#endif
 	unsigned long pc;
 };
 

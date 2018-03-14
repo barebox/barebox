@@ -529,6 +529,7 @@ int bootm_boot(struct bootm_data *bootm_data)
 	struct image_handler *handler;
 	int ret;
 	enum filetype os_type;
+	size_t size;
 
 	if (!bootm_data->os_file) {
 		printf("no image given\n");
@@ -548,7 +549,13 @@ int bootm_boot(struct bootm_data *bootm_data)
 	data->os_address = bootm_data->os_address;
 	data->os_entry = bootm_data->os_entry;
 
-	os_type = file_name_detect_type(data->os_file);
+	ret = read_file_2(data->os_file, &size, &data->os_header, PAGE_SIZE);
+	if (ret < 0 && ret != -EFBIG)
+		goto err_out;
+	if (size < PAGE_SIZE)
+		goto err_out;
+
+	os_type = file_detect_type(data->os_header, PAGE_SIZE);
 	if ((int)os_type < 0) {
 		printf("could not open %s: %s\n", data->os_file,
 				strerror(-os_type));
@@ -674,6 +681,7 @@ err_out:
 		of_delete_node(data->of_root_node);
 
 	globalvar_remove("linux.bootargs.bootm.appendroot");
+	free(data->os_header);
 	free(data->os_file);
 	free(data->oftree_file);
 	free(data->initrd_file);

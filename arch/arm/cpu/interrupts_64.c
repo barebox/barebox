@@ -143,9 +143,9 @@ void do_bad_error(struct pt_regs *pt_regs)
 	do_exception(pt_regs);
 }
 
-void do_sync(struct pt_regs *pt_regs)
+void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 {
-	printf("sync exception\n");
+	printf("%s exception at 0x%016lx\n", esr_get_class_string(esr), far);
 	do_exception(pt_regs);
 }
 

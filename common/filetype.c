@@ -67,6 +67,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_socfpga_xload] = { "SoCFPGA prebootloader image", "socfpga-xload" },
 	[filetype_kwbimage_v1] = { "MVEBU kwbimage (v1)", "kwb" },
 	[filetype_android_sparse] = { "Android sparse image", "sparse" },
+	[filetype_arm64_linux_image] = { "ARM aarch64 Linux image", "aarch64-linux" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -296,6 +297,8 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 		return filetype_mips_barebox;
 	if (buf[0] == be32_to_cpu(0x534F4659))
 		return filetype_bpk;
+	if (le32_to_cpu(buf[14]) == 0x644d5241)
+		return filetype_arm64_linux_image;
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
 	    buf8[0x1] == 0 && buf8[0x2] == 0 && buf8[0x3] == 0 &&

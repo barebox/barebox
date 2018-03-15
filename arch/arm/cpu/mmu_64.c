@@ -34,13 +34,6 @@
 
 #include "mmu_64.h"
 
-#define CACHED_MEM      (PTE_BLOCK_MEMTYPE(MT_NORMAL) | \
-			 PTE_BLOCK_OUTER_SHARE | \
-			 PTE_BLOCK_AF)
-#define UNCACHED_MEM    (PTE_BLOCK_MEMTYPE(MT_DEVICE_nGnRnE) | \
-			 PTE_BLOCK_OUTER_SHARE | \
-			 PTE_BLOCK_AF)
-
 static uint64_t *ttb;
 
 static void arm_mmu_not_initialized_error(void)
@@ -52,74 +45,6 @@ static void arm_mmu_not_initialized_error(void)
 	 * - Or the MMU initialization has failed earlier
 	 */
 	panic("MMU not initialized\n");
-}
-
-static uint64_t calc_tcr(int el)
-{
-	u64 ips, va_bits;
-	u64 tcr;
-
-	ips = 2;
-	va_bits = BITS_PER_VA;
-
-	if (el == 1)
-		tcr = (ips << 32) | TCR_EPD1_DISABLE;
-	else if (el == 2)
-		tcr = (ips << 16);
-	else
-		tcr = (ips << 16);
-
-	/* PTWs cacheable, inner/outer WBWA and inner shareable */
-	tcr |= TCR_TG0_4K | TCR_SHARED_INNER | TCR_ORGN_WBWA | TCR_IRGN_WBWA;
-	tcr |= TCR_T0SZ(va_bits);
-
-	return tcr;
-}
-
-/*
- * Do it the simple way for now and invalidate the entire
- * tlb
- */
-static inline void tlb_invalidate(void)
-{
-	unsigned int el = current_el();
-
-	dsb();
-
-	if (el == 1)
-		__asm__ __volatile__("tlbi vmalle1\n\t" : : : "memory");
-	else if (el == 2)
-		__asm__ __volatile__("tlbi alle2\n\t" : : : "memory");
-	else if (el == 3)
-		__asm__ __volatile__("tlbi alle3\n\t" : : : "memory");
-
-	dsb();
-	isb();
-}
-
-static int level2shift(int level)
-{
-	/* Page is 12 bits wide, every level translates 9 bits */
-	return (12 + 9 * (3 - level));
-}
-
-static uint64_t level2mask(int level)
-{
-	uint64_t mask = -EINVAL;
-
-	if (level == 1)
-		mask = L1_ADDR_MASK;
-	else if (level == 2)
-		mask = L2_ADDR_MASK;
-	else if (level == 3)
-		mask = L3_ADDR_MASK;
-
-	return mask;
-}
-
-static int pte_type(uint64_t *pte)
-{
-	return *pte & PTE_TYPE_MASK;
 }
 
 static void set_table(uint64_t *pt, uint64_t *table_addr)
@@ -138,16 +63,6 @@ static uint64_t *create_table(void)
 	memset(new_table, 0, GRANULE_SIZE);
 
 	return new_table;
-}
-
-static uint64_t *get_level_table(uint64_t *pte)
-{
-	uint64_t *table = (uint64_t *)(*pte & XLAT_ADDR_MASK);
-
-	if (pte_type(pte) != PTE_TYPE_TABLE)
-		BUG();
-
-	return table;
 }
 
 static __maybe_unused uint64_t *find_pte(uint64_t addr)
@@ -286,26 +201,15 @@ static int mmu_init(void)
 		 */
 		panic("MMU: No memory bank found! Cannot continue\n");
 
-	if (get_cr() & CR_M) {
-		ttb = (uint64_t *)get_ttbr(current_el());
-		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
-			/*
-			* This can mean that:
-			* - the early MMU code has put the ttb into a place
-			*   which we don't have inside our available memory
-			* - Somebody else has occupied the ttb region which means
-			*   the ttb will get corrupted.
-			*/
-			pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
-				ttb);
-	} else {
-		ttb = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
+	if (get_cr() & CR_M)
+		mmu_disable();
 
-		memset(ttb, 0, GRANULE_SIZE);
+	ttb = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
 
-		el = current_el();
-		set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
-	}
+	memset(ttb, 0, GRANULE_SIZE);
+
+	el = current_el();
+	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
 
 	pr_debug("ttb: 0x%p\n", ttb);
 
@@ -337,26 +241,6 @@ void mmu_disable(void)
 
 	dsb();
 	isb();
-}
-
-void mmu_early_enable(unsigned long membase, unsigned long memsize,
-		      unsigned long _ttb)
-{
-	int el;
-
-	ttb = (uint64_t *)_ttb;
-
-	memset(ttb, 0, GRANULE_SIZE);
-
-	el = current_el();
-	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
-
-	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
-
-	create_sections(membase, membase, memsize, CACHED_MEM);
-
-	isb();
-	set_cr(get_cr() | CR_M);
 }
 
 unsigned long virt_to_phys(volatile void *virt)

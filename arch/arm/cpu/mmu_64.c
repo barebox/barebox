@@ -339,7 +339,8 @@ void mmu_disable(void)
 	isb();
 }
 
-void mmu_early_enable(uint64_t membase, uint64_t memsize, uint64_t _ttb)
+void mmu_early_enable(unsigned long membase, unsigned long memsize,
+		      unsigned long _ttb)
 {
 	int el;
 

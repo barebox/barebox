@@ -27,9 +27,8 @@
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
 #include <asm/cache.h>
+#include <asm/mmu.h>
 #include <asm/unaligned.h>
-
-#include "mmu-early.h"
 
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;

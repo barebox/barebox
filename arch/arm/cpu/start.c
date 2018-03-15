@@ -26,12 +26,12 @@
 #include <asm/sections.h>
 #include <asm/unaligned.h>
 #include <asm/cache.h>
+#include <asm/mmu.h>
 #include <memory.h>
 #include <uncompress.h>
 #include <malloc.h>
 
 #include <debug_ll.h>
-#include "mmu-early.h"
 
 unsigned long arm_stack_top;
 static unsigned long arm_barebox_size;

@@ -10,7 +10,7 @@ endif
 
 obj-y += start.o entry.o
 
-obj-pbl-y += setupc$(S64).o
+obj-pbl-y += setupc$(S64).o cache$(S64).o
 
 #
 # Any variants can be called as start-armxyz.S
@@ -44,4 +44,4 @@ pbl-y += entry.o
 pbl-$(CONFIG_PBL_SINGLE_IMAGE) += start-pbl.o
 pbl-$(CONFIG_PBL_MULTI_IMAGES) += uncompress.o
 
-obj-pbl-y += common.o cache.o sections.o
+obj-pbl-y += common.o sections.o

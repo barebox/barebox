@@ -32,7 +32,7 @@
 #include <memory.h>
 #include <asm/system_info.h>
 
-#include "mmu.h"
+#include "mmu_64.h"
 
 #define CACHED_MEM      (PTE_BLOCK_MEMTYPE(MT_NORMAL) | \
 			 PTE_BLOCK_OUTER_SHARE | \

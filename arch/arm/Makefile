@@ -65,6 +65,7 @@ endif
 ifeq ($(CONFIG_CPU_V8), y)
 CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 AFLAGS   += -include asm/unified.h
+export S64 = _64
 else
 CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float $(CFLAGS_THUMB2)
 AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)

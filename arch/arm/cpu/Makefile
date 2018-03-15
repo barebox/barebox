@@ -1,24 +1,17 @@
 obj-y += cpu.o
 
-ifeq ($(CONFIG_CPU_64v8), y)
-obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions_64.o
-obj-$(CONFIG_MMU) += mmu_64.o
-lwl-y += lowlevel_64.o
-else
-obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions.o
-obj-$(CONFIG_MMU) += mmu.o
+obj-$(CONFIG_ARM_EXCEPTIONS) += exceptions$(S64).o
+obj-$(CONFIG_MMU) += mmu$(S64).o
+lwl-y += lowlevel$(S64).o
+
+ifeq ($(CONFIG_CPU_32), y)
 obj-pbl-$(CONFIG_MMU) += mmu-early.o
-lwl-y += lowlevel.o
 endif
 
 obj-$(CONFIG_ARM_EXCEPTIONS) += interrupts.o
 obj-y += start.o entry.o
 
-ifeq ($(CONFIG_CPU_64v8), y)
-obj-pbl-y += setupc_64.o
-else
-obj-pbl-y += setupc.o
-endif
+obj-pbl-y += setupc$(S64).o
 
 #
 # Any variants can be called as start-armxyz.S

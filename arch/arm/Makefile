@@ -298,7 +298,6 @@ endif
 
 common-y += $(BOARD) arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
-common-y += arch/arm/lib/
 
 ifeq ($(CONFIG_CPU_V8), y)
 common-y += arch/arm/lib64/

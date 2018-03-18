@@ -191,7 +191,7 @@ static char *__canonicalize_path(const char *_pathname, int level)
 		 * with an additional stat() call.
 		 */
 		fsdev = get_fsdevice_by_path(outpath);
-		if (!fsdev->driver->readlink)
+		if (!fsdev || !fsdev->driver->readlink)
 			continue;
 
 		ret = __lstat(outpath, &s);

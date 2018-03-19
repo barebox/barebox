@@ -294,6 +294,10 @@ config MACH_PHYTEC_SOM_IMX6
         select ARCH_IMX6
 	select ARCH_IMX6UL
 
+config MACH_KONTRON_SAMX6I
+        bool "Kontron sAMX6i"
+        select ARCH_IMX6
+
 config MACH_DFI_FS700_M60
 	bool "DFI i.MX6 FS700 M60 Q7 Board"
 	select ARCH_IMX6

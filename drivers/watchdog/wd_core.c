@@ -31,6 +31,16 @@ static const char *watchdog_name(struct watchdog *wd)
 	return "unknown";
 }
 
+static int _watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
+{
+	if (timeout > wd->timeout_max)
+		return -EINVAL;
+
+	pr_debug("setting timeout on %s to %ds\n", watchdog_name(wd), timeout);
+
+	return wd->set_timeout(wd, timeout);
+}
+
 static int watchdog_set_cur(struct param_d *param, void *priv)
 {
 	struct watchdog *wd = priv;
@@ -39,6 +49,55 @@ static int watchdog_set_cur(struct param_d *param, void *priv)
 		return -EINVAL;
 
 	return 0;
+}
+
+static void watchdog_poller_cb(void *priv);
+
+static void watchdog_poller_start(struct watchdog *wd)
+{
+	_watchdog_set_timeout(wd, wd->timeout_cur);
+	poller_call_async(&wd->poller, 500 * MSECOND,
+			watchdog_poller_cb, wd);
+
+}
+
+static void watchdog_poller_cb(void *priv)
+{
+	struct watchdog *wd = priv;
+
+	if (wd->poller_enable)
+		watchdog_poller_start(wd);
+}
+
+static int watchdog_set_poller(struct param_d *param, void *priv)
+{
+	struct watchdog *wd = priv;
+
+
+	if (wd->poller_enable) {
+		dev_info(&wd->dev, "enable watchdog poller\n");
+		watchdog_poller_start(wd);
+	} else {
+		dev_info(&wd->dev, "disable watchdog poller\n");
+		poller_async_cancel(&wd->poller);
+	}
+
+	return 0;
+}
+
+static int watchdog_register_poller(struct watchdog *wd)
+{
+	struct param_d *p;
+	int ret;
+
+	ret = poller_async_register(&wd->poller);
+	if (ret)
+		return ret;
+
+	p = dev_add_param_bool(&wd->dev, "autoping", watchdog_set_poller,
+			NULL, &wd->poller_enable, wd);
+
+	return PTR_ERR_OR_ZERO(p);
 }
 
 static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
@@ -86,6 +145,12 @@ int watchdog_register(struct watchdog *wd)
 	if (IS_ERR(p))
 		return PTR_ERR(p);
 
+	if (IS_ENABLED(CONFIG_WATCHDOG_POLLER)) {
+		ret = watchdog_register_poller(wd);
+		if (ret)
+			return ret;
+	}
+
 	list_add_tail(&wd->list, &watchdog_list);
 
 	pr_debug("registering watchdog %s with priority %d\n", watchdog_name(wd),
@@ -97,6 +162,11 @@ EXPORT_SYMBOL(watchdog_register);
 
 int watchdog_deregister(struct watchdog *wd)
 {
+	if (IS_ENABLED(CONFIG_WATCHDOG_POLLER)) {
+		poller_async_cancel(&wd->poller);
+		poller_async_unregister(&wd->poller);
+	}
+
 	unregister_device(&wd->dev);
 	list_del(&wd->list);
 
@@ -132,12 +202,7 @@ int watchdog_set_timeout(unsigned timeout)
 	if (!wd)
 		return -ENODEV;
 
-	if (timeout > wd->timeout_max)
-		return -EINVAL;
-
-	pr_debug("setting timeout on %s to %ds\n", watchdog_name(wd), timeout);
-
-	return wd->set_timeout(wd, timeout);
+	return _watchdog_set_timeout(wd, timeout);
 }
 EXPORT_SYMBOL(watchdog_set_timeout);
 

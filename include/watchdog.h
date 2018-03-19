@@ -13,6 +13,8 @@
 #ifndef INCLUDE_WATCHDOG_H
 # define INCLUDE_WATCHDOG_H
 
+#include <poller.h>
+
 struct watchdog {
 	int (*set_timeout)(struct watchdog *, unsigned);
 	const char *name;
@@ -21,6 +23,8 @@ struct watchdog {
 	unsigned int priority;
 	unsigned int timeout_max;
 	unsigned int timeout_cur;
+	unsigned int poller_enable;
+	struct poller_async poller;
 	struct list_head list;
 };
 

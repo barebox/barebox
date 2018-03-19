@@ -1660,7 +1660,7 @@ int mkdir (const char *pathname, mode_t mode)
 {
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
-	char *p = normalise_path(pathname);
+	char *p = canonicalize_path(pathname);
 	char *freep = p;
 	int ret;
 	struct stat s;
@@ -1700,7 +1700,7 @@ int rmdir (const char *pathname)
 {
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
-	char *p = normalise_path(pathname);
+	char *p = canonicalize_path(pathname);
 	char *freep = p;
 	int ret;
 	struct stat s;

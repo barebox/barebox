@@ -10,6 +10,7 @@ const char release_string[] =
 	"barebox-" UTS_RELEASE;
 EXPORT_SYMBOL(release_string);
 
+#ifdef CONFIG_BANNER
 void barebox_banner (void)
 {
 	printf("\n\n");
@@ -17,3 +18,4 @@ void barebox_banner (void)
 	printf("\n\n");
 	pr_info("Board: %s\n", barebox_get_model());
 }
+#endif

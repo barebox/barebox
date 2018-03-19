@@ -99,13 +99,13 @@ char *normalise_path(const char *pathname)
 
 	slashes[0] = in = out = path;
 
-        while (*in) {
-                if(*in == '/') {
+	while (*in) {
+		if(*in == '/') {
 			slashes[sl++] = out;
-                        *out++ = *in++;
-                        while(*in == '/')
-                                in++;
-                } else {
+			*out++ = *in++;
+			while(*in == '/')
+				in++;
+		} else {
 			if (*in == '.' && (*(in + 1) == '/' || !*(in + 1))) {
 				sl--;
 				if (sl < 0)
@@ -123,16 +123,16 @@ char *normalise_path(const char *pathname)
 				continue;
 			}
                         *out++ = *in++;
-                }
-        }
+		}
+	}
 
 	*out-- = 0;
 
-        /*
-         * Remove trailing slash
-         */
-        if (*out == '/')
-                *out = 0;
+	/*
+	 * Remove trailing slash
+	 */
+	if (*out == '/')
+		*out = 0;
 
 	if (!*path) {
 		*path = '/';

@@ -232,7 +232,7 @@ static ssize_t at25_ee_write(struct cdev *cdev,
 	return written ? written : status;
 }
 
-static struct file_operations at25_fops = {
+static struct cdev_operations at25_fops = {
 	.read	= at25_ee_read,
 	.write	= at25_ee_write,
 	.lseek	= dev_lseek_default,

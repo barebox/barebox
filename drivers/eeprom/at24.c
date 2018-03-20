@@ -52,7 +52,7 @@ struct at24_data {
 	struct at24_platform_data chip;
 
 	struct cdev		cdev;
-	struct file_operations	fops;
+	struct cdev_operations	fops;
 
 	u8 *writebuf;
 	unsigned write_max;

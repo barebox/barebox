@@ -120,7 +120,7 @@ static ssize_t micel_switch_write(struct cdev *cdev, const void *_buf, size_t co
 	return count;
 }
 
-static struct file_operations micrel_switch_ops = {
+static struct cdev_operations micrel_switch_ops = {
 	.read  = micel_switch_read,
 	.write = micel_switch_write,
 	.lseek = dev_lseek_default,

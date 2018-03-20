@@ -70,7 +70,7 @@ static ssize_t lp_read(struct cdev *cdev, void *_buf, size_t count, loff_t offse
 	return count;
 }
 
-static struct file_operations lp_fops = {
+static struct cdev_operations lp_fops = {
 	.lseek	= dev_lseek_default,
 	.read	= lp_read,
 };

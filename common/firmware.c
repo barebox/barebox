@@ -153,7 +153,7 @@ static int firmware_close(struct cdev *cdev)
 	return 0;
 }
 
-static struct file_operations firmware_ops = {
+static struct cdev_operations firmware_ops = {
 	.open = firmware_open,
 	.write = firmware_write,
 	.close = firmware_close,

@@ -420,7 +420,7 @@ int platform_driver_register(struct driver_d *drv);
 
 int platform_device_register(struct device_d *new_device);
 
-struct file_operations {
+struct cdev_operations {
 	/*! Called in response of reading from this device. Required */
 	ssize_t (*read)(struct cdev*, void* buf, size_t count, loff_t offset, ulong flags);
 
@@ -441,7 +441,7 @@ struct file_operations {
 #define MAX_PARTUUID_STR	sizeof("00112233-4455-6677-8899-AABBCCDDEEFF")
 
 struct cdev {
-	const struct file_operations *ops;
+	const struct cdev_operations *ops;
 	void *priv;
 	struct device_d *dev;
 	struct device_node *device_node;

@@ -264,7 +264,7 @@ static loff_t nand_bb_lseek(struct cdev *cdev, loff_t __offset)
 	return -EINVAL;
 }
 
-static struct file_operations nand_bb_ops = {
+static struct cdev_operations nand_bb_ops = {
 	.open   = nand_bb_open,
 	.close  = nand_bb_close,
 	.read  	= nand_bb_read,

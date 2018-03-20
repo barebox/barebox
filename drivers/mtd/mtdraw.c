@@ -287,7 +287,7 @@ static ssize_t mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)
 }
 #endif
 
-static const struct file_operations mtd_raw_fops = {
+static const struct cdev_operations mtd_raw_fops = {
 	.read		= mtdraw_read,
 	.write		= mtdraw_write,
 	.erase		= mtdraw_erase,
@@ -305,7 +305,7 @@ static int add_mtdraw_device(struct mtd_info *mtd, const char *devname, void **p
 	mtdraw->writebuf = xmalloc(RAW_WRITEBUF_SIZE);
 	mtdraw->mtd = mtd;
 
-	mtdraw->cdev.ops = (struct file_operations *)&mtd_raw_fops;
+	mtdraw->cdev.ops = (struct cdev_operations *)&mtd_raw_fops;
 	mtdraw->cdev.size = mtd_div_by_wb(mtd->size, mtd) *
 		(mtd->writesize + mtd->oobsize);
 	mtdraw->cdev.name = basprintf("%s.raw", mtd->cdev.name);

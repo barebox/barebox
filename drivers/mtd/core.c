@@ -438,7 +438,7 @@ int mtd_read_oob(struct mtd_info *mtd, loff_t from, struct mtd_oob_ops *ops)
 	return ret_code >= mtd->bitflip_threshold ? -EUCLEAN : 0;
 }
 
-static struct file_operations mtd_ops = {
+static struct cdev_operations mtd_ops = {
 	.read   = mtd_op_read,
 #ifdef CONFIG_MTD_WRITE
 	.write  = mtd_op_write,

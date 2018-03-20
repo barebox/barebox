@@ -285,7 +285,7 @@ static ssize_t phydev_write(struct cdev *cdev, const void *_buf, size_t count, l
 	return count;
 }
 
-static struct file_operations phydev_ops = {
+static struct cdev_operations phydev_ops = {
 	.read  = phydev_read,
 	.write = phydev_write,
 	.lseek = dev_lseek_default,

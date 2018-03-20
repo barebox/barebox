@@ -218,7 +218,7 @@ static int ubi_volume_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
 	return err;
 }
 
-static struct file_operations ubi_volume_fops = {
+static struct cdev_operations ubi_volume_fops = {
 	.open	= ubi_volume_cdev_open,
 	.close	= ubi_volume_cdev_close,
 	.read   = ubi_volume_cdev_read,
@@ -467,7 +467,7 @@ static int ubi_cdev_ioctl(struct cdev *cdev, int cmd, void *buf)
 	return 0;
 }
 
-static struct file_operations ubi_fops = {
+static struct cdev_operations ubi_fops = {
 	.ioctl	= ubi_cdev_ioctl,
 };
 

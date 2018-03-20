@@ -457,7 +457,7 @@ static ssize_t loop_write(struct cdev *cdev, const void *buf, size_t count,
 	return write(priv->fd, buf, count);
 }
 
-static const struct file_operations loop_ops = {
+static const struct cdev_operations loop_ops = {
 	.read = loop_read,
 	.write = loop_write,
 	.memmap = generic_memmap_rw,

@@ -112,7 +112,7 @@ static ssize_t mc_write(struct cdev *cdev, const void *_buf, size_t count, loff_
 	return count;
 }
 
-static struct file_operations mc_fops = {
+static struct cdev_operations mc_fops = {
 	.lseek	= dev_lseek_default,
 	.read	= mc_read,
 	.write	= mc_write,

@@ -265,7 +265,7 @@ static int jtag_ioctl(struct cdev *inode, int cmd, void *arg)
 	return ret;
 }
 
-static struct file_operations jtag_operations = {
+static struct cdev_operations jtag_operations = {
 	.ioctl = jtag_ioctl,
 };
 

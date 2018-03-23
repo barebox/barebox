@@ -69,10 +69,10 @@ struct command {
 };
 
 static const char *check_cmds[] = {
-	"while_all_bits_clear",		/* while ((*address & mask) == 0); */
-	"while_all_bits_set"	,	/* while ((*address & mask) == mask); */
-	"while_any_bit_clear",		/* while ((*address & mask) != mask); */
-	"while_any_bit_set",		/* while ((*address & mask) != 0); */
+	"until_all_bits_clear",	/* until ((*address & mask) == 0) { }; */
+	"until_any_bit_clear",	/* until ((*address & mask) != mask) { }; */
+	"until_all_bits_set",	/* until ((*address & mask) == mask) { }; */
+	"until_any_bit_set",	/* until ((*address & mask) != 0) { }; */
 };
 
 static void do_cmd_check_usage(void)
@@ -81,10 +81,10 @@ static void do_cmd_check_usage(void)
 			"usage: check <width> <cmd> <addr> <mask>\n"
 			"<width> access width in bytes [1|2|4]\n"
 			"with <cmd> one of:\n"
-			"while_all_bits_clear: while ((*addr & mask) == 0)\n"
-			"while_all_bits_set:   while ((*addr & mask) == mask)\n"
-			"while_any_bit_clear:  while ((*addr & mask) != mask)\n"
-			"while_any_bit_set:    while ((*addr & mask) != 0)\n");
+			"until_all_bits_clear: while ((*addr & mask) == 0)\n"
+			"until_all_bits_set:   while ((*addr & mask) == mask)\n"
+			"until_any_bit_clear:  while ((*addr & mask) != mask)\n"
+			"until_any_bit_set:    while ((*addr & mask) != 0)\n");
 }
 
 static int do_cmd_check(struct config_data *data, int argc, char *argv[])

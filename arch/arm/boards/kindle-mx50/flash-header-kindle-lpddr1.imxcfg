@@ -21,7 +21,7 @@ wm 32 0x63f8001c 0x00000080
 wm 32 0x63f80020 0x00000002
 wm 32 0x63f80024 0x00000001
 wm 32 0x63f80000 0x00001232
-check 8 while_any_bit_clear 0x63f80000 0x01
+check 8 until_any_bit_set 0x63f80000 0x01
 # Switch pll1_sw_clk to pll1
 wm 32 0x53fd400c 0x00000000
 
@@ -38,7 +38,7 @@ wm 32 0x53FD4098 0x80000004
 
 # CCM DDR div 4 / 200MHz
 wm 32 0x53fd4098 0x80000004
-check 32 while_all_bits_set 0x53fd408c 0x00000004
+check 32 until_all_bits_clear 0x53fd408c 0x00000004
 
 # IOMUX
 wm 32 0x53fa8490 0x00180000
@@ -163,4 +163,4 @@ wm 32 0x1400025c 0x00102201
 
 # start DDR
 wm 32 0x14000000 0x00000101
-check 32 while_any_bit_clear 0x140000a8 0x00000010
+check 32 until_any_bit_set 0x140000a8 0x00000010

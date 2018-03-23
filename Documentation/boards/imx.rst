@@ -48,6 +48,63 @@ The images can also always be started second stage::
 
   bootm /mnt/tftp/barebox-freescale-imx51-babbage.img
 
+Information about the ``imx-image`` tool
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The imx-image tool can be used to generate imximages from raw binaries.
+It requires an configuration file describing how to setup the SDRAM on
+a particular board. This mainly consists of a poke table. The recognized
+options in this file are:
+
+Header:
+
++----------------+--------------------------------------------------------------+
+| soc <soctype>  | soctype can be one of imx35, imx51, imx53, imx6              |
++----------------+--------------------------------------------------------------+
+| loadaddr <adr> |     The address the binary is uploaded to                    |
++----------------+--------------------------------------------------------------+
+| dcdofs <ofs>   | The offset of the image header in the image. This should be: |
+|                | * ``0x400``:  MMC/SD, NAND, serial ROM, PATA, SATA           |
+|                | * ``0x1000``: NOR Flash                                      |
+|                | * ``0x100``: OneNAND                                         |
++----------------+--------------------------------------------------------------+
+
+Memory manipulation:
+
++------------------------------------+-----------------------------------------+
+| wm 8 <addr> <value>                | write <value> into byte <addr>          |
++------------------------------------+-----------------------------------------+
+| wm 16 <addr> <value>               | write <value> into short <addr>         |
++------------------------------------+-----------------------------------------+
+| wm 32 <addr> <value>               | write <value> into word <addr>          |
++------------------------------------+-----------------------------------------+
+| set_bits <width> <addr> <value>    | set set bits in <value> in <addr>       |
++------------------------------------+-----------------------------------------+
+| clear_bits <width> <addr> <value>  | clear set bits in <value> in <addr>     |
++------------------------------------+-----------------------------------------+
+| nop                                | do nothing (just waste time)            |
++------------------------------------+-----------------------------------------+
+
+<width> can be of 8, 16 or 32.
+
+Checking conditions:
+
++------------------------------------+-----------------------------------------+
+| check <width> <cond> <addr> <mask> | Poll until condition becomes true.      |
+|                                    | with <cond> being one of:               |
+|                                    | * ``until_all_bits_clear``              |
+|                                    | * ``until_all_bits_set``                |
+|                                    | * ``until_any_bit_clear``               |
+|                                    | * ``until_any_bit_set``                 |
++------------------------------------+-----------------------------------------+
+
+Some notes about the mentioned *conditions*.
+
+ - ``until_all_bits_clear`` waits until ``(*addr & mask) == 0`` is true
+ - ``until_all_bits_set`` waits until ``(*addr & mask) == mask`` is true
+ - ``until_any_bit_clear`` waits until ``(*addr & mask) != mask`` is true
+ - ``until_any_bit_set`` waits until ``(*addr & mask) != 0`` is true.
+
 Internal Boot Mode Through Internal RAM(IRAM)
 ---------------------------------------------
 

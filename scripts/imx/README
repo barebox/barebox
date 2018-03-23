@@ -7,34 +7,12 @@ The imx-usb-loader tool is used to upload and start i.MX images. These
 are images containing a DCD (Device Configuration Data) table. To generate
 these images from raw binaries use the imx-image tool.
 
-imx-image
----------
+Refer the i.MX related documentation about the DCD source files and their
+content.
 
-The imx-image tool can be used to generate imximages from raw binaries.
-It requires an configuration file describing how to setup the SDRAM on
-a particular board. This mainly consists of a poke table. The recognized
-options in this file are:
+Example for a DCD source file:
 
-soc <soctype>      soctype can be one of imx35, imx51, imx53, imx6
-loadaddr <adr>     The address the binary is uploaded to
-dcdofs <ofs>       The offset of the image header in the image. This should be:
-                   0x400  - MMC/SD, NAND, serial ROM, PATA, SATA
-                   0x1000 - NOR Flash
-                   0x100  - OneNAND
-wm 8 <adr> <value>                    do a byte memory write
-wm 16 <adr> <value>                   do a short memory write
-wm 32 <adr> <value>                   do a word memory write
-check <width> <cond> <addr> <mask>    Poll until condition becomes true.
-                                      with <cond> being one of:
-                                      while_all_bits_clear,
-                                      while_all_bits_set,
-                                      while_any_bit_clear,
-                                      while_any_bit_set
-set_bits <width> <addr> <bits>        set <bits> in register <addr>
-clear_bits <width> <addr> <bits>      clear <bits> in register <addr>
-nop                                   do nothing
-
-the i.MX SoCs support a wide range of fancy things doing with the flash header.
+The i.MX SoCs support a wide range of fancy things doing with the flash header.
 We limit ourselves to a very simple case, that is the flash header has a fixed
 size of 0x1000 bytes. The application is expected right thereafter, so if you
 specify a loadaddr of 0x80000000 in the config file, the first 0x1000 bytes

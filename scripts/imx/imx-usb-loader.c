@@ -935,10 +935,10 @@ static int do_dcd_v2_cmd_check(const unsigned char *dcd)
 	}
 
 	switch ((check->param & 0xf8) >> 3) {
-	case check_all_bits_clear:
-	case check_all_bits_set:
-	case check_any_bit_clear:
-	case check_any_bit_set:
+	case until_all_bits_clear:
+	case until_all_bits_set:
+	case until_any_bit_clear:
+	case until_any_bit_set:
 		cond = (check->param & 0xf8) >> 3;
 		break;
 	default:
@@ -966,20 +966,20 @@ static int do_dcd_v2_cmd_check(const unsigned char *dcd)
 		data &= mask;
 
 		switch (cond) {
-		case check_all_bits_clear:
-			if (data != 0)
+		case until_all_bits_clear:
+			if (data == 0)
 				return 0;
 			break;
-		case check_all_bits_set:
-			if (data != mask)
-				return 0;
-			break;
-		case check_any_bit_clear:
+		case until_all_bits_set:
 			if (data == mask)
 				return 0;
 			break;
-		case check_any_bit_set:
-			if (data == 0)
+		case until_any_bit_clear:
+			if (data != mask)
+				return 0;
+			break;
+		case until_any_bit_set:
+			if (data != 0)
 				return 0;
 			break;
 		}

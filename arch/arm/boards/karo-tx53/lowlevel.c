@@ -52,6 +52,11 @@ static void __imx53_tx53_init(int is_xx30)
 	imx53_barebox_entry(fdt);
 }
 
+ENTRY_FUNCTION(start_imx53_tx53_xx30_samsung, r0, r1, r2)
+{
+	__imx53_tx53_init(1);
+}
+
 ENTRY_FUNCTION(start_imx53_tx53_xx30, r0, r1, r2)
 {
 	__imx53_tx53_init(1);

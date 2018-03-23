@@ -1258,6 +1258,7 @@ static int tc_filter_videomodes(struct tc_data *tc, struct display_timings *timi
 	} while (1);
 
 	free(timings->modes);
+	timings->num_modes = 0;
 	timings->modes = NULL;
 
 	if (!num_modes) {

@@ -1,0 +1,13 @@
+/dts-v1/;
+#include <arm/imx53-tx53.dtsi>
+
+/ {
+	model = "Ka-Ro electronics TX53 module";
+	compatible = "karo,tx53-xx30", "karo,tx53", "fsl,imx53";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	sgtl5000: dummy { };
+};

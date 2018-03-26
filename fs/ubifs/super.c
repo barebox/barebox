@@ -556,7 +556,6 @@ out:
 done:
 	clear_inode(inode);
 }
-#endif
 
 static void ubifs_dirty_inode(struct inode *inode, int flags)
 {
@@ -569,7 +568,6 @@ static void ubifs_dirty_inode(struct inode *inode, int flags)
 	}
 }
 
-#ifndef __BAREBOX__
 static int ubifs_statfs(struct dentry *dentry, struct kstatfs *buf)
 {
 	struct ubifs_info *c = dentry->d_sb->s_fs_info;
@@ -2107,9 +2105,7 @@ const struct super_operations ubifs_super_operations = {
 	.write_inode   = ubifs_write_inode,
 	.evict_inode   = ubifs_evict_inode,
 	.statfs        = ubifs_statfs,
-#endif
 	.dirty_inode   = ubifs_dirty_inode,
-#ifndef __BAREBOX__
 	.remount_fs    = ubifs_remount_fs,
 	.show_options  = ubifs_show_options,
 	.sync_fs       = ubifs_sync_fs,

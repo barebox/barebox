@@ -252,6 +252,11 @@ struct file {
 #endif
 };
 
+struct super_operations {
+	struct inode *(*alloc_inode)(struct super_block *sb);
+	void (*destroy_inode)(struct inode *);
+};
+
 /*
  * Inode flags - they have no relation to superblock flags now
  */

@@ -110,6 +110,14 @@ config ALLOW_PRNG_FALLBACK
 	  available and this option is disabled, cmd_password will fail.
 	  Enable it on your own risk.
 
+config CRC_CCITT
+	bool "CRC-CCITT functions"
+	help
+	  This option is provided for the case where no in-kernel-tree
+	  modules require CRC-CCITT functions, but a module built outside
+	  the kernel tree does. Such modules that use library CRC-CCITT
+	  functions require M here.
+
 source lib/gui/Kconfig
 
 source lib/fonts/Kconfig

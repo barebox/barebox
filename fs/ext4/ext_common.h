@@ -30,6 +30,8 @@
 #ifndef __EXT_COMMON__
 #define __EXT_COMMON__
 
+#include <linux/fs.h>
+
 #define SECTOR_SIZE		0x200
 #define SECTOR_BITS		9
 
@@ -208,6 +210,7 @@ struct ext2_dirent {
 };
 
 struct ext2fs_node {
+	struct inode i;
 	struct ext2_data *data;
 	struct ext2_inode inode;
 	int ino;

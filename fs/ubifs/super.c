@@ -30,6 +30,7 @@
 
 #include <common.h>
 #include <init.h>
+#include <fs.h>
 #include <malloc.h>
 #include <linux/bug.h>
 #include <linux/log2.h>
@@ -48,8 +49,6 @@ struct vfsmount;
 
 struct super_block *ubifs_sb;
 LIST_HEAD(super_blocks);
-
-static struct inode *inodes_locked_down[INODE_LOCKED_MAX];
 
 int set_anon_super(struct super_block *s, void *data)
 {
@@ -82,39 +81,6 @@ int ubifs_iput(struct inode *inode)
 
 	free(inode);
 	return 0;
-}
-
-/*
- * Lock (save) inode in inode array for readback after recovery
- */
-void iput(struct inode *inode)
-{
-	int i;
-	struct inode *ino;
-
-	/*
-	 * Search end of list
-	 */
-	for (i = 0; i < INODE_LOCKED_MAX; i++) {
-		if (inodes_locked_down[i] == NULL)
-			break;
-	}
-
-	if (i >= INODE_LOCKED_MAX) {
-		dbg_gen("Error, can't lock (save) more inodes while recovery!!!");
-		return;
-	}
-
-	/*
-	 * Allocate and use new inode
-	 */
-	ino = (struct inode *)kzalloc(sizeof(struct ubifs_inode), 0);
-	memcpy(ino, inode, sizeof(struct ubifs_inode));
-
-	/*
-	 * Finally save inode in array
-	 */
-	inodes_locked_down[i] = ino;
 }
 
 /* from fs/inode.c */
@@ -231,6 +197,9 @@ static int validate_inode(struct ubifs_info *c, const struct inode *inode)
 	return err;
 }
 
+const struct inode_operations ubifs_file_inode_operations;
+const struct file_operations ubifs_file_operations;
+
 struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 {
 	int err;
@@ -239,34 +208,8 @@ struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 	struct ubifs_info *c = sb->s_fs_info;
 	struct inode *inode;
 	struct ubifs_inode *ui;
-#ifdef __BAREBOX__
-	int i;
-#endif
 
 	dbg_gen("inode %lu", inum);
-
-#ifdef __BAREBOX__
-	/*
-	 * U-Boot special handling of locked down inodes via recovery
-	 * e.g. ubifs_recover_size()
-	 */
-	for (i = 0; i < INODE_LOCKED_MAX; i++) {
-		/*
-		 * Exit on last entry (NULL), inode not found in list
-		 */
-		if (inodes_locked_down[i] == NULL)
-			break;
-
-		if (inodes_locked_down[i]->i_ino == inum) {
-			/*
-			 * We found the locked down inode in our array,
-			 * so just return this pointer instead of creating
-			 * a new one.
-			 */
-			return inodes_locked_down[i];
-		}
-	}
-#endif
 
 	inode = iget_locked(sb, inum);
 	if (!inode)
@@ -315,10 +258,8 @@ struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 	if (err)
 		goto out_invalid;
 
-#ifndef __BAREBOX__
 	switch (inode->i_mode & S_IFMT) {
 	case S_IFREG:
-		inode->i_mapping->a_ops = &ubifs_file_address_operations;
 		inode->i_op = &ubifs_file_inode_operations;
 		inode->i_fop = &ubifs_file_operations;
 		if (ui->xattr) {
@@ -343,7 +284,7 @@ struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 		}
 		break;
 	case S_IFLNK:
-		inode->i_op = &ubifs_symlink_inode_operations;
+		inode->i_op = &simple_symlink_inode_operations;
 		if (ui->data_len <= 0 || ui->data_len > UBIFS_MAX_INO_DATA) {
 			err = 12;
 			goto out_invalid;
@@ -357,60 +298,10 @@ struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 		((char *)ui->data)[ui->data_len] = '\0';
 		inode->i_link = ui->data;
 		break;
-	case S_IFBLK:
-	case S_IFCHR:
-	{
-		dev_t rdev;
-		union ubifs_dev_desc *dev;
-
-		ui->data = kmalloc(sizeof(union ubifs_dev_desc), GFP_NOFS);
-		if (!ui->data) {
-			err = -ENOMEM;
-			goto out_ino;
-		}
-
-		dev = (union ubifs_dev_desc *)ino->data;
-		if (ui->data_len == sizeof(dev->new))
-			rdev = new_decode_dev(le32_to_cpu(dev->new));
-		else if (ui->data_len == sizeof(dev->huge))
-			rdev = huge_decode_dev(le64_to_cpu(dev->huge));
-		else {
-			err = 13;
-			goto out_invalid;
-		}
-		memcpy(ui->data, ino->data, ui->data_len);
-		inode->i_op = &ubifs_file_inode_operations;
-		init_special_inode(inode, inode->i_mode, rdev);
-		break;
-	}
-	case S_IFSOCK:
-	case S_IFIFO:
-		inode->i_op = &ubifs_file_inode_operations;
-		init_special_inode(inode, inode->i_mode, 0);
-		if (ui->data_len != 0) {
-			err = 14;
-			goto out_invalid;
-		}
-		break;
 	default:
 		err = 15;
 		goto out_invalid;
 	}
-#else
-	if ((inode->i_mode & S_IFMT) == S_IFLNK) {
-		if (ui->data_len <= 0 || ui->data_len > UBIFS_MAX_INO_DATA) {
-			err = 12;
-			goto out_invalid;
-		}
-		ui->data = kmalloc(ui->data_len + 1, GFP_NOFS);
-		if (!ui->data) {
-			err = -ENOMEM;
-			goto out_ino;
-		}
-		memcpy(ui->data, ino->data, ui->data_len);
-		((char *)ui->data)[ui->data_len] = '\0';
-	}
-#endif
 
 	kfree(ino);
 #ifndef __BAREBOX__
@@ -447,22 +338,15 @@ static struct inode *ubifs_alloc_inode(struct super_block *sb)
 	return &ui->vfs_inode;
 };
 
-#ifndef __BAREBOX__
-static void ubifs_i_callback(struct rcu_head *head)
-{
-	struct inode *inode = container_of(head, struct inode, i_rcu);
-	struct ubifs_inode *ui = ubifs_inode(inode);
-	kmem_cache_free(ubifs_inode_slab, ui);
-}
-
 static void ubifs_destroy_inode(struct inode *inode)
 {
 	struct ubifs_inode *ui = ubifs_inode(inode);
 
 	kfree(ui->data);
-	call_rcu(&inode->i_rcu, ubifs_i_callback);
+	kfree(ui);
 }
 
+#ifndef __BAREBOX__
 /*
  * Note, Linux write-back code calls this without 'i_mutex'.
  */
@@ -1330,15 +1214,9 @@ static int mount_ubifs(struct ubifs_info *c)
 	long long x, y;
 	size_t sz;
 
-	c->ro_mount = !!(c->vfs_sb->s_flags & MS_RDONLY);
+	c->ro_mount = true;
 	/* Suppress error messages while probing if MS_SILENT is set */
 	c->probing = !!(c->vfs_sb->s_flags & MS_SILENT);
-#ifdef __BAREBOX__
-	if (!c->ro_mount) {
-		printf("UBIFS: only ro mode in Barebox allowed.\n");
-		return -EACCES;
-	}
-#endif
 
 	err = init_constants_early(c);
 	if (err)
@@ -2099,8 +1977,8 @@ static int ubifs_remount_fs(struct super_block *sb, int *flags, char *data)
 
 const struct super_operations ubifs_super_operations = {
 	.alloc_inode   = ubifs_alloc_inode,
-#ifndef __BAREBOX__
 	.destroy_inode = ubifs_destroy_inode,
+#ifndef __BAREBOX__
 	.put_super     = ubifs_put_super,
 	.write_inode   = ubifs_write_inode,
 	.evict_inode   = ubifs_evict_inode,
@@ -2298,15 +2176,11 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
 		goto out_umount;
 	}
 
-#ifndef __BAREBOX__
 	sb->s_root = d_make_root(root);
 	if (!sb->s_root) {
 		err = -ENOMEM;
 		goto out_umount;
 	}
-#else
-	sb->s_root = NULL;
-#endif
 
 	mutex_unlock(&c->umount_mutex);
 	return 0;
@@ -2680,13 +2554,14 @@ MODULE_AUTHOR("Artem Bityutskiy, Adrian Hunter");
 MODULE_DESCRIPTION("UBIFS - UBI File System");
 #endif
 
-struct super_block *ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent)
+int ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent)
 {
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct super_block *sb;
 	struct ubifs_info *c;
 	int err;
 
-	sb = alloc_super(NULL, MS_RDONLY | MS_ACTIVE | MS_NOATIME);
+	sb = &fsdev->sb;
 	c = alloc_ubifs_info(ubi);
 
 	c->dev = dev;
@@ -2712,9 +2587,9 @@ struct super_block *ubifs_get_super(struct device_d *dev, struct ubi_volume_desc
 		goto out;
 	}
 
-	return sb;
+	return 0;
 out:
 	kfree(c);
 	kfree(sb);
-	return ERR_PTR(err);
+	return err;
 }

@@ -1,9 +1,6 @@
 menuconfig FS_UBIFS
 	bool
 	depends on MTD_UBI
-	select FS_LEGACY
-# Due to duplicate definition of iput
-	depends on BROKEN
 	prompt "ubifs support"
 
 if FS_UBIFS

@@ -36,7 +36,7 @@ struct chunk {
 	struct list_head list;
 };
 
-#define BUFSIZE (PAGE_SIZE * 16)
+#define BUFSIZE (PAGE_SIZE * 4)
 
 /*
  * Write all dirty chunks back to the device
@@ -361,7 +361,7 @@ int blockdevice_register(struct block_device *blk)
 	debug("%s: rdbufsize: %d blockbits: %d blkmask: 0x%08x\n", __func__, blk->rdbufsize, blk->blockbits,
 			blk->blkmask);
 
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 32; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));
 		chunk->data = dma_alloc(BUFSIZE);
 		chunk->num = i;

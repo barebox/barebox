@@ -52,7 +52,6 @@ config FS_OMAP4_USBBOOT
 
 config FS_NFS
 	depends on NET
-	select FS_LEGACY
 	bool
 	prompt "nfs support"
 

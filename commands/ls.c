@@ -115,11 +115,8 @@ int ls(const char *path, ulong flags)
 			continue;
 		}
 
-		if (s.st_mode & S_IFDIR) {
-			char *norm = normalise_path(tmp);
-			ls(norm, flags);
-			free(norm);
-		}
+		if (s.st_mode & S_IFDIR)
+			ls(tmp, flags);
 	}
 
 out:
@@ -158,7 +155,7 @@ static int do_ls(int argc, char *argv[])
 		flags |= LS_SHOWARG;
 
 	if (optind == argc) {
-		ret = ls(getcwd(), flags);
+		ret = ls(".", flags);
 		return ret ? 1 : 0;
 	}
 

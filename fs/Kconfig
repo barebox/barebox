@@ -40,7 +40,6 @@ config FS_DEVFS
 
 config FS_TFTP
 	bool
-	select FS_LEGACY
 	prompt "tftp support"
 	depends on NET
 

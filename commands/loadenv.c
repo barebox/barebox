@@ -62,20 +62,16 @@ static int do_loadenv(int argc, char *argv[])
 	if (argc - optind < 1) {
 		filename = default_environment_path_get();
 	} else {
-		char *str = normalise_path(argv[optind]);
-
 		/*
 		 * /dev/defaultenv use to contain the defaultenvironment.
 		 * we do not have this file anymore, but maintain compatibility
 		 * to the 'loadenv -s /dev/defaultenv' command to restore the
 		 * default environment for some time.
 		 */
-		if (!strcmp(str, "/dev/defaultenv"))
+		if (!strcmp(argv[optind], "/dev/defaultenv"))
 			defaultenv = 1;
 		else
 			filename = argv[optind];
-
-		free(str);
 	}
 
 	if (scrub) {

@@ -1,3 +1,4 @@
 config FS_EXT4
 	bool
+	select FS_LEGACY
 	prompt "ext4 filesystem support"

@@ -14,8 +14,11 @@
 
 struct vfsmount {
 	struct dentry *mnt_root;	/* root of the mounted tree */
+	struct dentry *mountpoint;	/* where it's mounted (barebox specific, no support */
+	struct vfsmount *parent;	/* for bind mounts and the like) */
 	struct super_block *mnt_sb;	/* pointer to superblock */
 	int mnt_flags;
+	int ref;
 };
 
 #endif /* _LINUX_MOUNT_H */

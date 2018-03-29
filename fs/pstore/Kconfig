@@ -1,4 +1,5 @@
 menuconfig FS_PSTORE
+	select FS_LEGACY
 	bool
 	prompt "pstore fs support"
 	help

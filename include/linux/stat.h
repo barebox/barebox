@@ -42,6 +42,8 @@ extern "C" {
 #define S_IWOTH 00002		/* read permission for other */
 #define S_IXOTH 00001		/* execute/search permission for other */
 
+#define S_IRWXUGO	(S_IRWXU|S_IRWXG|S_IRWXO)
+
 struct stat {
 	unsigned short st_dev;
 	unsigned short __pad1;

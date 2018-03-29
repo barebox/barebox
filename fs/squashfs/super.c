@@ -39,15 +39,6 @@
 #include "squashfs.h"
 #include "decompressor.h"
 
-static struct dentry *d_make_root(struct inode *inode)
-{
-	struct dentry *de = malloc(sizeof(struct dentry));
-	de->d_name.name = "/";
-	de->d_name.len = strlen("/");
-	de->d_inode = inode;
-	return de;
-}
-
 static const struct squashfs_decompressor *supported_squashfs_filesystem(short
 	major, short minor, short id)
 {

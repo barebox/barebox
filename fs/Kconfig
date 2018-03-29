@@ -36,7 +36,6 @@ config FS_RAMFS
 config FS_DEVFS
 	bool
 	default y
-	select FS_LEGACY
 	prompt "devfs support"
 
 config FS_TFTP

@@ -33,6 +33,11 @@
 #include <linux/mtd/mtd-abi.h>
 #include <partition.h>
 
+struct devfs_inode {
+	struct inode inode;
+	struct cdev *cdev;
+};
+
 extern struct list_head cdev_list;
 
 static int devfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
@@ -110,13 +115,10 @@ static int devfs_memmap(struct device_d *_dev, FILE *f, void **map, int flags)
 
 static int devfs_open(struct device_d *_dev, FILE *f, const char *filename)
 {
-	struct cdev *cdev;
+	struct inode *inode = f->f_inode;
+	struct devfs_inode *node = container_of(inode, struct devfs_inode, inode);
+	struct cdev *cdev = node->cdev;
 	int ret;
-
-	cdev = cdev_by_name(filename + 1);
-
-	if (!cdev)
-		return -ENOENT;
 
 	f->size = cdev->flags & DEVFS_IS_CHARACTER_DEV ?
 			FILE_SIZE_STREAM : cdev->size;
@@ -180,95 +182,118 @@ static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	return 0;
 }
 
-static DIR* devfs_opendir(struct device_d *dev, const char *pathname)
+static struct inode *devfs_alloc_inode(struct super_block *sb)
 {
-	DIR *dir;
+	struct devfs_inode *node;
 
-	dir = xzalloc(sizeof(DIR));
-
-	if (!list_empty(&cdev_list))
-		dir->priv = list_first_entry(&cdev_list, struct cdev, list);
-
-	return dir;
-}
-
-static struct dirent* devfs_readdir(struct device_d *_dev, DIR *dir)
-{
-	struct cdev *cdev = dir->priv;
-
-	if (!cdev)
+	node = xzalloc(sizeof(*node));
+	if (!node)
 		return NULL;
 
-	list_for_each_entry_from(cdev, &cdev_list, list) {
-		strcpy(dir->d.d_name, cdev->name);
-		dir->priv = list_entry(cdev->list.next, struct cdev, list);
-		return &dir->d;
-	}
-	return NULL;
+	return &node->inode;
 }
 
-static int devfs_closedir(struct device_d *dev, DIR *dir)
-{
-	free(dir);
-	return 0;
-}
-
-static int devfs_stat(struct device_d *_dev, const char *filename, struct stat *s)
+int devfs_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct cdev *cdev;
 
-	cdev = lcdev_by_name(filename + 1);
-	if (!cdev)
-		return -ENOENT;
+	dir_emit_dots(file, ctx);
 
-	s->st_mode = S_IFCHR;
-	s->st_size = cdev->size;
+	list_for_each_entry(cdev, &cdev_list, list) {
+		dir_emit(ctx, cdev->name, strlen(cdev->name),
+				1 /* FIXME */, DT_REG);
+	}
 
-	if (cdev->link)
-		s->st_mode |= S_IFLNK;
-
-	cdev = cdev_readlink(cdev);
-
-	if (cdev->ops->write)
-		s->st_mode |= S_IWUSR;
-	if (cdev->ops->read)
-		s->st_mode |= S_IRUSR;
-
-	return 0;
+        return 0;
 }
+
+static const struct inode_operations devfs_file_inode_operations;
+static const struct file_operations devfs_dir_operations;
+static const struct inode_operations devfs_dir_inode_operations;
+static const struct file_operations devfs_file_operations;
+
+static struct inode *devfs_get_inode(struct super_block *sb, const struct inode *dir,
+                                     umode_t mode)
+{
+	struct inode *inode = new_inode(sb);
+
+	if (!inode)
+		return NULL;
+
+	inode->i_ino = get_next_ino();
+	inode->i_mode = mode;
+
+	switch (mode & S_IFMT) {
+	default:
+		return NULL;
+	case S_IFREG:
+		inode->i_op = &devfs_file_inode_operations;
+		inode->i_fop = &devfs_file_operations;
+		break;
+	case S_IFDIR:
+		inode->i_op = &devfs_dir_inode_operations;
+		inode->i_fop = &devfs_dir_operations;
+		inc_nlink(inode);
+		break;
+	}
+
+	return inode;
+}
+
+static struct dentry *devfs_lookup(struct inode *dir, struct dentry *dentry,
+				   unsigned int flags)
+{
+	struct devfs_inode *dinode;
+	struct inode *inode;
+	struct cdev *cdev;
+
+	cdev = cdev_by_name(dentry->name);
+	if (!cdev)
+		return ERR_PTR(-ENOENT);
+
+	inode = devfs_get_inode(dir->i_sb, dir, S_IFREG | S_IRWXUGO);
+	if (!inode)
+		return ERR_PTR(-ENOMEM);
+
+	dinode = container_of(inode, struct devfs_inode, inode);
+
+	inode->i_size = cdev->size;
+	dinode->cdev = cdev;
+
+	d_add(dentry, inode);
+
+	return NULL;
+}
+
+static const struct file_operations devfs_dir_operations = {
+	.iterate = devfs_iterate,
+};
+
+static const struct inode_operations devfs_dir_inode_operations =
+{
+	.lookup = devfs_lookup,
+};
+
+static const struct super_operations devfs_ops = {
+	.alloc_inode = devfs_alloc_inode,
+};
 
 static int devfs_probe(struct device_d *dev)
 {
+	struct inode *inode;
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct super_block *sb = &fsdev->sb;
 
-	if (strcmp(fsdev->path, "/dev")) {
-		dev_err(dev, "devfs can only be mounted on /dev/\n");
-		return -EINVAL;
-	}
+	sb->s_op = &devfs_ops;
+
+	inode = devfs_get_inode(sb, NULL, S_IFDIR);
+	sb->s_root = d_make_root(inode);
 
 	return 0;
 }
 
 static void devfs_delete(struct device_d *dev)
 {
-}
-
-static int devfs_readlink(struct device_d *dev, const char *pathname,
-			  char *buf, size_t bufsz)
-{
-	struct cdev *cdev;
-
-	cdev = cdev_by_name(pathname + 1);
-	if (!cdev)
-		return -ENOENT;
-
-	while (cdev->link)
-		cdev = cdev->link;
-
-	bufsz = min(bufsz, strlen(cdev->name));
-	memcpy(buf, cdev->name, bufsz);
-
-	return 0;
 }
 
 static struct fs_driver_d devfs_driver = {
@@ -279,15 +304,10 @@ static struct fs_driver_d devfs_driver = {
 	.close     = devfs_close,
 	.flush     = devfs_flush,
 	.ioctl     = devfs_ioctl,
-	.opendir   = devfs_opendir,
-	.readdir   = devfs_readdir,
 	.truncate  = devfs_truncate,
-	.closedir  = devfs_closedir,
-	.stat      = devfs_stat,
 	.erase     = devfs_erase,
 	.protect   = devfs_protect,
 	.memmap    = devfs_memmap,
-	.readlink  = devfs_readlink,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = devfs_probe,

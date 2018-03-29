@@ -35,6 +35,7 @@ struct ramfs_chunk {
 };
 
 struct ramfs_inode {
+	struct inode inode;
 	char *name;
 	struct ramfs_inode *parent;
 	struct ramfs_inode *next;
@@ -52,84 +53,52 @@ struct ramfs_inode {
 	struct ramfs_chunk *recent_chunkp;
 };
 
+static inline struct ramfs_inode *to_ramfs_inode(struct inode *inode)
+{
+	return container_of(inode, struct ramfs_inode, inode);
+}
+
 struct ramfs_priv {
 	struct ramfs_inode root;
 };
 
 /* ---------------------------------------------------------------*/
-static struct ramfs_inode * lookup(struct ramfs_inode *node, const char *name)
+
+static const struct super_operations ramfs_ops;
+static const struct inode_operations ramfs_dir_inode_operations;
+static const struct inode_operations ramfs_file_inode_operations;
+static const struct inode_operations ramfs_symlink_inode_operations;
+static const struct file_operations ramfs_file_operations;
+
+static struct inode *ramfs_get_inode(struct super_block *sb, const struct inode *dir,
+				     umode_t mode)
 {
-	debug("lookup: %s in %p\n",name, node);
-	if(!S_ISDIR(node->mode))
+	struct inode *inode = new_inode(sb);
+
+	if (!inode)
 		return NULL;
 
-	node = node->child;
-	if (!node)
+	inode->i_ino = get_next_ino();
+	inode->i_mode = mode;
+
+	switch (mode & S_IFMT) {
+	default:
 		return NULL;
-
-	while (node) {
-		debug("lookup: %s\n", node->name);
-		if (!strcmp(node->name, name)) {
-			debug("lookup: found: 0x%p\n",node);
-			return node;
-		}
-		node = node->next;
-	}
-        return NULL;
-}
-
-static struct ramfs_inode* rlookup(struct ramfs_priv *priv, const char *path)
-{
-	struct ramfs_inode *node = &priv->root;
-        static char *buf;
-        char *part;
-
-	debug("rlookup %s in %p\n",path, node);
-        buf = strdup(path);
-
-        part = strtok(buf, "/");
-        if (!part)
-		goto out;
-
-        do {
-                node = lookup(node, part);
-                if (!node)
-			goto out;
-                part = strtok(NULL, "/");
-        } while(part);
-
-out:
-	free(buf);
-        return node;
-}
-
-static struct ramfs_inode* rlookup_parent(struct ramfs_priv *priv, const char *pathname, char **file)
-{
-	char *path;
-	struct ramfs_inode *node;
-
-	pathname++;
-	path = strdup(pathname);
-
-	if ((*file = strrchr((char *) pathname, '/'))) {
-		char *tmp;
-		(*file)++;
-
-		tmp = strrchr(path, '/');
-		*tmp = 0;
-		node = rlookup(priv, path);
-		if (!node) {
-			errno = -ENOENT;
-			goto out;
-		}
-	} else {
-		*file = (char *)pathname;
-		node = &priv->root;
+	case S_IFREG:
+		inode->i_op = &ramfs_file_inode_operations;
+		inode->i_fop = &ramfs_file_operations;
+		break;
+	case S_IFDIR:
+		inode->i_op = &ramfs_dir_inode_operations;
+		inode->i_fop = &simple_dir_operations;
+		inc_nlink(inode);
+		break;
+	case S_IFLNK:
+		inode->i_op = &ramfs_symlink_inode_operations;
+		break;
 	}
 
-out:
-	free(path);
-	return node;
+	return inode;
 }
 
 static int chunks = 0;
@@ -158,167 +127,74 @@ static void ramfs_put_chunk(struct ramfs_chunk *data)
 	chunks--;
 }
 
-static struct ramfs_inode* ramfs_get_inode(void)
-{
-	struct ramfs_inode *node = xzalloc(sizeof(struct ramfs_inode));
-	return node;
-}
-
-static void ramfs_put_inode(struct ramfs_inode *node)
-{
-	struct ramfs_chunk *data = node->data;
-
-	while (data) {
-		struct ramfs_chunk *tmp = data->next;
-		ramfs_put_chunk(data);
-		data = tmp;
-	}
-
-	free(node->symlink);
-	free(node->name);
-	free(node);
-}
-
-static struct ramfs_inode* node_insert(struct ramfs_inode *parent_node, const char *filename, ulong mode)
-{
-	struct ramfs_inode *node, *new_node = ramfs_get_inode();
-	new_node->name = strdup(filename);
-	new_node->mode = mode;
-
-	node = parent_node->child;
-
-	if (S_ISDIR(mode)) {
-		struct ramfs_inode *n = ramfs_get_inode();
-		n->name = strdup(".");
-		n->mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
-		n->child = n;
-		n->parent = new_node;
-		new_node->child = n;
-		n = ramfs_get_inode();
-		n->name = strdup("..");
-		n->mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
-		n->parent = new_node;
-		n->child = parent_node->child;
-		new_node->child->next = n;
-	}
-
-	while (node->next)
-		node = node->next;
-
-	node->next = new_node;
-	return new_node;
-}
-
 /* ---------------------------------------------------------------*/
 
-static int __ramfs_create(struct device_d *dev, const char *pathname,
-			  mode_t mode, const char *symlink)
+static int
+ramfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode)
 {
-	struct ramfs_priv *priv = dev->priv;
-	struct ramfs_inode *node;
-	char *file;
-	char *__symlink = NULL;
+	struct inode *inode = ramfs_get_inode(dir->i_sb, dir, mode);
 
-	node = rlookup_parent(priv, pathname, &file);
-	if (!node)
-		return -ENOENT;
+	if (!inode)
+		return -ENOSPC;
 
-	if (symlink) {
-		__symlink = strdup(symlink);
-		if (!__symlink)
-			return -ENOMEM;
+	if (inode) {
+		d_instantiate(dentry, inode);
+		dget(dentry);   /* Extra count - pin the dentry in core */
 	}
 
-	node = node_insert(node, file, mode);
-	if (!node) {
-		free(__symlink);
-		return -ENOMEM;
-	}
+	return 0;
+}
 
-	node->symlink = __symlink;
+static int ramfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
+{
+	int ret;
+
+	ret = ramfs_mknod(dir, dentry, mode | S_IFDIR);
+	if (!ret)
+		inc_nlink(dir);
+
+	return ret;
+}
+
+static int ramfs_create(struct inode *dir, struct dentry *dentry, umode_t mode)
+{
+	return ramfs_mknod(dir, dentry, mode | S_IFREG);
+}
+
+static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
+			 const char *symname)
+{
+	struct inode *inode;
+
+	inode = ramfs_get_inode(dir->i_sb, dir, S_IFLNK | S_IRWXG);
+	if (!inode)
+		return -ENOSPC;
+
+	inode->i_link = xstrdup(symname);
+	d_instantiate(dentry, inode);
 
 	return 0;
 }
 
-static int ramfs_create(struct device_d *dev, const char *pathname, mode_t mode)
+static const char *ramfs_get_link(struct dentry *dentry, struct inode *inode)
 {
-	return __ramfs_create(dev, pathname, mode, NULL);
+	return inode->i_link;
 }
 
-static int ramfs_unlink(struct device_d *dev, const char *pathname)
+static const struct inode_operations ramfs_symlink_inode_operations =
 {
-	struct ramfs_priv *priv = dev->priv;
-	struct ramfs_inode *node, *lastnode;
-	char *file;
+	.get_link = ramfs_get_link,
+};
 
-	node = rlookup_parent(priv, pathname, &file);
-
-	lastnode = node->child->next;
-	node = lastnode->next;
-
-	while (node) {
-		if (!strcmp(node->name, file)) {
-			struct ramfs_inode *tmp;
-			tmp = node;
-			lastnode->next = node->next;
-			ramfs_put_inode(tmp);
-			return 0;
-		}
-		lastnode = node;
-		node = node->next;
-	};
-	return -ENOENT;
-}
-
-static int ramfs_mkdir(struct device_d *dev, const char *pathname)
+static const struct inode_operations ramfs_dir_inode_operations =
 {
-	return ramfs_create(dev, pathname, S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO);
-}
-
-static int ramfs_rmdir(struct device_d *dev, const char *pathname)
-{
-	struct ramfs_priv *priv = dev->priv;
-	struct ramfs_inode *node, *lastnode;
-	char *file;
-
-	node = rlookup_parent(priv, pathname, &file);
-
-	lastnode = node->child->next;
-	node = lastnode->next;
-
-	while (node) {
-		if (!strcmp(node->name, file)) {
-			struct ramfs_inode *tmp;
-			tmp = node;
-			lastnode->next = node->next;
-			ramfs_put_inode(tmp->child->next);
-			ramfs_put_inode(tmp->child);
-			ramfs_put_inode(tmp);
-			return 0;
-		}
-		lastnode = node;
-		node = node->next;
-	};
-	return -ENOENT;
-}
-
-static int ramfs_open(struct device_d *dev, FILE *file, const char *filename)
-{
-	struct ramfs_priv *priv = dev->priv;
-	struct ramfs_inode *node = rlookup(priv, filename);
-
-	if (!node)
-		return -ENOENT;
-
-	file->size = node->size;
-	file->priv = node;
-	return 0;
-}
-
-static int ramfs_close(struct device_d *dev, FILE *f)
-{
-	return 0;
-}
+	.lookup = simple_lookup,
+	.symlink = ramfs_symlink,
+	.mkdir = ramfs_mkdir,
+	.rmdir = simple_rmdir,
+	.unlink = simple_unlink,
+	.create = ramfs_create,
+};
 
 static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node, int chunk)
 {
@@ -351,7 +227,8 @@ static struct ramfs_chunk *ramfs_find_chunk(struct ramfs_inode *node, int chunk)
 
 static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	struct ramfs_inode *node = f->priv;
+	struct inode *inode = f->f_inode;
+	struct ramfs_inode *node = to_ramfs_inode(inode);
 	int chunk;
 	struct ramfs_chunk *data;
 	int ofs;
@@ -359,12 +236,12 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 	int pos = f->pos;
 	int size = insize;
 
-	chunk = f->pos / CHUNK_SIZE;
+	chunk = pos / CHUNK_SIZE;
 	debug("%s: reading from chunk %d\n", __FUNCTION__, chunk);
 
 	/* Position ourself in stream */
 	data = ramfs_find_chunk(node, chunk);
-	ofs = f->pos % CHUNK_SIZE;
+	ofs = pos % CHUNK_SIZE;
 
 	/* Read till end of current chunk */
 	if (ofs) {
@@ -400,7 +277,8 @@ static int ramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 
 static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t insize)
 {
-	struct ramfs_inode *node = f->priv;
+	struct inode *inode = f->f_inode;
+	struct ramfs_inode *node = to_ramfs_inode(inode);
 	int chunk;
 	struct ramfs_chunk *data;
 	int ofs;
@@ -455,7 +333,8 @@ static loff_t ramfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 
 static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
-	struct ramfs_inode *node = f->priv;
+	struct inode *inode = f->f_inode;
+	struct ramfs_inode *node = to_ramfs_inode(inode);
 	int oldchunks, newchunks;
 	struct ramfs_chunk *data = node->data;
 
@@ -502,108 +381,38 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	return 0;
 }
 
-static DIR* ramfs_opendir(struct device_d *dev, const char *pathname)
+static struct inode *ramfs_alloc_inode(struct super_block *sb)
 {
-	DIR *dir;
-	struct ramfs_priv *priv = dev->priv;
 	struct ramfs_inode *node;
 
-	debug("opendir: %s\n", pathname);
-
-	node = rlookup(priv, pathname);
-
+	node = xzalloc(sizeof(*node));
 	if (!node)
 		return NULL;
 
-	if (!S_ISDIR(node->mode))
-		return NULL;
-
-	dir = xmalloc(sizeof(DIR));
-
-	dir->priv = node->child;
-
-	return dir;
+	return &node->inode;
 }
 
-static struct dirent* ramfs_readdir(struct device_d *dev, DIR *dir)
-{
-	struct ramfs_inode *node = dir->priv;
-
-	if (node) {
-		strcpy(dir->d.d_name, node->name);
-		dir->priv = node->next;
-		return &dir->d;
-	}
-	return NULL;
-}
-
-static int ramfs_closedir(struct device_d *dev, DIR *dir)
-{
-	free(dir);
-	return 0;
-}
-
-static int ramfs_stat(struct device_d *dev, const char *filename, struct stat *s)
-{
-	struct ramfs_priv *priv = dev->priv;
-	struct ramfs_inode *node = rlookup(priv, filename);
-
-	if (!node)
-		return -ENOENT;
-
-	s->st_size = node->symlink ? strlen(node->symlink) : node->size;
-	s->st_mode = node->mode;
-
-	return 0;
-}
-
-static int ramfs_symlink(struct device_d *dev, const char *pathname,
-		       const char *newpath)
-{
-	mode_t mode = S_IFLNK | S_IRWXU | S_IRWXG | S_IRWXO;
-
-	return __ramfs_create(dev, newpath, mode, pathname);
-}
-
-static int ramfs_readlink(struct device_d *dev, const char *pathname,
-			char *buf, size_t bufsiz)
-{
-	struct ramfs_priv *priv = dev->priv;
-	struct ramfs_inode *node = rlookup(priv, pathname);
-	int len;
-
-	if (!node || !node->symlink)
-		return -ENOENT;
-
-	len = min(bufsiz, strlen(node->symlink));
-
-	memcpy(buf, node->symlink, len);
-
-	return 0;
-}
+static const struct super_operations ramfs_ops = {
+	.alloc_inode = ramfs_alloc_inode,
+};
 
 static int ramfs_probe(struct device_d *dev)
 {
-	struct ramfs_inode *n;
+	struct inode *inode;
 	struct ramfs_priv *priv = xzalloc(sizeof(struct ramfs_priv));
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
+	struct super_block *sb = &fsdev->sb;
 
 	dev->priv = priv;
 
 	priv->root.name = "/";
 	priv->root.mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
 	priv->root.parent = &priv->root;
-	n = ramfs_get_inode();
-	n->name = strdup(".");
-	n->mode = S_IFDIR;
-	n->parent = &priv->root;
-	n->child = n;
-	priv->root.child = n;
-	n = ramfs_get_inode();
-	n->name = strdup("..");
-	n->mode = S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO;
-	n->parent = &priv->root;
-	n->child = priv->root.child;
-	priv->root.child->next = n;
+
+	sb->s_op = &ramfs_ops;
+
+	inode = ramfs_get_inode(sb, NULL, S_IFDIR);
+	sb->s_root = d_make_root(inode);
 
 	return 0;
 }
@@ -614,22 +423,10 @@ static void ramfs_remove(struct device_d *dev)
 }
 
 static struct fs_driver_d ramfs_driver = {
-	.create    = ramfs_create,
-	.unlink    = ramfs_unlink,
-	.open      = ramfs_open,
-	.close     = ramfs_close,
-	.truncate  = ramfs_truncate,
 	.read      = ramfs_read,
 	.write     = ramfs_write,
 	.lseek     = ramfs_lseek,
-	.mkdir     = ramfs_mkdir,
-	.rmdir     = ramfs_rmdir,
-	.opendir   = ramfs_opendir,
-	.readdir   = ramfs_readdir,
-	.closedir  = ramfs_closedir,
-	.stat      = ramfs_stat,
-	.symlink   = ramfs_symlink,
-	.readlink  = ramfs_readlink,
+	.truncate  = ramfs_truncate,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {
 		.probe  = ramfs_probe,

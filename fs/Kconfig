@@ -31,7 +31,6 @@ source fs/ext4/Kconfig
 config FS_RAMFS
 	bool
 	default y
-	select FS_LEGACY
 	prompt "ramfs support"
 
 config FS_DEVFS

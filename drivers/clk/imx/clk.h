@@ -80,6 +80,13 @@ static inline struct clk *imx_clk_gate2(const char *name, const char *parent,
 	return clk_gate2(name, parent, reg, shift, 0x3, 0);
 }
 
+static inline struct clk *imx_clk_gate2_shared2(const char *name, const char *parent,
+						void __iomem *reg, u8 shift)
+{
+	return clk_gate2(name, parent, reg, shift, 0x3,
+			 CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE);
+}
+
 static inline struct clk *imx_clk_gate2_cgr(const char *name, const char *parent,
 					    void __iomem *reg, u8 shift, u8 cgr_val)
 {

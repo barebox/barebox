@@ -1,9 +1,10 @@
 Framebuffer support
 ===================
 
-barebox has support for framebuffer devices. Currently there is no console support
-for framebuffers, so framebuffer usage is limited to splash screens only. barebox
-supports BMP and PNG graphics using the :ref:`command_splash` command. barebox
+Framebuffer splash screen
+-------------------------
+
+barebox supports BMP and PNG graphics using the :ref:`command_splash` command. barebox
 currently has no support for backlights, so unless there is a board specific enable
 hook for enabling a display it must be done manually with a script. Since barebox
 has nothing useful to show on the framebuffer it doesn't enable it during startup.

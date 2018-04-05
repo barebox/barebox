@@ -37,6 +37,9 @@ LDFLAGS_zbarebox += -pie
 else
 LDFLAGS_zbarebox += -static
 endif
+
+LDFLAGS_zbarebox += $(call ld-option, --no-dynamic-linker)
+
 zbarebox-common := $(barebox-pbl-common) $(obj)/$(piggy_o)
 zbarebox-lds := $(obj)/zbarebox.lds
 

@@ -133,9 +133,6 @@ static int imx28_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 	struct imx28_wd *pwd = (struct imx28_wd *)to_imx28_wd(wd);
 	void __iomem *base;
 
-	if (timeout > (ULONG_MAX / WDOG_TICK_RATE))
-		return -EINVAL;
-
 	if (timeout) {
 		writel(timeout * WDOG_TICK_RATE, pwd->regs + MXS_RTC_WATCHDOG);
 		base = pwd->regs + MXS_RTC_SET_ADDR;
@@ -199,7 +196,8 @@ static int imx28_wd_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	priv->regs = IOMEM(iores->start);
 	priv->wd.set_timeout = imx28_watchdog_set_timeout;
-	priv->wd.dev = dev;
+	priv->wd.timeout_max = ULONG_MAX / WDOG_TICK_RATE;
+	priv->wd.hwdev = dev;
 
 	if (!(readl(priv->regs + MXS_RTC_STAT) & MXS_RTC_STAT_WD_PRESENT)) {
 		rc = -ENODEV;

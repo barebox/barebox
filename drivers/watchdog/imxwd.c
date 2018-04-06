@@ -28,6 +28,7 @@ struct imx_wd_ops {
 	int (*set_timeout)(struct imx_wd *, unsigned);
 	void (*soc_reset)(struct imx_wd *);
 	int (*init)(struct imx_wd *);
+	unsigned int timeout_max;
 };
 
 struct imx_wd {
@@ -71,9 +72,6 @@ static int imx1_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 
 	dev_dbg(priv->dev, "%s: %d\n", __func__, timeout);
 
-	if (timeout > 64)
-		return -EINVAL;
-
 	if (!timeout) {
 		writew(IMX1_WDOG_WCR_WHALT, priv->base + IMX1_WDOG_WCR);
 		return 0;
@@ -101,9 +99,6 @@ static int imx21_watchdog_set_timeout(struct imx_wd *priv, unsigned timeout)
 	u16 val;
 
 	dev_dbg(priv->dev, "%s: %d\n", __func__, timeout);
-
-	if (timeout > 128)
-		return -EINVAL;
 
 	if (timeout == 0) /* bit 2 (WDE) cannot be set to 0 again */
 		return -ENOSYS;
@@ -218,7 +213,8 @@ static int imx_wd_probe(struct device_d *dev)
 	priv->base = IOMEM(iores->start);
 	priv->ops = ops;
 	priv->wd.set_timeout = imx_watchdog_set_timeout;
-	priv->wd.dev = dev;
+	priv->wd.timeout_max = priv->ops->timeout_max;
+	priv->wd.hwdev = dev;
 	priv->dev = dev;
 
 	priv->ext_reset = of_property_read_bool(dev->device_node,
@@ -259,11 +255,13 @@ static const struct imx_wd_ops imx21_wd_ops = {
 	.set_timeout = imx21_watchdog_set_timeout,
 	.soc_reset = imx21_soc_reset,
 	.init = imx21_wd_init,
+	.timeout_max = 128,
 };
 
 static const struct imx_wd_ops imx1_wd_ops = {
 	.set_timeout = imx1_watchdog_set_timeout,
 	.soc_reset = imx1_soc_reset,
+	.timeout_max = 64,
 };
 
 static __maybe_unused struct of_device_id imx_wdt_dt_ids[] = {

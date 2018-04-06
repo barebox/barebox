@@ -49,9 +49,6 @@ static int armada_xp_set_timeout(struct watchdog *wd, unsigned timeout)
 		container_of(wd, struct orion_wdt_ddata, wd);
 	u32 ctrl;
 
-	if (0xffffffff / CLKRATE < timeout)
-		return -EINVAL;
-
 	ctrl = readl(ddata->timer_base + TIMER_CTRL);
 
 	if (timeout == 0) {
@@ -88,7 +85,8 @@ static int orion_wdt_probe(struct device_d *dev)
 
 	ddata->wd.set_timeout = armada_xp_set_timeout;
 	ddata->wd.name = "orion_wdt";
-	ddata->wd.dev = dev;
+	ddata->wd.hwdev = dev;
+	ddata->wd.timeout_max = U32_MAX / CLKRATE;
 
 	res_timer = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(res_timer)) {

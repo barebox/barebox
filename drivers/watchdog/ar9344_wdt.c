@@ -41,20 +41,11 @@ struct ar9344_wd {
 static int ar9344_watchdog_set_timeout(struct watchdog *wd, unsigned timeout)
 {
 	struct ar9344_wd *priv = to_ar9344_wd(wd);
-	u32 val, ctrl, rate, max_timout;
-
-	rate = clk_get_rate(priv->clk);
-	max_timout = U32_MAX / rate;
-
-	if (timeout > max_timout) {
-		dev_err(priv->dev, "timeout value out of range: %d > %d\n",
-			timeout, max_timout);
-		return -EINVAL;
-	}
+	u32 val, ctrl;
 
 	if (timeout) {
 		ctrl = AR9344_WD_CTRL_ACTION_FCR;
-		val = timeout * rate;
+		val = timeout * clk_get_rate(priv->clk);
 	} else {
 		ctrl = AR9344_WD_CTRL_ACTION_NONE;
 		val = U32_MAX;
@@ -95,7 +86,7 @@ static int ar9344_wdt_probe(struct device_d *dev)
 
 	priv->base = IOMEM(iores->start);
 	priv->wd.set_timeout = ar9344_watchdog_set_timeout;
-	priv->wd.dev = dev;
+	priv->wd.hwdev = dev;
 	priv->dev = dev;
 
 	dev->priv = priv;
@@ -110,6 +101,8 @@ static int ar9344_wdt_probe(struct device_d *dev)
 	}
 
 	clk_enable(priv->clk);
+
+	priv->wd.timeout_max = U32_MAX / clk_get_rate(priv->clk);
 
 	ret = watchdog_register(&priv->wd);
 	if (ret)

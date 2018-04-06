@@ -10,6 +10,12 @@ menuconfig WATCHDOG
 
 if WATCHDOG
 
+menuconfig WATCHDOG_POLLER
+	bool "Watchdog periodic feeder support"
+	select POLLER
+	help
+	  Provides support for periodic watchdog feeder.
+
 config WATCHDOG_AR9344
 	bool "QCA AR9344"
 	depends on SOC_QCA_AR9344 || SOC_QCA_AR9331

@@ -347,7 +347,7 @@ static int imx_ldb_probe(struct device_d *dev)
 			return -EINVAL;
 
 		if (dual && i > 0) {
-			dev_warn(dev, "dual-channel mode, ignoring second output\n");
+			dev_info(dev, "dual-channel mode, ignoring second output\n");
 			continue;
 		}
 

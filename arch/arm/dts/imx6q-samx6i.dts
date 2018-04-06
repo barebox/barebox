@@ -1,0 +1,20 @@
+/*
+ * Copyright 2018 (C) Pengutronix, Michael Grzeschik <mgr@pengutronix.de>
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+/dts-v1/;
+#include <arm/imx6q.dtsi>
+#include "imx6q.dtsi"
+#include "imx6qdl-smarc-samx6i.dtsi"
+
+/ {
+	model = "Kontron sAMX6i";
+	compatible = "kontron,imx6q-samx6i", "fsl,imx6q";
+};

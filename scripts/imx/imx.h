@@ -105,10 +105,10 @@ struct imx_dcd_v2_check {
 } __attribute__((packed));
 
 enum imx_dcd_v2_check_cond {
-	check_all_bits_clear = 0,
-	check_all_bits_set = 1,
-	check_any_bit_clear = 2,
-	check_any_bit_set = 3,
+	until_all_bits_clear = 0, /* until ((*address & mask) == 0) { ...} */
+	until_any_bit_clear = 1, /* until ((*address & mask) != mask) { ...} */
+	until_all_bits_set = 2, /* until ((*address & mask) == mask) { ...} */
+	until_any_bit_set = 3, /* until ((*address & mask) != 0) { ...} */
 } __attribute__((packed));
 
 int parse_config(struct config_data *data, const char *filename);

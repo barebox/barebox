@@ -323,6 +323,7 @@ struct clk *clk_register_composite(const char *name,
 
 struct device_node;
 struct of_phandle_args;
+struct of_device_id;
 
 #if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 

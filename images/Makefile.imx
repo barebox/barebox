@@ -139,6 +139,21 @@ CFG_start_imx53_mba53_1gib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-
 FILE_barebox-tq-mba53-1gib.img = start_imx53_mba53_1gib.pblx.imximg
 image-$(CONFIG_MACH_TQMA53) += barebox-tq-mba53-1gib.img
 
+pblx-$(CONFIG_MACH_TX53) += start_imx53_imx53_tx53_xx30_samsung
+CFG_start_imx53_tx53_xx30_samsung.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30-samsung.imxcfg
+FILE_barebox-tx53-xx30-samsung.img = start_imx53_tx53_xx30_samsung.pblx.imximg
+image-$(CONFIG_MACH_TX53) += barebox-tx53-xx30-samsung.img
+
+pblx-$(CONFIG_MACH_TX53) += start_imx53_imx53_tx53_xx30
+CFG_start_imx53_tx53_xx30.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30.imxcfg
+FILE_barebox-tx53-xx30.img = start_imx53_tx53_xx30.pblx.imximg
+image-$(CONFIG_MACH_TX53) += barebox-tx53-xx30.img
+
+pblx-$(CONFIG_MACH_TX53) += start_imx53_imx53_tx53_1011
+CFG_start_imx53_tx53_1011.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-rev1011.imxcfg
+FILE_barebox-tx53-1011.img = start_imx53_tx53_1011.pblx.imximg
+image-$(CONFIG_MACH_TX53) += barebox-tx53-1011.img
+
 # ----------------------- i.MX6 based boards ---------------------------
 pblx-$(CONFIG_MACH_REALQ7) += start_imx6_realq7
 CFG_start_imx6_realq7.pblx.imximg = $(board)/datamodul-edm-qmx6/flash-header.imxcfg
@@ -454,6 +469,16 @@ pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6ull_som_256mb
 CFG_start_phytec_phycore_imx6ull_som_256mb.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcl063-256mb.imxcfg
 FILE_barebox-phytec-phycore-imx6ull-256mb.img = start_phytec_phycore_imx6ull_som_256mb.pblx.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6ull-256mb.img
+
+pblx-$(CONFIG_MACH_KONTRON_SAMX6I) += start_imx6q_samx6i
+CFG_start_imx6q_samx6i.pblx.imximg = $(board)/kontron-samx6i/flash-header-samx6i-quad.imxcfg
+FILE_barebox-imx6q-samx6i.img = start_imx6q_samx6i.pblx.imximg
+image-$(CONFIG_MACH_KONTRON_SAMX6I) += barebox-imx6q-samx6i.img
+
+pblx-$(CONFIG_MACH_KONTRON_SAMX6I) += start_imx6dl_samx6i
+CFG_start_imx6dl_samx6i.pblx.imximg = $(board)/kontron-samx6i/flash-header-samx6i-duallite.imxcfg
+FILE_barebox-imx6dl-samx6i.img = start_imx6dl_samx6i.pblx.imximg
+image-$(CONFIG_MACH_KONTRON_SAMX6I) += barebox-imx6dl-samx6i.img
 
 pblx-$(CONFIG_MACH_GW_VENTANA) += start_imx6q_gw54xx_1gx64
 CFG_start_imx6q_gw54xx_1gx64.pblx.imximg = $(board)/gateworks-ventana/flash-header-ventana-quad-1gx64.imxcfg

@@ -72,7 +72,7 @@ wm 32 MX7_DDR_PHY_ZQ_CON0 0x0e4c7304
 wm 32 MX7_DDR_PHY_ZQ_CON0 0x0e4c7306
 wm 32 MX7_DDR_PHY_ZQ_CON0 0x0e4c7304
 
-check 32 while_any_bit_clear MX7_DDR_PHY_ZQ_CON1 0x1
+check 32 until_any_bit_set MX7_DDR_PHY_ZQ_CON1 0x1
 
 wm 32 MX7_DDR_PHY_ZQ_CON0 0x0e487304
 
@@ -80,4 +80,4 @@ wm 32 0x30384130 0x00000000
 wm 32 0x30340020 0x00000178
 wm 32 0x30384130 0x00000002
 
-check 32 while_any_bit_clear MX7_DDRC_STAT 0x1
+check 32 until_any_bit_set MX7_DDRC_STAT 0x1

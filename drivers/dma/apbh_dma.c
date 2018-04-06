@@ -17,6 +17,7 @@
 
 #include <dma/apbh-dma.h>
 #include <stmp-device.h>
+#include <linux/clk.h>
 #include <linux/list.h>
 #include <linux/err.h>
 #include <common.h>
@@ -55,6 +56,7 @@ enum mxs_dma_id {
 
 struct apbh_dma {
 	void __iomem *regs;
+	struct clk *clk;
 	enum mxs_dma_id id;
 };
 
@@ -605,6 +607,17 @@ static int apbh_dma_probe(struct device_d *dev)
 	apbh->regs = IOMEM(iores->start);
 
 	apbh->id = id;
+
+	apbh->clk = clk_get(dev, NULL);
+	if (IS_ERR(apbh->clk))
+		return PTR_ERR(apbh->clk);
+
+	ret = clk_enable(apbh->clk);
+	if (ret) {
+		dev_err(dev, "Failed to enable clock: %s\n",
+			strerror(ret));
+		return ret;
+	}
 
 	ret = stmp_reset_block(apbh->regs, 0);
 	if (ret)

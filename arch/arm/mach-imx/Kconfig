@@ -289,10 +289,20 @@ config MACH_FREESCALE_MX53_VMX53
 	  Say Y here if you are using the Voipac Technologies X53-DMM-668
 	  module equipped with a Freescale i.MX53 Processor
 
+config MACH_TX53
+	bool "Ka-Ro TX53"
+	select ARCH_IMX53
+	help
+	  Say Y here if you are using the Ka-Ro tx53 board
+
 config MACH_PHYTEC_SOM_IMX6
         bool "Phytec phyCARD-i.MX6 and phyFLEX-i.MX6"
         select ARCH_IMX6
 	select ARCH_IMX6UL
+
+config MACH_KONTRON_SAMX6I
+        bool "Kontron sAMX6i"
+        select ARCH_IMX6
 
 config MACH_DFI_FS700_M60
 	bool "DFI i.MX6 FS700 M60 Q7 Board"
@@ -606,12 +616,6 @@ config MACH_FREESCALE_MX53_SMD
 	bool "Freescale i.MX53 SMD"
 	select ARCH_IMX53
 
-config MACH_TX53
-	bool "Ka-Ro TX53"
-	select ARCH_IMX53
-	help
-	  Say Y here if you are using the Ka-Ro tx53 board
-
 endchoice
 
 # ----------------------------------------------------------
@@ -681,19 +685,6 @@ config FREESCALE_MX25_3STACK_SDRAM_64MB_DDR2
 	bool "64 MB (DDR2)"
 config FREESCALE_MX25_3STACK_SDRAM_128MB_MDDR
 	bool "128 MB (mDDR)"
-endchoice
-
-endif
-
-if MACH_TX53
-
-choice
-	prompt "TX53 board revision"
-config TX53_REV_1011
-	bool "1011"
-config TX53_REV_XX30
-	bool "8030 / 1030"
-
 endchoice
 
 endif

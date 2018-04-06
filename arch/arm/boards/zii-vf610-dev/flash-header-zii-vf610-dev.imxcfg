@@ -45,7 +45,7 @@ CHECKPOINT(2)
 /*
  * Wait for PLLs to lock
  */
-check 32 while_any_bit_clear 0x40050030 0x80000000
+check 32 until_any_bit_set 0x40050030 0x80000000
 
 
 CHECKPOINT(3)
@@ -218,26 +218,26 @@ wm 32 0x400ae000 0x00000601
 
 CHECKPOINT(7)
 
-check 32 while_any_bit_clear 0x400ae140 0x100
-# check 32 while_any_bit_clear 0x400ae42c 0x1
-# check 32 while_any_bit_clear 0x400ae46c 0x1
-# check 32 while_any_bit_clear 0x400ae4ac 0x1
+check 32 until_any_bit_set 0x400ae140 0x100
+# check 32 until_any_bit_set 0x400ae42c 0x1
+# check 32 until_any_bit_set 0x400ae46c 0x1
+# check 32 until_any_bit_set 0x400ae4ac 0x1
 
 CHECKPOINT(8)
 
 wm 32 0x80000000 0xa5a5a5a5
-check 32 while_any_bit_clear 0x80000000 0xa5a5a5a5
+check 32 until_any_bit_set 0x80000000 0xa5a5a5a5
 
 wm 32 0x400ae000 0x00000600
 wm 32 0x400ae000 0x00000601
 
-check 32 while_any_bit_clear 0x400ae140 0x100
-# check 32 while_any_bit_clear 0x400ae42c 0x1
-# check 32 while_any_bit_clear 0x400ae46c 0x1
-# check 32 while_any_bit_clear 0x400ae4ac 0x1
+check 32 until_any_bit_set 0x400ae140 0x100
+# check 32 until_any_bit_set 0x400ae42c 0x1
+# check 32 until_any_bit_set 0x400ae46c 0x1
+# check 32 until_any_bit_set 0x400ae4ac 0x1
 
 /* wm 32 0x3f040000 0xf0
- check 32 while_any_bit_clear 0x3f040000 0x0f */
+ check 32 until_any_bit_set 0x3f040000 0x0f */
 
 
 CHECKPOINT(9)

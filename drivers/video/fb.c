@@ -124,6 +124,9 @@ static int fb_enable_set(struct param_d *param, void *priv)
 	struct fb_info *info = priv;
 	int enable;
 
+	if (!info->mode)
+		return -EINVAL;
+
 	enable = info->p_enable;
 
 	if (enable)

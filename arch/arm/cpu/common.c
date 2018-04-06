@@ -17,50 +17,90 @@
 
 #include <common.h>
 #include <init.h>
+#include <elf.h>
 #include <linux/sizes.h>
 #include <asm/system_info.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
-#include <asm/pgtable.h>
 #include <asm/cache.h>
+#include <debug_ll.h>
+
+#define R_ARM_RELATIVE 23
+#define R_AARCH64_RELATIVE 1027
 
 /*
  * relocate binary to the currently running address
  */
 void relocate_to_current_adr(void)
 {
-	uint32_t offset;
-	uint32_t *dstart, *dend, *dynsym, *dynend;
+	unsigned long offset, offset_var;
+	unsigned long __maybe_unused *dynsym, *dynend;
+	void *dstart, *dend;
 
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
+	offset_var = global_variable_offset();
 
-	dstart = (void *)(ld_var(__rel_dyn_start) - offset);
-	dend = (void *)(ld_var(__rel_dyn_end) - offset);
+	dstart = (void *)__rel_dyn_start + offset_var;
+	dend = (void *)__rel_dyn_end + offset_var;
 
-	dynsym = (void *)(ld_var(__dynsym_start) - offset);
-	dynend = (void *)(ld_var(__dynsym_end) - offset);
-
+#if defined(CONFIG_CPU_64)
 	while (dstart < dend) {
-		uint32_t *fixup = (uint32_t *)(*dstart - offset);
-		uint32_t type = *(dstart + 1);
+		struct elf64_rela *rel = dstart;
 
-		if ((type & 0xff) == 0x17) {
-			*fixup = *fixup - offset;
+		if (ELF64_R_TYPE(rel->r_info) == R_AARCH64_RELATIVE) {
+			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
+
+			*fixup = rel->r_addend + offset;
 		} else {
-			int index = type >> 8;
-			uint32_t r = dynsym[index * 4 + 1];
-
-			*fixup = *fixup + r - offset;
+			putc_ll('>');
+			puthex_ll(rel->r_info);
+			putc_ll(' ');
+			puthex_ll(rel->r_offset);
+			putc_ll(' ');
+			puthex_ll(rel->r_addend);
+			putc_ll('\n');
+			panic("");
 		}
 
-		*dstart -= offset;
-		dstart += 2;
+		dstart += sizeof(*rel);
+	}
+#elif defined(CONFIG_CPU_32)
+	dynsym = (void *)__dynsym_start + offset_var;
+	dynend = (void *)__dynsym_end + offset_var;
+
+	while (dstart < dend) {
+		struct elf32_rel *rel = dstart;
+
+		if (ELF32_R_TYPE(rel->r_info) == R_ARM_RELATIVE) {
+			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
+
+			*fixup = *fixup + offset;
+
+			rel->r_offset += offset;
+		} else if (ELF32_R_TYPE(rel->r_info) == R_ARM_ABS32) {
+			unsigned long r = dynsym[ELF32_R_SYM(rel->r_info) * 4 + 1];
+			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
+
+			*fixup = *fixup + r + offset;
+		} else {
+			putc_ll('>');
+			puthex_ll(rel->r_info);
+			putc_ll(' ');
+			puthex_ll(rel->r_offset);
+			putc_ll('\n');
+			panic("");
+		}
+
+		dstart += sizeof(*rel);
 	}
 
 	memset(dynsym, 0, (unsigned long)dynend - (unsigned long)dynsym);
+#else
+#error "Architecture not specified"
+#endif
 
 	arm_early_mmu_cache_flush();
 	icache_invalidate();
@@ -78,6 +118,3 @@ int __pure cpu_architecture(void)
 	return __cpu_architecture;
 }
 #endif
-
-char __image_start[0] __attribute__((section(".__image_start")));
-char __image_end[0] __attribute__((section(".__image_end")));

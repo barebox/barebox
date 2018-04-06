@@ -37,7 +37,7 @@ ENTRY_FUNCTION(start_rk3288_phycore_som, r0, r1, r2)
 			     GPIO7C6_UART2DBG_SIN << GPIO7C6_SHIFT);
 		INIT_LL();
 	}
-	fdt = __dtb_rk3288_phycore_som_start - get_runtime_offset();
+	fdt = __dtb_rk3288_phycore_som_start + get_runtime_offset();
 
 	barebox_arm_entry(0x0, SZ_1G, fdt);
 }

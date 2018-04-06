@@ -50,7 +50,7 @@ ENTRY_FUNCTION(start_imx51_babbage, r0, r1, r2)
 
 	arm_setup_stack(0x20000000 - 16);
 
-	fdt = __dtb_imx51_babbage_start - get_runtime_offset();
+	fdt = __dtb_imx51_babbage_start + get_runtime_offset();
 
 	imx51_barebox_entry(fdt);
 }

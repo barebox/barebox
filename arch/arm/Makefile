@@ -23,6 +23,8 @@ endif
 # accesses
 ifneq ($(CONFIG_CPU_V8),y)
 CFLAGS += -mno-unaligned-access
+else
+CFLAGS += -mstrict-align
 endif
 
 
@@ -65,6 +67,7 @@ endif
 ifeq ($(CONFIG_CPU_V8), y)
 CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y)
 AFLAGS   += -include asm/unified.h
+export S64 = _64
 else
 CPPFLAGS += $(CFLAGS_ABI) $(arch-y) $(tune-y) -msoft-float $(CFLAGS_THUMB2)
 AFLAGS   += -include asm/unified.h -msoft-float $(AFLAGS_THUMB2)
@@ -295,7 +298,6 @@ endif
 
 common-y += $(BOARD) arch/arm/boards/ $(MACH)
 common-y += arch/arm/cpu/
-common-y += arch/arm/lib/
 
 ifeq ($(CONFIG_CPU_V8), y)
 common-y += arch/arm/lib64/

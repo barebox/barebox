@@ -68,26 +68,27 @@ int icache_status(void)
 	return (get_cr () & CR_I) != 0;
 }
 
-#if __LINUX_ARM_ARCH__ <= 7
 /*
  * SoC like the ux500 have the l2x0 always enable
  * with or without MMU enable
  */
 struct outer_cache_fns outer_cache;
 
-/*
- * Clean and invalide caches, disable MMU
- */
-void mmu_disable(void)
+static void disable_interrupts(void)
 {
-	__mmu_cache_flush();
-	if (outer_cache.disable) {
-		outer_cache.flush_all();
-		outer_cache.disable();
-	}
-	__mmu_cache_off();
-}
+#if __LINUX_ARM_ARCH__ <= 7
+	uint32_t r;
+
+	/*
+	 * barebox normally does not use interrupts, but some functionalities
+	 * (eg. OMAP4_USBBOOT) require them enabled. So be sure interrupts are
+	 * disabled before exiting.
+	 */
+	__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
+	r |= PSR_I_BIT;
+	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
 #endif
+}
 
 /**
  * Disable MMU and D-cache, flush caches
@@ -98,23 +99,13 @@ void mmu_disable(void)
  */
 static void arch_shutdown(void)
 {
-	uint32_t r;
 
 #ifdef CONFIG_MMU
 	mmu_disable();
 #endif
 	icache_invalidate();
 
-#if __LINUX_ARM_ARCH__ <= 7
-	/*
-	 * barebox normally does not use interrupts, but some functionalities
-	 * (eg. OMAP4_USBBOOT) require them enabled. So be sure interrupts are
-	 * disabled before exiting.
-	 */
-	__asm__ __volatile__("mrs %0, cpsr" : "=r"(r));
-	r |= PSR_I_BIT;
-	__asm__ __volatile__("msr cpsr, %0" : : "r"(r));
-#endif
+	disable_interrupts();
 }
 archshutdown_exitcall(arch_shutdown);
 

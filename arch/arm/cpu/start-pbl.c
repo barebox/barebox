@@ -26,11 +26,9 @@
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
-#include <asm/pgtable.h>
 #include <asm/cache.h>
+#include <asm/mmu.h>
 #include <asm/unaligned.h>
-
-#include "mmu-early.h"
 
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
@@ -49,10 +47,10 @@ extern void *input_data_end;
 __noreturn void barebox_single_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
-	uint32_t offset;
-	uint32_t pg_start, pg_end, pg_len, uncompressed_len;
+	unsigned long offset;
+	unsigned long pg_start, pg_end, pg_len, uncompressed_len;
 	void __noreturn (*barebox)(unsigned long, unsigned long, void *);
-	uint32_t endmem = membase + memsize;
+	unsigned long endmem = membase + memsize;
 	unsigned long barebox_base;
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE))
@@ -61,8 +59,8 @@ __noreturn void barebox_single_pbl_start(unsigned long membase,
 	/* Get offset between linked address and runtime address */
 	offset = get_runtime_offset();
 
-	pg_start = (uint32_t)&input_data - offset;
-	pg_end = (uint32_t)&input_data_end - offset;
+	pg_start = (unsigned long)&input_data + global_variable_offset();
+	pg_end = (unsigned long)&input_data_end + global_variable_offset();
 	pg_len = pg_end - pg_start;
 	uncompressed_len = get_unaligned((const u32 *)(pg_start + pg_len - 4));
 

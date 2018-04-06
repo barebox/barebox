@@ -348,7 +348,7 @@ config CMD_BOOTM
 config CMD_BOOTU
 	tristate
 	default y
-	depends on ARM
+	depends on ARM && !CPU_64v8
 	prompt "bootu"
 	help
 	  Boot into already loaded Linux kernel, which must be raw (uncompressed).
@@ -357,7 +357,7 @@ config CMD_BOOTU
 
 config CMD_BOOTZ
 	tristate
-	depends on ARM
+	depends on ARM && !CPU_64v8
 	prompt "bootz"
 	help
 	  Boot Linux zImage

@@ -34,6 +34,6 @@ ENTRY_FUNCTION(start_vf610_twr, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_vf610_twr_start - get_runtime_offset();
+	fdt = __dtb_vf610_twr_start + get_runtime_offset();
 	barebox_arm_entry(0x80000000, SZ_128M, fdt);
 }

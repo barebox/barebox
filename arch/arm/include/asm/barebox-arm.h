@@ -32,17 +32,21 @@
 #include <linux/compiler.h>
 #include <asm/barebox-arm-head.h>
 
-/* cpu/.../cpu.c */
-int	cleanup_before_linux(void);
+unsigned long get_runtime_offset(void);
 
-/* arch/<arch>board(s)/.../... */
-int	board_init(void);
-int	dram_init (void);
-
-extern char __exceptions_start[], __exceptions_stop[];
-
-void board_init_lowlevel(void);
-uint32_t get_runtime_offset(void);
+/* global_variable_offset() - Access global variables when not running at link address
+ *
+ * Get the offset of global variables when not running at the address we are
+ * linked at. ARM uses absolute addresses, so we must add the runtime offset
+ * whereas aarch64 uses PC relative addresses, so nothing must be done here.
+ */
+static inline unsigned long global_variable_offset(void)
+{
+	if (IS_ENABLED(CONFIG_CPU_32))
+		return get_runtime_offset();
+	else
+		return 0;
+}
 
 void setup_c(void);
 void relocate_to_current_adr(void);
@@ -161,13 +165,13 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
 	static void __##name(uint32_t, uint32_t, uint32_t);		\
 									\
-	void __naked __section(.text_head_entry_##name)	name		\
+	void NAKED __section(.text_head_entry_##name)	name		\
 				(uint32_t r0, uint32_t r1, uint32_t r2)	\
 		{							\
 			__barebox_arm_head();				\
 			__##name(r0, r1, r2);				\
 		}							\
-		static void __naked noinline __##name			\
+		static void NAKED noinline __##name			\
 			(uint32_t arg0, uint32_t arg1, uint32_t arg2)
 
 /*
@@ -180,5 +184,18 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 #define MAX_BSS_SIZE SZ_1M
 
 #define barebox_image_size (__image_end - __image_start)
+
+#ifdef CONFIG_CPU_32
+#define NAKED __naked
+#else
+/*
+ * There is no naked support for aarch64, so do not rely on it.
+ * This basically means we must have a stack configured when a
+ * function with the naked attribute is entered. On nowadays hardware
+ * the ROM should have some basic stack already. If not, set one
+ * up before jumping into the barebox entry functions.
+ */
+#define NAKED
+#endif
 
 #endif	/* _BAREBOX_ARM_H_ */

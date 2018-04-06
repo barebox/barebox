@@ -25,7 +25,7 @@ ENTRY_FUNCTION(start_plathome_openblocks_a6, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = __dtb_kirkwood_openblocks_a6_bb_start -
+	fdt = __dtb_kirkwood_openblocks_a6_bb_start +
 		get_runtime_offset();
 
 	kirkwood_barebox_entry(fdt);

@@ -23,11 +23,6 @@
 #include <asm/system.h>
 #include <asm/openrisc_exc.h>
 
-int cleanup_before_linux(void)
-{
-	return 0;
-}
-
 extern void __reset(void);
 
 static void __noreturn openrisc_restart_cpu(struct restart_handler *rst)

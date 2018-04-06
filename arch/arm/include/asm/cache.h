@@ -1,10 +1,11 @@
 #ifndef __ASM_CACHE_H
 #define __ASM_CACHE_H
 
-#ifdef CONFIG_CPU_64v8
-extern void v8_invalidate_icache_all(void);
-extern void v8_dcache_all(void);
-#endif
+void v8_invalidate_icache_all(void);
+void v8_flush_dcache_all(void);
+void v8_invalidate_dcache_all(void);
+void v8_flush_dcache_range(unsigned long start, unsigned long end);
+void v8_inv_dcache_range(unsigned long start, unsigned long end);
 
 static inline void icache_invalidate(void)
 {

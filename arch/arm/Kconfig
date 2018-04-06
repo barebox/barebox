@@ -2,7 +2,7 @@ config ARM
 	bool
 	select HAS_KALLSYMS
 	select HAS_CACHE
-	select HAVE_CONFIGURABLE_TEXT_BASE
+	select HAVE_CONFIGURABLE_TEXT_BASE if !RELOCATABLE
 	select HAVE_IMAGE_COMPRESSION
 	default y
 
@@ -18,6 +18,10 @@ config ARM_USE_COMPRESSED_DTB
 	bool
 	select UNCOMPRESS
 	select LZO_DECOMPRESS
+
+config TEXT_BASE
+	hex
+	default 0x0
 
 menu "System Type"
 
@@ -282,6 +286,7 @@ config ARM_ASM_UNIFIED
 
 config AEABI
 	bool "Use the ARM EABI to compile barebox"
+	depends on !CPU_V8
 	help
 	  This option allows for barebox to be compiled using the latest
 	  ARM ABI (aka EABI).
@@ -304,7 +309,7 @@ config THUMB2_BAREBOX
 
 config ARM_BOARD_APPEND_ATAG
 	bool "Let board specific code to add ATAGs to be passed to the kernel"
-	depends on ARM_LINUX
+	depends on ARM_LINUX && !CPU_V8
 	help
 	  This option is purely to start some vendor provided kernels.
 	  ** DO NOT USE FOR YOUR OWN DESIGNS! **

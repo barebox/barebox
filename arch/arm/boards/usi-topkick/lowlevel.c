@@ -28,7 +28,7 @@ ENTRY_FUNCTION(start_usi_topkick, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = __dtb_kirkwood_topkick_bb_start - get_runtime_offset();
+	fdt = __dtb_kirkwood_topkick_bb_start + get_runtime_offset();
 
 	kirkwood_barebox_entry(fdt);
 }

@@ -109,7 +109,7 @@ ENTRY_FUNCTION(start_phytec_phycard_imx27, r0, r1, r2)
 
 	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 12);
 
-	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start - get_runtime_offset();
+	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
 
 	phytec_phycard_imx27_common_init(fdt);
 }

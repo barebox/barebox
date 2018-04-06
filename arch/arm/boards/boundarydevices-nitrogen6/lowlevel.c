@@ -11,7 +11,7 @@ ENTRY_FUNCTION(start_imx6q_nitrogen6x_1g, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	fdt = __dtb_imx6q_nitrogen6x_start - get_runtime_offset();
+	fdt = __dtb_imx6q_nitrogen6x_start + get_runtime_offset();
 
 	imx6q_barebox_entry(fdt);
 }
@@ -22,7 +22,7 @@ ENTRY_FUNCTION(start_imx6q_nitrogen6x_2g, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	fdt = __dtb_imx6q_nitrogen6x_start - get_runtime_offset();
+	fdt = __dtb_imx6q_nitrogen6x_start + get_runtime_offset();
 
 	imx6q_barebox_entry(fdt);
 }
@@ -35,7 +35,7 @@ ENTRY_FUNCTION(start_imx6dl_nitrogen6x_1g, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	fdt = __dtb_imx6dl_nitrogen6x_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_nitrogen6x_start + get_runtime_offset();
 
 	imx6q_barebox_entry(fdt);
 }
@@ -46,7 +46,7 @@ ENTRY_FUNCTION(start_imx6dl_nitrogen6x_2g, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	fdt = __dtb_imx6dl_nitrogen6x_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_nitrogen6x_start + get_runtime_offset();
 
 	imx6q_barebox_entry(fdt);
 }
@@ -59,7 +59,7 @@ ENTRY_FUNCTION(start_imx6qp_nitrogen6_max, r0, r1, r2)
 
 	imx6_cpu_lowlevel_init();
 
-	fdt = __dtb_imx6qp_nitrogen6_max_start - get_runtime_offset();
+	fdt = __dtb_imx6qp_nitrogen6_max_start + get_runtime_offset();
 
 	imx6q_barebox_entry(fdt);
 }

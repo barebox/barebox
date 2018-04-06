@@ -25,8 +25,13 @@
 #define BASE	(TEXT_BASE - SZ_2M)
 #endif
 
+#ifdef CONFIG_CPU_32
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
+#else
+OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
+OUTPUT_ARCH(aarch64)
+#endif
 SECTIONS
 {
 	. = BASE;
@@ -34,10 +39,10 @@ SECTIONS
 	PRE_IMAGE
 
 	. = ALIGN(4);
+	._text : { *(._text) }
 	.text      :
 	{
 		_stext = .;
-		_text = .;
 		*(.text_head_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
@@ -61,22 +66,22 @@ SECTIONS
 	. = ALIGN(4);
 	.data : { *(.data*) }
 
-	.rel.dyn : {
-		__rel_dyn_start = .;
-		*(.rel*)
-		__rel_dyn_end = .;
-	}
+	.rel_dyn_start : { *(.__rel_dyn_start) }
+#ifdef CONFIG_CPU_32
+	.rel.dyn : { *(.rel*) }
+#else
+	.rela.dyn : { *(.rela*) }
+#endif
+	.rel_dyn_end : { *(.__rel_dyn_end) }
 
-	.dynsym : {
-		__dynsym_start = .;
-		*(.dynsym)
-		__dynsym_end = .;
-	}
+	.__dynsym_start :  { *(.__dynsym_start) }
+	.dynsym : { *(.dynsym) }
+	.__dynsym_end : { *(.__dynsym_end) }
 
 	. = ALIGN(4);
-	__bss_start = .;
+	.__bss_start :  { *(.__bss_start) }
 	.bss : { *(.bss*) }
-	__bss_stop = .;
+	.__bss_stop :  { *(.__bss_stop) }
 	_end = .;
 
 	. = ALIGN(4);
@@ -87,10 +92,9 @@ SECTIONS
 	__piggydata_end = .;
 
 	. = ALIGN(4);
-	.image_end : {
-		KEEP(*(.image_end))
-	}
+	.image_end : { *(.image_end) }
 	__image_end = .;
+
 	_barebox_image_size = __image_end - BASE;
 	_barebox_pbl_size = __bss_start - BASE;
 }

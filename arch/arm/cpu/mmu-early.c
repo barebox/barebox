@@ -5,6 +5,7 @@
 #include <asm/memory.h>
 #include <asm/system.h>
 #include <asm/cache.h>
+#include <asm/pgtable.h>
 
 #include "mmu.h"
 
@@ -29,7 +30,8 @@ static void map_cachable(unsigned long start, unsigned long size)
 			PMD_SECT_AP_READ | PMD_TYPE_SECT | PMD_SECT_WB);
 }
 
-void mmu_early_enable(uint32_t membase, uint32_t memsize, uint32_t _ttb)
+void mmu_early_enable(unsigned long membase, unsigned long memsize,
+		      unsigned long _ttb)
 {
 	int i;
 

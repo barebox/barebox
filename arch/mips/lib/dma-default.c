@@ -44,13 +44,13 @@ static inline void __dma_sync_mips(void *addr, size_t size,
 }
 #endif
 
-void dma_sync_single_for_cpu(unsigned long address, size_t size,
+void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
 	__dma_sync_mips(address, size, dir);
 }
 
-void dma_sync_single_for_device(unsigned long address, size_t size,
+void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir)
 {
 	__dma_sync_mips(address, size, dir);

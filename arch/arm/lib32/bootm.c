@@ -362,7 +362,7 @@ static int do_bootz_linux(struct image_data *data)
 
 	data->os_res = request_sdram_region("zimage", load_address, image_size);
 	if (!data->os_res) {
-		pr_err("bootm/zImage: failed to request memory at 0x%lx to 0x%lx (%d).\n",
+		pr_err("bootm/zImage: failed to request memory at 0x%lx to 0x%lx (%zu).\n",
 		       load_address, load_address + image_size, image_size);
 		ret = -ENOMEM;
 		goto err_out;
@@ -522,7 +522,7 @@ static int do_bootm_aimage(struct image_data *data)
 		linux_bootargs_overwrite(header->cmdline);
 
 	if (!getenv("aimage_noverwrite_tags"))
-		armlinux_set_bootparams((void*)header->tags_addr);
+		armlinux_set_bootparams((void *)(unsigned long)header->tags_addr);
 
 	cmp = &header->second_stage;
 	if (cmp->size) {

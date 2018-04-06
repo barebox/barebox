@@ -29,7 +29,7 @@ ENTRY_FUNCTION(start_solidrun_cubox, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = __dtb_dove_cubox_bb_start - get_runtime_offset();
+	fdt = __dtb_dove_cubox_bb_start + get_runtime_offset();
 
 	dove_barebox_entry(fdt);
 }

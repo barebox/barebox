@@ -25,16 +25,16 @@
 #include <errno.h>
 #include <linux/sizes.h>
 #include <asm/memory.h>
+#include <asm/pgtable64.h>
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm/cache.h>
 #include <memory.h>
 #include <asm/system_info.h>
 
-#include "mmu.h"
+#include "mmu_64.h"
 
 static uint64_t *ttb;
-static int free_idx;
 
 static void arm_mmu_not_initialized_error(void)
 {
@@ -47,86 +47,25 @@ static void arm_mmu_not_initialized_error(void)
 	panic("MMU not initialized\n");
 }
 
-
-/*
- * Do it the simple way for now and invalidate the entire
- * tlb
- */
-static inline void tlb_invalidate(void)
-{
-	unsigned int el = current_el();
-
-	dsb();
-
-	if (el == 1)
-		__asm__ __volatile__("tlbi vmalle1\n\t" : : : "memory");
-	else if (el == 2)
-		__asm__ __volatile__("tlbi alle2\n\t" : : : "memory");
-	else if (el == 3)
-		__asm__ __volatile__("tlbi alle3\n\t" : : : "memory");
-
-	dsb();
-	isb();
-}
-
-static int level2shift(int level)
-{
-	/* Page is 12 bits wide, every level translates 9 bits */
-	return (12 + 9 * (3 - level));
-}
-
-static uint64_t level2mask(int level)
-{
-	uint64_t mask = -EINVAL;
-
-	if (level == 1)
-		mask = L1_ADDR_MASK;
-	else if (level == 2)
-		mask = L2_ADDR_MASK;
-	else if (level == 3)
-		mask = L3_ADDR_MASK;
-
-	return mask;
-}
-
-static int pte_type(uint64_t *pte)
-{
-	return *pte & PMD_TYPE_MASK;
-}
-
 static void set_table(uint64_t *pt, uint64_t *table_addr)
 {
 	uint64_t val;
 
-	val = PMD_TYPE_TABLE | (uint64_t)table_addr;
+	val = PTE_TYPE_TABLE | (uint64_t)table_addr;
 	*pt = val;
 }
 
 static uint64_t *create_table(void)
 {
-	uint64_t *new_table = ttb + free_idx * GRANULE_SIZE;
+	uint64_t *new_table = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
 
 	/* Mark all entries as invalid */
 	memset(new_table, 0, GRANULE_SIZE);
 
-	free_idx++;
-
 	return new_table;
 }
 
-static uint64_t *get_level_table(uint64_t *pte)
-{
-	uint64_t *table = (uint64_t *)(*pte & XLAT_ADDR_MASK);
-
-	if (pte_type(pte) != PMD_TYPE_TABLE) {
-		table = create_table();
-		set_table(pte, table);
-	}
-
-	return table;
-}
-
-static uint64_t *find_pte(uint64_t addr)
+static __maybe_unused uint64_t *find_pte(uint64_t addr)
 {
 	uint64_t *pte;
 	uint64_t block_shift;
@@ -140,13 +79,43 @@ static uint64_t *find_pte(uint64_t addr)
 		idx = (addr & level2mask(i)) >> block_shift;
 		pte += idx;
 
-		if ((pte_type(pte) != PMD_TYPE_TABLE) || (block_shift <= GRANULE_SIZE_SHIFT))
+		if ((pte_type(pte) != PTE_TYPE_TABLE) || (block_shift <= GRANULE_SIZE_SHIFT))
 			break;
 		else
 			pte = (uint64_t *)(*pte & XLAT_ADDR_MASK);
 	}
 
 	return pte;
+}
+
+#define MAX_PTE_ENTRIES 512
+
+/* Splits a block PTE into table with subpages spanning the old block */
+static void split_block(uint64_t *pte, int level)
+{
+	uint64_t old_pte = *pte;
+	uint64_t *new_table;
+	uint64_t i = 0;
+	int levelshift;
+
+	if ((*pte & PTE_TYPE_MASK) == PTE_TYPE_TABLE)
+		return;
+
+	/* level describes the parent level, we need the child ones */
+	levelshift = level2shift(level + 1);
+
+	new_table = create_table();
+
+	for (i = 0; i < MAX_PTE_ENTRIES; i++) {
+		new_table[i] = old_pte | (i << levelshift);
+
+		/* Level 3 block PTEs have the table type */
+		if ((level + 1) == 3)
+			new_table[i] |= PTE_TYPE_TABLE;
+	}
+
+	/* Set the new table into effect */
+	set_table(pte, new_table);
 }
 
 static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t attr)
@@ -164,29 +133,29 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 
 	addr = virt;
 
-	attr &= ~(PMD_TYPE_SECT);
+	attr &= ~PTE_TYPE_MASK;
 
 	while (size) {
 		table = ttb;
 		for (level = 1; level < 4; level++) {
 			block_shift = level2shift(level);
 			idx = (addr & level2mask(level)) >> block_shift;
-			block_size = (1 << block_shift);
+			block_size = (1ULL << block_shift);
 
 			pte = table + idx;
 
-			if (level == 3)
-				attr |= PTE_TYPE_PAGE;
-			else
-				attr |= PMD_TYPE_SECT;
-
 			if (size >= block_size && IS_ALIGNED(addr, block_size)) {
-				*pte = phys | attr;
+				if (level == 3)
+					*pte = phys | attr | PTE_TYPE_PAGE;
+				else
+					*pte = phys | attr | PTE_TYPE_BLOCK;
+
 				addr += block_size;
 				phys += block_size;
 				size -= block_size;
 				break;
-
+			} else {
+				split_block(pte, level);
 			}
 
 			table = get_level_table(pte);
@@ -195,22 +164,11 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 	}
 }
 
-static void create_sections(uint64_t virt, uint64_t phys, uint64_t size_m, uint64_t flags)
+static void create_sections(uint64_t virt, uint64_t phys, uint64_t size, uint64_t flags)
 {
-
-	map_region(virt, phys, size_m, flags);
+	map_region(virt, phys, size, flags);
 	tlb_invalidate();
 }
-
-void *map_io_sections(unsigned long phys, void *_start, size_t size)
-{
-
-	map_region((uint64_t)_start, phys, (uint64_t)size, UNCACHED_MEM);
-
-	tlb_invalidate();
-	return _start;
-}
-
 
 int arch_remap_range(void *_start, size_t size, unsigned flags)
 {
@@ -220,12 +178,19 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 	return 0;
 }
 
+static void mmu_enable(void)
+{
+	isb();
+	set_cr(get_cr() | CR_M | CR_C | CR_I);
+}
+
 /*
  * Prepare MMU for usage enable it.
  */
 static int mmu_init(void)
 {
 	struct memory_bank *bank;
+	unsigned int el;
 
 	if (list_empty(&memory_banks))
 		/*
@@ -236,88 +201,46 @@ static int mmu_init(void)
 		 */
 		panic("MMU: No memory bank found! Cannot continue\n");
 
-	if (get_cr() & CR_M) {
-		ttb = (uint64_t *)get_ttbr(current_el());
-		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
-			/*
-			* This can mean that:
-			* - the early MMU code has put the ttb into a place
-			*   which we don't have inside our available memory
-			* - Somebody else has occupied the ttb region which means
-			*   the ttb will get corrupted.
-			*/
-			pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
-				ttb);
-	} else {
-		ttb = memalign(GRANULE_SIZE, SZ_16K);
-		free_idx = 1;
+	if (get_cr() & CR_M)
+		mmu_disable();
 
-		memset(ttb, 0, GRANULE_SIZE);
+	ttb = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
 
-		set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, UNCACHED_MEM);
-	}
+	memset(ttb, 0, GRANULE_SIZE);
+
+	el = current_el();
+	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
 
 	pr_debug("ttb: 0x%p\n", ttb);
 
-	/* create a flat mapping using 1MiB sections */
-	create_sections(0, 0, GRANULE_SIZE, UNCACHED_MEM);
+	/* create a flat mapping */
+	create_sections(0, 0, 1UL << (BITS_PER_VA - 1), UNCACHED_MEM);
 
 	/* Map sdram cached. */
 	for_each_memory_bank(bank)
 		create_sections(bank->start, bank->start, bank->size, CACHED_MEM);
 
+	create_sections(0x0, 0x0, 0x1000, 0x0);
+
+	mmu_enable();
+
 	return 0;
 }
 mmu_initcall(mmu_init);
-
-void mmu_enable(void)
-{
-	if (!ttb)
-		arm_mmu_not_initialized_error();
-
-	if (!(get_cr() & CR_M)) {
-
-		isb();
-		set_cr(get_cr() | CR_M | CR_C | CR_I);
-	}
-}
 
 void mmu_disable(void)
 {
 	unsigned int cr;
 
-	if (!ttb)
-		arm_mmu_not_initialized_error();
-
 	cr = get_cr();
-	cr &= ~(CR_M | CR_C | CR_I);
+	cr &= ~(CR_M | CR_C);
 
+	set_cr(cr);
+	v8_flush_dcache_all();
 	tlb_invalidate();
 
 	dsb();
 	isb();
-
-	set_cr(cr);
-
-	dsb();
-	isb();
-}
-
-void mmu_early_enable(uint64_t membase, uint64_t memsize, uint64_t _ttb)
-{
-	ttb = (uint64_t *)_ttb;
-
-	memset(ttb, 0, GRANULE_SIZE);
-	free_idx = 1;
-
-	set_ttbr_tcr_mair(current_el(), (uint64_t)ttb, TCR_FLAGS, UNCACHED_MEM);
-
-	create_sections(0, 0, 4096, UNCACHED_MEM);
-
-	create_sections(membase, membase, memsize, CACHED_MEM);
-
-	isb();
-	set_cr(get_cr() | CR_M);
 }
 
 unsigned long virt_to_phys(volatile void *virt)
@@ -328,4 +251,59 @@ unsigned long virt_to_phys(volatile void *virt)
 void *phys_to_virt(unsigned long phys)
 {
 	return (void *)phys;
+}
+
+void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+{
+	void *ret;
+
+	size = PAGE_ALIGN(size);
+	ret = xmemalign(PAGE_SIZE, size);
+	if (dma_handle)
+		*dma_handle = (dma_addr_t)ret;
+
+	map_region((unsigned long)ret, (unsigned long)ret, size, UNCACHED_MEM);
+	tlb_invalidate();
+
+	return ret;
+}
+
+void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
+{
+	size = PAGE_ALIGN(size);
+
+	map_region((unsigned long)mem, (unsigned long)mem, size, CACHED_MEM);
+
+	free(mem);
+}
+
+void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
+                             enum dma_data_direction dir)
+{
+	if (dir != DMA_TO_DEVICE)
+		v8_inv_dcache_range(address, address + size - 1);
+}
+
+void dma_sync_single_for_device(dma_addr_t address, size_t size,
+                                enum dma_data_direction dir)
+{
+	if (dir == DMA_FROM_DEVICE)
+		v8_inv_dcache_range(address, address + size - 1);
+	v8_flush_dcache_range(address, address + size - 1);
+}
+
+dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
+			  enum dma_data_direction dir)
+{
+	unsigned long addr = (unsigned long)ptr;
+
+	dma_sync_single_for_device(addr, size, dir);
+
+	return addr;
+}
+
+void dma_unmap_single(struct device_d *dev, dma_addr_t addr, size_t size,
+		      enum dma_data_direction dir)
+{
+	dma_sync_single_for_cpu(addr, size, dir);
 }

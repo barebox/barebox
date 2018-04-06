@@ -68,7 +68,7 @@ static void __noreturn start_imx6_phytec_common(uint32_t size,
 	if (do_early_uart_config && IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = fdt_blob_fixed_offset - get_runtime_offset();
+	fdt = fdt_blob_fixed_offset + get_runtime_offset();
 
 	if (cpu_type == IMX6_CPUTYPE_IMX6UL
 	    || cpu_type == IMX6_CPUTYPE_IMX6ULL)

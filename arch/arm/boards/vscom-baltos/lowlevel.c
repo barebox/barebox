@@ -134,7 +134,7 @@ ENTRY_FUNCTION(start_am33xx_baltos_sdram, r0, r1, r2)
 
 	fdt = __dtb_am335x_baltos_minimal_start;
 
-	fdt -= get_runtime_offset();
+	fdt += get_runtime_offset();
 
 	am335x_barebox_entry(fdt);
 }

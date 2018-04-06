@@ -8,6 +8,7 @@
 #include <init.h>
 #include <asm/armlinux.h>
 #include <asm/system_info.h>
+#include <asm/pgtable64.h>
 #include <mach/devices.h>
 #include <environment.h>
 #include <linux/sizes.h>
@@ -61,16 +62,3 @@ static int virt_core_init(void)
 	return 0;
 }
 postcore_initcall(virt_core_init);
-
-#ifdef CONFIG_MMU
-static int virt_mmu_enable(void)
-{
-	/* Mapping all periph and flash range */
-	arch_remap_range((void *)0x00000000, 0x40000000, DEV_MEM);
-
-	mmu_enable();
-
-	return 0;
-}
-postmmu_initcall(virt_mmu_enable);
-#endif

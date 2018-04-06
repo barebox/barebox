@@ -26,12 +26,12 @@
 #include <asm/sections.h>
 #include <asm/unaligned.h>
 #include <asm/cache.h>
+#include <asm/mmu.h>
 #include <memory.h>
 #include <uncompress.h>
 #include <malloc.h>
 
 #include <debug_ll.h>
-#include "mmu-early.h"
 
 unsigned long arm_stack_top;
 static unsigned long arm_barebox_size;
@@ -229,7 +229,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 #ifndef CONFIG_PBL_IMAGE
 
-void __naked __section(.text_entry) start(void)
+void NAKED __section(.text_entry) start(void)
 {
 	barebox_arm_head();
 }
@@ -239,7 +239,7 @@ void __naked __section(.text_entry) start(void)
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.
  */
-void __naked __section(.text_entry) start(unsigned long membase,
+void NAKED __section(.text_entry) start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
 	barebox_non_pbl_start(membase, memsize, boarddata);

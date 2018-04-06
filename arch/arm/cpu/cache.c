@@ -102,11 +102,6 @@ int arm_set_cache_functions(void)
 		cache_fns = &cache_fns_armv7;
 		break;
 #endif
-#ifdef CONFIG_CPU_64v8
-	case CPU_ARCH_ARMv8:
-		cache_fns = &cache_fns_armv8;
-		break;
-#endif
 	default:
 		while(1);
 	}
@@ -144,11 +139,6 @@ void arm_early_mmu_cache_flush(void)
 		v7_mmu_cache_flush();
 		return;
 #endif
-#ifdef CONFIG_CPU_64v8
-	case CPU_ARCH_ARMv8:
-		v8_dcache_all();
-		return;
-#endif
 	}
 }
 
@@ -169,12 +159,6 @@ void arm_early_mmu_cache_invalidate(void)
 #ifdef CONFIG_CPU_32v7
 	case CPU_ARCH_ARMv7:
 		v7_mmu_cache_invalidate();
-		return;
-#endif
-#else
-#ifdef CONFIG_CPU_64v8
-	case CPU_ARCH_ARMv8:
-		v8_invalidate_icache_all();
 		return;
 #endif
 #endif

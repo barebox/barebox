@@ -6,24 +6,8 @@
 #include <malloc.h>
 #include <xfuncs.h>
 
-#ifdef CONFIG_CPU_64v8
-#include <asm/pgtable64.h>
-
-#define DEV_MEM		(PMD_ATTRINDX(MT_DEVICE_nGnRnE) | PMD_SECT_AF | PMD_TYPE_SECT)
-#define CACHED_MEM	(PMD_ATTRINDX(MT_NORMAL) | PMD_SECT_S | PMD_SECT_AF | PMD_TYPE_SECT)
-#define UNCACHED_MEM	(PMD_ATTRINDX(MT_NORMAL_NC) | PMD_SECT_S | PMD_SECT_AF | PMD_TYPE_SECT)
-#else
-#include <asm/pgtable.h>
-
-#define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
-#define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
-#endif
-
-
-
 struct arm_memory;
 
-void mmu_enable(void);
 void mmu_disable(void);
 static inline void arm_create_section(unsigned long virt, unsigned long phys, int size_m,
 		unsigned int flags)
@@ -69,5 +53,8 @@ extern struct outer_cache_fns outer_cache;
 void __dma_clean_range(unsigned long, unsigned long);
 void __dma_flush_range(unsigned long, unsigned long);
 void __dma_inv_range(unsigned long, unsigned long);
+
+void mmu_early_enable(unsigned long membase, unsigned long memsize,
+		      unsigned long ttb);
 
 #endif /* __ASM_MMU_H */

@@ -65,3 +65,8 @@ config CLOCKSOURCE_ROCKCHIP
 config CLOCKSOURCE_ATMEL_PIT
        bool
        depends on SOC_AT91SAM9 || SOC_SAMA5
+
+config CLOCKSOURCE_ARMV8_TIMER
+	bool
+	default y
+	depends on ARM && CPU_64v8

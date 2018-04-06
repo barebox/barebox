@@ -53,7 +53,7 @@ ENTRY_FUNCTION(start_imx6dl_tx6x_512m, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx6dl_tx6u_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_tx6u_start + get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_512M, fdt);
 }
@@ -73,7 +73,7 @@ ENTRY_FUNCTION(start_imx6dl_tx6x_1g, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx6dl_tx6u_start - get_runtime_offset();
+	fdt = __dtb_imx6dl_tx6u_start + get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, SZ_1G, fdt);
 }
@@ -93,7 +93,7 @@ ENTRY_FUNCTION(start_imx6q_tx6x_1g, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx6q_tx6q_start - get_runtime_offset();
+	fdt = __dtb_imx6q_tx6q_start + get_runtime_offset();
 
 	imx6q_barebox_entry(fdt);
 }
@@ -113,7 +113,7 @@ ENTRY_FUNCTION(start_imx6q_tx6x_2g, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx6q_tx6q_start - get_runtime_offset();
+	fdt = __dtb_imx6q_tx6q_start + get_runtime_offset();
 
 	imx6q_barebox_entry(fdt);
 }

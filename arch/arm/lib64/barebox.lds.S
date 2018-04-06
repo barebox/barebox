@@ -35,10 +35,10 @@ SECTIONS
 	PRE_IMAGE
 #endif
 	. = ALIGN(4);
+	._text : { *(._text) }
 	.text      :
 	{
 		_stext = .;
-		_text = .;
 		*(.text_entry*)
 		__bare_init_start = .;
 		*(.text_bare_init*)
@@ -53,22 +53,6 @@ SECTIONS
 	. = ALIGN(4);
 	.rodata : { *(.rodata*) }
 
-#ifdef CONFIG_ARM_UNWIND
-	/*
-	 * Stack unwinding tables
-	 */
-	. = ALIGN(8);
-	.ARM.unwind_idx : {
-		__start_unwind_idx = .;
-		*(.ARM.exidx*)
-		__stop_unwind_idx = .;
-	}
-	.ARM.unwind_tab : {
-		__start_unwind_tab = .;
-		*(.ARM.extab*)
-		__stop_unwind_tab = .;
-	}
-#endif
 	_etext = .;			/* End of text and rodata section */
 	_sdata = .;
 
@@ -106,24 +90,20 @@ SECTIONS
 
 	.dtb : { BAREBOX_DTB() }
 
-	.rel.dyn : {
-		__rel_dyn_start = .;
-		*(.rel*)
-		__rel_dyn_end = .;
-	}
+	.rel_dyn_start : { *(.__rel_dyn_start) }
+	.rela.dyn : { *(.rela*) }
+	.rel_dyn_end : { *(.__rel_dyn_end) }
 
-	.dynsym : {
-		__dynsym_start = .;
-		*(.dynsym)
-		__dynsym_end = .;
-	}
+	.__dynsym_start :  { *(.__dynsym_start) }
+	.dynsym : { *(.dynsym) }
+	.__dynsym_end : { *(.__dynsym_end) }
 
 	_edata = .;
 
 	. = ALIGN(4);
-	__bss_start = .;
+	.__bss_start :  { *(.__bss_start) }
 	.bss : { *(.bss*) }
-	__bss_stop = .;
+	.__bss_stop :  { *(.__bss_stop) }
 	_end = .;
 	_barebox_image_size = __bss_start - TEXT_BASE;
 }

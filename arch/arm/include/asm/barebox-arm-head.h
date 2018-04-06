@@ -21,6 +21,7 @@ void cortex_a7_lowlevel_init(void);
 static inline void __barebox_arm_head(void)
 {
 	__asm__ __volatile__ (
+#ifdef CONFIG_CPU_32
 #ifdef CONFIG_THUMB2_BAREBOX
 		".arm\n"
 		"adr r9, 1f + 1\n"
@@ -41,10 +42,22 @@ static inline void __barebox_arm_head(void)
 		"1: b 1b\n"
 		"1: b 1b\n"
 #endif
+#else
+		"b 2f\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+		"nop\n"
+#endif
 		".asciz \"barebox\"\n"
+#ifdef CONFIG_CPU_32
 		".word _text\n"				/* text base. If copied there,
 							 * barebox can skip relocation
 							 */
+#else
+		".word 0xffffffff\n"
+#endif
 		".word _barebox_image_size\n"		/* image size to copy */
 		".rept 8\n"
 		".word 0x55555555\n"

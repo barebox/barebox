@@ -184,7 +184,7 @@ ENTRY_FUNCTION(start_am33xx_beaglebone_sdram, r0, r1, r2)
 		fdt = __dtb_z_am335x_bone_start;
 	}
 
-	fdt -= get_runtime_offset();
+	fdt += get_runtime_offset();
 
 	barebox_arm_entry(0x80000000, sdram_size, fdt);
 }

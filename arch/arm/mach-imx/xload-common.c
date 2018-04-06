@@ -5,7 +5,7 @@
 
 int imx_image_size(void)
 {
-	uint32_t *image_end = (void *)ld_var(__image_end);
+	uint32_t *image_end = (void *)__image_end;
 	uint32_t payload_len, pbl_len, imx_header_len, sizep;
 	void *pg_start;
 
@@ -15,7 +15,7 @@ int imx_image_size(void)
 	imx_header_len = SZ_4K;
 
 	/* The length of the PBL image */
-	pbl_len = ld_var(__image_end) - ld_var(_text);
+	pbl_len = __image_end - _text;
 
 	sizep = 4;
 

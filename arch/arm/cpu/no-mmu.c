@@ -28,7 +28,7 @@
 #include <memory.h>
 #include <asm/system_info.h>
 #include <debug_ll.h>
-
+#include <asm/sections.h>
 
 #define __exceptions_size (__exceptions_stop - __exceptions_start)
 

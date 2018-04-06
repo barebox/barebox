@@ -3,7 +3,7 @@
 
 #define CACHE_DLINESIZE 32
 
-.section .text.__mmu_cache_on
+.section .text.v4_mmu_cache_on
 ENTRY(v4_mmu_cache_on)
 		mov	r12, lr
 #ifdef CONFIG_MMU

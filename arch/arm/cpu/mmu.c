@@ -27,10 +27,15 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm/cache.h>
+#include <asm/pgtable.h>
 #include <memory.h>
 #include <asm/system_info.h>
+#include <asm/sections.h>
 
 #include "mmu.h"
+
+#define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
+#define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
 static unsigned long *ttb;
 
@@ -507,6 +512,19 @@ static int mmu_init(void)
 }
 mmu_initcall(mmu_init);
 
+/*
+ * Clean and invalide caches, disable MMU
+ */
+void mmu_disable(void)
+{
+	__mmu_cache_flush();
+	if (outer_cache.disable) {
+		outer_cache.flush_all();
+		outer_cache.disable();
+	}
+	__mmu_cache_off();
+}
+
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
 	void *ret;
@@ -557,7 +575,7 @@ void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 	free(mem);
 }
 
-void dma_sync_single_for_cpu(unsigned long address, size_t size,
+void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
 	if (dir != DMA_TO_DEVICE) {
@@ -567,7 +585,7 @@ void dma_sync_single_for_cpu(unsigned long address, size_t size,
 	}
 }
 
-void dma_sync_single_for_device(unsigned long address, size_t size,
+void dma_sync_single_for_device(dma_addr_t address, size_t size,
 				enum dma_data_direction dir)
 {
 	if (dir == DMA_FROM_DEVICE) {
@@ -579,4 +597,20 @@ void dma_sync_single_for_device(unsigned long address, size_t size,
 		if (outer_cache.clean_range)
 			outer_cache.clean_range(address, address + size);
 	}
+}
+
+dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
+			  enum dma_data_direction dir)
+{
+	unsigned long addr = (unsigned long)ptr;
+
+	dma_sync_single_for_device(addr, size, dir);
+
+	return addr;
+}
+
+void dma_unmap_single(struct device_d *dev, dma_addr_t addr, size_t size,
+		      enum dma_data_direction dir)
+{
+	dma_sync_single_for_cpu(addr, size, dir);
 }

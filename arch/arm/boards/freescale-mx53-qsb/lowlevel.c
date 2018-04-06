@@ -15,7 +15,7 @@ ENTRY_FUNCTION(start_imx53_loco, r0, r1, r2)
 	imx5_cpu_lowlevel_init();
 	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
-	fdt = __dtb_imx53_qsb_start - get_runtime_offset();
+	fdt = __dtb_imx53_qsb_start + get_runtime_offset();
 
 	imx53_barebox_entry(fdt);
 }
@@ -29,7 +29,7 @@ ENTRY_FUNCTION(start_imx53_loco_r, r0, r1, r2)
 	imx5_cpu_lowlevel_init();
 	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
-	fdt = __dtb_imx53_qsrb_start - get_runtime_offset();
+	fdt = __dtb_imx53_qsrb_start + get_runtime_offset();
 
 	imx53_barebox_entry(fdt);
 }

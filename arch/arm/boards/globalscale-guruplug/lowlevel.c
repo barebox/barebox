@@ -28,7 +28,7 @@ ENTRY_FUNCTION(start_globalscale_guruplug, r0, r1, r2)
 
 	arm_cpu_lowlevel_init();
 
-	fdt = __dtb_kirkwood_guruplug_server_plus_bb_start -
+	fdt = __dtb_kirkwood_guruplug_server_plus_bb_start +
 		get_runtime_offset();
 
 	kirkwood_barebox_entry(fdt);

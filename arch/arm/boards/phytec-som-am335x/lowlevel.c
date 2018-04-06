@@ -210,7 +210,7 @@ static noinline void physom_board_entry(unsigned long bootinfo, int sdram,
 	ENTRY_FUNCTION(name, bootinfo, r1, r2)				\
 	{								\
 		extern char __dtb_z_##fdt_name##_start[];		\
-		void *fdt = __dtb_z_##fdt_name##_start -		\
+		void *fdt = __dtb_z_##fdt_name##_start +		\
 			get_runtime_offset();				\
 		physom_board_entry(bootinfo, 0, fdt, module_family);	\
 	}
@@ -219,7 +219,7 @@ static noinline void physom_board_entry(unsigned long bootinfo, int sdram,
 	ENTRY_FUNCTION(name, bootinfo, r1, r2)				\
 	{								\
 		extern char __dtb_z_##fdt_name##_start[];		\
-		void *fdt = __dtb_z_##fdt_name##_start -		\
+		void *fdt = __dtb_z_##fdt_name##_start +		\
 			get_runtime_offset();				\
 		physom_board_entry(bootinfo, sdram, fdt, NONE);		\
 	}
@@ -228,7 +228,7 @@ static noinline void physom_board_entry(unsigned long bootinfo, int sdram,
 	ENTRY_FUNCTION(name, r0, r1, r2)				\
 	{								\
 		extern char __dtb_z_##fdt_name##_start[];		\
-		void *fdt = __dtb_z_##fdt_name##_start -		\
+		void *fdt = __dtb_z_##fdt_name##_start +		\
 			get_runtime_offset();				\
 		am335x_barebox_entry(fdt);				\
 	}

@@ -7,7 +7,7 @@
 extern char __dtb_bcm2835_rpi_start[];
 ENTRY_FUNCTION(start_raspberry_pi1, r0, r1, r2)
 {
-	void *fdt = __dtb_bcm2835_rpi_start - get_runtime_offset();
+	void *fdt = __dtb_bcm2835_rpi_start + get_runtime_offset();
 
 	arm_cpu_lowlevel_init();
 
@@ -17,7 +17,7 @@ ENTRY_FUNCTION(start_raspberry_pi1, r0, r1, r2)
 extern char __dtb_bcm2836_rpi_2_start[];
 ENTRY_FUNCTION(start_raspberry_pi2, r0, r1, r2)
 {
-	void *fdt = __dtb_bcm2836_rpi_2_start - get_runtime_offset();
+	void *fdt = __dtb_bcm2836_rpi_2_start + get_runtime_offset();
 
 	arm_cpu_lowlevel_init();
 

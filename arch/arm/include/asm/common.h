@@ -4,13 +4,19 @@
 static inline unsigned long get_pc(void)
 {
 	unsigned long pc;
-
+#ifdef CONFIG_CPU_32
 	__asm__ __volatile__(
                 "mov    %0, pc\n"
                 : "=r" (pc)
                 :
                 : "memory");
-
+#else
+	__asm__ __volatile__(
+                "adr    %0, .\n"
+                : "=r" (pc)
+                :
+                : "memory");
+#endif
 	return pc;
 }
 

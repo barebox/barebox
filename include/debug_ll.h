@@ -42,7 +42,7 @@ static inline void puthex_ll(unsigned long value)
 {
 	int i; unsigned char ch;
 
-	for (i = 8; i--; ) {
+	for (i = sizeof(unsigned long) * 2; i--; ) {
 		ch = ((value >> (i * 4)) & 0xf);
 		ch += (ch >= 10) ? 'a' - 10 : '0';
 		putc_ll(ch);

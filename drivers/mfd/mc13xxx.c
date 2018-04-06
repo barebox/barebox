@@ -40,10 +40,12 @@ struct mc13xxx {
 		struct spi_device	*spi;
 	};
 	int				revision;
+	int				type;
 };
 
 struct mc13xxx_devtype {
 	int	(*revision)(struct mc13xxx*);
+	int	type;
 };
 
 #define to_mc13xxx(a)		container_of(a, struct mc13xxx, cdev)
@@ -55,6 +57,12 @@ struct mc13xxx *mc13xxx_get(void)
 	return mc_dev;
 }
 EXPORT_SYMBOL(mc13xxx_get);
+
+int mc13xxx_type(struct mc13xxx *mc13xxx)
+{
+	return mc13xxx->type;
+}
+EXPORT_SYMBOL(mc13xxx_type);
 
 int mc13xxx_revision(struct mc13xxx *mc13xxx)
 {
@@ -347,6 +355,7 @@ static int __init mc13xxx_probe(struct device_d *dev)
 	}
 
 	mc_dev->revision = rev;
+	mc_dev->type = devtype->type;
 
 	ret = regmap_register_cdev(mc_dev->map, NULL);
 	if (ret)
@@ -360,14 +369,17 @@ static int __init mc13xxx_probe(struct device_d *dev)
 
 static struct mc13xxx_devtype mc13783_devtype = {
 	.revision	= mc13783_revision,
+	.type		= MC13783_TYPE,
 };
 
 static struct mc13xxx_devtype mc13892_devtype = {
 	.revision	= mc13892_revision,
+	.type		= MC13892_TYPE,
 };
 
 static struct mc13xxx_devtype mc34708_devtype = {
 	.revision	= mc34708_revision,
+	.type		= MC34708_TYPE,
 };
 
 static struct platform_device_id mc13xxx_ids[] = {

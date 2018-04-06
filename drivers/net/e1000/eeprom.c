@@ -1294,7 +1294,7 @@ exit:
 	return ret;
 }
 
-static struct file_operations e1000_invm_ops = {
+static struct cdev_operations e1000_invm_ops = {
 	.read	= e1000_invm_cdev_read,
 	.write	= e1000_invm_cdev_write,
 	.lseek	= dev_lseek_default,
@@ -1320,7 +1320,7 @@ static ssize_t e1000_eeprom_cdev_read(struct cdev *cdev, void *buf,
 		return (count / 2) * 2;
 };
 
-static struct file_operations e1000_eeprom_ops = {
+static struct cdev_operations e1000_eeprom_ops = {
 	.read = e1000_eeprom_cdev_read,
 	.lseek = dev_lseek_default,
 };

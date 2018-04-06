@@ -99,13 +99,13 @@ char *normalise_path(const char *pathname)
 
 	slashes[0] = in = out = path;
 
-        while (*in) {
-                if(*in == '/') {
+	while (*in) {
+		if(*in == '/') {
 			slashes[sl++] = out;
-                        *out++ = *in++;
-                        while(*in == '/')
-                                in++;
-                } else {
+			*out++ = *in++;
+			while(*in == '/')
+				in++;
+		} else {
 			if (*in == '.' && (*(in + 1) == '/' || !*(in + 1))) {
 				sl--;
 				if (sl < 0)
@@ -123,16 +123,16 @@ char *normalise_path(const char *pathname)
 				continue;
 			}
                         *out++ = *in++;
-                }
-        }
+		}
+	}
 
 	*out-- = 0;
 
-        /*
-         * Remove trailing slash
-         */
-        if (*out == '/')
-                *out = 0;
+	/*
+	 * Remove trailing slash
+	 */
+	if (*out == '/')
+		*out = 0;
 
 	if (!*path) {
 		*path = '/';
@@ -1660,7 +1660,7 @@ int mkdir (const char *pathname, mode_t mode)
 {
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
-	char *p = normalise_path(pathname);
+	char *p = canonicalize_path(pathname);
 	char *freep = p;
 	int ret;
 	struct stat s;
@@ -1700,7 +1700,7 @@ int rmdir (const char *pathname)
 {
 	struct fs_driver_d *fsdrv;
 	struct fs_device_d *fsdev;
-	char *p = normalise_path(pathname);
+	char *p = canonicalize_path(pathname);
 	char *freep = p;
 	int ret;
 	struct stat s;
@@ -1738,72 +1738,6 @@ out:
 	return ret;
 }
 EXPORT_SYMBOL(rmdir);
-
-static void memcpy_sz(void *dst, const void *src, size_t count, int rwsize)
-{
-	/* no rwsize specification given. Do whatever memcpy likes best */
-	if (!rwsize) {
-		memcpy(dst, src, count);
-		return;
-	}
-
-	rwsize = rwsize >> O_RWSIZE_SHIFT;
-
-	count /= rwsize;
-
-	while (count-- > 0) {
-		switch (rwsize) {
-		case 1:
-			*((u8 *)dst) = *((u8 *)src);
-			break;
-		case 2:
-			*((u16 *)dst) = *((u16 *)src);
-			break;
-		case 4:
-			*((u32  *)dst) = *((u32  *)src);
-			break;
-		case 8:
-			*((u64  *)dst) = *((u64  *)src);
-			break;
-		}
-		dst += rwsize;
-		src += rwsize;
-	}
-}
-
-ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset, ulong flags)
-{
-	ulong size;
-	struct device_d *dev;
-
-	if (!cdev->dev || cdev->dev->num_resources < 1)
-		return -1;
-	dev = cdev->dev;
-
-	size = min((resource_size_t)count,
-			resource_size(&dev->resource[0]) -
-			(resource_size_t)offset);
-	memcpy_sz(buf, dev_get_mem_region(dev, 0) + offset, size, flags & O_RWSIZE_MASK);
-	return size;
-}
-EXPORT_SYMBOL(mem_read);
-
-ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset, ulong flags)
-{
-	ulong size;
-	struct device_d *dev;
-
-	if (!cdev->dev || cdev->dev->num_resources < 1)
-		return -1;
-	dev = cdev->dev;
-
-	size = min((resource_size_t)count,
-			resource_size(&dev->resource[0]) -
-			(resource_size_t)offset);
-	memcpy_sz(dev_get_mem_region(dev, 0) + offset, buf, size, flags & O_RWSIZE_MASK);
-	return size;
-}
-EXPORT_SYMBOL(mem_write);
 
 /*
  * cdev_get_mount_path - return the path a cdev is mounted on

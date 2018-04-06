@@ -21,7 +21,7 @@ struct twlcore {
 	struct i2c_client	*client;
 };
 
-extern struct file_operations twl_fops;
+extern struct cdev_operations twl_fops;
 
 extern int twlcore_reg_read(struct twlcore *twlcore, u16 reg, u8 *val);
 extern int twlcore_reg_write(struct twlcore *twlcore, u16 reg, u8 val);

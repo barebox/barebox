@@ -257,7 +257,7 @@ out_up:
 #define ds2431_cdev_write NULL
 #endif
 
-static struct file_operations ds2431_ops = {
+static struct cdev_operations ds2431_ops = {
 	.read	= ds2431_cdev_read,
 	.write	= ds2431_cdev_write,
 	.lseek	= dev_lseek_default,

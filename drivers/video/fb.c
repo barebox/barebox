@@ -221,7 +221,7 @@ static int fb_set_modename(struct param_d *param, void *priv)
 	return 0;
 }
 
-static struct file_operations fb_ops = {
+static struct cdev_operations fb_ops = {
 	.read	= mem_read,
 	.write	= mem_write,
 	.memmap	= generic_memmap_rw,

@@ -332,7 +332,7 @@ static int block_op_flush(struct cdev *cdev)
 	return writebuffer_flush(blk);
 }
 
-static struct file_operations block_ops = {
+static struct cdev_operations block_ops = {
 	.read	= block_op_read,
 #ifdef CONFIG_BLOCK_WRITE
 	.write	= block_op_write,

@@ -61,7 +61,7 @@ static ssize_t rng_dev_read(struct cdev *cdev, void *buf, size_t size,
 	return cur;
 }
 
-static struct file_operations rng_chrdev_ops = {
+static struct cdev_operations rng_chrdev_ops = {
 	.read  = rng_dev_read,
 	.lseek = dev_lseek_default,
 };

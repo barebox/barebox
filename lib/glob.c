@@ -313,7 +313,7 @@ static int prefix_array(const char *dirname, char **array, size_t n,
 static int glob_in_dir(const char *pattern, const char *directory,
 		int flags, int (*errfunc) __P((const char *, int)), glob_t *pglob)
 {
-	__ptr_t stream;
+	__ptr_t stream = NULL;
 
 	struct globlink {
 		struct globlink *next;
@@ -323,18 +323,19 @@ static int glob_in_dir(const char *pattern, const char *directory,
 	size_t nfound = 0;
 	int meta;
 
-	stream = opendir(directory);
+	meta = glob_pattern_p(pattern, !(flags & GLOB_NOESCAPE));
+
+	if (meta)
+		flags |= GLOB_MAGCHAR;
+
+	if (meta)
+		stream = opendir(directory);
 
 	if (stream == NULL) {
 		if ((errfunc != NULL && (*errfunc) (directory, errno)) ||
 		    (flags & GLOB_ERR))
 			return GLOB_ABORTED;
 	}
-
-	meta = glob_pattern_p(pattern, !(flags & GLOB_NOESCAPE));
-
-	if (meta)
-		flags |= GLOB_MAGCHAR;
 
 	while (1) {
 		const char *name;

@@ -64,7 +64,7 @@ static void hf_info(struct device_d *dev)
 	printf("file: %s\n", priv->filename);
 }
 
-static struct file_operations hf_fops = {
+static struct cdev_operations hf_fops = {
 	.read  = hf_read,
 	.write = hf_write,
 	.lseek = dev_lseek_default,

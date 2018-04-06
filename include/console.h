@@ -63,7 +63,7 @@ struct console_device {
 	const char *linux_console_name;
 
 	struct cdev devfs;
-	struct file_operations fops;
+	struct cdev_operations fops;
 };
 
 int console_register(struct console_device *cdev);

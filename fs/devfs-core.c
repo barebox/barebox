@@ -457,7 +457,7 @@ static ssize_t loop_write(struct cdev *cdev, const void *buf, size_t count,
 	return write(priv->fd, buf, count);
 }
 
-static const struct file_operations loop_ops = {
+static const struct cdev_operations loop_ops = {
 	.read = loop_read,
 	.write = loop_write,
 	.memmap = generic_memmap_rw,
@@ -513,3 +513,71 @@ void cdev_remove_loop(struct cdev *cdev)
 	free(cdev->name);
 	free(cdev);
 }
+
+static void memcpy_sz(void *dst, const void *src, size_t count, int rwsize)
+{
+	/* no rwsize specification given. Do whatever memcpy likes best */
+	if (!rwsize) {
+		memcpy(dst, src, count);
+		return;
+	}
+
+	rwsize = rwsize >> O_RWSIZE_SHIFT;
+
+	count /= rwsize;
+
+	while (count-- > 0) {
+		switch (rwsize) {
+		case 1:
+			*((u8 *)dst) = *((u8 *)src);
+			break;
+		case 2:
+			*((u16 *)dst) = *((u16 *)src);
+			break;
+		case 4:
+			*((u32  *)dst) = *((u32  *)src);
+			break;
+		case 8:
+			*((u64  *)dst) = *((u64  *)src);
+			break;
+		}
+		dst += rwsize;
+		src += rwsize;
+	}
+}
+
+ssize_t mem_read(struct cdev *cdev, void *buf, size_t count, loff_t offset,
+		 unsigned long flags)
+{
+	unsigned long size;
+	struct device_d *dev;
+
+	if (!cdev->dev || cdev->dev->num_resources < 1)
+		return -1;
+	dev = cdev->dev;
+
+	size = min((resource_size_t)count,
+			resource_size(&dev->resource[0]) -
+			(resource_size_t)offset);
+	memcpy_sz(buf, dev_get_mem_region(dev, 0) + offset, size, flags & O_RWSIZE_MASK);
+	return size;
+}
+EXPORT_SYMBOL(mem_read);
+
+ssize_t mem_write(struct cdev *cdev, const void *buf, size_t count, loff_t offset,
+		  unsigned long flags)
+{
+	unsigned long size;
+	struct device_d *dev;
+
+	if (!cdev->dev || cdev->dev->num_resources < 1)
+		return -1;
+	dev = cdev->dev;
+
+	size = min((resource_size_t)count,
+			resource_size(&dev->resource[0]) -
+			(resource_size_t)offset);
+	memcpy_sz(dev_get_mem_region(dev, 0) + offset, buf, size, flags & O_RWSIZE_MASK);
+	return size;
+}
+EXPORT_SYMBOL(mem_write);

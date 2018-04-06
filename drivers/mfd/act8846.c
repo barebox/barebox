@@ -117,7 +117,7 @@ static ssize_t act8846_write(struct cdev *cdev, const void *_buf, size_t count,
 	return count;
 }
 
-static struct file_operations act8846_fops = {
+static struct cdev_operations act8846_fops = {
 	.lseek	= dev_lseek_default,
 	.read	= act8846_read,
 	.write	= act8846_write,

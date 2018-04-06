@@ -63,7 +63,7 @@ static ssize_t mtd_op_read_oob(struct cdev *cdev, void *buf, size_t count,
 	return mtd->oobsize;
 }
 
-static struct file_operations mtd_ops_oob = {
+static struct cdev_operations mtd_ops_oob = {
 	.read   = mtd_op_read_oob,
 	.ioctl  = mtd_ioctl,
 	.lseek  = dev_lseek_default,

@@ -215,4 +215,13 @@ static inline int mc13xxx_register_init_callback(void(*callback)(struct mc13xxx 
 }
 #endif
 
+#ifdef CONFIG_MC13XXX_ADC
+int mc13xxx_adc_probe(struct device_d *dev, struct mc13xxx *mc_dev);
+#else
+static inline int mc13xxx_adc_probe(struct device_d *dev, struct mc13xxx *mc_dev)
+{
+	return 0;
+}
+#endif
+
 #endif /* __MFD_MC13XXX_H */

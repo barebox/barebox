@@ -364,6 +364,9 @@ static int __init mc13xxx_probe(struct device_d *dev)
 	if (mc13xxx_init_callback)
 		mc13xxx_init_callback(mc_dev);
 
+	if (of_property_read_bool(dev->device_node, "fsl,mc13xxx-uses-adc"))
+		mc13xxx_adc_probe(dev, mc_dev);
+
 	return 0;
 }
 

@@ -1405,6 +1405,10 @@ static int tc_probe(struct device_d *dev)
 	if (ret)
 		goto err;
 
+	ret = tc_get_display_props(tc);
+	if (ret)
+		goto err;
+
 	/* Register DP AUX channel */
 	tc->adapter.master_xfer = tc_aux_i2c_xfer;
 	tc->adapter.nr = -1; /* any free */
@@ -1416,10 +1420,6 @@ static int tc_probe(struct device_d *dev)
 		dev_err(tc->dev, "registration failed\n");
 		goto err;
 	}
-
-	ret = tc_get_display_props(tc);
-	if (ret)
-		goto err;
 
 	/* add vlp */
 	tc->vpl.node = dev->device_node;

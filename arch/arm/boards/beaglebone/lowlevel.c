@@ -48,26 +48,12 @@ static const struct am33xx_emif_regs ddr2_regs = {
 };
 
 static const struct am33xx_ddr_data ddr2_data = {
-	.rd_slave_ratio0        = (DDR2_RD_DQS << 30) | (DDR2_RD_DQS << 20) |
-				(DDR2_RD_DQS << 10) | (DDR2_RD_DQS << 0),
-	.wr_dqs_slave_ratio0    = (DDR2_WR_DQS << 30) | (DDR2_WR_DQS << 20) |
-				(DDR2_WR_DQS << 10) | (DDR2_WR_DQS << 0),
-	.wrlvl_init_ratio0	= (DDR2_PHY_WRLVL << 30) |
-				(DDR2_PHY_WRLVL << 20) |
-				(DDR2_PHY_WRLVL << 10) |
-				(DDR2_PHY_WRLVL << 0),
-	.gatelvl_init_ratio0	= (DDR2_PHY_GATELVL << 30) |
-				(DDR2_PHY_GATELVL << 20) |
-				(DDR2_PHY_GATELVL << 10) |
-				(DDR2_PHY_GATELVL << 0),
-	.fifo_we_slave_ratio0	= (DDR2_PHY_FIFO_WE << 30) |
-				(DDR2_PHY_FIFO_WE << 20) |
-				(DDR2_PHY_FIFO_WE << 10) |
-				(DDR2_PHY_FIFO_WE << 0),
-	.wr_slave_ratio0        = (DDR2_PHY_WR_DATA << 30) |
-				(DDR2_PHY_WR_DATA << 20) |
-				(DDR2_PHY_WR_DATA << 10) |
-				(DDR2_PHY_WR_DATA << 0),
+	.rd_slave_ratio0        = DDR2_RD_DQS,
+	.wr_dqs_slave_ratio0    = DDR2_WR_DQS,
+	.wrlvl_init_ratio0	= DDR2_PHY_WRLVL,
+	.gatelvl_init_ratio0	= DDR2_PHY_GATELVL,
+	.fifo_we_slave_ratio0	= DDR2_PHY_FIFO_WE,
+	.wr_slave_ratio0        = DDR2_PHY_WR_DATA,
 	.use_rank0_delay	= 0x01,
 	.dll_lock_diff0		= 0x0,
 };

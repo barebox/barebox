@@ -128,6 +128,7 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	if (!node)
 		return -ENOMEM;
 
+	of_property_write_string(node, "barebox-version", release_string);
 
 	err = of_property_write_string(node, "bootargs", str);
 

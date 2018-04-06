@@ -23,7 +23,7 @@
 struct aiodevice;
 struct aiochannel {
 	int index;
-	char *unit;
+	const char *unit;
 	struct aiodevice *aiodev;
 
 	int value;

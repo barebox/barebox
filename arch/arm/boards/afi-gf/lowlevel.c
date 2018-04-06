@@ -64,33 +64,27 @@ static void board_data_macro_config(int dataMacroNum)
 	if (dataMacroNum == 1)
 		BaseAddrOffset = 0xA4;
 
-	__raw_writel(((DDR2_RD_DQS<<30)|(DDR2_RD_DQS<<20)
-		|(DDR2_RD_DQS<<10)|(DDR2_RD_DQS<<0)),
+	__raw_writel(DDR2_RD_DQS,
 		(AM33XX_DATA0_RD_DQS_SLAVE_RATIO_0 + BaseAddrOffset));
 	__raw_writel(DDR2_RD_DQS>>2,
 		(AM33XX_DATA0_RD_DQS_SLAVE_RATIO_1 + BaseAddrOffset));
-	__raw_writel(((DDR2_WR_DQS<<30)|(DDR2_WR_DQS<<20)
-		|(DDR2_WR_DQS<<10)|(DDR2_WR_DQS<<0)),
+	__raw_writel(DDR2_WR_DQS,
 		(AM33XX_DATA0_WR_DQS_SLAVE_RATIO_0 + BaseAddrOffset));
 	__raw_writel(DDR2_WR_DQS>>2,
 		(AM33XX_DATA0_WR_DQS_SLAVE_RATIO_1 + BaseAddrOffset));
-	__raw_writel(((DDR2_PHY_WRLVL<<30)|(DDR2_PHY_WRLVL<<20)
-		|(DDR2_PHY_WRLVL<<10)|(DDR2_PHY_WRLVL<<0)),
+	__raw_writel(DDR2_PHY_WRLVL,
 		(AM33XX_DATA0_WRLVL_INIT_RATIO_0 + BaseAddrOffset));
 	__raw_writel(DDR2_PHY_WRLVL>>2,
 		(AM33XX_DATA0_WRLVL_INIT_RATIO_1 + BaseAddrOffset));
-	__raw_writel(((DDR2_PHY_GATELVL<<30)|(DDR2_PHY_GATELVL<<20)
-		|(DDR2_PHY_GATELVL<<10)|(DDR2_PHY_GATELVL<<0)),
+	__raw_writel(DDR2_PHY_GATELVL,
 		(AM33XX_DATA0_GATELVL_INIT_RATIO_0 + BaseAddrOffset));
 	__raw_writel(DDR2_PHY_GATELVL>>2,
 		(AM33XX_DATA0_GATELVL_INIT_RATIO_1 + BaseAddrOffset));
-	__raw_writel(((DDR2_PHY_FIFO_WE<<30)|(DDR2_PHY_FIFO_WE<<20)
-		|(DDR2_PHY_FIFO_WE<<10)|(DDR2_PHY_FIFO_WE<<0)),
+	__raw_writel(DDR2_PHY_FIFO_WE,
 		(AM33XX_DATA0_FIFO_WE_SLAVE_RATIO_0 + BaseAddrOffset));
 	__raw_writel(DDR2_PHY_FIFO_WE>>2,
 		(AM33XX_DATA0_FIFO_WE_SLAVE_RATIO_1 + BaseAddrOffset));
-	__raw_writel(((DDR2_PHY_WR_DATA<<30)|(DDR2_PHY_WR_DATA<<20)
-		|(DDR2_PHY_WR_DATA<<10)|(DDR2_PHY_WR_DATA<<0)),
+	__raw_writel(DDR2_PHY_WR_DATA,
 		(AM33XX_DATA0_WR_DATA_SLAVE_RATIO_0 + BaseAddrOffset));
 	__raw_writel(DDR2_PHY_WR_DATA>>2,
 		(AM33XX_DATA0_WR_DATA_SLAVE_RATIO_1 + BaseAddrOffset));

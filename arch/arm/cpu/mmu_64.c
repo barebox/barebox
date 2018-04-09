@@ -220,6 +220,7 @@ static int mmu_init(void)
 	for_each_memory_bank(bank)
 		create_sections(bank->start, bank->start, bank->size, CACHED_MEM);
 
+	/* Make zero page faulting to catch NULL pointer derefs */
 	create_sections(0x0, 0x0, 0x1000, 0x0);
 
 	mmu_enable();

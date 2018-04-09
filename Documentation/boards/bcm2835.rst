@@ -1,17 +1,35 @@
-Broadcom BCM2835
+Broadcom BCM283x
 ================
 
 Raspberry Pi
 ------------
 
-  1. Prepare a card with a FAT filesystem. Download a tiny NOOBS LITE
-     zip archive and unpack it into FAT partition.
-     See http://www.raspberrypi.org/help/noobs-setup/ for details.
+  1. Prepare an SD or microSD card with a FAT filesystem of at least 30 MB in size.
 
-  2. Compile ``barebox.bin`` image (use ``rpi_defconfig``).
-     Copy it to the SD/microSD card and name it ``recovery.img``.
+  2. Download the `Raspberry Pi firmware`_ (120 MB), unzip it, and copy the
+     contents of the ``boot/`` folder to your card.
 
-  3. Connect to board's UART (115200 8N1);
+  3. Use ``make rpi_defconfig; make`` to build barebox. This will create the following images:
+
+     - ``images/barebox-raspberry-pi-1.img`` for the BCM2835/ARM1176JZF-S (Raspberry Pi 1)
+     - ``images/barebox-raspberry-pi-2.img`` for the BCM2836/CORTEX-A7 (Raspberry Pi 2)
+     - ``images/barebox-raspberry-pi-3.img`` for the BCM2837/CORTEX-A53 (Raspberry Pi 3, Raspberry Pi Zero)
+
+     Copy the respective image for your model to your SD card and name it
+     ``barebox.img``.
+
+  4. Create a text file ``config.txt`` on the SD card with the following content::
+
+         kernel=barebox.img
+         enable_uart=1
+         dtoverlay=pi3-miniuart-bt
+
+     (For more information, refer to the `documentation for config.txt`_.)
+
+  5. Connect to board's UART (115200 8N1);
      Use PIN6 (GND), PIN8 (UART_TX), PIN10 (UART_RX) pins.
 
-  4. Turn board's power on.
+  6. Turn board's power on.
+
+.. _Raspberry Pi firmware: https://codeload.github.com/raspberrypi/firmware/zip/80e1fbeb78f9df06701d28c0ed3a3060a3f557ef
+.. _documentation for config.txt: https://www.raspberrypi.org/documentation/configuration/config-txt/

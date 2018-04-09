@@ -490,6 +490,11 @@ CFG_start_imx6dl_eltec_hipercam.pblx.imximg = $(board)/eltec-hipercam/flash-head
 FILE_barebox-eltec-hipercam.img = start_imx6dl_eltec_hipercam.pblx.imximg
 image-$(CONFIG_MACH_ELTEC_HIPERCAM) += barebox-eltec-hipercam.img
 
+pblx-$(CONFIG_MACH_ADVANTECH_ROM_742X) += start_advantech_imx6dl_rom_7421
+CFG_start_advantech_imx6dl_rom_7421.pblx.imximg = $(board)/advantech-mx6/flash-header-advantech-rom-7421.imxcfg
+FILE_barebox-advantech-imx6dl-rom-7421.img = start_advantech_imx6dl_rom_7421.pblx.imximg
+image-$(CONFIG_MACH_ADVANTECH_ROM_742X) += barebox-advantech-imx6dl-rom-7421.img
+
 pblx-$(CONFIG_MACH_WARP7) += start_imx7s_element14_warp7
 CFG_start_imx7s_element14_warp7.pblx.imximg = $(board)/element14-warp7/flash-header-mx7-warp.imxcfg
 FILE_barebox-element14-imx7s-warp7.img = start_imx7s_element14_warp7.pblx.imximg

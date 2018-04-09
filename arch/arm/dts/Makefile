@@ -7,6 +7,7 @@ endif
 # created.
 obj- += dummy.o
 
+pbl-dtb-$(CONFIG_MACH_ADVANTECH_ROM_742X) += imx6dl-advantech-rom-7421.dtb.o
 pbl-dtb-$(CONFIG_MACH_AFI_GF) += am335x-afi-gf.dtb.o
 pbl-dtb-$(CONFIG_MACH_BEAGLEBONE) += am335x-bone.dtb.o am335x-boneblack.dtb.o am335x-bone-common.dtb.o
 pbl-dtb-$(CONFIG_MACH_CM_FX6) += imx6dl-cm-fx6.dtb.o imx6q-cm-fx6.dtb.o imx6q-utilite.dtb.o

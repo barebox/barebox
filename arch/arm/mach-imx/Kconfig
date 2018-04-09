@@ -393,6 +393,11 @@ config MACH_CM_FX6
 	bool "CM FX6"
 	select ARCH_IMX6
 
+config MACH_ADVANTECH_ROM_742X
+	bool "Advantech ROM 742X"
+	select ARCH_IMX6
+	select ARM_USE_COMPRESSED_DTB
+
 config MACH_WARP7
 	bool "NXP i.MX7: element 14 WaRP7 Board"
 	select ARCH_IMX7

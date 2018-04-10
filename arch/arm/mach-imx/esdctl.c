@@ -37,6 +37,7 @@
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
+#include <mach/vf610-ddrmc.h>
 
 struct imx_esdctl_data {
 	unsigned long base0;
@@ -296,6 +297,28 @@ static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 			   imx6_mmdc_sdram_size(mmdcbase));
 }
 
+static inline resource_size_t vf610_ddrmc_sdram_size(void __iomem *ddrmc)
+{
+	const u32 cr01 = readl(ddrmc + DDRMC_CR(1));
+	const u32 cr73 = readl(ddrmc + DDRMC_CR(73));
+	const u32 cr78 = readl(ddrmc + DDRMC_CR(78));
+
+	unsigned int rows, cols, width, banks;
+
+	rows  = DDRMC_CR01_MAX_ROW_REG(cr01) - DDRMC_CR73_ROW_DIFF(cr73);
+	cols  = DDRMC_CR01_MAX_COL_REG(cr01) - DDRMC_CR73_COL_DIFF(cr73);
+	banks = 1 << (3 - DDRMC_CR73_BANK_DIFF(cr73));
+	width = (cr78 & DDRMC_CR78_REDUC) ? sizeof(u8) : sizeof(u16);
+
+	return memory_sdram_size(cols, rows, banks, width);
+}
+
+static void vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+{
+	arm_add_mem_device("ram0", data->base0,
+			   vf610_ddrmc_sdram_size(mmdcbase));
+}
+
 static int imx_esdctl_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -372,6 +395,11 @@ static __maybe_unused struct imx_esdctl_data imx6ul_data = {
 	.add_mem = imx6_mmdc_add_mem,
 };
 
+static __maybe_unused struct imx_esdctl_data vf610_data = {
+	.base0 = VF610_RAM_BASE_ADDR,
+	.add_mem = vf610_ddrmc_add_mem,
+};
+
 static struct platform_device_id imx_esdctl_ids[] = {
 #ifdef CONFIG_ARCH_IMX1
 	{
@@ -430,6 +458,9 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6q-mmdc",
 		.data = &imx6q_data
+	}, {
+		.compatible = "fsl,vf610-ddrmc",
+		.data = &vf610_data
 	}, {
 		/* sentinel */
 	}
@@ -596,4 +627,11 @@ void __noreturn imx6q_barebox_entry(void *boarddata)
 void __noreturn imx6ul_barebox_entry(void *boarddata)
 {
 	imx6_barebox_entry(MX6_MMDC_PORT0_BASE_ADDR, boarddata);
+}
+
+void __noreturn vf610_barebox_entry(void *boarddata)
+{
+	barebox_arm_entry(VF610_RAM_BASE_ADDR,
+			  vf610_ddrmc_sdram_size(IOMEM(VF610_DDR_BASE_ADDR)),
+			  boarddata);
 }

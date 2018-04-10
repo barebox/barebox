@@ -47,7 +47,7 @@ static void __noreturn start_imx6_samx6i_common(void *fdt_blob_fixed_offset)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = fdt_blob_fixed_offset - get_runtime_offset();
+	fdt = fdt_blob_fixed_offset + get_runtime_offset();
 
 	barebox_arm_entry(0x10000000, size, fdt);
 }

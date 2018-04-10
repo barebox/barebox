@@ -120,7 +120,7 @@ static inline unsigned long imx_v3_sdram_size(void __iomem *esdctlbase, int num)
 
 	size = imx_v2_sdram_size(esdctlbase, num);
 
-	if (readl(esdctlbase + IMX_ESDMISC) & (1 << 6))
+	if (readl(esdctlbase + IMX_ESDMISC) & ESDMISC_DDR2_8_BANK)
 		size *= 2;
 
 	if (size > SZ_256M)

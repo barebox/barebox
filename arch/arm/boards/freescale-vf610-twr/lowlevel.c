@@ -21,6 +21,8 @@ static inline void setup_uart(void)
 	writel(0, iomuxbase + 0x0380);
 
 	vf610_uart_setup_ll();
+
+	putc_ll('>');
 }
 
 extern char __dtb_vf610_twr_start[];

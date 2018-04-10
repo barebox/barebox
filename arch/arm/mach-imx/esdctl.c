@@ -378,12 +378,12 @@ static __maybe_unused struct imx_esdctl_data imx53_data = {
 };
 
 static __maybe_unused struct imx_esdctl_data imx6q_data = {
-	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
+	.base0 = MX6_MMDC_PORT01_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
 };
 
 static __maybe_unused struct imx_esdctl_data imx6ul_data = {
-	.base0 = 0x80000000,
+	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
 };
 
@@ -605,10 +605,10 @@ imx6_barebox_entry(unsigned long membase, void *boarddata)
 
 void __noreturn imx6q_barebox_entry(void *boarddata)
 {
-	imx6_barebox_entry(0x10000000, boarddata);
+	imx6_barebox_entry(MX6_MMDC_PORT01_BASE_ADDR, boarddata);
 }
 
 void __noreturn imx6ul_barebox_entry(void *boarddata)
 {
-	imx6_barebox_entry(0x80000000, boarddata);
+	imx6_barebox_entry(MX6_MMDC_PORT0_BASE_ADDR, boarddata);
 }

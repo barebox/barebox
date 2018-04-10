@@ -304,7 +304,7 @@ ENTRY_FUNCTION(start_imx6_zii_rdu2, r0, r1, r2)
 	 * When still running in SRAM, we need to setup the DRAM now and load
 	 * the remaining image.
 	 */
-	if (get_pc() < MX6_MMDC_PORT0_BASE_ADDR)
+	if (get_pc() < MX6_MMDC_PORT01_BASE_ADDR)
 		rdu2_sram_setup();
 
 	if (__imx6_cpu_revision() == IMX_CHIP_REV_2_0)

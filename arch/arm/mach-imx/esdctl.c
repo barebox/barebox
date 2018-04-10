@@ -75,7 +75,7 @@ static inline unsigned long imx_v1_sdram_size(void __iomem *esdctlbase, int num)
 	if (ctlval & (1 << 17))
 		width = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
+	size = memory_sdram_size(cols, rows, banks, width);
 
 	return min_t(unsigned long, size, SZ_64M);
 }
@@ -100,7 +100,7 @@ static inline unsigned long imx_v2_sdram_size(void __iomem *esdctlbase, int num)
 	if ((ctlval & ESDCTL0_DSIZ_MASK) == ESDCTL0_DSIZ_31_0)
 		width = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
+	size = memory_sdram_size(cols, rows, banks, width);
 
 	return min_t(unsigned long, size, SZ_256M);
 }
@@ -127,7 +127,6 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 {
 	u32 ctlval = readl(esdctlbase + ESDCTL_V4_ESDCTL0);
 	u32 esdmisc = readl(esdctlbase + ESDCTL_V4_ESDMISC);
-	unsigned long size;
 	int rows, cols, width = 2, banks = 8;
 
 	if (cs == 0 && !(ctlval & ESDCTL_V4_ESDCTLx_SDE0))
@@ -153,9 +152,7 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 	if (esdmisc & ESDCTL_V4_ESDMISC_BANKS_4)
 		banks = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
-
-	return size;
+	return memory_sdram_size(cols, rows, banks, width);
 }
 
 /*
@@ -166,7 +163,6 @@ static inline u64 __imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 {
 	u32 ctlval = readl(mmdcbase + MDCTL);
 	u32 mdmisc = readl(mmdcbase + MDMISC);
-	u64 size;
 	int rows, cols, width = 2, banks = 8;
 
 	if (cs == 0 && !(ctlval & MMDCx_MDCTL_SDE0))
@@ -192,9 +188,7 @@ static inline u64 __imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 	if (mdmisc & MMDCx_MDMISC_DDR_4_BANKS)
 		banks = 4;
 
-	size = (u64)(1 << cols) * (1 << rows) * banks * width;
-
-	return size;
+	return memory_sdram_size(cols, rows, banks, width);
 }
 
 static void add_mem(unsigned long base0, unsigned long size0,

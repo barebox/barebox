@@ -77,10 +77,7 @@ static inline unsigned long imx_v1_sdram_size(void __iomem *esdctlbase, int num)
 
 	size = (1 << cols) * (1 << rows) * banks * width;
 
-	if (size > SZ_64M)
-		size = SZ_64M;
-
-	return size;
+	return min_t(unsigned long, size, SZ_64M);
 }
 
 /*
@@ -105,10 +102,7 @@ static inline unsigned long imx_v2_sdram_size(void __iomem *esdctlbase, int num)
 
 	size = (1 << cols) * (1 << rows) * banks * width;
 
-	if (size > SZ_256M)
-		size = SZ_256M;
-
-	return size;
+	return min_t(unsigned long, size, SZ_256M);
 }
 
 /*
@@ -123,10 +117,7 @@ static inline unsigned long imx_v3_sdram_size(void __iomem *esdctlbase, int num)
 	if (readl(esdctlbase + IMX_ESDMISC) & ESDMISC_DDR2_8_BANK)
 		size *= 2;
 
-	if (size > SZ_256M)
-		size = SZ_256M;
-
-	return size;
+	return min_t(unsigned long, size, SZ_256M);
 }
 
 /*

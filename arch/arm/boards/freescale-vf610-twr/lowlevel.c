@@ -3,6 +3,7 @@
 #include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <mach/esdctl.h>
 #include <mach/vf610-regs.h>
 #include <mach/clock-vf610.h>
 #include <mach/iomux-vf610.h>
@@ -23,13 +24,11 @@ extern char __dtb_vf610_twr_start[];
 
 ENTRY_FUNCTION(start_vf610_twr, r0, r1, r2)
 {
-	void *fdt;
 
 	vf610_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_vf610_twr_start + get_runtime_offset();
-	barebox_arm_entry(0x80000000, SZ_128M, fdt);
+	vf610_barebox_entry(__dtb_vf610_twr_start + get_runtime_offset());
 }

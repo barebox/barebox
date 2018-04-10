@@ -498,9 +498,9 @@ void __noreturn imx1_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX1_CSD0_BASE_ADDR,
-			imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 0),
+			imx_v1_sdram_size(IOMEM(MX1_SDRAMC_BASE_ADDR), 0),
 			MX1_CSD1_BASE_ADDR,
-			imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 1),
+			imx_v1_sdram_size(IOMEM(MX1_SDRAMC_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -511,9 +511,9 @@ void __noreturn imx25_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX25_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX25_ESDCTL_BASE_ADDR), 0),
 			MX25_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX25_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -523,12 +523,12 @@ void __noreturn imx27_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
-	imx_esdctl_v2_disable_default((void *)MX27_ESDCTL_BASE_ADDR);
+	imx_esdctl_v2_disable_default(IOMEM(MX27_ESDCTL_BASE_ADDR));
 
 	upper_or_coalesced_range(MX27_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX27_ESDCTL_BASE_ADDR), 0),
 			MX27_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX27_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -538,12 +538,12 @@ void __noreturn imx31_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
-	imx_esdctl_v2_disable_default((void *)MX31_ESDCTL_BASE_ADDR);
+	imx_esdctl_v2_disable_default(IOMEM(MX31_ESDCTL_BASE_ADDR));
 
 	upper_or_coalesced_range(MX31_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX31_ESDCTL_BASE_ADDR), 0),
 			MX31_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX31_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -553,12 +553,12 @@ void __noreturn imx35_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
-	imx_esdctl_v2_disable_default((void *)MX35_ESDCTL_BASE_ADDR);
+	imx_esdctl_v2_disable_default(IOMEM(MX35_ESDCTL_BASE_ADDR));
 
 	upper_or_coalesced_range(MX35_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX35_ESDCTL_BASE_ADDR), 0),
 			MX35_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX35_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -569,9 +569,9 @@ void __noreturn imx51_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX51_CSD0_BASE_ADDR,
-			imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 0),
+			imx_v3_sdram_size(IOMEM(MX51_ESDCTL_BASE_ADDR), 0),
 			MX51_CSD1_BASE_ADDR,
-			imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 1),
+			imx_v3_sdram_size(IOMEM(MX51_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -582,9 +582,9 @@ void __noreturn imx53_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX53_CSD0_BASE_ADDR,
-			imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 0),
+			imx_v4_sdram_size(IOMEM(MX53_ESDCTL_BASE_ADDR), 0),
 			MX53_CSD1_BASE_ADDR,
-			imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 1),
+			imx_v4_sdram_size(IOMEM(MX53_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -592,8 +592,8 @@ void __noreturn imx53_barebox_entry(void *boarddata)
 
 void __noreturn imx6q_barebox_entry(void *boarddata)
 {
-	u64 size_cs0 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 0);
-	u64 size_cs1 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 1);
+	u64 size_cs0 = imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR), 0);
+	u64 size_cs1 = imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR), 1);
 	u64 total    = size_cs0 + size_cs1;
 
 	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
@@ -603,8 +603,8 @@ void __noreturn imx6q_barebox_entry(void *boarddata)
 
 void __noreturn imx6ul_barebox_entry(void *boarddata)
 {
-	u64 size_cs0 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 0);
-	u64 size_cs1 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 1);
+	u64 size_cs0 = imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR), 0);
+	u64 size_cs1 = imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR), 1);
 	u64 total    = size_cs0 + size_cs1;
 
 	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);

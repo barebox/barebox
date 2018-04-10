@@ -114,8 +114,7 @@ static inline unsigned long arm_mem_ttb(unsigned long membase,
 					unsigned long endmem)
 {
 	endmem = arm_mem_stack(membase, endmem);
-	endmem &= ~(SZ_16K - 1);
-	endmem -= SZ_16K;
+	endmem = ALIGN_DOWN(endmem, SZ_16K) - SZ_16K;
 
 	return endmem;
 }
@@ -138,7 +137,7 @@ static inline unsigned long arm_mem_ramoops(unsigned long membase,
 	endmem = arm_mem_ttb(membase, endmem);
 #ifdef CONFIG_FS_PSTORE_RAMOOPS
 	endmem -= CONFIG_FS_PSTORE_RAMOOPS_SIZE;
-	endmem &= ~(SZ_4K - 1); /* Align to 4K */
+	endmem = ALIGN_DOWN(endmem, SZ_4K);
 #endif
 
 	return endmem;
@@ -151,9 +150,7 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 	endmem = arm_mem_ramoops(membase, endmem);
 
 	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
-		endmem -= size;
-		endmem &= ~(SZ_1M - 1);
-		return endmem;
+		return ALIGN_DOWN(endmem - size, SZ_1M);
 	} else {
 		if (TEXT_BASE >= membase && TEXT_BASE < endmem)
 			return TEXT_BASE;

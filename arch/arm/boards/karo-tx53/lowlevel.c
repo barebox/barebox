@@ -47,7 +47,7 @@ static void __imx53_tx53_init(int is_xx30)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = fdt_blob_fixed_offset - get_runtime_offset();
+	fdt = fdt_blob_fixed_offset + get_runtime_offset();
 
 	imx53_barebox_entry(fdt);
 }

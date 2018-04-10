@@ -595,16 +595,20 @@ void __noreturn imx53_barebox_entry(void *boarddata)
 	barebox_arm_entry(base, size, boarddata);
 }
 
-void __noreturn imx6q_barebox_entry(void *boarddata)
+static void __noreturn
+imx6_barebox_entry(unsigned long membase, void *boarddata)
 {
-	barebox_arm_entry(0x10000000,
+	barebox_arm_entry(membase,
 			  imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR)),
 			  boarddata);
 }
 
+void __noreturn imx6q_barebox_entry(void *boarddata)
+{
+	imx6_barebox_entry(0x10000000, boarddata);
+}
+
 void __noreturn imx6ul_barebox_entry(void *boarddata)
 {
-	barebox_arm_entry(0x80000000,
-			  imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR)),
-			  boarddata);
+	imx6_barebox_entry(0x80000000, boarddata);
 }

@@ -55,13 +55,7 @@ static inline int __imx6_cpu_type(void)
 	return val;
 }
 
-static inline int imx6_cpu_type(void)
-{
-	if (!cpu_is_mx6())
-		return 0;
-
-	return __imx6_cpu_type();
-}
+int imx6_cpu_type(void);
 
 #define DEFINE_MX6_CPU_TYPE(str, type)					\
 	static inline int cpu_mx6_is_##str(void)			\
@@ -102,12 +96,6 @@ static inline int __imx6_cpu_revision(void)
 	return ((major_part + 1) << 4) | minor_part;
 }
 
-static inline int imx6_cpu_revision(void)
-{
-	if (!cpu_is_mx6())
-		return 0;
-
-	return __imx6_cpu_revision();
-}
+int imx6_cpu_revision(void);
 
 #endif /* __MACH_IMX6_H */

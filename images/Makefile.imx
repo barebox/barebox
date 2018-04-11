@@ -139,17 +139,17 @@ CFG_start_imx53_mba53_1gib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-
 FILE_barebox-tq-mba53-1gib.img = start_imx53_mba53_1gib.pblx.imximg
 image-$(CONFIG_MACH_TQMA53) += barebox-tq-mba53-1gib.img
 
-pblx-$(CONFIG_MACH_TX53) += start_imx53_imx53_tx53_xx30_samsung
+pblx-$(CONFIG_MACH_TX53) += start_imx53_tx53_xx30_samsung
 CFG_start_imx53_tx53_xx30_samsung.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30-samsung.imxcfg
 FILE_barebox-tx53-xx30-samsung.img = start_imx53_tx53_xx30_samsung.pblx.imximg
 image-$(CONFIG_MACH_TX53) += barebox-tx53-xx30-samsung.img
 
-pblx-$(CONFIG_MACH_TX53) += start_imx53_imx53_tx53_xx30
+pblx-$(CONFIG_MACH_TX53) += start_imx53_tx53_xx30
 CFG_start_imx53_tx53_xx30.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30.imxcfg
 FILE_barebox-tx53-xx30.img = start_imx53_tx53_xx30.pblx.imximg
 image-$(CONFIG_MACH_TX53) += barebox-tx53-xx30.img
 
-pblx-$(CONFIG_MACH_TX53) += start_imx53_imx53_tx53_1011
+pblx-$(CONFIG_MACH_TX53) += start_imx53_tx53_1011
 CFG_start_imx53_tx53_1011.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-rev1011.imxcfg
 FILE_barebox-tx53-1011.img = start_imx53_tx53_1011.pblx.imximg
 image-$(CONFIG_MACH_TX53) += barebox-tx53-1011.img

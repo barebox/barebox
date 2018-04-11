@@ -514,6 +514,13 @@ static int imx6_ccm_probe(struct device_d *dev)
 
 	clk_set_parent(clks[IMX6QDL_CLK_LVDS1_SEL], clks[IMX6QDL_CLK_SATA_REF_100M]);
 
+	/*
+	 * The gpmi needs 100MHz frequency in the EDO/Sync mode,
+	 * We can not get the 100MHz from the pll2_pfd0_352m.
+	 * So choose pll2_pfd2_396m as enfc_sel's parent.
+	 */
+	clk_set_parent(clks[IMX6QDL_CLK_ENFC_SEL], clks[IMX6QDL_CLK_PLL2_PFD2_396M]);
+
 	return 0;
 }
 

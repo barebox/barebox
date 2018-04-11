@@ -16,7 +16,9 @@ void __noreturn imx6_pm_stby_poweroff(void);
 #define IMX6_CPUTYPE_IMX6DL	0x261
 #define IMX6_CPUTYPE_IMX6SX	0x462
 #define IMX6_CPUTYPE_IMX6D	0x263
+#define IMX6_CPUTYPE_IMX6DP	0x1263
 #define IMX6_CPUTYPE_IMX6Q	0x463
+#define IMX6_CPUTYPE_IMX6QP	0x1463
 #define IMX6_CPUTYPE_IMX6UL	0x164
 #define IMX6_CPUTYPE_IMX6ULL	0x165
 
@@ -69,6 +71,10 @@ static inline int __imx6_cpu_type(void)
 
 	cpu_type |= scu_get_core_count() << 8;
 
+	if ((cpu_type == IMX6_CPUTYPE_IMX6D || cpu_type == IMX6_CPUTYPE_IMX6Q) &&
+	    SI_REV_MAJOR(si_rev) >= 1)
+		cpu_type |= 0x1000;
+
 	return cpu_type;
 }
 
@@ -90,7 +96,9 @@ int imx6_cpu_type(void);
 DEFINE_MX6_CPU_TYPE(mx6s, IMX6_CPUTYPE_IMX6S);
 DEFINE_MX6_CPU_TYPE(mx6dl, IMX6_CPUTYPE_IMX6DL);
 DEFINE_MX6_CPU_TYPE(mx6q, IMX6_CPUTYPE_IMX6Q);
+DEFINE_MX6_CPU_TYPE(mx6qp, IMX6_CPUTYPE_IMX6QP);
 DEFINE_MX6_CPU_TYPE(mx6d, IMX6_CPUTYPE_IMX6D);
+DEFINE_MX6_CPU_TYPE(mx6dp, IMX6_CPUTYPE_IMX6DP);
 DEFINE_MX6_CPU_TYPE(mx6sx, IMX6_CPUTYPE_IMX6SX);
 DEFINE_MX6_CPU_TYPE(mx6sl, IMX6_CPUTYPE_IMX6SL);
 DEFINE_MX6_CPU_TYPE(mx6ul, IMX6_CPUTYPE_IMX6UL);

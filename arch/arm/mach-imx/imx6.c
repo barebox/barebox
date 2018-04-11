@@ -186,16 +186,16 @@ int imx6_init(void)
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:
-		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
-			cputypestr = "i.MX6 Quad Plus";
-		else
-			cputypestr = "i.MX6 Quad";
+		cputypestr = "i.MX6 Quad";
+		break;
+	case IMX6_CPUTYPE_IMX6QP:
+		cputypestr = "i.MX6 Quad Plus";
 		break;
 	case IMX6_CPUTYPE_IMX6D:
-		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
-			cputypestr = "i.MX6 Dual Plus";
-		else
-			cputypestr = "i.MX6 Dual";
+		cputypestr = "i.MX6 Dual";
+		break;
+	case IMX6_CPUTYPE_IMX6DP:
+		cputypestr = "i.MX6 Dual Plus";
 		break;
 	case IMX6_CPUTYPE_IMX6DL:
 		cputypestr = "i.MX6 DualLite";

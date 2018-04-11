@@ -66,7 +66,7 @@ static void phyflex_err006282_workaround(void)
 	mdelay(2);
 	gpio_set_value(MX6_PHYFLEX_ERR006282, 0);
 
-	if (cpu_is_mx6q() || cpu_is_mx6d())
+	if (cpu_is_mx6q() || cpu_is_mx6d() || cpu_is_mx6qp() || cpu_is_mx6dp())
 		mxc_iomux_v3_setup_pad(MX6Q_PAD_SD4_DAT3__GPIO_2_11_PD);
 	else if (cpu_is_mx6dl() || cpu_is_mx6s())
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_SD4_DAT3__GPIO_2_11);

@@ -23,6 +23,7 @@
 		backend-type = "raw";
 		backend = <&backend_state_eeprom>;
 		backend-stridesize = <40>;
+		keep-previous-content;
 
 		#address-cells = <1>;
 		#size-cells = <1>;

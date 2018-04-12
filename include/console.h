@@ -23,6 +23,8 @@
 #include <param.h>
 #include <linux/list.h>
 #include <driver.h>
+#include <clock.h>
+#include <kfifo.h>
 
 #define CONSOLE_STDIN           (1 << 0)
 #define CONSOLE_STDOUT          (1 << 1)
@@ -87,6 +89,88 @@ int console_set_active(struct console_device *cdev, unsigned active);
 unsigned console_get_active(struct console_device *cdev);
 int console_set_baudrate(struct console_device *cdev, unsigned baudrate);
 unsigned console_get_baudrate(struct console_device *cdev);
+
+
+/**
+ * console_fifo_fill - fill FIFO with as much console data as possible
+ *
+ * @cdev:	Console to poll for dat
+ * @fifo:	FIFO to store the data in
+ */
+static inline int console_fifo_fill(struct console_device *cdev,
+				    struct kfifo *fifo)
+{
+	size_t len = kfifo_len(fifo);
+	while (cdev->tstc(cdev) && len < fifo->size) {
+		kfifo_putc(fifo, (unsigned char)(cdev->getc(cdev)));
+		len++;
+	}
+
+	return len;
+}
+
+/**
+ * __console_drain - Drain console into a buffer via FIFO
+ *
+ * @__is_timeout	Callback used to determine timeout condition
+ * @cdev		Console to drain
+ * @fifo		FIFO to use as a transient buffer
+ * @buf			Buffer to drain console into
+ * @len			Size of the drain buffer
+ * @timeout		Console polling timeout in ns
+ *
+ * This function is optimized to :
+ * - maximize throughput (ie. read as much as is available in lower layer fifo)
+ * - minimize latencies (no delay or wait timeout if data available)
+ * - have a timeout
+ * This is why standard getc() is not used, and input_fifo_fill() exists.
+ */
+static inline int __console_drain(int (*__is_timeout)(uint64_t start_ns,
+						      uint64_t time_offset_ns),
+				  struct console_device *cdev,
+				  struct kfifo *fifo,
+				  unsigned char *buf,
+				  int len,
+				  uint64_t timeout)
+{
+	int i = 0;
+	uint64_t start = get_time_ns();
+
+	if (!len)
+		return -EINVAL;
+
+	do {
+		/*
+		 * To minimize wait time before we start polling Rx
+		 * (to potentially avoid overruning Rx FIFO) we call
+		 * console_fifo_fill first
+		 */
+		if (console_fifo_fill(cdev, fifo))
+			kfifo_getc(fifo, &buf[i++]);
+
+	} while (i < len && !__is_timeout(start, timeout));
+
+	return i;
+}
+
+static inline int console_drain_non_interruptible(struct console_device *cdev,
+						  struct kfifo *fifo,
+						  unsigned char *buf,
+						  int len,
+						  uint64_t timeout)
+{
+	return __console_drain(is_timeout_non_interruptible,
+			       cdev, fifo, buf, len, timeout);
+}
+
+static inline int console_drain(struct console_device *cdev,
+				struct kfifo *fifo,
+				unsigned char *buf,
+				int len,
+				uint64_t timeout)
+{
+	return __console_drain(is_timeout, cdev, fifo, buf, len, timeout);
+}
 
 #ifdef CONFIG_PBL_CONSOLE
 void pbl_set_putc(void (*putcf)(void *ctx, int c), void *ctx);

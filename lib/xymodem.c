@@ -144,36 +144,16 @@ static const char block_nack[MAX_PROTOS][MAX_CRCS] = {
 	{ 0, 0, 0 },		/* YMODEM-G */
 };
 
-static int input_fifo_fill(struct console_device *cdev, struct kfifo *fifo)
-{
-	while (cdev->tstc(cdev) && kfifo_len(fifo) < INPUT_FIFO_SIZE)
-		kfifo_putc(fifo, (unsigned char)(cdev->getc(cdev)));
-	return kfifo_len(fifo);
-}
-
-/*
- * This function is optimized to :
- * - maximize throughput (ie. read as much as is available in lower layer fifo)
- * - minimize latencies (no delay or wait timeout if data available)
- * - have a timeout
- * This is why standard getc() is not used, and input_fifo_fill() exists.
- */
 static int xy_gets(struct console_device *cdev, struct kfifo *fifo,
 		      unsigned char *buf, int len, uint64_t timeout)
 {
-	int i, rc;
-	uint64_t start = get_time_ns();
+	int rc;
 
-	for (i = 0, rc = 0; rc >= 0 && i < len; ) {
-		if (is_timeout(start, timeout)) {
-			rc = -ETIMEDOUT;
-			continue;
-		}
-		if (input_fifo_fill(cdev, fifo))
-			kfifo_getc(fifo, &buf[i++]);
-	}
+	rc = console_drain(cdev, fifo, buf, len, timeout);
+	if (rc != len)
+		return -ETIMEDOUT;
 
-	return rc < 0 ? rc : i;
+	return len;
 }
 
 static void xy_putc(struct console_device *cdev, unsigned char c)

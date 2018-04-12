@@ -34,12 +34,26 @@ static void serdev_device_poller(void *context)
 				  serdev->polling_interval,
 				  serdev_device_poller,
 				  serdev);
+	} else {
+		poller_async_cancel(&serdev->poller);
 	}
+}
+
+static int serdev_device_set_polling_interval(struct param_d *param, void *serdev)
+{
+	/*
+	 * We execute poller ever time polling_interval changes to get
+	 * any unprocessed immediate Rx data as well as to propagate
+	 * polling_interval chagnes to outstanging async pollers.
+	 */
+	serdev_device_poller(serdev);
+	return 0;
 }
 
 int serdev_device_open(struct serdev_device *serdev)
 {
 	struct console_device *cdev = to_console_device(serdev);
+	struct param_d *p;
 	int ret;
 
 	if (!cdev->putc || !cdev->getc)
@@ -57,7 +71,17 @@ int serdev_device_open(struct serdev_device *serdev)
 	if (ret)
 		return ret;
 
-	return console_open(cdev);
+	ret = console_open(cdev);
+	if (ret)
+		return ret;
+
+	p = dev_add_param_uint64(serdev->dev, "polling_interval",
+				 serdev_device_set_polling_interval, NULL,
+				 &serdev->polling_interval, "%llu", serdev);
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
+	return 0;
 }
 
 unsigned int serdev_device_set_baudrate(struct serdev_device *serdev,

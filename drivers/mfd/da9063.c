@@ -126,7 +126,7 @@ static int da9063_probe(struct device_d *dev)
 	priv = xzalloc(sizeof(struct da9063));
 	priv->wd.priority = of_get_watchdog_priority(dev->device_node);
 	priv->wd.set_timeout = da9063_watchdog_set_timeout;
-	priv->wd.dev = dev;
+	priv->wd.hwdev = dev;
 	priv->client = to_i2c_client(dev);
 	priv->dev = dev;
 

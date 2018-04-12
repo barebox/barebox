@@ -185,17 +185,8 @@ static int pxa_serial_probe(struct device_d *dev)
 	return 0;
 }
 
-static void pxa_serial_remove(struct device_d *dev)
-{
-	struct pxa_serial_priv *priv = dev->priv;
-
-	console_unregister(&priv->cdev);
-	free(priv);
-}
-
 static struct driver_d pxa_serial_driver = {
 	.name = "pxa_serial",
 	.probe = pxa_serial_probe,
-	.remove = pxa_serial_remove,
 };
 console_platform_driver(pxa_serial_driver);

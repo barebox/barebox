@@ -181,15 +181,6 @@ out_err:
 	return err;
 }
 
-static void clps711x_remove(struct device_d *dev)
-{
-	struct clps711x_uart *s = dev->priv;
-
-	clps711x_flush(&s->cdev);
-	console_unregister(&s->cdev);
-	free(s);
-}
-
 static struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
 	{ .compatible = "cirrus,clps711x-uart", },
 };
@@ -197,7 +188,6 @@ static struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
 static struct driver_d clps711x_driver = {
 	.name		= "clps711x-uart",
 	.probe		= clps711x_probe,
-	.remove		= clps711x_remove,
 	.of_compatible	= DRV_OF_COMPAT(clps711x_uart_dt_ids),
 };
 console_platform_driver(clps711x_driver);

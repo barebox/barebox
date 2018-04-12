@@ -220,16 +220,6 @@ static int auart_serial_probe(struct device_d *dev)
 	return 0;
 }
 
-
-static void auart_serial_remove(struct device_d *dev)
-{
-	struct auart_priv *priv = dev->priv;
-
-	auart_serial_flush(&priv->cdev);
-	console_unregister(&priv->cdev);
-	free(priv);
-}
-
 static const __maybe_unused struct of_device_id auart_serial_dt_ids[] = {
 	{
 		.compatible = "fsl,imx23-auart",
@@ -241,7 +231,6 @@ static const __maybe_unused struct of_device_id auart_serial_dt_ids[] = {
 static struct driver_d auart_serial_driver = {
 	.name = "auart_serial",
 	.probe = auart_serial_probe,
-	.remove = auart_serial_remove,
 	.of_compatible = DRV_OF_COMPAT(auart_serial_dt_ids),
 };
 console_platform_driver(auart_serial_driver);

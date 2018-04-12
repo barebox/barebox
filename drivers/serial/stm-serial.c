@@ -182,15 +182,6 @@ static int stm_serial_probe(struct device_d *dev)
 	return 0;
 }
 
-static void stm_serial_remove(struct device_d *dev)
-{
-	struct stm_priv *priv = dev->priv;
-
-	stm_serial_flush(&priv->cdev);
-	console_unregister(&priv->cdev);
-	free(priv);
-}
-
 static __maybe_unused struct of_device_id stm_serial_dt_ids[] = {
 	{
 		.compatible = "arm,pl011",
@@ -202,7 +193,6 @@ static __maybe_unused struct of_device_id stm_serial_dt_ids[] = {
 static struct driver_d stm_serial_driver = {
         .name   = "stm_serial",
         .probe  = stm_serial_probe,
-	.remove = stm_serial_remove,
 	.of_compatible = DRV_OF_COMPAT(stm_serial_dt_ids),
 };
 console_platform_driver(stm_serial_driver);

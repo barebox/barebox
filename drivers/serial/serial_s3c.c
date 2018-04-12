@@ -202,18 +202,8 @@ static int s3c_serial_probe(struct device_d *dev)
 	return 0;
 }
 
-static void s3c_serial_remove(struct device_d *dev)
-{
-	struct s3c_uart *priv= dev->priv;
-
-	s3c_serial_flush(&priv->cdev);
-	console_unregister(&priv->cdev);
-	free(priv);
-}
-
 static struct driver_d s3c_serial_driver = {
 	.name   = "s3c_serial",
 	.probe  = s3c_serial_probe,
-	.remove = s3c_serial_remove,
 };
 console_platform_driver(s3c_serial_driver);

@@ -87,3 +87,98 @@ int serdev_device_write(struct serdev_device *serdev, const unsigned char *buf,
 	serdev_device_poller(serdev);
 	return 0;
 }
+
+/*
+ * NOTE: Code below is given primarily as an example of serdev API
+ * usage. It may or may not be as useful or work as well as the
+ * functions above.
+ */
+
+struct serdev_device_reader {
+	unsigned char *buf;
+	size_t len;
+	size_t capacity;
+};
+
+static int serdev_device_reader_receive_buf(struct serdev_device *serdev,
+					    const unsigned char *buf,
+					    size_t size)
+{
+	struct device_d *dev = serdev->dev;
+	struct serdev_device_reader *r = dev->priv;
+	const size_t room = min(r->capacity - r->len, size);
+
+	memcpy(r->buf + r->len, buf, room);
+	r->len += room;
+	/*
+	 * It's important we return 'size' even if we didn't trully
+	 * consume all of the data, since otherwise serdev will keep
+	 * re-executing us until we do. Given the logic above that
+	 * would mean infinite loop.
+	 */
+	return size;
+}
+
+/**
+ * serdev_device_reader_open - Open a reader serdev device
+ *
+ * @serdev:	Underlying serdev device
+ * @capacity:	Storage capacity of the reader
+ *
+ * This function is inteded for creating of reader serdev devices that
+ * can be used in conjunction with serdev_device_read() to perform
+ * trivial fixed length reads from a serdev device.
+ */
+int serdev_device_reader_open(struct serdev_device *serdev, size_t capacity)
+{
+	struct serdev_device_reader *r;
+
+	if (serdev->receive_buf)
+		return -EINVAL;
+
+	r = xzalloc(sizeof(*r));
+	r->capacity = capacity;
+	r->buf = xzalloc(capacity);
+
+	serdev->receive_buf = serdev_device_reader_receive_buf;
+	serdev->dev->priv   = r;
+
+	return 0;
+}
+
+/**
+ * serdev_device_read - Read data from serdev device
+ *
+ * @serdev:	Serdev device to read from (must be a serdev reader)
+ * @buf:	Buffer to read data into
+ * @count:	Number of bytes to read
+ * @timeout:	Read operation timeout
+ *
+ */
+int serdev_device_read(struct serdev_device *serdev, unsigned char *buf,
+		       size_t count, unsigned long timeout)
+{
+	struct device_d *dev = serdev->dev;
+	struct serdev_device_reader *r = dev->priv;
+	int ret;
+
+	uint64_t start = get_time_ns();
+
+	if (serdev->receive_buf != serdev_device_reader_receive_buf)
+		return -EINVAL;
+
+	/*
+	 * is_timeout will implicitly poll serdev via poller
+	 * infrastructure
+	 */
+	while (r->len < count) {
+		if (is_timeout(start, timeout))
+			return -ETIMEDOUT;
+	}
+
+	memcpy(buf, r->buf, count);
+	ret = (r->len == count) ? 0 : -EMSGSIZE;
+	r->len = 0;
+
+	return ret;
+}

@@ -33,4 +33,12 @@ int serdev_device_open(struct serdev_device *);
 unsigned int serdev_device_set_baudrate(struct serdev_device *, unsigned int);
 int serdev_device_write(struct serdev_device *, const unsigned char *,
 			size_t, unsigned long);
+
+/*
+ * The following two functions are not a part of original Linux API
+ */
+int serdev_device_reader_open(struct serdev_device *, size_t);
+int serdev_device_read(struct serdev_device *, unsigned char *,
+		       size_t, unsigned long);
+
 #endif

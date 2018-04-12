@@ -23,6 +23,7 @@
 #include <param.h>
 #include <linux/list.h>
 #include <driver.h>
+#include <serdev.h>
 #include <clock.h>
 #include <kfifo.h>
 
@@ -66,7 +67,33 @@ struct console_device {
 
 	struct cdev devfs;
 	struct cdev_operations fops;
+
+	struct serdev_device serdev;
 };
+
+static inline struct serdev_device *to_serdev_device(struct device_d *d)
+{
+	struct console_device *cdev =
+		container_of(d, struct console_device, class_dev);
+	return &cdev->serdev;
+}
+
+static inline struct console_device *
+to_console_device(struct serdev_device *serdev)
+{
+	return container_of(serdev, struct console_device, serdev);
+}
+
+static inline struct device_node *
+console_is_serdev_node(struct console_device *cdev)
+{
+	struct device_d *dev = cdev->dev;
+	if (dev && dev->device_node &&
+	    of_get_child_count(dev->device_node))
+		return dev->device_node;
+
+	return NULL;
+}
 
 int console_register(struct console_device *cdev);
 int console_unregister(struct console_device *cdev);

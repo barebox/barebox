@@ -238,34 +238,23 @@ static inline void lpuart_setbrg(void __iomem *base,
 	writeb(bfra, base + UARTCR4);
 }
 
-static inline void lpuart_setup_with_fifo(void __iomem *base,
-					  unsigned int refclock,
-					  unsigned int twfifo)
+static inline void lpuart_setup(void __iomem *base,
+				unsigned int refclock)
 {
 	/* Disable UART */
 	writeb(0, base + UARTCR2);
 	writeb(0, base + UARTMODEM);
 	writeb(0, base + UARTCR1);
 
-	if (twfifo) {
-		writeb(UARTPFIFO_TXFE | UARTPFIFO_RXFE, base + UARTPFIFO);
-		writeb((u8)twfifo, base + UARTTWFIFO);
-	} else {
-		writeb(0, base + UARTPFIFO);
-		writeb(0, base + UARTTWFIFO);
-	}
+	writeb(0, base + UARTPFIFO);
+	writeb(0, base + UARTTWFIFO);
+
 	writeb(1, base + UARTRWFIFO);
 	writeb(UARTCFIFO_RXFLUSH | UARTCFIFO_TXFLUSH, base + UARTCFIFO);
 
 	lpuart_setbrg(base, refclock, CONFIG_BAUDRATE);
 
 	writeb(UARTCR2_TE | UARTCR2_RE, base + UARTCR2);
-}
-
-static inline void lpuart_setup(void __iomem *base,
-				unsigned int refclock)
-{
-	lpuart_setup_with_fifo(base, refclock, 0x00);
 }
 
 static inline void lpuart_putc(void __iomem *base, int c)

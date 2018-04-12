@@ -170,9 +170,7 @@ static int lpuart_serial_probe(struct device_d *dev)
 
 	cdev->linux_console_name = "ttyLP";
 
-	lpuart_setup_with_fifo(lpuart->base,
-			       clk_get_rate(lpuart->clk),
-			       15);
+	lpuart_setup(lpuart->base, clk_get_rate(lpuart->clk));
 
 	ret = console_register(cdev);
 	if (!ret) {

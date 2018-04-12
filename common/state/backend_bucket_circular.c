@@ -396,11 +396,13 @@ static int state_backend_bucket_circular_init(
 			meta = (struct state_backend_storage_bucket_circular_meta *)
 					(buf + sub_offset + circ->writesize - sizeof(*meta));
 
-			if (meta->magic != circular_magic)
+			if (meta->magic != circular_magic) {
 				written_length = 0;
-			else
+				if (meta->magic != ~0 && !!meta->magic)
+					bucket->wrong_magic = 1;
+			} else {
 				written_length = meta->written_length;
-
+			}
 			break;
 		}
 	}

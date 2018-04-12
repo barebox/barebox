@@ -44,6 +44,8 @@ int state_save(struct state *state)
 	void *buf;
 	ssize_t len;
 	int ret;
+	struct state_backend_storage_bucket *bucket;
+	struct state_backend_storage *storage;
 
 	if (!state->dirty)
 		return 0;
@@ -55,7 +57,19 @@ int state_save(struct state *state)
 		return ret;
 	}
 
-	ret = state_storage_write(&state->storage, buf, len);
+	storage = &state->storage;
+	if (state->keep_prev_content) {
+		bool has_content = 0;
+		list_for_each_entry(bucket, &storage->buckets, bucket_list)
+			has_content |= bucket->wrong_magic;
+		if (has_content) {
+			dev_err(&state->dev, "Found foreign content on backend, won't overwrite.\n");
+			ret = -EPERM;
+			goto out;
+		}
+	}
+
+	ret = state_storage_write(storage, buf, len);
 	if (ret) {
 		dev_err(&state->dev, "Failed to write packed state, %d\n", ret);
 		goto out;
@@ -622,6 +636,9 @@ struct state *state_new_from_node(struct device_node *node, bool readonly)
 	}
 
 	of_property_read_string(node, "backend-storage-type", &storage_type);
+
+	state->keep_prev_content = of_property_read_bool(node,
+							"keep-previous-content");
 
 	ret = state_format_init(state, backend_type, node, alias);
 	if (ret)

@@ -55,6 +55,9 @@ Optional Properties
 * ``algo``: A HMAC algorithm used to detect manipulation of the data
   or header, sensible values follow this pattern ``hmac(<HASH>)``,
   e.g. ``hmac(sha256)``. Only available for the ``backend-type`` ``raw``.
+* ``keep-previous-content``: Check if a the bucket meta magic field contains
+  other data than the magic value. If so, the backend will not write the state
+  to prevent unconditionally overwrites of existing data.
 
 .. note:: For the ``backend-storage-type`` the keyword ``noncircular`` is still
    supported as a fall back to an old storage format. Recommendation is to not

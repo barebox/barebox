@@ -455,6 +455,16 @@ static unsigned int imx7_bootsource_internal(uint32_t r)
 	return FIELD_GET(BOOT_CFG(15, 12), r);
 }
 
+static int imx7_boot_instance_spi_nor(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG(11, 9), r);
+}
+
+static int imx7_boot_instance_mmc(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG(11, 10), r);
+}
+
 struct imx_boot_sw_info {
 	uint8_t  reserved_1;
 	uint8_t  boot_device_instance;
@@ -510,14 +520,14 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 	case 1:
 	case 2:
 		*src = BOOTSOURCE_MMC;
-		*instance = (sbmr1 >> 10 & 0x3);
+		*instance = imx7_boot_instance_mmc(sbmr1);
 		break;
 	case 3:
 		*src = BOOTSOURCE_NAND;
 		break;
 	case 6:
 		*src = BOOTSOURCE_SPI_NOR,
-		*instance = (sbmr1 >> 9 & 0x7);
+		*instance = imx7_boot_instance_spi_nor(sbmr1);
 		break;
 	case 4:
 		*src = BOOTSOURCE_SPI; /* Really: qspi */

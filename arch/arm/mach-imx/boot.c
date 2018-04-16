@@ -248,6 +248,11 @@ static int imx53_bootsource_internal(uint32_t r)
 	return FIELD_GET(BOOT_CFG1(7, 4), r);
 }
 
+static bool imx53_bootsource_nand(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_7, r);
+}
+
 void imx53_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX53_SRC_BASE_ADDR);
@@ -279,7 +284,7 @@ void imx53_get_boot_source(enum bootsource *src, int *instance)
 		break;
 	}
 
-	if (cfg1 & (1 << 7))
+	if (imx53_bootsource_nand(cfg1))
 		*src = BOOTSOURCE_NAND;
 
 
@@ -374,8 +379,7 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 		break;
 	}
 
-	/* BOOT_CFG1[7:0] */
-	if (sbmr1 & (1 << 7))
+	if (imx53_bootsource_nand(sbmr1))
 		*src = BOOTSOURCE_NAND;
 }
 

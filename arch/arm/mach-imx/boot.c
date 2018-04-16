@@ -27,6 +27,7 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx7-regs.h>
+#include <mach/vf610-regs.h>
 
 /* [CTRL][TYPE] */
 static const enum bootsource locations[4][4] = {
@@ -546,6 +547,106 @@ void imx7_boot_save_loc(void)
 	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
 
 	imx7_get_boot_source(&src, &instance);
+
+	bootsource_set(src);
+	bootsource_set_instance(instance);
+}
+
+static int vf610_boot_instance_spi(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_1, r);
+}
+
+static int vf610_boot_instance_nor(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_3, r);
+}
+
+/*
+ * Vybrid's Serial ROM boot sources (BOOT_CFG4[2:0]) are as follows:
+ *
+ *	000 - SPI0
+ *	001 - SPI1
+ *	010 - SPI2
+ *	011 - SPI3
+ *	100 - I2C0
+ *	101 - I2C1
+ *	110 - I2C2
+ *	111 - I2C3
+ *
+ * Which we can neatly divide in two halves and use MSb to detect if
+ * bootsource is I2C or SPI EEPROM and 2 LSbs directly as boot
+ * insance.
+ */
+static enum bootsource vf610_bootsource_serial_rom(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG4_2, r) ? BOOTSOURCE_I2C : BOOTSOURCE_SPI_NOR;
+}
+
+static int vf610_boot_instance_serial_rom(uint32_t r)
+{
+	return __imx6_bootsource_serial_rom(r) & 0b11;
+}
+
+static int vf610_boot_instance_can(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_0, r);
+}
+
+static int vf610_boot_instance_mmc(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG2_3, r);
+}
+
+void vf610_get_boot_source(enum bootsource *src, int *instance)
+{
+	void __iomem *src_base = IOMEM(VF610_SRC_BASE_ADDR);
+	uint32_t sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
+	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
+
+	if (imx6_bootsource_reserved(sbmr2))
+		return;
+
+	if (imx6_bootsource_serial(sbmr2)) {
+		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
+
+	switch (imx53_bootsource_internal(sbmr1)) {
+	case 0:
+		*src = BOOTSOURCE_SPI; /* Really: qspi */
+		*instance = vf610_boot_instance_spi(sbmr1);
+		break;
+	case 1:
+		*src = BOOTSOURCE_NOR;
+		*instance = vf610_boot_instance_nor(sbmr1);
+		break;
+	case 2:
+		*src = vf610_bootsource_serial_rom(sbmr1);
+		*instance = vf610_boot_instance_serial_rom(sbmr1);
+		break;
+	case 3:
+		*src = BOOTSOURCE_CAN;
+		*instance = vf610_boot_instance_can(sbmr1);
+		break;
+	case 6:
+	case 7:
+		*src = BOOTSOURCE_MMC;
+		*instance = vf610_boot_instance_mmc(sbmr1);
+		break;
+	default:
+		if (imx53_bootsource_nand(sbmr1))
+			*src = BOOTSOURCE_NAND;
+		break;
+	}
+}
+
+void vf610_boot_save_loc(void)
+{
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	vf610_get_boot_source(&src, &instance);
 
 	bootsource_set(src);
 	bootsource_set_instance(instance);

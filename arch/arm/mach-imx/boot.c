@@ -281,6 +281,18 @@ void imx53_boot_save_loc(void)
 
 #define IMX6_SRC_SBMR1	0x04
 #define IMX6_SRC_SBMR2	0x1c
+#define IMX6_BMOD_SERIAL	0b01
+#define IMX6_BMOD_RESERVED	0b11
+
+static bool imx6_bootsource_reserved(uint32_t sbmr2)
+{
+	return imx53_get_bmod(sbmr2) == IMX6_BMOD_RESERVED;
+}
+
+static bool imx6_bootsource_serial(uint32_t sbmr2)
+{
+	return imx53_get_bmod(sbmr2) == IMX6_BMOD_SERIAL;
+}
 
 void imx6_get_boot_source(enum bootsource *src, int *instance)
 {
@@ -289,20 +301,13 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
 	uint32_t boot_cfg_4_2_0;
 
-	switch (imx53_get_bmod(sbmr2)) {
-	case 0: /* Fuses, fall through */
-	case 2: /* internal boot */
-		goto internal_boot;
-	case 1: /* Serial Downloader */
+	if (imx6_bootsource_reserved(sbmr2))
+		return;
+
+	if (imx6_bootsource_serial(sbmr2)) {
 		*src = BOOTSOURCE_SERIAL;
-		break;
-	case 3: /* reserved */
-		break;
-	};
-
-	return;
-
-internal_boot:
+		return;
+	}
 
 	/* BOOT_CFG1[7:4] */
 	switch ((sbmr1 >> 4) & 0xf) {
@@ -361,20 +366,13 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 	uint32_t sbmr1 = readl(src_base + IMX7_SRC_SBMR1);
 	uint32_t sbmr2 = readl(src_base + IMX7_SRC_SBMR2);
 
-	switch (imx53_get_bmod(sbmr2)) {
-	case 0: /* Fuses, fall through */
-	case 2: /* internal boot */
-		goto internal_boot;
-	case 1: /* Serial Downloader */
+	if (imx6_bootsource_reserved(sbmr2))
+		return;
+
+	if (imx6_bootsource_serial(sbmr2)) {
 		*src = BOOTSOURCE_SERIAL;
-		break;
-	case 3: /* reserved */
-		break;
-	};
-
-	return;
-
-internal_boot:
+		return;
+	}
 
 	switch ((sbmr1 >> 12) & 0xf) {
 	case 1:

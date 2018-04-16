@@ -15,6 +15,7 @@
 #include <bootsource.h>
 #include <environment.h>
 #include <init.h>
+#include <linux/bitfield.h>
 #include <magicvar.h>
 
 #include <io.h>
@@ -213,12 +214,19 @@ void imx51_boot_save_loc(void)
 }
 
 #define IMX53_SRC_SBMR	0x4
+#define SRC_SBMR_BMOD	GENMASK(25, 24)
+
+static unsigned int imx53_get_bmod(uint32_t r)
+{
+	return FIELD_GET(SRC_SBMR_BMOD, r);
+}
+
 void imx53_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX53_SRC_BASE_ADDR);
 	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR);
 
-	if (((cfg1 >> 24) & 0x3) == 0x3) {
+	if (imx53_get_bmod(cfg1) == 0x3) {
 		*src = BOOTSOURCE_USB;
 		*instance = 0;
 		return;
@@ -280,12 +288,8 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 	uint32_t sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
 	uint32_t boot_cfg_4_2_0;
-	int boot_mode;
 
-	/* BMOD[1:0] */
-	boot_mode = (sbmr2 >> 24) & 0x3;
-
-	switch (boot_mode) {
+	switch (imx53_get_bmod(sbmr2)) {
 	case 0: /* Fuses, fall through */
 	case 2: /* internal boot */
 		goto internal_boot;
@@ -356,12 +360,8 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 	void __iomem *src_base = IOMEM(MX7_SRC_BASE_ADDR);
 	uint32_t sbmr1 = readl(src_base + IMX7_SRC_SBMR1);
 	uint32_t sbmr2 = readl(src_base + IMX7_SRC_SBMR2);
-	int boot_mode;
 
-	/* BMOD[1:0] */
-	boot_mode = (sbmr2 >> 24) & 0x3;
-
-	switch (boot_mode) {
+	switch (imx53_get_bmod(sbmr2)) {
 	case 0: /* Fuses, fall through */
 	case 2: /* internal boot */
 		goto internal_boot;

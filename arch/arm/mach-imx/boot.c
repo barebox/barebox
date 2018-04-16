@@ -375,7 +375,7 @@ static enum bootsource imx6_bootsource_serial_rom(uint32_t sbmr)
 	const int source = __imx6_bootsource_serial_rom(sbmr);
 
 	return source < IMX6_BOOTSOURCE_SERIAL_ROM_I2C1 ?
-		BOOTSOURCE_SPI : BOOTSOURCE_I2C;
+		BOOTSOURCE_SPI_NOR : BOOTSOURCE_I2C;
 }
 
 static int imx6_boot_instance_serial_rom(uint32_t sbmr)

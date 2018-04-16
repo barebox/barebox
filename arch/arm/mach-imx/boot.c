@@ -446,10 +446,6 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 		break;
 	}
 
-	/* BOOT_CFG1[7:0] */
-	if (sbmr1 & (1 << 7))
-		*src = BOOTSOURCE_NAND;
-
 	return;
 }
 

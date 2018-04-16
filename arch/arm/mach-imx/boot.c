@@ -281,12 +281,10 @@ void imx53_get_boot_source(enum bootsource *src, int *instance)
 		*src = BOOTSOURCE_MMC;
 		break;
 	default:
+		if (imx53_bootsource_nand(cfg1))
+			*src = BOOTSOURCE_NAND;
 		break;
 	}
-
-	if (imx53_bootsource_nand(cfg1))
-		*src = BOOTSOURCE_NAND;
-
 
 	switch (*src) {
 	case BOOTSOURCE_MMC:
@@ -376,11 +374,10 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 		*instance = (sbmr1 >> 11) & 0x3;
 		break;
 	default:
+		if (imx53_bootsource_nand(sbmr1))
+			*src = BOOTSOURCE_NAND;
 		break;
 	}
-
-	if (imx53_bootsource_nand(sbmr1))
-		*src = BOOTSOURCE_NAND;
 }
 
 void imx6_boot_save_loc(void)

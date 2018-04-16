@@ -283,6 +283,8 @@ void imx53_boot_save_loc(void)
 #define IMX6_SRC_SBMR2	0x1c
 #define IMX6_BMOD_SERIAL	0b01
 #define IMX6_BMOD_RESERVED	0b11
+#define IMX6_BMOD_FUSES		0b00
+#define BT_FUSE_SEL		BIT(4)
 
 static bool imx6_bootsource_reserved(uint32_t sbmr2)
 {
@@ -291,7 +293,14 @@ static bool imx6_bootsource_reserved(uint32_t sbmr2)
 
 static bool imx6_bootsource_serial(uint32_t sbmr2)
 {
-	return imx53_get_bmod(sbmr2) == IMX6_BMOD_SERIAL;
+	return imx53_get_bmod(sbmr2) == IMX6_BMOD_SERIAL ||
+		/*
+		 * If boot from fuses is selected and fuses are not
+		 * programmed by setting BT_FUSE_SEL, ROM code will
+		 * fallback to serial mode
+		 */
+	       (imx53_get_bmod(sbmr2) == IMX6_BMOD_FUSES &&
+		!(sbmr2 & BT_FUSE_SEL));
 }
 
 void imx6_get_boot_source(enum bootsource *src, int *instance)

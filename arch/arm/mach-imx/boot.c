@@ -351,8 +351,6 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 	/* BOOT_CFG1[7:0] */
 	if (sbmr1 & (1 << 7))
 		*src = BOOTSOURCE_NAND;
-
-	return;
 }
 
 void imx6_boot_save_loc(void)
@@ -445,8 +443,6 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 	default:
 		break;
 	}
-
-	return;
 }
 
 void imx7_boot_save_loc(void)

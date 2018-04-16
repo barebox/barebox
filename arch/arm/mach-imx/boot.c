@@ -216,9 +216,36 @@ void imx51_boot_save_loc(void)
 #define IMX53_SRC_SBMR	0x4
 #define SRC_SBMR_BMOD	GENMASK(25, 24)
 
+#define __BOOT_CFG(n, m, l)	GENMASK((m) + ((n) - 1) * 8, \
+					(l) + ((n) - 1) * 8)
+#define BOOT_CFG1(m, l)		__BOOT_CFG(1, m, l)
+
+#define ___BOOT_CFG(n, i)	__BOOT_CFG(n, i, i)
+#define __MAKE_BOOT_CFG_BITS(idx)					\
+	enum {								\
+		BOOT_CFG##idx##_0 = ___BOOT_CFG(idx, 0),		\
+		BOOT_CFG##idx##_1 = ___BOOT_CFG(idx, 1),		\
+		BOOT_CFG##idx##_2 = ___BOOT_CFG(idx, 2),		\
+		BOOT_CFG##idx##_3 = ___BOOT_CFG(idx, 3),		\
+		BOOT_CFG##idx##_4 = ___BOOT_CFG(idx, 4),		\
+		BOOT_CFG##idx##_5 = ___BOOT_CFG(idx, 5),		\
+		BOOT_CFG##idx##_6 = ___BOOT_CFG(idx, 6),		\
+		BOOT_CFG##idx##_7 = ___BOOT_CFG(idx, 7),		\
+	};
+
+__MAKE_BOOT_CFG_BITS(1)
+#undef __MAKE_BOOT_CFG
+#undef ___BOOT_CFG
+
+
 static unsigned int imx53_get_bmod(uint32_t r)
 {
 	return FIELD_GET(SRC_SBMR_BMOD, r);
+}
+
+static int imx53_bootsource_internal(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1(7, 4), r);
 }
 
 void imx53_get_boot_source(enum bootsource *src, int *instance)
@@ -232,7 +259,7 @@ void imx53_get_boot_source(enum bootsource *src, int *instance)
 		return;
 	}
 
-	switch ((cfg1 & 0xff) >> 4) {
+	switch (imx53_bootsource_internal(cfg1)) {
 	case 2:
 		*src = BOOTSOURCE_HD;
 		break;
@@ -318,8 +345,7 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 		return;
 	}
 
-	/* BOOT_CFG1[7:4] */
-	switch ((sbmr1 >> 4) & 0xf) {
+	switch (imx53_bootsource_internal(sbmr1)) {
 	case 2:
 		*src = BOOTSOURCE_HD;
 		break;
@@ -367,8 +393,18 @@ void imx6_boot_save_loc(void)
 #define IMX7_SRC_SBMR1	0x58
 #define IMX7_SRC_SBMR2	0x70
 
+/*
+ * Re-defined to match the naming in reference manual
+ */
+#define BOOT_CFG(m, l)	BOOT_CFG1(m, l)
+
 #define IMX_BOOT_SW_INFO_POINTER_ADDR	0x000001E8
 #define IMX_BOOT_SW_INFO_BDT_SD		0x1
+
+static unsigned int imx7_bootsource_internal(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG(15, 12), r);
+}
 
 struct imx_boot_sw_info {
 	uint8_t  reserved_1;
@@ -421,7 +457,7 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 		return;
 	}
 
-	switch ((sbmr1 >> 12) & 0xf) {
+	switch (imx7_bootsource_internal(sbmr1)) {
 	case 1:
 	case 2:
 		*src = BOOTSOURCE_MMC;

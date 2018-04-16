@@ -432,11 +432,11 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 	case 3:
 		*src = BOOTSOURCE_NAND;
 		break;
-	case 4:
+	case 6:
 		*src = BOOTSOURCE_SPI_NOR,
 		*instance = (sbmr1 >> 9 & 0x7);
 		break;
-	case 6:
+	case 4:
 		*src = BOOTSOURCE_SPI; /* Really: qspi */
 		break;
 	case 5:

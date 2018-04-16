@@ -369,6 +369,19 @@ void imx6_boot_save_loc(void)
 #define IMX7_SRC_SBMR1	0x58
 #define IMX7_SRC_SBMR2	0x70
 
+#define IMX_BOOT_SW_INFO_POINTER_ADDR	0x000001E8
+#define IMX_BOOT_SW_INFO_BDT_SD		0x1
+
+struct imx_boot_sw_info {
+	uint8_t  reserved_1;
+	uint8_t  boot_device_instance;
+	uint8_t  boot_device_type;
+	uint8_t  reserved_2;
+	uint32_t frequency_hz[4]; /* Various frequencies (ARM, AXI,
+				   * DDR, etc.). Not used */
+	uint32_t reserved_3[3];
+} __packed;
+
 void imx7_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX7_SRC_BASE_ADDR);
@@ -379,6 +392,33 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 		return;
 
 	if (imx6_bootsource_serial(sbmr2)) {
+		/*
+		 * On i.MX7 ROM code will try to bood from uSDHC1
+		 * before entering serial mode. It doesn't seem to be
+		 * reflected in the contents of SBMR1 in any way when
+		 * that happens, so we check "Boot_SW_Info" structure
+		 * (per 6.6.14 Boot information for software) to see
+		 * if that really happened.
+		 *
+		 * FIXME: This behaviour can be inhibited by
+		 * DISABLE_SDMMC_MFG, but location of that fuse
+		 * doesn't seem to be documented anywhere. Once that
+		 * is known it should be taken into account here.
+		 */
+		const struct imx_boot_sw_info *info;
+
+		info = (const void *)readl(IMX_BOOT_SW_INFO_POINTER_ADDR);
+
+		if (info->boot_device_type == IMX_BOOT_SW_INFO_BDT_SD) {
+			*src = BOOTSOURCE_MMC;
+			/*
+			 * We are expecting to only ever boot from
+			 * uSDHC1 here
+			 */
+			WARN_ON(*instance = info->boot_device_instance);
+			return;
+		}
+
 		*src = BOOTSOURCE_SERIAL;
 		return;
 	}

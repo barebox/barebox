@@ -93,6 +93,13 @@ int imx6_cpu_type(void);
 		return cpu_mx6_is_##str();				\
 	}
 
+/*
+ * Below are defined:
+ *
+ * cpu_is_mx6s(), cpu_is_mx6dl(), cpu_is_mx6q(), cpu_is_mx6qp(), cpu_is_mx6d(),
+ * cpu_is_mx6dp(), cpu_is_mx6sx(), cpu_is_mx6sl(), cpu_is_mx6ul(),
+ * cpu_is_mx6ull()
+ */
 DEFINE_MX6_CPU_TYPE(mx6s, IMX6_CPUTYPE_IMX6S);
 DEFINE_MX6_CPU_TYPE(mx6dl, IMX6_CPUTYPE_IMX6DL);
 DEFINE_MX6_CPU_TYPE(mx6q, IMX6_CPUTYPE_IMX6Q);

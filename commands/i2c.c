@@ -131,7 +131,7 @@ static int do_i2c_write(int argc, char *argv[])
 	for (i = 0; i < count; i++)
 		*(buf + i) = (char) simple_strtol(argv[optind+i], NULL, 0);
 
-	if (reg > 0) {
+	if (reg >= 0) {
 		ret = i2c_write_reg(&client, reg | wide, buf, count);
 	} else {
 		ret = i2c_master_send(&client, buf, count);

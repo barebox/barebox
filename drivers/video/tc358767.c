@@ -1413,7 +1413,6 @@ static int tc_probe(struct device_d *dev)
 	tc->adapter.master_xfer = tc_aux_i2c_xfer;
 	tc->adapter.nr = -1; /* any free */
 	tc->adapter.dev.parent = dev;
-	tc->adapter.dev.device_node = dev->device_node;
 	/* Add I2C adapter */
 	ret = i2c_add_numbered_adapter(&tc->adapter);
 	if (ret < 0) {

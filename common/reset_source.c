@@ -60,6 +60,12 @@ void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 }
 EXPORT_SYMBOL(reset_source_set_priority);
 
+const char *reset_source_name(void)
+{
+	return reset_src_names[reset_source];
+}
+EXPORT_SYMBOL(reset_source_name);
+
 void reset_source_set_instance(enum reset_src_type type, int instance)
 {
 	if (reset_source == type)

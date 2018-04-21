@@ -18,6 +18,17 @@
 #include <mach/generic.h>
 #include <mach/revision.h>
 #include <mach/vf610.h>
+#include <mach/reset-reason.h>
+
+static const struct imx_reset_reason vf610_reset_reasons[] = {
+	{ VF610_SRC_SRSR_POR_RST,       RESET_POR,   0 },
+	{ VF610_SRC_SRSR_WDOG_A5,       RESET_WDG,   0 },
+	{ VF610_SRC_SRSR_WDOG_M4,       RESET_WDG,   1 },
+	{ VF610_SRC_SRSR_JTAG_RST,      RESET_JTAG,  0 },
+	{ VF610_SRC_SRSR_RESETB,        RESET_EXT,   0 },
+	{ VF610_SRC_SRSR_SW_RST,        RESET_RST,   0 },
+	{ /* sentinel */ }
+};
 
 int vf610_init(void)
 {
@@ -43,5 +54,6 @@ int vf610_init(void)
 	}
 
 	imx_set_silicon_revision(cputypestr, vf610_cpu_revision());
+	imx_set_reset_reason(src + VF610_SRC_SRSR, vf610_reset_reasons);
 	return 0;
 }

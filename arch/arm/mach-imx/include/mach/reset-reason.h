@@ -16,6 +16,15 @@
 
 #define IMX6_SRC_SRSR	0x008
 #define IMX7_SRC_SRSR	0x05c
+#define VF610_SRC_SRSR	0x008
+
+
+#define VF610_SRC_SRSR_SW_RST		BIT(18)
+#define VF610_SRC_SRSR_RESETB		BIT(7)
+#define VF610_SRC_SRSR_JTAG_RST		BIT(5)
+#define VF610_SRC_SRSR_WDOG_M4		BIT(4)
+#define VF610_SRC_SRSR_WDOG_A5		BIT(3)
+#define VF610_SRC_SRSR_POR_RST		BIT(0)
 
 struct imx_reset_reason {
 	uint32_t mask;

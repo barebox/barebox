@@ -19,6 +19,7 @@
 #include <mach/imx6.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
+#include <mach/reset-reason.h>
 #include <mach/imx6-anadig.h>
 #include <mach/imx6-regs.h>
 #include <mach/generic.h>
@@ -147,10 +148,20 @@ static void imx6ul_enet_clk_init(void)
 	writel(val, gprbase + IOMUXC_GPR1);
 }
 
+static const struct imx_reset_reason imx6_reset_reasons[] = {
+	{ IMX_SRC_SRSR_IPP_RESET,     RESET_POR,  0 },
+	{ IMX_SRC_SRSR_WDOG1_RESET,   RESET_WDG,  0 },
+	{ IMX_SRC_SRSR_JTAG_RESET,    RESET_JTAG, 0 },
+	{ IMX_SRC_SRSR_JTAG_SW_RESET, RESET_JTAG, 0 },
+	{ IMX_SRC_SRSR_WARM_BOOT,     RESET_RST,  0 },
+	{ /* sentinel */ }
+};
+
 int imx6_init(void)
 {
 	const char *cputypestr;
 	u32 mx6_silicon_revision;
+	void __iomem *src = IOMEM(MX6_SRC_BASE_ADDR);
 
 	imx6_init_lowlevel();
 
@@ -195,7 +206,7 @@ int imx6_init(void)
 	}
 
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
-
+	imx_set_reset_reason(src + IMX6_SRC_SRSR, imx6_reset_reasons);
 	imx6_setup_ipu_qos();
 	imx6ul_enet_clk_init();
 

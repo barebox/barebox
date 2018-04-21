@@ -14,6 +14,8 @@
 #define IMX_SRC_SRSR_TEMPSENSE_RESET	BIT(9)
 #define IMX_SRC_SRSR_WARM_BOOT		BIT(16)
 
+#define IMX6_SRC_SRSR	0x008
+
 struct imx_reset_reason {
 	uint32_t mask;
 	enum reset_src_type type;

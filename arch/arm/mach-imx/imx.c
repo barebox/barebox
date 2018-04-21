@@ -14,8 +14,10 @@
 #include <common.h>
 #include <of.h>
 #include <init.h>
+#include <io.h>
 #include <mach/revision.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 static int __imx_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 
@@ -147,3 +149,34 @@ static int imx_init(void)
 	return ret;
 }
 postcore_initcall(imx_init);
+
+void imx_set_reset_reason(void __iomem *srsr,
+			  const struct imx_reset_reason *reasons)
+{
+	enum reset_src_type type = RESET_UKWN;
+	const u32 reg = readl(srsr);
+	int i, instance = 0;
+
+	/*
+	 * SRSR register captures ALL reset event that occured since
+	 * POR, so we need to clear it to make sure we only caputre
+	 * the latest one.
+	 */
+	writel(reg, srsr);
+
+	for (i = 0; reasons[i].mask; i++) {
+		if (reg & reasons[i].mask) {
+			type     = reasons[i].type;
+			instance = reasons[i].instance;
+			break;
+		}
+	}
+
+	/*
+	 * Report this with above default priority in order to make
+	 * sure we'll always override info from watchdog driver.
+	 */
+	reset_source_set_priority(type,
+				  RESET_SOURCE_DEFAULT_PRIORITY + 1);
+	reset_source_set_instance(type, instance);
+}

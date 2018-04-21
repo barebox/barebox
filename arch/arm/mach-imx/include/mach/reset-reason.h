@@ -15,6 +15,7 @@
 #define IMX_SRC_SRSR_WARM_BOOT		BIT(16)
 
 #define IMX6_SRC_SRSR	0x008
+#define IMX7_SRC_SRSR	0x05c
 
 struct imx_reset_reason {
 	uint32_t mask;

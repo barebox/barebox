@@ -30,7 +30,10 @@ void imx_set_silicon_revision(const char *soc, int revision)
 {
 	__imx_silicon_revision = revision;
 
-	pr_info("detected %s revision %d.%d\n", soc,
+	if (revision == IMX_CHIP_REV_UNKNOWN)
+		pr_info("detected %s revision unknown\n", soc);
+	else
+		pr_info("detected %s revision %d.%d\n", soc,
 			(revision >> 4) & 0xf,
 			revision & 0xf);
 }

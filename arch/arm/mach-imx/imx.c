@@ -119,7 +119,7 @@ static int imx_init(void)
 	else if (cpu_is_mx7())
 		ret = imx7_init();
 	else if (cpu_is_vf610())
-		ret = 0;
+		ret = vf610_init();
 	else
 		return -EINVAL;
 

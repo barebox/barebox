@@ -29,6 +29,20 @@
 #include <mach/imx7-regs.h>
 #include <mach/vf610-regs.h>
 
+
+static void
+imx_boot_save_loc(void (*get_boot_source)(enum bootsource *, int *))
+{
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	get_boot_source(&src, &instance);
+
+	bootsource_set(src);
+	bootsource_set_instance(instance);
+}
+
+
 /* [CTRL][TYPE] */
 static const enum bootsource locations[4][4] = {
 	{ /* CTRL = WEIM */
@@ -93,13 +107,7 @@ void imx25_get_boot_source(enum bootsource *src, int *instance)
 
 void imx25_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx25_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx25_get_boot_source);
 }
 
 void imx35_get_boot_source(enum bootsource *src, int *instance)
@@ -114,13 +122,7 @@ void imx35_get_boot_source(enum bootsource *src, int *instance)
 
 void imx35_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx35_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx35_get_boot_source);
 }
 
 #define IMX27_SYSCTRL_GPCR	0x18
@@ -161,13 +163,7 @@ void imx27_get_boot_source(enum bootsource *src, int *instance)
 
 void imx27_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx27_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx27_get_boot_source);
 }
 
 #define IMX51_SRC_SBMR			0x4
@@ -205,13 +201,7 @@ void imx51_get_boot_source(enum bootsource *src, int *instance)
 
 void imx51_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx51_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx51_get_boot_source);
 }
 
 #define IMX53_SRC_SBMR	0x4
@@ -431,13 +421,7 @@ void imx6_get_boot_source(enum bootsource *src, int *instance)
 
 void imx6_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx6_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx6_get_boot_source);
 }
 
 #define IMX7_SRC_SBMR1	0x58
@@ -543,13 +527,7 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 
 void imx7_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx7_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx7_get_boot_source);
 }
 
 static int vf610_boot_instance_spi(uint32_t r)
@@ -643,11 +621,5 @@ void vf610_get_boot_source(enum bootsource *src, int *instance)
 
 void vf610_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	vf610_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(vf610_get_boot_source);
 }

@@ -160,6 +160,7 @@ static int omap_wdt_probe(struct device_d *dev)
 
 	wdev = xzalloc(sizeof(*wdev));
 	wdev->wdog.set_timeout	= omap_wdt_set_timeout;
+	wdev->wdog.hwdev = dev;
 	wdev->wdt_trgr_pattern	= 0x1234;
 
 	/* reserve static register mappings */

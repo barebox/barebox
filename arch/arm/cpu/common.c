@@ -85,6 +85,7 @@ void relocate_to_current_adr(void)
 			unsigned long *fixup = (unsigned long *)(rel->r_offset + offset);
 
 			*fixup = *fixup + r + offset;
+			rel->r_offset += offset;
 		} else {
 			putc_ll('>');
 			puthex_ll(rel->r_info);

@@ -112,10 +112,12 @@ static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
 int watchdog_register(struct watchdog *wd)
 {
 	struct param_d *p;
-	const char *alias;
+	const char *alias = NULL;
 	int ret = 0;
 
-	alias = of_alias_get(wd->hwdev->device_node);
+	if (wd->hwdev)
+		alias = of_alias_get(wd->hwdev->device_node);
+
 	if (alias)
 		ret = watchdog_register_dev(wd, alias, DEVICE_ID_SINGLE);
 

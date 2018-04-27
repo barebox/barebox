@@ -21,6 +21,7 @@
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 #define IIM_SREV 0x24
 
@@ -57,7 +58,10 @@ static void imx51_ipu_mipi_setup(void)
 
 int imx51_init(void)
 {
+	void __iomem *src = IOMEM(MX51_SRC_BASE_ADDR);
+
 	imx_set_silicon_revision("i.MX51", imx51_silicon_revision());
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx51_boot_save_loc();
 	add_generic_device("imx51-esdctl", 0, NULL, MX51_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	imx51_ipu_mipi_setup();

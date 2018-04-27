@@ -153,6 +153,15 @@ static int imx_init(void)
 }
 postcore_initcall(imx_init);
 
+const struct imx_reset_reason imx_reset_reasons[] = {
+	{ IMX_SRC_SRSR_IPP_RESET,     RESET_POR,  0 },
+	{ IMX_SRC_SRSR_WDOG1_RESET,   RESET_WDG,  0 },
+	{ IMX_SRC_SRSR_JTAG_RESET,    RESET_JTAG, 0 },
+	{ IMX_SRC_SRSR_JTAG_SW_RESET, RESET_JTAG, 0 },
+	{ IMX_SRC_SRSR_WARM_BOOT,     RESET_RST,  0 },
+	{ /* sentinel */ }
+};
+
 void imx_set_reset_reason(void __iomem *srsr,
 			  const struct imx_reset_reason *reasons)
 {

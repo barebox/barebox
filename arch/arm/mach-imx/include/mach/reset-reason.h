@@ -34,4 +34,6 @@ struct imx_reset_reason {
 
 void imx_set_reset_reason(void __iomem *, const struct imx_reset_reason *);
 
+extern const struct imx_reset_reason imx_reset_reasons[];
+
 #endif /* __MACH_RESET_REASON_H__ */

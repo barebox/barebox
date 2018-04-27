@@ -182,7 +182,6 @@ static const struct imx_reset_reason imx7_reset_reasons[] = {
 int imx7_init(void)
 {
 	const char *cputypestr;
-	u32 imx7_silicon_revision;
 	void __iomem *src = IOMEM(MX7_SRC_BASE_ADDR);
 
 	imx7_init_lowlevel();
@@ -192,8 +191,6 @@ int imx7_init(void)
 	imx7_timer_init();
 
 	imx7_boot_save_loc();
-
-	imx7_silicon_revision = imx7_cpu_revision();
 
 	psci_set_ops(&imx7_psci_ops);
 
@@ -209,7 +206,7 @@ int imx7_init(void)
 		break;
 	}
 
-	imx_set_silicon_revision(cputypestr, imx7_silicon_revision);
+	imx_set_silicon_revision(cputypestr, imx7_cpu_revision());
 	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
 
 	return 0;

@@ -4,7 +4,7 @@
 #include <reset_source.h>
 
 #define IMX_SRC_SRSR_IPP_RESET		BIT(0)
-#define IMX_SRC_SRSR_CSU_RESET		BIT(1)
+#define IMX_SRC_SRSR_CSU_RESET		BIT(2)
 #define IMX_SRC_SRSR_IPP_USER_RESET	BIT(3)
 #define IMX_SRC_SRSR_WDOG1_RESET	BIT(4)
 #define IMX_SRC_SRSR_JTAG_RESET		BIT(5)

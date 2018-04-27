@@ -54,6 +54,6 @@ int vf610_init(void)
 	}
 
 	imx_set_silicon_revision(cputypestr, vf610_cpu_revision());
-	imx_set_reset_reason(src + VF610_SRC_SRSR, vf610_reset_reasons);
+	imx_set_reset_reason(src + IMX_SRC_SRSR, vf610_reset_reasons);
 	return 0;
 }

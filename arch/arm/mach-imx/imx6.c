@@ -197,7 +197,7 @@ int imx6_init(void)
 	}
 
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
-	imx_set_reset_reason(src + IMX6_SRC_SRSR, imx_reset_reasons);
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx6_setup_ipu_qos();
 	imx6ul_enet_clk_init();
 

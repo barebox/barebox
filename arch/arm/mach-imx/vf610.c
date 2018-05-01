@@ -35,6 +35,8 @@ int vf610_init(void)
 	const char *cputypestr;
 	void __iomem *src = IOMEM(VF610_SRC_BASE_ADDR);
 
+	vf610_boot_save_loc();
+
 	switch (vf610_cpu_type()) {
 	case VF610_CPUTYPE_VF610:
 		cputypestr = "VF610";

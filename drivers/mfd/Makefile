@@ -10,3 +10,4 @@ obj-$(CONFIG_MFD_SYSCON)	+= syscon.o
 obj-$(CONFIG_MFD_TWLCORE)	+= twl-core.o
 obj-$(CONFIG_MFD_TWL4030)	+= twl4030.o
 obj-$(CONFIG_MFD_TWL6030)	+= twl6030.o
+obj-$(CONFIG_RAVE_SP_CORE)	+= rave-sp.o

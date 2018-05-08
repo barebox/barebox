@@ -7,7 +7,7 @@ SoCs up to i.MX31 support only the external Boot Mode. Newer SoCs
 can be configured for internal or external Boot Mode with the internal
 boot mode being the more popular mode. The i.MX23 and i.MX28, also
 known as i.MXs, are special. These SoCs have a completely different
-boot mechanism.
+boot mechanism, see :doc:`mxs` instead.
 
 Internal Boot Mode
 ------------------

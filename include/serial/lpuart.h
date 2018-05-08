@@ -228,6 +228,8 @@ static inline void lpuart_setbrg(void __iomem *base,
 	unsigned int bfra;
 	u16 sbr;
 
+	BUG_ON(!baudrate);
+
 	sbr = (u16) (refclock / (16 * baudrate));
 
 	writeb(sbr >> 8,   base + UARTBDH);

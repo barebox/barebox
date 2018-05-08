@@ -68,11 +68,14 @@ static int lpuart_serial_setbaudrate(struct console_device *cdev,
 
 	lpuart_enable(lpuart, false);
 
-	lpuart_setbrg(lpuart->base,
-		      clk_get_rate(lpuart->clk),
-		      baudrate);
-
-	lpuart_enable(lpuart, true);
+	/*
+	 * We treat baudrate of 0 as a request to disable UART
+	 */
+	if (baudrate) {
+		lpuart_setbrg(lpuart->base, clk_get_rate(lpuart->clk),
+			      baudrate);
+		lpuart_enable(lpuart, true);
+	}
 
 	lpuart->baudrate = baudrate;
 

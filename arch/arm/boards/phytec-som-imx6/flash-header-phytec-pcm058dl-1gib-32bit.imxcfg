@@ -1,0 +1,8 @@
+#define SETUP_MDCFG0			\
+	wm 32 0x021b000c 0x8c929b85
+
+#define SETUP_MDASP_MDCTL		\
+	wm 32 0x021b0040 0x00000027;	\
+	wm 32 0x021b0000 0x84190000
+
+#include "flash-header-phytec-pcm058dl.h"

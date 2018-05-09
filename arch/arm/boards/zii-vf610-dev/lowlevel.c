@@ -18,6 +18,7 @@
 #include <mach/generic.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
+#include <mach/esdctl.h>
 #include <mach/vf610-regs.h>
 #include <mach/clock-vf610.h>
 #include <mach/iomux-vf610.h>
@@ -133,5 +134,5 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 		break;
 	}
 
-	barebox_arm_entry(0x80000000, SZ_512M, fdt + get_runtime_offset());
+	vf610_barebox_entry(fdt + get_runtime_offset());
 }

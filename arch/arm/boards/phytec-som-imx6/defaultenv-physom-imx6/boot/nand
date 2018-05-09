@@ -1,5 +1,12 @@
 #!/bin/sh
 
-global.bootm.image="/dev/nand0.kernel.bb"
-global.bootm.oftree="/dev/nand0.oftree.bb"
+[ ! -e /dev/nand0.root.ubi ] && ubiattach /dev/nand0.root
+
+if [ -e /dev/nand0.root.ubi.system ]; then
+	# configure here the android specific stuff
+	global linux.bootargs.sec="selinux=0 enforcing=0"
+fi
+
+global.bootm.image="/dev/nand0.root.ubi.kernel"
+global.bootm.oftree="/dev/nand0.root.ubi.oftree"
 global.linux.bootargs.dyn.root="root=ubi0:root ubi.mtd=root rootfstype=ubifs rw"

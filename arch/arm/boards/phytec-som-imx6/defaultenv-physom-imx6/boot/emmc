@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ -f /mnt/mmc3/android ]; then
+	# configure here the android specific stuff
+	global linux.bootargs.sec="selinux=0 enforcing=0"
+fi
+
+global.bootm.image="/mnt/mmc3/zImage"
+global.bootm.oftree="/mnt/mmc3/oftree"
+global.linux.bootargs.dyn.root="root=/dev/mmcblk3p2 rootwait rw"

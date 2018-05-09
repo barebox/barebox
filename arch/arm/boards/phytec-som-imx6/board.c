@@ -28,6 +28,7 @@
 #include <gpio.h>
 #include <init.h>
 #include <of.h>
+#include <i2c/i2c.h>
 #include <mach/bbu.h>
 #include <platform_data/eth-fec.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
@@ -51,6 +52,14 @@
 
 #define MX6_PHYFLEX_ERR006282	IMX_GPIO_NR(2, 11)
 
+#define DA9062_I2C_ADDRESS		0x58
+
+#define DA9062_BUCK1_CFG		0x9e
+#define DA9062_BUCK2_CFG		0x9d
+#define DA9062_BUCK3_CFG		0xa0
+#define DA9062_BUCK4_CFG		0x9f
+#define DA9062_BUCKx_MODE_SYNCHRONOUS	(2 << 6)
+
 static void phyflex_err006282_workaround(void)
 {
 	/*
@@ -66,7 +75,7 @@ static void phyflex_err006282_workaround(void)
 	mdelay(2);
 	gpio_set_value(MX6_PHYFLEX_ERR006282, 0);
 
-	if (cpu_is_mx6q() || cpu_is_mx6d())
+	if (cpu_is_mx6q() || cpu_is_mx6d() || cpu_is_mx6qp() || cpu_is_mx6dp())
 		mxc_iomux_v3_setup_pad(MX6Q_PAD_SD4_DAT3__GPIO_2_11_PD);
 	else if (cpu_is_mx6dl() || cpu_is_mx6s())
 		mxc_iomux_v3_setup_pad(MX6DL_PAD_SD4_DAT3__GPIO_2_11);
@@ -94,6 +103,45 @@ int ksz8081_phy_fixup(struct phy_device *phydev)
 	phy_write(phydev, 0x16, 0x202);
 
 	return 0;
+}
+
+static int phycore_da9062_setup_buck_mode(void)
+{
+	struct i2c_adapter *adapter = NULL;
+	struct i2c_client client;
+	unsigned char value;
+	int bus = 0;
+	int ret;
+
+	adapter = i2c_get_adapter(bus);
+	if (!adapter)
+		return -ENODEV;
+
+	client.adapter = adapter;
+	client.addr = DA9062_I2C_ADDRESS;
+
+	value = DA9062_BUCKx_MODE_SYNCHRONOUS;
+
+	ret = i2c_write_reg(&client, DA9062_BUCK1_CFG, &value, 1);
+	if (ret != 1)
+		goto err_out;
+
+	ret = i2c_write_reg(&client, DA9062_BUCK2_CFG, &value, 1);
+	if (ret != 1)
+		goto err_out;
+
+	ret = i2c_write_reg(&client, DA9062_BUCK3_CFG, &value, 1);
+	if (ret != 1)
+		goto err_out;
+
+	ret = i2c_write_reg(&client, DA9062_BUCK4_CFG, &value, 1);
+	if (ret != 1)
+		goto err_out;
+
+	return 0;
+
+err_out:
+	return ret;
 }
 
 static int physom_imx6_devices_init(void)
@@ -125,7 +173,11 @@ static int physom_imx6_devices_init(void)
 	} else if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6qp-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {
+
+		if (phycore_da9062_setup_buck_mode())
+			pr_err("Setting PMIC BUCK mode failed\n");
 
 		barebox_set_hostname("phyCORE-i.MX6");
 		default_environment_path = "/chosen/environment-spinor";
@@ -184,7 +236,8 @@ static int physom_imx6_devices_init(void)
 	defaultenv_append_directory(defaultenv_physom_imx6);
 
 	/* Overwrite file /env/init/automount */
-	if (of_machine_is_compatible("phytec,imx6q-pcm058-nand")
+	if (of_machine_is_compatible("phytec,imx6qp-pcm058-nand")
+		|| of_machine_is_compatible("phytec,imx6q-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6q-pcm058-emmc")
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-nand")
 		|| of_machine_is_compatible("phytec,imx6dl-pcm058-emmc")) {

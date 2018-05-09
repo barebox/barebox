@@ -59,6 +59,11 @@
 static struct clk *clks[IMX6QDL_CLK_END];
 static struct clk_onecell_data clk_data;
 
+static inline int cpu_is_plus(void)
+{
+	return cpu_is_mx6qp() || cpu_is_mx6dp();
+}
+
 static const char *step_sels[] = {
 	"osc",
 	"pll2_pfd2_396m",
@@ -107,6 +112,15 @@ static const char *enfc_sels[]	= {
 	"pll2_bus",
 	"pll3_usb_otg",
 	"pll2_pfd2_396m",
+};
+
+static const char *enfc_sels_plus[] = {
+	"pll2_pfd0_352m",
+	"pll2_bus",
+	"pll3_usb_otg",
+	"pll2_pfd2_396m",
+	"pll3_pfd3_454m",
+	"dummy",
 };
 
 static const char *eim_sels[] = {
@@ -404,7 +418,10 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clks[IMX6QDL_CLK_USDHC2_SEL]       = imx_clk_mux("usdhc2_sel",       base + 0x1c, 17, 1, usdhc_sels,        ARRAY_SIZE(usdhc_sels));
 	clks[IMX6QDL_CLK_USDHC3_SEL]       = imx_clk_mux("usdhc3_sel",       base + 0x1c, 18, 1, usdhc_sels,        ARRAY_SIZE(usdhc_sels));
 	clks[IMX6QDL_CLK_USDHC4_SEL]       = imx_clk_mux("usdhc4_sel",       base + 0x1c, 19, 1, usdhc_sels,        ARRAY_SIZE(usdhc_sels));
-	clks[IMX6QDL_CLK_ENFC_SEL]         = imx_clk_mux("enfc_sel",         base + 0x2c, 16, 2, enfc_sels,         ARRAY_SIZE(enfc_sels));
+	if (cpu_is_plus())
+		clks[IMX6QDL_CLK_ENFC_SEL]         = imx_clk_mux("enfc_sel",         base + 0x2c, 16, 2, enfc_sels_plus,    ARRAY_SIZE(enfc_sels_plus));
+	else
+		clks[IMX6QDL_CLK_ENFC_SEL]         = imx_clk_mux("enfc_sel",         base + 0x2c, 16, 2, enfc_sels,         ARRAY_SIZE(enfc_sels));
 	clks[IMX6QDL_CLK_EIM_SEL]          = imx_clk_mux("eim_sel",          base + 0x1c, 27, 2, eim_sels,          ARRAY_SIZE(eim_sels));
 	clks[IMX6QDL_CLK_EIM_SLOW_SEL]     = imx_clk_mux("eim_slow_sel",     base + 0x1c, 29, 2, eim_sels,          ARRAY_SIZE(eim_sels));
 	clks[IMX6QDL_CLK_VDO_AXI_SEL]      = imx_clk_mux("vdo_axi_sel",      base + 0x18, 11, 1, vdo_axi_sels,      ARRAY_SIZE(vdo_axi_sels));
@@ -513,6 +530,13 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clk_enable(clks[IMX6QDL_CLK_ENFC_PODF]);
 
 	clk_set_parent(clks[IMX6QDL_CLK_LVDS1_SEL], clks[IMX6QDL_CLK_SATA_REF_100M]);
+
+	/*
+	 * The gpmi needs 100MHz frequency in the EDO/Sync mode,
+	 * We can not get the 100MHz from the pll2_pfd0_352m.
+	 * So choose pll2_pfd2_396m as enfc_sel's parent.
+	 */
+	clk_set_parent(clks[IMX6QDL_CLK_ENFC_SEL], clks[IMX6QDL_CLK_PLL2_PFD2_396M]);
 
 	return 0;
 }

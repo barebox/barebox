@@ -1,5 +1,10 @@
 #!/bin/sh
 
-global.bootm.image="/mnt/mmc/linuximage"
+if [ -f /mnt/mmc/android ]; then
+	# configure here the android specific stuff
+	global linux.bootargs.sec="selinux=0 enforcing=0"
+fi
+
+global.bootm.image="/mnt/mmc/zImage"
 global.bootm.oftree="/mnt/mmc/oftree"
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait rw"

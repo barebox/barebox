@@ -37,6 +37,7 @@
 #include <mach/imx51-regs.h>
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
+#include <mach/vf610-ddrmc.h>
 
 struct imx_esdctl_data {
 	unsigned long base0;
@@ -75,12 +76,9 @@ static inline unsigned long imx_v1_sdram_size(void __iomem *esdctlbase, int num)
 	if (ctlval & (1 << 17))
 		width = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
+	size = memory_sdram_size(cols, rows, banks, width);
 
-	if (size > SZ_64M)
-		size = SZ_64M;
-
-	return size;
+	return min_t(unsigned long, size, SZ_64M);
 }
 
 /*
@@ -103,12 +101,9 @@ static inline unsigned long imx_v2_sdram_size(void __iomem *esdctlbase, int num)
 	if ((ctlval & ESDCTL0_DSIZ_MASK) == ESDCTL0_DSIZ_31_0)
 		width = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
+	size = memory_sdram_size(cols, rows, banks, width);
 
-	if (size > SZ_256M)
-		size = SZ_256M;
-
-	return size;
+	return min_t(unsigned long, size, SZ_256M);
 }
 
 /*
@@ -120,13 +115,10 @@ static inline unsigned long imx_v3_sdram_size(void __iomem *esdctlbase, int num)
 
 	size = imx_v2_sdram_size(esdctlbase, num);
 
-	if (readl(esdctlbase + IMX_ESDMISC) & (1 << 6))
+	if (readl(esdctlbase + IMX_ESDMISC) & ESDMISC_DDR2_8_BANK)
 		size *= 2;
 
-	if (size > SZ_256M)
-		size = SZ_256M;
-
-	return size;
+	return min_t(unsigned long, size, SZ_256M);
 }
 
 /*
@@ -136,7 +128,6 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 {
 	u32 ctlval = readl(esdctlbase + ESDCTL_V4_ESDCTL0);
 	u32 esdmisc = readl(esdctlbase + ESDCTL_V4_ESDMISC);
-	unsigned long size;
 	int rows, cols, width = 2, banks = 8;
 
 	if (cs == 0 && !(ctlval & ESDCTL_V4_ESDCTLx_SDE0))
@@ -162,20 +153,17 @@ static inline unsigned long imx_v4_sdram_size(void __iomem *esdctlbase, int cs)
 	if (esdmisc & ESDCTL_V4_ESDMISC_BANKS_4)
 		banks = 4;
 
-	size = (1 << cols) * (1 << rows) * banks * width;
-
-	return size;
+	return memory_sdram_size(cols, rows, banks, width);
 }
 
 /*
  * MMDC - found on i.MX6
  */
 
-static inline u64 imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
+static inline u64 __imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 {
 	u32 ctlval = readl(mmdcbase + MDCTL);
 	u32 mdmisc = readl(mmdcbase + MDMISC);
-	u64 size;
 	int rows, cols, width = 2, banks = 8;
 
 	if (cs == 0 && !(ctlval & MMDCx_MDCTL_SDE0))
@@ -201,9 +189,7 @@ static inline u64 imx6_mmdc_sdram_size(void __iomem *mmdcbase, int cs)
 	if (mdmisc & MMDCx_MDMISC_DDR_4_BANKS)
 		banks = 4;
 
-	size = (u64)(1 << cols) * (1 << rows) * banks * width;
-
-	return size;
+	return memory_sdram_size(cols, rows, banks, width);
 }
 
 static void add_mem(unsigned long base0, unsigned long size0,
@@ -286,7 +272,7 @@ static void imx_esdctl_v4_add_mem(void *esdctlbase, struct imx_esdctl_data *data
  */
 #define IMX6_MAX_SDRAM_SIZE 0xF0000000
 
-static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+static inline resource_size_t imx6_mmdc_sdram_size(void __iomem *mmdcbase)
 {
 	/*
 	 * It is possible to have a configuration in which both chip
@@ -296,14 +282,41 @@ static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 	 * IMX6_MAX_SDRAM_SIZE bytes of memory available.
 	 */
 
-	u64 size_cs0 = imx6_mmdc_sdram_size(mmdcbase, 0);
-	u64 size_cs1 = imx6_mmdc_sdram_size(mmdcbase, 1);
+	u64 size_cs0 = __imx6_mmdc_sdram_size(mmdcbase, 0);
+	u64 size_cs1 = __imx6_mmdc_sdram_size(mmdcbase, 1);
 	u64 total    = size_cs0 + size_cs1;
 
 	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
 
+	return size;
+}
+
+static void imx6_mmdc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+{
 	arm_add_mem_device("ram0", data->base0,
-			size);
+			   imx6_mmdc_sdram_size(mmdcbase));
+}
+
+static inline resource_size_t vf610_ddrmc_sdram_size(void __iomem *ddrmc)
+{
+	const u32 cr01 = readl(ddrmc + DDRMC_CR(1));
+	const u32 cr73 = readl(ddrmc + DDRMC_CR(73));
+	const u32 cr78 = readl(ddrmc + DDRMC_CR(78));
+
+	unsigned int rows, cols, width, banks;
+
+	rows  = DDRMC_CR01_MAX_ROW_REG(cr01) - DDRMC_CR73_ROW_DIFF(cr73);
+	cols  = DDRMC_CR01_MAX_COL_REG(cr01) - DDRMC_CR73_COL_DIFF(cr73);
+	banks = 1 << (3 - DDRMC_CR73_BANK_DIFF(cr73));
+	width = (cr78 & DDRMC_CR78_REDUC) ? sizeof(u8) : sizeof(u16);
+
+	return memory_sdram_size(cols, rows, banks, width);
+}
+
+static void vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+{
+	arm_add_mem_device("ram0", data->base0,
+			   vf610_ddrmc_sdram_size(mmdcbase));
 }
 
 static int imx_esdctl_probe(struct device_d *dev)
@@ -373,13 +386,18 @@ static __maybe_unused struct imx_esdctl_data imx53_data = {
 };
 
 static __maybe_unused struct imx_esdctl_data imx6q_data = {
-	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
+	.base0 = MX6_MMDC_PORT01_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
 };
 
 static __maybe_unused struct imx_esdctl_data imx6ul_data = {
-	.base0 = 0x80000000,
+	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
+};
+
+static __maybe_unused struct imx_esdctl_data vf610_data = {
+	.base0 = VF610_RAM_BASE_ADDR,
+	.add_mem = vf610_ddrmc_add_mem,
 };
 
 static struct platform_device_id imx_esdctl_ids[] = {
@@ -441,6 +459,9 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 		.compatible = "fsl,imx6q-mmdc",
 		.data = &imx6q_data
 	}, {
+		.compatible = "fsl,vf610-ddrmc",
+		.data = &vf610_data
+	}, {
 		/* sentinel */
 	}
 };
@@ -498,9 +519,9 @@ void __noreturn imx1_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX1_CSD0_BASE_ADDR,
-			imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 0),
+			imx_v1_sdram_size(IOMEM(MX1_SDRAMC_BASE_ADDR), 0),
 			MX1_CSD1_BASE_ADDR,
-			imx_v1_sdram_size((void *)MX1_SDRAMC_BASE_ADDR, 1),
+			imx_v1_sdram_size(IOMEM(MX1_SDRAMC_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -511,9 +532,9 @@ void __noreturn imx25_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX25_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX25_ESDCTL_BASE_ADDR), 0),
 			MX25_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX25_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX25_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -523,12 +544,12 @@ void __noreturn imx27_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
-	imx_esdctl_v2_disable_default((void *)MX27_ESDCTL_BASE_ADDR);
+	imx_esdctl_v2_disable_default(IOMEM(MX27_ESDCTL_BASE_ADDR));
 
 	upper_or_coalesced_range(MX27_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX27_ESDCTL_BASE_ADDR), 0),
 			MX27_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX27_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX27_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -538,12 +559,12 @@ void __noreturn imx31_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
-	imx_esdctl_v2_disable_default((void *)MX31_ESDCTL_BASE_ADDR);
+	imx_esdctl_v2_disable_default(IOMEM(MX31_ESDCTL_BASE_ADDR));
 
 	upper_or_coalesced_range(MX31_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX31_ESDCTL_BASE_ADDR), 0),
 			MX31_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX31_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX31_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -553,12 +574,12 @@ void __noreturn imx35_barebox_entry(void *boarddata)
 {
 	unsigned long base, size;
 
-	imx_esdctl_v2_disable_default((void *)MX35_ESDCTL_BASE_ADDR);
+	imx_esdctl_v2_disable_default(IOMEM(MX35_ESDCTL_BASE_ADDR));
 
 	upper_or_coalesced_range(MX35_CSD0_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 0),
+			imx_v2_sdram_size(IOMEM(MX35_ESDCTL_BASE_ADDR), 0),
 			MX35_CSD1_BASE_ADDR,
-			imx_v2_sdram_size((void *)MX35_ESDCTL_BASE_ADDR, 1),
+			imx_v2_sdram_size(IOMEM(MX35_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -569,9 +590,9 @@ void __noreturn imx51_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX51_CSD0_BASE_ADDR,
-			imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 0),
+			imx_v3_sdram_size(IOMEM(MX51_ESDCTL_BASE_ADDR), 0),
 			MX51_CSD1_BASE_ADDR,
-			imx_v3_sdram_size((void *)MX51_ESDCTL_BASE_ADDR, 1),
+			imx_v3_sdram_size(IOMEM(MX51_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
@@ -582,32 +603,35 @@ void __noreturn imx53_barebox_entry(void *boarddata)
 	unsigned long base, size;
 
 	upper_or_coalesced_range(MX53_CSD0_BASE_ADDR,
-			imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 0),
+			imx_v4_sdram_size(IOMEM(MX53_ESDCTL_BASE_ADDR), 0),
 			MX53_CSD1_BASE_ADDR,
-			imx_v4_sdram_size((void *)MX53_ESDCTL_BASE_ADDR, 1),
+			imx_v4_sdram_size(IOMEM(MX53_ESDCTL_BASE_ADDR), 1),
 			&base, &size);
 
 	barebox_arm_entry(base, size, boarddata);
 }
 
+static void __noreturn
+imx6_barebox_entry(unsigned long membase, void *boarddata)
+{
+	barebox_arm_entry(membase,
+			  imx6_mmdc_sdram_size(IOMEM(MX6_MMDC_P0_BASE_ADDR)),
+			  boarddata);
+}
+
 void __noreturn imx6q_barebox_entry(void *boarddata)
 {
-	u64 size_cs0 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 0);
-	u64 size_cs1 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 1);
-	u64 total    = size_cs0 + size_cs1;
-
-	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
-
-	barebox_arm_entry(0x10000000, size, boarddata);
+	imx6_barebox_entry(MX6_MMDC_PORT01_BASE_ADDR, boarddata);
 }
 
 void __noreturn imx6ul_barebox_entry(void *boarddata)
 {
-	u64 size_cs0 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 0);
-	u64 size_cs1 = imx6_mmdc_sdram_size((void *)MX6_MMDC_P0_BASE_ADDR, 1);
-	u64 total    = size_cs0 + size_cs1;
+	imx6_barebox_entry(MX6_MMDC_PORT0_BASE_ADDR, boarddata);
+}
 
-	resource_size_t size = min(total, (u64)IMX6_MAX_SDRAM_SIZE);
-
-	barebox_arm_entry(0x80000000, size, boarddata);
+void __noreturn vf610_barebox_entry(void *boarddata)
+{
+	barebox_arm_entry(VF610_RAM_BASE_ADDR,
+			  vf610_ddrmc_sdram_size(IOMEM(VF610_DDR_BASE_ADDR)),
+			  boarddata);
 }

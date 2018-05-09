@@ -1,5 +1,5 @@
 #define SETUP_MDCFG0                    \
-        wm 32 0x021b000c 0x3c409b85
+        wm 32 0x021b000c 0x2D307525
 
 #define SETUP_MDASP_MDCTL		\
         wm 32 0x021b0040 0x0000000B;    \

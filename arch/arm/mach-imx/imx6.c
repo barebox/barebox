@@ -16,6 +16,7 @@
 #include <io.h>
 #include <linux/sizes.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
+#include <mach/clock-imx6.h>
 #include <mach/imx6.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
@@ -44,6 +45,11 @@ static void imx6_init_lowlevel(void)
 	void __iomem *aips2 = (void *)MX6_AIPS2_ON_BASE_ADDR;
 	bool is_imx6q = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6Q;
 	bool is_imx6d = __imx6_cpu_type() == IMX6_CPUTYPE_IMX6D;
+	uint32_t val_480;
+	uint32_t val_528;
+	uint32_t periph_sel_1;
+	uint32_t periph_sel_2;
+	uint32_t reg;
 
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -68,32 +74,38 @@ static void imx6_init_lowlevel(void)
 	/* Due to hardware limitation, on MX6Q we need to gate/ungate all PFDs
 	 * to make sure PFD is working right, otherwise, PFDs may
 	 * not output clock after reset, MX6DL and MX6SL have added 396M pfd
-	 * workaround in ROM code, as bus clock need it
+	 * workaround in ROM code, as bus clock need it.
+	 * Don't reset PLL2 PFD0 / PLL2 PFD2 if is's used by periph_clk.
 	 */
 	if (is_imx6q || is_imx6d) {
-		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
-		       BM_ANADIG_PFD_480_PFD2_CLKGATE |
-		       BM_ANADIG_PFD_480_PFD1_CLKGATE |
-		       BM_ANADIG_PFD_480_PFD0_CLKGATE,
-		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
-		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
-		       BM_ANADIG_PFD_528_PFD2_CLKGATE |
-		       BM_ANADIG_PFD_528_PFD1_CLKGATE |
-		       BM_ANADIG_PFD_528_PFD0_CLKGATE,
-		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
+		val_480 = BM_ANADIG_PFD_480_PFD3_CLKGATE |
+			   BM_ANADIG_PFD_480_PFD2_CLKGATE |
+			   BM_ANADIG_PFD_480_PFD1_CLKGATE |
+			   BM_ANADIG_PFD_480_PFD0_CLKGATE;
 
-		writel(BM_ANADIG_PFD_480_PFD3_CLKGATE |
-		       BM_ANADIG_PFD_480_PFD2_CLKGATE |
-		       BM_ANADIG_PFD_480_PFD1_CLKGATE |
-		       BM_ANADIG_PFD_480_PFD0_CLKGATE,
-		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
-		writel(BM_ANADIG_PFD_528_PFD3_CLKGATE |
-		       BM_ANADIG_PFD_528_PFD2_CLKGATE |
-		       BM_ANADIG_PFD_528_PFD1_CLKGATE |
-		       BM_ANADIG_PFD_528_PFD0_CLKGATE,
-		       MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
+		val_528 = BM_ANADIG_PFD_528_PFD3_CLKGATE |
+			   BM_ANADIG_PFD_528_PFD1_CLKGATE;
+
+		reg = readl(MXC_CCM_CBCMR);
+		periph_sel_1 = (reg & MXC_CCM_CBCMR_PRE_PERIPH_CLK_SEL_MASK)
+			>> MXC_CCM_CBCMR_PRE_PERIPH_CLK_SEL_OFFSET;
+
+		periph_sel_2 = (reg & MXC_CCM_CBCMR_PRE_PERIPH2_CLK_SEL_MASK)
+			>> MXC_CCM_CBCMR_PRE_PERIPH2_CLK_SEL_OFFSET;
+
+		if ((periph_sel_1 != 0x2) && (periph_sel_2 != 0x2))
+			val_528 |= BM_ANADIG_PFD_528_PFD0_CLKGATE;
+
+		if ((periph_sel_1 != 0x1) && (periph_sel_2 != 0x1)
+		    && (periph_sel_1 != 0x3) && (periph_sel_2 != 0x3))
+			val_528 |= BM_ANADIG_PFD_528_PFD2_CLKGATE;
+
+		writel(val_480, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_SET);
+		writel(val_528, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_SET);
+
+		writel(val_480, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_480_CLR);
+		writel(val_528, MX6_ANATOP_BASE_ADDR + HW_ANADIG_PFD_528_CLR);
 	}
-
 }
 
 static void imx6_setup_ipu_qos(void)
@@ -147,6 +159,32 @@ static void imx6ul_enet_clk_init(void)
 	writel(val, gprbase + IOMUXC_GPR1);
 }
 
+int imx6_cpu_type(void)
+{
+	static int cpu_type = -1;
+
+	if (!cpu_is_mx6())
+		return 0;
+
+	if (cpu_type < 0)
+		cpu_type = __imx6_cpu_type();
+
+	return cpu_type;
+}
+
+int imx6_cpu_revision(void)
+{
+	static int soc_revision = -1;
+
+	if (!cpu_is_mx6())
+		return 0;
+
+	if (soc_revision < 0)
+		soc_revision = __imx6_cpu_revision();
+
+	return soc_revision;
+}
+
 int imx6_init(void)
 {
 	const char *cputypestr;
@@ -160,16 +198,16 @@ int imx6_init(void)
 
 	switch (imx6_cpu_type()) {
 	case IMX6_CPUTYPE_IMX6Q:
-		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
-			cputypestr = "i.MX6 Quad Plus";
-		else
-			cputypestr = "i.MX6 Quad";
+		cputypestr = "i.MX6 Quad";
+		break;
+	case IMX6_CPUTYPE_IMX6QP:
+		cputypestr = "i.MX6 Quad Plus";
 		break;
 	case IMX6_CPUTYPE_IMX6D:
-		if (mx6_silicon_revision >= IMX_CHIP_REV_2_0)
-			cputypestr = "i.MX6 Dual Plus";
-		else
-			cputypestr = "i.MX6 Dual";
+		cputypestr = "i.MX6 Dual";
+		break;
+	case IMX6_CPUTYPE_IMX6DP:
+		cputypestr = "i.MX6 Dual Plus";
 		break;
 	case IMX6_CPUTYPE_IMX6DL:
 		cputypestr = "i.MX6 DualLite";

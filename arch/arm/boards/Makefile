@@ -1,4 +1,5 @@
 # keep sorted by CONFIG_* macro name.
+obj-$(CONFIG_MACH_ADVANTECH_ROM_742X)		+= advantech-mx6/
 obj-$(CONFIG_MACH_AFI_GF)			+= afi-gf/
 obj-$(CONFIG_MACH_ANIMEO_IP)			+= animeo_ip/
 obj-$(CONFIG_MACH_ARCHOSG9)			+= archosg9/

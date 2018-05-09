@@ -48,6 +48,7 @@
 #define ESDMISC_MDDR_MDIS		0x00000010
 #define ESDMISC_LHD			0x00000020
 #define ESDMISC_SDRAMRDY		0x80000000
+#define ESDMISC_DDR2_8_BANK		BIT(6)
 
 #define	ESDCFGx_tXP_MASK 		0x00600000
 #define ESDCFGx_tXP_1			0x00000000
@@ -137,6 +138,7 @@ void __noreturn imx51_barebox_entry(void *boarddata);
 void __noreturn imx53_barebox_entry(void *boarddata);
 void __noreturn imx6q_barebox_entry(void *boarddata);
 void __noreturn imx6ul_barebox_entry(void *boarddata);
+void __noreturn vf610_barebox_entry(void *boarddata);
 void imx_esdctl_disable(void);
 #endif
 

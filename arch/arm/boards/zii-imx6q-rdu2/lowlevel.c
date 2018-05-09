@@ -284,7 +284,7 @@ static noinline void rdu2_sram_setup(void)
 	relocate_to_current_adr();
 	setup_c();
 
-	if (__imx6_cpu_revision() == IMX_CHIP_REV_2_0)
+	if (__imx6_cpu_type() == IMX6_CPUTYPE_IMX6QP)
 		write_regs(imx6qp_dcd, ARRAY_SIZE(imx6qp_dcd));
 	else
 		write_regs(imx6q_dcd, ARRAY_SIZE(imx6q_dcd));
@@ -304,10 +304,10 @@ ENTRY_FUNCTION(start_imx6_zii_rdu2, r0, r1, r2)
 	 * When still running in SRAM, we need to setup the DRAM now and load
 	 * the remaining image.
 	 */
-	if (get_pc() < MX6_MMDC_PORT0_BASE_ADDR)
+	if (get_pc() < MX6_MMDC_PORT01_BASE_ADDR)
 		rdu2_sram_setup();
 
-	if (__imx6_cpu_revision() == IMX_CHIP_REV_2_0)
+	if (__imx6_cpu_type() == IMX6_CPUTYPE_IMX6QP)
 		imx6q_barebox_entry(__dtb_imx6qp_zii_rdu2_start +
 				    get_runtime_offset());
 	else

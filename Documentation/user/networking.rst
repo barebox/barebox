@@ -51,6 +51,10 @@ device:
 | global.net.nameserver        | ipv4 address | The DNS server used for resolving host names.  |
 |                              |              | May be set by DHCP                             |
 +------------------------------+--------------+------------------------------------------------+
+| global.net.ifup_force_detect | boolean      | Set to true if your network device is not      |
+|                              |              | detected automatically during start (i.e. for  |
+|                              |              | USB network adapters)                          |
++------------------------------+--------------+------------------------------------------------+
 
 The first step for networking is configuring the network device. The network
 device is usually ``eth0``. The current configuration can be viewed with the

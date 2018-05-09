@@ -28,6 +28,9 @@
 #include <globalvar.h>
 #include <string.h>
 #include <driver.h>
+#include <init.h>
+#include <globalvar.h>
+#include <magicvar.h>
 #include <linux/stat.h>
 
 static int eth_discover(char *file)
@@ -245,6 +248,8 @@ int ifup(const char *ethname, unsigned flags)
 	return ifup_edev(edev, flags);
 }
 
+static int net_ifup_force_detect;
+
 int ifup_all(unsigned flags)
 {
 	struct eth_device *edev;
@@ -266,13 +271,27 @@ int ifup_all(unsigned flags)
 
 	closedir(dir);
 
-	device_detect_all();
+	if ((flags & IFUP_FLAG_FORCE) || net_ifup_force_detect ||
+	    list_empty(&netdev_list))
+		device_detect_all();
 
 	for_each_netdev(edev)
 		ifup_edev(edev, flags);
 
 	return 0;
 }
+
+static int ifup_all_init(void)
+{
+	globalvar_add_simple_bool("net.ifup_force_detect", &net_ifup_force_detect);
+
+	return 0;
+}
+late_initcall(ifup_all_init);
+
+BAREBOX_MAGICVAR_NAMED(global_net_ifup_force_detect,
+                       global.net.ifup_force_detect,
+                       "net: force detection of devices on ifup -a");
 
 #if IS_ENABLED(CONFIG_NET_CMD_IFUP)
 

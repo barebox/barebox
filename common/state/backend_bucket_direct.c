@@ -69,6 +69,8 @@ static int state_backend_bucket_direct_read(struct state_backend_storage_bucket
 	if (meta.magic == direct_magic) {
 		read_len = meta.written_length;
 	} else {
+		if (meta.magic != ~0 && !!meta.magic)
+			bucket->wrong_magic = 1;
 		if (!IS_ENABLED(CONFIG_STATE_BACKWARD_COMPATIBLE)) {
 			dev_err(direct->dev, "No meta data header found\n");
 			dev_dbg(direct->dev, "Enable backward compatibility or increase stride size\n");

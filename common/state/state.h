@@ -46,6 +46,7 @@ struct state_backend_storage_bucket {
 	void *buf;
 	ssize_t len;
 	bool needs_refresh;
+	bool wrong_magic;
 };
 
 /**
@@ -105,6 +106,7 @@ struct state {
 	char *of_path;
 	const char *name;
 	uint32_t magic;
+	bool keep_prev_content;
 
 	struct list_head variables; /* Sorted list of variables */
 

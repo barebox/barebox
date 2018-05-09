@@ -204,7 +204,7 @@ static int physom_imx6_devices_init(void)
 		environment_path = basprintf("/chosen/environment-nand");
 		envdev = "NAND flash";
 		break;
-	case BOOTSOURCE_SPI:
+	case BOOTSOURCE_SPI_NOR:
 		environment_path = basprintf("/chosen/environment-spinor");
 		envdev = "SPI NOR flash";
 		break;

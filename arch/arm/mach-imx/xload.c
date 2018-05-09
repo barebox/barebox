@@ -24,7 +24,7 @@ static __noreturn int imx_xload(void)
 		pr_info("booting from MMC\n");
 		buf = bootstrap_read_disk("disk0.0", "fat");
 		break;
-	case BOOTSOURCE_SPI:
+	case BOOTSOURCE_SPI_NOR:
 		pr_info("booting from SPI\n");
 		buf = bootstrap_read_devfs("dataflash0", false,
 					   SZ_256K, SZ_1M, SZ_1M);

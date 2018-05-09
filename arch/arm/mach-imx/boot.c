@@ -15,6 +15,7 @@
 #include <bootsource.h>
 #include <environment.h>
 #include <init.h>
+#include <linux/bitfield.h>
 #include <magicvar.h>
 
 #include <io.h>
@@ -26,6 +27,21 @@
 #include <mach/imx53-regs.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx7-regs.h>
+#include <mach/vf610-regs.h>
+
+
+static void
+imx_boot_save_loc(void (*get_boot_source)(enum bootsource *, int *))
+{
+	enum bootsource src = BOOTSOURCE_UNKNOWN;
+	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+
+	get_boot_source(&src, &instance);
+
+	bootsource_set(src);
+	bootsource_set_instance(instance);
+}
+
 
 /* [CTRL][TYPE] */
 static const enum bootsource locations[4][4] = {
@@ -91,13 +107,7 @@ void imx25_get_boot_source(enum bootsource *src, int *instance)
 
 void imx25_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx25_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx25_get_boot_source);
 }
 
 void imx35_get_boot_source(enum bootsource *src, int *instance)
@@ -112,13 +122,7 @@ void imx35_get_boot_source(enum bootsource *src, int *instance)
 
 void imx35_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx35_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx35_get_boot_source);
 }
 
 #define IMX27_SYSCTRL_GPCR	0x18
@@ -159,13 +163,7 @@ void imx27_get_boot_source(enum bootsource *src, int *instance)
 
 void imx27_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx27_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx27_get_boot_source);
 }
 
 #define IMX51_SRC_SBMR			0x4
@@ -203,36 +201,82 @@ void imx51_get_boot_source(enum bootsource *src, int *instance)
 
 void imx51_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx51_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx51_get_boot_source);
 }
 
 #define IMX53_SRC_SBMR	0x4
+#define SRC_SBMR_BMOD	GENMASK(25, 24)
+#define IMX53_BMOD_SERIAL	0b11
+
+#define __BOOT_CFG(n, m, l)	GENMASK((m) + ((n) - 1) * 8, \
+					(l) + ((n) - 1) * 8)
+#define BOOT_CFG1(m, l)		__BOOT_CFG(1, m, l)
+#define BOOT_CFG2(m, l)		__BOOT_CFG(2, m, l)
+#define BOOT_CFG3(m, l)		__BOOT_CFG(3, m, l)
+#define BOOT_CFG4(m, l)		__BOOT_CFG(4, m, l)
+
+#define ___BOOT_CFG(n, i)	__BOOT_CFG(n, i, i)
+#define __MAKE_BOOT_CFG_BITS(idx)					\
+	enum {								\
+		BOOT_CFG##idx##_0 = ___BOOT_CFG(idx, 0),		\
+		BOOT_CFG##idx##_1 = ___BOOT_CFG(idx, 1),		\
+		BOOT_CFG##idx##_2 = ___BOOT_CFG(idx, 2),		\
+		BOOT_CFG##idx##_3 = ___BOOT_CFG(idx, 3),		\
+		BOOT_CFG##idx##_4 = ___BOOT_CFG(idx, 4),		\
+		BOOT_CFG##idx##_5 = ___BOOT_CFG(idx, 5),		\
+		BOOT_CFG##idx##_6 = ___BOOT_CFG(idx, 6),		\
+		BOOT_CFG##idx##_7 = ___BOOT_CFG(idx, 7),		\
+	};
+
+__MAKE_BOOT_CFG_BITS(1)
+__MAKE_BOOT_CFG_BITS(2)
+__MAKE_BOOT_CFG_BITS(4)
+#undef __MAKE_BOOT_CFG
+#undef ___BOOT_CFG
+
+
+static unsigned int imx53_get_bmod(uint32_t r)
+{
+	return FIELD_GET(SRC_SBMR_BMOD, r);
+}
+
+static int imx53_bootsource_internal(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1(7, 4), r);
+}
+
+static int imx53_port_select(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG3(5, 4), r);
+}
+
+static bool imx53_bootsource_nand(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_7, r);
+}
+
+static enum bootsource imx53_bootsource_serial_rom(uint32_t r)
+{
+	return BOOT_CFG1(r, 3) ? BOOTSOURCE_SPI : BOOTSOURCE_I2C;
+}
+
 void imx53_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX53_SRC_BASE_ADDR);
 	uint32_t cfg1 = readl(src_base + IMX53_SRC_SBMR);
 
-	if (((cfg1 >> 24) & 0x3) == 0x3) {
+	if (imx53_get_bmod(cfg1) == IMX53_BMOD_SERIAL) {
 		*src = BOOTSOURCE_USB;
 		*instance = 0;
 		return;
 	}
 
-	switch ((cfg1 & 0xff) >> 4) {
+	switch (imx53_bootsource_internal(cfg1)) {
 	case 2:
 		*src = BOOTSOURCE_HD;
 		break;
 	case 3:
-		if (cfg1 & (1 << 3))
-			*src = BOOTSOURCE_SPI;
-		else
-			*src = BOOTSOURCE_I2C;
+		*src = imx53_bootsource_serial_rom(cfg1);
 		break;
 	case 4:
 	case 5:
@@ -241,18 +285,16 @@ void imx53_get_boot_source(enum bootsource *src, int *instance)
 		*src = BOOTSOURCE_MMC;
 		break;
 	default:
+		if (imx53_bootsource_nand(cfg1))
+			*src = BOOTSOURCE_NAND;
 		break;
 	}
-
-	if (cfg1 & (1 << 7))
-		*src = BOOTSOURCE_NAND;
-
 
 	switch (*src) {
 	case BOOTSOURCE_MMC:
 	case BOOTSOURCE_SPI:
 	case BOOTSOURCE_I2C:
-		*instance = (cfg1 >> 20) & 0x3;
+		*instance = imx53_port_select(cfg1);
 		break;
 	default:
 		*instance = 0;
@@ -273,123 +315,206 @@ void imx53_boot_save_loc(void)
 
 #define IMX6_SRC_SBMR1	0x04
 #define IMX6_SRC_SBMR2	0x1c
+#define IMX6_BMOD_SERIAL	0b01
+#define IMX6_BMOD_RESERVED	0b11
+#define IMX6_BMOD_FUSES		0b00
+#define BT_FUSE_SEL		BIT(4)
+
+static bool imx6_bootsource_reserved(uint32_t sbmr2)
+{
+	return imx53_get_bmod(sbmr2) == IMX6_BMOD_RESERVED;
+}
+
+static bool imx6_bootsource_serial(uint32_t sbmr2)
+{
+	return imx53_get_bmod(sbmr2) == IMX6_BMOD_SERIAL ||
+		/*
+		 * If boot from fuses is selected and fuses are not
+		 * programmed by setting BT_FUSE_SEL, ROM code will
+		 * fallback to serial mode
+		 */
+	       (imx53_get_bmod(sbmr2) == IMX6_BMOD_FUSES &&
+		!(sbmr2 & BT_FUSE_SEL));
+}
+
+static int __imx6_bootsource_serial_rom(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG4(2, 0), r);
+}
+
+/*
+ * Serial ROM bootsource on i.MX6 are as follows:
+ *
+ *	000 - ECSPI-1
+ *	001 - ECSPI-2
+ *	010 - ECSPI-3
+ *	011 - ECSPI-4
+ *	100 - ECSPI-5
+ *	101 - I2C1
+ *	110 - I2C2
+ *	111 - I2C3
+ *
+ * There's no single bit that would tell us we are booting from I2C or
+ * SPI, so we just have to compare the "source" agains the value for
+ * I2C1 for both: calculating bootsource and boot instance.
+ */
+#define IMX6_BOOTSOURCE_SERIAL_ROM_I2C1	0b101
+
+static enum bootsource imx6_bootsource_serial_rom(uint32_t sbmr)
+{
+	const int source = __imx6_bootsource_serial_rom(sbmr);
+
+	return source < IMX6_BOOTSOURCE_SERIAL_ROM_I2C1 ?
+		BOOTSOURCE_SPI_NOR : BOOTSOURCE_I2C;
+}
+
+static int imx6_boot_instance_serial_rom(uint32_t sbmr)
+{
+	const int source = __imx6_bootsource_serial_rom(sbmr);
+
+	if (source < IMX6_BOOTSOURCE_SERIAL_ROM_I2C1)
+		return source;
+
+	return source - IMX6_BOOTSOURCE_SERIAL_ROM_I2C1;
+}
+
+static int imx6_boot_instance_mmc(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG2(4, 3), r);
+}
 
 void imx6_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX6_SRC_BASE_ADDR);
 	uint32_t sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
 	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
-	uint32_t boot_cfg_4_2_0;
-	int boot_mode;
 
-	/* BMOD[1:0] */
-	boot_mode = (sbmr2 >> 24) & 0x3;
+	if (imx6_bootsource_reserved(sbmr2))
+		return;
 
-	switch (boot_mode) {
-	case 0: /* Fuses, fall through */
-	case 2: /* internal boot */
-		goto internal_boot;
-	case 1: /* Serial Downloader */
+	if (imx6_bootsource_serial(sbmr2)) {
 		*src = BOOTSOURCE_SERIAL;
-		break;
-	case 3: /* reserved */
-		break;
-	};
+		return;
+	}
 
-	return;
-
-internal_boot:
-
-	/* BOOT_CFG1[7:4] */
-	switch ((sbmr1 >> 4) & 0xf) {
+	switch (imx53_bootsource_internal(sbmr1)) {
 	case 2:
 		*src = BOOTSOURCE_HD;
 		break;
 	case 3:
-		/* BOOT_CFG4[2:0] */
-		boot_cfg_4_2_0 = (sbmr1 >> 24) & 0x7;
-
-		if (boot_cfg_4_2_0 > 4) {
-			*src = BOOTSOURCE_I2C;
-			*instance = boot_cfg_4_2_0 - 5;
-		} else {
-			*src = BOOTSOURCE_SPI;
-			*instance = boot_cfg_4_2_0;
-		}
+		*src = imx6_bootsource_serial_rom(sbmr1);
+		*instance = imx6_boot_instance_serial_rom(sbmr1);
 		break;
 	case 4:
 	case 5:
 	case 6:
 	case 7:
 		*src = BOOTSOURCE_MMC;
-
-		/* BOOT_CFG2[4:3] */
-		*instance = (sbmr1 >> 11) & 0x3;
+		*instance = imx6_boot_instance_mmc(sbmr1);
 		break;
 	default:
+		if (imx53_bootsource_nand(sbmr1))
+			*src = BOOTSOURCE_NAND;
 		break;
 	}
-
-	/* BOOT_CFG1[7:0] */
-	if (sbmr1 & (1 << 7))
-		*src = BOOTSOURCE_NAND;
-
-	return;
 }
 
 void imx6_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
-
-	imx6_get_boot_source(&src, &instance);
-
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+	imx_boot_save_loc(imx6_get_boot_source);
 }
 
 #define IMX7_SRC_SBMR1	0x58
 #define IMX7_SRC_SBMR2	0x70
+
+/*
+ * Re-defined to match the naming in reference manual
+ */
+#define BOOT_CFG(m, l)	BOOT_CFG1(m, l)
+
+#define IMX_BOOT_SW_INFO_POINTER_ADDR	0x000001E8
+#define IMX_BOOT_SW_INFO_BDT_SD		0x1
+
+static unsigned int imx7_bootsource_internal(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG(15, 12), r);
+}
+
+static int imx7_boot_instance_spi_nor(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG(11, 9), r);
+}
+
+static int imx7_boot_instance_mmc(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG(11, 10), r);
+}
+
+struct imx_boot_sw_info {
+	uint8_t  reserved_1;
+	uint8_t  boot_device_instance;
+	uint8_t  boot_device_type;
+	uint8_t  reserved_2;
+	uint32_t frequency_hz[4]; /* Various frequencies (ARM, AXI,
+				   * DDR, etc.). Not used */
+	uint32_t reserved_3[3];
+} __packed;
 
 void imx7_get_boot_source(enum bootsource *src, int *instance)
 {
 	void __iomem *src_base = IOMEM(MX7_SRC_BASE_ADDR);
 	uint32_t sbmr1 = readl(src_base + IMX7_SRC_SBMR1);
 	uint32_t sbmr2 = readl(src_base + IMX7_SRC_SBMR2);
-	int boot_mode;
 
-	/* BMOD[1:0] */
-	boot_mode = (sbmr2 >> 24) & 0x3;
+	if (imx6_bootsource_reserved(sbmr2))
+		return;
 
-	switch (boot_mode) {
-	case 0: /* Fuses, fall through */
-	case 2: /* internal boot */
-		goto internal_boot;
-	case 1: /* Serial Downloader */
+	if (imx6_bootsource_serial(sbmr2)) {
+		/*
+		 * On i.MX7 ROM code will try to bood from uSDHC1
+		 * before entering serial mode. It doesn't seem to be
+		 * reflected in the contents of SBMR1 in any way when
+		 * that happens, so we check "Boot_SW_Info" structure
+		 * (per 6.6.14 Boot information for software) to see
+		 * if that really happened.
+		 *
+		 * FIXME: This behaviour can be inhibited by
+		 * DISABLE_SDMMC_MFG, but location of that fuse
+		 * doesn't seem to be documented anywhere. Once that
+		 * is known it should be taken into account here.
+		 */
+		const struct imx_boot_sw_info *info;
+
+		info = (const void *)readl(IMX_BOOT_SW_INFO_POINTER_ADDR);
+
+		if (info->boot_device_type == IMX_BOOT_SW_INFO_BDT_SD) {
+			*src = BOOTSOURCE_MMC;
+			/*
+			 * We are expecting to only ever boot from
+			 * uSDHC1 here
+			 */
+			WARN_ON(*instance = info->boot_device_instance);
+			return;
+		}
+
 		*src = BOOTSOURCE_SERIAL;
-		break;
-	case 3: /* reserved */
-		break;
-	};
+		return;
+	}
 
-	return;
-
-internal_boot:
-
-	switch ((sbmr1 >> 12) & 0xf) {
+	switch (imx7_bootsource_internal(sbmr1)) {
 	case 1:
 	case 2:
 		*src = BOOTSOURCE_MMC;
-		*instance = (sbmr1 >> 10 & 0x3);
+		*instance = imx7_boot_instance_mmc(sbmr1);
 		break;
 	case 3:
 		*src = BOOTSOURCE_NAND;
 		break;
-	case 4:
-		*src = BOOTSOURCE_SPI_NOR,
-		*instance = (sbmr1 >> 9 & 0x7);
-		break;
 	case 6:
+		*src = BOOTSOURCE_SPI_NOR,
+		*instance = imx7_boot_instance_spi_nor(sbmr1);
+		break;
+	case 4:
 		*src = BOOTSOURCE_SPI; /* Really: qspi */
 		break;
 	case 5:
@@ -398,21 +523,103 @@ internal_boot:
 	default:
 		break;
 	}
-
-	/* BOOT_CFG1[7:0] */
-	if (sbmr1 & (1 << 7))
-		*src = BOOTSOURCE_NAND;
-
-	return;
 }
 
 void imx7_boot_save_loc(void)
 {
-	enum bootsource src = BOOTSOURCE_UNKNOWN;
-	int instance = BOOTSOURCE_INSTANCE_UNKNOWN;
+	imx_boot_save_loc(imx7_get_boot_source);
+}
 
-	imx7_get_boot_source(&src, &instance);
+static int vf610_boot_instance_spi(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_1, r);
+}
 
-	bootsource_set(src);
-	bootsource_set_instance(instance);
+static int vf610_boot_instance_nor(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_3, r);
+}
+
+/*
+ * Vybrid's Serial ROM boot sources (BOOT_CFG4[2:0]) are as follows:
+ *
+ *	000 - SPI0
+ *	001 - SPI1
+ *	010 - SPI2
+ *	011 - SPI3
+ *	100 - I2C0
+ *	101 - I2C1
+ *	110 - I2C2
+ *	111 - I2C3
+ *
+ * Which we can neatly divide in two halves and use MSb to detect if
+ * bootsource is I2C or SPI EEPROM and 2 LSbs directly as boot
+ * insance.
+ */
+static enum bootsource vf610_bootsource_serial_rom(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG4_2, r) ? BOOTSOURCE_I2C : BOOTSOURCE_SPI_NOR;
+}
+
+static int vf610_boot_instance_serial_rom(uint32_t r)
+{
+	return __imx6_bootsource_serial_rom(r) & 0b11;
+}
+
+static int vf610_boot_instance_can(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG1_0, r);
+}
+
+static int vf610_boot_instance_mmc(uint32_t r)
+{
+	return FIELD_GET(BOOT_CFG2_3, r);
+}
+
+void vf610_get_boot_source(enum bootsource *src, int *instance)
+{
+	void __iomem *src_base = IOMEM(VF610_SRC_BASE_ADDR);
+	uint32_t sbmr1 = readl(src_base + IMX6_SRC_SBMR1);
+	uint32_t sbmr2 = readl(src_base + IMX6_SRC_SBMR2);
+
+	if (imx6_bootsource_reserved(sbmr2))
+		return;
+
+	if (imx6_bootsource_serial(sbmr2)) {
+		*src = BOOTSOURCE_SERIAL;
+		return;
+	}
+
+	switch (imx53_bootsource_internal(sbmr1)) {
+	case 0:
+		*src = BOOTSOURCE_SPI; /* Really: qspi */
+		*instance = vf610_boot_instance_spi(sbmr1);
+		break;
+	case 1:
+		*src = BOOTSOURCE_NOR;
+		*instance = vf610_boot_instance_nor(sbmr1);
+		break;
+	case 2:
+		*src = vf610_bootsource_serial_rom(sbmr1);
+		*instance = vf610_boot_instance_serial_rom(sbmr1);
+		break;
+	case 3:
+		*src = BOOTSOURCE_CAN;
+		*instance = vf610_boot_instance_can(sbmr1);
+		break;
+	case 6:
+	case 7:
+		*src = BOOTSOURCE_MMC;
+		*instance = vf610_boot_instance_mmc(sbmr1);
+		break;
+	default:
+		if (imx53_bootsource_nand(sbmr1))
+			*src = BOOTSOURCE_NAND;
+		break;
+	}
+}
+
+void vf610_boot_save_loc(void)
+{
+	imx_boot_save_loc(vf610_get_boot_source);
 }

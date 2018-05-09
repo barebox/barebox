@@ -290,7 +290,7 @@ static noinline void rdu2_sram_setup(void)
 		write_regs(imx6q_dcd, ARRAY_SIZE(imx6q_dcd));
 
 	imx6_get_boot_source(&bootsrc, &instance);
-	if (bootsrc == BOOTSOURCE_SPI)
+	if (bootsrc == BOOTSOURCE_SPI_NOR)
 		imx6_spi_start_image(0);
 	else
 		imx6_esdhc_start_image(instance);

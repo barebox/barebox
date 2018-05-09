@@ -105,7 +105,7 @@ static int dfi_fs700_m60_init(void)
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK, ar8031_phy_fixup);
 
-	if (bootsource_get() == BOOTSOURCE_SPI)
+	if (bootsource_get() == BOOTSOURCE_SPI_NOR)
 		flag_spi |= BBU_HANDLER_FLAG_DEFAULT;
 	else
 		flag_mmc |= BBU_HANDLER_FLAG_DEFAULT;

@@ -132,7 +132,7 @@ static int realq7_device_init(void)
 		}
 		break;
 	default:
-	case BOOTSOURCE_SPI:
+	case BOOTSOURCE_SPI_NOR:
 		of_device_enable_path("/chosen/environment-spi");
 		break;
 	}

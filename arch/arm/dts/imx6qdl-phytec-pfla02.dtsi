@@ -190,4 +190,10 @@
 		pagesize = <32>;
 		reg = <0x50>;
 	};
+
+	pmic@58 {
+		watchdog-priority = <500>;
+		restart-priority = <500>;
+		reset-source-priority = <500>;
+	};
 };

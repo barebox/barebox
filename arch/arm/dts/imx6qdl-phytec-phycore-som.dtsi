@@ -156,6 +156,16 @@
 		compatible = "24c32";
 		reg = <0x50>;
 	};
+
+	pmic@58 {
+		compatible = "dlg,da9062";
+		reg = <0x58>;
+		status = "okay";
+
+		watchdog-priority = <500>;
+		restart-priority = <500>;
+		reset-source-priority = <500>;
+	};
 };
 
 &iomuxc {

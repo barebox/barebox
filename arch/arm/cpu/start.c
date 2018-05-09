@@ -144,13 +144,11 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	unsigned long endmem = membase + memsize;
 	unsigned long malloc_start, malloc_end;
 	unsigned long barebox_size = barebox_image_size + MAX_BSS_SIZE;
-
-	if (IS_ENABLED(CONFIG_RELOCATABLE)) {
-		unsigned long barebox_base = arm_mem_barebox_image(membase,
-								   endmem,
-								   barebox_size);
+	unsigned long barebox_base = arm_mem_barebox_image(membase,
+							   endmem,
+							   barebox_size);
+	if (IS_ENABLED(CONFIG_RELOCATABLE))
 		relocate_to_adr(barebox_base);
-	}
 
 	setup_c();
 
@@ -160,8 +158,7 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 	arm_stack_top = arm_mem_stack_top(membase, endmem);
 	arm_barebox_size = barebox_size;
-	malloc_end = arm_mem_barebox_image(membase, endmem,
-						arm_barebox_size);
+	malloc_end = barebox_base;
 
 	if (IS_ENABLED(CONFIG_MMU_EARLY)) {
 		unsigned long ttb = arm_mem_ttb(membase, endmem);

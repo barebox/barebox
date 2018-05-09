@@ -1,6 +1,12 @@
 menu "serial drivers"
 	depends on !CONSOLE_NONE
 
+config SERIAL_DEV_BUS
+	bool "Serial device bus"
+	depends on CONSOLE_FULL
+	help
+	  Core support for devices connected via a serial port.
+
 config DRIVER_SERIAL_ARM_DCC
 	depends on ARM && !CPU_V8
 	bool "ARM Debug Communications Channel (DCC) serial driver"

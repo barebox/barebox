@@ -189,18 +189,6 @@ err_free:
 	return ret;
 }
 
-static void lpuart_serial_remove(struct device_d *dev)
-{
-	struct lpuart *lpuart = dev->priv;
-
-	lpuart_serial_flush(&lpuart->cdev);
-	console_unregister(&lpuart->cdev);
-	release_region(lpuart->io);
-	clk_put(lpuart->clk);
-
-	free(lpuart);
-}
-
 static struct of_device_id lpuart_serial_dt_ids[] = {
 	{ .compatible = "fsl,vf610-lpuart" },
 	{}
@@ -209,7 +197,6 @@ static struct of_device_id lpuart_serial_dt_ids[] = {
 static struct driver_d lpuart_serial_driver = {
 	.name   = "lpuart-serial",
 	.probe  = lpuart_serial_probe,
-	.remove = lpuart_serial_remove,
 	.of_compatible = DRV_OF_COMPAT(lpuart_serial_dt_ids),
 };
 console_platform_driver(lpuart_serial_driver);

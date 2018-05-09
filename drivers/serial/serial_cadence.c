@@ -267,14 +267,6 @@ err_free:
 	return ret;
 }
 
-static void cadence_serial_remove(struct device_d *dev)
-{
-	struct cadence_serial_priv *priv = dev->priv;
-
-	console_unregister(&priv->cdev);
-	free(priv);
-}
-
 static __maybe_unused struct of_device_id cadence_serial_dt_ids[] = {
 	{
 		.compatible = "xlnx,xuartps",
@@ -296,7 +288,6 @@ static struct platform_device_id cadence_serial_ids[] = {
 static struct driver_d cadence_serial_driver = {
 	.name   = "cadence_serial",
 	.probe  = cadence_serial_probe,
-	.remove = cadence_serial_remove,
 	.of_compatible = DRV_OF_COMPAT(cadence_serial_dt_ids),
 	.id_table = cadence_serial_ids,
 };

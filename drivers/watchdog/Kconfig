@@ -70,4 +70,9 @@ config WATCHDOG_BCM2835
 	help
 	  Add support for watchdog on the Broadcom BCM283X SoCs.
 
+config RAVE_SP_WATCHDOG
+	bool "RAVE SP Watchdog timer"
+	depends on RAVE_SP_CORE
+	help
+	  Support for the watchdog on RAVE SP device.
 endif

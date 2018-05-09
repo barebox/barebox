@@ -212,6 +212,12 @@ The entry can be listed with the -l option:
 When on barebox the SD card shows up as ``mmc1`` then this entry can be booted with
 ``boot mmc1`` or with setting ``global.boot.default`` to ``mmc1``.
 
+``machine-id`` is an optional key. If ``global.boot.machine_id`` variable is set to
+non-empty value, then barebox accepts only Bootloader Spec entries with ``machine-id``
+key. In case if value of global variable and Bootloader Spec key match each other,
+barebox will choose the boot entry for booting. All other Bootloader Spec entries will
+be ignored.
+
 A bootloader spec entry can also reside on an NFS server in which case a RFC2224
 compatible NFS URI string must be passed to the boot command:
 

@@ -420,6 +420,30 @@ out:
 }
 
 /*
+ * entry_is_match_machine_id - check if a bootspec entry is match with
+ *                            the machine id given by global variable.
+ *
+ * returns true if the entry is match, false otherwise
+ */
+
+static bool entry_is_match_machine_id(struct blspec_entry *entry)
+{
+	int ret = true;
+	const char *env_machineid = getenv_nonempty("global.boot.machine_id");
+
+	if (env_machineid) {
+		const char *machineid = blspec_entry_var_get(entry, "machine-id");
+		if (!machineid || strcmp(machineid, env_machineid)) {
+			pr_debug("ignoring entry with missmatched machine-id " \
+				"\"%s\" != \"%s\"\n", env_machineid, machineid);
+			ret = false;
+		}
+	}
+
+	return ret;
+}
+
+/*
  * blspec_scan_directory - scan over a directory
  *
  * Given a root path collects all bootentries entries found under /bootentries/entries/.
@@ -500,6 +524,11 @@ int blspec_scan_directory(struct bootentries *bootentries, const char *root)
 		entry->cdev = get_cdev_by_mountpath(root);
 
 		if (!entry_is_of_compatible(entry)) {
+			blspec_entry_free(&entry->entry);
+			continue;
+		}
+
+		if (!entry_is_match_machine_id(entry)) {
 			blspec_entry_free(&entry->entry);
 			continue;
 		}

@@ -19,6 +19,7 @@
 #include <mach/imx7.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
+#include <mach/reset-reason.h>
 #include <mach/imx7-regs.h>
 
 void imx7_init_lowlevel(void)
@@ -167,10 +168,21 @@ static struct psci_ops imx7_psci_ops = {
 	.cpu_off = imx7_cpu_off,
 };
 
+static const struct imx_reset_reason imx7_reset_reasons[] = {
+	{ IMX_SRC_SRSR_IPP_RESET,       RESET_POR,   0 },
+	{ IMX_SRC_SRSR_WDOG1_RESET,     RESET_WDG,   0 },
+	{ IMX_SRC_SRSR_JTAG_RESET,      RESET_JTAG,  0 },
+	{ IMX_SRC_SRSR_JTAG_SW_RESET,   RESET_JTAG,  0 },
+	{ IMX_SRC_SRSR_WDOG3_RESET,     RESET_WDG,   1 },
+	{ IMX_SRC_SRSR_WDOG4_RESET,     RESET_WDG,   2 },
+	{ IMX_SRC_SRSR_TEMPSENSE_RESET, RESET_THERM, 0 },
+	{ /* sentinel */ }
+};
+
 int imx7_init(void)
 {
 	const char *cputypestr;
-	u32 imx7_silicon_revision;
+	void __iomem *src = IOMEM(MX7_SRC_BASE_ADDR);
 
 	imx7_init_lowlevel();
 
@@ -179,8 +191,6 @@ int imx7_init(void)
 	imx7_timer_init();
 
 	imx7_boot_save_loc();
-
-	imx7_silicon_revision = imx7_cpu_revision();
 
 	psci_set_ops(&imx7_psci_ops);
 
@@ -196,7 +206,8 @@ int imx7_init(void)
 		break;
 	}
 
-	imx_set_silicon_revision(cputypestr, imx7_silicon_revision);
+	imx_set_silicon_revision(cputypestr, imx7_cpu_revision());
+	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
 
 	return 0;
 }

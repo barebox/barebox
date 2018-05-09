@@ -14,8 +14,10 @@
 #include <common.h>
 #include <of.h>
 #include <init.h>
+#include <io.h>
 #include <mach/revision.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 static int __imx_silicon_revision = IMX_CHIP_REV_UNKNOWN;
 
@@ -28,7 +30,10 @@ void imx_set_silicon_revision(const char *soc, int revision)
 {
 	__imx_silicon_revision = revision;
 
-	pr_info("detected %s revision %d.%d\n", soc,
+	if (revision == IMX_CHIP_REV_UNKNOWN)
+		pr_info("detected %s revision unknown\n", soc);
+	else
+		pr_info("detected %s revision %d.%d\n", soc,
 			(revision >> 4) & 0xf,
 			revision & 0xf);
 }
@@ -114,7 +119,7 @@ static int imx_init(void)
 	else if (cpu_is_mx7())
 		ret = imx7_init();
 	else if (cpu_is_vf610())
-		ret = 0;
+		ret = vf610_init();
 	else
 		return -EINVAL;
 
@@ -147,3 +152,46 @@ static int imx_init(void)
 	return ret;
 }
 postcore_initcall(imx_init);
+
+const struct imx_reset_reason imx_reset_reasons[] = {
+	{ IMX_SRC_SRSR_IPP_RESET,     RESET_POR,  0 },
+	{ IMX_SRC_SRSR_WDOG1_RESET,   RESET_WDG,  0 },
+	{ IMX_SRC_SRSR_JTAG_RESET,    RESET_JTAG, 0 },
+	{ IMX_SRC_SRSR_JTAG_SW_RESET, RESET_JTAG, 0 },
+	{ IMX_SRC_SRSR_WARM_BOOT,     RESET_RST,  0 },
+	{ /* sentinel */ }
+};
+
+void imx_set_reset_reason(void __iomem *srsr,
+			  const struct imx_reset_reason *reasons)
+{
+	enum reset_src_type type = RESET_UKWN;
+	const u32 reg = readl(srsr);
+	int i, instance = 0;
+
+	/*
+	 * SRSR register captures ALL reset event that occured since
+	 * POR, so we need to clear it to make sure we only caputre
+	 * the latest one.
+	 */
+	writel(reg, srsr);
+
+	for (i = 0; reasons[i].mask; i++) {
+		if (reg & reasons[i].mask) {
+			type     = reasons[i].type;
+			instance = reasons[i].instance;
+			break;
+		}
+	}
+
+	/*
+	 * Report this with above default priority in order to make
+	 * sure we'll always override info from watchdog driver.
+	 */
+	reset_source_set_priority(type,
+				  RESET_SOURCE_DEFAULT_PRIORITY + 1);
+	reset_source_set_instance(type, instance);
+
+	pr_info("i.MX reset reason %s (SRSR: 0x%08x)\n",
+		reset_source_name(), reg);
+}

@@ -20,6 +20,7 @@
 #include <mach/imx6.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
+#include <mach/reset-reason.h>
 #include <mach/imx6-anadig.h>
 #include <mach/imx6-regs.h>
 #include <mach/generic.h>
@@ -189,6 +190,7 @@ int imx6_init(void)
 {
 	const char *cputypestr;
 	u32 mx6_silicon_revision;
+	void __iomem *src = IOMEM(MX6_SRC_BASE_ADDR);
 
 	imx6_init_lowlevel();
 
@@ -233,7 +235,7 @@ int imx6_init(void)
 	}
 
 	imx_set_silicon_revision(cputypestr, mx6_silicon_revision);
-
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx6_setup_ipu_qos();
 	imx6ul_enet_clk_init();
 

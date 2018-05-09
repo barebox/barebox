@@ -21,6 +21,7 @@
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 #define IIM_SREV 0x24
 
@@ -43,7 +44,7 @@ static int imx51_silicon_revision(void)
 
 static void imx51_ipu_mipi_setup(void)
 {
-	void __iomem *hsc_addr = (void __iomem *)MX51_MIPI_HSC_BASE_ADDR;
+	void __iomem *hsc_addr = IOMEM(MX51_MIPI_HSC_BASE_ADDR);
 	u32 val;
 
 	/* setup MIPI module to legacy mode */
@@ -57,7 +58,10 @@ static void imx51_ipu_mipi_setup(void)
 
 int imx51_init(void)
 {
+	void __iomem *src = IOMEM(MX51_SRC_BASE_ADDR);
+
 	imx_set_silicon_revision("i.MX51", imx51_silicon_revision());
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx51_boot_save_loc();
 	add_generic_device("imx51-esdctl", 0, NULL, MX51_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 	imx51_ipu_mipi_setup();
@@ -97,7 +101,7 @@ int imx51_devices_init(void)
  */
 static void imx51_setup_pll800_bug(void)
 {
-	void __iomem *base = (void *)MX51_PLL1_BASE_ADDR;
+	void __iomem *base = IOMEM(MX51_PLL1_BASE_ADDR);
 	u32 dp_config;
 	volatile int i;
 
@@ -132,7 +136,7 @@ static void imx51_setup_pll800_bug(void)
 
 void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 {
-	void __iomem *ccm = (void __iomem *)MX51_CCM_BASE_ADDR;
+	void __iomem *ccm = IOMEM(MX51_CCM_BASE_ADDR);
 	u32 r;
 	int rev = imx51_silicon_revision();
 
@@ -167,30 +171,30 @@ void imx51_init_lowlevel(unsigned int cpufreq_mhz)
 
 	switch (cpufreq_mhz) {
 	case 600:
-		imx5_setup_pll_600((void __iomem *)MX51_PLL1_BASE_ADDR);
+		imx5_setup_pll_600(IOMEM(MX51_PLL1_BASE_ADDR));
 		break;
 	default:
 		/* Default maximum 800MHz */
 		if (rev <= IMX_CHIP_REV_3_0)
 			imx51_setup_pll800_bug();
 		else
-			imx5_setup_pll_800((void __iomem *)MX51_PLL1_BASE_ADDR);
+			imx5_setup_pll_800(IOMEM(MX51_PLL1_BASE_ADDR));
 		break;
 	}
 
-	imx5_setup_pll_665((void __iomem *)MX51_PLL3_BASE_ADDR);
+	imx5_setup_pll_665(IOMEM(MX51_PLL3_BASE_ADDR));
 
 	/* Switch peripheral to PLL 3 */
 	writel(0x000010C0, ccm + MX5_CCM_CBCMR);
 	writel(0x13239145, ccm + MX5_CCM_CBCDR);
 
-	imx5_setup_pll_665((void __iomem *)MX51_PLL2_BASE_ADDR);
+	imx5_setup_pll_665(IOMEM(MX51_PLL2_BASE_ADDR));
 
 	/* Switch peripheral to PLL2 */
 	writel(0x19239145, ccm + MX5_CCM_CBCDR);
 	writel(0x000020C0, ccm + MX5_CCM_CBCMR);
 
-	imx5_setup_pll_216((void __iomem *)MX51_PLL3_BASE_ADDR);
+	imx5_setup_pll_216(IOMEM(MX51_PLL3_BASE_ADDR));
 
 	/* Set the platform clock dividers */
 	writel(0x00000125, MX51_ARM_BASE_ADDR + 0x14);

@@ -21,6 +21,7 @@
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 #define SI_REV 0x48
 
@@ -52,7 +53,10 @@ static int imx53_silicon_revision(void)
 
 int imx53_init(void)
 {
+	void __iomem *src = IOMEM(MX53_SRC_BASE_ADDR);
+
 	imx53_silicon_revision();
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx53_boot_save_loc();
 	add_generic_device("imx53-esdctl", 0, NULL, MX53_ESDCTL_BASE_ADDR, 0x1000, IORESOURCE_MEM, NULL);
 

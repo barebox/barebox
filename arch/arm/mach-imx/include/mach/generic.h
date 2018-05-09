@@ -36,6 +36,7 @@ int imx51_init(void);
 int imx53_init(void);
 int imx6_init(void);
 int imx7_init(void);
+int vf610_init(void);
 
 int imx1_devices_init(void);
 int imx21_devices_init(void);

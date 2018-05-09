@@ -32,12 +32,19 @@ static const char * const reset_src_names[] = {
 
 static enum reset_src_type reset_source;
 static unsigned int reset_source_priority;
+static int reset_source_instance;
 
 enum reset_src_type reset_source_get(void)
 {
 	return reset_source;
 }
 EXPORT_SYMBOL(reset_source_get);
+
+int reset_source_get_instance(void)
+{
+	return reset_source_instance;
+}
+EXPORT_SYMBOL(reset_source_get_instance);
 
 void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 {
@@ -46,17 +53,33 @@ void reset_source_set_priority(enum reset_src_type st, unsigned int priority)
 
 	reset_source = st;
 	reset_source_priority = priority;
+	reset_source_instance = 0;
 
 	pr_debug("Setting reset source to %s with priority %d\n",
 			reset_src_names[reset_source], priority);
 }
 EXPORT_SYMBOL(reset_source_set_priority);
 
+const char *reset_source_name(void)
+{
+	return reset_src_names[reset_source];
+}
+EXPORT_SYMBOL(reset_source_name);
+
+void reset_source_set_instance(enum reset_src_type type, int instance)
+{
+	if (reset_source == type)
+		reset_source_instance = instance;
+}
+EXPORT_SYMBOL(reset_source_set_instance);
+
 static int reset_source_init(void)
 {
 	globalvar_add_simple_enum("system.reset", (unsigned int *)&reset_source,
 			reset_src_names, ARRAY_SIZE(reset_src_names));
 
+	globalvar_add_simple_int("system.reset_instance", &reset_source_instance,
+				 "%d");
 	return 0;
 }
 

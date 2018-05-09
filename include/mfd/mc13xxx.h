@@ -16,6 +16,10 @@
 
 #define MC13XXX_REG_IDENTIFICATION	0x07
 
+#define MC13783_TYPE			1
+#define MC13892_TYPE			2
+#define MC34708_TYPE			3
+
 #define MC13783_REG_INT_STATUS0		0x00
 #define MC13783_REG_INT_MASK0		0x01
 #define MC13783_REG_INT_SENSE0		0x02
@@ -168,6 +172,7 @@ struct mc13xxx;
 
 #ifdef CONFIG_MFD_MC13XXX
 extern struct mc13xxx *mc13xxx_get(void);
+extern int mc13xxx_type(struct mc13xxx *mc13xxx);
 extern int mc13xxx_revision(struct mc13xxx *mc13xxx);
 extern int mc13xxx_reg_read(struct mc13xxx *mc13xxx, u8 reg, u32 *val);
 extern int mc13xxx_reg_write(struct mc13xxx *mc13xxx, u8 reg, u32 val);
@@ -177,6 +182,11 @@ int mc13xxx_register_init_callback(void(*callback)(struct mc13xxx *mc13xxx));
 static inline struct mc13xxx *mc13xxx_get(void)
 {
 	return NULL;
+}
+
+static inline int mc13xxx_type(struct mc13xxx *mc13xxx)
+{
+	return -ENODEV;
 }
 
 static inline int mc13xxx_revision(struct mc13xxx *mc13xxx)
@@ -202,6 +212,15 @@ static inline int mc13xxx_set_bits(struct mc13xxx *mc13xxx, u8 reg, u32 mask, u3
 static inline int mc13xxx_register_init_callback(void(*callback)(struct mc13xxx *mc13xxx))
 {
 	return -ENODEV;
+}
+#endif
+
+#ifdef CONFIG_MC13XXX_ADC
+int mc13xxx_adc_probe(struct device_d *dev, struct mc13xxx *mc_dev);
+#else
+static inline int mc13xxx_adc_probe(struct device_d *dev, struct mc13xxx *mc_dev)
+{
+	return 0;
 }
 #endif
 

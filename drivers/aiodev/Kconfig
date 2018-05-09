@@ -20,4 +20,10 @@ config LM75
 	help
 	  Support for LM75 and similar devices
 
+config MC13XXX_ADC
+	tristate "MC13XXX ADC driver"
+	depends on MFD_MC13XXX
+	help
+	  Support for MC13783, MC13892, MC34708 ADC
+
 endif

@@ -21,6 +21,7 @@
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 #define SI_REV 0x48
 
@@ -49,7 +50,10 @@ static int imx50_silicon_revision(void)
 
 int imx50_init(void)
 {
+	void __iomem *src = IOMEM(MX50_SRC_BASE_ADDR);
+
 	imx50_silicon_revision();
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx53_boot_save_loc();
 
 	return 0;

@@ -129,11 +129,6 @@ struct property *of_find_property(const struct device_node *np,
 }
 EXPORT_SYMBOL(of_find_property);
 
-static const void *of_property_get_value(struct property *pp)
-{
-	return pp->value ? pp->value : pp->value_const;
-}
-
 static void of_alias_add(struct alias_prop *ap, struct device_node *np,
 			 int id, const char *stem, int stem_len)
 {

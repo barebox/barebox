@@ -37,21 +37,7 @@
 #define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
-static unsigned long *ttb;
-
-static void create_sections(unsigned long virt, unsigned long phys, int size_m,
-		unsigned int flags)
-{
-	int i;
-
-	phys >>= 20;
-	virt >>= 20;
-
-	for (i = size_m; i > 0; i--, virt++, phys++)
-		ttb[virt] = (phys << 20) | flags;
-
-	__mmu_cache_flush();
-}
+static uint32_t *ttb;
 
 /*
  * Do it the simple way for now and invalidate the entire
@@ -452,7 +438,7 @@ static int mmu_init(void)
 		asm volatile ("mrc  p15,0,%0,c2,c0,0" : "=r"(ttb));
 
 		/* Clear unpredictable bits [13:0] */
-		ttb = (unsigned long *)((unsigned long)ttb & ~0x3fff);
+		ttb = (uint32_t *)((unsigned long)ttb & ~0x3fff);
 
 		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
 			/*
@@ -474,8 +460,9 @@ static int mmu_init(void)
 	set_domain(DOMAIN_MANAGER);
 
 	/* create a flat mapping using 1MiB sections */
-	create_sections(0, 0, PAGE_SIZE, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
+	create_sections(ttb, 0, PAGE_SIZE, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
 			PMD_TYPE_SECT);
+	__mmu_cache_flush();
 
 	vectors_init();
 
@@ -484,9 +471,11 @@ static int mmu_init(void)
 	 * This is to speed up the generation of 2nd level page tables
 	 * below
 	 */
-	for_each_memory_bank(bank)
-		create_sections(bank->start, bank->start, bank->size >> 20,
+	for_each_memory_bank(bank) {
+		create_sections(ttb, bank->start, bank->size >> 20,
 				PMD_SECT_DEF_CACHED);
+		__mmu_cache_flush();
+	}
 
 	__mmu_cache_on();
 

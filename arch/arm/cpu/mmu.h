@@ -24,5 +24,15 @@ static inline void set_domain(unsigned val)
 	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(val) /*:*/);
 }
 
+static inline void
+create_sections(uint32_t *ttb, unsigned long addr,
+		int size_m, unsigned int flags)
+{
+	unsigned int i;
+
+	for (i = 0, addr >>= 20; i < size_m; i++, addr++)
+		ttb[addr] = (addr << 20) | flags;
+}
+
 
 #endif /* __ARM_MMU_H */

@@ -33,17 +33,12 @@ static void map_cachable(unsigned long start, unsigned long size)
 void mmu_early_enable(unsigned long membase, unsigned long memsize,
 		      unsigned long _ttb)
 {
-	int i;
-
 	ttb = (uint32_t *)_ttb;
 
 	arm_set_cache_functions();
 
 	set_ttbr(ttb);
-
-	/* Set the Domain Access Control Register */
-	i = 0x3;
-	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
+	set_domain(DOMAIN_MANAGER);
 
 	create_sections(0, 4096, PMD_SECT_AP_WRITE |
 			PMD_SECT_AP_READ | PMD_TYPE_SECT);

@@ -422,7 +422,6 @@ static void vectors_init(void)
 static int mmu_init(void)
 {
 	struct memory_bank *bank;
-	int i;
 
 	if (list_empty(&memory_banks))
 		/*
@@ -472,10 +471,7 @@ static int mmu_init(void)
 	pr_debug("ttb: 0x%p\n", ttb);
 
 	set_ttbr(ttb);
-
-	/* Set the Domain Access Control Register */
-	i = 0x3;
-	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
+	set_domain(DOMAIN_MANAGER);
 
 	/* create a flat mapping using 1MiB sections */
 	create_sections(0, 0, PAGE_SIZE, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |

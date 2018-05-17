@@ -196,9 +196,8 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 {
 	unsigned long start = (unsigned long)_start, sec;
 
-	phys >>= 20;
-	for (sec = start; sec < start + size; sec += (1 << 20))
-		ttb[sec >> 20] = (phys++ << 20) | PMD_SECT_DEF_UNCACHED;
+	for (sec = start; sec < start + size; sec += (1 << 20), phys += SZ_1M)
+		ttb[sec >> 20] = phys | PMD_SECT_DEF_UNCACHED;
 
 	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
 	tlb_invalidate();

@@ -271,7 +271,7 @@ static void create_vector_table(unsigned long adr)
 	u32 *exc;
 	int idx;
 
-	vectors_sdram = request_sdram_region("vector table", adr, SZ_4K);
+	vectors_sdram = request_sdram_region("vector table", adr, PAGE_SIZE);
 	if (vectors_sdram) {
 		/*
 		 * The vector table address is inside the SDRAM physical
@@ -352,7 +352,7 @@ static void create_zero_page(void)
 	struct resource *zero_sdram;
 	u32 *zero;
 
-	zero_sdram = request_sdram_region("zero page", 0x0, SZ_4K);
+	zero_sdram = request_sdram_region("zero page", 0x0, PAGE_SIZE);
 	if (zero_sdram) {
 		/*
 		 * Here we would need to set the second level page table

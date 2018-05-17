@@ -5,7 +5,6 @@
 #include <asm/memory.h>
 #include <asm/system.h>
 #include <asm/cache.h>
-#include <asm/pgtable.h>
 
 #include "mmu.h"
 
@@ -30,8 +29,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 	set_ttbr(ttb);
 	set_domain(DOMAIN_MANAGER);
 
-	create_sections(ttb, 0, 0xffffffff, PMD_SECT_AP_WRITE |
-			PMD_SECT_AP_READ | PMD_TYPE_SECT);
+	create_flat_mapping(ttb);
 
 	map_cachable(membase, memsize);
 

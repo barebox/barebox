@@ -1,6 +1,7 @@
 #ifndef __ARM_MMU_H
 #define __ARM_MMU_H
 
+#include <asm/pgtable.h>
 #include <linux/sizes.h>
 
 #ifdef CONFIG_MMU
@@ -40,5 +41,12 @@ create_sections(uint32_t *ttb, unsigned long first,
 	}
 }
 
+#define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
+
+static inline void create_flat_mapping(uint32_t *ttb)
+{
+	/* create a flat mapping using 1MiB sections */
+	create_sections(ttb, 0, 0xffffffff, PMD_SECT_DEF_UNCACHED);
+}
 
 #endif /* __ARM_MMU_H */

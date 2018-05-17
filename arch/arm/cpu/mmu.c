@@ -27,14 +27,12 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm/cache.h>
-#include <asm/pgtable.h>
 #include <memory.h>
 #include <asm/system_info.h>
 #include <asm/sections.h>
 
 #include "mmu.h"
 
-#define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
 static uint32_t *ttb;
@@ -459,9 +457,7 @@ static int mmu_init(void)
 	set_ttbr(ttb);
 	set_domain(DOMAIN_MANAGER);
 
-	/* create a flat mapping using 1MiB sections */
-	create_sections(ttb, 0, 0xffffffff, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
-			PMD_TYPE_SECT);
+	create_flat_mapping(ttb);
 	__mmu_cache_flush();
 
 	vectors_init();

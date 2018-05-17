@@ -15,8 +15,7 @@ static void map_cachable(unsigned long start, unsigned long size)
 	start = ALIGN_DOWN(start, SZ_1M);
 	size  = ALIGN(size, SZ_1M);
 
-	create_sections(ttb, start, start + size - 1, PMD_SECT_AP_WRITE |
-			PMD_SECT_AP_READ | PMD_TYPE_SECT | PMD_SECT_WB);
+	create_sections(ttb, start, start + size - 1, PMD_SECT_DEF_CACHED);
 }
 
 void mmu_early_enable(unsigned long membase, unsigned long memsize,

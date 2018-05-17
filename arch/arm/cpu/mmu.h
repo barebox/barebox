@@ -42,6 +42,7 @@ create_sections(uint32_t *ttb, unsigned long first,
 }
 
 #define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
+#define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
 
 static inline void create_flat_mapping(uint32_t *ttb)
 {

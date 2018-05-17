@@ -39,8 +39,7 @@ void mmu_early_enable(unsigned long membase, unsigned long memsize,
 
 	arm_set_cache_functions();
 
-	/* Set the ttb register */
-	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);
+	set_ttbr(ttb);
 
 	/* Set the Domain Access Control Register */
 	i = 0x3;

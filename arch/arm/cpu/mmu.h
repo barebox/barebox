@@ -11,4 +11,9 @@ static inline void __mmu_cache_off(void) {}
 static inline void __mmu_cache_flush(void) {}
 #endif
 
+static inline void set_ttbr(void *ttb)
+{
+	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);
+}
+
 #endif /* __ARM_MMU_H */

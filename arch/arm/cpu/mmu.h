@@ -1,6 +1,8 @@
 #ifndef __ARM_MMU_H
 #define __ARM_MMU_H
 
+#include <linux/sizes.h>
+
 #ifdef CONFIG_MMU
 void __mmu_cache_on(void);
 void __mmu_cache_off(void);
@@ -28,10 +30,14 @@ static inline void
 create_sections(uint32_t *ttb, unsigned long addr,
 		int size_m, unsigned int flags)
 {
+	unsigned long ttb_start = addr >> 20;
+	unsigned long ttb_end = ttb_start + size_m;
 	unsigned int i;
 
-	for (i = 0, addr >>= 20; i < size_m; i++, addr++)
-		ttb[addr] = (addr << 20) | flags;
+	for (i = ttb_start; i < ttb_end; i++) {
+		ttb[i] = addr | flags;
+		addr += SZ_1M;
+	}
 }
 
 

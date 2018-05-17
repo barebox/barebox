@@ -34,6 +34,7 @@
 #include "mmu.h"
 
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
+#define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
 
 static uint32_t *ttb;
 
@@ -91,14 +92,15 @@ static u32 *arm_create_pte(unsigned long virt)
 	u32 *table;
 	int i;
 
-	table = memalign(0x400, 0x400);
+	table = memalign(PTRS_PER_PTE * sizeof(u32),
+			 PTRS_PER_PTE * sizeof(u32));
 
 	if (!ttb)
 		arm_mmu_not_initialized_error();
 
 	ttb[pgd_index(virt)] = (unsigned long)table | PMD_TYPE_TABLE;
 
-	for (i = 0; i < 256; i++) {
+	for (i = 0; i < PTRS_PER_PTE; i++) {
 		table[i] = virt | PTE_TYPE_SMALL | pte_flags_uncached;
 		virt += PAGE_SIZE;
 	}
@@ -242,7 +244,7 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 	for (i = ttb_start; i < ttb_end; i++) {
 		ttb[i] = (unsigned long)(&ptes[pte]) | PMD_TYPE_TABLE |
 			(0 << 4);
-		pte += 256;
+		pte += PTRS_PER_PTE;
 	}
 
 	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);

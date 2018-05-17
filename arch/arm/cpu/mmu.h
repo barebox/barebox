@@ -27,12 +27,12 @@ static inline void set_domain(unsigned val)
 }
 
 static inline void
-create_sections(uint32_t *ttb, unsigned long addr,
-		int size_m, unsigned int flags)
+create_sections(uint32_t *ttb, unsigned long first,
+		unsigned long last, unsigned int flags)
 {
-	unsigned long ttb_start = addr >> 20;
-	unsigned long ttb_end = ttb_start + size_m;
-	unsigned int i;
+	unsigned long ttb_start = first >> 20;
+	unsigned long ttb_end = (last >> 20) + 1;
+	unsigned int i, addr = first;
 
 	for (i = ttb_start; i < ttb_end; i++) {
 		ttb[i] = addr | flags;

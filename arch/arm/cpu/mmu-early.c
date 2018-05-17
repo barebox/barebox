@@ -23,8 +23,8 @@ static void create_sections(unsigned long addr, int size_m, unsigned int flags)
 
 static void map_cachable(unsigned long start, unsigned long size)
 {
-	start &= ~(SZ_1M - 1);
-	size = (size + (SZ_1M - 1)) & ~(SZ_1M - 1);
+	start = ALIGN_DOWN(start, SZ_1M);
+	size  = ALIGN(size, SZ_1M);
 
 	create_sections(start, size >> 20, PMD_SECT_AP_WRITE |
 			PMD_SECT_AP_READ | PMD_TYPE_SECT | PMD_SECT_WB);

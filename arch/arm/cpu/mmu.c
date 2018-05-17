@@ -500,7 +500,7 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+static void *dma_alloc(size_t size, dma_addr_t *dma_handle, uint32_t pte_flags)
 {
 	void *ret;
 
@@ -511,25 +511,19 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
-	__remap_range(ret, size, pte_flags_uncached);
+	__remap_range(ret, size, pte_flags);
 
 	return ret;
 }
 
+void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+{
+	return dma_alloc(size, dma_handle, pte_flags_uncached);
+}
+
 void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 {
-	void *ret;
-
-	size = PAGE_ALIGN(size);
-	ret = xmemalign(PAGE_SIZE, size);
-	if (dma_handle)
-		*dma_handle = (dma_addr_t)ret;
-
-	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
-
-	__remap_range(ret, size, pte_flags_wc);
-
-	return ret;
+	return dma_alloc(size, dma_handle, pte_flags_wc);
 }
 
 unsigned long virt_to_phys(volatile void *virt)

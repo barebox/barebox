@@ -87,7 +87,7 @@ static void arm_mmu_not_initialized_error(void)
  * We initially create a flat uncached mapping on it.
  * Not yet exported, but may be later if someone finds use for it.
  */
-static u32 *arm_create_pte(unsigned long virt)
+static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
 {
 	u32 *table;
 	int i;
@@ -101,7 +101,7 @@ static u32 *arm_create_pte(unsigned long virt)
 	ttb[pgd_index(virt)] = (unsigned long)table | PMD_TYPE_TABLE;
 
 	for (i = 0; i < PTRS_PER_PTE; i++) {
-		table[i] = virt | PTE_TYPE_SMALL | pte_flags_uncached;
+		table[i] = virt | PTE_TYPE_SMALL | flags;
 		virt += PAGE_SIZE;
 	}
 
@@ -291,7 +291,8 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		exc = arm_create_pte(ALIGN_DOWN(adr, PGDIR_SIZE));
+		exc = arm_create_pte(ALIGN_DOWN(adr, PGDIR_SIZE),
+				     pte_flags_uncached);
 		idx = (adr & (PGDIR_SIZE - 1)) >> PAGE_SHIFT;
 		exc[idx] = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
 	}
@@ -362,7 +363,7 @@ static void create_zero_page(void)
 		 */
 		pr_debug("zero page is in SDRAM area, currently not supported\n");
 	} else {
-		zero = arm_create_pte(0x0);
+		zero = arm_create_pte(0x0, pte_flags_uncached);
 		zero[0] = 0;
 		pr_debug("Created zero page\n");
 	}

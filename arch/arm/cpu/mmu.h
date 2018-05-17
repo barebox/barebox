@@ -4,6 +4,10 @@
 #include <asm/pgtable.h>
 #include <linux/sizes.h>
 
+#define PGDIR_SHIFT	20
+
+#define pgd_index(addr)		((addr) >> PGDIR_SHIFT)
+
 #ifdef CONFIG_MMU
 void __mmu_cache_on(void);
 void __mmu_cache_off(void);
@@ -31,8 +35,8 @@ static inline void
 create_sections(uint32_t *ttb, unsigned long first,
 		unsigned long last, unsigned int flags)
 {
-	unsigned long ttb_start = first >> 20;
-	unsigned long ttb_end = (last >> 20) + 1;
+	unsigned long ttb_start = pgd_index(first);
+	unsigned long ttb_end = pgd_index(last) + 1;
 	unsigned int i, addr = first;
 
 	for (i = ttb_start; i < ttb_end; i++) {

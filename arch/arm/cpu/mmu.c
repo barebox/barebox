@@ -96,7 +96,7 @@ static u32 *arm_create_pte(unsigned long virt)
 	if (!ttb)
 		arm_mmu_not_initialized_error();
 
-	ttb[virt >> 20] = (unsigned long)table | PMD_TYPE_TABLE;
+	ttb[pgd_index(virt)] = (unsigned long)table | PMD_TYPE_TABLE;
 
 	for (i = 0; i < 256; i++) {
 		table[i] = virt | PTE_TYPE_SMALL | pte_flags_uncached;
@@ -113,7 +113,7 @@ static u32 *find_pte(unsigned long adr)
 	if (!ttb)
 		arm_mmu_not_initialized_error();
 
-	if ((ttb[adr >> 20] & PMD_TYPE_MASK) != PMD_TYPE_TABLE) {
+	if ((ttb[pgd_index(adr)] & PMD_TYPE_MASK) != PMD_TYPE_TABLE) {
 		struct memory_bank *bank;
 		int i = 0;
 
@@ -132,7 +132,7 @@ static u32 *find_pte(unsigned long adr)
 	}
 
 	/* find the coarse page table base address */
-	table = (u32 *)(ttb[adr >> 20] & ~0x3ff);
+	table = (u32 *)(ttb[pgd_index(adr)] & ~0x3ff);
 
 	/* find second level descriptor */
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
@@ -197,7 +197,7 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 	unsigned long start = (unsigned long)_start, sec;
 
 	for (sec = start; sec < start + size; sec += (1 << 20), phys += SZ_1M)
-		ttb[sec >> 20] = phys | PMD_SECT_DEF_UNCACHED;
+		ttb[pgd_index(sec)] = phys | PMD_SECT_DEF_UNCACHED;
 
 	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
 	tlb_invalidate();
@@ -211,8 +211,8 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 static int arm_mmu_remap_sdram(struct memory_bank *bank)
 {
 	unsigned long phys = (unsigned long)bank->start;
-	unsigned long ttb_start = phys >> 20;
-	unsigned long ttb_end = (phys >> 20) + (bank->size >> 20);
+	unsigned long ttb_start = pgd_index(phys);
+	unsigned long ttb_end = pgd_index(phys) + pgd_index(bank->size);
 	unsigned long num_ptes = bank->size >> 12;
 	int i, pte;
 	u32 *ptes;

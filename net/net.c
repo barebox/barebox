@@ -330,7 +330,7 @@ static struct net_connection *net_new(struct eth_device *edev, IPaddr_t dest,
 		char str[sizeof("xx:xx:xx:xx:xx:xx")];
 		random_ether_addr(edev->ethaddr);
 		ethaddr_to_string(edev->ethaddr, str);
-		pr_warn("warning: No MAC address set. Using random address %s\n", str);
+		dev_warn(&edev->dev, "No MAC address set. Using random address %s\n", str);
 		eth_set_ethaddr(edev, edev->ethaddr);
 	}
 

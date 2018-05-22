@@ -150,7 +150,7 @@ image_set_hdr_u8(comp);		/* image_set_comp */
 
 static inline void image_set_name(image_header_t *hdr, const char *name)
 {
-	strncpy(image_get_name(hdr), name, IH_NMLEN);
+	strncpy(image_get_name(hdr), name, IH_NMLEN - 1);
 }
 
 /**

@@ -180,6 +180,7 @@ static int pca954x_probe(struct device_d *dev)
 	struct i2c_adapter *adap = to_i2c_adapter(client->dev.parent);
 	int num, force;
 	struct pca954x *data;
+	uintptr_t tmp;
 	int ret = -ENODEV;
 	int gpio;
 
@@ -203,7 +204,8 @@ static int pca954x_probe(struct device_d *dev)
 		goto exit_free;
 	}
 
-	ret = dev_get_drvdata(dev, (const void **)&data->type);
+	ret = dev_get_drvdata(dev, (const void **)&tmp);
+	data->type = tmp;
 	if (ret)
 		goto exit_free;
 

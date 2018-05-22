@@ -113,10 +113,10 @@ static int snvs_lpgpr_probe(struct device_d *dev)
 	cfg = &priv->cfg;
 	cfg->name = dev_name(dev);
 	cfg->dev = dev;
-	cfg->stride = 4,
-	cfg->word_size = 4,
-	cfg->size = 4,
-	cfg->bus = &snvs_lpgpr_nvmem_bus,
+	cfg->stride = 4;
+	cfg->word_size = 4;
+	cfg->size = 4;
+	cfg->bus = &snvs_lpgpr_nvmem_bus;
 
 	nvmem = nvmem_register(cfg);
 	if (IS_ERR(nvmem)) {

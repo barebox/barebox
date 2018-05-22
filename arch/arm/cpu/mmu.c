@@ -548,11 +548,8 @@ void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
-	if (dir != DMA_TO_DEVICE) {
-		if (outer_cache.inv_range)
-			outer_cache.inv_range(address, address + size);
-		__dma_inv_range(address, address + size);
-	}
+	if (dir != DMA_TO_DEVICE)
+		dma_inv_range(address, address + size);
 }
 
 void dma_sync_single_for_device(dma_addr_t address, size_t size,

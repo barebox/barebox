@@ -142,8 +142,11 @@ static u32 *find_pte(unsigned long adr)
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
 }
 
-static void dma_flush_range(unsigned long start, unsigned long end)
+static void dma_flush_range(void *ptr, size_t size)
 {
+	unsigned long start = (unsigned long)ptr;
+	unsigned long end = start + size;
+
 	__dma_flush_range(start, end);
 	if (outer_cache.flush_range)
 		outer_cache.flush_range(start, end);
@@ -170,9 +173,7 @@ static int __remap_range(void *_start, size_t size, u32 pte_flags)
 		p[i] |= pte_flags | PTE_TYPE_SMALL;
 	}
 
-	dma_flush_range((unsigned long)p,
-			(unsigned long)p + numentries * sizeof(u32));
-
+	dma_flush_range(p, numentries * sizeof(u32));
 	tlb_invalidate();
 
 	return 0;
@@ -203,7 +204,7 @@ void *map_io_sections(unsigned long phys, void *_start, size_t size)
 	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE)
 		ttb[pgd_index(sec)] = phys | PMD_SECT_DEF_UNCACHED;
 
-	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
+	dma_flush_range(ttb, 0x4000);
 	tlb_invalidate();
 	return _start;
 }
@@ -249,9 +250,8 @@ static int arm_mmu_remap_sdram(struct memory_bank *bank)
 		pte += PTRS_PER_PTE;
 	}
 
-	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
-	dma_flush_range((unsigned long)ptes,
-			(unsigned long)ptes + num_ptes * sizeof(u32));
+	dma_flush_range(ttb, 0x4000);
+	dma_flush_range(ptes, num_ptes * sizeof(u32));
 
 	tlb_invalidate();
 

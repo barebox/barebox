@@ -92,6 +92,8 @@ static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
 	u32 *table;
 	int i;
 
+	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
+
 	table = xmemalign(PTRS_PER_PTE * sizeof(u32),
 			  PTRS_PER_PTE * sizeof(u32));
 
@@ -291,8 +293,7 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		exc = arm_create_pte(ALIGN_DOWN(adr, PGDIR_SIZE),
-				     pte_flags_uncached);
+		exc = arm_create_pte(adr, pte_flags_uncached);
 		idx = (adr & (PGDIR_SIZE - 1)) >> PAGE_SHIFT;
 		exc[idx] = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
 	}

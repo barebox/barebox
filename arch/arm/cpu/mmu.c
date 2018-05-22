@@ -272,8 +272,7 @@ static void create_vector_table(unsigned long adr)
 {
 	struct resource *vectors_sdram;
 	void *vectors;
-	u32 *exc;
-	int idx;
+	u32 *pte;
 
 	vectors_sdram = request_sdram_region("vector table", adr, PAGE_SIZE);
 	if (vectors_sdram) {
@@ -293,9 +292,9 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		exc = arm_create_pte(adr, pte_flags_uncached);
-		idx = (adr & (PGDIR_SIZE - 1)) >> PAGE_SHIFT;
-		exc[idx] = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
+		arm_create_pte(adr, pte_flags_uncached);
+		pte = find_pte(adr);
+		*pte = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
 	}
 
 	arm_fixup_vectors();

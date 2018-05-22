@@ -58,14 +58,14 @@ void flush_cache_all(void)
 
 	dcache_size = c->dcache.waysize * c->dcache.ways;
 	lsize = c->dcache.linesz;
-	aend = (KSEG0 + dcache_size - 1) & ~(lsize - 1);
-	for (addr = KSEG0; addr <= aend; addr += lsize)
+	aend = (CKSEG0 + dcache_size - 1) & ~(lsize - 1);
+	for (addr = CKSEG0; addr <= aend; addr += lsize)
 		cache_op(Index_Writeback_Inv_D, addr);
 
 	icache_size = c->icache.waysize * c->icache.ways;
 	lsize = c->icache.linesz;
-	aend = (KSEG0 + icache_size - 1) & ~(lsize - 1);
-	for (addr = KSEG0; addr <= aend; addr += lsize)
+	aend = (CKSEG0 + icache_size - 1) & ~(lsize - 1);
+	for (addr = CKSEG0; addr <= aend; addr += lsize)
 		cache_op(Index_Invalidate_I, addr);
 
 	/* secondatory cache skipped */

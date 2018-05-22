@@ -30,10 +30,10 @@ void of_add_memory_bank(struct device_node *node, bool dump, int r,
 
 	if (IS_ENABLED(CONFIG_MMU)) {
 		sprintf(str, "kseg0_ram%d", r);
-		barebox_add_memory_bank(str, KSEG0 | base, size);
+		barebox_add_memory_bank(str, CKSEG0 | base, size);
 	} else {
 		sprintf(str, "kseg1_ram%d", r);
-		barebox_add_memory_bank(str, KSEG1 | base, size);
+		barebox_add_memory_bank(str, CKSEG1 | base, size);
 	}
 
 	if (dump)

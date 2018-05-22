@@ -73,6 +73,26 @@
 #define CKSEG2ADDR(a)		(CPHYSADDR(a) | CKSEG2)
 #define CKSEG3ADDR(a)		(CPHYSADDR(a) | CKSEG3)
 
+/*
+ * Cache modes for XKPHYS address conversion macros
+ */
+#define K_CALG_COH_EXCL1_NOL2	0
+#define K_CALG_COH_SHRL1_NOL2	1
+#define K_CALG_UNCACHED		2
+#define K_CALG_NONCOHERENT	3
+#define K_CALG_COH_EXCL		4
+#define K_CALG_COH_SHAREABLE	5
+#define K_CALG_NOTUSED		6
+#define K_CALG_UNCACHED_ACCEL	7
+
+/*
+ * 64-bit address conversions
+ */
+#define PHYS_TO_XKSEG_UNCACHED(p)	PHYS_TO_XKPHYS(K_CALG_UNCACHED, (p))
+#define PHYS_TO_XKSEG_CACHED(p)		PHYS_TO_XKPHYS(K_CALG_COH_SHAREABLE, (p))
+#define XKPHYS_TO_PHYS(p)		((p) & TO_PHYS_MASK)
+#define PHYS_TO_XKPHYS(cm, a)		(XKPHYS | (_ACAST64_(cm) << 59) | (a))
+
 #else
 
 #define CKSEG0ADDR(a)		(CPHYSADDR(a) | KSEG0)

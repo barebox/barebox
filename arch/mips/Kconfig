@@ -25,6 +25,9 @@ config GENERIC_LINKER_SCRIPT
 config HAS_NO_BOARD_HL_CODE
 	bool
 
+config PHYS_ADDR_T_64BIT
+	bool
+
 menu "Machine selection"
 
 config BUILTIN_DTB

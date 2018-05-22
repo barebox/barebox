@@ -469,7 +469,7 @@ static int mmu_init(void)
 			pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
 					ttb);
 	} else {
-		ttb = xmemalign(0x10000, 0x4000);
+		ttb = xmemalign(ARM_TTB_SIZE, ARM_TTB_SIZE);
 	}
 
 	pr_debug("ttb: 0x%p\n", ttb);

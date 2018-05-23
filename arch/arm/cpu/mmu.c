@@ -470,15 +470,15 @@ static int mmu_init(void)
 					ttb);
 	} else {
 		ttb = xmemalign(ARM_TTB_SIZE, ARM_TTB_SIZE);
+
+		set_ttbr(ttb);
+		set_domain(DOMAIN_MANAGER);
+
+		create_flat_mapping(ttb);
+		__mmu_cache_flush();
 	}
 
 	pr_debug("ttb: 0x%p\n", ttb);
-
-	set_ttbr(ttb);
-	set_domain(DOMAIN_MANAGER);
-
-	create_flat_mapping(ttb);
-	__mmu_cache_flush();
 
 	vectors_init();
 

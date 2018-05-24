@@ -40,6 +40,8 @@
 
 #define get_min(a, b) (((a) < (b)) ? (a) : (b))
 
+#define ALIGN(x, a)        (((x) + (a) - 1) & ~((a) - 1))
+
 #define FT_APP	0xaa
 #define FT_CSF	0xcc
 #define FT_DCD	0xee
@@ -412,7 +414,7 @@ static int read_file(const char *name, unsigned char **buffer, unsigned *size)
 		return -2;
 	}
 
-	buf = malloc(fsize);
+	buf = malloc(ALIGN(fsize, 4));
 	if (!buf) {
 		printf("error, out of memory\n");
 		fclose(xfile);
@@ -761,6 +763,8 @@ static int load_file(void *buf, unsigned len, unsigned dladdr, unsigned char typ
 	unsigned char tmp[64];
 	void *p;
 	int cnt;
+
+	len = ALIGN(len, 4);
 
 	dl_command.addr = htonl(dladdr);
 	dl_command.cnt = htonl(len);

@@ -331,28 +331,6 @@ static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **
 	return NULL;
 }
 
-static void dump_long(const void *src, unsigned cnt, unsigned addr)
-{
-	const unsigned *p = (unsigned *)src;
-
-	while (cnt >= 32) {
-		printf("%08x: %08x %08x %08x %08x  %08x %08x %08x %08x\n",
-				addr, p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7]);
-		p += 8;
-		cnt -= 32;
-		addr += 32;
-	}
-	if (cnt) {
-		printf("%08x:", addr);
-		while (cnt >= 4) {
-			printf(" %08x", p[0]);
-			p++;
-			cnt -= 4;
-		}
-		printf("\n");
-	}
-}
-
 static void dump_bytes(const void *src, unsigned cnt, unsigned addr)
 {
 	const unsigned char *p = src;
@@ -1179,9 +1157,9 @@ static int verify_memory(const void *buf, unsigned len, unsigned addr)
 
 		if (memcmp(buf + offset, readbuf + offset, now)) {
 			printf("mismatch at offset 0x%08x. expected:\n", offset);
-			dump_long(buf + offset, now, addr + offset);
+			dump_bytes(buf + offset, now, addr + offset);
 			printf("read:\n");
-			dump_long(readbuf + offset, now, addr + offset);
+			dump_bytes(readbuf + offset, now, addr + offset);
 			ret = -EINVAL;
 			mismatch++;
 			if (mismatch > 4)

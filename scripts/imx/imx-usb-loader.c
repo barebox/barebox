@@ -1164,12 +1164,13 @@ static int verify_memory(const void *buf, unsigned len, unsigned addr)
 	int ret, mismatch = 0;
 	void *readbuf;
 	unsigned offset = 0, now;
+	unsigned alen = ALIGN(len, 4);
 
-	readbuf = malloc(len);
+	readbuf = malloc(alen);
 	if (!readbuf)
 		return -ENOMEM;
 
-	ret = read_memory(addr, readbuf, len);
+	ret = read_memory(addr, readbuf, alen);
 	if (ret < 0)
 		goto err;
 

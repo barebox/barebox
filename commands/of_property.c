@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <init.h>
+#include <xfuncs.h>
 
 static int of_parse_prop_cells(char * const *newval, int count, char *data, int *len)
 {
@@ -198,23 +199,135 @@ static int of_parse_prop(char * const *newval, int count, char *data, int *len)
 	}
 }
 
+struct of_fixup_property_data {
+	char *path;
+	char *propname;
+	void *data;
+	int len;
+};
+
+static int do_of_property_delete_now(struct device_node *root, const char *path,
+		const char *propname);
+static int do_of_property_set_now(struct device_node *root, const char *path,
+		const char *propname, void *data, int len);
+
+static int of_fixup_property_set(struct device_node *root, void *context)
+{
+	struct of_fixup_property_data *fixup = context;
+
+	return do_of_property_set_now(root, fixup->path, fixup->propname,
+			fixup->data, fixup->len);
+}
+
+static int of_fixup_property_delete(struct device_node *root, void *context)
+{
+	struct of_fixup_property_data *fixup = context;
+
+	return do_of_property_delete_now(root, fixup->path, fixup->propname);
+}
+
+static int do_of_property_set_fixup(const char *path, const char *propname,
+		void *data, int len)
+{
+	struct of_fixup_property_data *fixup;
+
+	fixup = xzalloc(sizeof(*fixup));
+	fixup->path = xstrdup(path);
+	fixup->propname = xstrdup(propname);
+	fixup->data = data;
+	fixup->len = len;
+
+	return of_register_fixup(of_fixup_property_set, (void *)fixup);
+}
+
+static int do_of_property_delete_fixup(const char *path, const char *propname)
+{
+	struct of_fixup_property_data *fixup;
+
+	fixup = xzalloc(sizeof(*fixup));
+	fixup->path = xstrdup(path);
+	fixup->propname = xstrdup(propname);
+	fixup->data = NULL;
+	fixup->len = 0;
+
+	return of_register_fixup(of_fixup_property_delete, (void *)fixup);
+}
+
+static int do_of_property_set_now(struct device_node *root, const char *path,
+		const char *propname, void *data, int len)
+{
+	struct device_node *node = of_find_node_by_path_or_alias(root, path);
+	struct property *pp;
+
+	if (!node) {
+		printf("Cannot find nodepath %s\n", path);
+		return -ENOENT;
+	}
+
+	pp = of_find_property(node, propname, NULL);
+
+	if (pp) {
+		free(pp->value);
+		pp->value_const = NULL;
+
+		/* limit property data to the actual size */
+		if (len)
+			pp->value = xrealloc(data, len);
+		else
+			pp->value = NULL;
+
+		pp->length = len;
+	} else {
+		pp = of_new_property(node, propname, data, len);
+		if (!pp) {
+			printf("Cannot create property %s\n", propname);
+			return -ENOMEM;
+		}
+	}
+
+	return 0;
+}
+
+static int do_of_property_delete_now(struct device_node *root, const char *path,
+		const char *propname)
+{
+	struct device_node *node = of_find_node_by_path_or_alias(root, path);
+	struct property *pp;
+
+	if (!node) {
+		printf("Cannot find nodepath %s\n", path);
+		return -ENOENT;
+	}
+
+	pp = of_find_property(node, propname, NULL);
+	if (!pp) {
+		printf("Cannot find property %s\n", propname);
+		return -ENOENT;
+	}
+
+	of_delete_property(pp);
+
+	return 0;
+}
+
 static int do_of_property(int argc, char *argv[])
 {
 	int opt;
 	int delete = 0;
 	int set = 0;
-	int ret;
+	int fixup = 0;
 	char *path = NULL, *propname = NULL;
-	struct device_node *node = NULL;
-	struct property *pp = NULL;
 
-	while ((opt = getopt(argc, argv, "ds")) > 0) {
+	while ((opt = getopt(argc, argv, "dsf")) > 0) {
 		switch (opt) {
 		case 'd':
 			delete = 1;
 			break;
 		case 's':
 			set = 1;
+			break;
+		case 'f':
+			fixup = 1;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -224,43 +337,18 @@ static int do_of_property(int argc, char *argv[])
 	if (optind == argc)
 		return COMMAND_ERROR_USAGE;
 
-	if (optind < argc) {
+	if (optind < argc)
 		path = argv[optind];
-		node = of_find_node_by_path_or_alias(NULL, path);
-		if (!node) {
-			printf("Cannot find nodepath %s\n", path);
-			return -ENOENT;
-		}
-	}
 
-	if (optind + 1 < argc) {
+	if (optind + 1 < argc)
 		propname = argv[optind + 1];
-
-		pp = of_find_property(node, propname, NULL);
-		if (!set && !pp) {
-			printf("Cannot find property %s\n", propname);
-			return -ENOENT;
-		}
-	}
 
 	debug("path: %s propname: %s\n", path, propname);
 
-	if (delete) {
-		if (!node || !pp)
-			return COMMAND_ERROR_USAGE;
-
-		of_delete_property(pp);
-
-		return 0;
-	}
-
 	if (set) {
-		int num_args = argc - optind - 2;
+		int ret;
 		int len;
 		void *data;
-
-		if (!node)
-			return COMMAND_ERROR_USAGE;
 
 		/*
 		 * standard console buffer size. The result won't be bigger than the
@@ -270,42 +358,39 @@ static int do_of_property(int argc, char *argv[])
 		if (!data)
 			return -ENOMEM;
 
-		ret = of_parse_prop(&argv[optind + 2], num_args, data, &len);
+		ret = of_parse_prop(&argv[optind + 2], argc - optind - 2, data, &len);
 		if (ret) {
 			free(data);
 			return ret;
 		}
 
-		if (pp) {
-			free(pp->value);
-			pp->value_const = NULL;
-
-			/* limit property data to the actual size */
-			if (len) {
-				pp->value = xrealloc(data, len);
-			} else {
-				pp->value = NULL;
+		if (fixup) {
+			ret = do_of_property_set_fixup(path, propname, data, len);
+			if (ret)
 				free(data);
-			}
-
-			pp->length = len;
 		} else {
-			pp = of_new_property(node, propname, data, len);
-			if (!pp) {
-				printf("Cannot create property %s\n", propname);
-				free(data);
-				return 1;
-			}
+			ret = do_of_property_set_now(NULL, path, propname, data, len);
+			free(data);
 		}
+
+		return ret;
 	}
 
-	return 0;
+	if (delete) {
+		if (fixup)
+			return do_of_property_delete_fixup(path, propname);
+		else
+			return do_of_property_delete_now(NULL, path, propname);
+	}
+
+	return COMMAND_ERROR_USAGE;
 }
 
 BAREBOX_CMD_HELP_START(of_property)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-s",  "set property to value")
 BAREBOX_CMD_HELP_OPT ("-d",  "delete property")
+BAREBOX_CMD_HELP_OPT ("-f",  "set/delete as a fixup (defer the action until booting)")
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Valid formats for values:")
 BAREBOX_CMD_HELP_TEXT("<0x00112233 4 05> - an array of cells. cells not beginning with a digit are")
@@ -317,7 +402,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(of_property)
 	.cmd		= do_of_property,
 	BAREBOX_CMD_DESC("handle device tree properties")
-	BAREBOX_CMD_OPTS("[-sd] NODE [PROPERTY] [VALUES]")
+	BAREBOX_CMD_OPTS("[-sd] [-f] NODE [PROPERTY] [VALUES]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_COMPLETE(devicetree_complete)
 	BAREBOX_CMD_HELP(cmd_of_property_help)

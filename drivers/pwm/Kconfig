@@ -16,6 +16,12 @@ config PWM_PXA
 	  This enables PWM support for Intel/Marvell PXA chips, such
 	  as the PXA25x, PXA27x.
 
+config PWM_ATMEL
+	bool "Atmel PWM Support"
+	depends on ARCH_AT91
+	help
+	  This enables PWM support for Ateml AT91 SoCs
+
 config PWM_IMX
 	bool "i.MX PWM Support"
 	depends on ARCH_IMX || COMPILE_TEST

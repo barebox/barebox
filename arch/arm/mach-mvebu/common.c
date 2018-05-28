@@ -219,8 +219,8 @@ void __naked __noreturn dove_barebox_entry(void *boarddata)
 	 * The AXI units internal space base starts at the same address as the
 	 * DDR controller.
 	 */
-	val = readl(DOVE_CPU_CTRL) & 0xffff0000;
-	val |= ((unsigned long)DOVE_SDRAM_BASE & 0xffff0000) >> 16;
+	val = readl(DOVE_CPU_CTRL) & 0xfff007ff;
+	val |= ((unsigned long)DOVE_SDRAM_BASE & 0xff800000) >> 12;
 	writel(val, DOVE_CPU_CTRL);
 
 	barebox_arm_entry(0, dove_memory_find(), boarddata);

@@ -22,27 +22,6 @@
 #include <linux/mbus.h>
 #include <mach/dove-regs.h>
 
-static inline void dove_remap_mc_regs(void)
-{
-	void __iomem *mcboot = IOMEM(DOVE_BOOTUP_MC_REGS);
-	uint32_t val;
-
-	/* remap ahb slave base */
-	val  = readl(DOVE_CPU_CTRL) & 0xffff0000;
-	val |= (DOVE_REMAP_MC_REGS & 0xffff0000) >> 16;
-	writel(val, DOVE_CPU_CTRL);
-
-	/* remap axi bridge address */
-	val  = readl(DOVE_AXI_CTRL) & 0x007fffff;
-	val |= DOVE_REMAP_MC_REGS & 0xff800000;
-	writel(val, DOVE_AXI_CTRL);
-
-	/* remap memory controller base address */
-	val = readl(mcboot + SDRAM_REGS_BASE_DECODE) & 0x0000ffff;
-	val |= DOVE_REMAP_MC_REGS & 0xffff0000;
-	writel(val, mcboot + SDRAM_REGS_BASE_DECODE);
-}
-
 static void __noreturn dove_restart_soc(struct restart_handler *rst)
 {
 	/* enable and assert RSTOUTn */
@@ -62,7 +41,6 @@ static int dove_init_soc(void)
 	barebox_set_model("Marvell Dove");
 	barebox_set_hostname("dove");
 
-	dove_remap_mc_regs();
 	mvebu_mbus_init();
 
 	return 0;

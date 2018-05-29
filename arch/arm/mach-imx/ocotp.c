@@ -76,9 +76,16 @@
 #define MAX_MAC_OFFSETS			2
 #define MAC_BYTES			8
 
+enum imx_ocotp_format_mac_direction {
+	OCOTP_HW_TO_MAC,
+	OCOTP_MAC_TO_HW,
+};
+
 struct imx_ocotp_data {
 	int num_regs;
 	u32 (*addr_to_offset)(u32 addr);
+	void (*format_mac)(u8 *dst, const u8 *src,
+			   enum imx_ocotp_format_mac_direction dir);
 	u8  mac_offsets[MAX_MAC_OFFSETS];
 	u8  mac_offsets_num;
 };
@@ -87,6 +94,7 @@ struct ocotp_priv_ethaddr {
 	char value[MAC_BYTES];
 	struct regmap *map;
 	u8 offset;
+	const struct imx_ocotp_data *data;
 };
 
 struct ocotp_priv {
@@ -368,16 +376,46 @@ bool imx_ocotp_sense_enable(bool enable)
 	return old_value;
 }
 
-static void memreverse(void *dest, const void *src, size_t n)
+static void imx_ocotp_format_mac(u8 *dst, const u8 *src,
+				 enum imx_ocotp_format_mac_direction dir)
 {
-	char *destp = dest;
-	const char *srcp = src + n - 1;
-
-	while(n--)
-		*destp++ = *srcp--;
+	/*
+	 * This transformation is symmetic, so we don't care about the
+	 * value of 'dir'.
+	 */
+	dst[5] = src[0];
+	dst[4] = src[1];
+	dst[3] = src[2];
+	dst[2] = src[3];
+	dst[1] = src[4];
+	dst[0] = src[5];
 }
 
-static int imx_ocotp_read_mac(struct regmap *map, unsigned int offset,
+static void vf610_ocotp_format_mac(u8 *dst, const u8 *src,
+				   enum imx_ocotp_format_mac_direction dir)
+{
+	switch (dir) {
+	case OCOTP_HW_TO_MAC:
+		dst[1] = src[0];
+		dst[0] = src[1];
+		dst[5] = src[4];
+		dst[4] = src[5];
+		dst[3] = src[6];
+		dst[2] = src[7];
+		break;
+	case OCOTP_MAC_TO_HW:
+		dst[0] = src[1];
+		dst[1] = src[0];
+		dst[4] = src[5];
+		dst[5] = src[4];
+		dst[6] = src[3];
+		dst[7] = src[2];
+		break;
+	}
+}
+
+static int imx_ocotp_read_mac(const struct imx_ocotp_data *data,
+			      struct regmap *map, unsigned int offset,
 			      u8 mac[])
 {
 	u8 buf[MAC_BYTES];
@@ -387,7 +425,8 @@ static int imx_ocotp_read_mac(struct regmap *map, unsigned int offset,
 	if (ret < 0)
 		return ret;
 
-	memreverse(mac, buf, 6);
+	data->format_mac(mac, buf, OCOTP_HW_TO_MAC);
+
 	return 0;
 }
 
@@ -395,7 +434,7 @@ static int imx_ocotp_get_mac(struct param_d *param, void *priv)
 {
 	struct ocotp_priv_ethaddr *ethaddr = priv;
 
-	return imx_ocotp_read_mac(ethaddr->map, ethaddr->offset,
+	return imx_ocotp_read_mac(ethaddr->data, ethaddr->map, ethaddr->offset,
 				  ethaddr->value);
 }
 
@@ -404,7 +443,8 @@ static int imx_ocotp_set_mac(struct param_d *param, void *priv)
 	char buf[MAC_BYTES];
 	struct ocotp_priv_ethaddr *ethaddr = priv;
 
-	memreverse(buf, ethaddr->value, 6);
+	ethaddr->data->format_mac(buf, ethaddr->value,
+				  OCOTP_MAC_TO_HW);
 
 	return regmap_bulk_write(ethaddr->map, ethaddr->offset,
 				 buf, MAC_BYTES);
@@ -438,7 +478,7 @@ static void imx_ocotp_init_dt(struct ocotp_priv *priv)
 		rnode = of_find_node_by_phandle(phandle);
 		offset = be32_to_cpup(prop++);
 
-		if (imx_ocotp_read_mac(priv->map,
+		if (imx_ocotp_read_mac(priv->data, priv->map,
 				       OCOTP_OFFSET_TO_ADDR(offset),
 				       mac))
 			continue;
@@ -502,6 +542,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 			ethaddr = &priv->ethaddr[i];
 			ethaddr->map = priv->map;
 			ethaddr->offset = priv->data->mac_offsets[i];
+			ethaddr->data = data;
 
 			dev_add_param_mac(&priv->dev, xasprintf("mac_addr%d", i),
 					  imx_ocotp_set_mac, imx_ocotp_get_mac,
@@ -558,6 +599,7 @@ static struct imx_ocotp_data imx6q_ocotp_data = {
 	.addr_to_offset = imx6q_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { MAC_OFFSET_0 },
+	.format_mac = imx_ocotp_format_mac,
 };
 
 static struct imx_ocotp_data imx6sl_ocotp_data = {
@@ -565,6 +607,7 @@ static struct imx_ocotp_data imx6sl_ocotp_data = {
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { MAC_OFFSET_0 },
+	.format_mac = imx_ocotp_format_mac,
 };
 
 static struct imx_ocotp_data vf610_ocotp_data = {
@@ -572,6 +615,7 @@ static struct imx_ocotp_data vf610_ocotp_data = {
 	.addr_to_offset = vf610_addr_to_offset,
 	.mac_offsets_num = 2,
 	.mac_offsets = { MAC_OFFSET_0, MAC_OFFSET_1 },
+	.format_mac = vf610_ocotp_format_mac,
 };
 
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {

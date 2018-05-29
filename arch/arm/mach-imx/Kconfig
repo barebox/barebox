@@ -179,6 +179,7 @@ config ARCH_VF610
 	select OFTREE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER
+	select NVMEM
 	select IMX_OCOTP	# Needed for clock adjustement
 
 config IMX_MULTI_BOARDS
@@ -725,33 +726,13 @@ config IMX_IIM_FUSE_BLOW
 	  enable it:
 	    imx_iim0.permanent_write_enable=1
 
-config IMX_OCOTP
-	tristate "i.MX6 On Chip OTP controller"
-	depends on ARCH_IMX6 || ARCH_VF610
-	depends on OFDEVICE
-	help
-	  This adds support for the i.MX6 On-Chip OTP controller. Currently the
-	  only supported functionality is reading the MAC address and assigning
-	  it to an ethernet device.
-
-config IMX_OCOTP_WRITE
-	bool
-	prompt "Enable write support of i.MX6 CPUs OTP fuses"
-	depends on IMX_OCOTP
-	help
-	  This adds write support to IMX6 On-Chip OTP registers. Example of set
-	  MAC to 12:34:56:78:9A:BC (2 words with address 0x22 (OCOTP_MAC0) and
-	  address 0x23 (OCOTP_MAC1)). To calculate the file offset multiply
-	  the value of the address by 4.
-	    mw -l -d /dev/imx-ocotp 0x8C 0x00001234
-	    mw -l -d /dev/imx-ocotp 0x88 0x56789ABC
-
 config HAB
 	bool
 
 config HABV4
 	tristate "HABv4 support"
 	select HAB
+	select NVMEM
 	select IMX_OCOTP
 	depends on ARCH_IMX6
 	depends on OFDEVICE

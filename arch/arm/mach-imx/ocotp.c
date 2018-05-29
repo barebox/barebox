@@ -66,6 +66,8 @@
 
 #define BF(value, field)		(((value) << field) & field##_MASK)
 
+#define OCOTP_OFFSET_TO_ADDR(o)		(OCOTP_OFFSET_TO_INDEX(o) * 4)
+
 /* Other definitions */
 #define IMX6_OTP_DATA_ERROR_VAL		0xBADABADA
 #define DEF_RELAX			20
@@ -366,55 +368,6 @@ bool imx_ocotp_sense_enable(bool enable)
 	return old_value;
 }
 
-static uint32_t inc_offset(uint32_t offset)
-{
-	if ((offset & 0x3) == 0x3)
-		return offset + 0xd;
-	else
-		return offset + 1;
-}
-
-static void imx_ocotp_init_dt(struct device_d *dev, void __iomem *base)
-{
-	char mac[6];
-	const __be32 *prop;
-	struct device_node *node = dev->device_node;
-	int len;
-
-	if (!node)
-		return;
-
-	prop = of_get_property(node, "barebox,provide-mac-address", &len);
-	if (!prop)
-		return;
-
-	while (len >= MAC_ADDRESS_PROPLEN) {
-		struct device_node *rnode;
-		uint32_t phandle, offset;
-
-		phandle = be32_to_cpup(prop++);
-
-		rnode = of_find_node_by_phandle(phandle);
-		offset = be32_to_cpup(prop++);
-
-		mac[5] = readb(base + offset);
-		offset = inc_offset(offset);
-		mac[4] = readb(base + offset);
-		offset = inc_offset(offset);
-		mac[3] = readb(base + offset);
-		offset = inc_offset(offset);
-		mac[2] = readb(base + offset);
-		offset = inc_offset(offset);
-		mac[1] = readb(base + offset);
-		offset = inc_offset(offset);
-		mac[0] = readb(base + offset);
-
-		of_eth_register_ethaddr(rnode, mac);
-
-		len -= MAC_ADDRESS_PROPLEN;
-	}
-}
-
 static void memreverse(void *dest, const void *src, size_t n)
 {
 	char *destp = dest;
@@ -424,19 +377,26 @@ static void memreverse(void *dest, const void *src, size_t n)
 		*destp++ = *srcp--;
 }
 
-static int imx_ocotp_get_mac(struct param_d *param, void *priv)
+static int imx_ocotp_read_mac(struct regmap *map, unsigned int offset,
+			      u8 mac[])
 {
-	char buf[MAC_BYTES];
+	u8 buf[MAC_BYTES];
 	int ret;
-	struct ocotp_priv_ethaddr *ethaddr = priv;
 
-	ret = regmap_bulk_read(ethaddr->map, ethaddr->offset,
-			       buf, MAC_BYTES);
+	ret = regmap_bulk_read(map, offset, buf, MAC_BYTES);
 	if (ret < 0)
 		return ret;
 
-	memreverse(ethaddr->value, buf, 6);
+	memreverse(mac, buf, 6);
 	return 0;
+}
+
+static int imx_ocotp_get_mac(struct param_d *param, void *priv)
+{
+	struct ocotp_priv_ethaddr *ethaddr = priv;
+
+	return imx_ocotp_read_mac(ethaddr->map, ethaddr->offset,
+				  ethaddr->value);
 }
 
 static int imx_ocotp_set_mac(struct param_d *param, void *priv)
@@ -455,10 +415,41 @@ static struct regmap_bus imx_ocotp_regmap_bus = {
 	.reg_read = imx_ocotp_reg_read,
 };
 
+static void imx_ocotp_init_dt(struct ocotp_priv *priv)
+{
+	char mac[MAC_BYTES];
+	const __be32 *prop;
+	struct device_node *node = priv->dev.parent->device_node;
+	int len;
+
+	if (!node)
+		return;
+
+	prop = of_get_property(node, "barebox,provide-mac-address", &len);
+	if (!prop)
+		return;
+
+	for (; len >= MAC_ADDRESS_PROPLEN; len -= MAC_ADDRESS_PROPLEN) {
+		struct device_node *rnode;
+		uint32_t phandle, offset;
+
+		phandle = be32_to_cpup(prop++);
+
+		rnode = of_find_node_by_phandle(phandle);
+		offset = be32_to_cpup(prop++);
+
+		if (imx_ocotp_read_mac(priv->map,
+				       OCOTP_OFFSET_TO_ADDR(offset),
+				       mac))
+			continue;
+
+		of_eth_register_ethaddr(rnode, mac);
+	}
+}
+
 static int imx_ocotp_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	void __iomem *base;
 	struct ocotp_priv *priv;
 	int ret = 0;
 	const struct imx_ocotp_data *data;
@@ -470,14 +461,11 @@ static int imx_ocotp_probe(struct device_d *dev)
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	base = IOMEM(iores->start);
-
-	imx_ocotp_init_dt(dev, base);
 
 	priv = xzalloc(sizeof(*priv));
 
 	priv->data      = data;
-	priv->base	= base;
+	priv->base	= IOMEM(iores->start);
 	priv->clk	= clk_get(dev, NULL);
 	if (IS_ERR(priv->clk))
 		return PTR_ERR(priv->clk);
@@ -529,6 +517,8 @@ static int imx_ocotp_probe(struct device_d *dev)
 				  ethaddr->value, ethaddr);
 	}
 
+	imx_ocotp_init_dt(priv);
+
 	dev_add_param_bool(&(priv->dev), "sense_enable", NULL, NULL, &priv->sense_enable, priv);
 
 	return 0;
@@ -536,7 +526,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 
 static u32 imx6sl_addr_to_offset(u32 addr)
 {
-	return 0x400 + addr * 0x10;
+	return OCOTP_SHADOW_OFFSET + addr * OCOTP_SHADOW_SPACING;
 }
 
 static u32 imx6q_addr_to_offset(u32 addr)

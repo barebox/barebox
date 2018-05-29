@@ -1,9 +1,22 @@
 #ifndef __MACH_IMX_OCOTP_H
 #define __MACH_IMX_OCOTP_H
 
+#define OCOTP_SHADOW_OFFSET		0x400
+#define OCOTP_SHADOW_SPACING		0x10
+
+/*
+ * Trivial shadow register offset -> ocotp register index.
+ *
+ * NOTE: Doesn't handle special mapping quirks. See
+ * imx6q_addr_to_offset and vf610_addr_to_offset for more details. Use
+ * with care
+ */
+#define OCOTP_OFFSET_TO_INDEX(o)		\
+	(((o) - OCOTP_SHADOW_OFFSET) / OCOTP_SHADOW_SPACING)
+
 #define OCOTP_WORD_MASK_WIDTH	8
 #define OCOTP_WORD_MASK_SHIFT	0
-#define OCOTP_WORD(n)		((((n) - 0x400) >> 4) & ((1 << OCOTP_WORD_MASK_WIDTH) - 1))
+#define OCOTP_WORD(n)		(OCOTP_OFFSET_TO_INDEX(n) & ((1 << OCOTP_WORD_MASK_WIDTH) - 1))
 
 #define OCOTP_BIT_MASK_WIDTH	5
 #define OCOTP_BIT_MASK_SHIFT	(OCOTP_WORD_MASK_SHIFT + OCOTP_WORD_MASK_WIDTH)

@@ -29,6 +29,7 @@
 #include <regmap.h>
 #include <linux/clk.h>
 #include <mach/ocotp.h>
+#include <linux/nvmem-provider.h>
 
 /*
  * a single MAC address reference has the form
@@ -105,6 +106,7 @@ struct ocotp_priv {
 	struct regmap_config map_config;
 	const struct imx_ocotp_data *data;
 	int  mac_offset_idx;
+	struct nvmem_config config;
 };
 
 static struct ocotp_priv *imx_ocotp;
@@ -484,12 +486,34 @@ static void imx_ocotp_init_dt(struct ocotp_priv *priv)
 	}
 }
 
+static int imx_ocotp_write(struct device_d *dev, const int offset,
+			    const void *val, int bytes)
+{
+	struct ocotp_priv *priv = dev->parent->priv;
+
+	return regmap_bulk_write(priv->map, offset, val, bytes);
+}
+
+static int imx_ocotp_read(struct device_d *dev, const int offset, void *val,
+			   int bytes)
+{
+	struct ocotp_priv *priv = dev->parent->priv;
+
+	return regmap_bulk_read(priv->map, offset, val, bytes);
+}
+
+static const struct nvmem_bus imx_ocotp_nvmem_bus = {
+	.write = imx_ocotp_write,
+	.read  = imx_ocotp_read,
+};
+
 static int imx_ocotp_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct ocotp_priv *priv;
 	int ret = 0;
 	const struct imx_ocotp_data *data;
+	struct nvmem_device *nvmem;
 
 	ret = dev_get_drvdata(dev, (const void **)&data);
 	if (ret)
@@ -520,9 +544,17 @@ static int imx_ocotp_probe(struct device_d *dev)
 	if (IS_ERR(priv->map))
 		return PTR_ERR(priv->map);
 
-	ret = regmap_register_cdev(priv->map, "imx-ocotp");
-	if (ret)
-		return ret;
+	priv->config.name = "imx-ocotp";
+	priv->config.dev = dev;
+	priv->config.stride = 4;
+	priv->config.word_size = 4;
+	priv->config.size = data->num_regs;
+	priv->config.bus = &imx_ocotp_nvmem_bus;
+	dev->priv = priv;
+
+	nvmem = nvmem_register(&priv->config);
+	if (IS_ERR(nvmem))
+		return PTR_ERR(nvmem);
 
 	imx_ocotp = priv;
 

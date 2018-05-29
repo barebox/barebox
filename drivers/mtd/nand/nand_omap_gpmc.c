@@ -95,7 +95,6 @@ int omap_gpmc_decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_l
 static const char *ecc_mode_strings[] = {
 	"software",
 	"hamming_hw_romcode",
-	"bch4_hw",
 	"bch8_hw",
 	"bch8_hw_romcode",
 };

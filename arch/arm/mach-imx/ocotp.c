@@ -314,10 +314,10 @@ static void imx_ocotp_field_decode(uint32_t field, unsigned *word,
 {
 	unsigned width;
 
-	*word = ((field >> OCOTP_WORD_MASK_SHIFT) & ((1 << OCOTP_WORD_MASK_WIDTH) - 1)) * 4;
-	*bit = (field >> OCOTP_BIT_MASK_SHIFT) & ((1 << OCOTP_BIT_MASK_WIDTH) - 1);
-	width = ((field >> OCOTP_WIDTH_MASK_SHIFT) & ((1 << OCOTP_WIDTH_MASK_WIDTH) - 1)) + 1;
-	*mask = (1 << width) - 1;
+	*word = FIELD_GET(OCOTP_WORD_MASK, field) * 4;
+	*bit = FIELD_GET(OCOTP_BIT_MASK, field);
+	width = FIELD_GET(OCOTP_WIDTH_MASK, field);
+	*mask = GENMASK(width, 0);
 }
 
 int imx_ocotp_read_field(uint32_t field, unsigned *value)

@@ -23,7 +23,6 @@ config FS_AUTOMOUNT
 config FS_CRAMFS
 	bool
 	select ZLIB
-	select FS_LEGACY
 	prompt "cramfs support"
 
 source fs/ext4/Kconfig

@@ -324,11 +324,11 @@ failed_mount:
 
 int squashfs_mount(struct fs_device_d *fsdev, int silent)
 {
-	struct squashfs_priv *priv = fsdev->dev.priv;
+	struct super_block *sb = &fsdev->sb;
 
 	dev_dbg(&fsdev->dev, "squashfs_mount\n");
 
-	if (squashfs_fill_super(&priv->sb, fsdev, silent))
+	if (squashfs_fill_super(sb, fsdev, silent))
 		return -EINVAL;
 
 	return 0;

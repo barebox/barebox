@@ -48,11 +48,11 @@
  * and doesn't require much extra storage on disk.
  */
 
+#include <common.h>
 #include <linux/fs.h>
 #include <malloc.h>
 #include <linux/string.h>
 #include <linux/dcache.h>
-#include <common.h>
 
 #include "squashfs_fs.h"
 #include "squashfs_fs_sb.h"
@@ -130,11 +130,11 @@ out:
 }
 
 
-struct inode *squashfs_lookup(struct inode *dir, const char *cur_name,
-				 unsigned int flags)
+static struct dentry *squashfs_lookup(struct inode *dir, struct dentry *dentry,
+				     unsigned int flags)
 {
-	const unsigned char *name = cur_name;
-	int len = strlen(cur_name);
+	const unsigned char *name = dentry->d_name.name;
+	int len = dentry->d_name.len;
 	struct inode *inode = NULL;
 	struct squashfs_sb_info *msblk = dir->i_sb->s_fs_info;
 	struct squashfs_dir_header dirh;
@@ -223,7 +223,8 @@ struct inode *squashfs_lookup(struct inode *dir, const char *cur_name,
 
 exit_lookup:
 	kfree(dire);
-	return inode;
+	d_add(dentry, inode);
+	return NULL;
 
 data_error:
 	err = -EIO;
@@ -344,3 +345,7 @@ failed:
 	kfree(dire);
 	return 1;
 }
+
+const struct inode_operations squashfs_dir_inode_ops = {
+	.lookup = squashfs_lookup,
+};

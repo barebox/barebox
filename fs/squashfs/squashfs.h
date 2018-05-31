@@ -25,10 +25,6 @@
 #define DEBUG
 #define pgoff_t		unsigned long
 
-struct squashfs_priv {
-	struct super_block sb;
-};
-
 /*
  * We "simulate" the Linux page struct much simpler here
  */
@@ -132,10 +128,7 @@ extern const struct address_space_operations squashfs_aops;
 extern const struct inode_operations squashfs_inode_ops;
 
 /* namei.c */
-extern struct inode *squashfs_lookup(struct inode *dir, const char *cur_name,
-				 unsigned int flags);
-extern int squashfs_lookup_next(struct inode *dir,
-		char *root_name, char *cur_name);
+extern const struct inode_operations squashfs_dir_inode_ops;
 
 /* symlink.c */
 extern const struct address_space_operations squashfs_symlink_aops;

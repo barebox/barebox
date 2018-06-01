@@ -602,12 +602,24 @@ out:
 	return rc;
 }
 
+static unsigned char crc(const unsigned char *img, size_t len)
+{
+	unsigned char ret = 0;
+	size_t i;
+
+	for (i = 0; i < len; ++i)
+		ret += img[i];
+
+	return ret;
+}
+
 static int
 kwboot_check_image(unsigned char *img, size_t size)
 {
 	size_t i;
 	size_t header_size, image_size, image_offset;
 	unsigned char csum = 0;
+	unsigned char imgversion;
 
 	if (size < 0x20) {
 		fprintf(stderr,
@@ -636,7 +648,8 @@ kwboot_check_image(unsigned char *img, size_t size)
 			return 1;
 	}
 
-	if (img[0x8] != 1) {
+	imgversion = img[0x8];
+	if (imgversion > 1) {
 		fprintf(stderr, "Unknown version: 0x%hhx\n", img[0x8]);
 		return 1;
 	}
@@ -646,7 +659,15 @@ kwboot_check_image(unsigned char *img, size_t size)
 	image_offset = img[0xc] | (img[0xd] << 8) |
 		(img[0xe] << 16) | (img[0xf] << 24);
 
-	header_size = (img[0x9] << 16) | img[0xa] | (img[0xb] << 8);
+	if (imgversion == 0) {
+		/* Image format 0 */
+		header_size =
+			img[0x1e] * 0x200 /* header extensions */ +
+			img[0x1d] * 0x800 /* binary header extensions */;
+	} else {
+		/* Image format 1 */
+		header_size = (img[0x9] << 16) | img[0xa] | (img[0xb] << 8);
+	}
 
 	if (header_size > image_offset) {
 		fprintf(stderr, "Header (%zu) expands over image start (%zu)\n",
@@ -660,16 +681,38 @@ kwboot_check_image(unsigned char *img, size_t size)
 		return 1;
 	}
 
-	for (i = 0; i < header_size; ++i)
-		csum += img[i];
 
-	csum -= img[0x1f];
+	if (imgversion == 0) {
+		/* check Main Header */
+		csum = crc(img, 0x1f);
+		if (csum != img[0x1f]) {
+			fprintf(stderr,
+				"Main Header checksum mismatch: specified: 0x%02hhx, calculated: 0x%02hhx\n",
+				img[0x1f], csum);
+			return 1;
+		}
 
-	if (csum != img[0x1f]) {
-		fprintf(stderr,
-			"Checksum mismatch: specified: 0x%02hhx, calculated: 0x%02hhx\n",
-			img[0x1f], csum);
-		return 1;
+		/* check Header Extensions */
+		for (i = 0; i < img[0x1e]; ++i) {
+			csum = crc(img + 0x20 + i * 0x200, 0x1df);
+			if (csum != img[i * 0x200 + 0x1ff]) {
+				fprintf(stderr,
+					"Extension Header #%zu checksum mismatch: specified: 0x%02hhx, calculated: 0x%02hhx\n",
+					i, img[i * 0x200 + 0x1ff], csum);
+				return 1;
+			}
+		}
+	} else {
+		csum = crc(img, header_size);
+		csum -= img[0x1f];
+
+		if (csum != img[0x1f]) {
+			fprintf(stderr,
+				"Checksum mismatch: specified: 0x%02hhx, calculated: 0x%02hhx\n",
+				img[0x1f], csum);
+			return 1;
+		}
+
 	}
 
 	return 0;

@@ -7,29 +7,29 @@
 # command after changing this file, to see if there are
 # any tracked files which get ignored after the change.
 #
-# Normal rules
+# Normal rules (sorted alphabetically)
 #
 .*
-*.o
-*.o.*
 *.a
-*.s
-*.ko
-*.so
-*.so.dbg
-*.mod.c
-*.i
-*.lst
-*.symtypes
-*.elf
-*.patch
-*.pyc
-*.mcp
+*.bbenv
+*.bbenv.*
 *.bct
 *.dcd
 *.dcd.S
-*.bbenv
-*.bbenv.*
+*.elf
+*.i
+*.ko
+*.lst
+*.mcp
+*.mod.c
+*.o
+*.o.*
+*.patch
+*.pyc
+*.s
+*.so
+*.so.dbg
+*.symtypes
 Module.symvers
 
 #

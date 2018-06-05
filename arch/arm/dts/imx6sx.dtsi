@@ -10,3 +10,7 @@
 		pwm7 = &pwm8;
 	};
 };
+
+&gpt {
+	clocks = <&clks IMX6SX_CLK_GPT_BUS>, <&clks IMX6SX_CLK_GPT_SERIAL>;
+};

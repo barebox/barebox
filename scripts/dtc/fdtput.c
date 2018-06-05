@@ -96,7 +96,12 @@ static int encode_value(struct display_info *disp, char **arg, int arg_count,
 		/* enlarge our value buffer by a suitable margin if needed */
 		if (upto + len > value_size) {
 			value_size = (upto + len) + 500;
-			value = xrealloc(value, value_size);
+			value = realloc(value, value_size);
+			if (!value) {
+				fprintf(stderr, "Out of mmory: cannot alloc "
+					"%d bytes\n", value_size);
+				return -1;
+			}
 		}
 
 		ptr = value + upto;
@@ -126,59 +131,19 @@ static int encode_value(struct display_info *disp, char **arg, int arg_count,
 	return 0;
 }
 
-#define ALIGN(x)		(((x) + (FDT_TAGSIZE) - 1) & ~((FDT_TAGSIZE) - 1))
-
-static char *_realloc_fdt(char *fdt, int delta)
-{
-	int new_sz = fdt_totalsize(fdt) + delta;
-	fdt = xrealloc(fdt, new_sz);
-	fdt_open_into(fdt, fdt, new_sz);
-	return fdt;
-}
-
-static char *realloc_node(char *fdt, const char *name)
-{
-	int delta;
-	/* FDT_BEGIN_NODE, node name in off_struct and FDT_END_NODE */
-	delta = sizeof(struct fdt_node_header) + ALIGN(strlen(name) + 1)
-			+ FDT_TAGSIZE;
-	return _realloc_fdt(fdt, delta);
-}
-
-static char *realloc_property(char *fdt, int nodeoffset,
-		const char *name, int newlen)
-{
-	int delta = 0;
-	int oldlen = 0;
-
-	if (!fdt_get_property(fdt, nodeoffset, name, &oldlen))
-		/* strings + property header */
-		delta = sizeof(struct fdt_property) + strlen(name) + 1;
-
-	if (newlen > oldlen)
-		/* actual value in off_struct */
-		delta += ALIGN(newlen) - ALIGN(oldlen);
-
-	return _realloc_fdt(fdt, delta);
-}
-
-static int store_key_value(char **blob, const char *node_name,
+static int store_key_value(void *blob, const char *node_name,
 		const char *property, const char *buf, int len)
 {
 	int node;
 	int err;
 
-	node = fdt_path_offset(*blob, node_name);
+	node = fdt_path_offset(blob, node_name);
 	if (node < 0) {
 		report_error(node_name, -1, node);
 		return -1;
 	}
 
-	err = fdt_setprop(*blob, node, property, buf, len);
-	if (err == -FDT_ERR_NOSPACE) {
-		*blob = realloc_property(*blob, node, property, len);
-		err = fdt_setprop(*blob, node, property, buf, len);
-	}
+	err = fdt_setprop(blob, node, property, buf, len);
 	if (err) {
 		report_error(property, -1, err);
 		return -1;
@@ -196,7 +161,7 @@ static int store_key_value(char **blob, const char *node_name,
  * @param in_path	Path to process
  * @return 0 if ok, -1 on error
  */
-static int create_paths(char **blob, const char *in_path)
+static int create_paths(void *blob, const char *in_path)
 {
 	const char *path = in_path;
 	const char *sep;
@@ -212,11 +177,10 @@ static int create_paths(char **blob, const char *in_path)
 		if (!sep)
 			sep = path + strlen(path);
 
-		node = fdt_subnode_offset_namelen(*blob, offset, path,
+		node = fdt_subnode_offset_namelen(blob, offset, path,
 				sep - path);
 		if (node == -FDT_ERR_NOTFOUND) {
-			*blob = realloc_node(*blob, path);
-			node = fdt_add_subnode_namelen(*blob, offset, path,
+			node = fdt_add_subnode_namelen(blob, offset, path,
 						       sep - path);
 		}
 		if (node < 0) {
@@ -239,7 +203,7 @@ static int create_paths(char **blob, const char *in_path)
  * @param node_name	Name of node to create
  * @return new node offset if found, or -1 on failure
  */
-static int create_node(char **blob, const char *node_name)
+static int create_node(void *blob, const char *node_name)
 {
 	int node = 0;
 	char *p;
@@ -251,17 +215,15 @@ static int create_node(char **blob, const char *node_name)
 	}
 	*p = '\0';
 
-	*blob = realloc_node(*blob, p + 1);
-
 	if (p > node_name) {
-		node = fdt_path_offset(*blob, node_name);
+		node = fdt_path_offset(blob, node_name);
 		if (node < 0) {
 			report_error(node_name, -1, node);
 			return -1;
 		}
 	}
 
-	node = fdt_add_subnode(*blob, node, p + 1);
+	node = fdt_add_subnode(blob, node, p + 1);
 	if (node < 0) {
 		report_error(p + 1, -1, node);
 		return -1;
@@ -288,64 +250,66 @@ static int do_fdtput(struct display_info *disp, const char *filename,
 		 * store them into the property.
 		 */
 		assert(arg_count >= 2);
-		if (disp->auto_path && create_paths(&blob, *arg))
+		if (disp->auto_path && create_paths(blob, *arg))
 			return -1;
 		if (encode_value(disp, arg + 2, arg_count - 2, &value, &len) ||
-			store_key_value(&blob, *arg, arg[1], value, len))
+			store_key_value(blob, *arg, arg[1], value, len))
 			ret = -1;
 		break;
 	case OPER_CREATE_NODE:
 		for (; ret >= 0 && arg_count--; arg++) {
 			if (disp->auto_path)
-				ret = create_paths(&blob, *arg);
+				ret = create_paths(blob, *arg);
 			else
-				ret = create_node(&blob, *arg);
+				ret = create_node(blob, *arg);
 		}
 		break;
 	}
-	if (ret >= 0) {
-		fdt_pack(blob);
+	if (ret >= 0)
 		ret = utilfdt_write(filename, blob);
-	}
 
 	free(blob);
 	return ret;
 }
 
-/* Usage related data. */
-static const char usage_synopsis[] =
-	"write a property value to a device tree\n"
-	"	fdtput <options> <dt file> <node> <property> [<value>...]\n"
-	"	fdtput -c <options> <dt file> [<node>...]\n"
+static const char *usage_msg =
+	"fdtput - write a property value to a device tree\n"
 	"\n"
 	"The command line arguments are joined together into a single value.\n"
+	"\n"
+	"Usage:\n"
+	"	fdtput <options> <dt file> <node> <property> [<value>...]\n"
+	"	fdtput -c <options> <dt file> [<node>...]\n"
+	"Options:\n"
+	"\t-c\t\tCreate nodes if they don't already exist\n"
+	"\t-p\t\tAutomatically create nodes as needed for the node path\n"
+	"\t-t <type>\tType of data\n"
+	"\t-v\t\tVerbose: display each value decoded from command line\n"
+	"\t-h\t\tPrint this help\n\n"
 	USAGE_TYPE_MSG;
-static const char usage_short_opts[] = "cpt:v" USAGE_COMMON_SHORT_OPTS;
-static struct option const usage_long_opts[] = {
-	{"create",           no_argument, NULL, 'c'},
-	{"auto-path",        no_argument, NULL, 'p'},
-	{"type",              a_argument, NULL, 't'},
-	{"verbose",          no_argument, NULL, 'v'},
-	USAGE_COMMON_LONG_OPTS,
-};
-static const char * const usage_opts_help[] = {
-	"Create nodes if they don't already exist",
-	"Automatically create nodes as needed for the node path",
-	"Type of data",
-	"Display each value decoded from command line",
-	USAGE_COMMON_OPTS_HELP
-};
+
+static void usage(const char *msg)
+{
+	if (msg)
+		fprintf(stderr, "Error: %s\n\n", msg);
+
+	fprintf(stderr, "%s", usage_msg);
+	exit(2);
+}
 
 int main(int argc, char *argv[])
 {
-	int opt;
 	struct display_info disp;
 	char *filename = NULL;
 
 	memset(&disp, '\0', sizeof(disp));
 	disp.size = -1;
 	disp.oper = OPER_WRITE_PROP;
-	while ((opt = util_getopt_long()) != EOF) {
+	for (;;) {
+		int c = getopt(argc, argv, "chpt:v");
+		if (c == -1)
+			break;
+
 		/*
 		 * TODO: add options to:
 		 * - delete property
@@ -353,13 +317,15 @@ int main(int argc, char *argv[])
 		 * - rename node
 		 * - pack fdt before writing
 		 * - set amount of free space when writing
+		 * - expand fdt if value doesn't fit
 		 */
-		switch (opt) {
-		case_USAGE_COMMON_FLAGS
-
+		switch (c) {
 		case 'c':
 			disp.oper = OPER_CREATE_NODE;
 			break;
+		case 'h':
+		case '?':
+			usage(NULL);
 		case 'p':
 			disp.auto_path = 1;
 			break;
@@ -378,16 +344,16 @@ int main(int argc, char *argv[])
 	if (optind < argc)
 		filename = argv[optind++];
 	if (!filename)
-		usage("missing filename");
+		usage("Missing filename");
 
 	argv += optind;
 	argc -= optind;
 
 	if (disp.oper == OPER_WRITE_PROP) {
 		if (argc < 1)
-			usage("missing node");
+			usage("Missing node");
 		if (argc < 2)
-			usage("missing property");
+			usage("Missing property");
 	}
 
 	if (do_fdtput(&disp, filename, argv, argc))

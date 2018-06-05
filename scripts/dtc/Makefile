@@ -1,16 +1,14 @@
 # scripts/dtc makefile
 
-hostprogs-y	:= dtc fdtget
+hostprogs-y	:= dtc
 always		:= $(hostprogs-y)
 
 dtc-objs	:= dtc.o flattree.o fstree.o data.o livetree.o treesource.o \
 		   srcpos.o checks.o util.o
 dtc-objs	+= dtc-lexer.lex.o dtc-parser.tab.o
 
-libfdt-objs	= fdt.o fdt_ro.o fdt_strerror.o fdt_wip.o
+libfdt-objs	= fdt.o fdt_ro.o fdt_strerror.o fdt_wip.o fdt_overlay.o
 libfdt-objs	+= fdt_empty_tree.o fdt_rw.o fdt_sw.o
-
-fdtget-objs	+= fdtget.o $(libfdt-objs) util.o
 
 # Source files need to get at the userspace version of libfdt_env.h to compile
 
@@ -33,7 +31,7 @@ HOSTCFLAGS_fdt_wip.o := $(HOSTCFLAGS_DTC)
 HOSTCFLAGS_fdt_empty_tree.o := $(HOSTCFLAGS_DTC)
 HOSTCFLAGS_fdt_rw.o := $(HOSTCFLAGS_DTC)
 HOSTCFLAGS_fdt_sw.o := $(HOSTCFLAGS_DTC)
-HOSTCFLAGS_fdtget.o := $(HOSTCFLAGS_DTC)
+HOSTCFLAGS_fdt_overlay.o := $(HOSTCFLAGS_DTC)
 
 HOSTCFLAGS_dtc-lexer.lex.o := $(HOSTCFLAGS_DTC)
 HOSTCFLAGS_dtc-parser.tab.o := $(HOSTCFLAGS_DTC)

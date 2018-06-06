@@ -2,6 +2,7 @@
 #define _LINUX_ELF_H
 
 #include <linux/types.h>
+#include <linux/list.h>
 //#include <linux/auxvec.h>
 //#include <linux/elf-em.h>
 #include <asm/elf.h>
@@ -396,5 +397,14 @@ static inline void arch_write_notes(struct file *file) { }
 #define ELF_CORE_EXTRA_NOTES_SIZE arch_notes_size()
 #define ELF_CORE_WRITE_EXTRA_NOTES arch_write_notes(file)
 #endif /* ARCH_HAVE_EXTRA_ELF_NOTES */
+
+struct elf_image {
+	struct list_head list;
+	unsigned long entry;
+	void *buf;
+};
+
+struct elf_image *elf_load_image(void *buf);
+void elf_release_image(struct elf_image *elf);
 
 #endif /* _LINUX_ELF_H */

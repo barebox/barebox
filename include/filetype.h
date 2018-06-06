@@ -41,6 +41,7 @@ enum filetype {
 	filetype_kwbimage_v1,
 	filetype_android_sparse,
 	filetype_arm64_linux_image,
+	filetype_elf,
 	filetype_max,
 };
 

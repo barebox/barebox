@@ -93,6 +93,9 @@ the :ref:`command_edit` command. Typical content:
   # timeout in seconds before the default boot entry is started
   #global.autoboot_timeout=3
 
+  # key to abort autoboot. Supported options are: "any" and "ctrl-c"
+  #global.autoboot_abort_key=any
+
   # list of boot entries. These are executed in order until one
   # succeeds. An entry can be:
   # - a filename in /env/boot/

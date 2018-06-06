@@ -14,34 +14,36 @@
 #include <restart.h>
 #include <fs.h>
 
-static int bootm_relocate_fdt(void *addr, struct image_data *data)
+static int bootm_relocate_fdt(void *os, struct image_data *data)
 {
-	if (addr < LINUX_TLB1_MAX_ADDR) {
+	void *newfdt;
+
+	if (os < LINUX_TLB1_MAX_ADDR) {
 		/* The kernel is within  the boot TLB mapping.
 		 * Put the DTB above if there is no space
 		 * below.
 		 */
-		if (addr < (void *)data->oftree->totalsize) {
-			addr = (void *)PAGE_ALIGN((phys_addr_t)addr +
+		if (os < (void *)data->oftree->totalsize) {
+			os = (void *)PAGE_ALIGN((phys_addr_t)os +
 					data->os->header.ih_size);
-			addr += data->oftree->totalsize;
-			if (addr < LINUX_TLB1_MAX_ADDR)
-				addr = LINUX_TLB1_MAX_ADDR;
+			os += data->oftree->totalsize;
+			if (os < LINUX_TLB1_MAX_ADDR)
+				os = LINUX_TLB1_MAX_ADDR;
 		}
 	}
 
-	if (addr > LINUX_TLB1_MAX_ADDR) {
+	if (os > LINUX_TLB1_MAX_ADDR) {
 		pr_crit("Unable to relocate DTB to Linux TLB\n");
 		return 1;
 	}
 
-	addr = (void *)PAGE_ALIGN_DOWN((phys_addr_t)addr -
+	newfdt = (void *)PAGE_ALIGN_DOWN((phys_addr_t)os -
 			data->oftree->totalsize);
-	memcpy(addr, data->oftree, data->oftree->totalsize);
+	memcpy(newfdt, data->oftree, data->oftree->totalsize);
 	free(data->oftree);
-	data->oftree = addr;
+	data->oftree = newfdt;
 
-	pr_info("Relocating device tree to 0x%p\n", addr);
+	pr_info("Relocating device tree to 0x%p\n", newfdt);
 	return 0;
 }
 

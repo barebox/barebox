@@ -337,9 +337,6 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 	struct fdt_header *oftree;
 	int ret;
 
-	if (data->oftree)
-		return 0;
-
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return 0;
 
@@ -430,8 +427,6 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 	of_print_cmdline(data->of_root_node);
 	if (bootm_verbose(data) > 1)
 		of_print_nodes(data->of_root_node, 0);
-
-	data->oftree = oftree;
 
 	return 0;
 }
@@ -576,7 +571,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 		 * When we only allow booting signed images make sure everything
 		 * we boot is in the OS image and not given separately.
 		 */
-		data->oftree = NULL;
 		data->oftree_file = NULL;
 		data->initrd_file = NULL;
 		if (os_type != filetype_oftree) {

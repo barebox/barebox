@@ -78,7 +78,6 @@ struct image_data {
 	void *fit_config;
 
 	struct device_node *of_root_node;
-	struct fdt_header *oftree;
 	struct resource *oftree_res;
 
 	/*

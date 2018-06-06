@@ -473,7 +473,7 @@ static char *print_size(uint64_t s)
 		return basprintf("%lldM", s >> 20);
 	if (!(s & ((1 << 10) - 1)))
 		return basprintf("%lldk", s >> 10);
-	return basprintf("0x%lld", s);
+	return basprintf("0x%llx", s);
 }
 
 static int print_part(char *buf, int bufsize, struct mtd_info *mtd, uint64_t last_ofs,

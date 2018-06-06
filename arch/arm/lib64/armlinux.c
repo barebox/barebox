@@ -38,6 +38,7 @@ static int do_bootm_linux(struct image_data *data)
 	resource_size_t start, end;
 	unsigned long text_offset, image_size, devicetree, kernel;
 	int ret;
+	void *fdt;
 
 	text_offset = le64_to_cpup(data->os_header + 8);
 	image_size = le64_to_cpup(data->os_header + 16);
@@ -54,7 +55,16 @@ static int do_bootm_linux(struct image_data *data)
 
 	devicetree = ALIGN(kernel + image_size, PAGE_SIZE);
 
-	ret = bootm_load_devicetree(data, devicetree);
+	fdt = bootm_get_devicetree(data);
+	if (IS_ERR(fdt)) {
+		ret = PTR_ERR(fdt);
+		goto out;
+	}
+
+	ret = bootm_load_devicetree(data, fdt, devicetree);
+
+	free(fdt);
+
 	if (ret)
 		goto out;
 

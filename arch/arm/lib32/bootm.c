@@ -165,11 +165,18 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 		free_mem = PAGE_ALIGN(initrd_end + 1);
 	}
 
+	if (!fdt) {
+		fdt = bootm_get_devicetree(data);
+		if (IS_ERR(fdt))
+			return PTR_ERR(fdt);
+	}
+
 	if (fdt) {
-		fdt_load_address = fdt;
-	} else {
 		fdt_load_address = (void *)free_mem;
-		ret = bootm_load_devicetree(data, free_mem);
+		ret = bootm_load_devicetree(data, fdt, free_mem);
+
+		free(fdt);
+
 		if (ret)
 			return ret;
 	}

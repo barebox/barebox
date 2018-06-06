@@ -14,8 +14,9 @@
 #include <restart.h>
 #include <fs.h>
 
-static int bootm_relocate_fdt(void *os, struct image_data *data)
+static int bootm_relocate_fdt(struct image_data *data)
 {
+	void *os = (void *)data->os_address;
 	void *newfdt;
 
 	if (os < LINUX_TLB1_MAX_ADDR) {
@@ -73,9 +74,7 @@ static int do_bootm_linux(struct image_data *data)
 		void *addr = data->oftree;
 
 		if ((addr + data->oftree->totalsize) > LINUX_TLB1_MAX_ADDR) {
-			addr = (void *)data->os_address;
-
-			if (bootm_relocate_fdt(addr, data))
+			if (bootm_relocate_fdt(data))
 				goto error;
 		}
 	}

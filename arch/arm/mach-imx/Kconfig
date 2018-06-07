@@ -170,6 +170,15 @@ config ARCH_IMX7
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 
+config ARCH_IMX8MQ
+	bool
+	select CPU_V8
+	select PINCTRL_IMX_IOMUX_V3
+	select OFTREE
+	select SYS_SUPPORTS_64BIT_KERNEL
+	select COMMON_CLK_OF_PROVIDER
+	select ARCH_HAS_FEC_IMX
+
 config ARCH_VF610
 	bool
 	select ARCH_HAS_L2X0

@@ -37,6 +37,7 @@ int imx53_init(void);
 int imx6_init(void);
 int imx7_init(void);
 int vf610_init(void);
+int imx8mq_init(void);
 
 int imx1_devices_init(void);
 int imx21_devices_init(void);
@@ -192,6 +193,18 @@ extern unsigned int __imx_cpu_type;
 # define cpu_is_mx7()		(imx_cpu_type == IMX_CPU_IMX7)
 #else
 # define cpu_is_mx7()		(0)
+#endif
+
+#ifdef CONFIG_ARCH_IMX8MQ
+# ifdef imx_cpu_type
+#  undef imx_cpu_type
+#  define imx_cpu_type __imx_cpu_type
+# else
+#  define imx_cpu_type IMX_CPU_IMX8MQ
+# endif
+# define cpu_is_mx8mq()	(imx_cpu_type == IMX_CPU_IMX8MQ)
+#else
+# define cpu_is_mx8mq()	(0)
 #endif
 
 #ifdef CONFIG_ARCH_VF610

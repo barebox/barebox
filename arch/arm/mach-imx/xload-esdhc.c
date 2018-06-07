@@ -216,10 +216,11 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 	return 0;
 }
 
-static int esdhc_start_image(struct esdhc *esdhc)
+static int
+esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
 {
-	void *buf = (void *)0x10000000;
-	u32 *ivt = buf + SZ_1K;
+	void *buf = (void *)address;
+	u32 *ivt = buf + offset + SZ_1K;
 	int ret, len;
 	void __noreturn (*bb)(void);
 	unsigned int ofs;
@@ -227,9 +228,10 @@ static int esdhc_start_image(struct esdhc *esdhc)
 	len = imx_image_size();
 	len = ALIGN(len, SECTOR_SIZE);
 
-	ret = esdhc_read_blocks(esdhc, buf, 3 * SECTOR_SIZE);
+	ret = esdhc_read_blocks(esdhc, buf, offset + SZ_1K + SECTOR_SIZE);
 	if (ret)
 		return ret;
+
 	if (*(u32 *)(ivt) != 0x402000d1) {
 		pr_debug("IVT header not found on SD card. Found 0x%08x instead of 0x402000d1\n",
 				*ivt);
@@ -238,7 +240,7 @@ static int esdhc_start_image(struct esdhc *esdhc)
 
 	pr_debug("Check ok, loading image\n");
 
-	ret = esdhc_read_blocks(esdhc, buf, len);
+	ret = esdhc_read_blocks(esdhc, buf, offset + len);
 	if (ret) {
 		pr_err("Loading image failed with %d\n", ret);
 		return ret;
@@ -246,7 +248,7 @@ static int esdhc_start_image(struct esdhc *esdhc)
 
 	pr_debug("Image loaded successfully\n");
 
-	ofs = *(ivt + 1) - *(ivt + 8);
+	ofs = offset + *(ivt + 1) - *(ivt + 8);
 
 	bb = buf + ofs;
 
@@ -288,5 +290,5 @@ int imx6_esdhc_start_image(int instance)
 
 	esdhc.is_mx6 = 1;
 
-	return esdhc_start_image(&esdhc);
+	return esdhc_start_image(&esdhc, 0x10000000, 0);
 }

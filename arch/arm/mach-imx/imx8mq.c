@@ -14,6 +14,8 @@
 #include <init.h>
 #include <common.h>
 #include <io.h>
+#include <asm/syscounter.h>
+#include <asm/system.h>
 #include <mach/generic.h>
 #include <mach/revision.h>
 #include <mach/imx8mq-regs.h>
@@ -57,6 +59,23 @@ static void imx8mq_silicon_revision(void)
 
 	imx_set_silicon_revision(cputypestr, reg);
 }
+
+static int imx8mq_init_syscnt_frequency(void)
+{
+	void __iomem *syscnt = IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR);
+	/*
+	 * Update with accurate clock frequency
+	 */
+	set_cntfrq(syscnt_get_cntfrq(syscnt));
+	syscnt_enable(syscnt);
+
+	return 0;
+}
+/*
+ * This call needs to happen before timer driver gets probed and
+ * requests its update frequency via cntfrq_el0
+ */
+core_initcall(imx8mq_init_syscnt_frequency);
 
 int imx8mq_init(void)
 {

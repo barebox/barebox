@@ -427,7 +427,7 @@ static int xwrite(int fd, void *buf, int len)
 	return 0;
 }
 
-static int write_dcd(const char *outfile)
+static void write_dcd(const char *outfile)
 {
 	int outfd, ret;
 	int dcdsize = curdcd * sizeof(uint32_t);
@@ -443,8 +443,6 @@ static int write_dcd(const char *outfile)
 		perror("write");
 		exit(1);
 	}
-
-	return 0;
 }
 
 static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
@@ -778,10 +776,8 @@ int main(int argc, char *argv[])
 		check_last_dcd(0);
 
 	if (dcd_only) {
-		ret = write_dcd(data.outfile);
-		if (ret)
-			exit(1);
-		exit (0);
+		write_dcd(data.outfile);
+		exit(0);
 	}
 
 	switch (data.header_version) {

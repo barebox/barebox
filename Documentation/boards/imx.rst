@@ -42,7 +42,7 @@ The above will overwrite the MBR (and consequently the partition table)
 on the destination SD card. To preserve the MBR while writing the rest
 of the image to the card, use::
 
-  dd if=images/barebox-freescale-imx51-babbage.img of=/dev/sdd bs=512 skip=1 seek=1
+  dd if=images/barebox-freescale-imx51-babbage.img of=/dev/sdd bs=1024 skip=1 seek=1
 
 The images can also always be started second stage::
 

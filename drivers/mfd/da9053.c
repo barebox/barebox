@@ -276,7 +276,7 @@ static int da9053_probe(struct device_d *dev)
 	da9053->client = to_i2c_client(dev);
 	da9053->wd.set_timeout = da9053_set_timeout;
 	da9053->wd.priority = of_get_watchdog_priority(dev->device_node);
-	da9053->wd.dev = dev;
+	da9053->wd.hwdev = dev;
 
 	ret = da9053_enable_multiwrite(da9053);
 	if (ret < 0)

@@ -18,7 +18,7 @@ config NVMEM_SNVS_LPGPR
 
 config IMX_OCOTP
 	tristate "i.MX6 On Chip OTP controller"
-	depends on ARCH_IMX6 || ARCH_VF610
+	depends on ARCH_IMX6 || ARCH_VF610 || ARCH_IMX8MQ
 	depends on OFDEVICE
 	help
 	  This adds support for the i.MX6 On-Chip OTP controller. Currently the

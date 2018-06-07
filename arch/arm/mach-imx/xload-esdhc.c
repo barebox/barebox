@@ -15,6 +15,7 @@
 #include <io.h>
 #include <mci.h>
 #include <mach/imx6-regs.h>
+#include <mach/imx8mq-regs.h>
 #include <mach/xload.h>
 #include <linux/sizes.h>
 #include "../../../drivers/mci/sdhci.h"
@@ -291,4 +292,36 @@ int imx6_esdhc_start_image(int instance)
 	esdhc.is_mx6 = 1;
 
 	return esdhc_start_image(&esdhc, 0x10000000, 0);
+}
+
+/**
+ * imx8_esdhc_start_image - Load and start an image from USDHC controller
+ * @instance: The USDHC controller instance (0..2)
+ *
+ * This uses esdhc_start_image() to load an image from SD/MMC.  It is
+ * assumed that the image is the currently running barebox image (This
+ * information is used to calculate the length of the image). The
+ * image is started afterwards.
+ *
+ * Return: If successful, this function does not return. A negative error
+ * code is returned when this function fails.
+ */
+int imx8_esdhc_start_image(int instance)
+{
+	struct esdhc esdhc;
+
+	switch (instance) {
+	case 0:
+		esdhc.regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
+		break;
+	case 1:
+		esdhc.regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	esdhc.is_mx6 = 1;
+
+	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR, SZ_32K);
 }

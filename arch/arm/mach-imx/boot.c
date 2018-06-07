@@ -485,7 +485,8 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 		 */
 		const struct imx_boot_sw_info *info;
 
-		info = (const void *)readl(IMX_BOOT_SW_INFO_POINTER_ADDR);
+		info = (const void *)(unsigned long)
+			readl(IMX_BOOT_SW_INFO_POINTER_ADDR);
 
 		if (info->boot_device_type == IMX_BOOT_SW_INFO_BDT_SD) {
 			*src = BOOTSOURCE_MMC;

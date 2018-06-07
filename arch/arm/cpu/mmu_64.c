@@ -171,6 +171,17 @@ static void create_sections(uint64_t virt, uint64_t phys, uint64_t size, uint64_
 
 int arch_remap_range(void *_start, size_t size, unsigned flags)
 {
+	switch (flags) {
+	case MAP_CACHED:
+		flags = CACHED_MEM;
+		break;
+	case MAP_UNCACHED:
+		flags = UNCACHED_MEM;
+		break;
+	default:
+		return -EINVAL;
+	}
+
 	map_region((uint64_t)_start, (uint64_t)_start, (uint64_t)size, flags);
 	tlb_invalidate();
 

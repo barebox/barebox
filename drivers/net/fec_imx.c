@@ -467,7 +467,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 		return -1;
 	}
 
-	if ((unsigned long)eth_data & (DB_DATA_ALIGNMENT - 1))
+	if (!IS_ALIGNED((unsigned long)eth_data, DB_DATA_ALIGNMENT))
 		dev_warn(&dev->dev, "Transmit data not aligned: %p!\n", eth_data);
 
 	/*

@@ -35,7 +35,13 @@
 
 #include <include/filetype.h>
 
-#define MAX_DCD 1024
+#define FLASH_HEADER_OFFSET 0x400
+
+/*
+ * Conservative DCD element limit set to restriction v2 header size to
+ * HEADER_SIZE
+ */
+#define MAX_DCD ((HEADER_LEN - FLASH_HEADER_OFFSET - sizeof(struct imx_flash_header_v2)) / sizeof(u32))
 #define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
 
 static uint32_t dcdtable[MAX_DCD];
@@ -50,7 +56,6 @@ static char *prgname;
  * ============================================================================
  */
 
-#define FLASH_HEADER_OFFSET 0x400
 
 static uint32_t bb_header[] = {
 	0xea0003fe,	/* b 0x1000 */
@@ -261,7 +266,7 @@ static int write_mem_v1(uint32_t addr, uint32_t val, int width, int set_bits, in
 	}
 
 	if (curdcd > MAX_DCD - 3) {
-		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", (int)MAX_DCD);
 		return -ENOMEM;
 	}
 
@@ -383,7 +388,7 @@ static int write_mem_v2(uint32_t addr, uint32_t val, int width, int set_bits, in
 		cmd |= 1 << 3;
 
 	if (curdcd > MAX_DCD - 3) {
-		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", (int)MAX_DCD);
 		return -ENOMEM;
 	}
 
@@ -454,7 +459,7 @@ static int check(const struct config_data *data, uint32_t cmd, uint32_t addr,
 		return -EINVAL;
 	}
 	if (curdcd > MAX_DCD - 3) {
-		fprintf(stderr, "At maximum %d dcd entried are allowed\n", MAX_DCD);
+		fprintf(stderr, "At maximum %d dcd entried are allowed\n", (int)MAX_DCD);
 		return -ENOMEM;
 	}
 
@@ -495,7 +500,7 @@ static int nop(const struct config_data *data)
 	case 2:
 		if (curdcd > MAX_DCD - 1) {
 			fprintf(stderr, "At maximum %d DCD entries allowed\n",
-				MAX_DCD);
+				(int)MAX_DCD);
 			return -ENOMEM;
 		}
 
@@ -780,12 +785,12 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
+	buf = calloc(1, HEADER_LEN);
+	if (!buf)
+		exit(1);
+
 	switch (data.header_version) {
 	case 1:
-		buf = calloc(1, HEADER_LEN);
-		if (!buf)
-			exit(1);
-
 		add_header_v1(&data, buf);
 		if (data.srkfile) {
 			ret = add_srk(buf, data.image_dcd_offset, data.image_load_addr,
@@ -795,9 +800,11 @@ int main(int argc, char *argv[])
 		}
 		break;
 	case 2:
-		buf = calloc(1, data.image_dcd_offset + sizeof(struct imx_flash_header_v2) + MAX_DCD * sizeof(u32));
-		if (!buf)
+		if (data.image_dcd_offset + sizeof(struct imx_flash_header_v2) +
+		    MAX_DCD * sizeof(u32) > HEADER_LEN) {
+			fprintf(stderr, "i.MX v2 header exceeds SW limit set by imx-image\n");
 			exit(1);
+		}
 
 		add_header_v2(&data, buf);
 		break;

@@ -28,7 +28,7 @@ static inline void tlb_invalidate(void)
 
 static inline void set_ttbr_tcr_mair(int el, uint64_t table, uint64_t tcr, uint64_t attr)
 {
-	asm volatile("dsb sy");
+	dsb();
 	if (el == 1) {
 		asm volatile("msr ttbr0_el1, %0" : : "r" (table) : "memory");
 		asm volatile("msr tcr_el1, %0" : : "r" (tcr) : "memory");
@@ -44,7 +44,7 @@ static inline void set_ttbr_tcr_mair(int el, uint64_t table, uint64_t tcr, uint6
 	} else {
 		hang();
 	}
-	asm volatile("isb");
+	isb();
 }
 
 static inline uint64_t get_ttbr(int el)

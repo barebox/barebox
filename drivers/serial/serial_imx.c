@@ -281,8 +281,11 @@ static __maybe_unused struct of_device_id imx_serial_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6ul-uart",
 		.data = &imx21_data,
-	},  {
+	}, {
 		.compatible = "fsl,imx7d-uart",
+		.data = &imx21_data,
+	}, {
+		.compatible = "fsl,imx8mq-uart",
 		.data = &imx21_data,
 	}, {
 		/* sentinel */

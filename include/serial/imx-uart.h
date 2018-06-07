@@ -180,6 +180,11 @@ static inline void imx7_uart_setup(void __iomem *uartbase)
 	imx_uart_setup(uartbase, 24000000);
 }
 
+static inline void imx8mq_uart_setup(void __iomem *uartbase)
+{
+	imx_uart_setup(uartbase, 25000000);
+}
+
 static inline void imx_uart_putc(void *base, int c)
 {
 	if (!(readl(base + UCR1) & UCR1_UARTEN))

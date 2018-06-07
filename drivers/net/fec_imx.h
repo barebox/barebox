@@ -149,6 +149,7 @@ enum fec_opt_clock {
  */
 struct fec_priv {
 	struct eth_device edev;
+	struct device_d *dev;
 	void __iomem *regs;
 	struct buffer_descriptor __iomem *rbd_base;	/* RBD ring                  */
 	int rbd_index;				/* next receive BD to read   */

@@ -203,10 +203,7 @@ static int mmu_init(void)
 	if (get_cr() & CR_M)
 		mmu_disable();
 
-	ttb = xmemalign(GRANULE_SIZE, GRANULE_SIZE);
-
-	memset(ttb, 0, GRANULE_SIZE);
-
+	ttb = create_table();
 	el = current_el();
 	set_ttbr_tcr_mair(el, (uint64_t)ttb, calc_tcr(el), MEMORY_ATTRIBUTES);
 

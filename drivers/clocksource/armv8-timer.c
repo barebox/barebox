@@ -48,9 +48,5 @@ static struct driver_d armv8_timer_driver = {
 	.probe = armv8_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(armv8_timer_dt_ids),
 };
+postcore_platform_driver(armv8_timer_driver);
 
-static int armv8_timer_init(void)
-{
-	return platform_driver_register(&armv8_timer_driver);
-}
-postcore_initcall(armv8_timer_init);

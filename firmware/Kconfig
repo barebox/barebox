@@ -1,0 +1,7 @@
+menu "Firmware files"
+
+config EXTRA_FIRMWARE_DIR
+	string "Firmware blobs root directory"
+	default "firmware"
+
+endmenu

@@ -39,4 +39,12 @@ void firmwaremgr_list_handlers(void);
 
 int firmwaremgr_load_file(struct firmware_mgr *, const char *path);
 
+#define get_builtin_firmware(name, start, size) \
+	{							\
+		extern char _fw_##name##_start[];		\
+		extern char _fw_##name##_end[];			\
+		*start = (typeof(*start)) _fw_##name##_start;	\
+		*size = _fw_##name##_end - _fw_##name##_start;	\
+	}
+
 #endif /* FIRMWARE_H */

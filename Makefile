@@ -426,7 +426,7 @@ scripts: scripts_basic include/config/auto.conf
 	$(Q)$(MAKE) $(build)=$(@)
 
 # Objects we will link into barebox / subdirs we need to visit
-common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/
+common-y		:= common/ drivers/ commands/ lib/ crypto/ net/ fs/ firmware/
 
 ifeq ($(dot-config),1)
 # Read in config

@@ -17,6 +17,7 @@
 #define __MACH_IOMUX_V3_H__
 
 #include <io.h>
+#include <linux/bitfield.h>
 
 /*
  *	build IOMUX_PAD structure
@@ -95,6 +96,13 @@ typedef u64 iomux_v3_cfg_t;
 #define PAD_CTL_DVS			(1 << 13)
 #define PAD_CTL_HYS			(1 << 8)
 
+#define SHARE_CONF_PAD_CTL_DSE	GENMASK(2, 0)
+#define SHARE_CONF_PAD_CTL_SRE	GENMASK(4, 3)
+
+#define SHARE_CONF_PAD_CTL_ODE	BIT(5)
+#define SHARE_CONF_PAD_CTL_PUE	BIT(6)
+#define SHARE_CONF_PAD_CTL_HYS	BIT(7)
+
 #define PAD_CTL_PKE			(1 << 7)
 #define PAD_CTL_PUE			(1 << 6 | PAD_CTL_PKE)
 #define PAD_CTL_PUS_100K_DOWN		(0 << 4 | PAD_CTL_PUE)
@@ -118,6 +126,7 @@ typedef u64 iomux_v3_cfg_t;
 #define SHARE_MUX_CONF_REG		0x1
 #define ZERO_OFFSET_VALID		0x2
 #define IMX7_PINMUX_LPSR		0x4
+#define SHARE_CONF			BIT(3)
 
 static inline void iomux_v3_setup_pad(void __iomem *iomux, unsigned int flags,
 				      u32 mux_reg, u32 conf_reg, u32 input_reg,

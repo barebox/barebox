@@ -624,3 +624,8 @@ void vf610_boot_save_loc(void)
 {
 	imx_boot_save_loc(vf610_get_boot_source);
 }
+
+void imx8_get_boot_source(enum bootsource *src, int *instance)
+	__alias(imx7_get_boot_source);
+
+void imx8_boot_save_loc(void) __alias(imx7_boot_save_loc);

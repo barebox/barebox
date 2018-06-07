@@ -22,12 +22,7 @@
 
 uint64_t armv8_clocksource_read(void)
 {
-	unsigned long cntpct;
-
-	isb();
-	asm volatile("mrs %0, cntpct_el0" : "=r" (cntpct));
-
-	return cntpct;
+	return get_cntpct();
 }
 
 static struct clocksource cs = {
@@ -38,11 +33,7 @@ static struct clocksource cs = {
 
 static int armv8_timer_probe(struct device_d *dev)
 {
-	unsigned long cntfrq;
-
-	asm volatile("mrs %0, cntfrq_el0" : "=r" (cntfrq));
-
-	cs.mult = clocksource_hz2mult(cntfrq, cs.shift);
+	cs.mult = clocksource_hz2mult(get_cntfrq(), cs.shift);
 
 	return init_clock(&cs);
 }

@@ -126,6 +126,7 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 	uint64_t idx;
 	uint64_t addr;
 	uint64_t *table;
+	uint64_t type;
 	int level;
 
 	if (!ttb)
@@ -145,11 +146,9 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 			pte = table + idx;
 
 			if (size >= block_size && IS_ALIGNED(addr, block_size)) {
-				if (level == 3)
-					*pte = phys | attr | PTE_TYPE_PAGE;
-				else
-					*pte = phys | attr | PTE_TYPE_BLOCK;
-
+				type = (level == 3) ?
+					PTE_TYPE_PAGE : PTE_TYPE_BLOCK;
+				*pte = phys | attr | type;
 				addr += block_size;
 				phys += block_size;
 				size -= block_size;

@@ -67,8 +67,8 @@
 	stp \ptr, \regB, [\regC], \val
 	.endm
 
-	.weak memcpy
-ENTRY(memcpy)
+	.weak __arch_memcpy
+ENTRY(__arch_memcpy)
 #include "copy_template.S"
 	ret
-ENDPROC(memcpy)
+ENDPROC(__arch_memcpy)

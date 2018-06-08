@@ -3,6 +3,7 @@ menu "serial drivers"
 
 config SERIAL_DEV_BUS
 	bool "Serial device bus"
+	select POLLER
 	depends on CONSOLE_FULL
 	help
 	  Core support for devices connected via a serial port.

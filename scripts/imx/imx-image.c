@@ -122,12 +122,23 @@ struct hab_rsa_public_key {
 #include <openssl/pem.h>
 #include <openssl/bio.h>
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+void RSA_get0_key(const RSA *r, const BIGNUM **n,
+		  const BIGNUM **e, const BIGNUM **d)
+{
+	if (n != NULL)
+		*n = r->n;
+	if (e != NULL)
+		*e = r->e;
+	if (d != NULL)
+		*d = r->d;
+}
+#endif
+
 static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len,
 	uint8_t **exponent, int *exponent_len)
 {
-	char buf[PUBKEY_ALGO_LEN];
-	int pubkey_algonid;
-	const char *sslbuf;
+	const BIGNUM *n, *e;
 	EVP_PKEY *pkey;
 	FILE *fp;
 	X509 *cert;
@@ -148,37 +159,26 @@ static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len
 
 	fclose(fp);
 
-	pubkey_algonid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
-	if (pubkey_algonid == NID_undef) {
-		fprintf(stderr, "unable to find specified public key algorithm name.\n");
-		return -EINVAL;
-	}
-
-	if (pubkey_algonid != NID_rsaEncryption)
-		return -EINVAL;
-
-	sslbuf = OBJ_nid2ln(pubkey_algonid);
-	strncpy(buf, sslbuf, PUBKEY_ALGO_LEN);
-
 	pkey = X509_get_pubkey(cert);
 	if (!pkey) {
 		fprintf(stderr, "unable to extract public key from certificate");
 		return -EINVAL;
 	}
 
-	rsa_key = pkey->pkey.rsa;
+	rsa_key = EVP_PKEY_get0_RSA(pkey);
 	if (!rsa_key) {
 		fprintf(stderr, "unable to extract RSA public key");
 		return -EINVAL;
 	}
 
-	*modulus_len = BN_num_bytes(rsa_key->n);
+	RSA_get0_key(rsa_key, &n, &e, NULL);
+	*modulus_len = BN_num_bytes(n);
 	*modulus = malloc(*modulus_len);
-	BN_bn2bin(rsa_key->n, *modulus);
+	BN_bn2bin(n, *modulus);
 
-	*exponent_len = BN_num_bytes(rsa_key->e);
+	*exponent_len = BN_num_bytes(e);
 	*exponent = malloc(*exponent_len);
-	BN_bn2bin(rsa_key->e, *exponent);
+	BN_bn2bin(e, *exponent);
 
 	EVP_PKEY_free(pkey);
 	X509_free(cert);

@@ -138,12 +138,6 @@ config OMAP3_USBBOOT
 	  which is already initialized by the ROM code. Use the omap3-usb-loader
 	  tool selectable below to upload images.
 
-config OMAP3_USB_LOADER
-	bool "enable omap3 USB loader host tool"
-	depends on ARCH_OMAP3
-	help
-	  Say Y here to build the omap3 usb loader tool.
-
 config OMAP_SERIALBOOT
 	bool "enable booting from serial"
 	select XYMODEM

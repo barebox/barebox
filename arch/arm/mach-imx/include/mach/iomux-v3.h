@@ -159,14 +159,16 @@ static inline void iomux_v3_setup_pad(void __iomem *iomux, unsigned int flags,
 
 static inline void imx_setup_pad(void __iomem *iomux, iomux_v3_cfg_t pad)
 {
-	uint32_t pad_ctrl;
+	uint32_t conf_reg, pad_ctrl;
 
+	/* dont write PAD_CTRL when NO_PAD_CTRL is set */
 	pad_ctrl = IOMUX_PAD_CTRL(pad);
-	pad_ctrl = (pad_ctrl & NO_PAD_CTRL) ? 0 : pad_ctrl,
+	conf_reg = IOMUX_PAD_CTRL_OFS(pad);
+	conf_reg = (pad_ctrl & NO_PAD_CTRL) ? 0 : conf_reg,
 
 	iomux_v3_setup_pad(iomux, 0,
 			   IOMUX_CTRL_OFS(pad),
-			   IOMUX_PAD_CTRL_OFS(pad),
+			   conf_reg,
 			   IOMUX_SEL_INPUT_OFS(pad),
 			   IOMUX_MODE(pad),
 			   pad_ctrl,

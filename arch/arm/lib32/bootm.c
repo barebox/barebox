@@ -26,6 +26,9 @@
 #include <asm/armlinux.h>
 #include <asm/system.h>
 
+/* If true, ignore device tree and boot with ATAGs */
+static int bootm_boot_atag;
+
 /*
  * sdram_start_and_size() - determine place for putting the kernel/oftree/initrd
  *
@@ -135,7 +138,13 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
 	enum arm_security_state state = bootm_arm_security_state();
+	void *oftree;
 	int ret;
+
+	if (bootm_boot_atag)
+		oftree = NULL;
+	else
+		oftree = data->oftree;
 
 	kernel = data->os_res->start + data->os_entry;
 
@@ -163,16 +172,18 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		free_mem = PAGE_ALIGN(initrd_end + 1);
 	}
 
-	ret = bootm_load_devicetree(data, free_mem);
-	if (ret)
-		return ret;
+	if (oftree) {
+		ret = bootm_load_devicetree(data, free_mem);
+		if (ret)
+			return ret;
+	}
 
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%08lx", kernel);
 		if (initrd_size)
 			printf(", initrd at 0x%08lx", initrd_start);
 		if (data->oftree)
-			printf(", oftree at 0x%p", data->oftree);
+			printf(", oftree at 0x%p", oftree);
 		printf("...\n");
 	}
 
@@ -188,7 +199,7 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 	if (data->dryrun)
 		return 0;
 
-	start_linux((void *)kernel, swap, initrd_start, initrd_size, data->oftree,
+	start_linux((void *)kernel, swap, initrd_start, initrd_size, oftree,
 		    state);
 
 	restart_machine();
@@ -600,8 +611,13 @@ static struct binfmt_hook binfmt_barebox_hook = {
 	.exec = "bootm",
 };
 
+BAREBOX_MAGICVAR_NAMED(global_bootm_boot_atag, global.bootm.boot_atag,
+		       "If true, ignore device tree and boot using ATAGs");
+
 static int armlinux_register_image_handler(void)
 {
+	globalvar_add_simple_bool("bootm.boot_atag", &bootm_boot_atag);
+
 	register_image_handler(&barebox_handler);
 	register_image_handler(&uimage_handler);
 	register_image_handler(&rawimage_handler);

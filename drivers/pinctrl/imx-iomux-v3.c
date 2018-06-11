@@ -73,6 +73,7 @@ EXPORT_SYMBOL(mxc_iomux_v3_setup_multiple_pads);
  * 1 u32 CONFIG, so 24 types in total for each pin.
  */
 #define FSL_PIN_SIZE 24
+#define SHARE_CONF_FSL_PIN_SIZE (FSL_PIN_SIZE - 1 * sizeof(u32))
 
 #define IMX_DT_NO_PAD_CTL	(1 << 31)
 #define IMX_PAD_SION		(1 << 30)
@@ -83,22 +84,57 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 {
 	struct imx_iomux_v3 *iomux = container_of(pdev, struct imx_iomux_v3, pinctrl);
 	const __be32 *list;
-	int npins, size, i;
+	const bool share_conf = iomux->flags & SHARE_CONF;
+	int npins, size, i, fsl_pin_size;
+	const char *name;
+	u32 share_conf_val;
 
 	dev_dbg(iomux->pinctrl.dev, "set state: %s\n", np->full_name);
 
-	list = of_get_property(np, "fsl,pins", &size);
+	if (share_conf) {
+		u32 drive_strength, slew_rate;
+		int ret;
+
+		fsl_pin_size = SHARE_CONF_FSL_PIN_SIZE;
+		name = "pinmux";
+
+		ret = of_property_read_u32(np, "drive-strength",
+					   &drive_strength);
+		if (ret)
+			return ret;
+
+		ret = of_property_read_u32(np, "slew-rate", &slew_rate);
+		if (ret)
+			return ret;
+
+		share_conf_val =
+			FIELD_PREP(SHARE_CONF_PAD_CTL_DSE, drive_strength) |
+			FIELD_PREP(SHARE_CONF_PAD_CTL_SRE, slew_rate);
+
+		if (of_get_property(np, "drive-open-drain", NULL))
+			share_conf_val |= SHARE_CONF_PAD_CTL_ODE;
+
+		if (of_get_property(np, "input-schmitt-enable", NULL))
+			share_conf_val |= SHARE_CONF_PAD_CTL_HYS;
+
+		if (of_get_property(np, "bias-pull-up", NULL))
+			share_conf_val |= SHARE_CONF_PAD_CTL_PUE;
+	} else {
+		fsl_pin_size = FSL_PIN_SIZE;
+		name = "fsl,pins";
+	}
+
+	list = of_get_property(np, name, &size);
 	if (!list)
 		return -EINVAL;
 
-
-	if (!size || size % FSL_PIN_SIZE) {
+	if (!size || size % fsl_pin_size) {
 		dev_err(iomux->pinctrl.dev, "Invalid fsl,pins property in %s\n",
 				np->full_name);
 		return -EINVAL;
 	}
 
-	npins = size / FSL_PIN_SIZE;
+	npins = size / fsl_pin_size;
 
 	for (i = 0; i < npins; i++) {
 		u32 mux_reg = be32_to_cpu(*list++);
@@ -106,7 +142,8 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 		u32 input_reg = be32_to_cpu(*list++);
 		u32 mux_val = be32_to_cpu(*list++);
 		u32 input_val = be32_to_cpu(*list++);
-		u32 conf_val = be32_to_cpu(*list++);
+		u32 conf_val = share_conf ?
+			share_conf_val : be32_to_cpu(*list++);
 
 		if (conf_val & IMX_PAD_SION) {
 			mux_val |= IOMUXC_CONFIG_SION;
@@ -180,6 +217,10 @@ static struct imx_iomux_v3_data imx_iomux_imx7_lpsr_data = {
 	.flags = ZERO_OFFSET_VALID | IMX7_PINMUX_LPSR,
 };
 
+static struct imx_iomux_v3_data imx_iomux_imx8_data = {
+	.flags = SHARE_CONF,
+};
+
 static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	{
 		.compatible = "fsl,imx25-iomuxc",
@@ -204,6 +245,9 @@ static __maybe_unused struct of_device_id imx_iomux_v3_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx7d-iomuxc-lpsr",
 		.data = &imx_iomux_imx7_lpsr_data,
+	}, {
+		.compatible = "fsl,imx8mq-iomuxc",
+		.data = &imx_iomux_imx8_data,
 	}, {
 		/* sentinel */
 	}

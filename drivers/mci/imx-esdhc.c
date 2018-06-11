@@ -211,18 +211,14 @@ esdhc_pio_read_write(struct mci_host *mci, struct mci_data *data)
 	return 0;
 }
 
-static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
+static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data,
+			    dma_addr_t dma)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	void __iomem *regs = host->regs;
 	u32 wml_value;
 
-	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
-		if (!(data->flags & MMC_DATA_READ))
-			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->src);
-		else
-			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
-	} else {
+	if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
 		wml_value = data->blocksize/4;
 
 		if (data->flags & MMC_DATA_READ) {
@@ -230,15 +226,14 @@ static int esdhc_setup_data(struct mci_host *mci, struct mci_data *data)
 				wml_value = 0x10;
 
 			esdhc_clrsetbits32(regs + IMX_SDHCI_WML, WML_RD_WML_MASK, wml_value);
-			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
 		} else {
 			if (wml_value > 0x80)
 				wml_value = 0x80;
 
 			esdhc_clrsetbits32(regs + IMX_SDHCI_WML, WML_WR_WML_MASK,
 						wml_value << 16);
-			esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->src);
 		}
+		esdhc_write32(regs + SDHCI_DMA_ADDRESS, dma);
 	}
 
 	esdhc_write32(regs + SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | data->blocksize);
@@ -250,7 +245,6 @@ static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
 	void __iomem *regs = host->regs;
-	unsigned int num_bytes = data->blocks * data->blocksize;
 	u32 irqstat;
 
 	if (IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
@@ -266,13 +260,6 @@ static int esdhc_do_data(struct mci_host *mci, struct mci_data *data)
 			return -ETIMEDOUT;
 	} while (!(irqstat & IRQSTAT_TC) &&
 		(esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_DLA));
-
-	if (data->flags & MMC_DATA_WRITE)
-		dma_sync_single_for_cpu((unsigned long)data->src,
-					num_bytes, DMA_TO_DEVICE);
-	else
-		dma_sync_single_for_cpu((unsigned long)data->dest,
-					num_bytes, DMA_FROM_DEVICE);
 
 	return 0;
 }
@@ -290,6 +277,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	void __iomem *regs = host->regs;
 	unsigned int num_bytes = 0;
 	int ret;
+	void *ptr;
+	enum dma_data_direction dir = 0;
+	dma_addr_t dma = 0;
 
 	esdhc_write32(regs + SDHCI_INT_STATUS, -1);
 
@@ -300,19 +290,25 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 	if (data) {
 		int err;
 
-		err = esdhc_setup_data(mci, data);
+		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO)) {
+			num_bytes = data->blocks * data->blocksize;
+
+			if (data->flags & MMC_DATA_WRITE) {
+				ptr = (void *)data->src;
+				dir = DMA_TO_DEVICE;
+			} else {
+				ptr = data->dest;
+				dir = DMA_FROM_DEVICE;
+			}
+
+			dma = dma_map_single(host->dev, ptr, num_bytes, dir);
+			if (dma_mapping_error(host->dev, dma))
+				return -EIO;
+		}
+
+		err = esdhc_setup_data(mci, data, dma);
 		if(err)
 			return err;
-
-		num_bytes = data->blocks * data->blocksize;
-
-		if (data->flags & MMC_DATA_WRITE)
-			dma_sync_single_for_device((unsigned long)data->src,
-						   num_bytes, DMA_TO_DEVICE);
-		else
-			dma_sync_single_for_device((unsigned long)data->dest,
-						   num_bytes, DMA_FROM_DEVICE);
-
 	}
 
 	/* Figure out the transfer arguments */
@@ -383,6 +379,9 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 		ret = esdhc_do_data(mci, data);
 		if (ret)
 			return ret;
+
+		if (!IS_ENABLED(CONFIG_MCI_IMX_ESDHC_PIO))
+			dma_unmap_single(host->dev, dma, num_bytes, dir);
 	}
 
 	esdhc_write32(regs + SDHCI_INT_STATUS, -1);
@@ -729,6 +728,7 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ .compatible = "fsl,imx6q-usdhc",  .data = &usdhc_imx6q_data  },
 	{ .compatible = "fsl,imx6sl-usdhc", .data = &usdhc_imx6sl_data },
 	{ .compatible = "fsl,imx6sx-usdhc", .data = &usdhc_imx6sx_data },
+	{ .compatible = "fsl,imx8mq-usdhc", .data = &usdhc_imx6sx_data },
 	{ /* sentinel */ }
 };
 

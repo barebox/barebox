@@ -190,6 +190,9 @@ static __maybe_unused struct of_device_id imx_gpio_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6q-gpio",
 		.data = &regs_imx31,
+	},  {
+		.compatible = "fsl,imx8mq-gpio",
+		.data = &regs_imx31,
 	}, {
 		/* sentinel */
 	}

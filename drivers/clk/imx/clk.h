@@ -10,6 +10,13 @@ static inline struct clk *imx_clk_divider(const char *name, const char *parent,
 	return clk_divider(name, parent, reg, shift, width, CLK_SET_RATE_PARENT);
 }
 
+static inline struct clk *imx_clk_divider_flags(const char *name,
+                const char *parent, void __iomem *reg, u8 shift, u8 width,
+                unsigned long flags)
+{
+	return clk_divider(name, parent, reg, shift, width, flags);
+}
+
 static inline struct clk *imx_clk_divider_np(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width)
 {
@@ -42,6 +49,14 @@ static inline struct clk *imx_clk_mux_flags(const char *name, void __iomem *reg,
 					    unsigned long flags)
 {
 	return clk_mux(name, reg, shift, width, parents, num_parents, flags);
+}
+
+static inline struct clk *imx_clk_mux2_flags(const char *name,
+		void __iomem *reg, u8 shift, u8 width, const char **parents,
+		int num_parents, unsigned long flags)
+{
+	return clk_mux(name, reg, shift, width, parents, num_parents,
+		       flags | CLK_OPS_PARENT_ENABLE);
 }
 
 static inline struct clk *imx_clk_mux(const char *name, void __iomem *reg,
@@ -132,6 +147,18 @@ enum imx_pllv3_type {
 struct clk *imx_clk_pllv3(enum imx_pllv3_type type, const char *name,
 			  const char *parent, void __iomem *base,
 			  u32 div_mask);
+
+struct clk *imx_clk_frac_pll(const char *name, const char *parent_name,
+			     void __iomem *base);
+
+enum imx_sccg_pll_type {
+	SCCG_PLL1,
+	SCCG_PLL2,
+};
+
+struct clk *imx_clk_sccg_pll(const char *name, const char *parent_name,
+			     void __iomem *base,
+			     enum imx_sccg_pll_type pll_type);
 
 struct clk *imx_clk_pfd(const char *name, const char *parent,
 			void __iomem *reg, u8 idx);

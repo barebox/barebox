@@ -453,6 +453,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 {
 	unsigned int status;
 	uint64_t tmo;
+	dma_addr_t dma;
 
 	/*
 	 * This routine transmits one frame.  This routine only accepts
@@ -466,7 +467,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 		return -1;
 	}
 
-	if ((uint32_t)eth_data & (DB_DATA_ALIGNMENT-1))
+	if (!IS_ALIGNED((unsigned long)eth_data, DB_DATA_ALIGNMENT))
 		dev_warn(&dev->dev, "Transmit data not aligned: %p!\n", eth_data);
 
 	/*
@@ -479,10 +480,12 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 
 	writew(data_length, &fec->tbd_base[fec->tbd_index].data_length);
 
-	writel((uint32_t)(eth_data), &fec->tbd_base[fec->tbd_index].data_pointer);
+	dma = dma_map_single(fec->dev, eth_data, data_length, DMA_TO_DEVICE);
+	if (dma_mapping_error(fec->dev, dma))
+		return -EIO;
 
-	dma_sync_single_for_device((unsigned long)eth_data, data_length,
-				   DMA_TO_DEVICE);
+	writel((uint32_t)(dma), &fec->tbd_base[fec->tbd_index].data_pointer);
+
 	/*
 	 * update BD's status now
 	 * This block:
@@ -505,8 +508,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 			break;
 		}
 	}
-	dma_sync_single_for_cpu((unsigned long)eth_data, data_length,
-				DMA_TO_DEVICE);
+	dma_unmap_single(fec->dev, dma, data_length, DMA_TO_DEVICE);
 
 	/* for next transmission use the other buffer */
 	if (fec->tbd_index)
@@ -580,11 +582,7 @@ static int fec_recv(struct eth_device *dev)
 			 */
 			frame = phys_to_virt(readl(&rbd->data_pointer));
 			frame_length = readw(&rbd->data_length) - 4;
-			dma_sync_single_for_cpu((unsigned long)frame->data,
-						frame_length, DMA_FROM_DEVICE);
 			net_receive(dev, frame->data, frame_length);
-			dma_sync_single_for_device((unsigned long)frame->data,
-						   frame_length, DMA_FROM_DEVICE);
 			len = frame_length;
 		} else {
 			if (bd_status & FEC_RBD_ERR) {
@@ -752,6 +750,7 @@ static int fec_probe(struct device_d *dev)
 
 	fec = xzalloc(sizeof(*fec));
 	fec->type = type;
+	fec->dev = dev;
 	edev = &fec->edev;
 	dev->priv = fec;
 	edev->priv = fec;

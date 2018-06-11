@@ -353,6 +353,13 @@ menu "ARM specific settings"
 
 config ARM_OPTIMZED_STRING_FUNCTIONS
 	bool "use assembler optimized string functions"
+	#
+	# memset() and memcpy() in arm/lib64/mem[set|cpy].S are
+	# written with assumption of enabled MMU and cache. Depending
+	# on the inputs in may fail with Alignement exception if used
+	# without MMU
+	#
+	depends on !CPU_V8 || MMU
 	help
 	  Say yes here to use assembler optimized memcpy / memset functions.
 	  These functions work much faster than the normal versions but

@@ -20,14 +20,9 @@
 #include <io.h>
 #include <asm/system.h>
 
-uint64_t armv8_clocksource_read(void)
+static uint64_t armv8_clocksource_read(void)
 {
-	unsigned long cntpct;
-
-	isb();
-	asm volatile("mrs %0, cntpct_el0" : "=r" (cntpct));
-
-	return cntpct;
+	return get_cntpct();
 }
 
 static struct clocksource cs = {
@@ -38,11 +33,7 @@ static struct clocksource cs = {
 
 static int armv8_timer_probe(struct device_d *dev)
 {
-	unsigned long cntfrq;
-
-	asm volatile("mrs %0, cntfrq_el0" : "=r" (cntfrq));
-
-	cs.mult = clocksource_hz2mult(cntfrq, cs.shift);
+	cs.mult = clocksource_hz2mult(get_cntfrq(), cs.shift);
 
 	return init_clock(&cs);
 }
@@ -57,9 +48,5 @@ static struct driver_d armv8_timer_driver = {
 	.probe = armv8_timer_probe,
 	.of_compatible = DRV_OF_COMPAT(armv8_timer_dt_ids),
 };
+postcore_platform_driver(armv8_timer_driver);
 
-static int armv8_timer_init(void)
-{
-	return platform_driver_register(&armv8_timer_driver);
-}
-postcore_initcall(armv8_timer_init);

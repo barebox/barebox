@@ -6,6 +6,8 @@ obj-$(CONFIG_COMMON_CLK) +=	\
 	clk-gate2.o		\
 	clk-gate-exclusive.o	\
 	clk-cpu.o		\
+	clk-frac-pll.o		\
+	clk-sccg-pll.o		\
 	clk.o
 
 obj-$(CONFIG_ARCH_IMX1)   += clk-imx1.o
@@ -22,4 +24,5 @@ obj-$(CONFIG_ARCH_IMX6SX) += clk-imx6sx.o
 obj-$(CONFIG_ARCH_IMX6SL) += clk-imx6sl.o
 obj-$(CONFIG_ARCH_IMX6UL) += clk-imx6ul.o
 obj-$(CONFIG_ARCH_IMX7) += clk-imx7.o
+obj-$(CONFIG_ARCH_IMX8MQ) += clk-imx8mq.o
 obj-$(CONFIG_ARCH_VF610)  += clk-vf610.o

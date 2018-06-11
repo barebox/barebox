@@ -490,6 +490,20 @@ int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 	return __register_handler(imx_handler);
 }
 
+int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
+		char *devicefile, unsigned long flags)
+{
+	struct imx_internal_bbu_handler *imx_handler;
+
+	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+
+	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
+	imx_handler->handler.handler = imx_bbu_internal_v1_update;
+
+	return __register_handler(imx_handler);
+}
+
 /*
  * Register an i.MX53 internal boot update handler for MMC/SD
  */

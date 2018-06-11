@@ -20,10 +20,10 @@
 	compatible = "amazon,kindle-d01200", "fsl,imx50";
 
 	chosen {
-		linux,stdout-path = &uart1;
+		stdout-path = &uart1;
 	};
 
-	memory {
+	memory@70000000 {
 		device_type = "memory";
 		reg = <0x70000000 0x10000000>;
 	};

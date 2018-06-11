@@ -21,6 +21,7 @@
 #include <mach/revision.h>
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
+#include <mach/reset-reason.h>
 
 #define SI_REV 0x48
 
@@ -49,7 +50,10 @@ static int imx50_silicon_revision(void)
 
 int imx50_init(void)
 {
+	void __iomem *src = IOMEM(MX50_SRC_BASE_ADDR);
+
 	imx50_silicon_revision();
+	imx_set_reset_reason(src + IMX_SRC_SRSR, imx_reset_reasons);
 	imx53_boot_save_loc();
 
 	return 0;
@@ -83,7 +87,7 @@ int imx50_devices_init(void)
 
 void imx50_init_lowlevel_early(unsigned int cpufreq_mhz)
 {
-	void __iomem *ccm = (void __iomem *)MX50_CCM_BASE_ADDR;
+	void __iomem *ccm = IOMEM(MX50_CCM_BASE_ADDR);
 	u32 r;
 
 	imx5_init_lowlevel();
@@ -113,11 +117,11 @@ void imx50_init_lowlevel_early(unsigned int cpufreq_mhz)
 	writel(0x4, ccm + MX5_CCM_CCSR);
 
 	if (cpufreq_mhz == 400)
-		imx5_setup_pll_400((void __iomem *)MX50_PLL1_BASE_ADDR);
+		imx5_setup_pll_400(IOMEM(MX50_PLL1_BASE_ADDR));
 	else
-		imx5_setup_pll_800((void __iomem *)MX50_PLL1_BASE_ADDR);
+		imx5_setup_pll_800(IOMEM(MX50_PLL1_BASE_ADDR));
 
-	imx5_setup_pll_216((void __iomem *)MX50_PLL3_BASE_ADDR);
+	imx5_setup_pll_216(IOMEM(MX50_PLL3_BASE_ADDR));
 
 	/* Switch peripheral to PLL3 */
 	writel(0x00015154, ccm + MX5_CCM_CBCMR);
@@ -126,7 +130,7 @@ void imx50_init_lowlevel_early(unsigned int cpufreq_mhz)
 	/* make sure change is effective */
 	while (readl(ccm + MX5_CCM_CDHIPR));
 
-	imx5_setup_pll_400((void __iomem *)MX50_PLL2_BASE_ADDR);
+	imx5_setup_pll_400(IOMEM(MX50_PLL2_BASE_ADDR));
 
 	/* Switch peripheral to PLL2 */
 	r = 0x02800145 |

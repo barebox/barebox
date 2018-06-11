@@ -77,6 +77,30 @@ static inline unsigned long read_mpidr(void)
 
 	return val;
 }
+
+static inline void set_cntfrq(unsigned long cntfrq)
+{
+	asm volatile("msr cntfrq_el0, %0" : : "r" (cntfrq) : "memory");
+}
+
+static inline unsigned long get_cntfrq(void)
+{
+	unsigned long cntfrq;
+
+	asm volatile("mrs %0, cntfrq_el0" : "=r" (cntfrq));
+	return cntfrq;
+}
+
+static inline unsigned long get_cntpct(void)
+{
+	unsigned long cntpct;
+
+	isb();
+	asm volatile("mrs %0, cntpct_el0" : "=r" (cntpct));
+
+	return cntpct;
+}
+
 #endif
 static inline unsigned int get_cr(void)
 {

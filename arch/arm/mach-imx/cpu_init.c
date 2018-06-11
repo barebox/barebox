@@ -16,6 +16,7 @@
 #include <asm/errata.h>
 #include <linux/types.h>
 
+#ifdef CONFIG_CPU_32
 void imx5_cpu_lowlevel_init(void)
 {
 	arm_cpu_lowlevel_init();
@@ -50,3 +51,4 @@ void vf610_cpu_lowlevel_init(void)
 {
 	arm_cpu_lowlevel_init();
 }
+#endif

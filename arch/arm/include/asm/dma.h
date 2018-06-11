@@ -34,6 +34,17 @@ static inline void dma_free_coherent(void *mem, dma_addr_t dma_handle,
 	free(mem);
 }
 
+static inline dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
+					enum dma_data_direction dir)
+{
+	return (dma_addr_t)ptr;
+}
+
+static inline void dma_unmap_single(struct device_d *dev, dma_addr_t addr, size_t size,
+				    enum dma_data_direction dir)
+{
+}
+
 static inline void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 					   enum dma_data_direction dir)
 {

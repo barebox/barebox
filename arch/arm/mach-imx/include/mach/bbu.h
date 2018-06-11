@@ -12,6 +12,9 @@ struct imx_dcd_v2_entry;
 int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags);
 
+int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
+		char *devicefile, unsigned long flags);
+
 int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags);
 
@@ -37,6 +40,12 @@ int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
 
 static inline int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 		unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
+		char *devicefile, unsigned long flags)
 {
 	return -ENOSYS;
 }

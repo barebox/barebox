@@ -479,7 +479,6 @@ char *strswab(const char *s)
 }
 #endif
 
-#ifndef __HAVE_ARCH_MEMSET
 /**
  * memset - Fill a region of memory with the given value
  * @s: Pointer to the start of the area.
@@ -488,7 +487,7 @@ char *strswab(const char *s)
  *
  * Do not use memset() to access IO space, use memset_io() instead.
  */
-void * memset(void * s,int c,size_t count)
+void *__default_memset(void * s,int c,size_t count)
 {
 	char *xs = (char *) s;
 
@@ -497,10 +496,12 @@ void * memset(void * s,int c,size_t count)
 
 	return s;
 }
-#endif
-EXPORT_SYMBOL(memset);
+EXPORT_SYMBOL(__default_memset);
 
-#ifndef __HAVE_ARCH_MEMCPY
+#ifndef __HAVE_ARCH_MEMSET
+void *memset(void *s, int c, size_t count) __alias(__default_memset);
+#endif
+
 /**
  * memcpy - Copy one area of memory to another
  * @dest: Where to copy to
@@ -510,7 +511,7 @@ EXPORT_SYMBOL(memset);
  * You should not use this function to access IO space, use memcpy_toio()
  * or memcpy_fromio() instead.
  */
-void * memcpy(void * dest,const void *src,size_t count)
+void *__default_memcpy(void * dest,const void *src,size_t count)
 {
 	char *tmp = (char *) dest, *s = (char *) src;
 
@@ -519,8 +520,13 @@ void * memcpy(void * dest,const void *src,size_t count)
 
 	return dest;
 }
-#endif
 EXPORT_SYMBOL(memcpy);
+
+#ifndef __HAVE_ARCH_MEMCPY
+void *memcpy(void * dest, const void *src, size_t count)
+	__alias(__default_memcpy);
+#endif
+
 
 #ifndef __HAVE_ARCH_MEMMOVE
 /**

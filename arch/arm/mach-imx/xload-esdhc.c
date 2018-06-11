@@ -15,6 +15,7 @@
 #include <io.h>
 #include <mci.h>
 #include <mach/imx6-regs.h>
+#include <mach/imx8mq-regs.h>
 #include <mach/xload.h>
 #include <linux/sizes.h>
 #include "../../../drivers/mci/sdhci.h"
@@ -109,8 +110,13 @@ esdhc_send_cmd(struct esdhc *esdhc, struct mci_cmd *cmd, struct mci_data *data)
 	__udelay(1);
 
 	if (data) {
+		unsigned long dest = (unsigned long)data->dest;
+
+		if (dest > 0xffffffff)
+			return -EINVAL;
+
 		/* Set up for a data transfer if we have one */
-		esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)data->dest);
+		esdhc_write32(regs + SDHCI_DMA_ADDRESS, (u32)dest);
 		esdhc_write32(regs + SDHCI_BLOCK_SIZE__BLOCK_COUNT, data->blocks << 16 | SECTOR_SIZE);
 	}
 
@@ -211,10 +217,60 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 	return 0;
 }
 
-int imx6_esdhc_load_image(int instance, void *buf, int len)
+static int
+esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
+{
+	void *buf = (void *)address;
+	u32 *ivt = buf + offset + SZ_1K;
+	int ret, len;
+	void __noreturn (*bb)(void);
+	unsigned int ofs;
+
+	len = imx_image_size();
+	len = ALIGN(len, SECTOR_SIZE);
+
+	ret = esdhc_read_blocks(esdhc, buf, offset + SZ_1K + SECTOR_SIZE);
+	if (ret)
+		return ret;
+
+	if (*(u32 *)(ivt) != 0x402000d1) {
+		pr_debug("IVT header not found on SD card. Found 0x%08x instead of 0x402000d1\n",
+				*ivt);
+		return -EINVAL;
+	}
+
+	pr_debug("Check ok, loading image\n");
+
+	ret = esdhc_read_blocks(esdhc, buf, offset + len);
+	if (ret) {
+		pr_err("Loading image failed with %d\n", ret);
+		return ret;
+	}
+
+	pr_debug("Image loaded successfully\n");
+
+	ofs = offset + *(ivt + 1) - *(ivt + 8);
+
+	bb = buf + ofs;
+
+	bb();
+}
+
+/**
+ * imx6_esdhc_start_image - Load and start an image from USDHC controller
+ * @instance: The USDHC controller instance (0..4)
+ *
+ * This uses esdhc_start_image() to load an image from SD/MMC.  It is
+ * assumed that the image is the currently running barebox image (This
+ * information is used to calculate the length of the image). The
+ * image is started afterwards.
+ *
+ * Return: If successful, this function does not return. A negative error
+ * code is returned when this function fails.
+ */
+int imx6_esdhc_start_image(int instance)
 {
 	struct esdhc esdhc;
-	int ret;
 
 	switch (instance) {
 	case 0:
@@ -235,58 +291,37 @@ int imx6_esdhc_load_image(int instance, void *buf, int len)
 
 	esdhc.is_mx6 = 1;
 
-	ret = esdhc_read_blocks(&esdhc, buf, len);
-	if (ret)
-		return ret;
-
-	return 0;
+	return esdhc_start_image(&esdhc, 0x10000000, 0);
 }
 
 /**
- * imx6_esdhc_start_image - Load and start an image from USDHC controller
- * @instance: The USDHC controller instance (0..4)
+ * imx8_esdhc_start_image - Load and start an image from USDHC controller
+ * @instance: The USDHC controller instance (0..2)
  *
- * This uses imx6_esdhc_load_image() to load an image from SD/MMC.
- * It is assumed that the image is the currently running barebox image
- * (This information is used to calculate the length of the image). The
+ * This uses esdhc_start_image() to load an image from SD/MMC.  It is
+ * assumed that the image is the currently running barebox image (This
+ * information is used to calculate the length of the image). The
  * image is started afterwards.
  *
  * Return: If successful, this function does not return. A negative error
  * code is returned when this function fails.
  */
-int imx6_esdhc_start_image(int instance)
+int imx8_esdhc_start_image(int instance)
 {
-	void *buf = (void *)0x10000000;
-	u32 *ivt = buf + SZ_1K;
-	int ret, len;
-	void __noreturn (*bb)(void);
-	unsigned int ofs;
+	struct esdhc esdhc;
 
-	len = imx_image_size();
-	len = ALIGN(len, SECTOR_SIZE);
-
-	ret = imx6_esdhc_load_image(instance, buf, 3 * SECTOR_SIZE);
-	if (ret)
-		return ret;
-	if (*(u32 *)(ivt) != 0x402000d1) {
-		pr_debug("IVT header not found on SD card. Found 0x%08x instead of 0x402000d1\n",
-				*ivt);
+	switch (instance) {
+	case 0:
+		esdhc.regs = IOMEM(MX8MQ_USDHC1_BASE_ADDR);
+		break;
+	case 1:
+		esdhc.regs = IOMEM(MX8MQ_USDHC2_BASE_ADDR);
+		break;
+	default:
 		return -EINVAL;
 	}
 
-	pr_debug("Check ok, loading image\n");
+	esdhc.is_mx6 = 1;
 
-	ret = imx6_esdhc_load_image(instance, buf, len);
-	if (ret) {
-		pr_err("Loading image failed with %d\n", ret);
-		return ret;
-	}
-
-	pr_debug("Image loaded successfully\n");
-
-	ofs = *(ivt + 1) - *(ivt + 8);
-
-	bb = buf + ofs;
-
-	bb();
+	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR, SZ_32K);
 }

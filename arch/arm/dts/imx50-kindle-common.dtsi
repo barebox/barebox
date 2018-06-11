@@ -21,19 +21,12 @@
 	/* this is a dummy fixed-voltage "regulator", mainly to satisfy
 	* the esdhc implementation requiring vmmc-supply and vqmmc-supply
 	*/
-	regulators {
-		compatible = "simple-bus";
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		reg_3p3v: regulator@0 {
-			compatible = "regulator-fixed";
-			reg = <0>;
-			regulator-name = "3P3V";
-			regulator-min-microvolt = <3300000>;
-			regulator-max-microvolt = <3300000>;
-			regulator-always-on;
-		};
+	reg_3p3v: regulator-3p3v {
+		compatible = "regulator-fixed";
+		regulator-name = "3P3V";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
 	};
 };
 
@@ -149,12 +142,12 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		kernel: kernel@0x41000 {
+		kernel: kernel@41000 {
 			label = "kernel";
 			reg = <0x41000 0xe00000>;
 		};
 
-		diags_kernel: diags_kernel@0xe41000 {
+		diags_kernel: diags_kernel@e41000 {
 			label = "diags_kernel";
 			reg = <0xe41000 0xe00000>;
 		};
@@ -165,17 +158,17 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
-		imx_header: imx_header@0x400 {
+		imx_header: imx_header@400 {
 			label = "imx_header";
 			reg = <0x400 0x800>;
 		};
 
-		self: self@0x1000 {
+		self: self@1000 {
 			label = "self";
 			reg = <0x1000 0x3e000>;
 		};
 
-		userdata: userdata@0x3f000 {
+		userdata: userdata@3f000 {
 			label = "userdata";
 			reg = <0x3f000 0x1400>;
 		};
@@ -306,7 +299,7 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			led-control = <0 0xff8 0 0>;
-			ledg {
+			ledg@2 {
 				reg = <2>;
 				label = "pmic_ledsg";
 				linux,default-trigger = "heartbeat";

@@ -7,11 +7,11 @@ This CPU card is based on a Freescale i.MX53 CPU. The card is shipped with:
   * 512MiB synchronous dynamic RAM
   * microSD slot
 
-see http://www.garz-fricke.com/en/products/embedded-systems/single-board-computer/ia-0086r/ for more information
+See http://www.garz-fricke.com/en/products/embedded-systems/single-board-computer/ia-0086r/ for more information.
 
 
 Bootstrapping barebox
-=====================
+---------------------
 
 The Vincell is shipped with the RedBoot bootloader. To replace RedBoot with
 barebox, you first need to connect a serial console to the device.

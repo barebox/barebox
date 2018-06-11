@@ -155,7 +155,8 @@ void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far)
 		return;
 	}
 
-	printf("%s exception at 0x%016lx\n", esr_get_class_string(esr), far);
+	printf("%s exception (ESR 0x%08x) at 0x%016lx\n", esr_get_class_string(esr),
+	       esr, far);
 	do_exception(pt_regs);
 }
 

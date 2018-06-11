@@ -10,7 +10,7 @@
 #include <asm/unaligned.h>
 #include <mach/common.h>
 
-static int do_bootm_kwbimage_v1(struct image_data *data)
+static int do_bootm_kwbimage_v0_v1(struct image_data *data)
 {
 	int fd, ret;
 	loff_t offset;
@@ -69,14 +69,21 @@ out_free:
 	return ret;
 }
 
+static struct image_handler image_handler_kwbimage_v0_handler = {
+	.name = "MVEBU kwbimage v0",
+	.bootm = do_bootm_kwbimage_v0_v1,
+	.filetype = filetype_kwbimage_v0,
+};
+
 static struct image_handler image_handler_kwbimage_v1_handler = {
 	.name = "MVEBU kwbimage v1",
-	.bootm = do_bootm_kwbimage_v1,
+	.bootm = do_bootm_kwbimage_v0_v1,
 	.filetype = filetype_kwbimage_v1,
 };
 
 static int mvebu_register_kwbimage_image_handler(void)
 {
+	register_image_handler(&image_handler_kwbimage_v0_handler);
 	register_image_handler(&image_handler_kwbimage_v1_handler);
 
 	return 0;

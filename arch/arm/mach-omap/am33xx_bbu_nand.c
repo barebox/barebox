@@ -20,6 +20,7 @@
 #include <bbu.h>
 #include <fs.h>
 #include <fcntl.h>
+#include <libfile.h>
 #include <filetype.h>
 
 struct nand_bbu_handler {
@@ -27,39 +28,6 @@ struct nand_bbu_handler {
 	char **devicefile;
 	int num_devicefiles;
 };
-
-static int write_image(const char *devfile, const void *image, size_t size)
-{
-	int fd = 0;
-	int ret = 0;
-
-	fd = open(devfile, O_WRONLY);
-	if (fd < 0) {
-		pr_err("could not open %s: %s\n", devfile,
-			errno_str());
-		return fd;
-	}
-
-	ret = erase(fd, ERASE_SIZE_ALL, 0);
-	if (ret < 0) {
-		pr_err("could not erase %s: %s\n", devfile,
-			errno_str());
-		close(fd);
-		return ret;
-	}
-
-	ret = write(fd, image, size);
-	if (ret < 0) {
-		pr_err("could not write to fd %s: %s\n", devfile,
-			errno_str());
-		close(fd);
-		return ret;
-	}
-
-	close(fd);
-
-	return 0;
-}
 
 /*
  * Upate given nand partitions with an image
@@ -80,12 +48,12 @@ static int nand_slot_update_handler(struct bbu_handler *handler,
 
 	/* check if the devicefile has been overwritten */
 	if (strcmp(data->devicefile, nh->devicefile[0]) != 0) {
-		ret = write_image(data->devicefile, image, size);
+		ret = write_file_flash(data->devicefile, image, size);
 		if (ret != 0)
 			return ret;
 	} else {
 		for (i = 0; i < nh->num_devicefiles; i++) {
-			ret =  write_image(nh->devicefile[i], image, size);
+			ret =  write_file_flash(nh->devicefile[i], image, size);
 			if (ret != 0)
 				return ret;
 		}

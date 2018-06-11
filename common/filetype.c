@@ -65,7 +65,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_exe] = { "MS-DOS executable", "exe" },
 	[filetype_mxs_bootstream] = { "Freescale MXS bootstream", "mxsbs" },
 	[filetype_socfpga_xload] = { "SoCFPGA prebootloader image", "socfpga-xload" },
-	[filetype_kwbimage_v1] = { "MVEBU kwbimage (v1)", "kwb" },
+	[filetype_kwbimage_v0] = { "MVEBU kwbimage (v0)", "kwb0" },
+	[filetype_kwbimage_v1] = { "MVEBU kwbimage (v1)", "kwb1" },
 	[filetype_android_sparse] = { "Android sparse image", "sparse" },
 	[filetype_arm64_linux_image] = { "ARM aarch64 Linux image", "aarch64-linux" },
 };
@@ -302,10 +303,21 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if ((buf8[0] == 0x5a || buf8[0] == 0x69 || buf8[0] == 0x78 ||
 	     buf8[0] == 0x8b || buf8[0] == 0x9c) &&
 	    buf8[0x1] == 0 && buf8[0x2] == 0 && buf8[0x3] == 0 &&
-	    buf8[0x8] == 1 && buf8[0x18] == 0 && buf8[0x1b] == 0 &&
-	    buf8[0x1c] == 0 && buf8[0x1d] == 0 &&
-	    (buf8[0x1e] == 0 || buf8[0x1e] == 1))
-		return filetype_kwbimage_v1;
+	    buf8[0x18] == 0 && buf8[0x1b] == 0 && buf8[0x1c] == 0) {
+		unsigned char sum = 0;
+		int i;
+
+		for (i = 0; i <= 0x1e; ++i)
+			sum += buf8[i];
+
+		if (sum == buf8[0x1f] && buf8[0x8] == 0)
+			return filetype_kwbimage_v0;
+
+		if (sum == buf8[0x1f] &&
+		    buf8[0x8] == 1 && buf8[0x1d] == 0 &&
+		    (buf8[0x1e] == 0 || buf8[0x1e] == 1))
+			return filetype_kwbimage_v1;
+	}
 
 	if (is_sparse_image(_buf))
 		return filetype_android_sparse;

@@ -251,6 +251,39 @@ int write_file(const char *filename, const void *buf, size_t size)
 EXPORT_SYMBOL(write_file);
 
 /**
+ * write_file_flash - write a buffer to a file backed by flash
+ * @filename:    The filename to write
+ * @size:        The size of the buffer
+ *
+ * Functional this is identical to write_file but calls erase() before writing.
+ *
+ * Return: 0 for success or negative error value
+ */
+int write_file_flash(const char *filename, const void *buf, size_t size)
+{
+	int fd, ret;
+
+	fd = open(filename, O_WRONLY);
+	if (fd < 0)
+		return fd;
+
+	ret = erase(fd, size, 0);
+	if (ret < 0)
+		goto out_close;
+
+	ret = write_full(fd, buf, size);
+
+out_close:
+	close(fd);
+
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+EXPORT_SYMBOL(write_file_flash);
+
+/**
  * copy_file - Copy a file
  * @src:	The source filename
  * @dst:	The destination filename

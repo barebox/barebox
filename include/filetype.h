@@ -38,6 +38,7 @@ enum filetype {
 	filetype_xz_compressed,
 	filetype_mxs_bootstream,
 	filetype_socfpga_xload,
+	filetype_kwbimage_v0,
 	filetype_kwbimage_v1,
 	filetype_android_sparse,
 	filetype_arm64_linux_image,

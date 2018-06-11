@@ -37,6 +37,10 @@
 #define DOVE_SDRAM_MAP_VALID		BIT(0)
 #define DOVE_SDRAM_LENGTH_SHIFT		16
 #define DOVE_SDRAM_LENGTH_MASK		(0x00f << DOVE_SDRAM_LENGTH_SHIFT)
+#define DOVE_SDRAM_REGS_BASE_DECODE	0x10
+
+#define DOVE_CPU_CTRL			(MVEBU_REMAP_INT_REG_BASE + 0xd025c)
+#define DOVE_AXI_CTRL			(MVEBU_REMAP_INT_REG_BASE + 0xd0224)
 
 #define KIRKWOOD_SDRAM_BASE		(IOMEM(MVEBU_REMAP_INT_REG_BASE) + 0x00000)
 #define KIRKWOOD_DDR_BASE_CSn(n)	(0x1500 + ((n) * 0x8))
@@ -192,7 +196,32 @@ static void mvebu_remap_registers(void)
 
 void __naked __noreturn dove_barebox_entry(void *boarddata)
 {
+	uint32_t val;
+	void __iomem *mcbase = mvebu_get_initial_int_reg_base() + 0x800000;
+
 	mvebu_remap_registers();
+
+	/*
+	 * On dove there is an additional register window that is expected to be
+	 * located 0x800000 after the main register window. This contains the
+	 * DDR registers.
+	 */
+	val = readl(mcbase + DOVE_SDRAM_REGS_BASE_DECODE) & 0x0000ffff;
+	val |= (unsigned long)DOVE_SDRAM_BASE & 0xffff0000;
+	writel(val, mcbase + DOVE_SDRAM_REGS_BASE_DECODE);
+
+	/* tell the axi controller about where to find the DDR controller */
+	val = readl(DOVE_AXI_CTRL) & 0x007fffff;
+	val |= (unsigned long)DOVE_SDRAM_BASE & 0xff800000;
+	writel(val, DOVE_AXI_CTRL);
+
+	/*
+	 * The AXI units internal space base starts at the same address as the
+	 * DDR controller.
+	 */
+	val = readl(DOVE_CPU_CTRL) & 0xfff007ff;
+	val |= ((unsigned long)DOVE_SDRAM_BASE & 0xff800000) >> 12;
+	writel(val, DOVE_CPU_CTRL);
 
 	barebox_arm_entry(0, dove_memory_find(), boarddata);
 }

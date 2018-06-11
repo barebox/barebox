@@ -2,8 +2,8 @@
 # Boot the Amazon factory-shipped kernel uimage stored on
 # the eMMC at CONFIG_MMC_BOOTFLASH_ADDR 0x41000
 
-# Purge the OF tree to enable passing of ATAGs
-oftree -f
+# Force ATAG boot
+global.bootm.boot_atag=true
 
 # The same machine type introduced with freescale ENGR00124359
 armlinux_architecture=2955

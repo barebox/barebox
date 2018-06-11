@@ -2,7 +2,7 @@
 
 mount /dev/mshc1.0
 
-oftree -f
+global.bootm.boot_atag=true
 
 global.bootm.image=/mnt/mshc1.0/zImage-old
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait"

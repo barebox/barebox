@@ -354,12 +354,10 @@ static unsigned char *read_file(char *path, size_t *readamt)
 	size_t iter = 0;
 
 	while (1) {
-		if (iter >= iter) {
-			allocsize += 1024;
-			data = realloc(data, allocsize);
-			if (!data)
-				return NULL;
-		}
+		allocsize += 1024;
+		data = realloc(data, allocsize);
+		if (!data)
+			return NULL;
 
 		size_t readsize = allocsize - iter;
 		size_t ret = fread(data + iter, sizeof (unsigned char), readsize, fp);

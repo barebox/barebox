@@ -218,7 +218,7 @@ are the release rules:
   necessary, this is the scheme we follow.
 
 - Only the monthly releases are archived on the web site. The tarballs
-  are located in http://www.barebox.org/download/ and this location
+  are located in https://www.barebox.org/download/ and this location
   does never change, in order to make life easier for distribution
   people.
 

@@ -76,7 +76,7 @@ In case only the booted system itself knows when it is in a good state, the
 barebox-state tool from the dt-utils_ package can be used to reset the
 ``remaining_attempts`` counter from the running system.
 
-.. _dt-utils: http://git.pengutronix.de/?p=tools/dt-utils.git;a=summary
+.. _dt-utils: https://git.pengutronix.de/cgit/tools/dt-utils
 
 General Bootchooser Options
 ---------------------------

@@ -11,7 +11,7 @@ the suffix (for example 2014.06.1).
 
 All releases can be downloaded from:
 
-http://www.barebox.org/download/
+https://www.barebox.org/download/
 
 Development versions of barebox are accessible via Git. A local repository clone
 can be checked out as follows:
@@ -39,7 +39,7 @@ you can look at the ``next`` branch:
   $ git checkout -b next origin/remotes/next
 
 A web interface to the repository is available at
-http://git.pengutronix.de/?p=barebox.git.
+https://git.pengutronix.de/cgit/barebox
 
 .. _configuration:
 

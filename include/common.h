@@ -30,6 +30,7 @@
 #include <linux/kernel.h>
 #include <linux/stddef.h>
 #include <asm/common.h>
+#include <asm/io.h>
 #include <printk.h>
 
 /*
@@ -139,11 +140,7 @@ const char *barebox_get_hostname(void);
 void barebox_set_hostname(const char *);
 void barebox_set_hostname_no_overwrite(const char *);
 
-#if defined(CONFIG_MIPS)
-#include <asm/addrspace.h>
-
-#define IOMEM(addr)	((void __force __iomem *)CKSEG1ADDR(addr))
-#else
+#ifndef IOMEM
 #define IOMEM(addr)	((void __force __iomem *)(addr))
 #endif
 

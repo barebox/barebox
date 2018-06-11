@@ -515,7 +515,7 @@ static int write_buff(struct flash_info *info, const u8 *src,
 	int buffered_size;
 #endif
 	/* get lower aligned address */
-	wp = addr & ~(info->portwidth - 1);
+	wp = addr & ~((unsigned long)info->portwidth - 1);
 
 	/* handle unaligned start */
 	aln = addr - wp;

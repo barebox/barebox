@@ -25,6 +25,9 @@ config GENERIC_LINKER_SCRIPT
 config HAS_NO_BOARD_HL_CODE
 	bool
 
+config PHYS_ADDR_T_64BIT
+	bool
+
 menu "Machine selection"
 
 config BUILTIN_DTB
@@ -275,6 +278,7 @@ config 64BIT
 	bool "64-bit barebox"
 	depends on CPU_SUPPORTS_64BIT_KERNEL && SYS_SUPPORTS_64BIT_KERNEL
 	select ARCH_DMA_ADDR_T_64BIT
+	select PHYS_ADDR_T_64BIT
 	help
 	  Select this option if you want to build a 64-bit barebox.
 
@@ -337,6 +341,7 @@ config NMON_HELP
 
 config MIPS_OPTIMIZED_STRING_FUNCTIONS
 	bool "use assembler optimized string functions"
+	depends on !64BIT
 	default y
 	help
 	  Say yes here to use assembler optimized memcpy / memset functions.

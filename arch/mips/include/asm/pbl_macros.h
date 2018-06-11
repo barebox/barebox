@@ -134,21 +134,22 @@
 	subu	t2, t1, t0	/* t2 <- size of pbl */
 	addu	a2, a0, t2	/* a2 <- source end address */
 
+#define WSIZE	4
 copy_loop:
 	/* copy from source address [a0] */
-	lw	t4, LONGSIZE * 0(a0)
-	lw	t5, LONGSIZE * 1(a0)
-	lw	t6, LONGSIZE * 2(a0)
-	lw	t7, LONGSIZE * 3(a0)
+	lw	t4, WSIZE * 0(a0)
+	lw	t5, WSIZE * 1(a0)
+	lw	t6, WSIZE * 2(a0)
+	lw	t7, WSIZE * 3(a0)
 	/* copy to target address [a1] */
-	sw	t4, LONGSIZE * 0(a1)
-	sw	t5, LONGSIZE * 1(a1)
-	sw	t6, LONGSIZE * 2(a1)
-	sw	t7, LONGSIZE * 3(a1)
-	addi	a0, LONGSIZE * 4
+	sw	t4, WSIZE * 0(a1)
+	sw	t5, WSIZE * 1(a1)
+	sw	t6, WSIZE * 2(a1)
+	sw	t7, WSIZE * 3(a1)
+	addi	a0, WSIZE * 4
 	subu	t3, a0, a2
 	blez	t3, copy_loop
-	 addi	a1, LONGSIZE * 4
+	 addi	a1, WSIZE * 4
 
 copy_loop_exit:
 

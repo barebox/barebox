@@ -106,6 +106,12 @@ static inline void __raw_writel(u32 b, volatile void __iomem *addr)
 #define out_be16(a, v)	__raw_writew(__cpu_to_be16(v), a)
 #define out_be32(a, v)	__raw_writel(__cpu_to_be32(v), a)
 
+#ifdef CONFIG_64BIT
+#define IOMEM(addr)	((void __force __iomem *)PHYS_TO_XKSEG_UNCACHED(addr))
+#else
+#define IOMEM(addr)	((void __force __iomem *)CKSEG1ADDR(addr))
+#endif
+
 #include <asm-generic/io.h>
 
 #endif	/* __ASM_MIPS_IO_H */

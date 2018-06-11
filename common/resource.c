@@ -114,7 +114,7 @@ int release_region(struct resource *res)
 /* The root resource for the whole memory-mapped io space */
 struct resource iomem_resource = {
 	.start = 0,
-	.end = 0xffffffff,
+	.end = ~(resource_size_t)0,
 	.name = "iomem",
 	.children = LIST_HEAD_INIT(iomem_resource.children),
 };

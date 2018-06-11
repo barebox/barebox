@@ -94,6 +94,12 @@ static inline void of_write_number(void *__cell, u64 val, int size)
 	}
 }
 
+static inline const void *of_property_get_value(struct property *pp)
+{
+	return pp->value ? pp->value : pp->value_const;
+}
+
+
 void of_print_property(const void *data, int len);
 void of_print_cmdline(struct device_node *root);
 

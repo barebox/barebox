@@ -11,7 +11,9 @@
 #include <getopt.h>
 #include <init.h>
 #include <boot.h>
+#include <bootsource.h>
 #include <i2c/i2c.h>
+#include <reset_source.h>
 
 #define MAX_LEVEL	32		/* how deeply nested we will go */
 
@@ -114,6 +116,29 @@ void of_print_cmdline(struct device_node *root)
 	printf("commandline: %s\n", cmdline);
 }
 
+static int of_fixup_bootargs_bootsource(struct device_node *root,
+					struct device_node *chosen)
+{
+	char *alias_name = bootsource_get_alias_name();
+	struct device_node *bootsource;
+	int ret = 0;
+
+	if (!alias_name)
+		return 0;
+
+	bootsource = of_find_node_by_alias(root, alias_name);
+	/*
+	 * If kernel DTB doesn't have the appropriate alias set up,
+	 * give up and exit early. No error is reported.
+	 */
+	if (bootsource)
+		ret = of_set_property(chosen, "bootsource", bootsource->full_name,
+				      strlen(bootsource->full_name) + 1, true);
+
+	free(alias_name);
+	return ret;
+}
+
 static int of_fixup_bootargs(struct device_node *root, void *unused)
 {
 	struct device_node *node;
@@ -131,8 +156,14 @@ static int of_fixup_bootargs(struct device_node *root, void *unused)
 	of_property_write_string(node, "barebox-version", release_string);
 
 	err = of_property_write_string(node, "bootargs", str);
+	if (err)
+		return err;
 
-	return err;
+	of_property_write_string(node, "reset-source", reset_source_name());
+	of_property_write_u32(node, "reset-source-instance",
+			      reset_source_get_instance());
+
+	return of_fixup_bootargs_bootsource(root, node);
 }
 
 static int of_register_bootargs_fixup(void)

@@ -5,6 +5,7 @@ export PATH=/env/bin
 global hostname
 global user
 global autoboot_timeout
+global autoboot_abort_key
 global boot.default
 global linux.bootargs.base
 global linux.bootargs.console
@@ -18,6 +19,8 @@ global editcmd
 magicvar -a global.user "username (used in network filenames)"
 [ -z "${global.autoboot_timeout}" ] && global.autoboot_timeout=3
 magicvar -a global.autoboot_timeout "timeout in seconds before automatic booting"
+[ -z "${global.autoboot_abort_key}" ] && global.autoboot_abort_key=any
+magicvar -a global.autoboot_abort_key "key to abort automatic booting (valid options: any, ctrl-c)"
 [ -z "${global.boot.default}" ] && global.boot.default=net
 [ -z "${global.editcmd}" ] && global.editcmd=sedit
 
@@ -38,14 +41,22 @@ for i in /env/init/*; do
 	. $i
 done
 
-if [ -e /env/menu ]; then
-	echo -e -n "\nHit m for menu or any other key to stop autoboot: "
+if [ "${global.autoboot_abort_key}" = "ctrl-c" ]; then
+	abort_string="ctrl-c"
+	abort_args="-c"
 else
-	echo -e -n "\nHit any key to stop autoboot: "
+	abort_string="any key"
+	abort_args="-a"
+fi
+
+if [ -e /env/menu ]; then
+	echo -e -n "\nHit m for menu or $abort_string to stop autoboot: "
+else
+	echo -e -n "\nHit $abort_string to stop autoboot: "
 fi
 
 if [ "$autoboot" = 0 ]; then
-	timeout -a $global.autoboot_timeout -v key
+	timeout $abort_args $global.autoboot_timeout -v key
 	autoboot="$?"
 fi
 

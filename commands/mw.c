@@ -107,12 +107,13 @@ BAREBOX_CMD_HELP_OPT ("-w",  "word access (16 bit)")
 BAREBOX_CMD_HELP_OPT ("-l",  "long access (32 bit)")
 BAREBOX_CMD_HELP_OPT ("-q",  "quad access (64 bit)")
 BAREBOX_CMD_HELP_OPT ("-d FILE",  "write file (default /dev/mem)")
+BAREBOX_CMD_HELP_OPT ("-x",       "swap bytes")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mw)
 	.cmd		= do_mem_mw,
 	BAREBOX_CMD_DESC("memory write")
-	BAREBOX_CMD_OPTS("[-bwld] REGION DATA...")
+	BAREBOX_CMD_OPTS("[-bwldx] REGION DATA...")
 	BAREBOX_CMD_GROUP(CMD_GRP_MEM)
 	BAREBOX_CMD_HELP(cmd_mw_help)
 BAREBOX_CMD_END

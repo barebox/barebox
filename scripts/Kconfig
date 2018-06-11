@@ -1,0 +1,51 @@
+menu "Host Tools"
+
+config COMPILE_HOST_TOOLS
+	bool "Allow to enable unused host tools"
+	help
+	  Usually the needed host tools are selected (or selectable) depending
+	  on some config options. If you say yes here, the host tools that are
+	  not needed can be selected, too.
+
+	  This is usefull for compile coverage testing and for packaging the
+	  host tools.
+
+source scripts/imx/Kconfig
+
+config MVEBU_HOSTTOOLS
+	bool "mvebu hosttools" if COMPILE_HOST_TOOLS
+	depends on ARCH_MVEBU || COMPILE_HOST_TOOLS
+	default y if ARCH_MVEBU
+	help
+	  This enables building the tools kwbimage to create an image suitable
+	  for Marvell mvebu machines and kwboot to boot via UART.
+
+config MXS_HOSTTOOLS
+	bool "mxs hosttools" if COMPILE_HOST_TOOLS
+	depends on ARCH_MXS || COMPILE_HOST_TOOLS
+	default y if ARCH_MXS
+	help
+	  This builds the tools mxsimage and mxsboot which are needed to
+	  create bootable image files for mxs. You need openssl development
+	  files to compile this tool.
+
+config OMAP3_USB_LOADER
+	bool "omap3 USB loader"
+	depends on ARCH_OMAP3 || COMPILE_HOST_TOOLS
+	help
+	  Say Y here to build the omap3 usb loader tool.
+
+	  You need libusb-1.0 to compile this tool.
+
+config OMAP4_HOSTTOOL_USBBOOT
+	bool "omap4 usbboot"
+	depends on (ARCH_OMAP4 && !MMU) || COMPILE_HOST_TOOLS
+	default y if OMAP4_USBBOOT
+	help
+	  Say Y here to build the omap4 usb loader tool.
+	  Note that you need to enable OMAP4_USBBOOT to create an image
+	  suitable to boot using this tool.
+
+	  You need libusb-1.0 to compile this tool.
+
+endmenu

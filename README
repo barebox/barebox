@@ -179,7 +179,8 @@ net/                  -> Networking stuff
 
 scripts/              -> Kconfig system
 
-Documentation/        -> Sphinx generated documentation
+Documentation/        -> Sphinx generated documentation. Call "make docs" to
+                         generate a HTML version in Documentation/html.
 
 
 Release Strategy

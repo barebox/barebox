@@ -2306,10 +2306,8 @@ static int request_write_operation(void)
 	return 0;
 }
 
-static void write_field(struct mci *mci, u8 *reg, u16 index, u8 value,
-				int always_write)
+static int request_one_time_programmable(u16 index)
 {
-
 	switch (index) {
 	case EXT_CSD_BOOT_CONFIG_PROT:
 	case EXT_CSD_BOOT_WP:
@@ -2349,18 +2347,15 @@ static void write_field(struct mci *mci, u8 *reg, u16 index, u8 value,
 	case 52:
 	case EXT_CSD_BARRIER_CTRL:
 	case EXT_CSD_SECURE_REMOVAL_TYPE:
-		if (!always_write)
-			if (request_write_operation() == 0) {
-				printf("Abort write operation!\n");
-				goto out;
-			}
-		break;
+		if (request_write_operation() == 0) {
+			printf("Abort write operation!\n");
+			return 1;
+		} else {
+			return 0;
+		}
 	}
 
-	mci_switch(mci, index, value);
-
-out:
-	return;
+	return 0;
 }
 
 static int do_mmc_extcsd(int argc, char *argv[])
@@ -2430,11 +2425,26 @@ static int do_mmc_extcsd(int argc, char *argv[])
 		if (!print_field(dst, index)) {
 			printf("No field with this index found. Abort write operation!\n");
 		} else {
-			write_field(mci, dst, index, value, always_write);
+			struct extcsd_reg *ext;
+			int i;
+			int val = 0;
+
+			if (!always_write) {
+				retval = request_one_time_programmable(index);
+				if (retval)
+					goto error_with_mem;
+			}
+
+			ext = &extcsd[index];
+			for (i = 0; i < ext->width; i++) {
+				val = (value >> (i * 8)) & 0xFF;
+
+				mci_switch(mci, index + i, val);
+				retval = mci_send_ext_csd(mci, dst);
+				if (retval != 0)
+					goto error_with_mem;
+			}
 			printf("\nValue written!\n\n");
-			retval = mci_send_ext_csd(mci, dst);
-			if (retval != 0)
-				goto error_with_mem;
 			print_field(dst, index);
 		}
 	else

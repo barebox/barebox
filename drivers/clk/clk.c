@@ -22,6 +22,7 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <linux/clk/clk-conf.h>
+#include <pinctrl.h>
 
 static LIST_HEAD(clks);
 
@@ -596,10 +597,12 @@ int of_clk_init(struct device_node *root, const struct of_device_id *matches)
 		list_for_each_entry_safe(clk_provider, next,
 					 &clk_provider_list, node) {
 
-			if (force || parent_ready(clk_provider->np)) {
+			struct device_node *np = clk_provider->np;
+			if (force || parent_ready(np)) {
 
-				clk_provider->clk_init_cb(clk_provider->np);
-				of_clk_set_defaults(clk_provider->np, true);
+				of_pinctrl_select_state_default(np);
+				clk_provider->clk_init_cb(np);
+				of_clk_set_defaults(np, true);
 
 				list_del(&clk_provider->node);
 				free(clk_provider);

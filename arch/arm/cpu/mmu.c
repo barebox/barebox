@@ -27,31 +27,17 @@
 #include <asm/barebox-arm.h>
 #include <asm/system.h>
 #include <asm/cache.h>
-#include <asm/pgtable.h>
 #include <memory.h>
 #include <asm/system_info.h>
 #include <asm/sections.h>
 
 #include "mmu.h"
 
-#define PMD_SECT_DEF_UNCACHED (PMD_SECT_AP_WRITE | PMD_SECT_AP_READ | PMD_TYPE_SECT)
 #define PMD_SECT_DEF_CACHED (PMD_SECT_WB | PMD_SECT_DEF_UNCACHED)
+#define PTRS_PER_PTE		(PGDIR_SIZE / PAGE_SIZE)
+#define ARCH_MAP_WRITECOMBINE	((unsigned)-1)
 
-static unsigned long *ttb;
-
-static void create_sections(unsigned long virt, unsigned long phys, int size_m,
-		unsigned int flags)
-{
-	int i;
-
-	phys >>= 20;
-	virt >>= 20;
-
-	for (i = size_m; i > 0; i--, virt++, phys++)
-		ttb[virt] = (phys << 20) | flags;
-
-	__mmu_cache_flush();
-}
+static uint32_t *ttb;
 
 /*
  * Do it the simple way for now and invalidate the entire
@@ -75,6 +61,7 @@ static inline void tlb_invalidate(void)
 #define PTE_FLAGS_UNCACHED_V7 (0)
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
+#define PGD_FLAGS_WC_V7 PMD_SECT_TEX(1)
 
 /*
  * PTE flags to set cached and uncached areas.
@@ -83,6 +70,7 @@ static inline void tlb_invalidate(void)
 static uint32_t pte_flags_cached;
 static uint32_t pte_flags_wc;
 static uint32_t pte_flags_uncached;
+static uint32_t pgd_flags_wc;
 
 #define PTE_MASK ((1 << 12) - 1)
 
@@ -102,24 +90,32 @@ static void arm_mmu_not_initialized_error(void)
  * We initially create a flat uncached mapping on it.
  * Not yet exported, but may be later if someone finds use for it.
  */
-static u32 *arm_create_pte(unsigned long virt)
+static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
 {
 	u32 *table;
 	int i;
 
-	table = memalign(0x400, 0x400);
+	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
+
+	table = xmemalign(PTRS_PER_PTE * sizeof(u32),
+			  PTRS_PER_PTE * sizeof(u32));
 
 	if (!ttb)
 		arm_mmu_not_initialized_error();
 
-	ttb[virt >> 20] = (unsigned long)table | PMD_TYPE_TABLE;
+	ttb[pgd_index(virt)] = (unsigned long)table | PMD_TYPE_TABLE;
 
-	for (i = 0; i < 256; i++) {
-		table[i] = virt | PTE_TYPE_SMALL | pte_flags_uncached;
+	for (i = 0; i < PTRS_PER_PTE; i++) {
+		table[i] = virt | PTE_TYPE_SMALL | flags;
 		virt += PAGE_SIZE;
 	}
 
 	return table;
+}
+
+static bool pgd_type_table(u32 pgd)
+{
+	return (pgd & PMD_TYPE_MASK) == PMD_TYPE_TABLE;
 }
 
 static u32 *find_pte(unsigned long adr)
@@ -129,33 +125,21 @@ static u32 *find_pte(unsigned long adr)
 	if (!ttb)
 		arm_mmu_not_initialized_error();
 
-	if ((ttb[adr >> 20] & PMD_TYPE_MASK) != PMD_TYPE_TABLE) {
-		struct memory_bank *bank;
-		int i = 0;
-
-		/*
-		 * This should only be called for page mapped memory inside our
-		 * memory banks. It's a bug to call it with section mapped memory
-		 * locations.
-		 */
-		pr_crit("%s: TTB for address 0x%08lx is not of type table\n",
-				__func__, adr);
-		pr_crit("Memory banks:\n");
-		for_each_memory_bank(bank)
-			pr_crit("#%d 0x%08lx - 0x%08lx\n", i, bank->start,
-					bank->start + bank->size - 1);
-		BUG();
-	}
+	if (!pgd_type_table(ttb[pgd_index(adr)]))
+		return NULL;
 
 	/* find the coarse page table base address */
-	table = (u32 *)(ttb[adr >> 20] & ~0x3ff);
+	table = (u32 *)(ttb[pgd_index(adr)] & ~0x3ff);
 
 	/* find second level descriptor */
 	return &table[(adr >> PAGE_SHIFT) & 0xff];
 }
 
-static void dma_flush_range(unsigned long start, unsigned long end)
+static void dma_flush_range(void *ptr, size_t size)
 {
+	unsigned long start = (unsigned long)ptr;
+	unsigned long end = start + size;
+
 	__dma_flush_range(start, end);
 	if (outer_cache.flush_range)
 		outer_cache.flush_range(start, end);
@@ -168,114 +152,127 @@ static void dma_inv_range(unsigned long start, unsigned long end)
 	__dma_inv_range(start, end);
 }
 
-static int __remap_range(void *_start, size_t size, u32 pte_flags)
-{
-	unsigned long start = (unsigned long)_start;
-	u32 *p;
-	int numentries, i;
-
-	numentries = size >> PAGE_SHIFT;
-	p = find_pte(start);
-
-	for (i = 0; i < numentries; i++) {
-		p[i] &= ~PTE_MASK;
-		p[i] |= pte_flags | PTE_TYPE_SMALL;
-	}
-
-	dma_flush_range((unsigned long)p,
-			(unsigned long)p + numentries * sizeof(u32));
-
-	tlb_invalidate();
-
-	return 0;
-}
-
 int arch_remap_range(void *start, size_t size, unsigned flags)
 {
+	u32 addr = (u32)start;
 	u32 pte_flags;
+	u32 pgd_flags;
+
+	BUG_ON(!IS_ALIGNED(addr, PAGE_SIZE));
 
 	switch (flags) {
 	case MAP_CACHED:
 		pte_flags = pte_flags_cached;
+		pgd_flags = PMD_SECT_DEF_CACHED;
 		break;
 	case MAP_UNCACHED:
 		pte_flags = pte_flags_uncached;
+		pgd_flags = PMD_SECT_DEF_UNCACHED;
+		break;
+	case ARCH_MAP_WRITECOMBINE:
+		pte_flags = pte_flags_wc;
+		pgd_flags = pgd_flags_wc;
 		break;
 	default:
 		return -EINVAL;
 	}
 
-	return __remap_range(start, size, pte_flags);
+	while (size) {
+		const bool pgdir_size_aligned = IS_ALIGNED(addr, PGDIR_SIZE);
+		u32 *pgd = (u32 *)&ttb[pgd_index(addr)];
+		size_t chunk;
+
+		if (size >= PGDIR_SIZE && pgdir_size_aligned &&
+		    !pgd_type_table(*pgd)) {
+			/*
+			 * TODO: Add code to discard a page table and
+			 * replace it with a section
+			 */
+			chunk = PGDIR_SIZE;
+			*pgd = addr | pgd_flags;
+			dma_flush_range(pgd, sizeof(*pgd));
+		} else {
+			unsigned int num_ptes;
+			u32 *table = NULL;
+			unsigned int i;
+			u32 *pte;
+			/*
+			 * We only want to cover pages up until next
+			 * section boundary in case there we would
+			 * have an opportunity to re-map the whole
+			 * section (say if we got here becasue address
+			 * was not aligned on PGDIR_SIZE boundary)
+			 */
+			chunk = pgdir_size_aligned ?
+				PGDIR_SIZE : ALIGN(addr, PGDIR_SIZE) - addr;
+			/*
+			 * At the same time we want to make sure that
+			 * we don't go on remapping past requested
+			 * size in case that is less that the distance
+			 * to next PGDIR_SIZE boundary.
+			 */
+			chunk = min(chunk, size);
+			num_ptes = chunk / PAGE_SIZE;
+
+			pte = find_pte(addr);
+			if (!pte) {
+				/*
+				 * If PTE is not found it means that
+				 * we needs to split this section and
+				 * create a new page table for it
+				 *
+				 * NOTE: Here we assume that section
+				 * we just split was mapped as cached
+				 */
+				table = arm_create_pte(addr, pte_flags_cached);
+				pte = find_pte(addr);
+				BUG_ON(!pte);
+				/*
+				 * We just split this section and
+				 * modified it's Level 1 descriptor,
+				 * so it needs to be flushed.
+				 */
+				dma_flush_range(pgd, sizeof(*pgd));
+			}
+
+			for (i = 0; i < num_ptes; i++) {
+				pte[i] &= ~PTE_MASK;
+				pte[i] |= pte_flags | PTE_TYPE_SMALL;
+			}
+
+			if (table) {
+				/*
+				 * If we just created a new page
+				 * table, the whole table would have
+				 * to be flushed, not just PTEs that
+				 * we touched when re-mapping.
+				 */
+				pte = table;
+				num_ptes = PTRS_PER_PTE;
+			}
+
+			dma_flush_range(pte, num_ptes * sizeof(u32));
+		}
+
+		addr += chunk;
+		size -= chunk;
+	}
+
+	tlb_invalidate();
+	return 0;
 }
 
 void *map_io_sections(unsigned long phys, void *_start, size_t size)
 {
 	unsigned long start = (unsigned long)_start, sec;
 
-	phys >>= 20;
-	for (sec = start; sec < start + size; sec += (1 << 20))
-		ttb[sec >> 20] = (phys++ << 20) | PMD_SECT_DEF_UNCACHED;
+	for (sec = start; sec < start + size; sec += PGDIR_SIZE, phys += PGDIR_SIZE)
+		ttb[pgd_index(sec)] = phys | PMD_SECT_DEF_UNCACHED;
 
-	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
+	dma_flush_range(ttb, 0x4000);
 	tlb_invalidate();
 	return _start;
 }
-
-/*
- * remap the memory bank described by mem cachable and
- * bufferable
- */
-static int arm_mmu_remap_sdram(struct memory_bank *bank)
-{
-	unsigned long phys = (unsigned long)bank->start;
-	unsigned long ttb_start = phys >> 20;
-	unsigned long ttb_end = (phys >> 20) + (bank->size >> 20);
-	unsigned long num_ptes = bank->size >> 12;
-	int i, pte;
-	u32 *ptes;
-
-	pr_debug("remapping SDRAM from 0x%08lx (size 0x%08lx)\n",
-			phys, bank->size);
-
-	/*
-	 * We replace each 1MiB section in this range with second level page
-	 * tables, therefore we must have 1Mib aligment here.
-	 */
-	if ((phys & (SZ_1M - 1)) || (bank->size & (SZ_1M - 1)))
-		return -EINVAL;
-
-	ptes = xmemalign(PAGE_SIZE, num_ptes * sizeof(u32));
-
-	pr_debug("ptes: 0x%p ttb_start: 0x%08lx ttb_end: 0x%08lx\n",
-			ptes, ttb_start, ttb_end);
-
-	for (i = 0; i < num_ptes; i++) {
-		ptes[i] = (phys + i * PAGE_SIZE) | PTE_TYPE_SMALL |
-			pte_flags_cached;
-	}
-
-	pte = 0;
-
-	for (i = ttb_start; i < ttb_end; i++) {
-		ttb[i] = (unsigned long)(&ptes[pte]) | PMD_TYPE_TABLE |
-			(0 << 4);
-		pte += 256;
-	}
-
-	dma_flush_range((unsigned long)ttb, (unsigned long)ttb + 0x4000);
-	dma_flush_range((unsigned long)ptes,
-			(unsigned long)ptes + num_ptes * sizeof(u32));
-
-	tlb_invalidate();
-
-	return 0;
-}
-/*
- * We have 8 exception vectors and the table consists of absolute
- * jumps, so we need 8 * 4 bytes for the instructions and another
- * 8 * 4 bytes for the addresses.
- */
-#define ARM_VECTORS_SIZE	(sizeof(u32) * 8 * 2)
 
 #define ARM_HIGH_VECTORS	0xffff0000
 #define ARM_LOW_VECTORS		0x0
@@ -291,10 +288,9 @@ static void create_vector_table(unsigned long adr)
 {
 	struct resource *vectors_sdram;
 	void *vectors;
-	u32 *exc;
-	int idx;
+	u32 *pte;
 
-	vectors_sdram = request_sdram_region("vector table", adr, SZ_4K);
+	vectors_sdram = request_sdram_region("vector table", adr, PAGE_SIZE);
 	if (vectors_sdram) {
 		/*
 		 * The vector table address is inside the SDRAM physical
@@ -312,9 +308,9 @@ static void create_vector_table(unsigned long adr)
 		vectors = xmemalign(PAGE_SIZE, PAGE_SIZE);
 		pr_debug("Creating vector table, virt = 0x%p, phys = 0x%08lx\n",
 			 vectors, adr);
-		exc = arm_create_pte(ALIGN_DOWN(adr, SZ_1M));
-		idx = (adr & (SZ_1M - 1)) >> PAGE_SHIFT;
-		exc[idx] = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
+		arm_create_pte(adr, pte_flags_uncached);
+		pte = find_pte(adr);
+		*pte = (u32)vectors | PTE_TYPE_SMALL | pte_flags_cached;
 	}
 
 	arm_fixup_vectors();
@@ -375,7 +371,7 @@ static void create_zero_page(void)
 	struct resource *zero_sdram;
 	u32 *zero;
 
-	zero_sdram = request_sdram_region("zero page", 0x0, SZ_4K);
+	zero_sdram = request_sdram_region("zero page", 0x0, PAGE_SIZE);
 	if (zero_sdram) {
 		/*
 		 * Here we would need to set the second level page table
@@ -383,7 +379,7 @@ static void create_zero_page(void)
 		 */
 		pr_debug("zero page is in SDRAM area, currently not supported\n");
 	} else {
-		zero = arm_create_pte(0x0);
+		zero = arm_create_pte(0x0, pte_flags_uncached);
 		zero[0] = 0;
 		pr_debug("Created zero page\n");
 	}
@@ -428,7 +424,6 @@ static void vectors_init(void)
 static int mmu_init(void)
 {
 	struct memory_bank *bank;
-	int i;
 
 	if (list_empty(&memory_banks))
 		/*
@@ -444,10 +439,12 @@ static int mmu_init(void)
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
 		pte_flags_cached = PTE_FLAGS_CACHED_V7;
 		pte_flags_wc = PTE_FLAGS_WC_V7;
+		pgd_flags_wc = PGD_FLAGS_WC_V7;
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V7;
 	} else {
 		pte_flags_cached = PTE_FLAGS_CACHED_V4;
 		pte_flags_wc = PTE_FLAGS_UNCACHED_V4;
+		pgd_flags_wc = PMD_SECT_DEF_UNCACHED;
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 
@@ -459,7 +456,7 @@ static int mmu_init(void)
 		asm volatile ("mrc  p15,0,%0,c2,c0,0" : "=r"(ttb));
 
 		/* Clear unpredictable bits [13:0] */
-		ttb = (unsigned long *)((unsigned long)ttb & ~0x3fff);
+		ttb = (uint32_t *)((unsigned long)ttb & ~0x3fff);
 
 		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
 			/*
@@ -472,21 +469,16 @@ static int mmu_init(void)
 			pr_crit("Critical Error: Can't request SDRAM region for ttb at %p\n",
 					ttb);
 	} else {
-		ttb = memalign(0x10000, 0x4000);
+		ttb = xmemalign(ARM_TTB_SIZE, ARM_TTB_SIZE);
+
+		set_ttbr(ttb);
+		set_domain(DOMAIN_MANAGER);
+
+		create_flat_mapping(ttb);
+		__mmu_cache_flush();
 	}
 
 	pr_debug("ttb: 0x%p\n", ttb);
-
-	/* Set the ttb register */
-	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);
-
-	/* Set the Domain Access Control Register */
-	i = 0x3;
-	asm volatile ("mcr  p15,0,%0,c3,c0,0" : : "r"(i) /*:*/);
-
-	/* create a flat mapping using 1MiB sections */
-	create_sections(0, 0, PAGE_SIZE, PMD_SECT_AP_WRITE | PMD_SECT_AP_READ |
-			PMD_TYPE_SECT);
 
 	vectors_init();
 
@@ -495,18 +487,13 @@ static int mmu_init(void)
 	 * This is to speed up the generation of 2nd level page tables
 	 * below
 	 */
-	for_each_memory_bank(bank)
-		create_sections(bank->start, bank->start, bank->size >> 20,
+	for_each_memory_bank(bank) {
+		create_sections(ttb, bank->start, bank->start + bank->size - 1,
 				PMD_SECT_DEF_CACHED);
+		__mmu_cache_flush();
+	}
 
 	__mmu_cache_on();
-
-	/*
-	 * Now that we have the MMU and caches on remap sdram again using
-	 * page tables
-	 */
-	for_each_memory_bank(bank)
-		arm_mmu_remap_sdram(bank);
 
 	return 0;
 }
@@ -525,7 +512,7 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+static void *dma_alloc(size_t size, dma_addr_t *dma_handle, unsigned flags)
 {
 	void *ret;
 
@@ -536,25 +523,19 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 
 	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
 
-	__remap_range(ret, size, pte_flags_uncached);
+	arch_remap_range(ret, size, flags);
 
 	return ret;
 }
 
+void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
+{
+	return dma_alloc(size, dma_handle, MAP_UNCACHED);
+}
+
 void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 {
-	void *ret;
-
-	size = PAGE_ALIGN(size);
-	ret = xmemalign(PAGE_SIZE, size);
-	if (dma_handle)
-		*dma_handle = (dma_addr_t)ret;
-
-	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
-
-	__remap_range(ret, size, pte_flags_wc);
-
-	return ret;
+	return dma_alloc(size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
 unsigned long virt_to_phys(volatile void *virt)
@@ -570,7 +551,7 @@ void *phys_to_virt(unsigned long phys)
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);
-	__remap_range(mem, size, pte_flags_cached);
+	arch_remap_range(mem, size, MAP_CACHED);
 
 	free(mem);
 }
@@ -578,11 +559,8 @@ void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
-	if (dir != DMA_TO_DEVICE) {
-		if (outer_cache.inv_range)
-			outer_cache.inv_range(address, address + size);
-		__dma_inv_range(address, address + size);
-	}
+	if (dir != DMA_TO_DEVICE)
+		dma_inv_range(address, address + size);
 }
 
 void dma_sync_single_for_device(dma_addr_t address, size_t size,

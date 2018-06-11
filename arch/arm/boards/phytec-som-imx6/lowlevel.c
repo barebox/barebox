@@ -38,6 +38,7 @@ static inline void setup_uart(void)
 	putc_ll('>');
 }
 
+#undef SZ_4G
 #define SZ_4G 0xEFFFFFF8
 
 BAREBOX_IMD_TAG_STRING(physom_mx6_memsize_SZ_128M, IMD_TYPE_PARAMETER, "memsize=128", 0);

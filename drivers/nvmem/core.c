@@ -88,26 +88,14 @@ static struct cdev_operations nvmem_chrdev_ops = {
 	.lseek = dev_lseek_default,
 };
 
-static int nvmem_register_cdev(struct nvmem_device *nvmem)
+static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 {
 	struct device_d *dev = &nvmem->dev;
 	const char *alias;
-	char *devname;
-	int err;
 
 	alias = of_alias_get(dev->device_node);
-	if (alias) {
-		devname = xstrdup(alias);
-	} else {
-		err = cdev_find_free_index("nvmem");
-		if (err < 0) {
-			dev_err(dev, "no index found to name device\n");
-			return err;
-		}
-		devname = xasprintf("nvmem%d", err);
-	}
 
-	nvmem->cdev.name = devname;
+	nvmem->cdev.name = xstrdup(alias ?: name);
 	nvmem->cdev.flags = DEVFS_IS_CHARACTER_DEV;
 	nvmem->cdev.ops = &nvmem_chrdev_ops;
 	nvmem->cdev.dev = &nvmem->dev;
@@ -222,7 +210,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 		return ERR_PTR(rval);
 	}
 
-	rval = nvmem_register_cdev(nvmem);
+	rval = nvmem_register_cdev(nvmem, config->name);
 	if (rval) {
 		kfree(nvmem);
 		return ERR_PTR(rval);

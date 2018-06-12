@@ -13,16 +13,6 @@ dcdofs 0x400
 #define DDRMC_PHY_OFF		0x00000000
 #define DDRMC_PHY_PROC_PAD_ODT	0x00010101
 
-#ifdef DEBUG
-#define CHECKPOINT(n) wm 32 0x3f040000 n
-#else
-#define CHECKPOINT(n)
-#endif
-
-CHECKPOINT(1)
-
-/* ======================= Clock initialization =======================*/
-
 /*
  * Ungate all IP block clocks
  */
@@ -60,27 +50,16 @@ wm 32 0x4006b06c 0xffffffff
  */
 wm 32 0x40050030 0x00002001 /* Fout = Fin * 22 */
 
-CHECKPOINT(2)
-
 /*
  * Wait for PLLs to lock
  */
 check 32 until_any_bit_set 0x40050030 0x80000000
-
-
-CHECKPOINT(3)
 
 /*
  * Switch DDRMC to be clocked with PLL2 PFD2 and enable PFD2 output
  */
 clear_bits 32 0x4006b008 0x00000040
 set_bits   32 0x4006b008 0x00002000
-
-
-
-/* ======================= DDR IOMUX ======================= */
-
-CHECKPOINT(4)
 
 wm 32 0x40048220 VF610_DDR_PAD_CTRL
 wm 32 0x40048224 VF610_DDR_PAD_CTRL
@@ -130,10 +109,6 @@ wm 32 0x400482d0 VF610_DDR_PAD_CTRL
 wm 32 0x400482d4 VF610_DDR_PAD_CTRL
 wm 32 0x400482d8 VF610_DDR_PAD_CTRL
 wm 32 0x4004821c VF610_DDR_PAD_CTRL
-
-/* ======================= DDR Controller =======================*/
-
-CHECKPOINT(5)
 
 wm 32 0x400ae000 0x00000600
 wm 32 0x400ae008 0x00000020
@@ -214,10 +189,6 @@ wm 32 0x400ae26c 0x00000012
 wm 32 0x400ae278 0x00000006
 wm 32 0x400ae284 0x00010202
 
-/* ======================= DDR PHY =======================*/
-
-CHECKPOINT(6)
-
 wm 32 0x400ae400 DDRMC_PHY_DQ_TIMING
 wm 32 0x400ae440 DDRMC_PHY_DQ_TIMING
 wm 32 0x400ae480 DDRMC_PHY_DQ_TIMING
@@ -238,11 +209,7 @@ wm 32 0x400ae4d0 DDRMC_PHY_PROC_PAD_ODT
 
 wm 32 0x400ae000 0x00000601
 
-CHECKPOINT(7)
-
 check 32 until_any_bit_set 0x400ae140 0x100
-
-CHECKPOINT(8)
 
 /*
  * Cargo cult DDR controller initialization here we come!
@@ -275,4 +242,3 @@ wm 32 0x400ae000 0x00000601
 
 check 32 until_any_bit_set 0x400ae140 0x100
 
-CHECKPOINT(9)

@@ -569,6 +569,13 @@ int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 	__alias(imx53_bbu_internal_mmc_register_handler);
 
 /*
+ * Register an VF610 internal boot update handler for MMC/SD
+ */
+int vf610_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+					    unsigned long flags)
+	__alias(imx6_bbu_internal_mmc_register_handler);
+
+/*
  * Register a handler that writes to the non-active boot partition of an mmc
  * medium and on success activates the written-to partition. So the machine can
  * still boot even after a failed try to write a boot image.

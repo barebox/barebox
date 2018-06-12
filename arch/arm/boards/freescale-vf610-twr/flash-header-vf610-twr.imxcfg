@@ -13,35 +13,3 @@ dcdofs 0x400
 wm 32 DDRMC_CR00 DDRMC_CR00_DRAM_CLASS_DDR3_START
 
 check 32 until_any_bit_set 0x400ae140 0x100
-
-/*
- * Cargo cult DDR controller initialization here we come!
- *
- * Experemintation with VF610 Tower Board shows that without the
- * following code the board would not boot off of SD card when
- * power-cycled. It will however happily boot when reset via SW3/Reset
- * button. For whatever reason the following actions appear to be
- * necessary:
- *
- *          - Initialize DDRMC as usual
- *	    - Issue a read to location in DDR address space
- *	    - Disable DDRMC
- *	    - Enable DDRMC and wait for it to finish initializing
- *
- * I am sure this is all going to be extrememly embarrassing to read
- * if/when the real problem and real solution is found.
- */
-
-/*
- * Because there's no standalone read command what we do here instead
- * is write a pattern to memory and then checking that memory address
- * against that pattern
- */
-wm 32 0x80000000 0xa5a5a5a5
-check 32 until_any_bit_set 0x80000000 0xa5a5a5a5
-
-wm 32 0x400ae000 0x00000600
-wm 32 0x400ae000 0x00000601
-
-check 32 until_any_bit_set 0x400ae140 0x100
-

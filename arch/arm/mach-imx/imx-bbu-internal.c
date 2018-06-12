@@ -61,20 +61,20 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		return fd;
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
-		debug("%s: unprotecting %s from 0 to 0x%08x\n", __func__,
+		pr_debug("%s: unprotecting %s from 0 to 0x%08x\n", __func__,
 				devicefile, image_len);
 		ret = protect(fd, image_len, 0, 0);
 		if (ret && ret != -ENOSYS) {
-			printf("unprotecting %s failed with %s\n", devicefile,
+			pr_err("unprotecting %s failed with %s\n", devicefile,
 					strerror(-ret));
 			goto err_close;
 		}
 
-		debug("%s: erasing %s from 0 to 0x%08x\n", __func__,
+		pr_debug("%s: erasing %s from 0 to 0x%08x\n", __func__,
 				devicefile, image_len);
 		ret = erase(fd, image_len, 0);
 		if (ret) {
-			printf("erasing %s failed with %s\n", devicefile,
+			pr_err("erasing %s failed with %s\n", devicefile,
 					strerror(-ret));
 			goto err_close;
 		}
@@ -83,7 +83,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_KEEP_DOSPART) {
 		void *mbr = xzalloc(512);
 
-		debug("%s: reading DOS partition table in order to keep it\n", __func__);
+		pr_debug("%s: reading DOS partition table in order to keep it\n", __func__);
 
 		ret = read(fd, mbr, 512);
 		if (ret < 0) {
@@ -114,11 +114,11 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		goto err_close;
 
 	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
-		debug("%s: protecting %s from 0 to 0x%08x\n", __func__,
+		pr_debug("%s: protecting %s from 0 to 0x%08x\n", __func__,
 				devicefile, image_len);
 		ret = protect(fd, image_len, 0, 1);
 		if (ret && ret != -ENOSYS) {
-			printf("protecting %s failed with %s\n", devicefile,
+			pr_err("protecting %s failed with %s\n", devicefile,
 					strerror(-ret));
 		}
 	}
@@ -166,7 +166,7 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 	if (ret)
 		return ret;
 
-	printf("updating to %s\n", data->devicefile);
+	pr_info("updating to %s\n", data->devicefile);
 
 	ret = imx_bbu_write_device(imx_handler, data->devicefile, data, data->image, data->len);
 
@@ -257,7 +257,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 
 		if (ret) {
 			if (!offset) {
-				printf("1st block is bad. This is not supported\n");
+				pr_err("1st block is bad. This is not supported\n");
 				ret = -EINVAL;
 				goto out;
 			}
@@ -266,7 +266,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 			*num_bb += 1;
 			if (*num_bb == 425) {
 				/* Maximum number of bad blocks the ROM supports */
-				printf("maximum number of bad blocks reached\n");
+				pr_err("maximum number of bad blocks reached\n");
 				ret = -ENOSPC;
 				goto out;
 			}
@@ -281,7 +281,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 		block++;
 
 		if (size_available < 0) {
-			printf("device is too small");
+			pr_err("device is too small");
 			ret = -ENOSPC;
 			goto out;
 		}
@@ -292,7 +292,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 			data->len + pre_image_size + *num_bb * blocksize);
 
 	if (data->len + pre_image_size + *num_bb * blocksize > imx_handler->device_size) {
-		printf("needed space (0x%08zx) exceeds partition space (0x%08zx)\n",
+		pr_err("needed space (0x%08zx) exceeds partition space (0x%08zx)\n",
 				data->len + pre_image_size + *num_bb * blocksize,
 				imx_handler->device_size);
 		ret = -ENOSPC;
@@ -320,7 +320,7 @@ static int imx_bbu_internal_v2_write_nand_dbbt(struct imx_internal_bbu_handler *
 			continue;
 		}
 
-		debug("writing %d bytes at 0x%08llx\n", now, offset);
+		pr_debug("writing %d bytes at 0x%08llx\n", now, offset);
 
 		ret = erase(fd, blocksize, offset);
 		if (ret)
@@ -367,7 +367,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	barker = data->image + imx_handler->flash_header_offset;
 
 	if (*barker != IVT_BARKER) {
-		printf("Board does not provide DCD data and this image is no imximage\n");
+		pr_err("Board does not provide DCD data and this image is no imximage\n");
 		return -EINVAL;
 	}
 
@@ -394,7 +394,7 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 	barker = data->image + imx_handler->flash_header_offset;
 
 	if (*barker != IVT_BARKER) {
-		printf("Board does not provide DCD data and this image is no imximage\n");
+		pr_err("Board does not provide DCD data and this image is no imximage\n");
 		return -EINVAL;
 	}
 

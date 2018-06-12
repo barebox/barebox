@@ -563,18 +563,8 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
  * Register an i.MX6 internal boot update handler for MMC/SD
  */
 int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
-{
-	struct imx_internal_bbu_handler *imx_handler;
-
-	imx_handler = __init_handler(name, devicefile, flags);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
-	imx_handler->handler.handler = imx_bbu_internal_v2_update;
-
-	return __register_handler(imx_handler);
-}
+					   unsigned long flags)
+	__alias(imx53_bbu_internal_mmc_register_handler);
 
 /*
  * Register a handler that writes to the non-active boot partition of an mmc
@@ -603,19 +593,10 @@ int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefil
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
  * keep a partition table. We have to erase the device beforehand though.
  */
-int imx6_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
-{
-	struct imx_internal_bbu_handler *imx_handler;
-
-	imx_handler = __init_handler(name, devicefile, flags);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
-	imx_handler->handler.handler = imx_bbu_internal_v2_update;
-
-	return __register_handler(imx_handler);
-}
+int imx6_bbu_internal_spi_i2c_register_handler(const char *name,
+					       char *devicefile,
+					       unsigned long flags)
+	__alias(imx53_bbu_internal_spi_i2c_register_handler);
 
 int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
 		unsigned long flags)

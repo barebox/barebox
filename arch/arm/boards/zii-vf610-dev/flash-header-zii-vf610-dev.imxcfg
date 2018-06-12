@@ -9,7 +9,6 @@ dcdofs 0x400
 #include <mach/flash-header/vf610-iomux-ddr-default.imxcfg>
 #include <mach/flash-header/vf610-ddr-cr-default.imxcfg>
 
-wm 32 DDRMC_CR02 0x00000005
 wm 32 DDRMC_CR12 0x00000506
 wm 32 DDRMC_CR13 0x06040400
 wm 32 DDRMC_CR14 0x1006040e

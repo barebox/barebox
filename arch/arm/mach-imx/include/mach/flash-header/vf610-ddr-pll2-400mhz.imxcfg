@@ -1,0 +1,46 @@
+/*
+ * Ungate all IP block clocks
+ */
+wm 32 0x4006b040 0xffffffff
+wm 32 0x4006b044 0xffffffff
+wm 32 0x4006b048 0xffffffff
+wm 32 0x4006b04c 0xffffffff
+wm 32 0x4006b050 0xffffffff
+wm 32 0x4006b058 0xffffffff
+wm 32 0x4006b05c 0xffffffff
+wm 32 0x4006b060 0xffffffff
+wm 32 0x4006b064 0xffffffff
+wm 32 0x4006b068 0xffffffff
+wm 32 0x4006b06c 0xffffffff
+
+/*
+ * We have to options to clock DDR controller:
+ *
+ *  - Use Core-A5 clock
+ *  - Use PLL2 PFD2 clock
+ *
+
+ * Using first option without changing PLL settings doesn't seem to be
+ * possible given that DDRMC requires minimum of 300Mhz and MaskROM
+ * configures it to be clocked at 264Mhz. Changing PLL1 settings
+ * proved to be challenging becuase MaskROM code executing this DCD
+ * will also be fetching the rest of the bootloader via some
+ * peripheral interface whose clock is derived from Cortex-A5 clock.
+ *
+ * As a result this DCD configuration code uses the second option of
+ * clocking DDR wiht PLL2 PFD2 clock output
+ *
+ * Turn PLL2 on
+ */
+wm 32 0x40050030 0x00002001 /* Fout = Fin * 22 */
+
+/*
+ * Wait for PLLs to lock
+ */
+check 32 until_any_bit_set 0x40050030 0x80000000
+
+/*
+ * Switch DDRMC to be clocked with PLL2 PFD2 and enable PFD2 output
+ */
+clear_bits 32 0x4006b008 0x00000040
+set_bits   32 0x4006b008 0x00002000

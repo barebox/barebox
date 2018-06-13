@@ -390,6 +390,11 @@ static __maybe_unused struct imx_esdctl_data imx6q_data = {
 	.add_mem = imx6_mmdc_add_mem,
 };
 
+static __maybe_unused struct imx_esdctl_data imx6sx_data = {
+	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
+	.add_mem = imx6_mmdc_add_mem,
+};
+
 static __maybe_unused struct imx_esdctl_data imx6ul_data = {
 	.base0 = MX6_MMDC_PORT0_BASE_ADDR,
 	.add_mem = imx6_mmdc_add_mem,
@@ -455,6 +460,9 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx6ul-mmdc",
 		.data = &imx6ul_data
+	}, {
+		.compatible = "fsl,imx6sx-mmdc",
+		.data = &imx6sx_data
 	}, {
 		.compatible = "fsl,imx6q-mmdc",
 		.data = &imx6q_data

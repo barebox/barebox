@@ -679,6 +679,7 @@ int main(int argc, char *argv[])
 	int dcd_only = 0;
 	int now = 0;
 	int sign_image = 0;
+	int i, header_copies;
 	struct config_data data = {
 		.image_dcd_offset = 0xffffffff,
 		.write_mem = write_mem,
@@ -824,13 +825,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	ret = xwrite(outfd, buf, HEADER_LEN);
-	if (ret < 0) {
-		perror("write");
-		exit(1);
-	}
+	header_copies = (data.cpu_type == IMX_CPU_IMX35) ? 2 : 1;
 
-	if (data.cpu_type == IMX_CPU_IMX35) {
+	for (i = 0; i < header_copies; i++) {
 		ret = xwrite(outfd, buf, HEADER_LEN);
 		if (ret < 0) {
 			perror("write");

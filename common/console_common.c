@@ -301,12 +301,13 @@ EXPORT_SYMBOL(console_get_by_name);
 struct console_device *console_get_first_active(void)
 {
 	struct console_device *cdev;
+	const unsigned char active = CONSOLE_STDIN | CONSOLE_STDOUT;
 	/*
 	 * Assumption to have BOTH CONSOLE_STDIN AND STDOUT in the
 	 * same output console
 	 */
 	for_each_console(cdev) {
-		if ((cdev->f_active & (CONSOLE_STDIN | CONSOLE_STDOUT)))
+		if ((cdev->f_active & active) == active)
 			return cdev;
 	}
 

@@ -72,6 +72,8 @@ struct config_data {
 	char *outfile;
 	char *srkfile;
 	int header_version;
+	off_t header_gap;
+	uint32_t first_opcode;
 	int cpu_type;
 	int (*check)(const struct config_data *data, uint32_t cmd,
 		     uint32_t addr, uint32_t mask);

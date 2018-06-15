@@ -57,8 +57,7 @@ static char *prgname;
  */
 
 
-static uint32_t bb_header[] = {
-	0xea0003fe,	/* b 0x1000 */
+static uint32_t bb_header_aarch32[] = {
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
@@ -66,6 +65,30 @@ static uint32_t bb_header[] = {
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
 	0xeafffffe,	/* 1: b 1b  */
+	0xeafffffe,	/* 1: b 1b  */
+	0x65726162,	/* 'bare'   */
+	0x00786f62,	/* 'box\0'  */
+	0x00000000,
+	0x00000000,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+	0x55555555,
+};
+
+static uint32_t bb_header_aarch64[] = {
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
+	0x14000000,	/* 1: b 1b  */
 	0x65726162,	/* 'bare'   */
 	0x00786f62,	/* 'box\0'  */
 	0x00000000,
@@ -652,6 +675,11 @@ static void *read_file(const char *filename, size_t *size)
 	return buf;
 }
 
+static bool cpu_is_aarch64(const struct config_data *data)
+{
+	return data->cpu_type == IMX_CPU_IMX8MQ;
+}
+
 int main(int argc, char *argv[])
 {
 	int opt, ret;
@@ -674,6 +702,8 @@ int main(int argc, char *argv[])
 		.check = check,
 		.nop = nop,
 	};
+	uint32_t *bb_header;
+	size_t sizeof_bb_header;
 
 	prgname = argv[0];
 
@@ -803,6 +833,15 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	if (cpu_is_aarch64(&data)) {
+		bb_header = bb_header_aarch64;
+		sizeof_bb_header = sizeof(bb_header_aarch64);
+	} else {
+		bb_header = bb_header_aarch32;
+		sizeof_bb_header = sizeof(bb_header_aarch32);
+	}
+
+	bb_header[0] = data.first_opcode;
 	bb_header[ARM_HEAD_SIZE_INDEX] = barebox_image_size;
 
 	infile = read_file(imagename, &insize);
@@ -819,14 +858,19 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < header_copies; i++) {
 		ret = xwrite(outfd, add_barebox_header ? bb_header : buf,
-			     sizeof(bb_header));
+			     sizeof_bb_header);
 		if (ret < 0) {
 			perror("write");
 			exit(1);
 		}
 
-		ret = xwrite(outfd, buf + sizeof(bb_header),
-			     HEADER_LEN - sizeof(bb_header));
+		if (lseek(outfd, data.header_gap, SEEK_CUR) < 0) {
+			perror("lseek");
+			exit(1);
+		}
+
+		ret = xwrite(outfd, buf + sizeof_bb_header,
+			     HEADER_LEN - sizeof_bb_header);
 		if (ret < 0) {
 			perror("write");
 			exit(1);

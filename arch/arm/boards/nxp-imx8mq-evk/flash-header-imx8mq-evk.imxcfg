@@ -1,0 +1,4 @@
+soc imx8mq
+
+loadaddr 0x007E1000
+dcdofs 0x400

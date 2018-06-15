@@ -19,6 +19,15 @@ static inline void __mmu_cache_off(void) {}
 static inline void __mmu_cache_flush(void) {}
 #endif
 
+static inline unsigned long get_ttbr(void)
+{
+	unsigned long ttb;
+
+	asm volatile ("mrc p15, 0, %0, c2, c0, 0" : "=r"(ttb));
+
+	return ttb;
+}
+
 static inline void set_ttbr(void *ttb)
 {
 	asm volatile ("mcr  p15,0,%0,c2,c0,0" : : "r"(ttb) /*:*/);

@@ -193,8 +193,7 @@ int armv7_secure_monitor_install(void)
 	armv7_init_nonsec();
 	__armv7_secure_monitor_install();
 
-	asm volatile ("mcr p15, 0, %0, c2, c0, 0" : : "r"(ttb));
-
+	set_ttbr((void *)ttb);
 	set_vbar(vbar);
 
 	if (mmuon) {

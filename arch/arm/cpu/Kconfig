@@ -12,6 +12,7 @@ config CPU_32
 config CPU_64
 	bool
 	select PHYS_ADDR_T_64BIT
+	select HAVE_PBL_IMAGE
 
 # Select CPU types depending on the architecture selected. This selects
 # which CPUs we support in the kernel image, and the compiler instruction

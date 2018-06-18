@@ -290,7 +290,7 @@ static struct dpll_param mpu_dpll_param_34x_es1[] = {
 
 static struct dpll_param mpu_dpll_param_34x_es2[] = {
 	{.m = 0x0FA, .n = 0x05, .fsel = 0x07, .m2 = 0x01, }, /* 12   MHz */
-	{.m = 0x1F4, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
+	{.m = 0x258, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
 	{.m = 0x271, .n = 0x17, .fsel = 0x03, .m2 = 0x01, }, /* 19.2 MHz */
 	{.m = 0x0FA, .n = 0x0C, .fsel = 0x07, .m2 = 0x01, }, /* 26   MHz */
 	{.m = 0x271, .n = 0x2F, .fsel = 0x03, .m2 = 0x01, }, /* 38.4 MHz */

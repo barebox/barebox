@@ -1482,7 +1482,7 @@ static int print_field(u8 *reg, int index)
 			str = "may";
 		else
 			str = "shall not";
-		printf("\t[1] AUTO_EN: Device %s perform background ops while"
+		printf("\t[1] AUTO_EN: Device %s perform background ops while\n"
 		       "\t    not servicing the host\n", str);
 		return 1;
 
@@ -2371,11 +2371,12 @@ static int do_mmc_extcsd(int argc, char *argv[])
 	int			write_operation = 0;
 	int			always_write = 0;
 	int			print_as_raw = 0;
+	int			set_bkops_en = 0;
 
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	while ((opt = getopt(argc, argv, "i:v:yr")) > 0)
+	while ((opt = getopt(argc, argv, "i:v:yrb")) > 0)
 		switch (opt) {
 		case 'i':
 			index = simple_strtoul(optarg, NULL, 0);
@@ -2389,6 +2390,13 @@ static int do_mmc_extcsd(int argc, char *argv[])
 			break;
 		case 'r':
 			print_as_raw = 1;
+			break;
+		case 'b':
+			set_bkops_en = 1;
+			index = EXT_CSD_BKOPS_EN;
+			value = BIT(0);
+			write_operation = 1;
+			always_write = 1;
 			break;
 		}
 
@@ -2419,6 +2427,16 @@ static int do_mmc_extcsd(int argc, char *argv[])
 		printf("MMC version 4.2 or lower are not supported");
 		retval = 1;
 		goto error_with_mem;
+	}
+
+	if (set_bkops_en) {
+		if (dst[index]) {
+			printf("Abort: EXT_CSD [%u] already set to %#02x!\n",
+			       index, dst[index]);
+			goto error_with_mem;
+		}
+		if (dst[EXT_CSD_REV] >= 7)
+			value |= BIT(1);	/* set AUTO_EN bit too */
 	}
 
 	if (write_operation)
@@ -2466,12 +2484,14 @@ BAREBOX_CMD_HELP_OPT("-r", "print the register as raw data")
 BAREBOX_CMD_HELP_OPT("-v", "value which will be written")
 BAREBOX_CMD_HELP_OPT("-y", "don't request when writing to one time programmable fields")
 BAREBOX_CMD_HELP_OPT("",   "__CAUTION__: this could damage the device!")
+BAREBOX_CMD_HELP_OPT("-b", "set bkops-enable (EXT_CSD_BKOPS_EN[163])")
+BAREBOX_CMD_HELP_OPT("",   "__WARNING__: this is a write-once setting!")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(mmc_extcsd)
 	.cmd		= do_mmc_extcsd,
 	BAREBOX_CMD_DESC("Read/write the extended CSD register.")
-	BAREBOX_CMD_OPTS("dev [-r | -i index [-r | -v value [-y]]]")
+	BAREBOX_CMD_OPTS("dev [-r | -b | -i index [-r | -v value [-y]]]")
 	BAREBOX_CMD_GROUP(CMD_GRP_CONSOLE)
 	BAREBOX_CMD_HELP(cmd_mmc_extcsd_help)
 BAREBOX_CMD_END

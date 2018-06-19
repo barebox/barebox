@@ -552,10 +552,9 @@ int console_puts(unsigned int ch, const char *str)
 	}
 
 	while (*s) {
-		if (*s == '\n') {
-			console_putc(ch, '\r');
+		if (*s == '\n')
 			n++;
-		}
+
 		console_putc(ch, *s);
 		n++;
 		s++;

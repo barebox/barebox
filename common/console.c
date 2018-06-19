@@ -513,6 +513,8 @@ void console_putc(unsigned int ch, char c)
 
 	case CONSOLE_INITIALIZED_BUFFER:
 		kfifo_putc(console_output_fifo, c);
+		if (c == '\n')
+			putc_ll('\r');
 		putc_ll(c);
 		return;
 

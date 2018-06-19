@@ -18,7 +18,7 @@
 	compatible = "tq,mba6x", "tq,tqma6q", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = &uart2;
+		stdout-path = &uart2;
 	};
 
 	memory {

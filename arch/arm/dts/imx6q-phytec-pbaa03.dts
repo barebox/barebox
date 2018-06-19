@@ -17,7 +17,7 @@
 	compatible = "phytec,imx6q-pbaa03", "phytec,imx6q-pcaaxl3", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = &uart3;
+		stdout-path = &uart3;
 	};
 };
 

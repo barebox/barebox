@@ -17,7 +17,7 @@
 	compatible = "karo,imx25-tx25", "fsl,imx25";
 
 	chosen {
-		linux,stdout-path = &uart1;
+		stdout-path = &uart1;
 
 		environment@0 {
 			compatible = "barebox,environment";

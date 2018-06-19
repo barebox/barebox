@@ -19,7 +19,7 @@
 	compatible = "phytec,imx6x-pbab01", "phytec,imx6s-pfla02", "fsl,imx6dl";
 
 	chosen {
-		linux,stdout-path = &uart4;
+		stdout-path = &uart4;
 
 	};
 };

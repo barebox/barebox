@@ -27,6 +27,8 @@ EXPORT_SYMBOL(console_puts);
 void console_putc(unsigned int ch, char c)
 {
 	if (!console) {
+		if (c == '\n')
+			putc_ll('\r');
 		putc_ll(c);
 		return;
 	}

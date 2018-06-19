@@ -31,9 +31,10 @@ void console_putc(unsigned int ch, char c)
 		return;
 	}
 
-	console->putc(console, c);
 	if (c == '\n')
 		console->putc(console, '\r');
+
+	console->putc(console, c);
 }
 EXPORT_SYMBOL(console_putc);
 

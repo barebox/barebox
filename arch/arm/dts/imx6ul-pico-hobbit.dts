@@ -4,7 +4,7 @@
 	chosen {
 		stdout-path = &uart1;
 
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &environment_usdhc1;
 		};

@@ -7,7 +7,7 @@
 	compatible = "qemu,malta";
 
 	chosen {
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &nor0, "partname:barebox-environment";
 		};

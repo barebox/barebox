@@ -22,7 +22,7 @@
 	chosen {
 		stdout-path = &uart0;
 
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &spiflash, "partname:barebox-environment";
 		};

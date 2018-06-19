@@ -7,7 +7,7 @@
 	};
 
 	chosen {
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &spiflash, "partname:barebox-environment";
 		};

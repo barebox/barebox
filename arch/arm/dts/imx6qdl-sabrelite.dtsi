@@ -18,7 +18,7 @@
 	chosen {
 		stdout-path = &uart2;
 
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &flash, "partname:barebox-environment";
 		};

@@ -1,7 +1,7 @@
 #include <arm/at91sam9263ek.dts>
 / {
 	chosen {
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &nand_controller, "partname:bareboxenv";
 		};

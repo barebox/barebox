@@ -30,7 +30,7 @@ Example:
 
 .. code-block:: none
 
-  environment@0 {
+  environment {
   	compatible = "barebox,environment";
   	device-path = &flash, "partname:barebox-environment";
   };

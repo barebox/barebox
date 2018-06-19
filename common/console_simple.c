@@ -16,8 +16,6 @@ int console_puts(unsigned int ch, const char *str)
 
 	while (*s) {
 		console_putc(ch, *s);
-		if (*s == '\n')
-			console_putc(ch, '\r');
 		s++;
 		i++;
 	}

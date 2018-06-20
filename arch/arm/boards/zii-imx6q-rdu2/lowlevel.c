@@ -19,6 +19,7 @@
 #include <mach/generic.h>
 #include <mach/imx6.h>
 #include <mach/xload.h>
+#include <mach/iomux-mx6.h>
 #include <asm/barebox-arm.h>
 
 struct reginit {
@@ -255,12 +256,7 @@ static inline void setup_uart(void)
 {
 	void __iomem *iomuxbase = IOMEM(MX6_IOMUXC_BASE_ADDR);
 
-	writel(0x1b0b1, iomuxbase + 0x0650);
-	writel(3, iomuxbase + 0x0280);
-
-	writel(0x1b0b1, iomuxbase + 0x0654);
-	writel(3, iomuxbase + 0x0284);
-	writel(1, iomuxbase + 0x0920);
+	imx_setup_pad(iomuxbase, MX6Q_PAD_CSI0_DAT10__UART1_TXD);
 
 	imx6_uart_setup_ll();
 
@@ -278,7 +274,7 @@ static noinline void rdu2_sram_setup(void)
 	imx6_ungate_all_peripherals();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
-			setup_uart();
+		setup_uart();
 
 	arm_setup_stack(0x00920000 - 8);
 	relocate_to_current_adr();

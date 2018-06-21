@@ -24,7 +24,7 @@
 	model = "MIPS Creator CI20";
 	compatible = "img,ci20";
 
-	memory {
+	memory@0 {
 		device_type = "memory";
 		reg = <0x0 0x10000000>;
 	};

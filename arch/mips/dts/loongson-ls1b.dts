@@ -7,6 +7,7 @@
 	compatible = "loongson,ls1b";
 
 	memory {
+		device_type = "memory";
 		reg = <0x00000000 0x4000000>;
 	};
 };

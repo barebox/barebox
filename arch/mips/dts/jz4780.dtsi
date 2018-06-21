@@ -1,6 +1,7 @@
-#include "skeleton.dtsi"
-
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
 	soc {
 		model = "Ingenic JZ4780";
 		#address-cells = <1>;

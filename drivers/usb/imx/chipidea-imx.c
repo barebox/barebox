@@ -51,6 +51,7 @@ struct imx_chipidea {
 static int imx_chipidea_port_init(void *drvdata)
 {
 	struct imx_chipidea *ci = drvdata;
+	uint32_t portsc;
 	int ret;
 
 	if ((ci->flags & MXC_EHCI_PORTSC_MASK) == MXC_EHCI_MODE_ULPI) {
@@ -73,6 +74,14 @@ static int imx_chipidea_port_init(void *drvdata)
 	ret = imx_usbmisc_port_init(ci->usbmisc, ci->portno, ci->flags);
 	if (ret)
 		dev_err(ci->dev, "misc init failed: %s\n", strerror(-ret));
+
+	/* PFSC bit is reset by ehci_reset(), thus have to set it not in
+	 * probe but here, after ehci_reset() is already called */
+	if (ci->flags & MXC_EHCI_PFSC) {
+		portsc = readl(ci->base + 0x184);
+		portsc |= MXC_EHCI_PFSC;
+		writel(portsc, ci->base + 0x184);
+	}
 
 	return ret;
 }
@@ -158,6 +167,10 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 	else if (!of_find_property(ci->dev->device_node,
 				   "over-current-active-high", NULL))
 		ci->flags |= MXC_EHCI_OC_PIN_ACTIVE_LOW;
+
+	if (of_usb_get_maximum_speed(ci->dev->device_node, NULL) ==
+			USB_SPEED_FULL)
+		ci->flags |= MXC_EHCI_PFSC;
 
 	return 0;
 }

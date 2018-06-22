@@ -1004,6 +1004,12 @@ struct usb_set_sel_req {
  */
 const char *usb_speed_string(enum usb_device_speed speed);
 
+/**
+ * usb_speed_by_string() - Get speed from human readable name.
+ * @string: The human readable name for the speed. If it is not one of known
+ *   names, USB_SPEED_UNKNOWN will be returned.
+ */
+enum usb_device_speed usb_speed_by_string(const char *string);
 
 /**
  * usb_state_string - Returns human readable name for the state.

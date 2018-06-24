@@ -76,10 +76,7 @@ static int do_mount(int argc, char *argv[])
 		struct cdev *cdev;
 		const char *path;
 
-		if (!strncmp(devstr, "/dev/", 5))
-			devstr += 5;
-
-		device_detect_by_name(devstr);
+		device_detect_by_name(devpath_to_name(devstr));
 
 		cdev = cdev_by_name(devstr);
 		if (!cdev)

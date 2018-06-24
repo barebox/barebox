@@ -20,6 +20,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <of.h>
+#include <fs.h>
 
 #include <linux/mtd/mtd.h>
 
@@ -142,10 +143,7 @@ struct device_node *of_find_node_by_devpath(struct device_node *root, const char
 
 	pr_debug("%s: looking for path %s\n", __func__, path);
 
-	if (!strncmp(path, "/dev/", 5))
-		path += 5;
-
-	cdev = cdev_by_name(path);
+	cdev = cdev_by_name(devpath_to_name(path));
 	if (!cdev) {
 		pr_debug("%s: cdev %s not found\n", __func__, path);
 		return NULL;

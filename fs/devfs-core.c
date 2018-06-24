@@ -28,6 +28,7 @@
 #include <linux/fs.h>
 #include <linux/mtd/mtd.h>
 #include <unistd.h>
+#include <fs.h>
 
 LIST_HEAD(cdev_list);
 
@@ -155,10 +156,7 @@ struct cdev *cdev_open(const char *name, unsigned long flags)
 	struct cdev *cdev;
 	int ret;
 
-	if (!strncmp(name, "/dev/", 5))
-		name += 5;
-
-	cdev = cdev_by_name(name);
+	cdev = cdev_by_name(devpath_to_name(name));
 	if (!cdev)
 		return NULL;
 

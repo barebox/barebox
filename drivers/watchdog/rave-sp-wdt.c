@@ -75,7 +75,6 @@ struct rave_sp_wdt {
 	struct restart_handler restart;
 	unsigned int timeout;
 	unsigned int boot_source;
-	struct device_d dev;
 };
 
 static struct rave_sp_wdt *to_rave_sp_wdt(struct watchdog *wdd)
@@ -357,10 +356,8 @@ static int rave_sp_wdt_probe(struct device_d *dev)
 			      rave_sp_wdt_set_boot_source,
 			      rave_sp_wdt_get_boot_source,
 			      &sp_wd->boot_source, "%u", sp_wd);
-	if (IS_ERR(p)) {
-		unregister_device(&sp_wd->dev);
+	if (IS_ERR(p))
 		return PTR_ERR(p);
-	}
 
 	ret = sp_wd->variant->reset_reason(wdd);
 	if (ret < 0) {

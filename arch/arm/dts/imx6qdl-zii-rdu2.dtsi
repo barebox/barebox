@@ -66,6 +66,11 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 
+		watchdog {
+			nvmem-cells = <&boot_source>;
+			nvmem-cell-names = "boot-source";
+		};
+
 		dds_eeprom: eeprom@a3 {
 			compatible = "zii,rave-sp-eeprom";
 			reg = <0xa3 0x4000>;
@@ -76,6 +81,10 @@
 			reg = <0xa4 0x4000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
+
+			boot_source: boot-source@83 {
+				reg = <0x83 1>;
+			};
 		};
 	};
 };

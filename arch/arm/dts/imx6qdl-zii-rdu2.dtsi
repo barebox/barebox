@@ -86,6 +86,10 @@
 				reg = <0x83 1>;
 			};
 		};
+
+		backlight {
+			compatible = "zii,rave-sp-backlight";
+		};
 	};
 };
 

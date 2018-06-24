@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <mci.h>
 #include <getopt.h>
+#include <fs.h>
 
 #define EXT_CSD_BLOCKSIZE	512
 
@@ -2404,10 +2405,8 @@ static int do_mmc_extcsd(int argc, char *argv[])
 		return COMMAND_ERROR_USAGE;
 
 	devname = argv[optind];
-	if (!strncmp(devname, "/dev/", 5))
-		devname += 5;
 
-	mci = mci_get_device_by_name(devname);
+	mci = mci_get_device_by_name(devpath_to_name(devname));
 	if (mci == NULL) {
 		retval = -ENOENT;
 		goto error;

@@ -37,9 +37,6 @@ enum {
 	RAVE_SP_RESET_REASON_CP_REQUEST     = 13,
 
 	RAVE_SP_RESET_DELAY_MS = 500,
-
-	RAVE_SP_BOOT_SOURCE_GET = 0,
-	RAVE_SP_BOOT_SOURCE_SET = 1,
 };
 
 /**
@@ -75,6 +72,7 @@ struct rave_sp_wdt {
 	struct restart_handler restart;
 	unsigned int timeout;
 	unsigned int boot_source;
+	struct nvmem_cell *boot_source_cell;
 };
 
 static struct rave_sp_wdt *to_rave_sp_wdt(struct watchdog *wdd)
@@ -87,26 +85,6 @@ static int rave_sp_wdt_exec(struct watchdog *wdd, void *data,
 {
 	return rave_sp_exec(to_rave_sp_wdt(wdd)->sp,
 			    data, data_size, NULL, 0);
-}
-
-
-static int rave_sp_wdt_access_boot_source(struct rave_sp_wdt *sp_wd, u8 set_get)
-{
-	u8 cmd[] = {
-		[0] = RAVE_SP_CMD_BOOT_SOURCE,
-		[1] = 0,
-		[2] = set_get,
-		[3] = sp_wd->boot_source,
-	};
-	u8 response;
-	int ret;
-
-	ret = rave_sp_exec(sp_wd->sp, cmd, sizeof(cmd), &response,
-			   sizeof(response));
-	if (ret)
-		return ret;
-
-	return response;
 }
 
 static int __rave_sp_wdt_rdu_reset_reason(struct watchdog *wdd,
@@ -277,9 +255,12 @@ static const struct of_device_id rave_sp_wdt_of_match[] = {
 
 static int rave_sp_wdt_set_boot_source(struct param_d *param, void *priv)
 {
+	struct rave_sp_wdt *sp_wd = priv;
+	u8 boot_source = sp_wd->boot_source;
 	int ret;
 
-	ret = rave_sp_wdt_access_boot_source(priv, RAVE_SP_BOOT_SOURCE_SET);
+	ret = nvmem_cell_write(sp_wd->boot_source_cell, &boot_source,
+			       sizeof(boot_source));
 	if (ret < 0)
 		return ret;
 
@@ -289,13 +270,38 @@ static int rave_sp_wdt_set_boot_source(struct param_d *param, void *priv)
 static int rave_sp_wdt_get_boot_source(struct param_d *param, void *priv)
 {
 	struct rave_sp_wdt *sp_wd = priv;
-	int ret;
+	u8 *boot_source;
+	size_t len;
 
-	ret = rave_sp_wdt_access_boot_source(sp_wd, RAVE_SP_BOOT_SOURCE_GET);
-	if (ret < 0)
-		return ret;
+	boot_source = nvmem_cell_read(sp_wd->boot_source_cell, &len);
+	if (IS_ERR(boot_source))
+		return PTR_ERR(boot_source);
 
-	sp_wd->boot_source = ret;
+	sp_wd->boot_source = *boot_source;
+	kfree(boot_source);
+
+	return 0;
+}
+
+static int rave_sp_wdt_add_params(struct rave_sp_wdt *sp_wd)
+{
+	struct watchdog *wdd = &sp_wd->wdd;
+	struct device_node *np = wdd->hwdev->device_node;
+	struct param_d *p;
+
+	sp_wd->boot_source_cell = of_nvmem_cell_get(np, "boot-source");
+	if (IS_ERR(sp_wd->boot_source_cell)) {
+		dev_warn(wdd->hwdev, "No bootsource info availible\n");
+		return 0;
+	}
+
+	p = dev_add_param_int(&wdd->dev, "boot_source",
+			      rave_sp_wdt_set_boot_source,
+			      rave_sp_wdt_get_boot_source,
+			      &sp_wd->boot_source, "%u", sp_wd);
+	if (IS_ERR(p))
+		return PTR_ERR(p);
+
 	return 0;
 }
 
@@ -306,7 +312,6 @@ static int rave_sp_wdt_probe(struct device_d *dev)
 	struct nvmem_cell *cell;
 	struct watchdog *wdd;
 	__le16 timeout = 60;
-	struct param_d *p;
 	int ret;
 
 	sp_wd = xzalloc(sizeof(*sp_wd));
@@ -343,6 +348,12 @@ static int rave_sp_wdt_probe(struct device_d *dev)
 		return ret;
 	}
 
+	ret = rave_sp_wdt_add_params(sp_wd);
+	if (ret) {
+		dev_err(dev, "Failed to register device parameters");
+		return ret;
+	}
+
 	sp_wd->restart.name = "rave-sp-wdt";
 	sp_wd->restart.restart = rave_sp_wdt_restart_handler;
 	sp_wd->restart.priority = 200;
@@ -350,14 +361,6 @@ static int rave_sp_wdt_probe(struct device_d *dev)
 	ret = restart_handler_register(&sp_wd->restart);
 	if (ret)
 		dev_warn(dev, "Cannot register restart handler\n");
-
-
-	p = dev_add_param_int(&wdd->dev, "boot_source",
-			      rave_sp_wdt_set_boot_source,
-			      rave_sp_wdt_get_boot_source,
-			      &sp_wd->boot_source, "%u", sp_wd);
-	if (IS_ERR(p))
-		return PTR_ERR(p);
 
 	ret = sp_wd->variant->reset_reason(wdd);
 	if (ret < 0) {

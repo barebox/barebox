@@ -85,6 +85,14 @@
 			boot_source: boot-source@83 {
 				reg = <0x83 1>;
 			};
+
+			mac_address_0: mac-address@180 {
+				reg = <0x180 6>;
+			};
+
+			mac_address_1: mac-address@190 {
+				reg = <0x190 6>;
+			};
 		};
 
 		backlight {
@@ -110,6 +118,11 @@
 	};
 };
 
+&fec {
+	nvmem-cells = <&mac_address_0>;
+	nvmem-cell-names = "mac-address";
+};
+
 &i2c2 {
 	temp-sense@48 {
 		barebox,sensor-name = "Temp Sensor 1";
@@ -125,6 +138,8 @@
 
 		i210: i210@0 {
 			reg = <0 0 0 0 0>;
+			nvmem-cells = <&mac_address_1>;
+			nvmem-cell-names = "mac-address";
 		};
 	};
 };

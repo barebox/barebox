@@ -19,6 +19,8 @@
 #include <init.h>
 #include <mach/bbu.h>
 #include <mach/imx6.h>
+#include <net.h>
+#include <linux/nvmem-consumer.h>
 
 #define RDU2_DAC1_RESET	IMX_GPIO_NR(1, 0)
 #define RDU2_DAC2_RESET	IMX_GPIO_NR(1, 2)
@@ -151,3 +153,58 @@ static int rdu2_devices_init(void)
 	return 0;
 }
 device_initcall(rdu2_devices_init);
+
+static int rdu2_eth_register_ethaddr(struct device_node *np)
+{
+	u8 mac[ETH_ALEN];
+	u8 *data;
+	int i;
+
+	data = nvmem_cell_get_and_read(np, "mac-address", ETH_ALEN);
+	if (IS_ERR(data))
+		return PTR_ERR(data);
+	/*
+	 * EEPROM stores MAC address in reverse (to what we expect it
+	 * to be) byte order.
+	 */
+	for (i = 0; i < ETH_ALEN; i++)
+		mac[i] = data[ETH_ALEN - i - 1];
+
+	free(data);
+
+	of_eth_register_ethaddr(np, mac);
+
+	return 0;
+}
+
+static int rdu2_ethernet_init(void)
+{
+	const char *aliases[] = { "ethernet0", "ethernet1" };
+	struct device_node *np, *root;
+	int i, ret;
+
+	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
+	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
+		return 0;
+
+	root = of_get_root_node();
+
+	for (i = 0; i < ARRAY_SIZE(aliases); i++) {
+		const char *alias = aliases[i];
+
+		np = of_find_node_by_alias(root, alias);
+		if (!np) {
+			pr_warn("Failed to find %s\n", alias);
+			continue;
+		}
+
+		ret = rdu2_eth_register_ethaddr(np);
+		if (ret) {
+			pr_warn("Failed to register MAC for %s\n", alias);
+			continue;
+		}
+	}
+
+	return 0;
+}
+late_initcall(rdu2_ethernet_init);

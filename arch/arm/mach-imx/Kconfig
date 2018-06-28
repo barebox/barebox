@@ -85,6 +85,15 @@ config RESET_IMX_SRC
 	def_bool y
 	depends on ARCH_IMX6 || ARCH_IMX50 || ARCH_IMX51 || ARCH_IMX53
 
+#
+# PMIC configuration found on i.MX51 Babbadge board
+#
+config MACH_FREESCALE_MX51_PDK_POWER
+        bool
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
+
 comment "Freescale i.MX System-on-Chip"
 
 config ARCH_IMX1
@@ -256,9 +265,7 @@ config MACH_EMBEDSKY_E9
 config MACH_FREESCALE_MX51_PDK
 	bool "Freescale i.MX51 PDK"
 	select ARCH_IMX51
-	select SPI
-	select DRIVER_SPI_IMX
-	select MFD_MC13XXX
+	select MACH_FREESCALE_MX51_PDK_POWER
 
 config MACH_CCMX53
 	bool "Digi ConnectCore i.MX53"

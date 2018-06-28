@@ -140,8 +140,7 @@ static void imx6_setup_ipu_qos(void)
 	 * On i.MX6 QP/DP the NoC regulator for the IPU ports needs to be in
 	 * bypass mode for the above settings to take effect.
 	 */
-	if ((cpu_mx6_is_mx6q() || cpu_mx6_is_mx6d()) &&
-	    imx_silicon_revision() >= IMX_CHIP_REV_2_0) {
+	if (cpu_mx6_is_mx6qp() || cpu_mx6_is_mx6dp()) {
 		writel(0x2, fast2 + 0xb048c);
 		writel(0x2, fast2 + 0xb050c);
 	}

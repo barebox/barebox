@@ -181,10 +181,12 @@ EXPORT_SYMBOL(is_timeout_non_interruptible);
 
 int is_timeout(uint64_t start_ns, uint64_t time_offset_ns)
 {
+	int ret = is_timeout_non_interruptible(start_ns, time_offset_ns);
+
 	if (time_offset_ns >= 100 * USECOND)
 		poller_call();
 
-	return is_timeout_non_interruptible(start_ns, time_offset_ns);
+	return ret;
 }
 EXPORT_SYMBOL(is_timeout);
 

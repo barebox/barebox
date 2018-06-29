@@ -57,11 +57,14 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (fd < 0)
 		return fd;
 
-	if (imx_handler->handler.flags & IMX_BBU_FLAG_KEEP_HEAD) {
+	if (imx_handler->handler.flags & (IMX_BBU_FLAG_KEEP_HEAD |
+	    IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER)) {
 		image_len -= imx_handler->flash_header_offset;
-		offset += imx_handler->flash_header_offset;
 		buf += imx_handler->flash_header_offset;
 	}
+
+	if (imx_handler->handler.flags & IMX_BBU_FLAG_KEEP_HEAD)
+		offset += imx_handler->flash_header_offset;
 
 	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
 		pr_debug("%s: unprotecting %s from 0x%08x to 0x%08x\n", __func__,

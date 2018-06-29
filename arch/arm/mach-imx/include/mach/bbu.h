@@ -17,6 +17,14 @@ struct imx_dcd_v2_entry;
 #define IMX_BBU_FLAG_KEEP_HEAD	BIT(16)
 
 /*
+ * Set this flag when the partition the update image is written to
+ * actually starts at the offset where the i.MX flash header is expected
+ * (usually 0x400). This means for the update code that it has to skip
+ * the first 0x400 bytes of the image.
+ */
+#define IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER	(1 << 17)
+
+/*
  * The upper 16 bit of the flags passes to the below functions are reserved
  * for i.MX specific flags
  */

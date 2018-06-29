@@ -14,6 +14,7 @@
 #include <mach/generic.h>
 #include <asm/io.h>
 #include <asm/cache-l2x0.h>
+#include <asm/errata.h>
 #include <asm/system.h>
 
 #define L310_AUX_CTRL_EARLY_BRESP		BIT(30)	/* R2P0+ */
@@ -69,6 +70,9 @@ static void arria10_initialize_security_policies(void)
 
 	/* BootROM leaves the L2X0 in a weird state. Always disable L2X0 for now. */
 	l2c310_disable(l2x0_base);
+
+	enable_arm_errata_794072_war();
+	enable_arm_errata_845369_war();
 
 	/* Put OCRAM in non-secure */
 	writel(0x003f0000, ARRIA10_NOC_FW_OCRAM_OCRAM_SCR_REGION0);

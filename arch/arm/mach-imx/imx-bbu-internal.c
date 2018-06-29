@@ -34,9 +34,8 @@
 
 #define FLASH_HEADER_OFFSET_MMC		0x400
 
-#define IMX_INTERNAL_FLAG_NAND		BIT(16)
-#define IMX_INTERNAL_FLAG_KEEP_DOSPART	BIT(17)
-#define IMX_INTERNAL_FLAG_ERASE		BIT(18)
+#define IMX_INTERNAL_FLAG_NAND		BIT(31)
+#define IMX_INTERNAL_FLAG_ERASE		BIT(30)
 
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
@@ -52,26 +51,31 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		const char *devicefile, struct bbu_data *data,
 		const void *buf, int image_len)
 {
-	int fd, ret;
-	int written = 0;
+	int fd, ret, offset = 0;
 
 	fd = open(devicefile, O_RDWR | O_CREAT);
 	if (fd < 0)
 		return fd;
 
+	if (imx_handler->handler.flags & IMX_BBU_FLAG_KEEP_HEAD) {
+		image_len -= imx_handler->flash_header_offset;
+		offset += imx_handler->flash_header_offset;
+		buf += imx_handler->flash_header_offset;
+	}
+
 	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
-		pr_debug("%s: unprotecting %s from 0 to 0x%08x\n", __func__,
-				devicefile, image_len);
-		ret = protect(fd, image_len, 0, 0);
+		pr_debug("%s: unprotecting %s from 0x%08x to 0x%08x\n", __func__,
+				devicefile, offset, image_len);
+		ret = protect(fd, image_len, offset, 0);
 		if (ret && ret != -ENOSYS) {
 			pr_err("unprotecting %s failed with %s\n", devicefile,
 					strerror(-ret));
 			goto err_close;
 		}
 
-		pr_debug("%s: erasing %s from 0 to 0x%08x\n", __func__,
-				devicefile, image_len);
-		ret = erase(fd, image_len, 0);
+		pr_debug("%s: erasing %s from 0x%08x to 0x%08x\n", __func__,
+				devicefile, offset, image_len);
+		ret = erase(fd, image_len, offset);
 		if (ret) {
 			pr_err("erasing %s failed with %s\n", devicefile,
 					strerror(-ret));
@@ -79,43 +83,14 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		}
 	}
 
-	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_KEEP_DOSPART) {
-		void *mbr = xzalloc(512);
-
-		pr_debug("%s: reading DOS partition table in order to keep it\n", __func__);
-
-		ret = read(fd, mbr, 512);
-		if (ret < 0) {
-			free(mbr);
-			goto err_close;
-		}
-
-		memcpy(mbr, buf, 0x1b8);
-
-		ret = lseek(fd, 0, SEEK_SET);
-		if (ret) {
-			free(mbr);
-			goto err_close;
-		}
-
-		ret = write(fd, mbr, 512);
-
-		free(mbr);
-
-		if (ret < 0)
-			goto err_close;
-
-		written = 512;
-	}
-
-	ret = write(fd, buf + written, image_len - written);
+	ret = pwrite(fd, buf, image_len, offset);
 	if (ret < 0)
 		goto err_close;
 
 	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
-		pr_debug("%s: protecting %s from 0 to 0x%08x\n", __func__,
-				devicefile, image_len);
-		ret = protect(fd, image_len, 0, 1);
+		pr_debug("%s: protecting %s from 0x%08x to 0x%08x\n", __func__,
+				devicefile, offset, image_len);
+		ret = protect(fd, image_len, offset, 1);
 		if (ret && ret != -ENOSYS) {
 			pr_err("protecting %s failed with %s\n", devicefile,
 					strerror(-ret));
@@ -479,7 +454,7 @@ imx_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
-				     IMX_INTERNAL_FLAG_KEEP_DOSPART);
+				     IMX_BBU_FLAG_KEEP_HEAD);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
 
 	imx_handler->handler.handler = handler;

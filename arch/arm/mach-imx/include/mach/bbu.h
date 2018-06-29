@@ -7,6 +7,21 @@
 struct imx_dcd_entry;
 struct imx_dcd_v2_entry;
 
+/*
+ * The ROM code reads images from a certain offset of the boot device
+ * (usually 0x400), whereas the update images start from offset 0x0.
+ * Set this flag to skip the offset on both the update image and the
+ * device so that the initial boot device portion is preserved. This
+ * is useful if a partition table or other data is in this area.
+ */
+#define IMX_BBU_FLAG_KEEP_HEAD	BIT(16)
+
+/*
+ * The upper 16 bit of the flags passes to the below functions are reserved
+ * for i.MX specific flags
+ */
+#define IMX_BBU_FLAG_MASK	0xffff0000
+
 #ifdef CONFIG_BAREBOX_UPDATE
 
 int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,

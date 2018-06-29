@@ -471,6 +471,7 @@ struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
 	miibus = &priv->miibus;
 	edev->priv = priv;
 
+	dev->priv = edev;
 	edev->parent = dev;
 	edev->open = dwc_ether_open;
 	edev->send = dwc_ether_send;
@@ -488,4 +489,11 @@ struct dw_eth_dev *dwc_drv_probe(struct device_d *dev)
 	eth_register(edev);
 
 	return priv;
+}
+
+void dwc_drv_remove(struct device_d *dev)
+{
+	struct eth_device *edev = dev->priv;
+
+	dwc_ether_halt(edev);
 }

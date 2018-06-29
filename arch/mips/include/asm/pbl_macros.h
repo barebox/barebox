@@ -25,8 +25,6 @@
 #include <asm/mipsregs.h>
 #include <asm/asm.h>
 #include <asm-generic/memory_layout.h>
-#include <generated/compile.h>
-#include <generated/utsrelease.h>
 #include <asm/addrspace.h>
 #include <asm/cacheops.h>
 
@@ -174,7 +172,7 @@ copy_loop_exit:
 	 nop
 
 	.org	0x10
-	.ascii	"barebox " UTS_RELEASE " " UTS_VERSION
+	.ascii	"barebox"
 	.byte	0
 
 	.align	4

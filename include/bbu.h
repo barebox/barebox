@@ -25,6 +25,10 @@ struct bbu_handler {
 	struct list_head list;
 #define BBU_HANDLER_FLAG_DEFAULT	(1 << 0)
 #define BBU_HANDLER_CAN_REFRESH		(1 << 1)
+	/*
+	 * The lower 16bit are generic flags, the upper 16bit are reserved
+	 * for handler specific flags.
+	 */
 	unsigned long flags;
 
 	/* default device file, can be overwritten on the command line */

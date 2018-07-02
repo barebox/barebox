@@ -34,15 +34,14 @@
 
 #define FLASH_HEADER_OFFSET_MMC		0x400
 
-#define IMX_INTERNAL_FLAG_NAND		(1 << 0)
-#define IMX_INTERNAL_FLAG_KEEP_DOSPART	(1 << 1)
-#define IMX_INTERNAL_FLAG_ERASE		(1 << 2)
+#define IMX_INTERNAL_FLAG_NAND		BIT(16)
+#define IMX_INTERNAL_FLAG_KEEP_DOSPART	BIT(17)
+#define IMX_INTERNAL_FLAG_ERASE		BIT(18)
 
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
 	unsigned long flash_header_offset;
 	size_t device_size;
-	unsigned long flags;
 };
 
 /*
@@ -60,7 +59,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (fd < 0)
 		return fd;
 
-	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
+	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
 		pr_debug("%s: unprotecting %s from 0 to 0x%08x\n", __func__,
 				devicefile, image_len);
 		ret = protect(fd, image_len, 0, 0);
@@ -80,7 +79,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		}
 	}
 
-	if (imx_handler->flags & IMX_INTERNAL_FLAG_KEEP_DOSPART) {
+	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_KEEP_DOSPART) {
 		void *mbr = xzalloc(512);
 
 		pr_debug("%s: reading DOS partition table in order to keep it\n", __func__);
@@ -113,7 +112,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (ret < 0)
 		goto err_close;
 
-	if (imx_handler->flags & IMX_INTERNAL_FLAG_ERASE) {
+	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
 		pr_debug("%s: protecting %s from 0 to 0x%08x\n", __func__,
 				devicefile, image_len);
 		ret = protect(fd, image_len, 0, 1);
@@ -371,7 +370,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 		return -EINVAL;
 	}
 
-	if (imx_handler->flags & IMX_INTERNAL_FLAG_NAND)
+	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_NAND)
 		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data);
 	else
 		ret = imx_bbu_write_device(imx_handler, data->devicefile, data,
@@ -479,10 +478,10 @@ imx_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler = __init_handler(name, devicefile, flags |
+				     IMX_INTERNAL_FLAG_KEEP_DOSPART);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
 
-	imx_handler->flags = IMX_INTERNAL_FLAG_KEEP_DOSPART;
 	imx_handler->handler.handler = handler;
 
 	return __register_handler(imx_handler);
@@ -493,10 +492,10 @@ int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler = __init_handler(name, devicefile, flags |
+				     IMX_INTERNAL_FLAG_ERASE);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
 
-	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
 	imx_handler->handler.handler = imx_bbu_internal_v1_update;
 
 	return __register_handler(imx_handler);
@@ -533,10 +532,10 @@ int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefi
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, devicefile, flags);
+	imx_handler = __init_handler(name, devicefile, flags |
+				     IMX_INTERNAL_FLAG_ERASE);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
 
-	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
 
 	return __register_handler(imx_handler);
@@ -550,11 +549,11 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, NULL, flags);
+	imx_handler = __init_handler(name, NULL, flags |
+				     IMX_INTERNAL_FLAG_NAND);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
 
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
-	imx_handler->flags = IMX_INTERNAL_FLAG_NAND;
 	imx_handler->handler.devicefile = "/dev/nand0";
 	imx_handler->device_size = partition_size;
 
@@ -612,8 +611,8 @@ int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, devicefile, flags);
-	imx_handler->flags = IMX_INTERNAL_FLAG_ERASE;
+	imx_handler = __init_handler(name, devicefile, flags |
+				     IMX_INTERNAL_FLAG_ERASE);
 	imx_handler->handler.handler = imx_bbu_external_update;
 
 	return __register_handler(imx_handler);

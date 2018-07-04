@@ -52,11 +52,6 @@
 	aliases {
 		ethernet0 = &fec;
 		ethernet1 = &i210;
-		/*
-		 * Aliases to match Linux kernel naming in /dev/
-		 */
-		main-eeprom = &main_eeprom;
-		dds-eeprom = &dds_eeprom;
 	};
 };
 
@@ -71,16 +66,18 @@
 			nvmem-cell-names = "boot-source";
 		};
 
-		dds_eeprom: eeprom@a3 {
+		eeprom@a3 {
 			compatible = "zii,rave-sp-eeprom";
 			reg = <0xa3 0x4000>;
+			zii,eeprom-name = "dds-eeprom";
 		};
 
-		main_eeprom: eeprom@a4 {
+		eeprom@a4 {
 			compatible = "zii,rave-sp-eeprom";
 			reg = <0xa4 0x4000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
+			zii,eeprom-name = "main-eeprom";
 
 			boot_source: boot-source@83 {
 				reg = <0x83 1>;

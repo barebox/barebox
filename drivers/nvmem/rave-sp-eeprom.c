@@ -337,6 +337,11 @@ static int rave_sp_eeprom_probe(struct device_d *dev)
 		eeprom->header_size = RAVE_SP_EEPROM_HEADER_SMALL;
 
 	config.name      = dev_name(dev);
+	/*
+	 * If a name is specified via DT, override the above with it.
+	 */
+	of_property_read_string(dev->device_node, "zii,eeprom-name",
+				&config.name);
 	config.dev       = dev;
 	config.word_size = 1;
 	config.stride    = 1;

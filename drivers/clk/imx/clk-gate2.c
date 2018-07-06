@@ -129,20 +129,3 @@ struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,
 
 	return g;
 }
-
-struct clk *clk_gate2_inverted(const char *name, const char *parent,
-		void __iomem *reg, u8 shift)
-{
-	struct clk *clk;
-	struct clk_gate2 *g;
-
-	clk = clk_gate2(name, parent, reg, shift, 0x3, 0);
-	if (IS_ERR(clk))
-		return clk;
-
-	g = to_clk_gate2(clk);
-
-	g->flags = CLK_GATE_INVERTED;
-
-	return clk;
-}

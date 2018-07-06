@@ -2051,7 +2051,9 @@ static int mxs_nand_enable_edo_mode(struct mxs_nand_info *info)
 	nand->select_chip(mtd, -1);
 
 	/* [3] set the main IO clock, 100MHz for mode 5, 80MHz for mode 4. */
+	clk_disable(info->clk);
 	clk_set_rate(info->clk, (mode == 5) ? 100000000 : 80000000);
+	clk_enable(info->clk);
 
 	dev_dbg(info->dev, "using asynchronous EDO mode %d\n", mode);
 
@@ -2147,6 +2149,8 @@ static int mxs_nand_probe(struct device_d *dev)
 	if (IS_ERR(nand_info->clk))
 		return PTR_ERR(nand_info->clk);
 
+	clk_enable(nand_info->clk);
+
 	if (mxs_nand_is_imx6(nand_info)) {
 		clk_disable(nand_info->clk);
 		clk_set_rate(nand_info->clk, 22000000);
@@ -2154,7 +2158,6 @@ static int mxs_nand_probe(struct device_d *dev)
 		nand_info->dma_channel_base = 0;
 	} else {
 		nand_info->dma_channel_base = MXS_DMA_CHANNEL_AHB_APBH_GPMI0;
-		clk_enable(nand_info->clk);
 	}
 
 	err = mxs_nand_alloc_buffers(nand_info);

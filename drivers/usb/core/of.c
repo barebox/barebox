@@ -90,3 +90,27 @@ enum usb_phy_interface of_usb_get_phy_mode(struct device_node *np,
 	return USBPHY_INTERFACE_MODE_UNKNOWN;
 }
 EXPORT_SYMBOL_GPL(of_usb_get_phy_mode);
+
+/**
+ * of_usb_get_maximum_speed - Get maximum speed for given device_node
+ * @np:	Pointer to the given device_node
+ *
+ * The function gets maximum speed string from property 'maximum-speed',
+ * and returns the correspondig enum usb_device_speed
+ */
+enum usb_device_speed of_usb_get_maximum_speed(struct device_node *np,
+		const char *propname)
+{
+	const char *maximum_speed;
+	int err;
+
+	if (!propname)
+		propname = "maximum-speed";
+
+	err = of_property_read_string(np, propname, &maximum_speed);
+	if (err < 0)
+		return USB_SPEED_UNKNOWN;
+
+	return usb_speed_by_string(maximum_speed);
+}
+EXPORT_SYMBOL_GPL(of_usb_get_maximum_speed);

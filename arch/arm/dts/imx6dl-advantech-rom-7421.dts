@@ -79,6 +79,13 @@
 	status = "okay";
 };
 
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1>;
+	clock-frequency = <100000>;
+	status = "okay";
+};
+
 &uart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
@@ -144,6 +151,17 @@
 
 &iomuxc {
 	pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			/* custom watchdog controls disabled */
+			MX6QDL_PAD_NANDF_RB0__GPIO6_IO10        0x130b0
+			MX6QDL_PAD_GPIO_9__GPIO1_IO09           0x130b0
+			MX6QDL_PAD_GPIO_17__GPIO7_IO12          0x130b0
+
+		>;
+        };
 
 	pinctrl_ecspi1: ecspi1grp {
 		fsl,pins = <
@@ -172,6 +190,13 @@
 			MX6QDL_PAD_RGMII_RD3__RGMII_RD3		0x1b030
 			MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL	0x1b030
 			MX6QDL_PAD_ENET_CRS_DV__GPIO1_IO25	0x80000000
+		>;
+	};
+
+	pinctrl_i2c1: i2c1grp {
+		fsl,pins = <
+			MX6QDL_PAD_CSI0_DAT8__I2C1_SDA		0x4001b8b1
+			MX6QDL_PAD_CSI0_DAT9__I2C1_SCL		0x4001b8b1
 		>;
 	};
 

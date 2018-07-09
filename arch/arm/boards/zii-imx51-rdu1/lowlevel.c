@@ -4,7 +4,6 @@
 #include <common.h>
 #include <mach/esdctl.h>
 #include <mach/generic.h>
-#include <asm/cache.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/barebox-arm.h>
 
@@ -30,9 +29,9 @@ static inline void setup_uart(void)
 	putc_ll('>');
 }
 
-extern char __dtb_imx51_babbage_start[];
+extern char __dtb_imx51_zii_rdu1_start[];
 
-ENTRY_FUNCTION(start_imx51_babbage, r0, r1, r2)
+ENTRY_FUNCTION(start_imx51_zii_rdu1, r0, r1, r2)
 {
 	void *fdt;
 
@@ -41,33 +40,7 @@ ENTRY_FUNCTION(start_imx51_babbage, r0, r1, r2)
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	arm_setup_stack(0x20000000 - 16);
-
-	fdt = __dtb_imx51_babbage_start + get_runtime_offset();
+	fdt = __dtb_imx51_zii_rdu1_start + get_runtime_offset();
 
 	imx51_barebox_entry(fdt);
-}
-
-static noinline void babbage_entry(void)
-{
-	arm_early_mmu_cache_invalidate();
-
-	relocate_to_current_adr();
-	setup_c();
-
-	puts_ll("lowlevel init done\n");
-
-	imx51_barebox_entry(NULL);
-}
-
-ENTRY_FUNCTION(start_imx51_babbage_xload, r0, r1, r2)
-{
-	imx5_cpu_lowlevel_init();
-
-	if (IS_ENABLED(CONFIG_DEBUG_LL))
-		setup_uart();
-
-	arm_setup_stack(0x20000000 - 16);
-
-	babbage_entry();
 }

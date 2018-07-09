@@ -32,6 +32,9 @@ struct nvmem_cell_info {
 struct nvmem_cell *nvmem_cell_get(struct device_d *dev, const char *name);
 void nvmem_cell_put(struct nvmem_cell *cell);
 void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
+void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
+			      size_t bytes);
+
 int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
 
 /* direct nvmem device read/write interface */
@@ -51,6 +54,13 @@ static inline void nvmem_cell_put(struct nvmem_cell *cell)
 }
 
 static inline char *nvmem_cell_read(struct nvmem_cell *cell, size_t *len)
+{
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline void *nvmem_cell_get_and_read(struct device_node *np,
+					    const char *cell_name,
+					    size_t bytes)
 {
 	return ERR_PTR(-ENOSYS);
 }

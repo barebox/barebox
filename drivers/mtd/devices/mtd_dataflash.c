@@ -246,9 +246,6 @@ static int dataflash_read(struct mtd_info *mtd, loff_t from, size_t len,
 
 	command = priv->command;
 
-	dev_dbg(&priv->spi->dev, "READ: (%x) %x %x %x\n",
-		command[0], command[1], command[2], command[3]);
-
 	spi_message_init(&msg);
 
 	memset(&x[0], 0, sizeof(struct spi_transfer) * 2);
@@ -270,6 +267,9 @@ static int dataflash_read(struct mtd_info *mtd, loff_t from, size_t len,
 	command[2] = (u8)(addr >> 8);
 	command[3] = (u8)(addr >> 0);
 	/* plus 4 "don't care" bytes */
+
+	dev_dbg(&priv->spi->dev, "READ: (%x) %x %x %x\n",
+		command[0], command[1], command[2], command[3]);
 
 	status = spi_sync(priv->spi, &msg);
 

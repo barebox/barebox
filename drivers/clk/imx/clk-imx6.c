@@ -527,7 +527,6 @@ static int imx6_ccm_probe(struct device_d *dev)
 	clk_enable(clks[IMX6QDL_CLK_MMDC_CH0_AXI_PODF]);
 	clk_enable(clks[IMX6QDL_CLK_PLL6_ENET]);
 	clk_enable(clks[IMX6QDL_CLK_SATA_REF_100M]);
-	clk_enable(clks[IMX6QDL_CLK_ENFC_PODF]);
 
 	clk_set_parent(clks[IMX6QDL_CLK_LVDS1_SEL], clks[IMX6QDL_CLK_SATA_REF_100M]);
 

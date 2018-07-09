@@ -1,0 +1,88 @@
+/*
+ * Copyright 2018 CogentEmbedded, Inc.
+ * Copyright 2011 Freescale Semiconductor, Inc.
+ * Copyright 2011 Linaro Ltd.
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+#include <arm/imx51-zii-rdu1.dts>
+
+/ {
+	compatible = "zii,imx51-rdu1", "fsl,imx51-babbage-power", "fsl,imx51";
+
+	chosen {
+		stdout-path = &uart1;
+
+		environment-spi {
+			compatible = "barebox,environment";
+			device-path = &spinor, "partname:barebox-environment";
+		};
+	};
+};
+
+&ecspi1 {
+	spinor: flash@1 {
+		partition@0 {
+			/*
+			 * Do not change the size of this
+			 * partition. RDU1's BBU code relies on
+			 * "barebox" partition starting at 1024 byte
+			 * mark to function properly
+			 */
+			label = "config";
+			reg = <0x0 0x400>;
+		};
+
+		partition@400 {
+			label = "barebox";
+			reg = <0x400 0xdfc00>;
+		};
+
+		partition@e0000 {
+			label = "barebox-environment";
+			reg = <0xe0000 0x20000>;
+		};
+	};
+};
+
+&uart3 {
+	rave-sp {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		watchdog {
+			nvmem-cells = <&boot_source>;
+			nvmem-cell-names = "boot-source";
+		};
+
+		eeprom@a3 {
+			compatible = "zii,rave-sp-eeprom";
+			reg = <0xa3 0x4000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			zii,eeprom-name = "dds-eeprom";
+		};
+
+		eeprom@a4 {
+			compatible = "zii,rave-sp-eeprom";
+			reg = <0xa4 0x4000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			zii,eeprom-name = "main-eeprom";
+
+			boot_source: boot-source@83 {
+				reg = <0x83 1>;
+			};
+		};
+
+		backlight {
+			compatible = "zii,rave-sp-backlight";
+		};
+	};
+};

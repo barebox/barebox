@@ -11,3 +11,6 @@ nvmem_snvs_lpgpr-y		:= snvs_lpgpr.o
 
 obj-$(CONFIG_IMX_OCOTP)		+= nvmem_ocotp.o
 nvmem_ocotp-y			:= ocotp.o
+
+obj-$(CONFIG_RAVE_SP_EEPROM)	+= nvmem-rave-sp-eeprom.o
+nvmem-rave-sp-eeprom-y		:= rave-sp-eeprom.o

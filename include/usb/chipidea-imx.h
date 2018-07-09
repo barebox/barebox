@@ -13,6 +13,7 @@
 #define MXC_EHCI_MODE_ULPI		(2 << 30)
 #define MXC_EHCI_MODE_HSIC		(1 << 25)
 #define MXC_EHCI_MODE_SERIAL		(3 << 30)
+#define MXC_EHCI_PFSC			(1 << 24)
 
 /*
  * USB misc flags

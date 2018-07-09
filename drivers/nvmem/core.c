@@ -750,3 +750,26 @@ int nvmem_device_write(struct nvmem_device *nvmem,
 	return bytes;
 }
 EXPORT_SYMBOL_GPL(nvmem_device_write);
+
+void *nvmem_cell_get_and_read(struct device_node *np, const char *cell_name,
+			      size_t bytes)
+{
+	struct nvmem_cell *cell;
+	void *value;
+	size_t len;
+
+	cell = of_nvmem_cell_get(np, cell_name);
+	if (IS_ERR(cell))
+		return cell;
+
+	value = nvmem_cell_read(cell, &len);
+	if (!IS_ERR(value) && len != bytes) {
+		kfree(value);
+		value = ERR_PTR(-EINVAL);
+	}
+
+	nvmem_cell_put(cell);
+
+	return value;
+}
+EXPORT_SYMBOL_GPL(nvmem_cell_get_and_read);

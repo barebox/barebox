@@ -17,3 +17,15 @@ const char *usb_speed_string(enum usb_device_speed speed)
 	return speed_names[speed];
 }
 EXPORT_SYMBOL_GPL(usb_speed_string);
+
+enum usb_device_speed usb_speed_by_string(const char *string)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(speed_names); i++)
+		if (!strcmp(string, speed_names[i]))
+			return i;
+
+	return USB_SPEED_UNKNOWN;
+}
+EXPORT_SYMBOL_GPL(usb_speed_by_string);

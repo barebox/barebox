@@ -55,69 +55,45 @@
 	};
 };
 
-&uart4 {
-	pic {
-		compatible = "zii,pic-rdu2";
-		current-speed = <1000000>;
-		status = "okay";
 
-		main_eeprom {
-			compatible = "zii,pic-main-eeprom";
+&uart4 {
+	rave-sp {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		watchdog {
+			nvmem-cells = <&boot_source>;
+			nvmem-cell-names = "boot-source";
+		};
+
+		eeprom@a3 {
+			compatible = "zii,rave-sp-eeprom";
+			reg = <0xa3 0x4000>;
+			zii,eeprom-name = "dds-eeprom";
+		};
+
+		eeprom@a4 {
+			compatible = "zii,rave-sp-eeprom";
+			reg = <0xa4 0x4000>;
 			#address-cells = <1>;
 			#size-cells = <1>;
-			status = "okay";
+			zii,eeprom-name = "main-eeprom";
 
 			boot_source: boot-source@83 {
 				reg = <0x83 1>;
 			};
-			max_failed_boots: max-failed-boots@8E {
-				reg = <0x8E 2>;
+
+			mac_address_0: mac-address@180 {
+				reg = <0x180 6>;
+			};
+
+			mac_address_1: mac-address@190 {
+				reg = <0x190 6>;
 			};
 		};
 
-		dds_eeprom {
-			compatible = "zii,pic-dds-eeprom";
-			#address-cells = <1>;
-			#size-cells = <1>;
-			status = "okay";
-		};
-
-		watchdog {
-			compatible = "zii,pic-watchdog";
-			status = "okay";
-		};
-
-		hwmon {
-			compatible = "zii,pic-hwmon";
-			sensors = "RMB_3V3_PMIC",
-				  "RMB_3V3_MCU",
-				  "RMB_5V_MAIN",
-				  "RMB_12V_MAIN",
-				  "RMB_28V_FIL",
-				  "RMB_28V_HOTSWAP",
-				  "DEB_1V8",
-				  "DEB_3V3",
-				  "DEB_28V_DEB",
-				  "DEB_28V_RDU",
-				  "TEMPERATURE",
-				  "TEMPERATURE_2",
-				  "RMB_28V_CURRENT";
-			status = "okay";
-		};
-
 		backlight {
-			compatible = "zii,pic-backlight";
-			status = "okay";
-		};
-
-		leds {
-			compatible = "zii,pic-leds";
-			status = "okay";
-		};
-
-		pwrbutton {
-			compatible = "zii,pic-pwrbutton";
-			status = "okay";
+			compatible = "zii,rave-sp-backlight";
 		};
 	};
 };
@@ -139,6 +115,11 @@
 	};
 };
 
+&fec {
+	nvmem-cells = <&mac_address_0>;
+	nvmem-cell-names = "mac-address";
+};
+
 &i2c2 {
 	temp-sense@48 {
 		barebox,sensor-name = "Temp Sensor 1";
@@ -154,6 +135,8 @@
 
 		i210: i210@0 {
 			reg = <0 0 0 0 0>;
+			nvmem-cells = <&mac_address_1>;
+			nvmem-cell-names = "mac-address";
 		};
 	};
 };

@@ -6,7 +6,8 @@
 	model = "Ritmix RZX-50";
 	compatible = "ritmix,rzx50";
 
-	memory {
+	memory@0 {
+		device_type = "memory";
 		reg = <0x00000000 0x4000000>;
 	};
 

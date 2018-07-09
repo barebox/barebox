@@ -1,6 +1,7 @@
-#include "skeleton.dtsi"
-
 / {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
 	soc {
 		compatible = "simple-bus";
 		model = "Ingenic JZ4755";

@@ -1,10 +1,11 @@
 /dts-v1/;
 
-/include/ "skeleton.dtsi"
-
 / {
 	model = "qemu malta";
 	compatible = "qemu,malta";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
 
 	chosen {
 		environment {
@@ -13,7 +14,8 @@
 		};
 	};
 
-	memory {
+	memory@0 {
+		device_type = "memory";
 		reg = <0x00000000 0x10000000>;
 	};
 

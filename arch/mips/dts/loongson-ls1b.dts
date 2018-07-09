@@ -6,7 +6,8 @@
 	model = "Loongson Tech LS1B Demo Board";
 	compatible = "loongson,ls1b";
 
-	memory {
+	memory@0 {
+		device_type = "memory";
 		reg = <0x00000000 0x4000000>;
 	};
 };

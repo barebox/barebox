@@ -1,0 +1,131 @@
+/*
+
+ The following table contains DDR3 memory timing parameters derived
+ form memory module (Samsung K4B4G1646E) datasheet:
+
+| CL         |                                  6 | @400Mhz          |
+| WRLAT      |                                  5 |                  |
+| t_RC       |                                 21 |                  |
+| t_RRD      |                                  4 | [5]              |
+| t_CCD      |                                  4 |                  |
+| t_FAW      |          16(1KB page)/20(2KB page) |                  |
+| t_RP       |                                  6 |                  |
+| t_WTR      |                                  4 | [6]              |
+| t_RAS(MIN) |                                 15 |                  |
+| t_MRD      |                                  4 |                  |
+| t_RTP      |                                  4 | [1]              |
+| t_MOD      |                                 12 | [7]              |
+| t_RAS(MAX) |                              28080 | [8]              |
+| t_CKESR    |                                  4 | [9]              |
+| t_CKE      |                                  3 | [10]             |
+| t_RCD      |                                  6 |                  |
+| t_DAL      |                                 12 | [11]             |
+| t_DDLK     |                                512 |                  |
+| t_RP(AB)   |                                  6 | n/a in datasheet |
+| t_REFI     |                               3120 |                  |
+| t_RFC      | 44 @ 1Gb, 64@2Gb, 104@4Gb, 140@8Gb |                  |
+| t_XP       |                                  3 | [4]              |
+| t_XPDLL    |                                 10 | [12]             |
+| t_XS       | 48 @ 1Gb, 68@2Gb, 108@4Gb, 148@8Gb | [2]              |
+| t_XSDLL    |                                512 |                  |
+| t_CKSRX    |                                  5 | [3]              |
+| t_CKSRE    |                                  5 | [3]              |
+| MR0        |                                    |                  |
+| MR1        |                                    |                  |
+| MR2        |                                    |                  |
+| MR3        |                                    |                  |
+| t_ZQoper   |                                256 |                  |
+| t_ZQinit   |                                512 |                  |
+| t_ZQCS     |                                 64 |                  |
+| ODTL_off   |                                  3 | [14]             |
+| t_WLMRD    |                                 40 |                  |
+| t_WLDQSEN  |                                 25 |                  |
+| t_WR       |                                  6 |                  |
+| t_ODTH8(R) |                                  6 | n/a in datasheet |
+| t_ODTH8(W) |                                  6 |                  |
+
+
+[1]  t_RTP      = max(4nCK, 7.5ns) = max(10ns, 7.5ns)@400Mhz = 4nCK
+[2]  t_XS       = max(5nCK, t_RFC + 10ns)
+[3]  t_CKSRX    = t_CKSRE = max(5nCK, 10ns) = max(12.5ns, 7.5ns)@400Mhz = 5nCK
+[4]  t_XP       = max(3nCK, 7.5ns) = max(7.5ns, 7.5ns)@400Mhz = 3nCK
+[5]  t_RRD      = max(4nCK, 10ns) = max(10ns, 10ns)@400Mhz = 4nCK
+[6]  t_WTR      = max(4nCK, 7.5ns) = 4nCK (see [1] for calculation)
+[7]  t_MOD      = max(12nCK, 15ns) = max(30ns, 15ns)@400Mhz = 12nCK
+[8]  t_RAS(MAX) = 9 * t_REFI = 9 * 7.8us = 28080nCK
+[9]  t_CKESR    = t_CKE(min) + 1tCK = 4nCK
+[10] t_CKE      = max(3nCK, 7.5ns) = 3nCK (see [4])
+[11] t_DAL      = t_WR + roundup(t_RP/t_CK(AVG)) = 6nCK + 6nCK = 12nCK
+[12] t_XPDLL    = max(10nCK, 24ns) = max(25ns, 25ns)@400Mhz = 10nCK
+[13] WRLAT      = AL + CWL = 0 (not supported by controller) + 5nCK = 5nCK
+[14] ODTL_off   = WRLAT - 2 = 3nCK
+
+*/
+
+wm 32 DDRMC_CR00 DDRMC_CR00_DRAM_CLASS_DDR3
+wm 32 DDRMC_CR02 0x00000005
+wm 32 DDRMC_CR10 0x00013880
+wm 32 DDRMC_CR11 0x00030d40
+wm 32 DDRMC_CR12 0x0000050c
+wm 32 DDRMC_CR13 0x15040400
+wm 32 DDRMC_CR14 0x1406040f
+wm 32 DDRMC_CR16 0x04040000
+wm 32 DDRMC_CR17 0x006db00c
+wm 32 DDRMC_CR18 0x00000403
+wm 32 DDRMC_CR20 0x01000000
+wm 32 DDRMC_CR21 0x00060001
+wm 32 DDRMC_CR22 0x000c0000
+wm 32 DDRMC_CR23 0x03000200
+wm 32 DDRMC_CR24 0x00000006
+wm 32 DDRMC_CR25 0x00010000
+wm 32 DDRMC_CR26 0x0c30002c
+wm 32 DDRMC_CR28 0x00000000
+wm 32 DDRMC_CR29 0x00000003
+wm 32 DDRMC_CR30 0x0000000a
+wm 32 DDRMC_CR31 0x00300200
+wm 32 DDRMC_CR33 0x00010000
+wm 32 DDRMC_CR34 0x00050500
+wm 32 DDRMC_CR38 0x00000000
+wm 32 DDRMC_CR39 0x04001002
+wm 32 DDRMC_CR41 0x00000001
+wm 32 DDRMC_CR48 0x00460420
+wm 32 DDRMC_CR66 0x01000200
+wm 32 DDRMC_CR67 0x00000040
+wm 32 DDRMC_CR69 0x00000200
+wm 32 DDRMC_CR70 0x00000040
+wm 32 DDRMC_CR72 0x00000000
+wm 32 DDRMC_CR73 0x0a010300
+wm 32 DDRMC_CR74 0x01014040
+wm 32 DDRMC_CR75 0x01010101
+wm 32 DDRMC_CR76 0x03030100
+wm 32 DDRMC_CR77 0x01000101
+wm 32 DDRMC_CR78 0x0700000c
+wm 32 DDRMC_CR79 0x00000000
+wm 32 DDRMC_CR82 0x10000000
+wm 32 DDRMC_CR87 0x01000000
+wm 32 DDRMC_CR88 0x00040000
+wm 32 DDRMC_CR89 0x00000002
+wm 32 DDRMC_CR91 0x00020000
+wm 32 DDRMC_CR96 0x00002819
+wm 32 DDRMC_CR117 0x00000000
+wm 32 DDRMC_CR118 0x01010000
+wm 32 DDRMC_CR120 0x02020000
+wm 32 DDRMC_CR121 0x00000202
+wm 32 DDRMC_CR122 0x01010064
+wm 32 DDRMC_CR123 0x00010101
+wm 32 DDRMC_CR124 0x00000064
+wm 32 DDRMC_CR126 0x00000800
+/*
+ * Despite the RM insisting on setting RDLAT_ADJ to CASLAT_LIN - 1 in
+ * two places: p 1459 (section 10.1.5.133 "Control Register 132
+ * (DDRMC_CR132)") and p. 1587 (section 10.1.6.15.10 "Configure the
+ * 'output enable' of I/O Control") changing it from current 6 to
+ * recommended 5 results in non-working DDR.
+ */
+wm 32 DDRMC_CR132 0x00000506
+wm 32 DDRMC_CR137 0x00020000
+wm 32 DDRMC_CR138 0x01000100
+wm 32 DDRMC_CR154 0x682c4000
+wm 32 DDRMC_CR155 0x00000009
+wm 32 DDRMC_CR158 0x00000006
+wm 32 DDRMC_CR161 0x00010606

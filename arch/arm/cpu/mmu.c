@@ -453,10 +453,8 @@ static int mmu_init(void)
 		 * Early MMU code has already enabled the MMU. We assume a
 		 * flat 1:1 section mapping in this case.
 		 */
-		asm volatile ("mrc  p15,0,%0,c2,c0,0" : "=r"(ttb));
-
 		/* Clear unpredictable bits [13:0] */
-		ttb = (uint32_t *)((unsigned long)ttb & ~0x3fff);
+		ttb = (uint32_t *)(get_ttbr() & ~0x3fff);
 
 		if (!request_sdram_region("ttb", (unsigned long)ttb, SZ_16K))
 			/*

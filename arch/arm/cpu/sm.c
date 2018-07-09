@@ -187,14 +187,12 @@ int armv7_secure_monitor_install(void)
 	mmuon = get_cr() & CR_M;
 
 	vbar = get_vbar();
-
-	asm volatile ("mrc p15, 0, %0, c2, c0, 0" : "=r"(ttb));
+	ttb = get_ttbr();
 
 	armv7_init_nonsec();
 	__armv7_secure_monitor_install();
 
-	asm volatile ("mcr p15, 0, %0, c2, c0, 0" : : "r"(ttb));
-
+	set_ttbr((void *)ttb);
 	set_vbar(vbar);
 
 	if (mmuon) {

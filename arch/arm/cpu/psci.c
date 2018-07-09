@@ -159,12 +159,6 @@ static unsigned long psci_system_reset(void)
 void psci_entry(u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5, u32 r6,
 		struct arm_smccc_res *res)
 {
-	int mmuon;
-	unsigned long ttb;
-
-	mmuon = get_cr() & CR_M;
-	asm volatile ("mrc p15, 0, %0, c2, c0, 0" : "=r"(ttb));
-
 	psci_printf("%s entry, function: 0x%08x\n", __func__, r0);
 
 	switch (r0) {

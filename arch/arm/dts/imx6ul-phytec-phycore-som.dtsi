@@ -12,7 +12,7 @@
 
 / {
 	chosen {
-		linux,stdout-path = &uart1;
+		stdout-path = &uart1;
 
 		environment-nand {
 			compatible = "barebox,environment";

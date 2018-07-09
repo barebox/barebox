@@ -9,13 +9,6 @@
  * http://www.opensource.org/licenses/gpl-license.html
  * http://www.gnu.org/copyleft/gpl.html
  *
- *
- * 		environment@0 {
-			compatible = "barebox,environment";
-			device-path = &usdhc2, "partname:barebox-environment";
-		};
-
- *
  */
 
 /dts-v1/;
@@ -26,9 +19,9 @@
 	compatible = "variscite,imx6q-custom", "variscite,imx6q-som", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = &uart1;
+		stdout-path = &uart1;
 
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &environment_nand;
 		};

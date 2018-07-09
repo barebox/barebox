@@ -15,7 +15,7 @@
 	chosen {
 		stdout-path = &uart5;
 
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &bareboxenv;
 		};

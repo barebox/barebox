@@ -43,7 +43,7 @@
 
 / {
 	chosen {
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &nor_flash, "partname:barebox-environment";
 		};

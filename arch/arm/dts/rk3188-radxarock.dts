@@ -16,7 +16,7 @@
 
 / {
 	chosen {
-		linux,stdout-path = &uart2;
+		stdout-path = &uart2;
 
 		environment {
 			compatible = "barebox,environment";

@@ -52,7 +52,7 @@
 	compatible = "solidrun,hummingboard2/q", "fsl,imx6q";
 
 	chosen {
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &usdhc3, "partname:barebox-environment";
 		};

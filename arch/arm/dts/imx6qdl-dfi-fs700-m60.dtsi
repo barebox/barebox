@@ -2,7 +2,7 @@
 
 / {
 	chosen {
-		linux,stdout-path = &uart1;
+		stdout-path = &uart1;
 
 		environment-emmc {
 			compatible = "barebox,environment";

@@ -21,9 +21,9 @@
 	compatible = "fsl,imx6q-sabresd", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = &uart1;
+		stdout-path = &uart1;
 
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &environment_usdhc3;
 		};

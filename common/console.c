@@ -588,4 +588,4 @@ EXPORT_SYMBOL(ctrlc);
 #endif /* ARCH_HAS_CTRC */
 
 BAREBOX_MAGICVAR_NAMED(global_linux_bootargs_console, global.linux.bootargs.console,
-		"console= argument for Linux from the linux,stdout-path property in /chosen node");
+		"console= argument for Linux from the stdout-path property in /chosen node");

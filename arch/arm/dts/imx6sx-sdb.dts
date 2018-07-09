@@ -12,7 +12,7 @@
 
 / {
 	chosen {
-		environment@0 {
+		environment {
 			compatible = "barebox,environment";
 			device-path = &usdhc4, "partname:barebox-environment";
 		};

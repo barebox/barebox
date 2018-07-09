@@ -254,6 +254,12 @@ cmd_xzmisc = (cat $(filter-out FORCE,$^) | \
 # DTC
 # ---------------------------------------------------------------------------
 
+DTC_FLAGS += -Wno-unit_address_vs_reg \
+	 -Wno-unit_address_format \
+	 -Wno-avoid_unnecessary_addr_size \
+	 -Wno-alias_paths \
+	 -Wno-pci_device_reg
+
 # Generate an assembly file to wrap the output of the device tree compiler
 quiet_cmd_dt_S_dtb = DTB     $@
 cmd_dt_S_dtb = $(srctree)/scripts/gen-dtb-s $(subst -,_,$(*F)) $< $(CONFIG_IMD) > $@

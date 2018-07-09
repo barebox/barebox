@@ -19,7 +19,7 @@
 	compatible = "udoo,imx6qdl-udoo", "fsl,imx6q";
 
 	chosen {
-		linux,stdout-path = &uart2;
+		stdout-path = &uart2;
 	};
 
 	memory {

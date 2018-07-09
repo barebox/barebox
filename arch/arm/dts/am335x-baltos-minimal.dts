@@ -21,7 +21,7 @@
 	compatible = "vscom,onrisc", "ti,am33xx";
 
 	chosen {
-		linux,stdout-path = &uart0;
+		stdout-path = &uart0;
 	};
 
 	cpus {

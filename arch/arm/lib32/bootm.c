@@ -26,6 +26,9 @@
 #include <asm/armlinux.h>
 #include <asm/system.h>
 
+/* If true, ignore device tree and boot with ATAGs */
+static int bootm_boot_atag;
+
 /*
  * sdram_start_and_size() - determine place for putting the kernel/oftree/initrd
  *
@@ -165,7 +168,12 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
 		free_mem = PAGE_ALIGN(initrd_end + 1);
 	}
 
-	if (!fdt) {
+	if (fdt && bootm_boot_atag) {
+		printf("Error: Boot with ATAGs forced, but kernel has an appended device tree\n");
+		return -EINVAL;
+	}
+
+	if (!fdt && !bootm_boot_atag) {
 		fdt = bootm_get_devicetree(data);
 		if (IS_ERR(fdt))
 			return PTR_ERR(fdt);
@@ -612,8 +620,13 @@ static struct binfmt_hook binfmt_barebox_hook = {
 	.exec = "bootm",
 };
 
+BAREBOX_MAGICVAR_NAMED(global_bootm_boot_atag, global.bootm.boot_atag,
+		       "If true, ignore device tree and boot using ATAGs");
+
 static int armlinux_register_image_handler(void)
 {
+	globalvar_add_simple_bool("bootm.boot_atag", &bootm_boot_atag);
+
 	register_image_handler(&barebox_handler);
 	register_image_handler(&uimage_handler);
 	register_image_handler(&rawimage_handler);

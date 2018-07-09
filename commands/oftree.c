@@ -48,7 +48,6 @@ static int do_oftree(int argc, char *argv[])
 	int probe = 0;
 	char *load = NULL;
 	char *save = NULL;
-	int free_of = 0;
 	int ret;
 	struct device_node *root;
 
@@ -65,23 +64,10 @@ static int do_oftree(int argc, char *argv[])
 				return COMMAND_ERROR_USAGE;
 			}
 			break;
-		case 'f':
-			free_of = 1;
-			break;
 		case 's':
 			save = optarg;
 			break;
 		}
-	}
-
-	if (free_of) {
-		struct device_node *root = of_get_root_node();
-
-		if (root)
-			of_delete_node(root);
-
-		if (!load)
-			return 0;
 	}
 
 	if (!probe && !load && !save)
@@ -140,13 +126,12 @@ BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-l <DTB>",  "Load <DTB> to internal devicetree\n")
 BAREBOX_CMD_HELP_OPT ("-s <DTB>",  "save internal devicetree to <DTB>\n")
 BAREBOX_CMD_HELP_OPT ("-p",  "probe devices from stored device tree")
-BAREBOX_CMD_HELP_OPT ("-f",  "free stored device tree")
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(oftree)
 	.cmd		= do_oftree,
 	BAREBOX_CMD_DESC("handle device trees")
-	BAREBOX_CMD_OPTS("[-lspf]")
+	BAREBOX_CMD_OPTS("[-lsp]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_HELP(cmd_oftree_help)
 BAREBOX_CMD_END

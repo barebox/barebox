@@ -49,8 +49,8 @@ variable:
   bootm
 
 **NOTE:** it may happen that barebox is probed from the devicetree, but you have
-want to start a Kernel without passing a devicetree. In this case call ``oftree -f``
-to free the internal devicetree before calling ``bootm``
+want to start a Kernel without passing a devicetree. In this case set the
+``global.bootm.boot_atag`` variable to ``true``.
 
 Passing Kernel Arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^

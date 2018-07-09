@@ -71,15 +71,7 @@ work on the internal devicetree. It is possible to add/remove nodes using the
   # add a property to it
   of_property -s /chosen/mynode/ myproperty myvalue
 
-It is important to know that these commands always work on the internal
-devicetree. If you modify the internal devicetree to influence the behaviour of
-a kernel booted later, make sure that you start the kernel with the internal
-devicetree (i.e. don't pass a devicetree to the :ref:`command_bootm` command). If you
-wish to use another devicetree than the internal devicetree for starting the kernel,
-you can exchange the internal devicetree during runtime using the
-:ref:`command_oftree` command:
-
-.. code-block:: sh
-
-   oftree -f
-   oftree -l /new/dtb
+It is important to know that these commands normally work on the internal
+devicetree. If you want to modify the devicetree the kernel is started with
+see the -f options to of_property and of_node. This option will register the
+operation for later execution on the Kernel devicetree.

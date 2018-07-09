@@ -8,6 +8,7 @@ obj-y				+= misc.o
 obj-pbl-y			+= memsize.o
 obj-y				+= resource.o
 obj-y				+= bootsource.o
+obj-$(CONFIG_ELF)		+= elf.o
 obj-y				+= restart.o
 obj-y				+= poweroff.o
 obj-$(CONFIG_AUTO_COMPLETE)	+= complete.o

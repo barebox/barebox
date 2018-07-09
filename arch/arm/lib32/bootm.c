@@ -130,11 +130,13 @@ static int get_kernel_addresses(size_t image_size,
 	return 0;
 }
 
-static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int swap)
+static int __do_bootm_linux(struct image_data *data, unsigned long free_mem,
+			    int swap, void *fdt)
 {
 	unsigned long kernel;
 	unsigned long initrd_start = 0, initrd_size = 0, initrd_end = 0;
 	enum arm_security_state state = bootm_arm_security_state();
+	void *fdt_load_address = NULL;
 	int ret;
 
 	kernel = data->os_res->start + data->os_entry;
@@ -163,16 +165,28 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 		free_mem = PAGE_ALIGN(initrd_end + 1);
 	}
 
-	ret = bootm_load_devicetree(data, free_mem);
-	if (ret)
-		return ret;
+	if (!fdt) {
+		fdt = bootm_get_devicetree(data);
+		if (IS_ERR(fdt))
+			return PTR_ERR(fdt);
+	}
+
+	if (fdt) {
+		fdt_load_address = (void *)free_mem;
+		ret = bootm_load_devicetree(data, fdt, free_mem);
+
+		free(fdt);
+
+		if (ret)
+			return ret;
+	}
 
 	if (bootm_verbose(data)) {
 		printf("\nStarting kernel at 0x%08lx", kernel);
 		if (initrd_size)
 			printf(", initrd at 0x%08lx", initrd_start);
-		if (data->oftree)
-			printf(", oftree at 0x%p", data->oftree);
+		if (fdt_load_address)
+			printf(", oftree at 0x%p", fdt_load_address);
 		printf("...\n");
 	}
 
@@ -188,8 +202,8 @@ static int __do_bootm_linux(struct image_data *data, unsigned long free_mem, int
 	if (data->dryrun)
 		return 0;
 
-	start_linux((void *)kernel, swap, initrd_start, initrd_size, data->oftree,
-		    state);
+	start_linux((void *)kernel, swap, initrd_start, initrd_size,
+		    fdt_load_address, state);
 
 	restart_machine();
 
@@ -212,7 +226,7 @@ static int do_bootm_linux(struct image_data *data)
 	if (ret)
 		return ret;
 
-	return __do_bootm_linux(data, mem_free, 0);
+	return __do_bootm_linux(data, mem_free, 0, NULL);
 }
 
 static struct image_handler uimage_handler = {
@@ -237,16 +251,13 @@ struct zimage_header {
 
 #define ZIMAGE_MAGIC 0x016F2818
 
-static int do_bootz_linux_fdt(int fd, struct image_data *data)
+static int do_bootz_linux_fdt(int fd, struct image_data *data, void **outfdt)
 {
 	struct fdt_header __header, *header;
 	void *oftree;
 	int ret;
 
 	u32 end;
-
-	if (data->oftree)
-		return -ENXIO;
 
 	header = &__header;
 	ret = read(fd, header, sizeof(*header));
@@ -287,8 +298,8 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 			pr_err("unable to unflatten devicetree\n");
 			goto err_free;
 		}
-		data->oftree = of_get_fixed_tree(root);
-		if (!data->oftree) {
+		*outfdt = of_get_fixed_tree(root);
+		if (!*outfdt) {
 			pr_err("Unable to get fixed tree\n");
 			ret = -EINVAL;
 			goto err_free;
@@ -296,7 +307,7 @@ static int do_bootz_linux_fdt(int fd, struct image_data *data)
 
 		free(oftree);
 	} else {
-		data->oftree = oftree;
+		*outfdt = oftree;
 	}
 
 	pr_info("zImage: concatenated oftree detected\n");
@@ -318,6 +329,7 @@ static int do_bootz_linux(struct image_data *data)
 	size_t image_size;
 	unsigned long load_address = data->os_address;
 	unsigned long mem_free;
+	void *fdt = NULL;
 
 	fd = open(data->os_file, O_RDONLY);
 	if (fd < 0) {
@@ -388,13 +400,13 @@ static int do_bootz_linux(struct image_data *data)
 			*(u32 *)ptr = swab32(*(u32 *)ptr);
 	}
 
-	ret = do_bootz_linux_fdt(fd, data);
+	ret = do_bootz_linux_fdt(fd, data, &fdt);
 	if (ret && ret != -ENXIO)
 		goto err_out;
 
 	close(fd);
 
-	return __do_bootm_linux(data, mem_free, swap);
+	return __do_bootm_linux(data, mem_free, swap, fdt);
 
 err_out:
 	close(fd);
@@ -559,7 +571,7 @@ static int do_bootm_aimage(struct image_data *data)
 	else
 		mem_free = PAGE_ALIGN(data->os_res->end + SZ_1M);
 
-	return __do_bootm_linux(data, mem_free, 0);
+	return __do_bootm_linux(data, mem_free, 0, NULL);
 
 err_out:
 	linux_bootargs_overwrite(NULL);

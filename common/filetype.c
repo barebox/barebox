@@ -27,6 +27,7 @@
 #include <envfs.h>
 #include <disks.h>
 #include <image-sparse.h>
+#include <elf.h>
 
 struct filetype_str {
 	const char *name;	/* human readable filetype */
@@ -69,6 +70,7 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_kwbimage_v1] = { "MVEBU kwbimage (v1)", "kwb1" },
 	[filetype_android_sparse] = { "Android sparse image", "sparse" },
 	[filetype_arm64_linux_image] = { "ARM aarch64 Linux image", "aarch64-linux" },
+	[filetype_elf] = { "ELF", "elf" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -355,6 +357,9 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	if (buf[5] == 0x43485345 && buf[6] == 0x5454494E &&
 		buf[7] == 0x47530000)
 		return filetype_ch_image_be;
+
+	if (strncmp(buf8, ELFMAG, 4) == 0)
+		return filetype_elf;
 
 	return filetype_unknown;
 }

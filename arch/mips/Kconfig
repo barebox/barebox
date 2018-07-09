@@ -7,6 +7,7 @@ config MIPS
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	select HAVE_CONFIGURABLE_TEXT_BASE
 	select HAS_DMA
+	select ELF
 	default y
 
 config SYS_SUPPORTS_BIG_ENDIAN

@@ -320,28 +320,24 @@ static int bootm_open_oftree_uimage(struct image_data *data, size_t *size,
 }
 
 /*
- * bootm_load_devicetree() - load devicetree
+ * bootm_get_devicetree() - get devicetree
  *
  * @data:		image data context
- * @load_address:	The address where the devicetree should be loaded to
  *
- * This loads the devicetree to a RAM location. load_address must be a valid
- * address. The resulting devicetree will be found at data->oftree.
+ * This gets the fixed devicetree from the various image sources or the internal
+ * devicetree. It returns a pointer to the allocated devicetree which must be
+ * freed after use.
  *
- * Return: 0 on success, negative error code otherwise
+ * Return: pointer to the fixed devicetree or a ERR_PTR() on failure.
  */
-int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
+void *bootm_get_devicetree(struct image_data *data)
 {
 	enum filetype type;
-	int fdt_size;
 	struct fdt_header *oftree;
 	int ret;
 
-	if (data->oftree)
-		return 0;
-
 	if (!IS_ENABLED(CONFIG_OFTREE))
-		return 0;
+		return ERR_PTR(-ENOSYS);
 
 	if (IS_ENABLED(CONFIG_FITIMAGE) && data->os_fit &&
 	    fit_has_image(data->os_fit, data->fit_config, "fdt")) {
@@ -351,7 +347,7 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 		ret = fit_open_image(data->os_fit, data->fit_config, "fdt",
 				     &of_tree, &of_size);
 		if (ret)
-			return ret;
+			return ERR_PTR(ret);
 
 		data->of_root_node = of_unflatten_dtb(of_tree);
 	} else if (data->oftree_file) {
@@ -362,7 +358,7 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 		if ((int)type < 0) {
 			printf("could not open %s: %s\n", data->oftree_file,
 					strerror(-type));
-			return (int)type;
+			return ERR_PTR((int)type);
 		}
 
 		switch (type) {
@@ -375,11 +371,11 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 					  FILESIZE_MAX);
 			break;
 		default:
-			return -EINVAL;
+			return ERR_PTR(-EINVAL);
 		}
 
 		if (ret)
-			return ret;
+			return ERR_PTR(ret);
 
 		data->of_root_node = of_unflatten_dtb(oftree);
 
@@ -388,13 +384,13 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 		if (IS_ERR(data->of_root_node)) {
 			data->of_root_node = NULL;
 			pr_err("unable to unflatten devicetree\n");
-			return -EINVAL;
+			return ERR_PTR(-EINVAL);
 		}
 
 	} else {
 		data->of_root_node = of_get_root_node();
 		if (!data->of_root_node)
-			return 0;
+			return NULL;
 
 		if (bootm_verbose(data) > 1 && data->of_root_node)
 			printf("using internal devicetree\n");
@@ -408,30 +404,46 @@ int bootm_load_devicetree(struct image_data *data, unsigned long load_address)
 
 	oftree = of_get_fixed_tree(data->of_root_node);
 	if (!oftree)
-		return -EINVAL;
+		return ERR_PTR(-EINVAL);
 
-	fdt_size = be32_to_cpu(oftree->totalsize);
+	fdt_add_reserve_map(oftree);
+
+	return oftree;
+}
+
+/*
+ * bootm_load_devicetree() - load devicetree
+ *
+ * @data:		image data context
+ * @fdt:		The flat device tree to load
+ * @load_address:	The address where the devicetree should be loaded to
+ *
+ * This loads the devicetree to a RAM location. load_address must be a valid
+ * address which is requested with request_sdram_region. The associated region
+ * is released automatically in the bootm error path.
+ *
+ * Return: 0 on success, negative error code otherwise
+ */
+int bootm_load_devicetree(struct image_data *data, void *fdt,
+			    unsigned long load_address)
+{
+	int fdt_size;
+
+	if (!IS_ENABLED(CONFIG_OFTREE))
+		return -ENOSYS;
+
+	fdt_size = be32_to_cpu(((struct fdt_header *)fdt)->totalsize);
 
 	data->oftree_res = request_sdram_region("oftree", load_address,
 			fdt_size);
-	if (!data->oftree_res) {
-		free(oftree);
+	if (!data->oftree_res)
 		return -ENOMEM;
-	}
 
-	memcpy((void *)data->oftree_res->start, oftree, fdt_size);
-
-	free(oftree);
-
-	oftree = (void *)data->oftree_res->start;
-
-	fdt_add_reserve_map(oftree);
+	memcpy((void *)data->oftree_res->start, fdt, fdt_size);
 
 	of_print_cmdline(data->of_root_node);
 	if (bootm_verbose(data) > 1)
 		of_print_nodes(data->of_root_node, 0);
-
-	data->oftree = oftree;
 
 	return 0;
 }
@@ -576,7 +588,6 @@ int bootm_boot(struct bootm_data *bootm_data)
 		 * When we only allow booting signed images make sure everything
 		 * we boot is in the OS image and not given separately.
 		 */
-		data->oftree = NULL;
 		data->oftree_file = NULL;
 		data->initrd_file = NULL;
 		if (os_type != filetype_oftree) {

@@ -101,6 +101,9 @@ int cmdlinepart_do_parse(const char *devname, const char *parts, loff_t devsize,
 	loff_t offset = 0;
 	int ret;
 
+	if (!parts || *parts == '\0')
+		return 0;
+
 	while (1) {
 		loff_t size = 0;
 

@@ -652,6 +652,7 @@ static struct imx_ocotp_data imx8mq_ocotp_data = {
 	.addr_to_offset = imx6sl_addr_to_offset,
 	.mac_offsets_num = 1,
 	.mac_offsets = { 0x90 },
+	.format_mac = imx_ocotp_format_mac,
 };
 
 static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {

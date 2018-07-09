@@ -222,17 +222,22 @@ struct soc_type {
 	char *name;
 	int header_version;
 	int cpu_type;
+	off_t header_gap;
+	uint32_t first_opcode;
 };
 
+#define SZ_32K	(32 * 1024)
+
 static struct soc_type socs[] = {
-	{ .name = "imx25", .header_version = 1, .cpu_type = IMX_CPU_IMX25 },
-	{ .name = "imx35", .header_version = 1, .cpu_type = IMX_CPU_IMX35 },
-	{ .name = "imx50", .header_version = 2, .cpu_type = IMX_CPU_IMX50 },
-	{ .name = "imx51", .header_version = 1, .cpu_type = IMX_CPU_IMX51 },
-	{ .name = "imx53", .header_version = 2, .cpu_type = IMX_CPU_IMX53 },
-	{ .name = "imx6", .header_version = 2, .cpu_type = IMX_CPU_IMX6 },
-	{ .name = "imx7", .header_version = 2, .cpu_type = IMX_CPU_IMX7 },
-	{ .name = "vf610", .header_version = 2, .cpu_type = IMX_CPU_VF610 },
+	{ .name = "imx25",  .header_version = 1, .cpu_type = IMX_CPU_IMX25,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx35",  .header_version = 1, .cpu_type = IMX_CPU_IMX35,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx50",  .header_version = 2, .cpu_type = IMX_CPU_IMX50,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx51",  .header_version = 1, .cpu_type = IMX_CPU_IMX51,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx53",  .header_version = 2, .cpu_type = IMX_CPU_IMX53,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx6",   .header_version = 2, .cpu_type = IMX_CPU_IMX6,   .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx7",   .header_version = 2, .cpu_type = IMX_CPU_IMX7,   .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
+	{ .name = "imx8mq", .header_version = 2, .cpu_type = IMX_CPU_IMX8MQ, .header_gap = SZ_32K, .first_opcode = 0x14009000 /* b 0x9000 */},
+	{ .name = "vf610",  .header_version = 2, .cpu_type = IMX_CPU_VF610,  .header_gap = 0,      .first_opcode = 0xea0003fe /* b 0x1000 */},
 };
 
 static int do_soc(struct config_data *data, int argc, char *argv[])
@@ -249,6 +254,8 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 		if (!strcmp(socs[i].name, soc)) {
 			data->header_version = socs[i].header_version;
 			data->cpu_type = socs[i].cpu_type;
+			data->header_gap = socs[i].header_gap;
+			data->first_opcode = socs[i].first_opcode;
 
 			if (data->cpu_type == IMX_CPU_IMX35)
 				data->load_size += HEADER_LEN;

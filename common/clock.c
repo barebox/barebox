@@ -208,9 +208,7 @@ EXPORT_SYMBOL(udelay);
 
 void mdelay(unsigned long msecs)
 {
-	uint64_t start = get_time_ns();
-
-	while(!is_timeout(start, msecs * MSECOND));
+	udelay(msecs * USECOND);
 }
 EXPORT_SYMBOL(mdelay);
 

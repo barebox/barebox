@@ -12,4 +12,10 @@ extern unsigned long free_mem_end_ptr;
 
 void pbl_barebox_uncompress(void *dest, void *compressed_start, unsigned int len);
 
+#ifdef __PBL__
+#define IN_PBL	1
+#else
+#define IN_PBL	0
+#endif
+
 #endif /* __PBL_H__ */

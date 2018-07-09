@@ -962,7 +962,7 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 	case SEEK_SET:
 		if (f->size != FILE_SIZE_STREAM && offset > f->size)
 			goto out;
-		if (offset < 0)
+		if (IS_ERR_VALUE(offset))
 			goto out;
 		pos = offset;
 		break;
@@ -981,7 +981,7 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 	}
 
 	pos = fsdrv->lseek(&f->fsdev->dev, f, pos);
-	if (pos < 0) {
+	if (IS_ERR_VALUE(pos)) {
 		errno = -pos;
 		return -1;
 	}

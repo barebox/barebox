@@ -15,6 +15,15 @@ int backlight_set_brightness(struct backlight_device *bl, int brightness)
 	if (brightness == bl->brightness_cur)
 		return 0;
 
+	if (!bl->slew_time_ms) {
+		ret = bl->brightness_set(bl, brightness);
+		if (ret)
+			return ret;
+
+		bl->brightness_cur = bl->brightness = brightness;
+		return 0;
+	}
+
 	if (brightness > bl->brightness_cur)
 		step = 1;
 	else
@@ -34,9 +43,8 @@ int backlight_set_brightness(struct backlight_device *bl, int brightness)
 		if (i == brightness)
 			break;
 
-		udelay(100000 / num_steps);
+		udelay(bl->slew_time_ms * 1000 / num_steps);
 	}
-
 
 	bl->brightness_cur = bl->brightness = brightness;
 
@@ -72,6 +80,8 @@ int backlight_register(struct backlight_device *bl)
 
 	dev_add_param_uint32(&bl->dev, "brightness", backlight_brightness_set,
 			NULL, &bl->brightness, "%d", bl);
+	dev_add_param_uint32(&bl->dev, "slew_time_ms", NULL, NULL,
+			     &bl->slew_time_ms, "%d", NULL);
 
 	list_add_tail(&bl->list, &backlights);
 

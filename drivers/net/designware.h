@@ -51,6 +51,7 @@ struct dw_eth_drvdata {
 };
 
 struct dw_eth_dev *dwc_drv_probe(struct device_d *dev);
+void dwc_drv_remove(struct device_d *dev);
 
 #define CONFIG_TX_DESCR_NUM	16
 #define CONFIG_RX_DESCR_NUM	16

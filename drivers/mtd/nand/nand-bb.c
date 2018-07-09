@@ -316,6 +316,8 @@ void mtd_del_bb(struct mtd_info *mtd)
 	list_del_init(&bb->list);
 	free(bb->name);
 	free(bb);
+
+	mtd->cdev_bb = NULL;
 }
 
 /**

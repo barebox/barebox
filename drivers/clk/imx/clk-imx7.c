@@ -739,15 +739,14 @@ static int imx7_ccm_probe(struct device_d *dev)
 	clks[IMX7D_EPDC_PIXEL_ROOT_CLK] = imx_clk_gate4("epdc_pixel_root_clk", "epdc_pixel_post_div", base + 0x44a0, 0);
 	clks[IMX7D_LCDIF_PIXEL_ROOT_CLK] = imx_clk_gate4("lcdif_pixel_root_clk", "lcdif_pixel_post_div", base + 0x44b0, 0);
 
-	/*
-	 * Linux code controls gates at 0x44e0, 0x44f0, 0x4500 and 0x4500. However, these do not seem to
-	 * exist in hardware. According to the reference manual the ethernet clocks are controlled by
-	 * gates at 0x4700 and 0x4710
-	 */
-	clks[IMX7D_ENET1_REF_ROOT_CLK] = imx_clk_gate4("enet1_ref_root_clk", "enet1_ref_post_div", base + 0x4700, 0);
-	clks[IMX7D_ENET1_TIME_ROOT_CLK] = imx_clk_gate_shared("enet1_time_root_clk", "enet1_time_post_div", "enet1_ref_root_clk");
-	clks[IMX7D_ENET2_REF_ROOT_CLK] = imx_clk_gate4("enet2_ref_root_clk", "enet2_ref_post_div", base + 0x4710, 0);
-	clks[IMX7D_ENET2_TIME_ROOT_CLK] = imx_clk_gate_shared("enet2_time_root_clk", "enet2_time_post_div", "enet2_ref_root_clk");
+	clks[IMX7D_ENET1_IPG_ROOT_CLK] = imx_clk_gate2_shared2("enet1_ipg_root_clk",
+		"enet_axi_post_div", base + 0x4700, 0);
+	clks[IMX7D_ENET1_TIME_ROOT_CLK] = imx_clk_gate2_shared2("enet1_time_root_clk",
+		"enet1_time_post_div", base + 0x4700, 0);
+	clks[IMX7D_ENET2_IPG_ROOT_CLK] = imx_clk_gate2_shared2("enet2_ipg_root_clk", 
+		"enet_axi_post_div", base + 0x4710, 0);
+	clks[IMX7D_ENET2_TIME_ROOT_CLK] = imx_clk_gate2_shared2("enet2_time_root_clk",
+		"enet2_time_post_div", base + 0x4710, 0);
 	clks[IMX7D_ENET_PHY_REF_ROOT_CLK] = imx_clk_gate4("enet_phy_ref_root_clk", "enet_phy_ref_post_div", base + 0x4520, 0);
 
 	clks[IMX7D_EIM_ROOT_CLK] = imx_clk_gate4("eim_root_clk", "eim_post_div", base + 0x4160, 0);

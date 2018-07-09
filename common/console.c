@@ -513,6 +513,8 @@ void console_putc(unsigned int ch, char c)
 
 	case CONSOLE_INITIALIZED_BUFFER:
 		kfifo_putc(console_output_fifo, c);
+		if (c == '\n')
+			putc_ll('\r');
 		putc_ll(c);
 		return;
 
@@ -550,10 +552,9 @@ int console_puts(unsigned int ch, const char *str)
 	}
 
 	while (*s) {
-		if (*s == '\n') {
-			console_putc(ch, '\r');
+		if (*s == '\n')
 			n++;
-		}
+
 		console_putc(ch, *s);
 		n++;
 		s++;

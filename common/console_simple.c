@@ -16,8 +16,6 @@ int console_puts(unsigned int ch, const char *str)
 
 	while (*s) {
 		console_putc(ch, *s);
-		if (*s == '\n')
-			console_putc(ch, '\r');
 		s++;
 		i++;
 	}
@@ -29,13 +27,16 @@ EXPORT_SYMBOL(console_puts);
 void console_putc(unsigned int ch, char c)
 {
 	if (!console) {
+		if (c == '\n')
+			putc_ll('\r');
 		putc_ll(c);
 		return;
 	}
 
-	console->putc(console, c);
 	if (c == '\n')
 		console->putc(console, '\r');
+
+	console->putc(console, c);
 }
 EXPORT_SYMBOL(console_putc);
 

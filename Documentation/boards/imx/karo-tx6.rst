@@ -1,5 +1,5 @@
-KaRo TX6x
-=========
+Ka-Ro TX6x
+==========
 
 This CPU cards are based on a Freescale i.MX6 SoC.
 There are currently six variants of this module, that are distinguished

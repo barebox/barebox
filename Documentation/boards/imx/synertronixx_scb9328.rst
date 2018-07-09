@@ -1,4 +1,4 @@
-Synertronixx scb9328
+Synertronixx SCB9328
 ====================
 
 See http://www.synertronixx.de/produkte/scb9328/scb9328.htm

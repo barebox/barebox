@@ -23,8 +23,8 @@ Supported baseboards
 Supported baseboards are:
   * Silica / Phytec PCM-970 via phyMAP-i.MX31, PMA-001
 
-How to get barebox for 'Phytec's phyCORE-i.MX31'
-------------------------------------------------
+How to get barebox for Phytec's phyCORE-i.MX31
+----------------------------------------------
 
 Using the default configuration::
 
@@ -34,8 +34,8 @@ Build the binary image::
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 
-**NOTE:** replace ''armv5compiler'' with your ARM v5 cross compiler,
- e.g.: ''arm-1136jfs-linux-gnueabi-''
+.. note:: replace ``armv5compiler`` with your ARM v5 cross compiler prefix,
+ e.g.: ``arm-1136jfs-linux-gnueabi-``
 
 The resulting binary image to be flashed will be ``barebox.bin``, whereas
 the file named just ``barebox`` is an ELF executable for ARM.

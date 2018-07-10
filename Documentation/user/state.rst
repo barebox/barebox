@@ -475,7 +475,7 @@ content, its backend-type and *state* variable set layout.
 		backend-storage-type = "circular";
 		backend-stridesize = <32>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
@@ -524,7 +524,7 @@ content, its backend-type and *state* variable layout.
 		backend = <&backend_state_nand>;
 		backend-storage-type = "circular";
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
@@ -566,7 +566,7 @@ content, its backend-type and *state* variable layout.
 		backend = <&backend_state_sd>;
 		backend-stridesize = <0x40>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
@@ -614,7 +614,7 @@ content, its backend-type and *state* variable layout.
 		backend-storage-type = "direct";
 		backend-stridesize = <32>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
@@ -668,7 +668,7 @@ content, its backend-type and *state* variable layout.
 		backend-storage-type = "direct";
 		backend-stridesize = <32>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;

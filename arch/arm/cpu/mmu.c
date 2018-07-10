@@ -61,7 +61,7 @@ static inline void tlb_invalidate(void)
 #define PTE_FLAGS_UNCACHED_V7 (0)
 #define PTE_FLAGS_CACHED_V4 (PTE_SMALL_AP_UNO_SRW | PTE_BUFFERABLE | PTE_CACHEABLE)
 #define PTE_FLAGS_UNCACHED_V4 PTE_SMALL_AP_UNO_SRW
-#define PGD_FLAGS_WC_V7 PMD_SECT_TEX(1)
+#define PGD_FLAGS_WC_V7 (PMD_SECT_TEX(1) | PMD_TYPE_SECT | PMD_SECT_BUFFERABLE)
 
 /*
  * PTE flags to set cached and uncached areas.

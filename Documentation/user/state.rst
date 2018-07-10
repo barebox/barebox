@@ -52,7 +52,7 @@ required to define the location where to store the *state* variable set.
 
 .. _state_framework,backend_types:
 
-Backend-Types (e.g. *state* storage format)
+Backend-Types (e.g. *state* Storage Format)
 -------------------------------------------
 
 The *state* variable set itself can be stored in different ways. Currently two
@@ -66,7 +66,7 @@ Both serialize the *state* variable set differently.
 
 .. _state_framework,raw:
 
-The ``raw`` *state* storage format
+The ``raw`` *state* Storage Format
 ##################################
 
 ``raw`` means the *state* variable set is a simple binary data blob only. In
@@ -117,7 +117,7 @@ embedded *state* variable set. Refer to
 
 .. _state_framework,dtb:
 
-The ``dtb`` *state* storage format
+The ``dtb`` *state* Storage Format
 ##################################
 
 .. note:: The ``dtb`` backend type isn't well tested. Use the ``raw`` backend
@@ -130,7 +130,7 @@ Unlike the ``raw`` *state* backend the ``dtb`` *state* backend can describe itse
 
 .. _state_framework,backend_storage_type:
 
-Backend Storage Types (e.g. media storage layout)
+Backend Storage Types (e.g. Media Storage Layout)
 -------------------------------------------------
 
 The serialized data (``raw`` or ``dtb``) can be stored to different backend
@@ -321,7 +321,7 @@ the eraseblock again. This significantly reduces the need for a block erases.
 .. important:: One copy of the *state* variable set is limited to the page size
    of the used backend (e.g. NAND type flash memory)
 
-Redundant *state* variable set copies
+Redundant *state* Variable Set Copies
 -------------------------------------
 
 To avoid data loss when changing the *state* variable set, more than one
@@ -431,7 +431,7 @@ variable set has a size of 17 bytes (16 bytes header plus one byte variables).
 .. note:: For a more detailed description of the used *state* variable set
    properties here, refer to :ref:`barebox,state`.
 
-NOR flash memories
+NOR Flash Memories
 ##################
 
 This type of memory can be written on a single byte/word basis (depending on its bus
@@ -482,7 +482,7 @@ content, its backend-type and *state* variable set layout.
 		};
 	};
 
-NAND flash memories
+NAND Flash Memories
 ###################
 
 This type of memory can be written on a *page* base (typically 512 bytes,

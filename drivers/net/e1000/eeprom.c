@@ -3,6 +3,8 @@
 #include <malloc.h>
 #include <linux/math64.h>
 #include <linux/sizes.h>
+#include <of_device.h>
+#include <linux/pci.h>
 #include <linux/mtd/spi-nor.h>
 
 #include "e1000.h"
@@ -405,6 +407,45 @@ static void e1000_eeprom_uses_microwire(struct e1000_eeprom_info *eeprom,
 	eeprom->read = e1000_read_eeprom_microwire;
 }
 
+size_t e1000_igb_get_flash_size(struct e1000_hw *hw)
+{
+	struct device_node *node =
+		hw->pdev->dev.device_node;
+	u32 flash_size;
+	uint32_t fla;
+	int ret = 0;
+
+	/*
+	 * There are two potential places where the size of the flash can be
+	 * specified. In the device tree, and in the flash itself.  Use the
+	 * first that looks valid.
+	 */
+
+	ret = of_property_read_u32(node, "flash-size", &flash_size);
+	if (ret == 0) {
+		dev_info(hw->dev,
+			 "Determined flash size from device tree (%u)\n",
+			 flash_size);
+		return flash_size;
+	}
+
+	fla = e1000_read_reg(hw, E1000_FLA);
+	fla &= E1000_FLA_FL_SIZE_MASK;
+	fla >>= E1000_FLA_FL_SIZE_SHIFT;
+
+	if (fla) {
+		flash_size = SZ_64K << fla;
+		dev_info(hw->dev,
+			 "Determined flash size from E1000_FLA.FL_SIZE (%u)\n",
+			 flash_size);
+		return flash_size;
+	}
+
+	dev_info(hw->dev,
+		 "Unprogrammed Flash detected and no flash-size found in device tree, limiting access to first 4 kiB\n");
+
+	return 4096;
+}
 
 /******************************************************************************
  * Sets up eeprom variables in the hw struct.  Must be called after mac_type
@@ -480,20 +521,7 @@ int32_t e1000_init_eeprom_params(struct e1000_hw *hw)
 
 	case e1000_igb:
 		if (eecd & E1000_EECD_I210_FLASH_DETECTED) {
-			uint32_t fla;
-
-			fla  = e1000_read_reg(hw, E1000_FLA);
-			fla &= E1000_FLA_FL_SIZE_MASK;
-			fla >>= E1000_FLA_FL_SIZE_SHIFT;
-
-			if (fla) {
-				eeprom->word_size = (SZ_64K << fla) / 2;
-			} else {
-				eeprom->word_size = 2048;
-				dev_info(hw->dev, "Unprogrammed Flash detected, "
-					 "limiting access to first 4KB\n");
-			}
-
+			eeprom->word_size = e1000_igb_get_flash_size(hw) / 2;
 			eeprom->acquire = e1000_acquire_eeprom_flash;
 			eeprom->release = e1000_release_eeprom_flash;
 		}

@@ -2,6 +2,8 @@
  * Copyright 2017 NXP
  *
  * SPDX-License-Identifier:	GPL-2.0+
+ *
+ * Generated code from MX8M_DDR_tool
  */
 
 #include "ddr.h"
@@ -32,14 +34,6 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c44857c,0x1ff);
 	reg32_write(0x3c44c17c,0x1ff);
 	reg32_write(0x3c44c57c,0x1ff);
-	reg32_write(0x3c84017c,0x1ff);
-	reg32_write(0x3c84057c,0x1ff);
-	reg32_write(0x3c84417c,0x1ff);
-	reg32_write(0x3c84457c,0x1ff);
-	reg32_write(0x3c84817c,0x1ff);
-	reg32_write(0x3c84857c,0x1ff);
-	reg32_write(0x3c84c17c,0x1ff);
-	reg32_write(0x3c84c57c,0x1ff);
 	reg32_write(0x3c000154,0x1ff);
 	reg32_write(0x3c004154,0x1ff);
 	reg32_write(0x3c008154,0x1ff);
@@ -52,22 +46,16 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c024154,0x1ff);
 	reg32_write(0x3c080314,0x19);
 	reg32_write(0x3c480314,0x7);
-	reg32_write(0x3c880314,0x7);
 	reg32_write(0x3c0800b8,0x2);
-	reg32_write(0x3c4800b8,0x2);
-	reg32_write(0x3c8800b8,0x2);
+	reg32_write(0x3c4800b8,0x1);
 	reg32_write(0x3c240810,0x0);
 	reg32_write(0x3c640810,0x0);
-	reg32_write(0x3ca40810,0x0);
 	reg32_write(0x3c080090,0xab);
 	reg32_write(0x3c0800e8,0x0);
 	reg32_write(0x3c480090,0xab);
 	reg32_write(0x3c0800e8,0x0);
-	reg32_write(0x3c880090,0xab);
-	reg32_write(0x3c0800e8,0x0);
-	reg32_write(0x3c080158,0x7);
+	reg32_write(0x3c080158,0x3);
 	reg32_write(0x3c480158,0xa);
-	reg32_write(0x3c880158,0xa);
 	reg32_write(0x3c040134,0xe00);
 	reg32_write(0x3c040534,0xe00);
 	reg32_write(0x3c044134,0xe00);
@@ -84,14 +72,6 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c448534,0xe00);
 	reg32_write(0x3c44c134,0xe00);
 	reg32_write(0x3c44c534,0xe00);
-	reg32_write(0x3c840134,0xe00);
-	reg32_write(0x3c840534,0xe00);
-	reg32_write(0x3c844134,0xe00);
-	reg32_write(0x3c844534,0xe00);
-	reg32_write(0x3c848134,0xe00);
-	reg32_write(0x3c848534,0xe00);
-	reg32_write(0x3c84c134,0xe00);
-	reg32_write(0x3c84c534,0xe00);
 	reg32_write(0x3c040124,0xfbe);
 	reg32_write(0x3c040524,0xfbe);
 	reg32_write(0x3c044124,0xfbe);
@@ -108,14 +88,6 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c448524,0xfbe);
 	reg32_write(0x3c44c124,0xfbe);
 	reg32_write(0x3c44c524,0xfbe);
-	reg32_write(0x3c840124,0xfbe);
-	reg32_write(0x3c840524,0xfbe);
-	reg32_write(0x3c844124,0xfbe);
-	reg32_write(0x3c844524,0xfbe);
-	reg32_write(0x3c848124,0xfbe);
-	reg32_write(0x3c848524,0xfbe);
-	reg32_write(0x3c84c124,0xfbe);
-	reg32_write(0x3c84c524,0xfbe);
 	reg32_write(0x3c00010c,0x63);
 	reg32_write(0x3c00410c,0x63);
 	reg32_write(0x3c00810c,0x63);
@@ -130,8 +102,7 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c0801d4,0x4);
 	reg32_write(0x3c080140,0x0);
 	reg32_write(0x3c080020,0x320);
-	reg32_write(0x3c480020,0x64);
-	reg32_write(0x3c880020,0x19);
+	reg32_write(0x3c480020,0xa7);
 	reg32_write(0x3c080220,0x9);
 	reg32_write(0x3c0802c8,0xdc);
 	reg32_write(0x3c04010c,0x5a1);
@@ -151,33 +122,21 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c44850c,0x5a1);
 	reg32_write(0x3c44c10c,0x5a1);
 	reg32_write(0x3c44c50c,0x5a1);
-	reg32_write(0x3c8802c8,0xdc);
-	reg32_write(0x3c84010c,0x5a1);
-	reg32_write(0x3c84050c,0x5a1);
-	reg32_write(0x3c84410c,0x5a1);
-	reg32_write(0x3c84450c,0x5a1);
-	reg32_write(0x3c84810c,0x5a1);
-	reg32_write(0x3c84850c,0x5a1);
-	reg32_write(0x3c84c10c,0x5a1);
-	reg32_write(0x3c84c50c,0x5a1);
 	reg32_write(0x3c0803e8,0x1);
 	reg32_write(0x3c4803e8,0x1);
-	reg32_write(0x3c8803e8,0x1);
 	reg32_write(0x3c080064,0x1);
 	reg32_write(0x3c480064,0x1);
-	reg32_write(0x3c880064,0x1);
-	reg32_write(0x3c0803c0,0x660);
+	reg32_write(0x3c0803c0,0x0);
 	reg32_write(0x3c0803c4,0x0);
 	reg32_write(0x3c0803c8,0x4444);
 	reg32_write(0x3c0803cc,0x8888);
-	reg32_write(0x3c0803d0,0x5665);
+	reg32_write(0x3c0803d0,0x5555);
 	reg32_write(0x3c0803d4,0x0);
 	reg32_write(0x3c0803d8,0x0);
 	reg32_write(0x3c0803dc,0xf000);
 	reg32_write(0x3c080094,0x0);
 	reg32_write(0x3c0800b4,0x0);
 	reg32_write(0x3c4800b4,0x0);
-	reg32_write(0x3c8800b4,0x0);
 	reg32_write(0x3c080180,0x2);
 
 	//enable APB bus to access DDRPHY RAM
@@ -195,31 +154,32 @@ void ddr_cfg_phy(void) {
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54008,0x131f);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54009,0xc8);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5400b,0x2);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5400d,0x100);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54012,0x310);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54019,0x2dd4);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401a,0x31);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401b,0x4d46);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401c,0x4d08);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401e,0x15);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401b,0x4a66);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401c,0x4a08);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401e,0x16);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401f,0x2dd4);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54020,0x31);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54021,0x4d46);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54022,0x4d08);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54024,0x15);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54021,0x4a66);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54022,0x4a08);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54024,0x16);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5402b,0x1000);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5402c,0x3);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54032,0xd400);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54033,0x312d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54034,0x4600);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54035,0x84d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54036,0x4d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54037,0x1500);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54034,0x6600);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54035,0x84a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54036,0x4a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54037,0x1600);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54038,0xd400);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54039,0x312d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403a,0x4600);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403b,0x84d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403c,0x4d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403d,0x1500);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403a,0x6600);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403b,0x84a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403c,0x4a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403d,0x1600);
 
 	//disable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x1);
@@ -233,96 +193,57 @@ void ddr_cfg_phy(void) {
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);
 
 	//set the PHY input clock to the desired frequency for pstate 1
-	reg32_write(0x3038a008,0x7070000);
-	reg32_write(0x3038a004,0x5000000);
 	reg32_write(0x3038a088,0x7070000);
-	reg32_write(0x3038a084,0x2010000);
+	reg32_write(0x3038a084,0x4030000);
 	reg32_write(0x303a00ec,0xffff);
 	tmp=reg32_read(0x303a00f8);
 	tmp |= 0x20;
 	reg32_write(0x303a00f8,tmp);
-	reg32_write(0x30389804,0x1000000);
+	reg32_write(0x30360068,0xf5a406);
+	tmp=reg32_read(0x30360060);
+	tmp &= ~0x80;
+	reg32_write(0x30360060,tmp);
+	tmp=reg32_read(0x30360060);
+	tmp |= 0x200;
+	reg32_write(0x30360060,tmp);
+	tmp=reg32_read(0x30360060);
+	tmp &= ~0x20;
+	reg32_write(0x30360060,tmp);
+	tmp=reg32_read(0x30360060);
+	tmp &= ~0x10;
+	reg32_write(0x30360060,tmp);
+	do{
+		tmp=reg32_read(0x30360060);
+		if(tmp&0x80000000) break;
+	}while(1);
+	reg32_write(0x30389808,0x1000000);
 
 	//enable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
 
-	reg32_write(0x3c150008,0x101);
-	reg32_write(0x3c15000c,0x190);
+	reg32_write(0x3c150008,0x1);
+	reg32_write(0x3c15000c,0x29c);
 	reg32_write(0x3c150020,0x121f);
-	reg32_write(0x3c150064,0x84);
+	reg32_write(0x3c150064,0x994);
 	reg32_write(0x3c150068,0x31);
 	reg32_write(0x3c15006c,0x4d46);
 	reg32_write(0x3c150070,0x4d08);
 	reg32_write(0x3c150074,0x0);
 	reg32_write(0x3c150078,0x15);
-	reg32_write(0x3c15007c,0x84);
+	reg32_write(0x3c15007c,0x994);
 	reg32_write(0x3c150080,0x31);
 	reg32_write(0x3c150084,0x4d46);
 	reg32_write(0x3c150088,0x4d08);
 	reg32_write(0x3c15008c,0x0);
 	reg32_write(0x3c150090,0x15);
-	reg32_write(0x3c1500c8,0x8400);
-	reg32_write(0x3c1500cc,0x3100);
+	reg32_write(0x3c1500c8,0x9400);
+	reg32_write(0x3c1500cc,0x3109);
 	reg32_write(0x3c1500d0,0x4600);
 	reg32_write(0x3c1500d4,0x84d);
 	reg32_write(0x3c1500d8,0x4d);
 	reg32_write(0x3c1500dc,0x1500);
-	reg32_write(0x3c1500e0,0x8400);
-	reg32_write(0x3c1500e4,0x3100);
-	reg32_write(0x3c1500e8,0x4600);
-	reg32_write(0x3c1500ec,0x84d);
-	reg32_write(0x3c1500f0,0x4d);
-	reg32_write(0x3c1500f4,0x1500);
-	reg32_write(0x3c1500f8,0x0);
-
-	//disable APB bus to access DDRPHY RAM
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x1);
-	//Reset MPU and run
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x9);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x0);
-	wait_ddrphy_training_complete();
-
-	//configure DDRPHY-FW DMEM structure @clock2...
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0099, 0x1);
-
-	//set the PHY input clock to the desired frequency for pstate 2
-	reg32_write(0x3038a008,0x7070000);
-	reg32_write(0x3038a004,0x2000000);
-	reg32_write(0x3038a088,0x7070000);
-	reg32_write(0x3038a084,0x2010000);
-	reg32_write(0x303a00ec,0xffff);
-	tmp=reg32_read(0x303a00f8);
-	tmp |= 0x20;
-	reg32_write(0x303a00f8,tmp);
-	reg32_write(0x30389804,0x1000000);
-
-	//enable APB bus to access DDRPHY RAM
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x0);
-
-	reg32_write(0x3c150008,0x102);
-	reg32_write(0x3c15000c,0x64);
-	reg32_write(0x3c150020,0x121f);
-	reg32_write(0x3c150064,0x84);
-	reg32_write(0x3c150068,0x31);
-	reg32_write(0x3c15006c,0x4d46);
-	reg32_write(0x3c150070,0x4d08);
-	reg32_write(0x3c150074,0x0);
-	reg32_write(0x3c150078,0x15);
-	reg32_write(0x3c15007c,0x84);
-	reg32_write(0x3c150080,0x31);
-	reg32_write(0x3c150084,0x4d46);
-	reg32_write(0x3c150088,0x4d08);
-	reg32_write(0x3c15008c,0x0);
-	reg32_write(0x3c150090,0x15);
-	reg32_write(0x3c1500c8,0x8400);
-	reg32_write(0x3c1500cc,0x3100);
-	reg32_write(0x3c1500d0,0x4600);
-	reg32_write(0x3c1500d4,0x84d);
-	reg32_write(0x3c1500d8,0x4d);
-	reg32_write(0x3c1500dc,0x1500);
-	reg32_write(0x3c1500e0,0x8400);
-	reg32_write(0x3c1500e4,0x3100);
+	reg32_write(0x3c1500e0,0x9400);
+	reg32_write(0x3c1500e4,0x3109);
 	reg32_write(0x3c1500e8,0x4600);
 	reg32_write(0x3c1500ec,0x84d);
 	reg32_write(0x3c1500f0,0x4d);
@@ -344,7 +265,7 @@ void ddr_cfg_phy(void) {
 	tmp=reg32_read(0x303a00f8);
 	tmp |= 0x20;
 	reg32_write(0x303a00f8,tmp);
-	reg32_write(0x30360068,0xbbe580);
+	reg32_write(0x30360068,0xece580);
 	tmp=reg32_read(0x30360060);
 	tmp &= ~0x80;
 	reg32_write(0x30360060,tmp);
@@ -380,28 +301,28 @@ void ddr_cfg_phy(void) {
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54012,0x310);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54019,0x2dd4);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401a,0x31);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401b,0x4d46);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401c,0x4d08);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401e,0x15);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401b,0x4a66);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401c,0x4a08);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401e,0x16);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5401f,0x2dd4);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54020,0x31);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54021,0x4d46);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54022,0x4d08);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54024,0x15);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54021,0x4a66);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54022,0x4a08);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54024,0x16);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5402b,0x1000);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5402c,0x3);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54032,0xd400);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54033,0x312d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54034,0x4600);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54035,0x84d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54036,0x4d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54037,0x1500);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54034,0x6600);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54035,0x84a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54036,0x4a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54037,0x1600);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54038,0xd400);
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x54039,0x312d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403a,0x4600);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403b,0x84d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403c,0x4d);
-	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403d,0x1500);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403a,0x6600);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403b,0x84a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403c,0x4a);
+	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0x5403d,0x1600);
 
 	//disable APB bus to access DDRPHY RAM
 	reg32_write(IP2APB_DDRPHY_IPS_BASE_ADDR(0) + 4 * 0xd0000, 0x1);
@@ -912,10 +833,6 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c480030,0xc9);
 	reg32_write(0x3c480034,0x7d1);
 	reg32_write(0x3c480038,0x2c);
-	reg32_write(0x3c88002c,0x65);
-	reg32_write(0x3c880030,0xc9);
-	reg32_write(0x3c880034,0x7d1);
-	reg32_write(0x3c880038,0x2c);
 	reg32_write(0x3c240030,0x0);
 	reg32_write(0x3c240034,0x173);
 	reg32_write(0x3c240038,0x60);
@@ -928,8 +845,6 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c080044,0x3);
 	reg32_write(0x3c480040,0x5a);
 	reg32_write(0x3c480044,0x3);
-	reg32_write(0x3c880040,0x5a);
-	reg32_write(0x3c880044,0x3);
 	reg32_write(0x3c100200,0xe0);
 	reg32_write(0x3c100204,0x12);
 	reg32_write(0x3c100208,0xe0);
@@ -942,12 +857,6 @@ void ddr_cfg_phy(void) {
 	reg32_write(0x3c50020c,0x12);
 	reg32_write(0x3c500210,0xe0);
 	reg32_write(0x3c500214,0x12);
-	reg32_write(0x3c900200,0xe0);
-	reg32_write(0x3c900204,0x12);
-	reg32_write(0x3c900208,0xe0);
-	reg32_write(0x3c90020c,0x12);
-	reg32_write(0x3c900210,0xe0);
-	reg32_write(0x3c900214,0x12);
 	reg32_write(0x3c1003f4,0xf);
 	reg32_write(0x3c040044,0x1);
 	reg32_write(0x3c040048,0x1);

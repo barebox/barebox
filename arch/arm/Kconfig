@@ -388,7 +388,11 @@ config ARM_SEMIHOSTING
 	  the data on the host computer connected to the target via
 	  debugging channel (JTAG, SWD). If unsure say N
 
+config ARM_SMCCC
+	bool
+
 config ARM_SECURE_MONITOR
+	select ARM_SMCCC
 	bool
 
 config ARM_PSCI

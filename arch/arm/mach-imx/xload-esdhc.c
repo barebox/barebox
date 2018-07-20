@@ -14,6 +14,7 @@
 #include <common.h>
 #include <io.h>
 #include <mci.h>
+#include <mach/atf.h>
 #include <mach/imx6-regs.h>
 #include <mach/imx8mq-regs.h>
 #include <mach/xload.h>
@@ -219,7 +220,7 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 }
 
 static int
-esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
+esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, ptrdiff_t entry, u32 offset)
 {
 
 	void *buf = (void *)address;
@@ -245,6 +246,35 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
 
 	pr_debug("Check ok, loading image\n");
 
+	ofs = offset + hdr->entry - hdr->boot_data.start;
+
+	if (entry != address) {
+		/*
+		 * Passing entry different from address is interpreted
+		 * as a request to place the image such that its entry
+		 * point would be exactly at 'entry', that is:
+		 *
+		 *     buf + ofs = entry
+		 *
+		 * solving the above for 'buf' gvies us the
+		 * adjustement that needs to be made:
+		 *
+		 *     buf = entry - ofs
+		 *
+		 */
+		if (WARN_ON(entry - ofs < address)) {
+			/*
+			 * We want to make sure we won't try to place
+			 * the start of the image before the beginning
+			 * of the memory buffer we were given in
+			 * address.
+			 */
+			return -EINVAL;
+		}
+
+		buf = (void *)(entry - ofs);
+	}
+
 	ret = esdhc_read_blocks(esdhc, buf, offset + len);
 	if (ret) {
 		pr_err("Loading image failed with %d\n", ret);
@@ -252,8 +282,6 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
 	}
 
 	pr_debug("Image loaded successfully\n");
-
-	ofs = offset + hdr->entry - hdr->boot_data.start;
 
 	bb = buf + ofs;
 
@@ -295,7 +323,7 @@ int imx6_esdhc_start_image(int instance)
 
 	esdhc.is_mx6 = 1;
 
-	return esdhc_start_image(&esdhc, 0x10000000, 0);
+	return esdhc_start_image(&esdhc, 0x10000000, 0x10000000, 0);
 }
 
 /**
@@ -327,5 +355,6 @@ int imx8_esdhc_start_image(int instance)
 
 	esdhc.is_mx6 = 1;
 
-	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR, SZ_32K);
+	return esdhc_start_image(&esdhc, MX8MQ_DDR_CSD1_BASE_ADDR,
+				 MX8MQ_ATF_BL33_BASE_ADDR, SZ_32K);
 }

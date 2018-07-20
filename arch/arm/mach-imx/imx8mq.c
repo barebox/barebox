@@ -62,12 +62,14 @@ static void imx8mq_silicon_revision(void)
 
 static int imx8mq_init_syscnt_frequency(void)
 {
-	void __iomem *syscnt = IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR);
-	/*
-	 * Update with accurate clock frequency
-	 */
-	set_cntfrq(syscnt_get_cntfrq(syscnt));
-	syscnt_enable(syscnt);
+	if (current_el() == 3) {
+		void __iomem *syscnt = IOMEM(MX8MQ_SYSCNT_CTRL_BASE_ADDR);
+		/*
+		 * Update with accurate clock frequency
+		 */
+		set_cntfrq(syscnt_get_cntfrq(syscnt));
+		syscnt_enable(syscnt);
+	}
 
 	return 0;
 }

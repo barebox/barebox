@@ -20,10 +20,15 @@
 #include <mach/revision.h>
 #include <mach/imx8mq-regs.h>
 
+#include <linux/arm-smccc.h>
+
 #define IMX8MQ_ROM_VERSION_A0	0x800
 #define IMX8MQ_ROM_VERSION_B0	0x83C
 
 #define MX8MQ_ANATOP_DIGPROG	0x6c
+
+#define FSL_SIP_BUILDINFO			0xC2000003
+#define FSL_SIP_BUILDINFO_GET_COMMITHASH	0x00
 
 static void imx8mq_silicon_revision(void)
 {
@@ -81,7 +86,17 @@ core_initcall(imx8mq_init_syscnt_frequency);
 
 int imx8mq_init(void)
 {
+	struct arm_smccc_res res;
+
 	imx8mq_silicon_revision();
+
+	if (IS_ENABLED(CONFIG_ARM_SMCCC) &&
+	    IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_ATF)) {
+		arm_smccc_smc(FSL_SIP_BUILDINFO,
+			      FSL_SIP_BUILDINFO_GET_COMMITHASH,
+			      0, 0, 0, 0, 0, 0, &res);
+		pr_info("i.MX ARM Trusted Firmware: %s\n", (char *)&res.a0);
+	}
 
 	return 0;
 }

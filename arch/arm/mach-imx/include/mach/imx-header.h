@@ -1,6 +1,8 @@
 #ifndef __IMX_HEADER_H__
 #define __IMX_HEADER_H__
 
+#include <linux/types.h>
+
 #define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
 
 /*
@@ -65,6 +67,14 @@ struct imx_flash_header_v2 {
 	struct imx_boot_data boot_data;
 	struct imx_ivt_header dcd_header;
 } __attribute__((packed));
+
+static inline bool is_imx_flash_header_v2(const void *blob)
+{
+	const struct imx_flash_header_v2 *hdr = blob;
+
+	return  hdr->header.tag == TAG_IVT_HEADER &&
+		hdr->header.version >= IVT_VERSION;
+}
 
 struct config_data {
 	uint32_t image_load_addr;

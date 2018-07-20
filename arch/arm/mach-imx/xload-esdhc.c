@@ -18,6 +18,7 @@
 #include <mach/imx8mq-regs.h>
 #include <mach/xload.h>
 #include <linux/sizes.h>
+#include <mach/imx-header.h>
 #include "../../../drivers/mci/sdhci.h"
 #include "../../../drivers/mci/imx-esdhc.h"
 
@@ -220,8 +221,9 @@ static int esdhc_read_blocks(struct esdhc *esdhc, void *dst, size_t len)
 static int
 esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
 {
+
 	void *buf = (void *)address;
-	u32 *ivt = buf + offset + SZ_1K;
+	struct imx_flash_header_v2 *hdr = buf + offset + SZ_1K;
 	int ret, len;
 	void __noreturn (*bb)(void);
 	unsigned int ofs;
@@ -233,9 +235,11 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
 	if (ret)
 		return ret;
 
-	if (*(u32 *)(ivt) != 0x402000d1) {
-		pr_debug("IVT header not found on SD card. Found 0x%08x instead of 0x402000d1\n",
-				*ivt);
+	if (!is_imx_flash_header_v2(hdr)) {
+		pr_debug("IVT header not found on SD card. "
+			 "Found tag: 0x%02x length: 0x%04x version: %02x\n",
+			 hdr->header.tag, hdr->header.length,
+			 hdr->header.version);
 		return -EINVAL;
 	}
 
@@ -249,7 +253,7 @@ esdhc_start_image(struct esdhc *esdhc, ptrdiff_t address, u32 offset)
 
 	pr_debug("Image loaded successfully\n");
 
-	ofs = offset + *(ivt + 1) - *(ivt + 8);
+	ofs = offset + hdr->entry - hdr->boot_data.start;
 
 	bb = buf + ofs;
 

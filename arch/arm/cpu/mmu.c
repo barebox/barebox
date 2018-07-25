@@ -85,34 +85,6 @@ static void arm_mmu_not_initialized_error(void)
 	panic("MMU not initialized\n");
 }
 
-/*
- * Create a second level translation table for the given virtual address.
- * We initially create a flat uncached mapping on it.
- * Not yet exported, but may be later if someone finds use for it.
- */
-static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
-{
-	u32 *table;
-	int i;
-
-	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
-
-	table = xmemalign(PTRS_PER_PTE * sizeof(u32),
-			  PTRS_PER_PTE * sizeof(u32));
-
-	if (!ttb)
-		arm_mmu_not_initialized_error();
-
-	ttb[pgd_index(virt)] = (unsigned long)table | PMD_TYPE_TABLE;
-
-	for (i = 0; i < PTRS_PER_PTE; i++) {
-		table[i] = virt | PTE_TYPE_SMALL | flags;
-		virt += PAGE_SIZE;
-	}
-
-	return table;
-}
-
 static bool pgd_type_table(u32 pgd)
 {
 	return (pgd & PMD_TYPE_MASK) == PMD_TYPE_TABLE;
@@ -150,6 +122,38 @@ static void dma_inv_range(unsigned long start, unsigned long end)
 	if (outer_cache.inv_range)
 		outer_cache.inv_range(start, end);
 	__dma_inv_range(start, end);
+}
+
+/*
+ * Create a second level translation table for the given virtual address.
+ * We initially create a flat uncached mapping on it.
+ * Not yet exported, but may be later if someone finds use for it.
+ */
+static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
+{
+	u32 *table;
+	int i, ttb_idx;
+
+	virt = ALIGN_DOWN(virt, PGDIR_SIZE);
+
+	table = xmemalign(PTRS_PER_PTE * sizeof(u32),
+			  PTRS_PER_PTE * sizeof(u32));
+
+	if (!ttb)
+		arm_mmu_not_initialized_error();
+
+	ttb_idx = pgd_index(virt);
+
+	for (i = 0; i < PTRS_PER_PTE; i++) {
+		table[i] = virt | PTE_TYPE_SMALL | flags;
+		virt += PAGE_SIZE;
+	}
+	dma_flush_range(table, PTRS_PER_PTE * sizeof(u32));
+
+	ttb[ttb_idx] = (unsigned long)table | PMD_TYPE_TABLE;
+	dma_flush_range(ttb, sizeof(u32));
+
+	return table;
 }
 
 int arch_remap_range(void *start, size_t size, unsigned flags)
@@ -227,28 +231,11 @@ int arch_remap_range(void *start, size_t size, unsigned flags)
 				table = arm_create_pte(addr, pte_flags_cached);
 				pte = find_pte(addr);
 				BUG_ON(!pte);
-				/*
-				 * We just split this section and
-				 * modified it's Level 1 descriptor,
-				 * so it needs to be flushed.
-				 */
-				dma_flush_range(pgd, sizeof(*pgd));
 			}
 
 			for (i = 0; i < num_ptes; i++) {
 				pte[i] &= ~PTE_MASK;
 				pte[i] |= pte_flags | PTE_TYPE_SMALL;
-			}
-
-			if (table) {
-				/*
-				 * If we just created a new page
-				 * table, the whole table would have
-				 * to be flushed, not just PTEs that
-				 * we touched when re-mapping.
-				 */
-				pte = table;
-				num_ptes = PTRS_PER_PTE;
 			}
 
 			dma_flush_range(pte, num_ptes * sizeof(u32));

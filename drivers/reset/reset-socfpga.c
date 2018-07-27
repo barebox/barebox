@@ -113,6 +113,7 @@ static const struct of_device_id socfpga_reset_dt_ids[] = {
 };
 
 static struct driver_d socfpga_reset_driver = {
+	.name = "socfpga_reset",
 	.probe	= socfpga_reset_probe,
 	.of_compatible	= DRV_OF_COMPAT(socfpga_reset_dt_ids),
 };

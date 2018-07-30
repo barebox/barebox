@@ -1,6 +1,9 @@
 #ifndef __GPIO_H
 #define __GPIO_H
 
+#include <linux/types.h>
+#include <linux/list.h>
+
 #ifdef CONFIG_GENERIC_GPIO
 void gpio_set_value(unsigned gpio, int value);
 int gpio_get_value(unsigned gpio);

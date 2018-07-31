@@ -45,6 +45,9 @@ static inline void socfpga_cyclone5_qspi_init(void)
 	return;
 }
 #endif
+#if defined(CONFIG_ARCH_SOCFPGA_ARRIA10)
+enum bootsource arria10_get_bootsource(void);
+#endif
 
 static inline void __udelay(unsigned us)
 {

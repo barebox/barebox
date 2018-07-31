@@ -15,16 +15,17 @@
 #include <bootsource.h>
 #include <init.h>
 #include <io.h>
+#include <mach/generic.h>
 #include <mach/arria10-system-manager.h>
 
-static int arria10_boot_save_loc(void)
-{
+enum bootsource arria10_get_bootsource(void) {
 	enum bootsource src = BOOTSOURCE_UNKNOWN;
 	uint32_t val;
+	uint32_t mask = ARRIA10_SYSMGR_BOOTINFO_BSEL_MASK;
 
 	val = readl(ARRIA10_SYSMGR_BOOTINFO);
 
-	switch ((val & 0x7000) >> 12) {
+	switch ((val & mask) >> ARRIA10_SYSMGR_BOOTINFO_BSEL_SHIFT) {
 	case 0:
 		/* reserved */
 		break;
@@ -44,6 +45,15 @@ static int arria10_boot_save_loc(void)
 		src = BOOTSOURCE_SPI;
 		break;
 	}
+
+	return src;
+}
+
+static int arria10_boot_save_loc(void)
+{
+	enum bootsource src;
+
+	src = arria10_get_bootsource();
 
 	bootsource_set(src);
 	bootsource_set_instance(0);

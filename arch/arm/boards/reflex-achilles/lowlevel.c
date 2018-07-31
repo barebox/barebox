@@ -26,6 +26,7 @@ static noinline void achilles_entry(void)
 	setup_c();
 
 	arria10_init(&mainpll_cfg, &perpll_cfg, pinmux);
+	arria10_finish_io(&mainpll_cfg, &perpll_cfg, pinmux);
 
 	arria10_ddr_calibration_sequence();
 

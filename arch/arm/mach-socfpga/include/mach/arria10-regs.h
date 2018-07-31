@@ -45,6 +45,7 @@
 #define ARRIA10_DMASECURE_ADDR				(0xffda1000)
 #define ARRIA10_OCRAM_ADDR				(0xffe00000)
 #define ARRIA10_MPUSCU_ADDR				(0xffffc000)
+#define ARRIA10_SMP_TWD_ADDR				(0xffffc600)
 #define ARRIA10_MPUL2_ADDR				(0xfffff000)
 
 /* L2 cache controller */

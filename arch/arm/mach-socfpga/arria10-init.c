@@ -194,4 +194,6 @@ void arria10_init(struct arria10_mainpll_cfg *mainpll,
 	arria10_reset_deassert_fpga_peripherals();
 
 	INIT_LL();
+
+	puts_ll("lowlevel init done\n");
 }

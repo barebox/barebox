@@ -27,11 +27,7 @@ static noinline void achilles_entry(void)
 
 	arria10_init(&mainpll_cfg, &perpll_cfg, pinmux);
 
-	puts_ll("lowlevel init done\n");
-
 	arria10_ddr_calibration_sequence();
-
-	puts_ll("SDRAM setup done\n");
 
 	fdt = __dtb_socfpga_arria10_achilles_start + get_runtime_offset();
 

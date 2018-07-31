@@ -46,7 +46,43 @@ static inline void socfpga_cyclone5_qspi_init(void)
 }
 #endif
 #if defined(CONFIG_ARCH_SOCFPGA_ARRIA10)
+void socfpga_arria10_mmc_init(void);
+void socfpga_arria10_timer_init(void);
+int arria10_prepare_mmc(int barebox, int bitstream);
+void arria10_start_image(int offset);
+int arria10_load_fpga(int offset, int size);
+int arria10_device_init(struct arria10_mainpll_cfg *mainpll,
+			struct arria10_perpll_cfg *perpll,
+			uint32_t *pinmux);
 enum bootsource arria10_get_bootsource(void);
+#else
+static inline void socfpga_arria10_mmc_init(void)
+{
+	return;
+}
+
+static inline void socfpga_arria10_timer_init(void)
+{
+	return;
+}
+static void arria10_prepare_mmc(int barebox, int bitstream)
+{
+	return;
+}
+static void arria10_start_image(int offset)
+{
+	return;
+}
+static int arria10_load_fpga(int offset, int size)
+{
+	return;
+}
+static int arria10_device_init(struct arria10_mainpll_cfg *mainpll,
+			struct arria10_perpll_cfg *perpll,
+			uint32_t *pinmux)
+{
+	return 0;
+}
 #endif
 
 static inline void __udelay(unsigned us)

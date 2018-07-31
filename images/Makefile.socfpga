@@ -13,6 +13,17 @@ quiet_cmd_socfpga_image = SOCFPGA-IMG $@
 $(obj)/%.socfpgaimg: $(obj)/% FORCE
 	$(call if_changed,socfpga_image)
 
+ocram-tmp = $(subst $(comma),_,$(dot-target).ocram.tmp)
+
+quiet_cmd_socfpga_ocram_img ?= SOCFPGA-OCRAM-IMG    $@
+      cmd_socfpga_ocram_img ?= cat $(obj)/$(patsubst %.socfpga-ocram-img,%.pblb,$(2)) > $(ocram-tmp); \
+		  $(call size_append, $(obj)/barebox.z) >> $(ocram-tmp); \
+		  $(objtree)/scripts/socfpga_mkimage -v1 -b -s -o $@ $(ocram-tmp); \
+		  cat $(obj)/barebox.z >> $@
+
+$(obj)/%.socfpga-ocram-img: $(obj)/%.pblb $(obj)/barebox.z FORCE
+	$(call if_changed,socfpga_ocram_img,$(@F))
+
 # ----------------------- Cyclone5 based boards ---------------------------
 pblx-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += start_socfpga_socdk_xload
 FILE_barebox-socfpga-socdk-xload.img = start_socfpga_socdk_xload.pblx.socfpgaimg

@@ -253,6 +253,8 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		}
 	}
 
+	pci_fixup_device(pci_fixup_header, dev);
+
 	pci_write_config_byte(dev, PCI_COMMAND, cmd);
 	list_add_tail(&dev->bus_list, &dev->bus->devices);
 }
@@ -412,6 +414,10 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 		class >>= 8;
 		dev->hdr_type = hdr_type;
 
+		pci_fixup_device(pci_fixup_early, dev);
+		/* the fixup may have changed the device class */
+		class = dev->class >> 8;
+
 		pr_debug("class = %08x, hdr_type = %08x\n", class, hdr_type);
 		pr_debug("%02x:%02x [%04x:%04x]\n", bus->number, dev->devfn,
 		    dev->vendor, dev->device);
@@ -519,12 +525,61 @@ EXPORT_SYMBOL(pci_clear_master);
  */
 int pci_enable_device(struct pci_dev *dev)
 {
+	int ret;
 	u32 t;
 
 	pci_read_config_dword(dev, PCI_COMMAND, &t);
-	return pci_write_config_dword(dev, PCI_COMMAND, t
-				| PCI_COMMAND_IO
-				| PCI_COMMAND_MEMORY
-				);
+	ret = pci_write_config_dword(dev, PCI_COMMAND,
+				     t | PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
+	if (ret)
+		return ret;
+
+	pci_fixup_device(pci_fixup_enable, dev);
+
+	return 0;
 }
 EXPORT_SYMBOL(pci_enable_device);
+
+static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
+			  struct pci_fixup *end)
+{
+	for (; f < end; f++)
+		if ((f->class == (u32) (dev->class >> f->class_shift) ||
+		     f->class == (u32) PCI_ANY_ID) &&
+		    (f->vendor == dev->vendor ||
+		     f->vendor == (u16) PCI_ANY_ID) &&
+		    (f->device == dev->device ||
+		     f->device == (u16) PCI_ANY_ID)) {
+			f->hook(dev);
+		}
+}
+
+extern struct pci_fixup __start_pci_fixups_early[];
+extern struct pci_fixup __end_pci_fixups_early[];
+extern struct pci_fixup __start_pci_fixups_header[];
+extern struct pci_fixup __end_pci_fixups_header[];
+extern struct pci_fixup __start_pci_fixups_enable[];
+extern struct pci_fixup __end_pci_fixups_enable[];
+
+void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev)
+{
+	struct pci_fixup *start, *end;
+
+	switch (pass) {
+	case pci_fixup_early:
+		start = __start_pci_fixups_early;
+		end = __end_pci_fixups_early;
+		break;
+	case pci_fixup_header:
+		start = __start_pci_fixups_header;
+		end = __end_pci_fixups_header;
+		break;
+	case pci_fixup_enable:
+		start = __start_pci_fixups_enable;
+		end = __end_pci_fixups_enable;
+		break;
+	default:
+		unreachable();
+	}
+	pci_do_fixups(dev, start, end);
+}

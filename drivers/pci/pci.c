@@ -331,6 +331,31 @@ static void postscan_setup_bridge(struct pci_dev *dev)
 	}
 }
 
+static struct device_node *
+pci_of_match_device(struct device_d *parent, unsigned int devfn)
+{
+	struct device_node *np;
+	u32 reg;
+
+	if (!IS_ENABLED(CONFIG_OFTREE) || !parent->device_node)
+		return NULL;
+
+	for_each_child_of_node(parent->device_node, np) {
+		if (!of_property_read_u32_array(np, "reg", &reg, 1)) {
+			/*
+			 * Only match device/function pair of the device
+			 * address, other properties are defined by the
+			 * PCI/OF node topology.
+			 */
+			reg = (reg >> 8) & 0xffff;
+			if (reg == devfn)
+				return np;
+		}
+	}
+
+	return NULL;
+}
+
 unsigned int pci_scan_bus(struct pci_bus *bus)
 {
 	struct pci_dev *dev;
@@ -368,6 +393,11 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 		dev->vendor = l & 0xffff;
 		dev->device = (l >> 16) & 0xffff;
 		dev->dev.parent = bus->parent;
+		dev->dev.device_node = pci_of_match_device(bus->parent, devfn);
+		if (dev->dev.device_node)
+			pr_debug("found DT node %s for device %04x:%04x\n",
+				 dev->dev.device_node->full_name,
+				 dev->vendor, dev->device);
 
 		/* non-destructively determine if device can be a master: */
 		pci_read_config_byte(dev, PCI_COMMAND, &cmd);

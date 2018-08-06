@@ -113,7 +113,7 @@ static inline int imx6_bbu_internal_spi_i2c_register_handler(const char *name, c
 	return -ENOSYS;
 }
 
-int vf610_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+static inline int vf610_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 					    unsigned long flags)
 {
 	return -ENOSYS;

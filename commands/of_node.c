@@ -107,11 +107,10 @@ static int do_of_node(int argc, char *argv[])
 		}
 	}
 
-	if (optind == argc)
+	if (optind + 1 != argc)
 		return COMMAND_ERROR_USAGE;
 
-	if (optind < argc)
-		path = argv[optind];
+	path = argv[optind];
 
 	if (!path)
 		return COMMAND_ERROR_USAGE;
@@ -147,7 +146,7 @@ BAREBOX_CMD_HELP_END
 BAREBOX_CMD_START(of_node)
 	.cmd		= do_of_node,
 	BAREBOX_CMD_DESC("create/delete nodes in the device tree")
-	BAREBOX_CMD_OPTS("[-cd] [-f] NODE NAME")
+	BAREBOX_CMD_OPTS("[-cd] [-f] NODEPATH")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_COMPLETE(devicetree_complete)
 	BAREBOX_CMD_HELP(cmd_of_node_help)

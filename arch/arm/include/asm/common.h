@@ -48,7 +48,10 @@ static inline unsigned long get_sp(void)
 
 static inline void arm_setup_stack(unsigned long top)
 {
-	__asm__ __volatile__("mov sp, %0" : : "r"(top));
+	__asm__ __volatile__("mov sp, %0"
+			     :
+			     : "r"(top)
+			     : "sp");
 }
 
 #endif /* __ASM_ARM_COMMON_H */

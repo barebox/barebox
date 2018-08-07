@@ -135,7 +135,7 @@ static int physom_devices_init(void)
 			}
 	}
 
-	if (IS_ENABLED(PHYTEC_SOM_AM335X_OF_AUTOENABLE)) {
+	if (IS_ENABLED(CONFIG_PHYTEC_SOM_AM335X_OF_AUTOENABLE)) {
 		/* Enable NAND */
 		of_autoenable_device_by_path("/ocp/gpmc@50000000");
 		/* Enable eMMC */

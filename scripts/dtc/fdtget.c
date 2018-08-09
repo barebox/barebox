@@ -54,6 +54,37 @@ static void report_error(const char *where, int err)
 }
 
 /**
+ * Shows a list of cells in the requested format
+ *
+ * @param disp		Display information / options
+ * @param data		Data to display
+ * @param len		Maximum length of buffer
+ * @param size		Data size to use for display (e.g. 4 for 32-bit)
+ * @return 0 if ok, -1 on error
+ */
+static int show_cell_list(struct display_info *disp, const char *data, int len,
+			  int size)
+{
+	const uint8_t *p = (const uint8_t *)data;
+	char fmt[3];
+	int value;
+	int i;
+
+	fmt[0] = '%';
+	fmt[1] = disp->type ? disp->type : 'd';
+	fmt[2] = '\0';
+	for (i = 0; i < len; i += size, p += size) {
+		if (i)
+			printf(" ");
+		value = size == 4 ? fdt32_to_cpu(*(const fdt32_t *)p) :
+			size == 2 ? (*p << 8) | p[1] : *p;
+		printf(fmt, value);
+	}
+
+	return 0;
+}
+
+/**
  * Displays data of a given length according to selected options
  *
  * If a specific data type is provided in disp, then this is used. Otherwise
@@ -66,12 +97,9 @@ static void report_error(const char *where, int err)
  */
 static int show_data(struct display_info *disp, const char *data, int len)
 {
-	int i, size;
-	const uint8_t *p = (const uint8_t *)data;
+	int size;
 	const char *s;
-	int value;
 	int is_string;
-	char fmt[3];
 
 	/* no data, don't print */
 	if (len == 0)
@@ -99,17 +127,8 @@ static int show_data(struct display_info *disp, const char *data, int len)
 				"selected data size\n");
 		return -1;
 	}
-	fmt[0] = '%';
-	fmt[1] = disp->type ? disp->type : 'd';
-	fmt[2] = '\0';
-	for (i = 0; i < len; i += size, p += size) {
-		if (i)
-			printf(" ");
-		value = size == 4 ? fdt32_to_cpu(*(const uint32_t *)p) :
-			size == 2 ? (*p << 8) | p[1] : *p;
-		printf(fmt, value);
-	}
-	return 0;
+
+	return show_cell_list(disp, data, len, size);
 }
 
 /**
@@ -245,7 +264,7 @@ static int show_data_for_item(const void *blob, struct display_info *disp,
  * @param filename	Filename of blob file
  * @param arg		List of arguments to process
  * @param arg_count	Number of arguments
- * @param return 0 if ok, -ve on error
+ * @return 0 if ok, -ve on error
  */
 static int do_fdtget(struct display_info *disp, const char *filename,
 		     char **arg, int arg_count, int args_per_step)
@@ -266,44 +285,50 @@ static int do_fdtget(struct display_info *disp, const char *filename,
 				continue;
 			} else {
 				report_error(arg[i], node);
+				free(blob);
 				return -1;
 			}
 		}
 		prop = args_per_step == 1 ? NULL : arg[i + 1];
 
-		if (show_data_for_item(blob, disp, node, prop))
+		if (show_data_for_item(blob, disp, node, prop)) {
+			free(blob);
 			return -1;
+		}
 	}
+
+	free(blob);
+
 	return 0;
 }
 
-static const char *usage_msg =
-	"fdtget - read values from device tree\n"
-	"\n"
-	"Each value is printed on a new line.\n\n"
-	"Usage:\n"
+/* Usage related data. */
+static const char usage_synopsis[] =
+	"read values from device tree\n"
 	"	fdtget <options> <dt file> [<node> <property>]...\n"
 	"	fdtget -p <options> <dt file> [<node> ]...\n"
-	"Options:\n"
-	"\t-t <type>\tType of data\n"
-	"\t-p\t\tList properties for each node\n"
-	"\t-l\t\tList subnodes for each node\n"
-	"\t-d\t\tDefault value to display when the property is "
-			"missing\n"
-	"\t-h\t\tPrint this help\n\n"
+	"\n"
+	"Each value is printed on a new line.\n"
 	USAGE_TYPE_MSG;
-
-static void usage(const char *msg)
-{
-	if (msg)
-		fprintf(stderr, "Error: %s\n\n", msg);
-
-	fprintf(stderr, "%s", usage_msg);
-	exit(2);
-}
+static const char usage_short_opts[] = "t:pld:" USAGE_COMMON_SHORT_OPTS;
+static struct option const usage_long_opts[] = {
+	{"type",              a_argument, NULL, 't'},
+	{"properties",       no_argument, NULL, 'p'},
+	{"list",             no_argument, NULL, 'l'},
+	{"default",           a_argument, NULL, 'd'},
+	USAGE_COMMON_LONG_OPTS,
+};
+static const char * const usage_opts_help[] = {
+	"Type of data",
+	"List properties for each node",
+	"List subnodes for each node",
+	"Default value to display when the property is missing",
+	USAGE_COMMON_OPTS_HELP
+};
 
 int main(int argc, char *argv[])
 {
+	int opt;
 	char *filename = NULL;
 	struct display_info disp;
 	int args_per_step = 2;
@@ -312,20 +337,14 @@ int main(int argc, char *argv[])
 	memset(&disp, '\0', sizeof(disp));
 	disp.size = -1;
 	disp.mode = MODE_SHOW_VALUE;
-	for (;;) {
-		int c = getopt(argc, argv, "d:hlpt:");
-		if (c == -1)
-			break;
-
-		switch (c) {
-		case 'h':
-		case '?':
-			usage(NULL);
+	while ((opt = util_getopt_long()) != EOF) {
+		switch (opt) {
+		case_USAGE_COMMON_FLAGS
 
 		case 't':
 			if (utilfdt_decode_type(optarg, &disp.type,
 					&disp.size))
-				usage("Invalid type string");
+				usage("invalid type string");
 			break;
 
 		case 'p':
@@ -347,7 +366,7 @@ int main(int argc, char *argv[])
 	if (optind < argc)
 		filename = argv[optind++];
 	if (!filename)
-		usage("Missing filename");
+		usage("missing filename");
 
 	argv += optind;
 	argc -= optind;
@@ -358,7 +377,7 @@ int main(int argc, char *argv[])
 
 	/* Check for node, property arguments */
 	if (args_per_step == 2 && (argc % 2))
-		usage("Must have an even number of arguments");
+		usage("must have an even number of arguments");
 
 	if (do_fdtget(&disp, filename, argv, argc, args_per_step))
 		return 1;

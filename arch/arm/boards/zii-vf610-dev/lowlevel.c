@@ -111,7 +111,7 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 		if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 			relocate_to_current_adr();
 			setup_c();
-			puts_ll("*********************************\n");
+			puts_ll("\n*********************************\n");
 			puts_ll("* Unknown system type: ");
 			puthex_ll(system_type);
 			puts_ll("\n* Assuming devboard revision B\n");

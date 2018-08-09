@@ -43,7 +43,7 @@ enum zii_platform_vf610_type {
 	ZII_PLATFORM_VF610_DEV_REV_C	= 0x05,
 };
 
-unsigned int get_system_type(void)
+static unsigned int get_system_type(void)
 {
 #define GPIO_PDIR 0x10
 

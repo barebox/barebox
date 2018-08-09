@@ -289,11 +289,12 @@ static int fit_check_rsa_signature(struct device_node *sig_node,
 	}
 	key_path = xasprintf("/signature/key-%s", key_name);
 	key_node = of_find_node_by_path(key_path);
-	free(key_path);
 	if (!key_node) {
-		pr_info("failed to find key node\n");
+		pr_info("failed to find key node %s\n", key_path);
+		free(key_path);
 		return -ENOENT;
 	}
+	free(key_path);
 
 	ret = rsa_of_read_key(key_node, &key);
 	if (ret) {

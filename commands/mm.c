@@ -53,7 +53,7 @@ static int do_mem_mm(int argc, char *argv[])
 	value = simple_strtoull(argv[optind++], NULL, 0);
 	mask = simple_strtoull(argv[optind++], NULL, 0);
 
-	fd = open_and_lseek(filename, mode | O_RDWR, adr);
+	fd = open_and_lseek(filename, mode | O_RDWR | O_CREAT, adr);
 	if (fd < 0)
 		return 1;
 

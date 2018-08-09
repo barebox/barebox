@@ -501,7 +501,7 @@ int open_and_lseek(const char *filename, int mode, loff_t pos)
 {
 	int fd, ret;
 
-	fd = open(filename, mode | O_RDONLY);
+	fd = open(filename, mode);
 	if (fd < 0) {
 		perror("open");
 		return fd;

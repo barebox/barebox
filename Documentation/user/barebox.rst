@@ -181,9 +181,7 @@ simply with:
 The resulting binary varies depending on the board barebox is compiled for.
 Without :ref:`multi_image` support the ``barebox-flash-image`` link will point
 to the binary for flashing/uploading to the board. With :ref:`multi_image` support
-the compilation process will finish with a list of images built under ``images/``:
-
-.. code-block:: sh
+the compilation process will finish with a list of images built under ``images/``::
 
   images built:
   barebox-freescale-imx51-babbage.img

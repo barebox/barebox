@@ -17,11 +17,15 @@ gigabyte.
 Examples
 --------
 
-Display a hexdump from 0x80000000 to 0x80001000 (inclusive)::
+Display a hexdump from 0x80000000 to 0x80001000 (inclusive):
+
+.. code-block:: sh
 
   md 0x80000000-0x80001000
 
-Display 1 kilobyte of memory starting at 0x80000000::
+Display 1 kilobyte of memory starting at 0x80000000:
+
+.. code-block:: sh
 
   md 0x80000000+1k
 

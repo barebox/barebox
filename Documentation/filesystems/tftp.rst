@@ -12,7 +12,9 @@ TFTP is not designed as a filesystem. It does not have support for listing
 directories. This means a :ref:`ls <command_ls>` to a TFTP-mounted path will
 show an empty directory. Nevertheless, the files are there.
 
-Example::
+Example:
+
+.. code-block:: console
 
   barebox:/ mount -t tftp 192.168.23.4 /mnt/tftp
 

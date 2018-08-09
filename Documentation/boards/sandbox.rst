@@ -7,7 +7,9 @@ hardware related features.
 Building barebox for simulation
 -------------------------------
 
-The barebox sandbox can be built with the host compiler::
+The barebox sandbox can be built with the host compiler:
+
+.. code-block:: sh
 
   ARCH=sandbox make sandbox_defconfig
   ARCH=sandbox make
@@ -16,6 +18,8 @@ Running the sandbox
 -------------------
 
 Once you compile barebox for the sandbox, you can run it with::
+
+.. code-block:: console
 
   $ barebox [<OPTIONS>]
 

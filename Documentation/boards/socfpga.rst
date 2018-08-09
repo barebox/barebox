@@ -41,7 +41,9 @@ second partition of the SD card, which must be of type FAT32. On this partition
 barebox searches for a file called barebox.bin.
 
 To boot barebox on a Terasic SoCkit, the procedure is as follows (sdb1 is the A2 and
-sdb2 the FAT32 partition)::
+sdb2 the FAT32 partition):
+
+.. code-block:: sh
 
   mount -t fat /dev/sdb2 /mnt
   make socfpga-xload_defconfig
@@ -50,7 +52,9 @@ sdb2 the FAT32 partition)::
   make
 
 barebox has now generated multiple files in the images directory. So for the SoCkit
-proceed with::
+proceed with:
+
+.. code-block:: sh
 
   cat images/barebox-socfpga-sockit-xload.img > /dev/sdb1
   cp images/barebox-socfpga-sockit.img /mnt/barebox.bin
@@ -64,12 +68,16 @@ QSPI
 The Boot ROM loads the preloader starting from address 0x0 on the QSPI flash.
 barebox then searches for a barebox image at the 256K offset and loads it.
 
-The default bootsource is SD card, so to change that to QSPI, you have to::
+The default bootsource is SD card, so to change that to QSPI, you have to:
+
+.. code-block:: sh
 
   make socfpga-xload_defconfig
   make menuconfig
 
-And then select the options `MTD` and `SPI_CADENCE_QUADSPI`. Now::
+And then select the options `MTD` and `SPI_CADENCE_QUADSPI`. Now:
+
+.. code-block:: sh
 
   make
   cat images/barebox-socfpga-<board>-xload.img > /dev/mtd0
@@ -116,7 +124,9 @@ To update the handoff files, the following procedure is necessary:
    preloader settings directory
 7. Click ``Ok`` than ``Generate``
 
-Now run the command::
+Now run the command:
+
+.. code-block:: sh
 
   scripts/socfpga_import_preloader <SPL_GENERATED_DIR> <ISW_HANDOFF> <BOARD_DIRECTORY>
 
@@ -141,7 +151,9 @@ tree:
 * system.h
 * tclrpt.h
 
-To add these files, run::
+To add these files, run:
+
+.. code-block:: sh
 
   scripts/socfpga_get_sequencer <UBOOT-SRC> scripts/socfpga_sequencer_defines_defaults
 

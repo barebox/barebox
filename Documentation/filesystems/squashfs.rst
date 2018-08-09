@@ -6,7 +6,9 @@ SquashFS filesystem
 SquashFS is a highly compressed read-only filesystem for Linux.
 It uses zlib, lzo or xz compression to compress both files, inodes
 and directories. A SquashFS filesystem can be mounted using the
-:ref:`command_mount` command::
+:ref:`command_mount` command:
+
+.. code-block:: console
 
   barebox:/ mkdir /mnt
   barebox:/ mount -t squashfs /dev/spiflash.FileSystem /mnt

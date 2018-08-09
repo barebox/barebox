@@ -14,7 +14,9 @@ RAM initialisation
 ------------------
 
 Traditionally the RAM initialisation happens with a binary blob that have to be
-extracted from the vendor U-Boot::
+extracted from the vendor U-Boot:
+
+.. code-block:: sh
 
   scripts/kwbimage -x -i /dev/mtdblock0 -o .
 

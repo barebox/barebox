@@ -44,7 +44,9 @@ and their respective included directories in ``defaultenv/Makefile``:
 
 This script is executed by the barebox startup code after initialization.
 In defaultenv-2, this script will define and set a number of global
-variables, followed by sourcing all of the scripts in ``/env/init/`` with::
+variables, followed by sourcing all of the scripts in ``/env/init/`` with:
+
+.. code-block:: sh
 
   for i in /env/init/*; do
           . $i

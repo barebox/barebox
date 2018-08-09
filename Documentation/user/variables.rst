@@ -12,12 +12,16 @@ The ``global`` device
 The ``global`` device is a special purpose device. It only exists as a
 storage for global variables. Some global variables are created internally
 in barebox (see :ref:`magicvars`). Additional variables can be created with
-the :ref:`command_global` command::
+the :ref:`command_global` command:
+
+.. code-block:: sh
 
   global myvar
 
 This creates the ``global.myvar`` variable which now can be used like any
-other variable. You can also directly assign a value during creation::
+other variable. You can also directly assign a value during creation:
+
+.. code-block:: sh
 
   global myvar1=foobar
 
@@ -48,7 +52,7 @@ actual values.
 
 examples:
 
-.. code-block:: sh
+.. code-block:: console
 
   barebox@Phytec phyCARD-i.MX27:/ devinfo nv
   barebox@Phytec phyCARD-i.MX27:/ nv model=myboard
@@ -94,7 +98,9 @@ Some variables have special meanings and influence the behaviour
 of barebox. Most but not all of them are consolidated in the :ref:`global_device`.
 Since it's hard to remember which variables these are and if the current
 barebox has support for them the :ref:`command_magicvar` command can print a list
-of all variables with special meaning along with a short description::
+of all variables with special meaning along with a short description:
+
+.. code-block:: console
 
   barebox:/ magicvar
   OPTARG                           optarg for hush builtin getopt

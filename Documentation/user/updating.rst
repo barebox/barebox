@@ -11,12 +11,16 @@ A board can register an update handler to the update command. The handler can
 do additional checks before trying an update, e.g. it's possible
 to check whether the new image actually is a barebox image.
 
-Updating barebox can be as easy as::
+Updating barebox can be as easy as:
+
+.. code-block:: sh
 
   barebox_update /path/to/new/barebox.img
 
 Multiple handlers can be registered to the update mechanism. Usually the device
-barebox has been started from is registered as default (marked with a ``*``)::
+barebox has been started from is registered as default (marked with a ``*``):
+
+.. code-block:: console
 
   barebox:/ barebox_update -l
   registered update handlers:

@@ -26,11 +26,15 @@ Supported baseboards are:
 How to get barebox for Phytec's phyCORE-i.MX31
 ----------------------------------------------
 
-Using the default configuration::
+Using the default configuration:
+
+.. code-block:: sh
 
   make ARCH=arm pcm037_defconfig
 
-Build the binary image::
+Build the binary image:
+
+.. code-block:: sh
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 

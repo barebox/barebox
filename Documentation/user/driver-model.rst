@@ -32,7 +32,9 @@ Some devices like USB or MMC may take a longer time to probe. Probing USB
 devices should not delay booting when USB may not even be used. This case is
 handled with device detection. The user visible interface to device detection
 is the :ref:`command_detect` command. ``detect -l`` shows a list of detectable
-devices::
+devices:
+
+.. code-block:: console
 
   barebox:/ detect -l
   70004000.esdhc
@@ -46,7 +48,9 @@ devices::
   mmc1
   miibus0
 
-A particular device can be detected with ``detect <devname>``::
+A particular device can be detected with ``detect <devname>``:
+
+.. code-block:: console
 
   barebox:/ detect 73f80200.usb
   Found SMSC USB331x ULPI transceiver (0x0424:0x0006).
@@ -67,7 +71,9 @@ Device parameters
 Devices can have parameters which can be used to configure devices or to provide
 additional information for a device. The parameters can be listed with the
 :ref:`command_devinfo` command. A ``devinfo <devicename>`` will print the parameters
-of a device::
+of a device:
+
+.. code-block:: console
 
   barebox:/ devinfo eth0
   Parameters:
@@ -77,12 +83,16 @@ of a device::
     netmask: 255.255.0.0
     ethaddr: 00:1c:49:01:03:4b
 
-The parameters can be used as shell variables::
+The parameters can be used as shell variables:
+
+.. code-block:: sh
 
   eth0.ipaddr=192.168.23.15
   echo "my current ip is: $eth0.ipaddr"
 
-device variables may have a type, so assigning wrong values may fail::
+device variables may have a type, so assigning wrong values may fail:
+
+.. code-block:: console
 
   barebox:/ eth0.ipaddr="This is not an IP"
   set parameter: Invalid argument

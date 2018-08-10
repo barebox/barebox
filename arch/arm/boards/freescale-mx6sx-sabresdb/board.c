@@ -161,7 +161,7 @@ err_out:
 }
 fs_initcall(imx6sx_sdb_setup_pmic_voltages);
 
-int ar8031_phy_fixup(struct phy_device *phydev)
+static int ar8031_phy_fixup(struct phy_device *phydev)
 {
 	/*
 	 * Enable 1.8V(SEL_1P5_1P8_POS_REG) on

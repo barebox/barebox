@@ -200,13 +200,13 @@ static void i2c_fsl_dump_reg(struct i2c_adapter *adapter)
 	reg_cr = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2CR);
 	reg_sr = fsl_i2c_read_reg(i2c_fsl, FSL_I2C_I2SR);
 
-	dev_dbg(adapter->dev, "CONTROL:\t"
+	dev_dbg(&adapter->dev, "CONTROL:\t"
 		"IEN =%d, IIEN=%d, MSTA=%d, MTX =%d, TXAK=%d, RSTA=%d\n",
 		(reg_cr & I2CR_IEN  ? 1 : 0), (reg_cr & I2CR_IIEN ? 1 : 0),
 		(reg_cr & I2CR_MSTA ? 1 : 0), (reg_cr & I2CR_MTX  ? 1 : 0),
 		(reg_cr & I2CR_TXAK ? 1 : 0), (reg_cr & I2CR_RSTA ? 1 : 0));
 
-	dev_dbg(adapter->dev, "STATUS:\t"
+	dev_dbg(&adapter->dev, "STATUS:\t"
 		"ICF =%d, IAAS=%d, IB  =%d, IAL =%d, SRW =%d, IIF =%d, RXAK=%d\n",
 		(reg_sr & I2SR_ICF  ? 1 : 0), (reg_sr & I2SR_IAAS ? 1 : 0),
 		(reg_sr & I2SR_IBB  ? 1 : 0), (reg_sr & I2SR_IAL  ? 1 : 0),

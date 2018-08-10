@@ -47,13 +47,13 @@ core_initcall(imx8mq_init_syscnt_frequency);
 int imx8mq_init(void)
 {
 	void __iomem *anatop = IOMEM(MX8MQ_ANATOP_BASE_ADDR);
-	uint32_t reg = readl(anatop + MX8MQ_ANATOP_DIGPROG);
-	uint32_t type = (reg >> 16) & 0xff;
+	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
+				  readl(anatop + MX8MQ_ANATOP_DIGPROG));
 	struct arm_smccc_res res;
 	const char *cputypestr;
 
 	switch (type) {
-	case 0x82:
+	case IMX8M_CPUTYPE_IMX8MQ:
 		cputypestr = "i.MX8MQ";
 		break;
 	default:

@@ -140,7 +140,7 @@ static struct ramfs_chunk *ramfs_get_chunk(void)
 	if (!data)
 		return NULL;
 
-	data->data = malloc(CHUNK_SIZE);
+	data->data = calloc(CHUNK_SIZE, 1);
 	if (!data->data) {
 		free(data);
 		return NULL;

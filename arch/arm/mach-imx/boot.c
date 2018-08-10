@@ -512,7 +512,7 @@ void imx7_get_boot_source(enum bootsource *src, int *instance)
 		*src = BOOTSOURCE_NAND;
 		break;
 	case 6:
-		*src = BOOTSOURCE_SPI_NOR,
+		*src = BOOTSOURCE_SPI_NOR;
 		*instance = imx7_boot_instance_spi_nor(sbmr1);
 		break;
 	case 4:

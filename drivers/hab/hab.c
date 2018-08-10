@@ -161,6 +161,12 @@ static int imx_hab_permanent_write_enable_ocotp(int enable)
 
 static int imx_hab_lockdown_device_ocotp(void)
 {
+	int ret;
+
+	ret = imx_ocotp_write_field(OCOTP_DIR_BT_DIS, 1);
+	if (ret < 0)
+		return ret;
+
 	return imx_ocotp_write_field(OCOTP_SEC_CONFIG_1, 1);
 }
 

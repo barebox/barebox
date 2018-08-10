@@ -54,6 +54,8 @@ int imx8mq_init(void)
 	struct arm_smccc_res res;
 	const char *cputypestr;
 
+	imx8_boot_save_loc();
+
 	switch (type) {
 	case IMX8M_CPUTYPE_IMX8MQ:
 		cputypestr = "i.MX8MQ";

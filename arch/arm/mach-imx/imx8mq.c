@@ -19,6 +19,7 @@
 #include <mach/generic.h>
 #include <mach/revision.h>
 #include <mach/imx8mq.h>
+#include <mach/reset-reason.h>
 
 #include <linux/arm-smccc.h>
 
@@ -47,6 +48,7 @@ core_initcall(imx8mq_init_syscnt_frequency);
 int imx8mq_init(void)
 {
 	void __iomem *anatop = IOMEM(MX8MQ_ANATOP_BASE_ADDR);
+	void __iomem *src = IOMEM(MX8MQ_SRC_BASE_ADDR);
 	uint32_t type = FIELD_GET(DIGPROG_MAJOR,
 				  readl(anatop + MX8MQ_ANATOP_DIGPROG));
 	struct arm_smccc_res res;
@@ -62,6 +64,10 @@ int imx8mq_init(void)
 	};
 
 	imx_set_silicon_revision(cputypestr, imx8mq_cpu_revision());
+	/*
+	 * Reset reasons seem to be identical to that of i.MX7
+	 */
+	imx_set_reset_reason(src + IMX7_SRC_SRSR, imx7_reset_reasons);
 
 	if (IS_ENABLED(CONFIG_ARM_SMCCC) &&
 	    IS_ENABLED(CONFIG_FIRMWARE_IMX8MQ_ATF)) {

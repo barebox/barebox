@@ -24,11 +24,15 @@ Supported baseboards are:
 How to get barebox for 'KARO's Starterkit 5'
 --------------------------------------------
 
-Using the default configuration::
+Using the default configuration:
+
+.. code-block:: sh
 
   make ARCH=arm tx28stk5_defconfig
 
-Build the binary image::
+Build the binary image:
+
+.. code-block:: sh
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 

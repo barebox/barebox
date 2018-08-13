@@ -16,7 +16,9 @@ for root privileges.
 Using the "screen" program
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The terminal manager ``screen`` can also be used as a simple terminal emulator::
+The terminal manager ``screen`` can also be used as a simple terminal emulator:
+
+.. code-block:: sh
 
   screen /dev/ttyUSB0 115200
 
@@ -31,7 +33,9 @@ from source:
 
 https://git.pengutronix.de/cgit/tools/microcom
 
-Usage is simple::
+Usage is simple:
+
+.. code-block:: sh
 
   microcom -p /dev/ttyUSB0
 
@@ -46,7 +50,9 @@ Configuration of dnsmasq for DHCP and TFTP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The ``dnsmasq`` program can be configured as a DHCP and TFTP server in addition
-to its original DNS functionality::
+to its original DNS functionality:
+
+.. code-block:: sh
 
   sudo ip addr add 192.168.23.1/24 dev <interface>
   sudo ip link set <interface> up

@@ -38,6 +38,8 @@ If the network setup is working properly, barebox can be loaded into memory::
   load -v -r -b 0x80100000 barebox-guf-vincell-lt.img
   exec
 
-Once in barebox, the bootloader can now be persisted to NAND::
+Once in barebox, the bootloader can now be persisted to NAND:
+
+.. code-block:: sh
 
   barebox_update -t nand /mnt/tftp/barebox-guf-vincell-lt.img``

@@ -7,7 +7,9 @@ NFS Support
 
 barebox has readonly support for NFSv3 in UDP mode.
 
-Example::
+Example:
+
+.. code-block:: console
 
    barebox:/ mount -t nfs 192.168.23.4:/home/user/nfsroot /mnt/nfs
 
@@ -15,7 +17,9 @@ The barebox NFS driver adds a ``linux.bootargs`` device parameter to the NFS dev
 This parameter holds a Linux kernel commandline snippet containing a suitable root=
 option for booting from exactly that NFS share.
 
-Example::
+Example:
+
+.. code-block:: console
 
   barebox:/ devinfo nfs0
   ...

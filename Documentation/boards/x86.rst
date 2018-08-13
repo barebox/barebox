@@ -50,7 +50,8 @@ sectors must be kept free after the MBR prior the first partition. Do this
 simple calulation:
 
 .. code-block:: none
-  sectors = (\<size of barebox image\> + 511) / 512
+
+  sectors = (size of barebox image + 511) / 512
 
 To be able to store the runtime configuration, further free sectors are
 required. Its up to you and your requirements, how large this persistant

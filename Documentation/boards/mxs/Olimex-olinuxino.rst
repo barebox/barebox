@@ -9,11 +9,15 @@ This CPU module is based on a Freescale i.MX23 CPU.
 How to get the bootloader binary image
 --------------------------------------
 
-Using the default configuration::
+Using the default configuration:
+
+.. code-block:: sh
 
   make ARCH=arm imx233-olinuxino_defconfig
 
-Build the binary image::
+Build the binary image:
+
+.. code-block:: sh
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 

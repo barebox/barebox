@@ -40,7 +40,7 @@ LIST_HEAD(netdev_list);
 
 struct eth_ethaddr {
 	struct list_head list;
-	u8 ethaddr[6];
+	u8 ethaddr[ETH_ALEN];
 	int ethid;
 	struct device_node *node;
 };
@@ -82,7 +82,7 @@ static int eth_get_registered_ethaddr(struct eth_device *edev, void *buf)
 	list_for_each_entry(addr, &ethaddr_list, list) {
 		if ((node && node == addr->node) ||
 				addr->ethid == edev->dev.id) {
-			memcpy(buf, addr->ethaddr, 6);
+			memcpy(buf, addr->ethaddr, ETH_ALEN);
 			return 0;
 		}
 	}
@@ -118,7 +118,7 @@ void eth_register_ethaddr(int ethid, const char *ethaddr)
 
 	addr = xzalloc(sizeof(*addr));
 	addr->ethid = ethid;
-	memcpy(addr->ethaddr, ethaddr, 6);
+	memcpy(addr->ethaddr, ethaddr, ETH_ALEN);
 	list_add_tail(&addr->list, &ethaddr_list);
 }
 
@@ -150,7 +150,7 @@ void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr)
 
 	addr = xzalloc(sizeof(*addr));
 	addr->node = node;
-	memcpy(addr->ethaddr, ethaddr, 6);
+	memcpy(addr->ethaddr, ethaddr, ETH_ALEN);
 	list_add_tail(&addr->list, &ethaddr_list);
 }
 
@@ -284,7 +284,7 @@ static int eth_param_set_ethaddr(struct param_d *param, void *priv)
 #ifdef CONFIG_OFTREE
 static void eth_of_fixup_node(struct device_node *root,
 			      const char *node_path, int ethid,
-			      const u8 ethaddr[6])
+			      const u8 ethaddr[ETH_ALEN])
 {
 	struct device_node *node;
 	int ret;
@@ -308,7 +308,7 @@ static void eth_of_fixup_node(struct device_node *root,
 		return;
 	}
 
-	ret = of_set_property(node, "mac-address", ethaddr, 6, 1);
+	ret = of_set_property(node, "mac-address", ethaddr, ETH_ALEN, 1);
 	if (ret)
 		pr_err("Setting mac-address property of %s failed with: %s\n",
 		       node->full_name, strerror(-ret));
@@ -355,7 +355,7 @@ static const char * const eth_mode_names[] = {
 int eth_register(struct eth_device *edev)
 {
 	struct device_d *dev = &edev->dev;
-	unsigned char ethaddr[6];
+	unsigned char ethaddr[ETH_ALEN];
 	int ret, found = 0;
 
 	if (!edev->get_ethaddr) {

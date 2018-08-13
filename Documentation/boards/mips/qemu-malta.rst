@@ -4,7 +4,9 @@ QEMU Malta
 Big-endian mode
 ---------------
 
-QEMU run string::
+QEMU run string:
+
+.. code-block:: sh
 
   qemu-system-mips -nodefaults -M malta -m 256 \
       -nographic -serial stdio -monitor null \
@@ -18,13 +20,17 @@ Running little-endian Malta is a bit tricky.
 In little-endian mode the 32bit words in the boot flash image are swapped,
 a neat trick which allows bi-endian firmware.
 
-You have to swap words of ``zbarebox.bin`` image, e.g.::
+You have to swap words of ``zbarebox.bin`` image, e.g.:
+
+.. code-block:: sh
 
   echo arch/mips/pbl/zbarebox.bin \
       | cpio --create \
       | cpio --extract --swap --unconditional
 
-QEMU run string::
+QEMU run string:
+
+.. code-block:: sh
 
   qemu-system-mipsel -nodefaults -M malta -m 256 \
       -nographic -serial stdio -monitor null \
@@ -39,7 +45,9 @@ You can use GXemul to run little-endian barebox (use gxemul-malta_defconfig).
 
 N.B. There is no need to swap words in ``zbarebox.bin`` for little-endian GXemul!
 
-GXemul run string::
+GXemul run string:
+
+.. code-block:: sh
 
   gxemul -Q -e malta -M 256 0xbfc00000:barebox-flash-image
 

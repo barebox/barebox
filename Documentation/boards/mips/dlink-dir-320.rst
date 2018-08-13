@@ -26,7 +26,9 @@ Put your barebox.bin to tftp-server directory
 Connect your DIR-320 to your tftp-server network via
 one of four <LAN> sockets.
 
-Next, setup network on DIR-320 and run barebox.bin, e.g.::
+Next, setup network on DIR-320 and run barebox.bin, e.g.:
+
+.. code-block:: console
 
   CFE> ifconfig eth0 -addr=192.168.0.99
   CFE> boot -tftp -addr=a0800000 -raw 192.168.0.1:barebox.bin

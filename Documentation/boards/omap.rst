@@ -15,7 +15,9 @@ The PandaBoard boots from SD card. The OMAP Boot ROM code loads a file named
 scripts on the net which describe how to prepare such a card (it needs
 special partitioning). The same procedure can be used for barebox. With such a
 card (assumed to be at /dev/sdc), the following can be used to build and install
-barebox::
+barebox:
+
+.. code-block:: console
 
   # mount -t fat /dev/sdc1 /mnt
   # make panda_xload_defconfig

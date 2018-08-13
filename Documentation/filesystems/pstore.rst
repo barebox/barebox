@@ -20,7 +20,7 @@ at boot:
 	none on /pstore type pstore
 
 pstore may add additional warnings during boot due to wrong ECCs (no data
-written)::
+written):
 
 .. code-block:: none
 

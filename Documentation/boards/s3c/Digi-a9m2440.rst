@@ -78,11 +78,15 @@ This CPU card is based on a Samsung S3C2440 CPU. The card is shipped with:
 How to get the binary image
 ---------------------------
 
-Configure with the default configuration::
+Configure with the default configuration:
+
+.. code-block:: sh
 
   make ARCH=arm a9m2440_defconfig
 
-Build the binary image::
+Build the binary image:
+
+.. code-block:: sh
 
   make ARCH=arm CROSS_COMPILE=armv4compiler
 

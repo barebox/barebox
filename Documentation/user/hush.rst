@@ -13,13 +13,17 @@ more flexible and also more robust than a complicated shell script.
 Hush features
 -------------
 
-variables::
+variables:
+
+.. code-block:: sh
 
 	a="Hello user"
 	echo $a
 	Hello user
 
-conditional execution ``if`` / ``elif`` / ``else`` / ``fi``::
+conditional execution ``if`` / ``elif`` / ``else`` / ``fi``:
+
+.. code-block:: sh
 
 	if [ ${foo} = ${bar} ]; then
 		echo "foo equals bar"
@@ -27,19 +31,25 @@ conditional execution ``if`` / ``elif`` / ``else`` / ``fi``::
 		echo "foo and bar differ"
 	fi
 
-``for`` loops::
+``for`` loops:
+
+.. code-block:: sh
 
 	for i in a b c; do
 		echo $i
 	done
 
-``while`` loops::
+``while`` loops:
+
+.. code-block:: sh
 
 	while true; do
 		echo "endless loop"
 	done
 
-wildcard globbing::
+wildcard globbing:
+
+.. code-block:: sh
 
 	ls d*
 	echo ???
@@ -53,7 +63,9 @@ stored.
 
 **NOTE:** hush feels like a normal Unix shell, but it cannot calculate by
 itself, i.e. $(($A/2)) won't work. Calculation can however be done
-with :ref:`command_let`::
+with :ref:`command_let`:
+
+.. code-block:: sh
 
   A=10
   let B=$A/2

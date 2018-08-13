@@ -755,7 +755,7 @@ static int s3c_mci_probe(struct device_d *hw_dev)
 	s3c_host->host.f_min = pd->f_min == 0 ? s3c_get_pclk() / 256 : pd->f_min;
 	s3c_host->host.f_max = pd->f_max == 0 ? s3c_get_pclk() / 2 : pd->f_max;
 
-	if (IS_ENABLED(iCONFIG_MCI_INFO))
+	if (IS_ENABLED(CONFIG_MCI_INFO))
 		hw_dev->info = s3c_info;
 
 	/*

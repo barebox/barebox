@@ -4,7 +4,9 @@ OpenRISC
 or1ksim
 -------
 
-Compile or1ksim emulator::
+Compile or1ksim emulator:
+
+.. code-block:: console
 
  $ cd ~/
  $ git clone https://github.com/openrisc/or1ksim
@@ -48,6 +50,8 @@ Create minimal or1ksim.cfg file:
    tap_dev = "tap0"
  end
 
-Run or1ksim::
+Run or1ksim:
+
+.. code-block:: console
 
  $ ~/or1ksim/sim -f or1ksim.cfg barebox

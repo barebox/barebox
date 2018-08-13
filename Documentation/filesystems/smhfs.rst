@@ -18,7 +18,9 @@ not have support for listing directories. This means a
 :ref:`command_ls` to a SMHFS-mounted path will show an empty
 directory. Nevertheless, the files are there.
 
-Example::
+Example:
+
+.. code-block:: console
 
   barebox:/ mount -t smhfs /dev/null /mnt/smhfs
 

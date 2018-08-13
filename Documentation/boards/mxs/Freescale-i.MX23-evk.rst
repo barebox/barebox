@@ -19,11 +19,15 @@ Memory layout when barebox is running:
 How to get the bootloader binary image
 --------------------------------------
 
-Using the default configuration::
+Using the default configuration:
+
+.. code-block:: sh
 
   make ARCH=arm freescale-mx23-evk_defconfig
 
-Build the bootloader binary image::
+Build the bootloader binary image:
+
+.. code-block:: sh
 
   make ARCH=arm CROSS_COMPILE=armv5compiler
 

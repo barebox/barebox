@@ -14,7 +14,7 @@ Downloading DDR PHY Firmware
 As a part of DDR intialization routine NXP i.MX8MQ EVK requires and
 uses several binary firmware blobs that are distributed under a
 separate EULA and cannot be included in Barebox. In order to obtain
-the do the following::
+them do the following::
 
  wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-7.2.bin
  chmod +x firmware-imx-7.2.bin

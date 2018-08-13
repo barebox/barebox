@@ -30,7 +30,7 @@ void mx28_mem_init(const int emi_ds_ctrl_ddr_mode,
 		const uint32_t dram_vals[190]);
 void mxs_mem_setup_cpu_and_hbus(void);
 void mxs_mem_setup_vdda(void);
-void mxs_mem_init_clock(unsigned char divider);
+void mxs_mem_init_clock(const uint8_t clk_emi_div, const uint8_t clk_emi_frac);
 
 void mxs_lradc_init(void);
 void mxs_lradc_enable_batt_measurement(void);

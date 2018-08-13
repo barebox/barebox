@@ -39,28 +39,28 @@ static void mxs_power_status(void)
 
 #define __REG_BITS(value, fieldname)  (((value) & fieldname##_MASK) >> fieldname##_OFFSET)
 
-	printf("vddio:  %dmV (BO -%dmV), Linreg enabled, Linreg offset: %d, FET %sabled\n",
+	printf("vddio:  %4dmV (BO -%3dmV), Linreg  enabled, Linreg offset: %1d, FET %sabled\n",
 			__REG_BITS(vddio, POWER_VDDIOCTRL_TRG) * 50 + 2800,
 			__REG_BITS(vddio, POWER_VDDIOCTRL_BO_OFFSET) * 50,
 			linregofs[__REG_BITS(vddio, POWER_VDDIOCTRL_LINREG_OFFSET)],
-			(vddio & POWER_VDDIOCTRL_DISABLE_FET) ? "dis" : "en");
-	printf("vdda:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
+			(vddio & POWER_VDDIOCTRL_DISABLE_FET) ? "dis" : " en");
+	printf("vdda:   %4dmV (BO -%3dmV), Linreg %sabled, Linreg offset: %1d, FET %sabled\n",
 			__REG_BITS(vdda, POWER_VDDACTRL_TRG) * 25 + 1500,
 			__REG_BITS(vdda, POWER_VDDACTRL_BO_OFFSET) * 25,
-			(vdda & POWER_VDDACTRL_ENABLE_LINREG) ? "en" : "dis",
+			(vdda & POWER_VDDACTRL_ENABLE_LINREG) ? " en" : "dis",
 			linregofs[__REG_BITS(vdda, POWER_VDDACTRL_LINREG_OFFSET)],
-			(vdda & POWER_VDDACTRL_DISABLE_FET) ? "dis" : "en");
-	printf("vddd:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
+			(vdda & POWER_VDDACTRL_DISABLE_FET) ? "dis" : " en");
+	printf("vddd:   %4dmV (BO -%3dmV), Linreg %sabled, Linreg offset: %1d, FET %sabled\n",
 			__REG_BITS(vddd, POWER_VDDDCTRL_TRG) * 25 + 800,
 			__REG_BITS(vddd, POWER_VDDDCTRL_BO_OFFSET) * 25,
-			(vddd & POWER_VDDDCTRL_ENABLE_LINREG) ? "en" : "dis",
+			(vddd & POWER_VDDDCTRL_ENABLE_LINREG) ? " en" : "dis",
 			linregofs[__REG_BITS(vddd, POWER_VDDDCTRL_LINREG_OFFSET)],
-			(vddd & POWER_VDDDCTRL_DISABLE_FET) ? "dis" : "en");
-	printf("vddmem: %dmV (BO -%dmV), Linreg %sabled\n",
+			(vddd & POWER_VDDDCTRL_DISABLE_FET) ? "dis" : " en");
+	printf("vddmem: %4dmV (BO -%3dmV), Linreg %sabled\n",
 			__REG_BITS(vddmem, POWER_VDDMEMCTRL_TRG) * 25 + 1100,
 			/* Note: this area is reserved on i.MX23, yielding 0: */
 			__REG_BITS(vddmem, MX28_POWER_VDDMEMCTRL_BO_OFFSET) * 25,
-			(vddmem & POWER_VDDMEMCTRL_ENABLE_LINREG) ? "en" : "dis");
+			(vddmem & POWER_VDDMEMCTRL_ENABLE_LINREG) ? " en" : "dis");
 }
 
 /*

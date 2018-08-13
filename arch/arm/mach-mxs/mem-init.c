@@ -318,18 +318,15 @@ void mx23_mem_init(void)
 	mxs_mem_setup_cpu_and_hbus();
 }
 
-#define PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2	(0x3 << 16)
-
-void mx28_mem_init(const uint32_t dram_vals[190])
+void mx28_mem_init(const int emi_ds_ctrl_ddr_mode, const uint32_t dram_vals[190])
 {
 	mxs_early_delay(11000);
 
 	/* Fractional divider for ref_emi is 21 ; 480 * 18 / 21 = 411MHz */
 	mxs_mem_init_clock(21);
 
-	/* Set DDR2 mode */
-	writel(PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2,
-			IMX_IOMUXC_BASE + 0x1b80);
+	/* Set DDR mode */
+	writel(emi_ds_ctrl_ddr_mode, IMX_IOMUXC_BASE + 0x1b80);
 
 	/*
 	 * Configure the DRAM registers

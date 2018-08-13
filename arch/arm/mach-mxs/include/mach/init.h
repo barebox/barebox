@@ -21,8 +21,13 @@ void mxs_power_wait_pswitch(void);
 extern const uint32_t mx28_dram_vals_default[190];
 extern uint32_t mx23_dram_vals[];
 
+#define PINCTRL_EMI_DS_CTRL_DDR_MODE_LPDDR1	(0b00 << 16)
+#define PINCTRL_EMI_DS_CTRL_DDR_MODE_LVDDR2	(0b10 << 16)
+#define PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2	(0b11 << 16)
+
 void mx23_mem_init(void);
-void mx28_mem_init(const uint32_t dram_vals[190]);
+void mx28_mem_init(const int emi_ds_ctrl_ddr_mode,
+		const uint32_t dram_vals[190]);
 void mxs_mem_setup_cpu_and_hbus(void);
 void mxs_mem_setup_vdda(void);
 void mxs_mem_init_clock(unsigned char divider);

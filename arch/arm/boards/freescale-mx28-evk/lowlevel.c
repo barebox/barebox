@@ -47,7 +47,8 @@ static noinline void freescale_mx28evk_init(void)
 
 	pr_debug("initializing SDRAM...\n");
 
-	mx28_mem_init(mx28_dram_vals_default);
+	mx28_mem_init(PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2,
+			mx28_dram_vals_default);
 
 	pr_debug("DONE\n");
 }

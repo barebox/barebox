@@ -253,6 +253,8 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		}
 	}
 
+	pci_fixup_device(pci_fixup_header, dev);
+
 	pci_write_config_byte(dev, PCI_COMMAND, cmd);
 	list_add_tail(&dev->bus_list, &dev->bus->devices);
 }
@@ -331,6 +333,31 @@ static void postscan_setup_bridge(struct pci_dev *dev)
 	}
 }
 
+static struct device_node *
+pci_of_match_device(struct device_d *parent, unsigned int devfn)
+{
+	struct device_node *np;
+	u32 reg;
+
+	if (!IS_ENABLED(CONFIG_OFTREE) || !parent->device_node)
+		return NULL;
+
+	for_each_child_of_node(parent->device_node, np) {
+		if (!of_property_read_u32_array(np, "reg", &reg, 1)) {
+			/*
+			 * Only match device/function pair of the device
+			 * address, other properties are defined by the
+			 * PCI/OF node topology.
+			 */
+			reg = (reg >> 8) & 0xffff;
+			if (reg == devfn)
+				return np;
+		}
+	}
+
+	return NULL;
+}
+
 unsigned int pci_scan_bus(struct pci_bus *bus)
 {
 	struct pci_dev *dev;
@@ -368,6 +395,11 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 		dev->vendor = l & 0xffff;
 		dev->device = (l >> 16) & 0xffff;
 		dev->dev.parent = bus->parent;
+		dev->dev.device_node = pci_of_match_device(bus->parent, devfn);
+		if (dev->dev.device_node)
+			pr_debug("found DT node %s for device %04x:%04x\n",
+				 dev->dev.device_node->full_name,
+				 dev->vendor, dev->device);
 
 		/* non-destructively determine if device can be a master: */
 		pci_read_config_byte(dev, PCI_COMMAND, &cmd);
@@ -381,6 +413,10 @@ unsigned int pci_scan_bus(struct pci_bus *bus)
 		dev->class = class;
 		class >>= 8;
 		dev->hdr_type = hdr_type;
+
+		pci_fixup_device(pci_fixup_early, dev);
+		/* the fixup may have changed the device class */
+		class = dev->class >> 8;
 
 		pr_debug("class = %08x, hdr_type = %08x\n", class, hdr_type);
 		pr_debug("%02x:%02x [%04x:%04x]\n", bus->number, dev->devfn,
@@ -489,12 +525,61 @@ EXPORT_SYMBOL(pci_clear_master);
  */
 int pci_enable_device(struct pci_dev *dev)
 {
+	int ret;
 	u32 t;
 
 	pci_read_config_dword(dev, PCI_COMMAND, &t);
-	return pci_write_config_dword(dev, PCI_COMMAND, t
-				| PCI_COMMAND_IO
-				| PCI_COMMAND_MEMORY
-				);
+	ret = pci_write_config_dword(dev, PCI_COMMAND,
+				     t | PCI_COMMAND_IO | PCI_COMMAND_MEMORY);
+	if (ret)
+		return ret;
+
+	pci_fixup_device(pci_fixup_enable, dev);
+
+	return 0;
 }
 EXPORT_SYMBOL(pci_enable_device);
+
+static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f,
+			  struct pci_fixup *end)
+{
+	for (; f < end; f++)
+		if ((f->class == (u32) (dev->class >> f->class_shift) ||
+		     f->class == (u32) PCI_ANY_ID) &&
+		    (f->vendor == dev->vendor ||
+		     f->vendor == (u16) PCI_ANY_ID) &&
+		    (f->device == dev->device ||
+		     f->device == (u16) PCI_ANY_ID)) {
+			f->hook(dev);
+		}
+}
+
+extern struct pci_fixup __start_pci_fixups_early[];
+extern struct pci_fixup __end_pci_fixups_early[];
+extern struct pci_fixup __start_pci_fixups_header[];
+extern struct pci_fixup __end_pci_fixups_header[];
+extern struct pci_fixup __start_pci_fixups_enable[];
+extern struct pci_fixup __end_pci_fixups_enable[];
+
+void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev)
+{
+	struct pci_fixup *start, *end;
+
+	switch (pass) {
+	case pci_fixup_early:
+		start = __start_pci_fixups_early;
+		end = __end_pci_fixups_early;
+		break;
+	case pci_fixup_header:
+		start = __start_pci_fixups_header;
+		end = __end_pci_fixups_header;
+		break;
+	case pci_fixup_enable:
+		start = __start_pci_fixups_enable;
+		end = __end_pci_fixups_enable;
+		break;
+	default:
+		unreachable();
+	}
+	pci_do_fixups(dev, start, end);
+}

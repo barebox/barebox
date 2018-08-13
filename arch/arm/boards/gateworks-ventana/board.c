@@ -17,6 +17,7 @@
 #include <i2c/i2c.h>
 #include <init.h>
 #include <linux/marvell_phy.h>
+#include <linux/pci.h>
 #include <linux/phy.h>
 #include <mach/bbu.h>
 #include <mach/imx6.h>
@@ -111,3 +112,31 @@ static int gw54xx_coredevices_init(void)
 	return 0;
 }
 coredevice_initcall(gw54xx_coredevices_init);
+
+/*
+ * fixup for PLX PEX8909 bridge to configure GPIO1-7 as output High
+ * as they are used for slots1-7 PERST#
+ */
+static void ventana_pciesw_early_fixup(struct pci_dev *dev)
+{
+	u32 dw;
+
+	if (!of_machine_is_compatible("gw,ventana"))
+		return;
+
+	if (dev->devfn != 0)
+		return;
+
+	pci_read_config_dword(dev, 0x62c, &dw);
+	dw |= 0xaaa8; // GPIO1-7 outputs
+	pci_write_config_dword(dev, 0x62c, dw);
+
+	pci_read_config_dword(dev, 0x644, &dw);
+	dw |= 0xfe;   // GPIO1-7 output high
+	pci_write_config_dword(dev, 0x644, dw);
+
+	mdelay(100);
+}
+DECLARE_PCI_FIXUP_EARLY(0x10b5, 0x8609, ventana_pciesw_early_fixup);
+DECLARE_PCI_FIXUP_EARLY(0x10b5, 0x8606, ventana_pciesw_early_fixup);
+DECLARE_PCI_FIXUP_EARLY(0x10b5, 0x8604, ventana_pciesw_early_fixup);

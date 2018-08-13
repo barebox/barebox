@@ -29,6 +29,7 @@
 
 #include <linux/pci_ids.h>
 
+#define PCI_ANY_ID (~0)
 
 /*
  * The PCI interface treats multi-function devices as independent
@@ -298,5 +299,58 @@ void pci_clear_master(struct pci_dev *dev);
 int pci_enable_device(struct pci_dev *dev);
 
 extern void __iomem *pci_iomap(struct pci_dev *dev, int bar);
+
+/*
+ * The world is not perfect and supplies us with broken PCI devices.
+ * For at least a part of these bugs we need a work-around, so both
+ * generic (drivers/pci/quirks.c) and per-architecture code can define
+ * fixup hooks to be called for particular buggy devices.
+ */
+
+struct pci_fixup {
+	u16 vendor;			/* Or PCI_ANY_ID */
+	u16 device;			/* Or PCI_ANY_ID */
+	u32 class;			/* Or PCI_ANY_ID */
+	unsigned int class_shift;	/* should be 0, 8, 16 */
+	void (*hook)(struct pci_dev *dev);
+};
+
+enum pci_fixup_pass {
+	pci_fixup_early,	/* Before probing BARs */
+	pci_fixup_header,	/* After reading configuration header */
+	pci_fixup_enable,	/* pci_enable_device() time */
+};
+
+/* Anonymous variables would be nice... */
+#define DECLARE_PCI_FIXUP_SECTION(section, name, vendor, device, class,	\
+				  class_shift, hook)			\
+	static const struct pci_fixup __PASTE(__pci_fixup_##name,__LINE__) __used	\
+	__attribute__((__section__(#section), aligned((sizeof(void *)))))    \
+		= { vendor, device, class, class_shift, hook };
+
+#define DECLARE_PCI_FIXUP_CLASS_EARLY(vendor, device, class,		\
+					 class_shift, hook)		\
+	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_early,			\
+		hook, vendor, device, class, class_shift, hook)
+#define DECLARE_PCI_FIXUP_CLASS_HEADER(vendor, device, class,		\
+					 class_shift, hook)		\
+	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_header,			\
+		hook, vendor, device, class, class_shift, hook)
+#define DECLARE_PCI_FIXUP_CLASS_ENABLE(vendor, device, class,		\
+					 class_shift, hook)		\
+	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_enable,			\
+		hook, vendor, device, class, class_shift, hook)
+
+#define DECLARE_PCI_FIXUP_EARLY(vendor, device, hook)			\
+	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_early,			\
+		hook, vendor, device, PCI_ANY_ID, 0, hook)
+#define DECLARE_PCI_FIXUP_HEADER(vendor, device, hook)			\
+	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_header,			\
+		hook, vendor, device, PCI_ANY_ID, 0, hook)
+#define DECLARE_PCI_FIXUP_ENABLE(vendor, device, hook)			\
+	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_enable,			\
+		hook, vendor, device, PCI_ANY_ID, 0, hook)
+
+void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev);
 
 #endif /* LINUX_PCI_H */

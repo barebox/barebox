@@ -337,6 +337,7 @@ struct sb_image_ctx {
 	/* Image configuration */
 	unsigned int			verbose_boot:1;
 	unsigned int			silent_dump:1;
+	unsigned int			encrypted:1;
 	const char			*input_filename;
 	const char			*output_filename;
 	const char			*cfg_filename;
@@ -483,6 +484,12 @@ static int sb_aes_crypt(struct sb_image_ctx *ictx, uint8_t *in_data,
 	EVP_CIPHER_CTX *ctx = ictx->cipher_ctx;
 	int ret, outlen;
 	uint8_t *outbuf;
+
+	if (!ictx->encrypted) {
+		if (out_data && in_data != out_data)
+			memcpy(out_data, in_data, in_len);
+		return 0;
+	}
 
 	outbuf = malloc(in_len);
 	if (!outbuf)
@@ -645,7 +652,8 @@ static int sb_encrypt_image(struct sb_image_ctx *ictx)
 	 * Key dictionary.
 	 */
 	sb_aes_reinit(ictx, 1);
-	sb_encrypt_key_dictionary_key(ictx);
+	if (ictx->encrypted)
+		sb_encrypt_key_dictionary_key(ictx);
 
 	/*
 	 * Section tags.
@@ -1609,10 +1617,10 @@ static int sb_prefill_image_header(struct sb_image_ctx *ictx)
 	hdr->timestamp_us = sb_get_timestamp() * 1000000;
 
 	/* FIXME -- add proper config option */
-	hdr->flags = ictx->verbose_boot ? SB_IMAGE_FLAG_VERBOSE : 0,
+	hdr->flags = ictx->verbose_boot ? SB_IMAGE_FLAG_VERBOSE : 0;
 
 	/* FIXME -- We support only default key */
-	hdr->key_count = 1;
+	hdr->key_count = ictx->encrypted ? 1 : 0;
 
 	return 0;
 }
@@ -2450,7 +2458,7 @@ static int sb_build_image(struct sb_image_ctx *ictx)
 	/* Calculate image size. */
 	uint32_t size = sizeof(*sb_header) +
 		ictx->sect_count * sizeof(struct sb_sections_header) +
-		sizeof(*sb_dict_key) + sizeof(ictx->digest);
+		sizeof(*sb_dict_key) * sb_header->key_count + sizeof(ictx->digest);
 
 	sctx = ictx->sect_head;
 	while (sctx) {
@@ -2473,8 +2481,10 @@ static int sb_build_image(struct sb_image_ctx *ictx)
 		sctx = sctx->sect;
 	};
 
-	memcpy(iptr, sb_dict_key, sizeof(*sb_dict_key));
-	iptr += sizeof(*sb_dict_key);
+	if (ictx->encrypted) {
+		memcpy(iptr, sb_dict_key, sizeof(*sb_dict_key));
+		iptr += sizeof(*sb_dict_key);
+	}
 
 	sctx = ictx->sect_head;
 	while (sctx) {
@@ -2516,27 +2526,20 @@ static int sb_build_image(struct sb_image_ctx *ictx)
 	return 0;
 }
 
-static int mxsimage_generate(const char *configfile, const char *imagefile)
+static int mxsimage_generate(struct sb_image_ctx *ctx)
 {
 	int ret;
-	struct sb_image_ctx ctx;
 
-	memset(&ctx, 0, sizeof(ctx));
-
-	ctx.cfg_filename = configfile;
-	ctx.output_filename = imagefile;
-	ctx.verbose_boot = 1;
-
-	ret = sb_build_tree_from_cfg(&ctx);
+	ret = sb_build_tree_from_cfg(ctx);
 	if (ret)
 		goto fail;
 
-	ret = sb_encrypt_image(&ctx);
+	ret = sb_encrypt_image(ctx);
 	if (!ret)
-		ret = sb_build_image(&ctx);
+		ret = sb_build_image(ctx);
 
 fail:
-	sb_free_image(&ctx);
+	sb_free_image(ctx);
 
 	return ret;
 }
@@ -2546,8 +2549,12 @@ int main(int argc, char *argv[])
 	int ret;
 	int opt;
 	char *configfile = NULL, *outfile = NULL, *verify = NULL;
+	struct sb_image_ctx ctx = {
+		.encrypted = 1,
+		.verbose_boot = 1,
+	};
 
-	while ((opt = getopt(argc, argv, "p:b:c:o:v:")) != -1) {
+	while ((opt = getopt(argc, argv, "p:b:c:o:v:u")) != -1) {
 		switch (opt) {
 		case 'p':
 			prepfile = optarg;
@@ -2563,6 +2570,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'v':
 			verify = optarg;
+			break;
+		case 'u':
+			ctx.encrypted = 0;
 			break;
 		default:
 			exit(1);
@@ -2587,7 +2597,10 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	ret = mxsimage_generate(configfile, outfile);
+	ctx.cfg_filename = configfile;
+	ctx.output_filename = outfile;
+
+	ret = mxsimage_generate(&ctx);
 	if (ret)
 		exit(1);
 

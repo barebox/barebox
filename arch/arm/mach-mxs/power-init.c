@@ -1083,8 +1083,8 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 
 	if (adjust_up && cfg->bo_irq) {
 		if (powered_by_linreg) {
-			bo_int = readl(cfg->reg);
-			clrbits_le32(cfg->reg, cfg->bo_enirq);
+			bo_int = readl(&power_regs->hw_power_ctrl);
+			writel(cfg->bo_enirq, &power_regs->hw_power_ctrl_clr);
 		}
 		setbits_le32(cfg->reg, cfg->bo_offset_mask);
 	}
@@ -1126,7 +1126,7 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 		if (adjust_up && powered_by_linreg) {
 			writel(cfg->bo_irq, &power_regs->hw_power_ctrl_clr);
 			if (bo_int & cfg->bo_enirq)
-				setbits_le32(cfg->reg, cfg->bo_enirq);
+				writel(cfg->bo_enirq, &power_regs->hw_power_ctrl_set);
 		}
 
 		clrsetbits_le32(cfg->reg, cfg->bo_offset_mask,

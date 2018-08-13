@@ -1066,7 +1066,7 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
-	uint32_t cur_target, diff, bo_int = 0;
+	uint32_t cur_target, diff, prev_bo_enirq = 0;
 	uint32_t powered_by_linreg = 0;
 	int adjust_up, tmp;
 
@@ -1082,8 +1082,10 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 		powered_by_linreg = cfg->powered_by_linreg();
 
 	if (adjust_up && cfg->bo_irq) {
+		/* temporarily disable brownout to prevent it from taking
+		   effect prematurely during the adjustment */
 		if (powered_by_linreg) {
-			bo_int = readl(&power_regs->hw_power_ctrl);
+			prev_bo_enirq = readl(&power_regs->hw_power_ctrl) & cfg->bo_enirq;
 			writel(cfg->bo_enirq, &power_regs->hw_power_ctrl_clr);
 		}
 		setbits_le32(cfg->reg, cfg->bo_offset_mask);
@@ -1124,8 +1126,10 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 
 	if (cfg->bo_irq) {
 		if (adjust_up && powered_by_linreg) {
+			/* clear brownout IRQ flag in case it fired */
 			writel(cfg->bo_irq, &power_regs->hw_power_ctrl_clr);
-			if (bo_int & cfg->bo_enirq)
+			if (prev_bo_enirq)
+				/* re-enable brownout IRQ after adjustment has finished */
 				writel(cfg->bo_enirq, &power_regs->hw_power_ctrl_set);
 		}
 

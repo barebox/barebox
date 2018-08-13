@@ -18,11 +18,13 @@ void mxs_early_delay(int delay);
  * - POWER_USE_BATTERY: use battery input when the system is supplied by a battery
  * - POWER_USE_BATTERY_INPUT: use battery input when the system is supplied by
  *   a DC source (instead of a real battery) on the battery input
+ * - POWER_ENABLE_4P2: power up the 4P2 regulator (implied for POWER_USE_5V)
  */
 enum mxs_power_config {
 	POWER_USE_5V			= 0b00000000,
 	POWER_USE_BATTERY		= 0b00000001,
 	POWER_USE_BATTERY_INPUT		= 0b00000010,
+	POWER_ENABLE_4P2		= 0b00000100,
 };
 extern int power_config;
 static inline enum mxs_power_config mxs_power_config_get_use(void) {

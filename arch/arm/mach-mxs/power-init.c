@@ -717,7 +717,8 @@ static void mxs_enable_battery_input(void)
 		POWER_5VCTRL_CHARGE_4P2_ILIMIT_MASK,
 		0x8 << POWER_5VCTRL_CHARGE_4P2_ILIMIT_OFFSET);
 
-	mxs_power_enable_4p2();
+	if (power_config & POWER_ENABLE_4P2)
+		mxs_power_enable_4p2();
 }
 
 /**

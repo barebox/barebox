@@ -32,8 +32,26 @@ static inline enum mxs_power_config mxs_power_config_get_use(void) {
 }
 
 
-void mx23_power_init(const int config);
-void mx28_power_init(const int config);
+struct mxs_power_ctrl {
+	uint32_t target;	/*< target voltage */
+	uint32_t brownout;	/*< brownout threshhold */
+};
+struct mxs_power_ctrls {
+	struct mxs_power_ctrl * vdda;	/*< if non-null, set values for VDDA */
+	struct mxs_power_ctrl * vddd;	/*< if non-null, set values for VDDD */
+	struct mxs_power_ctrl * vddio;	/*< if non-null, set values for VDDIO */
+	struct mxs_power_ctrl * vddmem;	/*< if non-null, set values for VDDMEM */
+};
+
+extern struct mxs_power_ctrl mxs_vddio_default;
+extern struct mxs_power_ctrl mxs_vddd_default;
+extern struct mxs_power_ctrl mxs_vdda_default;
+extern struct mxs_power_ctrl mx23_vddmem_default;
+extern struct mxs_power_ctrls mx23_power_default;
+extern struct mxs_power_ctrls mx28_power_default;
+
+void mx23_power_init(const int config, struct mxs_power_ctrls *ctrls);
+void mx28_power_init(const int config, struct mxs_power_ctrls *ctrls);
 void mxs_power_wait_pswitch(void);
 
 extern const uint32_t mx28_dram_vals_default[190];

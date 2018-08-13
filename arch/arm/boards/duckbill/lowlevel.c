@@ -51,7 +51,7 @@ static noinline void duckbill_init(void)
 
 	pr_debug("initializing power...\n");
 
-	mx28_power_init(POWER_USE_5V);
+	mx28_power_init(POWER_USE_5V, &mx28_power_default);
 
 	pr_debug("initializing SDRAM...\n");
 

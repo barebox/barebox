@@ -1165,6 +1165,17 @@ static void mx23_ungate_power(void)
 	writel(MX23_POWER_CTRL_CLKGATE, &power_regs->hw_power_ctrl_clr);
 }
 
+struct mxs_power_ctrl mxs_vddd_default    = { .target = 1500, .brownout = 1325 };
+struct mxs_power_ctrl mxs_vdda_default    = { .target = 1800, .brownout = 1650 };
+struct mxs_power_ctrl mxs_vddio_default   = { .target = 3300, .brownout = 3150 };
+struct mxs_power_ctrl mx23_vddmem_default = { .target = 2500, .brownout = 1700 };
+struct mxs_power_ctrls mx23_power_default = {
+	.vdda	= &mxs_vdda_default,
+	.vddd	= &mxs_vddd_default,
+	.vddio	= &mxs_vddio_default,
+	.vddmem	= &mx23_vddmem_default,
+};
+
 /**
  * mx23_power_init() - The power block init main function
  *
@@ -1172,8 +1183,9 @@ static void mx23_ungate_power(void)
  * proper sequence to start the power block.
  *
  * @config: see enum mxs_power_config for possible options
+ * @ctrls: a mxs_power_ctrls struct, or use &mx23_power_default for default values
  */
-void mx23_power_init(const int config)
+void mx23_power_init(const int config, struct mxs_power_ctrls *ctrls)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
@@ -1210,10 +1222,18 @@ void mx23_power_init(const int config)
 
 	mxs_enable_output_rail_protection();
 
-	mxs_power_set_vddx(&mx23_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
-	mxs_power_set_vddx(&mxs_vddmem_cfg, 2500, 1700);
-	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
+	if (ctrls->vddio)
+		mxs_power_set_vddx(&mx23_vddio_cfg, ctrls->vddio->target,
+				ctrls->vddio->brownout);
+	if (ctrls->vddd)
+		mxs_power_set_vddx(&mxs_vddd_cfg, ctrls->vddd->target,
+				ctrls->vddd->brownout);
+	if (ctrls->vddmem)
+		mxs_power_set_vddx(&mxs_vddmem_cfg, ctrls->vddmem->target,
+				ctrls->vddmem->brownout);
+	if (ctrls->vdda)
+		mxs_power_set_vddx(&mxs_vdda_cfg, ctrls->vdda->target,
+				ctrls->vdda->brownout);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |
@@ -1225,6 +1245,13 @@ void mx23_power_init(const int config)
 	mxs_early_delay(1000);
 }
 
+struct mxs_power_ctrls mx28_power_default = {
+	.vdda	= &mxs_vdda_default,
+	.vddd	= &mxs_vddd_default,
+	.vddio	= &mxs_vddio_default,
+	.vddmem	= NULL,
+};
+
 /**
  * mx28_power_init() - The power block init main function
  *
@@ -1232,8 +1259,9 @@ void mx23_power_init(const int config)
  * proper sequence to start the power block.
  *
  * @config: see enum mxs_power_config for possible options
+ * @ctrls: a mxs_power_ctrls struct, or use &mx28_power_default for default values
  */
-void mx28_power_init(const int config)
+void mx28_power_init(const int config, struct mxs_power_ctrls *ctrls)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
@@ -1265,9 +1293,18 @@ void mx28_power_init(const int config)
 
 	mxs_enable_output_rail_protection();
 
-	mxs_power_set_vddx(&mx28_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
-	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
+	if (ctrls->vddio)
+		mxs_power_set_vddx(&mx28_vddio_cfg, ctrls->vddio->target,
+				ctrls->vddio->brownout);
+	if (ctrls->vddd)
+		mxs_power_set_vddx(&mxs_vddd_cfg, ctrls->vddd->target,
+				ctrls->vddd->brownout);
+	if (ctrls->vddmem)
+		mxs_power_set_vddx(&mxs_vddmem_cfg, ctrls->vddmem->target,
+				ctrls->vddmem->brownout);
+	if (ctrls->vdda)
+		mxs_power_set_vddx(&mxs_vdda_cfg, ctrls->vdda->target,
+				ctrls->vdda->brownout);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |

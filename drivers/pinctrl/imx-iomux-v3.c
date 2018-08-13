@@ -117,6 +117,9 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 		if (of_get_property(np, "input-schmitt-enable", NULL))
 			share_conf_val |= SHARE_CONF_PAD_CTL_HYS;
 
+		if (of_get_property(np, "input-enable", NULL))
+			share_conf_val |= IMX_PAD_SION;
+
 		if (of_get_property(np, "bias-pull-up", NULL))
 			share_conf_val |= SHARE_CONF_PAD_CTL_PUE;
 	} else {

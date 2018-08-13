@@ -43,7 +43,7 @@ enum zii_platform_vf610_type {
 	ZII_PLATFORM_VF610_DEV_REV_C	= 0x05,
 };
 
-unsigned int get_system_type(void)
+static unsigned int get_system_type(void)
 {
 #define GPIO_PDIR 0x10
 
@@ -111,7 +111,7 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 		if (IS_ENABLED(CONFIG_DEBUG_LL)) {
 			relocate_to_current_adr();
 			setup_c();
-			puts_ll("*********************************\n");
+			puts_ll("\n*********************************\n");
 			puts_ll("* Unknown system type: ");
 			puthex_ll(system_type);
 			puts_ll("\n* Assuming devboard revision B\n");

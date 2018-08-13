@@ -7,4 +7,7 @@ config EXTRA_FIRMWARE_DIR
 config FIRMWARE_IMX_LPDDR4_PMU_TRAIN
        	bool
 
+config FIRMWARE_IMX8MQ_ATF
+        bool
+
 endmenu

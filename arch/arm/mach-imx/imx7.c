@@ -168,17 +168,6 @@ static struct psci_ops imx7_psci_ops = {
 	.cpu_off = imx7_cpu_off,
 };
 
-static const struct imx_reset_reason imx7_reset_reasons[] = {
-	{ IMX_SRC_SRSR_IPP_RESET,       RESET_POR,   0 },
-	{ IMX_SRC_SRSR_WDOG1_RESET,     RESET_WDG,   0 },
-	{ IMX_SRC_SRSR_JTAG_RESET,      RESET_JTAG,  0 },
-	{ IMX_SRC_SRSR_JTAG_SW_RESET,   RESET_JTAG,  0 },
-	{ IMX_SRC_SRSR_WDOG3_RESET,     RESET_WDG,   1 },
-	{ IMX_SRC_SRSR_WDOG4_RESET,     RESET_WDG,   2 },
-	{ IMX_SRC_SRSR_TEMPSENSE_RESET, RESET_THERM, 0 },
-	{ /* sentinel */ }
-};
-
 int imx7_init(void)
 {
 	const char *cputypestr;

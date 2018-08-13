@@ -9,6 +9,8 @@ firmware-$(CONFIG_FIRMWARE_IMX_LPDDR4_PMU_TRAIN) += \
 	imx/lpddr4_pmu_train_2d_dmem.bin \
 	imx/lpddr4_pmu_train_2d_imem.bin
 
+firmware-$(CONFIG_FIRMWARE_IMX8MQ_ATF) += imx/imx8m-bl31.bin
+
 # Create $(fwabs) from $(CONFIG_EXTRA_FIRMWARE_DIR) -- if it doesn't have a
 # leading /, it's relative to $(srctree).
 fwdir := $(subst $(quote),,$(CONFIG_EXTRA_FIRMWARE_DIR))
@@ -55,6 +57,6 @@ endif
 targets := $(patsubst $(obj)/%,%, \
                                 $(shell find $(obj) -name \*.gen.S 2>/dev/null))
 
-# just to build a built-in.o. Otherwise compilation fails when no devicetree is
-# created.
+# just to build a built-in.o. Otherwise compilation fails when no
+# firmware is built.
 obj- += dummy.o

@@ -455,10 +455,13 @@ static void set_sysctl(struct mci_host *mci, u32 clock)
 	wait_on_timeout(10 * MSECOND,
 			esdhc_read32(regs + SDHCI_PRESENT_STATE) & PRSSTAT_SDSTB);
 
-	clk = SYSCTL_PEREN | SYSCTL_CKEN;
+	clk = SYSCTL_PEREN | SYSCTL_CKEN | SYSCTL_INITA;
 
 	esdhc_setbits32(regs + SDHCI_CLOCK_CONTROL__TIMEOUT_CONTROL__SOFTWARE_RESET,
 			clk);
+
+	wait_on_timeout(1 * MSECOND,
+			!(esdhc_read32(regs + SDHCI_CLOCK_CONTROL) & SYSCTL_INITA));
 }
 
 static void esdhc_set_ios(struct mci_host *mci, struct mci_ios *ios)

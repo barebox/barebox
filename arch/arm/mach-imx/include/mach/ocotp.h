@@ -2,6 +2,7 @@
 #define __MACH_IMX_OCOTP_H
 
 #include <linux/bitfield.h>
+#include <linux/types.h>
 
 #define OCOTP_SHADOW_OFFSET		0x400
 #define OCOTP_SHADOW_SPACING		0x10

@@ -53,14 +53,6 @@ static struct fsl_usb2_platform_data usb_pdata = {
 };
 #endif
 
-static int mx23_evk_mem_init(void)
-{
-	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 32 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(mx23_evk_mem_init);
-
 /**
  * Try to register an environment storage on the attached MCI card
  * @return 0 on success

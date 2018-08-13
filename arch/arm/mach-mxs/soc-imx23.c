@@ -19,6 +19,8 @@
 #include <restart.h>
 #include <mach/imx23-regs.h>
 #include <io.h>
+#include <asm/memory.h>
+#include <mach/imx23.h>
 
 #define HW_CLKCTRL_RESET 0x120
 # define HW_CLKCTRL_RESET_CHIP (1 << 1)
@@ -37,6 +39,8 @@ static void __noreturn imx23_restart_soc(struct restart_handler *rst)
 
 static int imx23_devices_init(void)
 {
+	arm_add_mem_device("ram0", IMX_MEMORY_BASE, imx23_get_memsize());
+
 	if (of_get_root_node())
 		return 0;
 

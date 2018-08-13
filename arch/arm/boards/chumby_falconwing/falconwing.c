@@ -258,14 +258,6 @@ static const uint32_t pad_setup[] = {
 	GPMI_RDY3_GPIO | GPIO_IN | PULLUP(1),
 };
 
-static int falconwing_mem_init(void)
-{
-	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(falconwing_mem_init);
-
 #define GPIO_USB_HUB_RESET	29
 #define GPIO_USB_HUB_POWER	26
 

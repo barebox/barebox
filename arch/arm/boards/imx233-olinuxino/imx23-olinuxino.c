@@ -40,14 +40,6 @@ static struct mxs_mci_platform_data mci_pdata = {
 	.f_min = 400000,
 };
 
-static int imx23_olinuxino_mem_init(void)
-{
-	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 64 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(imx23_olinuxino_mem_init);
-
 static void olinuxino_init_usb(void)
 {
 	imx23_usb_phy_enable();

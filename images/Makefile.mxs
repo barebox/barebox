@@ -10,6 +10,14 @@ quiet_cmd_mxs_bootstream = MXS-BOOTSTREAM $@
 $(obj)/%.mxsbs: $(obj)/%.pblx $(obj)/prep_%.pblb FORCE
 	$(call if_changed,mxs_bootstream)
 
+# %.mxsbsu - convert into unencrypted MXS BootStream image
+# ----------------------------------------------------------------
+quiet_cmd_mxs_bootstream_u = MXS-BOOTSTREAM-U $@
+      cmd_mxs_bootstream_u = $(objtree)/scripts/mxsimage -u -c $(CFG_$(@F)) -b $< -o $@ -p $(word 2,$^)
+
+$(obj)/%.mxsbsu: $(obj)/%.pblx $(obj)/prep_%.pblb FORCE
+	$(call if_changed,mxs_bootstream_u)
+
 # %.mxssd - convert into MXS SD card image
 # ----------------------------------------------------------------
 quiet_cmd_mxs_sd = MXS-SD $@

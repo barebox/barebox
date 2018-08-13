@@ -43,7 +43,7 @@ static noinline void freescale_mx28evk_init(void)
 
 	pr_debug("initializing power...\n");
 
-	mx28_power_init(0, 1, 0);
+	mx28_power_init(POWER_USE_BATTERY_INPUT);
 
 	pr_debug("initializing SDRAM...\n");
 

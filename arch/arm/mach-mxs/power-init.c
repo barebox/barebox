@@ -24,21 +24,7 @@
 #include <mach/regs-rtc.h>
 #include <mach/regs-lradc.h>
 
-/*
- * has_battery - true when this board has a battery.
- */
-static int has_battery;
-
-/*
- * use_battery_input - true when this board is supplied from the
- * battery input, but has a DC source instead of a real battery
- */
-static int use_battery_input;
-
-/*
- * use_5v_input - true when this board can use the 5V input
- */
-static int use_5v_input;
+int power_config;
 
 static void mxs_power_status(void)
 {
@@ -514,7 +500,8 @@ static void mxs_power_enable_4p2(void)
 		POWER_5VCTRL_HEADROOM_ADJ_MASK,
 		0x4 << POWER_5VCTRL_HEADROOM_ADJ_OFFSET);
 
-	if (has_battery || use_battery_input)
+	if (mxs_power_config_get_use() == POWER_USE_BATTERY ||
+	    mxs_power_config_get_use() == POWER_USE_BATTERY_INPUT)
 		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_SEL;
 	else
 		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_4P2;
@@ -1182,16 +1169,15 @@ static void mx23_ungate_power(void)
  *
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
+ *
+ * @config: see enum mxs_power_config for possible options
  */
-void mx23_power_init(int __has_battery, int __use_battery_input,
-		int __use_5v_input)
+void mx23_power_init(const int config)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
 
-	has_battery = __has_battery;
-	use_battery_input = __use_battery_input;
-	use_5v_input = __use_5v_input;
+	power_config = config;
 
 	mx23_ungate_power();
 
@@ -1204,11 +1190,11 @@ void mx23_power_init(int __has_battery, int __use_battery_input,
 
 	mxs_src_power_init();
 
-	if (has_battery)
+	if (mxs_power_config_get_use() == POWER_USE_BATTERY)
 		mxs_power_configure_power_source();
-	else if (use_battery_input)
+	else if (mxs_power_config_get_use() == POWER_USE_BATTERY_INPUT)
 		mxs_enable_battery_input();
-	else if (use_5v_input)
+	else if (mxs_power_config_get_use() == POWER_USE_5V)
 		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();
@@ -1243,16 +1229,15 @@ void mx23_power_init(int __has_battery, int __use_battery_input,
  *
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
+ *
+ * @config: see enum mxs_power_config for possible options
  */
-void mx28_power_init(int __has_battery, int __use_battery_input,
-		int __use_5v_input)
+void mx28_power_init(const int config)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
 
-	has_battery = __has_battery;
-	use_battery_input = __use_battery_input;
-	use_5v_input = __use_5v_input;
+	power_config = config;
 
 	mxs_power_status();
 	mxs_power_clock2xtal();
@@ -1264,11 +1249,11 @@ void mx28_power_init(int __has_battery, int __use_battery_input,
 
 	mxs_src_power_init();
 
-	if (has_battery)
+	if (mxs_power_config_get_use() == POWER_USE_BATTERY)
 		mxs_power_configure_power_source();
-	else if (use_battery_input)
+	else if (mxs_power_config_get_use() == POWER_USE_BATTERY_INPUT)
 		mxs_enable_battery_input();
-	else if (use_5v_input)
+	else if (mxs_power_config_get_use() == POWER_USE_5V)
 		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();

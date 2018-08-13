@@ -12,10 +12,26 @@
 
 void mxs_early_delay(int delay);
 
-void mx23_power_init(int __has_battery, int __use_battery_input,
-		int __use_5v_input);
-void mx28_power_init(int __has_battery, int __use_battery_input,
-		int __use_5v_input);
+/**
+ * Power configuration of the system:
+ * - POWER_USE_5V: use 5V input as power supply
+ * - POWER_USE_BATTERY: use battery input when the system is supplied by a battery
+ * - POWER_USE_BATTERY_INPUT: use battery input when the system is supplied by
+ *   a DC source (instead of a real battery) on the battery input
+ */
+enum mxs_power_config {
+	POWER_USE_5V			= 0b00000000,
+	POWER_USE_BATTERY		= 0b00000001,
+	POWER_USE_BATTERY_INPUT		= 0b00000010,
+};
+extern int power_config;
+static inline enum mxs_power_config mxs_power_config_get_use(void) {
+	return (power_config & 0b00000011);
+}
+
+
+void mx23_power_init(const int config);
+void mx28_power_init(const int config);
 void mxs_power_wait_pswitch(void);
 
 extern const uint32_t mx28_dram_vals_default[190];

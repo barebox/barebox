@@ -154,7 +154,7 @@ static noinline void imx23_olinuxino_init(void)
 
 	pr_debug("initializing power...\n");
 
-	mx23_power_init(0, 0, 1);
+	mx23_power_init(POWER_USE_5V);
 
 	pr_debug("initializing SDRAM...\n");
 

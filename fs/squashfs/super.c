@@ -39,15 +39,6 @@
 #include "squashfs.h"
 #include "decompressor.h"
 
-static struct dentry *d_make_root(struct inode *inode)
-{
-	struct dentry *de = malloc(sizeof(struct dentry));
-	de->d_name.name = "/";
-	de->d_name.len = strlen("/");
-	de->d_inode = inode;
-	return de;
-}
-
 static const struct squashfs_decompressor *supported_squashfs_filesystem(short
 	major, short minor, short id)
 {
@@ -333,11 +324,11 @@ failed_mount:
 
 int squashfs_mount(struct fs_device_d *fsdev, int silent)
 {
-	struct squashfs_priv *priv = fsdev->dev.priv;
+	struct super_block *sb = &fsdev->sb;
 
 	dev_dbg(&fsdev->dev, "squashfs_mount\n");
 
-	if (squashfs_fill_super(&priv->sb, fsdev, silent))
+	if (squashfs_fill_super(sb, fsdev, silent))
 		return -EINVAL;
 
 	return 0;

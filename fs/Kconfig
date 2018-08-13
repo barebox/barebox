@@ -6,6 +6,17 @@ config FS
 	default y
 	select FILETYPE
 
+config FS_LEGACY
+	bool
+	help
+	  invisible option selected by filesystem drivers which haven't
+	  been ported to dentry cache.
+
+if FS_LEGACY
+comment "Some selected filesystems still use the legacy FS API."
+comment "Consider updating them."
+endif
+
 config FS_AUTOMOUNT
 	bool
 
@@ -35,6 +46,7 @@ config FS_OMAP4_USBBOOT
 	bool
 	prompt "Filesystem over usb boot"
 	depends on OMAP4_USBBOOT
+	select FS_LEGACY
 
 config FS_NFS
 	depends on NET
@@ -43,6 +55,7 @@ config FS_NFS
 
 config FS_EFI
 	depends on EFI_BOOTUP
+	select FS_LEGACY
 	bool
 	prompt "EFI filesystem support"
 	help
@@ -51,6 +64,7 @@ config FS_EFI
 
 config FS_EFIVARFS
 	depends on EFI_BOOTUP
+	select FS_LEGACY
 	bool
 	prompt "EFI variable filesystem support (efivarfs)"
 	help
@@ -62,6 +76,7 @@ source fs/ubifs/Kconfig
 config FS_BPKFS
 	bool
 	select CRC32
+	select FS_LEGACY
 	prompt "BPKFS support"
 	help
 	  Simple update file format developed for Somfy, tools and library are
@@ -78,10 +93,12 @@ config FS_BPKFS
 config FS_UIMAGEFS
 	bool
 	select CRC32
+	select FS_LEGACY
 	prompt "uImage FS support"
 
 config FS_SMHFS
 	depends on ARM_SEMIHOSTING
+	select FS_LEGACY
 	bool
 	prompt "Semihosting FS support"
 	help
@@ -95,6 +112,7 @@ source fs/squashfs/Kconfig
 config FS_RATP
 	bool
 	depends on RATP
+	select FS_LEGACY
 	prompt "RATP filesystem support"
 	help
 	  This enables support for transferring files over RATP. A host can

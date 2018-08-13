@@ -46,34 +46,17 @@ int ext4fs_devread(struct ext_filesystem *fs, int __sector, int byte_offset,
 	return 0;
 }
 
-static int ext_open(struct device_d *dev, FILE *file, const char *filename)
+static inline struct ext2fs_node *to_ext2_node(struct inode *inode)
 {
-	struct ext_filesystem *fs = dev->priv;
-	struct ext2fs_node *inode;
-	int ret;
-
-	ret = ext4fs_open(fs->data, filename, &inode);
-	if (ret)
-		return ret;
-
-	file->size = le32_to_cpu(inode->inode.size);
-	file->priv = inode;
-
-	return 0;
-}
-
-static int ext_close(struct device_d *dev, FILE *f)
-{
-	struct ext_filesystem *fs = dev->priv;
-
-	ext4fs_free_node(f->priv, &fs->data->diropen);
-
-	return 0;
+	return container_of(inode, struct ext2fs_node, i);
 }
 
 static int ext_read(struct device_d *_dev, FILE *f, void *buf, size_t insize)
 {
-	return ext4fs_read_file(f->priv, f->pos, insize, buf);
+	struct inode *inode = f->f_inode;
+	struct ext2fs_node *node = to_ext2_node(inode);
+
+	return ext4fs_read_file(node, f->pos, insize, buf);
 }
 
 static loff_t ext_lseek(struct device_d *dev, FILE *f, loff_t pos)
@@ -83,143 +66,195 @@ static loff_t ext_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	return f->pos;
 }
 
-struct ext4fs_dir {
-	struct ext2fs_node *dirnode;
-	int fpos;
-	DIR dir;
+static struct inode *ext_alloc_inode(struct super_block *sb)
+{
+	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct ext_filesystem *fs = fsdev->dev.priv;
+	struct ext2fs_node *node;
+
+	node = xzalloc(sizeof(*node));
+	if (!node)
+		return NULL;
+
+	node->data = fs->data;
+
+	return &node->i;
+}
+
+static const struct super_operations ext_ops = {
+	.alloc_inode = ext_alloc_inode,
 };
 
-static DIR *ext_opendir(struct device_d *dev, const char *pathname)
+struct inode *ext_get_inode(struct super_block *sb, int ino);
+
+static int ext4fs_get_ino(struct ext2fs_node *dir, struct qstr *name, int *inum)
 {
-	struct ext_filesystem *fs = dev->priv;
-	struct ext4fs_dir *ext4_dir;
-	int type, ret;
-
-	ext4_dir = xzalloc(sizeof(*ext4_dir));
-
-	ret = ext4fs_find_file(pathname, &fs->data->diropen, &ext4_dir->dirnode,
-				  &type);
-	if (ret) {
-		free(ext4_dir);
-		return NULL;
-	}
-
-	if (type != FILETYPE_DIRECTORY)
-		return NULL;
-
-	ext4_dir->dir.priv = ext4_dir;
-
-	ret = ext4fs_read_inode(ext4_dir->dirnode->data, ext4_dir->dirnode->ino,
-			&ext4_dir->dirnode->inode);
-	if (ret) {
-		ext4fs_free_node(ext4_dir->dirnode, &fs->data->diropen);
-		free(ext4_dir);
-
-		return NULL;
-	}
-
-	return &ext4_dir->dir;
-}
-
-static struct dirent *ext_readdir(struct device_d *dev, DIR *dir)
-{
-	struct ext4fs_dir *ext4_dir = dir->priv;
-	struct ext2_dirent dirent;
-	struct ext2fs_node *diro = ext4_dir->dirnode;
+	unsigned int fpos = 0;
 	int ret;
-	char *filename;
 
-	if (ext4_dir->fpos >= le32_to_cpu(diro->inode.size))
-		return NULL;
+	while (fpos < le32_to_cpu(dir->inode.size)) {
+		struct ext2_dirent dirent;
 
-	ret = ext4fs_read_file(diro, ext4_dir->fpos, sizeof(struct ext2_dirent),
-			(char *) &dirent);
-	if (ret < 0)
-		return NULL;
+		ret = ext4fs_read_file(dir, fpos, sizeof(dirent), (char *)&dirent);
+		if (ret < 1)
+			return -EINVAL;
 
-	if (dirent.namelen == 0)
-		return NULL;
+		if (dirent.namelen != 0) {
+			char filename[dirent.namelen];
+			int ino;
 
-	filename = xzalloc(dirent.namelen + 1);
+			ret = ext4fs_read_file(dir, fpos + sizeof(dirent),
+						  dirent.namelen, filename);
+			if (ret < 1)
+				return -EINVAL;
 
-	ret = ext4fs_read_file(diro, ext4_dir->fpos + sizeof(struct ext2_dirent),
-			dirent.namelen, filename);
-	if (ret < 0) {
-		free(filename);
-		return NULL;
+			ino = le32_to_cpu(dirent.inode);
+
+			if (name->len == dirent.namelen &&
+			    !strncmp(name->name, filename, name->len)) {
+				*inum = ino;
+				return 0;
+			}
+		}
+		fpos += le16_to_cpu(dirent.direntlen);
 	}
 
-	filename[dirent.namelen] = '\0';
-
-	ext4_dir->fpos += le16_to_cpu(dirent.direntlen);
-
-	strcpy(dir->d.d_name, filename);
-
-	free(filename);
-
-	return &dir->d;
-}
-
-static int ext_closedir(struct device_d *dev, DIR *dir)
-{
-	struct ext_filesystem *fs = dev->priv;
-	struct ext4fs_dir *ext4_dir = dir->priv;
-
-	ext4fs_free_node(ext4_dir->dirnode, &fs->data->diropen);
-
-	free(ext4_dir);
+	*inum = 0;
 
 	return 0;
 }
 
-static int ext_stat(struct device_d *dev, const char *filename, struct stat *s)
+static struct dentry *ext_lookup(struct inode *dir, struct dentry *dentry,
+				 unsigned int flags)
 {
-	struct ext_filesystem *fs = dev->priv;
-	struct ext2fs_node *node;
+	struct ext2fs_node *e2dir = to_ext2_node(dir);
+	int ret, ino;
+	struct inode *inode;
+
+	ret = ext4fs_get_ino(e2dir, &dentry->d_name, &ino);
+	if (ret)
+		return ERR_PTR(ret);
+
+	if (ino) {
+		inode = ext_get_inode(dir->i_sb, ino);
+
+		d_add(dentry, inode);
+	}
+
+	return NULL;
+}
+
+static const struct inode_operations ext_inode_operations = {
+	.lookup = ext_lookup,
+};
+
+static int ext_iterate(struct file *file, struct dir_context *ctx)
+{
+	struct dentry *dentry = file->f_path.dentry;
+	struct inode *dir = d_inode(dentry);
+	unsigned int fpos = 0;
 	int status, ret;
+	struct ext2fs_node *diro = to_ext2_node(dir);
+	void *buf;
 
-	status = ext4fs_find_file(filename, &fs->data->diropen, &node, NULL);
-	if (status)
-		return -ENOENT;
+	buf = malloc(dir->i_size);
+	if (!buf)
+		return -ENOMEM;
 
-	ret = ext4fs_read_inode(node->data, node->ino, &node->inode);
-	if (ret)
-		return ret;
+	status = ext4fs_read_file(diro, 0, dir->i_size, buf);
+	if (status < 1) {
+		ret = -EINVAL;
+		goto out;
+	}
 
-	s->st_size = le32_to_cpu(node->inode.size);
-	s->st_mode = le16_to_cpu(node->inode.mode);
+	while (fpos < dir->i_size) {
+		const struct ext2_dirent *dirent = buf + fpos;
+		const char *filename = buf + fpos + sizeof(*dirent);
 
-	ext4fs_free_node(node, &fs->data->diropen);
+		if (dirent->namelen != 0)
+			dir_emit(ctx, filename, dirent->namelen,
+				 le32_to_cpu(dirent->inode), DT_UNKNOWN);
 
-	return 0;
+		fpos += le16_to_cpu(dirent->direntlen);
+	}
+	ret = 0;
+out:
+	free(buf);
+
+	return ret;
+
 }
 
-static int ext_readlink(struct device_d *dev, const char *pathname,
-		char *buf, size_t bufsiz)
+const struct file_operations ext_dir_operations = {
+	.iterate = ext_iterate,
+};
+
+static const char *ext_get_link(struct dentry *dentry, struct inode *inode)
 {
-	struct ext_filesystem *fs = dev->priv;
+	struct ext2fs_node *node = to_ext2_node(inode);
+	int ret;
+
+	if (inode->i_size < sizeof(node->inode.b.symlink))
+		return inode->i_link;
+
+	BUG_ON(inode->i_link);
+
+	inode->i_link = zalloc(inode->i_size + 1);
+
+	ret = ext4fs_read_file(node, 0, inode->i_size, inode->i_link);
+	if (ret == 0) {
+		free(inode->i_link);
+		inode->i_link = NULL;
+	}
+
+	return inode->i_link;
+}
+
+static const struct inode_operations ext_symlink_inode_operations =
+{
+	.get_link = ext_get_link,
+};
+
+struct inode *ext_get_inode(struct super_block *sb, int ino)
+{
+	struct inode *inode;
 	struct ext2fs_node *node;
-	char *symlink;
-	int ret, len, type;
+	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
+	struct ext_filesystem *fs = fsdev->dev.priv;
+	int ret;
 
-	ret = ext4fs_find_file(pathname, &fs->data->diropen, &node, &type);
-	if (ret)
-		return ret;
+	inode = new_inode(sb);
 
-	if (type != FILETYPE_SYMLINK)
-		return -EINVAL;
+	node = container_of(inode, struct ext2fs_node, i);
 
-	symlink = ext4fs_read_symlink(node);
-	if (!symlink)
-		return -ENOENT;
+	ret = ext4fs_read_inode(fs->data, ino, &node->inode);
 
-	len = min(bufsiz, strlen(symlink));
+	inode->i_ino = ino;
+	inode->i_mode = le16_to_cpu(node->inode.mode);
+	inode->i_size = le32_to_cpu(node->inode.size);
 
-	memcpy(buf, symlink, len);
+	switch (inode->i_mode & S_IFMT) {
+	default:
+		return NULL;
+	case S_IFREG:
+		inode->i_op = &ext_inode_operations;
+		break;
+	case S_IFDIR:
+		inode->i_op = &ext_inode_operations;
+		inode->i_fop = &ext_dir_operations;
+		inc_nlink(inode);
+		break;
+	case S_IFLNK:
+		inode->i_op = &ext_symlink_inode_operations;
+		if (inode->i_size < sizeof(node->inode.b.symlink)) {
+			inode->i_link = zalloc(inode->i_size + 1);
+			strncpy(inode->i_link, node->inode.b.symlink,
+				inode->i_size);
+		}
+		break;
+	}
 
-	free(symlink);
-
-	return 0;
+	return inode;
 }
 
 static int ext_probe(struct device_d *dev)
@@ -227,6 +262,8 @@ static int ext_probe(struct device_d *dev)
 	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	int ret;
 	struct ext_filesystem *fs;
+	struct super_block *sb = &fsdev->sb;
+	struct inode *inode;
 
 	fs = xzalloc(sizeof(*fs));
 
@@ -242,6 +279,11 @@ static int ext_probe(struct device_d *dev)
 	ret = ext4fs_mount(fs);
 	if (ret)
 		goto err_mount;
+
+	sb->s_op = &ext_ops;
+
+	inode = ext_get_inode(sb, 2);
+	sb->s_root = d_make_root(inode);
 
 	return 0;
 
@@ -261,15 +303,8 @@ static void ext_remove(struct device_d *dev)
 }
 
 static struct fs_driver_d ext_driver = {
-	.open      = ext_open,
-	.close     = ext_close,
 	.read      = ext_read,
 	.lseek     = ext_lseek,
-	.opendir   = ext_opendir,
-	.readdir   = ext_readdir,
-	.closedir  = ext_closedir,
-	.stat      = ext_stat,
-	.readlink  = ext_readlink,
 	.type      = filetype_ext,
 	.flags     = 0,
 	.drv = {

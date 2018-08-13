@@ -1,5 +1,6 @@
 menuconfig FS_FAT
 	bool
+	select FS_LEGACY
 	prompt "FAT filesystem support"
 
 if FS_FAT

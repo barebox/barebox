@@ -34,7 +34,18 @@
 #define DT_SOCK		12
 #define DT_WHT		14
 
+/*
+ * This is the "filldir" function type, used by readdir() to let
+ * the kernel specify what kind of dirent layout it wants to have.
+ * This allows the kernel to read directories into kernel space or
+ * to have different dirent layouts depending on the binary type.
+ */
+struct dir_context;
+typedef int (*filldir_t)(struct dir_context *, const char *, int, loff_t, u64,
+			 unsigned);
+
 struct dir_context {
+	const filldir_t actor;
 	loff_t pos;
 };
 
@@ -94,12 +105,8 @@ struct inode {
 	};
 	uid_t			i_uid;
 	gid_t			i_gid;
-	dev_t			i_rdev;
 	u64			i_version;
 	loff_t			i_size;
-#ifdef __NEED_I_SIZE_ORDERED
-	seqcount_t		i_size_seqcount;
-#endif
 	struct timespec		i_atime;
 	struct timespec		i_mtime;
 	struct timespec		i_ctime;
@@ -107,39 +114,19 @@ struct inode {
 	blkcnt_t		i_blocks;
 	unsigned short          i_bytes;
 	umode_t			i_mode;
-	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
-	struct mutex		i_mutex;
-	struct rw_semaphore	i_alloc_sem;
 	const struct inode_operations	*i_op;
 	const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 	struct super_block	*i_sb;
-	struct file_lock	*i_flock;
-#ifdef CONFIG_QUOTA
-	struct dquot		*i_dquot[MAXQUOTAS];
-#endif
-	struct list_head	i_devices;
-	int			i_cindex;
 
 	__u32			i_generation;
 
-#ifdef CONFIG_DNOTIFY
-	unsigned long		i_dnotify_mask; /* Directory notify events */
-	struct dnotify_struct	*i_dnotify; /* for directory notifications */
-#endif
-
-#ifdef CONFIG_INOTIFY
-	struct list_head	inotify_watches; /* watches on this inode */
-	struct mutex		inotify_mutex;	/* protects the watches list */
-#endif
-
 	unsigned long		i_state;
-	unsigned long		dirtied_when;	/* jiffies of first dirtying */
 
 	unsigned int		i_flags;
+	unsigned int		i_count;
 
-#ifdef CONFIG_SECURITY
-	void			*i_security;
-#endif
+	char			*i_link;
+
 	void			*i_private; /* fs or device private pointer */
 };
 
@@ -199,19 +186,9 @@ struct super_block {
 	   Cannot be worse than a second */
 	u32		   s_time_gran;
 
-	/*
-	 * Filesystem subtype.  If non-empty the filesystem type field
-	 * in /proc/mounts will be "type.subtype"
-	 */
-	char *s_subtype;
-
-	/*
-	 * Saved mount options for lazy filesystems using
-	 * generic_show_options()
-	 */
-	char *s_options;
-
 	/* Number of inodes with nlink == 0 but still referenced */
+
+	const struct dentry_operations *s_d_op; /* default d_op for dentries */
 };
 
 struct file_system_type {
@@ -404,5 +381,81 @@ static inline loff_t i_size_read(const struct inode *inode)
 {
 	return inode->i_size;
 }
+
+struct inode *new_inode(struct super_block *sb);
+unsigned int get_next_ino(void);
+void iput(struct inode *);
+struct inode *iget(struct inode *);
+void inc_nlink(struct inode *inode);
+
+struct inode_operations {
+	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
+
+	const char *(*get_link) (struct dentry *dentry, struct inode *inode);
+
+	int (*create) (struct inode *,struct dentry *, umode_t);
+	int (*link) (struct dentry *,struct inode *,struct dentry *);
+	int (*unlink) (struct inode *,struct dentry *);
+	int (*symlink) (struct inode *,struct dentry *,const char *);
+	int (*mkdir) (struct inode *,struct dentry *,umode_t);
+	int (*rmdir) (struct inode *,struct dentry *);
+	int (*rename) (struct inode *, struct dentry *,
+		       struct inode *, struct dentry *, unsigned int);
+};
+
+static inline ino_t parent_ino(struct dentry *dentry)
+{
+	return dentry->d_parent->d_inode->i_ino;
+}
+
+static inline bool dir_emit(struct dir_context *ctx,
+			    const char *name, int namelen,
+			    u64 ino, unsigned type)
+{
+	return ctx->actor(ctx, name, namelen, ctx->pos, ino, type) == 0;
+}
+
+static inline bool dir_emit_dot(struct file *file, struct dir_context *ctx)
+{
+	return ctx->actor(ctx, ".", 1, ctx->pos,
+			file->f_path.dentry->d_inode->i_ino, DT_DIR) == 0;
+}
+static inline bool dir_emit_dotdot(struct file *file, struct dir_context *ctx)
+{
+	return ctx->actor(ctx, "..", 2, ctx->pos,
+			parent_ino(file->f_path.dentry), DT_DIR) == 0;
+}
+
+static inline void dir_emit_dots(struct file *file, struct dir_context *ctx)
+{
+	if (ctx->pos == 0) {
+		dir_emit_dot(file, ctx);
+		ctx->pos = 1;
+	}
+	if (ctx->pos == 1) {
+		dir_emit_dotdot(file, ctx);
+		ctx->pos = 2;
+	}
+}
+
+struct file_operations {
+	int (*iterate) (struct file *, struct dir_context *);
+	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);
+	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);
+	int (*ioctl) (struct file *, int request, void *buf);
+	int (*truncate) (struct file *, loff_t);
+};
+
+void drop_nlink(struct inode *inode);
+
+extern const struct file_operations simple_dir_operations;
+extern const struct inode_operations simple_symlink_inode_operations;
+
+int simple_empty(struct dentry *dentry);
+int simple_unlink(struct inode *dir, struct dentry *dentry);
+int simple_rmdir(struct inode *dir, struct dentry *dentry);
+struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
+int dcache_readdir(struct file *, struct dir_context *);
+const char *simple_get_link(struct dentry *dentry, struct inode *inode);
 
 #endif /* _LINUX_FS_H */

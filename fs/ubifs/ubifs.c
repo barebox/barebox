@@ -269,161 +269,6 @@ int __init ubifs_compressors_init(void)
 	return 0;
 }
 
-/*
- * ubifsls...
- */
-
-static int ubifs_finddir(struct super_block *sb, char *dirname,
-			 unsigned long root_inum, unsigned long *inum)
-{
-	int err;
-	struct qstr nm;
-	union ubifs_key key;
-	struct ubifs_dent_node *dent;
-	struct ubifs_info *c;
-	struct file *file;
-	struct dentry *dentry;
-	struct inode *dir;
-	int ret = 0;
-
-	file = kzalloc(sizeof(struct file), 0);
-	dentry = kzalloc(sizeof(struct dentry), 0);
-	dir = kzalloc(sizeof(struct inode), 0);
-	if (!file || !dentry || !dir) {
-		printf("%s: Error, no memory for malloc!\n", __func__);
-		err = -ENOMEM;
-		goto out;
-	}
-
-	dir->i_sb = sb;
-	file->f_path.dentry = dentry;
-	file->f_path.dentry->d_parent = dentry;
-	file->f_path.dentry->d_inode = dir;
-	file->f_path.dentry->d_inode->i_ino = root_inum;
-	c = sb->s_fs_info;
-
-	dbg_gen("dir ino %lu, f_pos %#llx", dir->i_ino, file->f_pos);
-
-	/* Find the first entry in TNC and save it */
-	lowest_dent_key(c, &key, dir->i_ino);
-	nm.name = NULL;
-	dent = ubifs_tnc_next_ent(c, &key, &nm);
-	if (IS_ERR(dent)) {
-		err = PTR_ERR(dent);
-		goto out;
-	}
-
-	file->f_pos = key_hash_flash(c, &dent->key);
-	file->private_data = dent;
-
-	while (1) {
-		dbg_gen("feed '%s', ino %llu, new f_pos %#x",
-			dent->name, (unsigned long long)le64_to_cpu(dent->inum),
-			key_hash_flash(c, &dent->key));
-		ubifs_assert(le64_to_cpu(dent->ch.sqnum) > ubifs_inode(dir)->creat_sqnum);
-
-		nm.len = le16_to_cpu(dent->nlen);
-		if ((strncmp(dirname, (char *)dent->name, nm.len) == 0) &&
-		    (strlen(dirname) == nm.len)) {
-			*inum = le64_to_cpu(dent->inum);
-			ret = 1;
-			goto out_free;
-		}
-
-		/* Switch to the next entry */
-		key_read(c, &dent->key, &key);
-		nm.name = (char *)dent->name;
-		dent = ubifs_tnc_next_ent(c, &key, &nm);
-		if (IS_ERR(dent)) {
-			err = PTR_ERR(dent);
-			goto out;
-		}
-
-		kfree(file->private_data);
-		file->f_pos = key_hash_flash(c, &dent->key);
-		file->private_data = dent;
-		cond_resched();
-	}
-
-out:
-	if (err != -ENOENT)
-		dbg_gen("cannot find next direntry, error %d", err);
-
-out_free:
-	if (file->private_data)
-		kfree(file->private_data);
-	if (file)
-		free(file);
-	if (dentry)
-		free(dentry);
-	if (dir)
-		free(dir);
-
-	return ret;
-}
-
-static unsigned long ubifs_findfile(struct super_block *sb, const char *filename)
-{
-	int ret;
-	char *next;
-	char fpath[128];
-	char *name = fpath;
-	unsigned long root_inum = 1;
-	unsigned long inum;
-
-	strcpy(fpath, filename);
-
-	/* Remove all leading slashes */
-	while (*name == '/')
-		name++;
-
-	/*
-	 * Handle root-direcoty ('/')
-	 */
-	inum = root_inum;
-	if (!name || *name == '\0')
-		return inum;
-
-	for (;;) {
-		struct inode *inode;
-		struct ubifs_inode *ui;
-
-		/* Extract the actual part from the pathname.  */
-		next = strchr(name, '/');
-		if (next) {
-			/* Remove all leading slashes.  */
-			while (*next == '/')
-				*(next++) = '\0';
-		}
-
-		ret = ubifs_finddir(sb, name, root_inum, &inum);
-		if (!ret)
-			return 0;
-		inode = ubifs_iget(sb, inum);
-
-		if (IS_ERR(inode))
-			return 0;
-		ui = ubifs_inode(inode);
-
-		/*
-		 * Check if directory with this name exists
-		 */
-
-		/* Found the node!  */
-		if (!next || *next == '\0')
-			return inum;
-
-		root_inum = inum;
-		name = next;
-	}
-
-	return 0;
-}
-
-/*
- * ubifsload...
- */
-
 /* file.c */
 
 static inline void *kmap(struct page *page)
@@ -487,18 +332,8 @@ struct ubifs_file {
 
 static int ubifs_open(struct device_d *dev, FILE *file, const char *filename)
 {
-	struct ubifs_priv *priv = dev->priv;
-	struct inode *inode;
+	struct inode *inode = file->f_inode;
 	struct ubifs_file *uf;
-	unsigned long inum;
-
-	inum = ubifs_findfile(priv->sb, filename);
-	if (!inum)
-		return -ENOENT;
-
-	inode = ubifs_iget(priv->sb, inum);
-	if (IS_ERR(inode))
-		return -ENOENT;
 
 	uf = xzalloc(sizeof(*uf));
 
@@ -516,9 +351,6 @@ static int ubifs_open(struct device_d *dev, FILE *file, const char *filename)
 static int ubifs_close(struct device_d *dev, FILE *f)
 {
 	struct ubifs_file *uf = f->priv;
-	struct inode *inode = uf->inode;
-
-	ubifs_iput(inode);
 
 	free(uf->buf);
 	free(uf->dn);
@@ -596,163 +428,6 @@ static loff_t ubifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	return pos;
 }
 
-struct ubifs_dir {
-	struct file file;
-	struct dentry dentry;
-	struct inode inode;
-	DIR dir;
-	union ubifs_key key;
-	struct ubifs_dent_node *dent;
-	struct ubifs_priv *priv;
-	struct qstr nm;
-};
-
-static DIR *ubifs_opendir(struct device_d *dev, const char *pathname)
-{
-	struct ubifs_priv *priv = dev->priv;
-	struct ubifs_dir *dir;
-	struct file *file;
-	struct dentry *dentry;
-	struct inode *inode;
-	unsigned long inum;
-	struct ubifs_info *c = priv->sb->s_fs_info;
-
-	inum = ubifs_findfile(priv->sb, pathname);
-	if (!inum)
-		return NULL;
-
-	inode = ubifs_iget(priv->sb, inum);
-	if (IS_ERR(inode))
-		return NULL;
-
-	ubifs_iput(inode);
-
-	dir = xzalloc(sizeof(*dir));
-
-	dir->priv = priv;
-
-	file = &dir->file;
-	dentry = &dir->dentry;
-	inode = &dir->inode;
-
-	inode->i_sb = priv->sb;
-	file->f_path.dentry = dentry;
-	file->f_path.dentry->d_parent = dentry;
-	file->f_path.dentry->d_inode = inode;
-	file->f_path.dentry->d_inode->i_ino = inum;
-	file->f_pos = 1;
-
-	/* Find the first entry in TNC and save it */
-	lowest_dent_key(c, &dir->key, inode->i_ino);
-
-	return &dir->dir;
-}
-
-static struct dirent *ubifs_readdir(struct device_d *dev, DIR *_dir)
-{
-	struct ubifs_dir *dir = container_of(_dir, struct ubifs_dir, dir);
-	struct ubifs_info *c = dir->priv->sb->s_fs_info;
-	struct ubifs_dent_node *dent;
-	struct qstr *nm = &dir->nm;
-	struct file *file = &dir->file;
-
-	dent = ubifs_tnc_next_ent(c, &dir->key, nm);
-	if (IS_ERR(dent))
-		return NULL;
-
-	debug("feed '%s', ino %llu, new f_pos %#x\n",
-		dent->name, (unsigned long long)le64_to_cpu(dent->inum),
-		key_hash_flash(c, &dent->key));
-
-	ubifs_assert(le64_to_cpu(dent->ch.sqnum) > ubifs_inode(&dir->inode)->creat_sqnum);
-
-	key_read(c, &dent->key, &dir->key);
-	file->f_pos = key_hash_flash(c, &dent->key);
-	file->private_data = dent;
-
-	nm->len = le16_to_cpu(dent->nlen);
-	nm->name = dent->name;
-
-	strcpy(_dir->d.d_name, dent->name);
-
-	free(dir->dent);
-	dir->dent = dent;
-
-	return &_dir->d;
-}
-
-static int ubifs_closedir(struct device_d *dev, DIR *_dir)
-{
-	struct ubifs_dir *dir = container_of(_dir, struct ubifs_dir, dir);
-
-	free(dir->dent);
-	free(dir);
-
-	return 0;
-}
-
-static int ubifs_stat(struct device_d *dev, const char *filename, struct stat *s)
-{
-	struct ubifs_priv *priv = dev->priv;
-	struct inode *inode;
-	unsigned long inum;
-
-	inum = ubifs_findfile(priv->sb, filename);
-	if (!inum)
-		return -ENOENT;
-
-	inode = ubifs_iget(priv->sb, inum);
-	if (IS_ERR(inode))
-		return -ENOENT;
-
-	s->st_size = inode->i_size;
-	s->st_mode = inode->i_mode;
-
-	ubifs_iput(inode);
-
-	return 0;
-}
-
-static char *ubifs_symlink(struct inode *inode)
-{
-	struct ubifs_inode *ui;
-	char *symlink;
-
-	ui = ubifs_inode(inode);
-	symlink = malloc(ui->data_len + 1);
-
-	memcpy(symlink, ui->data, ui->data_len);
-	symlink[ui->data_len] = '\0';
-
-	return symlink;
-}
-
-static int ubifs_readlink(struct device_d *dev, const char *pathname, char *buf,
-			size_t bufsz)
-{
-	struct ubifs_priv *priv = dev->priv;
-	struct inode *inode;
-	char *symlink;
-	int len;
-	unsigned long inum;
-
-	inum = ubifs_findfile(priv->sb, pathname);
-	if (!inum)
-		return -ENOENT;
-
-	inode = ubifs_iget(priv->sb, inum);
-	if (!inode)
-		return -ENOENT;
-
-	symlink = ubifs_symlink(inode);
-
-	len = min(bufsz, strlen(symlink));
-	memcpy(buf, symlink, len);
-	free(symlink);
-
-	return 0;
-}
-
 void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev)
 {
 	struct ubi_volume_info vi = {};
@@ -795,11 +470,11 @@ static int ubifs_probe(struct device_d *dev)
 		goto err_free;
 	}
 
-	priv->sb = ubifs_get_super(dev, priv->ubi, 0);
-	if (IS_ERR(priv->sb)) {
-		ret = PTR_ERR(priv->sb);
+	ret = ubifs_get_super(dev, priv->ubi, 0);
+	if (ret)
 		goto err;
-	}
+
+	priv->sb = &fsdev->sb;
 
 	ubifs_set_rootarg(priv, fsdev);
 
@@ -821,7 +496,6 @@ static void ubifs_remove(struct device_d *dev)
 	ubi_close_volume(priv->ubi);
 
 	free(c);
-	free(sb);
 
 	free(priv);
 }
@@ -831,11 +505,6 @@ static struct fs_driver_d ubifs_driver = {
 	.close     = ubifs_close,
 	.read      = ubifs_read,
 	.lseek     = ubifs_lseek,
-	.opendir   = ubifs_opendir,
-	.readdir   = ubifs_readdir,
-	.closedir  = ubifs_closedir,
-	.stat      = ubifs_stat,
-	.readlink  = ubifs_readlink,
 	.type = filetype_ubifs,
 	.flags     = 0,
 	.drv = {

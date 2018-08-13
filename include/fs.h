@@ -31,14 +31,15 @@ typedef struct filep {
 	/* private fields. Mapping between FILE and filedescriptor number     */
 	int no;
 	char in_use;
+
+	struct inode *f_inode;
+	struct dentry *dentry;
 } FILE;
 
 #define FS_DRIVER_NO_DEV	1
 
 struct fs_driver_d {
 	int (*probe) (struct device_d *dev);
-	int (*mkdir)(struct device_d *dev, const char *pathname);
-	int (*rmdir)(struct device_d *dev, const char *pathname);
 
 	/* create a file. The file is guaranteed to not exist */
 	int (*create)(struct device_d *dev, const char *pathname, mode_t mode);
@@ -47,22 +48,12 @@ struct fs_driver_d {
 	/* Truncate a file to given size */
 	int (*truncate)(struct device_d *dev, FILE *f, ulong size);
 
-	int (*symlink)(struct device_d *dev, const char *pathname,
-		       const char *newpath);
-	int (*readlink)(struct device_d *dev, const char *pathname, char *name,
-			size_t size);
-
 	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
 	int (*close)(struct device_d *dev, FILE *f);
 	int (*read)(struct device_d *dev, FILE *f, void *buf, size_t size);
 	int (*write)(struct device_d *dev, FILE *f, const void *buf, size_t size);
 	int (*flush)(struct device_d *dev, FILE *f);
 	loff_t (*lseek)(struct device_d *dev, FILE *f, loff_t pos);
-
-	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
-	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
-	int (*closedir)(struct device_d *dev, DIR *dir);
-	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
 
 	int (*ioctl)(struct device_d *dev, FILE *f, int request, void *buf);
 	int (*erase)(struct device_d *dev, FILE *f, loff_t count,
@@ -71,6 +62,18 @@ struct fs_driver_d {
 			loff_t offset, int prot);
 
 	int (*memmap)(struct device_d *dev, FILE *f, void **map, int flags);
+
+	/* legacy */
+	int (*mkdir)(struct device_d *dev, const char *pathname);
+	int (*rmdir)(struct device_d *dev, const char *pathname);
+	int (*symlink)(struct device_d *dev, const char *pathname,
+		       const char *newpath);
+	int (*readlink)(struct device_d *dev, const char *pathname, char *name,
+			size_t size);
+	struct dir* (*opendir)(struct device_d *dev, const char *pathname);
+	struct dirent* (*readdir)(struct device_d *dev, struct dir *dir);
+	int (*closedir)(struct device_d *dev, DIR *dir);
+	int (*stat)(struct device_d *dev, const char *file, struct stat *stat);
 
 	struct driver_d drv;
 
@@ -99,6 +102,10 @@ struct fs_device_d {
 	struct list_head list;
 	char *options;
 	char *linux_rootarg;
+
+	struct super_block sb;
+
+	struct vfsmount vfsmount;
 };
 
 bool __is_tftp_fs(const char *path);
@@ -135,12 +142,6 @@ int ls(const char *path, ulong flags);
 
 char *mkmodestr(unsigned long mode, char *str);
 
-/*
- * This function turns 'path' into an absolute path and removes all occurrences
- * of "..", "." and double slashes. The returned string must be freed wit free().
- */
-char *normalise_path(const char *path);
-
 char *canonicalize_path(const char *pathname);
 
 char *get_mounted_path(const char *path);
@@ -154,6 +155,7 @@ void automount_remove(const char *_path);
 int automount_add(const char *path, const char *cmd);
 void automount_print(void);
 
+int fs_init_legacy(struct fs_device_d *fsdev);
 int fsdev_open_cdev(struct fs_device_d *fsdev);
 const char *cdev_get_mount_path(struct cdev *cdev);
 const char *cdev_mount_default(struct cdev *cdev, const char *fsoptions);

@@ -36,6 +36,7 @@
 #include <lzo.h>
 #include <crc.h>
 #include <linux/fs.h>
+#include <linux/stat.h>
 #include <linux/sched.h>
 #include <linux/ctype.h>
 #include <linux/time.h>
@@ -49,11 +50,9 @@
 
 #define crc32(seed, data, length)  crc32_no_comp(seed, (unsigned char const *)data, length)
 
-struct dentry;
 struct file;
 struct iattr;
 struct kstat;
-struct vfsmount;
 
 extern struct super_block *ubifs_sb;
 
@@ -71,8 +70,6 @@ struct page {
 	void *addr;
 	struct inode *inode;
 };
-
-void iput(struct inode *inode);
 
 struct kmem_cache { int sz; };
 
@@ -1901,7 +1898,7 @@ int ubifs_decompress(const struct ubifs_info *c, const void *buf, int len,
 
 #ifdef __BAREBOX__
 void ubifs_umount(struct ubifs_info *c);
-struct super_block *ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent);
+int ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent);
 #endif
 
 #endif /* !__UBIFS_H__ */

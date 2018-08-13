@@ -172,6 +172,7 @@ int squashfs_read_inode(struct inode *inode, long long ino)
 		}
 
 		inode->i_size = le32_to_cpu(sqsh_ino->file_size);
+		inode->i_op = &squashfs_inode_ops;
 		inode->i_mode |= S_IFREG;
 		inode->i_blocks = ((inode->i_size - 1) >> 9) + 1;
 		squashfs_i(inode)->fragment_block = frag_blk;
@@ -214,6 +215,7 @@ int squashfs_read_inode(struct inode *inode, long long ino)
 
 		xattr_id = le32_to_cpu(sqsh_ino->xattr);
 		inode->i_size = le64_to_cpu(sqsh_ino->file_size);
+		inode->i_op = &squashfs_inode_ops;
 		inode->i_mode |= S_IFREG;
 		inode->i_blocks = (inode->i_size -
 				le64_to_cpu(sqsh_ino->sparse) + 511) >> 9;
@@ -240,6 +242,8 @@ int squashfs_read_inode(struct inode *inode, long long ino)
 			goto failed_read;
 
 		inode->i_size = le16_to_cpu(sqsh_ino->file_size);
+		inode->i_op = &squashfs_dir_inode_ops;
+		inode->i_fop = &squashfs_dir_ops;
 		inode->i_mode |= S_IFDIR;
 		squashfs_i(inode)->start = le32_to_cpu(sqsh_ino->start_block);
 		squashfs_i(inode)->offset = le16_to_cpu(sqsh_ino->offset);
@@ -263,6 +267,8 @@ int squashfs_read_inode(struct inode *inode, long long ino)
 
 		xattr_id = le32_to_cpu(sqsh_ino->xattr);
 		inode->i_size = le32_to_cpu(sqsh_ino->file_size);
+		inode->i_op = &squashfs_dir_inode_ops;
+		inode->i_fop = &squashfs_dir_ops;
 		inode->i_mode |= S_IFDIR;
 		squashfs_i(inode)->start = le32_to_cpu(sqsh_ino->start_block);
 		squashfs_i(inode)->offset = le16_to_cpu(sqsh_ino->offset);
@@ -288,6 +294,7 @@ int squashfs_read_inode(struct inode *inode, long long ino)
 			goto failed_read;
 
 		inode->i_size = le32_to_cpu(sqsh_ino->symlink_size);
+		inode->i_op = &squashfs_symlink_inode_ops;
 		inode->i_mode |= S_IFLNK;
 		squashfs_i(inode)->start = block;
 		squashfs_i(inode)->offset = offset;
@@ -400,3 +407,5 @@ failed_read:
 	ERROR("Unable to read inode 0x%llx\n", ino);
 	return err;
 }
+
+const struct inode_operations squashfs_inode_ops;

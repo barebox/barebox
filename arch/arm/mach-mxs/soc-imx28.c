@@ -19,6 +19,8 @@
 #include <restart.h>
 #include <mach/imx28-regs.h>
 #include <io.h>
+#include <asm/memory.h>
+#include <mach/imx28.h>
 
 #define HW_CLKCTRL_RESET 0x1e0
 # define HW_CLKCTRL_RESET_CHIP (1 << 1)
@@ -50,6 +52,8 @@ static int imx28_init(void)
 	writel(reg, IMX_CCM_BASE + HW_CLKCTRL_RESET);
 
 	restart_handler_register_fn(imx28_restart_soc);
+
+	arm_add_mem_device("ram0", IMX_MEMORY_BASE, imx28_get_memsize());
 
 	return 0;
 }

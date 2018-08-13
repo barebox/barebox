@@ -232,14 +232,6 @@ static struct imx_fb_platformdata mx28_evk_fb_pdata = {
 	.enable = mx28_evk_fb_enable,
 };
 
-static int mx28_evk_mem_init(void)
-{
-	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(mx28_evk_mem_init);
-
 static const struct spi_board_info mx28evk_spi_board_info[] = {
 	{
 		.name = "m25p80",

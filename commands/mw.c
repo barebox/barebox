@@ -52,7 +52,7 @@ static int do_mem_mw(int argc, char *argv[])
 
 	adr = strtoull_suffix(argv[optind++], NULL, 0);
 
-	fd = open_and_lseek(filename, mode | O_WRONLY, adr);
+	fd = open_and_lseek(filename, mode | O_WRONLY | O_CREAT, adr);
 	if (fd < 0)
 		return 1;
 

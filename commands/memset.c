@@ -56,7 +56,7 @@ static int do_memset(int argc, char *argv[])
 	c = strtoull_suffix(argv[optind + 1], NULL, 0);
 	n = strtoull_suffix(argv[optind + 2], NULL, 0);
 
-	fd = open_and_lseek(file, mode | O_WRONLY, s);
+	fd = open_and_lseek(file, mode | O_WRONLY | O_CREAT, s);
 	if (fd < 0)
 		return 1;
 

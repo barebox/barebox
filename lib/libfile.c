@@ -501,7 +501,7 @@ int open_and_lseek(const char *filename, int mode, loff_t pos)
 {
 	int fd, ret;
 
-	fd = open(filename, mode | O_RDONLY);
+	fd = open(filename, mode);
 	if (fd < 0) {
 		perror("open");
 		return fd;
@@ -509,6 +509,24 @@ int open_and_lseek(const char *filename, int mode, loff_t pos)
 
 	if (!pos)
 		return fd;
+
+	if (mode & (O_WRONLY | O_RDWR)) {
+		struct stat s;
+
+		ret = fstat(fd, &s);
+		if (ret) {
+			perror("fstat");
+			return ret;
+		}
+
+		if (s.st_size < pos) {
+			ret = ftruncate(fd, pos);
+			if (ret) {
+				perror("ftruncate");
+				return ret;
+			}
+		}
+	}
 
 	ret = lseek(fd, pos, SEEK_SET);
 	if (ret == -1) {

@@ -37,9 +37,9 @@ section.
 Backends (e.g. Supported Memory Types)
 --------------------------------------
 
-Some non-volatile memory is need for storing a *state* variable set:
+Some non-volatile memory is needed for storing a *state* variable set:
 
-- Disk like devices: SD, (e)MMC, ATA
+- disk like devices: SD, (e)MMC, ATA
 - all kinds of NAND and NOR flash memories (mtd)
 - MRAM
 - EEPROM
@@ -52,7 +52,7 @@ required to define the location where to store the *state* variable set.
 
 .. _state_framework,backend_types:
 
-Backend-Types (e.g. *state* storage format)
+Backend-Types (e.g. *state* Storage Format)
 -------------------------------------------
 
 The *state* variable set itself can be stored in different ways. Currently two
@@ -66,7 +66,7 @@ Both serialize the *state* variable set differently.
 
 .. _state_framework,raw:
 
-The ``raw`` *state* storage format
+The ``raw`` *state* Storage Format
 ##################################
 
 ``raw`` means the *state* variable set is a simple binary data blob only. In
@@ -91,9 +91,9 @@ the binary data blob with the following content and layout:
 
 - 'magic value' is an unsigned value with native endianness, refer to
   :ref:`'magic' property <barebox,state_magic>` about its value.
-- 'byte count' is an unsigned value with native endianness
-- 'binary data blob CRC32' is an unsigned value with native endianness
-- 'header CRC32' is an unsigned value with native endianness
+- 'byte count' is an unsigned value with native endianness.
+- 'binary data blob CRC32' is an unsigned value with native endianness.
+- 'header CRC32' is an unsigned value with native endianness.
 
 .. note:: the 32-bit CRC calculation uses the polynomial:
 
@@ -117,7 +117,7 @@ embedded *state* variable set. Refer to
 
 .. _state_framework,dtb:
 
-The ``dtb`` *state* storage format
+The ``dtb`` *state* Storage Format
 ##################################
 
 .. note:: The ``dtb`` backend type isn't well tested. Use the ``raw`` backend
@@ -130,7 +130,7 @@ Unlike the ``raw`` *state* backend the ``dtb`` *state* backend can describe itse
 
 .. _state_framework,backend_storage_type:
 
-Backend Storage Types (e.g. media storage layout)
+Backend Storage Types (e.g. Media Storage Layout)
 -------------------------------------------------
 
 The serialized data (``raw`` or ``dtb``) can be stored to different backend
@@ -140,7 +140,7 @@ Currently two backend storage type implementations do exist, ``circular`` and
 ``direct``.
 
 The state framework can select the correct backend storage type depending on the
-backend medium. Media requiring erase operations (NAND, NOR flash) defaults to
+backend medium. Media requiring erase operations (NAND, NOR flash) default to
 the ``circular`` backend storage type automatically. In contrast EEPROMs and
 RAMs are candidates for the ``direct`` backend storage type.
 
@@ -151,9 +151,9 @@ This kind of backend storage type is intended to be used with persistent RAMs or
 EEPROMs.
 These media are characterized by:
 
-- memory cells can be simply written at any time (no previous erase required)
-- memory cells can be written as often as required (unlimted or very high endurance)
-- can be written on a byte-by-byte manner
+- memory cells can be simply written at any time (no previous erase required).
+- memory cells can be written as often as required (unlimted or very high endurance).
+- memory cells can be written on a byte-by-byte manner.
 
 Example: MRAM with 64 bytes at device's offset 0:
 
@@ -183,10 +183,10 @@ This kind of backend storage type is intended to be used with regular flash memo
 
 Flash memories are characterized by:
 
-- only erased memory cells can be written with new data
-- written data cannot be written twice (at least not for modern flash devices)
-- erase can happen on eraseblock sizes only (detectable, physical value)
-- an eraseblock only supports a limited number of write-erase-cycles (as low as a few thousand cycles)
+- only erased memory cells can be written with new data.
+- written data cannot be written twice (at least not for modern flash devices).
+- erase can happen on eraseblock sizes only (detectable, physical value).
+- an eraseblock only supports a limited number of write-erase-cycles (as low as a few thousand cycles).
 
 The purpose of the ``circular`` backend storage type is to save erase cycles
 which may wear out the flash's eraseblocks. This type instead incrementally fills
@@ -196,7 +196,7 @@ eraseblock again.
 
 **NOR type flash memory is additionally characterized by**
 
-- can be written on a byte-by-byte manner
+- memory cells can be written on a byte-by-byte manner.
 
 .. _state_framework,nor:
 
@@ -258,10 +258,10 @@ the eraseblock again. This reduces the need for a flash memory erase by factors.
 
 **NAND type flash memory is additionally characterized by**
 
-- organized in pages (size is a detectable, physical value)
-- writes can only happen in multiples of the page size (which much less than the eraseblock size)
+- it is organized in pages (size is a detectable, physical value).
+- writes can only happen in multiples of the page size (which much less than the eraseblock size).
 - partially writing a page can be limited in count or be entirely forbidden (in
-  the case of *MLC* NANDs)
+  the case of *MLC* NANDs).
 
 Example: NAND type flash memory with 128 kiB eraseblock size and 2 kiB page
 size and a 2 kiB write size
@@ -321,13 +321,13 @@ the eraseblock again. This significantly reduces the need for a block erases.
 .. important:: One copy of the *state* variable set is limited to the page size
    of the used backend (e.g. NAND type flash memory)
 
-Redundant *state* variable set copies
+Redundant *state* Variable Set Copies
 -------------------------------------
 
 To avoid data loss when changing the *state* variable set, more than one
 *state* variable set copy can be stored into the backend. Whenever the *state*
 variable set changes, only one *state* variable set copy gets changed at a time.
-In the case of an interruption and/or power loss resulting into an incomplete
+In the case of an interruption and/or power loss resulting in an incomplete
 write to the backend, the system can fall back to a different *state* variable
 set copy (previous *state* variable set).
 
@@ -379,9 +379,9 @@ side-by-side location of the *state* variable set copies.
 
 *<X>* defines the stride size, *C#1*, *C#2* the *state* variable set copies.
 
-Since these kinds of MTD devices are partitioned, its a good practice to always
-reserve multiple eraseblocks for the barebox's *state* feature. Keep in mind:
-Even NOR type flash memories can be worn out.
+Since these kinds of MTD devices are partitioned, it's a good practice to always
+reserve multiple eraseblocks for the barebox' *state* feature. Keep in mind:
+even NOR type flash memories can be worn out.
 
 **NAND type flash memory**
 
@@ -397,8 +397,8 @@ eraseblocks and this size is automatically detected at run-time.
     |<----------- eraseblock ---------->|<----------- eraseblock ---------->|<-
     |<-------- redundant area --------->|<-------- redundant area --------->|<-
 
-Since these kinds of MTD devices are partitioned, its a good practice to always
-reserve multiple eraseblocks for the barebox's *state* feature. Keep in mind:
+Since these kinds of MTD devices are partitioned, it's a good practice to always
+reserve multiple eraseblocks for the barebox' *state* feature. Keep in mind:
 NAND type flash memories can be worn out, factory bad blocks can exist from the
 beginning.
 
@@ -409,7 +409,7 @@ NAND type flash memory can have factory bad eraseblocks and more bad
 eraseblocks can appear over the life time of the memory. They are detected by
 the MTD layer, marked as bad and never used again.
 
-.. important:: If NAND type flash memory should be used as a backend, at least
+.. important:: if NAND type flash memory should be used as a backend, at least
    three eraseblocks are used to keep three redundant copies of the *state*
    variable set. You should add some spare eraseblocks to the backend
    partition by increasing the partition's size to a suitable value to handle
@@ -418,7 +418,7 @@ the MTD layer, marked as bad and never used again.
 Examples
 --------
 
-The following examples intends to show how to setup and interconnect all
+The following examples intend to show how to setup and interconnect all
 required components for various non-volatile memories.
 
 All examples use just one *state* variable of type *uint8* named ``variable``
@@ -431,7 +431,7 @@ variable set has a size of 17 bytes (16 bytes header plus one byte variables).
 .. note:: For a more detailed description of the used *state* variable set
    properties here, refer to :ref:`barebox,state`.
 
-NOR flash memories
+NOR Flash Memories
 ##################
 
 This type of memory can be written on a single byte/word basis (depending on its bus
@@ -456,7 +456,7 @@ a partition at a specific offset to be used as the backend for the
 		};
 	};
 
-With this 'backend' definition its possible to define the *state* variable set
+With this 'backend' definition it's possible to define the *state* variable set
 content, its backend-type and *state* variable set layout.
 
 .. code-block:: text
@@ -475,14 +475,14 @@ content, its backend-type and *state* variable set layout.
 		backend-storage-type = "circular";
 		backend-stridesize = <32>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
 		};
 	};
 
-NAND flash memories
+NAND Flash Memories
 ###################
 
 This type of memory can be written on a *page* base (typically 512 bytes,
@@ -506,7 +506,7 @@ a partition at a specific offset inside it to be used as the backend for the
 		};
 	};
 
-With this 'backend' definition its possible to define the *state* variable set
+With this 'backend' definition it's possible to define the *state* variable set
 content, its backend-type and *state* variable layout.
 
 .. code-block:: text
@@ -524,7 +524,7 @@ content, its backend-type and *state* variable layout.
 		backend = <&backend_state_nand>;
 		backend-storage-type = "circular";
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
@@ -537,7 +537,7 @@ SD/eMMC and ATA
 The following devicetree node entry defines some kind of SD/eMMC memory and
 a partition at a specific offset inside it to be used as the backend for the
 *state* variable set. Note that currently there is no support for on-disk
-partition tables. Instead, a ofpart partition description must be used. You
+partition tables. Instead, an ofpart partition description must be used. You
 have to make sure that this partition does not conflict with any other partition
 in the partition table.
 
@@ -548,7 +548,7 @@ in the partition table.
 		reg = <0x100000 0x20000>;
 	};
 
-With this 'backend' definition its possible to define the *state* variable set
+With this 'backend' definition it's possible to define the *state* variable set
 content, its backend-type and *state* variable layout.
 
 .. code-block:: text
@@ -566,7 +566,7 @@ content, its backend-type and *state* variable layout.
 		backend = <&backend_state_sd>;
 		backend-stridesize = <0x40>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
@@ -595,7 +595,7 @@ a partition at a specific offset inside it to be used as the backend for the
 		};
 	};
 
-With this 'backend' definition its possible to define the *state* variable set
+With this 'backend' definition it's possible to define the *state* variable set
 content, its backend-type and *state* variable layout.
 
 .. code-block:: text
@@ -614,7 +614,7 @@ content, its backend-type and *state* variable layout.
 		backend-storage-type = "direct";
 		backend-stridesize = <32>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;
@@ -649,7 +649,7 @@ within the EEPROM.
 	};
 };
 
-With this 'backend' definition its possible to define the *state* variable set
+With this 'backend' definition it's possible to define the *state* variable set
 content, its backend-type and *state* variable layout.
 
 .. code-block:: text
@@ -668,7 +668,7 @@ content, its backend-type and *state* variable layout.
 		backend-storage-type = "direct";
 		backend-stridesize = <32>;
 
-		variable {
+		variable@0 {
 			reg = <0x0 0x1>;
 			type ="uint8";
 			default = <0x1>;

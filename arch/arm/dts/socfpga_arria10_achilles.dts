@@ -30,8 +30,7 @@
 
 		environment {
 			compatible = "barebox,environment";
-			device-path = &mmc, "partname:1";
-			file-path = "barebox.env";
+			device-path = &environment_mmc;
 		};
 	};
 
@@ -93,17 +92,17 @@
 &i2c0 {
 	status = "okay";
 
-	tempsensor: ti,tmp102@0x48 {
+	tempsensor: ti,tmp102@48 {
 		compatible = "ti,tmp102";
 		reg = <0x48>;
 	};
 
-	rtc: nxp,pcf8563@0x51 {
+	rtc: nxp,pcf8563@51 {
 		compatible = "nxp,pcf8563";
 		reg = <0x51>;
 	};
 
-	eeprom: at24@0x54 {
+	eeprom: at24@54 {
 		compatible = "at24";
 		reg = <0x54>;
 		bytelen = <256>;
@@ -116,6 +115,11 @@
 	broken-cd;
 	bus-width = <1>;
 	status = "okay";
+
+	environment_mmc: partition@178000 {
+		label = "environment";
+		reg = <0x178000 0x8000>;
+	};
 };
 
 &uart0 {

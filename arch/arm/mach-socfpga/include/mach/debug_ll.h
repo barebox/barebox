@@ -40,8 +40,6 @@ static inline void INIT_LL(void)
 	unsigned int div = ns16550_calc_divisor(CONFIG_DEBUG_SOCFPGA_UART_CLOCK,
 						115200);
 
-	while ((readl(UART_BASE + LSR) & LSR_TEMT) == 0);
-
 	writel(0x00, UART_BASE + IER);
 
 	writel(LCR_BKSE, UART_BASE + LCR);

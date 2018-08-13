@@ -5,8 +5,10 @@
  */
 
 #include <common.h>
+#include <bootsource.h>
 #include <errno.h>
 #include <io.h>
+#include <mach/generic.h>
 #include <mach/arria10-pinmux.h>
 #include <mach/arria10-regs.h>
 #include <mach/arria10-reset-manager.h>
@@ -14,23 +16,35 @@
 
 void arria10_reset_peripherals(void)
 {
-	unsigned mask_ecc_ocp = ARRIA10_RSTMGR_PER0MODRST_EMAC0OCP |
+	enum bootsource src;
+
+	uint32_t mask = ARRIA10_RSTMGR_PER0MODRST_EMAC0OCP |
 		ARRIA10_RSTMGR_PER0MODRST_EMAC1OCP |
 		ARRIA10_RSTMGR_PER0MODRST_EMAC2OCP |
 		ARRIA10_RSTMGR_PER0MODRST_USB0OCP |
 		ARRIA10_RSTMGR_PER0MODRST_USB1OCP |
 		ARRIA10_RSTMGR_PER0MODRST_NANDOCP |
-		ARRIA10_RSTMGR_PER0MODRST_QSPIOCP |
-		ARRIA10_RSTMGR_PER0MODRST_SDMMCOCP;
+		ARRIA10_RSTMGR_PER0MODRST_QSPIOCP;
 
-	/* disable all components except ECC_OCP, L4 Timer0 and L4 WD0 */
+	src = arria10_get_bootsource();
+	if (src == BOOTSOURCE_MMC) {
+		mask |= ARRIA10_RSTMGR_PER0MODRST_SDMMC;
+		mask |= ARRIA10_RSTMGR_PER0MODRST_SDMMCOCP;
+	}
+
+	/* disable all components except the ECC_OCP and bootsource */
 	writel(0xffffffff, ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER1MODRST);
-	setbits_le32(ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER0MODRST,
-		     ~mask_ecc_ocp);
+	writel(~mask, ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER0MODRST);
+
+	mask = 0xffffffff;
+
+	if (src == BOOTSOURCE_MMC) {
+		mask &= ~ARRIA10_RSTMGR_PER0MODRST_SDMMC;
+		mask &= ~ARRIA10_RSTMGR_PER0MODRST_SDMMCOCP;
+	}
 
 	/* Finally disable the ECC_OCP */
-	setbits_le32(ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER0MODRST,
-		     mask_ecc_ocp);
+	writel(mask, ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER0MODRST);
 }
 
 void arria10_reset_deassert_dedicated_peripherals(void)
@@ -45,8 +59,7 @@ void arria10_reset_deassert_dedicated_peripherals(void)
 	/* enable ECC OCP first */
 	clrbits_le32(ARRIA10_RSTMGR_ADDR + ARRIA10_RSTMGR_PER0MODRST, mask);
 
-	mask = ARRIA10_RSTMGR_PER0MODRST_SDMMC |
-	       ARRIA10_RSTMGR_PER0MODRST_QSPI |
+	mask = ARRIA10_RSTMGR_PER0MODRST_QSPI |
 	       ARRIA10_RSTMGR_PER0MODRST_NAND |
 	       ARRIA10_RSTMGR_PER0MODRST_DMA;
 

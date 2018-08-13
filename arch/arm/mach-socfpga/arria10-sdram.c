@@ -531,5 +531,7 @@ int arria10_ddr_calibration_sequence(void)
 	if (arria10_sdram_firewall_setup())
 		puts_ll("FW: Error Configuring Firewall\n");
 
+	puts_ll("SDRAM setup done\n");
+
 	return 0;
 }

@@ -256,7 +256,7 @@ static int add_socfpga_header(void *buf, size_t size, unsigned start_addr, unsig
 
 static void usage(const char *prgname)
 {
-	fprintf(stderr, "usage: %s [-hb] [-v version] <infile> -o <outfile>\n", prgname);
+	fprintf(stderr, "usage: %s [-hbs] [-v version] <infile> -o <outfile>\n", prgname);
 }
 
 int main(int argc, char *argv[])
@@ -268,9 +268,11 @@ int main(int argc, char *argv[])
 	int fd;
 	int max_image_size, min_image_size = 80;
 	int addsize = 0, pad;
+	int fixup_size = 0;
 	unsigned int version = 0;
+	int fixed_size = 0;
 
-	while ((opt = getopt(argc, argv, "o:hbv:")) != -1) {
+	while ((opt = getopt(argc, argv, "o:hbsv:")) != -1) {
 		switch (opt) {
 		case 'v':
 			version = atoi(optarg);
@@ -284,6 +286,9 @@ int main(int argc, char *argv[])
 			add_barebox_header = 1;
 			min_image_size = 0;
 			addsize = 512;
+			break;
+		case 's':
+			fixup_size = 1;
 			break;
 		case 'h':
 			usage(argv[0]);
@@ -349,10 +354,26 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	fixed_size = s.st_size;
+
 	close(fd);
 
 	if (add_barebox_header) {
+		int barebox_size = 0;
+		int *image_size = buf + 0x2c;
+
 		memcpy(buf, bb_header, sizeof(bb_header));
+
+		if (fixup_size) {
+			fixed_size = htole32(fixed_size);
+
+			barebox_size = *((uint32_t *)buf + (fixed_size + addsize + pad) / 4 - 1);
+
+			/* size of barebox+pbl, header, size */
+			fixed_size += (barebox_size + addsize + 4);
+
+			*image_size = fixed_size;
+		}
 	}
 
 	ret = add_socfpga_header(buf, s.st_size + 4 + addsize + pad, addsize,

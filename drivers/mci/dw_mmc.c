@@ -26,128 +26,15 @@
 #include <mci.h>
 #include <io.h>
 #include <platform_data/dw_mmc.h>
+#include <linux/bitops.h>
 #include <linux/clk.h>
 #include <linux/err.h>
 #include <asm-generic/errno.h>
+#include "dw_mmc.h"
 
-#define DWMCI_CTRL		0x000
-#define	DWMCI_PWREN		0x004
-#define DWMCI_CLKDIV		0x008
-#define DWMCI_CLKSRC		0x00C
-#define DWMCI_CLKENA		0x010
-#define DWMCI_TMOUT		0x014
-#define DWMCI_CTYPE		0x018
-#define DWMCI_BLKSIZ		0x01C
-#define DWMCI_BYTCNT		0x020
-#define DWMCI_INTMASK		0x024
-#define DWMCI_CMDARG		0x028
-#define DWMCI_CMD		0x02C
-#define DWMCI_RESP0		0x030
-#define DWMCI_RESP1		0x034
-#define DWMCI_RESP2		0x038
-#define DWMCI_RESP3		0x03C
-#define DWMCI_MINTSTS		0x040
-#define DWMCI_RINTSTS		0x044
-#define DWMCI_STATUS		0x048
-#define DWMCI_FIFOTH		0x04C
-#define DWMCI_CDETECT		0x050
-#define DWMCI_WRTPRT		0x054
-#define DWMCI_GPIO		0x058
-#define DWMCI_TCMCNT		0x05C
-#define DWMCI_TBBCNT		0x060
-#define DWMCI_DEBNCE		0x064
-#define DWMCI_USRID		0x068
-#define DWMCI_VERID		0x06C
-#define DWMCI_HCON		0x070
-#define DWMCI_UHS_REG		0x074
-#define DWMCI_BMOD		0x080
-#define DWMCI_PLDMND		0x084
-#define DWMCI_DBADDR		0x088
-#define DWMCI_IDSTS		0x08C
-#define DWMCI_IDINTEN		0x090
-#define DWMCI_DSCADDR		0x094
-#define DWMCI_BUFADDR		0x098
-#define DWMCI_DATA		0x200
-
-/* Interrupt Mask register */
-#define DWMCI_INTMSK_ALL		0xffffffff
-#define DWMCI_INTMSK_RE			(1 << 1)
-#define DWMCI_INTMSK_CDONE		(1 << 2)
-#define DWMCI_INTMSK_DTO		(1 << 3)
-#define DWMCI_INTMSK_TXDR		(1 << 4)
-#define DWMCI_INTMSK_RXDR		(1 << 5)
-#define DWMCI_INTMSK_RCRC		(1 << 6)
-#define DWMCI_INTMSK_DCRC		(1 << 7)
-#define DWMCI_INTMSK_RTO		(1 << 8)
-#define DWMCI_INTMSK_DRTO		(1 << 9)
-#define DWMCI_INTMSK_HTO		(1 << 10)
-#define DWMCI_INTMSK_FRUN		(1 << 11)
-#define DWMCI_INTMSK_HLE		(1 << 12)
-#define DWMCI_INTMSK_SBE		(1 << 13)
-#define DWMCI_INTMSK_ACD		(1 << 14)
-#define DWMCI_INTMSK_EBE		(1 << 15)
-
-/* Raw interrupt Register */
-#define DWMCI_DATA_ERR	(DWMCI_INTMSK_EBE | DWMCI_INTMSK_SBE | DWMCI_INTMSK_HLE |\
-			DWMCI_INTMSK_FRUN | DWMCI_INTMSK_DCRC)
-#define DWMCI_DATA_TOUT	(DWMCI_INTMSK_HTO | DWMCI_INTMSK_DRTO)
-
-/* CTRL register */
-#define DWMCI_CTRL_RESET		(1 << 0)
-#define DWMCI_CTRL_FIFO_RESET		(1 << 1)
-#define DWMCI_CTRL_DMA_RESET		(1 << 2)
-#define DWMCI_DMA_EN			(1 << 5)
-#define DWMCI_CTRL_SEND_AS_CCSD		(1 << 10)
-#define DWMCI_IDMAC_EN			(1 << 25)
-#define DWMCI_RESET_ALL			(DWMCI_CTRL_RESET | DWMCI_CTRL_FIFO_RESET |\
-				DWMCI_CTRL_DMA_RESET)
-
-/* CMD register */
-#define DWMCI_CMD_RESP_EXP		(1 << 6)
-#define DWMCI_CMD_RESP_LENGTH		(1 << 7)
-#define DWMCI_CMD_CHECK_CRC		(1 << 8)
-#define DWMCI_CMD_DATA_EXP		(1 << 9)
-#define DWMCI_CMD_RW			(1 << 10)
-#define DWMCI_CMD_SEND_STOP		(1 << 12)
-#define DWMCI_CMD_ABORT_STOP		(1 << 14)
-#define DWMCI_CMD_PRV_DAT_WAIT		(1 << 13)
-#define DWMCI_CMD_UPD_CLK		(1 << 21)
-#define DWMCI_CMD_USE_HOLD_REG		(1 << 29)
-#define DWMCI_CMD_START			(1 << 31)
-
-/* CLKENA register */
-#define DWMCI_CLKEN_ENABLE		(1 << 0)
-#define DWMCI_CLKEN_LOW_PWR		(1 << 16)
-
-/* Card-type register */
-#define DWMCI_CTYPE_1BIT		0
-#define DWMCI_CTYPE_4BIT		(1 << 0)
-#define DWMCI_CTYPE_8BIT		(1 << 16)
-
-/* Status Register */
-#define DWMCI_STATUS_FIFO_EMPTY		(1 << 2)
-#define DWMCI_STATUS_FIFO_FULL		(1 << 3)
-#define DWMCI_STATUS_BUSY		(1 << 9)
-
-/* FIFOTH Register */
-#define DWMCI_FIFOTH_MSIZE(x)		((x) << 28)
-#define DWMCI_FIFOTH_RX_WMARK(x)	((x) << 16)
-#define DWMCI_FIFOTH_TX_WMARK(x)	(x)
-#define DWMCI_FIFOTH_FIFO_DEPTH(x)	((((x) >> 16) & 0x3ff) + 1)
-
-#define DWMCI_IDMAC_OWN			(1 << 31)
-#define DWMCI_IDMAC_CH			(1 << 4)
-#define DWMCI_IDMAC_FS			(1 << 3)
-#define DWMCI_IDMAC_LD			(1 << 2)
-
-/* Bus Mode Register */
-#define DWMCI_BMOD_IDMAC_RESET		(1 << 0)
-#define DWMCI_BMOD_IDMAC_FB		(1 << 1)
-#define DWMCI_BMOD_IDMAC_EN		(1 << 7)
 
 struct dwmci_host {
 	struct mci_host mci;
-	struct device_d *dev;
 	struct clk *clk_biu, *clk_ciu;
 	void *ioaddr;
 	unsigned int fifo_size_bytes;
@@ -271,7 +158,7 @@ static int dwmci_prepare_data_dma(struct dwmci_host *host,
 		desc->addr = start_addr + (i * PAGE_SIZE);
 		desc->next_addr = (uint32_t)(desc + 1);
 
-		dev_dbg(host->dev, "desc@ 0x%p 0x%08x 0x%08x 0x%08x 0x%08x\n",
+		dev_dbg(host->mci.hw_dev, "desc@ 0x%p 0x%08x 0x%08x 0x%08x 0x%08x\n",
 				desc, flags, cnt, desc->addr, desc->next_addr);
 		if (blk_cnt < 8)
 			break;
@@ -331,7 +218,7 @@ static int dwmci_read_data_pio(struct dwmci_host *host, struct mci_data *data)
 			status = dwmci_readl(host, DWMCI_STATUS);
 		}
 		if (!timeout) {
-			dev_err(host->dev, "%s: FIFO underflow timeout\n",
+			dev_err(host->mci.hw_dev, "%s: FIFO underflow timeout\n",
 			    __func__);
 			break;
 		}
@@ -360,7 +247,7 @@ static int dwmci_write_data_pio(struct dwmci_host *host, struct mci_data *data)
 			status = dwmci_readl(host, DWMCI_STATUS);
 		}
 		if (!timeout) {
-			dev_err(host->dev, "%s: FIFO overflow timeout\n",
+			dev_err(host->mci.hw_dev, "%s: FIFO overflow timeout\n",
 			    __func__);
 			break;
 		}
@@ -378,7 +265,7 @@ static int dwmci_write_data_pio(struct dwmci_host *host, struct mci_data *data)
 		status = dwmci_readl(host, DWMCI_STATUS);
 	}
 	if (!timeout) {
-		dev_err(host->dev, "%s: FIFO flush timeout\n",
+		dev_err(host->mci.hw_dev, "%s: FIFO flush timeout\n",
 		    __func__);
 		return -EIO;
 	}
@@ -403,7 +290,7 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 			break;
 
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_dbg(host->dev, "Timeout on data busy\n");
+			dev_dbg(host->mci.hw_dev, "Timeout on data busy\n");
 			return -ETIMEDOUT;
 		}
 	}
@@ -449,7 +336,7 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 	flags |= (cmd->cmdidx | DWMCI_CMD_START | DWMCI_CMD_USE_HOLD_REG);
 
-	dev_dbg(host->dev, "Sending CMD%d\n", cmd->cmdidx);
+	dev_dbg(host->mci.hw_dev, "Sending CMD%d\n", cmd->cmdidx);
 
 	dwmci_writel(host, DWMCI_CMD, flags);
 
@@ -462,16 +349,16 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 			break;
 		}
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_dbg(host->dev, "Send command timeout..\n");
+			dev_dbg(host->mci.hw_dev, "Send command timeout..\n");
 			return -ETIMEDOUT;
 		}
 	}
 
 	if (mask & DWMCI_INTMSK_RTO) {
-		dev_dbg(host->dev, "Response Timeout..\n");
+		dev_dbg(host->mci.hw_dev, "Response Timeout..\n");
 		return -ETIMEDOUT;
 	} else if (mask & DWMCI_INTMSK_RE) {
-		dev_dbg(host->dev, "Response Error..\n");
+		dev_dbg(host->mci.hw_dev, "Response Error..\n");
 		return -EIO;
 	}
 
@@ -492,17 +379,17 @@ dwmci_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 			mask = dwmci_readl(host, DWMCI_RINTSTS);
 
 			if (mask & (DWMCI_DATA_ERR)) {
-				dev_dbg(host->dev, "DATA ERROR!\n");
+				dev_dbg(host->mci.hw_dev, "DATA ERROR!\n");
 				return -EIO;
 			}
 
 			if (!dwmci_use_pio(host) && (mask & DWMCI_DATA_TOUT)) {
-				dev_dbg(host->dev, "DATA TIMEOUT!\n");
+				dev_dbg(host->mci.hw_dev, "DATA TIMEOUT!\n");
 				return -EIO;
 			}
 
 			if (is_timeout(start, SECOND * 10)) {
-				dev_dbg(host->dev, "Data timeout\n");
+				dev_dbg(host->mci.hw_dev, "Data timeout\n");
 				return -ETIMEDOUT;
 			}
 
@@ -552,7 +439,7 @@ static int dwmci_send_cmd(struct dwmci_host *host, u32 cmd, u32 arg)
 			return 0;
 
 		if (is_timeout(start, 100 * MSECOND)) {
-			dev_err(host->dev, "TIMEOUT error!!\n");
+			dev_err(host->mci.hw_dev, "TIMEOUT error!!\n");
 			return -ETIMEDOUT;
 		}
 	}
@@ -590,7 +477,7 @@ static void dwmci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 	struct dwmci_host *host = to_dwmci_host(mci);
 	uint32_t ctype;
 
-	dev_dbg(host->dev, "Buswidth = %d, clock: %d\n", ios->bus_width, ios->clock);
+	dev_dbg(host->mci.hw_dev, "Buswidth = %d, clock: %d\n", ios->bus_width, ios->clock);
 
 	if (ios->clock)
 		dwmci_setup_bus(host, ios->clock);
@@ -623,7 +510,7 @@ static int dwmci_init(struct mci_host *mci, struct device_d *dev)
 	dwmci_writel(host, DWMCI_PWREN, host->pwren_value);
 
 	if (dwmci_wait_reset(host, DWMCI_RESET_ALL)) {
-		dev_err(host->dev, "reset failed\n");
+		dev_err(host->mci.hw_dev, "reset failed\n");
 		return -EIO;
 	}
 
@@ -647,10 +534,10 @@ static int dwmci_init(struct mci_host *mci, struct device_d *dev)
 	/*
 	 * If fifo-depth property is set, use this value
 	 */
-	if (!of_property_read_u32(host->dev->device_node,
+	if (!of_property_read_u32(host->mci.hw_dev->device_node,
 		    "fifo-depth", &fifo_size)) {
 		host->fifo_size_bytes = fifo_size;
-		dev_dbg(host->dev, "Using fifo-depth=%u\n",
+		dev_dbg(host->mci.hw_dev, "Using fifo-depth=%u\n",
 		    host->fifo_size_bytes);
 	}
 
@@ -692,7 +579,6 @@ static int dw_mmc_probe(struct device_d *dev)
 	clk_enable(host->clk_biu);
 	clk_enable(host->clk_ciu);
 
-	host->dev = dev;
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);

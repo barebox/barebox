@@ -434,6 +434,12 @@ static struct image_handler barebox_handler = {
 	.filetype = filetype_arm_barebox,
 };
 
+static struct image_handler socfpga_xload_handler = {
+	.name = "SoCFPGA prebootloader image",
+	.bootm = do_bootm_linux,
+	.filetype = filetype_socfpga_xload,
+};
+
 #include <aimage.h>
 
 static int aimage_load_resource(int fd, struct resource *r, void* buf, int ps)
@@ -628,6 +634,7 @@ static int armlinux_register_image_handler(void)
 	globalvar_add_simple_bool("bootm.boot_atag", &bootm_boot_atag);
 
 	register_image_handler(&barebox_handler);
+	register_image_handler(&socfpga_xload_handler);
 	register_image_handler(&uimage_handler);
 	register_image_handler(&rawimage_handler);
 	register_image_handler(&zimage_handler);

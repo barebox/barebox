@@ -63,7 +63,7 @@ static int arria10_generic_init(void)
 
 	pr_debug("Setting SDMMC phase shifts for Arria10\n");
 	writel(ARRIA10_SYSMGR_SDMMC_DRVSEL(3) |
-	       ARRIA10_SYSMGR_SDMMC_SMPLSEL(0),
+	       ARRIA10_SYSMGR_SDMMC_SMPLSEL(2),
 	       ARRIA10_SYSMGR_SDMMC);
 
 	pr_debug("Initialize EMACs\n");

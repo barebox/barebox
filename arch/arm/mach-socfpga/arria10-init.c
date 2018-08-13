@@ -127,6 +127,32 @@ static void arria10_mask_ecc_errors(void)
 	writel(0x0007FFFF, ARRIA10_SYSMGR_ADDR + 0x94);
 }
 
+void arria10_finish_io(struct arria10_mainpll_cfg *mainpll,
+		       struct arria10_perpll_cfg *perpll,
+		       uint32_t *pinmux)
+{
+	int i;
+
+	/* shared pins */
+	for (i = arria10_pinmux_shared_io_q1_1;
+	     i <= arria10_pinmux_shared_io_q4_12; i++)
+		writel(pinmux[i], ARRIA10_PINMUX_SHARED_3V_IO_GRP_ADDR +
+		       (i - arria10_pinmux_shared_io_q1_1) * sizeof(uint32_t));
+
+	/* usefpga: select source for signals: hps or fpga */
+	for (i = arria10_pinmux_rgmii0_usefpga;
+	     i < arria10_pinmux_max; i++)
+		writel(pinmux[i], ARRIA10_PINMUX_FPGA_INTERFACE_ADDR +
+		       (i - arria10_pinmux_rgmii0_usefpga) * sizeof(uint32_t));
+
+	arria10_reset_deassert_shared_peripherals();
+
+	arria10_reset_deassert_fpga_peripherals();
+
+	INIT_LL();
+
+	puts_ll("lowlevel init done\n");
+}
 /*
  * First C function to initialize the critical hardware early
  */
@@ -173,25 +199,4 @@ void arria10_init(struct arria10_mainpll_cfg *mainpll,
 
 	/* deassert peripheral resets */
 	arria10_reset_deassert_dedicated_peripherals();
-
-	/* wait for fpga_usermode */
-	while ((readl(0xffd03080) & 0x6) == 0);
-
-	/* shared pins */
-	for (i = arria10_pinmux_shared_io_q1_1;
-	     i <= arria10_pinmux_shared_io_q4_12; i++)
-		writel(pinmux[i], ARRIA10_PINMUX_SHARED_3V_IO_GRP_ADDR +
-		       (i - arria10_pinmux_shared_io_q1_1) * sizeof(uint32_t));
-
-	arria10_reset_deassert_shared_peripherals();
-
-	/* usefpga: select source for signals: hps or fpga */
-	for (i = arria10_pinmux_rgmii0_usefpga;
-	     i < arria10_pinmux_max; i++)
-		writel(pinmux[i], ARRIA10_PINMUX_FPGA_INTERFACE_ADDR +
-		       (i - arria10_pinmux_rgmii0_usefpga) * sizeof(uint32_t));
-
-	arria10_reset_deassert_fpga_peripherals();
-
-	INIT_LL();
 }

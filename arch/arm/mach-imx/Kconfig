@@ -284,15 +284,6 @@ config MACH_GUF_VINCELL
 	bool "Garz-Fricke Vincell"
 	select ARCH_IMX53
 
-config MACH_GUF_VINCELL_XLOAD
-	depends on MACH_GUF_VINCELL
-	bool "Garz-Fricke Vincell NAND xload support"
-	help
-	  The Vincell initializes SDRAM from board code. This normally limits
-	  the image size to the size of the SoC internal SRAM. Enable this
-	  option to be able to use bigger images when booting from NAND. Images
-	  built with this option are no longer bootable from USB though.
-
 config MACH_TQMA53
 	bool "TQ i.MX53 TQMa53"
 	select ARCH_IMX53

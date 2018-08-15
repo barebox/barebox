@@ -151,7 +151,7 @@ static u32 *arm_create_pte(unsigned long virt, uint32_t flags)
 	dma_flush_range(table, PTRS_PER_PTE * sizeof(u32));
 
 	ttb[ttb_idx] = (unsigned long)table | PMD_TYPE_TABLE;
-	dma_flush_range(ttb, sizeof(u32));
+	dma_flush_range(&ttb[ttb_idx], sizeof(u32));
 
 	return table;
 }

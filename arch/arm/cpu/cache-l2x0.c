@@ -60,14 +60,14 @@ static inline void l2x0_inv_all(void)
 
 static void l2x0_inv_range(unsigned long start, unsigned long end)
 {
-	if (start & (CACHE_LINE_SIZE - 1)) {
-		start &= ~(CACHE_LINE_SIZE - 1);
+	if (!IS_ALIGNED(start, CACHE_LINE_SIZE)) {
+		start = ALIGN_DOWN(start, CACHE_LINE_SIZE);
 		l2x0_flush_line(start);
 		start += CACHE_LINE_SIZE;
 	}
 
-	if (end & (CACHE_LINE_SIZE - 1)) {
-		end &= ~(CACHE_LINE_SIZE - 1);
+	if (!IS_ALIGNED(end, CACHE_LINE_SIZE)) {
+		end = ALIGN_DOWN(end, CACHE_LINE_SIZE);
 		l2x0_flush_line(end);
 	}
 
@@ -87,7 +87,7 @@ static void l2x0_clean_range(unsigned long start, unsigned long end)
 {
 	void __iomem *base = l2x0_base;
 
-	start &= ~(CACHE_LINE_SIZE - 1);
+	start = ALIGN_DOWN(start, CACHE_LINE_SIZE);
 	while (start < end) {
 		unsigned long blk_end = start + min(end - start, 4096UL);
 
@@ -102,7 +102,7 @@ static void l2x0_clean_range(unsigned long start, unsigned long end)
 
 static void l2x0_flush_range(unsigned long start, unsigned long end)
 {
-	start &= ~(CACHE_LINE_SIZE - 1);
+	start = ALIGN_DOWN(start, CACHE_LINE_SIZE);
 	while (start < end) {
 		unsigned long blk_end = start + min(end - start, 4096UL);
 

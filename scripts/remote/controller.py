@@ -46,6 +46,9 @@ def unpack(data):
     elif p_type == BBType.fs_return:
         logging.debug("received: fs_return")
         return BBPacketFSReturn(raw=data)
+    elif p_type == BBType.md:
+        logging.debug("received: md")
+        return BBPacketMd(raw=data)
     elif p_type == BBType.md_return:
         logging.debug("received: md_return")
         return BBPacketMdReturn(raw=data)

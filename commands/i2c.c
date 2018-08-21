@@ -145,8 +145,12 @@ static int do_i2c_write(int argc, char *argv[])
 	ret = 0;
 
 	if (verbose) {
-		printf("wrote %i bytes starting at reg 0x%04x to i2cdev 0x%02x on bus %i\n",
-			count, reg, addr, adapter->nr);
+		if (reg >= 0)
+			printf("wrote %i bytes starting at reg 0x%04x to i2cdev 0x%02x on bus %i\n",
+			       count, reg, addr, adapter->nr);
+		else
+			printf("sent %i bytes in master send mode to i2cdev 0x%02x on bus %i\n",
+			       count, addr, adapter->nr);
 		for (i = 0; i < count; i++)
 			printf("0x%02x ", *(buf + i));
 		printf("\n");
@@ -161,7 +165,7 @@ BAREBOX_CMD_HELP_START(i2c_write)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b BUS\t", "i2c bus number (default 0)")
 BAREBOX_CMD_HELP_OPT ("-a ADDR\t", "i2c device address")
-BAREBOX_CMD_HELP_OPT ("-r START", "start register")
+BAREBOX_CMD_HELP_OPT ("-r START", "start register (optional, master send mode if none given)")
 BAREBOX_CMD_HELP_OPT ("-w\t",       "use word (16 bit) wide access")
 BAREBOX_CMD_HELP_OPT ("-v\t",       "verbose")
 BAREBOX_CMD_HELP_END

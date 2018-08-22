@@ -17,13 +17,18 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <common.h>
+#include <of_gpio.h>
 #include <driver.h>
 #include <init.h>
+#include <gpio.h>
 #include <clock.h>
 #include <net.h>
 #include <errno.h>
 #include <linux/phy.h>
 #include <linux/err.h>
+
+#define DEFAULT_GPIO_RESET_ASSERT       1000      /* us */
+#define DEFAULT_GPIO_RESET_DEASSERT     1000      /* us */
 
 LIST_HEAD(mii_bus_list);
 
@@ -82,6 +87,82 @@ static int of_mdiobus_register_phy(struct mii_bus *mdio, struct device_node *chi
 	return 0;
 }
 
+/*
+ * Node is considered a PHY node if:
+ * o Compatible string of "ethernet-phy-idX.X"
+ * o Compatible string of "ethernet-phy-ieee802.3-c45"
+ * o Compatible string of "ethernet-phy-ieee802.3-c22"
+ * o No compatibility string
+ *
+ * A device which is not a phy is expected to have a compatible string
+ * indicating what sort of device it is.
+ */
+static bool of_mdiobus_child_is_phy(struct device_node *np)
+{
+	struct property *prop;
+	const char *cp;
+
+	of_property_for_each_string(np, "compatible", prop, cp) {
+                if (!strncmp(cp, "ethernet-phy-id", strlen("ethernet-phy-id")))
+			return true;
+        }
+
+	if (of_device_is_compatible(np, "ethernet-phy-ieee802.3-c45"))
+		return true;
+
+	if (of_device_is_compatible(np, "ethernet-phy-ieee802.3-c22"))
+		return true;
+
+	if (!of_find_property(np, "compatible", NULL))
+		return true;
+
+	return false;
+}
+
+/*
+ * Reset the PHY, based on DT info
+ *
+ * If np is a phy node, and the phy node contains a reset-gpios property
+ * then reset the phy.
+ */
+static void of_mdiobus_reset_phy(struct mii_bus *bus, struct device_node *np)
+{
+	enum of_gpio_flags of_flags;
+	u32 reset_deassert_delay;
+	u32 reset_assert_delay;
+	unsigned long flags;
+	int gpio;
+	int ret;
+
+	gpio = of_get_named_gpio_flags(np, "reset-gpios", 0, &of_flags);
+	if (!gpio_is_valid(gpio))
+		return;
+
+	flags = GPIOF_OUT_INIT_INACTIVE;
+	if (of_flags & OF_GPIO_ACTIVE_LOW)
+		flags |= GPIOF_ACTIVE_LOW;
+
+	ret = gpio_request_one(gpio, flags, np->name);
+	if (ret) {
+		dev_err(&bus->dev, "failed to request reset gpio for: %s\n",
+			np->name);
+		return;
+	}
+
+	reset_assert_delay = DEFAULT_GPIO_RESET_ASSERT;
+	of_property_read_u32(np, "reset-assert-us", &reset_assert_delay);
+
+	reset_deassert_delay = DEFAULT_GPIO_RESET_DEASSERT;
+	of_property_read_u32(np, "reset-deassert-us", &reset_deassert_delay);
+
+	/* reset the PHY */
+	dev_dbg(&bus->dev, "reset PHY with GPIO: %d\n", gpio);
+	gpio_set_active(gpio, 1);
+	udelay(reset_assert_delay);
+	gpio_set_active(gpio, 0);
+	udelay(reset_deassert_delay);
+}
+
 /**
  * of_mdiobus_register - Register mii_bus and create PHYs from the device tree
  * @mdio: pointer to mii_bus structure
@@ -111,6 +192,10 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 			continue;
 		}
 
+		if (!of_mdiobus_child_is_phy(child))
+			continue;
+
+		of_mdiobus_reset_phy(mdio, child);
 		of_mdiobus_register_phy(mdio, child, addr);
 	}
 
@@ -154,8 +239,17 @@ int mdiobus_register(struct mii_bus *bus)
 
 	pr_info("%s: probed\n", dev_name(&bus->dev));
 
-	if (bus->dev.device_node)
+	if (bus->dev.device_node) {
+		/* Register PHY's as child node to mdio node */
 		of_mdiobus_register(bus, bus->dev.device_node);
+	}
+	else if (bus->parent->device_node) {
+		/*
+		 * Register PHY's as child node to the ethernet node,
+		 * if there was no mdio node
+		 */
+		of_mdiobus_register(bus, bus->parent->device_node);
+	}
 
 	return 0;
 }

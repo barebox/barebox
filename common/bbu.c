@@ -151,7 +151,7 @@ bool barebox_update_handler_exists(struct bbu_data *data)
 	if (!data->handler_name)
 		return false;
 
-	return !bbu_find_handler(data->handler_name);
+	return bbu_find_handler(data->handler_name) != NULL;
 }
 
 static int bbu_check_of_compat(struct bbu_data *data)

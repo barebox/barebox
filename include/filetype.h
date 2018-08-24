@@ -44,6 +44,7 @@ enum filetype {
 	filetype_arm64_linux_image,
 	filetype_elf,
 	filetype_imx_image_v1,
+	filetype_imx_image_v2,
 	filetype_max,
 };
 

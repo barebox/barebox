@@ -297,7 +297,8 @@ void dma_sync_single_for_device(dma_addr_t address, size_t size,
 {
 	if (dir == DMA_FROM_DEVICE)
 		v8_inv_dcache_range(address, address + size - 1);
-	v8_flush_dcache_range(address, address + size - 1);
+	else
+		v8_flush_dcache_range(address, address + size - 1);
 }
 
 dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,

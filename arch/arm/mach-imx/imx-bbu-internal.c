@@ -502,11 +502,10 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, NULL, flags);
+	imx_handler = __init_handler(name, "/dev/nand0", flags);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
 
 	imx_handler->expected_type = filetype_imx_image_v2;
-	imx_handler->handler.devicefile = "/dev/nand0";
 	imx_handler->device_size = partition_size;
 	imx_handler->write_device = imx_bbu_internal_v2_write_nand_dbbt;
 

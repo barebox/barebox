@@ -30,6 +30,7 @@
 #include <environment.h>
 #include <mach/bbu.h>
 #include <mach/generic.h>
+#include <libfile.h>
 
 #define IMX_INTERNAL_FLAG_ERASE		BIT(30)
 
@@ -116,9 +117,12 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		}
 	}
 
-	ret = pwrite(fd, buf, image_len, offset);
-	if (ret < 0)
+	ret = pwrite_full(fd, buf, image_len, offset);
+	if (ret < 0) {
+		pr_err("writing to %s failed with %s\n", devicefile,
+		       strerror(-ret));
 		goto err_close;
+	}
 
 	imx_bbu_protect(fd, imx_handler, devicefile, offset,
 			image_len, 1);
@@ -126,7 +130,7 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 err_close:
 	close(fd);
 
-	return ret;
+	return ret < 0 ? ret : 0;
 }
 
 static int __imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,

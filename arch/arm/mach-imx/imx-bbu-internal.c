@@ -31,8 +31,6 @@
 #include <mach/bbu.h>
 #include <mach/generic.h>
 
-#define FLASH_HEADER_OFFSET_MMC		0x400
-
 #define IMX_INTERNAL_FLAG_ERASE		BIT(30)
 
 struct imx_internal_bbu_handler {
@@ -371,6 +369,20 @@ static enum filetype imx_bbu_expected_filetype(void)
 	return filetype_imx_image_v1;
 }
 
+static unsigned long imx_bbu_flash_header_offset_mmc(void)
+{
+	unsigned long offset = SZ_1K;
+
+	/*
+	 * i.MX8MQ moved the header by 32K to accomodate for GPT
+	 * partition tables
+	 */
+	if (cpu_is_mx8mq())
+		offset += SZ_32K;
+
+	return offset;
+}
+
 static int imx_bbu_update(struct bbu_handler *handler, struct bbu_data *data)
 {
 	struct imx_internal_bbu_handler *imx_handler =
@@ -470,7 +482,7 @@ imx_bbu_internal_mmc_register_handler(const char *name, const char *devicefile,
 
 	imx_handler = __init_handler(name, devicefile, flags |
 				     IMX_BBU_FLAG_KEEP_HEAD);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	return __register_handler(imx_handler);
 }
@@ -484,7 +496,7 @@ imx_bbu_internal_spi_i2c_register_handler(const char *name,
 
 	imx_handler = __init_handler(name, devicefile, flags |
 				     IMX_INTERNAL_FLAG_ERASE);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	return __register_handler(imx_handler);
 }
@@ -529,7 +541,7 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, "/dev/nand0", flags);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	imx_handler->device_size = partition_size;
 	imx_handler->write_device = imx_bbu_internal_v2_write_nand_dbbt;
@@ -569,7 +581,7 @@ int imx6_bbu_internal_mmcboot_register_handler(const char *name,
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	imx_handler->handler.handler = imx_bbu_internal_v2_mmcboot_update;
 

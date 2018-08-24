@@ -44,6 +44,41 @@ struct imx_internal_bbu_handler {
 	enum filetype expected_type;
 };
 
+static bool
+imx_bbu_erase_required(struct imx_internal_bbu_handler *imx_handler)
+{
+	return imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE;
+}
+
+static int imx_bbu_protect(int fd, struct imx_internal_bbu_handler *imx_handler,
+			   const char *devicefile, int offset, int image_len,
+			   int prot)
+{
+	const char *prefix = prot ? "" : "un";
+	int ret;
+
+	if (!imx_bbu_erase_required(imx_handler))
+		return 0;
+
+	pr_debug("%s: %sprotecting %s from 0x%08x to 0x%08x\n", __func__,
+		 prefix, devicefile, offset, image_len);
+
+	ret = protect(fd, image_len, offset, prot);
+	if (ret) {
+		/*
+		 * If protect() is not implemented for this device,
+		 * just report success
+		 */
+		if (ret == -ENOSYS)
+			return 0;
+
+		pr_err("%sprotecting %s failed with %s\n", prefix, devicefile,
+		       strerror(-ret));
+	}
+
+	return ret;
+}
+
 /*
  * Actually write an image to the target device, eventually keeping a
  * DOS partition table on the device
@@ -67,16 +102,12 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (imx_handler->handler.flags & IMX_BBU_FLAG_KEEP_HEAD)
 		offset += imx_handler->flash_header_offset;
 
-	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
-		pr_debug("%s: unprotecting %s from 0x%08x to 0x%08x\n", __func__,
-				devicefile, offset, image_len);
-		ret = protect(fd, image_len, offset, 0);
-		if (ret && ret != -ENOSYS) {
-			pr_err("unprotecting %s failed with %s\n", devicefile,
-					strerror(-ret));
-			goto err_close;
-		}
+	ret = imx_bbu_protect(fd, imx_handler, devicefile, offset,
+			      image_len, 0);
+	if (ret)
+		goto err_close;
 
+	if (imx_bbu_erase_required(imx_handler)) {
 		pr_debug("%s: erasing %s from 0x%08x to 0x%08x\n", __func__,
 				devicefile, offset, image_len);
 		ret = erase(fd, image_len, offset);
@@ -91,17 +122,8 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (ret < 0)
 		goto err_close;
 
-	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
-		pr_debug("%s: protecting %s from 0x%08x to 0x%08x\n", __func__,
-				devicefile, offset, image_len);
-		ret = protect(fd, image_len, offset, 1);
-		if (ret && ret != -ENOSYS) {
-			pr_err("protecting %s failed with %s\n", devicefile,
-					strerror(-ret));
-		}
-	}
-
-	ret = 0;
+	imx_bbu_protect(fd, imx_handler, devicefile, offset,
+			image_len, 1);
 
 err_close:
 	close(fd);

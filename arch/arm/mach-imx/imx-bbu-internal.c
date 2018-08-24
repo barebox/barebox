@@ -106,11 +106,43 @@ err_close:
 	return ret;
 }
 
-static int imx_bbu_check_prereq(const char *devicefile, struct bbu_data *data)
+static int imx_bbu_check_prereq(struct imx_internal_bbu_handler *imx_handler,
+				const char *devicefile, struct bbu_data *data,
+				enum filetype expected_type)
 {
 	int ret;
+	const void *blob;
+	size_t len;
+	enum filetype type;
 
-	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
+	type = file_detect_type(data->image, data->len);
+
+	switch (type) {
+	case filetype_arm_barebox:
+		/*
+		 * Specifying expected_type as unknown will disable the
+		 * inner image type check.
+		 *
+		 * The only user of this code is
+		 * imx_bbu_external_nor_register_handler() used by
+		 * i.MX27.
+		 */
+		if (expected_type == filetype_unknown)
+			break;
+
+		blob = data->image + imx_handler->flash_header_offset;
+		len  = data->len   - imx_handler->flash_header_offset;
+		type = file_detect_type(blob, len);
+
+		if (type != expected_type) {
+			pr_err("Expected image type: %s, "
+			       "detected image type: %s\n",
+			       file_type_to_string(expected_type),
+			       file_type_to_string(type));
+			return -EINVAL;
+		}
+		break;
+	default:
 		if (!bbu_force(data, "Not an ARM barebox image"))
 			return -EINVAL;
 	}
@@ -137,7 +169,8 @@ static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_da
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
 
-	ret = imx_bbu_check_prereq(data->devicefile, data);
+	ret = imx_bbu_check_prereq(imx_handler, data->devicefile, data,
+				   filetype_imx_image_v1);
 	if (ret)
 		return ret;
 
@@ -319,8 +352,6 @@ out:
 	return ret;
 }
 
-#define IVT_BARKER		0x402000d1
-
 /*
  * Update barebox on a v2 type internal boot (i.MX53)
  *
@@ -333,18 +364,11 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
-	const uint32_t *barker;
 
-	ret = imx_bbu_check_prereq(data->devicefile, data);
+	ret = imx_bbu_check_prereq(imx_handler, data->devicefile, data,
+				   filetype_imx_image_v2);
 	if (ret)
 		return ret;
-
-	barker = data->image + imx_handler->flash_header_offset;
-
-	if (*barker != IVT_BARKER) {
-		pr_err("Board does not provide DCD data and this image is no imximage\n");
-		return -EINVAL;
-	}
 
 	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_NAND)
 		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data);
@@ -361,17 +385,9 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
-	const uint32_t *barker;
 	char *bootpartvar;
 	const char *bootpart;
 	char *devicefile;
-
-	barker = data->image + imx_handler->flash_header_offset;
-
-	if (*barker != IVT_BARKER) {
-		pr_err("Board does not provide DCD data and this image is no imximage\n");
-		return -EINVAL;
-	}
 
 	ret = asprintf(&bootpartvar, "%s.boot", data->devicefile);
 	if (ret < 0)
@@ -389,7 +405,8 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 	if (ret < 0)
 		goto free_bootpartvar;
 
-	ret = imx_bbu_check_prereq(devicefile, data);
+	ret = imx_bbu_check_prereq(imx_handler, devicefile, data,
+				   filetype_imx_image_v2);
 	if (ret)
 		goto free_devicefile;
 
@@ -414,7 +431,8 @@ static int imx_bbu_external_update(struct bbu_handler *handler, struct bbu_data 
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
 
-	ret = imx_bbu_check_prereq(data->devicefile, data);
+	ret = imx_bbu_check_prereq(imx_handler, data->devicefile, data,
+				   filetype_unknown);
 	if (ret)
 		return ret;
 

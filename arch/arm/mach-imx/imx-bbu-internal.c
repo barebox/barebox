@@ -16,8 +16,6 @@
  * GNU General Public License for more details.
  */
 
-#define IMX_INTERNAL_NAND_BBU
-
 #include <common.h>
 #include <malloc.h>
 #include <bbu.h>

@@ -260,13 +260,13 @@ int barebox_update(struct bbu_data *data)
 		return ret;
 
 	ret = handler->handler(handler, data);
-	if (ret == -EINTR)
-		printf("update aborted\n");
+	if (ret) {
+		printf("update %s\n", (ret == -EINTR) ? "aborted" : "failed");
+		return ret;
+	}
 
-	if (!ret)
-		printf("update succeeded\n");
-
-	return ret;
+	printf("update succeeded\n");
+	return 0;
 }
 
 /*

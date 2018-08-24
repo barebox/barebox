@@ -82,6 +82,7 @@ char *bootsource_get_alias_name(void)
 		stem = bootsource_str[BOOTSOURCE_I2C];
 		break;
 	case BOOTSOURCE_SPI_EEPROM:
+	case BOOTSOURCE_SPI_NOR:
 		stem = bootsource_str[BOOTSOURCE_SPI];
 		break;
 	case BOOTSOURCE_SERIAL:	/* FALLTHROUGH */

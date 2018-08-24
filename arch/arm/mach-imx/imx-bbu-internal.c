@@ -396,8 +396,9 @@ free_bootpartvar:
 	return ret;
 }
 
-static struct imx_internal_bbu_handler *__init_handler(const char *name, char *devicefile,
-		unsigned long flags)
+static struct imx_internal_bbu_handler *__init_handler(const char *name,
+						       const char *devicefile,
+						       unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 	struct bbu_handler *handler;
@@ -427,7 +428,7 @@ static int __register_handler(struct imx_internal_bbu_handler *imx_handler)
 }
 
 static int
-imx_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+imx_bbu_internal_mmc_register_handler(const char *name, const char *devicefile,
 				      unsigned long flags,
 				      enum filetype expected_type)
 {
@@ -443,7 +444,7 @@ imx_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 }
 
 int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
-		char *devicefile, unsigned long flags)
+		const char *devicefile, unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
@@ -457,8 +458,9 @@ int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
 /*
  * Register an i.MX51 internal boot update handler for MMC/SD
  */
-int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
+int imx51_bbu_internal_mmc_register_handler(const char *name,
+					    const char *devicefile,
+					    unsigned long flags)
 {
 
 	return imx_bbu_internal_mmc_register_handler(name, devicefile, flags,
@@ -468,8 +470,9 @@ int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
 /*
  * Register an i.MX53 internal boot update handler for MMC/SD
  */
-int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
+int imx53_bbu_internal_mmc_register_handler(const char *name,
+					    const char *devicefile,
+					    unsigned long flags)
 {
 	return imx_bbu_internal_mmc_register_handler(name, devicefile, flags,
 						     filetype_imx_image_v2);
@@ -480,8 +483,9 @@ int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
  * keep a partition table. We have to erase the device beforehand though.
  */
-int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
+int imx53_bbu_internal_spi_i2c_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
@@ -515,14 +519,16 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 /*
  * Register an i.MX6 internal boot update handler for MMC/SD
  */
-int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+int imx6_bbu_internal_mmc_register_handler(const char *name,
+					   const char *devicefile,
 					   unsigned long flags)
 	__alias(imx53_bbu_internal_mmc_register_handler);
 
 /*
  * Register an VF610 internal boot update handler for MMC/SD
  */
-int vf610_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+int vf610_bbu_internal_mmc_register_handler(const char *name,
+					    const char *devicefile,
 					    unsigned long flags)
 	__alias(imx6_bbu_internal_mmc_register_handler);
 
@@ -535,7 +541,8 @@ int vf610_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
  * Note that no further partitioning of the boot partition is supported up to
  * now.
  */
-int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefile,
+int imx6_bbu_internal_mmcboot_register_handler(const char *name,
+					       const char *devicefile,
 					       unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
@@ -554,12 +561,13 @@ int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefil
  * keep a partition table. We have to erase the device beforehand though.
  */
 int imx6_bbu_internal_spi_i2c_register_handler(const char *name,
-					       char *devicefile,
+					       const char *devicefile,
 					       unsigned long flags)
 	__alias(imx53_bbu_internal_spi_i2c_register_handler);
 
-int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
+int imx_bbu_external_nor_register_handler(const char *name,
+					  const char *devicefile,
+					  unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 

@@ -32,11 +32,12 @@
 
 #define FLASH_HEADER_OFFSET_MMC		0x400
 
-#define IMX_INTERNAL_FLAG_NAND		BIT(31)
 #define IMX_INTERNAL_FLAG_ERASE		BIT(30)
 
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
+	int (*write_device)(struct imx_internal_bbu_handler *,
+			    struct bbu_data *);
 	unsigned long flash_header_offset;
 	size_t device_size;
 };
@@ -104,6 +105,13 @@ err_close:
 	close(fd);
 
 	return ret;
+}
+
+static int __imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
+				  struct bbu_data *data)
+{
+	return imx_bbu_write_device(imx_handler, data->devicefile, data,
+				    data->image, data->len);
 }
 
 static int imx_bbu_check_prereq(struct imx_internal_bbu_handler *imx_handler,
@@ -370,13 +378,7 @@ static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_da
 	if (ret)
 		return ret;
 
-	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_NAND)
-		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data);
-	else
-		ret = imx_bbu_write_device(imx_handler, data->devicefile, data,
-					   data->image, data->len);
-
-	return ret;
+	return imx_handler->write_device(imx_handler, data);
 }
 
 static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
@@ -451,6 +453,8 @@ static struct imx_internal_bbu_handler *__init_handler(const char *name, char *d
 	handler->devicefile = devicefile;
 	handler->name = name;
 	handler->flags = flags;
+
+	imx_handler->write_device = __imx_bbu_write_device;
 
 	return imx_handler;
 }
@@ -543,13 +547,13 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, NULL, flags |
-				     IMX_INTERNAL_FLAG_NAND);
+	imx_handler = __init_handler(name, NULL, flags);
 	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
 
 	imx_handler->handler.handler = imx_bbu_internal_v2_update;
 	imx_handler->handler.devicefile = "/dev/nand0";
 	imx_handler->device_size = partition_size;
+	imx_handler->write_device = imx_bbu_internal_v2_write_nand_dbbt;
 
 	return __register_handler(imx_handler);
 }

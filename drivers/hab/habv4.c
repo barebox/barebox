@@ -163,17 +163,17 @@ static void habv4_display_event(uint8_t *data, uint32_t len)
 
 	if (data && len) {
 		for (i = 0; i < len; i++) {
-			if (i == 0)
-				printf(" %02x", data[i]);
-			else if ((i % 8) == 0)
-				printf("\n %02x", data[i]);
+			if ((i % 8) == 0)
+				pr_err(" %02x", data[i]);
 			else if ((i % 4) == 0)
-				printf("  %02x", data[i]);
+				pr_cont("  %02x", data[i]);
+			else if ((i % 8) == 7)
+				pr_cont(" %02x\n", data[i]);
 			else
-				printf(" %02x", data[i]);
+				pr_cont(" %02x", data[i]);
 		}
+		pr_cont("\n");
 	}
-	printf("\n\n");
 }
 
 static int habv4_get_status(const struct habv4_rvt *rvt)
@@ -201,8 +201,8 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 	}
 
 	while (rvt->report_event(HAB_STATUS_FAILURE, index, data, &len) == HAB_STATUS_SUCCESS) {
-		printf("-------- HAB Event %d --------\n"
-		       "event data:\n", index);
+		pr_err("-------- HAB Event %d --------\n", index);
+		pr_err("event data:\n");
 
 		habv4_display_event(data, len);
 		len = sizeof(data);

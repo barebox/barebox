@@ -27,13 +27,13 @@
 #define HABV4_RVT_IMX28 0xffff8af8
 #define HABV4_RVT_IMX6_OLD 0x00000094
 #define HABV4_RVT_IMX6_NEW 0x00000098
-#define HABV4_RVT_IMX6UL   0x00000100
+#define HABV4_RVT_IMX6UL 0x00000100
 
 enum hab_tag {
 	HAB_TAG_IVT = 0xd1,		/* Image Vector Table */
 	HAB_TAG_DCD = 0xd2,		/* Device Configuration Data */
 	HAB_TAG_CSF = 0xd4,		/* Command Sequence File */
-	HAB_TAG_CRT = 0xd7, 		/* Certificate */
+	HAB_TAG_CRT = 0xd7,		/* Certificate */
 	HAB_TAG_SIG = 0xd8,		/* Signature */
 	HAB_TAG_EVT = 0xdb,		/* Event */
 	HAB_TAG_RVT = 0xdd,		/* ROM Vector Table */

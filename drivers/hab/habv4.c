@@ -179,7 +179,7 @@ static void habv4_display_event(uint8_t *data, uint32_t len)
 static int habv4_get_status(const struct habv4_rvt *rvt)
 {
 	uint8_t data[256];
-	uint32_t len = sizeof(data);
+	uint32_t len;
 	uint32_t index = 0;
 	enum hab_status status;
 	enum hab_config config = 0x0;
@@ -200,8 +200,19 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 		return 0;
 	}
 
+	len = sizeof(data);
+	while (rvt->report_event(HAB_STATUS_WARNING, index, data, &len) == HAB_STATUS_SUCCESS) {
+		pr_err("-------- HAB warning Event %d --------\n", index);
+		pr_err("event data:\n");
+
+		habv4_display_event(data, len);
+		len = sizeof(data);
+		index++;
+	}
+
+	len = sizeof(data);
 	while (rvt->report_event(HAB_STATUS_FAILURE, index, data, &len) == HAB_STATUS_SUCCESS) {
-		pr_err("-------- HAB Event %d --------\n", index);
+		pr_err("-------- HAB failure Event %d --------\n", index);
 		pr_err("event data:\n");
 
 		habv4_display_event(data, len);
@@ -210,6 +221,7 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 	}
 
 	/* Check reason for stopping */
+	len = sizeof(data);
 	if (rvt->report_event(HAB_STATUS_ANY, index, NULL, &len) == HAB_STATUS_SUCCESS)
 		pr_err("ERROR: Recompile with larger event data buffer (at least %d bytes)\n\n", len);
 

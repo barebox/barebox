@@ -73,7 +73,7 @@ error_save_part_table:
 
 error:
 	close(fd);
-	return ret;
+	return (ret > 0) ? 0 : ret;
 }
 
 int am33xx_bbu_emmc_mlo_register_handler(const char *name, char *devicefile)

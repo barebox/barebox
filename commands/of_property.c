@@ -270,9 +270,8 @@ static int do_of_property_set_now(struct device_node *root, const char *path,
 		free(pp->value);
 		pp->value_const = NULL;
 
-		/* limit property data to the actual size */
 		if (len)
-			pp->value = xrealloc(data, len);
+			pp->value = xmemdup(data, len);
 		else
 			pp->value = NULL;
 

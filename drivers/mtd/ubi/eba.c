@@ -479,6 +479,7 @@ int ubi_eba_read_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 		     void *buf, int offset, int len, int check)
 {
 	int err, pnum, scrub = 0, vol_id = vol->vol_id;
+	struct ubi_vid_io_buf *vidb;
 	struct ubi_vid_hdr *vid_hdr;
 	uint32_t uninitialized_var(crc);
 
@@ -509,13 +510,15 @@ int ubi_eba_read_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 
 retry:
 	if (check) {
-		vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
-		if (!vid_hdr) {
+		vidb = ubi_alloc_vid_buf(ubi, GFP_NOFS);
+		if (!vidb) {
 			err = -ENOMEM;
 			goto out_unlock;
 		}
 
-		err = ubi_io_read_vid_hdr(ubi, pnum, vid_hdr, 1);
+		vid_hdr = ubi_get_vid_hdr(vidb);
+
+		err = ubi_io_read_vid_hdr(ubi, pnum, vidb, 1);
 		if (err && err != UBI_IO_BITFLIPS) {
 			if (err > 0) {
 				/*
@@ -561,7 +564,7 @@ retry:
 		ubi_assert(len == be32_to_cpu(vid_hdr->data_size));
 
 		crc = be32_to_cpu(vid_hdr->data_crc);
-		ubi_free_vid_hdr(ubi, vid_hdr);
+		ubi_free_vid_buf(vidb);
 	}
 
 	err = ubi_io_read_data(ubi, buf, pnum, offset, len);
@@ -598,7 +601,7 @@ retry:
 	return err;
 
 out_free:
-	ubi_free_vid_hdr(ubi, vid_hdr);
+	ubi_free_vid_buf(vidb);
 out_unlock:
 	leb_read_unlock(ubi, vol_id, lnum);
 	return err;
@@ -612,7 +615,7 @@ out_unlock:
  * @buf: data which was not written because of the write failure
  * @offset: offset of the failed write
  * @len: how many bytes should have been written
- * @vid: VID header
+ * @vidb: VID buffer
  * @retry: whether the caller should retry in case of failure
  *
  * This function is called in case of a write failure and moves all good data
@@ -624,9 +627,10 @@ out_unlock:
  */
 static int try_recover_peb(struct ubi_volume *vol, int pnum, int lnum,
 			   const void *buf, int offset, int len,
-			   struct ubi_vid_hdr *vid_hdr, bool *retry)
+			   struct ubi_vid_io_buf *vidb, bool *retry)
 {
 	struct ubi_device *ubi = vol->ubi;
+	struct ubi_vid_hdr *vid_hdr;
 	int new_pnum, err, vol_id = vol->vol_id, data_size;
 	uint32_t crc;
 
@@ -641,7 +645,7 @@ static int try_recover_peb(struct ubi_volume *vol, int pnum, int lnum,
 	ubi_msg(ubi, "recover PEB %d, move data to PEB %d",
 		pnum, new_pnum);
 
-	err = ubi_io_read_vid_hdr(ubi, pnum, vid_hdr, 1);
+	err = ubi_io_read_vid_hdr(ubi, pnum, vidb, 1);
 	if (err && err != UBI_IO_BITFLIPS) {
 		if (err > 0)
 			err = -EIO;
@@ -669,7 +673,7 @@ static int try_recover_peb(struct ubi_volume *vol, int pnum, int lnum,
 	vid_hdr->copy_flag = 1;
 	vid_hdr->data_size = cpu_to_be32(data_size);
 	vid_hdr->data_crc = cpu_to_be32(crc);
-	err = ubi_io_write_vid_hdr(ubi, new_pnum, vid_hdr);
+	err = ubi_io_write_vid_hdr(ubi, new_pnum, vidb);
 	if (err)
 		goto out_unlock;
 
@@ -717,24 +721,24 @@ static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
 {
 	int err, idx = vol_id2idx(ubi, vol_id), tries;
 	struct ubi_volume *vol = ubi->volumes[idx];
-	struct ubi_vid_hdr *vid_hdr;
+	struct ubi_vid_io_buf *vidb;
 
-	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
-	if (!vid_hdr)
+	vidb = ubi_alloc_vid_buf(ubi, GFP_NOFS);
+	if (!vidb)
 		return -ENOMEM;
 
 	for (tries = 0; tries <= UBI_IO_RETRIES; tries++) {
 		bool retry;
 
-		err = try_recover_peb(vol, pnum, lnum, buf, offset, len,
-				      vid_hdr, &retry);
+		err = try_recover_peb(vol, pnum, lnum, buf, offset, len, vidb,
+				      &retry);
 		if (!err || !retry)
 			break;
 
 		ubi_msg(ubi, "try again");
 	}
 
-	ubi_free_vid_hdr(ubi, vid_hdr);
+	ubi_free_vid_buf(vidb);
 
 	return err;
 }
@@ -743,7 +747,7 @@ static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
  * try_write_vid_and_data - try to write VID header and data to a new PEB.
  * @vol: volume description object
  * @lnum: logical eraseblock number
- * @vid_hdr: VID header to write
+ * @vidb: the VID buffer to write
  * @buf: buffer containing the data
  * @offset: where to start writing data
  * @len: how many bytes should be written
@@ -755,7 +759,7 @@ static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
  * flash media, but may be some garbage.
  */
 static int try_write_vid_and_data(struct ubi_volume *vol, int lnum,
-				  struct ubi_vid_hdr *vid_hdr, const void *buf,
+				  struct ubi_vid_io_buf *vidb, const void *buf,
 				  int offset, int len)
 {
 	struct ubi_device *ubi = vol->ubi;
@@ -772,7 +776,7 @@ static int try_write_vid_and_data(struct ubi_volume *vol, int lnum,
 	dbg_eba("write VID hdr and %d bytes at offset %d of LEB %d:%d, PEB %d",
 		len, offset, vol_id, lnum, pnum);
 
-	err = ubi_io_write_vid_hdr(ubi, pnum, vid_hdr);
+	err = ubi_io_write_vid_hdr(ubi, pnum, vidb);
 	if (err) {
 		ubi_warn(ubi, "failed to write VID header to LEB %d:%d, PEB %d",
 			 vol_id, lnum, pnum);
@@ -819,6 +823,7 @@ int ubi_eba_write_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 		      const void *buf, int offset, int len)
 {
 	int err, pnum, tries, vol_id = vol->vol_id;
+	struct ubi_vid_io_buf *vidb;
 	struct ubi_vid_hdr *vid_hdr;
 
 	if (ubi->ro_mode)
@@ -848,11 +853,13 @@ int ubi_eba_write_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 	 * The logical eraseblock is not mapped. We have to get a free physical
 	 * eraseblock and write the volume identifier header there first.
 	 */
-	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
-	if (!vid_hdr) {
+	vidb = ubi_alloc_vid_buf(ubi, GFP_NOFS);
+	if (!vidb) {
 		leb_write_unlock(ubi, vol_id, lnum);
 		return -ENOMEM;
 	}
+
+	vid_hdr = ubi_get_vid_hdr(vidb);
 
 	vid_hdr->vol_type = UBI_VID_DYNAMIC;
 	vid_hdr->sqnum = cpu_to_be64(ubi_next_sqnum(ubi));
@@ -862,8 +869,7 @@ int ubi_eba_write_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 	vid_hdr->data_pad = cpu_to_be32(vol->data_pad);
 
 	for (tries = 0; tries <= UBI_IO_RETRIES; tries++) {
-		err = try_write_vid_and_data(vol, lnum, vid_hdr, buf, offset,
-					     len);
+		err = try_write_vid_and_data(vol, lnum, vidb, buf, offset, len);
 		if (err != -EIO || !ubi->bad_allowed)
 			break;
 
@@ -877,7 +883,7 @@ int ubi_eba_write_leb(struct ubi_device *ubi, struct ubi_volume *vol, int lnum,
 		ubi_msg(ubi, "try another PEB");
 	}
 
-	ubi_free_vid_hdr(ubi, vid_hdr);
+	ubi_free_vid_buf(vidb);
 
 out:
 	if (err)
@@ -914,6 +920,7 @@ int ubi_eba_write_leb_st(struct ubi_device *ubi, struct ubi_volume *vol,
 			 int lnum, const void *buf, int len, int used_ebs)
 {
 	int err, tries, data_size = len, vol_id = vol->vol_id;
+	struct ubi_vid_io_buf *vidb;
 	struct ubi_vid_hdr *vid_hdr;
 	uint32_t crc;
 
@@ -926,9 +933,11 @@ int ubi_eba_write_leb_st(struct ubi_device *ubi, struct ubi_volume *vol,
 	else
 		ubi_assert(!(len & (ubi->min_io_size - 1)));
 
-	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
-	if (!vid_hdr)
+	vidb = ubi_alloc_vid_buf(ubi, GFP_NOFS);
+	if (!vidb)
 		return -ENOMEM;
+
+	vid_hdr = ubi_get_vid_hdr(vidb);
 
 	err = leb_write_lock(ubi, vol_id, lnum);
 	if (err)
@@ -949,7 +958,7 @@ int ubi_eba_write_leb_st(struct ubi_device *ubi, struct ubi_volume *vol,
 	ubi_assert(vol->eba_tbl->entries[lnum].pnum < 0);
 
 	for (tries = 0; tries <= UBI_IO_RETRIES; tries++) {
-		err = try_write_vid_and_data(vol, lnum, vid_hdr, buf, 0, len);
+		err = try_write_vid_and_data(vol, lnum, vidb, buf, 0, len);
 		if (err != -EIO || !ubi->bad_allowed)
 			break;
 
@@ -963,7 +972,7 @@ int ubi_eba_write_leb_st(struct ubi_device *ubi, struct ubi_volume *vol,
 	leb_write_unlock(ubi, vol_id, lnum);
 
 out:
-	ubi_free_vid_hdr(ubi, vid_hdr);
+	ubi_free_vid_buf(vidb);
 
 	return err;
 }
@@ -989,6 +998,7 @@ int ubi_eba_atomic_leb_change(struct ubi_device *ubi, struct ubi_volume *vol,
 			      int lnum, const void *buf, int len)
 {
 	int err, tries, vol_id = vol->vol_id;
+	struct ubi_vid_io_buf *vidb;
 	struct ubi_vid_hdr *vid_hdr;
 	uint32_t crc;
 
@@ -1006,9 +1016,11 @@ int ubi_eba_atomic_leb_change(struct ubi_device *ubi, struct ubi_volume *vol,
 		return ubi_eba_write_leb(ubi, vol, lnum, NULL, 0, 0);
 	}
 
-	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
-	if (!vid_hdr)
+	vidb = ubi_alloc_vid_buf(ubi, GFP_NOFS);
+	if (!vidb)
 		return -ENOMEM;
+
+	vid_hdr = ubi_get_vid_hdr(vidb);
 
 	err = leb_write_lock(ubi, vol_id, lnum);
 	if (err)
@@ -1029,7 +1041,7 @@ int ubi_eba_atomic_leb_change(struct ubi_device *ubi, struct ubi_volume *vol,
 	dbg_eba("change LEB %d:%d", vol_id, lnum);
 
 	for (tries = 0; tries <= UBI_IO_RETRIES; tries++) {
-		err = try_write_vid_and_data(vol, lnum, vid_hdr, buf, 0, len);
+		err = try_write_vid_and_data(vol, lnum, vidb, buf, 0, len);
 		if (err != -EIO || !ubi->bad_allowed)
 			break;
 
@@ -1048,7 +1060,7 @@ int ubi_eba_atomic_leb_change(struct ubi_device *ubi, struct ubi_volume *vol,
 	leb_write_unlock(ubi, vol_id, lnum);
 
 out_mutex:
-	ubi_free_vid_hdr(ubi, vid_hdr);
+	ubi_free_vid_buf(vidb);
 	return err;
 }
 
@@ -1094,9 +1106,10 @@ static int is_error_sane(int err)
  *   o a negative error code in case of failure.
  */
 int ubi_eba_copy_leb(struct ubi_device *ubi, int from, int to,
-		     struct ubi_vid_hdr *vid_hdr)
+		     struct ubi_vid_io_buf *vidb)
 {
 	int err, vol_id, lnum, data_size, aldata_size, idx;
+	struct ubi_vid_hdr *vid_hdr = ubi_get_vid_hdr(vidb);
 	struct ubi_volume *vol;
 	uint32_t crc;
 
@@ -1203,7 +1216,7 @@ int ubi_eba_copy_leb(struct ubi_device *ubi, int from, int to,
 	}
 	vid_hdr->sqnum = cpu_to_be64(ubi_next_sqnum(ubi));
 
-	err = ubi_io_write_vid_hdr(ubi, to, vid_hdr);
+	err = ubi_io_write_vid_hdr(ubi, to, vidb);
 	if (err) {
 		if (err == -EIO)
 			err = MOVE_TARGET_WR_ERR;
@@ -1211,7 +1224,7 @@ int ubi_eba_copy_leb(struct ubi_device *ubi, int from, int to,
 	}
 
 	/* Read the VID header back and check if it was written correctly */
-	err = ubi_io_read_vid_hdr(ubi, to, vid_hdr, 1);
+	err = ubi_io_read_vid_hdr(ubi, to, vidb, 1);
 	if (err) {
 		if (err != UBI_IO_BITFLIPS) {
 			ubi_warn(ubi, "error %d while reading VID header back from PEB %d",

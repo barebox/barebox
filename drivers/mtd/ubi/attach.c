@@ -447,7 +447,7 @@ int ubi_compare_lebs(struct ubi_device *ubi, const struct ubi_ainf_peb *aeb,
 {
 	int len, err, second_is_newer, bitflips = 0, corrupted = 0;
 	uint32_t data_crc, crc;
-	struct ubi_vid_hdr *vh = NULL;
+	struct ubi_vid_io_buf *vidb = NULL;
 	unsigned long long sqnum2 = be64_to_cpu(vid_hdr->sqnum);
 
 	if (sqnum2 == aeb->sqnum) {
@@ -490,12 +490,12 @@ int ubi_compare_lebs(struct ubi_device *ubi, const struct ubi_ainf_peb *aeb,
 			return bitflips << 1;
 		}
 
-		vh = ubi_zalloc_vid_hdr(ubi, GFP_KERNEL);
-		if (!vh)
+		vidb = ubi_alloc_vid_buf(ubi, GFP_KERNEL);
+		if (!vidb)
 			return -ENOMEM;
 
 		pnum = aeb->pnum;
-		err = ubi_io_read_vid_hdr(ubi, pnum, vh, 0);
+		err = ubi_io_read_vid_hdr(ubi, pnum, vidb, 0);
 		if (err) {
 			if (err == UBI_IO_BITFLIPS)
 				bitflips = 1;
@@ -509,7 +509,7 @@ int ubi_compare_lebs(struct ubi_device *ubi, const struct ubi_ainf_peb *aeb,
 			}
 		}
 
-		vid_hdr = vh;
+		vid_hdr = ubi_get_vid_hdr(vidb);
 	}
 
 	/* Read the data of the copy and check the CRC */
@@ -533,7 +533,7 @@ int ubi_compare_lebs(struct ubi_device *ubi, const struct ubi_ainf_peb *aeb,
 		bitflips |= !!err;
 	}
 
-	ubi_free_vid_hdr(ubi, vh);
+	ubi_free_vid_buf(vidb);
 
 	if (second_is_newer)
 		dbg_bld("second PEB %d is newer, copy_flag is set", pnum);
@@ -544,7 +544,7 @@ int ubi_compare_lebs(struct ubi_device *ubi, const struct ubi_ainf_peb *aeb,
 
 out_unlock:
 out_free_vidh:
-	ubi_free_vid_hdr(ubi, vh);
+	ubi_free_vid_buf(vidb);
 	return err;
 }
 
@@ -944,7 +944,8 @@ static int scan_peb(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		    int pnum, bool fast)
 {
 	struct ubi_ec_hdr *ech = ai->ech;
-	struct ubi_vid_hdr *vidh = ai->vidh;
+	struct ubi_vid_io_buf *vidb = ai->vidb;
+	struct ubi_vid_hdr *vidh = ubi_get_vid_hdr(vidb);
 	long long ec;
 	int err, bitflips = 0, vol_id = -1, ec_err = 0;
 
@@ -1042,7 +1043,7 @@ static int scan_peb(struct ubi_device *ubi, struct ubi_attach_info *ai,
 
 	/* OK, we've done with the EC header, let's look at the VID header */
 
-	err = ubi_io_read_vid_hdr(ubi, pnum, vidh, 0);
+	err = ubi_io_read_vid_hdr(ubi, pnum, vidb, 0);
 	if (err < 0)
 		return err;
 	switch (err) {
@@ -1384,8 +1385,8 @@ static int scan_all(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	if (!ai->ech)
 		return err;
 
-	ai->vidh = ubi_zalloc_vid_hdr(ubi, GFP_KERNEL);
-	if (!ai->vidh)
+	ai->vidb = ubi_alloc_vid_buf(ubi, GFP_KERNEL);
+	if (!ai->vidb)
 		goto out_ech;
 
 	for (pnum = start; pnum < ubi->peb_count; pnum++) {
@@ -1432,13 +1433,13 @@ static int scan_all(struct ubi_device *ubi, struct ubi_attach_info *ai,
 	if (err)
 		goto out_vidh;
 
-	ubi_free_vid_hdr(ubi, ai->vidh);
+	ubi_free_vid_buf(ai->vidb);
 	kfree(ai->ech);
 
 	return 0;
 
 out_vidh:
-	ubi_free_vid_hdr(ubi, ai->vidh);
+	ubi_free_vid_buf(ai->vidb);
 out_ech:
 	kfree(ai->ech);
 	return err;
@@ -1489,8 +1490,8 @@ static int scan_fast(struct ubi_device *ubi, struct ubi_attach_info **ai)
 	if (!scan_ai->ech)
 		goto out_ai;
 
-	scan_ai->vidh = ubi_zalloc_vid_hdr(ubi, GFP_KERNEL);
-	if (!scan_ai->vidh)
+	scan_ai->vidb = ubi_alloc_vid_buf(ubi, GFP_KERNEL);
+	if (!scan_ai->vidb)
 		goto out_ech;
 
 	for (pnum = 0; pnum < UBI_FM_MAX_START; pnum++) {
@@ -1500,7 +1501,7 @@ static int scan_fast(struct ubi_device *ubi, struct ubi_attach_info **ai)
 			goto out_vidh;
 	}
 
-	ubi_free_vid_hdr(ubi, scan_ai->vidh);
+	ubi_free_vid_buf(scan_ai->vidb);
 	kfree(scan_ai->ech);
 
 	if (scan_ai->force_full_scan)
@@ -1521,7 +1522,7 @@ static int scan_fast(struct ubi_device *ubi, struct ubi_attach_info **ai)
 	return err;
 
 out_vidh:
-	ubi_free_vid_hdr(ubi, scan_ai->vidh);
+	ubi_free_vid_buf(scan_ai->vidb);
 out_ech:
 	kfree(scan_ai->ech);
 out_ai:
@@ -1645,7 +1646,8 @@ out_ai:
  */
 static int self_check_ai(struct ubi_device *ubi, struct ubi_attach_info *ai)
 {
-	struct ubi_vid_hdr *vidh = ai->vidh;
+	struct ubi_vid_io_buf *vidb = ai->vidb;
+	struct ubi_vid_hdr *vidh = ubi_get_vid_hdr(vidb);
 	int pnum, err, vols_found = 0;
 	struct rb_node *rb1, *rb2;
 	struct ubi_ainf_volume *av;
@@ -1775,7 +1777,7 @@ static int self_check_ai(struct ubi_device *ubi, struct ubi_attach_info *ai)
 
 			last_aeb = aeb;
 
-			err = ubi_io_read_vid_hdr(ubi, aeb->pnum, vidh, 1);
+			err = ubi_io_read_vid_hdr(ubi, aeb->pnum, vidb, 1);
 			if (err && err != UBI_IO_BITFLIPS) {
 				ubi_err(ubi, "VID header is not OK (%d)",
 					err);

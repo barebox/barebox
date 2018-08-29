@@ -233,6 +233,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		dev_dbg(&dev->dev, "hub: disabling port %d\n", port + 1);
 		usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_ENABLE);
 		usb_free_device(usb);
+		dev->children[port] = NULL;
 		return;
 	}
 

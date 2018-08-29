@@ -112,32 +112,32 @@ static inline char *portspeed(int portstatus)
 		return "12 Mb/s";
 }
 
-int hub_port_reset(struct usb_device *dev, int port,
+int hub_port_reset(struct usb_device *hub, int port,
 			unsigned short *portstat)
 {
 	int tries;
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
 
-	dev_dbg(&dev->dev, "hub_port_reset: resetting port %d...\n", port);
+	dev_dbg(&hub->dev, "hub_port_reset: resetting port %d...\n", port);
 	for (tries = 0; tries < MAX_TRIES; tries++) {
 
-		usb_set_port_feature(dev, port + 1, USB_PORT_FEAT_RESET);
+		usb_set_port_feature(hub, port + 1, USB_PORT_FEAT_RESET);
 		mdelay(200);
 
-		if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
-			dev_dbg(&dev->dev, "get_port_status failed status %lX\n",
-					dev->status);
+		if (usb_get_port_status(hub, port + 1, &portsts) < 0) {
+			dev_dbg(&hub->dev, "get_port_status failed status %lX\n",
+					hub->status);
 			return -1;
 		}
 		portstatus = le16_to_cpu(portsts.wPortStatus);
 		portchange = le16_to_cpu(portsts.wPortChange);
 
-		dev_dbg(&dev->dev, "portstatus %x, change %x, %s\n",
+		dev_dbg(&hub->dev, "portstatus %x, change %x, %s\n",
 				portstatus, portchange,
 				portspeed(portstatus));
 
-		dev_dbg(&dev->dev, "STAT_C_CONNECTION = %d STAT_CONNECTION = %d" \
+		dev_dbg(&hub->dev, "STAT_C_CONNECTION = %d STAT_CONNECTION = %d" \
 			       "  USB_PORT_STAT_ENABLE %d\n",
 			(portchange & USB_PORT_STAT_C_CONNECTION) ? 1 : 0,
 			(portstatus & USB_PORT_STAT_CONNECTION) ? 1 : 0,
@@ -154,13 +154,13 @@ int hub_port_reset(struct usb_device *dev, int port,
 	}
 
 	if (tries == MAX_TRIES) {
-		dev_dbg(&dev->dev, "Cannot enable port %i after %i retries, " \
+		dev_dbg(&hub->dev, "Cannot enable port %i after %i retries, " \
 				"disabling port.\n", port + 1, MAX_TRIES);
-		dev_dbg(&dev->dev, "Maybe the USB cable is bad?\n");
+		dev_dbg(&hub->dev, "Maybe the USB cable is bad?\n");
 		return -1;
 	}
 
-	usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_RESET);
+	usb_clear_port_feature(hub, port + 1, USB_PORT_FEAT_C_RESET);
 	*portstat = portstatus;
 	return 0;
 }

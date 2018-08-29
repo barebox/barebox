@@ -465,38 +465,37 @@ out_unlock:
 }
 
 /**
- * recover_peb - recover from write failure.
- * @ubi: UBI device description object
+ * try_recover_peb - try to recover from write failure.
+ * @vol: volume description object
  * @pnum: the physical eraseblock to recover
- * @vol_id: volume ID
  * @lnum: logical eraseblock number
  * @buf: data which was not written because of the write failure
  * @offset: offset of the failed write
  * @len: how many bytes should have been written
+ * @vid: VID header
+ * @retry: whether the caller should retry in case of failure
  *
  * This function is called in case of a write failure and moves all good data
  * from the potentially bad physical eraseblock to a good physical eraseblock.
  * This function also writes the data which was not written due to the failure.
- * Returns new physical eraseblock number in case of success, and a negative
- * error code in case of failure.
+ * Returns 0 in case of success, and a negative error code in case of failure.
+ * In case of failure, the %retry parameter is set to false if this is a fatal
+ * error (retrying won't help), and true otherwise.
  */
-static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
-		       const void *buf, int offset, int len)
+static int try_recover_peb(struct ubi_volume *vol, int pnum, int lnum,
+			   const void *buf, int offset, int len,
+			   struct ubi_vid_hdr *vid_hdr, bool *retry)
 {
-	int err, idx = vol_id2idx(ubi, vol_id), new_pnum, data_size, tries = 0;
-	struct ubi_volume *vol = ubi->volumes[idx];
-	struct ubi_vid_hdr *vid_hdr;
+	struct ubi_device *ubi = vol->ubi;
+	int new_pnum, err, vol_id = vol->vol_id, data_size;
 	uint32_t crc;
 
-	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
-	if (!vid_hdr)
-		return -ENOMEM;
+	*retry = false;
 
-retry:
 	new_pnum = ubi_wl_get_peb(ubi);
 	if (new_pnum < 0) {
-		ubi_free_vid_hdr(ubi, vid_hdr);
-		return new_pnum;
+		err = new_pnum;
+		goto out_put;
 	}
 
 	ubi_msg(ubi, "recover PEB %d, move data to PEB %d",
@@ -520,6 +519,8 @@ retry:
 			goto out_unlock;
 	}
 
+	*retry = true;
+
 	memcpy(ubi->peb_buf + offset, buf, len);
 
 	data_size = offset + len;
@@ -530,39 +531,72 @@ retry:
 	vid_hdr->data_crc = cpu_to_be32(crc);
 	err = ubi_io_write_vid_hdr(ubi, new_pnum, vid_hdr);
 	if (err)
-		goto write_error;
+		goto out_unlock;
 
 	err = ubi_io_write_data(ubi, ubi->peb_buf, new_pnum, 0, data_size);
-	if (err)
-		goto write_error;
-
-	ubi_free_vid_hdr(ubi, vid_hdr);
-
-	vol->eba_tbl[lnum] = new_pnum;
-	ubi_wl_put_peb(ubi, vol_id, lnum, pnum, 1);
-
-	ubi_msg(ubi, "data was successfully recovered");
-	return 0;
 
 out_unlock:
-out_put:
-	ubi_wl_put_peb(ubi, vol_id, lnum, new_pnum, 1);
-	ubi_free_vid_hdr(ubi, vid_hdr);
-	return err;
+	if (!err)
+		vol->eba_tbl[lnum] = new_pnum;
 
-write_error:
-	/*
-	 * Bad luck? This physical eraseblock is bad too? Crud. Let's try to
-	 * get another one.
-	 */
-	ubi_warn(ubi, "failed to write to PEB %d", new_pnum);
-	ubi_wl_put_peb(ubi, vol_id, lnum, new_pnum, 1);
-	if (++tries > UBI_IO_RETRIES) {
-		ubi_free_vid_hdr(ubi, vid_hdr);
-		return err;
+out_put:
+
+	if (!err) {
+		ubi_wl_put_peb(ubi, vol_id, lnum, pnum, 1);
+		ubi_msg(ubi, "data was successfully recovered");
+	} else if (new_pnum >= 0) {
+		/*
+		 * Bad luck? This physical eraseblock is bad too? Crud. Let's
+		 * try to get another one.
+		 */
+		ubi_wl_put_peb(ubi, vol_id, lnum, new_pnum, 1);
+		ubi_warn(ubi, "failed to write to PEB %d", new_pnum);
 	}
-	ubi_msg(ubi, "try again");
-	goto retry;
+
+	return err;
+}
+
+/**
+ * recover_peb - recover from write failure.
+ * @ubi: UBI device description object
+ * @pnum: the physical eraseblock to recover
+ * @vol_id: volume ID
+ * @lnum: logical eraseblock number
+ * @buf: data which was not written because of the write failure
+ * @offset: offset of the failed write
+ * @len: how many bytes should have been written
+ *
+ * This function is called in case of a write failure and moves all good data
+ * from the potentially bad physical eraseblock to a good physical eraseblock.
+ * This function also writes the data which was not written due to the failure.
+ * Returns 0 in case of success, and a negative error code in case of failure.
+ * This function tries %UBI_IO_RETRIES before giving up.
+ */
+static int recover_peb(struct ubi_device *ubi, int pnum, int vol_id, int lnum,
+		       const void *buf, int offset, int len)
+{
+	int err, idx = vol_id2idx(ubi, vol_id), tries;
+	struct ubi_volume *vol = ubi->volumes[idx];
+	struct ubi_vid_hdr *vid_hdr;
+
+	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_NOFS);
+	if (!vid_hdr)
+		return -ENOMEM;
+
+	for (tries = 0; tries <= UBI_IO_RETRIES; tries++) {
+		bool retry;
+
+		err = try_recover_peb(vol, pnum, lnum, buf, offset, len,
+				      vid_hdr, &retry);
+		if (!err || !retry)
+			break;
+
+		ubi_msg(ubi, "try again");
+	}
+
+	ubi_free_vid_hdr(ubi, vid_hdr);
+
+	return err;
 }
 
 /**

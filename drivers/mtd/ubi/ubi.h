@@ -778,6 +778,11 @@ int ubi_check_volume(struct ubi_device *ubi, int vol_id);
 void ubi_update_reserved(struct ubi_device *ubi);
 void ubi_calculate_reserved(struct ubi_device *ubi);
 
+static inline bool ubi_leb_valid(struct ubi_volume *vol, int lnum)
+{
+	return lnum >= 0 && lnum < vol->reserved_pebs;
+}
+
 /* eba.c */
 int ubi_eba_unmap_leb(struct ubi_device *ubi, struct ubi_volume *vol,
 		      int lnum);

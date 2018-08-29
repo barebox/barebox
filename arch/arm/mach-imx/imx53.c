@@ -22,6 +22,7 @@
 #include <mach/clock-imx51_53.h>
 #include <mach/generic.h>
 #include <mach/reset-reason.h>
+#include <mach/usb.h>
 
 #define SI_REV 0x48
 
@@ -87,6 +88,9 @@ void imx53_init_lowlevel_early(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = (void __iomem *)MX53_CCM_BASE_ADDR;
 	u32 r, cbcdr, cbcmr;
+
+	if ((readl(ccm + MX5_CCM_CCGR2) & MX5_CCM_CCGRx_CG13_MASK))
+		imx_reset_otg_controller(IOMEM(MX53_OTG_BASE_ADDR));
 
 	imx5_init_lowlevel();
 

@@ -24,11 +24,13 @@
 #include <mach/imx6-anadig.h>
 #include <mach/imx6-regs.h>
 #include <mach/generic.h>
+#include <mach/usb.h>
 #include <asm/mmu.h>
 #include <asm/cache-l2x0.h>
 
 #include <poweroff.h>
 #include <mach/imx6-regs.h>
+#include <mach/clock-imx6.h>
 #include <io.h>
 
 #define CLPCR				0x54
@@ -51,6 +53,9 @@ static void imx6_init_lowlevel(void)
 	uint32_t periph_sel_1;
 	uint32_t periph_sel_2;
 	uint32_t reg;
+
+	if ((readl(MXC_CCM_CCGR6) & 0x3))
+		imx_reset_otg_controller(IOMEM(MX6_OTG_BASE_ADDR));
 
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,

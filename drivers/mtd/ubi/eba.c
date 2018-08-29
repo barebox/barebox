@@ -652,6 +652,7 @@ static int try_recover_peb(struct ubi_volume *vol, int pnum, int lnum,
 		goto out_put;
 	}
 
+	vid_hdr = ubi_get_vid_hdr(vidb);
 	ubi_assert(vid_hdr->vol_type == UBI_VID_DYNAMIC);
 
 	memset(ubi->peb_buf + offset, 0xFF, len);

@@ -112,8 +112,7 @@ static inline char *portspeed(int portstatus)
 		return "12 Mb/s";
 }
 
-int hub_port_reset(struct usb_device *hub, int port,
-			unsigned short *portstat)
+int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
 {
 	int tries;
 	struct usb_port_status portsts;
@@ -161,7 +160,14 @@ int hub_port_reset(struct usb_device *hub, int port,
 	}
 
 	usb_clear_port_feature(hub, port + 1, USB_PORT_FEAT_C_RESET);
-	*portstat = portstatus;
+
+	if (portstatus & USB_PORT_STAT_HIGH_SPEED)
+		usb->speed = USB_SPEED_HIGH;
+	else if (portstatus & USB_PORT_STAT_LOW_SPEED)
+		usb->speed = USB_SPEED_LOW;
+	else
+		usb->speed = USB_SPEED_FULL;
+
 	return 0;
 }
 
@@ -203,25 +209,19 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 
 	mdelay(200);
 
-	/* Reset the port */
-	if (hub_port_reset(dev, port, &portstatus) < 0) {
-		dev_warn(&dev->dev, "cannot reset port %i!?\n", port + 1);
-		return;
-	}
-
-	mdelay(200);
-
-	/* Allocate a new device struct for it */
+	/* Allocate a new device struct for the port */
 	usb = usb_alloc_new_device();
 	usb->dev.parent = &dev->dev;
 	usb->host = dev->host;
 
-	if (portstatus & USB_PORT_STAT_HIGH_SPEED)
-		usb->speed = USB_SPEED_HIGH;
-	else if (portstatus & USB_PORT_STAT_LOW_SPEED)
-		usb->speed = USB_SPEED_LOW;
-	else
-		usb->speed = USB_SPEED_FULL;
+	/* Reset it */
+	if (hub_port_reset(dev, port, usb) < 0) {
+		dev_warn(&dev->dev, "cannot reset port %i!?\n", port + 1);
+		usb_free_device(usb);
+		return;
+	}
+
+	mdelay(200);
 
 	dev->children[port] = usb;
 	usb->parent = dev;

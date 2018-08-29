@@ -312,7 +312,6 @@ int usb_new_device(struct usb_device *dev)
 	void *buf;
 	struct usb_device_descriptor *desc;
 	struct usb_device *parent = dev->parent;
-	unsigned short portstatus;
 	char str[16];
 
 	buf = dma_alloc(USB_BUFSIZ);
@@ -352,7 +351,7 @@ int usb_new_device(struct usb_device *dev)
 	/* find the port number we're at */
 	if (parent) {
 		/* reset the port for the second time */
-		err = hub_port_reset(dev->parent, dev->portnr - 1, &portstatus);
+		err = hub_port_reset(dev->parent, dev->portnr - 1, dev);
 		if (err < 0) {
 			printf("\n     Couldn't reset port %i\n", dev->portnr);
 			goto err_out;

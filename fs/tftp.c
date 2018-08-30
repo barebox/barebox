@@ -653,7 +653,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 
 	inode = tftp_get_inode(dir->i_sb, dir, S_IFREG | S_IRWXUGO);
 	if (!inode)
-		return ERR_PTR(-ENOSPC);
+		return ERR_PTR(-ENOMEM);
 
 	d_add(dentry, inode);
 

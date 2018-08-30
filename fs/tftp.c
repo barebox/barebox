@@ -79,7 +79,7 @@ struct file_priv {
 	uint16_t last_block;
 	int state;
 	int err;
-	const char *filename;
+	char *filename;
 	int filesize;
 	uint64_t resend_timeout;
 	uint64_t progress_timeout;
@@ -139,7 +139,7 @@ static int tftp_send(struct file_priv *priv)
 				"%d%c"
 				"blksize%c"
 				"1432",
-				priv->filename, 0,
+				priv->filename + 1, 0,
 				0,
 				0,
 				TIMEOUT, 0,
@@ -374,15 +374,14 @@ static void tftp_handler(void *ctx, char *packet, unsigned len)
 }
 
 static struct file_priv *tftp_do_open(struct device_d *dev,
-		int accmode, const char *filename)
+		int accmode, struct dentry *dentry)
 {
+	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 	struct file_priv *priv;
 	struct tftp_priv *tpriv = dev->priv;
 	int ret;
 
 	priv = xzalloc(sizeof(*priv));
-
-	filename++;
 
 	switch (accmode & O_ACCMODE) {
 	case O_RDONLY:
@@ -408,7 +407,7 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 
 	priv->block = 1;
 	priv->err = -EINVAL;
-	priv->filename = filename;
+	priv->filename = dpath(dentry, fsdev->vfsmount.mnt_root);
 	priv->blocksize = TFTP_BLOCK_SIZE;
 	priv->block_requested = -1;
 
@@ -461,11 +460,8 @@ out:
 static int tftp_open(struct device_d *dev, FILE *file, const char *filename)
 {
 	struct file_priv *priv;
-	struct fs_device_d *fsdev = dev_to_fs_device(dev);
 
-	filename = dpath(file->dentry, fsdev->vfsmount.mnt_root);
-
-	priv = tftp_do_open(dev, file->flags, filename);
+	priv = tftp_do_open(dev, file->flags, file->dentry);
 	if (IS_ERR(priv))
 		return PTR_ERR(priv);
 
@@ -507,6 +503,7 @@ static int tftp_do_close(struct file_priv *priv)
 
 	net_unregister(priv->tftp_con);
 	kfifo_free(priv->fifo);
+	free(priv->filename);
 	free(priv->buf);
 	free(priv);
 

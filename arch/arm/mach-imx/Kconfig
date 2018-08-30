@@ -418,7 +418,7 @@ config MACH_ZII_RDU2
 	select ARCH_IMX6
 
 config MACH_ZII_VF610_DEV
-	bool "Zodiac VF610 Dev Family"
+	bool "ZII VF610 Dev Family"
 	select ARCH_VF610
 	select CLKDEV_LOOKUP
 

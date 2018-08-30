@@ -391,14 +391,6 @@ static struct file_priv *tftp_do_open(struct device_d *dev,
 	case O_WRONLY:
 		priv->push = 1;
 		priv->state = STATE_WRQ;
-		if (!(accmode & O_TRUNC)) {
-			/*
-			 * TFTP always truncates the existing file, so this
-			 * flag is mandatory when opening a file for writing.
-			 */
-			ret = -ENOSYS;
-			goto out;
-		}
 		break;
 	case O_RDWR:
 		ret = -ENOSYS;
@@ -646,10 +638,34 @@ static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *
 	return inode;
 }
 
+static int tftp_create(struct inode *dir, struct dentry *dentry, umode_t mode)
+{
+	struct inode *inode;
+
+	inode = tftp_get_inode(dir->i_sb, dir, mode);
+	if (!inode)
+		return -EPERM;
+
+	inode->i_size = 0;
+
+	d_instantiate(dentry, inode);
+
+	return 0;
+}
+
 static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 			    unsigned int flags)
 {
+	struct super_block *sb = dir->i_sb;
+	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
 	struct inode *inode;
+	struct file_priv *priv;
+
+	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry);
+	if (IS_ERR(priv))
+		return NULL;
+
+	tftp_do_close(priv);
 
 	inode = tftp_get_inode(dir->i_sb, dir, S_IFREG | S_IRWXUGO);
 	if (!inode)
@@ -663,6 +679,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 static const struct inode_operations tftp_dir_inode_operations =
 {
 	.lookup = tftp_lookup,
+	.create = tftp_create,
 };
 
 static const struct super_operations tftp_ops;

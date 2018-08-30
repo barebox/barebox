@@ -458,7 +458,6 @@ static int tftp_open(struct device_d *dev, FILE *file, const char *filename)
 		return PTR_ERR(priv);
 
 	file->priv = priv;
-	file->size = SZ_2G;
 
 	return 0;
 }
@@ -619,7 +618,6 @@ static struct inode *tftp_get_inode(struct super_block *sb, const struct inode *
 
 	inode->i_ino = get_next_ino();
 	inode->i_mode = mode;
-	inode->i_size = FILE_SIZE_STREAM;
 
 	switch (mode & S_IFMT) {
 	default:
@@ -660,16 +658,24 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
 	struct inode *inode;
 	struct file_priv *priv;
+	int filesize;
 
 	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry);
 	if (IS_ERR(priv))
 		return NULL;
+
+	filesize = priv->filesize;
 
 	tftp_do_close(priv);
 
 	inode = tftp_get_inode(dir->i_sb, dir, S_IFREG | S_IRWXUGO);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
+
+	if (filesize)
+		inode->i_size = filesize;
+	else
+		inode->i_size = FILE_SIZE_STREAM;
 
 	d_add(dentry, inode);
 

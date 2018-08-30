@@ -695,7 +695,7 @@ int main(int argc, char *argv[])
 	int sign_image = 0;
 	int i, header_copies;
 	int add_barebox_header;
-	uint32_t barebox_image_size;
+	uint32_t barebox_image_size = 0;
 	struct config_data data = {
 		.image_dcd_offset = 0xffffffff,
 		.write_mem = write_mem,
@@ -704,6 +704,8 @@ int main(int argc, char *argv[])
 	};
 	uint32_t *bb_header;
 	size_t sizeof_bb_header;
+	size_t header_len = HEADER_LEN;
+	size_t signed_hdmi_firmware_size = 0;
 
 	prgname = argv[0];
 
@@ -770,7 +772,7 @@ int main(int argc, char *argv[])
 	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
 	 *   in ver funy ways when the image size is not 4 byte aligned
 	 */
-	data.load_size = roundup(data.image_size + HEADER_LEN, 0x1000);
+	data.load_size = roundup(data.image_size + header_len, 0x1000);
 
 	ret = parse_config(&data, configfile);
 	if (ret)
@@ -804,7 +806,7 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	buf = calloc(1, HEADER_LEN);
+	buf = calloc(1, header_len);
 	if (!buf)
 		exit(1);
 
@@ -825,7 +827,31 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 
-		barebox_image_size = add_header_v2(&data, buf);
+		if (data.signed_hdmi_firmware_file) {
+			free(buf);
+			buf = read_file(data.signed_hdmi_firmware_file,
+					&signed_hdmi_firmware_size);
+			if (!buf) {
+				perror("read_file");
+				exit(1);
+			}
+
+			signed_hdmi_firmware_size =
+				roundup(signed_hdmi_firmware_size,
+					PLUGIN_HDMI_SIZE);
+
+			header_len += signed_hdmi_firmware_size;
+			barebox_image_size += signed_hdmi_firmware_size;
+
+			buf = realloc(buf, header_len);
+			if (!buf) {
+				perror("realloc");
+				exit(1);
+			}
+		}
+
+		barebox_image_size += add_header_v2(&data, buf +
+						    signed_hdmi_firmware_size);
 		break;
 	default:
 		fprintf(stderr, "Congratulations! You're welcome to implement header version %d\n",
@@ -870,7 +896,7 @@ int main(int argc, char *argv[])
 		}
 
 		ret = xwrite(outfd, buf + sizeof_bb_header,
-			     HEADER_LEN - sizeof_bb_header);
+			     header_len - sizeof_bb_header);
 		if (ret < 0) {
 			perror("write");
 			exit(1);

@@ -303,7 +303,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 			dma = dma_map_single(host->dev, ptr, num_bytes, dir);
 			if (dma_mapping_error(host->dev, dma))
-				return -EIO;
+				return -EFAULT;
 		}
 
 		err = esdhc_setup_data(mci, data, dma);

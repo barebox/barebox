@@ -629,6 +629,8 @@ static int fsl_esdhc_probe(struct device_d *dev)
 			host->socdata = &esdhc_imx25_data;
 	}
 
+	dma_set_mask(dev, DMA_BIT_MASK(32));
+
 	host->clk = clk_get(dev, "per");
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);

@@ -762,6 +762,8 @@ static int fec_probe(struct device_d *dev)
 	edev->set_ethaddr = fec_set_hwaddr;
 	edev->parent = dev;
 
+	dma_set_mask(dev, DMA_BIT_MASK(32));
+
 	ret = fec_clk_get(fec);
 	if (ret < 0)
 		goto err_free;

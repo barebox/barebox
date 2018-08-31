@@ -482,7 +482,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 
 	dma = dma_map_single(fec->dev, eth_data, data_length, DMA_TO_DEVICE);
 	if (dma_mapping_error(fec->dev, dma))
-		return -EIO;
+		return -EFAULT;
 
 	writel((uint32_t)(dma), &fec->tbd_base[fec->tbd_index].data_pointer);
 

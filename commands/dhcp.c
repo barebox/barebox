@@ -24,7 +24,7 @@ static int do_dhcp(int argc, char *argv[])
 	struct eth_device *edev;
 	const char *edevname;
 
-	while ((opt = getopt(argc, argv, "H:v:c:u:U:r:")) > 0) {
+	while ((opt = getopt(argc, argv, "H:v:c:u:U:r:o:")) > 0) {
 		switch (opt) {
 		case 'H':
 			dhcp_param.hostname = optarg;
@@ -43,6 +43,9 @@ static int do_dhcp(int argc, char *argv[])
 			break;
 		case 'r':
 			dhcp_param.retries = simple_strtoul(optarg, NULL, 10);
+			break;
+		case 'o':
+			dhcp_param.option224 = optarg;
 			break;
 		default:
 			return COMMAND_ERROR_USAGE;
@@ -72,13 +75,14 @@ BAREBOX_CMD_HELP_OPT("-v ID\t", "DHCP Vendor ID (code 60) submitted in DHCP requ
 BAREBOX_CMD_HELP_OPT("-c ID\t", "DHCP Client ID (code 61) submitted in DHCP requests")
 BAREBOX_CMD_HELP_OPT("-u UUID\t", "DHCP Client UUID (code 97) submitted in DHCP requests")
 BAREBOX_CMD_HELP_OPT("-U CLASS", "DHCP User class (code 77) submitted in DHCP requests")
-BAREBOX_CMD_HELP_OPT("-r RETRY", "retry limit (default 20)");
+BAREBOX_CMD_HELP_OPT("-r RETRY", "retry limit (default 20)")
+BAREBOX_CMD_HELP_OPT("-o PRIVATE DATA", "private data (code 224) submitted in DHCP requests");
 BAREBOX_CMD_HELP_END
 
 BAREBOX_CMD_START(dhcp)
 	.cmd		= do_dhcp,
 	BAREBOX_CMD_DESC("DHCP client to obtain IP or boot params")
-	BAREBOX_CMD_OPTS("[-HvcuUr] [device]")
+	BAREBOX_CMD_OPTS("[-HvcuUro] [device]")
 	BAREBOX_CMD_GROUP(CMD_GRP_NET)
 	BAREBOX_CMD_HELP(cmd_dhcp_help)
 	BAREBOX_CMD_COMPLETE(eth_complete)

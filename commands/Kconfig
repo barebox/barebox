@@ -1127,7 +1127,7 @@ config CMD_DHCP
 	help
 	  DHCP client to obtain IP or boot params
 
-	  Usage: dhcp [-HvcuUr]
+	  Usage: dhcp [-HvcuUro]
 
 	  Options:
 	          -H HOSTNAME     hostname to send to the DHCP server
@@ -1135,7 +1135,8 @@ config CMD_DHCP
 	          -c ID           DHCP Client ID (code 61) submitted in DHCP requests
 	          -u UUID         DHCP Client UUID (code 97) submitted in DHCP requests
 	          -U CLASS        DHCP User class (code 77) submitted in DHCP requests
-	          -r RETRY        retry limit (default 20)#
+	          -r RETRY        retry limit (default 20)
+		  -o PRIVATE DATA private data (code 224) submitted in DHCP requests
 
 config CMD_HOST
 	tristate

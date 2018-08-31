@@ -448,6 +448,7 @@ static char *global_dhcp_bootfile;
 static char *global_dhcp_oftree_file;
 static char *global_dhcp_rootpath;
 static char *global_dhcp_tftp_server_name;
+static int global_dhcp_retries = DHCP_DEFAULT_RETRY;
 static char *global_dhcp_option224;
 
 static void set_res(char **var, const char *res)
@@ -484,7 +485,7 @@ int dhcp_request(struct eth_device *edev, const struct dhcp_req_param *param,
 	if (!dhcp_param.option224)
 		dhcp_param.option224 = global_dhcp_option224;
 	if (!dhcp_param.retries)
-		dhcp_param.retries = DHCP_DEFAULT_RETRY;
+		dhcp_param.retries = global_dhcp_retries;
 
 	dhcp_con = net_udp_eth_new(edev, IP_BROADCAST, PORT_BOOTPS, dhcp_handler, NULL);
 	if (IS_ERR(dhcp_con)) {
@@ -629,6 +630,7 @@ static int dhcp_global_init(void)
 	globalvar_add_simple_string("dhcp.user_class", &global_dhcp_user_class);
 	globalvar_add_simple_string("dhcp.oftree_file", &global_dhcp_oftree_file);
 	globalvar_add_simple_string("dhcp.tftp_server_name", &global_dhcp_tftp_server_name);
+	globalvar_add_simple_int("dhcp.retries", &global_dhcp_retries, "%u");
 	globalvar_add_simple_string("dhcp.option224", &global_dhcp_option224);
 
 	return 0;

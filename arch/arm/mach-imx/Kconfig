@@ -227,6 +227,7 @@ config MACH_KINDLE_MX50
 	select MFD_MC13XXX
 	select ARM_BOARD_APPEND_ATAG
 	select ARM_LINUX
+	select OFTREE
 	help
 	  Say Y here if you are using the fourth or fifth generation Amazon
 	  Kindle Model No. D01100 (Kindle Wi-Fi), D01200 (Kindle Touch) or

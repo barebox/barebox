@@ -160,7 +160,7 @@ static const struct mach_id imx_ids[] = {
 	}, {
 		.vid = 0x15a2,
 		.pid = 0x0071,
-		.name = "i.MX6 SoloX",
+		.name = "i.MX6SoloX",
 		.header_type = HDR_MX53,
 		.mode = MODE_HID,
 		.max_transfer = 1024,

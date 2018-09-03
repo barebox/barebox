@@ -317,15 +317,40 @@ static int do_hab(struct config_data *data, int argc, char *argv[])
 
 static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 {
+	const char *type;
 	char *str;
 	int ret;
 
 	if (!data->csf)
 		return -EINVAL;
 
-	ret = asprintf(&str, "Blocks = 0x%08x 0 %d \"%s\"\n",
-		       data->image_load_addr,
-		       data->load_size, data->outfile);
+	if (argc < 2)
+		type = "full";
+	else
+		type = argv[1];
+
+	if (!strcmp(type, "full")) {
+		ret = asprintf(&str, "Blocks = 0x%08x 0 %d \"%s\"\n",
+			       data->image_load_addr, data->load_size,
+			       data->outfile);
+	} else if (!strcmp(type, "from-dcdofs")) {
+		ret = asprintf(&str, "Blocks = 0x%08x 0x%x %d \"%s\"\n",
+			       data->image_load_addr + data->image_dcd_offset,
+			       data->image_dcd_offset,
+			       data->load_size - data->image_dcd_offset,
+			       data->outfile);
+	} else if (!strcmp(type, "skip-mbr")) {
+		ret = asprintf(&str,
+			       "Blocks = 0x%08x 0 440 \"%s\", \\\n"
+			       "         0x%08x 512 %d \"%s\"\n",
+			       data->image_load_addr, data->outfile,
+			       data->image_load_addr + 512,
+			       data->load_size - 512, data->outfile);
+	} else {
+		fprintf(stderr, "Invalid hab_blocks option: %s\n", type);
+		return -EINVAL;
+	}
+
 	if (ret < 0)
 		return -ENOMEM;
 

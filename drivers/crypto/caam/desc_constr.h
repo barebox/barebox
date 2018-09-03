@@ -4,6 +4,9 @@
  * Copyright 2008-2012 Freescale Semiconductor, Inc.
  */
 
+#ifndef DESC_CONSTR_H
+#define DESC_CONSTR_H
+
 #include "desc.h"
 #include "regs.h"
 
@@ -403,3 +406,5 @@ do { \
 	APPEND_MATH_IMM_u64(LSHIFT, desc, dest, src0, src1, data)
 #define append_math_rshift_imm_u64(desc, dest, src0, src1, data) \
 	APPEND_MATH_IMM_u64(RSHIFT, desc, dest, src0, src1, data)
+
+#endif /* DESC_CONSTR_H */

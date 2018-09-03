@@ -117,7 +117,7 @@ static inline int run_descriptor_deco0(struct device_d *ctrldev, u32 *desc,
 		flags |= DECO_JQCR_FOUR;
 
 	/* Instruct the DECO to execute it */
-	writel(flags, &deco->jr_ctl_hi);
+	setbits32(&deco->jr_ctl_hi, flags);
 
 	start = get_time_ns();
 	while ((deco_dbg_reg = readl(&deco->desc_dbg)) &

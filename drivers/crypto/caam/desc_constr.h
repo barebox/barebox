@@ -98,7 +98,7 @@ static inline void init_job_desc_shared(u32 * const desc, dma_addr_t ptr,
 	append_ptr(desc, ptr);
 }
 
-static inline void append_data(u32 * const desc, void *data, int len)
+static inline void append_data(u32 * const desc, const void *data, int len)
 {
 	u32 *offset = desc_end(desc);
 
@@ -161,7 +161,7 @@ static inline void append_cmd_ptr_extlen(u32 * const desc, dma_addr_t ptr,
 	append_cmd(desc, len);
 }
 
-static inline void append_cmd_data(u32 * const desc, void *data, int len,
+static inline void append_cmd_data(u32 * const desc, const void *data, int len,
 				   u32 command)
 {
 	append_cmd(desc, command | IMMEDIATE | len);
@@ -260,7 +260,7 @@ APPEND_SEQ_PTR_INTLEN(in, IN)
 APPEND_SEQ_PTR_INTLEN(out, OUT)
 
 #define APPEND_CMD_PTR_TO_IMM(cmd, op) \
-static inline void append_##cmd##_as_imm(u32 * const desc, void *data, \
+static inline void append_##cmd##_as_imm(u32 * const desc, const void *data, \
 					 unsigned int len, u32 options) \
 { \
 	PRINT_POS; \
@@ -301,7 +301,7 @@ APPEND_CMD_PTR_LEN(seq_out_ptr, SEQ_OUT_PTR, u32)
  * from length of immediate data provided, e.g., split keys
  */
 #define APPEND_CMD_PTR_TO_IMM2(cmd, op) \
-static inline void append_##cmd##_as_imm(u32 * const desc, void *data, \
+static inline void append_##cmd##_as_imm(u32 * const desc, const void *data, \
 					 unsigned int data_len, \
 					 unsigned int len, u32 options) \
 { \

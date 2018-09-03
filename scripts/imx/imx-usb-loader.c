@@ -231,6 +231,29 @@ static const struct mach_id *imx_device_by_usb_id(unsigned short vid,
 	return NULL;
 }
 
+static const struct mach_id *imx_device_by_type(const char *name)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(imx_ids); i++) {
+		const struct mach_id *id = &imx_ids[i];
+		if (strcmp(id->name, name) == 0) {
+			fprintf(stderr, "found %s USB device\n", id->name);
+			return id;
+		}
+	}
+
+	fprintf(stderr, "unknown device type: '%s', try '-d list'.\n", name);
+	return NULL;
+}
+
+static void list_imx_device_types(void)
+{
+	for (int i = 0; i < ARRAY_SIZE(imx_ids); i++) {
+		printf("%s\n", imx_ids[i].name);
+	}
+}
+
 static int device_location_equal(libusb_device *device, const char *location)
 {
 	uint8_t port_path[MAX_USB_PORTS];
@@ -287,7 +310,7 @@ done:
 }
 
 static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **pp_id,
-		const char *location)
+		const char *location, const char *type)
 {
 	int i = 0;
 	int err;
@@ -313,14 +336,21 @@ static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **
 			continue;
 		}
 
-		p = imx_device_by_usb_id(desc.idVendor, desc.idProduct);
-		if (!p)
-			continue;
+		if (location && type) {
+			p = imx_device_by_type(type);
+			if (!p)
+				return NULL; // unknown type
+		}
+		else {
+			p = imx_device_by_usb_id(desc.idVendor, desc.idProduct);
+			if (!p)
+				continue;
+		}
 
 		err = libusb_open(dev, &usb_dev_handle);
 		if (err) {
 			fprintf(stderr, "Could not open device vid=0x%x pid=0x%x err=%d\n",
-				p->vid, p->pid, err);
+				desc.idVendor, desc.idProduct, err);
 			continue;
 		}
 
@@ -1523,6 +1553,10 @@ static void usage(const char *prgname)
 {
 	fprintf(stderr, "usage: %s [OPTIONS] [FILENAME]\n\n"
 		"-c           check correctness of flashed image\n"
+		"-d <devtype> with -p: Specify device type to use, and use <devpath> even if\n"
+		"             its USB VID/PID is unknown. Note that this could potentially be\n"
+		"             dangerous, as the device autodetection is overridden!\n"
+		"             Use '-d list' to get a list of known device types.\n"
 		"-i <cfgfile> Specify custom SoC initialization file\n"
 		"-p <devpath> Specify device path: <bus>-<port>[.<port>]...\n"
 		"-s           skip DCD included in image\n"
@@ -1546,10 +1580,11 @@ int main(int argc, char *argv[])
 	int opt;
 	char *initfile = NULL;
 	char *devpath = NULL;
+	char *devtype = NULL;
 
 	w.do_dcd_once = 1;
 
-	while ((opt = getopt(argc, argv, "cvhi:p:s")) != -1) {
+	while ((opt = getopt(argc, argv, "cvhd:i:p:s")) != -1) {
 		switch (opt) {
 		case 'c':
 			verify = 1;
@@ -1559,6 +1594,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 			usage(argv[0]);
+		case 'd':
+			devtype = optarg;
+			break;
 		case 'i':
 			initfile = optarg;
 			break;
@@ -1571,6 +1609,15 @@ int main(int argc, char *argv[])
 		default:
 			exit(1);
 		}
+	}
+
+	if (devtype && strcmp(devtype, "list") == 0) {
+		list_imx_device_types();
+		exit(0);
+	}
+
+	if (devtype && !devpath) {
+		fprintf(stderr, "Note: ignoring -d <type> given without -p <path>.\n");
 	}
 
 	if (optind == argc) {
@@ -1592,7 +1639,7 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	dev = find_imx_dev(devs, &mach, devpath);
+	dev = find_imx_dev(devs, &mach, devpath, devtype);
 	if (!dev) {
 		fprintf(stderr, "no supported device found\n");
 		goto out;

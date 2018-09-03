@@ -307,6 +307,12 @@ static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **
 			return NULL;
 		}
 
+		if (location && !device_location_equal(dev, location)) {
+			libusb_close(usb_dev_handle);
+			usb_dev_handle = NULL;
+			continue;
+		}
+
 		p = imx_device_by_usb_id(desc.idVendor, desc.idProduct);
 		if (!p)
 			continue;
@@ -315,12 +321,6 @@ static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **
 		if (err) {
 			fprintf(stderr, "Could not open device vid=0x%x pid=0x%x err=%d\n",
 				p->vid, p->pid, err);
-			continue;
-		}
-
-		if (location && !device_location_equal(dev, location)) {
-			libusb_close(usb_dev_handle);
-			usb_dev_handle = NULL;
 			continue;
 		}
 

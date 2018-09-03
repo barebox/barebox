@@ -30,8 +30,7 @@ struct sec4_sg_entry {
 	u32 ptr;
 #endif
 	u32 len;
-	u16 buf_pool_id;
-	u16 offset;
+	u32 bpid_offset;
 };
 
 /* Max size of any CAAM descriptor in 32-bit words, inclusive of header */

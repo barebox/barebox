@@ -214,7 +214,8 @@ struct mxs_command {
 	uint32_t dw_size;	/* Download size */
 } __attribute__((packed));
 
-static const struct mach_id *imx_device(unsigned short vid, unsigned short pid)
+static const struct mach_id *imx_device_by_usb_id(unsigned short vid,
+		unsigned short pid)
 {
 	int i;
 
@@ -306,7 +307,7 @@ static libusb_device *find_imx_dev(libusb_device **devs, const struct mach_id **
 			return NULL;
 		}
 
-		p = imx_device(desc.idVendor, desc.idProduct);
+		p = imx_device_by_usb_id(desc.idVendor, desc.idProduct);
 		if (!p)
 			continue;
 

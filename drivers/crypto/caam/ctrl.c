@@ -286,7 +286,7 @@ start_rng:
  * caam_get_era() - Return the ERA of the SEC on SoC, based
  * on "sec-era" propery in the DTS. This property is updated by u-boot.
  **/
-int caam_get_era(void)
+static int caam_get_era(void)
 {
 	struct device_node *caam_node;
 	int ret;
@@ -297,7 +297,6 @@ int caam_get_era(void)
 
 	return IS_ERR_VALUE(ret) ? -ENOTSUPP : prop;
 }
-EXPORT_SYMBOL(caam_get_era);
 
 /* Probe routine for CAAM top (controller) level */
 static int caam_probe(struct device_d *dev)

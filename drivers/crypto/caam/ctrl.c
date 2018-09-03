@@ -225,7 +225,8 @@ static void caam_remove(struct device_d *dev)
 
 	/* shut clocks off before finalizing shutdown */
 	clk_disable(ctrlpriv->caam_ipg);
-	clk_disable(ctrlpriv->caam_mem);
+	if (ctrlpriv->caam_mem)
+		clk_disable(ctrlpriv->caam_mem);
 	clk_disable(ctrlpriv->caam_aclk);
 	if (ctrlpriv->caam_emi_slow)
 		clk_disable(ctrlpriv->caam_emi_slow);
@@ -324,11 +325,15 @@ static int caam_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	ctrlpriv->caam_mem = clk_get(dev, "mem");
-	if (IS_ERR(ctrlpriv->caam_mem)) {
-		ret = PTR_ERR(ctrlpriv->caam_mem);
-		dev_err(dev, "can't identify CAAM secure mem clk: %d\n", ret);
-		return -ENODEV;
+	if (!of_machine_is_compatible("fsl,imx7d") &&
+	    !of_machine_is_compatible("fsl,imx7s")) {
+		ctrlpriv->caam_mem = clk_get(dev, "mem");
+		if (IS_ERR(ctrlpriv->caam_mem)) {
+			ret = PTR_ERR(ctrlpriv->caam_mem);
+			dev_err(dev,
+				"can't identify CAAM mem clk: %d\n", ret);
+			return -ENODEV;
+		}
 	}
 
 	ctrlpriv->caam_aclk = clk_get(dev, "aclk");
@@ -339,7 +344,9 @@ static int caam_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	if (!of_machine_is_compatible("fsl,imx6ul")) {
+	if (!of_machine_is_compatible("fsl,imx6ul") &&
+	    !of_machine_is_compatible("fsl,imx7d") &&
+	    !of_machine_is_compatible("fsl,imx7s")) {
 		ctrlpriv->caam_emi_slow = clk_get(dev, "emi_slow");
 		if (IS_ERR(ctrlpriv->caam_emi_slow)) {
 			ret = PTR_ERR(ctrlpriv->caam_emi_slow);
@@ -355,11 +362,13 @@ static int caam_probe(struct device_d *dev)
 		return -ENODEV;
 	}
 
-	ret = clk_enable(ctrlpriv->caam_mem);
-	if (ret < 0) {
-		dev_err(dev, "can't enable CAAM secure mem clock: %d\n",
-			ret);
-		return -ENODEV;
+	if (ctrlpriv->caam_mem) {
+		ret = clk_enable(ctrlpriv->caam_mem);
+		if (ret < 0) {
+			dev_err(dev, "can't enable CAAM secure mem clock: %d\n",
+				ret);
+			return -ENODEV;
+		}
 	}
 
 	ret = clk_enable(ctrlpriv->caam_aclk);

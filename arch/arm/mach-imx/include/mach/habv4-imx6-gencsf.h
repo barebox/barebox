@@ -43,3 +43,16 @@ hab [Authenticate Data]
 hab Verification index = 2
 
 hab_blocks
+
+hab_encrypt [Install Secret Key]
+hab_encrypt Verification index = 0
+hab_encrypt Target index = 0
+hab_encrypt_key
+hab_encrypt_key_length 256
+hab_encrypt_blob_address
+
+hab_encrypt [Decrypt Data]
+hab_encrypt Verification index = 0
+hab_encrypt Mac Bytes = 16
+
+hab_encrypt_blocks

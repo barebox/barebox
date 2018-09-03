@@ -43,7 +43,6 @@
  * HEADER_SIZE
  */
 #define MAX_DCD ((HEADER_LEN - FLASH_HEADER_OFFSET - sizeof(struct imx_flash_header_v2)) / sizeof(u32))
-#define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
 
 static uint32_t dcdtable[MAX_DCD];
 static int curdcd;
@@ -533,6 +532,7 @@ static int hab_sign(struct config_data *data)
 	struct stat s;
 	char *cst;
 	void *buf;
+	size_t csf_space = CSF_LEN;
 
 	cst = getenv("CST");
 	if (!cst)
@@ -634,15 +634,23 @@ static int hab_sign(struct config_data *data)
 		return -errno;
 	}
 
-	buf = malloc(CSF_LEN);
+	/*
+	 * DEK blob needs to be part of CSF area, in order to properly
+	 * load by ROM code. Make space to simply concatenate DEK blob
+	 * to the end of image during device flashing procedure.
+	 */
+	if (data->encrypt_image)
+		csf_space -= (data->dek_size + DEK_BLOB_OVERHEAD);
+
+	buf = malloc(csf_space);
 	if (!buf)
 		return -ENOMEM;
 
-	memset(buf, 0x5a, CSF_LEN);
+	memset(buf, 0x5a, csf_space);
 
-	if (s.st_size > CSF_LEN) {
-		fprintf(stderr, "CSF file size exceeds maximum CSF len of %d bytes\n",
-			CSF_LEN);
+	if (s.st_size > csf_space) {
+		fprintf(stderr, "CSF file size exceeds maximum CSF space of %zu bytes\n",
+			csf_space);
 	}
 
 	ret = xread(fd, buf, s.st_size);
@@ -653,7 +661,7 @@ static int hab_sign(struct config_data *data)
 
 	outfd = open(data->outfile, O_WRONLY | O_APPEND);
 
-	ret = xwrite(outfd, buf, CSF_LEN);
+	ret = xwrite(outfd, buf, csf_space);
 	if (ret < 0) {
 		fprintf(stderr, "write failed: %s\n", strerror(errno));
 		return -errno;
@@ -728,7 +736,7 @@ int main(int argc, char *argv[])
 
 	prgname = argv[0];
 
-	while ((opt = getopt(argc, argv, "c:hf:o:bdus")) != -1) {
+	while ((opt = getopt(argc, argv, "c:hf:o:bduse")) != -1) {
 		switch (opt) {
 		case 'c':
 			configfile = optarg;
@@ -750,6 +758,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'u':
 			create_usb_image = 1;
+			break;
+		case 'e':
+			data.encrypt_image = 1;
 			break;
 		case 'h':
 			usage(argv[0]);

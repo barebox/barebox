@@ -558,7 +558,28 @@ static int hab_sign(struct config_data *data)
 		}
 	}
 
-	ret = asprintf(&command, "%s -o %s", cst, csffile);
+	/*
+	 * Older versions of "cst" want to read the CSF from STDIN,
+	 * while newer versions want to read the CSF from a
+	 * file. Sadly, the "-i" option doesn't understand "-i -" to
+	 * read from STDIN, so we give it "/dev/stdin" instead.
+	 */
+	ret = asprintf(&command,
+		       "%s | grep 'Input CSF text filename'",
+		       cst);
+	if (ret < 0)
+		return -ENOMEM;
+
+	ret = system(command);
+	free(command);
+	if (ret == -1)
+		return -EINVAL;
+	else if (ret == 0)
+		ret = asprintf(&command, "%s -o %s -i /dev/stdin",
+			       cst, csffile);
+	else
+		ret = asprintf(&command, "%s -o %s;",
+			       cst, csffile);
 	if (ret < 0)
 		return -ENOMEM;
 

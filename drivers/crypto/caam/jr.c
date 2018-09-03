@@ -309,7 +309,7 @@ int caam_jr_probe(struct device_d *dev)
 	if (IS_ERR(ctrl))
 		return PTR_ERR(ctrl);
 
-	jrpriv->rregs = (struct caam_job_ring __force *)ctrl;
+	jrpriv->rregs = (struct caam_job_ring __iomem __force *)ctrl;
 
 	/* Now do the platform independent part */
 	error = caam_jr_init(dev); /* now turn on hardware */

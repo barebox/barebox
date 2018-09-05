@@ -127,7 +127,7 @@ static void led_blink_func(struct poller_struct *poller)
 	struct led *led;
 
 	list_for_each_entry(led, &leds, list) {
-		bool on;
+		int on;
 
 		if (!led->blink && !led->flash)
 			continue;
@@ -137,6 +137,8 @@ static void led_blink_func(struct poller_struct *poller)
 		}
 
 		on = !(led->blink_next_state % 2);
+		if (on)
+			on = led->max_value;
 
 		led->blink_next_event = get_time_ns() +
 			(led->blink_states[led->blink_next_state] * MSECOND);

@@ -753,7 +753,29 @@ config HABV4
 	help
 	  High Assurance Boot, as found on i.MX28/i.MX6.
 
-if HABV4
+config HAB_CERTS_ENV
+	depends on HAB
+	bool "Specify certificates in environment"
+	help
+	  If this option is enabled the pathes to the HAB certificates are
+	  taken from environment variables which allows for better integration
+	  with build systems. With this option disabled the pathes can be
+	  specified below.
+
+	  The environment variables have the same name as the corresponding
+	  Kconfig variables. For HABv3 these are:
+
+	  CONFIG_HABV3_SRK_PEM
+	  CONFIG_HABV3_CSF_CRT_DER
+	  CONFIG_HABV3_IMG_CRT_DER
+
+	  For HABv4:
+
+	  CONFIG_HABV4_TABLE_BIN
+	  CONFIG_HABV4_CSF_CRT_PEM
+	  CONFIG_HABV4_IMG_CRT_PEM
+
+if HABV4 && !HAB_CERTS_ENV
 
 config HABV4_TABLE_BIN
 	string "Path to SRK table"
@@ -796,7 +818,7 @@ config HABV3
 	help
 	  High Assurance Boot, as found on i.MX25.
 
-if HABV3
+if HABV3 && !HAB_CERTS_ENV
 
 config HABV3_SRK_PEM
 	string "Path to SRK Certificate (PEM)"

@@ -4,6 +4,14 @@
 #include <linux/types.h>
 
 #define HEADER_LEN 0x1000	/* length of the blank area + IVT + DCD */
+#define CSF_LEN 0x2000		/* length of the CSF (needed for HAB) */
+
+#define DEK_BLOB_HEADER 8	/* length of DEK blob header */
+#define DEK_BLOB_KEY 32		/* length of DEK blob AES-256 key */
+#define DEK_BLOB_MAC 16		/* length of DEK blob MAC */
+
+/* DEK blob length excluding DEK itself */
+#define DEK_BLOB_OVERHEAD (DEK_BLOB_HEADER + DEK_BLOB_KEY + DEK_BLOB_MAC)
 
 /*
  * ============================================================================
@@ -103,6 +111,8 @@ struct config_data {
 	int csf_space;
 	char *csf;
 	char *signed_hdmi_firmware_file;
+	int encrypt_image;
+	size_t dek_size;
 };
 
 #define MAX_RECORDS_DCD_V2 1024

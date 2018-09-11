@@ -22,12 +22,19 @@
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
+#include <sys/stat.h>
 #include <linux/kernel.h>
 #include <mach/imx_cpu_types.h>
 
 #include "imx.h"
 
 #define MAXARGS 32
+
+/*
+ * First word of bootloader image should be authenticated,
+ * encrypt the rest.
+ */
+#define ENCRYPT_OFFSET	(HEADER_LEN + 0x10)
 
 static int parse_line(char *line, char *argv[])
 {
@@ -317,15 +324,170 @@ static int do_hab(struct config_data *data, int argc, char *argv[])
 
 static int do_hab_blocks(struct config_data *data, int argc, char *argv[])
 {
+	const char *type;
+	char *str;
+	int ret;
+	uint32_t signed_size = data->load_size;
+
+	if (!data->csf)
+		return -EINVAL;
+
+	if (argc < 2)
+		type = "full";
+	else
+		type = argv[1];
+
+	/*
+	 * In case of encrypted image we reduce signed area to beginning
+	 * of encrypted area.
+	 */
+	if (data->encrypt_image)
+		signed_size = ENCRYPT_OFFSET;
+
+	if (!strcmp(type, "full")) {
+		ret = asprintf(&str, "Blocks = 0x%08x 0 %d \"%s\"\n",
+			       data->image_load_addr, signed_size,
+			       data->outfile);
+	} else if (!strcmp(type, "from-dcdofs")) {
+		ret = asprintf(&str, "Blocks = 0x%08x 0x%x %d \"%s\"\n",
+			       data->image_load_addr + data->image_dcd_offset,
+			       data->image_dcd_offset,
+			       signed_size - data->image_dcd_offset,
+			       data->outfile);
+	} else if (!strcmp(type, "skip-mbr")) {
+		ret = asprintf(&str,
+			       "Blocks = 0x%08x 0 440 \"%s\", \\\n"
+			       "         0x%08x 512 %d \"%s\"\n",
+			       data->image_load_addr, data->outfile,
+			       data->image_load_addr + 512,
+			       signed_size - 512, data->outfile);
+	} else {
+		fprintf(stderr, "Invalid hab_blocks option: %s\n", type);
+		return -EINVAL;
+	}
+
+	if (ret < 0)
+		return -ENOMEM;
+
+	ret = hab_add_str(data, str);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static int do_hab_encrypt(struct config_data *data, int argc, char *argv[])
+{
+	if (!data->encrypt_image)
+		return 0;
+
+	return do_hab(data, argc, argv);
+}
+
+static int do_hab_encrypt_key(struct config_data *data, int argc, char *argv[])
+{
+	char *str;
+	char *dekfile;
+	int ret;
+
+	if (!data->csf)
+		return -EINVAL;
+
+	if (!data->encrypt_image)
+		return 0;
+
+	ret = asprintf(&dekfile, "%s.dek", data->outfile);
+	if (ret < 0)
+		return -ENOMEM;
+
+	ret = asprintf(&str, "Key = \"%s\"\n", dekfile);
+	if (ret < 0)
+		return -ENOMEM;
+
+	ret = hab_add_str(data, str);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static int do_hab_encrypt_key_length(struct config_data *data, int argc,
+				     char *argv[])
+{
+	unsigned int dek_bits;
 	char *str;
 	int ret;
 
 	if (!data->csf)
 		return -EINVAL;
 
-	ret = asprintf(&str, "Blocks = 0x%08x 0 %d \"%s\"\n",
-		       data->image_load_addr,
-		       data->load_size, data->outfile);
+	if (!data->encrypt_image)
+		return 0;
+
+	if (argc < 2)
+		return -EINVAL;
+
+	dek_bits = strtoul(argv[1], NULL, 0);
+
+	if (dek_bits != 128 && dek_bits != 192 && dek_bits != 256) {
+		fprintf(stderr, "wrong dek size (%u)\n", dek_bits);
+		return -EINVAL;
+	}
+
+	data->dek_size = dek_bits / 8;
+
+	ret = asprintf(&str, "Key Length = %u\n", dek_bits);
+	if (ret < 0)
+		return -ENOMEM;
+
+	ret = hab_add_str(data, str);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static int do_hab_encrypt_blob_address(struct config_data *data, int argc,
+				       char *argv[])
+{
+	char *str;
+	int ret;
+
+	if (!data->csf)
+		return -EINVAL;
+
+	if (!data->encrypt_image)
+		return 0;
+
+	ret = asprintf(&str,
+		       "Blob address = 0x%08zx\n",
+		       data->image_load_addr + data->load_size + CSF_LEN -
+				(DEK_BLOB_OVERHEAD + data->dek_size));
+	if (ret < 0)
+		return -ENOMEM;
+
+	ret = hab_add_str(data, str);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+static int do_hab_encrypt_blocks(struct config_data *data, int argc,
+				 char *argv[])
+{
+	char *str;
+	int ret;
+
+	if (!data->csf)
+		return -EINVAL;
+
+	if (!data->encrypt_image)
+		return 0;
+
+	ret = asprintf(&str, "Blocks = 0x%08x 0x%x %d \"%s\"\n",
+		       data->image_load_addr + ENCRYPT_OFFSET, ENCRYPT_OFFSET,
+		       data->load_size - ENCRYPT_OFFSET, data->outfile);
 	if (ret < 0)
 		return -ENOMEM;
 
@@ -434,6 +596,21 @@ struct command cmds[] = {
 	}, {
 		.name = "hab_blocks",
 		.parse = do_hab_blocks,
+	}, {
+		.name = "hab_encrypt",
+		.parse = do_hab_encrypt,
+	}, {
+		.name = "hab_encrypt_key",
+		.parse = do_hab_encrypt_key,
+	}, {
+		.name = "hab_encrypt_key_length",
+		.parse = do_hab_encrypt_key_length,
+	}, {
+		.name = "hab_encrypt_blob_address",
+		.parse = do_hab_encrypt_blob_address,
+	}, {
+		.name = "hab_encrypt_blocks",
+		.parse = do_hab_encrypt_blocks,
 	}, {
 		.name = "super_root_key",
 		.parse = do_super_root_key,

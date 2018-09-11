@@ -12,8 +12,8 @@
 		/delete-property/ i2c1;
 		/delete-property/ i2c2;
 		/delete-property/ mmc2;
-		/delete-property/ d_can0;
-		/delete-property/ d_can1;
+		/delete-property/ d-can0;
+		/delete-property/ d-can1;
 		/delete-property/ spi1;
 	};
 };

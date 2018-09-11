@@ -21,43 +21,16 @@
 #include "desc.h"
 #include "intern.h"
 
-/*
- * The DMA address registers in the JR are a pair of 32-bit registers.
- * The layout is:
- *
- *    base + 0x0000 : most-significant 32 bits
- *    base + 0x0004 : least-significant 32 bits
- *
- * The 32-bit version of this core therefore has to write to base + 0x0004
- * to set the 32-bit wide DMA address. This seems to be independent of the
- * endianness of the written/read data.
- */
-
-#define REG64_MS32(reg) ((u32 __iomem *)(reg))
-#define REG64_LS32(reg) ((u32 __iomem *)(reg) + 1)
-
-static inline void wr_reg64(u64 __iomem *reg, u64 data)
-{
-	writel(data >> 32, REG64_MS32(reg));
-	writel(data, REG64_LS32(reg));
-}
-
-static inline u64 rd_reg64(u64 __iomem *reg)
-{
-	return ((u64)readl(REG64_MS32(reg)) << 32 |
-		(u64)readl(REG64_LS32(reg)));
-}
-
 static int caam_reset_hw_jr(struct device_d *dev)
 {
 	struct caam_drv_private_jr *jrp = dev->priv;
 	uint64_t start;
 
 	/* initiate flush (required prior to reset) */
-	writel(JRCR_RESET, &jrp->rregs->jrcommand);
+	wr_reg32(&jrp->rregs->jrcommand, JRCR_RESET);
 
 	start = get_time_ns();
-	while ((readl(&jrp->rregs->jrintstatus) & JRINT_ERR_HALT_MASK) ==
+	while ((rd_reg32(&jrp->rregs->jrintstatus) & JRINT_ERR_HALT_MASK) ==
 	        JRINT_ERR_HALT_INPROGRESS) {
 		if (is_timeout(start, 100 * MSECOND)) {
 			dev_err(dev, "job ring %d timed out on flush\n",
@@ -67,10 +40,10 @@ static int caam_reset_hw_jr(struct device_d *dev)
 	}
 
 	/* initiate reset */
-	writel(JRCR_RESET, &jrp->rregs->jrcommand);
+	wr_reg32(&jrp->rregs->jrcommand, JRCR_RESET);
 
 	start = get_time_ns();
-	while (readl(&jrp->rregs->jrcommand) & JRCR_RESET) {
+	while (rd_reg32(&jrp->rregs->jrcommand) & JRCR_RESET) {
 		if (is_timeout(start, 100 * MSECOND)) {
 			dev_err(dev, "job ring %d timed out on reset\n",
 				jrp->ridx);
@@ -90,7 +63,7 @@ static int caam_jr_dequeue(struct caam_drv_private_jr *jrp)
 	void *userarg;
 	int found;
 
-	while (readl(&jrp->rregs->outring_used)) {
+	while (rd_reg32(&jrp->rregs->outring_used)) {
 		head = jrp->head;
 
 		sw_idx = tail = jrp->tail;
@@ -102,7 +75,7 @@ static int caam_jr_dequeue(struct caam_drv_private_jr *jrp)
 			sw_idx = (tail + i) & (JOBR_DEPTH - 1);
 
 			if (jrp->outring[hw_idx].desc ==
-			    jrp->entinfo[sw_idx].desc_addr_dma) {
+			    caam_dma_to_cpu(jrp->entinfo[sw_idx].desc_addr_dma)) {
 				found = 1;
 				break; /* found */
 			}
@@ -120,12 +93,12 @@ static int caam_jr_dequeue(struct caam_drv_private_jr *jrp)
 		usercall = jrp->entinfo[sw_idx].callbk;
 		userarg = jrp->entinfo[sw_idx].cbkarg;
 		userdesc = jrp->entinfo[sw_idx].desc_addr_virt;
-		userstatus = jrp->outring[hw_idx].jrstatus;
+		userstatus = caam32_to_cpu(jrp->outring[hw_idx].jrstatus);
 
 		barrier();
 
 		/* set done */
-		writel(1, &jrp->rregs->outring_rmvd);
+		wr_reg32(&jrp->rregs->outring_rmvd, 1);
 
 		jrp->out_ring_read_index = (jrp->out_ring_read_index + 1) &
 					   (JOBR_DEPTH - 1);
@@ -158,7 +131,7 @@ static int caam_jr_interrupt(struct caam_drv_private_jr *jrp)
 	u32 irqstate;
 
 	start = get_time_ns();
-	while (!(irqstate = readl(&jrp->rregs->jrintstatus))) {
+	while (!(irqstate = rd_reg32(&jrp->rregs->jrintstatus))) {
 		if (is_timeout(start, 100 * MSECOND)) {
 			dev_err(jrp->dev, "timeout waiting for interrupt\n");
 			return -ETIMEDOUT;
@@ -176,7 +149,7 @@ static int caam_jr_interrupt(struct caam_drv_private_jr *jrp)
 	}
 
 	/* Have valid interrupt at this point, just ACK and trigger */
-	writel(irqstate, &jrp->rregs->jrintstatus);
+	wr_reg32(&jrp->rregs->jrintstatus, irqstate);
 
 	return caam_jr_dequeue(jrp);
 }
@@ -218,7 +191,7 @@ int caam_jr_enqueue(struct device_d *dev, u32 *desc,
 	struct caam_jrentry_info *head_entry;
 	int head, tail, desc_size;
 
-	desc_size = (*desc & HDR_JD_LENGTH_MASK) * sizeof(u32);
+	desc_size = (caam32_to_cpu(*desc) & HDR_JD_LENGTH_MASK) * sizeof(u32);
 
 	if (!dev->priv)
 		return -ENODEV;
@@ -227,7 +200,7 @@ int caam_jr_enqueue(struct device_d *dev, u32 *desc,
 
 	head = jrp->head;
 	tail = jrp->tail;
-	if (!readl(&jrp->rregs->inpring_avail) ||
+	if (!rd_reg32(&jrp->rregs->inpring_avail) ||
 	    CIRC_SPACE(head, tail, JOBR_DEPTH) <= 0) {
 		return -EBUSY;
 	}
@@ -242,7 +215,8 @@ int caam_jr_enqueue(struct device_d *dev, u32 *desc,
 	if (!jrp->inpring)
 		return -EIO;
 
-	jrp->inpring[jrp->inp_ring_write_index] = (dma_addr_t)desc;
+	jrp->inpring[jrp->inp_ring_write_index] =
+		cpu_to_caam_dma((dma_addr_t)desc);
 
 	barrier();
 
@@ -251,9 +225,9 @@ int caam_jr_enqueue(struct device_d *dev, u32 *desc,
 	jrp->head = (head + 1) & (JOBR_DEPTH - 1);
 
 	barrier();
-	writel(1, &jrp->rregs->inpring_jobadd);
+	wr_reg32(&jrp->rregs->inpring_jobadd, 1);
 
-	clrbits32(&jrp->rregs->rconfig_lo, JRCFG_IMSK);
+	clrsetbits_32(&jrp->rregs->rconfig_lo, JRCFG_IMSK, 0);
 
 	return caam_jr_interrupt(jrp);
 }
@@ -301,8 +275,8 @@ static int caam_jr_init(struct device_d *dev)
 
 	wr_reg64(&jrp->rregs->inpring_base, dma_inpring);
 	wr_reg64(&jrp->rregs->outring_base, dma_outring);
-	writel(JOBR_DEPTH, &jrp->rregs->inpring_size);
-	writel(JOBR_DEPTH, &jrp->rregs->outring_size);
+	wr_reg32(&jrp->rregs->inpring_size, JOBR_DEPTH);
+	wr_reg32(&jrp->rregs->outring_size, JOBR_DEPTH);
 
 	jrp->ringsize = JOBR_DEPTH;
 
@@ -335,7 +309,7 @@ int caam_jr_probe(struct device_d *dev)
 	if (IS_ERR(ctrl))
 		return PTR_ERR(ctrl);
 
-	jrpriv->rregs = (struct caam_job_ring __force *)ctrl;
+	jrpriv->rregs = (struct caam_job_ring __iomem __force *)ctrl;
 
 	/* Now do the platform independent part */
 	error = caam_jr_init(dev); /* now turn on hardware */

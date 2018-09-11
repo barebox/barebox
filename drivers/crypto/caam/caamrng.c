@@ -81,8 +81,7 @@ static void rng_done(struct device_d *jrdev, u32 *desc, u32 err, void *context)
 {
 	struct buf_data *bd;
 
-	bd = (struct buf_data *)((char *)desc -
-	      offsetof(struct buf_data, hw_desc));
+	bd = container_of(desc, struct buf_data, hw_desc[0]);
 
 	if (err)
 		caam_jr_strstatus(jrdev, err);
@@ -243,11 +242,7 @@ static int caam_init_rng(struct caam_rng_ctx *ctx, struct device_d *jrdev)
 	if (err)
 		return err;
 
-	err = caam_init_buf(ctx, 1);
-	if (err)
-		return err;
-
-	return 0;
+	return caam_init_buf(ctx, 1);
 }
 
 int caam_rng_probe(struct device_d *dev, struct device_d *jrdev)

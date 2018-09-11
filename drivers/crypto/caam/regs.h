@@ -10,9 +10,118 @@
 #include <linux/types.h>
 #include <io.h>
 
-/* These are common macros for Power, put here for ARMs */
-#define setbits32(_addr, _v) writel((readl(_addr) | (_v)), (_addr))
-#define clrbits32(_addr, _v) writel((readl(_addr) & ~(_v)), (_addr))
+extern bool caam_little_end;
+
+#define caam_to_cpu(len)				\
+static inline u##len caam##len ## _to_cpu(u##len val)	\
+{							\
+	if (caam_little_end)				\
+		return le##len ## _to_cpu(val);		\
+	else						\
+		return be##len ## _to_cpu(val);		\
+}
+
+#define cpu_to_caam(len)				\
+static inline u##len cpu_to_caam##len(u##len val)	\
+{							\
+	if (caam_little_end)				\
+		return cpu_to_le##len(val);		\
+	else						\
+		return cpu_to_be##len(val);		\
+}
+
+caam_to_cpu(16)
+caam_to_cpu(32)
+caam_to_cpu(64)
+cpu_to_caam(16)
+cpu_to_caam(32)
+cpu_to_caam(64)
+
+static inline void wr_reg32(void __iomem *reg, u32 data)
+{
+	if (caam_little_end)
+		iowrite32(data, reg);
+	else
+		iowrite32be(data, reg);
+}
+
+static inline u32 rd_reg32(void __iomem *reg)
+{
+	if (caam_little_end)
+		return ioread32(reg);
+
+	return ioread32be(reg);
+}
+
+static inline void clrsetbits_32(void __iomem *reg, u32 clear, u32 set)
+{
+	if (caam_little_end)
+		iowrite32((ioread32(reg) & ~clear) | set, reg);
+	else
+		iowrite32be((ioread32be(reg) & ~clear) | set, reg);
+}
+
+/*
+ * The DMA address registers in the JR are a pair of 32-bit registers.
+ * The layout is:
+ *
+ *    base + 0x0000 : most-significant 32 bits
+ *    base + 0x0004 : least-significant 32 bits
+ *
+ * The 32-bit version of this core therefore has to write to base + 0x0004
+ * to set the 32-bit wide DMA address. This seems to be independent of the
+ * endianness of the written/read data.
+ */
+
+#ifdef CONFIG_64BIT
+static inline void wr_reg64(void __iomem *reg, u64 data)
+{
+	if (caam_little_end)
+		iowrite64(data, reg);
+	else
+		iowrite64be(data, reg);
+}
+
+static inline void rd_reg64(void __iomem *reg)
+{
+	if (caam_little_end)
+		ioread64(reg);
+	else
+		ioread64be(reg);
+}
+#else /* CONFIG_64BIT */
+static inline void wr_reg64(void __iomem *reg, u64 data)
+{
+	wr_reg32((u32 __iomem *)(reg), data >> 32);
+	wr_reg32((u32 __iomem *)(reg) + 1, data);
+}
+
+static inline u64 rd_reg64(void __iomem *reg)
+{
+	return ((u64)rd_reg32((u32 __iomem *)(reg)) << 32 |
+		(u64)rd_reg32((u32 __iomem *)(reg) + 1));
+}
+#endif /* CONFIG_64BIT */
+
+static inline u64 cpu_to_caam_dma64(dma_addr_t value)
+{
+	return (((u64)cpu_to_caam32(lower_32_bits(value)) << 32) |
+		 (u64)cpu_to_caam32(upper_32_bits(value)));
+}
+
+static inline u64 caam_dma64_to_cpu(u64 value)
+{
+	return (((u64)caam32_to_cpu(lower_32_bits(value)) << 32) |
+		 (u64)caam32_to_cpu(upper_32_bits(value)));
+}
+
+#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
+#define cpu_to_caam_dma(value) cpu_to_caam_dma64(value)
+#define caam_dma_to_cpu(value) caam_dma64_to_cpu(value)
+#else
+#define cpu_to_caam_dma(value) cpu_to_caam32(value)
+#define caam_dma_to_cpu(value) caam32_to_cpu(value)
+#endif /* CONFIG_ARCH_DMA_ADDR_T_64BIT */
 
 /*
  * jr_outentry
@@ -190,17 +299,25 @@ struct caam_perfmon {
 	u32 faultliodn;	/* FALR - Fault Address LIODN	*/
 	u32 faultdetail;	/* FADR - Fault Addr Detail	*/
 	u32 rsvd3;
+#define CSTA_PLEND		BIT(10)
+#define CSTA_ALT_PLEND		BIT(18)
 	u32 status;		/* CSTA - CAAM Status */
 	u32 smpart;		/* Secure Memory Partition Parameters */
 	u32 smvid;		/* Secure Memory Version ID */
 
 	/* Component Instantiation Parameters			fe0-fff */
 	u32 rtic_id;		/* RVID - RTIC Version ID	*/
+#define CCBVID_ERA_MASK		0xff000000
+#define CCBVID_ERA_SHIFT	24
 	u32 ccb_id;		/* CCBVID - CCB Version ID	*/
 	u32 cha_id_ms;		/* CHAVID - CHA Version ID Most Significant*/
 	u32 cha_id_ls;		/* CHAVID - CHA Version ID Least Significant*/
 	u32 cha_num_ms;		/* CHANUM - CHA Number Most Significant	*/
 	u32 cha_num_ls;		/* CHANUM - CHA Number Least Significant*/
+#define SECVID_MS_IPID_MASK	0xffff0000
+#define SECVID_MS_IPID_SHIFT	16
+#define SECVID_MS_MAJ_REV_MASK	0x0000ff00
+#define SECVID_MS_MAJ_REV_SHIFT	8
 	u32 caam_id_ms;		/* CAAMVID - CAAM Version ID MS	*/
 	u32 caam_id_ls;		/* CAAMVID - CAAM Version ID LS	*/
 };

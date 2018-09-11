@@ -18,6 +18,7 @@ struct dhcp_req_param {
 	char *client_id;
 	char *user_class;
 	char *client_uuid;
+	char *option224;
 	int retries;
 };
 

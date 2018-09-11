@@ -98,6 +98,7 @@ struct dhcp_receivce_opts {
 #define DHCP_CLIENT_ID		61
 #define DHCP_USER_CLASS		77
 #define DHCP_CLIENT_UUID	97
+#define DHCP_OPTION224		224
 
 static int dhcp_set_ip_options(int option, u8 *e, IPaddr_t ip)
 {
@@ -212,6 +213,7 @@ static int dhcp_extended(u8 *e, int message_type, IPaddr_t ServerID,
 	e += dhcp_set_string_options(DHCP_CLIENT_ID, dhcp_param.client_id, e);
 	e += dhcp_set_string_options(DHCP_USER_CLASS, dhcp_param.user_class, e);
 	e += dhcp_set_string_options(DHCP_CLIENT_UUID, dhcp_param.client_uuid, e);
+	e += dhcp_set_string_options(DHCP_OPTION224, dhcp_param.option224, e);
 
 	*e++ = 55;		/* Parameter Request List */
 	cnt = e++;		/* Pointer to count of requested items */
@@ -446,6 +448,8 @@ static char *global_dhcp_bootfile;
 static char *global_dhcp_oftree_file;
 static char *global_dhcp_rootpath;
 static char *global_dhcp_tftp_server_name;
+static int global_dhcp_retries = DHCP_DEFAULT_RETRY;
+static char *global_dhcp_option224;
 
 static void set_res(char **var, const char *res)
 {
@@ -478,8 +482,10 @@ int dhcp_request(struct eth_device *edev, const struct dhcp_req_param *param,
 		dhcp_param.client_uuid = global_dhcp_client_uuid;
 	if (!dhcp_param.client_id)
 		dhcp_param.client_id = global_dhcp_client_id;
+	if (!dhcp_param.option224)
+		dhcp_param.option224 = global_dhcp_option224;
 	if (!dhcp_param.retries)
-		dhcp_param.retries = DHCP_DEFAULT_RETRY;
+		dhcp_param.retries = global_dhcp_retries;
 
 	dhcp_con = net_udp_eth_new(edev, IP_BROADCAST, PORT_BOOTPS, dhcp_handler, NULL);
 	if (IS_ERR(dhcp_con)) {
@@ -624,6 +630,8 @@ static int dhcp_global_init(void)
 	globalvar_add_simple_string("dhcp.user_class", &global_dhcp_user_class);
 	globalvar_add_simple_string("dhcp.oftree_file", &global_dhcp_oftree_file);
 	globalvar_add_simple_string("dhcp.tftp_server_name", &global_dhcp_tftp_server_name);
+	globalvar_add_simple_int("dhcp.retries", &global_dhcp_retries, "%u");
+	globalvar_add_simple_string("dhcp.option224", &global_dhcp_option224);
 
 	return 0;
 }
@@ -639,3 +647,4 @@ BAREBOX_MAGICVAR_NAMED(global_dhcp_user_class, global.dhcp.user_class, "user cla
 BAREBOX_MAGICVAR_NAMED(global_dhcp_tftp_server_name, global.dhcp.tftp_server_name, "TFTP server Name returned from DHCP request");
 BAREBOX_MAGICVAR_NAMED(global_dhcp_oftree_file, global.dhcp.oftree_file, "OF tree returned from DHCP request (option 224)");
 BAREBOX_MAGICVAR_NAMED(global_dhcp_retries, global.dhcp.retries, "retry limit");
+BAREBOX_MAGICVAR_NAMED(global_dhcp_option224, global.dhcp.option224, "private data to send to the DHCP server (option 224)");

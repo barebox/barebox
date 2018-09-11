@@ -149,7 +149,7 @@ struct eth_device *net_route(IPaddr_t dest)
 	struct eth_device *edev;
 
 	for_each_netdev(edev) {
-		if (!edev->ipaddr)
+		if (!edev->ipaddr || !edev->ifup)
 			continue;
 
 		if ((dest & edev->netmask) == (edev->ipaddr & edev->netmask)) {

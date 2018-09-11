@@ -57,16 +57,6 @@
 #define RAVE_SP_TX_BUFFER_SIZE				\
 	(RAVE_SP_STX_ETX_SIZE + 2 * RAVE_SP_RX_BUFFER_SIZE)
 
-#define RAVE_SP_BOOT_SOURCE_GET		0
-#define RAVE_SP_BOOT_SOURCE_SET		1
-
-#define RAVE_SP_RDU2_BOARD_TYPE_RMB	0
-#define RAVE_SP_RDU2_BOARD_TYPE_DEB	1
-
-#define RAVE_SP_BOOT_SOURCE_SD		0
-#define RAVE_SP_BOOT_SOURCE_EMMC	1
-#define RAVE_SP_BOOT_SOURCE_NOR		2
-
 /**
  * enum rave_sp_deframer_state - Possible state for de-framer
  *
@@ -122,13 +112,46 @@ struct rave_sp_checksum {
 	void (*subroutine)(const u8 *, size_t, u8 *);
 };
 
+struct rave_sp_version {
+	u8     hardware;
+	__le16 major;
+	u8     minor;
+	u8     letter[2];
+} __packed;
+
+struct rave_sp_status {
+	struct rave_sp_version bootloader_version;
+	struct rave_sp_version firmware_version;
+	u16 rdu_eeprom_flag;
+	u16 dds_eeprom_flag;
+	u8  pic_flag;
+	u8  orientation;
+	u32 etc;
+	s16 temp[2];
+	u8  backlight_current[3];
+	u8  dip_switch;
+	u8  host_interrupt;
+	u16 voltage_28;
+	u8  i2c_device_status;
+	u8  power_status;
+	u8  general_status;
+#define RAVE_SP_STATUS_GS_FIRMWARE_MODE	BIT(1)
+
+	u8  deprecated1;
+	u8  power_led_status;
+	u8  deprecated2;
+	u8  periph_power_shutoff;
+} __packed;
+
 /**
  * struct rave_sp_variant_cmds - Variant specific command routines
  *
  * @translate:	Generic to variant specific command mapping routine
+ * @get_status: Variant specific implementation of CMD_GET_STATUS
  */
 struct rave_sp_variant_cmds {
 	int (*translate)(enum rave_sp_command);
+	int (*get_status)(struct rave_sp *sp, struct rave_sp_status *);
 };
 
 /**
@@ -170,37 +193,6 @@ struct rave_sp {
 	const char *part_number_firmware;
 	const char *part_number_bootloader;
 };
-
-struct rave_sp_version {
-	u8     hardware;
-	__le16 major;
-	u8     minor;
-	u8     letter[2];
-} __packed;
-
-struct rave_sp_status {
-	struct rave_sp_version bootloader_version;
-	struct rave_sp_version firmware_version;
-	u16 rdu_eeprom_flag;
-	u16 dds_eeprom_flag;
-	u8  pic_flag;
-	u8  orientation;
-	u32 etc;
-	s16 temp[2];
-	u8  backlight_current[3];
-	u8  dip_switch;
-	u8  host_interrupt;
-	u16 voltage_28;
-	u8  i2c_device_status;
-	u8  power_status;
-	u8  general_status;
-#define RAVE_SP_STATUS_GS_FIRMWARE_MODE	BIT(1)
-
-	u8  deprecated1;
-	u8  power_led_status;
-	u8  deprecated2;
-	u8  periph_power_shutoff;
-} __packed;
 
 static bool rave_sp_id_is_event(u8 code)
 {
@@ -596,12 +588,16 @@ static int rave_sp_default_cmd_translate(enum rave_sp_command command)
 		return 0x14;
 	case RAVE_SP_CMD_SW_WDT:
 		return 0x1C;
+	case RAVE_SP_CMD_PET_WDT:
+		return 0x1D;
 	case RAVE_SP_CMD_RESET:
 		return 0x1E;
 	case RAVE_SP_CMD_RESET_REASON:
 		return 0x1F;
 	case RAVE_SP_CMD_BOOTLOADER:
 		return 0x2A;
+	case RAVE_SP_CMD_RMB_EEPROM:
+		return 0x20;
 	default:
 		return -EINVAL;
 	}
@@ -623,18 +619,45 @@ static const char *devm_rave_sp_version(struct device_d *dev,
 			version->letter[1]);
 }
 
-static int rave_sp_get_status(struct rave_sp *sp)
+
+static int rave_sp_rdu1_get_status(struct rave_sp *sp,
+				   struct rave_sp_status *status)
 {
-	struct device_d *dev = sp->serdev->dev;
 	u8 cmd[] = {
 		[0] = RAVE_SP_CMD_STATUS,
 		[1] = 0
 	};
+
+	return rave_sp_exec(sp, cmd, sizeof(cmd), status, sizeof(*status));
+}
+
+static int rave_sp_emulated_get_status(struct rave_sp *sp,
+				       struct rave_sp_status *status)
+{
+	u8 cmd[] = {
+		[0] = RAVE_SP_CMD_GET_FIRMWARE_VERSION,
+		[1] = 0,
+	};
+	int ret;
+
+	ret = rave_sp_exec(sp, cmd, sizeof(cmd), &status->firmware_version,
+			   sizeof(status->firmware_version));
+	if (ret)
+		return ret;
+
+	cmd[0] = RAVE_SP_CMD_GET_BOOTLOADER_VERSION;
+	return rave_sp_exec(sp, cmd, sizeof(cmd), &status->bootloader_version,
+			    sizeof(status->bootloader_version));
+}
+
+static int rave_sp_get_status(struct rave_sp *sp)
+{
+	struct device_d *dev = sp->serdev->dev;
 	struct rave_sp_status status;
 	const char *mode;
 	int ret;
 
-	ret = rave_sp_exec(sp, cmd, sizeof(cmd), &status, sizeof(status));
+	ret = sp->variant->cmd.get_status(sp, &status);
 	if (ret)
 		return ret;
 
@@ -663,9 +686,10 @@ static const struct rave_sp_checksum rave_sp_checksum_ccitt = {
 };
 
 static const struct rave_sp_variant rave_sp_legacy = {
-	.checksum = &rave_sp_checksum_8b2c,
+	.checksum = &rave_sp_checksum_ccitt,
 	.cmd = {
 		.translate = rave_sp_default_cmd_translate,
+		.get_status = rave_sp_emulated_get_status,
 	},
 };
 
@@ -673,6 +697,7 @@ static const struct rave_sp_variant rave_sp_rdu1 = {
 	.checksum = &rave_sp_checksum_8b2c,
 	.cmd = {
 		.translate = rave_sp_rdu1_cmd_translate,
+		.get_status = rave_sp_rdu1_get_status,
 	},
 };
 
@@ -680,6 +705,7 @@ static const struct rave_sp_variant rave_sp_rdu2 = {
 	.checksum = &rave_sp_checksum_ccitt,
 	.cmd = {
 		.translate = rave_sp_rdu2_cmd_translate,
+		.get_status = rave_sp_emulated_get_status,
 	},
 };
 

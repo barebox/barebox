@@ -145,8 +145,12 @@ static int do_i2c_write(int argc, char *argv[])
 	ret = 0;
 
 	if (verbose) {
-		printf("wrote %i bytes starting at reg 0x%04x to i2cdev 0x%02x on bus %i\n",
-			count, reg, addr, adapter->nr);
+		if (reg >= 0)
+			printf("wrote %i bytes starting at reg 0x%04x to i2cdev 0x%02x on bus %i\n",
+			       count, reg, addr, adapter->nr);
+		else
+			printf("sent %i bytes in master send mode to i2cdev 0x%02x on bus %i\n",
+			       count, addr, adapter->nr);
 		for (i = 0; i < count; i++)
 			printf("0x%02x ", *(buf + i));
 		printf("\n");
@@ -161,7 +165,7 @@ BAREBOX_CMD_HELP_START(i2c_write)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-b BUS\t", "i2c bus number (default 0)")
 BAREBOX_CMD_HELP_OPT ("-a ADDR\t", "i2c device address")
-BAREBOX_CMD_HELP_OPT ("-r START", "start register")
+BAREBOX_CMD_HELP_OPT ("-r START", "start register (optional, master send mode if none given)")
 BAREBOX_CMD_HELP_OPT ("-w\t",       "use word (16 bit) wide access")
 BAREBOX_CMD_HELP_OPT ("-v\t",       "verbose")
 BAREBOX_CMD_HELP_END
@@ -204,7 +208,7 @@ static int do_i2c_read(int argc, char *argv[])
 		}
 	}
 
-	if ((addr < 0) || (reg < 0) || (count < 1) || (addr > 0x7F))
+	if ((addr < 0) || (count < 1) || (addr > 0x7F))
 		return COMMAND_ERROR_USAGE;
 
 	adapter = i2c_get_adapter(bus);
@@ -217,12 +221,21 @@ static int do_i2c_read(int argc, char *argv[])
 	client.addr = addr;
 
 	buf = xmalloc(count);
-	ret = i2c_read_reg(&client, reg | wide, buf, count);
+	if (reg >= 0)
+		ret = i2c_read_reg(&client, reg | wide, buf, count);
+	else
+		ret = i2c_master_recv(&client, buf, count);
 	if (ret == count) {
 		int i;
-		if (verbose)
-			printf("read %i bytes starting at reg 0x%04x from i2cdev 0x%02x on bus %i\n",
-				count, reg, addr, adapter->nr);
+		if (verbose) {
+			if (reg >= 0)
+				printf("read %i bytes starting at reg 0x%04x from i2cdev 0x%02x on bus %i\n",
+				       count, reg, addr, adapter->nr);
+			else
+				printf("received %i bytes in master receive mode from i2cdev 0x%02x on bus %i\n",
+				       count, addr, adapter->nr);
+		}
+
 		for (i = 0; i < count; i++)
 			printf("0x%02x ", *(buf + i));
 		printf("\n");
@@ -237,7 +250,7 @@ BAREBOX_CMD_HELP_START(i2c_read)
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT("-b BUS\t", "i2c bus number (default 0)")
 BAREBOX_CMD_HELP_OPT("-a ADDR\t", "i2c device address")
-BAREBOX_CMD_HELP_OPT("-r START", "start register")
+BAREBOX_CMD_HELP_OPT("-r START", "start register (optional, master receive mode if none given)")
 BAREBOX_CMD_HELP_OPT("-w\t",       "use word (16 bit) wide access")
 BAREBOX_CMD_HELP_OPT("-c COUNT", "byte count")
 BAREBOX_CMD_HELP_OPT("-v\t",       "verbose")

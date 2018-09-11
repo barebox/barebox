@@ -1734,11 +1734,12 @@ void ratp_close(struct ratp *ratp)
  *
  * Return: 0 if successful, a negative error code otherwise.
  */
-int ratp_send_complete(struct ratp *ratp, const void *data, size_t len,
+int ratp_send_complete(struct ratp *ratp, const uint8_t *data, size_t len,
 		   void (*complete)(void *ctx, int status), void *complete_ctx)
 {
 	struct ratp_internal *ri = ratp->internal;
 	struct ratp_message *msg;
+	int sent = 0;
 
 	if (!ri || ri->state != RATP_STATE_ESTABLISHED)
 		return -ENETDOWN;
@@ -1754,11 +1755,12 @@ int ratp_send_complete(struct ratp *ratp, const void *data, size_t len,
 		msg = xzalloc(sizeof(*msg));
 		msg->buf = xzalloc(sizeof(struct ratp_header) + now + 2);
 		msg->len = now;
-		memcpy(msg->buf + sizeof(struct ratp_header), data, now);
+		memcpy(msg->buf + sizeof(struct ratp_header), data + sent, now);
 
 		list_add_tail(&msg->list, &ri->sendmsg);
 
 		len -= now;
+		sent += now;
 	}
 
 	msg->eor = 1;

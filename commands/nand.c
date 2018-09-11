@@ -41,7 +41,7 @@ static int do_nand(int argc, char *argv[])
 	int command = 0;
 	loff_t badblock = 0;
 	int fd;
-	int ret;
+	int ret = 0;
 	struct mtd_info_user mtdinfo;
 
 	while((opt = getopt(argc, argv, "adb:g:i")) > 0) {
@@ -88,13 +88,18 @@ static int do_nand(int argc, char *argv[])
 
 			optind++;
 		}
+
+		goto out_ret;
 	}
 
 	if (command == NAND_DEL) {
 		while (optind < argc) {
-			dev_remove_bb_dev(basename(argv[optind]));
+			if (dev_remove_bb_dev(basename(argv[optind])))
+				return 1;
 			optind++;
 		}
+
+		goto out_ret;
 	}
 
 	fd = open(argv[optind], O_RDWR);
@@ -149,10 +154,10 @@ static int do_nand(int argc, char *argv[])
 			printf("No bad blocks\n");
 	}
 
-	ret = 0;
 out:
 	close(fd);
 
+out_ret:
 	return ret;
 }
 

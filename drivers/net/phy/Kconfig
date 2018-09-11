@@ -18,6 +18,11 @@ config AT803X_PHY
 	---help---
 	  Currently supports the AT8030, AT8031 and AT8035 PHYs.
 
+config DAVICOM_PHY
+	bool "Driver for Davicom PHYs"
+	---help---
+	  Currently supports dm9161e and dm9131
+
 config LXT_PHY
 	bool "Driver for the Intel LXT PHYs"
 	---help---

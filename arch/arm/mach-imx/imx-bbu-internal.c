@@ -16,8 +16,6 @@
  * GNU General Public License for more details.
  */
 
-#define IMX_INTERNAL_NAND_BBU
-
 #include <common.h>
 #include <malloc.h>
 #include <bbu.h>
@@ -31,17 +29,54 @@
 #include <ioctl.h>
 #include <environment.h>
 #include <mach/bbu.h>
+#include <mach/generic.h>
+#include <libfile.h>
 
-#define FLASH_HEADER_OFFSET_MMC		0x400
-
-#define IMX_INTERNAL_FLAG_NAND		BIT(31)
 #define IMX_INTERNAL_FLAG_ERASE		BIT(30)
 
 struct imx_internal_bbu_handler {
 	struct bbu_handler handler;
+	int (*write_device)(struct imx_internal_bbu_handler *,
+			    struct bbu_data *);
 	unsigned long flash_header_offset;
 	size_t device_size;
+	enum filetype expected_type;
 };
+
+static bool
+imx_bbu_erase_required(struct imx_internal_bbu_handler *imx_handler)
+{
+	return imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE;
+}
+
+static int imx_bbu_protect(int fd, struct imx_internal_bbu_handler *imx_handler,
+			   const char *devicefile, int offset, int image_len,
+			   int prot)
+{
+	const char *prefix = prot ? "" : "un";
+	int ret;
+
+	if (!imx_bbu_erase_required(imx_handler))
+		return 0;
+
+	pr_debug("%s: %sprotecting %s from 0x%08x to 0x%08x\n", __func__,
+		 prefix, devicefile, offset, image_len);
+
+	ret = protect(fd, image_len, offset, prot);
+	if (ret) {
+		/*
+		 * If protect() is not implemented for this device,
+		 * just report success
+		 */
+		if (ret == -ENOSYS)
+			return 0;
+
+		pr_err("%sprotecting %s failed with %s\n", prefix, devicefile,
+		       strerror(-ret));
+	}
+
+	return ret;
+}
 
 /*
  * Actually write an image to the target device, eventually keeping a
@@ -66,16 +101,12 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 	if (imx_handler->handler.flags & IMX_BBU_FLAG_KEEP_HEAD)
 		offset += imx_handler->flash_header_offset;
 
-	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
-		pr_debug("%s: unprotecting %s from 0x%08x to 0x%08x\n", __func__,
-				devicefile, offset, image_len);
-		ret = protect(fd, image_len, offset, 0);
-		if (ret && ret != -ENOSYS) {
-			pr_err("unprotecting %s failed with %s\n", devicefile,
-					strerror(-ret));
-			goto err_close;
-		}
+	ret = imx_bbu_protect(fd, imx_handler, devicefile, offset,
+			      image_len, 0);
+	if (ret)
+		goto err_close;
 
+	if (imx_bbu_erase_required(imx_handler)) {
 		pr_debug("%s: erasing %s from 0x%08x to 0x%08x\n", __func__,
 				devicefile, offset, image_len);
 		ret = erase(fd, image_len, offset);
@@ -86,33 +117,66 @@ static int imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
 		}
 	}
 
-	ret = pwrite(fd, buf, image_len, offset);
-	if (ret < 0)
+	ret = pwrite_full(fd, buf, image_len, offset);
+	if (ret < 0) {
+		pr_err("writing to %s failed with %s\n", devicefile,
+		       strerror(-ret));
 		goto err_close;
-
-	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_ERASE) {
-		pr_debug("%s: protecting %s from 0x%08x to 0x%08x\n", __func__,
-				devicefile, offset, image_len);
-		ret = protect(fd, image_len, offset, 1);
-		if (ret && ret != -ENOSYS) {
-			pr_err("protecting %s failed with %s\n", devicefile,
-					strerror(-ret));
-		}
 	}
 
-	ret = 0;
+	imx_bbu_protect(fd, imx_handler, devicefile, offset,
+			image_len, 1);
 
 err_close:
 	close(fd);
 
-	return ret;
+	return ret < 0 ? ret : 0;
 }
 
-static int imx_bbu_check_prereq(const char *devicefile, struct bbu_data *data)
+static int __imx_bbu_write_device(struct imx_internal_bbu_handler *imx_handler,
+				  struct bbu_data *data)
+{
+	return imx_bbu_write_device(imx_handler, data->devicefile, data,
+				    data->image, data->len);
+}
+
+static int imx_bbu_check_prereq(struct imx_internal_bbu_handler *imx_handler,
+				const char *devicefile, struct bbu_data *data,
+				enum filetype expected_type)
 {
 	int ret;
+	const void *blob;
+	size_t len;
+	enum filetype type;
 
-	if (file_detect_type(data->image, data->len) != filetype_arm_barebox) {
+	type = file_detect_type(data->image, data->len);
+
+	switch (type) {
+	case filetype_arm_barebox:
+		/*
+		 * Specifying expected_type as unknown will disable the
+		 * inner image type check.
+		 *
+		 * The only user of this code is
+		 * imx_bbu_external_nor_register_handler() used by
+		 * i.MX27.
+		 */
+		if (expected_type == filetype_unknown)
+			break;
+
+		blob = data->image + imx_handler->flash_header_offset;
+		len  = data->len   - imx_handler->flash_header_offset;
+		type = file_detect_type(blob, len);
+
+		if (type != expected_type) {
+			pr_err("Expected image type: %s, "
+			       "detected image type: %s\n",
+			       file_type_to_string(expected_type),
+			       file_type_to_string(type));
+			return -EINVAL;
+		}
+		break;
+	default:
 		if (!bbu_force(data, "Not an ARM barebox image"))
 			return -EINVAL;
 	}
@@ -124,30 +188,6 @@ static int imx_bbu_check_prereq(const char *devicefile, struct bbu_data *data)
 	device_detect_by_name(devpath_to_name(devicefile));
 
 	return 0;
-}
-
-/*
- * Update barebox on a v1 type internal boot (i.MX25, i.MX35, i.MX51)
- *
- * This constructs a DCD header, adds the specific DCD data and writes
- * the resulting image to the device. Currently this handles MMC/SD
- * devices.
- */
-static int imx_bbu_internal_v1_update(struct bbu_handler *handler, struct bbu_data *data)
-{
-	struct imx_internal_bbu_handler *imx_handler =
-		container_of(handler, struct imx_internal_bbu_handler, handler);
-	int ret;
-
-	ret = imx_bbu_check_prereq(data->devicefile, data);
-	if (ret)
-		return ret;
-
-	pr_info("updating to %s\n", data->devicefile);
-
-	ret = imx_bbu_write_device(imx_handler, data->devicefile, data, data->image, data->len);
-
-	return ret;
 }
 
 #define DBBT_MAGIC	0x44424254
@@ -321,40 +361,44 @@ out:
 	return ret;
 }
 
-#define IVT_BARKER		0x402000d1
+static enum filetype imx_bbu_expected_filetype(void)
+{
+	if (cpu_is_mx8mq() ||
+	    cpu_is_mx7()   ||
+	    cpu_is_mx6()   ||
+	    cpu_is_vf610() ||
+	    cpu_is_mx53())
+		return filetype_imx_image_v2;
 
-/*
- * Update barebox on a v2 type internal boot (i.MX53)
- *
- * This constructs a DCD header, adds the specific DCD data and writes
- * the resulting image to the device. Currently this handles MMC/SD
- * and NAND devices.
- */
-static int imx_bbu_internal_v2_update(struct bbu_handler *handler, struct bbu_data *data)
+	return filetype_imx_image_v1;
+}
+
+static unsigned long imx_bbu_flash_header_offset_mmc(void)
+{
+	unsigned long offset = SZ_1K;
+
+	/*
+	 * i.MX8MQ moved the header by 32K to accomodate for GPT
+	 * partition tables
+	 */
+	if (cpu_is_mx8mq())
+		offset += SZ_32K;
+
+	return offset;
+}
+
+static int imx_bbu_update(struct bbu_handler *handler, struct bbu_data *data)
 {
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
-	const uint32_t *barker;
 
-	ret = imx_bbu_check_prereq(data->devicefile, data);
+	ret = imx_bbu_check_prereq(imx_handler, data->devicefile, data,
+				   imx_handler->expected_type);
 	if (ret)
 		return ret;
 
-	barker = data->image + imx_handler->flash_header_offset;
-
-	if (*barker != IVT_BARKER) {
-		pr_err("Board does not provide DCD data and this image is no imximage\n");
-		return -EINVAL;
-	}
-
-	if (imx_handler->handler.flags & IMX_INTERNAL_FLAG_NAND)
-		ret = imx_bbu_internal_v2_write_nand_dbbt(imx_handler, data);
-	else
-		ret = imx_bbu_write_device(imx_handler, data->devicefile, data,
-					   data->image, data->len);
-
-	return ret;
+	return imx_handler->write_device(imx_handler, data);
 }
 
 static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
@@ -363,17 +407,9 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 	struct imx_internal_bbu_handler *imx_handler =
 		container_of(handler, struct imx_internal_bbu_handler, handler);
 	int ret;
-	const uint32_t *barker;
 	char *bootpartvar;
 	const char *bootpart;
 	char *devicefile;
-
-	barker = data->image + imx_handler->flash_header_offset;
-
-	if (*barker != IVT_BARKER) {
-		pr_err("Board does not provide DCD data and this image is no imximage\n");
-		return -EINVAL;
-	}
 
 	ret = asprintf(&bootpartvar, "%s.boot", data->devicefile);
 	if (ret < 0)
@@ -391,7 +427,8 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 	if (ret < 0)
 		goto free_bootpartvar;
 
-	ret = imx_bbu_check_prereq(devicefile, data);
+	ret = imx_bbu_check_prereq(imx_handler, devicefile, data,
+				   filetype_imx_image_v2);
 	if (ret)
 		goto free_devicefile;
 
@@ -410,22 +447,9 @@ free_bootpartvar:
 	return ret;
 }
 
-static int imx_bbu_external_update(struct bbu_handler *handler, struct bbu_data *data)
-{
-	struct imx_internal_bbu_handler *imx_handler =
-		container_of(handler, struct imx_internal_bbu_handler, handler);
-	int ret;
-
-	ret = imx_bbu_check_prereq(data->devicefile, data);
-	if (ret)
-		return ret;
-
-	return imx_bbu_write_device(imx_handler, data->devicefile, data,
-				    data->image, data->len);
-}
-
-static struct imx_internal_bbu_handler *__init_handler(const char *name, char *devicefile,
-		unsigned long flags)
+static struct imx_internal_bbu_handler *__init_handler(const char *name,
+						       const char *devicefile,
+						       unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 	struct bbu_handler *handler;
@@ -435,6 +459,10 @@ static struct imx_internal_bbu_handler *__init_handler(const char *name, char *d
 	handler->devicefile = devicefile;
 	handler->name = name;
 	handler->flags = flags;
+	handler->handler = imx_bbu_update;
+
+	imx_handler->expected_type = imx_bbu_expected_filetype();
+	imx_handler->write_device = __imx_bbu_write_device;
 
 	return imx_handler;
 }
@@ -451,73 +479,62 @@ static int __register_handler(struct imx_internal_bbu_handler *imx_handler)
 }
 
 static int
-imx_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-				      unsigned long flags, void *handler)
+imx_bbu_internal_mmc_register_handler(const char *name, const char *devicefile,
+				      unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
 				     IMX_BBU_FLAG_KEEP_HEAD);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	imx_handler->handler.handler = handler;
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	return __register_handler(imx_handler);
 }
 
-int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
-		char *devicefile, unsigned long flags)
+static int
+imx_bbu_internal_spi_i2c_register_handler(const char *name,
+					  const char *devicefile,
+					  unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
 				     IMX_INTERNAL_FLAG_ERASE);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	imx_handler->handler.handler = imx_bbu_internal_v1_update;
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	return __register_handler(imx_handler);
 }
 
+int imx51_bbu_internal_spi_i2c_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx_bbu_internal_spi_i2c_register_handler);
+
 /*
  * Register an i.MX51 internal boot update handler for MMC/SD
  */
-int imx51_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
-{
-
-	return imx_bbu_internal_mmc_register_handler(name, devicefile, flags,
-						  imx_bbu_internal_v1_update);
-}
+int imx51_bbu_internal_mmc_register_handler(const char *name,
+					    const char *devicefile,
+					    unsigned long flags)
+	__alias(imx_bbu_internal_mmc_register_handler);
 
 /*
  * Register an i.MX53 internal boot update handler for MMC/SD
  */
-int imx53_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
-{
-	return imx_bbu_internal_mmc_register_handler(name, devicefile, flags,
-						  imx_bbu_internal_v2_update);
-}
+int imx53_bbu_internal_mmc_register_handler(const char *name,
+					    const char *devicefile,
+					    unsigned long flags)
+	__alias(imx_bbu_internal_mmc_register_handler);
 
 /*
  * Register an i.MX6 internal boot update handler for i2c/spi
  * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
  * keep a partition table. We have to erase the device beforehand though.
  */
-int imx53_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
-{
-	struct imx_internal_bbu_handler *imx_handler;
-
-	imx_handler = __init_handler(name, devicefile, flags |
-				     IMX_INTERNAL_FLAG_ERASE);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
-
-	imx_handler->handler.handler = imx_bbu_internal_v2_update;
-
-	return __register_handler(imx_handler);
-}
+int imx53_bbu_internal_spi_i2c_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx_bbu_internal_spi_i2c_register_handler);
 
 /*
  * Register an i.MX53 internal boot update handler for NAND
@@ -527,13 +544,11 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
-	imx_handler = __init_handler(name, NULL, flags |
-				     IMX_INTERNAL_FLAG_NAND);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+	imx_handler = __init_handler(name, "/dev/nand0", flags);
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
-	imx_handler->handler.handler = imx_bbu_internal_v2_update;
-	imx_handler->handler.devicefile = "/dev/nand0";
 	imx_handler->device_size = partition_size;
+	imx_handler->write_device = imx_bbu_internal_v2_write_nand_dbbt;
 
 	return __register_handler(imx_handler);
 }
@@ -541,15 +556,25 @@ int imx53_bbu_internal_nand_register_handler(const char *name,
 /*
  * Register an i.MX6 internal boot update handler for MMC/SD
  */
-int imx6_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+int imx6_bbu_internal_mmc_register_handler(const char *name,
+					   const char *devicefile,
 					   unsigned long flags)
 	__alias(imx53_bbu_internal_mmc_register_handler);
 
 /*
  * Register an VF610 internal boot update handler for MMC/SD
  */
-int vf610_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
+int vf610_bbu_internal_mmc_register_handler(const char *name,
+					    const char *devicefile,
 					    unsigned long flags)
+	__alias(imx6_bbu_internal_mmc_register_handler);
+
+/*
+ * Register an i.MX8MQ internal boot update handler for MMC/SD
+ */
+int imx8mq_bbu_internal_mmc_register_handler(const char *name,
+					     const char *devicefile,
+					     unsigned long flags)
 	__alias(imx6_bbu_internal_mmc_register_handler);
 
 /*
@@ -561,13 +586,14 @@ int vf610_bbu_internal_mmc_register_handler(const char *name, char *devicefile,
  * Note that no further partitioning of the boot partition is supported up to
  * now.
  */
-int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefile,
+int imx6_bbu_internal_mmcboot_register_handler(const char *name,
+					       const char *devicefile,
 					       unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
-	imx_handler->flash_header_offset = FLASH_HEADER_OFFSET_MMC;
+	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
 	imx_handler->handler.handler = imx_bbu_internal_v2_mmcboot_update;
 
@@ -580,18 +606,30 @@ int imx6_bbu_internal_mmcboot_register_handler(const char *name, char *devicefil
  * keep a partition table. We have to erase the device beforehand though.
  */
 int imx6_bbu_internal_spi_i2c_register_handler(const char *name,
-					       char *devicefile,
+					       const char *devicefile,
 					       unsigned long flags)
 	__alias(imx53_bbu_internal_spi_i2c_register_handler);
 
-int imx_bbu_external_nor_register_handler(const char *name, char *devicefile,
-		unsigned long flags)
+/*
+ * Register an VFxxx internal boot update handler for i2c/spi
+ * EEPROMs / flashes. Nearly the same as MMC/SD, but we do not need to
+ * keep a partition table. We have to erase the device beforehand though.
+ */
+int vf610_bbu_internal_spi_i2c_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx6_bbu_internal_spi_i2c_register_handler);
+
+int imx_bbu_external_nor_register_handler(const char *name,
+					  const char *devicefile,
+					  unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags |
 				     IMX_INTERNAL_FLAG_ERASE);
-	imx_handler->handler.handler = imx_bbu_external_update;
+
+	imx_handler->expected_type = filetype_unknown;
 
 	return __register_handler(imx_handler);
 }

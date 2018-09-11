@@ -151,7 +151,7 @@ bool barebox_update_handler_exists(struct bbu_data *data)
 	if (!data->handler_name)
 		return false;
 
-	return !bbu_find_handler(data->handler_name);
+	return bbu_find_handler(data->handler_name) != NULL;
 }
 
 static int bbu_check_of_compat(struct bbu_data *data)
@@ -260,13 +260,13 @@ int barebox_update(struct bbu_data *data)
 		return ret;
 
 	ret = handler->handler(handler, data);
-	if (ret == -EINTR)
-		printf("update aborted\n");
+	if (ret) {
+		printf("update %s\n", (ret == -EINTR) ? "aborted" : "failed");
+		return ret;
+	}
 
-	if (!ret)
-		printf("update succeeded\n");
-
-	return ret;
+	printf("update succeeded\n");
+	return 0;
 }
 
 /*

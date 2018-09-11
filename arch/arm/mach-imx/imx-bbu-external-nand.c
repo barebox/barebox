@@ -190,7 +190,7 @@ out:
  * each bit represents a single block. With 2k NAND flashes this is enough for
  * 4MiB size including bad blocks.
  */
-int imx_bbu_external_nand_register_handler(const char *name, char *devicefile,
+int imx_bbu_external_nand_register_handler(const char *name, const char *devicefile,
 		unsigned long flags)
 {
 	struct bbu_handler *handler;

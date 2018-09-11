@@ -29,6 +29,8 @@
 #include <image-sparse.h>
 #include <elf.h>
 
+#include <arm/mach-imx/include/mach/imx-header.h>
+
 struct filetype_str {
 	const char *name;	/* human readable filetype */
 	const char *shortname;	/* short string without spaces for shell scripts */
@@ -71,6 +73,8 @@ static const struct filetype_str filetype_str[] = {
 	[filetype_android_sparse] = { "Android sparse image", "sparse" },
 	[filetype_arm64_linux_image] = { "ARM aarch64 Linux image", "aarch64-linux" },
 	[filetype_elf] = { "ELF", "elf" },
+	[filetype_imx_image_v1] = { "i.MX image (v1)", "imx-image-v1" },
+	[filetype_imx_image_v2] = { "i.MX image (v2)", "imx-image-v2" },
 };
 
 const char *file_type_to_string(enum filetype f)
@@ -250,6 +254,7 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 	const u64 *buf64 = _buf;
 	const u8 *buf8 = _buf;
 	const u16 *buf16 = _buf;
+	const struct imx_flash_header *imx_flash_header = _buf;
 	enum filetype type;
 
 	if (bufsize < 9)
@@ -360,6 +365,12 @@ enum filetype file_detect_type(const void *_buf, size_t bufsize)
 
 	if (strncmp(buf8, ELFMAG, 4) == 0)
 		return filetype_elf;
+
+	if (imx_flash_header->dcd_barker == DCD_BARKER)
+		return filetype_imx_image_v1;
+
+	if (is_imx_flash_header_v2(_buf))
+		return filetype_imx_image_v2;
 
 	return filetype_unknown;
 }

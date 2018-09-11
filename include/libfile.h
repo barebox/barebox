@@ -1,6 +1,7 @@
 #ifndef __LIBFILE_H
 #define __LIBFILE_H
 
+int pwrite_full(int fd, const void *buf, size_t size, loff_t offset);
 int write_full(int fd, const void *buf, size_t size);
 int read_full(int fd, void *buf, size_t size);
 

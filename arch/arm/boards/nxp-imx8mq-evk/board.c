@@ -21,6 +21,7 @@
 #include <init.h>
 #include <asm/memory.h>
 #include <linux/sizes.h>
+#include <mach/bbu.h>
 
 static int imx8mq_evk_mem_init(void)
 {
@@ -38,6 +39,8 @@ static int nxp_imx8mq_evk_init(void)
 		return 0;
 
 	barebox_set_hostname("imx8mq-evk");
+
+	imx8mq_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc0", 0);
 
 	return 0;
 }

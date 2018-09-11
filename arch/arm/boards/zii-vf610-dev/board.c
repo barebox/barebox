@@ -149,6 +149,25 @@ static int zii_vf610_dev_set_hostname(void)
 }
 late_initcall(zii_vf610_dev_set_hostname);
 
+static int zii_vf610_dev_register_bbu(void)
+{
+	int ret;
+	if (!of_machine_is_compatible("zii,vf610dev-c") &&
+	    !of_machine_is_compatible("zii,vf610dev-b"))
+		return 0;
+
+	ret = vf610_bbu_internal_spi_i2c_register_handler("SPI",
+							  "/dev/m25p0.bootloader",
+							  0);
+	if (ret) {
+		pr_err("Failed to register SPI BBU handler");
+		return ret;
+	}
+
+	return 0;
+}
+late_initcall(zii_vf610_dev_register_bbu);
+
 static int zii_vf610_spu3_register_bbu(void)
 {
 	int ret;

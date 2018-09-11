@@ -368,6 +368,41 @@ static int do_super_root_key(struct config_data *data, int argc, char *argv[])
 	return 0;
 }
 
+static int
+do_signed_hdmi_firmware(struct config_data *data, int argc, char *argv[])
+{
+	const char *file;
+	int len;
+
+
+	if (argc != 2) {
+		fprintf(stderr, "usage: signed_hdmi_firmware <file>\n");
+		return -EINVAL;
+	}
+
+	if (data->cpu_type != IMX_CPU_IMX8MQ) {
+		fprintf(stderr,
+			"Warning: The signed_hdmi_firmware command is "
+			"only supported i.MX8MQ SoCs\n");
+		return 0;
+	}
+
+	file = argv[1];
+
+	if (*file == '"')
+		file++;
+
+	data->signed_hdmi_firmware_file = strdup(file);
+	if (!data->signed_hdmi_firmware_file)
+		return -ENOMEM;
+
+	len = strlen(data->signed_hdmi_firmware_file);
+	if (data->signed_hdmi_firmware_file[len - 1] == '"')
+		data->signed_hdmi_firmware_file[len - 1] = 0;
+
+	return 0;
+}
+
 struct command cmds[] = {
 	{
 		.name = "wm",
@@ -402,6 +437,9 @@ struct command cmds[] = {
 	}, {
 		.name = "super_root_key",
 		.parse = do_super_root_key,
+	}, {
+		.name = "signed_hdmi_firmware",
+		.parse = do_signed_hdmi_firmware,
 	},
 };
 

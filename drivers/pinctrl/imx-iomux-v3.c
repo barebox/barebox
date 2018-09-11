@@ -87,7 +87,7 @@ static int imx_iomux_v3_set_state(struct pinctrl_device *pdev, struct device_nod
 	const bool share_conf = iomux->flags & SHARE_CONF;
 	int npins, size, i, fsl_pin_size;
 	const char *name;
-	u32 share_conf_val;
+	u32 share_conf_val = 0;
 
 	dev_dbg(iomux->pinctrl.dev, "set state: %s\n", np->full_name);
 

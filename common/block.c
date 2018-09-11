@@ -44,13 +44,17 @@ struct chunk {
 static int writebuffer_flush(struct block_device *blk)
 {
 	struct chunk *chunk;
+	int ret;
 
 	if (!IS_ENABLED(CONFIG_BLOCK_WRITE))
 		return 0;
 
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
 		if (chunk->dirty) {
-			blk->ops->write(blk, chunk->data, chunk->block_start, blk->rdbufsize);
+			ret = blk->ops->write(blk, chunk->data, chunk->block_start, blk->rdbufsize);
+			if (ret < 0)
+				return ret;
+
 			chunk->dirty = 0;
 		}
 	}
@@ -107,6 +111,7 @@ static void *block_get_cached(struct block_device *blk, int block)
 static struct chunk *get_chunk(struct block_device *blk)
 {
 	struct chunk *chunk;
+	int ret;
 
 	if (list_empty(&blk->idle_blocks)) {
 		/* use last entry which is the most unused */
@@ -114,8 +119,11 @@ static struct chunk *get_chunk(struct block_device *blk)
 		if (chunk->dirty) {
 			size_t num_blocks = min(blk->rdbufsize,
 					blk->num_blocks - chunk->block_start);
-			blk->ops->write(blk, chunk->data, chunk->block_start,
-					num_blocks);
+			ret = blk->ops->write(blk, chunk->data, chunk->block_start,
+					      num_blocks);
+			if (ret < 0)
+				return ERR_PTR(ret);
+
 			chunk->dirty = 0;
 		}
 
@@ -140,6 +148,9 @@ static int block_cache(struct block_device *blk, int block)
 	int ret;
 
 	chunk = get_chunk(blk);
+	if (IS_ERR(chunk))
+		return PTR_ERR(chunk);
+
 	chunk->block_start = block & ~blk->blkmask;
 
 	debug("%s: %d to %d\n", __func__, chunk->block_start,

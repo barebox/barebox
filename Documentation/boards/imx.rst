@@ -118,33 +118,6 @@ Some notes about the mentioned *conditions*.
  - ``until_any_bit_clear`` waits until ``(*addr & mask) != mask`` is true
  - ``until_any_bit_set`` waits until ``(*addr & mask) != 0`` is true.
 
-Internal Boot Mode Through Internal RAM(IRAM)
----------------------------------------------
-
-The Internal Boot Mode Through Internal RAM is supported on:
-
-* i.MX51
-
-As can be easily deduced from its name, the Internal Boot Mode Through
-Internal RAM is just a variant of Internal Boot Mode so all of the
-stated above still applies in this case. What it differs in is the following:
-
-* Boot process is done in two stages(First stage binary can be
-  produced with ``imx_v7-xload_defconfig``)
-* DCD of the first stage image is set such that the image is fetched
-  into an unoccupied area or IRAM
-* First stage image once uncompressed and set up will look for a
-  second stage bootloader on the same media it booted from and start
-  it(see mach-imx/xload.c for more details)
-* Second stage images are just regular i.MX boot images
-
-Since on a typical i.MX SoC unused IRAM area is not enough to run
-anything but a PBL this mode, due to its very limited usability,
-serves only one purpose -- allow for a portion of a bootloader to be
-executed without depending on DRAM to be functional. This peculiarity
-of the mode can be used to implement various memory testing
-scenarious.
-
 USB Boot
 ^^^^^^^^
 

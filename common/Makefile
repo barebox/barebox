@@ -28,6 +28,7 @@ obj-$(CONFIG_DDR_SPD)		+= ddr_spd.o
 obj-$(CONFIG_ENV_HANDLING)	+= environment.o
 obj-$(CONFIG_ENVIRONMENT_VARIABLES) += env.o
 obj-$(CONFIG_FILETYPE)		+= filetype.o
+CFLAGS_filetype.o = -I$(srctree)/arch/
 obj-$(CONFIG_FLEXIBLE_BOOTARGS)	+= bootargs.o
 obj-$(CONFIG_GLOBALVAR)		+= globalvar.o
 obj-$(CONFIG_GREGORIAN_CALENDER) += date.o

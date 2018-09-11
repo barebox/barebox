@@ -121,11 +121,9 @@ static void clk_pll1_unprepare(struct clk *clk)
 {
 	struct clk_sccg_pll *pll = to_clk_sccg_pll(clk);
 	u32 val;
-printf("%s %p\n", __func__, pll);
 	val = readl(pll->base);
 	val |= (1 << PLL_PD);
 	writel(val, pll->base);
-printf("fuschi\n");
 }
 
 static unsigned long clk_pll2_recalc_rate(struct clk *clk,

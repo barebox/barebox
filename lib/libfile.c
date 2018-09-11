@@ -24,6 +24,30 @@
 #include <linux/stat.h>
 
 /*
+ * pwrite_full - write to filedescriptor at offset
+ *
+ * Like pwrite, but guarantees to write the full buffer out, else it
+ * returns with an error.
+ */
+int pwrite_full(int fd, const void *buf, size_t size, loff_t offset)
+{
+	size_t insize = size;
+	int now;
+
+	while (size) {
+		now = pwrite(fd, buf, size, offset);
+		if (now <= 0)
+			return now;
+		size -= now;
+		buf += now;
+		offset += now;
+	}
+
+	return insize;
+}
+EXPORT_SYMBOL(pwrite_full);
+
+/*
  * write_full - write to filedescriptor
  *
  * Like write, but guarantees to write the full buffer out, else

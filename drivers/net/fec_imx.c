@@ -482,7 +482,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 
 	dma = dma_map_single(fec->dev, eth_data, data_length, DMA_TO_DEVICE);
 	if (dma_mapping_error(fec->dev, dma))
-		return -EIO;
+		return -EFAULT;
 
 	writel((uint32_t)(dma), &fec->tbd_base[fec->tbd_index].data_pointer);
 
@@ -761,6 +761,8 @@ static int fec_probe(struct device_d *dev)
 	edev->get_ethaddr = fec_get_hwaddr;
 	edev->set_ethaddr = fec_set_hwaddr;
 	edev->parent = dev;
+
+	dma_set_mask(dev, DMA_BIT_MASK(32));
 
 	ret = fec_clk_get(fec);
 	if (ret < 0)

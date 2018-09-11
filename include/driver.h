@@ -82,6 +82,8 @@ struct device_d {
 
 	const struct of_device_id *of_id_entry;
 
+	u64 dma_mask;
+
 	void    (*info) (struct device_d *);
 	/*
 	 * For devices which take longer to probe this is called

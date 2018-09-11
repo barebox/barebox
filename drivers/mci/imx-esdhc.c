@@ -303,7 +303,7 @@ esdhc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd, struct mci_data *data)
 
 			dma = dma_map_single(host->dev, ptr, num_bytes, dir);
 			if (dma_mapping_error(host->dev, dma))
-				return -EIO;
+				return -EFAULT;
 		}
 
 		err = esdhc_setup_data(mci, data, dma);
@@ -628,6 +628,8 @@ static int fsl_esdhc_probe(struct device_d *dev)
 		else
 			host->socdata = &esdhc_imx25_data;
 	}
+
+	dma_set_mask(dev, DMA_BIT_MASK(32));
 
 	host->clk = clk_get(dev, "per");
 	if (IS_ERR(host->clk))

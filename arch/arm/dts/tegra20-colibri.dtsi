@@ -1,2 +1,2 @@
-#include <arm/tegra20-colibri-512.dtsi>
+#include <arm/tegra20-colibri.dtsi>
 #include "tegra20.dtsi"

@@ -112,32 +112,31 @@ static inline char *portspeed(int portstatus)
 		return "12 Mb/s";
 }
 
-int hub_port_reset(struct usb_device *dev, int port,
-			unsigned short *portstat)
+int hub_port_reset(struct usb_device *hub, int port, struct usb_device *usb)
 {
 	int tries;
 	struct usb_port_status portsts;
 	unsigned short portstatus, portchange;
 
-	dev_dbg(&dev->dev, "hub_port_reset: resetting port %d...\n", port);
+	dev_dbg(&hub->dev, "hub_port_reset: resetting port %d...\n", port);
 	for (tries = 0; tries < MAX_TRIES; tries++) {
 
-		usb_set_port_feature(dev, port + 1, USB_PORT_FEAT_RESET);
+		usb_set_port_feature(hub, port + 1, USB_PORT_FEAT_RESET);
 		mdelay(200);
 
-		if (usb_get_port_status(dev, port + 1, &portsts) < 0) {
-			dev_dbg(&dev->dev, "get_port_status failed status %lX\n",
-					dev->status);
+		if (usb_get_port_status(hub, port + 1, &portsts) < 0) {
+			dev_dbg(&hub->dev, "get_port_status failed status %lX\n",
+					hub->status);
 			return -1;
 		}
 		portstatus = le16_to_cpu(portsts.wPortStatus);
 		portchange = le16_to_cpu(portsts.wPortChange);
 
-		dev_dbg(&dev->dev, "portstatus %x, change %x, %s\n",
+		dev_dbg(&hub->dev, "portstatus %x, change %x, %s\n",
 				portstatus, portchange,
 				portspeed(portstatus));
 
-		dev_dbg(&dev->dev, "STAT_C_CONNECTION = %d STAT_CONNECTION = %d" \
+		dev_dbg(&hub->dev, "STAT_C_CONNECTION = %d STAT_CONNECTION = %d" \
 			       "  USB_PORT_STAT_ENABLE %d\n",
 			(portchange & USB_PORT_STAT_C_CONNECTION) ? 1 : 0,
 			(portstatus & USB_PORT_STAT_CONNECTION) ? 1 : 0,
@@ -154,14 +153,21 @@ int hub_port_reset(struct usb_device *dev, int port,
 	}
 
 	if (tries == MAX_TRIES) {
-		dev_dbg(&dev->dev, "Cannot enable port %i after %i retries, " \
+		dev_dbg(&hub->dev, "Cannot enable port %i after %i retries, " \
 				"disabling port.\n", port + 1, MAX_TRIES);
-		dev_dbg(&dev->dev, "Maybe the USB cable is bad?\n");
+		dev_dbg(&hub->dev, "Maybe the USB cable is bad?\n");
 		return -1;
 	}
 
-	usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_C_RESET);
-	*portstat = portstatus;
+	usb_clear_port_feature(hub, port + 1, USB_PORT_FEAT_C_RESET);
+
+	if (portstatus & USB_PORT_STAT_HIGH_SPEED)
+		usb->speed = USB_SPEED_HIGH;
+	else if (portstatus & USB_PORT_STAT_LOW_SPEED)
+		usb->speed = USB_SPEED_LOW;
+	else
+		usb->speed = USB_SPEED_FULL;
+
 	return 0;
 }
 
@@ -203,25 +209,19 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 
 	mdelay(200);
 
-	/* Reset the port */
-	if (hub_port_reset(dev, port, &portstatus) < 0) {
-		dev_warn(&dev->dev, "cannot reset port %i!?\n", port + 1);
-		return;
-	}
-
-	mdelay(200);
-
-	/* Allocate a new device struct for it */
+	/* Allocate a new device struct for the port */
 	usb = usb_alloc_new_device();
 	usb->dev.parent = &dev->dev;
 	usb->host = dev->host;
 
-	if (portstatus & USB_PORT_STAT_HIGH_SPEED)
-		usb->speed = USB_SPEED_HIGH;
-	else if (portstatus & USB_PORT_STAT_LOW_SPEED)
-		usb->speed = USB_SPEED_LOW;
-	else
-		usb->speed = USB_SPEED_FULL;
+	/* Reset it */
+	if (hub_port_reset(dev, port, usb) < 0) {
+		dev_warn(&dev->dev, "cannot reset port %i!?\n", port + 1);
+		usb_free_device(usb);
+		return;
+	}
+
+	mdelay(200);
 
 	dev->children[port] = usb;
 	usb->parent = dev;
@@ -233,6 +233,7 @@ static void usb_hub_port_connect_change(struct usb_device *dev, int port)
 		dev_dbg(&dev->dev, "hub: disabling port %d\n", port + 1);
 		usb_clear_port_feature(dev, port + 1, USB_PORT_FEAT_ENABLE);
 		usb_free_device(usb);
+		dev->children[port] = NULL;
 		return;
 	}
 

@@ -290,14 +290,17 @@ static int create_vtbl(struct ubi_device *ubi, struct ubi_attach_info *ai,
 		       int copy, void *vtbl)
 {
 	int err, tries = 0;
+	struct ubi_vid_io_buf *vidb;
 	struct ubi_vid_hdr *vid_hdr;
 	struct ubi_ainf_peb *new_aeb;
 
 	dbg_gen("create volume table (copy #%d)", copy + 1);
 
-	vid_hdr = ubi_zalloc_vid_hdr(ubi, GFP_KERNEL);
-	if (!vid_hdr)
+	vidb = ubi_alloc_vid_buf(ubi, GFP_KERNEL);
+	if (!vidb)
 		return -ENOMEM;
+
+	vid_hdr = ubi_get_vid_hdr(vidb);
 
 retry:
 	new_aeb = ubi_early_get_peb(ubi, ai);
@@ -315,7 +318,7 @@ retry:
 	vid_hdr->sqnum = cpu_to_be64(++ai->max_sqnum);
 
 	/* The EC header is already there, write the VID header */
-	err = ubi_io_write_vid_hdr(ubi, new_aeb->pnum, vid_hdr);
+	err = ubi_io_write_vid_hdr(ubi, new_aeb->pnum, vidb);
 	if (err)
 		goto write_error;
 
@@ -329,8 +332,8 @@ retry:
 	 * of this LEB as it will be deleted and freed in 'ubi_add_to_av()'.
 	 */
 	err = ubi_add_to_av(ubi, ai, new_aeb->pnum, new_aeb->ec, vid_hdr, 0);
-	kfree(new_aeb);
-	ubi_free_vid_hdr(ubi, vid_hdr);
+	ubi_free_aeb(ai, new_aeb);
+	ubi_free_vid_buf(vidb);
 	return err;
 
 write_error:
@@ -343,8 +346,9 @@ write_error:
 		goto retry;
 	}
 	kfree(new_aeb);
+	ubi_free_aeb(ai, new_aeb);
 out_free:
-	ubi_free_vid_hdr(ubi, vid_hdr);
+	ubi_free_vid_buf(vidb);
 	return err;
 
 }
@@ -522,7 +526,7 @@ static int init_volumes(struct ubi_device *ubi,
 			const struct ubi_attach_info *ai,
 			const struct ubi_vtbl_record *vtbl)
 {
-	int i, reserved_pebs = 0;
+	int i, err, reserved_pebs = 0;
 	struct ubi_ainf_volume *av;
 	struct ubi_volume *vol;
 
@@ -563,6 +567,16 @@ static int init_volumes(struct ubi_device *ubi,
 		ubi->vol_count += 1;
 		vol->ubi = ubi;
 		reserved_pebs += vol->reserved_pebs;
+
+		/*
+		 * We use ubi->peb_count and not vol->reserved_pebs because
+		 * we want to keep the code simple. Otherwise we'd have to
+		 * resize/check the bitmap upon volume resize too.
+		 * Allocating a few bytes more does not hurt.
+		 */
+		err = ubi_fastmap_init_checkmap(vol, ubi->peb_count);
+		if (err)
+			return err;
 
 		/*
 		 * In case of dynamic volume UBI knows nothing about how many
@@ -631,6 +645,9 @@ static int init_volumes(struct ubi_device *ubi,
 	reserved_pebs += vol->reserved_pebs;
 	ubi->vol_count += 1;
 	vol->ubi = ubi;
+	err = ubi_fastmap_init_checkmap(vol, UBI_LAYOUT_VOLUME_EBS);
+	if (err)
+		return err;
 
 	if (reserved_pebs > ubi->avail_pebs) {
 		ubi_err(ubi, "not enough PEBs, required %d, available %d",
@@ -833,6 +850,7 @@ int ubi_read_volume_table(struct ubi_device *ubi, struct ubi_attach_info *ai)
 out_free:
 	vfree(ubi->vtbl);
 	for (i = 0; i < ubi->vtbl_slots + UBI_INT_VOL_COUNT; i++) {
+		ubi_fastmap_destroy_checkmap(ubi->volumes[i]);
 		kfree(ubi->volumes[i]);
 		ubi->volumes[i] = NULL;
 	}

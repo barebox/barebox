@@ -52,7 +52,7 @@ static void return_unused_pool_pebs(struct ubi_device *ubi,
 	}
 }
 
-static int anchor_pebs_avalible(struct rb_root *root)
+static int anchor_pebs_available(struct rb_root *root)
 {
 	struct rb_node *p;
 	struct ubi_wl_entry *e;
@@ -230,7 +230,7 @@ int ubi_ensure_anchor_pebs(struct ubi_device *ubi)
 
 	wrk->anchor = 1;
 	wrk->func = &wear_leveling_worker;
-	schedule_ubi_work(ubi, wrk);
+	__schedule_ubi_work(ubi, wrk);
 	return 0;
 }
 
@@ -268,7 +268,7 @@ int ubi_wl_put_fm_peb(struct ubi_device *ubi, struct ubi_wl_entry *fm_e,
 	}
 
 	vol_id = lnum ? UBI_FM_DATA_VOLUME_ID : UBI_FM_SB_VOLUME_ID;
-	return schedule_erase(ubi, e, vol_id, lnum, torture);
+	return schedule_erase(ubi, e, vol_id, lnum, torture, true);
 }
 
 /**

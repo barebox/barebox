@@ -24,21 +24,7 @@
 #include <mach/regs-rtc.h>
 #include <mach/regs-lradc.h>
 
-/*
- * has_battery - true when this board has a battery.
- */
-static int has_battery;
-
-/*
- * use_battery_input - true when this board is supplied from the
- * battery input, but has a DC source instead of a real battery
- */
-static int use_battery_input;
-
-/*
- * use_5v_input - true when this board can use the 5V input
- */
-static int use_5v_input;
+int power_config;
 
 static void mxs_power_status(void)
 {
@@ -51,27 +37,30 @@ static void mxs_power_status(void)
 	uint32_t vddd = readl(&power_regs->hw_power_vdddctrl);
 	uint32_t vddmem = readl(&power_regs->hw_power_vddmemctrl);
 
-	printf("vddio:  %dmV (BO -%dmV), Linreg enabled, Linreg offset: %d, FET %sabled\n",
-			(vddio & 0x1f) * 50 + 2800,
-			((vddio >> 8) & 0x7) * 50,
-			linregofs[((vdda >> 12) & 0x3)],
-			(vddio & (1 << 16)) ? "dis" : "en");
-	printf("vdda:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
-			(vdda & 0x1f) * 25 + 1500,
-			((vdda >> 8) & 0x7) * 25,
-			(vdda & (1 << 17)) ? "en" : "dis",
-			linregofs[((vdda >> 12) & 0x3)],
-			(vdda & (1 << 16)) ? "dis" : "en");
-	printf("vddd:   %dmV (BO -%dmV), Linreg %sabled, Linreg offset: %d, FET %sabled\n",
-			(vddd & 0x1f) * 25 + 800,
-			((vddd >> 8) & 0x7) * 25,
-			(vddd & (1 << 21)) ? "en" : "dis",
-			linregofs[((vdda >> 16) & 0x3)],
-			(vdda & (1 << 20)) ? "dis" : "en");
-	printf("vddmem: %dmV (BO -%dmV), Linreg %sabled\n",
-			(vddmem & 0x1f) * 25 + 1100,
-			((vddmem >> 5) & 0x7) * 25,
-			(vddmem & (1 << 8)) ? "en" : "dis");
+#define __REG_BITS(value, fieldname)  (((value) & fieldname##_MASK) >> fieldname##_OFFSET)
+
+	printf("vddio:  %4dmV (BO -%3dmV), Linreg  enabled, Linreg offset: %1d, FET %sabled\n",
+			__REG_BITS(vddio, POWER_VDDIOCTRL_TRG) * 50 + 2800,
+			__REG_BITS(vddio, POWER_VDDIOCTRL_BO_OFFSET) * 50,
+			linregofs[__REG_BITS(vddio, POWER_VDDIOCTRL_LINREG_OFFSET)],
+			(vddio & POWER_VDDIOCTRL_DISABLE_FET) ? "dis" : " en");
+	printf("vdda:   %4dmV (BO -%3dmV), Linreg %sabled, Linreg offset: %1d, FET %sabled\n",
+			__REG_BITS(vdda, POWER_VDDACTRL_TRG) * 25 + 1500,
+			__REG_BITS(vdda, POWER_VDDACTRL_BO_OFFSET) * 25,
+			(vdda & POWER_VDDACTRL_ENABLE_LINREG) ? " en" : "dis",
+			linregofs[__REG_BITS(vdda, POWER_VDDACTRL_LINREG_OFFSET)],
+			(vdda & POWER_VDDACTRL_DISABLE_FET) ? "dis" : " en");
+	printf("vddd:   %4dmV (BO -%3dmV), Linreg %sabled, Linreg offset: %1d, FET %sabled\n",
+			__REG_BITS(vddd, POWER_VDDDCTRL_TRG) * 25 + 800,
+			__REG_BITS(vddd, POWER_VDDDCTRL_BO_OFFSET) * 25,
+			(vddd & POWER_VDDDCTRL_ENABLE_LINREG) ? " en" : "dis",
+			linregofs[__REG_BITS(vddd, POWER_VDDDCTRL_LINREG_OFFSET)],
+			(vddd & POWER_VDDDCTRL_DISABLE_FET) ? "dis" : " en");
+	printf("vddmem: %4dmV (BO -%3dmV), Linreg %sabled\n",
+			__REG_BITS(vddmem, POWER_VDDMEMCTRL_TRG) * 25 + 1100,
+			/* Note: this area is reserved on i.MX23, yielding 0: */
+			__REG_BITS(vddmem, MX28_POWER_VDDMEMCTRL_BO_OFFSET) * 25,
+			(vddmem & POWER_VDDMEMCTRL_ENABLE_LINREG) ? " en" : "dis");
 }
 
 /*
@@ -514,7 +503,8 @@ static void mxs_power_enable_4p2(void)
 		POWER_5VCTRL_HEADROOM_ADJ_MASK,
 		0x4 << POWER_5VCTRL_HEADROOM_ADJ_OFFSET);
 
-	if (has_battery || use_battery_input)
+	if (mxs_power_config_get_use() == POWER_USE_BATTERY ||
+	    mxs_power_config_get_use() == POWER_USE_BATTERY_INPUT)
 		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_SEL;
 	else
 		dropout_ctrl = POWER_DCDC4P2_DROPOUT_CTRL_SRC_4P2;
@@ -730,7 +720,8 @@ static void mxs_enable_battery_input(void)
 		POWER_5VCTRL_CHARGE_4P2_ILIMIT_MASK,
 		0x8 << POWER_5VCTRL_CHARGE_4P2_ILIMIT_OFFSET);
 
-	mxs_power_enable_4p2();
+	if (power_config & POWER_ENABLE_4P2)
+		mxs_power_enable_4p2();
 }
 
 /**
@@ -1078,7 +1069,7 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
-	uint32_t cur_target, diff, bo_int = 0;
+	uint32_t cur_target, diff, prev_bo_enirq = 0;
 	uint32_t powered_by_linreg = 0;
 	int adjust_up, tmp;
 
@@ -1094,9 +1085,11 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 		powered_by_linreg = cfg->powered_by_linreg();
 
 	if (adjust_up && cfg->bo_irq) {
+		/* temporarily disable brownout to prevent it from taking
+		   effect prematurely during the adjustment */
 		if (powered_by_linreg) {
-			bo_int = readl(cfg->reg);
-			clrbits_le32(cfg->reg, cfg->bo_enirq);
+			prev_bo_enirq = readl(&power_regs->hw_power_ctrl) & cfg->bo_enirq;
+			writel(cfg->bo_enirq, &power_regs->hw_power_ctrl_clr);
 		}
 		setbits_le32(cfg->reg, cfg->bo_offset_mask);
 	}
@@ -1136,9 +1129,11 @@ static void mxs_power_set_vddx(const struct mxs_vddx_cfg *cfg,
 
 	if (cfg->bo_irq) {
 		if (adjust_up && powered_by_linreg) {
+			/* clear brownout IRQ flag in case it fired */
 			writel(cfg->bo_irq, &power_regs->hw_power_ctrl_clr);
-			if (bo_int & cfg->bo_enirq)
-				setbits_le32(cfg->reg, cfg->bo_enirq);
+			if (prev_bo_enirq)
+				/* re-enable brownout IRQ after adjustment has finished */
+				writel(cfg->bo_enirq, &power_regs->hw_power_ctrl_set);
 		}
 
 		clrsetbits_le32(cfg->reg, cfg->bo_offset_mask,
@@ -1177,21 +1172,32 @@ static void mx23_ungate_power(void)
 	writel(MX23_POWER_CTRL_CLKGATE, &power_regs->hw_power_ctrl_clr);
 }
 
+struct mxs_power_ctrl mxs_vddd_default    = { .target = 1500, .brownout = 1325 };
+struct mxs_power_ctrl mxs_vdda_default    = { .target = 1800, .brownout = 1650 };
+struct mxs_power_ctrl mxs_vddio_default   = { .target = 3300, .brownout = 3150 };
+struct mxs_power_ctrl mx23_vddmem_default = { .target = 2500, .brownout = 1700 };
+struct mxs_power_ctrls mx23_power_default = {
+	.vdda	= &mxs_vdda_default,
+	.vddd	= &mxs_vddd_default,
+	.vddio	= &mxs_vddio_default,
+	.vddmem	= &mx23_vddmem_default,
+};
+
 /**
  * mx23_power_init() - The power block init main function
  *
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
+ *
+ * @config: see enum mxs_power_config for possible options
+ * @ctrls: a mxs_power_ctrls struct, or use &mx23_power_default for default values
  */
-void mx23_power_init(int __has_battery, int __use_battery_input,
-		int __use_5v_input)
+void mx23_power_init(const int config, struct mxs_power_ctrls *ctrls)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
 
-	has_battery = __has_battery;
-	use_battery_input = __use_battery_input;
-	use_5v_input = __use_5v_input;
+	power_config = config;
 
 	mx23_ungate_power();
 
@@ -1204,11 +1210,11 @@ void mx23_power_init(int __has_battery, int __use_battery_input,
 
 	mxs_src_power_init();
 
-	if (has_battery)
+	if (mxs_power_config_get_use() == POWER_USE_BATTERY)
 		mxs_power_configure_power_source();
-	else if (use_battery_input)
+	else if (mxs_power_config_get_use() == POWER_USE_BATTERY_INPUT)
 		mxs_enable_battery_input();
-	else if (use_5v_input)
+	else if (mxs_power_config_get_use() == POWER_USE_5V)
 		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();
@@ -1223,10 +1229,18 @@ void mx23_power_init(int __has_battery, int __use_battery_input,
 
 	mxs_enable_output_rail_protection();
 
-	mxs_power_set_vddx(&mx23_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
-	mxs_power_set_vddx(&mxs_vddmem_cfg, 2500, 1700);
-	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
+	if (ctrls->vddio)
+		mxs_power_set_vddx(&mx23_vddio_cfg, ctrls->vddio->target,
+				ctrls->vddio->brownout);
+	if (ctrls->vddd)
+		mxs_power_set_vddx(&mxs_vddd_cfg, ctrls->vddd->target,
+				ctrls->vddd->brownout);
+	if (ctrls->vddmem)
+		mxs_power_set_vddx(&mxs_vddmem_cfg, ctrls->vddmem->target,
+				ctrls->vddmem->brownout);
+	if (ctrls->vdda)
+		mxs_power_set_vddx(&mxs_vdda_cfg, ctrls->vdda->target,
+				ctrls->vdda->brownout);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |
@@ -1238,21 +1252,28 @@ void mx23_power_init(int __has_battery, int __use_battery_input,
 	mxs_early_delay(1000);
 }
 
+struct mxs_power_ctrls mx28_power_default = {
+	.vdda	= &mxs_vdda_default,
+	.vddd	= &mxs_vddd_default,
+	.vddio	= &mxs_vddio_default,
+	.vddmem	= NULL,
+};
+
 /**
  * mx28_power_init() - The power block init main function
  *
  * This function calls all the power block initialization functions in
  * proper sequence to start the power block.
+ *
+ * @config: see enum mxs_power_config for possible options
+ * @ctrls: a mxs_power_ctrls struct, or use &mx28_power_default for default values
  */
-void mx28_power_init(int __has_battery, int __use_battery_input,
-		int __use_5v_input)
+void mx28_power_init(const int config, struct mxs_power_ctrls *ctrls)
 {
 	struct mxs_power_regs *power_regs =
 		(struct mxs_power_regs *)IMX_POWER_BASE;
 
-	has_battery = __has_battery;
-	use_battery_input = __use_battery_input;
-	use_5v_input = __use_5v_input;
+	power_config = config;
 
 	mxs_power_status();
 	mxs_power_clock2xtal();
@@ -1264,11 +1285,11 @@ void mx28_power_init(int __has_battery, int __use_battery_input,
 
 	mxs_src_power_init();
 
-	if (has_battery)
+	if (mxs_power_config_get_use() == POWER_USE_BATTERY)
 		mxs_power_configure_power_source();
-	else if (use_battery_input)
+	else if (mxs_power_config_get_use() == POWER_USE_BATTERY_INPUT)
 		mxs_enable_battery_input();
-	else if (use_5v_input)
+	else if (mxs_power_config_get_use() == POWER_USE_5V)
 		mxs_boot_valid_5v();
 
 	mxs_power_clock2pll();
@@ -1279,9 +1300,18 @@ void mx28_power_init(int __has_battery, int __use_battery_input,
 
 	mxs_enable_output_rail_protection();
 
-	mxs_power_set_vddx(&mx28_vddio_cfg, 3300, 3150);
-	mxs_power_set_vddx(&mxs_vddd_cfg, 1500, 1325);
-	mxs_power_set_vddx(&mxs_vdda_cfg, 1800, 1650);
+	if (ctrls->vddio)
+		mxs_power_set_vddx(&mx28_vddio_cfg, ctrls->vddio->target,
+				ctrls->vddio->brownout);
+	if (ctrls->vddd)
+		mxs_power_set_vddx(&mxs_vddd_cfg, ctrls->vddd->target,
+				ctrls->vddd->brownout);
+	if (ctrls->vddmem)
+		mxs_power_set_vddx(&mxs_vddmem_cfg, ctrls->vddmem->target,
+				ctrls->vddmem->brownout);
+	if (ctrls->vdda)
+		mxs_power_set_vddx(&mxs_vdda_cfg, ctrls->vdda->target,
+				ctrls->vdda->brownout);
 
 	writel(POWER_CTRL_VDDD_BO_IRQ | POWER_CTRL_VDDA_BO_IRQ |
 		POWER_CTRL_VDDIO_BO_IRQ | POWER_CTRL_VDD5V_DROOP_IRQ |

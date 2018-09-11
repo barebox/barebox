@@ -73,14 +73,6 @@ static const uint32_t tx28_pad_setup[] = {
 
 extern void base_board_init(void);
 
-static int tx28_mem_init(void)
-{
-	arm_add_mem_device("ram0", IMX_MEMORY_BASE, 128 * 1024 * 1024);
-
-	return 0;
-}
-mem_initcall(tx28_mem_init);
-
 static int tx28_devices_init(void)
 {
 	int i;

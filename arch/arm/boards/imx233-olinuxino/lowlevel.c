@@ -154,11 +154,13 @@ static noinline void imx23_olinuxino_init(void)
 
 	pr_debug("initializing power...\n");
 
-	mx23_power_init(0, 0, 1);
+	mx23_power_init(POWER_USE_5V, &mx23_power_default);
 
 	pr_debug("initializing SDRAM...\n");
 
 	imx23_olinuxino_adjust_memory_params(mx23_dram_vals);
+	/* EMI_CLK of 480 / 2 * (18/33) = 130.90 MHz */
+	mxs_mem_init_clock(2, 33);
 	mx23_mem_init();
 
 	pr_debug("DONE\n");

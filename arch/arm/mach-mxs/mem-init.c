@@ -192,7 +192,12 @@ static void mx23_initialize_dram_values(void)
 	writel((1 << 24), IMX_SDRAMC_BASE + (4 * 8));
 }
 
-void mxs_mem_init_clock(unsigned char divider)
+/**
+ * Set up the EMI clock.
+ * @clk_emi_div: integer divider (prescaler), the DIV_EMI field in HW_CLKCTRL_EMI
+ * @clk_emi_frac: fractional divider, the EMIFRAC field in HW_CLKCTRL_FRAC0
+ */
+void mxs_mem_init_clock(const uint8_t clk_emi_div, const uint8_t clk_emi_frac)
 {
 	struct mxs_clkctrl_regs *clkctrl_regs =
 		(struct mxs_clkctrl_regs *)IMX_CCM_BASE;
@@ -202,7 +207,7 @@ void mxs_mem_init_clock(unsigned char divider)
 		&clkctrl_regs->hw_clkctrl_frac0_set[CLKCTRL_FRAC0_EMI]);
 
 	/* Set fractional divider for ref_emi */
-	writeb(CLKCTRL_FRAC_CLKGATE | (divider & CLKCTRL_FRAC_FRAC_MASK),
+	writeb(CLKCTRL_FRAC_CLKGATE | (clk_emi_frac & CLKCTRL_FRAC_FRAC_MASK),
 		&clkctrl_regs->hw_clkctrl_frac0[CLKCTRL_FRAC0_EMI]);
 
 	/* Ungate EMI clock */
@@ -211,8 +216,8 @@ void mxs_mem_init_clock(unsigned char divider)
 
 	mxs_early_delay(11000);
 
-	/* Set EMI clock divider for EMI clock to 411 / 2 = 205MHz */
-	writel((2 << CLKCTRL_EMI_DIV_EMI_OFFSET) |
+	/* Set EMI clock prescaler */
+	writel(((clk_emi_div & CLKCTRL_EMI_DIV_EMI_MASK) << CLKCTRL_EMI_DIV_EMI_OFFSET) |
 		(1 << CLKCTRL_EMI_DIV_XTAL_OFFSET),
 		&clkctrl_regs->hw_clkctrl_emi);
 
@@ -273,9 +278,6 @@ void mx23_mem_init(void)
 {
 	mxs_early_delay(11000);
 
-	/* Fractional divider for ref_emi is 33 ; 480 * 18 / 33 = 266MHz */
-	mxs_mem_init_clock(33);
-
 	/*
 	 * Reset/ungate the EMI block. This is essential, otherwise the system
 	 * suffers from memory instability. This thing is mx23 specific and is
@@ -318,18 +320,12 @@ void mx23_mem_init(void)
 	mxs_mem_setup_cpu_and_hbus();
 }
 
-#define PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2	(0x3 << 16)
-
-void mx28_mem_init(const uint32_t dram_vals[190])
+void mx28_mem_init(const int emi_ds_ctrl_ddr_mode, const uint32_t dram_vals[190])
 {
 	mxs_early_delay(11000);
 
-	/* Fractional divider for ref_emi is 21 ; 480 * 18 / 21 = 411MHz */
-	mxs_mem_init_clock(21);
-
-	/* Set DDR2 mode */
-	writel(PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2,
-			IMX_IOMUXC_BASE + 0x1b80);
+	/* Set DDR mode */
+	writel(emi_ds_ctrl_ddr_mode, IMX_IOMUXC_BASE + 0x1b80);
 
 	/*
 	 * Configure the DRAM registers

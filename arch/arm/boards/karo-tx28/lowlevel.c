@@ -43,11 +43,15 @@ static noinline void karo_tx28_init(void)
 
 	pr_debug("initializing power...\n");
 
-	mx28_power_init(0, 1, 0);
+	mx28_power_init(POWER_USE_BATTERY_INPUT | POWER_ENABLE_4P2,
+			&mx28_power_default);
 
 	pr_debug("initializing SDRAM...\n");
 
-	mx28_mem_init(mx28_dram_vals_default);
+	/* EMI_CLK of 480 / 2 * (18/21) = 205.7 MHz */
+	mxs_mem_init_clock(2, 21);
+	mx28_mem_init(PINCTRL_EMI_DS_CTRL_DDR_MODE_DDR2,
+			mx28_dram_vals_default);
 
 	pr_debug("DONE\n");
 }

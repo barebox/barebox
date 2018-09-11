@@ -89,30 +89,6 @@ static struct i2c_gpio_platform_data i2c_gpio_pdata = {
 	.udelay			= 5,		/* ~100 kHz */
 };
 
-void v5_mmu_cache_flush(void);
-long cfa10036_get_ram_size(void)
-{
-	volatile u32 *base = (void *)IMX_MEMORY_BASE;
-	volatile u32 *ofs = base + SZ_128M / sizeof(u32);
-
-	*base = *ofs = 0xdeadbeef;
-	*ofs = 0xbaadcafe;
-
-	v5_mmu_cache_flush();
-	if (*base == 0xbaadcafe)
-		return SZ_128M;
-	else
-		return SZ_256M;
-}
-
-static int cfa10036_mem_init(void)
-{
-	arm_add_mem_device("ram0", IMX_MEMORY_BASE, cfa10036_get_ram_size());
-
-	return 0;
-}
-mem_initcall(cfa10036_mem_init);
-
 static int cfa10036_devices_init(void)
 {
 	int i;

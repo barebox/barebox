@@ -339,7 +339,7 @@ pci_of_match_device(struct device_d *parent, unsigned int devfn)
 	struct device_node *np;
 	u32 reg;
 
-	if (!IS_ENABLED(CONFIG_OFTREE) || !parent->device_node)
+	if (!IS_ENABLED(CONFIG_OFTREE) || !parent || !parent->device_node)
 		return NULL;
 
 	for_each_child_of_node(parent->device_node, np) {

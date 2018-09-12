@@ -26,6 +26,12 @@ class BBType(object):
     i2c_read_return = 16
     i2c_write = 17
     i2c_write_return = 18
+    gpio_get_value = 19
+    gpio_get_value_return = 20
+    gpio_set_value = 21
+    gpio_set_value_return = 22
+    gpio_set_direction = 23
+    gpio_set_direction_return = 24
 
 
 class BBPacket(object):
@@ -343,3 +349,90 @@ class BBPacketI2cWriteReturn(BBPacket):
     def _pack_payload(self):
         # header size is always 4 bytes (HH) and we have 8 bytes of fixed data (HLH), so buffer offset is 14
         return struct.pack("!HLH", 12, self.exit_code, self.written)
+
+
+class BBPacketGpioGetValue(BBPacket):
+    def __init__(self, raw=None, gpio=None):
+        self.gpio = gpio
+        super(BBPacketGpioGetValue, self).__init__(BBType.gpio_get_value, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketGpioGetValue(gpio=%u)" % (self.gpio)
+
+    def _unpack_payload(self, payload):
+        self.gpio = struct.unpack("!L", payload[:4])
+
+    def _pack_payload(self):
+        return struct.pack("!L", self.gpio)
+
+
+class BBPacketGpioGetValueReturn(BBPacket):
+    def __init__(self, raw=None, value=None):
+        self.value = value
+        super(BBPacketGpioGetValueReturn, self).__init__(BBType.gpio_get_value_return, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketGpioGetValueReturn(value=%u)" % (self.value)
+
+    def _unpack_payload(self, payload):
+        self.value = struct.unpack("!B", payload[:1])
+
+    def _pack_payload(self):
+        return struct.pack("!B", self.value)
+
+
+class BBPacketGpioSetValue(BBPacket):
+    def __init__(self, raw=None, gpio=None, value=None):
+        self.gpio = gpio
+        self.value = value
+        super(BBPacketGpioSetValue, self).__init__(BBType.gpio_set_value, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketGpioSetValue(gpio=%u,value=%u)" % (self.gpio, self.value)
+
+    def _unpack_payload(self, payload):
+        self.gpio = struct.unpack("!LB", payload[:5])
+
+    def _pack_payload(self):
+        return struct.pack("!LB", self.gpio, self.value)
+
+
+class BBPacketGpioSetValueReturn(BBPacket):
+    def __init__(self, raw=None, value=None):
+        self.value = value
+        super(BBPacketGpioSetValueReturn, self).__init__(BBType.gpio_set_value_return, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketGpioSetValueReturn()"
+
+
+class BBPacketGpioSetDirection(BBPacket):
+    def __init__(self, raw=None, gpio=None, direction=None, value=None):
+        self.gpio = gpio
+        self.direction = direction
+        self.value = value
+        super(BBPacketGpioSetDirection, self).__init__(BBType.gpio_set_direction, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketGpioSetDirection(gpio=%u,direction=%u,value=%u)" % (self.gpio, self.direction, self.value)
+
+    def _unpack_payload(self, payload):
+        self.gpio = struct.unpack("!LBB", payload[:6])
+
+    def _pack_payload(self):
+        return struct.pack("!LBB", self.gpio, self.direction, self.value)
+
+
+class BBPacketGpioSetDirectionReturn(BBPacket):
+    def __init__(self, raw=None, exit_code=None):
+        self.exit_code = exit_code
+        super(BBPacketGpioSetDirectionReturn, self).__init__(BBType.gpio_set_direction_return, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketGpioSetDirectionReturn(exit_code=%u)" % (self.exit_code)
+
+    def _unpack_payload(self, payload):
+        self.exit_code = struct.unpack("!L", payload[:4])
+
+    def _pack_payload(self):
+        return struct.pack("!L", self.exit_code)

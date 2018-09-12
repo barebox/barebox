@@ -226,7 +226,7 @@ static struct inode *devfs_get_inode(struct super_block *sb, const struct inode 
 	switch (mode & S_IFMT) {
 	default:
 		return NULL;
-	case S_IFREG:
+	case S_IFCHR:
 		inode->i_op = &devfs_file_inode_operations;
 		inode->i_fop = &devfs_file_operations;
 		break;
@@ -251,7 +251,7 @@ static struct dentry *devfs_lookup(struct inode *dir, struct dentry *dentry,
 	if (!cdev)
 		return ERR_PTR(-ENOENT);
 
-	inode = devfs_get_inode(dir->i_sb, dir, S_IFREG | S_IRWXUGO);
+	inode = devfs_get_inode(dir->i_sb, dir, S_IFCHR | S_IRWXUGO);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
 

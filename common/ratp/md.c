@@ -15,6 +15,8 @@
  *
  */
 
+#define pr_fmt(fmt) "barebox-ratp: md: " fmt
+
 #include <common.h>
 #include <ratp_bb.h>
 #include <init.h>
@@ -121,7 +123,7 @@ static int ratp_cmd_md(const struct ratp_bb *req, int req_len,
 
 	/* At least message header should be valid */
 	if (req_len < sizeof(*md_req)) {
-		printf("ratp md ignored: size mismatch (%d < %zu)\n",
+		pr_err("ignored: size mismatch (%d < %zu)\n",
 		       req_len, sizeof (*md_req));
 		ret = -EINVAL;
 		goto out;
@@ -130,7 +132,7 @@ static int ratp_cmd_md(const struct ratp_bb *req, int req_len,
 	/* Validate buffer position and size */
 	buffer_offset = be16_to_cpu(md_req->buffer_offset);
 	if (req_len < buffer_offset) {
-		printf("ratp md ignored: invalid buffer offset (%d < %hu)\n",
+		pr_err("ignored: invalid buffer offset (%d < %hu)\n",
 		       req_len, buffer_offset);
 		ret = -EINVAL;
 		goto out;
@@ -141,20 +143,20 @@ static int ratp_cmd_md(const struct ratp_bb *req, int req_len,
 	/* Validate path position and size */
 	path_offset = be16_to_cpu(md_req->path_offset);
 	if (path_offset != 0) {
-		printf("ratp md ignored: invalid path offset\n");
+		pr_err("ignored: invalid path offset\n");
 		ret = -EINVAL;
 		goto out;
 	}
 	path_size = be16_to_cpu(md_req->path_size);
 	if (!path_size) {
-		printf("ratp md ignored: no filepath given\n");
+		pr_err("ignored: no filepath given\n");
 		ret = -EINVAL;
 		goto out;
 	}
 
 	/* Validate buffer size */
 	if (buffer_size < path_size) {
-		printf("ratp mw ignored: size mismatch (%d < %hu): path may not be fully given\n",
+		pr_err("ignored: size mismatch (%d < %hu): path may not be fully given\n",
 		       req_len, path_size);
 		ret = -EINVAL;
 		goto out;

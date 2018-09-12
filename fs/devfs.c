@@ -251,9 +251,14 @@ static struct dentry *devfs_lookup(struct inode *dir, struct dentry *dentry,
 	if (!cdev)
 		return ERR_PTR(-ENOENT);
 
-	inode = devfs_get_inode(dir->i_sb, dir, S_IFCHR | S_IRWXUGO);
+	inode = devfs_get_inode(dir->i_sb, dir, S_IFCHR);
 	if (!inode)
 		return ERR_PTR(-ENOMEM);
+
+	if (cdev->ops->write)
+		inode->i_mode |= S_IWUSR;
+	if (cdev->ops->read)
+		inode->i_mode |= S_IRUSR;
 
 	dinode = container_of(inode, struct devfs_inode, inode);
 

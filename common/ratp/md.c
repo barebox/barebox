@@ -124,7 +124,7 @@ static int ratp_cmd_md(const struct ratp_bb *req, int req_len,
 	/* At least message header should be valid */
 	if (req_len < sizeof(*md_req)) {
 		pr_err("ignored: size mismatch (%d < %zu)\n",
-		       req_len, sizeof (*md_req));
+		       req_len, sizeof(*md_req));
 		ret = -EINVAL;
 		goto out;
 	}
@@ -162,8 +162,8 @@ static int ratp_cmd_md(const struct ratp_bb *req, int req_len,
 		goto out;
 	}
 
-	addr = be16_to_cpu (md_req->addr);
-	size = be16_to_cpu (md_req->size);
+	addr = be16_to_cpu(md_req->addr);
+	size = be16_to_cpu(md_req->size);
 	path = xstrndup((const char *)&buffer[path_offset], path_size);
 
 out:
@@ -193,7 +193,7 @@ out:
 	*rsp = (struct ratp_bb *)md_rsp;
 	*rsp_len = md_rsp_len;
 
-	free (path);
+	free(path);
 	return ret;
 }
 

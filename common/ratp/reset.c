@@ -36,8 +36,8 @@ static int ratp_cmd_reset(const struct ratp_bb *req, int req_len,
 {
 	struct ratp_bb_reset *reset_req = (struct ratp_bb_reset *)req;
 
-	if (req_len < sizeof (*reset_req)) {
-		pr_err("ignored: size mismatch (%d < %zu)\n", req_len, sizeof (*reset_req));
+	if (req_len < sizeof(*reset_req)) {
+		pr_err("ignored: size mismatch (%d < %zu)\n", req_len, sizeof(*reset_req));
 		return 2;
 	}
 

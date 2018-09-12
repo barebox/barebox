@@ -22,6 +22,10 @@ class BBType(object):
     mw = 12
     mw_return = 13
     reset = 14
+    i2c_read = 15
+    i2c_read_return = 16
+    i2c_write = 17
+    i2c_write_return = 18
 
 
 class BBPacket(object):
@@ -257,3 +261,85 @@ class BBPacketReset(BBPacket):
 
     def _pack_payload(self):
         return struct.pack("?", self.force)
+
+
+class BBPacketI2cRead(BBPacket):
+    def __init__(self, raw=None, bus=None, addr=None, reg=None, flags=None, size=None):
+        self.bus = bus
+        self.addr = addr
+        self.reg = reg
+        self.flags = flags
+        self.size = size
+        super(BBPacketI2cRead, self).__init__(BBType.i2c_read, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketI2cRead(bus=0x%x,addr=0x%x,reg=0x%x,flags=0x%x,size=%u)" % (self.bus, self.addr, self.reg, self.flags, self.size)
+
+    def _unpack_payload(self, payload):
+        buffer_offset, self.bus, self.addr, self.reg, self.flags, self.size = struct.unpack("!HBBHBH", payload[:9])
+
+    def _pack_payload(self):
+        # header size is always 4 bytes (HH) and we have 9 bytes of fixed data (HBBHBH), so buffer offset is 13
+        return struct.pack("!HBBHBH", 13, self.bus, self.addr, self.reg, self.flags, self.size)
+
+
+class BBPacketI2cReadReturn(BBPacket):
+    def __init__(self, raw=None, exit_code=None, data=None):
+        self.exit_code = exit_code
+        self.data = data
+        super(BBPacketI2cReadReturn, self).__init__(BBType.i2c_read_return, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketI2cReadReturn(exit_code=%i, data=%s)" % (self.exit_code, binascii.hexlify(self.data))
+
+    def _unpack_payload(self, payload):
+        buffer_offset, self.exit_code, data_size, data_offset = struct.unpack("!HLHH", payload[:10])
+        # header size is always 4 bytes (HH), so adjust the absolute data offset without the header size
+        absolute_data_offset = buffer_offset + data_offset - 4
+        self.data = payload[absolute_data_offset:absolute_data_offset + data_size]
+
+    def _pack_payload(self):
+        # header size is always 4 bytes (HH) and we have 10 bytes of fixed data (HLHH), so buffer offset is 14
+        return struct.pack("!HLHH%ds" % len(self.data), 14, self.exit_code, len(self.data), 0, self.data)
+        return self.text
+
+
+class BBPacketI2cWrite(BBPacket):
+    def __init__(self, raw=None, bus=None, addr=None, reg=None, flags=None, data=None):
+        self.bus = bus
+        self.addr = addr
+        self.reg = reg
+        self.flags = flags
+        self.data = data
+        super(BBPacketI2cWrite, self).__init__(BBType.i2c_write, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketI2cWrite(bus=0x%x,addr=0x%x,reg=0x%x,flags=0x%x,data=%r)" % (self.bus, self.addr, self.reg, self.flags, self.data)
+
+    def _unpack_payload(self, payload):
+        buffer_offset, self.bus, self.addr, self.reg, self.flags, data_size, data_offset = struct.unpack("!HBBHBHH", payload[:11])
+        # header size is always 4 bytes (HH), so adjust the absolute data offset without the header size
+        absolute_data_offset = buffer_offset + data_offset - 4
+        self.data = payload[absolute_data_offset:absolute_data_offset+data_size]
+
+    def _pack_payload(self):
+        # header size is always 4 bytes (HH) and we have 11 bytes of fixed data (HBBHBHH), so buffer offset is 15
+        data_size = len(self.data)
+        return struct.pack("!HBBHBHH%ds" % data_size, 15, self.bus, self.addr, self.reg, self.flags, data_size, 0, self.data)
+
+
+class BBPacketI2cWriteReturn(BBPacket):
+    def __init__(self, raw=None, exit_code=None, written=None):
+        self.exit_code = exit_code
+        self.written = written
+        super(BBPacketI2cWriteReturn, self).__init__(BBType.i2c_write_return, raw=raw)
+
+    def __repr__(self):
+        return "BBPacketI2cWriteReturn(exit_code=%i, written=%i)" % (self.exit_code, self.written)
+
+    def _unpack_payload(self, payload):
+        buffer_offset, self.exit_code, self.written = struct.unpack("!HLH", payload[:8])
+
+    def _pack_payload(self):
+        # header size is always 4 bytes (HH) and we have 8 bytes of fixed data (HLH), so buffer offset is 14
+        return struct.pack("!HLH", 12, self.exit_code, self.written)

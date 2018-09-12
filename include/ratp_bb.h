@@ -17,6 +17,10 @@
 #define BB_RATP_TYPE_MW			12
 #define BB_RATP_TYPE_MW_RETURN		13
 #define BB_RATP_TYPE_RESET		14
+#define BB_RATP_TYPE_I2C_READ		15
+#define BB_RATP_TYPE_I2C_READ_RETURN	16
+#define BB_RATP_TYPE_I2C_WRITE		17
+#define BB_RATP_TYPE_I2C_WRITE_RETURN	18
 
 struct ratp_bb {
 	uint16_t type;

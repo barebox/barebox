@@ -46,7 +46,7 @@ struct ratp_bb_md_request {
 	uint16_t path_size;
 	uint16_t path_offset;
 	uint8_t  buffer[];
-} __attribute__((packed));
+} __packed;
 
 struct ratp_bb_md_response {
 	struct ratp_bb header;
@@ -55,7 +55,7 @@ struct ratp_bb_md_response {
 	uint16_t data_size;
 	uint16_t data_offset;
 	uint8_t  buffer[];
-} __attribute__((packed));
+} __packed;
 
 extern char *mem_rw_buf;
 

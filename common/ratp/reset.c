@@ -27,7 +27,7 @@
 struct ratp_bb_reset {
 	struct ratp_bb header;
 	uint8_t        force;
-} __attribute__((packed));
+} __packed;
 
 static int ratp_cmd_reset(const struct ratp_bb *req, int req_len,
 			  struct ratp_bb **rsp, int *rsp_len)

@@ -47,7 +47,7 @@ struct ratp_bb_mw_request {
 	uint16_t data_size;
 	uint16_t data_offset;
 	uint8_t  buffer[];
-} __attribute__((packed));
+} __packed;
 
 struct ratp_bb_mw_response {
 	struct ratp_bb header;
@@ -55,7 +55,7 @@ struct ratp_bb_mw_response {
 	uint32_t errno;
 	uint16_t written;
 	uint8_t  buffer[];
-} __attribute__((packed));
+} __packed;
 
 static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 		       struct ratp_bb **rsp, int *rsp_len)

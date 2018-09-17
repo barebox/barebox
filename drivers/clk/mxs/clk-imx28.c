@@ -152,6 +152,7 @@ int __init mx28_clocks_init(void __iomem *regs)
 	clkdev_add_physbase(clks[fec], IMX_FEC0_BASE, NULL);
 	clkdev_add_physbase(clks[xbus], IMX_DBGUART_BASE, NULL);
 	clkdev_add_physbase(clks[hbus], IMX_OCOTP_BASE, NULL);
+	clkdev_add_physbase(clks[hbus], MXS_APBH_BASE, NULL);
 	clkdev_add_physbase(clks[uart], IMX_UART0_BASE, NULL);
 	clkdev_add_physbase(clks[uart], IMX_UART1_BASE, NULL);
 	clkdev_add_physbase(clks[uart], IMX_UART2_BASE, NULL);

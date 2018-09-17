@@ -179,9 +179,12 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 
 	/* Loop over the child nodes and register a phy_device for each one */
 	for_each_available_child_of_node(np, child) {
+		if (!of_mdiobus_child_is_phy(child))
+			continue;
+
 		ret = of_property_read_u32(child, "reg", &addr);
 		if (ret) {
-			dev_err(&mdio->dev, "%s has invalid PHY address\n",
+			dev_dbg(&mdio->dev, "%s has invalid PHY address\n",
 				child->full_name);
 			continue;
 		}
@@ -191,9 +194,6 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 				child->full_name, addr);
 			continue;
 		}
-
-		if (!of_mdiobus_child_is_phy(child))
-			continue;
 
 		of_mdiobus_reset_phy(mdio, child);
 		of_mdiobus_register_phy(mdio, child, addr);

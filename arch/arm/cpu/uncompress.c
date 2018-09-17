@@ -36,9 +36,6 @@
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
-static int __attribute__((__section__(".image_end")))
-	image_end_marker = 0xdeadbeef;
-
 void __noreturn barebox_multi_pbl_start(unsigned long membase,
 		unsigned long memsize, void *boarddata)
 {
@@ -50,7 +47,7 @@ void __noreturn barebox_multi_pbl_start(unsigned long membase,
 	void *pg_start;
 	unsigned long pc = get_pc();
 
-	image_end = (void *)&image_end_marker + global_variable_offset();
+	image_end = (void *)__image_end_marker + global_variable_offset();
 
 	if (IS_ENABLED(CONFIG_PBL_RELOCATABLE)) {
 		/*

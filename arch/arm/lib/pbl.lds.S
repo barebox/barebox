@@ -92,7 +92,7 @@ SECTIONS
 	__piggydata_end = .;
 
 	. = ALIGN(4);
-	.image_end : { *(.image_end) }
+	.image_end : { *(.__image_end_marker) }
 	__image_end = .;
 
 	_barebox_image_size = __image_end - BASE;

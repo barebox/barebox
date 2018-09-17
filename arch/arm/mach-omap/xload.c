@@ -236,6 +236,7 @@ static void *am33xx_net_boot(void)
 	char *file;
 	char ip4_str[sizeof("255.255.255.255")];
 	struct eth_device *edev;
+	struct dhcp_result *dhcp_res;
 
 	am33xx_register_ethaddr(0, 0);
 
@@ -248,11 +249,13 @@ static void *am33xx_net_boot(void)
 		return NULL;
 	}
 
-	err = dhcp(edev, &dhcp_param);
+	err = dhcp_request(edev, &dhcp_param, &dhcp_res);
 	if (err) {
 		printf("dhcp failed\n");
 		return NULL;
 	}
+
+	dhcp_set_result(edev, dhcp_res);
 
 	/*
 	 * Older tftp server don't send the file size.
@@ -276,7 +279,7 @@ static void *am33xx_net_boot(void)
 		return NULL;
 	}
 
-	bootfile = getenv("bootfile");
+	bootfile = dhcp_res->bootfile;
 	if (!bootfile) {
 		printf("bootfile not found.\n");
 		return NULL;

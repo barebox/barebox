@@ -247,6 +247,11 @@ static int fastboot_add_partition_variables(struct f_fastboot *f_fb,
 
 	ret = stat(fentry->filename, &s);
 	if (ret) {
+		device_detect_by_name(devpath_to_name(fentry->filename));
+		ret = stat(fentry->filename, &s);
+	}
+
+	if (ret) {
 		if (fentry->flags & FILE_LIST_FLAG_CREATE) {
 			ret = 0;
 			type = "file";

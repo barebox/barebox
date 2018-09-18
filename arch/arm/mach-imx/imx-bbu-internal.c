@@ -411,6 +411,12 @@ static int imx_bbu_internal_mmcboot_update(struct bbu_handler *handler,
 	char *devicefile;
 	const char *devname = devpath_to_name(data->devicefile);
 
+	ret = device_detect_by_name(devname);
+	if (ret) {
+		pr_err("Couldn't detect device '%s'\n", devname);
+		return ret;
+	}
+
 	ret = asprintf(&bootpartvar, "%s.boot", devname);
 	if (ret < 0)
 		return ret;

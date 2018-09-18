@@ -33,12 +33,6 @@
 
 #include "fec_imx.h"
 
-struct fec_frame {
-	uint8_t data[1500];	/* actual data */
-	int length;		/* actual length */
-	int used;		/* buffer in use or not */
-	uint8_t head[16];	/* MAC header(6 + 6 + 2) + 2(aligned) */
-};
 
 /*
  * MII-interface related functions
@@ -530,7 +524,6 @@ static int fec_recv(struct eth_device *dev)
 	struct buffer_descriptor __iomem *rbd = &fec->rbd_base[fec->rbd_index];
 	uint32_t ievent;
 	int frame_length, len = 0;
-	struct fec_frame *frame;
 	uint16_t bd_status;
 
 	/*
@@ -578,17 +571,16 @@ static int fec_recv(struct eth_device *dev)
 		const uint16_t data_length = readw(&rbd->data_length);
 
 		if (data_length - 4 > 14) {
+			void *frame = phys_to_virt(readl(&rbd->data_pointer));
 			if (fec_is_imx28(fec))
-				imx28_fix_endianess_rd(
-					phys_to_virt(readl(&rbd->data_pointer)),
-					(data_length + 3) >> 2);
+				imx28_fix_endianess_rd(frame,
+						       (data_length + 3) >> 2);
 
 			/*
 			 * Get buffer address and size
 			 */
-			frame = phys_to_virt(readl(&rbd->data_pointer));
 			frame_length = data_length - 4;
-			net_receive(dev, frame->data, frame_length);
+			net_receive(dev, frame, frame_length);
 			len = frame_length;
 		}
 	}

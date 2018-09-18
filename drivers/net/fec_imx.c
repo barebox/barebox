@@ -523,7 +523,7 @@ static int fec_recv(struct eth_device *dev)
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	struct buffer_descriptor __iomem *rbd = &fec->rbd_base[fec->rbd_index];
 	uint32_t ievent;
-	int frame_length, len = 0;
+	int len = 0;
 	uint16_t bd_status;
 
 	/*
@@ -579,9 +579,8 @@ static int fec_recv(struct eth_device *dev)
 			/*
 			 * Get buffer address and size
 			 */
-			frame_length = data_length - 4;
-			net_receive(dev, frame, frame_length);
-			len = frame_length;
+			len = data_length - 4;
+			net_receive(dev, frame, len);
 		}
 	}
 	/*

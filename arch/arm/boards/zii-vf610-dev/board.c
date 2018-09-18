@@ -174,8 +174,9 @@ static int zii_vf610_spu3_register_bbu(void)
 	if (!of_machine_is_compatible("zii,vf610spu3-a"))
 		return 0;
 
-	ret = vf610_bbu_internal_mmc_register_handler("eMMC", "/dev/disk0",
-						      BBU_HANDLER_FLAG_DEFAULT);
+	ret = vf610_bbu_internal_mmcboot_register_handler("eMMC",
+					      "/dev/mmc0",
+					      BBU_HANDLER_FLAG_DEFAULT);
 	if (ret) {
 		pr_err("Failed to register eMMC BBU handler\n");
 		return ret;

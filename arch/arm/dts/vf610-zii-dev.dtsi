@@ -42,6 +42,7 @@ n *     copy, modify, merge, publish, distribute, sublicense, and/or
  *     OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "vf610.dtsi"
 #include "vf610-ddrmc.dtsi"
 
 / {

@@ -8,6 +8,7 @@
  */
 
 #include <arm/vf610-twr.dts>
+#include "vf610.dtsi"
 #include "vf610-ddrmc.dtsi"
 
 &usbdev0 {

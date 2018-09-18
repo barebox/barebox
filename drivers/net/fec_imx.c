@@ -568,35 +568,36 @@ static int fec_recv(struct eth_device *dev)
 	 */
 	bd_status = readw(&rbd->status);
 
-	if (!(bd_status & FEC_RBD_EMPTY)) {
-		if ((bd_status & FEC_RBD_LAST) && !(bd_status & FEC_RBD_ERR) &&
-			((readw(&rbd->data_length) - 4) > 14)) {
+	if (bd_status & FEC_RBD_EMPTY)
+		return 0;
 
-			if (fec_is_imx28(fec))
-				imx28_fix_endianess_rd(
-					phys_to_virt(readl(&rbd->data_pointer)),
-					(readw(&rbd->data_length) + 3) >> 2);
+	if ((bd_status & FEC_RBD_LAST) && !(bd_status & FEC_RBD_ERR) &&
+	    ((readw(&rbd->data_length) - 4) > 14)) {
 
-			/*
-			 * Get buffer address and size
-			 */
-			frame = phys_to_virt(readl(&rbd->data_pointer));
-			frame_length = readw(&rbd->data_length) - 4;
-			net_receive(dev, frame->data, frame_length);
-			len = frame_length;
-		} else {
-			if (bd_status & FEC_RBD_ERR) {
-				dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n", rbd, bd_status);
-			}
-		}
+		if (fec_is_imx28(fec))
+			imx28_fix_endianess_rd(
+				phys_to_virt(readl(&rbd->data_pointer)),
+				(readw(&rbd->data_length) + 3) >> 2);
+
 		/*
-		 * free the current buffer, restart the engine
-		 * and move forward to the next buffer
+		 * Get buffer address and size
 		 */
-		fec_rbd_clean(fec->rbd_index == (FEC_RBD_NUM - 1) ? 1 : 0, rbd);
-		fec_rx_task_enable(fec);
-		fec->rbd_index = (fec->rbd_index + 1) % FEC_RBD_NUM;
+		frame = phys_to_virt(readl(&rbd->data_pointer));
+		frame_length = readw(&rbd->data_length) - 4;
+		net_receive(dev, frame->data, frame_length);
+		len = frame_length;
+	} else {
+		if (bd_status & FEC_RBD_ERR) {
+			dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n", rbd, bd_status);
+		}
 	}
+	/*
+	 * free the current buffer, restart the engine
+	 * and move forward to the next buffer
+	 */
+	fec_rbd_clean(fec->rbd_index == (FEC_RBD_NUM - 1) ? 1 : 0, rbd);
+	fec_rx_task_enable(fec);
+	fec->rbd_index = (fec->rbd_index + 1) % FEC_RBD_NUM;
 
 	return len;
 }

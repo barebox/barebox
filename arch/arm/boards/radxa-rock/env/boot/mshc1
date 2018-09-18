@@ -2,8 +2,6 @@
 
 mount /dev/mshc1.0
 
-global.bootm.boot_atag=true
-oftree -l /mnt/mshc1.0/rk3188-radxarock.dtb
-
+global.bootm.oftree=/mnt/mshc1.0/rk3188-radxarock.dtb
 global.bootm.image=/mnt/mshc1.0/zImage
 global.linux.bootargs.dyn.root="root=/dev/mmcblk0p2 rootwait"

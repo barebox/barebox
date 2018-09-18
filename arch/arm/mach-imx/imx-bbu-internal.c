@@ -415,6 +415,11 @@ static int imx_bbu_internal_mmcboot_update(struct bbu_handler *handler,
 		return ret;
 
 	bootpart = getenv(bootpartvar);
+	if (!bootpart) {
+		pr_err("Couldn't read the value of '%s'\n", bootpartvar);
+		ret = -ENOENT;
+		goto free_bootpartvar;
+	}
 
 	if (!strcmp(bootpart, "boot0")) {
 		bootpart = "boot1";

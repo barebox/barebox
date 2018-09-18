@@ -131,8 +131,8 @@ void mem_test_release_regions(struct list_head *list)
 		/*
 		 * Ensure to leave with a cached on non used sdram regions.
 		 */
-		remap_range((void *)r->r->start, r->r->end -
-				r->r->start + 1, MAP_DEFAULT);
+		remap_range((void *)r->r->start, resource_size(r->r),
+			    MAP_DEFAULT);
 
 		release_sdram_region(r->r);
 		free(r);

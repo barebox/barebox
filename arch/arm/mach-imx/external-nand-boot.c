@@ -323,9 +323,13 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_boot_nand_external_cont)  \
 {									\
 	unsigned long nfc_base = MX##soc##_NFC_BASE_ADDR;		\
 	void *sdram = (void *)MX##soc##_CSD0_BASE_ADDR;			\
-	uint32_t image_size;						\
+	uint32_t image_size, r;						\
 									\
 	image_size = *(uint32_t *)(sdram + 0x2c);			\
+									\
+	r = get_cr();							\
+	r |= CR_I;							\
+	set_cr(r);							\
 									\
 	imx##soc##_nand_load_image(sdram,				\
 			image_size,					\
@@ -347,6 +351,9 @@ void __noreturn BARE_INIT_FUNCTION(imx##soc##_barebox_boot_nand_external) \
 	int i;								\
 	void __noreturn (*fn)(void *);					\
 									\
+	r = get_cr();							\
+	r &= ~CR_I;							\
+	set_cr(r);							\
 	/* skip NAND boot if not running from NFC space */		\
 	r = get_pc();							\
 	if (r < nfc_base || r > nfc_base + 0x800)			\

@@ -30,7 +30,7 @@ static int zii_rdu1_init(void)
 
 	barebox_set_hostname("rdu1");
 
-	imx51_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc0", 0);
+	imx51_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0", 0);
 	imx51_bbu_internal_spi_i2c_register_handler("SPI",
 		"/dev/dataflash0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT |

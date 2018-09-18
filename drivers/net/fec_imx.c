@@ -558,6 +558,14 @@ static int fec_recv(struct eth_device *dev)
 
 		if (data_length - 4 > 14) {
 			void *frame = phys_to_virt(readl(&rbd->data_pointer));
+			/*
+			 * Sync the data for CPU so that endianness
+			 * fixup and net_receive below would get
+			 * proper data
+			 */
+			dma_sync_single_for_cpu((unsigned long)frame,
+						data_length,
+						DMA_FROM_DEVICE);
 			if (fec_is_imx28(fec))
 				imx28_fix_endianess_rd(frame,
 						       (data_length + 3) >> 2);
@@ -567,6 +575,9 @@ static int fec_recv(struct eth_device *dev)
 			 */
 			len = data_length - 4;
 			net_receive(dev, frame, len);
+			dma_sync_single_for_device((unsigned long)frame,
+						   data_length,
+						   DMA_FROM_DEVICE);
 		}
 	}
 	/*
@@ -585,13 +596,23 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 	void *p;
 	int i;
 
-	/* reserve data memory and consider alignment */
-	p = dma_alloc_coherent(size * count, DMA_ADDRESS_BROKEN);
+
+	p = dma_alloc(size * count);
 	if (!p)
 		return -ENOMEM;
 
 	for (i = 0; i < count; i++) {
-		writel(virt_to_phys(p), &fec->rbd_base[i].data_pointer);
+		dma_addr_t dma;
+		/*
+		 * Make sure there are no outstanding writes to the
+		 * region of memory we are going to use as receive
+		 * buffers as well as check that DMA mapping is valid
+		 */
+		dma = dma_map_single(fec->dev, p, size, DMA_FROM_DEVICE);
+		if (dma_mapping_error(fec->dev, dma))
+			return -EFAULT;
+
+		writel(dma, &fec->rbd_base[i].data_pointer);
 		p += size;
 	}
 
@@ -601,7 +622,7 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 static void fec_free_receive_packets(struct fec_priv *fec, int count, int size)
 {
 	void *p = phys_to_virt(fec->rbd_base[0].data_pointer);
-	dma_free_coherent(p, 0, size * count);
+	dma_free(p);
 }
 
 #ifdef CONFIG_OFDEVICE

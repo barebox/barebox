@@ -168,10 +168,11 @@ static int zii_vf610_dev_register_bbu(void)
 }
 late_initcall(zii_vf610_dev_register_bbu);
 
-static int zii_vf610_spu3_register_bbu(void)
+static int zii_vf610_register_emmc_bbu(void)
 {
 	int ret;
-	if (!of_machine_is_compatible("zii,vf610spu3-a"))
+	if (!of_machine_is_compatible("zii,vf610spu3-a") &&
+	    !of_machine_is_compatible("zii,vf610cfu1-a"))
 		return 0;
 
 	ret = vf610_bbu_internal_mmcboot_register_handler("eMMC",
@@ -184,4 +185,4 @@ static int zii_vf610_spu3_register_bbu(void)
 
 	return 0;
 }
-late_initcall(zii_vf610_spu3_register_bbu);
+late_initcall(zii_vf610_register_emmc_bbu);

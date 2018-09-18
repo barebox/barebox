@@ -409,8 +409,9 @@ static int imx_bbu_internal_mmcboot_update(struct bbu_handler *handler,
 	char *bootpartvar;
 	const char *bootpart;
 	char *devicefile;
+	const char *devname = devpath_to_name(data->devicefile);
 
-	ret = asprintf(&bootpartvar, "%s.boot", data->devicefile);
+	ret = asprintf(&bootpartvar, "%s.boot", devname);
 	if (ret < 0)
 		return ret;
 
@@ -427,7 +428,7 @@ static int imx_bbu_internal_mmcboot_update(struct bbu_handler *handler,
 		bootpart = "boot0";
 	}
 
-	ret = asprintf(&devicefile, "/dev/%s.%s", data->devicefile, bootpart);
+	ret = asprintf(&devicefile, "/dev/%s.%s", devname, bootpart);
 	if (ret < 0)
 		goto free_bootpartvar;
 

@@ -401,11 +401,10 @@ static int imx_bbu_update(struct bbu_handler *handler, struct bbu_data *data)
 	return imx_handler->write_device(imx_handler, data);
 }
 
-static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
-					      struct bbu_data *data)
+static int imx_bbu_internal_mmcboot_update(struct bbu_handler *handler,
+					   struct bbu_data *data)
 {
-	struct imx_internal_bbu_handler *imx_handler =
-		container_of(handler, struct imx_internal_bbu_handler, handler);
+	struct bbu_data _data = *data;
 	int ret;
 	char *bootpartvar;
 	const char *bootpart;
@@ -427,16 +426,14 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 	if (ret < 0)
 		goto free_bootpartvar;
 
-	ret = imx_bbu_check_prereq(imx_handler, devicefile, data,
-				   filetype_imx_image_v2);
+	_data.devicefile = devicefile;
+
+	ret = imx_bbu_update(handler, &_data);
 	if (ret)
 		goto free_devicefile;
 
-	ret = imx_bbu_write_device(imx_handler, devicefile, data, data->image, data->len);
-
-	if (!ret)
-		/* on success switch boot source */
-		ret = setenv(bootpartvar, bootpart);
+	/* on success switch boot source */
+	ret = setenv(bootpartvar, bootpart);
 
 free_devicefile:
 	free(devicefile);
@@ -586,19 +583,24 @@ int imx8mq_bbu_internal_mmc_register_handler(const char *name,
  * Note that no further partitioning of the boot partition is supported up to
  * now.
  */
-int imx6_bbu_internal_mmcboot_register_handler(const char *name,
-					       const char *devicefile,
-					       unsigned long flags)
+static int imx_bbu_internal_mmcboot_register_handler(const char *name,
+						     const char *devicefile,
+						     unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
 	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
-	imx_handler->handler.handler = imx_bbu_internal_v2_mmcboot_update;
+	imx_handler->handler.handler = imx_bbu_internal_mmcboot_update;
 
 	return __register_handler(imx_handler);
 }
+
+int imx6_bbu_internal_mmcboot_register_handler(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
+	__alias(imx_bbu_internal_mmcboot_register_handler);
 
 /*
  * Register an i.MX53 internal boot update handler for i2c/spi

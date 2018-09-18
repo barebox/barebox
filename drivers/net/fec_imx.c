@@ -571,9 +571,11 @@ static int fec_recv(struct eth_device *dev)
 	if (bd_status & FEC_RBD_EMPTY)
 		return 0;
 
-	if ((bd_status & FEC_RBD_LAST) && !(bd_status & FEC_RBD_ERR) &&
-	    ((readw(&rbd->data_length) - 4) > 14)) {
-
+	if (bd_status & FEC_RBD_ERR) {
+		dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n",
+			 rbd, bd_status);
+	} else if ((bd_status & FEC_RBD_LAST) &&
+		   ((readw(&rbd->data_length) - 4) > 14)) {
 		if (fec_is_imx28(fec))
 			imx28_fix_endianess_rd(
 				phys_to_virt(readl(&rbd->data_pointer)),
@@ -586,10 +588,6 @@ static int fec_recv(struct eth_device *dev)
 		frame_length = readw(&rbd->data_length) - 4;
 		net_receive(dev, frame->data, frame_length);
 		len = frame_length;
-	} else {
-		if (bd_status & FEC_RBD_ERR) {
-			dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n", rbd, bd_status);
-		}
 	}
 	/*
 	 * free the current buffer, restart the engine

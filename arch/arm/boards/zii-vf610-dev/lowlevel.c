@@ -75,7 +75,7 @@ static unsigned int get_system_type(void)
 
 extern char __dtb_vf610_zii_dev_rev_b_start[];
 extern char __dtb_vf610_zii_dev_rev_c_start[];
-extern char __dtb_vf610_zii_cfu1_rev_a_start[];
+extern char __dtb_vf610_zii_cfu1_start[];
 extern char __dtb_vf610_zii_spu3_rev_a_start[];
 extern char __dtb_vf610_zii_scu4_aib_rev_c_start[];
 
@@ -127,7 +127,7 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 		fdt = __dtb_vf610_zii_dev_rev_c_start;
 		break;
 	case ZII_PLATFORM_VF610_CFU1:
-		fdt = __dtb_vf610_zii_cfu1_rev_a_start;
+		fdt = __dtb_vf610_zii_cfu1_start;
 		break;
 	case ZII_PLATFORM_VF610_SPU3:
 		fdt = __dtb_vf610_zii_spu3_rev_a_start;

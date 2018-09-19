@@ -26,7 +26,8 @@ static int zii_rdu1_init(void)
 	const char *hostname;
 
 	if (!of_machine_is_compatible("zii,imx51-rdu1") &&
-	    !of_machine_is_compatible("zii,imx51-scu2-mezz"))
+	    !of_machine_is_compatible("zii,imx51-scu2-mezz") &&
+	    !of_machine_is_compatible("zii,imx51-scu3-esb"))
 		return 0;
 
 	hostname = of_get_machine_compatible() + strlen("imx51-");

@@ -170,6 +170,7 @@ void imx27_boot_save_loc(void)
 #define IMX51_SRC_SBMR		0x4
 #define IMX51_SBMR_BT_MEM_TYPE	GENMASK(8, 7)
 #define IMX51_SBMR_BT_MEM_CTL	GENMASK(1, 0)
+#define IMX51_SBMR_BT_SRC	GENMASK(20, 19)
 #define IMX51_SBMR_BMOD		GENMASK(15, 14)
 
 void imx51_get_boot_source(enum bootsource *src, int *instance)
@@ -188,6 +189,7 @@ void imx51_get_boot_source(enum bootsource *src, int *instance)
 		type = FIELD_GET(IMX51_SBMR_BT_MEM_TYPE, reg);
 
 		*src = locations[ctrl][type];
+		*instance = FIELD_GET(IMX51_SBMR_BT_SRC, reg);
 		break;
 	case 1:
 		/* reserved */

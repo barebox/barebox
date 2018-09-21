@@ -165,6 +165,9 @@ static ssize_t mtdraw_blkwrite(struct mtd_info *mtd, const void *buf,
 	struct mtd_oob_ops ops;
 	int ret;
 
+	if (mtd_buf_all_ff(buf, mtd->writesize + mtd->oobsize))
+		return 0;
+
 	ops.mode = MTD_OPS_RAW;
 	ops.ooboffs = 0;
 	ops.datbuf = (void *)buf;

@@ -185,6 +185,15 @@ static const char *imx8mq_clko2_sels[] = {"osc_25m", "sys2_pll_200m", "sys1_pll_
 
 static struct clk_onecell_data clk_data;
 
+static int const clks_init_on[] = {
+       IMX8MQ_CLK_DRAM_CORE, IMX8MQ_CLK_AHB_CG,
+       IMX8MQ_CLK_NOC_DIV, IMX8MQ_CLK_NOC_APB_DIV,
+       IMX8MQ_CLK_NAND_USDHC_BUS_SRC,
+       IMX8MQ_CLK_MAIN_AXI_SRC, IMX8MQ_CLK_A53_CG,
+       IMX8MQ_CLK_AUDIO_AHB_DIV, IMX8MQ_CLK_TMU_ROOT,
+       IMX8MQ_CLK_DRAM_APB_SRC,
+};
+
 static void __init imx8mq_clocks_init(struct device_node *ccm_node)
 {
 	struct device_node *np;
@@ -571,6 +580,9 @@ static void __init imx8mq_clocks_init(struct device_node *ccm_node)
 		if (IS_ERR(clks[i]))
 			pr_err("i.MX8mq clk %u register failed with %ld\n",
 			       i, PTR_ERR(clks[i]));
+
+	for (i = 0; i < ARRAY_SIZE(clks_init_on); i++)
+		clk_enable(clks[clks_init_on[i]]);
 
 	clk_data.clks = clks;
 	clk_data.clk_num = ARRAY_SIZE(clks);

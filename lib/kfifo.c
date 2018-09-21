@@ -18,6 +18,7 @@
 #include <malloc.h>
 #include <kfifo.h>
 #include <errno.h>
+#include <linux/log2.h>
 
 /**
  * kfifo_init - allocates a new FIFO using a preallocated buffer
@@ -48,6 +49,15 @@ struct kfifo *kfifo_alloc(unsigned int size)
 {
 	unsigned char *buffer;
 	struct kfifo *fifo;
+
+	/*
+	 * round up to the next power of 2, since our 'let the indices
+	 * wrap' tachnique works only in this case.
+	 */
+	if (size & (size - 1)) {
+		BUG_ON(size > 0x80000000);
+		size = roundup_pow_of_two(size);
+	}
 
 	buffer = malloc(size);
 	if (!buffer)

@@ -16,6 +16,13 @@ config IMX_THERMAL
          Support for Temperature Monitor (TEMPMON) found on Freescale
          i.MX SoCs.
 
+config QORIQ_THERMAL
+	tristate "QorIQ Thermal Monitoring Unit"
+	depends on ARCH_IMX8MQ
+	help
+	  Support for Thermal Monitoring Unit (TMU) found on QorIQ and
+	  i.MX8MQ platforms.
+
 config LM75
 	tristate "LM75 driver"
 	depends on I2C

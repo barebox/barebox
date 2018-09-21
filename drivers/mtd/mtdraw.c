@@ -146,11 +146,11 @@ static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
 		count -= ret;
 		retlen += ret;
 	}
+
 	if (ret < 0)
-		printf("err %zd\n", ret);
-	else
-		ret = retlen;
-	return ret;
+		return ret;
+
+	return retlen;
 }
 
 #ifdef CONFIG_MTD_WRITE
@@ -231,12 +231,10 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 		retlen += count;
 	}
 
-	if (ret < 0) {
-		printf("err %d\n", ret);
+	if (ret < 0)
 		return ret;
-	} else {
-		return retlen;
-	}
+
+	return retlen;
 }
 
 static int mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)

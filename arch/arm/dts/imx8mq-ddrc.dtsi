@@ -1,0 +1,17 @@
+/*
+ * Include file to switch board DTS form using hardcoded memory node
+ * to dynamic memory size detection based on DDR controller settings
+ */
+
+/ {
+
+	/delete-node/ memory@40000000;
+
+	peripherals@0 {
+		ddrc@3d400000 {
+			compatible = "fsl,imx8mq-ddrc";
+			reg = <0x3d400000 0x400000>;
+		};
+	};
+};
+

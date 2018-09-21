@@ -25,6 +25,9 @@
 
 static int imx8mq_evk_mem_init(void)
 {
+	if (!of_machine_is_compatible("fsl,imx8mq-evk"))
+		return 0;
+
 	arm_add_mem_device("ram0", 0x40000000, SZ_2G);
 
 	request_sdram_region("ATF", 0x40000000, SZ_128K);

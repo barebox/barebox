@@ -632,3 +632,23 @@
 		};
 	};
 };
+
+
+
+&clk {
+	assigned-clocks = <&clk IMX8MQ_CLK_USDHC1_SRC>,
+			  <&clk IMX8MQ_CLK_USDHC1_DIV>,
+			  <&clk IMX8MQ_CLK_USDHC2_SRC>,
+			  <&clk IMX8MQ_CLK_USDHC2_DIV>;
+
+	assigned-clock-parents =  <&clk IMX8MQ_SYS1_PLL_400M>,
+				  <0>,
+				  <&clk IMX8MQ_SYS1_PLL_400M>,
+				  <0>;
+
+	assigned-clock-rates = <400000000>,
+			       <200000000>,
+			       <400000000>,
+			       <200000000>;
+};
+

@@ -196,7 +196,7 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	if (mtdraw->write_fill &&
 	    mtdraw->write_ofs + mtdraw->write_fill != offset)
 		return -EINVAL;
-	if (mtdraw->write_fill == 0 && offset - numpage * mtd->writesize != 0)
+	if (mtdraw->write_fill == 0 && offset - numpage * mtdraw->rps != 0)
 		return -EINVAL;
 
 	if (mtdraw->write_fill) {

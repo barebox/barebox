@@ -158,12 +158,11 @@ static loff_t mtdraw_raw_to_mtd_offset(struct mtdraw *mtdraw, loff_t offset)
 	return (loff_t)mtdraw_offset_to_block(mtdraw, offset) * mtd->writesize;
 }
 
-static ssize_t mtdraw_blkwrite(struct mtdraw *mtdraw, const void *buf,
+static int mtdraw_blkwrite(struct mtdraw *mtdraw, const void *buf,
 			       ulong offset)
 {
 	struct mtd_info *mtd = mtdraw->mtd;
 	struct mtd_oob_ops ops;
-	int ret;
 
 	if (mtd_buf_all_ff(buf, mtdraw->rps))
 		return 0;
@@ -174,10 +173,7 @@ static ssize_t mtdraw_blkwrite(struct mtdraw *mtdraw, const void *buf,
 	ops.len = mtd->writesize;
 	ops.oobbuf = (void *)buf + mtd->writesize;
 	ops.ooblen = mtd->oobsize;
-	ret = mtd_write_oob(mtd, offset, &ops);
-	if (!ret)
-		ret = ops.retlen + ops.oobretlen;
-	return ret;
+	return mtd_write_oob(mtd, offset, &ops);
 }
 
 static void mtdraw_fillbuf(struct mtdraw *mtdraw, const void *src, int nbbytes)
@@ -215,6 +211,8 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 		numblock = mtdraw_offset_to_block(mtdraw, mtdraw->write_ofs);
 		ret = mtdraw_blkwrite(mtdraw, mtdraw->writebuf,
 				      mtd->writesize * numblock);
+		if (ret)
+			return ret;
 		mtdraw->write_fill = 0;
 	}
 
@@ -222,19 +220,18 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	while (ret >= 0 && count >= mtdraw->rps) {
 		ret = mtdraw_blkwrite(mtdraw, buf + retlen,
 				   mtd->writesize * numblock++);
+		if (ret)
+			return ret;
 		count -= ret;
 		retlen += ret;
 		offset += ret;
 	}
 
-	if (ret >= 0 && count) {
+	if (count) {
 		mtdraw->write_ofs = offset - mtdraw->write_fill;
 		mtdraw_fillbuf(mtdraw, buf + retlen, count);
 		retlen += count;
 	}
-
-	if (ret < 0)
-		return ret;
 
 	return retlen;
 }

@@ -79,7 +79,7 @@ static struct mtdraw *to_mtdraw(struct cdev *cdev)
 	return cdev->priv;
 }
 
-static unsigned int mtdraw_offset_to_block(struct mtdraw *mtdraw, loff_t offset)
+static unsigned int mtdraw_offset_to_page(struct mtdraw *mtdraw, loff_t offset)
 {
 	u64 ofs64 = offset;
 
@@ -128,16 +128,16 @@ static ssize_t mtdraw_read(struct cdev *cdev, void *buf, size_t count,
 	struct mtdraw *mtdraw = to_mtdraw(cdev);
 	struct mtd_info *mtd = mtdraw->mtd;
 	ssize_t retlen = 0, ret = 1, toread;
-	ulong numblock;
+	ulong numpage;
 	int skip;
 
-	numblock = mtdraw_offset_to_block(mtdraw, offset);
-	skip = offset - numblock * mtdraw->rps;
+	numpage = mtdraw_offset_to_page(mtdraw, offset);
+	skip = offset - numpage * mtdraw->rps;
 
 	while (ret > 0 && count > 0) {
 		toread = min_t(int, count, mtdraw->rps - skip);
 		ret = mtdraw_read_unaligned(mtdraw, buf, toread,
-					    skip, numblock++ * mtd->writesize);
+					    skip, numpage++ * mtd->writesize);
 		buf += ret;
 		skip = 0;
 		count -= ret;
@@ -155,10 +155,10 @@ static loff_t mtdraw_raw_to_mtd_offset(struct mtdraw *mtdraw, loff_t offset)
 {
 	struct mtd_info *mtd = mtdraw->mtd;
 
-	return (loff_t)mtdraw_offset_to_block(mtdraw, offset) * mtd->writesize;
+	return (loff_t)mtdraw_offset_to_page(mtdraw, offset) * mtd->writesize;
 }
 
-static int mtdraw_blkwrite(struct mtdraw *mtdraw, const void *buf,
+static int mtdraw_pagewrite(struct mtdraw *mtdraw, const void *buf,
 			       ulong offset)
 {
 	struct mtd_info *mtd = mtdraw->mtd;
@@ -187,16 +187,16 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 {
 	struct mtdraw *mtdraw = to_mtdraw(cdev);
 	struct mtd_info *mtd = mtdraw->mtd;
-	ulong numblock;
+	ulong numpage;
 	size_t retlen = 0, tofill;
 	int ret = 0;
 
-	numblock = mtdraw_offset_to_block(mtdraw, offset);
+	numpage = mtdraw_offset_to_page(mtdraw, offset);
 
 	if (mtdraw->write_fill &&
 	    mtdraw->write_ofs + mtdraw->write_fill != offset)
 		return -EINVAL;
-	if (mtdraw->write_fill == 0 && offset - numblock * mtd->writesize != 0)
+	if (mtdraw->write_fill == 0 && offset - numpage * mtd->writesize != 0)
 		return -EINVAL;
 
 	if (mtdraw->write_fill) {
@@ -208,23 +208,23 @@ static ssize_t mtdraw_write(struct cdev *cdev, const void *buf, size_t count,
 	}
 
 	if (mtdraw->write_fill == mtdraw->rps) {
-		numblock = mtdraw_offset_to_block(mtdraw, mtdraw->write_ofs);
-		ret = mtdraw_blkwrite(mtdraw, mtdraw->writebuf,
-				      mtd->writesize * numblock);
+		numpage = mtdraw_offset_to_page(mtdraw, mtdraw->write_ofs);
+		ret = mtdraw_pagewrite(mtdraw, mtdraw->writebuf,
+				      mtd->writesize * numpage);
 		if (ret)
 			return ret;
 		mtdraw->write_fill = 0;
 	}
 
-	numblock = mtdraw_offset_to_block(mtdraw, offset);
+	numpage = mtdraw_offset_to_page(mtdraw, offset);
 	while (ret >= 0 && count >= mtdraw->rps) {
-		ret = mtdraw_blkwrite(mtdraw, buf + retlen,
-				   mtd->writesize * numblock++);
+		ret = mtdraw_pagewrite(mtdraw, buf + retlen,
+				   mtd->writesize * numpage++);
 		if (ret)
 			return ret;
-		count -= ret;
-		retlen += ret;
-		offset += ret;
+		count -= mtdraw->rps;
+		retlen += mtdraw->rps;
+		offset += mtdraw->rps;
 	}
 
 	if (count) {

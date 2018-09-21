@@ -252,7 +252,8 @@ static int mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)
 	erase.len = mtd->erasesize;
 
 	while (count > 0) {
-		debug("erase 0x%08llx len: 0x%08llx\n", erase.addr, erase.len);
+		dev_dbg(&mtd->class_dev, "erase 0x%08llx len: 0x%08llx\n",
+			erase.addr, erase.len);
 
 		if (!mtd->allow_erasebad)
 			ret = mtd_block_isbad(mtd, erase.addr);
@@ -260,7 +261,8 @@ static int mtdraw_erase(struct cdev *cdev, loff_t count, loff_t offset)
 			ret = 0;
 
 		if (ret > 0) {
-			printf("Skipping bad block at 0x%08llx\n", erase.addr);
+			dev_info(&mtd->class_dev, "Skipping bad block at 0x%08llx\n",
+				 erase.addr);
 		} else {
 			ret = mtd_erase(mtd, &erase);
 			if (ret)

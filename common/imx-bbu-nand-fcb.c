@@ -459,7 +459,7 @@ static int read_fcb(struct mtd_info *mtd, int num, struct fcb_block **retfcb)
 		fcb = read_fcb_hamming_13_8(rawpage);
 
 	if (IS_ERR(fcb)) {
-		pr_err("Cannot read fcb\n");
+		pr_err("Cannot read fcb on block %d\n", num);
 		ret = PTR_ERR(fcb);
 		goto err;
 	}

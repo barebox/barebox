@@ -4,6 +4,7 @@ config CONSOLE_RATP
 	select RATP
 	select CRC16
 	select POLLER
+	select CMDLINE_EDITING
 	depends on CONSOLE_FULL
 	prompt "RATP console support"
 	help

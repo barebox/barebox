@@ -318,6 +318,17 @@ struct fcb_block *read_fcb_hamming_13_8(void *rawpage)
 	fcb = rawpage + 12;
 	ecc = rawpage + 512 + 12;
 
+	/*
+	 * The ROM does the check for the correct fingerprint and version before
+	 * correcting bitflips. This means we cannot allow bitflips in the
+	 * fingerprint and version. We bail out with an error if it's not correct.
+	 * This is currently done in the i.MX6qdl path. It needs to be checked if
+	 * the same happens in the BCH encoded variants (i.MX6ul(l)) aswell.
+	 */
+	if (((struct fcb_block *)fcb)->FingerPrint != 0x20424346 ||
+	    ((struct fcb_block *)fcb)->Version != 0x01000000)
+		return ERR_PTR(-EINVAL);
+
 	for (i = 0; i < 512; i++) {
 		parity = ecc[i];
 		np = calculate_parity_13_8(fcb[i]);

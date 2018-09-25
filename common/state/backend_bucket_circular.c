@@ -248,7 +248,7 @@ static int state_backend_bucket_circular_read(struct state_backend_storage_bucke
 		circ->write_area = 0;
 		dev_info(circ->dev, "Detected old on-storage format\n");
 	} else if (circ->last_written_length > circ->write_area
-		   || !IS_ALIGNED(circ->last_written_length, circ->writesize)) {
+		   || (circ->last_written_length % circ->writesize != 0)) {
 		circ->write_area = 0;
 		dev_err(circ->dev, "Error, invalid number of bytes written last time %d\n",
 			circ->last_written_length);
@@ -295,7 +295,7 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	    get_bucket_circular(bucket);
 	off_t offset;
 	struct state_backend_storage_bucket_circular_meta *meta;
-	uint32_t written_length = ALIGN(len + sizeof(*meta), circ->writesize);
+	uint32_t written_length = roundup(len + sizeof(*meta), circ->writesize);
 	int ret;
 	void *write_buf;
 

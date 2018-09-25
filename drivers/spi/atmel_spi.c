@@ -482,7 +482,7 @@ out_free:
 	return ret;
 }
 
-const static __maybe_unused const struct of_device_id atmel_spi_dt_ids[] = {
+const static __maybe_unused struct of_device_id atmel_spi_dt_ids[] = {
 	{ .compatible = "atmel,at91rm9200-spi" },
 	{ /* sentinel */ }
 };

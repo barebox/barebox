@@ -2237,7 +2237,7 @@ int open(const char *pathname, int flags, ...)
 	putname(nd.name);
 
 	if (error)
-		return error;
+		goto out1;
 
 	if (d_is_negative(dentry)) {
 		if (flags & O_CREAT) {

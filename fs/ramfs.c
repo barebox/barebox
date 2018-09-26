@@ -379,7 +379,9 @@ static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	}
 
 	if (newchunks > oldchunks) {
-		if (!data) {
+		if (data) {
+			data = ramfs_find_chunk(node, oldchunks - 1);
+		} else {
 			node->data = ramfs_get_chunk();
 			if (!node->data)
 				return -ENOMEM;

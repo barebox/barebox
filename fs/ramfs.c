@@ -176,6 +176,28 @@ static int ramfs_symlink(struct inode *dir, struct dentry *dentry,
 	return 0;
 }
 
+static int ramfs_unlink(struct inode *dir, struct dentry *dentry)
+{
+	struct inode *inode = d_inode(dentry);
+
+	if (inode) {
+		struct ramfs_inode *node = to_ramfs_inode(inode);
+		struct ramfs_chunk *chunk = node->data;
+
+		node->data = NULL;
+
+		while (chunk) {
+			struct ramfs_chunk *tmp = chunk;
+
+			chunk = chunk->next;
+
+			ramfs_put_chunk(tmp);
+		}
+	}
+
+	return simple_unlink(dir, dentry);
+}
+
 static const char *ramfs_get_link(struct dentry *dentry, struct inode *inode)
 {
 	return inode->i_link;
@@ -192,7 +214,7 @@ static const struct inode_operations ramfs_dir_inode_operations =
 	.symlink = ramfs_symlink,
 	.mkdir = ramfs_mkdir,
 	.rmdir = simple_rmdir,
-	.unlink = simple_unlink,
+	.unlink = ramfs_unlink,
 	.create = ramfs_create,
 };
 

@@ -2535,6 +2535,9 @@ static int stat_filename(const char *filename, struct stat *s, unsigned int flag
 out_put:
 	path_put(&path);
 out:
+	if (ret)
+		errno = -ret;
+
 	return ret;
 }
 

@@ -66,7 +66,7 @@
 				priority {
 					reg = <0x4 0x4>;
 					type = "uint32";
-					default = <20>;
+					default = <21>;
 				};
 			};
 

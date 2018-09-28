@@ -426,7 +426,7 @@ static inline bool dir_emit_dotdot(struct file *file, struct dir_context *ctx)
 			parent_ino(file->f_path.dentry), DT_DIR) == 0;
 }
 
-static inline void dir_emit_dots(struct file *file, struct dir_context *ctx)
+static inline int dir_emit_dots(struct file *file, struct dir_context *ctx)
 {
 	if (ctx->pos == 0) {
 		dir_emit_dot(file, ctx);
@@ -436,6 +436,7 @@ static inline void dir_emit_dots(struct file *file, struct dir_context *ctx)
 		dir_emit_dotdot(file, ctx);
 		ctx->pos = 2;
 	}
+	return true;
 }
 
 struct file_operations {

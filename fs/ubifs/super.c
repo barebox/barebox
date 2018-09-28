@@ -2590,6 +2590,5 @@ int ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silen
 	return 0;
 out:
 	kfree(c);
-	kfree(sb);
 	return err;
 }

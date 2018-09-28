@@ -201,14 +201,19 @@
 	bus-width = <1>;
 	status = "okay";
 
-	environment_mmc: partition@178000 {
-		label = "environment";
-		reg = <0x178000 0x8000>;
-	};
+	partitions {
+		compatible = "fixed-partitions";
+		#size-cells = <1>;
+		#address-cells = <1>;
+		environment_mmc: partition@178000 {
+			label = "environment";
+			reg = <0x178000 0x8000>;
+		};
 
-	state_mmc: partition@180000 {
-		label = "state";
-		reg = <0x180000 0xC00>;
+		state_mmc: partition@180000 {
+			label = "state";
+			reg = <0x180000 0xC00>;
+		};
 	};
 };
 

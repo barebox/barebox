@@ -207,12 +207,12 @@
 		#address-cells = <1>;
 		environment_mmc: partition@178000 {
 			label = "environment";
-			reg = <0x178000 0x8000>;
+			reg = <0x300000 0x8000>;
 		};
 
 		state_mmc: partition@180000 {
 			label = "state";
-			reg = <0x180000 0xC00>;
+			reg = <0x400000 0x8000>;
 		};
 	};
 };

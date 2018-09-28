@@ -21,9 +21,7 @@
  * larger is the journal, the more memory its index may consume.
  */
 
-#ifdef __BAREBOX__
 #include <linux/err.h>
-#endif
 #include "ubifs.h"
 #include <linux/bug.h>
 #include <linux/list_sort.h>
@@ -77,103 +75,6 @@ struct bud_entry {
 	int free;
 	int dirty;
 };
-
-/**
- * set_bud_lprops - set free and dirty space used by a bud.
- * @c: UBIFS file-system description object
- * @b: bud entry which describes the bud
- *
- * This function makes sure the LEB properties of bud @b are set correctly
- * after the replay. Returns zero in case of success and a negative error code
- * in case of failure.
- */
-static int set_bud_lprops(struct ubifs_info *c, struct bud_entry *b)
-{
-	const struct ubifs_lprops *lp;
-	int err = 0, dirty;
-
-	ubifs_get_lprops(c);
-
-	lp = ubifs_lpt_lookup_dirty(c, b->bud->lnum);
-	if (IS_ERR(lp)) {
-		err = PTR_ERR(lp);
-		goto out;
-	}
-
-	dirty = lp->dirty;
-	if (b->bud->start == 0 && (lp->free != c->leb_size || lp->dirty != 0)) {
-		/*
-		 * The LEB was added to the journal with a starting offset of
-		 * zero which means the LEB must have been empty. The LEB
-		 * property values should be @lp->free == @c->leb_size and
-		 * @lp->dirty == 0, but that is not the case. The reason is that
-		 * the LEB had been garbage collected before it became the bud,
-		 * and there was not commit inbetween. The garbage collector
-		 * resets the free and dirty space without recording it
-		 * anywhere except lprops, so if there was no commit then
-		 * lprops does not have that information.
-		 *
-		 * We do not need to adjust free space because the scan has told
-		 * us the exact value which is recorded in the replay entry as
-		 * @b->free.
-		 *
-		 * However we do need to subtract from the dirty space the
-		 * amount of space that the garbage collector reclaimed, which
-		 * is the whole LEB minus the amount of space that was free.
-		 */
-		dbg_mnt("bud LEB %d was GC'd (%d free, %d dirty)", b->bud->lnum,
-			lp->free, lp->dirty);
-		dbg_gc("bud LEB %d was GC'd (%d free, %d dirty)", b->bud->lnum,
-			lp->free, lp->dirty);
-		dirty -= c->leb_size - lp->free;
-		/*
-		 * If the replay order was perfect the dirty space would now be
-		 * zero. The order is not perfect because the journal heads
-		 * race with each other. This is not a problem but is does mean
-		 * that the dirty space may temporarily exceed c->leb_size
-		 * during the replay.
-		 */
-		if (dirty != 0)
-			dbg_mnt("LEB %d lp: %d free %d dirty replay: %d free %d dirty",
-				b->bud->lnum, lp->free, lp->dirty, b->free,
-				b->dirty);
-	}
-	lp = ubifs_change_lp(c, lp, b->free, dirty + b->dirty,
-			     lp->flags | LPROPS_TAKEN, 0);
-	if (IS_ERR(lp)) {
-		err = PTR_ERR(lp);
-		goto out;
-	}
-
-	/* Make sure the journal head points to the latest bud */
-	err = ubifs_wbuf_seek_nolock(&c->jheads[b->bud->jhead].wbuf,
-				     b->bud->lnum, c->leb_size - b->free);
-
-out:
-	ubifs_release_lprops(c);
-	return err;
-}
-
-/**
- * set_buds_lprops - set free and dirty space for all replayed buds.
- * @c: UBIFS file-system description object
- *
- * This function sets LEB properties for all replayed buds. Returns zero in
- * case of success and a negative error code in case of failure.
- */
-static int set_buds_lprops(struct ubifs_info *c)
-{
-	struct bud_entry *b;
-	int err;
-
-	list_for_each_entry(b, &c->replay_buds, list) {
-		err = set_bud_lprops(c, b);
-		if (err)
-			return err;
-	}
-
-	return 0;
-}
 
 /**
  * trun_remove_range - apply a replay entry for a truncation to the TNC.
@@ -956,41 +857,6 @@ out_dump:
 }
 
 /**
- * take_ihead - update the status of the index head in lprops to 'taken'.
- * @c: UBIFS file-system description object
- *
- * This function returns the amount of free space in the index head LEB or a
- * negative error code.
- */
-static int take_ihead(struct ubifs_info *c)
-{
-	const struct ubifs_lprops *lp;
-	int err, free;
-
-	ubifs_get_lprops(c);
-
-	lp = ubifs_lpt_lookup_dirty(c, c->ihead_lnum);
-	if (IS_ERR(lp)) {
-		err = PTR_ERR(lp);
-		goto out;
-	}
-
-	free = lp->free;
-
-	lp = ubifs_change_lp(c, lp, LPROPS_NC, LPROPS_NC,
-			     lp->flags | LPROPS_TAKEN, 0);
-	if (IS_ERR(lp)) {
-		err = PTR_ERR(lp);
-		goto out;
-	}
-
-	err = free;
-out:
-	ubifs_release_lprops(c);
-	return err;
-}
-
-/**
  * ubifs_replay_journal - replay journal.
  * @c: UBIFS file-system description object
  *
@@ -1000,20 +866,9 @@ out:
  */
 int ubifs_replay_journal(struct ubifs_info *c)
 {
-	int err, lnum, free;
+	int err, lnum;
 
 	BUILD_BUG_ON(UBIFS_TRUN_KEY > 5);
-
-	/* Update the status of the index head in lprops to 'taken' */
-	free = take_ihead(c);
-	if (free < 0)
-		return free; /* Error code */
-
-	if (c->ihead_offs != c->leb_size - free) {
-		ubifs_err(c, "bad index head LEB %d:%d", c->ihead_lnum,
-			  c->ihead_offs);
-		return -EINVAL;
-	}
 
 	dbg_mnt("start replaying the journal");
 	c->replaying = 1;
@@ -1047,10 +902,6 @@ int ubifs_replay_journal(struct ubifs_info *c)
 		goto out;
 
 	err = apply_replay_list(c);
-	if (err)
-		goto out;
-
-	err = set_buds_lprops(c);
 	if (err)
 		goto out;
 

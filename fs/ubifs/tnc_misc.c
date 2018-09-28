@@ -16,9 +16,7 @@
  * putting it all in one file would make that file too big and unreadable.
  */
 
-#ifdef __BAREBOX__
 #include <linux/err.h>
-#endif
 #include "ubifs.h"
 
 /**
@@ -452,19 +450,9 @@ int ubifs_tnc_read_node(struct ubifs_info *c, struct ubifs_zbranch *zbr,
 {
 	union ubifs_key key1, *key = &zbr->key;
 	int err, type = key_type(c, key);
-	struct ubifs_wbuf *wbuf;
 
-	/*
-	 * 'zbr' has to point to on-flash node. The node may sit in a bud and
-	 * may even be in a write buffer, so we have to take care about this.
-	 */
-	wbuf = ubifs_get_wbuf(c, zbr->lnum);
-	if (wbuf)
-		err = ubifs_read_node_wbuf(wbuf, node, type, zbr->len,
-					   zbr->lnum, zbr->offs);
-	else
-		err = ubifs_read_node(c, node, type, zbr->len, zbr->lnum,
-				      zbr->offs);
+	err = ubifs_read_node(c, node, type, zbr->len, zbr->lnum,
+			      zbr->offs);
 
 	if (err) {
 		dbg_tnck(key, "key ");

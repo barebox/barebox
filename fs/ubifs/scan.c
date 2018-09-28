@@ -16,9 +16,7 @@
  * debugging functions.
  */
 
-#ifdef __BAREBOX__
 #include <linux/err.h>
-#endif
 #include "ubifs.h"
 
 /**

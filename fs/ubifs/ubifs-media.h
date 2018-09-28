@@ -524,11 +524,7 @@ struct ubifs_dent_node {
 	__u8 type;
 	__le16 nlen;
 	__u8 padding2[4]; /* Watch 'zero_dent_node_unused()' if changing! */
-#ifndef __BAREBOX__
-	__u8 name[];
-#else
 	char name[];
-#endif
 } __packed;
 
 /**
@@ -735,11 +731,7 @@ struct ubifs_branch {
 	__le32 lnum;
 	__le32 offs;
 	__le32 len;
-#ifndef __BAREBOX__
-	__u8 key[];
-#else
 	char key[];
-#endif
 } __packed;
 
 /**
@@ -753,11 +745,7 @@ struct ubifs_idx_node {
 	struct ubifs_ch ch;
 	__le16 child_cnt;
 	__le16 level;
-#ifndef __BAREBOX__
-	__u8 branches[];
-#else
 	char branches[];
-#endif
 } __packed;
 
 /**

@@ -12,9 +12,7 @@
 /* This file implements reading and writing the master node */
 
 #include "ubifs.h"
-#ifdef __BAREBOX__
 #include <linux/err.h>
-#endif
 
 /**
  * scan_for_master - search the valid master node.
@@ -335,57 +333,7 @@ int ubifs_read_master(struct ubifs_info *c)
 	if (err)
 		return err;
 
-#ifndef __BAREBOX__
-	err = dbg_old_index_check_init(c, &c->zroot);
-#endif
 
 	return err;
 }
 
-#ifndef __BAREBOX__
-/**
- * ubifs_write_master - write master node.
- * @c: UBIFS file-system description object
- *
- * This function writes the master node. Returns zero in case of success and a
- * negative error code in case of failure. The master node is written twice to
- * enable recovery.
- */
-int ubifs_write_master(struct ubifs_info *c)
-{
-	int err, lnum, offs, len;
-
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	if (c->ro_error)
-		return -EROFS;
-
-	lnum = UBIFS_MST_LNUM;
-	offs = c->mst_offs + c->mst_node_alsz;
-	len = UBIFS_MST_NODE_SZ;
-
-	if (offs + UBIFS_MST_NODE_SZ > c->leb_size) {
-		err = ubifs_leb_unmap(c, lnum);
-		if (err)
-			return err;
-		offs = 0;
-	}
-
-	c->mst_offs = offs;
-	c->mst_node->highest_inum = cpu_to_le64(c->highest_inum);
-
-	err = ubifs_write_node(c, c->mst_node, len, lnum, offs);
-	if (err)
-		return err;
-
-	lnum += 1;
-
-	if (offs == 0) {
-		err = ubifs_leb_unmap(c, lnum);
-		if (err)
-			return err;
-	}
-	err = ubifs_write_node(c, c->mst_node, len, lnum, offs);
-
-	return err;
-}
-#endif

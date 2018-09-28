@@ -133,27 +133,6 @@ static inline int ubifs_wbuf_sync(struct ubifs_wbuf *wbuf)
 	return err;
 }
 
-#ifndef __BAREBOX__
-/**
- * ubifs_encode_dev - encode device node IDs.
- * @dev: UBIFS device node information
- * @rdev: device IDs to encode
- *
- * This is a helper function which encodes major/minor numbers of a device node
- * into UBIFS device node description. We use standard Linux "new" and "huge"
- * encodings.
- */
-static inline int ubifs_encode_dev(union ubifs_dev_desc *dev, dev_t rdev)
-{
-	if (new_valid_dev(rdev)) {
-		dev->new = cpu_to_le32(new_encode_dev(rdev));
-		return sizeof(dev->new);
-	} else {
-		dev->huge = cpu_to_le64(huge_encode_dev(rdev));
-		return sizeof(dev->huge);
-	}
-}
-#endif
 
 /**
  * ubifs_add_dirt - add dirty space to LEB properties.
@@ -166,7 +145,7 @@ static inline int ubifs_encode_dev(union ubifs_dev_desc *dev, dev_t rdev)
  */
 static inline int ubifs_add_dirt(struct ubifs_info *c, int lnum, int dirty)
 {
-	return ubifs_update_one_lp(c, lnum, LPROPS_NC, dirty, 0, 0);
+	return 0;
 }
 
 /**
@@ -180,8 +159,7 @@ static inline int ubifs_add_dirt(struct ubifs_info *c, int lnum, int dirty)
  */
 static inline int ubifs_return_leb(struct ubifs_info *c, int lnum)
 {
-	return ubifs_change_one_lp(c, lnum, LPROPS_NC, LPROPS_NC, 0,
-				   LPROPS_TAKEN, 0);
+	return 0;
 }
 
 /**
@@ -217,27 +195,12 @@ struct ubifs_branch *ubifs_idx_branch(const struct ubifs_info *c,
 static inline void *ubifs_idx_key(const struct ubifs_info *c,
 				  const struct ubifs_idx_node *idx)
 {
-#ifndef __BAREBOX__
-	return (void *)((struct ubifs_branch *)idx->branches)->key;
-#else
 	struct ubifs_branch *tmp;
 
 	tmp = (struct ubifs_branch *)idx->branches;
 	return (void *)tmp->key;
-#endif
 }
 
-#ifndef __BAREBOX__
-/**
- * ubifs_current_time - round current time to time granularity.
- * @inode: inode
- */
-static inline struct timespec ubifs_current_time(struct inode *inode)
-{
-	return (inode->i_sb->s_time_gran < NSEC_PER_SEC) ?
-		current_fs_time(inode->i_sb) : CURRENT_TIME_SEC;
-}
-#endif
 
 /**
  * ubifs_tnc_lookup - look up a file-system node.

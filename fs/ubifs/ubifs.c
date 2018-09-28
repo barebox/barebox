@@ -56,9 +56,6 @@ static struct ubifs_compressor none_compr = {
 
 static struct ubifs_compressor lzo_compr = {
 	.compr_type = UBIFS_COMPR_LZO,
-#ifndef __BAREBOX__
-	.comp_mutex = &lzo_mutex,
-#endif
 	.name = "lzo",
 #ifdef CONFIG_LZO_DECOMPRESS
 	.capi_name = "lzo",
@@ -68,10 +65,6 @@ static struct ubifs_compressor lzo_compr = {
 
 static struct ubifs_compressor zlib_compr = {
 	.compr_type = UBIFS_COMPR_ZLIB,
-#ifndef __BAREBOX__
-	.comp_mutex = &deflate_mutex,
-	.decomp_mutex = &inflate_mutex,
-#endif
 	.name = "zlib",
 #ifdef CONFIG_ZLIB
 	.capi_name = "deflate",
@@ -83,7 +76,6 @@ static struct ubifs_compressor zlib_compr = {
 struct ubifs_compressor *ubifs_compressors[UBIFS_COMPR_TYPES_CNT];
 
 
-#ifdef __BAREBOX__
 /* from mm/util.c */
 
 struct crypto_comp {
@@ -146,7 +138,6 @@ crypto_comp_decompress(const struct ubifs_info *c, struct crypto_comp *tfm,
 /* Global clean znode counter (for all mounted UBIFS instances) */
 atomic_long_t ubifs_clean_zn_cnt;
 
-#endif
 
 /**
  * ubifs_decompress - decompress data.
@@ -253,11 +244,6 @@ int __init ubifs_compressors_init(void)
 }
 
 /* file.c */
-
-static inline void *kmap(struct page *page)
-{
-	return page->addr;
-}
 
 static int read_block(struct inode *inode, void *addr, unsigned int block,
 		      struct ubifs_data_node *dn)

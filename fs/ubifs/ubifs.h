@@ -15,23 +15,6 @@
 #ifndef __UBIFS_H__
 #define __UBIFS_H__
 
-#ifndef __BAREBOX__
-#include <asm/div64.h>
-#include <linux/statfs.h>
-#include <linux/fs.h>
-#include <linux/err.h>
-#include <linux/sched.h>
-#include <linux/slab.h>
-#include <linux/vmalloc.h>
-#include <linux/spinlock.h>
-#include <linux/mutex.h>
-#include <linux/rwsem.h>
-#include <linux/mtd/ubi.h>
-#include <linux/pagemap.h>
-#include <linux/backing-dev.h>
-#include <linux/security.h>
-#include "ubifs-media.h"
-#else
 #include <common.h>
 #include <lzo.h>
 #include <crc.h>
@@ -53,23 +36,7 @@
 struct file;
 struct iattr;
 struct kstat;
-
-extern struct super_block *ubifs_sb;
-
-extern unsigned int ubifs_msg_flags;
-extern unsigned int ubifs_chk_flags;
-extern unsigned int ubifs_tst_flags;
-
-#define pgoff_t		unsigned long
-
-/*
- * We "simulate" the Linux page struct much simpler here
- */
-struct page {
-	pgoff_t index;
-	void *addr;
-	struct inode *inode;
-};
+struct page;
 
 /* uapi/linux/limits.h */
 #define XATTR_LIST_MAX 65536	/* size of extended attribute namelist (64k) */
@@ -81,11 +48,6 @@ struct page {
 
 /* debug.c */
 
-#define module_param_named(...)
-
-/* misc.h */
-#endif
-
 /* Version of this UBIFS implementation */
 #define UBIFS_VERSION 1
 
@@ -94,17 +56,6 @@ struct page {
 	pr_notice("UBIFS (ubi%d:%d): " fmt "\n",                    \
 		  (c)->vi.ubi_num, (c)->vi.vol_id, ##__VA_ARGS__)
 /* UBIFS error messages */
-#ifndef __BAREBOX__
-#define ubifs_err(c, fmt, ...)                                      \
-	pr_err("UBIFS error (ubi%d:%d pid %d): %s: " fmt "\n",      \
-	       (c)->vi.ubi_num, (c)->vi.vol_id, current->pid,       \
-	       __func__, ##__VA_ARGS__)
-/* UBIFS warning messages */
-#define ubifs_warn(c, fmt, ...)                                     \
-	pr_warn("UBIFS warning (ubi%d:%d pid %d): %s: " fmt "\n",   \
-		(c)->vi.ubi_num, (c)->vi.vol_id, current->pid,      \
-		__func__, ##__VA_ARGS__)
-#else
 #define ubifs_err(c, fmt, ...)                                      \
 	pr_err("UBIFS error (ubi%d:%d pid %d): %s: " fmt "\n",      \
 	       (c)->vi.ubi_num, (c)->vi.vol_id, 0,                  \
@@ -114,7 +65,6 @@ struct page {
 	pr_warn("UBIFS warning (ubi%d:%d pid %d): %s: " fmt "\n",   \
 		(c)->vi.ubi_num, (c)->vi.vol_id, 0,                 \
 		__func__, ##__VA_ARGS__)
-#endif
 
 /*
  * A variant of 'ubifs_err()' which takes the UBIFS file-sytem description
@@ -903,10 +853,8 @@ struct ubifs_compressor {
 	struct mutex *decomp_mutex;
 	const char *name;
 	const char *capi_name;
-#ifdef __BAREBOX__
 	int (*decompress)(const unsigned char *in, size_t in_len,
 			  unsigned char *out, size_t *out_len);
-#endif
 };
 
 /**
@@ -1301,9 +1249,6 @@ struct ubifs_debug_info;
  */
 struct ubifs_info {
 	struct super_block *vfs_sb;
-#ifndef __BAREBOX__
-	struct backing_dev_info bdi;
-#endif
 	ino_t highest_inum;
 	unsigned long long max_sqnum;
 	unsigned long long cmt_no;
@@ -1527,12 +1472,7 @@ struct ubifs_info {
 	struct rb_root size_tree;
 	struct ubifs_mount_opts mount_opts;
 
-#ifndef __BAREBOX__
-	struct ubifs_debug_info *dbg;
-#endif
-#ifdef __BAREBOX__
 	struct device_d *dev;
-#endif
 };
 
 extern struct list_head ubifs_infos;
@@ -1706,13 +1646,6 @@ int ubifs_tnc_read_node(struct ubifs_info *c, struct ubifs_zbranch *zbr,
 int ubifs_tnc_start_commit(struct ubifs_info *c, struct ubifs_zbranch *zroot);
 int ubifs_tnc_end_commit(struct ubifs_info *c);
 
-#ifndef __BAREBOX__
-/* shrinker.c */
-unsigned long ubifs_shrink_scan(struct shrinker *shrink,
-				struct shrink_control *sc);
-unsigned long ubifs_shrink_count(struct shrinker *shrink,
-				 struct shrink_control *sc);
-#endif
 
 /* commit.c */
 int ubifs_bg_thread(void *info);
@@ -1873,9 +1806,7 @@ int ubifs_decompress(const struct ubifs_info *c, const void *buf, int len,
 #include "misc.h"
 #include "key.h"
 
-#ifdef __BAREBOX__
 void ubifs_umount(struct ubifs_info *c);
 int ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silent);
-#endif
 
 #endif /* !__UBIFS_H__ */

@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Adrian Hunter
@@ -18,7 +29,6 @@
 
 #include <linux/err.h>
 #include "ubifs.h"
-
 
 static const char *get_key_fmt(int fmt)
 {
@@ -60,6 +70,10 @@ static const char *get_key_type(int type)
 	}
 }
 
+/*
+ * removed in barebox
+static const char *get_dent_type(int type)
+ */
 
 const char *dbg_snprintf_key(const struct ubifs_info *c,
 			     const union ubifs_key *key, char *buffer, int len)
@@ -96,7 +110,7 @@ const char *dbg_snprintf_key(const struct ubifs_info *c,
 		}
 	} else
 		len -= snprintf(p, len, "bad key format %d", c->key_fmt);
-	ubifs_assert(len > 0);
+	ubifs_assert(c, len > 0);
 	return p;
 }
 
@@ -195,6 +209,7 @@ static void dump_ch(const struct ubifs_ch *ch)
 
 void ubifs_dump_inode(struct ubifs_info *c, const struct inode *inode)
 {
+	/* removed in barebox */
 }
 
 void ubifs_dump_node(const struct ubifs_info *c, const void *node)
@@ -363,7 +378,8 @@ void ubifs_dump_node(const struct ubifs_info *c, const void *node)
 			pr_err("(bad name length, not printing, bad or corrupted node)");
 		else {
 			for (i = 0; i < nlen && dent->name[i]; i++)
-				pr_cont("%c", dent->name[i]);
+				pr_cont("%c", isprint(dent->name[i]) ?
+					dent->name[i] : '?');
 		}
 		pr_cont("\n");
 
@@ -444,171 +460,310 @@ void ubifs_dump_node(const struct ubifs_info *c, const void *node)
 	spin_unlock(&dbg_lock);
 }
 
-void ubifs_dump_budg(struct ubifs_info *c, const struct ubifs_budg_info *bi)
-{
-}
+/*
+ * removed in barebox
+void ubifs_dump_budget_req(const struct ubifs_budget_req *req)
+ */
 
+/*
+ * removed in barebox
+void ubifs_dump_lstats(const struct ubifs_lp_stats *lst)
+ */
+
+/*
+ * removed in barebox
+void ubifs_dump_budg(struct ubifs_info *c, const struct ubifs_budg_info *bi)
+ */
+
+/*
+ * removed in barebox
+void ubifs_dump_lprop(const struct ubifs_info *c, const struct ubifs_lprops *lp)
+ */
+
+/*
+ * removed in barebox
+void ubifs_dump_lprops(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+void ubifs_dump_lpt_info(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
 void ubifs_dump_sleb(const struct ubifs_info *c,
 		     const struct ubifs_scan_leb *sleb, int offs)
-{
-	struct ubifs_scan_node *snod;
+ */
 
-	pr_err("(pid %d) start dumping scanned data from LEB %d:%d\n",
-	       0, sleb->lnum, offs);
-
-	list_for_each_entry(snod, &sleb->nodes, list) {
-		cond_resched();
-		pr_err("Dumping node at LEB %d:%d len %d\n",
-		       sleb->lnum, snod->offs, snod->len);
-		ubifs_dump_node(c, snod->node);
-	}
-}
-
+/*
+ * removed in barebox
 void ubifs_dump_leb(const struct ubifs_info *c, int lnum)
-{
-	struct ubifs_scan_leb *sleb;
-	struct ubifs_scan_node *snod;
-	void *buf;
+ */
 
-	pr_err("(pid %d) start dumping LEB %d\n", 0, lnum);
-
-	buf = __vmalloc(c->leb_size, GFP_NOFS, PAGE_KERNEL);
-	if (!buf) {
-		ubifs_err(c, "cannot allocate memory for dumping LEB %d", lnum);
-		return;
-	}
-
-	sleb = ubifs_scan(c, lnum, 0, buf, 0);
-	if (IS_ERR(sleb)) {
-		ubifs_err(c, "scan error %d", (int)PTR_ERR(sleb));
-		goto out;
-	}
-
-	pr_err("LEB %d has %d nodes ending at %d\n", lnum,
-	       sleb->nodes_cnt, sleb->endpt);
-
-	list_for_each_entry(snod, &sleb->nodes, list) {
-		cond_resched();
-		pr_err("Dumping node at LEB %d:%d len %d\n", lnum,
-		       snod->offs, snod->len);
-		ubifs_dump_node(c, snod->node);
-	}
-
-	pr_err("(pid %d) finish dumping LEB %d\n", 0, lnum);
-	ubifs_scan_destroy(sleb);
-
-out:
-	vfree(buf);
-	return;
-}
-
+/*
+ * removed in barebox
 void ubifs_dump_znode(const struct ubifs_info *c,
 		      const struct ubifs_znode *znode)
-{
-	int n;
-	const struct ubifs_zbranch *zbr;
-	char key_buf[DBG_KEY_BUF_LEN];
+ */
 
-	spin_lock(&dbg_lock);
-	if (znode->parent)
-		zbr = &znode->parent->zbranch[znode->iip];
-	else
-		zbr = &c->zroot;
 
-	pr_err("znode %p, LEB %d:%d len %d parent %p iip %d level %d child_cnt %d flags %lx\n",
-	       znode, zbr->lnum, zbr->offs, zbr->len, znode->parent, znode->iip,
-	       znode->level, znode->child_cnt, znode->flags);
+/*
+ * removed in barebox
+void ubifs_dump_heap(struct ubifs_info *c, struct ubifs_lpt_heap *heap, int cat)
+ */
 
-	if (znode->child_cnt <= 0 || znode->child_cnt > c->fanout) {
-		spin_unlock(&dbg_lock);
-		return;
-	}
+/*
+ * removed in barebox
+void ubifs_dump_pnode(struct ubifs_info *c, struct ubifs_pnode *pnode,
+		      struct ubifs_nnode *parent, int iip)
+ */
 
-	pr_err("zbranches:\n");
-	for (n = 0; n < znode->child_cnt; n++) {
-		zbr = &znode->zbranch[n];
-		if (znode->level > 0)
-			pr_err("\t%d: znode %p LEB %d:%d len %d key %s\n",
-			       n, zbr->znode, zbr->lnum, zbr->offs, zbr->len,
-			       dbg_snprintf_key(c, &zbr->key, key_buf,
-						DBG_KEY_BUF_LEN));
-		else
-			pr_err("\t%d: LNC %p LEB %d:%d len %d key %s\n",
-			       n, zbr->znode, zbr->lnum, zbr->offs, zbr->len,
-			       dbg_snprintf_key(c, &zbr->key, key_buf,
-						DBG_KEY_BUF_LEN));
-	}
-	spin_unlock(&dbg_lock);
-}
-
+/*
+ * removed in barebox
 void ubifs_dump_tnc(struct ubifs_info *c)
-{
-	struct ubifs_znode *znode;
-	int level;
+ */
 
-	pr_err("\n");
-	pr_err("(pid %d) start dumping TNC tree\n", 0);
-	znode = ubifs_tnc_levelorder_next(c->zroot.znode, NULL);
-	level = znode->level;
-	pr_err("== Level %d ==\n", level);
-	while (znode) {
-		if (level != znode->level) {
-			level = znode->level;
-			pr_err("== Level %d ==\n", level);
-		}
-		ubifs_dump_znode(c, znode);
-		znode = ubifs_tnc_levelorder_next(c->zroot.znode, znode);
-	}
-	pr_err("(pid %d) finish dumping TNC tree\n", 0);
-}
 
+/*
+ * removed in barebox
 static int dump_znode(struct ubifs_info *c, struct ubifs_znode *znode,
 		      void *priv)
-{
-	ubifs_dump_znode(c, znode);
-	return 0;
-}
-
-/**
- * ubifs_dump_index - dump the on-flash index.
- * @c: UBIFS file-system description object
- *
- * This function dumps whole UBIFS indexing B-tree, unlike 'ubifs_dump_tnc()'
- * which dumps only in-memory znodes and does not read znodes which from flash.
  */
+
+/*
+ * removed in barebox
 void ubifs_dump_index(struct ubifs_info *c)
-{
-	dbg_walk_index(c, NULL, dump_znode, NULL);
-}
+ */
 
+/*
+ * removed in barebox
+void dbg_save_space_info(struct ubifs_info *c)
+ */
 
+/*
+ * removed in barebox
+int dbg_check_space_info(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+int dbg_check_synced_i_size(const struct ubifs_info *c, struct inode *inode)
+ */
+
+/*
+ * removed in barebox
 int dbg_check_dir(struct ubifs_info *c, const struct inode *dir)
-{
-	return 0;
-}
+ */
 
-void dbg_debugfs_exit_fs(struct ubifs_info *c)
-{
-	return;
-}
+/*
+ * removed in barebox
+static int dbg_check_key_order(struct ubifs_info *c, struct ubifs_zbranch *zbr1,
+			       struct ubifs_zbranch *zbr2)
+ */
 
-int ubifs_debugging_init(struct ubifs_info *c)
-{
-	return 0;
-}
-void ubifs_debugging_exit(struct ubifs_info *c)
-{
-}
-int dbg_check_filesystem(struct ubifs_info *c)
-{
-	return 0;
-}
-int dbg_debugfs_init_fs(struct ubifs_info *c)
-{
-	return 0;
-}
+/*
+ * removed in barebox
+static int dbg_check_znode(struct ubifs_info *c, struct ubifs_zbranch *zbr)
+ */
 
 int dbg_check_tnc(struct ubifs_info *c, int extra)
 {
 	return 0;
 }
+
+/*
+ * removed in barebox
+int dbg_walk_index(struct ubifs_info *c, dbg_leaf_callback leaf_cb,
+		   dbg_znode_callback znode_cb, void *priv)
+ */
+
+/*
+ * removed in barebox
+static int add_size(struct ubifs_info *c, struct ubifs_znode *znode, void *priv)
+ */
+
+/*
+ * removed in barebox
+int dbg_check_idx_size(struct ubifs_info *c, long long idx_size)
+ */
+
+/*
+ * removed in barebox
+static struct fsck_inode *add_inode(struct ubifs_info *c,
+				    struct fsck_data *fsckd,
+				    struct ubifs_ino_node *ino)
+ */
+
+/*
+ * removed in barebox
+static struct fsck_inode *search_inode(struct fsck_data *fsckd, ino_t inum)
+ */
+
+/*
+ * removed in barebox
+static struct fsck_inode *read_add_inode(struct ubifs_info *c,
+					 struct fsck_data *fsckd, ino_t inum)
+ */
+
+/*
+ * removed in barebox
+static int check_leaf(struct ubifs_info *c, struct ubifs_zbranch *zbr,
+		      void *priv)
+ */
+
+/*
+ * removed in barebox
+static void free_inodes(struct fsck_data *fsckd)
+ */
+
+
+/*
+ * removed in barebox
+static int check_inodes(struct ubifs_info *c, struct fsck_data *fsckd)
+ */
+
+/*
+ * removed in barebox
+int dbg_check_filesystem(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+int dbg_check_data_nodes_order(struct ubifs_info *c, struct list_head *head)
+ */
+
+/*
+ * removed in barebox
+int dbg_check_nondata_nodes_order(struct ubifs_info *c, struct list_head *head)
+ */
+
+/*
+ * removed in barebox
+static inline int chance(unsigned int n, unsigned int out_of)
+ */
+
+/*
+ * removed in barebox
+static int power_cut_emulated(struct ubifs_info *c, int lnum, int write)
+ */
+
+/*
+ * removed in barebox
+static int corrupt_data(const struct ubifs_info *c, const void *buf,
+			unsigned int len)
+ */
+
+/*
+ * removed in barebox
+ int dbg_leb_write(struct ubifs_info *c, int lnum, const void *buf,
+		  int offs, int len)
+ */
+
+/*
+ * removed in barebox
+int dbg_leb_change(struct ubifs_info *c, int lnum, const void *buf,
+		   int len)
+ */
+
+/*
+ * removed in barebox
+int dbg_leb_unmap(struct ubifs_info *c, int lnum)
+ */
+
+/*
+ * removed in barebox
+int dbg_leb_map(struct ubifs_info *c, int lnum)
+ */
+
+/*
+ * removed in barebox
+static int dfs_file_open(struct inode *inode, struct file *file)
+ */
+
+/*
+ * removed in barebox
+static int provide_user_output(int val, char __user *u, size_t count,
+			       loff_t *ppos)
+ */
+
+/*
+ * removed in barebox
+static ssize_t dfs_file_read(struct file *file, char __user *u, size_t count,
+			     loff_t *ppos)
+ */
+
+/*
+ * removed in barebox
+static int interpret_user_input(const char __user *u, size_t count)
+ */
+
+/*
+ * removed in barebox
+static ssize_t dfs_file_write(struct file *file, const char __user *u,
+			      size_t count, loff_t *ppos)
+ */
+
+/*
+ * removed in barebox
+int dbg_debugfs_init_fs(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+void dbg_debugfs_exit_fs(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+static ssize_t dfs_global_file_read(struct file *file, char __user *u,
+				    size_t count, loff_t *ppos)
+ */
+
+/*
+ * removed in barebox
+static ssize_t dfs_global_file_write(struct file *file, const char __user *u,
+				     size_t count, loff_t *ppos)
+ */
+
+/*
+ * removed in barebox
+int dbg_debugfs_init(void)
+ */
+
+/*
+ * removed in barebox
+void dbg_debugfs_exit(void)
+ */
+
+void ubifs_assert_failed(struct ubifs_info *c, const char *expr,
+			 const char *file, int line)
+{
+	ubifs_err(c, "UBIFS assert failed: %s, in %s:%u", expr, file, line);
+
+	switch (c->assert_action) {
+		case ASSACT_PANIC:
+		BUG();
+		break;
+
+		case ASSACT_RO:
+		ubifs_ro_mode(c, -EINVAL);
+		break;
+
+		case ASSACT_REPORT:
+		default:
+		dump_stack();
+		break;
+
+	}
+}
+
+/*
+ * removed in barebox
+int ubifs_debugging_init(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+void ubifs_debugging_exit(struct ubifs_info *c)
+ */

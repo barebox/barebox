@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Adrian Hunter
@@ -16,9 +27,6 @@
  * journal.
  */
 
-#ifdef __UBOOT__
-#include <linux/err.h>
-#endif
 #include "ubifs.h"
 
 /**
@@ -51,6 +59,16 @@ struct ubifs_bud *ubifs_search_bud(struct ubifs_info *c, int lnum)
 	return NULL;
 }
 
+/*
+ * removed in barebox
+struct ubifs_wbuf *ubifs_get_wbuf(struct ubifs_info *c, int lnum)
+ */
+
+/*
+ * removed in barebox
+static inline long long empty_log_bytes(const struct ubifs_info *c)
+ */
+
 /**
  * ubifs_add_bud - add bud LEB to the tree of buds and its journal head list.
  * @c: UBIFS file-system description object
@@ -67,7 +85,7 @@ void ubifs_add_bud(struct ubifs_info *c, struct ubifs_bud *bud)
 	while (*p) {
 		parent = *p;
 		b = rb_entry(parent, struct ubifs_bud, rb);
-		ubifs_assert(bud->lnum != b->lnum);
+		ubifs_assert(c, bud->lnum != b->lnum);
 		if (bud->lnum < b->lnum)
 			p = &(*p)->rb_left;
 		else
@@ -80,7 +98,7 @@ void ubifs_add_bud(struct ubifs_info *c, struct ubifs_bud *bud)
 		jhead = &c->jheads[bud->jhead];
 		list_add_tail(&bud->list, &jhead->buds_list);
 	} else
-		ubifs_assert(c->replaying && c->ro_mount);
+		ubifs_assert(c, c->replaying && c->ro_mount);
 
 	/*
 	 * Note, although this is a new bud, we anyway account this space now,
@@ -94,3 +112,54 @@ void ubifs_add_bud(struct ubifs_info *c, struct ubifs_bud *bud)
 		bud->start, dbg_jhead(bud->jhead), c->bud_bytes);
 	spin_unlock(&c->buds_lock);
 }
+
+/*
+ * removed in barebox
+int ubifs_add_bud_to_log(struct ubifs_info *c, int jhead, int lnum, int offs)
+ */
+
+/*
+ * removed in barebox
+static void remove_buds(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+int ubifs_log_start_commit(struct ubifs_info *c, int *ltail_lnum)
+ */
+
+/*
+ * removed in barebox
+int ubifs_log_end_commit(struct ubifs_info *c, int ltail_lnum)
+ */
+
+/*
+ * removed in barebox
+int ubifs_log_post_commit(struct ubifs_info *c, int old_ltail_lnum)
+ */
+
+/*
+ * removed in barebox
+static int done_already(struct rb_root *done_tree, int lnum)
+ */
+
+/*
+ * removed in barebox
+static void destroy_done_tree(struct rb_root *done_tree)
+ */
+
+/*
+ * removed in barebox
+static int add_node(struct ubifs_info *c, void *buf, int *lnum, int *offs,
+		    void *node)
+ */
+
+/*
+ * removed in barebox
+int ubifs_consolidate_log(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+static int dbg_check_bud_bytes(struct ubifs_info *c)
+ */

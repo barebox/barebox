@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Adrian Hunter
@@ -94,25 +105,27 @@ static inline struct ubifs_inode *ubifs_inode(const struct inode *inode)
 /**
  * ubifs_compr_present - check if compressor was compiled in.
  * @compr_type: compressor type to check
+ * @c: the UBIFS file-system description object
  *
  * This function returns %1 of compressor of type @compr_type is present, and
  * %0 if not.
  */
-static inline int ubifs_compr_present(int compr_type)
+static inline int ubifs_compr_present(struct ubifs_info *c, int compr_type)
 {
-	ubifs_assert(compr_type >= 0 && compr_type < UBIFS_COMPR_TYPES_CNT);
+	ubifs_assert(c, compr_type >= 0 && compr_type < UBIFS_COMPR_TYPES_CNT);
 	return !!ubifs_compressors[compr_type]->capi_name;
 }
 
 /**
  * ubifs_compr_name - get compressor name string by its type.
  * @compr_type: compressor type
+ * @c: the UBIFS file-system description object
  *
  * This function returns compressor type string.
  */
-static inline const char *ubifs_compr_name(int compr_type)
+static inline const char *ubifs_compr_name(struct ubifs_info *c, int compr_type)
 {
-	ubifs_assert(compr_type >= 0 && compr_type < UBIFS_COMPR_TYPES_CNT);
+	ubifs_assert(c, compr_type >= 0 && compr_type < UBIFS_COMPR_TYPES_CNT);
 	return ubifs_compressors[compr_type]->name;
 }
 
@@ -133,6 +146,10 @@ static inline int ubifs_wbuf_sync(struct ubifs_wbuf *wbuf)
 	return err;
 }
 
+/*
+ * removed in barebox
+static inline int ubifs_encode_dev(union ubifs_dev_desc *dev, dev_t rdev)
+ */
 
 /**
  * ubifs_add_dirt - add dirty space to LEB properties.
@@ -145,6 +162,7 @@ static inline int ubifs_wbuf_sync(struct ubifs_wbuf *wbuf)
  */
 static inline int ubifs_add_dirt(struct ubifs_info *c, int lnum, int dirty)
 {
+	/* removed in barebox */
 	return 0;
 }
 
@@ -159,6 +177,7 @@ static inline int ubifs_add_dirt(struct ubifs_info *c, int lnum, int dirty)
  */
 static inline int ubifs_return_leb(struct ubifs_info *c, int lnum)
 {
+	/* removed in barebox */
 	return 0;
 }
 
@@ -195,12 +214,8 @@ struct ubifs_branch *ubifs_idx_branch(const struct ubifs_info *c,
 static inline void *ubifs_idx_key(const struct ubifs_info *c,
 				  const struct ubifs_idx_node *idx)
 {
-	struct ubifs_branch *tmp;
-
-	tmp = (struct ubifs_branch *)idx->branches;
-	return (void *)tmp->key;
+	return (void *)((struct ubifs_branch *)idx->branches)->key;
 }
-
 
 /**
  * ubifs_tnc_lookup - look up a file-system node.
@@ -240,8 +255,8 @@ static inline void ubifs_get_lprops(struct ubifs_info *c)
  */
 static inline void ubifs_release_lprops(struct ubifs_info *c)
 {
-	ubifs_assert(mutex_is_locked(&c->lp_mutex));
-	ubifs_assert(c->lst.empty_lebs >= 0 &&
+	ubifs_assert(c, mutex_is_locked(&c->lp_mutex));
+	ubifs_assert(c, c->lst.empty_lebs >= 0 &&
 		     c->lst.empty_lebs <= c->main_lebs);
 	mutex_unlock(&c->lp_mutex);
 }
@@ -262,5 +277,7 @@ static inline int ubifs_next_log_lnum(const struct ubifs_info *c, int lnum)
 
 	return lnum;
 }
+
+const char *ubifs_assert_action_name(struct ubifs_info *c);
 
 #endif /* __UBIFS_MISC_H__ */

@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Adrian Hunter
@@ -52,6 +63,10 @@
 /* Default time granularity in nanoseconds */
 #define DEFAULT_TIME_GRAN 1000000000
 
+/*
+ * removed in barebox
+static int create_default_filesystem(struct ubifs_info *c)
+ */
 
 /**
  * validate_sb - validate superblock node.
@@ -179,6 +194,16 @@ static int validate_sb(struct ubifs_info *c, struct ubifs_sb_node *sup)
 		goto failed;
 	}
 
+	if (!c->double_hash && c->fmt_version >= 5) {
+		err = 16;
+		goto failed;
+	}
+
+	if (c->encrypted && c->fmt_version < 5) {
+		err = 17;
+		goto failed;
+	}
+
 	return 0;
 
 failed:
@@ -214,6 +239,11 @@ struct ubifs_sb_node *ubifs_read_sb_node(struct ubifs_info *c)
 	return sup;
 }
 
+/*
+ * removed in barebox
+int ubifs_write_sb_node(struct ubifs_info *c, struct ubifs_sb_node *sup)
+ */
+
 /**
  * ubifs_read_superblock - read superblock.
  * @c: UBIFS file-system description object
@@ -228,8 +258,8 @@ int ubifs_read_superblock(struct ubifs_info *c)
 	struct ubifs_sb_node *sup;
 
 	if (c->empty) {
-		printf("No UBIFS filesystem found!\n");
-		return -1;
+		ubifs_err(c, "No UBIFS filesystem found\n");
+		return -EINVAL;
 	}
 
 	sup = ubifs_read_sb_node(c);
@@ -244,7 +274,7 @@ int ubifs_read_superblock(struct ubifs_info *c)
 	 * due to the unavailability of time-travelling equipment.
 	 */
 	if (c->fmt_version > UBIFS_FORMAT_VERSION) {
-		ubifs_assert(!c->ro_media || c->ro_mount);
+		ubifs_assert(c, !c->ro_media || c->ro_mount);
 		if (!c->ro_mount ||
 		    c->ro_compat_version > UBIFS_RO_COMPAT_VERSION) {
 			ubifs_err(c, "on-flash format version is w%d/r%d, but software only supports up to version w%d/r%d",
@@ -308,8 +338,6 @@ int ubifs_read_superblock(struct ubifs_info *c)
 	c->fanout        = le32_to_cpu(sup->fanout);
 	c->lsave_cnt     = le32_to_cpu(sup->lsave_cnt);
 	c->rp_size       = le64_to_cpu(sup->rp_size);
-	c->rp_uid        = le32_to_cpu(sup->rp_uid);
-	c->rp_gid        = le32_to_cpu(sup->rp_gid);
 	sup_flags        = le32_to_cpu(sup->flags);
 	if (!c->mount_opts.override_compr)
 		c->default_compr = le16_to_cpu(sup->default_compr);
@@ -318,6 +346,24 @@ int ubifs_read_superblock(struct ubifs_info *c)
 	memcpy(&c->uuid, &sup->uuid, 16);
 	c->big_lpt = !!(sup_flags & UBIFS_FLG_BIGLPT);
 	c->space_fixup = !!(sup_flags & UBIFS_FLG_SPACE_FIXUP);
+	c->double_hash = !!(sup_flags & UBIFS_FLG_DOUBLE_HASH);
+	c->encrypted = !!(sup_flags & UBIFS_FLG_ENCRYPTION);
+
+	if ((sup_flags & ~UBIFS_FLG_MASK) != 0) {
+		ubifs_err(c, "Unknown feature flags found: %#x",
+			  sup_flags & ~UBIFS_FLG_MASK);
+		err = -EINVAL;
+		goto out;
+	}
+
+#ifndef CONFIG_UBIFS_FS_ENCRYPTION
+	if (c->encrypted) {
+		ubifs_err(c, "file system contains encrypted files but UBIFS"
+			     " was built without crypto support.");
+		err = -EINVAL;
+		goto out;
+	}
+#endif
 
 	/* Automatically increase file system size to the maximum size */
 	c->old_leb_cnt = c->leb_cnt;
@@ -326,6 +372,9 @@ int ubifs_read_superblock(struct ubifs_info *c)
 		if (c->ro_mount)
 			dbg_mnt("Auto resizing (ro) from %d LEBs to %d LEBs",
 				c->old_leb_cnt,	c->leb_cnt);
+		else {
+			/* Auto resizing not done in barebox */
+		}
 	}
 
 	c->log_bytes = (long long)c->log_lebs * c->leb_size;
@@ -343,3 +392,23 @@ out:
 	kfree(sup);
 	return err;
 }
+
+/*
+ * removed in barebox
+static int fixup_leb(struct ubifs_info *c, int lnum, int len)
+ */
+
+/*
+ * removed in barebox
+static int fixup_free_space(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+int ubifs_fixup_free_space(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+int ubifs_enable_encryption(struct ubifs_info *c)
+ */

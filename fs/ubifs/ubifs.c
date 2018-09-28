@@ -23,6 +23,8 @@
 
 #include <linux/err.h>
 
+struct task_struct *current;
+
 struct ubifs_priv {
 	struct cdev *cdev;
 	struct ubi_volume_desc *ubi;
@@ -262,7 +264,7 @@ static int read_block(struct inode *inode, void *addr, unsigned int block,
 		return err;
 	}
 
-	ubifs_assert(le64_to_cpu(dn->ch.sqnum) > ubifs_inode(inode)->creat_sqnum);
+	ubifs_assert(c, le64_to_cpu(dn->ch.sqnum) > ubifs_inode(inode)->creat_sqnum);
 
 	len = le32_to_cpu(dn->size);
 	if (len <= 0 || len > UBIFS_BLOCK_SIZE)

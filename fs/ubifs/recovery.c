@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Adrian Hunter
  *          Artem Bityutskiy (Битюцкий Артём)
@@ -182,6 +193,12 @@ out_free:
 	return err;
 }
 
+/*
+ * removed in barebox
+static int write_rcvrd_mst_node(struct ubifs_info *c,
+				struct ubifs_mst_node *mst)
+ */
+
 /**
  * ubifs_recover_master_node - recover the master node.
  * @c: UBIFS file-system description object
@@ -302,6 +319,9 @@ int ubifs_recover_master_node(struct ubifs_info *c)
 		 *    dirty.
 		 */
 		c->mst_node->flags |= cpu_to_le32(UBIFS_MST_DIRTY);
+	} else {
+		/* Write the recovered master node */
+		/* not done in barebox */
 	}
 
 	vfree(buf2);
@@ -325,6 +345,11 @@ out_free:
 	vfree(buf1);
 	return err;
 }
+
+/*
+ * removed in barebox
+int ubifs_write_rcvrd_mst_node(struct ubifs_info *c)
+ */
 
 /**
  * is_last_write - determine if an offset was in the last write to a LEB.
@@ -369,10 +394,9 @@ static void clean_buf(const struct ubifs_info *c, void **buf, int lnum,
 {
 	int empty_offs, pad_len;
 
-	lnum = lnum;
 	dbg_rcvry("cleaning corruption at %d:%d", lnum, *offs);
 
-	ubifs_assert(!(*offs & 7));
+	ubifs_assert(c, !(*offs & 7));
 	empty_offs = ALIGN(*offs, c->min_io_size);
 	pad_len = empty_offs - *offs;
 	ubifs_pad(c, *buf, pad_len);
@@ -453,6 +477,9 @@ static int fix_unclean_leb(struct ubifs_info *c, struct ubifs_scan_leb *sleb,
 		ucleb->lnum = lnum;
 		ucleb->endpt = endpt;
 		list_add_tail(&ucleb->list, &c->unclean_leb_list);
+	} else {
+		/* Write the fixed LEB back to flash */
+		/* not done in barebox */
 	}
 	return 0;
 }
@@ -539,7 +566,7 @@ struct ubifs_scan_leb *ubifs_recover_leb(struct ubifs_info *c, int lnum,
 	if (IS_ERR(sleb))
 		return sleb;
 
-	ubifs_assert(len >= 8);
+	ubifs_assert(c, len >= 8);
 	while (len >= 8) {
 		dbg_scan("look at LEB %d:%d (%d bytes left)",
 			 lnum, offs, len);
@@ -683,7 +710,7 @@ struct ubifs_scan_leb *ubifs_recover_leb(struct ubifs_info *c, int lnum,
 corrupted_rescan:
 	/* Re-scan the corrupted data with verbose messages */
 	ubifs_err(c, "corruption %d", ret);
-	ubifs_scan_a_node(c, buf, len, lnum, offs, 1);
+	ubifs_scan_a_node(c, buf, len, lnum, offs, 0);
 corrupted:
 	ubifs_scanned_corruption(c, lnum, offs, buf);
 	err = -EUCLEAN;
@@ -804,10 +831,36 @@ struct ubifs_scan_leb *ubifs_recover_log_leb(struct ubifs_info *c, int lnum,
 	return ubifs_recover_leb(c, lnum, offs, sbuf, -1);
 }
 
+/*
+ * removed in barebox
+static int recover_head(struct ubifs_info *c, int lnum, int offs, void *sbuf)
+ */
+
+/*
+ * removed in barebox
+int ubifs_recover_inl_heads(struct ubifs_info *c, void *sbuf)
+ */
+
+/*
+ * removed in barebox
+static int clean_an_unclean_leb(struct ubifs_info *c,
+				struct ubifs_unclean_leb *ucleb, void *sbuf)
+ */
+
+/*
+ * removed in barebox
+int ubifs_clean_lebs(struct ubifs_info *c, void *sbuf)
+ */
+
+/*
+ * removed in barebox
+static int grab_empty_leb(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
 int ubifs_rcvry_gc_commit(struct ubifs_info *c)
-{
-	return 0;
-}
+ */
 
 /**
  * struct size_entry - inode size information for recovery.
@@ -911,8 +964,7 @@ void ubifs_destroy_size_tree(struct ubifs_info *c)
 	struct size_entry *e, *n;
 
 	rbtree_postorder_for_each_entry_safe(e, n, &c->size_tree, rb) {
-		if (e->inode)
-			iput(e->inode);
+		iput(e->inode);
 		kfree(e);
 	}
 
@@ -987,6 +1039,10 @@ int ubifs_recover_size_accum(struct ubifs_info *c, union ubifs_key *key,
 	return 0;
 }
 
+/*
+ * removed in barebox
+static int fix_size_in_place(struct ubifs_info *c, struct size_entry *e)
+ */
 
 /**
  * ubifs_recover_size - recover inode size.
@@ -1034,7 +1090,7 @@ int ubifs_recover_size(struct ubifs_info *c)
 				struct inode *inode;
 				struct ubifs_inode *ui;
 
-				ubifs_assert(!e->inode);
+				ubifs_assert(c, !e->inode);
 
 				inode = ubifs_iget(c->vfs_sb, e->inum);
 				if (IS_ERR(inode))
@@ -1053,6 +1109,9 @@ int ubifs_recover_size(struct ubifs_info *c)
 					continue;
 				}
 				iput(inode);
+			} else {
+				/* Fix the size in place */
+				/* Not done in barebox */
 			}
 		}
 

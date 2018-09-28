@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Adrian Hunter
  *          Artem Bityutskiy (Битюцкий Артём)
@@ -21,9 +32,7 @@
  * larger is the journal, the more memory its index may consume.
  */
 
-#include <linux/err.h>
 #include "ubifs.h"
-#include <linux/bug.h>
 #include <linux/list_sort.h>
 
 /**
@@ -52,7 +61,7 @@ struct replay_entry {
 	struct list_head list;
 	union ubifs_key key;
 	union {
-		struct qstr nm;
+		struct fscrypt_name nm;
 		struct {
 			loff_t old_size;
 			loff_t new_size;
@@ -75,6 +84,16 @@ struct bud_entry {
 	int free;
 	int dirty;
 };
+
+/*
+ * removed in barebox
+static int set_bud_lprops(struct ubifs_info *c, struct bud_entry *b)
+ */
+
+/*
+ * removed in barebox
+static int set_buds_lprops(struct ubifs_info *c)
+ */
 
 /**
  * trun_remove_range - apply a replay entry for a truncation to the TNC.
@@ -117,9 +136,6 @@ static int apply_replay_entry(struct ubifs_info *c, struct replay_entry *r)
 	dbg_mntk(&r->key, "LEB %d:%d len %d deletion %d sqnum %llu key ",
 		 r->lnum, r->offs, r->len, r->deletion, r->sqnum);
 
-	/* Set c->replay_sqnum to help deal with dangling branches. */
-	c->replay_sqnum = r->sqnum;
-
 	if (is_hash_key(c, &r->key)) {
 		if (r->deletion)
 			err = ubifs_tnc_remove_nm(c, &r->key, &r->nm);
@@ -161,7 +177,7 @@ static int apply_replay_entry(struct ubifs_info *c, struct replay_entry *r)
  * replay_entries_cmp - compare 2 replay entries.
  * @priv: UBIFS file-system description object
  * @a: first replay entry
- * @a: second replay entry
+ * @b: second replay entry
  *
  * This is a comparios function for 'list_sort()' which compares 2 replay
  * entries @a and @b by comparing their sequence numer.  Returns %1 if @a has
@@ -170,6 +186,7 @@ static int apply_replay_entry(struct ubifs_info *c, struct replay_entry *r)
 static int replay_entries_cmp(void *priv, struct list_head *a,
 			      struct list_head *b)
 {
+	struct ubifs_info *c = priv;
 	struct replay_entry *ra, *rb;
 
 	cond_resched();
@@ -178,7 +195,7 @@ static int replay_entries_cmp(void *priv, struct list_head *a,
 
 	ra = list_entry(a, struct replay_entry, list);
 	rb = list_entry(b, struct replay_entry, list);
-	ubifs_assert(ra->sqnum != rb->sqnum);
+	ubifs_assert(c, ra->sqnum != rb->sqnum);
 	if (ra->sqnum > rb->sqnum)
 		return 1;
 	return -1;
@@ -221,7 +238,7 @@ static void destroy_replay_list(struct ubifs_info *c)
 
 	list_for_each_entry_safe(r, tmp, &c->replay_list, list) {
 		if (is_hash_key(c, &r->key))
-			kfree(r->nm.name);
+			kfree(fname_name(&r->nm));
 		list_del(&r->list);
 		kfree(r);
 	}
@@ -324,10 +341,10 @@ static int insert_dent(struct ubifs_info *c, int lnum, int offs, int len,
 	r->deletion = !!deletion;
 	r->sqnum = sqnum;
 	key_copy(c, key, &r->key);
-	r->nm.len = nlen;
+	fname_len(&r->nm) = nlen;
 	memcpy(nbuf, name, nlen);
 	nbuf[nlen] = '\0';
-	r->nm.name = nbuf;
+	fname_name(&r->nm) = nbuf;
 
 	list_add_tail(&r->list, &c->replay_list);
 	return 0;
@@ -350,7 +367,7 @@ int ubifs_validate_entry(struct ubifs_info *c,
 	if (le32_to_cpu(dent->ch.len) != nlen + UBIFS_DENT_NODE_SZ + 1 ||
 	    dent->type >= UBIFS_ITYPES_CNT ||
 	    nlen > UBIFS_MAX_NLEN || dent->name[nlen] != 0 ||
-	    strnlen(dent->name, nlen) != nlen ||
+	    (key_type == UBIFS_XENT_KEY && strnlen(dent->name, nlen) != nlen) ||
 	    le64_to_cpu(dent->inum) > MAX_INUM) {
 		ubifs_err(c, "bad %s node", key_type == UBIFS_DENT_KEY ?
 			  "directory entry" : "extended attribute entry");
@@ -565,9 +582,9 @@ static int replay_bud(struct ubifs_info *c, struct bud_entry *b)
 			goto out;
 	}
 
-	ubifs_assert(ubifs_search_bud(c, lnum));
-	ubifs_assert(sleb->endpt - offs >= used);
-	ubifs_assert(sleb->endpt % c->min_io_size == 0);
+	ubifs_assert(c, ubifs_search_bud(c, lnum));
+	ubifs_assert(c, sleb->endpt - offs >= used);
+	ubifs_assert(c, sleb->endpt % c->min_io_size == 0);
 
 	b->dirty = sleb->endpt - offs - used;
 	b->free = c->leb_size - sleb->endpt;
@@ -603,7 +620,7 @@ static int replay_buds(struct ubifs_info *c)
 		if (err)
 			return err;
 
-		ubifs_assert(b->sqnum > prev_sqnum);
+		ubifs_assert(c, b->sqnum > prev_sqnum);
 		prev_sqnum = b->sqnum;
 	}
 
@@ -856,6 +873,11 @@ out_dump:
 	return -EINVAL;
 }
 
+/*
+ * removed in barebox
+static int take_ihead(struct ubifs_info *c)
+ */
+
 /**
  * ubifs_replay_journal - replay journal.
  * @c: UBIFS file-system description object
@@ -869,6 +891,9 @@ int ubifs_replay_journal(struct ubifs_info *c)
 	int err, lnum;
 
 	BUILD_BUG_ON(UBIFS_TRUN_KEY > 5);
+
+	/* Update the status of the index head in lprops to 'taken' */
+	/* Not done in barebox */
 
 	dbg_mnt("start replaying the journal");
 	c->replaying = 1;
@@ -885,7 +910,7 @@ int ubifs_replay_journal(struct ubifs_info *c)
 			 * The head of the log must always start with the
 			 * "commit start" node on a properly formatted UBIFS.
 			 * But we found no nodes at all, which means that
-			 * someting went wrong and we cannot proceed mounting
+			 * something went wrong and we cannot proceed mounting
 			 * the file-system.
 			 */
 			ubifs_err(c, "no UBIFS nodes found at the log head LEB %d:%d, possibly corrupted",
@@ -905,6 +930,8 @@ int ubifs_replay_journal(struct ubifs_info *c)
 	if (err)
 		goto out;
 
+	/* set_buds_lprops Not done in barebox */
+
 	/*
 	 * UBIFS budgeting calculations use @c->bi.uncommitted_idx variable
 	 * to roughly estimate index growth. Things like @c->bi.min_idx_lebs
@@ -914,7 +941,7 @@ int ubifs_replay_journal(struct ubifs_info *c)
 	c->bi.uncommitted_idx = atomic_long_read(&c->dirty_zn_cnt);
 	c->bi.uncommitted_idx *= c->max_idx_node_sz;
 
-	ubifs_assert(c->bud_bytes <= c->max_bud_bytes || c->need_recovery);
+	ubifs_assert(c, c->bud_bytes <= c->max_bud_bytes || c->need_recovery);
 	dbg_mnt("finished, log head LEB %d:%d, max_sqnum %llu, highest_inum %lu",
 		c->lhead_lnum, c->lhead_offs, c->max_sqnum,
 		(unsigned long)c->highest_inum);

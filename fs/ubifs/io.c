@@ -4,7 +4,18 @@
  * Copyright (C) 2006-2008 Nokia Corporation.
  * Copyright (C) 2006, 2007 University of Szeged, Hungary
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Adrian Hunter
@@ -72,7 +83,7 @@ void ubifs_ro_mode(struct ubifs_info *c, int err)
 	if (!c->ro_error) {
 		c->ro_error = 1;
 		c->no_chk_data_crc = 0;
-		c->vfs_sb->s_flags |= MS_RDONLY;
+		c->vfs_sb->s_flags |= SB_RDONLY;
 		ubifs_warn(c, "switched to read-only mode, error %d", err);
 		dump_stack();
 	}
@@ -101,6 +112,27 @@ int ubifs_leb_read(const struct ubifs_info *c, int lnum, void *buf, int offs,
 	}
 	return err;
 }
+
+/*
+ * removed in barebox
+int ubifs_leb_write(struct ubifs_info *c, int lnum, const void *buf, int offs,
+		    int len)
+ */
+
+/*
+ * removed in barebox
+int ubifs_leb_change(struct ubifs_info *c, int lnum, const void *buf, int len)
+ */
+
+/*
+ * removed in barebox
+int ubifs_leb_unmap(struct ubifs_info *c, int lnum)
+ */
+
+/*
+ * removed in barebox
+int ubifs_leb_map(struct ubifs_info *c, int lnum)
+ */
 
 int ubifs_is_mapped(const struct ubifs_info *c, int lnum)
 {
@@ -150,8 +182,8 @@ int ubifs_check_node(const struct ubifs_info *c, const void *buf, int lnum,
 	uint32_t crc, node_crc, magic;
 	const struct ubifs_ch *ch = buf;
 
-	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-	ubifs_assert(!(offs & 7) && offs < c->leb_size);
+	ubifs_assert(c, lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
+	ubifs_assert(c, !(offs & 7) && offs < c->leb_size);
 
 	magic = le32_to_cpu(ch->magic);
 	if (magic != UBIFS_NODE_MAGIC) {
@@ -228,7 +260,7 @@ void ubifs_pad(const struct ubifs_info *c, void *buf, int pad)
 {
 	uint32_t crc;
 
-	ubifs_assert(pad >= 0 && !(pad & 7));
+	ubifs_assert(c, pad >= 0 && !(pad & 7));
 
 	if (pad >= UBIFS_PAD_NODE_SZ) {
 		struct ubifs_ch *ch = buf;
@@ -250,6 +282,68 @@ void ubifs_pad(const struct ubifs_info *c, void *buf, int pad)
 		memset(buf, UBIFS_PADDING_BYTE, pad);
 }
 
+/*
+ * removed in barebox
+static unsigned long long next_sqnum(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+void ubifs_prepare_node(struct ubifs_info *c, void *node, int len, int pad)
+ */
+
+/*
+ * removed in barebox
+void ubifs_prep_grp_node(struct ubifs_info *c, void *node, int len, int last)
+ */
+
+/*
+ * removed in barebox
+static enum hrtimer_restart wbuf_timer_callback_nolock(struct hrtimer *timer)
+ */
+
+/*
+ * removed in barebox
+static void new_wbuf_timer_nolock(struct ubifs_info *c, struct ubifs_wbuf *wbuf)
+ */
+
+/*
+ * removed in barebox
+static void cancel_wbuf_timer_nolock(struct ubifs_wbuf *wbuf)
+ */
+
+/*
+ * removed in barebox
+int ubifs_wbuf_sync_nolock(struct ubifs_wbuf *wbuf)
+ */
+
+/*
+ * removed in barebox
+int ubifs_wbuf_seek_nolock(struct ubifs_wbuf *wbuf, int lnum, int offs)
+ */
+
+/*
+ * removed in barebox
+int ubifs_bg_wbufs_sync(struct ubifs_info *c)
+ */
+
+/*
+ * removed in barebox
+int ubifs_wbuf_write_nolock(struct ubifs_wbuf *wbuf, void *buf, int len)
+ */
+
+/*
+ * removed in barebox
+int ubifs_write_node(struct ubifs_info *c, void *buf, int len, int lnum,
+		     int offs)
+ */
+
+/*
+ * removed in barebox
+int ubifs_read_node_wbuf(struct ubifs_wbuf *wbuf, void *buf, int type, int len,
+			 int lnum, int offs)
+ */
+
 /**
  * ubifs_read_node - read node.
  * @c: UBIFS file-system description object
@@ -270,10 +364,10 @@ int ubifs_read_node(const struct ubifs_info *c, void *buf, int type, int len,
 	struct ubifs_ch *ch = buf;
 
 	dbg_io("LEB %d:%d, %s, length %d", lnum, offs, dbg_ntype(type), len);
-	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-	ubifs_assert(len >= UBIFS_CH_SZ && offs + len <= c->leb_size);
-	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-	ubifs_assert(type >= 0 && type < UBIFS_NODE_TYPES_CNT);
+	ubifs_assert(c, lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
+	ubifs_assert(c, len >= UBIFS_CH_SZ && offs + len <= c->leb_size);
+	ubifs_assert(c, !(offs & 7) && offs < c->leb_size);
+	ubifs_assert(c, type >= 0 && type < UBIFS_NODE_TYPES_CNT);
 
 	err = ubifs_leb_read(c, lnum, buf, offs, len, 0);
 	if (err && err != -EBADMSG)
@@ -349,5 +443,22 @@ int ubifs_wbuf_init(struct ubifs_info *c, struct ubifs_wbuf *wbuf)
 	wbuf->c = c;
 	wbuf->next_ino = 0;
 
+	/* hrtimer not needed in barebox */
+
 	return 0;
 }
+
+/*
+ * removed in barebox
+void ubifs_wbuf_add_ino_nolock(struct ubifs_wbuf *wbuf, ino_t inum)
+ */
+
+/*
+ * removed in barebox
+static int wbuf_has_ino(struct ubifs_wbuf *wbuf, ino_t inum)
+ */
+
+/*
+ * removed in barebox
+int ubifs_sync_wbufs_by_inode(struct ubifs_info *c, struct inode *inode)
+ */

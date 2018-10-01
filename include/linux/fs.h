@@ -253,6 +253,11 @@ struct super_operations {
 	void (*destroy_inode)(struct inode *);
 };
 
+static inline struct inode *file_inode(const struct file *f)
+{
+	return f->f_inode;
+}
+
 /*
  * Inode flags - they have no relation to superblock flags now
  */

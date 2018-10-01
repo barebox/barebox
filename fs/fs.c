@@ -2423,6 +2423,7 @@ DIR *opendir(const char *pathname)
 	}
 
 	file.f_path.dentry = dir;
+	file.f_inode = d_inode(dir);
 	file.f_op = dir->d_inode->i_fop;
 
 	d = xzalloc(sizeof(*d));

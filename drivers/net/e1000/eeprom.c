@@ -883,7 +883,7 @@ static int e1000_flash_mode_erase_chunk(struct e1000_hw *hw, loff_t offset,
 	ret = e1000_poll_reg(hw, E1000_FLSWCTL,
 			     E1000_FLSWCTL_DONE | E1000_FLSWCTL_FLBUSY,
 			     E1000_FLSWCTL_DONE,
-			     10 * SECOND);
+			     40 * SECOND);
 	if (ret < 0) {
 		dev_err(hw->dev,
 			"Timeout waiting for FLSWCTL.DONE to be set (erase)\n");

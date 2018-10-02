@@ -28,10 +28,10 @@ enum hash_algo {
 	HASH_ALGO_MD5,
 	HASH_ALGO_SHA1,
 	HASH_ALGO_RIPE_MD_160,
-	HASH_ALGO_SHA224,
 	HASH_ALGO_SHA256,
 	HASH_ALGO_SHA384,
 	HASH_ALGO_SHA512,
+	HASH_ALGO_SHA224,
 	HASH_ALGO_RIPE_MD_128,
 	HASH_ALGO_RIPE_MD_256,
 	HASH_ALGO_RIPE_MD_320,
@@ -41,6 +41,12 @@ enum hash_algo {
 	HASH_ALGO_TGR_128,
 	HASH_ALGO_TGR_160,
 	HASH_ALGO_TGR_192,
+	HASH_ALGO_SM3_256,
+	/*
+	 * The above are exported from the Kernel as
+	 * /usr/include/linux/hash_info.h and thus have a fixed number, do not
+	 * change it. Below are barebox specific, subject to renumbering.
+	 */
 	HASH_ALGO_CRC32,
 	HASH_ALGO__LAST
 };

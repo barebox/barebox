@@ -496,6 +496,7 @@ static int zlib_decomp_init(void)
 }
 
 int ubifs_allow_encrypted;
+int ubifs_allow_authenticated_unauthenticated;
 
 static int ubifs_init(void)
 {
@@ -508,6 +509,8 @@ static int ubifs_init(void)
 	}
 
 	globalvar_add_simple_bool("ubifs.allow_encrypted", &ubifs_allow_encrypted);
+	globalvar_add_simple_bool("ubifs.allow_authenticated_unauthenticated",
+				  &ubifs_allow_authenticated_unauthenticated);
 
 	return register_fs_driver(&ubifs_driver);
 }
@@ -516,3 +519,6 @@ coredevice_initcall(ubifs_init);
 
 BAREBOX_MAGICVAR_NAMED(global_ubifs_allow_encrypted, global.ubifs.allow_encrypted,
 		       "If true, allow to mount UBIFS with encrypted files");
+BAREBOX_MAGICVAR_NAMED(global_ubifs_allow_authenticated_unauthenticated,
+		       global.ubifs.allow_authenticated_unauthenticated,
+		       "If true, allow to mount authenticated UBIFS images without doing authentication");

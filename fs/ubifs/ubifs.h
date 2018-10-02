@@ -48,6 +48,7 @@
 
 struct iattr;
 struct kstat;
+extern int ubifs_allow_encrypted;
 
 /* uapi/linux/limits.h */
 #define XATTR_LIST_MAX 65536	/* size of extended attribute namelist (64k) */

@@ -15,6 +15,8 @@
 #include <common.h>
 #include <init.h>
 #include <fs.h>
+#include <globalvar.h>
+#include <magicvar.h>
 #include <linux/stat.h>
 #include <linux/zlib.h>
 #include <linux/mtd/mtd.h>
@@ -501,6 +503,8 @@ static int zlib_decomp_init(void)
 	return 0;
 }
 
+int ubifs_allow_encrypted;
+
 static int ubifs_init(void)
 {
 	int ret;
@@ -511,7 +515,12 @@ static int ubifs_init(void)
 			return ret;
 	}
 
+	globalvar_add_simple_bool("ubifs.allow_encrypted", &ubifs_allow_encrypted);
+
 	return register_fs_driver(&ubifs_driver);
 }
 
 coredevice_initcall(ubifs_init);
+
+BAREBOX_MAGICVAR_NAMED(global_ubifs_allow_encrypted, global.ubifs.allow_encrypted,
+		       "If true, allow to mount UBIFS with encrypted files");

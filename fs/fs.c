@@ -1017,6 +1017,22 @@ void inc_nlink(struct inode *inode)
 	inode->__i_nlink++;
 }
 
+void clear_nlink(struct inode *inode)
+{
+	if (inode->i_nlink) {
+		inode->__i_nlink = 0;
+	}
+}
+
+void set_nlink(struct inode *inode, unsigned int nlink)
+{
+	if (!nlink) {
+		clear_nlink(inode);
+	} else {
+		inode->__i_nlink = nlink;
+	}
+}
+
 static struct inode *alloc_inode(struct super_block *sb)
 {
 	static const struct inode_operations empty_iops;

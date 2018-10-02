@@ -411,6 +411,8 @@ unsigned int get_next_ino(void);
 void iput(struct inode *);
 struct inode *iget(struct inode *);
 void inc_nlink(struct inode *inode);
+void clear_nlink(struct inode *inode);
+void set_nlink(struct inode *inode, unsigned int nlink);
 
 struct inode_operations {
 	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);

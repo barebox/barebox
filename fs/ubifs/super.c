@@ -63,41 +63,6 @@ int ubifs_iput(struct inode *inode)
 	return 0;
 }
 
-/* from fs/inode.c */
-/**
- * clear_nlink - directly zero an inode's link count
- * @inode: inode
- *
- * This is a low-level filesystem helper to replace any
- * direct filesystem manipulation of i_nlink.  See
- * drop_nlink() for why we care about i_nlink hitting zero.
- */
-void clear_nlink(struct inode *inode)
-{
-	if (inode->i_nlink) {
-		inode->__i_nlink = 0;
-	}
-}
-EXPORT_SYMBOL(clear_nlink);
-
-/**
- * set_nlink - directly set an inode's link count
- * @inode: inode
- * @nlink: new nlink (should be non-zero)
- *
- * This is a low-level filesystem helper to replace any
- * direct filesystem manipulation of i_nlink.
- */
-void set_nlink(struct inode *inode, unsigned int nlink)
-{
-	if (!nlink) {
-		clear_nlink(inode);
-	} else {
-		inode->__i_nlink = nlink;
-	}
-}
-EXPORT_SYMBOL(set_nlink);
-
 /* from include/linux/fs.h */
 static inline void i_uid_write(struct inode *inode, uid_t uid)
 {

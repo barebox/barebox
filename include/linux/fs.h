@@ -482,5 +482,7 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry);
 struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
 int dcache_readdir(struct file *, struct dir_context *);
 const char *simple_get_link(struct dentry *dentry, struct inode *inode);
+struct inode *iget_locked(struct super_block *, unsigned long);
+void iget_failed(struct inode *inode);
 
 #endif /* _LINUX_FS_H */

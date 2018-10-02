@@ -1051,6 +1051,30 @@ struct inode *new_inode(struct super_block *sb)
 	return inode;
 }
 
+struct inode *iget_locked(struct super_block *sb, unsigned long ino)
+{
+	struct inode *inode;
+
+	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+		if (inode->i_ino == ino)
+			return iget(inode);
+	}
+
+	inode = new_inode(sb);
+	if (!inode)
+		return NULL;
+
+	inode->i_state = I_NEW;
+	inode->i_ino = ino;
+
+	return inode;
+}
+
+void iget_failed(struct inode *inode)
+{
+	iput(inode);
+}
+
 void iput(struct inode *inode)
 {
 	if (!inode->i_count)

@@ -55,26 +55,6 @@ int set_anon_super(struct super_block *s, void *data)
 	return 0;
 }
 
-struct inode *iget_locked(struct super_block *sb, unsigned long ino)
-{
-	struct inode *inode;
-
-	inode = (struct inode *)kzalloc(
-			sizeof(struct ubifs_inode), 0);
-	if (inode) {
-		inode->i_ino = ino;
-		inode->i_sb = sb;
-		list_add(&inode->i_sb_list, &sb->s_inodes);
-		inode->i_state = I_SYNC | I_NEW;
-	}
-
-	return inode;
-}
-
-void iget_failed(struct inode *inode)
-{
-}
-
 int ubifs_iput(struct inode *inode)
 {
 	list_del_init(&inode->i_sb_list);
@@ -2573,15 +2553,6 @@ int ubifs_get_super(struct device_d *dev, struct ubi_volume_desc *ubi, int silen
 		goto out;
 	}
 	sb->s_dev = c->vi.cdev;
-
-	if (c->rw_incompat) {
-		ubifs_err(c, "the file-system is not R/W-compatible");
-		ubifs_msg(c, "on-flash format version is w%d/r%d, but software only supports up to version w%d/r%d",
-			  c->fmt_version, c->ro_compat_version,
-			  UBIFS_FORMAT_VERSION, UBIFS_RO_COMPAT_VERSION);
-		err = -EROFS;
-		goto out;
-	}
 
 	return 0;
 out:

@@ -84,9 +84,6 @@ struct page {
 #define module_param_named(...)
 
 /* misc.h */
-#define mutex_lock_nested(...)
-#define mutex_unlock_nested(...)
-#define mutex_is_locked(...)	0
 #endif
 
 /* Version of this UBIFS implementation */

@@ -13,6 +13,9 @@
 #define mutex_init(...)
 #define mutex_lock(...)
 #define mutex_unlock(...)
+#define mutex_lock_nested(...)
+#define mutex_unlock_nested(...)
+#define mutex_is_locked(...)	0
 struct mutex { int i; };
 
 #endif /* __LINUX_MUTEX_H */

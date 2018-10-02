@@ -71,24 +71,6 @@ struct page {
 	struct inode *inode;
 };
 
-struct kmem_cache { int sz; };
-
-struct kmem_cache *get_mem(int element_sz);
-#define kmem_cache_create(a, sz, c, d, e)	get_mem(sz)
-static inline void *kmem_cache_alloc(struct kmem_cache *obj, int flag)
-{
-	return kzalloc(obj->sz, 0);
-}
-
-static inline void kmem_cache_free(struct kmem_cache *cachep, void *obj)
-{
-	free(obj);
-}
-static inline void kmem_cache_destroy(struct kmem_cache *cachep)
-{
-	free(cachep);
-}
-
 void *kmemdup(const void *src, size_t len, gfp_t gfp);
 
 /* uapi/linux/limits.h */

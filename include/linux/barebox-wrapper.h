@@ -3,16 +3,10 @@
 
 #include <malloc.h>
 #include <xfuncs.h>
+#include <linux/slab.h>
 
-#define kmalloc(len, mode)	malloc(len)
-#define kzalloc(len, mode)	xzalloc(len)
-#define kcalloc(n, len, mode)	xzalloc(n * len)
 #define vmalloc(len)		malloc(len)
 #define __vmalloc(len, mode, pgsz)	malloc(len)
-static inline void kfree(const void *block)
-{
-	free((void *)block);
-}
 #define vzalloc(len)		kzalloc(len, 0)
 static inline void vfree(const void *addr)
 {
@@ -28,11 +22,6 @@ static inline void vfree(const void *addr)
 #define KERN_INFO       ""   /* informational                        */
 #define KERN_DEBUG      ""   /* debug-level messages                 */
 #define KERN_CONT       ""
-
-#define GFP_KERNEL ((gfp_t) 0)
-#define GFP_NOFS ((gfp_t) 1)
-
-typedef int     gfp_t;
 
 #define printk			printf
 

@@ -2406,20 +2406,16 @@ static struct file_system_type ubifs_fs_type = {
 
 #ifndef __BAREBOX__
 MODULE_ALIAS_FS("ubifs");
+#endif
 
 /*
  * Inode slab cache constructor.
  */
 static void inode_slab_ctor(void *obj)
 {
-	struct ubifs_inode *ui = obj;
-	inode_init_once(&ui->vfs_inode);
 }
 
 static int __init ubifs_init(void)
-#else
-int ubifs_init(void)
-#endif
 {
 	int err;
 
@@ -2480,7 +2476,6 @@ int ubifs_init(void)
 		return -EINVAL;
 	}
 
-#ifndef __BAREBOX__
 	ubifs_inode_slab = kmem_cache_create("ubifs_inode_slab",
 				sizeof(struct ubifs_inode), 0,
 				SLAB_MEM_SPREAD | SLAB_RECLAIM_ACCOUNT,
@@ -2488,6 +2483,7 @@ int ubifs_init(void)
 	if (!ubifs_inode_slab)
 		return -ENOMEM;
 
+#ifndef __BAREBOX__
 	err = register_shrinker(&ubifs_shrinker_info);
 	if (err)
 		goto out_slab;

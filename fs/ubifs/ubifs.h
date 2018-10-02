@@ -71,8 +71,6 @@ struct page {
 	struct inode *inode;
 };
 
-void *kmemdup(const void *src, size_t len, gfp_t gfp);
-
 /* uapi/linux/limits.h */
 #define XATTR_LIST_MAX 65536	/* size of extended attribute namelist (64k) */
 

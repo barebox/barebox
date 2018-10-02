@@ -115,4 +115,11 @@ void *memchr_inv(const void *start, int c, size_t bytes);
 }
 #endif
 
+void *memdup(const void *, size_t);
+
+static inline void *kmemdup(const void *src, size_t len, gfp_t gfp)
+{
+	return memdup(src, len);
+}
+
 #endif /* _LINUX_STRING_H_ */

@@ -302,6 +302,11 @@ char *address_val(char *buf, char *end, const void *addr,
  *             [0][1][2][3]-[4][5]-[6][7]-[8][9]-[10][11][12][13][14][15]
  *           little endian output byte order is:
  *             [3][2][1][0]-[5][4]-[7][6]-[8][9]-[10][11][12][13][14][15]
+ * - 'V' For a struct va_format which contains a format string * and va_list *,
+ *       call vsnprintf(->format, *->va_list).
+ *       Implements a "recursive vsnprintf".
+ *       Do not use this feature without some mechanism to verify the
+ *       correctness of the format string and va_list arguments.
  * - 'a[pd]' For address types [p] phys_addr_t, [d] dma_addr_t and derivatives
  *           (default assumed to be phys_addr_t, passed by reference)
  *
@@ -318,6 +323,16 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr, int field
 		if (IS_ENABLED(CONFIG_PRINTF_UUID))
 			return uuid_string(buf, end, ptr, field_width, precision, flags, fmt);
 		break;
+	case 'V':
+		{
+			va_list va;
+
+			va_copy(va, *((struct va_format *)ptr)->va);
+			buf += vsnprintf(buf, end > buf ? end - buf : 0,
+					 ((struct va_format *)ptr)->fmt, va);
+			va_end(va);
+			return buf;
+		}
 	case 'a':
 		return address_val(buf, end, ptr, field_width, precision, flags, fmt);
 	case 'I':

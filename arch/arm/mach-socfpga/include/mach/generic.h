@@ -65,19 +65,19 @@ static inline void socfpga_arria10_timer_init(void)
 {
 	return;
 }
-static void arria10_prepare_mmc(int barebox, int bitstream)
+static inline void arria10_prepare_mmc(int barebox, int bitstream)
 {
 	return;
 }
-static void arria10_start_image(int offset)
+static inline void arria10_start_image(int offset)
 {
 	return;
 }
-static int arria10_load_fpga(int offset, int size)
+static inline int arria10_load_fpga(int offset, int size)
 {
-	return;
+	return 0;
 }
-static int arria10_device_init(struct arria10_mainpll_cfg *mainpll,
+static inline int arria10_device_init(struct arria10_mainpll_cfg *mainpll,
 			struct arria10_perpll_cfg *perpll,
 			uint32_t *pinmux)
 {

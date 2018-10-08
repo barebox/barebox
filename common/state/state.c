@@ -83,7 +83,7 @@ out:
 }
 
 /**
- * state_load - Loads a state from the backend
+ * state_do_load - Loads a state from the backend
  * @param state The state that should be updated to contain the loaded data
  * @return 0 on success, -errno on failure. If no state is loaded the previous
  * values remain in the state.

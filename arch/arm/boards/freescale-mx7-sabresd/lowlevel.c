@@ -9,6 +9,7 @@
 #include <mach/iomux-mx7.h>
 #include <mach/debug_ll.h>
 #include <asm/cache.h>
+#include <mach/esdctl.h>
 
 extern char __dtb_imx7d_sdb_start[];
 
@@ -33,14 +34,10 @@ static inline void setup_uart(void)
 
 ENTRY_FUNCTION(start_imx7d_sabresd, r0, r1, r2)
 {
-	void *fdt;
-
 	imx7_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	fdt = __dtb_imx7d_sdb_start + get_runtime_offset();
-
-	barebox_arm_entry(0x80000000, SZ_1G, fdt);
+	imx7d_barebox_entry(__dtb_imx7d_sdb_start + get_runtime_offset());
 }

@@ -120,22 +120,18 @@ struct bbu_handler *bbu_find_handler_by_name(const char *name)
 struct bbu_handler *bbu_find_handler_by_device(const char *devicepath)
 {
 	struct bbu_handler *handler;
+	const char *devname = devpath_to_name(devicepath);
 
 	if (!devicepath)
 		return NULL;
 
-	list_for_each_entry(handler, &bbu_image_handlers, list)
+	list_for_each_entry(handler, &bbu_image_handlers, list) {
 		if (!strcmp(handler->devicefile, devicepath))
 			return handler;
+	}
 
-	if (strncmp(devicepath, "/dev/", 5))
-		return NULL;
-
-	devicepath += 5;
-
-	list_for_each_entry(handler, &bbu_image_handlers, list)
-		if (!strcmp(handler->devicefile, devicepath))
-			return handler;
+	if (devname != devicepath)
+		return bbu_find_handler_by_device(devname);
 
 	return NULL;
 }

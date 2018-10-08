@@ -71,6 +71,9 @@ int vf610_bbu_internal_mmc_register_handler(const char *name, const char *device
 int vf610_bbu_internal_spi_i2c_register_handler(const char *name, const char *devicefile,
 						unsigned long flags);
 
+int imx7_bbu_internal_spi_i2c_register_handler(const char *name, const char *devicefile,
+					       unsigned long flags);
+
 int imx8mq_bbu_internal_mmc_register_handler(const char *name, const char *devicefile,
 					     unsigned long flags);
 
@@ -171,6 +174,13 @@ static inline int imx_bbu_external_nor_register_handler(const char *name, const 
 static inline int
 vf610_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
 					    unsigned long flags)
+{
+	return -ENOSYS;
+}
+
+static inline int
+imx7_bbu_internal_spi_i2c_register_handler(const char *name, char *devicefile,
+					   unsigned long flags)
 {
 	return -ENOSYS;
 }

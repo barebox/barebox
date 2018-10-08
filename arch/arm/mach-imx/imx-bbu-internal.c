@@ -649,6 +649,12 @@ int vf610_bbu_internal_spi_i2c_register_handler(const char *name,
 						unsigned long flags)
 	__alias(imx6_bbu_internal_spi_i2c_register_handler);
 
+
+int imx7_bbu_internal_spi_i2c_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx6_bbu_internal_spi_i2c_register_handler);
+
 int imx_bbu_external_nor_register_handler(const char *name,
 					  const char *devicefile,
 					  unsigned long flags)

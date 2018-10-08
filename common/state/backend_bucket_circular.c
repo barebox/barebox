@@ -480,7 +480,8 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 	circ->fd = open(path, O_RDWR);
 	if (circ->fd < 0) {
 		pr_err("Failed to open circular bucket '%s'\n", path);
-		return -errno;
+		ret = -errno;
+		goto out_free;
 	}
 #endif
 
@@ -489,7 +490,7 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 		dev_info(dev, "Not using eraseblock %u, it is marked as bad (%d)\n",
 			 circ->eraseblock, ret);
 		ret = -EIO;
-		goto out_free;
+		goto out_close;
 	}
 
 	circ->bucket.read = state_backend_bucket_circular_read;
@@ -499,13 +500,15 @@ int state_backend_bucket_circular_create(struct device_d *dev, const char *path,
 
 	ret = state_backend_bucket_circular_init(*bucket);
 	if (ret)
-		goto out_free;
+		goto out_close;
 
 	return 0;
 
-out_free:
+out_close:
 #ifndef __BAREBOX__
 	close(circ->fd);
+out_free:
+	free(circ->mtd);
 #endif
 	free(circ);
 

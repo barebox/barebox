@@ -991,7 +991,7 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 			.flags = BBU_FLAG_YES,
 		};
 
-		if (!barebox_update_handler_exists(&data))
+		if (!bbu_find_handler_by_device(data.devicefile))
 			goto copy;
 
 		fastboot_tx_print(f_fb, "INFOThis is a barebox image...");

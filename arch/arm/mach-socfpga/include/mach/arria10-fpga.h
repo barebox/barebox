@@ -72,7 +72,7 @@
 #define CFGWDTH_32						1
 #define CFGWDTH_16						0
 
-int inline a10_wait_for_usermode(int timeout) {
+static inline int a10_wait_for_usermode(int timeout) {
 	while ((readl(ARRIA10_FPGAMGRREGS_ADDR +
 		      A10_FPGAMGR_IMGCFG_STAT_OFST) &
 		(A10_FPGAMGR_IMGCFG_STAT_F2S_EARLY_USERMODE |

@@ -1,0 +1,6 @@
+soc imx7
+loadaddr 0x80000000
+dcdofs 0x400
+
+#include <mach/flash-header/imx7d-ddr-sabresd.imxcfg>
+

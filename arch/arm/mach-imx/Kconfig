@@ -423,6 +423,10 @@ config MACH_ZII_VF610_DEV
 	select ARCH_VF610
 	select CLKDEV_LOOKUP
 
+config MACH_ZII_IMX7D_RPU2
+	bool "ZII i.MX7D RPU2"
+	select ARCH_IMX7
+
 config MACH_PHYTEC_PHYCORE_IMX7
 	bool "Phytec phyCORE i.MX7"
 	select ARCH_IMX7

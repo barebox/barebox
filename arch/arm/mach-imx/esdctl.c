@@ -40,6 +40,7 @@
 #include <mach/imx6-regs.h>
 #include <mach/vf610-ddrmc.h>
 #include <mach/imx8mq-regs.h>
+#include <mach/imx7-regs.h>
 
 struct imx_esdctl_data {
 	unsigned long base0;
@@ -323,6 +324,7 @@ static void vf610_ddrmc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 
 #define DDRC_ADDRMAP(n)				(0x200 + 4 * (n))
 #define DDRC_ADDRMAP6_LPDDR4_6GB_12GB_24GB	GENMASK(30, 29)
+#define DDRC_ADDRMAP6_LPDDR3_6GB_12GB		BIT(31)
 #define DDRC_ADDRMAP0_CS_BIT0			GENMASK(4, 0)
 
 #define DDRC_MSTR				0x0000
@@ -484,6 +486,48 @@ static void imx8mq_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
 			   imx8mq_ddrc_sdram_size(mmdcbase));
 }
 
+static resource_size_t imx7d_ddrc_sdram_size(void __iomem *ddrc)
+{
+	const u32 addrmap[] = {
+		readl(ddrc + DDRC_ADDRMAP(0)),
+		readl(ddrc + DDRC_ADDRMAP(1)),
+		readl(ddrc + DDRC_ADDRMAP(2)),
+		readl(ddrc + DDRC_ADDRMAP(3)),
+		readl(ddrc + DDRC_ADDRMAP(4)),
+		readl(ddrc + DDRC_ADDRMAP(5)),
+		readl(ddrc + DDRC_ADDRMAP(6))
+	};
+	const u8 col_b[] = {
+		FIELD_GET(DDRC_ADDRMAP4_COL_B10, addrmap[4]),
+		FIELD_GET(DDRC_ADDRMAP3_COL_B9,  addrmap[3]),
+		FIELD_GET(DDRC_ADDRMAP3_COL_B8,  addrmap[3]),
+		FIELD_GET(DDRC_ADDRMAP3_COL_B7,  addrmap[3]),
+		FIELD_GET(DDRC_ADDRMAP3_COL_B6,  addrmap[3]),
+		FIELD_GET(DDRC_ADDRMAP2_COL_B5,  addrmap[2]),
+		FIELD_GET(DDRC_ADDRMAP2_COL_B4,  addrmap[2]),
+	};
+	const u8 row_b[] = {
+		FIELD_GET(DDRC_ADDRMAP6_ROW_B15, addrmap[6]),
+		FIELD_GET(DDRC_ADDRMAP6_ROW_B14, addrmap[6]),
+		FIELD_GET(DDRC_ADDRMAP6_ROW_B13, addrmap[6]),
+		FIELD_GET(DDRC_ADDRMAP6_ROW_B12, addrmap[6]),
+		FIELD_GET(DDRC_ADDRMAP5_ROW_B11, addrmap[5]),
+	};
+	const bool reduced_adress_space =
+		FIELD_GET(DDRC_ADDRMAP6_LPDDR3_6GB_12GB, addrmap[6]);
+
+	return imx_ddrc_sdram_size(ddrc, addrmap,
+				   11, ARRAY_AND_SIZE(col_b),
+				   15, ARRAY_AND_SIZE(row_b),
+				   reduced_adress_space);
+}
+
+static void imx7d_ddrc_add_mem(void *mmdcbase, struct imx_esdctl_data *data)
+{
+	arm_add_mem_device("ram0", data->base0,
+			   imx7d_ddrc_sdram_size(mmdcbase));
+}
+
 static int imx_esdctl_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -575,6 +619,11 @@ static __maybe_unused struct imx_esdctl_data imx8mq_data = {
 	.add_mem = imx8mq_ddrc_add_mem,
 };
 
+static __maybe_unused struct imx_esdctl_data imx7d_data = {
+	.base0 = MX7_DDR_BASE_ADDR,
+	.add_mem = imx7d_ddrc_add_mem,
+};
+
 static struct platform_device_id imx_esdctl_ids[] = {
 #ifdef CONFIG_ARCH_IMX1
 	{
@@ -642,6 +691,9 @@ static __maybe_unused struct of_device_id imx_esdctl_dt_ids[] = {
 	}, {
 		.compatible = "fsl,imx8mq-ddrc",
 		.data = &imx8mq_data
+	}, {
+		.compatible = "fsl,imx7d-ddrc",
+		.data = &imx7d_data
 	}, {
 		/* sentinel */
 	}
@@ -834,3 +886,12 @@ void __noreturn imx8mq_barebox_entry(void *boarddata)
 	size = min_t(resource_size_t, SZ_4G - MX8MQ_DDR_CSD1_BASE_ADDR, size);
 	barebox_arm_entry(MX8MQ_DDR_CSD1_BASE_ADDR, size, boarddata);
 }
+
+void __noreturn imx7d_barebox_entry(void *boarddata)
+{
+	barebox_arm_entry(MX7_DDR_BASE_ADDR,
+			  imx7d_ddrc_sdram_size(IOMEM(MX7_DDRC_BASE_ADDR)),
+			  boarddata);
+}
+
+

@@ -216,18 +216,9 @@ static int bbu_check_metadata(struct bbu_data *data)
 /*
  * do a barebox update with data from *data
  */
-int barebox_update(struct bbu_data *data)
+int barebox_update(struct bbu_data *data, struct bbu_handler *handler)
 {
-	struct bbu_handler *handler;
 	int ret;
-
-	handler = bbu_find_handler_by_device(data->devicefile);
-
-	if (!handler)
-		handler = bbu_find_handler_by_name(data->handler_name);
-
-	if (!handler)
-		return -ENODEV;
 
 	if (!data->image && !data->imagefile &&
 	    !(handler->flags & BBU_HANDLER_CAN_REFRESH)) {

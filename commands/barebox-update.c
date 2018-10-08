@@ -28,6 +28,7 @@ static int do_barebox_update(int argc, char *argv[])
 {
 	int opt, ret, repair = 0;
 	struct bbu_data data = {};
+	struct bbu_handler *handler;
 	void *image = NULL;
 
 	while ((opt = getopt(argc, argv, "t:yf:ld:r")) > 0) {
@@ -69,7 +70,15 @@ static int do_barebox_update(int argc, char *argv[])
 			return COMMAND_ERROR_USAGE;
 	}
 
-	ret = barebox_update(&data);
+	handler = bbu_find_handler_by_device(data.devicefile);
+
+	if (!handler)
+		handler = bbu_find_handler_by_name(data.handler_name);
+
+	if (!handler)
+		return COMMAND_ERROR_USAGE;
+
+	ret = barebox_update(&data, handler);
 
 	free(image);
 

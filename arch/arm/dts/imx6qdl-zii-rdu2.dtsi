@@ -66,19 +66,7 @@
 			nvmem-cell-names = "boot-source";
 		};
 
-		eeprom@a3 {
-			compatible = "zii,rave-sp-eeprom";
-			reg = <0xa3 0x4000>;
-			zii,eeprom-name = "dds-eeprom";
-		};
-
 		eeprom@a4 {
-			compatible = "zii,rave-sp-eeprom";
-			reg = <0xa4 0x4000>;
-			#address-cells = <1>;
-			#size-cells = <1>;
-			zii,eeprom-name = "main-eeprom";
-
 			boot_source: boot-source@83 {
 				reg = <0x83 1>;
 			};
@@ -90,10 +78,6 @@
 			mac_address_1: mac-address@190 {
 				reg = <0x190 6>;
 			};
-		};
-
-		backlight {
-			compatible = "zii,rave-sp-backlight";
 		};
 	};
 };

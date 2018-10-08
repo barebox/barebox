@@ -53,36 +53,15 @@
 
 &uart3 {
 	rave-sp {
-		#address-cells = <1>;
-		#size-cells = <1>;
-
 		watchdog {
 			nvmem-cells = <&boot_source>;
 			nvmem-cell-names = "boot-source";
 		};
 
-		eeprom@a3 {
-			compatible = "zii,rave-sp-eeprom";
-			reg = <0xa3 0x4000>;
-			#address-cells = <1>;
-			#size-cells = <1>;
-			zii,eeprom-name = "dds-eeprom";
-		};
-
 		eeprom@a4 {
-			compatible = "zii,rave-sp-eeprom";
-			reg = <0xa4 0x4000>;
-			#address-cells = <1>;
-			#size-cells = <1>;
-			zii,eeprom-name = "main-eeprom";
-
 			boot_source: boot-source@83 {
 				reg = <0x83 1>;
 			};
-		};
-
-		backlight {
-			compatible = "zii,rave-sp-backlight";
 		};
 	};
 };

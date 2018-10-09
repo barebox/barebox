@@ -986,12 +986,14 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 	}
 
 	if (IS_ENABLED(CONFIG_BAREBOX_UPDATE) && filetype_is_barebox_image(filetype)) {
+		struct bbu_handler *handler;
 		struct bbu_data data = {
 			.devicefile = filename,
 			.flags = BBU_FLAG_YES,
 		};
 
-		if (!barebox_update_handler_exists(&data))
+		handler = bbu_find_handler_by_device(data.devicefile);
+		if (!handler)
 			goto copy;
 
 		fastboot_tx_print(f_fb, "INFOThis is a barebox image...");
@@ -1010,7 +1012,7 @@ static void cb_flash(struct f_fastboot *f_fb, const char *cmd)
 		data.image = f_fb->buf;
 		data.imagefile = sourcefile;
 
-		ret = barebox_update(&data);
+		ret = barebox_update(&data, handler);
 
 		if (ret)
 			fastboot_tx_print(f_fb, "FAILupdate barebox: %s", strerror(-ret));

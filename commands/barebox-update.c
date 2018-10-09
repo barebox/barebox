@@ -24,11 +24,20 @@
 #include <bbu.h>
 #include <fs.h>
 
+static void print_handlers_list(void)
+{
+	printf("registered update handlers:\n");
+	bbu_handlers_list();
+}
+
 static int do_barebox_update(int argc, char *argv[])
 {
 	int opt, ret, repair = 0;
 	struct bbu_data data = {};
+	struct bbu_handler *handler;
 	void *image = NULL;
+	const char *name;
+	const char *fmt;
 
 	while ((opt = getopt(argc, argv, "t:yf:ld:r")) > 0) {
 		switch (opt) {
@@ -46,8 +55,7 @@ static int do_barebox_update(int argc, char *argv[])
 			data.flags |= BBU_FLAG_YES;
 			break;
 		case 'l':
-			printf("registered update handlers:\n");
-			bbu_handlers_list();
+			print_handlers_list();
 			return 0;
 		case 'r':
 			repair = 1;
@@ -55,6 +63,33 @@ static int do_barebox_update(int argc, char *argv[])
 		default:
 			return COMMAND_ERROR_USAGE;
 		}
+	}
+
+	if (data.handler_name && data.devicefile) {
+		printf("Both TARGET and DEVICE are provided. "
+		       "Ignoring the latter\n");
+
+		data.devicefile = NULL;
+	}
+
+	if (data.handler_name) {
+		handler = bbu_find_handler_by_name(data.handler_name);
+		fmt = "handler '%s' does not exist\n";
+		name = data.handler_name;
+	} else if (data.devicefile) {
+		handler = bbu_find_handler_by_device(data.devicefile);
+		fmt = "handler for '%s' does not exist\n";
+		name = data.devicefile;
+	} else {
+		handler = bbu_find_handler_by_name(NULL);
+		fmt = "default handler does not exist\n";
+		name = NULL;
+	}
+
+	if (!handler) {
+		printf(fmt, name);
+		print_handlers_list();
+		return COMMAND_ERROR;
 	}
 
 	if (argc - optind > 0) {
@@ -69,7 +104,7 @@ static int do_barebox_update(int argc, char *argv[])
 			return COMMAND_ERROR_USAGE;
 	}
 
-	ret = barebox_update(&data);
+	ret = barebox_update(&data, handler);
 
 	free(image);
 

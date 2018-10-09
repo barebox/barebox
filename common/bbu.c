@@ -99,7 +99,7 @@ int bbu_confirm(struct bbu_data *data)
 	return -EINTR;
 }
 
-static struct bbu_handler *bbu_find_handler(const char *name)
+struct bbu_handler *bbu_find_handler_by_name(const char *name)
 {
 	struct bbu_handler *handler;
 
@@ -117,41 +117,23 @@ static struct bbu_handler *bbu_find_handler(const char *name)
 	return NULL;
 }
 
-static struct bbu_handler *bbu_find_handler_by_device(const char *devicepath)
+struct bbu_handler *bbu_find_handler_by_device(const char *devicepath)
 {
 	struct bbu_handler *handler;
+	const char *devname = devpath_to_name(devicepath);
 
 	if (!devicepath)
 		return NULL;
 
-	list_for_each_entry(handler, &bbu_image_handlers, list)
+	list_for_each_entry(handler, &bbu_image_handlers, list) {
 		if (!strcmp(handler->devicefile, devicepath))
 			return handler;
+	}
 
-	if (strncmp(devicepath, "/dev/", 5))
-		return NULL;
-
-	devicepath += 5;
-
-	list_for_each_entry(handler, &bbu_image_handlers, list)
-		if (!strcmp(handler->devicefile, devicepath))
-			return handler;
+	if (devname != devicepath)
+		return bbu_find_handler_by_device(devname);
 
 	return NULL;
-}
-
-bool barebox_update_handler_exists(struct bbu_data *data)
-{
-	struct bbu_handler *handler;
-
-	handler = bbu_find_handler_by_device(data->devicefile);
-	if (handler)
-		return true;
-
-	if (!data->handler_name)
-		return false;
-
-	return bbu_find_handler(data->handler_name) != NULL;
 }
 
 static int bbu_check_of_compat(struct bbu_data *data)
@@ -230,18 +212,9 @@ static int bbu_check_metadata(struct bbu_data *data)
 /*
  * do a barebox update with data from *data
  */
-int barebox_update(struct bbu_data *data)
+int barebox_update(struct bbu_data *data, struct bbu_handler *handler)
 {
-	struct bbu_handler *handler;
 	int ret;
-
-	handler = bbu_find_handler_by_device(data->devicefile);
-
-	if (!handler)
-		handler = bbu_find_handler(data->handler_name);
-
-	if (!handler)
-		return -ENODEV;
 
 	if (!data->image && !data->imagefile &&
 	    !(handler->flags & BBU_HANDLER_CAN_REFRESH)) {
@@ -292,11 +265,11 @@ void bbu_handlers_list(void)
  */
 int bbu_register_handler(struct bbu_handler *handler)
 {
-	if (bbu_find_handler(handler->name))
+	if (bbu_find_handler_by_name(handler->name))
 		return -EBUSY;
 
 	if (handler->flags & BBU_HANDLER_FLAG_DEFAULT &&
-			bbu_find_handler(NULL))
+	    bbu_find_handler_by_name(NULL))
 		return -EBUSY;
 
 	list_add_tail(&handler->list, &bbu_image_handlers);

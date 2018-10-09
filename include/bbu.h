@@ -40,9 +40,10 @@ int bbu_force(struct bbu_data *, const char *fmt, ...)
 
 int bbu_confirm(struct bbu_data *);
 
-int barebox_update(struct bbu_data *);
+int barebox_update(struct bbu_data *, struct bbu_handler *);
 
-bool barebox_update_handler_exists(struct bbu_data *);
+struct bbu_handler *bbu_find_handler_by_name(const char *name);
+struct bbu_handler *bbu_find_handler_by_device(const char *devicepath);
 
 void bbu_handlers_list(void);
 

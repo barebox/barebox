@@ -29,64 +29,64 @@ $(obj)/%.t124img: $(obj)/% FORCE
 	$(call if_changed,tegra124_image)
 
 # ----------------------- Tegra20 based boards ---------------------------
-pblx-$(CONFIG_MACH_TOSHIBA_AC100) += start_toshiba_ac100
-FILE_barebox-tegra20-toshiba-ac100-usbloader.img = start_toshiba_ac100.pblx
+pblb-$(CONFIG_MACH_TOSHIBA_AC100) += start_toshiba_ac100
+FILE_barebox-tegra20-toshiba-ac100-usbloader.img = start_toshiba_ac100.pblb
 image-$(CONFIG_MACH_TOSHIBA_AC100) += barebox-tegra20-toshiba-ac100-usbloader.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_usbload
-FILE_barebox-tegra20-toradex-colibri-t20-256-usbloader-iris.img = start_colibri_t20_256_usbload.pblx
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_usbload
+FILE_barebox-tegra20-toradex-colibri-t20-256-usbloader-iris.img = start_colibri_t20_256_usbload.pblb
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-256-usbloader-iris.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_hsmmc
-BCT_start_colibri_t20_256_hsmmc.pblx.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_256_hsmmc.bct
-FILE_barebox-tegra20-toradex-colibri-t20-256-hsmmc-iris.img = start_colibri_t20_256_hsmmc.pblx.t20img
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_hsmmc
+BCT_start_colibri_t20_256_hsmmc.pblb.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_256_hsmmc.bct
+FILE_barebox-tegra20-toradex-colibri-t20-256-hsmmc-iris.img = start_colibri_t20_256_hsmmc.pblb.t20img
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-256-hsmmc-iris.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_v11_nand
-BCT_start_colibri_t20_256_v11_nand.pblx.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_256_v11_nand.bct
-FILE_barebox-tegra20-toradex-colibri-t20-256-v11-nand-iris.img = start_colibri_t20_256_v11_nand.pblx.t20img
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_v11_nand
+BCT_start_colibri_t20_256_v11_nand.pblb.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_256_v11_nand.bct
+FILE_barebox-tegra20-toradex-colibri-t20-256-v11-nand-iris.img = start_colibri_t20_256_v11_nand.pblb.t20img
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-256-v11-nand-iris.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_v12_nand
-BCT_start_colibri_t20_256_v12_nand.pblx.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_256_v12_nand.bct
-FILE_barebox-tegra20-toradex-colibri-t20-256-v12-nand-iris.img = start_colibri_t20_256_v12_nand.pblx.t20img
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_256_v12_nand
+BCT_start_colibri_t20_256_v12_nand.pblb.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_256_v12_nand.bct
+FILE_barebox-tegra20-toradex-colibri-t20-256-v12-nand-iris.img = start_colibri_t20_256_v12_nand.pblb.t20img
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-256-v12-nand-iris.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_usbload
-FILE_barebox-tegra20-toradex-colibri-t20-512-usbloader-iris.img = start_colibri_t20_512_usbload.pblx
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_usbload
+FILE_barebox-tegra20-toradex-colibri-t20-512-usbloader-iris.img = start_colibri_t20_512_usbload.pblb
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-512-usbloader-iris.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_hsmmc
-BCT_start_colibri_t20_512_hsmmc.pblx.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_512_hsmmc.bct
-FILE_barebox-tegra20-toradex-colibri-t20-512-hsmmc-iris.img = start_colibri_t20_512_hsmmc.pblx.t20img
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_hsmmc
+BCT_start_colibri_t20_512_hsmmc.pblb.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_512_hsmmc.bct
+FILE_barebox-tegra20-toradex-colibri-t20-512-hsmmc-iris.img = start_colibri_t20_512_hsmmc.pblb.t20img
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-512-hsmmc-iris.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_v11_nand
-BCT_start_colibri_t20_512_v11_nand.pblx.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_512_v11_nand.bct
-FILE_barebox-tegra20-toradex-colibri-t20-512-v11-nand-iris.img = start_colibri_t20_512_v11_nand.pblx.t20img
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_v11_nand
+BCT_start_colibri_t20_512_v11_nand.pblb.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_512_v11_nand.bct
+FILE_barebox-tegra20-toradex-colibri-t20-512-v11-nand-iris.img = start_colibri_t20_512_v11_nand.pblb.t20img
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-512-v11-nand-iris.img
 
-pblx-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_v12_nand
-BCT_start_colibri_t20_512_v12_nand.pblx.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_512_v12_nand.bct
-FILE_barebox-tegra20-toradex-colibri-t20-512-v12-nand-iris.img = start_colibri_t20_512_v12_nand.pblx.t20img
+pblb-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += start_colibri_t20_512_v12_nand
+BCT_start_colibri_t20_512_v12_nand.pblb.t20img = $(objboard)/toradex-colibri-t20/colibri-t20_512_v12_nand.bct
+FILE_barebox-tegra20-toradex-colibri-t20-512-v12-nand-iris.img = start_colibri_t20_512_v12_nand.pblb.t20img
 image-$(CONFIG_MACH_TORADEX_COLIBRI_T20) += barebox-tegra20-toradex-colibri-t20-512-v12-nand-iris.img
 
 # ----------------------- Tegra30 based boards ---------------------------
-pblx-$(CONFIG_MACH_NVIDIA_BEAVER) += start_nvidia_beaver
-FILE_barebox-tegra30-nvidia-beaver-usbloader.img = start_nvidia_beaver.pblx
+pblb-$(CONFIG_MACH_NVIDIA_BEAVER) += start_nvidia_beaver
+FILE_barebox-tegra30-nvidia-beaver-usbloader.img = start_nvidia_beaver.pblb
 image-$(CONFIG_MACH_NVIDIA_BEAVER) += barebox-tegra30-nvidia-beaver-usbloader.img
 
-pblx-$(CONFIG_MACH_NVIDIA_BEAVER) += start_nvidia_beaver
-BCT_start_nvidia_beaver.pblx.t30img = $(objboard)/nvidia-beaver/beaver-2gb-emmc.bct
-FILE_barebox-tegra30-nvidia-beaver-emmc.img = start_nvidia_beaver.pblx.t30img
+pblb-$(CONFIG_MACH_NVIDIA_BEAVER) += start_nvidia_beaver
+BCT_start_nvidia_beaver.pblb.t30img = $(objboard)/nvidia-beaver/beaver-2gb-emmc.bct
+FILE_barebox-tegra30-nvidia-beaver-emmc.img = start_nvidia_beaver.pblb.t30img
 image-$(CONFIG_MACH_NVIDIA_BEAVER) += barebox-tegra30-nvidia-beaver-emmc.img
 
 # ----------------------- Tegra124 based boards --------------------------
-pblx-$(CONFIG_MACH_NVIDIA_JETSON) += start_nvidia_jetson
-FILE_barebox-tegra124-nvidia-jetson-tk1-usbloader.img = start_nvidia_jetson.pblx
+pblb-$(CONFIG_MACH_NVIDIA_JETSON) += start_nvidia_jetson
+FILE_barebox-tegra124-nvidia-jetson-tk1-usbloader.img = start_nvidia_jetson.pblb
 image-$(CONFIG_MACH_NVIDIA_JETSON) += barebox-tegra124-nvidia-jetson-tk1-usbloader.img
 
-pblx-$(CONFIG_MACH_NVIDIA_JETSON) += start_nvidia_jetson
-BCT_start_nvidia_jetson.pblx.t124img = $(objboard)/nvidia-jetson-tk1/jetson-tk1-2gb-emmc.bct
-FILE_barebox-tegra124-nvidia-jetson-tk1-emmc.img = start_nvidia_jetson.pblx.t124img
+pblb-$(CONFIG_MACH_NVIDIA_JETSON) += start_nvidia_jetson
+BCT_start_nvidia_jetson.pblb.t124img = $(objboard)/nvidia-jetson-tk1/jetson-tk1-2gb-emmc.bct
+FILE_barebox-tegra124-nvidia-jetson-tk1-emmc.img = start_nvidia_jetson.pblb.t124img
 image-$(CONFIG_MACH_NVIDIA_JETSON) += barebox-tegra124-nvidia-jetson-tk1-emmc.img

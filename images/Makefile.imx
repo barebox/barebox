@@ -22,527 +22,516 @@ $(obj)/%.img.dek: $(obj)/$$(FILE_$$(@F))
 	$(Q)if [ -z $(FILE_$(@F)) ]; then echo "FILE_$(@F) empty!"; false; fi
 	$(call if_changed,shipped)
 
-quiet_cmd_imx_sram_img ?= IMX-SRAM-IMG    $@
-      cmd_imx_sram_img ?= cat $(obj)/$(patsubst %.imx-sram-img,%.pblb,$(2)) > $@; \
-		  $(call size_append, $(obj)/barebox.z) >> $@; \
-		  $(CPP) $(imxcfg_cpp_flags) -o $(imximg-tmp) $(CFG_$(@F)) ; \
-		  $(objtree)/scripts/imx/imx-image -o $@ -b -c $(imximg-tmp) -f $@; \
-		  cat $(obj)/barebox.z >> $@; \
-		  $(objtree)/scripts/fix_size -f $@
-
-$(obj)/%.imx-sram-img: $(obj)/%.pblb $(obj)/barebox.z FORCE
-	$(call if_changed,imx_sram_img,$(@F))
-
 # ----------------------- i.MX25 based boards ---------------------------
-pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
-FILE_barebox-karo-tx25.img = start_imx25_karo_tx25.pblx
+pblb-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
+FILE_barebox-karo-tx25.img = start_imx25_karo_tx25.pblb
 image-$(CONFIG_MACH_TX25) += barebox-karo-tx25.img
 
-pblx-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
-CFG_start_imx25_karo_tx25.pblx.imximg = $(board)/karo-tx25/flash-header-tx25.imxcfg
-FILE_barebox-karo-tx25-internal.img = start_imx25_karo_tx25.pblx.imximg
+pblb-$(CONFIG_MACH_TX25) += start_imx25_karo_tx25
+CFG_start_imx25_karo_tx25.pblb.imximg = $(board)/karo-tx25/flash-header-tx25.imxcfg
+FILE_barebox-karo-tx25-internal.img = start_imx25_karo_tx25.pblb.imximg
 image-$(CONFIG_MACH_TX25) += barebox-karo-tx25-internal.img
 
-pblx-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27
-FILE_barebox-phytec-phycard-imx27.img = start_phytec_phycard_imx27.pblx
+pblb-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27
+FILE_barebox-phytec-phycard-imx27.img = start_phytec_phycard_imx27.pblb
 image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27.img
 
-pblx-$(CONFIG_MACH_PCM038) += start_phytec_phycore_imx27
-FILE_barebox-phytec-phycore-imx27.img = start_phytec_phycore_imx27.pblx
+pblb-$(CONFIG_MACH_PCM038) += start_phytec_phycore_imx27
+FILE_barebox-phytec-phycore-imx27.img = start_phytec_phycore_imx27.pblb
 image-$(CONFIG_MACH_PCM038) += barebox-phytec-phycore-imx27.img
 
 # ----------------------- i.MX50 based boards ---------------------------
-pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01100
-CFG_start_imx50_kindle_d01100.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
-FILE_barebox-kindle-d01100.img = start_imx50_kindle_d01100.pblx.imximg
+pblb-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01100
+CFG_start_imx50_kindle_d01100.pblb.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
+FILE_barebox-kindle-d01100.img = start_imx50_kindle_d01100.pblb.imximg
 image-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-d01100.img
 
-pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01200
-CFG_start_imx50_kindle_d01200.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
-FILE_barebox-kindle-d01200.img = start_imx50_kindle_d01200.pblx.imximg
+pblb-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_d01200
+CFG_start_imx50_kindle_d01200.pblb.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr1.imxcfg
+FILE_barebox-kindle-d01200.img = start_imx50_kindle_d01200.pblb.imximg
 image-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-d01200.img
 
-pblx-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_ey21
-CFG_start_imx50_kindle_ey21.pblx.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr2.imxcfg
-FILE_barebox-kindle-ey21.img = start_imx50_kindle_ey21.pblx.imximg
+pblb-$(CONFIG_MACH_KINDLE_MX50) += start_imx50_kindle_ey21
+CFG_start_imx50_kindle_ey21.pblb.imximg = $(board)/kindle-mx50/flash-header-kindle-lpddr2.imxcfg
+FILE_barebox-kindle-ey21.img = start_imx50_kindle_ey21.pblb.imximg
 image-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-ey21.img
 
 # ----------------------- i.MX51 based boards ---------------------------
-pblx-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
-CFG_start_imx51_babbage.pblx.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg
-FILE_barebox-freescale-imx51-babbage.img = start_imx51_babbage.pblx.imximg
+pblb-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
+CFG_start_imx51_babbage.pblb.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg
+FILE_barebox-freescale-imx51-babbage.img = start_imx51_babbage.pblb.imximg
 image-$(CONFIG_MACH_FREESCALE_MX51_PDK) += barebox-freescale-imx51-babbage.img
 
-pblx-$(CONFIG_MACH_ZII_RDU1) += start_imx51_zii_rdu1
-CFG_start_imx51_zii_rdu1.pblx.imximg = $(board)/zii-imx51-rdu1/flash-header-imx51-zii-rdu1.imxcfg
-FILE_barebox-zii-imx51-rdu1.img = start_imx51_zii_rdu1.pblx.imximg
+pblb-$(CONFIG_MACH_ZII_RDU1) += start_imx51_zii_rdu1
+CFG_start_imx51_zii_rdu1.pblb.imximg = $(board)/zii-imx51-rdu1/flash-header-imx51-zii-rdu1.imxcfg
+FILE_barebox-zii-imx51-rdu1.img = start_imx51_zii_rdu1.pblb.imximg
 image-$(CONFIG_MACH_ZII_RDU1) += barebox-zii-imx51-rdu1.img
 
-pblx-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK) += start_imx51_genesi_efikasb
-CFG_start_imx51_genesi_efikasb.pblx.imximg = $(board)/efika-mx-smartbook/flash-header-imx51-genesi-efikasb.imxcfg
-FILE_barebox-genesi-efikasb.img = start_imx51_genesi_efikasb.pblx.imximg
+pblb-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK) += start_imx51_genesi_efikasb
+CFG_start_imx51_genesi_efikasb.pblb.imximg = $(board)/efika-mx-smartbook/flash-header-imx51-genesi-efikasb.imxcfg
+FILE_barebox-genesi-efikasb.img = start_imx51_genesi_efikasb.pblb.imximg
 image-$(CONFIG_MACH_EFIKA_MX_SMARTBOOK) += barebox-genesi-efikasb.img
 
 # ----------------------- i.MX53 based boards ---------------------------
-pblx-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco
-CFG_start_imx53_loco.pblx.imximg = $(board)/freescale-mx53-qsb/flash-header-imx53-loco.imxcfg
-FILE_barebox-freescale-imx53-loco.img = start_imx53_loco.pblx.imximg
+pblb-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco
+CFG_start_imx53_loco.pblb.imximg = $(board)/freescale-mx53-qsb/flash-header-imx53-loco.imxcfg
+FILE_barebox-freescale-imx53-loco.img = start_imx53_loco.pblb.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco.img
 
-pblx-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco_r
-CFG_start_imx53_loco_r.pblx.imximg = $(board)/freescale-mx53-qsb/flash-header-imx53-loco.imxcfg
-FILE_barebox-freescale-imx53-loco-r.img = start_imx53_loco_r.pblx.imximg
+pblb-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += start_imx53_loco_r
+CFG_start_imx53_loco_r.pblb.imximg = $(board)/freescale-mx53-qsb/flash-header-imx53-loco.imxcfg
+FILE_barebox-freescale-imx53-loco-r.img = start_imx53_loco_r.pblb.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_LOCO) += barebox-freescale-imx53-loco-r.img
 
-pblx-$(CONFIG_MACH_CCMX53) += start_ccxmx53_512mb
-CFG_start_ccxmx53_512mb.pblx.imximg = $(board)/ccxmx53/flash-header-imx53-ccxmx53_512mb.imxcfg
-FILE_barebox-imx53-ccxmx53_512mb.img = start_ccxmx53_512mb.pblx.imximg
+pblb-$(CONFIG_MACH_CCMX53) += start_ccxmx53_512mb
+CFG_start_ccxmx53_512mb.pblb.imximg = $(board)/ccxmx53/flash-header-imx53-ccxmx53_512mb.imxcfg
+FILE_barebox-imx53-ccxmx53_512mb.img = start_ccxmx53_512mb.pblb.imximg
 image-$(CONFIG_MACH_CCMX53) += barebox-imx53-ccxmx53_512mb.img
 
-pblx-$(CONFIG_MACH_CCMX53) += start_ccxmx53_1gib
-CFG_start_ccxmx53_1gib.pblx.imximg = $(board)/ccxmx53/flash-header-imx53-ccxmx53_1gib.imxcfg
-FILE_barebox-imx53-ccxmx53_1gib.img = start_ccxmx53_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_CCMX53) += start_ccxmx53_1gib
+CFG_start_ccxmx53_1gib.pblb.imximg = $(board)/ccxmx53/flash-header-imx53-ccxmx53_1gib.imxcfg
+FILE_barebox-imx53-ccxmx53_1gib.img = start_ccxmx53_1gib.pblb.imximg
 image-$(CONFIG_MACH_CCMX53) += barebox-imx53-ccxmx53_1gib.img
 
-pblx-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += start_imx53_vmx53
-CFG_start_imx53_vmx53.pblx.imximg = $(board)/freescale-mx53-vmx53/flash-header-imx53-vmx53.imxcfg
-FILE_barebox-freescale-imx53-vmx53.img = start_imx53_vmx53.pblx.imximg
+pblb-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += start_imx53_vmx53
+CFG_start_imx53_vmx53.pblb.imximg = $(board)/freescale-mx53-vmx53/flash-header-imx53-vmx53.imxcfg
+FILE_barebox-freescale-imx53-vmx53.img = start_imx53_vmx53.pblb.imximg
 image-$(CONFIG_MACH_FREESCALE_MX53_VMX53) += barebox-freescale-imx53-vmx53.img
 
-pblx-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell
-CFG_start_imx53_guf_vincell.pblx.imximg = $(board)/guf-vincell/flash-header.imxcfg
-FILE_barebox-guf-vincell.img = start_imx53_guf_vincell.pblx.imximg
+pblb-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell
+CFG_start_imx53_guf_vincell.pblb.imximg = $(board)/guf-vincell/flash-header.imxcfg
+FILE_barebox-guf-vincell.img = start_imx53_guf_vincell.pblb.imximg
 image-$(CONFIG_MACH_GUF_VINCELL) += barebox-guf-vincell.img
 
-pblx-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell_lt
-CFG_start_imx53_guf_vincell_lt.pblx.imximg = $(board)/guf-vincell/flash-header.imxcfg
-FILE_barebox-guf-vincell-lt.img = start_imx53_guf_vincell_lt.pblx.imximg
+pblb-$(CONFIG_MACH_GUF_VINCELL) += start_imx53_guf_vincell_lt
+CFG_start_imx53_guf_vincell_lt.pblb.imximg = $(board)/guf-vincell/flash-header.imxcfg
+FILE_barebox-guf-vincell-lt.img = start_imx53_guf_vincell_lt.pblb.imximg
 image-$(CONFIG_MACH_GUF_VINCELL) += barebox-guf-vincell-lt.img
 
-pblx-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_512mib
-CFG_start_imx53_mba53_512mib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-512mib.imxcfg
-FILE_barebox-tq-mba53-512mib.img = start_imx53_mba53_512mib.pblx.imximg
+pblb-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_512mib
+CFG_start_imx53_mba53_512mib.pblb.imximg = $(board)/tqma53/flash-header-tq-tqma53-512mib.imxcfg
+FILE_barebox-tq-mba53-512mib.img = start_imx53_mba53_512mib.pblb.imximg
 image-$(CONFIG_MACH_TQMA53) += barebox-tq-mba53-512mib.img
 
-pblx-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_1gib
-CFG_start_imx53_mba53_1gib.pblx.imximg = $(board)/tqma53/flash-header-tq-tqma53-1gib.imxcfg
-FILE_barebox-tq-mba53-1gib.img = start_imx53_mba53_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_TQMA53) += start_imx53_mba53_1gib
+CFG_start_imx53_mba53_1gib.pblb.imximg = $(board)/tqma53/flash-header-tq-tqma53-1gib.imxcfg
+FILE_barebox-tq-mba53-1gib.img = start_imx53_mba53_1gib.pblb.imximg
 image-$(CONFIG_MACH_TQMA53) += barebox-tq-mba53-1gib.img
 
-pblx-$(CONFIG_MACH_TX53) += start_imx53_tx53_xx30_samsung
-CFG_start_imx53_tx53_xx30_samsung.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30-samsung.imxcfg
-FILE_barebox-tx53-xx30-samsung.img = start_imx53_tx53_xx30_samsung.pblx.imximg
+pblb-$(CONFIG_MACH_TX53) += start_imx53_tx53_xx30_samsung
+CFG_start_imx53_tx53_xx30_samsung.pblb.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30-samsung.imxcfg
+FILE_barebox-tx53-xx30-samsung.img = start_imx53_tx53_xx30_samsung.pblb.imximg
 image-$(CONFIG_MACH_TX53) += barebox-tx53-xx30-samsung.img
 
-pblx-$(CONFIG_MACH_TX53) += start_imx53_tx53_xx30
-CFG_start_imx53_tx53_xx30.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30.imxcfg
-FILE_barebox-tx53-xx30.img = start_imx53_tx53_xx30.pblx.imximg
+pblb-$(CONFIG_MACH_TX53) += start_imx53_tx53_xx30
+CFG_start_imx53_tx53_xx30.pblb.imximg = $(board)/karo-tx53/flash-header-tx53-revxx30.imxcfg
+FILE_barebox-tx53-xx30.img = start_imx53_tx53_xx30.pblb.imximg
 image-$(CONFIG_MACH_TX53) += barebox-tx53-xx30.img
 
-pblx-$(CONFIG_MACH_TX53) += start_imx53_tx53_1011
-CFG_start_imx53_tx53_1011.pblx.imximg = $(board)/karo-tx53/flash-header-tx53-rev1011.imxcfg
-FILE_barebox-tx53-1011.img = start_imx53_tx53_1011.pblx.imximg
+pblb-$(CONFIG_MACH_TX53) += start_imx53_tx53_1011
+CFG_start_imx53_tx53_1011.pblb.imximg = $(board)/karo-tx53/flash-header-tx53-rev1011.imxcfg
+FILE_barebox-tx53-1011.img = start_imx53_tx53_1011.pblb.imximg
 image-$(CONFIG_MACH_TX53) += barebox-tx53-1011.img
 
 # ----------------------- i.MX6 based boards ---------------------------
-pblx-$(CONFIG_MACH_REALQ7) += start_imx6_realq7
-CFG_start_imx6_realq7.pblx.imximg = $(board)/datamodul-edm-qmx6/flash-header.imxcfg
-FILE_barebox-datamodul-edm-qmx6.img = start_imx6_realq7.pblx.imximg
+pblb-$(CONFIG_MACH_REALQ7) += start_imx6_realq7
+CFG_start_imx6_realq7.pblb.imximg = $(board)/datamodul-edm-qmx6/flash-header.imxcfg
+FILE_barebox-datamodul-edm-qmx6.img = start_imx6_realq7.pblb.imximg
 image-$(CONFIG_MACH_REALQ7) += barebox-datamodul-edm-qmx6.img
 
-pblx-$(CONFIG_MACH_GUF_SANTARO) += start_imx6q_guf_santaro
-CFG_start_imx6q_guf_santaro.pblx.imximg = $(board)/guf-santaro/flash-header.imxcfg
-FILE_barebox-guf-santaro.img = start_imx6q_guf_santaro.pblx.imximg
+pblb-$(CONFIG_MACH_GUF_SANTARO) += start_imx6q_guf_santaro
+CFG_start_imx6q_guf_santaro.pblb.imximg = $(board)/guf-santaro/flash-header.imxcfg
+FILE_barebox-guf-santaro.img = start_imx6q_guf_santaro.pblb.imximg
 image-$(CONFIG_MACH_GUF_SANTARO) += barebox-guf-santaro.img
 
-pblx-$(CONFIG_MACH_GK802) += start_imx6_gk802
-CFG_start_imx6_gk802.pblx.imximg = $(board)/gk802/flash-header.imxcfg
-FILE_barebox-gk802.img = start_imx6_gk802.pblx.imximg
+pblb-$(CONFIG_MACH_GK802) += start_imx6_gk802
+CFG_start_imx6_gk802.pblb.imximg = $(board)/gk802/flash-header.imxcfg
+FILE_barebox-gk802.img = start_imx6_gk802.pblb.imximg
 image-$(CONFIG_MACH_GK802) += barebox-gk802.img
 
-pblx-$(CONFIG_MACH_TQMA6X) += start_imx6dl_mba6x
-CFG_start_imx6dl_mba6x.pblx.imximg = $(board)/tqma6x/flash-header-tqma6dl.imxcfg
-FILE_barebox-tq-tqma6s-mba6x.img = start_imx6dl_mba6x.pblx.imximg
+pblb-$(CONFIG_MACH_TQMA6X) += start_imx6dl_mba6x
+CFG_start_imx6dl_mba6x.pblb.imximg = $(board)/tqma6x/flash-header-tqma6dl.imxcfg
+FILE_barebox-tq-tqma6s-mba6x.img = start_imx6dl_mba6x.pblb.imximg
 image-$(CONFIG_MACH_TQMA6X) += barebox-tq-tqma6s-mba6x.img
 
-pblx-$(CONFIG_MACH_TQMA6X) += start_imx6q_mba6x
-CFG_start_imx6q_mba6x.pblx.imximg = $(board)/tqma6x/flash-header-tqma6q.imxcfg
-FILE_barebox-tq-tqma6q-mba6x.img = start_imx6q_mba6x.pblx.imximg
+pblb-$(CONFIG_MACH_TQMA6X) += start_imx6q_mba6x
+CFG_start_imx6q_mba6x.pblb.imximg = $(board)/tqma6x/flash-header-tqma6q.imxcfg
+FILE_barebox-tq-tqma6q-mba6x.img = start_imx6q_mba6x.pblb.imximg
 image-$(CONFIG_MACH_TQMA6X) += barebox-tq-tqma6q-mba6x.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_4gib
-CFG_start_phytec_pbab01_4gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-4gib.imxcfg
-FILE_barebox-phytec-pbab01-4gib.img = start_phytec_pbab01_4gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_4gib
+CFG_start_phytec_pbab01_4gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-4gib.imxcfg
+FILE_barebox-phytec-pbab01-4gib.img = start_phytec_pbab01_4gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01-4gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_2gib
-CFG_start_phytec_pbab01_2gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-2gib.imxcfg
-FILE_barebox-phytec-pbab01-2gib.img = start_phytec_pbab01_2gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_2gib
+CFG_start_phytec_pbab01_2gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-2gib.imxcfg
+FILE_barebox-phytec-pbab01-2gib.img = start_phytec_pbab01_2gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01-2gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_1gib
-CFG_start_phytec_pbab01_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib.imxcfg
-FILE_barebox-phytec-pbab01-1gib.img = start_phytec_pbab01_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_1gib
+CFG_start_phytec_pbab01_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib.imxcfg
+FILE_barebox-phytec-pbab01-1gib.img = start_phytec_pbab01_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_1gib_1bank
-CFG_start_phytec_pbab01_1gib_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib-1bank.imxcfg
-FILE_barebox-phytec-pbab01-1gib-1bank.img = start_phytec_pbab01_1gib_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_1gib_1bank
+CFG_start_phytec_pbab01_1gib_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib-1bank.imxcfg
+FILE_barebox-phytec-pbab01-1gib-1bank.img = start_phytec_pbab01_1gib_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01-1gib-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_512mb_1bank
-CFG_start_phytec_pbab01_512mb_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-512mb-1bank.imxcfg
-FILE_barebox-phytec-pbab01-512mb-1bank.img = start_phytec_pbab01_512mb_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01_512mb_1bank
+CFG_start_phytec_pbab01_512mb_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-512mb-1bank.imxcfg
+FILE_barebox-phytec-pbab01-512mb-1bank.img = start_phytec_pbab01_512mb_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01-512mb-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01dl_1gib
-CFG_start_phytec_pbab01dl_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02dl-1gib.imxcfg
-FILE_barebox-phytec-pbab01dl-1gib.img = start_phytec_pbab01dl_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01dl_1gib
+CFG_start_phytec_pbab01dl_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02dl-1gib.imxcfg
+FILE_barebox-phytec-pbab01dl-1gib.img = start_phytec_pbab01dl_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01dl-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01dl_1gib_1bank
-CFG_start_phytec_pbab01dl_1gib_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02dl-1gib-1bank.imxcfg
-FILE_barebox-phytec-pbab01dl-1gib-1bank.img = start_phytec_pbab01dl_1gib_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01dl_1gib_1bank
+CFG_start_phytec_pbab01dl_1gib_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02dl-1gib-1bank.imxcfg
+FILE_barebox-phytec-pbab01dl-1gib-1bank.img = start_phytec_pbab01dl_1gib_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01dl-1gib-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01s_512mb_1bank
-CFG_start_phytec_pbab01s_512mb_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-512mb-1bank.imxcfg
-FILE_barebox-phytec-pbab01s-512mb-1bank.img = start_phytec_pbab01s_512mb_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01s_512mb_1bank
+CFG_start_phytec_pbab01s_512mb_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-512mb-1bank.imxcfg
+FILE_barebox-phytec-pbab01s-512mb-1bank.img = start_phytec_pbab01s_512mb_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01s-512mb-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01s_256mb_1bank
-CFG_start_phytec_pbab01s_256mb_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-256mb-1bank.imxcfg
-FILE_barebox-phytec-pbab01s-256mb-1bank.img = start_phytec_pbab01s_256mb_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01s_256mb_1bank
+CFG_start_phytec_pbab01s_256mb_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-256mb-1bank.imxcfg
+FILE_barebox-phytec-pbab01s-256mb-1bank.img = start_phytec_pbab01s_256mb_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01s-256mb-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01s_128mb_1bank
-CFG_start_phytec_pbab01s_128mb_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-128mb-1bank.imxcfg
-FILE_barebox-phytec-pbab01s-128mb-1bank.img = start_phytec_pbab01s_128mb_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbab01s_128mb_1bank
+CFG_start_phytec_pbab01s_128mb_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-128mb-1bank.imxcfg
+FILE_barebox-phytec-pbab01s-128mb-1bank.img = start_phytec_pbab01s_128mb_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbab01s-128mb-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phyboard_alcor_1gib
-CFG_start_phytec_phyboard_alcor_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib.imxcfg
-FILE_barebox-phytec-phyboard-alcor-1gib.img = start_phytec_phyboard_alcor_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phyboard_alcor_1gib
+CFG_start_phytec_phyboard_alcor_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib.imxcfg
+FILE_barebox-phytec-phyboard-alcor-1gib.img = start_phytec_phyboard_alcor_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phyboard-alcor-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phyboard_subra_512mb_1bank
-CFG_start_phytec_phyboard_subra_512mb_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-512mb-1bank.imxcfg
-FILE_barebox-phytec-phyboard-subra-512mb-1bank.img = start_phytec_phyboard_subra_512mb_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phyboard_subra_512mb_1bank
+CFG_start_phytec_phyboard_subra_512mb_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02s-512mb-1bank.imxcfg
+FILE_barebox-phytec-phyboard-subra-512mb-1bank.img = start_phytec_phyboard_subra_512mb_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phyboard-subra-512mb-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phyboard_subra_1gib_1bank
-CFG_start_phytec_phyboard_subra_1gib_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib-1bank.imxcfg
-FILE_barebox-phytec-phyboard-subra-1gib-1bank.img = start_phytec_phyboard_subra_1gib_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phyboard_subra_1gib_1bank
+CFG_start_phytec_phyboard_subra_1gib_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pfla02-1gib-1bank.imxcfg
+FILE_barebox-phytec-phyboard-subra-1gib-1bank.img = start_phytec_phyboard_subra_1gib_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phyboard-subra-1gib-1bank.img
 
-pblx-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6dl_dfi_fs700_m60_6s
-CFG_start_imx6dl_dfi_fs700_m60_6s.pblx.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6s.imxcfg
-FILE_barebox-dfi-fs700-m60-6s.img = start_imx6dl_dfi_fs700_m60_6s.pblx.imximg
+pblb-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6dl_dfi_fs700_m60_6s
+CFG_start_imx6dl_dfi_fs700_m60_6s.pblb.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6s.imxcfg
+FILE_barebox-dfi-fs700-m60-6s.img = start_imx6dl_dfi_fs700_m60_6s.pblb.imximg
 image-$(CONFIG_MACH_DFI_FS700_M60) += barebox-dfi-fs700-m60-6s.img
 
-pblx-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_micron
-CFG_start_imx6q_dfi_fs700_m60_6q_micron.pblx.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6q-micron.imxcfg
-FILE_barebox-dfi-fs700-m60-6q-micron.img = start_imx6q_dfi_fs700_m60_6q_micron.pblx.imximg
+pblb-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_micron
+CFG_start_imx6q_dfi_fs700_m60_6q_micron.pblb.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6q-micron.imxcfg
+FILE_barebox-dfi-fs700-m60-6q-micron.img = start_imx6q_dfi_fs700_m60_6q_micron.pblb.imximg
 image-$(CONFIG_MACH_DFI_FS700_M60) += barebox-dfi-fs700-m60-6q-micron.img
 
-pblx-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_nanya
-CFG_start_imx6q_dfi_fs700_m60_6q_nanya.pblx.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6q-nanya.imxcfg
-FILE_barebox-dfi-fs700-m60-6q-nanya.img = start_imx6q_dfi_fs700_m60_6q_nanya.pblx.imximg
+pblb-$(CONFIG_MACH_DFI_FS700_M60) += start_imx6q_dfi_fs700_m60_6q_nanya
+CFG_start_imx6q_dfi_fs700_m60_6q_nanya.pblb.imximg = $(board)/dfi-fs700-m60/flash-header-fs700-m60-6q-nanya.imxcfg
+FILE_barebox-dfi-fs700-m60-6q-nanya.img = start_imx6q_dfi_fs700_m60_6q_nanya.pblb.imximg
 image-$(CONFIG_MACH_DFI_FS700_M60) += barebox-dfi-fs700-m60-6q-nanya.img
 
-pblx-$(CONFIG_MACH_SABRELITE) += start_imx6q_sabrelite
-CFG_start_imx6q_sabrelite.pblx.imximg = $(board)/freescale-mx6-sabrelite/flash-header-mx6-sabrelite.imxcfg
-FILE_barebox-freescale-imx6q-sabrelite.img = start_imx6q_sabrelite.pblx.imximg
+pblb-$(CONFIG_MACH_SABRELITE) += start_imx6q_sabrelite
+CFG_start_imx6q_sabrelite.pblb.imximg = $(board)/freescale-mx6-sabrelite/flash-header-mx6-sabrelite.imxcfg
+FILE_barebox-freescale-imx6q-sabrelite.img = start_imx6q_sabrelite.pblb.imximg
 image-$(CONFIG_MACH_SABRELITE) += barebox-freescale-imx6q-sabrelite.img
 
-pblx-$(CONFIG_MACH_SABRELITE) += start_imx6dl_sabrelite
-CFG_start_imx6dl_sabrelite.pblx.imximg = $(board)/freescale-mx6-sabrelite/flash-header-mx6-sabrelite.imxcfg
-FILE_barebox-freescale-imx6dl-sabrelite.img = start_imx6dl_sabrelite.pblx.imximg
+pblb-$(CONFIG_MACH_SABRELITE) += start_imx6dl_sabrelite
+CFG_start_imx6dl_sabrelite.pblb.imximg = $(board)/freescale-mx6-sabrelite/flash-header-mx6-sabrelite.imxcfg
+FILE_barebox-freescale-imx6dl-sabrelite.img = start_imx6dl_sabrelite.pblb.imximg
 image-$(CONFIG_MACH_SABRELITE) += barebox-freescale-imx6dl-sabrelite.img
 
-pblx-$(CONFIG_MACH_SABRESD) += start_imx6q_sabresd
-CFG_start_imx6q_sabresd.pblx.imximg = $(board)/freescale-mx6-sabresd/flash-header-mx6-sabresd.imxcfg
-FILE_barebox-freescale-imx6q-sabresd.img = start_imx6q_sabresd.pblx.imximg
+pblb-$(CONFIG_MACH_SABRESD) += start_imx6q_sabresd
+CFG_start_imx6q_sabresd.pblb.imximg = $(board)/freescale-mx6-sabresd/flash-header-mx6-sabresd.imxcfg
+FILE_barebox-freescale-imx6q-sabresd.img = start_imx6q_sabresd.pblb.imximg
 image-$(CONFIG_MACH_SABRESD) += barebox-freescale-imx6q-sabresd.img
 
-pblx-$(CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB) += start_imx6sx_sabresdb
-CFG_start_imx6sx_sabresdb.pblx.imximg = $(board)/freescale-mx6sx-sabresdb/flash-header-mx6sx-sabresdb.imxcfg
-FILE_barebox-freescale-imx6sx-sabresdb.img = start_imx6sx_sabresdb.pblx.imximg
+pblb-$(CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB) += start_imx6sx_sabresdb
+CFG_start_imx6sx_sabresdb.pblb.imximg = $(board)/freescale-mx6sx-sabresdb/flash-header-mx6sx-sabresdb.imxcfg
+FILE_barebox-freescale-imx6sx-sabresdb.img = start_imx6sx_sabresdb.pblb.imximg
 image-$(CONFIG_MACH_FREESCALE_IMX6SX_SABRESDB) += barebox-freescale-imx6sx-sabresdb.img
 
-pblx-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += start_imx6_wandboard
-CFG_start_imx6_wandboard.imx-sram-img = $(board)/technexion-wandboard/flash-header-technexion-wandboard.imxcfg
-FILE_barebox-imx6-wandboard.img = start_imx6_wandboard.imx-sram-img
+pblb-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += start_imx6_wandboard
+CFG_start_imx6_wandboard.pblb.imximg = $(board)/technexion-wandboard/flash-header-technexion-wandboard.imxcfg
+FILE_barebox-imx6-wandboard.img = start_imx6_wandboard.pblb.imximg
 image-$(CONFIG_MACH_TECHNEXION_WANDBOARD) += barebox-imx6-wandboard.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i1
-CFG_start_hummingboard_microsom_i1.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i1.imxcfg
-FILE_barebox-solidrun-hummingboard-microsom-i1.img = start_hummingboard_microsom_i1.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i1
+CFG_start_hummingboard_microsom_i1.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i1.imxcfg
+FILE_barebox-solidrun-hummingboard-microsom-i1.img = start_hummingboard_microsom_i1.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i1.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i2
-CFG_start_hummingboard_microsom_i2.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2.imxcfg
-FILE_barebox-solidrun-hummingboard-microsom-i2.img = start_hummingboard_microsom_i2.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i2
+CFG_start_hummingboard_microsom_i2.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2.imxcfg
+FILE_barebox-solidrun-hummingboard-microsom-i2.img = start_hummingboard_microsom_i2.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i2.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i2ex
-CFG_start_hummingboard_microsom_i2ex.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg
-FILE_barebox-solidrun-hummingboard-microsom-i2eX.img = start_hummingboard_microsom_i2ex.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i2ex
+CFG_start_hummingboard_microsom_i2ex.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg
+FILE_barebox-solidrun-hummingboard-microsom-i2eX.img = start_hummingboard_microsom_i2ex.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i2eX.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i4
-CFG_start_hummingboard_microsom_i4.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i4.imxcfg
-FILE_barebox-solidrun-hummingboard-microsom-i4.img = start_hummingboard_microsom_i4.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard_microsom_i4
+CFG_start_hummingboard_microsom_i4.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i4.imxcfg
+FILE_barebox-solidrun-hummingboard-microsom-i4.img = start_hummingboard_microsom_i4.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard-microsom-i4.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i1
-CFG_start_hummingboard2_microsom_i1.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i1.imxcfg
-FILE_barebox-solidrun-hummingboard2-microsom-i1.img = start_hummingboard2_microsom_i1.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i1
+CFG_start_hummingboard2_microsom_i1.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i1.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i1.img = start_hummingboard2_microsom_i1.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i1.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i2
-CFG_start_hummingboard2_microsom_i2.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2.imxcfg
-FILE_barebox-solidrun-hummingboard2-microsom-i2.img = start_hummingboard2_microsom_i2.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i2
+CFG_start_hummingboard2_microsom_i2.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i2.img = start_hummingboard2_microsom_i2.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i2.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i2ex
-CFG_start_hummingboard2_microsom_i2ex.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg
-FILE_barebox-solidrun-hummingboard2-microsom-i2eX.img = start_hummingboard2_microsom_i2ex.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i2ex
+CFG_start_hummingboard2_microsom_i2ex.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i2eX.img = start_hummingboard2_microsom_i2ex.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i2eX.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i4
-CFG_start_hummingboard2_microsom_i4.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i4.imxcfg
-FILE_barebox-solidrun-hummingboard2-microsom-i4.img = start_hummingboard2_microsom_i4.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_hummingboard2_microsom_i4
+CFG_start_hummingboard2_microsom_i4.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i4.imxcfg
+FILE_barebox-solidrun-hummingboard2-microsom-i4.img = start_hummingboard2_microsom_i4.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-solidrun-hummingboard2-microsom-i4.img
 
-pblx-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_h100_microsom_i2ex
-CFG_start_h100_microsom_i2ex.pblx.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg
-FILE_barebox-auvidea-h100-microsom-i2eX.img = start_h100_microsom_i2ex.pblx.imximg
+pblb-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += start_h100_microsom_i2ex
+CFG_start_h100_microsom_i2ex.pblb.imximg = $(board)/solidrun-microsom/flash-header-microsom-i2eX.imxcfg
+FILE_barebox-auvidea-h100-microsom-i2eX.img = start_h100_microsom_i2ex.pblb.imximg
 image-$(CONFIG_MACH_SOLIDRUN_MICROSOM) += barebox-auvidea-h100-microsom-i2eX.img
 
-pblx-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += start_imx6ul_pico_hobbit_256mb
-CFG_start_imx6ul_pico_hobbit_256mb.pblx.imximg = $(board)/technexion-pico-hobbit/flash-header-imx6ul-pico-hobbit-256.imxcfg
-FILE_barebox-imx6ul-pico-hobbit-256mb.img = start_imx6ul_pico_hobbit_256mb.pblx.imximg
+pblb-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += start_imx6ul_pico_hobbit_256mb
+CFG_start_imx6ul_pico_hobbit_256mb.pblb.imximg = $(board)/technexion-pico-hobbit/flash-header-imx6ul-pico-hobbit-256.imxcfg
+FILE_barebox-imx6ul-pico-hobbit-256mb.img = start_imx6ul_pico_hobbit_256mb.pblb.imximg
 image-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += barebox-imx6ul-pico-hobbit-256mb.img
 
-pblx-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += start_imx6ul_pico_hobbit_512mb
-CFG_start_imx6ul_pico_hobbit_512mb.pblx.imximg = $(board)/technexion-pico-hobbit/flash-header-imx6ul-pico-hobbit-512.imxcfg
-FILE_barebox-imx6ul-pico-hobbit-512mb.img = start_imx6ul_pico_hobbit_512mb.pblx.imximg
+pblb-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += start_imx6ul_pico_hobbit_512mb
+CFG_start_imx6ul_pico_hobbit_512mb.pblb.imximg = $(board)/technexion-pico-hobbit/flash-header-imx6ul-pico-hobbit-512.imxcfg
+FILE_barebox-imx6ul-pico-hobbit-512mb.img = start_imx6ul_pico_hobbit_512mb.pblb.imximg
 image-$(CONFIG_MACH_TECHNEXION_PICO_HOBBIT) += barebox-imx6ul-pico-hobbit-512mb.img
 
-pblx-$(CONFIG_MACH_NXP_IMX6ULL_EVK) += start_nxp_imx6ull_evk
-CFG_start_nxp_imx6ull_evk.pblx.imximg = $(board)/nxp-imx6ull-evk/flash-header-nxp-imx6ull-evk.imxcfg
-FILE_barebox-nxp-imx6ull-evk.img = start_nxp_imx6ull_evk.pblx.imximg
+pblb-$(CONFIG_MACH_NXP_IMX6ULL_EVK) += start_nxp_imx6ull_evk
+CFG_start_nxp_imx6ull_evk.pblb.imximg = $(board)/nxp-imx6ull-evk/flash-header-nxp-imx6ull-evk.imxcfg
+FILE_barebox-nxp-imx6ull-evk.img = start_nxp_imx6ull_evk.pblb.imximg
 image-$(CONFIG_MACH_NXP_IMX6ULL_EVK) += barebox-nxp-imx6ull-evk.img
 
-pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6q_nitrogen6x_1g
-CFG_start_imx6q_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6q-1g.imxcfg
-FILE_barebox-boundarydevices-imx6q-nitrogen6x-1g.img = start_imx6q_nitrogen6x_1g.pblx.imximg
+pblb-$(CONFIG_MACH_NITROGEN6) += start_imx6q_nitrogen6x_1g
+CFG_start_imx6q_nitrogen6x_1g.pblb.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6q-1g.imxcfg
+FILE_barebox-boundarydevices-imx6q-nitrogen6x-1g.img = start_imx6q_nitrogen6x_1g.pblb.imximg
 image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6q-nitrogen6x-1g.img
 
-pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6q_nitrogen6x_2g
-CFG_start_imx6q_nitrogen6x_2g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6q-2g.imxcfg
-FILE_barebox-boundarydevices-imx6q-nitrogen6x-2g.img = start_imx6q_nitrogen6x_2g.pblx.imximg
+pblb-$(CONFIG_MACH_NITROGEN6) += start_imx6q_nitrogen6x_2g
+CFG_start_imx6q_nitrogen6x_2g.pblb.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6q-2g.imxcfg
+FILE_barebox-boundarydevices-imx6q-nitrogen6x-2g.img = start_imx6q_nitrogen6x_2g.pblb.imximg
 image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6q-nitrogen6x-2g.img
 
-pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6dl_nitrogen6x_1g
-CFG_start_imx6dl_nitrogen6x_1g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6dl-1g.imxcfg
-FILE_barebox-boundarydevices-imx6dl-nitrogen6x-1g.img = start_imx6dl_nitrogen6x_1g.pblx.imximg
+pblb-$(CONFIG_MACH_NITROGEN6) += start_imx6dl_nitrogen6x_1g
+CFG_start_imx6dl_nitrogen6x_1g.pblb.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6dl-1g.imxcfg
+FILE_barebox-boundarydevices-imx6dl-nitrogen6x-1g.img = start_imx6dl_nitrogen6x_1g.pblb.imximg
 image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6dl-nitrogen6x-1g.img
 
-pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6dl_nitrogen6x_2g
-CFG_start_imx6dl_nitrogen6x_2g.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6dl-2g.imxcfg
-FILE_barebox-boundarydevices-imx6dl-nitrogen6x-2g.img = start_imx6dl_nitrogen6x_2g.pblx.imximg
+pblb-$(CONFIG_MACH_NITROGEN6) += start_imx6dl_nitrogen6x_2g
+CFG_start_imx6dl_nitrogen6x_2g.pblb.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6dl-2g.imxcfg
+FILE_barebox-boundarydevices-imx6dl-nitrogen6x-2g.img = start_imx6dl_nitrogen6x_2g.pblb.imximg
 image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6dl-nitrogen6x-2g.img
 
-pblx-$(CONFIG_MACH_NITROGEN6) += start_imx6qp_nitrogen6_max
-CFG_start_imx6qp_nitrogen6_max.pblx.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6qp-max.imxcfg
-FILE_barebox-boundarydevices-imx6qp-nitrogen6_max.img = start_imx6qp_nitrogen6_max.pblx.imximg
+pblb-$(CONFIG_MACH_NITROGEN6) += start_imx6qp_nitrogen6_max
+CFG_start_imx6qp_nitrogen6_max.pblb.imximg = $(board)/boundarydevices-nitrogen6/flash-header-nitrogen6qp-max.imxcfg
+FILE_barebox-boundarydevices-imx6qp-nitrogen6_max.img = start_imx6qp_nitrogen6_max.pblb.imximg
 image-$(CONFIG_MACH_NITROGEN6) += barebox-boundarydevices-imx6qp-nitrogen6_max.img
 
-pblx-$(CONFIG_MACH_TX6X) += start_imx6dl_tx6x_512m
-CFG_start_imx6dl_tx6x_512m.pblx.imximg = $(board)/karo-tx6x/flash-header-tx6dl-512m.imxcfg
-FILE_barebox-karo-imx6dl-tx6x-512m.img = start_imx6dl_tx6x_512m.pblx.imximg
+pblb-$(CONFIG_MACH_TX6X) += start_imx6dl_tx6x_512m
+CFG_start_imx6dl_tx6x_512m.pblb.imximg = $(board)/karo-tx6x/flash-header-tx6dl-512m.imxcfg
+FILE_barebox-karo-imx6dl-tx6x-512m.img = start_imx6dl_tx6x_512m.pblb.imximg
 image-$(CONFIG_MACH_TX6X) += barebox-karo-imx6dl-tx6x-512m.img
 
-pblx-$(CONFIG_MACH_TX6X) += start_imx6dl_tx6x_1g
-CFG_start_imx6dl_tx6x_1g.pblx.imximg = $(board)/karo-tx6x/flash-header-tx6dl-1g.imxcfg
-FILE_barebox-karo-imx6dl-tx6x-1g.img = start_imx6dl_tx6x_1g.pblx.imximg
+pblb-$(CONFIG_MACH_TX6X) += start_imx6dl_tx6x_1g
+CFG_start_imx6dl_tx6x_1g.pblb.imximg = $(board)/karo-tx6x/flash-header-tx6dl-1g.imxcfg
+FILE_barebox-karo-imx6dl-tx6x-1g.img = start_imx6dl_tx6x_1g.pblb.imximg
 image-$(CONFIG_MACH_TX6X) += barebox-karo-imx6dl-tx6x-1g.img
 
-pblx-$(CONFIG_MACH_TX6X) += start_imx6q_tx6x_1g
-CFG_start_imx6q_tx6x_1g.pblx.imximg = $(board)/karo-tx6x/flash-header-tx6q-1g.imxcfg
-FILE_barebox-karo-imx6q-tx6x-1g.img = start_imx6q_tx6x_1g.pblx.imximg
+pblb-$(CONFIG_MACH_TX6X) += start_imx6q_tx6x_1g
+CFG_start_imx6q_tx6x_1g.pblb.imximg = $(board)/karo-tx6x/flash-header-tx6q-1g.imxcfg
+FILE_barebox-karo-imx6q-tx6x-1g.img = start_imx6q_tx6x_1g.pblb.imximg
 image-$(CONFIG_MACH_TX6X) += barebox-karo-imx6q-tx6x-1g.img
 
-pblx-$(CONFIG_MACH_TX6X) += start_imx6q_tx6x_2g
-CFG_start_imx6q_tx6x_2g.pblx.imximg = $(board)/karo-tx6x/flash-header-tx6qp-2g.imxcfg
-FILE_barebox-karo-imx6qp-tx6x-2g.img = start_imx6q_tx6x_2g.pblx.imximg
+pblb-$(CONFIG_MACH_TX6X) += start_imx6q_tx6x_2g
+CFG_start_imx6q_tx6x_2g.pblb.imximg = $(board)/karo-tx6x/flash-header-tx6qp-2g.imxcfg
+FILE_barebox-karo-imx6qp-tx6x-2g.img = start_imx6q_tx6x_2g.pblb.imximg
 image-$(CONFIG_MACH_TX6X) += barebox-karo-imx6qp-tx6x-2g.img
 
-pblx-$(CONFIG_MACH_UDOO) += start_imx6_udoo
-CFG_start_imx6_udoo.pblx.imximg = $(board)/udoo/flash-header-mx6-udoo.imxcfg
-FILE_barebox-udoo-imx6q.img = start_imx6_udoo.pblx.imximg
+pblb-$(CONFIG_MACH_UDOO) += start_imx6_udoo
+CFG_start_imx6_udoo.pblb.imximg = $(board)/udoo/flash-header-mx6-udoo.imxcfg
+FILE_barebox-udoo-imx6q.img = start_imx6_udoo.pblb.imximg
 image-$(CONFIG_MACH_UDOO) += barebox-udoo-imx6q.img
 
-pblx-$(CONFIG_MACH_CM_FX6) += start_imx6_cm_fx6
-CFG_start_imx6_cm_fx6.imx-sram-img = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
-FILE_barebox-cm-fx6.img = start_imx6_cm_fx6.imx-sram-img
+pblb-$(CONFIG_MACH_CM_FX6) += start_imx6_cm_fx6
+CFG_start_imx6_cm_fx6.pblb.imximg = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
+FILE_barebox-cm-fx6.img = start_imx6_cm_fx6.pblb.imximg
 image-$(CONFIG_MACH_CM_FX6) += barebox-cm-fx6.img
 
-pblx-$(CONFIG_MACH_CM_FX6) += start_imx6_utilite
-CFG_start_imx6_utilite.imx-sram-img = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
-FILE_barebox-utilite.img = start_imx6_utilite.imx-sram-img
+pblb-$(CONFIG_MACH_CM_FX6) += start_imx6_utilite
+CFG_start_imx6_utilite.pblb.imximg = $(board)/cm-fx6/flash-header-mx6-cm-fx6.imxcfg
+FILE_barebox-utilite.img = start_imx6_utilite.pblb.imximg
 image-$(CONFIG_MACH_CM_FX6) += barebox-utilite.img
 
-pblx-$(CONFIG_MACH_VARISCITE_MX6) += start_variscite_custom
-CFG_start_variscite_custom.pblx.imximg = $(board)/variscite-mx6/flash-header-variscite.imxcfg
-FILE_barebox-variscite-custom.img = start_variscite_custom.pblx.imximg
+pblb-$(CONFIG_MACH_VARISCITE_MX6) += start_variscite_custom
+CFG_start_variscite_custom.pblb.imximg = $(board)/variscite-mx6/flash-header-variscite.imxcfg
+FILE_barebox-variscite-custom.img = start_variscite_custom.pblb.imximg
 image-$(CONFIG_MACH_VARISCITE_MX6) += barebox-variscite-custom.img
 
-pblx-$(CONFIG_MACH_EMBEDSKY_E9) += start_imx6q_embedsky_e9
-CFG_start_imx6q_embedsky_e9.pblx.imximg = $(board)/embedsky-e9/flash-header-e9.imxcfg
-FILE_barebox-embedsky-imx6q-e9.img = start_imx6q_embedsky_e9.pblx.imximg
+pblb-$(CONFIG_MACH_EMBEDSKY_E9) += start_imx6q_embedsky_e9
+CFG_start_imx6q_embedsky_e9.pblb.imximg = $(board)/embedsky-e9/flash-header-e9.imxcfg
+FILE_barebox-embedsky-imx6q-e9.img = start_imx6q_embedsky_e9.pblb.imximg
 image-$(CONFIG_MACH_EMBEDSKY_E9) += barebox-embedsky-imx6q-e9.img
 
-pblx-$(CONFIG_MACH_EMBEST_RIOTBOARD) += start_imx6s_riotboard
-CFG_start_imx6s_riotboard.pblx.imximg = $(board)/embest-riotboard/flash-header-embest-riotboard.imxcfg
-FILE_barebox-embest-imx6s-riotboard.img = start_imx6s_riotboard.pblx.imximg
+pblb-$(CONFIG_MACH_EMBEST_RIOTBOARD) += start_imx6s_riotboard
+CFG_start_imx6s_riotboard.pblb.imximg = $(board)/embest-riotboard/flash-header-embest-riotboard.imxcfg
+FILE_barebox-embest-imx6s-riotboard.img = start_imx6s_riotboard.pblb.imximg
 image-$(CONFIG_MACH_EMBEST_RIOTBOARD) += barebox-embest-imx6s-riotboard.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbaa03_1gib
-CFG_start_phytec_pbaa03_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcaaxl3-1gib.imxcfg
-FILE_barebox-phytec-pbaa03-1gib.img = start_phytec_pbaa03_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbaa03_1gib
+CFG_start_phytec_pbaa03_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcaaxl3-1gib.imxcfg
+FILE_barebox-phytec-pbaa03-1gib.img = start_phytec_pbaa03_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbaa03-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbaa03_1gib_1bank
-CFG_start_phytec_pbaa03_1gib_1bank.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcaaxl3-1gib-1bank.imxcfg
-FILE_barebox-phytec-pbaa03-1gib-1bank.img = start_phytec_pbaa03_1gib_1bank.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbaa03_1gib_1bank
+CFG_start_phytec_pbaa03_1gib_1bank.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcaaxl3-1gib-1bank.imxcfg
+FILE_barebox-phytec-pbaa03-1gib-1bank.img = start_phytec_pbaa03_1gib_1bank.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbaa03-1gib-1bank.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbaa03_2gib
-CFG_start_phytec_pbaa03_2gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcaaxl3-2gib.imxcfg
-FILE_barebox-phytec-pbaa03-2gib.img = start_phytec_pbaa03_2gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_pbaa03_2gib
+CFG_start_phytec_pbaa03_2gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcaaxl3-2gib.imxcfg
+FILE_barebox-phytec-pbaa03-2gib.img = start_phytec_pbaa03_2gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-pbaa03-2gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6q_som_nand_1gib
-CFG_start_phytec_phycore_imx6q_som_nand_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058-1gib.imxcfg
-FILE_barebox-phytec-phycore-imx6q-som-nand-1gib.img = start_phytec_phycore_imx6q_som_nand_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6q_som_nand_1gib
+CFG_start_phytec_phycore_imx6q_som_nand_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058-1gib.imxcfg
+FILE_barebox-phytec-phycore-imx6q-som-nand-1gib.img = start_phytec_phycore_imx6q_som_nand_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6q-som-nand-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6qp_som_nand_1gib
-CFG_start_phytec_phycore_imx6qp_som_nand_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058qp-1gib.imxcfg
-FILE_barebox-phytec-phycore-imx6qp-som-nand-1gib.img = start_phytec_phycore_imx6qp_som_nand_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6qp_som_nand_1gib
+CFG_start_phytec_phycore_imx6qp_som_nand_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058qp-1gib.imxcfg
+FILE_barebox-phytec-phycore-imx6qp-som-nand-1gib.img = start_phytec_phycore_imx6qp_som_nand_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6qp-som-nand-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6q_som_emmc_1gib
-CFG_start_phytec_phycore_imx6q_som_emmc_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058-1gib.imxcfg
-FILE_barebox-phytec-phycore-imx6q-som-emmc-1gib.img = start_phytec_phycore_imx6q_som_emmc_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6q_som_emmc_1gib
+CFG_start_phytec_phycore_imx6q_som_emmc_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058-1gib.imxcfg
+FILE_barebox-phytec-phycore-imx6q-som-emmc-1gib.img = start_phytec_phycore_imx6q_som_emmc_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6q-som-emmc-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6q_som_emmc_2gib
-CFG_start_phytec_phycore_imx6q_som_emmc_2gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058-2gib.imxcfg
-FILE_barebox-phytec-phycore-imx6q-som-emmc-2gib.img = start_phytec_phycore_imx6q_som_emmc_2gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6q_som_emmc_2gib
+CFG_start_phytec_phycore_imx6q_som_emmc_2gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058-2gib.imxcfg
+FILE_barebox-phytec-phycore-imx6q-som-emmc-2gib.img = start_phytec_phycore_imx6q_som_emmc_2gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6q-som-emmc-2gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6dl_som_nand_256mb
-CFG_start_phytec_phycore_imx6dl_som_nand_256mb.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058dl-256mb.imxcfg
-FILE_barebox-phytec-phycore-imx6dl-som-nand-256mb.img = start_phytec_phycore_imx6dl_som_nand_256mb.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6dl_som_nand_256mb
+CFG_start_phytec_phycore_imx6dl_som_nand_256mb.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058dl-256mb.imxcfg
+FILE_barebox-phytec-phycore-imx6dl-som-nand-256mb.img = start_phytec_phycore_imx6dl_som_nand_256mb.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6dl-som-nand-256mb.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6dl_som_nand_1gib
-CFG_start_phytec_phycore_imx6dl_som_nand_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058dl-1gib-32bit.imxcfg
-FILE_barebox-phytec-phycore-imx6dl-som-nand-1gib.img = start_phytec_phycore_imx6dl_som_nand_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6dl_som_nand_1gib
+CFG_start_phytec_phycore_imx6dl_som_nand_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058dl-1gib-32bit.imxcfg
+FILE_barebox-phytec-phycore-imx6dl-som-nand-1gib.img = start_phytec_phycore_imx6dl_som_nand_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6dl-som-nand-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6dl_som_emmc_1gib
-CFG_start_phytec_phycore_imx6dl_som_emmc_1gib.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058dl-1gib.imxcfg
-FILE_barebox-phytec-phycore-imx6dl-som-emmc-1gib.img = start_phytec_phycore_imx6dl_som_emmc_1gib.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6dl_som_emmc_1gib
+CFG_start_phytec_phycore_imx6dl_som_emmc_1gib.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcm058dl-1gib.imxcfg
+FILE_barebox-phytec-phycore-imx6dl-som-emmc-1gib.img = start_phytec_phycore_imx6dl_som_emmc_1gib.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6dl-som-emmc-1gib.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6ul_som_512mb
-CFG_start_phytec_phycore_imx6ul_som_512mb.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcl063-512mb.imxcfg
-FILE_barebox-phytec-phycore-imx6ul-512mb.img = start_phytec_phycore_imx6ul_som_512mb.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6ul_som_512mb
+CFG_start_phytec_phycore_imx6ul_som_512mb.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcl063-512mb.imxcfg
+FILE_barebox-phytec-phycore-imx6ul-512mb.img = start_phytec_phycore_imx6ul_som_512mb.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6ul-512mb.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6ull_som_256mb
-CFG_start_phytec_phycore_imx6ull_som_256mb.pblx.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcl063-256mb.imxcfg
-FILE_barebox-phytec-phycore-imx6ull-256mb.img = start_phytec_phycore_imx6ull_som_256mb.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += start_phytec_phycore_imx6ull_som_256mb
+CFG_start_phytec_phycore_imx6ull_som_256mb.pblb.imximg = $(board)/phytec-som-imx6/flash-header-phytec-pcl063-256mb.imxcfg
+FILE_barebox-phytec-phycore-imx6ull-256mb.img = start_phytec_phycore_imx6ull_som_256mb.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_SOM_IMX6) += barebox-phytec-phycore-imx6ull-256mb.img
 
-pblx-$(CONFIG_MACH_KONTRON_SAMX6I) += start_imx6q_samx6i
-CFG_start_imx6q_samx6i.pblx.imximg = $(board)/kontron-samx6i/flash-header-samx6i-quad.imxcfg
-FILE_barebox-imx6q-samx6i.img = start_imx6q_samx6i.pblx.imximg
+pblb-$(CONFIG_MACH_KONTRON_SAMX6I) += start_imx6q_samx6i
+CFG_start_imx6q_samx6i.pblb.imximg = $(board)/kontron-samx6i/flash-header-samx6i-quad.imxcfg
+FILE_barebox-imx6q-samx6i.img = start_imx6q_samx6i.pblb.imximg
 image-$(CONFIG_MACH_KONTRON_SAMX6I) += barebox-imx6q-samx6i.img
 
-pblx-$(CONFIG_MACH_KONTRON_SAMX6I) += start_imx6dl_samx6i
-CFG_start_imx6dl_samx6i.pblx.imximg = $(board)/kontron-samx6i/flash-header-samx6i-duallite.imxcfg
-FILE_barebox-imx6dl-samx6i.img = start_imx6dl_samx6i.pblx.imximg
+pblb-$(CONFIG_MACH_KONTRON_SAMX6I) += start_imx6dl_samx6i
+CFG_start_imx6dl_samx6i.pblb.imximg = $(board)/kontron-samx6i/flash-header-samx6i-duallite.imxcfg
+FILE_barebox-imx6dl-samx6i.img = start_imx6dl_samx6i.pblb.imximg
 image-$(CONFIG_MACH_KONTRON_SAMX6I) += barebox-imx6dl-samx6i.img
 
-pblx-$(CONFIG_MACH_GRINN_LITEBOARD) += start_imx6ul_liteboard_256mb
-CFG_start_imx6ul_liteboard_256mb.pblx.imximg = $(board)/grinn-liteboard/flash-header-liteboard-256mb.imxcfg
-FILE_barebox-grinn-liteboard-256mb.img = start_imx6ul_liteboard_256mb.pblx.imximg
+pblb-$(CONFIG_MACH_GRINN_LITEBOARD) += start_imx6ul_liteboard_256mb
+CFG_start_imx6ul_liteboard_256mb.pblb.imximg = $(board)/grinn-liteboard/flash-header-liteboard-256mb.imxcfg
+FILE_barebox-grinn-liteboard-256mb.img = start_imx6ul_liteboard_256mb.pblb.imximg
 image-$(CONFIG_MACH_GRINN_LITEBOARD) += barebox-grinn-liteboard-256mb.img
 
-pblx-$(CONFIG_MACH_GRINN_LITEBOARD) += start_imx6ul_liteboard_512mb
-CFG_start_imx6ul_liteboard_512mb.pblx.imximg = $(board)/grinn-liteboard/flash-header-liteboard-512mb.imxcfg
-FILE_barebox-grinn-liteboard-512mb.img = start_imx6ul_liteboard_512mb.pblx.imximg
+pblb-$(CONFIG_MACH_GRINN_LITEBOARD) += start_imx6ul_liteboard_512mb
+CFG_start_imx6ul_liteboard_512mb.pblb.imximg = $(board)/grinn-liteboard/flash-header-liteboard-512mb.imxcfg
+FILE_barebox-grinn-liteboard-512mb.img = start_imx6ul_liteboard_512mb.pblb.imximg
 image-$(CONFIG_MACH_GRINN_LITEBOARD) += barebox-grinn-liteboard-512mb.img
 
-pblx-$(CONFIG_MACH_GW_VENTANA) += start_imx6q_gw54xx_1gx64
-CFG_start_imx6q_gw54xx_1gx64.pblx.imximg = $(board)/gateworks-ventana/flash-header-ventana-quad-1gx64.imxcfg
-FILE_barebox-gateworks-imx6q-ventana-1gx64.img = start_imx6q_gw54xx_1gx64.pblx.imximg
+pblb-$(CONFIG_MACH_GW_VENTANA) += start_imx6q_gw54xx_1gx64
+CFG_start_imx6q_gw54xx_1gx64.pblb.imximg = $(board)/gateworks-ventana/flash-header-ventana-quad-1gx64.imxcfg
+FILE_barebox-gateworks-imx6q-ventana-1gx64.img = start_imx6q_gw54xx_1gx64.pblb.imximg
 image-$(CONFIG_MACH_GW_VENTANA) += barebox-gateworks-imx6q-ventana-1gx64.img
 
-pblx-$(CONFIG_MACH_ELTEC_HIPERCAM) += start_imx6dl_eltec_hipercam
-CFG_start_imx6dl_eltec_hipercam.pblx.imximg = $(board)/eltec-hipercam/flash-header-eltec-hipercam.imxcfg
-FILE_barebox-eltec-hipercam.img = start_imx6dl_eltec_hipercam.pblx.imximg
+pblb-$(CONFIG_MACH_ELTEC_HIPERCAM) += start_imx6dl_eltec_hipercam
+CFG_start_imx6dl_eltec_hipercam.pblb.imximg = $(board)/eltec-hipercam/flash-header-eltec-hipercam.imxcfg
+FILE_barebox-eltec-hipercam.img = start_imx6dl_eltec_hipercam.pblb.imximg
 image-$(CONFIG_MACH_ELTEC_HIPERCAM) += barebox-eltec-hipercam.img
 
-pblx-$(CONFIG_MACH_ADVANTECH_ROM_742X) += start_advantech_imx6dl_rom_7421
-CFG_start_advantech_imx6dl_rom_7421.pblx.imximg = $(board)/advantech-mx6/flash-header-advantech-rom-7421.imxcfg
-FILE_barebox-advantech-imx6dl-rom-7421.img = start_advantech_imx6dl_rom_7421.pblx.imximg
+pblb-$(CONFIG_MACH_ADVANTECH_ROM_742X) += start_advantech_imx6dl_rom_7421
+CFG_start_advantech_imx6dl_rom_7421.pblb.imximg = $(board)/advantech-mx6/flash-header-advantech-rom-7421.imxcfg
+FILE_barebox-advantech-imx6dl-rom-7421.img = start_advantech_imx6dl_rom_7421.pblb.imximg
 image-$(CONFIG_MACH_ADVANTECH_ROM_742X) += barebox-advantech-imx6dl-rom-7421.img
 
-pblx-$(CONFIG_MACH_WARP7) += start_imx7s_element14_warp7
-CFG_start_imx7s_element14_warp7.pblx.imximg = $(board)/element14-warp7/flash-header-mx7-warp.imxcfg
-FILE_barebox-element14-imx7s-warp7.img = start_imx7s_element14_warp7.pblx.imximg
+pblb-$(CONFIG_MACH_WARP7) += start_imx7s_element14_warp7
+CFG_start_imx7s_element14_warp7.pblb.imximg = $(board)/element14-warp7/flash-header-mx7-warp.imxcfg
+FILE_barebox-element14-imx7s-warp7.img = start_imx7s_element14_warp7.pblb.imximg
 image-$(CONFIG_MACH_WARP7) += barebox-element14-imx7s-warp7.img
 
-pblx-$(CONFIG_MACH_PHYTEC_PHYCORE_IMX7) += start_phytec_phycore_imx7
-CFG_start_phytec_phycore_imx7.pblx.imximg = $(board)/phytec-phycore-imx7/flash-header-phytec-phycore-imx7.imxcfg
-FILE_barebox-phytec-phycore-imx7.img = start_phytec_phycore_imx7.pblx.imximg
+pblb-$(CONFIG_MACH_PHYTEC_PHYCORE_IMX7) += start_phytec_phycore_imx7
+CFG_start_phytec_phycore_imx7.pblb.imximg = $(board)/phytec-phycore-imx7/flash-header-phytec-phycore-imx7.imxcfg
+FILE_barebox-phytec-phycore-imx7.img = start_phytec_phycore_imx7.pblb.imximg
 image-$(CONFIG_MACH_PHYTEC_PHYCORE_IMX7) += barebox-phytec-phycore-imx7.img
 
-pblx-$(CONFIG_MACH_VF610_TWR) += start_vf610_twr
-CFG_start_vf610_twr.pblx.imximg = $(board)/freescale-vf610-twr/flash-header-vf610-twr.imxcfg
-FILE_barebox-vf610-twr.img = start_vf610_twr.pblx.imximg
+pblb-$(CONFIG_MACH_VF610_TWR) += start_vf610_twr
+CFG_start_vf610_twr.pblb.imximg = $(board)/freescale-vf610-twr/flash-header-vf610-twr.imxcfg
+FILE_barebox-vf610-twr.img = start_vf610_twr.pblb.imximg
 image-$(CONFIG_MACH_VF610_TWR) += barebox-vf610-twr.img
 
-pblx-$(CONFIG_MACH_ZII_RDU2) += start_imx6_zii_rdu2
-CFG_start_imx6_zii_rdu2.imx-sram-img = $(board)/zii-imx6q-rdu2/flash-header-rdu2.imxcfg
-FILE_barebox-zii-imx6-rdu2.img = start_imx6_zii_rdu2.imx-sram-img
+pblb-$(CONFIG_MACH_ZII_RDU2) += start_imx6_zii_rdu2
+CFG_start_imx6_zii_rdu2.pblb.imximg = $(board)/zii-imx6q-rdu2/flash-header-rdu2.imxcfg
+FILE_barebox-zii-imx6-rdu2.img = start_imx6_zii_rdu2.pblb.imximg
 image-$(CONFIG_MACH_ZII_RDU2) += barebox-zii-imx6-rdu2.img
 
-pblx-$(CONFIG_MACH_ZII_VF610_DEV) += start_zii_vf610_dev
-CFG_start_zii_vf610_dev.pblx.imximg = $(board)/zii-vf610-dev/flash-header-zii-vf610-dev.imxcfg
-FILE_barebox-zii-vf610-dev.img = start_zii_vf610_dev.pblx.imximg
+pblb-$(CONFIG_MACH_ZII_VF610_DEV) += start_zii_vf610_dev
+CFG_start_zii_vf610_dev.pblb.imximg = $(board)/zii-vf610-dev/flash-header-zii-vf610-dev.imxcfg
+FILE_barebox-zii-vf610-dev.img = start_zii_vf610_dev.pblb.imximg
 image-$(CONFIG_MACH_ZII_VF610_DEV) += barebox-zii-vf610-dev.img
 
 # ----------------------- i.MX7 based boards ---------------------------
-pblx-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += start_imx7d_sabresd
-CFG_start_imx7d_sabresd.pblx.imximg = $(board)/freescale-mx7-sabresd/flash-header-mx7-sabresd.imxcfg
-FILE_barebox-freescale-mx7-sabresd.img = start_imx7d_sabresd.pblx.imximg
+pblb-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += start_imx7d_sabresd
+CFG_start_imx7d_sabresd.pblb.imximg = $(board)/freescale-mx7-sabresd/flash-header-mx7-sabresd.imxcfg
+FILE_barebox-freescale-mx7-sabresd.img = start_imx7d_sabresd.pblb.imximg
 image-$(CONFIG_MACH_FREESCALE_MX7_SABRESD) += barebox-freescale-mx7-sabresd.img
 
-pblx-$(CONFIG_MACH_ZII_IMX7D_RPU2) += start_zii_imx7d_rpu2
-CFG_start_zii_imx7d_rpu2.pblx.imximg = $(board)/zii-imx7d-rpu2/flash-header-zii-imx7d-rpu2.imxcfg
-FILE_barebox-zii-imx7d-rpu2.img = start_zii_imx7d_rpu2.pblx.imximg
+pblb-$(CONFIG_MACH_ZII_IMX7D_RPU2) += start_zii_imx7d_rpu2
+CFG_start_zii_imx7d_rpu2.pblb.imximg = $(board)/zii-imx7d-rpu2/flash-header-zii-imx7d-rpu2.imxcfg
+FILE_barebox-zii-imx7d-rpu2.img = start_zii_imx7d_rpu2.pblb.imximg
 image-$(CONFIG_MACH_ZII_IMX7D_RPU2) += barebox-zii-imx7d-rpu2.img
 
 # ----------------------- i.MX8mq based boards --------------------------
-pblx-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
-CFG_start_nxp_imx8mq_evk.imx-sram-img = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg
-FILE_barebox-nxp-imx8mq-evk.img = start_nxp_imx8mq_evk.imx-sram-img
+pblb-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += start_nxp_imx8mq_evk
+CFG_start_nxp_imx8mq_evk.pblb.imximg = $(board)/nxp-imx8mq-evk/flash-header-imx8mq-evk.imxcfg
+FILE_barebox-nxp-imx8mq-evk.img = start_nxp_imx8mq_evk.pblb.imximg
 image-$(CONFIG_MACH_NXP_IMX8MQ_EVK) += barebox-nxp-imx8mq-evk.img

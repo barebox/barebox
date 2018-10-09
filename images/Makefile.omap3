@@ -6,10 +6,10 @@ quiet_cmd_omap3_mlo_image = MLO     $@
 $(obj)/%.omap3_mlo: $(obj)/% FORCE
 	$(call if_changed,omap3_mlo_image)
 
-pblx-$(CONFIG_MACH_BEAGLE) += start_omap3_beagleboard_sdram start_omap3_beagleboard_sram
-FILE_barebox-beagleboard.img = start_omap3_beagleboard_sdram.pblx
+pblb-$(CONFIG_MACH_BEAGLE) += start_omap3_beagleboard_sdram start_omap3_beagleboard_sram
+FILE_barebox-beagleboard.img = start_omap3_beagleboard_sdram.pblb
 omap3-barebox-$(CONFIG_MACH_BEAGLE) += barebox-beagleboard.img
-FILE_barebox-beagleboard-mlo.img = start_omap3_beagleboard_sram.pblx.omap3_mlo
+FILE_barebox-beagleboard-mlo.img = start_omap3_beagleboard_sram.pblb.omap3_mlo
 omap3-mlo-$(CONFIG_MACH_BEAGLE) += barebox-beagleboard-mlo.img
 
 ifdef CONFIG_OMAP_BUILD_IFT

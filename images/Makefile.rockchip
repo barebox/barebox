@@ -2,10 +2,10 @@
 # barebox image generation Makefile for Rockchip images
 #
 
-pblx-$(CONFIG_MACH_RADXA_ROCK) += start_radxa_rock
-FILE_barebox-radxa-rock.img = start_radxa_rock.pblx
+pblb-$(CONFIG_MACH_RADXA_ROCK) += start_radxa_rock
+FILE_barebox-radxa-rock.img = start_radxa_rock.pblb
 image-$(CONFIG_MACH_RADXA_ROCK) += barebox-radxa-rock.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_RK3288) += start_rk3288_phycore_som
-FILE_barebox-rk3288-phycore-som.img = start_rk3288_phycore_som.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_RK3288) += start_rk3288_phycore_som
+FILE_barebox-rk3288-phycore-som.img = start_rk3288_phycore_som.pblb
 image-$(CONFIG_MACH_PHYTEC_SOM_RK3288) += barebox-rk3288-phycore-som.img

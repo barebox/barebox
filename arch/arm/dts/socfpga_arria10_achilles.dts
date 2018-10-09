@@ -23,6 +23,7 @@
 
 	aliases {
 		serial0 = &uart0;
+		state = &state;
 	};
 
 	chosen {
@@ -38,6 +39,90 @@
 		name = "memory";
 		device_type = "memory";
 		reg = <0x0 0xc0000000>;
+	};
+
+	state: state {
+		magic = <0x4d433230>;
+		compatible = "barebox,state";
+		backend-type = "raw";
+		backend = <&state_mmc>;
+		backend-stridesize = <1024>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootstate {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			system0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x0 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority {
+					reg = <0x4 0x4>;
+					type = "uint32";
+					default = <21>;
+				};
+			};
+
+			system1 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x10 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority {
+					reg = <0x14 0x4>;
+					type = "uint32";
+					default = <20>;
+				};
+			};
+			factory {
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+				remaining_attempts {
+					reg = <0x20 0x4>;
+					type = "uint32";
+					default = <3>;
+				};
+				priority {
+					reg = <0x24 0x4>;
+					type = "uint32";
+					default = <10>;
+				};
+			};
+			last_chosen {
+				reg = <0x2C 0x4>;
+				type = "uint32";
+			};
+		};
+	};
+
+	bootstate: bootstate {
+		compatible = "barebox,bootstate";
+		backend-type = "state"; // or "nv", or "efivar"
+		backend = <&state>;
+
+		system0 {
+			default_attempts = <3>;
+		};
+
+		system1 {
+			default_attempts = <3>;
+		};
+
+		factory {
+			default_attempts = <3>;
+		};
 	};
 
 	soc {
@@ -89,6 +174,27 @@
 	status = "okay";
 };
 
+&gmac2 {
+	phy-mode = "rgmii";
+	phy-addr = <0x3>;
+
+	status = "okay";
+
+	txd0-skew-ps = <0>; /* -420ps */
+	txd1-skew-ps = <0>; /* -420ps */
+	txd2-skew-ps = <0>; /* -420ps */
+	txd3-skew-ps = <0>; /* -420ps */
+	rxd0-skew-ps = <420>; /* 0ps */
+	rxd1-skew-ps = <420>; /* 0ps */
+	rxd2-skew-ps = <420>; /* 0ps */
+	rxd3-skew-ps = <420>; /* 0ps */
+	txen-skew-ps = <0>; /* -420ps */
+	txc-skew-ps = <1860>; /* 960ps */
+	rxdv-skew-ps = <420>; /* 0ps */
+	rxc-skew-ps = <1680>; /* 780ps */
+	max-frame-size = <3800>;
+};
+
 &i2c0 {
 	status = "okay";
 
@@ -116,9 +222,19 @@
 	bus-width = <1>;
 	status = "okay";
 
-	environment_mmc: partition@178000 {
-		label = "environment";
-		reg = <0x178000 0x8000>;
+	partitions {
+		compatible = "fixed-partitions";
+		#size-cells = <1>;
+		#address-cells = <1>;
+		environment_mmc: partition@178000 {
+			label = "environment";
+			reg = <0x300000 0x8000>;
+		};
+
+		state_mmc: partition@180000 {
+			label = "state";
+			reg = <0x400000 0x8000>;
+		};
 	};
 };
 

@@ -50,6 +50,25 @@ struct dir_context {
 };
 
 /*
+ * sb->s_flags.  Note that these mirror the equivalent MS_* flags where
+ * represented in both.
+ */
+#define SB_RDONLY        1      /* Mount read-only */
+#define SB_NOSUID        2      /* Ignore suid and sgid bits */
+#define SB_NODEV         4      /* Disallow access to device special files */
+#define SB_NOEXEC        8      /* Disallow program execution */
+#define SB_SYNCHRONOUS  16      /* Writes are synced at once */
+#define SB_MANDLOCK     64      /* Allow mandatory locks on an FS */
+#define SB_DIRSYNC      128     /* Directory modifications are synchronous */
+#define SB_NOATIME      1024    /* Do not update access times. */
+#define SB_NODIRATIME   2048    /* Do not update directory access times */
+#define SB_SILENT       32768
+#define SB_POSIXACL     (1<<16) /* VFS does not apply the umask */
+#define SB_KERNMOUNT    (1<<22) /* this is a kern_mount call */
+#define SB_I_VERSION    (1<<23) /* Update inode I_version field */
+#define SB_LAZYTIME     (1<<25) /* Update the on-disk [acm]times lazily */
+
+/*
  * These are the fs-independent mount-flags: up to 32 flags are supported
  */
 #define MS_RDONLY	 1	/* Mount read-only */
@@ -234,6 +253,11 @@ struct super_operations {
 	void (*destroy_inode)(struct inode *);
 };
 
+static inline struct inode *file_inode(const struct file *f)
+{
+	return f->f_inode;
+}
+
 /*
  * Inode flags - they have no relation to superblock flags now
  */
@@ -387,6 +411,8 @@ unsigned int get_next_ino(void);
 void iput(struct inode *);
 struct inode *iget(struct inode *);
 void inc_nlink(struct inode *inode);
+void clear_nlink(struct inode *inode);
+void set_nlink(struct inode *inode, unsigned int nlink);
 
 struct inode_operations {
 	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
@@ -426,7 +452,7 @@ static inline bool dir_emit_dotdot(struct file *file, struct dir_context *ctx)
 			parent_ino(file->f_path.dentry), DT_DIR) == 0;
 }
 
-static inline void dir_emit_dots(struct file *file, struct dir_context *ctx)
+static inline int dir_emit_dots(struct file *file, struct dir_context *ctx)
 {
 	if (ctx->pos == 0) {
 		dir_emit_dot(file, ctx);
@@ -436,6 +462,7 @@ static inline void dir_emit_dots(struct file *file, struct dir_context *ctx)
 		dir_emit_dotdot(file, ctx);
 		ctx->pos = 2;
 	}
+	return true;
 }
 
 struct file_operations {
@@ -457,5 +484,7 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry);
 struct dentry *simple_lookup(struct inode *, struct dentry *, unsigned int flags);
 int dcache_readdir(struct file *, struct dir_context *);
 const char *simple_get_link(struct dentry *dentry, struct inode *inode);
+struct inode *iget_locked(struct super_block *, unsigned long);
+void iget_failed(struct inode *inode);
 
 #endif /* _LINUX_FS_H */

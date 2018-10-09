@@ -15,6 +15,8 @@
 #include <common.h>
 #include <init.h>
 #include <fs.h>
+#include <globalvar.h>
+#include <magicvar.h>
 #include <linux/stat.h>
 #include <linux/zlib.h>
 #include <linux/mtd/mtd.h>
@@ -22,6 +24,8 @@
 #include "ubifs.h"
 
 #include <linux/err.h>
+
+struct task_struct *current;
 
 struct ubifs_priv {
 	struct cdev *cdev;
@@ -56,9 +60,6 @@ static struct ubifs_compressor none_compr = {
 
 static struct ubifs_compressor lzo_compr = {
 	.compr_type = UBIFS_COMPR_LZO,
-#ifndef __BAREBOX__
-	.comp_mutex = &lzo_mutex,
-#endif
 	.name = "lzo",
 #ifdef CONFIG_LZO_DECOMPRESS
 	.capi_name = "lzo",
@@ -68,10 +69,6 @@ static struct ubifs_compressor lzo_compr = {
 
 static struct ubifs_compressor zlib_compr = {
 	.compr_type = UBIFS_COMPR_ZLIB,
-#ifndef __BAREBOX__
-	.comp_mutex = &deflate_mutex,
-	.decomp_mutex = &inflate_mutex,
-#endif
 	.name = "zlib",
 #ifdef CONFIG_ZLIB
 	.capi_name = "deflate",
@@ -83,25 +80,7 @@ static struct ubifs_compressor zlib_compr = {
 struct ubifs_compressor *ubifs_compressors[UBIFS_COMPR_TYPES_CNT];
 
 
-#ifdef __BAREBOX__
 /* from mm/util.c */
-
-/**
- * kmemdup - duplicate region of memory
- *
- * @src: memory region to duplicate
- * @len: memory region length
- * @gfp: GFP mask to use
- */
-void *kmemdup(const void *src, size_t len, gfp_t gfp)
-{
-	void *p;
-
-	p = kmalloc(len, gfp);
-	if (p)
-		memcpy(p, src, len);
-	return p;
-}
 
 struct crypto_comp {
 	int compressor;
@@ -163,7 +142,6 @@ crypto_comp_decompress(const struct ubifs_info *c, struct crypto_comp *tfm,
 /* Global clean znode counter (for all mounted UBIFS instances) */
 atomic_long_t ubifs_clean_zn_cnt;
 
-#endif
 
 /**
  * ubifs_decompress - decompress data.
@@ -271,11 +249,6 @@ int __init ubifs_compressors_init(void)
 
 /* file.c */
 
-static inline void *kmap(struct page *page)
-{
-	return page->addr;
-}
-
 static int read_block(struct inode *inode, void *addr, unsigned int block,
 		      struct ubifs_data_node *dn)
 {
@@ -293,7 +266,7 @@ static int read_block(struct inode *inode, void *addr, unsigned int block,
 		return err;
 	}
 
-	ubifs_assert(le64_to_cpu(dn->ch.sqnum) > ubifs_inode(inode)->creat_sqnum);
+	ubifs_assert(c, le64_to_cpu(dn->ch.sqnum) > ubifs_inode(inode)->creat_sqnum);
 
 	len = le32_to_cpu(dn->size);
 	if (len <= 0 || len > UBIFS_BLOCK_SIZE)
@@ -530,6 +503,8 @@ static int zlib_decomp_init(void)
 	return 0;
 }
 
+int ubifs_allow_encrypted;
+
 static int ubifs_init(void)
 {
 	int ret;
@@ -540,7 +515,12 @@ static int ubifs_init(void)
 			return ret;
 	}
 
+	globalvar_add_simple_bool("ubifs.allow_encrypted", &ubifs_allow_encrypted);
+
 	return register_fs_driver(&ubifs_driver);
 }
 
 coredevice_initcall(ubifs_init);
+
+BAREBOX_MAGICVAR_NAMED(global_ubifs_allow_encrypted, global.ubifs.allow_encrypted,
+		       "If true, allow to mount UBIFS with encrypted files");

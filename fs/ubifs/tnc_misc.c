@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Adrian Hunter
  *          Artem Bityutskiy (Битюцкий Артём)
@@ -16,26 +27,25 @@
  * putting it all in one file would make that file too big and unreadable.
  */
 
-#ifdef __BAREBOX__
-#include <linux/err.h>
-#endif
 #include "ubifs.h"
 
 /**
  * ubifs_tnc_levelorder_next - next TNC tree element in levelorder traversal.
+ * @c: UBIFS file-system description object
  * @zr: root of the subtree to traverse
  * @znode: previous znode
  *
  * This function implements levelorder TNC traversal. The LNC is ignored.
  * Returns the next element or %NULL if @znode is already the last one.
  */
-struct ubifs_znode *ubifs_tnc_levelorder_next(struct ubifs_znode *zr,
+struct ubifs_znode *ubifs_tnc_levelorder_next(const struct ubifs_info *c,
+					      struct ubifs_znode *zr,
 					      struct ubifs_znode *znode)
 {
 	int level, iip, level_search = 0;
 	struct ubifs_znode *zn;
 
-	ubifs_assert(zr);
+	ubifs_assert(c, zr);
 
 	if (unlikely(!znode))
 		return zr;
@@ -50,7 +60,7 @@ struct ubifs_znode *ubifs_tnc_levelorder_next(struct ubifs_znode *zr,
 
 	iip = znode->iip;
 	while (1) {
-		ubifs_assert(znode->level <= zr->level);
+		ubifs_assert(c, znode->level <= zr->level);
 
 		/*
 		 * First walk up until there is a znode with next branch to
@@ -77,7 +87,7 @@ struct ubifs_znode *ubifs_tnc_levelorder_next(struct ubifs_znode *zr,
 			level_search = 1;
 			iip = -1;
 			znode = ubifs_tnc_find_child(zr, 0);
-			ubifs_assert(znode);
+			ubifs_assert(c, znode);
 		}
 
 		/* Switch to the next index */
@@ -103,7 +113,7 @@ struct ubifs_znode *ubifs_tnc_levelorder_next(struct ubifs_znode *zr,
 		}
 
 		if (zn) {
-			ubifs_assert(zn->level >= 0);
+			ubifs_assert(c, zn->level >= 0);
 			return zn;
 		}
 	}
@@ -132,7 +142,7 @@ int ubifs_search_zbranch(const struct ubifs_info *c,
 	int uninitialized_var(cmp);
 	const struct ubifs_zbranch *zbr = &znode->zbranch[0];
 
-	ubifs_assert(end > beg);
+	ubifs_assert(c, end > beg);
 
 	while (end > beg) {
 		mid = (beg + end) >> 1;
@@ -150,13 +160,13 @@ int ubifs_search_zbranch(const struct ubifs_info *c,
 	*n = end - 1;
 
 	/* The insert point is after *n */
-	ubifs_assert(*n >= -1 && *n < znode->child_cnt);
+	ubifs_assert(c, *n >= -1 && *n < znode->child_cnt);
 	if (*n == -1)
-		ubifs_assert(keys_cmp(c, key, &zbr[0].key) < 0);
+		ubifs_assert(c, keys_cmp(c, key, &zbr[0].key) < 0);
 	else
-		ubifs_assert(keys_cmp(c, key, &zbr[*n].key) > 0);
+		ubifs_assert(c, keys_cmp(c, key, &zbr[*n].key) > 0);
 	if (*n + 1 < znode->child_cnt)
-		ubifs_assert(keys_cmp(c, key, &zbr[*n + 1].key) < 0);
+		ubifs_assert(c, keys_cmp(c, key, &zbr[*n + 1].key) < 0);
 
 	return 0;
 }
@@ -187,16 +197,18 @@ struct ubifs_znode *ubifs_tnc_postorder_first(struct ubifs_znode *znode)
 
 /**
  * ubifs_tnc_postorder_next - next TNC tree element in postorder traversal.
+ * @c: UBIFS file-system description object
  * @znode: previous znode
  *
  * This function implements postorder TNC traversal. The LNC is ignored.
  * Returns the next element or %NULL if @znode is already the last one.
  */
-struct ubifs_znode *ubifs_tnc_postorder_next(struct ubifs_znode *znode)
+struct ubifs_znode *ubifs_tnc_postorder_next(const struct ubifs_info *c,
+					     struct ubifs_znode *znode)
 {
 	struct ubifs_znode *zn;
 
-	ubifs_assert(znode);
+	ubifs_assert(c, znode);
 	if (unlikely(!znode->parent))
 		return NULL;
 
@@ -212,18 +224,20 @@ struct ubifs_znode *ubifs_tnc_postorder_next(struct ubifs_znode *znode)
 
 /**
  * ubifs_destroy_tnc_subtree - destroy all znodes connected to a subtree.
+ * @c: UBIFS file-system description object
  * @znode: znode defining subtree to destroy
  *
  * This function destroys subtree of the TNC tree. Returns number of clean
  * znodes in the subtree.
  */
-long ubifs_destroy_tnc_subtree(struct ubifs_znode *znode)
+long ubifs_destroy_tnc_subtree(const struct ubifs_info *c,
+			       struct ubifs_znode *znode)
 {
 	struct ubifs_znode *zn = ubifs_tnc_postorder_first(znode);
 	long clean_freed = 0;
 	int n;
 
-	ubifs_assert(zn);
+	ubifs_assert(c, zn);
 	while (1) {
 		for (n = 0; n < zn->child_cnt; n++) {
 			if (!zn->zbranch[n].znode)
@@ -244,7 +258,7 @@ long ubifs_destroy_tnc_subtree(struct ubifs_znode *znode)
 			return clean_freed;
 		}
 
-		zn = ubifs_tnc_postorder_next(zn);
+		zn = ubifs_tnc_postorder_next(c, zn);
 	}
 }
 
@@ -402,7 +416,7 @@ struct ubifs_znode *ubifs_load_znode(struct ubifs_info *c,
 	int err;
 	struct ubifs_znode *znode;
 
-	ubifs_assert(!zbr->znode);
+	ubifs_assert(c, !zbr->znode);
 	/*
 	 * A slab cache is not presently used for znodes because the znode size
 	 * depends on the fanout which is stored in the superblock.
@@ -427,7 +441,6 @@ struct ubifs_znode *ubifs_load_znode(struct ubifs_info *c,
 
 	zbr->znode = znode;
 	znode->parent = parent;
-	znode->time = get_seconds();
 	znode->iip = iip;
 
 	return znode;
@@ -452,20 +465,9 @@ int ubifs_tnc_read_node(struct ubifs_info *c, struct ubifs_zbranch *zbr,
 {
 	union ubifs_key key1, *key = &zbr->key;
 	int err, type = key_type(c, key);
-	struct ubifs_wbuf *wbuf;
 
-	/*
-	 * 'zbr' has to point to on-flash node. The node may sit in a bud and
-	 * may even be in a write buffer, so we have to take care about this.
-	 */
-	wbuf = ubifs_get_wbuf(c, zbr->lnum);
-	if (wbuf)
-		err = ubifs_read_node_wbuf(wbuf, node, type, zbr->len,
-					   zbr->lnum, zbr->offs);
-	else
-		err = ubifs_read_node(c, node, type, zbr->len, zbr->lnum,
-				      zbr->offs);
-
+	err = ubifs_read_node(c, node, type, zbr->len, zbr->lnum,
+			      zbr->offs);
 	if (err) {
 		dbg_tnck(key, "key ");
 		return err;

@@ -1017,6 +1017,22 @@ void inc_nlink(struct inode *inode)
 	inode->__i_nlink++;
 }
 
+void clear_nlink(struct inode *inode)
+{
+	if (inode->i_nlink) {
+		inode->__i_nlink = 0;
+	}
+}
+
+void set_nlink(struct inode *inode, unsigned int nlink)
+{
+	if (!nlink) {
+		clear_nlink(inode);
+	} else {
+		inode->__i_nlink = nlink;
+	}
+}
+
 static struct inode *alloc_inode(struct super_block *sb)
 {
 	static const struct inode_operations empty_iops;
@@ -1049,6 +1065,30 @@ struct inode *new_inode(struct super_block *sb)
 	list_add(&inode->i_sb_list, &sb->s_inodes);
 
 	return inode;
+}
+
+struct inode *iget_locked(struct super_block *sb, unsigned long ino)
+{
+	struct inode *inode;
+
+	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+		if (inode->i_ino == ino)
+			return iget(inode);
+	}
+
+	inode = new_inode(sb);
+	if (!inode)
+		return NULL;
+
+	inode->i_state = I_NEW;
+	inode->i_ino = ino;
+
+	return inode;
+}
+
+void iget_failed(struct inode *inode)
+{
+	iput(inode);
 }
 
 void iput(struct inode *inode)
@@ -2423,6 +2463,7 @@ DIR *opendir(const char *pathname)
 	}
 
 	file.f_path.dentry = dir;
+	file.f_inode = d_inode(dir);
 	file.f_op = dir->d_inode->i_fop;
 
 	d = xzalloc(sizeof(*d));

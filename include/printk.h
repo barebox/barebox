@@ -120,4 +120,9 @@ extern void log_clean(unsigned int limit);
 
 void log_print(unsigned flags);
 
+struct va_format {
+	const char *fmt;
+	va_list *va;
+};
+
 #endif

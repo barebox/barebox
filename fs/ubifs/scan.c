@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Adrian Hunter
  *          Artem Bityutskiy (Битюцкий Артём)
@@ -16,9 +27,6 @@
  * debugging functions.
  */
 
-#ifdef __BAREBOX__
-#include <linux/err.h>
-#endif
 #include "ubifs.h"
 
 /**
@@ -167,9 +175,8 @@ struct ubifs_scan_leb *ubifs_start_scan(const struct ubifs_info *c, int lnum,
 void ubifs_end_scan(const struct ubifs_info *c, struct ubifs_scan_leb *sleb,
 		    int lnum, int offs)
 {
-	lnum = lnum;
 	dbg_scan("stop scanning LEB %d at offset %d", lnum, offs);
-	ubifs_assert(offs % c->min_io_size == 0);
+	ubifs_assert(c, offs % c->min_io_size == 0);
 
 	sleb->endpt = ALIGN(offs, c->min_io_size);
 }

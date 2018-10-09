@@ -3,7 +3,18 @@
  *
  * Copyright (C) 2006-2008 Nokia Corporation.
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Adrian Hunter
@@ -137,71 +148,34 @@ struct ubifs_global_debug_info {
 	unsigned int tst_rcvry:1;
 };
 
-#ifndef __BAREBOX__
-#define ubifs_assert(expr) do {                                                \
+void ubifs_assert_failed(struct ubifs_info *c, const char *expr,
+	const char *file, int line);
+
+#define ubifs_assert(c, expr) do {                                             \
 	if (unlikely(!(expr))) {                                               \
-		pr_crit("UBIFS assert failed in %s at %u (pid %d)\n",          \
-		       __func__, __LINE__, current->pid);                      \
-		dump_stack();                                                  \
+		ubifs_assert_failed((struct ubifs_info *)c, #expr, __FILE__,   \
+		 __LINE__);                                                    \
 	}                                                                      \
 } while (0)
 
 #define ubifs_assert_cmt_locked(c) do {                                        \
 	if (unlikely(down_write_trylock(&(c)->commit_sem))) {                  \
 		up_write(&(c)->commit_sem);                                    \
-		pr_crit("commit lock is not locked!\n");                       \
-		ubifs_assert(0);                                               \
+		ubifs_err(c, "commit lock is not locked!\n");                  \
+		ubifs_assert(c, 0);                                            \
 	}                                                                      \
 } while (0)
 
 #define ubifs_dbg_msg(type, fmt, ...) \
-	pr_debug("UBIFS DBG " type " (pid %d): " fmt "\n", current->pid,       \
-		 ##__VA_ARGS__)
+	pr_debug("UBIFS DBG " type ": " fmt "\n", ##__VA_ARGS__)
 
 #define DBG_KEY_BUF_LEN 48
-#define ubifs_dbg_msg_key(type, key, fmt, ...) do {                            \
-	char __tmp_key_buf[DBG_KEY_BUF_LEN];                                   \
-	pr_debug("UBIFS DBG " type " (pid %d): " fmt "%s\n", current->pid,     \
-		 ##__VA_ARGS__,                                                \
-		 dbg_snprintf_key(c, key, __tmp_key_buf, DBG_KEY_BUF_LEN));    \
-} while (0)
-#else
-#define ubifs_assert(expr) do {                                                \
-	if (0 && unlikely(!(expr))) {                                               \
-		pr_crit("UBIFS assert failed in %s at %u\n",                   \
-		       __func__, __LINE__);                                    \
-		dump_stack();                                                  \
-	}                                                                      \
-} while (0)
-
-#define ubifs_assert_cmt_locked(c) do {                                        \
-	if (unlikely(down_write_trylock(&(c)->commit_sem))) {                  \
-		up_write(&(c)->commit_sem);                                    \
-		pr_crit("commit lock is not locked!\n");                       \
-		ubifs_assert(0);                                               \
-	}                                                                      \
-} while (0)
-
-#define ubifs_dbg_msg(type, fmt, ...) \
-	pr_debug("UBIFS DBG " type ": " fmt "\n",                              \
-		 ##__VA_ARGS__)
-
-#define DBG_KEY_BUF_LEN 48
-#if defined CONFIG_MTD_DEBUG
 #define ubifs_dbg_msg_key(type, key, fmt, ...) do {                            \
 	char __tmp_key_buf[DBG_KEY_BUF_LEN];                                   \
 	pr_debug("UBIFS DBG " type ": " fmt "%s\n",                            \
 		 ##__VA_ARGS__,                                                \
 		 dbg_snprintf_key(c, key, __tmp_key_buf, DBG_KEY_BUF_LEN));    \
 } while (0)
-#else
-#define ubifs_dbg_msg_key(type, key, fmt, ...) do {                            \
-	pr_debug("UBIFS DBG\n");                                               \
-} while (0)
-
-#endif
-
-#endif
 
 /* General messages */
 #define dbg_gen(fmt, ...)   ubifs_dbg_msg("gen", fmt, ##__VA_ARGS__)
@@ -236,74 +210,46 @@ struct ubifs_global_debug_info {
 /* Additional recovery messages */
 #define dbg_rcvry(fmt, ...) ubifs_dbg_msg("rcvry", fmt, ##__VA_ARGS__)
 
-#ifndef __BAREBOX__
 extern struct ubifs_global_debug_info ubifs_dbg;
 
 static inline int dbg_is_chk_gen(const struct ubifs_info *c)
 {
-	return !!(ubifs_dbg.chk_gen || c->dbg->chk_gen);
-}
-static inline int dbg_is_chk_index(const struct ubifs_info *c)
-{
-	return !!(ubifs_dbg.chk_index || c->dbg->chk_index);
-}
-static inline int dbg_is_chk_orph(const struct ubifs_info *c)
-{
-	return !!(ubifs_dbg.chk_orph || c->dbg->chk_orph);
-}
-static inline int dbg_is_chk_lprops(const struct ubifs_info *c)
-{
-	return !!(ubifs_dbg.chk_lprops || c->dbg->chk_lprops);
-}
-static inline int dbg_is_chk_fs(const struct ubifs_info *c)
-{
-	return !!(ubifs_dbg.chk_fs || c->dbg->chk_fs);
-}
-static inline int dbg_is_tst_rcvry(const struct ubifs_info *c)
-{
-	return !!(ubifs_dbg.tst_rcvry || c->dbg->tst_rcvry);
-}
-static inline int dbg_is_power_cut(const struct ubifs_info *c)
-{
-	return !!c->dbg->pc_happened;
-}
-
-int ubifs_debugging_init(struct ubifs_info *c);
-void ubifs_debugging_exit(struct ubifs_info *c);
-#else
-static inline int dbg_is_chk_gen(const struct ubifs_info *c)
-{
+	/* not present in barebox */
 	return 0;
 }
 static inline int dbg_is_chk_index(const struct ubifs_info *c)
 {
+	/* not present in barebox */
 	return 0;
 }
 static inline int dbg_is_chk_orph(const struct ubifs_info *c)
 {
+	/* not present in barebox */
 	return 0;
 }
 static inline int dbg_is_chk_lprops(const struct ubifs_info *c)
 {
+	/* not present in barebox */
 	return 0;
 }
 static inline int dbg_is_chk_fs(const struct ubifs_info *c)
 {
+	/* not present in barebox */
 	return 0;
 }
 static inline int dbg_is_tst_rcvry(const struct ubifs_info *c)
 {
+	/* not present in barebox */
 	return 0;
 }
 static inline int dbg_is_power_cut(const struct ubifs_info *c)
 {
+	/* not present in barebox */
 	return 0;
 }
 
 int ubifs_debugging_init(struct ubifs_info *c);
 void ubifs_debugging_exit(struct ubifs_info *c);
-
-#endif
 
 /* Dump functions */
 const char *dbg_ntype(int type);

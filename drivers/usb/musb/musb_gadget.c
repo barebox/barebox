@@ -631,7 +631,7 @@ struct usb_request *musb_alloc_request(struct usb_ep *ep)
 	struct musb		*musb = musb_ep->musb;
 	struct musb_request	*request = NULL;
 
-	request = kzalloc(sizeof *request, gfp_flags);
+	request = kzalloc(sizeof *request, GFP_KERNEL);
 	if (!request) {
 		dev_dbg(musb->controller, "not enough memory\n");
 		return NULL;

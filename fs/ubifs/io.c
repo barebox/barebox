@@ -4,7 +4,18 @@
  * Copyright (C) 2006-2008 Nokia Corporation.
  * Copyright (C) 2006, 2007 University of Szeged, Hungary
  *
- * SPDX-License-Identifier:	GPL-2.0+
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 as published by
+ * the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Authors: Artem Bityutskiy (Битюцкий Артём)
  *          Adrian Hunter
@@ -59,12 +70,7 @@
  * they are read from the flash media.
  */
 
-#ifndef __BAREBOX__
-#include <linux/crc32.h>
-#include <linux/slab.h>
-#else
 #include <linux/err.h>
-#endif
 #include "ubifs.h"
 
 /**
@@ -77,7 +83,7 @@ void ubifs_ro_mode(struct ubifs_info *c, int err)
 	if (!c->ro_error) {
 		c->ro_error = 1;
 		c->no_chk_data_crc = 0;
-		c->vfs_sb->s_flags |= MS_RDONLY;
+		c->vfs_sb->s_flags |= SB_RDONLY;
 		ubifs_warn(c, "switched to read-only mode, error %d", err);
 		dump_stack();
 	}
@@ -107,92 +113,26 @@ int ubifs_leb_read(const struct ubifs_info *c, int lnum, void *buf, int offs,
 	return err;
 }
 
+/*
+ * removed in barebox
 int ubifs_leb_write(struct ubifs_info *c, int lnum, const void *buf, int offs,
 		    int len)
-{
-	int err;
+ */
 
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	if (c->ro_error)
-		return -EROFS;
-	if (!dbg_is_tst_rcvry(c))
-		err = ubi_leb_write(c->ubi, lnum, buf, offs, len);
-#ifndef __BAREBOX__
-	else
-		err = dbg_leb_write(c, lnum, buf, offs, len);
-#endif
-	if (err) {
-		ubifs_err(c, "writing %d bytes to LEB %d:%d failed, error %d",
-			  len, lnum, offs, err);
-		ubifs_ro_mode(c, err);
-		dump_stack();
-	}
-	return err;
-}
-
+/*
+ * removed in barebox
 int ubifs_leb_change(struct ubifs_info *c, int lnum, const void *buf, int len)
-{
-	int err;
+ */
 
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	if (c->ro_error)
-		return -EROFS;
-	if (!dbg_is_tst_rcvry(c))
-		err = ubi_leb_change(c->ubi, lnum, buf, len);
-#ifndef __BAREBOX__
-	else
-		err = dbg_leb_change(c, lnum, buf, len);
-#endif
-	if (err) {
-		ubifs_err(c, "changing %d bytes in LEB %d failed, error %d",
-			  len, lnum, err);
-		ubifs_ro_mode(c, err);
-		dump_stack();
-	}
-	return err;
-}
-
+/*
+ * removed in barebox
 int ubifs_leb_unmap(struct ubifs_info *c, int lnum)
-{
-	int err;
+ */
 
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	if (c->ro_error)
-		return -EROFS;
-	if (!dbg_is_tst_rcvry(c))
-		err = ubi_leb_unmap(c->ubi, lnum);
-#ifndef __BAREBOX__
-	else
-		err = dbg_leb_unmap(c, lnum);
-#endif
-	if (err) {
-		ubifs_err(c, "unmap LEB %d failed, error %d", lnum, err);
-		ubifs_ro_mode(c, err);
-		dump_stack();
-	}
-	return err;
-}
-
+/*
+ * removed in barebox
 int ubifs_leb_map(struct ubifs_info *c, int lnum)
-{
-	int err;
-
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	if (c->ro_error)
-		return -EROFS;
-	if (!dbg_is_tst_rcvry(c))
-		err = ubi_leb_map(c->ubi, lnum);
-#ifndef __BAREBOX__
-	else
-		err = dbg_leb_map(c, lnum);
-#endif
-	if (err) {
-		ubifs_err(c, "mapping LEB %d failed, error %d", lnum, err);
-		ubifs_ro_mode(c, err);
-		dump_stack();
-	}
-	return err;
-}
+ */
 
 int ubifs_is_mapped(const struct ubifs_info *c, int lnum)
 {
@@ -242,8 +182,8 @@ int ubifs_check_node(const struct ubifs_info *c, const void *buf, int lnum,
 	uint32_t crc, node_crc, magic;
 	const struct ubifs_ch *ch = buf;
 
-	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-	ubifs_assert(!(offs & 7) && offs < c->leb_size);
+	ubifs_assert(c, lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
+	ubifs_assert(c, !(offs & 7) && offs < c->leb_size);
 
 	magic = le32_to_cpu(ch->magic);
 	if (magic != UBIFS_NODE_MAGIC) {
@@ -320,7 +260,7 @@ void ubifs_pad(const struct ubifs_info *c, void *buf, int pad)
 {
 	uint32_t crc;
 
-	ubifs_assert(pad >= 0 && !(pad & 7));
+	ubifs_assert(c, pad >= 0 && !(pad & 7));
 
 	if (pad >= UBIFS_PAD_NODE_SZ) {
 		struct ubifs_ch *ch = buf;
@@ -342,628 +282,67 @@ void ubifs_pad(const struct ubifs_info *c, void *buf, int pad)
 		memset(buf, UBIFS_PADDING_BYTE, pad);
 }
 
-/**
- * next_sqnum - get next sequence number.
- * @c: UBIFS file-system description object
- */
+/*
+ * removed in barebox
 static unsigned long long next_sqnum(struct ubifs_info *c)
-{
-	unsigned long long sqnum;
-
-	spin_lock(&c->cnt_lock);
-	sqnum = ++c->max_sqnum;
-	spin_unlock(&c->cnt_lock);
-
-	if (unlikely(sqnum >= SQNUM_WARN_WATERMARK)) {
-		if (sqnum >= SQNUM_WATERMARK) {
-			ubifs_err(c, "sequence number overflow %llu, end of life",
-				  sqnum);
-			ubifs_ro_mode(c, -EINVAL);
-		}
-		ubifs_warn(c, "running out of sequence numbers, end of life soon");
-	}
-
-	return sqnum;
-}
-
-/**
- * ubifs_prepare_node - prepare node to be written to flash.
- * @c: UBIFS file-system description object
- * @node: the node to pad
- * @len: node length
- * @pad: if the buffer has to be padded
- *
- * This function prepares node at @node to be written to the media - it
- * calculates node CRC, fills the common header, and adds proper padding up to
- * the next minimum I/O unit if @pad is not zero.
  */
+
+/*
+ * removed in barebox
 void ubifs_prepare_node(struct ubifs_info *c, void *node, int len, int pad)
-{
-	uint32_t crc;
-	struct ubifs_ch *ch = node;
-	unsigned long long sqnum = next_sqnum(c);
-
-	ubifs_assert(len >= UBIFS_CH_SZ);
-
-	ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-	ch->len = cpu_to_le32(len);
-	ch->group_type = UBIFS_NO_NODE_GROUP;
-	ch->sqnum = cpu_to_le64(sqnum);
-	ch->padding[0] = ch->padding[1] = 0;
-	crc = crc32(UBIFS_CRC32_INIT, node + 8, len - 8);
-	ch->crc = cpu_to_le32(crc);
-
-	if (pad) {
-		len = ALIGN(len, 8);
-		pad = ALIGN(len, c->min_io_size) - len;
-		ubifs_pad(c, node + len, pad);
-	}
-}
-
-/**
- * ubifs_prep_grp_node - prepare node of a group to be written to flash.
- * @c: UBIFS file-system description object
- * @node: the node to pad
- * @len: node length
- * @last: indicates the last node of the group
- *
- * This function prepares node at @node to be written to the media - it
- * calculates node CRC and fills the common header.
  */
+
+/*
+ * removed in barebox
 void ubifs_prep_grp_node(struct ubifs_info *c, void *node, int len, int last)
-{
-	uint32_t crc;
-	struct ubifs_ch *ch = node;
-	unsigned long long sqnum = next_sqnum(c);
-
-	ubifs_assert(len >= UBIFS_CH_SZ);
-
-	ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-	ch->len = cpu_to_le32(len);
-	if (last)
-		ch->group_type = UBIFS_LAST_OF_NODE_GROUP;
-	else
-		ch->group_type = UBIFS_IN_NODE_GROUP;
-	ch->sqnum = cpu_to_le64(sqnum);
-	ch->padding[0] = ch->padding[1] = 0;
-	crc = crc32(UBIFS_CRC32_INIT, node + 8, len - 8);
-	ch->crc = cpu_to_le32(crc);
-}
-
-#ifndef __BAREBOX__
-/**
- * wbuf_timer_callback - write-buffer timer callback function.
- * @timer: timer data (write-buffer descriptor)
- *
- * This function is called when the write-buffer timer expires.
  */
+
+/*
+ * removed in barebox
 static enum hrtimer_restart wbuf_timer_callback_nolock(struct hrtimer *timer)
-{
-	struct ubifs_wbuf *wbuf = container_of(timer, struct ubifs_wbuf, timer);
-
-	dbg_io("jhead %s", dbg_jhead(wbuf->jhead));
-	wbuf->need_sync = 1;
-	wbuf->c->need_wbuf_sync = 1;
-	ubifs_wake_up_bgt(wbuf->c);
-	return HRTIMER_NORESTART;
-}
-
-/**
- * new_wbuf_timer - start new write-buffer timer.
- * @wbuf: write-buffer descriptor
  */
-static void new_wbuf_timer_nolock(struct ubifs_wbuf *wbuf)
-{
-	ubifs_assert(!hrtimer_active(&wbuf->timer));
 
-	if (wbuf->no_timer)
-		return;
-	dbg_io("set timer for jhead %s, %llu-%llu millisecs",
-	       dbg_jhead(wbuf->jhead),
-	       div_u64(ktime_to_ns(wbuf->softlimit), USEC_PER_SEC),
-	       div_u64(ktime_to_ns(wbuf->softlimit) + wbuf->delta,
-		       USEC_PER_SEC));
-	hrtimer_start_range_ns(&wbuf->timer, wbuf->softlimit, wbuf->delta,
-			       HRTIMER_MODE_REL);
-}
-#endif
-
-/**
- * cancel_wbuf_timer - cancel write-buffer timer.
- * @wbuf: write-buffer descriptor
+/*
+ * removed in barebox
+static void new_wbuf_timer_nolock(struct ubifs_info *c, struct ubifs_wbuf *wbuf)
  */
+
+/*
+ * removed in barebox
 static void cancel_wbuf_timer_nolock(struct ubifs_wbuf *wbuf)
-{
-	if (wbuf->no_timer)
-		return;
-	wbuf->need_sync = 0;
-#ifndef __BAREBOX__
-	hrtimer_cancel(&wbuf->timer);
-#endif
-}
-
-/**
- * ubifs_wbuf_sync_nolock - synchronize write-buffer.
- * @wbuf: write-buffer to synchronize
- *
- * This function synchronizes write-buffer @buf and returns zero in case of
- * success or a negative error code in case of failure.
- *
- * Note, although write-buffers are of @c->max_write_size, this function does
- * not necessarily writes all @c->max_write_size bytes to the flash. Instead,
- * if the write-buffer is only partially filled with data, only the used part
- * of the write-buffer (aligned on @c->min_io_size boundary) is synchronized.
- * This way we waste less space.
  */
+
+/*
+ * removed in barebox
 int ubifs_wbuf_sync_nolock(struct ubifs_wbuf *wbuf)
-{
-	struct ubifs_info *c = wbuf->c;
-	int err, dirt, sync_len;
-
-	cancel_wbuf_timer_nolock(wbuf);
-	if (!wbuf->used || wbuf->lnum == -1)
-		/* Write-buffer is empty or not seeked */
-		return 0;
-
-	dbg_io("LEB %d:%d, %d bytes, jhead %s",
-	       wbuf->lnum, wbuf->offs, wbuf->used, dbg_jhead(wbuf->jhead));
-	ubifs_assert(!(wbuf->avail & 7));
-	ubifs_assert(wbuf->offs + wbuf->size <= c->leb_size);
-	ubifs_assert(wbuf->size >= c->min_io_size);
-	ubifs_assert(wbuf->size <= c->max_write_size);
-	ubifs_assert(wbuf->size % c->min_io_size == 0);
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	if (c->leb_size - wbuf->offs >= c->max_write_size)
-		ubifs_assert(!((wbuf->offs + wbuf->size) % c->max_write_size));
-
-	if (c->ro_error)
-		return -EROFS;
-
-	/*
-	 * Do not write whole write buffer but write only the minimum necessary
-	 * amount of min. I/O units.
-	 */
-	sync_len = ALIGN(wbuf->used, c->min_io_size);
-	dirt = sync_len - wbuf->used;
-	if (dirt)
-		ubifs_pad(c, wbuf->buf + wbuf->used, dirt);
-	err = ubifs_leb_write(c, wbuf->lnum, wbuf->buf, wbuf->offs, sync_len);
-	if (err)
-		return err;
-
-	spin_lock(&wbuf->lock);
-	wbuf->offs += sync_len;
-	/*
-	 * Now @wbuf->offs is not necessarily aligned to @c->max_write_size.
-	 * But our goal is to optimize writes and make sure we write in
-	 * @c->max_write_size chunks and to @c->max_write_size-aligned offset.
-	 * Thus, if @wbuf->offs is not aligned to @c->max_write_size now, make
-	 * sure that @wbuf->offs + @wbuf->size is aligned to
-	 * @c->max_write_size. This way we make sure that after next
-	 * write-buffer flush we are again at the optimal offset (aligned to
-	 * @c->max_write_size).
-	 */
-	if (c->leb_size - wbuf->offs < c->max_write_size)
-		wbuf->size = c->leb_size - wbuf->offs;
-	else if (wbuf->offs & (c->max_write_size - 1))
-		wbuf->size = ALIGN(wbuf->offs, c->max_write_size) - wbuf->offs;
-	else
-		wbuf->size = c->max_write_size;
-	wbuf->avail = wbuf->size;
-	wbuf->used = 0;
-	wbuf->next_ino = 0;
-	spin_unlock(&wbuf->lock);
-
-	if (wbuf->sync_callback)
-		err = wbuf->sync_callback(c, wbuf->lnum,
-					  c->leb_size - wbuf->offs, dirt);
-	return err;
-}
-
-/**
- * ubifs_wbuf_seek_nolock - seek write-buffer.
- * @wbuf: write-buffer
- * @lnum: logical eraseblock number to seek to
- * @offs: logical eraseblock offset to seek to
- *
- * This function targets the write-buffer to logical eraseblock @lnum:@offs.
- * The write-buffer has to be empty. Returns zero in case of success and a
- * negative error code in case of failure.
  */
+
+/*
+ * removed in barebox
 int ubifs_wbuf_seek_nolock(struct ubifs_wbuf *wbuf, int lnum, int offs)
-{
-	const struct ubifs_info *c = wbuf->c;
-
-	dbg_io("LEB %d:%d, jhead %s", lnum, offs, dbg_jhead(wbuf->jhead));
-	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt);
-	ubifs_assert(offs >= 0 && offs <= c->leb_size);
-	ubifs_assert(offs % c->min_io_size == 0 && !(offs & 7));
-	ubifs_assert(lnum != wbuf->lnum);
-	ubifs_assert(wbuf->used == 0);
-
-	spin_lock(&wbuf->lock);
-	wbuf->lnum = lnum;
-	wbuf->offs = offs;
-	if (c->leb_size - wbuf->offs < c->max_write_size)
-		wbuf->size = c->leb_size - wbuf->offs;
-	else if (wbuf->offs & (c->max_write_size - 1))
-		wbuf->size = ALIGN(wbuf->offs, c->max_write_size) - wbuf->offs;
-	else
-		wbuf->size = c->max_write_size;
-	wbuf->avail = wbuf->size;
-	wbuf->used = 0;
-	spin_unlock(&wbuf->lock);
-
-	return 0;
-}
-
-#ifndef __BAREBOX__
-/**
- * ubifs_bg_wbufs_sync - synchronize write-buffers.
- * @c: UBIFS file-system description object
- *
- * This function is called by background thread to synchronize write-buffers.
- * Returns zero in case of success and a negative error code in case of
- * failure.
  */
+
+/*
+ * removed in barebox
 int ubifs_bg_wbufs_sync(struct ubifs_info *c)
-{
-	int err, i;
-
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	if (!c->need_wbuf_sync)
-		return 0;
-	c->need_wbuf_sync = 0;
-
-	if (c->ro_error) {
-		err = -EROFS;
-		goto out_timers;
-	}
-
-	dbg_io("synchronize");
-	for (i = 0; i < c->jhead_cnt; i++) {
-		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-
-		cond_resched();
-
-		/*
-		 * If the mutex is locked then wbuf is being changed, so
-		 * synchronization is not necessary.
-		 */
-		if (mutex_is_locked(&wbuf->io_mutex))
-			continue;
-
-		mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-		if (!wbuf->need_sync) {
-			mutex_unlock(&wbuf->io_mutex);
-			continue;
-		}
-
-		err = ubifs_wbuf_sync_nolock(wbuf);
-		mutex_unlock(&wbuf->io_mutex);
-		if (err) {
-			ubifs_err(c, "cannot sync write-buffer, error %d", err);
-			ubifs_ro_mode(c, err);
-			goto out_timers;
-		}
-	}
-
-	return 0;
-
-out_timers:
-	/* Cancel all timers to prevent repeated errors */
-	for (i = 0; i < c->jhead_cnt; i++) {
-		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-
-		mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-		cancel_wbuf_timer_nolock(wbuf);
-		mutex_unlock(&wbuf->io_mutex);
-	}
-	return err;
-}
-
-/**
- * ubifs_wbuf_write_nolock - write data to flash via write-buffer.
- * @wbuf: write-buffer
- * @buf: node to write
- * @len: node length
- *
- * This function writes data to flash via write-buffer @wbuf. This means that
- * the last piece of the node won't reach the flash media immediately if it
- * does not take whole max. write unit (@c->max_write_size). Instead, the node
- * will sit in RAM until the write-buffer is synchronized (e.g., by timer, or
- * because more data are appended to the write-buffer).
- *
- * This function returns zero in case of success and a negative error code in
- * case of failure. If the node cannot be written because there is no more
- * space in this logical eraseblock, %-ENOSPC is returned.
  */
+
+/*
+ * removed in barebox
 int ubifs_wbuf_write_nolock(struct ubifs_wbuf *wbuf, void *buf, int len)
-{
-	struct ubifs_info *c = wbuf->c;
-	int err, written, n, aligned_len = ALIGN(len, 8);
-
-	dbg_io("%d bytes (%s) to jhead %s wbuf at LEB %d:%d", len,
-	       dbg_ntype(((struct ubifs_ch *)buf)->node_type),
-	       dbg_jhead(wbuf->jhead), wbuf->lnum, wbuf->offs + wbuf->used);
-	ubifs_assert(len > 0 && wbuf->lnum >= 0 && wbuf->lnum < c->leb_cnt);
-	ubifs_assert(wbuf->offs >= 0 && wbuf->offs % c->min_io_size == 0);
-	ubifs_assert(!(wbuf->offs & 7) && wbuf->offs <= c->leb_size);
-	ubifs_assert(wbuf->avail > 0 && wbuf->avail <= wbuf->size);
-	ubifs_assert(wbuf->size >= c->min_io_size);
-	ubifs_assert(wbuf->size <= c->max_write_size);
-	ubifs_assert(wbuf->size % c->min_io_size == 0);
-	ubifs_assert(mutex_is_locked(&wbuf->io_mutex));
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	ubifs_assert(!c->space_fixup);
-	if (c->leb_size - wbuf->offs >= c->max_write_size)
-		ubifs_assert(!((wbuf->offs + wbuf->size) % c->max_write_size));
-
-	if (c->leb_size - wbuf->offs - wbuf->used < aligned_len) {
-		err = -ENOSPC;
-		goto out;
-	}
-
-	cancel_wbuf_timer_nolock(wbuf);
-
-	if (c->ro_error)
-		return -EROFS;
-
-	if (aligned_len <= wbuf->avail) {
-		/*
-		 * The node is not very large and fits entirely within
-		 * write-buffer.
-		 */
-		memcpy(wbuf->buf + wbuf->used, buf, len);
-
-		if (aligned_len == wbuf->avail) {
-			dbg_io("flush jhead %s wbuf to LEB %d:%d",
-			       dbg_jhead(wbuf->jhead), wbuf->lnum, wbuf->offs);
-			err = ubifs_leb_write(c, wbuf->lnum, wbuf->buf,
-					      wbuf->offs, wbuf->size);
-			if (err)
-				goto out;
-
-			spin_lock(&wbuf->lock);
-			wbuf->offs += wbuf->size;
-			if (c->leb_size - wbuf->offs >= c->max_write_size)
-				wbuf->size = c->max_write_size;
-			else
-				wbuf->size = c->leb_size - wbuf->offs;
-			wbuf->avail = wbuf->size;
-			wbuf->used = 0;
-			wbuf->next_ino = 0;
-			spin_unlock(&wbuf->lock);
-		} else {
-			spin_lock(&wbuf->lock);
-			wbuf->avail -= aligned_len;
-			wbuf->used += aligned_len;
-			spin_unlock(&wbuf->lock);
-		}
-
-		goto exit;
-	}
-
-	written = 0;
-
-	if (wbuf->used) {
-		/*
-		 * The node is large enough and does not fit entirely within
-		 * current available space. We have to fill and flush
-		 * write-buffer and switch to the next max. write unit.
-		 */
-		dbg_io("flush jhead %s wbuf to LEB %d:%d",
-		       dbg_jhead(wbuf->jhead), wbuf->lnum, wbuf->offs);
-		memcpy(wbuf->buf + wbuf->used, buf, wbuf->avail);
-		err = ubifs_leb_write(c, wbuf->lnum, wbuf->buf, wbuf->offs,
-				      wbuf->size);
-		if (err)
-			goto out;
-
-		wbuf->offs += wbuf->size;
-		len -= wbuf->avail;
-		aligned_len -= wbuf->avail;
-		written += wbuf->avail;
-	} else if (wbuf->offs & (c->max_write_size - 1)) {
-		/*
-		 * The write-buffer offset is not aligned to
-		 * @c->max_write_size and @wbuf->size is less than
-		 * @c->max_write_size. Write @wbuf->size bytes to make sure the
-		 * following writes are done in optimal @c->max_write_size
-		 * chunks.
-		 */
-		dbg_io("write %d bytes to LEB %d:%d",
-		       wbuf->size, wbuf->lnum, wbuf->offs);
-		err = ubifs_leb_write(c, wbuf->lnum, buf, wbuf->offs,
-				      wbuf->size);
-		if (err)
-			goto out;
-
-		wbuf->offs += wbuf->size;
-		len -= wbuf->size;
-		aligned_len -= wbuf->size;
-		written += wbuf->size;
-	}
-
-	/*
-	 * The remaining data may take more whole max. write units, so write the
-	 * remains multiple to max. write unit size directly to the flash media.
-	 * We align node length to 8-byte boundary because we anyway flash wbuf
-	 * if the remaining space is less than 8 bytes.
-	 */
-	n = aligned_len >> c->max_write_shift;
-	if (n) {
-		n <<= c->max_write_shift;
-		dbg_io("write %d bytes to LEB %d:%d", n, wbuf->lnum,
-		       wbuf->offs);
-		err = ubifs_leb_write(c, wbuf->lnum, buf + written,
-				      wbuf->offs, n);
-		if (err)
-			goto out;
-		wbuf->offs += n;
-		aligned_len -= n;
-		len -= n;
-		written += n;
-	}
-
-	spin_lock(&wbuf->lock);
-	if (aligned_len)
-		/*
-		 * And now we have what's left and what does not take whole
-		 * max. write unit, so write it to the write-buffer and we are
-		 * done.
-		 */
-		memcpy(wbuf->buf, buf + written, len);
-
-	if (c->leb_size - wbuf->offs >= c->max_write_size)
-		wbuf->size = c->max_write_size;
-	else
-		wbuf->size = c->leb_size - wbuf->offs;
-	wbuf->avail = wbuf->size - aligned_len;
-	wbuf->used = aligned_len;
-	wbuf->next_ino = 0;
-	spin_unlock(&wbuf->lock);
-
-exit:
-	if (wbuf->sync_callback) {
-		int free = c->leb_size - wbuf->offs - wbuf->used;
-
-		err = wbuf->sync_callback(c, wbuf->lnum, free, 0);
-		if (err)
-			goto out;
-	}
-
-	if (wbuf->used)
-		new_wbuf_timer_nolock(wbuf);
-
-	return 0;
-
-out:
-	ubifs_err(c, "cannot write %d bytes to LEB %d:%d, error %d",
-		  len, wbuf->lnum, wbuf->offs, err);
-	ubifs_dump_node(c, buf);
-	dump_stack();
-	ubifs_dump_leb(c, wbuf->lnum);
-	return err;
-}
-
-/**
- * ubifs_write_node - write node to the media.
- * @c: UBIFS file-system description object
- * @buf: the node to write
- * @len: node length
- * @lnum: logical eraseblock number
- * @offs: offset within the logical eraseblock
- *
- * This function automatically fills node magic number, assigns sequence
- * number, and calculates node CRC checksum. The length of the @buf buffer has
- * to be aligned to the minimal I/O unit size. This function automatically
- * appends padding node and padding bytes if needed. Returns zero in case of
- * success and a negative error code in case of failure.
  */
+
+/*
+ * removed in barebox
 int ubifs_write_node(struct ubifs_info *c, void *buf, int len, int lnum,
 		     int offs)
-{
-	int err, buf_len = ALIGN(len, c->min_io_size);
-
-	dbg_io("LEB %d:%d, %s, length %d (aligned %d)",
-	       lnum, offs, dbg_ntype(((struct ubifs_ch *)buf)->node_type), len,
-	       buf_len);
-	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-	ubifs_assert(offs % c->min_io_size == 0 && offs < c->leb_size);
-	ubifs_assert(!c->ro_media && !c->ro_mount);
-	ubifs_assert(!c->space_fixup);
-
-	if (c->ro_error)
-		return -EROFS;
-
-	ubifs_prepare_node(c, buf, len, 1);
-	err = ubifs_leb_write(c, lnum, buf, offs, buf_len);
-	if (err)
-		ubifs_dump_node(c, buf);
-
-	return err;
-}
-#endif
-
-/**
- * ubifs_read_node_wbuf - read node from the media or write-buffer.
- * @wbuf: wbuf to check for un-written data
- * @buf: buffer to read to
- * @type: node type
- * @len: node length
- * @lnum: logical eraseblock number
- * @offs: offset within the logical eraseblock
- *
- * This function reads a node of known type and length, checks it and stores
- * in @buf. If the node partially or fully sits in the write-buffer, this
- * function takes data from the buffer, otherwise it reads the flash media.
- * Returns zero in case of success, %-EUCLEAN if CRC mismatched and a negative
- * error code in case of failure.
  */
+
+/*
+ * removed in barebox
 int ubifs_read_node_wbuf(struct ubifs_wbuf *wbuf, void *buf, int type, int len,
 			 int lnum, int offs)
-{
-	const struct ubifs_info *c = wbuf->c;
-	int err, rlen, overlap;
-	struct ubifs_ch *ch = buf;
-
-	dbg_io("LEB %d:%d, %s, length %d, jhead %s", lnum, offs,
-	       dbg_ntype(type), len, dbg_jhead(wbuf->jhead));
-	ubifs_assert(wbuf && lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-	ubifs_assert(type >= 0 && type < UBIFS_NODE_TYPES_CNT);
-
-	spin_lock(&wbuf->lock);
-	overlap = (lnum == wbuf->lnum && offs + len > wbuf->offs);
-	if (!overlap) {
-		/* We may safely unlock the write-buffer and read the data */
-		spin_unlock(&wbuf->lock);
-		return ubifs_read_node(c, buf, type, len, lnum, offs);
-	}
-
-	/* Don't read under wbuf */
-	rlen = wbuf->offs - offs;
-	if (rlen < 0)
-		rlen = 0;
-
-	/* Copy the rest from the write-buffer */
-	memcpy(buf + rlen, wbuf->buf + offs + rlen - wbuf->offs, len - rlen);
-	spin_unlock(&wbuf->lock);
-
-	if (rlen > 0) {
-		/* Read everything that goes before write-buffer */
-		err = ubifs_leb_read(c, lnum, buf, offs, rlen, 0);
-		if (err && err != -EBADMSG)
-			return err;
-	}
-
-	if (type != ch->node_type) {
-		ubifs_err(c, "bad node type (%d but expected %d)",
-			  ch->node_type, type);
-		goto out;
-	}
-
-	err = ubifs_check_node(c, buf, lnum, offs, 0, 0);
-	if (err) {
-		ubifs_err(c, "expected node type %d", type);
-		return err;
-	}
-
-	rlen = le32_to_cpu(ch->len);
-	if (rlen != len) {
-		ubifs_err(c, "bad node length %d, expected %d", rlen, len);
-		goto out;
-	}
-
-	return 0;
-
-out:
-	ubifs_err(c, "bad node at LEB %d:%d", lnum, offs);
-	ubifs_dump_node(c, buf);
-	dump_stack();
-	return -EINVAL;
-}
+ */
 
 /**
  * ubifs_read_node - read node.
@@ -985,10 +364,10 @@ int ubifs_read_node(const struct ubifs_info *c, void *buf, int type, int len,
 	struct ubifs_ch *ch = buf;
 
 	dbg_io("LEB %d:%d, %s, length %d", lnum, offs, dbg_ntype(type), len);
-	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-	ubifs_assert(len >= UBIFS_CH_SZ && offs + len <= c->leb_size);
-	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-	ubifs_assert(type >= 0 && type < UBIFS_NODE_TYPES_CNT);
+	ubifs_assert(c, lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
+	ubifs_assert(c, len >= UBIFS_CH_SZ && offs + len <= c->leb_size);
+	ubifs_assert(c, !(offs & 7) && offs < c->leb_size);
+	ubifs_assert(c, type >= 0 && type < UBIFS_NODE_TYPES_CNT);
 
 	err = ubifs_leb_read(c, lnum, buf, offs, len, 0);
 	if (err && err != -EBADMSG)
@@ -1064,96 +443,22 @@ int ubifs_wbuf_init(struct ubifs_info *c, struct ubifs_wbuf *wbuf)
 	wbuf->c = c;
 	wbuf->next_ino = 0;
 
-#ifndef __BAREBOX__
-	hrtimer_init(&wbuf->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	wbuf->timer.function = wbuf_timer_callback_nolock;
-	wbuf->softlimit = ktime_set(WBUF_TIMEOUT_SOFTLIMIT, 0);
-	wbuf->delta = WBUF_TIMEOUT_HARDLIMIT - WBUF_TIMEOUT_SOFTLIMIT;
-	wbuf->delta *= 1000000000ULL;
-	ubifs_assert(wbuf->delta <= ULONG_MAX);
-#endif
+	/* hrtimer not needed in barebox */
+
 	return 0;
 }
 
-/**
- * ubifs_wbuf_add_ino_nolock - add an inode number into the wbuf inode array.
- * @wbuf: the write-buffer where to add
- * @inum: the inode number
- *
- * This function adds an inode number to the inode array of the write-buffer.
- */
+/*
+ * removed in barebox
 void ubifs_wbuf_add_ino_nolock(struct ubifs_wbuf *wbuf, ino_t inum)
-{
-	if (!wbuf->buf)
-		/* NOR flash or something similar */
-		return;
-
-	spin_lock(&wbuf->lock);
-	if (wbuf->used)
-		wbuf->inodes[wbuf->next_ino++] = inum;
-	spin_unlock(&wbuf->lock);
-}
-
-/**
- * wbuf_has_ino - returns if the wbuf contains data from the inode.
- * @wbuf: the write-buffer
- * @inum: the inode number
- *
- * This function returns with %1 if the write-buffer contains some data from the
- * given inode otherwise it returns with %0.
  */
+
+/*
+ * removed in barebox
 static int wbuf_has_ino(struct ubifs_wbuf *wbuf, ino_t inum)
-{
-	int i, ret = 0;
-
-	spin_lock(&wbuf->lock);
-	for (i = 0; i < wbuf->next_ino; i++)
-		if (inum == wbuf->inodes[i]) {
-			ret = 1;
-			break;
-		}
-	spin_unlock(&wbuf->lock);
-
-	return ret;
-}
-
-/**
- * ubifs_sync_wbufs_by_inode - synchronize write-buffers for an inode.
- * @c: UBIFS file-system description object
- * @inode: inode to synchronize
- *
- * This function synchronizes write-buffers which contain nodes belonging to
- * @inode. Returns zero in case of success and a negative error code in case of
- * failure.
  */
+
+/*
+ * removed in barebox
 int ubifs_sync_wbufs_by_inode(struct ubifs_info *c, struct inode *inode)
-{
-	int i, err = 0;
-
-	for (i = 0; i < c->jhead_cnt; i++) {
-		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-
-		if (i == GCHD)
-			/*
-			 * GC head is special, do not look at it. Even if the
-			 * head contains something related to this inode, it is
-			 * a _copy_ of corresponding on-flash node which sits
-			 * somewhere else.
-			 */
-			continue;
-
-		if (!wbuf_has_ino(wbuf, inode->i_ino))
-			continue;
-
-		mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-		if (wbuf_has_ino(wbuf, inode->i_ino))
-			err = ubifs_wbuf_sync_nolock(wbuf);
-		mutex_unlock(&wbuf->io_mutex);
-
-		if (err) {
-			ubifs_ro_mode(c, err);
-			return err;
-		}
-	}
-	return 0;
-}
+ */

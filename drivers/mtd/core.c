@@ -589,11 +589,8 @@ static int mtd_detect(struct device_d *dev)
 			continue;
 
 		filetype = file_detect_type(buf, bufsize);
-		if (filetype == filetype_ubi) {
+		if (filetype == filetype_ubi && ubi_num_get_by_mtd(mtd) < 0)
 			ret = ubi_attach_mtd_dev(mtd, UBI_DEV_NUM_AUTO, 0, 20);
-			if (ret == -EEXIST)
-				ret = 0;
-		}
 
 		break;
 	}

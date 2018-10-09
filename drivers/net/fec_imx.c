@@ -30,15 +30,10 @@
 #include <of_net.h>
 #include <of_gpio.h>
 #include <gpio.h>
+#include <linux/iopoll.h>
 
 #include "fec_imx.h"
 
-struct fec_frame {
-	uint8_t data[1500];	/* actual data */
-	int length;		/* actual length */
-	int used;		/* buffer in use or not */
-	uint8_t head[16];	/* MAC header(6 + 6 + 2) + 2(aligned) */
-};
 
 /*
  * MII-interface related functions
@@ -49,7 +44,6 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 
 	uint32_t reg;		/* convenient holder for the PHY register */
 	uint32_t phy;		/* convenient holder for the PHY */
-	uint64_t start;
 
 	writel(((clk_get_rate(fec->clk[FEC_CLK_IPG]) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
@@ -66,12 +60,10 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	/*
 	 * wait for the related interrupt
 	 */
-	start = get_time_ns();
-	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_MII)) {
-		if (is_timeout(start, MSECOND)) {
-			dev_err(&fec->edev.dev, "Read MDIO failed...\n");
-			return -1;
-		}
+	if (readl_poll_timeout(fec->regs + FEC_IEVENT, reg,
+			       reg & FEC_IEVENT_MII, MSECOND)) {
+		dev_err(&fec->edev.dev, "Read MDIO failed...\n");
+		return -1;
 	}
 
 	/*
@@ -92,7 +84,6 @@ static int fec_miibus_write(struct mii_bus *bus, int phyAddr,
 
 	uint32_t reg;		/* convenient holder for the PHY register */
 	uint32_t phy;		/* convenient holder for the PHY */
-	uint64_t start;
 
 	writel(((clk_get_rate(fec->clk[FEC_CLK_IPG]) >> 20) / 5) << 1,
 			fec->regs + FEC_MII_SPEED);
@@ -106,12 +97,10 @@ static int fec_miibus_write(struct mii_bus *bus, int phyAddr,
 	/*
 	 * wait for the MII interrupt
 	 */
-	start = get_time_ns();
-	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_MII)) {
-		if (is_timeout(start, MSECOND)) {
-			dev_err(&fec->edev.dev, "Write MDIO failed...\n");
-			return -1;
-		}
+	if (readl_poll_timeout(fec->regs + FEC_IEVENT, reg,
+			       reg & FEC_IEVENT_MII, MSECOND)) {
+		dev_err(&fec->edev.dev, "Write MDIO failed...\n");
+		return -1;
 	}
 
 	/*
@@ -414,20 +403,16 @@ static int fec_open(struct eth_device *edev)
 static void fec_halt(struct eth_device *dev)
 {
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
-	uint64_t tmo;
+	uint32_t reg;
 
 	/* issue graceful stop command to the FEC transmitter if necessary */
 	writel(readl(fec->regs + FEC_X_CNTRL) | FEC_ECNTRL_RESET,
 			fec->regs + FEC_X_CNTRL);
 
 	/* wait for graceful stop to register */
-	tmo = get_time_ns();
-	while (!(readl(fec->regs + FEC_IEVENT) & FEC_IEVENT_GRA)) {
-		if (is_timeout(tmo, 1 * SECOND)) {
-			dev_err(&dev->dev, "graceful stop timeout\n");
-			break;
-		}
-	}
+	if (readl_poll_timeout(fec->regs + FEC_IEVENT, reg,
+			       reg & FEC_IEVENT_GRA, SECOND))
+		dev_err(&dev->dev, "graceful stop timeout\n");
 
 	/* Disable SmartDMA tasks */
 	fec_tx_task_disable(fec);
@@ -452,7 +437,6 @@ static void fec_halt(struct eth_device *dev)
 static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 {
 	unsigned int status;
-	uint64_t tmo;
 	dma_addr_t dma;
 
 	/*
@@ -500,14 +484,10 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	/* Enable SmartDMA transmit task */
 	fec_tx_task_enable(fec);
 
-	/* wait until frame is sent */
-	tmo = get_time_ns();
-	while (readw(&fec->tbd_base[fec->tbd_index].status) & FEC_TBD_READY) {
-		if (is_timeout(tmo, 1 * SECOND)) {
-			dev_err(&dev->dev, "transmission timeout\n");
-			break;
-		}
-	}
+	if (readw_poll_timeout(&fec->tbd_base[fec->tbd_index].status,
+			       status, !(status & FEC_TBD_READY), SECOND))
+		dev_err(&dev->dev, "transmission timeout\n");
+
 	dma_unmap_single(fec->dev, dma, data_length, DMA_TO_DEVICE);
 
 	/* for next transmission use the other buffer */
@@ -529,8 +509,7 @@ static int fec_recv(struct eth_device *dev)
 	struct fec_priv *fec = (struct fec_priv *)dev->priv;
 	struct buffer_descriptor __iomem *rbd = &fec->rbd_base[fec->rbd_index];
 	uint32_t ievent;
-	int frame_length, len = 0;
-	struct fec_frame *frame;
+	int len = 0;
 	uint16_t bd_status;
 
 	/*
@@ -568,35 +547,46 @@ static int fec_recv(struct eth_device *dev)
 	 */
 	bd_status = readw(&rbd->status);
 
-	if (!(bd_status & FEC_RBD_EMPTY)) {
-		if ((bd_status & FEC_RBD_LAST) && !(bd_status & FEC_RBD_ERR) &&
-			((readw(&rbd->data_length) - 4) > 14)) {
+	if (bd_status & FEC_RBD_EMPTY)
+		return 0;
 
+	if (bd_status & FEC_RBD_ERR) {
+		dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n",
+			 rbd, bd_status);
+	} else if (bd_status & FEC_RBD_LAST) {
+		const uint16_t data_length = readw(&rbd->data_length);
+
+		if (data_length - 4 > 14) {
+			void *frame = phys_to_virt(readl(&rbd->data_pointer));
+			/*
+			 * Sync the data for CPU so that endianness
+			 * fixup and net_receive below would get
+			 * proper data
+			 */
+			dma_sync_single_for_cpu((unsigned long)frame,
+						data_length,
+						DMA_FROM_DEVICE);
 			if (fec_is_imx28(fec))
-				imx28_fix_endianess_rd(
-					phys_to_virt(readl(&rbd->data_pointer)),
-					(readw(&rbd->data_length) + 3) >> 2);
+				imx28_fix_endianess_rd(frame,
+						       (data_length + 3) >> 2);
 
 			/*
 			 * Get buffer address and size
 			 */
-			frame = phys_to_virt(readl(&rbd->data_pointer));
-			frame_length = readw(&rbd->data_length) - 4;
-			net_receive(dev, frame->data, frame_length);
-			len = frame_length;
-		} else {
-			if (bd_status & FEC_RBD_ERR) {
-				dev_warn(&dev->dev, "error frame: 0x%p 0x%08x\n", rbd, bd_status);
-			}
+			len = data_length - 4;
+			net_receive(dev, frame, len);
+			dma_sync_single_for_device((unsigned long)frame,
+						   data_length,
+						   DMA_FROM_DEVICE);
 		}
-		/*
-		 * free the current buffer, restart the engine
-		 * and move forward to the next buffer
-		 */
-		fec_rbd_clean(fec->rbd_index == (FEC_RBD_NUM - 1) ? 1 : 0, rbd);
-		fec_rx_task_enable(fec);
-		fec->rbd_index = (fec->rbd_index + 1) % FEC_RBD_NUM;
 	}
+	/*
+	 * free the current buffer, restart the engine
+	 * and move forward to the next buffer
+	 */
+	fec_rbd_clean(fec->rbd_index == (FEC_RBD_NUM - 1) ? 1 : 0, rbd);
+	fec_rx_task_enable(fec);
+	fec->rbd_index = (fec->rbd_index + 1) % FEC_RBD_NUM;
 
 	return len;
 }
@@ -606,13 +596,23 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 	void *p;
 	int i;
 
-	/* reserve data memory and consider alignment */
-	p = dma_alloc_coherent(size * count, DMA_ADDRESS_BROKEN);
+
+	p = dma_alloc(size * count);
 	if (!p)
 		return -ENOMEM;
 
 	for (i = 0; i < count; i++) {
-		writel(virt_to_phys(p), &fec->rbd_base[i].data_pointer);
+		dma_addr_t dma;
+		/*
+		 * Make sure there are no outstanding writes to the
+		 * region of memory we are going to use as receive
+		 * buffers as well as check that DMA mapping is valid
+		 */
+		dma = dma_map_single(fec->dev, p, size, DMA_FROM_DEVICE);
+		if (dma_mapping_error(fec->dev, dma))
+			return -EFAULT;
+
+		writel(dma, &fec->rbd_base[i].data_pointer);
 		p += size;
 	}
 
@@ -622,7 +622,7 @@ static int fec_alloc_receive_packets(struct fec_priv *fec, int count, int size)
 static void fec_free_receive_packets(struct fec_priv *fec, int count, int size)
 {
 	void *p = phys_to_virt(fec->rbd_base[0].data_pointer);
-	dma_free_coherent(p, 0, size * count);
+	dma_free(p);
 }
 
 #ifdef CONFIG_OFDEVICE
@@ -742,7 +742,7 @@ static int fec_probe(struct device_d *dev)
 	enum fec_type type;
 	int phy_reset;
 	u32 msec = 1, phy_post_delay = 0;
-	u64 start;
+	u32 reg;
 
 	ret = dev_get_drvdata(dev, (const void **)&type);
 	if (ret)
@@ -804,14 +804,11 @@ static int fec_probe(struct device_d *dev)
 	}
 
 	/* Reset chip. */
-	start = get_time_ns();
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);
-	while(readl(fec->regs + FEC_ECNTRL) & FEC_ECNTRL_RESET) {
-		if (is_timeout(start, SECOND)) {
-			ret = -ETIMEDOUT;
-			goto free_gpio;
-		}
-	}
+	ret = readl_poll_timeout(fec->regs + FEC_ECNTRL, reg,
+				 !(reg & FEC_ECNTRL_RESET), SECOND);
+	if (ret)
+		goto free_gpio;
 
 	/*
 	 * reserve memory for both buffer descriptor chains at once

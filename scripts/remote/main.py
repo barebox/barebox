@@ -98,6 +98,49 @@ def handle_mw(args):
     return res
 
 
+def handle_i2c_read(args):
+    ctrl = get_controller(args)
+    (res,data) = ctrl.i2c_read(args.bus, args.address, args.reg, args.flags, args.size)
+    if res == 0:
+        print(binascii.hexlify(data))
+    ctrl.close()
+    return res
+
+
+def handle_i2c_write(args):
+    ctrl = get_controller(args)
+    data=args.data
+    if ((len(data) % 2) != 0):
+        data="0"+data
+    (res,written) = ctrl.i2c_write(args.bus, args.address, args.reg, args.flags, binascii.unhexlify(data))
+    if res == 0:
+        print("%i bytes written" % written)
+    ctrl.close()
+    return res
+
+
+def handle_gpio_get_value(args):
+    ctrl = get_controller(args)
+    value = ctrl.gpio_get_value(args.gpio)
+    print ("%u" % value);
+    ctrl.close()
+    return 0
+
+
+def handle_gpio_set_value(args):
+    ctrl = get_controller(args)
+    ctrl.gpio_set_value(args.gpio, args.value)
+    ctrl.close()
+    return 0
+
+
+def handle_gpio_set_direction(args):
+    ctrl = get_controller(args)
+    res = ctrl.gpio_set_direction(args.gpio, args.direction, args.value)
+    ctrl.close()
+    return res
+
+
 def handle_reset(args):
     ctrl = get_controller(args)
     ctrl.reset(args.force)
@@ -187,6 +230,37 @@ parser_mw.add_argument('path', help="path")
 parser_mw.add_argument('address', type=auto_int, help="address")
 parser_mw.add_argument('data', help="data")
 parser_mw.set_defaults(func=handle_mw)
+
+parser_i2c_read = subparsers.add_parser('i2c-read', help="run i2c read command")
+parser_i2c_read.add_argument('bus', type=auto_int, help="bus")
+parser_i2c_read.add_argument('address', type=auto_int, help="address")
+parser_i2c_read.add_argument('reg', type=auto_int, help="reg")
+parser_i2c_read.add_argument('flags', type=auto_int, help="flags")
+parser_i2c_read.add_argument('size', type=auto_int, help="size")
+parser_i2c_read.set_defaults(func=handle_i2c_read)
+
+parser_i2c_write = subparsers.add_parser('i2c-write', help="run i2c write command")
+parser_i2c_write.add_argument('bus', type=auto_int, help="bus")
+parser_i2c_write.add_argument('address', type=auto_int, help="address")
+parser_i2c_write.add_argument('reg', type=auto_int, help="reg")
+parser_i2c_write.add_argument('flags', type=auto_int, help="flags")
+parser_i2c_write.add_argument('data', help="data")
+parser_i2c_write.set_defaults(func=handle_i2c_write)
+
+parser_gpio_get_value = subparsers.add_parser('gpio-get-value', help="run gpio get value command")
+parser_gpio_get_value.add_argument('gpio', type=auto_int, help="gpio")
+parser_gpio_get_value.set_defaults(func=handle_gpio_get_value)
+
+parser_gpio_set_value = subparsers.add_parser('gpio-set-value', help="run gpio set value command")
+parser_gpio_set_value.add_argument('gpio', type=auto_int, help="gpio")
+parser_gpio_set_value.add_argument('value', type=auto_int, help="value")
+parser_gpio_set_value.set_defaults(func=handle_gpio_set_value)
+
+parser_gpio_set_direction = subparsers.add_parser('gpio-set-direction', help="run gpio set direction command")
+parser_gpio_set_direction.add_argument('gpio', type=auto_int, help="gpio")
+parser_gpio_set_direction.add_argument('direction', type=auto_int, help="direction (0: input, 1: output)")
+parser_gpio_set_direction.add_argument('value', type=auto_int, help="value (if output)")
+parser_gpio_set_direction.set_defaults(func=handle_gpio_set_direction)
 
 parser_reset = subparsers.add_parser('reset', help="run reset command")
 parser_reset_force = parser_reset.add_mutually_exclusive_group(required=False)

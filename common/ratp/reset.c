@@ -17,6 +17,8 @@
  *
  */
 
+#define pr_fmt(fmt) "barebox-ratp: reset: " fmt
+
 #include <common.h>
 #include <command.h>
 #include <ratp_bb.h>
@@ -27,19 +29,19 @@
 struct ratp_bb_reset {
 	struct ratp_bb header;
 	uint8_t        force;
-} __attribute__((packed));
+} __packed;
 
 static int ratp_cmd_reset(const struct ratp_bb *req, int req_len,
 			  struct ratp_bb **rsp, int *rsp_len)
 {
 	struct ratp_bb_reset *reset_req = (struct ratp_bb_reset *)req;
 
-	if (req_len < sizeof (*reset_req)) {
-		printf ("ratp reset ignored: size mismatch (%d < %zu)\n", req_len, sizeof (*reset_req));
+	if (req_len < sizeof(*reset_req)) {
+		pr_err("ignored: size mismatch (%d < %zu)\n", req_len, sizeof(*reset_req));
 		return 2;
 	}
 
-	debug("running reset %s\n", reset_req->force ? "(forced)" : "");
+	pr_debug("running %s\n", reset_req->force ? "(forced)" : "");
 
 	if (!reset_req->force)
 		shutdown_barebox();

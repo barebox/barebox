@@ -13,3 +13,18 @@ config CONSOLE_RATP
 	  this option adds a machine readable interface for controlling barebox.
 	  Say yes here if you want to control barebox from a remote host.
 
+config RATP_CMD_I2C
+	bool
+	depends on RATP
+	depends on I2C
+	prompt "RATP i2c support"
+	help
+	  This option adds support for i2c read/write commands via RATP.
+
+config RATP_CMD_GPIO
+	bool
+	depends on RATP
+	depends on GENERIC_GPIO
+	prompt "RATP GPIO support"
+	help
+	  This option adds support for GPIO get/set/direction commands via RATP.

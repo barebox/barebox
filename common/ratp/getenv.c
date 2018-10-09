@@ -27,20 +27,20 @@
 static int ratp_cmd_getenv(const struct ratp_bb *req, int req_len,
 			   struct ratp_bb **rsp, int *rsp_len)
 {
-	int dlen = req_len - sizeof (struct ratp_bb);
+	int dlen = req_len - sizeof(struct ratp_bb);
 	char *varname;
 	const char *value;
 
-	varname = xstrndup ((const char *)req->data, dlen);
-	value = getenv (varname);
-	free (varname);
+	varname = xstrndup((const char *)req->data, dlen);
+	value = getenv(varname);
+	free(varname);
 
-	dlen = strlen (value);
+	dlen = strlen(value);
 
 	*rsp_len = sizeof(struct ratp_bb) + dlen;
 	*rsp = xzalloc(*rsp_len);
 	(*rsp)->type = cpu_to_be16(BB_RATP_TYPE_GETENV_RETURN);
-	memcpy ((*rsp)->data, value, dlen);
+	memcpy((*rsp)->data, value, dlen);
 	return 0;
 }
 

@@ -61,6 +61,36 @@ def unpack(data):
     elif p_type == BBType.reset:
         logging.debug("received: reset")
         return BBPacketReset(raw=data)
+    elif p_type == BBType.i2c_read:
+        logging.debug("received: i2c_read")
+        return BBPacketI2cRead(raw=data)
+    elif p_type == BBType.i2c_read_return:
+        logging.debug("received: i2c_read_return")
+        return BBPacketI2cReadReturn(raw=data)
+    elif p_type == BBType.i2c_write:
+        logging.debug("received: i2c_write")
+        return BBPacketI2cWrite(raw=data)
+    elif p_type == BBType.i2c_write_return:
+        logging.debug("received: i2c_write_return")
+        return BBPacketI2cWriteReturn(raw=data)
+    elif p_type == BBType.gpio_get_value:
+        logging.debug("received: gpio_get_value")
+        return BBPacketGpioGetValue(raw=data)
+    elif p_type == BBType.gpio_get_value_return:
+        logging.debug("received: gpio_get_value_return")
+        return BBPacketGpioGetValueReturn(raw=data)
+    elif p_type == BBType.gpio_set_value:
+        logging.debug("received: gpio_set_value")
+        return BBPacketGpioSetValue(raw=data)
+    elif p_type == BBType.gpio_set_value_return:
+        logging.debug("received: gpio_set_value_return")
+        return BBPacketGpioSetValueReturn(raw=data)
+    elif p_type == BBType.gpio_set_direction:
+        logging.debug("received: gpio_set_direction")
+        return BBPacketGpioSetDirection(raw=data)
+    elif p_type == BBType.gpio_set_direction_return:
+        logging.debug("received: gpio_set_direction_return")
+        return BBPacketGpioSetDirectionReturn(raw=data)
     else:
         logging.debug("received: UNKNOWN")
         return BBPacket(raw=data)
@@ -138,6 +168,36 @@ class Controller(Thread):
         r = self._expect(BBPacketMwReturn)
         logging.info("Mw return: %r", r)
         return (r.exit_code,r.written)
+
+    def i2c_read(self, bus, addr, reg, flags, size):
+        self._send(BBPacketI2cRead(bus=bus, addr=addr, reg=reg, flags=flags, size=size))
+        r = self._expect(BBPacketI2cReadReturn)
+        logging.info("i2c read return: %r", r)
+        return (r.exit_code,r.data)
+
+    def i2c_write(self, bus, addr, reg, flags, data):
+        self._send(BBPacketI2cWrite(bus=bus, addr=addr, reg=reg, flags=flags, data=data))
+        r = self._expect(BBPacketI2cWriteReturn)
+        logging.info("i2c write return: %r", r)
+        return (r.exit_code,r.written)
+
+    def gpio_get_value(self, gpio):
+        self._send(BBPacketGpioGetValue(gpio=gpio))
+        r = self._expect(BBPacketGpioGetValueReturn)
+        logging.info("gpio get value return: %r", r)
+        return r.value
+
+    def gpio_set_value(self, gpio, value):
+        self._send(BBPacketGpioSetValue(gpio=gpio, value=value))
+        r = self._expect(BBPacketGpioSetValueReturn)
+        logging.info("gpio set value return: %r", r)
+        return 0
+
+    def gpio_set_direction(self, gpio, direction, value):
+        self._send(BBPacketGpioSetDirection(gpio=gpio, direction=direction, value=value))
+        r = self._expect(BBPacketGpioSetDirectionReturn)
+        logging.info("gpio set direction return: %r", r)
+        return r.exit_code
 
     def reset(self, force):
         self._send(BBPacketReset(force=force))

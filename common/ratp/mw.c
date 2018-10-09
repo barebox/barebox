@@ -16,6 +16,8 @@
  *
  */
 
+#define pr_fmt(fmt) "barebox-ratp: mw: " fmt
+
 #include <common.h>
 #include <ratp_bb.h>
 #include <init.h>
@@ -47,7 +49,7 @@ struct ratp_bb_mw_request {
 	uint16_t data_size;
 	uint16_t data_offset;
 	uint8_t  buffer[];
-} __attribute__((packed));
+} __packed;
 
 struct ratp_bb_mw_response {
 	struct ratp_bb header;
@@ -55,7 +57,7 @@ struct ratp_bb_mw_response {
 	uint32_t errno;
 	uint16_t written;
 	uint8_t  buffer[];
-} __attribute__((packed));
+} __packed;
 
 static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 		       struct ratp_bb **rsp, int *rsp_len)
@@ -77,8 +79,8 @@ static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 
 	/* At least message header should be valid */
 	if (req_len < sizeof(*mw_req)) {
-		printf("ratp mw ignored: size mismatch (%d < %zu)\n",
-		       req_len, sizeof (*mw_req));
+		pr_err("ignored: size mismatch (%d < %zu)\n",
+		       req_len, sizeof(*mw_req));
 		ret = -EINVAL;
 		goto out;
 	}
@@ -86,7 +88,7 @@ static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 	/* Validate buffer position and size */
 	buffer_offset = be16_to_cpu(mw_req->buffer_offset);
 	if (req_len < buffer_offset) {
-		printf("ratp mw ignored: invalid buffer offset (%d < %hu)\n",
+		pr_err("ignored: invalid buffer offset (%d < %hu)\n",
 		       req_len, buffer_offset);
 		ret = -EINVAL;
 		goto out;
@@ -97,13 +99,13 @@ static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 	/* Validate path position and size */
 	path_offset = be16_to_cpu(mw_req->path_offset);
 	if (path_offset != 0) {
-		printf("ratp mw ignored: invalid path offset\n");
+		pr_err("ignored: invalid path offset\n");
 		ret = -EINVAL;
 		goto out;
 	}
 	path_size = be16_to_cpu(mw_req->path_size);
 	if (!path_size) {
-		printf("ratp mw ignored: no filepath given\n");
+		pr_err("ignored: no filepath given\n");
 		ret = -EINVAL;
 		goto out;
 	}
@@ -111,7 +113,7 @@ static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 	/* Validate data position and size */
 	data_offset = be16_to_cpu(mw_req->data_offset);
 	if (data_offset != (path_offset + path_size)) {
-		printf("ratp mw ignored: invalid path offset\n");
+		pr_err("ignored: invalid path offset\n");
 		ret = -EINVAL;
 		goto out;
 	}
@@ -123,13 +125,13 @@ static int ratp_cmd_mw(const struct ratp_bb *req, int req_len,
 
 	/* Validate buffer size */
 	if (buffer_size < (path_size + data_size)) {
-		printf("ratp mw ignored: size mismatch (%d < %hu): path or data not be fully given\n",
+		pr_err("ignored: size mismatch (%d < %hu): path or data not be fully given\n",
 		       req_len, path_size + data_size);
 		ret = -EINVAL;
 		goto out;
 	}
 
-	addr = be16_to_cpu (mw_req->addr);
+	addr = be16_to_cpu(mw_req->addr);
 	path = xstrndup((const char *)&buffer[path_offset], path_size);
 
 	fd = open_and_lseek(path, O_RWSIZE_1 | O_WRONLY, addr);
@@ -162,7 +164,7 @@ out:
 	*rsp = (struct ratp_bb *)mw_rsp;
 	*rsp_len = sizeof(*mw_rsp);
 
-	free (path);
+	free(path);
 	return ret;
 }
 

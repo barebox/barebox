@@ -247,6 +247,11 @@ static int fastboot_add_partition_variables(struct f_fastboot *f_fb,
 
 	ret = stat(fentry->filename, &s);
 	if (ret) {
+		device_detect_by_name(devpath_to_name(fentry->filename));
+		ret = stat(fentry->filename, &s);
+	}
+
+	if (ret) {
 		if (fentry->flags & FILE_LIST_FLAG_CREATE) {
 			ret = 0;
 			type = "file";
@@ -609,6 +614,16 @@ static void cb_getvar(struct f_fastboot *f_fb, const char *cmd)
 	fastboot_tx_print(f_fb, "OKAY");
 }
 
+static int rx_bytes_expected(struct f_fastboot *f_fb)
+{
+	int remaining = f_fb->download_size - f_fb->download_bytes;
+
+	if (remaining >= EP_BUFFER_SIZE)
+		return EP_BUFFER_SIZE;
+
+	return ALIGN(remaining, f_fb->out_ep->maxpacket);
+}
+
 static void rx_handler_dl_image(struct usb_ep *ep, struct usb_request *req)
 {
 	struct f_fastboot *f_fb = req->context;
@@ -632,9 +647,7 @@ static void rx_handler_dl_image(struct usb_ep *ep, struct usb_request *req)
 
 	f_fb->download_bytes += req->actual;
 
-	req->length = f_fb->download_size - f_fb->download_bytes;
-	if (req->length > EP_BUFFER_SIZE)
-		req->length = EP_BUFFER_SIZE;
+	req->length = rx_bytes_expected(f_fb);
 
 	show_progress(f_fb->download_bytes);
 
@@ -687,9 +700,7 @@ static void cb_download(struct f_fastboot *f_fb, const char *cmd)
 		struct usb_ep *ep = f_fb->out_ep;
 		fastboot_tx_print(f_fb, "DATA%08x", f_fb->download_size);
 		req->complete = rx_handler_dl_image;
-		req->length = EP_BUFFER_SIZE;
-		if (req->length < ep->maxpacket)
-			req->length = ep->maxpacket;
+		req->length = rx_bytes_expected(f_fb);
 	}
 }
 

@@ -33,12 +33,10 @@ static int do_test_one_area(struct mem_test_resource *r, int bus_only,
 {
 	int ret;
 
-	printf("Testing memory space: "
-			"0x%08x -> 0x%08x:\n",
-			r->r->start,  r->r->end);
+	printf("Testing memory space: %pa -> %pa:\n",
+	       &r->r->start,  &r->r->end);
 
-	remap_range((void *)r->r->start, r->r->end -
-			r->r->start + 1, cache_flag);
+	remap_range((void *)r->r->start, resource_size(r->r), cache_flag);
 
 	ret = mem_test_bus_integrity(r->r->start, r->r->end);
 	if (ret < 0)

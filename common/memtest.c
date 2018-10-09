@@ -131,8 +131,8 @@ void mem_test_release_regions(struct list_head *list)
 		/*
 		 * Ensure to leave with a cached on non used sdram regions.
 		 */
-		remap_range((void *)r->r->start, r->r->end -
-				r->r->start + 1, MAP_DEFAULT);
+		remap_range((void *)r->r->start, resource_size(r->r),
+			    MAP_DEFAULT);
 
 		release_sdram_region(r->r);
 		free(r);
@@ -160,24 +160,29 @@ static void mem_test_report_failure(const char *failure_description,
 				    resource_size_t actual_value,
 				    volatile resource_size_t *address)
 {
+	/*
+	 * expected_value and actual_value below are not really
+	 * pointers, but we want them to be printed exactly the same
+	 * as pointers would, so we use %pa regardless
+	 */
 	printf("FAILURE (%s): "
-	       "expected 0x%08x, actual 0x%08x at address 0x%08x.\n",
-	       failure_description, expected_value, actual_value,
-	       (resource_size_t)address);
+	       "expected %pa, actual %pa at address %pa.\n",
+	       failure_description, &expected_value, &actual_value,
+	       &address);
 }
 
 int mem_test_bus_integrity(resource_size_t _start,
 			   resource_size_t _end)
 {
-	static const resource_size_t bitpattern[] = {
-		0x00000001,	/* single bit */
-		0x00000003,	/* two adjacent bits */
-		0x00000007,	/* three adjacent bits */
-		0x0000000F,	/* four adjacent bits */
-		0x00000005,	/* two non-adjacent bits */
-		0x00000015,	/* three non-adjacent bits */
-		0x00000055,	/* four non-adjacent bits */
-		0xAAAAAAAA,	/* alternating 1/0 */
+	static const uint64_t bitpattern[] = {
+		0x0000000000000001ULL,	/* single bit */
+		0x0000000000000003ULL,	/* two adjacent bits */
+		0x0000000000000007ULL,	/* three adjacent bits */
+		0x000000000000000FULL,	/* four adjacent bits */
+		0x0000000000000005ULL,	/* two non-adjacent bits */
+		0x0000000000000015ULL,	/* three non-adjacent bits */
+		0x0000000000000055ULL,	/* four non-adjacent bits */
+		0xAAAAAAAAAAAAAAAAULL,	/* alternating 1/0 */
 	};
 
 	volatile resource_size_t *start, *dummy, num_words, val, readback, offset,
@@ -217,7 +222,7 @@ int mem_test_bus_integrity(resource_size_t _start,
 	 * pattern and ~pattern).
 	 */
 	for (i = 0; i < ARRAY_SIZE(bitpattern); i++) {
-		val = bitpattern[i];
+		val = (resource_size_t)bitpattern[i];
 
 		for (; val != 0; val <<= 1) {
 			*start = val;
@@ -282,8 +287,8 @@ int mem_test_bus_integrity(resource_size_t _start,
 	 *              01ffffff is perfect.
 	 */
 
-	pattern = 0xAAAAAAAA;
-	anti_pattern = 0x55555555;
+	pattern = (resource_size_t)0xAAAAAAAAAAAAAAAAULL;
+	anti_pattern = (resource_size_t)0x5555555555555555ULL;
 
 	/*
 	 * Write the default pattern at each of the

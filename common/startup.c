@@ -73,16 +73,66 @@ fs_initcall(mount_root);
 #endif
 
 #ifdef CONFIG_ENV_HANDLING
+static int check_overlap(const char *path)
+{
+	struct cdev *cenv, *cdisk, *cpart;
+	const char *name;
+
+	name = devpath_to_name(path);
+
+	if (name == path)
+		/*
+		 * no /dev/ in front, so *path is some file. No need to
+		 * check further.
+		 */
+		return 0;
+
+	cenv = cdev_by_name(name);
+	if (!cenv)
+		return -EINVAL;
+
+	cdisk = cenv->master;
+
+	if (!cdisk)
+		return 0;
+
+	list_for_each_entry(cpart, &cdisk->partitions, partition_entry) {
+		if (cpart == cenv)
+			continue;
+
+		if (lregion_overlap(cpart->offset, cpart->size,
+				    cenv->offset, cenv->size))
+			goto conflict;
+	}
+
+	return 0;
+
+conflict:
+	pr_err("Environment partition (0x%08llx-0x%08llx) "
+		"overlaps with partition %s (0x%08llx-0x%08llx), not using it\n",
+		cenv->offset, cenv->offset + cenv->offset + cenv->size - 1,
+		cpart->name,
+		cpart->offset, cpart->offset + cpart->offset + cpart->size - 1);
+
+	return -EINVAL;
+}
+
 static int load_environment(void)
 {
 	const char *default_environment_path;
+	int ret;
 
 	default_environment_path = default_environment_path_get();
 
 	if (IS_ENABLED(CONFIG_DEFAULT_ENVIRONMENT))
 		defaultenv_load("/env", 0);
 
-	envfs_load(default_environment_path, "/env", 0);
+	ret = check_overlap(default_environment_path);
+	if (ret)
+		default_environment_path_set(NULL);
+	else
+		envfs_load(default_environment_path, "/env", 0);
+
 	nvvar_load();
 
 	return 0;

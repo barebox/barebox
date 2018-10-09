@@ -157,4 +157,14 @@ static inline bool region_overlap(unsigned long starta, unsigned long lena,
 	return 1;
 }
 
+static inline bool lregion_overlap(loff_t starta, loff_t lena,
+				   loff_t startb, loff_t lenb)
+{
+	if (starta + lena <= startb)
+		return 0;
+	if (startb + lenb <= starta)
+		return 0;
+	return 1;
+}
+
 #endif	/* __COMMON_H_ */

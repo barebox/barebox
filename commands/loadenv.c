@@ -61,6 +61,10 @@ static int do_loadenv(int argc, char *argv[])
 
 	if (argc - optind < 1) {
 		filename = default_environment_path_get();
+		if (!filename) {
+			printf("Default environment path not set\n");
+			return 1;
+		}
 	} else {
 		/*
 		 * /dev/defaultenv use to contain the defaultenvironment.

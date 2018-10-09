@@ -1,0 +1,12 @@
+/*
+ * Two aliases missing in upstream DT needed to make VFxxx's SD/MMC
+ * device naming scheme consistent with the rest of i.MX (which the
+ * following aliases from upstream.
+ */
+
+/ {
+	aliases {
+		mmc0 = &esdhc0;
+		mmc1 = &esdhc1;
+	};
+};	

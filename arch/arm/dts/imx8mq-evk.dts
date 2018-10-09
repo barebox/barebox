@@ -7,6 +7,7 @@
 /dts-v1/;
 
 #include "imx8mq.dtsi"
+#include "imx8mq-ddrc.dtsi"
 
 / {
 	model = "NXP i.MX8MQ EVK";
@@ -14,11 +15,6 @@
 
 	chosen {
 		stdout-path = &uart1;
-	};
-
-	memory@40000000 {
-		device_type = "memory";
-		reg = <0x00000000 0x40000000 0 0xc0000000>;
 	};
 
 	reg_usdhc2_vmmc: regulator-vsd-3v3 {
@@ -43,6 +39,7 @@
 	            <&pinctrl_fec1_data_tx>, <&pinctrl_fec1_data_rx>,
 	            <&pinctrl_fec1_phy_reset>;
 	phy-mode = "rgmii-id";
+	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 

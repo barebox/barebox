@@ -24,6 +24,7 @@
 #include <asm/sections.h>
 #include <asm/mmu.h>
 #include <mach/atf.h>
+#include <mach/esdctl.h>
 
 #include "ddr.h"
 
@@ -121,7 +122,6 @@ ENTRY_FUNCTION(start_nxp_imx8mq_evk, r0, r1, r2)
 	/*
 	 * Standard entry we hit once we initialized both DDR and ATF
 	 */
-	barebox_arm_entry(MX8MQ_DDR_CSD1_BASE_ADDR,
-			  SZ_2G + SZ_1G, __dtb_imx8mq_evk_start);
+	imx8mq_barebox_entry(__dtb_imx8mq_evk_start);
 }
 

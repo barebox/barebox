@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+
+#include <arm/vf610-zii-ssmb-spu3.dts>
+
+#include "vf610-zii-dev.dtsi"

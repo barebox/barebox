@@ -38,7 +38,7 @@ static inline void setup_uart(void)
 enum zii_platform_vf610_type {
 	ZII_PLATFORM_VF610_DEV_REV_B	= 0x01,
 	ZII_PLATFORM_VF610_SCU4_AIB	= 0x02,
-	ZII_PLATFORM_VF610_SPU3		= 0x03,
+	ZII_PLATFORM_VF610_SSMB_SPU3	= 0x03,
 	ZII_PLATFORM_VF610_CFU1		= 0x04,
 	ZII_PLATFORM_VF610_DEV_REV_C	= 0x05,
 };
@@ -75,8 +75,8 @@ static unsigned int get_system_type(void)
 
 extern char __dtb_vf610_zii_dev_rev_b_start[];
 extern char __dtb_vf610_zii_dev_rev_c_start[];
-extern char __dtb_vf610_zii_cfu1_rev_a_start[];
-extern char __dtb_vf610_zii_spu3_rev_a_start[];
+extern char __dtb_vf610_zii_cfu1_start[];
+extern char __dtb_vf610_zii_ssmb_spu3_start[];
 extern char __dtb_vf610_zii_scu4_aib_rev_c_start[];
 
 ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
@@ -127,10 +127,10 @@ ENTRY_FUNCTION(start_zii_vf610_dev, r0, r1, r2)
 		fdt = __dtb_vf610_zii_dev_rev_c_start;
 		break;
 	case ZII_PLATFORM_VF610_CFU1:
-		fdt = __dtb_vf610_zii_cfu1_rev_a_start;
+		fdt = __dtb_vf610_zii_cfu1_start;
 		break;
-	case ZII_PLATFORM_VF610_SPU3:
-		fdt = __dtb_vf610_zii_spu3_rev_a_start;
+	case ZII_PLATFORM_VF610_SSMB_SPU3:
+		fdt = __dtb_vf610_zii_ssmb_spu3_start;
 		break;
 	}
 

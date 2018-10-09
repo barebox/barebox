@@ -30,6 +30,7 @@
 *.so
 *.so.dbg
 *.symtypes
+*.bin.gen.S
 Module.symvers
 
 #

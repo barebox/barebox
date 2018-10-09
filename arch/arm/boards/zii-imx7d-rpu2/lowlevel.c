@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/*
+ * Copyright (C) 2018 Zodiac Inflight Innovation
+ * Author: Andrey Smirnov <andrew.smirnov@gmail.com>
+ */
+
 #include <debug_ll.h>
 #include <io.h>
 #include <common.h>
@@ -11,7 +18,7 @@
 #include <asm/cache.h>
 #include <mach/esdctl.h>
 
-extern char __dtb_imx7d_sdb_start[];
+extern char __dtb_imx7d_zii_rpu2_start[];
 
 static inline void setup_uart(void)
 {
@@ -19,25 +26,25 @@ static inline void setup_uart(void)
 	void __iomem *ccm   = IOMEM(MX7_CCM_BASE_ADDR);
 
 	writel(CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + CCM_CCGRn_CLR(CCM_CCGR_UART1));
-	writel(CCM_TARGET_ROOTn_ENABLE | UART1_CLK_ROOT__OSC_24M,
-	       ccm + CCM_TARGET_ROOTn(UART1_CLK_ROOT));
+	       ccm + CCM_CCGRn_CLR(CCM_CCGR_UART2));
+	writel(CCM_TARGET_ROOTn_ENABLE | UART2_CLK_ROOT__OSC_24M,
+	       ccm + CCM_TARGET_ROOTn(UART2_CLK_ROOT));
 	writel(CCM_CCGR_SETTINGn_NEEDED(0),
-	       ccm + CCM_CCGRn_SET(CCM_CCGR_UART1));
+	       ccm + CCM_CCGRn_SET(CCM_CCGR_UART2));
 
-	mx7_setup_pad(iomux, MX7D_PAD_UART1_TX_DATA__UART1_DCE_TX);
+	mx7_setup_pad(iomux, MX7D_PAD_UART2_TX_DATA__UART2_DCE_TX);
 
 	imx7_uart_setup_ll();
 
 	putc_ll('>');
 }
 
-ENTRY_FUNCTION(start_imx7d_sabresd, r0, r1, r2)
+ENTRY_FUNCTION(start_zii_imx7d_rpu2, r0, r1, r2)
 {
 	imx7_cpu_lowlevel_init();
 
 	if (IS_ENABLED(CONFIG_DEBUG_LL))
 		setup_uart();
 
-	imx7d_barebox_entry(__dtb_imx7d_sdb_start + get_runtime_offset());
+	imx7d_barebox_entry(__dtb_imx7d_zii_rpu2_start + get_runtime_offset());
 }

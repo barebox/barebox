@@ -23,15 +23,21 @@
 
 static int zii_rdu1_init(void)
 {
-	if (!of_machine_is_compatible("zii,imx51-rdu1"))
+	const char *hostname;
+
+	if (!of_machine_is_compatible("zii,imx51-rdu1") &&
+	    !of_machine_is_compatible("zii,imx51-scu2-mezz") &&
+	    !of_machine_is_compatible("zii,imx51-scu3-esb"))
 		return 0;
+
+	hostname = of_get_machine_compatible() + strlen("imx51-");
 
 	imx51_babbage_power_init();
 
-	barebox_set_hostname("rdu1");
+	barebox_set_hostname(hostname);
 
-	imx51_bbu_internal_mmc_register_handler("mmc", "/dev/mmc0", 0);
-	imx51_bbu_internal_spi_i2c_register_handler("spi",
+	imx51_bbu_internal_mmcboot_register_handler("eMMC", "/dev/mmc0", 0);
+	imx51_bbu_internal_spi_i2c_register_handler("SPI",
 		"/dev/dataflash0.barebox",
 		BBU_HANDLER_FLAG_DEFAULT |
 		IMX_BBU_FLAG_PARTITION_STARTS_AT_HEADER);

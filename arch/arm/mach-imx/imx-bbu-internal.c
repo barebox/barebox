@@ -401,21 +401,32 @@ static int imx_bbu_update(struct bbu_handler *handler, struct bbu_data *data)
 	return imx_handler->write_device(imx_handler, data);
 }
 
-static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
-					      struct bbu_data *data)
+static int imx_bbu_internal_mmcboot_update(struct bbu_handler *handler,
+					   struct bbu_data *data)
 {
-	struct imx_internal_bbu_handler *imx_handler =
-		container_of(handler, struct imx_internal_bbu_handler, handler);
+	struct bbu_data _data = *data;
 	int ret;
 	char *bootpartvar;
 	const char *bootpart;
 	char *devicefile;
+	const char *devname = devpath_to_name(data->devicefile);
 
-	ret = asprintf(&bootpartvar, "%s.boot", data->devicefile);
+	ret = device_detect_by_name(devname);
+	if (ret) {
+		pr_err("Couldn't detect device '%s'\n", devname);
+		return ret;
+	}
+
+	ret = asprintf(&bootpartvar, "%s.boot", devname);
 	if (ret < 0)
 		return ret;
 
 	bootpart = getenv(bootpartvar);
+	if (!bootpart) {
+		pr_err("Couldn't read the value of '%s'\n", bootpartvar);
+		ret = -ENOENT;
+		goto free_bootpartvar;
+	}
 
 	if (!strcmp(bootpart, "boot0")) {
 		bootpart = "boot1";
@@ -423,20 +434,18 @@ static int imx_bbu_internal_v2_mmcboot_update(struct bbu_handler *handler,
 		bootpart = "boot0";
 	}
 
-	ret = asprintf(&devicefile, "/dev/%s.%s", data->devicefile, bootpart);
+	ret = asprintf(&devicefile, "/dev/%s.%s", devname, bootpart);
 	if (ret < 0)
 		goto free_bootpartvar;
 
-	ret = imx_bbu_check_prereq(imx_handler, devicefile, data,
-				   filetype_imx_image_v2);
+	_data.devicefile = devicefile;
+
+	ret = imx_bbu_update(handler, &_data);
 	if (ret)
 		goto free_devicefile;
 
-	ret = imx_bbu_write_device(imx_handler, devicefile, data, data->image, data->len);
-
-	if (!ret)
-		/* on success switch boot source */
-		ret = setenv(bootpartvar, bootpart);
+	/* on success switch boot source */
+	ret = setenv(bootpartvar, bootpart);
 
 free_devicefile:
 	free(devicefile);
@@ -586,19 +595,39 @@ int imx8mq_bbu_internal_mmc_register_handler(const char *name,
  * Note that no further partitioning of the boot partition is supported up to
  * now.
  */
-int imx6_bbu_internal_mmcboot_register_handler(const char *name,
-					       const char *devicefile,
-					       unsigned long flags)
+static int imx_bbu_internal_mmcboot_register_handler(const char *name,
+						     const char *devicefile,
+						     unsigned long flags)
 {
 	struct imx_internal_bbu_handler *imx_handler;
 
 	imx_handler = __init_handler(name, devicefile, flags);
 	imx_handler->flash_header_offset = imx_bbu_flash_header_offset_mmc();
 
-	imx_handler->handler.handler = imx_bbu_internal_v2_mmcboot_update;
+	imx_handler->handler.handler = imx_bbu_internal_mmcboot_update;
 
 	return __register_handler(imx_handler);
 }
+
+int imx6_bbu_internal_mmcboot_register_handler(const char *name,
+					       const char *devicefile,
+					       unsigned long flags)
+	__alias(imx_bbu_internal_mmcboot_register_handler);
+
+int imx51_bbu_internal_mmcboot_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx_bbu_internal_mmcboot_register_handler);
+
+int vf610_bbu_internal_mmcboot_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx_bbu_internal_mmcboot_register_handler);
+
+int imx7_bbu_internal_mmcboot_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx_bbu_internal_mmcboot_register_handler);
 
 /*
  * Register an i.MX53 internal boot update handler for i2c/spi
@@ -616,6 +645,12 @@ int imx6_bbu_internal_spi_i2c_register_handler(const char *name,
  * keep a partition table. We have to erase the device beforehand though.
  */
 int vf610_bbu_internal_spi_i2c_register_handler(const char *name,
+						const char *devicefile,
+						unsigned long flags)
+	__alias(imx6_bbu_internal_spi_i2c_register_handler);
+
+
+int imx7_bbu_internal_spi_i2c_register_handler(const char *name,
 						const char *devicefile,
 						unsigned long flags)
 	__alias(imx6_bbu_internal_spi_i2c_register_handler);

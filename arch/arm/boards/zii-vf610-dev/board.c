@@ -53,7 +53,7 @@ static int zii_vf610_cfu1_expose_signals(void)
 		},
 	};
 
-	if (!of_machine_is_compatible("zii,vf610cfu1-a"))
+	if (!of_machine_is_compatible("zii,vf610cfu1"))
 		return 0;
 
 	return expose_signals(signals, ARRAY_SIZE(signals));
@@ -75,8 +75,8 @@ static int zii_vf610_cfu1_spu3_expose_signals(void)
 		},
 	};
 
-	if (!of_machine_is_compatible("zii,vf610spu3-a") &&
-	    !of_machine_is_compatible("zii,vf610cfu1-a"))
+	if (!of_machine_is_compatible("zii,vf610spu3") &&
+	    !of_machine_is_compatible("zii,vf610cfu1"))
 		return 0;
 
 	return expose_signals(signals, ARRAY_SIZE(signals));
@@ -127,8 +127,8 @@ static int zii_vf610_dev_set_hostname(void)
 		const char *compatible;
 		const char *hostname;
 	} boards[] = {
-		{ "zii,vf610spu3-a", "spu3-rev-a" },
-		{ "zii,vf610cfu1-a", "cfu1-rev-a" },
+		{ "zii,vf610spu3", "spu3" },
+		{ "zii,vf610cfu1", "cfu1" },
 		{ "zii,vf610dev-b", "dev-rev-b" },
 		{ "zii,vf610dev-c", "dev-rev-c" },
 		{ "zii,vf610scu4-aib-c", "scu4-aib-rev-c" },
@@ -168,14 +168,17 @@ static int zii_vf610_dev_register_bbu(void)
 }
 late_initcall(zii_vf610_dev_register_bbu);
 
-static int zii_vf610_spu3_register_bbu(void)
+static int zii_vf610_register_emmc_bbu(void)
 {
 	int ret;
-	if (!of_machine_is_compatible("zii,vf610spu3-a"))
+
+	if (!of_machine_is_compatible("zii,vf610spu3") &&
+	    !of_machine_is_compatible("zii,vf610cfu1"))
 		return 0;
 
-	ret = vf610_bbu_internal_mmc_register_handler("eMMC", "/dev/disk0",
-						      BBU_HANDLER_FLAG_DEFAULT);
+	ret = vf610_bbu_internal_mmcboot_register_handler("eMMC",
+					      "/dev/mmc0",
+					      BBU_HANDLER_FLAG_DEFAULT);
 	if (ret) {
 		pr_err("Failed to register eMMC BBU handler\n");
 		return ret;
@@ -183,4 +186,4 @@ static int zii_vf610_spu3_register_bbu(void)
 
 	return 0;
 }
-late_initcall(zii_vf610_spu3_register_bbu);
+late_initcall(zii_vf610_register_emmc_bbu);

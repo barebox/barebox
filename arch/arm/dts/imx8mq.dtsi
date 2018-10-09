@@ -7,6 +7,7 @@
 #include <dt-bindings/clock/imx8mq-clock.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/thermal/thermal.h>
 #include "imx8mq-pinfunc.h"
 
 /* first 128 KiB of memory are owned by ATF */
@@ -96,6 +97,7 @@
 			reg = <0x0>;
 			enable-method = "psci";
 			next-level-cache = <&A53_L2>;
+			#cooling-cells = <2>;
 		};
 
 		A53_1: cpu@1 {
@@ -214,6 +216,89 @@
 				#interrupt-cells = <2>;
 			};
 
+			tmu: tmu@30260000 {
+				compatible = "fsl,imx8mq-tmu";
+				reg = <0x30260000 0x10000>;
+				interrupt = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+				little-endian;
+				fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x70061>;
+				fsl,tmu-calibration = <0x00000000 0x00000023
+						       0x00000001 0x00000029
+						       0x00000002 0x0000002f
+						       0x00000003 0x00000035
+						       0x00000004 0x0000003d
+						       0x00000005 0x00000043
+						       0x00000006 0x0000004b
+						       0x00000007 0x00000051
+						       0x00000008 0x00000057
+						       0x00000009 0x0000005f
+						       0x0000000a 0x00000067
+						       0x0000000b 0x0000006f
+
+						       0x00010000 0x0000001b
+						       0x00010001 0x00000023
+						       0x00010002 0x0000002b
+						       0x00010003 0x00000033
+						       0x00010004 0x0000003b
+						       0x00010005 0x00000043
+						       0x00010006 0x0000004b
+						       0x00010007 0x00000055
+						       0x00010008 0x0000005d
+						       0x00010009 0x00000067
+						       0x0001000a 0x00000070
+
+						       0x00020000 0x00000017
+						       0x00020001 0x00000023
+						       0x00020002 0x0000002d
+						       0x00020003 0x00000037
+						       0x00020004 0x00000041
+						       0x00020005 0x0000004b
+						       0x00020006 0x00000057
+						       0x00020007 0x00000063
+						       0x00020008 0x0000006f
+
+						       0x00030000 0x00000015
+						       0x00030001 0x00000021
+						       0x00030002 0x0000002d
+						       0x00030003 0x00000039
+						       0x00030004 0x00000045
+						       0x00030005 0x00000053
+						       0x00030006 0x0000005f
+						       0x00030007 0x00000071>;
+				#thermal-sensor-cells =  <0>;
+			};
+
+			thermal-zones {
+				/* cpu thermal */
+				cpu-thermal {
+					polling-delay-passive = <250>;
+					polling-delay = <2000>;
+					thermal-sensors = <&tmu>;
+
+					trips {
+						cpu_alert0: trip0 {
+							temperature = <85000>;
+							hysteresis = <2000>;
+							type = "passive";
+						};
+
+						cpu_crit0: trip1 {
+							temperature = <95000>;
+							hysteresis = <2000>;
+							type = "critical";
+						};
+					};
+
+					cooling-maps {
+						map0 {
+							trip = <&cpu_alert0>;
+							cooling-device =
+							<&A53_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+						};
+					};
+				};
+			};
+
 			iomuxc: iomuxc@30330000 {
 				compatible = "fsl,imx8mq-iomuxc";
 				reg = <0x30330000 0x10000>;
@@ -287,6 +372,16 @@
 			#address-cells = <1>;
 			#size-cells = <1>;
 			ranges = <0x30800000 0x30800000 0x400000>;
+
+			ecspi1: ecspi@30820000 {
+				compatible = "fsl,imx6ul-ecspi", "fsl,imx51-ecspi";
+				reg = <0x30820000 0x10000>;
+				interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&clk IMX8MQ_CLK_ECSPI1_ROOT>,
+				<&clk IMX8MQ_CLK_ECSPI1_ROOT>;
+				clock-names = "ipg", "per";
+				status = "disabled";
+			};
 
 			uart1: serial@30860000 {
 				compatible = "fsl,imx8mq-uart",
@@ -622,3 +717,35 @@
 		};
 	};
 };
+
+
+
+&clk {
+	assigned-clocks = <&clk IMX8MQ_CLK_USDHC1_SRC>,
+			  <&clk IMX8MQ_CLK_USDHC1_DIV>,
+			  <&clk IMX8MQ_CLK_USDHC2_SRC>,
+			  <&clk IMX8MQ_CLK_USDHC2_DIV>,
+			  <&clk IMX8MQ_CLK_ENET_AXI_SRC>,
+			  <&clk IMX8MQ_CLK_ENET_TIMER_SRC>,
+			  <&clk IMX8MQ_CLK_ENET_REF_SRC>,
+			  <&clk IMX8MQ_CLK_ENET_TIMER_DIV>;
+
+	assigned-clock-parents =  <&clk IMX8MQ_SYS1_PLL_400M>,
+				  <0>,
+				  <&clk IMX8MQ_SYS1_PLL_400M>,
+				  <0>,
+				  <&clk IMX8MQ_SYS1_PLL_266M>,
+				  <&clk IMX8MQ_SYS2_PLL_100M>,
+				  <&clk IMX8MQ_SYS2_PLL_125M>,
+				  <0>;
+
+	assigned-clock-rates = <400000000>,
+			       <200000000>,
+			       <400000000>,
+			       <200000000>,
+			       <266000000>,
+			       <0>,
+			       <125000000>,
+			       <25000000>;
+};
+

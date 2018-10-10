@@ -155,8 +155,6 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 {
 	int ret;
 	off_t offset = suboffset;
-	struct mtd_ecc_stats stat1, stat2;
-	bool nostats = false;
 
 	offset += (off_t)circ->eraseblock * circ->mtd->erasesize;
 

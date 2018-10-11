@@ -281,12 +281,6 @@ static int do_miitool(int argc, char *argv[])
 
 	while ((opt = getopt(argc, argv, "vs:r:")) > 0) {
 		switch (opt) {
-		case 'a':
-			addr = simple_strtol(optarg, NULL, 0);
-			break;
-		case 'b':
-			bus = simple_strtoul(optarg, NULL, 0);
-			break;
 		case 's':
 			action = MIITOOL_SHOW;
 			phydevname = xstrdup(optarg);

@@ -339,8 +339,7 @@ static int state_string_export(struct state_variable *var,
 	int ret = 0;
 
 	if (string->value_default) {
-		ret = of_set_property(node, "default", string->value_default,
-				      strlen(string->value_default) + 1, 1);
+		ret = of_property_write_string(node, "default", string->value_default);
 
 		if (ret)
 			return ret;
@@ -350,8 +349,7 @@ static int state_string_export(struct state_variable *var,
 		return 0;
 
 	if (string->value)
-		ret = of_set_property(node, "value", string->value,
-				      strlen(string->value) + 1, 1);
+		ret = of_property_write_string(node, "value", string->value);
 
 	return ret;
 }

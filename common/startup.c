@@ -110,9 +110,9 @@ static int check_overlap(const char *path)
 conflict:
 	pr_err("Environment partition (0x%08llx-0x%08llx) "
 		"overlaps with partition %s (0x%08llx-0x%08llx), not using it\n",
-		cenv->offset, cenv->offset + cenv->offset + cenv->size - 1,
+		cenv->offset, cenv->offset + cenv->size - 1,
 		cpart->name,
-		cpart->offset, cpart->offset + cpart->offset + cpart->size - 1);
+		cpart->offset, cpart->offset + cpart->size - 1);
 
 	return -EINVAL;
 }

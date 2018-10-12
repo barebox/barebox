@@ -91,6 +91,9 @@ static int check_overlap(const char *path)
 	if (!cenv)
 		return -EINVAL;
 
+	if (cenv->mtd)
+		return 0;
+
 	cdisk = cenv->master;
 
 	if (!cdisk)

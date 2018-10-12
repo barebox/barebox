@@ -583,6 +583,7 @@ void state_release(struct state *state)
 /*
  * state_new_from_node - create a new state instance from a device_node
  *
+ * @node	The device_node describing the new state instance
  * @readonly	This is a read-only state. Note that with this option set,
  *		there are no repairs done.
  */

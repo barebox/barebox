@@ -32,6 +32,11 @@ void *memalign(size_t alignment, size_t bytes)
 {
 	void *mem = sbrk(bytes + alignment);
 
+	if (!mem) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
 	return PTR_ALIGN(mem, alignment);
 }
 

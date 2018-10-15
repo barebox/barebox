@@ -28,6 +28,7 @@ extern tlsf_pool tlsf_mem_pool;
 
 void *malloc(size_t bytes)
 {
+	void *mem;
 	/*
 	 * tlsf_malloc returns NULL for zero bytes, we instead want
 	 * to have a valid pointer.
@@ -35,7 +36,11 @@ void *malloc(size_t bytes)
 	if (!bytes)
 		bytes = 1;
 
-	return tlsf_malloc(tlsf_mem_pool, bytes);
+	mem = tlsf_malloc(tlsf_mem_pool, bytes);
+	if (!mem)
+		errno = ENOMEM;
+
+	return mem;
 }
 EXPORT_SYMBOL(malloc);
 
@@ -47,13 +52,21 @@ EXPORT_SYMBOL(free);
 
 void *realloc(void *oldmem, size_t bytes)
 {
-	return tlsf_realloc(tlsf_mem_pool, oldmem, bytes);
+	void *mem = tlsf_realloc(tlsf_mem_pool, oldmem, bytes);
+	if (!mem)
+		errno = ENOMEM;
+
+	return mem;
 }
 EXPORT_SYMBOL(realloc);
 
 void *memalign(size_t alignment, size_t bytes)
 {
-	return tlsf_memalign(tlsf_mem_pool, alignment, bytes);
+	void *mem = tlsf_memalign(tlsf_mem_pool, alignment, bytes);
+	if (!mem)
+		errno = ENOMEM;
+
+	return mem;
 }
 EXPORT_SYMBOL(memalign);
 

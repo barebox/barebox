@@ -185,7 +185,11 @@ again:
 		goto again;
 	}
 
-	buf = xzalloc(read_size + 1);
+	buf = calloc(read_size + 1, 1);
+	if (!buf) {
+		ret = -ENOMEM;
+		goto err_out;
+	}
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {

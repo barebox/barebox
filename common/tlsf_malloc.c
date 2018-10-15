@@ -39,22 +39,6 @@ void *malloc(size_t bytes)
 }
 EXPORT_SYMBOL(malloc);
 
-/*
- * calloc calls malloc, then zeroes out the allocated chunk.
- */
-void *calloc(size_t n, size_t elem_size)
-{
-	void *mem;
-	size_t sz;
-
-	sz = n * elem_size;
-	mem = malloc(sz);
-	memset(mem, 0, sz);
-
-	return mem;
-}
-EXPORT_SYMBOL(calloc);
-
 void free(void *mem)
 {
 	tlsf_free(tlsf_mem_pool, mem);

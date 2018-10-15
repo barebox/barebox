@@ -615,6 +615,9 @@ int dhcp(struct eth_device *edev, const struct dhcp_req_param *param)
 
 	dhcp_result_free(res);
 
+	if (!ret)
+		edev->ifup = true;
+
 	return ret;
 }
 

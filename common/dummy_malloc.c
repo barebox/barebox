@@ -30,11 +30,9 @@ void malloc_stats(void)
 
 void *memalign(size_t alignment, size_t bytes)
 {
-	unsigned long mem = (unsigned long)sbrk(bytes + alignment);
+	void *mem = sbrk(bytes + alignment);
 
-	mem = (mem + alignment) & ~(alignment - 1);
-
-	return (void *)mem;
+	return PTR_ALIGN(mem, alignment);
 }
 
 void *malloc(size_t size)

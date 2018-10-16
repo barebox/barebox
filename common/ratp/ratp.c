@@ -72,7 +72,7 @@ int register_ratp_command(struct ratp_command *cmd)
 }
 EXPORT_SYMBOL(register_ratp_command);
 
-struct ratp_command *find_ratp_request(uint16_t request_id)
+static struct ratp_command *find_ratp_request(uint16_t request_id)
 {
 	struct ratp_command *cmdtp;
 

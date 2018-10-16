@@ -23,7 +23,6 @@
 #include <linux/ioport.h>
 #include <of.h>
 
-#define MAX_DRIVER_NAME		32
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
 
 #include <param.h>
@@ -44,13 +43,13 @@ struct device_d {
 	 * should not be modified directly and dev_set_name() should
 	 * be used instead.
 	 */
-	char name[MAX_DRIVER_NAME];
+	char *name;
 
 	/*! This member is used to store device's unique name as
 	 *  obtained by calling dev_id(). Internal field, do not
 	 *  access it directly.
 	  */
-	char unique_name[MAX_DRIVER_NAME + 16];
+	char *unique_name;
 	/*! The id is used to uniquely identify a device in the system. The id
 	 * will show up under /dev/ as the device's name. Usually this is
 	 * something like eth0 or nor0. */

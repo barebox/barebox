@@ -184,11 +184,9 @@ int register_device(struct device_d *new_device)
 	}
 
 	if (new_device->id != DEVICE_ID_SINGLE)
-		snprintf(new_device->unique_name,
-			 sizeof(new_device->unique_name),
-			 FORMAT_DRIVER_NAME_ID,
-			 new_device->name,
-			 new_device->id);
+		new_device->unique_name = basprintf(FORMAT_DRIVER_NAME_ID,
+						    new_device->name,
+						    new_device->id);
 
 	debug ("register_device: %s\n", dev_name(new_device));
 
@@ -478,15 +476,28 @@ EXPORT_SYMBOL(dummy_probe);
  * @dev: device
  * @fmt: format string for the device's name
  *
+ * NOTE: This function expects dev->name to be free()-able, so extra
+ * precautions needs to be taken when mixing its usage with manual
+ * assignement of device_d.name.
  */
 int dev_set_name(struct device_d *dev, const char *fmt, ...)
 {
 	va_list vargs;
 	int err;
+	/*
+	 * Save old pointer in case we are overriding already set name
+	 */
+	char *oldname = dev->name;
 
 	va_start(vargs, fmt);
-	err = vsnprintf(dev->name, sizeof(dev->name), fmt, vargs);
+	err = vasprintf(&dev->name, fmt, vargs);
 	va_end(vargs);
+
+	/*
+	 * Free old pointer, we do this after vasprintf call in case
+	 * old device name was in one of vargs
+	 */
+	free(oldname);
 
 	WARN_ON(err < 0);
 

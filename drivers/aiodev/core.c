@@ -106,8 +106,6 @@ int aiodevice_register(struct aiodevice *aiodev)
 		aiodev->dev.id = DEVICE_ID_SINGLE;
 
 		aiodev->name = of_alias_get(aiodev->hwdev->device_node);
-		if (!aiodev->name)
-			aiodev->name = aiodev->hwdev->device_node->name;
 	}
 
 	if (!aiodev->name) {

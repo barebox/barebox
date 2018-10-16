@@ -45,6 +45,11 @@ struct mv88e6xxx_chip {
 	int reset;
 };
 
+struct ethtool_eeprom {
+	__u32	offset;
+	__u32	len;
+};
+
 struct mv88e6xxx_ops {
 	int (*phy_read)(struct mv88e6xxx_chip *chip,
 			struct mii_bus *bus,
@@ -52,6 +57,11 @@ struct mv88e6xxx_ops {
 	int (*phy_write)(struct mv88e6xxx_chip *chip,
 			 struct mii_bus *bus,
 			 int addr, int reg, u16 val);
+
+	int (*get_eeprom)(struct mv88e6xxx_chip *chip,
+			  struct ethtool_eeprom *eeprom, u8 *data);
+	int (*set_eeprom)(struct mv88e6xxx_chip *chip,
+			  struct ethtool_eeprom *eeprom, u8 *data);
 };
 
 int mv88e6xxx_write(struct mv88e6xxx_chip *chip, int addr, int reg, u16 val);

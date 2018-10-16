@@ -4,6 +4,7 @@
 #include <linux/ethtool.h>
 #include <linux/phy.h>
 #include <linux/bitfield.h>
+#include <linux/nvmem-provider.h>
 
 #include <gpio.h>
 #include <of_device.h>
@@ -79,6 +80,8 @@ static const struct mv88e6xxx_ops mv88e6131_ops = {
 
 static const struct mv88e6xxx_ops mv88e6141_ops = {
 	/* MV88E6XXX_FAMILY_6341 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
@@ -104,6 +107,8 @@ static const struct mv88e6xxx_ops mv88e6171_ops = {
 
 static const struct mv88e6xxx_ops mv88e6172_ops = {
 	/* MV88E6XXX_FAMILY_6352 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
@@ -116,6 +121,8 @@ static const struct mv88e6xxx_ops mv88e6175_ops = {
 
 static const struct mv88e6xxx_ops mv88e6176_ops = {
 	/* MV88E6XXX_FAMILY_6352 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
@@ -129,48 +136,64 @@ static const struct mv88e6xxx_ops mv88e6185_ops = {
 
 static const struct mv88e6xxx_ops mv88e6190_ops = {
 	/* MV88E6XXX_FAMILY_6390 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6190x_ops = {
 	/* MV88E6XXX_FAMILY_6390 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6191_ops = {
 	/* MV88E6XXX_FAMILY_6390 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6240_ops = {
 	/* MV88E6XXX_FAMILY_6352 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6290_ops = {
 	/* MV88E6XXX_FAMILY_6390 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6320_ops = {
 	/* MV88E6XXX_FAMILY_6320 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6321_ops = {
 	/* MV88E6XXX_FAMILY_6320 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6341_ops = {
 	/* MV88E6XXX_FAMILY_6341 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
@@ -191,16 +214,22 @@ static const struct mv88e6xxx_ops mv88e6352_ops = {
 	/* MV88E6XXX_FAMILY_6352 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 };
 
 static const struct mv88e6xxx_ops mv88e6390_ops = {
 	/* MV88E6XXX_FAMILY_6390 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
 
 static const struct mv88e6xxx_ops mv88e6390x_ops = {
 	/* MV88E6XXX_FAMILY_6390 */
+	.get_eeprom = mv88e6xxx_g2_get_eeprom8,
+	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 };
@@ -621,12 +650,48 @@ static int mv88e6xxx_switch_reset(struct mv88e6xxx_chip *chip)
 	return 0;
 }
 
+static int mv88e6xxx_eeprom_read(struct device_d *dev, const int offset,
+				 void *val, int bytes)
+{
+	struct mv88e6xxx_chip *chip = dev->parent->priv;
+	struct ethtool_eeprom eeprom = {
+		.offset = offset,
+		.len = bytes,
+	};
+
+	if (!chip->info->ops->get_eeprom)
+		return -ENOTSUPP;
+
+	return chip->info->ops->get_eeprom(chip, &eeprom, val);
+}
+
+static int mv88e6xxx_eeprom_write(struct device_d *dev, const int offset,
+				  const void *val, int bytes)
+{
+	struct mv88e6xxx_chip *chip = dev->parent->priv;
+	struct ethtool_eeprom eeprom = {
+		.offset = offset,
+		.len = bytes,
+	};
+
+	if (!chip->info->ops->set_eeprom)
+		return -ENOTSUPP;
+
+	return chip->info->ops->set_eeprom(chip, &eeprom, (void *)val);
+}
+
+static const struct nvmem_bus mv88e6xxx_eeprom_nvmem_bus = {
+	.write = mv88e6xxx_eeprom_write,
+	.read  = mv88e6xxx_eeprom_read,
+};
+
 static int mv88e6xxx_probe(struct device_d *dev)
 {
 	struct device_node *np = dev->device_node;
 	struct device_node *mdio_node;
 	struct mv88e6xxx_chip *chip;
 	enum of_gpio_flags of_flags;
+	u32 eeprom_len = 0;
 	int err;
 	u32 reg;
 
@@ -643,7 +708,10 @@ static int mv88e6xxx_probe(struct device_d *dev)
 
 	chip = xzalloc(sizeof(struct mv88e6xxx_chip));
 	chip->dev = dev;
+	dev->priv = chip;
 	chip->info = of_device_get_match_data(dev);
+
+	of_property_read_u32(np, "eeprom-length", &eeprom_len);
 
 	chip->parent_miibus = of_mdio_find_bus(np->parent);
 	if (!chip->parent_miibus)
@@ -676,6 +744,22 @@ static int mv88e6xxx_probe(struct device_d *dev)
 	err = mv88e6xxx_switch_reset(chip);
 	if (err)
 		return err;
+
+	if (eeprom_len) {
+		struct nvmem_config config = {
+			.name = basprintf("%s-eeprom", dev_name(dev)),
+			.dev = dev,
+			.word_size = 1,
+			.stride = 1,
+			.size = eeprom_len,
+			.read_only = false,
+			.bus = &mv88e6xxx_eeprom_nvmem_bus,
+		};
+
+		if (IS_ERR(nvmem_register(&config)))
+			dev_err(dev, "Failed to register EEPROM\n");
+	}
+
 	/*
 	 * In single-chip address mode addresses 0x10 - 0x1f are
 	 * reserved to access various switch registers and do not

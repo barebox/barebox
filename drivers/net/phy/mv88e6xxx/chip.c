@@ -63,12 +63,20 @@ static const struct mv88e6xxx_ops mv88e6097_ops = {
 	/* MV88E6XXX_FAMILY_6097 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6123_ops = {
 	/* MV88E6XXX_FAMILY_6165 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6131_ops = {
@@ -84,12 +92,20 @@ static const struct mv88e6xxx_ops mv88e6141_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6161_ops = {
 	/* MV88E6XXX_FAMILY_6165 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6165_ops = {
@@ -103,6 +119,11 @@ static const struct mv88e6xxx_ops mv88e6171_ops = {
 	/* MV88E6XXX_FAMILY_6351 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6172_ops = {
@@ -111,12 +132,22 @@ static const struct mv88e6xxx_ops mv88e6172_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6352_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6175_ops = {
 	/* MV88E6XXX_FAMILY_6351 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6176_ops = {
@@ -125,6 +156,11 @@ static const struct mv88e6xxx_ops mv88e6176_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6352_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6185_ops = {
@@ -140,6 +176,11 @@ static const struct mv88e6xxx_ops mv88e6190_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6390_port_set_rgmii_delay,
+	.port_set_speed = mv88e6390_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6190x_ops = {
@@ -148,6 +189,11 @@ static const struct mv88e6xxx_ops mv88e6190x_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6390_port_set_rgmii_delay,
+	.port_set_speed = mv88e6390x_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6191_ops = {
@@ -156,6 +202,11 @@ static const struct mv88e6xxx_ops mv88e6191_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6390_port_set_rgmii_delay,
+	.port_set_speed = mv88e6390_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6240_ops = {
@@ -164,6 +215,11 @@ static const struct mv88e6xxx_ops mv88e6240_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6352_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6290_ops = {
@@ -172,6 +228,11 @@ static const struct mv88e6xxx_ops mv88e6290_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6390_port_set_rgmii_delay,
+	.port_set_speed = mv88e6390_port_set_speed,
+	.port_set_cmode = mv88e6390x_port_set_cmode,
 };
 
 static const struct mv88e6xxx_ops mv88e6320_ops = {
@@ -180,6 +241,10 @@ static const struct mv88e6xxx_ops mv88e6320_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6321_ops = {
@@ -188,6 +253,10 @@ static const struct mv88e6xxx_ops mv88e6321_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6341_ops = {
@@ -196,18 +265,33 @@ static const struct mv88e6xxx_ops mv88e6341_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6390_port_set_rgmii_delay,
+	.port_set_speed = mv88e6390_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6350_ops = {
 	/* MV88E6XXX_FAMILY_6351 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6351_ops = {
 	/* MV88E6XXX_FAMILY_6351 */
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6185_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6352_ops = {
@@ -216,6 +300,11 @@ static const struct mv88e6xxx_ops mv88e6352_ops = {
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
 	.get_eeprom = mv88e6xxx_g2_get_eeprom16,
 	.set_eeprom = mv88e6xxx_g2_set_eeprom16,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6352_port_set_rgmii_delay,
+	.port_set_speed = mv88e6352_port_set_speed,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6390_ops = {
@@ -224,6 +313,12 @@ static const struct mv88e6xxx_ops mv88e6390_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6390_port_set_rgmii_delay,
+	.port_set_speed = mv88e6390_port_set_speed,
+	.port_set_cmode = mv88e6390x_port_set_cmode,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_ops mv88e6390x_ops = {
@@ -232,6 +327,12 @@ static const struct mv88e6xxx_ops mv88e6390x_ops = {
 	.set_eeprom = mv88e6xxx_g2_set_eeprom8,
 	.phy_read = mv88e6xxx_g2_smi_phy_read,
 	.phy_write = mv88e6xxx_g2_smi_phy_write,
+	.port_set_link = mv88e6xxx_port_set_link,
+	.port_set_duplex = mv88e6xxx_port_set_duplex,
+	.port_set_rgmii_delay = mv88e6390_port_set_rgmii_delay,
+	.port_set_speed = mv88e6390x_port_set_speed,
+	.port_set_cmode = mv88e6390x_port_set_cmode,
+	.port_link_state = mv88e6352_port_link_state,
 };
 
 static const struct mv88e6xxx_info mv88e6xxx_table[] = {
@@ -761,18 +862,19 @@ static int mv88e6xxx_probe(struct device_d *dev)
 	}
 
 	/*
-	 * In single-chip address mode addresses 0x10 - 0x1f are
-	 * reserved to access various switch registers and do not
-	 * correspond to any PHYs, so we mask them to pervent from
-	 * being exposed as phy devices
+	 * In single-chip address mode addresses 0x10 -
+	 * port_base_address are reserved to access various switch
+	 * registers and do not correspond to any PHYs, so we mask
+	 * them to pervent from being exposed.
 	 */
-	chip->parent_miibus->phy_mask |= GENMASK(0x1f, 0x10);
+	chip->parent_miibus->phy_mask |= GENMASK(0x1f,
+						 chip->info->port_base_addr);
 	/*
-	 * Address 0x0f on internal bus is dedicated to SERDES
-	 * registers and won't be very useful against standard PHY
-	 * driver
+	 * Mask all of the devices on child MDIO bus. Call to
+	 * mv88e6xxx_port_probe() will unmask port that can be probed
+	 * using standard methods
 	 */
-	chip->miibus.phy_mask |= GENMASK(0x1f, 0x0f);
+	chip->miibus.phy_mask |= GENMASK(0x1f, 0x00);
 
 	chip->miibus.read = mv88e6xxx_mdio_read;
 	chip->miibus.write = mv88e6xxx_mdio_write;
@@ -783,6 +885,10 @@ static int mv88e6xxx_probe(struct device_d *dev)
 	mdio_node = of_get_child_by_name(np, "mdio");
 	if (mdio_node)
 		chip->miibus.dev.device_node = mdio_node;
+
+	err = mv88e6xxx_port_probe(chip);
+	if (err)
+		return err;
 
 	return mdiobus_register(&chip->miibus);
 }

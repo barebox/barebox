@@ -26,6 +26,8 @@ enum mv88e6xxx_family {
 
 struct mv88e6xxx_ops;
 
+#define DSA_MAX_PORTS		12
+
 struct mv88e6xxx_info {
 	enum mv88e6xxx_family family;
 	u16 prod_num;
@@ -37,17 +39,34 @@ struct mv88e6xxx_info {
 	const struct mv88e6xxx_ops *ops;
 };
 
+struct mv88e6xxx_port {
+	u8 cmode;
+};
+
 struct mv88e6xxx_chip {
 	const struct mv88e6xxx_info *info;
 	struct mii_bus *parent_miibus;
 	struct mii_bus miibus;
 	struct device_d *dev;
 	int reset;
+
+	/* Array of port structures. */
+	struct mv88e6xxx_port ports[DSA_MAX_PORTS];
 };
 
 struct ethtool_eeprom {
 	__u32	offset;
 	__u32	len;
+};
+
+struct phylink_link_state {
+	phy_interface_t interface;
+	int speed;
+	int duplex;
+	int pause;
+	unsigned int link:1;
+	unsigned int an_enabled:1;
+	unsigned int an_complete:1;
 };
 
 struct mv88e6xxx_ops {
@@ -62,6 +81,58 @@ struct mv88e6xxx_ops {
 			  struct ethtool_eeprom *eeprom, u8 *data);
 	int (*set_eeprom)(struct mv88e6xxx_chip *chip,
 			  struct ethtool_eeprom *eeprom, u8 *data);
+
+	/* RGMII Receive/Transmit Timing Control
+	 * Add delay on PHY_INTERFACE_MODE_RGMII_*ID, no delay otherwise.
+	 */
+	int (*port_set_rgmii_delay)(struct mv88e6xxx_chip *chip, int port,
+				    phy_interface_t mode);
+
+#define LINK_FORCED_DOWN	0
+#define LINK_FORCED_UP		1
+#define LINK_UNFORCED		-2
+
+	/* Port's MAC link state
+	 * Use LINK_FORCED_UP or LINK_FORCED_DOWN to force link up or down,
+	 * or LINK_UNFORCED for normal link detection.
+	 */
+	int (*port_set_link)(struct mv88e6xxx_chip *chip, int port, int link);
+
+#define DUPLEX_UNFORCED		-2
+
+	/* Port's MAC duplex mode
+	 *
+	 * Use DUPLEX_HALF or DUPLEX_FULL to force half or full duplex,
+	 * or DUPLEX_UNFORCED for normal duplex detection.
+	 */
+	int (*port_set_duplex)(struct mv88e6xxx_chip *chip, int port, int dup);
+
+#define PAUSE_ON		1
+#define PAUSE_OFF		0
+
+	/* Enable/disable sending Pause */
+	int (*port_set_pause)(struct mv88e6xxx_chip *chip, int port,
+			      int pause);
+
+#define SPEED_MAX		INT_MAX
+#define SPEED_UNFORCED		-2
+
+	/* Port's MAC speed (in Mbps)
+	 *
+	 * Depending on the chip, 10, 100, 200, 1000, 2500, 10000 are valid.
+	 * Use SPEED_UNFORCED for normal detection, SPEED_MAX for max value.
+	 */
+	int (*port_set_speed)(struct mv88e6xxx_chip *chip, int port, int speed);
+
+	/* CMODE control what PHY mode the MAC will use, eg. SGMII, RGMII, etc.
+	 * Some chips allow this to be configured on specific ports.
+	 */
+	int (*port_set_cmode)(struct mv88e6xxx_chip *chip, int port,
+			      phy_interface_t mode);
+
+	/* Return the port link state, as required by phylink */
+	int (*port_link_state)(struct mv88e6xxx_chip *chip, int port,
+			       struct phylink_link_state *state);
 };
 
 int mv88e6xxx_write(struct mv88e6xxx_chip *chip, int addr, int reg, u16 val);

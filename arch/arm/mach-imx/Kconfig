@@ -184,6 +184,7 @@ config ARCH_VF610
 	select COMMON_CLK_OF_PROVIDER
 	select NVMEM
 	select IMX_OCOTP	# Needed for clock adjustement
+	select CLOCKSOURCE_ARM_GLOBAL_TIMER
 
 config IMX_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"

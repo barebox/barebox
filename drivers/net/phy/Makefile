@@ -7,6 +7,7 @@ obj-$(CONFIG_MARVELL_PHY)	+= marvell.o
 obj-$(CONFIG_MICREL_PHY)	+= micrel.o
 obj-$(CONFIG_NATIONAL_PHY)	+= national.o
 obj-$(CONFIG_SMSC_PHY)		+= smsc.o
+obj-$(CONFIG_NET_DSA_MV88E6XXX)	+= mv88e6xxx/
 
 obj-$(CONFIG_MDIO_MVEBU)	+= mdio-mvebu.o
 obj-$(CONFIG_MDIO_BITBANG)	+= mdio-bitbang.o

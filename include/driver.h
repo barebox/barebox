@@ -45,6 +45,12 @@ struct device_d {
 	 * be used instead.
 	 */
 	char name[MAX_DRIVER_NAME];
+
+	/*! This member is used to store device's unique name as
+	 *  obtained by calling dev_id(). Internal field, do not
+	 *  access it directly.
+	  */
+	char unique_name[MAX_DRIVER_NAME + 16];
 	/*! The id is used to uniquely identify a device in the system. The id
 	 * will show up under /dev/ as the device's name. Usually this is
 	 * something like eth0 or nor0. */
@@ -173,7 +179,10 @@ int get_free_deviceid(const char *name_template);
 
 char *deviceid_from_spec_str(const char *str, char **endp);
 
-extern const char *dev_id(const struct device_d *dev);
+static inline const char *dev_id(const struct device_d *dev)
+{
+	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
+}
 
 static inline const char *dev_name(const struct device_d *dev)
 {

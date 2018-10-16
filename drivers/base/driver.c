@@ -183,6 +183,13 @@ int register_device(struct device_d *new_device)
 		}
 	}
 
+	if (new_device->id != DEVICE_ID_SINGLE)
+		snprintf(new_device->unique_name,
+			 sizeof(new_device->unique_name),
+			 FORMAT_DRIVER_NAME_ID,
+			 new_device->name,
+			 new_device->id);
+
 	debug ("register_device: %s\n", dev_name(new_device));
 
 	list_add_tail(&new_device->list, &device_list);
@@ -465,18 +472,6 @@ int dummy_probe(struct device_d *dev)
 	return 0;
 }
 EXPORT_SYMBOL(dummy_probe);
-
-const char *dev_id(const struct device_d *dev)
-{
-	static char buf[MAX_DRIVER_NAME + 16];
-
-	if (dev->id != DEVICE_ID_SINGLE)
-		snprintf(buf, sizeof(buf), FORMAT_DRIVER_NAME_ID, dev->name, dev->id);
-	else
-		snprintf(buf, sizeof(buf), "%s", dev->name);
-
-	return buf;
-}
 
 /**
  * dev_set_name - set a device name

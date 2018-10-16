@@ -335,16 +335,19 @@ EXPORT_SYMBOL(of_mdio_find_bus);
  * @dev: target PHY device
  * @drv: given PHY driver
  *
- * Description: Given a PHY device, and a PHY driver, return 1 if
- *   the driver supports the device.  Otherwise, return 0.
+ * Description: Given a PHY device, and a PHY driver, return 0 if
+ *   the driver supports the device.  Otherwise, return 1.
  */
 static int mdio_bus_match(struct device_d *dev, struct driver_d *drv)
 {
 	struct phy_device *phydev = to_phy_device(dev);
 	struct phy_driver *phydrv = to_phy_driver(drv);
 
-	return ((phydrv->phy_id & phydrv->phy_id_mask) !=
-		(phydev->phy_id & phydrv->phy_id_mask));
+	if ((phydrv->phy_id & phydrv->phy_id_mask) ==
+	    (phydev->phy_id & phydrv->phy_id_mask))
+		return 0;
+
+	return 1;
 }
 
 static ssize_t phydev_read(struct cdev *cdev, void *_buf, size_t count, loff_t offset, ulong flags)

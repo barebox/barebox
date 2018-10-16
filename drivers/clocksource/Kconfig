@@ -74,3 +74,6 @@ config CLOCKSOURCE_ARMV8_TIMER
 config CLOCKSOURCE_ARM_GLOBAL_TIMER
 	bool
 	depends on ARM && CPU_V7
+config CLOCKSOURCE_IMX_GPT
+	def_bool y
+	depends on ARCH_IMX

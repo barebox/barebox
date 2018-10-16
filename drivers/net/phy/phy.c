@@ -234,6 +234,10 @@ struct phy_device *get_phy_device(struct mii_bus *bus, int addr)
 	u32 phy_id = 0;
 	int r;
 
+	/* skip masked out PHY addresses */
+	if (bus->phy_mask & BIT(addr))
+		return ERR_PTR(-ENODEV);
+
 	r = get_phy_id(bus, addr, &phy_id);
 	if (r)
 		return ERR_PTR(r);
@@ -440,9 +444,6 @@ int phy_device_connect(struct eth_device *edev, struct mii_bus *bus, int addr,
 	}
 
 	for (i = 0; i < PHY_MAX_ADDR && !edev->phydev; i++) {
-		/* skip masked out PHY addresses */
-		if (bus->phy_mask & (1 << i))
-			continue;
 
 		phy = mdiobus_scan(bus, i);
 		if (IS_ERR(phy))

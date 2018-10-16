@@ -314,10 +314,10 @@ int console_register(struct console_device *newcdev)
 
 	if (newcdev->devname) {
 		dev->id = newcdev->devid;
-		strcpy(dev->name, newcdev->devname);
+		dev_set_name(dev, newcdev->devname);
 	} else {
 		dev->id = DEVICE_ID_DYNAMIC;
-		strcpy(dev->name, "cs");
+		dev_set_name(dev, "cs");
 	}
 
 	if (newcdev->dev)

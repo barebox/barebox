@@ -200,7 +200,7 @@ struct amba_device *amba_device_alloc(const char *name, int id, resource_size_t 
 
 	dev = xzalloc(sizeof(*dev));
 
-	strcpy(dev->dev.name, name);
+	dev_set_name(&dev->dev, name);
 	dev->dev.id = id;
 	dev->res.start = base;
 	dev->res.end = base + size - 1;

@@ -113,7 +113,7 @@ int aiodevice_register(struct aiodevice *aiodev)
 		aiodev->dev.id = DEVICE_ID_DYNAMIC;
 	}
 
-	strcpy(aiodev->dev.name, aiodev->name);
+	dev_set_name(&aiodev->dev, aiodev->name);
 
 	aiodev->dev.parent = aiodev->hwdev;
 

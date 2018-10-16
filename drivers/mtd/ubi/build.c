@@ -157,7 +157,7 @@ static int uif_init(struct ubi_device *ubi, int *ref)
 	*ref = 0;
 	sprintf(ubi->ubi_name, UBI_NAME_STR "%d", ubi->ubi_num);
 
-	sprintf(ubi->dev.name, "%s.ubi", ubi->mtd->cdev.name);
+	dev_set_name(&ubi->dev, "%s.ubi", ubi->mtd->cdev.name);
 	ubi->dev.id = DEVICE_ID_SINGLE;
 	ubi->dev.parent = &ubi->mtd->class_dev;
 

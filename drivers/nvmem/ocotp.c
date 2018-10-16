@@ -531,7 +531,7 @@ static int imx_ocotp_probe(struct device_d *dev)
 	if (IS_ERR(priv->clk))
 		return PTR_ERR(priv->clk);
 
-	strcpy(priv->dev.name, "ocotp");
+	dev_set_name(&priv->dev, "ocotp");
 	priv->dev.parent = dev;
 	register_device(&priv->dev);
 

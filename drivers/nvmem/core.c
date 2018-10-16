@@ -199,7 +199,7 @@ struct nvmem_device *nvmem_register(const struct nvmem_config *config)
 	nvmem->read_only = of_property_read_bool(np, "read-only") |
 			   config->read_only;
 
-	safe_strncpy(nvmem->dev.name, config->name, MAX_DRIVER_NAME);
+	dev_set_name(&nvmem->dev, config->name);
 	nvmem->dev.id = DEVICE_ID_DYNAMIC;
 
 	dev_dbg(&nvmem->dev, "Registering nvmem device %s\n", config->name);

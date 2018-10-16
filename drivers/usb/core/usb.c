@@ -431,9 +431,10 @@ int usb_new_device(struct usb_device *dev)
 			   dev->serial, sizeof(dev->serial));
 
 	if (parent) {
-		sprintf(dev->dev.name, "%s-%d", parent->dev.name, dev->portnr - 1);
+		dev_set_name(&dev->dev, "%s-%d", parent->dev.name,
+			     dev->portnr - 1);
 	} else {
-		sprintf(dev->dev.name, "usb%d", dev->host->busnum);
+		dev_set_name(&dev->dev, "usb%d", dev->host->busnum);
 	}
 
 	dev->dev.id = DEVICE_ID_SINGLE;

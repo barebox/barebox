@@ -197,7 +197,7 @@ static int mxs_ocotp_probe(struct device_d *dev)
 	priv->cdev.size = cpu_is_mx23() ? 128 : 160;
 	priv->cdev.name = DRIVERNAME;
 
-	strcpy(priv->dev.name, "ocotp");
+	dev_set_name(&priv->dev, "ocotp");
 	priv->dev.parent = dev;
 	err = register_device(&priv->dev);
 	if (err)

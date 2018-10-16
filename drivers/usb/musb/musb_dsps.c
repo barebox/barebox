@@ -333,7 +333,7 @@ static int dsps_register_otg_device(struct dsps_glue *glue)
 {
 	int ret;
 
-	strcpy(glue->otg_dev.name, "otg");
+	dev_set_name(&glue->otg_dev, "otg");
 	glue->otg_dev.id = DEVICE_ID_DYNAMIC,
 	glue->otg_dev.parent = glue->dev;
 

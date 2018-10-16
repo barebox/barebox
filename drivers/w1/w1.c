@@ -423,7 +423,7 @@ static int w1_device_register(struct w1_bus *bus, struct w1_device *dev)
 	char str[18];
 	int ret;
 
-	sprintf(dev->dev.name, "w1-%x-", dev->fid);
+	dev_set_name(&dev->dev, "w1-%x-", dev->fid);
 	dev->dev.id = DEVICE_ID_DYNAMIC;
 	dev->dev.bus = &w1_bustype;
 	dev->bus = bus;
@@ -619,7 +619,7 @@ int w1_bus_register(struct w1_bus *bus)
 
 	list_add_tail(&bus->list, &w1_buses);
 
-	strcpy(bus->dev.name, "w1_bus");
+	dev_set_name(&bus->dev, "w1_bus");
 	bus->dev.id = DEVICE_ID_DYNAMIC;
 	bus->dev.parent = bus->parent;
 

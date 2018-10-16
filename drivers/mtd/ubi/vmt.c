@@ -145,7 +145,7 @@ int ubi_create_volume(struct ubi_device *ubi, struct ubi_mkvol_req *req)
 			vol->last_eb_bytes = vol->usable_leb_size;
 	}
 
-	sprintf(vol->dev.name, "%s.%s", dev_name(&ubi->dev), vol->name);
+	dev_set_name(&vol->dev, "%s.%s", dev_name(&ubi->dev), vol->name);
 	vol->dev.id = DEVICE_ID_SINGLE;
 	vol->dev.parent = &ubi->dev;
 	err = register_device(&vol->dev);
@@ -443,7 +443,7 @@ int ubi_add_volume(struct ubi_device *ubi, struct ubi_volume *vol)
 
 	dbg_gen("add volume");
 
-	sprintf(vol->dev.name, "%s.%s", dev_name(&ubi->dev), vol->name);
+	dev_set_name(&vol->dev, "%s.%s", dev_name(&ubi->dev), vol->name);
 	vol->dev.id = DEVICE_ID_SINGLE;
 	vol->dev.parent = &ubi->dev;
 	err = register_device(&vol->dev);

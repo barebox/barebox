@@ -38,9 +38,12 @@ struct platform_device_id {
 
 /** @brief Describes a particular device present in the system */
 struct device_d {
-	/*! This member (and 'type' described below) is used to match with a
-	 * driver. This is a descriptive name and could be MPC5XXX_ether or
-	 * imx_serial. */
+	/*! This member (and 'type' described below) is used to match
+	 * with a driver. This is a descriptive name and could be
+	 * MPC5XXX_ether or imx_serial. Unless absolutely necessary,
+	 * should not be modified directly and dev_set_name() should
+	 * be used instead.
+	 */
 	char name[MAX_DRIVER_NAME];
 	/*! The id is used to uniquely identify a device in the system. The id
 	 * will show up under /dev/ as the device's name. Usually this is
@@ -176,6 +179,8 @@ static inline const char *dev_name(const struct device_d *dev)
 {
 	return dev_id(dev);
 }
+
+int dev_set_name(struct device_d *dev, const char *fmt, ...);
 
 /*
  * get resource 'num' for a device

@@ -916,7 +916,7 @@ static int cpsw_slave_setup(struct cpsw_slave *slave, int slave_num,
 	if (ret)
 		goto err_out;
 
-	sprintf(dev->name, "cpsw-slave");
+	dev_set_name(dev, "cpsw-slave");
 	dev->id = slave->slave_num;
 	dev->parent = priv->dev;
 	ret = register_device(dev);

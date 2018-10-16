@@ -179,7 +179,7 @@ static struct state *state_new(const char *name)
 	int ret;
 
 	state = xzalloc(sizeof(*state));
-	safe_strncpy(state->dev.name, name, MAX_DRIVER_NAME);
+	dev_set_name(&state->dev, name);
 	state->name = state->dev.name;
 	state->dev.id = DEVICE_ID_SINGLE;
 	INIT_LIST_HEAD(&state->variables);

@@ -68,12 +68,12 @@ static void of_device_make_bus_id(struct device_d *dev)
 	reg = of_get_property(np, "dcr-reg", NULL);
 	if (reg) {
 #ifdef CONFIG_PPC_DCR_NATIVE
-		snprintf(dev->name, MAX_DRIVER_NAME, "d%x.%s", *reg, name);
+		dev_set_name(dev, "d%x.%s", *reg, name);
 #else /* CONFIG_PPC_DCR_NATIVE */
 		u64 addr = of_translate_dcr_address(np, *reg, NULL);
 		if (addr != OF_BAD_ADDR) {
-			snprintf(dev->name, MAX_DRIVER_NAME, "D%llx.%s",
-				(unsigned long long)addr, name);
+			dev_set_name(dev, "D%llx.%s",
+				     (unsigned long long)addr, name);
 			free(name);
 			return;
 		}
@@ -96,8 +96,8 @@ static void of_device_make_bus_id(struct device_d *dev)
 				addr = OF_BAD_ADDR;
 		}
 		if (addr != OF_BAD_ADDR) {
-			snprintf(dev->name, MAX_DRIVER_NAME, "%llx.%s",
-				(unsigned long long)addr, name);
+			dev_set_name(dev, "%llx.%s",
+				     (unsigned long long)addr, name);
 			free(name);
 			return;
 		}
@@ -106,7 +106,7 @@ static void of_device_make_bus_id(struct device_d *dev)
 	/*
 	 * No BusID, use the node name and add a globally incremented counter
 	 */
-	snprintf(dev->name, MAX_DRIVER_NAME, "%s.%d", name, bus_no_reg_magic++);
+	dev_set_name(dev, "%s.%d", name, bus_no_reg_magic++);
 	free(name);
 }
 

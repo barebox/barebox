@@ -222,7 +222,7 @@ int mdiobus_register(struct mii_bus *bus)
 
 	bus->dev.priv = bus;
 	bus->dev.id = DEVICE_ID_DYNAMIC;
-	strcpy(bus->dev.name, "miibus");
+	dev_set_name(&bus->dev, "miibus");
 	bus->dev.parent = bus->parent;
 	bus->dev.detect = mdiobus_detect;
 

@@ -1802,10 +1802,10 @@ int mci_register(struct mci_host *host)
 	mci->host = host;
 
 	if (host->devname) {
-		strcpy(mci->dev.name, host->devname);
+		dev_set_name(&mci->dev, host->devname);
 		mci->dev.id = DEVICE_ID_SINGLE;
 	} else {
-		strcpy(mci->dev.name, "mci");
+		dev_set_name(&mci->dev, "mci");
 		mci->dev.id = DEVICE_ID_DYNAMIC;
 	}
 

@@ -1051,7 +1051,7 @@ static int cqspi_setup_flash(struct device_d *dev,
 	if (np) {
 		nor->dev = xzalloc(sizeof(*nor->dev));
 
-		strcpy(nor->dev->name, np->name);
+		dev_set_name(nor->dev, np->name);
 
 		nor->dev->device_node = np;
 		nor->dev->id = DEVICE_ID_SINGLE;

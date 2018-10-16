@@ -71,7 +71,7 @@ int backlight_register(struct backlight_device *bl)
 {
 	int ret;
 
-	sprintf(bl->dev.name, "backlight");
+	dev_set_name(&bl->dev, "backlight");
 	bl->dev.id = DEVICE_ID_DYNAMIC;
 
 	ret = register_device(&bl->dev);

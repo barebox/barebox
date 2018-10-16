@@ -478,6 +478,27 @@ const char *dev_id(const struct device_d *dev)
 	return buf;
 }
 
+/**
+ * dev_set_name - set a device name
+ * @dev: device
+ * @fmt: format string for the device's name
+ *
+ */
+int dev_set_name(struct device_d *dev, const char *fmt, ...)
+{
+	va_list vargs;
+	int err;
+
+	va_start(vargs, fmt);
+	err = vsnprintf(dev->name, sizeof(dev->name), fmt, vargs);
+	va_end(vargs);
+
+	WARN_ON(err < 0);
+
+	return err;
+}
+EXPORT_SYMBOL_GPL(dev_set_name);
+
 static void devices_shutdown(void)
 {
 	struct device_d *dev;

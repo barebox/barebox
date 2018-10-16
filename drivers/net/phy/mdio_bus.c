@@ -26,6 +26,7 @@
 #include <errno.h>
 #include <linux/phy.h>
 #include <linux/err.h>
+#include <of_device.h>
 
 #define DEFAULT_GPIO_RESET_ASSERT       1000      /* us */
 #define DEFAULT_GPIO_RESET_DEASSERT     1000      /* us */
@@ -179,8 +180,19 @@ static int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 
 	/* Loop over the child nodes and register a phy_device for each one */
 	for_each_available_child_of_node(np, child) {
-		if (!of_mdiobus_child_is_phy(child))
+		if (!of_mdiobus_child_is_phy(child)) {
+			if (of_get_property(child, "compatible", NULL)) {
+				if (!of_platform_device_create(child,
+							       &mdio->dev)) {
+					dev_err(&mdio->dev,
+						"Failed to create device "
+						"for %s\n",
+						child->full_name);
+				}
+			}
+
 			continue;
+		}
 
 		ret = of_property_read_u32(child, "reg", &addr);
 		if (ret) {

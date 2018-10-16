@@ -70,3 +70,7 @@ config CLOCKSOURCE_ARMV8_TIMER
 	bool
 	default y
 	depends on ARM && CPU_64v8
+
+config CLOCKSOURCE_ARM_GLOBAL_TIMER
+	bool
+	depends on ARM && CPU_V7

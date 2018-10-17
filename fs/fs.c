@@ -1141,6 +1141,12 @@ const struct qstr slash_name = QSTR_INIT("/", 1);
 void d_set_d_op(struct dentry *dentry, const struct dentry_operations *op)
 {
 	dentry->d_op = op;
+
+	if (!op)
+		return;
+
+	if (op->d_revalidate)
+		dentry->d_flags |= DCACHE_OP_REVALIDATE;
 }
 
 /**
@@ -1283,6 +1289,35 @@ struct dentry *d_lookup(const struct dentry *parent, const struct qstr *name)
 
 void d_invalidate(struct dentry *dentry)
 {
+}
+
+static inline int d_revalidate(struct dentry *dentry, unsigned int flags)
+{
+	if (unlikely(dentry->d_flags & DCACHE_OP_REVALIDATE))
+		return dentry->d_op->d_revalidate(dentry, flags);
+	else
+		return 1;
+}
+
+/*
+ * This looks up the name in dcache and possibly revalidates the found dentry.
+ * NULL is returned if the dentry does not exist in the cache.
+ */
+static struct dentry *lookup_dcache(const struct qstr *name,
+				    struct dentry *dir,
+				    unsigned int flags)
+{
+	struct dentry *dentry = d_lookup(dir, name);
+	if (dentry) {
+		int error = d_revalidate(dentry, flags);
+		if (unlikely(error <= 0)) {
+			if (!error)
+				d_invalidate(dentry);
+			dput(dentry);
+			return ERR_PTR(error);
+		}
+	}
+	return dentry;
 }
 
 static inline void __d_clear_type_and_inode(struct dentry *dentry)
@@ -1496,7 +1531,7 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	if (!base)
 		return ERR_PTR(-ENOENT);
 
-	dentry = d_lookup(base, name);
+	dentry = lookup_dcache(name, base, flags);
 	if (dentry)
 		return dentry;
 

@@ -82,6 +82,7 @@ struct dentry {
 };
 
 struct dentry_operations {
+	int (*d_revalidate)(struct dentry *, unsigned int);
 };
 
 struct dentry * d_make_root(struct inode *);
@@ -92,6 +93,8 @@ void d_instantiate(struct dentry *dentry, struct inode *inode);
 void d_delete(struct dentry *);
 struct dentry *dget(struct dentry *);
 void dput(struct dentry *);
+
+#define DCACHE_OP_REVALIDATE		0x00000004
 
 #define DCACHE_ENTRY_TYPE		0x00700000
 #define DCACHE_MISS_TYPE		0x00000000 /* Negative dentry (maybe fallthru to nowhere) */

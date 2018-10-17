@@ -212,6 +212,32 @@ static const struct file_operations devfs_dir_operations;
 static const struct inode_operations devfs_dir_inode_operations;
 static const struct file_operations devfs_file_operations;
 
+static int devfs_lookup_revalidate(struct dentry *dentry, unsigned int flags)
+{
+	struct devfs_inode *dinode;
+	struct inode *inode;
+	struct cdev *cdev;
+
+	cdev = cdev_by_name(dentry->name);
+	if (!cdev)
+		return -ENOENT;
+
+	inode = d_inode(dentry);
+	if (!inode)
+		return 0;
+
+	dinode = container_of(inode, struct devfs_inode, inode);
+
+	if (dinode->cdev != cdev)
+		return 0;
+
+	return 1;
+}
+
+static const struct dentry_operations devfs_dentry_operations = {
+	.d_revalidate = devfs_lookup_revalidate,
+};
+
 static struct inode *devfs_get_inode(struct super_block *sb, const struct inode *dir,
                                      umode_t mode)
 {
@@ -290,6 +316,7 @@ static int devfs_probe(struct device_d *dev)
 	struct super_block *sb = &fsdev->sb;
 
 	sb->s_op = &devfs_ops;
+	sb->s_d_op = &devfs_dentry_operations;
 
 	inode = devfs_get_inode(sb, NULL, S_IFDIR);
 	sb->s_root = d_make_root(inode);

@@ -57,6 +57,7 @@ struct bootchooser {
 
 	struct state *state;
 	char *state_prefix;
+	int refs;
 
 	int verbose;
 	int dryrun;
@@ -344,11 +345,15 @@ static void bootchooser_reset_priorities(struct bootchooser *bc)
 		bootchooser_target_set_priority(target, -1);
 }
 
+static struct bootchooser *bootchooser;
+
 /**
- * bootchooser_get - get a bootchooser instance
+ * bootchooser_get - get a reference to the bootchooser
  *
- * This evaluates the different globalvars and eventually state variables,
- * creates a bootchooser instance from it and returns it.
+ * When no bootchooser is initialized this function allocates the bootchooser
+ * and initializes it with the different globalvars and state variables. The
+ * bootchooser is returned. Subsequent calls will return a reference to the same
+ * bootchooser.
  */
 struct bootchooser *bootchooser_get(void)
 {
@@ -358,6 +363,11 @@ struct bootchooser *bootchooser_get(void)
 	int ret = -EINVAL, id = 1;
 	uint32_t last_chosen;
 	static int attempts_resetted;
+
+	if (bootchooser) {
+		bootchooser->refs++;
+		return bootchooser;
+	}
 
 	bc = xzalloc(sizeof(*bc));
 
@@ -473,6 +483,10 @@ struct bootchooser *bootchooser_get(void)
 
 	}
 
+	bootchooser = bc;
+
+	bootchooser->refs = 1;
+
 	return bc;
 
 err:
@@ -528,15 +542,25 @@ int bootchooser_save(struct bootchooser *bc)
 }
 
 /**
- * bootchooser_put - release a bootchooser instance
+ * bootchooser_put - return a bootchooser reference
  * @bc: The bootchooser instance
  *
- * This releases a bootchooser instance and the memory associated with it.
+ * This returns a reference to the bootchooser. If it is the last reference the
+ * bootchooser is saved and the associated memory is freed.
+ *
+ * Return: 0 for success or a negative error code. An error can occur when
+ *         bootchooser_save fails to write to the storage, nevertheless the
+ *         bootchooser reference is still released.
  */
 int bootchooser_put(struct bootchooser *bc)
 {
 	struct bootchooser_target *target, *tmp;
 	int ret;
+
+	bc->refs--;
+
+	if (bc->refs)
+		return 0;
 
 	ret = bootchooser_save(bc);
 	if (ret)
@@ -551,6 +575,8 @@ int bootchooser_put(struct bootchooser *bc)
 	}
 
 	free(bc);
+
+	bootchooser = NULL;
 
 	return ret;
 }

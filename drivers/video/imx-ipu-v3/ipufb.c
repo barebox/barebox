@@ -101,7 +101,7 @@ static int ipu_crtc_adjust_videomode(struct ipufb_info *fbi, struct fb_videomode
 	return 0;
 }
 
-int ipu_crtc_mode_set(struct ipufb_info *fbi,
+static int ipu_crtc_mode_set(struct ipufb_info *fbi,
 			       struct fb_videomode *mode,
 			       int x, int y)
 {

@@ -352,12 +352,12 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		flags |= GPIOF_ACTIVE_LOW;
 
 	gpio = gpio_get_num(chip->dev, gpio_num);
-	if (ret == -EPROBE_DEFER)
-		return ret;
+	if (gpio == -EPROBE_DEFER)
+		return gpio;
 
-	if (ret < 0) {
+	if (gpio < 0) {
 		dev_err(chip->dev, "unable to get gpio %u\n", gpio_num);
-		return ret;
+		return gpio;
 	}
 
 

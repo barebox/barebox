@@ -54,7 +54,7 @@ static struct {
 	{ 0x33, rn5t567_pmic_setup, "rn5t567" },
 };
 
-int setup_pmic_voltages(void)
+static int setup_pmic_voltages(void)
 {
 	struct i2c_adapter *adapter;
 	struct i2c_client client;

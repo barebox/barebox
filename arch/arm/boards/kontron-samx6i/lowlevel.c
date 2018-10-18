@@ -20,7 +20,7 @@
 #include <mach/imx6.h>
 #include <mach/esdctl.h>
 
-resource_size_t samx6i_get_size(void);
+#include "mem.h"
 
 static inline void setup_uart(void)
 {

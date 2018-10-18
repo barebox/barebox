@@ -23,7 +23,7 @@
 
 #include <asm/armlinux.h>
 
-resource_size_t samx6i_get_size(void);
+#include "mem.h"
 
 /*
  * On this board the SDRAM size is always configured by pin selection.

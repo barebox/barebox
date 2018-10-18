@@ -97,7 +97,7 @@ static unsigned int get_module_rev(void)
 	return 16 - val;
 }
 
-int ksz8081_phy_fixup(struct phy_device *phydev)
+static int ksz8081_phy_fixup(struct phy_device *phydev)
 {
 	phy_write(phydev, 0x1f, 0x8190);
 	phy_write(phydev, 0x16, 0x202);

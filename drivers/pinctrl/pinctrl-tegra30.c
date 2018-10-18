@@ -935,4 +935,4 @@ static int pinctrl_tegra30_init(void)
 {
 	return platform_driver_register(&pinctrl_tegra30_driver);
 }
-postcore_initcall(pinctrl_tegra30_init);
+core_initcall(pinctrl_tegra30_init);

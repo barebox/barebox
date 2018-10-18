@@ -168,4 +168,4 @@ static int mxs_pinctrl_init(void)
 {
 	return platform_driver_register(&mxs_pinctrl_driver);
 }
-postcore_initcall(mxs_pinctrl_init);
+core_initcall(mxs_pinctrl_init);

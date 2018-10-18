@@ -742,4 +742,4 @@ static int dove_pinctrl_init(void)
 {
 	return platform_driver_register(&dove_pinctrl_driver);
 }
-postcore_initcall(dove_pinctrl_init);
+core_initcall(dove_pinctrl_init);

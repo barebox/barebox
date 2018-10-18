@@ -167,4 +167,4 @@ static int pcs_init(void)
 {
 	return platform_driver_register(&pcs_driver);
 }
-postcore_initcall(pcs_init);
+core_initcall(pcs_init);

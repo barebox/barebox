@@ -183,4 +183,4 @@ static int mxs_gpio_add(void)
 	platform_driver_register(&mxs_gpio_driver);
 	return 0;
 }
-core_initcall(mxs_gpio_add);
+postcore_initcall(mxs_gpio_add);

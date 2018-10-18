@@ -199,4 +199,4 @@ static int __init dwgpio_init(void)
 {
 	return platform_driver_register(&dwgpio_driver);
 }
-core_initcall(dwgpio_init);
+postcore_initcall(dwgpio_init);

@@ -161,4 +161,4 @@ static int __init gpio_vf610_init(void)
 {
 	return platform_driver_register(&vf610_gpio_driver);
 }
-core_initcall(gpio_vf610_init);
+postcore_initcall(gpio_vf610_init);

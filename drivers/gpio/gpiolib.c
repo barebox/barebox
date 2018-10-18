@@ -382,7 +382,10 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 	else
 		return -EINVAL;
 
-	of_property_read_string(np, "line-name", &name);
+	/* The line-name is optional and if not present the node name is used */
+	ret = of_property_read_string(np, "line-name", &name);
+	if (ret < 0)
+		name = np->name;
 
 	return gpio_request_one(gpio, flags, name);
 }

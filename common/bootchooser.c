@@ -52,7 +52,6 @@ static int retry;
 static int last_boot_successful;
 
 struct bootchooser {
-	struct bootentry entry;
 	struct list_head targets;
 	struct bootchooser_target *last_chosen;
 
@@ -841,20 +840,26 @@ int bootchooser_boot(struct bootchooser *bc)
 
 static int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun)
 {
-	struct bootchooser *bc = container_of(entry, struct bootchooser,
-						       entry);
+	struct bootchooser *bc;
+	int ret;
+
+	bc = bootchooser_get();
+	if (IS_ERR(bc))
+		return PTR_ERR(bc);
+
 	bc->verbose = verbose;
 	bc->dryrun = dryrun;
 
-	return bootchooser_boot(bc);
+	ret = bootchooser_boot(bc);
+
+	bootchooser_put(bc);
+
+	return ret;
 }
 
 static void bootchooser_release(struct bootentry *entry)
 {
-	struct bootchooser *bc = container_of(entry, struct bootchooser,
-						       entry);
-
-	bootchooser_put(bc);
+	free(entry);
 }
 
 /**
@@ -869,6 +874,7 @@ static void bootchooser_release(struct bootentry *entry)
 static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 {
 	struct bootchooser *bc;
+	struct bootentry *entry;
 
 	if (strcmp(name, "bootchooser"))
 		return 0;
@@ -877,12 +883,16 @@ static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 	if (IS_ERR(bc))
 		return PTR_ERR(bc);
 
-	bc->entry.boot = bootchooser_entry_boot;
-	bc->entry.release = bootchooser_release;
-	bc->entry.title = xstrdup("bootchooser");
-	bc->entry.description = xstrdup("bootchooser");
+	entry = xzalloc(sizeof(*entry));
 
-	bootentries_add_entry(entries, &bc->entry);
+	entry->boot = bootchooser_entry_boot;
+	entry->release = bootchooser_release;
+	entry->title = xstrdup("bootchooser");
+	entry->description = xstrdup("bootchooser");
+
+	bootentries_add_entry(entries, entry);
+
+	bootchooser_put(bc);
 
 	return 1;
 }

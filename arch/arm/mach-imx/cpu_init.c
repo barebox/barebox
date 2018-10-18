@@ -15,6 +15,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm/errata.h>
 #include <linux/types.h>
+#include <mach/generic.h>
 
 #ifdef CONFIG_CPU_32
 void imx5_cpu_lowlevel_init(void)

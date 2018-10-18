@@ -20,7 +20,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <malloc.h>
 #include <errno.h>
@@ -1434,9 +1433,4 @@ static struct driver_d tc_driver = {
 	.name		= "tc358767",
 	.probe		= tc_probe,
 };
-
-static int tc_init(void)
-{
-	return i2c_driver_register(&tc_driver);
-}
-device_initcall(tc_init);
+device_i2c_driver(tc_driver);

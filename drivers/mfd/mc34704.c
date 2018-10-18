@@ -17,7 +17,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -133,10 +132,4 @@ static struct driver_d mc34704_driver = {
 	.probe = mc34704_probe,
 	.of_compatible = DRV_OF_COMPAT(mc34704_dt_ids),
 };
-
-static int mc34704_init(void)
-{
-	i2c_driver_register(&mc34704_driver);
-	return 0;
-}
-device_initcall(mc34704_init);
+device_i2c_driver(mc34704_driver);

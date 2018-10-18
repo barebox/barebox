@@ -17,6 +17,7 @@
 #define I2C_I2C_H
 
 #include <driver.h>
+#include <init.h>
 #include <linux/types.h>
 
 struct i2c_adapter;
@@ -296,5 +297,8 @@ static inline int i2c_driver_register(struct driver_d *drv)
 	drv->bus = &i2c_bus;
 	return register_driver(drv);
 }
+
+#define device_i2c_driver(drv) \
+	register_driver_macro(device, i2c, drv)
 
 #endif /* I2C_I2C_H */

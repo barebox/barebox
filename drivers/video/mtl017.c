@@ -16,7 +16,6 @@
  *
  */
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -270,11 +269,4 @@ static struct driver_d twl_driver = {
 	.name  = "mtl017",
 	.probe = mtl017_probe,
 };
-
-static int mtl017_init(void)
-{
-	i2c_driver_register(&twl_driver);
-	return 0;
-}
-
-device_initcall(mtl017_init);
+device_i2c_driver(twl_driver);

@@ -18,7 +18,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <fb.h>
 #include <i2c/i2c.h>
 #include <of_device.h>
@@ -581,11 +580,4 @@ static struct driver_d ssd1307fb_driver = {
 	.probe = ssd1307fb_probe,
 	.of_compatible = DRV_OF_COMPAT(ssd1307fb_of_match),
 };
-
-static int ssd1307_init(void)
-{
-	i2c_driver_register(&ssd1307fb_driver);
-	return 0;
-}
-
-device_initcall(ssd1307_init);
+device_i2c_driver(ssd1307fb_driver);

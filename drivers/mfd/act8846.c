@@ -18,7 +18,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -144,11 +143,4 @@ static struct driver_d act8846_driver = {
 	.name  = DRIVERNAME,
 	.probe = act8846_probe,
 };
-
-static int act8846_init(void)
-{
-	i2c_driver_register(&act8846_driver);
-	return 0;
-}
-
-device_initcall(act8846_init);
+device_i2c_driver(act8846_driver);

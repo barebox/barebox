@@ -17,7 +17,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -96,11 +95,4 @@ static struct driver_d lp_driver = {
 	.name  = DRIVERNAME,
 	.probe = lp_probe,
 };
-
-static int lp_init(void)
-{
-	i2c_driver_register(&lp_driver);
-	return 0;
-}
-
-device_initcall(lp_init);
+device_i2c_driver(lp_driver);

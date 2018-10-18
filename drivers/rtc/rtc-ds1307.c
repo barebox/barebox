@@ -14,7 +14,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <malloc.h>
@@ -489,9 +488,4 @@ static struct driver_d ds1307_driver = {
 	.probe		= ds1307_probe,
 	.id_table	= ds1307_id,
 };
-
-static int __init ds1307_init(void)
-{
-	return i2c_driver_register(&ds1307_driver);
-}
-device_initcall(ds1307_init);
+device_i2c_driver(ds1307_driver);

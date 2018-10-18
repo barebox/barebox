@@ -11,7 +11,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <malloc.h>
 #include <clock.h>
 #include <driver.h>
@@ -529,10 +528,4 @@ static struct driver_d at24_driver = {
 	.probe		= at24_probe,
 	.id_table	= at24_ids,
 };
-
-static int at24_init(void)
-{
-	i2c_driver_register(&at24_driver);
-	return 0;
-}
-device_initcall(at24_init);
+device_i2c_driver(at24_driver);

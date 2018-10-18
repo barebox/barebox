@@ -14,7 +14,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <malloc.h>
 #include <driver.h>
 #include <xfuncs.h>
@@ -508,9 +507,4 @@ static struct driver_d pca953x_driver = {
 	.of_compatible	= DRV_OF_COMPAT(pca953x_dt_ids),
 	.id_table	= pca953x_id,
 };
-
-static int __init pca953x_init(void)
-{
-	return i2c_driver_register(&pca953x_driver);
-}
-device_initcall(pca953x_init);
+device_i2c_driver(pca953x_driver);

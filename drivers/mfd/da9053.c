@@ -15,7 +15,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -310,11 +309,4 @@ static struct driver_d da9053_driver = {
 	.probe = da9053_probe,
 	.of_compatible = DRV_OF_COMPAT(da9053_dt_ids),
 };
-
-static int da9053_init(void)
-{
-	i2c_driver_register(&da9053_driver);
-	return 0;
-}
-
-device_initcall(da9053_init);
+device_i2c_driver(da9053_driver);

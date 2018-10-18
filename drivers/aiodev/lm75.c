@@ -19,7 +19,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <i2c/i2c.h>
@@ -252,11 +251,4 @@ static struct driver_d lm75_driver = {
 	.probe = lm75_probe,
 	.id_table = lm75_ids,
 };
-
-static int lm75_init(void)
-{
-	i2c_driver_register(&lm75_driver);
-	return 0;
-}
-
-device_initcall(lm75_init);
+device_i2c_driver(lm75_driver);

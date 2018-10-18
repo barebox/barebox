@@ -57,7 +57,7 @@ void armlinux_set_architecture(int architecture)
 	armlinux_architecture = architecture;
 }
 
-int armlinux_get_architecture(void)
+static int armlinux_get_architecture(void)
 {
 	getenv_uint("armlinux_architecture", &armlinux_architecture);
 
@@ -70,7 +70,7 @@ void armlinux_set_revision(unsigned int rev)
 	armlinux_system_rev = rev;
 }
 
-unsigned int armlinux_get_revision(void)
+static unsigned int armlinux_get_revision(void)
 {
 	getenv_uint("armlinux_system_rev", &armlinux_system_rev);
 
@@ -83,7 +83,7 @@ void armlinux_set_serial(u64 serial)
 	armlinux_system_serial = serial;
 }
 
-u64 armlinux_get_serial(void)
+static u64 armlinux_get_serial(void)
 {
 	getenv_ull("armlinux_system_serial", &armlinux_system_serial);
 

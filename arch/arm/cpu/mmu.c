@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <dma-dir.h>
+#include <dma.h>
 #include <init.h>
 #include <mmu.h>
 #include <errno.h>

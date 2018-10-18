@@ -279,7 +279,7 @@ static void mx5_clocks_ipu_init(void __iomem *regs)
 	clks[IMX5_CLK_IPU_SEL]		= imx_clk_mux("ipu_sel", regs + CCM_CBCMR, 6, 2, ipu_sel, ARRAY_SIZE(ipu_sel));
 }
 
-int __init mx50_clocks_init(struct device_d *dev, void __iomem *regs)
+static int __init mx50_clocks_init(struct device_d *dev, void __iomem *regs)
 {
 	clks[IMX5_CLK_PLL1_SW] = imx_clk_pllv2("pll1_sw", "osc",
 					       (void *)MX50_PLL1_BASE_ADDR);
@@ -366,7 +366,7 @@ static void mx51_clocks_ipu_init(void __iomem *regs)
 	clkdev_add_physbase(clks[IMX5_CLK_IPU_DI1_SEL], MX51_IPU_BASE_ADDR, "di1");
 }
 
-int __init mx51_clocks_init(struct device_d *dev, void __iomem *regs)
+static int __init mx51_clocks_init(struct device_d *dev, void __iomem *regs)
 {
 	clks[IMX5_CLK_PLL1_SW] = imx_clk_pllv2("pll1_sw", "osc", (void *)MX51_PLL1_BASE_ADDR);
 	clks[IMX5_CLK_PLL2_SW] = imx_clk_pllv2("pll2_sw", "osc", (void *)MX51_PLL2_BASE_ADDR);
@@ -454,7 +454,7 @@ static void mx53_clocks_ipu_init(void __iomem *regs)
 	clkdev_add_physbase(clks[IMX5_CLK_IPU_DI1_SEL], MX53_IPU_BASE_ADDR, "di1");
 }
 
-int __init mx53_clocks_init(struct device_d *dev, void __iomem *regs)
+static int __init mx53_clocks_init(struct device_d *dev, void __iomem *regs)
 {
 	clks[IMX5_CLK_PLL1_SW] = imx_clk_pllv2("pll1_sw", "osc", (void *)MX53_PLL1_BASE_ADDR);
 	clks[IMX5_CLK_PLL2_SW] = imx_clk_pllv2("pll2_sw", "osc", (void *)MX53_PLL2_BASE_ADDR);

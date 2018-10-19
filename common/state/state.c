@@ -311,7 +311,7 @@ static int state_convert_node_variable(struct state *state,
 		if ((conv == STATE_CONVERT_TO_NODE)
 		    || (conv == STATE_CONVERT_FIXUP)) {
 			ret = of_property_write_string(new_node, "type",
-					      vtype->type_name);
+						       vtype->type_name);
 			if (ret)
 				goto out;
 

@@ -2275,7 +2275,8 @@ struct fsl_udc *ci_udc_register(struct device_d *dev, void __iomem *regs)
 	 * for other eps, gadget layer called ep_enable with defined desc
 	 */
 	udc_controller->eps[0].desc = &fsl_ep0_desc;
-	udc_controller->eps[0].ep.maxpacket = USB_MAX_CTRL_PAYLOAD;
+	usb_ep_set_maxpacket_limit(&udc_controller->eps[0].ep,
+				   USB_MAX_CTRL_PAYLOAD);
 
 	/* setup the udc->eps[] for non-control endpoints and link
 	 * to gadget.ep_list */

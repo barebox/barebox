@@ -1429,14 +1429,14 @@ static int __init atmel_nand_probe(struct device_d *dev)
 		}
 
 		if (gpio_get_value(host->board->det_pin)) {
-			printk("No SmartMedia card inserted.\n");
+			dev_info(dev, "No SmartMedia card inserted.\n");
 			res = -ENXIO;
 			goto err_no_card;
 		}
 	}
 
 	if (host->board->on_flash_bbt) {
-		printk(KERN_INFO "atmel_nand: Use On Flash BBT\n");
+		dev_info(dev, "Use On Flash BBT\n");
 		nand_chip->bbt_options |= NAND_BBT_USE_FLASH;
 	}
 

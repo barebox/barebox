@@ -115,6 +115,13 @@ config UBIFORMAT
 	depends on MTD_UBI
 	default y
 
+config USBGADGET_START
+	bool
+	depends on CMD_USBGADGET || USB_GADGET_AUTOSTART
+	select ENVIRONMENT_VARIABLES
+	select FILE_LIST
+	default y
+
 config BOOT
 	bool
 

@@ -249,7 +249,9 @@ static const struct mach_id *imx_device_by_type(const char *name)
 
 static void list_imx_device_types(void)
 {
-	for (int i = 0; i < ARRAY_SIZE(imx_ids); i++) {
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(imx_ids); i++) {
 		printf("%s\n", imx_ids[i].name);
 	}
 }

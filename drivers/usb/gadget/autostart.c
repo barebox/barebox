@@ -35,6 +35,7 @@ static int fastboot_bbu;
 static int usbgadget_autostart(void)
 {
 	struct f_multi_opts *opts;
+	struct device_d *dev;
 	int ret;
 
 	if (!autostart)
@@ -61,7 +62,9 @@ static int usbgadget_autostart(void)
 		return 0;
 	}
 
-	setenv("otg.mode", "peripheral");
+	dev = get_device_by_name("otg");
+	if (dev)
+		dev_set_param(dev, "mode", "peripheral");
 
 	ret = usb_multi_register(opts);
 	if (ret)

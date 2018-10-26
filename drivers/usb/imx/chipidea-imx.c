@@ -364,6 +364,11 @@ static int imx_chipidea_probe(struct device_d *dev)
 
 static void imx_chipidea_remove(struct device_d *dev)
 {
+	struct imx_chipidea *ci = dev->priv;
+
+	if (ci->ehci)
+		ehci_unregister(ci->ehci);
+
 	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC))
 		ci_udc_unregister();
 }

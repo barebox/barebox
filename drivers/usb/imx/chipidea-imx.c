@@ -176,6 +176,13 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 	return 0;
 }
 
+static int ci_ehci_detect(struct device_d *dev)
+{
+	struct imx_chipidea *ci = dev->priv;
+
+	return ehci_detect(ci->ehci);
+}
+
 static int ci_register_role(struct imx_chipidea *ci)
 {
 	int ret;
@@ -197,6 +204,8 @@ static int ci_register_role(struct imx_chipidea *ci)
 				return PTR_ERR(ehci);
 
 			ci->ehci = ehci;
+
+			ci->dev->detect = ci_ehci_detect;
 
 			regulator_disable(ci->vbus);
 		} else {
@@ -271,6 +280,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 
 	ci = xzalloc(sizeof(*ci));
 	ci->dev = dev;
+	dev->priv = ci;
 	ci->role_registered = IMX_USB_MODE_OTG;
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {

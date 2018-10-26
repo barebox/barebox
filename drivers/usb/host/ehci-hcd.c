@@ -1273,10 +1273,8 @@ submit_int_msg(struct usb_device *dev, unsigned long pipe, void *buffer,
 	return result;
 }
 
-static int ehci_detect(struct device_d *dev)
+int ehci_detect(struct ehci_host *ehci)
 {
-	struct ehci_host *ehci = dev->priv;
-
 	return usb_host_detect(&ehci->host);
 }
 
@@ -1288,7 +1286,6 @@ struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data)
 
 	ehci = xzalloc(sizeof(struct ehci_host));
 	host = &ehci->host;
-	dev->priv = ehci;
 	ehci->flags = data->flags;
 	ehci->hccr = data->hccr;
 	ehci->dev = dev;
@@ -1321,8 +1318,6 @@ struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data)
 		ehci_reset(ehci);
 	}
 
-	dev->detect = ehci_detect;
-
 	usb_register_host(host);
 
 	reg = HC_VERSION(ehci_readl(&ehci->hccr->cr_capbase));
@@ -1338,6 +1333,13 @@ void ehci_unregister(struct ehci_host *ehci)
 	usb_unregister_host(&ehci->host);
 
 	free(ehci);
+}
+
+static int ehci_dev_detect(struct device_d *dev)
+{
+	struct ehci_host *ehci = dev->priv;
+
+	return ehci_detect(ehci);
 }
 
 static int ehci_probe(struct device_d *dev)
@@ -1377,6 +1379,9 @@ static int ehci_probe(struct device_d *dev)
 	ehci = ehci_register(dev, &data);
 	if (IS_ERR(ehci))
 		return PTR_ERR(ehci);
+
+	dev->priv = ehci;
+	dev->detect = ehci_dev_detect;
 
 	return 0;
 }

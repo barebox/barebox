@@ -47,6 +47,7 @@ struct imx_chipidea {
 	struct usb_phy *usbphy;
 	struct clk *clk;
 	struct ehci_host *ehci;
+	struct fsl_udc *udc;
 };
 
 static int imx_chipidea_port_init(void *drvdata)
@@ -216,8 +217,14 @@ static int ci_register_role(struct imx_chipidea *ci)
 
 	if (ci->mode == IMX_USB_MODE_DEVICE) {
 		if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC)) {
+			struct fsl_udc *udc;
 			ci->role_registered = IMX_USB_MODE_DEVICE;
-			return ci_udc_register(ci->dev, ci->base);
+
+			udc = ci_udc_register(ci->dev, ci->base);
+			if (IS_ERR(udc))
+				return PTR_ERR(udc);
+
+			ci->udc = udc;
 		} else {
 			dev_err(ci->dev, "USB device support not available\n");
 			return -ENODEV;
@@ -369,8 +376,8 @@ static void imx_chipidea_remove(struct device_d *dev)
 	if (ci->ehci)
 		ehci_unregister(ci->ehci);
 
-	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC))
-		ci_udc_unregister();
+	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC) && ci->udc)
+		ci_udc_unregister(ci->udc);
 }
 
 static __maybe_unused struct of_device_id imx_chipidea_dt_ids[] = {

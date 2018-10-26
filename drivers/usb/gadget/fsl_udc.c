@@ -528,7 +528,6 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
 #define get_pipe_by_ep(EP)	(ep_index(EP) * 2 + ep_is_in(EP))
 
 static struct usb_dr_device __iomem *dr_regs;
-static struct fsl_udc *udc_controller = NULL;
 
 static const struct usb_endpoint_descriptor
 fsl_ep0_desc = {
@@ -2226,8 +2225,9 @@ static int __init struct_ep_setup(struct fsl_udc *udc, unsigned char index,
 	return 0;
 }
 
-int ci_udc_register(struct device_d *dev, void __iomem *regs)
+struct fsl_udc *ci_udc_register(struct device_d *dev, void __iomem *regs)
 {
+	struct fsl_udc *udc_controller;
 	int ret, i;
 	u32 dccparams;
 
@@ -2293,31 +2293,41 @@ int ci_udc_register(struct device_d *dev, void __iomem *regs)
 	if (ret)
 		goto err_out;
 
-	return 0;
+	return udc_controller;
 err_out:
-	return ret;
+	free(udc_controller);
+
+	return ERR_PTR(ret);
 }
 
-void ci_udc_unregister(void)
+void ci_udc_unregister(struct fsl_udc *udc)
 {
-	if (udc_controller)
-		usb_del_gadget_udc(&udc_controller->gadget);
-
+	usb_del_gadget_udc(&udc->gadget);
+	free(udc);
 }
 
 static int fsl_udc_probe(struct device_d *dev)
 {
+	struct fsl_udc *udc;
 	void __iomem *regs = dev_request_mem_region(dev, 0);
 
 	if (IS_ERR(regs))
 		return PTR_ERR(regs);
 
-	return ci_udc_register(dev, regs);
+	udc = ci_udc_register(dev, regs);
+	if (IS_ERR(udc))
+		return PTR_ERR(udc);
+
+	dev->priv = udc;
+
+	return 0;
 }
 
 static void fsl_udc_remove(struct device_d *dev)
 {
-	ci_udc_unregister();
+	struct fsl_udc *udc = dev->priv;
+
+	ci_udc_unregister(udc);
 }
 
 static struct driver_d fsl_udc_driver = {

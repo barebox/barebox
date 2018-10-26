@@ -120,10 +120,14 @@ static int atmel_ehci_probe(struct device_d *dev)
 
 static void atmel_ehci_remove(struct device_d *dev)
 {
+	struct atmel_ehci_priv *atehci = dev->priv;
+
+	ehci_unregister(atehci->ehci);
+
 	/*
 	 * Stop the USB clocks.
 	 */
-	atmel_stop_clock(dev->priv);
+	atmel_stop_clock(atehci);
 }
 
 static const struct of_device_id atmel_ehci_dt_ids[] = {

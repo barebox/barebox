@@ -266,3 +266,5 @@ USB Gadget autostart Options
   See :ref:`command_usbgadget` -a. (Default 0).
 ``global.usbgadget.fastboot_function``
   Function description for fastboot. See :ref:`command_usbgadget` -A [desc].
+``global.usbgadget.fastboot_bbu``
+  Export barebox update handlers. See :ref:`command_usbgadget` -b. (Default 0).

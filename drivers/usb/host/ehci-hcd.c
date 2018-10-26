@@ -1280,7 +1280,7 @@ static int ehci_detect(struct device_d *dev)
 	return usb_host_detect(&ehci->host);
 }
 
-int ehci_register(struct device_d *dev, struct ehci_data *data)
+struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data)
 {
 	struct usb_host *host;
 	struct ehci_host *ehci;
@@ -1328,7 +1328,16 @@ int ehci_register(struct device_d *dev, struct ehci_data *data)
 	reg = HC_VERSION(ehci_readl(&ehci->hccr->cr_capbase));
 	dev_info(dev, "USB EHCI %x.%02x\n", reg >> 8, reg & 0xff);
 
-	return 0;
+	return ehci;
+}
+
+void ehci_unregister(struct ehci_host *ehci)
+{
+	ehci_halt(ehci);
+
+	usb_unregister_host(&ehci->host);
+
+	free(ehci);
 }
 
 static int ehci_probe(struct device_d *dev)
@@ -1337,6 +1346,7 @@ static int ehci_probe(struct device_d *dev)
 	struct ehci_data data = {};
 	struct ehci_platform_data *pdata = dev->platform_data;
 	struct device_node *dn = dev->device_node;
+	struct ehci_host *ehci;
 
 	if (pdata)
 		data.flags = pdata->flags;
@@ -1364,13 +1374,18 @@ static int ehci_probe(struct device_d *dev)
 	else
 		data.hcor = NULL;
 
-	return ehci_register(dev, &data);
+	ehci = ehci_register(dev, &data);
+	if (IS_ERR(ehci))
+		return PTR_ERR(ehci);
+
+	return 0;
 }
 
 static void ehci_remove(struct device_d *dev)
 {
 	struct ehci_host *ehci = dev->priv;
-	ehci_halt(ehci);
+
+	ehci_unregister(ehci);
 }
 
 static __maybe_unused struct of_device_id ehci_platform_dt_ids[] = {

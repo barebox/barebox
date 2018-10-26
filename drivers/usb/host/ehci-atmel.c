@@ -30,6 +30,7 @@
 #include "ehci.h"
 
 struct atmel_ehci_priv {
+	struct ehci_host *ehci;
 	struct device_d *dev;
 	struct clk *iclk;
 	struct clk *uclk;
@@ -66,6 +67,7 @@ static int atmel_ehci_probe(struct device_d *dev)
 	struct ehci_data data;
 	struct atmel_ehci_priv *atehci;
 	const char *uclk_name;
+	struct ehci_host *ehci;
 
 	uclk_name = (dev->device_node) ? "usb_clk" : "uhpck";
 
@@ -99,7 +101,13 @@ static int atmel_ehci_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	data.hccr = IOMEM(iores->start);
 
-	return ehci_register(dev, &data);
+	ehci = ehci_register(dev, &data);
+	if (IS_ERR(ehci))
+		return PTR_ERR(ehci);
+
+	atehci->ehci = ehci;
+
+	return 0;
 }
 
 static void atmel_ehci_remove(struct device_d *dev)

@@ -46,6 +46,7 @@ struct imx_chipidea {
 	struct phy *phy;
 	struct usb_phy *usbphy;
 	struct clk *clk;
+	struct ehci_host *ehci;
 };
 
 static int imx_chipidea_port_init(void *drvdata)
@@ -184,14 +185,18 @@ static int ci_register_role(struct imx_chipidea *ci)
 
 	if (ci->mode == IMX_USB_MODE_HOST) {
 		if (IS_ENABLED(CONFIG_USB_EHCI)) {
+			struct ehci_host *ehci;
+
 			ci->role_registered = IMX_USB_MODE_HOST;
 			ret = regulator_enable(ci->vbus);
 			if (ret)
 				return ret;
 
-			ret = ehci_register(ci->dev, &ci->data);
-			if (!ret)
-				return 0;
+			ehci = ehci_register(ci->dev, &ci->data);
+			if (IS_ERR(ehci))
+				return PTR_ERR(ehci);
+
+			ci->ehci = ehci;
 
 			regulator_disable(ci->vbus);
 		} else {

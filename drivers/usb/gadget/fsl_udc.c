@@ -450,6 +450,11 @@ struct fsl_udc {
 	u8 device_address;	/* Device USB address */
 };
 
+static inline struct fsl_udc *to_fsl_udc(struct usb_gadget *gadget)
+{
+	return container_of(gadget, struct fsl_udc, gadget);
+}
+
 /*-------------------------------------------------------------------------*/
 
 #ifdef DEBUG
@@ -1943,11 +1948,8 @@ static void dtd_complete_irq(struct fsl_udc *udc)
  */
 static void fsl_udc_gadget_poll(struct usb_gadget *gadget)
 {
-	struct fsl_udc *udc = udc_controller;
+	struct fsl_udc *udc = to_fsl_udc(gadget);
 	u32 irq_src;
-
-	if (!udc)
-		return;
 
 	/* Disable ISR for OTG host mode */
 	if (udc->stopped)
@@ -1981,7 +1983,7 @@ static void fsl_udc_gadget_poll(struct usb_gadget *gadget)
 
 	/* Sleep Enable (Suspend) */
 	if (irq_src & USB_STS_SUSPEND)
-		udc->driver->disconnect(&udc_controller->gadget);
+		udc->driver->disconnect(gadget);
 
 	if (irq_src & (USB_STS_ERR | USB_STS_SYS_ERR))
 		printf("Error IRQ %x\n", irq_src);
@@ -1993,6 +1995,8 @@ static void fsl_udc_gadget_poll(struct usb_gadget *gadget)
 *----------------------------------------------------------------*/
 static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
+	struct fsl_udc *udc = to_fsl_udc(gadget);
+
 	/*
 	 * We currently have PHY no driver which could call vbus_connect,
 	 * so when the USB gadget core calls usb_gadget_connect() the
@@ -2002,13 +2006,13 @@ static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 	usb_gadget_vbus_connect(gadget);
 
 	/* hook up the driver */
-	udc_controller->driver = driver;
+	udc->driver = driver;
 
 	/* Enable DR IRQ reg and Set usbcmd reg  Run bit */
-	dr_controller_run(udc_controller);
-	udc_controller->usb_state = USB_STATE_ATTACHED;
-	udc_controller->ep0_state = WAIT_FOR_SETUP;
-	udc_controller->ep0_dir = 0;
+	dr_controller_run(udc);
+	udc->usb_state = USB_STATE_ATTACHED;
+	udc->ep0_state = WAIT_FOR_SETUP;
+	udc->ep0_dir = 0;
 
 	return 0;
 }
@@ -2016,20 +2020,21 @@ static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 /* Disconnect from gadget driver */
 static int fsl_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
+	struct fsl_udc *udc = to_fsl_udc(gadget);
 	struct fsl_ep *loop_ep;
 
 	/* stop DR, disable intr */
-	dr_controller_stop(udc_controller);
+	dr_controller_stop(udc);
 
 	/* in fact, no needed */
-	udc_controller->usb_state = USB_STATE_ATTACHED;
-	udc_controller->ep0_state = WAIT_FOR_SETUP;
-	udc_controller->ep0_dir = 0;
+	udc->usb_state = USB_STATE_ATTACHED;
+	udc->ep0_state = WAIT_FOR_SETUP;
+	udc->ep0_dir = 0;
 
 	/* stand operation */
-	udc_controller->gadget.speed = USB_SPEED_UNKNOWN;
-	nuke(&udc_controller->eps[0], -ESHUTDOWN);
-	list_for_each_entry(loop_ep, &udc_controller->gadget.ep_list,
+	udc->gadget.speed = USB_SPEED_UNKNOWN;
+	nuke(&udc->eps[0], -ESHUTDOWN);
+	list_for_each_entry(loop_ep, &udc->gadget.ep_list,
 			ep.ep_list)
 		nuke(loop_ep, -ESHUTDOWN);
 

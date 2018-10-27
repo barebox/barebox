@@ -20,14 +20,17 @@ static int get_gpio_and_value(int argc, char *argv[],
 			      int *gpio, int *value)
 {
 	const int count = value ? 3 : 2;
-	int ret;
+	int ret = 0;
 
 	if (argc < count)
 		return COMMAND_ERROR_USAGE;
 
-	ret = kstrtoint(argv[1], 0, gpio);
-	if (ret < 0)
-		return ret;
+	*gpio = gpio_find_by_label(argv[1]);
+	if (*gpio < 0) {
+		ret = kstrtoint(argv[1], 0, gpio);
+		if (ret < 0)
+			return ret;
+	}
 
 	if (value)
 		ret = kstrtoint(argv[2], 0, value);

@@ -435,29 +435,22 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_request_mem_region);
 
-int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
-{
-	if (!cdev->dev)
-		return -EINVAL;
-
-	if (flags & PROT_WRITE)
-		return -EACCES;
-	*map = dev_get_mem_region(cdev->dev, 0);
-	if (IS_ERR(*map))
-		return PTR_ERR(*map);
-	return 0;
-}
-
 int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 {
 	if (!cdev->dev)
 		return -EINVAL;
 
 	*map = dev_get_mem_region(cdev->dev, 0);
-	if (IS_ERR(*map))
-		return PTR_ERR(*map);
 
-	return 0;
+	return PTR_ERR_OR_ZERO(*map);
+}
+
+int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
+{
+	if (flags & PROT_WRITE)
+		return -EACCES;
+
+	return generic_memmap_rw(cdev, map, flags);
 }
 
 int dummy_probe(struct device_d *dev)

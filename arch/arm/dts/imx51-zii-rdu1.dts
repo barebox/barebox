@@ -24,6 +24,15 @@
 			device-path = &spinor, "partname:barebox-environment";
 		};
 	};
+
+	aliases {
+		/*
+		 * NVMEM device corresponding to EEPROM attached to
+                 * the switch shared DT node with it, so we use that
+                 * fact to create a desirable naming
+		 */
+		switch-eeprom = &switch;
+	};
 };
 
 &ecspi1 {
@@ -49,6 +58,10 @@
 			reg = <0xe0000 0x20000>;
 		};
 	};
+};
+
+&mdio_gpio {
+	switch: switch@0 {};
 };
 
 &uart3 {

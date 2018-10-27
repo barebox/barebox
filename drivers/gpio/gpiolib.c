@@ -91,6 +91,23 @@ done:
 	return ret;
 }
 
+int gpio_find_by_label(const char *label)
+{
+	int i;
+
+	for (i = 0; i < ARCH_NR_GPIOS; i++) {
+		struct gpio_info *info = &gpio_desc[i];
+
+		if (!info->requested || !info->chip || !info->label)
+			continue;
+
+		if (!strcmp(info->label, label))
+			return i;
+	}
+
+	return -ENOENT;
+}
+
 void gpio_free(unsigned gpio)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);

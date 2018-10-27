@@ -92,6 +92,11 @@ static inline int gpio_request(unsigned gpio, const char *label)
 	return 0;
 }
 
+static inline int gpio_find_by_label(const char *label)
+{
+	return -ENOSYS;
+}
+
 static inline void gpio_free(unsigned gpio)
 {
 }
@@ -114,6 +119,7 @@ static inline void gpio_free_array(const struct gpio *array, size_t num)
 }
 #else
 int gpio_request(unsigned gpio, const char *label);
+int gpio_find_by_label(const char *label);
 void gpio_free(unsigned gpio);
 int gpio_request_one(unsigned gpio, unsigned long flags, const char *label);
 int gpio_request_array(const struct gpio *array, size_t num);

@@ -5,6 +5,7 @@ obj-y			+= rbtree.o
 obj-y			+= display_options.o
 obj-y			+= string.o
 obj-y			+= strtox.o
+obj-y			+= kstrtox.o
 obj-y			+= vsprintf.o
 pbl-$(CONFIG_PBL_CONSOLE) += vsprintf.o
 obj-y			+= div64.o

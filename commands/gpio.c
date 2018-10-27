@@ -20,16 +20,19 @@ static int get_gpio_and_value(int argc, char *argv[],
 			      int *gpio, int *value)
 {
 	const int count = value ? 3 : 2;
+	int ret;
 
 	if (argc < count)
 		return COMMAND_ERROR_USAGE;
 
-	*gpio = simple_strtoul(argv[1], NULL, 0);
+	ret = kstrtoint(argv[1], 0, gpio);
+	if (ret < 0)
+		return ret;
 
 	if (value)
-		*value = simple_strtoul(argv[2], NULL, 0);
+		ret = kstrtoint(argv[2], 0, value);
 
-	return 0;
+	return ret;
 }
 
 static int do_gpio_get_value(int argc, char *argv[])

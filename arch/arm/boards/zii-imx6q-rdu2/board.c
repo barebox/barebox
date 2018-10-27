@@ -97,44 +97,6 @@ static int rdu2_reset_audio_touchscreen_nfc(void)
  */
 late_initcall(rdu2_reset_audio_touchscreen_nfc);
 
-static const struct gpio rdu2_front_panel_usb_gpios[] = {
-	{
-		.gpio = IMX_GPIO_NR(3, 19),
-		.flags = GPIOF_OUT_INIT_LOW,
-		.label = "usb-emulation",
-	},
-	{
-		.gpio = IMX_GPIO_NR(3, 20),
-		.flags = GPIOF_OUT_INIT_HIGH,
-		.label = "usb-mode1",
-	},
-	{
-		.gpio = IMX_GPIO_NR(3, 23),
-		.flags = GPIOF_OUT_INIT_HIGH,
-		.label = "usb-mode2",
-	},
-};
-
-static int rdu2_enable_front_panel_usb(void)
-{
-	int ret;
-
-	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
-	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
-		return 0;
-
-	ret = gpio_request_array(rdu2_front_panel_usb_gpios,
-				 ARRAY_SIZE(rdu2_front_panel_usb_gpios));
-	if (ret) {
-		pr_err("Failed to request RDU2 front panel USB gpios: %s\n",
-		       strerror(-ret));
-
-	}
-
-	return ret;
-}
-late_initcall(rdu2_enable_front_panel_usb);
-
 static int rdu2_devices_init(void)
 {
 	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&

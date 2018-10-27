@@ -52,6 +52,12 @@
 	aliases {
 		ethernet0 = &fec;
 		ethernet1 = &i210;
+		/*
+		 * NVMEM device corresponding to EEPROM attached to
+                 * the switch shared DT node with it, so we use that
+                 * fact to create a desirable naming
+		 */
+		switch-eeprom = &switch;
 	};
 };
 

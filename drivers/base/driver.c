@@ -368,18 +368,6 @@ struct resource *dev_get_resource_by_name(struct device_d *dev,
 	return ERR_PTR(-ENOENT);
 }
 
-void *dev_get_mem_region_by_name(struct device_d *dev, const char *name)
-{
-	struct resource *res;
-
-	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
-	if (IS_ERR(res))
-		return ERR_CAST(res);
-
-	return (void __force *)res->start;
-}
-EXPORT_SYMBOL(dev_get_mem_region_by_name);
-
 void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *name)
 {
 	struct resource *res;

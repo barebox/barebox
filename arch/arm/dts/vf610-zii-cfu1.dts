@@ -8,3 +8,13 @@
 
 #include "vf610-zii-dev.dtsi"
 
+/ {
+	aliases {
+		/*
+		* NVMEM device corresponding to EEPROM attached to
+		* the switch shared DT node with it, so we use that
+		* fact to create a desirable naming
+		*/
+		switch-eeprom = &switch0;
+	};
+};

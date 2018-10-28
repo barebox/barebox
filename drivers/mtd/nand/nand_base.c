@@ -3698,15 +3698,18 @@ int nand_scan_tail(struct mtd_info *mtd)
 		chip->ecc.read_oob = nand_read_oob_std;
 		chip->ecc.write_oob = nand_write_oob_std;
 		/*
-		 * Board driver should supply ecc.size and ecc.bytes values to
-		 * select how many bits are correctable; see nand_bch_init()
-		 * for details. Otherwise, default to 4 bits for large page
-		 * devices.
+		 * Board driver should supply ecc.size and ecc.strength values
+		 * to select how many bits are correctable. Otherwise, default
+		 * to 4 bits for large page devices.
 		 */
 		if (!chip->ecc.size && (mtd->oobsize >= 64)) {
 			chip->ecc.size = 512;
-			chip->ecc.bytes = 7;
+			chip->ecc.strength = 4;
 		}
+
+		/* See nand_bch_init() for details. */
+		chip->ecc.bytes = DIV_ROUND_UP(
+				chip->ecc.strength * fls(8 * chip->ecc.size), 8);
 		chip->ecc.priv = nand_bch_init(mtd,
 					       chip->ecc.size,
 					       chip->ecc.bytes,
@@ -3715,8 +3718,6 @@ int nand_scan_tail(struct mtd_info *mtd)
 			pr_warn("BCH ECC initialization failed!\n");
 			BUG();
 		}
-		chip->ecc.strength =
-			chip->ecc.bytes * 8 / fls(8 * chip->ecc.size);
 		break;
 #endif
 #ifdef CONFIG_NAND_ECC_NONE

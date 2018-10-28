@@ -3708,12 +3708,8 @@ int nand_scan_tail(struct mtd_info *mtd)
 		}
 
 		/* See nand_bch_init() for details. */
-		chip->ecc.bytes = DIV_ROUND_UP(
-				chip->ecc.strength * fls(8 * chip->ecc.size), 8);
-		chip->ecc.priv = nand_bch_init(mtd,
-					       chip->ecc.size,
-					       chip->ecc.bytes,
-					       &chip->ecc.layout);
+		chip->ecc.bytes = 0;
+		chip->ecc.priv = nand_bch_init(mtd);
 		if (!chip->ecc.priv) {
 			pr_warn("BCH ECC initialization failed!\n");
 			BUG();

@@ -64,6 +64,8 @@ struct atmel_nand_data {
 	u8		cle;		/* address line number connected to CLE */
 	u8		bus_width_16;	/* buswidth is 16 bit */
 	u8		ecc_mode;	/* NAND_ECC_* */
+	u8		ecc_strength;	/* number of bits to correct per ECC step */
+	u8		ecc_size_shift;	/* data bytes covered by a single ECC step.*/
 	u8		on_flash_bbt;	/* Use flash based bbt */
 	u8		has_pmecc;	/* Use PMECC */
 	u8		bus_on_d0;

@@ -417,7 +417,6 @@ struct nand_buffers {
  * @hwcontrol:		platform-specific hardware control structure
  * @erase_cmd:		[INTERN] erase command write function, selectable due
  *			to AND support.
- * @scan_bbt:		[REPLACEABLE] function to scan bad block table
  * @chip_delay:		[BOARDSPECIFIC] chip dependent delay for transferring
  *			data from array to read regs (tR).
  * @state:		[INTERN] the current state of the NAND device
@@ -491,7 +490,6 @@ struct nand_chip {
 			int page_addr);
 	int(*waitfunc)(struct mtd_info *mtd, struct nand_chip *this);
 	void (*erase_cmd)(struct mtd_info *mtd, int page);
-	int (*scan_bbt)(struct mtd_info *mtd);
 	int (*errstat)(struct mtd_info *mtd, struct nand_chip *this, int state,
 			int status, int page);
 	int (*write_page)(struct mtd_info *mtd, struct nand_chip *chip,
@@ -634,8 +632,7 @@ struct nand_manufacturers {
 extern struct nand_flash_dev nand_flash_ids[];
 extern struct nand_manufacturers nand_manuf_ids[];
 
-extern int nand_update_bbt(struct mtd_info *mtd, loff_t offs);
-extern int nand_default_bbt(struct mtd_info *mtd);
+extern int nand_create_bbt(struct mtd_info *mtd);
 extern int nand_markbad_bbt(struct mtd_info *mtd, loff_t offs);
 extern int nand_markgood_bbt(struct mtd_info *mtd, loff_t offs);
 extern int nand_isbad_bbt(struct mtd_info *mtd, loff_t offs, int allowbbt);

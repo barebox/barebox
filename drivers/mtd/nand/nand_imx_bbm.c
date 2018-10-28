@@ -129,7 +129,7 @@ static int attach_bbt(struct mtd_info *mtd, void *bbt)
 	free(chip->bbt);
 	chip->bbt = bbt;
 
-	return nand_update_bbt(mtd, 0);
+	return nand_create_bbt(mtd);
 }
 
 static int do_imx_nand_bbm(int argc, char *argv[])

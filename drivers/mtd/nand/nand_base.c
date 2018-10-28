@@ -2956,10 +2956,6 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 #endif
 	if (!chip->read_buf)
 		chip->read_buf = busw ? nand_read_buf16 : nand_read_buf;
-#ifdef CONFIG_NAND_BBT
-	if (!chip->scan_bbt)
-		chip->scan_bbt = nand_default_bbt;
-#endif
 	if (!chip->controller) {
 		chip->controller = &chip->hwcontrol;
 	}
@@ -3825,7 +3821,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 		return 0;
 
 	/* Build bad block table */
-	return chip->scan_bbt(mtd);
+	return nand_create_bbt(mtd);
 }
 EXPORT_SYMBOL(nand_scan_tail);
 

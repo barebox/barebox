@@ -36,13 +36,13 @@
 #include <clock.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
-#include <linux/err.h>
+#include <linux/mtd/nand_bch.h>
 #include <linux/mtd/nand_ecc.h>
+#include <linux/err.h>
 #include <asm/byteorder.h>
 #include <io.h>
 #include <malloc.h>
 #include <module.h>
-#include <linux/mtd/nand_bch.h>
 
 /* Define default oob placement schemes for large and small page devices */
 static struct nand_ecclayout nand_oob_8 = {
@@ -376,22 +376,20 @@ static int nand_default_block_markbad(struct mtd_info *mtd, loff_t ofs)
  * block table(s) and/or marker(s)). We only allow the hardware driver to
  * specify how to write bad block markers to OOB (chip->block_markbad).
  *
- * We try operations in the following order, according to our bbt_options
- * (NAND_BBT_NO_OOB_BBM and NAND_BBT_USE_FLASH):
+ * We try operations in the following order:
  *  (1) erase the affected block, to allow OOB marker to be written cleanly
- *  (2) update in-memory BBT
- *  (3) write bad block marker to OOB area of affected block
- *  (4) update flash-based BBT
- * Note that we retain the first error encountered in (3) or (4), finish the
+ *  (2) write bad block marker to OOB area of affected block (unless flag
+ *      NAND_BBT_NO_OOB_BBM is present)
+ *  (3) update the BBT
+ * Note that we retain the first error encountered in (2) or (3), finish the
  * procedures, and dump the error in the end.
-*/
+ */
 static int nand_block_markbad_lowlevel(struct mtd_info *mtd, loff_t ofs)
 {
 	struct nand_chip *chip = mtd->priv;
-	int block, res, ret = 0;
-	int write_oob = !(chip->bbt_options & NAND_BBT_NO_OOB_BBM);
+	int res, ret = 0;
 
-	if (write_oob) {
+	if (!(chip->bbt_options & NAND_BBT_NO_OOB_BBM)) {
 		struct erase_info einfo;
 
 		/* Attempt erase before marking OOB */
@@ -400,24 +398,16 @@ static int nand_block_markbad_lowlevel(struct mtd_info *mtd, loff_t ofs)
 		einfo.addr = ofs;
 		einfo.len = 1 << chip->phys_erase_shift;
 		nand_erase_nand(mtd, &einfo, 0);
-	}
 
-	/* Get block number */
-	block = (int)(ofs >> chip->bbt_erase_shift);
-	/* Mark block bad in memory-based BBT */
-	if (chip->bbt)
-		chip->bbt[block >> 2] |= 0x01 << ((block & 0x03) << 1);
-
-	/* Write bad block marker to OOB */
-	if (write_oob) {
+		/* Write bad block marker to OOB */
 		nand_get_device(mtd, FL_WRITING);
 		ret = chip->block_markbad(mtd, ofs);
 		nand_release_device(mtd);
 	}
 
-	/* Update flash-based bad block table */
-	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt_options & NAND_BBT_USE_FLASH) {
-		res = nand_update_bbt(mtd, ofs);
+	/* Mark block bad in BBT */
+	if (chip->bbt) {
+		res = nand_markbad_bbt(mtd, ofs);
 		if (!ret)
 			ret = res;
 	}
@@ -426,6 +416,57 @@ static int nand_block_markbad_lowlevel(struct mtd_info *mtd, loff_t ofs)
 		mtd->ecc_stats.badblocks++;
 
 	return ret;
+}
+
+/**
+ * nand_block_markgood_lowlevel - mark a block good
+ * @mtd: MTD device structure
+ * @ofs: offset from device start
+ *
+ * We try operations in the following order:
+ *  (1) erase the affected block
+ *  (2) check bad block marker
+ *  (3) update the BBT
+ */
+static int nand_block_markgood_lowlevel(struct mtd_info *mtd, loff_t ofs)
+{
+	struct nand_chip *chip = mtd->priv;
+	bool allow_erasebad;
+	int ret;
+
+	if (!(chip->bbt_options & NAND_BBT_NO_OOB_BBM)) {
+		struct erase_info einfo;
+
+		/* Attempt erase possibly bad block */
+		allow_erasebad = mtd->allow_erasebad;
+		mtd->allow_erasebad = true;
+		memset(&einfo, 0, sizeof(einfo));
+		einfo.mtd = mtd;
+		einfo.addr = ofs;
+		einfo.len = 1 << chip->phys_erase_shift;
+		nand_erase_nand(mtd, &einfo, 0);
+		mtd->allow_erasebad = allow_erasebad;
+
+		/*
+		 * Verify erase succeded. We need to select chip again,
+		 * as nand_erase_nand deselected it.
+		 */
+		ret = chip->block_bad(mtd, ofs, 1);
+		if (ret)
+			return ret;
+	}
+
+	/* Mark block good in BBT */
+	if (chip->bbt) {
+		ret = nand_markgood_bbt(mtd, ofs);
+		if (ret)
+			return ret;
+	}
+
+	if (mtd->ecc_stats.badblocks > 0)
+		mtd->ecc_stats.badblocks--;
+
+	return 0;
 }
 
 /**
@@ -469,38 +510,6 @@ static int nand_block_checkbad(struct mtd_info *mtd, loff_t ofs, int getchip,
 	}
 
 	return chip->block_bad(mtd, ofs, getchip);
-}
-
-/**
- * nand_default_block_markgood - [DEFAULT] mark a block good
- * @mtd:	MTD device structure
- * @ofs:	offset from device start
- *
- * This is the default implementation, which can be overridden by
- * a hardware specific driver.
-*/
-static __maybe_unused  int nand_default_block_markgood(struct mtd_info *mtd, loff_t ofs)
-{
-	struct nand_chip *chip = mtd->priv;
-	int block, res, ret = 0;
-
-	/* Get block number */
-	block = (int)(ofs >> chip->bbt_erase_shift);
-	/* Mark block good in memory-based BBT */
-	if (chip->bbt)
-		chip->bbt[block >> 2] &= ~(0x01 << ((block & 0x03) << 1));
-
-	/* Update flash-based bad block table */
-	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt_options & NAND_BBT_USE_FLASH) {
-		res = nand_update_bbt(mtd, ofs);
-		if (!ret)
-			ret = res;
-	}
-
-	if (!ret)
-		mtd->ecc_stats.badblocks++;
-
-	return ret;
 }
 
 /* Wait for the ready pin, after a command. The timeout is caught later. */
@@ -2839,13 +2848,12 @@ static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 }
 
 /**
- * nand_block_markgood - [MTD Interface] Mark block at the given offset as bad
+ * nand_block_markgood - [MTD Interface] Mark block at the given offset as good
  * @mtd: MTD device structure
  * @ofs: offset relative to mtd start
  */
 static int nand_block_markgood(struct mtd_info *mtd, loff_t ofs)
 {
-	struct nand_chip *chip = mtd->priv;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_MTD_WRITE))
@@ -2859,7 +2867,7 @@ static int nand_block_markgood(struct mtd_info *mtd, loff_t ofs)
 	if (!ret)
 		return 0;
 
-	return chip->block_markgood(mtd, ofs);
+	return nand_block_markgood_lowlevel(mtd, ofs);
 }
 
 /**
@@ -2943,8 +2951,6 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 #ifdef CONFIG_MTD_WRITE
 	if (!chip->block_markbad)
 		chip->block_markbad = nand_default_block_markbad;
-	if (!chip->block_markgood)
-		chip->block_markgood = nand_default_block_markgood;
 	if (!chip->write_buf)
 		chip->write_buf = busw ? nand_write_buf16 : nand_write_buf;
 #endif

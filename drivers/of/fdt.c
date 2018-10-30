@@ -227,7 +227,7 @@ static struct device_node *__of_unflatten_dtb(const void *infdt, bool constprops
 				p = of_new_property(node, name, nodep, len);
 
 			if (!strcmp(name, "phandle") && len == 4)
-				node->phandle = be32_to_cpup(p->value);
+				node->phandle = be32_to_cpup(of_property_get_value(p));
 
 			dt_struct = dt_struct_advance(&f, dt_struct,
 					sizeof(struct fdt_property) + len);

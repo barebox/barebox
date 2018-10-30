@@ -697,7 +697,6 @@ static void cb_download(struct f_fastboot *f_fb, const char *cmd)
 		fastboot_tx_print(f_fb, "FAILdata invalid size");
 	} else {
 		struct usb_request *req = f_fb->out_req;
-		struct usb_ep *ep = f_fb->out_ep;
 		fastboot_tx_print(f_fb, "DATA%08x", f_fb->download_size);
 		req->complete = rx_handler_dl_image;
 		req->length = rx_bytes_expected(f_fb);

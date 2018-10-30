@@ -82,38 +82,38 @@ static void __always_inline at91sam926x_sdramc_init(struct at91sam926x_board_cfg
 		return;
 
 	/* SDRAMC_MR : Normal Mode */
-	__raw_writel(AT91_SDRAMC_MR, cfg->sdramc + AT91_SDRAMC_MODE_NORMAL);
+	__raw_writel(AT91_SDRAMC_MODE_NORMAL, cfg->sdramc + AT91_SDRAMC_MR);
 
 	/* SDRAMC_TR - Refresh Timer register */
-	__raw_writel(AT91_SDRAMC_TR, cfg->sdramc + cfg->sdrc_tr1);
+	__raw_writel(cfg->sdrc_tr1, cfg->sdramc + AT91_SDRAMC_TR);
 
 	/* SDRAMC_CR - Configuration register*/
-	__raw_writel(AT91_SDRAMC_CR, cfg->sdramc + cfg->sdrc_cr);
+	__raw_writel(cfg->sdrc_cr, cfg->sdramc + AT91_SDRAMC_CR);
 
 	/* Memory Device Type */
-	__raw_writel(AT91_SDRAMC_MDR, cfg->sdramc + cfg->sdrc_mdr);
+	__raw_writel(cfg->sdrc_mdr, cfg->sdramc + AT91_SDRAMC_MDR);
 
 	/* SDRAMC_MR : Precharge All */
-	__raw_writel(AT91_SDRAMC_MR, cfg->sdramc + AT91_SDRAMC_MODE_PRECHARGE);
+	__raw_writel(AT91_SDRAMC_MODE_PRECHARGE, cfg->sdramc + AT91_SDRAMC_MR);
 	access_sdram();
 
 	/* SDRAMC_MR : refresh */
-	__raw_writel(AT91_SDRAMC_MR, cfg->sdramc + AT91_SDRAMC_MODE_REFRESH);
+	__raw_writel(AT91_SDRAMC_MODE_REFRESH, cfg->sdramc + AT91_SDRAMC_MR);
 
 	/* access SDRAM 8 times */
 	for (i = 0; i < 8; i++)
 		access_sdram();
 
 	/* SDRAMC_MR : Load Mode Register */
-	__raw_writel(AT91_SDRAMC_MR, cfg->sdramc + AT91_SDRAMC_MODE_LMR);
+	__raw_writel(AT91_SDRAMC_MODE_LMR, cfg->sdramc + AT91_SDRAMC_MR);
 	access_sdram();
 
 	/* SDRAMC_MR : Normal Mode */
-	__raw_writel(AT91_SDRAMC_MR, cfg->sdramc + AT91_SDRAMC_MODE_NORMAL);
+	__raw_writel(AT91_SDRAMC_MODE_NORMAL, cfg->sdramc + AT91_SDRAMC_MR);
 	access_sdram();
 
 	/* SDRAMC_TR : Refresh Timer Counter */
-	__raw_writel(AT91_SDRAMC_TR, cfg->sdramc + cfg->sdrc_tr2);
+	__raw_writel(cfg->sdrc_tr2, cfg->sdramc + AT91_SDRAMC_TR);
 	access_sdram();
 }
 

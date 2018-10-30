@@ -550,6 +550,13 @@ config MACH_AT91SAM9X5EK
 	  Select this if you re using Atmel's AT91SAM9x5-EK Evaluation Kit.
 	  Supported chips are sam9g15, sam9g25, sam9x25, sam9g35 and sam9x35.
 
+config MACH_MICROCHIP_KSZ9477_EVB
+	bool "Microchip EVB-KSZ9477 Evaluation Kit"
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using Microchip's EVB-KSZ9477 Evaluation Kit.
+
 endif
 
 comment "AT91 Board Options"

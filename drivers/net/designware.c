@@ -408,11 +408,21 @@ static void dwc_version(struct device_d *dev, u32 hwid)
 
 static int dwc_probe_dt(struct device_d *dev, struct dw_eth_dev *priv)
 {
+	struct device_node *child;
+
 	if (!IS_ENABLED(CONFIG_OFTREE))
 		return -ENODEV;
 
 	priv->phy_addr = -1;
 	priv->interface = of_get_phy_mode(dev->device_node);
+
+	/* Set MDIO bus device node, if present. */
+	for_each_child_of_node(dev->device_node, child) {
+		if (of_device_is_compatible(child, "snps,dwmac-mdio")) {
+			priv->miibus.dev.device_node = child;
+			break;
+		}
+	}
 
 	return 0;
 }

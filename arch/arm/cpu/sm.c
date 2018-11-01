@@ -184,6 +184,9 @@ int armv7_secure_monitor_install(void)
 		return -EINVAL;
 	}
 
+	if (__boot_cpu_mode == HYP_MODE)
+		return 0;
+
 	mmuon = get_cr() & CR_M;
 
 	vbar = get_vbar();

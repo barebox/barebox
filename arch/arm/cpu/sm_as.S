@@ -148,17 +148,6 @@ hyp_trap:
         mov pc, lr                              @ do no switch modes, but
                                                 @ return to caller
 
-ENTRY(armv7_switch_to_hyp)
-	mov	r0, lr
-	mov	r1, sp		@ save SVC copy of LR and SP
-	isb
-	hvc #0			@ for older asm: .byte 0x70, 0x00, 0x40, 0xe1
-	mov	sp, r1
-	mov	lr, r0		@ restore SVC copy of LR and SP
-
-	bx	lr
-ENDPROC(armv7_switch_to_hyp)
-
 ENTRY(psci_cpu_entry)
 	mrc	p15, 0, r0, c1, c0, 1	@ ACTLR
 	orr	r0, r0, #(1 << 6)	@ Set SMP bit

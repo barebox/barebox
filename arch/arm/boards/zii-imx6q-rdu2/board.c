@@ -16,6 +16,7 @@
 #include <common.h>
 #include <envfs.h>
 #include <gpio.h>
+#include <i2c/i2c.h>
 #include <init.h>
 #include <mach/bbu.h>
 #include <mach/imx6.h>
@@ -137,9 +138,26 @@ late_initcall(rdu2_enable_front_panel_usb);
 
 static int rdu2_devices_init(void)
 {
+	struct i2c_client client;
+
 	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
 	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
 		return 0;
+
+	client.adapter = i2c_get_adapter(1);
+	if (client.adapter) {
+		u8 reg;
+
+		/*
+		 * Reset PMIC SW1AB and SW1C rails to 1.375V. If an event
+		 * caused only the i.MX6 SoC reset, the PMIC might still be
+		 * stuck on the low voltage for the slow operating point.
+		 */
+		client.addr = 0x08; /* PMIC i2c address */
+		reg = 0x2b; /* 1.375V, valid for both rails */
+		i2c_write_reg(&client, 0x20, &reg, 1);
+		i2c_write_reg(&client, 0x2e, &reg, 1);
+	}
 
 	barebox_set_hostname("rdu2");
 

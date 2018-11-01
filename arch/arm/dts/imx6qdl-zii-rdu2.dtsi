@@ -116,19 +116,9 @@
 	};
 };
 
-&pcie {
-	host@0 {
-		#address-cells = <3>;
-		#size-cells = <2>;
-		reg = <0 0 0 0 0>;
-		device_type = "pci";
-
-		i210: i210@0 {
-			reg = <0 0 0 0 0>;
-			nvmem-cells = <&mac_address_1>;
-			nvmem-cell-names = "mac-address";
-		};
-	};
+&i210 {
+	nvmem-cells = <&mac_address_1>;
+	nvmem-cell-names = "mac-address";
 };
 
 &usbotg {

@@ -129,6 +129,10 @@ struct bcm2835_mbox_tag_hdr {
 
 /* RPi 2 */
 #define BCM2836_BOARD_REV_2_B		0x4
+/* RPi 3 */
+#define BCM2837_BOARD_REV_3_B		0x8
+/* Zero */
+#define BCM2835_BOARD_REV_ZERO		0x9
 
 /*
  * 0x2..0xf from:

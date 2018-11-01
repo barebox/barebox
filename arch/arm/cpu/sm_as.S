@@ -129,7 +129,9 @@ secure_monitor:
 	sub	sp, sp, #4*4			@ allocate result structure on stack
 	mov	r12, sp
 	push	{r4-r6, r12}
+#ifdef CONFIG_ARM_PSCI
 	bl	psci_entry
+#endif
 	pop	{r4-r6, r12}
 	ldm	r12, {r0-r3}
 	add	sp, sp, #4*4
@@ -163,6 +165,8 @@ ENTRY(psci_cpu_entry)
 	mcr	p15, 0, r0, c1, c0, 1	@ ACTLR
 
 	bl	secure_monitor_stack_setup
+#ifdef CONFIG_ARM_PSCI
 	bl	psci_cpu_entry_c
+#endif
 
 ENDPROC(psci_cpu_entry)

@@ -60,6 +60,32 @@
 #define CR_AFE  (1 << 29)	/* Access flag enable			*/
 #define CR_TE   (1 << 30)	/* Thumb exception enable		*/
 
+/*
+ * PSR bits
+ */
+#define USR_MODE	0x00000010
+#define FIQ_MODE	0x00000011
+#define IRQ_MODE	0x00000012
+#define SVC_MODE	0x00000013
+#define ABT_MODE	0x00000017
+#define HYP_MODE	0x0000001a
+#define UND_MODE	0x0000001b
+#define SYSTEM_MODE	0x0000001f
+#define MODE32_BIT	0x00000010
+#define MODE_MASK	0x0000001f
+
+#define PSR_T_BIT	0x00000020
+#define PSR_F_BIT	0x00000040
+#define PSR_I_BIT	0x00000080
+#define PSR_A_BIT	0x00000100
+#define PSR_E_BIT	0x00000200
+#define PSR_J_BIT	0x01000000
+#define PSR_Q_BIT	0x08000000
+#define PSR_V_BIT	0x10000000
+#define PSR_C_BIT	0x20000000
+#define PSR_Z_BIT	0x40000000
+#define PSR_N_BIT	0x80000000
+
 #ifndef __ASSEMBLY__
 #if __LINUX_ARM_ARCH__ >= 7
 static inline unsigned int current_el(void)

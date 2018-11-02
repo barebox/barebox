@@ -145,6 +145,4 @@
 
 #define CONFIG_DRAM_BASE	AT91_CHIPSELECT_1
 
-#define CONSISTENT_DMA_SIZE	(14 * SZ_1M)
-
 #endif

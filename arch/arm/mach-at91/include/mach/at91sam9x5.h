@@ -152,6 +152,4 @@
 #define AT91SAM9X5_OHCI_BASE	0x00600000	/* USB Host controller (OHCI) */
 #define AT91SAM9X5_EHCI_BASE	0x00700000	/* USB Host controller (EHCI) */
 
-#define CONSISTENT_DMA_SIZE	SZ_4M
-
 #endif

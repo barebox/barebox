@@ -510,7 +510,7 @@ static int at91_pinctrl_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	dev_info(dev, "AT91 pinctrl registered\n");
+	dev_dbg(dev, "AT91 pinctrl registered\n");
 
 	return 0;
 }
@@ -690,7 +690,7 @@ static int at91_gpio_probe(struct device_d *dev)
 		return ret;
 	}
 
-	dev_info(dev, "AT91 gpio driver registered\n");
+	dev_dbg(dev, "AT91 gpio driver registered\n");
 
 	return 0;
 }

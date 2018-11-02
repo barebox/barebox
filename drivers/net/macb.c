@@ -719,6 +719,13 @@ static int macb_probe(struct device_d *dev)
 	return 0;
 }
 
+static void macb_remove(struct device_d *dev)
+{
+	struct macb_device *macb = dev->priv;
+
+	macb_halt(&macb->netdev);
+}
+
 static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,at91sam9260-macb",},
 	{ /* sentinel */ }
@@ -727,6 +734,7 @@ static const struct of_device_id macb_dt_ids[] = {
 static struct driver_d macb_driver = {
 	.name  = "macb",
 	.probe = macb_probe,
+	.remove = macb_remove,
 	.of_compatible = DRV_OF_COMPAT(macb_dt_ids),
 };
 device_platform_driver(macb_driver);

@@ -51,7 +51,7 @@ struct at91sam926x_board_cfg {
 
 static void __always_inline access_sdram(void)
 {
-	writel(0x00000000, AT91_SDRAM_BASE);
+	writel(0x00000000, AT91_CHIPSELECT_1);
 }
 
 static void __always_inline pmc_check_mckrdy(void)

@@ -130,6 +130,4 @@
 #define AT91SAM9N12_SMD_BASE	0x00400000	/* SMD Controller */
 #define AT91SAM9N12_OHCI_BASE	0x00500000	/* USB Host controller (OHCI) */
 
-#define CONFIG_DRAM_BASE	AT91_CHIPSELECT_1
-
 #endif

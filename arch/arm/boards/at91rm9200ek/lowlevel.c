@@ -18,7 +18,7 @@
 
 void static inline access_sdram(void)
 {
-	writel(0x00000000, AT91_SDRAM_BASE);
+	writel(0x00000000, AT91_CHIPSELECT_1);
 }
 
 void __naked __bare_init barebox_arm_reset_vector(void)

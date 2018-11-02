@@ -105,8 +105,6 @@
 
 #define AT91_BASE_SMC	AT91SAM9260_BASE_SMC
 
-#define AT91_NB_USART	7
-
 #define AT91_PMC	0xfffffc00
 
 /*

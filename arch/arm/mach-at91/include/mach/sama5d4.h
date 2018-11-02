@@ -122,7 +122,6 @@
 #define SAMA5D4_SRAM_BASE	0x00200000	/* Internal SRAM base address */
 #define SAMA5D4_SRAM_SIZE	(128 * SZ_1K)	/* Internal SRAM size */
 
-#define AT91_NB_USART		7
 #define AT91_BASE_SYS		0xf0000000
 #define AT91_PMC		SAMA5D4_BASE_PMC
 #define AT91_DDRSDRC0		(0xf0010000 - AT91_BASE_SYS)

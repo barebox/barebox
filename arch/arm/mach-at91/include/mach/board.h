@@ -107,9 +107,6 @@ static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
 	resource_size_t start;
 	resource_size_t size = SZ_16K;
 
-	if (id >= AT91_NB_USART)
-		return NULL;
-
 	switch (id) {
 		case 0:		/* DBGU */
 			start = at91_configure_dbgu();

@@ -104,8 +104,6 @@
 #define SAMA5D3_BASE_PMECC	0xffffc070
 #define SAMA5D3_BASE_PMERRLOC	0xffffc500
 
-#define AT91_NB_USART	3
-
 #define AT91_PMC	0xfffffc00
 
 /*

@@ -19,8 +19,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		1	/* System Peripheral */
 #define AT91RM9200_ID_PIOA	2	/* Parallel IO Controller A */
 #define AT91RM9200_ID_PIOB	3	/* Parallel IO Controller B */
 #define AT91RM9200_ID_PIOC	4	/* Parallel IO Controller C */
@@ -99,21 +97,8 @@
 #define AT91_RTC	(0xfffffe00 - AT91_BASE_SYS)	/* Real-Time Clock */
 #define AT91_MC		(0xffffff00 - AT91_BASE_SYS)	/* Memory Controllers */
 
-#define AT91_BASE_PIOA	AT91RM9200_BASE_PIOA	/* PIO Controller A */
-#define AT91_BASE_PIOB	AT91RM9200_BASE_PIOB	/* PIO Controller B */
-#define AT91_BASE_PIOC	AT91RM9200_BASE_PIOC	/* PIO Controller C */
-#define AT91_BASE_PIOD	AT91RM9200_BASE_PIOD	/* PIO Controller D */
-
-#define AT91_USART0	AT91RM9200_BASE_US0
-#define AT91_USART1	AT91RM9200_BASE_US1
-#define AT91_USART2	AT91RM9200_BASE_US2
-#define AT91_USART3	AT91RM9200_BASE_US3
 #define AT91_NB_USART	5
 
-#define AT91_BASE_SPI	AT91RM9200_BASE_SPI
-#define AT91_BASE_TWI	AT91RM9200_BASE_TWI
-#define AT91_ID_UHP	AT91RM9200_ID_UHP
-#define AT91_PMC_UHP	AT91RM9200_PMC_UHP
 #define AT91_TC		(AT91RM9200_BASE_TC0 - AT91_BASE_SYS)
 
 #define AT91_MATRIX	0	/* not supported */
@@ -132,10 +117,5 @@
 #define AT91RM9200_UHP_BASE	0x00300000	/* USB Host controller */
 
 #define AT91_VA_BASE_EMAC	AT91RM9200_BASE_EMAC
-
-/*
- * Cpu Name
- */
-#define AT91_CPU_NAME	"AT91RM9200"
 
 #endif

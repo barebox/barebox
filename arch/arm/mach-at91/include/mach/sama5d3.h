@@ -15,8 +15,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		 0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		 1	/* System Peripherals */
 #define SAMA5D3_ID_DBGU		 2	/* debug Unit (usually no special interrupt line) */
 #define SAMA5D3_ID_PIT		 3	/* Periodic Interval Timer Interrupt */
 #define SAMA5D3_ID_WDT		 4	/* Watchdog timer Interrupt */

@@ -18,8 +18,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		1	/* System Controller Interrupt */
 #define AT91SAM9G45_ID_PIOA	2	/* Parallel I/O Controller A */
 #define AT91SAM9G45_ID_PIOB	3	/* Parallel I/O Controller B */
 #define AT91SAM9G45_ID_PIOC	4	/* Parallel I/O Controller C */
@@ -120,18 +118,8 @@
 #define AT91_RSTC	(0xfffffd00 - AT91_BASE_SYS)
 #define AT91_SHDWC	(0xfffffd10 - AT91_BASE_SYS)
 
-#define AT91_BASE_WDT	AT91SAM9G45_BASE_WDT
 #define AT91_BASE_SMC	AT91SAM9G45_BASE_SMC
-#define AT91_BASE_PIOA	AT91SAM9G45_BASE_PIOA
-#define AT91_BASE_PIOB	AT91SAM9G45_BASE_PIOB
-#define AT91_BASE_PIOC	AT91SAM9G45_BASE_PIOC
-#define AT91_BASE_PIOD	AT91SAM9G45_BASE_PIOD
-#define AT91_BASE_PIOE	AT91SAM9G45_BASE_PIOE
 
-#define AT91_USART0	AT91SAM9G45_BASE_US0
-#define AT91_USART1	AT91SAM9G45_BASE_US1
-#define AT91_USART2	AT91SAM9G45_BASE_US2
-#define AT91_USART3	AT91SAM9G45_BASE_US3
 #define AT91_NB_USART	5
 
 #define AT91_PMC	0xfffffc00
@@ -152,10 +140,5 @@
 #define AT91SAM9G45_VDEC_BASE	0x00900000	/* Video Decoder Controller */
 
 #define CONFIG_DRAM_BASE	AT91_CHIPSELECT_6
-
-/*
- * Cpu Name
- */
-#define AT91_CPU_NAME	"AT91SAM9G45"
 
 #endif

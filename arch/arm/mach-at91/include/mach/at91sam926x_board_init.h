@@ -18,6 +18,7 @@
 #include <mach/at91_wdt.h>
 #include <mach/hardware.h>
 #include <mach/gpio.h>
+#include <mach/at91sam926x.h>
 
 struct at91sam926x_board_cfg {
 	/* SoC specific */
@@ -124,7 +125,7 @@ static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg 
 	if (!IS_ENABLED(CONFIG_AT91SAM926X_BOARD_INIT))
 		return;
 
-	__raw_writel(cfg->wdt_mr, AT91_BASE_WDT + AT91_WDT_MR);
+	__raw_writel(cfg->wdt_mr, AT91SAM926X_BASE_WDT + AT91_WDT_MR);
 
 	/* configure PIOx as EBI0 D[16-31] */
 	at91_mux_gpio_disable(cfg->pio, cfg->ebi_pio_pdr);

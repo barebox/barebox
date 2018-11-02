@@ -18,8 +18,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		1	/* System Controller Interrupt */
 #define AT91SAM9X5_ID_PIOAB	2	/* Parallel I/O Controller A and B */
 #define AT91SAM9X5_ID_PIOCD	3	/* Parallel I/O Controller C and D */
 #define AT91SAM9X5_ID_SMD	4	/* SMD Soft Modem (SMD) */
@@ -123,17 +121,8 @@
 #define AT91_RSTC	(0xfffffe00 - AT91_BASE_SYS)
 #define AT91_SHDWC	(0xfffffe10 - AT91_BASE_SYS)
 
-#define AT91_BASE_WDT	AT91SAM9X5_BASE_WDT
 #define AT91_BASE_SMC	AT91SAM9X5_BASE_SMC
-#define AT91_BASE_PIOA	AT91SAM9X5_BASE_PIOA
-#define AT91_BASE_PIOB	AT91SAM9X5_BASE_PIOB
-#define AT91_BASE_PIOC	AT91SAM9X5_BASE_PIOC
-#define AT91_BASE_PIOD	AT91SAM9X5_BASE_PIOD
 
-#define AT91_USART0	AT91SAM9X5_BASE_US0
-#define AT91_USART1	AT91SAM9X5_BASE_US1
-#define AT91_USART2	AT91SAM9X5_BASE_US2
-#define AT91_USART3	AT91SAM9X5_BASE_US3
 #define AT91_NB_USART	5
 
 #define AT91_PMC	0xfffffc00

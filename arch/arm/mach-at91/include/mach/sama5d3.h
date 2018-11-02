@@ -123,32 +123,4 @@
 #define SAMA5D3_OHCI_BASE	0x00600000	/* USB Host controller (OHCI) */
 #define SAMA5D3_EHCI_BASE	0x00700000	/* USB Host controller (EHCI) */
 
-/*
- * DMA0 peripheral identifiers
- * for hardware handshaking interface
- */
-#define SAMA5_DMA_ID_MCI0	 0
-#define SAMA5_DMA_ID_SPI0_TX	 1
-#define SAMA5_DMA_ID_SPI0_RX	 2
-#define SAMA5_DMA_ID_USART0_TX	 3
-#define SAMA5_DMA_ID_USART0_RX	 4
-#define SAMA5_DMA_ID_USART1_TX	 5
-#define SAMA5_DMA_ID_USART1_RX	 6
-#define SAMA5_DMA_ID_TWI0_TX	 7
-#define SAMA5_DMA_ID_TWI0_RX	 8
-#define SAMA5_DMA_ID_TWI1_TX	 9
-#define SAMA5_DMA_ID_TWI1_RX	10
-#define SAMA5_DMA_ID_UART0_TX	11
-#define SAMA5_DMA_ID_UART0_RX	12
-#define SAMA5_DMA_ID_SSC0_TX	13
-#define SAMA5_DMA_ID_SSC0_RX	14
-#define SAMA5_DMA_ID_SMD_TX	15
-#define SAMA5_DMA_ID_SMD_RX	16
-
-/*
- * DMA1 peripheral identifiers
- * for hardware handshaking interface
- */
-#define SAMA5_DMA_ID_MCI1	0
-
 #endif

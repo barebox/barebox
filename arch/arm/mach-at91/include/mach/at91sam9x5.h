@@ -154,45 +154,4 @@
 
 #define CONSISTENT_DMA_SIZE	SZ_4M
 
-/*
- * DMA0 peripheral identifiers
- * for hardware handshaking interface
- */
-#define AT_DMA_ID_MCI0		 0
-#define AT_DMA_ID_SPI0_TX	 1
-#define AT_DMA_ID_SPI0_RX	 2
-#define AT_DMA_ID_USART0_TX	 3
-#define AT_DMA_ID_USART0_RX	 4
-#define AT_DMA_ID_USART1_TX	 5
-#define AT_DMA_ID_USART1_RX	 6
-#define AT_DMA_ID_TWI0_TX	 7
-#define AT_DMA_ID_TWI0_RX	 8
-#define AT_DMA_ID_TWI2_TX	 9
-#define AT_DMA_ID_TWI2_RX	10
-#define AT_DMA_ID_UART0_TX	11
-#define AT_DMA_ID_UART0_RX	12
-#define AT_DMA_ID_SSC_TX	13
-#define AT_DMA_ID_SSC_RX	14
-
-/*
- * DMA1 peripheral identifiers
- * for hardware handshaking interface
- */
-#define AT_DMA_ID_MCI1		 0
-#define AT_DMA_ID_SPI1_TX	 1
-#define AT_DMA_ID_SPI1_RX	 2
-#define AT_DMA_ID_SMD_TX	 3
-#define AT_DMA_ID_SMD_RX	 4
-#define AT_DMA_ID_TWI1_TX	 5
-#define AT_DMA_ID_TWI1_RX	 6
-#define AT_DMA_ID_ADC_RX	 7
-#define AT_DMA_ID_DBGU_TX	 8
-#define AT_DMA_ID_DBGU_RX	 9
-#define AT_DMA_ID_UART1_TX	10
-#define AT_DMA_ID_UART1_RX	11
-#define AT_DMA_ID_USART2_TX	12
-#define AT_DMA_ID_USART2_RX	13
-#define AT_DMA_ID_USART3_TX	14
-#define AT_DMA_ID_USART3_RX	15
-
 #endif

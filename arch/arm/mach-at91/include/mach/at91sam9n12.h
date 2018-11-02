@@ -147,38 +147,4 @@
 
 #define CONSISTENT_DMA_SIZE	(14 * SZ_1M)
 
-/*
- * DMA0 peripheral identifiers
- * for hardware handshaking interface
- */
-#define AT_DMA_ID_MCI		0
-#define AT_DMA_ID_SPI0_TX	1
-#define AT_DMA_ID_SPI0_RX	2
-#define AT_DMA_ID_SPI1_TX	3
-#define AT_DMA_ID_SPI1_RX	4
-#define AT_DMA_ID_USART0_TX	5
-#define AT_DMA_ID_USART0_RX	6
-#define AT_DMA_ID_USART1_TX	7
-#define AT_DMA_ID_USART1_RX	8
-#define AT_DMA_ID_USART2_TX	9
-#define AT_DMA_ID_USART2_RX	10
-#define AT_DMA_ID_USART3_TX	11
-#define AT_DMA_ID_USART3_RX	12
-#define AT_DMA_ID_TWI0_TX	13
-#define AT_DMA_ID_TWI0_RX	14
-#define AT_DMA_ID_TWI1_TX	15
-#define AT_DMA_ID_TWI1_RX	16
-#define AT_DMA_ID_UART0_TX	17
-#define AT_DMA_ID_UART0_RX	18
-#define AT_DMA_ID_UART1_TX	19
-#define AT_DMA_ID_UART1_RX	20
-#define AT_DMA_ID_SSC_TX	21
-#define AT_DMA_ID_SSC_RX	22
-#define AT_DMA_ID_ADC_RX	23
-#define AT_DMA_ID_DBGU_TX	24
-#define AT_DMA_ID_DBGU_RX	25
-#define AT_DMA_ID_AES_TX	26
-#define AT_DMA_ID_AES_RX	27
-#define AT_DMA_ID_SHA_RX	28
-
 #endif

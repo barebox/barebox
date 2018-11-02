@@ -618,9 +618,10 @@ static int macb_probe(struct device_d *dev)
 	const char *pclk_name;
 	u32 ncfgr;
 
-	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct macb_device));
-	edev->priv = (struct macb_device *)(edev + 1);
-	macb = edev->priv;
+	macb = xzalloc(sizeof(*macb));
+	edev = &macb->netdev;
+	edev->priv = macb;
+	dev->priv = macb;
 
 	macb->dev = dev;
 

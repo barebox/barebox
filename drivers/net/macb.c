@@ -65,7 +65,6 @@ struct macb_device {
 
 	unsigned int		rx_tail;
 	unsigned int		tx_head;
-	unsigned int		tx_tail;
 
 	void			*rx_buffer;
 	void			*tx_buffer;
@@ -344,7 +343,7 @@ static void macb_init(struct macb_device *macb)
 	}
 	macb->tx_ring[TX_RING_SIZE - 1].addr |= MACB_BIT(TX_WRAP);
 
-	macb->rx_tail = macb->tx_head = macb->tx_tail = 0;
+	macb->rx_tail = macb->tx_head = 0;
 
 	macb_configure_dma(macb);
 

@@ -90,7 +90,7 @@
  * System Peripherals
  */
 #define AT91SAM9X5_BASE_MATRIX		0xffffde00
-#define AT9SAM9X5_BASE1_PMECC		0xffffe000
+#define AT91SAM9X5_BASE_PMECC		0xffffe000
 #define AT91SAM9X5_BASE_PMERRLOC	0xffffe600
 #define AT91SAM9X5_BASE_DDRSDRC0	0xffffe800
 #define AT91SAM9X5_BASE_SMC		0xffffea00

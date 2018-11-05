@@ -327,7 +327,7 @@ static void animeo_ip_shutdown(void)
 	 * so linux can detect that we only enable the uart2
 	 * and use it for decompress
 	 */
-	animeo_ip_shutdown_uart(IOMEM(AT91_DBGU + AT91_BASE_SYS));
+	animeo_ip_shutdown_uart(IOMEM(AT91SAM9260_BASE_DBGU));
 	animeo_ip_shutdown_uart(IOMEM(AT91SAM9260_BASE_US0));
 	animeo_ip_shutdown_uart(IOMEM(AT91SAM9260_BASE_US1));
 }

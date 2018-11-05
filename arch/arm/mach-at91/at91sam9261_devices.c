@@ -270,7 +270,7 @@ resource_size_t __init at91_configure_dbgu(void)
 	at91_set_A_periph(AT91_PIN_PA9, 1);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PA10, 0);		/* DTXD */
 
-	return AT91_BASE_SYS + AT91_DBGU;
+	return AT91SAM9261_BASE_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)

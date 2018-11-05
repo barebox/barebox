@@ -132,8 +132,8 @@ static struct resource nand_resources[] = {
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
-		.start	= AT91_BASE_SYS + AT91_ECC,
-		.end	= AT91_BASE_SYS + AT91_ECC + 512 - 1,
+		.start	= AT91SAM9260_BASE_ECC,
+		.end	= AT91SAM9260_BASE_ECC + 512 - 1,
 		.flags	= IORESOURCE_MEM,
 	}
 };
@@ -266,7 +266,7 @@ resource_size_t __init at91_configure_dbgu(void)
 	at91_set_A_periph(AT91_PIN_PB14, 1);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PB15, 0);		/* DTXD */
 
-	return AT91_BASE_SYS + AT91_DBGU;
+	return AT91SAM9260_BASE_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)

@@ -118,6 +118,13 @@ config CRC_CCITT
 	  the kernel tree does. Such modules that use library CRC-CCITT
 	  functions require M here.
 
+config CRC8
+        bool "CRC8 function"
+	help
+	  This option provides CRC8 function. Drivers may select this
+	  when they need to do cyclic redundancy check according CRC8
+	  algorithm. Module will be called crc8.
+
 source lib/gui/Kconfig
 
 source lib/fonts/Kconfig

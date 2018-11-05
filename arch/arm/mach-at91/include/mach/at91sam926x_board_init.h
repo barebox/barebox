@@ -121,6 +121,7 @@ static void __always_inline at91sam926x_sdramc_init(struct at91sam926x_board_cfg
 static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg *cfg)
 {
 	u32 r;
+	void __iomem *pmc = IOMEM(AT91SAM926X_BASE_PMC);
 
 	if (!IS_ENABLED(CONFIG_AT91SAM926X_BOARD_INIT))
 		return;
@@ -142,28 +143,28 @@ static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg 
 	at91_smc_write(cfg->smc_cs, AT91_SMC_SETUP, cfg->smc_setup);
 
 	/* PMC Check if the PLL is already initialized */
-	r = at91_pmc_read(AT91_PMC_MCKR);
+	r = readl(pmc + AT91_PMC_MCKR);
 	if ((r & AT91_PMC_CSS) && !running_in_sram())
 		return;
 
 	/* Enable the Main Oscillator */
-	at91_pmc_write(AT91_CKGR_MOR, cfg->pmc_mor);
+	writel(cfg->pmc_mor, pmc + AT91_CKGR_MOR);
 	do {
-		r = at91_pmc_read(AT91_PMC_SR);
+		r = readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_MOSCS));
 
 	/* PLLAR: x MHz for PCK */
-	at91_pmc_write(AT91_CKGR_PLLAR, cfg->pmc_pllar);
+	writel(cfg->pmc_pllar, pmc + AT91_CKGR_PLLAR);
 	do {
-		r = at91_pmc_read(AT91_PMC_SR);
+		r = readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_LOCKA));
 
 	/* PCK/x = MCK Master Clock from SLOW */
-	at91_pmc_write(AT91_PMC_MCKR, cfg->pmc_mckr1);
+	writel(cfg->pmc_mckr1, pmc + AT91_PMC_MCKR);
 	pmc_check_mckrdy();
 
 	/* PCK/x = MCK Master Clock from PLLA */
-	at91_pmc_write(AT91_PMC_MCKR, cfg->pmc_mckr2);
+	writel(cfg->pmc_mckr2, pmc + AT91_PMC_MCKR);
 	pmc_check_mckrdy();
 
 	/* Init SDRAM */
@@ -178,7 +179,7 @@ static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg 
 	 * so enable all of them
 	 * We will shutdown what we don't need later
 	 */
-	at91_pmc_write(AT91_PMC_PCER, 0xffffffff);
+	writel(0xffffffff, pmc + AT91_PMC_PCER);
 }
 
 #endif /* __AT91SAM926X_BOARD_INIT_H__ */

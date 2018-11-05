@@ -26,23 +26,24 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 	u32 r;
 	int i;
 	void __iomem *mc = IOMEM(AT91RM9200_BASE_MC);
+	void __iomem *pmc = IOMEM(AT91RM9200_BASE_PMC);
 
 	arm_cpu_lowlevel_init();
 
 	/*
 	 * PMC Check if the PLL is already initialized
 	 */
-	r = at91_pmc_read(AT91_PMC_MCKR);
+	r = __raw_readl(pmc + AT91_PMC_MCKR);
 	if (r & AT91_PMC_CSS)
 		goto end;
 
 	/*
 	 * Enable the Main Oscillator
 	 */
-	at91_pmc_write(AT91_CKGR_MOR, CONFIG_SYS_MOR_VAL);
+	__raw_writel(CONFIG_SYS_MOR_VAL, pmc + AT91_CKGR_MOR);
 
 	do {
-		r = at91_pmc_read(AT91_PMC_SR);
+		r = __raw_readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_MOSCS));
 
 	/*
@@ -62,24 +63,24 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 	/*
 	 * PLLAR: x MHz for PCK
 	 */
-	at91_pmc_write(AT91_CKGR_PLLAR, CONFIG_SYS_PLLAR_VAL);
+	__raw_writel(CONFIG_SYS_PLLAR_VAL, pmc + AT91_CKGR_PLLAR);
 
 	do {
-		r = at91_pmc_read(AT91_PMC_SR);
+		r = __raw_readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_LOCKA));
 
 	/*
 	 * PCK/x = MCK Master Clock from SLOW
 	 */
-	at91_pmc_write(AT91_PMC_MCKR, CONFIG_SYS_MCKR2_VAL1);
+	__raw_writel(CONFIG_SYS_MCKR2_VAL1, pmc + AT91_PMC_MCKR);
 
 	/*
 	 * PCK/x = MCK Master Clock from PLLA
 	 */
-	at91_pmc_write(AT91_PMC_MCKR, CONFIG_SYS_MCKR2_VAL2);
+	__raw_writel(CONFIG_SYS_MCKR2_VAL2, pmc + AT91_PMC_MCKR);
 
 	do {
-		r = at91_pmc_read(AT91_PMC_SR);
+		r = __raw_readl(pmc + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_MCKRDY));
 
 	/*

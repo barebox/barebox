@@ -231,30 +231,12 @@ static void animeo_ip_power_control(void)
 
 static void animeo_ip_phy_reset(void)
 {
-	unsigned long rstc;
 	int i;
-	struct clk *clk = clk_get(NULL, "macb_clk");
-
-	clk_enable(clk);
 
 	for (i = AT91_PIN_PA12; i <= AT91_PIN_PA29; i++)
 		at91_set_gpio_input(i, 0);
 
-	rstc = at91_sys_read(AT91_RSTC_MR) & AT91_RSTC_ERSTL;
-
-	/* Need to reset PHY -> 500ms reset */
-	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
-				     (AT91_RSTC_ERSTL & (0x0d << 8)) |
-				     AT91_RSTC_URSTEN);
-
-	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_EXTRST);
-
-	/* Wait for end hardware reset */
-	while (!(at91_sys_read(AT91_RSTC_SR) & AT91_RSTC_NRSTL))
-		;
-
-	/* Restore NRST value */
-	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY | (rstc) | AT91_RSTC_URSTEN);
+	at91sam_phy_reset(IOMEM(AT91SAM9260_BASE_RSTC));
 }
 
 #define MACB_SA1B	0x0098

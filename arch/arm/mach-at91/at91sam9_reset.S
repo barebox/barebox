@@ -40,4 +40,4 @@ restart_sam9:		ldr	r0, .at91_va_base_sdramc			@ preload constants
 .at91_va_base_sdramc:
 	.word AT91_BASE_SYS + AT91_SDRAMC
 .at91_va_base_rstc_cr:
-	.word AT91_BASE_SYS + AT91_RSTC_CR
+	.word AT91_BASE_SYS + AT91_RSTC + AT91_RSTC_CR

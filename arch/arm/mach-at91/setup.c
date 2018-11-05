@@ -9,10 +9,12 @@
 #include <io.h>
 #include <init.h>
 #include <restart.h>
+#include <linux/clk.h>
 
 #include <mach/hardware.h>
 #include <mach/cpu.h>
 #include <mach/at91_dbgu.h>
+#include <mach/at91_rstc.h>
 
 #include "generic.h"
 
@@ -300,3 +302,26 @@ static int at91_soc_device(void)
 	return 0;
 }
 coredevice_initcall(at91_soc_device);
+
+void at91sam_phy_reset(void __iomem *rstc_base)
+{
+	unsigned long rstc;
+	struct clk *clk = clk_get(NULL, "macb_clk");
+
+	clk_enable(clk);
+
+	rstc = readl(rstc_base + AT91_RSTC_MR) & AT91_RSTC_ERSTL;
+
+	/* Need to reset PHY -> 500ms reset */
+	writel(AT91_RSTC_KEY | (AT91_RSTC_ERSTL & (0x0d << 8)) | AT91_RSTC_URSTEN,
+		rstc_base + AT91_RSTC_MR);
+
+	writel(AT91_RSTC_KEY | AT91_RSTC_EXTRST, rstc_base + AT91_RSTC_CR);
+
+	/* Wait for end hardware reset */
+	while (!(readl(rstc_base + AT91_RSTC_SR) & AT91_RSTC_NRSTL))
+		;
+
+	/* Restore NRST value */
+	writel(AT91_RSTC_KEY | (rstc) | AT91_RSTC_URSTEN, rstc_base + AT91_RSTC_MR);
+}

@@ -170,7 +170,7 @@ static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg 
 	at91sam926x_sdramc_init(cfg);
 
 	/* User reset enable*/
-	at91_sys_write(AT91_RSTC_MR, cfg->rstc_rmr);
+	writel(cfg->rstc_rmr, AT91SAM926X_BASE_RSTC + AT91_RSTC_MR);
 
 	/*
 	 * When boot from external boot

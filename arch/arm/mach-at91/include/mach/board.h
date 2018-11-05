@@ -164,4 +164,7 @@ struct at91_spi_platform_data {
 void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata);
 
 void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data);
+
+void at91sam_phy_reset(void __iomem *rstc_base);
+
 #endif

@@ -31,7 +31,6 @@
 #include <restart.h>
 #include <mach/hardware.h>
 #include <mach/at91rm9200_st.h>
-#include <mach/io.h>
 #include <io.h>
 
 static void __iomem *st = IOMEM(AT91RM9200_BASE_ST);

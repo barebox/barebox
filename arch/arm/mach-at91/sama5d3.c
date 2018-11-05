@@ -3,7 +3,6 @@
 #include <init.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
-#include <mach/io.h>
 #include <mach/cpu.h>
 #include <linux/clk.h>
 

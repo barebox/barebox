@@ -16,13 +16,13 @@
 #include <envfs.h>
 #include <init.h>
 #include <gpio.h>
+#include <io.h>
 
 #include <mach/at91sam9263_matrix.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/at91_rtt.h>
 #include <mach/hardware.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 
 static int add_smc_devices(void)
 {

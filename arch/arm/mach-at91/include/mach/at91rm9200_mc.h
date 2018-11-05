@@ -158,7 +158,8 @@
 #define		AT91RM9200_BFC_RDYEN		(1   << 19)		/* Ready Enable Mode */
 
 #ifndef __ASSEMBLY__
-#include <mach/io.h>
+#include <io.h>
+#include <mach/at91rm9200.h>
 static inline u32 at91rm9200_get_sdram_size(void)
 {
 	u32 cr, mr;

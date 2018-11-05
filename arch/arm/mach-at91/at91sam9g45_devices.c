@@ -21,7 +21,6 @@
 #include <mach/at91_rtt.h>
 #include <mach/board.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 #include <i2c/i2c-gpio.h>
 
 #include "generic.h"

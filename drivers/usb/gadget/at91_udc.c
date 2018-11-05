@@ -18,6 +18,7 @@
 #include <errno.h>
 #include <init.h>
 #include <gpio.h>
+#include <io.h>
 #include <clock.h>
 #include <usb/ch9.h>
 #include <usb/gadget.h>
@@ -33,7 +34,6 @@
 #if defined CONFIG_ARCH_AT91SAM9261 || defined CONFIG_ARCH_AT91SAM9G10
 #include <mach/at91sam9261.h>
 #endif
-#include <mach/io.h>
 #include <mach/board.h>
 #include <mach/cpu.h>
 #include <mach/at91sam9261_matrix.h>

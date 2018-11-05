@@ -20,7 +20,6 @@
 #include <mach/at91sam9x5_matrix.h>
 #include <mach/at91sam9_ddrsdr.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 #include <mach/cpu.h>
 #include <i2c/i2c-gpio.h>
 

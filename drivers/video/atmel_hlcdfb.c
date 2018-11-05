@@ -24,7 +24,6 @@
 #include <linux/clk.h>
 #include <mach/hardware.h>
 #include <mach/atmel_hlcdc.h>
-#include <mach/io.h>
 #include <mach/cpu.h>
 #include <errno.h>
 

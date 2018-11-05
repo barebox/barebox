@@ -22,7 +22,6 @@
 #include <io.h>
 #include <init.h>
 #include <mach/hardware.h>
-#include <mach/io.h>
 #include <errno.h>
 #include <linux/clk.h>
 

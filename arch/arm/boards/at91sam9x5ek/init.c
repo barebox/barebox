@@ -32,7 +32,6 @@
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
 #include <gpio.h>
-#include <mach/io.h>
 #include <mach/iomux.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>

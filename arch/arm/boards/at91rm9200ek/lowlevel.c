@@ -86,11 +86,11 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 	 */
 
 	/* PIOC_ASR: Configure PIOC as peripheral (D16/D31) */
-	__raw_writel(CONFIG_SYS_PIOC_ASR_VAL, AT91_BASE_PIOC + PIO_ASR);
+	__raw_writel(CONFIG_SYS_PIOC_ASR_VAL, AT91RM9200_BASE_PIOC + PIO_ASR);
 	/* PIOC_BSR */
-	__raw_writel(CONFIG_SYS_PIOC_BSR_VAL, AT91_BASE_PIOC + PIO_BSR);
+	__raw_writel(CONFIG_SYS_PIOC_BSR_VAL, AT91RM9200_BASE_PIOC + PIO_BSR);
 	/* PIOC_PDR */
-	__raw_writel(CONFIG_SYS_PIOC_PDR_VAL, AT91_BASE_PIOC + PIO_PDR);
+	__raw_writel(CONFIG_SYS_PIOC_PDR_VAL, AT91RM9200_BASE_PIOC + PIO_PDR);
 
 	/* EBI_CSA : CS1=SDRAM */
 	at91_sys_write(AT91_EBI_CSA, CONFIG_SYS_EBI_CSA_VAL);

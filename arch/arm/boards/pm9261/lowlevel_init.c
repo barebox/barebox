@@ -7,7 +7,7 @@
 #include <asm/barebox-arm.h>
 
 #include <mach/at91sam926x_board_init.h>
-#include <mach/at91sam9_matrix.h>
+#include <mach/at91sam9261_matrix.h>
 
 #define MASTER_PLL_DIV		15
 #define MASTER_PLL_MUL		162

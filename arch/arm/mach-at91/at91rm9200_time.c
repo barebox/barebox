@@ -30,7 +30,6 @@
 #include <clock.h>
 #include <restart.h>
 #include <mach/hardware.h>
-#include <mach/at91_tc.h>
 #include <mach/at91_st.h>
 #include <mach/at91_pmc.h>
 #include <mach/io.h>

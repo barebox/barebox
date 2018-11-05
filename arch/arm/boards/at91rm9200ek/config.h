@@ -30,30 +30,30 @@
 /* flash */
 #define CONFIG_SYS_EBI_CFGR_VAL	0x00000000
 #define CONFIG_SYS_SMC_CSR0_VAL							\
-		(AT91_SMC_NWS_(4) |	/* Number of Wait States */		\
-		 AT91_SMC_WSEN |	/* Wait State Enable */			\
-		 AT91_SMC_TDF_(2) |	/* Data Float Time */			\
-		 AT91_SMC_BAT |		/* Byte Access Type */			\
-		 AT91_SMC_DBW_16)	/* Data Bus Width */
+		(AT91RM9200_SMC_NWS_(4) |	/* Number of Wait States */		\
+		 AT91RM9200_SMC_WSEN |	/* Wait State Enable */			\
+		 AT91RM9200_SMC_TDF_(2) |	/* Data Float Time */			\
+		 AT91RM9200_SMC_BAT |		/* Byte Access Type */			\
+		 AT91RM9200_SMC_DBW_16)	/* Data Bus Width */
 
 /* sdram */
 #define CONFIG_SYS_PIOC_ASR_VAL	0xFFFF0000 /* Configure PIOC as peripheral (D16/D31) */
 #define CONFIG_SYS_PIOC_BSR_VAL	0x00000000
 #define CONFIG_SYS_PIOC_PDR_VAL	0xFFFF0000
 #define CONFIG_SYS_EBI_CSA_VAL							\
-		(AT91_EBI_CS0A_SMC |						\
-		 AT91_EBI_CS1A_SDRAMC |						\
-		 AT91_EBI_CS3A_SMC |						\
-		 AT91_EBI_CS4A_SMC)						\
+		(AT91RM9200_EBI_CS0A_SMC |					\
+		 AT91RM9200_EBI_CS1A_SDRAMC |					\
+		 AT91RM9200_EBI_CS3A_SMC |					\
+		 AT91RM9200_EBI_CS4A_SMC)					\
 
 /* SDRAM */
 /* SDRAMC_MR Mode register */
 /* SDRAMC_CR - Configuration register*/
 #define CONFIG_SYS_SDRC_CR_VAL							\
-		(AT91_SDRAMC_NC_9 |						\
-		 AT91_SDRAMC_NR_12 |						\
-		 AT91_SDRAMC_NB_4 |						\
-		 AT91_SDRAMC_CAS_2 |						\
+		(AT91RM9200_SDRAMC_NC_9 |					\
+		 AT91RM9200_SDRAMC_NR_12 |					\
+		 AT91RM9200_SDRAMC_NB_4 |					\
+		 AT91RM9200_SDRAMC_CAS_2 |					\
 		 (1 <<  8) |		/* Write Recovery Delay */		\
 		 (12 << 12) |		/* Row Cycle Delay */			\
 		 (8 << 16) |		/* Row Precharge Delay */		\

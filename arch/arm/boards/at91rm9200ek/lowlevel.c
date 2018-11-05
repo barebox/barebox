@@ -25,6 +25,7 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 {
 	u32 r;
 	int i;
+	void __iomem *mc = IOMEM(AT91RM9200_BASE_MC);
 
 	arm_cpu_lowlevel_init();
 
@@ -47,12 +48,12 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 	/*
 	 * EBI_CFGR
 	 */
-	at91_sys_write(AT91_EBI_CFGR, CONFIG_SYS_EBI_CFGR_VAL);
+	__raw_writel(CONFIG_SYS_EBI_CFGR_VAL, mc + AT91RM9200_EBI_CFGR);
 
 	/*
 	 * SMC2_CSR[0]: 16bit, 2 TDF, 4 WS
 	 */
-	at91_sys_write(AT91_SMC_CSR(0), CONFIG_SYS_SMC_CSR0_VAL);
+	__raw_writel(CONFIG_SYS_SMC_CSR0_VAL, mc + AT91RM9200_SMC_CSR(0));
 
 	/*
 	 * Init Clocks
@@ -93,31 +94,31 @@ void __naked __bare_init barebox_arm_reset_vector(void)
 	__raw_writel(CONFIG_SYS_PIOC_PDR_VAL, AT91RM9200_BASE_PIOC + PIO_PDR);
 
 	/* EBI_CSA : CS1=SDRAM */
-	at91_sys_write(AT91_EBI_CSA, CONFIG_SYS_EBI_CSA_VAL);
+	__raw_writel(CONFIG_SYS_EBI_CSA_VAL, mc + AT91RM9200_EBI_CSA);
 
 	/* SDRC_CR */
-	at91_sys_write(AT91_SDRAMC_CR, CONFIG_SYS_SDRC_CR_VAL);
+	__raw_writel(CONFIG_SYS_SDRC_CR_VAL, mc + AT91RM9200_SDRAMC_CR);
 	/* SDRC_MR : Precharge All */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_PRECHARGE);
+	__raw_writel(AT91RM9200_SDRAMC_MODE_PRECHARGE, mc + AT91RM9200_SDRAMC_MR);
 	/* access SDRAM */
 	access_sdram();
 	/* SDRC_MR : refresh */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_REFRESH);
+	__raw_writel(AT91RM9200_SDRAMC_MODE_REFRESH, mc + AT91RM9200_SDRAMC_MR);
 
 	/* access SDRAM 8 times */
 	for (i = 0; i < 8; i++)
 		access_sdram();
 
 	/* SDRC_MR : Load Mode Register */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_LMR);
+	__raw_writel(AT91RM9200_SDRAMC_MODE_LMR, mc + AT91RM9200_SDRAMC_MR);
 	/* access SDRAM */
 	access_sdram();
 	/* SDRC_TR : Write refresh rate */
-	at91_sys_write(AT91_SDRAMC_TR, CONFIG_SYS_SDRC_TR_VAL);
+	__raw_writel(CONFIG_SYS_SDRC_TR_VAL, mc + AT91RM9200_SDRAMC_TR);
 	/* access SDRAM */
 	access_sdram();
 	/* SDRC_MR : Normal Mode */
-	at91_sys_write(AT91_SDRAMC_MR, AT91_SDRAMC_MODE_NORMAL);
+	__raw_writel(AT91RM9200_SDRAMC_MODE_NORMAL, mc + AT91RM9200_SDRAMC_MR);
 	/* access SDRAM */
 	access_sdram();
 

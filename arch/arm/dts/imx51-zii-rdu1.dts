@@ -32,6 +32,7 @@
                  * fact to create a desirable naming
 		 */
 		switch-eeprom = &switch;
+		microwire-eeprom = &microwire_eeprom;
 	};
 };
 
@@ -62,6 +63,10 @@
 
 &mdio_gpio {
 	switch: switch@0 {};
+};
+
+&spi_gpio {
+	microwire_eeprom: eeprom@0 {};
 };
 
 &uart3 {

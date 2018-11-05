@@ -84,7 +84,6 @@
 #define AT91SAM9X5_BASE_UART1		0xf8044000
 #define AT91SAM9X5_BASE_ISI		0xf8048000
 #define AT91SAM9X5_BASE_ADC		0xf804c000
-#define AT91_BASE_SYS			0xffffc000
 
 /*
  * System Peripherals
@@ -109,21 +108,6 @@
 #define AT91SAM9X5_BASE_WDT		0xfffffe40
 #define AT91SAM9X5_BASE_GPBR		0xfffffe60
 #define AT91SAM9X5_BASE_RTC		0xfffffeb0
-
-/*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_MATRIX	(0xffffde00 - AT91_BASE_SYS)
-#define AT91_PMECC	(0xffffe000 - AT91_BASE_SYS)
-#define AT91_PMERRLOC	(0xffffe600 - AT91_BASE_SYS)
-#define AT91_DDRSDRC0	(0xffffe800 - AT91_BASE_SYS)
-#define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)
-#define AT91_RSTC	(0xfffffe00 - AT91_BASE_SYS)
-#define AT91_SHDWC	(0xfffffe10 - AT91_BASE_SYS)
-
-#define AT91_BASE_SMC	AT91SAM9X5_BASE_SMC
-
-#define AT91_PMC	0xfffffc00
 
 /*
  * Internal Memory.

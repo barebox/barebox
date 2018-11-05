@@ -20,10 +20,6 @@
 #include <mach/gpio.h>
 #include <mach/at91sam926x.h>
 
-#define AT91SAM926X_BASE_PMC	0xfffffc00
-#define AT91SAM926X_BASE_RSTC	0xfffffd00
-#define AT91SAM926X_BASE_WDT	0xfffffd40
-
 struct at91sam926x_board_cfg {
 	/* SoC specific */
 	void __iomem *pio;

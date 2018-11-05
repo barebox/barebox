@@ -74,7 +74,6 @@
 #define AT91RM9200_BASE_SSC1	0xfffd4000
 #define AT91RM9200_BASE_SSC2	0xfffd8000
 #define AT91RM9200_BASE_SPI	0xfffe0000
-#define AT91_BASE_SYS		0xfffff000
 
 /*
  * System Peripherals
@@ -88,21 +87,6 @@
 #define AT91RM9200_BASE_ST	0xfffffd00	/* System Timer */
 #define AT91RM9200_BASE_RTC	0xfffffe00	/* Real-Time Clock */
 #define AT91RM9200_BASE_MC	0xffffff00	/* Memory Controllers */
-
-
-/*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)	/* Debug Unit */
-#define AT91_ST		(0xfffffd00 - AT91_BASE_SYS)	/* System Timer */
-#define AT91_RTC	(0xfffffe00 - AT91_BASE_SYS)	/* Real-Time Clock */
-#define AT91_MC		(0xffffff00 - AT91_BASE_SYS)	/* Memory Controllers */
-
-#define AT91_TC		(AT91RM9200_BASE_TC0 - AT91_BASE_SYS)
-
-#define AT91_MATRIX	0	/* not supported */
-
-#define AT91_PMC	0xfffffc00
 
 /*
  * Internal Memory.

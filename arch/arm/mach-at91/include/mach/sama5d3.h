@@ -81,15 +81,6 @@
 #define SAMA5D3_BASE_SPI1	0xf8008000
 #define SAMA5D3_BASE_EMAC	0xf802c000 /* (EMAC) Base Address */
 #define SAMA5D3_BASE_UDPHS	0xf8030000
-#define AT91_BASE_SYS		0xffffc000
-
-/*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_MATRIX	(0xffffec00 - AT91_BASE_SYS)
-#define AT91_GPBR	(0xfffffe60 - AT91_BASE_SYS) // KO OAR_TEMP, NO GPBR, error while building in "drivers/rtc/rtc-at91sam9.c"
-#define AT91_DDRSDRC0	(0xffffea00 - AT91_BASE_SYS)
-#define AT91_RSTC	(0xfffffe00 - AT91_BASE_SYS)
 
 #define SAMA5D3_BASE_PIOA	0xfffff200
 #define SAMA5D3_BASE_PIOB	0xfffff400
@@ -104,8 +95,6 @@
 
 #define SAMA5D3_BASE_PMECC	0xffffc070
 #define SAMA5D3_BASE_PMERRLOC	0xffffc500
-
-#define AT91_PMC	0xfffffc00
 
 /*
  * Internal Memory.

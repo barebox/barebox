@@ -105,7 +105,7 @@ static void __bare_init pm9261_init(void)
 	cfg.matrix_csa = IOMEM(AT91SAM9261_BASE_MATRIX + AT91SAM9261_MATRIX_EBICSA);
 
 	pm9261_board_config(&cfg);
-	at91sam926x_board_init(&cfg);
+	at91sam9261_board_init(&cfg);
 
 	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc),
 	                  NULL);

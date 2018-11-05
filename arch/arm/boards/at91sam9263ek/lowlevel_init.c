@@ -109,7 +109,7 @@ static void __bare_init at91sam9263ek_init(void *fdt)
 	cfg.matrix_csa = IOMEM(AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
 
 	at91sam9263ek_board_config(&cfg);
-	at91sam926x_board_init(&cfg);
+	at91sam9263_board_init(&cfg);
 
 	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc),
 			  fdt);

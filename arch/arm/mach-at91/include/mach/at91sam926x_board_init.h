@@ -120,7 +120,8 @@ static void __always_inline at91sam926x_sdramc_init(struct at91sam926x_board_cfg
 	access_sdram();
 }
 
-static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg *cfg)
+static void __always_inline at91sam926x_board_init(void __iomem *smcbase,
+						   struct at91sam926x_board_cfg *cfg)
 {
 	u32 r;
 	void __iomem *pmc = IOMEM(AT91SAM926X_BASE_PMC);
@@ -139,10 +140,10 @@ static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg 
 	writel(cfg->ebi_csa, cfg->matrix_csa);
 
 	/* flash */
-	at91_smc_write(cfg->smc_cs, AT91_SAM9_SMC_MODE, cfg->smc_mode);
-	at91_smc_write(cfg->smc_cs, AT91_SMC_CYCLE, cfg->smc_cycle);
-	at91_smc_write(cfg->smc_cs, AT91_SMC_PULSE, cfg->smc_pulse);
-	at91_smc_write(cfg->smc_cs, AT91_SMC_SETUP, cfg->smc_setup);
+	writel(cfg->smc_mode, smcbase + cfg->smc_cs * 0x10 + AT91_SAM9_SMC_MODE);
+	writel(cfg->smc_cycle, smcbase + cfg->smc_cs * 0x10 + AT91_SMC_CYCLE);
+	writel(cfg->smc_pulse, smcbase + cfg->smc_cs * 0x10 + AT91_SMC_PULSE);
+	writel(cfg->smc_setup, smcbase + cfg->smc_cs * 0x10 + AT91_SMC_SETUP);
 
 	/* PMC Check if the PLL is already initialized */
 	r = readl(pmc + AT91_PMC_MCKR);
@@ -183,5 +184,29 @@ static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg 
 	 */
 	writel(0xffffffff, pmc + AT91_PMC_PCER);
 }
+
+#if defined CONFIG_ARCH_AT91SAM9260
+#include <mach/at91sam9260.h>
+static void __always_inline at91sam9260_board_init(struct at91sam926x_board_cfg *cfg)
+{
+	at91sam926x_board_init(IOMEM(AT91SAM9260_BASE_SMC), cfg);
+}
+#endif
+
+#if defined CONFIG_ARCH_AT91SAM9261 || defined CONFIG_ARCH_AT91SAM9G10
+#include <mach/at91sam9261.h>
+static void __always_inline at91sam9261_board_init(struct at91sam926x_board_cfg *cfg)
+{
+	at91sam926x_board_init(IOMEM(AT91SAM9261_BASE_SMC), cfg);
+}
+#endif
+
+#if defined CONFIG_ARCH_AT91SAM9263
+#include <mach/at91sam9263.h>
+static void __always_inline at91sam9263_board_init(struct at91sam926x_board_cfg *cfg)
+{
+	at91sam926x_board_init(IOMEM(AT91SAM9263_BASE_SMC0), cfg);
+}
+#endif
 
 #endif /* __AT91SAM926X_BOARD_INIT_H__ */

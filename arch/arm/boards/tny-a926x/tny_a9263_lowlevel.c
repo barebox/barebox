@@ -111,7 +111,7 @@ static void __bare_init tny_a9263_init(void)
 
         tny_a9263_board_config(&cfg);
 
-	at91sam926x_board_init(&cfg);
+	at91sam9263_board_init(&cfg);
 
 	barebox_arm_entry(AT91_CHIPSELECT_1,
 			  at91_get_sdram_size(IOMEM(AT91SAM9263_BASE_SDRAMC0)),

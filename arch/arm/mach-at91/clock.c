@@ -108,6 +108,18 @@
 
 #define cpu_has_dual_matrix()	(cpu_is_sama5d4())
 
+static void *pmc;
+
+static inline void at91_pmc_write(unsigned int offset, u32 val)
+{
+	writel(val, pmc + offset);
+}
+
+static inline u32 at91_pmc_read(unsigned int offset)
+{
+	return readl(pmc + offset);
+}
+
 static LIST_HEAD(clocks);
 
 static u32 at91_pllb_usb_init;
@@ -647,6 +659,15 @@ int at91_clock_init(void)
 	unsigned tmp, freq, mckr;
 	int i;
 	unsigned long main_clock;
+
+	if (cpu_is_sama5d4())
+		pmc = IOMEM(0xf0018000);
+	else
+		pmc = IOMEM(0xfffffc00); /*
+					  * All other supported SoCs use this
+					  * base address (new ones should use of
+					  * clock support)
+		                          */
 
 	main_clock = at91_main_clock;
 

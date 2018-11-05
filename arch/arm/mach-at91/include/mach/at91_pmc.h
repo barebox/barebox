@@ -16,12 +16,6 @@
 #ifndef AT91_PMC_H
 #define AT91_PMC_H
 
-#define at91_pmc_read(field) \
-	__raw_readl(AT91_PMC + field)
-
-#define at91_pmc_write(field, value) \
-	__raw_writel(value, AT91_PMC + field)
-
 #define	AT91_PMC_SCER		0x00			/* System Clock Enable Register */
 #define	AT91_PMC_SCDR		0x04			/* System Clock Disable Register */
 

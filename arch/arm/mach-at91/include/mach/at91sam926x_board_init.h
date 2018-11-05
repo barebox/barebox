@@ -20,6 +20,8 @@
 #include <mach/gpio.h>
 #include <mach/at91sam926x.h>
 
+#define AT91SAM926X_BASE_PMC	0xfffffc00
+
 struct at91sam926x_board_cfg {
 	/* SoC specific */
 	void __iomem *pio;
@@ -59,7 +61,7 @@ static void __always_inline pmc_check_mckrdy(void)
 	u32 r;
 
 	do {
-		r = at91_pmc_read(AT91_PMC_SR);
+		r = readl(AT91SAM926X_BASE_PMC + AT91_PMC_SR);
 	} while (!(r & AT91_PMC_MCKRDY));
 }
 

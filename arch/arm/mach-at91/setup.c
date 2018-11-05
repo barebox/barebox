@@ -283,9 +283,6 @@ static int at91_detect(void)
 }
 postcore_initcall(at91_detect);
 
-void restart_sam9(struct restart_handler *rst);
-void restart_sam9g45(struct restart_handler *rst);
-
 static int at91_soc_device(void)
 {
 	struct device_d *dev;
@@ -293,11 +290,6 @@ static int at91_soc_device(void)
 	dev = add_generic_device_res("soc", DEVICE_ID_SINGLE, NULL, 0, NULL);
 	dev_add_param_fixed(dev, "name", (char*)at91_get_soc_type(&at91_soc_initdata));
 	dev_add_param_fixed(dev, "subname", (char*)at91_get_soc_subtype(&at91_soc_initdata));
-
-	if (IS_ENABLED(CONFIG_AT91SAM9_RESET))
-		restart_handler_register_fn(restart_sam9);
-	if (IS_ENABLED(CONFIG_AT91SAM9G45_RESET))
-		restart_handler_register_fn(restart_sam9g45);
 
 	return 0;
 }

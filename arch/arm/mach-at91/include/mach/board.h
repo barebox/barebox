@@ -167,4 +167,7 @@ void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data);
 
 void at91sam_phy_reset(void __iomem *rstc_base);
 
+void at91sam9_reset(void __iomem *sdram, void __iomem *rstc_cr);
+void at91sam9g45_reset(void __iomem *sdram, void __iomem *rstc_cr);
+
 #endif

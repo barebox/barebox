@@ -98,6 +98,7 @@
 #define SAMA5D3_BASE_PIOE	0xfffffa00
 #define SAMA5D3_BASE_MPDDRC	0xffffea00
 #define	SAMA5D3_BASE_HSMC	0xffffc000
+#define SAMA5D3_BASE_RSTC	0xfffffe00
 #define SAMA5D3_BASE_PIT	0xfffffe30
 #define SAMA5D3_BASE_WDT	0xfffffe40
 

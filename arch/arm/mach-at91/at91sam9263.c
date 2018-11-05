@@ -1,8 +1,11 @@
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
+#include <restart.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
+#include <mach/board.h>
+#include <mach/at91_rstc.h>
 
 #include "clock.h"
 #include "generic.h"
@@ -231,6 +234,12 @@ static void __init at91sam9263_register_clocks(void)
 	clk_register(&pck3);
 }
 
+static void at91sam9263_restart(struct restart_handler *rst)
+{
+	at91sam9_reset(IOMEM(AT91SAM9263_BASE_SDRAMC0),
+		       IOMEM(AT91SAM9263_BASE_RSTC + AT91_RSTC_CR));
+}
+
 static void at91sam9263_initialize(void)
 {
 	/* Register the processor-specific clocks */
@@ -246,6 +255,8 @@ static void at91sam9263_initialize(void)
 	at91_add_pit(AT91SAM9263_BASE_PIT);
 	at91_add_sam9_smc(0, AT91SAM9263_BASE_SMC0, 0x200);
 	at91_add_sam9_smc(1, AT91SAM9263_BASE_SMC1, 0x200);
+
+	restart_handler_register_fn(at91sam9263_restart);
 }
 
 static int at91sam9263_setup(void)

@@ -106,6 +106,7 @@
 #define SAMA5D4_BASE_PMECC	0xfc05c070 /* (PMECC) Base Address */
 #define SAMA5D4_BASE_PMERRLOC	0xfc05c500 /* (PMERRLOC) Base Address */
 #define SAMA5D4_BASE_PIOD	0xfc068000 /* (PIOD) Base Address */
+#define SAMA5D4_BASE_RSTC	0xfc068600
 #define SAMA5D4_BASE_PIT	0xfc068630 /* (PIT) Base Address */
 #define SAMA5D4_BASE_DBGU	0xfc069000 /* (DBGU) Base Address */
 #define SAMA5D4_BASE_PIOA	0xfc06a000 /* (PIOA) Base Address */

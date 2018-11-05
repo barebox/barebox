@@ -25,7 +25,7 @@ struct at91sam926x_board_cfg {
 	void __iomem *pio;
 	void __iomem *sdramc;
 	u32 ebi_pio_is_peripha;
-	u32 matrix_csa;
+	void __iomem *matrix_csa;
 
 	/* board specific */
 	u32 wdt_mr;
@@ -133,7 +133,7 @@ static void __always_inline at91sam926x_board_init(struct at91sam926x_board_cfg 
 	if (cfg->ebi_pio_is_peripha)
 		at91_mux_set_A_periph(cfg->pio, cfg->ebi_pio_ppudr);
 
-	at91_sys_write(cfg->matrix_csa, cfg->ebi_csa);
+	writel(cfg->ebi_csa, cfg->matrix_csa);
 
 	/* flash */
 	at91_smc_write(cfg->smc_cs, AT91_SAM9_SMC_MODE, cfg->smc_mode);

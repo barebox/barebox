@@ -248,8 +248,9 @@ void __init at91_add_device_nand(struct atmel_nand_data *data)
 	if (!data)
 		return;
 
-	csa = at91_sys_read(AT91_MATRIX_EBICSA);
-	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_EBI_CS3A_SMC_NANDFLASH);
+	csa = readl(AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
+	csa |= AT91SAM9X5_MATRIX_EBI_CS3A_SMC_NANDFLASH;
+	writel(csa, AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
 
 	data->pmecc_lookup_table_offset = 0x8000;
 

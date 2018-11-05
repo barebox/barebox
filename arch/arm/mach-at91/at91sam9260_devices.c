@@ -145,8 +145,9 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (!data)
 		return;
 
-	csa = at91_sys_read(AT91_MATRIX_EBICSA);
-	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_CS3A_SMC_SMARTMEDIA);
+	csa = readl(AT91SAM9260_BASE_MATRIX + AT91SAM9260_MATRIX_EBICSA);
+	csa |= AT91SAM9260_MATRIX_CS3A_SMC_SMARTMEDIA;
+	writel(csa, AT91SAM9260_BASE_MATRIX + AT91SAM9260_MATRIX_EBICSA);
 
 	/* enable pin */
 	if (gpio_is_valid(data->enable_pin))

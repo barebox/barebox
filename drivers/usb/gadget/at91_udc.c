@@ -30,6 +30,9 @@
 #include <asm/byteorder.h>
 
 #include <mach/hardware.h>
+#if defined CONFIG_ARCH_AT91SAM9261 || defined CONFIG_ARCH_AT91SAM9G10
+#include <mach/at91sam9261.h>
+#endif
 #include <mach/io.h>
 #include <mach/board.h>
 #include <mach/cpu.h>
@@ -691,10 +694,12 @@ static void pullup(struct at91_udc *udc, int is_on)
 			txvc |= AT91_UDP_TXVC_PUON;
 			at91_udp_write(udc, AT91_UDP_TXVC, txvc);
 		} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
+#if defined CONFIG_ARCH_AT91SAM9261 || defined CONFIG_ARCH_AT91SAM9G10
 			u32	usbpucr;
-			usbpucr = at91_sys_read(AT91_MATRIX_USBPUCR);
-			usbpucr |= AT91_MATRIX_USBPUCR_PUON;
-			at91_sys_write(AT91_MATRIX_USBPUCR, usbpucr);
+			usbpucr = readl(AT91SAM9261_BASE_MATRIX + AT91SAM9261_MATRIX_USBPUCR);
+			usbpucr |= AT91SAM9261_MATRIX_USBPUCR_PUON;
+			writel(usbpucr, AT91SAM9261_BASE_MATRIX + AT91SAM9261_MATRIX_USBPUCR);
+#endif
 		}
 	} else {
 		stop_activity(udc);
@@ -708,10 +713,12 @@ static void pullup(struct at91_udc *udc, int is_on)
 			txvc &= ~AT91_UDP_TXVC_PUON;
 			at91_udp_write(udc, AT91_UDP_TXVC, txvc);
 		} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
+#if defined CONFIG_ARCH_AT91SAM9261 || defined CONFIG_ARCH_AT91SAM9G10
 			u32	usbpucr;
-			usbpucr = at91_sys_read(AT91_MATRIX_USBPUCR);
-			usbpucr &= ~AT91_MATRIX_USBPUCR_PUON;
-			at91_sys_write(AT91_MATRIX_USBPUCR, usbpucr);
+			usbpucr = readl(AT91SAM9261_BASE_MATRIX + AT91SAM9261_MATRIX_USBPUCR);
+			usbpucr &= ~AT91SAM9261_MATRIX_USBPUCR_PUON;
+			writel(usbpucr, AT91SAM9261_BASE_MATRIX + AT91SAM9261_MATRIX_USBPUCR);
+#endif
 		}
 		clk_off(udc);
 	}

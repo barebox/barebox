@@ -158,19 +158,19 @@ void __init at91_add_device_nand(struct atmel_nand_data *data)
 
 	data->pmecc_lookup_table_offset = 0x8000;
 
-	csa = at91_sys_read(AT91_MATRIX_EBICSA);
+	csa = readl(AT91SAM9N12_BASE_MATRIX + AT91SAM9N12_MATRIX_EBICSA);
 
 	/* Assign CS3 to NAND/SmartMedia Interface */
-	csa |= AT91_MATRIX_EBI_CS3A_SMC_NANDFLASH;
+	csa |= AT91SAM9N12_MATRIX_EBI_CS3A_SMC_NANDFLASH;
 	/* Configure databus */
 	if (!data->bus_on_d0)
-		csa |= AT91_MATRIX_NFD0_ON_D16;
+		csa |= AT91SAM9N12_MATRIX_NFD0_ON_D16;
 	else
-		csa &= ~AT91_MATRIX_NFD0_ON_D16;
+		csa &= ~AT91SAM9N12_MATRIX_NFD0_ON_D16;
 	/* Configure IO drive */
-	csa |= AT91_MATRIX_EBI_HIGH_DRIVE;
+	csa |= AT91SAM9N12_MATRIX_EBI_HIGH_DRIVE;
 
-	at91_sys_write(AT91_MATRIX_EBICSA, csa);
+	writel(csa, AT91SAM9N12_BASE_MATRIX + AT91SAM9N12_MATRIX_EBICSA);
 
 	/* enable pin */
 	if (gpio_is_valid(data->enable_pin))

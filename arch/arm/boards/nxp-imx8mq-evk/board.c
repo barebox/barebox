@@ -45,17 +45,6 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int imx8mq_evk_mem_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx8mq-evk"))
-		return 0;
-
-	request_sdram_region("ATF", 0x40000000, SZ_128K);
-
-	return 0;
-}
-mem_initcall(imx8mq_evk_mem_init);
-
 static int nxp_imx8mq_evk_init(void)
 {
 	if (!of_machine_is_compatible("fsl,imx8mq-evk"))

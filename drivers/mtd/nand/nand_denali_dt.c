@@ -86,7 +86,7 @@ out_disable_clk:
 
 static __maybe_unused struct of_device_id denali_nand_compatible[] = {
 	{
-		.compatible = "denali,denali-nand-dt"
+		.compatible = "altr,socfpga-denali-nand"
 	}, {
 		/* sentinel */
 	}

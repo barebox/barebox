@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <arm/socfpga_cyclone5_de0_sockit.dts>
+#include <arm/socfpga_cyclone5_de0_nano_soc.dts>
 #include "socfpga.dtsi"
 
 / {

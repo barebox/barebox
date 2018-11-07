@@ -150,6 +150,7 @@ void of_eth_register_ethaddr(struct device_node *node, const char *ethaddr)
 
 	addr = xzalloc(sizeof(*addr));
 	addr->node = node;
+	addr->ethid = -1;
 	memcpy(addr->ethaddr, ethaddr, ETH_ALEN);
 	list_add_tail(&addr->list, &ethaddr_list);
 }

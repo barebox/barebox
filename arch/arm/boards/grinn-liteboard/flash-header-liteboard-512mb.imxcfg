@@ -1,0 +1,6 @@
+
+#define SETUP_MDASP_MDCTL		\
+	wm 32 0x021B0040 0x0000004F;	\
+	wm 32 0x021B0000 0x84180000
+
+#include "flash-header-liteboard.h"

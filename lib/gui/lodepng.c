@@ -74,34 +74,6 @@ static void myfree(void* ptr)
   free(ptr);
 }
 
-/*
-Declaration of the custom functions used if LODEPNG_COMPILE_ZLIB isn't defined
-or LODEPNG_CUSTOM_ZLIB_DECODER or LODEPNG_CUSTOM_ZLIB_ENCODER are enabled.
-
-In that case, you need to define these yourself (which you can do in one of your
-own source files) so that LodePNG can link to it.
-
-By default, this is not needed. If LODEPNG_COMPILE_ZLIB isn't defined, then only
-the two zlib related ones are needed.
-
-If needed, the functions must act as follows:
-*out must be NULL and *outsize must be 0 initially, and after the function is done,
-*out must point to the decompressed data, *outsize must be the size of it, and must
-be the size of the useful data in bytes, not the alloc size.
-*/
-unsigned lodepng_custom_zlib_decompress(unsigned char** out, size_t* outsize,
-                                        const unsigned char* in, size_t insize,
-                                        const LodePNGDecompressSettings* settings);
-unsigned lodepng_custom_zlib_compress(unsigned char** out, size_t* outsize,
-                                      const unsigned char* in, size_t insize,
-                                      const LodePNGCompressSettings* settings);
-unsigned lodepng_custom_inflate(unsigned char** out, size_t* outsize,
-                                const unsigned char* in, size_t insize,
-                                const LodePNGDecompressSettings* settings);
-unsigned lodepng_custom_deflate(unsigned char** out, size_t* outsize,
-                                const unsigned char* in, size_t insize,
-                                const LodePNGCompressSettings* settings);
-
 /* ////////////////////////////////////////////////////////////////////////// */
 /* ////////////////////////////////////////////////////////////////////////// */
 /* // Tools for C, and common code for PNG and Zlib.                       // */
@@ -348,7 +320,7 @@ static void string_set(char** out, const char* in)
 
 /* ////////////////////////////////////////////////////////////////////////// */
 
-unsigned lodepng_read32bitInt(const unsigned char* buffer)
+static unsigned lodepng_read32bitInt(const unsigned char* buffer)
 {
   return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
 }
@@ -2668,11 +2640,6 @@ size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* colo
   return (w * h * lodepng_get_bpp(color) + 7) / 8;
 }
 
-size_t lodepng_get_raw_size_lct(unsigned w, unsigned h, LodePNGColorType colortype, unsigned bitdepth)
-{
-  return (w * h * lodepng_get_bpp_lct(colortype, bitdepth) + 7) / 8;
-}
-
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
 
 static void LodePNGUnknownChunks_init(LodePNGInfo* info)
@@ -2904,13 +2871,6 @@ unsigned lodepng_info_copy(LodePNGInfo* dest, const LodePNGInfo* source)
   CERROR_TRY_RETURN(LodePNGUnknownChunks_copy(dest, source));
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
   return 0;
-}
-
-void lodepng_info_swap(LodePNGInfo* a, LodePNGInfo* b)
-{
-  LodePNGInfo temp = *a;
-  *a = *b;
-  *b = temp;
 }
 
 /* ////////////////////////////////////////////////////////////////////////// */

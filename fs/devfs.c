@@ -193,7 +193,7 @@ static struct inode *devfs_alloc_inode(struct super_block *sb)
 	return &node->inode;
 }
 
-int devfs_iterate(struct file *file, struct dir_context *ctx)
+static int devfs_iterate(struct file *file, struct dir_context *ctx)
 {
 	struct cdev *cdev;
 

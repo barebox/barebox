@@ -18,4 +18,3 @@
 		switch-eeprom = &switch0;
 	};
 };
-

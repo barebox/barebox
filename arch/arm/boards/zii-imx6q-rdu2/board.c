@@ -15,7 +15,9 @@
 
 #include <common.h>
 #include <envfs.h>
+#include <fs.h>
 #include <gpio.h>
+#include <i2c/i2c.h>
 #include <init.h>
 #include <mach/bbu.h>
 #include <mach/imx6.h>
@@ -99,9 +101,26 @@ late_initcall(rdu2_reset_audio_touchscreen_nfc);
 
 static int rdu2_devices_init(void)
 {
+	struct i2c_client client;
+
 	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
 	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
 		return 0;
+
+	client.adapter = i2c_get_adapter(1);
+	if (client.adapter) {
+		u8 reg;
+
+		/*
+		 * Reset PMIC SW1AB and SW1C rails to 1.375V. If an event
+		 * caused only the i.MX6 SoC reset, the PMIC might still be
+		 * stuck on the low voltage for the slow operating point.
+		 */
+		client.addr = 0x08; /* PMIC i2c address */
+		reg = 0x2b; /* 1.375V, valid for both rails */
+		i2c_write_reg(&client, 0x20, &reg, 1);
+		i2c_write_reg(&client, 0x2e, &reg, 1);
+	}
 
 	barebox_set_hostname("rdu2");
 
@@ -170,3 +189,32 @@ static int rdu2_ethernet_init(void)
 	return 0;
 }
 late_initcall(rdu2_ethernet_init);
+
+#define I210_CFGWORD_PCIID_157B	0x157b1a11
+static int rdu2_i210_invm(void)
+{
+	int fd;
+	u32 val;
+
+	if (!of_machine_is_compatible("zii,imx6q-zii-rdu2") &&
+	    !of_machine_is_compatible("zii,imx6qp-zii-rdu2"))
+		return 0;
+
+	fd = open("/dev/e1000-invm0", O_RDWR);
+	if (fd < 0) {
+		pr_err("could not open e1000 iNVM device!\n");
+		return fd;
+	}
+
+	pread(fd, &val, sizeof(val), 0);
+	if (val == I210_CFGWORD_PCIID_157B) {
+		pr_debug("i210 already programmed correctly\n");
+		return 0;
+	}
+
+	val = I210_CFGWORD_PCIID_157B;
+	pwrite(fd, &val, sizeof(val), 0);
+
+	return 0;
+}
+late_initcall(rdu2_i210_invm);

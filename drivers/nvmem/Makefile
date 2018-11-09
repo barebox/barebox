@@ -14,3 +14,6 @@ nvmem_ocotp-y			:= ocotp.o
 
 obj-$(CONFIG_RAVE_SP_EEPROM)	+= nvmem-rave-sp-eeprom.o
 nvmem-rave-sp-eeprom-y		:= rave-sp-eeprom.o
+
+obj-$(CONFIG_EEPROM_93XX46)	+= nvmem_eeprom_93xx46.o
+nvmem_eeprom_93xx46-y		:= eeprom_93xx46.o

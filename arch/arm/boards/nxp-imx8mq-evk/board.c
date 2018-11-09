@@ -17,11 +17,12 @@
  *
  */
 
+#include <asm/memory.h>
+#include <bootsource.h>
 #include <common.h>
 #include <init.h>
-#include <asm/memory.h>
-#include <linux/sizes.h>
 #include <linux/phy.h>
+#include <linux/sizes.h>
 #include <mach/bbu.h>
 
 #include <envfs.h>
@@ -45,25 +46,27 @@ static int ar8031_phy_fixup(struct phy_device *phydev)
 	return 0;
 }
 
-static int imx8mq_evk_mem_init(void)
-{
-	if (!of_machine_is_compatible("fsl,imx8mq-evk"))
-		return 0;
-
-	request_sdram_region("ATF", 0x40000000, SZ_128K);
-
-	return 0;
-}
-mem_initcall(imx8mq_evk_mem_init);
-
 static int nxp_imx8mq_evk_init(void)
 {
+	int flags;
+
 	if (!of_machine_is_compatible("fsl,imx8mq-evk"))
 		return 0;
 
 	barebox_set_hostname("imx8mq-evk");
 
-	imx8mq_bbu_internal_mmc_register_handler("eMMC", "/dev/mmc0", 0);
+	flags = bootsource_get_instance() == 0 ? BBU_HANDLER_FLAG_DEFAULT : 0;
+	imx8mq_bbu_internal_mmc_register_handler("eMMC",
+						 "/dev/mmc0.barebox", flags);
+
+	flags = bootsource_get_instance() == 1 ? BBU_HANDLER_FLAG_DEFAULT : 0;
+	imx8mq_bbu_internal_mmc_register_handler("SD",
+						 "/dev/mmc1.barebox", flags);
+
+	if (bootsource_get_instance() == 0)
+		of_device_enable_path("/chosen/environment-emmc");
+	else
+		of_device_enable_path("/chosen/environment-sd");
 
 	phy_register_fixup_for_uid(PHY_ID_AR8031, AR_PHY_ID_MASK,
 				   ar8031_phy_fixup);

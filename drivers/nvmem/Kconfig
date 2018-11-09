@@ -43,4 +43,12 @@ config RAVE_SP_EEPROM
 	help
 	  Say y here to enable Rave SP EEPROM support.
 
+config EEPROM_93XX46
+	bool "Microwire EEPROM 93XX46 support"
+	depends on SPI
+	help
+	  Driver for the microwire EEPROM chipsets 93xx46x. The driver
+	  supports both read and write commands and also the command to
+	  erase the whole EEPROM.
+
 endif

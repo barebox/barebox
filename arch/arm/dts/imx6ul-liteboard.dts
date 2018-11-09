@@ -1,5 +1,7 @@
 /*
- * Copyright (C) 2016-2017 Zodiac Inflight Innovations
+ * Copyright 2018 Grinn
+ *
+ * Author: Marcin Niestroj <m.niestroj@grinn-global.com>
  *
  * This file is dual-licensed: you can use it either under the terms
  * of the GPL or the X11 license, at your option. Note that this dual
@@ -29,7 +31,7 @@
  *     The above copyright notice and this permission notice shall be
  *     included in all copies or substantial portions of the Software.
  *
- *     THE SOFTWARE IS PROVIDED , WITHOUT WARRANTY OF ANY KIND,
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
  *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
@@ -39,124 +41,56 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <arm/imx6qdl-zii-rdu2.dtsi>
+#include <arm/imx6ul-liteboard.dts>
 
 / {
 	chosen {
-		environment {
+		environment-sd {
 			compatible = "barebox,environment";
-			device-path = &nor_flash, "partname:barebox-environment";
-		};
-	};
-
-	aliases {
-		ethernet0 = &fec;
-		ethernet1 = &i210;
-		/*
-		 * NVMEM device corresponding to EEPROM attached to
-                 * the switch shared DT node with it, so we use that
-                 * fact to create a desirable naming
-		 */
-		switch-eeprom = &switch;
-	};
-};
-
-
-&uart4 {
-	rave-sp {
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		watchdog {
-			nvmem-cells = <&boot_source>;
-			nvmem-cell-names = "boot-source";
+			device-path = &environment_sd;
+			status = "disabled";
 		};
 
-		eeprom@a4 {
-			boot_source: boot-source@83 {
-				reg = <0x83 1>;
-			};
-
-			mac_address_0: mac-address@180 {
-				reg = <0x180 6>;
-			};
-
-			mac_address_1: mac-address@190 {
-				reg = <0x190 6>;
-			};
+		environment-emmc {
+			compatible = "barebox,environment";
+			device-path = &environment_emmc;
+			status = "disabled";
 		};
 	};
 };
 
-&ecspi1 {
-	nor_flash: flash@0 {
+&usdhc1 {
+	partitions {
+		compatible = "fixed-partitions";
 		#address-cells = <1>;
 		#size-cells = <1>;
 
 		partition@0 {
 			label = "barebox";
-			reg = <0x0 0xc0000>;
+			reg = <0x0 0xe0000>;
 		};
 
-		partition@c0000 {
+		environment_sd: partition@e0000 {
 			label = "barebox-environment";
-			reg = <0xc0000 0x40000>;
+			reg = <0xe0000 0x20000>;
 		};
 	};
 };
 
-&fec {
-	nvmem-cells = <&mac_address_0>;
-	nvmem-cell-names = "mac-address";
-};
+&usdhc2 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-&i2c2 {
-	temp-sense@48 {
-		barebox,sensor-name = "Temp Sensor 1";
-	};
-};
+		partition@0 {
+			label = "barebox";
+			reg = <0x0 0xe0000>;
+		};
 
-&i210 {
-	nvmem-cells = <&mac_address_1>;
-	nvmem-cell-names = "mac-address";
-};
-
-&usbotg {
-	dr_mode = "otg";
-};
-
-&gpio3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_gpio3_hog>;
-
-	usb-emulation {
-		gpio-hog;
-		gpios = <19 GPIO_ACTIVE_HIGH>;
-		output-low;
-		line-name = "usb-emulation";
-	};
-
-	usb-mode1 {
-		gpio-hog;
-		gpios = <20 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "usb-mode1";
-	};
-
-	usb-mode2 {
-		gpio-hog;
-		gpios = <23 GPIO_ACTIVE_HIGH>;
-		output-high;
-		line-name = "usb-mode2";
-	};
-};
-
-&iomuxc {
-	pinctrl_gpio3_hog: gpio3hoggrp {
-		fsl,pins = <
-			MX6QDL_PAD_EIM_D19__GPIO3_IO19		0x40000038
-			MX6QDL_PAD_EIM_D20__GPIO3_IO20		0x40000038
-			MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x40000038
-		>;
+		environment_emmc: partition@e0000 {
+			label = "barebox-environment";
+			reg = <0xe0000 0x20000>;
+		};
 	};
 };

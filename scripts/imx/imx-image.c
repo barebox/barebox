@@ -894,6 +894,12 @@ int main(int argc, char *argv[])
 	if (cpu_is_aarch64(&data)) {
 		bb_header = bb_header_aarch64;
 		sizeof_bb_header = sizeof(bb_header_aarch64);
+		/*
+		 * Compute jump offset, must be done dynamically as the code
+		 * location changes depending on the presence of a signed HDMI
+		 * firmware.
+		 */
+		data.first_opcode |= (data.header_gap + header_len) >> 2;
 	} else {
 		bb_header = bb_header_aarch32;
 		sizeof_bb_header = sizeof(bb_header_aarch32);

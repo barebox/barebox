@@ -24,6 +24,7 @@
 #include <asm/barebox-arm-head.h>
 #include <asm-generic/memory_layout.h>
 #include <asm/sections.h>
+#include <asm/secure.h>
 #include <asm/unaligned.h>
 #include <asm/cache.h>
 #include <asm/mmu.h>
@@ -147,6 +148,10 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 	unsigned long barebox_base = arm_mem_barebox_image(membase,
 							   endmem,
 							   barebox_size);
+
+	if (IS_ENABLED(CONFIG_CPU_V7))
+		armv7_hyp_install();
+
 	if (IS_ENABLED(CONFIG_RELOCATABLE))
 		relocate_to_adr(barebox_base);
 

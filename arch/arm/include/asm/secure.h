@@ -5,9 +5,12 @@
 
 int armv7_secure_monitor_install(void);
 int __armv7_secure_monitor_install(void);
+
 void armv7_switch_to_hyp(void);
+void armv7_hyp_install(void);
 
 extern unsigned char secure_monitor_init_vectors[];
+extern int __boot_cpu_mode;
 
 enum arm_security_state {
 	ARM_STATE_SECURE,

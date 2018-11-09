@@ -1,16 +1,33 @@
 #include <linux/linkage.h>
 #include <init.h>
 #include <asm/system.h>
+#include <asm/opcodes-virt.h>
 
 .section ".text_bare_init_","ax"
 ENTRY(arm_cpu_lowlevel_init)
 	/* save lr, since it may be banked away with a processor mode change */
 	mov	r2, lr
+
+#ifdef CONFIG_CPU_32v7
+	/* careful: the hyp install corrupts r0 and r1 */
+	bl	__hyp_install
+#endif
+
 	/* set the cpu to SVC32 mode, mask irq and fiq */
 	mrs	r12, cpsr
-	bic	r12, r12, #0x1f
-	orr	r12, r12, #0xd3
-	msr	cpsr, r12
+	eor	r12, r12, #HYP_MODE
+	tst	r12, #MODE_MASK
+	bic	r12, r12, #MODE_MASK
+	orr	r12, r12, #(PSR_I_BIT | PSR_F_BIT | SVC_MODE)
+THUMB(	orr	r12, r12, #PSR_T_BIT	)
+	bne	1f
+	orr	r12, r12, #PSR_A_BIT
+	adr	lr, 2f
+	msr	spsr_cxsf, r12
+	__MSR_ELR_HYP(14)
+	__ERET
+1:	msr	cpsr_c, r12
+2:
 
 #if __LINUX_ARM_ARCH__ >= 6
 	/*

@@ -19,6 +19,12 @@ config MACH_RPI2
 	select CPU_V7
 	select MACH_RPI_COMMON
 
+config MACH_RPI3
+	bool "RaspberryPi 3 (BCM2837/CORTEX-A53)"
+	select CPU_V7
+	select MACH_RPI_COMMON
+	select ARM_SECURE_MONITOR
+
 endmenu
 
 config MACH_RPI_DEBUG_UART_BASE

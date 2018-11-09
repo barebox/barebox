@@ -184,6 +184,9 @@ int armv7_secure_monitor_install(void)
 		return -EINVAL;
 	}
 
+	if (__boot_cpu_mode == HYP_MODE)
+		return 0;
+
 	mmuon = get_cr() & CR_M;
 
 	vbar = get_vbar();
@@ -258,6 +261,9 @@ static int sm_init(void)
 				  (unsigned int *)&bootm_secure_state,
 				  bootm_secure_state_names,
 				  ARRAY_SIZE(bootm_secure_state_names));
+
+	if (__boot_cpu_mode == HYP_MODE)
+		bootm_secure_state = ARM_STATE_HYP;
 
 	return 0;
 }

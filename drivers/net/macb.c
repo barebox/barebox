@@ -65,7 +65,6 @@ struct macb_device {
 
 	unsigned int		rx_tail;
 	unsigned int		tx_head;
-	unsigned int		tx_tail;
 
 	void			*rx_buffer;
 	void			*tx_buffer;
@@ -344,7 +343,7 @@ static void macb_init(struct macb_device *macb)
 	}
 	macb->tx_ring[TX_RING_SIZE - 1].addr |= MACB_BIT(TX_WRAP);
 
-	macb->rx_tail = macb->tx_head = macb->tx_tail = 0;
+	macb->rx_tail = macb->tx_head = 0;
 
 	macb_configure_dma(macb);
 
@@ -619,9 +618,10 @@ static int macb_probe(struct device_d *dev)
 	const char *pclk_name;
 	u32 ncfgr;
 
-	edev = xzalloc(sizeof(struct eth_device) + sizeof(struct macb_device));
-	edev->priv = (struct macb_device *)(edev + 1);
-	macb = edev->priv;
+	macb = xzalloc(sizeof(*macb));
+	edev = &macb->netdev;
+	edev->priv = macb;
+	dev->priv = macb;
 
 	macb->dev = dev;
 
@@ -697,8 +697,7 @@ static int macb_probe(struct device_d *dev)
 		edev->recv = macb_recv;
 
 	macb_init_rx_buffer_size(macb, PKTSIZE);
-	macb->rx_buffer = dma_alloc_coherent(macb->rx_buffer_size * macb->rx_ring_size,
-					     DMA_ADDRESS_BROKEN);
+	macb->rx_buffer = dma_alloc(macb->rx_buffer_size * macb->rx_ring_size);
 	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb), DMA_ADDRESS_BROKEN);
 	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES, DMA_ADDRESS_BROKEN);
 
@@ -720,14 +719,23 @@ static int macb_probe(struct device_d *dev)
 	return 0;
 }
 
+static void macb_remove(struct device_d *dev)
+{
+	struct macb_device *macb = dev->priv;
+
+	macb_halt(&macb->netdev);
+}
+
 static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,at91sam9260-macb",},
+	{ .compatible = "atmel,sama5d3-gem",},
 	{ /* sentinel */ }
 };
 
 static struct driver_d macb_driver = {
 	.name  = "macb",
 	.probe = macb_probe,
+	.remove = macb_remove,
 	.of_compatible = DRV_OF_COMPAT(macb_dt_ids),
 };
 device_platform_driver(macb_driver);

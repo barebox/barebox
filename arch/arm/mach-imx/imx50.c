@@ -86,7 +86,7 @@ int imx50_devices_init(void)
 	return 0;
 }
 
-void imx50_init_lowlevel_early(unsigned int cpufreq_mhz)
+static void imx50_init_lowlevel_early(unsigned int cpufreq_mhz)
 {
 	void __iomem *ccm = IOMEM(MX50_CCM_BASE_ADDR);
 	u32 r;

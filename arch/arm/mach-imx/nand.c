@@ -17,6 +17,7 @@
 #include <mach/imx25-regs.h>
 #include <mach/imx27-regs.h>
 #include <mach/imx35-regs.h>
+#include <mach/imx-nand.h>
 #include <io.h>
 
 #define RCSR_NFC_FMS		(1 << 8)

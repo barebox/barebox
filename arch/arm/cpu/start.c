@@ -34,6 +34,8 @@
 
 #include <debug_ll.h>
 
+#include "entry.h"
+
 unsigned long arm_stack_top;
 static unsigned long arm_barebox_size;
 static void *barebox_boarddata;

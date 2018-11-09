@@ -20,6 +20,7 @@
 #include <common.h>
 #include <io.h>
 #include <mach/imx6-regs.h>
+#include <mach/usb.h>
 
 #define SET				0x4
 #define CLR				0x8
@@ -33,7 +34,6 @@
 #define USB_UH1_USBCMD			0x340
 
 #define USB_CMD_RUNSTOP			(1 <<  0)
-#define USB_CMD_RESET			(1 <<  1)
 
 #define USB_OVER_CUR_DIS		(1 <<  7)
 #define USBPHY_CTRL_SFTRST		(1 << 31)

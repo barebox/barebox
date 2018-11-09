@@ -368,18 +368,6 @@ struct resource *dev_get_resource_by_name(struct device_d *dev,
 	return ERR_PTR(-ENOENT);
 }
 
-void *dev_get_mem_region_by_name(struct device_d *dev, const char *name)
-{
-	struct resource *res;
-
-	res = dev_get_resource_by_name(dev, IORESOURCE_MEM, name);
-	if (IS_ERR(res))
-		return ERR_CAST(res);
-
-	return (void __force *)res->start;
-}
-EXPORT_SYMBOL(dev_get_mem_region_by_name);
-
 void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *name)
 {
 	struct resource *res;
@@ -396,22 +384,6 @@ void __iomem *dev_request_mem_region_by_name(struct device_d *dev, const char *n
 }
 EXPORT_SYMBOL(dev_request_mem_region_by_name);
 
-void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num)
-{
-	struct resource *res;
-
-	res = dev_get_resource(dev, IORESOURCE_MEM, num);
-	if (IS_ERR(res))
-		return NULL;
-
-	res = request_iomem_region(dev_name(dev), res->start, res->end);
-	if (IS_ERR(res))
-		return NULL;
-
-	return IOMEM(res->start);
-}
-EXPORT_SYMBOL(dev_request_mem_region_err_null);
-
 struct resource *dev_request_mem_resource(struct device_d *dev, int num)
 {
 	struct resource *res;
@@ -422,6 +394,18 @@ struct resource *dev_request_mem_resource(struct device_d *dev, int num)
 
 	return request_iomem_region(dev_name(dev), res->start, res->end);
 }
+
+void __iomem *dev_request_mem_region_err_null(struct device_d *dev, int num)
+{
+	struct resource *res;
+
+	res = dev_request_mem_resource(dev, num);
+	if (IS_ERR(res))
+		return NULL;
+
+	return IOMEM(res->start);
+}
+EXPORT_SYMBOL(dev_request_mem_region_err_null);
 
 void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 {
@@ -435,29 +419,22 @@ void __iomem *dev_request_mem_region(struct device_d *dev, int num)
 }
 EXPORT_SYMBOL(dev_request_mem_region);
 
-int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
-{
-	if (!cdev->dev)
-		return -EINVAL;
-
-	if (flags & PROT_WRITE)
-		return -EACCES;
-	*map = dev_get_mem_region(cdev->dev, 0);
-	if (IS_ERR(*map))
-		return PTR_ERR(*map);
-	return 0;
-}
-
 int generic_memmap_rw(struct cdev *cdev, void **map, int flags)
 {
 	if (!cdev->dev)
 		return -EINVAL;
 
 	*map = dev_get_mem_region(cdev->dev, 0);
-	if (IS_ERR(*map))
-		return PTR_ERR(*map);
 
-	return 0;
+	return PTR_ERR_OR_ZERO(*map);
+}
+
+int generic_memmap_ro(struct cdev *cdev, void **map, int flags)
+{
+	if (flags & PROT_WRITE)
+		return -EACCES;
+
+	return generic_memmap_rw(cdev, map, flags);
 }
 
 int dummy_probe(struct device_d *dev)

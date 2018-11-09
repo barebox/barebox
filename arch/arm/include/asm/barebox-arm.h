@@ -85,6 +85,8 @@ static inline void boarddata_create(void *adr, u32 machine)
 
 u32 barebox_arm_machine(void);
 
+unsigned long arm_mem_ramoops_get(void);
+
 struct barebox_arm_boarddata_compressed_dtb {
 #define BAREBOX_ARM_BOARDDATA_COMPRESSED_DTB_MAGIC 0x7b66bcbd
 	u32 magic;

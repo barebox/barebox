@@ -67,7 +67,7 @@ static struct apbh_dma *apbh_dma;
 /*
  * Test is the DMA channel is valid channel
  */
-int mxs_dma_validate_chan(int channel)
+static int mxs_dma_validate_chan(int channel)
 {
 	struct mxs_dma_chan *pchan;
 

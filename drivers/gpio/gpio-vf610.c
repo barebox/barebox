@@ -142,9 +142,8 @@ static int vf610_gpio_probe(struct device_d *dev)
 
 	port->chip.base *= VF610_GPIO_PER_PORT;
 	port->chip.dev = dev;
-	gpiochip_add(&port->chip);
 
-	return 0;
+	return gpiochip_add(&port->chip);
 
 free_port:
 	free(port);
@@ -161,4 +160,4 @@ static int __init gpio_vf610_init(void)
 {
 	return platform_driver_register(&vf610_gpio_driver);
 }
-core_initcall(gpio_vf610_init);
+postcore_initcall(gpio_vf610_init);

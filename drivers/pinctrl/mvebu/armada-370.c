@@ -415,4 +415,4 @@ static int armada_370_pinctrl_init(void)
 {
 	return platform_driver_register(&armada_370_pinctrl_driver);
 }
-postcore_initcall(armada_370_pinctrl_init);
+core_initcall(armada_370_pinctrl_init);

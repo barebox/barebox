@@ -518,4 +518,4 @@ static int pinctrl_tegra_xusb_init(void)
 {
 	return platform_driver_register(&pinctrl_tegra_xusb_driver);
 }
-postcore_initcall(pinctrl_tegra_xusb_init);
+core_initcall(pinctrl_tegra_xusb_init);

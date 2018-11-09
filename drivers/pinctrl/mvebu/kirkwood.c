@@ -456,4 +456,4 @@ static int kirkwood_pinctrl_init(void)
 {
 	return platform_driver_register(&kirkwood_pinctrl_driver);
 }
-postcore_initcall(kirkwood_pinctrl_init);
+core_initcall(kirkwood_pinctrl_init);

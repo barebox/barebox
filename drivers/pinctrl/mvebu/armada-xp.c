@@ -405,4 +405,4 @@ static int armada_xp_pinctrl_init(void)
 {
 	return platform_driver_register(&armada_xp_pinctrl_driver);
 }
-postcore_initcall(armada_xp_pinctrl_init);
+core_initcall(armada_xp_pinctrl_init);

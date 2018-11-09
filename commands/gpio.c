@@ -16,14 +16,35 @@
 #include <errno.h>
 #include <gpio.h>
 
-static int do_gpio_get_value(int argc, char *argv[])
+static int get_gpio_and_value(int argc, char *argv[],
+			      int *gpio, int *value)
 {
-	int gpio, value;
+	const int count = value ? 3 : 2;
+	int ret = 0;
 
-	if (argc < 2)
+	if (argc < count)
 		return COMMAND_ERROR_USAGE;
 
-	gpio = simple_strtoul(argv[1], NULL, 0);
+	*gpio = gpio_find_by_label(argv[1]);
+	if (*gpio < 0) {
+		ret = kstrtoint(argv[1], 0, gpio);
+		if (ret < 0)
+			return ret;
+	}
+
+	if (value)
+		ret = kstrtoint(argv[2], 0, value);
+
+	return ret;
+}
+
+static int do_gpio_get_value(int argc, char *argv[])
+{
+	int gpio, value, ret;
+
+	ret = get_gpio_and_value(argc, argv, &gpio, NULL);
+	if (ret)
+		return ret;
 
 	value = gpio_get_value(gpio);
 	if (value < 0)
@@ -41,13 +62,11 @@ BAREBOX_CMD_END
 
 static int do_gpio_set_value(int argc, char *argv[])
 {
-	int gpio, value;
+	int gpio, value, ret;
 
-	if (argc < 3)
-		return COMMAND_ERROR_USAGE;
-
-	gpio = simple_strtoul(argv[1], NULL, 0);
-	value = simple_strtoul(argv[2], NULL, 0);
+	ret = get_gpio_and_value(argc, argv, &gpio, &value);
+	if (ret)
+		return ret;
 
 	gpio_set_value(gpio, value);
 
@@ -65,10 +84,9 @@ static int do_gpio_direction_input(int argc, char *argv[])
 {
 	int gpio, ret;
 
-	if (argc < 2)
-		return COMMAND_ERROR_USAGE;
-
-	gpio = simple_strtoul(argv[1], NULL, 0);
+	ret = get_gpio_and_value(argc, argv, &gpio, NULL);
+	if (ret)
+		return ret;
 
 	ret = gpio_direction_input(gpio);
 	if (ret)
@@ -88,11 +106,9 @@ static int do_gpio_direction_output(int argc, char *argv[])
 {
 	int gpio, value, ret;
 
-	if (argc < 3)
-		return COMMAND_ERROR_USAGE;
-
-	gpio = simple_strtoul(argv[1], NULL, 0);
-	value = simple_strtoul(argv[2], NULL, 0);
+	ret = get_gpio_and_value(argc, argv, &gpio, &value);
+	if (ret)
+		return ret;
 
 	ret = gpio_direction_output(gpio, value);
 	if (ret)

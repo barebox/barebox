@@ -122,4 +122,6 @@ static inline void *kmemdup(const void *src, size_t len, gfp_t gfp)
 	return memdup(src, len);
 }
 
+extern int kstrtobool(const char *s, bool *res);
+
 #endif /* _LINUX_STRING_H_ */

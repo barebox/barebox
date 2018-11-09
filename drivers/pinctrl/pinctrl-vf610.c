@@ -165,4 +165,4 @@ static int pinctrl_vf610_init(void)
 {
 	return platform_driver_register(&pinctrl_vf610_driver);
 }
-postcore_initcall(pinctrl_vf610_init);
+core_initcall(pinctrl_vf610_init);

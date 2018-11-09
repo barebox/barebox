@@ -222,4 +222,4 @@ static int imx_gpio_add(void)
 	platform_driver_register(&imx_gpio_driver);
 	return 0;
 }
-core_initcall(imx_gpio_add);
+postcore_initcall(imx_gpio_add);

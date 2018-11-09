@@ -266,4 +266,4 @@ static int imx_iomux_v3_init(void)
 {
 	return platform_driver_register(&imx_iomux_v3_driver);
 }
-postcore_initcall(imx_iomux_v3_init);
+core_initcall(imx_iomux_v3_init);

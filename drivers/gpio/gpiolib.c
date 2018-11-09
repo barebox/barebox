@@ -91,6 +91,23 @@ done:
 	return ret;
 }
 
+int gpio_find_by_label(const char *label)
+{
+	int i;
+
+	for (i = 0; i < ARCH_NR_GPIOS; i++) {
+		struct gpio_info *info = &gpio_desc[i];
+
+		if (!info->requested || !info->chip || !info->label)
+			continue;
+
+		if (!strcmp(info->label, label))
+			return i;
+	}
+
+	return -ENOENT;
+}
+
 void gpio_free(unsigned gpio)
 {
 	struct gpio_info *gi = gpio_to_desc(gpio);
@@ -352,12 +369,12 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 		flags |= GPIOF_ACTIVE_LOW;
 
 	gpio = gpio_get_num(chip->dev, gpio_num);
-	if (ret == -EPROBE_DEFER)
-		return ret;
+	if (gpio == -EPROBE_DEFER)
+		return gpio;
 
-	if (ret < 0) {
+	if (gpio < 0) {
 		dev_err(chip->dev, "unable to get gpio %u\n", gpio_num);
-		return ret;
+		return gpio;
 	}
 
 
@@ -382,7 +399,10 @@ static int of_hog_gpio(struct device_node *np, struct gpio_chip *chip,
 	else
 		return -EINVAL;
 
-	of_property_read_string(np, "line-name", &name);
+	/* The line-name is optional and if not present the node name is used */
+	ret = of_property_read_string(np, "line-name", &name);
+	if (ret < 0)
+		name = np->name;
 
 	return gpio_request_one(gpio, flags, name);
 }

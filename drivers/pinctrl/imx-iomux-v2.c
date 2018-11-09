@@ -154,4 +154,4 @@ static int imx_iomux_init(void)
 {
 	return platform_driver_register(&imx_iomux_driver);
 }
-postcore_initcall(imx_iomux_init);
+core_initcall(imx_iomux_init);

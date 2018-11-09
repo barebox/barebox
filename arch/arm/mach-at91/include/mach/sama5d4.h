@@ -106,6 +106,7 @@
 #define SAMA5D4_BASE_PMECC	0xfc05c070 /* (PMECC) Base Address */
 #define SAMA5D4_BASE_PMERRLOC	0xfc05c500 /* (PMERRLOC) Base Address */
 #define SAMA5D4_BASE_PIOD	0xfc068000 /* (PIOD) Base Address */
+#define SAMA5D4_BASE_RSTC	0xfc068600
 #define SAMA5D4_BASE_PIT	0xfc068630 /* (PIT) Base Address */
 #define SAMA5D4_BASE_DBGU	0xfc069000 /* (DBGU) Base Address */
 #define SAMA5D4_BASE_PIOA	0xfc06a000 /* (PIOA) Base Address */
@@ -121,14 +122,5 @@
  */
 #define SAMA5D4_SRAM_BASE	0x00200000	/* Internal SRAM base address */
 #define SAMA5D4_SRAM_SIZE	(128 * SZ_1K)	/* Internal SRAM size */
-
-#define AT91_NB_USART		7
-#define AT91_BASE_SYS		0xf0000000
-#define AT91_PMC		SAMA5D4_BASE_PMC
-#define AT91_DDRSDRC0		(0xf0010000 - AT91_BASE_SYS)
-#define AT91_RSTC		(0xfc068600 - AT91_BASE_SYS)
-#define SAMA5D3_BASE_MPDDRC	SAMA5D4_BASE_MPDDRC
-#define SAMA5D3_SRAM_BASE	SAMA5D4_SRAM_BASE
-#define SAMA5D3_SRAM_SIZE	SAMA5D4_SRAM_SIZE
 
 #endif

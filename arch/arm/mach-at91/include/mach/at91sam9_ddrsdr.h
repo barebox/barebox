@@ -136,7 +136,7 @@ Banks [not SAM9G45] */
 #define		AT91_DDRSDRC_WPVSRC	(0xffff << 8)		/* Write protect violation source */
 
 #ifndef __ASSEMBLY__
-#include <mach/io.h>
+#include <io.h>
 
 static inline u32 at91_get_ddram_size(void * __iomem base, bool is_nb)
 {
@@ -176,6 +176,7 @@ static inline u32 at91_get_ddram_size(void * __iomem base, bool is_nb)
 }
 
 #ifdef CONFIG_SOC_AT91SAM9G45
+#include <mach/at91sam9g45.h>
 static inline u32 at91sam9g45_get_ddram_size(int bank)
 {
 	switch (bank) {
@@ -195,6 +196,7 @@ static inline u32 at91sam9g45_get_ddram_size(int bank)
 #endif
 
 #ifdef CONFIG_SOC_AT91SAM9X5
+#include <mach/at91sam9x5.h>
 static inline u32 at91sam9x5_get_ddram_size(void)
 {
 	return at91_get_ddram_size(IOMEM(AT91SAM9X5_BASE_DDRSDRC0), true);
@@ -207,6 +209,7 @@ static inline u32 at91sam9x5_get_ddram_size(void)
 #endif
 
 #ifdef CONFIG_SOC_AT91SAM9N12
+#include <mach/at91sam9n12.h>
 static inline u32 at91sam9n12_get_ddram_size(void)
 {
 	return at91_get_ddram_size(IOMEM(AT91SAM9N12_BASE_DDRSDRC0), true);
@@ -219,6 +222,7 @@ static inline u32 at91sam9n12_get_ddram_size(void)
 #endif
 
 #ifdef CONFIG_SOC_SAMA5
+#include <mach/sama5d3.h>
 static inline u32 at91sama5_get_ddram_size(void)
 {
 	u32 cr;

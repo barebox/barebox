@@ -18,7 +18,6 @@
 #include <mach/at91_pmc.h>
 #include <mach/at91sam9x5_matrix.h>
 #include <mach/at91sam9_ddrsdr.h>
-#include <mach/io.h>
 #include <mach/iomux.h>
 #include <mach/cpu.h>
 #include <i2c/i2c-gpio.h>
@@ -225,13 +224,13 @@ static struct resource nand_resources[] = {
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
-		.start	= AT91_BASE_SYS + AT91_PMECC,
-		.end	= AT91_BASE_SYS + AT91_PMECC + 0x600 - 1,
+		.start	= AT91SAM9X5_BASE_PMECC,
+		.end	= AT91SAM9X5_BASE_PMECC + 0x600 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[2] = {
-		.start	= AT91_BASE_SYS + AT91_PMERRLOC,
-		.end	= AT91_BASE_SYS + AT91_PMERRLOC + 0x200 - 1,
+		.start	= AT91SAM9X5_BASE_PMERRLOC,
+		.end	= AT91SAM9X5_BASE_PMERRLOC + 0x200 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[3] = {
@@ -248,8 +247,9 @@ void __init at91_add_device_nand(struct atmel_nand_data *data)
 	if (!data)
 		return;
 
-	csa = at91_sys_read(AT91_MATRIX_EBICSA);
-	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_EBI_CS3A_SMC_NANDFLASH);
+	csa = readl(AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
+	csa |= AT91SAM9X5_MATRIX_EBI_CS3A_SMC_NANDFLASH;
+	writel(csa, AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
 
 	data->pmecc_lookup_table_offset = 0x8000;
 
@@ -456,7 +456,7 @@ resource_size_t __init at91_configure_dbgu(void)
 	at91_set_A_periph(AT91_PIN_PA9, 1);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PA10, 0);		/* DTXD */
 
-	return AT91_BASE_SYS + AT91_DBGU;
+	return AT91SAM9X5_BASE_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)

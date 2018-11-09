@@ -21,7 +21,6 @@
 #include <mach/at91_rtt.h>
 #include <mach/board.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 #include <i2c/i2c-gpio.h>
 
 #include "generic.h"
@@ -126,8 +125,8 @@ static struct resource nand_resources[] = {
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
-		.start	= AT91_BASE_SYS + AT91_ECC0,
-		.end	= AT91_BASE_SYS + AT91_ECC0 + 512 - 1,
+		.start	= AT91SAM9263_BASE_ECC0,
+		.end	= AT91SAM9263_BASE_ECC0 + 512 - 1,
 		.flags	= IORESOURCE_MEM,
 	}
 };
@@ -139,8 +138,9 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (!data)
 		return;
 
-	csa = at91_sys_read(AT91_MATRIX_EBI0CSA);
-	at91_sys_write(AT91_MATRIX_EBI0CSA, csa | AT91_MATRIX_EBI0_CS3A_SMC_SMARTMEDIA);
+	csa = readl(AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
+	csa |= AT91SAM9263_MATRIX_EBI0_CS3A_SMC_SMARTMEDIA;
+	writel(csa, AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
 
 	/* enable pin */
 	if (gpio_is_valid(data->enable_pin))
@@ -300,7 +300,7 @@ resource_size_t __init at91_configure_dbgu(void)
 	at91_set_A_periph(AT91_PIN_PC30, 1);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PC31, 0);		/* DTXD */
 
-	return AT91_BASE_SYS + AT91_DBGU;
+	return AT91SAM9263_BASE_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)

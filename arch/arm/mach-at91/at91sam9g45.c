@@ -1,10 +1,12 @@
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
-#include <mach/io.h>
+#include <restart.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/cpu.h>
+#include <mach/board.h>
+#include <mach/at91_rstc.h>
 
 #include "generic.h"
 #include "clock.h"
@@ -247,6 +249,12 @@ static void __init at91sam9g45_register_clocks(void)
 	clk_register(&pck1);
 }
 
+static void at91sam9g45_restart(struct restart_handler *rst)
+{
+	at91sam9g45_reset(IOMEM(AT91SAM9G45_BASE_DDRSDRC0),
+			  IOMEM(AT91SAM9G45_BASE_RSTC + AT91_RSTC_CR));
+}
+
 static void at91sam9g45_initialize(void)
 {
 	/* Register the processor-specific clocks */
@@ -261,6 +269,8 @@ static void at91sam9g45_initialize(void)
 
 	at91_add_pit(AT91SAM9G45_BASE_PIT);
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, AT91SAM9G45_BASE_SMC, 0x200);
+
+	restart_handler_register_fn(at91sam9g45_restart);
 }
 
 static int at91sam9g45_setup(void)

@@ -15,8 +15,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		 0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		 1	/* System Peripherals */
 #define SAMA5D3_ID_DBGU		 2	/* debug Unit (usually no special interrupt line) */
 #define SAMA5D3_ID_PIT		 3	/* Periodic Interval Timer Interrupt */
 #define SAMA5D3_ID_WDT		 4	/* Watchdog timer Interrupt */
@@ -83,15 +81,6 @@
 #define SAMA5D3_BASE_SPI1	0xf8008000
 #define SAMA5D3_BASE_EMAC	0xf802c000 /* (EMAC) Base Address */
 #define SAMA5D3_BASE_UDPHS	0xf8030000
-#define AT91_BASE_SYS		0xffffc000
-
-/*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_MATRIX	(0xffffec00 - AT91_BASE_SYS)
-#define AT91_GPBR	(0xfffffe60 - AT91_BASE_SYS) // KO OAR_TEMP, NO GPBR, error while building in "drivers/rtc/rtc-at91sam9.c"
-#define AT91_DDRSDRC0	(0xffffea00 - AT91_BASE_SYS)
-#define AT91_RSTC	(0xfffffe00 - AT91_BASE_SYS)
 
 #define SAMA5D3_BASE_PIOA	0xfffff200
 #define SAMA5D3_BASE_PIOB	0xfffff400
@@ -100,15 +89,12 @@
 #define SAMA5D3_BASE_PIOE	0xfffffa00
 #define SAMA5D3_BASE_MPDDRC	0xffffea00
 #define	SAMA5D3_BASE_HSMC	0xffffc000
+#define SAMA5D3_BASE_RSTC	0xfffffe00
 #define SAMA5D3_BASE_PIT	0xfffffe30
 #define SAMA5D3_BASE_WDT	0xfffffe40
 
 #define SAMA5D3_BASE_PMECC	0xffffc070
 #define SAMA5D3_BASE_PMERRLOC	0xffffc500
-
-#define AT91_NB_USART	3
-
-#define AT91_PMC	0xfffffc00
 
 /*
  * Internal Memory.
@@ -122,33 +108,5 @@
 #define SAMA5D3_UDPHS_FIFO	0x00500000
 #define SAMA5D3_OHCI_BASE	0x00600000	/* USB Host controller (OHCI) */
 #define SAMA5D3_EHCI_BASE	0x00700000	/* USB Host controller (EHCI) */
-
-/*
- * DMA0 peripheral identifiers
- * for hardware handshaking interface
- */
-#define SAMA5_DMA_ID_MCI0	 0
-#define SAMA5_DMA_ID_SPI0_TX	 1
-#define SAMA5_DMA_ID_SPI0_RX	 2
-#define SAMA5_DMA_ID_USART0_TX	 3
-#define SAMA5_DMA_ID_USART0_RX	 4
-#define SAMA5_DMA_ID_USART1_TX	 5
-#define SAMA5_DMA_ID_USART1_RX	 6
-#define SAMA5_DMA_ID_TWI0_TX	 7
-#define SAMA5_DMA_ID_TWI0_RX	 8
-#define SAMA5_DMA_ID_TWI1_TX	 9
-#define SAMA5_DMA_ID_TWI1_RX	10
-#define SAMA5_DMA_ID_UART0_TX	11
-#define SAMA5_DMA_ID_UART0_RX	12
-#define SAMA5_DMA_ID_SSC0_TX	13
-#define SAMA5_DMA_ID_SSC0_RX	14
-#define SAMA5_DMA_ID_SMD_TX	15
-#define SAMA5_DMA_ID_SMD_RX	16
-
-/*
- * DMA1 peripheral identifiers
- * for hardware handshaking interface
- */
-#define SAMA5_DMA_ID_MCI1	0
 
 #endif

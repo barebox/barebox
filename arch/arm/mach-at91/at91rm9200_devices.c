@@ -17,7 +17,6 @@
 #include <mach/at91rm9200.h>
 #include <mach/board.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 #include <mach/at91rm9200_mc.h>
 #include <i2c/i2c-gpio.h>
 #include <linux/sizes.h>
@@ -135,15 +134,19 @@ void __init at91_add_device_nand(struct atmel_nand_data *data)
 		return;
 
 	/* enable the address range of CS3 */
-	csa = at91_sys_read(AT91_EBI_CSA);
-	at91_sys_write(AT91_EBI_CSA, csa | AT91_EBI_CS3A_SMC_SMARTMEDIA);
+	csa = readl(AT91RM9200_BASE_MC + AT91RM9200_EBI_CSA);
+	csa |= AT91RM9200_EBI_CS3A_SMC_SMARTMEDIA;
+	writel(csa, AT91RM9200_BASE_MC + AT91RM9200_EBI_CSA);
 
 	/* set the bus interface characteristics */
-	at91_sys_write(AT91_SMC_CSR(3), AT91_SMC_ACSS_STD | AT91_SMC_DBW_8 | AT91_SMC_WSEN
-		| AT91_SMC_NWS_(5)
-		| AT91_SMC_TDF_(1)
-		| AT91_SMC_RWSETUP_(0)	/* tDS Data Set up Time 30 - ns */
-		| AT91_SMC_RWHOLD_(1)	/* tDH Data Hold Time 20 - ns */
+	writel(AT91RM9200_SMC_ACSS_STD |
+		AT91RM9200_SMC_DBW_8 |
+		AT91RM9200_SMC_WSEN |
+		AT91RM9200_SMC_NWS_(5) |
+		AT91RM9200_SMC_TDF_(1) |
+		AT91RM9200_SMC_RWSETUP_(0) |	/* tDS Data Set up Time 30 - ns */
+		AT91RM9200_SMC_RWHOLD_(1),	/* tDH Data Hold Time 20 - ns */
+	        AT91RM9200_BASE_MC + AT91RM9200_SMC_CSR(3)
 	);
 
 	/* enable pin */
@@ -253,7 +256,7 @@ resource_size_t __init at91_configure_dbgu(void)
 	at91_set_A_periph(AT91_PIN_PA30, 1);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PA31, 0);		/* DTXD */
 
-	return AT91_BASE_SYS + AT91_DBGU;
+	return AT91RM9200_BASE_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)

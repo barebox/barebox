@@ -16,13 +16,13 @@
 #include <envfs.h>
 #include <init.h>
 #include <gpio.h>
+#include <io.h>
 
 #include <mach/at91sam9263_matrix.h>
 #include <mach/at91sam9_smc.h>
 #include <mach/at91_rtt.h>
 #include <mach/hardware.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 
 static int add_smc_devices(void)
 {
@@ -66,9 +66,9 @@ static int at91sam9263_smc_init(void)
 	else
 		ek_nand_smc_config.mode |= AT91_SMC_DBW_8;
 
-	csa = at91_sys_read(AT91_MATRIX_EBI0CSA);
-	csa |= AT91_MATRIX_EBI0_CS3A_SMC_SMARTMEDIA;
-	at91_sys_write(AT91_MATRIX_EBI0CSA, csa);
+	csa = readl(AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
+	csa |= AT91SAM9263_MATRIX_EBI0_CS3A_SMC_SMARTMEDIA;
+	writel(csa, AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
 
 	/* configure chip-select 3 (NAND) */
 	sam9_smc_configure(0, 3, &ek_nand_smc_config);

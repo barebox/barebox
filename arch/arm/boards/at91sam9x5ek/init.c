@@ -32,7 +32,6 @@
 #include <mach/board.h>
 #include <mach/at91sam9_smc.h>
 #include <gpio.h>
-#include <mach/io.h>
 #include <mach/iomux.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
@@ -70,16 +69,16 @@ static int ek_add_device_smc(void)
 	if (!of_machine_is_compatible("atmel,at91sam9x5ek"))
 		return 0;
 
-	csa = at91_sys_read(AT91_MATRIX_EBICSA);
+	csa = readl(AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
 
 	/* Enable CS3 */
-	csa |= AT91_MATRIX_EBI_CS3A_SMC_NANDFLASH;
+	csa |= AT91SAM9X5_MATRIX_EBI_CS3A_SMC_NANDFLASH;
 	/* NAND flash on D16 */
-	csa |= AT91_MATRIX_NFD0_ON_D16;
+	csa |= AT91SAM9X5_MATRIX_NFD0_ON_D16;
 
 	/* Configure IO drive */
-	csa &= ~AT91_MATRIX_EBI_EBI_IOSR_NORMAL;
-	at91_sys_write(AT91_MATRIX_EBICSA, csa);
+	csa &= ~AT91SAM9X5_MATRIX_EBI_EBI_IOSR_NORMAL;
+	writel(csa, AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
 
 	add_generic_device("at91sam9-smc",
 			   DEVICE_ID_SINGLE, NULL,
@@ -96,9 +95,9 @@ static int ek_add_device_smc(void)
 	sam9_smc_configure(0, 3, &cm_nand_smc_config);
 
 	if (at91sam9x5ek_cm_is_vendor(VENDOR_COGENT)) {
-		csa = at91_sys_read(AT91_MATRIX_EBICSA);
-		csa |= AT91_MATRIX_EBI_VDDIOMSEL_1_8V;
-		at91_sys_write(AT91_MATRIX_EBICSA, csa);
+		csa = readl(AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
+		csa |= AT91SAM9X5_MATRIX_EBI_VDDIOMSEL_1_8V;
+		writel(csa, AT91SAM9X5_BASE_MATRIX + AT91SAM9X5_MATRIX_EBICSA);
 	}
 
 	return 0;

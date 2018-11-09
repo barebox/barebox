@@ -29,8 +29,8 @@ static void __bare_init at91sam9263ek_board_config(struct at91sam926x_board_cfg 
 	cfg->ebi_pio_ppudr = 0xFFFF0000;
 	/* EBI0_CSA, CS1 SDRAM, CS3 NAND Flash, 3.3V memories */
 	cfg->ebi_csa =
-		AT91_MATRIX_EBI0_DBPUC | AT91_MATRIX_EBI0_VDDIOMSEL_3_3V |
-		AT91_MATRIX_EBI0_CS1A_SDRAMC;
+		AT91SAM9263_MATRIX_EBI0_DBPUC | AT91SAM9263_MATRIX_EBI0_VDDIOMSEL_3_3V |
+		AT91SAM9263_MATRIX_EBI0_CS1A_SDRAMC;
 
 	cfg->smc_cs = 0;
 	cfg->smc_mode =
@@ -106,10 +106,10 @@ static void __bare_init at91sam9263ek_init(void *fdt)
 	cfg.pio = IOMEM(AT91SAM9263_BASE_PIOD);
 	cfg.sdramc = IOMEM(AT91SAM9263_BASE_SDRAMC0);
 	cfg.ebi_pio_is_peripha = true;
-	cfg.matrix_csa = AT91_MATRIX_EBI0CSA;
+	cfg.matrix_csa = IOMEM(AT91SAM9263_BASE_MATRIX + AT91SAM9263_MATRIX_EBI0CSA);
 
 	at91sam9263ek_board_config(&cfg);
-	at91sam926x_board_init(&cfg);
+	at91sam9263_board_init(&cfg);
 
 	barebox_arm_entry(AT91_CHIPSELECT_1, at91_get_sdram_size(cfg.sdramc),
 			  fdt);

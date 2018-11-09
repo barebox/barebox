@@ -30,7 +30,6 @@
 #include <clock.h>
 #include <mach/hardware.h>
 #include <mach/at91_pit.h>
-#include <mach/io.h>
 #include <io.h>
 #include <linux/clk.h>
 #include <linux/err.h>

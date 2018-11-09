@@ -84,7 +84,7 @@
 #define			AT91_SDRAMC_MD_LOW_POWER_SDRAM	1
 
 #ifndef __ASSEMBLY__
-#include <mach/io.h>
+#include <io.h>
 static inline u32 at91_get_sdram_size(void *base)
 {
 	u32 val;
@@ -118,6 +118,7 @@ static inline bool at91_is_low_power_sdram(void *base)
 }
 
 #ifdef CONFIG_SOC_AT91SAM9260
+#include <mach/at91sam9260.h>
 static inline u32 at91sam9260_get_sdram_size(void)
 {
 	return at91_get_sdram_size(IOMEM(AT91SAM9260_BASE_SDRAMC));
@@ -140,6 +141,7 @@ static inline bool at91sam9260_is_low_power_sdram(void)
 #endif
 
 #ifdef CONFIG_SOC_AT91SAM9261
+#include <mach/at91sam9261.h>
 static inline u32 at91sam9261_get_sdram_size(void)
 {
 	return at91_get_sdram_size(IOMEM(AT91SAM9261_BASE_SDRAMC));
@@ -162,6 +164,7 @@ static inline bool at91sam9261_is_low_power_sdram(void)
 #endif
 
 #ifdef CONFIG_SOC_AT91SAM9263
+#include <mach/at91sam9263.h>
 static inline u32 at91sam9263_get_sdram_size(int bank)
 {
 	switch (bank) {

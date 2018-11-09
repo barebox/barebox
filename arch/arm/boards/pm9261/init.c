@@ -34,7 +34,6 @@
 #include <mach/at91_pmc.h>
 #include <mach/board.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 #include <mach/at91sam9_smc.h>
 #include <platform_data/eth-dm9000.h>
 #include <linux/w1-gpio.h>

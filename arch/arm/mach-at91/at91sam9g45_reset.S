@@ -17,12 +17,9 @@
 
 			.arm
 
-			.globl	restart_sam9g45
+			.globl	at91sam9g45_reset
 
-restart_sam9g45:	ldr	r0, .at91_va_base_sdramc	@ preload constants
-			ldr	r1, .at91_va_base_rstc_cr
-
-			mov	r2, #1
+at91sam9g45_reset:	mov	r2, #1
 			mov	r3, #AT91_DDRSDRC_LPCB_POWER_DOWN
 			ldr	r4, =AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST
 
@@ -33,8 +30,3 @@ restart_sam9g45:	ldr	r0, .at91_va_base_sdramc	@ preload constants
 			str	r4, [r1]			@ reset processor
 
 			b	.
-
-.at91_va_base_sdramc:
-	.word AT91_BASE_SYS + AT91_DDRSDRC0
-.at91_va_base_rstc_cr:
-	.word AT91_BASE_SYS + AT91_RSTC_CR

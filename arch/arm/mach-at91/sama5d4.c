@@ -10,10 +10,12 @@
 #include <common.h>
 #include <gpio.h>
 #include <init.h>
+#include <restart.h>
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
-#include <mach/io.h>
 #include <mach/cpu.h>
+#include <mach/board.h>
+#include <mach/at91_rstc.h>
 #include <linux/clk.h>
 
 #include "generic.h"
@@ -279,6 +281,12 @@ static void __init sama5d4_register_clocks(void)
 	clk_register(&pck2);
 }
 
+static void sama5d4_restart(struct restart_handler *rst)
+{
+	at91sam9g45_reset(IOMEM(SAMA5D4_BASE_MPDDRC),
+			  IOMEM(SAMA5D4_BASE_RSTC + AT91_RSTC_CR));
+}
+
 /* --------------------------------------------------------------------
  *  Processor initialization
  * -------------------------------------------------------------------- */
@@ -296,6 +304,8 @@ static void sama5d4_initialize(void)
 
 	at91_add_pit(SAMA5D4_BASE_PIT);
 	at91_add_sam9_smc(DEVICE_ID_SINGLE, SAMA5D4_BASE_HSMC + 0x600, 0xa0);
+
+	restart_handler_register_fn(sama5d4_restart);
 }
 
 static int sama5d4_setup(void)

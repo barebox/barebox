@@ -32,7 +32,6 @@
 #include <of_gpio.h>
 #include <io.h>
 #include <spi/spi.h>
-#include <mach/io.h>
 #include <mach/iomux.h>
 #include <mach/board.h>
 #include <mach/cpu.h>

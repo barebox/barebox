@@ -74,12 +74,6 @@ config HAVE_NAND_ATMEL_BUSWIDTH_16
 config HAVE_AT91_DATAFLASH_CARD
 	bool
 
-config AT91SAM9_RESET
-	bool
-
-config AT91SAM9G45_RESET
-	bool
-
 config HAVE_AT91_LOAD_BAREBOX_SRAM
 	bool
 
@@ -96,7 +90,6 @@ config SOC_AT91SAM9260
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
-	select AT91SAM9_RESET
 	help
 	  Select this if you are using one of Atmel's AT91SAM9260, AT91SAM9XE
 	  or AT91SAM9G20 SoC.
@@ -105,7 +98,6 @@ config SOC_AT91SAM9261
 	bool
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
-	select AT91SAM9_RESET
 	help
 	  Select this if you are using one of Atmel's AT91SAM9261 or AT91SAM9G10 SoC.
 
@@ -114,7 +106,6 @@ config SOC_AT91SAM9263
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
-	select AT91SAM9_RESET
 	select HAVE_AT91_LOAD_BAREBOX_SRAM
 
 config SOC_AT91SAM9G45
@@ -122,7 +113,6 @@ config SOC_AT91SAM9G45
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
-	select AT91SAM9G45_RESET
 	help
 	  Select this if you are using one of Atmel's AT91SAM9G45 family SoC.
 	  This support covers AT91SAM9G45, AT91SAM9G46, AT91SAM9M10 and AT91SAM9M11.
@@ -132,7 +122,6 @@ config SOC_AT91SAM9X5
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
 	select HAS_MACB
-	select AT91SAM9G45_RESET
 	select HAVE_AT91_SMD
 	select HAVE_AT91_USB_CLK
 	select HAVE_AT91_UTMI
@@ -148,7 +137,6 @@ config SOC_AT91SAM9N12
 	bool
 	select SOC_AT91SAM9
 	select HAVE_AT91_DBGU0
-	select AT91SAM9G45_RESET
 	help
 	  Select this if you are using Atmel's AT91SAM9N12 SoC.
 
@@ -203,7 +191,6 @@ config ARCH_SAMA5D3
 	select SOC_SAMA5
 	select HAVE_AT91_DBGU1
 	select HAS_MACB
-	select AT91SAM9G45_RESET
 	select HAVE_MACH_ARM_HEAD
 
 config ARCH_SAMA5D4
@@ -211,7 +198,6 @@ config ARCH_SAMA5D4
 	select SOC_SAMA5
 	select HAVE_AT91_DBGU2
 	select HAS_MACB
-	select AT91SAM9G45_RESET
 	select HAVE_MACH_ARM_HEAD
 
 endchoice
@@ -549,6 +535,13 @@ config MACH_AT91SAM9X5EK
 	help
 	  Select this if you re using Atmel's AT91SAM9x5-EK Evaluation Kit.
 	  Supported chips are sam9g15, sam9g25, sam9x25, sam9g35 and sam9x35.
+
+config MACH_MICROCHIP_KSZ9477_EVB
+	bool "Microchip EVB-KSZ9477 Evaluation Kit"
+	select OFDEVICE
+	select COMMON_CLK_OF_PROVIDER
+	help
+	  Select this if you are using Microchip's EVB-KSZ9477 Evaluation Kit.
 
 endif
 

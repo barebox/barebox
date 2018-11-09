@@ -18,8 +18,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		1	/* System Controller Interrupt */
 #define AT91SAM9G45_ID_PIOA	2	/* Parallel I/O Controller A */
 #define AT91SAM9G45_ID_PIOB	3	/* Parallel I/O Controller B */
 #define AT91SAM9G45_ID_PIOC	4	/* Parallel I/O Controller C */
@@ -84,7 +82,6 @@
 #define AT91SAM9G45_BASE_TC3		0xfffd4000
 #define AT91SAM9G45_BASE_TC4		0xfffd4040
 #define AT91SAM9G45_BASE_TC5		0xfffd4080
-#define AT91_BASE_SYS			0xffffe200
 
 /*
  * System Peripherals
@@ -110,33 +107,6 @@
 #define AT91SAM9G45_BASE_GPBR	0xfffffd60
 
 /*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_ECC	(0xffffe200 - AT91_BASE_SYS)
-#define AT91_DDRSDRC1	(0xffffe400 - AT91_BASE_SYS)
-#define AT91_DDRSDRC0	(0xffffe600 - AT91_BASE_SYS)
-#define AT91_MATRIX	(0xffffea00 - AT91_BASE_SYS)
-#define AT91_DBGU	(0xffffee00 - AT91_BASE_SYS)
-#define AT91_RSTC	(0xfffffd00 - AT91_BASE_SYS)
-#define AT91_SHDWC	(0xfffffd10 - AT91_BASE_SYS)
-
-#define AT91_BASE_WDT	AT91SAM9G45_BASE_WDT
-#define AT91_BASE_SMC	AT91SAM9G45_BASE_SMC
-#define AT91_BASE_PIOA	AT91SAM9G45_BASE_PIOA
-#define AT91_BASE_PIOB	AT91SAM9G45_BASE_PIOB
-#define AT91_BASE_PIOC	AT91SAM9G45_BASE_PIOC
-#define AT91_BASE_PIOD	AT91SAM9G45_BASE_PIOD
-#define AT91_BASE_PIOE	AT91SAM9G45_BASE_PIOE
-
-#define AT91_USART0	AT91SAM9G45_BASE_US0
-#define AT91_USART1	AT91SAM9G45_BASE_US1
-#define AT91_USART2	AT91SAM9G45_BASE_US2
-#define AT91_USART3	AT91SAM9G45_BASE_US3
-#define AT91_NB_USART	5
-
-#define AT91_PMC	0xfffffc00
-
-/*
  * Internal Memory.
  */
 #define AT91SAM9G45_SRAM_BASE	0x00300000	/* Internal SRAM base address */
@@ -150,31 +120,5 @@
 #define AT91SAM9G45_OHCI_BASE	0x00700000	/* USB Host controller (OHCI) */
 #define AT91SAM9G45_EHCI_BASE	0x00800000	/* USB Host controller (EHCI) */
 #define AT91SAM9G45_VDEC_BASE	0x00900000	/* Video Decoder Controller */
-
-#define CONFIG_DRAM_BASE	AT91_CHIPSELECT_6
-
-#define CONSISTENT_DMA_SIZE	SZ_4M
-
-/*
- * DMA peripheral identifiers
- * for hardware handshaking interface
- */
-#define AT_DMA_ID_MCI0		 0
-#define AT_DMA_ID_SPI0_TX	 1
-#define AT_DMA_ID_SPI0_RX	 2
-#define AT_DMA_ID_SPI1_TX	 3
-#define AT_DMA_ID_SPI1_RX	 4
-#define AT_DMA_ID_SSC0_TX	 5
-#define AT_DMA_ID_SSC0_RX	 6
-#define AT_DMA_ID_SSC1_TX	 7
-#define AT_DMA_ID_SSC1_RX	 8
-#define AT_DMA_ID_AC97_TX	 9
-#define AT_DMA_ID_AC97_RX	10
-#define AT_DMA_ID_MCI1		13
-
-/*
- * Cpu Name
- */
-#define AT91_CPU_NAME	"AT91SAM9G45"
 
 #endif

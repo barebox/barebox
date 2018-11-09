@@ -16,12 +16,6 @@
 #ifndef AT91SAM9_SMC_H
 #define AT91SAM9_SMC_H
 
-#define at91_smc_read(id, field) \
-	__raw_readl(AT91_BASE_SMC + ((id) * 0x10) + field)
-
-#define at91_smc_write(id, field, value) \
-	__raw_writel(value, AT91_BASE_SMC + ((id) * 0x10) + field)
-
 #ifndef __ASSEMBLY__
 struct sam9_smc_config {
 	/* Setup register */

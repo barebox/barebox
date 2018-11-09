@@ -26,6 +26,7 @@
 #include <io.h>
 #include <envfs.h>
 #include <mach/hardware.h>
+#include <mach/at91sam926x.h>
 #include <nand.h>
 #include <linux/sizes.h>
 #include <linux/mtd/nand.h>
@@ -35,7 +36,6 @@
 #include <mach/at91sam9_sdramc.h>
 #include <gpio.h>
 #include <led.h>
-#include <mach/io.h>
 #include <mach/iomux.h>
 #include <mach/at91_pmc.h>
 #include <mach/at91_rstc.h>
@@ -128,11 +128,6 @@ static struct macb_platform_data macb_pdata = {
 
 static void usb_a9260_phy_reset(void)
 {
-	unsigned long rstc;
-	struct clk *clk = clk_get(NULL, "macb_clk");
-
-	clk_enable(clk);
-
 	at91_set_gpio_input(AT91_PIN_PA14, 0);
 	at91_set_gpio_input(AT91_PIN_PA15, 0);
 	at91_set_gpio_input(AT91_PIN_PA17, 0);
@@ -140,22 +135,8 @@ static void usb_a9260_phy_reset(void)
 	at91_set_gpio_input(AT91_PIN_PA26, 0);
 	at91_set_gpio_input(AT91_PIN_PA28, 0);
 
-	rstc = at91_sys_read(AT91_RSTC_MR) & AT91_RSTC_ERSTL;
-
-	/* Need to reset PHY -> 500ms reset */
-	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
-				     (AT91_RSTC_ERSTL & (0x0d << 8)) |
-				     AT91_RSTC_URSTEN);
-
-	at91_sys_write(AT91_RSTC_CR, AT91_RSTC_KEY | AT91_RSTC_EXTRST);
-
-	/* Wait for end hardware reset */
-	while (!(at91_sys_read(AT91_RSTC_SR) & AT91_RSTC_NRSTL));
-
-	/* Restore NRST value */
-	at91_sys_write(AT91_RSTC_MR, AT91_RSTC_KEY |
-				     (rstc) |
-				     AT91_RSTC_URSTEN);
+	/* same address for the different supported SoCs */
+	at91sam_phy_reset(IOMEM(AT91SAM926X_BASE_RSTC));
 }
 
 static void usb_a9260_add_device_eth(void)

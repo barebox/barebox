@@ -18,8 +18,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		1	/* System Peripherals */
 #define AT91SAM9260_ID_PIOA	2	/* Parallel IO Controller A */
 #define AT91SAM9260_ID_PIOB	3	/* Parallel IO Controller B */
 #define AT91SAM9260_ID_PIOC	4	/* Parallel IO Controller C */
@@ -75,7 +73,6 @@
 #define AT91SAM9260_BASE_TC4		0xfffdc040
 #define AT91SAM9260_BASE_TC5		0xfffdc080
 #define AT91SAM9260_BASE_ADC		0xfffe0000
-#define AT91_BASE_SYS			0xffffe800
 
 /*
  * System Peripherals
@@ -94,38 +91,6 @@
 #define AT91SAM9260_BASE_PIT	0xfffffd30
 #define AT91SAM9260_BASE_WDT	0xfffffd40
 #define AT91SAM9260_BASE_GPBR	0xfffffd50
-
-/*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_ECC	(0xffffe800 - AT91_BASE_SYS)
-#define AT91_SDRAMC	(0xffffea00 - AT91_BASE_SYS)
-#define AT91_MATRIX	(0xffffee00 - AT91_BASE_SYS)
-#define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)
-#define AT91_RSTC	(0xfffffd00 - AT91_BASE_SYS)
-#define AT91_SHDWC	(0xfffffd10 - AT91_BASE_SYS)
-
-#define AT91_BASE_WDT	AT91SAM9260_BASE_WDT
-#define AT91_BASE_SMC	AT91SAM9260_BASE_SMC
-#define AT91_BASE_PIOA	AT91SAM9260_BASE_PIOA
-#define AT91_BASE_PIOA	AT91SAM9260_BASE_PIOA
-#define AT91_BASE_PIOB	AT91SAM9260_BASE_PIOB
-#define AT91_BASE_PIOC	AT91SAM9260_BASE_PIOC
-
-#define AT91_USART0	AT91SAM9260_BASE_US0
-#define AT91_USART1	AT91SAM9260_BASE_US1
-#define AT91_USART2	AT91SAM9260_BASE_US2
-#define AT91_USART3	AT91SAM9260_BASE_US3
-#define AT91_USART4	AT91SAM9260_BASE_US4
-#define AT91_USART5	AT91SAM9260_BASE_US5
-#define AT91_NB_USART	7
-
-#define AT91_BASE_SPI	AT91SAM9260_BASE_SPI0
-#define AT91_BASE_TWI	AT91SAM9260_BASE_TWI
-#define AT91_ID_UHP	AT91SAM9260_ID_UHP
-#define AT91_PMC_UHP	AT91SAM926x_PMC_UHP
-
-#define AT91_PMC	0xfffffc00
 
 /*
  * Internal Memory.
@@ -156,14 +121,5 @@
 #define AT91SAM9G20_SRAM_SIZE	SZ_32K		/* Internal SRAM size (32Kb) */
 
 #define AT91SAM9G20_UHP_BASE	0x00500000	/* USB Host controller */
-
-/*
- * Cpu Name
- */
-#if defined(CONFIG_AT91SAM9260)
-#define AT91_CPU_NAME	"AT91SAM9260"
-#elif defined(CONFIG_AT91SAM9G20)
-#define AT91_CPU_NAME	"AT91SAM9G20"
-#endif
 
 #endif

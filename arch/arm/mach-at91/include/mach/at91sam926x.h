@@ -1,0 +1,8 @@
+#ifndef __MACH_AT91SAM926X_H
+#define __MACH_AT91SAM926X_H
+
+#define AT91SAM926X_BASE_PMC	0xfffffc00
+#define AT91SAM926X_BASE_RSTC	0xfffffd00
+#define AT91SAM926X_BASE_WDT	0xfffffd40
+
+#endif /* __MACH_AT91SAM926X_H */

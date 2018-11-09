@@ -107,9 +107,6 @@ static inline struct device_d * at91_register_uart(unsigned id, unsigned pins)
 	resource_size_t start;
 	resource_size_t size = SZ_16K;
 
-	if (id >= AT91_NB_USART)
-		return NULL;
-
 	switch (id) {
 		case 0:		/* DBGU */
 			start = at91_configure_dbgu();
@@ -167,4 +164,10 @@ struct at91_spi_platform_data {
 void at91_add_device_spi(int spi_id, struct at91_spi_platform_data *pdata);
 
 void __init at91_add_device_lcdc(struct atmel_lcdfb_platform_data *data);
+
+void at91sam_phy_reset(void __iomem *rstc_base);
+
+void at91sam9_reset(void __iomem *sdram, void __iomem *rstc_cr);
+void at91sam9g45_reset(void __iomem *sdram, void __iomem *rstc_cr);
+
 #endif

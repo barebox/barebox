@@ -13,7 +13,6 @@
 #include <io.h>
 #include <mach/hardware.h>
 #include <mach/cpu.h>
-#include <mach/io.h>
 #include <linux/err.h>
 
 #include <mach/at91sam9_smc.h>

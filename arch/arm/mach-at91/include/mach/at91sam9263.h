@@ -18,8 +18,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		1	/* System Peripherals */
 #define AT91SAM9263_ID_PIOA	2	/* Parallel IO Controller A */
 #define AT91SAM9263_ID_PIOB	3	/* Parallel IO Controller B */
 #define AT91SAM9263_ID_PIOCDE	4	/* Parallel IO Controller C, D and E */
@@ -72,7 +70,6 @@
 #define AT91SAM9263_BASE_EMAC		0xfffbc000
 #define AT91SAM9263_BASE_ISI		0xfffc4000
 #define AT91SAM9263_BASE_2DGE		0xfffc8000
-#define AT91_BASE_SYS			0xffffe000
 
 
 /*
@@ -100,38 +97,6 @@
 #define AT91SAM9263_BASE_GPBR	0xfffffd60
 
 /*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_ECC0	(0xffffe000 - AT91_BASE_SYS)
-#define AT91_SDRAMC0	(0xffffe200 - AT91_BASE_SYS)
-#define AT91_MATRIX	(0xffffec00 - AT91_BASE_SYS)
-#define AT91_DBGU	(0xffffee00 - AT91_BASE_SYS)
-#define AT91_RSTC	(0xfffffd00 - AT91_BASE_SYS)
-#define AT91_SHDWC	(0xfffffd10 - AT91_BASE_SYS)
-
-#define AT91_BASE_WDT	AT91SAM9263_BASE_WDT
-#define AT91_BASE_SMC	AT91SAM9263_BASE_SMC0
-#define AT91_BASE_PIOA	AT91SAM9263_BASE_PIOA
-#define AT91_BASE_PIOB	AT91SAM9263_BASE_PIOB
-#define AT91_BASE_PIOC	AT91SAM9263_BASE_PIOC
-#define AT91_BASE_PIOD	AT91SAM9263_BASE_PIOD
-#define AT91_BASE_PIOE	AT91SAM9263_BASE_PIOE
-
-#define AT91_USART0	AT91SAM9263_BASE_US0
-#define AT91_USART1	AT91SAM9263_BASE_US1
-#define AT91_USART2	AT91SAM9263_BASE_US2
-#define AT91_NB_USART	4
-
-#define AT91_SDRAMC	AT91_SDRAMC0
-
-#define AT91_BASE_SPI	AT91SAM9263_BASE_SPI0
-#define AT91_BASE_TWI	AT91SAM9263_BASE_TWI
-#define AT91_ID_UHP	AT91SAM9263_ID_UHP
-#define AT91_PMC_UHP	AT91SAM926x_PMC_UHP
-
-#define AT91_PMC	0xfffffc00
-
-/*
  * Internal Memory.
  */
 #define AT91SAM9263_SRAM0_BASE	0x00300000	/* Internal SRAM 0 base address */
@@ -146,10 +111,5 @@
 #define AT91SAM9263_LCDC_BASE	0x00700000	/* LCD Controller */
 #define AT91SAM9263_DMAC_BASE	0x00800000	/* DMA Controller */
 #define AT91SAM9263_UHP_BASE	0x00a00000	/* USB Host controller */
-
-/*
- * Cpu Name
- */
-#define AT91_CPU_NAME	"AT91SAM9263"
 
 #endif

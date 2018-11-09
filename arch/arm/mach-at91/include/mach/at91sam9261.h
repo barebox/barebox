@@ -18,8 +18,6 @@
 /*
  * Peripheral identifiers/interrupts.
  */
-#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
-#define AT91_ID_SYS		1	/* System Peripherals */
 #define AT91SAM9261_ID_PIOA	2	/* Parallel IO Controller A */
 #define AT91SAM9261_ID_PIOB	3	/* Parallel IO Controller B */
 #define AT91SAM9261_ID_PIOC	4	/* Parallel IO Controller C */
@@ -62,7 +60,6 @@
 #define AT91SAM9261_BASE_SSC2		0xfffc4000
 #define AT91SAM9261_BASE_SPI0		0xfffc8000
 #define AT91SAM9261_BASE_SPI1		0xfffcc000
-#define AT91_BASE_SYS			0xffffea00
 
 
 /*
@@ -83,28 +80,6 @@
 #define AT91SAM9261_BASE_GPBR	0xfffffd50
 
 /*
- * System Peripherals (offset from AT91_BASE_SYS)
- */
-#define AT91_SDRAMC	(0xffffea00 - AT91_BASE_SYS)
-#define AT91_MATRIX	(0xffffee00 - AT91_BASE_SYS)
-#define AT91_DBGU	(0xfffff200 - AT91_BASE_SYS)
-#define AT91_RSTC	(0xfffffd00 - AT91_BASE_SYS)
-#define AT91_SHDWC	(0xfffffd10 - AT91_BASE_SYS)
-
-#define AT91_BASE_WDT	AT91SAM9261_BASE_WDT
-#define AT91_BASE_SMC	AT91SAM9261_BASE_SMC
-#define AT91_BASE_PIOA	AT91SAM9261_BASE_PIOA
-#define AT91_BASE_PIOB	AT91SAM9261_BASE_PIOB
-#define AT91_BASE_PIOC	AT91SAM9261_BASE_PIOC
-
-#define AT91_USART0	AT91SAM9261_BASE_US0
-#define AT91_USART1	AT91SAM9261_BASE_US1
-#define AT91_USART2	AT91SAM9261_BASE_US2
-#define AT91_NB_USART	4
-
-#define AT91_PMC	0xfffffc00
-
-/*
  * Internal Memory.
  */
 #define AT91SAM9261_SRAM_BASE	0x00300000	/* Internal SRAM base address */
@@ -118,10 +93,5 @@
 
 #define AT91SAM9261_UHP_BASE	0x00500000	/* USB Host controller */
 #define AT91SAM9261_LCDC_BASE	0x00600000	/* LDC controller */
-
-/*
- * Cpu Name
- */
-#define AT91_CPU_NAME	"AT91SAM9261"
 
 #endif

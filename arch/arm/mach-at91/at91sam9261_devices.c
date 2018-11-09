@@ -21,7 +21,6 @@
 #include <mach/at91_rtt.h>
 #include <mach/board.h>
 #include <mach/iomux.h>
-#include <mach/io.h>
 #include <mach/cpu.h>
 #include <i2c/i2c-gpio.h>
 
@@ -94,8 +93,9 @@ void at91_add_device_nand(struct atmel_nand_data *data)
 	if (!data)
 		return;
 
-	csa = at91_sys_read(AT91_MATRIX_EBICSA);
-	at91_sys_write(AT91_MATRIX_EBICSA, csa | AT91_MATRIX_CS3A_SMC_SMARTMEDIA);
+	csa = readl(AT91SAM9261_BASE_MATRIX + AT91SAM9261_MATRIX_EBICSA);
+	csa |= AT91SAM9261_MATRIX_CS3A_SMC_SMARTMEDIA;
+	writel(csa, AT91SAM9261_BASE_MATRIX + AT91SAM9261_MATRIX_EBICSA);
 
 	/* enable pin */
 	if (gpio_is_valid(data->enable_pin))
@@ -269,7 +269,7 @@ resource_size_t __init at91_configure_dbgu(void)
 	at91_set_A_periph(AT91_PIN_PA9, 1);		/* DRXD */
 	at91_set_A_periph(AT91_PIN_PA10, 0);		/* DTXD */
 
-	return AT91_BASE_SYS + AT91_DBGU;
+	return AT91SAM9261_BASE_DBGU;
 }
 
 resource_size_t __init at91_configure_usart0(unsigned pins)

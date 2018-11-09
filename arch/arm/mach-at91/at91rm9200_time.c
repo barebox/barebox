@@ -30,11 +30,10 @@
 #include <clock.h>
 #include <restart.h>
 #include <mach/hardware.h>
-#include <mach/at91_tc.h>
-#include <mach/at91_st.h>
-#include <mach/at91_pmc.h>
-#include <mach/io.h>
+#include <mach/at91rm9200_st.h>
 #include <io.h>
+
+static void __iomem *st = IOMEM(AT91RM9200_BASE_ST);
 
 /*
  * The ST_CRTR is updated asynchronously to the master clock ... but
@@ -45,9 +44,9 @@ uint64_t at91rm9200_clocksource_read(void)
 {
 	unsigned long x1, x2;
 
-	x1 = at91_sys_read(AT91_ST_CRTR);
+	x1 = readl(st + AT91RM9200_ST_CRTR);
 	do {
-		x2 = at91_sys_read(AT91_ST_CRTR);
+		x2 = readl(st + AT91RM9200_ST_CRTR);
 		if (x1 == x2)
 			break;
 		x1 = x2;
@@ -67,7 +66,7 @@ static int clocksource_init (void)
 	 * directly for the clocksource and all clockevents, after adjusting
 	 * its prescaler from the 1 Hz default.
 	 */
-	at91_sys_write(AT91_ST_RTMR, 1);
+	writel(1, st + AT91RM9200_ST_RTMR);
 
 	cs.mult = clocksource_hz2mult(AT91_SLOW_CLOCK, cs.shift);
 
@@ -83,8 +82,8 @@ static void __noreturn at91rm9200_restart_soc(struct restart_handler *rst)
 	/*
 	 * Perform a hardware reset with the use of the Watchdog timer.
 	 */
-	at91_sys_write(AT91_ST_WDMR, AT91_ST_RSTEN | AT91_ST_EXTEN | 1);
-	at91_sys_write(AT91_ST_CR, AT91_ST_WDRST);
+	writel(AT91RM9200_ST_RSTEN | AT91RM9200_ST_EXTEN | 1, st + AT91RM9200_ST_WDMR);
+	writel(AT91RM9200_ST_WDRST, st + AT91RM9200_ST_CR);
 
 	/* Not reached */
 	hang();

@@ -46,6 +46,8 @@ struct imx_chipidea {
 	struct phy *phy;
 	struct usb_phy *usbphy;
 	struct clk *clk;
+	struct ehci_host *ehci;
+	struct fsl_udc *udc;
 };
 
 static int imx_chipidea_port_init(void *drvdata)
@@ -175,6 +177,13 @@ static int imx_chipidea_probe_dt(struct imx_chipidea *ci)
 	return 0;
 }
 
+static int ci_ehci_detect(struct device_d *dev)
+{
+	struct imx_chipidea *ci = dev->priv;
+
+	return ehci_detect(ci->ehci);
+}
+
 static int ci_register_role(struct imx_chipidea *ci)
 {
 	int ret;
@@ -184,14 +193,20 @@ static int ci_register_role(struct imx_chipidea *ci)
 
 	if (ci->mode == IMX_USB_MODE_HOST) {
 		if (IS_ENABLED(CONFIG_USB_EHCI)) {
+			struct ehci_host *ehci;
+
 			ci->role_registered = IMX_USB_MODE_HOST;
 			ret = regulator_enable(ci->vbus);
 			if (ret)
 				return ret;
 
-			ret = ehci_register(ci->dev, &ci->data);
-			if (!ret)
-				return 0;
+			ehci = ehci_register(ci->dev, &ci->data);
+			if (IS_ERR(ehci))
+				return PTR_ERR(ehci);
+
+			ci->ehci = ehci;
+
+			ci->dev->detect = ci_ehci_detect;
 
 			regulator_disable(ci->vbus);
 		} else {
@@ -202,8 +217,14 @@ static int ci_register_role(struct imx_chipidea *ci)
 
 	if (ci->mode == IMX_USB_MODE_DEVICE) {
 		if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC)) {
+			struct fsl_udc *udc;
 			ci->role_registered = IMX_USB_MODE_DEVICE;
-			return ci_udc_register(ci->dev, ci->base);
+
+			udc = ci_udc_register(ci->dev, ci->base);
+			if (IS_ERR(udc))
+				return PTR_ERR(udc);
+
+			ci->udc = udc;
 		} else {
 			dev_err(ci->dev, "USB device support not available\n");
 			return -ENODEV;
@@ -266,6 +287,7 @@ static int imx_chipidea_probe(struct device_d *dev)
 
 	ci = xzalloc(sizeof(*ci));
 	ci->dev = dev;
+	dev->priv = ci;
 	ci->role_registered = IMX_USB_MODE_OTG;
 
 	if (IS_ENABLED(CONFIG_OFDEVICE) && dev->device_node) {
@@ -349,8 +371,13 @@ static int imx_chipidea_probe(struct device_d *dev)
 
 static void imx_chipidea_remove(struct device_d *dev)
 {
-	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC))
-		ci_udc_unregister();
+	struct imx_chipidea *ci = dev->priv;
+
+	if (ci->ehci)
+		ehci_unregister(ci->ehci);
+
+	if (IS_ENABLED(CONFIG_USB_GADGET_DRIVER_ARC) && ci->udc)
+		ci_udc_unregister(ci->udc);
 }
 
 static __maybe_unused struct of_device_id imx_chipidea_dt_ids[] = {

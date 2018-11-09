@@ -102,6 +102,11 @@ int usb_register_host(struct usb_host *host)
 	return 0;
 }
 
+void usb_unregister_host(struct usb_host *host)
+{
+	list_del(&host->list);
+}
+
 /**
  * set configuration number to configuration
  */

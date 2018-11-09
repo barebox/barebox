@@ -30,6 +30,7 @@
 #include "ehci.h"
 
 struct atmel_ehci_priv {
+	struct ehci_host *ehci;
 	struct device_d *dev;
 	struct clk *iclk;
 	struct clk *uclk;
@@ -59,6 +60,13 @@ static void atmel_stop_clock(struct atmel_ehci_priv *atehci)
 	clk_disable(atehci->uclk);
 }
 
+static int atmel_ehci_detect(struct device_d *dev)
+{
+	struct atmel_ehci_priv *atehci = dev->priv;
+
+	return ehci_detect(atehci->ehci);
+}
+
 static int atmel_ehci_probe(struct device_d *dev)
 {
 	int ret;
@@ -66,12 +74,14 @@ static int atmel_ehci_probe(struct device_d *dev)
 	struct ehci_data data;
 	struct atmel_ehci_priv *atehci;
 	const char *uclk_name;
+	struct ehci_host *ehci;
 
 	uclk_name = (dev->device_node) ? "usb_clk" : "uhpck";
 
 	atehci = xzalloc(sizeof(*atehci));
 	atehci->dev = dev;
 	dev->priv = atehci;
+	dev->detect = atmel_ehci_detect;
 
 	atehci->iclk = clk_get(dev, "ehci_clk");
 	if (IS_ERR(atehci->iclk)) {
@@ -99,15 +109,25 @@ static int atmel_ehci_probe(struct device_d *dev)
 		return PTR_ERR(iores);
 	data.hccr = IOMEM(iores->start);
 
-	return ehci_register(dev, &data);
+	ehci = ehci_register(dev, &data);
+	if (IS_ERR(ehci))
+		return PTR_ERR(ehci);
+
+	atehci->ehci = ehci;
+
+	return 0;
 }
 
 static void atmel_ehci_remove(struct device_d *dev)
 {
+	struct atmel_ehci_priv *atehci = dev->priv;
+
+	ehci_unregister(atehci->ehci);
+
 	/*
 	 * Stop the USB clocks.
 	 */
-	atmel_stop_clock(dev->priv);
+	atmel_stop_clock(atehci);
 }
 
 static const struct of_device_id atmel_ehci_dt_ids[] = {

@@ -23,7 +23,9 @@ struct fsl_usb2_platform_data {
 	unsigned int			port_enables;
 };
 
-int ci_udc_register(struct device_d *dev, void __iomem *regs);
-void ci_udc_unregister(void);
+struct fsl_udc;
+
+struct fsl_udc *ci_udc_register(struct device_d *dev, void __iomem *regs);
+void ci_udc_unregister(struct fsl_udc *);
 
 #endif /* __USB_FSL_USB2_H */

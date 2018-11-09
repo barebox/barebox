@@ -19,12 +19,26 @@ struct ehci_data {
 	void *drvdata;
 };
 
+struct ehci_host;
+
 #ifdef CONFIG_USB_EHCI
-int ehci_register(struct device_d *dev, struct ehci_data *data);
+struct ehci_host *ehci_register(struct device_d *dev, struct ehci_data *data);
+void ehci_unregister(struct ehci_host *);
+int ehci_detect(struct ehci_host *ehci);
 #else
-static inline int ehci_register(struct device_d *dev, struct ehci_data *data)
+static inline struct ehci_host *ehci_register(struct device_d *dev,
+					      struct ehci_data *data)
 {
-	return -ENOSYS;
+	return ERR_PTR(-ENOSYS);
+}
+
+static inline void ehci_unregister(struct ehci_host *ehci)
+{
+}
+
+static inline int ehci_detect(struct ehci_host *ehci)
+{
+	return 0;
 }
 #endif
 

@@ -1910,7 +1910,6 @@ config CMD_USB
 config CMD_USBGADGET
 	bool
 	depends on USB_GADGET
-	select FILE_LIST
 	prompt "usbgadget"
 
 config CMD_WD

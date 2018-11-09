@@ -32,30 +32,26 @@
 
 static int do_usbgadget(int argc, char *argv[])
 {
-	int opt, ret;
-	int acm = 1, create_serial = 0, fastboot_set = 0, fastboot_export_bbu = 0;
+	int opt;
+	bool acm = false, dfu = false, fastboot = false, export_bbu = false;
 	const char *fastboot_opts = NULL, *dfu_opts = NULL;
-	struct f_multi_opts *opts;
 
-	while ((opt = getopt(argc, argv, "asdA::D:b")) > 0) {
+	while ((opt = getopt(argc, argv, "asdA::D::b")) > 0) {
 		switch (opt) {
 		case 'a':
-			acm = 1;
-			create_serial = 1;
-			break;
 		case 's':
-			acm = 0;
-			create_serial = 1;
+			acm = true;
 			break;
 		case 'D':
+			dfu = true;
 			dfu_opts = optarg;
 			break;
 		case 'A':
+			fastboot = true;
 			fastboot_opts = optarg;
-			fastboot_set = 1;
 			break;
 		case 'b':
-			fastboot_export_bbu = 1;
+			export_bbu = true;
 			break;
 		case 'd':
 			usb_multi_unregister();
@@ -65,54 +61,8 @@ static int do_usbgadget(int argc, char *argv[])
 		}
 	}
 
-	if (fastboot_set && !fastboot_opts)
-		fastboot_opts = getenv("global.usbgadget.fastboot_function");
-
-	if (!dfu_opts && !fastboot_opts && !create_serial)
-		return COMMAND_ERROR_USAGE;
-
-	/*
-	 * Creating a gadget with both DFU and Fastboot doesn't work.
-	 * Both client tools seem to assume that the device only has
-	 * a single configuration
-	 */
-	if (fastboot_opts && dfu_opts) {
-		printf("Only one of Fastboot and DFU allowed\n");
-		return -EINVAL;
-	}
-
-	opts = xzalloc(sizeof(*opts));
-	opts->release = usb_multi_opts_release;
-
-	if (fastboot_opts) {
-		opts->fastboot_opts.files = file_list_parse(fastboot_opts);
-		if (IS_ERR(opts->fastboot_opts.files))
-			goto err_parse;
-		opts->fastboot_opts.export_bbu = fastboot_export_bbu;
-	}
-
-	if (dfu_opts) {
-		opts->dfu_opts.files = file_list_parse(dfu_opts);
-		if (IS_ERR(opts->dfu_opts.files))
-			goto err_parse;
-	}
-
-	if (create_serial) {
-		opts->create_acm = acm;
-	}
-
-	ret = usb_multi_register(opts);
-	if (ret)
-		usb_multi_opts_release(opts);
-
-	return ret;
-
-err_parse:
-	printf("Cannot parse file list \"%s\": %s\n", fastboot_opts, strerrorp(opts->fastboot_opts.files));
-
-	free(opts);
-
-	return 1;
+	return usbgadget_register(dfu, dfu_opts, fastboot, fastboot_opts, acm,
+				  export_bbu);
 }
 
 BAREBOX_CMD_HELP_START(usbgadget)
@@ -120,11 +70,11 @@ BAREBOX_CMD_HELP_TEXT("Enable / disable a USB composite gadget on the USB device
 BAREBOX_CMD_HELP_TEXT("")
 BAREBOX_CMD_HELP_TEXT("Options:")
 BAREBOX_CMD_HELP_OPT ("-a\t", "Create CDC ACM function")
-BAREBOX_CMD_HELP_OPT ("-s\t", "Create Generic Serial function")
 BAREBOX_CMD_HELP_OPT ("-A <desc>", "Create Android Fastboot function. If 'desc' is not provided, "
 				   "try to use 'global.usbgadget.fastboot_function' variable.")
 BAREBOX_CMD_HELP_OPT ("-b\t", "include registered barebox update handlers (fastboot specific)")
-BAREBOX_CMD_HELP_OPT ("-D <desc>", "Create DFU function")
+BAREBOX_CMD_HELP_OPT ("-D <desc>", "Create DFU function. If 'desc' is not provided, "
+				   "try to use 'global.usbgadget.dfu_function' variable.")
 BAREBOX_CMD_HELP_OPT ("-d\t", "Disable the currently running gadget")
 BAREBOX_CMD_HELP_END
 

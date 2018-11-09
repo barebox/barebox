@@ -157,6 +157,7 @@ struct usb_host {
 };
 
 int usb_register_host(struct usb_host *);
+void usb_unregister_host(struct usb_host *host);
 
 int usb_host_detect(struct usb_host *host);
 

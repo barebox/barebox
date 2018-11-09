@@ -450,6 +450,11 @@ struct fsl_udc {
 	u8 device_address;	/* Device USB address */
 };
 
+static inline struct fsl_udc *to_fsl_udc(struct usb_gadget *gadget)
+{
+	return container_of(gadget, struct fsl_udc, gadget);
+}
+
 /*-------------------------------------------------------------------------*/
 
 #ifdef DEBUG
@@ -523,7 +528,6 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
 #define get_pipe_by_ep(EP)	(ep_index(EP) * 2 + ep_is_in(EP))
 
 static struct usb_dr_device __iomem *dr_regs;
-static struct fsl_udc *udc_controller = NULL;
 
 static const struct usb_endpoint_descriptor
 fsl_ep0_desc = {
@@ -1943,11 +1947,8 @@ static void dtd_complete_irq(struct fsl_udc *udc)
  */
 static void fsl_udc_gadget_poll(struct usb_gadget *gadget)
 {
-	struct fsl_udc *udc = udc_controller;
+	struct fsl_udc *udc = to_fsl_udc(gadget);
 	u32 irq_src;
-
-	if (!udc)
-		return;
 
 	/* Disable ISR for OTG host mode */
 	if (udc->stopped)
@@ -1981,7 +1982,7 @@ static void fsl_udc_gadget_poll(struct usb_gadget *gadget)
 
 	/* Sleep Enable (Suspend) */
 	if (irq_src & USB_STS_SUSPEND)
-		udc->driver->disconnect(&udc_controller->gadget);
+		udc->driver->disconnect(gadget);
 
 	if (irq_src & (USB_STS_ERR | USB_STS_SYS_ERR))
 		printf("Error IRQ %x\n", irq_src);
@@ -1993,6 +1994,8 @@ static void fsl_udc_gadget_poll(struct usb_gadget *gadget)
 *----------------------------------------------------------------*/
 static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
+	struct fsl_udc *udc = to_fsl_udc(gadget);
+
 	/*
 	 * We currently have PHY no driver which could call vbus_connect,
 	 * so when the USB gadget core calls usb_gadget_connect() the
@@ -2002,13 +2005,13 @@ static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 	usb_gadget_vbus_connect(gadget);
 
 	/* hook up the driver */
-	udc_controller->driver = driver;
+	udc->driver = driver;
 
 	/* Enable DR IRQ reg and Set usbcmd reg  Run bit */
-	dr_controller_run(udc_controller);
-	udc_controller->usb_state = USB_STATE_ATTACHED;
-	udc_controller->ep0_state = WAIT_FOR_SETUP;
-	udc_controller->ep0_dir = 0;
+	dr_controller_run(udc);
+	udc->usb_state = USB_STATE_ATTACHED;
+	udc->ep0_state = WAIT_FOR_SETUP;
+	udc->ep0_dir = 0;
 
 	return 0;
 }
@@ -2016,20 +2019,21 @@ static int fsl_udc_start(struct usb_gadget *gadget, struct usb_gadget_driver *dr
 /* Disconnect from gadget driver */
 static int fsl_udc_stop(struct usb_gadget *gadget, struct usb_gadget_driver *driver)
 {
+	struct fsl_udc *udc = to_fsl_udc(gadget);
 	struct fsl_ep *loop_ep;
 
 	/* stop DR, disable intr */
-	dr_controller_stop(udc_controller);
+	dr_controller_stop(udc);
 
 	/* in fact, no needed */
-	udc_controller->usb_state = USB_STATE_ATTACHED;
-	udc_controller->ep0_state = WAIT_FOR_SETUP;
-	udc_controller->ep0_dir = 0;
+	udc->usb_state = USB_STATE_ATTACHED;
+	udc->ep0_state = WAIT_FOR_SETUP;
+	udc->ep0_dir = 0;
 
 	/* stand operation */
-	udc_controller->gadget.speed = USB_SPEED_UNKNOWN;
-	nuke(&udc_controller->eps[0], -ESHUTDOWN);
-	list_for_each_entry(loop_ep, &udc_controller->gadget.ep_list,
+	udc->gadget.speed = USB_SPEED_UNKNOWN;
+	nuke(&udc->eps[0], -ESHUTDOWN);
+	list_for_each_entry(loop_ep, &udc->gadget.ep_list,
 			ep.ep_list)
 		nuke(loop_ep, -ESHUTDOWN);
 
@@ -2221,8 +2225,9 @@ static int __init struct_ep_setup(struct fsl_udc *udc, unsigned char index,
 	return 0;
 }
 
-int ci_udc_register(struct device_d *dev, void __iomem *regs)
+struct fsl_udc *ci_udc_register(struct device_d *dev, void __iomem *regs)
 {
+	struct fsl_udc *udc_controller;
 	int ret, i;
 	u32 dccparams;
 
@@ -2270,7 +2275,8 @@ int ci_udc_register(struct device_d *dev, void __iomem *regs)
 	 * for other eps, gadget layer called ep_enable with defined desc
 	 */
 	udc_controller->eps[0].desc = &fsl_ep0_desc;
-	udc_controller->eps[0].ep.maxpacket = USB_MAX_CTRL_PAYLOAD;
+	usb_ep_set_maxpacket_limit(&udc_controller->eps[0].ep,
+				   USB_MAX_CTRL_PAYLOAD);
 
 	/* setup the udc->eps[] for non-control endpoints and link
 	 * to gadget.ep_list */
@@ -2288,31 +2294,41 @@ int ci_udc_register(struct device_d *dev, void __iomem *regs)
 	if (ret)
 		goto err_out;
 
-	return 0;
+	return udc_controller;
 err_out:
-	return ret;
+	free(udc_controller);
+
+	return ERR_PTR(ret);
 }
 
-void ci_udc_unregister(void)
+void ci_udc_unregister(struct fsl_udc *udc)
 {
-	if (udc_controller)
-		usb_del_gadget_udc(&udc_controller->gadget);
-
+	usb_del_gadget_udc(&udc->gadget);
+	free(udc);
 }
 
 static int fsl_udc_probe(struct device_d *dev)
 {
+	struct fsl_udc *udc;
 	void __iomem *regs = dev_request_mem_region(dev, 0);
 
 	if (IS_ERR(regs))
 		return PTR_ERR(regs);
 
-	return ci_udc_register(dev, regs);
+	udc = ci_udc_register(dev, regs);
+	if (IS_ERR(udc))
+		return PTR_ERR(udc);
+
+	dev->priv = udc;
+
+	return 0;
 }
 
 static void fsl_udc_remove(struct device_d *dev)
 {
-	ci_udc_unregister();
+	struct fsl_udc *udc = dev->priv;
+
+	ci_udc_unregister(udc);
 }
 
 static struct driver_d fsl_udc_driver = {

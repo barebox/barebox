@@ -156,6 +156,10 @@ static unsigned long psci_system_reset(void)
 	restart_machine();
 }
 
+/* Avoid missing prototype warning, called from assembly */
+void psci_entry(u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5, u32 r6,
+		struct arm_smccc_res *res);
+
 void psci_entry(u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5, u32 r6,
 		struct arm_smccc_res *res)
 {
@@ -208,6 +212,9 @@ static int of_psci_fixup(struct device_node *root, void *unused)
 
 	return 0;
 }
+
+/* Avoid missing prototype warning, called from assembly */
+int psci_cpu_entry_c(void);
 
 int psci_cpu_entry_c(void)
 {

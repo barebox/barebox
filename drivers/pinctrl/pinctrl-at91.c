@@ -32,6 +32,7 @@
 
 #include <mach/at91_pio.h>
 #include <mach/gpio.h>
+#include <mach/iomux.h>
 
 #include <pinctrl.h>
 
@@ -44,14 +45,6 @@ struct at91_gpio_chip {
 	struct gpio_chip	chip;
 	void __iomem		*regbase;	/* PIO bank virtual address */
 	struct at91_pinctrl_mux_ops *ops;	/* ops */
-};
-
-enum at91_mux {
-	AT91_MUX_GPIO = 0,
-	AT91_MUX_PERIPH_A = 1,
-	AT91_MUX_PERIPH_B = 2,
-	AT91_MUX_PERIPH_C = 3,
-	AT91_MUX_PERIPH_D = 4,
 };
 
 #define MAX_GPIO_BANKS		5

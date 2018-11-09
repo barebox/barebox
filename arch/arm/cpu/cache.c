@@ -4,6 +4,8 @@
 #include <asm/cache.h>
 #include <asm/system_info.h>
 
+#include "mmu.h"
+
 struct cache_fns {
 	void (*dma_clean_range)(unsigned long start, unsigned long end);
 	void (*dma_flush_range)(unsigned long start, unsigned long end);
@@ -55,6 +57,8 @@ void __dma_inv_range(unsigned long start, unsigned long end)
 		cache_fns->dma_inv_range(start, end);
 }
 
+#ifdef CONFIG_MMU
+
 void __mmu_cache_on(void)
 {
 	if (cache_fns)
@@ -74,6 +78,8 @@ void __mmu_cache_flush(void)
 	if (outer_cache.flush_all)
 		outer_cache.flush_all();
 }
+
+#endif
 
 int arm_set_cache_functions(void)
 {

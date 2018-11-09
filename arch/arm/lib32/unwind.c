@@ -4,6 +4,10 @@
 #include <asm/unwind.h>
 #include <asm/sections.h>
 
+void __aeabi_unwind_cpp_pr0(void);
+void __aeabi_unwind_cpp_pr1(void);
+void __aeabi_unwind_cpp_pr2(void);
+
 /* Dummy functions to avoid linker complaints */
 void __aeabi_unwind_cpp_pr0(void)
 {
@@ -54,7 +58,8 @@ static inline int is_kernel_text(unsigned long addr)
 	return 0;
 }
 
-void dump_backtrace_entry(unsigned long where, unsigned long from, unsigned long frame)
+static void dump_backtrace_entry(unsigned long where, unsigned long from,
+				 unsigned long frame)
 {
 #ifdef CONFIG_KALLSYMS
 	printk("[<%08lx>] (%pS) from [<%08lx>] (%pS)\n", where, (void *)where, from, (void *)from);

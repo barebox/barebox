@@ -113,7 +113,7 @@ static void configure_dram_iomux(void)
 	writel(PAD_CTL_HYS, iomux + IOMUXC_SW_PAD_CTL_GRP_DDRHYS);
 }
 
-void disable_watchdog(void)
+static void disable_watchdog(void)
 {
 	/*
 	 * configure WDOG to generate external reset on trigger

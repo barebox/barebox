@@ -19,6 +19,7 @@
 
 #include <common.h>
 #include <dma-dir.h>
+#include <dma.h>
 #include <init.h>
 #include <mmu.h>
 #include <errno.h>
@@ -497,7 +498,7 @@ void mmu_disable(void)
 	__mmu_cache_off();
 }
 
-static void *dma_alloc(size_t size, dma_addr_t *dma_handle, unsigned flags)
+static void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
 {
 	void *ret;
 
@@ -515,12 +516,12 @@ static void *dma_alloc(size_t size, dma_addr_t *dma_handle, unsigned flags)
 
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
-	return dma_alloc(size, dma_handle, MAP_UNCACHED);
+	return dma_alloc_map(size, dma_handle, MAP_UNCACHED);
 }
 
 void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 {
-	return dma_alloc(size, dma_handle, ARCH_MAP_WRITECOMBINE);
+	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
 unsigned long virt_to_phys(volatile void *virt)

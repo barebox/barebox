@@ -15,6 +15,8 @@
 #include <mach/imx-gpio.h>
 #include <mach/imx6.h>
 
+#include "mem.h"
+
 #define PCBVERSION_PIN IMX_GPIO_NR(2, 2)
 #define PCBID0_PIN IMX_GPIO_NR(6, 7)
 #define PCBID1_PIN IMX_GPIO_NR(6, 9)

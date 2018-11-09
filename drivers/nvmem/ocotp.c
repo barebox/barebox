@@ -184,7 +184,7 @@ static int fuse_read_addr(struct ocotp_priv *priv, u32 addr, u32 *pdata)
 	return 0;
 }
 
-int imx6_ocotp_read_one_u32(struct ocotp_priv *priv, u32 index, u32 *pdata)
+static int imx6_ocotp_read_one_u32(struct ocotp_priv *priv, u32 index, u32 *pdata)
 {
 	int ret;
 
@@ -257,7 +257,7 @@ static int imx6_ocotp_reload_shadow(struct ocotp_priv *priv)
 	return imx6_ocotp_wait_busy(priv, OCOTP_CTRL_RELOAD_SHADOWS);
 }
 
-int imx6_ocotp_blow_one_u32(struct ocotp_priv *priv, u32 index, u32 data,
+static int imx6_ocotp_blow_one_u32(struct ocotp_priv *priv, u32 index, u32 data,
 			    u32 *pfused_value)
 {
 	int ret;

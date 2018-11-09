@@ -164,7 +164,7 @@ static int ulpi_read_id(void __iomem *view, int *vid, int *pid)
 	return 0;
 }
 
-int ulpi_probe(void __iomem *view)
+static int ulpi_probe(void __iomem *view)
 {
 	int i, j, vid, pid, ret;
 
@@ -187,7 +187,7 @@ int ulpi_probe(void __iomem *view)
 	return -ENODEV;
 }
 
-int ulpi_set_vbus(void __iomem *view, int on)
+static int ulpi_set_vbus(void __iomem *view, int on)
 {
 	int ret;
 

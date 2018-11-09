@@ -1259,7 +1259,7 @@ static int mxs_nand_scan_bbt(struct mtd_info *mtd)
 /*
  * Allocate DMA buffers
  */
-int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
+static int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 {
 	uint8_t *buf;
 	const int size = NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE;
@@ -1293,7 +1293,7 @@ int mxs_nand_alloc_buffers(struct mxs_nand_info *nand_info)
 /*
  * Initializes the NFC hardware.
  */
-int mxs_nand_hw_init(struct mxs_nand_info *info)
+static int mxs_nand_hw_init(struct mxs_nand_info *info)
 {
 	void __iomem *gpmi_regs = info->io_base;
 	void __iomem *bch_regs = info->bch_base;

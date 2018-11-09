@@ -166,6 +166,8 @@ static inline unsigned long arm_mem_barebox_image(unsigned long membase,
 }
 
 #define ENTRY_FUNCTION(name, arg0, arg1, arg2)				\
+	void name (uint32_t r0, uint32_t r1, uint32_t r2);		\
+									\
 	static void __##name(uint32_t, uint32_t, uint32_t);		\
 									\
 	void NAKED __section(.text_head_entry_##name)	name		\

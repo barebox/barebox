@@ -474,7 +474,7 @@ static int imx_iim_probe(struct device_d *dev)
 
 	imx_iim = iim;
 
-	strcpy(iim->dev.name, "iim");
+	dev_set_name(&iim->dev, "iim");
 	iim->dev.parent = dev;
 	iim->dev.id = DEVICE_ID_SINGLE;
 	ret = register_device(&iim->dev);

@@ -26,7 +26,7 @@ static inline struct device_d *mxs_add_nand(unsigned long gpmi_base, unsigned lo
 	dev->resource = xzalloc(sizeof(struct resource) * ARRAY_SIZE(res));
 	memcpy(dev->resource, res, sizeof(struct resource) * ARRAY_SIZE(res));
 	dev->num_resources = ARRAY_SIZE(res);
-	strcpy(dev->name, "mxs_nand");
+	dev_set_name(dev, "mxs_nand");
 	dev->id = DEVICE_ID_DYNAMIC;
 
 	platform_device_register(dev);

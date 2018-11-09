@@ -111,6 +111,18 @@ extern char *strim(char *);
 
 void *memchr_inv(const void *start, int c, size_t bytes);
 
+/**
+ * kbasename - return the last part of a pathname.
+ *
+ * @path: path to extract the filename from.
+ */
+static inline const char *kbasename(const char *path)
+{
+	const char *tail = strrchr(path, '/');
+	return tail ? tail + 1 : path;
+}
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -61,7 +61,7 @@
 #define CR_TE   (1 << 30)	/* Thumb exception enable		*/
 
 #ifndef __ASSEMBLY__
-#if __LINUX_ARM_ARCH__ >= 7
+#if __LINUX_ARM_ARCH__ > 7
 static inline unsigned int current_el(void)
 {
 	unsigned int el;

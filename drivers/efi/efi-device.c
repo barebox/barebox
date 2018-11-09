@@ -185,7 +185,7 @@ static struct efi_device *efi_add_device(efi_handle_t *handle, efi_guid_t **guid
 	efidev->dev.info = efi_devinfo;
 	efidev->devpath = devpath;
 
-	sprintf(efidev->dev.name, "handle-%p", handle);
+	dev_set_name(&efidev->dev, "handle-%p", handle);
 
 	efidev->parent_handle = efi_find_parent(efidev->handle);
 

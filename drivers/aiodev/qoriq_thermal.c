@@ -232,6 +232,7 @@ static int qoriq_tmu_probe(struct device_d *dev)
 
 	data->aiodev.num_channels = 1;
 	data->aiodev.hwdev = dev;
+	data->aiodev.name = "thermal-sensor";
 	data->aiodev.channels = xmalloc(data->aiodev.num_channels *
 					sizeof(data->aiodev.channels[0]));
 	data->aiodev.channels[0] = &data->aiochan;

@@ -48,6 +48,12 @@ config SMSC_PHY
 	---help---
 	  Currently supports the LAN83C185, LAN8187 and LAN8700 PHYs
 
+config NET_DSA_MV88E6XXX
+	tristate "Marvell 88E6xxx Ethernet switch fabric support"
+	help
+	  This driver adds support for most of the Marvell 88E6xxx models of
+	  Ethernet switch chips, except 88E6060.
+
 comment "MII bus device drivers"
 
 config MDIO_MVEBU

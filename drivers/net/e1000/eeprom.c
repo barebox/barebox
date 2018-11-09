@@ -1529,7 +1529,7 @@ int e1000_register_invm(struct e1000_hw *hw)
 	if (ret < 0)
 		return ret;
 
-	strcpy(hw->invm.dev.name, "invm");
+	dev_set_name(&hw->invm.dev, "invm");
 	hw->invm.dev.id = hw->dev->id;
 	hw->invm.dev.parent = hw->dev;
 	ret = register_device(&hw->invm.dev);

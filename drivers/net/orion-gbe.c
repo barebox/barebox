@@ -462,7 +462,7 @@ static int port_probe(struct device_d *parent, struct port_priv *port)
 		reg |= RGMII_ENABLE;
 	writel(reg, port->regs + PORT_SC1);
 
-	snprintf(dev->name, MAX_DRIVER_NAME, "%08x.ethernet-port", (u32)gbe->regs);
+	dev_set_name(dev, "%08x.ethernet-port", (u32)gbe->regs);
 	dev->id = port->portno;
 	dev->parent = parent;
 	dev->device_node = port->np;

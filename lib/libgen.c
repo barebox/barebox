@@ -17,23 +17,11 @@
 
 #include <common.h>
 #include <libgen.h>
+#include <linux/string.h>
 
 char *basename (char *path)
 {
-	char *fname;
-
-	if(!strchr(path, '/'))
-		return path;
-
-	fname = path + strlen(path) - 1;
-	while (fname >= path) {
-		if (*fname == '/') {
-			fname++;
-			break;
-		}
-		fname--;
-	}
-	return fname;
+	return (char *)kbasename(path);
 }
 EXPORT_SYMBOL(basename);
 

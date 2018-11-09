@@ -95,7 +95,7 @@ static inline struct device_d *imx53_add_nand(struct imx_nand_platform_data *pda
 	dev->resource = xzalloc(sizeof(struct resource) * ARRAY_SIZE(res));
 	memcpy(dev->resource, res, sizeof(struct resource) * ARRAY_SIZE(res));
 	dev->num_resources = ARRAY_SIZE(res);
-	strcpy(dev->name, "imx_nand");
+	dev_set_name(dev, "imx_nand");
 	dev->id = DEVICE_ID_DYNAMIC;
 	dev->platform_data = pdata;
 

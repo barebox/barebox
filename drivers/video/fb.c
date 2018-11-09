@@ -309,7 +309,7 @@ int register_framebuffer(struct fb_info *info)
 	dev->id = id;
 	dev->info = fb_info;
 
-	sprintf(dev->name, "fb");
+	dev_set_name(dev, "fb");
 
 	ret = register_device(&info->dev);
 	if (ret)

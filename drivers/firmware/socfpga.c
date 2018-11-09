@@ -438,7 +438,7 @@ static int fpgamgr_probe(struct device_d *dev)
 	dev_dbg(dev, "Registering FPGA firmware programmer\n");
 
 	mgr->dev.id = DEVICE_ID_SINGLE;
-	strcpy(mgr->dev.name, "fpga");
+	dev_set_name(&mgr->dev, "fpga");
 	mgr->dev.parent = dev;
 	ret = register_device(&mgr->dev);
 	if (ret)

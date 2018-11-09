@@ -46,7 +46,7 @@ struct phy *phy_create(struct device_d *dev, struct device_node *node,
 
 	id = phy_ida++;
 
-	snprintf(phy->dev.name, MAX_DRIVER_NAME, "phy");
+	dev_set_name(&phy->dev, "phy");
 	phy->dev.id = id;
 	phy->dev.parent = dev;
 	phy->dev.device_node = node ?: dev->device_node;

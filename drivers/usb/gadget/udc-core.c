@@ -179,7 +179,7 @@ int usb_add_gadget_udc_release(struct device_d *parent, struct usb_gadget *gadge
 	if (!udc)
 		goto err1;
 
-	strcpy(gadget->dev.name, "usbgadget");
+	dev_set_name(&gadget->dev, "usbgadget");
 	gadget->dev.id = DEVICE_ID_SINGLE;
 	gadget->dev.parent = parent;
 
@@ -198,7 +198,7 @@ int usb_add_gadget_udc_release(struct device_d *parent, struct usb_gadget *gadge
 	dev_add_param_string(&gadget->dev, "productname", NULL, NULL,
 			&gadget->productname, NULL);
 
-	strcpy(udc->dev.name, "udc");
+	dev_set_name(&udc->dev, "udc");
 	udc->dev.id = DEVICE_ID_DYNAMIC;
 
 	udc->gadget = gadget;

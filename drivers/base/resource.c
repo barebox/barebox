@@ -27,7 +27,7 @@ struct device_d *device_alloc(const char *devname, int id)
 	struct device_d *dev;
 
 	dev = xzalloc(sizeof(*dev));
-	strcpy(dev->name, devname);
+	dev_set_name(dev, devname);
 	dev->id = id;
 
 	return dev;

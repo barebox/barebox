@@ -43,71 +43,35 @@ EXPORT_SYMBOL(of_find_device_by_node);
  * of_device_make_bus_id - Use the device node data to assign a unique name
  * @dev: pointer to device structure that is linked to a device tree node
  *
- * This routine will first try using either the dcr-reg or the reg property
- * value to derive a unique name.  As a last resort it will use the node
- * name followed by a unique number.
+ * This routine will first try using the translated bus address to
+ * derive a unique name. If it cannot, then it will prepend names from
+ * parent nodes until a unique name can be derived.
  */
 static void of_device_make_bus_id(struct device_d *dev)
 {
-	static int bus_no_reg_magic;
-	struct device_node *np = dev->device_node;
-	const __be32 *reg, *addrp;
+	struct device_node *node = dev->device_node;
+	const __be32 *reg;
 	u64 addr;
-	char *name, *at;
 
-	name = xstrdup(np->name);
-	at = strchr(name, '@');
-	if (at)
-		*at = '\0';
-
-#ifdef CONFIG_PPC_DCR
-	/*
-	 * If it's a DCR based device, use 'd' for native DCRs
-	 * and 'D' for MMIO DCRs.
-	 */
-	reg = of_get_property(np, "dcr-reg", NULL);
-	if (reg) {
-#ifdef CONFIG_PPC_DCR_NATIVE
-		snprintf(dev->name, MAX_DRIVER_NAME, "d%x.%s", *reg, name);
-#else /* CONFIG_PPC_DCR_NATIVE */
-		u64 addr = of_translate_dcr_address(np, *reg, NULL);
-		if (addr != OF_BAD_ADDR) {
-			snprintf(dev->name, MAX_DRIVER_NAME, "D%llx.%s",
-				(unsigned long long)addr, name);
-			free(name);
+	/* Construct the name, using parent nodes if necessary to ensure uniqueness */
+	while (node->parent) {
+		/*
+		 * If the address can be translated, then that is as much
+		 * uniqueness as we need. Make it the first component and return
+		 */
+		reg = of_get_property(node, "reg", NULL);
+		if (reg && (addr = of_translate_address(node, reg)) != OF_BAD_ADDR) {
+			dev_set_name(dev, dev->name ? "%llx.%s:%s" : "%llx.%s",
+				     (unsigned long long)addr, node->name,
+				     dev->name);
 			return;
 		}
-#endif /* !CONFIG_PPC_DCR_NATIVE */
-	}
-#endif /* CONFIG_PPC_DCR */
 
-	/*
-	 * For MMIO, get the physical address
-	 */
-	reg = of_get_property(np, "reg", NULL);
-	if (reg) {
-		if (of_can_translate_address(np)) {
-			addr = of_translate_address(np, reg);
-		} else {
-			addrp = of_get_address(np, 0, NULL, NULL);
-			if (addrp)
-				addr = of_read_number(addrp, 1);
-			else
-				addr = OF_BAD_ADDR;
-		}
-		if (addr != OF_BAD_ADDR) {
-			snprintf(dev->name, MAX_DRIVER_NAME, "%llx.%s",
-				(unsigned long long)addr, name);
-			free(name);
-			return;
-		}
+		/* format arguments only used if dev_name() resolves to NULL */
+		dev_set_name(dev, dev->name ? "%s:%s" : "%s",
+			     kbasename(node->full_name), dev->name);
+		node = node->parent;
 	}
-
-	/*
-	 * No BusID, use the node name and add a globally incremented counter
-	 */
-	snprintf(dev->name, MAX_DRIVER_NAME, "%s.%d", name, bus_no_reg_magic++);
-	free(name);
 }
 
 /**

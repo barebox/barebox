@@ -104,7 +104,7 @@ static int watchdog_register_dev(struct watchdog *wd, const char *name, int id)
 {
 	wd->dev.parent = wd->hwdev;
 	wd->dev.id = id;
-	strncpy(wd->dev.name, name, MAX_DRIVER_NAME);
+	dev_set_name(&wd->dev, name);
 
 	return register_device(&wd->dev);
 }

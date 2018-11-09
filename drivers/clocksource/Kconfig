@@ -1,3 +1,6 @@
+config ARCH_HAS_IMX_GPT
+       bool
+
 config AMBA_SP804
 	bool
 	depends on ARM_AMBA
@@ -70,3 +73,10 @@ config CLOCKSOURCE_ARMV8_TIMER
 	bool
 	default y
 	depends on ARM && CPU_64v8
+
+config CLOCKSOURCE_ARM_GLOBAL_TIMER
+	bool
+	depends on ARM && CPU_V7
+config CLOCKSOURCE_IMX_GPT
+	def_bool y
+	depends on ARCH_HAS_IMX_GPT

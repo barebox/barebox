@@ -364,7 +364,7 @@ int eth_register(struct eth_device *edev)
 		return -1;
 	}
 
-	strcpy(edev->dev.name, "eth");
+	dev_set_name(&edev->dev, "eth");
 
 	if (edev->parent)
 		edev->dev.parent = edev->parent;

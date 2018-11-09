@@ -67,7 +67,7 @@ int rtc_register(struct rtc_device *rtcdev)
 		return -EINVAL;
 
 	dev->id = DEVICE_ID_DYNAMIC;
-	strcpy(dev->name, "rtc");
+	dev_set_name(dev, "rtc");
 	if (rtcdev->dev)
 		dev->parent = rtcdev->dev;
 	platform_device_register(dev);

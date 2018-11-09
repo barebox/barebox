@@ -389,7 +389,7 @@ static struct i2c_client *i2c_new_device(struct i2c_adapter *adapter,
 	int status;
 
 	client = xzalloc(sizeof *client);
-	strcpy(client->dev.name, chip->type);
+	dev_set_name(&client->dev, chip->type);
 	client->dev.type_data = client;
 	client->dev.platform_data = chip->platform_data;
 	client->dev.id = DEVICE_ID_DYNAMIC;
@@ -588,7 +588,7 @@ int i2c_add_numbered_adapter(struct i2c_adapter *adapter)
 	}
 
 	adapter->dev.id = adapter->nr;
-	strcpy(adapter->dev.name, "i2c");
+	dev_set_name(&adapter->dev, "i2c");
 
 	ret = register_device(&adapter->dev);
 	if (ret)

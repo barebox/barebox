@@ -177,6 +177,7 @@ static int imx_thermal_probe(struct device_d *dev)
 
 	imx_thermal->aiodev.num_channels = 1;
 	imx_thermal->aiodev.hwdev = dev;
+	imx_thermal->aiodev.name = "thermal-sensor";
 	imx_thermal->aiodev.channels =
 		xmalloc(imx_thermal->aiodev.num_channels *
 			sizeof(imx_thermal->aiodev.channels[0]));

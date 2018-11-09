@@ -607,7 +607,7 @@ int add_mtd_device(struct mtd_info *mtd, const char *devname, int device_id)
 
 	if (!devname)
 		devname = "mtd";
-	strcpy(mtd->class_dev.name, devname);
+	dev_set_name(&mtd->class_dev, devname);
 	mtd->class_dev.id = device_id;
 	if (mtd->parent)
 		mtd->class_dev.parent = mtd->parent;

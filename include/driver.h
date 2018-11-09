@@ -23,7 +23,6 @@
 #include <linux/ioport.h>
 #include <of.h>
 
-#define MAX_DRIVER_NAME		32
 #define FORMAT_DRIVER_NAME_ID	"%s%d"
 
 #include <param.h>
@@ -38,10 +37,19 @@ struct platform_device_id {
 
 /** @brief Describes a particular device present in the system */
 struct device_d {
-	/*! This member (and 'type' described below) is used to match with a
-	 * driver. This is a descriptive name and could be MPC5XXX_ether or
-	 * imx_serial. */
-	char name[MAX_DRIVER_NAME];
+	/*! This member (and 'type' described below) is used to match
+	 * with a driver. This is a descriptive name and could be
+	 * MPC5XXX_ether or imx_serial. Unless absolutely necessary,
+	 * should not be modified directly and dev_set_name() should
+	 * be used instead.
+	 */
+	char *name;
+
+	/*! This member is used to store device's unique name as
+	 *  obtained by calling dev_id(). Internal field, do not
+	 *  access it directly.
+	  */
+	char *unique_name;
 	/*! The id is used to uniquely identify a device in the system. The id
 	 * will show up under /dev/ as the device's name. Usually this is
 	 * something like eth0 or nor0. */
@@ -170,12 +178,17 @@ int get_free_deviceid(const char *name_template);
 
 char *deviceid_from_spec_str(const char *str, char **endp);
 
-extern const char *dev_id(const struct device_d *dev);
+static inline const char *dev_id(const struct device_d *dev)
+{
+	return (dev->id != DEVICE_ID_SINGLE) ? dev->unique_name : dev->name;
+}
 
 static inline const char *dev_name(const struct device_d *dev)
 {
 	return dev_id(dev);
 }
+
+int dev_set_name(struct device_d *dev, const char *fmt, ...);
 
 /*
  * get resource 'num' for a device

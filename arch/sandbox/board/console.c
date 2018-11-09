@@ -32,7 +32,7 @@ int barebox_register_console(int stdinfd, int stdoutfd)
 	data = (struct linux_console_data *)(dev + 1);
 
 	dev->platform_data = data;
-	strcpy(dev->name, "console");
+	dev_set_name(dev, "console");
 	dev->id = DEVICE_ID_DYNAMIC;
 
 	data->stdoutfd = stdoutfd;

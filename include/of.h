@@ -321,6 +321,12 @@ static inline int of_set_root_node(struct device_node *node)
 	return -ENOSYS;
 }
 
+static inline struct device_d *of_platform_device_create(struct device_node *np,
+							 struct device_d *parent)
+{
+	return NULL;
+}
+
 static inline int of_n_addr_cells(struct device_node *np)
 {
 	return 0;

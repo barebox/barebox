@@ -52,12 +52,12 @@ static int retry;
 static int last_boot_successful;
 
 struct bootchooser {
-	struct bootentry entry;
 	struct list_head targets;
 	struct bootchooser_target *last_chosen;
 
 	struct state *state;
 	char *state_prefix;
+	int refs;
 
 	int verbose;
 	int dryrun;
@@ -345,11 +345,15 @@ static void bootchooser_reset_priorities(struct bootchooser *bc)
 		bootchooser_target_set_priority(target, -1);
 }
 
+static struct bootchooser *bootchooser;
+
 /**
- * bootchooser_get - get a bootchooser instance
+ * bootchooser_get - get a reference to the bootchooser
  *
- * This evaluates the different globalvars and eventually state variables,
- * creates a bootchooser instance from it and returns it.
+ * When no bootchooser is initialized this function allocates the bootchooser
+ * and initializes it with the different globalvars and state variables. The
+ * bootchooser is returned. Subsequent calls will return a reference to the same
+ * bootchooser.
  */
 struct bootchooser *bootchooser_get(void)
 {
@@ -359,6 +363,11 @@ struct bootchooser *bootchooser_get(void)
 	int ret = -EINVAL, id = 1;
 	uint32_t last_chosen;
 	static int attempts_resetted;
+
+	if (bootchooser) {
+		bootchooser->refs++;
+		return bootchooser;
+	}
 
 	bc = xzalloc(sizeof(*bc));
 
@@ -474,6 +483,10 @@ struct bootchooser *bootchooser_get(void)
 
 	}
 
+	bootchooser = bc;
+
+	bootchooser->refs = 1;
+
 	return bc;
 
 err:
@@ -529,15 +542,25 @@ int bootchooser_save(struct bootchooser *bc)
 }
 
 /**
- * bootchooser_put - release a bootchooser instance
+ * bootchooser_put - return a bootchooser reference
  * @bc: The bootchooser instance
  *
- * This releases a bootchooser instance and the memory associated with it.
+ * This returns a reference to the bootchooser. If it is the last reference the
+ * bootchooser is saved and the associated memory is freed.
+ *
+ * Return: 0 for success or a negative error code. An error can occur when
+ *         bootchooser_save fails to write to the storage, nevertheless the
+ *         bootchooser reference is still released.
  */
 int bootchooser_put(struct bootchooser *bc)
 {
 	struct bootchooser_target *target, *tmp;
 	int ret;
+
+	bc->refs--;
+
+	if (bc->refs)
+		return 0;
 
 	ret = bootchooser_save(bc);
 	if (ret)
@@ -552,6 +575,8 @@ int bootchooser_put(struct bootchooser *bc)
 	}
 
 	free(bc);
+
+	bootchooser = NULL;
 
 	return ret;
 }
@@ -841,20 +866,26 @@ int bootchooser_boot(struct bootchooser *bc)
 
 static int bootchooser_entry_boot(struct bootentry *entry, int verbose, int dryrun)
 {
-	struct bootchooser *bc = container_of(entry, struct bootchooser,
-						       entry);
+	struct bootchooser *bc;
+	int ret;
+
+	bc = bootchooser_get();
+	if (IS_ERR(bc))
+		return PTR_ERR(bc);
+
 	bc->verbose = verbose;
 	bc->dryrun = dryrun;
 
-	return bootchooser_boot(bc);
+	ret = bootchooser_boot(bc);
+
+	bootchooser_put(bc);
+
+	return ret;
 }
 
 static void bootchooser_release(struct bootentry *entry)
 {
-	struct bootchooser *bc = container_of(entry, struct bootchooser,
-						       entry);
-
-	bootchooser_put(bc);
+	free(entry);
 }
 
 /**
@@ -869,6 +900,7 @@ static void bootchooser_release(struct bootentry *entry)
 static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 {
 	struct bootchooser *bc;
+	struct bootentry *entry;
 
 	if (strcmp(name, "bootchooser"))
 		return 0;
@@ -877,12 +909,16 @@ static int bootchooser_add_entry(struct bootentries *entries, const char *name)
 	if (IS_ERR(bc))
 		return PTR_ERR(bc);
 
-	bc->entry.boot = bootchooser_entry_boot;
-	bc->entry.release = bootchooser_release;
-	bc->entry.title = xstrdup("bootchooser");
-	bc->entry.description = xstrdup("bootchooser");
+	entry = xzalloc(sizeof(*entry));
 
-	bootentries_add_entry(entries, &bc->entry);
+	entry->boot = bootchooser_entry_boot;
+	entry->release = bootchooser_release;
+	entry->title = xstrdup("bootchooser");
+	entry->description = xstrdup("bootchooser");
+
+	bootentries_add_entry(entries, entry);
+
+	bootchooser_put(bc);
 
 	return 1;
 }

@@ -653,7 +653,6 @@ config BOOTM_FORCE_SIGNED_IMAGES
 	  since they are the only supported image type that support signing.
 
 config BLSPEC
-	depends on BLOCK
 	depends on FLEXIBLE_BOOTARGS
 	depends on !SHELL_NONE
 	select BOOT

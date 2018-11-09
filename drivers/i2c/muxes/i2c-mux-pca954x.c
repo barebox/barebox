@@ -44,7 +44,6 @@
 #include <i2c/i2c.h>
 #include <i2c/i2c-algo-bit.h>
 #include <i2c/i2c-mux.h>
-#include <init.h>
 #include <gpio.h>
 #include <of_gpio.h>
 
@@ -248,12 +247,7 @@ static struct driver_d pca954x_driver = {
 	.probe		= pca954x_probe,
 	.id_table	= pca954x_id,
 };
-
-static int __init pca954x_init(void)
-{
-	return i2c_driver_register(&pca954x_driver);
-}
-device_initcall(pca954x_init);
+device_i2c_driver(pca954x_driver);
 
 MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
 MODULE_DESCRIPTION("PCA954x I2C mux/switch driver");

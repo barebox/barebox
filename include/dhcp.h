@@ -28,6 +28,7 @@ struct dhcp_result {
 	IPaddr_t gateway;
 	IPaddr_t nameserver;
 	IPaddr_t serverip;
+	IPaddr_t dhcp_serverip;
 	char *hostname;
 	char *domainname;
 	char *rootpath;

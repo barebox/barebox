@@ -17,7 +17,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <malloc.h>
 #include <driver.h>
 #include <xfuncs.h>
@@ -266,9 +265,4 @@ static struct driver_d sx150x_driver = {
 	.probe = sx150x_probe,
 	.of_compatible = sx150x_dt_ids,
 };
-
-static int __init sx150x_init(void)
-{
-	return i2c_driver_register(&sx150x_driver);
-}
-device_initcall(sx150x_init);
+device_i2c_driver(sx150x_driver);

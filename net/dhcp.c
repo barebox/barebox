@@ -300,7 +300,7 @@ static void dhcp_options_handle(unsigned char option, void *popt,
 			net_copy_uint32(&dhcp_result->leasetime, popt);
 			break;
 		case 54:
-			dhcp_result->serverip = net_read_ip(popt);
+			dhcp_result->dhcp_serverip = net_read_ip(popt);
 			break;
 		case 66:
 			dhcp_result->tftp_server_name = xstrndup(popt, optlen);
@@ -378,8 +378,8 @@ static void dhcp_send_request_packet(struct bootp *bp_offer)
 	/*
 	 * Copy options from OFFER packet if present
 	 */
-	extlen = dhcp_extended(bp->bp_vend, DHCP_REQUEST, dhcp_result->serverip,
-				dhcp_result->ip);
+	extlen = dhcp_extended(bp->bp_vend, DHCP_REQUEST,
+			dhcp_result->dhcp_serverip, dhcp_result->ip);
 
 	debug("Transmitting DHCPREQUEST packet\n");
 	net_udp_send(dhcp_con, sizeof(*bp) + extlen);

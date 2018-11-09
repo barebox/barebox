@@ -10,7 +10,6 @@
  */
 
 #include <common.h>
-#include <init.h>
 #include <driver.h>
 #include <xfuncs.h>
 #include <errno.h>
@@ -118,9 +117,4 @@ static struct driver_d abracon_driver = {
 	.probe		= abracon_probe,
 	.id_table	= abracon_id,
 };
-
-static int __init abracon_init(void)
-{
-	return i2c_driver_register(&abracon_driver);
-}
-device_initcall(abracon_init);
+device_i2c_driver(abracon_driver);

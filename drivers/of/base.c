@@ -1235,7 +1235,7 @@ int of_property_write_u64_array(struct device_node *np,
  *
  * @np:		device node to which the property value is to be written.
  * @propname:	name of the property to be written.
- * value:	pointer to the string to write
+ * @value:	pointer to the string to write
  *
  * Search for a property in a device node and write a string to
  * it. If the property does not exist, it will be created and appended to

@@ -398,6 +398,10 @@ static int phy_device_attach(struct phy_device *phy, struct eth_device *edev,
 
 	phy->adjust_link = adjust_link;
 
+	/* If the phy is a fixed-link, then call adjust_link directly */
+	if (!phy->bus && adjust_link)
+		adjust_link(edev);
+
 	return 0;
 }
 

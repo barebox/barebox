@@ -23,7 +23,7 @@
 #include "efi.h"
 #include "parser.h"
 
-static int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);
+static const int force_gpt = IS_ENABLED(CONFIG_PARTITION_DISK_EFI_GPT_NO_FORCE);
 
 /**
  * efi_crc32() - EFI version of crc32 function

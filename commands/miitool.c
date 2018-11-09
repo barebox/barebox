@@ -115,7 +115,7 @@ static int show_basic_mii(struct mii_bus *mii, struct phy_device *phydev,
 	for (i = 0; i < 32; i++)
 		mii_val[i] = mii->read(mii, phydev->addr, i);
 
-	printf((mii->parent->id) < 0 ? "%s: %s:" : "%s: %s%d: ",
+	printf((mii->parent->id) < 0 ? "%s: %s: " : "%s: %s%d: ",
 	       phydev->cdev.name, mii->parent->name, mii->parent->id);
 
 

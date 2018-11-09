@@ -96,7 +96,8 @@ static int mem_probe(struct device_d *dev)
 	dev->priv = cdev;
 
 	cdev->name = (char*)dev->resource[0].name;
-	cdev->size = (unsigned long)resource_size(&dev->resource[0]);
+	cdev->size = min(resource_size(&dev->resource[0]),
+			 (unsigned long long)S64_MAX);
 	cdev->ops = &memops;
 	cdev->dev = dev;
 

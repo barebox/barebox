@@ -164,6 +164,9 @@ static int rockchip_rk3066_pll_set_rate(struct clk *hw, unsigned long drate,
 	int cur_parent;
 	int ret;
 
+	if (old_rate == drate)
+		return 0;
+
 	pr_debug("%s: changing %s from %lu to %lu with a parent rate of %lu\n",
 		 __func__, __clk_get_name(hw), old_rate, drate, prate);
 

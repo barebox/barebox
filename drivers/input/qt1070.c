@@ -6,7 +6,6 @@
 
 #include <common.h>
 #include <errno.h>
-#include <init.h>
 #include <clock.h>
 #include <poller.h>
 #include <kfifo.h>
@@ -284,10 +283,4 @@ static struct driver_d qt1070_driver = {
 	.name	= "qt1070",
 	.probe	= qt1070_probe,
 };
-
-static int qt1070_init(void)
-{
-	i2c_driver_register(&qt1070_driver);
-	return 0;
-}
-device_initcall(qt1070_init);
+device_i2c_driver(qt1070_driver);

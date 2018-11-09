@@ -239,6 +239,8 @@ void NAKED __section(.text_entry) start(void)
 }
 
 #else
+
+void start(unsigned long membase, unsigned long memsize, void *boarddata);
 /*
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.

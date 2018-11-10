@@ -166,7 +166,6 @@ static int ddr2_sdram_ctime(uint8_t byte)
 void ddr_spd_print(uint8_t *record)
 {
 	int highestCAS = 0;
-	int cas[256];
 	int i, i_i, k, x, y;
 	int ddrclk, tbits, pcclk;
 	int trcd, trp, tras;
@@ -199,7 +198,6 @@ void ddr_spd_print(uint8_t *record)
 	for (i_i = 2; i_i < 7; i_i++) {
 		if (s->cas_lat & 1 << i_i) {
 			highestCAS = i_i;
-			cas[highestCAS]++;
 		}
 	}
 

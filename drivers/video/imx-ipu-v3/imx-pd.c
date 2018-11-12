@@ -45,7 +45,7 @@ static int imx_pd_ioctl(struct vpl *vpl, unsigned int port,
 	case IMX_IPU_VPL_DI_MODE:
 		mode = data;
 
-		mode->di_clkflags = IPU_DI_CLKMODE_SYNC;
+		mode->di_clkflags = IPU_DI_CLKMODE_NON_FRACTIONAL;
 		mode->bus_format = imx_pd->bus_format;
 		return 0;
 

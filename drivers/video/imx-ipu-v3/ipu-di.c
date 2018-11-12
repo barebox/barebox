@@ -140,6 +140,7 @@ static int ipu_di_clk_calc_div(unsigned long inrate, unsigned long outrate)
 	int div;
 
 	tmp *= 16;
+	tmp += outrate / 2;
 
 	do_div(tmp, outrate);
 

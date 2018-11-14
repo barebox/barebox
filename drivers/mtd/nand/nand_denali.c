@@ -1387,7 +1387,7 @@ int denali_init(struct denali_nand_info *denali)
 	}
 
 	/* allocate a temporary buffer for nand_scan_ident() */
-	denali->buf.buf = kzalloc(PAGE_SIZE, GFP_DMA | GFP_KERNEL);
+	denali->buf.buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
 	if (!denali->buf.buf)
 		return -ENOMEM;
 

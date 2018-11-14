@@ -177,7 +177,7 @@ int register_device(struct device_d *new_device)
 		new_device->id = get_free_deviceid(new_device->name);
 	} else {
 		if (get_device_by_name_id(new_device->name, new_device->id)) {
-			eprintf("register_device: already registered %s\n",
+			pr_err("register_device: already registered %s\n",
 				dev_name(new_device));
 			return -EINVAL;
 		}

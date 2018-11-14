@@ -257,6 +257,8 @@ static void *am33xx_net_boot(void)
 
 	dhcp_set_result(edev, dhcp_res);
 
+	edev->ifup = true;
+
 	/*
 	 * Older tftp server don't send the file size.
 	 * Then tftpfs needs temporary place to store the file.

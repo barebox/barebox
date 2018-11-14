@@ -61,14 +61,14 @@ static void of_device_make_bus_id(struct device_d *dev)
 		 */
 		reg = of_get_property(node, "reg", NULL);
 		if (reg && (addr = of_translate_address(node, reg)) != OF_BAD_ADDR) {
-			dev_set_name(dev, dev->name ? "%llx.%s:%s" : "%llx.%s",
+			dev_set_name(dev, dev->name ? "%llx.%s:%s" : "%llx.%s.of",
 				     (unsigned long long)addr, node->name,
 				     dev->name);
 			return;
 		}
 
 		/* format arguments only used if dev_name() resolves to NULL */
-		dev_set_name(dev, dev->name ? "%s:%s" : "%s",
+		dev_set_name(dev, dev->name ? "%s:%s" : "%s.of",
 			     kbasename(node->full_name), dev->name);
 		node = node->parent;
 	}

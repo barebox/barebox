@@ -407,7 +407,7 @@ static void e1000_eeprom_uses_microwire(struct e1000_eeprom_info *eeprom,
 	eeprom->read = e1000_read_eeprom_microwire;
 }
 
-size_t e1000_igb_get_flash_size(struct e1000_hw *hw)
+static size_t e1000_igb_get_flash_size(struct e1000_hw *hw)
 {
 	struct device_node *node =
 		hw->pdev->dev.device_node;

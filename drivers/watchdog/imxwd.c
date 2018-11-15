@@ -162,19 +162,23 @@ static void __noreturn imxwd_force_soc_reset(struct restart_handler *rst)
 static void imx_watchdog_detect_reset_source(struct imx_wd *priv)
 {
 	u16 val = readw(priv->base + IMX21_WDOG_WSTR);
+	int priority = RESET_SOURCE_DEFAULT_PRIORITY;
+
+	if (reset_source_get() == RESET_WDG)
+		priority++;
 
 	if (val & WSTR_COLDSTART) {
-		reset_source_set(RESET_POR);
+		reset_source_set_priority(RESET_POR, priority);
 		return;
 	}
 
 	if (val & (WSTR_HARDRESET | WSTR_WARMSTART)) {
-		reset_source_set(RESET_RST);
+		reset_source_set_priority(RESET_RST, priority);
 		return;
 	}
 
 	if (val & WSTR_WDOG) {
-		reset_source_set(RESET_WDG);
+		reset_source_set_priority(RESET_WDG, priority);
 		return;
 	}
 

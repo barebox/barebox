@@ -199,12 +199,8 @@ void imx_set_reset_reason(void __iomem *srsr,
 		}
 	}
 
-	/*
-	 * Report this with above default priority in order to make
-	 * sure we'll always override info from watchdog driver.
-	 */
 	reset_source_set_priority(type,
-				  RESET_SOURCE_DEFAULT_PRIORITY + 1);
+				  RESET_SOURCE_DEFAULT_PRIORITY);
 	reset_source_set_instance(type, instance);
 
 	pr_info("i.MX reset reason %s (SRSR: 0x%08x)\n",

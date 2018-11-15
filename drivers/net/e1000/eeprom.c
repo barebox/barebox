@@ -1504,7 +1504,7 @@ static int e1000_mtd_unlock(struct mtd_info *mtd, loff_t ofs, size_t len)
 	return e1000_mtd_sr_rmw(mtd, SR_BPALL, 0x0);
 }
 
-int e1000_register_invm(struct e1000_hw *hw)
+static int e1000_register_invm(struct e1000_hw *hw)
 {
 	int ret;
 	u16 word;

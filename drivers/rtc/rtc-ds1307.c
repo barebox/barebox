@@ -348,10 +348,10 @@ static int ds1307_probe(struct device_d *dev)
 			ds1307->regs[1] &= ~DS1341_BIT_ECLK;
 
 			/*
-			 * Let's set additionale RTC bits to
+			 * Let's set additional RTC bits to
 			 * facilitate maximum power saving.
 			 */
-			ds1307->regs[0] |=  DS1341_BIT_DOSF;
+			ds1307->regs[1] |=  DS1341_BIT_DOSF;
 			ds1307->regs[0] &= ~DS1341_BIT_EGFIL;
 
 			i2c_smbus_write_byte_data(client, DS1337_REG_CONTROL,

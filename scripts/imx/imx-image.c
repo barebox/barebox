@@ -324,7 +324,10 @@ static size_t add_header_v2(const struct config_data *data, void *buf)
 	hdr->self		= loadaddr + offset;
 
 	hdr->boot_data.start	= loadaddr;
-	hdr->boot_data.size	= imagesize;
+	if (data->max_load_size && imagesize > data->max_load_size)
+		hdr->boot_data.size	= data->max_load_size;
+	else
+		hdr->boot_data.size	= imagesize;
 
 	if (data->csf) {
 		hdr->csf = loadaddr + imagesize;
@@ -809,6 +812,11 @@ int main(int argc, char *argv[])
 	ret = parse_config(&data, configfile);
 	if (ret)
 		exit(1);
+
+	if (data.max_load_size && (sign_image || data.encrypt_image)) {
+		fprintf(stderr, "Specifying max_load_size is incompatible with HAB signing/encrypting\n");
+		exit(1);
+	}
 
 	if (!sign_image)
 		data.csf = NULL;

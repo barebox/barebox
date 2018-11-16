@@ -797,12 +797,12 @@ int main(int argc, char *argv[])
 	}
 
 	/*
-	 * Add HEADER_LEN to the image size for the blank aera + IVT + DCD.
+	 * Add HEADER_LEN to the image size for the blank area + IVT + DCD.
 	 * Align up to a 4k boundary, because:
 	 * - at least i.MX5 NAND boot only reads full NAND pages and misses the
 	 *   last partial NAND page.
 	 * - i.MX6 SPI NOR boot corrupts the last few bytes of an image loaded
-	 *   in ver funy ways when the image size is not 4 byte aligned
+	 *   in very funny ways when the image size is not 4 byte aligned
 	 */
 	data.load_size = roundup(data.image_size + header_len, 0x1000);
 

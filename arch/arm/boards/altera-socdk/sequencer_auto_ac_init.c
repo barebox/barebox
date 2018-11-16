@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 static const uint32_t ac_rom_init_size = 36;
-static const uint32_t ac_rom_init[36] = {
+static const uint32_t SECT(ac_rom_init)[36] = {
 	0x20700000,
 	0x20780000,
 	0x10080431,

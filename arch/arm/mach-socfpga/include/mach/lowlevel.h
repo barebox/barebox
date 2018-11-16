@@ -13,7 +13,7 @@
 #include <mach/pll_config.h>
 #include <mach/cyclone5-sequencer.c>
 
-static void __noreturn start_socfpga_c5_common(uint32_t size, void *fdt_blob)
+static noinline void SECT(start_socfpga_c5_common)(uint32_t size, void *fdt_blob)
 {
 	void *fdt;
 
@@ -32,7 +32,7 @@ static void __noreturn start_socfpga_c5_common(uint32_t size, void *fdt_blob)
 		start_socfpga_c5_common(memory_size, __dtb_##fdt_name##_start); \
 	}
 
-static noinline void start_socfpga_c5_xload_common(uint32_t size)
+static noinline void SECT(start_socfpga_c5_xload_common)(uint32_t size)
 {
 	struct socfpga_io_config io_config;
 	int ret;

@@ -16,11 +16,10 @@
 extern char __dtb_imx53_guf_vincell_lt_start[];
 extern char __dtb_imx53_guf_vincell_start[];
 
-static noinline void imx53_guf_vincell_init(int is_lt)
+static noinline void imx53_guf_vincell_init(void *fdt)
 {
 	void __iomem *ccm = (void *)MX53_CCM_BASE_ADDR;
 	void __iomem *uart = IOMEM(MX53_UART2_BASE_ADDR);
-	void *fdt;
 
 	arm_setup_stack(MX53_IRAM_BASE_ADDR + MX53_IRAM_SIZE - 8);
 
@@ -36,15 +35,10 @@ static noinline void imx53_guf_vincell_init(int is_lt)
 	pbl_set_putc(imx_uart_putc, uart);
 	pr_debug("GuF Vincell\n");
 
-	if (is_lt)
-		fdt = __dtb_imx53_guf_vincell_lt_start;
-	else
-		fdt = __dtb_imx53_guf_vincell_start;
-
 	imx53_barebox_entry(fdt);
 }
 
-static void __imx53_guf_vincell_init(int is_lt)
+static noinline void __imx53_guf_vincell_init(void *fdt)
 {
 	arm_early_mmu_cache_invalidate();
 	imx5_cpu_lowlevel_init();
@@ -52,15 +46,19 @@ static void __imx53_guf_vincell_init(int is_lt)
 	setup_c();
 	barrier();
 
-	imx53_guf_vincell_init(is_lt);
+	imx53_guf_vincell_init(fdt);
 }
 
 ENTRY_FUNCTION(start_imx53_guf_vincell_lt, r0, r1, r2)
 {
-	__imx53_guf_vincell_init(1);
+	void *fdt = __dtb_imx53_guf_vincell_lt_start + get_runtime_offset();
+
+	__imx53_guf_vincell_init(fdt);
 }
 
 ENTRY_FUNCTION(start_imx53_guf_vincell, r0, r1, r2)
 {
-	__imx53_guf_vincell_init(0);
+	void *fdt = __dtb_imx53_guf_vincell_start + get_runtime_offset();
+
+	__imx53_guf_vincell_init(fdt);
 }

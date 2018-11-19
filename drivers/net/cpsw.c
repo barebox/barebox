@@ -1093,8 +1093,8 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 
 			if (!of_find_node_by_name(child, "fixed-link")) {
 				ret = of_property_read_u32_array(child, "phy_id", phy_id, 2);
-				if (ret)
-					return ret;
+				if (!ret)
+					dev_warn(dev, "phy_id is deprecated, use phy-handle\n");
 			}
 
 			slave->dev.device_node = child;

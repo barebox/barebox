@@ -67,7 +67,7 @@ static void spi_reset(struct spi_master *master)
 	writel(OMAP3_MCSPI_WAKEUPENABLE_WKEN, regs + OMAP3_MCSPI_WAKEUPENABLE);
 }
 
-int spi_claim_bus(struct spi_device *spi)
+static int spi_claim_bus(struct spi_device *spi)
 {
 	struct spi_master *master = spi->master;
 	struct omap3_spi_master *omap3_master = container_of(master, struct omap3_spi_master, master);
@@ -144,7 +144,7 @@ int spi_claim_bus(struct spi_device *spi)
 	return 0;
 }
 
-int omap3_spi_write(struct spi_device *spi, unsigned int len, const u8 *txp,
+static int omap3_spi_write(struct spi_device *spi, unsigned int len, const u8 *txp,
 		    unsigned long flags)
 {
 	struct spi_master *master = spi->master;
@@ -198,7 +198,7 @@ int omap3_spi_write(struct spi_device *spi, unsigned int len, const u8 *txp,
 	return 0;
 }
 
-int omap3_spi_read(struct spi_device *spi, unsigned int len, u8 *rxp,
+static int omap3_spi_read(struct spi_device *spi, unsigned int len, u8 *rxp,
 		   unsigned long flags)
 {
 	struct spi_master *master = spi->master;
@@ -245,7 +245,7 @@ int omap3_spi_read(struct spi_device *spi, unsigned int len, u8 *rxp,
 	return 0;
 }
 
-int spi_xfer(struct spi_device *spi, struct spi_transfer *t, unsigned long flags)
+static int spi_xfer(struct spi_device *spi, struct spi_transfer *t, unsigned long flags)
 {
 	struct spi_master *master = spi->master;
 	struct omap3_spi_master *omap3_master = container_of(master, struct omap3_spi_master, master);

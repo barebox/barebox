@@ -133,6 +133,8 @@ struct bcm2835_mbox_tag_hdr {
 #define BCM2837_BOARD_REV_3_B		0x8
 /* Zero */
 #define BCM2835_BOARD_REV_ZERO		0x9
+/* Zero W */
+#define BCM2835_BOARD_REV_ZERO_W	0xc
 
 /*
  * 0x2..0xf from:

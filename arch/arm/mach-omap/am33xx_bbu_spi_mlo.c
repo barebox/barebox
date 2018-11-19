@@ -20,6 +20,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <linux/stat.h>
+#include <mach/bbu.h>
 
 /*
  * AM35xx, AM33xx chips use big endian MLO for SPI NOR flash

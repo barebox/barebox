@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <libfile.h>
 #include <filetype.h>
+#include <mach/bbu.h>
 
 struct nand_bbu_handler {
 	struct bbu_handler bbu_handler;

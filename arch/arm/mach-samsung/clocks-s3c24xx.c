@@ -128,7 +128,7 @@ unsigned s3c_get_uart_clk(unsigned src)
 /**
  * Show the user the current clock settings
  */
-int s3c24xx_dump_clocks(void)
+static int s3c24xx_dump_clocks(void)
 {
 	printf("refclk:  %7d kHz\n", S3C24XX_CLOCK_REFERENCE / 1000);
 	printf("mpll:    %7d kHz\n", s3c_get_mpllclk() / 1000);

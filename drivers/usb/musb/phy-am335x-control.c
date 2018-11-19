@@ -4,10 +4,7 @@
 #include <linux/err.h>
 #include <linux/spinlock.h>
 
-struct phy_control {
-	void (*phy_power)(struct phy_control *phy_ctrl, u32 id, bool on);
-	void (*phy_wkup)(struct phy_control *phy_ctrl, u32 id, bool on);
-};
+#include "am35x-phy-control.h"
 
 struct am335x_control_usb {
 	struct device_d *dev;

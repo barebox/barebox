@@ -5,6 +5,7 @@
 #include <linux/err.h>
 #include "am35x-phy-control.h"
 #include "musb_core.h"
+#include "phy-am335x.h"
 
 struct am335x_usbphy {
 	void __iomem *base;

@@ -233,6 +233,8 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 #ifndef CONFIG_PBL_IMAGE
 
+void start(void);
+
 void NAKED __section(.text_entry) start(void)
 {
 	barebox_arm_head();

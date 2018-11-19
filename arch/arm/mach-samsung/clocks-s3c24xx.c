@@ -109,15 +109,6 @@ uint32_t s3c_get_pclk(void)
 }
 
 /**
- * Calculate the UCLK frequency used by the USB host device
- * @return Current frequency in Hz
- */
-uint32_t s3c24_get_uclk(void)
-{
-	return s3c_get_upllclk();
-}
-
-/**
  * Return correct UART frequency based on the UCON register
  */
 unsigned s3c_get_uart_clk(unsigned src)

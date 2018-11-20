@@ -1526,7 +1526,7 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 {
 	struct dentry *dentry;
 	struct dentry *old;
-	struct inode *dir = base->d_inode;
+	struct inode *dir;
 
 	if (!base)
 		return ERR_PTR(-ENOENT);
@@ -1539,6 +1539,7 @@ static struct dentry *__lookup_hash(const struct qstr *name,
 	if (unlikely(!dentry))
 		return ERR_PTR(-ENOMEM);
 
+	dir = base->d_inode;
 	old = dir->i_op->lookup(dir, dentry, flags);
 	if (IS_ERR(old)) {
 		dput(dentry);

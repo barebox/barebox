@@ -2527,8 +2527,6 @@ EXPORT_SYMBOL(opendir);
 
 int closedir(DIR *dir)
 {
-	int ret;
-
 	if (!dir) {
 		errno = EBADF;
 		return -EBADF;
@@ -2536,7 +2534,7 @@ int closedir(DIR *dir)
 
 	release_dir(dir);
 
-	return ret;
+	return 0;
 }
 EXPORT_SYMBOL(closedir);
 

@@ -1130,7 +1130,7 @@ static int32_t e1000_set_d3_lplu_state_off(struct e1000_hw *hw)
 {
 	uint32_t phy_ctrl = 0;
 	int32_t ret_val;
-	uint16_t phy_data;
+	uint16_t phy_data = 0;
 	DEBUGFUNC();
 
 	/* During driver activity LPLU should not be used or it will attain link

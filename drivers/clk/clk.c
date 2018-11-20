@@ -413,7 +413,7 @@ int of_clk_add_provider(struct device_node *np,
 	cp->get = clk_src_get;
 
 	list_add(&cp->link, &of_clk_providers);
-	pr_debug("Added clock from %s\n", np->full_name);
+	pr_debug("Added clock from %s\n", np ? np->full_name : "<none>");
 
 	return 0;
 }

@@ -658,8 +658,8 @@ static int pinctrl_tegra30_set_drvstate(struct pinctrl_tegra30 *ctrl,
 			break;
 		}
 	}
-	/* if no matching drivegroup is found */
-	if (i == ctrl->drvdata->num_drvgrps)
+
+	if (!group)
 		return 0;
 
 	regaddr = ctrl->regs.ctrl + (group->reg >> 2);

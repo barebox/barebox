@@ -58,6 +58,8 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 				res = *((uint16_t *)addr);
 				if (swab)
 					res = __swab16(res);
+				if (i > 1 && i % 8 == 0)
+					count -= printf(" ");
 				if (data_abort_unmask()) {
 					res = 0xffff;
 					count -= printf(" xxxx");
@@ -69,6 +71,8 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 				uint8_t res;
 				data_abort_mask();
 				res = *((uint8_t *)addr);
+				if (i > 1 && i % 8 == 0)
+					count -= printf(" ");
 				if (data_abort_unmask()) {
 					res = 0xff;
 					count -= printf(" xx");

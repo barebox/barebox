@@ -1168,13 +1168,7 @@ static unsigned inflateHuffmanBlock(ucvector* out, const unsigned char* in, size
       code_d = huffmanDecodeSymbol(in, bp, &tree_d, inbitlength);
       if(code_d > 29)
       {
-        if(code_ll == (unsigned)(-1)) /*huffmanDecodeSymbol returns (unsigned)(-1) in case of error*/
-        {
-          /*return error code 10 or 11 depending on the situation that happened in huffmanDecodeSymbol
-          (10=no endcode, 11=wrong jump outside of tree)*/
-          error = (*bp) > inlength * 8 ? 10 : 11;
-        }
-        else error = 18; /*error: invalid distance code (30-31 are never used)*/
+        error = 18; /*error: invalid distance code (30-31 are never used)*/
         break;
       }
       distance = DISTANCEBASE[code_d];

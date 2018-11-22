@@ -392,7 +392,9 @@ static int fit_verify_hash(struct fit_handle *handle, struct device_node *image,
 		ret = -EINVAL;
 	}
 
-	hash = of_get_child_by_name(image, "hash@1");
+	hash = of_get_child_by_name(image, "hash-1");
+	if (!hash)
+		hash = of_get_child_by_name(image, "hash@1");
 	if (!hash) {
 		if (ret)
 			pr_err("image %s does not have hashes\n",
@@ -468,7 +470,9 @@ static int fit_image_verify_signature(struct fit_handle *handle,
 		ret = -EINVAL;
 	}
 
-	sig_node = of_get_child_by_name(image, "signature@1");
+	sig_node = of_get_child_by_name(image, "signature-1");
+	if (!sig_node)
+		sig_node = of_get_child_by_name(image, "signature@1");
 	if (!sig_node) {
 		pr_err("Image %s has no signature\n", image->full_name);
 		return ret;

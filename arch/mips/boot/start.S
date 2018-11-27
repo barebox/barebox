@@ -27,6 +27,10 @@ EXPORT(_start)
 
 	mips_barebox_10h
 
+	/* save dtb pointer */
+	move	s0, a0
+	move	s1, a1
+
 	/* disable watchpoints */
 	mtc0	zero, CP0_WATCHLO
 	mtc0	zero, CP0_WATCHHI
@@ -37,6 +41,9 @@ EXPORT(_start)
 
 	stack_setup
 
+	/* restore dtb pointer */
+	move	a0, s0
+	move	a1, s1
 	la	v0, main_entry
 	jal	v0
 	 nop

@@ -106,6 +106,9 @@
  * General Public License for more details.
  *
  */
+
+#define pr_fmt(fmt) "hush: " fmt
+
 #include <malloc.h>         /* malloc, free, realloc*/
 #include <xfuncs.h>
 #include <linux/ctype.h>    /* isalpha, isdigit */

@@ -40,8 +40,8 @@ static int bcm2835_clk_init(void)
 
 	clk = clk_fixed("uart0-pl0110", 3 * 1000 * 1000);
 	clk_register_clkdev(clk, NULL, "uart0-pl0110");
-	clk_register_clkdev(clk, NULL, "20201000.serial");
-	clk_register_clkdev(clk, NULL, "3f201000.serial");
+	clkdev_add_physbase(clk, 0x20201000, NULL);
+	clkdev_add_physbase(clk, 0x3f201000, NULL);
 
 	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
 	clk_register_clkdev(clk, NULL, "bcm2835-cs");

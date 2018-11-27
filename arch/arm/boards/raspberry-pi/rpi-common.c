@@ -290,8 +290,8 @@ static int rpi_clock_init(void)
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
-	clk_register_clkdev(clk, NULL, "20300000.sdhci");
-	clk_register_clkdev(clk, NULL, "3f300000.sdhci");
+	clkdev_add_physbase(clk, 0x20300000, NULL);
+	clkdev_add_physbase(clk, 0x3f300000, NULL);
 
 	return 0;
 }

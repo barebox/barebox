@@ -21,7 +21,15 @@
 #ifndef __MACH_MALTA_DEBUG_LL_H__
 #define __MACH_MALTA_DEBUG_LL_H__
 
-#include <board/debug_ll.h>
+#include <mach/hardware.h>
+
+#define DEBUG_LL_UART_ADDR	MALTA_PIIX4_UART0
+#define DEBUG_LL_UART_SHIFT	0
+
+#define DEBUG_LL_UART_CLK       1843200
+#define DEBUG_LL_UART_BPS       CONFIG_BAUDRATE
+#define DEBUG_LL_UART_DIVISOR   (DEBUG_LL_UART_CLK / DEBUG_LL_UART_BPS)
+
 #include <asm/debug_ll_ns16550.h>
 
 #endif /* __MACH_MALTA_DEBUG_LL_H__ */

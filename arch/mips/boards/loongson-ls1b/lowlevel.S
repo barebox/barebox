@@ -10,14 +10,27 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  */
 
-#ifndef __INCLUDE_CI20_BOARD_DEBUG_LL_H__
-#define __INCLUDE_CI20_BOARD_DEBUG_LL_H__
+#define BOARD_PBL_START start_loongson_ls1b
 
-#include <mach/debug_ll_jz4780.h>
+#include <asm/pbl_macros.h>
+#include <mach/loongson1.h>
+#include <mach/debug_ll.h>
+#include <asm/pbl_nmon.h>
 
-#endif  /* __INCLUDE_CI20_BOARD_DEBUG_LL_H__ */
+ENTRY_FUNCTION(BOARD_PBL_START)
+
+	mips_barebox_10h
+
+	mips_disable_interrupts
+
+	debug_ll_ns16550_init
+
+	debug_ll_outc '.'
+	debug_ll_ns16550_outnl
+
+ENTRY_FUNCTION_END(BOARD_PBL_START, loongson_ls1b)

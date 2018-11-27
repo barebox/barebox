@@ -1,0 +1,3 @@
+pblb-$(CONFIG_BOARD_NETGEAR_WG102) += start_netgear_wg102
+FILE_barebox-netgear-wg102.img = start_netgear_wg102.pblb
+image-$(CONFIG_BOARD_NETGEAR_WG102) += barebox-netgear-wg102.img

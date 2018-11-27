@@ -6,15 +6,18 @@
  * as published by the Free Software Foundation.
  */
 
+#define BOARD_PBL_START start_dptechnics_dpt_module
+
+#include <mach/debug_ll.h>
+#include <asm/regdef.h>
+#include <asm/mipsregs.h>
+#include <asm/asm.h>
 #include <asm/pbl_macros.h>
 #include <mach/pbl_macros.h>
 #include <asm/pbl_nmon.h>
 
-	.macro	board_pbl_start
-	.set	push
-	.set	noreorder
+ENTRY_FUNCTION(BOARD_PBL_START)
 
 	ar9331_pbl_generic_start
 
-	.set	pop
-	.endm
+ENTRY_FUNCTION_END(BOARD_PBL_START, ar9331_dptechnics_dpt_module)

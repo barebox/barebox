@@ -1,0 +1,3 @@
+pblb-$(CONFIG_BOARD_DLINK_DIR320) += start_dlink_dir_320
+FILE_barebox-dlink-dir-320.img = start_dlink_dir_320.pblb
+image-$(CONFIG_BOARD_DLINK_DIR320) += barebox-dlink-dir-320.img

@@ -17,6 +17,9 @@
  *
  */
 
+#define BOARD_PBL_START start_qemu_malta
+
+#include <asm/asm.h>
 #include <asm/pbl_macros.h>
 #include <asm/pbl_nmon.h>
 
@@ -39,10 +42,7 @@
 #define	GT_LD(x)	(GT_CPU_TO_LE32(((x) >> 21) & 0x7fff))
 #define	GT_HD(x)	(GT_CPU_TO_LE32(((x) >> 21) & 0x7f))
 
-	.macro	board_pbl_start
-	.set	push
-	.set	noreorder
-
+ENTRY_FUNCTION(BOARD_PBL_START)
 	b	__start
 	 nop
 
@@ -94,9 +94,4 @@ __start:
 	li	t0, GT_LD(0x1bdfffff)
 	sw	t0, GT_PCI0M1HD_OFS(t1)
 
-	mips_nmon
-
-	copy_to_link_location	pbl_start
-
-	.set	pop
-	.endm
+ENTRY_FUNCTION_END(BOARD_PBL_START, qemu_malta)

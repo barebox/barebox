@@ -16,9 +16,6 @@ config CPU_JZ4780
 	select WATCHDOG
 	select WATCHDOG_JZ4740
 
-choice
-	prompt "Board type"
-
 config BOARD_RZX50
 	bool "Ritmix RZX-50"
 	select CPU_JZ4755
@@ -28,9 +25,18 @@ config BOARD_CI20
 	select CPU_JZ4780
 	select HAS_DM9000
 
+if DEBUG_LL
+choice
+	prompt "DEBUG_LL driver"
+
+config DEBUG_JZ4750D_UART
+	bool "JZ4750D Debug UART"
+
+config DEBUG_JZ4780_UART
+	bool "JZ4780 Debug UART"
+
 endchoice
 
-if DEBUG_LL
 choice
 	prompt "DEBUG_LL port"
 

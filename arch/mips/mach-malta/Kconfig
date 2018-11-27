@@ -4,8 +4,11 @@ config ARCH_TEXT_BASE
 	hex
 	default 0xa0800000
 
-choice
-	prompt "Board type"
+config MIPS_MALTA_MULTI_BOARDS
+	bool "Allow multiple boards to be selected"
+	select HAVE_PBL_MULTI_IMAGE
+
+if MIPS_MALTA_MULTI_BOARDS
 
 config BOARD_QEMU_MALTA
 	bool "qemu malta"
@@ -13,6 +16,6 @@ config BOARD_QEMU_MALTA
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
 
-endchoice
+endif # MIPS_MALTA_MULTI_BOARDS
 
 endif

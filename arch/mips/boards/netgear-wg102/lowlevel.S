@@ -16,15 +16,15 @@
  *
  */
 
+#define BOARD_PBL_START start_netgear_wg102
+
 #include <asm/pbl_macros.h>
 #include <mach/pbl_macros.h>
 #include <mach/ar2312_regs.h>
 
 #include <mach/debug_ll.h>
 
-	.macro	board_pbl_start
-	.set	push
-	.set	noreorder
+ENTRY_FUNCTION(BOARD_PBL_START)
 
 	mips_barebox_10h
 
@@ -71,7 +71,15 @@ sdram_configured:
 	debug_ll_outc 'b'
 	debug_ll_ns16550_outnl
 
-	copy_to_link_location	pbl_start
+	copy_to_link_location	BOARD_PBL_START;
+	stack_setup;
 
-	.set	pop
-	.endm
+	lw	a0, 0;
+	la	v0, pbl_main_entry;
+	jal	v0;
+	 nop;
+
+	/* No return */
+__error:
+	b	__error;
+	 nop;

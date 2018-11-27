@@ -81,7 +81,7 @@ static inline void PUTC_LL(int ch)
 #define AR933X_UART_CLOCK_REG		0x08
 #define CLOCK_REG	((KSEG1 | AR933X_UART_BASE) | AR933X_UART_CLOCK_REG)
 
-.macro debug_ll_ar9331_init
+.macro debug_ll_ath79_init
 #ifdef CONFIG_DEBUG_LL
 
 	pbl_reg_writel ((AR933X_UART_CS_IF_MODE_DCE << AR933X_UART_CS_IF_MODE_S) \

@@ -21,7 +21,6 @@
 #ifndef __INCLUDE_ARCH_DEBUG_LL_H__
 #define   __INCLUDE_ARCH_DEBUG_LL_H__
 
-#include <io.h>
 #include <mach/hardware.h>
 
 #define DEBUG_LL_UART_SHIFT	0

@@ -21,7 +21,6 @@
 /** @file
  *  This File contains declaration for early output support
  */
-#include <board/debug_ll.h>
 #include <asm/debug_ll_ns16550.h>
 
 #endif /* __MACH_LOONGSON_DEBUG_LL__ */

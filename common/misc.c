@@ -67,11 +67,11 @@ const char *strerror(int errnum)
 	case	ETIMEDOUT	: str = "Connection timed out"; break;
 	case	EPROBE_DEFER	: str = "Requested probe deferral"; break;
 	case	ELOOP		: str = "Too many symbolic links encountered"; break;
+	case	ENODATA		: str = "No data available"; break;
 #if 0 /* These are probably not needed */
 	case	ENOTBLK		: str = "Block device required"; break;
 	case	EFBIG		: str = "File too large"; break;
 	case	EBADSLT		: str = "Invalid slot"; break;
-	case	ENODATA		: str = "No data available"; break;
 	case	ETIME		: str = "Timer expired"; break;
 	case	ENONET		: str = "Machine is not on the network"; break;
 	case	EADV		: str = "Advertise error"; break;

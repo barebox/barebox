@@ -27,9 +27,6 @@ config GENERIC_LINKER_SCRIPT
 	bool
 	default y
 
-config HAS_NO_BOARD_HL_CODE
-	bool
-
 config PHYS_ADDR_T_64BIT
 	bool
 

@@ -35,7 +35,7 @@ config PBL_FORCE_PIGGYDATA_COPY
 if PBL_IMAGE
 
 config PBL_RELOCATABLE
-	depends on ARM
+	depends on ARM || MIPS
 	bool "relocatable pbl image"
 	help
 	  Generate a pbl binary which can relocate itself during startup to run

@@ -16,6 +16,7 @@
  *
  */
 
+#include <init.h>
 #include <common.h>
 #include <string.h>
 #include <memory.h>
@@ -79,7 +80,7 @@ extern u32 glob_fdt_size;
  *
  * @note The C environment isn't initialized yet
  */
-void main_entry(void *fdt, u32 fdt_size)
+void __bare_init main_entry(void *fdt, u32 fdt_size)
 {
 	/* clear the BSS first */
 	memset(__bss_start, 0x00, __bss_stop - __bss_start);

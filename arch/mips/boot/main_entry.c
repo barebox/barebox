@@ -27,7 +27,7 @@
 
 extern void handle_reserved(void);
 
-void main_entry(void);
+void main_entry(void *fdt, u32 fdt_size);
 
 unsigned long exception_handlers[32];
 
@@ -71,12 +71,15 @@ static void trap_init(void)
 	write_c0_status(read_c0_status() & ~ST0_BEV);
 }
 
+extern void *glob_fdt;
+extern u32 glob_fdt_size;
+
 /**
  * Called plainly from assembler code
  *
  * @note The C environment isn't initialized yet
  */
-void main_entry(void)
+void main_entry(void *fdt, u32 fdt_size)
 {
 	/* clear the BSS first */
 	memset(__bss_start, 0x00, __bss_stop - __bss_start);
@@ -93,6 +96,9 @@ void main_entry(void)
 
 	mem_malloc_init((void *)MALLOC_BASE,
 			(void *)(MALLOC_BASE + MALLOC_SIZE - 1));
+
+	glob_fdt = fdt;
+	glob_fdt_size = fdt_size;
 
 	start_barebox();
 }

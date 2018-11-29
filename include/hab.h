@@ -21,6 +21,7 @@
 #include <errno.h>
 
 #ifdef CONFIG_HABV4
+extern bool habv4_need_rng_software_self_test;
 int imx28_hab_get_status(void);
 int imx6_hab_get_status(void);
 #else

@@ -387,6 +387,39 @@ static void habv4_display_event(uint8_t *data, uint32_t len)
 	habv4_display_event_record((struct hab_event_record *)data);
 }
 
+/* Some chips with HAB >= 4.2.3 have an incorrect implementation of the RNG
+ * self-test in ROM code. In this case, an HAB event is generated, and a
+ * software self-test should be run. This variable is set to @c true by
+ * habv4_get_status() when this occurs. */
+bool habv4_need_rng_software_self_test = false;
+EXPORT_SYMBOL(habv4_need_rng_software_self_test);
+
+#define RNG_FAIL_EVENT_SIZE 36
+static uint8_t habv4_known_rng_fail_events[][RNG_FAIL_EVENT_SIZE] = {
+	{ 0xdb, 0x00, 0x24, 0x42,  0x69, 0x30, 0xe1, 0x1d,
+	  0x00, 0x80, 0x00, 0x02,  0x40, 0x00, 0x36, 0x06,
+	  0x55, 0x55, 0x00, 0x03,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x01 },
+	{ 0xdb, 0x00, 0x24, 0x42,  0x69, 0x30, 0xe1, 0x1d,
+	  0x00, 0x04, 0x00, 0x02,  0x40, 0x00, 0x36, 0x06,
+	  0x55, 0x55, 0x00, 0x03,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x01 },
+};
+
+static bool is_known_rng_fail_event(const uint8_t *data, size_t len)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(habv4_known_rng_fail_events); i++) {
+		if (memcmp(data, habv4_known_rng_fail_events[i],
+			   min(len, (uint32_t)RNG_FAIL_EVENT_SIZE)) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 static int habv4_get_status(const struct habv4_rvt *rvt)
 {
 	uint8_t data[256];
@@ -413,10 +446,18 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 
 	len = sizeof(data);
 	while (rvt->report_event(HAB_STATUS_WARNING, index, data, &len) == HAB_STATUS_SUCCESS) {
-		pr_err("-------- HAB warning Event %d --------\n", index);
-		pr_err("event data:\n");
 
-		habv4_display_event(data, len);
+		/* suppress RNG self-test fail events if they can be handled in software */
+		if (IS_ENABLED(CONFIG_CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST) &&
+		    is_known_rng_fail_event(data, len)) {
+			pr_debug("RNG self-test failure detected, will run software self-test\n");
+			habv4_need_rng_software_self_test = true;
+		} else {
+			pr_err("-------- HAB warning Event %d --------\n", index);
+			pr_err("event data:\n");
+			habv4_display_event(data, len);
+		}
+
 		len = sizeof(data);
 		index++;
 	}

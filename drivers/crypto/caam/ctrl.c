@@ -8,6 +8,7 @@
 #include <common.h>
 #include <clock.h>
 #include <driver.h>
+#include <hab.h>
 #include <init.h>
 #include <linux/barebox-wrapper.h>
 #include <linux/spinlock.h>
@@ -19,6 +20,7 @@
 #include "desc_constr.h"
 #include "error.h"
 #include "ctrl.h"
+#include "rng_self_test.h"
 
 bool caam_little_end;
 EXPORT_SYMBOL(caam_little_end);
@@ -569,6 +571,24 @@ static int caam_probe(struct device_d *dev)
 	}
 
 	cha_vid_ls = rd_reg32(&ctrl->perfmon.cha_id_ls);
+
+	/* habv4_need_rng_software_self_test is determined by habv4_get_status() */
+	if (IS_ENABLED(CONFIG_CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST) &&
+	    habv4_need_rng_software_self_test) {
+		u8 caam_era;
+		u8 rngvid;
+		u8 rngrev;
+
+		caam_era = (rd_reg32(&ctrl->perfmon.ccb_id) & CCBVID_ERA_MASK) >> CCBVID_ERA_SHIFT;
+		rngvid = (cha_vid_ls & CHAVID_LS_RNGVID_MASK) >> CHAVID_LS_RNGVID_SHIFT;
+		rngrev = (rd_reg32(&ctrl->perfmon.cha_rev_ls) & CRNR_LS_RNGRN_MASK) >> CRNR_LS_RNGRN_SHIFT;
+
+		ret = caam_rng_self_test(ctrlpriv->jrpdev[0], caam_era, rngvid, rngrev);
+		if (ret != 0) {
+			caam_remove(dev);
+			return ret;
+		}
+	}
 
 	/*
 	 * If SEC has RNG version >= 4 and RNG state handle has not been

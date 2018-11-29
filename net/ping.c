@@ -76,6 +76,8 @@ static int do_ping(int argc, char *argv[])
 		goto out;
 	}
 
+	printf("PING %s (%pI4)\n", argv[1], &net_ping_ip);
+
 	ping_start = get_time_ns();
 	ret = ping_send();
 	if (ret)

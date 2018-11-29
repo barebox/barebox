@@ -21,7 +21,9 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-//#define DEBUG
+
+#define pr_fmt(fmt) "dns: " fmt
+
 #include <common.h>
 #include <command.h>
 #include <net.h>
@@ -123,7 +125,7 @@ static void dns_recv(struct header *header, unsigned len)
 	int found, stop, dlen;
 	short tmp;
 
-	debug("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	/* We sent 1 query. We want to see more that 1 answer. */
 	if (ntohs(header->nqueries) != 1)
@@ -132,7 +134,7 @@ static void dns_recv(struct header *header, unsigned len)
 	/* Received 0 answers */
 	if (header->nanswers == 0) {
 		dns_state = STATE_DONE;
-		debug("DNS server returned no answers\n");
+		pr_debug("DNS server returned no answers\n");
 		return;
 	}
 
@@ -145,7 +147,7 @@ static void dns_recv(struct header *header, unsigned len)
 	/* We sent query class 1, query type 1 */
 	tmp = p[1] | (p[2] << 8);
 	if (&p[5] > e || ntohs(tmp) != DNS_A_RECORD) {
-		debug("DNS response was not A record\n");
+		pr_debug("DNS response was not A record\n");
 		return;
 	}
 
@@ -161,23 +163,23 @@ static void dns_recv(struct header *header, unsigned len)
 				p++;
 			p--;
 		}
-		debug("Name (Offset in header): %d\n", p[1]);
+		pr_debug("Name (Offset in header): %d\n", p[1]);
 
 		tmp = p[2] | (p[3] << 8);
 		type = ntohs(tmp);
-		debug("type = %d\n", type);
+		pr_debug("type = %d\n", type);
 		if (type == DNS_CNAME_RECORD) {
 			/* CNAME answer. shift to the next section */
 			debug("Found canonical name\n");
 			tmp = p[10] | (p[11] << 8);
 			dlen = ntohs(tmp);
-			debug("dlen = %d\n", dlen);
+			pr_debug("dlen = %d\n", dlen);
 			p += 12 + dlen;
 		} else if (type == DNS_A_RECORD) {
-			debug("Found A-record\n");
+			pr_debug("Found A-record\n");
 			found = stop = 1;
 		} else {
-			debug("Unknown type\n");
+			pr_debug("Unknown type\n");
 			stop = 1;
 		}
 	}
@@ -212,12 +214,11 @@ IPaddr_t resolv(const char *host)
 
 	ip = net_get_nameserver();
 	if (!ip) {
-		printk("%s: no nameserver specified in $net.nameserver\n",
-				__func__);
+		pr_err("no nameserver specified in $net.nameserver\n");
 		return 0;
 	}
 
-	debug("resolving host %s via nameserver %pI4\n", host, &ip);
+	pr_debug("resolving host %s via nameserver %pI4\n", host, &ip);
 
 	dns_con = net_udp_new(ip, DNS_PORT, dns_handler, NULL);
 	if (IS_ERR(dns_con))
@@ -238,6 +239,8 @@ IPaddr_t resolv(const char *host)
 	}
 
 	net_unregister(dns_con);
+
+	pr_debug("host %s is at %pI4\n", host, &dns_ip);
 
 	return dns_ip;
 }

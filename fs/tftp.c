@@ -696,10 +696,15 @@ static int tftp_probe(struct device_d *dev)
 	struct tftp_priv *priv = xzalloc(sizeof(struct tftp_priv));
 	struct super_block *sb = &fsdev->sb;
 	struct inode *inode;
+	int ret;
 
 	dev->priv = priv;
 
-	priv->server = resolv(fsdev->backingstore);
+	ret = resolv(fsdev->backingstore, &priv->server);
+	if (ret) {
+		pr_err("Cannot resolve \"%s\": %s\n", fsdev->backingstore, strerror(-ret));
+		goto err;
+	}
 
 	sb->s_op = &tftp_ops;
 
@@ -707,6 +712,10 @@ static int tftp_probe(struct device_d *dev)
 	sb->s_root = d_make_root(inode);
 
 	return 0;
+err:
+	free(priv);
+
+	return ret;
 }
 
 static void tftp_remove(struct device_d *dev)

@@ -107,7 +107,9 @@ IPaddr_t getenv_ip(const char *name)
 	if (!string_to_ip(var, &ip))
 		return ip;
 
-	return resolv((char*)var);
+	resolv(var, &ip);
+
+	return ip;
 }
 
 int setenv_ip(const char *name, IPaddr_t ip)

@@ -303,9 +303,11 @@ static char *parse_nfs_url(const char *url)
 		goto out;
 	}
 
-	ip = resolv(host);
-	if (ip == 0)
+	ret = resolv(host, &ip);
+	if (ret) {
+		pr_err("Cannot resolve \"%s\": %s\n", host, strerror(-ret));
 		goto out;
+	}
 
 	hostpath = basprintf("%pI4:%s", &ip, path);
 

@@ -120,9 +120,9 @@ s64 sntp(const char *server)
 	if (!server)
 		return -EINVAL;
 
-	net_sntp_ip = resolv(server);
-	if (!net_sntp_ip) {
-		printf("unknown host %s\n", server);
+	ret = resolv(server, &net_sntp_ip);
+	if (ret) {
+		printf("Cannot resolve \"%s\": %s\n", server, strerror(-ret));;
 		return 1;
 	}
 

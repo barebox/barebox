@@ -201,26 +201,27 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 		net_eth_to_udplen(packet));
 }
 
-IPaddr_t resolv(const char *host)
+int resolv(const char *host, IPaddr_t *ip)
 {
-	IPaddr_t ip;
+	IPaddr_t nameserver;
 
-	if (!string_to_ip(host, &ip))
-		return ip;
+	if (!string_to_ip(host, ip))
+		return 0;
 
 	dns_ip = 0;
+	*ip = 0;
 
 	dns_state = STATE_INIT;
 
-	ip = net_get_nameserver();
-	if (!ip) {
+	nameserver = net_get_nameserver();
+	if (!nameserver) {
 		pr_err("no nameserver specified in $net.nameserver\n");
 		return 0;
 	}
 
-	pr_debug("resolving host %s via nameserver %pI4\n", host, &ip);
+	pr_debug("resolving host %s via nameserver %pI4\n", host, &nameserver);
 
-	dns_con = net_udp_new(ip, DNS_PORT, dns_handler, NULL);
+	dns_con = net_udp_new(nameserver, DNS_PORT, dns_handler, NULL);
 	if (IS_ERR(dns_con))
 		return PTR_ERR(dns_con);
 	dns_timer_start = get_time_ns();
@@ -240,25 +241,32 @@ IPaddr_t resolv(const char *host)
 
 	net_unregister(dns_con);
 
-	pr_debug("host %s is at %pI4\n", host, &dns_ip);
+	if (dns_ip) {
+		pr_debug("host %s is at %pI4\n", host, &dns_ip);
+	} else {
+		pr_debug("host %s not found\n", host);
+		return -ENOENT;
+	}
 
-	return dns_ip;
+	*ip = dns_ip;
+
+	return 0;
 }
 
 #ifdef CONFIG_CMD_HOST
 static int do_host(int argc, char *argv[])
 {
 	IPaddr_t ip;
+	int ret;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	ip = resolv(argv[1]);
-	if (!ip)
+	ret = resolv(argv[1], &ip);
+	if (ret)
 		printf("unknown host %s\n", argv[1]);
-	else {
+	else
 		printf("%s is at %pI4\n", argv[1], &ip);
-	}
 
 	return 0;
 }

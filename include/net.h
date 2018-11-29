@@ -330,13 +330,11 @@ int string_to_ethaddr(const char *str, u8 enetaddr[6]);
 void ethaddr_to_string(const u8 enetaddr[6], char *str);
 
 #ifdef CONFIG_NET_RESOLV
-IPaddr_t resolv(const char *host);
+int resolv(const char *host, IPaddr_t *ip);
 #else
-static inline IPaddr_t resolv(const char *host)
+static inline int resolv(const char *host, IPaddr_t *ip)
 {
-	IPaddr_t ip = 0;
-	string_to_ip(host, &ip);
-	return ip;
+	return string_to_ip(host, ip);
 }
 #endif
 

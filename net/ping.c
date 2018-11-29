@@ -61,9 +61,9 @@ static int do_ping(int argc, char *argv[])
 	if (argc < 2)
 		return COMMAND_ERROR_USAGE;
 
-	net_ping_ip = resolv(argv[1]);
-	if (!net_ping_ip) {
-		printf("unknown host %s\n", argv[1]);
+	ret = resolv(argv[1], &net_ping_ip);
+	if (ret) {
+		printf("Cannot resolve \"%s\": %s\n", argv[1], strerror(-ret));
 		return 1;
 	}
 

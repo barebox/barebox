@@ -20,6 +20,7 @@
 
 #include <common.h>
 #include <hab.h>
+#include <init.h>
 #include <types.h>
 
 #include <mach/generic.h>
@@ -501,9 +502,54 @@ int imx6_hab_get_status(void)
 	return -EINVAL;
 }
 
+static int init_imx6_hab_get_status(void)
+{
+	int ret = 0;
+
+	if (!cpu_is_mx6())
+		/* can happen in multi-image builds and is not an error */
+		return 0;
+
+	ret = imx6_hab_get_status();
+
+	/*
+	 * Nobody will check the return value if there were HAB errors, but the
+	 * initcall will fail spectaculously with a strange error message.
+	 */
+	if (ret == -EPERM)
+		return 0;
+	return ret;
+}
+
+/*
+ * Need to run before MMU setup because i.MX6 ROM code is mapped near 0x0,
+ * which will no longer be accessible when the MMU sets the zero page to
+ * faulting.
+ */
+postconsole_initcall(init_imx6_hab_get_status);
+
 int imx28_hab_get_status(void)
 {
 	const struct habv4_rvt *rvt = (void *)HABV4_RVT_IMX28;
 
 	return habv4_get_status(rvt);
 }
+
+static int init_imx28_hab_get_status(void)
+{
+	int ret = 0;
+
+	if (!cpu_is_mx28())
+		/* can happen in multi-image builds and is not an error */
+		return 0;
+
+	ret = imx28_hab_get_status();
+
+	/* nobody will check the return value if there were HAB errors, but the
+	 * initcall will fail spectaculously with a strange error message. */
+	if (ret == -EPERM)
+		return 0;
+	return ret;
+}
+/* i.MX28 ROM code can be run after MMU setup to make use of caching */
+postmmu_initcall(init_imx28_hab_get_status);

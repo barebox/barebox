@@ -64,11 +64,3 @@ config BFIN_BOOT_FLASH16
 	  blackfin is strapped to boot from 16bit wide flash via boot ROM
 
 endchoice
-
-source common/Kconfig
-source commands/Kconfig
-source net/Kconfig
-source drivers/Kconfig
-source fs/Kconfig
-source lib/Kconfig
-source crypto/Kconfig

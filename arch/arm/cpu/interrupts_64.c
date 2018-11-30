@@ -25,6 +25,16 @@
 #include <asm/system.h>
 #include <asm/esr.h>
 
+/* Avoid missing prototype warning, called from assembly */
+void do_bad_sync (struct pt_regs *pt_regs);
+void do_bad_irq (struct pt_regs *pt_regs);
+void do_bad_fiq (struct pt_regs *pt_regs);
+void do_bad_error (struct pt_regs *pt_regs);
+void do_fiq (struct pt_regs *pt_regs);
+void do_irq (struct pt_regs *pt_regs);
+void do_error (struct pt_regs *pt_regs);
+void do_sync(struct pt_regs *pt_regs, unsigned int esr, unsigned long far);
+
 static const char *esr_class_str[] = {
 	[0 ... ESR_ELx_EC_MAX]		= "UNRECOGNIZED EC",
 	[ESR_ELx_EC_UNKNOWN]		= "Unknown/Uncategorized",

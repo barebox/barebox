@@ -4,11 +4,21 @@
 
 #define DISP_LINE_LEN	16
 
-int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int swab)
+
+int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbytes,
+			int size, int swab, const char *fmt, ...)
 {
 	unsigned long linebytes, i;
 	unsigned char *cp;
 	unsigned char line[sizeof("00000000: 0000 0000 0000 0000  0000 0000 0000 0000            ................")];
+	struct va_format vaf;
+	int ret;
+	va_list args;
+
+	va_start(args, fmt);
+
+	vaf.fmt = fmt;
+	vaf.va = &args;
 
 	/* Print the lines.
 	 *
@@ -98,11 +108,28 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 			cp++;
 		}
 
-		printf("%s\n", line);
+		if (level >= MSG_EMERG)
+			pr_print(level, "%pV%s\n", &vaf, line);
+		else
+			printf("%s\n", line);
+
 		nbytes -= linebytes;
-		if (ctrlc())
-			return -EINTR;
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out;
+		}
+
 	} while (nbytes > 0);
 
-	return 0;
+	va_end(args);
+	ret = 0;
+out:
+
+	return ret;
+}
+
+int memory_display(const void *addr, loff_t offs, unsigned nbytes,
+		   int size, int swab)
+{
+	return pr_memory_display(-1, addr, offs, nbytes, size, swab);
 }

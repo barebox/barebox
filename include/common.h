@@ -112,16 +112,6 @@ void shutdown_barebox(void);
 #define PAGE_ALIGN(s)	ALIGN(s, PAGE_SIZE)
 #define PAGE_ALIGN_DOWN(x) ALIGN_DOWN(x, PAGE_SIZE)
 
-int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int swab);
-
-#define DUMP_PREFIX_OFFSET 0
-static inline void print_hex_dump(const char *level, const char *prefix_str,
-		int prefix_type, int rowsize, int groupsize,
-		const void *buf, size_t len, bool ascii)
-{
-	memory_display(buf, 0, len, 4, 0);
-}
-
 int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
 		char **sourcefile, char **destfile, int *swab);
 #define RW_BUF_SIZE	(unsigned)4096

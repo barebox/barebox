@@ -74,8 +74,16 @@
 #define PCIE_ATU_UNR_LOWER_TARGET	0x14
 #define PCIE_ATU_UNR_UPPER_TARGET	0x18
 
+/*
+ * The default address offset between dbi_base and atu_base. Root controller
+ * drivers are not required to initialize atu_base if the offset matches this
+ * default; the driver core automatically derives atu_base from dbi_base using
+ * this offset, if atu_base not set.
+ */
+#define DEFAULT_DBI_ATU_OFFSET (0x3 << 20)
+
 /* Register address builder */
-#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region)  ((0x3 << 20) | (region << 9))
+#define PCIE_GET_ATU_OUTB_UNR_REG_OFFSET(region) ((region) << 9)
 
 /* PCIe Port Logic registers */
 #define PLR_OFFSET                     0x700
@@ -144,6 +152,8 @@ struct dw_pcie_ops {
 struct dw_pcie {
 	struct device_d         *dev;
 	void __iomem            *dbi_base;
+	/* Used when iatu_unroll_enabled is true */
+	void __iomem            *atu_base;
 	u32                     num_viewport;
 	u8                      iatu_unroll_enabled;
 	struct pcie_port        pp;
@@ -176,6 +186,16 @@ static inline void dw_pcie_writel_dbi(struct dw_pcie *pci, u32 reg, u32 val)
 static inline u32 dw_pcie_readl_dbi(struct dw_pcie *pci, u32 reg)
 {
 	return  __dw_pcie_readl_dbi(pci, pci->dbi_base, reg, 0x4);
+}
+
+static inline void dw_pcie_writel_atu(struct dw_pcie *pci, u32 reg, u32 val)
+{
+	__dw_pcie_writel_dbi(pci, pci->atu_base, reg, 0x4, val);
+}
+
+static inline u32 dw_pcie_readl_atu(struct dw_pcie *pci, u32 reg)
+{
+	return __dw_pcie_readl_dbi(pci, pci->atu_base, reg, 0x4);
 }
 
 static inline void dw_pcie_dbi_ro_wr_en(struct dw_pcie *pci)

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * OpenCores 10/100 Mbps Ethernet driver
  *
@@ -6,10 +7,6 @@
  * Copyright (C) 2013 Beniamino Galvani <b.galvani@gmail.com>
  *
  * Originally written by Thierry Reding <thierry.reding@avionic-design.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation.
  */
 
 #include <common.h>

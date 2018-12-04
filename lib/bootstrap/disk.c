@@ -18,7 +18,7 @@ void* bootstrap_read_disk(const char *dev, const char *fstype)
 {
 	int ret;
 	void *buf;
-	int len;
+	size_t len;
 	const char *path = "/";
 
 	ret = mount(dev, fstype, path, NULL);

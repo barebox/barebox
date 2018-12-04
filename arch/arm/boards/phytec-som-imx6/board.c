@@ -99,8 +99,17 @@ static unsigned int get_module_rev(void)
 
 static int ksz8081_phy_fixup(struct phy_device *phydev)
 {
+	/*
+	 * 0x8100 default
+	 * 0x0080 RMII 50 MHz clock mode
+	 * 0x0010 LED Mode 1
+	 */
 	phy_write(phydev, 0x1f, 0x8190);
-	phy_write(phydev, 0x16, 0x202);
+	/*
+	 * 0x0002 Override strap-in for RMII mode
+	 * This should be default but after reset we occasionally read 0x0001
+	 */
+	phy_write(phydev, 0x16, 0x2);
 
 	return 0;
 }

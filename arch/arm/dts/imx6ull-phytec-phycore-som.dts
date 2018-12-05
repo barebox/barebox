@@ -39,3 +39,7 @@
 &usdhc1 {
 	status = "okay";
 };
+
+&usbotg1 {
+	status = "okay";
+};

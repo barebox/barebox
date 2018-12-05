@@ -89,6 +89,12 @@
 	status = "disabled";
 };
 
+&usbotg2 {
+	dr_mode = "host";
+	disable-over-current;
+	status = "disabled";
+};
+
 &usdhc1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_usdhc1>;

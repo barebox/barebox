@@ -132,6 +132,14 @@ void RSA_get0_key(const RSA *r, const BIGNUM **n,
 	if (d != NULL)
 		*d = r->d;
 }
+
+RSA *EVP_PKEY_get0_RSA(EVP_PKEY *pkey)
+{
+    if (pkey->type != EVP_PKEY_RSA)
+        return NULL;
+
+    return pkey->pkey.rsa;
+}
 #endif
 
 static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len,

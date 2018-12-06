@@ -190,6 +190,7 @@ config ARCH_VF610
 	select ARCH_HAS_FEC_IMX
 	select CPU_V7
 	select PINCTRL
+	select OFDEVICE
 	select OFTREE
 	select COMMON_CLK
 	select COMMON_CLK_OF_PROVIDER

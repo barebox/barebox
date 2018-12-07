@@ -759,7 +759,7 @@ static void cb_download(struct f_fastboot *f_fb, const char *cmd)
 	}
 }
 
-static void do_bootm_on_complete(struct usb_ep *ep, struct usb_request *req)
+static void __maybe_unused cb_boot(struct f_fastboot *f_fb, const char *opt)
 {
 	int ret;
 	struct bootm_data data = {
@@ -767,7 +767,7 @@ static void do_bootm_on_complete(struct usb_ep *ep, struct usb_request *req)
 		.os_address = UIMAGE_SOME_ADDRESS,
 	};
 
-	pr_info("Booting kernel..\n");
+	fastboot_tx_print(f_fb, FASTBOOT_MSG_INFO, "Booting kernel..\n");
 
 	globalvar_set_match("linux.bootargs.dyn.", "");
 	globalvar_set_match("bootm.", "");
@@ -775,14 +775,12 @@ static void do_bootm_on_complete(struct usb_ep *ep, struct usb_request *req)
 	data.os_file = xstrdup(FASTBOOT_TMPFILE);
 
 	ret = bootm_boot(&data);
-	if (ret)
-		pr_err("Booting failed\n");
-}
 
-static void __maybe_unused cb_boot(struct f_fastboot *f_fb, const char *opt)
-{
-	f_fb->in_req->complete = do_bootm_on_complete;
-	fastboot_tx_print(f_fb, FASTBOOT_MSG_OKAY, "");
+	if (ret)
+		fastboot_tx_print(f_fb, FASTBOOT_MSG_FAIL, "Booting failed: %s",
+				   strerror(-ret));
+	else
+		fastboot_tx_print(f_fb, FASTBOOT_MSG_OKAY, "");
 }
 
 static struct mtd_info *get_mtd(struct f_fastboot *f_fb, const char *filename)

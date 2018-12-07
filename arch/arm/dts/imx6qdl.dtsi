@@ -8,9 +8,3 @@
 		ipu0 = &ipu1;
 	};
 };
-
-&snvs {
-	snvs_lpgpr: snvs-lpgpr {
-		compatible = "fsl,imx6q-snvs-lpgpr";
-	};
-};

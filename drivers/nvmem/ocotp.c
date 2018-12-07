@@ -697,11 +697,4 @@ static struct driver_d imx_ocotp_driver = {
 	.probe	= imx_ocotp_probe,
 	.of_compatible = DRV_OF_COMPAT(imx_ocotp_dt_ids),
 };
-
-static int imx_ocotp_init(void)
-{
-	platform_driver_register(&imx_ocotp_driver);
-
-	return 0;
-}
-postcore_initcall(imx_ocotp_init);
+postcore_platform_driver(imx_ocotp_driver);

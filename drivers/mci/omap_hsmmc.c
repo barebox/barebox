@@ -625,12 +625,6 @@ static int omap_mmc_probe(struct device_d *dev)
 			hsmmc->mci.devname = pdata->devname;
 	}
 
-	if (dev->device_node) {
-		const char *alias = of_alias_get(dev->device_node);
-		if (alias)
-			hsmmc->mci.devname = xstrdup(alias);
-	}
-
 	mci_of_parse(&hsmmc->mci);
 
 	dev->priv = hsmmc;

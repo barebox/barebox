@@ -1858,12 +1858,17 @@ void mci_of_parse_node(struct mci_host *host,
 {
 	u32 bus_width;
 	u32 dsr_val;
+	const char *alias;
 
 	if (!IS_ENABLED(CONFIG_OFDEVICE))
 		return;
 
 	if (!host->hw_dev || !np)
 		return;
+
+	alias = of_alias_get(np);
+	if (alias)
+		host->devname = xstrdup(alias);
 
 	/* "bus-width" is translated to MMC_CAP_*_BIT_DATA flags */
 	if (of_property_read_u32(np, "bus-width", &bus_width) < 0) {

@@ -80,6 +80,7 @@ struct f_fastboot {
 			 const char *filename, const void *buf, size_t len);
 	int download_fd;
 	void *buf;
+	bool active;
 
 	size_t download_bytes;
 	size_t download_size;
@@ -426,6 +427,8 @@ static void fastboot_unbind(struct usb_configuration *c, struct usb_function *f)
 		list_del(&var->list);
 		free(var);
 	}
+
+	f_fb->active = false;
 }
 
 static void fastboot_disable(struct usb_function *f)
@@ -478,12 +481,35 @@ err:
 	return ret;
 }
 
+static struct f_fastboot *g_f_fb;
+
 static void fastboot_free_func(struct usb_function *f)
 {
 	struct f_fastboot *f_fb = container_of(f, struct f_fastboot, func);
 
+	if (g_f_fb == f_fb)
+		g_f_fb = NULL;
+
 	free(f_fb);
 }
+
+/*
+ * A "oem exec bootm" or similar commands will stop barebox. Tell the
+ * fastboot command on the other side so that it doesn't run into a
+ * timeout.
+ */
+static void fastboot_shutdown(void)
+{
+	struct f_fastboot *f_fb = g_f_fb;
+
+	if (!f_fb || !f_fb->active)
+		return;
+
+	fastboot_tx_print(f_fb, FASTBOOT_MSG_INFO, "barebox shutting down");
+	fastboot_tx_print(f_fb, FASTBOOT_MSG_OKAY, "");
+}
+
+early_exitcall(fastboot_shutdown);
 
 static struct usb_function *fastboot_alloc_func(struct usb_function_instance *fi)
 {
@@ -500,6 +526,9 @@ static struct usb_function *fastboot_alloc_func(struct usb_function_instance *fi
 	f_fb->func.disable = fastboot_disable;
 	f_fb->func.unbind = fastboot_unbind;
 	f_fb->func.free_func = fastboot_free_func;
+
+	if (!g_f_fb)
+		g_f_fb = f_fb;
 
 	return &f_fb->func;
 }
@@ -572,6 +601,18 @@ int fastboot_tx_print(struct f_fastboot *f_fb, enum fastboot_msg_type type,
 	vaf.va = &ap;
 
 	n = snprintf(buf, 64, "%s%pV", msg, &vaf);
+
+	switch (type) {
+	case FASTBOOT_MSG_OKAY:
+		f_fb->active = false;
+		break;
+	case FASTBOOT_MSG_FAIL:
+		f_fb->active = false;
+		break;
+	case FASTBOOT_MSG_INFO:
+	case FASTBOOT_MSG_DATA:
+		break;
+	}
 
 	va_end(ap);
 
@@ -1257,6 +1298,8 @@ static void rx_handler_command(struct usb_ep *ep, struct usb_request *req)
 
 	if (req->status != 0)
 		return;
+
+	f_fb->active = true;
 
 	*(cmdbuf + req->actual) = 0;
 

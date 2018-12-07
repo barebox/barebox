@@ -15,124 +15,124 @@ quiet_cmd_mlo_spi_image = SPI-IMG $@
 $(obj)/%.mlospi: $(obj)/% $(obj)/%.mlo FORCE
 	$(call if_changed,mlo_spi_image)
 
-pblx-$(CONFIG_MACH_AFI_GF) += start_am33xx_afi_gf_sdram
-FILE_barebox-am33xx-afi-gf.img = start_am33xx_afi_gf_sdram.pblx
+pblb-$(CONFIG_MACH_AFI_GF) += start_am33xx_afi_gf_sdram
+FILE_barebox-am33xx-afi-gf.img = start_am33xx_afi_gf_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_AFI_GF) += barebox-am33xx-afi-gf.img
 
-pblx-$(CONFIG_MACH_AFI_GF) += start_am33xx_afi_gf_sram
-FILE_barebox-am33xx-afi-gf-mlo.img = start_am33xx_afi_gf_sram.pblx.mlo
-FILE_barebox-am33xx-afi-gf-mlo.spi.img = start_am33xx_afi_gf_sram.pblx.mlospi
+pblb-$(CONFIG_MACH_AFI_GF) += start_am33xx_afi_gf_sram
+FILE_barebox-am33xx-afi-gf-mlo.img = start_am33xx_afi_gf_sram.pblb.mlo
+FILE_barebox-am33xx-afi-gf-mlo.spi.img = start_am33xx_afi_gf_sram.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_AFI_GF) += barebox-am33xx-afi-gf-mlo.img
 am33xx-mlospi-$(CONFIG_MACH_AFI_GF) += barebox-am33xx-afi-gf-mlo.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_sdram
-FILE_barebox-am33xx-phytec-phycore.img = start_am33xx_phytec_phycore_nand_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_sdram
+FILE_barebox-am33xx-phytec-phycore.img = start_am33xx_phytec_phycore_nand_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_emmc_sdram
-FILE_barebox-am33xx-phytec-phycore-emmc.img = start_am33xx_phytec_phycore_emmc_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_emmc_sdram
+FILE_barebox-am33xx-phytec-phycore-emmc.img = start_am33xx_phytec_phycore_emmc_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-emmc.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_no_spi_sdram
-FILE_barebox-am33xx-phytec-phycore-no-spi.img = start_am33xx_phytec_phycore_nand_no_spi_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_no_spi_sdram
+FILE_barebox-am33xx-phytec-phycore-no-spi.img = start_am33xx_phytec_phycore_nand_no_spi_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-no-spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_no_eeprom_sdram
-FILE_barebox-am33xx-phytec-phycore-no-eeprom.img = start_am33xx_phytec_phycore_nand_no_eeprom_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_no_eeprom_sdram
+FILE_barebox-am33xx-phytec-phycore-no-eeprom.img = start_am33xx_phytec_phycore_nand_no_eeprom_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-no-eeprom.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_no_spi_no_eeprom_sdram
-FILE_barebox-am33xx-phytec-phycore-no-spi-no-eeprom.img = start_am33xx_phytec_phycore_nand_no_spi_no_eeprom_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_nand_no_spi_no_eeprom_sdram
+FILE_barebox-am33xx-phytec-phycore-no-spi-no-eeprom.img = start_am33xx_phytec_phycore_nand_no_spi_no_eeprom_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-no-spi-no-eeprom.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_r2_sram
-FILE_barebox-am33xx-phytec-phycore-r2-mlo.img = start_am33xx_phytec_phycore_r2_sram.pblx.mlo
-FILE_barebox-am33xx-phytec-phycore-r2-mlo.spi.img = start_am33xx_phytec_phycore_r2_sram.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_r2_sram
+FILE_barebox-am33xx-phytec-phycore-r2-mlo.img = start_am33xx_phytec_phycore_r2_sram.pblb.mlo
+FILE_barebox-am33xx-phytec-phycore-r2-mlo.spi.img = start_am33xx_phytec_phycore_r2_sram.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-r2-mlo.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-r2-mlo.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_r2_sram_1024mb
-FILE_barebox-am33xx-phytec-phycore-r2-mlo-1024mb.img = start_am33xx_phytec_phycore_r2_sram_1024mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phycore-r2-mlo-1024mb.spi.img = start_am33xx_phytec_phycore_r2_sram_1024mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_r2_sram_1024mb
+FILE_barebox-am33xx-phytec-phycore-r2-mlo-1024mb.img = start_am33xx_phytec_phycore_r2_sram_1024mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phycore-r2-mlo-1024mb.spi.img = start_am33xx_phytec_phycore_r2_sram_1024mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-r2-mlo-1024mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-r2-mlo-1024mb.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_256mb
-FILE_barebox-am33xx-phytec-phycore-mlo-256mb.img = start_am33xx_phytec_phycore_sram_256mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phycore-mlo-256mb.spi.img = start_am33xx_phytec_phycore_sram_256mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_256mb
+FILE_barebox-am33xx-phytec-phycore-mlo-256mb.img = start_am33xx_phytec_phycore_sram_256mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phycore-mlo-256mb.spi.img = start_am33xx_phytec_phycore_sram_256mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-256mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-256mb.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_128mb
-FILE_barebox-am33xx-phytec-phycore-mlo-128mb.img = start_am33xx_phytec_phycore_sram_128mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phycore-mlo-128mb.spi.img = start_am33xx_phytec_phycore_sram_128mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_128mb
+FILE_barebox-am33xx-phytec-phycore-mlo-128mb.img = start_am33xx_phytec_phycore_sram_128mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phycore-mlo-128mb.spi.img = start_am33xx_phytec_phycore_sram_128mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-128mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-128mb.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_512mb
-FILE_barebox-am33xx-phytec-phycore-mlo-512mb.img = start_am33xx_phytec_phycore_sram_512mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phycore-mlo-512mb.spi.img = start_am33xx_phytec_phycore_sram_512mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_512mb
+FILE_barebox-am33xx-phytec-phycore-mlo-512mb.img = start_am33xx_phytec_phycore_sram_512mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phycore-mlo-512mb.spi.img = start_am33xx_phytec_phycore_sram_512mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-512mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-512mb.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_2x512mb
-FILE_barebox-am33xx-phytec-phycore-mlo-2x512mb.img = start_am33xx_phytec_phycore_sram_2x512mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phycore-mlo-2x512mb.spi.img = start_am33xx_phytec_phycore_sram_2x512mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycore_sram_2x512mb
+FILE_barebox-am33xx-phytec-phycore-mlo-2x512mb.img = start_am33xx_phytec_phycore_sram_2x512mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phycore-mlo-2x512mb.spi.img = start_am33xx_phytec_phycore_sram_2x512mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-2x512mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycore-mlo-2x512mb.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_sdram
-FILE_barebox-am33xx-phytec-phyflex.img = start_am33xx_phytec_phyflex_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_sdram
+FILE_barebox-am33xx-phytec-phyflex.img = start_am33xx_phytec_phyflex_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_no_spi_sdram
-FILE_barebox-am33xx-phytec-phyflex-no-spi.img = start_am33xx_phytec_phyflex_no_spi_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_no_spi_sdram
+FILE_barebox-am33xx-phytec-phyflex-no-spi.img = start_am33xx_phytec_phyflex_no_spi_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-no-spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_no_eeprom_sdram
-FILE_barebox-am33xx-phytec-phyflex-no-eeprom.img = start_am33xx_phytec_phyflex_no_eeprom_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_no_eeprom_sdram
+FILE_barebox-am33xx-phytec-phyflex-no-eeprom.img = start_am33xx_phytec_phyflex_no_eeprom_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-no-eeprom.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_no_spi_no_eeprom_sdram
-FILE_barebox-am33xx-phytec-phyflex-no-spi-no-eeprom.img = start_am33xx_phytec_phyflex_no_spi_no_eeprom_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_no_spi_no_eeprom_sdram
+FILE_barebox-am33xx-phytec-phyflex-no-spi-no-eeprom.img = start_am33xx_phytec_phyflex_no_spi_no_eeprom_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-no-spi-no-eeprom.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_sram_256mb
-FILE_barebox-am33xx-phytec-phyflex-mlo-256mb.img = start_am33xx_phytec_phyflex_sram_256mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phyflex-mlo-256mb.spi.img = start_am33xx_phytec_phyflex_sram_256mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_sram_256mb
+FILE_barebox-am33xx-phytec-phyflex-mlo-256mb.img = start_am33xx_phytec_phyflex_sram_256mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phyflex-mlo-256mb.spi.img = start_am33xx_phytec_phyflex_sram_256mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-mlo-256mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-mlo-256mb.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_sram_512mb
-FILE_barebox-am33xx-phytec-phyflex-mlo-512mb.img = start_am33xx_phytec_phyflex_sram_512mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phyflex-mlo-512mb.spi.img = start_am33xx_phytec_phyflex_sram_512mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phyflex_sram_512mb
+FILE_barebox-am33xx-phytec-phyflex-mlo-512mb.img = start_am33xx_phytec_phyflex_sram_512mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phyflex-mlo-512mb.spi.img = start_am33xx_phytec_phyflex_sram_512mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-mlo-512mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phyflex-mlo-512mb.spi.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycard_sdram
-FILE_barebox-am33xx-phytec-phycard.img = start_am33xx_phytec_phycard_sdram.pblx
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycard_sdram
+FILE_barebox-am33xx-phytec-phycard.img = start_am33xx_phytec_phycard_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycard.img
 
-pblx-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycard_sram_256mb
-FILE_barebox-am33xx-phytec-phycard-mlo-256mb.img = start_am33xx_phytec_phycard_sram_256mb.pblx.mlo
-FILE_barebox-am33xx-phytec-phycard-mlo-256mb.spi.img = start_am33xx_phytec_phycard_sram_256mb.pblx.mlospi
+pblb-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += start_am33xx_phytec_phycard_sram_256mb
+FILE_barebox-am33xx-phytec-phycard-mlo-256mb.img = start_am33xx_phytec_phycard_sram_256mb.pblb.mlo
+FILE_barebox-am33xx-phytec-phycard-mlo-256mb.spi.img = start_am33xx_phytec_phycard_sram_256mb.pblb.mlospi
 am33xx-mlo-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycard-mlo-256mb.img
 am33xx-mlospi-$(CONFIG_MACH_PHYTEC_SOM_AM335X) += barebox-am33xx-phytec-phycard-mlo-256mb.spi.img
 
-pblx-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sdram
-FILE_barebox-am33xx-beaglebone.img = start_am33xx_beaglebone_sdram.pblx
+pblb-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sdram
+FILE_barebox-am33xx-beaglebone.img = start_am33xx_beaglebone_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_BEAGLEBONE) += barebox-am33xx-beaglebone.img
 
-pblx-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sram
-FILE_barebox-am33xx-beaglebone-mlo.img = start_am33xx_beaglebone_sram.pblx.mlo
+pblb-$(CONFIG_MACH_BEAGLEBONE) += start_am33xx_beaglebone_sram
+FILE_barebox-am33xx-beaglebone-mlo.img = start_am33xx_beaglebone_sram.pblb.mlo
 am33xx-mlo-$(CONFIG_MACH_BEAGLEBONE) += barebox-am33xx-beaglebone-mlo.img
 
-pblx-$(CONFIG_MACH_VSCOM_BALTOS) += start_am33xx_baltos_sdram
-FILE_barebox-am33xx-baltos.img = start_am33xx_baltos_sdram.pblx
+pblb-$(CONFIG_MACH_VSCOM_BALTOS) += start_am33xx_baltos_sdram
+FILE_barebox-am33xx-baltos.img = start_am33xx_baltos_sdram.pblb
 am33xx-barebox-$(CONFIG_MACH_VSCOM_BALTOS) += barebox-am33xx-baltos.img
 
-pblx-$(CONFIG_MACH_VSCOM_BALTOS) += start_am33xx_baltos_sram
-FILE_barebox-am33xx-baltos-mlo.img = start_am33xx_baltos_sram.pblx.mlo
+pblb-$(CONFIG_MACH_VSCOM_BALTOS) += start_am33xx_baltos_sram
+FILE_barebox-am33xx-baltos-mlo.img = start_am33xx_baltos_sram.pblb.mlo
 am33xx-mlo-$(CONFIG_MACH_VSCOM_BALTOS) += barebox-am33xx-baltos-mlo.img
 
 ifdef CONFIG_OMAP_BUILD_IFT

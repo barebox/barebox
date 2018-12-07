@@ -279,6 +279,16 @@ static int do_soc(struct config_data *data, int argc, char *argv[])
 	return -EINVAL;
 }
 
+static int do_max_load_size(struct config_data *data, int argc, char *argv[])
+{
+	if (argc < 2)
+		return -EINVAL;
+
+	data->max_load_size = strtoul(argv[1], NULL, 0);
+
+	return 0;
+}
+
 static int hab_add_str(struct config_data *data, const char *str)
 {
 	int len = strlen(str);
@@ -590,6 +600,9 @@ struct command cmds[] = {
 	}, {
 		.name = "soc",
 		.parse = do_soc,
+	},  {
+		.name = "max_load_size",
+		.parse = do_max_load_size,
 	}, {
 		.name = "hab",
 		.parse = do_hab,

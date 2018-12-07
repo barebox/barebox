@@ -1,3 +1,4 @@
 loadaddr 0x00907000
 soc imx6
+max_load_size 0x11000
 dcdofs 0x400

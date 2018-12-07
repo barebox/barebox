@@ -20,6 +20,7 @@
 
 #include <common.h>
 #include <hab.h>
+#include <init.h>
 #include <types.h>
 
 #include <mach/generic.h>
@@ -387,6 +388,39 @@ static void habv4_display_event(uint8_t *data, uint32_t len)
 	habv4_display_event_record((struct hab_event_record *)data);
 }
 
+/* Some chips with HAB >= 4.2.3 have an incorrect implementation of the RNG
+ * self-test in ROM code. In this case, an HAB event is generated, and a
+ * software self-test should be run. This variable is set to @c true by
+ * habv4_get_status() when this occurs. */
+bool habv4_need_rng_software_self_test = false;
+EXPORT_SYMBOL(habv4_need_rng_software_self_test);
+
+#define RNG_FAIL_EVENT_SIZE 36
+static uint8_t habv4_known_rng_fail_events[][RNG_FAIL_EVENT_SIZE] = {
+	{ 0xdb, 0x00, 0x24, 0x42,  0x69, 0x30, 0xe1, 0x1d,
+	  0x00, 0x80, 0x00, 0x02,  0x40, 0x00, 0x36, 0x06,
+	  0x55, 0x55, 0x00, 0x03,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x01 },
+	{ 0xdb, 0x00, 0x24, 0x42,  0x69, 0x30, 0xe1, 0x1d,
+	  0x00, 0x04, 0x00, 0x02,  0x40, 0x00, 0x36, 0x06,
+	  0x55, 0x55, 0x00, 0x03,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
+	  0x00, 0x00, 0x00, 0x01 },
+};
+
+static bool is_known_rng_fail_event(const uint8_t *data, size_t len)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(habv4_known_rng_fail_events); i++) {
+		if (memcmp(data, habv4_known_rng_fail_events[i],
+			   min(len, (uint32_t)RNG_FAIL_EVENT_SIZE)) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 static int habv4_get_status(const struct habv4_rvt *rvt)
 {
 	uint8_t data[256];
@@ -413,10 +447,18 @@ static int habv4_get_status(const struct habv4_rvt *rvt)
 
 	len = sizeof(data);
 	while (rvt->report_event(HAB_STATUS_WARNING, index, data, &len) == HAB_STATUS_SUCCESS) {
-		pr_err("-------- HAB warning Event %d --------\n", index);
-		pr_err("event data:\n");
 
-		habv4_display_event(data, len);
+		/* suppress RNG self-test fail events if they can be handled in software */
+		if (IS_ENABLED(CONFIG_CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST) &&
+		    is_known_rng_fail_event(data, len)) {
+			pr_debug("RNG self-test failure detected, will run software self-test\n");
+			habv4_need_rng_software_self_test = true;
+		} else {
+			pr_err("-------- HAB warning Event %d --------\n", index);
+			pr_err("event data:\n");
+			habv4_display_event(data, len);
+		}
+
 		len = sizeof(data);
 		index++;
 	}
@@ -460,9 +502,54 @@ int imx6_hab_get_status(void)
 	return -EINVAL;
 }
 
+static int init_imx6_hab_get_status(void)
+{
+	int ret = 0;
+
+	if (!cpu_is_mx6())
+		/* can happen in multi-image builds and is not an error */
+		return 0;
+
+	ret = imx6_hab_get_status();
+
+	/*
+	 * Nobody will check the return value if there were HAB errors, but the
+	 * initcall will fail spectaculously with a strange error message.
+	 */
+	if (ret == -EPERM)
+		return 0;
+	return ret;
+}
+
+/*
+ * Need to run before MMU setup because i.MX6 ROM code is mapped near 0x0,
+ * which will no longer be accessible when the MMU sets the zero page to
+ * faulting.
+ */
+postconsole_initcall(init_imx6_hab_get_status);
+
 int imx28_hab_get_status(void)
 {
 	const struct habv4_rvt *rvt = (void *)HABV4_RVT_IMX28;
 
 	return habv4_get_status(rvt);
 }
+
+static int init_imx28_hab_get_status(void)
+{
+	int ret = 0;
+
+	if (!cpu_is_mx28())
+		/* can happen in multi-image builds and is not an error */
+		return 0;
+
+	ret = imx28_hab_get_status();
+
+	/* nobody will check the return value if there were HAB errors, but the
+	 * initcall will fail spectaculously with a strange error message. */
+	if (ret == -EPERM)
+		return 0;
+	return ret;
+}
+/* i.MX28 ROM code can be run after MMU setup to make use of caching */
+postmmu_initcall(init_imx28_hab_get_status);

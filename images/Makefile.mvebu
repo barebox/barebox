@@ -11,92 +11,92 @@ KWBOPTS = -c -d 0x1000000 -e 0x1000000
 
 # ----------------------- Armada 370 based boards ---------------------------
 GLOBALSCALE_MIRABOX_KWBOPTS = ${KWBOPTS} -i $(board)/globalscale-mirabox/kwbimage.cfg
-OPTS_start_globalscale_mirabox.pblx.kwbimg = $(GLOBALSCALE_MIRABOX_KWBOPTS)
-FILE_barebox-globalscale-mirabox.img	= start_globalscale_mirabox.pblx.kwbimg
-FILE_barebox-globalscale-mirabox-2nd.img = start_globalscale_mirabox.pblx
-pblx-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += start_globalscale_mirabox
+OPTS_start_globalscale_mirabox.pblb.kwbimg = $(GLOBALSCALE_MIRABOX_KWBOPTS)
+FILE_barebox-globalscale-mirabox.img	= start_globalscale_mirabox.pblb.kwbimg
+FILE_barebox-globalscale-mirabox-2nd.img = start_globalscale_mirabox.pblb
+pblb-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += start_globalscale_mirabox
 image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox.img
 image-$(CONFIG_MACH_GLOBALSCALE_MIRABOX) += barebox-globalscale-mirabox-2nd.img
 
 NETGEAR_RN104_KWBOPTS = ${KWBOPTS} -i $(board)/netgear-rn104/kwbimage.cfg
-OPTS_start_netgear_rn104.pblx.kwbimg = $(NETGEAR_RN104_KWBOPTS)
-FILE_barebox-netgear-rn104.img	= start_netgear_rn104.pblx.kwbimg
-FILE_barebox-netgear-rn104-2nd.img = start_netgear_rn104.pblx
-pblx-$(CONFIG_MACH_NETGEAR_RN104) += start_netgear_rn104
+OPTS_start_netgear_rn104.pblb.kwbimg = $(NETGEAR_RN104_KWBOPTS)
+FILE_barebox-netgear-rn104.img	= start_netgear_rn104.pblb.kwbimg
+FILE_barebox-netgear-rn104-2nd.img = start_netgear_rn104.pblb
+pblb-$(CONFIG_MACH_NETGEAR_RN104) += start_netgear_rn104
 image-$(CONFIG_MACH_NETGEAR_RN104) += barebox-netgear-rn104.img
 image-$(CONFIG_MACH_NETGEAR_RN104) += barebox-netgear-rn104-2nd.img
 
 # ----------------------- Armada XP based boards ---------------------------
 LENOVO_IX4_300D_KWBOPTS = ${KWBOPTS} -i $(board)/lenovo-ix4-300d/kwbimage.cfg
-OPTS_start_lenovo_ix4_300d.pblx.kwbimg = $(LENOVO_IX4_300D_KWBOPTS)
-FILE_barebox-lenovo-ix4-300d.img   = start_lenovo_ix4_300d.pblx.kwbimg
-FILE_barebox-lenovo-ix4-300d-2nd.img = start_lenovo_ix4_300d.pblx
-pblx-$(CONFIG_MACH_LENOVO_IX4_300D) += start_lenovo_ix4_300d
+OPTS_start_lenovo_ix4_300d.pblb.kwbimg = $(LENOVO_IX4_300D_KWBOPTS)
+FILE_barebox-lenovo-ix4-300d.img   = start_lenovo_ix4_300d.pblb.kwbimg
+FILE_barebox-lenovo-ix4-300d-2nd.img = start_lenovo_ix4_300d.pblb
+pblb-$(CONFIG_MACH_LENOVO_IX4_300D) += start_lenovo_ix4_300d
 image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d.img
 image-$(CONFIG_MACH_LENOVO_IX4_300D) += barebox-lenovo-ix4-300d-2nd.img
 
 MARVELL_ARMADA_XP_GP_KWBOPTS = ${KWBOPTS} -i $(board)/marvell-armada-xp-gp/kwbimage.cfg
-OPTS_start_marvell_armada_xp_gp.pblx.kwbimg = $(MARVELL_ARMADA_XP_GP_KWBOPTS)
-FILE_barebox-marvell-armada-xp-gp.img   = start_marvell_armada_xp_gp.pblx.kwbimg
-FILE_barebox-marvell-armada-xp-gp-2nd.img = start_marvell_armada_xp_gp.pblx
-pblx-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += start_marvell_armada_xp_gp
+OPTS_start_marvell_armada_xp_gp.pblb.kwbimg = $(MARVELL_ARMADA_XP_GP_KWBOPTS)
+FILE_barebox-marvell-armada-xp-gp.img   = start_marvell_armada_xp_gp.pblb.kwbimg
+FILE_barebox-marvell-armada-xp-gp-2nd.img = start_marvell_armada_xp_gp.pblb
+pblb-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += start_marvell_armada_xp_gp
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp.img
 image-$(CONFIG_MACH_MARVELL_ARMADA_XP_GP) += barebox-marvell-armada-xp-gp-2nd.img
 
 NETGEAR_RN2120_KWBOPTS = ${KWBOPTS} -i $(board)/netgear-rn2120/kwbimage.cfg
-OPTS_start_netgear_rn2120.pblx.kwbimg = $(NETGEAR_RN2120_KWBOPTS)
-FILE_barebox-netgear-rn2120.img	= start_netgear_rn2120.pblx.kwbimg
-FILE_barebox-netgear-rn2120-2nd.img = start_netgear_rn2120.pblx
-pblx-$(CONFIG_MACH_NETGEAR_RN2120) += start_netgear_rn2120
+OPTS_start_netgear_rn2120.pblb.kwbimg = $(NETGEAR_RN2120_KWBOPTS)
+FILE_barebox-netgear-rn2120.img	= start_netgear_rn2120.pblb.kwbimg
+FILE_barebox-netgear-rn2120-2nd.img = start_netgear_rn2120.pblb
+pblb-$(CONFIG_MACH_NETGEAR_RN2120) += start_netgear_rn2120
 image-$(CONFIG_MACH_NETGEAR_RN2120) += barebox-netgear-rn2120.img
 image-$(CONFIG_MACH_NETGEAR_RN2120) += barebox-netgear-rn2120-2nd.img
 
 # ----------------------- Armada 38x based boards ---------------------------
 TURRIS_OMNIA_KWBOPTS = ${KWBOPTS} -i $(board)/turris-omnia/kwbimage.cfg
-OPTS_start_turris_omnia.pblx.kwbimg = $(TURRIS_OMNIA_KWBOPTS)
-FILE_barebox-turris-omnia.img = start_turris_omnia.pblx.kwbimg
-FILE_barebox-turris-omnia-2nd.img = start_turris_omnia.pblx
-pblx-$(CONFIG_MACH_TURRIS_OMNIA) += start_turris_omnia
+OPTS_start_turris_omnia.pblb.kwbimg = $(TURRIS_OMNIA_KWBOPTS)
+FILE_barebox-turris-omnia.img = start_turris_omnia.pblb.kwbimg
+FILE_barebox-turris-omnia-2nd.img = start_turris_omnia.pblb
+pblb-$(CONFIG_MACH_TURRIS_OMNIA) += start_turris_omnia
 image-$(CONFIG_MACH_TURRIS_OMNIA) += barebox-turris-omnia.img
 
 PLATHOME_OPENBLOCKS_AX3_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-ax3/kwbimage.cfg
-OPTS_start_plathome_openblocks_ax3.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
-FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblx.kwbimg
-FILE_barebox-plathome-openblocks-ax3-2nd.img = start_plathome_openblocks_ax3.pblx
-pblx-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += start_plathome_openblocks_ax3
+OPTS_start_plathome_openblocks_ax3.pblb.kwbimg = $(PLATHOME_OPENBLOCKS_AX3_KWBOPTS)
+FILE_barebox-plathome-openblocks-ax3.img   = start_plathome_openblocks_ax3.pblb.kwbimg
+FILE_barebox-plathome-openblocks-ax3-2nd.img = start_plathome_openblocks_ax3.pblb
+pblb-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += start_plathome_openblocks_ax3
 image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3.img
 image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_AX3) += barebox-plathome-openblocks-ax3-2nd.img
 
 # ----------------------- Dove 88AP510 based boards ---------------------------
 SOLIDRUN_CUBOX_KWBOPTS = ${KWBOPTS} -i $(board)/solidrun-cubox/kwbimage.cfg
-OPTS_start_solidrun_cubox.pblx.kwbimg = $(SOLIDRUN_CUBOX_KWBOPTS)
-FILE_barebox-solidrun-cubox.img	= start_solidrun_cubox.pblx.kwbimg
-FILE_barebox-solidrun-cubox-2nd.img = start_solidrun_cubox.pblx
-pblx-$(CONFIG_MACH_SOLIDRUN_CUBOX) += start_solidrun_cubox
+OPTS_start_solidrun_cubox.pblb.kwbimg = $(SOLIDRUN_CUBOX_KWBOPTS)
+FILE_barebox-solidrun-cubox.img	= start_solidrun_cubox.pblb.kwbimg
+FILE_barebox-solidrun-cubox-2nd.img = start_solidrun_cubox.pblb
+pblb-$(CONFIG_MACH_SOLIDRUN_CUBOX) += start_solidrun_cubox
 image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox.img
 image-$(CONFIG_MACH_SOLIDRUN_CUBOX) += barebox-solidrun-cubox-2nd.img
 
 # ----------------------- Kirkwood based boards ---------------------------
 GLOBALSCALE_GURUPLUG_KWBOPTS = ${KWBOPTS} -i $(board)/globalscale-guruplug/kwbimage.cfg
-OPTS_start_globalscale_guruplug.pblx.kwbimg = $(GLOBALSCALE_GURUPLUG_KWBOPTS)
-FILE_barebox-globalscale-guruplug.img	= start_globalscale_guruplug.pblx.kwbimg
-FILE_barebox-globalscale-guruplug-2nd.img = start_globalscale_guruplug.pblx
-pblx-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += start_globalscale_guruplug
+OPTS_start_globalscale_guruplug.pblb.kwbimg = $(GLOBALSCALE_GURUPLUG_KWBOPTS)
+FILE_barebox-globalscale-guruplug.img	= start_globalscale_guruplug.pblb.kwbimg
+FILE_barebox-globalscale-guruplug-2nd.img = start_globalscale_guruplug.pblb
+pblb-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += start_globalscale_guruplug
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug.img
 image-$(CONFIG_MACH_GLOBALSCALE_GURUPLUG) += barebox-globalscale-guruplug-2nd.img
 
 PLATHOME_OPENBLOCKS_A6_KWBOPTS = ${KWBOPTS} -i $(board)/plathome-openblocks-a6/kwbimage.cfg
-OPTS_start_plathome_openblocks_a6.pblx.kwbimg = $(PLATHOME_OPENBLOCKS_A6_KWBOPTS)
-FILE_barebox-plathome-openblocks-a6.img   = start_plathome_openblocks_a6.pblx.kwbimg
-FILE_barebox-plathome-openblocks-a6-2nd.img = start_plathome_openblocks_a6.pblx
-pblx-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += start_plathome_openblocks_a6
+OPTS_start_plathome_openblocks_a6.pblb.kwbimg = $(PLATHOME_OPENBLOCKS_A6_KWBOPTS)
+FILE_barebox-plathome-openblocks-a6.img   = start_plathome_openblocks_a6.pblb.kwbimg
+FILE_barebox-plathome-openblocks-a6-2nd.img = start_plathome_openblocks_a6.pblb
+pblb-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += start_plathome_openblocks_a6
 image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += barebox-plathome-openblocks-a6.img
 image-$(CONFIG_MACH_PLATHOME_OPENBLOCKS_A6) += barebox-plathome-openblocks-a6-2nd.img
 
 USI_TOPKICK_KWBOPTS = ${KWBOPTS} -i $(board)/usi-topkick/kwbimage.cfg
-OPTS_start_usi_topkick.pblx.kwbimg = $(USI_TOPKICK_KWBOPTS)
-FILE_barebox-usi-topkick.img	= start_usi_topkick.pblx.kwbimg
-FILE_barebox-usi-topkick-2nd.img = start_usi_topkick.pblx
-pblx-$(CONFIG_MACH_USI_TOPKICK) += start_usi_topkick
+OPTS_start_usi_topkick.pblb.kwbimg = $(USI_TOPKICK_KWBOPTS)
+FILE_barebox-usi-topkick.img	= start_usi_topkick.pblb.kwbimg
+FILE_barebox-usi-topkick-2nd.img = start_usi_topkick.pblb
+pblb-$(CONFIG_MACH_USI_TOPKICK) += start_usi_topkick
 image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick.img
 image-$(CONFIG_MACH_USI_TOPKICK) += barebox-usi-topkick-2nd.img

@@ -7,7 +7,7 @@
 quiet_cmd_mxs_bootstream = MXS-BOOTSTREAM $@
       cmd_mxs_bootstream = $(objtree)/scripts/mxsimage -c $(CFG_$(@F)) -b $< -o $@ -p $(word 2,$^)
 
-$(obj)/%.mxsbs: $(obj)/%.pblx $(obj)/prep_%.pblb FORCE
+$(obj)/%.mxsbs: $(obj)/%.pblb $(obj)/prep_%.pblb FORCE
 	$(call if_changed,mxs_bootstream)
 
 # %.mxsbsu - convert into unencrypted MXS BootStream image
@@ -15,7 +15,7 @@ $(obj)/%.mxsbs: $(obj)/%.pblx $(obj)/prep_%.pblb FORCE
 quiet_cmd_mxs_bootstream_u = MXS-BOOTSTREAM-U $@
       cmd_mxs_bootstream_u = $(objtree)/scripts/mxsimage -u -c $(CFG_$(@F)) -b $< -o $@ -p $(word 2,$^)
 
-$(obj)/%.mxsbsu: $(obj)/%.pblx $(obj)/prep_%.pblb FORCE
+$(obj)/%.mxsbsu: $(obj)/%.pblb $(obj)/prep_%.pblb FORCE
 	$(call if_changed,mxs_bootstream_u)
 
 # %.mxssd - convert into MXS SD card image
@@ -29,38 +29,38 @@ $(obj)/%.mxssd: $(obj)/%
 mxs23cfg = $(srctree)/arch/arm/mach-mxs/mxs23img.cfg
 mxs28cfg = $(srctree)/arch/arm/mach-mxs/mxs28img.cfg
 
-pblx-$(CONFIG_MACH_DUCKBILL) += start_barebox_duckbill prep_start_barebox_duckbill
+pblb-$(CONFIG_MACH_DUCKBILL) += start_barebox_duckbill prep_start_barebox_duckbill
 CFG_start_barebox_duckbill.mxsbs = $(mxs28cfg)
 FILE_barebox-duckbill-bootstream.img = start_barebox_duckbill.mxsbs
 image-$(CONFIG_MACH_DUCKBILL) += barebox-duckbill-bootstream.img
 FILE_barebox-duckbill-sd.img = start_barebox_duckbill.mxsbs.mxssd
 image-$(CONFIG_MACH_DUCKBILL) += barebox-duckbill-sd.img
-FILE_barebox-duckbill-2nd.img = start_barebox_duckbill.pblx
+FILE_barebox-duckbill-2nd.img = start_barebox_duckbill.pblb
 image-$(CONFIG_MACH_DUCKBILL) += barebox-duckbill-2nd.img
 
-pblx-$(CONFIG_MACH_TX28) += start_barebox_karo_tx28 prep_start_barebox_karo_tx28
+pblb-$(CONFIG_MACH_TX28) += start_barebox_karo_tx28 prep_start_barebox_karo_tx28
 CFG_start_barebox_karo_tx28.mxsbs = $(mxs28cfg)
 FILE_barebox-karo-tx28-bootstream.img = start_barebox_karo_tx28.mxsbs
 image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-bootstream.img
 FILE_barebox-karo-tx28-sd.img = start_barebox_karo_tx28.mxsbs.mxssd
 image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-sd.img
-FILE_barebox-karo-tx28-2nd.img = start_barebox_karo_tx28.pblx
+FILE_barebox-karo-tx28-2nd.img = start_barebox_karo_tx28.pblb
 image-$(CONFIG_MACH_TX28) += barebox-karo-tx28-2nd.img
 
-pblx-$(CONFIG_MACH_MX28EVK) += start_barebox_freescale_mx28evk prep_start_barebox_freescale_mx28evk
+pblb-$(CONFIG_MACH_MX28EVK) += start_barebox_freescale_mx28evk prep_start_barebox_freescale_mx28evk
 CFG_start_barebox_freescale_mx28evk.mxsbs = $(mxs28cfg)
 FILE_barebox-freescale-mx28evk-bootstream.img = start_barebox_freescale_mx28evk.mxsbs
 image-$(CONFIG_MACH_MX28EVK) += barebox-freescale-mx28evk-bootstream.img
 FILE_barebox-freescale-mx28evk-sd.img = start_barebox_freescale_mx28evk.mxsbs.mxssd
 image-$(CONFIG_MACH_MX28EVK) += barebox-freescale-mx28evk-sd.img
-FILE_barebox-freescale-mx28evk-2nd.img = start_barebox_freescale_mx28evk.pblx
+FILE_barebox-freescale-mx28evk-2nd.img = start_barebox_freescale_mx28evk.pblb
 image-$(CONFIG_MACH_MX28EVK) += barebox-freescale-mx28evk-2nd.img
 
-pblx-$(CONFIG_MACH_IMX233_OLINUXINO) += start_barebox_olinuxino_imx23 prep_start_barebox_olinuxino_imx23
+pblb-$(CONFIG_MACH_IMX233_OLINUXINO) += start_barebox_olinuxino_imx23 prep_start_barebox_olinuxino_imx23
 CFG_start_barebox_olinuxino_imx23.mxsbs = $(mxs23cfg)
 FILE_barebox-olinuxino-imx23-bootstream.img = start_barebox_olinuxino_imx23.mxsbs
 image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-bootstream.img
 FILE_barebox-olinuxino-imx23-sd.img = start_barebox_olinuxino_imx23.mxsbs.mxssd
 image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-sd.img
-FILE_barebox-olinuxino-imx23-2nd.img = start_barebox_olinuxino_imx23.pblx
+FILE_barebox-olinuxino-imx23-2nd.img = start_barebox_olinuxino_imx23.pblb
 image-$(CONFIG_MACH_IMX233_OLINUXINO) += barebox-olinuxino-imx23-2nd.img

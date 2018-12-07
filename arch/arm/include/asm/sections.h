@@ -11,7 +11,6 @@ extern char __dynsym_start[];
 extern char __dynsym_end[];
 extern char __exceptions_start[];
 extern char __exceptions_stop[];
-extern uint32_t __image_end_marker[];
 
 #endif
 

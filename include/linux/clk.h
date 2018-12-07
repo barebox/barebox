@@ -325,6 +325,11 @@ struct device_node;
 struct of_phandle_args;
 struct of_device_id;
 
+struct clk_onecell_data {
+	struct clk **clks;
+	unsigned int clk_num;
+};
+
 #if defined(CONFIG_COMMON_CLK_OF_PROVIDER)
 
 #define CLK_OF_DECLARE(name, compat, fn)				\
@@ -336,10 +341,6 @@ void of_clk_del_provider(struct device_node *np);
 
 typedef int (*of_clk_init_cb_t)(struct device_node *);
 
-struct clk_onecell_data {
-	struct clk **clks;
-	unsigned int clk_num;
-};
 struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data);
 struct clk *of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data);
 
@@ -350,6 +351,10 @@ unsigned int of_clk_get_parent_count(struct device_node *np);
 int of_clk_parent_fill(struct device_node *np, const char **parents,
 		       unsigned int size);
 int of_clk_init(struct device_node *root, const struct of_device_id *matches);
+int of_clk_add_provider(struct device_node *np,
+			struct clk *(*clk_src_get)(struct of_phandle_args *args,
+						   void *data),
+			void *data);
 #else
 
 
@@ -362,12 +367,16 @@ static const struct of_device_id __clk_of_table_##name			\
 __attribute__ ((unused)) = { .data = fn }
 
 
+static inline struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec,
+						 void *data)
+{
+	return ERR_PTR(-ENOENT);
+}
 static inline struct clk *
 of_clk_src_simple_get(struct of_phandle_args *clkspec, void *data)
 {
 	return ERR_PTR(-ENOENT);
 }
-
 static inline struct clk *of_clk_get(struct device_node *np, int index)
 {
 	return ERR_PTR(-ENOENT);
@@ -382,16 +391,19 @@ static inline int of_clk_init(struct device_node *root,
 {
 	return 0;
 }
+static inline int of_clk_add_provider(struct device_node *np,
+			struct clk *(*clk_src_get)(struct of_phandle_args *args,
+						   void *data),
+			void *data)
+{
+	return 0;
+}
 #endif
 
 struct string_list;
 
 int clk_name_complete(struct string_list *sl, char *instr);
 
-int of_clk_add_provider(struct device_node *np,
-			struct clk *(*clk_src_get)(struct of_phandle_args *args,
-						   void *data),
-			void *data);
 char *of_clk_get_parent_name(struct device_node *np, unsigned int index);
 
 #endif

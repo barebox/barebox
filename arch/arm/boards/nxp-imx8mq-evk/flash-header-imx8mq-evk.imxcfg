@@ -1,4 +1,5 @@
 soc imx8mq
 
 loadaddr 0x007E1000
+max_load_size 0x3F000
 dcdofs 0x400

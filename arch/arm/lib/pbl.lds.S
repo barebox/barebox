@@ -36,6 +36,8 @@ SECTIONS
 {
 	. = BASE;
 
+	.image_start : { *(.__image_start) }
+
 	PRE_IMAGE
 
 	. = ALIGN(4);
@@ -91,9 +93,7 @@ SECTIONS
 	}
 	__piggydata_end = .;
 
-	. = ALIGN(4);
-	.image_end : { *(.__image_end_marker) }
-	__image_end = .;
+	.image_end : { *(.__image_end) }
 
 	_barebox_image_size = __image_end - BASE;
 	_barebox_pbl_size = __bss_start - BASE;

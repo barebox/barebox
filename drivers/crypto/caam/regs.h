@@ -279,6 +279,8 @@ struct caam_perfmon {
 
 	/* CAAM Hardware Instantiation Parameters		fa0-fbf */
 	u32 cha_rev_ms;		/* CRNR - CHA Rev No. Most significant half*/
+#define CRNR_LS_RNGRN_SHIFT	16
+#define CRNR_LS_RNGRN_MASK	(0xfull << CRNR_LS_RNGRN_SHIFT)
 	u32 cha_rev_ls;		/* CRNR - CHA Rev No. Least significant half*/
 #define CTPR_MS_QI_SHIFT	25
 #define CTPR_MS_QI_MASK		(0x1ull << CTPR_MS_QI_SHIFT)
@@ -311,6 +313,8 @@ struct caam_perfmon {
 #define CCBVID_ERA_SHIFT	24
 	u32 ccb_id;		/* CCBVID - CCB Version ID	*/
 	u32 cha_id_ms;		/* CHAVID - CHA Version ID Most Significant*/
+#define CHAVID_LS_RNGVID_SHIFT	16
+#define CHAVID_LS_RNGVID_MASK	(0xfull << CHAVID_LS_RNGVID_SHIFT)
 	u32 cha_id_ls;		/* CHAVID - CHA Version ID Least Significant*/
 	u32 cha_num_ms;		/* CHANUM - CHA Number Most Significant	*/
 	u32 cha_num_ls;		/* CHANUM - CHA Number Least Significant*/

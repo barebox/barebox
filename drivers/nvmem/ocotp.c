@@ -70,6 +70,7 @@
 #define IMX6_OTP_DATA_ERROR_VAL		0xBADABADA
 #define DEF_RELAX			20
 #define MAC_OFFSET_0			(0x22 * 4)
+#define IMX6UL_MAC_OFFSET_1		(0x23 * 4)
 #define MAC_OFFSET_1			(0x24 * 4)
 #define MAX_MAC_OFFSETS			2
 #define MAC_BYTES			8
@@ -421,10 +422,14 @@ static int imx_ocotp_read_mac(const struct imx_ocotp_data *data,
 	int ret;
 
 	ret = regmap_bulk_read(map, offset, buf, MAC_BYTES);
+
 	if (ret < 0)
 		return ret;
 
-	data->format_mac(mac, buf, OCOTP_HW_TO_MAC);
+	if (offset != IMX6UL_MAC_OFFSET_1)
+		data->format_mac(mac, buf, OCOTP_HW_TO_MAC);
+	else
+		data->format_mac(mac, buf + 2, OCOTP_HW_TO_MAC);
 
 	return 0;
 }
@@ -639,6 +644,14 @@ static struct imx_ocotp_data imx6sl_ocotp_data = {
 	.format_mac = imx_ocotp_format_mac,
 };
 
+static struct imx_ocotp_data imx6ul_ocotp_data = {
+	.num_regs = 512,
+	.addr_to_offset = imx6q_addr_to_offset,
+	.mac_offsets_num = 2,
+	.mac_offsets = { MAC_OFFSET_0, IMX6UL_MAC_OFFSET_1 },
+	.format_mac = imx_ocotp_format_mac,
+};
+
 static struct imx_ocotp_data vf610_ocotp_data = {
 	.num_regs = 512,
 	.addr_to_offset = vf610_addr_to_offset,
@@ -667,7 +680,7 @@ static __maybe_unused struct of_device_id imx_ocotp_dt_ids[] = {
 		.data = &imx6sl_ocotp_data,
 	}, {
 		.compatible = "fsl,imx6ul-ocotp",
-		.data = &imx6q_ocotp_data,
+		.data = &imx6ul_ocotp_data,
 	}, {
 		.compatible = "fsl,imx8mq-ocotp",
 		.data = &imx8mq_ocotp_data,

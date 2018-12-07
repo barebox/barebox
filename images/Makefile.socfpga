@@ -13,56 +13,49 @@ quiet_cmd_socfpga_image = SOCFPGA-IMG $@
 $(obj)/%.socfpgaimg: $(obj)/% FORCE
 	$(call if_changed,socfpga_image)
 
-ocram-tmp = $(subst $(comma),_,$(dot-target).ocram.tmp)
-
-quiet_cmd_socfpga_ocram_img ?= SOCFPGA-OCRAM-IMG    $@
-      cmd_socfpga_ocram_img ?= cat $(obj)/$(patsubst %.socfpga-ocram-img,%.pblb,$(2)) > $(ocram-tmp); \
-		  $(call size_append, $(obj)/barebox.z) >> $(ocram-tmp); \
-		  $(objtree)/scripts/socfpga_mkimage -v1 -b -s -o $@ $(ocram-tmp); \
-		  cat $(obj)/barebox.z >> $@
-
-$(obj)/%.socfpga-ocram-img: $(obj)/%.pblb $(obj)/barebox.z FORCE
-	$(call if_changed,socfpga_ocram_img,$(@F))
-
 # ----------------------- Cyclone5 based boards ---------------------------
-pblx-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += start_socfpga_socdk_xload
-FILE_barebox-socfpga-socdk-xload.img = start_socfpga_socdk_xload.pblx.socfpgaimg
+pblb-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += start_socfpga_socdk_xload
+FILE_barebox-socfpga-socdk-xload.img = start_socfpga_socdk_xload.pblb.socfpgaimg
 socfpga-xload-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += barebox-socfpga-socdk-xload.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += start_socfpga_socdk
-FILE_barebox-socfpga-socdk.img = start_socfpga_socdk.pblx
+pblb-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += start_socfpga_socdk
+FILE_barebox-socfpga-socdk.img = start_socfpga_socdk.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_ALTERA_SOCDK) += barebox-socfpga-socdk.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += start_socfpga_de0_nano_soc_xload
-FILE_barebox-socfpga-de0_nano_soc-xload.img = start_socfpga_de0_nano_soc_xload.pblx.socfpgaimg
+pblb-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += start_socfpga_de0_nano_soc_xload
+FILE_barebox-socfpga-de0_nano_soc-xload.img = start_socfpga_de0_nano_soc_xload.pblb.socfpgaimg
 socfpga-xload-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += barebox-socfpga-de0_nano_soc-xload.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += start_socfpga_de0_nano_soc
-FILE_barebox-socfpga-de0_nano_soc.img = start_socfpga_de0_nano_soc.pblx
+pblb-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += start_socfpga_de0_nano_soc
+FILE_barebox-socfpga-de0_nano_soc.img = start_socfpga_de0_nano_soc.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_TERASIC_DE0_NANO_SOC) += barebox-socfpga-de0_nano_soc.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles
-FILE_barebox-socfpga-achilles.img = start_socfpga_achilles.socfpga-ocram-img
+pblb-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles_xload
+FILE_barebox-socfpga-achilles-xload.img = start_socfpga_achilles_xload.pblb.socfpgaimg
+socfpga-barebox-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += barebox-socfpga-achilles-xload.img
+
+pblb-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles
+FILE_barebox-socfpga-achilles.img = start_socfpga_achilles.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += barebox-socfpga-achilles.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles_bringup
-FILE_barebox-socfpga-achilles-bringup.img = start_socfpga_achilles_bringup.pblx
+pblb-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += start_socfpga_achilles_bringup
+FILE_barebox-socfpga-achilles-bringup.img = start_socfpga_achilles_bringup.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_REFLEX_ACHILLES) += barebox-socfpga-achilles-bringup.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += start_socfpga_sockit_xload
-FILE_barebox-socfpga-sockit-xload.img = start_socfpga_sockit_xload.pblx.socfpgaimg
+pblb-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += start_socfpga_sockit_xload
+FILE_barebox-socfpga-sockit-xload.img = start_socfpga_sockit_xload.pblb.socfpgaimg
 socfpga-xload-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += barebox-socfpga-sockit-xload.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += start_socfpga_sockit
-FILE_barebox-socfpga-sockit.img = start_socfpga_sockit.pblx
+pblb-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += start_socfpga_sockit
+FILE_barebox-socfpga-sockit.img = start_socfpga_sockit.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_TERASIC_SOCKIT) += barebox-socfpga-sockit.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += start_socfpga_socrates_xload
-FILE_barebox-socfpga-socrates-xload.img = start_socfpga_socrates_xload.pblx.socfpgaimg
+pblb-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += start_socfpga_socrates_xload
+FILE_barebox-socfpga-socrates-xload.img = start_socfpga_socrates_xload.pblb.socfpgaimg
 socfpga-xload-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += barebox-socfpga-socrates-xload.img
 
-pblx-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += start_socfpga_socrates
-FILE_barebox-socfpga-socrates.img = start_socfpga_socrates.pblx
+pblb-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += start_socfpga_socrates
+FILE_barebox-socfpga-socrates.img = start_socfpga_socrates.pblb
 socfpga-barebox-$(CONFIG_MACH_SOCFPGA_EBV_SOCRATES) += barebox-socfpga-socrates.img
 
 ifdef CONFIG_ARCH_SOCFPGA_XLOAD

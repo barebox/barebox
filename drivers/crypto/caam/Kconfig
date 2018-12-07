@@ -33,3 +33,27 @@ config CRYPTO_DEV_FSL_CAAM_RNG
 	default y
 	help
 	  Selecting this will register the SEC4 hardware rng.
+
+if CRYPTO_DEV_FSL_CAAM_RNG
+
+config CRYPTO_DEV_FSL_CAAM_RNG_SELF_TEST
+	bool "Run RNG software self-test on impacted chips"
+	depends on ARCH_IMX6
+	depends on HABV4
+	default y
+	help
+	  Some chips with HAB >= 4.2.3 have an incorrect implementation of the
+	  RNG self-test in ROM code. In this case, a software self-test should
+	  be run to ensure correctness of the RNG. By enabling this config
+	  option, the software self-test is run automatically when this case
+	  is detected.
+
+	  Currently known impacted chips:
+	  * i.MX6DQ+ silicon revision 1.1
+	  * i.MX6DQ silicon revision 1.6
+	  * i.MX6DLS silicon revision 1.4
+	  * i.MX6SX silicon revision 1.4
+	  * i.MX6UL silicon revision 1.2
+	  * i.MX67SD silicon revision 1.3
+
+endif

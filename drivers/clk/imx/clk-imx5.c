@@ -60,6 +60,7 @@
 #define CCM_CMEOR	0x84
 
 static struct clk *clks[IMX5_CLK_END];
+static struct clk_onecell_data clk_data;
 
 /* This is used multiple times */
 static const char *standard_pll_sel[] = {
@@ -411,6 +412,10 @@ static int imx51_ccm_probe(struct device_d *dev)
 
 	mx51_clocks_init(dev, regs);
 
+	clk_data.clks = clks;
+	clk_data.clk_num = IMX5_CLK_END;
+	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
+
 	return 0;
 }
 
@@ -502,6 +507,10 @@ static int imx53_ccm_probe(struct device_d *dev)
 	regs = IOMEM(iores->start);
 
 	mx53_clocks_init(dev, regs);
+
+	clk_data.clks = clks;
+	clk_data.clk_num = IMX5_CLK_END;
+	of_clk_add_provider(dev->device_node, of_clk_src_onecell_get, &clk_data);
 
 	return 0;
 }

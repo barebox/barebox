@@ -1,3 +1,130 @@
+loadaddr 0x71000000
 soc imx53
-loadaddr 0xf8020000
 dcdofs 0x400
+
+//=============================================================================
+//init script for i.MX53 DDR3
+//=============================================================================
+
+//=============================================================================
+// Enable all clocks (they are disabled by ROM code)
+//=============================================================================
+
+//=============================================================================
+// IOMUX
+//=============================================================================
+//DDR IO TYPE:
+wm 32	0x53fa8724 	0x00000000	// IOMUXC_SW_PAD_CTL_GRP_DDR_TYPE
+wm 32	0x53fa86fc 	0x00000000	// IOMUXC_SW_PAD_CTL_GRP_DDRPKE
+
+//CLOCK:
+wm 32	0x53fa8578 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDCLK_0
+wm 32	0x53fa8570 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDCLK_1
+
+//ADDRESS:
+wm 32	0x53fa8574 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_CAS
+wm 32	0x53fa8588 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_RAS
+wm 32	0x53fa86f0 	0x00300000	// IOMUXC_SW_PAD_CTL_GRP_ADDDS
+
+//Control:
+wm 32	0x53fa856c 	0x00300040	// IOMUXC_SW_PAD_CTL_PAD_DRAM_RESET
+wm 32	0x53fa8580 	0x00300040	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDODT0
+wm 32	0x53fa8564 	0x00300040	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDODT1
+wm 32	0x53fa8720 	0x00300000	// IOMUXC_SW_PAD_CTL_GRP_CTLDS
+
+//Data Strobes:
+wm 32	0x53fa86f4 	0x00000000	// IOMUXC_SW_PAD_CTL_GRP_DDRMODE_CTL
+wm 32	0x53fa857c 	0x00300040	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS0
+wm 32	0x53fa8590 	0x00300040	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS1
+wm 32	0x53fa8568 	0x00300040	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS2
+wm 32	0x53fa8558 	0x00300040	// IOMUXC_SW_PAD_CTL_PAD_DRAM_SDQS3
+
+//Data:
+wm 32	0x53fa8714	0x00000000	// IOMUXC_SW_PAD_CTL_GRP_DDRMODE
+wm 32	0x53fa8718 	0x00300000	// IOMUXC_SW_PAD_CTL_GRP_B0DS
+wm 32	0x53fa871c 	0x00300000	// IOMUXC_SW_PAD_CTL_GRP_B1DS
+wm 32	0x53fa8728 	0x00300000	// IOMUXC_SW_PAD_CTL_GRP_B2DS
+wm 32	0x53fa872c 	0x00300000	// IOMUXC_SW_PAD_CTL_GRP_B3DS
+
+wm 32	0x53fa8584 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM0
+wm 32	0x53fa8594 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM1
+wm 32	0x53fa8560 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM2
+wm 32	0x53fa8554 	0x00300000	// IOMUXC_SW_PAD_CTL_PAD_DRAM_DQM3
+
+
+//=============================================================================
+// DDR Controller Registers
+//=============================================================================
+// Manufacturer:	Micron
+// Device Part Number:	MT41J128M16HA-15E
+// Clock Freq.: 	400MHz
+// Density per CS in Gb: 	4
+// Chip Selects used:	1
+// Number of Banks:	8
+// Row address:    	14
+// Column address: 	10
+// Data bus width	32
+//=============================================================================
+wm 32	0x63fd901c 	0x00008000	//ESDSCR, set the Configuration request bit during MMDC set up
+
+//=============================================================================
+// Calibration setup.
+//=============================================================================
+wm 32	0x63fd9040 	0x05390003	// ZQHWCTRL, enable both one-time & periodic HW ZQ calibration.
+
+// For target board, may need to run write leveling calibration to fine tune these settings.
+wm 32	0x63fd904c 	0x00000000	//WLDECTRL0
+wm 32	0x63fd9050 	0x00000000	//WLDECTRL1
+
+////Read DQS Gating calibration
+wm 32	0x63fd907c 	0x01320135	// DGCTRL0
+wm 32	0x63fd9080 	0x01370137	// DGCTRL1
+
+//Read calibration
+wm 32	0x63fd9088 	0x3a413c3f	// RDDLCTL
+
+//Write calibration
+wm 32	0x63fd9090 	0x49434b43	// WRDLCTL
+
+// Complete calibration by forced measurement:
+wm 32	0x63fd90F8 	0x00000800	// MUR
+//=============================================================================
+// Calibration setup end
+//=============================================================================
+
+//MMDC init:
+wm 32	0x63fd9004 	0x0002002D	// ESDPDC
+wm 32	0x63fd9008 	0x00333030	// ESDOTC
+wm 32	0x63fd900c 	0x3F435333	// ESDCFG0
+wm 32	0x63fd9010 	0xB5058B63	// ESDCFG1
+wm 32	0x63fd9014 	0x01FF00DB	// ESDCFG2
+
+//MDMISC: RALAT kept to the high level of 5.
+//MDMISC: consider reducing RALAT if your 528MHz board design allow that. Lower RALAT benefits:
+//a. better operation at low frequency, for LPDDR2 freq < 100MHz, change RALAT to 3
+//b. Small performence improvment
+wm 32	0x63fd9018 	0x00011740	// ESDMISC
+wm 32	0x63fd902c 	0x000026D2	// ESDRWD
+wm 32	0x63fd9030 	0x00430E21	// ESDOR
+wm 32	0x63fd9000 	0x83190000	// ESDCTL
+
+//Mode register writes
+wm 32	0x63fd901c 	0x02008032	// ESDSCR, MR2 write, CS0
+wm 32	0x63fd901c 	0x00008033	// ESDSCR, MR3 write, CS0
+wm 32	0x63fd901c 	0x00448031	// ESDSCR, MR1 write, CS0
+wm 32	0x63fd901c 	0x15208030	// ESDSCR, MR0write, CS0
+wm 32	0x63fd901c 	0x04008040	// ESDSCR, ZQ calibration command sent to device on CS0
+
+//wm 32	0x63fd901c 	0x0200803A	// ESDSCR, MR2 write, CS1
+//wm 32	0x63fd901c 	0x0000803B	// ESDSCR, MR3 write, CS1
+//wm 32	0x63fd901c 	0x00448039	// ESDSCR, MR1 write, CS1
+//wm 32	0x63fd901c 	0x15208038	// ESDSCR, MR0write, CS1
+//wm 32	0x63fd901c 	0x04008048	// ESDSCR, ZQ calibration command sent to device on CS1
+
+wm 32	0x63fd9020 	0x00001800	// ESDREF
+
+wm 32	0x63fd9058 	0x00033337	// ODTCTRL
+
+wm 32	0x63fd901c 	0x00000000	// MMDC0_ESDSCR, clear this register (especially the configuration bit as initialization is complete)
+
+wm 32	0x53fa8004 	0x00194005	// For TO2 only, increase LDO for VDIG_PLL to 1.3V

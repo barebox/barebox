@@ -74,17 +74,16 @@ static noinline void achilles_start(void)
 	arria10_start_image(barebox);
 }
 
+ENTRY_FUNCTION(start_socfpga_achilles_xload, r0, r1, r2)
+{
+	arm_cpu_lowlevel_init();
+	arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K - 32);
+	achilles_start();
+}
+
 ENTRY_FUNCTION(start_socfpga_achilles, r0, r1, r2)
 {
 	void *fdt;
-
-	if (get_pc() > ARRIA10_OCRAM_ADDR) {
-		arm_cpu_lowlevel_init();
-
-		arm_setup_stack(ARRIA10_OCRAM_ADDR + SZ_256K - 32);
-
-		achilles_start();
-	}
 
 	fdt = __dtb_socfpga_arria10_achilles_start + get_runtime_offset();
 

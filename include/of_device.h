@@ -41,7 +41,7 @@ static inline const struct of_device_id *__of_match_device(
 	return NULL;
 }
 #define of_match_device(matches, dev)	\
-	__of_match_device(of_match_ptr(matches), (dev))
+	__of_match_device(matches, (dev))
 
 #endif /* CONFIG_OF */
 

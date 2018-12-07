@@ -538,6 +538,7 @@ config MACH_AT91SAM9X5EK
 
 config MACH_MICROCHIP_KSZ9477_EVB
 	bool "Microchip EVB-KSZ9477 Evaluation Kit"
+	depends on ARCH_SAMA5D3
 	select OFDEVICE
 	select COMMON_CLK_OF_PROVIDER
 	help

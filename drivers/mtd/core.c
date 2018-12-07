@@ -178,6 +178,9 @@ static int mtd_op_erase(struct cdev *cdev, loff_t count, loff_t offset)
 	loff_t addr;
 	int ret;
 
+	if (mtd->flags & MTD_NO_ERASE)
+		return -EOPNOTSUPP;
+
 	ret = mtd_erase_align(mtd, &count, &offset);
 	if (ret)
 		return ret;

@@ -511,7 +511,7 @@ static uint16_t denali_nand_timing_set(struct denali_nand_info *denali)
 		get_hynix_nand_para(denali, device_id);
 	}
 
-	dev_info(denali->dev,
+	dev_dbg(denali->dev,
 			"Dump timing register values:\n"
 			"acc_clks: %d, re_2_we: %d, re_2_re: %d\n"
 			"we_2_re: %d, addr_2_data: %d, rdwr_en_lo_cnt: %d\n"

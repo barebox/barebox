@@ -60,6 +60,25 @@ The images can also always be started second stage::
 
   bootm /mnt/tftp/barebox-freescale-imx51-babbage.img
 
+Using GPT on i.MX
+^^^^^^^^^^^^^^^^^
+
+For i.MX SoCs that place vendor specific header at +1KiB mark of a
+boot medium, special care needs to be taken when parition that medium
+with GPT. In order to make room for i.MX boot header GPT Partition
+Entry Array needs to be moved from its typical location, LBA 2, to an
+offset past vendor specific information. One way to do this would be
+to use ``-j`` or ``--adjust-main-table`` option of ``sgdisk``. For
+example, the following sequence:
+
+  sgdisk -Z <block device>
+  sgdisk -o -j 2048 -n 1:8192:+100M <block device>
+
+will create a single GPT partition starting at LBA 8192 and would
+place Partition Entry Array starting at LBA 2048 which should leave
+enough room for Barebox/i.MX boot header. Once that is done ``dd``
+command above can be used to place Barebox on the same medium.
+
 Information about the ``imx-image`` tool
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -397,7 +397,6 @@ static int fastboot_bind(struct usb_configuration *c, struct usb_function *f)
 		return ret;
 	}
 	f_fb->in_req->complete = fastboot_complete;
-	f_fb->out_req->context = f_fb;
 
 	ret = usb_assign_descriptors(f, fb_fs_descs, fb_hs_descs, NULL);
 	if (ret)

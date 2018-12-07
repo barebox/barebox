@@ -177,7 +177,7 @@ int led_blink_pattern(struct led *led, const unsigned int *pattern,
 				    pattern_len * sizeof(*led->blink_states));
 	led->blink_nr_states = pattern_len;
 	led->blink_next_state = 0;
-	led->blink_next_event = get_time_ns();
+	led->blink_next_event = 0;
 	led->blink = 1;
 	led->flash = 0;
 

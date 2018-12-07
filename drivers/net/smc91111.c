@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*------------------------------------------------------------------------
  . smc91111.c
  . This is a driver for SMSC's 91C111 single-chip Ethernet device.
@@ -9,16 +10,6 @@
  . Copyright (C) 2001 Standard Microsystems Corporation (SMSC)
  .	 Developed by Simple Network Magic Corporation (SNMC)
  . Copyright (C) 1996 by Erik Stahlman (ES)
- .
- . This program is free software; you can redistribute it and/or modify
- . it under the terms of the GNU General Public License as published by
- . the Free Software Foundation; either version 2 of the License, or
- . (at your option) any later version.
- .
- . This program is distributed in the hope that it will be useful,
- . but WITHOUT ANY WARRANTY; without even the implied warranty of
- . MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- . GNU General Public License for more details.
  .
  . Information contained in this file was obtained from the LAN91C111
  . manual from SMC.  To get a copy, if you really want one, you can find

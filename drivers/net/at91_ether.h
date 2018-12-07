@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * Ethernet driver for the Atmel AT91RM9200 (Thunder)
  *
@@ -5,11 +6,6 @@
  *
  * Based on an earlier Atmel EMAC macrocell driver by Atmel and Lineo Inc.
  * Initial version by Rick Bronson.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version
- * 2 of the License, or (at your option) any later version.
  */
 
 #ifndef AT91_ETHERNET

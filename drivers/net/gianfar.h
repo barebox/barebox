@@ -1,11 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  *  gianfar.h
  *
  *  Driver for the Motorola Triple Speed Ethernet Controller
- *
- *  This software may be used and distributed according to the
- *  terms of the GNU Public License, Version 2, incorporated
- *  herein by reference.
  *
  * Copyright 2012 GE Intelligent Platforms, Inc.
  * Copyright 2004, 2007, 2009  Freescale Semiconductor, Inc.

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Microchip ENC28J60 ethernet driver (MAC + PHY)
  *
@@ -6,12 +7,6 @@
  * Copyright (C) 2007 Eurek srl
  * Author: Claudio Lanconelli <lanconelli.claudio@eptar.com>
  * based on enc28j60.c written by David Anders for 2.4 kernel version
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
  */
 
 #include <common.h>

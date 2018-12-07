@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * ar231x.h: Linux driver for the Atheros AR231x Ethernet device.
  * Based on Linux driver:
@@ -6,14 +7,6 @@
  *		Copyright (C) 2006-2009 Felix Fietkau <nbd@openwrt.org>
  * Ported to Barebox:
  *		Copyright (C) 2013 Oleksij Rempel <linux@rempel-privat.de>
- *
- * Thanks to Atheros for providing hardware and documentation
- * enabling me to write this driver.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 
 #ifndef _AR2313_2_H_

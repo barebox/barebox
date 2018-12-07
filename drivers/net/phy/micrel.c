@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * drivers/net/phy/micrel.c
  *
@@ -6,11 +7,6 @@
  * Author: David J. Choi
  *
  * Copyright (c) 2010 Micrel, Inc.
- *
- * This program is free software; you can redistribute  it and/or modify it
- * under  the terms of  the GNU General  Public License as published by the
- * Free Software Foundation;  either version 2 of the  License, or (at your
- * option) any later version.
  *
  * Support : ksz9021 1000/100/10 phy from Micrel
  *		ks8001, ks8737, ks8721, ks8041, ks8051 100/10 phy

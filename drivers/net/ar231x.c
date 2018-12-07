@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * ar231x.c: driver for the Atheros AR231x Ethernet device.
  * This device is build in to SoC on ar231x series.
@@ -9,11 +10,6 @@
  *   Copyright (C) 2006-2009 Felix Fietkau <nbd@openwrt.org>
  * Ported to Barebox:
  *   Copyright (C) 2013 Oleksij Rempel <linux@rempel-privat.de>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
  */
 /*
  * Known issues:

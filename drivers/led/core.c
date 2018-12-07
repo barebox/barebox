@@ -188,7 +188,7 @@ int led_blink(struct led *led, unsigned int on_ms, unsigned int off_ms)
 {
 	unsigned int pattern[] = {on_ms, off_ms};
 
-	return led_blink_pattern(led, pattern, 2);
+	return led_blink_pattern(led, ARRAY_AND_SIZE(pattern));
 }
 
 int led_flash(struct led *led, unsigned int duration_ms)
@@ -196,7 +196,7 @@ int led_flash(struct led *led, unsigned int duration_ms)
 	unsigned int pattern[] = {duration_ms, 0};
 	int ret;
 
-	ret = led_blink_pattern(led, pattern, 2);
+	ret = led_blink_pattern(led, ARRAY_AND_SIZE(pattern));
 	if (ret)
 		return ret;
 

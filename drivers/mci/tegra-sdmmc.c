@@ -411,10 +411,7 @@ static int tegra_sdmmc_detect(struct device_d *dev)
 static void tegra_sdmmc_parse_dt(struct tegra_sdmmc_host *host)
 {
 	struct device_node *np = host->mci.hw_dev->device_node;
-	const char *alias = of_alias_get(np);
 
-	if (alias)
-		host->mci.devname = xstrdup(alias);
 	host->gpio_cd = of_get_named_gpio(np, "cd-gpios", 0);
 	host->gpio_pwr = of_get_named_gpio(np, "power-gpios", 0);
 	mci_of_parse(&host->mci);

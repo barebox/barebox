@@ -1,3 +1,5 @@
+#define SECT(name) __attribute__((section("terasic_de0_nano_soc_" #name))) name
+
 #include "sdram_config.h"
 #include "pinmux_config.c"
 #include "pll_config.h"

@@ -29,7 +29,7 @@
 
 #include <mach/cyclone5-scan-manager.h>
 
-static const unsigned long iocsr_scan_chain0_table[((CONFIG_HPS_IOCSR_SCANCHAIN0_LENGTH / 32) + 1)]
+static const unsigned long SECT(iocsr_scan_chain0_table)[((CONFIG_HPS_IOCSR_SCANCHAIN0_LENGTH / 32) + 1)]
     = {
 	0x00000000,
 	0x00000000,
@@ -57,7 +57,7 @@ static const unsigned long iocsr_scan_chain0_table[((CONFIG_HPS_IOCSR_SCANCHAIN0
 	0x00001000,
 };
 
-static const unsigned long iocsr_scan_chain1_table[((CONFIG_HPS_IOCSR_SCANCHAIN1_LENGTH / 32) + 1)]
+static const unsigned long SECT(iocsr_scan_chain1_table)[((CONFIG_HPS_IOCSR_SCANCHAIN1_LENGTH / 32) + 1)]
     = {
 	0x000C0300,
 	0x10040000,
@@ -115,7 +115,7 @@ static const unsigned long iocsr_scan_chain1_table[((CONFIG_HPS_IOCSR_SCANCHAIN1
 	0x00000080,
 };
 
-static const unsigned long iocsr_scan_chain2_table[((CONFIG_HPS_IOCSR_SCANCHAIN2_LENGTH / 32) + 1)]
+static const unsigned long SECT(iocsr_scan_chain2_table)[((CONFIG_HPS_IOCSR_SCANCHAIN2_LENGTH / 32) + 1)]
     = {
 	0x80040100,
 	0x00000000,
@@ -149,7 +149,7 @@ static const unsigned long iocsr_scan_chain2_table[((CONFIG_HPS_IOCSR_SCANCHAIN2
 	0x00000800,
 };
 
-static const unsigned long iocsr_scan_chain3_table[((CONFIG_HPS_IOCSR_SCANCHAIN3_LENGTH / 32) + 1)]
+static const unsigned long SECT(iocsr_scan_chain3_table)[((CONFIG_HPS_IOCSR_SCANCHAIN3_LENGTH / 32) + 1)]
     = {
 	0x0C420D80,
 	0x082000FF,

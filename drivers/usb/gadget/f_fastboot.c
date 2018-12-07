@@ -182,15 +182,8 @@ static struct usb_gadget_strings *fastboot_strings[] = {
 
 static void rx_handler_command(struct usb_ep *ep, struct usb_request *req);
 
-static int in_req_complete;
-
 static void fastboot_complete(struct usb_ep *ep, struct usb_request *req)
 {
-	int status = req->status;
-
-	in_req_complete = 1;
-
-	pr_debug("status: %d ep '%s' trans: %d\n", status, ep->name, req->actual);
 }
 
 static struct usb_request *fastboot_alloc_request(struct usb_ep *ep)
@@ -540,18 +533,21 @@ static int fastboot_tx_write(struct f_fastboot *f_fb, const char *buffer, unsign
 
 	memcpy(in_req->buf, buffer, buffer_size);
 	in_req->length = buffer_size;
-	in_req_complete = 0;
+
 	ret = usb_ep_queue(f_fb->in_ep, in_req);
 	if (ret)
 		pr_err("Error %d on queue\n", ret);
 
 	start = get_time_ns();
 
-	while (!in_req_complete) {
+	while (in_req->status == -EINPROGRESS) {
 		if (is_timeout(start, 2 * SECOND))
 			return -ETIMEDOUT;
 		usb_gadget_poll();
 	}
+
+	if (in_req->status)
+		pr_err("Failed to send answer: %d\n", in_req->status);
 
 	return 0;
 }

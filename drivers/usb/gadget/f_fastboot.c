@@ -622,15 +622,9 @@ int fastboot_tx_print(struct f_fastboot *f_fb, enum fastboot_msg_type type,
 	return fastboot_tx_write(f_fb, buf, n);
 }
 
-static void compl_do_reset(struct usb_ep *ep, struct usb_request *req)
-{
-	restart_machine();
-}
-
 static void cb_reboot(struct f_fastboot *f_fb, const char *cmd)
 {
-	f_fb->in_req->complete = compl_do_reset;
-	fastboot_tx_print(f_fb, FASTBOOT_MSG_OKAY, "");
+	restart_machine();
 }
 
 static int strcmp_l1(const char *s1, const char *s2)

@@ -15,11 +15,30 @@
 #include <mach/esdctl.h>
 #include <mach/imx-nand.h>
 
-#define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
+enum {
+	PHYCARD_MICRON_64MB,
+	PHYCARD_MICRON_128MB,
+};
 
-static void sdram_init(void)
+#define ESDCTL0_VAL_64MB (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL9)
+#define ESDCFG0_VAL_64MB 0x00696429
+#define ESDCTL0_VAL_128MB (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)
+#define ESDCFG0_VAL_128MB 0x006ac73a
+
+static void sdram_init(int sdram)
 {
 	int i;
+	unsigned esdcfg, esdctl;
+
+	if (sdram == PHYCARD_MICRON_64MB) {
+		esdcfg = ESDCFG0_VAL_64MB;
+		esdctl = ESDCTL0_VAL_64MB;
+	} else if (sdram == PHYCARD_MICRON_128MB) {
+		esdcfg = ESDCFG0_VAL_128MB;
+		esdctl = ESDCTL0_VAL_128MB;
+	} else {
+		hang();
+	}
 
 	/*
 	 * DDR on CSD0
@@ -36,29 +55,29 @@ static void sdram_init(void)
 
 	/* Initial reset */
 	writel(0x00000004, MX27_ESDCTL_BASE_ADDR + IMX_ESDMISC);
-	writel(0x006ac73a, MX27_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
+	writel(esdcfg, MX27_ESDCTL_BASE_ADDR + IMX_ESDCFG0);
 
 	/* precharge CSD0 all banks */
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_PRECHARGE,
+	writel(esdctl | ESDCTL0_SMODE_PRECHARGE,
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writel(0x00000000, 0xa0000f00);	/* CSD0 precharge address (A10 = 1) */
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_AUTO_REFRESH,
+	writel(esdctl | ESDCTL0_SMODE_AUTO_REFRESH,
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 
 	for (i = 0; i < 8; i++)
 		writel(0, 0xa0000f00);
 
-	writel(ESDCTL0_VAL | ESDCTL0_SMODE_LOAD_MODE,
+	writel(esdctl | ESDCTL0_SMODE_LOAD_MODE,
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 	writeb(0xda, 0xa0000033);
 	writeb(0xff, 0xa1000000);
 
-	writel(ESDCTL0_VAL | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 |
+	writel(esdctl | ESDCTL0_DSIZ_31_0 | ESDCTL0_REF4 |
 			ESDCTL0_BL | ESDCTL0_SMODE_NORMAL,
 			MX27_ESDCTL_BASE_ADDR + IMX_ESDCTL0);
 }
 
-void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt)
+void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt, int sdram)
 {
 	unsigned long r;
 
@@ -96,14 +115,14 @@ void __bare_init __naked phytec_phycard_imx27_common_init(void *fdt)
 		MX27_CSCR_SSI1_SEL | MX27_CSCR_H264_SEL |
 		MX27_CSCR_MSHC_SEL, MX27_CCM_BASE_ADDR + MX27_CSCR);
 
-	sdram_init();
+	sdram_init(sdram);
 
 	imx27_barebox_boot_nand_external(fdt);
 }
 
 extern char __dtb_imx27_phytec_phycard_s_rdk_bb_start[];
 
-ENTRY_FUNCTION(start_phytec_phycard_imx27, r0, r1, r2)
+ENTRY_FUNCTION(start_phytec_phycard_imx27_64mb, r0, r1, r2)
 {
 	void *fdt;
 
@@ -111,5 +130,16 @@ ENTRY_FUNCTION(start_phytec_phycard_imx27, r0, r1, r2)
 
 	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
 
-	phytec_phycard_imx27_common_init(fdt);
+	phytec_phycard_imx27_common_init(fdt, PHYCARD_MICRON_64MB);
+}
+
+ENTRY_FUNCTION(start_phytec_phycard_imx27_128mb, r0, r1, r2)
+{
+	void *fdt;
+
+	arm_setup_stack(MX27_IRAM_BASE_ADDR + MX27_IRAM_SIZE - 12);
+
+	fdt = __dtb_imx27_phytec_phycard_s_rdk_bb_start + get_runtime_offset();
+
+	phytec_phycard_imx27_common_init(fdt, PHYCARD_MICRON_128MB);
 }

@@ -32,9 +32,13 @@ CFG_start_imx25_karo_tx25.pblb.imximg = $(board)/karo-tx25/flash-header-tx25.imx
 FILE_barebox-karo-tx25-internal.img = start_imx25_karo_tx25.pblb.imximg
 image-$(CONFIG_MACH_TX25) += barebox-karo-tx25-internal.img
 
-pblb-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27
-FILE_barebox-phytec-phycard-imx27.img = start_phytec_phycard_imx27.pblb
-image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27.img
+pblb-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27_64mb
+FILE_barebox-phytec-phycard-imx27-64mb.img = start_phytec_phycard_imx27_64mb.pblb
+image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27-64mb.img
+
+pblb-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27_128mb
+FILE_barebox-phytec-phycard-imx27-128mb.img = start_phytec_phycard_imx27_128mb.pblb
+image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27-128mb.img
 
 pblb-$(CONFIG_MACH_PCM038) += start_phytec_phycore_imx27
 FILE_barebox-phytec-phycore-imx27.img = start_phytec_phycore_imx27.pblb

@@ -80,7 +80,7 @@ struct file_priv {
 	int state;
 	int err;
 	char *filename;
-	int filesize;
+	loff_t filesize;
 	uint64_t resend_timeout;
 	uint64_t progress_timeout;
 	struct kfifo *fifo;
@@ -136,7 +136,7 @@ static int tftp_send(struct file_priv *priv)
 				"timeout%c"
 				"%d%c"
 				"tsize%c"
-				"%d%c"
+				"%lld%c"
 				"blksize%c"
 				"1432",
 				priv->filename + 1, 0,
@@ -235,7 +235,7 @@ static void tftp_parse_oack(struct file_priv *priv, unsigned char *pkt, int len)
 		if (val > s + len)
 			return;
 		if (!strcmp(opt, "tsize"))
-			priv->filesize = simple_strtoul(val, NULL, 10);
+			priv->filesize = simple_strtoull(val, NULL, 10);
 		if (!strcmp(opt, "blksize"))
 			priv->blocksize = simple_strtoul(val, NULL, 10);
 		pr_debug("OACK opt: %s val: %s\n", opt, val);
@@ -658,7 +658,7 @@ static struct dentry *tftp_lookup(struct inode *dir, struct dentry *dentry,
 	struct fs_device_d *fsdev = container_of(sb, struct fs_device_d, sb);
 	struct inode *inode;
 	struct file_priv *priv;
-	int filesize;
+	loff_t filesize;
 
 	priv = tftp_do_open(&fsdev->dev, O_RDONLY, dentry);
 	if (IS_ERR(priv))
@@ -696,10 +696,15 @@ static int tftp_probe(struct device_d *dev)
 	struct tftp_priv *priv = xzalloc(sizeof(struct tftp_priv));
 	struct super_block *sb = &fsdev->sb;
 	struct inode *inode;
+	int ret;
 
 	dev->priv = priv;
 
-	priv->server = resolv(fsdev->backingstore);
+	ret = resolv(fsdev->backingstore, &priv->server);
+	if (ret) {
+		pr_err("Cannot resolve \"%s\": %s\n", fsdev->backingstore, strerror(-ret));
+		goto err;
+	}
 
 	sb->s_op = &tftp_ops;
 
@@ -707,6 +712,10 @@ static int tftp_probe(struct device_d *dev)
 	sb->s_root = d_make_root(inode);
 
 	return 0;
+err:
+	free(priv);
+
+	return ret;
 }
 
 static void tftp_remove(struct device_d *dev)

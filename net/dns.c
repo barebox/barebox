@@ -21,7 +21,9 @@
  * can do whatever you want with this stuff. If we meet some day, and you think
  * this stuff is worth it, you can buy me a beer in return.
  */
-//#define DEBUG
+
+#define pr_fmt(fmt) "dns: " fmt
+
 #include <common.h>
 #include <command.h>
 #include <net.h>
@@ -123,7 +125,7 @@ static void dns_recv(struct header *header, unsigned len)
 	int found, stop, dlen;
 	short tmp;
 
-	debug("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	/* We sent 1 query. We want to see more that 1 answer. */
 	if (ntohs(header->nqueries) != 1)
@@ -132,7 +134,7 @@ static void dns_recv(struct header *header, unsigned len)
 	/* Received 0 answers */
 	if (header->nanswers == 0) {
 		dns_state = STATE_DONE;
-		debug("DNS server returned no answers\n");
+		pr_debug("DNS server returned no answers\n");
 		return;
 	}
 
@@ -145,7 +147,7 @@ static void dns_recv(struct header *header, unsigned len)
 	/* We sent query class 1, query type 1 */
 	tmp = p[1] | (p[2] << 8);
 	if (&p[5] > e || ntohs(tmp) != DNS_A_RECORD) {
-		debug("DNS response was not A record\n");
+		pr_debug("DNS response was not A record\n");
 		return;
 	}
 
@@ -161,23 +163,23 @@ static void dns_recv(struct header *header, unsigned len)
 				p++;
 			p--;
 		}
-		debug("Name (Offset in header): %d\n", p[1]);
+		pr_debug("Name (Offset in header): %d\n", p[1]);
 
 		tmp = p[2] | (p[3] << 8);
 		type = ntohs(tmp);
-		debug("type = %d\n", type);
+		pr_debug("type = %d\n", type);
 		if (type == DNS_CNAME_RECORD) {
 			/* CNAME answer. shift to the next section */
 			debug("Found canonical name\n");
 			tmp = p[10] | (p[11] << 8);
 			dlen = ntohs(tmp);
-			debug("dlen = %d\n", dlen);
+			pr_debug("dlen = %d\n", dlen);
 			p += 12 + dlen;
 		} else if (type == DNS_A_RECORD) {
-			debug("Found A-record\n");
+			pr_debug("Found A-record\n");
 			found = stop = 1;
 		} else {
-			debug("Unknown type\n");
+			pr_debug("Unknown type\n");
 			stop = 1;
 		}
 	}
@@ -199,27 +201,27 @@ static void dns_handler(void *ctx, char *packet, unsigned len)
 		net_eth_to_udplen(packet));
 }
 
-IPaddr_t resolv(const char *host)
+int resolv(const char *host, IPaddr_t *ip)
 {
-	IPaddr_t ip;
+	IPaddr_t nameserver;
 
-	if (!string_to_ip(host, &ip))
-		return ip;
+	if (!string_to_ip(host, ip))
+		return 0;
 
 	dns_ip = 0;
+	*ip = 0;
 
 	dns_state = STATE_INIT;
 
-	ip = net_get_nameserver();
-	if (!ip) {
-		printk("%s: no nameserver specified in $net.nameserver\n",
-				__func__);
+	nameserver = net_get_nameserver();
+	if (!nameserver) {
+		pr_err("no nameserver specified in $net.nameserver\n");
 		return 0;
 	}
 
-	debug("resolving host %s via nameserver %pI4\n", host, &ip);
+	pr_debug("resolving host %s via nameserver %pI4\n", host, &nameserver);
 
-	dns_con = net_udp_new(ip, DNS_PORT, dns_handler, NULL);
+	dns_con = net_udp_new(nameserver, DNS_PORT, dns_handler, NULL);
 	if (IS_ERR(dns_con))
 		return PTR_ERR(dns_con);
 	dns_timer_start = get_time_ns();
@@ -239,23 +241,32 @@ IPaddr_t resolv(const char *host)
 
 	net_unregister(dns_con);
 
-	return dns_ip;
+	if (dns_ip) {
+		pr_debug("host %s is at %pI4\n", host, &dns_ip);
+	} else {
+		pr_debug("host %s not found\n", host);
+		return -ENOENT;
+	}
+
+	*ip = dns_ip;
+
+	return 0;
 }
 
 #ifdef CONFIG_CMD_HOST
 static int do_host(int argc, char *argv[])
 {
 	IPaddr_t ip;
+	int ret;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
-	ip = resolv(argv[1]);
-	if (!ip)
+	ret = resolv(argv[1], &ip);
+	if (ret)
 		printf("unknown host %s\n", argv[1]);
-	else {
+	else
 		printf("%s is at %pI4\n", argv[1], &ip);
-	}
 
 	return 0;
 }

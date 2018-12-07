@@ -158,9 +158,7 @@ static int socfpga_dwc_ether_probe(struct device_d *dev)
 	if (ret)
 		return ret;
 
-	socfpga_dwc_set_phy_mode(dwc_dev);
-
-	return 0;
+	return socfpga_dwc_set_phy_mode(dwc_dev);
 }
 
 static struct dw_eth_drvdata socfpga_stmmac_drvdata = {

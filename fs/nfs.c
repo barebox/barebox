@@ -1293,7 +1293,11 @@ static int nfs_probe(struct device_d *dev)
 
 	npriv->path = xstrdup(path + 1);
 
-	npriv->server = resolv(tmp);
+	ret = resolv(tmp, &npriv->server);
+	if (ret) {
+		printf("cannot resolve \"%s\": %s\n", tmp, strerror(-ret));
+		goto err1;
+	}
 
 	debug("nfs: server: %s path: %s\n", tmp, npriv->path);
 

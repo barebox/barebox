@@ -187,7 +187,7 @@ static unsigned int gpmc_ns_to_ticks(unsigned int time_ns)
 	return (time_ns * 1000 + tick_ps - 1) / tick_ps;
 }
 
-int gpmc_calc_divider(unsigned int sync_clk)
+static int gpmc_calc_divider(unsigned int sync_clk)
 {
 	int div;
 	u32 l;

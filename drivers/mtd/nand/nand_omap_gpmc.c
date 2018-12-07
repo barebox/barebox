@@ -71,6 +71,8 @@
 #include <mach/gpmc.h>
 #include <mach/gpmc_nand.h>
 
+#include "nand_omap_bch_decoder.h"
+
 #define GPMC_ECC_CONFIG_ECCENABLE		(1 << 0)
 #define GPMC_ECC_CONFIG_ECCCS(x)		(((x) & 0x7) << 1)
 #define GPMC_ECC_CONFIG_ECCTOPSECTOR(x)		(((x) & 0x7) << 4)
@@ -89,8 +91,6 @@
 
 static const uint8_t bch8_vector[] = {0xf3, 0xdb, 0x14, 0x16, 0x8b, 0xd2,
 		0xbe, 0xcc, 0xac, 0x6b, 0xff, 0x99, 0x7b};
-
-int omap_gpmc_decode_bch(int select_4_8, unsigned char *ecc, unsigned int *err_loc);
 
 static const char *ecc_mode_strings[] = {
 	"software",

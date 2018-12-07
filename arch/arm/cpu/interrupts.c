@@ -28,6 +28,14 @@
 #include <asm/unwind.h>
 #include <init.h>
 
+/* Avoid missing prototype warning, called from assembly */
+void do_undefined_instruction (struct pt_regs *pt_regs);
+void do_software_interrupt (struct pt_regs *pt_regs);
+void do_prefetch_abort (struct pt_regs *pt_regs);
+void do_data_abort (struct pt_regs *pt_regs);
+void do_fiq (struct pt_regs *pt_regs);
+void do_irq (struct pt_regs *pt_regs);
+
 /**
  * Display current register set content
  * @param[in] regs Guess what

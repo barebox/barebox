@@ -75,8 +75,9 @@ to_mc13xx_adc_data(struct aiochannel *chan)
 	return container_of(chan->aiodev, struct mc13xx_adc_data, aiodev);
 }
 
-int mc13xxx_adc_do_conversion(struct mc13xxx *mc13xxx,
-		unsigned int channel, unsigned int *sample)
+static int mc13xxx_adc_do_conversion(struct mc13xxx *mc13xxx,
+				     unsigned int channel,
+				     unsigned int *sample)
 {
 	int i;
 	int timeout = 100;

@@ -34,6 +34,8 @@
 
 #include <debug_ll.h>
 
+#include "entry.h"
+
 unsigned long arm_stack_top;
 static unsigned long arm_barebox_size;
 static void *barebox_boarddata;
@@ -231,12 +233,16 @@ __noreturn void barebox_non_pbl_start(unsigned long membase,
 
 #ifndef CONFIG_PBL_IMAGE
 
+void start(void);
+
 void NAKED __section(.text_entry) start(void)
 {
 	barebox_arm_head();
 }
 
 #else
+
+void start(unsigned long membase, unsigned long memsize, void *boarddata);
 /*
  * First function in the uncompressed image. We get here from
  * the pbl. The stack already has been set up by the pbl.

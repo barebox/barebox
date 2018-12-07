@@ -34,6 +34,8 @@
 
 #include <debug_ll.h>
 
+#include "entry.h"
+
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 

@@ -52,4 +52,6 @@ struct s3c24x0_nand_platform_data {
  * @brief Basic declaration to use the s3c24x0 NAND driver
  */
 
+void nand_boot(void);
+
 #endif /* MACH_S3C24XX_NAND_H */

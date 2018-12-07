@@ -15,6 +15,7 @@
 #include <common.h>
 #include <asm/io.h>
 #include <mach/am33xx-clock.h>
+#include <mach/am33xx-generic.h>
 #include <asm-generic/div64.h>
 
 #define PRCM_MOD_EN		0x2

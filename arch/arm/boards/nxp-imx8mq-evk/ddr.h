@@ -19,6 +19,7 @@
 #define ddr_cfg_phy	nxp_imx8mq_evk_ddr_cfg_phy
 
 void nxp_imx8mq_evk_ddr_init(void);
+void nxp_imx8mq_evk_ddr_cfg_phy(void);
 
 #define FW_1D_IMAGE	imx_lpddr4_pmu_train_1d_imem_bin, \
 			imx_lpddr4_pmu_train_1d_dmem_bin

@@ -12,7 +12,7 @@ endif
 CPPFLAGS += -D__MIPS__ -fno-strict-aliasing -fno-merge-constants
 
 cflags-y += -G 0 -mno-abicalls -fno-pic -pipe
-cflags-y += -Wall -Wmissing-prototypes -Wstrict-prototypes \
+cflags-y += -Wall -Wstrict-prototypes \
 	-Wno-uninitialized -Wno-format -Wno-main
 
 ifdef CONFIG_32BIT

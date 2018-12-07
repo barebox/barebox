@@ -1115,7 +1115,7 @@ static int cpsw_probe_dt(struct cpsw_priv *priv)
 	return 0;
 }
 
-int cpsw_probe(struct device_d *dev)
+static int cpsw_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct cpsw_platform_data *data = (struct cpsw_platform_data *)dev->platform_data;

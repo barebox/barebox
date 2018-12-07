@@ -87,7 +87,7 @@ static struct clk_ops clk_gate2_ops = {
 	.is_enabled = clk_gate2_is_enabled,
 };
 
-struct clk *clk_gate2_alloc(const char *name, const char *parent,
+static struct clk *clk_gate2_alloc(const char *name, const char *parent,
 			    void __iomem *reg, u8 shift, u8 cgr_val,
 			    unsigned long flags)
 {
@@ -104,13 +104,6 @@ struct clk *clk_gate2_alloc(const char *name, const char *parent,
 	g->clk.flags = CLK_SET_RATE_PARENT | flags;
 
 	return &g->clk;
-}
-
-void clk_gate2_free(struct clk *clk)
-{
-	struct clk_gate2 *g = to_clk_gate2(clk);
-
-	free(g);
 }
 
 struct clk *clk_gate2(const char *name, const char *parent, void __iomem *reg,

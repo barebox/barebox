@@ -307,7 +307,7 @@ CPPFLAGS        := -D__KERNEL__ -D__BAREBOX__ $(LINUXINCLUDE) -fno-builtin -ffre
 
 CFLAGS          := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
                    -Werror-implicit-function-declaration \
-                   -fno-strict-aliasing -fno-common -Os -pipe
+                   -fno-strict-aliasing -fno-common -Os -pipe -Wmissing-prototypes
 AFLAGS          := -D__ASSEMBLY__
 
 LDFLAGS_barebox	:= -Map barebox.map

@@ -40,6 +40,10 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
 /* direct nvmem device read/write interface */
 struct nvmem_device *nvmem_device_get(struct device_d *dev, const char *name);
 void nvmem_device_put(struct nvmem_device *nvmem);
+ssize_t nvmem_device_cell_read(struct nvmem_device *nvmem,
+			       struct nvmem_cell_info *info, void *buf);
+int nvmem_device_cell_write(struct nvmem_device *nvmem,
+			    struct nvmem_cell_info *info, void *buf);
 
 #else
 

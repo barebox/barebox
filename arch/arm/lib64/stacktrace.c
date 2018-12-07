@@ -11,6 +11,7 @@
 
 #include <common.h>
 #include <asm/stacktrace.h>
+#include <asm/unwind.h>
 
 #define THREAD_SIZE 16384
 
@@ -45,7 +46,7 @@ int unwind_frame(struct stackframe *frame)
 	return 0;
 }
 
-void dump_backtrace_entry(unsigned long where, unsigned long from)
+static void dump_backtrace_entry(unsigned long where, unsigned long from)
 {
 #ifdef CONFIG_KALLSYMS
 	printf("[<%08lx>] (%pS) from [<%08lx>] (%pS)\n", where, (void *)where, from, (void *)from);

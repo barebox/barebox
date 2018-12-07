@@ -401,7 +401,7 @@ static loff_t ubifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	return pos;
 }
 
-void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev)
+static void ubifs_set_rootarg(struct ubifs_priv *priv, struct fs_device_d *fsdev)
 {
 	struct ubi_volume_info vi = {};
 	struct ubi_device_info di = {};

@@ -36,7 +36,7 @@ int vpl_register(struct vpl *vpl)
 	return 0;
 }
 
-struct vpl *of_find_vpl(struct device_node *node)
+static struct vpl *of_find_vpl(struct device_node *node)
 {
 	struct vpl *vpl;
 

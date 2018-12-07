@@ -856,6 +856,34 @@ unsigned compress(std::vector<unsigned char>& out, const std::vector<unsigned ch
 #endif /*LODEPNG_COMPILE_CPP*/
 
 /*
+Declaration of the custom functions used if LODEPNG_COMPILE_ZLIB isn't defined
+or LODEPNG_CUSTOM_ZLIB_DECODER or LODEPNG_CUSTOM_ZLIB_ENCODER are enabled.
+
+In that case, you need to define these yourself (which you can do in one of your
+own source files) so that LodePNG can link to it.
+
+By default, this is not needed. If LODEPNG_COMPILE_ZLIB isn't defined, then only
+the two zlib related ones are needed.
+
+If needed, the functions must act as follows:
+*out must be NULL and *outsize must be 0 initially, and after the function is done,
+*out must point to the decompressed data, *outsize must be the size of it, and must
+be the size of the useful data in bytes, not the alloc size.
+*/
+unsigned lodepng_custom_zlib_decompress(unsigned char** out, size_t* outsize,
+                                        const unsigned char* in, size_t insize,
+                                        const LodePNGDecompressSettings* settings);
+unsigned lodepng_custom_zlib_compress(unsigned char** out, size_t* outsize,
+                                      const unsigned char* in, size_t insize,
+                                      const LodePNGCompressSettings* settings);
+unsigned lodepng_custom_inflate(unsigned char** out, size_t* outsize,
+                                const unsigned char* in, size_t insize,
+                                const LodePNGDecompressSettings* settings);
+unsigned lodepng_custom_deflate(unsigned char** out, size_t* outsize,
+                                const unsigned char* in, size_t insize,
+                                const LodePNGCompressSettings* settings);
+
+/*
 TODO:
 [.] test if there are no memory leaks or security exploits - done a lot but needs to be checked often
 [.] check compatibility with vareous compilers  - done but needs to be redone for every newer version

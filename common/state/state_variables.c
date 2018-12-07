@@ -492,19 +492,6 @@ struct variable_type *state_find_type_by_name(const char *name)
 	return NULL;
 }
 
-struct variable_type *state_find_type(const enum state_variable_type type)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(types); i++) {
-		if (type == types[i].type) {
-			return &types[i];
-		}
-	}
-
-	return NULL;
-}
-
 struct state_variable *state_find_var(struct state *state, const char *name)
 {
 	struct state_variable *sv;

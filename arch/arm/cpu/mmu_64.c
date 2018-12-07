@@ -19,6 +19,7 @@
 #define pr_fmt(fmt)	"mmu: " fmt
 
 #include <common.h>
+#include <dma.h>
 #include <dma-dir.h>
 #include <init.h>
 #include <mmu.h>

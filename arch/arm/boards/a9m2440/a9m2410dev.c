@@ -28,6 +28,8 @@
 #include <mach/s3c-busctl.h>
 #include <mach/s3c24xx-gpio.h>
 
+#include "baseboards.h"
+
 /**
  * Initialize the CPU to be able to work with the a9m2410dev evaluation board
  */

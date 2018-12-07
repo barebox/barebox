@@ -204,7 +204,7 @@ static void encode_bch_ecc(void *buf, struct fcb_block *fcb, int eccbits)
 	free_bch(bch);
 }
 
-struct fcb_block *read_fcb_bch(void *rawpage, int eccbits)
+static struct fcb_block *read_fcb_bch(void *rawpage, int eccbits)
 {
 	int i, j, ret, errbit, m = 13;
 	int blocksize = 128;
@@ -308,7 +308,7 @@ static uint32_t calc_chksum(void *buf, size_t size)
 	return ~chksum;
 }
 
-struct fcb_block *read_fcb_hamming_13_8(void *rawpage)
+static struct fcb_block *read_fcb_hamming_13_8(void *rawpage)
 {
 	int i;
 	int bitflips = 0, bit_to_flip;

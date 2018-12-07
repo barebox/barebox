@@ -23,6 +23,8 @@ struct pt_regs {
 	unsigned long regs[31];
 };
 
+void show_regs(struct pt_regs *);
+
 #endif  /* __ASSEMBLY__ */
 
 #else   /* CONFIG_CPU_64 */

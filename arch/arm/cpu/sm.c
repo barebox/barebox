@@ -94,7 +94,7 @@ static unsigned long get_gicc_base_address(void)
 
 #define GICD_IGROUPRn             0x0080
 
-int armv7_init_nonsec(void)
+static int armv7_init_nonsec(void)
 {
 	void __iomem *gicd = IOMEM(get_gicd_base_address());
 	unsigned itlinesnr, i;

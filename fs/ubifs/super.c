@@ -37,14 +37,6 @@
 #include "ubifs.h"
 #include <mtd/ubi-user.h>
 
-int ubifs_iput(struct inode *inode)
-{
-	list_del_init(&inode->i_sb_list);
-
-	free(inode);
-	return 0;
-}
-
 /* from include/linux/fs.h */
 static inline void i_uid_write(struct inode *inode, uid_t uid)
 {
@@ -56,7 +48,7 @@ static inline void i_gid_write(struct inode *inode, gid_t gid)
 	inode->i_gid = gid;
 }
 
-void unlock_new_inode(struct inode *inode)
+static void unlock_new_inode(struct inode *inode)
 {
 	return;
 }

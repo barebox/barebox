@@ -15,6 +15,8 @@
 
 #include <common.h>
 
+#include "nand_omap_bch_decoder.h"
+
 #define mm		13
 #define kk_shorten	4096
 #define nn		8191	/* Length of codeword, n = 2**mm - 1 */

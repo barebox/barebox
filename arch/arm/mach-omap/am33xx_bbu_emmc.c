@@ -18,6 +18,7 @@
 #include <fs.h>
 #include <fcntl.h>
 #include <filetype.h>
+#include <mach/bbu.h>
 
 #define PART_TABLE_SIZE		66
 #define PART_TABLE_OFFSET	0x1BE

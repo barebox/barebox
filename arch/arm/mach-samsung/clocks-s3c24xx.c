@@ -109,15 +109,6 @@ uint32_t s3c_get_pclk(void)
 }
 
 /**
- * Calculate the UCLK frequency used by the USB host device
- * @return Current frequency in Hz
- */
-uint32_t s3c24_get_uclk(void)
-{
-	return s3c_get_upllclk();
-}
-
-/**
  * Return correct UART frequency based on the UCON register
  */
 unsigned s3c_get_uart_clk(unsigned src)
@@ -137,7 +128,7 @@ unsigned s3c_get_uart_clk(unsigned src)
 /**
  * Show the user the current clock settings
  */
-int s3c24xx_dump_clocks(void)
+static int s3c24xx_dump_clocks(void)
 {
 	printf("refclk:  %7d kHz\n", S3C24XX_CLOCK_REFERENCE / 1000);
 	printf("mpll:    %7d kHz\n", s3c_get_mpllclk() / 1000);

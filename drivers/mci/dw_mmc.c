@@ -602,9 +602,6 @@ static int dw_mmc_probe(struct device_d *dev)
 		host->mci.host_caps &= ~MMC_CAP_BIT_DATA_MASK;
 		host->mci.host_caps |= pdata->bus_width_caps;
 	} else if (dev->device_node) {
-		const char *alias = of_alias_get(dev->device_node);
-		if (alias)
-			host->mci.devname = xstrdup(alias);
 		of_property_read_u32(dev->device_node, "dw-mshc-ciu-div",
 				&host->ciu_div);
 	}

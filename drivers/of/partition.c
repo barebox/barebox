@@ -186,11 +186,11 @@ static int of_partition_fixup(struct device_node *root, void *ctx)
 			return ret;
 	}
 
-	of_property_write_u32(partnode, "#size-cells", n_cells);
+	ret = of_property_write_u32(partnode, "#size-cells", n_cells);
 	if (ret)
 		return ret;
 
-	of_property_write_u32(partnode, "#address-cells", n_cells);
+	ret = of_property_write_u32(partnode, "#address-cells", n_cells);
 	if (ret)
 		return ret;
 

@@ -788,7 +788,6 @@ static int pmecc_build_galois_table(unsigned int mm, int16_t *index_of,
 	case 3:
 	case 4:
 	case 6:
-	case 15:
 		p[1] = 1;
 		break;
 	case 5:

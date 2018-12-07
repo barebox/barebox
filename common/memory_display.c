@@ -4,10 +4,21 @@
 
 #define DISP_LINE_LEN	16
 
-int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int swab)
+
+int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbytes,
+			int size, int swab, const char *fmt, ...)
 {
 	unsigned long linebytes, i;
 	unsigned char *cp;
+	unsigned char line[sizeof("00000000: 0000 0000 0000 0000  0000 0000 0000 0000            ................")];
+	struct va_format vaf;
+	int ret;
+	va_list args;
+
+	va_start(args, fmt);
+
+	vaf.fmt = fmt;
+	vaf.va = &args;
 
 	/* Print the lines.
 	 *
@@ -20,9 +31,9 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 		uint32_t *uip = (uint32_t *)linebuf;
 		uint16_t *usp = (uint16_t *)linebuf;
 		uint8_t *ucp = (uint8_t *)linebuf;
-		unsigned count = 52;
+		unsigned char *pos = line;
 
-		printf("%08llx:", offs);
+		pos += sprintf(pos, "%08llx:", offs);
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
 		for (i = 0; i < linebytes; i += size) {
@@ -34,9 +45,9 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 					res = __swab64(res);
 				if (data_abort_unmask()) {
 					res = 0xffffffffffffffffULL;
-					count -= printf(" xxxxxxxxxxxxxxxx");
+					pos += sprintf(pos, " xxxxxxxxxxxxxxxx");
 				} else {
-					count -= printf(" %016llx", res);
+					pos += sprintf(pos, " %016llx", res);
 				}
 				*ullp++ = res;
 			} else if (size == 4) {
@@ -47,9 +58,9 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 					res = __swab32(res);
 				if (data_abort_unmask()) {
 					res = 0xffffffff;
-					count -= printf(" xxxxxxxx");
+					pos += sprintf(pos, " xxxxxxxx");
 				} else {
-					count -= printf(" %08x", res);
+					pos += sprintf(pos, " %08x", res);
 				}
 				*uip++ = res;
 			} else if (size == 2) {
@@ -58,22 +69,26 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 				res = *((uint16_t *)addr);
 				if (swab)
 					res = __swab16(res);
+				if (i > 1 && i % 8 == 0)
+					pos += sprintf(pos, " ");
 				if (data_abort_unmask()) {
 					res = 0xffff;
-					count -= printf(" xxxx");
+					pos += sprintf(pos, " xxxx");
 				} else {
-					count -= printf(" %04x", res);
+					pos += sprintf(pos, " %04x", res);
 				}
 				*usp++ = res;
 			} else {
 				uint8_t res;
 				data_abort_mask();
 				res = *((uint8_t *)addr);
+				if (i > 1 && i % 8 == 0)
+					pos += sprintf(pos, " ");
 				if (data_abort_unmask()) {
 					res = 0xff;
-					count -= printf(" xx");
+					pos += sprintf(pos, " xx");
 				} else {
-					count -= printf(" %02x", res);
+					pos += sprintf(pos, " %02x", res);
 				}
 				*ucp++ = res;
 			}
@@ -81,23 +96,40 @@ int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size, int
 			offs += size;
 		}
 
-		while (count--)
-			putchar(' ');
+		pos += sprintf(pos, "%*s", 61 - (pos - line), "");
 
 		cp = linebuf;
 		for (i = 0; i < linebytes; i++) {
 			if ((*cp < 0x20) || (*cp > 0x7e))
-				putchar('.');
+				sprintf(pos, ".");
 			else
-				printf("%c", *cp);
+				sprintf(pos, "%c", *cp);
+			pos++;
 			cp++;
 		}
 
-		putchar('\n');
+		if (level >= MSG_EMERG)
+			pr_print(level, "%pV%s\n", &vaf, line);
+		else
+			printf("%s\n", line);
+
 		nbytes -= linebytes;
-		if (ctrlc())
-			return -EINTR;
+		if (ctrlc()) {
+			ret = -EINTR;
+			goto out;
+		}
+
 	} while (nbytes > 0);
 
-	return 0;
+	va_end(args);
+	ret = 0;
+out:
+
+	return ret;
+}
+
+int memory_display(const void *addr, loff_t offs, unsigned nbytes,
+		   int size, int swab)
+{
+	return pr_memory_display(-1, addr, offs, nbytes, size, swab);
 }

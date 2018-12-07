@@ -176,6 +176,7 @@ const struct rpi_model rpi_models_new_scheme[] = {
 	RPI_MODEL(BCM2836_BOARD_REV_2_B, "2 Model B", rpi_b_plus_init),
 	RPI_MODEL(BCM2837_BOARD_REV_3_B, "3 Model B", rpi_b_plus_init),
 	RPI_MODEL(BCM2835_BOARD_REV_ZERO, "Zero", rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, "Zero W", rpi_b_plus_init),
 };
 
 static int rpi_board_rev = 0;

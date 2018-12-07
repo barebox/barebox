@@ -13,6 +13,7 @@
  * GNU General Public License for more details.
  *
  */
+#define pr_fmt(fmt) "getopt: " fmt
 
 #include <common.h>
 #include <module.h>

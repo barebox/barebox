@@ -70,7 +70,7 @@ static void process_macros (const char *input, char *output)
 	/* 3 = waiting for '''  */
 	char __maybe_unused *output_start = output;
 
-	pr_debug("[PROCESS_MACROS] INPUT len %d: \"%s\"\n", strlen (input),
+	pr_debug("[PROCESS_MACROS] INPUT len %zu: \"%s\"\n", strlen (input),
 		input);
 
 	prev = '\0';		/* previous character   */
@@ -158,7 +158,7 @@ static void process_macros (const char *input, char *output)
 	if (outputcnt)
 		*output = 0;
 
-	pr_debug("[PROCESS_MACROS] OUTPUT len %d: \"%s\"\n",
+	pr_debug("[PROCESS_MACROS] OUTPUT len %zu: \"%s\"\n",
 		strlen (output_start), output_start);
 }
 

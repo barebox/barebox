@@ -73,7 +73,7 @@ static const char *eth_names[ETH_COUNT] = {"mac0", "mac1"};
 static int physom_devices_init(void)
 {
 	struct state *state;
-	u8 mac[6];
+	uint8_t mac[6];
 	int state_ret;
 	int state_i;
 
@@ -130,7 +130,7 @@ static int physom_devices_init(void)
 			for (state_i = 0; state_i < 2; state_i++) {
 				state_ret = state_read_mac(state,
 						      eth_names[state_i], &mac[0]);
-				if (state_ret == 6)
+				if (!state_ret && is_valid_ether_addr(&mac[0]))
 					eth_register_ethaddr(state_i, mac);
 			}
 	}

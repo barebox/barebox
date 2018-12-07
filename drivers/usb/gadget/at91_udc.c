@@ -288,8 +288,7 @@ static int at91_ep_enable(struct usb_ep *_ep,
 	u16		maxpacket;
 	u32		tmp;
 
-	if (!_ep || !ep
-			|| !desc || ep->desc
+	if (!desc || ep->desc
 			|| _ep->name == ep0name
 			|| desc->bDescriptorType != USB_DT_ENDPOINT
 			|| (maxpacket = le16_to_cpu(desc->wMaxPacketSize)) == 0

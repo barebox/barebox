@@ -1,3 +1,5 @@
+menu "Clocksource"
+
 config ARCH_HAS_IMX_GPT
        bool
 
@@ -80,3 +82,10 @@ config CLOCKSOURCE_ARM_GLOBAL_TIMER
 config CLOCKSOURCE_IMX_GPT
 	def_bool y
 	depends on ARCH_HAS_IMX_GPT
+
+config CLOCKSOURCE_DW_APB_TIMER
+	bool "DW APB timer driver"
+	help
+	  Enables the support for the dw_apb timer.
+
+endmenu

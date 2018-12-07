@@ -548,8 +548,10 @@ static int ssd1307fb_probe(struct device_d *dev)
 	/* clear display */
 	array = ssd1307fb_alloc_array(par->width * par->height / 8,
 				      SSD1307FB_DATA);
-	if (!array)
-		return -ENOMEM;
+	if (!array) {
+		ret = -ENOMEM;
+		goto panel_init_error;
+	}
 
 	for (i = 0; i < (par->height / 8); i++) {
 		for (j = 0; j < par->width; j++) {
@@ -569,6 +571,7 @@ static int ssd1307fb_probe(struct device_d *dev)
 
 panel_init_error:
 reset_oled_error:
+	free(vmem);
 fb_alloc_error:
 	regulator_disable(par->vbat);
 	free(info);

@@ -235,6 +235,9 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 		int err, new_len;
 		long long ec;
 
+		if (si->ec[eb] == EB_BAD)
+			continue;
+
 		if (!args->quiet && !args->verbose) {
 			if (is_timeout(lastprint, 300 * MSECOND) ||
 			    eb == eb_cnt - 1) {
@@ -243,9 +246,6 @@ static int flash_image(struct ubiformat_args *args, struct mtd_info *mtd,
 				lastprint = get_time_ns();
 			}
 		}
-
-		if (si->ec[eb] == EB_BAD)
-			continue;
 
 		if (args->verbose) {
 			normsg_cont("eraseblock %d: erase", eb);
@@ -357,6 +357,9 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 	for (eb = start_eb; eb < eb_cnt; eb++) {
 		long long ec;
 
+		if (si->ec[eb] == EB_BAD)
+			continue;
+
 		if (!args->quiet && !args->verbose) {
 			if (is_timeout(lastprint, 300 * MSECOND) ||
 			    eb == eb_cnt - 1) {
@@ -365,9 +368,6 @@ static int format(struct ubiformat_args *args, struct mtd_info *mtd,
 				lastprint = get_time_ns();
 			}
 		}
-
-		if (si->ec[eb] == EB_BAD)
-			continue;
 
 		if (args->override_ec)
 			ec = args->ec;

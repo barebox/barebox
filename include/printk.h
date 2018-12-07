@@ -91,7 +91,7 @@ static inline int pr_print(int level, const char *format, ...)
 #define pr_debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 #define debug(fmt, arg...)	__pr_printk(7, pr_fmt(fmt), ##arg)
 #define pr_vdebug(fmt, arg...)	__pr_printk(8, pr_fmt(fmt), ##arg)
-#define pr_cont(fmt, arg...)	__pr_printk(0, fmt, ##arg)
+#define pr_cont(fmt, arg...)	__pr_printk(-1, fmt, ##arg)
 
 #define printk_once(fmt, ...)					\
 ({								\
@@ -102,6 +102,25 @@ static inline int pr_print(int level, const char *format, ...)
 		printk(fmt, ##__VA_ARGS__);			\
 	}							\
 })
+
+int memory_display(const void *addr, loff_t offs, unsigned nbytes, int size,
+		   int swab);
+int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbytes,
+			int size, int swab, const char *format, ...);
+
+#define pr_memory_display(level, addr, offs, nbytes, size, swab) \
+	({	\
+		(level) <= LOGLEVEL ? __pr_memory_display((level), (addr), \
+				(offs), (nbytes), (size), (swab), pr_fmt("")) : 0; \
+	 })
+
+#define DUMP_PREFIX_OFFSET 0
+static inline void print_hex_dump(const char *level, const char *prefix_str,
+		int prefix_type, int rowsize, int groupsize,
+		const void *buf, size_t len, bool ascii)
+{
+	memory_display(buf, 0, len, 4, 0);
+}
 
 struct log_entry {
 	struct list_head list;

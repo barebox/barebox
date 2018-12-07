@@ -201,7 +201,7 @@ static int da9062_device_init(struct da9063 *priv)
 
 	priv->client1 = i2c_new_dummy(priv->client->adapter,
 				      priv->client->addr + 1);
-	if (!priv) {
+	if (!priv->client1) {
 		dev_warn(priv->dev, "failed to create bank 1 device\n");
 		/* TODO: return -EINVAL; i2c api does not return more
 		 * details */

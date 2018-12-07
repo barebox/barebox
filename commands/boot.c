@@ -29,10 +29,6 @@ static int do_boot(int argc, char *argv[])
 	struct bootentries *entries;
 	struct bootentry *entry;
 
-	verbose = 0;
-	dryrun = 0;
-	timeout = -1;
-
 	while ((opt = getopt(argc, argv, "vldmt:w:")) > 0) {
 		switch (opt) {
 		case 'v':

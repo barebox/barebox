@@ -608,8 +608,11 @@ int fastboot_tx_print(struct f_fastboot *f_fb, enum fastboot_msg_type type,
 		break;
 	case FASTBOOT_MSG_FAIL:
 		f_fb->active = false;
+		pr_err("%pV\n", &vaf);
 		break;
 	case FASTBOOT_MSG_INFO:
+		pr_info("%pV\n", &vaf);
+		break;
 	case FASTBOOT_MSG_DATA:
 		break;
 	}
@@ -702,12 +705,12 @@ static void rx_handler_dl_image(struct usb_ep *ep, struct usb_request *req)
 		req->length = EP_BUFFER_SIZE;
 		close(f_fb->download_fd);
 
+		printf("\n");
+
 		fastboot_tx_print(f_fb, FASTBOOT_MSG_INFO, "Downloading %d bytes finished",
 				  f_fb->download_bytes);
 
 		fastboot_tx_print(f_fb, FASTBOOT_MSG_OKAY, "");
-
-		printf("\n");
 	}
 
 	req->actual = 0;

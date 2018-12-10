@@ -10,6 +10,7 @@
 #include <mach/generic.h>
 #include <mach/gpmc.h>
 #include <mach/omap4_rom_usb.h>
+#include <mach/omap4-generic.h>
 
 /*
  *  The following several lines are taken from U-Boot to support
@@ -179,7 +180,7 @@ static inline void delay(unsigned long loops)
 			  "bne 1b" : "=r" (loops) : "0"(loops));
 }
 
-int omap4_emif_config(unsigned int base, const struct ddr_regs *ddr_regs)
+static int omap4_emif_config(unsigned int base, const struct ddr_regs *ddr_regs)
 {
 	/*
 	 * set SDRAM CONFIG register

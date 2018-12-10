@@ -1,6 +1,7 @@
 #ifndef __MACH_OMAP4_GENERIC_H
 #define __MACH_OMAP4_GENERIC_H
 
+#include <linux/sizes.h>
 #include <mach/generic.h>
 #include <mach/omap4-silicon.h>
 

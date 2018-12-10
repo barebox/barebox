@@ -31,8 +31,12 @@
 #include <asm/mmu.h>
 #include <asm/unaligned.h>
 
+#include "entry.h"
+
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
+
+void pbl_start(void);
 
 /*
  * First instructions in the pbl image

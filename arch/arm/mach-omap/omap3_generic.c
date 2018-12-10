@@ -43,6 +43,7 @@
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
+#include <mach/omap3-generic.h>
 
 /**
  * @brief Reset the CPU

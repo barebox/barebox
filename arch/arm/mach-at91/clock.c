@@ -22,6 +22,7 @@
 #include <mach/hardware.h>
 #include <mach/at91_pmc.h>
 #include <mach/cpu.h>
+#include <mach/board.h>
 
 #include "clock.h"
 #include "generic.h"

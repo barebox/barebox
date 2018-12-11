@@ -316,13 +316,16 @@ static int mmc_read_data(struct omap_hsmmc *hsmmc, char *buf, unsigned int size)
 		do {
 			mmc_stat = readl(&mmc_base->stat);
 			if (is_timeout(start, SECOND)) {
-				dev_dbg(hsmmc->dev, "timedout waiting for status!\n");
+				dev_err(hsmmc->dev, "timedout waiting for status!\n");
 				return -ETIMEDOUT;
 			}
 		} while (mmc_stat == 0);
 
-		if ((mmc_stat & ERRI_MASK) != 0)
-			return 1;
+		if ((mmc_stat & ERRI_MASK) != 0) {
+			dev_err(hsmmc->dev, "Error while reading data. status: 0x%08x\n",
+				mmc_stat);
+			return -EIO;
+		}
 
 		if (mmc_stat & BRR_MASK) {
 			unsigned int k;
@@ -373,8 +376,11 @@ static int mmc_write_data(struct omap_hsmmc *hsmmc, const char *buf, unsigned in
 			}
 		} while (mmc_stat == 0);
 
-		if ((mmc_stat & ERRI_MASK) != 0)
-			return 1;
+		if ((mmc_stat & ERRI_MASK) != 0) {
+			dev_err(hsmmc->dev, "Error while reading data. status: 0x%08x\n",
+				mmc_stat);
+			return -EIO;
+		}
 
 		if (mmc_stat & BWR_MASK) {
 			unsigned int k;

@@ -352,7 +352,6 @@ static int mmc_read_data(struct omap_hsmmc *hsmmc, char *buf, unsigned int size)
 	return 0;
 }
 
-#ifdef CONFIG_MCI_WRITE
 static int mmc_write_data(struct omap_hsmmc *hsmmc, const char *buf, unsigned int size)
 {
 	struct hsmmc *mmc_base = hsmmc->base;
@@ -406,7 +405,6 @@ static int mmc_write_data(struct omap_hsmmc *hsmmc, const char *buf, unsigned in
 	}
 	return 0;
 }
-#endif
 
 static int mmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 		struct mci_data *data)
@@ -517,13 +515,18 @@ static int mmc_send_cmd(struct mci_host *mci, struct mci_cmd *cmd,
 		}
 	}
 
-	if (data && (data->flags & MMC_DATA_READ))
-		mmc_read_data(hsmmc, data->dest, data->blocksize * data->blocks);
-#ifdef CONFIG_MCI_WRITE
-	else if (data && (data->flags & MMC_DATA_WRITE))
-		mmc_write_data(hsmmc, data->src, data->blocksize * data->blocks);
-#endif
-	return 0;
+	if (!data)
+		return 0;
+
+	if (data->flags & MMC_DATA_READ)
+		return mmc_read_data(hsmmc, data->dest,
+				     data->blocksize * data->blocks);
+
+	if (IS_ENABLED(CONFIG_MCI_WRITE))
+		return mmc_write_data(hsmmc, data->src,
+				      data->blocksize * data->blocks);
+
+	return -ENOSYS;
 }
 
 static void mmc_set_ios(struct mci_host *mci, struct mci_ios *ios)

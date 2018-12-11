@@ -256,7 +256,10 @@ int am33xx_init(void)
 
 int am33xx_devices_init(void)
 {
-	return am33xx_gpio_init();
+	am33xx_gpio_init();
+	add_generic_device("omap-dmtimer", 0, NULL, AM33XX_DMTIMER2_BASE, 0x400,
+			   IORESOURCE_MEM, NULL);
+	return 0;
 }
 
 /* UART Defines */

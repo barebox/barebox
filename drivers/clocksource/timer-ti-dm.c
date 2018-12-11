@@ -27,6 +27,7 @@
  *
  */
 
+#include <common.h>
 #include <clock.h>
 #include <init.h>
 #include <io.h>
@@ -55,7 +56,7 @@
 #define TSICR			0x54
 #define TCAR2			0x58
 
-static void *base = (void *)AM33XX_DMTIMER2_BASE;
+static void *base;
 
 /**
  * @brief Provide a simple counter read
@@ -73,16 +74,19 @@ static struct clocksource dmtimer_cs = {
 	.shift	= 10,
 };
 
-/**
- * @brief Initialize the Clock
- *
- * Enable dmtimer.
- *
- * @return result of @ref init_clock
- */
-static int dmtimer_init(void)
+static int omap_dmtimer_probe(struct device_d *dev)
 {
+	struct resource *iores;
 	u64 clk_speed;
+
+	/* one timer is enough */
+	if (base)
+		return 0;
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	base = IOMEM(iores->start);
 
 	clk_speed = am33xx_get_osc_clock();
 	clk_speed *= 1000;
@@ -94,5 +98,22 @@ static int dmtimer_init(void)
 	return init_clock(&dmtimer_cs);
 }
 
-/* Run me at boot time */
-core_initcall(dmtimer_init);
+static __maybe_unused struct of_device_id omap_dmtimer_dt_ids[] = {
+	{
+		.compatible = "ti,am335x-timer",
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct driver_d omap_dmtimer_driver = {
+	.name = "omap-dmtimer",
+	.probe = omap_dmtimer_probe,
+	.of_compatible = DRV_OF_COMPAT(omap_dmtimer_dt_ids),
+};
+
+static int omap_dmtimer_init(void)
+{
+	return platform_driver_register(&omap_dmtimer_driver);
+}
+postcore_initcall(omap_dmtimer_init);

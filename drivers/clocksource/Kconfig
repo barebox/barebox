@@ -88,4 +88,7 @@ config CLOCKSOURCE_DW_APB_TIMER
 	help
 	  Enables the support for the dw_apb timer.
 
+config CLOCKSOURCE_TI_DM
+	bool
+
 endmenu

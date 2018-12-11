@@ -43,16 +43,13 @@ config ARCH_AM33XX
 	select CPU_V7
 	select GENERIC_GPIO
 	select OFTREE
-	select OMAP_CLOCK_SOURCE_DMTIMER
+	select CLOCKSOURCE_TI_DM
 	select ARM_USE_COMPRESSED_DTB
 	help
 	  Say Y here if you are using Texas Instrument's AM33xx based platform
 
 # Blind enable all possible clocks.. think twice before you do this.
 config OMAP_CLOCK_SOURCE_S32K
-	bool
-
-config OMAP_CLOCK_SOURCE_DMTIMER
 	bool
 
 config OMAP_GPMC

@@ -48,6 +48,12 @@ config ARCH_AM33XX
 	help
 	  Say Y here if you are using Texas Instrument's AM33xx based platform
 
+config ARCH_AM35XX
+	bool
+	select ARCH_OMAP3
+	help
+	  Say Y here if you are using Texas Instrument's AM35XX based platform
+
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
 	bool

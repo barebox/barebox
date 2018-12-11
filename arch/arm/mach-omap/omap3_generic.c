@@ -78,6 +78,9 @@ u32 get_cpu_type(void)
 	if (hawkeye == OMAP_HAWKEYE_34XX)
 		return CPU_3430;
 
+	if (hawkeye == OMAP_HAWKEYE_AM35XX)
+		return CPU_AM35XX;
+
 	if (hawkeye == OMAP_HAWKEYE_36XX)
 		return CPU_3630;
 

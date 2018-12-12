@@ -99,6 +99,9 @@ void dev_param_init_from_nv(struct device_d *dev, const char *name)
 	const char *val;
 	int ret = 0;
 
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return;
+
 	if (dev == &nv_device)
 		return;
 	if (dev == &global_device)
@@ -137,6 +140,9 @@ static int nvvar_device_dispatch(const char *name, struct device_d **dev,
 	char *devname;
 	const char *dot;
 	int dotpos;
+
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return -ENOSYS;
 
 	*dev = NULL;
 
@@ -446,6 +452,9 @@ static int globalvar_remove_unqualified(const char *name)
 static void globalvar_nv_sync(const char *name)
 {
 	const char *val;
+
+	if (!IS_ENABLED(CONFIG_NVVAR))
+		return;
 
 	val = dev_get_param(&nv_device, name);
 	if (val)

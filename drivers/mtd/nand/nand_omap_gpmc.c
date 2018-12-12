@@ -162,7 +162,7 @@ static void gpmc_nand_wp(struct gpmc_nand_info *oinfo, int mode)
 {
 	unsigned long config = readl(oinfo->gpmc_base + GPMC_CFG);
 
-	debug("%s: mode=%x\n", __func__, mode);
+	dev_dbg(oinfo->pdev, "%s: mode=%x\n", __func__, mode);
 
 	if (mode)
 		config &= ~(NAND_WP_BIT);	/* WP is ON */
@@ -425,7 +425,7 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
 
-	debug("%s\n", __func__);
+	dev_dbg(oinfo->pdev, "%s\n", __func__);
 
 	switch (oinfo->ecc_mode) {
 	case OMAP_ECC_HAMMING_CODE_HW_ROMCODE:

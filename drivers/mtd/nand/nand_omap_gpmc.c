@@ -391,14 +391,13 @@ static int omap_correct_hamming(struct mtd_info *mtd, uint8_t *dat,
 			byte = (parity_bits >> 3) & 0x1FF;
 			/* Flip the bit to correct */
 			dat[byte] ^= (0x1 << bit);
+			return 1;
 		} else if (hm == 1) {
-			printf("Ecc is wrong\n");
 			/* ECC itself is corrupted */
-			return 2;
+			return -EBADMSG;
 		} else {
-			printf("bad compare! failed\n");
 			/* detected 2 bit error */
-			return -1;
+			return -EBADMSG;
 		}
 	}
 

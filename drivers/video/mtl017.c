@@ -244,6 +244,9 @@ static int mtl017_probe(struct device_d *dev)
 	mtl017->client = to_i2c_client(dev);
 	mtl017->regulator = regulator_get(dev, "vdd");
 
+	if (IS_ERR(mtl017->regulator))
+		mtl017->regulator = NULL;
+
 	mtl017->enable_gpio = of_get_named_gpio_flags(dev->device_node,
 			"enable-gpios", 0, &flags);
 	if (gpio_is_valid(mtl017->enable_gpio)) {

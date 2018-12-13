@@ -183,6 +183,15 @@ config MACH_VSCOM_BALTOS
 	help
 	  Say Y here if you are using a am335x based VScom Baltos devices
 
+config MACH_WAGO_PFC_AM35XX
+        bool "Wago PFC200 Fieldbus Controller"
+        select ARCH_AM35XX
+        select HAVE_DEFAULT_ENVIRONMENT_NEW
+        select HAVE_PBL_MULTI_IMAGES
+        select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+        help
+          Say Y here if you are using a the AM3505 based PFC200 controller
+
 endif
 
 source arch/arm/boards/phytec-som-am335x/Kconfig

@@ -37,7 +37,7 @@ static int clps711x_devices_init(void)
 	add_cfi_flash_device(DEVICE_ID_DYNAMIC, (unsigned long)cfi_io, SZ_32M,
 			     IORESOURCE_MEM);
 
-	devfs_add_partition("nor0", 0x00000, SZ_256K, DEVFS_PARTITION_FIXED,
+	devfs_add_partition("nor0", 0x00000, SZ_512K, DEVFS_PARTITION_FIXED,
 			    "self0");
 	devfs_add_partition("nor0", SZ_256K, SZ_256K, DEVFS_PARTITION_FIXED,
 			    "env0");

@@ -736,6 +736,7 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		nand->ecc.read_oob = NULL;
 		nand->ecc.write_oob = NULL;
 		nand->ecc.mode = NAND_ECC_HW;
+		nand->options &= ~NAND_SUBPAGE_READ;
 	}
 
 	switch (mode) {

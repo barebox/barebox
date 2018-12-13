@@ -72,7 +72,7 @@ UTS_TRUNCATE="cut -b -$UTS_LEN"
   echo \#define BAREBOX_COMPILE_BY \"`echo $BAREBOX_COMPILE_BY | $UTS_TRUNCATE`\"
   echo \#define BAREBOX_COMPILE_HOST \"`echo $BAREBOX_COMPILE_HOST | $UTS_TRUNCATE`\"
 
-  echo \#define BAREBOX_COMPILER \"`$CC -v 2>&1 | tail -n 1`\"
+  echo \#define BAREBOX_COMPILER \"`$CC -v 2>&1 | grep ' version ' | sed 's/[[:space:]]*$//'`\"
 ) > .tmpcompile
 
 # Only replace the real compile.h if the new one is different,

@@ -228,8 +228,8 @@ static unsigned int gen_true_ecc(u8 *ecc_buf)
 	    ((ecc_buf[2] & 0x0F) << 8);
 }
 
-static int __omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
-			      uint8_t *ecc_code, int sblock)
+static int __omap_calculate_ecc(struct mtd_info *mtd, uint8_t *ecc_code,
+				int sblock)
 {
 	struct nand_chip *nand = (struct nand_chip *)(mtd->priv);
 	struct gpmc_nand_info *oinfo = (struct gpmc_nand_info *)(nand->priv);
@@ -288,7 +288,7 @@ static int __omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 static int omap_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
 			      uint8_t *ecc_code)
 {
-	return __omap_calculate_ecc(mtd, dat, ecc_code, 0);
+	return __omap_calculate_ecc(mtd, ecc_code, 0);
 }
 
 static int omap_correct_bch(struct mtd_info *mtd, uint8_t *dat,
@@ -436,7 +436,7 @@ static int omap_correct_data(struct mtd_info *mtd, uint8_t *dat,
 		 * but before it has read the oob data. Do it again,
 		 * this time with oob data.
 		 */
-		__omap_calculate_ecc(mtd, dat, calc_ecc, 0);
+		__omap_calculate_ecc(mtd, calc_ecc, 0);
 		return omap_correct_bch(mtd, dat, read_ecc, calc_ecc);
 	default:
 		return -EINVAL;
@@ -691,7 +691,7 @@ static int omap_gpmc_read_page_bch_rom_mode(struct mtd_info *mtd,
 	for (i = 0; i < chip->ecc.total; i++)
 		ecc_code[i] = chip->oob_poi[eccpos[i]];
 
-	__omap_calculate_ecc(mtd, buf, ecc_calc, 1);
+	__omap_calculate_ecc(mtd, ecc_calc, 1);
 
 	p = buf;
 

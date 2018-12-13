@@ -840,10 +840,11 @@ static int e1000_setup_link(struct e1000_hw *hw)
 	 * control setting, then the variable hw->fc will
 	 * be initialized based on a value in the EEPROM.
 	 */
-	if (e1000_read_eeprom(hw, EEPROM_INIT_CONTROL2_REG, 1,
-				&eeprom_data) < 0) {
+	ret_val = e1000_read_eeprom(hw, EEPROM_INIT_CONTROL2_REG, 1,
+				    &eeprom_data);
+	if (ret_val < 0) {
 		dev_dbg(hw->dev, "EEPROM Read Error\n");
-		return -E1000_ERR_EEPROM;
+		return ret_val;
 	}
 
 	switch (hw->mac_type) {

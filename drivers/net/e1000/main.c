@@ -832,21 +832,6 @@ static int e1000_setup_link(struct e1000_hw *hw)
 	if (e1000_check_phy_reset_block(hw))
 		return E1000_SUCCESS;
 
-	/* Read and store word 0x0F of the EEPROM. This word contains bits
-	 * that determine the hardware's default PAUSE (flow control) mode,
-	 * a bit that determines whether the HW defaults to enabling or
-	 * disabling auto-negotiation, and the direction of the
-	 * SW defined pins. If there is no SW over-ride of the flow
-	 * control setting, then the variable hw->fc will
-	 * be initialized based on a value in the EEPROM.
-	 */
-	ret_val = e1000_read_eeprom(hw, EEPROM_INIT_CONTROL2_REG, 1,
-				    &eeprom_data);
-	if (ret_val < 0) {
-		dev_err(hw->dev, "EEPROM Read Error\n");
-		return ret_val;
-	}
-
 	switch (hw->mac_type) {
 	case e1000_ich8lan:
 	case e1000_82573:
@@ -855,6 +840,22 @@ static int e1000_setup_link(struct e1000_hw *hw)
 		hw->fc = e1000_fc_full;
 		break;
 	default:
+		/* Read and store word 0x0F of the EEPROM. This word
+		 * contains bits that determine the hardware's default
+		 * PAUSE (flow control) mode, a bit that determines
+		 * whether the HW defaults to enabling or disabling
+		 * auto-negotiation, and the direction of the SW
+		 * defined pins. If there is no SW over-ride of the
+		 * flow control setting, then the variable hw->fc will
+		 * be initialized based on a value in the EEPROM.
+		 */
+		ret_val = e1000_read_eeprom(hw, EEPROM_INIT_CONTROL2_REG, 1,
+					    &eeprom_data);
+		if (ret_val < 0) {
+			dev_err(hw->dev, "EEPROM Read Error\n");
+			return ret_val;
+		}
+
 		if ((eeprom_data & EEPROM_WORD0F_PAUSE_MASK) == 0)
 			hw->fc = e1000_fc_none;
 		else if ((eeprom_data & EEPROM_WORD0F_PAUSE_MASK) == EEPROM_WORD0F_ASM_DIR)

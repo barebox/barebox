@@ -185,7 +185,7 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 	struct regulator *r;
 
 	r = regulator_get(&dev->dev, NULL);
-	if (r) {
+	if (!IS_ERR(r)) {
 		int ret;
 
 		ret = regulator_enable(r);

@@ -765,6 +765,7 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		omap_oobinfo.oobfree->offset = offset;
 		oinfo->nand.ecc.steps = minfo->writesize / oinfo->nand.ecc.size;
 		oinfo->nand.ecc.total = oinfo->nand.ecc.steps * oinfo->nand.ecc.bytes;
+		omap_oobinfo.eccbytes = oinfo->nand.ecc.total;
 
 		omap_oobinfo.oobfree->length = minfo->oobsize -
 					offset - omap_oobinfo.eccbytes;
@@ -779,6 +780,9 @@ static int omap_gpmc_eccmode(struct gpmc_nand_info *oinfo,
 		oinfo->nand.ecc.strength = BCH8_MAX_ERROR;
 		nand->ecc.read_page = omap_gpmc_read_page_bch_rom_mode;
 		omap_oobinfo.oobfree->length = 0;
+		oinfo->nand.ecc.steps = minfo->writesize / oinfo->nand.ecc.size;
+		oinfo->nand.ecc.total = oinfo->nand.ecc.steps * oinfo->nand.ecc.bytes;
+		omap_oobinfo.eccbytes = oinfo->nand.ecc.total;
 		j = 0;
 		for (i = 2; i < 58; i++)
 			omap_oobinfo.eccpos[j++] = i;

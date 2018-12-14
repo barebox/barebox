@@ -67,19 +67,40 @@ static struct clocksource s32k_cs = {
  *
  * @return result of @ref init_clock
  */
-static int s32k_clocksource_init(void)
+static int omap_32ktimer_probe(struct device_d *dev)
 {
-	if (IS_ENABLED(CONFIG_ARCH_OMAP3))
-		timerbase = (void *)OMAP3_32KTIMER_BASE;
-	else if (IS_ENABLED(CONFIG_ARCH_OMAP4))
-		timerbase = (void *)OMAP44XX_32KTIMER_BASE;
-	else
-		BUG();
+	struct resource *iores;
+
+	/* one timer is enough */
+	if (timerbase)
+		return 0;
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	timerbase = IOMEM(iores->start);
 
 	s32k_cs.mult = clocksource_hz2mult(S32K_FREQUENCY, s32k_cs.shift);
 
 	return init_clock(&s32k_cs);
 }
 
-/* Run me at boot time */
-core_initcall(s32k_clocksource_init);
+static __maybe_unused struct of_device_id omap_32ktimer_dt_ids[] = {
+	{
+		.compatible = "ti,omap-counter32k",
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct driver_d omap_32ktimer_driver = {
+	.name = "omap-32ktimer",
+	.probe = omap_32ktimer_probe,
+	.of_compatible = DRV_OF_COMPAT(omap_32ktimer_dt_ids),
+};
+
+static int omap_32ktimer_init(void)
+{
+	return platform_driver_register(&omap_32ktimer_driver);
+}
+postcore_initcall(omap_32ktimer_init);

@@ -684,5 +684,8 @@ static int omap4_gpio_init(void)
 
 int omap4_devices_init(void)
 {
-	return omap4_gpio_init();
+	omap4_gpio_init();
+	add_generic_device("omap-32ktimer", 0, NULL, OMAP44XX_32KTIMER_BASE, 0x400,
+			   IORESOURCE_MEM, NULL);
+	return 0;
 }

@@ -533,6 +533,9 @@ static int omap3_gpio_init(void)
 
 int omap3_devices_init(void)
 {
-	return omap3_gpio_init();
+	omap3_gpio_init();
+	add_generic_device("omap-32ktimer", 0, NULL, OMAP3_32KTIMER_BASE, 0x400,
+			   IORESOURCE_MEM, NULL);
+	return 0;
 }
 #endif

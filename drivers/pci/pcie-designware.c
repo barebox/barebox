@@ -183,7 +183,7 @@ void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
 	 */
 	for (retries = 0; retries < LINK_WAIT_MAX_IATU_RETRIES; retries++) {
 		val = dw_pcie_readl_dbi(pci, PCIE_ATU_CR2);
-		if (val == PCIE_ATU_ENABLE)
+		if (val & PCIE_ATU_ENABLE)
 			return;
 
 		udelay(LINK_WAIT_IATU_MAX);

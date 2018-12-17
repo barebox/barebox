@@ -43,11 +43,11 @@ enum imx6_pcie_variants {
 };
 
 struct imx6_pcie {
+	struct pcie_port	pp; /* pp.dbi_base is DT 0th resource */
 	int			reset_gpio;
 	struct clk		*pcie_bus;
 	struct clk		*pcie_phy;
 	struct clk		*pcie;
-	struct pcie_port	pp;
 	void __iomem		*iomuxc_gpr;
 	enum imx6_pcie_variants variant;
 	u32                     tx_deemph_gen1;

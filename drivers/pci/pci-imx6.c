@@ -239,8 +239,7 @@ static void imx6_pcie_reset_phy(struct imx6_pcie *imx6_pcie)
 
 static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 {
-	struct pcie_port *pp = &imx6_pcie->pp;
-	u32 val, gpr1, gpr12;
+	u32 gpr1;
 
 	switch (imx6_pcie->variant) {
 	case IMX6QP:
@@ -249,34 +248,7 @@ static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 		break;
 	case IMX6Q:
-		/*
-		 * If the bootloader already enabled the link we need some special
-		 * handling to get the core back into a state where it is safe to
-		 * touch it for configuration.  As there is no dedicated reset signal
-		 * wired up for MX6QDL, we need to manually force LTSSM into "detect"
-		 * state before completely disabling LTSSM, which is a prerequisite
-		 * for core configuration.
-		 *
-		 * If both LTSSM_ENABLE and REF_SSP_ENABLE are active we have a strong
-		 * indication that the bootloader activated the link.
-		 */
 		gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
-
-		if ((gpr1 & IMX6Q_GPR1_PCIE_REF_CLK_EN) &&
-		    (gpr12 & IMX6Q_GPR12_PCIE_CTL_2)) {
-			val = dw_pcie_readl_rc(pp, PCIE_PL_PFLR);
-			val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
-			val |= PCIE_PL_PFLR_FORCE_LINK;
-
-			data_abort_mask();
-			dw_pcie_writel_rc(pp, PCIE_PL_PFLR, val);
-			data_abort_unmask();
-
-			gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
-			writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
-		}
-
 		gpr1 |= IMX6Q_GPR1_PCIE_TEST_PD;
 		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 
@@ -641,6 +613,33 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 static void imx6_pcie_remove(struct device_d *dev)
 {
 	struct imx6_pcie *imx6_pcie = dev->priv;
+
+	if (imx6_pcie->variant == IMX6Q) {
+		/*
+		 * If the bootloader already enabled the link we need
+		 * some special handling to get the core back into a
+		 * state where it is safe to touch it for
+		 * configuration.  As there is no dedicated reset
+		 * signal wired up for MX6QDL, we need to manually
+		 * force LTSSM into "detect" state before completely
+		 * disabling LTSSM, which is a prerequisite for core
+		 * configuration.
+		 */
+		struct pcie_port *pp = &imx6_pcie->pp;
+		u32 gpr12, val;
+
+		val = dw_pcie_readl_rc(pp, PCIE_PL_PFLR);
+		val &= ~PCIE_PL_PFLR_LINK_STATE_MASK;
+		val |= PCIE_PL_PFLR_FORCE_LINK;
+
+		data_abort_mask();
+		dw_pcie_writel_rc(pp, PCIE_PL_PFLR, val);
+		data_abort_unmask();
+
+		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+		gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
+		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+	}
 
 	imx6_pcie_assert_core_reset(imx6_pcie);
 }

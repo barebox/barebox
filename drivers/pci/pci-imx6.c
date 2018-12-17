@@ -236,7 +236,7 @@ static void imx6_pcie_reset_phy(struct imx6_pcie *imx6_pcie)
 	pcie_phy_write(imx6_pcie, PHY_RX_OVRD_IN_LO, temp);
 }
 
-static int imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
+static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 {
 	struct pcie_port *pp = &imx6_pcie->pp;
 	u32 val, gpr1, gpr12;
@@ -283,11 +283,9 @@ static int imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 		break;
 	}
-
-	return 0;
 }
 
-static int imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
+static void imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 {
 	struct device_d *dev = imx6_pcie->pp.dev;
 	int ret;
@@ -296,7 +294,7 @@ static int imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 	ret = clk_enable(imx6_pcie->pcie_phy);
 	if (ret) {
 		dev_err(dev, "unable to enable pcie_phy clock\n");
-		goto err_pcie_phy;
+		return;
 	}
 
 	ret = clk_enable(imx6_pcie->pcie_bus);
@@ -351,15 +349,12 @@ static int imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 		break;
 	}
 
-	return 0;
+	return;
 
 err_pcie:
 	clk_disable(imx6_pcie->pcie_bus);
 err_pcie_bus:
 	clk_disable(imx6_pcie->pcie_phy);
-err_pcie_phy:
-	return ret;
-
 }
 
 static void imx6_pcie_init_phy(struct imx6_pcie *imx6_pcie)

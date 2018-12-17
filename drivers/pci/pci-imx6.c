@@ -285,6 +285,28 @@ static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 	}
 }
 
+static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
+{
+	u32 gpr1;
+
+	/* power up core phy and enable ref clock */
+	gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+	gpr1 &= ~IMX6Q_GPR1_PCIE_TEST_PD;
+	writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+	/*
+	 * the async reset input need ref clock to sync internally,
+	 * when the ref clock comes after reset, internal synced
+	 * reset time is too short, cannot meet the requirement.
+	 * add one ~10us delay here.
+	 */
+	udelay(10);
+	gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+	gpr1 |= IMX6Q_GPR1_PCIE_REF_CLK_EN;
+	writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+
+	return 0;
+}
+
 static void imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 {
 	struct device_d *dev = imx6_pcie->pp.dev;
@@ -309,20 +331,11 @@ static void imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 		goto err_pcie;
 	}
 
-	/* power up core phy and enable ref clock */
-	gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-	gpr1 &= ~IMX6Q_GPR1_PCIE_TEST_PD;
-	writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-	/*
-	 * the async reset input need ref clock to sync internally,
-	 * when the ref clock comes after reset, internal synced
-	 * reset time is too short, cannot meet the requirement.
-	 * add one ~10us delay here.
-	 */
-	udelay(10);
-	gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
-	gpr1 |= IMX6Q_GPR1_PCIE_REF_CLK_EN;
-	writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
+	ret = imx6_pcie_enable_ref_clk(imx6_pcie);
+	if (ret) {
+		dev_err(dev, "unable to enable pcie ref clock\n");
+		goto err_ref_clk;
+	}
 
 	/* allow the clocks to stabilize */
 	udelay(200);
@@ -351,6 +364,8 @@ static void imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 
 	return;
 
+err_ref_clk:
+	clk_disable(imx6_pcie->pcie);
 err_pcie:
 	clk_disable(imx6_pcie->pcie_bus);
 err_pcie_bus:

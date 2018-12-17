@@ -42,6 +42,7 @@ struct pcie_port {
 	u32			lanes;
 	struct pcie_host_ops	*ops;
 	struct pci_controller	pci;
+	u8                      iatu_unroll_enabled;
 };
 
 struct pcie_host_ops {

@@ -66,6 +66,7 @@ $(obj)/%.pbl: $(pbl-lds) $(barebox-pbl-common) $(obj)/piggy.o FORCE
 
 $(obj)/%.pblb: $(obj)/%.pbl FORCE
 	$(call if_changed,objcopy_bin,$(*F))
+	$(Q)$(objtree)/scripts/fix_size -f $@
 
 $(obj)/%.s: $(obj)/% FORCE
 	$(call if_changed,disasm)

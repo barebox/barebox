@@ -92,10 +92,22 @@
 #define PCIE_PHY_DEBUG_R1_LINK_UP      (0x1 << 4)
 #define PCIE_PHY_DEBUG_R1_LINK_IN_TRAINING     (0x1 << 29)
 
+struct pcie_port;
+struct dw_pcie;
+
+struct dw_pcie_host_ops {
+	int (*rd_own_conf)(struct pcie_port *pp, int where, int size, u32 *val);
+	int (*wr_own_conf)(struct pcie_port *pp, int where, int size, u32 val);
+	int (*rd_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
+			     unsigned int devfn, int where, int size, u32 *val);
+	int (*wr_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
+			     unsigned int devfn, int where, int size, u32 val);
+	void (*host_init)(struct pcie_port *pp);
+	void (*scan_bus)(struct pcie_port *pp);
+};
+
 struct pcie_port {
-	struct device_d		*dev;
 	u8			root_bus_nr;
-	void __iomem		*dbi_base;
 	u64			cfg0_base;
 	u64			cfg0_mod_base;
 	void __iomem		*va_cfg0_base;
@@ -117,35 +129,36 @@ struct pcie_port {
 	struct resource		mem;
 	struct resource		busn;
 	int			irq;
-	u32			lanes;
-	u32			num_viewport;
-	struct pcie_host_ops	*ops;
+	struct dw_pcie_host_ops	*ops;
 	struct pci_controller	pci;
+};
+
+struct dw_pcie_ops {
+	u32     (*readl_dbi)(struct dw_pcie *pcie, u32 reg);
+	void    (*writel_dbi)(struct dw_pcie *pcie, u32 reg, u32 val);
+	int     (*link_up)(struct dw_pcie *pcie);
+};
+
+struct dw_pcie {
+	struct device_d         *dev;
+	void __iomem            *dbi_base;
+	u32                     lanes;
+	u32                     num_viewport;
 	u8                      iatu_unroll_enabled;
+	struct pcie_port        pp;
+	const struct dw_pcie_ops *ops;
 };
 
-struct pcie_host_ops {
-	u32 (*readl_rc)(struct pcie_port *pp, u32 reg);
-	void (*writel_rc)(struct pcie_port *pp, u32 reg, u32 val);
-	int (*rd_own_conf)(struct pcie_port *pp, int where, int size, u32 *val);
-	int (*wr_own_conf)(struct pcie_port *pp, int where, int size, u32 val);
-	int (*rd_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
-			unsigned int devfn, int where, int size, u32 *val);
-	int (*wr_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
-			unsigned int devfn, int where, int size, u32 val);
-	int (*link_up)(struct pcie_port *pp);
-	void (*host_init)(struct pcie_port *pp);
-	void (*scan_bus)(struct pcie_port *pp);
-};
+#define to_dw_pcie_from_pp(port) container_of((port), struct dw_pcie, pp)
 
-u32 dw_pcie_readl_rc(struct pcie_port *pp, u32 reg);
-void dw_pcie_writel_rc(struct pcie_port *pp, u32 reg, u32 val);
 int dw_pcie_read(void __iomem *addr, int size, u32 *val);
 int dw_pcie_write(void __iomem *addr, int size, u32 val);
-int dw_pcie_link_up(struct pcie_port *pp);
 void dw_pcie_setup_rc(struct pcie_port *pp);
 int dw_pcie_host_init(struct pcie_port *pp);
 
-int dw_pcie_wait_for_link(struct pcie_port *pp);
+u32 dw_pcie_readl_dbi(struct dw_pcie *pci, u32 reg);
+void dw_pcie_writel_dbi(struct dw_pcie *pci, u32 reg, u32 val);
+int dw_pcie_link_up(struct dw_pcie *pci);
+int dw_pcie_wait_for_link(struct dw_pcie *pci);
 
 #endif /* _PCIE_DESIGNWARE_H */

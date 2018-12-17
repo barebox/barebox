@@ -203,7 +203,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	struct resource *cfg_res;
 	u32 val, na, ns;
 	const __be32 *addrp;
-	int index;
+	int index, ret;
 
 	/* Find the address cell size and the number of cells in order to get
 	 * the untranslated address.
@@ -285,10 +285,9 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	if (!pp->va_cfg1_base)
 		pp->va_cfg1_base = (void __force *)(u32)pp->cfg1_base;
 
-	if (of_property_read_u32(np, "num-lanes", &pp->lanes)) {
-		dev_err(pp->dev, "Failed to parse the number of lanes\n");
-		return -EINVAL;
-	}
+	ret = of_property_read_u32(np, "num-lanes", &pp->lanes);
+	if (ret)
+		pp->lanes = 0;
 
 	if (pp->ops->host_init)
 		pp->ops->host_init(pp);
@@ -496,6 +495,9 @@ void dw_pcie_setup_rc(struct pcie_port *pp)
 	case 4:
 		val |= PORT_LINK_MODE_4_LANES;
 		break;
+       default:
+               dev_err(pp->dev, "num-lanes %u: invalid value\n", pp->lanes);
+               return;
 	}
 	dw_pcie_writel_rc(pp, val, PCIE_PORT_LINK_CONTROL);
 

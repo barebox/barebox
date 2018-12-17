@@ -140,8 +140,8 @@ struct pcie_host_ops {
 
 u32 dw_pcie_readl_rc(struct pcie_port *pp, u32 reg);
 void dw_pcie_writel_rc(struct pcie_port *pp, u32 reg, u32 val);
-int dw_pcie_cfg_read(void __iomem *addr, int size, u32 *val);
-int dw_pcie_cfg_write(void __iomem *addr, int size, u32 val);
+int dw_pcie_read(void __iomem *addr, int size, u32 *val);
+int dw_pcie_write(void __iomem *addr, int size, u32 val);
 int dw_pcie_link_up(struct pcie_port *pp);
 void dw_pcie_setup_rc(struct pcie_port *pp);
 int dw_pcie_host_init(struct pcie_port *pp);

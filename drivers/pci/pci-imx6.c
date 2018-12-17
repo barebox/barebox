@@ -501,7 +501,7 @@ static const struct dw_pcie_ops dw_pcie_ops = {
        .link_up = imx6_pcie_link_up,
 };
 
-static struct dw_pcie_host_ops imx6_pcie_host_ops = {
+static const struct dw_pcie_host_ops imx6_pcie_host_ops = {
 	.host_init = imx6_pcie_host_init,
 };
 

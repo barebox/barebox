@@ -129,7 +129,7 @@ struct pcie_port {
 	struct resource		mem;
 	struct resource		busn;
 	int			irq;
-	struct dw_pcie_host_ops	*ops;
+	const struct dw_pcie_host_ops	*ops;
 	struct pci_controller	pci;
 };
 

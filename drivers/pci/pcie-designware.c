@@ -76,7 +76,7 @@ u32 __dw_pcie_readl_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
 
 	ret = dw_pcie_read(base + reg, size, &val);
 	if (ret)
-		dev_err(pci->dev, "read DBI address failed\n");
+		dev_err(pci->dev, "Read DBI address failed\n");
 
 	return val;
 }
@@ -93,7 +93,7 @@ void __dw_pcie_writel_dbi(struct dw_pcie *pci, void __iomem *base, u32 reg,
 
 	ret = dw_pcie_write(base + reg, size, val);
 	if (ret)
-		dev_err(pci->dev, "write DBI address failed\n");
+		dev_err(pci->dev, "Write DBI address failed\n");
 }
 
 static u32 dw_pcie_readl_ob_unroll(struct dw_pcie *pci, u32 index, u32 reg)
@@ -144,7 +144,7 @@ static void dw_pcie_prog_outbound_atu_unroll(struct dw_pcie *pci, int index,
 
 		udelay(LINK_WAIT_IATU_MAX);
 	}
-	dev_err(pci->dev, "outbound iATU is not being enabled\n");
+	dev_err(pci->dev, "Outbound iATU is not being enabled\n");
 }
 
 void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
@@ -185,7 +185,7 @@ void dw_pcie_prog_outbound_atu(struct dw_pcie *pci, int index,
 
 		udelay(LINK_WAIT_IATU_MAX);
 	}
-	dev_err(pci->dev, "outbound iATU is not being enabled\n");
+	dev_err(pci->dev, "Outbound iATU is not being enabled\n");
 }
 
 int dw_pcie_wait_for_link(struct dw_pcie *pci)
@@ -230,7 +230,7 @@ void dw_pcie_setup(struct dw_pcie *pci)
 	if (ret)
 		lanes = 0;
 
-	/* set the number of lanes */
+	/* Set the number of lanes */
 	val = dw_pcie_readl_dbi(pci, PCIE_PORT_LINK_CONTROL);
 	val &= ~PORT_LINK_MODE_MASK;
 	switch (lanes) {
@@ -249,7 +249,7 @@ void dw_pcie_setup(struct dw_pcie *pci)
 	}
 	dw_pcie_writel_dbi(pci, PCIE_PORT_LINK_CONTROL, val);
 
-	/* set link width speed control register */
+	/* Set link width speed control register */
 	val = dw_pcie_readl_dbi(pci, PCIE_LINK_WIDTH_SPEED_CONTROL);
 	val &= ~PORT_LOGIC_LINK_WIDTH_MASK;
 	switch (lanes) {

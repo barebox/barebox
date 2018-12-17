@@ -114,9 +114,9 @@ static void dw_pcie_writel_ob_unroll(struct dw_pcie *pci, u32 index,
 	dw_pcie_writel_dbi(pci, offset + reg, val);
 }
 
-void dw_pcie_prog_outbound_atu_unroll(struct dw_pcie *pci, int index, int type,
-				     u64 cpu_addr, u64 pci_addr, u32 size)
-
+static void dw_pcie_prog_outbound_atu_unroll(struct dw_pcie *pci, int index,
+					     int type, u64 cpu_addr,
+					     u64 pci_addr, u32 size)
 {
 	u32 retries, val;
 

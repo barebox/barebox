@@ -40,6 +40,7 @@ struct pcie_port {
 	struct resource		busn;
 	int			irq;
 	u32			lanes;
+	u32			num_viewport;
 	struct pcie_host_ops	*ops;
 	struct pci_controller	pci;
 	u8                      iatu_unroll_enabled;

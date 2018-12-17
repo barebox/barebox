@@ -14,6 +14,10 @@
 #ifndef _PCIE_DESIGNWARE_H
 #define _PCIE_DESIGNWARE_H
 
+/* Parameters for the waiting for link up routine */
+#define LINK_WAIT_MAX_RETRIES		10
+#define LINK_WAIT_USLEEP_MAX		100000
+
 struct pcie_port {
 	struct device_d		*dev;
 	u8			root_bus_nr;
@@ -65,5 +69,7 @@ int dw_pcie_cfg_write(void __iomem *addr, int size, u32 val);
 int dw_pcie_link_up(struct pcie_port *pp);
 void dw_pcie_setup_rc(struct pcie_port *pp);
 int dw_pcie_host_init(struct pcie_port *pp);
+
+int dw_pcie_wait_for_link(struct pcie_port *pp);
 
 #endif /* _PCIE_DESIGNWARE_H */

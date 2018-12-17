@@ -171,6 +171,24 @@ static void dw_pcie_prog_outbound_atu(struct pcie_port *pp, int index,
 	dw_pcie_readl_rc(pp, PCIE_ATU_CR2, &val);
 }
 
+int dw_pcie_wait_for_link(struct pcie_port *pp)
+{
+	int retries;
+
+	/* Check if the link is up or not */
+	for (retries = 0; retries < LINK_WAIT_MAX_RETRIES; retries++) {
+		if (dw_pcie_link_up(pp)) {
+			dev_info(pp->dev, "Link up\n");
+			return 0;
+		}
+		udelay(LINK_WAIT_USLEEP_MAX);
+	}
+
+	dev_err(pp->dev, "Phy link never came up\n");
+
+	return -ETIMEDOUT;
+}
+
 int dw_pcie_link_up(struct pcie_port *pp)
 {
 	if (pp->ops->link_up)

@@ -14,10 +14,6 @@
 #ifndef _PCIE_DESIGNWARE_H
 #define _PCIE_DESIGNWARE_H
 
-/* Parameters for the waiting for link up routine */
-#define LINK_WAIT_MAX_RETRIES		10
-#define LINK_WAIT_USLEEP_MAX		100000
-
 struct pcie_port {
 	struct device_d		*dev;
 	u8			root_bus_nr;

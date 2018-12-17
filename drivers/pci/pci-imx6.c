@@ -401,6 +401,7 @@ static int imx6_pcie_wait_for_link(struct pcie_port *pp)
 
 static int imx6_pcie_wait_for_speed_change(struct pcie_port *pp)
 {
+	struct device_d *dev = pp->dev;
 	uint32_t tmp;
 	uint64_t start = get_time_ns();
 
@@ -411,7 +412,7 @@ static int imx6_pcie_wait_for_speed_change(struct pcie_port *pp)
 			return 0;
 	}
 
-	dev_err(pp->dev, "Speed change timeout\n");
+	dev_err(dev, "Speed change timeout\n");
 	return -EINVAL;
 }
 
@@ -419,6 +420,7 @@ static int imx6_pcie_wait_for_speed_change(struct pcie_port *pp)
 static int imx6_pcie_establish_link(struct pcie_port *pp)
 {
 	struct imx6_pcie *imx6_pcie = to_imx6_pcie(pp);
+	struct device_d *dev = pp->dev;
 	uint32_t tmp;
 	int ret;
 	u32 gpr12;
@@ -440,7 +442,7 @@ static int imx6_pcie_establish_link(struct pcie_port *pp)
 
 	ret = imx6_pcie_wait_for_link(pp);
 	if (ret) {
-		dev_info(pp->dev, "Link never came up\n");
+		dev_info(dev, "Link never came up\n");
 		goto err_reset_phy;
 	}
 
@@ -460,24 +462,24 @@ static int imx6_pcie_establish_link(struct pcie_port *pp)
 
 	ret = imx6_pcie_wait_for_speed_change(pp);
 	if (ret) {
-		dev_err(pp->dev, "Failed to bring link up!\n");
+		dev_err(dev, "Failed to bring link up!\n");
 		goto err_reset_phy;
 	}
 
 	/* Make sure link training is finished as well! */
 	ret = imx6_pcie_wait_for_link(pp);
 	if (ret) {
-		dev_err(pp->dev, "Failed to bring link up!\n");
+		dev_err(dev, "Failed to bring link up!\n");
 		goto err_reset_phy;
 	}
 
 	tmp = readl(pp->dbi_base + PCIE_RC_LCSR);
-	dev_dbg(pp->dev, "Link up, Gen=%i\n", (tmp >> 16) & 0xf);
+	dev_dbg(dev, "Link up, Gen=%i\n", (tmp >> 16) & 0xf);
 
 	return 0;
 
 err_reset_phy:
-       dev_dbg(pp->dev, "PHY DEBUG_R0=0x%08x DEBUG_R1=0x%08x\n",
+       dev_dbg(dev, "PHY DEBUG_R0=0x%08x DEBUG_R1=0x%08x\n",
                readl(pp->dbi_base + PCIE_PHY_DEBUG_R0),
                readl(pp->dbi_base + PCIE_PHY_DEBUG_R1));
        imx6_pcie_reset_phy(pp);
@@ -500,6 +502,7 @@ static void imx6_pcie_host_init(struct pcie_port *pp)
 
 static int imx6_pcie_link_up(struct pcie_port *pp)
 {
+	struct device_d *dev = pp->dev;
 	u32 rc;
 	int count = 5;
 
@@ -527,7 +530,7 @@ static int imx6_pcie_link_up(struct pcie_port *pp)
 			return 1;
 		if (!count--)
 			break;
-		dev_dbg(pp->dev, "Link is up, but still in training\n");
+		dev_dbg(dev, "Link is up, but still in training\n");
 		/*
 		 * Wait a little bit, then re-check if the link finished
 		 * the training.

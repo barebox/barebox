@@ -76,6 +76,11 @@ static unsigned long global_io_offset;
 
 int dw_pcie_cfg_read(void __iomem *addr, int size, u32 *val)
 {
+	if ((uintptr_t)addr & (size - 1)) {
+		*val = 0;
+		return PCIBIOS_BAD_REGISTER_NUMBER;
+	}
+
 	if (size == 4)
 		*val = readl(addr);
 	else if (size == 2)
@@ -92,6 +97,9 @@ int dw_pcie_cfg_read(void __iomem *addr, int size, u32 *val)
 
 int dw_pcie_cfg_write(void __iomem *addr, int size, u32 val)
 {
+	if ((uintptr_t)addr & (size - 1))
+		return PCIBIOS_BAD_REGISTER_NUMBER;
+
 	if (size == 4)
 		writel(val, addr);
 	else if (size == 2)

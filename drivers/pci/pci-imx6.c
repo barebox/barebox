@@ -55,6 +55,7 @@ struct imx6_pcie {
 	u32                     tx_deemph_gen2_6db;
 	u32                     tx_swing_full;
 	u32                     tx_swing_low;
+	int			link_gen;
 };
 
 /* PCIe Root Complex registers (memory-mapped) */
@@ -464,11 +465,16 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
 		goto err_reset_phy;
 	}
 
-	/* Allow Gen2 mode after the link is up. */
-	tmp = dw_pcie_readl_rc(pp, PCIE_RC_LCR);
-	tmp &= ~PCIE_RC_LCR_MAX_LINK_SPEEDS_MASK;
-	tmp |= PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN2;
-	dw_pcie_writel_rc(pp, PCIE_RC_LCR, tmp);
+
+	if (imx6_pcie->link_gen == 2) {
+		/* Allow Gen2 mode after the link is up. */
+		tmp = dw_pcie_readl_rc(pp, PCIE_RC_LCR);
+		tmp &= ~PCIE_RC_LCR_MAX_LINK_SPEEDS_MASK;
+		tmp |= PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN2;
+		dw_pcie_writel_rc(pp, PCIE_RC_LCR, tmp);
+	} else {
+		dev_info(dev, "Link: Gen2 disabled\n");
+	}
 
 	/*
 	 * Start Directed Speed Change so the best possible speed both link
@@ -492,8 +498,7 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
 	}
 
 	tmp = dw_pcie_readl_rc(pp, PCIE_RC_LCSR);
-	dev_dbg(dev, "Link up, Gen=%i\n", (tmp >> 16) & 0xf);
-
+	dev_info(dev, "Link up, Gen%i\n", (tmp >> 16) & 0xf);
 	return 0;
 
 err_reset_phy:
@@ -619,6 +624,12 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 	if (of_property_read_u32(np, "fsl,tx-swing-low",
 				 &imx6_pcie->tx_swing_low))
 		imx6_pcie->tx_swing_low = 127;
+
+       /* Limit link speed */
+       ret = of_property_read_u32(np, "fsl,max-link-speed",
+                                  &imx6_pcie->link_gen);
+       if (ret)
+               imx6_pcie->link_gen = 1;
 
 	ret = imx6_add_pcie_port(imx6_pcie, dev);
 	if (ret < 0)

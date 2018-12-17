@@ -39,13 +39,13 @@ int dw_pcie_read(void __iomem *addr, int size, u32 *val)
 		return PCIBIOS_BAD_REGISTER_NUMBER;
 	}
 
-	if (size == 4)
+	if (size == 4) {
 		*val = readl(addr);
-	else if (size == 2)
+	} else if (size == 2) {
 		*val = readw(addr);
-	else if (size == 1)
+	} else if (size == 1) {
 		*val = readb(addr);
-	else {
+	} else {
 		*val = 0;
 		return PCIBIOS_BAD_REGISTER_NUMBER;
 	}
@@ -260,8 +260,8 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 
 	cfg_res = dev_get_resource_by_name(dev, IORESOURCE_MEM, "config");
 	if (cfg_res) {
-		pp->cfg0_size = resource_size(cfg_res)/2;
-		pp->cfg1_size = resource_size(cfg_res)/2;
+		pp->cfg0_size = resource_size(cfg_res) / 2;
+		pp->cfg1_size = resource_size(cfg_res) / 2;
 		pp->cfg0_base = cfg_res->start;
 		pp->cfg1_base = cfg_res->start + pp->cfg0_size;
 
@@ -308,8 +308,8 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 		}
 		if (restype == 0) {
 			of_pci_range_to_resource(&range, np, &pp->cfg);
-			pp->cfg0_size = resource_size(&pp->cfg)/2;
-			pp->cfg1_size = resource_size(&pp->cfg)/2;
+			pp->cfg0_size = resource_size(&pp->cfg) / 2;
+			pp->cfg1_size = resource_size(&pp->cfg) / 2;
 			pp->cfg0_base = pp->cfg.start;
 			pp->cfg1_base = pp->cfg.start + pp->cfg0_size;
 
@@ -351,7 +351,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 }
 
 static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
-		u32 devfn, int where, int size, u32 *val)
+				 u32 devfn, int where, int size, u32 *val)
 {
 	int ret, type;
 	u32 address, busdev, cfg_size;
@@ -392,7 +392,7 @@ static int dw_pcie_rd_other_conf(struct pcie_port *pp, struct pci_bus *bus,
 }
 
 static int dw_pcie_wr_other_conf(struct pcie_port *pp, struct pci_bus *bus,
-		u32 devfn, int where, int size, u32 val)
+				 u32 devfn, int where, int size, u32 val)
 {
 	int ret, type;
 	u32 busdev, cfg_size;
@@ -457,7 +457,7 @@ static int dw_pcie_valid_device(struct pcie_port *pp, struct pci_bus *bus,
 }
 
 static int dw_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
-			int size, u32 *val)
+			   int size, u32 *val)
 {
 	struct pcie_port *pp = host_to_pcie(bus->host);
 	int ret;
@@ -482,7 +482,7 @@ static int dw_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
 }
 
 static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
-			int where, int size, u32 val)
+			   int where, int size, u32 val)
 {
 	struct pcie_port *pp = host_to_pcie(bus->host);
 	int ret;

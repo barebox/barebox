@@ -76,14 +76,16 @@ static unsigned long global_io_offset;
 
 int dw_pcie_cfg_read(void __iomem *addr, int where, int size, u32 *val)
 {
-	*val = readl(addr);
-
-	if (size == 1)
-		*val = (*val >> (8 * (where & 3))) & 0xff;
+	if (size == 4)
+		*val = readl(addr);
 	else if (size == 2)
-		*val = (*val >> (8 * (where & 3))) & 0xffff;
-	else if (size != 4)
+		*val = readw(addr + (where & 2));
+	else if (size == 1)
+		*val = readb(addr + (where & 3));
+	else {
+		*val = 0;
 		return PCIBIOS_BAD_REGISTER_NUMBER;
+	}
 
 	return PCIBIOS_SUCCESSFUL;
 }

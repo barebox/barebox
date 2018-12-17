@@ -334,7 +334,7 @@ static int nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
  * specific driver. It provides the details for writing a bad block marker to a
  * block.
  */
-static int nand_default_block_markbad(struct mtd_info *mtd, loff_t ofs)
+static __maybe_unused int nand_default_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
 	struct nand_chip *chip = mtd->priv;
 	struct mtd_oob_ops ops;

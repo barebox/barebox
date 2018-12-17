@@ -83,6 +83,9 @@
 #define PCIE_PHY_DEBUG_R1_LINK_UP      (0x1 << 4)
 #define PCIE_PHY_DEBUG_R1_LINK_IN_TRAINING     (0x1 << 29)
 
+#define PCIE_MISC_CONTROL_1_OFF		0x8BC
+#define PCIE_DBI_RO_WR_EN		(0x1 << 0)
+
 /* PCIe Port Logic registers */
 #define PLR_OFFSET                     0x700
 #define PCIE_PHY_DEBUG_R1              (PLR_OFFSET + 0x2c)
@@ -174,4 +177,27 @@ static inline u32 dw_pcie_readl_dbi(struct dw_pcie *pci, u32 reg)
 {
 	return  __dw_pcie_readl_dbi(pci, pci->dbi_base, reg, 0x4);
 }
+
+static inline void dw_pcie_dbi_ro_wr_en(struct dw_pcie *pci)
+{
+	u32 reg;
+	u32 val;
+
+	reg = PCIE_MISC_CONTROL_1_OFF;
+	val = dw_pcie_readl_dbi(pci, reg);
+	val |= PCIE_DBI_RO_WR_EN;
+	dw_pcie_writel_dbi(pci, reg, val);
+}
+
+static inline void dw_pcie_dbi_ro_wr_dis(struct dw_pcie *pci)
+{
+	u32 reg;
+	u32 val;
+
+	reg = PCIE_MISC_CONTROL_1_OFF;
+	val = dw_pcie_readl_dbi(pci, reg);
+	val &= ~PCIE_DBI_RO_WR_EN;
+	dw_pcie_writel_dbi(pci, reg, val);
+}
+
 #endif /* _PCIE_DESIGNWARE_H */

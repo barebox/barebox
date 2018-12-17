@@ -133,29 +133,19 @@ static inline void dw_pcie_writel_rc(struct pcie_port *pp, u32 val, u32 reg)
 static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
 			       u32 *val)
 {
-	int ret;
-
 	if (pp->ops->rd_own_conf)
-		ret = pp->ops->rd_own_conf(pp, where, size, val);
-	else
-		ret = dw_pcie_cfg_read(pp->dbi_base + where,
-				       size, val);
+		return pp->ops->rd_own_conf(pp, where, size, val);
 
-	return ret;
+	return dw_pcie_cfg_read(pp->dbi_base + where, size, val);
 }
 
 static int dw_pcie_wr_own_conf(struct pcie_port *pp, int where, int size,
 			       u32 val)
 {
-	int ret;
-
 	if (pp->ops->wr_own_conf)
-		ret = pp->ops->wr_own_conf(pp, where, size, val);
-	else
-		ret = dw_pcie_cfg_write(pp->dbi_base + where,
-					size, val);
+		return pp->ops->wr_own_conf(pp, where, size, val);
 
-	return ret;
+	return dw_pcie_cfg_write(pp->dbi_base + where, size, val);
 }
 
 static void dw_pcie_prog_outbound_atu(struct pcie_port *pp, int index,
@@ -185,8 +175,8 @@ int dw_pcie_link_up(struct pcie_port *pp)
 {
 	if (pp->ops->link_up)
 		return pp->ops->link_up(pp);
-	else
-		return 0;
+
+	return 0;
 }
 
 static inline struct pcie_port *host_to_pcie(struct pci_controller *host)
@@ -430,15 +420,15 @@ static int dw_pcie_rd_conf(struct pci_bus *bus, u32 devfn, int where,
 
 	data_abort_mask();
 
-	if (bus->number != pp->root_bus_nr)
-		if (pp->ops->rd_other_conf)
-			ret = pp->ops->rd_other_conf(pp, bus, devfn,
-						where, size, val);
-		else
-			ret = dw_pcie_rd_other_conf(pp, bus, devfn,
-						where, size, val);
-	else
+	if (bus->number == pp->root_bus_nr)
 		ret = dw_pcie_rd_own_conf(pp, where, size, val);
+
+	else if (pp->ops->rd_other_conf)
+		ret = pp->ops->rd_other_conf(pp, bus, devfn,
+					     where, size, val);
+	else
+		ret = dw_pcie_rd_other_conf(pp, bus, devfn,
+					    where, size, val);
 
 	if (data_abort_unmask())
 		return PCIBIOS_DEVICE_NOT_FOUND;
@@ -457,15 +447,14 @@ static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
 
 	data_abort_mask();
 
-	if (bus->number != pp->root_bus_nr)
-		if (pp->ops->wr_other_conf)
-			ret = pp->ops->wr_other_conf(pp, bus, devfn,
-						where, size, val);
-		else
-			ret = dw_pcie_wr_other_conf(pp, bus, devfn,
-						where, size, val);
-	else
+	if (bus->number == pp->root_bus_nr)
 		ret = dw_pcie_wr_own_conf(pp, where, size, val);
+	else if (pp->ops->wr_other_conf)
+		ret = pp->ops->wr_other_conf(pp, bus, devfn,
+					     where, size, val);
+	else
+		ret = dw_pcie_wr_other_conf(pp, bus, devfn,
+					    where, size, val);
 
 	if (data_abort_unmask())
 		return PCIBIOS_DEVICE_NOT_FOUND;

@@ -235,7 +235,8 @@ static u8 dw_pcie_iatu_unroll_enabled(struct pcie_port *pp)
 
 int __init dw_pcie_host_init(struct pcie_port *pp)
 {
-	struct device_node *np = pp->dev->device_node;
+	struct device_d *dev = pp->dev;
+	struct device_node *np = dev->device_node;
 	struct of_pci_range range;
 	struct of_pci_range_parser parser;
 	struct resource *cfg_res;
@@ -249,7 +250,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	of_property_read_u32(np, "#address-cells", &na);
 	ns = of_n_size_cells(np);
 
-	cfg_res = dev_get_resource_by_name(pp->dev, IORESOURCE_MEM, "config");
+	cfg_res = dev_get_resource_by_name(dev, IORESOURCE_MEM, "config");
 	if (cfg_res) {
 		pp->cfg0_size = resource_size(cfg_res)/2;
 		pp->cfg1_size = resource_size(cfg_res)/2;
@@ -262,11 +263,11 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 		pp->cfg0_mod_base = of_read_number(addrp, ns);
 		pp->cfg1_mod_base = pp->cfg0_mod_base + pp->cfg0_size;
 	} else {
-		dev_err(pp->dev, "missing *config* reg space\n");
+		dev_err(dev, "missing *config* reg space\n");
 	}
 
 	if (of_pci_range_parser_init(&parser, np)) {
-		dev_err(pp->dev, "missing ranges property\n");
+		dev_err(dev, "missing ranges property\n");
 		return -EINVAL;
 	}
 
@@ -334,7 +335,7 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	if (pp->ops->host_init)
 		pp->ops->host_init(pp);
 
-	pp->pci.parent = pp->dev;
+	pp->pci.parent = dev;
 	pp->pci.pci_ops = &dw_pcie_ops;
 	pp->pci.set_busno = dw_pcie_set_local_bus_nr;
 	pp->pci.mem_resource = &pp->mem;

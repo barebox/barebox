@@ -99,7 +99,7 @@ struct dw_pcie_host_ops {
 			     unsigned int devfn, int where, int size, u32 *val);
 	int (*wr_other_conf)(struct pcie_port *pp, struct pci_bus *bus,
 			     unsigned int devfn, int where, int size, u32 val);
-	void (*host_init)(struct pcie_port *pp);
+	int (*host_init)(struct pcie_port *pp);
 	void (*scan_bus)(struct pcie_port *pp);
 };
 

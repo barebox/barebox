@@ -164,8 +164,11 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	if (ret)
 		pci->num_viewport = 2;
 
-	if (pp->ops->host_init)
-		pp->ops->host_init(pp);
+	if (pp->ops->host_init) {
+		ret = pp->ops->host_init(pp);
+		if (ret)
+			return ret;
+	}
 
 	pp->pci.parent = dev;
 	pp->pci.pci_ops = &dw_pcie_ops;

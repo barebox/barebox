@@ -289,20 +289,27 @@ static int imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 
 static int imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 {
+	struct device_d *dev = imx6_pcie->pp.dev;
 	int ret;
 	u32 gpr1;
 
 	ret = clk_enable(imx6_pcie->pcie_phy);
-	if (ret)
+	if (ret) {
+		dev_err(dev, "unable to enable pcie_phy clock\n");
 		goto err_pcie_phy;
+	}
 
 	ret = clk_enable(imx6_pcie->pcie_bus);
-	if (ret)
+	if (ret) {
+		dev_err(dev, "unable to enable pcie_bus clock\n");
 		goto err_pcie_bus;
+	}
 
 	ret = clk_enable(imx6_pcie->pcie);
-	if (ret)
+	if (ret) {
+		dev_err(dev, "unable to enable pcie clock\n");
 		goto err_pcie;
+	}
 
 	/* power up core phy and enable ref clock */
 	gpr1 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);

@@ -1,0 +1,11 @@
+if MACH_ERIZO
+
+choice
+	prompt "Board type"
+
+config BOARD_ERIZO_GENERIC
+	bool "erizo generic board"
+
+endchoice
+
+endif

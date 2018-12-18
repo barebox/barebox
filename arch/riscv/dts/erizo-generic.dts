@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+#include "erizo.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "generic Erizo SoC board";
+	compatible = "miet-riscv-workgroup,erizo-generic-board";
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x80000000 0x00800000>;
+	};
+};

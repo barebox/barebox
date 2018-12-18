@@ -16,6 +16,15 @@ config ARCH_TEXT_BASE
 menu "Machine selection"
 
 choice
+	prompt "System type"
+	default MACH_ERIZO
+
+config MACH_ERIZO
+	bool "erizo family"
+
+endchoice
+
+choice
 	prompt "Base ISA"
 	default ARCH_RV32I
 
@@ -50,5 +59,7 @@ config BUILTIN_DTB
 config BUILTIN_DTB_NAME
 	string "DTB to build into the barebox image"
 	depends on BUILTIN_DTB
+
+source arch/riscv/mach-erizo/Kconfig
 
 endmenu

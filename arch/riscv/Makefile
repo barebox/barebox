@@ -54,3 +54,14 @@ CFLAGS += $(cflags-y)
 lds-y	:= arch/riscv/lib/barebox.lds
 
 CLEAN_FILES += arch/riscv/lib/barebox.lds
+
+ifeq ($(CONFIG_MACH_ERIZO),y)
+KBUILD_IMAGE := barebox.erizo.nmon
+endif
+
+quiet_cmd_erizo_nmon_image = MKIMAGE $@
+      cmd_erizo_nmon_image = $(srctree)/scripts/erizo-nmon-image $< $@ || \
+	echo "WARNING: Couldn't create erizo nmon image due to previous errors."
+
+barebox.erizo.nmon: $(KBUILD_BINARY) FORCE
+	$(call if_changed,erizo_nmon_image)

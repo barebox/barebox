@@ -63,3 +63,27 @@ config BUILTIN_DTB_NAME
 source arch/riscv/mach-erizo/Kconfig
 
 endmenu
+
+menu "RISC-V specific settings"
+
+config HAS_NMON
+	bool
+
+config NMON
+	bool "nmon"
+	depends on HAS_NMON
+	depends on DEBUG_LL
+	help
+	  Say yes here to add the nmon to pbl.
+	  nmon -- nano-monitor program for the RISC-V processors.
+	  It can operate with NO working RAM, using only
+	  the processor registers.
+
+config NMON_HELP
+	bool "nmon help message"
+	depends on NMON
+	help
+	  Say yes here to get the nmon commands message on
+	  every nmon start.
+
+endmenu

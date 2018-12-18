@@ -18,12 +18,20 @@
 
 #include <asm-generic/memory_layout.h>
 
+#include "mach/debug_ll.h"
+
+#include "asm/riscv_nmon.h"
+
 	.text
 	.section ".text_entry"
 	.align 2
 
 .globl _start
 _start:
+	debug_ll_ns16550_init
+
+	riscv_nmon
+
 	li	sp, STACK_BASE + STACK_SIZE
 
 	/* copy barebox to link location */

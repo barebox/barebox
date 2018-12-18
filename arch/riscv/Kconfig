@@ -21,6 +21,7 @@ choice
 
 config MACH_ERIZO
 	bool "erizo family"
+	select HAS_DEBUG_LL
 
 endchoice
 

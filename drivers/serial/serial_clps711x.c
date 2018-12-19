@@ -124,6 +124,7 @@ static int clps711x_probe(struct device_d *dev)
 	struct clps711x_uart *s;
 	int err, id = dev->id;
 	char syscon_dev[8];
+	const char *devname;
 
 	if (dev->device_node)
 		id = of_alias_get_id(dev->device_node, "serial");
@@ -162,6 +163,14 @@ static int clps711x_probe(struct device_d *dev)
 	s->cdev.getc	= clps711x_getc;
 	s->cdev.flush	= clps711x_flush;
 	s->cdev.setbrg	= clps711x_setbaudrate;
+	s->cdev.linux_console_name = "ttyCL";
+
+	devname = of_alias_get(dev->device_node);
+	if (devname) {
+		s->cdev.devname = xstrdup(devname);
+		s->cdev.devid = DEVICE_ID_SINGLE;
+	}
+
 	clps711x_init_port(&s->cdev);
 
 	err = console_register(&s->cdev);

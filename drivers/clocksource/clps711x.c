@@ -51,9 +51,15 @@ static int clps711x_cs_probe(struct device_d *dev)
 	return init_clock(&clps711x_cs);
 }
 
+static __maybe_unused struct of_device_id clps711x_timer_dt_ids[] = {
+	{ .compatible = "cirrus,ep7209-timer", },
+	{ }
+};
+
 static struct driver_d clps711x_cs_driver = {
 	.name = "clps711x-cs",
 	.probe = clps711x_cs_probe,
+	.of_compatible = DRV_OF_COMPAT(clps711x_timer_dt_ids),
 };
 
 static __init int clps711x_cs_init(void)

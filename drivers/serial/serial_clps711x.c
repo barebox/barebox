@@ -182,7 +182,7 @@ out_err:
 }
 
 static struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
-	{ .compatible = "cirrus,clps711x-uart", },
+	{ .compatible = "cirrus,ep7209-uart", },
 };
 
 static struct driver_d clps711x_driver = {

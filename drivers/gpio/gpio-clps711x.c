@@ -71,7 +71,7 @@ out_err:
 }
 
 static struct of_device_id __maybe_unused clps711x_gpio_dt_ids[] = {
-	{ .compatible = "cirrus,clps711x-gpio", },
+	{ .compatible = "cirrus,ep7209-gpio", },
 	{ /* sentinel */ }
 };
 

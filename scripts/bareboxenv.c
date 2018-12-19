@@ -34,6 +34,7 @@
 #include "compiler.h"
 
 #define debug(...)
+#define printk_once(...)
 
 /* Find out if the last character of a string matches the one given.
  * Don't underrun the buffer if the string length is 0.
@@ -54,6 +55,7 @@ enum {
 	ACTION_FOLLOWLINKS = (1 << 1),
 	ACTION_DEPTHFIRST  = (1 << 2),
 	/*ACTION_REVERSE   = (1 << 3), - unused */
+	ACTION_SORT        = (1 << 4),
 };
 
 int recursive_action(const char *fileName, unsigned flags,
@@ -95,6 +97,19 @@ static char *concat_subpath_file(const char *path, const char *f)
 	return concat_path_file(path, f);
 }
 
+static char *xstrdup(const char *s)
+{
+	int len = strlen(s) + 1;
+	char *d = xmalloc(len);
+
+	memcpy(d, s, len);
+
+	return d;
+}
+
+#include <linux/list.h>
+#include <linux/list_sort.h>
+#include "../lib/list_sort.c"
 #include "../lib/recursive_action.c"
 #include "../include/envfs.h"
 #include "../crypto/crc32.c"

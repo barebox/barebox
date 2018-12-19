@@ -1,7 +1,6 @@
 #ifndef __BAREBOX__
 #include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/slab.h>
+#define EXPORT_SYMBOL(x)
 #else
 #include <common.h>
 #include <malloc.h>

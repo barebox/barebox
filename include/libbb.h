@@ -17,6 +17,7 @@ enum {
 	ACTION_FOLLOWLINKS    = (1 << 1),
 	ACTION_DEPTHFIRST  = (1 << 2),
 	/*ACTION_REVERSE   = (1 << 3), - unused */
+	ACTION_SORT        = (1 << 4),
 };
 
 int recursive_action(const char *fileName, unsigned flags,

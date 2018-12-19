@@ -55,9 +55,4 @@ static struct driver_d clps711x_cs_driver = {
 	.probe = clps711x_cs_probe,
 	.of_compatible = DRV_OF_COMPAT(clps711x_timer_dt_ids),
 };
-
-static __init int clps711x_cs_init(void)
-{
-	return platform_driver_register(&clps711x_cs_driver);
-}
-coredevice_initcall(clps711x_cs_init);
+coredevice_platform_driver(clps711x_cs_driver);

@@ -277,9 +277,9 @@ int envfs_save(const char *filename, const char *dirname, unsigned flags)
 		size = 0; /* force no content */
 	} else {
 		/* first pass: calculate size */
-		recursive_action(dirname, ACTION_RECURSE, file_action,
+		recursive_action(dirname, ACTION_RECURSE | ACTION_SORT, file_action,
 				NULL, &data, 0);
-		recursive_action("/.defaultenv", ACTION_RECURSE,
+		recursive_action("/.defaultenv", ACTION_RECURSE | ACTION_SORT,
 				file_remove_action, NULL, &data, 0);
 		size = 0;
 

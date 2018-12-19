@@ -46,7 +46,7 @@ static int clps711x_setbaudrate(struct console_device *cdev, int baudrate)
 	int divisor;
 	u32 tmp;
 
-	divisor = (clk_get_rate(s->uart_clk) / 16) / baudrate;
+	divisor = DIV_ROUND_CLOSEST(clk_get_rate(s->uart_clk), baudrate * 16);
 
 	tmp = readl(s->base + UBRLCR) & ~UBRLCR_BAUD_MASK;
 	tmp |= divisor - 1;

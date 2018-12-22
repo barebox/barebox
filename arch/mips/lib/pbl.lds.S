@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0+
+/* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * (C) Copyright 2018 Oleksij Rempel <o.rempel@pengutronix.de>, Pengutronix
  * (C) Copyright 2012 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix

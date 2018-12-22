@@ -1,8 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * This file is subject to the terms and conditions of the GNU General Public
- * License.  See the file "COPYING" in the main directory of this archive
- * for more details.
- *
  * Copyright (C) 1995, 1996, 1997, 1999, 2001 by Ralf Baechle
  * Copyright (C) 1999 by Silicon Graphics, Inc.
  * Copyright (C) 2001 MIPS Technologies, Inc.

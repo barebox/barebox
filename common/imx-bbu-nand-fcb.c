@@ -1198,9 +1198,8 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	int ret, i;
 	struct fcb_block *fcb = NULL;
 	void *fw = NULL, *fw_orig = NULL;
-	unsigned fw_size, partition_size;
 	enum filetype filetype;
-	unsigned num_blocks_fw;
+	unsigned num_blocks_fw, fw_size;
 	int used = 0;
 	int fw_orig_len;
 	int used_refresh = 0, unused_refresh = 0;
@@ -1222,7 +1221,6 @@ static int imx_bbu_nand_update(struct bbu_handler *handler, struct bbu_data *dat
 	}
 
 	mtd = bcb_cdev->mtd;
-	partition_size = mtd->size;
 
 	num_blocks_fw = imx_bbu_firmware_max_blocks(mtd);
 	if (num_blocks_fw < 1) {

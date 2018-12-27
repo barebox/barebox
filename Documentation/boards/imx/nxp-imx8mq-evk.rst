@@ -45,8 +45,8 @@ DDR Configuration Code
 
 The following two files:
 
-  - ddr_init.c
-  - ddrphy_train.c
+  - arch/arm/boards/nxp-imx8mq-evk/ddr_init.c
+  - arch/arm/boards/nxp-imx8mq-evk/ddrphy_train.c
 
 were obtained by running i.MX 8M DDR Tool that can be found here:
 

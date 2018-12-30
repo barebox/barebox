@@ -1,7 +1,6 @@
 
 menuconfig CRYPTO_HW
 	bool "Hardware crypto devices"
-	help
 
 if CRYPTO_HW
 

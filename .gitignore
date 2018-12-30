@@ -19,6 +19,7 @@
 *.elf
 *.i
 *.ko
+*.lex.c
 *.lst
 *.mcp
 *.mod.c
@@ -30,6 +31,7 @@
 *.so
 *.so.dbg
 *.symtypes
+*.tab.[ch]
 *.bin.gen.S
 Module.symvers
 

@@ -2,7 +2,7 @@ hostprogs-$(CONFIG_ARCH_TEGRA) += cbootimage
 
 always          := $(hostprogs-y)
 
-HOSTLOADLIBES_cbootimage  = '-lm'
+HOSTLDLIBS_cbootimage  = '-lm'
 
 cbootimage-objs := \
 	cbootimage.o \

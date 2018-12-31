@@ -268,8 +268,8 @@ static int mtl017_probe(struct device_d *dev)
 	return 0;
 }
 
-static struct driver_d twl_driver = {
+static struct driver_d mtl_driver = {
 	.name  = "mtl017",
 	.probe = mtl017_probe,
 };
-device_i2c_driver(twl_driver);
+device_i2c_driver(mtl_driver);

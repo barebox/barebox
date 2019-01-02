@@ -396,6 +396,9 @@ void at91_add_device_mci(short mmc_id, struct atmel_mci_platform_data *data)
 	} else {			/* MCI1 */
 		start = AT91SAM9263_BASE_MCI1;
 
+		/* CLK */
+		at91_set_A_periph(AT91_PIN_PA6, 0);
+
 		if (data->slot_b) {
 			/* CMD */
 			at91_set_A_periph(AT91_PIN_PA21, 1);

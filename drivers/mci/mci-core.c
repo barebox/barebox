@@ -1628,7 +1628,12 @@ static int mci_register_partition(struct mci_part *part)
 
 	if (np) {
 		of_parse_partitions(&part->blk.cdev, np);
-		of_partitions_register_fixup(&part->blk.cdev);
+
+		/* bootN-partitions binding barebox-specific, so don't register
+		 * for fixup into kernel device tree
+		 */
+		if (part->area_type != MMC_BLK_DATA_AREA_BOOT)
+			of_partitions_register_fixup(&part->blk.cdev);
 	}
 
 	return 0;

@@ -26,6 +26,7 @@ void imx7_init_lowlevel(void)
 {
 	void __iomem *aips1 = IOMEM(MX7_AIPS1_CONFIG_BASE_ADDR);
 	void __iomem *aips2 = IOMEM(MX7_AIPS2_CONFIG_BASE_ADDR);
+	void __iomem *aips3 = IOMEM(MX7_AIPS3_CONFIG_BASE_ADDR);
 
 	/*
 	 * Set all MPROTx to be non-bufferable, trusted for R/W,
@@ -46,6 +47,14 @@ void imx7_init_lowlevel(void)
 	writel(0, aips2 + 0x48);
 	writel(0, aips2 + 0x4c);
 	writel(0, aips2 + 0x50);
+
+	writel(0x77777777, aips3);
+	writel(0x77777777, aips3 + 0x4);
+	writel(0, aips3 + 0x40);
+	writel(0, aips3 + 0x44);
+	writel(0, aips3 + 0x48);
+	writel(0, aips3 + 0x4c);
+	writel(0, aips3 + 0x50);
 }
 
 #define SC_CNTCR	0x0

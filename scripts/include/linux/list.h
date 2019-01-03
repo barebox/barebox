@@ -2,7 +2,6 @@
 #define __TOOLS_LINUX_LIST_H
 
 #include <linux/types.h>
-#include <linux/poison.h>
 #include <linux/kernel.h>
 #include <linux/compiler.h>
 
@@ -15,6 +14,8 @@
  * generate better code by using them directly rather than
  * using the generic single-entry routines.
  */
+#define LIST_POISON1  ((void *) 0x00100100)
+#define LIST_POISON2  ((void *) 0x00200200)
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 

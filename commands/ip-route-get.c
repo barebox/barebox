@@ -40,7 +40,7 @@ static int do_ip_route_get(int argc, char *argv[])
 	if (argc == optind + 2)
 		variable = argv[optind + 1];
 
-	ret = string_to_ip(argv[optind], &ip);
+	ret = resolv(argv[optind], &ip);
 	if (ret) {
 		printf("Cannot convert \"%s\" into a IP address: %s\n",
 		       argv[optind], strerror(-ret));

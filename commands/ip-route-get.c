@@ -42,8 +42,8 @@ static int do_ip_route_get(int argc, char *argv[])
 
 	ret = string_to_ip(argv[optind], &ip);
 	if (ret) {
-		printf("Cannot convert %s into a IP address: %s\n",
-		       argv[1], strerror(-ret));
+		printf("Cannot convert \"%s\" into a IP address: %s\n",
+		       argv[optind], strerror(-ret));
 		return 1;
 	}
 

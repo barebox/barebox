@@ -9,7 +9,7 @@ if [ -f "${oftree}" ]; then
 	global.bootm.oftree="$oftree"
 fi
 
-nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
+nfsroot="${global.net.server}:/home/${global.user}/nfsroot/${global.hostname}"
 
 ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
 

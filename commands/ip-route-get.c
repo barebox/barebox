@@ -93,4 +93,5 @@ BAREBOX_CMD_START(ip_route_get)
 	BAREBOX_CMD_OPTS("[-b] <IP> [variable]")
 	BAREBOX_CMD_GROUP(CMD_GRP_MISC)
 	BAREBOX_CMD_COMPLETE(empty_complete)
+	BAREBOX_CMD_HELP(cmd_ip_route_get_help)
 BAREBOX_CMD_END

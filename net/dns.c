@@ -258,15 +258,20 @@ static int do_host(int argc, char *argv[])
 {
 	IPaddr_t ip;
 	int ret;
+	char *hostname;
 
 	if (argc != 2)
 		return COMMAND_ERROR_USAGE;
 
+	hostname = argv[1];
+
 	ret = resolv(argv[1], &ip);
-	if (ret)
-		printf("unknown host %s\n", argv[1]);
-	else
-		printf("%s is at %pI4\n", argv[1], &ip);
+	if (ret) {
+		printf("unknown host %s\n", hostname);
+		return 1;
+	}
+
+	printf("%s is at %pI4\n", hostname, &ip);
 
 	return 0;
 }

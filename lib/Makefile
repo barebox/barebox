@@ -72,5 +72,6 @@ obj-$(CONFIG_CRC8)	+= crc8.o
 obj-$(CONFIG_GENERIC_LIB_ASHLDI3) += ashldi3.o
 obj-$(CONFIG_GENERIC_LIB_ASHRDI3) += ashrdi3.o
 obj-$(CONFIG_GENERIC_LIB_LSHRDI3) += lshrdi3.o
+obj-$(CONFIG_GENERIC_LIB_MULDI3)  += muldi3.o
 
 pbl-$(CONFIG_GENERIC_LIB_ASHLDI3) += ashldi3.o

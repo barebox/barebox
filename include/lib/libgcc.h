@@ -43,5 +43,6 @@ typedef union {
 long long __lshrdi3(long long u, word_type b);
 long long __ashldi3(long long u, word_type b);
 long long __ashrdi3(long long u, word_type b);
+long long __muldi3(long long u, long long v);
 
 #endif /* __ASM_LIBGCC_H */

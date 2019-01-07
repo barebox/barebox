@@ -46,7 +46,7 @@
 		#size-cells = <1>;
 		#address-cells = <1>;
 		backend_state_eeprom: state@0 {
-			reg = <0x000 0x120>;
+			reg = <0x000 0x100>;
 			label = "state-eeprom";
 		};
 	};

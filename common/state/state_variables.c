@@ -102,7 +102,7 @@ static int state_uint8_set(struct param_d *p, void *priv)
 static struct state_variable *state_uint8_create(struct state *state,
 						 const char *name,
 						 struct device_node *node,
-					      const struct variable_type *vtype)
+						 const struct variable_type *vtype)
 {
 	struct state_uint32 *su32;
 	struct param_d *param;

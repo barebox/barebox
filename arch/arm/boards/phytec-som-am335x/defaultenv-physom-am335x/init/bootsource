@@ -11,13 +11,13 @@ else
 fi
 
 if [ $bootsource = mmc -a $bootsource_instance = 1 ]; then
-	global.boot.default="emmc mmc spi net"
+	global.boot.default="bootchooser emmc mmc spi net"
 elif [ $bootsource = mmc -a $bootsource_instance = 0 ]; then
 	global.boot.default="mmc $nvmem spi net"
 elif [ $bootsource = nand ]; then
-	global.boot.default="nand spi mmc net"
+	global.boot.default="bootchooser nand spi mmc net"
 elif [ $bootsource = spi ]; then
-	global.boot.default="spi $nvmem mmc net"
+	global.boot.default="spi bootchooser $nvmem mmc net"
 elif [ $bootsource = net ]; then
-	global.boot.default="net $nvmem spi mmc"
+	global.boot.default="net bootchooser $nvmem spi mmc"
 fi

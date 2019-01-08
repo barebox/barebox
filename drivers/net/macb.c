@@ -596,7 +596,7 @@ static void macb_init_rx_buffer_size(struct macb_device *bp, size_t size)
 						   DMA_ADDRESS_BROKEN);
 	}
 
-	dev_dbg(bp->dev, "[%d] rx_buffer_size [%d]\n",
+	dev_dbg(bp->dev, "[%zu] rx_buffer_size [%d]\n",
 		   size, bp->rx_buffer_size);
 }
 

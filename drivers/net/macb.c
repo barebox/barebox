@@ -86,7 +86,7 @@ static inline bool macb_is_gem(struct macb_device *macb)
 
 static inline bool read_is_gem(struct macb_device *macb)
 {
-	return MACB_BFEXT(IDNUM, macb_readl(macb, MID)) == 0x2;
+	return MACB_BFEXT(IDNUM, macb_readl(macb, MID)) >= 0x2;
 }
 
 static int macb_send(struct eth_device *edev, void *packet,

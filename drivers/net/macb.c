@@ -719,6 +719,7 @@ static void macb_remove(struct device_d *dev)
 static const struct of_device_id macb_dt_ids[] = {
 	{ .compatible = "cdns,at91sam9260-macb",},
 	{ .compatible = "atmel,sama5d3-gem",},
+	{ .compatible = "cdns,zynqmp-gem",},
 	{ /* sentinel */ }
 };
 

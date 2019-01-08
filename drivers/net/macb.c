@@ -46,9 +46,11 @@
 #define RX_BUFFER_MULTIPLE	64  /* bytes */
 #define RX_NB_PACKET		10
 #define TX_RING_SIZE		2 /* must be power of 2 */
+#define GEM_Q1_DESCS		2
 
 #define RX_RING_BYTES(bp)	(sizeof(struct macb_dma_desc) * bp->rx_ring_size)
 #define TX_RING_BYTES		(sizeof(struct macb_dma_desc) * TX_RING_SIZE)
+#define GEM_Q1_DESC_BYTES	(sizeof(struct macb_dma_desc) * GEM_Q1_DESCS)
 
 struct macb_device {
 	void			__iomem *regs;
@@ -60,6 +62,7 @@ struct macb_device {
 	void			*tx_buffer;
 	struct macb_dma_desc	*rx_ring;
 	struct macb_dma_desc	*tx_ring;
+	struct macb_dma_desc	*gem_q1_descs;
 
 	int			rx_buffer_size;
 	int			rx_ring_size;
@@ -339,6 +342,20 @@ static void macb_init(struct macb_device *macb)
 
 	macb_writel(macb, RBQP, (ulong)macb->rx_ring);
 	macb_writel(macb, TBQP, (ulong)macb->tx_ring);
+
+	if (macb->is_gem && macb->gem_q1_descs) {
+		/* Disable the second priority queue */
+		macb->gem_q1_descs[0].addr = 0;
+		macb->gem_q1_descs[0].ctrl = MACB_BIT(TX_WRAP) |
+				MACB_BIT(TX_LAST) |
+				MACB_BIT(TX_USED);
+		macb->gem_q1_descs[1].addr = MACB_BIT(RX_USED) |
+				MACB_BIT(RX_WRAP);
+		macb->gem_q1_descs[1].ctrl = 0;
+
+		gem_writel(macb, TQ1, (ulong)&macb->gem_q1_descs[0]);
+		gem_writel(macb, RQ1, (ulong)&macb->gem_q1_descs[1]);
+	}
 
 	switch(macb->interface) {
 	case PHY_INTERFACE_MODE_RGMII:
@@ -688,6 +705,10 @@ static int macb_probe(struct device_d *dev)
 	macb->rx_buffer = dma_alloc(macb->rx_buffer_size * macb->rx_ring_size);
 	macb->rx_ring = dma_alloc_coherent(RX_RING_BYTES(macb), DMA_ADDRESS_BROKEN);
 	macb->tx_ring = dma_alloc_coherent(TX_RING_BYTES, DMA_ADDRESS_BROKEN);
+
+	if (macb->is_gem)
+		macb->gem_q1_descs = dma_alloc_coherent(GEM_Q1_DESC_BYTES,
+				DMA_ADDRESS_BROKEN);
 
 	macb_reset_hw(macb);
 	ncfgr = macb_mdc_clk_div(macb);

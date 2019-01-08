@@ -49,7 +49,6 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_gpmi_nand>;
 	nand-on-flash-bbt;
-	fsl,no-blockmark-swap;
 	status = "disabled";
 
 	#address-cells = <1>;

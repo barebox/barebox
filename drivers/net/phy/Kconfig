@@ -23,6 +23,11 @@ config DAVICOM_PHY
 	---help---
 	  Currently supports dm9161e and dm9131
 
+config DP83867_PHY
+	tristate "Texas Instruments DP83867 Gigabit PHY"
+	---help---
+	  Currently supports the DP83867 PHY.
+
 config LXT_PHY
 	bool "Driver for the Intel LXT PHYs"
 	---help---

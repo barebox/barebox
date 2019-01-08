@@ -592,8 +592,6 @@ static void macb_init_rx_buffer_size(struct macb_device *bp, size_t size)
 			bp->rx_buffer_size =
 				roundup(bp->rx_buffer_size, RX_BUFFER_MULTIPLE);
 		}
-		bp->rx_buffer = dma_alloc_coherent(bp->rx_buffer_size * bp->rx_ring_size,
-						   DMA_ADDRESS_BROKEN);
 	}
 
 	dev_dbg(bp->dev, "[%zu] rx_buffer_size [%d]\n",

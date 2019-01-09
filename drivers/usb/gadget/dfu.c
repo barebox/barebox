@@ -489,7 +489,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			value = handle_dnload(f, ctrl);
 			dfu->dfu_state = DFU_STATE_dfuDNLOAD_IDLE;
 			return 0;
-			break;
 		case USB_REQ_DFU_UPLOAD:
 			dfu->dfu_state = DFU_STATE_dfuUPLOAD_IDLE;
 			debug("dfu: starting upload from %s\n", dfu_file_entry->filename);
@@ -505,7 +504,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			}
 			handle_upload(f, ctrl);
 			return 0;
-			break;
 		case USB_REQ_DFU_ABORT:
 			dfu->dfu_status = DFU_STATUS_OK;
 			value = 0;
@@ -517,7 +515,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		default:
 			dfu->dfu_state = DFU_STATE_dfuERROR;
 			value = -EINVAL;
-			goto out;
 			break;
 		}
 		break;
@@ -544,7 +541,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		case USB_REQ_DFU_UPLOAD:
 			handle_upload(f, ctrl);
 			return 0;
-			break;
 		case USB_REQ_DFU_ABORT:
 			dfu_abort(dfu);
 			value = 0;
@@ -574,7 +570,6 @@ static int dfu_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	case DFU_STATE_dfuMANIFEST:
 		dfu->dfu_state = DFU_STATE_dfuERROR;
 		value = -EINVAL;
-		goto out;
 		break;
 	default:
 		break;

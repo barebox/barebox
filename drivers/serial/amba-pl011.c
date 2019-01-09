@@ -148,7 +148,7 @@ static void pl011_rlcr(struct amba_uart_port *uart, u32 lcr)
 	}
 }
 
-int pl011_init_port (struct console_device *cdev)
+static int pl011_init_port(struct console_device *cdev)
 {
 	struct amba_uart_port *uart = to_amba_uart_port(cdev);
 

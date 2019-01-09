@@ -96,7 +96,7 @@ int __pr_memory_display(int level, const void *addr, loff_t offs, unsigned nbyte
 			offs += size;
 		}
 
-		pos += sprintf(pos, "%*s", 61 - (pos - line), "");
+		pos += sprintf(pos, "%*s", (int)(61 - (pos - line)), "");
 
 		cp = linebuf;
 		for (i = 0; i < linebytes; i++) {

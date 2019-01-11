@@ -36,6 +36,7 @@
 		gpio4 = &gpio5;
 		mmc0 = &usdhc1;
 		mmc1 = &usdhc2;
+		spi0 = &ecspi1;
 	};
 
 	ckil: clk-ckil {

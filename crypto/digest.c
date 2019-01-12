@@ -232,7 +232,7 @@ int digest_file_window(struct digest *d, const char *filename,
 
 	buf = memmap(fd, PROT_READ);
 	if (buf == MAP_FAILED) {
-		buf = xmalloc(4096);
+		buf = xmalloc(PAGE_SIZE);
 		flags = 1;
 	}
 
@@ -249,7 +249,7 @@ int digest_file_window(struct digest *d, const char *filename,
 	}
 
 	while (size) {
-		now = min((ulong)4096, size);
+		now = min((ulong)PAGE_SIZE, size);
 		if (flags) {
 			now = read(fd, buf, now);
 			if (now < 0) {

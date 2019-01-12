@@ -6,6 +6,7 @@
 
 #include <common.h>
 #include <command.h>
+#include <linux/pagemap.h>
 #include <fs.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -35,7 +36,7 @@ int __do_digest(struct digest *d, unsigned char *sig,
 
 	while (*argv) {
 		char *filename = "/dev/mem";
-		loff_t start = 0, size = ~0;
+		loff_t start = 0, size = MAX_LFS_FILESIZE;
 		int show_area = 1;
 
 		/* arguments are either file, file+area or area */

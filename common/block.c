@@ -76,7 +76,8 @@ static struct chunk *chunk_get_cached(struct block_device *blk, int block)
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
 		if (block >= chunk->block_start &&
 				block < chunk->block_start + blk->rdbufsize) {
-			debug("%s: found %d in %d\n", __func__, block, chunk->num);
+			dev_dbg(blk->dev, "%s: found %d in %d\n", __func__,
+				block, chunk->num);
 			/*
 			 * move most recently used entry to the head of the list
 			 */
@@ -153,8 +154,8 @@ static int block_cache(struct block_device *blk, int block)
 
 	chunk->block_start = block & ~blk->blkmask;
 
-	debug("%s: %d to %d\n", __func__, chunk->block_start,
-			chunk->num);
+	dev_dbg(blk->dev, "%s: %d to %d\n", __func__, chunk->block_start,
+		chunk->num);
 
 	num_blocks = min(blk->rdbufsize, blk->num_blocks - chunk->block_start);
 
@@ -364,8 +365,8 @@ int blockdevice_register(struct block_device *blk)
 	INIT_LIST_HEAD(&blk->idle_blocks);
 	blk->blkmask = blk->rdbufsize - 1;
 
-	debug("%s: rdbufsize: %d blockbits: %d blkmask: 0x%08x\n", __func__, blk->rdbufsize, blk->blockbits,
-			blk->blkmask);
+	dev_dbg(blk->dev, "rdbufsize: %d blockbits: %d blkmask: 0x%08x\n",
+		blk->rdbufsize, blk->blockbits, blk->blkmask);
 
 	for (i = 0; i < 32; i++) {
 		struct chunk *chunk = xzalloc(sizeof(*chunk));

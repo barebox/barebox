@@ -216,7 +216,6 @@ int digest_file_window(struct digest *d, const char *filename,
 		       const unsigned char *sig,
 		       ulong start, ulong size)
 {
-	ulong len = 0;
 	int fd, now, ret = 0;
 	unsigned char *buf;
 	int flags = 0;
@@ -271,7 +270,6 @@ int digest_file_window(struct digest *d, const char *filename,
 		if (ret)
 			goto out_free;
 		size -= now;
-		len += now;
 
 		if (!flags)
 			buf += now;

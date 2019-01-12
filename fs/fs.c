@@ -533,7 +533,7 @@ void *memmap(int fd, int flags)
 {
 	struct fs_driver_d *fsdrv;
 	FILE *f;
-	void *retp = (void *)-1;
+	void *retp = MAP_FAILED;
 	int ret;
 
 	if (check_fd(fd))

@@ -45,7 +45,7 @@ static int do_go(int argc, char *argv[])
 		}
 
 		addr = memmap(fd, PROT_READ);
-		if (addr == (void *)-1) {
+		if (addr == MAP_FAILED) {
 			perror("memmap");
 			goto out;
 		}

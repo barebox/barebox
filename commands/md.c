@@ -68,7 +68,7 @@ static int do_mem_md(int argc, char *argv[])
 		return 1;
 
 	map = memmap(fd, PROT_READ);
-	if (map != (void *)-1) {
+	if (map != MAP_FAILED) {
 		ret = memory_display(map + start, start, size,
 				mode >> O_RWSIZE_SHIFT, swab);
 		goto out;

@@ -232,7 +232,7 @@ int digest_file_window(struct digest *d, const char *filename,
 	}
 
 	buf = memmap(fd, PROT_READ);
-	if (buf == (void *)-1) {
+	if (buf == MAP_FAILED) {
 		buf = xmalloc(4096);
 		flags = 1;
 	}

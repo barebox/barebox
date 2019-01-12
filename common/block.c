@@ -329,19 +329,14 @@ static ssize_t block_op_write(struct cdev *cdev, const void *buf, size_t count,
 }
 #endif
 
-static int block_op_close(struct cdev *cdev)
-{
-	struct block_device *blk = cdev->priv;
-
-	return writebuffer_flush(blk);
-}
-
 static int block_op_flush(struct cdev *cdev)
 {
 	struct block_device *blk = cdev->priv;
 
 	return writebuffer_flush(blk);
 }
+
+static int block_op_close(struct cdev *cdev) __alias(block_op_flush);
 
 static struct cdev_operations block_ops = {
 	.read	= block_op_read,

@@ -211,14 +211,76 @@ void digest_free(struct digest *d)
 }
 EXPORT_SYMBOL_GPL(digest_free);
 
+static int digest_update_interruptible(struct digest *d, const void *data,
+				       unsigned long len)
+{
+	if (ctrlc())
+		return -EINTR;
+
+	return digest_update(d, data, len);
+}
+
+static int digest_update_from_fd(struct digest *d, int fd,
+				 ulong start, ulong size)
+{
+	unsigned char *buf = xmalloc(PAGE_SIZE);
+	int ret = 0;
+
+	ret = lseek(fd, start, SEEK_SET);
+	if (ret == -1) {
+		perror("lseek");
+		goto out_free;
+	}
+
+	while (size) {
+		const ssize_t now = read(fd, buf, PAGE_SIZE);
+		if (now < 0) {
+			ret = now;
+			perror("read");
+			goto out_free;
+		}
+
+		if (!now)
+			break;
+
+		ret = digest_update_interruptible(d, buf, now);
+		if (ret)
+			goto out_free;
+
+		size -= now;
+	}
+
+out_free:
+	free(buf);
+	return ret;
+}
+
+static int digest_update_from_memory(struct digest *d,
+				     const unsigned char *buf,
+				     ulong size)
+{
+	while (size) {
+		unsigned long now = min_t(typeof(size), PAGE_SIZE, size);
+		int ret;
+
+		ret = digest_update_interruptible(d, buf, now);
+		if (ret)
+			return ret;
+
+		size -= now;
+		buf  += now;
+	}
+
+	return 0;
+}
+
 int digest_file_window(struct digest *d, const char *filename,
 		       unsigned char *hash,
 		       const unsigned char *sig,
 		       ulong start, ulong size)
 {
-	int fd, now, ret = 0;
+	int fd, ret;
 	unsigned char *buf;
-	int flags = 0;
 
 	ret = digest_init(d);
 	if (ret)
@@ -231,58 +293,18 @@ int digest_file_window(struct digest *d, const char *filename,
 	}
 
 	buf = memmap(fd, PROT_READ);
-	if (buf == MAP_FAILED) {
-		buf = xmalloc(PAGE_SIZE);
-		flags = 1;
-	}
+	if (buf == MAP_FAILED)
+		ret = digest_update_from_fd(d, fd, start, size);
+	else
+		ret = digest_update_from_memory(d, buf + start, size);
 
-	if (start > 0) {
-		if (flags) {
-			ret = lseek(fd, start, SEEK_SET);
-			if (ret == -1) {
-				perror("lseek");
-				goto out;
-			}
-		} else {
-			buf += start;
-		}
-	}
-
-	while (size) {
-		now = min((ulong)PAGE_SIZE, size);
-		if (flags) {
-			now = read(fd, buf, now);
-			if (now < 0) {
-				ret = now;
-				perror("read");
-				goto out_free;
-			}
-			if (!now)
-				break;
-		}
-
-		if (ctrlc()) {
-			ret = -EINTR;
-			goto out_free;
-		}
-
-		ret = digest_update(d, buf, now);
-		if (ret)
-			goto out_free;
-		size -= now;
-
-		if (!flags)
-			buf += now;
-	}
+	if (ret)
+		goto out;
 
 	if (sig)
 		ret = digest_verify(d, sig);
 	else
 		ret = digest_final(d, hash);
-
-out_free:
-	if (flags)
-		free(buf);
 out:
 	close(fd);
 

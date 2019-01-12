@@ -221,7 +221,7 @@ static int digest_update_interruptible(struct digest *d, const void *data,
 }
 
 static int digest_update_from_fd(struct digest *d, int fd,
-				 ulong start, ulong size)
+				 loff_t start, loff_t size)
 {
 	unsigned char *buf = xmalloc(PAGE_SIZE);
 	int ret = 0;
@@ -257,7 +257,7 @@ out_free:
 
 static int digest_update_from_memory(struct digest *d,
 				     const unsigned char *buf,
-				     ulong size)
+				     loff_t size)
 {
 	while (size) {
 		unsigned long now = min_t(typeof(size), PAGE_SIZE, size);
@@ -277,7 +277,7 @@ static int digest_update_from_memory(struct digest *d,
 int digest_file_window(struct digest *d, const char *filename,
 		       unsigned char *hash,
 		       const unsigned char *sig,
-		       ulong start, ulong size)
+		       loff_t start, loff_t size)
 {
 	int fd, ret;
 	unsigned char *buf;

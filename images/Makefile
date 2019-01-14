@@ -112,6 +112,10 @@ include $(srctree)/images/Makefile.xburst
 include $(srctree)/images/Makefile.at91
 include $(srctree)/images/Makefile.zynqmp
 
+ifneq ($(pblx-y)$(pblx-),)
+  $(error pblx- has been removed. Please use pblb- instead.)
+endif
+
 targets += $(image-y) pbl.lds barebox.x barebox.z piggy.o
 targets += $(patsubst %,%.pblb,$(pblb-y))
 targets += $(patsubst %,%.pbl,$(pblb-y))

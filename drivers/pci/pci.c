@@ -48,7 +48,6 @@ void register_pci_controller(struct pci_controller *hose)
 	hose->bus = bus;
 	bus->parent = hose->parent;
 	bus->host = hose;
-	bus->ops = hose->pci_ops;
 	bus->resource[PCI_BUS_RESOURCE_MEM] = hose->mem_resource;
 	bus->resource[PCI_BUS_RESOURCE_MEM_PREF] = hose->mem_pref_resource;
 	bus->resource[PCI_BUS_RESOURCE_IO] = hose->io_resource;
@@ -97,7 +96,7 @@ int pci_bus_read_config_##size \
 	int res;							\
 	u32 data = 0;							\
 	if (PCI_##size##_BAD) return PCIBIOS_BAD_REGISTER_NUMBER;	\
-	res = bus->ops->read(bus, devfn, pos, len, &data);		\
+	res = bus->host->pci_ops->read(bus, devfn, pos, len, &data);	\
 	*value = (type)data;						\
 	return res;							\
 }
@@ -108,7 +107,7 @@ int pci_bus_write_config_##size \
 {									\
 	int res;							\
 	if (PCI_##size##_BAD) return PCIBIOS_BAD_REGISTER_NUMBER;	\
-	res = bus->ops->write(bus, devfn, pos, len, value);		\
+	res = bus->host->pci_ops->write(bus, devfn, pos, len, value);	\
 	return res;							\
 }
 
@@ -421,7 +420,6 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 			child_bus = pci_alloc_bus();
 			/* inherit parent properties */
 			child_bus->host = bus->host;
-			child_bus->ops = bus->host->pci_ops;
 			child_bus->parent_bus = bus;
 			child_bus->resource[PCI_BUS_RESOURCE_MEM] =
 				bus->resource[PCI_BUS_RESOURCE_MEM];

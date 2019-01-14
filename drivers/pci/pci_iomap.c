@@ -24,6 +24,6 @@ void __iomem *pci_iomap(struct pci_dev *dev, int bar)
 	struct pci_bus *bus = dev->bus;
 	resource_size_t start = pci_resource_start(dev, bar);
 
-	return (void *)bus->ops->res_start(bus, start);
+	return (void *)bus->host->pci_ops->res_start(bus, start);
 }
 EXPORT_SYMBOL(pci_iomap);

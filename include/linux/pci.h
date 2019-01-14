@@ -143,7 +143,7 @@ struct pci_ops {
 	int (*write)(struct pci_bus *bus, unsigned int devfn, int where, int size, u32 val);
 
 	/* return memory address for pci resource */
-	int (*res_start)(struct pci_bus *bus, resource_size_t res_addr);
+	resource_size_t (*res_start)(struct pci_bus *bus, resource_size_t res_addr);
 };
 
 extern struct pci_ops *pci_ops;

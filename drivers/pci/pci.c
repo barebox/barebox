@@ -4,6 +4,8 @@
 #include <linux/sizes.h>
 #include <linux/pci.h>
 
+static unsigned int pci_scan_bus(struct pci_bus *bus);
+
 LIST_HEAD(pci_root_buses);
 EXPORT_SYMBOL(pci_root_buses);
 static u8 bus_index;
@@ -339,7 +341,7 @@ pci_of_match_device(struct device_d *parent, unsigned int devfn)
 	return NULL;
 }
 
-unsigned int pci_scan_bus(struct pci_bus *bus)
+static unsigned int pci_scan_bus(struct pci_bus *bus)
 {
 	struct pci_dev *dev;
 	struct pci_bus *child_bus;

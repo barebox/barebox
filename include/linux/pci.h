@@ -137,8 +137,6 @@ struct pci_bus {
 	unsigned char	primary;	/* number of primary bridge */
 	unsigned char	secondary;	/* number of secondary bridge */
 	unsigned char	subordinate;	/* max number of subordinate buses */
-
-	char		name[48];
 };
 
 /* Low-level architecture-dependent routines */

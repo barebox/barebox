@@ -259,6 +259,11 @@ struct clk_divider {
 
 extern struct clk_ops clk_divider_ops;
 
+unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
+		unsigned int val,
+		const struct clk_div_table *table,
+		unsigned long flags, unsigned long width);
+
 struct clk *clk_divider_alloc(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width, unsigned flags);
 void clk_divider_free(struct clk *clk_divider);

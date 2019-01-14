@@ -366,7 +366,7 @@ static int tegra_pcie_write_conf(struct pci_bus *bus, unsigned int devfn,
 	return PCIBIOS_SUCCESSFUL;
 }
 
-static struct pci_ops tegra_pcie_ops = {
+static const struct pci_ops tegra_pcie_ops = {
 	.read = tegra_pcie_read_conf,
 	.write = tegra_pcie_write_conf,
 };

@@ -29,7 +29,7 @@
 
 #include <abort.h>
 
-static struct pci_ops dw_pcie_ops;
+static const struct pci_ops dw_pcie_ops;
 static unsigned long global_io_offset;
 
 static int dw_pcie_rd_own_conf(struct pcie_port *pp, int where, int size,
@@ -335,7 +335,7 @@ static int dw_pcie_wr_conf(struct pci_bus *bus, u32 devfn,
 	return ret;
 }
 
-static struct pci_ops dw_pcie_ops = {
+static const struct pci_ops dw_pcie_ops = {
 	.read = dw_pcie_rd_conf,
 	.write = dw_pcie_wr_conf,
 };

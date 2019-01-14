@@ -158,7 +158,7 @@ struct pci_controller {
 	struct device_d *parent;
 	struct pci_bus *bus;
 
-	struct pci_ops *pci_ops;
+	const struct pci_ops *pci_ops;
 	struct resource *mem_resource;
 	struct resource *mem_pref_resource;
 	unsigned long mem_offset;

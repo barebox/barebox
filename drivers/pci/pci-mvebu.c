@@ -154,7 +154,7 @@ static resource_size_t mvebu_pcie_res_start(struct pci_bus *bus,
 		(res_addr & (resource_size(&pcie->mem) - 1));
 }
 
-static struct pci_ops mvebu_pcie_indirect_ops = {
+static const struct pci_ops mvebu_pcie_indirect_ops = {
 	.read = mvebu_pcie_indirect_rd_conf,
 	.write = mvebu_pcie_indirect_wr_conf,
 	.res_start = mvebu_pcie_res_start,

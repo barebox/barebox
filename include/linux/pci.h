@@ -112,7 +112,6 @@ struct pci_dev {
 	 * pcibios_fixup() as necessary.
 	 */
 	unsigned long	base_address[6];
-	unsigned long	rom_address;
 };
 #define	to_pci_dev(dev) container_of(dev, struct pci_dev, dev)
 

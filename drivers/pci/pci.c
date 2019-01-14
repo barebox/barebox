@@ -407,13 +407,6 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 			if (class == PCI_CLASS_BRIDGE_PCI)
 				goto bad;
 
-			/*
-			 * read base address registers, again pcibios_fixup() can
-			 * tweak these
-			 */
-			pci_read_config_dword(dev, PCI_ROM_ADDRESS, &l);
-			dev->rom_address = (l == 0xffffffff) ? 0 : l;
-
 			setup_device(dev, 6);
 			break;
 		case PCI_HEADER_TYPE_BRIDGE:

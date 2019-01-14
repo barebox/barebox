@@ -169,16 +169,18 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			      cmd & ~(PCI_COMMAND_IO | PCI_COMMAND_MEMORY));
 
 	for (bar = 0; bar < max_bar; bar++) {
+		const int pci_base_address_0 = PCI_BASE_ADDRESS_0 + bar * 4;
+		const int pci_base_address_1 = PCI_BASE_ADDRESS_1 + bar * 4;
 		resource_size_t *last_addr;
 		u32 orig, mask, size;
 		unsigned long flags;
 		const char *kind;
 		int busres;
 
-		pci_read_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, &orig);
-		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, 0xfffffffe);
-		pci_read_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, &mask);
-		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4, orig);
+		pci_read_config_dword(dev, pci_base_address_0, &orig);
+		pci_write_config_dword(dev, pci_base_address_0, 0xfffffffe);
+		pci_read_config_dword(dev, pci_base_address_0, &mask);
+		pci_write_config_dword(dev, pci_base_address_0, orig);
 
 		if (mask == 0 || mask == 0xffffffff) {
 			pr_debug("pbar%d set bad mask\n", bar);
@@ -221,8 +223,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		}
 
 		*last_addr = ALIGN(*last_addr, size);
-		pci_write_config_dword(dev, PCI_BASE_ADDRESS_0 + bar * 4,
-				       *last_addr);
+		pci_write_config_dword(dev, pci_base_address_0, *last_addr);
 		dev->resource[bar].flags = flags;
 		dev->resource[bar].start = *last_addr;
 		dev->resource[bar].end = dev->resource[bar].start + size - 1;
@@ -233,8 +234,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 
 		if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64) {
 			dev->resource[bar].flags |= IORESOURCE_MEM_64;
-			pci_write_config_dword(dev,
-			       PCI_BASE_ADDRESS_1 + bar * 4, 0);
+			pci_write_config_dword(dev, pci_base_address_1, 0);
 			bar++;
 		}
 	}

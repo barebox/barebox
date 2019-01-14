@@ -20,15 +20,6 @@
 #include <linux/clk.h>
 #include <linux/err.h>
 
-struct clk_mux {
-	struct clk clk;
-	void __iomem *reg;
-	int shift;
-	int width;
-};
-
-#define to_clk_mux(_clk) container_of(_clk, struct clk_mux, clk)
-
 static int clk_mux_get_parent(struct clk *clk)
 {
 	struct clk_mux *m = container_of(clk, struct clk_mux, clk);
@@ -53,7 +44,7 @@ static int clk_mux_set_parent(struct clk *clk, u8 idx)
 	return 0;
 }
 
-static struct clk_ops clk_mux_ops = {
+struct clk_ops clk_mux_ops = {
 	.set_rate = clk_parent_set_rate,
 	.round_rate = clk_parent_round_rate,
 	.get_parent = clk_mux_get_parent,

@@ -282,6 +282,17 @@ struct clk *clk_fractional_divider(
 		u8 clk_divider_flags);
 void clk_fractional_divider_free(struct clk *clk_fd);
 
+struct clk_mux {
+	struct clk clk;
+	void __iomem *reg;
+	int shift;
+	int width;
+};
+
+#define to_clk_mux(_clk) container_of(_clk, struct clk_mux, clk)
+
+extern struct clk_ops clk_mux_ops;
+
 struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents,
 		unsigned flags);

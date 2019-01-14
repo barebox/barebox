@@ -290,6 +290,18 @@ struct clk *clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents,
 		unsigned flags);
 
+struct clk_gate {
+	struct clk clk;
+	void __iomem *reg;
+	int shift;
+	const char *parent;
+	unsigned flags;
+};
+
+#define to_clk_gate(_clk) container_of(_clk, struct clk_gate, clk)
+
+extern struct clk_ops clk_gate_ops;
+
 struct clk *clk_gate_alloc(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, unsigned flags,
 		u8 clk_gate_flags);

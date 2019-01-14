@@ -102,6 +102,13 @@ static inline struct clk *imx_clk_gate2_shared2(const char *name, const char *pa
 			 CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE);
 }
 
+static inline struct clk *imx_clk_gate2_flags(const char *name,
+		const char *parent, void __iomem *reg, u8 shift,
+		unsigned long flags)
+{
+	return clk_gate2(name, parent, reg, shift, 0x3, flags);
+}
+
 static inline struct clk *imx_clk_gate2_cgr(const char *name, const char *parent,
 					    void __iomem *reg, u8 shift, u8 cgr_val)
 {

@@ -4,8 +4,6 @@
 #include <linux/sizes.h>
 #include <linux/pci.h>
 
-static struct pci_controller *hose_head, **hose_tail = &hose_head;
-
 LIST_HEAD(pci_root_buses);
 EXPORT_SYMBOL(pci_root_buses);
 static u8 bus_index;
@@ -45,9 +43,6 @@ static void pci_bus_register_devices(struct pci_bus *bus)
 void register_pci_controller(struct pci_controller *hose)
 {
 	struct pci_bus *bus;
-
-	*hose_tail = hose;
-	hose_tail = &hose->next;
 
 	bus = pci_alloc_bus();
 	hose->bus = bus;

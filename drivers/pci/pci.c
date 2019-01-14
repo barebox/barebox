@@ -182,7 +182,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 			continue;
 		}
 
-		if (mask & 0x01) { /* IO */
+		if (mask & PCI_BASE_ADDRESS_SPACE_IO) { /* IO */
 			size = pci_size(orig, mask, 0xfffffffe);
 			if (!size) {
 				pr_debug("pbar%d bad IO mask\n", bar);

@@ -129,10 +129,7 @@ static struct pci_dev *alloc_pci_dev(void)
 {
 	struct pci_dev *dev;
 
-	dev = kzalloc(sizeof(struct pci_dev), GFP_KERNEL);
-	if (!dev)
-		return NULL;
-
+	dev = xzalloc(sizeof(struct pci_dev));
 	INIT_LIST_HEAD(&dev->bus_list);
 
 	return dev;
@@ -367,9 +364,6 @@ static unsigned int pci_scan_bus(struct pci_bus *bus)
 			continue;
 
 		dev = alloc_pci_dev();
-		if (!dev)
-			return 0;
-
 		dev->bus = bus;
 		dev->devfn = devfn;
 		dev->vendor = l & 0xffff;

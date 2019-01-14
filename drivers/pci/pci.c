@@ -245,7 +245,7 @@ static void setup_device(struct pci_dev *dev, int max_bar)
 		dev->resource[bar].start = last_addr;
 		dev->resource[bar].end = last_addr + size - 1;
 
-		if ((mask & PCI_BASE_ADDRESS_MEM_TYPE_64)) {
+		if (mask & PCI_BASE_ADDRESS_MEM_TYPE_64) {
 			dev->resource[bar].flags |= IORESOURCE_MEM_64;
 			pci_write_config_dword(dev,
 			       PCI_BASE_ADDRESS_1 + bar * 4, 0);

@@ -3,8 +3,6 @@
 
 #ifndef __ASSEMBLY__
 
-typedef unsigned short umode_t;
-
 typedef __signed__ char __s8;
 typedef unsigned char __u8;
 

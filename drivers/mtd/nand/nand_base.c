@@ -36,13 +36,13 @@
 #include <clock.h>
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
-#include <linux/err.h>
+#include <linux/mtd/nand_bch.h>
 #include <linux/mtd/nand_ecc.h>
+#include <linux/err.h>
 #include <asm/byteorder.h>
 #include <io.h>
 #include <malloc.h>
 #include <module.h>
-#include <linux/mtd/nand_bch.h>
 
 /* Define default oob placement schemes for large and small page devices */
 static struct nand_ecclayout nand_oob_8 = {
@@ -326,28 +326,70 @@ static int nand_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
 }
 
 /**
- * nand_default_block_markbad - [DEFAULT] mark a block bad
+ * nand_default_block_markbad - [DEFAULT] mark a block bad via bad block marker
  * @mtd: MTD device structure
  * @ofs: offset from device start
  *
  * This is the default implementation, which can be overridden by a hardware
- * specific driver. We try operations in the following order, according to our
- * bbt_options (NAND_BBT_NO_OOB_BBM and NAND_BBT_USE_FLASH):
- *  (1) erase the affected block, to allow OOB marker to be written cleanly
- *  (2) update in-memory BBT
- *  (3) write bad block marker to OOB area of affected block
- *  (4) update flash-based BBT
- * Note that we retain the first error encountered in (3) or (4), finish the
- * procedures, and dump the error in the end.
-*/
-static __maybe_unused  int nand_default_block_markbad(struct mtd_info *mtd, loff_t ofs)
+ * specific driver. It provides the details for writing a bad block marker to a
+ * block.
+ */
+static __maybe_unused int nand_default_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
 	struct nand_chip *chip = mtd->priv;
+	struct mtd_oob_ops ops;
 	uint8_t buf[2] = { 0, 0 };
-	int block, res, ret = 0, i = 0;
-	int write_oob = !(chip->bbt_options & NAND_BBT_NO_OOB_BBM);
+	int ret = 0, res, i = 0;
 
-	if (write_oob) {
+	ops.datbuf = NULL;
+	ops.oobbuf = buf;
+	ops.ooboffs = chip->badblockpos;
+	if (chip->options & NAND_BUSWIDTH_16) {
+		ops.ooboffs &= ~0x01;
+		ops.len = ops.ooblen = 2;
+	} else {
+		ops.len = ops.ooblen = 1;
+	}
+	ops.mode = MTD_OPS_PLACE_OOB;
+
+	/* Write to first/last page(s) if necessary */
+	if (chip->bbt_options & NAND_BBT_SCANLASTPAGE)
+		ofs += mtd->erasesize - mtd->writesize;
+	do {
+		res = nand_do_write_oob(mtd, ofs, &ops);
+		if (!ret)
+			ret = res;
+
+		i++;
+		ofs += mtd->writesize;
+	} while ((chip->bbt_options & NAND_BBT_SCAN2NDPAGE) && i < 2);
+
+	return ret;
+}
+
+/**
+ * nand_block_markbad_lowlevel - mark a block bad
+ * @mtd: MTD device structure
+ * @ofs: offset from device start
+ *
+ * This function performs the generic NAND bad block marking steps (i.e., bad
+ * block table(s) and/or marker(s)). We only allow the hardware driver to
+ * specify how to write bad block markers to OOB (chip->block_markbad).
+ *
+ * We try operations in the following order:
+ *  (1) erase the affected block, to allow OOB marker to be written cleanly
+ *  (2) write bad block marker to OOB area of affected block (unless flag
+ *      NAND_BBT_NO_OOB_BBM is present)
+ *  (3) update the BBT
+ * Note that we retain the first error encountered in (2) or (3), finish the
+ * procedures, and dump the error in the end.
+ */
+static int nand_block_markbad_lowlevel(struct mtd_info *mtd, loff_t ofs)
+{
+	struct nand_chip *chip = mtd->priv;
+	int res, ret = 0;
+
+	if (!(chip->bbt_options & NAND_BBT_NO_OOB_BBM)) {
 		struct erase_info einfo;
 
 		/* Attempt erase before marking OOB */
@@ -356,50 +398,16 @@ static __maybe_unused  int nand_default_block_markbad(struct mtd_info *mtd, loff
 		einfo.addr = ofs;
 		einfo.len = 1 << chip->phys_erase_shift;
 		nand_erase_nand(mtd, &einfo, 0);
-	}
 
-	/* Get block number */
-	block = (int)(ofs >> chip->bbt_erase_shift);
-	/* Mark block bad in memory-based BBT */
-	if (chip->bbt)
-		chip->bbt[block >> 2] |= 0x01 << ((block & 0x03) << 1);
-
-	/* Write bad block marker to OOB */
-	if (write_oob) {
-		struct mtd_oob_ops ops;
-		loff_t wr_ofs = ofs;
-
+		/* Write bad block marker to OOB */
 		nand_get_device(mtd, FL_WRITING);
-
-		ops.datbuf = NULL;
-		ops.oobbuf = buf;
-		ops.ooboffs = chip->badblockpos;
-		if (chip->options & NAND_BUSWIDTH_16) {
-			ops.ooboffs &= ~0x01;
-			ops.len = ops.ooblen = 2;
-		} else {
-			ops.len = ops.ooblen = 1;
-		}
-		ops.mode = MTD_OPS_PLACE_OOB;
-
-		/* Write to first/last page(s) if necessary */
-		if (chip->bbt_options & NAND_BBT_SCANLASTPAGE)
-			wr_ofs += mtd->erasesize - mtd->writesize;
-		do {
-			res = nand_do_write_oob(mtd, wr_ofs, &ops);
-			if (!ret)
-				ret = res;
-
-			i++;
-			wr_ofs += mtd->writesize;
-		} while ((chip->bbt_options & NAND_BBT_SCAN2NDPAGE) && i < 2);
-
+		ret = chip->block_markbad(mtd, ofs);
 		nand_release_device(mtd);
 	}
 
-	/* Update flash-based bad block table */
-	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt_options & NAND_BBT_USE_FLASH) {
-		res = nand_update_bbt(mtd, ofs);
+	/* Mark block bad in BBT */
+	if (chip->bbt) {
+		res = nand_markbad_bbt(mtd, ofs);
 		if (!ret)
 			ret = res;
 	}
@@ -408,6 +416,57 @@ static __maybe_unused  int nand_default_block_markbad(struct mtd_info *mtd, loff
 		mtd->ecc_stats.badblocks++;
 
 	return ret;
+}
+
+/**
+ * nand_block_markgood_lowlevel - mark a block good
+ * @mtd: MTD device structure
+ * @ofs: offset from device start
+ *
+ * We try operations in the following order:
+ *  (1) erase the affected block
+ *  (2) check bad block marker
+ *  (3) update the BBT
+ */
+static int nand_block_markgood_lowlevel(struct mtd_info *mtd, loff_t ofs)
+{
+	struct nand_chip *chip = mtd->priv;
+	bool allow_erasebad;
+	int ret;
+
+	if (!(chip->bbt_options & NAND_BBT_NO_OOB_BBM)) {
+		struct erase_info einfo;
+
+		/* Attempt erase possibly bad block */
+		allow_erasebad = mtd->allow_erasebad;
+		mtd->allow_erasebad = true;
+		memset(&einfo, 0, sizeof(einfo));
+		einfo.mtd = mtd;
+		einfo.addr = ofs;
+		einfo.len = 1 << chip->phys_erase_shift;
+		nand_erase_nand(mtd, &einfo, 0);
+		mtd->allow_erasebad = allow_erasebad;
+
+		/*
+		 * Verify erase succeded. We need to select chip again,
+		 * as nand_erase_nand deselected it.
+		 */
+		ret = chip->block_bad(mtd, ofs, 1);
+		if (ret)
+			return ret;
+	}
+
+	/* Mark block good in BBT */
+	if (chip->bbt) {
+		ret = nand_markgood_bbt(mtd, ofs);
+		if (ret)
+			return ret;
+	}
+
+	if (mtd->ecc_stats.badblocks > 0)
+		mtd->ecc_stats.badblocks--;
+
+	return 0;
 }
 
 /**
@@ -451,38 +510,6 @@ static int nand_block_checkbad(struct mtd_info *mtd, loff_t ofs, int getchip,
 	}
 
 	return chip->block_bad(mtd, ofs, getchip);
-}
-
-/**
- * nand_default_block_markgood - [DEFAULT] mark a block good
- * @mtd:	MTD device structure
- * @ofs:	offset from device start
- *
- * This is the default implementation, which can be overridden by
- * a hardware specific driver.
-*/
-static __maybe_unused  int nand_default_block_markgood(struct mtd_info *mtd, loff_t ofs)
-{
-	struct nand_chip *chip = mtd->priv;
-	int block, res, ret = 0;
-
-	/* Get block number */
-	block = (int)(ofs >> chip->bbt_erase_shift);
-	/* Mark block good in memory-based BBT */
-	if (chip->bbt)
-		chip->bbt[block >> 2] &= ~(0x01 << ((block & 0x03) << 1));
-
-	/* Update flash-based bad block table */
-	if (IS_ENABLED(CONFIG_NAND_BBT) && chip->bbt_options & NAND_BBT_USE_FLASH) {
-		res = nand_update_bbt(mtd, ofs);
-		if (!ret)
-			ret = res;
-	}
-
-	if (!ret)
-		mtd->ecc_stats.badblocks++;
-
-	return ret;
 }
 
 /* Wait for the ready pin, after a command. The timeout is caught later. */
@@ -2804,7 +2831,6 @@ static int nand_block_isbad(struct mtd_info *mtd, loff_t offs)
  */
 static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 {
-	struct nand_chip *chip = mtd->priv;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_MTD_WRITE))
@@ -2818,17 +2844,16 @@ static int nand_block_markbad(struct mtd_info *mtd, loff_t ofs)
 		return ret;
 	}
 
-	return chip->block_markbad(mtd, ofs);
+	return nand_block_markbad_lowlevel(mtd, ofs);
 }
 
 /**
- * nand_block_markgood - [MTD Interface] Mark block at the given offset as bad
+ * nand_block_markgood - [MTD Interface] Mark block at the given offset as good
  * @mtd: MTD device structure
  * @ofs: offset relative to mtd start
  */
 static int nand_block_markgood(struct mtd_info *mtd, loff_t ofs)
 {
-	struct nand_chip *chip = mtd->priv;
 	int ret;
 
 	if (!IS_ENABLED(CONFIG_MTD_WRITE))
@@ -2842,7 +2867,7 @@ static int nand_block_markgood(struct mtd_info *mtd, loff_t ofs)
 	if (!ret)
 		return 0;
 
-	return chip->block_markgood(mtd, ofs);
+	return nand_block_markgood_lowlevel(mtd, ofs);
 }
 
 /**
@@ -2926,17 +2951,11 @@ static void nand_set_defaults(struct nand_chip *chip, int busw)
 #ifdef CONFIG_MTD_WRITE
 	if (!chip->block_markbad)
 		chip->block_markbad = nand_default_block_markbad;
-	if (!chip->block_markgood)
-		chip->block_markgood = nand_default_block_markgood;
 	if (!chip->write_buf)
 		chip->write_buf = busw ? nand_write_buf16 : nand_write_buf;
 #endif
 	if (!chip->read_buf)
 		chip->read_buf = busw ? nand_read_buf16 : nand_read_buf;
-#ifdef CONFIG_NAND_BBT
-	if (!chip->scan_bbt)
-		chip->scan_bbt = nand_default_bbt;
-#endif
 	if (!chip->controller) {
 		chip->controller = &chip->hwcontrol;
 	}
@@ -3100,6 +3119,16 @@ static int nand_id_len(u8 *id_data, int arrlen)
 	return arrlen;
 }
 
+/* Extract the bits of per cell from the 3rd byte of the extended ID */
+static int nand_get_bits_per_cell(u8 cellinfo)
+{
+	int bits;
+
+	bits = cellinfo & NAND_CI_CELLTYPE_MSK;
+	bits >>= NAND_CI_CELLTYPE_SHIFT;
+	return bits + 1;
+}
+
 /*
  * Many new NAND share similar device ID codes, which represent the size of the
  * chip. The rest of the parameters must be decoded according to generic or
@@ -3110,7 +3139,7 @@ static void nand_decode_ext_id(struct mtd_info *mtd, struct nand_chip *chip,
 {
 	int extid, id_len;
 	/* The 3rd id byte holds MLC / multichip data */
-	chip->cellinfo = id_data[2];
+	chip->bits_per_cell = nand_get_bits_per_cell(id_data[2]);
 	/* The 4th id byte is the important one */
 	extid = id_data[3];
 
@@ -3126,8 +3155,7 @@ static void nand_decode_ext_id(struct mtd_info *mtd, struct nand_chip *chip,
 	 * ID to decide what to do.
 	 */
 	if (id_len == 6 && id_data[0] == NAND_MFR_SAMSUNG &&
-			(chip->cellinfo & NAND_CI_CELLTYPE_MSK) &&
-			id_data[5] != 0x00) {
+			!nand_is_slc(chip) && id_data[5] != 0x00) {
 		/* Calc pagesize */
 		mtd->writesize = 2048 << (extid & 0x03);
 		extid >>= 2;
@@ -3159,7 +3187,7 @@ static void nand_decode_ext_id(struct mtd_info *mtd, struct nand_chip *chip,
 			(((extid >> 1) & 0x04) | (extid & 0x03));
 		*busw = 0;
 	} else if (id_len == 6 && id_data[0] == NAND_MFR_HYNIX &&
-			(chip->cellinfo & NAND_CI_CELLTYPE_MSK)) {
+			!nand_is_slc(chip)) {
 		unsigned int tmp;
 
 		/* Calc pagesize */
@@ -3212,6 +3240,20 @@ static void nand_decode_ext_id(struct mtd_info *mtd, struct nand_chip *chip,
 		extid >>= 2;
 		/* Get buswidth information */
 		*busw = (extid & 0x01) ? NAND_BUSWIDTH_16 : 0;
+		/*
+		 * Toshiba 24nm raw SLC (i.e., not BENAND) have 32B OOB per
+		 * 512B page. For Toshiba SLC, we decode the 5th/6th byte as
+		 * follows:
+		 * - ID byte 6, bits[2:0]: 100b -> 43nm, 101b -> 32nm,
+		 *                         110b -> 24nm
+		 * - ID byte 5, bit[7]:    1 -> BENAND, 0 -> raw SLC
+		 */
+		if (id_len >= 6 && id_data[0] == NAND_MFR_TOSHIBA &&
+				nand_is_slc(chip) &&
+				(id_data[5] & 0x7) == 0x6 /* 24nm */ &&
+				!(id_data[4] & 0x80) /* !BENAND */) {
+			mtd->oobsize = 32 * mtd->writesize >> 9;
+		}
 	}
 }
 
@@ -3230,6 +3272,9 @@ static void nand_decode_id(struct mtd_info *mtd, struct nand_chip *chip,
 	mtd->writesize = type->pagesize;
 	mtd->oobsize = mtd->writesize / 32;
 	*busw = type->options & NAND_BUSWIDTH_16;
+
+	/* All legacy ID NAND are small-page, SLC */
+	chip->bits_per_cell = 1;
 
 	/*
 	 * Check for Spansion/AMD ID + repeating 5th, 6th byte since
@@ -3267,11 +3312,11 @@ static void nand_decode_bbm_options(struct mtd_info *mtd,
 	 * Micron devices with 2KiB pages and on SLC Samsung, Hynix, Toshiba,
 	 * AMD/Spansion, and Macronix.  All others scan only the first page.
 	 */
-	if ((chip->cellinfo & NAND_CI_CELLTYPE_MSK) &&
+	if (!nand_is_slc(chip) &&
 			(maf_id == NAND_MFR_SAMSUNG ||
 			 maf_id == NAND_MFR_HYNIX))
 		chip->bbt_options |= NAND_BBT_SCANLASTPAGE;
-	else if ((!(chip->cellinfo & NAND_CI_CELLTYPE_MSK) &&
+	else if ((nand_is_slc(chip) &&
 				(maf_id == NAND_MFR_SAMSUNG ||
 				 maf_id == NAND_MFR_HYNIX ||
 				 maf_id == NAND_MFR_TOSHIBA ||
@@ -3295,7 +3340,7 @@ static bool find_full_id_nand(struct mtd_info *mtd, struct nand_chip *chip,
 		mtd->erasesize = type->erasesize;
 		mtd->oobsize = type->oobsize;
 
-		chip->cellinfo = id_data[2];
+		chip->bits_per_cell = nand_get_bits_per_cell(id_data[2]);
 		chip->chipsize = (uint64_t)type->chipsize << 20;
 		chip->options |= type->options;
 
@@ -3675,25 +3720,22 @@ int nand_scan_tail(struct mtd_info *mtd)
 		chip->ecc.read_oob = nand_read_oob_std;
 		chip->ecc.write_oob = nand_write_oob_std;
 		/*
-		 * Board driver should supply ecc.size and ecc.bytes values to
-		 * select how many bits are correctable; see nand_bch_init()
-		 * for details. Otherwise, default to 4 bits for large page
-		 * devices.
+		 * Board driver should supply ecc.size and ecc.strength values
+		 * to select how many bits are correctable. Otherwise, default
+		 * to 4 bits for large page devices.
 		 */
 		if (!chip->ecc.size && (mtd->oobsize >= 64)) {
 			chip->ecc.size = 512;
-			chip->ecc.bytes = 7;
+			chip->ecc.strength = 4;
 		}
-		chip->ecc.priv = nand_bch_init(mtd,
-					       chip->ecc.size,
-					       chip->ecc.bytes,
-					       &chip->ecc.layout);
+
+		/* See nand_bch_init() for details. */
+		chip->ecc.bytes = 0;
+		chip->ecc.priv = nand_bch_init(mtd);
 		if (!chip->ecc.priv) {
 			pr_warn("BCH ECC initialization failed!\n");
 			BUG();
 		}
-		chip->ecc.strength =
-			chip->ecc.bytes * 8 / fls(8 * chip->ecc.size);
 		break;
 #endif
 #ifdef CONFIG_NAND_ECC_NONE
@@ -3744,8 +3786,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 	chip->ecc.total = chip->ecc.steps * chip->ecc.bytes;
 
 	/* Allow subpage writes up to ecc.steps. Not possible for MLC flash */
-	if (!(chip->options & NAND_NO_SUBPAGE_WRITE) &&
-	    !(chip->cellinfo & NAND_CI_CELLTYPE_MSK)) {
+	if (!(chip->options & NAND_NO_SUBPAGE_WRITE) && nand_is_slc(chip)) {
 		switch (chip->ecc.steps) {
 		case 2:
 			mtd->subpage_sft = 1;
@@ -3805,7 +3846,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 		return 0;
 
 	/* Build bad block table */
-	return chip->scan_bbt(mtd);
+	return nand_create_bbt(mtd);
 }
 EXPORT_SYMBOL(nand_scan_tail);
 

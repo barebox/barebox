@@ -1297,6 +1297,7 @@ static int atmel_hw_nand_init_params(struct device_d *dev,
 	nand_chip->ecc.hwctl = atmel_nand_hwctl;
 	nand_chip->ecc.read_page = atmel_nand_read_page;
 	nand_chip->ecc.bytes = 4;
+	nand_chip->ecc.strength = 1;
 
 	return 0;
 }
@@ -1387,6 +1388,8 @@ static int __init atmel_nand_probe(struct device_d *dev)
 	}
 
 	nand_chip->ecc.mode = pdata->ecc_mode;
+	nand_chip->ecc.strength = pdata->ecc_strength ? : 1;
+	nand_chip->ecc.size = 1 << pdata->ecc_size_shift ? : 512;
 
 	if (IS_ENABLED(CONFIG_NAND_ECC_HW) &&
 	    pdata->ecc_mode == NAND_ECC_HW) {

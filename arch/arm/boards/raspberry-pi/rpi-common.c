@@ -298,6 +298,25 @@ static int rpi_clock_init(void)
 }
 postconsole_initcall(rpi_clock_init);
 
+static int rpi_console_clock_init(void)
+{
+	struct clk *clk;
+
+	clk = clk_fixed("apb_pclk", 0);
+	clk_register_clkdev(clk, "apb_pclk", NULL);
+
+	clk = clk_fixed("uart0-pl0110", 3 * 1000 * 1000);
+	clk_register_clkdev(clk, NULL, "uart0-pl0110");
+	clkdev_add_physbase(clk, 0x20201000, NULL);
+	clkdev_add_physbase(clk, 0x3f201000, NULL);
+
+	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
+	clk_register_clkdev(clk, NULL, "bcm2835-cs");
+
+	return 0;
+}
+postcore_initcall(rpi_console_clock_init);
+
 static int rpi_env_init(void)
 {
 	struct stat s;

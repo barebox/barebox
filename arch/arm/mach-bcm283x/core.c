@@ -31,25 +31,6 @@
 #include <mach/core.h>
 #include <linux/amba/bus.h>
 
-static int bcm2835_clk_init(void)
-{
-	struct clk *clk;
-
-	clk = clk_fixed("apb_pclk", 0);
-	clk_register_clkdev(clk, "apb_pclk", NULL);
-
-	clk = clk_fixed("uart0-pl0110", 3 * 1000 * 1000);
-	clk_register_clkdev(clk, NULL, "uart0-pl0110");
-	clkdev_add_physbase(clk, 0x20201000, NULL);
-	clkdev_add_physbase(clk, 0x3f201000, NULL);
-
-	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
-	clk_register_clkdev(clk, NULL, "bcm2835-cs");
-
-	return 0;
-}
-postcore_initcall(bcm2835_clk_init);
-
 void bcm2835_add_device_sdram(u32 size)
 {
 	if (!size)

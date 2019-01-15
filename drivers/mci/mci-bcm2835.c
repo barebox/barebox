@@ -53,7 +53,7 @@ struct bcm2835_mci_host {
 	uint64_t last_write;
 };
 
-void bcm2835_mci_write(struct bcm2835_mci_host *host, u32 reg, u32 val)
+static void bcm2835_mci_write(struct bcm2835_mci_host *host, u32 reg, u32 val)
 {
 	/*
 	 * The Arasan has a bugette whereby it may lose the content of
@@ -71,7 +71,7 @@ void bcm2835_mci_write(struct bcm2835_mci_host *host, u32 reg, u32 val)
 	writel(val, host->regs + reg);
 }
 
-u32 bcm2835_mci_read(struct bcm2835_mci_host *host, u32 reg)
+static u32 bcm2835_mci_read(struct bcm2835_mci_host *host, u32 reg)
 {
 	return readl(host->regs + reg);
 }
@@ -80,13 +80,13 @@ u32 bcm2835_mci_read(struct bcm2835_mci_host *host, u32 reg)
  * register is not affected by the twoticks_delay bug
  * and we can thus get better speed here
  */
-void bcm2835_mci_write_data(struct bcm2835_mci_host *host, u32 *p)
+static void bcm2835_mci_write_data(struct bcm2835_mci_host *host, u32 *p)
 {
 	writel(*p, host->regs + SDHCI_BUFFER);
 }
 
 /* Make a read data functions as well just to keep structure */
-void bcm2835_mci_read_data(struct bcm2835_mci_host *host, u32 *p)
+static void bcm2835_mci_read_data(struct bcm2835_mci_host *host, u32 *p)
 {
 	*p = readl(host->regs + SDHCI_BUFFER);
 }
@@ -416,7 +416,7 @@ static void bcm2835_mci_set_ios(struct mci_host *mci, struct mci_ios *ios)
 			host->bus_width, host->clock);
 }
 
-int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
+static int bcm2835_mci_reset(struct mci_host *mci, struct device_d *mci_dev)
 {
 	struct bcm2835_mci_host *host;
 	u32 ret = 0;

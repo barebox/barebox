@@ -310,6 +310,13 @@ static int rpi_console_clock_init(void)
 	clkdev_add_physbase(clk, 0x20201000, NULL);
 	clkdev_add_physbase(clk, 0x3f201000, NULL);
 
+	clk = rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_CORE,
+					  "uart1-8250");
+	if (IS_ERR(clk))
+		return PTR_ERR(clk);
+
+	clkdev_add_physbase(clk, 0x3f215040, NULL);
+
 	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
 	clk_register_clkdev(clk, NULL, "bcm2835-cs");
 

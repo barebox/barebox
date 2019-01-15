@@ -102,7 +102,7 @@ static int state_uint8_set(struct param_d *p, void *priv)
 static struct state_variable *state_uint8_create(struct state *state,
 						 const char *name,
 						 struct device_node *node,
-					      const struct variable_type *vtype)
+						 const struct variable_type *vtype)
 {
 	struct state_uint32 *su32;
 	struct param_d *param;
@@ -132,7 +132,7 @@ static struct state_variable *state_uint8_create(struct state *state,
 static struct state_variable *state_uint32_create(struct state *state,
 						  const char *name,
 						  struct device_node *node,
-					      const struct variable_type *vtype)
+						  const struct variable_type *vtype)
 {
 	struct state_uint32 *su32;
 	struct param_d *param;
@@ -223,7 +223,7 @@ static int state_enum32_import(struct state_variable *sv,
 static struct state_variable *state_enum32_create(struct state *state,
 						  const char *name,
 						  struct device_node *node,
-					      const struct variable_type *vtype)
+						  const struct variable_type *vtype)
 {
 	struct state_enum32 *enum32;
 	int ret, i, num_names;
@@ -307,7 +307,7 @@ static int state_mac_import(struct state_variable *sv, struct device_node *node)
 static struct state_variable *state_mac_create(struct state *state,
 					       const char *name,
 					       struct device_node *node,
-					      const struct variable_type *vtype)
+					       const struct variable_type *vtype)
 {
 	struct state_mac *mac;
 	int ret;
@@ -409,7 +409,7 @@ static int state_string_get(struct param_d *p, void *priv)
 static struct state_variable *state_string_create(struct state *state,
 						  const char *name,
 						  struct device_node *node,
-					      const struct variable_type *vtype)
+						  const struct variable_type *vtype)
 {
 	struct state_string *string;
 	uint32_t start_size[2];

@@ -51,7 +51,7 @@ static int fec_miibus_read(struct mii_bus *bus, int phyAddr, int regAddr)
 	 * wait for the related interrupt
 	 */
 	if (readl_poll_timeout(fec->regs + FEC_IEVENT, reg,
-			       reg & FEC_IEVENT_MII, MSECOND)) {
+			       reg & FEC_IEVENT_MII, USEC_PER_MSEC)) {
 		dev_err(&fec->edev.dev, "Read MDIO failed...\n");
 		return -1;
 	}
@@ -88,7 +88,7 @@ static int fec_miibus_write(struct mii_bus *bus, int phyAddr,
 	 * wait for the MII interrupt
 	 */
 	if (readl_poll_timeout(fec->regs + FEC_IEVENT, reg,
-			       reg & FEC_IEVENT_MII, MSECOND)) {
+			       reg & FEC_IEVENT_MII, USEC_PER_MSEC)) {
 		dev_err(&fec->edev.dev, "Write MDIO failed...\n");
 		return -1;
 	}
@@ -401,7 +401,7 @@ static void fec_halt(struct eth_device *dev)
 
 	/* wait for graceful stop to register */
 	if (readl_poll_timeout(fec->regs + FEC_IEVENT, reg,
-			       reg & FEC_IEVENT_GRA, SECOND))
+			       reg & FEC_IEVENT_GRA, USEC_PER_SEC))
 		dev_err(&dev->dev, "graceful stop timeout\n");
 
 	/* Disable SmartDMA tasks */
@@ -475,7 +475,7 @@ static int fec_send(struct eth_device *dev, void *eth_data, int data_length)
 	fec_tx_task_enable(fec);
 
 	if (readw_poll_timeout(&fec->tbd_base[fec->tbd_index].status,
-			       status, !(status & FEC_TBD_READY), SECOND))
+			       status, !(status & FEC_TBD_READY), USEC_PER_SEC))
 		dev_err(&dev->dev, "transmission timeout\n");
 
 	dma_unmap_single(fec->dev, dma, data_length, DMA_TO_DEVICE);
@@ -796,7 +796,7 @@ static int fec_probe(struct device_d *dev)
 	/* Reset chip. */
 	writel(FEC_ECNTRL_RESET, fec->regs + FEC_ECNTRL);
 	ret = readl_poll_timeout(fec->regs + FEC_ECNTRL, reg,
-				 !(reg & FEC_ECNTRL_RESET), SECOND);
+				 !(reg & FEC_ECNTRL_RESET), USEC_PER_SEC);
 	if (ret)
 		goto free_gpio;
 

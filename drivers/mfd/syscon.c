@@ -176,7 +176,7 @@ static int syscon_probe(struct device_d *dev)
 	syscon->base = IOMEM(res->start);
 	dev->priv = syscon;
 
-	dev_dbg(dev, "map 0x%x-0x%x registered\n", res->start, res->end);
+	dev_dbg(dev, "map %pa-%pa registered\n", &res->start, &res->end);
 
 	return 0;
 }

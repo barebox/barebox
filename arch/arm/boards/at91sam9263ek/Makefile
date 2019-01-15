@@ -1,7 +1,7 @@
 ifeq ($(CONFIG_OFDEVICE),)
 obj-y += init.o
 endif
-obj-$(CONFIG_OF_DEVICE) += of_init.o
+obj-$(CONFIG_OFDEVICE) += of_init.o
 
 lwl-y += lowlevel_init.o
 

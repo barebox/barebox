@@ -1591,9 +1591,14 @@ static int chk_mounted (	/* 0(0): successful, !=0: any error occurred */
 		return -EINVAL;
 
 	/* Number of sectors per FAT */
+	fmt = FS_FAT12;
 	fasize = LD_WORD(fs->win+BPB_FATSz16);
-	if (!fasize)
+	if (!fasize) {
 		fasize = LD_DWORD(fs->win+BPB_FATSz32);
+		if (fasize)
+			/* Must be FAT32 */
+			fmt = FS_FAT32;
+	}
 	fs->fsize = fasize;
 
 	/* Number of FAT copies */
@@ -1633,11 +1638,8 @@ static int chk_mounted (	/* 0(0): successful, !=0: any error occurred */
 	nclst = (tsect - sysect) / fs->csize;
 	if (!nclst)
 		return -EINVAL;	/* (Invalid volume size) */
-	fmt = FS_FAT12;
-	if (nclst >= MIN_FAT16)
+	if (fmt == FS_FAT12 && nclst >= MIN_FAT16)
 		fmt = FS_FAT16;
-	if (nclst >= MIN_FAT32)
-		fmt = FS_FAT32;
 
 	/* Boundaries and Limits */
 	/* Number of FAT entries */

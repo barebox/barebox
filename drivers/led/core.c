@@ -127,12 +127,13 @@ static void led_blink_func(struct poller_struct *poller)
 	struct led *led;
 
 	list_for_each_entry(led, &leds, list) {
+		const uint64_t now = get_time_ns();
 		int on;
 
 		if (!led->blink && !led->flash)
 			continue;
 
-		if (led->blink_next_event > get_time_ns()) {
+		if (led->blink_next_event > now) {
 			continue;
 		}
 
@@ -140,7 +141,7 @@ static void led_blink_func(struct poller_struct *poller)
 		if (on)
 			on = led->max_value;
 
-		led->blink_next_event = get_time_ns() +
+		led->blink_next_event = now +
 			(led->blink_states[led->blink_next_state] * MSECOND);
 		led->blink_next_state = (led->blink_next_state + 1) %
 					led->blink_nr_states;
@@ -176,7 +177,7 @@ int led_blink_pattern(struct led *led, const unsigned int *pattern,
 				    pattern_len * sizeof(*led->blink_states));
 	led->blink_nr_states = pattern_len;
 	led->blink_next_state = 0;
-	led->blink_next_event = get_time_ns();
+	led->blink_next_event = 0;
 	led->blink = 1;
 	led->flash = 0;
 
@@ -187,7 +188,7 @@ int led_blink(struct led *led, unsigned int on_ms, unsigned int off_ms)
 {
 	unsigned int pattern[] = {on_ms, off_ms};
 
-	return led_blink_pattern(led, pattern, 2);
+	return led_blink_pattern(led, ARRAY_AND_SIZE(pattern));
 }
 
 int led_flash(struct led *led, unsigned int duration_ms)
@@ -195,7 +196,7 @@ int led_flash(struct led *led, unsigned int duration_ms)
 	unsigned int pattern[] = {duration_ms, 0};
 	int ret;
 
-	ret = led_blink_pattern(led, pattern, 2);
+	ret = led_blink_pattern(led, ARRAY_AND_SIZE(pattern));
 	if (ret)
 		return ret;
 

@@ -7,6 +7,8 @@
 #include <fs.h>
 #include <malloc.h>
 
+#include <gui/2d-primitives.h>
+
 static void __illuminate(struct fb_info *info,
 			 int x, int y,
 			 u8 r, u8 g, u8 b, u8 a)

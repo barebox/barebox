@@ -145,4 +145,7 @@ config GENERIC_LIB_ASHRDI3
 config GENERIC_LIB_LSHRDI3
 	bool
 
+config GENERIC_LIB_MULDI3
+	bool
+
 endmenu

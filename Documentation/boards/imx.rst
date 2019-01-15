@@ -43,22 +43,51 @@ SD card:
 
 The above will overwrite the MBR (and consequently the partition table)
 on the destination SD card. To preserve the MBR while writing the rest
-of the image to the card, use::
+of the image to the card, use:
+
+.. code-block:: sh
 
   dd if=images/barebox-freescale-imx51-babbage.img of=/dev/sdd bs=1024 skip=1 seek=1
 
-NOTE: MaskROM on i.MX8 expects image to start at +33KiB mark, so the
+Note that MaskROM on i.MX8 expects the image to start at the +33KiB mark, so the
 following command has to be used instead:
+
+.. code-block:: sh
 
   dd if=images/barebox-nxp-imx8mq-evk.img of=/dev/sdd bs=1024 skip=33 seek=33
 
 Or, in case of NAND:
 
+.. code-block:: sh
+
   dd if=images/barebox-nxp-imx8mq-evk.img of=/dev/nand bs=1024 skip=33 seek=1
 
-The images can also always be started second stage::
+The images can also always be started as second stage on the target:
 
-  bootm /mnt/tftp/barebox-freescale-imx51-babbage.img
+.. code-block:: console
+
+  barebox@Board Name:/ bootm /mnt/tftp/barebox-freescale-imx51-babbage.img
+
+Using GPT on i.MX
+^^^^^^^^^^^^^^^^^
+
+For i.MX SoCs that place a vendor specific header at the +1KiB mark of a
+boot medium, special care needs to be taken when partitioning that medium
+with GPT. In order to make room for the i.MX boot header, the GPT Partition
+Entry Array needs to be moved from its typical location, LBA 2, to an
+offset past vendor specific information. One way to do this would be
+to use the ``-j`` or ``--adjust-main-table`` option of ``sgdisk``. For
+example, the following sequence
+
+.. code-block:: sh
+
+  sgdisk -Z <block device>
+  sgdisk -o -j 2048 -n 1:8192:+100M <block device>
+
+will create a single GPT partition starting at LBA 8192 and would
+place the Partition Entry Array starting at LBA 2048, which should leave
+enough room for the Barebox/i.MX boot header. Once that is done, the ``dd``
+command above can be used to place Barebox on the same medium.
 
 Information about the ``imx-image`` tool
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -70,46 +99,48 @@ options in this file are:
 
 Header:
 
-+----------------+--------------------------------------------------------------+
-| soc <soctype>  |soctype can be one of imx35, imx51, imx53, imx6, imx7, vf610, |
-|                |                             imx8mq                           |
-+----------------+--------------------------------------------------------------+
-| loadaddr <adr> |     The address the binary is uploaded to                    |
-+----------------+--------------------------------------------------------------+
-| dcdofs <ofs>   | The offset of the image header in the image. This should be: |
-|                | * ``0x400``:  MMC/SD, NAND, serial ROM, PATA, SATA           |
-|                | * ``0x1000``: NOR Flash                                      |
-|                | * ``0x100``: OneNAND                                         |
-+----------------+--------------------------------------------------------------+
++--------------------+--------------------------------------------------------------+
+| ``soc <soctype>``  | soctype can be one of imx35, imx51, imx53, imx6, imx7, vf610,|
+|                    |                             imx8mq                           |
++--------------------+--------------------------------------------------------------+
+| ``loadaddr <adr>`` |     The address the binary is uploaded to                    |
++--------------------+--------------------------------------------------------------+
+| ``dcdofs <ofs>``   | The offset of the image header in the image. This should be: |
+|                    |                                                              |
+|                    | * ``0x400``:  MMC/SD, NAND, serial ROM, PATA, SATA           |
+|                    | * ``0x1000``: NOR Flash                                      |
+|                    | * ``0x100``: OneNAND                                         |
++--------------------+--------------------------------------------------------------+
 
 Memory manipulation:
 
-+------------------------------------+-----------------------------------------+
-| wm 8 <addr> <value>                | write <value> into byte <addr>          |
-+------------------------------------+-----------------------------------------+
-| wm 16 <addr> <value>               | write <value> into short <addr>         |
-+------------------------------------+-----------------------------------------+
-| wm 32 <addr> <value>               | write <value> into word <addr>          |
-+------------------------------------+-----------------------------------------+
-| set_bits <width> <addr> <value>    | set set bits in <value> in <addr>       |
-+------------------------------------+-----------------------------------------+
-| clear_bits <width> <addr> <value>  | clear set bits in <value> in <addr>     |
-+------------------------------------+-----------------------------------------+
-| nop                                | do nothing (just waste time)            |
-+------------------------------------+-----------------------------------------+
++----------------------------------------+-------------------------------------------------+
+| ``wm 8 <addr> <value>``                | write ``<value>`` into byte ``<addr>``          |
++----------------------------------------+-------------------------------------------------+
+| ``wm 16 <addr> <value>``               | write ``<value>`` into short ``<addr>``         |
++----------------------------------------+-------------------------------------------------+
+| ``wm 32 <addr> <value>``               | write ``<value>`` into word ``<addr>``          |
++----------------------------------------+-------------------------------------------------+
+| ``set_bits <width> <addr> <value>``    | set set bits in ``<value>`` in ``<addr>``       |
++----------------------------------------+-------------------------------------------------+
+| ``clear_bits <width> <addr> <value>``  | clear set bits in ``<value>`` in ``<addr>``     |
++----------------------------------------+-------------------------------------------------+
+| ``nop``                                | do nothing (just waste time)                    |
++----------------------------------------+-------------------------------------------------+
 
-<width> can be of 8, 16 or 32.
+``<width>`` can be one of 8, 16 or 32.
 
 Checking conditions:
 
-+------------------------------------+-----------------------------------------+
-| check <width> <cond> <addr> <mask> | Poll until condition becomes true.      |
-|                                    | with <cond> being one of:               |
-|                                    | * ``until_all_bits_clear``              |
-|                                    | * ``until_all_bits_set``                |
-|                                    | * ``until_any_bit_clear``               |
-|                                    | * ``until_any_bit_set``                 |
-+------------------------------------+-----------------------------------------+
++----------------------------------------+-----------------------------------------+
+| ``check <width> <cond> <addr> <mask>`` | Poll until condition becomes true.      |
+|                                        | with ``<cond>`` being one of:           |
+|                                        |                                         |
+|                                        | * ``until_all_bits_clear``              |
+|                                        | * ``until_all_bits_set``                |
+|                                        | * ``until_any_bit_clear``               |
+|                                        | * ``until_any_bit_set``                 |
++----------------------------------------+-----------------------------------------+
 
 Some notes about the mentioned *conditions*.
 

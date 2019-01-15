@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 Barebox
 -------
 
@@ -222,3 +224,33 @@ are the release rules:
   does never change, in order to make life easier for distribution
   people.
 
+
+License
+-------
+
+Copyright (C) 2000 - 2005 Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+Copyright (C) 2018 Sascha Hauer, Pengutronix, and individual contributors
+
+Barebox is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License, version 2, as published by the Free
+Software Foundation.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License in the file
+COPYING along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Individual files may contain the following SPDX license tags as a shorthand for
+the above copyright and warranty notices:
+
+    SPDX-License-Identifier: GPL-2.0-only
+    SPDX-License-Identifier: GPL-2.0-or-later
+
+This eases machine processing of licensing information based on the SPDX
+License Identifiers that are available at http://spdx.org/licenses/.
+
+Also note that some files in the Barebox source tree are available under
+several different GPLv2-compatible open-source licenses. This fact is noted
+clearly in the file headers of the respective files.

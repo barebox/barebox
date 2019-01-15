@@ -24,7 +24,7 @@ endmenu
 
 config ARCH_TEXT_BASE
 	hex
-	default 0xc0780000 if MACH_CLEP7212
+	default 0xc0740000 if MACH_CLEP7212
 
 config BAREBOX_MAX_IMAGE_SIZE
 	hex

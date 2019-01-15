@@ -320,7 +320,6 @@ int rave_sp_exec(struct rave_sp *sp,
 	unsigned char *data = __data;
 	int command, ret = 0;
 	u8 ackid;
-	uint64_t start = get_time_ns();
 
 	command = sp->variant->cmd.translate(data[0]);
 	if (command < 0)
@@ -340,12 +339,9 @@ int rave_sp_exec(struct rave_sp *sp,
 	 * is_timeout will implicitly poll serdev via poller
 	 * infrastructure
 	 */
-	while (!is_timeout(start, SECOND) && !reply.received)
-		;
-
-	if (!reply.received) {
+	ret = wait_on_timeout(SECOND, reply.received);
+	if (ret) {
 		dev_err(dev, "Command timeout\n");
-		ret = -ETIMEDOUT;
 		sp->reply = NULL;
 	}
 

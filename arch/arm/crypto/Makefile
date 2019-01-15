@@ -13,5 +13,3 @@ quiet_cmd_perl = PERL    $@
 
 $(src)/sha256-core.S_shipped: $(src)/sha256-armv4.pl
 	$(call cmd,perl)
-
-.PRECIOUS: $(obj)/sha256-core.S

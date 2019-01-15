@@ -112,8 +112,6 @@ targets += $(patsubst %,%.pbl,$(pblb-y))
 targets += $(patsubst %,%.s,$(pblb-y))
 targets += $(foreach m, $(image-y), $(FILE_$(m)))
 
-SECONDARY: $(addprefix $(obj)/,$(targets))
-
 # Images with full paths
 image-y-path := $(addprefix $(obj)/,$(image-y))
 # File will have a list of images generated

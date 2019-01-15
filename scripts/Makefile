@@ -21,12 +21,12 @@ hostprogs-$(CONFIG_ARCH_ZYNQ)	 += zynq_mkimage
 hostprogs-$(CONFIG_ARCH_SOCFPGA) += socfpga_mkimage
 hostprogs-$(CONFIG_MXS_HOSTTOOLS)+= mxsimage mxsboot
 HOSTCFLAGS += -I$(srctree)/scripts/include/
-HOSTLOADLIBES_mxsimage  = `pkg-config --libs openssl`
+HOSTLDLIBS_mxsimage  = `pkg-config --libs openssl`
 HOSTCFLAGS_omap3-usb-loader.o = `pkg-config --cflags libusb-1.0`
-HOSTLOADLIBES_omap3-usb-loader  = `pkg-config --libs libusb-1.0`
+HOSTLDLIBS_omap3-usb-loader  = `pkg-config --libs libusb-1.0`
 hostprogs-$(CONFIG_OMAP3_USB_LOADER)  += omap3-usb-loader
 HOSTCFLAGS_omap4_usbboot.o = `pkg-config --cflags libusb-1.0`
-HOSTLOADLIBES_omap4_usbboot = -lpthread `pkg-config --libs libusb-1.0`
+HOSTLDLIBS_omap4_usbboot = -lpthread `pkg-config --libs libusb-1.0`
 hostprogs-$(CONFIG_OMAP4_HOSTTOOL_USBBOOT) += omap4_usbboot
 
 subdir-y			+= mod

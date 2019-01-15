@@ -2,13 +2,9 @@
 # For a description of the syntax of this configuration file,
 # see Documentation/kbuild/kconfig-language.txt.
 #
-mainmenu "Barebox/$ARCH $KERNELVERSION Configuration"
+mainmenu "Barebox/$(ARCH) $(KERNELVERSION) Configuration"
 
-config SRCARCH
-	string
-	option env="SRCARCH"
-
-source "arch/$SRCARCH/Kconfig"
+source "arch/$(SRCARCH)/Kconfig"
 
 source common/Kconfig
 source commands/Kconfig

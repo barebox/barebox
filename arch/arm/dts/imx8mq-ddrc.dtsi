@@ -7,7 +7,7 @@
 
 	/delete-node/ memory@40000000;
 
-	peripherals@0 {
+	soc@0 {
 		ddrc@3d400000 {
 			compatible = "fsl,imx8mq-ddrc";
 			reg = <0x3d400000 0x400000>;

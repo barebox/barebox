@@ -8,6 +8,7 @@
 
 #include <arm64/freescale/imx8mq-evk.dts>
 #include "imx8mq.dtsi"
+#include "imx8mq-ddrc.dtsi"
 
 / {
 	chosen {

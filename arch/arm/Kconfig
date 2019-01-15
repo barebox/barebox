@@ -245,6 +245,19 @@ config ARCH_ZYNQ
 	bool "Xilinx Zynq-based boards"
 	select HAS_DEBUG_LL
 
+config ARCH_ZYNQMP
+	bool "Xilinx ZynqMP-based boards"
+	select CPU_V8
+	select HAS_DEBUG_LL
+	select HAVE_PBL_MULTI_IMAGES
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select CLKDEV_LOOKUP
+	select OFDEVICE
+	select OFTREE
+	select RELOCATABLE
+	select SYS_SUPPORTS_64BIT_KERNEL
+
 config ARCH_QEMU
 	bool "ARM QEMU boards"
 	select HAS_DEBUG_LL
@@ -275,6 +288,7 @@ source arch/arm/mach-tegra/Kconfig
 source arch/arm/mach-uemd/Kconfig
 source arch/arm/mach-zynq/Kconfig
 source arch/arm/mach-qemu/Kconfig
+source arch/arm/mach-zynqmp/Kconfig
 
 config ARM_ASM_UNIFIED
 	bool

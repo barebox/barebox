@@ -27,6 +27,10 @@ else
 CFLAGS += -mstrict-align
 endif
 
+# Prevent use of floating point and Advanced SIMD registers.
+ifeq ($(CONFIG_CPU_V8),y)
+CFLAGS += -mgeneral-regs-only
+endif
 
 # This selects which instruction set is used.
 # Note that GCC does not numerically define an architecture version
@@ -97,6 +101,7 @@ machine-$(CONFIG_ARCH_VEXPRESS)		:= vexpress
 machine-$(CONFIG_ARCH_TEGRA)		:= tegra
 machine-$(CONFIG_ARCH_UEMD)		:= uemd
 machine-$(CONFIG_ARCH_ZYNQ)		:= zynq
+machine-$(CONFIG_ARCH_ZYNQMP)		:= zynqmp
 machine-$(CONFIG_ARCH_QEMU)		:= qemu
 
 

@@ -1,13 +1,5 @@
-/*
- * Simple CLPS711X serial driver
- *
- * (C) Copyright 2012-2014 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0+
+/* Author: Alexander Shiyan <shc_work@mail.ru> */
 
 #include <common.h>
 #include <malloc.h>
@@ -54,7 +46,7 @@ static int clps711x_setbaudrate(struct console_device *cdev, int baudrate)
 	int divisor;
 	u32 tmp;
 
-	divisor = (clk_get_rate(s->uart_clk) / 16) / baudrate;
+	divisor = DIV_ROUND_CLOSEST(clk_get_rate(s->uart_clk), baudrate * 16);
 
 	tmp = readl(s->base + UBRLCR) & ~UBRLCR_BAUD_MASK;
 	tmp |= divisor - 1;
@@ -132,6 +124,7 @@ static int clps711x_probe(struct device_d *dev)
 	struct clps711x_uart *s;
 	int err, id = dev->id;
 	char syscon_dev[8];
+	const char *devname;
 
 	if (dev->device_node)
 		id = of_alias_get_id(dev->device_node, "serial");
@@ -170,6 +163,14 @@ static int clps711x_probe(struct device_d *dev)
 	s->cdev.getc	= clps711x_getc;
 	s->cdev.flush	= clps711x_flush;
 	s->cdev.setbrg	= clps711x_setbaudrate;
+	s->cdev.linux_console_name = "ttyCL";
+
+	devname = of_alias_get(dev->device_node);
+	if (devname) {
+		s->cdev.devname = xstrdup(devname);
+		s->cdev.devid = DEVICE_ID_SINGLE;
+	}
+
 	clps711x_init_port(&s->cdev);
 
 	err = console_register(&s->cdev);
@@ -182,7 +183,7 @@ out_err:
 }
 
 static struct of_device_id __maybe_unused clps711x_uart_dt_ids[] = {
-	{ .compatible = "cirrus,clps711x-uart", },
+	{ .compatible = "cirrus,ep7209-uart", },
 };
 
 static struct driver_d clps711x_driver = {

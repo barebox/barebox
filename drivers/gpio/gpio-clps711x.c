@@ -1,11 +1,5 @@
-/*
- * Copyright (C) 2013-2014 Alexander Shiyan <shc_work@mail.ru>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- */
+// SPDX-License-Identifier: GPL-2.0+
+/* Author: Alexander Shiyan <shc_work@mail.ru> */
 
 #include <init.h>
 #include <common.h>
@@ -71,7 +65,7 @@ out_err:
 }
 
 static struct of_device_id __maybe_unused clps711x_gpio_dt_ids[] = {
-	{ .compatible = "cirrus,clps711x-gpio", },
+	{ .compatible = "cirrus,ep7209-gpio", },
 	{ /* sentinel */ }
 };
 
@@ -80,9 +74,4 @@ static struct driver_d clps711x_gpio_driver = {
 	.probe		= clps711x_gpio_probe,
 	.of_compatible	= DRV_OF_COMPAT(clps711x_gpio_dt_ids),
 };
-
-static __init int clps711x_gpio_register(void)
-{
-	return platform_driver_register(&clps711x_gpio_driver);
-}
-coredevice_initcall(clps711x_gpio_register);
+coredevice_platform_driver(clps711x_gpio_driver);

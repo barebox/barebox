@@ -26,7 +26,6 @@ config ARCH_TEXT_BASE
 	default 0x93d00000 if MACH_TX25
 	default 0x7ff00000 if MACH_TQMA53
 	default 0x97f00000 if MACH_TX51
-	default 0x97f00000 if MACH_CCMX51
 	default 0x4fc00000 if MACH_SABRELITE
 	default 0x8fe00000 if MACH_TX53
 	default 0x97f00000 if MACH_EFIKA_MX_SMARTBOOK
@@ -245,6 +244,18 @@ config MACH_KINDLE_MX50
 	  Say Y here if you are using the fourth or fifth generation Amazon
 	  Kindle Model No. D01100 (Kindle Wi-Fi), D01200 (Kindle Touch) or
 	  EY21 (Kindle Paperwhite).
+
+config MACH_CCMX51
+	bool "ConnectCore i.MX51"
+	select ARCH_IMX51
+	select IMX_IIM
+	select SPI
+	select DRIVER_SPI_IMX
+	select MFD_MC13XXX
+	select RELOCATABLE
+	help
+	  Say Y here if you are using Digi ConnectCore (W)i-i.MX51
+	  equipped with a Freescale i.MX51 Processor
 
 config MACH_EFIKA_MX_SMARTBOOK
 	bool "Efika MX smartbook"
@@ -621,25 +632,6 @@ config MACH_TX51
 	select ARCH_IMX51
 	help
 	  Say Y here if you are using the Ka-Ro tx51 board
-
-config MACH_CCMX51
-	bool "ConnectCore i.MX51"
-	select ARCH_IMX51
-	select IMX_IIM
-	select SPI
-	select DRIVER_SPI_IMX
-	select MFD_MC13XXX
-	help
-	  Say Y here if you are using Digi ConnectCore (W)i-i.MX51
-	  equipped with a Freescale i.MX51 Processor
-
-config MACH_CCMX51_BASEBOARD
-	bool "Digi development board for CCMX51 module"
-	depends on MACH_CCMX51
-	default y
-	help
-	  This adds board specific devices that can be found on Digi
-	  evaluation board for CCMX51 module.
 
 # ----------------------------------------------------------
 

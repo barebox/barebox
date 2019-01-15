@@ -605,17 +605,20 @@ static int imx_spi_probe(struct device_d *dev)
 
 	master = &imx->master;
 	master->dev = dev;
-	master->bus_num = dev->id;
 
 	master->setup = imx_spi_setup;
 	master->transfer = imx_spi_transfer;
 
 	if (pdata) {
+		master->bus_num = dev->id;
 		master->num_chipselect = pdata->num_chipselect;
 		imx->cs_array = pdata->chipselect;
-	} else {
-		if (IS_ENABLED(CONFIG_OFDEVICE))
-			imx_spi_dt_probe(imx);
+	} else if (IS_ENABLED(CONFIG_OFDEVICE)) {
+		ret = of_alias_get_id(dev->device_node, "spi");
+		if (ret < 0)
+			goto err_free;
+		master->bus_num = ret;
+		imx_spi_dt_probe(imx);
 	}
 
 	imx->clk = clk_get(dev, NULL);

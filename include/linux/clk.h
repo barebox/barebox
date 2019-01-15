@@ -197,6 +197,8 @@ static inline int clk_set_rate(struct clk *clk, unsigned long rate)
 
 #ifdef CONFIG_COMMON_CLK
 
+#include <linux/list.h>
+
 #define CLK_SET_RATE_PARENT     (1 << 0) /* propagate rate change up one level */
 /* parents need enable during gate/ungate, set rate and re-parent */
 #define CLK_OPS_PARENT_ENABLE   (1 << 12)
@@ -257,6 +259,11 @@ struct clk_divider {
 
 extern struct clk_ops clk_divider_ops;
 
+unsigned long divider_recalc_rate(struct clk *clk, unsigned long parent_rate,
+		unsigned int val,
+		const struct clk_div_table *table,
+		unsigned long flags, unsigned long width);
+
 struct clk *clk_divider_alloc(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, u8 width, unsigned flags);
 void clk_divider_free(struct clk *clk_divider);
@@ -280,6 +287,17 @@ struct clk *clk_fractional_divider(
 		u8 clk_divider_flags);
 void clk_fractional_divider_free(struct clk *clk_fd);
 
+struct clk_mux {
+	struct clk clk;
+	void __iomem *reg;
+	int shift;
+	int width;
+};
+
+#define to_clk_mux(_clk) container_of(_clk, struct clk_mux, clk)
+
+extern struct clk_ops clk_mux_ops;
+
 struct clk *clk_mux_alloc(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents,
 		unsigned flags);
@@ -287,6 +305,18 @@ void clk_mux_free(struct clk *clk_mux);
 struct clk *clk_mux(const char *name, void __iomem *reg,
 		u8 shift, u8 width, const char **parents, u8 num_parents,
 		unsigned flags);
+
+struct clk_gate {
+	struct clk clk;
+	void __iomem *reg;
+	int shift;
+	const char *parent;
+	unsigned flags;
+};
+
+#define to_clk_gate(_clk) container_of(_clk, struct clk_gate, clk)
+
+extern struct clk_ops clk_gate_ops;
 
 struct clk *clk_gate_alloc(const char *name, const char *parent,
 		void __iomem *reg, u8 shift, unsigned flags,

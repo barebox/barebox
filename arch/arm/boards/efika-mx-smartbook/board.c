@@ -79,7 +79,7 @@ static void efikamx_power_init(struct mc13xxx *mc)
 
 	/* power up the system first */
 	mc13xxx_reg_write(mc, MC13892_REG_POWER_MISC,
-			MC13892_POWER_MISC_PWUP);
+			  MC13892_POWER_MISC_GPO4ADIN);
 
 	/* Set core voltage to 1.1V */
 	mc13xxx_reg_read(mc, MC13892_REG_SW_0, &val);

@@ -1,6 +1,0 @@
-#!/bin/sh
-
-mtdparts="512k(barebox)ro,256k(bareboxenv),3328k(kernel),-(root)"
-kernelname="mxc_nand"
-
-mtdparts-add -b -d nand0 -k ${kernelname} -p ${mtdparts}

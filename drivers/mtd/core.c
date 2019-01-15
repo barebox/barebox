@@ -141,15 +141,28 @@ static struct mtd_erase_region_info *mtd_find_erase_region(struct mtd_info *mtd,
 	return NULL;
 }
 
+static loff_t __mtd_erase_round(loff_t x, uint32_t esize, int up)
+{
+	uint64_t dividend = x;
+	uint32_t mod = do_div(dividend, esize);
+	if (mod == 0)
+		return x;
+	if (up)
+		x += esize;
+	return x - mod;
+}
+#define mtd_erase_round_up(x, esize)	__mtd_erase_round(x, esize, 1)
+#define mtd_erase_round_down(x, esize)	__mtd_erase_round(x, esize, 0)
+
 static int mtd_erase_align(struct mtd_info *mtd, loff_t *count, loff_t *offset)
 {
 	struct mtd_erase_region_info *e;
 	loff_t ofs;
 
 	if (mtd->numeraseregions == 0) {
-		ofs = *offset & ~(loff_t)(mtd->erasesize - 1);
-		*count += (*offset - ofs);
-		*count = ALIGN(*count, mtd->erasesize);
+		ofs = mtd_erase_round_down(*offset, mtd->erasesize);
+		*count += *offset - ofs;
+		*count = mtd_erase_round_up(*count, mtd->erasesize);
 		*offset = ofs;
 		return 0;
 	}
@@ -158,14 +171,14 @@ static int mtd_erase_align(struct mtd_info *mtd, loff_t *count, loff_t *offset)
 	if (!e)
 		return -EINVAL;
 
-	ofs = *offset & ~(e->erasesize - 1);
-	*count += (*offset - ofs);
+	ofs = mtd_erase_round_down(*offset, e->erasesize);
+	*count += *offset - ofs;
 
 	e = mtd_find_erase_region(mtd, *offset + *count);
 	if (!e)
 		return -EINVAL;
 
-	*count = ALIGN(*count, e->erasesize);
+	*count = mtd_erase_round_up(*count, e->erasesize);
 	*offset = ofs;
 
 	return 0;

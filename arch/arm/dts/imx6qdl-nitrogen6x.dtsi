@@ -32,6 +32,9 @@
 		reg = <0x0 0xe0000>;
 	};
 
+	/delete-node/ partition@c0000;
+	/delete-node/ partition@c2000;
+
 	partition@e0000 {
 		label = "barebox-environment";
 		reg = <0xe0000 0x20000>;

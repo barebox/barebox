@@ -32,9 +32,13 @@ CFG_start_imx25_karo_tx25.pblb.imximg = $(board)/karo-tx25/flash-header-tx25.imx
 FILE_barebox-karo-tx25-internal.img = start_imx25_karo_tx25.pblb.imximg
 image-$(CONFIG_MACH_TX25) += barebox-karo-tx25-internal.img
 
-pblb-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27
-FILE_barebox-phytec-phycard-imx27.img = start_phytec_phycard_imx27.pblb
-image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27.img
+pblb-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27_64mb
+FILE_barebox-phytec-phycard-imx27-64mb.img = start_phytec_phycard_imx27_64mb.pblb
+image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27-64mb.img
+
+pblb-$(CONFIG_MACH_PCA100) += start_phytec_phycard_imx27_128mb
+FILE_barebox-phytec-phycard-imx27-128mb.img = start_phytec_phycard_imx27_128mb.pblb
+image-$(CONFIG_MACH_PCA100) += barebox-phytec-phycard-imx27-128mb.img
 
 pblb-$(CONFIG_MACH_PCM038) += start_phytec_phycore_imx27
 FILE_barebox-phytec-phycore-imx27.img = start_phytec_phycore_imx27.pblb
@@ -57,6 +61,11 @@ FILE_barebox-kindle-ey21.img = start_imx50_kindle_ey21.pblb.imximg
 image-$(CONFIG_MACH_KINDLE_MX50) += barebox-kindle-ey21.img
 
 # ----------------------- i.MX51 based boards ---------------------------
+pblb-$(CONFIG_MACH_CCMX51) += start_ccxmx51
+CFG_start_ccxmx51.pblb.imximg = $(board)/ccxmx51/flash-header.imxcfg
+FILE_barebox-imx51-ccxmx51.img = start_ccxmx51.pblb.imximg
+image-$(CONFIG_MACH_CCMX51) += barebox-imx51-ccxmx51.img
+
 pblb-$(CONFIG_MACH_FREESCALE_MX51_PDK) += start_imx51_babbage
 CFG_start_imx51_babbage.pblb.imximg = $(board)/freescale-mx51-babbage/flash-header-imx51-babbage.imxcfg
 FILE_barebox-freescale-imx51-babbage.img = start_imx51_babbage.pblb.imximg

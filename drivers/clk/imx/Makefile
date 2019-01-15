@@ -1,4 +1,5 @@
 obj-$(CONFIG_COMMON_CLK) +=	\
+	clk-composite-8m.o	\
 	clk-pllv1.o		\
 	clk-pllv2.o		\
 	clk-pllv3.o		\

@@ -102,6 +102,13 @@ static inline struct clk *imx_clk_gate2_shared2(const char *name, const char *pa
 			 CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE);
 }
 
+static inline struct clk *imx_clk_gate2_flags(const char *name,
+		const char *parent, void __iomem *reg, u8 shift,
+		unsigned long flags)
+{
+	return clk_gate2(name, parent, reg, shift, 0x3, flags);
+}
+
 static inline struct clk *imx_clk_gate2_cgr(const char *name, const char *parent,
 					    void __iomem *reg, u8 shift, u8 cgr_val)
 {
@@ -193,5 +200,17 @@ void imx_check_clocks(struct clk *clks[], unsigned int count);
 struct clk *imx_clk_cpu(const char *name, const char *parent_name,
 		struct clk *div, struct clk *mux, struct clk *pll,
 		struct clk *step);
+
+struct clk *imx8m_clk_composite_flags(const char *name,
+		const char **parent_names, int num_parents, void __iomem *reg,
+		unsigned long flags);
+
+#define __imx8m_clk_composite(name, parent_names, reg, flags) \
+		imx8m_clk_composite_flags(name, parent_names, \
+			ARRAY_SIZE(parent_names), reg, \
+			flags | CLK_OPS_PARENT_ENABLE)
+
+#define imx8m_clk_composite(name, parent_names, reg) \
+	__imx8m_clk_composite(name, parent_names, reg, 0)
 
 #endif /* __IMX_CLK_H */

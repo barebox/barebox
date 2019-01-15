@@ -40,7 +40,7 @@
 
 static __iomem void *pit_base;
 
-uint64_t at91sam9_clocksource_read(void)
+static uint64_t at91sam9_clocksource_read(void)
 {
 	return pit_read(AT91_PIT_PIIR);
 }

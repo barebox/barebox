@@ -456,7 +456,7 @@ int w1_driver_register(struct w1_driver *drv)
 	return register_driver(&drv->drv);
 }
 
-void w1_found(struct w1_bus *bus, u64 rn)
+static void w1_found(struct w1_bus *bus, u64 rn)
 {
 	struct w1_device *dev;
 	u64 tmp = be64_to_cpu(rn);

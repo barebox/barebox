@@ -15,6 +15,7 @@
 #include <mach/cpu.h>
 #include <mach/at91_dbgu.h>
 #include <mach/at91_rstc.h>
+#include <mach/board.h>
 
 #include "generic.h"
 
@@ -23,17 +24,6 @@ void __initdata (*at91_boot_soc)(void);
 
 struct at91_socinfo at91_soc_initdata;
 EXPORT_SYMBOL(at91_soc_initdata);
-
-void __init at91rm9200_set_type(int type)
-{
-	if (type == ARCH_REVISON_9200_PQFP)
-		at91_soc_initdata.subtype = AT91_SOC_RM9200_PQFP;
-	else
-		at91_soc_initdata.subtype = AT91_SOC_RM9200_BGA;
-
-	pr_info("AT91: filled in soc subtype: %s\n",
-		at91_get_soc_subtype(&at91_soc_initdata));
-}
 
 static void __init soc_detect(u32 dbgu_base)
 {

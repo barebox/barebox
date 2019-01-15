@@ -40,7 +40,7 @@ static void __iomem *st = IOMEM(AT91RM9200_BASE_ST);
  * the updates as seen by the CPU don't seem to be strictly monotonic.
  * Waiting until we read the same value twice avoids glitching.
  */
-uint64_t at91rm9200_clocksource_read(void)
+static uint64_t at91rm9200_clocksource_read(void)
 {
 	unsigned long x1, x2;
 

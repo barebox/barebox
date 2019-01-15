@@ -435,7 +435,7 @@ static inline void ks_outblk(struct ks_net *ks, u16 *wptr, u32 len)
 		writew(*wptr++, ks->hw_addr);
 }
 
-void ks_enable_qmu(struct ks_net *ks)
+static void ks_enable_qmu(struct ks_net *ks)
 {
 	u16 w;
 

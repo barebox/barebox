@@ -1,0 +1,91 @@
+config RISCV
+	def_bool y
+	select GENERIC_FIND_NEXT_BIT
+	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+	select HAVE_CONFIGURABLE_TEXT_BASE
+	select GPIOLIB
+	select OFTREE
+	select COMMON_CLK
+	select COMMON_CLK_OF_PROVIDER
+	select CLKDEV_LOOKUP
+
+config ARCH_TEXT_BASE
+	hex
+	default 0x0
+
+menu "Machine selection"
+
+choice
+	prompt "System type"
+	default MACH_ERIZO
+
+config MACH_ERIZO
+	bool "erizo family"
+	select HAS_DEBUG_LL
+	select HAS_NMON
+
+endchoice
+
+choice
+	prompt "Base ISA"
+	default ARCH_RV32I
+
+config ARCH_RV32I
+	bool "RV32I"
+	select CPU_SUPPORTS_32BIT_KERNEL
+	select GENERIC_LIB_ASHLDI3
+	select GENERIC_LIB_ASHRDI3
+	select GENERIC_LIB_LSHRDI3
+
+endchoice
+
+config CPU_SUPPORTS_32BIT_KERNEL
+	bool
+
+choice
+	prompt "barebox code model"
+	default 32BIT
+
+config 32BIT
+	bool "32-bit barebox"
+	depends on CPU_SUPPORTS_32BIT_KERNEL
+	help
+	  Select this option to build a 32-bit barebox.
+
+endchoice
+
+config BUILTIN_DTB
+	bool "link a DTB into the barebox image"
+	depends on OFTREE
+
+config BUILTIN_DTB_NAME
+	string "DTB to build into the barebox image"
+	depends on BUILTIN_DTB
+
+source arch/riscv/mach-erizo/Kconfig
+
+endmenu
+
+menu "RISC-V specific settings"
+
+config HAS_NMON
+	bool
+
+config NMON
+	bool "nmon"
+	depends on HAS_NMON
+	depends on DEBUG_LL
+	help
+	  Say yes here to add the nmon to pbl.
+	  nmon -- nano-monitor program for the RISC-V processors.
+	  It can operate with NO working RAM, using only
+	  the processor registers.
+
+config NMON_HELP
+	bool "nmon help message"
+	depends on NMON
+	help
+	  Say yes here to get the nmon commands message on
+	  every nmon start.
+
+endmenu

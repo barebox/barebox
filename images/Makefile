@@ -94,6 +94,7 @@ board = $(srctree)/arch/$(ARCH)/boards
 objboard = $(objtree)/arch/$(ARCH)/boards
 
 include $(srctree)/images/Makefile.am33xx
+include $(srctree)/images/Makefile.am35xx
 include $(srctree)/images/Makefile.bcm283x
 include $(srctree)/images/Makefile.imx
 include $(srctree)/images/Makefile.mvebu

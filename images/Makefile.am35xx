@@ -1,0 +1,24 @@
+
+# %.mlo - convert into mlo image
+# ----------------------------------------------------------------
+quiet_cmd_mlo_image_am35xx = MLO     $@
+      cmd_mlo_image_am35xx = scripts/omap_signGP -o $@ -l 0x40200000 -c $<
+
+$(obj)/%.mlo-am35xx: $(obj)/% FORCE
+	$(call if_changed,mlo_image_am35xx)
+
+ifdef CONFIG_OMAP_BUILD_IFT
+pblb-$(CONFIG_MACH_WAGO_PFC_AM35XX) += start_am35xx_pfc_750_820x_sram
+FILE_barebox-am35xx-pfc-750-820x-mlo.img = start_am35xx_pfc_750_820x_sram.pblb.mlo-am35xx
+am35xx-mlo-$(CONFIG_MACH_WAGO_PFC_AM35XX) += barebox-am35xx-pfc-750-820x-mlo.img
+endif
+
+pblb-$(CONFIG_MACH_WAGO_PFC_AM35XX) += start_am35xx_pfc_750_820x_sdram
+FILE_barebox-am35xx-pfc-750-820x.img = start_am35xx_pfc_750_820x_sdram.pblb
+am35xx-barebox-$(CONFIG_MACH_WAGO_PFC_AM35XX) += barebox-am35xx-pfc-750-820x.img
+
+ifdef CONFIG_OMAP_BUILD_IFT
+image-y += $(am35xx-mlo-y)
+else
+image-y += $(am35xx-barebox-y)
+endif

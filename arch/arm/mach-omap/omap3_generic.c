@@ -43,6 +43,8 @@
 #include <mach/wdt.h>
 #include <mach/sys_info.h>
 #include <mach/syslib.h>
+#include <mach/omap3-generic.h>
+#include <reset_source.h>
 
 /**
  * @brief Reset the CPU
@@ -76,6 +78,9 @@ u32 get_cpu_type(void)
 
 	if (hawkeye == OMAP_HAWKEYE_34XX)
 		return CPU_3430;
+
+	if (hawkeye == OMAP_HAWKEYE_AM35XX)
+		return CPU_AM35XX;
 
 	if (hawkeye == OMAP_HAWKEYE_36XX)
 		return CPU_3630;
@@ -486,11 +491,59 @@ static int omap3_bootsource(void)
 	return 0;
 }
 
+#define OMAP3_PRM_RSTST_OFF 0x8
+#define OMAP3_REG_PRM_RSTST (OMAP3_PRM_REG(RSTCTRL) + OMAP3_PRM_RSTST_OFF)
+
+#define OMAP3_ICECRUSHER_RST	BIT(10)
+#define OMAP3_ICEPICK_RST	BIT(9)
+#define OMAP3_EXTERNAL_WARM_RST	BIT(6)
+#define OMAP3_SECURE_WD_RST	BIT(5)
+#define OMAP3_MPU_WD_RST	BIT(4)
+#define OMAP3_SECURITY_VIOL_RST	BIT(3)
+#define OMAP3_GLOBAL_SW_RST	BIT(1)
+#define OMAP3_GLOBAL_COLD_RST	BIT(0)
+
+static void omap3_detect_reset_reason(void)
+{
+	uint32_t val = 0;
+
+	val = readl(OMAP3_REG_PRM_RSTST);
+	/* clear OMAP3_PRM_RSTST - must be cleared by software */
+	writel(val, OMAP3_REG_PRM_RSTST);
+
+	switch (val) {
+	case OMAP3_ICECRUSHER_RST:
+	case OMAP3_ICEPICK_RST:
+		reset_source_set(RESET_JTAG);
+		break;
+	case OMAP3_EXTERNAL_WARM_RST:
+		reset_source_set(RESET_EXT);
+		break;
+	case OMAP3_SECURE_WD_RST:
+	case OMAP3_MPU_WD_RST:
+	case OMAP3_SECURITY_VIOL_RST:
+		reset_source_set(RESET_WDG);
+		break;
+	case OMAP3_GLOBAL_SW_RST:
+		reset_source_set(RESET_RST);
+		break;
+	case OMAP3_GLOBAL_COLD_RST:
+		reset_source_set(RESET_POR);
+		break;
+	default:
+		reset_source_set(RESET_UKWN);
+		break;
+	}
+}
+
 int omap3_init(void)
 {
 	omap_gpmc_base = (void *)OMAP3_GPMC_BASE;
 
 	restart_handler_register_fn(omap3_restart_soc);
+
+	if (IS_ENABLED(CONFIG_RESET_SOURCE))
+		omap3_detect_reset_reason();
 
 	return omap3_bootsource();
 }
@@ -532,6 +585,9 @@ static int omap3_gpio_init(void)
 
 int omap3_devices_init(void)
 {
-	return omap3_gpio_init();
+	omap3_gpio_init();
+	add_generic_device("omap-32ktimer", 0, NULL, OMAP3_32KTIMER_BASE, 0x400,
+			   IORESOURCE_MEM, NULL);
+	return 0;
 }
 #endif

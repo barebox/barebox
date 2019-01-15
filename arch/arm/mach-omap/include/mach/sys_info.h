@@ -43,6 +43,7 @@
 #define CPU_3350	0x3350
 #define CPU_3430	0x3430
 #define CPU_3630	0x3630
+#define CPU_AM35XX	0x3500
 
 /**
  * Define CPU revisions
@@ -84,6 +85,7 @@
 #define OMAP_HAWKEYE_34XX	0xB7AE /* OMAP34xx */
 #define OMAP_HAWKEYE_36XX	0xB891 /* OMAP36xx */
 #define OMAP_HAWKEYE_335X	0xB944 /* AM335x */
+#define OMAP_HAWKEYE_AM35XX	0xb868 /* AM35xx */
 
 /** These are implemented by the System specific code in omapX-generic.c */
 u32 get_cpu_type(void);

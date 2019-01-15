@@ -1,0 +1,63 @@
+/*
+ * Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ * Copyright (C) 2015 WAGO Kontakttechnik GmbH & Co. KG <http://global.wago.com>
+ * Author: Oleg Karfich <oleg.karfich@wago.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+&nand {
+	        /* 4 x 128k MLOs */
+		partition@0 {
+			label = "mlo0";
+			reg = <0x0 0x20000>;
+		};
+
+		partition@20000 {
+			label = "mlo1";
+			reg = <0x20000 0x20000>;
+		};
+
+		partition@40000 {
+			label = "mlo2";
+			reg = <0x40000 0x20000>;
+		};
+
+		partition@60000 {
+			label = "mlo3";
+			reg = <0x60000 0x20000>;
+		};
+
+	        /* 16 x 128k: 4 x stage2 (4x128k) */
+		partition@80000 {
+			label = "boot0";
+			reg = <0x80000 0x80000>;
+		};
+
+		partition@100000 {
+			label = "boot1";
+			reg = <0x100000 0x80000>;
+		};
+
+		partition@180000 {
+			label = "boot2";
+			reg = <0x180000 0x80000>;
+		};
+
+		partition@200000 {
+			label = "boot3";
+			reg = <0x200000 0x80000>;
+		};
+
+		partition@280000 {
+			label = "ubidata";
+			/*
+			 * Size 0x0 extends partition to
+			 * end of nand flash.
+			 */
+			reg = <0x280000 0x0>;
+		};
+};

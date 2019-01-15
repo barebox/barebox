@@ -22,7 +22,6 @@
 /delete-node/ &ehrpwm2_tbclk;
 /delete-node/ &clk_32768_ck;
 /delete-node/ &clk_rc32k_ck;
-/delete-node/ &tclkin_ck;
 /delete-node/ &dpll_core_m6_ck;
 /delete-node/ &dpll_mpu_m2_ck;
 /delete-node/ &dpll_ddr_ck;
@@ -40,7 +39,6 @@
 /delete-node/ &pruss_ocp_gclk;
 /delete-node/ &mmu_fck;
 /delete-node/ &timer1_fck;
-/delete-node/ &timer2_fck;
 /delete-node/ &timer3_fck;
 /delete-node/ &timer4_fck;
 /delete-node/ &timer5_fck;

@@ -290,7 +290,7 @@ static struct dpll_param mpu_dpll_param_34x_es1[] = {
 
 static struct dpll_param mpu_dpll_param_34x_es2[] = {
 	{.m = 0x0FA, .n = 0x05, .fsel = 0x07, .m2 = 0x01, }, /* 12   MHz */
-	{.m = 0x1F4, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
+	{.m = 0x258, .n = 0x0C, .fsel = 0x03, .m2 = 0x01, }, /* 13   MHz */
 	{.m = 0x271, .n = 0x17, .fsel = 0x03, .m2 = 0x01, }, /* 19.2 MHz */
 	{.m = 0x0FA, .n = 0x0C, .fsel = 0x07, .m2 = 0x01, }, /* 26   MHz */
 	{.m = 0x271, .n = 0x2F, .fsel = 0x03, .m2 = 0x01, }, /* 38.4 MHz */
@@ -617,11 +617,12 @@ void prcm_init(void)
 	sr32(OMAP3_CM_REG(CLKEN_PLL_MPU), 0, 3, PLL_LOW_POWER_BYPASS);
 	wait_on_value((0x1 << 0), 0, OMAP3_CM_REG(IDLEST_PLL_MPU), LDELAY);
 
-	if (cpu_type == CPU_3430) {
+	if (cpu_type == CPU_3430 || cpu_type == CPU_AM35XX) {
 		init_core_dpll_34x(cpu_rev, clk_index);
 		init_per_dpll_34x(cpu_rev, clk_index);
 		init_mpu_dpll_34x(cpu_rev, clk_index);
-		init_iva_dpll_34x(cpu_rev, clk_index);
+		if (cpu_type != CPU_AM35XX)
+			init_iva_dpll_34x(cpu_rev, clk_index);
 	}
 	else if (cpu_type == CPU_3630) {
 		init_core_dpll_36x(cpu_rev, clk_index);
@@ -676,7 +677,12 @@ static void per_clocks_enable(void)
 #define ICK_CAM_ON	0x00000001
 #define FCK_PER_ON	0x0003ffff
 #define ICK_PER_ON	0x0003ffff
-	sr32(OMAP3_CM_REG(FCLKEN_IVA2), 0, 32, FCK_IVA2_ON);
+
+	if (get_cpu_type() != CPU_AM35XX) {
+		sr32(OMAP3_CM_REG(FCLKEN_IVA2), 0, 32, FCK_IVA2_ON);
+		sr32(OMAP3_CM_REG(FCLKEN_CAM), 0, 32, FCK_CAM_ON);
+		sr32(OMAP3_CM_REG(ICLKEN_CAM), 0, 32, ICK_CAM_ON);
+	}
 	sr32(OMAP3_CM_REG(FCLKEN1_CORE), 0, 32, FCK_CORE1_ON);
 	sr32(OMAP3_CM_REG(ICLKEN1_CORE), 0, 32, ICK_CORE1_ON);
 	sr32(OMAP3_CM_REG(ICLKEN2_CORE), 0, 32, ICK_CORE2_ON);
@@ -684,8 +690,6 @@ static void per_clocks_enable(void)
 	sr32(OMAP3_CM_REG(ICLKEN_WKUP), 0, 32, ICK_WKUP_ON);
 	sr32(OMAP3_CM_REG(FCLKEN_DSS), 0, 32, FCK_DSS_ON);
 	sr32(OMAP3_CM_REG(ICLKEN_DSS), 0, 32, ICK_DSS_ON);
-	sr32(OMAP3_CM_REG(FCLKEN_CAM), 0, 32, FCK_CAM_ON);
-	sr32(OMAP3_CM_REG(ICLKEN_CAM), 0, 32, ICK_CAM_ON);
 	sr32(OMAP3_CM_REG(FCLKEN_PER), 0, 32, FCK_PER_ON);
 	sr32(OMAP3_CM_REG(ICLKEN_PER), 0, 32, ICK_PER_ON);
 

@@ -26,7 +26,7 @@ config ARCH_OMAP3
 	bool
 	select CPU_V7
 	select GENERIC_GPIO
-	select OMAP_CLOCK_SOURCE_S32K
+	select CLOCKSOURCE_TI_32K
 	help
 	  Say Y here if you are using Texas Instrument's OMAP343x based platform
 
@@ -34,7 +34,7 @@ config ARCH_OMAP4
 	bool
 	select CPU_V7
 	select GENERIC_GPIO
-	select OMAP_CLOCK_SOURCE_S32K
+	select CLOCKSOURCE_TI_32K
 	help
 	  Say Y here if you are using Texas Instrument's OMAP4 based platform
 
@@ -43,17 +43,16 @@ config ARCH_AM33XX
 	select CPU_V7
 	select GENERIC_GPIO
 	select OFTREE
-	select OMAP_CLOCK_SOURCE_DMTIMER
+	select CLOCKSOURCE_TI_DM
 	select ARM_USE_COMPRESSED_DTB
 	help
 	  Say Y here if you are using Texas Instrument's AM33xx based platform
 
-# Blind enable all possible clocks.. think twice before you do this.
-config OMAP_CLOCK_SOURCE_S32K
+config ARCH_AM35XX
 	bool
-
-config OMAP_CLOCK_SOURCE_DMTIMER
-	bool
+	select ARCH_OMAP3
+	help
+	  Say Y here if you are using Texas Instrument's AM35XX based platform
 
 config OMAP_GPMC
 	prompt "Support for GPMC configuration"
@@ -183,6 +182,15 @@ config MACH_VSCOM_BALTOS
 	select ARCH_AM33XX
 	help
 	  Say Y here if you are using a am335x based VScom Baltos devices
+
+config MACH_WAGO_PFC_AM35XX
+        bool "Wago PFC200 Fieldbus Controller"
+        select ARCH_AM35XX
+        select HAVE_DEFAULT_ENVIRONMENT_NEW
+        select HAVE_PBL_MULTI_IMAGES
+        select HAVE_CONFIGURABLE_MEMORY_LAYOUT
+        help
+          Say Y here if you are using a the AM3505 based PFC200 controller
 
 endif
 

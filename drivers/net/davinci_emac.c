@@ -32,18 +32,16 @@
 #include <asm/system.h>
 #include <linux/phy.h>
 #include <mach/emac_defs.h>
-#include <platform_data/eth-davinci-emac.h>
+#include <of_net.h>
 #include "davinci_emac.h"
 
 struct davinci_emac_priv {
 	struct device_d *dev;
 	struct eth_device edev;
-	struct mii_bus miibus;
 
 	/* EMAC Addresses */
 	void __iomem *adap_emac; /* = EMAC_BASE_ADDR */
 	void __iomem *adap_ewrap; /* = EMAC_WRAPPER_BASE_ADDR */
-	void __iomem *adap_mdio; /* = EMAC_MDIO_BASE_ADDR */
 
 	/* EMAC descriptors */
 	void __iomem *emac_desc_base; /* = EMAC_WRAPPER_RAM_ADDR */
@@ -58,8 +56,6 @@ struct davinci_emac_priv {
 
 	/* PHY-specific information */
 	phy_interface_t interface;
-	uint8_t phy_addr;
-	uint32_t phy_flags;
 
 	/* mac_addr[0] goes out on the wire first */
 	uint8_t mac_addr[6];
@@ -86,7 +82,13 @@ static inline void __iomem *HW_TO_BD(uint32_t x)
 #define HW_TO_BD(x)     (x)
 #endif
 
-static void davinci_eth_mdio_enable(struct davinci_emac_priv *priv)
+struct davinci_mdio_priv {
+	struct device_d *dev;
+	struct mii_bus miibus;
+	void __iomem *adap_mdio; /* = EMAC_MDIO_BASE_ADDR */
+};
+
+static void davinci_eth_mdio_enable(struct davinci_mdio_priv *priv)
 {
 	uint32_t	clkdiv;
 
@@ -105,13 +107,40 @@ static void davinci_eth_mdio_enable(struct davinci_emac_priv *priv)
 	while (readl(priv->adap_mdio + EMAC_MDIO_CONTROL) & MDIO_CONTROL_IDLE);
 }
 
+/* wait until hardware is ready for another user access */
+static int wait_for_user_access(struct davinci_mdio_priv *priv, uint32_t *val)
+{
+	u32 tmp;
+	uint64_t start = get_time_ns();
+
+	do {
+		tmp = readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0);
+
+		if (!(tmp & MDIO_USERACCESS0_GO))
+			break;
+
+		if (is_timeout(start, 100 * MSECOND)) {
+			dev_err(priv->dev, "timeout waiting for user access\n");
+			return -ETIMEDOUT;
+		}
+	} while (1);
+
+	if (val)
+		*val = tmp;
+
+	return 0;
+}
+
+
 static int davinci_miibus_read(struct mii_bus *bus, int addr, int reg)
 {
-	struct davinci_emac_priv *priv = bus->priv;
+	struct davinci_mdio_priv *priv = bus->priv;
 	uint16_t value;
-	int tmp;
+	int tmp, ret;
 
-	while (readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0) & MDIO_USERACCESS0_GO);
+	ret = wait_for_user_access(priv, NULL);
+	if (ret)
+		return ret;
 
 	writel(MDIO_USERACCESS0_GO |
 		MDIO_USERACCESS0_WRITE_READ |
@@ -119,8 +148,9 @@ static int davinci_miibus_read(struct mii_bus *bus, int addr, int reg)
 		((addr & 0x1f) << 16),
 		priv->adap_mdio + EMAC_MDIO_USERACCESS0);
 
-	/* Wait for command to complete */
-	while ((tmp = readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0)) & MDIO_USERACCESS0_GO);
+	ret = wait_for_user_access(priv, &tmp);
+	if (ret)
+		return ret;
 
 	if (tmp & MDIO_USERACCESS0_ACK) {
 		value = tmp & 0xffff;
@@ -134,8 +164,12 @@ static int davinci_miibus_read(struct mii_bus *bus, int addr, int reg)
 
 static int davinci_miibus_write(struct mii_bus *bus, int addr, int reg, u16 value)
 {
-	struct davinci_emac_priv *priv = bus->priv;
-	while (readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0) & MDIO_USERACCESS0_GO);
+	struct davinci_mdio_priv *priv = bus->priv;
+	int ret;
+
+	ret = wait_for_user_access(priv, NULL);
+	if (ret)
+		return ret;
 
 	dev_dbg(priv->dev, "davinci_miibus_write: addr=0x%02x reg=0x%02x value=0x%04x\n",
 		   addr, reg, value);
@@ -146,10 +180,7 @@ static int davinci_miibus_write(struct mii_bus *bus, int addr, int reg, u16 valu
 				(value & 0xffff),
 		priv->adap_mdio + EMAC_MDIO_USERACCESS0);
 
-	/* Wait for command to complete */
-	while (readl(priv->adap_mdio + EMAC_MDIO_USERACCESS0) & MDIO_USERACCESS0_GO);
-
-	return 0;
+	return wait_for_user_access(priv, NULL);
 }
 
 static int davinci_emac_get_ethaddr(struct eth_device *edev, unsigned char *adr)
@@ -173,6 +204,17 @@ static int davinci_emac_set_ethaddr(struct eth_device *edev, const unsigned char
 
 static int davinci_emac_init(struct eth_device *edev)
 {
+	struct davinci_emac_priv *priv = edev->priv;
+	uint32_t cnt;
+
+	/* Set DMA head and completion pointers to 0 */
+	for(cnt = 0; cnt < 8; cnt++) {
+		writel(0, (void *)priv->adap_emac + EMAC_TX0HDP + 4 * cnt);
+		writel(0, (void *)priv->adap_emac + EMAC_RX0HDP + 4 * cnt);
+		writel(0, (void *)priv->adap_emac + EMAC_TX0CP + 4 * cnt);
+		writel(0, (void *)priv->adap_emac + EMAC_RX0CP + 4 * cnt);
+	}
+
 	dev_dbg(&edev->dev, "* emac_init\n");
 	return 0;
 }
@@ -180,7 +222,7 @@ static int davinci_emac_init(struct eth_device *edev)
 static int davinci_emac_open(struct eth_device *edev)
 {
 	struct davinci_emac_priv *priv = edev->priv;
-	uint32_t clkdiv, cnt;
+	uint32_t cnt;
 	void __iomem *rx_desc;
 	unsigned long mac_hi, mac_lo;
 	int ret;
@@ -282,16 +324,10 @@ static int davinci_emac_open(struct eth_device *edev)
 		EMAC_MACCONTROL_RMIISPEED_100),
 	       priv->adap_emac + EMAC_MACCONTROL);
 
-	/* Init MDIO & get link state */
-	clkdiv = (EMAC_MDIO_BUS_FREQ / EMAC_MDIO_CLOCK_FREQ) - 1;
-	writel((clkdiv & 0xff) | MDIO_CONTROL_ENABLE | MDIO_CONTROL_FAULT,
-		priv->adap_mdio + EMAC_MDIO_CONTROL);
-
 	/* Start receive process */
 	writel(BD_TO_HW(priv->emac_rx_desc), priv->adap_emac + EMAC_RX0HDP);
 
-	ret = phy_device_connect(edev, &priv->miibus, priv->phy_addr, NULL,
-	                         priv->phy_flags, priv->interface);
+	ret = phy_device_connect(edev, NULL, -1, NULL, 0, priv->interface);
 	if (ret)
 		return ret;
 
@@ -500,18 +536,12 @@ out:
 static int davinci_emac_probe(struct device_d *dev)
 {
 	struct resource *iores;
-	struct davinci_emac_platform_data *pdata;
 	struct davinci_emac_priv *priv;
-	uint64_t start;
-	uint32_t phy_mask;
+	uint32_t ctrl_reg_offset;
+	uint32_t ctrl_ram_offset;
+	struct device_node *np = dev->device_node;
 
 	dev_dbg(dev, "+ emac_probe\n");
-
-	if (!dev->platform_data) {
-		dev_err(dev, "no platform_data\n");
-		return -ENODEV;
-	}
-	pdata = dev->platform_data;
 
 	priv = xzalloc(sizeof(*priv));
 	dev->priv = priv;
@@ -521,22 +551,14 @@ static int davinci_emac_probe(struct device_d *dev)
 	iores = dev_request_mem_resource(dev, 0);
 	if (IS_ERR(iores))
 		return PTR_ERR(iores);
-	priv->adap_emac = IOMEM(iores->start);
 
-	iores = dev_request_mem_resource(dev, 1);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
 	priv->adap_ewrap = IOMEM(iores->start);
 
-	iores = dev_request_mem_resource(dev, 2);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	priv->adap_mdio = IOMEM(iores->start);
+	of_property_read_u32(np, "ti,davinci-ctrl-reg-offset", &ctrl_reg_offset);
+	priv->adap_emac = IOMEM(iores->start) + ctrl_reg_offset;
 
-	iores = dev_request_mem_resource(dev, 3);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	priv->emac_desc_base = IOMEM(iores->start);
+	of_property_read_u32(np, "ti,davinci-ctrl-ram-offset", &ctrl_ram_offset);
+	priv->emac_desc_base = IOMEM(iores->start) + ctrl_ram_offset;
 
 	/* EMAC descriptors */
 	priv->emac_rx_desc = priv->emac_desc_base + EMAC_RX_DESC_BASE;
@@ -558,37 +580,7 @@ static int davinci_emac_probe(struct device_d *dev)
 	priv->edev.set_ethaddr = davinci_emac_set_ethaddr;
 	priv->edev.parent = dev;
 
-	davinci_eth_mdio_enable(priv);
-
-	start = get_time_ns();
-	while (1) {
-		phy_mask = readl(priv->adap_mdio + EMAC_MDIO_ALIVE);
-		if (phy_mask) {
-			dev_info(dev, "detected phy mask 0x%x\n", phy_mask);
-			phy_mask = ~phy_mask;
-			break;
-		}
-		if (is_timeout(start, 256 * MSECOND)) {
-			dev_err(dev, "no live phy, scanning all\n");
-			phy_mask = 0;
-			break;
-		}
-	}
-
-	if (pdata->interface_rmii)
-		priv->interface = PHY_INTERFACE_MODE_RMII;
-	else
-		priv->interface = PHY_INTERFACE_MODE_MII;
-	priv->phy_addr = pdata->phy_addr;
-	priv->phy_flags = pdata->force_link ? PHYLIB_FORCE_LINK : 0;
-
-	priv->miibus.read = davinci_miibus_read;
-	priv->miibus.write = davinci_miibus_write;
-	priv->miibus.priv = priv;
-	priv->miibus.parent = dev;
-	priv->miibus.phy_mask = phy_mask;
-
-	mdiobus_register(&priv->miibus);
+	priv->interface = of_get_phy_mode(np);
 
 	eth_register(&priv->edev);
 
@@ -603,9 +595,73 @@ static void davinci_emac_remove(struct device_d *dev)
 	davinci_emac_halt(&priv->edev);
 }
 
+static __maybe_unused struct of_device_id davinci_emac_dt_ids[] = {
+	{
+		.compatible = "ti,am3517-emac",
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d davinci_emac_driver = {
 	.name   = "davinci_emac",
 	.probe  = davinci_emac_probe,
 	.remove = davinci_emac_remove,
+	.of_compatible = DRV_OF_COMPAT(davinci_emac_dt_ids),
 };
 device_platform_driver(davinci_emac_driver);
+
+static int davinci_mdio_probe(struct device_d *dev)
+{
+	struct resource *iores;
+	struct davinci_mdio_priv *priv;
+	int ret;
+	uint32_t clkdiv;
+
+	priv = xzalloc(sizeof(*priv));
+
+	priv->dev = dev;
+	priv->miibus.read = davinci_miibus_read;
+	priv->miibus.write = davinci_miibus_write;
+	priv->miibus.priv = priv;
+	priv->miibus.parent = dev;
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+
+	priv->adap_mdio = IOMEM(iores->start);
+
+	davinci_eth_mdio_enable(priv);
+
+	/* Init MDIO & get link state */
+	clkdiv = (EMAC_MDIO_BUS_FREQ / EMAC_MDIO_CLOCK_FREQ) - 1;
+	writel((clkdiv & 0xff) | MDIO_CONTROL_ENABLE | MDIO_CONTROL_FAULT,
+		priv->adap_mdio + EMAC_MDIO_CONTROL);
+
+	ret = mdiobus_register(&priv->miibus);
+	if (ret)
+		goto err;
+
+	return 0;
+
+err:
+	free(priv);
+
+	return ret;
+}
+
+static __maybe_unused struct of_device_id davinci_mdio_dt_ids[] = {
+	{
+		.compatible = "ti,davinci_mdio",
+	}, {
+		/* sentinel */
+	}
+};
+
+static struct driver_d davinci_mdio_driver = {
+	.name   = "davinci_mdio",
+	.probe  = davinci_mdio_probe,
+	.of_compatible = DRV_OF_COMPAT(davinci_mdio_dt_ids),
+};
+device_platform_driver(davinci_mdio_driver);

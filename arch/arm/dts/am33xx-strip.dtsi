@@ -27,7 +27,6 @@
 /delete-node/ &dcan1;
 /delete-node/ &mailbox;
 /delete-node/ &timer1;
-/delete-node/ &timer2;
 /delete-node/ &timer3;
 /delete-node/ &timer4;
 /delete-node/ &timer5;

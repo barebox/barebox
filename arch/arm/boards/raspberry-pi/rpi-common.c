@@ -298,6 +298,10 @@ static int rpi_clock_init(void)
 }
 postconsole_initcall(rpi_clock_init);
 
+#define BCM2835_PL011_BASE 0x20201000
+#define BCM2836_PL011_BASE 0x3f201000
+#define BCM2836_MINIUART_BASE 0x3f215040
+
 static int rpi_console_clock_init(void)
 {
 	struct clk *clk;
@@ -307,15 +311,15 @@ static int rpi_console_clock_init(void)
 
 	clk = clk_fixed("uart0-pl0110", 3 * 1000 * 1000);
 	clk_register_clkdev(clk, NULL, "uart0-pl0110");
-	clkdev_add_physbase(clk, 0x20201000, NULL);
-	clkdev_add_physbase(clk, 0x3f201000, NULL);
+	clkdev_add_physbase(clk, BCM2835_PL011_BASE, NULL);
+	clkdev_add_physbase(clk, BCM2836_PL011_BASE, NULL);
 
 	clk = rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_CORE,
 					  "uart1-8250");
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);
 
-	clkdev_add_physbase(clk, 0x3f215040, NULL);
+	clkdev_add_physbase(clk, BCM2836_MINIUART_BASE, NULL);
 
 	clk = clk_fixed("bcm2835-cs", 1 * 1000 * 1000);
 	clk_register_clkdev(clk, NULL, "bcm2835-cs");

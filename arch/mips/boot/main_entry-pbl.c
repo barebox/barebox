@@ -1,19 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2012 Antony Pavlov <antonynpavlov@gmail.com>
- *
- * This file is part of barebox.
- * See file CREDITS for list of people who contributed to this project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #include <common.h>
@@ -31,7 +18,7 @@ extern void *input_data_end;
 unsigned long free_mem_ptr;
 unsigned long free_mem_end_ptr;
 
-void pbl_main_entry(void);
+void pbl_main_entry(void *fdt, void *fdt_end);
 
 static unsigned long *ttb;
 
@@ -46,10 +33,11 @@ static void barebox_uncompress(void *compressed_start, unsigned int len)
 	pbl_barebox_uncompress((void*)TEXT_BASE, compressed_start, len);
 }
 
-void __section(.text_entry) pbl_main_entry(void)
+void __section(.text_entry) pbl_main_entry(void *fdt, void *fdt_end)
 {
-	u32 pg_start, pg_end, pg_len;
-	void (*barebox)(void);
+	u32 pg_start, pg_end, pg_len, fdt_len;
+	void *fdt_new;
+	void (*barebox)(void *fdt, u32 fdt_len);
 
 	puts_ll("pbl_main_entry()\n");
 
@@ -62,6 +50,10 @@ void __section(.text_entry) pbl_main_entry(void)
 
 	barebox_uncompress(&input_data, pg_len);
 
+	fdt_len = (u32)fdt_end - (u32)fdt;
+	fdt_new = (void *)PAGE_ALIGN_DOWN(STACK_BASE - fdt_len);
+	memcpy(fdt_new, fdt, fdt_len);
+
 	barebox = (void *)TEXT_BASE;
-	barebox();
+	barebox(fdt_new, fdt_len);
 }

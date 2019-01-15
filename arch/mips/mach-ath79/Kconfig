@@ -10,8 +10,18 @@ config SOC_QCA_AR9331
 config SOC_QCA_AR9344
 	bool
 
+if DEBUG_LL
 choice
-	prompt "Board type"
+	prompt "DEBUG_LL driver"
+
+config DEBUG_AR9331_UART
+	bool "AR9331 Debug UART"
+
+config DEBUG_AR9344_UART
+	bool "AR9344 Debug UART"
+
+endchoice
+endif # DEBUG_LL
 
 config BOARD_8DEVICES_LIMA
 	bool "8devices LIMA"
@@ -19,7 +29,6 @@ config BOARD_8DEVICES_LIMA
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
-	select HAS_NO_BOARD_HL_CODE
 
 config BOARD_DPTECHNICS_DPT_MODULE
 	bool "DPTechnics DPT-Module"
@@ -27,7 +36,6 @@ config BOARD_DPTECHNICS_DPT_MODULE
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
-	select HAS_NO_BOARD_HL_CODE
 
 config BOARD_TPLINK_MR3020
 	bool "TP-LINK MR3020"
@@ -49,7 +57,5 @@ config BOARD_BLACK_SWIFT
 	select HAVE_PBL_IMAGE
 	select HAVE_IMAGE_COMPRESSION
 	select HAS_NMON
-
-endchoice
 
 endif

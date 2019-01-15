@@ -9,6 +9,7 @@ config MIPS
 	select HAS_KALLSYMS
 	select HAVE_CONFIGURABLE_MEMORY_LAYOUT
 	select HAVE_CONFIGURABLE_TEXT_BASE
+	select HAVE_PBL_MULTI_IMAGES
 	select HAS_DMA
 	select ELF
 	default y
@@ -25,9 +26,6 @@ config CSRC_R4K_LIB
 config GENERIC_LINKER_SCRIPT
 	bool
 	default y
-
-config HAS_NO_BOARD_HL_CODE
-	bool
 
 config PHYS_ADDR_T_64BIT
 	bool
@@ -58,6 +56,8 @@ config MACH_MIPS_MALTA
 	select HAS_DEBUG_LL
 	select GPIOLIB
 	select HW_HAS_PCI
+	select HAVE_PBL_IMAGE
+	select HAVE_IMAGE_COMPRESSION
 
 config MACH_MIPS_AR231X
 	bool "Atheros ar231x-based boards"
@@ -67,6 +67,7 @@ config MACH_MIPS_AR231X
 	select CSRC_R4K_LIB
 	select DRIVER_SERIAL_NS16550
 	select HAS_DEBUG_LL
+	select HAVE_IMAGE_COMPRESSION
 
 config MACH_MIPS_ATH79
 	bool "Atheros AR71XX/AR724X/AR913X/AR933X based boards"
@@ -89,6 +90,9 @@ config MACH_MIPS_BCM47XX
 	select SYS_SUPPORTS_32BIT_KERNEL
 	select SYS_SUPPORTS_LITTLE_ENDIAN
 	select HAS_DEBUG_LL
+	select HAVE_IMAGE_COMPRESSION
+	select HAVE_PBL_IMAGE
+	select HAS_NMON
 
 config MACH_MIPS_LOONGSON
 	bool "Loongson-based boards"

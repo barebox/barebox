@@ -1,27 +1,23 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
- *
- * This file is part of barebox.
- * See file CREDITS for list of people who contributed to this project.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #ifndef __MACH_ATH79_DEBUG_LL__
 #define __MACH_ATH79_DEBUG_LL__
 
-#if defined(CONFIG_SOC_QCA_AR9331)
+#ifdef CONFIG_DEBUG_LL
+
+#ifdef CONFIG_DEBUG_AR9331_UART
 #include <mach/debug_ll_ar9331.h>
-#elif defined(CONFIG_SOC_QCA_AR9344)
+#elif defined CONFIG_DEBUG_AR9344_UART
 #include <mach/debug_ll_ar9344.h>
+#else
+#error "unknown ath79 debug uart soc type"
 #endif
+
+#else
+#define debug_ll_ath79_init
+#endif  /* CONFIG_DEBUG_LL */
 
 #endif /* __MACH_AR9344_DEBUG_LL_H__ */

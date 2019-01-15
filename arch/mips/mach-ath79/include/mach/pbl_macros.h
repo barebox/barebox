@@ -393,12 +393,9 @@ skip_pll_ram_config:
 	dcache_enable
 
 	pbl_ar9331_uart_enable
-	debug_ll_ar9331_init
-	mips_nmon
+	debug_ll_ath79_init
 
 	pbl_ar9331_mdio_gpio_enable
-
-	copy_to_link_location	pbl_start
 
 	.set	pop
 	.endm

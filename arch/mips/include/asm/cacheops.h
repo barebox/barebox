@@ -1,10 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Cache operations for the cache instruction.
- *
- * This file is subject to the terms and conditions of the GNU General Public
- * License.  See the file "COPYING" in the main directory of this archive
- * for more details.
- *
  * (C) Copyright 1996, 97, 99, 2002, 03 Ralf Baechle
  * (C) Copyright 1999 Silicon Graphics, Inc.
  */

@@ -1,0 +1,3 @@
+pblb-$(CONFIG_BOARD_QEMU_MALTA) += start_qemu_malta
+FILE_barebox-qemu-malta.img = start_qemu_malta.pblb
+image-$(CONFIG_BOARD_QEMU_MALTA) += barebox-qemu-malta.img

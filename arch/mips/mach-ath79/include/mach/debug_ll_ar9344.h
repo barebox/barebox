@@ -1,26 +1,16 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
  * Copyright (C) 2017 Oleksij Rempel <o.rempel@pengutronix.de>
  * Copyright (C) 2012, 2013 Antony Pavlov <antonynpavlov@gmail.com>
- *
- * This file is part of barebox.
- * See file CREDITS for list of people who contributed to this project.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 
 #ifndef __AR9344_DEBUG_LL__
 #define __AR9344_DEBUG_LL__
 
+#include <asm/asm.h>
 #include <asm/addrspace.h>
 #include <mach/ar71xx_regs.h>
+#include <asm/regdef.h>
 
 #define DEBUG_LL_UART_ADDR		KSEG1ADDR(AR934X_UART0_BASE)
 #define DEBUG_LL_UART_SHIFT		AR934X_UART0_SHIFT
@@ -66,7 +56,7 @@ static inline void PUTC_LL(char ch)
  * Macros for use in assembly language code
  */
 
-.macro	debug_ll_ar9344_init
+.macro	debug_ll_ath79_init
 #ifdef CONFIG_DEBUG_LL
 
 	/* find out the ref clock */

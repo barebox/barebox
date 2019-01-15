@@ -1,0 +1,7 @@
+pblb-$(CONFIG_BOARD_CI20) += start_img_ci20
+FILE_barebox-img-ci20.img = start_img_ci20.pblb
+image-$(CONFIG_BOARD_CI20) += barebox-img-ci20.img
+
+pblb-$(CONFIG_BOARD_RZX50) += start_ritmix_rzx50
+FILE_barebox-ritmix-rzx50.img = start_ritmix_rzx50.pblb
+image-$(CONFIG_BOARD_RZX50) += barebox-ritmix-rzx50.img

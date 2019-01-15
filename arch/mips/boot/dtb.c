@@ -1,27 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (C) 2013 Antony Pavlov <antonynpavlov@gmail.com>
  *
  * Based on arch/arm/cpu/dtb.c:
  * Copyright (C) 2013 Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix
- *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
  */
 #include <common.h>
 #include <init.h>
 #include <of.h>
 #include <memory.h>
 #include <asm/addrspace.h>
+
+void *glob_fdt;
+u32 glob_fdt_size;
 
 void of_add_memory_bank(struct device_node *node, bool dump, int r,
 		u64 base, u64 size)
@@ -38,6 +29,10 @@ void of_add_memory_bank(struct device_node *node, bool dump, int r,
 
 	if (dump)
 		pr_info("%s: %s: 0x%llx@0x%llx\n", node->name, str, size, base);
+
+	if (glob_fdt && glob_fdt_size)
+		request_sdram_region("fdt", (resource_size_t)glob_fdt,
+				     glob_fdt_size);
 }
 
 extern char __dtb_start[];
@@ -45,12 +40,13 @@ extern char __dtb_start[];
 static int of_mips_init(void)
 {
 	struct device_node *root;
+	void *fdt;
 
-	root = of_get_root_node();
-	if (root)
-		return 0;
+	fdt = glob_fdt;
+	if (!fdt)
+		fdt = __dtb_start;
 
-	root = of_unflatten_dtb(__dtb_start);
+	root = of_unflatten_dtb(fdt);
 	if (!IS_ERR(root)) {
 		pr_debug("using internal DTB\n");
 		of_set_root_node(root);

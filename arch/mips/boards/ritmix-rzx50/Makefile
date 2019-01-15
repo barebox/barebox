@@ -1,1 +1,1 @@
-obj-y += serial.o
+lwl-y += lowlevel.o

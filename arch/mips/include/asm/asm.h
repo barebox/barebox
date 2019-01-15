@@ -1,8 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * This file is subject to the terms and conditions of the GNU General Public
- * License.  See the file "COPYING" in the main directory of this archive
- * for more details.
- *
  * Copyright (C) 1995, 1996, 1997, 1999, 2001 by Ralf Baechle
  * Copyright (C) 1999 by Silicon Graphics, Inc.
  * Copyright (C) 2001 MIPS Technologies, Inc.
@@ -78,6 +75,35 @@ symbol:		.frame	sp, framesize, rpc
 #define EXPORT(symbol)					\
 		.globl	symbol;                         \
 symbol:
+
+/*
+ * ENTRY_FUNCTION - mark start of entry function
+ */
+#define ENTRY_FUNCTION(symbol)				\
+	.set noreorder;					\
+	.section .text_head_entry.symbol;		\
+	.align 4;					\
+							\
+EXPORT(symbol)
+
+/*
+ * ENTRY_FUNCTION_END - mark end of entry function
+ */
+#define ENTRY_FUNCTION_END(symbol, dtb)			\
+	mips_nmon;					\
+	copy_to_link_location	symbol;			\
+	stack_setup;					\
+							\
+	la	a0, __dtb_ ## dtb##_start;		\
+	la	a1, __dtb_ ## dtb##_end;		\
+	la	v0, pbl_main_entry;			\
+	jal	v0;					\
+	 nop;						\
+							\
+	/* No return */					\
+__error:						\
+	b	__error;				\
+	 nop;
 
 /*
  * FEXPORT - export definition of a function symbol

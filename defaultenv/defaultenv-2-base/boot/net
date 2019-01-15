@@ -9,7 +9,13 @@ if [ -f "${oftree}" ]; then
 	global.bootm.oftree="$oftree"
 fi
 
-nfsroot="/home/${global.user}/nfsroot/${global.hostname}"
+host ${global.net.server} nfsserver
+if [ $? != 0 ]; then
+	echo "Cannot resolve \"${global.net.server}\""
+	exit 1
+fi
+
+nfsroot="${nfsserver}:/home/${global.user}/nfsroot/${global.hostname}"
 
 ip_route_get -b ${global.net.server} global.linux.bootargs.dyn.ip
 

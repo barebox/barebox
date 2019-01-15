@@ -45,8 +45,8 @@ device:
 |                              |              | any directly visible subnet. May be set        |
 |                              |              | automatically by DHCP.                         |
 +------------------------------+--------------+------------------------------------------------+
-| global.net.server            | ipv4 host    | The default server address. If unspecified, may|
-|                              |              | be set by DHCP                                 |
+| global.net.server            | hostname or  | The default server. If unspecified, may be set |
+|                              | ipv4 address | by DHCP                                        |
 +------------------------------+--------------+------------------------------------------------+
 | global.net.nameserver        | ipv4 address | The DNS server used for resolving host names.  |
 |                              |              | May be set by DHCP                             |

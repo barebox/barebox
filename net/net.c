@@ -44,7 +44,7 @@
 unsigned char *NetRxPackets[PKTBUFSRX]; /* Receive packets		*/
 static unsigned int net_ip_id;
 
-IPaddr_t net_serverip;
+char *net_server;
 IPaddr_t net_gateway;
 static IPaddr_t net_nameserver;
 static char *net_domainname;
@@ -271,17 +271,26 @@ static uint16_t net_udp_new_localport(void)
 
 IPaddr_t net_get_serverip(void)
 {
-	return net_serverip;
+	IPaddr_t ip;
+	int ret;
+
+	ret = resolv(net_server, &ip);
+	if (ret)
+		return 0;
+
+	return ip;
 }
 
 void net_set_serverip(IPaddr_t ip)
 {
-	net_serverip = ip;
+	free(net_server);
+
+	net_server = xasprintf("%pI4", &ip);
 }
 
 void net_set_serverip_empty(IPaddr_t ip)
 {
-	if (net_serverip)
+	if (net_server && *net_server)
 		return;
 
 	net_set_serverip(ip);
@@ -647,7 +656,7 @@ static int net_init(void)
 
 	globalvar_add_simple_ip("net.nameserver", &net_nameserver);
 	globalvar_add_simple_string("net.domainname", &net_domainname);
-	globalvar_add_simple_ip("net.server", &net_serverip);
+	globalvar_add_simple_string("net.server", &net_server);
 	globalvar_add_simple_ip("net.gateway", &net_gateway);
 
 	return 0;

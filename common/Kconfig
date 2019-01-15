@@ -858,6 +858,8 @@ config DEFAULT_ENVIRONMENT_GENERIC_NEW
 	select FLEXIBLE_BOOTARGS
 	select CMD_BOOT
 	select NET_CMD_IFUP if NET
+	select CMD_IP_ROUTE_GET if NET
+	select CMD_HOST if NET
 
 config DEFAULT_ENVIRONMENT_GENERIC
 	bool "Generic environment template (old version)"

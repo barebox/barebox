@@ -72,6 +72,8 @@
 #define GEM_DCFG5				0x0290
 #define GEM_DCFG6				0x0294
 #define GEM_DCFG7				0x0298
+#define GEM_TQ1					0x0440
+#define GEM_RQ1					0x0480
 
 /* Bitfields in NCR */
 #define MACB_LB_OFFSET				0

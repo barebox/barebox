@@ -121,7 +121,7 @@ struct gpio_led rpi_leds[] = {
 	},
 };
 
-void rpi_add_led(void)
+static void rpi_add_led(void)
 {
 	int i;
 	struct gpio_led *l;
@@ -138,14 +138,14 @@ void rpi_add_led(void)
 		led_set_trigger(LED_TRIGGER_HEARTBEAT, &l->led);
 }
 
-void rpi_b_init(void)
+static void rpi_b_init(void)
 {
 	rpi_leds[0].gpio = 16;
 	rpi_leds[0].active_low = 1;
 	rpi_set_usbethaddr();
 }
 
-void rpi_b_plus_init(void)
+static void rpi_b_plus_init(void)
 {
 	rpi_leds[0].gpio = 47;
 	rpi_leds[1].gpio = 35;

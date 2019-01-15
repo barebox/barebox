@@ -19,7 +19,6 @@ struct rpi_model {
 
 extern struct gpio_led rpi_leds[];
 
-void rpi_b_plus_init(void);
 void rpi_set_usbethaddr(void);
 
 #endif /* __ARCH_ARM_BOARDS_RPI_H__ */

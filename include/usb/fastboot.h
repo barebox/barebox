@@ -32,6 +32,14 @@ struct f_fastboot_opts {
  */
 #define FASTBOOT_CMD_FALLTHROUGH	1
 
-int fastboot_tx_print(struct f_fastboot *f_fb, const char *fmt, ...);
+enum fastboot_msg_type {
+	FASTBOOT_MSG_OKAY,
+	FASTBOOT_MSG_FAIL,
+	FASTBOOT_MSG_INFO,
+	FASTBOOT_MSG_DATA,
+};
+
+int fastboot_tx_print(struct f_fastboot *f_fb, enum fastboot_msg_type type,
+		      const char *fmt, ...);
 
 #endif /* _USB_FASTBOOT_H */

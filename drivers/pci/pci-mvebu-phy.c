@@ -1,13 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * SoC specific PCIe PHY setup for Marvell MVEBU SoCs
  *
  * Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
  *
  * based on Marvell BSP code (C) Marvell International Ltd.
- *
- * This file is licensed under the terms of the GNU General Public
- * License version 2.  This program is licensed "as is" without any
- * warranty of any kind, whether express or implied.
  */
 
 #include <common.h>

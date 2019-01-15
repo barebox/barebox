@@ -73,7 +73,7 @@ static int rpi_get_arm_mem(u32 *size)
 	return 0;
 }
 
-static struct clk *rpi_register_firmare_clock(u32 clock_id, const char *name)
+static struct clk *rpi_register_firmware_clock(u32 clock_id, const char *name)
 {
 	BCM2835_MBOX_STACK_ALIGN(struct msg_get_clock_rate, msg);
 	int ret;
@@ -286,7 +286,7 @@ static int rpi_clock_init(void)
 {
 	struct clk *clk;
 
-	clk = rpi_register_firmare_clock(BCM2835_MBOX_CLOCK_ID_EMMC,
+	clk = rpi_register_firmware_clock(BCM2835_MBOX_CLOCK_ID_EMMC,
 					 "bcm2835_mci0");
 	if (IS_ERR(clk))
 		return PTR_ERR(clk);

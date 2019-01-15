@@ -13,8 +13,27 @@
 #include <linux/stat.h>
 #include <malloc.h>
 #include <libbb.h>
+#include <xfuncs.h>
+
+/*
+ * Sorting not required for barebox itself currently, support for it is only added
+ * for generating reproducible envfs images on the build host.
+ */
+#define DO_SORT(flags)	0
+
+#else
+
+#define DO_SORT(flags)	((flags) & ACTION_SORT)
 
 #endif
+
+#include <linux/list.h>
+#include <linux/list_sort.h>
+
+struct dirlist {
+	char *dirname;
+	struct list_head list;
+};
 
 /*
  * Walk down all the directories under the specified
@@ -31,6 +50,19 @@ static int true_action(const char *fileName, struct stat *statbuf,
 						void* userData, int depth)
 {
 	return 1;
+}
+
+static int cmp_dirlist(void *priv, struct list_head *a, struct list_head *b)
+{
+	struct dirlist *ra, *rb;
+
+	if (a == b)
+		return 0;
+
+	ra = list_entry(a, struct dirlist, list);
+	rb = list_entry(b, struct dirlist, list);
+
+	return strcmp(ra->dirname, rb->dirname);
 }
 
 /* fileAction return value of 0 on any file in directory will make
@@ -58,6 +90,8 @@ int recursive_action(const char *fileName,
 	int status;
 	DIR *dir;
 	struct dirent *next;
+	struct dirlist *entry, *entry_tmp;
+	LIST_HEAD(dirs);
 
 	if (!fileAction) fileAction = true_action;
 	if (!dirAction) dirAction = true_action;
@@ -106,19 +140,40 @@ int recursive_action(const char *fileName,
 		/* To trigger: "find -exec rm -rf {} \;" */
 		goto done_nak_warn;
 	}
+
 	status = 1;
 	while ((next = readdir(dir)) != NULL) {
-		char *nextFile;
-
-		nextFile = concat_subpath_file(fileName, next->d_name);
+		char *nextFile = concat_subpath_file(fileName, next->d_name);
 		if (nextFile == NULL)
 			continue;
-		/* now descend into it, forcing recursion. */
-		if (!recursive_action(nextFile, flags | ACTION_RECURSE,
-				fileAction, dirAction, userData, depth+1)) {
-			status = 0;
+
+		if (DO_SORT(flags)) {
+			struct dirlist *e = xmalloc(sizeof(*e));
+			e->dirname = nextFile;
+			list_add(&e->list, &dirs);
+		} else {
+			/* descend into it, forcing recursion. */
+			if (!recursive_action(nextFile, flags | ACTION_RECURSE,
+						fileAction, dirAction, userData, depth+1)) {
+				status = 0;
+			}
+			free(nextFile);
 		}
-		free(nextFile);
+	}
+
+	if (DO_SORT(flags)) {
+		list_sort(NULL, &dirs, &cmp_dirlist);
+
+		list_for_each_entry_safe(entry, entry_tmp, &dirs, list){
+			/* descend into it, forcing recursion. */
+			if (!recursive_action(entry->dirname, flags | ACTION_RECURSE,
+						fileAction, dirAction, userData, depth+1)) {
+				status = 0;
+			}
+
+			list_del(&entry->list);
+			free(entry->dirname);
+		}
 	}
 	closedir(dir);
 	if ((flags & ACTION_DEPTHFIRST) &&

@@ -1,0 +1,4 @@
+#include <arm/imx6sx-udoo-neo-full.dts>
+
+/{
+};

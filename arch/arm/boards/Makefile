@@ -139,6 +139,7 @@ obj-$(CONFIG_MACH_TX51)				+= karo-tx51/
 obj-$(CONFIG_MACH_TX53)				+= karo-tx53/
 obj-$(CONFIG_MACH_TX6X)				+= karo-tx6x/
 obj-$(CONFIG_MACH_UDOO)				+= udoo/
+obj-$(CONFIG_MACH_UDOO_NEO)			+= udoo-neo/
 obj-$(CONFIG_MACH_USB_A9260)			+= usb-a926x/
 obj-$(CONFIG_MACH_USB_A9263)			+= usb-a926x/
 obj-$(CONFIG_MACH_USB_A9G20)			+= usb-a926x/

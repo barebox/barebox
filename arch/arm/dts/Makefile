@@ -100,6 +100,7 @@ pbl-dtb-$(CONFIG_MACH_TX6X) += imx6dl-tx6u.dtb.o
 pbl-dtb-$(CONFIG_MACH_TX6X) += imx6q-tx6q.dtb.o
 pbl-dtb-$(CONFIG_MACH_TURRIS_OMNIA) += armada-385-turris-omnia-bb.dtb.o
 pbl-dtb-$(CONFIG_MACH_UDOO) += imx6q-udoo.dtb.o
+pbl-dtb-$(CONFIG_MACH_UDOO_NEO) += imx6sx-udoo-neo-full.dtb.o
 pbl-dtb-$(CONFIG_MACH_USI_TOPKICK) += kirkwood-topkick-bb.dtb.o
 pbl-dtb-$(CONFIG_MACH_VARISCITE_MX6) += imx6q-var-custom.dtb.o
 pbl-dtb-$(CONFIG_MACH_VEXPRESS) += vexpress-v2p-ca9.dtb.o

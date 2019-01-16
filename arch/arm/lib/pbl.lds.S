@@ -95,6 +95,6 @@ SECTIONS
 
 	.image_end : { *(.__image_end) }
 
-	_barebox_image_size = __image_end - BASE;
+	_barebox_image_size = __piggydata_end - BASE;
 	_barebox_pbl_size = __bss_start - BASE;
 }

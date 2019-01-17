@@ -33,7 +33,6 @@
 #include <mach/imx-nand.h>
 #include <mach/imx-pll.h>
 #include <mach/imxfb.h>
-#include <gpio.h>
 #include <asm/mmu.h>
 #include <usb/ulpi.h>
 #include <mach/bbu.h>

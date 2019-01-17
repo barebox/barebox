@@ -27,7 +27,6 @@
 #include <asm/barebox-arm-head.h>
 #include <mach/imx31-regs.h>
 #include <mach/imx-pll.h>
-#include <asm/barebox-arm-head.h>
 #include <mach/esdctl.h>
 
 static noinline __noreturn void mx31moboard_startup(void)

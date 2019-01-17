@@ -27,7 +27,6 @@
 #include <asm/barebox-arm-head.h>
 #include <mach/imx31-regs.h>
 #include <mach/imx-pll.h>
-#include <asm/barebox-arm-head.h>
 #include <mach/esdctl.h>
 
 #define ESDCTL0_VAL (ESDCTL0_SDE | ESDCTL0_ROW13 | ESDCTL0_COL10)

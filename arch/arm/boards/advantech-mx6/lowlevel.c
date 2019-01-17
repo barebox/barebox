@@ -23,9 +23,6 @@
 #include <mach/iomux-mx6.h>
 #include <linux/sizes.h>
 
-#include <linux/sizes.h>
-#include <asm/barebox-arm-head.h>
-#include <asm/barebox-arm.h>
 static inline void setup_uart(void)
 {
 	void __iomem *iomuxbase = (void *)MX6_IOMUXC_BASE_ADDR;

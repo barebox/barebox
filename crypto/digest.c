@@ -317,12 +317,9 @@ int digest_file(struct digest *d, const char *filename,
 		const unsigned char *sig)
 {
 	struct stat st;
-	int ret;
 
-	ret = stat(filename, &st);
-
-	if (ret < 0)
-		return ret;
+	if (stat(filename, &st))
+		return -errno;
 
 	return digest_file_window(d, filename, hash, sig, 0, st.st_size);
 }

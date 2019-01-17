@@ -147,8 +147,8 @@ EXPORT_SYMBOL_GPL(reset_control_deassert);
  *
  * Use of id names is optional.
  */
-struct reset_control *of_reset_control_get(struct device_node *node,
-					   const char *id)
+static struct reset_control *of_reset_control_get(struct device_node *node,
+						  const char *id)
 {
 	struct reset_control *rstc = ERR_PTR(-ENODEV);
 	struct reset_controller_dev *r, *rcdev;
@@ -194,9 +194,9 @@ struct reset_control *of_reset_control_get(struct device_node *node,
 
 	return rstc;
 }
-EXPORT_SYMBOL_GPL(of_reset_control_get);
 
-struct reset_control *gpio_reset_control_get(struct device_d *dev, const char *id)
+static struct reset_control *
+gpio_reset_control_get(struct device_d *dev, const char *id)
 {
 	struct reset_control *rc;
 	int gpio;

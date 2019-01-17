@@ -457,6 +457,23 @@ static int imx6_pcie_wait_for_speed_change(struct imx6_pcie *imx6_pcie)
 	return -EINVAL;
 }
 
+static void imx6_pcie_ltssm_enable(struct device_d *dev)
+{
+	struct imx6_pcie *imx6_pcie = dev->priv;
+	u32 gpr12;
+
+	switch (imx6_pcie->variant) {
+	case IMX6Q:
+	case IMX6QP:
+		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+		gpr12 |= IMX6Q_GPR12_PCIE_CTL_2;
+		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+		break;
+	case IMX7D:
+		reset_control_deassert(imx6_pcie->apps_reset);
+		break;
+	}
+}
 
 static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
 {
@@ -464,7 +481,6 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
 	struct device_d *dev = pci->dev;
 	uint32_t tmp;
 	int ret;
-	u32 gpr12;
 
 	/*
 	 * Force Gen1 operation when starting the link.  In case the link is
@@ -476,14 +492,7 @@ static int imx6_pcie_establish_link(struct imx6_pcie *imx6_pcie)
 	tmp |= PCIE_RC_LCR_MAX_LINK_SPEEDS_GEN1;
 	dw_pcie_writel_dbi(pci, PCIE_RC_LCR, tmp);
 
-	/* Start LTSSM. */
-	if (imx6_pcie->variant == IMX7D) {
-		reset_control_deassert(imx6_pcie->apps_reset);
-	} else {
-		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
-		gpr12 |= IMX6Q_GPR12_PCIE_CTL_2;
-		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
-	}
+	imx6_pcie_ltssm_enable(dev);
 
 	ret = imx6_pcie_wait_for_link(imx6_pcie);
 	if (ret)

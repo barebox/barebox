@@ -269,7 +269,7 @@ static int device_probe_deferred(void)
 		success = false;
 
 		if (list_empty(&deferred))
-			break;
+			return 0;
 
 		list_for_each_entry_safe(dev, tmp, &deferred, active) {
 			list_del(&dev->active);
@@ -284,9 +284,6 @@ static int device_probe_deferred(void)
 			}
 		}
 	} while (success);
-
-	if (list_empty(&deferred))
-		return 0;
 
 	list_for_each_entry(dev, &deferred, active)
 		dev_err(dev, "probe permanently deferred\n");

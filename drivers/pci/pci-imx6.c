@@ -562,8 +562,8 @@ static const struct dw_pcie_host_ops imx6_pcie_host_ops = {
 	.host_init = imx6_pcie_host_init,
 };
 
-static int __init imx6_add_pcie_port(struct imx6_pcie *imx6_pcie,
-				     struct device_d *dev)
+static int imx6_add_pcie_port(struct imx6_pcie *imx6_pcie,
+			      struct device_d *dev)
 {
 	struct dw_pcie *pci = imx6_pcie->pci;
 	struct pcie_port *pp = &pci->pp;
@@ -581,7 +581,7 @@ static int __init imx6_add_pcie_port(struct imx6_pcie *imx6_pcie,
 	return 0;
 }
 
-static int __init imx6_pcie_probe(struct device_d *dev)
+static int imx6_pcie_probe(struct device_d *dev)
 {
 	struct resource *iores;
 	struct dw_pcie *pci;
@@ -599,13 +599,11 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 	imx6_pcie->variant =
 		(enum imx6_pcie_variants)of_device_get_match_data(dev);
 
-	iores = dev_request_mem_resource(dev, 0);
-	if (IS_ERR(iores))
-		return PTR_ERR(iores);
-	pci->dbi_base = IOMEM(iores->start);
-
 	/* Fetch GPIOs */
 	imx6_pcie->reset_gpio = of_get_named_gpio(np, "reset-gpio", 0);
+	if (imx6_pcie->reset_gpio == -EPROBE_DEFER)
+		return imx6_pcie->reset_gpio;
+
 	if (gpio_is_valid(imx6_pcie->reset_gpio)) {
 		ret = gpio_request_one(imx6_pcie->reset_gpio,
 					    GPIOF_OUT_INIT_LOW, "PCIe reset");
@@ -614,6 +612,11 @@ static int __init imx6_pcie_probe(struct device_d *dev)
 			return ret;
 		}
 	}
+
+	iores = dev_request_mem_resource(dev, 0);
+	if (IS_ERR(iores))
+		return PTR_ERR(iores);
+	pci->dbi_base = IOMEM(iores->start);
 
 	/* Fetch clocks */
 	imx6_pcie->pcie_phy = clk_get(dev, "pcie_phy");

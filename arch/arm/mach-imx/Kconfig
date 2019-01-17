@@ -173,6 +173,7 @@ config ARCH_IMX7
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
 	select ARCH_HAS_IMX_GPT
+	select HW_HAS_PCI
 
 config ARCH_IMX8MQ
 	bool

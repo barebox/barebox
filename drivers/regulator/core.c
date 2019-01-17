@@ -227,7 +227,12 @@ static struct regulator_internal *of_regulator_get(struct device_d *dev, const c
 		}
 	}
 
-	ri = ERR_PTR(-ENODEV);
+	/*
+	 * It is possible that regulator we are looking for will be
+	 * added in future initcalls, so, instead of reporting a
+	 * complete failure report probe deferral
+	 */
+	ri = ERR_PTR(-EPROBE_DEFER);
 out:
 	free(propname);
 

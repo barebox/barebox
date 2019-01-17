@@ -21,9 +21,16 @@
 #include <errno.h>
 #include <init.h>
 #include <of.h>
+#include <pm_domain.h>
 
 static int platform_probe(struct device_d *dev)
 {
+	int ret;
+
+	ret = genpd_dev_pm_attach(dev);
+	if (ret < 0)
+		return ret;
+
 	return dev->driver->probe(dev);
 }
 

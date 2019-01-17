@@ -1,0 +1,3 @@
+
+config PM_GENERIC_DOMAINS
+	bool

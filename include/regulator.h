@@ -4,8 +4,12 @@
 /* struct regulator is an opaque object for consumers */
 struct regulator;
 
+struct regulator_desc {
+	const struct regulator_ops *ops;
+};
+
 struct regulator_dev {
-	struct regulator_ops *ops;
+	const struct regulator_desc *desc;
 	int boot_on;
 };
 

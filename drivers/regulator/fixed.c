@@ -29,6 +29,7 @@ struct regulator_fixed {
 	int active_low;
 	int always_on;
 	struct regulator_dev rdev;
+	struct regulator_desc rdesc;
 };
 
 static int regulator_fixed_enable(struct regulator_dev *rdev)
@@ -54,7 +55,7 @@ static int regulator_fixed_disable(struct regulator_dev *rdev)
 	return gpio_direction_output(fix->gpio, fix->active_low);
 }
 
-static struct regulator_ops fixed_ops = {
+const static struct regulator_ops fixed_ops = {
 	.enable = regulator_fixed_enable,
 	.disable = regulator_fixed_disable,
 };
@@ -82,7 +83,8 @@ static int regulator_fixed_probe(struct device_d *dev)
 			fix->active_low = 1;
 	}
 
-	fix->rdev.ops = &fixed_ops;
+	fix->rdesc.ops = &fixed_ops;
+	fix->rdev.desc = &fix->rdesc;
 
 	if (of_find_property(dev->device_node, "regulator-always-on", NULL)) {
 		fix->always_on = 1;

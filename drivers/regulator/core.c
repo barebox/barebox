@@ -52,10 +52,10 @@ static int regulator_enable_internal(struct regulator_internal *ri)
 		return 0;
 	}
 
-	if (!ri->rdev->ops->enable)
+	if (!ri->rdev->desc->ops->enable)
 		return -ENOSYS;
 
-	ret = ri->rdev->ops->enable(ri->rdev);
+	ret = ri->rdev->desc->ops->enable(ri->rdev);
 	if (ret)
 		return ret;
 
@@ -74,10 +74,10 @@ static int regulator_disable_internal(struct regulator_internal *ri)
 	if (!ri->enable_count)
 		return -EINVAL;
 
-	if (!ri->rdev->ops->disable)
+	if (!ri->rdev->desc->ops->disable)
 		return -ENOSYS;
 
-	ret = ri->rdev->ops->disable(ri->rdev);
+	ret = ri->rdev->desc->ops->disable(ri->rdev);
 	if (ret)
 		return ret;
 

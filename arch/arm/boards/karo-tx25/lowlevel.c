@@ -23,7 +23,6 @@
 #include <io.h>
 #include <linux/sizes.h>
 #include <mach/imx-nand.h>
-#include <mach/esdctl.h>
 #include <asm/barebox-arm.h>
 #include <asm/barebox-arm-head.h>
 #include <asm/system.h>

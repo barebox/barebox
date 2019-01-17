@@ -29,7 +29,6 @@
 #include <globalvar.h>
 #include <linux/sizes.h>
 #include <net.h>
-#include <envfs.h>
 #include <bootsource.h>
 #include <asm/armlinux.h>
 #include <generated/mach-types.h>

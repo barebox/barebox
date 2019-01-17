@@ -20,7 +20,6 @@
 #include <mach/generic.h>
 #include <init.h>
 #include <io.h>
-#include <mach/generic.h>
 
 static int imx27_silicon_revision(void)
 {

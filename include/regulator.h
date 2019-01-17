@@ -6,10 +6,17 @@ struct regulator;
 
 struct regulator_desc {
 	const struct regulator_ops *ops;
+
+	unsigned int enable_reg;
+	unsigned int enable_mask;
+	unsigned int enable_val;
+	unsigned int disable_val;
+	bool enable_is_inverted;
 };
 
 struct regulator_dev {
 	const struct regulator_desc *desc;
+	struct regmap *regmap;
 	int boot_on;
 };
 
@@ -39,7 +46,9 @@ void regulators_print(void);
 struct regulator *regulator_get(struct device_d *, const char *);
 int regulator_enable(struct regulator *);
 int regulator_disable(struct regulator *);
-
+int regulator_is_enabled_regmap(struct regulator_dev *);
+int regulator_enable_regmap(struct regulator_dev *);
+int regulator_disable_regmap(struct regulator_dev *);
 #else
 
 static inline struct regulator *regulator_get(struct device_d *dev, const char *id)

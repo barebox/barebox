@@ -1,0 +1,9 @@
+menu "i.MX SoC drivers"
+
+config IMX7_PM_DOMAINS
+	bool "i.MX7 PM domains"
+	depends on ARCH_IMX7
+	select PM_GENERIC_DOMAINS
+	default y if ARCH_IMX7
+
+endmenu

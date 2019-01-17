@@ -289,7 +289,7 @@ int digest_file_window(struct digest *d, const char *filename,
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
 		perror(filename);
-		return fd;
+		return -errno;
 	}
 
 	buf = memmap(fd, PROT_READ);

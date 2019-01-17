@@ -226,9 +226,9 @@ static int digest_update_from_fd(struct digest *d, int fd,
 	unsigned char *buf = xmalloc(PAGE_SIZE);
 	int ret = 0;
 
-	ret = lseek(fd, start, SEEK_SET);
-	if (ret == -1) {
+	if (lseek(fd, start, SEEK_SET) != start) {
 		perror("lseek");
+		ret = -errno;
 		goto out_free;
 	}
 

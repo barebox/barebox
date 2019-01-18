@@ -119,7 +119,8 @@ static void split_block(uint64_t *pte, int level)
 	set_table(pte, new_table);
 }
 
-static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t attr)
+static void create_sections(uint64_t virt, uint64_t phys, uint64_t size,
+			    uint64_t attr)
 {
 	uint64_t block_size;
 	uint64_t block_shift;
@@ -162,11 +163,7 @@ static void map_region(uint64_t virt, uint64_t phys, uint64_t size, uint64_t att
 		}
 
 	}
-}
 
-static void create_sections(uint64_t virt, uint64_t phys, uint64_t size, uint64_t flags)
-{
-	map_region(virt, phys, size, flags);
 	tlb_invalidate();
 }
 
@@ -183,9 +180,8 @@ int arch_remap_range(void *_start, size_t size, unsigned flags)
 		return -EINVAL;
 	}
 
-	map_region((uint64_t)_start, (uint64_t)_start, (uint64_t)size, flags);
-	tlb_invalidate();
-
+	create_sections((uint64_t)_start, (uint64_t)_start, (uint64_t)size,
+			flags);
 	return 0;
 }
 

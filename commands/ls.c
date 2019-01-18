@@ -26,6 +26,15 @@
 #include <getopt.h>
 #include <stringlist.h>
 
+/*
+ * SIZELEN = strlen(itoa(MAX_LFS_FILESIZE)) + 1;
+ */
+#ifdef CONFIG_CPU_64
+#define SIZELEN		20
+#else
+#define SIZELEN		14
+#endif
+
 static void ls_one(const char *path, const char* fullname)
 {
 	char modestr[11];
@@ -38,7 +47,8 @@ static void ls_one(const char *path, const char* fullname)
 		return;
 
 	mkmodestr(s.st_mode, modestr);
-	printf("%s %14llu %*.*s", modestr, s.st_size, namelen, namelen, path);
+	printf("%s %*llu %*.*s", modestr, SIZELEN, s.st_size, namelen,
+	       namelen, path);
 
 	if (S_ISLNK(s.st_mode)) {
 		char realname[PATH_MAX];

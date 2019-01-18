@@ -262,14 +262,6 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	return ret;
 }
 
-void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
-{
-	size = PAGE_ALIGN(size);
-	arch_remap_range(mem, size, MAP_CACHED);
-
-	free(mem);
-}
-
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
                              enum dma_data_direction dir)
 {

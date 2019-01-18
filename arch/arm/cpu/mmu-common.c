@@ -23,3 +23,11 @@ void dma_unmap_single(struct device_d *dev, dma_addr_t addr, size_t size,
 {
 	dma_sync_single_for_cpu(addr, size, dir);
 }
+
+void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
+{
+	size = PAGE_ALIGN(size);
+	arch_remap_range(mem, size, MAP_CACHED);
+
+	free(mem);
+}

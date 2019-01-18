@@ -8,6 +8,14 @@
 
 #include "mmu.h"
 
+
+void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
+			     enum dma_data_direction dir)
+{
+	if (dir != DMA_TO_DEVICE)
+		dma_inv_range((void *)address, size);
+}
+
 dma_addr_t dma_map_single(struct device_d *dev, void *ptr, size_t size,
 			  enum dma_data_direction dir)
 {

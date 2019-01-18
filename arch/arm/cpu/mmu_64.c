@@ -256,13 +256,6 @@ void dma_inv_range(void *ptr, size_t size)
 	v8_inv_dcache_range(start, end);
 }
 
-void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
-                             enum dma_data_direction dir)
-{
-	if (dir != DMA_TO_DEVICE)
-		v8_inv_dcache_range(address, address + size - 1);
-}
-
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
                                 enum dma_data_direction dir)
 {

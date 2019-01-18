@@ -118,8 +118,11 @@ static void dma_flush_range(void *ptr, size_t size)
 		outer_cache.flush_range(start, end);
 }
 
-static void dma_inv_range(unsigned long start, unsigned long end)
+static void dma_inv_range(void *ptr, size_t size)
 {
+	unsigned long start = (unsigned long)ptr;
+	unsigned long end = start + size;
+
 	if (outer_cache.inv_range)
 		outer_cache.inv_range(start, end);
 	__dma_inv_range(start, end);
@@ -507,7 +510,7 @@ static void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
 	if (dma_handle)
 		*dma_handle = (dma_addr_t)ret;
 
-	dma_inv_range((unsigned long)ret, (unsigned long)ret + size);
+	dma_inv_range(ret, size);
 
 	arch_remap_range(ret, size, flags);
 
@@ -536,7 +539,7 @@ void dma_sync_single_for_cpu(dma_addr_t address, size_t size,
 			     enum dma_data_direction dir)
 {
 	if (dir != DMA_TO_DEVICE)
-		dma_inv_range(address, address + size);
+		dma_inv_range((void *)address, size);
 }
 
 void dma_sync_single_for_device(dma_addr_t address, size_t size,

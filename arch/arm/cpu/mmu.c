@@ -75,17 +75,6 @@ static uint32_t pgd_flags_wc;
 
 #define PTE_MASK ((1 << 12) - 1)
 
-static void arm_mmu_not_initialized_error(void)
-{
-	/*
-	 * This means:
-	 * - one of the MMU functions like dma_alloc_coherent
-	 *   or remap_range is called too early, before the MMU is initialized
-	 * - Or the MMU initialization has failed earlier
-	 */
-	panic("MMU not initialized\n");
-}
-
 static bool pgd_type_table(u32 pgd)
 {
 	return (pgd & PMD_TYPE_MASK) == PMD_TYPE_TABLE;

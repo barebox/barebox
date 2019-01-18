@@ -37,17 +37,6 @@
 
 static uint64_t *ttb;
 
-static void arm_mmu_not_initialized_error(void)
-{
-	/*
-	 * This means:
-	 * - one of the MMU functions like dma_alloc_coherent
-	 *   or remap_range is called too early, before the MMU is initialized
-	 * - Or the MMU initialization has failed earlier
-	 */
-	panic("MMU not initialized\n");
-}
-
 static void set_table(uint64_t *pt, uint64_t *table_addr)
 {
 	uint64_t val;

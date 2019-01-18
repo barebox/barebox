@@ -1,38 +1,56 @@
 #include <common.h>
 #include <linux/ctype.h>
 
-unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
+#include "kstrtox.h"
+
+/**
+ * simple_strtoull - convert a string to an unsigned long long
+ * @cp: The start of the string
+ * @endp: A pointer to the end of the parsed string will be placed here
+ * @base: The number base to use
+ *
+ * This function is obsolete. Please use kstrtoull instead.
+ */
+unsigned long long simple_strtoull(const char *cp, char **endp,
+				   unsigned int base)
 {
-	unsigned long result = 0, value;
+	unsigned long long result;
+	unsigned int rv;
 
-	if (*cp == '0') {
-		cp++;
-
-		if ((*cp == 'x') && isxdigit(cp[1])) {
-			base = 16;
-			cp++;
-		}
-
-		if (!base)
-			base = 8;
-	}
-
-	if (!base)
-		base = 10;
-
-	while (isxdigit(*cp) && (value = isdigit(*cp) ?
-	       *cp - '0' : toupper(*cp) - 'A' + 10) < base) {
-		result = result * base + value;
-		cp++;
-	}
+	cp = _parse_integer_fixup_radix(cp, &base);
+	rv = _parse_integer(cp, base, &result);
+	/* FIXME */
+	cp += (rv & ~KSTRTOX_OVERFLOW);
 
 	if (endp)
 		*endp = (char *)cp;
 
 	return result;
 }
+EXPORT_SYMBOL(simple_strtoull);
+
+/**
+ * simple_strtoul - convert a string to an unsigned long
+ * @cp: The start of the string
+ * @endp: A pointer to the end of the parsed string will be placed here
+ * @base: The number base to use
+ *
+ * This function is obsolete. Please use kstrtoul instead.
+ */
+unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
+{
+	return simple_strtoull(cp, endp, base);
+}
 EXPORT_SYMBOL(simple_strtoul);
 
+/**
+ * simple_strtol - convert a string to a signed long
+ * @cp: The start of the string
+ * @endp: A pointer to the end of the parsed string will be placed here
+ * @base: The number base to use
+ *
+ * This function is obsolete. Please use kstrtol instead.
+ */
 long simple_strtol(const char *cp, char **endp, unsigned int base)
 {
 	if (*cp == '-')
@@ -42,38 +60,14 @@ long simple_strtol(const char *cp, char **endp, unsigned int base)
 }
 EXPORT_SYMBOL(simple_strtol);
 
-unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base)
-{
-	unsigned long long result = 0, value;
-
-	if (*cp == '0') {
-		cp++;
-
-		if ((*cp == 'x') && isxdigit(cp[1])) {
-			base = 16;
-			cp++;
-		}
-
-		if (!base)
-			base = 8;
-	}
-
-	if (!base)
-		base = 10;
-
-	while (isxdigit(*cp) && (value = isdigit(*cp) ?
-	       *cp - '0' : toupper(*cp) - 'A' + 10) < base) {
-		result = result * base + value;
-		cp++;
-	}
-
-	if (endp)
-		*endp = (char *)cp;
-
-	return result;
-}
-EXPORT_SYMBOL(simple_strtoull);
-
+/**
+ * simple_strtoll - convert a string to a signed long long
+ * @cp: The start of the string
+ * @endp: A pointer to the end of the parsed string will be placed here
+ * @base: The number base to use
+ *
+ * This function is obsolete. Please use kstrtoll instead.
+ */
 long long simple_strtoll(const char *cp, char **endp, unsigned int base)
 {
 	if (*cp == '-')

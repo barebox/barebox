@@ -6,50 +6,37 @@
 
 static char unlink_recursive_failedpath[PATH_MAX];
 
-struct data {
-	int error;
-};
-
 static int file_action(const char *filename, struct stat *statbuf,
 			    void *userdata, int depth)
 {
-	struct data *data = userdata;
-	int ret;
-
-	ret = unlink(filename);
-	if (ret) {
+	if (unlink(filename)) {
 		strcpy(unlink_recursive_failedpath, filename);
-		data->error = ret;
+		return 0;
 	}
 
-	return ret ? 0 : 1;
+	return 1;
 }
 
 static int dir_action(const char *dirname, struct stat *statbuf,
 			    void *userdata, int depth)
 {
-	struct data *data = userdata;
-	int ret;
-
-	ret = rmdir(dirname);
-	if (ret) {
+	if (rmdir(dirname)) {
 		strcpy(unlink_recursive_failedpath, dirname);
-		data->error = ret;
+		return 0;
 	}
 
-	return ret ? 0 : 1;
+	return 1;
 }
 
 int unlink_recursive(const char *path, char **failedpath)
 {
-	struct data data = {};
 	int ret;
 
 	if (failedpath)
 		*failedpath = NULL;
 
 	ret = recursive_action(path, ACTION_RECURSE | ACTION_DEPTHFIRST,
-			file_action, dir_action, &data, 0);
+			file_action, dir_action, NULL, 0);
 
 	if (!ret && failedpath)
 		*failedpath = unlink_recursive_failedpath;

@@ -118,7 +118,7 @@ static void dma_flush_range(void *ptr, size_t size)
 		outer_cache.flush_range(start, end);
 }
 
-static void dma_inv_range(void *ptr, size_t size)
+void dma_inv_range(void *ptr, size_t size)
 {
 	unsigned long start = (unsigned long)ptr;
 	unsigned long end = start + size;
@@ -499,27 +499,6 @@ void mmu_disable(void)
 		outer_cache.disable();
 	}
 	__mmu_cache_off();
-}
-
-static void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
-{
-	void *ret;
-
-	size = PAGE_ALIGN(size);
-	ret = xmemalign(PAGE_SIZE, size);
-	if (dma_handle)
-		*dma_handle = (dma_addr_t)ret;
-
-	dma_inv_range(ret, size);
-
-	arch_remap_range(ret, size, flags);
-
-	return ret;
-}
-
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
-{
-	return dma_alloc_map(size, dma_handle, MAP_UNCACHED);
 }
 
 void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)

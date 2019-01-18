@@ -4,6 +4,8 @@
 #include <asm/pgtable.h>
 #include <linux/sizes.h>
 
+#include "mmu-common.h"
+
 #define PGDIR_SHIFT	20
 #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
 

@@ -248,28 +248,12 @@ void mmu_disable(void)
 	isb();
 }
 
-static void dma_inv_range(void *ptr, size_t size)
+void dma_inv_range(void *ptr, size_t size)
 {
 	unsigned long start = (unsigned long)ptr;
 	unsigned long end = start + size - 1;
 
 	v8_inv_dcache_range(start, end);
-}
-
-void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
-{
-	void *ret;
-
-	size = PAGE_ALIGN(size);
-	ret = xmemalign(PAGE_SIZE, size);
-	if (dma_handle)
-		*dma_handle = (dma_addr_t)ret;
-
-	dma_inv_range(ret, size);
-
-	arch_remap_range(ret, size, MAP_UNCACHED);
-
-	return ret;
 }
 
 void dma_sync_single_for_cpu(dma_addr_t address, size_t size,

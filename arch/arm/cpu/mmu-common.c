@@ -2,10 +2,12 @@
 #define pr_fmt(fmt)	"mmu: " fmt
 
 #include <common.h>
+#include <init.h>
 #include <dma-dir.h>
 #include <dma.h>
 #include <mmu.h>
-
+#include <asm/system.h>
+#include <memory.h>
 #include "mmu.h"
 
 
@@ -60,3 +62,20 @@ void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 
 	free(mem);
 }
+
+static int mmu_init(void)
+{
+	if (list_empty(&memory_banks))
+		/*
+		 * If you see this it means you have no memory registered.
+		 * This can be done either with arm_add_mem_device() in an
+		 * initcall prior to mmu_initcall or via devicetree in the
+		 * memory node.
+		 */
+		panic("MMU: No memory bank found! Cannot continue\n");
+
+	__mmu_init(get_cr() & CR_M);
+
+	return 0;
+}
+mmu_initcall(mmu_init);

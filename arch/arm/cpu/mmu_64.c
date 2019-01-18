@@ -194,21 +194,12 @@ static void mmu_enable(void)
 /*
  * Prepare MMU for usage enable it.
  */
-static int mmu_init(void)
+void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
 	unsigned int el;
 
-	if (list_empty(&memory_banks))
-		/*
-		 * If you see this it means you have no memory registered.
-		 * This can be done either with arm_add_mem_device() in an
-		 * initcall prior to mmu_initcall or via devicetree in the
-		 * memory node.
-		 */
-		panic("MMU: No memory bank found! Cannot continue\n");
-
-	if (get_cr() & CR_M)
+	if (mmu_on)
 		mmu_disable();
 
 	ttb = create_table();
@@ -228,10 +219,7 @@ static int mmu_init(void)
 	create_sections(0x0, 0x0, 0x1000, 0x0);
 
 	mmu_enable();
-
-	return 0;
 }
-mmu_initcall(mmu_init);
 
 void mmu_disable(void)
 {

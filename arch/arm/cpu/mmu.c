@@ -412,18 +412,9 @@ static void vectors_init(void)
 /*
  * Prepare MMU for usage enable it.
  */
-static int mmu_init(void)
+void __mmu_init(bool mmu_on)
 {
 	struct memory_bank *bank;
-
-	if (list_empty(&memory_banks))
-		/*
-		 * If you see this it means you have no memory registered.
-		 * This can be done either with arm_add_mem_device() in an
-		 * initcall prior to mmu_initcall or via devicetree in the
-		 * memory node.
-		 */
-		panic("MMU: No memory bank found! Cannot continue\n");
 
 	arm_set_cache_functions();
 
@@ -439,7 +430,7 @@ static int mmu_init(void)
 		pte_flags_uncached = PTE_FLAGS_UNCACHED_V4;
 	}
 
-	if (get_cr() & CR_M) {
+	if (mmu_on) {
 		/*
 		 * Early MMU code has already enabled the MMU. We assume a
 		 * flat 1:1 section mapping in this case.
@@ -483,10 +474,7 @@ static int mmu_init(void)
 	}
 
 	__mmu_cache_on();
-
-	return 0;
 }
-mmu_initcall(mmu_init);
 
 /*
  * Clean and invalide caches, disable MMU

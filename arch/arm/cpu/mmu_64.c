@@ -261,8 +261,7 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 	if (dma_handle)
 		*dma_handle = (dma_addr_t)ret;
 
-	map_region((unsigned long)ret, (unsigned long)ret, size, UNCACHED_MEM);
-	tlb_invalidate();
+	arch_remap_range(ret, size, MAP_UNCACHED);
 
 	return ret;
 }
@@ -270,8 +269,7 @@ void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);
-
-	map_region((unsigned long)mem, (unsigned long)mem, size, CACHED_MEM);
+	arch_remap_range(mem, size, MAP_CACHED);
 
 	free(mem);
 }

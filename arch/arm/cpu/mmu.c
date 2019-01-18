@@ -524,16 +524,6 @@ void *dma_alloc_writecombine(size_t size, dma_addr_t *dma_handle)
 	return dma_alloc_map(size, dma_handle, ARCH_MAP_WRITECOMBINE);
 }
 
-unsigned long virt_to_phys(volatile void *virt)
-{
-	return (unsigned long)virt;
-}
-
-void *phys_to_virt(unsigned long phys)
-{
-	return (void *)phys;
-}
-
 void dma_free_coherent(void *mem, dma_addr_t dma_handle, size_t size)
 {
 	size = PAGE_ALIGN(size);

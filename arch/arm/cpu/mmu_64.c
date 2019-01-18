@@ -252,16 +252,6 @@ void mmu_disable(void)
 	isb();
 }
 
-unsigned long virt_to_phys(volatile void *virt)
-{
-	return (unsigned long)virt;
-}
-
-void *phys_to_virt(unsigned long phys)
-{
-	return (void *)phys;
-}
-
 void *dma_alloc_coherent(size_t size, dma_addr_t *dma_handle)
 {
 	void *ret;

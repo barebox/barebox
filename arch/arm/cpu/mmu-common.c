@@ -43,7 +43,8 @@ void *dma_alloc_map(size_t size, dma_addr_t *dma_handle, unsigned flags)
 	if (dma_handle)
 		*dma_handle = (dma_addr_t)ret;
 
-	dma_inv_range(ret, size);
+	memset(ret, 0, size);
+	dma_flush_range(ret, size);
 
 	arch_remap_range(ret, size, flags);
 

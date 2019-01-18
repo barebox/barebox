@@ -233,6 +233,14 @@ void dma_inv_range(void *ptr, size_t size)
 	v8_inv_dcache_range(start, end);
 }
 
+void dma_flush_range(void *ptr, size_t size)
+{
+	unsigned long start = (unsigned long)ptr;
+	unsigned long end = start + size - 1;
+
+	v8_flush_dcache_range(start, end);
+}
+
 void dma_sync_single_for_device(dma_addr_t address, size_t size,
                                 enum dma_data_direction dir)
 {

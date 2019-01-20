@@ -6,7 +6,7 @@ config ARCH_TEXT_BASE
 
 config MIPS_MALTA_MULTI_BOARDS
 	bool "Allow multiple boards to be selected"
-	select HAVE_PBL_MULTI_IMAGE
+	select HAVE_PBL_MULTI_IMAGES
 
 if MIPS_MALTA_MULTI_BOARDS
 

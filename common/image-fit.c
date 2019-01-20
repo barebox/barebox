@@ -368,7 +368,7 @@ static int fit_verify_signature(struct device_node *sig_node, const void *fit)
  out_sl:
 	string_list_free(&inc_nodes);
 	string_list_free(&exc_props);
- 
+
 	return ret;
 }
 

@@ -105,12 +105,12 @@ static void setup_usb_phys(void)
 
 	/* Power up PLL and PHY channel */
 	setbits_le32(MV_USB_PHY_PLL_REG(2), BIT(9));
- 
+
 	/* Assert VCOCAL_START */
 	setbits_le32(MV_USB_PHY_PLL_REG(1), BIT(21));
- 
+
 	mdelay(1);
- 
+
 	/*
 	 * USB PHY init (change from defaults) specific for 40nm (78X30 78X60)
 	 */

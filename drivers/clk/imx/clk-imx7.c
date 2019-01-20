@@ -743,7 +743,7 @@ static int imx7_ccm_probe(struct device_d *dev)
 		"enet_axi_post_div", base + 0x4700, 0);
 	clks[IMX7D_ENET1_TIME_ROOT_CLK] = imx_clk_gate2_shared2("enet1_time_root_clk",
 		"enet1_time_post_div", base + 0x4700, 0);
-	clks[IMX7D_ENET2_IPG_ROOT_CLK] = imx_clk_gate2_shared2("enet2_ipg_root_clk", 
+	clks[IMX7D_ENET2_IPG_ROOT_CLK] = imx_clk_gate2_shared2("enet2_ipg_root_clk",
 		"enet_axi_post_div", base + 0x4710, 0);
 	clks[IMX7D_ENET2_TIME_ROOT_CLK] = imx_clk_gate2_shared2("enet2_time_root_clk",
 		"enet2_time_post_div", base + 0x4710, 0);

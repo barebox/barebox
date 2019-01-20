@@ -335,7 +335,7 @@ static struct inode *cramfs_alloc_inode(struct super_block *sb)
 	struct cramfs_inode_info *info;
 
 	info = xzalloc(sizeof(*info));
- 
+
 	return &info->i_inode;
 }
 

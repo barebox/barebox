@@ -551,7 +551,7 @@ static int do_efi_protocol_dump(int argc, char **argv)
 
 		if (len != 36)
 			return -EINVAL;
-		
+
 		read_xbit(s, a, 32);
 		if (*s != '-')
 			return -EINVAL;

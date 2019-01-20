@@ -186,7 +186,6 @@ config MACH_VSCOM_BALTOS
 config MACH_WAGO_PFC_AM35XX
         bool "Wago PFC200 Fieldbus Controller"
         select ARCH_AM35XX
-        select HAVE_DEFAULT_ENVIRONMENT_NEW
         select HAVE_PBL_MULTI_IMAGES
         select HAVE_CONFIGURABLE_MEMORY_LAYOUT
         help

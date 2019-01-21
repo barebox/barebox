@@ -382,7 +382,7 @@ static int rpc_check_reply(unsigned char *pkt,
 		return -EINVAL;
 	}
 
-	if (rpc_prog == PROG_PORTMAP)
+	if (rpc_prog != PROG_NFS)
 		return 0;
 
 	data = (uint32_t *)(pkt + sizeof(struct rpc_reply));
@@ -459,7 +459,8 @@ again:
 		ret = rpc_check_reply(nfs_packet, rpc_prog,
 				npriv->rpc_id, &nfserr);
 		if (!ret) {
-			ret = nfserr;
+			if (rpc_prog == PROG_NFS)
+				ret = nfserr;
 			break;
 		}
 	}

@@ -77,8 +77,6 @@
 #define BBT_ENTRY_MASK		0x03
 #define BBT_ENTRY_SHIFT		2
 
-static int nand_update_bbt(struct mtd_info *mtd, loff_t offs);
-
 static inline uint8_t bbt_get_entry(struct nand_chip *chip, int block)
 {
 	uint8_t entry = chip->bbt[block >> BBT_ENTRY_SHIFT];
@@ -1225,7 +1223,7 @@ err:
  *
  * The function updates the bad block table(s).
  */
-static int nand_update_bbt(struct mtd_info *mtd, loff_t offs)
+int nand_update_bbt(struct mtd_info *mtd, loff_t offs)
 {
 	struct nand_chip *this = mtd->priv;
 	int len, res = 0;
@@ -1353,13 +1351,13 @@ static int nand_create_badblock_pattern(struct nand_chip *this)
 }
 
 /**
- * nand_create_bbt - [NAND Interface] Select a default bad block table for the device
+ * nand_default_bbt - [NAND Interface] Select a default bad block table for the device
  * @mtd: MTD device structure
  *
  * This function selects the default bad block table support for the device and
  * calls the nand_scan_bbt function.
  */
-int nand_create_bbt(struct mtd_info *mtd)
+int nand_default_bbt(struct mtd_info *mtd)
 {
 	struct nand_chip *this = mtd->priv;
 	int ret;
@@ -1457,3 +1455,5 @@ int nand_markgood_bbt(struct mtd_info *mtd, loff_t offs)
 }
 
 EXPORT_SYMBOL(nand_scan_bbt);
+EXPORT_SYMBOL(nand_default_bbt);
+EXPORT_SYMBOL_GPL(nand_update_bbt);

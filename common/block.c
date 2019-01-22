@@ -133,12 +133,11 @@ static struct chunk *get_chunk(struct block_device *blk)
 
 			chunk->dirty = 0;
 		}
-
-		list_del(&chunk->list);
 	} else {
 		chunk = list_first_entry(&blk->idle_blocks, struct chunk, list);
-		list_del(&chunk->list);
 	}
+
+	list_del(&chunk->list);
 
 	return chunk;
 }

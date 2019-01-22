@@ -38,6 +38,11 @@ struct chunk {
 
 #define BUFSIZE (PAGE_SIZE * 4)
 
+static int writebuffer_io_len(struct block_device *blk, struct chunk *chunk)
+{
+	return min(blk->rdbufsize, blk->num_blocks - chunk->block_start);
+}
+
 /*
  * Write all dirty chunks back to the device
  */
@@ -51,7 +56,9 @@ static int writebuffer_flush(struct block_device *blk)
 
 	list_for_each_entry(chunk, &blk->buffered_blocks, list) {
 		if (chunk->dirty) {
-			ret = blk->ops->write(blk, chunk->data, chunk->block_start, blk->rdbufsize);
+			ret = blk->ops->write(blk, chunk->data,
+					      chunk->block_start,
+					      writebuffer_io_len(blk, chunk));
 			if (ret < 0)
 				return ret;
 
@@ -118,10 +125,9 @@ static struct chunk *get_chunk(struct block_device *blk)
 		/* use last entry which is the most unused */
 		chunk = list_last_entry(&blk->buffered_blocks, struct chunk, list);
 		if (chunk->dirty) {
-			size_t num_blocks = min(blk->rdbufsize,
-					blk->num_blocks - chunk->block_start);
-			ret = blk->ops->write(blk, chunk->data, chunk->block_start,
-					      num_blocks);
+			ret = blk->ops->write(blk, chunk->data,
+					      chunk->block_start,
+					      writebuffer_io_len(blk, chunk));
 			if (ret < 0)
 				return ERR_PTR(ret);
 
@@ -145,7 +151,6 @@ static struct chunk *get_chunk(struct block_device *blk)
 static int block_cache(struct block_device *blk, int block)
 {
 	struct chunk *chunk;
-	size_t num_blocks;
 	int ret;
 
 	chunk = get_chunk(blk);
@@ -157,9 +162,8 @@ static int block_cache(struct block_device *blk, int block)
 	dev_dbg(blk->dev, "%s: %d to %d\n", __func__, chunk->block_start,
 		chunk->num);
 
-	num_blocks = min(blk->rdbufsize, blk->num_blocks - chunk->block_start);
-
-	ret = blk->ops->read(blk, chunk->data, chunk->block_start, num_blocks);
+	ret = blk->ops->read(blk, chunk->data, chunk->block_start,
+			     writebuffer_io_len(blk, chunk));
 	if (ret) {
 		list_add_tail(&chunk->list, &blk->idle_blocks);
 		return ret;

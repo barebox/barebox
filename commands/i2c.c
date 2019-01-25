@@ -24,19 +24,19 @@
 
 static void i2c_probe_range(struct i2c_adapter *adapter, int startaddr, int stopaddr)
 {
-	struct i2c_client client = {};
 	int addr;
-	int ret;
-	u8 reg;
-
-	client.adapter = adapter;
 
 	printf("probing i2c%d range 0x%02x-0x%02x: ", adapter->nr, startaddr, stopaddr);
 	for (addr = startaddr; addr <= stopaddr && !ctrlc(); addr++) {
-		client.addr = addr;
-		ret = i2c_write_reg(&client, 0x00, &reg, 0);
-		if (ret == 0)
+		struct i2c_msg msg = {
+			.addr = addr,
+			.buf = NULL,
+			.len = 0,
+		};
+		int ret = i2c_transfer(adapter, &msg, 1);
+		if (ret == 1)
 			printf("0x%02x ", addr);
+
 	}
 	printf("\n");
 }

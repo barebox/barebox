@@ -25,7 +25,7 @@ if [ "$imd" = "y" ]; then
 	if [ "$compat" != "notfound" ]; then
 
 		compatlen=$($FDTGET -t s "$dtb" / compatible | wc -c)
-		le32 0x640c8005
+		le32 0x640c8005 # IMD_TYPE_OF_COMPATIBLE
 		le32 $compatlen
 		echo ".byte " $compat
 		echo ".balign 4"
@@ -35,7 +35,7 @@ if [ "$imd" = "y" ]; then
 
 	if [ "$model" != "notfound" ]; then
 		modellen=$($FDTGET -t s "$dtb" / model | wc -c)
-		le32 0x640c8004
+		le32 0x640c8004 # IMD_TYPE_MODEL
 		le32 $modellen
 		echo ".byte " $model
 		echo ".balign 4"

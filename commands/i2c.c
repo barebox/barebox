@@ -44,7 +44,7 @@ static void i2c_probe_range(struct i2c_adapter *adapter, int startaddr, int stop
 static int do_i2c_probe(int argc, char *argv[])
 {
 	struct i2c_adapter *adapter = NULL;
-	int startaddr = 0, stopaddr = 0x7f;
+	int startaddr = 4, stopaddr = 0x77;
 
 	if (argc > 1) {
 		adapter = i2c_get_adapter(simple_strtoul(argv[1], NULL, 0));
@@ -57,12 +57,14 @@ static int do_i2c_probe(int argc, char *argv[])
 	if (argc > 3)
 		stopaddr = simple_strtol(argv[3], NULL, 0);
 
+	if (stopaddr > 0x7f)
+		stopaddr = 0x7f;
+
+	if (startaddr < 0)
+		startaddr = 0;
 
 	if (startaddr > stopaddr)
 		return COMMAND_ERROR_USAGE;
-
-	if (stopaddr > 0x7F)
-		stopaddr = 0x7F;
 
 	if (adapter) {
 		i2c_probe_range(adapter, startaddr, stopaddr);

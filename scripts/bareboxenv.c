@@ -97,16 +97,6 @@ static char *concat_subpath_file(const char *path, const char *f)
 	return concat_path_file(path, f);
 }
 
-static char *xstrdup(const char *s)
-{
-	int len = strlen(s) + 1;
-	char *d = xmalloc(len);
-
-	memcpy(d, s, len);
-
-	return d;
-}
-
 #include <linux/list.h>
 #include <linux/list_sort.h>
 #include "../lib/list_sort.c"

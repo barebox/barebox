@@ -130,6 +130,33 @@ int mtd_num_pebs(struct mtd_info *mtd)
 }
 
 /**
+ * mtd_skip_bad - skip bad blocks
+ * @mtd: mtd device
+ * @pnum: The number of the block
+ *
+ * This function skips bad blocks beginning from @pnum. Returns 0 for success and
+ * a negative error code otherwise. on successful exit @pnum points to the next
+ * good block.
+ */
+int mtd_skip_bad(struct mtd_info *mtd, int *pnum)
+{
+	if (*pnum < 0)
+		return -EINVAL;
+
+	while (1) {
+		loff_t offset = (uint64_t)mtd->erasesize * *pnum;
+
+		if (offset >= mtd->size)
+			return -ENOSPC;
+
+		if (!mtd_block_isbad(mtd, offset))
+		    return 0;
+
+		*pnum = *pnum + 1;
+	}
+}
+
+/**
  * mtd_peb_mark_bad - mark a physical eraseblock as bad
  * @mtd: mtd device
  * @pnum: The number of the block

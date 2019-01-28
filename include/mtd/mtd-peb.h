@@ -12,6 +12,7 @@ int mtd_peb_torture(struct mtd_info *mtd, int pnum);
 int mtd_peb_erase(struct mtd_info *mtd, int pnum);
 int mtd_peb_mark_bad(struct mtd_info *mtd, int pnum);
 int mtd_peb_is_bad(struct mtd_info *mtd, int pnum);
+int mtd_skip_bad(struct mtd_info *mtd, int *pnum);
 int mtd_peb_check_all_ff(struct mtd_info *mtd, int pnum, int offset, int len,
 			 int warn);
 int mtd_peb_verify(struct mtd_info *mtd, const void *buf, int pnum,

@@ -166,17 +166,30 @@ const struct rpi_model rpi_models_old_scheme[] = {
 	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_d, "Model B rev2", rpi_b_init),
 	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_e, "Model B rev2", rpi_b_init),
 	RPI_MODEL(BCM2835_BOARD_REV_B_REV2_f, "Model B rev2", rpi_b_init),
-	RPI_MODEL(BCM2835_BOARD_REV_B_PLUS, "Model B+", rpi_b_plus_init),
-	RPI_MODEL(BCM2835_BOARD_REV_CM, "Compute Module", NULL),
-	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS, "Model A+", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_B_PLUS_10, "Model B+", rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_CM_11, "Compute Module", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS_12, "Model A+", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_B_PLUS_13, "Model B+", rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_CM_14, "Compute Module", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS_15, "Model A+", NULL),
 };
 
 const struct rpi_model rpi_models_new_scheme[] = {
-	RPI_MODEL(0, "Unknown model", NULL),
-	RPI_MODEL(BCM2836_BOARD_REV_2_B, "2 Model B", rpi_b_plus_init),
-	RPI_MODEL(BCM2837_BOARD_REV_3_B, "3 Model B", rpi_b_plus_init),
-	RPI_MODEL(BCM2835_BOARD_REV_ZERO, "Zero", rpi_b_plus_init),
-	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, "Zero W", rpi_b_plus_init),
+	RPI_MODEL(BCM2835_BOARD_REV_A, 		"Model A",	NULL ),
+	RPI_MODEL(BCM2835_BOARD_REV_B, 		"Model B", 	rpi_b_init ),
+	RPI_MODEL(BCM2835_BOARD_REV_A_PLUS, 	"Model A+", 	NULL ),
+	RPI_MODEL(BCM2835_BOARD_REV_B_PLUS, 	"Model B+", 	rpi_b_plus_init ),
+	RPI_MODEL(BCM2836_BOARD_REV_2_B, 	"Model 2B", 	rpi_b_plus_init),
+	RPI_MODEL(BCM283x_BOARD_REV_Alpha, 	"Alpha", 	NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_CM1, 	"Compute Module", NULL ),
+	RPI_MODEL(0x7, "Unknown model", NULL),
+	RPI_MODEL(BCM2837_BOARD_REV_3_B, 	"Model 3B", 	rpi_b_init ),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO, 	"Zero", 	rpi_b_plus_init),
+	RPI_MODEL(BCM2837_BOARD_REV_CM3, 	"Compute Module 3", NULL ),
+	RPI_MODEL(0xb, "Unknown model", NULL),
+	RPI_MODEL(BCM2835_BOARD_REV_ZERO_W, 	"Zero W", 	rpi_b_plus_init),
+	RPI_MODEL(BCM2837B0_BOARD_REV_3B_PLUS, 	"Model 3 B+", 	rpi_b_plus_init ),
+	RPI_MODEL(BCM2837B0_BOARD_REV_3A_PLUS, 	"Nodel 3 A+", 	rpi_b_plus_init),
 };
 
 static int rpi_board_rev = 0;

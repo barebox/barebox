@@ -14,11 +14,6 @@ config COMPILE_HASH
 	help
 	  Turns on compilation of digest.c
 
-config COMPILE_MEMORY
-	bool
-	help
-	  Turns on compilation of mem.c
-
 menu "Commands"
 
 
@@ -1493,7 +1488,7 @@ config CMD_CRC_CMP
 config CMD_MD
 	tristate
 	default y
-	select COMPILE_MEMORY
+	select DEV_MEM
 	prompt "md"
 	help
 	  Memory display
@@ -1517,7 +1512,7 @@ config CMD_MD
 config CMD_MEMCMP
 	tristate
 	default y
-	select COMPILE_MEMORY
+	select DEV_MEM
 	prompt "memcmp"
 	help
 	  Memory compare
@@ -1539,7 +1534,7 @@ config CMD_MEMCMP
 config CMD_MEMCPY
 	tristate
 	default y
-	select COMPILE_MEMORY
+	select DEV_MEM
 	prompt "memcpy"
 	help
 	  Memory copy
@@ -1558,7 +1553,7 @@ config CMD_MEMCPY
 config CMD_MEMSET
 	tristate
 	default y
-	select COMPILE_MEMORY
+	select DEV_MEM
 	prompt "memset"
 	help
 	  Memory fill
@@ -1591,7 +1586,7 @@ config CMD_MEMTEST
 
 config CMD_MM
 	tristate
-	select COMPILE_MEMORY
+	select DEV_MEM
 	prompt "memory modify (mm)"
 	help
 	  Memory modify with mask
@@ -1609,7 +1604,7 @@ config CMD_MM
 config CMD_MW
 	tristate
 	default y
-	select COMPILE_MEMORY
+	select DEV_MEM
 	prompt "mw"
 	help
 	  Memory write

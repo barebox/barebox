@@ -20,4 +20,7 @@ config STATE_DRV
 	depends on OFDEVICE
 	depends on STATE
 
+config DEV_MEM
+        bool "Generic memory I/O device (/dev/mem)"
+
 endmenu

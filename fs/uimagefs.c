@@ -116,7 +116,7 @@ static int uimagefs_read(struct device_d *dev, FILE *file, void *buf, size_t ins
 	}
 }
 
-static loff_t uimagefs_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int uimagefs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
 	struct uimagefs_handle_data *d = file->priv;
 
@@ -125,7 +125,7 @@ static loff_t uimagefs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 
 	d->pos = pos;
 
-	return pos;
+	return 0;
 }
 
 static DIR *uimagefs_opendir(struct device_d *dev, const char *pathname)

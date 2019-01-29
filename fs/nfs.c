@@ -1060,13 +1060,13 @@ static int nfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize)
 	return kfifo_get(priv->fifo, buf, insize);
 }
 
-static loff_t nfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int nfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
 	struct file_priv *priv = file->priv;
 
 	kfifo_reset(priv->fifo);
 
-	return pos;
+	return 0;
 }
 
 static int nfs_iterate(struct file *file, struct dir_context *ctx)

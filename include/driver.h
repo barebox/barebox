@@ -434,7 +434,7 @@ struct cdev_operations {
 	ssize_t (*write)(struct cdev*, const void* buf, size_t count, loff_t offset, ulong flags);
 
 	int (*ioctl)(struct cdev*, int, void *);
-	loff_t (*lseek)(struct cdev*, loff_t);
+	int (*lseek)(struct cdev*, loff_t);
 	int (*open)(struct cdev*, unsigned long flags);
 	int (*close)(struct cdev*);
 	int (*flush)(struct cdev*);

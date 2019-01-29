@@ -439,11 +439,9 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 	}
 
 	if (fsdrv->lseek) {
-		pos = fsdrv->lseek(&f->fsdev->dev, f, pos);
-		if (IS_ERR_VALUE(pos)) {
-			errno = -pos;
-			return -1;
-		}
+		ret = fsdrv->lseek(&f->fsdev->dev, f, pos);
+		if (ret < 0)
+			goto out;
 	}
 
 	f->pos = pos;

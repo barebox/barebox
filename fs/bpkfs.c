@@ -192,7 +192,7 @@ static int bpkfs_read(struct device_d *dev, FILE *file, void *buf, size_t insize
 	}
 }
 
-static loff_t bpkfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
+static int bpkfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
 	struct bpkfs_handle_data *d = file->priv;
 
@@ -201,7 +201,7 @@ static loff_t bpkfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 
 	d->pos = pos;
 
-	return pos;
+	return 0;
 }
 
 struct somfy_readdir {

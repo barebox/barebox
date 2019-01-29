@@ -109,13 +109,13 @@ static int smhfs_read(struct device_d __always_unused *dev,
 		return -semihosting_errno();
 }
 
-static loff_t smhfs_lseek(struct device_d __always_unused *dev,
+static int smhfs_lseek(struct device_d __always_unused *dev,
 			  FILE *f, loff_t pos)
 {
 	if (semihosting_seek(file_to_fd(f), pos))
 		return -semihosting_errno();
 
-	return pos;
+	return 0;
 }
 
 static DIR* smhfs_opendir(struct device_d __always_unused *dev,

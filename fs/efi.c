@@ -292,7 +292,7 @@ static int efifs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	return bufsize;
 }
 
-static loff_t efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
+static int efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
 	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;
@@ -302,7 +302,7 @@ static loff_t efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 		return -efi_errno(efiret);
 	}
 
-	return pos;
+	return 0;
 }
 
 static int efifs_truncate(struct device_d *dev, FILE *f, unsigned long size)

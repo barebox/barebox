@@ -57,10 +57,10 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 	return cdev_write(cdev, buf, size, f->pos, f->flags);
 }
 
-static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
+static int devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 {
 	struct cdev *cdev = f->priv;
-	loff_t ret;
+	int ret;
 
 	if (cdev->ops->lseek) {
 		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
@@ -68,7 +68,7 @@ static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 			return ret;
 	}
 
-	return pos;
+	return 0;
 }
 
 static int devfs_erase(struct device_d *_dev, FILE *f, loff_t count, loff_t offset)

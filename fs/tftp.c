@@ -573,13 +573,13 @@ static int tftp_read(struct device_d *dev, FILE *f, void *buf, size_t insize)
 	return outsize;
 }
 
-static loff_t tftp_lseek(struct device_d *dev, FILE *f, loff_t pos)
+static int tftp_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
 	/* We cannot seek backwards without reloading or caching the file */
 	loff_t f_pos = f->pos;
 
 	if (pos >= f_pos) {
-		loff_t ret;
+		int ret = 0;
 		char *buf = xmalloc(1024);
 
 		while (pos > f_pos) {
@@ -596,8 +596,6 @@ static loff_t tftp_lseek(struct device_d *dev, FILE *f, loff_t pos)
 			f_pos += ret;
 		}
 
-		ret = pos;
-
 out_free:
 		free(buf);
 		if (ret < 0) {
@@ -606,8 +604,10 @@ out_free:
 			 * failed since we can't move backwards
 			 */
 			f->pos = f_pos;
+			return ret;
 		}
-		return ret;
+
+		return 0;
 	}
 
 	return -ENOSYS;

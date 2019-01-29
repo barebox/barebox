@@ -96,7 +96,6 @@ static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)
 	alias = of_alias_get(dev->device_node);
 
 	nvmem->cdev.name = xstrdup(alias ?: name);
-	nvmem->cdev.flags = DEVFS_IS_CHARACTER_DEV;
 	nvmem->cdev.ops = &nvmem_chrdev_ops;
 	nvmem->cdev.dev = &nvmem->dev;
 	nvmem->cdev.size = nvmem->size;

@@ -521,9 +521,9 @@ static void memcpy_sz(void *dst, const void *src, size_t count, int rwsize)
 
 	rwsize = rwsize >> O_RWSIZE_SHIFT;
 
-	count /= rwsize;
+	count = ALIGN_DOWN(count, rwsize);
 
-	while (count-- > 0) {
+	while (count) {
 		switch (rwsize) {
 		case 1:
 			*((u8 *)dst) = *((u8 *)src);
@@ -540,6 +540,7 @@ static void memcpy_sz(void *dst, const void *src, size_t count, int rwsize)
 		}
 		dst += rwsize;
 		src += rwsize;
+		count -= rwsize;
 	}
 }
 

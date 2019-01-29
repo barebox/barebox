@@ -307,11 +307,6 @@ static int efivarfs_truncate(struct device_d *dev, FILE *f, ulong size)
 	return 0;
 }
 
-static loff_t efivarfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
-{
-	return pos;
-}
-
 static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)
 {
 	struct efivarfs_priv *priv = dev->priv;
@@ -435,7 +430,6 @@ static struct fs_driver_d efivarfs_driver = {
 	.read      = efivarfs_read,
 	.write     = efivarfs_write,
 	.truncate  = efivarfs_truncate,
-	.lseek     = efivarfs_lseek,
 	.opendir   = efivarfs_opendir,
 	.readdir   = efivarfs_readdir,
 	.closedir  = efivarfs_closedir,

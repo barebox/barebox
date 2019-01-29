@@ -347,11 +347,6 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 	return insize;
 }
 
-static loff_t ramfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
-{
-	return pos;
-}
-
 static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)
 {
 	struct inode *inode = f->f_inode;
@@ -447,7 +442,6 @@ static void ramfs_remove(struct device_d *dev)
 static struct fs_driver_d ramfs_driver = {
 	.read      = ramfs_read,
 	.write     = ramfs_write,
-	.lseek     = ramfs_lseek,
 	.truncate  = ramfs_truncate,
 	.flags     = FS_DRIVER_NO_DEV,
 	.drv = {

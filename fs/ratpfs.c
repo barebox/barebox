@@ -284,13 +284,6 @@ out:
 	return ret;
 }
 
-static loff_t ratpfs_lseek(struct device_d __always_unused *dev,
-			  FILE *f, loff_t pos)
-{
-	pr_debug("%s\n", __func__);
-	return pos;
-}
-
 static DIR* ratpfs_opendir(struct device_d __always_unused *dev,
 			  const char *pathname)
 {
@@ -449,7 +442,6 @@ static struct fs_driver_d ratpfs_driver = {
 	.open      = ratpfs_open,
 	.close     = ratpfs_close,
 	.read      = ratpfs_read,
-	.lseek     = ratpfs_lseek,
 	.opendir   = ratpfs_opendir,
 	.readdir   = ratpfs_readdir,
 	.closedir  = ratpfs_closedir,

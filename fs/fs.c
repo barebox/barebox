@@ -413,10 +413,6 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 
 	f = &files[fildes];
 	fsdrv = f->fsdev->driver;
-	if (!fsdrv->lseek) {
-		ret = -ENOSYS;
-		goto out;
-	}
 
 	ret = -EINVAL;
 
@@ -442,10 +438,12 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 		goto out;
 	}
 
-	pos = fsdrv->lseek(&f->fsdev->dev, f, pos);
-	if (IS_ERR_VALUE(pos)) {
-		errno = -pos;
-		return -1;
+	if (fsdrv->lseek) {
+		pos = fsdrv->lseek(&f->fsdev->dev, f, pos);
+		if (IS_ERR_VALUE(pos)) {
+			errno = -pos;
+			return -1;
+		}
 	}
 
 	f->pos = pos;

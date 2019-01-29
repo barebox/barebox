@@ -66,8 +66,6 @@ static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
 		if (ret < 0)
 			return ret;
-	} else {
-		return -ENOSYS;
 	}
 
 	return pos;

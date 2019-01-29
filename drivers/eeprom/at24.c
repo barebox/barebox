@@ -447,7 +447,6 @@ static int at24_probe(struct device_d *dev)
 	at24->cdev.priv = at24;
 	at24->cdev.dev = dev;
 	at24->cdev.ops = &at24->fops;
-	at24->fops.lseek = dev_lseek_default;
 	at24->fops.read	= at24_cdev_read,
 	at24->fops.protect = at24_cdev_protect,
 	at24->cdev.size = chip.byte_len;

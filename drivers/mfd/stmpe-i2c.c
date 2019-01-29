@@ -101,7 +101,6 @@ static ssize_t stmpe_write(struct cdev *cdev, const void *_buf, size_t count, lo
 }
 
 static struct cdev_operations stmpe_fops = {
-	.lseek	= dev_lseek_default,
 	.read	= stmpe_read,
 	.write	= stmpe_write,
 };

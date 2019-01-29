@@ -360,11 +360,6 @@ int dummy_probe(struct device_d *);
 int generic_memmap_ro(struct cdev *dev, void **map, int flags);
 int generic_memmap_rw(struct cdev *dev, void **map, int flags);
 
-static inline loff_t dev_lseek_default(struct cdev *cdev, loff_t ofs)
-{
-	return ofs;
-}
-
 static inline int dev_open_default(struct device_d *dev, struct filep *f)
 {
 	return 0;

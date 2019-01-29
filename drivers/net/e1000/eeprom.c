@@ -1325,7 +1325,6 @@ exit:
 static struct cdev_operations e1000_invm_ops = {
 	.read	= e1000_invm_cdev_read,
 	.write	= e1000_invm_cdev_write,
-	.lseek	= dev_lseek_default,
 };
 
 static ssize_t e1000_eeprom_cdev_read(struct cdev *cdev, void *buf,
@@ -1350,7 +1349,6 @@ static ssize_t e1000_eeprom_cdev_read(struct cdev *cdev, void *buf,
 
 static struct cdev_operations e1000_eeprom_ops = {
 	.read = e1000_eeprom_cdev_read,
-	.lseek = dev_lseek_default,
 };
 
 static int e1000_mtd_read_or_write(bool read,

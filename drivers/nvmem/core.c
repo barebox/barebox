@@ -85,7 +85,6 @@ static ssize_t nvmem_cdev_write(struct cdev *cdev, const void *buf, size_t count
 static struct cdev_operations nvmem_chrdev_ops = {
 	.read  = nvmem_cdev_read,
 	.write  = nvmem_cdev_write,
-	.lseek = dev_lseek_default,
 };
 
 static int nvmem_register_cdev(struct nvmem_device *nvmem, const char *name)

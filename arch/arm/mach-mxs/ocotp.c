@@ -174,7 +174,6 @@ free_mem:
 
 static struct cdev_operations mxs_ocotp_ops = {
 	.read	= mxs_ocotp_cdev_read,
-	.lseek	= dev_lseek_default,
 };
 
 static int mxs_ocotp_probe(struct device_d *dev)

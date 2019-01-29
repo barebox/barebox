@@ -459,7 +459,6 @@ static const struct cdev_operations loop_ops = {
 	.read = loop_read,
 	.write = loop_write,
 	.memmap = generic_memmap_rw,
-	.lseek = dev_lseek_default,
 };
 
 struct cdev *cdev_create_loop(const char *path, ulong flags, loff_t offset)

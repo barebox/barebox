@@ -66,7 +66,6 @@ static ssize_t mtd_op_read_oob(struct cdev *cdev, void *buf, size_t count,
 static struct cdev_operations mtd_ops_oob = {
 	.read   = mtd_op_read_oob,
 	.ioctl  = mtd_ioctl,
-	.lseek  = dev_lseek_default,
 };
 
 static int add_mtdoob_device(struct mtd_info *mtd, const char *devname, void **priv)

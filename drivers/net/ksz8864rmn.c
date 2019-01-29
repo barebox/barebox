@@ -113,7 +113,6 @@ static ssize_t micel_switch_write(struct cdev *cdev, const void *_buf, size_t co
 static struct cdev_operations micrel_switch_ops = {
 	.read  = micel_switch_read,
 	.write = micel_switch_write,
-	.lseek = dev_lseek_default,
 };
 
 static int micrel_switch_probe(struct device_d *dev)

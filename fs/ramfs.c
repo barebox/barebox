@@ -349,8 +349,7 @@ static int ramfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t i
 
 static loff_t ramfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
-	f->pos = pos;
-	return f->pos;
+	return pos;
 }
 
 static int ramfs_truncate(struct device_d *dev, FILE *f, ulong size)

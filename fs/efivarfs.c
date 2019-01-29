@@ -309,9 +309,7 @@ static int efivarfs_truncate(struct device_d *dev, FILE *f, ulong size)
 
 static loff_t efivarfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
-	f->pos = pos;
-
-	return f->pos;
+	return pos;
 }
 
 static DIR *efivarfs_opendir(struct device_d *dev, const char *pathname)

@@ -151,7 +151,6 @@ static int omap4_usbbootfs_read(
 
 static loff_t omap4_usbbootfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
-	f->pos = pos;
 	return pos;
 }
 

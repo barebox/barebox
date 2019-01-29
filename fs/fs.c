@@ -448,6 +448,8 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 		return -1;
 	}
 
+	f->pos = pos;
+
 	return pos;
 
 out:

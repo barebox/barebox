@@ -233,8 +233,6 @@ static int squashfs_read(struct device_d *_dev, FILE *f, void *buf,
 
 static loff_t squashfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
-	f->pos = pos;
-
 	return pos;
 }
 

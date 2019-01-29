@@ -70,8 +70,6 @@ static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 		return -ENOSYS;
 	}
 
-	f->pos = pos;
-
 	return pos;
 }
 

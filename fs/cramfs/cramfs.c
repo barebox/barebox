@@ -168,8 +168,7 @@ static int cramfs_read(struct device_d *_dev, FILE *f, void *buf, size_t size)
 
 static loff_t cramfs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 {
-	f->pos = pos;
-	return f->pos;
+	return pos;
 }
 
 #if 0

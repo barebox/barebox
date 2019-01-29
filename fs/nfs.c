@@ -1064,10 +1064,9 @@ static loff_t nfs_lseek(struct device_d *dev, FILE *file, loff_t pos)
 {
 	struct file_priv *priv = file->priv;
 
-	file->pos = pos;
 	kfifo_reset(priv->fifo);
 
-	return file->pos;
+	return pos;
 }
 
 static int nfs_iterate(struct file *file, struct dir_context *ctx)

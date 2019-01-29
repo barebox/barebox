@@ -288,8 +288,7 @@ static loff_t ratpfs_lseek(struct device_d __always_unused *dev,
 			  FILE *f, loff_t pos)
 {
 	pr_debug("%s\n", __func__);
-	f->pos = pos;
-	return f->pos;
+	return pos;
 }
 
 static DIR* ratpfs_opendir(struct device_d __always_unused *dev,

@@ -257,6 +257,7 @@ config ARCH_ZYNQMP
 	select OFTREE
 	select RELOCATABLE
 	select SYS_SUPPORTS_64BIT_KERNEL
+	select HAS_MACB
 
 config ARCH_QEMU
 	bool "ARM QEMU boards"

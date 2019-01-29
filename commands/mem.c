@@ -41,46 +41,6 @@
 
 char *mem_rw_buf;
 
-/*
- * Common function for parsing options for the 'md', 'mw', 'memcpy', 'memcmp'
- * commands.
- */
-int mem_parse_options(int argc, char *argv[], char *optstr, int *mode,
-		char **sourcefile, char **destfile, int *swab)
-{
-	int opt;
-
-	while((opt = getopt(argc, argv, optstr)) > 0) {
-		switch(opt) {
-		case 'b':
-			*mode = O_RWSIZE_1;
-			break;
-		case 'w':
-			*mode = O_RWSIZE_2;
-			break;
-		case 'l':
-			*mode = O_RWSIZE_4;
-			break;
-		case 'q':
-			*mode = O_RWSIZE_8;
-			break;
-		case 's':
-			*sourcefile = optarg;
-			break;
-		case 'd':
-			*destfile = optarg;
-			break;
-		case 'x':
-			*swab = 1;
-			break;
-		default:
-			return COMMAND_ERROR_USAGE;
-		}
-	}
-
-	return 0;
-}
-
 static struct cdev_operations memops = {
 	.read  = mem_read,
 	.write = mem_write,

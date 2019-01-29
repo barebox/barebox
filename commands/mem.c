@@ -39,8 +39,6 @@
 #define PRINTF(fmt,args...)
 #endif
 
-char *mem_rw_buf;
-
 static struct cdev_operations memops = {
 	.read  = mem_read,
 	.write = mem_write,
@@ -73,10 +71,6 @@ static struct driver_d mem_drv = {
 
 static int mem_init(void)
 {
-	mem_rw_buf = malloc(RW_BUF_SIZE);
-	if(!mem_rw_buf)
-		return -ENOMEM;
-
 	add_mem_device("mem", 0, ~0, IORESOURCE_MEM_WRITEABLE);
 	return platform_driver_register(&mem_drv);
 }

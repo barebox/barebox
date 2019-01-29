@@ -418,25 +418,22 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 
 	switch (whence) {
 	case SEEK_SET:
-		if (f->size != FILE_SIZE_STREAM && offset > f->size)
-			goto out;
-		if (offset < 0)
-			goto out;
-		pos = offset;
+		pos = 0;
 		break;
 	case SEEK_CUR:
-		if (f->size != FILE_SIZE_STREAM && offset + f->pos > f->size)
-			goto out;
-		pos = f->pos + offset;
+		pos = f->pos;
 		break;
 	case SEEK_END:
-		if (offset > 0)
-			goto out;
-		pos = f->size + offset;
+		pos = f->size;
 		break;
 	default:
 		goto out;
 	}
+
+	pos += offset;
+
+	if (f->size != FILE_SIZE_STREAM && (pos < 0 || pos > f->size))
+		goto out;
 
 	if (fsdrv->lseek) {
 		ret = fsdrv->lseek(&f->fsdev->dev, f, pos);

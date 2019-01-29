@@ -420,7 +420,7 @@ loff_t lseek(int fildes, loff_t offset, int whence)
 	case SEEK_SET:
 		if (f->size != FILE_SIZE_STREAM && offset > f->size)
 			goto out;
-		if (IS_ERR_VALUE(offset))
+		if (offset < 0)
 			goto out;
 		pos = offset;
 		break;

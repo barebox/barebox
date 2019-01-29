@@ -60,15 +60,19 @@ static int devfs_write(struct device_d *_dev, FILE *f, const void *buf, size_t s
 static loff_t devfs_lseek(struct device_d *_dev, FILE *f, loff_t pos)
 {
 	struct cdev *cdev = f->priv;
-	loff_t ret = -1;
+	loff_t ret;
 
-	if (cdev->ops->lseek)
+	if (cdev->ops->lseek) {
 		ret = cdev->ops->lseek(cdev, pos + cdev->offset);
+		if (ret < 0)
+			return ret;
+	} else {
+		return -ENOSYS;
+	}
 
-	if (ret != -1)
-		f->pos = pos;
+	f->pos = pos;
 
-	return ret - cdev->offset;
+	return pos;
 }
 
 static int devfs_erase(struct device_d *_dev, FILE *f, loff_t count, loff_t offset)

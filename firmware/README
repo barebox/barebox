@@ -1,0 +1,7 @@
+This is where you need to place any firmware files that need to be built
+into the boot image.
+
+Note that if you need to place any files here, the resulting boot image
+is not completely governed by the GPLv2, as used for the Barebox binary,
+but will be subject to additional terms of use imposed by the various
+licenses that apply to the firmware files.

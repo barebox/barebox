@@ -87,6 +87,7 @@
 
 struct esdhc_soc_data {
 	u32 flags;
+	const char *clkidx;
 };
 
 struct fsl_esdhc_host {
@@ -617,7 +618,7 @@ static int fsl_esdhc_probe(struct device_d *dev)
 
 	dma_set_mask(dev, DMA_BIT_MASK(32));
 
-	host->clk = clk_get(dev, "per");
+	host->clk = clk_get(dev, socdata->clkidx);
 	if (IS_ERR(host->clk))
 		return PTR_ERR(host->clk);
 
@@ -679,25 +680,30 @@ static int fsl_esdhc_probe(struct device_d *dev)
 
 static struct esdhc_soc_data esdhc_imx25_data = {
 	.flags = ESDHC_FLAG_ENGCM07207,
+	.clkidx = "per",
 };
 
 static struct esdhc_soc_data esdhc_imx53_data = {
 	.flags = ESDHC_FLAG_MULTIBLK_NO_INT,
+	.clkidx = "per",
 };
 
 static struct esdhc_soc_data usdhc_imx6q_data = {
 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_MAN_TUNING,
+	.clkidx = "per",
 };
 
 static struct esdhc_soc_data usdhc_imx6sl_data = {
 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING
 	       | ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_ERR004536
 	       | ESDHC_FLAG_HS200,
+	.clkidx = "per",
 };
 
 static struct esdhc_soc_data usdhc_imx6sx_data = {
 	.flags = ESDHC_FLAG_USDHC | ESDHC_FLAG_STD_TUNING
 	       | ESDHC_FLAG_HAVE_CAP1 | ESDHC_FLAG_HS200,
+	.clkidx = "per",
 };
 
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {

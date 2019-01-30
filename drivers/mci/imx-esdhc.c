@@ -32,7 +32,6 @@
 #include <io.h>
 #include <linux/clk.h>
 #include <linux/err.h>
-#include <mach/generic.h>
 #include <platform_data/mmc-esdhc-imx.h>
 #include <gpio.h>
 #include <of_device.h>

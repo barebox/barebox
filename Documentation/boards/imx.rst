@@ -204,3 +204,4 @@ or ``imx_defconfig`` instead.
   :maxdepth: 2
 
   imx/*
+  imx/*/*

@@ -113,6 +113,9 @@ pbl-dtb-$(CONFIG_MACH_ZII_RDU1) +=	\
 	imx51-zii-scu2-mezz.dtb.o	\
 	imx51-zii-scu3-esb.dtb.o
 pbl-dtb-$(CONFIG_MACH_ZII_RDU2) += imx6q-zii-rdu2.dtb.o imx6qp-zii-rdu2.dtb.o
+pbl-dtb-$(CONFIG_MACH_ZII_IMX8MQ_DEV) +=	\
+	imx8mq-zii-ultra-rmb3.dtb.o		\
+	imx8mq-zii-ultra-zest.dtb.o
 pbl-dtb-$(CONFIG_MACH_ZII_VF610_DEV) += \
 	vf610-zii-dev-rev-b.dtb.o 	\
 	vf610-zii-dev-rev-c.dtb.o 	\

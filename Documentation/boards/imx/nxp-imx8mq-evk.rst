@@ -8,8 +8,8 @@ Board comes with:
 
 Not including booting via serial, the device can boot from either SD or eMMC.
 
-Downloading DDR PHY Firmware
-----------------------------
+Downloading DDR PHY and HDMI/eDP Firmware
+-----------------------------------------
 
 As a part of DDR intialization routine NXP i.MX8MQ EVK requires and
 uses several binary firmware blobs that are distributed under a
@@ -37,6 +37,16 @@ As a last step of this process those files need to be placed in
 	   lpddr4_pmu_train_2d_imem.bin; \
   do \
 	   cp firmware-imx-8.0/firmware/ddr/synopsys/${f} \
+	      firmware/imx/${f}; \
+  done
+
+You will also need to copy the HDMITX controller firmware in order to
+use the HDMI and/or eDP display output::
+
+  for f in signed_dp_imx8m.bin \
+	   signed_hdmi_imx8m.bin; \
+  do \
+	   cp firmware-imx-8.0/firmware/hdmi/cadence/${f} \
 	      firmware/imx/${f}; \
   done
 

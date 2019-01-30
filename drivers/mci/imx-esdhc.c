@@ -596,9 +596,6 @@ static int fsl_esdhc_detect(struct device_d *dev)
 	return mci_detect_card(&host->mci);
 }
 
-static struct esdhc_soc_data esdhc_imx25_data;
-static struct esdhc_soc_data esdhc_imx53_data;
-
 static int fsl_esdhc_probe(struct device_d *dev)
 {
 	struct resource *iores;
@@ -608,20 +605,15 @@ static int fsl_esdhc_probe(struct device_d *dev)
 	int ret;
 	unsigned long rate;
 	struct esdhc_platform_data *pdata = dev->platform_data;
+	const struct esdhc_soc_data *socdata;
+
+	ret = dev_get_drvdata(dev, (const void **)&socdata);
+	if (ret)
+		return ret;
 
 	host = xzalloc(sizeof(*host));
+	host->socdata = socdata;
 	mci = &host->mci;
-
-	if (IS_ENABLED(CONFIG_OFDEVICE)) {
-		host->socdata = of_device_get_match_data(dev);
-		if (!host->socdata)
-			return -EINVAL;
-	} else {
-		if (cpu_is_mx50() || cpu_is_mx51() || cpu_is_mx53())
-			host->socdata = &esdhc_imx53_data;
-		else
-			host->socdata = &esdhc_imx25_data;
-	}
 
 	dma_set_mask(dev, DMA_BIT_MASK(32));
 
@@ -720,9 +712,22 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ /* sentinel */ }
 };
 
+static struct platform_device_id imx_esdhc_ids[] = {
+	{
+		.name = "imx25-esdhc",
+		.driver_data = (unsigned long)&esdhc_imx25_data,
+	}, {
+		.name = "imx5-esdhc",
+		.driver_data = (unsigned long)&esdhc_imx53_data,
+	}, {
+		/* sentinel */
+	}
+};
+
 static struct driver_d fsl_esdhc_driver = {
 	.name  = "imx-esdhc",
 	.probe = fsl_esdhc_probe,
 	.of_compatible = DRV_OF_COMPAT(fsl_esdhc_compatible),
+	.id_table = imx_esdhc_ids,
 };
 device_platform_driver(fsl_esdhc_driver);

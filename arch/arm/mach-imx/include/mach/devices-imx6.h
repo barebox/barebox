@@ -21,26 +21,6 @@ static inline struct device_d *imx6_add_uart3(void)
 	return imx_add_uart_imx21((void *)MX6_UART4_BASE_ADDR, 3);
 }
 
-static inline struct device_d *imx6_add_mmc0(struct esdhc_platform_data *pdata)
-{
-	return imx_add_esdhc((void *)MX6_USDHC1_BASE_ADDR, 0, pdata);
-}
-
-static inline struct device_d *imx6_add_mmc1(struct esdhc_platform_data *pdata)
-{
-	return imx_add_esdhc((void *)MX6_USDHC2_BASE_ADDR, 1, pdata);
-}
-
-static inline struct device_d *imx6_add_mmc2(struct esdhc_platform_data *pdata)
-{
-	return imx_add_esdhc((void *)MX6_USDHC3_BASE_ADDR, 2, pdata);
-}
-
-static inline struct device_d *imx6_add_mmc3(struct esdhc_platform_data *pdata)
-{
-	return imx_add_esdhc((void *)MX6_USDHC4_BASE_ADDR, 3, pdata);
-}
-
 static inline struct device_d *imx6_add_fec(struct fec_platform_data *pdata)
 {
 	return imx_add_fec_imx6((void *)MX6_ENET_BASE_ADDR, pdata);

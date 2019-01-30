@@ -201,6 +201,6 @@ or ``imx_defconfig`` instead.
 
 .. toctree::
   :glob:
-  :maxdepth: 1
+  :maxdepth: 2
 
   imx/*

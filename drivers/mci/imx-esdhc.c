@@ -69,6 +69,8 @@
 #define ESDHC_FLAG_HAVE_CAP1		BIT(6)
 /* Need to access registers in bigendian mode */
 #define ESDHC_FLAG_BIGENDIAN		BIT(7)
+/* Enable cache snooping */
+#define ESDHC_FLAG_CACHE_SNOOPING	BIT(8)
 
 /*
  * The IP has errata ERR004536
@@ -86,6 +88,9 @@
 #define IMX_SDHCI_MIXCTRL	0x48
 #define IMX_SDHCI_DLL_CTRL	0x60
 #define IMX_SDHCI_MIX_CTRL_FBCLK_SEL	(BIT(25))
+
+#define ESDHC_DMA_SYSCTL	0x40c /* Layerscape specific */
+#define ESDHC_SYSCTL_DMA_SNOOP  BIT(6)
 
 struct esdhc_soc_data {
 	u32 flags;
@@ -604,6 +609,10 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	/* RSTA doesn't reset MMC_BOOT register, so manually reset it */
 	esdhc_write32(host, SDHCI_MMC_BOOT, 0);
 
+	/* Enable cache snooping */
+	if (host->socdata->flags & ESDHC_FLAG_CACHE_SNOOPING)
+		esdhc_setbits32(host, ESDHC_DMA_SYSCTL, ESDHC_SYSCTL_DMA_SNOOP);
+
 	/* Set the initial clock speed */
 	set_sysctl(mci, 400000);
 
@@ -739,6 +748,10 @@ static struct esdhc_soc_data usdhc_imx6sx_data = {
 	.clkidx = "per",
 };
 
+static struct esdhc_soc_data esdhc_ls_data = {
+	.flags = ESDHC_FLAG_MULTIBLK_NO_INT | ESDHC_FLAG_BIGENDIAN,
+};
+
 static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ .compatible = "fsl,imx25-esdhc",  .data = &esdhc_imx25_data  },
 	{ .compatible = "fsl,imx50-esdhc",  .data = &esdhc_imx53_data  },
@@ -748,6 +761,7 @@ static __maybe_unused struct of_device_id fsl_esdhc_compatible[] = {
 	{ .compatible = "fsl,imx6sl-usdhc", .data = &usdhc_imx6sl_data },
 	{ .compatible = "fsl,imx6sx-usdhc", .data = &usdhc_imx6sx_data },
 	{ .compatible = "fsl,imx8mq-usdhc", .data = &usdhc_imx6sx_data },
+	{ .compatible = "fsl,ls1046a-esdhc",.data = &esdhc_ls_data  },
 	{ /* sentinel */ }
 };
 

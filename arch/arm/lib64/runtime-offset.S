@@ -1,7 +1,19 @@
 #include <linux/linkage.h>
 #include <asm/assembler.h>
 
-.section ".text_bare_init","ax"
+/*
+ * The .section directive below intentionally omits "a", since that
+ * appears to be the simplest way to force assembler to not generate
+ * R_AARCH64_RELATIVE relocation for
+ *
+ * linkadr:
+ *	.quad get_runtime_offset
+ *
+ * statement below. While having that relocating was relatively
+ * harmless with GCC8, builging the code with GCC5 resulted in
+ * "linkaddr" being initialized to 0 causing complete boot breakdown
+ */
+.section ".text_bare_init","x"
 
 /*
  * Get the offset between the link address and the address

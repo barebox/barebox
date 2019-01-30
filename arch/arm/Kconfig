@@ -118,6 +118,9 @@ config ARCH_LAYERSCAPE
 	select GPIOLIB
 	select HAS_DEBUG_LL
 	select HAVE_PBL_MULTI_IMAGES
+	select COMMON_CLK
+	select CLKDEV_LOOKUP
+	select COMMON_CLK_OF_PROVIDER
 
 config ARCH_MVEBU
 	bool "Marvell EBU platforms"

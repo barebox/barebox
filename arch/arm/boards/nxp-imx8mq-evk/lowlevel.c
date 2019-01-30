@@ -115,7 +115,7 @@ ENTRY_FUNCTION(start_nxp_imx8mq_evk, r0, r1, r2)
 		const u8 *bl31;
 		size_t bl31_size;
 
-		get_builtin_firmware(imx_imx8m_bl31_bin, &bl31, &bl31_size);
+		get_builtin_firmware(imx8mq_bl31_bin, &bl31, &bl31_size);
 		imx8mq_atf_load_bl31(bl31, bl31_size);
 	}
 

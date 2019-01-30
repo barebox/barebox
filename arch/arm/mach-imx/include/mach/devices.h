@@ -6,7 +6,7 @@
 #include <mach/imx-nand.h>
 #include <mach/imxfb.h>
 #include <mach/imx-ipu-fb.h>
-#include <mach/esdhc.h>
+#include <platform_data/mmc-esdhc-imx.h>
 #include <usb/chipidea-imx.h>
 
 struct device_d *imx_add_fec_imx27(void *base, struct fec_platform_data *pdata);

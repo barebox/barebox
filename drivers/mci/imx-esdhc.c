@@ -67,6 +67,9 @@
 #define ESDHC_FLAG_STD_TUNING		BIT(5)
 /* The IP has SDHCI_CAPABILITIES_1 register */
 #define ESDHC_FLAG_HAVE_CAP1		BIT(6)
+/* Need to access registers in bigendian mode */
+#define ESDHC_FLAG_BIGENDIAN		BIT(7)
+
 /*
  * The IP has errata ERR004536
  * uSDHC: ADMA Length Mismatch Error occurs if the AHB read access is slow,
@@ -108,13 +111,19 @@ static inline int esdhc_is_usdhc(struct fsl_esdhc_host *data)
 
 static inline u32 esdhc_read32(struct fsl_esdhc_host *host, unsigned int reg)
 {
-	return readl(host->regs + reg);
+	if (host->socdata->flags & ESDHC_FLAG_BIGENDIAN)
+		return in_be32(host->regs + reg);
+	else
+		return readl(host->regs + reg);
 }
 
 static inline void esdhc_write32(struct fsl_esdhc_host *host, unsigned int reg,
 				 u32 val)
 {
-	writel(val, host->regs + reg);
+	if (host->socdata->flags & ESDHC_FLAG_BIGENDIAN)
+		out_be32(host->regs + reg, val);
+	else
+		writel(val, host->regs + reg);
 }
 
 static inline void esdhc_clrsetbits32(struct fsl_esdhc_host *host, unsigned int reg,
@@ -583,7 +592,6 @@ static int esdhc_reset(struct fsl_esdhc_host *host)
 static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 {
 	struct fsl_esdhc_host *host = to_fsl_esdhc(mci);
-	void __iomem *regs = host->regs;
 	int ret;
 
 	ret = esdhc_reset(host);
@@ -599,9 +607,10 @@ static int esdhc_init(struct mci_host *mci, struct device_d *dev)
 	/* Set the initial clock speed */
 	set_sysctl(mci, 400000);
 
-	writel(IRQSTATEN_CC | IRQSTATEN_TC | IRQSTATEN_CINT | IRQSTATEN_CTOE |
-			IRQSTATEN_CCE | IRQSTATEN_CEBE | IRQSTATEN_CIE | IRQSTATEN_DTOE |
-			IRQSTATEN_DCE | IRQSTATEN_DEBE | IRQSTATEN_DINT, regs + SDHCI_INT_ENABLE);
+	esdhc_write32(host, SDHCI_INT_ENABLE, IRQSTATEN_CC | IRQSTATEN_TC |
+			IRQSTATEN_CINT | IRQSTATEN_CTOE | IRQSTATEN_CCE |
+			IRQSTATEN_CEBE | IRQSTATEN_CIE | IRQSTATEN_DTOE |
+			IRQSTATEN_DCE | IRQSTATEN_DEBE | IRQSTATEN_DINT);
 
 	/* Put the PROCTL reg back to the default */
 	esdhc_write32(host, SDHCI_HOST_CONTROL__POWER_CONTROL__BLOCK_GAP_CONTROL,

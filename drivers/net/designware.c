@@ -291,12 +291,14 @@ static int dwc_ether_send(struct eth_device *dev, void *packet, int length)
 
 	if (priv->enh_desc) {
 		desc_p->txrx_status |= DESC_ENH_TXSTS_TXFIRST | DESC_ENH_TXSTS_TXLAST;
+		desc_p->dmamac_cntl &= ~(DESC_ENH_TXCTRL_SIZE1MASK);
 		desc_p->dmamac_cntl |= (length << DESC_ENH_TXCTRL_SIZE1SHFT) &
 				       DESC_ENH_TXCTRL_SIZE1MASK;
 
 		desc_p->txrx_status &= ~(DESC_ENH_TXSTS_MSK);
 		desc_p->txrx_status |= DESC_ENH_TXSTS_OWNBYDMA;
 	} else {
+		desc_p->dmamac_cntl &= ~(DESC_TXCTRL_SIZE1MASK);
 		desc_p->dmamac_cntl |= ((length << DESC_TXCTRL_SIZE1SHFT) &
 				       DESC_TXCTRL_SIZE1MASK) | DESC_TXCTRL_TXLAST |
 				       DESC_TXCTRL_TXFIRST;

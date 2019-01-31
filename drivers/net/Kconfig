@@ -137,6 +137,14 @@ config DRIVER_NET_FEC_IMX
 	depends on ARCH_HAS_FEC_IMX
 	select PHYLIB
 
+config DRIVER_NET_FSL_FMAN
+	bool "Freescale fman ethernet driver"
+	select PHYLIB
+	select FSL_QE_FIRMWARE
+	help
+	  This option enabled support for the Freescale fman core found
+	  on Layerscape SoCs.
+
 config DRIVER_NET_GIANFAR
 	bool "Gianfar Ethernet"
 	depends on ARCH_MPC85XX

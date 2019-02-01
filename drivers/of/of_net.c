@@ -17,18 +17,28 @@
  */
 static const char *phy_modes[] = {
 	[PHY_INTERFACE_MODE_NA]		= "",
+	[PHY_INTERFACE_MODE_INTERNAL]	= "internal",
 	[PHY_INTERFACE_MODE_MII]	= "mii",
 	[PHY_INTERFACE_MODE_GMII]	= "gmii",
 	[PHY_INTERFACE_MODE_SGMII]	= "sgmii",
 	[PHY_INTERFACE_MODE_TBI]	= "tbi",
+	[PHY_INTERFACE_MODE_REVMII]	= "rev-mii",
 	[PHY_INTERFACE_MODE_RMII]	= "rmii",
 	[PHY_INTERFACE_MODE_RGMII]	= "rgmii",
 	[PHY_INTERFACE_MODE_RGMII_ID]	= "rgmii-id",
 	[PHY_INTERFACE_MODE_RGMII_RXID]	= "rgmii-rxid",
-	[PHY_INTERFACE_MODE_RGMII_TXID] = "rgmii-txid",
+	[PHY_INTERFACE_MODE_RGMII_TXID]	= "rgmii-txid",
 	[PHY_INTERFACE_MODE_RTBI]	= "rtbi",
 	[PHY_INTERFACE_MODE_SMII]	= "smii",
+	[PHY_INTERFACE_MODE_XGMII]	= "xgmii",
+	[PHY_INTERFACE_MODE_MOCA]	= "moca",
 	[PHY_INTERFACE_MODE_QSGMII]	= "qsgmii",
+	[PHY_INTERFACE_MODE_TRGMII]	= "trgmii",
+	[PHY_INTERFACE_MODE_1000BASEX]	= "1000base-x",
+	[PHY_INTERFACE_MODE_2500BASEX]	= "2500base-x",
+	[PHY_INTERFACE_MODE_RXAUI]	= "rxaui",
+	[PHY_INTERFACE_MODE_XAUI]	= "xaui",
+	[PHY_INTERFACE_MODE_10GKR]	= "10gbase-kr",
 };
 
 /**

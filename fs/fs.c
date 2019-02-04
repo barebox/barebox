@@ -216,8 +216,10 @@ int ftruncate(int fd, loff_t length)
 	fsdrv = f->fsdev->driver;
 
 	ret = fsdrv->truncate(&f->fsdev->dev, f, length);
-	if (ret)
+	if (ret) {
+		errno = -ret;
 		return ret;
+	}
 
 	f->size = length;
 

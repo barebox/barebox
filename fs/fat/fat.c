@@ -177,7 +177,7 @@ static int fat_write(struct device_d *_dev, FILE *f, const void *buf, size_t ins
 	return outsize;
 }
 
-static int fat_truncate(struct device_d *dev, FILE *f, ulong size)
+static int fat_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	FIL *f_file = f->priv;
 	unsigned long lastofs;

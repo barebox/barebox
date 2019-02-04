@@ -46,7 +46,7 @@ struct fs_driver_d {
 	int (*unlink)(struct device_d *dev, const char *pathname);
 
 	/* Truncate a file to given size */
-	int (*truncate)(struct device_d *dev, FILE *f, ulong size);
+	int (*truncate)(struct device_d *dev, FILE *f, loff_t size);
 
 	int (*open)(struct device_d *dev, FILE *f, const char *pathname);
 	int (*close)(struct device_d *dev, FILE *f);

@@ -77,7 +77,7 @@ static int ratpfs_rm(struct device_d __always_unused *dev,
 }
 
 static int ratpfs_truncate(struct device_d __always_unused *dev,
-			  FILE *f, ulong size)
+			  FILE *f, loff_t size)
 {
 	int len_tx = 1 /* type */
 		+ 4 /* handle */

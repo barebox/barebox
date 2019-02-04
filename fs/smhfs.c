@@ -56,7 +56,7 @@ static int smhfs_rm(struct device_d __always_unused *dev,
 
 static int smhfs_truncate(struct device_d __always_unused *dev,
 			  FILE __always_unused *f,
-			  ulong __always_unused size)
+			  loff_t __always_unused size)
 {
 	return 0;
 }

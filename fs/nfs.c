@@ -928,7 +928,7 @@ static void nfs_handler(void *ctx, char *packet, unsigned len)
 	nfs_len = len;
 }
 
-static int nfs_truncate(struct device_d *dev, FILE *f, ulong size)
+static int nfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	return -ENOSYS;
 }

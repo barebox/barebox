@@ -57,7 +57,7 @@ static int omap4_usbbootfs_write(
 	return -ENOSYS;
 }
 
-static int omap4_usbbootfs_truncate(struct device_d *dev, FILE *f, ulong size)
+static int omap4_usbbootfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	return -ENOSYS;
 }

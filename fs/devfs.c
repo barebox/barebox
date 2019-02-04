@@ -168,7 +168,7 @@ static int devfs_ioctl(struct device_d *_dev, FILE *f, int request, void *buf)
 	return cdev_ioctl(cdev, request, buf);
 }
 
-static int devfs_truncate(struct device_d *dev, FILE *f, ulong size)
+static int devfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	struct cdev *cdev = f->priv;
 

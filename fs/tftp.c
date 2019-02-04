@@ -93,7 +93,7 @@ struct tftp_priv {
 	IPaddr_t server;
 };
 
-static int tftp_truncate(struct device_d *dev, FILE *f, ulong size)
+static int tftp_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	return 0;
 }

@@ -305,7 +305,7 @@ static int efifs_lseek(struct device_d *dev, FILE *f, loff_t pos)
 	return 0;
 }
 
-static int efifs_truncate(struct device_d *dev, FILE *f, unsigned long size)
+static int efifs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	struct efifs_file *ufile = f->priv;
 	efi_status_t efiret;

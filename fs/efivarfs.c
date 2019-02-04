@@ -288,7 +288,7 @@ static int efivarfs_write(struct device_d *_dev, FILE *f, const void *buf, size_
 	return insize;
 }
 
-static int efivarfs_truncate(struct device_d *dev, FILE *f, ulong size)
+static int efivarfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 {
 	struct efivars_file *efile = f->priv;
 	efi_status_t efiret;

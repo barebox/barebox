@@ -213,6 +213,9 @@ int ftruncate(int fd, loff_t length)
 
 	f = &files[fd];
 
+	if (f->size == FILE_SIZE_STREAM)
+		return 0;
+
 	fsdrv = f->fsdev->driver;
 
 	ret = fsdrv->truncate(&f->fsdev->dev, f, length);

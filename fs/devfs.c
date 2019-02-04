@@ -175,11 +175,7 @@ static int devfs_truncate(struct device_d *dev, FILE *f, loff_t size)
 	if (cdev->ops->truncate)
 		return cdev->ops->truncate(cdev, size);
 
-	if (f->fsdev->dev.num_resources < 1)
-		return -ENOSPC;
-	if (size > resource_size(&f->fsdev->dev.resource[0]))
-		return -ENOSPC;
-	return 0;
+	return -EPERM;
 }
 
 static struct inode *devfs_alloc_inode(struct super_block *sb)

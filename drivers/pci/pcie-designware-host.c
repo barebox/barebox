@@ -150,15 +150,15 @@ int __init dw_pcie_host_init(struct pcie_port *pp)
 	}
 
 	if (!pci->dbi_base)
-		pci->dbi_base = (void __force *)pp->cfg.start;
+		pci->dbi_base = IOMEM(pp->cfg.start);
 
 	pp->mem_base = pp->mem.start;
 
 	if (!pp->va_cfg0_base)
-		pp->va_cfg0_base = (void __force *)(u32)pp->cfg0_base;
+		pp->va_cfg0_base = IOMEM((unsigned long)pp->cfg0_base);
 
 	if (!pp->va_cfg1_base)
-		pp->va_cfg1_base = (void __force *)(u32)pp->cfg1_base;
+		pp->va_cfg1_base = IOMEM((unsigned long)pp->cfg1_base);
 
 	ret = of_property_read_u32(np, "num-viewport", &pci->num_viewport);
 	if (ret)

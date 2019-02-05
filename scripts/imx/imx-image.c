@@ -694,7 +694,7 @@ static int hab_sign(struct config_data *data)
 	return 0;
 }
 
-static void *read_file(const char *filename, size_t *size)
+static void *xread_file(const char *filename, size_t *size)
 {
 	int fd, ret;
 	void *buf;
@@ -707,13 +707,17 @@ static void *read_file(const char *filename, size_t *size)
 	}
 
 	ret = fstat(fd, &s);
-	if (ret)
-		return NULL;
+	if (ret) {
+		fprintf(stderr, "Cannot stat %s: %s\n", filename, strerror(errno));
+		exit(1);
+	}
 
 	*size = s.st_size;
 	buf = malloc(*size);
-	if (!buf)
+	if (!buf) {
+		perror("malloc");
 		exit(1);
+	}
 
 	xread(fd, buf, *size);
 
@@ -884,12 +888,8 @@ int main(int argc, char *argv[])
 
 		if (data.signed_hdmi_firmware_file) {
 			free(buf);
-			buf = read_file(data.signed_hdmi_firmware_file,
+			buf = xread_file(data.signed_hdmi_firmware_file,
 					&signed_hdmi_firmware_size);
-			if (!buf) {
-				perror("read_file");
-				exit(1);
-			}
 
 			signed_hdmi_firmware_size =
 				roundup(signed_hdmi_firmware_size,
@@ -931,9 +931,7 @@ int main(int argc, char *argv[])
 	bb_header[0] = data.first_opcode;
 	bb_header[ARM_HEAD_SIZE_INDEX] = barebox_image_size;
 
-	infile = read_file(imagename, &insize);
-	if (!infile)
-		exit(1);
+	infile = xread_file(imagename, &insize);
 
 	outfd = open(data.outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {
@@ -998,7 +996,7 @@ int main(int argc, char *argv[])
 	if (create_usb_image) {
 		uint32_t *dcd;
 
-		infile = read_file(data.outfile, &insize);
+		infile = xread_file(data.outfile, &insize);
 
 		dcd = infile + dcd_ptr_offset;
 		*dcd = dcd_ptr_content;

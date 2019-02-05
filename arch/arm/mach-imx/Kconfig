@@ -183,6 +183,7 @@ config ARCH_IMX8MQ
 	select SYS_SUPPORTS_64BIT_KERNEL
 	select COMMON_CLK_OF_PROVIDER
 	select ARCH_HAS_FEC_IMX
+	select HW_HAS_PCI
 
 config ARCH_VF610
 	bool

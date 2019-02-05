@@ -26,13 +26,21 @@
 #include <linux/phy/phy.h>
 #include <linux/reset.h>
 #include <linux/sizes.h>
+#include <linux/bitfield.h>
 #include <mfd/imx6q-iomuxc-gpr.h>
 #include <mfd/imx7-iomuxc-gpr.h>
 
 #include <mach/imx6-regs.h>
 #include <mach/imx7-regs.h>
+#include <mach/imx8mq-regs.h>
 
 #include "pcie-designware.h"
+
+#define IMX8MQ_GPR_PCIE_REF_USE_PAD            BIT(9)
+#define IMX8MQ_GPR_PCIE_CLK_REQ_OVERRIDE_EN    BIT(10)
+#define IMX8MQ_GPR_PCIE_CLK_REQ_OVERRIDE       BIT(11)
+#define IMX8MQ_GPR12_PCIE2_CTRL_DEVICE_TYPE    GENMASK(11, 8)
+#define IMX8MQ_PCIE2_BASE_ADDR			0x33c00000
 
 #define to_imx6_pcie(x)	((x)->dev->priv)
 
@@ -40,6 +48,7 @@ enum imx6_pcie_variants {
 	IMX6Q,
 	IMX6QP,
 	IMX7D,
+	IMX8MQ,
 };
 
 #define IMX6_PCIE_FLAG_IMX6_PHY			BIT(0)
@@ -57,6 +66,7 @@ struct imx6_pcie {
 	struct clk		*pcie_phy;
 	struct clk		*pcie;
 	void __iomem		*iomuxc_gpr;
+	u32			controller_id;
 	struct reset_control	*pciephy_reset;
 	struct reset_control	*apps_reset;
 	u32                     tx_deemph_gen1;
@@ -261,6 +271,7 @@ static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 
 	switch (imx6_pcie->drvdata->variant) {
 	case IMX7D:
+	case IMX8MQ:
 		reset_control_assert(imx6_pcie->pciephy_reset);
 		reset_control_assert(imx6_pcie->apps_reset);
 		break;
@@ -280,9 +291,16 @@ static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
 	}
 }
 
+static unsigned int imx6_pcie_grp_offset(const struct imx6_pcie *imx6_pcie)
+{
+	WARN_ON(imx6_pcie->drvdata->variant != IMX8MQ);
+	return imx6_pcie->controller_id == 1 ? IOMUXC_GPR16 : IOMUXC_GPR14;
+}
+
 static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
 {
-	u32 gpr1;
+	u32 gpr1, gpr1x;
+	unsigned int offset;
 
 	switch (imx6_pcie->drvdata->variant) {
 	case IMX6QP:
@@ -303,6 +321,20 @@ static int imx6_pcie_enable_ref_clk(struct imx6_pcie *imx6_pcie)
 		writel(gpr1, imx6_pcie->iomuxc_gpr + IOMUXC_GPR1);
 		break;
 	case IMX7D:
+		break;
+	case IMX8MQ:
+		offset = imx6_pcie_grp_offset(imx6_pcie);
+		/*
+		 * Set the over ride low and enabled
+		 * make sure that REF_CLK is turned on.
+		 */
+		gpr1x = readl(imx6_pcie->iomuxc_gpr + offset);
+		gpr1x &= ~IMX8MQ_GPR_PCIE_CLK_REQ_OVERRIDE;
+		writel(gpr1x, imx6_pcie->iomuxc_gpr + offset);
+
+		gpr1x = readl(imx6_pcie->iomuxc_gpr + offset);
+		gpr1x |= IMX8MQ_GPR_PCIE_CLK_REQ_OVERRIDE_EN;
+		writel(gpr1x, imx6_pcie->iomuxc_gpr + offset);
 		break;
 	}
 
@@ -371,6 +403,9 @@ static void imx6_pcie_deassert_core_reset(struct imx6_pcie *imx6_pcie)
 	 * Release the PCIe PHY reset here
 	 */
 	switch (imx6_pcie->drvdata->variant) {
+	case IMX8MQ:
+		reset_control_deassert(imx6_pcie->pciephy_reset);
+		break;
 	case IMX7D:
 		reset_control_deassert(imx6_pcie->pciephy_reset);
 		imx7d_pcie_wait_for_phy_pll_lock(imx6_pcie);
@@ -396,19 +431,52 @@ err_pcie_bus:
 	clk_disable(imx6_pcie->pcie_phy);
 }
 
+static void imx6_pcie_configure_type(struct imx6_pcie *imx6_pcie)
+{
+	unsigned int mask, val;
+	u32 gpr12;
+
+	if (imx6_pcie->drvdata->variant == IMX8MQ &&
+	    imx6_pcie->controller_id == 1) {
+		mask   = IMX8MQ_GPR12_PCIE2_CTRL_DEVICE_TYPE;
+		val    = FIELD_PREP(IMX8MQ_GPR12_PCIE2_CTRL_DEVICE_TYPE,
+				    PCI_EXP_TYPE_ROOT_PORT);
+	} else {
+		mask = IMX6Q_GPR12_DEVICE_TYPE;
+		val  = FIELD_PREP(IMX6Q_GPR12_DEVICE_TYPE,
+				  PCI_EXP_TYPE_ROOT_PORT);
+	}
+
+	gpr12  = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+	gpr12 &= ~mask;
+	gpr12 |= val;
+	writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+}
+
 static void imx6_pcie_init_phy(struct imx6_pcie *imx6_pcie)
 {
-	u32 gpr12, gpr8;
-
-	gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+	u32 gpr12, gpr8, gpr1x;
+	unsigned int offset;
 
 	switch (imx6_pcie->drvdata->variant) {
+	case IMX8MQ:
+		offset = imx6_pcie_grp_offset(imx6_pcie);
+		/*
+		 * TODO: Currently this code assumes external
+		 * oscillator is being used
+		 */
+		gpr1x = readl(imx6_pcie->iomuxc_gpr + offset);
+		gpr1x |= IMX8MQ_GPR_PCIE_REF_USE_PAD;
+		writel(gpr1x, imx6_pcie->iomuxc_gpr + offset);
+		break;
 	case IMX7D:
+		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 		gpr12 &= ~IMX7D_GPR12_PCIE_PHY_REFCLK_SEL;
 		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 		break;
 	case IMX6QP:
 	case IMX6Q:	/* FALLTHROUGH */
+		gpr12 = readl(imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 		gpr12 &= ~IMX6Q_GPR12_PCIE_CTL_2;
 		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 
@@ -440,9 +508,7 @@ static void imx6_pcie_init_phy(struct imx6_pcie *imx6_pcie)
 		break;
 	}
 
-	gpr12 &= ~IMX6Q_GPR12_DEVICE_TYPE;
-	gpr12 |= PCI_EXP_TYPE_ROOT_PORT << 12;
-	writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
+	imx6_pcie_configure_type(imx6_pcie);
 }
 
 static int imx6_pcie_wait_for_link(struct imx6_pcie *imx6_pcie)
@@ -481,6 +547,7 @@ static void imx6_pcie_ltssm_enable(struct device_d *dev)
 		writel(gpr12, imx6_pcie->iomuxc_gpr + IOMUXC_GPR12);
 		break;
 	case IMX7D:
+	case IMX8MQ:
 		reset_control_deassert(imx6_pcie->apps_reset);
 		break;
 	}
@@ -668,10 +735,17 @@ static int imx6_pcie_probe(struct device_d *dev)
 		return PTR_ERR(imx6_pcie->pcie);
 	}
 
+
 	switch (imx6_pcie->drvdata->variant) {
+	case IMX8MQ:
+		imx6_pcie->iomuxc_gpr = IOMEM(MX8MQ_IOMUXC_GPR_BASE_ADDR);
+		if (iores->start == IMX8MQ_PCIE2_BASE_ADDR)
+			imx6_pcie->controller_id = 1;
+
+		goto imx7d_init;
 	case IMX7D:
 		imx6_pcie->iomuxc_gpr = IOMEM(MX7_IOMUXC_GPR_BASE_ADDR);
-
+	imx7d_init:
 		imx6_pcie->pciephy_reset = reset_control_get(dev, "pciephy");
 		if (IS_ERR(imx6_pcie->pciephy_reset)) {
 			dev_err(dev, "Failed to get PCIEPHY reset control\n");
@@ -775,12 +849,16 @@ static const struct imx6_pcie_drvdata drvdata[] = {
 	[IMX7D] = {
 		.variant = IMX7D,
 	},
+	[IMX8MQ] = {
+		.variant = IMX8MQ,
+	},
 };
 
 static struct of_device_id imx6_pcie_of_match[] = {
 	{ .compatible = "fsl,imx6q-pcie",  .data = &drvdata[IMX6Q],  },
 	{ .compatible = "fsl,imx6qp-pcie", .data = &drvdata[IMX6QP], },
 	{ .compatible = "fsl,imx7d-pcie",  .data = &drvdata[IMX7D],  },
+	{ .compatible = "fsl,imx8mq-pcie", .data = &drvdata[IMX8MQ], } ,
 	{},
 };
 

@@ -26,14 +26,14 @@
 #include <regulator.h>
 #include <dt-bindings/power/imx7-power.h>
 
-#define GPC_LPCR_A7_BSC			0x000
+#define GPC_LPCR_A_BSC			0x000
 
 #define GPC_PGC_CPU_MAPPING		0x0ec
-#define USB_HSIC_PHY_A7_DOMAIN		BIT(6)
-#define USB_OTG2_PHY_A7_DOMAIN		BIT(5)
-#define USB_OTG1_PHY_A7_DOMAIN		BIT(4)
-#define PCIE_PHY_A7_DOMAIN		BIT(3)
-#define MIPI_PHY_A7_DOMAIN		BIT(2)
+#define USB_HSIC_PHY_A_DOMAIN		BIT(6)
+#define USB_OTG2_PHY_A_DOMAIN		BIT(5)
+#define USB_OTG1_PHY_A_DOMAIN		BIT(4)
+#define PCIE_PHY_A_DOMAIN		BIT(3)
+#define MIPI_PHY_A_DOMAIN		BIT(2)
 
 #define GPC_PU_PGC_SW_PUP_REQ		0x0f8
 #define GPC_PU_PGC_SW_PDN_REQ		0x104
@@ -167,7 +167,7 @@ static const struct imx7_pgc_domain imx7_pgc_domains[] = {
 		},
 		.bits  = {
 			.pxx = MIPI_PHY_SW_Pxx_REQ,
-			.map = MIPI_PHY_A7_DOMAIN,
+			.map = MIPI_PHY_A_DOMAIN,
 		},
 		.voltage   = 1000000,
 		.pgc	   = PGC_MIPI,
@@ -179,7 +179,7 @@ static const struct imx7_pgc_domain imx7_pgc_domains[] = {
 		},
 		.bits  = {
 			.pxx = PCIE_PHY_SW_Pxx_REQ,
-			.map = PCIE_PHY_A7_DOMAIN,
+			.map = PCIE_PHY_A_DOMAIN,
 		},
 		.voltage   = 1000000,
 		.pgc	   = PGC_PCIE,
@@ -191,7 +191,7 @@ static const struct imx7_pgc_domain imx7_pgc_domains[] = {
 		},
 		.bits  = {
 			.pxx = USB_HSIC_PHY_SW_Pxx_REQ,
-			.map = USB_HSIC_PHY_A7_DOMAIN,
+			.map = USB_HSIC_PHY_A_DOMAIN,
 	},
 		.voltage   = 1200000,
 		.pgc	   = PGC_USB_HSIC,

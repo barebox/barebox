@@ -153,7 +153,8 @@ static int extract_key(const char *certfile, uint8_t **modulus, int *modulus_len
 
 	fp = fopen(certfile, "r");
 	if (!fp) {
-		fprintf(stderr, "unable to open certfile: %s\n", certfile);
+		fprintf(stderr, "unable to open certfile %s: %s\n", certfile,
+			strerror(errno));
 		return -errno;
 	}
 
@@ -458,7 +459,8 @@ static void write_dcd(const char *outfile)
 
 	outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {
-		perror("open");
+		fprintf(stderr, "Cannot open %s for wrinting: %s\n", outfile,
+			strerror(errno));
 		exit(1);
 	}
 
@@ -671,6 +673,11 @@ static int hab_sign(struct config_data *data)
 	}
 
 	outfd = open(data->outfile, O_WRONLY | O_APPEND);
+	if (outfd < 0) {
+		fprintf(stderr, "Cannot open %s for writing: %s\n", data->outfile,
+			strerror(errno));
+		exit(1);
+	}
 
 	ret = xwrite(outfd, buf, csf_space);
 	if (ret < 0) {
@@ -695,7 +702,7 @@ static void *read_file(const char *filename, size_t *size)
 
 	fd = open(filename, O_RDONLY);
 	if (fd < 0) {
-		perror("open");
+		fprintf(stderr, "Cannot open %s: %s\n", filename, strerror(errno));
 		exit(1);
 	}
 
@@ -930,7 +937,8 @@ int main(int argc, char *argv[])
 
 	outfd = open(data.outfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (outfd < 0) {
-		perror("open");
+		fprintf(stderr, "Cannot open %s for writing: %s\n", data.outfile,
+			strerror(errno));
 		exit(1);
 	}
 

@@ -128,7 +128,7 @@ int state_load(struct state *state)
 
 int state_load_no_auth(struct state *state)
 {
-	return state_do_load(state, STATE_FLAG_NO_AUTHENTIFICATION);
+	return state_do_load(state, STATE_FLAG_NO_AUTHENTICATION);
 }
 
 static int state_format_init(struct state *state, const char *backend_format,

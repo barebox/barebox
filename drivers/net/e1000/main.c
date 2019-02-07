@@ -36,11 +36,6 @@ tested on both gig copper and gig fiber boards
 #include <dma.h>
 #include "e1000.h"
 
-static u32 inline virt_to_bus(struct pci_dev *pdev, void *adr)
-{
-	return (u32)adr;
-}
-
 #define PCI_VENDOR_ID_INTEL	0x8086
 
 
@@ -3420,15 +3415,20 @@ static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 	struct e1000_hw *hw = edev->priv;
 	volatile struct e1000_tx_desc *txp;
 	uint64_t to;
+	dma_addr_t dma;
+	int ret = 0;
 
 	txp = hw->tx_base + hw->tx_tail;
 	hw->tx_tail = (hw->tx_tail + 1) % 8;
 
-	txp->buffer_addr = cpu_to_le64(virt_to_bus(hw->pdev, txpacket));
 	txp->lower.data = cpu_to_le32(hw->txd_cmd | length);
 	txp->upper.data = 0;
 
-	dma_sync_single_for_device((unsigned long)txpacket, length, DMA_TO_DEVICE);
+	dma = dma_map_single(hw->dev, txpacket, length, DMA_TO_DEVICE);
+	if (dma_mapping_error(hw->dev, dma))
+		return -EFAULT;
+
+	txp->buffer_addr = cpu_to_le64(dma);
 
 	e1000_write_reg(hw, E1000_TDT, hw->tx_tail);
 
@@ -3440,11 +3440,14 @@ static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 			break;
 		if (is_timeout(to, MSECOND)) {
 			dev_dbg(hw->dev, "e1000: tx timeout\n");
-			return -ETIMEDOUT;
+			ret = -ETIMEDOUT;
+			break;
 		}
 	}
 
-	return 0;
+	dma_unmap_single(hw->dev, dma, length, DMA_TO_DEVICE);
+
+	return ret;
 }
 
 static void e1000_disable(struct eth_device *edev)

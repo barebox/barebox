@@ -3391,11 +3391,10 @@ static void e1000_configure_rx(struct e1000_hw *hw)
 static int e1000_poll(struct eth_device *edev)
 {
 	struct e1000_hw *hw = edev->priv;
-	volatile struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_last];
-	uint32_t len;
+	struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_last];
 
-	if (le32_to_cpu(rd->status) & E1000_RXD_STAT_DD) {
-		len = le32_to_cpu(rd->length);
+	if (readb(&rd->status) & E1000_RXD_STAT_DD) {
+		const uint16_t len = readw(&rd->length);
 
 		dma_sync_single_for_cpu(hw->packet_dma, len,
 					DMA_FROM_DEVICE);

@@ -3200,12 +3200,11 @@ static int e1000_sw_init(struct eth_device *edev)
 
 static void e1000_fill_rx(struct e1000_hw *hw)
 {
-	volatile struct e1000_rx_desc *rd;
+	volatile struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_tail];
 	volatile u32 *bla;
 	int i;
 
 	hw->rx_last = hw->rx_tail;
-	rd = hw->rx_base + hw->rx_tail;
 	hw->rx_tail = (hw->rx_tail + 1) % 8;
 
 	bla = (void *)rd;

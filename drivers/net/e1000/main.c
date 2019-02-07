@@ -33,6 +33,7 @@ tested on both gig copper and gig fiber boards
 #include <init.h>
 #include <malloc.h>
 #include <linux/pci.h>
+#include <linux/iopoll.h>
 #include <dma.h>
 #include "e1000.h"
 #include <io-64-nonatomic-lo-hi.h>
@@ -3415,9 +3416,9 @@ static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 {
 	struct e1000_hw *hw = edev->priv;
 	struct e1000_tx_desc *txp = &hw->tx_base[hw->tx_tail];
-	uint64_t to;
 	dma_addr_t dma;
-	int ret = 0;
+	uint32_t stat;
+	int ret;
 
 	hw->tx_tail = (hw->tx_tail + 1) % 8;
 
@@ -3433,16 +3434,11 @@ static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 
 	e1000_write_flush(hw);
 
-	to = get_time_ns();
-	while (1) {
-		if (readl(&txp->upper.data) & E1000_TXD_STAT_DD)
-			break;
-		if (is_timeout(to, MSECOND)) {
-			dev_dbg(hw->dev, "e1000: tx timeout\n");
-			ret = -ETIMEDOUT;
-			break;
-		}
-	}
+	ret = readl_poll_timeout(&txp->upper.data,
+				 stat, stat & E1000_TXD_STAT_DD,
+				 MSECOND / USECOND);
+	if (ret)
+		dev_dbg(hw->dev, "e1000: tx timeout\n");
 
 	dma_unmap_single(hw->dev, dma, length, DMA_TO_DEVICE);
 

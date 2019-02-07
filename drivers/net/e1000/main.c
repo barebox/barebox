@@ -3198,6 +3198,11 @@ static int e1000_sw_init(struct eth_device *edev)
 	return E1000_SUCCESS;
 }
 
+static int e1000_bd_next_index(int index)
+{
+	return (index + 1) % 8;
+}
+
 static void e1000_fill_rx(struct e1000_hw *hw)
 {
 	volatile struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_tail];
@@ -3205,7 +3210,7 @@ static void e1000_fill_rx(struct e1000_hw *hw)
 	int i;
 
 	hw->rx_last = hw->rx_tail;
-	hw->rx_tail = (hw->rx_tail + 1) % 8;
+	hw->rx_tail = e1000_bd_next_index(hw->rx_tail);
 
 	bla = (void *)rd;
 	for (i = 0; i < 4; i++)
@@ -3419,7 +3424,7 @@ static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 	uint32_t stat;
 	int ret;
 
-	hw->tx_tail = (hw->tx_tail + 1) % 8;
+	hw->tx_tail = e1000_bd_next_index(hw->tx_tail);
 
 	writel(hw->txd_cmd | length, &txp->lower.data);
 	writel(0, &txp->upper.data);

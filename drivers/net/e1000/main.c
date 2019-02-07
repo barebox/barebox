@@ -3413,12 +3413,11 @@ static int e1000_poll(struct eth_device *edev)
 static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 {
 	struct e1000_hw *hw = edev->priv;
-	volatile struct e1000_tx_desc *txp;
+	volatile struct e1000_tx_desc *txp = &hw->tx_base[hw->tx_tail];
 	uint64_t to;
 	dma_addr_t dma;
 	int ret = 0;
 
-	txp = hw->tx_base + hw->tx_tail;
 	hw->tx_tail = (hw->tx_tail + 1) % 8;
 
 	txp->lower.data = cpu_to_le32(hw->txd_cmd | length);

@@ -3205,18 +3205,17 @@ static int e1000_bd_next_index(int index)
 
 static void e1000_fill_rx(struct e1000_hw *hw)
 {
-	volatile struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_tail];
-	volatile u32 *bla;
-	int i;
+	struct e1000_rx_desc *rd = &hw->rx_base[hw->rx_tail];
 
 	hw->rx_last = hw->rx_tail;
 	hw->rx_tail = e1000_bd_next_index(hw->rx_tail);
 
-	bla = (void *)rd;
-	for (i = 0; i < 4; i++)
-		*bla++ = 0;
-
-	rd->buffer_addr = cpu_to_le64(hw->packet_dma);
+	writeq(hw->packet_dma, &rd->buffer_addr);
+	writew(0, &rd->length);
+	writew(0, &rd->csum);
+	writeb(0, &rd->status);
+	writeb(0, &rd->errors);
+	writew(0, &rd->special);
 
 	e1000_write_reg(hw, E1000_RDT, hw->rx_tail);
 }

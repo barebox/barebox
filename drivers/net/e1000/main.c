@@ -3215,7 +3215,7 @@ static void fill_rx(struct e1000_hw *hw)
 	for (i = 0; i < 4; i++)
 		*bla++ = 0;
 
-	rd->buffer_addr = cpu_to_le64((unsigned long)hw->packet);
+	rd->buffer_addr = cpu_to_le64(hw->packet_dma);
 
 	e1000_write_reg(hw, E1000_RDT, hw->rx_tail);
 }
@@ -3406,9 +3406,11 @@ static int e1000_poll(struct eth_device *edev)
 
 	len = le32_to_cpu(rd->length);
 
-	dma_sync_single_for_cpu((unsigned long)hw->packet, len, DMA_FROM_DEVICE);
+	dma_sync_single_for_cpu(hw->packet_dma, len, DMA_FROM_DEVICE);
 
-	net_receive(edev, (uchar *)hw->packet, len);
+	net_receive(edev, hw->packet, len);
+
+	dma_sync_single_for_device(hw->packet_dma, len, DMA_FROM_DEVICE);
 	fill_rx(hw);
 	return 1;
 }
@@ -3561,7 +3563,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 
 	hw->tx_base = dma_alloc_coherent(16 * sizeof(*hw->tx_base), DMA_ADDRESS_BROKEN);
 	hw->rx_base = dma_alloc_coherent(16 * sizeof(*hw->rx_base), DMA_ADDRESS_BROKEN);
-	hw->packet = dma_alloc_coherent(4096, DMA_ADDRESS_BROKEN);
 
 	edev = &hw->edev;
 
@@ -3569,6 +3570,15 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	hw->dev = &pdev->dev;
 	pdev->dev.priv = hw;
 	edev->priv = hw;
+
+	hw->packet = dma_alloc(PAGE_SIZE);
+	if (!hw->packet)
+		return -ENOMEM;
+
+	hw->packet_dma = dma_map_single(hw->dev, hw->packet, PAGE_SIZE,
+					DMA_FROM_DEVICE);
+	if (dma_mapping_error(hw->dev, hw->packet_dma))
+		return -EFAULT;
 
 	hw->hw_addr = pci_iomap(pdev, 0);
 

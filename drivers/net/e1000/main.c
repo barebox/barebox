@@ -3396,18 +3396,21 @@ static int e1000_poll(struct eth_device *edev)
 
 	rd = hw->rx_base + hw->rx_last;
 
-	if (!(le32_to_cpu(rd->status)) & E1000_RXD_STAT_DD)
-		return 0;
+	if (le32_to_cpu(rd->status) & E1000_RXD_STAT_DD) {
+		len = le32_to_cpu(rd->length);
 
-	len = le32_to_cpu(rd->length);
+		dma_sync_single_for_cpu(hw->packet_dma, len,
+					DMA_FROM_DEVICE);
 
-	dma_sync_single_for_cpu(hw->packet_dma, len, DMA_FROM_DEVICE);
+		net_receive(edev, hw->packet, len);
 
-	net_receive(edev, hw->packet, len);
+		dma_sync_single_for_device(hw->packet_dma, len,
+					   DMA_FROM_DEVICE);
+		fill_rx(hw);
+		return 1;
+	}
 
-	dma_sync_single_for_device(hw->packet_dma, len, DMA_FROM_DEVICE);
-	fill_rx(hw);
-	return 1;
+	return 0;
 }
 
 static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)

@@ -35,6 +35,7 @@ tested on both gig copper and gig fiber boards
 #include <linux/pci.h>
 #include <dma.h>
 #include "e1000.h"
+#include <io-64-nonatomic-lo-hi.h>
 
 #define PCI_VENDOR_ID_INTEL	0x8086
 
@@ -3413,29 +3414,28 @@ static int e1000_poll(struct eth_device *edev)
 static int e1000_transmit(struct eth_device *edev, void *txpacket, int length)
 {
 	struct e1000_hw *hw = edev->priv;
-	volatile struct e1000_tx_desc *txp = &hw->tx_base[hw->tx_tail];
+	struct e1000_tx_desc *txp = &hw->tx_base[hw->tx_tail];
 	uint64_t to;
 	dma_addr_t dma;
 	int ret = 0;
 
 	hw->tx_tail = (hw->tx_tail + 1) % 8;
 
-	txp->lower.data = cpu_to_le32(hw->txd_cmd | length);
-	txp->upper.data = 0;
+	writel(hw->txd_cmd | length, &txp->lower.data);
+	writel(0, &txp->upper.data);
 
 	dma = dma_map_single(hw->dev, txpacket, length, DMA_TO_DEVICE);
 	if (dma_mapping_error(hw->dev, dma))
 		return -EFAULT;
 
-	txp->buffer_addr = cpu_to_le64(dma);
-
+	writeq(dma, &txp->buffer_addr);
 	e1000_write_reg(hw, E1000_TDT, hw->tx_tail);
 
 	e1000_write_flush(hw);
 
 	to = get_time_ns();
 	while (1) {
-		if (le32_to_cpu(txp->upper.data) & E1000_TXD_STAT_DD)
+		if (readl(&txp->upper.data) & E1000_TXD_STAT_DD)
 			break;
 		if (is_timeout(to, MSECOND)) {
 			dev_dbg(hw->dev, "e1000: tx timeout\n");

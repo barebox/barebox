@@ -3198,7 +3198,7 @@ static int e1000_sw_init(struct eth_device *edev)
 	return E1000_SUCCESS;
 }
 
-static void fill_rx(struct e1000_hw *hw)
+static void e1000_fill_rx(struct e1000_hw *hw)
 {
 	volatile struct e1000_rx_desc *rd;
 	volatile u32 *bla;
@@ -3387,7 +3387,7 @@ static void e1000_configure_rx(struct e1000_hw *hw)
 
 	e1000_write_reg(hw, E1000_RCTL, rctl);
 
-	fill_rx(hw);
+	e1000_fill_rx(hw);
 }
 
 static int e1000_poll(struct eth_device *edev)
@@ -3405,7 +3405,7 @@ static int e1000_poll(struct eth_device *edev)
 
 		dma_sync_single_for_device(hw->packet_dma, len,
 					   DMA_FROM_DEVICE);
-		fill_rx(hw);
+		e1000_fill_rx(hw);
 		return 1;
 	}
 

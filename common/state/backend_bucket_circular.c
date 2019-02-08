@@ -298,7 +298,7 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	void *write_buf;
 
 	if (written_length > circ->max_size) {
-		dev_err(circ->dev, "Error, state data too big to be written, to write: %d, writesize: %zd, length: %zd, available: %zd\n",
+		dev_err(circ->dev, "Error, state data too big to be written, to write: %u, writesize: %zd, length: %zd, available: %zd\n",
 			written_length, circ->writesize, len, circ->max_size);
 		return -E2BIG;
 	}
@@ -345,12 +345,12 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 
 	ret = state_mtd_peb_write(circ, write_buf, offset, written_length);
 	if (ret < 0 && ret != -EUCLEAN) {
-		dev_err(circ->dev, "Failed to write circular to %lld length %d, %d\n",
+		dev_err(circ->dev, "Failed to write circular to %lld length %u, %d\n",
 			(long long) offset, written_length, ret);
 		goto out_free;
 	}
 
-	dev_dbg(circ->dev, "Written state to PEB %u offset %lld length %d data length %zd\n",
+	dev_dbg(circ->dev, "Written state to PEB %u offset %lld length %u data length %zd\n",
 		circ->eraseblock, (long long) offset, written_length, len);
 
 out_free:

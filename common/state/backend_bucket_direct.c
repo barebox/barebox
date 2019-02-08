@@ -110,6 +110,9 @@ static int state_backend_bucket_direct_write(struct state_backend_storage_bucket
 	int ret;
 	struct state_backend_storage_bucket_direct_meta meta;
 
+	if (len > direct->max_size - sizeof(meta))
+		return -E2BIG;
+
 	ret = lseek(direct->fd, direct->offset, SEEK_SET);
 	if (ret < 0) {
 		dev_err(direct->dev, "Failed to seek file, %d\n", ret);

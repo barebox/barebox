@@ -165,13 +165,13 @@ static int state_mtd_peb_read(struct state_backend_storage_bucket_circular *circ
 		return ret;
 	}
 
-	dev_dbg(circ->dev, "Read state from %ld length %zd\n", offset,
+	dev_dbg(circ->dev, "Read state from %ld length %d\n", offset,
 		len);
 
 
 	ret = read_full(circ->fd, buf, len);
 	if (ret < 0) {
-		dev_err(circ->dev, "Failed to read circular storage len %zd, %d\n",
+		dev_err(circ->dev, "Failed to read circular storage len %d, %d\n",
 			len, ret);
 		free(buf);
 	}
@@ -196,7 +196,7 @@ static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *cir
 
 	ret = write_full(circ->fd, buf, len);
 	if (ret < 0) {
-		dev_err(circ->dev, "Failed to write circular to %ld length %zd, %d\n",
+		dev_err(circ->dev, "Failed to write circular to %ld length %d, %d\n",
 			offset, len, ret);
 		return ret;
 	}
@@ -207,7 +207,7 @@ static int state_mtd_peb_write(struct state_backend_storage_bucket_circular *cir
 	 */
 	flush(circ->fd);
 
-	dev_dbg(circ->dev, "Written state to offset %ld length %zd data length %zd\n",
+	dev_dbg(circ->dev, "Written state to offset %ld length %d data length %d\n",
 		offset, len, len);
 
 	return 0;
@@ -298,7 +298,7 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 	void *write_buf;
 
 	if (written_length > circ->max_size) {
-		dev_err(circ->dev, "Error, state data too big to be written, to write: %zd, writesize: %zd, length: %zd, available: %zd\n",
+		dev_err(circ->dev, "Error, state data too big to be written, to write: %d, writesize: %zd, length: %zd, available: %zd\n",
 			written_length, circ->writesize, len, circ->max_size);
 		return -E2BIG;
 	}
@@ -345,12 +345,12 @@ static int state_backend_bucket_circular_write(struct state_backend_storage_buck
 
 	ret = state_mtd_peb_write(circ, write_buf, offset, written_length);
 	if (ret < 0 && ret != -EUCLEAN) {
-		dev_err(circ->dev, "Failed to write circular to %ld length %zd, %d\n",
+		dev_err(circ->dev, "Failed to write circular to %ld length %d, %d\n",
 			offset, written_length, ret);
 		goto out_free;
 	}
 
-	dev_dbg(circ->dev, "Written state to PEB %u offset %ld length %zd data length %zd\n",
+	dev_dbg(circ->dev, "Written state to PEB %u offset %ld length %d data length %zd\n",
 		circ->eraseblock, offset, written_length, len);
 
 out_free:

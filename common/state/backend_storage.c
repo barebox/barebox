@@ -19,7 +19,7 @@
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/mtd/mtd-abi.h>
-#include <linux/stat.h>
+#include <sys/stat.h>
 #include <malloc.h>
 #include <printk.h>
 
